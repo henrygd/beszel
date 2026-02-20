@@ -174,8 +174,8 @@ export const columns: ColumnDef<SmartDeviceRecord>[] = [
 			<HeaderButton column={column} name={t({ message: "Power On", comment: "Power On Time" })} Icon={Clock} />
 		),
 		cell: ({ getValue }) => {
-			const hours = (getValue() ?? 0) as number
-			if (!hours && hours !== 0) {
+			const hours = getValue() as number | undefined
+			if (hours == null) {
 				return <div className="text-sm text-muted-foreground ms-1.5">N/A</div>
 			}
 			const seconds = hours * 3600
@@ -195,7 +195,7 @@ export const columns: ColumnDef<SmartDeviceRecord>[] = [
 		),
 		cell: ({ getValue }) => {
 			const cycles = getValue() as number | undefined
-			if (!cycles && cycles !== 0) {
+			if (cycles == null) {
 				return <div className="text-muted-foreground ms-1.5">N/A</div>
 			}
 			return <span className="ms-1.5">{cycles.toLocaleString()}</span>
@@ -206,7 +206,11 @@ export const columns: ColumnDef<SmartDeviceRecord>[] = [
 		invertSorting: true,
 		header: ({ column }) => <HeaderButton column={column} name={t`Temp`} Icon={ThermometerIcon} />,
 		cell: ({ getValue }) => {
-			const { value, unit } = formatTemperature(getValue() as number)
+			const temp = getValue() as number | null | undefined
+			if (!temp) {
+				return <div className="text-muted-foreground ms-1.5">N/A</div>
+			}
+			const { value, unit } = formatTemperature(temp)
 			return <span className="ms-1.5">{`${value} ${unit}`}</span>
 		},
 	},
@@ -304,41 +308,41 @@ export default function DisksTable({ systemId }: { systemId?: string }) {
 			? { fields: SMART_DEVICE_FIELDS, filter: pb.filter("system = {:system}", { system: systemId }) }
 			: { fields: SMART_DEVICE_FIELDS }
 
-			; (async () => {
-				try {
-					unsubscribe = await pb.collection("smart_devices").subscribe(
-						"*",
-						(event) => {
-							const record = event.record as SmartDeviceRecord
-							setSmartDevices((currentDevices) => {
-								const devices = currentDevices ?? []
-								const matchesSystemScope = !systemId || record.system === systemId
+		;(async () => {
+			try {
+				unsubscribe = await pb.collection("smart_devices").subscribe(
+					"*",
+					(event) => {
+						const record = event.record as SmartDeviceRecord
+						setSmartDevices((currentDevices) => {
+							const devices = currentDevices ?? []
+							const matchesSystemScope = !systemId || record.system === systemId
 
-								if (event.action === "delete") {
-									return devices.filter((device) => device.id !== record.id)
-								}
+							if (event.action === "delete") {
+								return devices.filter((device) => device.id !== record.id)
+							}
 
-								if (!matchesSystemScope) {
-									// Record moved out of scope; ensure it disappears locally.
-									return devices.filter((device) => device.id !== record.id)
-								}
+							if (!matchesSystemScope) {
+								// Record moved out of scope; ensure it disappears locally.
+								return devices.filter((device) => device.id !== record.id)
+							}
 
-								const existingIndex = devices.findIndex((device) => device.id === record.id)
-								if (existingIndex === -1) {
-									return [record, ...devices]
-								}
+							const existingIndex = devices.findIndex((device) => device.id === record.id)
+							if (existingIndex === -1) {
+								return [record, ...devices]
+							}
 
-								const next = [...devices]
-								next[existingIndex] = record
-								return next
-							})
-						},
-						pbOptions
-					)
-				} catch (error) {
-					console.error("Failed to subscribe to SMART device updates:", error)
-				}
-			})()
+							const next = [...devices]
+							next[existingIndex] = record
+							return next
+						})
+					},
+					pbOptions
+				)
+			} catch (error) {
+				console.error("Failed to subscribe to SMART device updates:", error)
+			}
+		})()
 
 		return () => {
 			unsubscribe?.()
@@ -652,14 +656,14 @@ function DiskSheet({
 						</Tooltip>
 					</SheetDescription>
 				</SheetHeader>
-				<div className="flex-1 overflow-auto p-4 flex flex-col gap-4">
+				<div className="flex-1 overflow-hidden p-4 flex flex-col gap-4">
 					{isLoading ? (
 						<div className="flex justify-center py-8">
 							<LoaderCircleIcon className="animate-spin size-10 opacity-60" />
 						</div>
 					) : (
 						<>
-							<Alert className="pb-3">
+							<Alert className="pb-3 shrink-0">
 								{status === "PASSED" ? <CheckCircle2Icon className="size-4" /> : <XCircleIcon className="size-4" />}
 								<AlertTitle>
 									<Trans>S.M.A.R.T. Self-Test</Trans>: {status}
@@ -671,9 +675,9 @@ function DiskSheet({
 								)}
 							</Alert>
 							{smartAttributes.length > 0 ? (
-								<div className="rounded-md border overflow-auto">
+								<div className="rounded-md border min-h-0 flex flex-col">
 									<Table>
-										<TableHeader>
+										<TableHeader className="sticky top-0 z-10">
 											{table.getHeaderGroups().map((headerGroup) => (
 												<TableRow key={headerGroup.id}>
 													{headerGroup.headers.map((header) => (

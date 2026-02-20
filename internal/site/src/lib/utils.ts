@@ -6,7 +6,7 @@ import { useEffect, useState } from "react"
 import { twMerge } from "tailwind-merge"
 import { toast } from "@/components/ui/use-toast"
 import type { ChartTimeData, FingerprintRecord, SemVer, SystemRecord } from "@/types"
-import { HourFormat, MeterState, Unit } from "./enums"
+import { HourFormat, Unit } from "./enums"
 import { $copyContent, $userSettings } from "./stores"
 
 export function cn(...inputs: ClassValue[]) {
@@ -210,7 +210,6 @@ export function useBrowserStorage<T>(key: string, defaultValue: T, storageInterf
 	const [value, setValue] = useState(() => {
 		return getStorageValue(key, defaultValue, storageInterface)
 	})
-	// biome-ignore lint/correctness/useExhaustiveDependencies: storageInterface won't change
 	useEffect(() => {
 		storageInterface?.setItem(key, JSON.stringify(value))
 	}, [key, value])
@@ -394,12 +393,6 @@ export function compareSemVer(a: SemVer, b: SemVer) {
 	return a.patch - b.patch
 }
 
-/** Get meter state from 0-100 value. Used for color coding meters. */
-export function getMeterState(value: number): MeterState {
-	const { colorWarn = 65, colorCrit = 90 } = $userSettings.get()
-	return value >= colorCrit ? MeterState.Crit : value >= colorWarn ? MeterState.Warn : MeterState.Good
-}
-
 // biome-ignore lint/suspicious/noExplicitAny: any is used to allow any function to be passed in
 export function debounce<T extends (...args: any[]) => any>(func: T, wait: number): (...args: Parameters<T>) => void {
 	let timeout: ReturnType<typeof setTimeout>
@@ -464,5 +457,16 @@ export function secondsToString(seconds: number, unit: "hour" | "minute" | "day"
 			return plural(count, { one: `${countString} hour`, other: `${countString} hours` })
 		case "day":
 			return plural(count, { one: `${countString} day`, other: `${countString} days` })
+	}
+}
+
+/** Format seconds to uptime string - "X minutes", "X hours", "X days" */
+export function secondsToUptimeString(seconds: number): string {
+	if (seconds < 3600) {
+		return secondsToString(seconds, "minute")
+	} else if (seconds < 360000) {
+		return secondsToString(seconds, "hour")
+	} else {
+		return secondsToString(seconds, "day")
 	}
 }

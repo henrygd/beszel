@@ -93,6 +93,7 @@ msgstr "Dejanja"
 
 #: src/components/alerts-history-columns.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
+#: src/components/routes/settings/heartbeat.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Active"
 msgstr "Aktivno"
@@ -140,9 +141,13 @@ msgstr "Administrator"
 msgid "After"
 msgstr "Po"
 
+#: src/components/routes/settings/heartbeat.tsx
+msgid "After setting the environment variables, restart your Beszel hub for changes to take effect."
+msgstr "Po nastavitvi okoljskih spremenljivk ponovno zaženite vozlišče Beszel, da spremembe začnejo veljati."
+
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Agent"
-msgstr ""
+msgstr "Agent"
 
 #: src/components/command-palette.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
@@ -194,7 +199,7 @@ msgstr "Povprečna izkoriščenost procesorja kontejnerjev"
 #. placeholder {0}: alertData.unit
 #: src/components/alerts/alerts-sheet.tsx
 msgid "Average drops below <0>{value}{0}</0>"
-msgstr ""
+msgstr "Povprečje pade pod <0>{value}{0}</0>"
 
 #. placeholder {0}: alertData.unit
 #: src/components/alerts/alerts-sheet.tsx
@@ -231,7 +236,7 @@ msgstr "Pasovna širina"
 #. Battery label in systems table header
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Bat"
-msgstr ""
+msgstr "Bat"
 
 #: src/components/routes/system.tsx
 #: src/lib/alerts.ts
@@ -255,7 +260,7 @@ msgstr "Pred"
 #. placeholder {2}: alert.min
 #: src/components/active-alerts.tsx
 msgid "Below {0}{1} in last {2, plural, one {# minute} other {# minutes}}"
-msgstr ""
+msgstr "Pod {0}{1} v zadnjih {2, plural, one {# minuti} two {# minutah} few {# minutah} other {# minutah}}"
 
 #: src/components/login/auth-form.tsx
 msgid "Beszel supports OpenID Connect and many OAuth2 authentication providers."
@@ -349,6 +354,10 @@ msgstr "Preverite {email} za povezavo za ponastavitev."
 #: src/components/routes/settings/layout.tsx
 msgid "Check logs for more details."
 msgstr "Za več podrobnosti preverite dnevnike."
+
+#: src/components/routes/settings/heartbeat.tsx
+msgid "Check your monitoring service"
+msgstr "Preverite svojo storitev za spremljanje"
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Check your notification service"
@@ -457,7 +466,7 @@ msgstr "Kopiraj YAML"
 #: src/components/systemd-table/systemd-table-columns.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "CPU"
-msgstr ""
+msgstr "CPE"
 
 #: src/components/routes/system/cpu-sheet.tsx
 msgid "CPU Cores"
@@ -556,11 +565,11 @@ msgstr "Prazni se"
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Disk"
-msgstr ""
+msgstr "Disk"
 
 #: src/components/routes/system.tsx
 msgid "Disk I/O"
-msgstr ""
+msgstr "Disk V/I"
 
 #: src/components/routes/settings/general.tsx
 msgid "Disk unit"
@@ -643,6 +652,14 @@ msgstr "Prazna"
 msgid "End Time"
 msgstr "Čas konca"
 
+#: src/components/routes/settings/heartbeat.tsx
+msgid "Endpoint URL"
+msgstr "URL končne točke"
+
+#: src/components/routes/settings/heartbeat.tsx
+msgid "Endpoint URL to ping (required)"
+msgstr "URL končne točke za ping (zahtevano)"
+
 #: src/components/login/login.tsx
 msgid "Enter email address to reset password"
 msgstr "Vnesite e-poštni naslov za ponastavitev gesla"
@@ -662,6 +679,9 @@ msgstr "Prehodni"
 #: src/components/login/auth-form.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/settings/config-yaml.tsx
+#: src/components/routes/settings/heartbeat.tsx
+#: src/components/routes/settings/heartbeat.tsx
+#: src/components/routes/settings/heartbeat.tsx
 #: src/components/routes/settings/notifications.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/quiet-hours.tsx
@@ -669,6 +689,10 @@ msgstr "Prehodni"
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Error"
 msgstr "Napaka"
+
+#: src/components/routes/settings/heartbeat.tsx
+msgid "Example:"
+msgstr "Primer:"
 
 #. placeholder {0}: alert.value
 #. placeholder {1}: info.unit
@@ -679,7 +703,7 @@ msgstr "Preseženo {0}{1} v zadnjih {2, plural, one {# minuti} other {# minutah}
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Exec main PID"
-msgstr ""
+msgstr "Glavni PID izvajanja"
 
 #: src/components/routes/settings/config-yaml.tsx
 msgid "Existing systems not defined in <0>config.yml</0> will be deleted. Please make regular backups."
@@ -707,7 +731,7 @@ msgstr "Izvozi trenutne nastavitve sistema."
 
 #: src/components/routes/settings/general.tsx
 msgid "Fahrenheit (°F)"
-msgstr ""
+msgstr "Fahrenheit (°F)"
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Failed"
@@ -726,6 +750,10 @@ msgstr "Preverjanje pristnosti ni uspelo"
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Failed to save settings"
 msgstr "Shranjevanje nastavitev ni uspelo"
+
+#: src/components/routes/settings/heartbeat.tsx
+msgid "Failed to send heartbeat"
+msgstr "Slanje srčnega utripa (heartbeat) ni uspelo"
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Failed to send test notification"
@@ -806,6 +834,18 @@ msgstr "Mreža"
 msgid "Health"
 msgstr "Zdravje"
 
+#: src/components/routes/settings/layout.tsx
+msgid "Heartbeat"
+msgstr "Srčni utrip (Heartbeat)"
+
+#: src/components/routes/settings/heartbeat.tsx
+msgid "Heartbeat Monitoring"
+msgstr "Spremljanje srčnega utripa"
+
+#: src/components/routes/settings/heartbeat.tsx
+msgid "Heartbeat sent successfully"
+msgstr "Srčni utrip uspešno poslan"
+
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgctxt "Button to copy install command"
@@ -815,6 +855,14 @@ msgstr "Ukaz Homebrew"
 #: src/components/add-system.tsx
 msgid "Host / IP"
 msgstr "Gostitelj / IP"
+
+#: src/components/routes/settings/heartbeat.tsx
+msgid "HTTP Method"
+msgstr "Metoda HTTP"
+
+#: src/components/routes/settings/heartbeat.tsx
+msgid "HTTP method: POST, GET, or HEAD (default: POST)"
+msgstr "Metoda HTTP: POST, GET ali HEAD (privzeto: POST)"
 
 #. Context: Battery state
 #: src/lib/i18n.ts
@@ -833,6 +881,10 @@ msgstr "Slika"
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Inactive"
 msgstr "Neaktivno"
+
+#: src/components/routes/settings/heartbeat.tsx
+msgid "Interval"
+msgstr "Interval"
 
 #: src/components/login/auth-form.tsx
 msgid "Invalid email address."
@@ -885,6 +937,7 @@ msgstr "Povpr. obrem."
 msgid "Load state"
 msgstr "Stanje nalaganja"
 
+#: src/components/routes/settings/heartbeat.tsx
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Loading..."
 msgstr "Nalaganje..."
@@ -958,7 +1011,7 @@ msgstr "Poraba pomnilnika docker kontejnerjev"
 
 #: src/components/routes/system/smart-table.tsx
 msgid "Model"
-msgstr ""
+msgstr "Model"
 
 #: src/components/add-system.tsx
 #: src/components/alerts-history-columns.tsx
@@ -1109,6 +1162,10 @@ msgstr "Zaustavljeno"
 #: src/components/systems-table/systems-table.tsx
 msgid "Paused ({pausedSystemsLength})"
 msgstr "Pavzirano za {pausedSystemsLength}"
+
+#: src/components/routes/settings/heartbeat.tsx
+msgid "Payload format"
+msgstr "Oblika tovora (payload)"
 
 #: src/components/routes/system/cpu-sheet.tsx
 #: src/components/routes/system/cpu-sheet.tsx
@@ -1307,6 +1364,10 @@ msgstr "Iskanje"
 msgid "Search for systems or settings..."
 msgstr "Iskanje sistemov ali nastavitev..."
 
+#: src/components/routes/settings/heartbeat.tsx
+msgid "Seconds between pings (default: 60)"
+msgstr "Sekunde med pingi (privzeto: 60)"
+
 #: src/components/alerts/alerts-sheet.tsx
 msgid "See <0>notification settings</0> to configure how you receive alerts."
 msgstr "Glejte <0>nastavitve obvestil</0>, da nastavite način prejemanja opozoril."
@@ -1314,6 +1375,18 @@ msgstr "Glejte <0>nastavitve obvestil</0>, da nastavite način prejemanja opozor
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Select {foo}"
 msgstr "Izberi {foo}"
+
+#: src/components/routes/settings/heartbeat.tsx
+msgid "Send a single heartbeat ping to verify your endpoint is working."
+msgstr "Pošljite en srčni utrip (ping), da preverite, ali vaša končna točka deluje."
+
+#: src/components/routes/settings/heartbeat.tsx
+msgid "Send periodic outbound pings to an external monitoring service so you can monitor Beszel without exposing it to the internet."
+msgstr "Pošiljajte občasne odhodne pinge zunanji storitvi za spremljanje, da boste lahko spremljali Beszel, ne da bi ga izpostavili internetu."
+
+#: src/components/routes/settings/heartbeat.tsx
+msgid "Send test heartbeat"
+msgstr "Pošlji testni srčni utrip"
 
 #: src/components/routes/system.tsx
 msgid "Sent"
@@ -1334,6 +1407,10 @@ msgstr "Storitve"
 #: src/components/routes/settings/general.tsx
 msgid "Set percentage thresholds for meter colors."
 msgstr "Nastavite odstotne pragove za barve merilnikov."
+
+#: src/components/routes/settings/heartbeat.tsx
+msgid "Set the following environment variables on your Beszel hub to enable heartbeat monitoring:"
+msgstr "Na svojem vozlišču Beszel nastavite naslednje okoljske spremenljivke, da omogočite spremljanje srčnega utripa:"
 
 #: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
@@ -1377,7 +1454,7 @@ msgstr "Stanje"
 #: src/components/systems-table/systems-table.tsx
 #: src/lib/alerts.ts
 msgid "Status"
-msgstr ""
+msgstr "Stanje"
 
 #: src/components/systemd-table/systemd-table-columns.tsx
 msgid "Sub State"
@@ -1452,9 +1529,17 @@ msgstr "Temperature sistemskih senzorjev"
 msgid "Test <0>URL</0>"
 msgstr "Preveri <0>URL</0>"
 
+#: src/components/routes/settings/heartbeat.tsx
+msgid "Test heartbeat"
+msgstr "Testni srčni utrip"
+
 #: src/components/routes/settings/notifications.tsx
 msgid "Test notification sent"
 msgstr "Testno obvestilo je poslano"
+
+#: src/components/routes/settings/heartbeat.tsx
+msgid "The overall status is <0>ok</0> when all systems are up, <1>warn</1> when alerts are triggered, and <2>error</2> when any system is down."
+msgstr "Splošno stanje je <0>v redu</0>, ko vsi sistemi delujejo, <1>opozorilo</1>, ko se sprožijo opozorila, in <2>napaka</2>, ko kateri koli sistem ne deluje."
 
 #: src/components/login/forgot-pass-form.tsx
 msgid "Then log into the backend and reset your user account password in the users table."
@@ -1557,7 +1642,7 @@ msgstr "Sproži se, ko kateri koli senzor preseže prag"
 
 #: src/lib/alerts.ts
 msgid "Triggers when battery charge drops below a threshold"
-msgstr ""
+msgstr "Sproži se, ko napolnjenost baterije pade pod prag"
 
 #: src/lib/alerts.ts
 msgid "Triggers when combined up/down exceeds a threshold"
@@ -1642,8 +1727,9 @@ msgid "Upload"
 msgstr "Naloži"
 
 #: src/components/routes/system/info-bar.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Uptime"
-msgstr "Čas delovanja"
+msgstr "Uptime"
 
 #: src/components/routes/system.tsx
 #: src/components/routes/system.tsx
@@ -1715,6 +1801,10 @@ msgstr "Webhook / potisna obvestila"
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "When enabled, this token allows agents to self-register without prior system creation."
 msgstr "Ko je omogočen, ta žeton omogoča agentom samoregistracijo brez predhodnega ustvarjanja sistema."
+
+#: src/components/routes/settings/heartbeat.tsx
+msgid "When using POST, each heartbeat includes a JSON payload with system status summary, list of down systems, and triggered alerts."
+msgstr "Pri uporabi POST vsak srčni utrip vključuje tovor JSON s povzetkom stanja sistema, seznamom nedelujočih sistemov in sproženimi opozorili."
 
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx

@@ -127,7 +127,7 @@ func (a *Agent) initializeDiskInfo() {
 
 	// Add EXTRA_FILESYSTEMS env var values to fsStats
 	if extraFilesystems, exists := GetEnv("EXTRA_FILESYSTEMS"); exists {
-		for _, fsEntry := range strings.Split(extraFilesystems, ",") {
+		for fsEntry := range strings.SplitSeq(extraFilesystems, ",") {
 			// Parse custom name from format: device__customname
 			fs, customName := parseFilesystemEntry(fsEntry)
 

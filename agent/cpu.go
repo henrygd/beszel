@@ -89,10 +89,7 @@ func getPerCoreCpuUsage(cacheTimeMs uint16) (system.Uint8Slice, error) {
 	lastTimes := lastPerCoreCpuTimes[cacheTimeMs]
 
 	// Limit to the number of cores available in both samples
-	length := len(perCoreTimes)
-	if len(lastTimes) < length {
-		length = len(lastTimes)
-	}
+	length := min(len(lastTimes), len(perCoreTimes))
 
 	usage := make([]uint8, length)
 	for i := 0; i < length; i++ {

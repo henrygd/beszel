@@ -10,6 +10,7 @@ dist
 *.exe
 internal/cmd/hub/hub
 internal/cmd/agent/agent
+agent.test
 node_modules
 build
 *timestamp*

@@ -7,6 +7,7 @@ import { lazy, memo, Suspense, useMemo, useState } from "react"
 import { $router, Link } from "@/components/router"
 import { Checkbox } from "@/components/ui/checkbox"
 import { DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { Input } from "@/components/ui/input"
 import { Switch } from "@/components/ui/switch"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { toast } from "@/components/ui/use-toast"
@@ -20,7 +21,7 @@ const Slider = lazy(() => import("@/components/ui/slider"))
 
 const endpoint = "/api/beszel/user-alerts"
 
-const alertDebounce = 100
+const alertDebounce = 400
 
 const alertKeys = Object.keys(alertInfo) as (keyof typeof alertInfo)[]
 
@@ -244,7 +245,7 @@ export function AlertContent({
 					<Suspense fallback={<div className="h-10" />}>
 						{!singleDescription && (
 							<div>
-								<p id={`v${name}`} className="text-sm block h-8">
+								<p id={`v${name}`} className="text-sm block h-6">
 									{alertData.invert ? (
 										<Trans>
 											Average drops below{" "}
@@ -263,21 +264,38 @@ export function AlertContent({
 										</Trans>
 									)}
 								</p>
-								<div className="flex gap-3">
+								<div className="flex gap-3 items-center">
 									<Slider
 										aria-labelledby={`v${name}`}
-										defaultValue={[value]}
+										value={[value]}
 										onValueCommit={(val) => sendUpsert(min, val[0])}
 										onValueChange={(val) => setValue(val[0])}
 										step={alertData.step ?? 1}
 										min={alertData.min ?? 1}
 										max={alertData.max ?? 99}
 									/>
+									<Input
+										type="number"
+										value={value}
+										onChange={(e) => {
+											let val = parseFloat(e.target.value)
+											if (!Number.isNaN(val)) {
+												if (alertData.max != null) val = Math.min(val, alertData.max)
+												if (alertData.min != null) val = Math.max(val, alertData.min)
+												setValue(val)
+												sendUpsert(min, val)
+											}
+										}}
+										step={alertData.step ?? 1}
+										min={alertData.min ?? 1}
+										max={alertData.max ?? 99}
+										className="w-16 h-8 text-center px-1"
+									/>
 								</div>
 							</div>
 						)}
 						<div className={cn(singleDescription && "col-span-full lowercase")}>
-							<p id={`t${name}`} className="text-sm block h-8 first-letter:uppercase">
+							<p id={`t${name}`} className="text-sm block h-6 first-letter:uppercase">
 								{singleDescription && (
 									<>
 										{singleDescription}
@@ -289,14 +307,29 @@ export function AlertContent({
 									<Plural value={min} one="minute" other="minutes" />
 								</Trans>
 							</p>
-							<div className="flex gap-3">
+							<div className="flex gap-3 items-center">
 								<Slider
-									aria-labelledby={`v${name}`}
-									defaultValue={[min]}
-									onValueCommit={(minVal) => sendUpsert(minVal[0], value)}
+									aria-labelledby={`t${name}`}
+									value={[min]}
+									onValueCommit={(val) => sendUpsert(val[0], value)}
 									onValueChange={(val) => setMin(val[0])}
 									min={1}
 									max={60}
+								/>
+								<Input
+									type="number"
+									value={min}
+									onChange={(e) => {
+										let val = parseInt(e.target.value, 10)
+										if (!Number.isNaN(val)) {
+											val = Math.max(1, Math.min(val, 60))
+											setMin(val)
+											sendUpsert(val, value)
+										}
+									}}
+									min={1}
+									max={60}
+									className="w-16 h-8 text-center px-1"
 								/>
 							</div>
 						</div>
