@@ -937,7 +937,6 @@ msgstr "Povpr. obrem."
 msgid "Load state"
 msgstr "Stanje nalaganja"
 
-#: src/components/routes/settings/heartbeat.tsx
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Loading..."
 msgstr "Nalaganje..."

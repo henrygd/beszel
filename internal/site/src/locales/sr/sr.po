@@ -937,7 +937,6 @@ msgstr "Просечно опт."
 msgid "Load state"
 msgstr "Стање учитавања"
 
-#: src/components/routes/settings/heartbeat.tsx
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Loading..."
 msgstr "Учитавање..."

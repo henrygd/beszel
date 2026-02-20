@@ -937,7 +937,6 @@ msgstr "Prům. zatížení"
 msgid "Load state"
 msgstr "Stav načtení"
 
-#: src/components/routes/settings/heartbeat.tsx
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Loading..."
 msgstr "Načítání..."

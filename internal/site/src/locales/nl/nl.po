@@ -937,7 +937,6 @@ msgstr "Gem. Belasting"
 msgid "Load state"
 msgstr "Laadstatus"
 
-#: src/components/routes/settings/heartbeat.tsx
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Loading..."
 msgstr "Laden..."
