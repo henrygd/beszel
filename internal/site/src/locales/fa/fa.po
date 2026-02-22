@@ -937,7 +937,6 @@ msgstr "میانگین بار"
 msgid "Load state"
 msgstr "وضعیت بارگذاری"
 
-#: src/components/routes/settings/heartbeat.tsx
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Loading..."
 msgstr "در حال بارگذاری..."

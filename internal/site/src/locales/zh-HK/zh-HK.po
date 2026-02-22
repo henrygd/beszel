@@ -937,7 +937,6 @@ msgstr "平均負載"
 msgid "Load state"
 msgstr "載入狀態"
 
-#: src/components/routes/settings/heartbeat.tsx
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Loading..."
 msgstr "載入中..."

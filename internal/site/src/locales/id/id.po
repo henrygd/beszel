@@ -937,7 +937,6 @@ msgstr "Rata-rata Beban"
 msgid "Load state"
 msgstr "Beban saat ini"
 
-#: src/components/routes/settings/heartbeat.tsx
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Loading..."
 msgstr "Memuat..."

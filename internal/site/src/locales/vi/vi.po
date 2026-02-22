@@ -937,7 +937,6 @@ msgstr "Tải TB"
 msgid "Load state"
 msgstr "Trạng thái tải"
 
-#: src/components/routes/settings/heartbeat.tsx
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Loading..."
 msgstr "Đang tải..."

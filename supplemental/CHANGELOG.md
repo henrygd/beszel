@@ -1,10 +1,10 @@
-## Unreleased
+## 0.18.4
 
-- Add outbound heartbeat monitoring to external services (BetterStack, Uptime Kuma, Healthchecks.io, etc.) with system status summary payload. Configured via `BESZEL_HUB_HEARTBEAT_URL`, `BESZEL_HUB_HEARTBEAT_INTERVAL`, and `BESZEL_HUB_HEARTBEAT_METHOD` environment variables.
+- Add outbound heartbeat monitoring to external services (#1729)
 
-- Add GPU monitoring for Apple Silicon. (#1747, #1746)
+- Add experimental GPU monitoring for Apple Silicon. (#1747, #1746)
 
-- Add `nvtop` integration for expanded GPU compatibility.
+- Add `nvtop` integration for GPU monitoring. (#1508)
 
 - Add `GPU_COLLECTOR` environment variable to manually specify the GPU collector(s).
 
@@ -16,11 +16,21 @@
 
 - Add `fingerprint` command to the agent. (#1726)
 
+- Add precise value entry for alerts via text input. (#1718)
+
 - Include GTT memory in AMD GPU metrics and improve device name lookup. (#1569)
+
+- Improve multiplexed logs detection for Podman. (#1755)
+
+- Harden against Docker API path traversal.
 
 - Fix issue where the agent could report incorrect root disk I/O when running in Docker. (#1737)
 
-- Update Go to 1.26.
+- Retry Docker check on non-200 HTTP response. (#1754)
+
+- Fix race issue with meter threshold colors.
+
+- Update Go version and dependencies.
 
 - Add `InstallMethod` parameter to Windows install script.
 

@@ -937,7 +937,6 @@ msgstr "Charge moy."
 msgid "Load state"
 msgstr "État de charge"
 
-#: src/components/routes/settings/heartbeat.tsx
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Loading..."
 msgstr "Chargement..."

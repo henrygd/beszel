@@ -937,7 +937,6 @@ msgstr "Сер. навантаження"
 msgid "Load state"
 msgstr "Стан завантаження"
 
-#: src/components/routes/settings/heartbeat.tsx
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Loading..."
 msgstr "Завантаження..."
