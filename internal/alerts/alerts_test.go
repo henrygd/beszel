@@ -450,6 +450,60 @@ func TestStatusAlerts(t *testing.T) {
 	})
 }
 
+func TestStatusAlertDismissedWhileDownDoesNotSendUpNotification(t *testing.T) {
+	synctest.Test(t, func(t *testing.T) {
+		hub, user := beszelTests.GetHubWithUser(t)
+		defer hub.Cleanup()
+
+		system, err := beszelTests.CreateRecord(hub, "systems", map[string]any{
+			"name":   "dismiss-test-system",
+			"users":  []string{user.Id},
+			"host":   "127.0.0.1",
+			"status": "paused",
+		})
+		assert.NoError(t, err)
+
+		alert, err := beszelTests.CreateRecord(hub, "alerts", map[string]any{
+			"name":   "Status",
+			"system": system.Id,
+			"user":   user.Id,
+			"min":    1,
+		})
+		assert.NoError(t, err)
+
+		system.Set("status", "up")
+		err = hub.SaveNoValidate(system)
+		assert.NoError(t, err)
+
+		time.Sleep(time.Second)
+
+		system.Set("status", "down")
+		err = hub.SaveNoValidate(system)
+		assert.NoError(t, err)
+
+		// Wait long enough for the down alert to trigger.
+		time.Sleep(75 * time.Second)
+
+		assert.EqualValues(t, 1, hub.TestMailer.TotalSend(), "should have 1 down notification")
+		alert, err = hub.FindRecordById("alerts", alert.Id)
+		assert.NoError(t, err)
+		assert.True(t, alert.GetBool("triggered"), "status alert should be triggered before dismissal")
+
+		// Simulate manual dismissal from the UI while the system is still down.
+		alert.Set("triggered", false)
+		err = hub.SaveNoValidate(alert)
+		assert.NoError(t, err)
+
+		system.Set("status", "up")
+		err = hub.SaveNoValidate(system)
+		assert.NoError(t, err)
+
+		time.Sleep(time.Second)
+
+		assert.EqualValues(t, 1, hub.TestMailer.TotalSend(), "should not send an up notification after dismissal")
+	})
+}
+
 func TestAlertsHistory(t *testing.T) {
 	synctest.Test(t, func(t *testing.T) {
 		hub, user := beszelTests.GetHubWithUser(t)
