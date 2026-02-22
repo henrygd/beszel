@@ -937,7 +937,6 @@ msgstr "Snittbelastning"
 msgid "Load state"
 msgstr "Lastetilstand"
 
-#: src/components/routes/settings/heartbeat.tsx
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Loading..."
 msgstr "Laster..."

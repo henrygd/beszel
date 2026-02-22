@@ -32,7 +32,10 @@ export function LangToggle() {
 						className={cn("px-2.5 flex gap-2.5 cursor-pointer", lang === i18n.locale && "bg-accent/70 font-medium")}
 						onClick={() => dynamicActivate(lang)}
 					>
-						<span>{e}</span> {label}
+						<span>
+							{e || <code className="font-mono bg-muted text-[.65em] w-5 h-4 grid place-items-center">{lang}</code>}
+						</span>{" "}
+						{label}
 					</DropdownMenuItem>
 				))}
 			</DropdownMenuContent>

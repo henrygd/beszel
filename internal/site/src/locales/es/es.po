@@ -937,7 +937,6 @@ msgstr "Carga media"
 msgid "Load state"
 msgstr "Estado de carga"
 
-#: src/components/routes/settings/heartbeat.tsx
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Loading..."
 msgstr "Cargando..."

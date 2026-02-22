@@ -937,7 +937,6 @@ msgstr "Systemlast"
 msgid "Load state"
 msgstr "Ladezustand"
 
-#: src/components/routes/settings/heartbeat.tsx
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Loading..."
 msgstr "Lädt..."
