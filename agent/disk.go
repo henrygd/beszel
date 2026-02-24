@@ -197,7 +197,58 @@ func (a *Agent) initializeDiskInfo() {
 		a.fsStats[rootKey] = &system.FsStats{Root: true, Mountpoint: rootMountPoint}
 	}
 
+	a.pruneDuplicateRootExtraFilesystems()
 	a.initializeDiskIoStats(diskIoCounters)
+}
+
+// Removes extra filesystems that mirror root usage (https://github.com/henrygd/beszel/issues/1428).
+func (a *Agent) pruneDuplicateRootExtraFilesystems() {
+	var rootMountpoint string
+	for _, stats := range a.fsStats {
+		if stats != nil && stats.Root {
+			rootMountpoint = stats.Mountpoint
+			break
+		}
+	}
+	if rootMountpoint == "" {
+		return
+	}
+	rootUsage, err := disk.Usage(rootMountpoint)
+	if err != nil {
+		return
+	}
+	for name, stats := range a.fsStats {
+		if stats == nil || stats.Root {
+			continue
+		}
+		extraUsage, err := disk.Usage(stats.Mountpoint)
+		if err != nil {
+			continue
+		}
+		if hasSameDiskUsage(rootUsage, extraUsage) {
+			slog.Info("Ignoring duplicate FS", "name", name, "mount", stats.Mountpoint)
+			delete(a.fsStats, name)
+		}
+	}
+}
+
+// hasSameDiskUsage compares root/extra usage with a small byte tolerance.
+func hasSameDiskUsage(a, b *disk.UsageStat) bool {
+	if a == nil || b == nil || a.Total == 0 || b.Total == 0 {
+		return false
+	}
+	// Allow minor drift between sequential disk usage calls.
+	const toleranceBytes uint64 = 16 * 1024 * 1024
+	return withinUsageTolerance(a.Total, b.Total, toleranceBytes) &&
+		withinUsageTolerance(a.Used, b.Used, toleranceBytes)
+}
+
+// withinUsageTolerance reports whether two byte values differ by at most tolerance.
+func withinUsageTolerance(a, b, tolerance uint64) bool {
+	if a >= b {
+		return a-b <= tolerance
+	}
+	return b-a <= tolerance
 }
 
 // Returns matching device from /proc/diskstats.
