@@ -871,6 +871,8 @@ EOF
 
 elif is_freebsd; then
   echo "Checking for existing FreeBSD service configuration..."
+  # Ensure rc.d directory exists on minimal FreeBSD installs
+  mkdir -p /usr/local/etc/rc.d
   
   # Create environment configuration file with proper permissions if it doesn't exist
   if [ ! -f "$AGENT_DIR/env" ]; then
