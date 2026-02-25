@@ -8,7 +8,7 @@ msgstr ""
 "Language: bg\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2026-02-25 08:59\n"
+"PO-Revision-Date: 2026-02-25 11:49\n"
 "Last-Translator: \n"
 "Language-Team: Bulgarian\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
@@ -1377,7 +1377,7 @@ msgstr "Избери {foo}"
 
 #: src/components/routes/settings/heartbeat.tsx
 msgid "Send a single heartbeat ping to verify your endpoint is working."
-msgstr "Изпратете единичен heartbeat пинг, за да се уверите, че вашата крайна точка работи."
+msgstr "Изпратете единичен heartbeat пинг, за да се уверите, че крайната Ви точка работи."
 
 #: src/components/routes/settings/heartbeat.tsx
 msgid "Send periodic outbound pings to an external monitoring service so you can monitor Beszel without exposing it to the internet."
@@ -1409,7 +1409,7 @@ msgstr "Задайте процентни прагове за цветовете
 
 #: src/components/routes/settings/heartbeat.tsx
 msgid "Set the following environment variables on your Beszel hub to enable heartbeat monitoring:"
-msgstr "Задайте следните променливи на средата на вашия Beszel hub, за да активирате мониторинга на heartbeat:"
+msgstr "Задайте следните променливи на средата на вашия Beszel hub, за да активирате heartbeat мониторинг:"
 
 #: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
@@ -1799,7 +1799,7 @@ msgstr "Webhook / Пуш нотификации"
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "When enabled, this token allows agents to self-register without prior system creation."
-msgstr "Когато е активиран, този символ позволява на агентите да се регистрират сами без предварително създаване на система."
+msgstr "Когато е активиран, този токен позволява на агентите да се регистрират сами без предварително създаване на система."
 
 #: src/components/routes/settings/heartbeat.tsx
 msgid "When using POST, each heartbeat includes a JSON payload with system status summary, list of down systems, and triggered alerts."
