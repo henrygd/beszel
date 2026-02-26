@@ -402,8 +402,6 @@ func (dm *dockerManager) updateContainerStats(ctr *container.ApiInfo, cacheTimeM
 		dm.containerStatsMap[ctr.IdShort] = stats
 	}
 
-	fmt.Printf("opa - %+v\n", ctr)
-
 	stats.Id = ctr.IdShort
 	stats.Name = name
 	stats.Image = ctr.Image
