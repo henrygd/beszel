@@ -1,5 +1,3 @@
-//go:build testing
-
 package systems
 
 import (
@@ -21,18 +19,18 @@ func TestResolveAutoContainerAlias(t *testing.T) {
 		alias := resolveAutoContainerAlias("$SERVICE-$ENV", map[string]string{
 			"SERVICE": "api",
 		})
-		assert.Equal(t, "", alias)
+		assert.Empty(t, alias)
 	})
 
 	t.Run("returns empty when template has no variables", func(t *testing.T) {
 		alias := resolveAutoContainerAlias("plain-text", map[string]string{
 			"SERVICE": "api",
 		})
-		assert.Equal(t, "", alias)
+		assert.Empty(t, alias)
 	})
 
 	t.Run("returns empty when labels are missing", func(t *testing.T) {
 		alias := resolveAutoContainerAlias("$SERVICE", nil)
-		assert.Equal(t, "", alias)
+		assert.Empty(t, alias)
 	})
 }
