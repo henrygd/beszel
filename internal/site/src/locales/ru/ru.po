@@ -84,6 +84,7 @@ msgid "5 min"
 msgstr "5 мин"
 
 #. Table column
+#: src/components/containers-table/containers-table-columns.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 #: src/components/routes/system/smart-table.tsx
@@ -159,6 +160,10 @@ msgstr "История оповещений"
 #: src/components/alerts/alerts-sheet.tsx
 msgid "Alerts"
 msgstr "Оповещения"
+
+#: src/components/containers-table/container-alias-action-button.tsx
+msgid "Alias (optional)"
+msgstr ""
 
 #: src/components/command-palette.tsx
 #: src/components/containers-table/containers-table.tsx
@@ -304,6 +309,7 @@ msgstr "Может запустить"
 msgid "Can stop"
 msgstr "Может остановить"
 
+#: src/components/containers-table/container-alias-action-button.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/systems-table/systems-table-columns.tsx
@@ -362,6 +368,10 @@ msgstr "Проверьте ваш сервис мониторинга"
 #: src/components/routes/settings/notifications.tsx
 msgid "Check your notification service"
 msgstr "Проверьте ваш сервис уведомлений"
+
+#: src/components/containers-table/container-alias-action-button.tsx
+msgid "Choose a friendly name for this container (optional)."
+msgstr ""
 
 #: src/components/containers-table/containers-table.tsx
 #: src/components/routes/system/smart-table.tsx
@@ -631,6 +641,15 @@ msgstr "Редактировать"
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Edit {foo}"
 msgstr "Редактировать {foo}"
+
+#: src/components/containers-table/container-alias-action-button.tsx
+#: src/components/containers-table/container-alias-action-button.tsx
+msgid "Edit alias"
+msgstr ""
+
+#: src/components/containers-table/container-alias-action-button.tsx
+msgid "Edit container alias"
+msgstr ""
 
 #: src/components/login/auth-form.tsx
 #: src/components/login/forgot-pass-form.tsx
@@ -1327,6 +1346,10 @@ msgstr "Детали S.M.A.R.T."
 msgid "S.M.A.R.T. Self-Test"
 msgstr "Самотестирование S.M.A.R.T."
 
+#: src/components/containers-table/container-alias-action-button.tsx
+msgid "Save"
+msgstr ""
+
 #: src/components/routes/settings/notifications.tsx
 msgid "Save address using enter key or comma. Leave blank to disable email notifications."
 msgstr "Сохраните адрес, используя клавишу ввода или запятую. Оставьте пустым, чтобы отключить уведомления по электронной почте."
@@ -1343,6 +1366,10 @@ msgstr "Сохранить систему"
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Saved in the database and does not expire until you disable it."
 msgstr "Сохранено в базе данных и не истекает, пока вы его не отключите."
+
+#: src/components/containers-table/container-alias-action-button.tsx
+msgid "Saving..."
+msgstr ""
 
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Schedule"

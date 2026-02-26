@@ -1,17 +1,17 @@
 msgid ""
 msgstr ""
+"Project-Id-Version: beszel\n"
+"Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2024-11-01 11:30-0400\n"
+"PO-Revision-Date: 2026-02-25 23:34-0300\n"
+"Last-Translator: \n"
+"Language-Team: Portuguese\n"
+"Language: pt\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: @lingui/cli\n"
-"Language: pt\n"
-"Project-Id-Version: beszel\n"
-"Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2026-01-31 21:16\n"
-"Last-Translator: \n"
-"Language-Team: Portuguese\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Generator: Poedit 3.8\n"
 "X-Crowdin-Project: beszel\n"
 "X-Crowdin-Project-ID: 733311\n"
 "X-Crowdin-Language: pt-PT\n"
@@ -84,6 +84,7 @@ msgid "5 min"
 msgstr "5 min"
 
 #. Table column
+#: src/components/containers-table/containers-table-columns.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 #: src/components/routes/system/smart-table.tsx
@@ -159,6 +160,10 @@ msgstr "Histórico de alertas"
 #: src/components/alerts/alerts-sheet.tsx
 msgid "Alerts"
 msgstr "Alertas"
+
+#: src/components/containers-table/container-alias-action-button.tsx
+msgid "Alias (optional)"
+msgstr "Apelido (opcional)"
 
 #: src/components/command-palette.tsx
 #: src/components/containers-table/containers-table.tsx
@@ -304,6 +309,7 @@ msgstr "Pode iniciar"
 msgid "Can stop"
 msgstr "Pode parar"
 
+#: src/components/containers-table/container-alias-action-button.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/systems-table/systems-table-columns.tsx
@@ -362,6 +368,10 @@ msgstr "Verifique o seu serviço de monitorização"
 #: src/components/routes/settings/notifications.tsx
 msgid "Check your notification service"
 msgstr "Verifique seu serviço de notificação"
+
+#: src/components/containers-table/container-alias-action-button.tsx
+msgid "Choose a friendly name for this container (optional)."
+msgstr "Escolha um nome amigável para esse container (opcional)."
 
 #: src/components/containers-table/containers-table.tsx
 #: src/components/routes/system/smart-table.tsx
@@ -631,6 +641,15 @@ msgstr "Editar"
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Edit {foo}"
 msgstr "Editar {foo}"
+
+#: src/components/containers-table/container-alias-action-button.tsx
+#: src/components/containers-table/container-alias-action-button.tsx
+msgid "Edit alias"
+msgstr "Editar apelido"
+
+#: src/components/containers-table/container-alias-action-button.tsx
+msgid "Edit container alias"
+msgstr "Editar apelido do container"
 
 #: src/components/login/auth-form.tsx
 #: src/components/login/forgot-pass-form.tsx
@@ -1327,6 +1346,10 @@ msgstr "Detalhes S.M.A.R.T."
 msgid "S.M.A.R.T. Self-Test"
 msgstr "Auto-teste S.M.A.R.T."
 
+#: src/components/containers-table/container-alias-action-button.tsx
+msgid "Save"
+msgstr "Salvar"
+
 #: src/components/routes/settings/notifications.tsx
 msgid "Save address using enter key or comma. Leave blank to disable email notifications."
 msgstr "Salve o endereço usando a tecla enter ou vírgula. Deixe em branco para desativar notificações por email."
@@ -1343,6 +1366,10 @@ msgstr "Guardar Sistema"
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Saved in the database and does not expire until you disable it."
 msgstr "Salvo no banco de dados e não expira até você desativá-lo."
+
+#: src/components/containers-table/container-alias-action-button.tsx
+msgid "Saving..."
+msgstr "Salvando…"
 
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Schedule"

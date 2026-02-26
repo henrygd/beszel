@@ -1,8 +1,6 @@
+import { t } from "@lingui/core/macro"
+import { useStore } from "@nanostores/react"
 import type { Column, ColumnDef } from "@tanstack/react-table"
-import { Button } from "@/components/ui/button"
-import { cn, decimalString, formatBytes, hourWithSeconds } from "@/lib/utils"
-import type { ContainerRecord } from "@/types"
-import { ContainerHealth, ContainerHealthLabels } from "@/lib/enums"
 import {
 	ArrowUpDownIcon,
 	ClockIcon,
@@ -13,11 +11,14 @@ import {
 	ServerIcon,
 	ShieldCheckIcon,
 } from "lucide-react"
-import { EthernetIcon, HourglassIcon } from "../ui/icons"
-import { Badge } from "../ui/badge"
-import { t } from "@lingui/core/macro"
+import { Button } from "@/components/ui/button"
+import { ContainerHealth, ContainerHealthLabels } from "@/lib/enums"
 import { $allSystemsById } from "@/lib/stores"
-import { useStore } from "@nanostores/react"
+import { cn, decimalString, formatBytes, hourWithSeconds } from "@/lib/utils"
+import type { ContainerRecord } from "@/types"
+import { Badge } from "../ui/badge"
+import { EthernetIcon, HourglassIcon } from "../ui/icons"
+import { ContainerAliasActionButton } from "./container-alias-action-button"
 
 // Unit names and their corresponding number of seconds for converting docker status strings
 const unitSeconds = [
@@ -41,13 +42,25 @@ function getStatusValue(status: string): number {
 	return 0
 }
 
+export type ContainerTableMeta = {
+	onAliasUpdated?: (containerId: string, alias: string) => void
+}
+
 export const containerChartCols: ColumnDef<ContainerRecord>[] = [
 	{
 		id: "name",
 		sortingFn: (a, b) => a.original.name.localeCompare(b.original.name),
 		accessorFn: (record) => record.name,
 		header: ({ column }) => <HeaderButton column={column} name={t`Name`} Icon={ContainerIcon} />,
-		cell: ({ getValue }) => {
+		cell: ({ getValue, row }) => {
+			if (row.original.alias) {
+				return (
+					<div className="alias-name-cell relative h-full">
+						<span className="ms-1.5 xl:w-48 block truncate">{row.original.alias}</span>
+						<span className="ms-1.5 xl:w-48 text-muted-foreground truncate">{getValue() as string}</span>
+					</div>
+				)
+			}
 			return <span className="ms-1.5 xl:w-48 block truncate">{getValue() as string}</span>
 		},
 	},
@@ -163,6 +176,17 @@ export const containerChartCols: ColumnDef<ContainerRecord>[] = [
 		cell: ({ getValue }) => {
 			const timestamp = getValue() as number
 			return <span className="ms-1.5 tabular-nums">{hourWithSeconds(new Date(timestamp).toISOString())}</span>
+		},
+	},
+	{
+		id: "actions",
+		enableSorting: false,
+		enableHiding: false,
+		size: 52,
+		header: () => <span className="sr-only">{t`Actions`}</span>,
+		cell: ({ row, table }) => {
+			const onAliasUpdated = (table.options.meta as ContainerTableMeta | undefined)?.onAliasUpdated
+			return <ContainerAliasActionButton container={row.original} onAliasUpdated={onAliasUpdated} />
 		},
 	},
 ]

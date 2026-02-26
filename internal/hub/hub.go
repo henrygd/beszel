@@ -207,7 +207,9 @@ func setCollectionAuthSettings(app core.App) error {
 		return err
 	}
 	containersListRule := strings.Replace(systemsReadRule, "users.id", "system.users.id", 1)
+	containersUpdateRule := containersListRule + " && @request.auth.role != \"readonly\""
 	containersCollection.ListRule = &containersListRule
+	containersCollection.UpdateRule = &containersUpdateRule
 	if err := app.Save(containersCollection); err != nil {
 		return err
 	}
