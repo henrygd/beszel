@@ -40,7 +40,7 @@ export const alertInfo: Record<string, AlertInfo> = {
 		unit: " MB/s",
 		icon: EthernetIcon,
 		desc: () => t`Triggers when combined up/down exceeds a threshold`,
-		max: 125,
+		max: 250,
 	},
 	GPU: {
 		name: () => t`GPU Usage`,

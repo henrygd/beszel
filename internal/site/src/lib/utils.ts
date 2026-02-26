@@ -6,7 +6,7 @@ import { useEffect, useState } from "react"
 import { twMerge } from "tailwind-merge"
 import { toast } from "@/components/ui/use-toast"
 import type { ChartTimeData, FingerprintRecord, SemVer, SystemRecord } from "@/types"
-import { HourFormat, MeterState, Unit } from "./enums"
+import { HourFormat, Unit } from "./enums"
 import { $copyContent, $userSettings } from "./stores"
 
 export function cn(...inputs: ClassValue[]) {
@@ -210,7 +210,6 @@ export function useBrowserStorage<T>(key: string, defaultValue: T, storageInterf
 	const [value, setValue] = useState(() => {
 		return getStorageValue(key, defaultValue, storageInterface)
 	})
-	// biome-ignore lint/correctness/useExhaustiveDependencies: storageInterface won't change
 	useEffect(() => {
 		storageInterface?.setItem(key, JSON.stringify(value))
 	}, [key, value])
@@ -392,12 +391,6 @@ export function compareSemVer(a: SemVer, b: SemVer) {
 		return a.minor - b.minor
 	}
 	return a.patch - b.patch
-}
-
-/** Get meter state from 0-100 value. Used for color coding meters. */
-export function getMeterState(value: number): MeterState {
-	const { colorWarn = 65, colorCrit = 90 } = $userSettings.get()
-	return value >= colorCrit ? MeterState.Crit : value >= colorWarn ? MeterState.Warn : MeterState.Good
 }
 
 // biome-ignore lint/suspicious/noExplicitAny: any is used to allow any function to be passed in

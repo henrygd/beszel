@@ -1,5 +1,4 @@
 //go:build testing
-// +build testing
 
 package agent
 
@@ -371,5 +370,39 @@ func TestDiskUsageCaching(t *testing.T) {
 		// lastDiskUsageUpdate should be refreshed since cache expired
 		assert.True(t, time.Since(agent.lastDiskUsageUpdate) < time.Second,
 			"lastDiskUsageUpdate should be refreshed when cache expires")
+	})
+}
+
+func TestHasSameDiskUsage(t *testing.T) {
+	const toleranceBytes uint64 = 16 * 1024 * 1024
+
+	t.Run("returns true when totals and usage are equal", func(t *testing.T) {
+		a := &disk.UsageStat{Total: 100 * 1024 * 1024 * 1024, Used: 42 * 1024 * 1024 * 1024}
+		b := &disk.UsageStat{Total: 100 * 1024 * 1024 * 1024, Used: 42 * 1024 * 1024 * 1024}
+		assert.True(t, hasSameDiskUsage(a, b))
+	})
+
+	t.Run("returns true within tolerance", func(t *testing.T) {
+		a := &disk.UsageStat{Total: 100 * 1024 * 1024 * 1024, Used: 42 * 1024 * 1024 * 1024}
+		b := &disk.UsageStat{
+			Total: a.Total + toleranceBytes - 1,
+			Used:  a.Used - toleranceBytes + 1,
+		}
+		assert.True(t, hasSameDiskUsage(a, b))
+	})
+
+	t.Run("returns false when total exceeds tolerance", func(t *testing.T) {
+		a := &disk.UsageStat{Total: 100 * 1024 * 1024 * 1024, Used: 42 * 1024 * 1024 * 1024}
+		b := &disk.UsageStat{
+			Total: a.Total + toleranceBytes + 1,
+			Used:  a.Used,
+		}
+		assert.False(t, hasSameDiskUsage(a, b))
+	})
+
+	t.Run("returns false for nil or zero total", func(t *testing.T) {
+		assert.False(t, hasSameDiskUsage(nil, &disk.UsageStat{Total: 1, Used: 1}))
+		assert.False(t, hasSameDiskUsage(&disk.UsageStat{Total: 1, Used: 1}, nil))
+		assert.False(t, hasSameDiskUsage(&disk.UsageStat{Total: 0, Used: 0}, &disk.UsageStat{Total: 1, Used: 1}))
 	})
 }

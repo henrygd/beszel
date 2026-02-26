@@ -51,7 +51,6 @@ clean:
 lint:
 	golangci-lint run
 
-test: export GOEXPERIMENT=synctest
 test:
 	go test -tags=testing ./...
 
