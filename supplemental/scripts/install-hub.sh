@@ -156,7 +156,7 @@ fi
 
 # Define default values
 PORT=8090
-GITHUB_PROXY_URL="https://ghfast.top/"
+GITHUB_URL="https://github.com"
 AUTO_UPDATE_FLAG="false"
 UNINSTALL=false
 
@@ -173,7 +173,7 @@ while [ $# -gt 0 ]; do
       printf "Options: \n"
       printf "  -u           : Uninstall the Beszel Hub\n"
       printf "  -p <port>    : Specify a port number (default: 8090)\n"
-      printf "  -c <url>     : Use a custom GitHub mirror URL (e.g., https://ghfast.top/)\n"
+      printf "  -c, --mirror [URL] : Use a GitHub mirror/proxy URL (default: https://gh.beszel.dev)\n"
       printf "  --auto-update : Enable automatic daily updates (disabled by default)\n"
       printf "  -h, --help   : Display this help message\n"
       exit 0
@@ -183,10 +183,14 @@ while [ $# -gt 0 ]; do
       PORT="$1"
       shift
       ;;
-    -c)
+    -c | --mirror)
       shift
-      GITHUB_PROXY_URL=$(ensure_trailing_slash "$1")
-      shift
+      if [ -n "$1" ] && ! echo "$1" | grep -q '^-'; then
+        GITHUB_URL="$(ensure_trailing_slash "$1")https://github.com"
+        shift
+      else
+        GITHUB_URL="https://gh.beszel.dev"
+      fi
       ;;
     --auto-update)
       AUTO_UPDATE_FLAG="true"
@@ -198,9 +202,6 @@ while [ $# -gt 0 ]; do
       ;;
   esac
 done
-
-# Ensure the proxy URL ends with a /
-GITHUB_PROXY_URL=$(ensure_trailing_slash "$GITHUB_PROXY_URL")
 
 # Set paths based on operating system
 if is_freebsd; then
@@ -323,10 +324,41 @@ OS=$(uname -s | tr '[:upper:]' '[:lower:]')
 ARCH=$(detect_architecture)
 FILE_NAME="beszel_${OS}_${ARCH}.tar.gz"
 
-curl -sL "${GITHUB_PROXY_URL}https://github.com/henrygd/beszel/releases/latest/download/$FILE_NAME" | tar -xz -O beszel | tee ./beszel >/dev/null
-chmod +x ./beszel
-mv ./beszel "$BIN_PATH"
+TEMP_DIR=$(mktemp -d)
+ARCHIVE_PATH="$TEMP_DIR/$FILE_NAME"
+DOWNLOAD_URL="$GITHUB_URL/henrygd/beszel/releases/latest/download/$FILE_NAME"
+
+if ! curl -fL# --retry 3 --retry-delay 2 --connect-timeout 10 "$DOWNLOAD_URL" -o "$ARCHIVE_PATH"; then
+  echo "Failed to download the Beszel Hub from:"
+  echo "$DOWNLOAD_URL"
+  echo "Try again with --mirror (or --mirror <url>) if GitHub is not reachable."
+  rm -rf "$TEMP_DIR"
+  exit 1
+fi
+
+if ! tar -tzf "$ARCHIVE_PATH" >/dev/null 2>&1; then
+  echo "Downloaded archive is invalid or incomplete (possible network/proxy issue)."
+  echo "Try again with --mirror (or --mirror <url>) if the download path is unstable."
+  rm -rf "$TEMP_DIR"
+  exit 1
+fi
+
+if ! tar -xzf "$ARCHIVE_PATH" -C "$TEMP_DIR" beszel; then
+  echo "Failed to extract beszel from archive."
+  rm -rf "$TEMP_DIR"
+  exit 1
+fi
+
+if [ ! -s "$TEMP_DIR/beszel" ]; then
+  echo "Downloaded binary is missing or empty."
+  rm -rf "$TEMP_DIR"
+  exit 1
+fi
+
+chmod +x "$TEMP_DIR/beszel"
+mv "$TEMP_DIR/beszel" "$BIN_PATH"
 chown beszel:beszel "$BIN_PATH"
+rm -rf "$TEMP_DIR"
 
 if is_freebsd; then
   echo "Creating FreeBSD rc service..."
@@ -375,8 +407,8 @@ EOF
 
 else
   # Original systemd service installation code
-  printf "Creating the systemd service for the Beszel Hub...\n\n"
-  tee /etc/systemd/system/beszel-hub.service <<EOF
+  printf "Creating the systemd service for the Beszel Hub...\n"
+  cat >/etc/systemd/system/beszel-hub.service <<EOF
 [Unit]
 Description=Beszel Hub Service
 After=network.target
@@ -393,10 +425,10 @@ WantedBy=multi-user.target
 EOF
 
   # Load and start the service
-  printf "\nLoading and starting the Beszel Hub service...\n"
+  printf "Loading and starting the Beszel Hub service...\n"
   systemctl daemon-reload
-  systemctl enable beszel-hub.service
-  systemctl start beszel-hub.service
+  systemctl enable --quiet beszel-hub.service
+  systemctl start --quiet beszel-hub.service
 
   # Wait for the service to start or fail
   sleep 2
@@ -444,4 +476,4 @@ EOF
   fi
 fi
 
-echo "The Beszel Hub has been installed and configured successfully! It is now accessible on port $PORT."
+printf "\n\033[32mBeszel Hub has been installed successfully! It is now accessible on port $PORT.\033[0m\n"
