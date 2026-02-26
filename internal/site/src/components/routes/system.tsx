@@ -245,7 +245,7 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 			<Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
 				<Card className="p-1">
 					<TabsList className="w-full h-11 grid" style={{ gridTemplateColumns: `repeat(${tabCount}, 1fr)` }}>
-						<TabsTrigger value="overview" className="h-9"><Trans>Core Metrics</Trans></TabsTrigger>
+						<TabsTrigger value="overview" className="h-9"><Trans>Overview</Trans></TabsTrigger>
 						<TabsTrigger value="disks" className="h-9"><Trans>Disks</Trans></TabsTrigger>
 						{hasGpuData && <TabsTrigger value="gpu" className="h-9"><Trans>GPU</Trans></TabsTrigger>}
 						{hasContainers && <TabsTrigger value="containers" className="h-9"><Trans>Containers</Trans></TabsTrigger>}

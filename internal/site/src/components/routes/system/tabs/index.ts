@@ -1,4 +1,4 @@
-export { CoreMetricsTab } from "./core-metrics"
+export { CoreMetricsTab } from "./overview"
 export { DisksTab } from "./disks"
 export { GpuTab } from "./gpu"
 export { ContainersTab } from "./containers"
