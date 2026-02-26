@@ -78,14 +78,21 @@ func (a *Agent) initializeDiskInfo() {
 		if _, exists := a.fsStats[key]; !exists {
 			if root {
 				slog.Info("Detected root device", "name", key)
-				// Check if root device is in /proc/diskstats. Do not guess a
-				// fallback device for root: that can misattribute root I/O to a
-				// different disk while usage remains tied to root mountpoint.
+				// Try to map root device to a diskIoCounters entry. First
+				// checks for an exact key match, then uses findIoDevice for
+				// normalized / prefix-based matching (e.g. nda0p2 → nda0),
+				// and finally falls back to the FILESYSTEM env var.
 				if _, ioMatch = diskIoCounters[key]; !ioMatch {
-					if matchedKey, match := findIoDevice(filesystem, diskIoCounters); match {
+					if matchedKey, match := findIoDevice(key, diskIoCounters); match {
 						key = matchedKey
 						ioMatch = true
-					} else {
+					} else if filesystem != "" {
+						if matchedKey, match := findIoDevice(filesystem, diskIoCounters); match {
+							key = matchedKey
+							ioMatch = true
+						}
+					}
+					if !ioMatch {
 						slog.Warn("Root I/O unmapped; set FILESYSTEM", "device", device, "mountpoint", mountpoint)
 					}
 				}
@@ -114,7 +121,7 @@ func (a *Agent) initializeDiskInfo() {
 	// Use FILESYSTEM env var to find root filesystem
 	if filesystem != "" {
 		for _, p := range partitions {
-			if strings.HasSuffix(p.Device, filesystem) || p.Mountpoint == filesystem {
+			if filesystemMatchesPartitionSetting(filesystem, p) {
 				addFsStat(p.Device, p.Mountpoint, true)
 				hasRoot = true
 				break
@@ -251,15 +258,91 @@ func withinUsageTolerance(a, b, tolerance uint64) bool {
 	return b-a <= tolerance
 }
 
-// Returns matching device from /proc/diskstats.
-// bool is true if a match was found.
+type ioMatchCandidate struct {
+	name  string
+	bytes uint64
+	ops   uint64
+}
+
+// findIoDevice prefers exact device/label matches, then falls back to a
+// prefix-related candidate with the highest recent activity.
 func findIoDevice(filesystem string, diskIoCounters map[string]disk.IOCountersStat) (string, bool) {
+	filesystem = normalizeDeviceName(filesystem)
+	if filesystem == "" {
+		return "", false
+	}
+
+	candidates := []ioMatchCandidate{}
+
 	for _, d := range diskIoCounters {
-		if d.Name == filesystem || (d.Label != "" && d.Label == filesystem) {
+		if normalizeDeviceName(d.Name) == filesystem || (d.Label != "" && normalizeDeviceName(d.Label) == filesystem) {
 			return d.Name, true
 		}
+		if prefixRelated(normalizeDeviceName(d.Name), filesystem) ||
+			(d.Label != "" && prefixRelated(normalizeDeviceName(d.Label), filesystem)) {
+			candidates = append(candidates, ioMatchCandidate{
+				name:  d.Name,
+				bytes: d.ReadBytes + d.WriteBytes,
+				ops:   d.ReadCount + d.WriteCount,
+			})
+		}
 	}
-	return "", false
+
+	if len(candidates) == 0 {
+		return "", false
+	}
+
+	best := candidates[0]
+	for _, c := range candidates[1:] {
+		if c.bytes > best.bytes ||
+			(c.bytes == best.bytes && c.ops > best.ops) ||
+			(c.bytes == best.bytes && c.ops == best.ops && c.name < best.name) {
+			best = c
+		}
+	}
+
+	slog.Info("Using disk I/O fallback", "requested", filesystem, "selected", best.name)
+	return best.name, true
+}
+
+// prefixRelated reports whether either identifier is a prefix of the other.
+func prefixRelated(a, b string) bool {
+	if a == "" || b == "" || a == b {
+		return false
+	}
+	return strings.HasPrefix(a, b) || strings.HasPrefix(b, a)
+}
+
+// filesystemMatchesPartitionSetting checks whether a FILESYSTEM env var value
+// matches a partition by mountpoint, exact device name, or prefix relationship
+// (e.g. FILESYSTEM=ada0 matches partition /dev/ada0p2).
+func filesystemMatchesPartitionSetting(filesystem string, p disk.PartitionStat) bool {
+	filesystem = strings.TrimSpace(filesystem)
+	if filesystem == "" {
+		return false
+	}
+	if p.Mountpoint == filesystem {
+		return true
+	}
+
+	fsName := normalizeDeviceName(filesystem)
+	partName := normalizeDeviceName(p.Device)
+	if fsName == "" || partName == "" {
+		return false
+	}
+	if fsName == partName {
+		return true
+	}
+	return prefixRelated(partName, fsName)
+}
+
+// normalizeDeviceName canonicalizes device strings for comparisons.
+func normalizeDeviceName(value string) string {
+	name := filepath.Base(strings.TrimSpace(value))
+	if name == "." {
+		return ""
+	}
+	return name
 }
 
 // Sets start values for disk I/O stats.
