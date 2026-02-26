@@ -7,12 +7,12 @@ import (
 	"log/slog"
 	"os"
 	"runtime"
-	"strconv"
 	"strings"
 	"time"
 
 	"github.com/henrygd/beszel"
 	"github.com/henrygd/beszel/agent/battery"
+	"github.com/henrygd/beszel/agent/zfs"
 	"github.com/henrygd/beszel/internal/entities/container"
 	"github.com/henrygd/beszel/internal/entities/system"
 
@@ -107,7 +107,7 @@ func (a *Agent) refreshSystemDetails() {
 	}
 
 	// zfs
-	if _, err := getARCSize(); err != nil {
+	if _, err := zfs.ARCSize(); err != nil {
 		slog.Debug("Not monitoring ZFS ARC", "err", err)
 	} else {
 		a.zfs = true
@@ -178,7 +178,7 @@ func (a *Agent) getSystemStats(cacheTimeMs uint16) system.Stats {
 		// }
 		// subtract ZFS ARC size from used memory and add as its own category
 		if a.zfs {
-			if arcSize, _ := getARCSize(); arcSize > 0 && arcSize < v.Used {
+			if arcSize, _ := zfs.ARCSize(); arcSize > 0 && arcSize < v.Used {
 				v.Used = v.Used - arcSize
 				v.UsedPercent = float64(v.Used) / float64(v.Total) * 100.0
 				systemStats.MemZfsArc = bytesToGigabytes(arcSize)
@@ -248,32 +248,6 @@ func (a *Agent) getSystemStats(cacheTimeMs uint16) system.Stats {
 	a.systemInfo.Threads = a.systemDetails.Threads
 
 	return systemStats
-}
-
-// Returns the size of the ZFS ARC memory cache in bytes
-func getARCSize() (uint64, error) {
-	file, err := os.Open("/proc/spl/kstat/zfs/arcstats")
-	if err != nil {
-		return 0, err
-	}
-	defer file.Close()
-
-	// Scan the lines
-	scanner := bufio.NewScanner(file)
-	for scanner.Scan() {
-		line := scanner.Text()
-		if strings.HasPrefix(line, "size") {
-			// Example line: size 4 15032385536
-			fields := strings.Fields(line)
-			if len(fields) < 3 {
-				return 0, err
-			}
-			// Return the size as uint64
-			return strconv.ParseUint(fields[2], 10, 64)
-		}
-	}
-
-	return 0, fmt.Errorf("failed to parse size field")
 }
 
 // getOsPrettyName attempts to get the pretty OS name from /etc/os-release on Linux systems
