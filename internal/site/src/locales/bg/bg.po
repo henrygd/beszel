@@ -189,6 +189,10 @@ msgstr "Сигурен ли си, че искаш да изтриеш {name}?"
 msgid "Are you sure?"
 msgstr "Сигурни ли сте?"
 
+#: src/components/add-system.tsx
+msgid "Auto Container Alias"
+msgstr ""
+
 #: src/components/copy-to-clipboard.tsx
 msgid "Automatic copy requires a secure context."
 msgstr "Автоматичното копиране изисква защитен контескт."
@@ -1769,6 +1773,10 @@ msgstr "Употреба"
 #: src/components/routes/system.tsx
 msgid "Usage of root partition"
 msgstr "Употреба на root partition-а"
+
+#: src/components/add-system.tsx
+msgid "Use variables like $LABEL_KEY to build aliases from container labels."
+msgstr ""
 
 #: src/components/charts/mem-chart.tsx
 #: src/components/charts/swap-chart.tsx

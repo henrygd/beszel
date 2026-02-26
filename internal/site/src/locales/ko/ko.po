@@ -189,6 +189,10 @@ msgstr "{name}을(를) 삭제하시겠습니까?"
 msgid "Are you sure?"
 msgstr "확실합니까?"
 
+#: src/components/add-system.tsx
+msgid "Auto Container Alias"
+msgstr ""
+
 #: src/components/copy-to-clipboard.tsx
 msgid "Automatic copy requires a secure context."
 msgstr "자동 복사는 안전한 컨텍스트가 필요합니다."
@@ -1769,6 +1773,10 @@ msgstr "사용량"
 #: src/components/routes/system.tsx
 msgid "Usage of root partition"
 msgstr "루트 파티션의 사용량"
+
+#: src/components/add-system.tsx
+msgid "Use variables like $LABEL_KEY to build aliases from container labels."
+msgstr ""
 
 #: src/components/charts/mem-chart.tsx
 #: src/components/charts/swap-chart.tsx

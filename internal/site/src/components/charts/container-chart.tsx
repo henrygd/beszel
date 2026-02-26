@@ -50,13 +50,23 @@ export default memo(function ContainerChart({
 		return new Set(
 			Object.keys(chartConfig).filter((key) => {
 				const keyLower = key.toLowerCase()
-				return !filterTerms.some((term) => keyLower.includes(term))
+				const label = chartConfig[key]?.label
+				const labelLower = typeof label === "string" ? label.toLowerCase() : ""
+				return !filterTerms.some((term) => keyLower.includes(term) || labelLower.includes(term))
 			})
 		)
 	}, [chartConfig, filter])
 
 	// biome-ignore lint/correctness/useExhaustiveDependencies: not necessary
 	const { toolTipFormatter, dataFunction, tickFormatter } = useMemo(() => {
+		const labelToKey = new Map<string, string>()
+		for (const [containerKey, config] of Object.entries(chartConfig)) {
+			const label = config?.label
+			if (typeof label === "string" && label.length > 0) {
+				labelToKey.set(label, containerKey)
+			}
+		}
+		const resolveContainerKey = (key: string) => labelToKey.get(key) || key
 		const obj = {} as {
 			toolTipFormatter: (item: any, key: string) => React.ReactNode | string
 			dataFunction: (key: string, data: any) => number | null
@@ -116,7 +126,8 @@ export default memo(function ContainerChart({
 						}
 						return formatRxTx(totalRecv, totalSent)
 					}
-					const [sent, recv] = getRxTxBytes(item?.payload?.[key])
+					const containerKey = resolveContainerKey(key)
+					const [sent, recv] = getRxTxBytes(item?.payload?.[containerKey])
 					return formatRxTx(recv, sent)
 				} catch (e) {
 					return null
@@ -192,12 +203,13 @@ export default memo(function ContainerChart({
 						const filtered = filteredKeys.has(key)
 						const fillOpacity = filtered ? 0.05 : 0.4
 						const strokeOpacity = filtered ? 0.1 : 1
+						const label = chartConfig[key]?.label
 						return (
 							<Area
 								key={key}
 								isAnimationActive={false}
 								dataKey={dataFunction.bind(null, key)}
-								name={key}
+								name={typeof label === "string" && label.length > 0 ? label : key}
 								type="monotoneX"
 								fill={chartConfig[key].color}
 								fillOpacity={fillOpacity}

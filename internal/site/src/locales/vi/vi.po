@@ -189,6 +189,10 @@ msgstr "Bạn có chắc chắn muốn xóa {name} không?"
 msgid "Are you sure?"
 msgstr "Bạn có chắc không?"
 
+#: src/components/add-system.tsx
+msgid "Auto Container Alias"
+msgstr ""
+
 #: src/components/copy-to-clipboard.tsx
 msgid "Automatic copy requires a secure context."
 msgstr "Sao chép tự động yêu cầu một ngữ cảnh an toàn."
@@ -1769,6 +1773,10 @@ msgstr "Sử dụng"
 #: src/components/routes/system.tsx
 msgid "Usage of root partition"
 msgstr "Sử dụng phân vùng gốc"
+
+#: src/components/add-system.tsx
+msgid "Use variables like $LABEL_KEY to build aliases from container labels."
+msgstr ""
 
 #: src/components/charts/mem-chart.tsx
 #: src/components/charts/swap-chart.tsx

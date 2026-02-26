@@ -44,6 +44,7 @@ import {
 import type {
 	ChartData,
 	ChartTimes,
+	ContainerRecord,
 	ContainerStatsRecord,
 	GPUData,
 	SystemDetailsRecord,
@@ -52,18 +53,18 @@ import type {
 	SystemStats,
 	SystemStatsRecord,
 } from "@/types"
+import LineChartDefault from "../charts/line-chart"
 import { $router, navigate } from "../router"
 import Spinner from "../spinner"
 import { Button } from "../ui/button"
 import { Card, CardDescription, CardHeader, CardTitle } from "../ui/card"
+import { pinnedAxisDomain } from "../ui/chart"
 import { ChartAverage, ChartMax } from "../ui/icons"
 import { Input } from "../ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select"
-import NetworkSheet from "./system/network-sheet"
 import CpuCoresSheet from "./system/cpu-sheet"
-import LineChartDefault from "../charts/line-chart"
-import { pinnedAxisDomain } from "../ui/chart"
 import InfoBar from "./system/info-bar"
+import NetworkSheet from "./system/network-sheet"
 
 type ChartTimeData = {
 	time: number
@@ -160,6 +161,7 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 	const [system, setSystem] = useState({} as SystemRecord)
 	const [systemStats, setSystemStats] = useState([] as SystemStatsRecord[])
 	const [containerData, setContainerData] = useState([] as ChartData["containerData"])
+	const [containerAliases, setContainerAliases] = useState<Record<string, string>>({})
 	const temperatureChartRef = useRef<HTMLDivElement>(null)
 	const persistChartTime = useRef(false)
 	const [bottomSpacing, setBottomSpacing] = useState(0)
@@ -177,6 +179,7 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 			persistChartTime.current = false
 			setSystemStats([])
 			setContainerData([])
+			setContainerAliases({})
 			setDetails({} as SystemDetailsRecord)
 			$containerFilter.set("")
 		}
@@ -219,6 +222,37 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 				},
 			})
 			.then(setDetails)
+	}, [system.id])
+
+	useEffect(() => {
+		if (!system.id) {
+			setContainerAliases({})
+			return
+		}
+		let ignore = false
+		pb.collection<Pick<ContainerRecord, "name" | "alias">>("containers")
+			.getFullList({
+				fields: "name,alias",
+				filter: pb.filter("system={:system}", { system: system.id }),
+			})
+			.then((containers) => {
+				if (ignore) {
+					return
+				}
+				const aliases = {} as Record<string, string>
+				for (const container of containers) {
+					aliases[container.name] = container.alias?.trim() || container.name
+				}
+				setContainerAliases(aliases)
+			})
+			.catch(() => {
+				if (!ignore) {
+					setContainerAliases({})
+				}
+			})
+		return () => {
+			ignore = true
+		}
 	}, [system.id])
 
 	// subscribe to realtime metrics if chart time is 1m
@@ -275,7 +309,7 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 	}, [systemStats, containerData, direction])
 
 	// Share chart config computation for all container charts
-	const containerChartConfigs = useContainerChartConfigs(containerData)
+	const containerChartConfigs = useContainerChartConfigs(containerData, containerAliases)
 
 	// make container stats for charts
 	const makeContainerData = useCallback((containers: ContainerStatsRecord[]) => {

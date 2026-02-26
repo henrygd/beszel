@@ -189,6 +189,10 @@ msgstr "¿Estás seguro de que deseas eliminar {name}?"
 msgid "Are you sure?"
 msgstr "¿Estás seguro?"
 
+#: src/components/add-system.tsx
+msgid "Auto Container Alias"
+msgstr ""
+
 #: src/components/copy-to-clipboard.tsx
 msgid "Automatic copy requires a secure context."
 msgstr "La copia automática requiere un contexto seguro."
@@ -1769,6 +1773,10 @@ msgstr "Uso"
 #: src/components/routes/system.tsx
 msgid "Usage of root partition"
 msgstr "Uso de la partición raíz"
+
+#: src/components/add-system.tsx
+msgid "Use variables like $LABEL_KEY to build aliases from container labels."
+msgstr ""
 
 #: src/components/charts/mem-chart.tsx
 #: src/components/charts/swap-chart.tsx

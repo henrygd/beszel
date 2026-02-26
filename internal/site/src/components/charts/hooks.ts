@@ -14,7 +14,10 @@ export interface ContainerChartConfigs {
  * @param containerData - Array of container statistics data points
  * @returns Chart configurations for CPU, memory, and network metrics
  */
-export function useContainerChartConfigs(containerData: ChartData["containerData"]): ContainerChartConfigs {
+export function useContainerChartConfigs(
+	containerData: ChartData["containerData"],
+	containerAliases: Record<string, string> = {}
+): ContainerChartConfigs {
 	return useMemo(() => {
 		const configs = {
 			cpu: {} as ChartConfig,
@@ -68,9 +71,10 @@ export function useContainerChartConfigs(containerData: ChartData["containerData
 			// Generate colors for each container
 			for (let i = 0; i < count; i++) {
 				const [containerName] = sortedContainers[i]
+				const alias = containerAliases[containerName]?.trim()
 				const hue = ((i * 360) / count) % 360
 				chartConfig[containerName] = {
-					label: containerName,
+					label: alias || containerName,
 					color: `hsl(${hue}, var(--chart-saturation), var(--chart-lightness))`,
 				}
 			}
@@ -79,7 +83,7 @@ export function useContainerChartConfigs(containerData: ChartData["containerData
 		})
 
 		return configs
-	}, [containerData])
+	}, [containerAliases, containerData])
 }
 
 /** Sets the correct width of the y axis in recharts based on the longest label */

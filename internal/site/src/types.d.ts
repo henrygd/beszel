@@ -27,6 +27,7 @@ export interface SystemRecord extends RecordModel {
 	host: string
 	status: "up" | "down" | "paused" | "pending"
 	port: string
+	auto_container_alias?: string
 	info: SystemInfo
 	v: string
 	updated: string

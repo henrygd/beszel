@@ -184,6 +184,10 @@ msgstr "Are you sure you want to delete {name}?"
 msgid "Are you sure?"
 msgstr "Are you sure?"
 
+#: src/components/add-system.tsx
+msgid "Auto Container Alias"
+msgstr "Auto Container Alias"
+
 #: src/components/copy-to-clipboard.tsx
 msgid "Automatic copy requires a secure context."
 msgstr "Automatic copy requires a secure context."
@@ -1764,6 +1768,10 @@ msgstr "Usage"
 #: src/components/routes/system.tsx
 msgid "Usage of root partition"
 msgstr "Usage of root partition"
+
+#: src/components/add-system.tsx
+msgid "Use variables like $LABEL_KEY to build aliases from container labels."
+msgstr "Use variables like $LABEL_KEY to build aliases from container labels."
 
 #: src/components/charts/mem-chart.tsx
 #: src/components/charts/swap-chart.tsx
