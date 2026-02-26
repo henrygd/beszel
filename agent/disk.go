@@ -128,7 +128,15 @@ func (a *Agent) initializeDiskInfo() {
 			}
 		}
 		if !hasRoot {
-			slog.Warn("Partition details not found", "filesystem", filesystem)
+			// FILESYSTEM may name a physical disk absent from partitions (e.g.
+			// ZFS lists dataset paths like zroot/ROOT/default, not block devices).
+			// Try matching directly against diskIoCounters.
+			if ioKey, match := findIoDevice(filesystem, diskIoCounters); match {
+				a.fsStats[ioKey] = &system.FsStats{Root: true, Mountpoint: rootMountPoint}
+				hasRoot = true
+			} else {
+				slog.Warn("Partition details not found", "filesystem", filesystem)
+			}
 		}
 	}
 
@@ -194,13 +202,19 @@ func (a *Agent) initializeDiskInfo() {
 		}
 	}
 
-	// If no root filesystem set, use fallback
+	// If no root filesystem set, try the most active I/O device as a last
+	// resort (e.g. ZFS where dataset names are unrelated to disk names).
 	if !hasRoot {
-		rootKey := filepath.Base(rootMountPoint)
-		if _, exists := a.fsStats[rootKey]; exists {
-			rootKey = "root"
+		rootKey := mostActiveIoDevice(diskIoCounters)
+		if rootKey != "" {
+			slog.Warn("Using most active device for root I/O; set FILESYSTEM to override", "device", rootKey)
+		} else {
+			rootKey = filepath.Base(rootMountPoint)
+			if _, exists := a.fsStats[rootKey]; exists {
+				rootKey = "root"
+			}
+			slog.Warn("Root I/O device not detected; set FILESYSTEM to override")
 		}
-		slog.Warn("Root device not detected; root I/O disabled", "mountpoint", rootMountPoint)
 		a.fsStats[rootKey] = &system.FsStats{Root: true, Mountpoint: rootMountPoint}
 	}
 
@@ -303,6 +317,25 @@ func findIoDevice(filesystem string, diskIoCounters map[string]disk.IOCountersSt
 
 	slog.Info("Using disk I/O fallback", "requested", filesystem, "selected", best.name)
 	return best.name, true
+}
+
+// mostActiveIoDevice returns the device with the highest I/O activity,
+// or "" if diskIoCounters is empty.
+func mostActiveIoDevice(diskIoCounters map[string]disk.IOCountersStat) string {
+	var best ioMatchCandidate
+	for _, d := range diskIoCounters {
+		c := ioMatchCandidate{
+			name:  d.Name,
+			bytes: d.ReadBytes + d.WriteBytes,
+			ops:   d.ReadCount + d.WriteCount,
+		}
+		if best.name == "" || c.bytes > best.bytes ||
+			(c.bytes == best.bytes && c.ops > best.ops) ||
+			(c.bytes == best.bytes && c.ops == best.ops && c.name < best.name) {
+			best = c
+		}
+	}
+	return best.name
 }
 
 // prefixRelated reports whether either identifier is a prefix of the other.

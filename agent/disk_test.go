@@ -206,6 +206,28 @@ func TestFilesystemMatchesPartitionSetting(t *testing.T) {
 	})
 }
 
+func TestMostActiveIoDevice(t *testing.T) {
+	t.Run("returns most active device", func(t *testing.T) {
+		ioCounters := map[string]disk.IOCountersStat{
+			"nda0": {Name: "nda0", ReadBytes: 5000, WriteBytes: 5000, ReadCount: 100, WriteCount: 100},
+			"nda1": {Name: "nda1", ReadBytes: 1000, WriteBytes: 1000, ReadCount: 50, WriteCount: 50},
+		}
+		assert.Equal(t, "nda0", mostActiveIoDevice(ioCounters))
+	})
+
+	t.Run("uses deterministic tie-breaker", func(t *testing.T) {
+		ioCounters := map[string]disk.IOCountersStat{
+			"sdb": {Name: "sdb", ReadBytes: 1000, WriteBytes: 1000, ReadCount: 10, WriteCount: 10},
+			"sda": {Name: "sda", ReadBytes: 1000, WriteBytes: 1000, ReadCount: 10, WriteCount: 10},
+		}
+		assert.Equal(t, "sda", mostActiveIoDevice(ioCounters))
+	})
+
+	t.Run("returns empty for empty map", func(t *testing.T) {
+		assert.Equal(t, "", mostActiveIoDevice(map[string]disk.IOCountersStat{}))
+	})
+}
+
 func TestIsDockerSpecialMountpoint(t *testing.T) {
 	testCases := []struct {
 		name       string
