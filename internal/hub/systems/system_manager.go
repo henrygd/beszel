@@ -51,6 +51,7 @@ type hubLike interface {
 	core.App
 	GetSSHKey(dataDir string) (ssh.Signer, error)
 	HandleSystemAlerts(systemRecord *core.Record, data *system.CombinedData) error
+	HandleContainerAlerts(systemRecord *core.Record, data *system.CombinedData) error
 	HandleStatusAlerts(status string, systemRecord *core.Record) error
 }
 
@@ -210,6 +211,10 @@ func (sm *SystemManager) onRecordAfterUpdateSuccess(e *core.RecordEvent) error {
 	if newStatus == up {
 		if err := sm.hub.HandleSystemAlerts(e.Record, system.data); err != nil {
 			e.App.Logger().Error("Error handling system alerts", "err", err)
+		}
+		// Trigger container alerts
+		if err := sm.hub.HandleContainerAlerts(e.Record, system.data); err != nil {
+			e.App.Logger().Error("Error handling container alerts", "err", err)
 		}
 	}
 

@@ -340,6 +340,33 @@ export interface AlertInfo {
 
 export type AlertMap = Record<string, Map<string, AlertRecord>>
 
+export interface ContainerAlertRecord extends RecordModel {
+	id: string
+	system: string
+	container: string
+	name: string
+	triggered: boolean
+	value: number
+	min: number
+}
+
+export interface ContainerAlertInfo {
+	name: () => string
+	unit: string
+	icon: any
+	desc: () => string
+	max?: number
+	min?: number
+	step?: number
+	start?: number
+	/** Single value description (when there's only one value, like status) */
+	singleDesc?: () => string
+	invert?: boolean
+}
+
+export type ContainerAlertMap = Record<string, Map<string, Map<string, ContainerAlertRecord>>>
+
+
 export interface SmartData {
 	/** model family */
 	// mf?: string

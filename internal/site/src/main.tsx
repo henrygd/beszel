@@ -12,6 +12,7 @@ import Settings from "@/components/routes/settings/layout.tsx"
 import { ThemeProvider } from "@/components/theme-provider.tsx"
 import { Toaster } from "@/components/ui/toaster.tsx"
 import { alertManager } from "@/lib/alerts"
+import { containerAlertManager } from "@/lib/container-alerts"
 import { pb, updateUserSettings } from "@/lib/api.ts"
 import { dynamicActivate, getLocale } from "@/lib/i18n"
 import { $authenticated, $copyContent, $direction, $publicKey, $userSettings } from "@/lib/stores.ts"
@@ -49,8 +50,11 @@ const App = memo(() => {
 			.then(alertManager.refresh)
 			// subscribe to new alert updates
 			.then(alertManager.subscribe)
+			// subscribe to container alerts
+			.then(() => containerAlertManager.subscribe())
 		return () => {
 			alertManager.unsubscribe()
+			containerAlertManager.unsubscribe()
 			systemsManager.unsubscribe()
 		}
 	}, [])
