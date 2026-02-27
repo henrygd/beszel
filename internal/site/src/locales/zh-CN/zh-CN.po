@@ -184,6 +184,10 @@ msgstr "您确定要删除 {name} 吗？"
 msgid "Are you sure?"
 msgstr "您确定吗？"
 
+#: src/components/routes/settings/general.tsx
+msgid "Auto"
+msgstr ""
+
 #: src/components/copy-to-clipboard.tsx
 msgid "Automatic copy requires a secure context."
 msgstr "自动复制所需的安全上下文。"
@@ -810,6 +814,10 @@ msgstr "满电"
 msgid "General"
 msgstr "常规"
 
+#: src/components/routes/settings/general.tsx
+msgid "Gigabytes (GB)"
+msgstr ""
+
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Global"
 msgstr "全局"
@@ -982,6 +990,10 @@ msgstr "手动设置说明"
 msgid "Max 1 min"
 msgstr "1分钟内最大值"
 
+#: src/components/routes/settings/general.tsx
+msgid "Megabytes (MB)"
+msgstr ""
+
 #: src/components/containers-table/containers-table-columns.tsx
 #: src/components/routes/system/info-bar.tsx
 #: src/components/systemd-table/systemd-table-columns.tsx
@@ -998,6 +1010,10 @@ msgstr "内存限制"
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Memory Peak"
 msgstr "内存峰值"
+
+#: src/components/routes/settings/general.tsx
+msgid "Memory unit"
+msgstr ""
 
 #: src/components/routes/system.tsx
 #: src/lib/alerts.ts
@@ -1523,6 +1539,10 @@ msgstr "温度单位"
 #: src/components/routes/system.tsx
 msgid "Temperatures of system sensors"
 msgstr "系统传感器的温度"
+
+#: src/components/routes/settings/general.tsx
+msgid "Terabytes (TB)"
+msgstr ""
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Test <0>URL</0>"

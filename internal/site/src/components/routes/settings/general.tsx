@@ -168,7 +168,7 @@ export default function SettingsProfilePage({ userSettings }: { userSettings: Us
 							<Trans>Change display units for metrics.</Trans>
 						</p>
 					</div>
-					<div className="grid sm:grid-cols-3 gap-4">
+					<div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
 						<div className="grid gap-2">
 							<Label className="block" htmlFor="unitTemp">
 								<Trans>Temperature unit</Trans>
@@ -187,6 +187,37 @@ export default function SettingsProfilePage({ userSettings }: { userSettings: Us
 									</SelectItem>
 									<SelectItem value={String(Unit.Fahrenheit)}>
 										<Trans>Fahrenheit (°F)</Trans>
+									</SelectItem>
+								</SelectContent>
+							</Select>
+						</div>
+						<div className="grid gap-2">
+							<Label className="block" htmlFor="unitMem">
+								<Trans>Memory unit</Trans>
+							</Label>
+							<Select
+								name="unitMem"
+								key={userSettings.unitMem}
+								defaultValue={userSettings.unitMem?.toString() ?? String(Unit.Bytes)}
+							>
+								<SelectTrigger id="unitMem">
+									<SelectValue />
+								</SelectTrigger>
+								<SelectContent>
+									<SelectItem value={String(Unit.Bytes)}>
+										<Trans>Auto</Trans>
+									</SelectItem>
+									<SelectItem value={String(Unit.TB)}>
+										<Trans>Terabytes (TB)</Trans>
+									</SelectItem>
+									<SelectItem value={String(Unit.GB)}>
+										<Trans>Gigabytes (GB)</Trans>
+									</SelectItem>
+									<SelectItem value={String(Unit.MB)}>
+										<Trans>Megabytes (MB)</Trans>
+									</SelectItem>
+									<SelectItem value={String(Unit.KB)}>
+										<Trans>Kilobytes (KB)</Trans>
 									</SelectItem>
 								</SelectContent>
 							</Select>
