@@ -55,14 +55,15 @@ type dockerManager struct {
 	containerStatsMutex sync.RWMutex                // Mutex to prevent concurrent access to containerStatsMap
 	apiContainerList    []*container.ApiInfo        // List of containers from Docker API
 	containerStatsMap   map[string]*container.Stats // Keeps track of container stats
-	validIds            map[string]struct{}         // Map of valid container ids, used to prune invalid containers from containerStatsMap
-	goodDockerVersion   bool                        // Whether docker version is at least 25.0.0 (one-shot works correctly)
-	isWindows           bool                        // Whether the Docker Engine API is running on Windows
-	buf                 *bytes.Buffer               // Buffer to store and read response bodies
-	decoder             *json.Decoder               // Reusable JSON decoder that reads from buf
-	apiStats            *container.ApiStats         // Reusable API stats object
-	excludeContainers   []string                    // Patterns to exclude containers by name
-	usingPodman         bool                        // Whether the Docker Engine API is running on Podman
+	containerLabelsMap  map[string]map[string]string
+	validIds            map[string]struct{} // Map of valid container ids, used to prune invalid containers from containerStatsMap
+	goodDockerVersion   bool                // Whether docker version is at least 25.0.0 (one-shot works correctly)
+	isWindows           bool                // Whether the Docker Engine API is running on Windows
+	buf                 *bytes.Buffer       // Buffer to store and read response bodies
+	decoder             *json.Decoder       // Reusable JSON decoder that reads from buf
+	apiStats            *container.ApiStats // Reusable API stats object
+	excludeContainers   []string            // Patterns to exclude containers by name
+	usingPodman         bool                // Whether the Docker Engine API is running on Podman
 
 	// Cache-time-aware tracking for CPU stats (similar to cpu.go)
 	// Maps cache time intervals to container-specific CPU usage tracking
@@ -196,6 +197,7 @@ func (dm *dockerManager) getDockerStats(cacheTimeMs uint16) ([]*container.Stats,
 	for id, v := range dm.containerStatsMap {
 		if _, exists := dm.validIds[id]; !exists {
 			delete(dm.containerStatsMap, id)
+			delete(dm.containerLabelsMap, id)
 		} else {
 			stats = append(stats, v)
 		}
@@ -383,6 +385,7 @@ func parseDockerStatus(status string) (string, container.DockerHealth) {
 // Updates stats for individual container with cache-time-aware delta tracking
 func (dm *dockerManager) updateContainerStats(ctr *container.ApiInfo, cacheTimeMs uint16) error {
 	name := ctr.Names[0][1:]
+	labels := dm.getContainerLabels(ctr)
 
 	resp, err := dm.client.Get(fmt.Sprintf("http://localhost/containers/%s/stats?stream=0&one-shot=1", ctr.IdShort))
 	if err != nil {
@@ -400,6 +403,9 @@ func (dm *dockerManager) updateContainerStats(ctr *container.ApiInfo, cacheTimeM
 	}
 
 	stats.Id = ctr.IdShort
+	stats.Name = name
+	stats.Image = ctr.Image
+	stats.Labels = labels
 
 	statusText, health := parseDockerStatus(ctr.Status)
 	stats.Status = statusText
@@ -474,6 +480,7 @@ func (dm *dockerManager) deleteContainerStatsSync(id string) {
 	dm.containerStatsMutex.Lock()
 	defer dm.containerStatsMutex.Unlock()
 	delete(dm.containerStatsMap, id)
+	delete(dm.containerLabelsMap, id)
 	for ct := range dm.lastCpuContainer {
 		delete(dm.lastCpuContainer[ct], id)
 	}
@@ -556,11 +563,12 @@ func newDockerManager() *dockerManager {
 			Timeout:   timeout,
 			Transport: userAgentTransport,
 		},
-		containerStatsMap: make(map[string]*container.Stats),
-		sem:               make(chan struct{}, 5),
-		apiContainerList:  []*container.ApiInfo{},
-		apiStats:          &container.ApiStats{},
-		excludeContainers: excludeContainers,
+		containerStatsMap:  make(map[string]*container.Stats),
+		containerLabelsMap: make(map[string]map[string]string),
+		sem:                make(chan struct{}, 5),
+		apiContainerList:   []*container.ApiInfo{},
+		apiStats:           &container.ApiStats{},
+		excludeContainers:  excludeContainers,
 
 		// Initialize cache-time-aware tracking structures
 		lastCpuContainer:    make(map[uint16]map[string]uint64),
@@ -585,6 +593,74 @@ func newDockerManager() *dockerManager {
 	time.Sleep(50 * time.Millisecond)
 
 	return manager
+}
+
+func copyLabels(src map[string]string) map[string]string {
+	if len(src) == 0 {
+		return map[string]string{}
+	}
+	out := make(map[string]string, len(src))
+	for k, v := range src {
+		out[k] = v
+	}
+	return out
+}
+
+func mergeLabels(base, extra map[string]string) map[string]string {
+	if len(extra) == 0 {
+		return base
+	}
+	merged := copyLabels(base)
+	for k, v := range extra {
+		merged[k] = v
+	}
+	return merged
+}
+
+func (dm *dockerManager) getContainerLabels(ctr *container.ApiInfo) map[string]string {
+	base := copyLabels(ctr.Labels)
+
+	dm.containerStatsMutex.RLock()
+	cached, ok := dm.containerLabelsMap[ctr.IdShort]
+	dm.containerStatsMutex.RUnlock()
+	if ok {
+		return cached
+	}
+
+	inspectLabels, err := dm.fetchInspectLabels(ctr.IdShort)
+	if err != nil {
+		dm.containerStatsMutex.Lock()
+		dm.containerLabelsMap[ctr.IdShort] = base
+		dm.containerStatsMutex.Unlock()
+		return base
+	}
+
+	labels := mergeLabels(base, inspectLabels)
+	dm.containerStatsMutex.Lock()
+	dm.containerLabelsMap[ctr.IdShort] = labels
+	dm.containerStatsMutex.Unlock()
+	return labels
+}
+
+func (dm *dockerManager) fetchInspectLabels(containerID string) (map[string]string, error) {
+	type inspectResponse struct {
+		Config struct {
+			Labels map[string]string `json:"Labels"`
+		} `json:"Config"`
+	}
+
+	resp, err := dm.client.Get(fmt.Sprintf("http://localhost/containers/%s/json", containerID))
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	var info inspectResponse
+	if err := json.NewDecoder(resp.Body).Decode(&info); err != nil {
+		return nil, err
+	}
+
+	return info.Config.Labels, nil
 }
 
 // checkDockerVersion checks Docker version and sets goodDockerVersion if at least 25.0.0.

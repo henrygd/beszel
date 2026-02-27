@@ -191,6 +191,20 @@ export const SystemDialog = ({ setOpen, system }: { setOpen: (open: boolean) => 
 							<Trans>Name</Trans>
 						</Label>
 						<Input id="name" name="name" defaultValue={system?.name} required />
+						<Label htmlFor="auto_container_alias" className="xs:text-end">
+							<Trans>Auto Container Alias</Trans>
+						</Label>
+						<div>
+							<Input
+								id="auto_container_alias"
+								name="auto_container_alias"
+								defaultValue={system?.auto_container_alias}
+								placeholder="$SERVICE - $ENV"
+							/>
+							<p className="mt-1 text-xs text-muted-foreground">
+								<Trans>Use variables like $LABEL_KEY to build aliases from container labels.</Trans>
+							</p>
+						</div>
 						<Label htmlFor="host" className="xs:text-end">
 							<Trans>Host / IP</Trans>
 						</Label>

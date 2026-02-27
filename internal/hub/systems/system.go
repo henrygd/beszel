@@ -8,6 +8,7 @@ import (
 	"hash/fnv"
 	"math/rand"
 	"net"
+	"regexp"
 	"strings"
 	"sync/atomic"
 	"time"
@@ -30,6 +31,8 @@ import (
 	"github.com/pocketbase/pocketbase/core"
 	"golang.org/x/crypto/ssh"
 )
+
+var autoContainerAliasVarPattern = regexp.MustCompile(`\$([A-Za-z0-9_.]+)`)
 
 type System struct {
 	Id             string                  `db:"id"`
@@ -192,7 +195,8 @@ func (sys *System) createRecords(data *system.CombinedData) (*core.Record, error
 		// add containers and container_stats records
 		if len(data.Containers) > 0 {
 			if data.Containers[0].Id != "" {
-				if err := createContainerRecords(txApp, data.Containers, sys.Id); err != nil {
+				fmt.Printf("RECORDS - %+v", systemRecord.Collection())
+				if err := createContainerRecords(txApp, data.Containers, sys.Id, systemRecord.GetString("auto_container_alias")); err != nil {
 					return err
 				}
 			}
@@ -297,7 +301,7 @@ func createSystemdStatsRecords(app core.App, data []*systemd.Service, systemId s
 }
 
 // createContainerRecords creates container records
-func createContainerRecords(app core.App, data []*container.Stats, systemId string) error {
+func createContainerRecords(app core.App, data []*container.Stats, systemId string, autoContainerAliasTemplate string) error {
 	if len(data) == 0 {
 		return nil
 	}
@@ -309,7 +313,7 @@ func createContainerRecords(app core.App, data []*container.Stats, systemId stri
 	valueStrings := make([]string, 0, len(data))
 	for i, container := range data {
 		suffix := fmt.Sprintf("%d", i)
-		valueStrings = append(valueStrings, fmt.Sprintf("({:id%[1]s}, {:system}, {:name%[1]s}, {:image%[1]s}, {:status%[1]s}, {:health%[1]s}, {:cpu%[1]s}, {:memory%[1]s}, {:net%[1]s}, {:updated})", suffix))
+		valueStrings = append(valueStrings, fmt.Sprintf("({:id%[1]s}, {:system}, {:name%[1]s}, {:image%[1]s}, {:status%[1]s}, {:health%[1]s}, {:cpu%[1]s}, {:memory%[1]s}, {:net%[1]s}, {:alias%[1]s}, {:updated})", suffix))
 		params["id"+suffix] = container.Id
 		params["name"+suffix] = container.Name
 		params["image"+suffix] = container.Image
@@ -322,13 +326,38 @@ func createContainerRecords(app core.App, data []*container.Stats, systemId stri
 			netBytes = uint64((container.NetworkSent + container.NetworkRecv) * 1024 * 1024)
 		}
 		params["net"+suffix] = netBytes
+		params["alias"+suffix] = resolveAutoContainerAlias(autoContainerAliasTemplate, container.Labels)
 	}
 	queryString := fmt.Sprintf(
-		"INSERT INTO containers (id, system, name, image, status, health, cpu, memory, net, updated) VALUES %s ON CONFLICT(id) DO UPDATE SET system = excluded.system, name = excluded.name, image = excluded.image, status = excluded.status, health = excluded.health, cpu = excluded.cpu, memory = excluded.memory, net = excluded.net, updated = excluded.updated",
+		"INSERT INTO containers (id, system, name, image, status, health, cpu, memory, net, alias, updated) VALUES %s ON CONFLICT(id) DO UPDATE SET system = excluded.system, name = excluded.name, image = excluded.image, status = excluded.status, health = excluded.health, cpu = excluded.cpu, memory = excluded.memory, net = excluded.net, alias = CASE WHEN (containers.alias IS NULL OR containers.alias = '') AND (excluded.alias IS NOT NULL AND excluded.alias != '') THEN excluded.alias ELSE containers.alias END, updated = excluded.updated",
 		strings.Join(valueStrings, ","),
 	)
 	_, err := app.DB().NewQuery(queryString).Bind(params).Execute()
 	return err
+}
+
+func resolveAutoContainerAlias(template string, labels map[string]string) string {
+	template = strings.TrimSpace(template)
+	if template == "" || len(labels) == 0 {
+		return ""
+	}
+
+	matches := autoContainerAliasVarPattern.FindAllStringSubmatch(template, -1)
+	if len(matches) == 0 {
+		return ""
+	}
+
+	alias := template
+	for _, match := range matches {
+		labelKey := match[1]
+		labelValue, ok := labels[labelKey]
+		if !ok || strings.TrimSpace(labelValue) == "" {
+			return ""
+		}
+		alias = strings.ReplaceAll(alias, match[0], strings.TrimSpace(labelValue))
+	}
+
+	return strings.TrimSpace(alias)
 }
 
 // getRecord retrieves the system record from the database.

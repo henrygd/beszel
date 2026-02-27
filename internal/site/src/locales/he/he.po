@@ -84,6 +84,7 @@ msgid "5 min"
 msgstr "5 דק'"
 
 #. Table column
+#: src/components/containers-table/containers-table-columns.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 #: src/components/routes/system/smart-table.tsx
@@ -160,6 +161,10 @@ msgstr "היסטוריית התראות"
 msgid "Alerts"
 msgstr "התראות"
 
+#: src/components/containers-table/container-alias-action-button.tsx
+msgid "Alias (optional)"
+msgstr ""
+
 #: src/components/command-palette.tsx
 #: src/components/containers-table/containers-table.tsx
 #: src/components/navbar.tsx
@@ -183,6 +188,10 @@ msgstr "האם אתה בטוח שברצונך למחוק את {name}?"
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Are you sure?"
 msgstr "האם אתה בטוח?"
+
+#: src/components/add-system.tsx
+msgid "Auto Container Alias"
+msgstr ""
 
 #: src/components/copy-to-clipboard.tsx
 msgid "Automatic copy requires a secure context."
@@ -304,6 +313,7 @@ msgstr "יכול להתחיל"
 msgid "Can stop"
 msgstr "יכול לעצור"
 
+#: src/components/containers-table/container-alias-action-button.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/systems-table/systems-table-columns.tsx
@@ -362,6 +372,10 @@ msgstr "בדוק את שירות הניטור שלך"
 #: src/components/routes/settings/notifications.tsx
 msgid "Check your notification service"
 msgstr "בדוק את שירות ההתראות שלך"
+
+#: src/components/containers-table/container-alias-action-button.tsx
+msgid "Choose a friendly name for this container (optional)."
+msgstr ""
 
 #: src/components/containers-table/containers-table.tsx
 #: src/components/routes/system/smart-table.tsx
@@ -631,6 +645,15 @@ msgstr "ערוך"
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Edit {foo}"
 msgstr "ערוך {foo}"
+
+#: src/components/containers-table/container-alias-action-button.tsx
+#: src/components/containers-table/container-alias-action-button.tsx
+msgid "Edit alias"
+msgstr ""
+
+#: src/components/containers-table/container-alias-action-button.tsx
+msgid "Edit container alias"
+msgstr ""
 
 #: src/components/login/auth-form.tsx
 #: src/components/login/forgot-pass-form.tsx
@@ -1326,6 +1349,10 @@ msgstr "פרטי S.M.A.R.T."
 msgid "S.M.A.R.T. Self-Test"
 msgstr "בדיקה עצמית S.M.A.R.T."
 
+#: src/components/containers-table/container-alias-action-button.tsx
+msgid "Save"
+msgstr ""
+
 #: src/components/routes/settings/notifications.tsx
 msgid "Save address using enter key or comma. Leave blank to disable email notifications."
 msgstr "שמור כתובת באמצעות מקש enter או פסיק. השאר ריק כדי להשבית התראות אימייל."
@@ -1342,6 +1369,10 @@ msgstr "שמור מערכת"
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Saved in the database and does not expire until you disable it."
 msgstr "נשמר במסד הנתונים ולא פג תוקף עד שתבטל אותו."
+
+#: src/components/containers-table/container-alias-action-button.tsx
+msgid "Saving..."
+msgstr ""
 
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Schedule"
@@ -1741,6 +1772,10 @@ msgstr "שימוש"
 #: src/components/routes/system.tsx
 msgid "Usage of root partition"
 msgstr "שימוש במחיצה הראשית"
+
+#: src/components/add-system.tsx
+msgid "Use variables like $LABEL_KEY to build aliases from container labels."
+msgstr ""
 
 #: src/components/charts/mem-chart.tsx
 #: src/components/charts/swap-chart.tsx
