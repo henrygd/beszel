@@ -960,7 +960,6 @@ msgstr "负载"
 msgid "Load state"
 msgstr "加载状态"
 
-#: src/components/routes/settings/heartbeat.tsx
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Loading..."
 msgstr "加载中..."

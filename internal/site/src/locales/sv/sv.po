@@ -960,7 +960,6 @@ msgstr "Belastning"
 msgid "Load state"
 msgstr "Laddningstillstånd"
 
-#: src/components/routes/settings/heartbeat.tsx
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Loading..."
 msgstr "Laddar..."

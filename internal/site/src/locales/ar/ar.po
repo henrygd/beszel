@@ -960,7 +960,6 @@ msgstr "متوسط التحميل"
 msgid "Load state"
 msgstr "حالة التحميل"
 
-#: src/components/routes/settings/heartbeat.tsx
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Loading..."
 msgstr "جاري التحميل..."

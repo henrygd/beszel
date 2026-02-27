@@ -960,7 +960,6 @@ msgstr "Belastning gns."
 msgid "Load state"
 msgstr "Indlæsningstilstand"
 
-#: src/components/routes/settings/heartbeat.tsx
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Loading..."
 msgstr "Indlæser..."

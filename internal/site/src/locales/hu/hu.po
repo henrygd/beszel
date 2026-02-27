@@ -960,7 +960,6 @@ msgstr "Terhelési átlag"
 msgid "Load state"
 msgstr "Betöltési állapot"
 
-#: src/components/routes/settings/heartbeat.tsx
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Loading..."
 msgstr "Betöltés..."

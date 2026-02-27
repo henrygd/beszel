@@ -8,7 +8,7 @@ export default [
 	["es", "Español", "🇪🇸"],
 	["fa", "فارسی", "🇮🇷"],
 	["fr", "Français", "🇫🇷"],
-	["he", "עברית", "🕎"],
+	["he", "עברית", ""],
 	["hr", "Hrvatski", "🇭🇷"],
 	["hu", "Magyar", "🇭🇺"],
 	["id", "Indonesia", "🇮🇩"],

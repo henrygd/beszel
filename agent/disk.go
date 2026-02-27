@@ -78,14 +78,21 @@ func (a *Agent) initializeDiskInfo() {
 		if _, exists := a.fsStats[key]; !exists {
 			if root {
 				slog.Info("Detected root device", "name", key)
-				// Check if root device is in /proc/diskstats. Do not guess a
-				// fallback device for root: that can misattribute root I/O to a
-				// different disk while usage remains tied to root mountpoint.
+				// Try to map root device to a diskIoCounters entry. First
+				// checks for an exact key match, then uses findIoDevice for
+				// normalized / prefix-based matching (e.g. nda0p2 → nda0),
+				// and finally falls back to the FILESYSTEM env var.
 				if _, ioMatch = diskIoCounters[key]; !ioMatch {
-					if matchedKey, match := findIoDevice(filesystem, diskIoCounters); match {
+					if matchedKey, match := findIoDevice(key, diskIoCounters); match {
 						key = matchedKey
 						ioMatch = true
-					} else {
+					} else if filesystem != "" {
+						if matchedKey, match := findIoDevice(filesystem, diskIoCounters); match {
+							key = matchedKey
+							ioMatch = true
+						}
+					}
+					if !ioMatch {
 						slog.Warn("Root I/O unmapped; set FILESYSTEM", "device", device, "mountpoint", mountpoint)
 					}
 				}
@@ -114,14 +121,22 @@ func (a *Agent) initializeDiskInfo() {
 	// Use FILESYSTEM env var to find root filesystem
 	if filesystem != "" {
 		for _, p := range partitions {
-			if strings.HasSuffix(p.Device, filesystem) || p.Mountpoint == filesystem {
+			if filesystemMatchesPartitionSetting(filesystem, p) {
 				addFsStat(p.Device, p.Mountpoint, true)
 				hasRoot = true
 				break
 			}
 		}
 		if !hasRoot {
-			slog.Warn("Partition details not found", "filesystem", filesystem)
+			// FILESYSTEM may name a physical disk absent from partitions (e.g.
+			// ZFS lists dataset paths like zroot/ROOT/default, not block devices).
+			// Try matching directly against diskIoCounters.
+			if ioKey, match := findIoDevice(filesystem, diskIoCounters); match {
+				a.fsStats[ioKey] = &system.FsStats{Root: true, Mountpoint: rootMountPoint}
+				hasRoot = true
+			} else {
+				slog.Warn("Partition details not found", "filesystem", filesystem)
+			}
 		}
 	}
 
@@ -187,28 +202,180 @@ func (a *Agent) initializeDiskInfo() {
 		}
 	}
 
-	// If no root filesystem set, use fallback
+	// If no root filesystem set, try the most active I/O device as a last
+	// resort (e.g. ZFS where dataset names are unrelated to disk names).
 	if !hasRoot {
-		rootKey := filepath.Base(rootMountPoint)
-		if _, exists := a.fsStats[rootKey]; exists {
-			rootKey = "root"
+		rootKey := mostActiveIoDevice(diskIoCounters)
+		if rootKey != "" {
+			slog.Warn("Using most active device for root I/O; set FILESYSTEM to override", "device", rootKey)
+		} else {
+			rootKey = filepath.Base(rootMountPoint)
+			if _, exists := a.fsStats[rootKey]; exists {
+				rootKey = "root"
+			}
+			slog.Warn("Root I/O device not detected; set FILESYSTEM to override")
 		}
-		slog.Warn("Root device not detected; root I/O disabled", "mountpoint", rootMountPoint)
 		a.fsStats[rootKey] = &system.FsStats{Root: true, Mountpoint: rootMountPoint}
 	}
 
+	a.pruneDuplicateRootExtraFilesystems()
 	a.initializeDiskIoStats(diskIoCounters)
 }
 
-// Returns matching device from /proc/diskstats.
-// bool is true if a match was found.
-func findIoDevice(filesystem string, diskIoCounters map[string]disk.IOCountersStat) (string, bool) {
-	for _, d := range diskIoCounters {
-		if d.Name == filesystem || (d.Label != "" && d.Label == filesystem) {
-			return d.Name, true
+// Removes extra filesystems that mirror root usage (https://github.com/henrygd/beszel/issues/1428).
+func (a *Agent) pruneDuplicateRootExtraFilesystems() {
+	var rootMountpoint string
+	for _, stats := range a.fsStats {
+		if stats != nil && stats.Root {
+			rootMountpoint = stats.Mountpoint
+			break
 		}
 	}
-	return "", false
+	if rootMountpoint == "" {
+		return
+	}
+	rootUsage, err := disk.Usage(rootMountpoint)
+	if err != nil {
+		return
+	}
+	for name, stats := range a.fsStats {
+		if stats == nil || stats.Root {
+			continue
+		}
+		extraUsage, err := disk.Usage(stats.Mountpoint)
+		if err != nil {
+			continue
+		}
+		if hasSameDiskUsage(rootUsage, extraUsage) {
+			slog.Info("Ignoring duplicate FS", "name", name, "mount", stats.Mountpoint)
+			delete(a.fsStats, name)
+		}
+	}
+}
+
+// hasSameDiskUsage compares root/extra usage with a small byte tolerance.
+func hasSameDiskUsage(a, b *disk.UsageStat) bool {
+	if a == nil || b == nil || a.Total == 0 || b.Total == 0 {
+		return false
+	}
+	// Allow minor drift between sequential disk usage calls.
+	const toleranceBytes uint64 = 16 * 1024 * 1024
+	return withinUsageTolerance(a.Total, b.Total, toleranceBytes) &&
+		withinUsageTolerance(a.Used, b.Used, toleranceBytes)
+}
+
+// withinUsageTolerance reports whether two byte values differ by at most tolerance.
+func withinUsageTolerance(a, b, tolerance uint64) bool {
+	if a >= b {
+		return a-b <= tolerance
+	}
+	return b-a <= tolerance
+}
+
+type ioMatchCandidate struct {
+	name  string
+	bytes uint64
+	ops   uint64
+}
+
+// findIoDevice prefers exact device/label matches, then falls back to a
+// prefix-related candidate with the highest recent activity.
+func findIoDevice(filesystem string, diskIoCounters map[string]disk.IOCountersStat) (string, bool) {
+	filesystem = normalizeDeviceName(filesystem)
+	if filesystem == "" {
+		return "", false
+	}
+
+	candidates := []ioMatchCandidate{}
+
+	for _, d := range diskIoCounters {
+		if normalizeDeviceName(d.Name) == filesystem || (d.Label != "" && normalizeDeviceName(d.Label) == filesystem) {
+			return d.Name, true
+		}
+		if prefixRelated(normalizeDeviceName(d.Name), filesystem) ||
+			(d.Label != "" && prefixRelated(normalizeDeviceName(d.Label), filesystem)) {
+			candidates = append(candidates, ioMatchCandidate{
+				name:  d.Name,
+				bytes: d.ReadBytes + d.WriteBytes,
+				ops:   d.ReadCount + d.WriteCount,
+			})
+		}
+	}
+
+	if len(candidates) == 0 {
+		return "", false
+	}
+
+	best := candidates[0]
+	for _, c := range candidates[1:] {
+		if c.bytes > best.bytes ||
+			(c.bytes == best.bytes && c.ops > best.ops) ||
+			(c.bytes == best.bytes && c.ops == best.ops && c.name < best.name) {
+			best = c
+		}
+	}
+
+	slog.Info("Using disk I/O fallback", "requested", filesystem, "selected", best.name)
+	return best.name, true
+}
+
+// mostActiveIoDevice returns the device with the highest I/O activity,
+// or "" if diskIoCounters is empty.
+func mostActiveIoDevice(diskIoCounters map[string]disk.IOCountersStat) string {
+	var best ioMatchCandidate
+	for _, d := range diskIoCounters {
+		c := ioMatchCandidate{
+			name:  d.Name,
+			bytes: d.ReadBytes + d.WriteBytes,
+			ops:   d.ReadCount + d.WriteCount,
+		}
+		if best.name == "" || c.bytes > best.bytes ||
+			(c.bytes == best.bytes && c.ops > best.ops) ||
+			(c.bytes == best.bytes && c.ops == best.ops && c.name < best.name) {
+			best = c
+		}
+	}
+	return best.name
+}
+
+// prefixRelated reports whether either identifier is a prefix of the other.
+func prefixRelated(a, b string) bool {
+	if a == "" || b == "" || a == b {
+		return false
+	}
+	return strings.HasPrefix(a, b) || strings.HasPrefix(b, a)
+}
+
+// filesystemMatchesPartitionSetting checks whether a FILESYSTEM env var value
+// matches a partition by mountpoint, exact device name, or prefix relationship
+// (e.g. FILESYSTEM=ada0 matches partition /dev/ada0p2).
+func filesystemMatchesPartitionSetting(filesystem string, p disk.PartitionStat) bool {
+	filesystem = strings.TrimSpace(filesystem)
+	if filesystem == "" {
+		return false
+	}
+	if p.Mountpoint == filesystem {
+		return true
+	}
+
+	fsName := normalizeDeviceName(filesystem)
+	partName := normalizeDeviceName(p.Device)
+	if fsName == "" || partName == "" {
+		return false
+	}
+	if fsName == partName {
+		return true
+	}
+	return prefixRelated(partName, fsName)
+}
+
+// normalizeDeviceName canonicalizes device strings for comparisons.
+func normalizeDeviceName(value string) string {
+	name := filepath.Base(strings.TrimSpace(value))
+	if name == "." {
+		return ""
+	}
+	return name
 }
 
 // Sets start values for disk I/O stats.

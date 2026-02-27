@@ -960,7 +960,6 @@ msgstr "Carico Medio"
 msgid "Load state"
 msgstr "Stato di caricamento"
 
-#: src/components/routes/settings/heartbeat.tsx
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Loading..."
 msgstr "Caricamento..."

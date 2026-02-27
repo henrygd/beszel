@@ -70,7 +70,16 @@ export default function SettingsProfilePage({ userSettings }: { userSettings: Us
 						<SelectContent>
 							{languages.map(([lang, label, e]) => (
 								<SelectItem key={lang} value={lang}>
-									<span className="me-2.5">{e}</span>
+									<span className="me-2.5">
+										{e || (
+											<code
+												aria-hidden="true"
+												className="font-mono bg-muted text-[.65em] w-5 h-4 inline-grid place-items-center"
+											>
+												{lang}
+											</code>
+										)}
+									</span>
 									{label}
 								</SelectItem>
 							))}

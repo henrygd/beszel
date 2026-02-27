@@ -960,7 +960,6 @@ msgstr "부하 평균"
 msgid "Load state"
 msgstr "로드 상태"
 
-#: src/components/routes/settings/heartbeat.tsx
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Loading..."
 msgstr "로딩 중..."
