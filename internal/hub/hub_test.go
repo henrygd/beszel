@@ -1,5 +1,4 @@
 //go:build testing
-// +build testing
 
 package hub_test
 
@@ -363,6 +362,58 @@ func TestApiRoutesAuthentication(t *testing.T) {
 			TestAppFactory:  testAppFactory,
 		},
 		{
+			Name:            "GET /heartbeat-status - no auth should fail",
+			Method:          http.MethodGet,
+			URL:             "/api/beszel/heartbeat-status",
+			ExpectedStatus:  401,
+			ExpectedContent: []string{"requires valid"},
+			TestAppFactory:  testAppFactory,
+		},
+		{
+			Name:   "GET /heartbeat-status - with user auth should fail",
+			Method: http.MethodGet,
+			URL:    "/api/beszel/heartbeat-status",
+			Headers: map[string]string{
+				"Authorization": userToken,
+			},
+			ExpectedStatus:  403,
+			ExpectedContent: []string{"Requires admin role"},
+			TestAppFactory:  testAppFactory,
+		},
+		{
+			Name:   "GET /heartbeat-status - with admin auth should succeed",
+			Method: http.MethodGet,
+			URL:    "/api/beszel/heartbeat-status",
+			Headers: map[string]string{
+				"Authorization": adminUserToken,
+			},
+			ExpectedStatus:  200,
+			ExpectedContent: []string{`"enabled":false`},
+			TestAppFactory:  testAppFactory,
+		},
+		{
+			Name:   "POST /test-heartbeat - with user auth should fail",
+			Method: http.MethodPost,
+			URL:    "/api/beszel/test-heartbeat",
+			Headers: map[string]string{
+				"Authorization": userToken,
+			},
+			ExpectedStatus:  403,
+			ExpectedContent: []string{"Requires admin role"},
+			TestAppFactory:  testAppFactory,
+		},
+		{
+			Name:   "POST /test-heartbeat - with admin auth should report disabled state",
+			Method: http.MethodPost,
+			URL:    "/api/beszel/test-heartbeat",
+			Headers: map[string]string{
+				"Authorization": adminUserToken,
+			},
+			ExpectedStatus:  200,
+			ExpectedContent: []string{"Heartbeat not configured"},
+			TestAppFactory:  testAppFactory,
+		},
+		{
 			Name:            "GET /universal-token - no auth should fail",
 			Method:          http.MethodGet,
 			URL:             "/api/beszel/universal-token",
@@ -493,12 +544,45 @@ func TestApiRoutesAuthentication(t *testing.T) {
 		{
 			Name:   "GET /containers/logs - with auth but invalid system should fail",
 			Method: http.MethodGet,
-			URL:    "/api/beszel/containers/logs?system=invalid-system&container=test-container",
+			URL:    "/api/beszel/containers/logs?system=invalid-system&container=0123456789ab",
 			Headers: map[string]string{
 				"Authorization": userToken,
 			},
 			ExpectedStatus:  404,
 			ExpectedContent: []string{"system not found"},
+			TestAppFactory:  testAppFactory,
+		},
+		{
+			Name:   "GET /containers/logs - traversal container should fail validation",
+			Method: http.MethodGet,
+			URL:    "/api/beszel/containers/logs?system=" + system.Id + "&container=..%2F..%2Fversion",
+			Headers: map[string]string{
+				"Authorization": userToken,
+			},
+			ExpectedStatus:  400,
+			ExpectedContent: []string{"invalid container parameter"},
+			TestAppFactory:  testAppFactory,
+		},
+		{
+			Name:   "GET /containers/info - traversal container should fail validation",
+			Method: http.MethodGet,
+			URL:    "/api/beszel/containers/info?system=" + system.Id + "&container=../../version?x=",
+			Headers: map[string]string{
+				"Authorization": userToken,
+			},
+			ExpectedStatus:  400,
+			ExpectedContent: []string{"invalid container parameter"},
+			TestAppFactory:  testAppFactory,
+		},
+		{
+			Name:   "GET /containers/info - non-hex container should fail validation",
+			Method: http.MethodGet,
+			URL:    "/api/beszel/containers/info?system=" + system.Id + "&container=container_name",
+			Headers: map[string]string{
+				"Authorization": userToken,
+			},
+			ExpectedStatus:  400,
+			ExpectedContent: []string{"invalid container parameter"},
 			TestAppFactory:  testAppFactory,
 		},
 

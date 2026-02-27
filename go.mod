@@ -1,6 +1,6 @@
 module github.com/henrygd/beszel
 
-go 1.25.7
+go 1.26.0
 
 require (
 	github.com/blang/semver v3.5.1+incompatible
@@ -11,17 +11,17 @@ require (
 	github.com/gliderlabs/ssh v0.3.8
 	github.com/google/uuid v1.6.0
 	github.com/lxzan/gws v1.8.9
-	github.com/nicholas-fedor/shoutrrr v0.13.1
-	github.com/pocketbase/dbx v1.11.0
-	github.com/pocketbase/pocketbase v0.36.2
+	github.com/nicholas-fedor/shoutrrr v0.13.2
+	github.com/pocketbase/dbx v1.12.0
+	github.com/pocketbase/pocketbase v0.36.4
 	github.com/shirou/gopsutil/v4 v4.26.1
 	github.com/spf13/cast v1.10.0
 	github.com/spf13/cobra v1.10.2
 	github.com/spf13/pflag v1.0.10
 	github.com/stretchr/testify v1.11.1
-	golang.org/x/crypto v0.47.0
-	golang.org/x/exp v0.0.0-20260112195511-716be5621a96
-	golang.org/x/sys v0.40.0
+	golang.org/x/crypto v0.48.0
+	golang.org/x/exp v0.0.0-20260218203240-3dfff04db8fa
+	golang.org/x/sys v0.41.0
 	gopkg.in/yaml.v3 v3.0.1
 )
 
@@ -42,8 +42,8 @@ require (
 	github.com/godbus/dbus/v5 v5.2.2 // indirect
 	github.com/golang-jwt/jwt/v5 v5.3.1 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
-	github.com/klauspost/compress v1.18.3 // indirect
-	github.com/lufia/plan9stats v0.0.0-20251013123823-9fd1530e3ec3 // indirect
+	github.com/klauspost/compress v1.18.4 // indirect
+	github.com/lufia/plan9stats v0.0.0-20260216142805-b3301c5f2a88 // indirect
 	github.com/mattn/go-colorable v0.1.14 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
 	github.com/ncruces/go-strftime v1.0.0 // indirect
@@ -54,15 +54,15 @@ require (
 	github.com/tklauser/numcpus v0.11.0 // indirect
 	github.com/x448/float16 v0.8.4 // indirect
 	github.com/yusufpapurcu/wmi v1.2.4 // indirect
-	golang.org/x/image v0.35.0 // indirect
-	golang.org/x/net v0.49.0 // indirect
-	golang.org/x/oauth2 v0.34.0 // indirect
+	golang.org/x/image v0.36.0 // indirect
+	golang.org/x/net v0.50.0 // indirect
+	golang.org/x/oauth2 v0.35.0 // indirect
 	golang.org/x/sync v0.19.0 // indirect
-	golang.org/x/term v0.39.0 // indirect
-	golang.org/x/text v0.33.0 // indirect
+	golang.org/x/term v0.40.0 // indirect
+	golang.org/x/text v0.34.0 // indirect
 	howett.net/plist v1.0.1 // indirect
 	modernc.org/libc v1.67.6 // indirect
 	modernc.org/mathutil v1.7.1 // indirect
 	modernc.org/memory v1.11.0 // indirect
-	modernc.org/sqlite v1.44.3 // indirect
+	modernc.org/sqlite v1.45.0 // indirect
 )

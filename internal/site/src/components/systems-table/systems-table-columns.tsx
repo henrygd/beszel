@@ -33,7 +33,6 @@ import {
 	decimalString,
 	formatBytes,
 	formatTemperature,
-	getMeterState,
 	parseSemVer,
 	secondsToUptimeString,
 } from "@/lib/utils"
@@ -80,6 +79,10 @@ const STATUS_COLORS = {
 	[SystemStatus.Paused]: "bg-primary/40",
 	[SystemStatus.Pending]: "bg-yellow-500",
 } as const
+
+function getMeterStateByThresholds(value: number, warn = 65, crit = 90): MeterState {
+	return value >= crit ? MeterState.Crit : value >= warn ? MeterState.Warn : MeterState.Good
+}
 
 /**
  * @param viewMode - "table" or "grid"
@@ -209,6 +212,7 @@ export function SystemsTableColumns(viewMode: "table" | "grid"): ColumnDef<Syste
 			header: sortableHeader,
 			cell(info: CellContext<SystemRecord, unknown>) {
 				const { info: sysInfo, status } = info.row.original
+				const { colorWarn = 65, colorCrit = 90 } = useStore($userSettings, { keys: ["colorWarn", "colorCrit"] })
 				// agent version
 				const { minor, patch } = parseSemVer(sysInfo.v)
 				let loadAverages = sysInfo.la
@@ -224,7 +228,7 @@ export function SystemsTableColumns(viewMode: "table" | "grid"): ColumnDef<Syste
 				}
 
 				const normalizedLoad = max / (sysInfo.t ?? 1)
-				const threshold = getMeterState(normalizedLoad * 100)
+				const threshold = getMeterStateByThresholds(normalizedLoad * 100, colorWarn, colorCrit)
 
 				return (
 					<div className="flex items-center gap-[.35em] w-full tabular-nums tracking-tight">
@@ -463,8 +467,9 @@ function sortableHeader(context: HeaderContext<SystemRecord, unknown>) {
 }
 
 function TableCellWithMeter(info: CellContext<SystemRecord, unknown>) {
+	const { colorWarn = 65, colorCrit = 90 } = useStore($userSettings, { keys: ["colorWarn", "colorCrit"] })
 	const val = Number(info.getValue()) || 0
-	const threshold = getMeterState(val)
+	const threshold = getMeterStateByThresholds(val, colorWarn, colorCrit)
 	const meterClass = cn(
 		"h-full",
 		(info.row.original.status !== SystemStatus.Up && STATUS_COLORS.paused) ||
@@ -483,6 +488,7 @@ function TableCellWithMeter(info: CellContext<SystemRecord, unknown>) {
 }
 
 function DiskCellWithMultiple(info: CellContext<SystemRecord, unknown>) {
+	const { colorWarn = 65, colorCrit = 90 } = useStore($userSettings, { keys: ["colorWarn", "colorCrit"] })
 	const { info: sysInfo, status, id } = info.row.original
 	const extraFs = Object.entries(sysInfo.efs ?? {})
 
@@ -496,7 +502,7 @@ function DiskCellWithMultiple(info: CellContext<SystemRecord, unknown>) {
 	extraFs.sort((a, b) => b[1] - a[1])
 
 	function getIndicatorColor(pct: number) {
-		const threshold = getMeterState(pct)
+		const threshold = getMeterStateByThresholds(pct, colorWarn, colorCrit)
 		return (
 			(status !== SystemStatus.Up && STATUS_COLORS.paused) ||
 			(threshold === MeterState.Good && STATUS_COLORS.up) ||
@@ -514,7 +520,9 @@ function DiskCellWithMultiple(info: CellContext<SystemRecord, unknown>) {
 	const extraDiskIndicators =
 		status !== SystemStatus.Up
 			? []
-			: [...new Set(extraFs.map(([, pct]) => getMeterState(pct)))].sort().map((state) => stateColors[state])
+			: [...new Set(extraFs.map(([, pct]) => getMeterStateByThresholds(pct, colorWarn, colorCrit)))]
+					.sort()
+					.map((state) => stateColors[state])
 
 	return (
 		<Tooltip>

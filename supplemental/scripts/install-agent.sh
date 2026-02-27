@@ -374,7 +374,7 @@ else
 fi
 
 # Stop existing service if it exists (for upgrades)
-if [ -f "$BIN_PATH" ]; then
+if [ "$UNINSTALL" != true ] && [ -f "$BIN_PATH" ]; then
   echo "Existing installation detected. Stopping service for upgrade..."
   if is_alpine; then
     rc-service beszel-agent stop 2>/dev/null || true
@@ -451,7 +451,7 @@ if [ "$UNINSTALL" = true ]; then
   else
     echo "Stopping and disabling the agent service..."
     systemctl stop beszel-agent.service
-    systemctl disable beszel-agent.service
+    systemctl disable beszel-agent.service >/dev/null 2>&1
 
     echo "Removing the systemd service file..."
     rm /etc/systemd/system/beszel-agent.service
@@ -459,7 +459,7 @@ if [ "$UNINSTALL" = true ]; then
     # Remove the update timer and service if they exist
     echo "Removing the daily update service and timer..."
     systemctl stop beszel-agent-update.timer 2>/dev/null
-    systemctl disable beszel-agent-update.timer 2>/dev/null
+    systemctl disable beszel-agent-update.timer >/dev/null 2>&1
     rm -f /etc/systemd/system/beszel-agent-update.service
     rm -f /etc/systemd/system/beszel-agent-update.timer
 
@@ -549,14 +549,14 @@ else
 fi
 
 # Create a dedicated user for the service if it doesn't exist
-echo "Creating a dedicated user for the Beszel Agent service..."
+echo "Configuring the dedicated user for the Beszel Agent service..."
 if is_alpine; then
   if ! id -u beszel >/dev/null 2>&1; then
     addgroup beszel
     adduser -S -D -H -s /sbin/nologin -G beszel beszel
   fi
   # Add the user to the docker group to allow access to the Docker socket if group docker exists
-  if getent group docker; then
+  if getent group docker >/dev/null 2>&1; then
     echo "Adding beszel to docker group"
     addgroup beszel docker
   fi
@@ -604,12 +604,12 @@ else
     useradd --system --home-dir /nonexistent --shell /bin/false beszel
   fi
   # Add the user to the docker group to allow access to the Docker socket if group docker exists
-  if getent group docker; then
+  if getent group docker >/dev/null 2>&1; then
     echo "Adding beszel to docker group"
     usermod -aG docker beszel
   fi
   # Add the user to the disk group to allow access to disk devices if group disk exists
-  if getent group disk; then
+  if getent group disk >/dev/null 2>&1; then
     echo "Adding beszel to disk group"
     usermod -aG disk beszel
   fi
@@ -629,7 +629,6 @@ if [ ! -d "$BIN_DIR" ]; then
 fi
 
 # Download and install the Beszel Agent
-echo "Downloading and installing the agent..."
 
 OS=$(uname -s | sed -e 'y/ABCDEFGHIJKLMNOPQRSTUVWXYZ/abcdefghijklmnopqrstuvwxyz/')
 ARCH=$(detect_architecture)
@@ -656,19 +655,29 @@ else
   INSTALL_VERSION=$(echo "$INSTALL_VERSION" | sed 's/^v//')
 fi
 
-echo "Downloading and installing agent version ${INSTALL_VERSION} from ${GITHUB_URL} ..."
+echo "Downloading beszel-agent v${INSTALL_VERSION}..."
 
 # Download checksums file
 TEMP_DIR=$(mktemp -d)
 cd "$TEMP_DIR" || exit 1
-CHECKSUM=$(curl -sL "$GITHUB_URL/henrygd/beszel/releases/download/v${INSTALL_VERSION}/beszel_${INSTALL_VERSION}_checksums.txt" | grep "$FILE_NAME" | cut -d' ' -f1)
+CHECKSUM=$(curl -fsSL "$GITHUB_URL/henrygd/beszel/releases/download/v${INSTALL_VERSION}/beszel_${INSTALL_VERSION}_checksums.txt" | grep "$FILE_NAME" | cut -d' ' -f1)
 if [ -z "$CHECKSUM" ] || ! echo "$CHECKSUM" | grep -qE "^[a-fA-F0-9]{64}$"; then
   echo "Failed to get checksum or invalid checksum format"
+  echo "Try again with --mirror (or --mirror <url>) if GitHub is not reachable."
+  rm -rf "$TEMP_DIR"
   exit 1
 fi
 
-if ! curl -#L "$GITHUB_URL/henrygd/beszel/releases/download/v${INSTALL_VERSION}/$FILE_NAME" -o "$FILE_NAME"; then
-  echo "Failed to download the agent from ""$GITHUB_URL/henrygd/beszel/releases/download/v${INSTALL_VERSION}/$FILE_NAME"
+if ! curl -fL# --retry 3 --retry-delay 2 --connect-timeout 10 "$GITHUB_URL/henrygd/beszel/releases/download/v${INSTALL_VERSION}/$FILE_NAME" -o "$FILE_NAME"; then
+  echo "Failed to download the agent from $GITHUB_URL/henrygd/beszel/releases/download/v${INSTALL_VERSION}/$FILE_NAME"
+  echo "Try again with --mirror (or --mirror <url>) if GitHub is not reachable."
+  rm -rf "$TEMP_DIR"
+  exit 1
+fi
+
+if ! tar -tzf "$FILE_NAME" >/dev/null 2>&1; then
+  echo "Downloaded archive is invalid or incomplete (possible network/proxy issue)."
+  echo "Try again with --mirror (or --mirror <url>) if the download path is unstable."
   rm -rf "$TEMP_DIR"
   exit 1
 fi
@@ -681,6 +690,12 @@ fi
 
 if ! tar -xzf "$FILE_NAME" beszel-agent; then
   echo "Failed to extract the agent"
+  rm -rf "$TEMP_DIR"
+  exit 1
+fi
+
+if [ ! -s "$TEMP_DIR/beszel-agent" ]; then
+  echo "Downloaded binary is missing or empty."
   rm -rf "$TEMP_DIR"
   exit 1
 fi
@@ -871,6 +886,8 @@ EOF
 
 elif is_freebsd; then
   echo "Checking for existing FreeBSD service configuration..."
+  # Ensure rc.d directory exists on minimal FreeBSD installs
+  mkdir -p /usr/local/etc/rc.d
   
   # Create environment configuration file with proper permissions if it doesn't exist
   if [ ! -f "$AGENT_DIR/env" ]; then
@@ -989,7 +1006,7 @@ EOF
   # Load and start the service
   printf "\nLoading and starting the agent service...\n"
   systemctl daemon-reload
-  systemctl enable beszel-agent.service
+  systemctl enable beszel-agent.service >/dev/null 2>&1
   systemctl restart beszel-agent.service
 
 
@@ -1035,7 +1052,7 @@ WantedBy=timers.target
 EOF
 
     systemctl daemon-reload
-    systemctl enable --now beszel-agent-update.timer
+    systemctl enable --now beszel-agent-update.timer >/dev/null 2>&1
 
     printf "\nDaily updates have been enabled.\n"
     ;;

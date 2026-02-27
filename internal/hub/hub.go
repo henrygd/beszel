@@ -9,12 +9,14 @@ import (
 	"net/url"
 	"os"
 	"path"
+	"regexp"
 	"strings"
 	"time"
 
 	"github.com/henrygd/beszel"
 	"github.com/henrygd/beszel/internal/alerts"
 	"github.com/henrygd/beszel/internal/hub/config"
+	"github.com/henrygd/beszel/internal/hub/heartbeat"
 	"github.com/henrygd/beszel/internal/hub/systems"
 	"github.com/henrygd/beszel/internal/records"
 	"github.com/henrygd/beszel/internal/users"
@@ -33,10 +35,14 @@ type Hub struct {
 	um     *users.UserManager
 	rm     *records.RecordManager
 	sm     *systems.SystemManager
+	hb     *heartbeat.Heartbeat
+	hbStop chan struct{}
 	pubKey string
 	signer ssh.Signer
 	appURL string
 }
+
+var containerIDPattern = regexp.MustCompile(`^[a-fA-F0-9]{12,64}$`)
 
 // NewHub creates a new Hub instance with default configuration
 func NewHub(app core.App) *Hub {
@@ -48,6 +54,10 @@ func NewHub(app core.App) *Hub {
 	hub.rm = records.NewRecordManager(hub)
 	hub.sm = systems.NewSystemManager(hub)
 	hub.appURL, _ = GetEnv("APP_URL")
+	hub.hb = heartbeat.New(app, GetEnv)
+	if hub.hb != nil {
+		hub.hbStop = make(chan struct{})
+	}
 	return hub
 }
 
@@ -87,6 +97,10 @@ func (h *Hub) StartHub() error {
 		// start system updates
 		if err := h.sm.Initialize(); err != nil {
 			return err
+		}
+		// start heartbeat if configured
+		if h.hb != nil {
+			go h.hb.Start(h.hbStop)
 		}
 		return e.Next()
 	})
@@ -287,6 +301,9 @@ func (h *Hub) registerApiRoutes(se *core.ServeEvent) error {
 	})
 	// send test notification
 	apiAuth.POST("/test-notification", h.SendTestNotification)
+	// heartbeat status and test
+	apiAuth.GET("/heartbeat-status", h.getHeartbeatStatus)
+	apiAuth.POST("/test-heartbeat", h.testHeartbeat)
 	// get config.yml content
 	apiAuth.GET("/config-yaml", config.GetYamlConfig)
 	// handle agent websocket connection
@@ -403,6 +420,42 @@ func (h *Hub) getUniversalToken(e *core.RequestEvent) error {
 	return e.JSON(http.StatusOK, response)
 }
 
+// getHeartbeatStatus returns current heartbeat configuration and whether it's enabled
+func (h *Hub) getHeartbeatStatus(e *core.RequestEvent) error {
+	if e.Auth.GetString("role") != "admin" {
+		return e.ForbiddenError("Requires admin role", nil)
+	}
+	if h.hb == nil {
+		return e.JSON(http.StatusOK, map[string]any{
+			"enabled": false,
+			"msg":     "Set HEARTBEAT_URL to enable outbound heartbeat monitoring",
+		})
+	}
+	cfg := h.hb.GetConfig()
+	return e.JSON(http.StatusOK, map[string]any{
+		"enabled":  true,
+		"url":      cfg.URL,
+		"interval": cfg.Interval,
+		"method":   cfg.Method,
+	})
+}
+
+// testHeartbeat triggers a single heartbeat ping and returns the result
+func (h *Hub) testHeartbeat(e *core.RequestEvent) error {
+	if e.Auth.GetString("role") != "admin" {
+		return e.ForbiddenError("Requires admin role", nil)
+	}
+	if h.hb == nil {
+		return e.JSON(http.StatusOK, map[string]any{
+			"err": "Heartbeat not configured. Set HEARTBEAT_URL environment variable.",
+		})
+	}
+	if err := h.hb.Send(); err != nil {
+		return e.JSON(http.StatusOK, map[string]any{"err": err.Error()})
+	}
+	return e.JSON(http.StatusOK, map[string]any{"err": false})
+}
+
 // containerRequestHandler handles both container logs and info requests
 func (h *Hub) containerRequestHandler(e *core.RequestEvent, fetchFunc func(*systems.System, string) (string, error), responseKey string) error {
 	systemID := e.Request.URL.Query().Get("system")
@@ -410,6 +463,9 @@ func (h *Hub) containerRequestHandler(e *core.RequestEvent, fetchFunc func(*syst
 
 	if systemID == "" || containerID == "" {
 		return e.JSON(http.StatusBadRequest, map[string]string{"error": "system and container parameters are required"})
+	}
+	if !containerIDPattern.MatchString(containerID) {
+		return e.JSON(http.StatusBadRequest, map[string]string{"error": "invalid container parameter"})
 	}
 
 	system, err := h.sm.GetSystem(systemID)

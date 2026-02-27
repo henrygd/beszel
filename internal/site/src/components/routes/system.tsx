@@ -593,7 +593,7 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 										if (showMax) {
 											return data?.stats?.bm?.[0] ?? (data?.stats?.nsm ?? 0) * 1024 * 1024
 										}
-										return data?.stats?.b?.[0] ?? data?.stats?.ns * 1024 * 1024
+										return data?.stats?.b?.[0] ?? (data?.stats?.ns ?? 0) * 1024 * 1024
 									},
 									color: 5,
 									opacity: 0.2,
@@ -604,7 +604,7 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 										if (showMax) {
 											return data?.stats?.bm?.[1] ?? (data?.stats?.nrm ?? 0) * 1024 * 1024
 										}
-										return data?.stats?.b?.[1] ?? data?.stats?.nr * 1024 * 1024
+										return data?.stats?.b?.[1] ?? (data?.stats?.nr ?? 0) * 1024 * 1024
 									},
 									color: 2,
 									opacity: 0.2,

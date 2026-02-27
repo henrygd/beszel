@@ -93,6 +93,7 @@ msgstr "Åtgärder"
 
 #: src/components/alerts-history-columns.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
+#: src/components/routes/settings/heartbeat.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Active"
 msgstr "Aktiv"
@@ -139,6 +140,10 @@ msgstr "Admin"
 #: src/components/systemd-table/systemd-table.tsx
 msgid "After"
 msgstr "Efter"
+
+#: src/components/routes/settings/heartbeat.tsx
+msgid "After setting the environment variables, restart your Beszel hub for changes to take effect."
+msgstr "Efter att du har ställt in miljövariablerna, starta om din Beszel-hubb för att ändringarna ska träda i kraft."
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Agent"
@@ -231,7 +236,7 @@ msgstr "Bandbredd"
 #. Battery label in systems table header
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Bat"
-msgstr ""
+msgstr "Bat"
 
 #: src/components/routes/system.tsx
 #: src/lib/alerts.ts
@@ -307,7 +312,7 @@ msgstr "Avbryt"
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Capabilities"
-msgstr ""
+msgstr "Capabilities"
 
 #: src/components/routes/system/smart-table.tsx
 msgid "Capacity"
@@ -349,6 +354,10 @@ msgstr "Kontrollera {email} för en återställningslänk."
 #: src/components/routes/settings/layout.tsx
 msgid "Check logs for more details."
 msgstr "Kontrollera loggarna för mer information."
+
+#: src/components/routes/settings/heartbeat.tsx
+msgid "Check your monitoring service"
+msgstr "Kontrollera din övervakningstjänst"
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Check your notification service"
@@ -465,11 +474,11 @@ msgstr "CPU-kärnor"
 
 #: src/components/systemd-table/systemd-table-columns.tsx
 msgid "CPU Peak"
-msgstr ""
+msgstr "CPU-topp"
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "CPU time"
-msgstr ""
+msgstr "CPU-tid"
 
 #: src/components/routes/system/cpu-sheet.tsx
 msgid "CPU Time Breakdown"
@@ -560,7 +569,7 @@ msgstr "Disk"
 
 #: src/components/routes/system.tsx
 msgid "Disk I/O"
-msgstr "Disk-I/O"
+msgstr "Disk I/O"
 
 #: src/components/routes/settings/general.tsx
 msgid "Disk unit"
@@ -643,6 +652,14 @@ msgstr "Tom"
 msgid "End Time"
 msgstr "Sluttid"
 
+#: src/components/routes/settings/heartbeat.tsx
+msgid "Endpoint URL"
+msgstr "Slutpunkts-URL"
+
+#: src/components/routes/settings/heartbeat.tsx
+msgid "Endpoint URL to ping (required)"
+msgstr "Slutpunkts-URL att pinga (krävs)"
+
 #: src/components/login/login.tsx
 msgid "Enter email address to reset password"
 msgstr "Ange e-postadress för att återställa lösenord"
@@ -662,6 +679,9 @@ msgstr "Flyktig"
 #: src/components/login/auth-form.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/settings/config-yaml.tsx
+#: src/components/routes/settings/heartbeat.tsx
+#: src/components/routes/settings/heartbeat.tsx
+#: src/components/routes/settings/heartbeat.tsx
 #: src/components/routes/settings/notifications.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/quiet-hours.tsx
@@ -669,6 +689,10 @@ msgstr "Flyktig"
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Error"
 msgstr "Fel"
+
+#: src/components/routes/settings/heartbeat.tsx
+msgid "Example:"
+msgstr "Exempel:"
 
 #. placeholder {0}: alert.value
 #. placeholder {1}: info.unit
@@ -679,7 +703,7 @@ msgstr "Överskrider {0}{1} under de senaste {2, plural, one {# minuten} other {
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Exec main PID"
-msgstr ""
+msgstr "Exec-huvud-PID"
 
 #: src/components/routes/settings/config-yaml.tsx
 msgid "Existing systems not defined in <0>config.yml</0> will be deleted. Please make regular backups."
@@ -726,6 +750,10 @@ msgstr "Autentisering misslyckades"
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Failed to save settings"
 msgstr "Kunde inte spara inställningar"
+
+#: src/components/routes/settings/heartbeat.tsx
+msgid "Failed to send heartbeat"
+msgstr "Misslyckades med att skicka heartbeat"
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Failed to send test notification"
@@ -806,6 +834,18 @@ msgstr "Rutnät"
 msgid "Health"
 msgstr "Hälsa"
 
+#: src/components/routes/settings/layout.tsx
+msgid "Heartbeat"
+msgstr "Heartbeat"
+
+#: src/components/routes/settings/heartbeat.tsx
+msgid "Heartbeat Monitoring"
+msgstr "Heartbeat-övervakning"
+
+#: src/components/routes/settings/heartbeat.tsx
+msgid "Heartbeat sent successfully"
+msgstr "Heartbeat skickades framgångsrikt"
+
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgctxt "Button to copy install command"
@@ -815,6 +855,14 @@ msgstr "Homebrew-kommando"
 #: src/components/add-system.tsx
 msgid "Host / IP"
 msgstr "Värd / IP"
+
+#: src/components/routes/settings/heartbeat.tsx
+msgid "HTTP Method"
+msgstr "HTTP-metod"
+
+#: src/components/routes/settings/heartbeat.tsx
+msgid "HTTP method: POST, GET, or HEAD (default: POST)"
+msgstr "HTTP-metod: POST, GET eller HEAD (standard: POST)"
 
 #. Context: Battery state
 #: src/lib/i18n.ts
@@ -833,6 +881,10 @@ msgstr "Avbild"
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Inactive"
 msgstr "Inaktiv"
+
+#: src/components/routes/settings/heartbeat.tsx
+msgid "Interval"
+msgstr "Intervall"
 
 #: src/components/login/auth-form.tsx
 msgid "Invalid email address."
@@ -858,7 +910,7 @@ msgstr "Livscykel"
 #: src/components/systemd-table/systemd-table.tsx
 #: src/components/systemd-table/systemd-table.tsx
 msgid "limit"
-msgstr ""
+msgstr "gräns"
 
 #: src/components/routes/system.tsx
 msgid "Load Average"
@@ -914,7 +966,7 @@ msgstr "Letar du istället efter var du skapar larm? Klicka på klockikonerna <0
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Main PID"
-msgstr ""
+msgstr "Huvud-PID"
 
 #: src/components/routes/settings/layout.tsx
 msgid "Manage display and notification preferences."
@@ -945,7 +997,7 @@ msgstr "Minnesgräns"
 #: src/components/systemd-table/systemd-table-columns.tsx
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Memory Peak"
-msgstr ""
+msgstr "Minnestopp"
 
 #: src/components/routes/system.tsx
 #: src/lib/alerts.ts
@@ -1110,6 +1162,10 @@ msgstr "Pausad"
 msgid "Paused ({pausedSystemsLength})"
 msgstr "Pausad ({pausedSystemsLength})"
 
+#: src/components/routes/settings/heartbeat.tsx
+msgid "Payload format"
+msgstr "Nyttolastformat"
+
 #: src/components/routes/system/cpu-sheet.tsx
 #: src/components/routes/system/cpu-sheet.tsx
 msgid "Per-core average utilization"
@@ -1121,7 +1177,7 @@ msgstr "Procentandel av tid spenderad i varje tillstånd"
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Permanent"
-msgstr ""
+msgstr "Permanent"
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Persistence"
@@ -1248,7 +1304,7 @@ msgstr "Återuppta"
 #: src/components/systems-table/systems-table-columns.tsx
 msgctxt "Root disk label"
 msgid "Root"
-msgstr ""
+msgstr "Root"
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Rotate token"
@@ -1307,6 +1363,10 @@ msgstr "Sök"
 msgid "Search for systems or settings..."
 msgstr "Sök efter system eller inställningar..."
 
+#: src/components/routes/settings/heartbeat.tsx
+msgid "Seconds between pings (default: 60)"
+msgstr "Sekunder mellan pingar (standard: 60)"
+
 #: src/components/alerts/alerts-sheet.tsx
 msgid "See <0>notification settings</0> to configure how you receive alerts."
 msgstr "Se <0>aviseringsinställningar</0> för att konfigurera hur du tar emot larm."
@@ -1314,6 +1374,18 @@ msgstr "Se <0>aviseringsinställningar</0> för att konfigurera hur du tar emot 
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Select {foo}"
 msgstr "Välj {foo}"
+
+#: src/components/routes/settings/heartbeat.tsx
+msgid "Send a single heartbeat ping to verify your endpoint is working."
+msgstr "Skicka en enstaka heartbeat-ping för att verifiera att din slutpunkt fungerar."
+
+#: src/components/routes/settings/heartbeat.tsx
+msgid "Send periodic outbound pings to an external monitoring service so you can monitor Beszel without exposing it to the internet."
+msgstr "Skicka periodiska utgående pingar till en extern övervakningstjänst så att du kan övervaka Beszel utan att exponera den för internet."
+
+#: src/components/routes/settings/heartbeat.tsx
+msgid "Send test heartbeat"
+msgstr "Skicka test-heartbeat"
 
 #: src/components/routes/system.tsx
 msgid "Sent"
@@ -1334,6 +1406,10 @@ msgstr "Tjänster"
 #: src/components/routes/settings/general.tsx
 msgid "Set percentage thresholds for meter colors."
 msgstr "Ställ in procentuella tröskelvärden för mätarfärger."
+
+#: src/components/routes/settings/heartbeat.tsx
+msgid "Set the following environment variables on your Beszel hub to enable heartbeat monitoring:"
+msgstr "Ställ in följande miljövariabler på din Beszel-hubb för att aktivera heartbeat-övervakning:"
 
 #: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
@@ -1411,7 +1487,7 @@ msgstr "Systembelastning över tid"
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Systemd Services"
-msgstr ""
+msgstr "Systemd-tjänster"
 
 #: src/components/navbar.tsx
 msgid "Systems"
@@ -1452,9 +1528,17 @@ msgstr "Temperaturer för systemsensorer"
 msgid "Test <0>URL</0>"
 msgstr "Testa <0>URL</0>"
 
+#: src/components/routes/settings/heartbeat.tsx
+msgid "Test heartbeat"
+msgstr "Testa heartbeat"
+
 #: src/components/routes/settings/notifications.tsx
 msgid "Test notification sent"
 msgstr "Testavisering skickad"
+
+#: src/components/routes/settings/heartbeat.tsx
+msgid "The overall status is <0>ok</0> when all systems are up, <1>warn</1> when alerts are triggered, and <2>error</2> when any system is down."
+msgstr "Den övergripande statusen är <0>ok</0> när alla system är uppe, <1>varning</1> när larm utlöses och <2>fel</2> när något system är nere."
 
 #: src/components/login/forgot-pass-form.tsx
 msgid "Then log into the backend and reset your user account password in the users table."
@@ -1591,7 +1675,7 @@ msgstr "Typ"
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Unit file"
-msgstr ""
+msgstr "Unit-fil"
 
 #. Temperature / network units
 #: src/components/routes/settings/general.tsx
@@ -1611,7 +1695,7 @@ msgstr "Okänd"
 #: src/components/systemd-table/systemd-table.tsx
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Unlimited"
-msgstr ""
+msgstr "Obegränsad"
 
 #. Context: System is up
 #: src/components/routes/system/info-bar.tsx
@@ -1642,6 +1726,7 @@ msgid "Upload"
 msgstr "Ladda upp"
 
 #: src/components/routes/system/info-bar.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Uptime"
 msgstr "Drifttid"
 
@@ -1715,6 +1800,10 @@ msgstr "Webhook / Push-aviseringar"
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "When enabled, this token allows agents to self-register without prior system creation."
 msgstr "När aktiverad tillåter denna token agenter att självregistrera utan föregående systemskapande."
+
+#: src/components/routes/settings/heartbeat.tsx
+msgid "When using POST, each heartbeat includes a JSON payload with system status summary, list of down systems, and triggered alerts."
+msgstr "När POST används inkluderar varje heartbeat en JSON-nyttolast med systemstatussammanfattning, lista över nere system och utlösta larm."
 
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx

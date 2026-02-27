@@ -656,14 +656,14 @@ function DiskSheet({
 						</Tooltip>
 					</SheetDescription>
 				</SheetHeader>
-				<div className="flex-1 overflow-auto p-4 flex flex-col gap-4">
+				<div className="flex-1 overflow-hidden p-4 flex flex-col gap-4">
 					{isLoading ? (
 						<div className="flex justify-center py-8">
 							<LoaderCircleIcon className="animate-spin size-10 opacity-60" />
 						</div>
 					) : (
 						<>
-							<Alert className="pb-3">
+							<Alert className="pb-3 shrink-0">
 								{status === "PASSED" ? <CheckCircle2Icon className="size-4" /> : <XCircleIcon className="size-4" />}
 								<AlertTitle>
 									<Trans>S.M.A.R.T. Self-Test</Trans>: {status}
@@ -675,9 +675,9 @@ function DiskSheet({
 								)}
 							</Alert>
 							{smartAttributes.length > 0 ? (
-								<div className="rounded-md border overflow-auto">
+								<div className="rounded-md border min-h-0 flex flex-col">
 									<Table>
-										<TableHeader>
+										<TableHeader className="sticky top-0 z-10">
 											{table.getHeaderGroups().map((headerGroup) => (
 												<TableRow key={headerGroup.id}>
 													{headerGroup.headers.map((header) => (

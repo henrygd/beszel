@@ -1,5 +1,4 @@
 //go:build testing
-// +build testing
 
 package health
 
@@ -37,7 +36,6 @@ func TestHealth(t *testing.T) {
 	})
 
 	// This test uses synctest to simulate time passing.
-	// NOTE: This test requires GOEXPERIMENT=synctest to run.
 	t.Run("check with simulated time", func(t *testing.T) {
 		synctest.Test(t, func(t *testing.T) {
 			// Update the file to set the initial timestamp.

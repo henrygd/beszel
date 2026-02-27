@@ -489,7 +489,7 @@ func (sm *SmartManager) CollectSmart(deviceInfo *DeviceInfo) error {
 	output, err := cmd.CombinedOutput()
 
 	// Check if device is in standby (exit status 2)
-	if exitErr, ok := err.(*exec.ExitError); ok && exitErr.ExitCode() == 2 {
+	if exitErr, ok := errors.AsType[*exec.ExitError](err); ok && exitErr.ExitCode() == 2 {
 		if hasExistingData {
 			// Device is in standby and we have cached data, keep using cache
 			return nil
