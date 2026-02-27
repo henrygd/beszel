@@ -158,7 +158,7 @@ func readMdraidHealth(blockName string) (mdraidHealth, bool) {
 		out.mismatchCnt = val
 	}
 
-	if capBytes, ok := readBlockCapacityBytes(blockName, mdraidSysfsRoot); ok {
+	if capBytes, ok := readMdraidBlockCapacityBytes(blockName, mdraidSysfsRoot); ok {
 		out.capacity = capBytes
 	}
 
@@ -214,7 +214,7 @@ func readUintFile(path string) (uint64, bool) {
 	return parsed, true
 }
 
-func readBlockCapacityBytes(blockName, root string) (uint64, bool) {
+func readMdraidBlockCapacityBytes(blockName, root string) (uint64, bool) {
 	sizePath := filepath.Join(root, "block", blockName, "size")
 	lbsPath := filepath.Join(root, "block", blockName, "queue", "logical_block_size")
 
