@@ -16,7 +16,6 @@ import (
 var mdraidSysfsRoot = "/sys"
 
 type mdraidHealth struct {
-	name          string
 	level         string
 	arrayState    string
 	degraded      uint64
@@ -28,6 +27,7 @@ type mdraidHealth struct {
 	capacity      uint64
 }
 
+// scanMdraidDevices discovers Linux md arrays exposed in sysfs.
 func scanMdraidDevices() []*DeviceInfo {
 	blockDir := filepath.Join(mdraidSysfsRoot, "block")
 	entries, err := os.ReadDir(blockDir)
@@ -58,6 +58,7 @@ func scanMdraidDevices() []*DeviceInfo {
 	return devices
 }
 
+// collectMdraidHealth reads mdraid health and stores it in SmartDataMap.
 func (sm *SmartManager) collectMdraidHealth(deviceInfo *DeviceInfo) (bool, error) {
 	if deviceInfo == nil || deviceInfo.Name == "" {
 		return false, nil
@@ -115,19 +116,16 @@ func (sm *SmartManager) collectMdraidHealth(deviceInfo *DeviceInfo) (bool, error
 	if health.level != "" {
 		data.ModelName = "Linux MD RAID (" + health.level + ")"
 	}
-	data.SerialNumber = ""
-	data.FirmwareVersion = ""
 	data.Capacity = health.capacity
-	data.Temperature = 0
 	data.SmartStatus = status
 	data.DiskName = filepath.Join("/dev", base)
 	data.DiskType = "mdraid"
 	data.Attributes = attrs
-	sm.SmartDataMap[key] = data
 
 	return true, nil
 }
 
+// readMdraidHealth reads md array health fields from sysfs.
 func readMdraidHealth(blockName string) (mdraidHealth, bool) {
 	var out mdraidHealth
 
@@ -141,7 +139,6 @@ func readMdraidHealth(blockName string) (mdraidHealth, bool) {
 		return out, false
 	}
 
-	out.name = blockName
 	out.arrayState = arrayState
 	out.level = readStringFile(filepath.Join(mdDir, "level"))
 	out.syncAction = readStringFile(filepath.Join(mdDir, "sync_action"))
@@ -165,6 +162,7 @@ func readMdraidHealth(blockName string) (mdraidHealth, bool) {
 	return out, true
 }
 
+// mdraidSmartStatus maps md state/sync signals to a SMART-like status.
 func mdraidSmartStatus(health mdraidHealth) string {
 	state := strings.ToLower(strings.TrimSpace(health.arrayState))
 	switch state {
@@ -174,18 +172,18 @@ func mdraidSmartStatus(health mdraidHealth) string {
 	if health.degraded > 0 {
 		return "FAILED"
 	}
-
 	switch strings.ToLower(strings.TrimSpace(health.syncAction)) {
 	case "resync", "recover", "reshape", "check", "repair":
 		return "WARNING"
 	}
-
-	if state == "clean" || state == "active" || state == "readonly" {
+	switch state {
+	case "clean", "active", "active-idle", "write-pending", "read-auto", "readonly":
 		return "PASSED"
 	}
 	return "UNKNOWN"
 }
 
+// isMdraidBlockName matches /dev/mdN-style block device names.
 func isMdraidBlockName(name string) bool {
 	if !strings.HasPrefix(name, "md") {
 		return false
@@ -202,18 +200,7 @@ func isMdraidBlockName(name string) bool {
 	return true
 }
 
-func readUintFile(path string) (uint64, bool) {
-	raw, ok := readStringFileOK(path)
-	if !ok {
-		return 0, false
-	}
-	parsed, err := strconv.ParseUint(strings.TrimSpace(raw), 10, 64)
-	if err != nil {
-		return 0, false
-	}
-	return parsed, true
-}
-
+// readMdraidBlockCapacityBytes converts block size metadata into bytes.
 func readMdraidBlockCapacityBytes(blockName, root string) (uint64, bool) {
 	sizePath := filepath.Join(root, "block", blockName, "size")
 	lbsPath := filepath.Join(root, "block", blockName, "queue", "logical_block_size")
@@ -222,15 +209,14 @@ func readMdraidBlockCapacityBytes(blockName, root string) (uint64, bool) {
 	if !ok {
 		return 0, false
 	}
-	sectors, err := strconv.ParseUint(strings.TrimSpace(sizeStr), 10, 64)
+	sectors, err := strconv.ParseUint(sizeStr, 10, 64)
 	if err != nil || sectors == 0 {
 		return 0, false
 	}
 
-	lbsStr, ok := readStringFileOK(lbsPath)
 	logicalBlockSize := uint64(512)
-	if ok {
-		if parsed, err := strconv.ParseUint(strings.TrimSpace(lbsStr), 10, 64); err == nil && parsed > 0 {
+	if lbsStr, ok := readStringFileOK(lbsPath); ok {
+		if parsed, err := strconv.ParseUint(lbsStr, 10, 64); err == nil && parsed > 0 {
 			logicalBlockSize = parsed
 		}
 	}
