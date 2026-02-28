@@ -2,6 +2,12 @@ import { useMemo, useState } from "react"
 import type { ChartConfig } from "@/components/ui/chart"
 import type { ChartData, SystemStats, SystemStatsRecord } from "@/types"
 
+/** Generates evenly distributed HSL colors for chart series */
+function getChartColor(index: number, total: number, startHue = 0): string {
+	const hue = (startHue + (index * 360) / total) % 360
+	return `hsl(${hue}, 60%, 55%)`
+}
+
 /** Chart configurations for CPU, memory, and network usage charts */
 export interface ContainerChartConfigs {
 	cpu: ChartConfig
@@ -16,69 +22,27 @@ export interface ContainerChartConfigs {
  */
 export function useContainerChartConfigs(containerData: ChartData["containerData"]): ContainerChartConfigs {
 	return useMemo(() => {
-		const configs = {
-			cpu: {} as ChartConfig,
-			memory: {} as ChartConfig,
-			network: {} as ChartConfig,
-		}
+		if (!containerData.length) return { cpu: {}, memory: {}, network: {} }
 
-		// Aggregate usage metrics for each container
-		const totalUsage = {
-			cpu: new Map<string, number>(),
-			memory: new Map<string, number>(),
-			network: new Map<string, number>(),
-		}
-
-		// Process each data point to calculate totals
-		for (let i = 0; i < containerData.length; i++) {
-			const stats = containerData[i]
-			const containerNames = Object.keys(stats)
-
-			for (let j = 0; j < containerNames.length; j++) {
-				const containerName = containerNames[j]
-				// Skip metadata field
-				if (containerName === "created") {
-					continue
-				}
-
-				const containerStats = stats[containerName]
-				if (!containerStats) {
-					continue
-				}
-
-				// Accumulate metrics for CPU, memory, and network
-				const currentCpu = totalUsage.cpu.get(containerName) ?? 0
-				const currentMemory = totalUsage.memory.get(containerName) ?? 0
-				const currentNetwork = totalUsage.network.get(containerName) ?? 0
-				const sentBytes = containerStats.b?.[0] ?? (containerStats.ns ?? 0) * 1024 * 1024
-				const recvBytes = containerStats.b?.[1] ?? (containerStats.nr ?? 0) * 1024 * 1024
-
-				totalUsage.cpu.set(containerName, currentCpu + (containerStats.c ?? 0))
-				totalUsage.memory.set(containerName, currentMemory + (containerStats.m ?? 0))
-				totalUsage.network.set(containerName, currentNetwork + sentBytes + recvBytes)
+		// Collect all containers and their total usage across all data points
+		const usage = new Map<string, number>()
+		for (const dataPoint of containerData) {
+			for (const [name, s] of Object.entries(dataPoint)) {
+				if (name === "created" || !s || typeof s !== "object") continue
+				const stats = s as { c?: number; m?: number; b?: number[] }
+				const value = (stats.c ?? 0) + (stats.m ?? 0) + (stats.b?.[0] ?? 0) + (stats.b?.[1] ?? 0)
+				usage.set(name, (usage.get(name) ?? 0) + value)
 			}
 		}
 
-		// Generate chart configurations for each metric type
-		Object.entries(totalUsage).forEach(([chartType, usageMap]) => {
-			const sortedContainers = Array.from(usageMap.entries()).sort(([, a], [, b]) => b - a)
-			const chartConfig = {} as Record<string, { label: string; color: string }>
-			const count = sortedContainers.length
+		// Sort by total usage and generate config with consistent colors
+		const sorted = [...usage.entries()].sort(([, a], [, b]) => b - a)
+		const chartConfig: ChartConfig = {}
+		for (let i = 0; i < sorted.length; i++) {
+			chartConfig[sorted[i][0]] = { label: sorted[i][0], color: getChartColor(i, sorted.length) }
+		}
 
-			// Generate colors for each container
-			for (let i = 0; i < count; i++) {
-				const [containerName] = sortedContainers[i]
-				const hue = ((i * 360) / count) % 360
-				chartConfig[containerName] = {
-					label: containerName,
-					color: `hsl(${hue}, var(--chart-saturation), var(--chart-lightness))`,
-				}
-			}
-
-			configs[chartType as keyof typeof configs] = chartConfig
-		})
-
-		return configs
+		return { cpu: chartConfig, memory: chartConfig, network: chartConfig }
 	}, [containerData])
 }
 
@@ -115,11 +79,10 @@ export function useNetworkInterfaces(interfaces: SystemStats["ni"]) {
 	return {
 		length: sortedKeys.length,
 		data: (index = 3) => {
-			return sortedKeys.map((key) => ({
+			return sortedKeys.map((key, i) => ({
 				label: key,
 				dataKey: ({ stats }: SystemStatsRecord) => stats?.ni?.[key]?.[index],
-				color: `hsl(${220 + (((sortedKeys.indexOf(key) * 360) / sortedKeys.length) % 360)}, 70%, 50%)`,
-
+				color: getChartColor(i, sortedKeys.length, 220),
 				opacity: 0.3,
 			}))
 		},
