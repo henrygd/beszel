@@ -8,7 +8,7 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 import { DialogTitle } from "@/components/ui/dialog"
 import { compareSemVer, decimalString, parseSemVer, toFixedFloat } from "@/lib/utils"
 import type { ChartData, SystemStatsRecord } from "@/types"
-import { ChartCard } from "../system"
+import { ChartCard } from "./tabs"
 
 const minAgentVersion = parseSemVer("0.15.3")
 
