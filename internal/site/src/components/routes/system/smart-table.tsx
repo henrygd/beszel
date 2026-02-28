@@ -621,8 +621,8 @@ function DiskSheet({
 	const deviceName = disk?.name || unknown
 	const model = disk?.model || unknown
 	const capacity = disk?.capacity ? formatCapacity(disk.capacity) : unknown
-	const serialNumber = disk?.serial || unknown
-	const firmwareVersion = disk?.firmware || unknown
+	const serialNumber = disk?.serial
+	const firmwareVersion = disk?.firmware
 	const status = disk?.state || unknown
 
 	return (
@@ -636,24 +636,32 @@ function DiskSheet({
 						{model}
 						<Separator orientation="vertical" className="h-2.5 bg-muted-foreground opacity-70" />
 						{capacity}
-						<Separator orientation="vertical" className="h-2.5 bg-muted-foreground opacity-70" />
-						<Tooltip>
-							<TooltipTrigger asChild>
-								<span>{serialNumber}</span>
-							</TooltipTrigger>
-							<TooltipContent>
-								<Trans>Serial Number</Trans>
-							</TooltipContent>
-						</Tooltip>
-						<Separator orientation="vertical" className="h-2.5 bg-muted-foreground opacity-70" />
-						<Tooltip>
-							<TooltipTrigger asChild>
-								<span>{firmwareVersion}</span>
-							</TooltipTrigger>
-							<TooltipContent>
-								<Trans>Firmware</Trans>
-							</TooltipContent>
-						</Tooltip>
+						{serialNumber && (
+							<>
+								<Separator orientation="vertical" className="h-2.5 bg-muted-foreground opacity-70" />
+								<Tooltip>
+									<TooltipTrigger asChild>
+										<span>{serialNumber}</span>
+									</TooltipTrigger>
+									<TooltipContent>
+										<Trans>Serial Number</Trans>
+									</TooltipContent>
+								</Tooltip>
+							</>
+						)}
+						{firmwareVersion && (
+							<>
+								<Separator orientation="vertical" className="h-2.5 bg-muted-foreground opacity-70" />
+								<Tooltip>
+									<TooltipTrigger asChild>
+										<span>{firmwareVersion}</span>
+									</TooltipTrigger>
+									<TooltipContent>
+										<Trans>Firmware</Trans>
+									</TooltipContent>
+								</Tooltip>
+							</>
+						)}
 					</SheetDescription>
 				</SheetHeader>
 				<div className="flex-1 overflow-hidden p-4 flex flex-col gap-4">

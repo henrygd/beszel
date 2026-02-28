@@ -51,7 +51,7 @@ The [quick start guide](https://beszel.dev/guide/getting-started) and other docu
 - **GPU usage / power draw** - Nvidia, AMD, and Intel.
 - **Battery** - Host system battery charge.
 - **Containers** - Status and metrics of all running Docker / Podman containers.
-- **S.M.A.R.T.** - Host system disk health (includes eMMC wear/EOL via Linux sysfs when available).
+- **S.M.A.R.T.** - Host system disk health (includes eMMC wear/EOL and Linux mdraid array health via sysfs when available).
 
 ## Help and discussion
 

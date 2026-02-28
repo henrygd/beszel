@@ -199,19 +199,6 @@ func readHexByteFile(path string) (uint8, bool) {
 	return b, ok
 }
 
-func readStringFile(path string) string {
-	content, _ := readStringFileOK(path)
-	return content
-}
-
-func readStringFileOK(path string) (string, bool) {
-	b, err := os.ReadFile(path)
-	if err != nil {
-		return "", false
-	}
-	return strings.TrimSpace(string(b)), true
-}
-
 func hasEmmcHealthFiles(deviceDir string) bool {
 	entries, err := os.ReadDir(deviceDir)
 	if err != nil {

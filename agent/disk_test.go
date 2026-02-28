@@ -116,7 +116,7 @@ func TestFindIoDevice(t *testing.T) {
 		assert.Equal(t, "sda", device)
 	})
 
-	t.Run("returns no fallback when not found", func(t *testing.T) {
+	t.Run("returns no match when not found", func(t *testing.T) {
 		ioCounters := map[string]disk.IOCountersStat{
 			"sda": {Name: "sda"},
 			"sdb": {Name: "sdb"},
@@ -125,6 +125,106 @@ func TestFindIoDevice(t *testing.T) {
 		device, ok := findIoDevice("nvme0n1p1", ioCounters)
 		assert.False(t, ok)
 		assert.Equal(t, "", device)
+	})
+
+	t.Run("uses uncertain unique prefix fallback", func(t *testing.T) {
+		ioCounters := map[string]disk.IOCountersStat{
+			"nvme0n1": {Name: "nvme0n1"},
+			"sda":     {Name: "sda"},
+		}
+
+		device, ok := findIoDevice("nvme0n1p2", ioCounters)
+		assert.True(t, ok)
+		assert.Equal(t, "nvme0n1", device)
+	})
+
+	t.Run("uses dominant activity when prefix matches are ambiguous", func(t *testing.T) {
+		ioCounters := map[string]disk.IOCountersStat{
+			"sda": {Name: "sda", ReadBytes: 5000, WriteBytes: 5000, ReadCount: 100, WriteCount: 100},
+			"sdb": {Name: "sdb", ReadBytes: 1000, WriteBytes: 1000, ReadCount: 50, WriteCount: 50},
+		}
+
+		device, ok := findIoDevice("sd", ioCounters)
+		assert.True(t, ok)
+		assert.Equal(t, "sda", device)
+	})
+
+	t.Run("uses highest activity when ambiguous without dominance", func(t *testing.T) {
+		ioCounters := map[string]disk.IOCountersStat{
+			"sda": {Name: "sda", ReadBytes: 3000, WriteBytes: 3000, ReadCount: 50, WriteCount: 50},
+			"sdb": {Name: "sdb", ReadBytes: 2500, WriteBytes: 2500, ReadCount: 40, WriteCount: 40},
+		}
+
+		device, ok := findIoDevice("sd", ioCounters)
+		assert.True(t, ok)
+		assert.Equal(t, "sda", device)
+	})
+
+	t.Run("matches /dev/-prefixed partition to parent disk", func(t *testing.T) {
+		ioCounters := map[string]disk.IOCountersStat{
+			"nda0": {Name: "nda0", ReadBytes: 1000, WriteBytes: 1000},
+		}
+
+		device, ok := findIoDevice("/dev/nda0p2", ioCounters)
+		assert.True(t, ok)
+		assert.Equal(t, "nda0", device)
+	})
+
+	t.Run("uses deterministic name tie-breaker", func(t *testing.T) {
+		ioCounters := map[string]disk.IOCountersStat{
+			"sdb": {Name: "sdb", ReadBytes: 2000, WriteBytes: 2000, ReadCount: 10, WriteCount: 10},
+			"sda": {Name: "sda", ReadBytes: 2000, WriteBytes: 2000, ReadCount: 10, WriteCount: 10},
+		}
+
+		device, ok := findIoDevice("sd", ioCounters)
+		assert.True(t, ok)
+		assert.Equal(t, "sda", device)
+	})
+}
+
+func TestFilesystemMatchesPartitionSetting(t *testing.T) {
+	p := disk.PartitionStat{Device: "/dev/ada0p2", Mountpoint: "/"}
+
+	t.Run("matches mountpoint setting", func(t *testing.T) {
+		assert.True(t, filesystemMatchesPartitionSetting("/", p))
+	})
+
+	t.Run("matches exact partition setting", func(t *testing.T) {
+		assert.True(t, filesystemMatchesPartitionSetting("ada0p2", p))
+		assert.True(t, filesystemMatchesPartitionSetting("/dev/ada0p2", p))
+	})
+
+	t.Run("matches prefix-style parent setting", func(t *testing.T) {
+		assert.True(t, filesystemMatchesPartitionSetting("ada0", p))
+		assert.True(t, filesystemMatchesPartitionSetting("/dev/ada0", p))
+	})
+
+	t.Run("does not match unrelated device", func(t *testing.T) {
+		assert.False(t, filesystemMatchesPartitionSetting("sda", p))
+		assert.False(t, filesystemMatchesPartitionSetting("nvme0n1", p))
+		assert.False(t, filesystemMatchesPartitionSetting("", p))
+	})
+}
+
+func TestMostActiveIoDevice(t *testing.T) {
+	t.Run("returns most active device", func(t *testing.T) {
+		ioCounters := map[string]disk.IOCountersStat{
+			"nda0": {Name: "nda0", ReadBytes: 5000, WriteBytes: 5000, ReadCount: 100, WriteCount: 100},
+			"nda1": {Name: "nda1", ReadBytes: 1000, WriteBytes: 1000, ReadCount: 50, WriteCount: 50},
+		}
+		assert.Equal(t, "nda0", mostActiveIoDevice(ioCounters))
+	})
+
+	t.Run("uses deterministic tie-breaker", func(t *testing.T) {
+		ioCounters := map[string]disk.IOCountersStat{
+			"sdb": {Name: "sdb", ReadBytes: 1000, WriteBytes: 1000, ReadCount: 10, WriteCount: 10},
+			"sda": {Name: "sda", ReadBytes: 1000, WriteBytes: 1000, ReadCount: 10, WriteCount: 10},
+		}
+		assert.Equal(t, "sda", mostActiveIoDevice(ioCounters))
+	})
+
+	t.Run("returns empty for empty map", func(t *testing.T) {
+		assert.Equal(t, "", mostActiveIoDevice(map[string]disk.IOCountersStat{}))
 	})
 }
 
