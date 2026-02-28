@@ -24,9 +24,10 @@ import {
 	LayoutGridIcon,
 	LayoutListIcon,
 	Settings2Icon,
+	TagIcon,
 	XIcon,
 } from "lucide-react"
-import { memo, useEffect, useMemo, useRef, useState } from "react"
+import React, { memo, useEffect, useMemo, useRef, useState } from "react"
 import { Button } from "@/components/ui/button"
 import {
 	DropdownMenu,
@@ -44,11 +45,14 @@ import { TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/compon
 import { SystemStatus } from "@/lib/enums"
 import { $downSystems, $pausedSystems, $systems, $upSystems } from "@/lib/stores"
 import { cn, runOnce, useBrowserStorage } from "@/lib/utils"
-import type { SystemRecord } from "@/types"
+import { pb } from "@/lib/api"
+import { Badge } from "../ui/badge"
+import type { SystemRecord, TagRecord} from "@/types"
 import AlertButton from "../alerts/alert-button"
 import { $router, Link } from "../router"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui/card"
 import { SystemsTableColumns, ActionsButton, IndicatorDot } from "./systems-table-columns"
+import { getTagColorClasses } from "../tags/tags-columns"
 
 type ViewMode = "table" | "grid"
 type StatusFilter = "all" | SystemRecord["status"]
@@ -63,6 +67,8 @@ export default function SystemsTable() {
 	const { i18n, t } = useLingui()
 	const [filter, setFilter] = useState<string>("")
 	const [statusFilter, setStatusFilter] = useState<StatusFilter>("all")
+	const [availableTags, setAvailableTags] = useState<TagRecord[]>([])
+	const [selectedTagFilter, setSelectedTagFilter] = useState<string[]>([])
 	const [sorting, setSorting] = useBrowserStorage<SortingState>(
 		"sortMode",
 		[{ id: "system", desc: false }],
@@ -73,19 +79,42 @@ export default function SystemsTable() {
 
 	const locale = i18n.locale
 
-	// Filter data based on status filter
+	// Extract unique tags from all systems
+	useEffect(() => {
+		const tagsMap = new Map<string, TagRecord>()
+		for (const system of data) {
+			if (system.expand?.tags) {
+				for (const tag of system.expand.tags) {
+					tagsMap.set(tag.id, tag)
+				}
+			}
+		}
+		setAvailableTags(Array.from(tagsMap.values()).sort((a, b) => a.name.localeCompare(b.name)))
+	}, [data])
+
+	// Filter data based on status and tag filters
 	const filteredData = useMemo(() => {
-		if (statusFilter === "all") {
-			return data
-		}
+		let filtered = data
+
+		// Filter by status
 		if (statusFilter === SystemStatus.Up) {
-			return Object.values(upSystems) ?? []
+			filtered = Object.values(upSystems) ?? []
+		} else if (statusFilter === SystemStatus.Down) {
+			filtered = Object.values(downSystems) ?? []
+		} else if (statusFilter === SystemStatus.Paused) {
+			filtered = Object.values(pausedSystems) ?? []
 		}
-		if (statusFilter === SystemStatus.Down) {
-			return Object.values(downSystems) ?? []
+
+		// Filter by tags
+		if (selectedTagFilter.length > 0) {
+			filtered = filtered.filter((system) => {
+				if (!system.tags || system.tags.length === 0) return false
+				return selectedTagFilter.some((tagId) => system.tags!.includes(tagId))
+			})
 		}
-		return Object.values(pausedSystems) ?? []
-	}, [data, statusFilter])
+
+		return filtered
+	}, [data, statusFilter, selectedTagFilter, upSystems, downSystems, pausedSystems])
 
 	const [viewMode, setViewMode] = useBrowserStorage<ViewMode>(
 		"viewMode",
@@ -174,7 +203,7 @@ export default function SystemsTable() {
 								</Button>
 							</DropdownMenuTrigger>
 							<DropdownMenuContent align="end" className="h-72 md:h-auto min-w-48 md:min-w-auto overflow-y-auto">
-								<div className="grid grid-cols-1 md:grid-cols-4 divide-y md:divide-s md:divide-y-0">
+								<div className="grid grid-cols-1 md:grid-cols-5 divide-y md:divide-s md:divide-y-0">
 									<div className="border-r">
 										<DropdownMenuLabel className="pt-2 px-3.5 flex items-center gap-2">
 											<LayoutGridIcon className="size-4" />
@@ -195,6 +224,53 @@ export default function SystemsTable() {
 												<Trans>Grid</Trans>
 											</DropdownMenuRadioItem>
 										</DropdownMenuRadioGroup>
+									</div>
+
+							<div className="border-r">
+										<DropdownMenuLabel className="pt-2 px-3.5 flex items-center gap-2">
+											<TagIcon className="size-4" />
+											<Trans>Tags</Trans>
+										</DropdownMenuLabel>
+										<DropdownMenuSeparator />
+										<div className="px-1 pb-1 max-h-64 overflow-y-auto min-w-48">
+											{availableTags.length === 0 ? (
+												<p className="text-xs text-muted-foreground py-2 px-2">
+													<Trans>No tags available</Trans>
+												</p>
+											) : (
+												<div className="space-y-0.5">
+													{availableTags.map((tag) => {
+														const isSelected = selectedTagFilter.includes(tag.id)
+														const systemsWithTag = data.filter((sys) => sys.tags?.includes(tag.id)).length
+														return (
+															<div
+																key={tag.id}
+																className={cn(
+																	"flex items-center justify-between gap-3 px-2 py-1.5 rounded cursor-pointer transition-colors",
+																	isSelected ? "bg-accent" : "hover:bg-accent/50"
+																)}
+																onClick={() => {
+																	setSelectedTagFilter((prev) =>
+																		isSelected ? prev.filter((id) => id !== tag.id) : [...prev, tag.id]
+																	)
+																}}
+															>
+																<div className="flex items-center gap-2 min-w-0 flex-1">
+																	<Badge
+																		className={cn("text-xs px-2 py-0.5 shrink-0 pointer-events-none", getTagColorClasses(tag.color))}
+																	>
+																		{tag.name}
+																	</Badge>
+																</div>
+																<span className="text-xs text-muted-foreground shrink-0">
+																	{systemsWithTag}
+																</span>
+															</div>
+														)
+													})}
+												</div>
+											)}
+										</div>
 									</div>
 
 									<div className="border-r">
@@ -295,6 +371,8 @@ export default function SystemsTable() {
 		viewMode,
 		locale,
 		statusFilter,
+		selectedTagFilter,
+		availableTags,
 		upSystemsLength,
 		downSystemsLength,
 		pausedSystemsLength,
@@ -487,21 +565,21 @@ const SystemCard = memo(
 								// @ts-expect-error
 								const { Icon, name } = column.columnDef as ColumnDef<SystemRecord, unknown>
 								return (
-									<>
-										<div key={`${column.id}-icon`} className="flex items-center">
+									<React.Fragment key={column.id}>
+										<div className="flex items-center">
 											{column.id === "lastSeen" ? (
 												<EyeIcon className="size-4 text-muted-foreground" />
 											) : (
 												Icon && <Icon className="size-4 text-muted-foreground" />
 											)}
 										</div>
-										<div key={`${column.id}-label`} className="flex items-center text-muted-foreground pr-3">
+										<div className="flex items-center text-muted-foreground pr-3">
 											{name()}:
 										</div>
-										<div key={`${column.id}-value`} className="flex items-center">
+										<div className="flex items-center">
 											{flexRender(cell.column.columnDef.cell, cell.getContext())}
 										</div>
-									</>
+									</React.Fragment>
 								)
 							})}
 						</div>

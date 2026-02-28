@@ -9,6 +9,7 @@ import {
 	FingerprintIcon,
 	HeartPulseIcon,
 	SettingsIcon,
+	TagIcon,
 } from "lucide-react"
 import { lazy, useEffect } from "react"
 import { $router } from "@/components/router.tsx"
@@ -25,6 +26,7 @@ const notificationsSettingsImport = () => import("./notifications.tsx")
 const configYamlSettingsImport = () => import("./config-yaml.tsx")
 const fingerprintsSettingsImport = () => import("./tokens-fingerprints.tsx")
 const alertsHistoryDataTableSettingsImport = () => import("./alerts-history-data-table.tsx")
+const tagsSettingsImport = () => import("./tags.tsx")
 const heartbeatSettingsImport = () => import("./heartbeat.tsx")
 
 const GeneralSettings = lazy(generalSettingsImport)
@@ -32,6 +34,7 @@ const NotificationsSettings = lazy(notificationsSettingsImport)
 const ConfigYamlSettings = lazy(configYamlSettingsImport)
 const FingerprintsSettings = lazy(fingerprintsSettingsImport)
 const AlertsHistoryDataTableSettings = lazy(alertsHistoryDataTableSettingsImport)
+const TagsSettings = lazy(tagsSettingsImport)
 const HeartbeatSettings = lazy(heartbeatSettingsImport)
 
 export async function saveSettings(newSettings: Partial<UserSettings>) {
@@ -76,6 +79,13 @@ export default function SettingsLayout() {
 			href: getPagePath($router, "settings", { name: "notifications" }),
 			icon: BellIcon,
 			preload: notificationsSettingsImport,
+		},
+		{
+			title: t`Tags`,
+			href: getPagePath($router, "settings", { name: "tags" }),
+			icon: TagIcon,
+			noReadOnly: true,
+			preload: tagsSettingsImport,
 		},
 		{
 			title: t`Tokens & Fingerprints`,
@@ -151,6 +161,8 @@ function SettingsContent({ name }: { name: string }) {
 			return <GeneralSettings userSettings={userSettings} />
 		case "notifications":
 			return <NotificationsSettings userSettings={userSettings} />
+		case "tags":
+			return <TagsSettings />		
 		case "config":
 			return <ConfigYamlSettings />
 		case "tokens":

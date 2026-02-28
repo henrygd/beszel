@@ -1,4 +1,4 @@
-import { msg, t } from "@lingui/core/macro"
+import { t } from "@lingui/core/macro"
 import { Trans } from "@lingui/react/macro"
 import { useStore } from "@nanostores/react"
 import { getPagePath } from "@nanostores/router"
@@ -21,7 +21,7 @@ import { isReadOnlyUser, pb } from "@/lib/api"
 import { SystemStatus } from "@/lib/enums"
 import { $publicKey } from "@/lib/stores"
 import { cn, generateToken, tokenMap, useBrowserStorage } from "@/lib/utils"
-import type { SystemRecord } from "@/types"
+import type { SystemRecord, TagRecord } from "@/types"
 import {
 	copyDockerCompose,
 	copyDockerRun,
@@ -31,12 +31,14 @@ import {
 	InstallDropdown,
 } from "./install-dropdowns"
 import { $router, basePath, Link, navigate } from "./router"
-import { DropdownMenu, DropdownMenuTrigger } from "./ui/dropdown-menu"
 import { AppleIcon, DockerIcon, FreeBsdIcon, TuxIcon, WindowsIcon } from "./ui/icons"
 import { InputCopy } from "./ui/input-copy"
+import { toast } from "./ui/use-toast"
+import { TagSelectorDialog } from "./tags/tag-selector-dialog"
+import { DropdownMenu, DropdownMenuTrigger } from "@radix-ui/react-dropdown-menu"
 
 export function AddSystemButton({ className }: { className?: string }) {
-	if (isReadOnlyUser()) {
+		if (isReadOnlyUser()) {
 		return null
 	}
 	const [open, setOpen] = useState(false)
@@ -81,23 +83,42 @@ export const SystemDialog = ({ setOpen, system }: { setOpen: (open: boolean) => 
 	const isUnixSocket = hostValue.startsWith("/")
 	const [tab, setTab] = useBrowserStorage("as-tab", "docker")
 	const [token, setToken] = useState(system?.token ?? "")
+	const [availableTags, setAvailableTags] = useState<TagRecord[]>([])
+	const [selectedTags, setSelectedTags] = useState<string[]>(system?.tags ?? [])
+	const [tagSearchQuery, setTagSearchQuery] = useState("")
 
 	useEffect(() => {
 		;(async () => {
+			// Load available tags
+			try {
+				const tags = await pb.collection("tags").getFullList<TagRecord>({
+					sort: "name",
+				})
+				setAvailableTags(tags)
+			} catch (e) {
+				console.error("Failed to load tags", e)
+			}
+
 			// if no system, generate a new token
 			if (!system) {
 				nextSystemToken ||= generateToken()
-				return setToken(nextSystemToken)
+				setToken(nextSystemToken)
+				return
 			}
 			// if system exists,get the token from the fingerprint record
 			if (tokenMap.has(system.id)) {
-				return setToken(tokenMap.get(system.id)!)
+				setToken(tokenMap.get(system.id)!)
+				return
 			}
-			const { token } = await pb.collection("fingerprints").getFirstListItem(`system = "${system.id}"`, {
-				fields: "token",
-			})
-			tokenMap.set(system.id, token)
-			setToken(token)
+			try {
+				const { token } = await pb.collection("fingerprints").getFirstListItem(`system = "${system.id}"`, {
+					fields: "token",
+				})
+				tokenMap.set(system.id, token)
+				setToken(token)
+			} catch (e) {
+				console.error("Failed to load fingerprint", e)
+			}
 		})()
 	}, [system?.id, nextSystemToken])
 
@@ -106,6 +127,7 @@ export const SystemDialog = ({ setOpen, system }: { setOpen: (open: boolean) => 
 		const formData = new FormData(e.target as HTMLFormElement)
 		const data = Object.fromEntries(formData) as Record<string, any>
 		data.users = pb.authStore.record!.id
+		data.tags = selectedTags
 		try {
 			setOpen(false)
 			if (system) {
@@ -125,9 +147,8 @@ export const SystemDialog = ({ setOpen, system }: { setOpen: (open: boolean) => 
 			console.error(e)
 		}
 	}
-
+	
 	const systemTranslation = t`System`
-
 	return (
 		<DialogContent
 			className="w-[90%] sm:w-auto sm:ns-dialog max-w-full rounded-lg"
@@ -222,6 +243,17 @@ export const SystemDialog = ({ setOpen, system }: { setOpen: (open: boolean) => 
 							<Trans>Token</Trans>
 						</Label>
 						<InputCopy value={token} id="tkn" name="tkn" />
+						<Label htmlFor="tags" className="xs:text-end self-start pt-2">
+							<Trans>Tags</Trans>
+						</Label>
+						<TagSelectorDialog
+							availableTags={availableTags}
+							selectedTags={selectedTags}
+							tagSearchQuery={tagSearchQuery}
+							onAvailableTagsChange={setAvailableTags}
+							onSelectedTagsChange={setSelectedTags}
+							onSearchQueryChange={setTagSearchQuery}
+						/>
 					</div>
 					<DialogFooter className="flex justify-end gap-x-2 gap-y-3 flex-col mt-5">
 						{/* Docker */}

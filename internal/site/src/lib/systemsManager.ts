@@ -10,11 +10,15 @@ import {
 	$upSystems,
 } from "@/lib/stores"
 import { getVisualStringWidth, updateFavicon } from "@/lib/utils"
-import type { SystemRecord } from "@/types"
+import type { SystemRecord, TagRecord } from "@/types"
 import { SystemStatus } from "./enums"
 
+// Cache for tags
+let tagsCache: Record<string, TagRecord> = {}
+
 const COLLECTION = pb.collection<SystemRecord>("systems")
-const FIELDS_DEFAULT = "id,name,host,port,info,status"
+const FIELDS_DEFAULT = "id,name,host,port,info,status,tags"
+const EXPAND_DEFAULT = "tags"
 
 /** Maximum system name length for display purposes */
 const MAX_SYSTEM_NAME_LENGTH = 22
@@ -23,12 +27,41 @@ let initialized = false
 // biome-ignore lint/suspicious/noConfusingVoidType: typescript rocks
 let unsub: (() => void) | undefined | void
 
+/** Load tags into cache */
+async function loadTags() {
+	try {
+		const tags = await pb.collection("tags").getFullList<TagRecord>()
+		tagsCache = {}
+		for (const tag of tags) {
+			tagsCache[tag.id] = tag
+		}
+	} catch (error: any) {
+		// Ignore auto-cancellation errors
+		if (error.isAbort || error.name === 'AbortError') {
+			return
+		}
+		console.error("Failed to load tags:", error)
+	}
+}
+
+/** Expand tags for a system record */
+function expandTags(system: SystemRecord): SystemRecord {
+	if (system.tags && system.tags.length > 0) {
+		system.expand = system.expand || {}
+		system.expand.tags = system.tags.map(tagId => tagsCache[tagId]).filter(Boolean)
+	}
+	return system
+}
+
 /** Initialize the systems manager and set up listeners */
 export function init() {
 	if (initialized) {
 		return
 	}
 	initialized = true
+
+// Load tags cache
+	loadTags()
 
 	// sync system stores on change
 	$allSystemsById.listen((newSystems, oldSystems, changedKey) => {
@@ -90,7 +123,7 @@ function onSystemsChanged(_: Record<string, SystemRecord>, changedSystem: System
 /** Fetch systems from collection */
 async function fetchSystems(): Promise<SystemRecord[]> {
 	try {
-		return await COLLECTION.getFullList({ sort: "+name", fields: FIELDS_DEFAULT })
+		return await COLLECTION.getFullList({ sort: "+name", fields: FIELDS_DEFAULT, expand: EXPAND_DEFAULT })
 	} catch (error) {
 		console.error("Failed to fetch systems:", error)
 		return []
@@ -108,6 +141,8 @@ function validateSystemInfo(system: SystemRecord) {
 export function add(system: SystemRecord) {
 	try {
 		validateSystemInfo(system)
+		// Expand tags before adding
+		system = expandTags(system)
 		$allSystemsByName.setKey(system.name, system)
 		$allSystemsById.setKey(system.id, system)
 	} catch (error) {
@@ -157,6 +192,7 @@ export async function subscribe() {
 	try {
 		unsub = await COLLECTION.subscribe("*", ({ action, record }) => actionFns[action]?.(record), {
 			fields: FIELDS_DEFAULT,
+			expand: EXPAND_DEFAULT,
 		})
 	} catch (error) {
 		console.error("Failed to subscribe to systems collection:", error)
@@ -166,6 +202,8 @@ export async function subscribe() {
 /** Refresh all systems with latest data from the hub */
 export async function refresh() {
 	try {
+		// Reload tags cache
+		await loadTags()
 		const records = await fetchSystems()
 		if (!records.length) {
 			// No systems found, verify authentication

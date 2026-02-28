@@ -18,6 +18,7 @@ import {
 	PenBoxIcon,
 	PlayCircleIcon,
 	ServerIcon,
+	TagIcon,
 	TerminalSquareIcon,
 	Trash2Icon,
 	WifiIcon,
@@ -37,9 +38,11 @@ import {
 	secondsToUptimeString,
 } from "@/lib/utils"
 import { batteryStateTranslations } from "@/lib/i18n"
-import type { SystemRecord } from "@/types"
+import type { SystemRecord, TagRecord } from "@/types"
+import { getTagColorClasses } from "../tags/tags-columns"
 import { SystemDialog } from "../add-system"
 import AlertButton from "../alerts/alert-button"
+import { Badge } from "../ui/badge"
 import { $router, Link } from "../router"
 import {
 	AlertDialog,
@@ -110,7 +113,7 @@ export function SystemsTableColumns(viewMode: "table" | "grid"): ColumnDef<Syste
 
 				// match filter value against name or translated status
 				return (row, _, newFilterInput) => {
-					const { name, status } = row.original
+					const { name, status, expand } = row.original
 					if (newFilterInput !== filterInput) {
 						filterInput = newFilterInput
 						filterInputLower = newFilterInput.toLowerCase()
@@ -124,7 +127,18 @@ export function SystemsTableColumns(viewMode: "table" | "grid"): ColumnDef<Syste
 						return true
 					}
 					const statusLower = statusTranslations[status as keyof typeof statusTranslations]
-					return statusLower?.includes(filterInputLower) || false
+					if (statusLower?.includes(filterInputLower)) {
+						return true
+					}
+					// Search in tags
+					if (expand?.tags) {
+						for (const tag of expand.tags) {
+							if (tag.name.toLowerCase().includes(filterInputLower)) {
+								return true
+							}
+						}
+					}
+					return false
 				}
 			})(),
 			enableHiding: false,
@@ -162,6 +176,39 @@ export function SystemsTableColumns(viewMode: "table" | "grid"): ColumnDef<Syste
 				)
 			},
 			header: sortableHeader,
+		},
+		{
+			accessorKey: "tags",
+			id: "tags",
+			name: () => t`Tags`,
+			size: 120,
+			hideSort: true,
+			Icon: TagIcon,
+			header: sortableHeader,
+			cell: ({ row }) => {
+				const system = row.original
+				if (!system.expand?.tags || system.expand.tags.length === 0) {
+					return null
+				}
+				const maxTags = viewMode === "table" ? 1 : 3
+				return (
+					<div className="flex flex-wrap gap-1 relative z-10" onClick={(e) => e.stopPropagation()}>
+						{system.expand.tags.slice(0, maxTags).map((tag: TagRecord) => (
+							<Badge
+								key={tag.id}
+								className={cn("text-xs px-1.5 py-0 pointer-events-none", getTagColorClasses(tag.color))}
+							>
+								{tag.name}
+							</Badge>
+						))}
+						{system.expand.tags.length > maxTags && (
+							<Badge variant="secondary" className="text-xs px-1.5 py-0">
+								+{system.expand.tags.length - maxTags}
+							</Badge>
+						)}
+					</div>
+				)
+			},
 		},
 		{
 			accessorFn: ({ info }) => info.cpu || undefined,
