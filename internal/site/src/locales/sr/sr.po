@@ -8,7 +8,7 @@ msgstr ""
 "Language: sr\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2026-02-03 15:27\n"
+"PO-Revision-Date: 2026-02-23 15:11\n"
 "Last-Translator: \n"
 "Language-Team: Serbian (Cyrillic)\n"
 "Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
@@ -836,7 +836,7 @@ msgstr "Здравље"
 
 #: src/components/routes/settings/layout.tsx
 msgid "Heartbeat"
-msgstr "Heartbeat"
+msgstr "Оркуцај"
 
 #: src/components/routes/settings/heartbeat.tsx
 msgid "Heartbeat Monitoring"
@@ -884,7 +884,7 @@ msgstr "Неактивно"
 
 #: src/components/routes/settings/heartbeat.tsx
 msgid "Interval"
-msgstr "Interval"
+msgstr "Интервал"
 
 #: src/components/login/auth-form.tsx
 msgid "Invalid email address."
@@ -1728,7 +1728,7 @@ msgstr "Отпреми"
 #: src/components/routes/system/info-bar.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Uptime"
-msgstr "Uptime"
+msgstr "Време рада"
 
 #: src/components/routes/system.tsx
 #: src/components/routes/system.tsx
@@ -1834,3 +1834,4 @@ msgstr "Да"
 #: src/components/routes/settings/layout.tsx
 msgid "Your user settings have been updated."
 msgstr "Ваша корисничка подешавања су ажурирана."
+
