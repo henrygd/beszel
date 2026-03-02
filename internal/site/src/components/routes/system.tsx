@@ -150,9 +150,8 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 
 	// biome-ignore lint/correctness/useExhaustiveDependencies: not necessary
 	useEffect(() => {
-		if (!system.id || chartTime === "1m") return
+		if (!system.id || chartTime !== "1m") return
 		let unsub = () => {}
-		if (chartTime !== "1m") return
 
 		if (system.status !== SystemStatus.Up || parseSemVer(system?.info?.v).minor < 13) {
 			$chartTime.set("1h")
