@@ -146,6 +146,9 @@ export default function ContainersTable({ systemId }: { systemId?: string }) {
 	const rows = table.getRowModel().rows
 	const visibleColumns = table.getVisibleLeafColumns()
 
+	const runningCount = data?.filter((c) => c.status.startsWith("Up")).length ?? 0
+	const totalCount = data?.length ?? 0
+
 	return (
 		<Card className="p-6 @container w-full">
 			<CardHeader className="p-0 mb-4">
@@ -154,8 +157,13 @@ export default function ContainersTable({ systemId }: { systemId?: string }) {
 						<CardTitle className="mb-2">
 							<Trans>All Containers</Trans>
 						</CardTitle>
-						<CardDescription className="flex">
+						<CardDescription className="flex gap-3">
 							<Trans>Click on a container to view more information.</Trans>
+							{data && (
+								<span>
+									{runningCount} / {totalCount} <Trans>running</Trans>
+								</span>
+							)}
 						</CardDescription>
 					</div>
 					<div className="relative ms-auto w-full max-w-full md:w-64">
