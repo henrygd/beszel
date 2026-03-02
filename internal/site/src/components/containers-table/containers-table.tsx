@@ -19,6 +19,7 @@ import { TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/compon
 import { pb } from "@/lib/api"
 import type { ContainerRecord } from "@/types"
 import { containerChartCols } from "@/components/containers-table/containers-table-columns"
+import { Badge } from "@/components/ui/badge"
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { type ContainerHealth, ContainerHealthLabels } from "@/lib/enums"
 import { cn, useBrowserStorage } from "@/lib/utils"
@@ -146,7 +147,6 @@ export default function ContainersTable({ systemId }: { systemId?: string }) {
 	const rows = table.getRowModel().rows
 	const visibleColumns = table.getVisibleLeafColumns()
 
-	const runningCount = data?.filter((c) => c.status.startsWith("Up")).length ?? 0
 	const totalCount = data?.length ?? 0
 
 	return (
@@ -157,12 +157,12 @@ export default function ContainersTable({ systemId }: { systemId?: string }) {
 						<CardTitle className="mb-2">
 							<Trans>All Containers</Trans>
 						</CardTitle>
-						<CardDescription className="flex gap-3">
+						<CardDescription className="flex gap-3 items-center">
 							<Trans>Click on a container to view more information.</Trans>
 							{data && (
-								<span>
-									{runningCount} / {totalCount} <Trans>running</Trans>
-								</span>
+								<Badge variant="outline">
+									<Trans>{totalCount} containers</Trans>
+								</Badge>
 							)}
 						</CardDescription>
 					</div>
