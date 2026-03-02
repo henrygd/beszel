@@ -82,12 +82,16 @@ func (rm *RecordManager) CreateLongerRecords() {
 	// wrap the operations in a transaction
 	rm.app.RunInTransaction(func(txApp core.App) error {
 		var err error
-		collections := [2]*core.Collection{}
+		collections := [3]*core.Collection{}
 		collections[0], err = txApp.FindCachedCollectionByNameOrId("system_stats")
 		if err != nil {
 			return err
 		}
 		collections[1], err = txApp.FindCachedCollectionByNameOrId("container_stats")
+		if err != nil {
+			return err
+		}
+		collections[2], err = txApp.FindCachedCollectionByNameOrId("pve_stats")
 		if err != nil {
 			return err
 		}
@@ -150,8 +154,9 @@ func (rm *RecordManager) CreateLongerRecords() {
 					case "system_stats":
 						longerRecord.Set("stats", rm.AverageSystemStats(db, recordIds))
 					case "container_stats":
-
-						longerRecord.Set("stats", rm.AverageContainerStats(db, recordIds))
+						longerRecord.Set("stats", rm.AverageContainerStats(db, recordIds, "container_stats"))
+					case "pve_stats":
+						longerRecord.Set("stats", rm.AverageContainerStats(db, recordIds, "pve_stats"))
 					}
 					if err := txApp.SaveNoValidate(longerRecord); err != nil {
 						log.Println("failed to save longer record", "err", err)
@@ -435,8 +440,8 @@ func (rm *RecordManager) AverageSystemStats(db dbx.Builder, records RecordIds) *
 	return sum
 }
 
-// Calculate the average stats of a list of container_stats records
-func (rm *RecordManager) AverageContainerStats(db dbx.Builder, records RecordIds) []container.Stats {
+// Calculate the average stats of a list of container_stats or pve_stats records
+func (rm *RecordManager) AverageContainerStats(db dbx.Builder, records RecordIds, collectionName string) []container.Stats {
 	// Clear global map for reuse
 	for k := range containerSums {
 		delete(containerSums, k)
@@ -453,7 +458,7 @@ func (rm *RecordManager) AverageContainerStats(db dbx.Builder, records RecordIds
 		containerStats = nil
 
 		queryParams["id"] = id
-		db.NewQuery("SELECT stats FROM container_stats WHERE id = {:id}").Bind(queryParams).One(&statsRecord)
+		db.NewQuery(fmt.Sprintf("SELECT stats FROM %s WHERE id = {:id}", collectionName)).Bind(queryParams).One(&statsRecord)
 
 		if err := json.Unmarshal(statsRecord.Stats, &containerStats); err != nil {
 			return []container.Stats{}
@@ -499,6 +504,10 @@ func (rm *RecordManager) DeleteOldRecords() {
 		if err != nil {
 			return err
 		}
+		err = deleteOldPVEVMRecords(txApp)
+		if err != nil {
+			return err
+		}
 		err = deleteOldSystemdServiceRecords(txApp)
 		if err != nil {
 			return err
@@ -537,7 +546,7 @@ func deleteOldAlertsHistory(app core.App, countToKeep, countBeforeDeletion int) 
 // Deletes system_stats records older than what is displayed in the UI
 func deleteOldSystemStats(app core.App) error {
 	// Collections to process
-	collections := [2]string{"system_stats", "container_stats"}
+	collections := [3]string{"system_stats", "container_stats", "pve_stats"}
 
 	// Record types and their retention periods
 	type RecordDeletionData struct {
@@ -585,6 +594,19 @@ func deleteOldSystemdServiceRecords(app core.App) error {
 	_, err := app.DB().NewQuery("DELETE FROM systemd_services WHERE updated < {:updated}").Bind(dbx.Params{"updated": twentyMinutesAgo.UnixMilli()}).Execute()
 	if err != nil {
 		return fmt.Errorf("failed to delete old systemd service records: %v", err)
+	}
+
+	return nil
+}
+
+// Deletes pve_vms records that haven't been updated in the last 10 minutes
+func deleteOldPVEVMRecords(app core.App) error {
+	now := time.Now().UTC()
+	tenMinutesAgo := now.Add(-10 * time.Minute)
+
+	_, err := app.DB().NewQuery("DELETE FROM pve_vms WHERE updated < {:updated}").Bind(dbx.Params{"updated": tenMinutesAgo.UnixMilli()}).Execute()
+	if err != nil {
+		return fmt.Errorf("failed to delete old pve_vms records: %v", err)
 	}
 
 	return nil

@@ -209,6 +209,26 @@ func (sys *System) createRecords(data *system.CombinedData) (*core.Record, error
 			}
 		}
 
+		// add pve_vms and pve_stats records
+		if len(data.PVEStats) > 0 {
+			if data.PVEStats[0].Id != "" {
+				if err := createPVEVMRecords(txApp, data.PVEStats, sys.Id); err != nil {
+					return err
+				}
+			}
+			pveStatsCollection, err := txApp.FindCachedCollectionByNameOrId("pve_stats")
+			if err != nil {
+				return err
+			}
+			pveStatsRecord := core.NewRecord(pveStatsCollection)
+			pveStatsRecord.Set("system", systemRecord.Id)
+			pveStatsRecord.Set("stats", data.PVEStats)
+			pveStatsRecord.Set("type", "1m")
+			if err := txApp.SaveNoValidate(pveStatsRecord); err != nil {
+				return err
+			}
+		}
+
 		// add new systemd_stats record
 		if len(data.SystemdServices) > 0 {
 			if err := createSystemdStatsRecords(txApp, data.SystemdServices, sys.Id); err != nil {
@@ -331,8 +351,40 @@ func createContainerRecords(app core.App, data []*container.Stats, systemId stri
 	return err
 }
 
+// createPVEVMRecords creates or updates pve_vms records
+func createPVEVMRecords(app core.App, data []*container.Stats, systemId string) error {
+	if len(data) == 0 {
+		return nil
+	}
+	// shared params for all records
+	params := dbx.Params{
+		"system":  systemId,
+		"updated": time.Now().UTC().UnixMilli(),
+	}
+	valueStrings := make([]string, 0, len(data))
+	for i, vm := range data {
+		suffix := fmt.Sprintf("%d", i)
+		valueStrings = append(valueStrings, fmt.Sprintf("({:id%[1]s}, {:system}, {:name%[1]s}, {:type%[1]s}, {:cpu%[1]s}, {:memory%[1]s}, {:net%[1]s}, {:updated})", suffix))
+		params["id"+suffix] = makeStableHashId(systemId, vm.Id)
+		params["name"+suffix] = vm.Name
+		params["type"+suffix] = vm.Image // "qemu" or "lxc"
+		params["cpu"+suffix] = vm.Cpu
+		params["memory"+suffix] = vm.Mem
+		netBytes := vm.Bandwidth[0] + vm.Bandwidth[1]
+		if netBytes == 0 {
+			netBytes = uint64((vm.NetworkSent + vm.NetworkRecv) * 1024 * 1024)
+		}
+		params["net"+suffix] = netBytes
+	}
+	queryString := fmt.Sprintf(
+		"INSERT INTO pve_vms (id, system, name, type, cpu, memory, net, updated) VALUES %s ON CONFLICT(id) DO UPDATE SET system=excluded.system, name=excluded.name, type=excluded.type, cpu=excluded.cpu, memory=excluded.memory, net=excluded.net, updated=excluded.updated",
+		strings.Join(valueStrings, ","),
+	)
+	_, err := app.DB().NewQuery(queryString).Bind(params).Execute()
+	return err
+}
+
 // getRecord retrieves the system record from the database.
-// If the record is not found, it removes the system from the manager.
 func (sys *System) getRecord() (*core.Record, error) {
 	record, err := sys.manager.hub.FindRecordById("systems", sys.Id)
 	if err != nil || record == nil {

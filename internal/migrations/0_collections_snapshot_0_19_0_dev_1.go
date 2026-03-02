@@ -1685,6 +1685,216 @@ func init() {
 		"type": "base",
 		"updateRule": null,
 		"viewRule": null
+	},
+	{
+		"createRule": null,
+		"deleteRule": null,
+		"fields": [
+			{
+				"autogeneratePattern": "[a-z0-9]{15}",
+				"hidden": false,
+				"id": "text3208210256",
+				"max": 15,
+				"min": 15,
+				"name": "id",
+				"pattern": "^[a-z0-9]+$",
+				"presentable": false,
+				"primaryKey": true,
+				"required": true,
+				"system": true,
+				"type": "text"
+			},
+			{
+				"cascadeDelete": true,
+				"collectionId": "2hz5ncl8tizk5nx",
+				"hidden": false,
+				"id": "pve_stats_sys01",
+				"maxSelect": 1,
+				"minSelect": 0,
+				"name": "system",
+				"presentable": false,
+				"required": true,
+				"system": false,
+				"type": "relation"
+			},
+			{
+				"hidden": false,
+				"id": "pve_stats_json1",
+				"maxSize": 2000000,
+				"name": "stats",
+				"presentable": false,
+				"required": true,
+				"system": false,
+				"type": "json"
+			},
+			{
+				"hidden": false,
+				"id": "pve_stats_type1",
+				"maxSelect": 1,
+				"name": "type",
+				"presentable": false,
+				"required": true,
+				"system": false,
+				"type": "select",
+				"values": [
+					"1m",
+					"10m",
+					"20m",
+					"120m",
+					"480m"
+				]
+			},
+			{
+				"hidden": false,
+				"id": "pve_stats_crt1",
+				"name": "created",
+				"onCreate": true,
+				"onUpdate": false,
+				"presentable": false,
+				"system": false,
+				"type": "autodate"
+			},
+			{
+				"hidden": false,
+				"id": "pve_stats_upd1",
+				"name": "updated",
+				"onCreate": true,
+				"onUpdate": true,
+				"presentable": false,
+				"system": false,
+				"type": "autodate"
+			}
+		],
+		"id": "pve_stats_col001",
+		"indexes": [
+			"CREATE INDEX ` + "`" + `idx_pve_stats_sys_type_created` + "`" + ` ON ` + "`" + `pve_stats` + "`" + ` (\n  ` + "`" + `system` + "`" + `,\n  ` + "`" + `type` + "`" + `,\n  ` + "`" + `created` + "`" + `\n)"
+		],
+		"listRule": "@request.auth.id != \"\"",
+		"name": "pve_stats",
+		"system": false,
+		"type": "base",
+		"updateRule": null,
+		"viewRule": null
+	},
+	{
+		"createRule": null,
+		"deleteRule": null,
+		"fields": [
+			{
+				"autogeneratePattern": "[a-f0-9]{8}",
+				"hidden": false,
+				"id": "text3208210256",
+				"max": 8,
+				"min": 8,
+				"name": "id",
+				"pattern": "^[a-f0-9]+$",
+				"presentable": false,
+				"primaryKey": true,
+				"required": true,
+				"system": true,
+				"type": "text"
+			},
+			{
+				"cascadeDelete": false,
+				"collectionId": "2hz5ncl8tizk5nx",
+				"hidden": false,
+				"id": "pve_vms_sys001",
+				"maxSelect": 1,
+				"minSelect": 0,
+				"name": "system",
+				"presentable": false,
+				"required": false,
+				"system": false,
+				"type": "relation"
+			},
+			{
+				"autogeneratePattern": "",
+				"hidden": false,
+				"id": "pve_vms_name01",
+				"max": 0,
+				"min": 0,
+				"name": "name",
+				"pattern": "",
+				"presentable": false,
+				"primaryKey": false,
+				"required": false,
+				"system": false,
+				"type": "text"
+			},
+			{
+				"autogeneratePattern": "",
+				"hidden": false,
+				"id": "pve_vms_type01",
+				"max": 0,
+				"min": 0,
+				"name": "type",
+				"pattern": "",
+				"presentable": false,
+				"primaryKey": false,
+				"required": false,
+				"system": false,
+				"type": "text"
+			},
+			{
+				"hidden": false,
+				"id": "pve_vms_cpu001",
+				"max": 100,
+				"min": 0,
+				"name": "cpu",
+				"onlyInt": false,
+				"presentable": false,
+				"required": false,
+				"system": false,
+				"type": "number"
+			},
+			{
+				"hidden": false,
+				"id": "pve_vms_mem001",
+				"max": null,
+				"min": 0,
+				"name": "memory",
+				"onlyInt": false,
+				"presentable": false,
+				"required": false,
+				"system": false,
+				"type": "number"
+			},
+			{
+				"hidden": false,
+				"id": "pve_vms_net001",
+				"max": null,
+				"min": null,
+				"name": "net",
+				"onlyInt": false,
+				"presentable": false,
+				"required": false,
+				"system": false,
+				"type": "number"
+			},
+			{
+				"hidden": false,
+				"id": "pve_vms_upd001",
+				"max": null,
+				"min": null,
+				"name": "updated",
+				"onlyInt": true,
+				"presentable": false,
+				"required": true,
+				"system": false,
+				"type": "number"
+			}
+		],
+		"id": "pve_vms_col0001",
+		"indexes": [
+			"CREATE INDEX ` + "`" + `idx_pve_vms_updated` + "`" + ` ON ` + "`" + `pve_vms` + "`" + ` (` + "`" + `updated` + "`" + `)",
+			"CREATE INDEX ` + "`" + `idx_pve_vms_system` + "`" + ` ON ` + "`" + `pve_vms` + "`" + ` (` + "`" + `system` + "`" + `)"
+		],
+		"listRule": "@request.auth.id != \"\" && system.users.id ?= @request.auth.id",
+		"name": "pve_vms",
+		"system": false,
+		"type": "base",
+		"updateRule": null,
+		"viewRule": null
 	}
 ]`
 
