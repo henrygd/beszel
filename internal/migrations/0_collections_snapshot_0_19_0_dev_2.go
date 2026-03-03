@@ -1691,11 +1691,11 @@ func init() {
 		"deleteRule": null,
 		"fields": [
 			{
-				"autogeneratePattern": "[a-z0-9]{15}",
+				"autogeneratePattern": "[a-z0-9]{10}",
 				"hidden": false,
 				"id": "text3208210256",
-				"max": 15,
-				"min": 15,
+				"max": 10,
+				"min": 10,
 				"name": "id",
 				"pattern": "^[a-z0-9]+$",
 				"presentable": false,
@@ -1765,11 +1765,11 @@ func init() {
 				"type": "autodate"
 			}
 		],
-		"id": "pve_stats_col001",
+		"id": "pvestats",
 		"indexes": [
 			"CREATE INDEX ` + "`" + `idx_pve_stats_sys_type_created` + "`" + ` ON ` + "`" + `pve_stats` + "`" + ` (\n  ` + "`" + `system` + "`" + `,\n  ` + "`" + `type` + "`" + `,\n  ` + "`" + `created` + "`" + `\n)"
 		],
-		"listRule": "@request.auth.id != \"\"",
+		"listRule": "@request.auth.id != \"\" && system.users.id ?= @request.auth.id",
 		"name": "pve_stats",
 		"system": false,
 		"type": "base",
@@ -1852,7 +1852,7 @@ func init() {
 				"id": "pve_vms_mem001",
 				"max": null,
 				"min": 0,
-				"name": "memory",
+				"name": "mem",
 				"onlyInt": false,
 				"presentable": false,
 				"required": false,
@@ -1873,6 +1873,42 @@ func init() {
 			},
 			{
 				"hidden": false,
+				"id": "number1253106325",
+				"max": null,
+				"min": null,
+				"name": "maxcpu",
+				"onlyInt": false,
+				"presentable": false,
+				"required": false,
+				"system": false,
+				"type": "number"
+			},
+			{
+				"hidden": false,
+				"id": "number1693954525",
+				"max": null,
+				"min": null,
+				"name": "maxmem",
+				"onlyInt": false,
+				"presentable": false,
+				"required": false,
+				"system": false,
+				"type": "number"
+			},
+			{
+				"hidden": false,
+				"id": "number1563400775",
+				"max": null,
+				"min": null,
+				"name": "uptime",
+				"onlyInt": false,
+				"presentable": false,
+				"required": false,
+				"system": false,
+				"type": "number"
+			},
+			{
+				"hidden": false,
 				"id": "pve_vms_upd001",
 				"max": null,
 				"min": null,
@@ -1884,7 +1920,7 @@ func init() {
 				"type": "number"
 			}
 		],
-		"id": "pve_vms_col0001",
+		"id": "pvevms",
 		"indexes": [
 			"CREATE INDEX ` + "`" + `idx_pve_vms_updated` + "`" + ` ON ` + "`" + `pve_vms` + "`" + ` (` + "`" + `updated` + "`" + `)",
 			"CREATE INDEX ` + "`" + `idx_pve_vms_system` + "`" + ` ON ` + "`" + `pve_vms` + "`" + ` (` + "`" + `system` + "`" + `)"
@@ -1896,6 +1932,7 @@ func init() {
 		"updateRule": null,
 		"viewRule": null
 	}
+
 ]`
 
 		err := app.ImportCollectionsByMarshaledJSON([]byte(jsonData), false)

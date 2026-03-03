@@ -140,6 +140,9 @@ type Stats struct {
 	Status string       `json:"-" cbor:"6,keyasint"`
 	Id     string       `json:"-" cbor:"7,keyasint"`
 	Image  string       `json:"-" cbor:"8,keyasint"`
+	MaxCPU uint64       `json:"-" cbor:"10,keyasint,omitzero"` // PVE: max vCPU count
+	MaxMem uint64       `json:"-" cbor:"11,keyasint,omitzero"` // PVE: max memory bytes
+	Uptime uint64       `json:"-" cbor:"12,keyasint,omitzero"` // PVE: uptime in seconds
 	// PrevCpu     [2]uint64    `json:"-"`
 	CpuSystem    uint64       `json:"-"`
 	CpuContainer uint64       `json:"-"`

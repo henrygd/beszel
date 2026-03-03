@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"hash/fnv"
+	"log/slog"
 	"math/rand"
 	"net"
 	"strings"
@@ -213,6 +214,7 @@ func (sys *System) createRecords(data *system.CombinedData) (*core.Record, error
 		if len(data.PVEStats) > 0 {
 			if data.PVEStats[0].Id != "" {
 				if err := createPVEVMRecords(txApp, data.PVEStats, sys.Id); err != nil {
+					slog.Error("Error creating PVE VM records", "err", err)
 					return err
 				}
 			}
@@ -225,6 +227,7 @@ func (sys *System) createRecords(data *system.CombinedData) (*core.Record, error
 			pveStatsRecord.Set("stats", data.PVEStats)
 			pveStatsRecord.Set("type", "1m")
 			if err := txApp.SaveNoValidate(pveStatsRecord); err != nil {
+				slog.Error("Error creating PVE stats records", "err", err)
 				return err
 			}
 		}
@@ -364,20 +367,20 @@ func createPVEVMRecords(app core.App, data []*container.Stats, systemId string) 
 	valueStrings := make([]string, 0, len(data))
 	for i, vm := range data {
 		suffix := fmt.Sprintf("%d", i)
-		valueStrings = append(valueStrings, fmt.Sprintf("({:id%[1]s}, {:system}, {:name%[1]s}, {:type%[1]s}, {:cpu%[1]s}, {:memory%[1]s}, {:net%[1]s}, {:updated})", suffix))
+		valueStrings = append(valueStrings, fmt.Sprintf("({:id%[1]s}, {:system}, {:name%[1]s}, {:type%[1]s}, {:cpu%[1]s}, {:mem%[1]s}, {:net%[1]s}, {:maxcpu%[1]s}, {:maxmem%[1]s}, {:uptime%[1]s}, {:updated})", suffix))
 		params["id"+suffix] = makeStableHashId(systemId, vm.Id)
 		params["name"+suffix] = vm.Name
 		params["type"+suffix] = vm.Image // "qemu" or "lxc"
 		params["cpu"+suffix] = vm.Cpu
-		params["memory"+suffix] = vm.Mem
+		params["mem"+suffix] = vm.Mem
+		params["maxcpu"+suffix] = vm.MaxCPU
+		params["maxmem"+suffix] = vm.MaxMem
+		params["uptime"+suffix] = vm.Uptime
 		netBytes := vm.Bandwidth[0] + vm.Bandwidth[1]
-		if netBytes == 0 {
-			netBytes = uint64((vm.NetworkSent + vm.NetworkRecv) * 1024 * 1024)
-		}
 		params["net"+suffix] = netBytes
 	}
 	queryString := fmt.Sprintf(
-		"INSERT INTO pve_vms (id, system, name, type, cpu, memory, net, updated) VALUES %s ON CONFLICT(id) DO UPDATE SET system=excluded.system, name=excluded.name, type=excluded.type, cpu=excluded.cpu, memory=excluded.memory, net=excluded.net, updated=excluded.updated",
+		"INSERT INTO pve_vms (id, system, name, type, cpu, mem, net, maxcpu, maxmem, uptime, updated) VALUES %s ON CONFLICT(id) DO UPDATE SET system=excluded.system, name=excluded.name, type=excluded.type, cpu=excluded.cpu, mem=excluded.mem, net=excluded.net, maxcpu=excluded.maxcpu, maxmem=excluded.maxmem, uptime=excluded.uptime, updated=excluded.updated",
 		strings.Join(valueStrings, ","),
 	)
 	_, err := app.DB().NewQuery(queryString).Bind(params).Execute()

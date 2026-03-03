@@ -28,8 +28,10 @@ import (
 
 // ansiEscapePattern matches ANSI escape sequences (colors, cursor movement, etc.)
 // This includes CSI sequences like \x1b[...m and simple escapes like \x1b[K
-var ansiEscapePattern = regexp.MustCompile(`\x1b\[[0-9;]*[a-zA-Z]|\x1b\][^\x07]*\x07|\x1b[@-Z\\-_]`)
-var dockerContainerIDPattern = regexp.MustCompile(`^[a-fA-F0-9]{12,64}$`)
+var (
+	ansiEscapePattern        = regexp.MustCompile(`\x1b\[[0-9;]*[a-zA-Z]|\x1b\][^\x07]*\x07|\x1b[@-Z\\-_]`)
+	dockerContainerIDPattern = regexp.MustCompile(`^[a-fA-F0-9]{12,64}$`)
+)
 
 const (
 	// Docker API timeout in milliseconds
