@@ -82,14 +82,18 @@ func (pm *pveManager) getPVEStats() ([]*container.PveNodeStats, error) {
 		var sent_delta, recv_delta float64
 		if initialized {
 			secondsElapsed := time.Since(resourceStats.PrevReadTime).Seconds()
-			sent_delta = float64(total_sent-resourceStats.PrevNet.Sent) / secondsElapsed
-			recv_delta = float64(total_recv-resourceStats.PrevNet.Recv) / secondsElapsed
+			if secondsElapsed > 0 {
+				sent_delta = float64(total_sent-resourceStats.PrevNet.Sent) / secondsElapsed
+				recv_delta = float64(total_recv-resourceStats.PrevNet.Recv) / secondsElapsed
+			}
 		}
+		resourceStats.PrevNet.Sent = total_sent
+		resourceStats.PrevNet.Recv = total_recv
 		resourceStats.PrevReadTime = time.Now()
 
 		// Update final stats values
 		resourceStats.Cpu = twoDecimals(100.0 * resource.CPU * float64(resource.MaxCPU) / float64(pm.cpuCount))
-		resourceStats.Mem = float64(resource.Mem)
+		resourceStats.Mem = bytesToMegabytes(float64(resource.Mem))
 		resourceStats.Bandwidth = [2]uint64{uint64(sent_delta), uint64(recv_delta)}
 
 		stats = append(stats, resourceStats)

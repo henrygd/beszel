@@ -55,6 +55,9 @@ listenKeys($userSettings, ["chartTime"], ({ chartTime }) => $chartTime.set(chart
 /** Container chart filter */
 export const $containerFilter = atom("")
 
+/** PVE chart filter */
+export const $pveFilter = atom("")
+
 /** Temperature chart filter */
 export const $temperatureFilter = atom("")
 

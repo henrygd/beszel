@@ -23,14 +23,16 @@ export default memo(function ContainerChart({
 	chartType,
 	chartConfig,
 	unit = "%",
+	filterStore = $containerFilter,
 }: {
 	dataKey: string
 	chartData: ChartData
 	chartType: ChartType
 	chartConfig: ChartConfig
 	unit?: string
+	filterStore?: typeof $containerFilter
 }) {
-	const filter = useStore($containerFilter)
+	const filter = useStore(filterStore)
 	const userSettings = useStore($userSettings)
 	const { yAxisWidth, updateYAxisWidth } = useYAxisWidth()
 

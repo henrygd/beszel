@@ -25,6 +25,7 @@ import {
 	$containerFilter,
 	$direction,
 	$maxValues,
+	$pveFilter,
 	$systems,
 	$temperatureFilter,
 	$userSettings,
@@ -160,6 +161,7 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 	const [system, setSystem] = useState({} as SystemRecord)
 	const [systemStats, setSystemStats] = useState([] as SystemStatsRecord[])
 	const [containerData, setContainerData] = useState([] as ChartData["containerData"])
+	const [pveData, setPveData] = useState([] as ChartData["containerData"])
 	const temperatureChartRef = useRef<HTMLDivElement>(null)
 	const persistChartTime = useRef(false)
 	const [bottomSpacing, setBottomSpacing] = useState(0)
@@ -177,8 +179,10 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 			persistChartTime.current = false
 			setSystemStats([])
 			setContainerData([])
+			setPveData([])
 			setDetails({} as SystemDetailsRecord)
 			$containerFilter.set("")
+			$pveFilter.set("")
 		}
 	}, [id])
 
@@ -277,6 +281,10 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 	// Share chart config computation for all container charts
 	const containerChartConfigs = useContainerChartConfigs(containerData)
 
+	// PVE chart data and configs
+	const pveSyntheticChartData = useMemo(() => ({ ...chartData, containerData: pveData }), [chartData, pveData])
+	const pveChartConfigs = useContainerChartConfigs(pveData)
+
 	// make container stats for charts
 	const makeContainerData = useCallback((containers: ContainerStatsRecord[]) => {
 		const containerData = [] as ChartData["containerData"]
@@ -307,7 +315,8 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 		Promise.allSettled([
 			getStats<SystemStatsRecord>("system_stats", system, chartTime),
 			getStats<ContainerStatsRecord>("container_stats", system, chartTime),
-		]).then(([systemStats, containerStats]) => {
+			getStats<ContainerStatsRecord>("pve_stats", system, chartTime),
+		]).then(([systemStats, containerStats, pveStats]) => {
 			// loading: false
 			setChartLoading(false)
 
@@ -334,6 +343,17 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 				cache.set(cs_cache_key, containerData)
 			}
 			setContainerData(makeContainerData(containerData))
+			// make new pve stats
+			const ps_cache_key = `${system.id}_${chartTime}_pve_stats`
+			let pveRecords = (cache.get(ps_cache_key) || []) as ContainerStatsRecord[]
+			if (pveStats.status === "fulfilled" && pveStats.value.length) {
+				pveRecords = pveRecords.concat(addEmptyValues(pveRecords, pveStats.value, expectedInterval))
+				if (pveRecords.length > 120) {
+					pveRecords = pveRecords.slice(-100)
+				}
+				cache.set(ps_cache_key, pveRecords)
+			}
+			setPveData(makeContainerData(pveRecords))
 		})
 	}, [system, chartTime])
 
@@ -399,6 +419,7 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 	const showMax = maxValues && isLongerChart
 
 	const containerFilterBar = containerData.length ? <FilterBar /> : null
+	const pveFilterBar = pveData.length ? <FilterBar store={$pveFilter} /> : null
 
 	const dataEmpty = !chartLoading && chartData.systemStats.length === 0
 	const lastGpus = systemStats.at(-1)?.stats?.g
@@ -493,6 +514,24 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 						</ChartCard>
 					)}
 
+					{pveFilterBar && (
+						<ChartCard
+							empty={dataEmpty}
+							grid={grid}
+							title={t`Proxmox CPU Usage`}
+							description={t`Average CPU utilization of VMs and containers`}
+							cornerEl={pveFilterBar}
+						>
+							<ContainerChart
+								chartData={pveSyntheticChartData}
+								dataKey="c"
+								chartType={ChartType.CPU}
+								chartConfig={pveChartConfigs.cpu}
+								filterStore={$pveFilter}
+							/>
+						</ChartCard>
+					)}
+
 					<ChartCard
 						empty={dataEmpty}
 						grid={grid}
@@ -516,6 +555,24 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 								dataKey="m"
 								chartType={ChartType.Memory}
 								chartConfig={containerChartConfigs.memory}
+							/>
+						</ChartCard>
+					)}
+
+					{pveFilterBar && (
+						<ChartCard
+							empty={dataEmpty}
+							grid={grid}
+							title={t`Proxmox Memory Usage`}
+							description={t`Memory usage of Proxmox VMs and containers`}
+							cornerEl={pveFilterBar}
+						>
+							<ContainerChart
+								chartData={pveSyntheticChartData}
+								dataKey="m"
+								chartType={ChartType.Memory}
+								chartConfig={pveChartConfigs.memory}
+								filterStore={$pveFilter}
 							/>
 						</ChartCard>
 					)}
@@ -637,6 +694,24 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 								chartType={ChartType.Network}
 								dataKey="n"
 								chartConfig={containerChartConfigs.network}
+							/>
+						</ChartCard>
+					)}
+
+					{pveFilterBar && pveData.length > 0 && (
+						<ChartCard
+							empty={dataEmpty}
+							grid={grid}
+							title={t`Proxmox Network I/O`}
+							description={t`Network traffic of Proxmox VMs and containers`}
+							cornerEl={pveFilterBar}
+						>
+							<ContainerChart
+								chartData={pveSyntheticChartData}
+								chartType={ChartType.Network}
+								dataKey="n"
+								chartConfig={pveChartConfigs.network}
+								filterStore={$pveFilter}
 							/>
 						</ChartCard>
 					)}
