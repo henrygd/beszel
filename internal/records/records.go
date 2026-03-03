@@ -42,11 +42,11 @@ type StatsRecord struct {
 // global variables for reusing allocations
 var (
 	statsRecord    StatsRecord
-	containerStats []container.Stats
+	containerStats []container.SharedCoreMetrics
 	sumStats       system.Stats
 	tempStats      system.Stats
 	queryParams    = make(dbx.Params, 1)
-	containerSums  = make(map[string]*container.Stats)
+	containerSums  = make(map[string]*container.SharedCoreMetrics)
 )
 
 // Create longer records by averaging shorter records
@@ -441,7 +441,7 @@ func (rm *RecordManager) AverageSystemStats(db dbx.Builder, records RecordIds) *
 }
 
 // Calculate the average stats of a list of container_stats or pve_stats records
-func (rm *RecordManager) AverageContainerStats(db dbx.Builder, records RecordIds, collectionName string) []container.Stats {
+func (rm *RecordManager) AverageContainerStats(db dbx.Builder, records RecordIds, collectionName string) []container.SharedCoreMetrics {
 	// Clear global map for reuse
 	for k := range containerSums {
 		delete(containerSums, k)
@@ -461,12 +461,12 @@ func (rm *RecordManager) AverageContainerStats(db dbx.Builder, records RecordIds
 		db.NewQuery(fmt.Sprintf("SELECT stats FROM %s WHERE id = {:id}", collectionName)).Bind(queryParams).One(&statsRecord)
 
 		if err := json.Unmarshal(statsRecord.Stats, &containerStats); err != nil {
-			return []container.Stats{}
+			return []container.SharedCoreMetrics{}
 		}
 		for i := range containerStats {
 			stat := containerStats[i]
 			if _, ok := sums[stat.Name]; !ok {
-				sums[stat.Name] = &container.Stats{Name: stat.Name}
+				sums[stat.Name] = &container.SharedCoreMetrics{Name: stat.Name}
 			}
 			sums[stat.Name].Cpu += stat.Cpu
 			sums[stat.Name].Mem += stat.Mem
@@ -481,9 +481,9 @@ func (rm *RecordManager) AverageContainerStats(db dbx.Builder, records RecordIds
 		}
 	}
 
-	result := make([]container.Stats, 0, len(sums))
+	result := make([]container.SharedCoreMetrics, 0, len(sums))
 	for _, value := range sums {
-		result = append(result, container.Stats{
+		result = append(result, container.SharedCoreMetrics{
 			Name:      value.Name,
 			Cpu:       twoDecimals(value.Cpu / count),
 			Mem:       twoDecimals(value.Mem / count),

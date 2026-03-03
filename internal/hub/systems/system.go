@@ -355,7 +355,7 @@ func createContainerRecords(app core.App, data []*container.Stats, systemId stri
 }
 
 // createPVEVMRecords creates or updates pve_vms records
-func createPVEVMRecords(app core.App, data []*container.Stats, systemId string) error {
+func createPVEVMRecords(app core.App, data []*container.PveNodeStats, systemId string) error {
 	if len(data) == 0 {
 		return nil
 	}
@@ -370,7 +370,7 @@ func createPVEVMRecords(app core.App, data []*container.Stats, systemId string) 
 		valueStrings = append(valueStrings, fmt.Sprintf("({:id%[1]s}, {:system}, {:name%[1]s}, {:type%[1]s}, {:cpu%[1]s}, {:mem%[1]s}, {:net%[1]s}, {:maxcpu%[1]s}, {:maxmem%[1]s}, {:uptime%[1]s}, {:updated})", suffix))
 		params["id"+suffix] = makeStableHashId(systemId, vm.Id)
 		params["name"+suffix] = vm.Name
-		params["type"+suffix] = vm.Image // "qemu" or "lxc"
+		params["type"+suffix] = vm.Type // "qemu" or "lxc"
 		params["cpu"+suffix] = vm.Cpu
 		params["mem"+suffix] = vm.Mem
 		params["maxcpu"+suffix] = vm.MaxCPU

@@ -101,7 +101,7 @@ func NewAgent(dataDir ...string) (agent *Agent, err error) {
 	agent.dockerManager = newDockerManager()
 
 	// initialize pve manager
-	agent.pveManager = newPVEManager(agent)
+	agent.pveManager = newPVEManager()
 
 	// initialize system info
 	agent.refreshSystemDetails()

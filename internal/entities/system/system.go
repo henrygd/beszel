@@ -170,10 +170,10 @@ type Details struct {
 
 // Final data structure to return to the hub
 type CombinedData struct {
-	Stats           Stats              `json:"stats" cbor:"0,keyasint"`
-	Info            Info               `json:"info" cbor:"1,keyasint"`
-	Containers      []*container.Stats `json:"container" cbor:"2,keyasint"`
-	SystemdServices []*systemd.Service `json:"systemd,omitempty" cbor:"3,keyasint,omitempty"`
-	Details         *Details           `cbor:"4,keyasint,omitempty"`
-	PVEStats        []*container.Stats `json:"pve,omitempty" cbor:"5,keyasint,omitempty"`
+	Stats           Stats                     `json:"stats" cbor:"0,keyasint"`
+	Info            Info                      `json:"info" cbor:"1,keyasint"`
+	Containers      []*container.Stats        `json:"container" cbor:"2,keyasint"`
+	SystemdServices []*systemd.Service        `json:"systemd,omitempty" cbor:"3,keyasint,omitempty"`
+	Details         *Details                  `cbor:"4,keyasint,omitempty"`
+	PVEStats        []*container.PveNodeStats `json:"pve,omitempty" cbor:"5,keyasint,omitempty"`
 }

@@ -127,25 +127,38 @@ var DockerHealthStrings = map[string]DockerHealth{
 	"unhealthy": DockerHealthUnhealthy,
 }
 
-// Docker container stats
+// SharedCoreMetrics contains fields that are common to both container Stats and PveNodeStats
+type SharedCoreMetrics struct {
+	Name         string       `json:"n" cbor:"0,keyasint"`
+	Cpu          float64      `json:"c" cbor:"1,keyasint"`
+	Mem          float64      `json:"m" cbor:"2,keyasint"`
+	NetworkSent  float64      `json:"ns,omitzero" cbor:"3,keyasint,omitzero"` // deprecated 0.18.3 (MB) - keep field for old agents/records
+	NetworkRecv  float64      `json:"nr,omitzero" cbor:"4,keyasint,omitzero"` // deprecated 0.18.3 (MB) - keep field for old agents/records
+	Id           string       `json:"-" cbor:"7,keyasint"`
+	Bandwidth    [2]uint64    `json:"b,omitzero" cbor:"9,keyasint,omitzero"` // [sent bytes, recv bytes]
+	PrevNet      prevNetStats `json:"-"`
+	PrevReadTime time.Time    `json:"-"`
+}
+
+// Stats holds data specific to docker containers for the containers table
 type Stats struct {
-	Name        string    `json:"n" cbor:"0,keyasint"`
-	Cpu         float64   `json:"c" cbor:"1,keyasint"`
-	Mem         float64   `json:"m" cbor:"2,keyasint"`
-	NetworkSent float64   `json:"ns,omitzero" cbor:"3,keyasint,omitzero"` // deprecated 0.18.3 (MB) - keep field for old agents/records
-	NetworkRecv float64   `json:"nr,omitzero" cbor:"4,keyasint,omitzero"` // deprecated 0.18.3 (MB) - keep field for old agents/records
-	Bandwidth   [2]uint64 `json:"b,omitzero" cbor:"9,keyasint,omitzero"`  // [sent bytes, recv bytes]
+	SharedCoreMetrics // used to populate stats field in container_stats
+
+	// fields used for containers table
 
 	Health DockerHealth `json:"-" cbor:"5,keyasint"`
 	Status string       `json:"-" cbor:"6,keyasint"`
-	Id     string       `json:"-" cbor:"7,keyasint"`
 	Image  string       `json:"-" cbor:"8,keyasint"`
-	MaxCPU uint64       `json:"-" cbor:"10,keyasint,omitzero"` // PVE: max vCPU count
-	MaxMem uint64       `json:"-" cbor:"11,keyasint,omitzero"` // PVE: max memory bytes
-	Uptime uint64       `json:"-" cbor:"12,keyasint,omitzero"` // PVE: uptime in seconds
-	// PrevCpu     [2]uint64    `json:"-"`
-	CpuSystem    uint64       `json:"-"`
-	CpuContainer uint64       `json:"-"`
-	PrevNet      prevNetStats `json:"-"`
-	PrevReadTime time.Time    `json:"-"`
+}
+
+// PveNodeStats holds data specific to PVE nodes for the pve_vms table
+type PveNodeStats struct {
+	SharedCoreMetrics // used to populate stats field in pve_stats
+
+	// fields used for pve_vms table
+
+	MaxCPU uint64 `json:"-" cbor:"10,keyasint,omitzero"` // PVE: max vCPU count
+	MaxMem uint64 `json:"-" cbor:"11,keyasint,omitzero"` // PVE: max memory bytes
+	Uptime uint64 `json:"-" cbor:"12,keyasint,omitzero"` // PVE: uptime in seconds
+	Type   string `json:"-" cbor:"13,keyasint,omitzero"` // PVE: resource type (e.g. "qemu" or "lxc")
 }

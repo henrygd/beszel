@@ -14,16 +14,15 @@ import (
 )
 
 type pveManager struct {
-	client            *proxmox.Client             // Client to query PVE API
-	nodeName          string                      // Cluster node name
-	cpuCount          int                         // CPU count on node
-	containerStatsMap map[string]*container.Stats // Keeps track of container stats
+	client       *proxmox.Client                    // Client to query PVE API
+	nodeName     string                             // Cluster node name
+	cpuCount     int                                // CPU count on node
+	nodeStatsMap map[string]*container.PveNodeStats // Keeps track of pve node stats
 }
 
 // Returns stats for all running VMs/LXCs
-func (pm *pveManager) getPVEStats() ([]*container.Stats, error) {
+func (pm *pveManager) getPVEStats() ([]*container.PveNodeStats, error) {
 	if pm.client == nil {
-		slog.Info("PVE client not configured")
 		return nil, errors.New("PVE client not configured")
 	}
 	cluster, err := pm.client.Cluster(context.Background())
@@ -31,42 +30,37 @@ func (pm *pveManager) getPVEStats() ([]*container.Stats, error) {
 		slog.Error("Error getting cluster", "err", err)
 		return nil, err
 	}
-	slog.Info("PVE cluster", "cluster", cluster)
 	resources, err := cluster.Resources(context.Background(), "vm")
 	if err != nil {
 		slog.Error("Error getting resources", "err", err, "resources", resources)
 		return nil, err
 	}
-	slog.Info("PVE resources", "resources", resources)
 	containersLength := len(resources)
-	slog.Info("PVE containers length", "containersLength", containersLength)
 	containerIds := make(map[string]struct{}, containersLength)
 
 	// only include running vms and lxcs on selected node
 	for _, resource := range resources {
 		if resource.Node == pm.nodeName && resource.Status == "running" {
-			slog.Info("PVE resource", "resource", resource)
 			containerIds[resource.ID] = struct{}{}
 		}
 	}
 	// remove invalid container stats
-	for id := range pm.containerStatsMap {
+	for id := range pm.nodeStatsMap {
 		if _, exists := containerIds[id]; !exists {
-			delete(pm.containerStatsMap, id)
+			delete(pm.nodeStatsMap, id)
 		}
 	}
 
 	// populate stats
-	stats := make([]*container.Stats, 0, len(containerIds))
+	stats := make([]*container.PveNodeStats, 0, len(containerIds))
 	for _, resource := range resources {
-		// slog.Info("PVE resource", "resource", resource)
 		if _, exists := containerIds[resource.ID]; !exists {
 			continue
 		}
-		resourceStats, initialized := pm.containerStatsMap[resource.ID]
+		resourceStats, initialized := pm.nodeStatsMap[resource.ID]
 		if !initialized {
-			resourceStats = &container.Stats{}
-			pm.containerStatsMap[resource.ID] = resourceStats
+			resourceStats = &container.PveNodeStats{}
+			pm.nodeStatsMap[resource.ID] = resourceStats
 		}
 		// reset current stats
 		resourceStats.Cpu = 0
@@ -77,7 +71,7 @@ func (pm *pveManager) getPVEStats() ([]*container.Stats, error) {
 		// Store resource ID (e.g. "qemu/100") in .Id (cbor key 7, json:"-")
 		resourceStats.Id = resource.ID
 		// Store type (e.g. "qemu" or "lxc") in .Image (cbor key 8, json:"-")
-		resourceStats.Image = resource.Type
+		resourceStats.Type = resource.Type
 		// PVE limits (cbor-only, for pve_vms table)
 		resourceStats.MaxCPU = resource.MaxCPU
 		resourceStats.MaxMem = resource.MaxMem
@@ -98,30 +92,30 @@ func (pm *pveManager) getPVEStats() ([]*container.Stats, error) {
 		resourceStats.Mem = float64(resource.Mem)
 		resourceStats.Bandwidth = [2]uint64{uint64(sent_delta), uint64(recv_delta)}
 
-		slog.Info("PVE resource stats", "resourceStats", resourceStats)
-
 		stats = append(stats, resourceStats)
 	}
 
-	slog.Info("PVE stats", "stats", stats)
 	return stats, nil
 }
 
-// Creates a new PVE manager
-func newPVEManager(_ *Agent) *pveManager {
-	slog.Info("Creating new PVE manager")
+// Creates a new PVE manager - may return nil if required environment variables are not set or if there is an error connecting to the API
+func newPVEManager() *pveManager {
 	url, exists := GetEnv("PROXMOX_URL")
 	if !exists {
 		url = "https://localhost:8006/api2/json"
 	}
-	nodeName, nodeNameExists := GetEnv("PROXMOX_NODE")
-	tokenID, tokenIDExists := GetEnv("PROXMOX_TOKENID")
-	secret, secretExists := GetEnv("PROXMOX_SECRET")
+	const nodeEnvVar = "PROXMOX_NODE"
+	const tokenIDEnvVar = "PROXMOX_TOKENID"
+	const secretEnvVar = "PROXMOX_SECRET"
 
-	slog.Info("PROXMOX_URL", "url", url)
-	slog.Info("PROXMOX_NODE", "nodeName", nodeName)
-	slog.Info("PROXMOX_TOKENID", "tokenID", tokenID)
-	slog.Info("PROXMOX_SECRET", "secret", secret)
+	nodeName, nodeNameExists := GetEnv(nodeEnvVar)
+	tokenID, tokenIDExists := GetEnv(tokenIDEnvVar)
+	secret, secretExists := GetEnv(secretEnvVar)
+
+	if !nodeNameExists || !tokenIDExists || !secretExists {
+		slog.Debug("Proxmox env vars unset", nodeEnvVar, nodeNameExists, tokenIDEnvVar, tokenIDExists, secretEnvVar, secretExists)
+		return nil
+	}
 
 	// PROXMOX_INSECURE_TLS defaults to true; set to "false" to enable TLS verification
 	insecureTLS := true
@@ -129,40 +123,32 @@ func newPVEManager(_ *Agent) *pveManager {
 		insecureTLS = val != "false"
 	}
 
-	var client *proxmox.Client
-	if nodeNameExists && tokenIDExists && secretExists {
-		httpClient := http.Client{
-			Transport: &http.Transport{
-				TLSClientConfig: &tls.Config{
-					InsecureSkipVerify: insecureTLS,
-				},
+	httpClient := http.Client{
+		Transport: &http.Transport{
+			TLSClientConfig: &tls.Config{
+				InsecureSkipVerify: insecureTLS,
 			},
-		}
-		client = proxmox.NewClient(url,
-			proxmox.WithHTTPClient(&httpClient),
-			proxmox.WithAPIToken(tokenID, secret),
-		)
-	} else {
-		slog.Error("Env variables not set")
-		client = nil
+		},
+	}
+	client := proxmox.NewClient(url,
+		proxmox.WithHTTPClient(&httpClient),
+		proxmox.WithAPIToken(tokenID, secret),
+	)
+
+	pveManager := pveManager{
+		client:       client,
+		nodeName:     nodeName,
+		nodeStatsMap: make(map[string]*container.PveNodeStats),
 	}
 
-	pveManager := &pveManager{
-		client:            client,
-		nodeName:          nodeName,
-		containerStatsMap: make(map[string]*container.Stats),
-	}
 	// Retrieve node cpu count
-	if client != nil {
-		slog.Info("Getting node CPU count", "nodeName", nodeName)
-		node, err := client.Node(context.Background(), nodeName)
-		if err != nil {
-			pveManager.client = nil
-			slog.Error("Error getting node", "err", err)
-		} else {
-			pveManager.cpuCount = node.CPUInfo.CPUs
-			slog.Info("Node CPU count", "cpuCount", pveManager.cpuCount)
-		}
+	node, err := client.Node(context.Background(), nodeName)
+	if err != nil {
+		slog.Error("Error connecting to Proxmox", "err", err)
+		return nil
+	} else {
+		pveManager.cpuCount = node.CPUInfo.CPUs
 	}
-	return pveManager
+
+	return &pveManager
 }

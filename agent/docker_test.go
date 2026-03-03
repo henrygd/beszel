@@ -269,17 +269,16 @@ func TestValidateCpuPercentage(t *testing.T) {
 }
 
 func TestUpdateContainerStatsValues(t *testing.T) {
-	stats := &container.Stats{
-		Name:         "test-container",
-		Cpu:          0.0,
-		Mem:          0.0,
-		NetworkSent:  0.0,
-		NetworkRecv:  0.0,
-		PrevReadTime: time.Time{},
-	}
+	var stats = container.Stats{}
+	stats.Name = "test-container"
+	stats.Cpu = 0.0
+	stats.Mem = 0.0
+	stats.NetworkSent = 0.0
+	stats.NetworkRecv = 0.0
+	stats.PrevReadTime = time.Time{}
 
 	testTime := time.Now()
-	updateContainerStatsValues(stats, 75.5, 1048576, 524288, 262144, testTime)
+	updateContainerStatsValues(&stats, 75.5, 1048576, 524288, 262144, testTime)
 
 	// Check CPU percentage (should be rounded to 2 decimals)
 	assert.Equal(t, 75.5, stats.Cpu)
@@ -446,12 +445,11 @@ func TestCalculateNetworkStats(t *testing.T) {
 		},
 	}
 
-	stats := &container.Stats{
-		PrevReadTime: time.Now().Add(-time.Second), // 1 second ago
-	}
+	var stats = container.Stats{}
+	stats.PrevReadTime = time.Now().Add(-time.Second) // 1 second ago
 
 	// Test with initialized container
-	sent, recv := dm.calculateNetworkStats(ctr, apiStats, stats, true, "test-container", cacheTimeMs)
+	sent, recv := dm.calculateNetworkStats(ctr, apiStats, &stats, true, "test-container", cacheTimeMs)
 
 	// Should return calculated byte rates per second
 	assert.GreaterOrEqual(t, sent, uint64(0))
@@ -460,7 +458,7 @@ func TestCalculateNetworkStats(t *testing.T) {
 	// Cycle and test one-direction change (Tx only) is reflected independently
 	dm.cycleNetworkDeltasForCacheTime(cacheTimeMs)
 	apiStats.Networks["eth0"] = container.NetworkStats{TxBytes: 2500, RxBytes: 1800} // +500 Tx only
-	sent, recv = dm.calculateNetworkStats(ctr, apiStats, stats, true, "test-container", cacheTimeMs)
+	sent, recv = dm.calculateNetworkStats(ctr, apiStats, &stats, true, "test-container", cacheTimeMs)
 	assert.Greater(t, sent, uint64(0))
 	assert.Equal(t, uint64(0), recv)
 }
@@ -726,7 +724,8 @@ func TestMemoryStatsEdgeCases(t *testing.T) {
 }
 
 func TestContainerStatsInitialization(t *testing.T) {
-	stats := &container.Stats{Name: "test-container"}
+	var stats = container.Stats{}
+	stats.Name = "test-container"
 
 	// Verify initial values
 	assert.Equal(t, "test-container", stats.Name)
@@ -738,7 +737,7 @@ func TestContainerStatsInitialization(t *testing.T) {
 
 	// Test updating values
 	testTime := time.Now()
-	updateContainerStatsValues(stats, 45.67, 2097152, 1048576, 524288, testTime)
+	updateContainerStatsValues(&stats, 45.67, 2097152, 1048576, 524288, testTime)
 
 	assert.Equal(t, 45.67, stats.Cpu)
 	assert.Equal(t, 2.0, stats.Mem)
@@ -816,12 +815,11 @@ func TestNetworkStatsCalculationWithRealData(t *testing.T) {
 
 	// Use exact timing for deterministic results
 	exactly1000msAgo := time.Now().Add(-1000 * time.Millisecond)
-	stats := &container.Stats{
-		PrevReadTime: exactly1000msAgo,
-	}
+	var stats = container.Stats{}
+	stats.PrevReadTime = exactly1000msAgo
 
 	// First call sets baseline
-	sent1, recv1 := dm.calculateNetworkStats(ctr, apiStats1, stats, true, "test", cacheTimeMs)
+	sent1, recv1 := dm.calculateNetworkStats(ctr, apiStats1, &stats, true, "test", cacheTimeMs)
 	assert.Equal(t, uint64(0), sent1)
 	assert.Equal(t, uint64(0), recv1)
 
@@ -836,7 +834,7 @@ func TestNetworkStatsCalculationWithRealData(t *testing.T) {
 	expectedRecvRate := deltaRecv * 1000 / expectedElapsedMs // Should be exactly 1000000
 
 	// Second call with changed data
-	sent2, recv2 := dm.calculateNetworkStats(ctr, apiStats2, stats, true, "test", cacheTimeMs)
+	sent2, recv2 := dm.calculateNetworkStats(ctr, apiStats2, &stats, true, "test", cacheTimeMs)
 
 	// Should be exactly the expected rates (no tolerance needed)
 	assert.Equal(t, expectedSentRate, sent2)
@@ -847,9 +845,9 @@ func TestNetworkStatsCalculationWithRealData(t *testing.T) {
 	stats.PrevReadTime = time.Now().Add(-1 * time.Millisecond)
 	apiStats1.Networks["eth0"] = container.NetworkStats{TxBytes: 0, RxBytes: 0}
 	apiStats2.Networks["eth0"] = container.NetworkStats{TxBytes: 10 * 1024 * 1024 * 1024, RxBytes: 0} // 10GB delta
-	_, _ = dm.calculateNetworkStats(ctr, apiStats1, stats, true, "test", cacheTimeMs)                 // baseline
+	_, _ = dm.calculateNetworkStats(ctr, apiStats1, &stats, true, "test", cacheTimeMs)                // baseline
 	dm.cycleNetworkDeltasForCacheTime(cacheTimeMs)
-	sent3, recv3 := dm.calculateNetworkStats(ctr, apiStats2, stats, true, "test", cacheTimeMs)
+	sent3, recv3 := dm.calculateNetworkStats(ctr, apiStats2, &stats, true, "test", cacheTimeMs)
 	assert.Equal(t, uint64(0), sent3)
 	assert.Equal(t, uint64(0), recv3)
 }
@@ -883,8 +881,9 @@ func TestContainerStatsEndToEndWithRealData(t *testing.T) {
 	}
 
 	// Initialize container stats
-	stats := &container.Stats{Name: "jellyfin"}
-	dm.containerStatsMap[ctr.IdShort] = stats
+	var stats = container.Stats{}
+	stats.Name = "jellyfin"
+	dm.containerStatsMap[ctr.IdShort] = &stats
 
 	// Test individual components that we can verify
 	usedMemory, memErr := calculateMemoryUsage(&apiStats, false)

@@ -559,6 +559,10 @@ func TestWriteToSessionEncoding(t *testing.T) {
 
 // Helper function to create test data for encoding tests
 func createTestCombinedData() *system.CombinedData {
+	var stats = container.Stats{}
+	stats.Name = "test-container"
+	stats.Cpu = 10.5
+	stats.Mem = 1073741824 // 1GB
 	return &system.CombinedData{
 		Stats: system.Stats{
 			Cpu:       25.5,
@@ -577,11 +581,7 @@ func createTestCombinedData() *system.CombinedData {
 			AgentVersion: "0.12.0",
 		},
 		Containers: []*container.Stats{
-			{
-				Name: "test-container",
-				Cpu:  10.5,
-				Mem:  1073741824, // 1GB
-			},
+			&stats,
 		},
 	}
 }

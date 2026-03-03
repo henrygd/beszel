@@ -14,6 +14,10 @@ import (
 )
 
 func createTestCacheData() *system.CombinedData {
+	var stats = container.Stats{}
+	stats.Name = "test-container"
+	stats.Cpu = 10.5
+	stats.Mem = 1073741824 // 1GB
 	return &system.CombinedData{
 		Stats: system.Stats{
 			Cpu:       50.5,
@@ -24,10 +28,7 @@ func createTestCacheData() *system.CombinedData {
 			AgentVersion: "0.12.0",
 		},
 		Containers: []*container.Stats{
-			{
-				Name: "test-container",
-				Cpu:  25.0,
-			},
+			&stats,
 		},
 	}
 }
