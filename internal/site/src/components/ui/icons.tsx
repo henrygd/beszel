@@ -185,3 +185,12 @@ export function PlugChargingIcon(props: SVGProps<SVGSVGElement>) {
 		</svg>
 	)
 }
+
+// simple-icons (CC0) https://github.com/simple-icons/simple-icons/blob/develop/LICENSE.md
+export function ProxmoxIcon(props: SVGProps<SVGSVGElement>) {
+	return (
+		<svg viewBox="0 0 24 24" {...props} stroke="currentColor" strokeWidth="1.5" fill="none">
+			<path d="M5 1.8c-1.2.6-1.2.7-.1 1.8l7 7.8c.2 0 8-8.6 8.1-8.8l-.5-.5q-.5-.5-1.7-.5c-1.6-.1-2.2.2-4.1 2.4L12 6 10.4 4 8 1.9c-.8-.4-2.4-.5-3.2 0M1.2 4.4q-1.2.5-1.3.8l3 3.5L5.8 12l-3 3.3L0 18.8c.1.5 1.5 1 2.6 1 1.7 0 2-.2 5.6-4.1l3.2-3.7a74 74 0 0 0-7.1-7.5c-.9-.4-2.2-.5-3-.1m18.5 0q-.7.4-4 4L12.6 12l3.3 3.7c3.5 3.9 3.9 4.2 5.6 4.2 1 0 2.4-.6 2.5-1 0-.2-1.3-1.8-2.9-3.6L18 12l3-3.3c1.6-1.8 3-3.3 2.9-3.5 0-.4-1.4-1-2.5-1q-1 0-1.7.3M8 17l-4 4.4.5.6q.6.4 1.7.4c1.6.1 2.2-.2 4.2-2.5l1.6-1.8 1.7 1.8c2 2.3 2.5 2.6 4 2.5q1.3 0 1.8-.4t.5-.6c0-.2-7.9-8.8-8-8.8z" />
+		</svg>
+	)
+}

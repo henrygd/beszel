@@ -1,4 +1,5 @@
 import { Trans } from "@lingui/react/macro"
+import { t } from "@lingui/core/macro"
 import { getPagePath } from "@nanostores/router"
 import {
 	ContainerIcon,
@@ -31,6 +32,7 @@ import { Logo } from "./logo"
 import { ModeToggle } from "./mode-toggle"
 import { $router, basePath, Link, prependBasePath } from "./router"
 import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip"
+import { ProxmoxIcon } from "./ui/icons"
 
 const CommandPalette = lazy(() => import("./command-palette"))
 
@@ -76,6 +78,20 @@ export default function Navbar() {
 						</Link>
 					</TooltipTrigger>
 					<TooltipContent>S.M.A.R.T.</TooltipContent>
+				</Tooltip>
+				<Tooltip>
+					<TooltipTrigger asChild>
+						<Link
+							href={getPagePath($router, "proxmox")}
+							className={cn(buttonVariants({ variant: "ghost", size: "icon" }))}
+							aria-label={t`Proxmox`}
+						>
+							<ProxmoxIcon className="h-[1.2rem] w-[1.2rem] opacity-90" />
+						</Link>
+					</TooltipTrigger>
+					<TooltipContent>
+						<Trans>Proxmox</Trans>
+					</TooltipContent>
 				</Tooltip>
 				<LangToggle />
 				<ModeToggle />

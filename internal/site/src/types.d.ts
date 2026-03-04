@@ -275,6 +275,28 @@ export interface ContainerRecord extends RecordModel {
 	updated: number
 }
 
+export interface PveVmRecord extends RecordModel {
+	id: string
+	system: string
+	name: string
+	/** "qemu" or "lxc" */
+	type: string
+	/** CPU usage percent (0–100, relative to host) */
+	cpu: number
+	/** Memory used (MB) */
+	mem: number
+	/** Network bandwidth (bytes/s, combined send+recv) */
+	net: number
+	/** Max vCPU count */
+	maxcpu: number
+	/** Max memory (bytes) */
+	maxmem: number
+	/** Uptime (seconds) */
+	uptime: number
+	/** Unix timestamp (ms) */
+	updated: number
+}
+
 export type ChartTimes = "1m" | "1h" | "12h" | "24h" | "1w" | "30d"
 
 export interface ChartTimeData {
