@@ -1849,30 +1849,6 @@ func init() {
 			},
 			{
 				"hidden": false,
-				"id": "pve_vms_mem001",
-				"max": null,
-				"min": 0,
-				"name": "mem",
-				"onlyInt": false,
-				"presentable": false,
-				"required": false,
-				"system": false,
-				"type": "number"
-			},
-			{
-				"hidden": false,
-				"id": "pve_vms_net001",
-				"max": null,
-				"min": null,
-				"name": "net",
-				"onlyInt": false,
-				"presentable": false,
-				"required": false,
-				"system": false,
-				"type": "number"
-			},
-			{
-				"hidden": false,
 				"id": "number1253106325",
 				"max": null,
 				"min": null,
@@ -1885,10 +1861,82 @@ func init() {
 			},
 			{
 				"hidden": false,
+				"id": "pve_vms_mem001",
+				"max": null,
+				"min": 0,
+				"name": "mem",
+				"onlyInt": false,
+				"presentable": false,
+				"required": false,
+				"system": false,
+				"type": "number"
+			},
+			{
+				"hidden": false,
 				"id": "number1693954525",
 				"max": null,
 				"min": null,
 				"name": "maxmem",
+				"onlyInt": false,
+				"presentable": false,
+				"required": false,
+				"system": false,
+				"type": "number"
+			},
+			{
+				"hidden": false,
+				"id": "number208985346",
+				"max": null,
+				"min": null,
+				"name": "disk",
+				"onlyInt": false,
+				"presentable": false,
+				"required": false,
+				"system": false,
+				"type": "number"
+			},
+			{
+				"hidden": false,
+				"id": "number4125810518",
+				"max": null,
+				"min": null,
+				"name": "diskread",
+				"onlyInt": false,
+				"presentable": false,
+				"required": false,
+				"system": false,
+				"type": "number"
+			},
+			{
+				"hidden": false,
+				"id": "number752404475",
+				"max": null,
+				"min": null,
+				"name": "diskwrite",
+				"onlyInt": false,
+				"presentable": false,
+				"required": false,
+				"system": false,
+				"type": "number"
+			},
+			{
+				"hidden": false,
+				"id": "number1880667380",
+				"max": null,
+				"min": null,
+				"name": "netout",
+				"onlyInt": false,
+				"presentable": false,
+				"required": false,
+				"system": false,
+				"type": "number"
+			},
+			{
+				"hidden": false,
+				"id": "number2702533949",
+				"max": null,
+				"min": null,
+				"name": "netin",
 				"onlyInt": false,
 				"presentable": false,
 				"required": false,
@@ -1932,7 +1980,6 @@ func init() {
 		"updateRule": null,
 		"viewRule": null
 	}
-
 ]`
 
 		err := app.ImportCollectionsByMarshaledJSON([]byte(jsonData), false)

@@ -123,6 +123,9 @@ func (pm *pveManager) getPVEStats() ([]*container.PveNodeStats, error) {
 		resourceStats.MaxCPU = resource.MaxCPU
 		resourceStats.MaxMem = resource.MaxMem
 		resourceStats.Uptime = resource.Uptime
+		resourceStats.DiskRead = resource.DiskRead
+		resourceStats.DiskWrite = resource.DiskWrite
+		resourceStats.Disk = resource.MaxDisk
 
 		// prevent first run from sending all prev sent/recv bytes
 		total_sent := resource.NetOut
@@ -143,6 +146,8 @@ func (pm *pveManager) getPVEStats() ([]*container.PveNodeStats, error) {
 		resourceStats.Cpu = twoDecimals(100.0 * resource.CPU * float64(resource.MaxCPU) / float64(pm.cpuCount))
 		resourceStats.Mem = bytesToMegabytes(float64(resource.Mem))
 		resourceStats.Bandwidth = [2]uint64{uint64(sent_delta), uint64(recv_delta)}
+		resourceStats.NetOut = total_sent
+		resourceStats.NetIn = total_recv
 
 		stats = append(stats, resourceStats)
 	}

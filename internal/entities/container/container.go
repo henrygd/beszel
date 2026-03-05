@@ -157,8 +157,13 @@ type PveNodeStats struct {
 
 	// fields used for pve_vms table
 
-	MaxCPU uint64 `json:"-" cbor:"10,keyasint,omitzero"` // PVE: max vCPU count
-	MaxMem uint64 `json:"-" cbor:"11,keyasint,omitzero"` // PVE: max memory bytes
-	Uptime uint64 `json:"-" cbor:"12,keyasint,omitzero"` // PVE: uptime in seconds
-	Type   string `json:"-" cbor:"13,keyasint,omitzero"` // PVE: resource type (e.g. "qemu" or "lxc")
+	MaxCPU    uint64 `json:"-" cbor:"10,keyasint,omitzero"` // PVE: max vCPU count
+	MaxMem    uint64 `json:"-" cbor:"11,keyasint,omitzero"` // PVE: max memory bytes
+	Uptime    uint64 `json:"-" cbor:"12,keyasint,omitzero"` // PVE: uptime in seconds
+	Type      string `json:"-" cbor:"13,keyasint,omitzero"` // PVE: resource type (e.g. "qemu" or "lxc")
+	DiskRead  uint64 `json:"-" cbor:"14,keyasint,omitzero"` // PVE: cumulative disk read bytes
+	DiskWrite uint64 `json:"-" cbor:"15,keyasint,omitzero"` // PVE: cumulative disk write bytes
+	Disk      uint64 `json:"-" cbor:"16,keyasint,omitzero"` // PVE: allocated disk size in bytes
+	NetOut    uint64 `json:"-" cbor:"17,keyasint,omitzero"` // PVE: cumulative bytes sent by VM
+	NetIn     uint64 `json:"-" cbor:"18,keyasint,omitzero"` // PVE: cumulative bytes received by VM
 }

@@ -367,7 +367,7 @@ func createPVEVMRecords(app core.App, data []*container.PveNodeStats, systemId s
 	valueStrings := make([]string, 0, len(data))
 	for i, vm := range data {
 		suffix := fmt.Sprintf("%d", i)
-		valueStrings = append(valueStrings, fmt.Sprintf("({:id%[1]s}, {:system}, {:name%[1]s}, {:type%[1]s}, {:cpu%[1]s}, {:mem%[1]s}, {:net%[1]s}, {:maxcpu%[1]s}, {:maxmem%[1]s}, {:uptime%[1]s}, {:updated})", suffix))
+		valueStrings = append(valueStrings, fmt.Sprintf("({:id%[1]s}, {:system}, {:name%[1]s}, {:type%[1]s}, {:cpu%[1]s}, {:mem%[1]s}, {:netout%[1]s}, {:netin%[1]s}, {:maxcpu%[1]s}, {:maxmem%[1]s}, {:uptime%[1]s}, {:diskread%[1]s}, {:diskwrite%[1]s}, {:disk%[1]s}, {:updated})", suffix))
 		params["id"+suffix] = makeStableHashId(systemId, vm.Id)
 		params["name"+suffix] = vm.Name
 		params["type"+suffix] = vm.Type // "qemu" or "lxc"
@@ -376,11 +376,14 @@ func createPVEVMRecords(app core.App, data []*container.PveNodeStats, systemId s
 		params["maxcpu"+suffix] = vm.MaxCPU
 		params["maxmem"+suffix] = vm.MaxMem
 		params["uptime"+suffix] = vm.Uptime
-		netBytes := vm.Bandwidth[0] + vm.Bandwidth[1]
-		params["net"+suffix] = netBytes
+		params["diskread"+suffix] = vm.DiskRead
+		params["diskwrite"+suffix] = vm.DiskWrite
+		params["disk"+suffix] = vm.Disk
+		params["netout"+suffix] = vm.NetOut // cumulative bytes sent by VM
+		params["netin"+suffix] = vm.NetIn   // cumulative bytes received by VM
 	}
 	queryString := fmt.Sprintf(
-		"INSERT INTO pve_vms (id, system, name, type, cpu, mem, net, maxcpu, maxmem, uptime, updated) VALUES %s ON CONFLICT(id) DO UPDATE SET system=excluded.system, name=excluded.name, type=excluded.type, cpu=excluded.cpu, mem=excluded.mem, net=excluded.net, maxcpu=excluded.maxcpu, maxmem=excluded.maxmem, uptime=excluded.uptime, updated=excluded.updated",
+		"INSERT INTO pve_vms (id, system, name, type, cpu, mem, netout, netin, maxcpu, maxmem, uptime, diskread, diskwrite, disk, updated) VALUES %s ON CONFLICT(id) DO UPDATE SET system=excluded.system, name=excluded.name, type=excluded.type, cpu=excluded.cpu, mem=excluded.mem, netout=excluded.netout, netin=excluded.netin, maxcpu=excluded.maxcpu, maxmem=excluded.maxmem, uptime=excluded.uptime, diskread=excluded.diskread, diskwrite=excluded.diskwrite, disk=excluded.disk, updated=excluded.updated",
 		strings.Join(valueStrings, ","),
 	)
 	_, err := app.DB().NewQuery(queryString).Bind(params).Execute()

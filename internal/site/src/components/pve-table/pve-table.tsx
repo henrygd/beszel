@@ -46,7 +46,6 @@ export default function PveTable({ systemId }: { systemId?: string }) {
 		function fetchData(systemId?: string) {
 			pb.collection<PveVmRecord>("pve_vms")
 				.getList(0, 2000, {
-					fields: "id,name,type,cpu,mem,net,maxcpu,maxmem,uptime,system,updated",
 					filter: systemId ? pb.filter("system={:system}", { system: systemId }) : undefined,
 				})
 				.then(({ items }) => {
@@ -145,7 +144,7 @@ export default function PveTable({ systemId }: { systemId?: string }) {
 				<div className="grid md:flex gap-5 w-full items-end">
 					<div className="px-2 sm:px-1">
 						<CardTitle className="mb-2">
-							<Trans>All Proxmox VMs</Trans>
+							<Trans>Proxmox Resources</Trans>
 						</CardTitle>
 						<CardDescription className="flex">
 							<Trans>CPU is percent of overall host CPU usage.</Trans>
@@ -259,7 +258,11 @@ function PveVmSheet({
 
 	const memFormatted = formatBytes(vm.mem, false, undefined, true)
 	const maxMemFormatted = formatBytes(vm.maxmem, false, undefined, false)
-	const netFormatted = formatBytes(vm.net, true, undefined, false)
+	const netoutFormatted = formatBytes(vm.netout, false, undefined, false)
+	const netinFormatted = formatBytes(vm.netin, false, undefined, false)
+	const diskReadFormatted = formatBytes(vm.diskread, false, undefined, false)
+	const diskWriteFormatted = formatBytes(vm.diskwrite, false, undefined, false)
+	const diskFormatted = formatBytes(vm.disk, false, undefined, false)
 
 	return (
 		<Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
@@ -294,9 +297,14 @@ function PveVmSheet({
 						<dd className="tabular-nums">{`${decimalString(memFormatted.value, memFormatted.value >= 10 ? 1 : 2)} ${memFormatted.unit}`}</dd>
 
 						<dt className="text-muted-foreground">
-							<Trans>Network</Trans>
+							<Trans>Upload</Trans>
 						</dt>
-						<dd className="tabular-nums">{`${decimalString(netFormatted.value, netFormatted.value >= 10 ? 1 : 2)} ${netFormatted.unit}`}</dd>
+						<dd className="tabular-nums">{`${decimalString(netoutFormatted.value, netoutFormatted.value >= 10 ? 1 : 2)} ${netoutFormatted.unit}`}</dd>
+
+						<dt className="text-muted-foreground">
+							<Trans>Download</Trans>
+						</dt>
+						<dd className="tabular-nums">{`${decimalString(netinFormatted.value, netinFormatted.value >= 10 ? 1 : 2)} ${netinFormatted.unit}`}</dd>
 
 						<dt className="text-muted-foreground">
 							<Trans>vCPUs</Trans>
@@ -307,6 +315,21 @@ function PveVmSheet({
 							<Trans>Max Memory</Trans>
 						</dt>
 						<dd className="tabular-nums">{`${decimalString(maxMemFormatted.value, maxMemFormatted.value >= 10 ? 1 : 2)} ${maxMemFormatted.unit}`}</dd>
+
+						<dt className="text-muted-foreground">
+							<Trans>Disk Read</Trans>
+						</dt>
+						<dd className="tabular-nums">{`${decimalString(diskReadFormatted.value, diskReadFormatted.value >= 10 ? 1 : 2)} ${diskReadFormatted.unit}`}</dd>
+
+						<dt className="text-muted-foreground">
+							<Trans>Disk Write</Trans>
+						</dt>
+						<dd className="tabular-nums">{`${decimalString(diskWriteFormatted.value, diskWriteFormatted.value >= 10 ? 1 : 2)} ${diskWriteFormatted.unit}`}</dd>
+
+						<dt className="text-muted-foreground">
+							<Trans>Disk Size</Trans>
+						</dt>
+						<dd className="tabular-nums">{`${decimalString(diskFormatted.value, diskFormatted.value >= 10 ? 1 : 2)} ${diskFormatted.unit}`}</dd>
 
 						<dt className="text-muted-foreground">
 							<Trans>Uptime</Trans>
