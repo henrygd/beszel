@@ -10,6 +10,7 @@ require (
 	github.com/fxamacker/cbor/v2 v2.9.0
 	github.com/gliderlabs/ssh v0.3.8
 	github.com/google/uuid v1.6.0
+	github.com/gosnmp/gosnmp v1.43.2
 	github.com/lxzan/gws v1.8.9
 	github.com/nicholas-fedor/shoutrrr v0.13.2
 	github.com/pocketbase/dbx v1.12.0
