@@ -4,7 +4,7 @@ A Kubernetes Helm chart for deploying [Beszel Agent](https://www.beszel.dev/) - 
 
 ## Overview
 
-This Helm chart simplifies the deployment of Beszel Agent in Kubernetes environments. By default, it deploys as a DaemonSet to run one agent on each node in the cluster. The agent monitors system resources, containers, and services, providing detailed metrics to the Beszel Hub for centralized monitoring and alerting.
+This Helm chart simplifies the deployment of Beszel Agent in Kubernetes environments. By default, it deploys as a DaemonSet to run one agent on each node in the cluster. The agent monitors node-level system resources (CPU, memory, disk, network, temperature, GPU, etc.) and provides detailed metrics to the Beszel Hub for centralized monitoring and alerting.
 
 ## Features
 
@@ -23,9 +23,32 @@ This Helm chart simplifies the deployment of Beszel Agent in Kubernetes environm
 - Beszel Hub instance running and accessible
 - SSH public key for agent authentication
 
+## What Gets Monitored
+
+In Kubernetes environments, the Beszel agent monitors **node-level metrics**:
+
+- **CPU usage** - Node CPU utilization and per-core stats
+- **Memory usage** - Node memory, swap, and ZFS ARC
+- **Disk usage** - Node filesystem usage and I/O statistics
+- **Network usage** - Node network traffic (requires `hostNetwork: true`)
+- **Load average** - System load averages
+- **Temperature** - Node hardware sensors
+- **GPU usage/power** - NVIDIA, AMD, and Intel GPUs (with appropriate image)
+- **Battery** - Node battery status (if applicable)
+- **S.M.A.T.** - Disk health monitoring
+
+**Note**: The agent does **not** monitor individual Kubernetes pods or containers. For pod/container metrics, use Kubernetes metrics-server or monitoring tools like Prometheus.
+
 ## Quick Start
 
-### 1. Install the Chart
+### 1. Add the Helm Repository
+
+```bash
+helm repo add beszel https://henrygd.github.io/beszel-kubernetes
+helm repo update
+```
+
+### 2. Install the Chart
 
 ```bash
 helm install beszel-agent ./beszel-agent \
@@ -40,7 +63,7 @@ Or with custom values:
 helm install beszel-agent ./beszel-agent -f custom-values.yaml
 ```
 
-### 2. Verify the Agent is Running
+### 3. Verify the Agent is Running
 
 ```bash
 kubectl get pods -l app.kubernetes.io/name=beszel-agent
@@ -94,7 +117,7 @@ hostNetwork: false
 
 ### GPU Support (NVIDIA)
 
-For systems with NVIDIA GPUs:
+For systems with NVIDIA GPUs, use the special GPU-enabled image:
 
 ```yaml
 image:
@@ -111,6 +134,8 @@ env:
   NVIDIA_VISIBLE_DEVICES: "all"
   NVIDIA_DRIVER_CAPABILITIES: "compute,video,utility"
 ```
+
+**Note**: The GPU image (`henrygd/beszel-agent-nvidia`) is specifically for monitoring NVIDIA GPUs on the node. It does not provide container-level GPU metrics.
 
 Or via CLI:
 
@@ -192,7 +217,7 @@ affinity:
 
 #### Host Network
 
-For detailed network statistics:
+For detailed network statistics, enable host network mode:
 
 ```yaml
 hostNetwork: true
@@ -203,6 +228,8 @@ env:
   TOKEN: "your-token-value"
   HUB_URL: "http://beszel-hub:8090"
 ```
+
+**Note**: When `hostNetwork: true`, the agent can monitor the node's actual network interfaces. When `false`, it only sees the pod's network namespace.
 
 #### DaemonSet Mode
 
@@ -325,6 +352,10 @@ helm upgrade beszel-agent ./beszel-agent \
 ### Restart All Agents
 
 ```bash
+# For DaemonSet (default)
+kubectl rollout restart daemonset beszel-agent
+
+# For Deployment (if daemonset.enabled=false)
 kubectl rollout restart deployment beszel-agent
 ```
 
@@ -360,9 +391,6 @@ helm rollback beszel-agent 1  # Rollback to previous version
 # Check pod events and logs
 kubectl describe pod <pod-name>
 kubectl logs <pod-name>
-
-# Check if Docker socket is accessible
-kubectl exec <pod-name> -- ls -la /var/run/docker.sock
 ```
 
 ### Cannot Connect to Hub
@@ -371,13 +399,6 @@ kubectl exec <pod-name> -- ls -la /var/run/docker.sock
 - Check DNS resolution: `kubectl exec <pod-name> -- nslookup beszel-hub.default.svc.cluster.local`
 - Verify SSH key is correctly configured
 - Check firewall rules for port 8090 (Hub) and 45876 (Agent)
-
-### Docker Monitoring Not Working
-
-- Verify Docker socket is mounted: `kubectl exec <pod-name> -- ls -la /var/run/docker.sock`
-- Check socket permissions
-- Ensure agent has Docker socket read permission
-- Verify the socket path is correct for your system
 
 ### GPU Not Detected
 
@@ -456,6 +477,8 @@ kubectl get secret beszel-agent -o jsonpath='{.data.ssh-key}' | base64 -d
 - **Project Homepage**: https://www.beszel.dev/
 - **GitHub Repository**: https://github.com/henrygd/beszel
 - **Agent Documentation**: https://www.beszel.dev/
+
+**Note**: The main Beszel documentation describes Docker/Podman container monitoring. In Kubernetes, the agent focuses on node-level metrics. For Kubernetes-specific container/pod monitoring, use tools like metrics-server, Prometheus, or the Kubernetes Metrics API.
 
 ## Chart Information
 

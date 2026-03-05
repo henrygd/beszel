@@ -17,7 +17,8 @@ This Helm chart simplifies the deployment of Beszel Hub in Kubernetes environmen
 ### 1. Add the Repository
 
 ```bash
-TO DO
+helm repo add beszel https://henrygd.github.io/beszel-kubernetes
+helm repo update
 ```
 
 ### 2. Install the Chart
@@ -274,7 +275,7 @@ After deploying Beszel Hub, you can connect Beszel agents running on:
 Agents communicate with the Hub on port `8090`. Configure the agent with the Hub's address:
 
 ```
-HUB_ADDRESS=beszel-hub.default.svc.cluster.local:8090
+HUB_URL=http://beszel-hub.default.svc.cluster.local:8090
 ```
 
 Or for external access, use the LoadBalancer IP/DNS or Ingress hostname.
@@ -331,7 +332,7 @@ By default, Beszel Hub uses a PersistentVolumeClaim for data storage. Ensure you
 
 - **Project Homepage**: https://www.beszel.dev/
 - **GitHub Repository**: https://github.com/henrygd/beszel
-- **Chart Repository**: https://github.com/dnikoloski/beszel-kubernetes
+- **Chart Repository**: https://github.com/henrygd/beszel-kubernetes
 
 ## Chart Information
 
