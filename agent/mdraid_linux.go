@@ -169,11 +169,17 @@ func mdraidSmartStatus(health mdraidHealth) string {
 	case "inactive", "faulty", "broken", "stopped":
 		return "FAILED"
 	}
+	// During rebuild/recovery, arrays are often temporarily degraded; report as
+	// warning instead of hard failure while synchronization is in progress.
+	switch strings.ToLower(strings.TrimSpace(health.syncAction)) {
+	case "resync", "recover", "reshape":
+		return "WARNING"
+	}
 	if health.degraded > 0 {
 		return "FAILED"
 	}
 	switch strings.ToLower(strings.TrimSpace(health.syncAction)) {
-	case "resync", "recover", "reshape", "check", "repair":
+	case "check", "repair":
 		return "WARNING"
 	}
 	switch state {
