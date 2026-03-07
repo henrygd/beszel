@@ -85,6 +85,9 @@ func TestMdraidSmartStatus(t *testing.T) {
 	if got := mdraidSmartStatus(mdraidHealth{arrayState: "inactive"}); got != "FAILED" {
 		t.Fatalf("mdraidSmartStatus(inactive) = %q, want FAILED", got)
 	}
+	if got := mdraidSmartStatus(mdraidHealth{arrayState: "active", degraded: 1, syncAction: "recover"}); got != "WARNING" {
+		t.Fatalf("mdraidSmartStatus(degraded+recover) = %q, want WARNING", got)
+	}
 	if got := mdraidSmartStatus(mdraidHealth{arrayState: "active", degraded: 1}); got != "FAILED" {
 		t.Fatalf("mdraidSmartStatus(degraded) = %q, want FAILED", got)
 	}
