@@ -6,7 +6,6 @@ package agent
 
 import (
 	"log/slog"
-	"os"
 	"strings"
 	"sync"
 	"time"
@@ -69,11 +68,11 @@ func NewAgent(dataDir ...string) (agent *Agent, err error) {
 		slog.Info("Data directory", "path", agent.dataDir)
 	}
 
-	agent.memCalc, _ = GetEnv("MEM_CALC")
+	agent.memCalc, _ = utils.GetEnv("MEM_CALC")
 	agent.sensorConfig = agent.newSensorConfig()
 
 	// Parse disk usage cache duration (e.g., "15m", "1h") to avoid waking sleeping disks
-	if diskUsageCache, exists := GetEnv("DISK_USAGE_CACHE"); exists {
+	if diskUsageCache, exists := utils.GetEnv("DISK_USAGE_CACHE"); exists {
 		if duration, err := time.ParseDuration(diskUsageCache); err == nil {
 			agent.diskUsageCacheDuration = duration
 			slog.Info("DISK_USAGE_CACHE", "duration", duration)
@@ -83,7 +82,7 @@ func NewAgent(dataDir ...string) (agent *Agent, err error) {
 	}
 
 	// Set up slog with a log level determined by the LOG_LEVEL env var
-	if logLevelStr, exists := GetEnv("LOG_LEVEL"); exists {
+	if logLevelStr, exists := utils.GetEnv("LOG_LEVEL"); exists {
 		switch strings.ToLower(logLevelStr) {
 		case "debug":
 			agent.debug = true
@@ -104,7 +103,7 @@ func NewAgent(dataDir ...string) (agent *Agent, err error) {
 	agent.refreshSystemDetails()
 
 	// SMART_INTERVAL env var to update smart data at this interval
-	if smartIntervalEnv, exists := GetEnv("SMART_INTERVAL"); exists {
+	if smartIntervalEnv, exists := utils.GetEnv("SMART_INTERVAL"); exists {
 		if duration, err := time.ParseDuration(smartIntervalEnv); err == nil && duration > 0 {
 			agent.systemDetails.SmartInterval = duration
 			slog.Info("SMART_INTERVAL", "duration", duration)
@@ -147,15 +146,6 @@ func NewAgent(dataDir ...string) (agent *Agent, err error) {
 	}
 
 	return agent, nil
-}
-
-// GetEnv retrieves an environment variable with a "BESZEL_AGENT_" prefix, or falls back to the unprefixed key.
-func GetEnv(key string) (value string, exists bool) {
-	if value, exists = os.LookupEnv("BESZEL_AGENT_" + key); exists {
-		return value, exists
-	}
-	// Fallback to the old unprefixed key
-	return os.LookupEnv(key)
 }
 
 func (a *Agent) gatherStats(options common.DataRequestOptions) *system.CombinedData {

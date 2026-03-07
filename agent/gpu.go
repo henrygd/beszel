@@ -688,7 +688,7 @@ func (gm *GPUManager) resolveLegacyCollectorPriority(caps gpuCapabilities) []col
 	priorities := make([]collectorSource, 0, 4)
 
 	if caps.hasNvidiaSmi && !caps.hasTegrastats {
-		if nvml, _ := GetEnv("NVML"); nvml == "true" {
+		if nvml, _ := utils.GetEnv("NVML"); nvml == "true" {
 			priorities = append(priorities, collectorSourceNVML, collectorSourceNvidiaSMI)
 		} else {
 			priorities = append(priorities, collectorSourceNvidiaSMI)
@@ -696,7 +696,7 @@ func (gm *GPUManager) resolveLegacyCollectorPriority(caps gpuCapabilities) []col
 	}
 
 	if caps.hasRocmSmi {
-		if val, _ := GetEnv("AMD_SYSFS"); val == "true" {
+		if val, _ := utils.GetEnv("AMD_SYSFS"); val == "true" {
 			priorities = append(priorities, collectorSourceAmdSysfs)
 		} else {
 			priorities = append(priorities, collectorSourceRocmSMI)
@@ -729,7 +729,7 @@ func (gm *GPUManager) resolveLegacyCollectorPriority(caps gpuCapabilities) []col
 
 // NewGPUManager creates and initializes a new GPUManager
 func NewGPUManager() (*GPUManager, error) {
-	if skipGPU, _ := GetEnv("SKIP_GPU"); skipGPU == "true" {
+	if skipGPU, _ := utils.GetEnv("SKIP_GPU"); skipGPU == "true" {
 		return nil, nil
 	}
 	var gm GPUManager
@@ -746,7 +746,7 @@ func NewGPUManager() (*GPUManager, error) {
 	}
 
 	// if GPU_COLLECTOR is set, start user-defined collectors.
-	if collectorConfig, ok := GetEnv("GPU_COLLECTOR"); ok && strings.TrimSpace(collectorConfig) != "" {
+	if collectorConfig, ok := utils.GetEnv("GPU_COLLECTOR"); ok && strings.TrimSpace(collectorConfig) != "" {
 		priorities := parseCollectorPriority(collectorConfig)
 		if gm.startCollectorsByPriority(priorities, caps) == 0 {
 			return nil, fmt.Errorf("no configured GPU collectors are available")

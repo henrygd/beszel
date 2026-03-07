@@ -38,7 +38,7 @@ func isDockerSpecialMountpoint(mountpoint string) bool {
 
 // Sets up the filesystems to monitor for disk usage and I/O.
 func (a *Agent) initializeDiskInfo() {
-	filesystem, _ := GetEnv("FILESYSTEM")
+	filesystem, _ := utils.GetEnv("FILESYSTEM")
 	efPath := "/extra-filesystems"
 	hasRoot := false
 	isWindows := runtime.GOOS == "windows"
@@ -142,7 +142,7 @@ func (a *Agent) initializeDiskInfo() {
 	}
 
 	// Add EXTRA_FILESYSTEMS env var values to fsStats
-	if extraFilesystems, exists := GetEnv("EXTRA_FILESYSTEMS"); exists {
+	if extraFilesystems, exists := utils.GetEnv("EXTRA_FILESYSTEMS"); exists {
 		for fsEntry := range strings.SplitSeq(extraFilesystems, ",") {
 			// Parse custom name from format: device__customname
 			fs, customName := parseFilesystemEntry(fsEntry)

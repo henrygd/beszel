@@ -18,6 +18,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/henrygd/beszel/agent/utils"
 	"github.com/henrygd/beszel/internal/entities/smart"
 )
 
@@ -156,7 +157,7 @@ func (sm *SmartManager) ScanDevices(force bool) error {
 	currentDevices := sm.devicesSnapshot()
 
 	var configuredDevices []*DeviceInfo
-	if configuredRaw, ok := GetEnv("SMART_DEVICES"); ok {
+	if configuredRaw, ok := utils.GetEnv("SMART_DEVICES"); ok {
 		slog.Info("SMART_DEVICES", "value", configuredRaw)
 		config := strings.TrimSpace(configuredRaw)
 		if config == "" {
@@ -260,7 +261,7 @@ func (sm *SmartManager) parseConfiguredDevices(config string) ([]*DeviceInfo, er
 }
 
 func (sm *SmartManager) refreshExcludedDevices() {
-	rawValue, _ := GetEnv("EXCLUDE_SMART")
+	rawValue, _ := utils.GetEnv("EXCLUDE_SMART")
 	sm.excludedDevices = make(map[string]struct{})
 
 	for entry := range strings.SplitSeq(rawValue, ",") {

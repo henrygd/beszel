@@ -95,7 +95,7 @@ func (a *Agent) initializeNetIoStats() {
 	a.netInterfaces = make(map[string]struct{}, 0)
 
 	// parse NICS env var for whitelist / blacklist
-	nicsEnvVal, nicsEnvExists := GetEnv("NICS")
+	nicsEnvVal, nicsEnvExists := utils.GetEnv("NICS")
 	var nicCfg *NicConfig
 	if nicsEnvExists {
 		nicCfg = newNicConfig(nicsEnvVal)

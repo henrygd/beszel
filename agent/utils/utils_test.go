@@ -128,3 +128,38 @@ func TestReadUintFile(t *testing.T) {
 		assert.Equal(t, uint64(0), val)
 	})
 }
+
+func TestGetEnv(t *testing.T) {
+	key := "TEST_VAR"
+	prefixedKey := "BESZEL_AGENT_" + key
+
+	t.Run("prefixed variable exists", func(t *testing.T) {
+		os.Setenv(prefixedKey, "prefixed_val")
+		os.Setenv(key, "unprefixed_val")
+		defer os.Unsetenv(prefixedKey)
+		defer os.Unsetenv(key)
+
+		val, exists := GetEnv(key)
+		assert.True(t, exists)
+		assert.Equal(t, "prefixed_val", val)
+	})
+
+	t.Run("only unprefixed variable exists", func(t *testing.T) {
+		os.Unsetenv(prefixedKey)
+		os.Setenv(key, "unprefixed_val")
+		defer os.Unsetenv(key)
+
+		val, exists := GetEnv(key)
+		assert.True(t, exists)
+		assert.Equal(t, "unprefixed_val", val)
+	})
+
+	t.Run("neither variable exists", func(t *testing.T) {
+		os.Unsetenv(prefixedKey)
+		os.Unsetenv(key)
+
+		val, exists := GetEnv(key)
+		assert.False(t, exists)
+		assert.Empty(t, val)
+	})
+}

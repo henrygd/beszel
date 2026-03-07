@@ -488,7 +488,7 @@ func (dm *dockerManager) deleteContainerStatsSync(id string) {
 
 // Creates a new http client for Docker or Podman API
 func newDockerManager() *dockerManager {
-	dockerHost, exists := GetEnv("DOCKER_HOST")
+	dockerHost, exists := utils.GetEnv("DOCKER_HOST")
 	if exists {
 		// return nil if set to empty string
 		if dockerHost == "" {
@@ -524,7 +524,7 @@ func newDockerManager() *dockerManager {
 
 	// configurable timeout
 	timeout := time.Millisecond * time.Duration(dockerTimeoutMs)
-	if t, set := GetEnv("DOCKER_TIMEOUT"); set {
+	if t, set := utils.GetEnv("DOCKER_TIMEOUT"); set {
 		timeout, err = time.ParseDuration(t)
 		if err != nil {
 			slog.Error(err.Error())
@@ -541,7 +541,7 @@ func newDockerManager() *dockerManager {
 
 	// Read container exclusion patterns from environment variable
 	var excludeContainers []string
-	if excludeStr, set := GetEnv("EXCLUDE_CONTAINERS"); set && excludeStr != "" {
+	if excludeStr, set := utils.GetEnv("EXCLUDE_CONTAINERS"); set && excludeStr != "" {
 		parts := strings.SplitSeq(excludeStr, ",")
 		for part := range parts {
 			trimmed := strings.TrimSpace(part)

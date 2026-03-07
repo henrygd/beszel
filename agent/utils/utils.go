@@ -7,6 +7,14 @@ import (
 	"strings"
 )
 
+// GetEnv retrieves an environment variable with a "BESZEL_AGENT_" prefix, or falls back to the unprefixed key.
+func GetEnv(key string) (value string, exists bool) {
+	if value, exists = os.LookupEnv("BESZEL_AGENT_" + key); exists {
+		return value, exists
+	}
+	return os.LookupEnv(key)
+}
+
 // BytesToMegabytes converts bytes to megabytes and rounds to two decimal places.
 func BytesToMegabytes(b float64) float64 {
 	return TwoDecimals(b / 1048576)

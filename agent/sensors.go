@@ -27,9 +27,9 @@ type SensorConfig struct {
 }
 
 func (a *Agent) newSensorConfig() *SensorConfig {
-	primarySensor, _ := GetEnv("PRIMARY_SENSOR")
-	sysSensors, _ := GetEnv("SYS_SENSORS")
-	sensorsEnvVal, sensorsSet := GetEnv("SENSORS")
+	primarySensor, _ := utils.GetEnv("PRIMARY_SENSOR")
+	sysSensors, _ := utils.GetEnv("SYS_SENSORS")
+	sensorsEnvVal, sensorsSet := utils.GetEnv("SENSORS")
 	skipCollection := sensorsSet && sensorsEnvVal == ""
 
 	return a.newSensorConfigWithEnv(primarySensor, sysSensors, sensorsEnvVal, skipCollection)
