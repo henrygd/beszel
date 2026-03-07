@@ -952,6 +952,8 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 					<LazyContainersTable systemId={system.id} />
 				)}
 
+				{pveData.length > 0 && <LazyPveTable systemId={system.id} />}
+
 				{isLinux && compareSemVer(chartData.agentVersion, parseSemVer("0.16.0")) >= 0 && (
 					<LazySystemdTable systemId={system.id} />
 				)}
@@ -1122,6 +1124,17 @@ function LazyContainersTable({ systemId }: { systemId: string }) {
 	return (
 		<div ref={ref} className={cn(isIntersecting && "contents")}>
 			{isIntersecting && <ContainersTable systemId={systemId} />}
+		</div>
+	)
+}
+
+const PveTable = lazy(() => import("../pve-table/pve-table"))
+
+function LazyPveTable({ systemId }: { systemId: string }) {
+	const { isIntersecting, ref } = useIntersectionObserver({ rootMargin: "90px" })
+	return (
+		<div ref={ref} className={cn(isIntersecting && "contents")}>
+			{isIntersecting && <PveTable systemId={systemId} />}
 		</div>
 	)
 }

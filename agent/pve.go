@@ -18,9 +18,11 @@ type pveManager struct {
 	nodeName     string                             // Cluster node name
 	cpuCount     int                                // CPU count on node
 	nodeStatsMap map[string]*container.PveNodeStats // Keeps track of pve node stats
+	lastInitTry  time.Time                          // Last time node initialization was attempted
 }
 
-// Creates a new PVE manager - may return nil if required environment variables are not set or if there is an error connecting to the API
+// newPVEManager creates a new PVE manager - may return nil if required environment variables
+// are not set or if there is an error connecting to the API
 func newPVEManager() *pveManager {
 	url, exists := GetEnv("PROXMOX_URL")
 	if !exists {
@@ -63,22 +65,41 @@ func newPVEManager() *pveManager {
 		nodeStatsMap: make(map[string]*container.PveNodeStats),
 	}
 
-	// Retrieve node cpu count
-	node, err := client.Node(context.Background(), nodeName)
-	if err != nil {
-		slog.Error("Error connecting to Proxmox", "err", err)
-		return nil
-	} else {
-		pveManager.cpuCount = node.CPUInfo.CPUs
-	}
-
 	return &pveManager
 }
 
-// Returns stats for all running VMs/LXCs
-func (pm *pveManager) getPVEStats() ([]*container.PveNodeStats, error) {
+// ensureInitialized checks if the PVE manager is initialized and attempts to initialize it if not.
+// It returns an error if initialization fails or if a retry is pending.
+func (pm *pveManager) ensureInitialized(ctx context.Context) error {
 	if pm.client == nil {
-		return nil, errors.New("PVE client not configured")
+		return errors.New("PVE client not configured")
+	}
+	if pm.cpuCount > 0 {
+		return nil
+	}
+
+	if time.Since(pm.lastInitTry) < 30*time.Second {
+		return errors.New("PVE initialization retry pending")
+	}
+	pm.lastInitTry = time.Now()
+
+	node, err := pm.client.Node(ctx, pm.nodeName)
+	if err != nil {
+		return err
+	}
+	if node.CPUInfo.CPUs <= 0 {
+		return errors.New("node returned zero CPUs")
+	}
+
+	pm.cpuCount = node.CPUInfo.CPUs
+	return nil
+}
+
+// getPVEStats returns stats for all running VMs/LXCs
+func (pm *pveManager) getPVEStats() ([]*container.PveNodeStats, error) {
+	if err := pm.ensureInitialized(context.Background()); err != nil {
+		slog.Warn("Proxmox API unavailable", "err", err)
+		return nil, err
 	}
 	cluster, err := pm.client.Cluster(context.Background())
 	if err != nil {
