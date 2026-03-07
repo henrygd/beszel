@@ -9,6 +9,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/henrygd/beszel/agent/utils"
 	"github.com/henrygd/beszel/internal/entities/system"
 )
 
@@ -80,10 +81,10 @@ func (gm *GPUManager) updateNvtopSnapshots(snapshots []nvtopSnapshot) bool {
 			gpu.Temperature = parseNvtopNumber(*sample.Temp)
 		}
 		if sample.MemUsed != nil {
-			gpu.MemoryUsed = bytesToMegabytes(parseNvtopNumber(*sample.MemUsed))
+			gpu.MemoryUsed = utils.BytesToMegabytes(parseNvtopNumber(*sample.MemUsed))
 		}
 		if sample.MemTotal != nil {
-			gpu.MemoryTotal = bytesToMegabytes(parseNvtopNumber(*sample.MemTotal))
+			gpu.MemoryTotal = utils.BytesToMegabytes(parseNvtopNumber(*sample.MemTotal))
 		}
 		if sample.GpuUtil != nil {
 			gpu.Usage += parseNvtopNumber(*sample.GpuUtil)

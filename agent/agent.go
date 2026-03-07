@@ -14,6 +14,7 @@ import (
 	"github.com/gliderlabs/ssh"
 	"github.com/henrygd/beszel"
 	"github.com/henrygd/beszel/agent/deltatracker"
+	"github.com/henrygd/beszel/agent/utils"
 	"github.com/henrygd/beszel/internal/common"
 	"github.com/henrygd/beszel/internal/entities/system"
 	gossh "golang.org/x/crypto/ssh"
@@ -213,7 +214,7 @@ func (a *Agent) gatherStats(options common.DataRequestOptions) *system.CombinedD
 			data.Stats.ExtraFs[key] = stats
 			// Add percentages to Info struct for dashboard
 			if stats.DiskTotal > 0 {
-				pct := twoDecimals((stats.DiskUsed / stats.DiskTotal) * 100)
+				pct := utils.TwoDecimals((stats.DiskUsed / stats.DiskTotal) * 100)
 				data.Info.ExtraFsPct[key] = pct
 			}
 		}

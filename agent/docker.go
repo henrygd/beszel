@@ -21,6 +21,7 @@ import (
 	"time"
 
 	"github.com/henrygd/beszel/agent/deltatracker"
+	"github.com/henrygd/beszel/agent/utils"
 	"github.com/henrygd/beszel/internal/entities/container"
 
 	"github.com/blang/semver"
@@ -336,12 +337,12 @@ func validateCpuPercentage(cpuPct float64, containerName string) error {
 
 // updateContainerStatsValues updates the final stats values
 func updateContainerStatsValues(stats *container.Stats, cpuPct float64, usedMemory uint64, sent_delta, recv_delta uint64, readTime time.Time) {
-	stats.Cpu = twoDecimals(cpuPct)
-	stats.Mem = bytesToMegabytes(float64(usedMemory))
+	stats.Cpu = utils.TwoDecimals(cpuPct)
+	stats.Mem = utils.BytesToMegabytes(float64(usedMemory))
 	stats.Bandwidth = [2]uint64{sent_delta, recv_delta}
 	// TODO(0.19+): stop populating NetworkSent/NetworkRecv (deprecated in 0.18.3)
-	stats.NetworkSent = bytesToMegabytes(float64(sent_delta))
-	stats.NetworkRecv = bytesToMegabytes(float64(recv_delta))
+	stats.NetworkSent = utils.BytesToMegabytes(float64(sent_delta))
+	stats.NetworkRecv = utils.BytesToMegabytes(float64(recv_delta))
 	stats.PrevReadTime = readTime
 }
 

@@ -8,6 +8,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/henrygd/beszel/agent/utils"
 	"github.com/henrygd/beszel/internal/entities/system"
 
 	"github.com/shirou/gopsutil/v4/disk"
@@ -412,12 +413,12 @@ func (a *Agent) updateDiskUsage(systemStats *system.Stats) {
 			continue
 		}
 		if d, err := disk.Usage(stats.Mountpoint); err == nil {
-			stats.DiskTotal = bytesToGigabytes(d.Total)
-			stats.DiskUsed = bytesToGigabytes(d.Used)
+			stats.DiskTotal = utils.BytesToGigabytes(d.Total)
+			stats.DiskUsed = utils.BytesToGigabytes(d.Used)
 			if stats.Root {
-				systemStats.DiskTotal = bytesToGigabytes(d.Total)
-				systemStats.DiskUsed = bytesToGigabytes(d.Used)
-				systemStats.DiskPct = twoDecimals(d.UsedPercent)
+				systemStats.DiskTotal = utils.BytesToGigabytes(d.Total)
+				systemStats.DiskUsed = utils.BytesToGigabytes(d.Used)
+				systemStats.DiskPct = utils.TwoDecimals(d.UsedPercent)
 			}
 		} else {
 			// reset stats if error (likely unmounted)
@@ -470,8 +471,8 @@ func (a *Agent) updateDiskIo(cacheTimeMs uint16, systemStats *system.Stats) {
 
 			diskIORead := (d.ReadBytes - prev.readBytes) * 1000 / msElapsed
 			diskIOWrite := (d.WriteBytes - prev.writeBytes) * 1000 / msElapsed
-			readMbPerSecond := bytesToMegabytes(float64(diskIORead))
-			writeMbPerSecond := bytesToMegabytes(float64(diskIOWrite))
+			readMbPerSecond := utils.BytesToMegabytes(float64(diskIORead))
+			writeMbPerSecond := utils.BytesToMegabytes(float64(diskIOWrite))
 
 			// validate values
 			if readMbPerSecond > 50_000 || writeMbPerSecond > 50_000 {

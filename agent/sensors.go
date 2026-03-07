@@ -10,6 +10,7 @@ import (
 	"strings"
 	"unicode/utf8"
 
+	"github.com/henrygd/beszel/agent/utils"
 	"github.com/henrygd/beszel/internal/entities/system"
 
 	"github.com/shirou/gopsutil/v4/common"
@@ -135,7 +136,7 @@ func (a *Agent) updateTemperatures(systemStats *system.Stats) {
 		case sensorName:
 			a.systemInfo.DashboardTemp = sensor.Temperature
 		}
-		systemStats.Temperatures[sensorName] = twoDecimals(sensor.Temperature)
+		systemStats.Temperatures[sensorName] = utils.TwoDecimals(sensor.Temperature)
 	}
 }
 
