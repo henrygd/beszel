@@ -11,7 +11,7 @@ import { DialogTitle } from "@/components/ui/dialog"
 import { $userSettings } from "@/lib/stores"
 import { decimalString, formatBytes, toFixedFloat } from "@/lib/utils"
 import type { ChartData } from "@/types"
-import { ChartCard } from "../system"
+import { ChartCard } from "./tabs"
 
 export default memo(function NetworkSheet({
 	chartData,
