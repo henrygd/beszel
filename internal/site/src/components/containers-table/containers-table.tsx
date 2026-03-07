@@ -229,7 +229,7 @@ const AllContainersTable = memo(function AllContainersTable({
 		>
 			{/* add header height to table size */}
 			<div style={{ height: `${virtualizer.getTotalSize() + 48}px`, paddingTop, paddingBottom }}>
-				<table className="text-sm w-full h-full text-nowrap">
+				<table className="text-sm w-full h-full">
 					<ContainersTableHead table={table} />
 					<TableBody>
 						{rows.length ? (
