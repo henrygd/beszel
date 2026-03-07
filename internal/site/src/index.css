@@ -171,3 +171,26 @@
 .recharts-yAxis {
 	@apply tabular-nums;
 }
+
+
+.alias-name-cell span:first-child {
+	position: absolute;
+	top: 1.2em;
+	transition: all 200ms;
+}
+
+.alias-name-cell:hover span:first-child {
+	top: 0.6em;
+}
+
+.alias-name-cell span:last-child {
+	opacity: 0;
+	position: absolute;
+	bottom: 1.2em;
+	transition: all 200ms;
+}
+
+.alias-name-cell:hover span:last-child {
+	opacity: 1;
+	bottom: 0.6em;
+}
