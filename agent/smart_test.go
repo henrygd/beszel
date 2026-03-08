@@ -121,6 +121,43 @@ func TestParseSmartForSataDeviceStatisticsTemperature(t *testing.T) {
 	assert.Equal(t, uint8(22), deviceData.Temperature)
 }
 
+func TestParseSmartForSataNegativeDeviceStatistics(t *testing.T) {
+	// Tests that negative values in ata_device_statistics (e.g. min operating temp)
+	// do not cause the entire SAT parser to fail.
+	jsonPayload := []byte(`{
+		"smartctl": {"exit_status": 0},
+		"device": {"name": "/dev/sdb", "type": "sat"},
+		"model_name": "SanDisk SSD U110 16GB",
+		"serial_number": "NEGATIVE123",
+		"firmware_version": "U21B001",
+		"user_capacity": {"bytes": 16013942784},
+		"smart_status": {"passed": true},
+		"temperature": {"current": 38},
+		"ata_smart_attributes": {"table": []},
+		"ata_device_statistics": {
+			"pages": [
+				{
+					"number": 5,
+					"name": "Temperature Statistics",
+					"table": [
+						{"name": "Current Temperature", "value": 38, "flags": {"valid": true}},
+						{"name": "Specified Minimum Operating Temperature", "value": -20, "flags": {"valid": true}}
+					]
+				}
+			]
+		}
+	}`)
+
+	sm := &SmartManager{SmartDataMap: make(map[string]*smart.SmartData)}
+	hasData, exitStatus := sm.parseSmartForSata(jsonPayload)
+	require.True(t, hasData)
+	assert.Equal(t, 0, exitStatus)
+
+	deviceData, ok := sm.SmartDataMap["NEGATIVE123"]
+	require.True(t, ok, "expected smart data entry for serial NEGATIVE123")
+	assert.Equal(t, uint8(38), deviceData.Temperature)
+}
+
 func TestParseSmartForSataParentheticalRawValue(t *testing.T) {
 	jsonPayload := []byte(`{
 		"smartctl": {"exit_status": 0},

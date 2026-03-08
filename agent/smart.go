@@ -223,7 +223,7 @@ func (sm *SmartManager) ScanDevices(force bool) error {
 }
 
 func (sm *SmartManager) parseConfiguredDevices(config string) ([]*DeviceInfo, error) {
-	splitChar := os.Getenv("SMART_DEVICES_SEPARATOR")
+	splitChar, _ := utils.GetEnv("SMART_DEVICES_SEPARATOR")
 	if splitChar == "" {
 		splitChar = ","
 	}
@@ -919,7 +919,7 @@ func temperatureFromAtaDeviceStatistics(stats smart.AtaDeviceStatistics) (uint8,
 	if entry == nil || entry.Value == nil {
 		return 0, false
 	}
-	if *entry.Value > 255 {
+	if *entry.Value < 0 || *entry.Value > 255 {
 		return 0, false
 	}
 	return uint8(*entry.Value), true

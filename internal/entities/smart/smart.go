@@ -143,8 +143,8 @@ type AtaDeviceStatisticsPage struct {
 }
 
 type AtaDeviceStatisticsEntry struct {
-	Name  string  `json:"name"`
-	Value *uint64 `json:"value,omitempty"`
+	Name  string `json:"name"`
+	Value *int64 `json:"value,omitempty"`
 }
 
 type AtaSmartAttribute struct {
