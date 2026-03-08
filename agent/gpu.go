@@ -3,8 +3,10 @@ package agent
 import (
 	"bufio"
 	"bytes"
+	"encoding/csv"
 	"encoding/json"
 	"fmt"
+	"io"
 	"log/slog"
 	"maps"
 	"os/exec"
@@ -231,40 +233,168 @@ func (gm *GPUManager) getJetsonParser() func(output []byte) bool {
 	}
 }
 
+type nvidiaSmiData struct {
+	id          string
+	name        string
+	temp        float64
+	memoryUsage float64
+	totalMemory float64
+	usage       float64
+	power       float64
+}
+
 // parseNvidiaData parses the output of nvidia-smi and updates the GPUData map
 func (gm *GPUManager) parseNvidiaData(output []byte) bool {
-	gm.Lock()
-	defer gm.Unlock()
-	scanner := bufio.NewScanner(bytes.NewReader(output))
-	var valid bool
-	for scanner.Scan() {
-		line := scanner.Text() // Or use scanner.Bytes() for []byte
-		fields := strings.Split(strings.TrimSpace(line), ", ")
+	reader := csv.NewReader(bytes.NewReader(output))
+	reader.FieldsPerRecord = -1
+	reader.TrimLeadingSpace = true
+
+	updates := make([]nvidiaSmiData, 0, 8)
+	for {
+		fields, err := reader.Read()
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			if len(updates) == 0 {
+				return false
+			}
+			break
+		}
 		if len(fields) < 7 {
 			continue
 		}
-		valid = true
-		id := fields[0]
-		temp, _ := strconv.ParseFloat(fields[2], 64)
-		memoryUsage, _ := strconv.ParseFloat(fields[3], 64)
-		totalMemory, _ := strconv.ParseFloat(fields[4], 64)
-		usage, _ := strconv.ParseFloat(fields[5], 64)
-		power, _ := strconv.ParseFloat(fields[6], 64)
+		updates = append(updates, nvidiaSmiData{
+			id:          strings.TrimSpace(fields[0]),
+			name:        strings.TrimSpace(fields[1]),
+			temp:        parseNvidiaMetric(fields[2]),
+			memoryUsage: parseNvidiaMetric(fields[3]),
+			totalMemory: parseNvidiaMetric(fields[4]),
+			usage:       parseNvidiaMetric(fields[5]),
+			power:       parseNvidiaMetric(fields[6]),
+		})
+	}
+	if len(updates) == 0 {
+		return false
+	}
+
+	gm.Lock()
+	defer gm.Unlock()
+	for _, update := range updates {
+		id := update.id
+		if id == "" {
+			continue
+		}
 		// add gpu if not exists
 		if _, ok := gm.GpuDataMap[id]; !ok {
-			name := strings.TrimPrefix(fields[1], "NVIDIA ")
+			name := strings.TrimPrefix(update.name, "NVIDIA ")
 			gm.GpuDataMap[id] = &system.GPUData{Name: strings.TrimSuffix(name, " Laptop GPU")}
 		}
 		// update gpu data
 		gpu := gm.GpuDataMap[id]
-		gpu.Temperature = temp
-		gpu.MemoryUsed = memoryUsage / mebibytesInAMegabyte
-		gpu.MemoryTotal = totalMemory / mebibytesInAMegabyte
-		gpu.Usage += usage
-		gpu.Power += power
+		gpu.Temperature = update.temp
+		gpu.MemoryUsed = update.memoryUsage / mebibytesInAMegabyte
+		gpu.MemoryTotal = update.totalMemory / mebibytesInAMegabyte
+		gpu.Usage += update.usage
+		gpu.Power += update.power
 		gpu.Count++
 	}
-	return valid
+	return true
+}
+
+func parseNvidiaMetric(raw string) float64 {
+	value := strings.TrimSpace(raw)
+	if value == "" || strings.EqualFold(value, "n/a") || strings.EqualFold(value, "[n/a]") {
+		return 0
+	}
+	value = strings.TrimPrefix(value, "[")
+	value = strings.TrimSuffix(value, "]")
+	parsed, _ := strconv.ParseFloat(value, 64)
+	return parsed
+}
+
+func parseNvidiaLineID(line string) (string, bool) {
+	id, _, ok := strings.Cut(line, ",")
+	if !ok {
+		return "", false
+	}
+	id = strings.TrimSpace(id)
+	return id, id != ""
+}
+
+func (gm *GPUManager) collectNvidiaSmiStats(intervalSeconds string) (err error) {
+	cmd := exec.Command(
+		nvidiaSmiCmd,
+		"-l", intervalSeconds,
+		"--query-gpu=index,name,temperature.gpu,memory.used,memory.total,utilization.gpu,power.draw",
+		"--format=csv,noheader,nounits",
+	)
+	stdout, err := cmd.StdoutPipe()
+	if err != nil {
+		return err
+	}
+	if err := cmd.Start(); err != nil {
+		return err
+	}
+
+	defer func() {
+		_ = stdout.Close()
+		if cmd.ProcessState == nil || !cmd.ProcessState.Exited() {
+			_ = cmd.Process.Kill()
+		}
+		if waitErr := cmd.Wait(); err == nil && waitErr != nil {
+			err = waitErr
+		}
+	}()
+
+	scanner := bufio.NewScanner(stdout)
+	scanner.Buffer(make([]byte, 0, 10*1024), bufio.MaxScanTokenSize)
+
+	var sawValidBatch bool
+	batchLines := make([]string, 0, 16)
+	seenIDs := make(map[string]struct{}, 16)
+	flushBatch := func() error {
+		if len(batchLines) == 0 {
+			return nil
+		}
+		if gm.parseNvidiaData([]byte(strings.Join(batchLines, "\n"))) {
+			sawValidBatch = true
+		} else if !sawValidBatch {
+			return errNoValidData
+		}
+		batchLines = batchLines[:0]
+		clear(seenIDs)
+		return nil
+	}
+
+	for scanner.Scan() {
+		line := strings.TrimSpace(scanner.Text())
+		if line == "" {
+			if err := flushBatch(); err != nil {
+				return err
+			}
+			continue
+		}
+		if id, ok := parseNvidiaLineID(line); ok && len(seenIDs) > 0 {
+			if _, exists := seenIDs[id]; exists {
+				if err := flushBatch(); err != nil {
+					return err
+				}
+			}
+			seenIDs[id] = struct{}{}
+		}
+		batchLines = append(batchLines, line)
+	}
+	if err := flushBatch(); err != nil {
+		return err
+	}
+	if err := scanner.Err(); err != nil {
+		return fmt.Errorf("scanner error: %w", err)
+	}
+	if !sawValidBatch {
+		return errNoValidData
+	}
+	return nil
 }
 
 // parseAmdData parses the output of rocm-smi and updates the GPUData map
@@ -493,17 +623,19 @@ func (gm *GPUManager) startIntelCollector() {
 }
 
 func (gm *GPUManager) startNvidiaSmiCollector(intervalSeconds string) {
-	collector := gpuCollector{
-		name:    nvidiaSmiCmd,
-		bufSize: 10 * 1024,
-		cmdArgs: []string{
-			"-l", intervalSeconds,
-			"--query-gpu=index,name,temperature.gpu,memory.used,memory.total,utilization.gpu,power.draw",
-			"--format=csv,noheader,nounits",
-		},
-		parse: gm.parseNvidiaData,
-	}
-	go collector.start()
+	go func() {
+		for {
+			err := gm.collectNvidiaSmiStats(intervalSeconds)
+			if err != nil {
+				if err == errNoValidData {
+					slog.Warn(nvidiaSmiCmd + " found no valid GPU data, stopping")
+					break
+				}
+				slog.Warn(nvidiaSmiCmd+" failed, restarting", "err", err)
+				time.Sleep(retryWaitTime)
+			}
+		}
+	}()
 }
 
 func (gm *GPUManager) startTegraStatsCollector(intervalMilliseconds string) {

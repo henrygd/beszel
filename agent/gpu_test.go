@@ -96,6 +96,31 @@ func TestParseNvidiaData(t *testing.T) {
 			wantValid: true,
 		},
 		{
+			name:  "quoted names and blank lines are handled as valid csv",
+			input: "0, \"NVIDIA RTX PRO 6000, Server Edition\", 48, 12, 4096, 26.3, 12.73\n\n1, NVIDIA A100-PCIE-40GB, 38, 74, 40960, [N/A], 36.79",
+			wantData: map[string]system.GPUData{
+				"0": {
+					Name:        "RTX PRO 6000, Server Edition",
+					Temperature: 48.0,
+					MemoryUsed:  12.0 / 1.024,
+					MemoryTotal: 4096.0 / 1.024,
+					Usage:       26.3,
+					Power:       12.73,
+					Count:       1,
+				},
+				"1": {
+					Name:        "A100-PCIE-40GB",
+					Temperature: 38.0,
+					MemoryUsed:  74.0 / 1.024,
+					MemoryTotal: 40960.0 / 1.024,
+					Usage:       0.0,
+					Power:       36.79,
+					Count:       1,
+				},
+			},
+			wantValid: true,
+		},
+		{
 			name:      "empty input",
 			input:     "",
 			wantData:  map[string]system.GPUData{},
