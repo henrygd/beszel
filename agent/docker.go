@@ -21,6 +21,7 @@ import (
 	"time"
 
 	"github.com/henrygd/beszel/agent/deltatracker"
+	"github.com/henrygd/beszel/agent/utils"
 	"github.com/henrygd/beszel/internal/entities/container"
 
 	"github.com/blang/semver"
@@ -336,12 +337,12 @@ func validateCpuPercentage(cpuPct float64, containerName string) error {
 
 // updateContainerStatsValues updates the final stats values
 func updateContainerStatsValues(stats *container.Stats, cpuPct float64, usedMemory uint64, sent_delta, recv_delta uint64, readTime time.Time) {
-	stats.Cpu = twoDecimals(cpuPct)
-	stats.Mem = bytesToMegabytes(float64(usedMemory))
+	stats.Cpu = utils.TwoDecimals(cpuPct)
+	stats.Mem = utils.BytesToMegabytes(float64(usedMemory))
 	stats.Bandwidth = [2]uint64{sent_delta, recv_delta}
 	// TODO(0.19+): stop populating NetworkSent/NetworkRecv (deprecated in 0.18.3)
-	stats.NetworkSent = bytesToMegabytes(float64(sent_delta))
-	stats.NetworkRecv = bytesToMegabytes(float64(recv_delta))
+	stats.NetworkSent = utils.BytesToMegabytes(float64(sent_delta))
+	stats.NetworkRecv = utils.BytesToMegabytes(float64(recv_delta))
 	stats.PrevReadTime = readTime
 }
 
@@ -487,7 +488,7 @@ func (dm *dockerManager) deleteContainerStatsSync(id string) {
 
 // Creates a new http client for Docker or Podman API
 func newDockerManager() *dockerManager {
-	dockerHost, exists := GetEnv("DOCKER_HOST")
+	dockerHost, exists := utils.GetEnv("DOCKER_HOST")
 	if exists {
 		// return nil if set to empty string
 		if dockerHost == "" {
@@ -523,7 +524,7 @@ func newDockerManager() *dockerManager {
 
 	// configurable timeout
 	timeout := time.Millisecond * time.Duration(dockerTimeoutMs)
-	if t, set := GetEnv("DOCKER_TIMEOUT"); set {
+	if t, set := utils.GetEnv("DOCKER_TIMEOUT"); set {
 		timeout, err = time.ParseDuration(t)
 		if err != nil {
 			slog.Error(err.Error())
@@ -540,7 +541,7 @@ func newDockerManager() *dockerManager {
 
 	// Read container exclusion patterns from environment variable
 	var excludeContainers []string
-	if excludeStr, set := GetEnv("EXCLUDE_CONTAINERS"); set && excludeStr != "" {
+	if excludeStr, set := utils.GetEnv("EXCLUDE_CONTAINERS"); set && excludeStr != "" {
 		parts := strings.SplitSeq(excludeStr, ",")
 		for part := range parts {
 			trimmed := strings.TrimSpace(part)

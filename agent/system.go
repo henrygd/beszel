@@ -12,6 +12,7 @@ import (
 
 	"github.com/henrygd/beszel"
 	"github.com/henrygd/beszel/agent/battery"
+	"github.com/henrygd/beszel/agent/utils"
 	"github.com/henrygd/beszel/agent/zfs"
 	"github.com/henrygd/beszel/internal/entities/container"
 	"github.com/henrygd/beszel/internal/entities/system"
@@ -127,13 +128,13 @@ func (a *Agent) getSystemStats(cacheTimeMs uint16) system.Stats {
 	// cpu metrics
 	cpuMetrics, err := getCpuMetrics(cacheTimeMs)
 	if err == nil {
-		systemStats.Cpu = twoDecimals(cpuMetrics.Total)
+		systemStats.Cpu = utils.TwoDecimals(cpuMetrics.Total)
 		systemStats.CpuBreakdown = []float64{
-			twoDecimals(cpuMetrics.User),
-			twoDecimals(cpuMetrics.System),
-			twoDecimals(cpuMetrics.Iowait),
-			twoDecimals(cpuMetrics.Steal),
-			twoDecimals(cpuMetrics.Idle),
+			utils.TwoDecimals(cpuMetrics.User),
+			utils.TwoDecimals(cpuMetrics.System),
+			utils.TwoDecimals(cpuMetrics.Iowait),
+			utils.TwoDecimals(cpuMetrics.Steal),
+			utils.TwoDecimals(cpuMetrics.Idle),
 		}
 	} else {
 		slog.Error("Error getting cpu metrics", "err", err)
@@ -157,8 +158,8 @@ func (a *Agent) getSystemStats(cacheTimeMs uint16) system.Stats {
 	// memory
 	if v, err := mem.VirtualMemory(); err == nil {
 		// swap
-		systemStats.Swap = bytesToGigabytes(v.SwapTotal)
-		systemStats.SwapUsed = bytesToGigabytes(v.SwapTotal - v.SwapFree - v.SwapCached)
+		systemStats.Swap = utils.BytesToGigabytes(v.SwapTotal)
+		systemStats.SwapUsed = utils.BytesToGigabytes(v.SwapTotal - v.SwapFree - v.SwapCached)
 		// cache + buffers value for default mem calculation
 		// note: gopsutil automatically adds SReclaimable to v.Cached
 		cacheBuff := v.Cached + v.Buffers - v.Shared
@@ -181,13 +182,13 @@ func (a *Agent) getSystemStats(cacheTimeMs uint16) system.Stats {
 			if arcSize, _ := zfs.ARCSize(); arcSize > 0 && arcSize < v.Used {
 				v.Used = v.Used - arcSize
 				v.UsedPercent = float64(v.Used) / float64(v.Total) * 100.0
-				systemStats.MemZfsArc = bytesToGigabytes(arcSize)
+				systemStats.MemZfsArc = utils.BytesToGigabytes(arcSize)
 			}
 		}
-		systemStats.Mem = bytesToGigabytes(v.Total)
-		systemStats.MemBuffCache = bytesToGigabytes(cacheBuff)
-		systemStats.MemUsed = bytesToGigabytes(v.Used)
-		systemStats.MemPct = twoDecimals(v.UsedPercent)
+		systemStats.Mem = utils.BytesToGigabytes(v.Total)
+		systemStats.MemBuffCache = utils.BytesToGigabytes(cacheBuff)
+		systemStats.MemUsed = utils.BytesToGigabytes(v.Used)
+		systemStats.MemPct = utils.TwoDecimals(v.UsedPercent)
 	}
 
 	// disk usage

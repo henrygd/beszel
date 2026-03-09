@@ -18,6 +18,7 @@ import (
 	"time"
 
 	"github.com/henrygd/beszel/agent/deltatracker"
+	"github.com/henrygd/beszel/agent/utils"
 	"github.com/henrygd/beszel/internal/entities/container"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -296,48 +297,6 @@ func TestUpdateContainerStatsValues(t *testing.T) {
 
 	// Check read time
 	assert.Equal(t, testTime, stats.PrevReadTime)
-}
-
-func TestTwoDecimals(t *testing.T) {
-	tests := []struct {
-		name     string
-		input    float64
-		expected float64
-	}{
-		{"round down", 1.234, 1.23},
-		{"round half up", 1.235, 1.24}, // math.Round rounds half up
-		{"no rounding needed", 1.23, 1.23},
-		{"negative number", -1.235, -1.24}, // math.Round rounds half up (more negative)
-		{"zero", 0.0, 0.0},
-		{"large number", 123.456, 123.46}, // rounds 5 up
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			result := twoDecimals(tt.input)
-			assert.Equal(t, tt.expected, result)
-		})
-	}
-}
-
-func TestBytesToMegabytes(t *testing.T) {
-	tests := []struct {
-		name     string
-		input    float64
-		expected float64
-	}{
-		{"1 MB", 1048576, 1.0},
-		{"512 KB", 524288, 0.5},
-		{"zero", 0, 0},
-		{"large value", 1073741824, 1024}, // 1 GB = 1024 MB
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			result := bytesToMegabytes(tt.input)
-			assert.Equal(t, tt.expected, result)
-		})
-	}
 }
 
 func TestInitializeCpuTracking(t *testing.T) {
@@ -905,11 +864,11 @@ func TestContainerStatsEndToEndWithRealData(t *testing.T) {
 	updateContainerStatsValues(testStats, cpuPct, usedMemory, 1000000, 500000, testTime)
 
 	assert.Equal(t, cpuPct, testStats.Cpu)
-	assert.Equal(t, bytesToMegabytes(float64(usedMemory)), testStats.Mem)
+	assert.Equal(t, utils.BytesToMegabytes(float64(usedMemory)), testStats.Mem)
 	assert.Equal(t, [2]uint64{1000000, 500000}, testStats.Bandwidth)
 	// Deprecated fields still populated for backward compatibility with older hubs
-	assert.Equal(t, bytesToMegabytes(1000000), testStats.NetworkSent)
-	assert.Equal(t, bytesToMegabytes(500000), testStats.NetworkRecv)
+	assert.Equal(t, utils.BytesToMegabytes(1000000), testStats.NetworkSent)
+	assert.Equal(t, utils.BytesToMegabytes(500000), testStats.NetworkRecv)
 	assert.Equal(t, testTime, testStats.PrevReadTime)
 }
 
@@ -1190,13 +1149,13 @@ func TestConstantsAndUtilityFunctions(t *testing.T) {
 	assert.Equal(t, 5*1024*1024, maxTotalLogSize)               // 5MB
 
 	// Test utility functions
-	assert.Equal(t, 1.5, twoDecimals(1.499))
-	assert.Equal(t, 1.5, twoDecimals(1.5))
-	assert.Equal(t, 1.5, twoDecimals(1.501))
+	assert.Equal(t, 1.5, utils.TwoDecimals(1.499))
+	assert.Equal(t, 1.5, utils.TwoDecimals(1.5))
+	assert.Equal(t, 1.5, utils.TwoDecimals(1.501))
 
-	assert.Equal(t, 1.0, bytesToMegabytes(1048576)) // 1 MB
-	assert.Equal(t, 0.5, bytesToMegabytes(524288))  // 512 KB
-	assert.Equal(t, 0.0, bytesToMegabytes(0))
+	assert.Equal(t, 1.0, utils.BytesToMegabytes(1048576)) // 1 MB
+	assert.Equal(t, 0.5, utils.BytesToMegabytes(524288))  // 512 KB
+	assert.Equal(t, 0.0, utils.BytesToMegabytes(0))
 }
 
 func TestDecodeDockerLogStream(t *testing.T) {

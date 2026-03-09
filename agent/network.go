@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/henrygd/beszel/agent/deltatracker"
+	"github.com/henrygd/beszel/agent/utils"
 	"github.com/henrygd/beszel/internal/entities/system"
 	psutilNet "github.com/shirou/gopsutil/v4/net"
 )
@@ -94,7 +95,7 @@ func (a *Agent) initializeNetIoStats() {
 	a.netInterfaces = make(map[string]struct{}, 0)
 
 	// parse NICS env var for whitelist / blacklist
-	nicsEnvVal, nicsEnvExists := GetEnv("NICS")
+	nicsEnvVal, nicsEnvExists := utils.GetEnv("NICS")
 	var nicCfg *NicConfig
 	if nicsEnvExists {
 		nicCfg = newNicConfig(nicsEnvVal)
@@ -215,8 +216,8 @@ func (a *Agent) applyNetworkTotals(
 	totalBytesSent, totalBytesRecv uint64,
 	bytesSentPerSecond, bytesRecvPerSecond uint64,
 ) {
-	networkSentPs := bytesToMegabytes(float64(bytesSentPerSecond))
-	networkRecvPs := bytesToMegabytes(float64(bytesRecvPerSecond))
+	networkSentPs := utils.BytesToMegabytes(float64(bytesSentPerSecond))
+	networkRecvPs := utils.BytesToMegabytes(float64(bytesRecvPerSecond))
 	if networkSentPs > 10_000 || networkRecvPs > 10_000 {
 		slog.Warn("Invalid net stats. Resetting.", "sent", networkSentPs, "recv", networkRecvPs)
 		for _, v := range netIO {
