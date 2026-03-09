@@ -113,4 +113,5 @@ func (sm *SystemManager) RemoveAllSystems() {
 	for _, system := range sm.systems.GetAll() {
 		sm.RemoveSystem(system.Id)
 	}
+	sm.smartFetchMap.StopCleaner()
 }

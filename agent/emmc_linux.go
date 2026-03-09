@@ -8,6 +8,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/henrygd/beszel/agent/utils"
 	"github.com/henrygd/beszel/internal/entities/smart"
 )
 
@@ -141,9 +142,9 @@ func readEmmcHealth(blockName string) (emmcHealth, bool) {
 	out.lifeA = lifeA
 	out.lifeB = lifeB
 
-	out.model = readStringFile(filepath.Join(deviceDir, "name"))
-	out.serial = readStringFile(filepath.Join(deviceDir, "serial"))
-	out.revision = readStringFile(filepath.Join(deviceDir, "prv"))
+	out.model = utils.ReadStringFile(filepath.Join(deviceDir, "name"))
+	out.serial = utils.ReadStringFile(filepath.Join(deviceDir, "serial"))
+	out.revision = utils.ReadStringFile(filepath.Join(deviceDir, "prv"))
 
 	if capBytes, ok := readBlockCapacityBytes(blockName); ok {
 		out.capacity = capBytes
@@ -153,7 +154,7 @@ func readEmmcHealth(blockName string) (emmcHealth, bool) {
 }
 
 func readLifeTime(deviceDir string) (uint8, uint8, bool) {
-	if content, ok := readStringFileOK(filepath.Join(deviceDir, "life_time")); ok {
+	if content, ok := utils.ReadStringFileOK(filepath.Join(deviceDir, "life_time")); ok {
 		a, b, ok := parseHexBytePair(content)
 		return a, b, ok
 	}
@@ -170,7 +171,7 @@ func readBlockCapacityBytes(blockName string) (uint64, bool) {
 	sizePath := filepath.Join(emmcSysfsRoot, "class", "block", blockName, "size")
 	lbsPath := filepath.Join(emmcSysfsRoot, "class", "block", blockName, "queue", "logical_block_size")
 
-	sizeStr, ok := readStringFileOK(sizePath)
+	sizeStr, ok := utils.ReadStringFileOK(sizePath)
 	if !ok {
 		return 0, false
 	}
@@ -179,7 +180,7 @@ func readBlockCapacityBytes(blockName string) (uint64, bool) {
 		return 0, false
 	}
 
-	lbsStr, ok := readStringFileOK(lbsPath)
+	lbsStr, ok := utils.ReadStringFileOK(lbsPath)
 	logicalBlockSize := uint64(512)
 	if ok {
 		if parsed, err := strconv.ParseUint(lbsStr, 10, 64); err == nil && parsed > 0 {
@@ -191,7 +192,7 @@ func readBlockCapacityBytes(blockName string) (uint64, bool) {
 }
 
 func readHexByteFile(path string) (uint8, bool) {
-	content, ok := readStringFileOK(path)
+	content, ok := utils.ReadStringFileOK(path)
 	if !ok {
 		return 0, false
 	}
