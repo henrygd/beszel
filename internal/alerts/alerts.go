@@ -40,16 +40,22 @@ type UserNotificationSettings struct {
 	Webhooks []string `json:"webhooks"`
 }
 
+type SystemAlertFsStats struct {
+	DiskTotal float64 `json:"d"`
+	DiskUsed  float64 `json:"du"`
+}
+
 type SystemAlertStats struct {
-	Cpu          float64                       `json:"cpu"`
-	Mem          float64                       `json:"mp"`
-	Disk         float64                       `json:"dp"`
-	NetSent      float64                       `json:"ns"`
-	NetRecv      float64                       `json:"nr"`
-	GPU          map[string]SystemAlertGPUData `json:"g"`
-	Temperatures map[string]float32            `json:"t"`
-	LoadAvg      [3]float64                    `json:"la"`
-	Battery      [2]uint8                      `json:"bat"`
+	Cpu          float64                        `json:"cpu"`
+	Mem          float64                        `json:"mp"`
+	Disk         float64                        `json:"dp"`
+	NetSent      float64                        `json:"ns"`
+	NetRecv      float64                        `json:"nr"`
+	GPU          map[string]SystemAlertGPUData  `json:"g"`
+	Temperatures map[string]float32             `json:"t"`
+	LoadAvg      [3]float64                     `json:"la"`
+	Battery      [2]uint8                       `json:"bat"`
+	ExtraFs      map[string]SystemAlertFsStats  `json:"efs"`
 }
 
 type SystemAlertGPUData struct {

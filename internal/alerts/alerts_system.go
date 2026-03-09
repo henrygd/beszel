@@ -195,19 +195,21 @@ func (am *AlertManager) HandleSystemAlerts(systemRecord *core.Record, data *syst
 				alert.val += stats.NetSent + stats.NetRecv
 			case "Disk":
 				if alert.mapSums == nil {
-					alert.mapSums = make(map[string]float32, len(data.Stats.ExtraFs)+1)
+					alert.mapSums = make(map[string]float32, len(stats.ExtraFs)+1)
 				}
 				// add root disk
 				if _, ok := alert.mapSums["root"]; !ok {
 					alert.mapSums["root"] = 0.0
 				}
 				alert.mapSums["root"] += float32(stats.Disk)
-				// add extra disks
-				for key, fs := range data.Stats.ExtraFs {
-					if _, ok := alert.mapSums[key]; !ok {
-						alert.mapSums[key] = 0.0
+				// add extra disks from historical record
+				for key, fs := range stats.ExtraFs {
+					if fs.DiskTotal > 0 {
+						if _, ok := alert.mapSums[key]; !ok {
+							alert.mapSums[key] = 0.0
+						}
+						alert.mapSums[key] += float32(fs.DiskUsed / fs.DiskTotal * 100)
 					}
-					alert.mapSums[key] += float32(fs.DiskUsed / fs.DiskTotal * 100)
 				}
 			case "Temperature":
 				if alert.mapSums == nil {
