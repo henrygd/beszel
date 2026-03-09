@@ -8,6 +8,7 @@ import (
 	"github.com/henrygd/beszel/internal/hub/ws"
 
 	"github.com/henrygd/beszel/internal/entities/system"
+	"github.com/henrygd/beszel/internal/hub/expirymap"
 
 	"github.com/henrygd/beszel/internal/common"
 
@@ -40,9 +41,10 @@ var errSystemExists = errors.New("system exists")
 // SystemManager manages a collection of monitored systems and their connections.
 // It handles system lifecycle, status updates, and maintains both SSH and WebSocket connections.
 type SystemManager struct {
-	hub       hubLike                       // Hub interface for database and alert operations
-	systems   *store.Store[string, *System] // Thread-safe store of active systems
-	sshConfig *ssh.ClientConfig             // SSH client configuration for system connections
+	hub           hubLike                       // Hub interface for database and alert operations
+	systems       *store.Store[string, *System] // Thread-safe store of active systems
+	sshConfig     *ssh.ClientConfig             // SSH client configuration for system connections
+	smartFetchMap *expirymap.ExpiryMap[int64]   // Stores last SMART fetch time per system ID
 }
 
 // hubLike defines the interface requirements for the hub dependency.
@@ -58,8 +60,9 @@ type hubLike interface {
 // The hub must implement the hubLike interface to provide database and alert functionality.
 func NewSystemManager(hub hubLike) *SystemManager {
 	return &SystemManager{
-		systems: store.New(map[string]*System{}),
-		hub:     hub,
+		systems:       store.New(map[string]*System{}),
+		hub:           hub,
+		smartFetchMap: expirymap.New[int64](time.Hour),
 	}
 }
 
