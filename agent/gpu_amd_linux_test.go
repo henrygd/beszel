@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/henrygd/beszel/agent/utils"
 	"github.com/henrygd/beszel/internal/entities/system"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -128,14 +129,14 @@ func TestUpdateAmdGpuDataWithFakeSysfs(t *testing.T) {
 		{
 			name:            "sums vram and gtt when gtt is present",
 			writeGTT:        true,
-			wantMemoryUsed:  bytesToMegabytes(1073741824 + 536870912),
-			wantMemoryTotal: bytesToMegabytes(2147483648 + 4294967296),
+			wantMemoryUsed:  utils.BytesToMegabytes(1073741824 + 536870912),
+			wantMemoryTotal: utils.BytesToMegabytes(2147483648 + 4294967296),
 		},
 		{
 			name:            "falls back to vram when gtt is missing",
 			writeGTT:        false,
-			wantMemoryUsed:  bytesToMegabytes(1073741824),
-			wantMemoryTotal: bytesToMegabytes(2147483648),
+			wantMemoryUsed:  utils.BytesToMegabytes(1073741824),
+			wantMemoryTotal: utils.BytesToMegabytes(2147483648),
 		},
 	}
 
