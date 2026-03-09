@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"io"
 	"math"
 	"os"
 	"strconv"
@@ -48,6 +49,23 @@ func ReadStringFileOK(path string) (string, bool) {
 		return "", false
 	}
 	return strings.TrimSpace(string(b)), true
+}
+
+// ReadStringFileLimited reads a file into a string with a maximum size (in bytes) to avoid
+// allocating large buffers and potential panics with pseudo-files when the size is misreported.
+func ReadStringFileLimited(path string, maxSize int) (string, error) {
+	f, err := os.Open(path)
+	if err != nil {
+		return "", err
+	}
+	defer f.Close()
+
+	buf := make([]byte, maxSize)
+	n, err := f.Read(buf)
+	if err != nil && err != io.EOF {
+		return "", err
+	}
+	return strings.TrimSpace(string(buf[:n])), nil
 }
 
 // FileExists reports whether the given path exists.
