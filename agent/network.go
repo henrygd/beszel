@@ -103,10 +103,16 @@ func (a *Agent) initializeNetIoStats() {
 	// get current network I/O stats and record valid interfaces
 	if netIO, err := psutilNet.IOCounters(true); err == nil {
 		for _, v := range netIO {
-			if nicsEnvExists && !isValidNic(v.Name, nicCfg) {
-				continue
-			}
-			if a.skipNetworkInterface(v) {
+			if nicsEnvExists {
+				if !isValidNic(v.Name, nicCfg) {
+					continue
+				}
+				// In whitelist mode, honor explicit inclusion without auto-filtering.
+				// In blacklist mode, still apply the auto-filter.
+				if nicCfg.isBlacklist && a.skipNetworkInterface(v) {
+					continue
+				}
+			} else if a.skipNetworkInterface(v) {
 				continue
 			}
 			slog.Info("Detected network interface", "name", v.Name, "sent", v.BytesSent, "recv", v.BytesRecv)
