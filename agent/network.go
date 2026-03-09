@@ -104,16 +104,7 @@ func (a *Agent) initializeNetIoStats() {
 	// get current network I/O stats and record valid interfaces
 	if netIO, err := psutilNet.IOCounters(true); err == nil {
 		for _, v := range netIO {
-			if nicsEnvExists {
-				if !isValidNic(v.Name, nicCfg) {
-					continue
-				}
-				// In whitelist mode, honor explicit inclusion without auto-filtering.
-				// In blacklist mode, still apply the auto-filter.
-				if nicCfg.isBlacklist && a.skipNetworkInterface(v) {
-					continue
-				}
-			} else if a.skipNetworkInterface(v) {
+			if skipNetworkInterface(v, nicCfg) {
 				continue
 			}
 			slog.Info("Detected network interface", "name", v.Name, "sent", v.BytesSent, "recv", v.BytesRecv)
@@ -249,7 +240,19 @@ func (a *Agent) applyNetworkTotals(
 	a.netIoStats[cacheTimeMs] = nis
 }
 
-func (a *Agent) skipNetworkInterface(v psutilNet.IOCountersStat) bool {
+// skipNetworkInterface returns true if the network interface should be ignored.
+func skipNetworkInterface(v psutilNet.IOCountersStat, nicCfg *NicConfig) bool {
+	if nicCfg != nil {
+		if !isValidNic(v.Name, nicCfg) {
+			return true
+		}
+		// In whitelist mode, we honor explicit inclusion without auto-filtering.
+		if !nicCfg.isBlacklist {
+			return false
+		}
+		// In blacklist mode, still apply the auto-filter below.
+	}
+
 	switch {
 	case strings.HasPrefix(v.Name, "lo"),
 		strings.HasPrefix(v.Name, "docker"),

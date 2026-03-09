@@ -262,28 +262,34 @@ func TestNewNicConfig(t *testing.T) {
 	}
 }
 func TestSkipNetworkInterface(t *testing.T) {
-	a := &Agent{}
 	tests := []struct {
-		name        string
-		nic         psutilNet.IOCountersStat
-		expectSkip  bool
+		name       string
+		nic        psutilNet.IOCountersStat
+		nicCfg     *NicConfig
+		expectSkip bool
 	}{
-		{"loopback lo", psutilNet.IOCountersStat{Name: "lo", BytesSent: 100, BytesRecv: 100}, true},
-		{"loopback lo0", psutilNet.IOCountersStat{Name: "lo0", BytesSent: 100, BytesRecv: 100}, true},
-		{"docker prefix", psutilNet.IOCountersStat{Name: "docker0", BytesSent: 100, BytesRecv: 100}, true},
-		{"br- prefix", psutilNet.IOCountersStat{Name: "br-lan", BytesSent: 100, BytesRecv: 100}, true},
-		{"veth prefix", psutilNet.IOCountersStat{Name: "veth0abc", BytesSent: 100, BytesRecv: 100}, true},
-		{"bond prefix", psutilNet.IOCountersStat{Name: "bond0", BytesSent: 100, BytesRecv: 100}, true},
-		{"cali prefix", psutilNet.IOCountersStat{Name: "cali1234", BytesSent: 100, BytesRecv: 100}, true},
-		{"zero BytesRecv", psutilNet.IOCountersStat{Name: "eth0", BytesSent: 100, BytesRecv: 0}, true},
-		{"zero BytesSent", psutilNet.IOCountersStat{Name: "eth0", BytesSent: 0, BytesRecv: 100}, true},
-		{"both zero", psutilNet.IOCountersStat{Name: "eth0", BytesSent: 0, BytesRecv: 0}, true},
-		{"normal eth0", psutilNet.IOCountersStat{Name: "eth0", BytesSent: 100, BytesRecv: 200}, false},
-		{"normal wlan0", psutilNet.IOCountersStat{Name: "wlan0", BytesSent: 1, BytesRecv: 1}, false},
+		{"loopback lo", psutilNet.IOCountersStat{Name: "lo", BytesSent: 100, BytesRecv: 100}, nil, true},
+		{"loopback lo0", psutilNet.IOCountersStat{Name: "lo0", BytesSent: 100, BytesRecv: 100}, nil, true},
+		{"docker prefix", psutilNet.IOCountersStat{Name: "docker0", BytesSent: 100, BytesRecv: 100}, nil, true},
+		{"br- prefix", psutilNet.IOCountersStat{Name: "br-lan", BytesSent: 100, BytesRecv: 100}, nil, true},
+		{"veth prefix", psutilNet.IOCountersStat{Name: "veth0abc", BytesSent: 100, BytesRecv: 100}, nil, true},
+		{"bond prefix", psutilNet.IOCountersStat{Name: "bond0", BytesSent: 100, BytesRecv: 100}, nil, true},
+		{"cali prefix", psutilNet.IOCountersStat{Name: "cali1234", BytesSent: 100, BytesRecv: 100}, nil, true},
+		{"zero BytesRecv", psutilNet.IOCountersStat{Name: "eth0", BytesSent: 100, BytesRecv: 0}, nil, true},
+		{"zero BytesSent", psutilNet.IOCountersStat{Name: "eth0", BytesSent: 0, BytesRecv: 100}, nil, true},
+		{"both zero", psutilNet.IOCountersStat{Name: "eth0", BytesSent: 0, BytesRecv: 0}, nil, true},
+		{"normal eth0", psutilNet.IOCountersStat{Name: "eth0", BytesSent: 100, BytesRecv: 200}, nil, false},
+		{"normal wlan0", psutilNet.IOCountersStat{Name: "wlan0", BytesSent: 1, BytesRecv: 1}, nil, false},
+		{"whitelist overrides skip (docker)", psutilNet.IOCountersStat{Name: "docker0", BytesSent: 100, BytesRecv: 100}, newNicConfig("docker0"), false},
+		{"whitelist overrides skip (lo)", psutilNet.IOCountersStat{Name: "lo", BytesSent: 100, BytesRecv: 100}, newNicConfig("lo"), false},
+		{"whitelist exclusion", psutilNet.IOCountersStat{Name: "eth1", BytesSent: 100, BytesRecv: 100}, newNicConfig("eth0"), true},
+		{"blacklist skip lo", psutilNet.IOCountersStat{Name: "lo", BytesSent: 100, BytesRecv: 100}, newNicConfig("-eth0"), true},
+		{"blacklist explicit eth0", psutilNet.IOCountersStat{Name: "eth0", BytesSent: 100, BytesRecv: 100}, newNicConfig("-eth0"), true},
+		{"blacklist allow eth1", psutilNet.IOCountersStat{Name: "eth1", BytesSent: 100, BytesRecv: 100}, newNicConfig("-eth0"), false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			assert.Equal(t, tt.expectSkip, a.skipNetworkInterface(tt.nic))
+			assert.Equal(t, tt.expectSkip, skipNetworkInterface(tt.nic, tt.nicCfg))
 		})
 	}
 }
