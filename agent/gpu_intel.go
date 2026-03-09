@@ -7,6 +7,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/henrygd/beszel/agent/utils"
 	"github.com/henrygd/beszel/internal/entities/system"
 )
 
@@ -52,7 +53,7 @@ func (gm *GPUManager) updateIntelFromStats(sample *intelGpuStats) bool {
 func (gm *GPUManager) collectIntelStats() (err error) {
 	// Build command arguments, optionally selecting a device via -d
 	args := []string{"-s", intelGpuStatsInterval, "-l"}
-	if dev, ok := GetEnv("INTEL_GPU_DEVICE"); ok && dev != "" {
+	if dev, ok := utils.GetEnv("INTEL_GPU_DEVICE"); ok && dev != "" {
 		args = append(args, "-d", dev)
 	}
 	cmd := exec.Command(intelGpuStatsCmd, args...)

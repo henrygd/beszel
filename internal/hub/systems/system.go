@@ -48,7 +48,6 @@ type System struct {
 	detailsFetched atomic.Bool             // True if static system details have been fetched and saved
 	smartFetching  atomic.Bool             // True if SMART devices are currently being fetched
 	smartInterval  time.Duration           // Interval for periodic SMART data updates
-	lastSmartFetch atomic.Int64            // Unix milliseconds of last SMART data fetch
 }
 
 func (sm *SystemManager) NewSystem(systemId string) *System {
@@ -142,11 +141,11 @@ func (sys *System) update() error {
 		if sys.smartInterval <= 0 {
 			sys.smartInterval = time.Hour
 		}
-		lastFetch := sys.lastSmartFetch.Load()
+		lastFetch, _ := sys.manager.smartFetchMap.GetOk(sys.Id)
 		if time.Since(time.UnixMilli(lastFetch)) >= sys.smartInterval && sys.smartFetching.CompareAndSwap(false, true) {
 			go func() {
 				defer sys.smartFetching.Store(false)
-				sys.lastSmartFetch.Store(time.Now().UnixMilli())
+				sys.manager.smartFetchMap.Set(sys.Id, time.Now().UnixMilli(), sys.smartInterval+time.Minute)
 				_ = sys.FetchAndSaveSmartDevices()
 			}()
 		}

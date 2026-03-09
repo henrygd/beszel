@@ -13,6 +13,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/henrygd/beszel/agent/utils"
 	"github.com/henrygd/beszel/internal/entities/system"
 )
 
@@ -144,8 +145,8 @@ func (gm *GPUManager) updateAmdGpuData(cardPath string) bool {
 	if usageErr == nil {
 		gpu.Usage += usage
 	}
-	gpu.MemoryUsed = bytesToMegabytes(memUsed)
-	gpu.MemoryTotal = bytesToMegabytes(memTotal)
+	gpu.MemoryUsed = utils.BytesToMegabytes(memUsed)
+	gpu.MemoryTotal = utils.BytesToMegabytes(memTotal)
 	gpu.Temperature = temp
 	gpu.Power += power
 	gpu.Count++

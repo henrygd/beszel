@@ -10,6 +10,7 @@ import (
 	"strings"
 	"unicode/utf8"
 
+	"github.com/henrygd/beszel/agent/utils"
 	"github.com/henrygd/beszel/internal/entities/system"
 
 	"github.com/shirou/gopsutil/v4/common"
@@ -26,9 +27,9 @@ type SensorConfig struct {
 }
 
 func (a *Agent) newSensorConfig() *SensorConfig {
-	primarySensor, _ := GetEnv("PRIMARY_SENSOR")
-	sysSensors, _ := GetEnv("SYS_SENSORS")
-	sensorsEnvVal, sensorsSet := GetEnv("SENSORS")
+	primarySensor, _ := utils.GetEnv("PRIMARY_SENSOR")
+	sysSensors, _ := utils.GetEnv("SYS_SENSORS")
+	sensorsEnvVal, sensorsSet := utils.GetEnv("SENSORS")
 	skipCollection := sensorsSet && sensorsEnvVal == ""
 
 	return a.newSensorConfigWithEnv(primarySensor, sysSensors, sensorsEnvVal, skipCollection)
@@ -135,7 +136,7 @@ func (a *Agent) updateTemperatures(systemStats *system.Stats) {
 		case sensorName:
 			a.systemInfo.DashboardTemp = sensor.Temperature
 		}
-		systemStats.Temperatures[sensorName] = twoDecimals(sensor.Temperature)
+		systemStats.Temperatures[sensorName] = utils.TwoDecimals(sensor.Temperature)
 	}
 }
 

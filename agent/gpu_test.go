@@ -10,6 +10,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/henrygd/beszel/agent/utils"
 	"github.com/henrygd/beszel/internal/entities/system"
 
 	"github.com/stretchr/testify/assert"
@@ -265,8 +266,8 @@ func TestParseNvtopData(t *testing.T) {
 	assert.Equal(t, 48.0, g0.Temperature)
 	assert.Equal(t, 5.0, g0.Usage)
 	assert.Equal(t, 13.0, g0.Power)
-	assert.Equal(t, bytesToMegabytes(349372416), g0.MemoryUsed)
-	assert.Equal(t, bytesToMegabytes(4294967296), g0.MemoryTotal)
+	assert.Equal(t, utils.BytesToMegabytes(349372416), g0.MemoryUsed)
+	assert.Equal(t, utils.BytesToMegabytes(4294967296), g0.MemoryTotal)
 	assert.Equal(t, 1.0, g0.Count)
 
 	g1, ok := gm.GpuDataMap["n1"]
@@ -275,8 +276,8 @@ func TestParseNvtopData(t *testing.T) {
 	assert.Equal(t, 48.0, g1.Temperature)
 	assert.Equal(t, 12.0, g1.Usage)
 	assert.Equal(t, 9.0, g1.Power)
-	assert.Equal(t, bytesToMegabytes(1213784064), g1.MemoryUsed)
-	assert.Equal(t, bytesToMegabytes(16929173504), g1.MemoryTotal)
+	assert.Equal(t, utils.BytesToMegabytes(1213784064), g1.MemoryUsed)
+	assert.Equal(t, utils.BytesToMegabytes(16929173504), g1.MemoryTotal)
 	assert.Equal(t, 1.0, g1.Count)
 }
 
