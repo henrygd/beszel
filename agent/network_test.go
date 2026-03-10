@@ -416,8 +416,6 @@ func TestApplyNetworkTotals(t *testing.T) {
 		totalBytesSent        uint64
 		totalBytesRecv        uint64
 		expectReset           bool
-		expectedNetworkSent   float64
-		expectedNetworkRecv   float64
 		expectedBandwidthSent uint64
 		expectedBandwidthRecv uint64
 	}{
@@ -428,8 +426,6 @@ func TestApplyNetworkTotals(t *testing.T) {
 			totalBytesSent:        10000000,
 			totalBytesRecv:        20000000,
 			expectReset:           false,
-			expectedNetworkSent:   0.95, // ~1 MB/s rounded to 2 decimals
-			expectedNetworkRecv:   1.91, // ~2 MB/s rounded to 2 decimals
 			expectedBandwidthSent: 1000000,
 			expectedBandwidthRecv: 2000000,
 		},
@@ -458,26 +454,12 @@ func TestApplyNetworkTotals(t *testing.T) {
 			expectReset:        true,
 		},
 		{
-			name:                  "Valid network stats - at threshold boundary",
-			bytesSentPerSecond:    10485750000, // ~9999.99 MB/s (rounds to 9999.99)
-			bytesRecvPerSecond:    10485750000, // ~9999.99 MB/s (rounds to 9999.99)
-			totalBytesSent:        10000000,
-			totalBytesRecv:        20000000,
-			expectReset:           false,
-			expectedNetworkSent:   9999.99,
-			expectedNetworkRecv:   9999.99,
-			expectedBandwidthSent: 10485750000,
-			expectedBandwidthRecv: 10485750000,
-		},
-		{
 			name:                  "Zero values",
 			bytesSentPerSecond:    0,
 			bytesRecvPerSecond:    0,
 			totalBytesSent:        0,
 			totalBytesRecv:        0,
 			expectReset:           false,
-			expectedNetworkSent:   0.0,
-			expectedNetworkRecv:   0.0,
 			expectedBandwidthSent: 0,
 			expectedBandwidthRecv: 0,
 		},
@@ -514,14 +496,10 @@ func TestApplyNetworkTotals(t *testing.T) {
 				// Should have reset network tracking state - maps cleared and stats zeroed
 				assert.NotContains(t, a.netIoStats, cacheTimeMs, "cache entry should be cleared after reset")
 				assert.NotContains(t, a.netInterfaceDeltaTrackers, cacheTimeMs, "tracker should be cleared on reset")
-				assert.Zero(t, systemStats.NetworkSent)
-				assert.Zero(t, systemStats.NetworkRecv)
 				assert.Zero(t, systemStats.Bandwidth[0])
 				assert.Zero(t, systemStats.Bandwidth[1])
 			} else {
 				// Should have applied stats
-				assert.Equal(t, tt.expectedNetworkSent, systemStats.NetworkSent)
-				assert.Equal(t, tt.expectedNetworkRecv, systemStats.NetworkRecv)
 				assert.Equal(t, tt.expectedBandwidthSent, systemStats.Bandwidth[0])
 				assert.Equal(t, tt.expectedBandwidthRecv, systemStats.Bandwidth[1])
 

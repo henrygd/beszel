@@ -11,7 +11,6 @@ import (
 	"github.com/pocketbase/dbx"
 	"github.com/pocketbase/pocketbase/core"
 	"github.com/pocketbase/pocketbase/tools/types"
-	"github.com/spf13/cast"
 )
 
 func (am *AlertManager) HandleSystemAlerts(systemRecord *core.Record, data *system.CombinedData) error {
@@ -92,7 +91,7 @@ func (am *AlertManager) HandleSystemAlerts(systemRecord *core.Record, data *syst
 			}
 		}
 
-		min := max(1, cast.ToUint8(alertRecord.Get("min")))
+		min := max(1, uint8(alertRecord.GetInt("min")))
 
 		alert := SystemAlertData{
 			systemRecord: systemRecord,
@@ -192,7 +191,7 @@ func (am *AlertManager) HandleSystemAlerts(systemRecord *core.Record, data *syst
 			case "Memory":
 				alert.val += stats.Mem
 			case "Bandwidth":
-				alert.val += stats.NetSent + stats.NetRecv
+				alert.val += float64(stats.Bandwidth[0]+stats.Bandwidth[1]) / (1024 * 1024)
 			case "Disk":
 				if alert.mapSums == nil {
 					alert.mapSums = make(map[string]float32, len(stats.ExtraFs)+1)

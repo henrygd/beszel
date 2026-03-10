@@ -213,10 +213,8 @@ func (a *Agent) applyNetworkTotals(
 	totalBytesSent, totalBytesRecv uint64,
 	bytesSentPerSecond, bytesRecvPerSecond uint64,
 ) {
-	networkSentPs := utils.BytesToMegabytes(float64(bytesSentPerSecond))
-	networkRecvPs := utils.BytesToMegabytes(float64(bytesRecvPerSecond))
-	if networkSentPs > 10_000 || networkRecvPs > 10_000 {
-		slog.Warn("Invalid net stats. Resetting.", "sent", networkSentPs, "recv", networkRecvPs)
+	if bytesSentPerSecond > 10_000_000_000 || bytesRecvPerSecond > 10_000_000_000 {
+		slog.Warn("Invalid net stats. Resetting.", "sent", bytesSentPerSecond, "recv", bytesRecvPerSecond)
 		for _, v := range netIO {
 			if _, exists := a.netInterfaces[v.Name]; !exists {
 				continue
@@ -226,14 +224,10 @@ func (a *Agent) applyNetworkTotals(
 		a.initializeNetIoStats()
 		delete(a.netIoStats, cacheTimeMs)
 		delete(a.netInterfaceDeltaTrackers, cacheTimeMs)
-		systemStats.NetworkSent = 0
-		systemStats.NetworkRecv = 0
 		systemStats.Bandwidth[0], systemStats.Bandwidth[1] = 0, 0
 		return
 	}
 
-	systemStats.NetworkSent = networkSentPs
-	systemStats.NetworkRecv = networkRecvPs
 	systemStats.Bandwidth[0], systemStats.Bandwidth[1] = bytesSentPerSecond, bytesRecvPerSecond
 	nis.BytesSent = totalBytesSent
 	nis.BytesRecv = totalBytesRecv
