@@ -262,7 +262,9 @@ export interface ContainerRecord extends RecordModel {
 	updated: number
 }
 
-export type ChartTimes = "1m" | "1h" | "12h" | "24h" | "1w" | "30d"
+export type ChartTimes = "1m" | "1h" | "12h" | "24h" | "1w" | "30d" | "90d" | "1y"
+
+export type ChartMaxPeriod = "30d" | "90d" | "1y" | "all"
 
 export interface ChartTimeData {
 	[key: string]: {
@@ -278,6 +280,7 @@ export interface ChartTimeData {
 
 export interface UserSettings {
 	chartTime: ChartTimes
+	maxChartPeriod?: ChartMaxPeriod
 	emails?: string[]
 	webhooks?: string[]
 	unitTemp?: Unit
