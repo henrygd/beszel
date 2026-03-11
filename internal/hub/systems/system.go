@@ -139,13 +139,25 @@ func (sys *System) update() error {
 	// create system records
 	_, err = sys.createRecords(data)
 
+	// if details were included and fetched successfully, mark details as fetched and update smart interval if set by agent
+	if err == nil && data.Details != nil {
+		sys.detailsFetched.Store(true)
+		// update smart interval if it's set on the agent side
+		if data.Details.SmartInterval > 0 {
+			sys.smartInterval = data.Details.SmartInterval
+			// make sure we reset expiration of lastFetch to remain as long as the new smart interval
+			// to prevent premature expiration leading to new fetch if interval is different.
+			sys.manager.smartFetchMap.UpdateExpiration(sys.Id, sys.smartInterval+time.Minute)
+		}
+	}
+
 	// Fetch and save SMART devices when system first comes online or at intervals
-	if backgroundSmartFetchEnabled() {
+	if backgroundSmartFetchEnabled() && sys.detailsFetched.Load() {
 		if sys.smartInterval <= 0 {
 			sys.smartInterval = time.Hour
 		}
 		lastFetch, _ := sys.manager.smartFetchMap.GetOk(sys.Id)
-		if time.Since(time.UnixMilli(lastFetch)) >= sys.smartInterval && sys.smartFetching.CompareAndSwap(false, true) {
+		if time.Since(time.UnixMilli(lastFetch-1e4)) >= sys.smartInterval && sys.smartFetching.CompareAndSwap(false, true) {
 			go func() {
 				defer sys.smartFetching.Store(false)
 				sys.manager.smartFetchMap.Set(sys.Id, time.Now().UnixMilli(), sys.smartInterval+time.Minute)
@@ -222,11 +234,6 @@ func (sys *System) createRecords(data *system.CombinedData) (*core.Record, error
 		if data.Details != nil {
 			if err := createSystemDetailsRecord(txApp, data.Details, sys.Id); err != nil {
 				return err
-			}
-			sys.detailsFetched.Store(true)
-			// update smart interval if it's set on the agent side
-			if data.Details.SmartInterval > 0 {
-				sys.smartInterval = data.Details.SmartInterval
 			}
 		}
 
