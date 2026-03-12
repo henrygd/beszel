@@ -54,12 +54,6 @@ export interface SystemInfo {
 	c: number
 	/** cpu model */
 	m: string
-	/** load average 1 minute */
-	l1?: number
-	/** load average 5 minutes */
-	l5?: number
-	/** load average 15 minutes */
-	l15?: number
 	/** load average */
 	la?: [number, number, number]
 	/** operating system */
@@ -103,13 +97,6 @@ export interface SystemStats {
 	cpub?: number[]
 	/** per-core cpu usage [CPU0..] (0-100 integers) */
 	cpus?: number[]
-	// TODO: remove these in future release in favor of la
-	/** load average 1 minute */
-	l1?: number
-	/** load average 5 minutes */
-	l5?: number
-	/** load average 15 minutes */
-	l15?: number
 	/** load average */
 	la?: [number, number, number]
 	/** total memory (gb) */

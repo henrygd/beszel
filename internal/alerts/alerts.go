@@ -40,16 +40,22 @@ type UserNotificationSettings struct {
 	Webhooks []string `json:"webhooks"`
 }
 
+type SystemAlertFsStats struct {
+	DiskTotal float64 `json:"d"`
+	DiskUsed  float64 `json:"du"`
+}
+
+// Values pulled from system_stats.stats that are relevant to alerts.
 type SystemAlertStats struct {
 	Cpu          float64                       `json:"cpu"`
 	Mem          float64                       `json:"mp"`
 	Disk         float64                       `json:"dp"`
-	NetSent      float64                       `json:"ns"`
-	NetRecv      float64                       `json:"nr"`
+	Bandwidth    [2]uint64                     `json:"b"`
 	GPU          map[string]SystemAlertGPUData `json:"g"`
 	Temperatures map[string]float32            `json:"t"`
 	LoadAvg      [3]float64                    `json:"la"`
 	Battery      [2]uint8                      `json:"bat"`
+	ExtraFs      map[string]SystemAlertFsStats `json:"efs"`
 }
 
 type SystemAlertGPUData struct {
@@ -259,13 +265,14 @@ func (am *AlertManager) SendShoutrrrAlert(notificationUrl, title, message, link,
 	}
 
 	// Add link
-	if scheme == "ntfy" {
+	switch scheme {
+	case "ntfy":
 		queryParams.Add("Actions", fmt.Sprintf("view, %s, %s", linkText, link))
-	} else if scheme == "lark" {
+	case "lark":
 		queryParams.Add("link", link)
-	} else if scheme == "bark" {
+	case "bark":
 		queryParams.Add("url", link)
-	} else {
+	default:
 		message += "\n\n" + link
 	}
 

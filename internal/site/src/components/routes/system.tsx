@@ -654,7 +654,7 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 					)}
 
 					{/* Load Average chart */}
-					{chartData.agentVersion?.minor >= 12 && (
+					{chartData.agentVersion?.minor > 12 && (
 						<ChartCard
 							empty={dataEmpty}
 							grid={grid}

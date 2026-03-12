@@ -134,7 +134,10 @@ func (am *AlertManager) handleSystemUp(systemName string, alertRecords []*core.R
 			}
 			continue
 		}
-		// No alert scheduled for this record, send "up" alert
+		// No alert scheduled for this record, send "up" alert only if "down" was triggered
+		if !alertRecord.GetBool("triggered") {
+			continue
+		}
 		if err := am.sendStatusAlert("up", systemName, alertRecord); err != nil {
 			am.hub.Logger().Error("Failed to send alert", "err", err)
 		}
