@@ -133,16 +133,31 @@ func (sys *System) update() error {
 		return err
 	}
 
+	// ensure deprecated fields from older agents are migrated to current fields
+	migrateDeprecatedFields(data, !sys.detailsFetched.Load())
+
 	// create system records
 	_, err = sys.createRecords(data)
 
+	// if details were included and fetched successfully, mark details as fetched and update smart interval if set by agent
+	if err == nil && data.Details != nil {
+		sys.detailsFetched.Store(true)
+		// update smart interval if it's set on the agent side
+		if data.Details.SmartInterval > 0 {
+			sys.smartInterval = data.Details.SmartInterval
+			// make sure we reset expiration of lastFetch to remain as long as the new smart interval
+			// to prevent premature expiration leading to new fetch if interval is different.
+			sys.manager.smartFetchMap.UpdateExpiration(sys.Id, sys.smartInterval+time.Minute)
+		}
+	}
+
 	// Fetch and save SMART devices when system first comes online or at intervals
-	if backgroundSmartFetchEnabled() {
+	if backgroundSmartFetchEnabled() && sys.detailsFetched.Load() {
 		if sys.smartInterval <= 0 {
 			sys.smartInterval = time.Hour
 		}
 		lastFetch, _ := sys.manager.smartFetchMap.GetOk(sys.Id)
-		if time.Since(time.UnixMilli(lastFetch)) >= sys.smartInterval && sys.smartFetching.CompareAndSwap(false, true) {
+		if time.Since(time.UnixMilli(lastFetch-1e4)) >= sys.smartInterval && sys.smartFetching.CompareAndSwap(false, true) {
 			go func() {
 				defer sys.smartFetching.Store(false)
 				sys.manager.smartFetchMap.Set(sys.Id, time.Now().UnixMilli(), sys.smartInterval+time.Minute)
@@ -219,11 +234,6 @@ func (sys *System) createRecords(data *system.CombinedData) (*core.Record, error
 		if data.Details != nil {
 			if err := createSystemDetailsRecord(txApp, data.Details, sys.Id); err != nil {
 				return err
-			}
-			sys.detailsFetched.Store(true)
-			// update smart interval if it's set on the agent side
-			if data.Details.SmartInterval > 0 {
-				sys.smartInterval = data.Details.SmartInterval
 			}
 		}
 
@@ -701,4 +711,51 @@ func getJitter() <-chan time.Time {
 	jitterRange := maxPercent - minPercent
 	msDelay := (interval * minPercent / 100) + rand.Intn(interval*jitterRange/100)
 	return time.After(time.Duration(msDelay) * time.Millisecond)
+}
+
+// migrateDeprecatedFields moves values from deprecated fields to their new locations if the new
+// fields are not already populated. Deprecated fields and refs may be removed at least 30 days
+// and one minor version release after the release that includes the migration.
+//
+// This is run when processing incoming system data from agents, which may be on older versions.
+func migrateDeprecatedFields(cd *system.CombinedData, createDetails bool) {
+	// migration added 0.19.0
+	if cd.Stats.Bandwidth[0] == 0 && cd.Stats.Bandwidth[1] == 0 {
+		cd.Stats.Bandwidth[0] = uint64(cd.Stats.NetworkSent * 1024 * 1024)
+		cd.Stats.Bandwidth[1] = uint64(cd.Stats.NetworkRecv * 1024 * 1024)
+		cd.Stats.NetworkSent, cd.Stats.NetworkRecv = 0, 0
+	}
+	// migration added 0.19.0
+	if cd.Info.BandwidthBytes == 0 {
+		cd.Info.BandwidthBytes = uint64(cd.Info.Bandwidth * 1024 * 1024)
+		cd.Info.Bandwidth = 0
+	}
+	// migration added 0.19.0
+	if cd.Stats.DiskIO[0] == 0 && cd.Stats.DiskIO[1] == 0 {
+		cd.Stats.DiskIO[0] = uint64(cd.Stats.DiskReadPs * 1024 * 1024)
+		cd.Stats.DiskIO[1] = uint64(cd.Stats.DiskWritePs * 1024 * 1024)
+		cd.Stats.DiskReadPs, cd.Stats.DiskWritePs = 0, 0
+	}
+	// migration added 0.19.0 - Move deprecated Info fields to Details struct
+	if cd.Details == nil && cd.Info.Hostname != "" {
+		if createDetails {
+			cd.Details = &system.Details{
+				Hostname:    cd.Info.Hostname,
+				Kernel:      cd.Info.KernelVersion,
+				Cores:       cd.Info.Cores,
+				Threads:     cd.Info.Threads,
+				CpuModel:    cd.Info.CpuModel,
+				Podman:      cd.Info.Podman,
+				Os:          cd.Info.Os,
+				MemoryTotal: uint64(cd.Stats.Mem * 1024 * 1024 * 1024),
+			}
+		}
+		// zero the deprecated fields to prevent saving them in systems.info DB json payload
+		cd.Info.Hostname = ""
+		cd.Info.KernelVersion = ""
+		cd.Info.Cores = 0
+		cd.Info.CpuModel = ""
+		cd.Info.Podman = false
+		cd.Info.Os = 0
+	}
 }

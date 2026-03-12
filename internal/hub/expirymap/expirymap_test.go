@@ -178,6 +178,33 @@ func TestExpiryMap_GenericTypes(t *testing.T) {
 	})
 }
 
+func TestExpiryMap_UpdateExpiration(t *testing.T) {
+	em := New[string](time.Hour)
+
+	// Set a value with short TTL
+	em.Set("key1", "value1", time.Millisecond*50)
+
+	// Verify it exists
+	assert.True(t, em.Has("key1"))
+
+	// Update expiration to a longer TTL
+	em.UpdateExpiration("key1", time.Hour)
+
+	// Wait for the original TTL to pass
+	time.Sleep(time.Millisecond * 100)
+
+	// Should still exist because expiration was updated
+	assert.True(t, em.Has("key1"))
+	value, ok := em.GetOk("key1")
+	assert.True(t, ok)
+	assert.Equal(t, "value1", value)
+
+	// Try updating non-existent key (should not panic)
+	assert.NotPanics(t, func() {
+		em.UpdateExpiration("nonexistent", time.Hour)
+	})
+}
+
 func TestExpiryMap_ZeroValues(t *testing.T) {
 	em := New[string](time.Hour)
 

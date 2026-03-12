@@ -198,32 +198,19 @@ export function SystemsTableColumns(viewMode: "table" | "grid"): ColumnDef<Syste
 		},
 		{
 			id: "loadAverage",
-			accessorFn: ({ info }) => {
-				const sum = info.la?.reduce((acc, curr) => acc + curr, 0)
-				// TODO: remove this in future release in favor of la array
-				if (!sum) {
-					return (info.l1 ?? 0) + (info.l5 ?? 0) + (info.l15 ?? 0) || undefined
-				}
-				return sum || undefined
-			},
+			accessorFn: ({ info }) => info.la?.reduce((acc, curr) => acc + curr, 0),
 			name: () => t({ message: "Load Avg", comment: "Short label for load average" }),
 			size: 0,
 			Icon: HourglassIcon,
 			header: sortableHeader,
 			cell(info: CellContext<SystemRecord, unknown>) {
 				const { info: sysInfo, status } = info.row.original
+				const { major, minor } = parseSemVer(sysInfo.v)
 				const { colorWarn = 65, colorCrit = 90 } = useStore($userSettings, { keys: ["colorWarn", "colorCrit"] })
-				// agent version
-				const { minor, patch } = parseSemVer(sysInfo.v)
-				let loadAverages = sysInfo.la
-
-				// use legacy load averages if agent version is less than 12.1.0
-				if (!loadAverages || (minor === 12 && patch < 1)) {
-					loadAverages = [sysInfo.l1 ?? 0, sysInfo.l5 ?? 0, sysInfo.l15 ?? 0]
-				}
+				const loadAverages = sysInfo.la || []
 
 				const max = Math.max(...loadAverages)
-				if (max === 0 && (status === SystemStatus.Paused || minor < 12)) {
+				if (max === 0 && (status === SystemStatus.Paused || (major < 1 && minor < 13))) {
 					return null
 				}
 
@@ -248,19 +235,20 @@ export function SystemsTableColumns(viewMode: "table" | "grid"): ColumnDef<Syste
 			},
 		},
 		{
-			accessorFn: ({ info }) => info.bb || (info.b || 0) * 1024 * 1024 || undefined,
+			accessorFn: ({ info, status }) => (status !== SystemStatus.Up ? undefined : info.bb),
 			id: "net",
 			name: () => t`Net`,
 			size: 0,
 			Icon: EthernetIcon,
 			header: sortableHeader,
+			sortUndefined: "last",
 			cell(info) {
-				const sys = info.row.original
-				const userSettings = useStore($userSettings, { keys: ["unitNet"] })
-				if (sys.status === SystemStatus.Paused) {
+				const val = info.getValue() as number | undefined
+				if (val === undefined) {
 					return null
 				}
-				const { value, unit } = formatBytes((info.getValue() || 0) as number, true, userSettings.unitNet, false)
+				const userSettings = useStore($userSettings, { keys: ["unitNet"] })
+				const { value, unit } = formatBytes(val, true, userSettings.unitNet, false)
 				return (
 					<span className="tabular-nums whitespace-nowrap">
 						{decimalString(value, value >= 100 ? 1 : 2)} {unit}

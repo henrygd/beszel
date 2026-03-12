@@ -16,19 +16,16 @@ import { useYAxisWidth } from "./hooks"
 export default memo(function LoadAverageChart({ chartData }: { chartData: ChartData }) {
 	const { yAxisWidth, updateYAxisWidth } = useYAxisWidth()
 
-	const keys: { legacy: keyof SystemStats; color: string; label: string }[] = [
+	const keys: { color: string; label: string }[] = [
 		{
-			legacy: "l1",
 			color: "hsl(271, 81%, 60%)", // Purple
 			label: t({ message: `1 min`, comment: "Load average" }),
 		},
 		{
-			legacy: "l5",
 			color: "hsl(217, 91%, 60%)", // Blue
 			label: t({ message: `5 min`, comment: "Load average" }),
 		},
 		{
-			legacy: "l15",
 			color: "hsl(25, 95%, 53%)", // Orange
 			label: t({ message: `15 min`, comment: "Load average" }),
 		},
@@ -66,27 +63,18 @@ export default memo(function LoadAverageChart({ chartData }: { chartData: ChartD
 							/>
 						}
 					/>
-					{keys.map(({ legacy, color, label }, i) => {
-						const dataKey = (value: { stats: SystemStats }) => {
-							const { minor, patch } = chartData.agentVersion
-							if (minor <= 12 && patch < 1) {
-								return value.stats?.[legacy]
-							}
-							return value.stats?.la?.[i] ?? value.stats?.[legacy]
-						}
-						return (
-							<Line
-								key={label}
-								dataKey={dataKey}
-								name={label}
-								type="monotoneX"
-								dot={false}
-								strokeWidth={1.5}
-								stroke={color}
-								isAnimationActive={false}
-							/>
-						)
-					})}
+					{keys.map(({ color, label }, i) => (
+						<Line
+							key={label}
+							dataKey={(value: { stats: SystemStats }) => value.stats?.la?.[i]}
+							name={label}
+							type="monotoneX"
+							dot={false}
+							strokeWidth={1.5}
+							stroke={color}
+							isAnimationActive={false}
+						/>
+					))}
 					<ChartLegend content={<ChartLegendContent />} />
 				</LineChart>
 			</ChartContainer>

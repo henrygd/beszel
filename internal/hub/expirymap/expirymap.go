@@ -16,7 +16,7 @@ type val[T comparable] struct {
 }
 
 type ExpiryMap[T comparable] struct {
-	store    *store.Store[string, *val[T]]
+	store    store.Store[string, val[T]]
 	stopChan chan struct{}
 	stopOnce sync.Once
 }
@@ -24,7 +24,7 @@ type ExpiryMap[T comparable] struct {
 // New creates a new expiry map with custom cleanup interval
 func New[T comparable](cleanupInterval time.Duration) *ExpiryMap[T] {
 	m := &ExpiryMap[T]{
-		store:    store.New(map[string]*val[T]{}),
+		store:    *store.New(map[string]val[T]{}),
 		stopChan: make(chan struct{}),
 	}
 	go m.startCleaner(cleanupInterval)
@@ -33,7 +33,7 @@ func New[T comparable](cleanupInterval time.Duration) *ExpiryMap[T] {
 
 // Set stores a value with the given TTL
 func (m *ExpiryMap[T]) Set(key string, value T, ttl time.Duration) {
-	m.store.Set(key, &val[T]{
+	m.store.Set(key, val[T]{
 		value:   value,
 		expires: time.Now().Add(ttl),
 	})
@@ -114,5 +114,14 @@ func (m *ExpiryMap[T]) cleanup() {
 		if val.expires.Before(now) {
 			m.store.Remove(key)
 		}
+	}
+}
+
+// UpdateExpiration updates the expiration time of a key
+func (m *ExpiryMap[T]) UpdateExpiration(key string, ttl time.Duration) {
+	value, ok := m.store.GetOk(key)
+	if ok {
+		value.expires = time.Now().Add(ttl)
+		m.store.Set(key, value)
 	}
 }
