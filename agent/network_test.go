@@ -261,6 +261,39 @@ func TestNewNicConfig(t *testing.T) {
 		})
 	}
 }
+func TestSkipNetworkInterface(t *testing.T) {
+	tests := []struct {
+		name       string
+		nic        psutilNet.IOCountersStat
+		nicCfg     *NicConfig
+		expectSkip bool
+	}{
+		{"loopback lo", psutilNet.IOCountersStat{Name: "lo", BytesSent: 100, BytesRecv: 100}, nil, true},
+		{"loopback lo0", psutilNet.IOCountersStat{Name: "lo0", BytesSent: 100, BytesRecv: 100}, nil, true},
+		{"docker prefix", psutilNet.IOCountersStat{Name: "docker0", BytesSent: 100, BytesRecv: 100}, nil, true},
+		{"br- prefix", psutilNet.IOCountersStat{Name: "br-lan", BytesSent: 100, BytesRecv: 100}, nil, true},
+		{"veth prefix", psutilNet.IOCountersStat{Name: "veth0abc", BytesSent: 100, BytesRecv: 100}, nil, true},
+		{"bond prefix", psutilNet.IOCountersStat{Name: "bond0", BytesSent: 100, BytesRecv: 100}, nil, true},
+		{"cali prefix", psutilNet.IOCountersStat{Name: "cali1234", BytesSent: 100, BytesRecv: 100}, nil, true},
+		{"zero BytesRecv", psutilNet.IOCountersStat{Name: "eth0", BytesSent: 100, BytesRecv: 0}, nil, true},
+		{"zero BytesSent", psutilNet.IOCountersStat{Name: "eth0", BytesSent: 0, BytesRecv: 100}, nil, true},
+		{"both zero", psutilNet.IOCountersStat{Name: "eth0", BytesSent: 0, BytesRecv: 0}, nil, true},
+		{"normal eth0", psutilNet.IOCountersStat{Name: "eth0", BytesSent: 100, BytesRecv: 200}, nil, false},
+		{"normal wlan0", psutilNet.IOCountersStat{Name: "wlan0", BytesSent: 1, BytesRecv: 1}, nil, false},
+		{"whitelist overrides skip (docker)", psutilNet.IOCountersStat{Name: "docker0", BytesSent: 100, BytesRecv: 100}, newNicConfig("docker0"), false},
+		{"whitelist overrides skip (lo)", psutilNet.IOCountersStat{Name: "lo", BytesSent: 100, BytesRecv: 100}, newNicConfig("lo"), false},
+		{"whitelist exclusion", psutilNet.IOCountersStat{Name: "eth1", BytesSent: 100, BytesRecv: 100}, newNicConfig("eth0"), true},
+		{"blacklist skip lo", psutilNet.IOCountersStat{Name: "lo", BytesSent: 100, BytesRecv: 100}, newNicConfig("-eth0"), true},
+		{"blacklist explicit eth0", psutilNet.IOCountersStat{Name: "eth0", BytesSent: 100, BytesRecv: 100}, newNicConfig("-eth0"), true},
+		{"blacklist allow eth1", psutilNet.IOCountersStat{Name: "eth1", BytesSent: 100, BytesRecv: 100}, newNicConfig("-eth0"), false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.Equal(t, tt.expectSkip, skipNetworkInterface(tt.nic, tt.nicCfg))
+		})
+	}
+}
+
 func TestEnsureNetworkInterfacesMap(t *testing.T) {
 	var a Agent
 	var stats system.Stats
@@ -383,8 +416,6 @@ func TestApplyNetworkTotals(t *testing.T) {
 		totalBytesSent        uint64
 		totalBytesRecv        uint64
 		expectReset           bool
-		expectedNetworkSent   float64
-		expectedNetworkRecv   float64
 		expectedBandwidthSent uint64
 		expectedBandwidthRecv uint64
 	}{
@@ -395,8 +426,6 @@ func TestApplyNetworkTotals(t *testing.T) {
 			totalBytesSent:        10000000,
 			totalBytesRecv:        20000000,
 			expectReset:           false,
-			expectedNetworkSent:   0.95, // ~1 MB/s rounded to 2 decimals
-			expectedNetworkRecv:   1.91, // ~2 MB/s rounded to 2 decimals
 			expectedBandwidthSent: 1000000,
 			expectedBandwidthRecv: 2000000,
 		},
@@ -425,26 +454,12 @@ func TestApplyNetworkTotals(t *testing.T) {
 			expectReset:        true,
 		},
 		{
-			name:                  "Valid network stats - at threshold boundary",
-			bytesSentPerSecond:    10485750000, // ~9999.99 MB/s (rounds to 9999.99)
-			bytesRecvPerSecond:    10485750000, // ~9999.99 MB/s (rounds to 9999.99)
-			totalBytesSent:        10000000,
-			totalBytesRecv:        20000000,
-			expectReset:           false,
-			expectedNetworkSent:   9999.99,
-			expectedNetworkRecv:   9999.99,
-			expectedBandwidthSent: 10485750000,
-			expectedBandwidthRecv: 10485750000,
-		},
-		{
 			name:                  "Zero values",
 			bytesSentPerSecond:    0,
 			bytesRecvPerSecond:    0,
 			totalBytesSent:        0,
 			totalBytesRecv:        0,
 			expectReset:           false,
-			expectedNetworkSent:   0.0,
-			expectedNetworkRecv:   0.0,
 			expectedBandwidthSent: 0,
 			expectedBandwidthRecv: 0,
 		},
@@ -481,14 +496,10 @@ func TestApplyNetworkTotals(t *testing.T) {
 				// Should have reset network tracking state - maps cleared and stats zeroed
 				assert.NotContains(t, a.netIoStats, cacheTimeMs, "cache entry should be cleared after reset")
 				assert.NotContains(t, a.netInterfaceDeltaTrackers, cacheTimeMs, "tracker should be cleared on reset")
-				assert.Zero(t, systemStats.NetworkSent)
-				assert.Zero(t, systemStats.NetworkRecv)
 				assert.Zero(t, systemStats.Bandwidth[0])
 				assert.Zero(t, systemStats.Bandwidth[1])
 			} else {
 				// Should have applied stats
-				assert.Equal(t, tt.expectedNetworkSent, systemStats.NetworkSent)
-				assert.Equal(t, tt.expectedNetworkRecv, systemStats.NetworkRecv)
 				assert.Equal(t, tt.expectedBandwidthSent, systemStats.Bandwidth[0])
 				assert.Equal(t, tt.expectedBandwidthRecv, systemStats.Bandwidth[1])
 

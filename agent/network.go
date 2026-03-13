@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/henrygd/beszel/agent/deltatracker"
+	"github.com/henrygd/beszel/agent/utils"
 	"github.com/henrygd/beszel/internal/entities/system"
 	psutilNet "github.com/shirou/gopsutil/v4/net"
 )
@@ -94,7 +95,7 @@ func (a *Agent) initializeNetIoStats() {
 	a.netInterfaces = make(map[string]struct{}, 0)
 
 	// parse NICS env var for whitelist / blacklist
-	nicsEnvVal, nicsEnvExists := GetEnv("NICS")
+	nicsEnvVal, nicsEnvExists := utils.GetEnv("NICS")
 	var nicCfg *NicConfig
 	if nicsEnvExists {
 		nicCfg = newNicConfig(nicsEnvVal)
@@ -103,10 +104,7 @@ func (a *Agent) initializeNetIoStats() {
 	// get current network I/O stats and record valid interfaces
 	if netIO, err := psutilNet.IOCounters(true); err == nil {
 		for _, v := range netIO {
-			if nicsEnvExists && !isValidNic(v.Name, nicCfg) {
-				continue
-			}
-			if a.skipNetworkInterface(v) {
+			if skipNetworkInterface(v, nicCfg) {
 				continue
 			}
 			slog.Info("Detected network interface", "name", v.Name, "sent", v.BytesSent, "recv", v.BytesRecv)
@@ -215,10 +213,8 @@ func (a *Agent) applyNetworkTotals(
 	totalBytesSent, totalBytesRecv uint64,
 	bytesSentPerSecond, bytesRecvPerSecond uint64,
 ) {
-	networkSentPs := bytesToMegabytes(float64(bytesSentPerSecond))
-	networkRecvPs := bytesToMegabytes(float64(bytesRecvPerSecond))
-	if networkSentPs > 10_000 || networkRecvPs > 10_000 {
-		slog.Warn("Invalid net stats. Resetting.", "sent", networkSentPs, "recv", networkRecvPs)
+	if bytesSentPerSecond > 10_000_000_000 || bytesRecvPerSecond > 10_000_000_000 {
+		slog.Warn("Invalid net stats. Resetting.", "sent", bytesSentPerSecond, "recv", bytesRecvPerSecond)
 		for _, v := range netIO {
 			if _, exists := a.netInterfaces[v.Name]; !exists {
 				continue
@@ -228,21 +224,29 @@ func (a *Agent) applyNetworkTotals(
 		a.initializeNetIoStats()
 		delete(a.netIoStats, cacheTimeMs)
 		delete(a.netInterfaceDeltaTrackers, cacheTimeMs)
-		systemStats.NetworkSent = 0
-		systemStats.NetworkRecv = 0
 		systemStats.Bandwidth[0], systemStats.Bandwidth[1] = 0, 0
 		return
 	}
 
-	systemStats.NetworkSent = networkSentPs
-	systemStats.NetworkRecv = networkRecvPs
 	systemStats.Bandwidth[0], systemStats.Bandwidth[1] = bytesSentPerSecond, bytesRecvPerSecond
 	nis.BytesSent = totalBytesSent
 	nis.BytesRecv = totalBytesRecv
 	a.netIoStats[cacheTimeMs] = nis
 }
 
-func (a *Agent) skipNetworkInterface(v psutilNet.IOCountersStat) bool {
+// skipNetworkInterface returns true if the network interface should be ignored.
+func skipNetworkInterface(v psutilNet.IOCountersStat, nicCfg *NicConfig) bool {
+	if nicCfg != nil {
+		if !isValidNic(v.Name, nicCfg) {
+			return true
+		}
+		// In whitelist mode, we honor explicit inclusion without auto-filtering.
+		if !nicCfg.isBlacklist {
+			return false
+		}
+		// In blacklist mode, still apply the auto-filter below.
+	}
+
 	switch {
 	case strings.HasPrefix(v.Name, "lo"),
 		strings.HasPrefix(v.Name, "docker"),

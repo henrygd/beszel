@@ -917,7 +917,7 @@ func TestAgentWebSocketIntegration(t *testing.T) {
 
 			// Wait for connection result
 			maxWait := 2 * time.Second
-			time.Sleep(20 * time.Millisecond)
+			time.Sleep(40 * time.Millisecond)
 			checkInterval := 20 * time.Millisecond
 			timeout := time.After(maxWait)
 			ticker := time.Tick(checkInterval)
