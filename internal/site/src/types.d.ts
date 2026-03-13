@@ -300,6 +300,7 @@ export interface UserSettings {
 	colorCrit?: number
 	hourFormat?: HourFormat
 	layoutWidth?: number
+	disableTabs?: boolean
 }
 
 type ChartDataContainer = {

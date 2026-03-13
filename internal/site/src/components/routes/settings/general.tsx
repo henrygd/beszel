@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Separator } from "@/components/ui/separator"
 import Slider from "@/components/ui/slider"
+import { Switch } from "@/components/ui/switch"
 import { HourFormat, Unit } from "@/lib/enums"
 import { dynamicActivate } from "@/lib/i18n"
 import languages from "@/lib/languages"
@@ -105,6 +106,22 @@ export default function SettingsProfilePage({ userSettings }: { userSettings: Us
 						max={2000}
 						step={10}
 						className="w-full mb-1"
+					/>
+				</div>
+				<Separator />
+				<div className="grid gap-2">
+					<div className="mb-2">
+						<h3 className="mb-1 text-lg font-medium">
+							<Trans>Tabbed layout</Trans>
+						</h3>
+						<Label htmlFor="disableTabs" className="text-sm text-muted-foreground leading-relaxed">
+							<Trans>Show system charts in grouped tabs instead of a single scrollable page</Trans>
+						</Label>
+					</div>
+					<Switch
+						id="disableTabs"
+						checked={!currentUserSettings.disableTabs}
+						onCheckedChange={(checked) => saveSettings({ disableTabs: !checked })}
 					/>
 				</div>
 				<Separator />

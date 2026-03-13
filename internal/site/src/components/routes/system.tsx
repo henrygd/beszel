@@ -94,6 +94,7 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 	const systems = useStore($systems)
 	const chartTime = useStore($chartTime)
 	const direction = useStore($direction)
+	const userSettings = useStore($userSettings)
 	const [grid, setGrid] = useBrowserStorage("grid", true)
 	const [system, setSystem] = useState({} as SystemRecord)
 	const [systemStats, setSystemStats] = useState<SystemStatsRecord[]>([])
@@ -236,6 +237,19 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 	const isLinux = !(details?.os ?? system.info?.os)
 	const hasServices = isLinux && compareSemVer(chartData.agentVersion, parseSemVer("0.16.0")) >= 0
 	const tabCount = 2 + +hasGpuData + +hasContainers + +hasServices
+
+	if (userSettings.disableTabs) {
+		return (
+			<div className="grid gap-4 mb-14 overflow-x-clip">
+				<InfoBar system={system} chartData={chartData} grid={grid} setGrid={setGrid} details={details} />
+				<CoreMetricsTab chartData={chartData} grid={grid} />
+				<DisksTab chartData={chartData} grid={grid} systemId={system.id} />
+				{hasGpuData && <GpuTab chartData={chartData} grid={grid} />}
+				{hasContainers && <ContainersTab chartData={chartData} grid={grid} system={system} />}
+				{hasServices && <ServicesTab systemId={system.id} />}
+			</div>
+		)
+	}
 
 	return (
 		<div className="grid gap-4 mb-14 overflow-x-clip">
