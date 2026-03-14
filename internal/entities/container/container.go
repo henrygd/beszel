@@ -10,6 +10,10 @@ type ApiInfo struct {
 	Status  string
 	State   string
 	Image   string
+	Health  struct {
+		Status string
+		// FailingStreak int
+	}
 	// ImageID string
 	// Command string
 	// Created int64

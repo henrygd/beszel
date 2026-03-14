@@ -403,6 +403,14 @@ func (dm *dockerManager) updateContainerStats(ctr *container.ApiInfo, cacheTimeM
 	stats.Id = ctr.IdShort
 
 	statusText, health := parseDockerStatus(ctr.Status)
+
+	// Use Health.Status if it's available (Docker API 1.52+; Podman TBD - https://github.com/containers/podman/issues/27786)
+	if ctr.Health.Status != "" {
+		if h, ok := container.DockerHealthStrings[ctr.Health.Status]; ok {
+			health = h
+		}
+	}
+
 	stats.Status = statusText
 	stats.Health = health
 
