@@ -16,6 +16,8 @@ import (
 	"os"
 	"path"
 	"regexp"
+	"sort"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -346,6 +348,33 @@ func updateContainerStatsValues(stats *container.Stats, cpuPct float64, usedMemo
 	stats.PrevReadTime = readTime
 }
 
+// convertContainerPortsToString formats the ports of a container into a sorted, deduplicated string.
+// ctr.Ports is nilled out after processing so the slice is not accidentally reused.
+func convertContainerPortsToString(ctr *container.ApiInfo) string {
+	if len(ctr.Ports) == 0 {
+		return ""
+	}
+	sort.Slice(ctr.Ports, func(i, j int) bool {
+		return ctr.Ports[i].PublicPort < ctr.Ports[j].PublicPort
+	})
+	var builder strings.Builder
+	seenPorts := make(map[uint16]struct{})
+	for _, p := range ctr.Ports {
+		_, ok := seenPorts[p.PublicPort]
+		if p.PublicPort == 0 || ok {
+			continue
+		}
+		seenPorts[p.PublicPort] = struct{}{}
+		if builder.Len() > 0 {
+			builder.WriteString(", ")
+		}
+		builder.WriteString(strconv.Itoa(int(p.PublicPort)))
+	}
+	// clear ports slice so it doesn't get reused and blend into next response
+	ctr.Ports = nil
+	return builder.String()
+}
+
 func parseDockerStatus(status string) (string, container.DockerHealth) {
 	trimmed := strings.TrimSpace(status)
 	if trimmed == "" {
@@ -413,6 +442,10 @@ func (dm *dockerManager) updateContainerStats(ctr *container.ApiInfo, cacheTimeM
 
 	stats.Status = statusText
 	stats.Health = health
+
+	if len(ctr.Ports) > 0 {
+		stats.Ports = convertContainerPortsToString(ctr)
+	}
 
 	// reset current stats
 	stats.Cpu = 0

@@ -14,10 +14,15 @@ type ApiInfo struct {
 		Status string
 		// FailingStreak int
 	}
+	Ports []struct {
+		// PrivatePort uint16
+		PublicPort uint16
+		// IP          string
+		// Type        string
+	}
 	// ImageID string
 	// Command string
 	// Created int64
-	// Ports      []Port
 	// SizeRw     int64 `json:",omitempty"`
 	// SizeRootFs int64 `json:",omitempty"`
 	// Labels     map[string]string
@@ -144,6 +149,7 @@ type Stats struct {
 	Status string       `json:"-" cbor:"6,keyasint"`
 	Id     string       `json:"-" cbor:"7,keyasint"`
 	Image  string       `json:"-" cbor:"8,keyasint"`
+	Ports  string       `json:"-" cbor:"10,keyasint"`
 	// PrevCpu     [2]uint64    `json:"-"`
 	CpuSystem    uint64       `json:"-"`
 	CpuContainer uint64       `json:"-"`
