@@ -1,5 +1,6 @@
 import { t } from "@lingui/core/macro"
 import { Trans } from "@lingui/react/macro"
+import { getPagePath } from "@nanostores/router"
 import {
 	type ColumnFiltersState,
 	flexRender,
@@ -13,24 +14,23 @@ import {
 	type VisibilityState,
 } from "@tanstack/react-table"
 import { useVirtualizer, type VirtualItem } from "@tanstack/react-virtual"
-import { memo, RefObject, useEffect, useRef, useState } from "react"
+import { LoaderCircleIcon, MaximizeIcon, RefreshCwIcon, XIcon } from "lucide-react"
+import { listenKeys } from "nanostores"
+import { memo, type RefObject, useEffect, useRef, useState } from "react"
+import { type ContainerTableMeta, containerChartCols } from "@/components/containers-table/containers-table-columns"
+import { Button } from "@/components/ui/button"
+import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { pb } from "@/lib/api"
-import type { ContainerRecord } from "@/types"
-import { containerChartCols } from "@/components/containers-table/containers-table-columns"
-import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { type ContainerHealth, ContainerHealthLabels } from "@/lib/enums"
-import { cn, useBrowserStorage } from "@/lib/utils"
-import { Sheet, SheetTitle, SheetHeader, SheetContent, SheetDescription } from "../ui/sheet"
-import { Dialog, DialogContent, DialogTitle } from "../ui/dialog"
-import { Button } from "@/components/ui/button"
 import { $allSystemsById } from "@/lib/stores"
-import { LoaderCircleIcon, MaximizeIcon, RefreshCwIcon, XIcon } from "lucide-react"
-import { Separator } from "../ui/separator"
+import { cn, useBrowserStorage } from "@/lib/utils"
+import type { ContainerRecord } from "@/types"
 import { $router, Link } from "../router"
-import { listenKeys } from "nanostores"
-import { getPagePath } from "@nanostores/router"
+import { Dialog, DialogContent, DialogTitle } from "../ui/dialog"
+import { Separator } from "../ui/separator"
+import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "../ui/sheet"
 
 const syntaxTheme = "github-dark-dimmed"
 
@@ -46,12 +46,15 @@ export default function ContainersTable({ systemId }: { systemId?: string }) {
 	const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
 	const [rowSelection, setRowSelection] = useState({})
 	const [globalFilter, setGlobalFilter] = useState("")
+	const onAliasUpdated: NonNullable<ContainerTableMeta["onAliasUpdated"]> = (containerId, alias) => {
+		setData((curItems) => curItems?.map((item) => (item.id === containerId ? { ...item, alias } : item)))
+	}
 
 	useEffect(() => {
 		function fetchData(systemId?: string) {
 			pb.collection<ContainerRecord>("containers")
 				.getList(0, 2000, {
-					fields: "id,name,image,cpu,memory,net,health,status,system,updated",
+					fields: "id,name,image,cpu,memory,net,health,status,system,updated,alias",
 					filter: systemId ? pb.filter("system={:system}", { system: systemId }) : undefined,
 				})
 				.then(({ items }) => {
@@ -67,7 +70,7 @@ export default function ContainersTable({ systemId }: { systemId?: string }) {
 					setData((curItems) => {
 						const lastUpdated = Math.max(items[0].updated, items.at(-1)?.updated ?? 0)
 						const containerIds = new Set()
-						const newItems = []
+						const newItems: ContainerRecord[] = []
 						for (const item of items) {
 							if (Math.abs(lastUpdated - item.updated) < 70_000) {
 								containerIds.add(item.id)
@@ -113,6 +116,7 @@ export default function ContainersTable({ systemId }: { systemId?: string }) {
 		onColumnFiltersChange: setColumnFilters,
 		onColumnVisibilityChange: setColumnVisibility,
 		onRowSelectionChange: setRowSelection,
+		meta: { onAliasUpdated },
 		defaultColumn: {
 			sortUndefined: "last",
 			size: 100,
@@ -131,10 +135,11 @@ export default function ContainersTable({ systemId }: { systemId?: string }) {
 			const systemName = $allSystemsById.get()[container.system]?.name ?? ""
 			const id = container.id ?? ""
 			const name = container.name ?? ""
+			const alias = container.alias ?? ""
 			const status = container.status ?? ""
 			const healthLabel = ContainerHealthLabels[container.health as ContainerHealth] ?? ""
 			const image = container.image ?? ""
-			const searchString = `${systemName} ${id} ${name} ${healthLabel} ${status} ${image}`.toLowerCase()
+			const searchString = `${systemName} ${id} ${name} ${alias} ${healthLabel} ${status} ${image}`.toLowerCase()
 
 			return (filterValue as string)
 				.toLowerCase()

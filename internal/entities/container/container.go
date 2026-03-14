@@ -10,13 +10,13 @@ type ApiInfo struct {
 	Status  string
 	State   string
 	Image   string
+	Labels  map[string]string
 	// ImageID string
 	// Command string
 	// Created int64
 	// Ports      []Port
 	// SizeRw     int64 `json:",omitempty"`
 	// SizeRootFs int64 `json:",omitempty"`
-	// Labels     map[string]string
 	// HostConfig struct {
 	// 	NetworkMode string            `json:",omitempty"`
 	// 	Annotations map[string]string `json:",omitempty"`
@@ -136,10 +136,11 @@ type Stats struct {
 	NetworkRecv float64   `json:"nr,omitzero" cbor:"4,keyasint,omitzero"` // deprecated 0.18.3 (MB) - keep field for old agents/records
 	Bandwidth   [2]uint64 `json:"b,omitzero" cbor:"9,keyasint,omitzero"`  // [sent bytes, recv bytes]
 
-	Health DockerHealth `json:"-" cbor:"5,keyasint"`
-	Status string       `json:"-" cbor:"6,keyasint"`
-	Id     string       `json:"-" cbor:"7,keyasint"`
-	Image  string       `json:"-" cbor:"8,keyasint"`
+	Health DockerHealth      `json:"-" cbor:"5,keyasint"`
+	Status string            `json:"-" cbor:"6,keyasint"`
+	Id     string            `json:"-" cbor:"7,keyasint"`
+	Image  string            `json:"-" cbor:"8,keyasint"`
+	Labels map[string]string `json:"-" cbor:"10,keyasint,omitempty"`
 	// PrevCpu     [2]uint64    `json:"-"`
 	CpuSystem    uint64       `json:"-"`
 	CpuContainer uint64       `json:"-"`

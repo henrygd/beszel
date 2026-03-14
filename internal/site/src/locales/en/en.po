@@ -79,6 +79,7 @@ msgid "5 min"
 msgstr "5 min"
 
 #. Table column
+#: src/components/containers-table/containers-table-columns.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 #: src/components/routes/system/smart-table.tsx
@@ -155,6 +156,10 @@ msgstr "Alert History"
 msgid "Alerts"
 msgstr "Alerts"
 
+#: src/components/containers-table/container-alias-action-button.tsx
+msgid "Alias (optional)"
+msgstr "Alias (optional)"
+
 #: src/components/command-palette.tsx
 #: src/components/containers-table/containers-table.tsx
 #: src/components/navbar.tsx
@@ -178,6 +183,10 @@ msgstr "Are you sure you want to delete {name}?"
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Are you sure?"
 msgstr "Are you sure?"
+
+#: src/components/add-system.tsx
+msgid "Auto Container Alias"
+msgstr "Auto Container Alias"
 
 #: src/components/copy-to-clipboard.tsx
 msgid "Automatic copy requires a secure context."
@@ -299,6 +308,7 @@ msgstr "Can start"
 msgid "Can stop"
 msgstr "Can stop"
 
+#: src/components/containers-table/container-alias-action-button.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/systems-table/systems-table-columns.tsx
@@ -357,6 +367,10 @@ msgstr "Check your monitoring service"
 #: src/components/routes/settings/notifications.tsx
 msgid "Check your notification service"
 msgstr "Check your notification service"
+
+#: src/components/containers-table/container-alias-action-button.tsx
+msgid "Choose a friendly name for this container (optional)."
+msgstr "Choose a friendly name for this container (optional)."
 
 #: src/components/containers-table/containers-table.tsx
 #: src/components/routes/system/smart-table.tsx
@@ -626,6 +640,15 @@ msgstr "Edit"
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Edit {foo}"
 msgstr "Edit {foo}"
+
+#: src/components/containers-table/container-alias-action-button.tsx
+#: src/components/containers-table/container-alias-action-button.tsx
+msgid "Edit alias"
+msgstr "Edit alias"
+
+#: src/components/containers-table/container-alias-action-button.tsx
+msgid "Edit container alias"
+msgstr "Edit container alias"
 
 #: src/components/login/auth-form.tsx
 #: src/components/login/forgot-pass-form.tsx
@@ -1321,6 +1344,10 @@ msgstr "S.M.A.R.T. Details"
 msgid "S.M.A.R.T. Self-Test"
 msgstr "S.M.A.R.T. Self-Test"
 
+#: src/components/containers-table/container-alias-action-button.tsx
+msgid "Save"
+msgstr "Save"
+
 #: src/components/routes/settings/notifications.tsx
 msgid "Save address using enter key or comma. Leave blank to disable email notifications."
 msgstr "Save address using enter key or comma. Leave blank to disable email notifications."
@@ -1337,6 +1364,10 @@ msgstr "Save system"
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Saved in the database and does not expire until you disable it."
 msgstr "Saved in the database and does not expire until you disable it."
+
+#: src/components/containers-table/container-alias-action-button.tsx
+msgid "Saving..."
+msgstr "Saving..."
 
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Schedule"
@@ -1736,6 +1767,10 @@ msgstr "Usage"
 #: src/components/routes/system.tsx
 msgid "Usage of root partition"
 msgstr "Usage of root partition"
+
+#: src/components/add-system.tsx
+msgid "Use variables like $LABEL_KEY to build aliases from container labels."
+msgstr "Use variables like $LABEL_KEY to build aliases from container labels."
 
 #: src/components/charts/mem-chart.tsx
 #: src/components/charts/swap-chart.tsx
