@@ -52,7 +52,7 @@ export default function ContainersTable({ systemId }: { systemId?: string }) {
 		function fetchData(systemId?: string) {
 			pb.collection<ContainerRecord>("containers")
 				.getList(0, 2000, {
-					fields: "id,name,image,cpu,memory,net,health,status,system,updated",
+					fields: "id,name,image,ports,cpu,memory,net,health,status,system,updated",
 					filter: systemId ? pb.filter("system={:system}", { system: systemId }) : undefined,
 				})
 				.then(({ items }) => {
@@ -135,7 +135,8 @@ export default function ContainersTable({ systemId }: { systemId?: string }) {
 			const status = container.status ?? ""
 			const healthLabel = ContainerHealthLabels[container.health as ContainerHealth] ?? ""
 			const image = container.image ?? ""
-			const searchString = `${systemName} ${id} ${name} ${healthLabel} ${status} ${image}`.toLowerCase()
+			const ports = container.ports ?? ""
+			const searchString = `${systemName} ${id} ${name} ${healthLabel} ${status} ${image} ${ports}`.toLowerCase()
 
 			return (filterValue as string)
 				.toLowerCase()
@@ -386,8 +387,14 @@ function ContainerSheet({
 							{container.image}
 							<Separator orientation="vertical" className="h-2.5 bg-muted-foreground opacity-70" />
 							{container.id}
-							<Separator orientation="vertical" className="h-2.5 bg-muted-foreground opacity-70" />
-							{ContainerHealthLabels[container.health as ContainerHealth]}
+							{/* {container.ports && (
+								<>
+									<Separator orientation="vertical" className="h-2.5 bg-muted-foreground opacity-70" />
+									{container.ports}
+								</>
+							)} */}
+							{/* <Separator orientation="vertical" className="h-2.5 bg-muted-foreground opacity-70" />
+							{ContainerHealthLabels[container.health as ContainerHealth]} */}
 						</SheetDescription>
 					</SheetHeader>
 					<div className="px-3 pb-3 -mt-4 flex flex-col gap-3 h-full items-start">

@@ -4,7 +4,6 @@ import { cn, decimalString, formatBytes, hourWithSeconds } from "@/lib/utils"
 import type { ContainerRecord } from "@/types"
 import { ContainerHealth, ContainerHealthLabels } from "@/lib/enums"
 import {
-	ArrowUpDownIcon,
 	ClockIcon,
 	ContainerIcon,
 	CpuIcon,
@@ -13,11 +12,12 @@ import {
 	ServerIcon,
 	ShieldCheckIcon,
 } from "lucide-react"
-import { EthernetIcon, HourglassIcon } from "../ui/icons"
+import { EthernetIcon, HourglassIcon, SquareArrowRightEnterIcon } from "../ui/icons"
 import { Badge } from "../ui/badge"
 import { t } from "@lingui/core/macro"
 import { $allSystemsById } from "@/lib/stores"
 import { useStore } from "@nanostores/react"
+import { Tooltip, TooltipContent,  TooltipTrigger } from "../ui/tooltip"
 
 // Unit names and their corresponding number of seconds for converting docker status strings
 const unitSeconds = [
@@ -135,6 +135,29 @@ export const containerChartCols: ColumnDef<ContainerRecord>[] = [
 		},
 	},
 	{
+		id: "ports",
+		accessorFn: (record) => record.ports || undefined,
+		header: ({ column }) => (
+			<HeaderButton column={column} name={t({ message: "Ports", context: "Container ports" })} Icon={SquareArrowRightEnterIcon} />
+		),
+		cell: ({ getValue }) => {
+			const val = getValue() as string
+			if (!val) {
+				return <span className="ms-2">-</span>
+			}
+			const className = "ms-1.5 w-20 block truncate tabular-nums"
+			if (val.length > 9) {
+				return (
+					<Tooltip>
+						<TooltipTrigger className={className}>{val}</TooltipTrigger>
+						<TooltipContent>{val}</TooltipContent>
+					</Tooltip>
+				)
+			}
+			return <span className={className}>{val}</span>
+		},
+	},
+	{
 		id: "image",
 		sortingFn: (a, b) => a.original.image.localeCompare(b.original.image),
 		accessorFn: (record) => record.image,
@@ -188,7 +211,7 @@ function HeaderButton({
 		>
 			{Icon && <Icon className="size-4" />}
 			{name}
-			<ArrowUpDownIcon className="size-4" />
+			{/* <ArrowUpDownIcon className="size-4" /> */}
 		</Button>
 	)
 }
