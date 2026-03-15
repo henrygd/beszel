@@ -79,10 +79,13 @@ Essential parameters to configure:
 | Parameter | Default | Description |
 |-----------|---------|-------------|
 | `daemonset.enabled` | `true` | Deploy as DaemonSet (one pod per node) |
-| `env.KEY` | Required | SSH public key for Hub authentication |
+| `env.KEY` | Required* | SSH public key for Hub authentication (*unless using existingSecret) |
 | `env.TOKEN` | Empty | Authentication token (optional) |
 | `env.HUB_URL` | Empty | Hub URL (e.g., http://beszel-hub:8090) |
 | `env.PORT` | `45876` | Port the agent listens on |
+| `secret.existingSecret` | Empty | Name of an existing Kubernetes Secret to use |
+| `secret.sshKey` | `ssh-key` | Key name in the secret for the SSH public key |
+| `secret.tokenKey` | `token` | Key name in the secret for the authentication token |
 | `image.repository` | `henrygd/beszel-agent` | Container image |
 | `image.tag` | Chart AppVersion (0.17.0) | Image version |
 | `hostNetwork` | `false` | Use host network for network monitoring |
@@ -263,6 +266,49 @@ To restrict agents to specific nodes:
 tolerations: []
 nodeSelector:
   monitoring: "true"
+```
+
+### Using Existing Secrets
+
+The chart supports referencing an existing Kubernetes Secret instead of having the chart create one. This is useful when:
+
+- You want to manage secrets externally (e.g., with a secret operator, external secret manager, or GitOps)
+- You want to share a single secret across multiple deployments
+- You prefer not to store sensitive values in Helm values
+
+```yaml
+# Create the secret manually
+apiVersion: v1
+kind: Secret
+metadata:
+  name: my-beszel-secret
+type: Opaque
+data:
+  ssh-key: c3NoLWVkMjU1IDEgQUFBQU...  # base64 encoded SSH public key
+  token: dG9rZW4tdmFsdWU=              # base64 encoded token (optional)
+```
+
+Then reference it in your values:
+
+```yaml
+secret:
+  existingSecret: my-beszel-secret
+  sshKey: ssh-key      # key name in the secret (default: ssh-key)
+  tokenKey: token      # key name in the secret (default: token)
+
+env:
+  HUB_URL: "http://beszel-hub:8090"
+```
+
+**Note**: When using `existingSecret`, do not set `env.KEY` or `env.TOKEN` - the chart will use the values from the existing secret instead.
+
+You can also use different key names if your secret uses non-standard keys:
+
+```yaml
+secret:
+  existingSecret: my-beszel-secret
+  sshKey: public-key     # custom key name
+  tokenKey: auth-token  # custom key name
 ```
 
 ## Deployment Examples

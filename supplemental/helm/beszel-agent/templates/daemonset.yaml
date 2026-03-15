@@ -59,14 +59,14 @@ spec:
             - name: KEY
               valueFrom:
                 secretKeyRef:
-                  name: {{ include "beszel-agent.fullname" . }}
-                  key: ssh-key
-            {{- if .Values.env.TOKEN }}
+                  name: {{ include "beszel-agent.secretName" . }}
+                  key: {{ .Values.secret.sshKey }}
+            {{- if or .Values.env.TOKEN .Values.secret.existingSecret }}
             - name: TOKEN
               valueFrom:
                 secretKeyRef:
-                  name: {{ include "beszel-agent.fullname" . }}
-                  key: token
+                  name: {{ include "beszel-agent.secretName" . }}
+                  key: {{ .Values.secret.tokenKey }}
             {{- end }}
             {{- range $key, $value := .Values.env }}
             {{- if and (ne $key "KEY") (ne $key "TOKEN") (ne $key "SYSTEM_NAME") (ne $value "") }}

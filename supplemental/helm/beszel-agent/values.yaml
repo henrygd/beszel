@@ -162,15 +162,26 @@ env:
   PORT: "45876"
   # Hub URL - OPTIONAL (e.g., http://beszel-hub:8090)
   HUB_URL: ""
-  # SSH public key for agent authentication - REQUIRED
+  # SSH public key for agent authentication - REQUIRED (unless using existingSecret)
   KEY: ""
-  # Authentication token - OPTIONAL
+  # Authentication token - OPTIONAL (unless using existingSecret)
   TOKEN: ""
   # Agent name in the Hub - OPTIONAL (defaults to node name)
   SYSTEM_NAME: ""
   # For GPU support (henrygd/beszel-agent-nvidia only)
   # NVIDIA_VISIBLE_DEVICES: "all"
   # NVIDIA_DRIVER_CAPABILITIES: "compute,video,utility"
+
+# -- Secret configuration for sensitive data
+secret:
+  # Name of an existing Kubernetes Secret to use
+  # When set, the chart will not create a Secret and will use this existing one instead
+  # The secret should contain keys specified by sshKey and tokenKey below
+  existingSecret: ""
+  # Key name in the secret for the SSH public key
+  sshKey: "ssh-key"
+  # Key name in the secret for the authentication token
+  tokenKey: "token"
 
 # -- Use host network to allow network monitoring
 hostNetwork: false
