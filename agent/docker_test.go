@@ -1455,3 +1455,109 @@ func TestAnsiEscapePattern(t *testing.T) {
 		})
 	}
 }
+
+func TestConvertContainerPortsToString(t *testing.T) {
+	type port = struct {
+		PrivatePort uint16
+		PublicPort  uint16
+		Type        string
+	}
+	tests := []struct {
+		name     string
+		ports    []port
+		expected string
+	}{
+		{
+			name:     "empty ports",
+			ports:    nil,
+			expected: "",
+		},
+		{
+			name: "single port public==private",
+			ports: []port{
+				{PublicPort: 80, PrivatePort: 80},
+			},
+			expected: "80",
+		},
+		{
+			name: "single port public!=private",
+			ports: []port{
+				{PublicPort: 443, PrivatePort: 2019},
+			},
+			// expected: "443:2019",
+			expected: "443",
+		},
+		{
+			name: "zero PublicPort is skipped",
+			ports: []port{
+				{PublicPort: 0, PrivatePort: 8080},
+				{PublicPort: 80, PrivatePort: 80},
+			},
+			expected: "80",
+		},
+		{
+			name: "ports sorted ascending by PublicPort",
+			ports: []port{
+				{PublicPort: 443, PrivatePort: 443},
+				{PublicPort: 80, PrivatePort: 80},
+				{PublicPort: 8080, PrivatePort: 8080},
+			},
+			expected: "80, 443, 8080",
+		},
+		{
+			name: "same PublicPort sorted by PrivatePort",
+			ports: []port{
+				{PublicPort: 443, PrivatePort: 9000},
+				{PublicPort: 443, PrivatePort: 2019},
+			},
+			// expected: "443:2019,443:9000",
+			expected: "443",
+		},
+		{
+			name: "duplicates are deduplicated",
+			ports: []port{
+				{PublicPort: 80, PrivatePort: 80},
+				{PublicPort: 80, PrivatePort: 80},
+				{PublicPort: 443, PrivatePort: 2019},
+				{PublicPort: 443, PrivatePort: 2019},
+			},
+			// expected: "80,443:2019",
+			expected: "80, 443",
+		},
+		{
+			name: "mixed zero and non-zero ports",
+			ports: []port{
+				{PublicPort: 0, PrivatePort: 5432},
+				{PublicPort: 443, PrivatePort: 2019},
+				{PublicPort: 80, PrivatePort: 80},
+				{PublicPort: 0, PrivatePort: 9000},
+			},
+			// expected: "80,443:2019",
+			expected: "80, 443",
+		},
+		{
+			name: "ports slice is nilled after call",
+			ports: []port{
+				{PublicPort: 8080, PrivatePort: 8080},
+			},
+			expected: "8080",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctr := &container.ApiInfo{}
+			for _, p := range tt.ports {
+				ctr.Ports = append(ctr.Ports, struct {
+					// PrivatePort uint16
+					PublicPort uint16
+					// Type        string
+				}{PublicPort: p.PublicPort})
+			}
+			result := convertContainerPortsToString(ctr)
+			assert.Equal(t, tt.expected, result)
+			// Ports slice must be cleared to prevent bleed-over into the next response
+			assert.Nil(t, ctr.Ports, "ctr.Ports should be nil after formatContainerPorts")
+		})
+	}
+}
