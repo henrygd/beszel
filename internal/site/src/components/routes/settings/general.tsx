@@ -1,7 +1,7 @@
 /** biome-ignore-all lint/correctness/useUniqueElementIds: component is only rendered once */
 import { Trans, useLingui } from "@lingui/react/macro"
 import { LanguagesIcon, LoaderCircleIcon, SaveIcon } from "lucide-react"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { useStore } from "@nanostores/react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -13,8 +13,8 @@ import { HourFormat, Unit } from "@/lib/enums"
 import { dynamicActivate } from "@/lib/i18n"
 import languages from "@/lib/languages"
 import { $userSettings } from "@/lib/stores"
-import { chartTimeData, currentHour12 } from "@/lib/utils"
-import type { UserSettings } from "@/types"
+import { chartMaxPeriodData, currentHour12, getAvailableChartTimeEntries, getNearestAvailableChartTime } from "@/lib/utils"
+import type { ChartMaxPeriod, ChartTimes, UserSettings } from "@/types"
 import { saveSettings } from "./layout"
 
 export default function SettingsProfilePage({ userSettings }: { userSettings: UserSettings }) {
@@ -22,6 +22,26 @@ export default function SettingsProfilePage({ userSettings }: { userSettings: Us
 	const { i18n } = useLingui()
 	const currentUserSettings = useStore($userSettings)
 	const layoutWidth = currentUserSettings.layoutWidth ?? 1500
+	const initialMaxChartPeriod = userSettings.maxChartPeriod ?? "30d"
+	const [chartTime, setChartTime] = useState<ChartTimes>(
+		getNearestAvailableChartTime(
+			userSettings.chartTime,
+			getAvailableChartTimeEntries(initialMaxChartPeriod).map(([availableChartTime]) => availableChartTime)
+		)
+	)
+	const [maxChartPeriod, setMaxChartPeriod] = useState<ChartMaxPeriod>(initialMaxChartPeriod)
+	const availableChartTimes = getAvailableChartTimeEntries(maxChartPeriod)
+
+	useEffect(() => {
+		const nextMaxChartPeriod = userSettings.maxChartPeriod ?? "30d"
+		setMaxChartPeriod(nextMaxChartPeriod)
+		setChartTime(
+			getNearestAvailableChartTime(
+				userSettings.chartTime,
+				getAvailableChartTimeEntries(nextMaxChartPeriod).map(([availableChartTime]) => availableChartTime)
+			)
+		)
+	}, [userSettings.chartTime, userSettings.maxChartPeriod])
 
 	async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
 		e.preventDefault()
@@ -30,6 +50,16 @@ export default function SettingsProfilePage({ userSettings }: { userSettings: Us
 		const data = Object.fromEntries(formData) as Partial<UserSettings>
 		await saveSettings(data)
 		setIsLoading(false)
+	}
+
+	function handleMaxChartPeriodChange(value: ChartMaxPeriod) {
+		setMaxChartPeriod(value)
+		setChartTime((currentChartTime) =>
+			getNearestAvailableChartTime(
+				currentChartTime,
+				getAvailableChartTimeEntries(value).map(([availableChartTime]) => availableChartTime)
+			)
+		)
 	}
 
 	return (
@@ -122,12 +152,12 @@ export default function SettingsProfilePage({ userSettings }: { userSettings: Us
 							<Label className="block" htmlFor="chartTime">
 								<Trans>Default time period</Trans>
 							</Label>
-							<Select name="chartTime" key={userSettings.chartTime} defaultValue={userSettings.chartTime}>
+							<Select name="chartTime" value={chartTime} onValueChange={(value: ChartTimes) => setChartTime(value)}>
 								<SelectTrigger id="chartTime">
 									<SelectValue />
 								</SelectTrigger>
 								<SelectContent>
-									{Object.entries(chartTimeData).map(([value, { label }]) => (
+									{availableChartTimes.map(([value, { label }]) => (
 										<SelectItem key={value} value={value}>
 											{label()}
 										</SelectItem>
@@ -151,6 +181,23 @@ export default function SettingsProfilePage({ userSettings }: { userSettings: Us
 									{Object.keys(HourFormat).map((value) => (
 										<SelectItem key={value} value={value}>
 											{value}
+										</SelectItem>
+									))}
+								</SelectContent>
+							</Select>
+						</div>
+						<div className="grid gap-2">
+							<Label className="block" htmlFor="maxChartPeriod">
+								<Trans>Max Period</Trans>
+							</Label>
+							<Select name="maxChartPeriod" value={maxChartPeriod} onValueChange={handleMaxChartPeriodChange}>
+								<SelectTrigger id="maxChartPeriod">
+									<SelectValue />
+								</SelectTrigger>
+								<SelectContent>
+									{Object.entries(chartMaxPeriodData).map(([value, { label }]) => (
+										<SelectItem key={value} value={value}>
+											{label()}
 										</SelectItem>
 									))}
 								</SelectContent>

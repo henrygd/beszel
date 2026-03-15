@@ -25,8 +25,16 @@ export const $alerts = map<AlertMap>({})
 /** SSH public key */
 export const $publicKey = atom("")
 
+export const defaultUserSettings: UserSettings = {
+	chartTime: "1h",
+	maxChartPeriod: "30d",
+	emails: [pb.authStore.record?.email || ""],
+	unitNet: Unit.Bytes,
+	unitTemp: Unit.Celsius,
+}
+
 /** Chart time period */
-export const $chartTime = atom<ChartTimes>("1h")
+export const $chartTime = atom<ChartTimes>(defaultUserSettings.chartTime)
 
 /** Whether to display average or max chart values */
 export const $maxValues = atom(false)
@@ -43,14 +51,9 @@ export const $maxValues = atom(false)
 // })
 
 /** User settings */
-export const $userSettings = map<UserSettings>({
-	chartTime: "1h",
-	emails: [pb.authStore.record?.email || ""],
-	unitNet: Unit.Bytes,
-	unitTemp: Unit.Celsius,
-})
+export const $userSettings = map<UserSettings>(defaultUserSettings)
 // update chart time on change
-listenKeys($userSettings, ["chartTime"], ({ chartTime }) => $chartTime.set(chartTime))
+listenKeys($userSettings, ["chartTime"], ({ chartTime }) => $chartTime.set(chartTime || defaultUserSettings.chartTime))
 
 /** Container chart filter */
 export const $containerFilter = atom("")

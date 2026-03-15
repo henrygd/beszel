@@ -36,6 +36,7 @@ import {
 	compareSemVer,
 	decimalString,
 	formatBytes,
+	getChartTimePointLimit,
 	listen,
 	parseSemVer,
 	toFixedFloat,
@@ -272,7 +273,7 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 			...getTimeData(chartTime, lastCreated),
 			agentVersion: parseSemVer(system?.info?.v),
 		}
-	}, [systemStats, containerData, direction])
+	}, [chartTime, containerData, direction, system?.info?.v, systemStats])
 
 	// Share chart config computation for all container charts
 	const containerChartConfigs = useContainerChartConfigs(containerData)
@@ -312,13 +313,14 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 			setChartLoading(false)
 
 			const { expectedInterval } = chartTimeData[chartTime]
+			const maxPoints = getChartTimePointLimit(chartTime)
 			// make new system stats
 			const ss_cache_key = `${system.id}_${chartTime}_system_stats`
 			let systemData = (cache.get(ss_cache_key) || []) as SystemStatsRecord[]
 			if (systemStats.status === "fulfilled" && systemStats.value.length) {
 				systemData = systemData.concat(addEmptyValues(systemData, systemStats.value, expectedInterval))
-				if (systemData.length > 120) {
-					systemData = systemData.slice(-100)
+				if (systemData.length > maxPoints) {
+					systemData = systemData.slice(-maxPoints)
 				}
 				cache.set(ss_cache_key, systemData)
 			}
@@ -328,8 +330,8 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 			let containerData = (cache.get(cs_cache_key) || []) as ContainerStatsRecord[]
 			if (containerStats.status === "fulfilled" && containerStats.value.length) {
 				containerData = containerData.concat(addEmptyValues(containerData, containerStats.value, expectedInterval))
-				if (containerData.length > 120) {
-					containerData = containerData.slice(-100)
+				if (containerData.length > maxPoints) {
+					containerData = containerData.slice(-maxPoints)
 				}
 				cache.set(cs_cache_key, containerData)
 			}
