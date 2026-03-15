@@ -400,20 +400,58 @@ func parseDockerStatus(status string) (string, container.DockerHealth) {
 		statusText = trimmed
 	}
 
-	healthText := strings.ToLower(strings.TrimSpace(strings.TrimSuffix(trimmed[openIdx+1:], ")")))
+	healthText := strings.TrimSpace(strings.TrimSuffix(trimmed[openIdx+1:], ")"))
 	// Some Docker statuses include a "health:" prefix inside the parentheses.
 	// Strip it so it maps correctly to the known health states.
 	if colonIdx := strings.IndexRune(healthText, ':'); colonIdx != -1 {
-		prefix := strings.TrimSpace(healthText[:colonIdx])
+		prefix := strings.ToLower(strings.TrimSpace(healthText[:colonIdx]))
 		if prefix == "health" || prefix == "health status" {
 			healthText = strings.TrimSpace(healthText[colonIdx+1:])
 		}
 	}
-	if health, ok := container.DockerHealthStrings[healthText]; ok {
+	if health, ok := parseDockerHealthStatus(healthText); ok {
 		return statusText, health
 	}
 
 	return trimmed, container.DockerHealthNone
+}
+
+// parseDockerHealthStatus maps Docker health status strings to container.DockerHealth values
+func parseDockerHealthStatus(status string) (container.DockerHealth, bool) {
+	health, ok := container.DockerHealthStrings[strings.ToLower(strings.TrimSpace(status))]
+	return health, ok
+}
+
+// getPodmanContainerHealth fetches container health status from the container inspect endpoint.
+// Used for Podman which doesn't provide health status in the /containers/json endpoint as of March 2026.
+// https://github.com/containers/podman/issues/27786
+func (dm *dockerManager) getPodmanContainerHealth(containerID string) (container.DockerHealth, error) {
+	resp, err := dm.client.Get(fmt.Sprintf("http://localhost/containers/%s/json", url.PathEscape(containerID)))
+	if err != nil {
+		return container.DockerHealthNone, err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return container.DockerHealthNone, fmt.Errorf("container inspect request failed: %s", resp.Status)
+	}
+
+	var inspectInfo struct {
+		State struct {
+			Health struct {
+				Status string
+			}
+		}
+	}
+	if err := json.NewDecoder(resp.Body).Decode(&inspectInfo); err != nil {
+		return container.DockerHealthNone, err
+	}
+
+	if health, ok := parseDockerHealthStatus(inspectInfo.State.Health.Status); ok {
+		return health, nil
+	}
+
+	return container.DockerHealthNone, nil
 }
 
 // Updates stats for individual container with cache-time-aware delta tracking
@@ -423,6 +461,21 @@ func (dm *dockerManager) updateContainerStats(ctr *container.ApiInfo, cacheTimeM
 	resp, err := dm.client.Get(fmt.Sprintf("http://localhost/containers/%s/stats?stream=0&one-shot=1", ctr.IdShort))
 	if err != nil {
 		return err
+	}
+
+	statusText, health := parseDockerStatus(ctr.Status)
+
+	// Docker exposes Health.Status on /containers/json in API 1.52+.
+	// Podman currently requires falling back to the inspect endpoint as of March 2026.
+	// https://github.com/containers/podman/issues/27786
+	if ctr.Health.Status != "" {
+		if h, ok := parseDockerHealthStatus(ctr.Health.Status); ok {
+			health = h
+		}
+	} else if dm.usingPodman {
+		if podmanHealth, err := dm.getPodmanContainerHealth(ctr.IdShort); err == nil {
+			health = podmanHealth
+		}
 	}
 
 	dm.containerStatsMutex.Lock()
@@ -436,16 +489,6 @@ func (dm *dockerManager) updateContainerStats(ctr *container.ApiInfo, cacheTimeM
 	}
 
 	stats.Id = ctr.IdShort
-
-	statusText, health := parseDockerStatus(ctr.Status)
-
-	// Use Health.Status if it's available (Docker API 1.52+; Podman TBD - https://github.com/containers/podman/issues/27786)
-	if ctr.Health.Status != "" {
-		if h, ok := container.DockerHealthStrings[ctr.Health.Status]; ok {
-			health = h
-		}
-	}
-
 	stats.Status = statusText
 	stats.Health = health
 
