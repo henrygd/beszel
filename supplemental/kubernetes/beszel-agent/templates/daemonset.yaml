@@ -49,6 +49,10 @@ spec:
         - name: K8S_NAMESPACE
           value: {{ .Values.agent.kubernetes.namespace | quote }}
         {{- end }}
+        - name: NODE_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: spec.nodeName
         {{- with .Values.agent.extraEnv }}
         {{- toYaml . | nindent 8 }}
         {{- end }}
