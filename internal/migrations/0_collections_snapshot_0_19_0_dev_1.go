@@ -978,18 +978,6 @@ func init() {
 					"type": "number"
 				},
 				{
-					"hidden": false,
-					"id": "number3332085495",
-					"max": null,
-					"min": null,
-					"name": "updated",
-					"onlyInt": true,
-					"presentable": false,
-					"required": true,
-					"system": false,
-					"type": "number"
-				},
-				{
 					"autogeneratePattern": "",
 					"hidden": false,
 					"id": "text3309110367",
@@ -1002,6 +990,32 @@ func init() {
 					"required": false,
 					"system": false,
 					"type": "text"
+				},
+				{
+					"autogeneratePattern": "",
+					"hidden": false,
+					"id": "text2308952269",
+					"max": 0,
+					"min": 0,
+					"name": "ports",
+					"pattern": "",
+					"presentable": false,
+					"primaryKey": false,
+					"required": false,
+					"system": false,
+					"type": "text"
+				},
+				{
+					"hidden": false,
+					"id": "number3332085495",
+					"max": null,
+					"min": null,
+					"name": "updated",
+					"onlyInt": true,
+					"presentable": false,
+					"required": true,
+					"system": false,
+					"type": "number"
 				}
 		],
 		"indexes": [

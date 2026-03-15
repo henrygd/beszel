@@ -9,6 +9,12 @@ import (
 	"github.com/pocketbase/pocketbase/core"
 )
 
+func NewTestAlertManagerWithoutWorker(app hubLike) *AlertManager {
+	return &AlertManager{
+		hub: app,
+	}
+}
+
 func (am *AlertManager) GetAlertManager() *AlertManager {
 	return am
 }
@@ -34,12 +40,11 @@ func (am *AlertManager) ProcessPendingAlerts() ([]*core.Record, error) {
 	am.pendingAlerts.Range(func(key, value any) bool {
 		info := value.(*alertInfo)
 		if now.After(info.expireTime) {
-			// Downtime delay has passed, process alert
-			if err := am.sendStatusAlert("down", info.systemName, info.alertRecord); err != nil {
-				lastErr = err
+			if info.timer != nil {
+				info.timer.Stop()
 			}
+			am.processPendingAlert(key.(string))
 			processedAlerts = append(processedAlerts, info.alertRecord)
-			am.pendingAlerts.Delete(key)
 		}
 		return true
 	})
@@ -56,6 +61,27 @@ func (am *AlertManager) ForceExpirePendingAlerts() {
 	})
 }
 
+func (am *AlertManager) ResetPendingAlertTimer(alertID string, delay time.Duration) bool {
+	value, loaded := am.pendingAlerts.Load(alertID)
+	if !loaded {
+		return false
+	}
+
+	info := value.(*alertInfo)
+	if info.timer != nil {
+		info.timer.Stop()
+	}
+	info.expireTime = time.Now().Add(delay)
+	info.timer = time.AfterFunc(delay, func() {
+		am.processPendingAlert(alertID)
+	})
+	return true
+}
+
 func ResolveStatusAlerts(app core.App) error {
 	return resolveStatusAlerts(app)
+}
+
+func (am *AlertManager) RestorePendingStatusAlerts() error {
+	return am.restorePendingStatusAlerts()
 }

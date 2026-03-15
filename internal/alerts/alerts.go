@@ -21,8 +21,7 @@ type hubLike interface {
 
 type AlertManager struct {
 	hub           hubLike
-	alertQueue    chan alertTask
-	stopChan      chan struct{}
+	stopOnce      sync.Once
 	pendingAlerts sync.Map
 }
 
@@ -98,12 +97,9 @@ var supportsTitle = map[string]struct{}{
 // NewAlertManager creates a new AlertManager instance.
 func NewAlertManager(app hubLike) *AlertManager {
 	am := &AlertManager{
-		hub:        app,
-		alertQueue: make(chan alertTask, 5),
-		stopChan:   make(chan struct{}),
+		hub: app,
 	}
 	am.bindEvents()
-	go am.startWorker()
 	return am
 }
 
@@ -112,6 +108,16 @@ func (am *AlertManager) bindEvents() {
 	am.hub.OnRecordAfterUpdateSuccess("alerts").BindFunc(updateHistoryOnAlertUpdate)
 	am.hub.OnRecordAfterDeleteSuccess("alerts").BindFunc(resolveHistoryOnAlertDelete)
 	am.hub.OnRecordAfterUpdateSuccess("smart_devices").BindFunc(am.handleSmartDeviceAlert)
+
+	am.hub.OnServe().BindFunc(func(e *core.ServeEvent) error {
+		if err := resolveStatusAlerts(e.App); err != nil {
+			e.App.Logger().Error("Failed to resolve stale status alerts", "err", err)
+		}
+		if err := am.restorePendingStatusAlerts(); err != nil {
+			e.App.Logger().Error("Failed to restore pending status alerts", "err", err)
+		}
+		return e.Next()
+	})
 }
 
 // IsNotificationSilenced checks if a notification should be silenced based on configured quiet hours
