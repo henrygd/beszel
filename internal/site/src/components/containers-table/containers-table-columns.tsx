@@ -15,9 +15,9 @@ import {
 import { EthernetIcon, HourglassIcon, SquareArrowRightEnterIcon } from "../ui/icons"
 import { Badge } from "../ui/badge"
 import { t } from "@lingui/core/macro"
-import { $allSystemsById } from "@/lib/stores"
+import { $allSystemsById, $longestSystemNameLen } from "@/lib/stores"
 import { useStore } from "@nanostores/react"
-import { Tooltip, TooltipContent,  TooltipTrigger } from "../ui/tooltip"
+import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip"
 
 // Unit names and their corresponding number of seconds for converting docker status strings
 const unitSeconds = [
@@ -63,7 +63,12 @@ export const containerChartCols: ColumnDef<ContainerRecord>[] = [
 		header: ({ column }) => <HeaderButton column={column} name={t`System`} Icon={ServerIcon} />,
 		cell: ({ getValue }) => {
 			const allSystems = useStore($allSystemsById)
-			return <span className="ms-1.5 xl:w-34 block truncate">{allSystems[getValue() as string]?.name ?? ""}</span>
+			const longestName = useStore($longestSystemNameLen)
+			return (
+				<div className="ms-1 max-w-40 truncate" style={{ width: `${longestName / 1.05}ch` }}>
+					{allSystems[getValue() as string]?.name ?? ""}
+				</div>
+			)
 		},
 	},
 	// {
@@ -82,7 +87,7 @@ export const containerChartCols: ColumnDef<ContainerRecord>[] = [
 		header: ({ column }) => <HeaderButton column={column} name={t`CPU`} Icon={CpuIcon} />,
 		cell: ({ getValue }) => {
 			const val = getValue() as number
-			return <span className="ms-1.5 tabular-nums">{`${decimalString(val, val >= 10 ? 1 : 2)}%`}</span>
+			return <span className="ms-1 tabular-nums">{`${decimalString(val, val >= 10 ? 1 : 2)}%`}</span>
 		},
 	},
 	{
@@ -94,7 +99,7 @@ export const containerChartCols: ColumnDef<ContainerRecord>[] = [
 			const val = getValue() as number
 			const formatted = formatBytes(val, false, undefined, true)
 			return (
-				<span className="ms-1.5 tabular-nums">{`${decimalString(formatted.value, formatted.value >= 10 ? 1 : 2)} ${formatted.unit}`}</span>
+				<span className="ms-1 tabular-nums">{`${decimalString(formatted.value, formatted.value >= 10 ? 1 : 2)} ${formatted.unit}`}</span>
 			)
 		},
 	},
@@ -103,11 +108,12 @@ export const containerChartCols: ColumnDef<ContainerRecord>[] = [
 		accessorFn: (record) => record.net,
 		invertSorting: true,
 		header: ({ column }) => <HeaderButton column={column} name={t`Net`} Icon={EthernetIcon} />,
+		minSize: 112,
 		cell: ({ getValue }) => {
 			const val = getValue() as number
 			const formatted = formatBytes(val, true, undefined, false)
 			return (
-				<span className="ms-1.5 tabular-nums">{`${decimalString(formatted.value, formatted.value >= 10 ? 1 : 2)} ${formatted.unit}`}</span>
+				<div className="ms-1 tabular-nums">{`${decimalString(formatted.value, formatted.value >= 10 ? 1 : 2)} ${formatted.unit}`}</div>
 			)
 		},
 	},
@@ -116,6 +122,7 @@ export const containerChartCols: ColumnDef<ContainerRecord>[] = [
 		invertSorting: true,
 		accessorFn: (record) => record.health,
 		header: ({ column }) => <HeaderButton column={column} name={t`Health`} Icon={ShieldCheckIcon} />,
+		minSize: 121,
 		cell: ({ getValue }) => {
 			const healthValue = getValue() as number
 			const healthStatus = ContainerHealthLabels[healthValue] || "Unknown"
@@ -138,15 +145,21 @@ export const containerChartCols: ColumnDef<ContainerRecord>[] = [
 		id: "ports",
 		accessorFn: (record) => record.ports || undefined,
 		header: ({ column }) => (
-			<HeaderButton column={column} name={t({ message: "Ports", context: "Container ports" })} Icon={SquareArrowRightEnterIcon} />
+			<HeaderButton
+				column={column}
+				name={t({ message: "Ports", context: "Container ports" })}
+				Icon={SquareArrowRightEnterIcon}
+			/>
 		),
+		sortingFn: (a, b) => getPortValue(a.original.ports) - getPortValue(b.original.ports),
+		minSize: 147,
 		cell: ({ getValue }) => {
-			const val = getValue() as string
+			const val = getValue() as string | undefined
 			if (!val) {
-				return <span className="ms-2">-</span>
+				return <div className="ms-1.5 text-muted-foreground">-</div>
 			}
-			const className = "ms-1.5 w-20 block truncate tabular-nums"
-			if (val.length > 9) {
+			const className = "ms-1 w-27 block truncate tabular-nums"
+			if (val.length > 14) {
 				return (
 					<Tooltip>
 						<TooltipTrigger className={className}>{val}</TooltipTrigger>
@@ -165,7 +178,12 @@ export const containerChartCols: ColumnDef<ContainerRecord>[] = [
 			<HeaderButton column={column} name={t({ message: "Image", context: "Docker image" })} Icon={LayersIcon} />
 		),
 		cell: ({ getValue }) => {
-			return <span className="ms-1.5 xl:w-40 block truncate">{getValue() as string}</span>
+			const val = getValue() as string
+			return (
+				<div className="ms-1 xl:w-40 truncate" title={val}>
+					{val}
+				</div>
+			)
 		},
 	},
 	{
@@ -175,7 +193,7 @@ export const containerChartCols: ColumnDef<ContainerRecord>[] = [
 		sortingFn: (a, b) => getStatusValue(a.original.status) - getStatusValue(b.original.status),
 		header: ({ column }) => <HeaderButton column={column} name={t`Status`} Icon={HourglassIcon} />,
 		cell: ({ getValue }) => {
-			return <span className="ms-1.5 w-25 block truncate">{getValue() as string}</span>
+			return <span className="ms-1 w-25 block truncate">{getValue() as string}</span>
 		},
 	},
 	{
@@ -185,7 +203,7 @@ export const containerChartCols: ColumnDef<ContainerRecord>[] = [
 		header: ({ column }) => <HeaderButton column={column} name={t`Updated`} Icon={ClockIcon} />,
 		cell: ({ getValue }) => {
 			const timestamp = getValue() as number
-			return <span className="ms-1.5 tabular-nums">{hourWithSeconds(new Date(timestamp).toISOString())}</span>
+			return <span className="ms-1 tabular-nums">{hourWithSeconds(new Date(timestamp).toISOString())}</span>
 		},
 	},
 ]
@@ -214,4 +232,18 @@ function HeaderButton({
 			{/* <ArrowUpDownIcon className="size-4" /> */}
 		</Button>
 	)
+}
+
+/**
+ * Convert port string to a number for sorting.
+ * Handles formats like "80", "127.0.0.1:80", and "80, 443" (takes the first mapping).
+ */
+function getPortValue(ports: string | undefined): number {
+	if (!ports) {
+		return 0
+	}
+	const first = ports.includes(",") ? ports.substring(0, ports.indexOf(",")) : ports
+	const colonIndex = first.lastIndexOf(":")
+	const portStr = colonIndex === -1 ? first : first.substring(colonIndex + 1)
+	return Number(portStr) || 0
 }

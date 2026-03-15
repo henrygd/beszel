@@ -40,6 +40,7 @@ import {
 	toFixedFloat,
 	formatTemperature,
 	cn,
+	getVisualStringWidth,
 	secondsToString,
 	hourWithSeconds,
 	formatShortDate,
@@ -101,7 +102,7 @@ function formatCapacity(bytes: number): string {
 
 const SMART_DEVICE_FIELDS = "id,system,name,model,state,capacity,temp,type,hours,cycles,updated"
 
-export const columns: ColumnDef<SmartDeviceRecord>[] = [
+export const createColumns = (longestName: number): ColumnDef<SmartDeviceRecord>[] => [
 	{
 		id: "system",
 		accessorFn: (record) => record.system,
@@ -114,7 +115,11 @@ export const columns: ColumnDef<SmartDeviceRecord>[] = [
 		header: ({ column }) => <HeaderButton column={column} name={t`System`} Icon={ServerIcon} />,
 		cell: ({ getValue }) => {
 			const allSystems = useStore($allSystemsById)
-			return <span className="ms-1.5 xl:w-30 block truncate">{allSystems[getValue() as string]?.name ?? ""}</span>
+			return (
+				<div className="ms-1.5 max-w-40 block truncate" style={{ width: `${longestName / 1.05}ch` }}>
+					{allSystems[getValue() as string]?.name ?? ""}
+				</div>
+			)
 		},
 	},
 	{
@@ -275,6 +280,30 @@ export default function DisksTable({ systemId }: { systemId?: string }) {
 	const [sheetOpen, setSheetOpen] = useState(false)
 	const [rowActionState, setRowActionState] = useState<{ type: "refresh" | "delete"; id: string } | null>(null)
 	const [globalFilter, setGlobalFilter] = useState("")
+	const allSystems = useStore($allSystemsById)
+
+	// duplicate the devices to test with more rows
+	// if (smartDevices?.length && smartDevices.length < 50) {
+	// 	setSmartDevices([...smartDevices, ...smartDevices, ...smartDevices])
+	// }
+
+	// Calculate the right width for the system column based on the longest system name among the displayed devices
+	const longestName = useMemo(() => {
+		if (systemId || !smartDevices || Object.keys(allSystems).length === 0) {
+			return 0
+		}
+		let maxLen = 0
+		const seenSystems = new Set<string>()
+		for (const device of smartDevices) {
+			if (seenSystems.has(device.system)) {
+				continue
+			}
+			seenSystems.add(device.system)
+			const name = allSystems[device.system]?.name ?? ""
+			maxLen = Math.max(maxLen, getVisualStringWidth(name))
+		}
+		return maxLen
+	}, [smartDevices, systemId, allSystems])
 
 	const openSheet = (disk: SmartDeviceRecord) => {
 		setActiveDiskId(disk.id)
@@ -440,9 +469,10 @@ export default function DisksTable({ systemId }: { systemId?: string }) {
 
 	// Filter columns based on whether systemId is provided
 	const tableColumns = useMemo(() => {
+		const columns = createColumns(longestName)
 		const baseColumns = systemId ? columns.filter((col) => col.id !== "system") : columns
 		return [...baseColumns, actionColumn]
-	}, [systemId, actionColumn])
+	}, [systemId, actionColumn, longestName])
 
 	const table = useReactTable({
 		data: smartDevices || ([] as SmartDeviceRecord[]),
@@ -513,7 +543,7 @@ export default function DisksTable({ systemId }: { systemId?: string }) {
 						</div>
 					</div>
 				</CardHeader>
-				<div className="rounded-md border text-nowrap">
+				<div className="rounded-md border text-nowrap overflow-hidden">
 					<Table>
 						<TableHeader>
 							{table.getHeaderGroups().map((headerGroup) => (
