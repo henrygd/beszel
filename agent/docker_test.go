@@ -1458,9 +1458,8 @@ func TestAnsiEscapePattern(t *testing.T) {
 
 func TestConvertContainerPortsToString(t *testing.T) {
 	type port = struct {
-		PrivatePort uint16
-		PublicPort  uint16
-		Type        string
+		PublicPort uint16
+		IP         string
 	}
 	tests := []struct {
 		name     string
@@ -1473,72 +1472,64 @@ func TestConvertContainerPortsToString(t *testing.T) {
 			expected: "",
 		},
 		{
-			name: "single port public==private",
+			name: "single port",
 			ports: []port{
-				{PublicPort: 80, PrivatePort: 80},
+				{PublicPort: 80, IP: "0.0.0.0"},
 			},
 			expected: "80",
 		},
 		{
-			name: "single port public!=private",
+			name: "single port with non-default IP",
 			ports: []port{
-				{PublicPort: 443, PrivatePort: 2019},
+				{PublicPort: 80, IP: "1.2.3.4"},
 			},
-			// expected: "443:2019",
-			expected: "443",
+			expected: "1.2.3.4:80",
+		},
+		{
+			name: "ipv6 default ip",
+			ports: []port{
+				{PublicPort: 80, IP: "::"},
+			},
+			expected: "80",
 		},
 		{
 			name: "zero PublicPort is skipped",
 			ports: []port{
-				{PublicPort: 0, PrivatePort: 8080},
-				{PublicPort: 80, PrivatePort: 80},
+				{PublicPort: 0, IP: "0.0.0.0"},
+				{PublicPort: 80, IP: "0.0.0.0"},
 			},
 			expected: "80",
 		},
 		{
 			name: "ports sorted ascending by PublicPort",
 			ports: []port{
-				{PublicPort: 443, PrivatePort: 443},
-				{PublicPort: 80, PrivatePort: 80},
-				{PublicPort: 8080, PrivatePort: 8080},
+				{PublicPort: 443, IP: "0.0.0.0"},
+				{PublicPort: 80, IP: "0.0.0.0"},
+				{PublicPort: 8080, IP: "0.0.0.0"},
 			},
 			expected: "80, 443, 8080",
 		},
 		{
-			name: "same PublicPort sorted by PrivatePort",
-			ports: []port{
-				{PublicPort: 443, PrivatePort: 9000},
-				{PublicPort: 443, PrivatePort: 2019},
-			},
-			// expected: "443:2019,443:9000",
-			expected: "443",
-		},
-		{
 			name: "duplicates are deduplicated",
 			ports: []port{
-				{PublicPort: 80, PrivatePort: 80},
-				{PublicPort: 80, PrivatePort: 80},
-				{PublicPort: 443, PrivatePort: 2019},
-				{PublicPort: 443, PrivatePort: 2019},
+				{PublicPort: 80, IP: "0.0.0.0"},
+				{PublicPort: 80, IP: "0.0.0.0"},
+				{PublicPort: 443, IP: "0.0.0.0"},
 			},
-			// expected: "80,443:2019",
 			expected: "80, 443",
 		},
 		{
-			name: "mixed zero and non-zero ports",
+			name: "multiple ports with different IPs",
 			ports: []port{
-				{PublicPort: 0, PrivatePort: 5432},
-				{PublicPort: 443, PrivatePort: 2019},
-				{PublicPort: 80, PrivatePort: 80},
-				{PublicPort: 0, PrivatePort: 9000},
+				{PublicPort: 80, IP: "0.0.0.0"},
+				{PublicPort: 443, IP: "1.2.3.4"},
 			},
-			// expected: "80,443:2019",
-			expected: "80, 443",
+			expected: "80, 1.2.3.4:443",
 		},
 		{
 			name: "ports slice is nilled after call",
 			ports: []port{
-				{PublicPort: 8080, PrivatePort: 8080},
+				{PublicPort: 8080, IP: "0.0.0.0"},
 			},
 			expected: "8080",
 		},
@@ -1549,10 +1540,9 @@ func TestConvertContainerPortsToString(t *testing.T) {
 			ctr := &container.ApiInfo{}
 			for _, p := range tt.ports {
 				ctr.Ports = append(ctr.Ports, struct {
-					// PrivatePort uint16
 					PublicPort uint16
-					// Type        string
-				}{PublicPort: p.PublicPort})
+					IP         string
+				}{PublicPort: p.PublicPort, IP: p.IP})
 			}
 			result := convertContainerPortsToString(ctr)
 			assert.Equal(t, tt.expected, result)

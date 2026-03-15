@@ -368,6 +368,12 @@ func convertContainerPortsToString(ctr *container.ApiInfo) string {
 		if builder.Len() > 0 {
 			builder.WriteString(", ")
 		}
+		switch p.IP {
+		case "0.0.0.0", "::":
+		default:
+			builder.WriteString(p.IP)
+			builder.WriteByte(':')
+		}
 		builder.WriteString(strconv.Itoa(int(p.PublicPort)))
 	}
 	// clear ports slice so it doesn't get reused and blend into next response
