@@ -35,6 +35,12 @@ type recordingRoundTripper struct {
 	lastQuery   map[string]string
 }
 
+type roundTripFunc func(*http.Request) (*http.Response, error)
+
+func (fn roundTripFunc) RoundTrip(req *http.Request) (*http.Response, error) {
+	return fn(req)
+}
+
 func (rt *recordingRoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 	rt.called = true
 	rt.lastPath = req.URL.EscapedPath()
@@ -212,6 +218,28 @@ func TestContainerDetailsRequestsUseExpectedDockerPaths(t *testing.T) {
 		assert.Equal(t, "200", rt.lastQuery["tail"])
 		assert.Equal(t, "line1\nline2\n", logs)
 	})
+}
+
+func TestGetPodmanContainerHealth(t *testing.T) {
+	called := false
+	dm := &dockerManager{
+		client: &http.Client{Transport: roundTripFunc(func(req *http.Request) (*http.Response, error) {
+			called = true
+			assert.Equal(t, "/containers/0123456789ab/json", req.URL.EscapedPath())
+			return &http.Response{
+				StatusCode: http.StatusOK,
+				Status:     "200 OK",
+				Header:     make(http.Header),
+				Body:       io.NopCloser(strings.NewReader(`{"State":{"Health":{"Status":"healthy"}}}`)),
+				Request:    req,
+			}, nil
+		})},
+	}
+
+	health, err := dm.getPodmanContainerHealth("0123456789ab")
+	require.NoError(t, err)
+	assert.True(t, called)
+	assert.Equal(t, container.DockerHealthHealthy, health)
 }
 
 func TestValidateCpuPercentage(t *testing.T) {
@@ -1129,6 +1157,18 @@ func TestParseDockerStatus(t *testing.T) {
 			expectedStatus: "",
 			expectedHealth: container.DockerHealthNone,
 		},
+		{
+			name:           "status health with health: prefix",
+			input:          "Up 5 minutes (health: starting)",
+			expectedStatus: "Up 5 minutes",
+			expectedHealth: container.DockerHealthStarting,
+		},
+		{
+			name:           "status health with health status: prefix",
+			input:          "Up 10 minutes (health status: unhealthy)",
+			expectedStatus: "Up 10 minutes",
+			expectedHealth: container.DockerHealthUnhealthy,
+		},
 	}
 
 	for _, tt := range tests {
@@ -1138,6 +1178,84 @@ func TestParseDockerStatus(t *testing.T) {
 			assert.Equal(t, tt.expectedHealth, health)
 		})
 	}
+}
+
+func TestParseDockerHealthStatus(t *testing.T) {
+	tests := []struct {
+		input          string
+		expectedHealth container.DockerHealth
+		expectedOk     bool
+	}{
+		{"healthy", container.DockerHealthHealthy, true},
+		{"unhealthy", container.DockerHealthUnhealthy, true},
+		{"starting", container.DockerHealthStarting, true},
+		{"none", container.DockerHealthNone, true},
+		{" Healthy ", container.DockerHealthHealthy, true},
+		{"unknown", container.DockerHealthNone, false},
+		{"", container.DockerHealthNone, false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.input, func(t *testing.T) {
+			health, ok := parseDockerHealthStatus(tt.input)
+			assert.Equal(t, tt.expectedHealth, health)
+			assert.Equal(t, tt.expectedOk, ok)
+		})
+	}
+}
+
+func TestUpdateContainerStatsUsesPodmanInspectHealthFallback(t *testing.T) {
+	var requestedPaths []string
+	dm := &dockerManager{
+		client: &http.Client{Transport: roundTripFunc(func(req *http.Request) (*http.Response, error) {
+			requestedPaths = append(requestedPaths, req.URL.EscapedPath())
+			switch req.URL.EscapedPath() {
+			case "/containers/0123456789ab/stats":
+				return &http.Response{
+					StatusCode: http.StatusOK,
+					Status:     "200 OK",
+					Header:     make(http.Header),
+					Body: io.NopCloser(strings.NewReader(`{
+						"read":"2026-03-15T21:26:59Z",
+						"cpu_stats":{"cpu_usage":{"total_usage":1000},"system_cpu_usage":2000},
+						"memory_stats":{"usage":1048576,"stats":{"inactive_file":262144}},
+						"networks":{"eth0":{"rx_bytes":0,"tx_bytes":0}}
+					}`)),
+					Request: req,
+				}, nil
+			case "/containers/0123456789ab/json":
+				return &http.Response{
+					StatusCode: http.StatusOK,
+					Status:     "200 OK",
+					Header:     make(http.Header),
+					Body:       io.NopCloser(strings.NewReader(`{"State":{"Health":{"Status":"healthy"}}}`)),
+					Request:    req,
+				}, nil
+			default:
+				return nil, fmt.Errorf("unexpected path: %s", req.URL.EscapedPath())
+			}
+		})},
+		containerStatsMap:   make(map[string]*container.Stats),
+		apiStats:            &container.ApiStats{},
+		usingPodman:         true,
+		lastCpuContainer:    make(map[uint16]map[string]uint64),
+		lastCpuSystem:       make(map[uint16]map[string]uint64),
+		lastCpuReadTime:     make(map[uint16]map[string]time.Time),
+		networkSentTrackers: make(map[uint16]*deltatracker.DeltaTracker[string, uint64]),
+		networkRecvTrackers: make(map[uint16]*deltatracker.DeltaTracker[string, uint64]),
+	}
+
+	ctr := &container.ApiInfo{
+		IdShort: "0123456789ab",
+		Names:   []string{"/beszel"},
+		Status:  "Up 2 minutes",
+		Image:   "beszel:latest",
+	}
+
+	err := dm.updateContainerStats(ctr, defaultCacheTimeMs)
+	require.NoError(t, err)
+	assert.Equal(t, []string{"/containers/0123456789ab/stats", "/containers/0123456789ab/json"}, requestedPaths)
+	assert.Equal(t, container.DockerHealthHealthy, dm.containerStatsMap[ctr.IdShort].Health)
+	assert.Equal(t, "Up 2 minutes", dm.containerStatsMap[ctr.IdShort].Status)
 }
 
 func TestConstantsAndUtilityFunctions(t *testing.T) {
@@ -1458,9 +1576,8 @@ func TestAnsiEscapePattern(t *testing.T) {
 
 func TestConvertContainerPortsToString(t *testing.T) {
 	type port = struct {
-		PrivatePort uint16
-		PublicPort  uint16
-		Type        string
+		PublicPort uint16
+		IP         string
 	}
 	tests := []struct {
 		name     string
@@ -1473,72 +1590,64 @@ func TestConvertContainerPortsToString(t *testing.T) {
 			expected: "",
 		},
 		{
-			name: "single port public==private",
+			name: "single port",
 			ports: []port{
-				{PublicPort: 80, PrivatePort: 80},
+				{PublicPort: 80, IP: "0.0.0.0"},
 			},
 			expected: "80",
 		},
 		{
-			name: "single port public!=private",
+			name: "single port with non-default IP",
 			ports: []port{
-				{PublicPort: 443, PrivatePort: 2019},
+				{PublicPort: 80, IP: "1.2.3.4"},
 			},
-			// expected: "443:2019",
-			expected: "443",
+			expected: "1.2.3.4:80",
+		},
+		{
+			name: "ipv6 default ip",
+			ports: []port{
+				{PublicPort: 80, IP: "::"},
+			},
+			expected: "80",
 		},
 		{
 			name: "zero PublicPort is skipped",
 			ports: []port{
-				{PublicPort: 0, PrivatePort: 8080},
-				{PublicPort: 80, PrivatePort: 80},
+				{PublicPort: 0, IP: "0.0.0.0"},
+				{PublicPort: 80, IP: "0.0.0.0"},
 			},
 			expected: "80",
 		},
 		{
 			name: "ports sorted ascending by PublicPort",
 			ports: []port{
-				{PublicPort: 443, PrivatePort: 443},
-				{PublicPort: 80, PrivatePort: 80},
-				{PublicPort: 8080, PrivatePort: 8080},
+				{PublicPort: 443, IP: "0.0.0.0"},
+				{PublicPort: 80, IP: "0.0.0.0"},
+				{PublicPort: 8080, IP: "0.0.0.0"},
 			},
 			expected: "80, 443, 8080",
 		},
 		{
-			name: "same PublicPort sorted by PrivatePort",
-			ports: []port{
-				{PublicPort: 443, PrivatePort: 9000},
-				{PublicPort: 443, PrivatePort: 2019},
-			},
-			// expected: "443:2019,443:9000",
-			expected: "443",
-		},
-		{
 			name: "duplicates are deduplicated",
 			ports: []port{
-				{PublicPort: 80, PrivatePort: 80},
-				{PublicPort: 80, PrivatePort: 80},
-				{PublicPort: 443, PrivatePort: 2019},
-				{PublicPort: 443, PrivatePort: 2019},
+				{PublicPort: 80, IP: "0.0.0.0"},
+				{PublicPort: 80, IP: "0.0.0.0"},
+				{PublicPort: 443, IP: "0.0.0.0"},
 			},
-			// expected: "80,443:2019",
 			expected: "80, 443",
 		},
 		{
-			name: "mixed zero and non-zero ports",
+			name: "multiple ports with different IPs",
 			ports: []port{
-				{PublicPort: 0, PrivatePort: 5432},
-				{PublicPort: 443, PrivatePort: 2019},
-				{PublicPort: 80, PrivatePort: 80},
-				{PublicPort: 0, PrivatePort: 9000},
+				{PublicPort: 80, IP: "0.0.0.0"},
+				{PublicPort: 443, IP: "1.2.3.4"},
 			},
-			// expected: "80,443:2019",
-			expected: "80, 443",
+			expected: "80, 1.2.3.4:443",
 		},
 		{
 			name: "ports slice is nilled after call",
 			ports: []port{
-				{PublicPort: 8080, PrivatePort: 8080},
+				{PublicPort: 8080, IP: "0.0.0.0"},
 			},
 			expected: "8080",
 		},
@@ -1549,10 +1658,9 @@ func TestConvertContainerPortsToString(t *testing.T) {
 			ctr := &container.ApiInfo{}
 			for _, p := range tt.ports {
 				ctr.Ports = append(ctr.Ports, struct {
-					// PrivatePort uint16
 					PublicPort uint16
-					// Type        string
-				}{PublicPort: p.PublicPort})
+					IP         string
+				}{PublicPort: p.PublicPort, IP: p.IP})
 			}
 			result := convertContainerPortsToString(ctr)
 			assert.Equal(t, tt.expected, result)

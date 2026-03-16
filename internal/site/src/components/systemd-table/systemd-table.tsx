@@ -46,7 +46,6 @@ export default function SystemdTable({ systemId }: { systemId?: string }) {
 		return setData([])
 	}, [systemId])
 
-
 	useEffect(() => {
 		const lastUpdated = data[0]?.updated ?? 0
 
@@ -360,15 +359,9 @@ function SystemdSheet({
 		return (
 			<>
 				{hasCurrent ? current : notAvailable}
-				{hasMax && (
-					<span className="text-muted-foreground ms-1.5">
-						{`(${t`limit`}: ${max})`}
-					</span>
-				)}
+				{hasMax && <span className="text-muted-foreground ms-1.5">{`(${t`limit`}: ${max})`}</span>}
 				{max === null && (
-					<span className="text-muted-foreground ms-1.5">
-						{`(${t`limit`}: ${t`Unlimited`.toLowerCase()})`}
-					</span>
+					<span className="text-muted-foreground ms-1.5">{`(${t`limit`}: ${t`Unlimited`.toLowerCase()})`}</span>
 				)}
 			</>
 		)
@@ -435,7 +428,7 @@ function SystemdSheet({
 			</tr>
 		)
 	}
-	
+
 	const capitalize = (str: string) => `${str.charAt(0).toUpperCase()}${str.slice(1).toLowerCase()}`
 
 	return (
@@ -621,6 +614,7 @@ function SystemdSheet({
 function SystemdTableHead({ table }: { table: TableType<SystemdRecord> }) {
 	return (
 		<TableHeader className="sticky top-0 z-50 w-full border-b-2">
+			<div className="absolute -top-2 left-0 w-full h-4 bg-table-header z-50"></div>
 			{table.getHeaderGroups().map((headerGroup) => (
 				<tr key={headerGroup.id}>
 					{headerGroup.headers.map((header) => {
