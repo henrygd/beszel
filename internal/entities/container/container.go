@@ -17,7 +17,7 @@ type ApiInfo struct {
 	Ports []struct {
 		// PrivatePort uint16
 		PublicPort uint16
-		// IP          string
+		IP         string
 		// Type        string
 	}
 	// ImageID string
