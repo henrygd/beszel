@@ -12,7 +12,7 @@ import Slider from "@/components/ui/slider"
 import { HourFormat, Unit } from "@/lib/enums"
 import { dynamicActivate } from "@/lib/i18n"
 import languages from "@/lib/languages"
-import { $userSettings } from "@/lib/stores"
+import { $userSettings, defaultLayoutWidth } from "@/lib/stores"
 import { chartTimeData, currentHour12 } from "@/lib/utils"
 import type { UserSettings } from "@/types"
 import { saveSettings } from "./layout"
@@ -21,7 +21,7 @@ export default function SettingsProfilePage({ userSettings }: { userSettings: Us
 	const [isLoading, setIsLoading] = useState(false)
 	const { i18n } = useLingui()
 	const currentUserSettings = useStore($userSettings)
-	const layoutWidth = currentUserSettings.layoutWidth ?? 1500
+	const layoutWidth = currentUserSettings.layoutWidth ?? defaultLayoutWidth
 
 	async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
 		e.preventDefault()
