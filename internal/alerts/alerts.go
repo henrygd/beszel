@@ -23,6 +23,7 @@ type AlertManager struct {
 	hub           hubLike
 	stopOnce      sync.Once
 	pendingAlerts sync.Map
+	alertsCache   *AlertsCache
 }
 
 type AlertMessageData struct {
@@ -63,7 +64,7 @@ type SystemAlertGPUData struct {
 
 type SystemAlertData struct {
 	systemRecord *core.Record
-	alertRecord  *core.Record
+	alertRecord  CachedAlertData
 	name         string
 	unit         string
 	val          float64
@@ -97,7 +98,8 @@ var supportsTitle = map[string]struct{}{
 // NewAlertManager creates a new AlertManager instance.
 func NewAlertManager(app hubLike) *AlertManager {
 	am := &AlertManager{
-		hub: app,
+		hub:         app,
+		alertsCache: NewAlertsCache(app),
 	}
 	am.bindEvents()
 	return am
@@ -110,6 +112,9 @@ func (am *AlertManager) bindEvents() {
 	am.hub.OnRecordAfterUpdateSuccess("smart_devices").BindFunc(am.handleSmartDeviceAlert)
 
 	am.hub.OnServe().BindFunc(func(e *core.ServeEvent) error {
+		// Populate all alerts into cache on startup
+		_ = am.alertsCache.PopulateFromDB(true)
+
 		if err := resolveStatusAlerts(e.App); err != nil {
 			e.App.Logger().Error("Failed to resolve stale status alerts", "err", err)
 		}
@@ -310,4 +315,14 @@ func (am *AlertManager) SendTestNotification(e *core.RequestEvent) error {
 		return e.JSON(200, map[string]string{"err": err.Error()})
 	}
 	return e.JSON(200, map[string]bool{"err": false})
+}
+
+// setAlertTriggered updates the "triggered" status of an alert record in the database
+func (am *AlertManager) setAlertTriggered(alert CachedAlertData, triggered bool) error {
+	alertRecord, err := am.hub.FindRecordById("alerts", alert.Id)
+	if err != nil {
+		return err
+	}
+	alertRecord.Set("triggered", triggered)
+	return am.hub.Save(alertRecord)
 }

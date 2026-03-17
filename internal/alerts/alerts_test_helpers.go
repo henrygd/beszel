@@ -11,8 +11,14 @@ import (
 
 func NewTestAlertManagerWithoutWorker(app hubLike) *AlertManager {
 	return &AlertManager{
-		hub: app,
+		hub:         app,
+		alertsCache: NewAlertsCache(app),
 	}
+}
+
+// GetSystemAlertsCache returns the internal system alerts cache.
+func (am *AlertManager) GetSystemAlertsCache() *AlertsCache {
+	return am.alertsCache
 }
 
 func (am *AlertManager) GetAlertManager() *AlertManager {
@@ -33,10 +39,10 @@ func (am *AlertManager) GetPendingAlertsCount() int {
 }
 
 // ProcessPendingAlerts manually processes all expired alerts (for testing)
-func (am *AlertManager) ProcessPendingAlerts() ([]*core.Record, error) {
+func (am *AlertManager) ProcessPendingAlerts() ([]CachedAlertData, error) {
 	now := time.Now()
 	var lastErr error
-	var processedAlerts []*core.Record
+	var processedAlerts []CachedAlertData
 	am.pendingAlerts.Range(func(key, value any) bool {
 		info := value.(*alertInfo)
 		if now.After(info.expireTime) {
@@ -84,4 +90,8 @@ func ResolveStatusAlerts(app core.App) error {
 
 func (am *AlertManager) RestorePendingStatusAlerts() error {
 	return am.restorePendingStatusAlerts()
+}
+
+func (am *AlertManager) SetAlertTriggered(alert CachedAlertData, triggered bool) error {
+	return am.setAlertTriggered(alert, triggered)
 }

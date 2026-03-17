@@ -14,6 +14,7 @@ import (
 
 	beszelTests "github.com/henrygd/beszel/internal/tests"
 
+	"github.com/henrygd/beszel/internal/alerts"
 	"github.com/pocketbase/dbx"
 	"github.com/pocketbase/pocketbase/core"
 	pbTests "github.com/pocketbase/pocketbase/tests"
@@ -495,4 +496,47 @@ func TestAlertsHistory(t *testing.T) {
 		assert.NoError(t, err)
 		assert.EqualValues(t, 2, totalHistoryCount, "Should have 2 total alert history records")
 	})
+}
+
+func TestSetAlertTriggered(t *testing.T) {
+	hub, _ := beszelTests.NewTestHub(t.TempDir())
+	defer hub.Cleanup()
+
+	hub.StartHub()
+
+	user, _ := beszelTests.CreateUser(hub, "test@example.com", "password")
+	system, _ := beszelTests.CreateRecord(hub, "systems", map[string]any{
+		"name":  "test-system",
+		"users": []string{user.Id},
+		"host":  "127.0.0.1",
+	})
+
+	alertRecord, _ := beszelTests.CreateRecord(hub, "alerts", map[string]any{
+		"name":      "CPU",
+		"system":    system.Id,
+		"user":      user.Id,
+		"value":     80,
+		"triggered": false,
+	})
+
+	am := alerts.NewAlertManager(hub)
+
+	var alert alerts.CachedAlertData
+	alert.PopulateFromRecord(alertRecord)
+
+	// Test triggering the alert
+	err := am.SetAlertTriggered(alert, true)
+	assert.NoError(t, err)
+
+	updatedRecord, err := hub.FindRecordById("alerts", alert.Id)
+	assert.NoError(t, err)
+	assert.True(t, updatedRecord.GetBool("triggered"))
+
+	// Test un-triggering the alert
+	err = am.SetAlertTriggered(alert, false)
+	assert.NoError(t, err)
+
+	updatedRecord, err = hub.FindRecordById("alerts", alert.Id)
+	assert.NoError(t, err)
+	assert.False(t, updatedRecord.GetBool("triggered"))
 }
