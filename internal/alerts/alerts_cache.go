@@ -125,11 +125,11 @@ func (c *AlertsCache) GetSystemAlerts(systemID string) []CachedAlertData {
 		c.store.Set(systemID, systemStore)
 	}
 	all := systemStore.GetAll()
-	records := make([]CachedAlertData, 0, len(all))
+	alerts := make([]CachedAlertData, 0, len(all))
 	for _, alert := range all {
-		records = append(records, alert)
+		alerts = append(alerts, alert)
 	}
-	return records
+	return alerts
 }
 
 // GetAlert returns a specific alert by its ID from the cache.
@@ -143,13 +143,13 @@ func (c *AlertsCache) GetAlert(systemID, alertID string) (CachedAlertData, bool)
 // GetAlertsByName returns all alerts of a specific type for the specified system.
 func (c *AlertsCache) GetAlertsByName(systemID, alertName string) []CachedAlertData {
 	allAlerts := c.GetSystemAlerts(systemID)
-	var alertRecords []CachedAlertData
+	var alerts []CachedAlertData
 	for _, record := range allAlerts {
 		if record.Name == alertName {
-			alertRecords = append(alertRecords, record)
+			alerts = append(alerts, record)
 		}
 	}
-	return alertRecords
+	return alerts
 }
 
 // GetAlertsExcludingNames returns all alerts for the specified system excluding the given types.
@@ -159,13 +159,13 @@ func (c *AlertsCache) GetAlertsExcludingNames(systemID string, excludedNames ...
 		excludeMap[name] = struct{}{}
 	}
 	allAlerts := c.GetSystemAlerts(systemID)
-	var alertRecords []CachedAlertData
+	var alerts []CachedAlertData
 	for _, record := range allAlerts {
 		if _, excluded := excludeMap[record.Name]; !excluded {
-			alertRecords = append(alertRecords, record)
+			alerts = append(alerts, record)
 		}
 	}
-	return alertRecords
+	return alerts
 }
 
 // Refresh returns the latest cached copy for an alert snapshot if it still exists.

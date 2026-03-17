@@ -9,10 +9,10 @@ import (
 )
 
 type alertInfo struct {
-	systemName  string
-	alertRecord CachedAlertData
-	expireTime  time.Time
-	timer       *time.Timer
+	systemName string
+	alertData  CachedAlertData
+	expireTime time.Time
+	timer      *time.Timer
 }
 
 // Stop cancels all pending status alert timers.
@@ -35,61 +35,61 @@ func (am *AlertManager) HandleStatusAlerts(newStatus string, systemRecord *core.
 		return nil
 	}
 
-	alertRecords := am.alertsCache.GetAlertsByName(systemRecord.Id, "Status")
-	if len(alertRecords) == 0 {
+	alerts := am.alertsCache.GetAlertsByName(systemRecord.Id, "Status")
+	if len(alerts) == 0 {
 		return nil
 	}
 
 	systemName := systemRecord.GetString("name")
 	if newStatus == "down" {
-		am.handleSystemDown(systemName, alertRecords)
+		am.handleSystemDown(systemName, alerts)
 	} else {
-		am.handleSystemUp(systemName, alertRecords)
+		am.handleSystemUp(systemName, alerts)
 	}
 	return nil
 }
 
 // handleSystemDown manages the logic when a system status changes to "down". It schedules pending alerts for each alert record.
-func (am *AlertManager) handleSystemDown(systemName string, alertRecords []CachedAlertData) {
-	for _, alertRecord := range alertRecords {
-		min := max(1, int(alertRecord.Min))
-		am.schedulePendingStatusAlert(systemName, alertRecord, time.Duration(min)*time.Minute)
+func (am *AlertManager) handleSystemDown(systemName string, alerts []CachedAlertData) {
+	for _, alertData := range alerts {
+		min := max(1, int(alertData.Min))
+		am.schedulePendingStatusAlert(systemName, alertData, time.Duration(min)*time.Minute)
 	}
 }
 
 // schedulePendingStatusAlert sets up a timer to send a "down" alert after the specified delay if the system is still down.
 // It returns true if the alert was scheduled, or false if an alert was already pending for the given alert record.
-func (am *AlertManager) schedulePendingStatusAlert(systemName string, alertRecord CachedAlertData, delay time.Duration) bool {
+func (am *AlertManager) schedulePendingStatusAlert(systemName string, alertData CachedAlertData, delay time.Duration) bool {
 	alert := &alertInfo{
-		systemName:  systemName,
-		alertRecord: alertRecord,
-		expireTime:  time.Now().Add(delay),
+		systemName: systemName,
+		alertData:  alertData,
+		expireTime: time.Now().Add(delay),
 	}
 
-	storedAlert, loaded := am.pendingAlerts.LoadOrStore(alertRecord.Id, alert)
+	storedAlert, loaded := am.pendingAlerts.LoadOrStore(alertData.Id, alert)
 	if loaded {
 		return false
 	}
 
 	stored := storedAlert.(*alertInfo)
 	stored.timer = time.AfterFunc(time.Until(stored.expireTime), func() {
-		am.processPendingAlert(alertRecord.Id)
+		am.processPendingAlert(alertData.Id)
 	})
 	return true
 }
 
 // handleSystemUp manages the logic when a system status changes to "up".
 // It cancels any pending alerts and sends "up" alerts.
-func (am *AlertManager) handleSystemUp(systemName string, alertRecords []CachedAlertData) {
-	for _, alertRecord := range alertRecords {
+func (am *AlertManager) handleSystemUp(systemName string, alerts []CachedAlertData) {
+	for _, alertData := range alerts {
 		// If alert exists for record, delete and continue (down alert not sent)
-		if am.cancelPendingAlert(alertRecord.Id) {
+		if am.cancelPendingAlert(alertData.Id) {
 			continue
 		}
-		if !alertRecord.Triggered {
+		if !alertData.Triggered {
 			continue
 		}
-		if err := am.sendStatusAlert("up", systemName, alertRecord); err != nil {
+		if err := am.sendStatusAlert("up", systemName, alertData); err != nil {
 			am.hub.Logger().Error("Failed to send alert", "err", err)
 		}
 	}
@@ -117,20 +117,20 @@ func (am *AlertManager) processPendingAlert(alertID string) {
 	}
 
 	info := value.(*alertInfo)
-	alertRecord, ok := am.alertsCache.Refresh(info.alertRecord)
-	if !ok || alertRecord.Triggered {
+	refreshedAlertData, ok := am.alertsCache.Refresh(info.alertData)
+	if !ok || refreshedAlertData.Triggered {
 		return
 	}
-	if err := am.sendStatusAlert("down", info.systemName, alertRecord); err != nil {
+	if err := am.sendStatusAlert("down", info.systemName, refreshedAlertData); err != nil {
 		am.hub.Logger().Error("Failed to send alert", "err", err)
 	}
 }
 
 // sendStatusAlert sends a status alert ("up" or "down") to the users associated with the alert records.
-func (am *AlertManager) sendStatusAlert(alertStatus string, systemName string, alertRecord CachedAlertData) error {
+func (am *AlertManager) sendStatusAlert(alertStatus string, systemName string, alertData CachedAlertData) error {
 	// Update trigger state for alert record before sending alert
 	triggered := alertStatus == "down"
-	if err := am.setAlertTriggered(alertRecord, triggered); err != nil {
+	if err := am.setAlertTriggered(alertData, triggered); err != nil {
 		return err
 	}
 
@@ -145,10 +145,10 @@ func (am *AlertManager) sendStatusAlert(alertStatus string, systemName string, a
 	message := strings.TrimSuffix(title, emoji)
 
 	// Get system ID for the link
-	systemID := alertRecord.SystemID
+	systemID := alertData.SystemID
 
 	return am.SendAlert(AlertMessageData{
-		UserID:   alertRecord.UserID,
+		UserID:   alertData.UserID,
 		SystemID: systemID,
 		Title:    title,
 		Message:  message,
@@ -215,12 +215,12 @@ func (am *AlertManager) restorePendingStatusAlerts() error {
 	_ = am.alertsCache.PopulateFromDB(false)
 
 	for _, item := range pending {
-		alertRecord, ok := am.alertsCache.GetAlert(item.SystemID, item.AlertID)
+		alertData, ok := am.alertsCache.GetAlert(item.SystemID, item.AlertID)
 		if !ok {
 			continue
 		}
-		min := max(1, int(alertRecord.Min))
-		am.schedulePendingStatusAlert(item.SystemName, alertRecord, time.Duration(min)*time.Minute)
+		min := max(1, int(alertData.Min))
+		am.schedulePendingStatusAlert(item.SystemName, alertData, time.Duration(min)*time.Minute)
 	}
 
 	return nil

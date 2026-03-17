@@ -14,8 +14,8 @@ import (
 )
 
 func (am *AlertManager) HandleSystemAlerts(systemRecord *core.Record, data *system.CombinedData) error {
-	alertRecords := am.alertsCache.GetAlertsExcludingNames(systemRecord.Id, "Status")
-	if len(alertRecords) == 0 {
+	alerts := am.alertsCache.GetAlertsExcludingNames(systemRecord.Id, "Status")
+	if len(alerts) == 0 {
 		return nil
 	}
 
@@ -23,8 +23,8 @@ func (am *AlertManager) HandleSystemAlerts(systemRecord *core.Record, data *syst
 	now := systemRecord.GetDateTime("updated").Time().UTC()
 	oldestTime := now
 
-	for _, alertRecord := range alertRecords {
-		name := alertRecord.Name
+	for _, alertData := range alerts {
+		name := alertData.Name
 		var val float64
 		unit := "%"
 
@@ -69,8 +69,8 @@ func (am *AlertManager) HandleSystemAlerts(systemRecord *core.Record, data *syst
 			val = float64(data.Stats.Battery[0])
 		}
 
-		triggered := alertRecord.Triggered
-		threshold := alertRecord.Value
+		triggered := alertData.Triggered
+		threshold := alertData.Value
 
 		// Battery alert has inverted logic: trigger when value is BELOW threshold
 		lowAlert := isLowAlert(name)
@@ -88,11 +88,11 @@ func (am *AlertManager) HandleSystemAlerts(systemRecord *core.Record, data *syst
 			}
 		}
 
-		min := max(1, alertRecord.Min)
+		min := max(1, alertData.Min)
 
 		alert := SystemAlertData{
 			systemRecord: systemRecord,
-			alertRecord:  alertRecord,
+			alertData:    alertData,
 			name:         name,
 			unit:         unit,
 			val:          val,
@@ -340,12 +340,12 @@ func (am *AlertManager) sendSystemAlert(alert SystemAlertData) {
 	}
 	body := fmt.Sprintf("%s averaged %.2f%s for the previous %v %s.", alert.descriptor, alert.val, alert.unit, alert.min, minutesLabel)
 
-	if err := am.setAlertTriggered(alert.alertRecord, alert.triggered); err != nil {
+	if err := am.setAlertTriggered(alert.alertData, alert.triggered); err != nil {
 		// app.Logger().Error("failed to save alert record", "err", err)
 		return
 	}
 	am.SendAlert(AlertMessageData{
-		UserID:   alert.alertRecord.UserID,
+		UserID:   alert.alertData.UserID,
 		SystemID: alert.systemRecord.Id,
 		Title:    subject,
 		Message:  body,

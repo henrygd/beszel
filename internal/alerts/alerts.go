@@ -64,7 +64,7 @@ type SystemAlertGPUData struct {
 
 type SystemAlertData struct {
 	systemRecord *core.Record
-	alertRecord  CachedAlertData
+	alertData    CachedAlertData
 	name         string
 	unit         string
 	val          float64

@@ -50,7 +50,7 @@ func (am *AlertManager) ProcessPendingAlerts() ([]CachedAlertData, error) {
 				info.timer.Stop()
 			}
 			am.processPendingAlert(key.(string))
-			processedAlerts = append(processedAlerts, info.alertRecord)
+			processedAlerts = append(processedAlerts, info.alertData)
 		}
 		return true
 	})
