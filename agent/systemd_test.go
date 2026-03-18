@@ -156,6 +156,13 @@ func TestGetServicePatterns(t *testing.T) {
 			expected:       []string{"*nginx*.service", "*apache*.service"},
 			cleanupEnvVars: true,
 		},
+		{
+			name:           "opt into timer monitoring",
+			prefixedEnv:    "nginx.service,docker,apache.timer",
+			unprefixedEnv:  "",
+			expected:       []string{"nginx.service", "docker.service", "apache.timer"},
+			cleanupEnvVars: true,
+		},
 	}
 
 	for _, tt := range tests {
