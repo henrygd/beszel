@@ -14,7 +14,14 @@ import { Toaster } from "@/components/ui/toaster.tsx"
 import { alertManager } from "@/lib/alerts"
 import { pb, updateUserSettings } from "@/lib/api.ts"
 import { dynamicActivate, getLocale } from "@/lib/i18n"
-import { $authenticated, $copyContent, $direction, $publicKey, $userSettings } from "@/lib/stores.ts"
+import {
+	$authenticated,
+	$copyContent,
+	$direction,
+	$publicKey,
+	$userSettings,
+	defaultLayoutWidth,
+} from "@/lib/stores.ts"
 import * as systemsManager from "@/lib/systemsManager.ts"
 
 const LoginPage = lazy(() => import("@/components/login/login.tsx"))
@@ -100,7 +107,7 @@ const Layout = () => {
 					<LoginPage />
 				</Suspense>
 			) : (
-				<div style={{ "--container": `${userSettings.layoutWidth ?? 1580}px` } as React.CSSProperties}>
+				<div style={{ "--container": `${userSettings.layoutWidth ?? defaultLayoutWidth}px` } as React.CSSProperties}>
 					<div className="container">
 						<Navbar />
 					</div>

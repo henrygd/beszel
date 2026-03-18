@@ -5,15 +5,14 @@ import (
 	"strings"
 	"time"
 
-	"github.com/pocketbase/dbx"
 	"github.com/pocketbase/pocketbase/core"
 )
 
 type alertInfo struct {
-	systemName  string
-	alertRecord *core.Record
-	expireTime  time.Time
-	timer       *time.Timer
+	systemName string
+	alertData  CachedAlertData
+	expireTime time.Time
+	timer      *time.Timer
 }
 
 // Stop cancels all pending status alert timers.
@@ -36,76 +35,61 @@ func (am *AlertManager) HandleStatusAlerts(newStatus string, systemRecord *core.
 		return nil
 	}
 
-	alertRecords, err := am.getSystemStatusAlerts(systemRecord.Id)
-	if err != nil {
-		return err
-	}
-	if len(alertRecords) == 0 {
+	alerts := am.alertsCache.GetAlertsByName(systemRecord.Id, "Status")
+	if len(alerts) == 0 {
 		return nil
 	}
 
 	systemName := systemRecord.GetString("name")
 	if newStatus == "down" {
-		am.handleSystemDown(systemName, alertRecords)
+		am.handleSystemDown(systemName, alerts)
 	} else {
-		am.handleSystemUp(systemName, alertRecords)
+		am.handleSystemUp(systemName, alerts)
 	}
 	return nil
 }
 
-// getSystemStatusAlerts retrieves all "Status" alert records for a given system ID.
-func (am *AlertManager) getSystemStatusAlerts(systemID string) ([]*core.Record, error) {
-	alertRecords, err := am.hub.FindAllRecords("alerts", dbx.HashExp{
-		"system": systemID,
-		"name":   "Status",
-	})
-	if err != nil {
-		return nil, err
-	}
-	return alertRecords, nil
-}
-
 // handleSystemDown manages the logic when a system status changes to "down". It schedules pending alerts for each alert record.
-func (am *AlertManager) handleSystemDown(systemName string, alertRecords []*core.Record) {
-	for _, alertRecord := range alertRecords {
-		min := max(1, alertRecord.GetInt("min"))
-		am.schedulePendingStatusAlert(systemName, alertRecord, time.Duration(min)*time.Minute)
+func (am *AlertManager) handleSystemDown(systemName string, alerts []CachedAlertData) {
+	for _, alertData := range alerts {
+		min := max(1, int(alertData.Min))
+		am.schedulePendingStatusAlert(systemName, alertData, time.Duration(min)*time.Minute)
 	}
 }
 
 // schedulePendingStatusAlert sets up a timer to send a "down" alert after the specified delay if the system is still down.
 // It returns true if the alert was scheduled, or false if an alert was already pending for the given alert record.
-func (am *AlertManager) schedulePendingStatusAlert(systemName string, alertRecord *core.Record, delay time.Duration) bool {
+func (am *AlertManager) schedulePendingStatusAlert(systemName string, alertData CachedAlertData, delay time.Duration) bool {
 	alert := &alertInfo{
-		systemName:  systemName,
-		alertRecord: alertRecord,
-		expireTime:  time.Now().Add(delay),
+		systemName: systemName,
+		alertData:  alertData,
+		expireTime: time.Now().Add(delay),
 	}
 
-	storedAlert, loaded := am.pendingAlerts.LoadOrStore(alertRecord.Id, alert)
+	storedAlert, loaded := am.pendingAlerts.LoadOrStore(alertData.Id, alert)
 	if loaded {
 		return false
 	}
 
 	stored := storedAlert.(*alertInfo)
 	stored.timer = time.AfterFunc(time.Until(stored.expireTime), func() {
-		am.processPendingAlert(alertRecord.Id)
+		am.processPendingAlert(alertData.Id)
 	})
 	return true
 }
 
 // handleSystemUp manages the logic when a system status changes to "up".
 // It cancels any pending alerts and sends "up" alerts.
-func (am *AlertManager) handleSystemUp(systemName string, alertRecords []*core.Record) {
-	for _, alertRecord := range alertRecords {
+func (am *AlertManager) handleSystemUp(systemName string, alerts []CachedAlertData) {
+	for _, alertData := range alerts {
 		// If alert exists for record, delete and continue (down alert not sent)
-		if am.cancelPendingAlert(alertRecord.Id) {
+		if am.cancelPendingAlert(alertData.Id) {
 			continue
 		}
-		if !alertRecord.GetBool("triggered") {
+		if !alertData.Triggered {
 			continue
 		}
-		if err := am.sendStatusAlert("up", systemName, alertRecord); err != nil {
+		if err := am.sendStatusAlert("up", systemName, alertData); err != nil {
 			am.hub.Logger().Error("Failed to send alert", "err", err)
 		}
 	}
@@ -133,23 +117,22 @@ func (am *AlertManager) processPendingAlert(alertID string) {
 	}
 
 	info := value.(*alertInfo)
-	if info.alertRecord.GetBool("triggered") {
+	refreshedAlertData, ok := am.alertsCache.Refresh(info.alertData)
+	if !ok || refreshedAlertData.Triggered {
 		return
 	}
-	if err := am.sendStatusAlert("down", info.systemName, info.alertRecord); err != nil {
+	if err := am.sendStatusAlert("down", info.systemName, refreshedAlertData); err != nil {
 		am.hub.Logger().Error("Failed to send alert", "err", err)
 	}
 }
 
 // sendStatusAlert sends a status alert ("up" or "down") to the users associated with the alert records.
-func (am *AlertManager) sendStatusAlert(alertStatus string, systemName string, alertRecord *core.Record) error {
-	switch alertStatus {
-	case "up":
-		alertRecord.Set("triggered", false)
-	case "down":
-		alertRecord.Set("triggered", true)
+func (am *AlertManager) sendStatusAlert(alertStatus string, systemName string, alertData CachedAlertData) error {
+	// Update trigger state for alert record before sending alert
+	triggered := alertStatus == "down"
+	if err := am.setAlertTriggered(alertData, triggered); err != nil {
+		return err
 	}
-	am.hub.Save(alertRecord)
 
 	var emoji string
 	if alertStatus == "up" {
@@ -162,10 +145,10 @@ func (am *AlertManager) sendStatusAlert(alertStatus string, systemName string, a
 	message := strings.TrimSuffix(title, emoji)
 
 	// Get system ID for the link
-	systemID := alertRecord.GetString("system")
+	systemID := alertData.SystemID
 
 	return am.SendAlert(AlertMessageData{
-		UserID:   alertRecord.GetString("user"),
+		UserID:   alertData.UserID,
 		SystemID: systemID,
 		Title:    title,
 		Message:  message,
@@ -211,12 +194,13 @@ func resolveStatusAlerts(app core.App) error {
 func (am *AlertManager) restorePendingStatusAlerts() error {
 	type pendingStatusAlert struct {
 		AlertID    string `db:"alert_id"`
+		SystemID   string `db:"system_id"`
 		SystemName string `db:"system_name"`
 	}
 
 	var pending []pendingStatusAlert
 	err := am.hub.DB().NewQuery(`
-		SELECT a.id AS alert_id, s.name AS system_name
+		SELECT a.id AS alert_id, a.system AS system_id, s.name AS system_name
 		FROM alerts a
 		JOIN systems s ON a.system = s.id
 		WHERE a.name = 'Status'
@@ -227,13 +211,16 @@ func (am *AlertManager) restorePendingStatusAlerts() error {
 		return err
 	}
 
+	// Make sure cache is populated before trying to restore pending alerts
+	_ = am.alertsCache.PopulateFromDB(false)
+
 	for _, item := range pending {
-		alertRecord, err := am.hub.FindRecordById("alerts", item.AlertID)
-		if err != nil {
-			return err
+		alertData, ok := am.alertsCache.GetAlert(item.SystemID, item.AlertID)
+		if !ok {
+			continue
 		}
-		min := max(1, alertRecord.GetInt("min"))
-		am.schedulePendingStatusAlert(item.SystemName, alertRecord, time.Duration(min)*time.Minute)
+		min := max(1, int(alertData.Min))
+		am.schedulePendingStatusAlert(item.SystemName, alertData, time.Duration(min)*time.Minute)
 	}
 
 	return nil
