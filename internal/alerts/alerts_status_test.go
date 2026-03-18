@@ -626,3 +626,130 @@ func TestResolveStatusAlerts(t *testing.T) {
 	assert.EqualValues(t, 1, alertHistoryCount, "Should have exactly one unresolved alert history record")
 
 }
+
+func TestAlertsHistoryStatus(t *testing.T) {
+	synctest.Test(t, func(t *testing.T) {
+		hub, user := beszelTests.GetHubWithUser(t)
+		defer hub.Cleanup()
+
+		// Create a system
+		systems, err := beszelTests.CreateSystems(hub, 1, user.Id, "up")
+		assert.NoError(t, err)
+		system := systems[0]
+
+		// Create a status alertRecord for the system
+		alertRecord, err := beszelTests.CreateRecord(hub, "alerts", map[string]any{
+			"name":   "Status",
+			"system": system.Id,
+			"user":   user.Id,
+			"min":    1,
+		})
+		assert.NoError(t, err)
+
+		// Verify alert is not triggered initially
+		assert.False(t, alertRecord.GetBool("triggered"), "Alert should not be triggered initially")
+
+		// Set the system to 'down' (this should trigger the alert)
+		system.Set("status", "down")
+		err = hub.Save(system)
+		assert.NoError(t, err)
+
+		time.Sleep(time.Second * 30)
+		synctest.Wait()
+
+		alertFresh, _ := hub.FindRecordById("alerts", alertRecord.Id)
+		assert.False(t, alertFresh.GetBool("triggered"), "Alert should not be triggered after 30 seconds")
+
+		time.Sleep(time.Minute)
+		synctest.Wait()
+
+		// Verify alert is triggered after setting system to down
+		alertFresh, err = hub.FindRecordById("alerts", alertRecord.Id)
+		assert.NoError(t, err)
+		assert.True(t, alertFresh.GetBool("triggered"), "Alert should be triggered after one minute")
+
+		// Verify we have one unresolved alert history record
+		alertHistoryCount, err := hub.CountRecords("alerts_history", dbx.HashExp{"resolved": ""})
+		assert.NoError(t, err)
+		assert.EqualValues(t, 1, alertHistoryCount, "Should have exactly one unresolved alert history record")
+
+		// Set the system back to 'up' (this should resolve the alert)
+		system.Set("status", "up")
+		err = hub.Save(system)
+		assert.NoError(t, err)
+
+		time.Sleep(time.Second)
+		synctest.Wait()
+
+		// Verify alert is not triggered after setting system back to up
+		alertFresh, err = hub.FindRecordById("alerts", alertRecord.Id)
+		assert.NoError(t, err)
+		assert.False(t, alertFresh.GetBool("triggered"), "Alert should not be triggered after system recovers")
+
+		// Verify the alert history record is resolved
+		alertHistoryCount, err = hub.CountRecords("alerts_history", dbx.HashExp{"resolved": ""})
+		assert.NoError(t, err)
+		assert.EqualValues(t, 0, alertHistoryCount, "Should have no unresolved alert history records")
+	})
+}
+
+func TestStatusAlertClearedBeforeSend(t *testing.T) {
+	synctest.Test(t, func(t *testing.T) {
+		hub, user := beszelTests.GetHubWithUser(t)
+		defer hub.Cleanup()
+
+		// Create a system
+		systems, err := beszelTests.CreateSystems(hub, 1, user.Id, "up")
+		assert.NoError(t, err)
+		system := systems[0]
+
+		// Ensure user settings have an email
+		userSettings, _ := hub.FindFirstRecordByFilter("user_settings", "user={:user}", map[string]any{"user": user.Id})
+		userSettings.Set("settings", `{"emails":["test@example.com"],"webhooks":[]}`)
+		hub.Save(userSettings)
+
+		// Initial email count
+		initialEmailCount := hub.TestMailer.TotalSend()
+
+		// Create a status alertRecord for the system
+		alertRecord, err := beszelTests.CreateRecord(hub, "alerts", map[string]any{
+			"name":   "Status",
+			"system": system.Id,
+			"user":   user.Id,
+			"min":    1,
+		})
+		assert.NoError(t, err)
+
+		// Verify alert is not triggered initially
+		assert.False(t, alertRecord.GetBool("triggered"), "Alert should not be triggered initially")
+
+		// Set the system to 'down' (this should trigger the alert)
+		system.Set("status", "down")
+		err = hub.Save(system)
+		assert.NoError(t, err)
+
+		time.Sleep(time.Second * 30)
+		synctest.Wait()
+
+		// Set system back up to clear the pending alert before it triggers
+		system.Set("status", "up")
+		err = hub.Save(system)
+		assert.NoError(t, err)
+
+		time.Sleep(time.Minute)
+		synctest.Wait()
+
+		// Verify that we have not sent any emails since the system recovered before the alert triggered
+		assert.Equal(t, initialEmailCount, hub.TestMailer.TotalSend(), "No email should be sent if system recovers before alert triggers")
+
+		// Verify alert is not triggered after setting system back to up
+		alertFresh, err := hub.FindRecordById("alerts", alertRecord.Id)
+		assert.NoError(t, err)
+		assert.False(t, alertFresh.GetBool("triggered"), "Alert should not be triggered after system recovers")
+
+		// Verify that no alert history record was created since the alert never triggered
+		alertHistoryCount, err := hub.CountRecords("alerts_history")
+		assert.NoError(t, err)
+		assert.EqualValues(t, 0, alertHistoryCount, "Should have no unresolved alert history records since alert never triggered")
+	})
+}

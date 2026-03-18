@@ -16,7 +16,7 @@ type val[T comparable] struct {
 }
 
 type ExpiryMap[T comparable] struct {
-	store    store.Store[string, val[T]]
+	store    *store.Store[string, val[T]]
 	stopChan chan struct{}
 	stopOnce sync.Once
 }
@@ -24,7 +24,7 @@ type ExpiryMap[T comparable] struct {
 // New creates a new expiry map with custom cleanup interval
 func New[T comparable](cleanupInterval time.Duration) *ExpiryMap[T] {
 	m := &ExpiryMap[T]{
-		store:    *store.New(map[string]val[T]{}),
+		store:    store.New(map[string]val[T]{}),
 		stopChan: make(chan struct{}),
 	}
 	go m.startCleaner(cleanupInterval)

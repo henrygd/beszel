@@ -301,7 +301,7 @@ func getServicePatterns() []string {
 			if pattern == "" {
 				continue
 			}
-			if !strings.HasSuffix(pattern, ".service") {
+			if !strings.HasSuffix(pattern, "timer") && !strings.HasSuffix(pattern, ".service") {
 				pattern += ".service"
 			}
 			patterns = append(patterns, pattern)
