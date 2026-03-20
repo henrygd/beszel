@@ -5,7 +5,6 @@ package agent
 import (
 	"context"
 	"fmt"
-	"os"
 	"testing"
 
 	"github.com/henrygd/beszel/internal/entities/system"
@@ -329,34 +328,10 @@ func TestNewSensorConfigWithEnv(t *testing.T) {
 }
 
 func TestNewSensorConfig(t *testing.T) {
-	// Save original environment variables
-	originalPrimary, hasPrimary := os.LookupEnv("BESZEL_AGENT_PRIMARY_SENSOR")
-	originalSys, hasSys := os.LookupEnv("BESZEL_AGENT_SYS_SENSORS")
-	originalSensors, hasSensors := os.LookupEnv("BESZEL_AGENT_SENSORS")
-
-	// Restore environment variables after the test
-	defer func() {
-		// Clean up test environment variables
-		os.Unsetenv("BESZEL_AGENT_PRIMARY_SENSOR")
-		os.Unsetenv("BESZEL_AGENT_SYS_SENSORS")
-		os.Unsetenv("BESZEL_AGENT_SENSORS")
-
-		// Restore original values if they existed
-		if hasPrimary {
-			os.Setenv("BESZEL_AGENT_PRIMARY_SENSOR", originalPrimary)
-		}
-		if hasSys {
-			os.Setenv("BESZEL_AGENT_SYS_SENSORS", originalSys)
-		}
-		if hasSensors {
-			os.Setenv("BESZEL_AGENT_SENSORS", originalSensors)
-		}
-	}()
-
 	// Set test environment variables
-	os.Setenv("BESZEL_AGENT_PRIMARY_SENSOR", "test_primary")
-	os.Setenv("BESZEL_AGENT_SYS_SENSORS", "/test/path")
-	os.Setenv("BESZEL_AGENT_SENSORS", "test_sensor1,test_*,test_sensor3")
+	t.Setenv("BESZEL_AGENT_PRIMARY_SENSOR", "test_primary")
+	t.Setenv("BESZEL_AGENT_SYS_SENSORS", "/test/path")
+	t.Setenv("BESZEL_AGENT_SENSORS", "test_sensor1,test_*,test_sensor3")
 
 	agent := &Agent{}
 	result := agent.newSensorConfig()
