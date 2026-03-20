@@ -15,6 +15,19 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+func setStatusAlertEmail(t *testing.T, hub core.App, userID, email string) {
+	t.Helper()
+
+	userSettings, err := hub.FindFirstRecordByFilter("user_settings", "user={:user}", map[string]any{"user": userID})
+	require.NoError(t, err)
+
+	userSettings.Set("settings", map[string]any{
+		"emails":   []string{email},
+		"webhooks": []string{},
+	})
+	require.NoError(t, hub.Save(userSettings))
+}
+
 func TestStatusAlerts(t *testing.T) {
 	synctest.Test(t, func(t *testing.T) {
 		hub, user := beszelTests.GetHubWithUser(t)
@@ -320,6 +333,181 @@ func TestStatusAlertDownFiresAfterDelayExpires(t *testing.T) {
 	alertRecord, err := hub.FindRecordById("alerts", alert.Id)
 	require.NoError(t, err)
 	assert.True(t, alertRecord.GetBool("triggered"), "alert should be marked triggered after downtime matures")
+}
+
+func TestStatusAlertMultipleUsersRespectDifferentMinutes(t *testing.T) {
+	synctest.Test(t, func(t *testing.T) {
+		hub, user1 := beszelTests.GetHubWithUser(t)
+		defer hub.Cleanup()
+
+		setStatusAlertEmail(t, hub, user1.Id, "user1@example.com")
+
+		user2, err := beszelTests.CreateUser(hub, "user2@example.com", "password")
+		require.NoError(t, err)
+		_, err = beszelTests.CreateRecord(hub, "user_settings", map[string]any{
+			"user": user2.Id,
+			"settings": map[string]any{
+				"emails":   []string{"user2@example.com"},
+				"webhooks": []string{},
+			},
+		})
+		require.NoError(t, err)
+
+		system, err := beszelTests.CreateRecord(hub, "systems", map[string]any{
+			"name":  "shared-system",
+			"users": []string{user1.Id, user2.Id},
+			"host":  "127.0.0.1",
+		})
+		require.NoError(t, err)
+		system.Set("status", "up")
+		require.NoError(t, hub.SaveNoValidate(system))
+
+		alertUser1, err := beszelTests.CreateRecord(hub, "alerts", map[string]any{
+			"name":   "Status",
+			"system": system.Id,
+			"user":   user1.Id,
+			"min":    1,
+		})
+		require.NoError(t, err)
+		alertUser2, err := beszelTests.CreateRecord(hub, "alerts", map[string]any{
+			"name":   "Status",
+			"system": system.Id,
+			"user":   user2.Id,
+			"min":    2,
+		})
+		require.NoError(t, err)
+
+		time.Sleep(10 * time.Millisecond)
+
+		system.Set("status", "down")
+		require.NoError(t, hub.SaveNoValidate(system))
+
+		assert.Equal(t, 2, hub.GetPendingAlertsCount(), "both user alerts should be pending after the system goes down")
+
+		time.Sleep(59 * time.Second)
+		synctest.Wait()
+		assert.Zero(t, hub.TestMailer.TotalSend(), "no messages should be sent before the earliest alert minute elapses")
+
+		time.Sleep(2 * time.Second)
+		synctest.Wait()
+
+		messages := hub.TestMailer.Messages()
+		require.Len(t, messages, 1, "only the first user's alert should send after one minute")
+		require.Len(t, messages[0].To, 1)
+		assert.Equal(t, "user1@example.com", messages[0].To[0].Address)
+		assert.Contains(t, messages[0].Subject, "Connection to shared-system is down")
+		assert.Equal(t, 1, hub.GetPendingAlertsCount(), "the later user alert should still be pending")
+
+		time.Sleep(58 * time.Second)
+		synctest.Wait()
+		assert.Equal(t, 1, hub.TestMailer.TotalSend(), "the second user's alert should still be waiting before two minutes")
+
+		time.Sleep(2 * time.Second)
+		synctest.Wait()
+
+		messages = hub.TestMailer.Messages()
+		require.Len(t, messages, 2, "both users should eventually receive their own status alert")
+		require.Len(t, messages[1].To, 1)
+		assert.Equal(t, "user2@example.com", messages[1].To[0].Address)
+		assert.Contains(t, messages[1].Subject, "Connection to shared-system is down")
+		assert.Zero(t, hub.GetPendingAlertsCount(), "all pending alerts should be consumed after both timers fire")
+
+		alertUser1, err = hub.FindRecordById("alerts", alertUser1.Id)
+		require.NoError(t, err)
+		assert.True(t, alertUser1.GetBool("triggered"), "user1 alert should be marked triggered after delivery")
+
+		alertUser2, err = hub.FindRecordById("alerts", alertUser2.Id)
+		require.NoError(t, err)
+		assert.True(t, alertUser2.GetBool("triggered"), "user2 alert should be marked triggered after delivery")
+	})
+}
+
+func TestStatusAlertMultipleUsersRecoveryBetweenMinutesOnlyAlertsEarlierUser(t *testing.T) {
+	synctest.Test(t, func(t *testing.T) {
+		hub, user1 := beszelTests.GetHubWithUser(t)
+		defer hub.Cleanup()
+
+		setStatusAlertEmail(t, hub, user1.Id, "user1@example.com")
+
+		user2, err := beszelTests.CreateUser(hub, "user2@example.com", "password")
+		require.NoError(t, err)
+		_, err = beszelTests.CreateRecord(hub, "user_settings", map[string]any{
+			"user": user2.Id,
+			"settings": map[string]any{
+				"emails":   []string{"user2@example.com"},
+				"webhooks": []string{},
+			},
+		})
+		require.NoError(t, err)
+
+		system, err := beszelTests.CreateRecord(hub, "systems", map[string]any{
+			"name":  "shared-system",
+			"users": []string{user1.Id, user2.Id},
+			"host":  "127.0.0.1",
+		})
+		require.NoError(t, err)
+		system.Set("status", "up")
+		require.NoError(t, hub.SaveNoValidate(system))
+
+		alertUser1, err := beszelTests.CreateRecord(hub, "alerts", map[string]any{
+			"name":   "Status",
+			"system": system.Id,
+			"user":   user1.Id,
+			"min":    1,
+		})
+		require.NoError(t, err)
+		alertUser2, err := beszelTests.CreateRecord(hub, "alerts", map[string]any{
+			"name":   "Status",
+			"system": system.Id,
+			"user":   user2.Id,
+			"min":    2,
+		})
+		require.NoError(t, err)
+
+		time.Sleep(10 * time.Millisecond)
+
+		system.Set("status", "down")
+		require.NoError(t, hub.SaveNoValidate(system))
+
+		time.Sleep(61 * time.Second)
+		synctest.Wait()
+
+		messages := hub.TestMailer.Messages()
+		require.Len(t, messages, 1, "the first user's down alert should send before recovery")
+		require.Len(t, messages[0].To, 1)
+		assert.Equal(t, "user1@example.com", messages[0].To[0].Address)
+		assert.Contains(t, messages[0].Subject, "Connection to shared-system is down")
+		assert.Equal(t, 1, hub.GetPendingAlertsCount(), "the second user's alert should still be pending")
+
+		system.Set("status", "up")
+		require.NoError(t, hub.SaveNoValidate(system))
+
+		time.Sleep(time.Second)
+		synctest.Wait()
+
+		messages = hub.TestMailer.Messages()
+		require.Len(t, messages, 2, "recovery should notify only the user whose down alert had already triggered")
+		for _, message := range messages {
+			require.Len(t, message.To, 1)
+			assert.Equal(t, "user1@example.com", message.To[0].Address)
+		}
+		assert.Contains(t, messages[1].Subject, "Connection to shared-system is up")
+		assert.Zero(t, hub.GetPendingAlertsCount(), "recovery should cancel the later user's pending alert")
+
+		time.Sleep(61 * time.Second)
+		synctest.Wait()
+
+		messages = hub.TestMailer.Messages()
+		require.Len(t, messages, 2, "user2 should never receive a down alert once recovery cancels the pending timer")
+
+		alertUser1, err = hub.FindRecordById("alerts", alertUser1.Id)
+		require.NoError(t, err)
+		assert.False(t, alertUser1.GetBool("triggered"), "user1 alert should be cleared after recovery")
+
+		alertUser2, err = hub.FindRecordById("alerts", alertUser2.Id)
+		require.NoError(t, err)
+		assert.False(t, alertUser2.GetBool("triggered"), "user2 alert should remain untriggered because it never fired")
+	})
 }
 
 func TestStatusAlertDuplicateDownCallIsIdempotent(t *testing.T) {

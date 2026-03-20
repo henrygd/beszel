@@ -184,7 +184,8 @@ export function SystemsTableColumns(viewMode: "table" | "grid"): ColumnDef<Syste
 			accessorFn: ({ info }) => info.dp || undefined,
 			id: "disk",
 			name: () => t`Disk`,
-			cell: DiskCellWithMultiple,
+			cell: (info: CellContext<SystemRecord, unknown>) =>
+				info.row.original.info.efs ? DiskCellWithMultiple(info) : TableCellWithMeter(info),
 			Icon: HardDriveIcon,
 			header: sortableHeader,
 		},
@@ -479,11 +480,6 @@ function DiskCellWithMultiple(info: CellContext<SystemRecord, unknown>) {
 	const { colorWarn = 65, colorCrit = 90 } = useStore($userSettings, { keys: ["colorWarn", "colorCrit"] })
 	const { info: sysInfo, status, id } = info.row.original
 	const extraFs = Object.entries(sysInfo.efs ?? {})
-
-	if (extraFs.length === 0) {
-		return TableCellWithMeter(info)
-	}
-
 	const rootDiskPct = sysInfo.dp
 
 	// sort extra disks by percentage descending
