@@ -32,7 +32,8 @@ func createTestHub(t testing.TB) (*Hub, *pbtests.TestApp, error) {
 	if err != nil {
 		return nil, nil, err
 	}
-	return NewHub(testApp), testApp, nil
+	h, err := NewHub(testApp)
+	return h, testApp, err
 }
 
 // cleanupTestHub stops background system goroutines before tearing down the app.

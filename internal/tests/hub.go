@@ -52,7 +52,10 @@ func NewTestHubWithConfig(config core.BaseAppConfig) (*TestHub, error) {
 		return nil, err
 	}
 
-	hub := hub.NewHub(testApp)
+	hub, err := hub.NewHub(testApp)
+	if err != nil {
+		return nil, err
+	}
 
 	t := &TestHub{
 		App:     testApp,
@@ -74,6 +77,16 @@ func CreateUser(app core.App, email string, password string) (*core.Record, erro
 	user.Set("email", email)
 	user.Set("password", password)
 
+	return user, app.Save(user)
+}
+
+func CreateUserWithRole(app core.App, email string, password string, roleName string) (*core.Record, error) {
+	user, err := CreateUser(app, email, password)
+	if err != nil {
+		return nil, err
+	}
+
+	user.Set("role", roleName)
 	return user, app.Save(user)
 }
 

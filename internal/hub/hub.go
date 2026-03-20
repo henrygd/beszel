@@ -4,6 +4,7 @@ package hub
 import (
 	"crypto/ed25519"
 	"encoding/pem"
+	"errors"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -45,20 +46,17 @@ type Hub struct {
 var containerIDPattern = regexp.MustCompile(`^[a-fA-F0-9]{12,64}$`)
 
 // NewHub creates a new Hub instance with default configuration
-func NewHub(app core.App) *Hub {
-	hub := &Hub{}
-	hub.App = app
-
+func NewHub(app core.App) (*Hub, error) {
+	hub := &Hub{App: app}
 	hub.AlertManager = alerts.NewAlertManager(hub)
 	hub.um = users.NewUserManager(hub)
 	hub.rm = records.NewRecordManager(hub)
 	hub.sm = systems.NewSystemManager(hub)
-	hub.appURL, _ = GetEnv("APP_URL")
 	hub.hb = heartbeat.New(app, GetEnv)
 	if hub.hb != nil {
 		hub.hbStop = make(chan struct{})
 	}
-	return hub
+	return hub, initialize(hub)
 }
 
 // GetEnv retrieves an environment variable with a "BESZEL_HUB_" prefix, or falls back to the unprefixed key.
@@ -72,10 +70,6 @@ func GetEnv(key string) (value string, exists bool) {
 
 func (h *Hub) StartHub() error {
 	h.App.OnServe().BindFunc(func(e *core.ServeEvent) error {
-		// initialize settings / collections
-		if err := h.initialize(e); err != nil {
-			return err
-		}
 		// sync systems with config
 		if err := config.SyncSystems(e); err != nil {
 			return err
@@ -110,132 +104,32 @@ func (h *Hub) StartHub() error {
 	h.App.OnRecordCreate("users").BindFunc(h.um.InitializeUserRole)
 	h.App.OnRecordCreate("user_settings").BindFunc(h.um.InitializeUserSettings)
 
-	if pb, ok := h.App.(*pocketbase.PocketBase); ok {
-		// log.Println("Starting pocketbase")
-		err := pb.Start()
-		if err != nil {
-			return err
-		}
+	pb, ok := h.App.(*pocketbase.PocketBase)
+	if !ok {
+		return errors.New("not a pocketbase app")
 	}
-
-	return nil
+	return pb.Start()
 }
 
 // initialize sets up initial configuration (collections, settings, etc.)
-func (h *Hub) initialize(e *core.ServeEvent) error {
-	// set general settings
-	settings := e.App.Settings()
-	// batch requests (for global alerts)
-	settings.Batch.Enabled = true
-	// set URL if BASE_URL env is set
-	if h.appURL != "" {
-		settings.Meta.AppURL = h.appURL
+func initialize(hub *Hub) error {
+	if !hub.App.IsBootstrapped() {
+		hub.App.Bootstrap()
 	}
-	if err := e.App.Save(settings); err != nil {
+	// set general settings
+	settings := hub.App.Settings()
+	// batch requests (for alerts)
+	settings.Batch.Enabled = true
+	// set URL if APP_URL env is set
+	if appURL, isSet := GetEnv("APP_URL"); isSet {
+		hub.appURL = appURL
+		settings.Meta.AppURL = hub.appURL
+	}
+	if err := hub.App.Save(settings); err != nil {
 		return err
 	}
 	// set auth settings
-	if err := setCollectionAuthSettings(e.App); err != nil {
-		return err
-	}
-	return nil
-}
-
-// setCollectionAuthSettings sets up default authentication settings for the app
-func setCollectionAuthSettings(app core.App) error {
-	usersCollection, err := app.FindCollectionByNameOrId("users")
-	if err != nil {
-		return err
-	}
-	superusersCollection, err := app.FindCollectionByNameOrId(core.CollectionNameSuperusers)
-	if err != nil {
-		return err
-	}
-
-	// disable email auth if DISABLE_PASSWORD_AUTH env var is set
-	disablePasswordAuth, _ := GetEnv("DISABLE_PASSWORD_AUTH")
-	usersCollection.PasswordAuth.Enabled = disablePasswordAuth != "true"
-	usersCollection.PasswordAuth.IdentityFields = []string{"email"}
-	// allow oauth user creation if USER_CREATION is set
-	if userCreation, _ := GetEnv("USER_CREATION"); userCreation == "true" {
-		cr := "@request.context = 'oauth2'"
-		usersCollection.CreateRule = &cr
-	} else {
-		usersCollection.CreateRule = nil
-	}
-
-	// enable mfaOtp mfa if MFA_OTP env var is set
-	mfaOtp, _ := GetEnv("MFA_OTP")
-	usersCollection.OTP.Length = 6
-	superusersCollection.OTP.Length = 6
-	usersCollection.OTP.Enabled = mfaOtp == "true"
-	usersCollection.MFA.Enabled = mfaOtp == "true"
-	superusersCollection.OTP.Enabled = mfaOtp == "true" || mfaOtp == "superusers"
-	superusersCollection.MFA.Enabled = mfaOtp == "true" || mfaOtp == "superusers"
-	if err := app.Save(superusersCollection); err != nil {
-		return err
-	}
-	if err := app.Save(usersCollection); err != nil {
-		return err
-	}
-
-	shareAllSystems, _ := GetEnv("SHARE_ALL_SYSTEMS")
-
-	// allow all users to access systems if SHARE_ALL_SYSTEMS is set
-	systemsCollection, err := app.FindCollectionByNameOrId("systems")
-	if err != nil {
-		return err
-	}
-	var systemsReadRule string
-	if shareAllSystems == "true" {
-		systemsReadRule = "@request.auth.id != \"\""
-	} else {
-		systemsReadRule = "@request.auth.id != \"\" && users.id ?= @request.auth.id"
-	}
-	updateDeleteRule := systemsReadRule + " && @request.auth.role != \"readonly\""
-	systemsCollection.ListRule = &systemsReadRule
-	systemsCollection.ViewRule = &systemsReadRule
-	systemsCollection.UpdateRule = &updateDeleteRule
-	systemsCollection.DeleteRule = &updateDeleteRule
-	if err := app.Save(systemsCollection); err != nil {
-		return err
-	}
-
-	// allow all users to access all containers if SHARE_ALL_SYSTEMS is set
-	containersCollection, err := app.FindCollectionByNameOrId("containers")
-	if err != nil {
-		return err
-	}
-	containersListRule := strings.Replace(systemsReadRule, "users.id", "system.users.id", 1)
-	containersCollection.ListRule = &containersListRule
-	if err := app.Save(containersCollection); err != nil {
-		return err
-	}
-
-	// allow all users to access system-related collections if SHARE_ALL_SYSTEMS is set
-	// these collections all have a "system" relation field
-	systemRelatedCollections := []string{"system_details", "smart_devices", "systemd_services"}
-	for _, collectionName := range systemRelatedCollections {
-		collection, err := app.FindCollectionByNameOrId(collectionName)
-		if err != nil {
-			return err
-		}
-		collection.ListRule = &containersListRule
-		// set viewRule for collections that need it (system_details, smart_devices)
-		if collection.ViewRule != nil {
-			collection.ViewRule = &containersListRule
-		}
-		// set deleteRule for smart_devices (allows user to dismiss disk warnings)
-		if collectionName == "smart_devices" {
-			deleteRule := containersListRule + " && @request.auth.role != \"readonly\""
-			collection.DeleteRule = &deleteRule
-		}
-		if err := app.Save(collection); err != nil {
-			return err
-		}
-	}
-
-	return nil
+	return setCollectionAuthSettings(hub.App)
 }
 
 // registerCronJobs sets up scheduled tasks

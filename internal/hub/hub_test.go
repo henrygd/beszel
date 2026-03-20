@@ -961,3 +961,21 @@ func TestTrustedHeaderMiddleware(t *testing.T) {
 		scenario.Test(t)
 	}
 }
+
+func TestAppUrl(t *testing.T) {
+	t.Run("no APP_URL does't change app url", func(t *testing.T) {
+		hub, _ := beszelTests.NewTestHub(t.TempDir())
+		defer hub.Cleanup()
+
+		settings := hub.Settings()
+		assert.Equal(t, "http://localhost:8090", settings.Meta.AppURL)
+	})
+	t.Run("APP_URL changes app url", func(t *testing.T) {
+		t.Setenv("APP_URL", "http://example.com/app")
+		hub, _ := beszelTests.NewTestHub(t.TempDir())
+		defer hub.Cleanup()
+
+		settings := hub.Settings()
+		assert.Equal(t, "http://example.com/app", settings.Meta.AppURL)
+	})
+}
