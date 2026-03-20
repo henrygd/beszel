@@ -30,6 +30,7 @@ import (
 	"golang.org/x/crypto/ssh"
 )
 
+// Hub is the application. It embeds the PocketBase app and keeps references to subcomponents.
 type Hub struct {
 	core.App
 	*alerts.AlertManager
@@ -46,7 +47,7 @@ type Hub struct {
 var containerIDPattern = regexp.MustCompile(`^[a-fA-F0-9]{12,64}$`)
 
 // NewHub creates a new Hub instance with default configuration
-func NewHub(app core.App) (*Hub, error) {
+func NewHub(app core.App) *Hub {
 	hub := &Hub{App: app}
 	hub.AlertManager = alerts.NewAlertManager(hub)
 	hub.um = users.NewUserManager(hub)
@@ -56,7 +57,8 @@ func NewHub(app core.App) (*Hub, error) {
 	if hub.hb != nil {
 		hub.hbStop = make(chan struct{})
 	}
-	return hub, initialize(hub)
+	_ = onAfterBootstrapAndMigrations(app, hub.initialize)
+	return hub
 }
 
 // GetEnv retrieves an environment variable with a "BESZEL_HUB_" prefix, or falls back to the unprefixed key.
@@ -68,6 +70,26 @@ func GetEnv(key string) (value string, exists bool) {
 	return os.LookupEnv(key)
 }
 
+// onAfterBootstrapAndMigrations ensures the provided function runs after the database is set up and migrations are applied.
+// This is a workaround for behavior in PocketBase where onBootstrap runs before migrations, forcing use of onServe for this purpose.
+// However, PB's tests.TestApp is already bootstrapped, generally doesn't serve, but does handle migrations.
+// So this ensures that the provided function runs at the right time either way, after DB is ready and migrations are done.
+func onAfterBootstrapAndMigrations(app core.App, fn func(app core.App) error) error {
+	// pb tests.TestApp is already bootstrapped and doesn't serve
+	if app.IsBootstrapped() {
+		return fn(app)
+	}
+	// Must use OnServe because OnBootstrap appears to run before migrations, even if calling e.Next() before anything else
+	app.OnServe().BindFunc(func(e *core.ServeEvent) error {
+		if err := fn(e.App); err != nil {
+			return err
+		}
+		return e.Next()
+	})
+	return nil
+}
+
+// StartHub sets up event handlers and starts the PocketBase server
 func (h *Hub) StartHub() error {
 	h.App.OnServe().BindFunc(func(e *core.ServeEvent) error {
 		// sync systems with config
@@ -112,24 +134,21 @@ func (h *Hub) StartHub() error {
 }
 
 // initialize sets up initial configuration (collections, settings, etc.)
-func initialize(hub *Hub) error {
-	if !hub.App.IsBootstrapped() {
-		hub.App.Bootstrap()
-	}
+func (h *Hub) initialize(app core.App) error {
 	// set general settings
-	settings := hub.App.Settings()
+	settings := app.Settings()
 	// batch requests (for alerts)
 	settings.Batch.Enabled = true
 	// set URL if APP_URL env is set
 	if appURL, isSet := GetEnv("APP_URL"); isSet {
-		hub.appURL = appURL
-		settings.Meta.AppURL = hub.appURL
+		h.appURL = appURL
+		settings.Meta.AppURL = appURL
 	}
-	if err := hub.App.Save(settings); err != nil {
+	if err := app.Save(settings); err != nil {
 		return err
 	}
 	// set auth settings
-	return setCollectionAuthSettings(hub.App)
+	return setCollectionAuthSettings(app)
 }
 
 // registerCronJobs sets up scheduled tasks
@@ -141,7 +160,7 @@ func (h *Hub) registerCronJobs(_ *core.ServeEvent) error {
 	return nil
 }
 
-// custom middlewares
+// registerMiddlewares registers custom middlewares
 func (h *Hub) registerMiddlewares(se *core.ServeEvent) {
 	// authorizes request with user matching the provided email
 	authorizeRequestWithEmail := func(e *core.RequestEvent, email string) (err error) {
@@ -172,7 +191,7 @@ func (h *Hub) registerMiddlewares(se *core.ServeEvent) {
 	}
 }
 
-// custom api routes
+// registerApiRoutes registers custom API routes
 func (h *Hub) registerApiRoutes(se *core.ServeEvent) error {
 	// auth protected routes
 	apiAuth := se.Router.Group("/api/beszel")
@@ -221,7 +240,7 @@ func (h *Hub) registerApiRoutes(se *core.ServeEvent) error {
 	return nil
 }
 
-// Handler for universal token API endpoint (create, read, delete)
+// GetUniversalToken handles the universal token API endpoint (create, read, delete)
 func (h *Hub) getUniversalToken(e *core.RequestEvent) error {
 	tokenMap := universalTokenMap.GetMap()
 	userID := e.Auth.Id
@@ -430,7 +449,7 @@ func (h *Hub) refreshSmartData(e *core.RequestEvent) error {
 	return e.JSON(http.StatusOK, map[string]string{"status": "ok"})
 }
 
-// generates key pair if it doesn't exist and returns signer
+// GetSSHKey generates key pair if it doesn't exist and returns signer
 func (h *Hub) GetSSHKey(dataDir string) (ssh.Signer, error) {
 	if h.signer != nil {
 		return h.signer, nil

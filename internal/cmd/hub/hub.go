@@ -28,8 +28,8 @@ func main() {
 	}
 
 	baseApp := getBaseApp()
-	h, _ := hub.NewHub(baseApp)
-	if err := h.StartHub(); err != nil {
+	hub := hub.NewHub(baseApp)
+	if err := hub.StartHub(); err != nil {
 		log.Fatal(err)
 	}
 }

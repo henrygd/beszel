@@ -52,10 +52,7 @@ func NewTestHubWithConfig(config core.BaseAppConfig) (*TestHub, error) {
 		return nil, err
 	}
 
-	hub, err := hub.NewHub(testApp)
-	if err != nil {
-		return nil, err
-	}
+	hub := hub.NewHub(testApp)
 
 	t := &TestHub{
 		App:     testApp,
