@@ -134,10 +134,8 @@ func TestGetEnv(t *testing.T) {
 	prefixedKey := "BESZEL_AGENT_" + key
 
 	t.Run("prefixed variable exists", func(t *testing.T) {
-		os.Setenv(prefixedKey, "prefixed_val")
-		os.Setenv(key, "unprefixed_val")
-		defer os.Unsetenv(prefixedKey)
-		defer os.Unsetenv(key)
+		t.Setenv(prefixedKey, "prefixed_val")
+		t.Setenv(key, "unprefixed_val")
 
 		val, exists := GetEnv(key)
 		assert.True(t, exists)
@@ -145,9 +143,7 @@ func TestGetEnv(t *testing.T) {
 	})
 
 	t.Run("only unprefixed variable exists", func(t *testing.T) {
-		os.Unsetenv(prefixedKey)
-		os.Setenv(key, "unprefixed_val")
-		defer os.Unsetenv(key)
+		t.Setenv(key, "unprefixed_val")
 
 		val, exists := GetEnv(key)
 		assert.True(t, exists)
@@ -155,9 +151,6 @@ func TestGetEnv(t *testing.T) {
 	})
 
 	t.Run("neither variable exists", func(t *testing.T) {
-		os.Unsetenv(prefixedKey)
-		os.Unsetenv(key)
-
 		val, exists := GetEnv(key)
 		assert.False(t, exists)
 		assert.Empty(t, val)

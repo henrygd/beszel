@@ -687,18 +687,8 @@ func TestIsDockerSpecialMountpoint(t *testing.T) {
 }
 
 func TestInitializeDiskInfoWithCustomNames(t *testing.T) {
-	// Set up environment variables
-	oldEnv := os.Getenv("EXTRA_FILESYSTEMS")
-	defer func() {
-		if oldEnv != "" {
-			os.Setenv("EXTRA_FILESYSTEMS", oldEnv)
-		} else {
-			os.Unsetenv("EXTRA_FILESYSTEMS")
-		}
-	}()
-
 	// Test with custom names
-	os.Setenv("EXTRA_FILESYSTEMS", "sda1__my-storage,/dev/sdb1__backup-drive,nvme0n1p2")
+	t.Setenv("EXTRA_FILESYSTEMS", "sda1__my-storage,/dev/sdb1__backup-drive,nvme0n1p2")
 
 	// Mock disk partitions (we'll just test the parsing logic)
 	// Since the actual disk operations are system-dependent, we'll focus on the parsing
@@ -726,7 +716,7 @@ func TestInitializeDiskInfoWithCustomNames(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run("env_"+tc.envValue, func(t *testing.T) {
-			os.Setenv("EXTRA_FILESYSTEMS", tc.envValue)
+			t.Setenv("EXTRA_FILESYSTEMS", tc.envValue)
 
 			// Create mock partitions that would match our test cases
 			partitions := []disk.PartitionStat{}
