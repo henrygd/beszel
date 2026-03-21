@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/henrygd/beszel/internal/entities/container"
+	"github.com/henrygd/beszel/internal/entities/kubernetes"
 	"github.com/henrygd/beszel/internal/entities/systemd"
 )
 
@@ -175,4 +176,7 @@ type CombinedData struct {
 	Containers      []*container.Stats `json:"container" cbor:"2,keyasint"`
 	SystemdServices []*systemd.Service `json:"systemd,omitempty" cbor:"3,keyasint,omitempty"`
 	Details         *Details           `cbor:"4,keyasint,omitempty"`
+	Pods            []*kubernetes.PodStats      `json:"pods,omitempty" cbor:"5,keyasint,omitempty"`
+	ClusterHealth   *kubernetes.ClusterHealth   `json:"k8s_health,omitempty" cbor:"6,keyasint,omitempty"`
+	Workloads       *kubernetes.WorkloadMetrics `json:"workloads,omitempty" cbor:"7,keyasint,omitempty"`
 }

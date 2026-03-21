@@ -1,0 +1,15 @@
+apiVersion: v2
+name: beszel-agent
+description: A Helm chart for Beszel Agent - Kubernetes monitoring agent
+type: application
+version: 0.1.0
+appVersion: "0.9.0"
+keywords:
+  - monitoring
+  - kubernetes
+  - observability
+home: https://github.com/henrygd/beszel
+sources:
+  - https://github.com/henrygd/beszel
+maintainers:
+  - name: henrygd
