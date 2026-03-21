@@ -183,8 +183,7 @@ func TestStartServer(t *testing.T) {
 }
 
 func TestStartServerDisableSSH(t *testing.T) {
-	os.Setenv("BESZEL_AGENT_DISABLE_SSH", "true")
-	defer os.Unsetenv("BESZEL_AGENT_DISABLE_SSH")
+	t.Setenv("BESZEL_AGENT_DISABLE_SSH", "true")
 
 	agent, err := NewAgent("")
 	require.NoError(t, err)
