@@ -70,19 +70,11 @@ func TestNewWebSocketClient(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			// Set up environment
 			if tc.hubURL != "" {
-				os.Setenv("BESZEL_AGENT_HUB_URL", tc.hubURL)
-			} else {
-				os.Unsetenv("BESZEL_AGENT_HUB_URL")
+				t.Setenv("BESZEL_AGENT_HUB_URL", tc.hubURL)
 			}
 			if tc.token != "" {
-				os.Setenv("BESZEL_AGENT_TOKEN", tc.token)
-			} else {
-				os.Unsetenv("BESZEL_AGENT_TOKEN")
+				t.Setenv("BESZEL_AGENT_TOKEN", tc.token)
 			}
-			defer func() {
-				os.Unsetenv("BESZEL_AGENT_HUB_URL")
-				os.Unsetenv("BESZEL_AGENT_TOKEN")
-			}()
 
 			client, err := newWebSocketClient(agent)
 
@@ -138,12 +130,8 @@ func TestWebSocketClient_GetOptions(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			// Set up environment
-			os.Setenv("BESZEL_AGENT_HUB_URL", tc.inputURL)
-			os.Setenv("BESZEL_AGENT_TOKEN", "test-token")
-			defer func() {
-				os.Unsetenv("BESZEL_AGENT_HUB_URL")
-				os.Unsetenv("BESZEL_AGENT_TOKEN")
-			}()
+			t.Setenv("BESZEL_AGENT_HUB_URL", tc.inputURL)
+			t.Setenv("BESZEL_AGENT_TOKEN", "test-token")
 
 			client, err := newWebSocketClient(agent)
 			require.NoError(t, err)
@@ -185,12 +173,8 @@ func TestWebSocketClient_VerifySignature(t *testing.T) {
 	require.NoError(t, err)
 
 	// Set up environment
-	os.Setenv("BESZEL_AGENT_HUB_URL", "http://localhost:8080")
-	os.Setenv("BESZEL_AGENT_TOKEN", "test-token")
-	defer func() {
-		os.Unsetenv("BESZEL_AGENT_HUB_URL")
-		os.Unsetenv("BESZEL_AGENT_TOKEN")
-	}()
+	t.Setenv("BESZEL_AGENT_HUB_URL", "http://localhost:8080")
+	t.Setenv("BESZEL_AGENT_TOKEN", "test-token")
 
 	client, err := newWebSocketClient(agent)
 	require.NoError(t, err)
@@ -258,12 +242,8 @@ func TestWebSocketClient_HandleHubRequest(t *testing.T) {
 	agent := createTestAgent(t)
 
 	// Set up environment
-	os.Setenv("BESZEL_AGENT_HUB_URL", "http://localhost:8080")
-	os.Setenv("BESZEL_AGENT_TOKEN", "test-token")
-	defer func() {
-		os.Unsetenv("BESZEL_AGENT_HUB_URL")
-		os.Unsetenv("BESZEL_AGENT_TOKEN")
-	}()
+	t.Setenv("BESZEL_AGENT_HUB_URL", "http://localhost:8080")
+	t.Setenv("BESZEL_AGENT_TOKEN", "test-token")
 
 	client, err := newWebSocketClient(agent)
 	require.NoError(t, err)
@@ -350,13 +330,8 @@ func TestGetUserAgent(t *testing.T) {
 func TestWebSocketClient_Close(t *testing.T) {
 	agent := createTestAgent(t)
 
-	// Set up environment
-	os.Setenv("BESZEL_AGENT_HUB_URL", "http://localhost:8080")
-	os.Setenv("BESZEL_AGENT_TOKEN", "test-token")
-	defer func() {
-		os.Unsetenv("BESZEL_AGENT_HUB_URL")
-		os.Unsetenv("BESZEL_AGENT_TOKEN")
-	}()
+	t.Setenv("BESZEL_AGENT_HUB_URL", "http://localhost:8080")
+	t.Setenv("BESZEL_AGENT_TOKEN", "test-token")
 
 	client, err := newWebSocketClient(agent)
 	require.NoError(t, err)
@@ -371,13 +346,8 @@ func TestWebSocketClient_Close(t *testing.T) {
 func TestWebSocketClient_ConnectRateLimit(t *testing.T) {
 	agent := createTestAgent(t)
 
-	// Set up environment
-	os.Setenv("BESZEL_AGENT_HUB_URL", "http://localhost:8080")
-	os.Setenv("BESZEL_AGENT_TOKEN", "test-token")
-	defer func() {
-		os.Unsetenv("BESZEL_AGENT_HUB_URL")
-		os.Unsetenv("BESZEL_AGENT_TOKEN")
-	}()
+	t.Setenv("BESZEL_AGENT_HUB_URL", "http://localhost:8080")
+	t.Setenv("BESZEL_AGENT_TOKEN", "test-token")
 
 	client, err := newWebSocketClient(agent)
 	require.NoError(t, err)
@@ -393,20 +363,10 @@ func TestWebSocketClient_ConnectRateLimit(t *testing.T) {
 
 // TestGetToken tests the getToken function with various scenarios
 func TestGetToken(t *testing.T) {
-	unsetEnvVars := func() {
-		os.Unsetenv("BESZEL_AGENT_TOKEN")
-		os.Unsetenv("TOKEN")
-		os.Unsetenv("BESZEL_AGENT_TOKEN_FILE")
-		os.Unsetenv("TOKEN_FILE")
-	}
-
 	t.Run("token from TOKEN environment variable", func(t *testing.T) {
-		unsetEnvVars()
-
 		// Set TOKEN env var
 		expectedToken := "test-token-from-env"
-		os.Setenv("TOKEN", expectedToken)
-		defer os.Unsetenv("TOKEN")
+		t.Setenv("TOKEN", expectedToken)
 
 		token, err := getToken()
 		assert.NoError(t, err)
@@ -414,12 +374,9 @@ func TestGetToken(t *testing.T) {
 	})
 
 	t.Run("token from BESZEL_AGENT_TOKEN environment variable", func(t *testing.T) {
-		unsetEnvVars()
-
 		// Set BESZEL_AGENT_TOKEN env var (should take precedence)
 		expectedToken := "test-token-from-beszel-env"
-		os.Setenv("BESZEL_AGENT_TOKEN", expectedToken)
-		defer os.Unsetenv("BESZEL_AGENT_TOKEN")
+		t.Setenv("BESZEL_AGENT_TOKEN", expectedToken)
 
 		token, err := getToken()
 		assert.NoError(t, err)
@@ -427,8 +384,6 @@ func TestGetToken(t *testing.T) {
 	})
 
 	t.Run("token from TOKEN_FILE", func(t *testing.T) {
-		unsetEnvVars()
-
 		// Create a temporary token file
 		expectedToken := "test-token-from-file"
 		tokenFile, err := os.CreateTemp("", "token-test-*.txt")
@@ -440,8 +395,7 @@ func TestGetToken(t *testing.T) {
 		tokenFile.Close()
 
 		// Set TOKEN_FILE env var
-		os.Setenv("TOKEN_FILE", tokenFile.Name())
-		defer os.Unsetenv("TOKEN_FILE")
+		t.Setenv("TOKEN_FILE", tokenFile.Name())
 
 		token, err := getToken()
 		assert.NoError(t, err)
@@ -449,8 +403,6 @@ func TestGetToken(t *testing.T) {
 	})
 
 	t.Run("token from BESZEL_AGENT_TOKEN_FILE", func(t *testing.T) {
-		unsetEnvVars()
-
 		// Create a temporary token file
 		expectedToken := "test-token-from-beszel-file"
 		tokenFile, err := os.CreateTemp("", "token-test-*.txt")
@@ -462,8 +414,7 @@ func TestGetToken(t *testing.T) {
 		tokenFile.Close()
 
 		// Set BESZEL_AGENT_TOKEN_FILE env var (should take precedence)
-		os.Setenv("BESZEL_AGENT_TOKEN_FILE", tokenFile.Name())
-		defer os.Unsetenv("BESZEL_AGENT_TOKEN_FILE")
+		t.Setenv("BESZEL_AGENT_TOKEN_FILE", tokenFile.Name())
 
 		token, err := getToken()
 		assert.NoError(t, err)
@@ -471,8 +422,6 @@ func TestGetToken(t *testing.T) {
 	})
 
 	t.Run("TOKEN takes precedence over TOKEN_FILE", func(t *testing.T) {
-		unsetEnvVars()
-
 		// Create a temporary token file
 		fileToken := "token-from-file"
 		tokenFile, err := os.CreateTemp("", "token-test-*.txt")
@@ -485,12 +434,8 @@ func TestGetToken(t *testing.T) {
 
 		// Set both TOKEN and TOKEN_FILE
 		envToken := "token-from-env"
-		os.Setenv("TOKEN", envToken)
-		os.Setenv("TOKEN_FILE", tokenFile.Name())
-		defer func() {
-			os.Unsetenv("TOKEN")
-			os.Unsetenv("TOKEN_FILE")
-		}()
+		t.Setenv("TOKEN", envToken)
+		t.Setenv("TOKEN_FILE", tokenFile.Name())
 
 		token, err := getToken()
 		assert.NoError(t, err)
@@ -498,7 +443,10 @@ func TestGetToken(t *testing.T) {
 	})
 
 	t.Run("error when neither TOKEN nor TOKEN_FILE is set", func(t *testing.T) {
-		unsetEnvVars()
+		t.Setenv("BESZEL_AGENT_TOKEN", "")
+		t.Setenv("TOKEN", "")
+		t.Setenv("BESZEL_AGENT_TOKEN_FILE", "")
+		t.Setenv("TOKEN_FILE", "")
 
 		token, err := getToken()
 		assert.Error(t, err)
@@ -507,11 +455,8 @@ func TestGetToken(t *testing.T) {
 	})
 
 	t.Run("error when TOKEN_FILE points to non-existent file", func(t *testing.T) {
-		unsetEnvVars()
-
 		// Set TOKEN_FILE to a non-existent file
-		os.Setenv("TOKEN_FILE", "/non/existent/file.txt")
-		defer os.Unsetenv("TOKEN_FILE")
+		t.Setenv("TOKEN_FILE", "/non/existent/file.txt")
 
 		token, err := getToken()
 		assert.Error(t, err)
@@ -520,8 +465,6 @@ func TestGetToken(t *testing.T) {
 	})
 
 	t.Run("handles empty token file", func(t *testing.T) {
-		unsetEnvVars()
-
 		// Create an empty token file
 		tokenFile, err := os.CreateTemp("", "token-test-*.txt")
 		require.NoError(t, err)
@@ -529,8 +472,7 @@ func TestGetToken(t *testing.T) {
 		tokenFile.Close()
 
 		// Set TOKEN_FILE env var
-		os.Setenv("TOKEN_FILE", tokenFile.Name())
-		defer os.Unsetenv("TOKEN_FILE")
+		t.Setenv("TOKEN_FILE", tokenFile.Name())
 
 		token, err := getToken()
 		assert.NoError(t, err)
@@ -538,8 +480,6 @@ func TestGetToken(t *testing.T) {
 	})
 
 	t.Run("strips whitespace from TOKEN_FILE", func(t *testing.T) {
-		unsetEnvVars()
-
 		tokenWithWhitespace := "  test-token-with-whitespace  \n\t"
 		expectedToken := "test-token-with-whitespace"
 		tokenFile, err := os.CreateTemp("", "token-test-*.txt")
@@ -550,8 +490,7 @@ func TestGetToken(t *testing.T) {
 		require.NoError(t, err)
 		tokenFile.Close()
 
-		os.Setenv("TOKEN_FILE", tokenFile.Name())
-		defer os.Unsetenv("TOKEN_FILE")
+		t.Setenv("TOKEN_FILE", tokenFile.Name())
 
 		token, err := getToken()
 		assert.NoError(t, err)

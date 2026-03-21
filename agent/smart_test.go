@@ -1035,7 +1035,7 @@ func TestRefreshExcludedDevices(t *testing.T) {
 				t.Setenv("EXCLUDE_SMART", tt.envValue)
 			} else {
 				// Ensure env var is not set for empty test
-				os.Unsetenv("EXCLUDE_SMART")
+				t.Setenv("EXCLUDE_SMART", "")
 			}
 
 			sm := &SmartManager{}

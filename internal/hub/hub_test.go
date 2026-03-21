@@ -733,10 +733,8 @@ func TestFirstUserCreation(t *testing.T) {
 	})
 
 	t.Run("CreateUserEndpoint not available when USER_EMAIL, USER_PASSWORD are set", func(t *testing.T) {
-		os.Setenv("BESZEL_HUB_USER_EMAIL", "me@example.com")
-		os.Setenv("BESZEL_HUB_USER_PASSWORD", "password123")
-		defer os.Unsetenv("BESZEL_HUB_USER_EMAIL")
-		defer os.Unsetenv("BESZEL_HUB_USER_PASSWORD")
+		t.Setenv("BESZEL_HUB_USER_EMAIL", "me@example.com")
+		t.Setenv("BESZEL_HUB_USER_PASSWORD", "password123")
 
 		hub, _ := beszelTests.NewTestHub(t.TempDir())
 		defer hub.Cleanup()
@@ -852,13 +850,12 @@ func TestAutoLoginMiddleware(t *testing.T) {
 	var hubs []*beszelTests.TestHub
 
 	defer func() {
-		defer os.Unsetenv("AUTO_LOGIN")
 		for _, hub := range hubs {
 			hub.Cleanup()
 		}
 	}()
 
-	os.Setenv("AUTO_LOGIN", "user@test.com")
+	t.Setenv("AUTO_LOGIN", "user@test.com")
 
 	testAppFactory := func(t testing.TB) *pbTests.TestApp {
 		hub, _ := beszelTests.NewTestHub(t.TempDir())
@@ -906,13 +903,12 @@ func TestTrustedHeaderMiddleware(t *testing.T) {
 	var hubs []*beszelTests.TestHub
 
 	defer func() {
-		defer os.Unsetenv("TRUSTED_AUTH_HEADER")
 		for _, hub := range hubs {
 			hub.Cleanup()
 		}
 	}()
 
-	os.Setenv("TRUSTED_AUTH_HEADER", "X-Beszel-Trusted")
+	t.Setenv("TRUSTED_AUTH_HEADER", "X-Beszel-Trusted")
 
 	testAppFactory := func(t testing.TB) *pbTests.TestApp {
 		hub, _ := beszelTests.NewTestHub(t.TempDir())
@@ -960,4 +956,22 @@ func TestTrustedHeaderMiddleware(t *testing.T) {
 	for _, scenario := range scenarios {
 		scenario.Test(t)
 	}
+}
+
+func TestAppUrl(t *testing.T) {
+	t.Run("no APP_URL does't change app url", func(t *testing.T) {
+		hub, _ := beszelTests.NewTestHub(t.TempDir())
+		defer hub.Cleanup()
+
+		settings := hub.Settings()
+		assert.Equal(t, "http://localhost:8090", settings.Meta.AppURL)
+	})
+	t.Run("APP_URL changes app url", func(t *testing.T) {
+		t.Setenv("APP_URL", "http://example.com/app")
+		hub, _ := beszelTests.NewTestHub(t.TempDir())
+		defer hub.Cleanup()
+
+		settings := hub.Settings()
+		assert.Equal(t, "http://example.com/app", settings.Meta.AppURL)
+	})
 }

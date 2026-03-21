@@ -77,6 +77,16 @@ func CreateUser(app core.App, email string, password string) (*core.Record, erro
 	return user, app.Save(user)
 }
 
+func CreateUserWithRole(app core.App, email string, password string, roleName string) (*core.Record, error) {
+	user, err := CreateUser(app, email, password)
+	if err != nil {
+		return nil, err
+	}
+
+	user.Set("role", roleName)
+	return user, app.Save(user)
+}
+
 // Helper function to create a test record
 func CreateRecord(app core.App, collectionName string, fields map[string]any) (*core.Record, error) {
 	collection, err := app.FindCachedCollectionByNameOrId(collectionName)
