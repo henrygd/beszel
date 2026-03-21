@@ -2,7 +2,9 @@
 
 package hub
 
-import "github.com/henrygd/beszel/internal/hub/systems"
+import (
+	"github.com/henrygd/beszel/internal/hub/systems"
+)
 
 // TESTING ONLY: GetSystemManager returns the system manager
 func (h *Hub) GetSystemManager() *systems.SystemManager {
@@ -17,4 +19,8 @@ func (h *Hub) GetPubkey() string {
 // TESTING ONLY: SetPubkey sets the public key
 func (h *Hub) SetPubkey(pubkey string) {
 	h.pubKey = pubkey
+}
+
+func (h *Hub) SetCollectionAuthSettings() error {
+	return setCollectionAuthSettings(h)
 }

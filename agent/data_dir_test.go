@@ -39,17 +39,7 @@ func TestGetDataDir(t *testing.T) {
 	t.Run("DATA_DIR environment variable", func(t *testing.T) {
 		tempDir := t.TempDir()
 
-		// Set environment variable
-		oldValue := os.Getenv("DATA_DIR")
-		defer func() {
-			if oldValue == "" {
-				os.Unsetenv("BESZEL_AGENT_DATA_DIR")
-			} else {
-				os.Setenv("BESZEL_AGENT_DATA_DIR", oldValue)
-			}
-		}()
-
-		os.Setenv("BESZEL_AGENT_DATA_DIR", tempDir)
+		t.Setenv("BESZEL_AGENT_DATA_DIR", tempDir)
 
 		result, err := GetDataDir()
 		require.NoError(t, err)
@@ -65,17 +55,6 @@ func TestGetDataDir(t *testing.T) {
 
 	// Test fallback behavior (empty dataDir, no env var)
 	t.Run("fallback to default directories", func(t *testing.T) {
-		// Clear DATA_DIR environment variable
-		oldValue := os.Getenv("DATA_DIR")
-		defer func() {
-			if oldValue == "" {
-				os.Unsetenv("DATA_DIR")
-			} else {
-				os.Setenv("DATA_DIR", oldValue)
-			}
-		}()
-		os.Unsetenv("DATA_DIR")
-
 		// This will try platform-specific defaults, which may or may not work
 		// We're mainly testing that it doesn't panic and returns some result
 		result, err := GetDataDir()
