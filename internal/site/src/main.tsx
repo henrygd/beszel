@@ -24,6 +24,7 @@ import {
 	defaultLayoutWidth,
 } from "@/lib/stores.ts"
 import * as systemsManager from "@/lib/systemsManager.ts"
+import type { BeszelInfo, UpdateInfo } from "./types"
 
 const LoginPage = lazy(() => import("@/components/login/login.tsx"))
 const Home = lazy(() => import("@/components/routes/home.tsx"))
@@ -40,18 +41,14 @@ const App = memo(() => {
 		pb.authStore.onChange(() => {
 			$authenticated.set(pb.authStore.isValid)
 		})
-		// get version / public key
-		pb.send("/api/beszel/getkey", {}).then((data) => {
+		// get general info for authenticated users, such as public key and version
+		pb.send<BeszelInfo>("/api/beszel/info", {}).then((data) => {
 			$publicKey.set(data.key)
+			// check for updates if enabled
+			if (data.cu && isAdmin()) {
+				pb.send<UpdateInfo>("/api/beszel/update", {}).then($newVersion.set)
+			}
 		})
-		// check for newer version (admin only)
-		if (isAdmin()) {
-			pb.send("/api/beszel/newversion", {}).then((data) => {
-				if (data?.version) {
-					$newVersion.set(data)
-				}
-			})
-		}
 		// get user settings
 		updateUserSettings()
 		// need to get system list before alerts

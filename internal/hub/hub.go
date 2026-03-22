@@ -13,15 +13,15 @@ import (
 	"path"
 	"regexp"
 	"strings"
-	"sync"
 	"time"
 
+	"github.com/blang/semver"
 	"github.com/henrygd/beszel"
 	"github.com/henrygd/beszel/internal/alerts"
+	"github.com/henrygd/beszel/internal/ghupdate"
 	"github.com/henrygd/beszel/internal/hub/config"
 	"github.com/henrygd/beszel/internal/hub/heartbeat"
 	"github.com/henrygd/beszel/internal/hub/systems"
-	"github.com/henrygd/beszel/internal/ghupdate"
 	"github.com/henrygd/beszel/internal/records"
 	"github.com/henrygd/beszel/internal/users"
 
@@ -32,14 +32,6 @@ import (
 	"github.com/pocketbase/pocketbase/core"
 	"golang.org/x/crypto/ssh"
 )
-
-// versionCache caches the latest release version check result.
-type versionCache struct {
-	mu        sync.Mutex
-	version   string
-	url       string
-	checkedAt time.Time
-}
 
 // Hub is the application. It embeds the PocketBase app and keeps references to subcomponents.
 type Hub struct {
@@ -53,7 +45,6 @@ type Hub struct {
 	pubKey string
 	signer ssh.Signer
 	appURL string
-	vc     versionCache
 }
 
 var containerIDPattern = regexp.MustCompile(`^[a-fA-F0-9]{12,64}$`)
@@ -203,6 +194,36 @@ func (h *Hub) registerMiddlewares(se *core.ServeEvent) {
 	}
 }
 
+type UpdateInfo struct {
+	lastCheck time.Time
+	Version   string `json:"v"`
+	Url       string `json:"url"`
+}
+
+func (info *UpdateInfo) getUpdate(e *core.RequestEvent) error {
+	if time.Since(info.lastCheck) < 6*time.Hour {
+		return e.JSON(http.StatusOK, info)
+	}
+	latestRelease, err := ghupdate.FetchLatestRelease(context.Background(), http.DefaultClient, "")
+	if err != nil {
+		return err
+	}
+	currentVersion, err := semver.Parse(strings.TrimPrefix(beszel.Version, "v"))
+	if err != nil {
+		return err
+	}
+	latestVersion, err := semver.Parse(strings.TrimPrefix(latestRelease.Tag, "v"))
+	if err != nil {
+		return err
+	}
+	info.lastCheck = time.Now()
+	if latestVersion.GT(currentVersion) {
+		info.Version = strings.TrimPrefix(latestRelease.Tag, "v")
+		info.Url = latestRelease.Url
+	}
+	return e.JSON(http.StatusOK, info)
+}
+
 // registerApiRoutes registers custom API routes
 func (h *Hub) registerApiRoutes(se *core.ServeEvent) error {
 	// auth protected routes
@@ -221,11 +242,13 @@ func (h *Hub) registerApiRoutes(se *core.ServeEvent) error {
 		return e.JSON(http.StatusOK, map[string]bool{"firstRun": err == nil && total == 0})
 	})
 	// get public key and version
-	apiAuth.GET("/getkey", func(e *core.RequestEvent) error {
-		return e.JSON(http.StatusOK, map[string]string{"key": h.pubKey, "v": beszel.Version})
-	})
-	// check for a newer release on GitHub (result cached for 1 hour)
-	apiAuth.GET("/newversion", h.checkNewVersion)
+	apiAuth.GET("/info", h.getInfo)
+	apiAuth.GET("/getkey", h.getInfo) // deprecated - keep for compatibility w/ integrations
+	// check for updates
+	if optIn, _ := GetEnv("CHECK_UPDATES"); optIn == "true" {
+		var updateInfo UpdateInfo
+		apiAuth.GET("/update", updateInfo.getUpdate)
+	}
 	// send test notification
 	apiAuth.POST("/test-notification", h.SendTestNotification)
 	// heartbeat status and test
@@ -252,6 +275,23 @@ func (h *Hub) registerApiRoutes(se *core.ServeEvent) error {
 		apiAuth.GET("/containers/info", h.getContainerInfo)
 	}
 	return nil
+}
+
+// getInfo returns data needed by authenticated users, such as the public key and current version
+func (h *Hub) getInfo(e *core.RequestEvent) error {
+	type infoResponse struct {
+		Key         string `json:"key"`
+		Version     string `json:"v"`
+		CheckUpdate bool   `json:"cu"`
+	}
+	info := infoResponse{
+		Key:     h.pubKey,
+		Version: beszel.Version,
+	}
+	if optIn, _ := GetEnv("CHECK_UPDATES"); optIn == "true" {
+		info.CheckUpdate = true
+	}
+	return e.JSON(http.StatusOK, info)
 }
 
 // GetUniversalToken handles the universal token API endpoint (create, read, delete)
@@ -516,33 +556,6 @@ func (h *Hub) GetSSHKey(dataDir string) (ssh.Signer, error) {
 }
 
 // MakeLink formats a link with the app URL and path segments.
-// checkNewVersion checks GitHub for a newer release and returns it if available.
-// Results are cached for one hour to avoid excessive API calls.
-func (h *Hub) checkNewVersion(e *core.RequestEvent) error {
-	h.vc.mu.Lock()
-	defer h.vc.mu.Unlock()
-
-	// Return cached result if still fresh
-	if time.Since(h.vc.checkedAt) < 12*time.Hour {
-		return e.JSON(http.StatusOK, map[string]string{"version": h.vc.version, "url": h.vc.url})
-	}
-
-	h.vc.checkedAt = time.Now()
-	h.vc.version = ""
-	h.vc.url = ""
-
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
-
-	tag, url, err := ghupdate.CheckForUpdate(ctx, http.DefaultClient)
-	if err == nil {
-		h.vc.version = tag
-		h.vc.url = url
-	}
-
-	return e.JSON(http.StatusOK, map[string]string{"version": h.vc.version, "url": h.vc.url})
-}
-
 // Only path segments should be provided.
 func (h *Hub) MakeLink(parts ...string) string {
 	base := strings.TrimSuffix(h.Settings().Meta.AppURL, "/")

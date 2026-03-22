@@ -2,6 +2,7 @@ import { useStore } from "@nanostores/react"
 import { GithubIcon } from "lucide-react"
 import { $newVersion } from "@/lib/stores"
 import { Separator } from "./ui/separator"
+import { Trans } from "@lingui/react/macro"
 
 export function FooterRepoLink() {
 	const newVersion = useStore($newVersion)
@@ -24,7 +25,7 @@ export function FooterRepoLink() {
 			>
 				Beszel {globalThis.BESZEL.HUB_VERSION}
 			</a>
-			{newVersion && (
+			{newVersion?.v && (
 				<>
 					<Separator orientation="vertical" className="h-2.5 bg-muted-foreground opacity-70" />
 					<a
@@ -33,7 +34,7 @@ export function FooterRepoLink() {
 						className="text-yellow-500 hover:text-yellow-400 duration-75"
 						rel="noopener"
 					>
-						↑ {newVersion.version} available
+						<Trans context="New version available">{newVersion.v} available</Trans>
 					</a>
 				</>
 			)}
