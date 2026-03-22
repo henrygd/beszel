@@ -12,12 +12,13 @@ import Settings from "@/components/routes/settings/layout.tsx"
 import { ThemeProvider } from "@/components/theme-provider.tsx"
 import { Toaster } from "@/components/ui/toaster.tsx"
 import { alertManager } from "@/lib/alerts"
-import { pb, updateUserSettings } from "@/lib/api.ts"
+import { isAdmin, pb, updateUserSettings } from "@/lib/api.ts"
 import { dynamicActivate, getLocale } from "@/lib/i18n"
 import {
 	$authenticated,
 	$copyContent,
 	$direction,
+	$newVersion,
 	$publicKey,
 	$userSettings,
 	defaultLayoutWidth,
@@ -43,6 +44,14 @@ const App = memo(() => {
 		pb.send("/api/beszel/getkey", {}).then((data) => {
 			$publicKey.set(data.key)
 		})
+		// check for newer version (admin only)
+		if (isAdmin()) {
+			pb.send("/api/beszel/newversion", {}).then((data) => {
+				if (data?.version) {
+					$newVersion.set(data)
+				}
+			})
+		}
 		// get user settings
 		updateUserSettings()
 		// need to get system list before alerts

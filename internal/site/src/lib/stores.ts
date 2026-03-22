@@ -28,6 +28,9 @@ export const $alerts = map<AlertMap>({})
 /** SSH public key */
 export const $publicKey = atom("")
 
+/** New version info if an update is available, otherwise null */
+export const $newVersion = atom<{ version: string; url: string } | null>(null)
+
 /** Chart time period */
 export const $chartTime = atom<ChartTimes>("1h")
 

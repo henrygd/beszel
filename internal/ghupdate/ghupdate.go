@@ -226,6 +226,31 @@ func (p *updater) update() (updated bool, err error) {
 	return true, nil
 }
 
+// CheckForUpdate fetches the latest release from GitHub and returns the tag and
+// release page URL if a newer version is available. Returns empty strings if
+// already up to date or if the check fails.
+func CheckForUpdate(ctx context.Context, client HttpClient) (tag string, url string, err error) {
+	latest, err := fetchLatestRelease(ctx, client,
+		"https://api.github.com/repos/henrygd/beszel/releases/latest")
+	if err != nil {
+		return "", "", err
+	}
+
+	current, err := semver.Parse(strings.TrimPrefix(beszel.Version, "v"))
+	if err != nil {
+		return "", "", err
+	}
+	latestVer, err := semver.Parse(strings.TrimPrefix(latest.Tag, "v"))
+	if err != nil {
+		return "", "", err
+	}
+
+	if latestVer.GT(current) {
+		return latest.Tag, latest.Url, nil
+	}
+	return "", "", nil
+}
+
 func fetchLatestRelease(
 	ctx context.Context,
 	client HttpClient,
