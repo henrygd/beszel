@@ -607,6 +607,17 @@ func TestApiRoutesAuthentication(t *testing.T) {
 			TestAppFactory:  testAppFactory,
 		},
 		{
+			Name:   "GET /info - should return the same as /getkey",
+			Method: http.MethodGet,
+			URL:    "/api/beszel/info",
+			Headers: map[string]string{
+				"Authorization": userToken,
+			},
+			ExpectedStatus:  200,
+			ExpectedContent: []string{"\"key\":", "\"v\":"},
+			TestAppFactory:  testAppFactory,
+		},
+		{
 			Name:            "GET /first-run - no auth should succeed",
 			Method:          http.MethodGet,
 			URL:             "/api/beszel/first-run",
