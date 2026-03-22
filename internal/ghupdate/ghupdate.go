@@ -110,21 +110,13 @@ func (p *updater) update() (updated bool, err error) {
 	}
 
 	var latest *release
-	var useMirror bool
 
-	// Determine the API endpoint based on UseMirror flag
-	apiURL := fmt.Sprintf("https://api.github.com/repos/%s/%s/releases/latest", p.config.Owner, p.config.Repo)
+	apiURL := getApiURL(p.config.UseMirror, p.config.Owner, p.config.Repo)
 	if p.config.UseMirror {
-		useMirror = true
-		apiURL = fmt.Sprintf("https://gh.beszel.dev/repos/%s/%s/releases/latest?api=true", p.config.Owner, p.config.Repo)
 		ColorPrint(ColorYellow, "Using mirror for update.")
 	}
 
-	latest, err = fetchLatestRelease(
-		p.config.Context,
-		p.config.HttpClient,
-		apiURL,
-	)
+	latest, err = FetchLatestRelease(p.config.Context, p.config.HttpClient, apiURL)
 	if err != nil {
 		return false, err
 	}
@@ -150,7 +142,7 @@ func (p *updater) update() (updated bool, err error) {
 
 	// download the release asset
 	assetPath := filepath.Join(releaseDir, asset.Name)
-	if err := downloadFile(p.config.Context, p.config.HttpClient, asset.DownloadUrl, assetPath, useMirror); err != nil {
+	if err := downloadFile(p.config.Context, p.config.HttpClient, asset.DownloadUrl, assetPath, p.config.UseMirror); err != nil {
 		return false, err
 	}
 
@@ -226,11 +218,11 @@ func (p *updater) update() (updated bool, err error) {
 	return true, nil
 }
 
-func fetchLatestRelease(
-	ctx context.Context,
-	client HttpClient,
-	url string,
-) (*release, error) {
+func FetchLatestRelease(ctx context.Context, client HttpClient, url string) (*release, error) {
+	if url == "" {
+		url = getApiURL(false, "henrygd", "beszel")
+	}
+
 	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
 	if err != nil {
 		return nil, err
@@ -374,4 +366,11 @@ func isGlibc() bool {
 		}
 	}
 	return false
+}
+
+func getApiURL(useMirror bool, owner, repo string) string {
+	if useMirror {
+		return fmt.Sprintf("https://gh.beszel.dev/repos/%s/%s/releases/latest?api=true", owner, repo)
+	}
+	return fmt.Sprintf("https://api.github.com/repos/%s/%s/releases/latest", owner, repo)
 }

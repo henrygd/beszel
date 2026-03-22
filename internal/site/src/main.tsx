@@ -12,17 +12,19 @@ import Settings from "@/components/routes/settings/layout.tsx"
 import { ThemeProvider } from "@/components/theme-provider.tsx"
 import { Toaster } from "@/components/ui/toaster.tsx"
 import { alertManager } from "@/lib/alerts"
-import { pb, updateUserSettings } from "@/lib/api.ts"
+import { isAdmin, pb, updateUserSettings } from "@/lib/api.ts"
 import { dynamicActivate, getLocale } from "@/lib/i18n"
 import {
 	$authenticated,
 	$copyContent,
 	$direction,
+	$newVersion,
 	$publicKey,
 	$userSettings,
 	defaultLayoutWidth,
 } from "@/lib/stores.ts"
 import * as systemsManager from "@/lib/systemsManager.ts"
+import type { BeszelInfo, UpdateInfo } from "./types"
 
 const LoginPage = lazy(() => import("@/components/login/login.tsx"))
 const Home = lazy(() => import("@/components/routes/home.tsx"))
@@ -39,9 +41,13 @@ const App = memo(() => {
 		pb.authStore.onChange(() => {
 			$authenticated.set(pb.authStore.isValid)
 		})
-		// get version / public key
-		pb.send("/api/beszel/getkey", {}).then((data) => {
+		// get general info for authenticated users, such as public key and version
+		pb.send<BeszelInfo>("/api/beszel/info", {}).then((data) => {
 			$publicKey.set(data.key)
+			// check for updates if enabled
+			if (data.cu && isAdmin()) {
+				pb.send<UpdateInfo>("/api/beszel/update", {}).then($newVersion.set)
+			}
 		})
 		// get user settings
 		updateUserSettings()

@@ -2,6 +2,7 @@
 package hub
 
 import (
+	"context"
 	"crypto/ed25519"
 	"encoding/pem"
 	"errors"
@@ -14,8 +15,10 @@ import (
 	"strings"
 	"time"
 
+	"github.com/blang/semver"
 	"github.com/henrygd/beszel"
 	"github.com/henrygd/beszel/internal/alerts"
+	"github.com/henrygd/beszel/internal/ghupdate"
 	"github.com/henrygd/beszel/internal/hub/config"
 	"github.com/henrygd/beszel/internal/hub/heartbeat"
 	"github.com/henrygd/beszel/internal/hub/systems"
@@ -191,6 +194,36 @@ func (h *Hub) registerMiddlewares(se *core.ServeEvent) {
 	}
 }
 
+type UpdateInfo struct {
+	lastCheck time.Time
+	Version   string `json:"v"`
+	Url       string `json:"url"`
+}
+
+func (info *UpdateInfo) getUpdate(e *core.RequestEvent) error {
+	if time.Since(info.lastCheck) < 6*time.Hour {
+		return e.JSON(http.StatusOK, info)
+	}
+	latestRelease, err := ghupdate.FetchLatestRelease(context.Background(), http.DefaultClient, "")
+	if err != nil {
+		return err
+	}
+	currentVersion, err := semver.Parse(strings.TrimPrefix(beszel.Version, "v"))
+	if err != nil {
+		return err
+	}
+	latestVersion, err := semver.Parse(strings.TrimPrefix(latestRelease.Tag, "v"))
+	if err != nil {
+		return err
+	}
+	info.lastCheck = time.Now()
+	if latestVersion.GT(currentVersion) {
+		info.Version = strings.TrimPrefix(latestRelease.Tag, "v")
+		info.Url = latestRelease.Url
+	}
+	return e.JSON(http.StatusOK, info)
+}
+
 // registerApiRoutes registers custom API routes
 func (h *Hub) registerApiRoutes(se *core.ServeEvent) error {
 	// auth protected routes
@@ -209,9 +242,13 @@ func (h *Hub) registerApiRoutes(se *core.ServeEvent) error {
 		return e.JSON(http.StatusOK, map[string]bool{"firstRun": err == nil && total == 0})
 	})
 	// get public key and version
-	apiAuth.GET("/getkey", func(e *core.RequestEvent) error {
-		return e.JSON(http.StatusOK, map[string]string{"key": h.pubKey, "v": beszel.Version})
-	})
+	apiAuth.GET("/info", h.getInfo)
+	apiAuth.GET("/getkey", h.getInfo) // deprecated - keep for compatibility w/ integrations
+	// check for updates
+	if optIn, _ := GetEnv("CHECK_UPDATES"); optIn == "true" {
+		var updateInfo UpdateInfo
+		apiAuth.GET("/update", updateInfo.getUpdate)
+	}
 	// send test notification
 	apiAuth.POST("/test-notification", h.SendTestNotification)
 	// heartbeat status and test
@@ -238,6 +275,23 @@ func (h *Hub) registerApiRoutes(se *core.ServeEvent) error {
 		apiAuth.GET("/containers/info", h.getContainerInfo)
 	}
 	return nil
+}
+
+// getInfo returns data needed by authenticated users, such as the public key and current version
+func (h *Hub) getInfo(e *core.RequestEvent) error {
+	type infoResponse struct {
+		Key         string `json:"key"`
+		Version     string `json:"v"`
+		CheckUpdate bool   `json:"cu"`
+	}
+	info := infoResponse{
+		Key:     h.pubKey,
+		Version: beszel.Version,
+	}
+	if optIn, _ := GetEnv("CHECK_UPDATES"); optIn == "true" {
+		info.CheckUpdate = true
+	}
+	return e.JSON(http.StatusOK, info)
 }
 
 // GetUniversalToken handles the universal token API endpoint (create, read, delete)
