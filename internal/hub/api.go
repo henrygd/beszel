@@ -18,6 +18,7 @@ import (
 	"github.com/pocketbase/pocketbase/core"
 )
 
+// UpdateInfo holds information about the latest update check
 type UpdateInfo struct {
 	lastCheck time.Time
 	Version   string `json:"v"`
@@ -125,10 +126,12 @@ func (h *Hub) getInfo(e *core.RequestEvent) error {
 	return e.JSON(http.StatusOK, info)
 }
 
+// getUpdate checks for the latest release on GitHub and returns update info if a newer version is available
 func (info *UpdateInfo) getUpdate(e *core.RequestEvent) error {
 	if time.Since(info.lastCheck) < 6*time.Hour {
 		return e.JSON(http.StatusOK, info)
 	}
+	info.lastCheck = time.Now()
 	latestRelease, err := ghupdate.FetchLatestRelease(context.Background(), http.DefaultClient, "")
 	if err != nil {
 		return err
@@ -141,7 +144,6 @@ func (info *UpdateInfo) getUpdate(e *core.RequestEvent) error {
 	if err != nil {
 		return err
 	}
-	info.lastCheck = time.Now()
 	if latestVersion.GT(currentVersion) {
 		info.Version = strings.TrimPrefix(latestRelease.Tag, "v")
 		info.Url = latestRelease.Url
