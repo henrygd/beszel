@@ -434,6 +434,13 @@ func TestApiRoutesAuthentication(t *testing.T) {
 				"systems": []string{system.Id},
 			}),
 		},
+		{
+			Name:           "GET /update - shouldn't exist without CHECK_UPDATES env var",
+			Method:         http.MethodGet,
+			URL:            "/api/beszel/update",
+			ExpectedStatus: 502,
+			TestAppFactory: testAppFactory,
+		},
 	}
 
 	for _, scenario := range scenarios {
@@ -721,6 +728,50 @@ func TestTrustedHeaderMiddleware(t *testing.T) {
 				beszelTests.CreateUser(app, "user@test.com", "password123")
 			},
 		},
+	}
+
+	for _, scenario := range scenarios {
+		scenario.Test(t)
+	}
+}
+
+func TestUpdateEndpoint(t *testing.T) {
+	t.Setenv("CHECK_UPDATES", "true")
+
+	hub, _ := beszelTests.NewTestHub(t.TempDir())
+	defer hub.Cleanup()
+	hub.StartHub()
+
+	// Create test user and get auth token
+	// user, err := beszelTests.CreateUser(hub, "testuser@example.com", "password123")
+	// require.NoError(t, err, "Failed to create test user")
+	// userToken, err := user.NewAuthToken()
+
+	testAppFactory := func(t testing.TB) *pbTests.TestApp {
+		return hub.TestApp
+	}
+
+	scenarios := []beszelTests.ApiScenario{
+		{
+			Name:            "update endpoint shouldn't work without auth",
+			Method:          http.MethodGet,
+			URL:             "/api/beszel/update",
+			ExpectedStatus:  401,
+			ExpectedContent: []string{"requires valid"},
+			TestAppFactory:  testAppFactory,
+		},
+		// leave this out for now since it actually makes a request to github
+		// {
+		// 	Name:   "GET /update - with valid auth should succeed",
+		// 	Method: http.MethodGet,
+		// 	URL:    "/api/beszel/update",
+		// 	Headers: map[string]string{
+		// 		"Authorization": userToken,
+		// 	},
+		// 	ExpectedStatus:  200,
+		// 	ExpectedContent: []string{`"v":`},
+		// 	TestAppFactory:  testAppFactory,
+		// },
 	}
 
 	for _, scenario := range scenarios {
