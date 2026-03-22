@@ -26,7 +26,7 @@ import {
 	Settings2Icon,
 	XIcon,
 } from "lucide-react"
-import { memo, useEffect, useMemo, useRef, useState } from "react"
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { Button } from "@/components/ui/button"
 import {
 	DropdownMenu,
@@ -42,8 +42,9 @@ import {
 import { Input } from "@/components/ui/input"
 import { TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { SystemStatus } from "@/lib/enums"
-import { $downSystems, $pausedSystems, $systems, $upSystems } from "@/lib/stores"
-import { cn, runOnce, useBrowserStorage } from "@/lib/utils"
+import { $downSystems, $pausedSystems, $systems, $upSystems, $userSettings } from "@/lib/stores"
+import { cn, debounce, runOnce, useBrowserStorage } from "@/lib/utils"
+import { saveSettings } from "@/components/routes/settings/layout"
 import type { SystemRecord } from "@/types"
 import AlertButton from "../alerts/alert-button"
 import { $router, Link } from "../router"
@@ -54,6 +55,8 @@ type ViewMode = "table" | "grid"
 type StatusFilter = "all" | SystemRecord["status"]
 
 const preloadSystemDetail = runOnce(() => import("@/components/routes/system.tsx"))
+
+const saveCols = debounce((cols: VisibilityState) => saveSettings({ cols }, true), 1000)
 
 export default function SystemsTable() {
 	const data = useStore($systems)
@@ -69,7 +72,31 @@ export default function SystemsTable() {
 		sessionStorage
 	)
 	const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
-	const [columnVisibility, setColumnVisibility] = useBrowserStorage<VisibilityState>("cols", {})
+	const [columnVisibility, setColumnVisibility] = useState<VisibilityState>(
+		() => $userSettings.get().cols ?? JSON.parse(localStorage.getItem("besz-cols") || "{}")
+	)
+
+	// Apply cols from server once they load (handles incognito / new devices)
+	const colsApplied = useRef(false)
+	const { cols } = useStore($userSettings)
+	useEffect(() => {
+		if (!colsApplied.current && cols !== undefined) {
+			colsApplied.current = true
+			setColumnVisibility(cols)
+		}
+	}, [cols])
+
+	const handleColumnVisibilityChange = useCallback(
+		(updater: VisibilityState | ((prev: VisibilityState) => VisibilityState)) => {
+			setColumnVisibility((prev) => {
+				const next = typeof updater === "function" ? updater(prev) : updater
+				$userSettings.setKey("cols", next)
+				saveCols(next)
+				return next
+			})
+		},
+		[]
+	)
 
 	const locale = i18n.locale
 
@@ -109,7 +136,7 @@ export default function SystemsTable() {
 		getSortedRowModel: getSortedRowModel(),
 		onColumnFiltersChange: setColumnFilters,
 		getFilteredRowModel: getFilteredRowModel(),
-		onColumnVisibilityChange: setColumnVisibility,
+		onColumnVisibilityChange: handleColumnVisibilityChange,
 		state: {
 			sorting,
 			columnFilters,

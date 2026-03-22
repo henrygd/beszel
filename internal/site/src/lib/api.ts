@@ -2,6 +2,7 @@ import { t } from "@lingui/core/macro"
 import PocketBase from "pocketbase"
 import { basePath } from "@/components/router"
 import { toast } from "@/components/ui/use-toast"
+import { dynamicActivate } from "@/lib/i18n"
 import type { ChartTimes, UserSettings } from "@/types"
 import { $alerts, $allSystemsById, $allSystemsByName, $userSettings } from "./stores"
 import { chartTimeData } from "./utils"
@@ -41,6 +42,9 @@ export async function updateUserSettings() {
 	try {
 		const req = await pb.collection("user_settings").getFirstListItem("", { fields: "settings" })
 		$userSettings.set(req.settings)
+		if (req.settings.lang) {
+			dynamicActivate(req.settings.lang)
+		}
 		return
 	} catch (e) {
 		console.error("get settings", e)

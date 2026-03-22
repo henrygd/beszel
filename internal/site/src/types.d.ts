@@ -288,6 +288,8 @@ export interface UserSettings {
 	colorCrit?: number
 	hourFormat?: HourFormat
 	layoutWidth?: number
+	lang?: string
+	cols?: Record<string, boolean>
 }
 
 type ChartDataContainer = {
