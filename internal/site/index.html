@@ -7,6 +7,19 @@
 		<meta name="viewport" content="width=device-width, initial-scale=1.0,maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
 		<meta name="robots" content="noindex, nofollow" />
 		<title>Beszel</title>
+		<style>
+			.dark { background: hsl(220 5.5% 9%); color-scheme: dark; }
+		</style>
+		<script>
+			(function() {
+				try {
+					var theme = localStorage.getItem('ui-theme');
+					var isDark = theme === 'dark' ||
+						(theme !== 'light' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+					document.documentElement.classList.add(isDark ? 'dark' : 'light');
+				} catch (e) {}
+			})();
+		</script>
 		<script>
 			globalThis.BESZEL = {
 				BASE_PATH: "%BASE_URL%",
