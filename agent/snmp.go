@@ -3,8 +3,7 @@ package agent
 import (
 	"encoding/hex"
 	"fmt"
-	"log"
-	"math/big"
+	"log/slog"
 	"strconv"
 	"strings"
 	"time"
@@ -12,37 +11,6 @@ import (
 	"github.com/gosnmp/gosnmp"
 	psutilNet "github.com/shirou/gopsutil/v4/net"
 )
-
-// toBig converts any numeric SNMP value to *big.Int safely.
-func toBig(v interface{}) *big.Int {
-	switch x := v.(type) {
-	case int:
-		return big.NewInt(int64(x))
-	case int8:
-		return big.NewInt(int64(x))
-	case int16:
-		return big.NewInt(int64(x))
-	case int32:
-		return big.NewInt(int64(x))
-	case int64:
-		return big.NewInt(x)
-	case uint:
-		return new(big.Int).SetUint64(uint64(x))
-	case uint8:
-		return new(big.Int).SetUint64(uint64(x))
-	case uint16:
-		return new(big.Int).SetUint64(uint64(x))
-	case uint32:
-		return new(big.Int).SetUint64(uint64(x))
-	case uint64:
-		return new(big.Int).SetUint64(x)
-	case *big.Int:
-		return x
-	default:
-		// gosnmp provides helper: gosnmp.ToBigInt(v)
-		return gosnmp.ToBigInt(v)
-	}
-}
 
 // isIfPhysAddressOID returns true for ifPhysAddress (.1.3.6.1.2.1.2.2.1.6)
 func isIfPhysAddressOID(oid string) bool {
@@ -67,7 +35,7 @@ func formatMAC(b []byte) string {
 }
 
 // PrettyValue returns a Go string you can print safely for a varbind.
-func PrettyValue(vb gosnmp.SnmpPDU) string {
+func SNMP_PrettyValue(vb gosnmp.SnmpPDU) string {
 	switch vb.Type {
 	case gosnmp.OctetString:
 		b, _ := vb.Value.([]byte)
@@ -98,7 +66,8 @@ func PrettyValue(vb gosnmp.SnmpPDU) string {
 	case gosnmp.Uinteger32:
 		fallthrough
 	case gosnmp.Counter64:
-		return toBig(vb.Value).String()
+		return gosnmp.ToBigInt(vb.Value).String()
+		// return toBig(vb.Value).String()
 
 	case gosnmp.IPAddress:
 		// gosnmp usually gives string for IP
@@ -150,7 +119,7 @@ type Dictionary struct {
 	System     SystemFmt
 }
 
-func MikrotikOID() Dictionary {
+func SNMP_OID() Dictionary {
 	iface := InterfacesFmt{
 		Name:        ".1.3.6.1.2.1.2.2.1.2.%v",
 		ActualMTU:   ".1.3.6.1.2.1.2.2.1.4.%v",
@@ -167,11 +136,11 @@ func MikrotikOID() Dictionary {
 		ErrorsOut:   ".1.3.6.1.2.1.2.2.1.20.%v",
 	}
 
-	// MikrotikOIDHelper(OIDHelper.Interfaces.Name, 1),     // name
-	// MikrotikOIDHelper(OIDHelper.Interfaces.BytesIn, 1),  // bytesRecv
-	// MikrotikOIDHelper(OIDHelper.Interfaces.BytesOut, 1), // bytesSent
-	// MikrotikOIDHelper(OIDHelper.Interfaces.PktsIn, 1),   // packetsRecv
-	// MikrotikOIDHelper(OIDHelper.Interfaces.PktsOut, 1),  // packetsSent
+	// SNMP_OIDHelper(OIDHelper.Interfaces.Name, 1),     // name
+	// SNMP_OIDHelper(OIDHelper.Interfaces.BytesIn, 1),  // bytesRecv
+	// SNMP_OIDHelper(OIDHelper.Interfaces.BytesOut, 1), // bytesSent
+	// SNMP_OIDHelper(OIDHelper.Interfaces.PktsIn, 1),   // packetsRecv
+	// SNMP_OIDHelper(OIDHelper.Interfaces.PktsOut, 1),  // packetsSent
 	iface.Map = map[string]string{
 		"name":         iface.Name,
 		"actual-mtu":   iface.ActualMTU,
@@ -202,15 +171,14 @@ func MikrotikOID() Dictionary {
 }
 
 // oid formats a %d-based template with an index.
-func MikrotikOIDHelper(tmpl string, idx int) string { return fmt.Sprintf(tmpl, idx) }
+func SNMP_OIDHelper(tmpl string, idx int) string { return fmt.Sprintf(tmpl, idx) }
 
 // ReverseLookup takes an OID like ".1.3.6.1.2.1.2.2.1.8.1"
 // And returns e.g.: "oper-status", 1, true
-func MikrotikReverseOID(dict Dictionary, oid string) string {
+func SNMP_ReverseOID(dict Dictionary, oid string) string {
 	for key, tmpl := range dict.Interfaces.Map {
 		// get prefix before %d
 		prefix := strings.Split(tmpl, "%v")[0]
-
 		if strings.HasPrefix(oid, prefix) {
 			return key
 		}
@@ -219,70 +187,88 @@ func MikrotikReverseOID(dict Dictionary, oid string) string {
 	return "unknown"
 }
 
-func CheckIfMikrotik() bool {
-	// OIDHelper := MikrotikOID()
-	// Configure GoSNMP
-	IP, exists := GetEnv("MIKROTIK_IP")
-	if !exists {
-		return false
-	}
-	gosnmp.Default.Target = IP // RouterOS IP
-	gosnmp.Default.Community = "public"
-	gosnmp.Default.Version = gosnmp.Version2c
-	gosnmp.Default.Timeout = time.Duration(2) * time.Second
-
-	err := gosnmp.Default.Connect()
+func SNMP_Call(c *SNMPNetworkIO, oids []string) *gosnmp.SnmpPacket {
+	result, err := c.client.Get(oids)
 	if err != nil {
-		log.Fatalf("Connect() err: %v", err)
-		return false
-	}
-	defer gosnmp.Default.Conn.Close()
-	return true
-}
-func CallMikrotikSNMP(oids []string) *gosnmp.SnmpPacket {
-	IP, exists := GetEnv("MIKROTIK_IP")
-	if !exists {
-		return nil
-	}
-	gosnmp.Default.Target = IP // RouterOS IP
-	gosnmp.Default.Community = "public"
-	gosnmp.Default.Version = gosnmp.Version2c
-	gosnmp.Default.Timeout = time.Duration(2) * time.Second
-
-	err := gosnmp.Default.Connect()
-	if err != nil {
-		log.Fatalf("Connect() err: %v", err)
-	}
-	defer gosnmp.Default.Conn.Close()
-	result, err := gosnmp.Default.Get(oids)
-	if err != nil {
-		log.Fatalf("Get() err: %v", err)
+		slog.Error("Get() err: ", "err", err)
 	}
 	return result
 }
 
-func getMikrotikInterfaces() []int {
+func SNMP_getInterfaces(c *SNMPNetworkIO) []int {
 	Interfaces := []int{}
-	gosnmp.Default.Target = "192.168.10.2" // RouterOS IP
-	gosnmp.Default.Community = "public"
-	gosnmp.Default.Version = gosnmp.Version2c
-	gosnmp.Default.Timeout = time.Duration(2) * time.Second
-
-	err := gosnmp.Default.Connect()
-	if err != nil {
-		log.Fatalf("Connect() err: %v", err)
-	}
-	defer gosnmp.Default.Conn.Close()
-	gosnmp.Default.Walk(".1.3.6.1.2.1.2.2.1.1", func(pdu gosnmp.SnmpPDU) error {
+	err := c.client.Walk(".1.3.6.1.2.1.2.2.1.1", func(pdu gosnmp.SnmpPDU) error {
 		idx := gosnmp.ToBigInt(pdu.Value).Int64()
 		Interfaces = append(Interfaces, int(idx))
 		return nil
 	})
+	if err != nil {
+		slog.Error("Walk() err: ", "err", err)
+	}
 	return Interfaces
 
 }
-func GetMikrotikInterfacesStats() []psutilNet.IOCountersStat {
-	OIDHelper := MikrotikOID()
+
+func toUint64(s string) uint64 {
+	// return gosnmp.ToBigInt(s).Uint64()
+	v, err := strconv.ParseUint(s, 10, 64)
+	if err != nil {
+		return 0 // or handle differently
+	}
+	return v
+}
+
+// NetworkIOProvider abstracts network interface stats collection.
+type NetworkIOProvider interface {
+	IOCounters() ([]psutilNet.IOCountersStat, error)
+}
+
+// localNetworkIO reads from /proc via gopsutil (default).
+type localNetworkIO struct{}
+
+// snmpNetworkIO reads interface stats from a remote SNMP target.
+type SNMPNetworkIO struct {
+	client *gosnmp.GoSNMP
+}
+
+func SNMP_NetworkIO(target string) (*SNMPNetworkIO, error) {
+	community, _ := GetEnv("SNMP_COMMUNITY")
+	if community == "" {
+		community = "public"
+	}
+	port, _ := GetEnv("SNMP_PORT")
+	if port == "" {
+		port = "161"
+	}
+	version, _ := GetEnv("SNMP_VERSION")
+	snmpVersion := gosnmp.Version2c
+	switch version {
+	case "1":
+		snmpVersion = gosnmp.Version1
+	case "2c":
+		snmpVersion = gosnmp.Version2c
+	case "3":
+		snmpVersion = gosnmp.Version3
+	}
+	thisPort, _ := strconv.ParseUint(port, 10, 16)
+	client := &gosnmp.GoSNMP{
+		Target:    target,
+		Port:      uint16(thisPort),
+		Community: community,
+		Version:   snmpVersion,
+		Timeout:   2 * time.Second,
+	}
+	if err := client.Connect(); err != nil {
+		return nil, fmt.Errorf("snmp connect: %w", err)
+	}
+	return &SNMPNetworkIO{client: client}, nil
+}
+func (l *localNetworkIO) IOCounters() ([]psutilNet.IOCountersStat, error) {
+	return psutilNet.IOCounters(true)
+}
+func (c *SNMPNetworkIO) IOCounters() ([]psutilNet.IOCountersStat, error) {
+	// walk IF-MIB,
+	OIDHelper := SNMP_OID()
 
 	// // Get System Name
 	// // oids := []string{"1.3.6.1.2.1.1.5.0"}
@@ -291,33 +277,33 @@ func GetMikrotikInterfacesStats() []psutilNet.IOCountersStat {
 
 	InterfacesResult := []psutilNet.IOCountersStat{}
 	// Discover Interfaces
-	Interfaces := getMikrotikInterfaces()
+	Interfaces := SNMP_getInterfaces(c)
 
 	for _, pos := range Interfaces {
 		oids := []string{
-			MikrotikOIDHelper(OIDHelper.Interfaces.Name, pos),     // name
-			MikrotikOIDHelper(OIDHelper.Interfaces.BytesIn, pos),  // bytesRecv
-			MikrotikOIDHelper(OIDHelper.Interfaces.BytesOut, pos), // bytesSent
-			MikrotikOIDHelper(OIDHelper.Interfaces.PktsIn, pos),   // packetsRecv
-			MikrotikOIDHelper(OIDHelper.Interfaces.PktsOut, pos),  // packetsSent
+			SNMP_OIDHelper(OIDHelper.Interfaces.Name, pos),     // name
+			SNMP_OIDHelper(OIDHelper.Interfaces.BytesIn, pos),  // bytesRecv
+			SNMP_OIDHelper(OIDHelper.Interfaces.BytesOut, pos), // bytesSent
+			SNMP_OIDHelper(OIDHelper.Interfaces.PktsIn, pos),   // packetsRecv
+			SNMP_OIDHelper(OIDHelper.Interfaces.PktsOut, pos),  // packetsSent
 		}
-		result := CallMikrotikSNMP(oids)
+		result := SNMP_Call(c, oids)
 		thisInterface := psutilNet.IOCountersStat{}
 		for _, vb := range result.Variables {
 
-			key := MikrotikReverseOID(OIDHelper, vb.Name)
-			val := PrettyValue(vb)
+			key := SNMP_ReverseOID(OIDHelper, vb.Name)
+			val := SNMP_PrettyValue(vb)
 			switch key {
 			case "name":
 				thisInterface.Name = val
 			case "bytesRecv":
-				thisInterface.BytesRecv = ToUint64(val)
+				thisInterface.BytesRecv = toUint64(val)
 			case "bytesSent":
-				thisInterface.BytesSent = ToUint64(val)
+				thisInterface.BytesSent = toUint64(val)
 			case "packetsRecv":
-				thisInterface.PacketsRecv = ToUint64(val)
+				thisInterface.PacketsRecv = toUint64(val)
 			case "packetsSent":
-				thisInterface.PacketsSent = ToUint64(val)
+				thisInterface.PacketsSent = toUint64(val)
 			}
 		}
 		InterfacesResult = append(InterfacesResult, thisInterface)
@@ -325,15 +311,5 @@ func GetMikrotikInterfacesStats() []psutilNet.IOCountersStat {
 	// for _, v := range InterfacesResult {
 	// 	fmt.Println("_", v)
 	// }
-	return InterfacesResult
-
-}
-
-func ToUint64(s string) uint64 {
-	// return gosnmp.ToBigInt(s).Uint64()
-	v, err := strconv.ParseUint(s, 10, 64)
-	if err != nil {
-		return 0 // or handle differently
-	}
-	return v
+	return InterfacesResult, nil
 }

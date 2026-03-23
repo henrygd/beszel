@@ -75,27 +75,14 @@ func isValidNic(nicName string, cfg *NicConfig) bool {
 	return cfg.isBlacklist
 }
 
-func getNetIO() ([]psutilNet.IOCountersStat, error) {
-	netIO := []psutilNet.IOCountersStat{}
-	if _, exists := GetEnv("MIKROTIK_IP"); exists && CheckIfMikrotik() {
-		slog.Info("Mikrotik device detected. Adding Mikrotik SNMP stats to network stats.")
-		netIO = GetMikrotikInterfacesStats()
-	} else if thisNetIO, err := psutilNet.IOCounters(true); err == nil {
-		slog.Info("Non-Mikrotik device detected. Adding local network stats.")
-		netIO = thisNetIO
-	}
-	return netIO, nil
-}
-
 func (a *Agent) updateNetworkStats(cacheTimeMs uint16, systemStats *system.Stats) {
 	// network stats
 	a.ensureNetInterfacesInitialized()
 
 	a.ensureNetworkInterfacesMap(systemStats)
 	// [upload bytes, download bytes, total upload, total download]
-	// if something here
-	netIO, err := getNetIO()
-	if err != nil {
+	netIO, err := a.networkIO.IOCounters()
+	if err == nil {
 		if netIO != nil {
 			nis, msElapsed := a.loadAndTickNetBaseline(cacheTimeMs)
 			totalBytesSent, totalBytesRecv := a.sumAndTrackPerNicDeltas(cacheTimeMs, msElapsed, netIO, systemStats)
@@ -118,8 +105,8 @@ func (a *Agent) initializeNetIoStats() {
 
 	// get current network I/O stats and record valid interfaces
 	// also if in here
-	netIO, err := getNetIO()
-	if err != nil {
+	netIO, err := a.networkIO.IOCounters()
+	if err == nil {
 		for _, v := range netIO {
 			if nicsEnvExists && !isValidNic(v.Name, nicCfg) {
 				continue
