@@ -77,6 +77,7 @@ type dockerManager struct {
 	// cacheTimeMs -> DeltaTracker for network bytes sent/received
 	networkSentTrackers map[uint16]*deltatracker.DeltaTracker[string, uint64]
 	networkRecvTrackers map[uint16]*deltatracker.DeltaTracker[string, uint64]
+	lastNetworkReadTime map[uint16]map[string]time.Time // cacheTimeMs -> containerId -> last network read time
 	retrySleep          func(time.Duration)
 }
 
@@ -285,7 +286,7 @@ func (dm *dockerManager) cycleNetworkDeltasForCacheTime(cacheTimeMs uint16) {
 }
 
 // calculateNetworkStats calculates network sent/receive deltas using DeltaTracker
-func (dm *dockerManager) calculateNetworkStats(ctr *container.ApiInfo, apiStats *container.ApiStats, stats *container.Stats, initialized bool, name string, cacheTimeMs uint16) (uint64, uint64) {
+func (dm *dockerManager) calculateNetworkStats(ctr *container.ApiInfo, apiStats *container.ApiStats, name string, cacheTimeMs uint16) (uint64, uint64) {
 	var total_sent, total_recv uint64
 	for _, v := range apiStats.Networks {
 		total_sent += v.TxBytes
@@ -304,10 +305,11 @@ func (dm *dockerManager) calculateNetworkStats(ctr *container.ApiInfo, apiStats 
 	sent_delta_raw := sentTracker.Delta(ctr.IdShort)
 	recv_delta_raw := recvTracker.Delta(ctr.IdShort)
 
-	// Calculate bytes per second independently for Tx and Rx if we have previous data
+	// Calculate bytes per second using per-cache-time read time to avoid
+	// interference between different cache intervals (e.g. 1000ms vs 60000ms)
 	var sent_delta, recv_delta uint64
-	if initialized {
-		millisecondsElapsed := uint64(time.Since(stats.PrevReadTime).Milliseconds())
+	if prevReadTime, ok := dm.lastNetworkReadTime[cacheTimeMs][ctr.IdShort]; ok {
+		millisecondsElapsed := uint64(time.Since(prevReadTime).Milliseconds())
 		if millisecondsElapsed > 0 {
 			if sent_delta_raw > 0 {
 				sent_delta = sent_delta_raw * 1000 / millisecondsElapsed
@@ -542,7 +544,13 @@ func (dm *dockerManager) updateContainerStats(ctr *container.ApiInfo, cacheTimeM
 	}
 
 	// Calculate network stats using DeltaTracker
-	sent_delta, recv_delta := dm.calculateNetworkStats(ctr, res, stats, initialized, name, cacheTimeMs)
+	sent_delta, recv_delta := dm.calculateNetworkStats(ctr, res, name, cacheTimeMs)
+
+	// Store per-cache-time network read time for next rate calculation
+	if dm.lastNetworkReadTime[cacheTimeMs] == nil {
+		dm.lastNetworkReadTime[cacheTimeMs] = make(map[string]time.Time)
+	}
+	dm.lastNetworkReadTime[cacheTimeMs][ctr.IdShort] = time.Now()
 
 	// Store current network values for legacy compatibility
 	var total_sent, total_recv uint64
@@ -573,6 +581,9 @@ func (dm *dockerManager) deleteContainerStatsSync(id string) {
 	}
 	for ct := range dm.lastCpuReadTime {
 		delete(dm.lastCpuReadTime[ct], id)
+	}
+	for ct := range dm.lastNetworkReadTime {
+		delete(dm.lastNetworkReadTime[ct], id)
 	}
 }
 
@@ -659,6 +670,7 @@ func newDockerManager() *dockerManager {
 		lastCpuReadTime:     make(map[uint16]map[string]time.Time),
 		networkSentTrackers: make(map[uint16]*deltatracker.DeltaTracker[string, uint64]),
 		networkRecvTrackers: make(map[uint16]*deltatracker.DeltaTracker[string, uint64]),
+		lastNetworkReadTime: make(map[uint16]map[string]time.Time),
 		retrySleep:          time.Sleep,
 	}
 
