@@ -184,6 +184,10 @@ msgstr "Bạn có chắc chắn muốn xóa {name} không?"
 msgid "Are you sure?"
 msgstr "Bạn có chắc không?"
 
+#: src/components/routes/settings/general.tsx
+msgid "Auto"
+msgstr ""
+
 #: src/components/copy-to-clipboard.tsx
 msgid "Automatic copy requires a secure context."
 msgstr "Sao chép tự động yêu cầu một ngữ cảnh an toàn."
@@ -810,6 +814,10 @@ msgstr "Đầy pin"
 msgid "General"
 msgstr "Chung"
 
+#: src/components/routes/settings/general.tsx
+msgid "Gigabytes (GB)"
+msgstr ""
+
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Global"
 msgstr "Toàn cầu"
@@ -982,6 +990,10 @@ msgstr "Hướng dẫn cài đặt thủ công"
 msgid "Max 1 min"
 msgstr "Tối đa 1 phút"
 
+#: src/components/routes/settings/general.tsx
+msgid "Megabytes (MB)"
+msgstr ""
+
 #: src/components/containers-table/containers-table-columns.tsx
 #: src/components/routes/system/info-bar.tsx
 #: src/components/systemd-table/systemd-table-columns.tsx
@@ -998,6 +1010,10 @@ msgstr "Giới hạn bộ nhớ"
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Memory Peak"
 msgstr "Đỉnh bộ nhớ"
+
+#: src/components/routes/settings/general.tsx
+msgid "Memory unit"
+msgstr ""
 
 #: src/components/routes/system.tsx
 #: src/lib/alerts.ts
@@ -1523,6 +1539,10 @@ msgstr "Đơn vị nhiệt độ"
 #: src/components/routes/system.tsx
 msgid "Temperatures of system sensors"
 msgstr "Nhiệt độ của các cảm biến hệ thống"
+
+#: src/components/routes/settings/general.tsx
+msgid "Terabytes (TB)"
+msgstr ""
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Test <0>URL</0>"

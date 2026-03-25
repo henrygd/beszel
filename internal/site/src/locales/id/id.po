@@ -184,6 +184,10 @@ msgstr "Apakah anda yakin ingin menghapus {name}?"
 msgid "Are you sure?"
 msgstr "Apakah anda yakin?"
 
+#: src/components/routes/settings/general.tsx
+msgid "Auto"
+msgstr ""
+
 #: src/components/copy-to-clipboard.tsx
 msgid "Automatic copy requires a secure context."
 msgstr "Copy memerlukan https."
@@ -810,6 +814,10 @@ msgstr "Penuh"
 msgid "General"
 msgstr "Umum"
 
+#: src/components/routes/settings/general.tsx
+msgid "Gigabytes (GB)"
+msgstr ""
+
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Global"
 msgstr "Global"
@@ -982,6 +990,10 @@ msgstr "Instruksi setup manual"
 msgid "Max 1 min"
 msgstr "Maks 1 mnt"
 
+#: src/components/routes/settings/general.tsx
+msgid "Megabytes (MB)"
+msgstr ""
+
 #: src/components/containers-table/containers-table-columns.tsx
 #: src/components/routes/system/info-bar.tsx
 #: src/components/systemd-table/systemd-table-columns.tsx
@@ -998,6 +1010,10 @@ msgstr "Batas memori"
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Memory Peak"
 msgstr "Puncak Memori"
+
+#: src/components/routes/settings/general.tsx
+msgid "Memory unit"
+msgstr ""
 
 #: src/components/routes/system.tsx
 #: src/lib/alerts.ts
@@ -1523,6 +1539,10 @@ msgstr "Unit temperatur"
 #: src/components/routes/system.tsx
 msgid "Temperatures of system sensors"
 msgstr "Temperatur sensor sistem"
+
+#: src/components/routes/settings/general.tsx
+msgid "Terabytes (TB)"
+msgstr ""
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Test <0>URL</0>"

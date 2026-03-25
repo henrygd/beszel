@@ -284,6 +284,7 @@ export interface UserSettings {
 	unitTemp?: Unit
 	unitNet?: Unit
 	unitDisk?: Unit
+	unitMem?: Unit
 	colorWarn?: number
 	colorCrit?: number
 	hourFormat?: HourFormat
