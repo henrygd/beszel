@@ -6,7 +6,7 @@ kind: HTTPRoute
 metadata:
   name: {{ $fullName }}
   labels:
-    {{- include "beszel-hub.labels" . | nindent 4 }}
+    {{- include "beszel.labels" . | nindent 4 }}
   {{- with .Values.httpRoute.annotations }}
   annotations:
     {{- toYaml . | nindent 4 }}
