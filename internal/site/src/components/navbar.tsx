@@ -56,102 +56,106 @@ export default function Navbar() {
 			</Link>
 			<SearchButton />
 
-			<DropdownMenu>
-				<DropdownMenuTrigger
-					asChild
-					className="ms-auto md:hidden"
-					onMouseEnter={() => import("@/components/routes/settings/general")}
-					aria-label="Open Menu"
-				>
-					<MenuIcon />
-				</DropdownMenuTrigger>
-				<DropdownMenuContent align="end">
-					<DropdownMenuGroup>
-						<DropdownMenuItem>
-							<Link href={getPagePath($router, "containers")} className="flex items-center">
-								<ContainerIcon className="h-4 w-4 me-2.5" strokeWidth={1.5} />
-								<Trans>All Containers</Trans>
-							</Link>
-						</DropdownMenuItem>
-						<DropdownMenuItem>
-							<Link href={getPagePath($router, "smart")} className="flex items-center">
-								<HardDriveIcon className="h-4 w-4 me-2.5" strokeWidth={1.5} />
-								<span>S.M.A.R.T.</span>
-							</Link>
-						</DropdownMenuItem>
-						<DropdownMenuItem>
-							<Link href={getPagePath($router, "settings", { name: "general" })} className="flex items-center">
-								<SettingsIcon className="h-4 w-4 me-2.5" />
-								<Trans>Settings</Trans>
-							</Link>
-						</DropdownMenuItem>
-						{isAdmin() && (
-							<DropdownMenuSub>
-								<DropdownMenuSubTrigger>
-									<UserIcon className="h-4 w-4 me-2.5" />
-									<Trans>Admin</Trans>
-								</DropdownMenuSubTrigger>
-								<DropdownMenuSubContent>
-									<DropdownMenuLabel>{pb.authStore.record?.email}</DropdownMenuLabel>
-									<DropdownMenuSeparator />
-									<DropdownMenuGroup>
-										<DropdownMenuItem asChild>
-											<a href={prependBasePath("/_/")} target="_blank">
-												<UsersIcon className="me-2.5 h-4 w-4" />
-												<span>
-													<Trans>Users</Trans>
-												</span>
-											</a>
-										</DropdownMenuItem>
-										<DropdownMenuItem asChild>
-											<a href={prependBasePath("/_/#/collections?collection=systems")} target="_blank">
-												<ServerIcon className="me-2.5 h-4 w-4" />
-												<span>
-													<Trans>Systems</Trans>
-												</span>
-											</a>
-										</DropdownMenuItem>
-										<DropdownMenuItem asChild>
-											<a href={prependBasePath("/_/#/logs")} target="_blank">
-												<LogsIcon className="me-2.5 h-4 w-4" />
-												<span>
-													<Trans>Logs</Trans>
-												</span>
-											</a>
-										</DropdownMenuItem>
-										<DropdownMenuItem asChild>
-											<a href={prependBasePath("/_/#/settings/backups")} target="_blank">
-												<DatabaseBackupIcon className="me-2.5 h-4 w-4" />
-												<span>
-													<Trans>Backups</Trans>
-												</span>
-											</a>
-										</DropdownMenuItem>
-									</DropdownMenuGroup>
-								</DropdownMenuSubContent>
-							</DropdownMenuSub>
-						)}
-						<DropdownMenuItem
-							className="flex items-center"
-							onSelect={(e) => {
-								e.preventDefault()
-								setAddSystemDialogOpen(true)
-							}}
-						>
-							<PlusIcon className="h-4 w-4 me-2.5" />
-							<Trans>Add System</Trans>
-						</DropdownMenuItem>
-					</DropdownMenuGroup>
-					<DropdownMenuSeparator />
-					<DropdownMenuGroup>
-						<DropdownMenuItem onSelect={logOut} className="flex items-center">
-							<LogOutIcon className="h-4 w-4 me-2.5" />
-							<Trans>Log Out</Trans>
-						</DropdownMenuItem>
-					</DropdownMenuGroup>
-				</DropdownMenuContent>
-			</DropdownMenu>
+			{/* mobile menu */}
+			<div className="ms-auto flex items-center gap-2 md:hidden">
+				<ModeToggle />
+				<DropdownMenu>
+					<DropdownMenuTrigger
+						asChild
+						onMouseEnter={() => import("@/components/routes/settings/general")}
+						aria-label="Open Menu"
+					>
+						<MenuIcon />
+					</DropdownMenuTrigger>
+					<DropdownMenuContent align="end">
+						<DropdownMenuGroup>
+							<DropdownMenuItem>
+								<Link href={getPagePath($router, "containers")} className="flex items-center">
+									<ContainerIcon className="h-4 w-4 me-2.5" strokeWidth={1.5} />
+									<Trans>All Containers</Trans>
+								</Link>
+							</DropdownMenuItem>
+							<DropdownMenuItem>
+								<Link href={getPagePath($router, "smart")} className="flex items-center">
+									<HardDriveIcon className="h-4 w-4 me-2.5" strokeWidth={1.5} />
+									<span>S.M.A.R.T.</span>
+								</Link>
+							</DropdownMenuItem>
+							<DropdownMenuItem>
+								<Link href={getPagePath($router, "settings", { name: "general" })} className="flex items-center">
+									<SettingsIcon className="h-4 w-4 me-2.5" />
+									<Trans>Settings</Trans>
+								</Link>
+							</DropdownMenuItem>
+							{isAdmin() && (
+								<DropdownMenuSub>
+									<DropdownMenuSubTrigger>
+										<UserIcon className="h-4 w-4 me-2.5" />
+										<Trans>Admin</Trans>
+									</DropdownMenuSubTrigger>
+									<DropdownMenuSubContent>
+										<DropdownMenuLabel>{pb.authStore.record?.email}</DropdownMenuLabel>
+										<DropdownMenuSeparator />
+										<DropdownMenuGroup>
+											<DropdownMenuItem asChild>
+												<a href={prependBasePath("/_/")} target="_blank">
+													<UsersIcon className="me-2.5 h-4 w-4" />
+													<span>
+														<Trans>Users</Trans>
+													</span>
+												</a>
+											</DropdownMenuItem>
+											<DropdownMenuItem asChild>
+												<a href={prependBasePath("/_/#/collections?collection=systems")} target="_blank">
+													<ServerIcon className="me-2.5 h-4 w-4" />
+													<span>
+														<Trans>Systems</Trans>
+													</span>
+												</a>
+											</DropdownMenuItem>
+											<DropdownMenuItem asChild>
+												<a href={prependBasePath("/_/#/logs")} target="_blank">
+													<LogsIcon className="me-2.5 h-4 w-4" />
+													<span>
+														<Trans>Logs</Trans>
+													</span>
+												</a>
+											</DropdownMenuItem>
+											<DropdownMenuItem asChild>
+												<a href={prependBasePath("/_/#/settings/backups")} target="_blank">
+													<DatabaseBackupIcon className="me-2.5 h-4 w-4" />
+													<span>
+														<Trans>Backups</Trans>
+													</span>
+												</a>
+											</DropdownMenuItem>
+										</DropdownMenuGroup>
+									</DropdownMenuSubContent>
+								</DropdownMenuSub>
+							)}
+							<DropdownMenuItem
+								className="flex items-center"
+								onSelect={(e) => {
+									e.preventDefault()
+									setAddSystemDialogOpen(true)
+								}}
+							>
+								<PlusIcon className="h-4 w-4 me-2.5" />
+								<Trans>Add System</Trans>
+							</DropdownMenuItem>
+						</DropdownMenuGroup>
+						<DropdownMenuSeparator />
+						<DropdownMenuGroup>
+							<DropdownMenuItem onSelect={logOut} className="flex items-center">
+								<LogOutIcon className="h-4 w-4 me-2.5" />
+								<Trans>Log Out</Trans>
+							</DropdownMenuItem>
+						</DropdownMenuGroup>
+					</DropdownMenuContent>
+				</DropdownMenu>
+			</div>
 
+			{/* desktop menu */}
 			{/** biome-ignore lint/a11y/noStaticElementInteractions: ignore */}
 			<div
 				className="hidden md:flex items-center ms-auto"
@@ -255,8 +259,8 @@ export default function Navbar() {
 						</DropdownMenuItem>
 					</DropdownMenuContent>
 				</DropdownMenu>
-				<Button variant="outline" className="flex gap-1 max-xs:h-[2.4rem]" onClick={() => setAddSystemDialogOpen(true)}>
-					<PlusIcon className="h-4 w-4 450:-ms-1" />
+				<Button variant="outline" className="flex gap-1 ms-2" onClick={() => setAddSystemDialogOpen(true)}>
+					<PlusIcon className="h-4 w-4 -ms-1" />
 					<Trans>Add System</Trans>
 				</Button>
 			</div>
