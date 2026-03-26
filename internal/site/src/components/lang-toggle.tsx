@@ -1,6 +1,6 @@
 import { Trans, useLingui } from "@lingui/react/macro"
 import { LanguagesIcon } from "lucide-react"
-import { Button } from "@/components/ui/button"
+import { buttonVariants } from "@/components/ui/button"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { dynamicActivate } from "@/lib/i18n"
 import languages from "@/lib/languages"
@@ -14,31 +14,29 @@ export function LangToggle() {
 
 	return (
 		<DropdownMenu>
-			<DropdownMenuTrigger>
-				<Tooltip>
-					<TooltipTrigger asChild>
-						<Button variant={"ghost"} size="icon" className="hidden sm:flex">
-							<LanguagesIcon className="absolute h-[1.2rem] w-[1.2rem] light:opacity-85" />
-							<span className="sr-only">{LangTrans}</span>
-						</Button>
-					</TooltipTrigger>
-					<TooltipContent>{LangTrans}</TooltipContent>
-				</Tooltip>
-			</DropdownMenuTrigger>
-			<DropdownMenuContent className="grid grid-cols-3">
-				{languages.map(([lang, label, e]) => (
-					<DropdownMenuItem
-						key={lang}
-						className={cn("px-2.5 flex gap-2.5 cursor-pointer", lang === i18n.locale && "bg-accent/70 font-medium")}
-						onClick={() => dynamicActivate(lang)}
-					>
-						<span>
-							{e || <code className="font-mono bg-muted text-[.65em] w-5 h-4 grid place-items-center">{lang}</code>}
-						</span>{" "}
-						{label}
-					</DropdownMenuItem>
-				))}
-			</DropdownMenuContent>
+			<Tooltip>
+				<TooltipTrigger asChild>
+					<DropdownMenuTrigger className={cn(buttonVariants({ variant: "ghost", size: "icon" }))}>
+						<LanguagesIcon className="absolute h-[1.2rem] w-[1.2rem] light:opacity-85" />
+						<span className="sr-only">{LangTrans}</span>
+						<TooltipContent>{LangTrans}</TooltipContent>
+					</DropdownMenuTrigger>
+				</TooltipTrigger>
+				<DropdownMenuContent className="grid grid-cols-3">
+					{languages.map(([lang, label, e]) => (
+						<DropdownMenuItem
+							key={lang}
+							className={cn("px-2.5 flex gap-2.5 cursor-pointer", lang === i18n.locale && "bg-accent/70 font-medium")}
+							onClick={() => dynamicActivate(lang)}
+						>
+							<span>
+								{e || <code className="font-mono bg-muted text-[.65em] w-5 h-4 grid place-items-center">{lang}</code>}
+							</span>{" "}
+							{label}
+						</DropdownMenuItem>
+					))}
+				</DropdownMenuContent>
+			</Tooltip>
 		</DropdownMenu>
 	)
 }
