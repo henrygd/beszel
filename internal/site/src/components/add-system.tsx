@@ -36,12 +36,13 @@ import { InputCopy } from "./ui/input-copy"
 
 // To avoid a refactor of the dialog, we will just keep this function as a "skeleton" for the actual dialog
 export function AddSystemDialog({ open, setOpen }: { open: boolean; setOpen: (open: boolean) => void }) {
-	if (isReadOnlyUser()) {
-		return null
-	}
 	const opened = useRef(false)
 	if (open) {
 		opened.current = true
+	}
+
+	if (isReadOnlyUser()) {
+		return null
 	}
 
 	return (

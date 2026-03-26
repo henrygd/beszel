@@ -65,7 +65,7 @@ export default function Navbar() {
 				>
 					<MenuIcon />
 				</DropdownMenuTrigger>
-				<DropdownMenuContent>
+				<DropdownMenuContent align="end">
 					<DropdownMenuGroup>
 						<DropdownMenuItem>
 							<Link href={getPagePath($router, "containers")} className="flex items-center">
@@ -85,58 +85,52 @@ export default function Navbar() {
 								<Trans>Settings</Trans>
 							</Link>
 						</DropdownMenuItem>
-						<DropdownMenuSub>
-							<DropdownMenuSubTrigger>
-								<UserIcon className="h-4 w-4 me-2.5" />
-								<Trans>User Actions</Trans>
-							</DropdownMenuSubTrigger>
-							<DropdownMenuSubContent>
-								<DropdownMenuLabel>{pb.authStore.record?.email}</DropdownMenuLabel>
-								<DropdownMenuSeparator />
-								<DropdownMenuGroup>
-									{isAdmin() ? (
-										<>
-											<DropdownMenuItem asChild>
-												<a href={prependBasePath("/_/")} target="_blank">
-													<UsersIcon className="me-2.5 h-4 w-4" />
-													<span>
-														<Trans>Users</Trans>
-													</span>
-												</a>
-											</DropdownMenuItem>
-											<DropdownMenuItem asChild>
-												<a href={prependBasePath("/_/#/collections?collection=systems")} target="_blank">
-													<ServerIcon className="me-2.5 h-4 w-4" />
-													<span>
-														<Trans>Systems</Trans>
-													</span>
-												</a>
-											</DropdownMenuItem>
-											<DropdownMenuItem asChild>
-												<a href={prependBasePath("/_/#/logs")} target="_blank">
-													<LogsIcon className="me-2.5 h-4 w-4" />
-													<span>
-														<Trans>Logs</Trans>
-													</span>
-												</a>
-											</DropdownMenuItem>
-											<DropdownMenuItem asChild>
-												<a href={prependBasePath("/_/#/settings/backups")} target="_blank">
-													<DatabaseBackupIcon className="me-2.5 h-4 w-4" />
-													<span>
-														<Trans>Backups</Trans>
-													</span>
-												</a>
-											</DropdownMenuItem>
-										</>
-									) : (
-										<div className="text-muted-foreground py-1.5 px-2.5 text-sm">
-											<Trans>No access.</Trans>
-										</div>
-									)}
-								</DropdownMenuGroup>
-							</DropdownMenuSubContent>
-						</DropdownMenuSub>
+						{isAdmin() && (
+							<DropdownMenuSub>
+								<DropdownMenuSubTrigger>
+									<UserIcon className="h-4 w-4 me-2.5" />
+									<Trans>Admin</Trans>
+								</DropdownMenuSubTrigger>
+								<DropdownMenuSubContent>
+									<DropdownMenuLabel>{pb.authStore.record?.email}</DropdownMenuLabel>
+									<DropdownMenuSeparator />
+									<DropdownMenuGroup>
+										<DropdownMenuItem asChild>
+											<a href={prependBasePath("/_/")} target="_blank">
+												<UsersIcon className="me-2.5 h-4 w-4" />
+												<span>
+													<Trans>Users</Trans>
+												</span>
+											</a>
+										</DropdownMenuItem>
+										<DropdownMenuItem asChild>
+											<a href={prependBasePath("/_/#/collections?collection=systems")} target="_blank">
+												<ServerIcon className="me-2.5 h-4 w-4" />
+												<span>
+													<Trans>Systems</Trans>
+												</span>
+											</a>
+										</DropdownMenuItem>
+										<DropdownMenuItem asChild>
+											<a href={prependBasePath("/_/#/logs")} target="_blank">
+												<LogsIcon className="me-2.5 h-4 w-4" />
+												<span>
+													<Trans>Logs</Trans>
+												</span>
+											</a>
+										</DropdownMenuItem>
+										<DropdownMenuItem asChild>
+											<a href={prependBasePath("/_/#/settings/backups")} target="_blank">
+												<DatabaseBackupIcon className="me-2.5 h-4 w-4" />
+												<span>
+													<Trans>Backups</Trans>
+												</span>
+											</a>
+										</DropdownMenuItem>
+									</DropdownMenuGroup>
+								</DropdownMenuSubContent>
+							</DropdownMenuSub>
+						)}
 						<DropdownMenuItem
 							className="flex items-center"
 							onSelect={(e) => {
