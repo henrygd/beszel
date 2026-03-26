@@ -19,7 +19,6 @@ type subscriptionInfo struct {
 var (
 	activeSubscriptions = make(map[string]*subscriptionInfo)
 	workerRunning       bool
-	realtimeTicker      *time.Ticker
 	tickerStopChan      chan struct{}
 	realtimeMutex       sync.Mutex
 )
@@ -70,7 +69,7 @@ func (sm *SystemManager) onRealtimeSubscribeRequest(e *core.RealtimeSubscribeReq
 }
 
 // onRealtimeSubscriptionAdded initializes or starts the realtime worker when the first subscription is added.
-// It ensures only one worker runs at a time and creates the ticker for periodic data fetching.
+// It ensures only one worker runs at a time.
 func (sm *SystemManager) onRealtimeSubscriptionAdded() {
 	realtimeMutex.Lock()
 	defer realtimeMutex.Unlock()
@@ -81,11 +80,6 @@ func (sm *SystemManager) onRealtimeSubscriptionAdded() {
 		// Create a new stop channel for this worker instance
 		tickerStopChan = make(chan struct{})
 		go sm.startRealtimeWorker()
-	}
-
-	// If no ticker exists, create one
-	if realtimeTicker == nil {
-		realtimeTicker = time.NewTicker(1 * time.Second)
 	}
 }
 
@@ -105,11 +99,6 @@ func (sm *SystemManager) checkSubscriptions() {
 		case tickerStopChan <- struct{}{}:
 		default:
 		}
-	}
-
-	if realtimeTicker != nil {
-		realtimeTicker.Stop()
-		realtimeTicker = nil
 	}
 
 	// Mark worker as stopped (will be reset when next subscription comes in)
@@ -135,17 +124,16 @@ func (sm *SystemManager) removeRealtimeSubscription(subscription string, options
 // It continuously fetches system data and broadcasts it to subscribed clients via WebSocket.
 func (sm *SystemManager) startRealtimeWorker() {
 	sm.fetchRealtimeDataAndNotify()
+	tick := time.Tick(1 * time.Second)
 
 	for {
 		select {
 		case <-tickerStopChan:
 			return
-		case <-realtimeTicker.C:
-			// Check if ticker is still valid (might have been stopped)
-			if realtimeTicker == nil || len(activeSubscriptions) == 0 {
+		case <-tick:
+			if len(activeSubscriptions) == 0 {
 				return
 			}
-			// slog.Debug("activeSubscriptions", "count", len(activeSubscriptions))
 			sm.fetchRealtimeDataAndNotify()
 		}
 	}
