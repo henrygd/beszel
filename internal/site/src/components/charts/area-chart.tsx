@@ -113,7 +113,7 @@ export default function AreaChartDefault({
 			return null
 		}
 		// if (logRender) {
-		console.log("Rendered at", new Date(), "for", dataPoints?.at(0)?.label)
+		// console.log("Rendered at", new Date(), "for", dataPoints?.at(0)?.label)
 		// }
 		return (
 			<ChartContainer

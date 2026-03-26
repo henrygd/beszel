@@ -38,7 +38,7 @@ const App = memo(() => {
 
 	useEffect(() => {
 		// change auth store on auth change
-		pb.authStore.onChange(() => {
+		const unsubscribeAuth = pb.authStore.onChange(() => {
 			$authenticated.set(pb.authStore.isValid)
 		})
 		// get general info for authenticated users, such as public key and version
@@ -63,6 +63,7 @@ const App = memo(() => {
 			// subscribe to new alert updates
 			.then(alertManager.subscribe)
 		return () => {
+			unsubscribeAuth()
 			alertManager.unsubscribe()
 			systemsManager.unsubscribe()
 		}
@@ -87,13 +88,12 @@ const Layout = () => {
 	const authenticated = useStore($authenticated)
 	const copyContent = useStore($copyContent)
 	const direction = useStore($direction)
-	const userSettings = useStore($userSettings)
+	const { layoutWidth } = useStore($userSettings, { keys: ["layoutWidth"] })
 
 	useEffect(() => {
 		document.documentElement.dir = direction
 	}, [direction])
 
-	// biome-ignore lint/correctness/useExhaustiveDependencies: only run on mount
 	useEffect(() => {
 		// refresh auth if not authenticated (required for trusted auth header)
 		if (!authenticated) {
@@ -113,7 +113,7 @@ const Layout = () => {
 					<LoginPage />
 				</Suspense>
 			) : (
-				<div style={{ "--container": `${userSettings.layoutWidth ?? defaultLayoutWidth}px` } as React.CSSProperties}>
+				<div style={{ "--container": `${layoutWidth ?? defaultLayoutWidth}px` } as React.CSSProperties}>
 					<div className="container">
 						<Navbar />
 					</div>
