@@ -94,7 +94,7 @@ export default function Navbar() {
 								<DropdownMenuLabel>{pb.authStore.record?.email}</DropdownMenuLabel>
 								<DropdownMenuSeparator />
 								<DropdownMenuGroup>
-									{isAdmin() && (
+									{isAdmin() ? (
 										<>
 											<DropdownMenuItem asChild>
 												<a href={prependBasePath("/_/")} target="_blank">
@@ -129,6 +129,10 @@ export default function Navbar() {
 												</a>
 											</DropdownMenuItem>
 										</>
+									) : (
+										<div className="text-muted-foreground py-1.5 px-2.5 text-sm">
+											<Trans>No access.</Trans>
+										</div>
 									)}
 								</DropdownMenuGroup>
 							</DropdownMenuSubContent>
@@ -140,7 +144,7 @@ export default function Navbar() {
 								setAddSystemDialogOpen(true)
 							}}
 						>
-							<PlusIcon className="h-4 w-4 me-2" />
+							<PlusIcon className="h-4 w-4 me-2.5" />
 							<Trans>Add System</Trans>
 						</DropdownMenuItem>
 					</DropdownMenuGroup>
