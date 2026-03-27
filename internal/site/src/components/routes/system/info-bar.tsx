@@ -1,20 +1,28 @@
 import { plural } from "@lingui/core/macro"
-import { useLingui } from "@lingui/react/macro"
+import { Trans, useLingui } from "@lingui/react/macro"
 import {
 	AppleIcon,
 	ChevronRightSquareIcon,
 	ClockArrowUp,
 	CpuIcon,
 	GlobeIcon,
-	LayoutGridIcon,
 	MemoryStickIcon,
 	MonitorIcon,
-	Rows,
+	Settings2Icon,
 } from "lucide-react"
 import { useMemo } from "react"
 import ChartTimeSelect from "@/components/charts/chart-time-select"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
+import {
+	DropdownMenu,
+	DropdownMenuContent,
+	DropdownMenuLabel,
+	DropdownMenuRadioGroup,
+	DropdownMenuRadioItem,
+	DropdownMenuSeparator,
+	DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 import { FreeBsdIcon, TuxIcon, WebSocketIcon, WindowsIcon } from "@/components/ui/icons"
 import { Separator } from "@/components/ui/separator"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
@@ -27,12 +35,16 @@ export default function InfoBar({
 	chartData,
 	grid,
 	setGrid,
+	displayMode,
+	setDisplayMode,
 	details,
 }: {
 	system: SystemRecord
 	chartData: ChartData
 	grid: boolean
 	setGrid: (grid: boolean) => void
+	displayMode: "default" | "tabs"
+	setDisplayMode: (mode: "default" | "tabs") => void
 	details: SystemDetailsRecord | null
 }) {
 	const { t } = useLingui()
@@ -190,24 +202,53 @@ export default function InfoBar({
 				</div>
 				<div className="xl:ms-auto flex items-center gap-2 max-sm:-mb-1">
 					<ChartTimeSelect className="w-full xl:w-40" agentVersion={chartData.agentVersion} />
-					<Tooltip>
-						<TooltipTrigger asChild>
+					<DropdownMenu>
+						<DropdownMenuTrigger asChild>
 							<Button
-								aria-label={t`Toggle grid`}
+								aria-label={t`View options`}
 								variant="outline"
 								size="icon"
 								className="hidden xl:flex p-0 text-primary"
-								onClick={() => setGrid(!grid)}
 							>
-								{grid ? (
-									<LayoutGridIcon className="h-[1.2rem] w-[1.2rem] opacity-75" />
-								) : (
-									<Rows className="h-[1.3rem] w-[1.3rem] opacity-75" />
-								)}
+								<Settings2Icon className="size-4 opacity-90" />
 							</Button>
-						</TooltipTrigger>
-						<TooltipContent>{t`Toggle grid`}</TooltipContent>
-					</Tooltip>
+						</DropdownMenuTrigger>
+						<DropdownMenuContent align="end" className="min-w-44">
+							<DropdownMenuLabel className="px-3.5">
+								<Trans>Display</Trans>
+							</DropdownMenuLabel>
+							<DropdownMenuSeparator />
+							<DropdownMenuRadioGroup
+								className="px-1 pb-1"
+								value={displayMode}
+								onValueChange={(v) => setDisplayMode(v as "default" | "tabs")}
+							>
+								<DropdownMenuRadioItem value="default" onSelect={(e) => e.preventDefault()}>
+									<Trans>Default</Trans>
+								</DropdownMenuRadioItem>
+								<DropdownMenuRadioItem value="tabs" onSelect={(e) => e.preventDefault()}>
+									<Trans>Tabs</Trans>
+								</DropdownMenuRadioItem>
+							</DropdownMenuRadioGroup>
+							<DropdownMenuSeparator />
+							<DropdownMenuLabel className="px-3.5">
+								<Trans>Chart width</Trans>
+							</DropdownMenuLabel>
+							<DropdownMenuSeparator />
+							<DropdownMenuRadioGroup
+								className="px-1 pb-1"
+								value={grid ? "grid" : "full"}
+								onValueChange={(v) => setGrid(v === "grid")}
+							>
+								<DropdownMenuRadioItem value="grid" onSelect={(e) => e.preventDefault()}>
+									<Trans>Grid</Trans>
+								</DropdownMenuRadioItem>
+								<DropdownMenuRadioItem value="full" onSelect={(e) => e.preventDefault()}>
+									<Trans>Full</Trans>
+								</DropdownMenuRadioItem>
+							</DropdownMenuRadioGroup>
+						</DropdownMenuContent>
+					</DropdownMenu>
 				</div>
 			</div>
 		</Card>

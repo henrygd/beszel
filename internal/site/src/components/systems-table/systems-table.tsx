@@ -391,7 +391,6 @@ function SystemsTableHead({ table }: { table: TableType<SystemRecord> }) {
 	const { t } = useLingui()
 	return (
 		<TableHeader className="sticky top-0 z-50 w-full border-b-2">
-			<div className="absolute -top-2 left-0 w-full h-4 bg-table-header z-50"></div>
 			{table.getHeaderGroups().map((headerGroup) => (
 				<tr key={headerGroup.id}>
 					{headerGroup.headers.map((header) => {

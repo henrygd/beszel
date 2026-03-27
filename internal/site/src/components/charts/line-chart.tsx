@@ -1,4 +1,4 @@
-import { useMemo } from "react"
+import { type ReactNode, useEffect, useMemo, useState } from "react"
 import { CartesianGrid, Line, LineChart, YAxis } from "recharts"
 import {
 	ChartContainer,
@@ -11,15 +11,22 @@ import {
 import { chartMargin, cn, formatShortDate } from "@/lib/utils"
 import type { ChartData, SystemStatsRecord } from "@/types"
 import { useYAxisWidth } from "./hooks"
+import type { AxisDomain } from "recharts/types/util/types"
+import { useIntersectionObserver } from "@/lib/use-intersection-observer"
 
-export type DataPoint = {
+export type DataPoint<T = SystemStatsRecord> = {
 	label: string
-	dataKey: (data: SystemStatsRecord) => number | undefined
+	dataKey: (data: T) => number | null | undefined
 	color: number | string
+	stackId?: string | number
+	order?: number
+	strokeOpacity?: number
+	activeDot?: boolean
 }
 
 export default function LineChartDefault({
 	chartData,
+	customData,
 	max,
 	maxToggled,
 	tickFormatter,
@@ -28,38 +35,101 @@ export default function LineChartDefault({
 	domain,
 	legend,
 	itemSorter,
+	showTotal = false,
+	reverseStackOrder = false,
+	hideYAxis = false,
+	filter,
+	truncate = false,
 }: // logRender = false,
 {
 	chartData: ChartData
+	// biome-ignore lint/suspicious/noExplicitAny: accepts different data source types (systemStats or containerData)
+	customData?: any[]
 	max?: number
 	maxToggled?: boolean
 	tickFormatter: (value: number, index: number) => string
-	contentFormatter: ({ value, payload }: { value: number; payload: SystemStatsRecord }) => string
-	dataPoints?: DataPoint[]
-	domain?: [number, number]
+	// biome-ignore lint/suspicious/noExplicitAny: recharts tooltip item interop
+	contentFormatter: (item: any, key: string) => ReactNode
+	// biome-ignore lint/suspicious/noExplicitAny: accepts DataPoint with different generic types
+	dataPoints?: DataPoint<any>[]
+	domain?: AxisDomain
 	legend?: boolean
+	showTotal?: boolean
+	// biome-ignore lint/suspicious/noExplicitAny: recharts tooltip item interop
 	itemSorter?: (a: any, b: any) => number
+	reverseStackOrder?: boolean
+	hideYAxis?: boolean
+	filter?: string
+	truncate?: boolean
 	// logRender?: boolean
 }) {
 	const { yAxisWidth, updateYAxisWidth } = useYAxisWidth()
+	const { isIntersecting, ref } = useIntersectionObserver({ freeze: false })
+	const sourceData = customData ?? chartData.systemStats
+	// Only update the rendered data while the chart is visible
+	const [displayData, setDisplayData] = useState(sourceData)
 
-	// biome-ignore lint/correctness/useExhaustiveDependencies: ignore
+	// Reduce chart redraws by only updating while visible or when chart time changes
+	useEffect(() => {
+		const shouldPrimeData = sourceData.length && !displayData.length
+		const sourceChanged = sourceData !== displayData
+		const shouldUpdate = shouldPrimeData || (sourceChanged && isIntersecting)
+		if (shouldUpdate) {
+			setDisplayData(sourceData)
+		}
+	}, [displayData, isIntersecting, sourceData])
+
+	// Use a stable key derived from data point identities and visual properties
+	const linesKey = dataPoints?.map((d) => `${d.label}:${d.strokeOpacity ?? ""}`).join("\0")
+
+	const Lines = useMemo(() => {
+		return dataPoints?.map((dataPoint, i) => {
+			let { color } = dataPoint
+			if (typeof color === "number") {
+				color = `var(--chart-${color})`
+			}
+			return (
+				<Line
+					key={dataPoint.label}
+					dataKey={dataPoint.dataKey}
+					name={dataPoint.label}
+					type="monotoneX"
+					dot={false}
+					strokeWidth={1.5}
+					stroke={color}
+					strokeOpacity={dataPoint.strokeOpacity}
+					isAnimationActive={false}
+					// stackId={dataPoint.stackId}
+					order={dataPoint.order || i}
+					// activeDot={dataPoint.activeDot ?? true}
+				/>
+			)
+		})
+	}, [linesKey, maxToggled])
+
 	return useMemo(() => {
-		if (chartData.systemStats.length === 0) {
+		if (displayData.length === 0) {
 			return null
 		}
 		// if (logRender) {
-		// 	console.log("Rendered at", new Date())
+		// console.log("Rendered at", new Date(), "for", dataPoints?.at(0)?.label)
 		// }
 		return (
-			<div>
-				<ChartContainer
-					className={cn("h-full w-full absolute aspect-auto bg-card opacity-0 transition-opacity", {
-						"opacity-100": yAxisWidth,
-					})}
+			<ChartContainer
+				ref={ref}
+				className={cn("h-full w-full absolute aspect-auto bg-card opacity-0 transition-opacity", {
+					"opacity-100": yAxisWidth || hideYAxis,
+					"ps-4": hideYAxis,
+				})}
+			>
+				<LineChart
+					reverseStackOrder={reverseStackOrder}
+					accessibilityLayer
+					data={displayData}
+					margin={hideYAxis ? { ...chartMargin, left: 5 } : chartMargin}
 				>
-					<LineChart accessibilityLayer data={chartData.systemStats} margin={chartMargin}>
-						<CartesianGrid vertical={false} />
+					<CartesianGrid vertical={false} />
+					{!hideYAxis && (
 						<YAxis
 							direction="ltr"
 							orientation={chartData.orientation}
@@ -70,41 +140,27 @@ export default function LineChartDefault({
 							tickLine={false}
 							axisLine={false}
 						/>
-						{xAxis(chartData)}
-						<ChartTooltip
-							animationEasing="ease-out"
-							animationDuration={150}
-							// @ts-expect-error
-							itemSorter={itemSorter}
-							content={
-								<ChartTooltipContent
-									labelFormatter={(_, data) => formatShortDate(data[0].payload.created)}
-									contentFormatter={contentFormatter}
-								/>
-							}
-						/>
-						{dataPoints?.map((dataPoint) => {
-							let { color } = dataPoint
-							if (typeof color === "number") {
-								color = `var(--chart-${color})`
-							}
-							return (
-								<Line
-									key={dataPoint.label}
-									dataKey={dataPoint.dataKey}
-									name={dataPoint.label}
-									type="monotoneX"
-									dot={false}
-									strokeWidth={1.5}
-									stroke={color}
-									isAnimationActive={false}
-								/>
-							)
-						})}
-						{legend && <ChartLegend content={<ChartLegendContent />} />}
-					</LineChart>
-				</ChartContainer>
-			</div>
+					)}
+					{xAxis(chartData)}
+					<ChartTooltip
+						animationEasing="ease-out"
+						animationDuration={150}
+						// @ts-expect-error
+						itemSorter={itemSorter}
+						content={
+							<ChartTooltipContent
+								labelFormatter={(_, data) => formatShortDate(data[0].payload.created)}
+								contentFormatter={contentFormatter}
+								showTotal={showTotal}
+								filter={filter}
+								truncate={truncate}
+							/>
+						}
+					/>
+					{Lines}
+					{legend && <ChartLegend content={<ChartLegendContent />} />}
+				</LineChart>
+			</ChartContainer>
 		)
-	}, [chartData.systemStats.at(-1), yAxisWidth, maxToggled])
+	}, [displayData, yAxisWidth, showTotal, filter, chartData.chartTime])
 }
