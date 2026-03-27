@@ -8,7 +8,7 @@ msgstr ""
 "Language: id\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2026-03-27 19:17\n"
+"PO-Revision-Date: 2026-03-27 20:42\n"
 "Last-Translator: \n"
 "Language-Team: Indonesian\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
@@ -17,6 +17,12 @@ msgstr ""
 "X-Crowdin-Language: id\n"
 "X-Crowdin-File: /main/internal/site/src/locales/en/en.po\n"
 "X-Crowdin-File-ID: 32\n"
+
+#. placeholder {0}: newVersion.v
+#: src/components/footer-repo-link.tsx
+msgctxt "New version available"
+msgid "{0} available"
+msgstr ""
 
 #. placeholder {0}: table.getFilteredSelectedRowModel().rows.length
 #. placeholder {1}: table.getFilteredRowModel().rows.length
@@ -49,7 +55,7 @@ msgid "1 hour"
 msgstr "1 jam"
 
 #. Load average
-#: src/components/charts/load-average-chart.tsx
+#: src/components/routes/system/charts/load-average-chart.tsx
 msgid "1 min"
 msgstr "1 mnt"
 
@@ -66,7 +72,7 @@ msgid "12 hours"
 msgstr "12 jam"
 
 #. Load average
-#: src/components/charts/load-average-chart.tsx
+#: src/components/routes/system/charts/load-average-chart.tsx
 msgid "15 min"
 msgstr "15 menit"
 
@@ -79,7 +85,7 @@ msgid "30 days"
 msgstr "30 hari"
 
 #. Load average
-#: src/components/charts/load-average-chart.tsx
+#: src/components/routes/system/charts/load-average-chart.tsx
 msgid "5 min"
 msgstr "5 mnt"
 
@@ -107,18 +113,13 @@ msgid "Active state"
 msgstr "Status aktif"
 
 #: src/components/add-system.tsx
+#: src/components/add-system.tsx
+#: src/components/navbar.tsx
+#: src/components/navbar.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Add {foo}"
 msgstr "Tambah {foo}"
-
-#: src/components/add-system.tsx
-msgid "Add <0>System</0>"
-msgstr "Tambah <0>Sistem</0>"
-
-#: src/components/add-system.tsx
-msgid "Add system"
-msgstr "Tambah sistem"
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Add URL"
@@ -134,6 +135,7 @@ msgstr "Sesuaikan lebar layar utama"
 
 #: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
+#: src/components/navbar.tsx
 msgid "Admin"
 msgstr "Admin"
 
@@ -163,6 +165,7 @@ msgstr "Peringatan"
 #: src/components/command-palette.tsx
 #: src/components/containers-table/containers-table.tsx
 #: src/components/navbar.tsx
+#: src/components/navbar.tsx
 #: src/components/routes/containers.tsx
 msgid "All Containers"
 msgstr "Semua Container"
@@ -188,11 +191,11 @@ msgstr "Apakah anda yakin?"
 msgid "Automatic copy requires a secure context."
 msgstr "Copy memerlukan https."
 
-#: src/components/routes/system.tsx
+#: src/components/routes/system/chart-card.tsx
 msgid "Average"
 msgstr "Rata-rata"
 
-#: src/components/routes/system.tsx
+#: src/components/routes/system/charts/cpu-charts.tsx
 msgid "Average CPU utilization of containers"
 msgstr "Rata-rata utilisasi CPU untuk semua kontainer"
 
@@ -206,20 +209,20 @@ msgstr "Rata-rata turun di bawah <0>{value}{0}</0>"
 msgid "Average exceeds <0>{value}{0}</0>"
 msgstr "Rata-rata melebihi <0>{value}{0}</0>"
 
-#: src/components/routes/system.tsx
+#: src/components/routes/system/charts/gpu-charts.tsx
 msgid "Average power consumption of GPUs"
 msgstr "Rata-rata konsumsi daya GPU"
 
-#: src/components/routes/system.tsx
+#: src/components/routes/system/charts/cpu-charts.tsx
 msgid "Average system-wide CPU utilization"
 msgstr "Rata-rata utilisasi CPU seluruh sistem"
 
 #. placeholder {0}: gpu.n
-#: src/components/routes/system.tsx
+#: src/components/routes/system/charts/gpu-charts.tsx
 msgid "Average utilization of {0}"
 msgstr "Rata-rata utilisasi {0}"
 
-#: src/components/routes/system.tsx
+#: src/components/routes/system/charts/gpu-charts.tsx
 msgid "Average utilization of GPU engines"
 msgstr "Rata-rata utilisasi GPU"
 
@@ -228,7 +231,7 @@ msgstr "Rata-rata utilisasi GPU"
 msgid "Backups"
 msgstr "Cadangan"
 
-#: src/components/routes/system.tsx
+#: src/components/routes/system/charts/network-charts.tsx
 #: src/lib/alerts.ts
 msgid "Bandwidth"
 msgstr "Bandwith"
@@ -238,7 +241,7 @@ msgstr "Bandwith"
 msgid "Bat"
 msgstr "Baterai"
 
-#: src/components/routes/system.tsx
+#: src/components/routes/system/charts/sensor-charts.tsx
 #: src/lib/alerts.ts
 msgid "Battery"
 msgstr "Baterai"
@@ -288,7 +291,7 @@ msgstr "Status memulai"
 msgid "Bytes (KB/s, MB/s, GB/s)"
 msgstr "Byte (KB/s, MB/s, GB/s)"
 
-#: src/components/charts/mem-chart.tsx
+#: src/components/routes/system/charts/memory-charts.tsx
 msgid "Cache / Buffers"
 msgstr "Cache / Buffers"
 
@@ -334,7 +337,7 @@ msgstr "Ubah tampilan satuan untuk metrik."
 msgid "Change general application options."
 msgstr "Ubah pengaturan umum aplikasi."
 
-#: src/components/routes/system.tsx
+#: src/components/routes/system/charts/sensor-charts.tsx
 msgid "Charge"
 msgstr "Isi baterai"
 
@@ -346,6 +349,10 @@ msgstr "Sedang mengisi"
 #: src/components/routes/settings/general.tsx
 msgid "Chart options"
 msgstr "Pilihan grafik"
+
+#: src/components/routes/system/info-bar.tsx
+msgid "Chart width"
+msgstr "Lebar grafik"
 
 #: src/components/login/forgot-pass-form.tsx
 msgid "Check {email} for a reset link."
@@ -407,6 +414,10 @@ msgstr "Konflik"
 msgid "Connection is down"
 msgstr "Koneksi terputus"
 
+#: src/components/routes/system.tsx
+msgid "Containers"
+msgstr "Kontainer"
+
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Continue"
@@ -462,6 +473,11 @@ msgstr "Salin konten <0>docker-compose.yml</0> untuk agen di bawah, atau daftark
 msgid "Copy YAML"
 msgstr "Salin YAML"
 
+#: src/components/routes/system.tsx
+msgctxt "Core system metrics"
+msgid "Core"
+msgstr ""
+
 #: src/components/containers-table/containers-table-columns.tsx
 #: src/components/systemd-table/systemd-table-columns.tsx
 #: src/components/systems-table/systems-table-columns.tsx
@@ -484,8 +500,8 @@ msgstr "Waktu CPU"
 msgid "CPU Time Breakdown"
 msgstr "Rincian Waktu CPU"
 
-#: src/components/routes/system.tsx
-#: src/components/routes/system.tsx
+#: src/components/routes/system/charts/cpu-charts.tsx
+#: src/components/routes/system/charts/cpu-charts.tsx
 #: src/components/routes/system/cpu-sheet.tsx
 #: src/lib/alerts.ts
 msgid "CPU Usage"
@@ -517,7 +533,7 @@ msgid "Cumulative Upload"
 msgstr "Akumulasi Upload"
 
 #. Context: Battery state
-#: src/components/routes/system.tsx
+#: src/components/routes/system/charts/sensor-charts.tsx
 msgid "Current state"
 msgstr "Status saat ini"
 
@@ -530,6 +546,11 @@ msgstr "Siklus"
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Daily"
 msgstr "Harian"
+
+#: src/components/routes/system/info-bar.tsx
+msgctxt "Default system layout option"
+msgid "Default"
+msgstr ""
 
 #: src/components/routes/settings/general.tsx
 msgid "Default time period"
@@ -563,39 +584,46 @@ msgstr "Perangkat"
 msgid "Discharging"
 msgstr "Sedang tidak di charge"
 
+#: src/components/routes/system.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Disk"
 msgstr ""
 
-#: src/components/routes/system.tsx
+#: src/components/routes/system/charts/disk-charts.tsx
 msgid "Disk I/O"
-msgstr ""
+msgstr "I/O Disk"
 
 #: src/components/routes/settings/general.tsx
 msgid "Disk unit"
 msgstr "Unit disk"
 
-#: src/components/charts/disk-chart.tsx
-#: src/components/routes/system.tsx
+#: src/components/routes/system/charts/disk-charts.tsx
+#: src/components/routes/system/charts/disk-charts.tsx
+#: src/components/routes/system/charts/extra-fs-charts.tsx
 #: src/lib/alerts.ts
 msgid "Disk Usage"
 msgstr "Penggunaan Disk"
 
-#: src/components/routes/system.tsx
+#: src/components/routes/system/charts/extra-fs-charts.tsx
 msgid "Disk usage of {extraFsName}"
 msgstr "Penggunaan disk dari {extraFsName}"
 
-#: src/components/routes/system.tsx
+#: src/components/routes/system/info-bar.tsx
+msgctxt "Layout display options"
+msgid "Display"
+msgstr ""
+
+#: src/components/routes/system/charts/cpu-charts.tsx
 msgid "Docker CPU Usage"
 msgstr "Penggunaan CPU Docker"
 
-#: src/components/routes/system.tsx
+#: src/components/routes/system/charts/memory-charts.tsx
 msgid "Docker Memory Usage"
 msgstr "Penggunaan Memori Docker"
 
-#: src/components/routes/system.tsx
+#: src/components/routes/system/charts/network-charts.tsx
 msgid "Docker Network I/O"
-msgstr ""
+msgstr "I/O Jaringan Docker"
 
 #: src/components/command-palette.tsx
 #: src/components/systemd-table/systemd-table.tsx
@@ -770,7 +798,7 @@ msgstr "Gagal: {0}"
 
 #: src/components/containers-table/containers-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
-#: src/components/routes/system.tsx
+#: src/components/routes/system/chart-card.tsx
 #: src/components/routes/system/smart-table.tsx
 #: src/components/systemd-table/systemd-table.tsx
 #: src/components/systems-table/systems-table.tsx
@@ -800,6 +828,7 @@ msgid "FreeBSD command"
 msgstr "Perintah FreeBSD"
 
 #. Context: Battery state
+#: src/components/routes/system/info-bar.tsx
 #: src/lib/i18n.ts
 msgid "Full"
 msgstr "Penuh"
@@ -815,10 +844,14 @@ msgid "Global"
 msgstr ""
 
 #: src/components/routes/system.tsx
+msgid "GPU"
+msgstr ""
+
+#: src/components/routes/system/charts/gpu-charts.tsx
 msgid "GPU Engines"
 msgstr "GPU"
 
-#: src/components/routes/system.tsx
+#: src/components/routes/system/charts/gpu-charts.tsx
 msgid "GPU Power Draw"
 msgstr "Konsumsi Daya GPU"
 
@@ -826,6 +859,7 @@ msgstr "Konsumsi Daya GPU"
 msgid "GPU Usage"
 msgstr "Penggunaan GPU"
 
+#: src/components/routes/system/info-bar.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "Grid"
 msgstr "Kartu"
@@ -912,7 +946,7 @@ msgstr "Siklus hidup"
 msgid "limit"
 msgstr "batas"
 
-#: src/components/routes/system.tsx
+#: src/components/routes/system/charts/load-average-chart.tsx
 msgid "Load Average"
 msgstr "Rata-rata Beban"
 
@@ -941,6 +975,7 @@ msgstr "Beban saat ini"
 msgid "Loading..."
 msgstr "Memuat..."
 
+#: src/components/navbar.tsx
 #: src/components/navbar.tsx
 msgid "Log Out"
 msgstr "Keluar"
@@ -978,7 +1013,7 @@ msgid "Manual setup instructions"
 msgstr "Instruksi setup manual"
 
 #. Chart select field. Please try to keep this short.
-#: src/components/routes/system.tsx
+#: src/components/routes/system/chart-card.tsx
 msgid "Max 1 min"
 msgstr "Maks 1 mnt"
 
@@ -999,15 +1034,16 @@ msgstr "Batas memori"
 msgid "Memory Peak"
 msgstr "Puncak Memori"
 
-#: src/components/routes/system.tsx
+#: src/components/routes/system/charts/memory-charts.tsx
 #: src/lib/alerts.ts
 msgid "Memory Usage"
 msgstr "Penggunaan Memori"
 
-#: src/components/routes/system.tsx
+#: src/components/routes/system/charts/memory-charts.tsx
 msgid "Memory usage of docker containers"
 msgstr "Penggunaan memori kontainer docker"
 
+#. Device model
 #: src/components/routes/system/smart-table.tsx
 msgid "Model"
 msgstr ""
@@ -1025,11 +1061,11 @@ msgstr "Nama"
 msgid "Net"
 msgstr "Jaringan"
 
-#: src/components/routes/system.tsx
+#: src/components/routes/system/charts/network-charts.tsx
 msgid "Network traffic of docker containers"
 msgstr "Trafik jaringan kontainer docker"
 
-#: src/components/routes/system.tsx
+#: src/components/routes/system/charts/network-charts.tsx
 #: src/components/routes/system/network-sheet.tsx
 #: src/components/routes/system/network-sheet.tsx
 #: src/components/routes/system/network-sheet.tsx
@@ -1220,13 +1256,18 @@ msgstr "Silakan masuk ke akun anda"
 msgid "Port"
 msgstr ""
 
+#: src/components/containers-table/containers-table-columns.tsx
+msgctxt "Container ports"
+msgid "Ports"
+msgstr ""
+
 #. Power On Time
 #: src/components/routes/system/smart-table.tsx
 msgid "Power On"
 msgstr "Dihidupkan"
 
-#: src/components/routes/system.tsx
-#: src/components/routes/system.tsx
+#: src/components/routes/system/charts/gpu-charts.tsx
+#: src/components/routes/system/charts/memory-charts.tsx
 msgid "Precise utilization at the recorded time"
 msgstr "Utilisasi tepat pada waktu yang direkam"
 
@@ -1248,12 +1289,12 @@ msgid "Quiet Hours"
 msgstr "Jam Tenang"
 
 #. Disk read
-#: src/components/routes/system.tsx
-#: src/components/routes/system.tsx
+#: src/components/routes/system/charts/disk-charts.tsx
+#: src/components/routes/system/charts/extra-fs-charts.tsx
 msgid "Read"
 msgstr "Baca"
 
-#: src/components/routes/system.tsx
+#: src/components/routes/system/charts/network-charts.tsx
 msgid "Received"
 msgstr "Diterima"
 
@@ -1326,6 +1367,10 @@ msgstr "Detail S.M.A.R.T."
 msgid "S.M.A.R.T. Self-Test"
 msgstr "Self-Test S.M.A.R.T."
 
+#: src/components/add-system.tsx
+msgid "Save {foo}"
+msgstr "Simpan {foo}"
+
 #: src/components/routes/settings/notifications.tsx
 msgid "Save address using enter key or comma. Leave blank to disable email notifications."
 msgstr "Simpan alamat menggunakan tombol enter atau koma. Biarkan kosong untuk menonaktifkan notifikasi email."
@@ -1334,10 +1379,6 @@ msgstr "Simpan alamat menggunakan tombol enter atau koma. Biarkan kosong untuk m
 #: src/components/routes/settings/notifications.tsx
 msgid "Save Settings"
 msgstr "Simpan Pengaturan"
-
-#: src/components/add-system.tsx
-msgid "Save system"
-msgstr "Simpan sistem"
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Saved in the database and does not expire until you disable it."
@@ -1387,7 +1428,7 @@ msgstr "Kirim ping keluar secara berkala ke layanan pemantauan eksternal sehingg
 msgid "Send test heartbeat"
 msgstr "Kirim tes heartbeat"
 
-#: src/components/routes/system.tsx
+#: src/components/routes/system/charts/network-charts.tsx
 msgid "Sent"
 msgstr "Dikirim"
 
@@ -1399,6 +1440,7 @@ msgstr "Nomor Seri"
 msgid "Service Details"
 msgstr "Detail Layanan"
 
+#: src/components/routes/system.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Services"
 msgstr "Layanan"
@@ -1414,8 +1456,10 @@ msgstr "Setel variabel lingkungan berikut di hub Beszel Anda untuk mengaktifkan 
 #: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
 #: src/components/navbar.tsx
+#: src/components/navbar.tsx
 #: src/components/routes/settings/layout.tsx
 #: src/components/routes/settings/layout.tsx
+#: src/components/routes/system/info-bar.tsx
 msgid "Settings"
 msgstr "Pengaturan"
 
@@ -1459,17 +1503,18 @@ msgstr ""
 msgid "Sub State"
 msgstr "Sub Status"
 
-#: src/components/routes/system.tsx
+#: src/components/routes/system/charts/memory-charts.tsx
 msgid "Swap space used by the system"
 msgstr "Ruang swap yang digunakan oleh sistem"
 
-#: src/components/routes/system.tsx
+#: src/components/routes/system/charts/memory-charts.tsx
 msgid "Swap Usage"
 msgstr "Penggunaan Swap"
 
 #: src/components/add-system.tsx
 #: src/components/alerts-history-columns.tsx
 #: src/components/containers-table/containers-table-columns.tsx
+#: src/components/navbar.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/quiet-hours.tsx
@@ -1481,7 +1526,7 @@ msgstr "Penggunaan Swap"
 msgid "System"
 msgstr "Sistem"
 
-#: src/components/routes/system.tsx
+#: src/components/routes/system/charts/load-average-chart.tsx
 msgid "System load averages over time"
 msgstr "Rata-rata beban sistem dari waktu ke waktu"
 
@@ -1501,6 +1546,11 @@ msgstr "Sistem dapat dikelola dalam file <0>config.yml</0> di dalam direktori da
 msgid "Table"
 msgstr "Tabel"
 
+#: src/components/routes/system/info-bar.tsx
+msgctxt "Tabs system layout option"
+msgid "Tabs"
+msgstr ""
+
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Tasks"
 msgstr "Tugas"
@@ -1511,7 +1561,7 @@ msgstr "Tugas"
 msgid "Temp"
 msgstr "Temperatur"
 
-#: src/components/routes/system.tsx
+#: src/components/routes/system/charts/sensor-charts.tsx
 #: src/lib/alerts.ts
 msgid "Temperature"
 msgstr "Temperatur"
@@ -1520,7 +1570,7 @@ msgstr "Temperatur"
 msgid "Temperature unit"
 msgstr "Unit temperatur"
 
-#: src/components/routes/system.tsx
+#: src/components/routes/system/charts/sensor-charts.tsx
 msgid "Temperatures of system sensors"
 msgstr "Temperatur sensor sistem"
 
@@ -1552,11 +1602,11 @@ msgstr "Aksi ini tidak dapat di kembalikan. ini akan menghapus permanen semua re
 msgid "This will permanently delete all selected records from the database."
 msgstr "Ini akan menghapus secara permanen semua record yang dipilih dari database."
 
-#: src/components/routes/system.tsx
+#: src/components/routes/system/charts/extra-fs-charts.tsx
 msgid "Throughput of {extraFsName}"
 msgstr "Throughput dari {extraFsName}"
 
-#: src/components/routes/system.tsx
+#: src/components/routes/system/charts/disk-charts.tsx
 msgid "Throughput of root filesystem"
 msgstr "Throughput dari filesystem root"
 
@@ -1567,11 +1617,6 @@ msgstr "Format waktu"
 #: src/components/routes/settings/notifications.tsx
 msgid "To email(s)"
 msgstr "Ke email"
-
-#: src/components/routes/system/info-bar.tsx
-#: src/components/routes/system/info-bar.tsx
-msgid "Toggle grid"
-msgstr "Ganti tampilan"
 
 #: src/components/mode-toggle.tsx
 #: src/components/mode-toggle.tsx
@@ -1730,20 +1775,20 @@ msgstr "Unggah"
 msgid "Uptime"
 msgstr "Waktu aktif"
 
-#: src/components/routes/system.tsx
-#: src/components/routes/system.tsx
-#: src/components/routes/system.tsx
-#: src/components/routes/system.tsx
+#: src/components/routes/system/charts/extra-fs-charts.tsx
+#: src/components/routes/system/charts/gpu-charts.tsx
+#: src/components/routes/system/charts/gpu-charts.tsx
+#: src/components/routes/system/charts/gpu-charts.tsx
 #: src/components/routes/system/cpu-sheet.tsx
 msgid "Usage"
 msgstr "Penggunaan"
 
-#: src/components/routes/system.tsx
+#: src/components/routes/system/charts/disk-charts.tsx
 msgid "Usage of root partition"
 msgstr "Penggunaan partisi root"
 
-#: src/components/charts/mem-chart.tsx
-#: src/components/charts/swap-chart.tsx
+#: src/components/routes/system/charts/memory-charts.tsx
+#: src/components/routes/system/charts/memory-charts.tsx
 msgid "Used"
 msgstr "Digunakan"
 
@@ -1773,7 +1818,7 @@ msgstr "Lihat 200 peringatan terbaru anda."
 msgid "Visible Fields"
 msgstr "Metrik yang Terlihat"
 
-#: src/components/routes/system.tsx
+#: src/components/routes/system/chart-card.tsx
 msgid "Waiting for enough records to display"
 msgstr "Menunggu cukup record untuk ditampilkan"
 
@@ -1812,8 +1857,8 @@ msgid "Windows command"
 msgstr "Perintah Windows"
 
 #. Disk write
-#: src/components/routes/system.tsx
-#: src/components/routes/system.tsx
+#: src/components/routes/system/charts/disk-charts.tsx
+#: src/components/routes/system/charts/extra-fs-charts.tsx
 msgid "Write"
 msgstr "Tulis"
 
