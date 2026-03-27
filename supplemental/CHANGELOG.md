@@ -1,3 +1,51 @@
+## 0.18.5
+
+- Add "update available" notification in hub web UI with `CHECK_UPDATES=true` (#1830)
+
+- Add Linux mdraid health monitoring (#1750)
+
+- Add ports column to containers table (#1481)
+
+- Allow Linux systemd timer monitoring with `SERVICE_PATTERNS` (#1820)
+
+- Add ZFS ARC support on FreeBSD
+
+- Add optional tabs layout on web UI system page (#1513)
+
+- Improve web UI performance and mobile styles
+
+- Improve disk discovery and I/O device matching (#1811, #1772)
+
+- Improve (likely fix) status alert reliability (#1519)
+
+- Fix temperature collection blocking agent stats on some systems (#1839)
+
+- Fix `SMART_INTERVAL` consistency across agent reconnects (#1800)
+
+- Fix container health status for Podman (#1475)
+
+- Fix disk usage averaging for extra disk alerts using historical records (#1801)
+
+- Fix bandwidth alert computation from byte-per-second source (#1770)
+
+- Fix 1m chart view leading to inflated Docker network IO during use
+
+- Fix light flashes when refreshing in dark mode (#1832)
+
+- Fix daylight saving time offset handling in daily quiet hours (#1827)
+
+- Fix potential nil pointer panics in hub realtime worker and websocket ping
+
+- Fix NIC auto-filter bypass when explicitly whitelisted (#1805)
+
+- Fix ATA device statistics handling for negative values (#1791)
+
+- Fix AMD GPU sysfs filesize misreporting workaround (#1799)
+
+- Fix macOS agent path lookup for `macmon` (#1746)
+
+- Update Go version and dependencies
+
 ## 0.18.4
 
 - Add outbound heartbeat monitoring to external services (#1729)
