@@ -1,5 +1,5 @@
 import { atom, computed, listenKeys, map, type ReadableAtom } from "nanostores"
-import type { AlertMap, ChartTimes, SystemRecord, UserSettings } from "@/types"
+import type { AlertMap, ChartTimes, SystemRecord, UpdateInfo, UserSettings } from "@/types"
 import { pb } from "./api"
 import { Unit } from "./enums"
 
@@ -27,6 +27,9 @@ export const $alerts = map<AlertMap>({})
 
 /** SSH public key */
 export const $publicKey = atom("")
+
+/** New version info if an update is available, otherwise undefined */
+export const $newVersion = atom<UpdateInfo | undefined>()
 
 /** Chart time period */
 export const $chartTime = atom<ChartTimes>("1h")
