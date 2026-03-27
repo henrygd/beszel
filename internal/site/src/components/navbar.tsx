@@ -95,7 +95,10 @@ export default function Navbar() {
 						<DropdownMenuLabel className="max-w-40 truncate">{pb.authStore.record?.email}</DropdownMenuLabel>
 						<DropdownMenuSeparator />
 						<DropdownMenuGroup>
-							<DropdownMenuItem onClick={() => navigate(getPagePath($router, "home"))} className="flex items-center">
+							<DropdownMenuItem
+								onClick={() => navigate(getPagePath($router, "containers"))}
+								className="flex items-center"
+							>
 								<ContainerIcon className="h-4 w-4 me-2.5" strokeWidth={1.5} />
 								<Trans>All Containers</Trans>
 							</DropdownMenuItem>
