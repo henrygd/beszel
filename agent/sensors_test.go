@@ -6,6 +6,7 @@ import (
 	"context"
 	"fmt"
 	"testing"
+	"time"
 
 	"github.com/henrygd/beszel/internal/entities/system"
 
@@ -525,4 +526,67 @@ func TestGetTempsWithPanicRecovery(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestGetTempsWithTimeout(t *testing.T) {
+	agent := &Agent{
+		sensorConfig: &SensorConfig{
+			context: context.Background(),
+		},
+	}
+
+	originalTimeout := temperatureFetchTimeout
+	t.Cleanup(func() {
+		temperatureFetchTimeout = originalTimeout
+	})
+	temperatureFetchTimeout = 10 * time.Millisecond
+
+	t.Run("returns temperatures before timeout", func(t *testing.T) {
+		temps, err := agent.getTempsWithTimeout(func(ctx context.Context) ([]sensors.TemperatureStat, error) {
+			return []sensors.TemperatureStat{{SensorKey: "cpu_temp", Temperature: 42}}, nil
+		})
+
+		require.NoError(t, err)
+		require.Len(t, temps, 1)
+		assert.Equal(t, "cpu_temp", temps[0].SensorKey)
+	})
+
+	t.Run("returns timeout error when collector hangs", func(t *testing.T) {
+		temps, err := agent.getTempsWithTimeout(func(ctx context.Context) ([]sensors.TemperatureStat, error) {
+			time.Sleep(50 * time.Millisecond)
+			return []sensors.TemperatureStat{{SensorKey: "cpu_temp", Temperature: 42}}, nil
+		})
+
+		assert.Nil(t, temps)
+		assert.ErrorIs(t, err, errTemperatureFetchTimeout)
+	})
+}
+
+func TestUpdateTemperaturesSkipsOnTimeout(t *testing.T) {
+	agent := &Agent{
+		systemInfo: system.Info{DashboardTemp: 99},
+		sensorConfig: &SensorConfig{
+			context: context.Background(),
+		},
+	}
+
+	originalTimeout := temperatureFetchTimeout
+	t.Cleanup(func() {
+		temperatureFetchTimeout = originalTimeout
+		getSensorTemps = sensors.TemperaturesWithContext
+	})
+	temperatureFetchTimeout = 10 * time.Millisecond
+	getSensorTemps = func(ctx context.Context) ([]sensors.TemperatureStat, error) {
+		time.Sleep(50 * time.Millisecond)
+		return nil, nil
+	}
+
+	stats := &system.Stats{
+		Temperatures: map[string]float64{"stale": 50},
+	}
+
+	agent.updateTemperatures(stats)
+
+	assert.Equal(t, 0.0, agent.systemInfo.DashboardTemp)
+	assert.Equal(t, map[string]float64{}, stats.Temperatures)
 }
