@@ -8,7 +8,7 @@ msgstr ""
 "Language: nl\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2026-02-24 11:37\n"
+"PO-Revision-Date: 2026-03-27 19:17\n"
 "Last-Translator: \n"
 "Language-Team: Dutch\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
@@ -876,7 +876,7 @@ msgstr "Als je het wachtwoord voor je beheerdersaccount bent kwijtgeraakt, kan j
 #: src/components/containers-table/containers-table-columns.tsx
 msgctxt "Docker image"
 msgid "Image"
-msgstr "Afbeelding"
+msgstr "Image"
 
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Inactive"
