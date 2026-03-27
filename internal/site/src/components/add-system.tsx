@@ -1,8 +1,8 @@
-import { msg, t } from "@lingui/core/macro"
+import { t } from "@lingui/core/macro"
 import { Trans } from "@lingui/react/macro"
 import { useStore } from "@nanostores/react"
 import { getPagePath } from "@nanostores/router"
-import { ChevronDownIcon, ExternalLinkIcon, PlusIcon } from "lucide-react"
+import { ChevronDownIcon, ExternalLinkIcon } from "lucide-react"
 import { memo, useEffect, useRef, useState } from "react"
 import { Button } from "@/components/ui/button"
 import {
@@ -12,7 +12,6 @@ import {
 	DialogFooter,
 	DialogHeader,
 	DialogTitle,
-	DialogTrigger,
 } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -35,28 +34,19 @@ import { DropdownMenu, DropdownMenuTrigger } from "./ui/dropdown-menu"
 import { AppleIcon, DockerIcon, FreeBsdIcon, TuxIcon, WindowsIcon } from "./ui/icons"
 import { InputCopy } from "./ui/input-copy"
 
-export function AddSystemButton({ className }: { className?: string }) {
-	if (isReadOnlyUser()) {
-		return null
-	}
-	const [open, setOpen] = useState(false)
+// To avoid a refactor of the dialog, we will just keep this function as a "skeleton" for the actual dialog
+export function AddSystemDialog({ open, setOpen }: { open: boolean; setOpen: (open: boolean) => void }) {
 	const opened = useRef(false)
 	if (open) {
 		opened.current = true
 	}
 
+	if (isReadOnlyUser()) {
+		return null
+	}
+
 	return (
 		<Dialog open={open} onOpenChange={setOpen}>
-			<DialogTrigger asChild>
-				<Button variant="outline" className={cn("flex gap-1 max-xs:h-[2.4rem]", className)}>
-					<PlusIcon className="h-4 w-4 450:-ms-1" />
-					<span className="hidden 450:inline">
-						<Trans>
-							Add <span className="hidden sm:inline">System</span>
-						</Trans>
-					</span>
-				</Button>
-			</DialogTrigger>
 			{opened.current && <SystemDialog setOpen={setOpen} />}
 		</Dialog>
 	)

@@ -10,7 +10,7 @@ export function ModeToggle() {
 
 	return (
 		<Tooltip>
-			<TooltipTrigger>
+			<TooltipTrigger asChild>
 				<Button
 					variant={"ghost"}
 					size="icon"

@@ -2,12 +2,14 @@ package agent
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log/slog"
 	"path"
 	"runtime"
 	"strconv"
 	"strings"
+	"time"
 	"unicode/utf8"
 
 	"github.com/henrygd/beszel/agent/utils"
@@ -37,6 +39,11 @@ func (a *Agent) newSensorConfig() *SensorConfig {
 
 // Matches sensors.TemperaturesWithContext to allow for panic recovery (gopsutil/issues/1832)
 type getTempsFn func(ctx context.Context) ([]sensors.TemperatureStat, error)
+
+var (
+	errTemperatureFetchTimeout = errors.New("temperature collection timed out")
+	temperatureFetchTimeout    = 2 * time.Second
+)
 
 // newSensorConfigWithEnv creates a SensorConfig with the provided environment variables
 // sensorsSet indicates if the SENSORS environment variable was explicitly set (even to empty string)
@@ -86,10 +93,12 @@ func (a *Agent) updateTemperatures(systemStats *system.Stats) {
 	// reset high temp
 	a.systemInfo.DashboardTemp = 0
 
-	temps, err := a.getTempsWithPanicRecovery(getSensorTemps)
+	temps, err := a.getTempsWithTimeout(getSensorTemps)
 	if err != nil {
 		// retry once on panic (gopsutil/issues/1832)
-		temps, err = a.getTempsWithPanicRecovery(getSensorTemps)
+		if !errors.Is(err, errTemperatureFetchTimeout) {
+			temps, err = a.getTempsWithTimeout(getSensorTemps)
+		}
 		if err != nil {
 			slog.Warn("Error updating temperatures", "err", err)
 			if len(systemStats.Temperatures) > 0 {
@@ -150,6 +159,26 @@ func (a *Agent) getTempsWithPanicRecovery(getTemps getTempsFn) (temps []sensors.
 	// get sensor data (error ignored intentionally as it may be only with one sensor)
 	temps, _ = getTemps(a.sensorConfig.context)
 	return
+}
+
+func (a *Agent) getTempsWithTimeout(getTemps getTempsFn) ([]sensors.TemperatureStat, error) {
+	type result struct {
+		temps []sensors.TemperatureStat
+		err   error
+	}
+
+	resultCh := make(chan result, 1)
+	go func() {
+		temps, err := a.getTempsWithPanicRecovery(getTemps)
+		resultCh <- result{temps: temps, err: err}
+	}()
+
+	select {
+	case res := <-resultCh:
+		return res.temps, res.err
+	case <-time.After(temperatureFetchTimeout):
+		return nil, errTemperatureFetchTimeout
+	}
 }
 
 // isValidSensor checks if a sensor is valid based on the sensor name and the sensor config
