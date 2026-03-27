@@ -8,7 +8,7 @@ msgstr ""
 "Language: cs\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2026-03-27 19:17\n"
+"PO-Revision-Date: 2026-03-27 20:42\n"
 "Last-Translator: \n"
 "Language-Team: Czech\n"
 "Plural-Forms: nplurals=4; plural=(n==1) ? 0 : (n>=2 && n<=4) ? 1 : 3;\n"
@@ -17,6 +17,12 @@ msgstr ""
 "X-Crowdin-Language: cs\n"
 "X-Crowdin-File: /main/internal/site/src/locales/en/en.po\n"
 "X-Crowdin-File-ID: 32\n"
+
+#. placeholder {0}: newVersion.v
+#: src/components/footer-repo-link.tsx
+msgctxt "New version available"
+msgid "{0} available"
+msgstr ""
 
 #. placeholder {0}: table.getFilteredSelectedRowModel().rows.length
 #. placeholder {1}: table.getFilteredRowModel().rows.length
@@ -49,7 +55,7 @@ msgid "1 hour"
 msgstr "1 hodina"
 
 #. Load average
-#: src/components/charts/load-average-chart.tsx
+#: src/components/routes/system/charts/load-average-chart.tsx
 msgid "1 min"
 msgstr "1 min"
 
@@ -66,7 +72,7 @@ msgid "12 hours"
 msgstr "12 hodin"
 
 #. Load average
-#: src/components/charts/load-average-chart.tsx
+#: src/components/routes/system/charts/load-average-chart.tsx
 msgid "15 min"
 msgstr "15 min"
 
@@ -79,7 +85,7 @@ msgid "30 days"
 msgstr "30 dní"
 
 #. Load average
-#: src/components/charts/load-average-chart.tsx
+#: src/components/routes/system/charts/load-average-chart.tsx
 msgid "5 min"
 msgstr "5 min"
 
@@ -107,18 +113,13 @@ msgid "Active state"
 msgstr "Aktivní stav"
 
 #: src/components/add-system.tsx
+#: src/components/add-system.tsx
+#: src/components/navbar.tsx
+#: src/components/navbar.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Add {foo}"
 msgstr "Přidat {foo}"
-
-#: src/components/add-system.tsx
-msgid "Add <0>System</0>"
-msgstr "Přidat <0>Systém</0>"
-
-#: src/components/add-system.tsx
-msgid "Add system"
-msgstr "Přidat systém"
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Add URL"
@@ -134,6 +135,7 @@ msgstr "Upravit šířku hlavního rozvržení"
 
 #: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
+#: src/components/navbar.tsx
 msgid "Admin"
 msgstr "Administrátor"
 
@@ -163,6 +165,7 @@ msgstr "Výstrahy"
 #: src/components/command-palette.tsx
 #: src/components/containers-table/containers-table.tsx
 #: src/components/navbar.tsx
+#: src/components/navbar.tsx
 #: src/components/routes/containers.tsx
 msgid "All Containers"
 msgstr "Všechny kontejnery"
@@ -188,11 +191,11 @@ msgstr "Jste si jistý?"
 msgid "Automatic copy requires a secure context."
 msgstr "Automatická kopie vyžaduje zabezpečený kontext."
 
-#: src/components/routes/system.tsx
+#: src/components/routes/system/chart-card.tsx
 msgid "Average"
 msgstr "Průměr"
 
-#: src/components/routes/system.tsx
+#: src/components/routes/system/charts/cpu-charts.tsx
 msgid "Average CPU utilization of containers"
 msgstr "Průměrné využití CPU kontejnerů"
 
@@ -206,20 +209,20 @@ msgstr "Průměr klesne pod <0>{value}{0}</0>"
 msgid "Average exceeds <0>{value}{0}</0>"
 msgstr "Průměr je vyšší než <0>{value}{0}</0>"
 
-#: src/components/routes/system.tsx
+#: src/components/routes/system/charts/gpu-charts.tsx
 msgid "Average power consumption of GPUs"
 msgstr "Průměrná spotřeba energie GPU"
 
-#: src/components/routes/system.tsx
+#: src/components/routes/system/charts/cpu-charts.tsx
 msgid "Average system-wide CPU utilization"
 msgstr "Průměrné využití CPU v celém systému"
 
 #. placeholder {0}: gpu.n
-#: src/components/routes/system.tsx
+#: src/components/routes/system/charts/gpu-charts.tsx
 msgid "Average utilization of {0}"
 msgstr "Průměrné využití {0}"
 
-#: src/components/routes/system.tsx
+#: src/components/routes/system/charts/gpu-charts.tsx
 msgid "Average utilization of GPU engines"
 msgstr "Průměrné využití GPU engine"
 
@@ -228,7 +231,7 @@ msgstr "Průměrné využití GPU engine"
 msgid "Backups"
 msgstr "Zálohy"
 
-#: src/components/routes/system.tsx
+#: src/components/routes/system/charts/network-charts.tsx
 #: src/lib/alerts.ts
 msgid "Bandwidth"
 msgstr "Přenos"
@@ -238,7 +241,7 @@ msgstr "Přenos"
 msgid "Bat"
 msgstr ""
 
-#: src/components/routes/system.tsx
+#: src/components/routes/system/charts/sensor-charts.tsx
 #: src/lib/alerts.ts
 msgid "Battery"
 msgstr "Baterie"
@@ -288,7 +291,7 @@ msgstr "Stav zavádění"
 msgid "Bytes (KB/s, MB/s, GB/s)"
 msgstr "Byty (KB/s, MB/s, GB/s)"
 
-#: src/components/charts/mem-chart.tsx
+#: src/components/routes/system/charts/memory-charts.tsx
 msgid "Cache / Buffers"
 msgstr "Cache / vyrovnávací paměť"
 
@@ -334,7 +337,7 @@ msgstr "Změnit jednotky zobrazení metrik."
 msgid "Change general application options."
 msgstr "Změnit obecné nastavení aplikace."
 
-#: src/components/routes/system.tsx
+#: src/components/routes/system/charts/sensor-charts.tsx
 msgid "Charge"
 msgstr "Nabíjení"
 
@@ -346,6 +349,10 @@ msgstr "Nabíjení"
 #: src/components/routes/settings/general.tsx
 msgid "Chart options"
 msgstr "Možnosti grafu"
+
+#: src/components/routes/system/info-bar.tsx
+msgid "Chart width"
+msgstr "Šířka grafu"
 
 #: src/components/login/forgot-pass-form.tsx
 msgid "Check {email} for a reset link."
@@ -407,6 +414,10 @@ msgstr "Konflikty"
 msgid "Connection is down"
 msgstr "Připojení je nedostupné"
 
+#: src/components/routes/system.tsx
+msgid "Containers"
+msgstr "Kontejnery"
+
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Continue"
@@ -462,6 +473,11 @@ msgstr "Zkopírujte obsah <0>docker-compose.yml</0> pro agenta níže nebo autom
 msgid "Copy YAML"
 msgstr "Kopírovat YAML"
 
+#: src/components/routes/system.tsx
+msgctxt "Core system metrics"
+msgid "Core"
+msgstr ""
+
 #: src/components/containers-table/containers-table-columns.tsx
 #: src/components/systemd-table/systemd-table-columns.tsx
 #: src/components/systems-table/systems-table-columns.tsx
@@ -484,8 +500,8 @@ msgstr "Čas CPU"
 msgid "CPU Time Breakdown"
 msgstr "Rozdělení času CPU"
 
-#: src/components/routes/system.tsx
-#: src/components/routes/system.tsx
+#: src/components/routes/system/charts/cpu-charts.tsx
+#: src/components/routes/system/charts/cpu-charts.tsx
 #: src/components/routes/system/cpu-sheet.tsx
 #: src/lib/alerts.ts
 msgid "CPU Usage"
@@ -517,7 +533,7 @@ msgid "Cumulative Upload"
 msgstr "Kumulativní odeslání"
 
 #. Context: Battery state
-#: src/components/routes/system.tsx
+#: src/components/routes/system/charts/sensor-charts.tsx
 msgid "Current state"
 msgstr "Aktuální stav"
 
@@ -530,6 +546,11 @@ msgstr "Cykly"
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Daily"
 msgstr "Denně"
+
+#: src/components/routes/system/info-bar.tsx
+msgctxt "Default system layout option"
+msgid "Default"
+msgstr ""
 
 #: src/components/routes/settings/general.tsx
 msgid "Default time period"
@@ -563,37 +584,44 @@ msgstr "Zařízení"
 msgid "Discharging"
 msgstr "Vybíjení"
 
+#: src/components/routes/system.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Disk"
 msgstr ""
 
-#: src/components/routes/system.tsx
+#: src/components/routes/system/charts/disk-charts.tsx
 msgid "Disk I/O"
-msgstr ""
+msgstr "I/O disku"
 
 #: src/components/routes/settings/general.tsx
 msgid "Disk unit"
 msgstr "Disková jednotka"
 
-#: src/components/charts/disk-chart.tsx
-#: src/components/routes/system.tsx
+#: src/components/routes/system/charts/disk-charts.tsx
+#: src/components/routes/system/charts/disk-charts.tsx
+#: src/components/routes/system/charts/extra-fs-charts.tsx
 #: src/lib/alerts.ts
 msgid "Disk Usage"
 msgstr "Využití disku"
 
-#: src/components/routes/system.tsx
+#: src/components/routes/system/charts/extra-fs-charts.tsx
 msgid "Disk usage of {extraFsName}"
 msgstr "Využití disku {extraFsName}"
 
-#: src/components/routes/system.tsx
+#: src/components/routes/system/info-bar.tsx
+msgctxt "Layout display options"
+msgid "Display"
+msgstr ""
+
+#: src/components/routes/system/charts/cpu-charts.tsx
 msgid "Docker CPU Usage"
 msgstr "Využití CPU Dockeru"
 
-#: src/components/routes/system.tsx
+#: src/components/routes/system/charts/memory-charts.tsx
 msgid "Docker Memory Usage"
 msgstr "Využití paměti Dockeru"
 
-#: src/components/routes/system.tsx
+#: src/components/routes/system/charts/network-charts.tsx
 msgid "Docker Network I/O"
 msgstr "Síťové I/O Dockeru"
 
@@ -770,7 +798,7 @@ msgstr "Neúspěšné: {0}"
 
 #: src/components/containers-table/containers-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
-#: src/components/routes/system.tsx
+#: src/components/routes/system/chart-card.tsx
 #: src/components/routes/system/smart-table.tsx
 #: src/components/systemd-table/systemd-table.tsx
 #: src/components/systems-table/systems-table.tsx
@@ -800,6 +828,7 @@ msgid "FreeBSD command"
 msgstr "FreeBSD příkaz"
 
 #. Context: Battery state
+#: src/components/routes/system/info-bar.tsx
 #: src/lib/i18n.ts
 msgid "Full"
 msgstr "Plná"
@@ -815,10 +844,14 @@ msgid "Global"
 msgstr "Globální"
 
 #: src/components/routes/system.tsx
+msgid "GPU"
+msgstr ""
+
+#: src/components/routes/system/charts/gpu-charts.tsx
 msgid "GPU Engines"
 msgstr "GPU enginy"
 
-#: src/components/routes/system.tsx
+#: src/components/routes/system/charts/gpu-charts.tsx
 msgid "GPU Power Draw"
 msgstr "Spotřeba energie GPU"
 
@@ -826,6 +859,7 @@ msgstr "Spotřeba energie GPU"
 msgid "GPU Usage"
 msgstr "Využití GPU"
 
+#: src/components/routes/system/info-bar.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "Grid"
 msgstr "Mřížka"
@@ -912,7 +946,7 @@ msgstr "Životní cyklus"
 msgid "limit"
 msgstr ""
 
-#: src/components/routes/system.tsx
+#: src/components/routes/system/charts/load-average-chart.tsx
 msgid "Load Average"
 msgstr "Průměrné vytížení"
 
@@ -941,6 +975,7 @@ msgstr "Stav načtení"
 msgid "Loading..."
 msgstr "Načítání..."
 
+#: src/components/navbar.tsx
 #: src/components/navbar.tsx
 msgid "Log Out"
 msgstr "Odhlásit"
@@ -978,7 +1013,7 @@ msgid "Manual setup instructions"
 msgstr "Pokyny k manuálnímu nastavení"
 
 #. Chart select field. Please try to keep this short.
-#: src/components/routes/system.tsx
+#: src/components/routes/system/chart-card.tsx
 msgid "Max 1 min"
 msgstr "Max. 1 min"
 
@@ -999,15 +1034,16 @@ msgstr "Limit paměti"
 msgid "Memory Peak"
 msgstr "Špička paměti"
 
-#: src/components/routes/system.tsx
+#: src/components/routes/system/charts/memory-charts.tsx
 #: src/lib/alerts.ts
 msgid "Memory Usage"
 msgstr "Využití paměti"
 
-#: src/components/routes/system.tsx
+#: src/components/routes/system/charts/memory-charts.tsx
 msgid "Memory usage of docker containers"
 msgstr "Využití paměti docker kontejnerů"
 
+#. Device model
 #: src/components/routes/system/smart-table.tsx
 msgid "Model"
 msgstr ""
@@ -1025,11 +1061,11 @@ msgstr "Název"
 msgid "Net"
 msgstr "Síť"
 
-#: src/components/routes/system.tsx
+#: src/components/routes/system/charts/network-charts.tsx
 msgid "Network traffic of docker containers"
 msgstr "Síťový provoz kontejnerů docker"
 
-#: src/components/routes/system.tsx
+#: src/components/routes/system/charts/network-charts.tsx
 #: src/components/routes/system/network-sheet.tsx
 #: src/components/routes/system/network-sheet.tsx
 #: src/components/routes/system/network-sheet.tsx
@@ -1220,13 +1256,18 @@ msgstr "Přihlaste se prosím k vašemu účtu"
 msgid "Port"
 msgstr ""
 
+#: src/components/containers-table/containers-table-columns.tsx
+msgctxt "Container ports"
+msgid "Ports"
+msgstr ""
+
 #. Power On Time
 #: src/components/routes/system/smart-table.tsx
 msgid "Power On"
 msgstr "Zapnutí"
 
-#: src/components/routes/system.tsx
-#: src/components/routes/system.tsx
+#: src/components/routes/system/charts/gpu-charts.tsx
+#: src/components/routes/system/charts/memory-charts.tsx
 msgid "Precise utilization at the recorded time"
 msgstr "Přesné využití v zaznamenaném čase"
 
@@ -1248,12 +1289,12 @@ msgid "Quiet Hours"
 msgstr "Tiché hodiny"
 
 #. Disk read
-#: src/components/routes/system.tsx
-#: src/components/routes/system.tsx
+#: src/components/routes/system/charts/disk-charts.tsx
+#: src/components/routes/system/charts/extra-fs-charts.tsx
 msgid "Read"
 msgstr "Číst"
 
-#: src/components/routes/system.tsx
+#: src/components/routes/system/charts/network-charts.tsx
 msgid "Received"
 msgstr "Přijato"
 
@@ -1326,6 +1367,10 @@ msgstr "S.M.A.R.T. Detaily"
 msgid "S.M.A.R.T. Self-Test"
 msgstr "S.M.A.R.T. Vlastní test"
 
+#: src/components/add-system.tsx
+msgid "Save {foo}"
+msgstr "Uložit {foo}"
+
 #: src/components/routes/settings/notifications.tsx
 msgid "Save address using enter key or comma. Leave blank to disable email notifications."
 msgstr "Adresu uložte pomocí klávesy enter nebo čárky. Pro deaktivaci e-mailových oznámení ponechte prázdné pole."
@@ -1334,10 +1379,6 @@ msgstr "Adresu uložte pomocí klávesy enter nebo čárky. Pro deaktivaci e-mai
 #: src/components/routes/settings/notifications.tsx
 msgid "Save Settings"
 msgstr "Uložit nastavení"
-
-#: src/components/add-system.tsx
-msgid "Save system"
-msgstr "Uložit systém"
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Saved in the database and does not expire until you disable it."
@@ -1387,7 +1428,7 @@ msgstr "Odesílejte periodické odchozí pingy na externí monitorovací službu
 msgid "Send test heartbeat"
 msgstr "Odeslat testovací heartbeat"
 
-#: src/components/routes/system.tsx
+#: src/components/routes/system/charts/network-charts.tsx
 msgid "Sent"
 msgstr "Odeslat"
 
@@ -1399,6 +1440,7 @@ msgstr "Sériové číslo"
 msgid "Service Details"
 msgstr "Detaily služby"
 
+#: src/components/routes/system.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Services"
 msgstr "Služby"
@@ -1414,8 +1456,10 @@ msgstr "Pro povolení monitorování heartbeat nastavte na hubu Beszel následuj
 #: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
 #: src/components/navbar.tsx
+#: src/components/navbar.tsx
 #: src/components/routes/settings/layout.tsx
 #: src/components/routes/settings/layout.tsx
+#: src/components/routes/system/info-bar.tsx
 msgid "Settings"
 msgstr "Nastavení"
 
@@ -1459,17 +1503,18 @@ msgstr "Stav"
 msgid "Sub State"
 msgstr "Podstav"
 
-#: src/components/routes/system.tsx
+#: src/components/routes/system/charts/memory-charts.tsx
 msgid "Swap space used by the system"
 msgstr "Swap prostor využívaný systémem"
 
-#: src/components/routes/system.tsx
+#: src/components/routes/system/charts/memory-charts.tsx
 msgid "Swap Usage"
 msgstr "Swap využití"
 
 #: src/components/add-system.tsx
 #: src/components/alerts-history-columns.tsx
 #: src/components/containers-table/containers-table-columns.tsx
+#: src/components/navbar.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/quiet-hours.tsx
@@ -1481,7 +1526,7 @@ msgstr "Swap využití"
 msgid "System"
 msgstr "Systém"
 
-#: src/components/routes/system.tsx
+#: src/components/routes/system/charts/load-average-chart.tsx
 msgid "System load averages over time"
 msgstr "Průměry zatížení systému v průběhu času"
 
@@ -1501,6 +1546,11 @@ msgstr "Systémy lze spravovat v souboru <0>config.yml</0> uvnitř datového adr
 msgid "Table"
 msgstr "Tabulka"
 
+#: src/components/routes/system/info-bar.tsx
+msgctxt "Tabs system layout option"
+msgid "Tabs"
+msgstr ""
+
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Tasks"
 msgstr "Úlohy"
@@ -1511,7 +1561,7 @@ msgstr "Úlohy"
 msgid "Temp"
 msgstr "Teplota"
 
-#: src/components/routes/system.tsx
+#: src/components/routes/system/charts/sensor-charts.tsx
 #: src/lib/alerts.ts
 msgid "Temperature"
 msgstr "Teplota"
@@ -1520,7 +1570,7 @@ msgstr "Teplota"
 msgid "Temperature unit"
 msgstr "Jednotky teploty"
 
-#: src/components/routes/system.tsx
+#: src/components/routes/system/charts/sensor-charts.tsx
 msgid "Temperatures of system sensors"
 msgstr "Teploty systémových senzorů"
 
@@ -1552,11 +1602,11 @@ msgstr "Tuto akci nelze vzít zpět. Tím se z databáze trvale odstraní všech
 msgid "This will permanently delete all selected records from the database."
 msgstr "Tímto trvale odstraníte všechny vybrané záznamy z databáze."
 
-#: src/components/routes/system.tsx
+#: src/components/routes/system/charts/extra-fs-charts.tsx
 msgid "Throughput of {extraFsName}"
 msgstr "Propustnost {extraFsName}"
 
-#: src/components/routes/system.tsx
+#: src/components/routes/system/charts/disk-charts.tsx
 msgid "Throughput of root filesystem"
 msgstr "Propustnost kořenového souborového systému"
 
@@ -1567,11 +1617,6 @@ msgstr "Formát času"
 #: src/components/routes/settings/notifications.tsx
 msgid "To email(s)"
 msgstr "Na email(y)"
-
-#: src/components/routes/system/info-bar.tsx
-#: src/components/routes/system/info-bar.tsx
-msgid "Toggle grid"
-msgstr "Přepnout mřížku"
 
 #: src/components/mode-toggle.tsx
 #: src/components/mode-toggle.tsx
@@ -1730,20 +1775,20 @@ msgstr "Odeslání"
 msgid "Uptime"
 msgstr "Doba provozu"
 
-#: src/components/routes/system.tsx
-#: src/components/routes/system.tsx
-#: src/components/routes/system.tsx
-#: src/components/routes/system.tsx
+#: src/components/routes/system/charts/extra-fs-charts.tsx
+#: src/components/routes/system/charts/gpu-charts.tsx
+#: src/components/routes/system/charts/gpu-charts.tsx
+#: src/components/routes/system/charts/gpu-charts.tsx
 #: src/components/routes/system/cpu-sheet.tsx
 msgid "Usage"
 msgstr "Využití"
 
-#: src/components/routes/system.tsx
+#: src/components/routes/system/charts/disk-charts.tsx
 msgid "Usage of root partition"
 msgstr "Využití kořenového oddílu"
 
-#: src/components/charts/mem-chart.tsx
-#: src/components/charts/swap-chart.tsx
+#: src/components/routes/system/charts/memory-charts.tsx
+#: src/components/routes/system/charts/memory-charts.tsx
 msgid "Used"
 msgstr "Využito"
 
@@ -1773,7 +1818,7 @@ msgstr "Zobrazit vašich 200 nejnovějších upozornění."
 msgid "Visible Fields"
 msgstr "Viditelné sloupce"
 
-#: src/components/routes/system.tsx
+#: src/components/routes/system/chart-card.tsx
 msgid "Waiting for enough records to display"
 msgstr "Čeká se na dostatek záznamů k zobrazení"
 
@@ -1812,8 +1857,8 @@ msgid "Windows command"
 msgstr "Windows příkaz"
 
 #. Disk write
-#: src/components/routes/system.tsx
-#: src/components/routes/system.tsx
+#: src/components/routes/system/charts/disk-charts.tsx
+#: src/components/routes/system/charts/extra-fs-charts.tsx
 msgid "Write"
 msgstr "Psát"
 
