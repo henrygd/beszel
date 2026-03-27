@@ -8,7 +8,7 @@ msgstr ""
 "Language: fa\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2026-01-31 21:16\n"
+"PO-Revision-Date: 2026-03-27 19:17\n"
 "Last-Translator: \n"
 "Language-Team: Persian\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
@@ -937,7 +937,6 @@ msgstr "میانگین بار"
 msgid "Load state"
 msgstr "وضعیت بارگذاری"
 
-#: src/components/routes/settings/heartbeat.tsx
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Loading..."
 msgstr "در حال بارگذاری..."
@@ -1835,3 +1834,4 @@ msgstr "بله"
 #: src/components/routes/settings/layout.tsx
 msgid "Your user settings have been updated."
 msgstr "تنظیمات کاربری شما به‌روزرسانی شد."
+
