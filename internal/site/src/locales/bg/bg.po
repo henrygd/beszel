@@ -8,7 +8,7 @@ msgstr ""
 "Language: bg\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2026-02-25 11:49\n"
+"PO-Revision-Date: 2026-03-27 19:17\n"
 "Last-Translator: \n"
 "Language-Team: Bulgarian\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
@@ -1803,7 +1803,7 @@ msgstr "Когато е активиран, този токен позволяв
 
 #: src/components/routes/settings/heartbeat.tsx
 msgid "When using POST, each heartbeat includes a JSON payload with system status summary, list of down systems, and triggered alerts."
-msgstr "При използване на POST всеки heartbeat включва JSON полезен товар с резюме на състоянието на системата, списък на спрените системи и задействаните предупреждения."
+msgstr "При използване на POST, всеки heartbeat включва JSON полезен товар с резюме на състоянието на системата, списък на спрените системи и задействаните предупреждения."
 
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
