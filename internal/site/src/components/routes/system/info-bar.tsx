@@ -205,7 +205,7 @@ export default function InfoBar({
 					<DropdownMenu>
 						<DropdownMenuTrigger asChild>
 							<Button
-								aria-label={t`View options`}
+								aria-label={t`Settings`}
 								variant="outline"
 								size="icon"
 								className="hidden xl:flex p-0 text-primary"
@@ -215,7 +215,7 @@ export default function InfoBar({
 						</DropdownMenuTrigger>
 						<DropdownMenuContent align="end" className="min-w-44">
 							<DropdownMenuLabel className="px-3.5">
-								<Trans>Display</Trans>
+								<Trans context="Layout display options">Display</Trans>
 							</DropdownMenuLabel>
 							<DropdownMenuSeparator />
 							<DropdownMenuRadioGroup
@@ -224,10 +224,10 @@ export default function InfoBar({
 								onValueChange={(v) => setDisplayMode(v as "default" | "tabs")}
 							>
 								<DropdownMenuRadioItem value="default" onSelect={(e) => e.preventDefault()}>
-									<Trans>Default</Trans>
+									<Trans context="Default system layout option">Default</Trans>
 								</DropdownMenuRadioItem>
 								<DropdownMenuRadioItem value="tabs" onSelect={(e) => e.preventDefault()}>
-									<Trans>Tabs</Trans>
+									<Trans context="Tabs system layout option">Tabs</Trans>
 								</DropdownMenuRadioItem>
 							</DropdownMenuRadioGroup>
 							<DropdownMenuSeparator />

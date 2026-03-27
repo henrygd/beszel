@@ -146,7 +146,9 @@ export const createColumns = (
 	{
 		accessorKey: "model",
 		sortingFn: (a, b) => a.original.model.localeCompare(b.original.model),
-		header: ({ column }) => <HeaderButton column={column} name={t`Model`} Icon={Box} />,
+		header: ({ column }) => (
+			<HeaderButton column={column} name={t({ message: "Model", comment: "Device model" })} Icon={Box} />
+		),
 		cell: ({ getValue }) => (
 			<div
 				className="max-w-48 truncate ms-1"
