@@ -1104,32 +1104,21 @@ func (sm *SmartManager) parseSmartForNvme(output []byte) (bool, int) {
 
 // detectSmartctl checks if smartctl is installed, returns an error if not
 func (sm *SmartManager) detectSmartctl() (string, error) {
-	isWindows := runtime.GOOS == "windows"
-
-	// Load embedded smartctl.exe for Windows amd64 builds.
-	if isWindows && runtime.GOARCH == "amd64" {
-		if path, err := ensureEmbeddedSmartctl(); err == nil {
-			return path, nil
+	if runtime.GOOS == "windows" {
+		// Load embedded smartctl.exe for Windows amd64 builds.
+		if runtime.GOARCH == "amd64" {
+			if path, err := ensureEmbeddedSmartctl(); err == nil {
+				return path, nil
+			}
 		}
-	}
-
-	if path, err := exec.LookPath("smartctl"); err == nil {
-		return path, nil
-	}
-	locations := []string{}
-	if isWindows {
-		locations = append(locations,
-			"C:\\Program Files\\smartmontools\\bin\\smartctl.exe",
-		)
-	} else {
-		locations = append(locations, "/opt/homebrew/bin/smartctl")
-	}
-	for _, location := range locations {
+		// Try to find smartctl in the default installation location
+		const location = "C:\\Program Files\\smartmontools\\bin\\smartctl.exe"
 		if _, err := os.Stat(location); err == nil {
 			return location, nil
 		}
 	}
-	return "", errors.New("smartctl not found")
+
+	return utils.LookPathHomebrew("smartctl")
 }
 
 // isNvmeControllerPath checks if the path matches an NVMe controller pattern
