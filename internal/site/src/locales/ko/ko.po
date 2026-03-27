@@ -8,7 +8,7 @@ msgstr ""
 "Language: ko\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2026-01-31 21:16\n"
+"PO-Revision-Date: 2026-03-27 19:17\n"
 "Last-Translator: \n"
 "Language-Team: Korean\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
@@ -703,7 +703,7 @@ msgstr "마지막 {2, plural, one {# 분} other {# 분}} 동안 {0}{1} 초과"
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Exec main PID"
-msgstr "실행 메인 PID"
+msgstr "Exec 주 PID"
 
 #: src/components/routes/settings/config-yaml.tsx
 msgid "Existing systems not defined in <0>config.yml</0> will be deleted. Please make regular backups."
@@ -937,7 +937,6 @@ msgstr "부하 평균"
 msgid "Load state"
 msgstr "로드 상태"
 
-#: src/components/routes/settings/heartbeat.tsx
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Loading..."
 msgstr "로딩 중..."
@@ -967,7 +966,7 @@ msgstr "알림을 생성하려 하시나요? 시스템 테이블의 종 <0/> 아
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Main PID"
-msgstr "메인 PID"
+msgstr "주 PID"
 
 #: src/components/routes/settings/layout.tsx
 msgid "Manage display and notification preferences."
@@ -1305,7 +1304,7 @@ msgstr "재개"
 #: src/components/systems-table/systems-table-columns.tsx
 msgctxt "Root disk label"
 msgid "Root"
-msgstr "루트"
+msgstr "최상위"
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Rotate token"
@@ -1676,7 +1675,7 @@ msgstr "유형"
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Unit file"
-msgstr "유닛 파일"
+msgstr "Unit 파일"
 
 #. Temperature / network units
 #: src/components/routes/settings/general.tsx
@@ -1729,7 +1728,7 @@ msgstr "업로드"
 #: src/components/routes/system/info-bar.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Uptime"
-msgstr "가동시간"
+msgstr "가동 시간"
 
 #: src/components/routes/system.tsx
 #: src/components/routes/system.tsx
@@ -1835,3 +1834,4 @@ msgstr "예"
 #: src/components/routes/settings/layout.tsx
 msgid "Your user settings have been updated."
 msgstr "사용자 설정이 업데이트되었습니다."
+
