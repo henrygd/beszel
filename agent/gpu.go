@@ -461,7 +461,7 @@ func (gm *GPUManager) discoverGpuCapabilities() gpuCapabilities {
 		caps.hasNvtop = true
 	}
 	if runtime.GOOS == "darwin" {
-		if _, err := exec.LookPath(macmonCmd); err == nil {
+		if _, err := utils.LookPathHomebrew(macmonCmd); err == nil {
 			caps.hasMacmon = true
 		}
 		if _, err := exec.LookPath(powermetricsCmd); err == nil {

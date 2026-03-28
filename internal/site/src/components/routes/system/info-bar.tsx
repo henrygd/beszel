@@ -135,10 +135,10 @@ export default function InfoBar({
 
 	return (
 		<Card>
-			<div className="grid xl:flex gap-4 px-4 sm:px-6 pt-3 sm:pt-4 pb-5">
-				<div>
-					<h1 className="text-[1.6rem] font-semibold mb-1.5">{system.name}</h1>
-					<div className="flex flex-wrap items-center gap-3 gap-y-2 text-sm opacity-90">
+			<div className="grid xl:flex xl:gap-4 px-4 sm:px-6 pt-3 sm:pt-4 pb-5">
+				<div className="min-w-0">
+					<h1 className="text-2xl sm:text-[1.6rem] font-semibold mb-1.5">{system.name}</h1>
+					<div className="flex xl:flex-wrap items-center py-4 xl:p-0 -mt-3 xl:mt-1 gap-3 text-sm text-nowrap opacity-90 overflow-x-auto scrollbar-hide -mx-4 px-4 xl:mx-0">
 						<Tooltip>
 							<TooltipTrigger asChild>
 								<div className="capitalize flex gap-2 items-center">
@@ -205,7 +205,7 @@ export default function InfoBar({
 					<DropdownMenu>
 						<DropdownMenuTrigger asChild>
 							<Button
-								aria-label={t`View options`}
+								aria-label={t`Settings`}
 								variant="outline"
 								size="icon"
 								className="hidden xl:flex p-0 text-primary"
@@ -215,7 +215,7 @@ export default function InfoBar({
 						</DropdownMenuTrigger>
 						<DropdownMenuContent align="end" className="min-w-44">
 							<DropdownMenuLabel className="px-3.5">
-								<Trans>Display</Trans>
+								<Trans context="Layout display options">Display</Trans>
 							</DropdownMenuLabel>
 							<DropdownMenuSeparator />
 							<DropdownMenuRadioGroup
@@ -224,10 +224,10 @@ export default function InfoBar({
 								onValueChange={(v) => setDisplayMode(v as "default" | "tabs")}
 							>
 								<DropdownMenuRadioItem value="default" onSelect={(e) => e.preventDefault()}>
-									<Trans>Default</Trans>
+									<Trans context="Default system layout option">Default</Trans>
 								</DropdownMenuRadioItem>
 								<DropdownMenuRadioItem value="tabs" onSelect={(e) => e.preventDefault()}>
-									<Trans>Tabs</Trans>
+									<Trans context="Tabs system layout option">Tabs</Trans>
 								</DropdownMenuRadioItem>
 							</DropdownMenuRadioGroup>
 							<DropdownMenuSeparator />

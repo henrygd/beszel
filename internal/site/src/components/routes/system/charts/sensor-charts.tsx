@@ -7,7 +7,7 @@ import type { ChartData, SystemStatsRecord } from "@/types"
 import { ChartCard, FilterBar } from "../chart-card"
 import LineChartDefault from "@/components/charts/line-chart"
 import { useStore } from "@nanostores/react"
-import { useRef, useMemo } from "react"
+import { useRef, useMemo, useState, useEffect } from "react"
 
 export function BatteryChart({
 	chartData,
@@ -59,10 +59,12 @@ export function TemperatureChart({
 	chartData,
 	grid,
 	dataEmpty,
+	setPageBottomExtraMargin,
 }: {
 	chartData: ChartData
 	grid: boolean
 	dataEmpty: boolean
+	setPageBottomExtraMargin?: (margin: number) => void
 }) {
 	const showTempChart = chartData.systemStats.at(-1)?.stats.t
 
@@ -123,14 +125,61 @@ export function TemperatureChart({
 		})
 	}, [sortedKeys, filter, dataKeys, colorMap])
 
+	// test with lots of data points
+	// const totalPoints = 50
+	// if (dataPoints.length > 0 && dataPoints.length < totalPoints) {
+	// 	let i = 0
+	// 	while (dataPoints.length < totalPoints) {
+	// 		dataPoints.push({
+	// 			label: `Test ${++i}`,
+	// 			dataKey: () => 0,
+	// 			color: "red",
+	// 			opacity: 1,
+	// 		})
+	// 	}
+	// }
+
+	const chartRef = useRef<HTMLDivElement>(null)
+	const [addMargin, setAddMargin] = useState(false)
+	const marginPx = (dataPoints.length - 13) * 18
+
+	useEffect(() => {
+		if (setPageBottomExtraMargin && dataPoints.length > 13 && chartRef.current) {
+			const checkPosition = () => {
+				if (!chartRef.current) return
+				const rect = chartRef.current.getBoundingClientRect()
+				const actualScrollHeight = addMargin
+					? document.documentElement.scrollHeight - marginPx
+					: document.documentElement.scrollHeight
+				const distanceToBottom = actualScrollHeight - (rect.bottom + window.scrollY)
+
+				if (distanceToBottom < 250) {
+					setAddMargin(true)
+					setPageBottomExtraMargin(marginPx)
+				} else {
+					setAddMargin(false)
+					setPageBottomExtraMargin(0)
+				}
+			}
+			checkPosition()
+			const timer = setTimeout(checkPosition, 500)
+			return () => {
+				clearTimeout(timer)
+			}
+		} else if (addMargin) {
+			setAddMargin(false)
+			if (setPageBottomExtraMargin) setPageBottomExtraMargin(0)
+		}
+	}, [dataPoints.length, addMargin, marginPx, setPageBottomExtraMargin])
+
 	if (!showTempChart) {
 		return null
 	}
 
-	const legend = Object.keys(chartData.systemStats.at(-1)?.stats.t ?? {}).length < 12
+	const legend = dataPoints.length < 12
 
 	return (
-		<div className={cn("odd:last-of-type:col-span-full", { "col-span-full": !grid })}>
+		<div ref={chartRef} className={cn("odd:last-of-type:col-span-full", { "col-span-full": !grid })}>
 			<ChartCard
 				empty={dataEmpty}
 				grid={grid}

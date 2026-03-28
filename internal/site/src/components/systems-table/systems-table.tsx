@@ -161,8 +161,8 @@ export default function SystemsTable() {
 
 	const CardHead = useMemo(() => {
 		return (
-			<CardHeader className="pb-4.5 px-2 sm:px-6 max-sm:pt-5 max-sm:pb-1">
-				<div className="grid md:flex gap-5 w-full items-end">
+			<CardHeader className="p-0 mb-3 sm:mb-4">
+				<div className="grid md:flex gap-x-5 gap-y-3 w-full items-end">
 					<div className="px-2 sm:px-1">
 						<CardTitle className="mb-2">
 							<Trans>All Systems</Trans>
@@ -329,29 +329,27 @@ export default function SystemsTable() {
 	])
 
 	return (
-		<Card>
+		<Card className="w-full px-3 py-5 sm:py-6 sm:px-6">
 			{CardHead}
-			<div className="p-6 pt-0 max-sm:py-3 max-sm:px-2">
-				{viewMode === "table" ? (
-					// table layout
-					<div className="rounded-md">
-						<AllSystemsTable table={table} rows={rows} colLength={visibleColumns.length} />
-					</div>
-				) : (
-					// grid layout
-					<div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
-						{rows?.length ? (
-							rows.map((row) => {
-								return <SystemCard key={row.original.id} row={row} table={table} colLength={visibleColumns.length} />
-							})
-						) : (
-							<div className="col-span-full text-center py-8">
-								<Trans>No systems found.</Trans>
-							</div>
-						)}
-					</div>
-				)}
-			</div>
+			{viewMode === "table" ? (
+				// table layout
+				<div className="rounded-md">
+					<AllSystemsTable table={table} rows={rows} colLength={visibleColumns.length} />
+				</div>
+			) : (
+				// grid layout
+				<div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+					{rows?.length ? (
+						rows.map((row) => {
+							return <SystemCard key={row.original.id} row={row} table={table} colLength={visibleColumns.length} />
+						})
+					) : (
+						<div className="col-span-full text-center py-8">
+							<Trans>No systems found.</Trans>
+						</div>
+					)}
+				</div>
+			)}
 		</Card>
 	)
 }
