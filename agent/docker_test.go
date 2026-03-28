@@ -539,59 +539,53 @@ func TestDockerManagerCreation(t *testing.T) {
 
 func TestCheckDockerVersion(t *testing.T) {
 	tests := []struct {
-		name      string
-		responses []struct {
-			statusCode int
-			body       string
-		}
-		expectedGood     bool
-		expectedRequests int
+		name            string
+		statusCode      int
+		body            string
+		server          string
+		expectSuccess   bool
+		expectedGood    bool
+		expectedPodman  bool
+		expectError     bool
+		expectedRequest string
 	}{
 		{
-			name: "200 with good version on first try",
-			responses: []struct {
-				statusCode int
-				body       string
-			}{
-				{http.StatusOK, `{"Version":"25.0.1"}`},
-			},
-			expectedGood:     true,
-			expectedRequests: 1,
+			name:            "good docker version",
+			statusCode:      http.StatusOK,
+			body:            `{"Version":"25.0.1"}`,
+			expectSuccess:   true,
+			expectedGood:    true,
+			expectedPodman:  false,
+			expectedRequest: "/version",
 		},
 		{
-			name: "200 with old version on first try",
-			responses: []struct {
-				statusCode int
-				body       string
-			}{
-				{http.StatusOK, `{"Version":"24.0.7"}`},
-			},
-			expectedGood:     false,
-			expectedRequests: 1,
+			name:            "old docker version",
+			statusCode:      http.StatusOK,
+			body:            `{"Version":"24.0.7"}`,
+			expectSuccess:   true,
+			expectedGood:    false,
+			expectedPodman:  false,
+			expectedRequest: "/version",
 		},
 		{
-			name: "non-200 then 200 with good version",
-			responses: []struct {
-				statusCode int
-				body       string
-			}{
-				{http.StatusServiceUnavailable, `"not ready"`},
-				{http.StatusOK, `{"Version":"25.1.0"}`},
-			},
-			expectedGood:     true,
-			expectedRequests: 2,
+			name:            "podman from server header",
+			statusCode:      http.StatusOK,
+			body:            `{"Version":"5.5.0"}`,
+			server:          "Libpod/5.5.0",
+			expectSuccess:   true,
+			expectedGood:    true,
+			expectedPodman:  true,
+			expectedRequest: "/version",
 		},
 		{
-			name: "non-200 on all retries",
-			responses: []struct {
-				statusCode int
-				body       string
-			}{
-				{http.StatusInternalServerError, `"error"`},
-				{http.StatusUnauthorized, `"error"`},
-			},
-			expectedGood:     false,
-			expectedRequests: 2,
+			name:            "non-200 response",
+			statusCode:      http.StatusServiceUnavailable,
+			body:            `"not ready"`,
+			expectSuccess:   false,
+			expectedGood:    false,
+			expectedPodman:  false,
+			expectError:     true,
+			expectedRequest: "/version",
 		},
 	}
 
@@ -599,13 +593,13 @@ func TestCheckDockerVersion(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			requestCount := 0
 			server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-				idx := requestCount
 				requestCount++
-				if idx >= len(tt.responses) {
-					idx = len(tt.responses) - 1
+				assert.Equal(t, tt.expectedRequest, r.URL.EscapedPath())
+				if tt.server != "" {
+					w.Header().Set("Server", tt.server)
 				}
-				w.WriteHeader(tt.responses[idx].statusCode)
-				fmt.Fprint(w, tt.responses[idx].body)
+				w.WriteHeader(tt.statusCode)
+				fmt.Fprint(w, tt.body)
 			}))
 			defer server.Close()
 
@@ -617,17 +611,24 @@ func TestCheckDockerVersion(t *testing.T) {
 						},
 					},
 				},
-				retrySleep: func(time.Duration) {},
 			}
 
-			dm.checkDockerVersion()
+			success, err := dm.checkDockerVersion()
 
+			assert.Equal(t, tt.expectSuccess, success)
+			assert.Equal(t, tt.expectSuccess, dm.dockerVersionChecked)
 			assert.Equal(t, tt.expectedGood, dm.goodDockerVersion)
-			assert.Equal(t, tt.expectedRequests, requestCount)
+			assert.Equal(t, tt.expectedPodman, dm.usingPodman)
+			assert.Equal(t, 1, requestCount)
+			if tt.expectError {
+				require.Error(t, err)
+			} else {
+				require.NoError(t, err)
+			}
 		})
 	}
 
-	t.Run("request error on all retries", func(t *testing.T) {
+	t.Run("request error", func(t *testing.T) {
 		requestCount := 0
 		dm := &dockerManager{
 			client: &http.Client{
@@ -638,14 +639,169 @@ func TestCheckDockerVersion(t *testing.T) {
 					},
 				},
 			},
-			retrySleep: func(time.Duration) {},
 		}
 
-		dm.checkDockerVersion()
+		success, err := dm.checkDockerVersion()
 
+		assert.False(t, success)
+		require.Error(t, err)
+		assert.False(t, dm.dockerVersionChecked)
 		assert.False(t, dm.goodDockerVersion)
-		assert.Equal(t, 2, requestCount)
+		assert.False(t, dm.usingPodman)
+		assert.Equal(t, 1, requestCount)
 	})
+}
+
+// newDockerManagerForVersionTest creates a dockerManager wired to a test server.
+func newDockerManagerForVersionTest(server *httptest.Server) *dockerManager {
+	return &dockerManager{
+		client: &http.Client{
+			Transport: &http.Transport{
+				DialContext: func(_ context.Context, network, _ string) (net.Conn, error) {
+					return net.Dial(network, server.Listener.Addr().String())
+				},
+			},
+		},
+		containerStatsMap:   make(map[string]*container.Stats),
+		lastCpuContainer:    make(map[uint16]map[string]uint64),
+		lastCpuSystem:       make(map[uint16]map[string]uint64),
+		lastCpuReadTime:     make(map[uint16]map[string]time.Time),
+		networkSentTrackers: make(map[uint16]*deltatracker.DeltaTracker[string, uint64]),
+		networkRecvTrackers: make(map[uint16]*deltatracker.DeltaTracker[string, uint64]),
+		lastNetworkReadTime: make(map[uint16]map[string]time.Time),
+	}
+}
+
+func TestGetDockerStatsChecksDockerVersionAfterContainerList(t *testing.T) {
+	tests := []struct {
+		name            string
+		containerServer string
+		versionServer   string
+		versionBody     string
+		expectedGood    bool
+		expectedPodman  bool
+	}{
+		{
+			name:           "200 with good version on first try",
+			versionBody:    `{"Version":"25.0.1"}`,
+			expectedGood:   true,
+			expectedPodman: false,
+		},
+		{
+			name:           "200 with old version on first try",
+			versionBody:    `{"Version":"24.0.7"}`,
+			expectedGood:   false,
+			expectedPodman: false,
+		},
+		{
+			name:            "podman detected from server header",
+			containerServer: "Libpod/5.5.0",
+			expectedGood:    true,
+			expectedPodman:  true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			requestCounts := map[string]int{}
+			server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				requestCounts[r.URL.EscapedPath()]++
+				switch r.URL.EscapedPath() {
+				case "/containers/json":
+					if tt.containerServer != "" {
+						w.Header().Set("Server", tt.containerServer)
+					}
+					w.WriteHeader(http.StatusOK)
+					fmt.Fprint(w, `[]`)
+				case "/version":
+					if tt.versionServer != "" {
+						w.Header().Set("Server", tt.versionServer)
+					}
+					w.WriteHeader(http.StatusOK)
+					fmt.Fprint(w, tt.versionBody)
+				default:
+					t.Fatalf("unexpected path: %s", r.URL.EscapedPath())
+				}
+			}))
+			defer server.Close()
+
+			dm := newDockerManagerForVersionTest(server)
+
+			stats, err := dm.getDockerStats(defaultCacheTimeMs)
+			require.NoError(t, err)
+			assert.Empty(t, stats)
+			assert.True(t, dm.dockerVersionChecked)
+			assert.Equal(t, tt.expectedGood, dm.goodDockerVersion)
+			assert.Equal(t, tt.expectedPodman, dm.usingPodman)
+			assert.Equal(t, 1, requestCounts["/containers/json"])
+			if tt.expectedPodman {
+				assert.Equal(t, 0, requestCounts["/version"])
+			} else {
+				assert.Equal(t, 1, requestCounts["/version"])
+			}
+
+			stats, err = dm.getDockerStats(defaultCacheTimeMs)
+			require.NoError(t, err)
+			assert.Empty(t, stats)
+			assert.Equal(t, tt.expectedGood, dm.goodDockerVersion)
+			assert.Equal(t, tt.expectedPodman, dm.usingPodman)
+			assert.Equal(t, 2, requestCounts["/containers/json"])
+			if tt.expectedPodman {
+				assert.Equal(t, 0, requestCounts["/version"])
+			} else {
+				assert.Equal(t, 1, requestCounts["/version"])
+			}
+		})
+	}
+
+}
+
+func TestGetDockerStatsRetriesVersionCheckUntilSuccess(t *testing.T) {
+	requestCounts := map[string]int{}
+	versionStatuses := []int{http.StatusServiceUnavailable, http.StatusOK}
+	versionBodies := []string{`"not ready"`, `{"Version":"25.1.0"}`}
+
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		requestCounts[r.URL.EscapedPath()]++
+		switch r.URL.EscapedPath() {
+		case "/containers/json":
+			w.WriteHeader(http.StatusOK)
+			fmt.Fprint(w, `[]`)
+		case "/version":
+			idx := requestCounts["/version"] - 1
+			if idx >= len(versionStatuses) {
+				idx = len(versionStatuses) - 1
+			}
+			w.WriteHeader(versionStatuses[idx])
+			fmt.Fprint(w, versionBodies[idx])
+		default:
+			t.Fatalf("unexpected path: %s", r.URL.EscapedPath())
+		}
+	}))
+	defer server.Close()
+
+	dm := newDockerManagerForVersionTest(server)
+
+	stats, err := dm.getDockerStats(defaultCacheTimeMs)
+	require.NoError(t, err)
+	assert.Empty(t, stats)
+	assert.False(t, dm.dockerVersionChecked)
+	assert.False(t, dm.goodDockerVersion)
+	assert.Equal(t, 1, requestCounts["/version"])
+
+	stats, err = dm.getDockerStats(defaultCacheTimeMs)
+	require.NoError(t, err)
+	assert.Empty(t, stats)
+	assert.True(t, dm.dockerVersionChecked)
+	assert.True(t, dm.goodDockerVersion)
+	assert.Equal(t, 2, requestCounts["/containers/json"])
+	assert.Equal(t, 2, requestCounts["/version"])
+
+	stats, err = dm.getDockerStats(defaultCacheTimeMs)
+	require.NoError(t, err)
+	assert.Empty(t, stats)
+	assert.Equal(t, 3, requestCounts["/containers/json"])
+	assert.Equal(t, 2, requestCounts["/version"])
 }
 
 func TestCycleCpuDeltas(t *testing.T) {
