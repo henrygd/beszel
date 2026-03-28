@@ -542,7 +542,7 @@ func (gm *GPUManager) collectorDefinitions(caps gpuCapabilities) map[collectorSo
 	return map[collectorSource]collectorDefinition{
 		collectorSourceNVML: {
 			group:     collectorGroupNvidia,
-			available: caps.hasNvidiaSmi,
+			available: true,
 			start: func(_ func()) bool {
 				return gm.startNvmlCollector()
 			},
@@ -734,9 +734,6 @@ func NewGPUManager() (*GPUManager, error) {
 	}
 	var gm GPUManager
 	caps := gm.discoverGpuCapabilities()
-	if !hasAnyGpuCollector(caps) {
-		return nil, fmt.Errorf(noGPUFoundMsg)
-	}
 	gm.GpuDataMap = make(map[string]*system.GPUData)
 
 	// Jetson devices should always use tegrastats (ignore GPU_COLLECTOR).
@@ -745,13 +742,17 @@ func NewGPUManager() (*GPUManager, error) {
 		return &gm, nil
 	}
 
-	// if GPU_COLLECTOR is set, start user-defined collectors.
+	// Respect explicit collector selection before capability auto-detection.
 	if collectorConfig, ok := utils.GetEnv("GPU_COLLECTOR"); ok && strings.TrimSpace(collectorConfig) != "" {
 		priorities := parseCollectorPriority(collectorConfig)
 		if gm.startCollectorsByPriority(priorities, caps) == 0 {
 			return nil, fmt.Errorf("no configured GPU collectors are available")
 		}
 		return &gm, nil
+	}
+
+	if !hasAnyGpuCollector(caps) {
+		return nil, fmt.Errorf(noGPUFoundMsg)
 	}
 
 	// auto-detect and start collectors when GPU_COLLECTOR is unset.
