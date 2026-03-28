@@ -8,7 +8,7 @@ msgstr ""
 "Language: zh\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2026-03-28 00:33\n"
+"PO-Revision-Date: 2026-03-28 01:33\n"
 "Last-Translator: \n"
 "Language-Team: Chinese Traditional\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
@@ -22,7 +22,7 @@ msgstr ""
 #: src/components/footer-repo-link.tsx
 msgctxt "New version available"
 msgid "{0} available"
-msgstr ""
+msgstr "{0} 現已推出"
 
 #. placeholder {0}: table.getFilteredSelectedRowModel().rows.length
 #. placeholder {1}: table.getFilteredRowModel().rows.length
@@ -145,7 +145,7 @@ msgstr "之後"
 
 #: src/components/routes/settings/heartbeat.tsx
 msgid "After setting the environment variables, restart your Beszel hub for changes to take effect."
-msgstr "設置環境變數後，重新啟動您的 Beszel hub 以使更改生效。"
+msgstr "設定環境變數後，請重新啟動 Beszel Hub 以使變更生效。"
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Agent"
@@ -476,7 +476,7 @@ msgstr "複製 YAML"
 #: src/components/routes/system.tsx
 msgctxt "Core system metrics"
 msgid "Core"
-msgstr ""
+msgstr "核心指標"
 
 #: src/components/containers-table/containers-table-columns.tsx
 #: src/components/systemd-table/systemd-table-columns.tsx
@@ -550,7 +550,7 @@ msgstr "每日"
 #: src/components/routes/system/info-bar.tsx
 msgctxt "Default system layout option"
 msgid "Default"
-msgstr ""
+msgstr "預設"
 
 #: src/components/routes/settings/general.tsx
 msgid "Default time period"
@@ -611,7 +611,7 @@ msgstr "{extraFsName}的磁碟使用量"
 #: src/components/routes/system/info-bar.tsx
 msgctxt "Layout display options"
 msgid "Display"
-msgstr ""
+msgstr "顯示"
 
 #: src/components/routes/system/charts/cpu-charts.tsx
 msgid "Docker CPU Usage"
@@ -1200,7 +1200,7 @@ msgstr "已暫停 ({pausedSystemsLength})"
 
 #: src/components/routes/settings/heartbeat.tsx
 msgid "Payload format"
-msgstr "有效載荷 (Payload) 格式"
+msgstr "資料格式"
 
 #: src/components/routes/system/cpu-sheet.tsx
 #: src/components/routes/system/cpu-sheet.tsx
@@ -1259,7 +1259,7 @@ msgstr "Port"
 #: src/components/containers-table/containers-table-columns.tsx
 msgctxt "Container ports"
 msgid "Ports"
-msgstr ""
+msgstr "Port 映射"
 
 #. Power On Time
 #: src/components/routes/system/smart-table.tsx
@@ -1418,7 +1418,7 @@ msgstr "選取{foo}"
 
 #: src/components/routes/settings/heartbeat.tsx
 msgid "Send a single heartbeat ping to verify your endpoint is working."
-msgstr "發送單個 heartbeat ping 以驗證您的端點是否正常工作。"
+msgstr "發送單次心跳偵測以驗證您的端點運作正常。"
 
 #: src/components/routes/settings/heartbeat.tsx
 msgid "Send periodic outbound pings to an external monitoring service so you can monitor Beszel without exposing it to the internet."
@@ -1549,7 +1549,7 @@ msgstr "列表"
 #: src/components/routes/system/info-bar.tsx
 msgctxt "Tabs system layout option"
 msgid "Tabs"
-msgstr ""
+msgstr "分頁"
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Tasks"
