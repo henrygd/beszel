@@ -1,4 +1,4 @@
-import { memo } from "react"
+import { memo, useState } from "react"
 import { Trans } from "@lingui/react/macro"
 import { compareSemVer, parseSemVer } from "@/lib/utils"
 
@@ -49,6 +49,10 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 		hasGpuEnginesData,
 		hasGpuPowerData,
 	} = useSystemData(id)
+
+	// extra margin to add to bottom of page, specifically for temperature chart,
+	// where the tooltip can go past the bottom of the page if lots of sensors
+	const [pageBottomExtraMargin, setPageBottomExtraMargin] = useState(0)
 
 	if (!system.id) {
 		return null
@@ -183,8 +187,9 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 						<MemoryChart {...coreProps} />
 						<LoadAverageChart chartData={chartData} grid={grid} dataEmpty={dataEmpty} />
 						<BandwidthChart {...coreProps} systemStats={systemStats} />
-						<TemperatureChart {...coreProps} />
+						<TemperatureChart {...coreProps} setPageBottomExtraMargin={setPageBottomExtraMargin} />
 						<SwapChart chartData={chartData} grid={grid} dataEmpty={dataEmpty} systemStats={systemStats} />
+						{pageBottomExtraMargin > 0 && <div style={{ marginBottom: pageBottomExtraMargin }}></div>}
 					</div>
 				</TabsContent>
 

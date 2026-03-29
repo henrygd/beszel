@@ -169,6 +169,14 @@
 	min-width: 30.3rem;
 }
 
+@utility scrollbar-hide {
+	-ms-overflow-style: none;
+	scrollbar-width: none;
+	&::-webkit-scrollbar {
+		display: none;
+	}
+}
+
 .recharts-tooltip-wrapper {
 	z-index: 51;
 	@apply tabular-nums;

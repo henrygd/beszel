@@ -1461,6 +1461,25 @@ func TestNewGPUManagerConfiguredCollectorsMustStart(t *testing.T) {
 	})
 }
 
+func TestCollectorDefinitionsNvmlDoesNotRequireNvidiaSmi(t *testing.T) {
+	gm := &GPUManager{}
+	definitions := gm.collectorDefinitions(gpuCapabilities{})
+	require.Contains(t, definitions, collectorSourceNVML)
+	assert.True(t, definitions[collectorSourceNVML].available)
+}
+
+func TestNewGPUManagerConfiguredNvmlBypassesCapabilityGate(t *testing.T) {
+	dir := t.TempDir()
+	t.Setenv("PATH", dir)
+	t.Setenv("BESZEL_AGENT_GPU_COLLECTOR", "nvml")
+
+	gm, err := NewGPUManager()
+	require.Nil(t, gm)
+	require.Error(t, err)
+	assert.Contains(t, err.Error(), "no configured GPU collectors are available")
+	assert.NotContains(t, err.Error(), noGPUFoundMsg)
+}
+
 func TestNewGPUManagerJetsonIgnoresCollectorConfig(t *testing.T) {
 	dir := t.TempDir()
 	t.Setenv("PATH", dir)

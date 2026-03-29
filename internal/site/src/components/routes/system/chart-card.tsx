@@ -107,15 +107,19 @@ export function ChartCard({
 
 	return (
 		<Card
-			className={cn("pb-2 sm:pb-4 odd:last-of-type:col-span-full min-h-full", { "col-span-full": !grid }, className)}
+			className={cn(
+				"px-3 py-5 sm:py-6 sm:px-6 odd:last-of-type:col-span-full min-h-full",
+				{ "col-span-full": !grid },
+				className
+			)}
 			ref={ref}
 		>
-			<CardHeader className="pb-5 pt-4 gap-1 relative max-sm:py-3 max-sm:px-4">
-				<CardTitle className="text-xl sm:text-2xl">{title}</CardTitle>
+			<CardHeader className="gap-1.5 relative p-0 mb-3 sm:mb-4">
+				<CardTitle>{title}</CardTitle>
 				<CardDescription>{description}</CardDescription>
-				{cornerEl && <div className="py-1 grid sm:justify-end sm:absolute sm:top-3.5 sm:end-3.5">{cornerEl}</div>}
+				{cornerEl && <div className="grid sm:justify-end sm:absolute sm:top-0 sm:end-0 my-1 sm:my-0">{cornerEl}</div>}
 			</CardHeader>
-			<div className={cn("ps-0 w-[calc(100%-1.3em)] relative group", legend ? "h-54 md:h-56" : "h-48 md:h-52")}>
+			<div className={cn("ps-0 -me-1 -ms-3.5 relative group", legend ? "h-54 md:h-56" : "h-48 md:h-52")}>
 				{
 					<Spinner
 						msg={empty ? t`Waiting for enough records to display` : undefined}

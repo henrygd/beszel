@@ -266,7 +266,13 @@ export const SystemDialog = ({ setOpen, system }: { setOpen: (open: boolean) => 
 							/>
 						</TabsContent>
 						{/* Save */}
-						<Button>{system ? <Trans>Save system</Trans> : <Trans>Add system</Trans>}</Button>
+						<Button>
+							{system ? (
+								<Trans>Save {{ foo: systemTranslation }}</Trans>
+							) : (
+								<Trans>Add {{ foo: systemTranslation }}</Trans>
+							)}
+						</Button>
 					</DialogFooter>
 				</form>
 			</Tabs>

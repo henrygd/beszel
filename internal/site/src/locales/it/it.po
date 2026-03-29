@@ -8,7 +8,7 @@ msgstr ""
 "Language: it\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2026-01-31 21:16\n"
+"PO-Revision-Date: 2026-03-27 19:17\n"
 "Last-Translator: \n"
 "Language-Team: Italian\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
@@ -17,6 +17,12 @@ msgstr ""
 "X-Crowdin-Language: it\n"
 "X-Crowdin-File: /main/internal/site/src/locales/en/en.po\n"
 "X-Crowdin-File-ID: 32\n"
+
+#. placeholder {0}: newVersion.v
+#: src/components/footer-repo-link.tsx
+msgctxt "New version available"
+msgid "{0} available"
+msgstr ""
 
 #. placeholder {0}: table.getFilteredSelectedRowModel().rows.length
 #. placeholder {1}: table.getFilteredRowModel().rows.length
@@ -49,9 +55,9 @@ msgid "1 hour"
 msgstr "1 ora"
 
 #. Load average
-#: src/components/charts/load-average-chart.tsx
+#: src/components/routes/system/charts/load-average-chart.tsx
 msgid "1 min"
-msgstr "1 min"
+msgstr ""
 
 #: src/lib/utils.ts
 msgid "1 minute"
@@ -66,9 +72,9 @@ msgid "12 hours"
 msgstr "12 ore"
 
 #. Load average
-#: src/components/charts/load-average-chart.tsx
+#: src/components/routes/system/charts/load-average-chart.tsx
 msgid "15 min"
-msgstr "15 min"
+msgstr ""
 
 #: src/lib/utils.ts
 msgid "24 hours"
@@ -79,9 +85,9 @@ msgid "30 days"
 msgstr "30 giorni"
 
 #. Load average
-#: src/components/charts/load-average-chart.tsx
+#: src/components/routes/system/charts/load-average-chart.tsx
 msgid "5 min"
-msgstr "5 min"
+msgstr ""
 
 #. Table column
 #: src/components/routes/settings/quiet-hours.tsx
@@ -107,18 +113,13 @@ msgid "Active state"
 msgstr "Stato attivo"
 
 #: src/components/add-system.tsx
+#: src/components/add-system.tsx
+#: src/components/navbar.tsx
+#: src/components/navbar.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Add {foo}"
 msgstr "Aggiungi {foo}"
-
-#: src/components/add-system.tsx
-msgid "Add <0>System</0>"
-msgstr "Aggiungi <0>Sistema</0>"
-
-#: src/components/add-system.tsx
-msgid "Add system"
-msgstr "Aggiungi sistema"
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Add URL"
@@ -134,6 +135,7 @@ msgstr "Regola la larghezza del layout principale"
 
 #: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
+#: src/components/navbar.tsx
 msgid "Admin"
 msgstr "Amministratore"
 
@@ -163,6 +165,7 @@ msgstr "Avvisi"
 #: src/components/command-palette.tsx
 #: src/components/containers-table/containers-table.tsx
 #: src/components/navbar.tsx
+#: src/components/navbar.tsx
 #: src/components/routes/containers.tsx
 msgid "All Containers"
 msgstr "Tutti i contenitori"
@@ -188,11 +191,11 @@ msgstr "Sei sicuro?"
 msgid "Automatic copy requires a secure context."
 msgstr "La copia automatica richiede un contesto sicuro."
 
-#: src/components/routes/system.tsx
+#: src/components/routes/system/chart-card.tsx
 msgid "Average"
 msgstr "Media"
 
-#: src/components/routes/system.tsx
+#: src/components/routes/system/charts/cpu-charts.tsx
 msgid "Average CPU utilization of containers"
 msgstr "Utilizzo medio della CPU dei container"
 
@@ -206,20 +209,20 @@ msgstr "La media scende sotto <0>{value}{0}</0>"
 msgid "Average exceeds <0>{value}{0}</0>"
 msgstr "La media supera <0>{value}{0}</0>"
 
-#: src/components/routes/system.tsx
+#: src/components/routes/system/charts/gpu-charts.tsx
 msgid "Average power consumption of GPUs"
 msgstr "Consumo energetico medio delle GPU"
 
-#: src/components/routes/system.tsx
+#: src/components/routes/system/charts/cpu-charts.tsx
 msgid "Average system-wide CPU utilization"
 msgstr "Utilizzo medio della CPU a livello di sistema"
 
 #. placeholder {0}: gpu.n
-#: src/components/routes/system.tsx
+#: src/components/routes/system/charts/gpu-charts.tsx
 msgid "Average utilization of {0}"
 msgstr "Utilizzo medio di {0}"
 
-#: src/components/routes/system.tsx
+#: src/components/routes/system/charts/gpu-charts.tsx
 msgid "Average utilization of GPU engines"
 msgstr "Utilizzo medio dei motori GPU"
 
@@ -228,7 +231,7 @@ msgstr "Utilizzo medio dei motori GPU"
 msgid "Backups"
 msgstr "Backup"
 
-#: src/components/routes/system.tsx
+#: src/components/routes/system/charts/network-charts.tsx
 #: src/lib/alerts.ts
 msgid "Bandwidth"
 msgstr "Larghezza di banda"
@@ -236,9 +239,9 @@ msgstr "Larghezza di banda"
 #. Battery label in systems table header
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Bat"
-msgstr "Bat"
+msgstr ""
 
-#: src/components/routes/system.tsx
+#: src/components/routes/system/charts/sensor-charts.tsx
 #: src/lib/alerts.ts
 msgid "Battery"
 msgstr "Batteria"
@@ -288,7 +291,7 @@ msgstr "Stato di avvio"
 msgid "Bytes (KB/s, MB/s, GB/s)"
 msgstr "Byte (KB/s, MB/s, GB/s)"
 
-#: src/components/charts/mem-chart.tsx
+#: src/components/routes/system/charts/memory-charts.tsx
 msgid "Cache / Buffers"
 msgstr "Cache / Buffer"
 
@@ -324,7 +327,7 @@ msgstr "Attenzione - possibile perdita di dati"
 
 #: src/components/routes/settings/general.tsx
 msgid "Celsius (°C)"
-msgstr "Celsius (°C)"
+msgstr ""
 
 #: src/components/routes/settings/general.tsx
 msgid "Change display units for metrics."
@@ -334,7 +337,7 @@ msgstr "Modifica le unità di visualizzazione per le metriche."
 msgid "Change general application options."
 msgstr "Modifica le opzioni generali dell'applicazione."
 
-#: src/components/routes/system.tsx
+#: src/components/routes/system/charts/sensor-charts.tsx
 msgid "Charge"
 msgstr "Carica"
 
@@ -346,6 +349,10 @@ msgstr "In carica"
 #: src/components/routes/settings/general.tsx
 msgid "Chart options"
 msgstr "Opzioni del grafico"
+
+#: src/components/routes/system/info-bar.tsx
+msgid "Chart width"
+msgstr "Larghezza grafico"
 
 #: src/components/login/forgot-pass-form.tsx
 msgid "Check {email} for a reset link."
@@ -407,6 +414,10 @@ msgstr "Conflitti"
 msgid "Connection is down"
 msgstr "La connessione è interrotta"
 
+#: src/components/routes/system.tsx
+msgid "Containers"
+msgstr "Container"
+
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Continue"
@@ -462,11 +473,16 @@ msgstr "Copia il contenuto<0>docker-compose.yml</0> per l'agente qui sotto, o re
 msgid "Copy YAML"
 msgstr "Copia YAML"
 
+#: src/components/routes/system.tsx
+msgctxt "Core system metrics"
+msgid "Core"
+msgstr ""
+
 #: src/components/containers-table/containers-table-columns.tsx
 #: src/components/systemd-table/systemd-table-columns.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "CPU"
-msgstr "CPU"
+msgstr ""
 
 #: src/components/routes/system/cpu-sheet.tsx
 msgid "CPU Cores"
@@ -484,8 +500,8 @@ msgstr "Tempo CPU"
 msgid "CPU Time Breakdown"
 msgstr "Suddivisione tempo CPU"
 
-#: src/components/routes/system.tsx
-#: src/components/routes/system.tsx
+#: src/components/routes/system/charts/cpu-charts.tsx
+#: src/components/routes/system/charts/cpu-charts.tsx
 #: src/components/routes/system/cpu-sheet.tsx
 #: src/lib/alerts.ts
 msgid "CPU Usage"
@@ -517,7 +533,7 @@ msgid "Cumulative Upload"
 msgstr "Upload cumulativo"
 
 #. Context: Battery state
-#: src/components/routes/system.tsx
+#: src/components/routes/system/charts/sensor-charts.tsx
 msgid "Current state"
 msgstr "Stato attuale"
 
@@ -530,6 +546,11 @@ msgstr "Cicli"
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Daily"
 msgstr "Giornaliero"
+
+#: src/components/routes/system/info-bar.tsx
+msgctxt "Default system layout option"
+msgid "Default"
+msgstr ""
 
 #: src/components/routes/settings/general.tsx
 msgid "Default time period"
@@ -563,11 +584,12 @@ msgstr "Dispositivo"
 msgid "Discharging"
 msgstr "In scarica"
 
+#: src/components/routes/system.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Disk"
 msgstr "Disco"
 
-#: src/components/routes/system.tsx
+#: src/components/routes/system/charts/disk-charts.tsx
 msgid "Disk I/O"
 msgstr "I/O Disco"
 
@@ -575,25 +597,31 @@ msgstr "I/O Disco"
 msgid "Disk unit"
 msgstr "Unità disco"
 
-#: src/components/charts/disk-chart.tsx
-#: src/components/routes/system.tsx
+#: src/components/routes/system/charts/disk-charts.tsx
+#: src/components/routes/system/charts/disk-charts.tsx
+#: src/components/routes/system/charts/extra-fs-charts.tsx
 #: src/lib/alerts.ts
 msgid "Disk Usage"
 msgstr "Utilizzo Disco"
 
-#: src/components/routes/system.tsx
+#: src/components/routes/system/charts/extra-fs-charts.tsx
 msgid "Disk usage of {extraFsName}"
 msgstr "Utilizzo del disco di {extraFsName}"
 
-#: src/components/routes/system.tsx
+#: src/components/routes/system/info-bar.tsx
+msgctxt "Layout display options"
+msgid "Display"
+msgstr ""
+
+#: src/components/routes/system/charts/cpu-charts.tsx
 msgid "Docker CPU Usage"
 msgstr "Utilizzo CPU Docker"
 
-#: src/components/routes/system.tsx
+#: src/components/routes/system/charts/memory-charts.tsx
 msgid "Docker Memory Usage"
 msgstr "Utilizzo Memoria Docker"
 
-#: src/components/routes/system.tsx
+#: src/components/routes/system/charts/network-charts.tsx
 msgid "Docker Network I/O"
 msgstr "I/O di Rete Docker"
 
@@ -636,7 +664,7 @@ msgstr "Modifica {foo}"
 #: src/components/login/forgot-pass-form.tsx
 #: src/components/login/otp-forms.tsx
 msgid "Email"
-msgstr "Email"
+msgstr ""
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Email notifications"
@@ -731,7 +759,7 @@ msgstr "Esporta la configurazione attuale dei tuoi sistemi."
 
 #: src/components/routes/settings/general.tsx
 msgid "Fahrenheit (°F)"
-msgstr "Fahrenheit (°F)"
+msgstr ""
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Failed"
@@ -770,7 +798,7 @@ msgstr "Fallito: {0}"
 
 #: src/components/containers-table/containers-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
-#: src/components/routes/system.tsx
+#: src/components/routes/system/chart-card.tsx
 #: src/components/routes/system/smart-table.tsx
 #: src/components/systemd-table/systemd-table.tsx
 #: src/components/systems-table/systems-table.tsx
@@ -783,7 +811,7 @@ msgstr "Impronta digitale"
 
 #: src/components/routes/system/smart-table.tsx
 msgid "Firmware"
-msgstr "Firmware"
+msgstr ""
 
 #: src/components/alerts/alerts-sheet.tsx
 msgid "For <0>{min}</0> {min, plural, one {minute} other {minutes}}"
@@ -800,6 +828,7 @@ msgid "FreeBSD command"
 msgstr "Comando FreeBSD"
 
 #. Context: Battery state
+#: src/components/routes/system/info-bar.tsx
 #: src/lib/i18n.ts
 msgid "Full"
 msgstr "Piena"
@@ -815,10 +844,14 @@ msgid "Global"
 msgstr "Globale"
 
 #: src/components/routes/system.tsx
+msgid "GPU"
+msgstr ""
+
+#: src/components/routes/system/charts/gpu-charts.tsx
 msgid "GPU Engines"
 msgstr "Motori GPU"
 
-#: src/components/routes/system.tsx
+#: src/components/routes/system/charts/gpu-charts.tsx
 msgid "GPU Power Draw"
 msgstr "Consumo della GPU"
 
@@ -826,6 +859,7 @@ msgstr "Consumo della GPU"
 msgid "GPU Usage"
 msgstr "Utilizzo GPU"
 
+#: src/components/routes/system/info-bar.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "Grid"
 msgstr "Griglia"
@@ -836,7 +870,7 @@ msgstr "Stato"
 
 #: src/components/routes/settings/layout.tsx
 msgid "Heartbeat"
-msgstr "Heartbeat"
+msgstr ""
 
 #: src/components/routes/settings/heartbeat.tsx
 msgid "Heartbeat Monitoring"
@@ -854,7 +888,7 @@ msgstr "Comando Homebrew"
 
 #: src/components/add-system.tsx
 msgid "Host / IP"
-msgstr "Host / IP"
+msgstr ""
 
 #: src/components/routes/settings/heartbeat.tsx
 msgid "HTTP Method"
@@ -912,7 +946,7 @@ msgstr "Ciclo di vita"
 msgid "limit"
 msgstr "limite"
 
-#: src/components/routes/system.tsx
+#: src/components/routes/system/charts/load-average-chart.tsx
 msgid "Load Average"
 msgstr "Carico medio"
 
@@ -941,6 +975,7 @@ msgstr "Stato di caricamento"
 msgid "Loading..."
 msgstr "Caricamento..."
 
+#: src/components/navbar.tsx
 #: src/components/navbar.tsx
 msgid "Log Out"
 msgstr "Disconnetti"
@@ -978,9 +1013,9 @@ msgid "Manual setup instructions"
 msgstr "Istruzioni di configurazione manuale"
 
 #. Chart select field. Please try to keep this short.
-#: src/components/routes/system.tsx
+#: src/components/routes/system/chart-card.tsx
 msgid "Max 1 min"
-msgstr "Max 1 min"
+msgstr ""
 
 #: src/components/containers-table/containers-table-columns.tsx
 #: src/components/routes/system/info-bar.tsx
@@ -999,15 +1034,16 @@ msgstr "Limite memoria"
 msgid "Memory Peak"
 msgstr "Picco memoria"
 
-#: src/components/routes/system.tsx
+#: src/components/routes/system/charts/memory-charts.tsx
 #: src/lib/alerts.ts
 msgid "Memory Usage"
 msgstr "Utilizzo Memoria"
 
-#: src/components/routes/system.tsx
+#: src/components/routes/system/charts/memory-charts.tsx
 msgid "Memory usage of docker containers"
 msgstr "Utilizzo della memoria dei container Docker"
 
+#. Device model
 #: src/components/routes/system/smart-table.tsx
 msgid "Model"
 msgstr "Modello"
@@ -1025,11 +1061,11 @@ msgstr "Nome"
 msgid "Net"
 msgstr "Rete"
 
-#: src/components/routes/system.tsx
+#: src/components/routes/system/charts/network-charts.tsx
 msgid "Network traffic of docker containers"
 msgstr "Traffico di rete dei container Docker"
 
-#: src/components/routes/system.tsx
+#: src/components/routes/system/charts/network-charts.tsx
 #: src/components/routes/system/network-sheet.tsx
 #: src/components/routes/system/network-sheet.tsx
 #: src/components/routes/system/network-sheet.tsx
@@ -1045,7 +1081,7 @@ msgstr "Unità rete"
 #: src/components/systemd-table/systemd-table.tsx
 #: src/components/systemd-table/systemd-table.tsx
 msgid "No"
-msgstr "No"
+msgstr ""
 
 #: src/components/command-palette.tsx
 #: src/components/systemd-table/systemd-table.tsx
@@ -1132,7 +1168,7 @@ msgstr "Pagine / Impostazioni"
 #: src/components/login/auth-form.tsx
 #: src/components/login/auth-form.tsx
 msgid "Password"
-msgstr "Password"
+msgstr ""
 
 #: src/components/login/auth-form.tsx
 msgid "Password must be at least 8 characters."
@@ -1220,13 +1256,18 @@ msgstr "Si prega di accedere al proprio account"
 msgid "Port"
 msgstr "Porta"
 
+#: src/components/containers-table/containers-table-columns.tsx
+msgctxt "Container ports"
+msgid "Ports"
+msgstr ""
+
 #. Power On Time
 #: src/components/routes/system/smart-table.tsx
 msgid "Power On"
 msgstr "Accensione"
 
-#: src/components/routes/system.tsx
-#: src/components/routes/system.tsx
+#: src/components/routes/system/charts/gpu-charts.tsx
+#: src/components/routes/system/charts/memory-charts.tsx
 msgid "Precise utilization at the recorded time"
 msgstr "Utilizzo preciso al momento registrato"
 
@@ -1248,12 +1289,12 @@ msgid "Quiet Hours"
 msgstr "Ore silenziose"
 
 #. Disk read
-#: src/components/routes/system.tsx
-#: src/components/routes/system.tsx
+#: src/components/routes/system/charts/disk-charts.tsx
+#: src/components/routes/system/charts/extra-fs-charts.tsx
 msgid "Read"
 msgstr "Lettura"
 
-#: src/components/routes/system.tsx
+#: src/components/routes/system/charts/network-charts.tsx
 msgid "Received"
 msgstr "Ricevuto"
 
@@ -1304,7 +1345,7 @@ msgstr "Riprendi"
 #: src/components/systems-table/systems-table-columns.tsx
 msgctxt "Root disk label"
 msgid "Root"
-msgstr "Root"
+msgstr ""
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Rotate token"
@@ -1326,6 +1367,10 @@ msgstr "Dettagli S.M.A.R.T."
 msgid "S.M.A.R.T. Self-Test"
 msgstr "Autotest S.M.A.R.T."
 
+#: src/components/add-system.tsx
+msgid "Save {foo}"
+msgstr "Salva {foo}"
+
 #: src/components/routes/settings/notifications.tsx
 msgid "Save address using enter key or comma. Leave blank to disable email notifications."
 msgstr "Salva l'indirizzo usando il tasto invio o la virgola. Lascia vuoto per disabilitare le notifiche email."
@@ -1334,10 +1379,6 @@ msgstr "Salva l'indirizzo usando il tasto invio o la virgola. Lascia vuoto per d
 #: src/components/routes/settings/notifications.tsx
 msgid "Save Settings"
 msgstr "Salva Impostazioni"
-
-#: src/components/add-system.tsx
-msgid "Save system"
-msgstr "Salva sistema"
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Saved in the database and does not expire until you disable it."
@@ -1387,7 +1428,7 @@ msgstr "Invia ping in uscita periodici a un servizio di monitoraggio esterno in 
 msgid "Send test heartbeat"
 msgstr "Invia heartbeat di prova"
 
-#: src/components/routes/system.tsx
+#: src/components/routes/system/charts/network-charts.tsx
 msgid "Sent"
 msgstr "Inviato"
 
@@ -1399,6 +1440,7 @@ msgstr "Numero di serie"
 msgid "Service Details"
 msgstr "Dettagli servizio"
 
+#: src/components/routes/system.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Services"
 msgstr "Servizi"
@@ -1414,8 +1456,10 @@ msgstr "Imposta le seguenti variabili d'ambiente sul tuo Beszel hub per abilitar
 #: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
 #: src/components/navbar.tsx
+#: src/components/navbar.tsx
 #: src/components/routes/settings/layout.tsx
 #: src/components/routes/settings/layout.tsx
+#: src/components/routes/system/info-bar.tsx
 msgid "Settings"
 msgstr "Impostazioni"
 
@@ -1459,17 +1503,18 @@ msgstr "Stato"
 msgid "Sub State"
 msgstr "Sotto-stato"
 
-#: src/components/routes/system.tsx
+#: src/components/routes/system/charts/memory-charts.tsx
 msgid "Swap space used by the system"
 msgstr "Spazio di swap utilizzato dal sistema"
 
-#: src/components/routes/system.tsx
+#: src/components/routes/system/charts/memory-charts.tsx
 msgid "Swap Usage"
 msgstr "Utilizzo Swap"
 
 #: src/components/add-system.tsx
 #: src/components/alerts-history-columns.tsx
 #: src/components/containers-table/containers-table-columns.tsx
+#: src/components/navbar.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/quiet-hours.tsx
@@ -1481,7 +1526,7 @@ msgstr "Utilizzo Swap"
 msgid "System"
 msgstr "Sistema"
 
-#: src/components/routes/system.tsx
+#: src/components/routes/system/charts/load-average-chart.tsx
 msgid "System load averages over time"
 msgstr "Medie di carico del sistema nel tempo"
 
@@ -1501,6 +1546,11 @@ msgstr "I sistemi possono essere gestiti in un file <0>config.yml</0> all'intern
 msgid "Table"
 msgstr "Tabella"
 
+#: src/components/routes/system/info-bar.tsx
+msgctxt "Tabs system layout option"
+msgid "Tabs"
+msgstr ""
+
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Tasks"
 msgstr "Attività"
@@ -1511,7 +1561,7 @@ msgstr "Attività"
 msgid "Temp"
 msgstr "Temperatura"
 
-#: src/components/routes/system.tsx
+#: src/components/routes/system/charts/sensor-charts.tsx
 #: src/lib/alerts.ts
 msgid "Temperature"
 msgstr "Temperatura"
@@ -1520,17 +1570,17 @@ msgstr "Temperatura"
 msgid "Temperature unit"
 msgstr "Unità temperatura"
 
-#: src/components/routes/system.tsx
+#: src/components/routes/system/charts/sensor-charts.tsx
 msgid "Temperatures of system sensors"
 msgstr "Temperature dei sensori di sistema"
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Test <0>URL</0>"
-msgstr "Test <0>URL</0>"
+msgstr ""
 
 #: src/components/routes/settings/heartbeat.tsx
 msgid "Test heartbeat"
-msgstr "Test heartbeat"
+msgstr ""
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Test notification sent"
@@ -1552,11 +1602,11 @@ msgstr "Questa azione non può essere annullata. Questo eliminerà permanentemen
 msgid "This will permanently delete all selected records from the database."
 msgstr "Questo eliminerà permanentemente tutti i record selezionati dal database."
 
-#: src/components/routes/system.tsx
+#: src/components/routes/system/charts/extra-fs-charts.tsx
 msgid "Throughput of {extraFsName}"
 msgstr "Throughput di {extraFsName}"
 
-#: src/components/routes/system.tsx
+#: src/components/routes/system/charts/disk-charts.tsx
 msgid "Throughput of root filesystem"
 msgstr "Throughput del filesystem root"
 
@@ -1568,11 +1618,6 @@ msgstr "Formato orario"
 msgid "To email(s)"
 msgstr "A email(s)"
 
-#: src/components/routes/system/info-bar.tsx
-#: src/components/routes/system/info-bar.tsx
-msgid "Toggle grid"
-msgstr "Attiva/disattiva griglia"
-
 #: src/components/mode-toggle.tsx
 #: src/components/mode-toggle.tsx
 msgid "Toggle theme"
@@ -1581,7 +1626,7 @@ msgstr "Attiva/disattiva tema"
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Token"
-msgstr "Token"
+msgstr ""
 
 #: src/components/command-palette.tsx
 #: src/components/routes/settings/layout.tsx
@@ -1728,22 +1773,22 @@ msgstr "Carica"
 #: src/components/routes/system/info-bar.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Uptime"
-msgstr "Uptime"
+msgstr "Tempo di attività"
 
-#: src/components/routes/system.tsx
-#: src/components/routes/system.tsx
-#: src/components/routes/system.tsx
-#: src/components/routes/system.tsx
+#: src/components/routes/system/charts/extra-fs-charts.tsx
+#: src/components/routes/system/charts/gpu-charts.tsx
+#: src/components/routes/system/charts/gpu-charts.tsx
+#: src/components/routes/system/charts/gpu-charts.tsx
 #: src/components/routes/system/cpu-sheet.tsx
 msgid "Usage"
 msgstr "Utilizzo"
 
-#: src/components/routes/system.tsx
+#: src/components/routes/system/charts/disk-charts.tsx
 msgid "Usage of root partition"
 msgstr "Utilizzo della partizione root"
 
-#: src/components/charts/mem-chart.tsx
-#: src/components/charts/swap-chart.tsx
+#: src/components/routes/system/charts/memory-charts.tsx
+#: src/components/routes/system/charts/memory-charts.tsx
 msgid "Used"
 msgstr "Utilizzato"
 
@@ -1773,7 +1818,7 @@ msgstr "Visualizza i tuoi 200 avvisi più recenti."
 msgid "Visible Fields"
 msgstr "Colonne visibili"
 
-#: src/components/routes/system.tsx
+#: src/components/routes/system/chart-card.tsx
 msgid "Waiting for enough records to display"
 msgstr "In attesa di abbastanza record da visualizzare"
 
@@ -1812,8 +1857,8 @@ msgid "Windows command"
 msgstr "Comando Windows"
 
 #. Disk write
-#: src/components/routes/system.tsx
-#: src/components/routes/system.tsx
+#: src/components/routes/system/charts/disk-charts.tsx
+#: src/components/routes/system/charts/extra-fs-charts.tsx
 msgid "Write"
 msgstr "Scrittura"
 
