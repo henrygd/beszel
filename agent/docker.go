@@ -25,6 +25,7 @@ import (
 	"github.com/henrygd/beszel/agent/deltatracker"
 	"github.com/henrygd/beszel/agent/utils"
 	"github.com/henrygd/beszel/internal/entities/container"
+	"github.com/henrygd/beszel/internal/entities/system"
 
 	"github.com/blang/semver"
 )
@@ -52,20 +53,22 @@ const (
 )
 
 type dockerManager struct {
-	client              *http.Client                // Client to query Docker API
-	wg                  sync.WaitGroup              // WaitGroup to wait for all goroutines to finish
-	sem                 chan struct{}               // Semaphore to limit concurrent container requests
-	containerStatsMutex sync.RWMutex                // Mutex to prevent concurrent access to containerStatsMap
-	apiContainerList    []*container.ApiInfo        // List of containers from Docker API
-	containerStatsMap   map[string]*container.Stats // Keeps track of container stats
-	validIds            map[string]struct{}         // Map of valid container ids, used to prune invalid containers from containerStatsMap
-	goodDockerVersion   bool                        // Whether docker version is at least 25.0.0 (one-shot works correctly)
-	isWindows           bool                        // Whether the Docker Engine API is running on Windows
-	buf                 *bytes.Buffer               // Buffer to store and read response bodies
-	decoder             *json.Decoder               // Reusable JSON decoder that reads from buf
-	apiStats            *container.ApiStats         // Reusable API stats object
-	excludeContainers   []string                    // Patterns to exclude containers by name
-	usingPodman         bool                        // Whether the Docker Engine API is running on Podman
+	agent                *Agent                      // Used to propagate system detail changes back to the agent
+	client               *http.Client                // Client to query Docker API
+	wg                   sync.WaitGroup              // WaitGroup to wait for all goroutines to finish
+	sem                  chan struct{}               // Semaphore to limit concurrent container requests
+	containerStatsMutex  sync.RWMutex                // Mutex to prevent concurrent access to containerStatsMap
+	apiContainerList     []*container.ApiInfo        // List of containers from Docker API
+	containerStatsMap    map[string]*container.Stats // Keeps track of container stats
+	validIds             map[string]struct{}         // Map of valid container ids, used to prune invalid containers from containerStatsMap
+	goodDockerVersion    bool                        // Whether docker version is at least 25.0.0 (one-shot works correctly)
+	dockerVersionChecked bool                        // Whether a version probe has completed successfully
+	isWindows            bool                        // Whether the Docker Engine API is running on Windows
+	buf                  *bytes.Buffer               // Buffer to store and read response bodies
+	decoder              *json.Decoder               // Reusable JSON decoder that reads from buf
+	apiStats             *container.ApiStats         // Reusable API stats object
+	excludeContainers    []string                    // Patterns to exclude containers by name
+	usingPodman          bool                        // Whether the Docker Engine API is running on Podman
 
 	// Cache-time-aware tracking for CPU stats (similar to cpu.go)
 	// Maps cache time intervals to container-specific CPU usage tracking
@@ -78,13 +81,20 @@ type dockerManager struct {
 	networkSentTrackers map[uint16]*deltatracker.DeltaTracker[string, uint64]
 	networkRecvTrackers map[uint16]*deltatracker.DeltaTracker[string, uint64]
 	lastNetworkReadTime map[uint16]map[string]time.Time // cacheTimeMs -> containerId -> last network read time
-	retrySleep          func(time.Duration)
 }
 
 // userAgentRoundTripper is a custom http.RoundTripper that adds a User-Agent header to all requests
 type userAgentRoundTripper struct {
 	rt        http.RoundTripper
 	userAgent string
+}
+
+// dockerVersionResponse contains the /version fields used for engine checks.
+type dockerVersionResponse struct {
+	Version    string `json:"Version"`
+	Components []struct {
+		Name string `json:"Name"`
+	} `json:"Components"`
 }
 
 // RoundTrip implements the http.RoundTripper interface
@@ -134,7 +144,14 @@ func (dm *dockerManager) getDockerStats(cacheTimeMs uint16) ([]*container.Stats,
 		return nil, err
 	}
 
-	dm.isWindows = strings.Contains(resp.Header.Get("Server"), "windows")
+	// Detect Podman and Windows from Server header
+	serverHeader := resp.Header.Get("Server")
+	if !dm.usingPodman && detectPodmanFromHeader(serverHeader) {
+		dm.setIsPodman()
+	}
+	dm.isWindows = strings.Contains(serverHeader, "windows")
+
+	dm.ensureDockerVersionChecked()
 
 	containersLength := len(dm.apiContainerList)
 
@@ -588,7 +605,7 @@ func (dm *dockerManager) deleteContainerStatsSync(id string) {
 }
 
 // Creates a new http client for Docker or Podman API
-func newDockerManager() *dockerManager {
+func newDockerManager(agent *Agent) *dockerManager {
 	dockerHost, exists := utils.GetEnv("DOCKER_HOST")
 	if exists {
 		// return nil if set to empty string
@@ -654,6 +671,7 @@ func newDockerManager() *dockerManager {
 	}
 
 	manager := &dockerManager{
+		agent: agent,
 		client: &http.Client{
 			Timeout:   timeout,
 			Transport: userAgentTransport,
@@ -671,51 +689,54 @@ func newDockerManager() *dockerManager {
 		networkSentTrackers: make(map[uint16]*deltatracker.DeltaTracker[string, uint64]),
 		networkRecvTrackers: make(map[uint16]*deltatracker.DeltaTracker[string, uint64]),
 		lastNetworkReadTime: make(map[uint16]map[string]time.Time),
-		retrySleep:          time.Sleep,
 	}
 
-	// If using podman, return client
-	if strings.Contains(dockerHost, "podman") {
-		manager.usingPodman = true
-		manager.goodDockerVersion = true
-		return manager
-	}
-
-	// run version check in goroutine to avoid blocking (server may not be ready and requires retries)
-	go manager.checkDockerVersion()
-
-	// give version check a chance to complete before returning
-	time.Sleep(50 * time.Millisecond)
+	// Best-effort startup probe. If the engine is not ready yet, getDockerStats will
+	// retry after the first successful /containers/json request.
+	_, _ = manager.checkDockerVersion()
 
 	return manager
 }
 
 // checkDockerVersion checks Docker version and sets goodDockerVersion if at least 25.0.0.
 // Versions before 25.0.0 have a bug with one-shot which requires all requests to be made in one batch.
-func (dm *dockerManager) checkDockerVersion() {
-	var err error
-	var resp *http.Response
-	var versionInfo struct {
-		Version string `json:"Version"`
+func (dm *dockerManager) checkDockerVersion() (bool, error) {
+	resp, err := dm.client.Get("http://localhost/version")
+	if err != nil {
+		return false, err
 	}
-	const versionMaxTries = 2
-	for i := 1; i <= versionMaxTries; i++ {
-		resp, err = dm.client.Get("http://localhost/version")
-		if err == nil && resp.StatusCode == http.StatusOK {
-			break
-		}
-		if resp != nil {
-			resp.Body.Close()
-		}
-		if i < versionMaxTries {
-			slog.Debug("Failed to get Docker version; retrying", "attempt", i, "err", err, "response", resp)
-			dm.retrySleep(5 * time.Second)
-		}
+	if resp.StatusCode != http.StatusOK {
+		status := resp.Status
+		resp.Body.Close()
+		return false, fmt.Errorf("docker version request failed: %s", status)
 	}
-	if err != nil || resp.StatusCode != http.StatusOK {
+
+	var versionInfo dockerVersionResponse
+	serverHeader := resp.Header.Get("Server")
+	if err := dm.decode(resp, &versionInfo); err != nil {
+		return false, err
+	}
+
+	dm.applyDockerVersionInfo(serverHeader, &versionInfo)
+	dm.dockerVersionChecked = true
+	return true, nil
+}
+
+// ensureDockerVersionChecked retries the version probe after a successful
+// container list request.
+func (dm *dockerManager) ensureDockerVersionChecked() {
+	if dm.dockerVersionChecked {
 		return
 	}
-	if err := dm.decode(resp, &versionInfo); err != nil {
+	if _, err := dm.checkDockerVersion(); err != nil {
+		slog.Debug("Failed to get Docker version", "err", err)
+	}
+}
+
+// applyDockerVersionInfo updates version-dependent behavior from engine metadata.
+func (dm *dockerManager) applyDockerVersionInfo(serverHeader string, versionInfo *dockerVersionResponse) {
+	if detectPodmanEngine(serverHeader, versionInfo) {
+		dm.setIsPodman()
 		return
 	}
 	// if version > 24, one-shot works correctly and we can limit concurrent operations
@@ -940,4 +961,47 @@ func (dm *dockerManager) GetHostInfo() (info container.HostInfo, err error) {
 
 func (dm *dockerManager) IsPodman() bool {
 	return dm.usingPodman
+}
+
+// setIsPodman sets the manager to Podman mode and updates system details accordingly.
+func (dm *dockerManager) setIsPodman() {
+	if dm.usingPodman {
+		return
+	}
+	dm.usingPodman = true
+	dm.goodDockerVersion = true
+	dm.dockerVersionChecked = true
+	// keep system details updated - this may be detected late if server isn't ready when
+	// agent starts, so make sure we notify the hub if this happens later.
+	if dm.agent != nil {
+		dm.agent.updateSystemDetails(func(details *system.Details) {
+			details.Podman = true
+		})
+	}
+}
+
+// detectPodmanFromHeader identifies Podman from the Docker API server header.
+func detectPodmanFromHeader(server string) bool {
+	return strings.HasPrefix(server, "Libpod")
+}
+
+// detectPodmanFromVersion identifies Podman from the version payload.
+func detectPodmanFromVersion(versionInfo *dockerVersionResponse) bool {
+	if versionInfo == nil {
+		return false
+	}
+	for _, component := range versionInfo.Components {
+		if strings.HasPrefix(component.Name, "Podman") {
+			return true
+		}
+	}
+	return false
+}
+
+// detectPodmanEngine checks both header and version metadata for Podman.
+func detectPodmanEngine(serverHeader string, versionInfo *dockerVersionResponse) bool {
+	if detectPodmanFromHeader(serverHeader) {
+		return true
+	}
+	return detectPodmanFromVersion(versionInfo)
 }

@@ -1,3 +1,4 @@
+import { t } from "@lingui/core/macro"
 import { Trans } from "@lingui/react/macro"
 import { getPagePath } from "@nanostores/router"
 import {
@@ -47,6 +48,8 @@ export default function Navbar() {
 
 	const AdminLinks = AdminDropdownGroup()
 
+	const systemTranslation = t`System`
+
 	return (
 		<div className="flex items-center h-14 md:h-16 bg-card px-4 pe-3 sm:px-6 border border-border/60 bt-0 rounded-md my-4">
 			<Suspense>
@@ -95,7 +98,10 @@ export default function Navbar() {
 						<DropdownMenuLabel className="max-w-40 truncate">{pb.authStore.record?.email}</DropdownMenuLabel>
 						<DropdownMenuSeparator />
 						<DropdownMenuGroup>
-							<DropdownMenuItem onClick={() => navigate(getPagePath($router, "home"))} className="flex items-center">
+							<DropdownMenuItem
+								onClick={() => navigate(getPagePath($router, "containers"))}
+								className="flex items-center"
+							>
 								<ContainerIcon className="h-4 w-4 me-2.5" strokeWidth={1.5} />
 								<Trans>All Containers</Trans>
 							</DropdownMenuItem>
@@ -126,7 +132,7 @@ export default function Navbar() {
 								}}
 							>
 								<PlusIcon className="h-4 w-4 me-2.5" />
-								<Trans>Add System</Trans>
+								<Trans>Add {{ foo: systemTranslation }}</Trans>
 							</DropdownMenuItem>
 						</DropdownMenuGroup>
 						<DropdownMenuSeparator />
@@ -213,7 +219,7 @@ export default function Navbar() {
 				</DropdownMenu>
 				<Button variant="outline" className="flex gap-1 ms-2" onClick={() => setAddSystemDialogOpen(true)}>
 					<PlusIcon className="h-4 w-4 -ms-1" />
-					<Trans>Add System</Trans>
+					<Trans>Add {{ foo: systemTranslation }}</Trans>
 				</Button>
 			</div>
 		</div>
