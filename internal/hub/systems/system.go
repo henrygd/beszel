@@ -156,11 +156,9 @@ func (sys *System) update() error {
 		if sys.smartInterval <= 0 {
 			sys.smartInterval = time.Hour
 		}
-		lastFetch, _ := sys.manager.smartFetchMap.GetOk(sys.Id)
-		if time.Since(time.UnixMilli(lastFetch-1e4)) >= sys.smartInterval && sys.smartFetching.CompareAndSwap(false, true) {
+		if sys.shouldFetchSmart() && sys.smartFetching.CompareAndSwap(false, true) {
 			go func() {
 				defer sys.smartFetching.Store(false)
-				sys.manager.smartFetchMap.Set(sys.Id, time.Now().UnixMilli(), sys.smartInterval+time.Minute)
 				_ = sys.FetchAndSaveSmartDevices()
 			}()
 		}
@@ -643,6 +641,7 @@ func (s *System) createSSHClient() error {
 		return err
 	}
 	s.agentVersion, _ = extractAgentVersion(string(s.client.Conn.ServerVersion()))
+	s.manager.resetFailedSmartFetchState(s.Id)
 	return nil
 }
 
