@@ -145,6 +145,7 @@ func (sys *System) update() error {
 		// update smart interval if it's set on the agent side
 		if data.Details.SmartInterval > 0 {
 			sys.smartInterval = data.Details.SmartInterval
+			sys.manager.hub.Logger().Info("SMART interval updated from agent details", "system", sys.Id, "interval", sys.smartInterval.String())
 			// make sure we reset expiration of lastFetch to remain as long as the new smart interval
 			// to prevent premature expiration leading to new fetch if interval is different.
 			sys.manager.smartFetchMap.UpdateExpiration(sys.Id, sys.smartInterval+time.Minute)
@@ -157,6 +158,7 @@ func (sys *System) update() error {
 			sys.smartInterval = time.Hour
 		}
 		if sys.shouldFetchSmart() && sys.smartFetching.CompareAndSwap(false, true) {
+			sys.manager.hub.Logger().Info("SMART fetch", "system", sys.Id, "interval", sys.smartInterval.String())
 			go func() {
 				defer sys.smartFetching.Store(false)
 				_ = sys.FetchAndSaveSmartDevices()

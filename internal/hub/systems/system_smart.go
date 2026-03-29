@@ -28,7 +28,12 @@ func (sys *System) recordSmartFetchResult(err error, deviceCount int) {
 	if sys.manager == nil {
 		return
 	}
-	sys.manager.smartFetchMap.Set(sys.Id, err == nil && deviceCount > 0, sys.smartFetchInterval()+time.Minute)
+	interval := sys.smartFetchInterval()
+	success := err == nil && deviceCount > 0
+	if sys.manager.hub != nil {
+		sys.manager.hub.Logger().Info("SMART fetch result", "system", sys.Id, "success", success, "devices", deviceCount, "interval", interval.String(), "err", err)
+	}
+	sys.manager.smartFetchMap.Set(sys.Id, success, interval+time.Minute)
 }
 
 // shouldFetchSmart returns true when there is no active SMART cooldown entry for this system.
