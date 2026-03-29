@@ -163,9 +163,9 @@ export default function ContainersTable({ systemId }: { systemId?: string }) {
 	const visibleColumns = table.getVisibleLeafColumns()
 
 	return (
-		<Card className="p-6 @container w-full">
-			<CardHeader className="p-0 mb-4">
-				<div className="grid md:flex gap-5 w-full items-end">
+		<Card className="@container w-full px-3 py-5 sm:py-6 sm:px-6">
+			<CardHeader className="p-0 mb-3 sm:mb-4">
+				<div className="grid md:flex gap-x-5 gap-y-3 w-full items-end">
 					<div className="px-2 sm:px-1">
 						<CardTitle className="mb-2">
 							<Trans>All Containers</Trans>
@@ -462,7 +462,6 @@ function ContainerSheet({
 function ContainersTableHead({ table }: { table: TableType<ContainerRecord> }) {
 	return (
 		<TableHeader className="sticky top-0 z-50 w-full border-b-2">
-			<div className="absolute -top-2 left-0 w-full h-4 bg-table-header z-50"></div>
 			{table.getHeaderGroups().map((headerGroup) => (
 				<tr key={headerGroup.id}>
 					{headerGroup.headers.map((header) => {

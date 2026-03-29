@@ -134,10 +134,10 @@ export function QuietHours() {
 			const startMinutes = startDate.getUTCHours() * 60 + startDate.getUTCMinutes()
 			const endMinutes = endDate.getUTCHours() * 60 + endDate.getUTCMinutes()
 
-			// Convert UTC to local time offset
-			const offset = now.getTimezoneOffset()
-			const localStartMinutes = (startMinutes - offset + 1440) % 1440
-			const localEndMinutes = (endMinutes - offset + 1440) % 1440
+			// Convert UTC to local time using the stored date's offset, not the current date's offset
+			// This avoids DST mismatch when records were saved in a different DST period
+			const localStartMinutes = (startMinutes - startDate.getTimezoneOffset() + 1440) % 1440
+			const localEndMinutes = (endMinutes - endDate.getTimezoneOffset() + 1440) % 1440
 
 			// Handle cases where window spans midnight
 			if (localStartMinutes <= localEndMinutes) {
@@ -347,12 +347,13 @@ function QuietHoursDialog({
 
 			if (windowType === "daily") {
 				// For daily windows, convert local time to UTC
-				// Create a date with the time in local timezone, then convert to UTC
-				const startDate = new Date(`2000-01-01T${startTime}:00`)
+				// Use today's date so the current DST offset is applied (not a fixed historical date)
+				const today = new Date().toISOString().split("T")[0]
+				const startDate = new Date(`${today}T${startTime}:00`)
 				startValue = startDate.toISOString()
 
 				if (endTime) {
-					const endDate = new Date(`2000-01-01T${endTime}:00`)
+					const endDate = new Date(`${today}T${endTime}:00`)
 					endValue = endDate.toISOString()
 				}
 			} else {

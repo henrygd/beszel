@@ -147,6 +147,12 @@
 	button {
 		cursor: pointer;
 	}
+	
+	/* cosmetic patch for half pixel gap in table headers when scrolling content shows at top  */
+	thead.sticky:before {
+		content: "";
+		@apply absolute -top-2 left-0 w-full h-4 bg-table-header z-50	
+	}
 }
 
 @utility container {
@@ -161,6 +167,14 @@
 @utility ns-dialog {
 	/* New system dialog width */
 	min-width: 30.3rem;
+}
+
+@utility scrollbar-hide {
+	-ms-overflow-style: none;
+	scrollbar-width: none;
+	&::-webkit-scrollbar {
+		display: none;
+	}
 }
 
 .recharts-tooltip-wrapper {

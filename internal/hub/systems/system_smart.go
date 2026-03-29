@@ -4,18 +4,61 @@ import (
 	"database/sql"
 	"errors"
 	"strings"
+	"time"
 
 	"github.com/henrygd/beszel/internal/entities/smart"
 	"github.com/pocketbase/pocketbase/core"
 )
 
+type smartFetchState struct {
+	LastAttempt int64
+	Successful  bool
+}
+
 // FetchAndSaveSmartDevices fetches SMART data from the agent and saves it to the database
 func (sys *System) FetchAndSaveSmartDevices() error {
 	smartData, err := sys.FetchSmartDataFromAgent()
-	if err != nil || len(smartData) == 0 {
+	if err != nil {
+		sys.recordSmartFetchResult(err, 0)
 		return err
 	}
-	return sys.saveSmartDevices(smartData)
+	err = sys.saveSmartDevices(smartData)
+	sys.recordSmartFetchResult(err, len(smartData))
+	return err
+}
+
+// recordSmartFetchResult stores a cooldown entry for the SMART interval and marks
+// whether the last fetch produced any devices, so failed setup can retry on reconnect.
+func (sys *System) recordSmartFetchResult(err error, deviceCount int) {
+	if sys.manager == nil {
+		return
+	}
+	interval := sys.smartFetchInterval()
+	success := err == nil && deviceCount > 0
+	if sys.manager.hub != nil {
+		sys.manager.hub.Logger().Info("SMART fetch result", "system", sys.Id, "success", success, "devices", deviceCount, "interval", interval.String(), "err", err)
+	}
+	sys.manager.smartFetchMap.Set(sys.Id, smartFetchState{LastAttempt: time.Now().UnixMilli(), Successful: success}, interval+time.Minute)
+}
+
+// shouldFetchSmart returns true when there is no active SMART cooldown entry for this system.
+func (sys *System) shouldFetchSmart() bool {
+	if sys.manager == nil {
+		return true
+	}
+	state, ok := sys.manager.smartFetchMap.GetOk(sys.Id)
+	if !ok {
+		return true
+	}
+	return !time.UnixMilli(state.LastAttempt).Add(sys.smartFetchInterval()).After(time.Now())
+}
+
+// smartFetchInterval returns the agent-provided SMART interval or the default when unset.
+func (sys *System) smartFetchInterval() time.Duration {
+	if sys.smartInterval > 0 {
+		return sys.smartInterval
+	}
+	return time.Hour
 }
 
 // saveSmartDevices saves SMART device data to the smart_devices collection

@@ -535,3 +535,14 @@ export interface SystemdServiceDetails {
 	Wants: string[];
 	WantsMountsFor: any[];
 }
+
+export interface BeszelInfo {
+	key: string // public key
+	v: string // version
+	cu: boolean // check updates
+}
+
+export interface UpdateInfo {
+	v: string // new version
+	url: string // url to new version
+}

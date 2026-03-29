@@ -4,6 +4,9 @@ import (
 	"io"
 	"math"
 	"os"
+	"os/exec"
+	"path/filepath"
+	"runtime"
 	"strconv"
 	"strings"
 )
@@ -85,4 +88,25 @@ func ReadUintFile(path string) (uint64, bool) {
 		return 0, false
 	}
 	return parsed, true
+}
+
+// LookPathHomebrew is like exec.LookPath but also checks Homebrew paths.
+func LookPathHomebrew(file string) (string, error) {
+	foundPath, lookPathErr := exec.LookPath(file)
+	if lookPathErr == nil {
+		return foundPath, nil
+	}
+	var homebrewPath string
+	switch runtime.GOOS {
+	case "darwin":
+		homebrewPath = filepath.Join("/opt", "homebrew", "bin", file)
+	case "linux":
+		homebrewPath = filepath.Join("/home", "linuxbrew", ".linuxbrew", "bin", file)
+	}
+	if homebrewPath != "" {
+		if _, err := os.Stat(homebrewPath); err == nil {
+			return homebrewPath, nil
+		}
+	}
+	return "", lookPathErr
 }

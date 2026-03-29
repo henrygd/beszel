@@ -146,7 +146,9 @@ export const createColumns = (
 	{
 		accessorKey: "model",
 		sortingFn: (a, b) => a.original.model.localeCompare(b.original.model),
-		header: ({ column }) => <HeaderButton column={column} name={t`Model`} Icon={Box} />,
+		header: ({ column }) => (
+			<HeaderButton column={column} name={t({ message: "Model", comment: "Device model" })} Icon={Box} />
+		),
 		cell: ({ getValue }) => (
 			<div
 				className="max-w-48 truncate ms-1"
@@ -532,9 +534,9 @@ export default function DisksTable({ systemId }: { systemId?: string }) {
 
 	return (
 		<div>
-			<Card className="p-6 @container w-full">
-				<CardHeader className="p-0 mb-4">
-					<div className="grid md:flex gap-5 w-full items-end">
+			<Card className="@container w-full px-3 py-5 sm:py-6 sm:px-6">
+				<CardHeader className="p-0 mb-3 sm:mb-4">
+					<div className="grid md:flex gap-x-5 gap-y-3 w-full items-end">
 						<div className="px-2 sm:px-1">
 							<CardTitle className="mb-2">S.M.A.R.T.</CardTitle>
 							<CardDescription className="flex">
@@ -620,11 +622,13 @@ const SmartDevicesTable = memo(function SmartDevicesTable({
 								return <SmartDeviceTableRow key={row.id} row={row} virtualRow={virtualRow} openSheet={openSheet} />
 							})
 						) : (
-							<TableRow>
-								<TableCell colSpan={colLength} className="h-24 text-center pointer-events-none">
-									{data ? t`No results.` : <LoaderCircleIcon className="animate-spin size-10 opacity-60 mx-auto" />}
-								</TableCell>
-							</TableRow>
+							<TableCell colSpan={colLength} className="h-37 text-center pointer-events-none">
+								{data ? (
+									<Trans>No results.</Trans>
+								) : (
+									<LoaderCircleIcon className="animate-spin size-10 opacity-60 mx-auto" />
+								)}
+							</TableCell>
 						)}
 					</TableBody>
 				</table>
@@ -636,7 +640,6 @@ const SmartDevicesTable = memo(function SmartDevicesTable({
 function SmartTableHead({ table }: { table: TableType<SmartDeviceRecord> }) {
 	return (
 		<TableHeader className="sticky top-0 z-50 w-full border-b-2">
-			<div className="absolute -top-2 left-0 w-full h-4 bg-table-header z-50"></div>
 			{table.getHeaderGroups().map((headerGroup) => (
 				<TableRow key={headerGroup.id}>
 					{headerGroup.headers.map((header) => (

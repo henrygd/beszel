@@ -111,6 +111,9 @@ func (ws *WsConn) Close(msg []byte) {
 
 // Ping sends a ping frame to keep the connection alive.
 func (ws *WsConn) Ping() error {
+	if ws.conn == nil {
+		return gws.ErrConnClosed
+	}
 	ws.conn.SetDeadline(time.Now().Add(deadline))
 	return ws.conn.WritePing(nil)
 }

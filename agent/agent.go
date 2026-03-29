@@ -19,6 +19,8 @@ import (
 	gossh "golang.org/x/crypto/ssh"
 )
 
+const defaultDataCacheTimeMs uint16 = 60_000
+
 type Agent struct {
 	sync.Mutex                                                                      // Used to lock agent while collecting data
 	debug                     bool                                                  // true if LOG_LEVEL is set to debug
@@ -36,6 +38,7 @@ type Agent struct {
 	sensorConfig              *SensorConfig                                         // Sensors config
 	systemInfo                system.Info                                           // Host system info (dynamic)
 	systemDetails             system.Details                                        // Host system details (static, once-per-connection)
+	detailsDirty              bool                                                  // Whether system details have changed and need to be resent
 	gpuManager                *GPUManager                                           // Manages GPU data
 	cache                     *systemDataCache                                      // Cache for system stats based on cache time
 	connectionManager         *ConnectionManager                                    // Channel to signal connection events
@@ -97,7 +100,7 @@ func NewAgent(dataDir ...string) (agent *Agent, err error) {
 	slog.Debug(beszel.Version)
 
 	// initialize docker manager
-	agent.dockerManager = newDockerManager()
+	agent.dockerManager = newDockerManager(agent)
 
 	// initialize system info
 	agent.refreshSystemDetails()
@@ -142,7 +145,7 @@ func NewAgent(dataDir ...string) (agent *Agent, err error) {
 
 	// if debugging, print stats
 	if agent.debug {
-		slog.Debug("Stats", "data", agent.gatherStats(common.DataRequestOptions{CacheTimeMs: 60_000, IncludeDetails: true}))
+		slog.Debug("Stats", "data", agent.gatherStats(common.DataRequestOptions{CacheTimeMs: defaultDataCacheTimeMs, IncludeDetails: true}))
 	}
 
 	return agent, nil
@@ -164,11 +167,6 @@ func (a *Agent) gatherStats(options common.DataRequestOptions) *system.CombinedD
 		Info:  a.systemInfo,
 	}
 
-	// Include static system details only when requested
-	if options.IncludeDetails {
-		data.Details = &a.systemDetails
-	}
-
 	// slog.Info("System data", "data", data, "cacheTimeMs", cacheTimeMs)
 
 	if a.dockerManager != nil {
@@ -181,7 +179,7 @@ func (a *Agent) gatherStats(options common.DataRequestOptions) *system.CombinedD
 	}
 
 	// skip updating systemd services if cache time is not the default 60sec interval
-	if a.systemdManager != nil && cacheTimeMs == 60_000 {
+	if a.systemdManager != nil && cacheTimeMs == defaultDataCacheTimeMs {
 		totalCount := uint16(a.systemdManager.getServiceStatsCount())
 		if totalCount > 0 {
 			numFailed := a.systemdManager.getFailedServiceCount()
@@ -212,7 +210,8 @@ func (a *Agent) gatherStats(options common.DataRequestOptions) *system.CombinedD
 	slog.Debug("Extra FS", "data", data.Stats.ExtraFs)
 
 	a.cache.Set(data, cacheTimeMs)
-	return data
+
+	return a.attachSystemDetails(data, cacheTimeMs, options.IncludeDetails)
 }
 
 // Start initializes and starts the agent with optional WebSocket connection
