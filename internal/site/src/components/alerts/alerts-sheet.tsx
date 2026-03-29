@@ -8,6 +8,7 @@ import { $router, Link } from "@/components/router"
 import { Checkbox } from "@/components/ui/checkbox"
 import { DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Switch } from "@/components/ui/switch"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { toast } from "@/components/ui/use-toast"
@@ -64,10 +65,44 @@ const deleteAlerts = debounce(async ({ name, systems }: { name: string; systems:
 
 export const AlertDialogContent = memo(function AlertDialogContent({ system }: { system: SystemRecord }) {
 	const alerts = useStore($alerts)
+	const systems = useStore($systems)
 	const [overwriteExisting, setOverwriteExisting] = useState<boolean | "indeterminate">(false)
 	const [currentTab, setCurrentTab] = useState("system")
+	const [copyKey, setCopyKey] = useState(0)
 
 	const systemAlerts = alerts[system.id] ?? new Map()
+
+	// Systems that have at least one alert configured (excluding the current system)
+	const systemsWithAlerts = useMemo(
+		() => systems.filter((s) => s.id !== system.id && alerts[s.id]?.size),
+		[systems, alerts, system.id]
+	)
+
+	async function copyAlertsFromSystem(sourceSystemId: string) {
+		const sourceAlerts = $alerts.get()[sourceSystemId]
+		if (!sourceAlerts?.size) return
+		try {
+			await Promise.all(
+				Array.from(sourceAlerts.values()).map((alert) =>
+					pb.send<{ success: boolean }>(endpoint, {
+						method: "POST",
+						body: { name: alert.name, value: alert.value, min: alert.min, systems: [system.id], overwrite: true },
+					})
+				)
+			)
+			// Optimistically update the store so components re-mount with correct data
+			// before the realtime subscription event arrives
+			const newSystemAlerts = new Map($alerts.get()[system.id] ?? new Map())
+			for (const alert of sourceAlerts.values()) {
+				newSystemAlerts.set(alert.name, { ...alert, system: system.id, triggered: false })
+			}
+			$alerts.setKey(system.id, newSystemAlerts)
+			setCopyKey((k) => k + 1)
+			toast({ title: t`Alerts copied successfully` })
+		} catch (error) {
+			failedUpdateToast(error)
+		}
+	}
 
 	// We need to keep a copy of alerts when we switch to global tab. If we always compare to
 	// current alerts, it will only be updated when first checked, then won't be updated because
@@ -104,7 +139,21 @@ export const AlertDialogContent = memo(function AlertDialogContent({ system }: {
 					</TabsTrigger>
 				</TabsList>
 				<TabsContent value="system">
-					<div className="grid gap-3">
+					{systemsWithAlerts.length > 0 && (
+						<Select onValueChange={copyAlertsFromSystem}>
+							<SelectTrigger className="mb-3 h-9 text-muted-foreground">
+								<SelectValue placeholder={t`Copy alerts from...`} />
+							</SelectTrigger>
+							<SelectContent>
+								{systemsWithAlerts.map((s) => (
+									<SelectItem key={s.id} value={s.id}>
+										{s.name}
+									</SelectItem>
+								))}
+							</SelectContent>
+						</Select>
+					)}
+					<div key={copyKey} className="grid gap-3">
 						{alertKeys.map((name) => (
 							<AlertContent
 								key={name}
