@@ -41,10 +41,10 @@ var errSystemExists = errors.New("system exists")
 // SystemManager manages a collection of monitored systems and their connections.
 // It handles system lifecycle, status updates, and maintains both SSH and WebSocket connections.
 type SystemManager struct {
-	hub           hubLike                       // Hub interface for database and alert operations
-	systems       *store.Store[string, *System] // Thread-safe store of active systems
-	sshConfig     *ssh.ClientConfig             // SSH client configuration for system connections
-	smartFetchMap *expirymap.ExpiryMap[bool]    // Stores whether the last SMART fetch succeeded while entry TTL enforces fetch interval
+	hub           hubLike                               // Hub interface for database and alert operations
+	systems       *store.Store[string, *System]         // Thread-safe store of active systems
+	sshConfig     *ssh.ClientConfig                     // SSH client configuration for system connections
+	smartFetchMap *expirymap.ExpiryMap[smartFetchState] // Stores last SMART fetch time/result; TTL is only for cleanup
 }
 
 // hubLike defines the interface requirements for the hub dependency.
@@ -62,7 +62,7 @@ func NewSystemManager(hub hubLike) *SystemManager {
 	return &SystemManager{
 		systems:       store.New(map[string]*System{}),
 		hub:           hub,
-		smartFetchMap: expirymap.New[bool](time.Hour),
+		smartFetchMap: expirymap.New[smartFetchState](time.Hour),
 	}
 }
 
@@ -321,8 +321,8 @@ func (sm *SystemManager) AddWebSocketSystem(systemId string, agentVersion semver
 // resetFailedSmartFetchState clears only failed SMART cooldown entries so a fresh
 // agent reconnect retries SMART discovery immediately after configuration changes.
 func (sm *SystemManager) resetFailedSmartFetchState(systemID string) {
-	succeeded, ok := sm.smartFetchMap.GetOk(systemID)
-	if ok && !succeeded {
+	state, ok := sm.smartFetchMap.GetOk(systemID)
+	if ok && !state.Successful {
 		sm.smartFetchMap.Remove(systemID)
 	}
 }

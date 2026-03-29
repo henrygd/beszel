@@ -10,6 +10,11 @@ import (
 	"github.com/pocketbase/pocketbase/core"
 )
 
+type smartFetchState struct {
+	LastAttempt int64
+	Successful  bool
+}
+
 // FetchAndSaveSmartDevices fetches SMART data from the agent and saves it to the database
 func (sys *System) FetchAndSaveSmartDevices() error {
 	smartData, err := sys.FetchSmartDataFromAgent()
@@ -33,7 +38,7 @@ func (sys *System) recordSmartFetchResult(err error, deviceCount int) {
 	if sys.manager.hub != nil {
 		sys.manager.hub.Logger().Info("SMART fetch result", "system", sys.Id, "success", success, "devices", deviceCount, "interval", interval.String(), "err", err)
 	}
-	sys.manager.smartFetchMap.Set(sys.Id, success, interval+time.Minute)
+	sys.manager.smartFetchMap.Set(sys.Id, smartFetchState{LastAttempt: time.Now().UnixMilli(), Successful: success}, interval+time.Minute)
 }
 
 // shouldFetchSmart returns true when there is no active SMART cooldown entry for this system.
@@ -41,8 +46,11 @@ func (sys *System) shouldFetchSmart() bool {
 	if sys.manager == nil {
 		return true
 	}
-	_, ok := sys.manager.smartFetchMap.GetOk(sys.Id)
-	return !ok
+	state, ok := sys.manager.smartFetchMap.GetOk(sys.Id)
+	if !ok {
+		return true
+	}
+	return !time.UnixMilli(state.LastAttempt).Add(sys.smartFetchInterval()).After(time.Now())
 }
 
 // smartFetchInterval returns the agent-provided SMART interval or the default when unset.
