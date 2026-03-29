@@ -18,7 +18,7 @@ import { listenKeys } from "nanostores"
 import { memo, type ReactNode, useEffect, useMemo, useRef, useState } from "react"
 import { getStatusColor, systemdTableCols } from "@/components/systemd-table/systemd-table-columns"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
-import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet"
 import { TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
@@ -161,13 +161,13 @@ export default function SystemdTable({ systemId }: { systemId?: string }) {
 						<CardTitle className="mb-2">
 							<Trans>Systemd Services</Trans>
 						</CardTitle>
-						<CardDescription className="flex items-center">
+						<div className="text-sm text-muted-foreground flex items-center flex-wrap">
 							<Trans>Total: {data.length}</Trans>
 							<Separator orientation="vertical" className="h-4 mx-2 bg-primary/40" />
 							<Trans>Failed: {statusTotals[ServiceStatus.Failed]}</Trans>
 							<Separator orientation="vertical" className="h-4 mx-2 bg-primary/40" />
 							<Trans>Updated every 10 minutes.</Trans>
-						</CardDescription>
+						</div>
 					</div>
 					<Input
 						placeholder={t`Filter...`}

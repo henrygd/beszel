@@ -66,8 +66,8 @@ export default function LineChartDefault({
 	const { yAxisWidth, updateYAxisWidth } = useYAxisWidth()
 	const { isIntersecting, ref } = useIntersectionObserver({ freeze: false })
 	const sourceData = customData ?? chartData.systemStats
-	// Only update the rendered data while the chart is visible
 	const [displayData, setDisplayData] = useState(sourceData)
+	const [displayMaxToggled, setDisplayMaxToggled] = useState(maxToggled)
 
 	// Reduce chart redraws by only updating while visible or when chart time changes
 	useEffect(() => {
@@ -77,7 +77,10 @@ export default function LineChartDefault({
 		if (shouldUpdate) {
 			setDisplayData(sourceData)
 		}
-	}, [displayData, isIntersecting, sourceData])
+		if (isIntersecting && maxToggled !== displayMaxToggled) {
+			setDisplayMaxToggled(maxToggled)
+		}
+	}, [displayData, displayMaxToggled, isIntersecting, maxToggled, sourceData])
 
 	// Use a stable key derived from data point identities and visual properties
 	const linesKey = dataPoints?.map((d) => `${d.label}:${d.strokeOpacity ?? ""}`).join("\0")
@@ -105,14 +108,14 @@ export default function LineChartDefault({
 				/>
 			)
 		})
-	}, [linesKey, maxToggled])
+	}, [linesKey, displayMaxToggled])
 
 	return useMemo(() => {
 		if (displayData.length === 0) {
 			return null
 		}
 		// if (logRender) {
-		// console.log("Rendered at", new Date(), "for", dataPoints?.at(0)?.label)
+		// console.log("Rendered", dataPoints?.map((d) => d.label).join(", "), new Date())
 		// }
 		return (
 			<ChartContainer
@@ -162,5 +165,5 @@ export default function LineChartDefault({
 				</LineChart>
 			</ChartContainer>
 		)
-	}, [displayData, yAxisWidth, showTotal, filter, chartData.chartTime])
+	}, [displayData, yAxisWidth, filter, Lines])
 }

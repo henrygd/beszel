@@ -1,3 +1,17 @@
+## 0.18.6
+
+- Add apple-touch-icon link to index.html (#1850)
+
+- Fix UI bug where charts did not display 1m max until next update
+
+- Fix regression in partition discovery on Docker (#1847)
+
+- Fix agent detection of Podman when using socket proxy (#1846)
+
+- Fix NVML GPU collection being disabled when `nvidia-smi` is not in PATH (#1849)
+
+- Reset SMART interval on agent reconnect if the agent hasn't collected SMART data, allowing config changes to take effect immediately
+
 ## 0.18.5
 
 - Add "update available" notification in hub web UI with `CHECK_UPDATES=true` (#1830)

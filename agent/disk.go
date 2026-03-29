@@ -1,6 +1,7 @@
 package agent
 
 import (
+	"context"
 	"log/slog"
 	"os"
 	"path/filepath"
@@ -273,7 +274,7 @@ func (a *Agent) initializeDiskInfo() {
 	hasRoot := false
 	isWindows := runtime.GOOS == "windows"
 
-	partitions, err := disk.Partitions(false)
+	partitions, err := disk.PartitionsWithContext(context.Background(), true)
 	if err != nil {
 		slog.Error("Error getting disk partitions", "err", err)
 	}

@@ -115,6 +115,26 @@ func (a *Agent) refreshSystemDetails() {
 	}
 }
 
+// attachSystemDetails returns details only for fresh default-interval responses.
+func (a *Agent) attachSystemDetails(data *system.CombinedData, cacheTimeMs uint16, includeRequested bool) *system.CombinedData {
+	if cacheTimeMs != defaultDataCacheTimeMs || (!includeRequested && !a.detailsDirty) {
+		return data
+	}
+
+	// copy data to avoid adding details to the original cached struct
+	response := *data
+	response.Details = &a.systemDetails
+	a.detailsDirty = false
+	return &response
+}
+
+// updateSystemDetails applies a mutation to the static details payload and marks
+// it for inclusion on the next fresh default-interval response.
+func (a *Agent) updateSystemDetails(updateFunc func(details *system.Details)) {
+	updateFunc(&a.systemDetails)
+	a.detailsDirty = true
+}
+
 // Returns current info, stats about the host system
 func (a *Agent) getSystemStats(cacheTimeMs uint16) system.Stats {
 	var systemStats system.Stats
