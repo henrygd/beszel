@@ -25,6 +25,30 @@ type UpdateInfo struct {
 	Url       string `json:"url"`
 }
 
+// Middleware to allow only admin role users
+var requireAdminRole = customAuthMiddleware(func(e *core.RequestEvent) bool {
+	return e.Auth.GetString("role") == "admin"
+})
+
+// Middleware to exclude readonly users
+var excludeReadOnlyRole = customAuthMiddleware(func(e *core.RequestEvent) bool {
+	return e.Auth.GetString("role") != "readonly"
+})
+
+// customAuthMiddleware handles boilerplate for custom authentication middlewares. fn should
+// return true if the request is allowed, false otherwise. e.Auth is guaranteed to be non-nil.
+func customAuthMiddleware(fn func(*core.RequestEvent) bool) func(*core.RequestEvent) error {
+	return func(e *core.RequestEvent) error {
+		if e.Auth == nil {
+			return e.UnauthorizedError("The request requires valid record authorization token.", nil)
+		}
+		if !fn(e) {
+			return e.ForbiddenError("The authorized record is not allowed to perform this action.", nil)
+		}
+		return e.Next()
+	}
+}
+
 // registerMiddlewares registers custom middlewares
 func (h *Hub) registerMiddlewares(se *core.ServeEvent) {
 	// authorizes request with user matching the provided email
@@ -33,7 +57,7 @@ func (h *Hub) registerMiddlewares(se *core.ServeEvent) {
 			return e.Next()
 		}
 		isAuthRefresh := e.Request.URL.Path == "/api/collections/users/auth-refresh" && e.Request.Method == http.MethodPost
-		e.Auth, err = e.App.FindFirstRecordByData("users", "email", email)
+		e.Auth, err = e.App.FindAuthRecordByEmail("users", email)
 		if err != nil || !isAuthRefresh {
 			return e.Next()
 		}
@@ -84,19 +108,19 @@ func (h *Hub) registerApiRoutes(se *core.ServeEvent) error {
 	// send test notification
 	apiAuth.POST("/test-notification", h.SendTestNotification)
 	// heartbeat status and test
-	apiAuth.GET("/heartbeat-status", h.getHeartbeatStatus)
-	apiAuth.POST("/test-heartbeat", h.testHeartbeat)
+	apiAuth.GET("/heartbeat-status", h.getHeartbeatStatus).BindFunc(requireAdminRole)
+	apiAuth.POST("/test-heartbeat", h.testHeartbeat).BindFunc(requireAdminRole)
 	// get config.yml content
-	apiAuth.GET("/config-yaml", config.GetYamlConfig)
+	apiAuth.GET("/config-yaml", config.GetYamlConfig).BindFunc(requireAdminRole)
 	// handle agent websocket connection
 	apiNoAuth.GET("/agent-connect", h.handleAgentConnect)
 	// get or create universal tokens
-	apiAuth.GET("/universal-token", h.getUniversalToken)
+	apiAuth.GET("/universal-token", h.getUniversalToken).BindFunc(excludeReadOnlyRole)
 	// update / delete user alerts
 	apiAuth.POST("/user-alerts", alerts.UpsertUserAlerts)
 	apiAuth.DELETE("/user-alerts", alerts.DeleteUserAlerts)
 	// refresh SMART devices for a system
-	apiAuth.POST("/smart/refresh", h.refreshSmartData)
+	apiAuth.POST("/smart/refresh", h.refreshSmartData).BindFunc(excludeReadOnlyRole)
 	// get systemd service details
 	apiAuth.GET("/systemd/info", h.getSystemdInfo)
 	// /containers routes
@@ -246,9 +270,6 @@ func (h *Hub) getUniversalToken(e *core.RequestEvent) error {
 
 // getHeartbeatStatus returns current heartbeat configuration and whether it's enabled
 func (h *Hub) getHeartbeatStatus(e *core.RequestEvent) error {
-	if e.Auth.GetString("role") != "admin" {
-		return e.ForbiddenError("Requires admin role", nil)
-	}
 	if h.hb == nil {
 		return e.JSON(http.StatusOK, map[string]any{
 			"enabled": false,
@@ -266,9 +287,6 @@ func (h *Hub) getHeartbeatStatus(e *core.RequestEvent) error {
 
 // testHeartbeat triggers a single heartbeat ping and returns the result
 func (h *Hub) testHeartbeat(e *core.RequestEvent) error {
-	if e.Auth.GetString("role") != "admin" {
-		return e.ForbiddenError("Requires admin role", nil)
-	}
 	if h.hb == nil {
 		return e.JSON(http.StatusOK, map[string]any{
 			"err": "Heartbeat not configured. Set HEARTBEAT_URL environment variable.",

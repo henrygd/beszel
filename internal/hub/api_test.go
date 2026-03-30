@@ -34,19 +34,13 @@ func TestApiRoutesAuthentication(t *testing.T) {
 	user, err := beszelTests.CreateUser(hub, "testuser@example.com", "password123")
 	require.NoError(t, err, "Failed to create test user")
 
-	adminUser, err := beszelTests.CreateRecord(hub, "users", map[string]any{
-		"email":    "admin@example.com",
-		"password": "password123",
-		"role":     "admin",
-	})
+	adminUser, err := beszelTests.CreateUserWithRole(hub, "admin@example.com", "password123", "admin")
 	require.NoError(t, err, "Failed to create admin user")
 	adminUserToken, err := adminUser.NewAuthToken()
 
-	// superUser, err := beszelTests.CreateRecord(hub, core.CollectionNameSuperusers, map[string]any{
-	// 	"email":    "superuser@example.com",
-	// 	"password": "password123",
-	// })
-	// require.NoError(t, err, "Failed to create superuser")
+	readOnlyUser, err := beszelTests.CreateUserWithRole(hub, "readonly@example.com", "password123", "readonly")
+	require.NoError(t, err, "Failed to create readonly user")
+	readOnlyUserToken, err := readOnlyUser.NewAuthToken()
 
 	userToken, err := user.NewAuthToken()
 	require.NoError(t, err, "Failed to create auth token")
@@ -106,7 +100,7 @@ func TestApiRoutesAuthentication(t *testing.T) {
 				"Authorization": userToken,
 			},
 			ExpectedStatus:  403,
-			ExpectedContent: []string{"Requires admin"},
+			ExpectedContent: []string{"The authorized record is not allowed to perform this action."},
 			TestAppFactory:  testAppFactory,
 		},
 		{
@@ -136,7 +130,7 @@ func TestApiRoutesAuthentication(t *testing.T) {
 				"Authorization": userToken,
 			},
 			ExpectedStatus:  403,
-			ExpectedContent: []string{"Requires admin role"},
+			ExpectedContent: []string{"The authorized record is not allowed to perform this action."},
 			TestAppFactory:  testAppFactory,
 		},
 		{
@@ -158,7 +152,7 @@ func TestApiRoutesAuthentication(t *testing.T) {
 				"Authorization": userToken,
 			},
 			ExpectedStatus:  403,
-			ExpectedContent: []string{"Requires admin role"},
+			ExpectedContent: []string{"The authorized record is not allowed to perform this action."},
 			TestAppFactory:  testAppFactory,
 		},
 		{
@@ -200,6 +194,39 @@ func TestApiRoutesAuthentication(t *testing.T) {
 			},
 			ExpectedStatus:  200,
 			ExpectedContent: []string{"\"permanent\":true", "permanent-token-123"},
+			TestAppFactory:  testAppFactory,
+		},
+		{
+			Name:   "GET /universal-token - with readonly auth should fail",
+			Method: http.MethodGet,
+			URL:    "/api/beszel/universal-token",
+			Headers: map[string]string{
+				"Authorization": readOnlyUserToken,
+			},
+			ExpectedStatus:  403,
+			ExpectedContent: []string{"The authorized record is not allowed to perform this action."},
+			TestAppFactory:  testAppFactory,
+		},
+		{
+			Name:   "POST /smart/refresh - missing system should fail 400 with user auth",
+			Method: http.MethodPost,
+			URL:    "/api/beszel/smart/refresh",
+			Headers: map[string]string{
+				"Authorization": userToken,
+			},
+			ExpectedStatus:  400,
+			ExpectedContent: []string{"system parameter is required"},
+			TestAppFactory:  testAppFactory,
+		},
+		{
+			Name:   "POST /smart/refresh - with readonly auth should fail",
+			Method: http.MethodPost,
+			URL:    "/api/beszel/smart/refresh",
+			Headers: map[string]string{
+				"Authorization": readOnlyUserToken,
+			},
+			ExpectedStatus:  403,
+			ExpectedContent: []string{"The authorized record is not allowed to perform this action."},
 			TestAppFactory:  testAppFactory,
 		},
 		{
