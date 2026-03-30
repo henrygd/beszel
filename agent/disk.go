@@ -239,9 +239,11 @@ func (d *diskDiscovery) addConfiguredExtraFilesystems(extraFilesystems string) {
 
 // addPartitionExtraFs registers partitions mounted under /extra-filesystems so
 // their display names can come from the folder name while their I/O keys still
-// prefer the underlying partition device.
+// prefer the underlying partition device. Only direct children are matched to
+// avoid registering nested virtual mounts (e.g. /proc, /sys) that appear when
+// the host root is bind-mounted into /extra-filesystems with all=true.
 func (d *diskDiscovery) addPartitionExtraFs(p disk.PartitionStat) {
-	if !strings.HasPrefix(p.Mountpoint, d.ctx.efPath) {
+	if filepath.Dir(p.Mountpoint) != d.ctx.efPath {
 		return
 	}
 	device, customName := extraFilesystemPartitionInfo(p)
