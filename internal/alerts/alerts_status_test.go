@@ -941,3 +941,68 @@ func TestStatusAlertClearedBeforeSend(t *testing.T) {
 		assert.EqualValues(t, 0, alertHistoryCount, "Should have no unresolved alert history records since alert never triggered")
 	})
 }
+
+func TestCancelPendingStatusAlertsClearsAllAlertsForSystem(t *testing.T) {
+	hub, user := beszelTests.GetHubWithUser(t)
+	defer hub.Cleanup()
+
+	userSettings, err := hub.FindFirstRecordByFilter("user_settings", "user={:user}", map[string]any{"user": user.Id})
+	require.NoError(t, err)
+	userSettings.Set("settings", `{"emails":["test@example.com"],"webhooks":[]}`)
+	require.NoError(t, hub.Save(userSettings))
+
+	systemCollection, err := hub.FindCollectionByNameOrId("systems")
+	require.NoError(t, err)
+
+	system1 := core.NewRecord(systemCollection)
+	system1.Set("name", "system-1")
+	system1.Set("status", "up")
+	system1.Set("host", "127.0.0.1")
+	system1.Set("users", []string{user.Id})
+	require.NoError(t, hub.Save(system1))
+
+	system2 := core.NewRecord(systemCollection)
+	system2.Set("name", "system-2")
+	system2.Set("status", "up")
+	system2.Set("host", "127.0.0.2")
+	system2.Set("users", []string{user.Id})
+	require.NoError(t, hub.Save(system2))
+
+	alertCollection, err := hub.FindCollectionByNameOrId("alerts")
+	require.NoError(t, err)
+
+	alert1 := core.NewRecord(alertCollection)
+	alert1.Set("user", user.Id)
+	alert1.Set("system", system1.Id)
+	alert1.Set("name", "Status")
+	alert1.Set("triggered", false)
+	alert1.Set("min", 5)
+	require.NoError(t, hub.Save(alert1))
+
+	alert2 := core.NewRecord(alertCollection)
+	alert2.Set("user", user.Id)
+	alert2.Set("system", system2.Id)
+	alert2.Set("name", "Status")
+	alert2.Set("triggered", false)
+	alert2.Set("min", 5)
+	require.NoError(t, hub.Save(alert2))
+
+	am := alerts.NewTestAlertManagerWithoutWorker(hub)
+	initialEmailCount := hub.TestMailer.TotalSend()
+
+	// Both systems go down
+	require.NoError(t, am.HandleStatusAlerts("down", system1))
+	require.NoError(t, am.HandleStatusAlerts("down", system2))
+	assert.Equal(t, 2, am.GetPendingAlertsCount(), "both systems should have pending alerts")
+
+	// System 1 is paused — cancel its pending alerts
+	am.CancelPendingStatusAlerts(system1.Id)
+	assert.Equal(t, 1, am.GetPendingAlertsCount(), "only system2 alert should remain pending after pausing system1")
+
+	// Expire and process remaining alerts — only system2 should fire
+	am.ForceExpirePendingAlerts()
+	processed, err := am.ProcessPendingAlerts()
+	require.NoError(t, err)
+	assert.Len(t, processed, 1, "only the non-paused system's alert should be processed")
+	assert.Equal(t, initialEmailCount+1, hub.TestMailer.TotalSend(), "only system2 should send a down notification")
+}
