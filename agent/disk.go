@@ -631,9 +631,17 @@ func (a *Agent) updateDiskIo(cacheTimeMs uint16, systemStats *system.Stats) {
 	}
 }
 
-// getRootMountPoint returns the appropriate root mount point for the system
+// getRootMountPoint returns the appropriate root mount point for the system.
+// On Windows it returns the system drive (e.g. "C:").
 // For immutable systems like Fedora Silverblue, it returns /sysroot instead of /
 func (a *Agent) getRootMountPoint() string {
+	if runtime.GOOS == "windows" {
+		if sd := os.Getenv("SystemDrive"); sd != "" {
+			return sd
+		}
+		return "C:"
+	}
+
 	// 1. Check if /etc/os-release contains indicators of an immutable system
 	if osReleaseContent, err := os.ReadFile("/etc/os-release"); err == nil {
 		content := string(osReleaseContent)
