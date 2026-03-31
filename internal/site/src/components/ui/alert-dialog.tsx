@@ -43,7 +43,7 @@ const AlertDialogContent = React.forwardRef<
 AlertDialogContent.displayName = AlertDialogPrimitive.Content.displayName
 
 const AlertDialogHeader = ({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) => (
-	<div className={cn("grid gap-2 text-center sm:text-start", className)} {...props} />
+	<div className={cn("grid gap-2 text-start", className)} {...props} />
 )
 AlertDialogHeader.displayName = "AlertDialogHeader"
 
