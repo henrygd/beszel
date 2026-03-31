@@ -27,6 +27,8 @@ import (
 type prevDisk struct {
 	readBytes  uint64
 	writeBytes uint64
+	readTime   uint64 // cumulative ms spent on reads (from ReadTime)
+	writeTime  uint64 // cumulative ms spent on writes (from WriteTime)
 	at         time.Time
 }
 

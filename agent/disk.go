@@ -581,16 +581,16 @@ func (a *Agent) updateDiskIo(cacheTimeMs uint16, systemStats *system.Stats) {
 			prev, hasPrev := a.diskPrev[cacheTimeMs][name]
 			if !hasPrev {
 				// Seed from agent-level fsStats if present, else seed from current
-				prev = prevDisk{readBytes: stats.TotalRead, writeBytes: stats.TotalWrite, at: stats.Time}
+				prev = prevDisk{readBytes: stats.TotalRead, writeBytes: stats.TotalWrite, readTime: d.ReadTime, writeTime: d.WriteTime, at: stats.Time}
 				if prev.at.IsZero() {
-					prev = prevDisk{readBytes: d.ReadBytes, writeBytes: d.WriteBytes, at: now}
+					prev = prevDisk{readBytes: d.ReadBytes, writeBytes: d.WriteBytes, readTime: d.ReadTime, writeTime: d.WriteTime, at: now}
 				}
 			}
 
 			msElapsed := uint64(now.Sub(prev.at).Milliseconds())
 			if msElapsed < 100 {
 				// Avoid division by zero or clock issues; update snapshot and continue
-				a.diskPrev[cacheTimeMs][name] = prevDisk{readBytes: d.ReadBytes, writeBytes: d.WriteBytes, at: now}
+				a.diskPrev[cacheTimeMs][name] = prevDisk{readBytes: d.ReadBytes, writeBytes: d.WriteBytes, readTime: d.ReadTime, writeTime: d.WriteTime, at: now}
 				continue
 			}
 
@@ -603,14 +603,18 @@ func (a *Agent) updateDiskIo(cacheTimeMs uint16, systemStats *system.Stats) {
 			if readMbPerSecond > 50_000 || writeMbPerSecond > 50_000 {
 				slog.Warn("Invalid disk I/O. Resetting.", "name", d.Name, "read", readMbPerSecond, "write", writeMbPerSecond)
 				// Reset interval snapshot and seed from current
-				a.diskPrev[cacheTimeMs][name] = prevDisk{readBytes: d.ReadBytes, writeBytes: d.WriteBytes, at: now}
+				a.diskPrev[cacheTimeMs][name] = prevDisk{readBytes: d.ReadBytes, writeBytes: d.WriteBytes, readTime: d.ReadTime, writeTime: d.WriteTime, at: now}
 				// also refresh agent baseline to avoid future negatives
 				a.initializeDiskIoStats(ioCounters)
 				continue
 			}
 
+			// Calculate I/O utilization % per direction (ms busy / ms elapsed * 100)
+			diskReadUtilPct := min(float64(d.ReadTime-prev.readTime)*100/float64(msElapsed), 100)
+			diskWriteUtilPct := min(float64(d.WriteTime-prev.writeTime)*100/float64(msElapsed), 100)
+
 			// Update per-interval snapshot
-			a.diskPrev[cacheTimeMs][name] = prevDisk{readBytes: d.ReadBytes, writeBytes: d.WriteBytes, at: now}
+			a.diskPrev[cacheTimeMs][name] = prevDisk{readBytes: d.ReadBytes, writeBytes: d.WriteBytes, readTime: d.ReadTime, writeTime: d.WriteTime, at: now}
 
 			// Update global fsStats baseline for cross-interval correctness
 			stats.Time = now
@@ -620,12 +624,16 @@ func (a *Agent) updateDiskIo(cacheTimeMs uint16, systemStats *system.Stats) {
 			stats.DiskWritePs = writeMbPerSecond
 			stats.DiskReadBytes = diskIORead
 			stats.DiskWriteBytes = diskIOWrite
+			stats.DiskReadUtilPct = diskReadUtilPct
+			stats.DiskWriteUtilPct = diskWriteUtilPct
 
 			if stats.Root {
 				systemStats.DiskReadPs = stats.DiskReadPs
 				systemStats.DiskWritePs = stats.DiskWritePs
 				systemStats.DiskIO[0] = diskIORead
 				systemStats.DiskIO[1] = diskIOWrite
+				systemStats.DiskReadUtilPct = diskReadUtilPct
+				systemStats.DiskWriteUtilPct = diskWriteUtilPct
 			}
 		}
 	}

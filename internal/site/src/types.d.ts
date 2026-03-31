@@ -124,6 +124,10 @@ export interface SystemStats {
 	dio?: [number, number]
 	/** max disk I/O bytes [read, write] */
 	diom?: [number, number]
+	/** disk read utilization % */
+	diur?: number
+	/** disk write utilization % */
+	diuw?: number
 	/** network sent (mb) */
 	ns: number
 	/** network received (mb) */
@@ -186,6 +190,10 @@ export interface ExtraFsStats {
 	rbm: number
 	/** max write per second (mb) */
 	wbm: number
+	/** disk read utilization % */
+	diur?: number
+	/** disk write utilization % */
+	diuw?: number
 }
 
 export interface ContainerStatsRecord extends RecordModel {

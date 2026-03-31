@@ -48,6 +48,8 @@ type Stats struct {
 	MaxDiskIO         [2]uint64            `json:"diom,omitzero" cbor:"-"`                      // [max read bytes, max write bytes]
 	CpuBreakdown      []float64            `json:"cpub,omitempty" cbor:"33,keyasint,omitempty"` // [user, system, iowait, steal, idle]
 	CpuCoresUsage     Uint8Slice           `json:"cpus,omitempty" cbor:"34,keyasint,omitempty"` // per-core busy usage [CPU0..]
+	DiskReadUtilPct  float64 `json:"diur" cbor:"35,keyasint,omitzero"` // disk read utilization %
+	DiskWriteUtilPct float64 `json:"diuw" cbor:"36,keyasint,omitzero"` // disk write utilization %
 }
 
 // Uint8Slice wraps []uint8 to customize JSON encoding while keeping CBOR efficient.
@@ -93,10 +95,12 @@ type FsStats struct {
 	MaxDiskReadPS  float64   `json:"rm,omitempty" cbor:"-"`
 	MaxDiskWritePS float64   `json:"wm,omitempty" cbor:"-"`
 	// TODO: remove DiskReadPs and DiskWritePs in future release in favor of DiskReadBytes and DiskWriteBytes
-	DiskReadBytes     uint64 `json:"rb" cbor:"6,keyasint,omitempty"`
-	DiskWriteBytes    uint64 `json:"wb" cbor:"7,keyasint,omitempty"`
-	MaxDiskReadBytes  uint64 `json:"rbm,omitempty" cbor:"-"`
-	MaxDiskWriteBytes uint64 `json:"wbm,omitempty" cbor:"-"`
+	DiskReadBytes     uint64  `json:"rb" cbor:"6,keyasint,omitempty"`
+	DiskWriteBytes    uint64  `json:"wb" cbor:"7,keyasint,omitempty"`
+	MaxDiskReadBytes  uint64  `json:"rbm,omitempty" cbor:"-"`
+	MaxDiskWriteBytes uint64  `json:"wbm,omitempty" cbor:"-"`
+	DiskReadUtilPct  float64 `json:"diur" cbor:"8,keyasint,omitzero"` // disk read utilization %
+	DiskWriteUtilPct float64 `json:"diuw" cbor:"9,keyasint,omitzero"` // disk write utilization %
 }
 
 type NetIoStats struct {

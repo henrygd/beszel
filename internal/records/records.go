@@ -230,6 +230,8 @@ func (rm *RecordManager) AverageSystemStats(db dbx.Builder, records RecordIds) *
 		sum.Bandwidth[1] += stats.Bandwidth[1]
 		sum.DiskIO[0] += stats.DiskIO[0]
 		sum.DiskIO[1] += stats.DiskIO[1]
+		sum.DiskReadUtilPct += stats.DiskReadUtilPct
+		sum.DiskWriteUtilPct += stats.DiskWriteUtilPct
 		batterySum += int(stats.Battery[0])
 		sum.Battery[1] = stats.Battery[1]
 
@@ -299,6 +301,8 @@ func (rm *RecordManager) AverageSystemStats(db dbx.Builder, records RecordIds) *
 				fs.DiskWriteBytes += value.DiskWriteBytes
 				fs.MaxDiskReadBytes = max(fs.MaxDiskReadBytes, value.MaxDiskReadBytes, value.DiskReadBytes)
 				fs.MaxDiskWriteBytes = max(fs.MaxDiskWriteBytes, value.MaxDiskWriteBytes, value.DiskWriteBytes)
+				fs.DiskReadUtilPct += value.DiskReadUtilPct
+				fs.DiskWriteUtilPct += value.DiskWriteUtilPct
 			}
 		}
 
@@ -350,6 +354,8 @@ func (rm *RecordManager) AverageSystemStats(db dbx.Builder, records RecordIds) *
 		sum.DiskWritePs = twoDecimals(sum.DiskWritePs / count)
 		sum.DiskIO[0] = sum.DiskIO[0] / uint64(count)
 		sum.DiskIO[1] = sum.DiskIO[1] / uint64(count)
+		sum.DiskReadUtilPct = twoDecimals(sum.DiskReadUtilPct / count)
+		sum.DiskWriteUtilPct = twoDecimals(sum.DiskWriteUtilPct / count)
 		sum.NetworkSent = twoDecimals(sum.NetworkSent / count)
 		sum.NetworkRecv = twoDecimals(sum.NetworkRecv / count)
 		sum.LoadAvg[0] = twoDecimals(sum.LoadAvg[0] / count)
@@ -388,6 +394,8 @@ func (rm *RecordManager) AverageSystemStats(db dbx.Builder, records RecordIds) *
 				fs.DiskReadPs = twoDecimals(fs.DiskReadPs / count)
 				fs.DiskReadBytes = fs.DiskReadBytes / uint64(count)
 				fs.DiskWriteBytes = fs.DiskWriteBytes / uint64(count)
+				fs.DiskReadUtilPct = twoDecimals(fs.DiskReadUtilPct / count)
+				fs.DiskWriteUtilPct = twoDecimals(fs.DiskWriteUtilPct / count)
 			}
 		}
 

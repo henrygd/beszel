@@ -5,6 +5,7 @@ import { decimalString, formatBytes, toFixedFloat } from "@/lib/utils"
 import type { ChartData, SystemStatsRecord } from "@/types"
 import { ChartCard, SelectAvgMax } from "../chart-card"
 import { Unit } from "@/lib/enums"
+import { pinnedAxisDomain } from "@/components/ui/chart"
 
 export function DiskCharts({
 	chartData,
@@ -101,6 +102,37 @@ export function DiskCharts({
 					showTotal={true}
 				/>
 			</ChartCard>
+
+			{chartData.systemStats?.some((r) => r.stats?.diur !== undefined) && (
+				<ChartCard
+					empty={dataEmpty}
+					grid={grid}
+					title={t`Disk I/O Utilization`}
+					description={t`Percentage of time root disk was busy with reads/writes`}
+				>
+					<AreaChartDefault
+						chartData={chartData}
+						domain={pinnedAxisDomain()}
+						tickFormatter={(val) => `${toFixedFloat(val, 2)}%`}
+						contentFormatter={({ value }) => `${decimalString(value)}%`}
+						showTotal={true}
+						dataPoints={[
+							{
+								label: t({ message: "Write", comment: "Disk write" }),
+								dataKey: ({ stats }: SystemStatsRecord) => stats?.diuw,
+								color: 3,
+								opacity: 0.3,
+							},
+							{
+								label: t({ message: "Read", comment: "Disk read" }),
+								dataKey: ({ stats }: SystemStatsRecord) => stats?.diur,
+								color: 1,
+								opacity: 0.3,
+							},
+						]}
+					/>
+				</ChartCard>
+			)}
 		</>
 	)
 }

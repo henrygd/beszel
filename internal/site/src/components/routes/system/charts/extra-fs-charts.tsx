@@ -5,6 +5,7 @@ import { decimalString, formatBytes, toFixedFloat } from "@/lib/utils"
 import type { ChartData, SystemStatsRecord } from "@/types"
 import { ChartCard, SelectAvgMax } from "../chart-card"
 import { Unit } from "@/lib/enums"
+import { pinnedAxisDomain } from "@/components/ui/chart"
 
 export function ExtraFsCharts({
 	chartData,
@@ -112,6 +113,36 @@ export function ExtraFsCharts({
 								}}
 							/>
 						</ChartCard>
+						{systemStats.some((r) => r.stats?.efs?.[extraFsName]?.diur !== undefined) && (
+							<ChartCard
+								empty={dataEmpty}
+								grid={grid}
+								title={`${extraFsName} ${t`I/O Utilization`}`}
+								description={t`Percentage of time ${extraFsName} disk was busy with reads/writes`}
+							>
+								<AreaChartDefault
+									chartData={chartData}
+									domain={pinnedAxisDomain()}
+									tickFormatter={(val) => `${toFixedFloat(val, 2)}%`}
+									contentFormatter={({ value }) => `${decimalString(value)}%`}
+									showTotal={true}
+									dataPoints={[
+										{
+											label: t`Write`,
+											dataKey: ({ stats }: SystemStatsRecord) => stats?.efs?.[extraFsName]?.diuw,
+											color: 3,
+											opacity: 0.3,
+										},
+										{
+											label: t`Read`,
+											dataKey: ({ stats }: SystemStatsRecord) => stats?.efs?.[extraFsName]?.diur,
+											color: 1,
+											opacity: 0.3,
+										},
+									]}
+								/>
+							</ChartCard>
+						)}
 					</div>
 				)
 			})}
