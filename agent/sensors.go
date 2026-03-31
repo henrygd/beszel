@@ -26,6 +26,7 @@ type SensorConfig struct {
 	isBlacklist    bool
 	hasWildcards   bool
 	skipCollection bool
+	firstRun       bool
 }
 
 func (a *Agent) newSensorConfig() *SensorConfig {
@@ -52,6 +53,7 @@ func (a *Agent) newSensorConfigWithEnv(primarySensor, sysSensors, sensorsEnvVal 
 		context:        context.Background(),
 		primarySensor:  primarySensor,
 		skipCollection: skipCollection,
+		firstRun:       true,
 		sensors:        make(map[string]struct{}),
 	}
 
@@ -167,6 +169,14 @@ func (a *Agent) getTempsWithTimeout(getTemps getTempsFn) ([]sensors.TemperatureS
 		err   error
 	}
 
+	// Use a longer timeout on the first run to allow for initialization
+	// (e.g. Windows LHM subprocess startup)
+	timeout := temperatureFetchTimeout
+	if a.sensorConfig.firstRun {
+		a.sensorConfig.firstRun = false
+		timeout = 10 * time.Second
+	}
+
 	resultCh := make(chan result, 1)
 	go func() {
 		temps, err := a.getTempsWithPanicRecovery(getTemps)
@@ -176,7 +186,7 @@ func (a *Agent) getTempsWithTimeout(getTemps getTempsFn) ([]sensors.TemperatureS
 	select {
 	case res := <-resultCh:
 		return res.temps, res.err
-	case <-time.After(temperatureFetchTimeout):
+	case <-time.After(timeout):
 		return nil, errTemperatureFetchTimeout
 	}
 }
