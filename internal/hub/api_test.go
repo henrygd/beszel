@@ -3,6 +3,7 @@ package hub_test
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"io"
 	"net/http"
 	"testing"
@@ -25,14 +26,17 @@ func jsonReader(v any) io.Reader {
 }
 
 func TestApiRoutesAuthentication(t *testing.T) {
-	hub, _ := beszelTests.NewTestHub(t.TempDir())
+	hub, user := beszelTests.GetHubWithUser(t)
 	defer hub.Cleanup()
 
-	hub.StartHub()
+	userToken, err := user.NewAuthToken()
+	require.NoError(t, err, "Failed to create auth token")
 
 	// Create test user and get auth token
-	user, err := beszelTests.CreateUser(hub, "testuser@example.com", "password123")
+	user2, err := beszelTests.CreateUser(hub, "testuser@example.com", "password123")
 	require.NoError(t, err, "Failed to create test user")
+	user2Token, err := user2.NewAuthToken()
+	require.NoError(t, err, "Failed to create user2 auth token")
 
 	adminUser, err := beszelTests.CreateUserWithRole(hub, "admin@example.com", "password123", "admin")
 	require.NoError(t, err, "Failed to create admin user")
@@ -42,10 +46,7 @@ func TestApiRoutesAuthentication(t *testing.T) {
 	require.NoError(t, err, "Failed to create readonly user")
 	readOnlyUserToken, err := readOnlyUser.NewAuthToken()
 
-	userToken, err := user.NewAuthToken()
-	require.NoError(t, err, "Failed to create auth token")
-
-	// Create test system for user-alerts endpoints
+	// Create test system
 	system, err := beszelTests.CreateRecord(hub, "systems", map[string]any{
 		"name":  "test-system",
 		"users": []string{user.Id},
@@ -215,18 +216,40 @@ func TestApiRoutesAuthentication(t *testing.T) {
 				"Authorization": userToken,
 			},
 			ExpectedStatus:  400,
-			ExpectedContent: []string{"system parameter is required"},
+			ExpectedContent: []string{"Invalid", "system", "parameter"},
 			TestAppFactory:  testAppFactory,
 		},
 		{
 			Name:   "POST /smart/refresh - with readonly auth should fail",
 			Method: http.MethodPost,
-			URL:    "/api/beszel/smart/refresh",
+			URL:    fmt.Sprintf("/api/beszel/smart/refresh?system=%s", system.Id),
 			Headers: map[string]string{
 				"Authorization": readOnlyUserToken,
 			},
 			ExpectedStatus:  403,
 			ExpectedContent: []string{"The authorized record is not allowed to perform this action."},
+			TestAppFactory:  testAppFactory,
+		},
+		{
+			Name:   "POST /smart/refresh - non-user system should fail",
+			Method: http.MethodPost,
+			URL:    fmt.Sprintf("/api/beszel/smart/refresh?system=%s", system.Id),
+			Headers: map[string]string{
+				"Authorization": user2Token,
+			},
+			ExpectedStatus:  404,
+			ExpectedContent: []string{"The requested resource wasn't found."},
+			TestAppFactory:  testAppFactory,
+		},
+		{
+			Name:   "POST /smart/refresh - good user should pass validation",
+			Method: http.MethodPost,
+			URL:    fmt.Sprintf("/api/beszel/smart/refresh?system=%s", system.Id),
+			Headers: map[string]string{
+				"Authorization": userToken,
+			},
+			ExpectedStatus:  500,
+			ExpectedContent: []string{"Something went wrong while processing your request."},
 			TestAppFactory:  testAppFactory,
 		},
 		{
@@ -300,20 +323,42 @@ func TestApiRoutesAuthentication(t *testing.T) {
 		{
 			Name:            "GET /containers/logs - no auth should fail",
 			Method:          http.MethodGet,
-			URL:             "/api/beszel/containers/logs?system=test-system&container=test-container",
+			URL:             "/api/beszel/containers/logs?system=test-system&container=abababababab",
 			ExpectedStatus:  401,
 			ExpectedContent: []string{"requires valid"},
 			TestAppFactory:  testAppFactory,
 		},
 		{
+			Name:            "GET /containers/logs - request for valid non-user system should fail",
+			Method:          http.MethodGet,
+			URL:             fmt.Sprintf("/api/beszel/containers/logs?system=%s&container=abababababab", system.Id),
+			ExpectedStatus:  404,
+			ExpectedContent: []string{"The requested resource wasn't found."},
+			TestAppFactory:  testAppFactory,
+			Headers: map[string]string{
+				"Authorization": user2Token,
+			},
+		},
+		{
+			Name:            "GET /containers/info - request for valid non-user system should fail",
+			Method:          http.MethodGet,
+			URL:             fmt.Sprintf("/api/beszel/containers/info?system=%s&container=abababababab", system.Id),
+			ExpectedStatus:  404,
+			ExpectedContent: []string{"The requested resource wasn't found."},
+			TestAppFactory:  testAppFactory,
+			Headers: map[string]string{
+				"Authorization": user2Token,
+			},
+		},
+		{
 			Name:   "GET /containers/logs - with auth but missing system param should fail",
 			Method: http.MethodGet,
-			URL:    "/api/beszel/containers/logs?container=test-container",
+			URL:    "/api/beszel/containers/logs?container=abababababab",
 			Headers: map[string]string{
 				"Authorization": userToken,
 			},
 			ExpectedStatus:  400,
-			ExpectedContent: []string{"system and container parameters are required"},
+			ExpectedContent: []string{"Invalid", "parameter"},
 			TestAppFactory:  testAppFactory,
 		},
 		{
@@ -324,7 +369,7 @@ func TestApiRoutesAuthentication(t *testing.T) {
 				"Authorization": userToken,
 			},
 			ExpectedStatus:  400,
-			ExpectedContent: []string{"system and container parameters are required"},
+			ExpectedContent: []string{"Invalid", "parameter"},
 			TestAppFactory:  testAppFactory,
 		},
 		{
@@ -335,7 +380,7 @@ func TestApiRoutesAuthentication(t *testing.T) {
 				"Authorization": userToken,
 			},
 			ExpectedStatus:  404,
-			ExpectedContent: []string{"system not found"},
+			ExpectedContent: []string{"The requested resource wasn't found."},
 			TestAppFactory:  testAppFactory,
 		},
 		{
@@ -346,7 +391,7 @@ func TestApiRoutesAuthentication(t *testing.T) {
 				"Authorization": userToken,
 			},
 			ExpectedStatus:  400,
-			ExpectedContent: []string{"invalid container parameter"},
+			ExpectedContent: []string{"Invalid", "parameter"},
 			TestAppFactory:  testAppFactory,
 		},
 		{
@@ -357,7 +402,7 @@ func TestApiRoutesAuthentication(t *testing.T) {
 				"Authorization": userToken,
 			},
 			ExpectedStatus:  400,
-			ExpectedContent: []string{"invalid container parameter"},
+			ExpectedContent: []string{"Invalid", "parameter"},
 			TestAppFactory:  testAppFactory,
 		},
 		{
@@ -368,8 +413,113 @@ func TestApiRoutesAuthentication(t *testing.T) {
 				"Authorization": userToken,
 			},
 			ExpectedStatus:  400,
-			ExpectedContent: []string{"invalid container parameter"},
+			ExpectedContent: []string{"Invalid", "parameter"},
 			TestAppFactory:  testAppFactory,
+		},
+		{
+			Name:   "GET /containers/logs - good user should pass validation",
+			Method: http.MethodGet,
+			URL:    "/api/beszel/containers/logs?system=" + system.Id + "&container=0123456789ab",
+			Headers: map[string]string{
+				"Authorization": userToken,
+			},
+			ExpectedStatus:  500,
+			ExpectedContent: []string{"Something went wrong while processing your request."},
+			TestAppFactory:  testAppFactory,
+		},
+		{
+			Name:   "GET /containers/info - good user should pass validation",
+			Method: http.MethodGet,
+			URL:    "/api/beszel/containers/info?system=" + system.Id + "&container=0123456789ab",
+			Headers: map[string]string{
+				"Authorization": userToken,
+			},
+			ExpectedStatus:  500,
+			ExpectedContent: []string{"Something went wrong while processing your request."},
+			TestAppFactory:  testAppFactory,
+		},
+		// /systemd routes
+		{
+			Name:            "GET /systemd/info - no auth should fail",
+			Method:          http.MethodGet,
+			URL:             fmt.Sprintf("/api/beszel/systemd/info?system=%s&service=nginx.service", system.Id),
+			ExpectedStatus:  401,
+			ExpectedContent: []string{"requires valid"},
+			TestAppFactory:  testAppFactory,
+		},
+		{
+			Name:            "GET /systemd/info - request for valid non-user system should fail",
+			Method:          http.MethodGet,
+			URL:             fmt.Sprintf("/api/beszel/systemd/info?system=%s&service=nginx.service", system.Id),
+			ExpectedStatus:  404,
+			ExpectedContent: []string{"The requested resource wasn't found."},
+			TestAppFactory:  testAppFactory,
+			Headers: map[string]string{
+				"Authorization": user2Token,
+			},
+		},
+		{
+			Name:   "GET /systemd/info - with auth but missing system param should fail",
+			Method: http.MethodGet,
+			URL:    "/api/beszel/systemd/info?service=nginx.service",
+			Headers: map[string]string{
+				"Authorization": userToken,
+			},
+			ExpectedStatus:  400,
+			ExpectedContent: []string{"Invalid", "parameter"},
+			TestAppFactory:  testAppFactory,
+		},
+		{
+			Name:   "GET /systemd/info - with auth but missing service param should fail",
+			Method: http.MethodGet,
+			URL:    fmt.Sprintf("/api/beszel/systemd/info?system=%s", system.Id),
+			Headers: map[string]string{
+				"Authorization": userToken,
+			},
+			ExpectedStatus:  400,
+			ExpectedContent: []string{"Invalid", "parameter"},
+			TestAppFactory:  testAppFactory,
+		},
+		{
+			Name:   "GET /systemd/info - with auth but invalid system should fail",
+			Method: http.MethodGet,
+			URL:    "/api/beszel/systemd/info?system=invalid-system&service=nginx.service",
+			Headers: map[string]string{
+				"Authorization": userToken,
+			},
+			ExpectedStatus:  404,
+			ExpectedContent: []string{"The requested resource wasn't found."},
+			TestAppFactory:  testAppFactory,
+		},
+		{
+			Name:   "GET /systemd/info - service not in systemd_services collection should fail",
+			Method: http.MethodGet,
+			URL:    fmt.Sprintf("/api/beszel/systemd/info?system=%s&service=notregistered.service", system.Id),
+			Headers: map[string]string{
+				"Authorization": userToken,
+			},
+			ExpectedStatus:  404,
+			ExpectedContent: []string{"The requested resource wasn't found."},
+			TestAppFactory:  testAppFactory,
+		},
+		{
+			Name:   "GET /systemd/info - with auth and existing service record should pass validation",
+			Method: http.MethodGet,
+			URL:    fmt.Sprintf("/api/beszel/systemd/info?system=%s&service=nginx.service", system.Id),
+			Headers: map[string]string{
+				"Authorization": userToken,
+			},
+			ExpectedStatus:  500,
+			ExpectedContent: []string{"Something went wrong while processing your request."},
+			TestAppFactory:  testAppFactory,
+			BeforeTestFunc: func(t testing.TB, app *pbTests.TestApp, e *core.ServeEvent) {
+				beszelTests.CreateRecord(app, "systemd_services", map[string]any{
+					"system": system.Id,
+					"name":   "nginx.service",
+					"state":  0,
+					"sub":    1,
+				})
+			},
 		},
 
 		// Auth Optional Routes - Should work without authentication

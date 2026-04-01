@@ -3,6 +3,7 @@ package hub
 import (
 	"context"
 	"net/http"
+	"regexp"
 	"strings"
 	"time"
 
@@ -24,6 +25,8 @@ type UpdateInfo struct {
 	Version   string `json:"v"`
 	Url       string `json:"url"`
 }
+
+var containerIDPattern = regexp.MustCompile(`^[a-fA-F0-9]{12,64}$`)
 
 // Middleware to allow only admin role users
 var requireAdminRole = customAuthMiddleware(func(e *core.RequestEvent) bool {
@@ -303,21 +306,18 @@ func (h *Hub) containerRequestHandler(e *core.RequestEvent, fetchFunc func(*syst
 	systemID := e.Request.URL.Query().Get("system")
 	containerID := e.Request.URL.Query().Get("container")
 
-	if systemID == "" || containerID == "" {
-		return e.JSON(http.StatusBadRequest, map[string]string{"error": "system and container parameters are required"})
-	}
-	if !containerIDPattern.MatchString(containerID) {
-		return e.JSON(http.StatusBadRequest, map[string]string{"error": "invalid container parameter"})
+	if systemID == "" || containerID == "" || !containerIDPattern.MatchString(containerID) {
+		return e.BadRequestError("Invalid system or container parameter", nil)
 	}
 
 	system, err := h.sm.GetSystem(systemID)
-	if err != nil {
-		return e.JSON(http.StatusNotFound, map[string]string{"error": "system not found"})
+	if err != nil || !system.HasUser(e.App, e.Auth.Id) {
+		return e.NotFoundError("", nil)
 	}
 
 	data, err := fetchFunc(system, containerID)
 	if err != nil {
-		return e.JSON(http.StatusNotFound, map[string]string{"error": err.Error()})
+		return e.InternalServerError("", err)
 	}
 
 	return e.JSON(http.StatusOK, map[string]string{responseKey: data})
@@ -343,15 +343,23 @@ func (h *Hub) getSystemdInfo(e *core.RequestEvent) error {
 	serviceName := query.Get("service")
 
 	if systemID == "" || serviceName == "" {
-		return e.JSON(http.StatusBadRequest, map[string]string{"error": "system and service parameters are required"})
+		return e.BadRequestError("Invalid system or service parameter", nil)
 	}
 	system, err := h.sm.GetSystem(systemID)
+	if err != nil || !system.HasUser(e.App, e.Auth.Id) {
+		return e.NotFoundError("", nil)
+	}
+	// verify service exists before fetching details
+	_, err = e.App.FindFirstRecordByFilter("systemd_services", "system = {:system} && name = {:name}", dbx.Params{
+		"system": systemID,
+		"name":   serviceName,
+	})
 	if err != nil {
-		return e.JSON(http.StatusNotFound, map[string]string{"error": "system not found"})
+		return e.NotFoundError("", err)
 	}
 	details, err := system.FetchSystemdInfoFromAgent(serviceName)
 	if err != nil {
-		return e.JSON(http.StatusNotFound, map[string]string{"error": err.Error()})
+		return e.InternalServerError("", err)
 	}
 	e.Response.Header().Set("Cache-Control", "public, max-age=60")
 	return e.JSON(http.StatusOK, map[string]any{"details": details})
@@ -362,17 +370,16 @@ func (h *Hub) getSystemdInfo(e *core.RequestEvent) error {
 func (h *Hub) refreshSmartData(e *core.RequestEvent) error {
 	systemID := e.Request.URL.Query().Get("system")
 	if systemID == "" {
-		return e.JSON(http.StatusBadRequest, map[string]string{"error": "system parameter is required"})
+		return e.BadRequestError("Invalid system parameter", nil)
 	}
 
 	system, err := h.sm.GetSystem(systemID)
-	if err != nil {
-		return e.JSON(http.StatusNotFound, map[string]string{"error": "system not found"})
+	if err != nil || !system.HasUser(e.App, e.Auth.Id) {
+		return e.NotFoundError("", nil)
 	}
 
-	// Fetch and save SMART devices
 	if err := system.FetchAndSaveSmartDevices(); err != nil {
-		return e.JSON(http.StatusInternalServerError, map[string]string{"error": err.Error()})
+		return e.InternalServerError("", err)
 	}
 
 	return e.JSON(http.StatusOK, map[string]string{"status": "ok"})

@@ -5,7 +5,6 @@ package hub
 import (
 	"fmt"
 	"io"
-	"log/slog"
 	"net/http"
 	"net/http/httputil"
 	"net/url"
@@ -62,7 +61,6 @@ func (rm *responseModifier) modifyHTML(html string) string {
 
 // startServer sets up the development server for Beszel
 func (h *Hub) startServer(se *core.ServeEvent) error {
-	slog.Info("starting server", "appURL", h.appURL)
 	proxy := httputil.NewSingleHostReverseProxy(&url.URL{
 		Scheme: "http",
 		Host:   "localhost:5173",
