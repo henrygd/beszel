@@ -1,0 +1,123 @@
+//go:build linux
+
+package battery
+
+import (
+	"errors"
+	"log/slog"
+	"math"
+	"os"
+	"path/filepath"
+	"strconv"
+
+	"github.com/henrygd/beszel/agent/utils"
+)
+
+const (
+	stateUnknown     uint8 = 0
+	stateEmpty       uint8 = 1
+	stateFull        uint8 = 2
+	stateCharging    uint8 = 3
+	stateDischarging uint8 = 4
+	stateIdle        uint8 = 5
+)
+
+const sysfsPowerSupply = "/sys/class/power_supply"
+
+var (
+	systemHasBattery   = false
+	haveCheckedBattery = false
+)
+
+func getBatteryPaths() ([]string, error) {
+	entries, err := os.ReadDir(sysfsPowerSupply)
+	if err != nil {
+		return nil, err
+	}
+	var paths []string
+	for _, e := range entries {
+		path := filepath.Join(sysfsPowerSupply, e.Name())
+		if utils.ReadStringFile(filepath.Join(path, "type")) == "Battery" {
+			paths = append(paths, path)
+		}
+	}
+	return paths, nil
+}
+
+func parseSysfsState(status string) uint8 {
+	switch status {
+	case "Empty":
+		return stateEmpty
+	case "Full":
+		return stateFull
+	case "Charging":
+		return stateCharging
+	case "Discharging":
+		return stateDischarging
+	case "Not charging":
+		return stateIdle
+	default:
+		return stateUnknown
+	}
+}
+
+// HasReadableBattery checks if the system has a battery and returns true if it does.
+func HasReadableBattery() bool {
+	if haveCheckedBattery {
+		return systemHasBattery
+	}
+	haveCheckedBattery = true
+	paths, err := getBatteryPaths()
+	for _, path := range paths {
+		if _, ok := utils.ReadStringFileOK(filepath.Join(path, "capacity")); ok {
+			systemHasBattery = true
+			break
+		}
+	}
+	if !systemHasBattery {
+		slog.Debug("No battery found", "err", err)
+	}
+	return systemHasBattery
+}
+
+// GetBatteryStats returns the current battery percent and charge state.
+// Reads /sys/class/power_supply/*/capacity directly so the kernel-reported
+// value is used, which is always 0-100 and matches what the OS displays.
+func GetBatteryStats() (batteryPercent uint8, batteryState uint8, err error) {
+	if !HasReadableBattery() {
+		return batteryPercent, batteryState, errors.ErrUnsupported
+	}
+	paths, err := getBatteryPaths()
+	if len(paths) == 0 {
+		return batteryPercent, batteryState, errors.New("no batteries")
+	}
+
+	batteryState = math.MaxUint8
+	totalPercent := 0
+	count := 0
+
+	for _, path := range paths {
+		capStr, ok := utils.ReadStringFileOK(filepath.Join(path, "capacity"))
+		if !ok {
+			continue
+		}
+		cap, parseErr := strconv.Atoi(capStr)
+		if parseErr != nil {
+			continue
+		}
+		totalPercent += cap
+		count++
+
+		state := parseSysfsState(utils.ReadStringFile(filepath.Join(path, "status")))
+		if state != stateUnknown {
+			batteryState = state
+		}
+	}
+
+	if count == 0 || batteryState == math.MaxUint8 {
+		return batteryPercent, batteryState, errors.New("no battery capacity")
+	}
+
+	batteryPercent = uint8(totalPercent / count)
+	return batteryPercent, batteryState, nil
+}
