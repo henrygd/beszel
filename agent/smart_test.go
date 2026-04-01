@@ -1274,8 +1274,6 @@ func TestLookupDarwinNvmeCapacityProviderError(t *testing.T) {
 
 	sm := &SmartManager{darwinNvmeProvider: fakeProvider}
 	assert.Equal(t, uint64(0), sm.lookupDarwinNvmeCapacity("any-serial"))
-	// Cache should be initialized even on error so we don't retry
-	sm.Lock()
+	// Cache should be initialized even on error so we don't retry (Once already fired)
 	assert.NotNil(t, sm.darwinNvmeCapacity)
-	sm.Unlock()
 }
