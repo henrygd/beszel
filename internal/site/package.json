@@ -52,7 +52,7 @@
 		"recharts": "^2.15.4",
 		"shiki": "^3.13.0",
 		"tailwind-merge": "^3.3.1",
-		"valibot": "^0.42.1"
+		"valibot": "^1.0.0"
 	},
 	"devDependencies": {
 		"@biomejs/biome": "2.2.4",
