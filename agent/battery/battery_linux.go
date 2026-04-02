@@ -9,27 +9,14 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
+	"sync"
 
 	"github.com/henrygd/beszel/agent/utils"
 )
 
-const (
-	stateUnknown     uint8 = 0
-	stateEmpty       uint8 = 1
-	stateFull        uint8 = 2
-	stateCharging    uint8 = 3
-	stateDischarging uint8 = 4
-	stateIdle        uint8 = 5
-)
-
 const sysfsPowerSupply = "/sys/class/power_supply"
 
-var (
-	systemHasBattery   = false
-	haveCheckedBattery = false
-)
-
-func getBatteryPaths() ([]string, error) {
+var getBatteryPaths = sync.OnceValues(func() ([]string, error) {
 	entries, err := os.ReadDir(sysfsPowerSupply)
 	if err != nil {
 		return nil, err
@@ -42,7 +29,7 @@ func getBatteryPaths() ([]string, error) {
 		}
 	}
 	return paths, nil
-}
+})
 
 func parseSysfsState(status string) uint8 {
 	switch status {
@@ -62,11 +49,8 @@ func parseSysfsState(status string) uint8 {
 }
 
 // HasReadableBattery checks if the system has a battery and returns true if it does.
-func HasReadableBattery() bool {
-	if haveCheckedBattery {
-		return systemHasBattery
-	}
-	haveCheckedBattery = true
+var HasReadableBattery = sync.OnceValue(func() bool {
+	systemHasBattery := false
 	paths, err := getBatteryPaths()
 	for _, path := range paths {
 		if _, ok := utils.ReadStringFileOK(filepath.Join(path, "capacity")); ok {
@@ -78,7 +62,7 @@ func HasReadableBattery() bool {
 		slog.Debug("No battery found", "err", err)
 	}
 	return systemHasBattery
-}
+})
 
 // GetBatteryStats returns the current battery percent and charge state.
 // Reads /sys/class/power_supply/*/capacity directly so the kernel-reported
