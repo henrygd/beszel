@@ -1,4 +1,4 @@
-//go:build freebsd
+//go:build !darwin && !linux && !windows
 
 package battery
 

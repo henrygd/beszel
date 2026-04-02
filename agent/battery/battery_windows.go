@@ -6,19 +6,11 @@ import (
 	"errors"
 	"log/slog"
 	"math"
+	"sync"
 	"syscall"
 	"unsafe"
 
 	"golang.org/x/sys/windows"
-)
-
-const (
-	stateUnknown     uint8 = 0
-	stateEmpty       uint8 = 1
-	stateFull        uint8 = 2
-	stateCharging    uint8 = 3
-	stateDischarging uint8 = 4
-	stateIdle        uint8 = 5
 )
 
 type batteryQueryInformation struct {
@@ -77,15 +69,16 @@ var guidDeviceBattery = winGUID{
 }
 
 var (
-	setupapi                        = &windows.LazyDLL{Name: "setupapi.dll", System: true}
-	setupDiGetClassDevsW            = setupapi.NewProc("SetupDiGetClassDevsW")
-	setupDiEnumDeviceInterfaces     = setupapi.NewProc("SetupDiEnumDeviceInterfaces")
+	setupapi                         = &windows.LazyDLL{Name: "setupapi.dll", System: true}
+	setupDiGetClassDevsW             = setupapi.NewProc("SetupDiGetClassDevsW")
+	setupDiEnumDeviceInterfaces      = setupapi.NewProc("SetupDiEnumDeviceInterfaces")
 	setupDiGetDeviceInterfaceDetailW = setupapi.NewProc("SetupDiGetDeviceInterfaceDetailW")
-	setupDiDestroyDeviceInfoList    = setupapi.NewProc("SetupDiDestroyDeviceInfoList")
+	setupDiDestroyDeviceInfoList     = setupapi.NewProc("SetupDiDestroyDeviceInfoList")
 )
 
 func setupDiSetup(proc *windows.LazyProc, nargs, a1, a2, a3, a4, a5, a6 uintptr) (uintptr, error) {
-	r1, _, errno := syscall.Syscall6(proc.Addr(), nargs, a1, a2, a3, a4, a5, a6)
+	_ = nargs
+	r1, _, errno := syscall.SyscallN(proc.Addr(), a1, a2, a3, a4, a5, a6)
 	if windows.Handle(r1) == windows.InvalidHandle {
 		if errno != 0 {
 			return 0, error(errno)
@@ -96,7 +89,8 @@ func setupDiSetup(proc *windows.LazyProc, nargs, a1, a2, a3, a4, a5, a6 uintptr)
 }
 
 func setupDiCall(proc *windows.LazyProc, nargs, a1, a2, a3, a4, a5, a6 uintptr) syscall.Errno {
-	r1, _, errno := syscall.Syscall6(proc.Addr(), nargs, a1, a2, a3, a4, a5, a6)
+	_ = nargs
+	r1, _, errno := syscall.SyscallN(proc.Addr(), a1, a2, a3, a4, a5, a6)
 	if r1 == 0 {
 		if errno != 0 {
 			return errno
@@ -137,7 +131,7 @@ func winBatteryGet(idx int) (full, current uint32, state uint8, err error) {
 	if err != nil {
 		return 0, 0, stateUnknown, err
 	}
-	defer syscall.Syscall(setupDiDestroyDeviceInfoList.Addr(), 1, hdev, 0, 0)
+	defer syscall.SyscallN(setupDiDestroyDeviceInfoList.Addr(), hdev)
 
 	var did spDeviceInterfaceData
 	did.cbSize = uint32(unsafe.Sizeof(did))
@@ -256,17 +250,9 @@ func winBatteryGet(idx int) (full, current uint32, state uint8, err error) {
 	return bi.FullChargedCapacity, bs.Capacity, readWinBatteryState(bs.PowerState), nil
 }
 
-var (
-	systemHasBattery   = false
-	haveCheckedBattery = false
-)
-
 // HasReadableBattery checks if the system has a battery and returns true if it does.
-func HasReadableBattery() bool {
-	if haveCheckedBattery {
-		return systemHasBattery
-	}
-	haveCheckedBattery = true
+var HasReadableBattery = sync.OnceValue(func() bool {
+	systemHasBattery := false
 	full, _, _, err := winBatteryGet(0)
 	if err == nil && full > 0 {
 		systemHasBattery = true
@@ -275,7 +261,7 @@ func HasReadableBattery() bool {
 		slog.Debug("No battery found", "err", err)
 	}
 	return systemHasBattery
-}
+})
 
 // GetBatteryStats returns the current battery percent and charge state.
 func GetBatteryStats() (batteryPercent uint8, batteryState uint8, err error) {

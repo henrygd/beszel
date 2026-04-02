@@ -7,17 +7,9 @@ import (
 	"log/slog"
 	"math"
 	"os/exec"
+	"sync"
 
 	"howett.net/plist"
-)
-
-const (
-	stateUnknown     uint8 = 0
-	stateEmpty       uint8 = 1
-	stateFull        uint8 = 2
-	stateCharging    uint8 = 3
-	stateDischarging uint8 = 4
-	stateIdle        uint8 = 5
 )
 
 type macBattery struct {
@@ -27,11 +19,6 @@ type macBattery struct {
 	IsCharging        bool `plist:"IsCharging"`
 	ExternalConnected bool `plist:"ExternalConnected"`
 }
-
-var (
-	systemHasBattery   = false
-	haveCheckedBattery = false
-)
 
 func readMacBatteries() ([]macBattery, error) {
 	out, err := exec.Command("ioreg", "-n", "AppleSmartBattery", "-r", "-a").Output()
@@ -49,11 +36,8 @@ func readMacBatteries() ([]macBattery, error) {
 }
 
 // HasReadableBattery checks if the system has a battery and returns true if it does.
-func HasReadableBattery() bool {
-	if haveCheckedBattery {
-		return systemHasBattery
-	}
-	haveCheckedBattery = true
+var HasReadableBattery = sync.OnceValue(func() bool {
+	systemHasBattery := false
 	batteries, err := readMacBatteries()
 	for _, bat := range batteries {
 		if bat.MaxCapacity > 0 {
@@ -65,7 +49,7 @@ func HasReadableBattery() bool {
 		slog.Debug("No battery found", "err", err)
 	}
 	return systemHasBattery
-}
+})
 
 // GetBatteryStats returns the current battery percent and charge state.
 // Uses CurrentCapacity/MaxCapacity to match the value macOS displays.
