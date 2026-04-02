@@ -180,6 +180,10 @@ func (info *UpdateInfo) getUpdate(e *core.RequestEvent) error {
 
 // GetUniversalToken handles the universal token API endpoint (create, read, delete)
 func (h *Hub) getUniversalToken(e *core.RequestEvent) error {
+	if e.Auth.IsSuperuser() {
+		return e.ForbiddenError("Superusers cannot use universal tokens", nil)
+	}
+
 	tokenMap := universalTokenMap.GetMap()
 	userID := e.Auth.Id
 	query := e.Request.URL.Query()
