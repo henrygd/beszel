@@ -14,7 +14,7 @@ require (
 	github.com/nicholas-fedor/shoutrrr v0.14.1
 	github.com/pocketbase/dbx v1.12.0
 	github.com/pocketbase/pocketbase v0.36.7
-	github.com/shirou/gopsutil/v4 v4.26.2
+	github.com/shirou/gopsutil/v4 v4.26.3
 	github.com/spf13/cast v1.10.0
 	github.com/spf13/cobra v1.10.2
 	github.com/spf13/pflag v1.0.10
