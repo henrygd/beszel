@@ -69,6 +69,8 @@ export const AlertDialogContent = memo(function AlertDialogContent({ system }: {
 	const systems = useStore($systems)
 	const [overwriteExisting, setOverwriteExisting] = useState<boolean | "indeterminate">(false)
 	const [currentTab, setCurrentTab] = useState("system")
+	// copyKey is used to force remount AlertContent components with
+	// new alert data after copying alerts from another system
 	const [copyKey, setCopyKey] = useState(0)
 
 	const systemAlerts = alerts[system.id] ?? new Map()
@@ -83,23 +85,33 @@ export const AlertDialogContent = memo(function AlertDialogContent({ system }: {
 		const sourceAlerts = $alerts.get()[sourceSystemId]
 		if (!sourceAlerts?.size) return
 		try {
-			await Promise.all(
-				Array.from(sourceAlerts.values()).map((alert) =>
+			const currentTargetAlerts = $alerts.get()[system.id] ?? new Map()
+			// Alert names present on target but absent from source should be deleted
+			const namesToDelete = Array.from(currentTargetAlerts.keys()).filter((name) => !sourceAlerts.has(name))
+			await Promise.all([
+				...Array.from(sourceAlerts.values()).map(({ name, value, min }) =>
 					pb.send<{ success: boolean }>(endpoint, {
 						method: "POST",
-						body: { name: alert.name, value: alert.value, min: alert.min, systems: [system.id], overwrite: true },
+						body: { name, value, min, systems: [system.id], overwrite: true },
+						requestKey: name,
 					})
-				)
-			)
+				),
+				...namesToDelete.map((name) =>
+					pb.send<{ success: boolean }>(endpoint, {
+						method: "DELETE",
+						body: { name, systems: [system.id] },
+						requestKey: name,
+					})
+				),
+			])
 			// Optimistically update the store so components re-mount with correct data
-			// before the realtime subscription event arrives
-			const newSystemAlerts = new Map($alerts.get()[system.id] ?? new Map())
+			// before the realtime subscription event arrives.
+			const newSystemAlerts = new Map<string, AlertRecord>()
 			for (const alert of sourceAlerts.values()) {
 				newSystemAlerts.set(alert.name, { ...alert, system: system.id, triggered: false })
 			}
 			$alerts.setKey(system.id, newSystemAlerts)
 			setCopyKey((k) => k + 1)
-			toast({ title: t`Alerts copied successfully` })
 		} catch (error) {
 			failedUpdateToast(error)
 		}
@@ -144,13 +156,13 @@ export const AlertDialogContent = memo(function AlertDialogContent({ system }: {
 						<DropdownMenu>
 							<DropdownMenuTrigger asChild>
 								<Button variant="ghost" size="sm" className="text-muted-foreground text-xs gap-1.5">
-									<Trans>Copy from</Trans>
+									<Trans context="Copy alerts from another system">Copy from</Trans>
 									<ChevronDownIcon className="h-3.5 w-3.5" />
 								</Button>
 							</DropdownMenuTrigger>
-							<DropdownMenuContent align="end">
+							<DropdownMenuContent align="end" className="max-h-100 overflow-auto">
 								{systemsWithAlerts.map((s) => (
-									<DropdownMenuItem key={s.id} onSelect={() => copyAlertsFromSystem(s.id)}>
+									<DropdownMenuItem key={s.id} className="min-w-44" onSelect={() => copyAlertsFromSystem(s.id)}>
 										{s.name}
 									</DropdownMenuItem>
 								))}
