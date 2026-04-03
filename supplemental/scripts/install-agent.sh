@@ -12,6 +12,10 @@ is_freebsd() {
   [ "$(uname -s)" = "FreeBSD" ]
 }
 
+is_opnsense() {
+  [ -f /usr/local/sbin/opnsense-version ] || [ -f /usr/local/etc/opnsense-version ] || [ -f /etc/opnsense-release ]
+}
+
 is_glibc() {
   # Prefer glibc-enabled agent (NVML via purego) on linux/amd64 glibc systems.
   # Check common dynamic loader paths first (fast + reliable).
@@ -549,6 +553,7 @@ else
 fi
 
 # Create a dedicated user for the service if it doesn't exist
+AGENT_USER="beszel"
 echo "Configuring the dedicated user for the Beszel Agent service..."
 if is_alpine; then
   if ! id -u beszel >/dev/null 2>&1; then
@@ -590,13 +595,18 @@ elif is_openwrt; then
   fi
 
 elif is_freebsd; then
-  if ! id -u beszel >/dev/null 2>&1; then
-    pw user add beszel -d /nonexistent -s /usr/sbin/nologin -c "beszel user"
-  fi
-  # Add the user to the wheel group to allow self-updates
-  if pw group show wheel >/dev/null 2>&1; then
-    echo "Adding beszel to wheel group for self-updates"
-    pw group mod wheel -m beszel
+  if is_opnsense; then
+    echo "OPNsense detected: skipping user creation (using daemon user instead)"
+    AGENT_USER="daemon"
+  else
+    if ! id -u beszel >/dev/null 2>&1; then
+      pw user add beszel -d /nonexistent -s /usr/sbin/nologin -c "beszel user"
+    fi
+    # Add the user to the wheel group to allow self-updates
+    if pw group show wheel >/dev/null 2>&1; then
+      echo "Adding beszel to wheel group for self-updates"
+      pw group mod wheel -m beszel
+    fi
   fi
 
 else
@@ -620,7 +630,7 @@ fi
 if [ ! -d "$AGENT_DIR" ]; then
   echo "Creating the directory for the Beszel Agent..."
   mkdir -p "$AGENT_DIR"
-  chown beszel:beszel "$AGENT_DIR"
+  chown "${AGENT_USER}:${AGENT_USER}" "$AGENT_DIR"
   chmod 755 "$AGENT_DIR"
 fi
 
@@ -899,7 +909,7 @@ TOKEN=$TOKEN
 HUB_URL=$HUB_URL
 EOF
     chmod 640 "$AGENT_DIR/env"
-    chown root:beszel "$AGENT_DIR/env"
+    chown "root:${AGENT_USER}" "$AGENT_DIR/env"
   else
     echo "FreeBSD environment file already exists. Skipping creation."
   fi
@@ -917,6 +927,7 @@ EOF
   # Enable and start the service
   echo "Enabling and starting the agent service..."
   sysrc beszel_agent_enable="YES"
+  sysrc beszel_agent_user="${AGENT_USER}"
   service beszel-agent restart
   
   # Check if service started successfully

@@ -8,6 +8,7 @@ import (
 	"hash/fnv"
 	"math/rand"
 	"net"
+	"slices"
 	"strings"
 	"sync/atomic"
 	"time"
@@ -184,7 +185,7 @@ func (sys *System) handlePaused() {
 
 // createRecords updates the system record and adds system_stats and container_stats records
 func (sys *System) createRecords(data *system.CombinedData) (*core.Record, error) {
-	systemRecord, err := sys.getRecord()
+	systemRecord, err := sys.getRecord(sys.manager.hub)
 	if err != nil {
 		return nil, err
 	}
@@ -343,13 +344,23 @@ func createContainerRecords(app core.App, data []*container.Stats, systemId stri
 
 // getRecord retrieves the system record from the database.
 // If the record is not found, it removes the system from the manager.
-func (sys *System) getRecord() (*core.Record, error) {
-	record, err := sys.manager.hub.FindRecordById("systems", sys.Id)
+func (sys *System) getRecord(app core.App) (*core.Record, error) {
+	record, err := app.FindRecordById("systems", sys.Id)
 	if err != nil || record == nil {
 		_ = sys.manager.RemoveSystem(sys.Id)
 		return nil, err
 	}
 	return record, nil
+}
+
+// HasUser checks if the given user ID is in the system's users list.
+func (sys *System) HasUser(app core.App, userID string) bool {
+	record, err := sys.getRecord(app)
+	if err != nil {
+		return false
+	}
+	users := record.GetStringSlice("users")
+	return slices.Contains(users, userID)
 }
 
 // setDown marks a system as down in the database.
@@ -359,7 +370,7 @@ func (sys *System) setDown(originalError error) error {
 	if sys.Status == down || sys.Status == paused {
 		return nil
 	}
-	record, err := sys.getRecord()
+	record, err := sys.getRecord(sys.manager.hub)
 	if err != nil {
 		return err
 	}

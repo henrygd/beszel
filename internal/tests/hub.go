@@ -77,6 +77,16 @@ func CreateUser(app core.App, email string, password string) (*core.Record, erro
 	return user, app.Save(user)
 }
 
+// Helper function to create a test superuser for config tests
+func CreateSuperuser(app core.App, email string, password string) (*core.Record, error) {
+	superusersCollection, _ := app.FindCachedCollectionByNameOrId(core.CollectionNameSuperusers)
+	superuser := core.NewRecord(superusersCollection)
+	superuser.Set("email", email)
+	superuser.Set("password", password)
+
+	return superuser, app.Save(superuser)
+}
+
 func CreateUserWithRole(app core.App, email string, password string, roleName string) (*core.Record, error) {
 	user, err := CreateUser(app, email, password)
 	if err != nil {
