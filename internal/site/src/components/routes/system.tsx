@@ -1,18 +1,16 @@
 import { memo, useState } from "react"
 import { Trans } from "@lingui/react/macro"
 import { compareSemVer, parseSemVer } from "@/lib/utils"
-
 import type { GPUData } from "@/types"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import InfoBar from "./system/info-bar"
 import { useSystemData } from "./system/use-system-data"
 import { CpuChart, ContainerCpuChart } from "./system/charts/cpu-charts"
 import { MemoryChart, ContainerMemoryChart, SwapChart } from "./system/charts/memory-charts"
-import { DiskCharts } from "./system/charts/disk-charts"
+import { RootDiskCharts, ExtraFsCharts } from "./system/charts/disk-charts"
 import { BandwidthChart, ContainerNetworkChart } from "./system/charts/network-charts"
 import { TemperatureChart, BatteryChart } from "./system/charts/sensor-charts"
 import { GpuPowerChart, GpuDetailCharts } from "./system/charts/gpu-charts"
-import { ExtraFsCharts } from "./system/charts/extra-fs-charts"
 import { LazyContainersTable, LazySmartTable, LazySystemdTable } from "./system/lazy-tables"
 import { LoadAverageChart } from "./system/charts/load-average-chart"
 import { ContainerIcon, CpuIcon, HardDriveIcon, TerminalSquareIcon } from "lucide-react"
@@ -24,6 +22,8 @@ const SEMVER_0_14_0 = parseSemVer("0.14.0")
 const SEMVER_0_15_0 = parseSemVer("0.15.0")
 
 export default memo(function SystemDetail({ id }: { id: string }) {
+	const systemData = useSystemData(id)
+
 	const {
 		system,
 		systemStats,
@@ -48,7 +48,7 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 		hasGpuData,
 		hasGpuEnginesData,
 		hasGpuPowerData,
-	} = useSystemData(id)
+	} = systemData
 
 	// extra margin to add to bottom of page, specifically for temperature chart,
 	// where the tooltip can go past the bottom of the page if lots of sensors
@@ -103,7 +103,7 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 						/>
 					)}
 
-					<DiskCharts {...coreProps} systemStats={systemStats} />
+					<RootDiskCharts systemData={systemData} />
 
 					<BandwidthChart {...coreProps} systemStats={systemStats} />
 
@@ -138,7 +138,7 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 					/>
 				)}
 
-				<ExtraFsCharts {...coreProps} systemStats={systemStats} />
+				<ExtraFsCharts systemData={systemData} />
 
 				{maybeHasSmartData && <LazySmartTable systemId={system.id} />}
 
@@ -198,9 +198,9 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 					{mountedTabs.has("disk") && (
 						<>
 							<div className="grid xl:grid-cols-2 gap-4">
-								<DiskCharts {...coreProps} systemStats={systemStats} />
+								<RootDiskCharts systemData={systemData} />
 							</div>
-							<ExtraFsCharts {...coreProps} systemStats={systemStats} />
+							<ExtraFsCharts systemData={systemData} />
 							{maybeHasSmartData && <LazySmartTable systemId={system.id} />}
 						</>
 					)}
