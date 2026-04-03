@@ -13,7 +13,7 @@ is_freebsd() {
 }
 
 is_opnsense() {
-  [ -f /usr/local/etc/opnsense-version ] || [ -f /etc/opnsense-release ]
+  [ -f /usr/local/sbin/opnsense-version ] || [ -f /usr/local/etc/opnsense-version ] || [ -f /etc/opnsense-release ]
 }
 
 is_glibc() {
