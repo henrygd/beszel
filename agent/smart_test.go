@@ -1199,3 +1199,81 @@ func TestIsNvmeControllerPath(t *testing.T) {
 		})
 	}
 }
+
+func TestParseSmartForNvmeAppleSSD(t *testing.T) {
+	// Apple SSDs don't report user_capacity via smartctl; capacity should be fetched
+	// from system_profiler via the darwinNvmeProvider fallback.
+	fixturePath := filepath.Join("test-data", "smart", "apple_nvme.json")
+	data, err := os.ReadFile(fixturePath)
+	require.NoError(t, err)
+
+	providerCalls := 0
+	fakeProvider := func() ([]byte, error) {
+		providerCalls++
+		return []byte(`{
+			"SPNVMeDataType": [{
+				"_items": [{
+					"device_serial": "0ba0147940253c15",
+					"size_in_bytes": 251000193024
+				}]
+			}]
+		}`), nil
+	}
+
+	sm := &SmartManager{
+		SmartDataMap:       make(map[string]*smart.SmartData),
+		darwinNvmeProvider: fakeProvider,
+	}
+
+	hasData, _ := sm.parseSmartForNvme(data)
+	require.True(t, hasData)
+
+	deviceData, ok := sm.SmartDataMap["0ba0147940253c15"]
+	require.True(t, ok)
+	assert.Equal(t, "APPLE SSD AP0256Q", deviceData.ModelName)
+	assert.Equal(t, uint64(251000193024), deviceData.Capacity)
+	assert.Equal(t, uint8(42), deviceData.Temperature)
+	assert.Equal(t, "PASSED", deviceData.SmartStatus)
+	assert.Equal(t, 1, providerCalls, "system_profiler should be called once")
+
+	// Second parse: provider should NOT be called again (cache hit)
+	_, _ = sm.parseSmartForNvme(data)
+	assert.Equal(t, 1, providerCalls, "system_profiler should not be called again after caching")
+}
+
+func TestLookupDarwinNvmeCapacityMultipleDisks(t *testing.T) {
+	fakeProvider := func() ([]byte, error) {
+		return []byte(`{
+			"SPNVMeDataType": [
+				{
+					"_items": [
+						{"device_serial": "serial-disk0", "size_in_bytes": 251000193024},
+						{"device_serial": "serial-disk1", "size_in_bytes": 1000204886016}
+					]
+				},
+				{
+					"_items": [
+						{"device_serial": "serial-disk2", "size_in_bytes": 512110190592}
+					]
+				}
+			]
+		}`), nil
+	}
+
+	sm := &SmartManager{darwinNvmeProvider: fakeProvider}
+	assert.Equal(t, uint64(251000193024), sm.lookupDarwinNvmeCapacity("serial-disk0"))
+	assert.Equal(t, uint64(1000204886016), sm.lookupDarwinNvmeCapacity("serial-disk1"))
+	assert.Equal(t, uint64(512110190592), sm.lookupDarwinNvmeCapacity("serial-disk2"))
+	assert.Equal(t, uint64(0), sm.lookupDarwinNvmeCapacity("unknown-serial"))
+}
+
+func TestLookupDarwinNvmeCapacityProviderError(t *testing.T) {
+	fakeProvider := func() ([]byte, error) {
+		return nil, errors.New("system_profiler not found")
+	}
+
+	sm := &SmartManager{darwinNvmeProvider: fakeProvider}
+	assert.Equal(t, uint64(0), sm.lookupDarwinNvmeCapacity("any-serial"))
+	// Cache should be initialized even on error so we don't retry (Once already fired)
+	assert.NotNil(t, sm.darwinNvmeCapacity)
+}
