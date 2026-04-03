@@ -1,5 +1,8 @@
 //go:build windows
 
+// Most of the Windows battery code is based on
+// distatus/battery by Karol 'Kenji Takahashi' Woźniak
+
 package battery
 
 import (
@@ -76,6 +79,10 @@ var (
 	setupDiDestroyDeviceInfoList     = setupapi.NewProc("SetupDiDestroyDeviceInfoList")
 )
 
+// winBatteryGet reads one battery by index. Returns (fullCapacity, currentCapacity, state, error).
+// Returns error == errNotFound when there are no more batteries.
+var errNotFound = errors.New("no more batteries")
+
 func setupDiSetup(proc *windows.LazyProc, nargs, a1, a2, a3, a4, a5, a6 uintptr) (uintptr, error) {
 	_ = nargs
 	r1, _, errno := syscall.SyscallN(proc.Addr(), a1, a2, a3, a4, a5, a6)
@@ -114,10 +121,6 @@ func readWinBatteryState(powerState uint32) uint8 {
 		return stateUnknown
 	}
 }
-
-// winBatteryGet reads one battery by index. Returns (fullCapacity, currentCapacity, state, error).
-// Returns error == errNotFound when there are no more batteries.
-var errNotFound = errors.New("no more batteries")
 
 func winBatteryGet(idx int) (full, current uint32, state uint8, err error) {
 	hdev, err := setupDiSetup(

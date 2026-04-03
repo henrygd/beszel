@@ -14,22 +14,48 @@ import (
 	"github.com/henrygd/beszel/agent/utils"
 )
 
-const sysfsPowerSupply = "/sys/class/power_supply"
+// getBatteryPaths returns the paths of all batteries in /sys/class/power_supply
+var getBatteryPaths func() ([]string, error)
 
-var getBatteryPaths = sync.OnceValues(func() ([]string, error) {
-	entries, err := os.ReadDir(sysfsPowerSupply)
-	if err != nil {
-		return nil, err
-	}
-	var paths []string
-	for _, e := range entries {
-		path := filepath.Join(sysfsPowerSupply, e.Name())
-		if utils.ReadStringFile(filepath.Join(path, "type")) == "Battery" {
-			paths = append(paths, path)
+// HasReadableBattery checks if the system has a battery and returns true if it does.
+var HasReadableBattery func() bool
+
+func init() {
+	resetBatteryState("/sys/class/power_supply")
+}
+
+// resetBatteryState resets the sync.Once functions to a fresh state.
+// Tests call this after swapping sysfsPowerSupply so the new path is picked up.
+func resetBatteryState(sysfsPowerSupplyPath string) {
+	getBatteryPaths = sync.OnceValues(func() ([]string, error) {
+		entries, err := os.ReadDir(sysfsPowerSupplyPath)
+		if err != nil {
+			return nil, err
 		}
-	}
-	return paths, nil
-})
+		var paths []string
+		for _, e := range entries {
+			path := filepath.Join(sysfsPowerSupplyPath, e.Name())
+			if utils.ReadStringFile(filepath.Join(path, "type")) == "Battery" {
+				paths = append(paths, path)
+			}
+		}
+		return paths, nil
+	})
+	HasReadableBattery = sync.OnceValue(func() bool {
+		systemHasBattery := false
+		paths, err := getBatteryPaths()
+		for _, path := range paths {
+			if _, ok := utils.ReadStringFileOK(filepath.Join(path, "capacity")); ok {
+				systemHasBattery = true
+				break
+			}
+		}
+		if !systemHasBattery {
+			slog.Debug("No battery found", "err", err)
+		}
+		return systemHasBattery
+	})
+}
 
 func parseSysfsState(status string) uint8 {
 	switch status {
@@ -47,22 +73,6 @@ func parseSysfsState(status string) uint8 {
 		return stateUnknown
 	}
 }
-
-// HasReadableBattery checks if the system has a battery and returns true if it does.
-var HasReadableBattery = sync.OnceValue(func() bool {
-	systemHasBattery := false
-	paths, err := getBatteryPaths()
-	for _, path := range paths {
-		if _, ok := utils.ReadStringFileOK(filepath.Join(path, "capacity")); ok {
-			systemHasBattery = true
-			break
-		}
-	}
-	if !systemHasBattery {
-		slog.Debug("No battery found", "err", err)
-	}
-	return systemHasBattery
-})
 
 // GetBatteryStats returns the current battery percent and charge state.
 // Reads /sys/class/power_supply/*/capacity directly so the kernel-reported

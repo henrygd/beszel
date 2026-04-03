@@ -1,4 +1,4 @@
-// Package battery provides functions to check if the system has a battery and to get the battery stats.
+// Package battery provides functions to check if the system has a battery and return the charge state and percentage.
 package battery
 
 const (
