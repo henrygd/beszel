@@ -63,7 +63,7 @@ export default function Navbar() {
 				className="p-2 ps-0 me-3 group"
 				onMouseEnter={runOnce(() => import("@/components/routes/home"))}
 			>
-				<Logo className="h-[1.1rem] md:h-5 fill-foreground" />
+				<Logo className="h-[1.2rem] md:h-5 fill-foreground" />
 			</Link>
 			<Button
 				variant="outline"
@@ -125,15 +125,17 @@ export default function Navbar() {
 									<DropdownMenuSubContent>{AdminLinks}</DropdownMenuSubContent>
 								</DropdownMenuSub>
 							)}
-							<DropdownMenuItem
-								className="flex items-center"
-								onSelect={() => {
-									setAddSystemDialogOpen(true)
-								}}
-							>
-								<PlusIcon className="h-4 w-4 me-2.5" />
-								<Trans>Add {{ foo: systemTranslation }}</Trans>
-							</DropdownMenuItem>
+							{!isReadOnlyUser() && (
+								<DropdownMenuItem
+									className="flex items-center"
+									onSelect={() => {
+										setAddSystemDialogOpen(true)
+									}}
+								>
+									<PlusIcon className="h-4 w-4 me-2.5" />
+									<Trans>Add {{ foo: systemTranslation }}</Trans>
+								</DropdownMenuItem>
+							)}
 						</DropdownMenuGroup>
 						<DropdownMenuSeparator />
 						<DropdownMenuGroup>
@@ -217,10 +219,12 @@ export default function Navbar() {
 						</DropdownMenuItem>
 					</DropdownMenuContent>
 				</DropdownMenu>
-				<Button variant="outline" className="flex gap-1 ms-2" onClick={() => setAddSystemDialogOpen(true)}>
-					<PlusIcon className="h-4 w-4 -ms-1" />
-					<Trans>Add {{ foo: systemTranslation }}</Trans>
-				</Button>
+				{!isReadOnlyUser() && (
+					<Button variant="outline" className="flex gap-1 ms-2" onClick={() => setAddSystemDialogOpen(true)}>
+						<PlusIcon className="h-4 w-4 -ms-1" />
+						<Trans>Add {{ foo: systemTranslation }}</Trans>
+					</Button>
+				)}
 			</div>
 		</div>
 	)

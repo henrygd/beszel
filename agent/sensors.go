@@ -19,13 +19,20 @@ import (
 	"github.com/shirou/gopsutil/v4/sensors"
 )
 
+var errTemperatureFetchTimeout = errors.New("temperature collection timed out")
+
+// Matches sensors.TemperaturesWithContext to allow for panic recovery (gopsutil/issues/1832)
+type getTempsFn func(ctx context.Context) ([]sensors.TemperatureStat, error)
+
 type SensorConfig struct {
 	context        context.Context
 	sensors        map[string]struct{}
 	primarySensor  string
+	timeout        time.Duration
 	isBlacklist    bool
 	hasWildcards   bool
 	skipCollection bool
+	firstRun       bool
 }
 
 func (a *Agent) newSensorConfig() *SensorConfig {
@@ -33,25 +40,29 @@ func (a *Agent) newSensorConfig() *SensorConfig {
 	sysSensors, _ := utils.GetEnv("SYS_SENSORS")
 	sensorsEnvVal, sensorsSet := utils.GetEnv("SENSORS")
 	skipCollection := sensorsSet && sensorsEnvVal == ""
+	sensorsTimeout, _ := utils.GetEnv("SENSORS_TIMEOUT")
 
-	return a.newSensorConfigWithEnv(primarySensor, sysSensors, sensorsEnvVal, skipCollection)
+	return a.newSensorConfigWithEnv(primarySensor, sysSensors, sensorsEnvVal, sensorsTimeout, skipCollection)
 }
-
-// Matches sensors.TemperaturesWithContext to allow for panic recovery (gopsutil/issues/1832)
-type getTempsFn func(ctx context.Context) ([]sensors.TemperatureStat, error)
-
-var (
-	errTemperatureFetchTimeout = errors.New("temperature collection timed out")
-	temperatureFetchTimeout    = 2 * time.Second
-)
 
 // newSensorConfigWithEnv creates a SensorConfig with the provided environment variables
 // sensorsSet indicates if the SENSORS environment variable was explicitly set (even to empty string)
-func (a *Agent) newSensorConfigWithEnv(primarySensor, sysSensors, sensorsEnvVal string, skipCollection bool) *SensorConfig {
+func (a *Agent) newSensorConfigWithEnv(primarySensor, sysSensors, sensorsEnvVal, sensorsTimeout string, skipCollection bool) *SensorConfig {
+	timeout := 2 * time.Second
+	if sensorsTimeout != "" {
+		if d, err := time.ParseDuration(sensorsTimeout); err == nil {
+			timeout = d
+		} else {
+			slog.Warn("Invalid SENSORS_TIMEOUT", "value", sensorsTimeout)
+		}
+	}
+
 	config := &SensorConfig{
 		context:        context.Background(),
 		primarySensor:  primarySensor,
+		timeout:        timeout,
 		skipCollection: skipCollection,
+		firstRun:       true,
 		sensors:        make(map[string]struct{}),
 	}
 
@@ -167,6 +178,14 @@ func (a *Agent) getTempsWithTimeout(getTemps getTempsFn) ([]sensors.TemperatureS
 		err   error
 	}
 
+	// Use a longer timeout on the first run to allow for initialization
+	// (e.g. Windows LHM subprocess startup)
+	timeout := a.sensorConfig.timeout
+	if a.sensorConfig.firstRun {
+		a.sensorConfig.firstRun = false
+		timeout = 10 * time.Second
+	}
+
 	resultCh := make(chan result, 1)
 	go func() {
 		temps, err := a.getTempsWithPanicRecovery(getTemps)
@@ -176,7 +195,7 @@ func (a *Agent) getTempsWithTimeout(getTemps getTempsFn) ([]sensors.TemperatureS
 	select {
 	case res := <-resultCh:
 		return res.temps, res.err
-	case <-time.After(temperatureFetchTimeout):
+	case <-time.After(timeout):
 		return nil, errTemperatureFetchTimeout
 	}
 }
