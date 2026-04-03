@@ -39,14 +39,12 @@ func readMacBatteries() ([]macBattery, error) {
 var HasReadableBattery = sync.OnceValue(func() bool {
 	systemHasBattery := false
 	batteries, err := readMacBatteries()
+	slog.Debug("Batteries", "batteries", batteries, "err", err)
 	for _, bat := range batteries {
 		if bat.MaxCapacity > 0 {
 			systemHasBattery = true
 			break
 		}
-	}
-	if !systemHasBattery {
-		slog.Debug("No battery found", "err", err)
 	}
 	return systemHasBattery
 })
