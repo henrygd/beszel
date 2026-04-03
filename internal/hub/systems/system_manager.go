@@ -54,6 +54,7 @@ type hubLike interface {
 	GetSSHKey(dataDir string) (ssh.Signer, error)
 	HandleSystemAlerts(systemRecord *core.Record, data *system.CombinedData) error
 	HandleStatusAlerts(status string, systemRecord *core.Record) error
+	CancelPendingStatusAlerts(systemID string)
 }
 
 // NewSystemManager creates a new SystemManager instance with the provided hub.
@@ -189,6 +190,7 @@ func (sm *SystemManager) onRecordAfterUpdateSuccess(e *core.RecordEvent) error {
 			system.closeSSHConnection()
 		}
 		_ = deactivateAlerts(e.App, e.Record.Id)
+		sm.hub.CancelPendingStatusAlerts(e.Record.Id)
 		return e.Next()
 	case pending:
 		// Resume monitoring, preferring existing WebSocket connection

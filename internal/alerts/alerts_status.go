@@ -109,6 +109,18 @@ func (am *AlertManager) cancelPendingAlert(alertID string) bool {
 	return true
 }
 
+// CancelPendingStatusAlerts cancels all pending status alert timers for a given system.
+// This is called when a system is paused to prevent delayed alerts from firing.
+func (am *AlertManager) CancelPendingStatusAlerts(systemID string) {
+	am.pendingAlerts.Range(func(key, value any) bool {
+		info := value.(*alertInfo)
+		if info.alertData.SystemID == systemID {
+			am.cancelPendingAlert(key.(string))
+		}
+		return true
+	})
+}
+
 // processPendingAlert sends a "down" alert if the pending alert has expired and the system is still down.
 func (am *AlertManager) processPendingAlert(alertID string) {
 	value, loaded := am.pendingAlerts.LoadAndDelete(alertID)

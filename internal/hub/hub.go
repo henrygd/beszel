@@ -9,7 +9,6 @@ import (
 	"net/url"
 	"os"
 	"path"
-	"regexp"
 	"strings"
 
 	"github.com/henrygd/beszel/internal/alerts"
@@ -37,8 +36,6 @@ type Hub struct {
 	signer ssh.Signer
 	appURL string
 }
-
-var containerIDPattern = regexp.MustCompile(`^[a-fA-F0-9]{12,64}$`)
 
 // NewHub creates a new Hub instance with default configuration
 func NewHub(app core.App) *Hub {

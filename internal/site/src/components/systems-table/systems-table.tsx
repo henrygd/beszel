@@ -460,14 +460,14 @@ const SystemCard = memo(
 						}
 					)}
 				>
-					<CardHeader className="py-1 ps-5 pe-3 bg-muted/30 border-b border-border/60">
-						<div className="flex items-center gap-2 w-full overflow-hidden">
-							<CardTitle className="text-base tracking-normal text-primary/90 flex items-center min-w-0 flex-1 gap-2.5">
+					<CardHeader className="py-1 ps-4 pe-2 bg-muted/30 border-b border-border/60">
+						<div className="flex items-center gap-1 w-full overflow-hidden">
+							<h3 className="text-primary/90 min-w-0 flex-1 gap-2.5 font-semibold">
 								<div className="flex items-center gap-2.5 min-w-0 flex-1">
 									<IndicatorDot system={system} />
 									<span className="text-[.95em]/normal tracking-normal text-primary/90 truncate">{system.name}</span>
 								</div>
-							</CardTitle>
+							</h3>
 							{table.getColumn("actions")?.getIsVisible() && (
 								<div className="flex gap-1 shrink-0 relative z-10">
 									<AlertButton system={system} />

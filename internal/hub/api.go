@@ -3,6 +3,7 @@ package hub
 import (
 	"context"
 	"net/http"
+	"regexp"
 	"strings"
 	"time"
 
@@ -25,6 +26,32 @@ type UpdateInfo struct {
 	Url       string `json:"url"`
 }
 
+var containerIDPattern = regexp.MustCompile(`^[a-fA-F0-9]{12,64}$`)
+
+// Middleware to allow only admin role users
+var requireAdminRole = customAuthMiddleware(func(e *core.RequestEvent) bool {
+	return e.Auth.GetString("role") == "admin"
+})
+
+// Middleware to exclude readonly users
+var excludeReadOnlyRole = customAuthMiddleware(func(e *core.RequestEvent) bool {
+	return e.Auth.GetString("role") != "readonly"
+})
+
+// customAuthMiddleware handles boilerplate for custom authentication middlewares. fn should
+// return true if the request is allowed, false otherwise. e.Auth is guaranteed to be non-nil.
+func customAuthMiddleware(fn func(*core.RequestEvent) bool) func(*core.RequestEvent) error {
+	return func(e *core.RequestEvent) error {
+		if e.Auth == nil {
+			return e.UnauthorizedError("The request requires valid record authorization token.", nil)
+		}
+		if !fn(e) {
+			return e.ForbiddenError("The authorized record is not allowed to perform this action.", nil)
+		}
+		return e.Next()
+	}
+}
+
 // registerMiddlewares registers custom middlewares
 func (h *Hub) registerMiddlewares(se *core.ServeEvent) {
 	// authorizes request with user matching the provided email
@@ -33,7 +60,7 @@ func (h *Hub) registerMiddlewares(se *core.ServeEvent) {
 			return e.Next()
 		}
 		isAuthRefresh := e.Request.URL.Path == "/api/collections/users/auth-refresh" && e.Request.Method == http.MethodPost
-		e.Auth, err = e.App.FindFirstRecordByData("users", "email", email)
+		e.Auth, err = e.App.FindAuthRecordByEmail("users", email)
 		if err != nil || !isAuthRefresh {
 			return e.Next()
 		}
@@ -84,19 +111,19 @@ func (h *Hub) registerApiRoutes(se *core.ServeEvent) error {
 	// send test notification
 	apiAuth.POST("/test-notification", h.SendTestNotification)
 	// heartbeat status and test
-	apiAuth.GET("/heartbeat-status", h.getHeartbeatStatus)
-	apiAuth.POST("/test-heartbeat", h.testHeartbeat)
+	apiAuth.GET("/heartbeat-status", h.getHeartbeatStatus).BindFunc(requireAdminRole)
+	apiAuth.POST("/test-heartbeat", h.testHeartbeat).BindFunc(requireAdminRole)
 	// get config.yml content
-	apiAuth.GET("/config-yaml", config.GetYamlConfig)
+	apiAuth.GET("/config-yaml", config.GetYamlConfig).BindFunc(requireAdminRole)
 	// handle agent websocket connection
 	apiNoAuth.GET("/agent-connect", h.handleAgentConnect)
 	// get or create universal tokens
-	apiAuth.GET("/universal-token", h.getUniversalToken)
+	apiAuth.GET("/universal-token", h.getUniversalToken).BindFunc(excludeReadOnlyRole)
 	// update / delete user alerts
 	apiAuth.POST("/user-alerts", alerts.UpsertUserAlerts)
 	apiAuth.DELETE("/user-alerts", alerts.DeleteUserAlerts)
 	// refresh SMART devices for a system
-	apiAuth.POST("/smart/refresh", h.refreshSmartData)
+	apiAuth.POST("/smart/refresh", h.refreshSmartData).BindFunc(excludeReadOnlyRole)
 	// get systemd service details
 	apiAuth.GET("/systemd/info", h.getSystemdInfo)
 	// /containers routes
@@ -153,6 +180,10 @@ func (info *UpdateInfo) getUpdate(e *core.RequestEvent) error {
 
 // GetUniversalToken handles the universal token API endpoint (create, read, delete)
 func (h *Hub) getUniversalToken(e *core.RequestEvent) error {
+	if e.Auth.IsSuperuser() {
+		return e.ForbiddenError("Superusers cannot use universal tokens", nil)
+	}
+
 	tokenMap := universalTokenMap.GetMap()
 	userID := e.Auth.Id
 	query := e.Request.URL.Query()
@@ -246,9 +277,6 @@ func (h *Hub) getUniversalToken(e *core.RequestEvent) error {
 
 // getHeartbeatStatus returns current heartbeat configuration and whether it's enabled
 func (h *Hub) getHeartbeatStatus(e *core.RequestEvent) error {
-	if e.Auth.GetString("role") != "admin" {
-		return e.ForbiddenError("Requires admin role", nil)
-	}
 	if h.hb == nil {
 		return e.JSON(http.StatusOK, map[string]any{
 			"enabled": false,
@@ -266,9 +294,6 @@ func (h *Hub) getHeartbeatStatus(e *core.RequestEvent) error {
 
 // testHeartbeat triggers a single heartbeat ping and returns the result
 func (h *Hub) testHeartbeat(e *core.RequestEvent) error {
-	if e.Auth.GetString("role") != "admin" {
-		return e.ForbiddenError("Requires admin role", nil)
-	}
 	if h.hb == nil {
 		return e.JSON(http.StatusOK, map[string]any{
 			"err": "Heartbeat not configured. Set HEARTBEAT_URL environment variable.",
@@ -285,21 +310,18 @@ func (h *Hub) containerRequestHandler(e *core.RequestEvent, fetchFunc func(*syst
 	systemID := e.Request.URL.Query().Get("system")
 	containerID := e.Request.URL.Query().Get("container")
 
-	if systemID == "" || containerID == "" {
-		return e.JSON(http.StatusBadRequest, map[string]string{"error": "system and container parameters are required"})
-	}
-	if !containerIDPattern.MatchString(containerID) {
-		return e.JSON(http.StatusBadRequest, map[string]string{"error": "invalid container parameter"})
+	if systemID == "" || containerID == "" || !containerIDPattern.MatchString(containerID) {
+		return e.BadRequestError("Invalid system or container parameter", nil)
 	}
 
 	system, err := h.sm.GetSystem(systemID)
-	if err != nil {
-		return e.JSON(http.StatusNotFound, map[string]string{"error": "system not found"})
+	if err != nil || !system.HasUser(e.App, e.Auth.Id) {
+		return e.NotFoundError("", nil)
 	}
 
 	data, err := fetchFunc(system, containerID)
 	if err != nil {
-		return e.JSON(http.StatusNotFound, map[string]string{"error": err.Error()})
+		return e.InternalServerError("", err)
 	}
 
 	return e.JSON(http.StatusOK, map[string]string{responseKey: data})
@@ -325,15 +347,23 @@ func (h *Hub) getSystemdInfo(e *core.RequestEvent) error {
 	serviceName := query.Get("service")
 
 	if systemID == "" || serviceName == "" {
-		return e.JSON(http.StatusBadRequest, map[string]string{"error": "system and service parameters are required"})
+		return e.BadRequestError("Invalid system or service parameter", nil)
 	}
 	system, err := h.sm.GetSystem(systemID)
+	if err != nil || !system.HasUser(e.App, e.Auth.Id) {
+		return e.NotFoundError("", nil)
+	}
+	// verify service exists before fetching details
+	_, err = e.App.FindFirstRecordByFilter("systemd_services", "system = {:system} && name = {:name}", dbx.Params{
+		"system": systemID,
+		"name":   serviceName,
+	})
 	if err != nil {
-		return e.JSON(http.StatusNotFound, map[string]string{"error": "system not found"})
+		return e.NotFoundError("", err)
 	}
 	details, err := system.FetchSystemdInfoFromAgent(serviceName)
 	if err != nil {
-		return e.JSON(http.StatusNotFound, map[string]string{"error": err.Error()})
+		return e.InternalServerError("", err)
 	}
 	e.Response.Header().Set("Cache-Control", "public, max-age=60")
 	return e.JSON(http.StatusOK, map[string]any{"details": details})
@@ -344,17 +374,16 @@ func (h *Hub) getSystemdInfo(e *core.RequestEvent) error {
 func (h *Hub) refreshSmartData(e *core.RequestEvent) error {
 	systemID := e.Request.URL.Query().Get("system")
 	if systemID == "" {
-		return e.JSON(http.StatusBadRequest, map[string]string{"error": "system parameter is required"})
+		return e.BadRequestError("Invalid system parameter", nil)
 	}
 
 	system, err := h.sm.GetSystem(systemID)
-	if err != nil {
-		return e.JSON(http.StatusNotFound, map[string]string{"error": "system not found"})
+	if err != nil || !system.HasUser(e.App, e.Auth.Id) {
+		return e.NotFoundError("", nil)
 	}
 
-	// Fetch and save SMART devices
 	if err := system.FetchAndSaveSmartDevices(); err != nil {
-		return e.JSON(http.StatusInternalServerError, map[string]string{"error": err.Error()})
+		return e.InternalServerError("", err)
 	}
 
 	return e.JSON(http.StatusOK, map[string]string{"status": "ok"})
