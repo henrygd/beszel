@@ -34,7 +34,7 @@ const FingerprintsSettings = lazy(fingerprintsSettingsImport)
 const AlertsHistoryDataTableSettings = lazy(alertsHistoryDataTableSettingsImport)
 const HeartbeatSettings = lazy(heartbeatSettingsImport)
 
-export async function saveSettings(newSettings: Partial<UserSettings>) {
+export async function saveSettings(newSettings: Partial<UserSettings>, quiet = false) {
 	try {
 		// get fresh copy of settings
 		const req = await pb.collection("user_settings").getFirstListItem("", {
@@ -48,17 +48,21 @@ export async function saveSettings(newSettings: Partial<UserSettings>) {
 			},
 		})
 		$userSettings.set(updatedSettings.settings)
-		toast({
-			title: t`Settings saved`,
-			description: t`Your user settings have been updated.`,
-		})
+		if (!quiet) {
+			toast({
+				title: t`Settings saved`,
+				description: t`Your user settings have been updated.`,
+			})
+		}
 	} catch (e) {
 		// console.error('update settings', e)
-		toast({
-			title: t`Failed to save settings`,
-			description: t`Check logs for more details.`,
-			variant: "destructive",
-		})
+		if (!quiet) {
+			toast({
+				title: t`Failed to save settings`,
+				description: t`Check logs for more details.`,
+				variant: "destructive",
+			})
+		}
 	}
 }
 

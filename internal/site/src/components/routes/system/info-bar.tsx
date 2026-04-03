@@ -2,6 +2,7 @@ import { plural } from "@lingui/core/macro"
 import { Trans, useLingui } from "@lingui/react/macro"
 import {
 	AppleIcon,
+	CheckIcon,
 	ChevronRightSquareIcon,
 	ClockArrowUp,
 	CpuIcon,
@@ -10,7 +11,7 @@ import {
 	MonitorIcon,
 	Settings2Icon,
 } from "lucide-react"
-import { useMemo } from "react"
+import { useCallback, useMemo, useRef, useState } from "react"
 import ChartTimeSelect from "@/components/charts/chart-time-select"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
@@ -48,6 +49,13 @@ export default function InfoBar({
 	details: SystemDetailsRecord | null
 }) {
 	const { t } = useLingui()
+	const [saved, setSaved] = useState(false)
+	const savedTimeout = useRef<ReturnType<typeof setTimeout> | null>(null)
+	const showSaved = useCallback(() => {
+		setSaved(true)
+		if (savedTimeout.current) clearTimeout(savedTimeout.current)
+		savedTimeout.current = setTimeout(() => setSaved(false), 1500)
+	}, [])
 
 	// values for system info bar - use details with fallback to system.info
 	const systemInfo = useMemo(() => {
@@ -210,7 +218,11 @@ export default function InfoBar({
 								size="icon"
 								className="hidden xl:flex p-0 text-primary"
 							>
-								<Settings2Icon className="size-4 opacity-90" />
+								{saved ? (
+									<CheckIcon className="size-4 text-green-500" />
+								) : (
+									<Settings2Icon className="size-4 opacity-90" />
+								)}
 							</Button>
 						</DropdownMenuTrigger>
 						<DropdownMenuContent align="end" className="min-w-44">
@@ -221,7 +233,7 @@ export default function InfoBar({
 							<DropdownMenuRadioGroup
 								className="px-1 pb-1"
 								value={displayMode}
-								onValueChange={(v) => setDisplayMode(v as "default" | "tabs")}
+								onValueChange={(v) => { setDisplayMode(v as "default" | "tabs"); showSaved() }}
 							>
 								<DropdownMenuRadioItem value="default" onSelect={(e) => e.preventDefault()}>
 									<Trans context="Default system layout option">Default</Trans>
@@ -238,7 +250,7 @@ export default function InfoBar({
 							<DropdownMenuRadioGroup
 								className="px-1 pb-1"
 								value={grid ? "grid" : "full"}
-								onValueChange={(v) => setGrid(v === "grid")}
+								onValueChange={(v) => { setGrid(v === "grid"); showSaved() }}
 							>
 								<DropdownMenuRadioItem value="grid" onSelect={(e) => e.preventDefault()}>
 									<Trans>Grid</Trans>
