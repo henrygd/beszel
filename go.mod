@@ -5,7 +5,6 @@ go 1.26.1
 require (
 	github.com/blang/semver v3.5.1+incompatible
 	github.com/coreos/go-systemd/v22 v22.7.0
-	github.com/distatus/battery v0.11.0
 	github.com/ebitengine/purego v0.10.0
 	github.com/fxamacker/cbor/v2 v2.9.0
 	github.com/gliderlabs/ssh v0.3.8
@@ -14,7 +13,7 @@ require (
 	github.com/nicholas-fedor/shoutrrr v0.14.1
 	github.com/pocketbase/dbx v1.12.0
 	github.com/pocketbase/pocketbase v0.36.7
-	github.com/shirou/gopsutil/v4 v4.26.2
+	github.com/shirou/gopsutil/v4 v4.26.3
 	github.com/spf13/cast v1.10.0
 	github.com/spf13/cobra v1.10.2
 	github.com/spf13/pflag v1.0.10
@@ -23,6 +22,7 @@ require (
 	golang.org/x/exp v0.0.0-20260312153236-7ab1446f8b90
 	golang.org/x/sys v0.42.0
 	gopkg.in/yaml.v3 v3.0.1
+	howett.net/plist v1.0.1
 )
 
 require (
@@ -61,7 +61,6 @@ require (
 	golang.org/x/sync v0.20.0 // indirect
 	golang.org/x/term v0.41.0 // indirect
 	golang.org/x/text v0.35.0 // indirect
-	howett.net/plist v1.0.1 // indirect
 	modernc.org/libc v1.70.0 // indirect
 	modernc.org/mathutil v1.7.1 // indirect
 	modernc.org/memory v1.11.0 // indirect

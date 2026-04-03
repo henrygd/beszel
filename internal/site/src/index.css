@@ -177,6 +177,10 @@
 	}
 }
 
+@utility text-card-title {
+	@apply text-[1.4rem] sm:text-2xl;
+}
+
 .recharts-tooltip-wrapper {
 	z-index: 51;
 	@apply tabular-nums;

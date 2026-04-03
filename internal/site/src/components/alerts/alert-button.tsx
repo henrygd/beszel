@@ -20,7 +20,7 @@ export default memo(function AlertsButton({ system }: { system: SystemRecord }) 
 				<SheetTrigger asChild>
 					<Button variant="ghost" size="icon" aria-label={t`Alerts`} data-nolink onClick={() => setOpened(true)}>
 						<BellIcon
-							className={cn("h-[1.2em] w-[1.2em] pointer-events-none", {
+							className={cn("size-[1.2em] pointer-events-none", {
 								"fill-primary": hasSystemAlert,
 							})}
 						/>

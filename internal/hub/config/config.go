@@ -279,9 +279,6 @@ func createFingerprintRecord(app core.App, systemID, token string) error {
 
 // Returns the current config.yml file as a JSON object
 func GetYamlConfig(e *core.RequestEvent) error {
-	if e.Auth.GetString("role") != "admin" {
-		return e.ForbiddenError("Requires admin role", nil)
-	}
 	configContent, err := generateYAML(e.App)
 	if err != nil {
 		return err

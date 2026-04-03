@@ -2,11 +2,13 @@ import { t } from "@lingui/core/macro"
 import { Plural, Trans } from "@lingui/react/macro"
 import { useStore } from "@nanostores/react"
 import { getPagePath } from "@nanostores/router"
-import { GlobeIcon, ServerIcon } from "lucide-react"
+import { ChevronDownIcon, GlobeIcon, ServerIcon } from "lucide-react"
 import { lazy, memo, Suspense, useMemo, useState } from "react"
 import { $router, Link } from "@/components/router"
+import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
 import { DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Input } from "@/components/ui/input"
 import { Switch } from "@/components/ui/switch"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -64,10 +66,56 @@ const deleteAlerts = debounce(async ({ name, systems }: { name: string; systems:
 
 export const AlertDialogContent = memo(function AlertDialogContent({ system }: { system: SystemRecord }) {
 	const alerts = useStore($alerts)
+	const systems = useStore($systems)
 	const [overwriteExisting, setOverwriteExisting] = useState<boolean | "indeterminate">(false)
 	const [currentTab, setCurrentTab] = useState("system")
+	// copyKey is used to force remount AlertContent components with
+	// new alert data after copying alerts from another system
+	const [copyKey, setCopyKey] = useState(0)
 
 	const systemAlerts = alerts[system.id] ?? new Map()
+
+	// Systems that have at least one alert configured (excluding the current system)
+	const systemsWithAlerts = useMemo(
+		() => systems.filter((s) => s.id !== system.id && alerts[s.id]?.size),
+		[systems, alerts, system.id]
+	)
+
+	async function copyAlertsFromSystem(sourceSystemId: string) {
+		const sourceAlerts = $alerts.get()[sourceSystemId]
+		if (!sourceAlerts?.size) return
+		try {
+			const currentTargetAlerts = $alerts.get()[system.id] ?? new Map()
+			// Alert names present on target but absent from source should be deleted
+			const namesToDelete = Array.from(currentTargetAlerts.keys()).filter((name) => !sourceAlerts.has(name))
+			await Promise.all([
+				...Array.from(sourceAlerts.values()).map(({ name, value, min }) =>
+					pb.send<{ success: boolean }>(endpoint, {
+						method: "POST",
+						body: { name, value, min, systems: [system.id], overwrite: true },
+						requestKey: name,
+					})
+				),
+				...namesToDelete.map((name) =>
+					pb.send<{ success: boolean }>(endpoint, {
+						method: "DELETE",
+						body: { name, systems: [system.id] },
+						requestKey: name,
+					})
+				),
+			])
+			// Optimistically update the store so components re-mount with correct data
+			// before the realtime subscription event arrives.
+			const newSystemAlerts = new Map<string, AlertRecord>()
+			for (const alert of sourceAlerts.values()) {
+				newSystemAlerts.set(alert.name, { ...alert, system: system.id, triggered: false })
+			}
+			$alerts.setKey(system.id, newSystemAlerts)
+			setCopyKey((k) => k + 1)
+		} catch (error) {
+			failedUpdateToast(error)
+		}
+	}
 
 	// We need to keep a copy of alerts when we switch to global tab. If we always compare to
 	// current alerts, it will only be updated when first checked, then won't be updated because
@@ -93,18 +141,37 @@ export const AlertDialogContent = memo(function AlertDialogContent({ system }: {
 				</DialogDescription>
 			</DialogHeader>
 			<Tabs defaultValue="system" onValueChange={setCurrentTab}>
-				<TabsList className="mb-1 -mt-0.5">
-					<TabsTrigger value="system">
-						<ServerIcon className="me-2 h-3.5 w-3.5" />
-						<span className="truncate max-w-60">{system.name}</span>
-					</TabsTrigger>
-					<TabsTrigger value="global">
-						<GlobeIcon className="me-1.5 h-3.5 w-3.5" />
-						<Trans>All Systems</Trans>
-					</TabsTrigger>
-				</TabsList>
+				<div className="flex items-center justify-between mb-1 -mt-0.5">
+					<TabsList>
+						<TabsTrigger value="system">
+							<ServerIcon className="me-2 h-3.5 w-3.5" />
+							<span className="truncate max-w-60">{system.name}</span>
+						</TabsTrigger>
+						<TabsTrigger value="global">
+							<GlobeIcon className="me-1.5 h-3.5 w-3.5" />
+							<Trans>All Systems</Trans>
+						</TabsTrigger>
+					</TabsList>
+					{systemsWithAlerts.length > 0 && currentTab === "system" && (
+						<DropdownMenu>
+							<DropdownMenuTrigger asChild>
+								<Button variant="ghost" size="sm" className="text-muted-foreground text-xs gap-1.5">
+									<Trans context="Copy alerts from another system">Copy from</Trans>
+									<ChevronDownIcon className="h-3.5 w-3.5" />
+								</Button>
+							</DropdownMenuTrigger>
+							<DropdownMenuContent align="end" className="max-h-100 overflow-auto">
+								{systemsWithAlerts.map((s) => (
+									<DropdownMenuItem key={s.id} className="min-w-44" onSelect={() => copyAlertsFromSystem(s.id)}>
+										{s.name}
+									</DropdownMenuItem>
+								))}
+							</DropdownMenuContent>
+						</DropdownMenu>
+					)}
+				</div>
 				<TabsContent value="system">
-					<div className="grid gap-3">
+					<div key={copyKey} className="grid gap-3">
 						{alertKeys.map((name) => (
 							<AlertContent
 								key={name}

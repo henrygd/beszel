@@ -188,6 +188,7 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 						<LoadAverageChart chartData={chartData} grid={grid} dataEmpty={dataEmpty} />
 						<BandwidthChart {...coreProps} systemStats={systemStats} />
 						<TemperatureChart {...coreProps} setPageBottomExtraMargin={setPageBottomExtraMargin} />
+						<BatteryChart {...coreProps} />
 						<SwapChart chartData={chartData} grid={grid} dataEmpty={dataEmpty} systemStats={systemStats} />
 						{pageBottomExtraMargin > 0 && <div style={{ marginBottom: pageBottomExtraMargin }}></div>}
 					</div>

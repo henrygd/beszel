@@ -530,6 +530,87 @@ func TestAddExtraFilesystemFolders(t *testing.T) {
 	})
 }
 
+func TestAddPartitionExtraFs(t *testing.T) {
+	makeDiscovery := func(agent *Agent) diskDiscovery {
+		return diskDiscovery{
+			agent: agent,
+			ctx: fsRegistrationContext{
+				isWindows: false,
+				efPath:    "/extra-filesystems",
+				diskIoCounters: map[string]disk.IOCountersStat{
+					"nvme0n1p1": {Name: "nvme0n1p1"},
+					"nvme1n1":   {Name: "nvme1n1"},
+				},
+			},
+		}
+	}
+
+	t.Run("registers direct child of extra-filesystems", func(t *testing.T) {
+		agent := &Agent{fsStats: make(map[string]*system.FsStats)}
+		d := makeDiscovery(agent)
+
+		d.addPartitionExtraFs(disk.PartitionStat{
+			Device:     "/dev/nvme0n1p1",
+			Mountpoint: "/extra-filesystems/nvme0n1p1__caddy1-root",
+		})
+
+		stats, exists := agent.fsStats["nvme0n1p1"]
+		assert.True(t, exists)
+		assert.Equal(t, "/extra-filesystems/nvme0n1p1__caddy1-root", stats.Mountpoint)
+		assert.Equal(t, "caddy1-root", stats.Name)
+	})
+
+	t.Run("skips nested mount under extra-filesystem bind mount", func(t *testing.T) {
+		agent := &Agent{fsStats: make(map[string]*system.FsStats)}
+		d := makeDiscovery(agent)
+
+		// These simulate the virtual mounts that appear when host / is bind-mounted
+		// with disk.Partitions(all=true) — e.g. /proc, /sys, /dev visible under the mount.
+		for _, nested := range []string{
+			"/extra-filesystems/nvme0n1p1__caddy1-root/proc",
+			"/extra-filesystems/nvme0n1p1__caddy1-root/sys",
+			"/extra-filesystems/nvme0n1p1__caddy1-root/dev",
+			"/extra-filesystems/nvme0n1p1__caddy1-root/run",
+		} {
+			d.addPartitionExtraFs(disk.PartitionStat{Device: "tmpfs", Mountpoint: nested})
+		}
+
+		assert.Empty(t, agent.fsStats)
+	})
+
+	t.Run("registers both direct children, skips their nested mounts", func(t *testing.T) {
+		agent := &Agent{fsStats: make(map[string]*system.FsStats)}
+		d := makeDiscovery(agent)
+
+		partitions := []disk.PartitionStat{
+			{Device: "/dev/nvme0n1p1", Mountpoint: "/extra-filesystems/nvme0n1p1__caddy1-root"},
+			{Device: "/dev/nvme1n1", Mountpoint: "/extra-filesystems/nvme1n1__caddy1-docker"},
+			{Device: "proc", Mountpoint: "/extra-filesystems/nvme0n1p1__caddy1-root/proc"},
+			{Device: "sysfs", Mountpoint: "/extra-filesystems/nvme0n1p1__caddy1-root/sys"},
+			{Device: "overlay", Mountpoint: "/extra-filesystems/nvme0n1p1__caddy1-root/var/lib/docker"},
+		}
+		for _, p := range partitions {
+			d.addPartitionExtraFs(p)
+		}
+
+		assert.Len(t, agent.fsStats, 2)
+		assert.Equal(t, "caddy1-root", agent.fsStats["nvme0n1p1"].Name)
+		assert.Equal(t, "caddy1-docker", agent.fsStats["nvme1n1"].Name)
+	})
+
+	t.Run("skips partition not under extra-filesystems", func(t *testing.T) {
+		agent := &Agent{fsStats: make(map[string]*system.FsStats)}
+		d := makeDiscovery(agent)
+
+		d.addPartitionExtraFs(disk.PartitionStat{
+			Device:     "/dev/nvme0n1p1",
+			Mountpoint: "/",
+		})
+
+		assert.Empty(t, agent.fsStats)
+	})
+}
+
 func TestFindIoDevice(t *testing.T) {
 	t.Run("matches by device name", func(t *testing.T) {
 		ioCounters := map[string]disk.IOCountersStat{

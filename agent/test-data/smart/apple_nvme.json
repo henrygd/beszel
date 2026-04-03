@@ -1,0 +1,51 @@
+{
+  "json_format_version": [1, 0],
+  "smartctl": {
+    "version": [7, 4],
+    "argv": ["smartctl", "-aix", "-j", "IOService:/AppleARMPE/arm-io@10F00000/AppleT810xIO/ans@77400000/AppleASCWrapV4/iop-ans-nub/RTBuddy(ANS2)/RTBuddyService/AppleANS3NVMeController/NS_01@1"],
+    "exit_status": 4
+  },
+  "device": {
+    "name": "IOService:/AppleARMPE/arm-io@10F00000/AppleT810xIO/ans@77400000/AppleASCWrapV4/iop-ans-nub/RTBuddy(ANS2)/RTBuddyService/AppleANS3NVMeController/NS_01@1",
+    "info_name": "IOService:/AppleARMPE/arm-io@10F00000/AppleT810xIO/ans@77400000/AppleASCWrapV4/iop-ans-nub/RTBuddy(ANS2)/RTBuddyService/AppleANS3NVMeController/NS_01@1",
+    "type": "nvme",
+    "protocol": "NVMe"
+  },
+  "model_name": "APPLE SSD AP0256Q",
+  "serial_number": "0ba0147940253c15",
+  "firmware_version": "555",
+  "smart_support": {
+    "available": true,
+    "enabled": true
+  },
+  "smart_status": {
+    "passed": true,
+    "nvme": {
+      "value": 0
+    }
+  },
+  "nvme_smart_health_information_log": {
+    "critical_warning": 0,
+    "temperature": 42,
+    "available_spare": 100,
+    "available_spare_threshold": 99,
+    "percentage_used": 1,
+    "data_units_read": 270189386,
+    "data_units_written": 166753862,
+    "host_reads": 7543766995,
+    "host_writes": 3761621926,
+    "controller_busy_time": 0,
+    "power_cycles": 366,
+    "power_on_hours": 2850,
+    "unsafe_shutdowns": 195,
+    "media_errors": 0,
+    "num_err_log_entries": 0
+  },
+  "temperature": {
+    "current": 42
+  },
+  "power_cycle_count": 366,
+  "power_on_time": {
+    "hours": 2850
+  }
+}
