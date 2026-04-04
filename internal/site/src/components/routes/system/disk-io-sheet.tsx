@@ -66,6 +66,20 @@ export default memo(function DiskIOSheet({
 		weightedIOFn = showMax ? diskDataFns.extraWeightedIOMax(extraFsName) : diskDataFns.extraWeightedIO(extraFsName)
 	}
 
+	// check for availability of I/O metrics
+	let hasUtilization = false
+	let hasAwait = false
+	let hasWeightedIO = false
+	for (const record of chartData.systemStats ?? []) {
+		const dios = record.stats?.dios
+		if ((dios?.at(2) ?? 0) > 0) hasUtilization = true
+		if ((dios?.at(3) ?? 0) > 0) hasAwait = true
+		if ((dios?.at(5) ?? 0) > 0) hasWeightedIO = true
+		if (hasUtilization && hasAwait && hasWeightedIO) {
+			break
+		}
+	}
+
 	const maxValSelect = isLongerChart ? <SelectAvgMax max={maxValues} /> : null
 
 	const chartProps = { syncId: "io" }
@@ -133,7 +147,7 @@ export default memo(function DiskIOSheet({
 						/>
 					</ChartCard>
 
-					<DiskUtilizationChart systemData={systemData} extraFsName={extraFsName} />
+					{hasUtilization && <DiskUtilizationChart systemData={systemData} extraFsName={extraFsName} />}
 
 					<ChartCard
 						empty={dataEmpty}
@@ -174,64 +188,68 @@ export default memo(function DiskIOSheet({
 						/>
 					</ChartCard>
 
-					<ChartCard
-						empty={dataEmpty}
-						grid={grid}
-						title={t`Average Queue Depth`}
-						description={t`Average number of I/O operations waiting to be serviced`}
-						className="min-h-auto"
-						cornerEl={maxValSelect}
-					>
-						<AreaChartDefault
-							chartData={chartData}
-							domain={pinnedAxisDomain()}
-							tickFormatter={(val) => `${toFixedFloat(val, 2)}`}
-							contentFormatter={({ value }) => decimalString(value, value < 10 ? 3 : 2)}
-							maxToggled={showMax}
-							chartProps={chartProps}
-							dataPoints={[
-								{
-									label: t`Queue Depth`,
-									dataKey: weightedIOFn,
-									color: 1,
-									opacity: 0.4,
-								},
-							]}
-						/>
-					</ChartCard>
+					{hasWeightedIO && (
+						<ChartCard
+							empty={dataEmpty}
+							grid={grid}
+							title={t`Average Queue Depth`}
+							description={t`Average number of I/O operations waiting to be serviced`}
+							className="min-h-auto"
+							cornerEl={maxValSelect}
+						>
+							<AreaChartDefault
+								chartData={chartData}
+								domain={pinnedAxisDomain()}
+								tickFormatter={(val) => `${toFixedFloat(val, 2)}`}
+								contentFormatter={({ value }) => decimalString(value, value < 10 ? 3 : 2)}
+								maxToggled={showMax}
+								chartProps={chartProps}
+								dataPoints={[
+									{
+										label: t`Queue Depth`,
+										dataKey: weightedIOFn,
+										color: 1,
+										opacity: 0.4,
+									},
+								]}
+							/>
+						</ChartCard>
+					)}
 
-					<ChartCard
-						empty={dataEmpty}
-						grid={grid}
-						title={t`I/O Await`}
-						description={t`Average service time per operation`}
-						className="min-h-auto"
-						cornerEl={maxValSelect}
-						// legend={true}
-					>
-						<AreaChartDefault
-							chartData={chartData}
-							domain={pinnedAxisDomain()}
-							tickFormatter={(val) => `${toFixedFloat(val, 2)} ms`}
-							contentFormatter={({ value }) => `${decimalString(value)} ms`}
-							maxToggled={showMax}
-							chartProps={chartProps}
-							dataPoints={[
-								{
-									label: t`Write`,
-									dataKey: wAwaitFn,
-									color: 3,
-									opacity: 0.3,
-								},
-								{
-									label: t`Read`,
-									dataKey: rAwaitFn,
-									color: 1,
-									opacity: 0.3,
-								},
-							]}
-						/>
-					</ChartCard>
+					{hasAwait && (
+						<ChartCard
+							empty={dataEmpty}
+							grid={grid}
+							title={t`I/O Await`}
+							description={t`Average service time per operation`}
+							className="min-h-auto"
+							cornerEl={maxValSelect}
+							// legend={true}
+						>
+							<AreaChartDefault
+								chartData={chartData}
+								domain={pinnedAxisDomain()}
+								tickFormatter={(val) => `${toFixedFloat(val, 2)} ms`}
+								contentFormatter={({ value }) => `${decimalString(value)} ms`}
+								maxToggled={showMax}
+								chartProps={chartProps}
+								dataPoints={[
+									{
+										label: t`Write`,
+										dataKey: wAwaitFn,
+										color: 3,
+										opacity: 0.3,
+									},
+									{
+										label: t`Read`,
+										dataKey: rAwaitFn,
+										color: 1,
+										opacity: 0.3,
+									},
+								]}
+							/>
+						</ChartCard>
+					)}
 				</SheetContent>
 			)}
 		</Sheet>

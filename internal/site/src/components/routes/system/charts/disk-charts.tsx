@@ -155,7 +155,7 @@ export function DiskIOChart({ systemData, extraFsName }: { systemData: SystemDat
 	const title = extraFsName ? t`${extraFsName} I/O` : t`Disk I/O`
 	const description = extraFsName ? t`Throughput of ${extraFsName}` : t`Throughput of root filesystem`
 
-	const hasMoreIOMetrics = chartData.systemStats?.some((record) => record.stats?.dios !== undefined)
+	const hasMoreIOMetrics = chartData.systemStats?.some((record) => record.stats?.dios?.at(0))
 
 	let CornerEl = maxValSelect
 	if (hasMoreIOMetrics) {
