@@ -28,6 +28,8 @@ import type {
 import { $router, navigate } from "../../router"
 import { appendData, cache, getStats, getTimeData, makeContainerData, makeContainerPoint } from "./chart-data"
 
+export type SystemData = ReturnType<typeof useSystemData>
+
 export function useSystemData(id: string) {
 	const direction = useStore($direction)
 	const systems = useStore($systems)
