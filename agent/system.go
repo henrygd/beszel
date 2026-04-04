@@ -8,7 +8,6 @@ import (
 	"os"
 	"runtime"
 	"strings"
-	"time"
 
 	"github.com/henrygd/beszel"
 	"github.com/henrygd/beszel/agent/battery"
@@ -22,15 +21,6 @@ import (
 	"github.com/shirou/gopsutil/v4/load"
 	"github.com/shirou/gopsutil/v4/mem"
 )
-
-// prevDisk stores previous per-device disk counters for a given cache interval
-type prevDisk struct {
-	readBytes  uint64
-	writeBytes uint64
-	readTime   uint64 // cumulative ms spent on reads (from ReadTime)
-	writeTime  uint64 // cumulative ms spent on writes (from WriteTime)
-	at         time.Time
-}
 
 // Sets initial / non-changing values about the host system
 func (a *Agent) refreshSystemDetails() {

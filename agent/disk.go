@@ -34,6 +34,34 @@ type diskDiscovery struct {
 	ctx            fsRegistrationContext
 }
 
+// prevDisk stores previous per-device disk counters for a given cache interval
+type prevDisk struct {
+	readBytes  uint64
+	writeBytes uint64
+	readTime   uint64 // cumulative ms spent on reads (from ReadTime)
+	writeTime  uint64 // cumulative ms spent on writes (from WriteTime)
+	ioTime     uint64 // cumulative ms spent doing I/O (from IoTime)
+	weightedIO uint64 // cumulative weighted ms (queue-depth × ms, from WeightedIO)
+	readCount  uint64 // cumulative read operation count
+	writeCount uint64 // cumulative write operation count
+	at         time.Time
+}
+
+// prevDiskFromCounter creates a prevDisk snapshot from a disk.IOCountersStat at time t.
+func prevDiskFromCounter(d disk.IOCountersStat, t time.Time) prevDisk {
+	return prevDisk{
+		readBytes:  d.ReadBytes,
+		writeBytes: d.WriteBytes,
+		readTime:   d.ReadTime,
+		writeTime:  d.WriteTime,
+		ioTime:     d.IoTime,
+		weightedIO: d.WeightedIO,
+		readCount:  d.ReadCount,
+		writeCount: d.WriteCount,
+		at:         t,
+	}
+}
+
 // parseFilesystemEntry parses a filesystem entry in the format "device__customname"
 // Returns the device/filesystem part and the custom name part
 func parseFilesystemEntry(entry string) (device, customName string) {
@@ -581,16 +609,29 @@ func (a *Agent) updateDiskIo(cacheTimeMs uint16, systemStats *system.Stats) {
 			prev, hasPrev := a.diskPrev[cacheTimeMs][name]
 			if !hasPrev {
 				// Seed from agent-level fsStats if present, else seed from current
-				prev = prevDisk{readBytes: stats.TotalRead, writeBytes: stats.TotalWrite, readTime: d.ReadTime, writeTime: d.WriteTime, at: stats.Time}
+				prev = prevDisk{
+					readBytes:  stats.TotalRead,
+					writeBytes: stats.TotalWrite,
+					readTime:   d.ReadTime,
+					writeTime:  d.WriteTime,
+					ioTime:     d.IoTime,
+					weightedIO: d.WeightedIO,
+					readCount:  d.ReadCount,
+					writeCount: d.WriteCount,
+					at:         stats.Time,
+				}
 				if prev.at.IsZero() {
-					prev = prevDisk{readBytes: d.ReadBytes, writeBytes: d.WriteBytes, readTime: d.ReadTime, writeTime: d.WriteTime, at: now}
+					prev = prevDiskFromCounter(d, now)
 				}
 			}
 
 			msElapsed := uint64(now.Sub(prev.at).Milliseconds())
+
+			// Update per-interval snapshot
+			a.diskPrev[cacheTimeMs][name] = prevDiskFromCounter(d, now)
+
+			// Avoid division by zero or clock issues
 			if msElapsed < 100 {
-				// Avoid division by zero or clock issues; update snapshot and continue
-				a.diskPrev[cacheTimeMs][name] = prevDisk{readBytes: d.ReadBytes, writeBytes: d.WriteBytes, readTime: d.ReadTime, writeTime: d.WriteTime, at: now}
 				continue
 			}
 
@@ -602,19 +643,38 @@ func (a *Agent) updateDiskIo(cacheTimeMs uint16, systemStats *system.Stats) {
 			// validate values
 			if readMbPerSecond > 50_000 || writeMbPerSecond > 50_000 {
 				slog.Warn("Invalid disk I/O. Resetting.", "name", d.Name, "read", readMbPerSecond, "write", writeMbPerSecond)
-				// Reset interval snapshot and seed from current
-				a.diskPrev[cacheTimeMs][name] = prevDisk{readBytes: d.ReadBytes, writeBytes: d.WriteBytes, readTime: d.ReadTime, writeTime: d.WriteTime, at: now}
 				// also refresh agent baseline to avoid future negatives
 				a.initializeDiskIoStats(ioCounters)
 				continue
 			}
 
-			// Calculate I/O utilization % per direction (ms busy / ms elapsed * 100)
-			diskReadUtilPct := min(float64(d.ReadTime-prev.readTime)*100/float64(msElapsed), 100)
-			diskWriteUtilPct := min(float64(d.WriteTime-prev.writeTime)*100/float64(msElapsed), 100)
+			// These properties are calculated differently on different platforms,
+			// but generally represent cumulative time spent doing reads/writes on the device.
+			// This can surpass 100% if there are multiple concurrent I/O operations.
+			// Linux kernel docs:
+			// This is the total number of milliseconds spent by all reads (as
+			// measured from __make_request() to end_that_request_last()).
+			// https://www.kernel.org/doc/Documentation/iostats.txt (fields 4, 8)
+			diskReadTime := utils.TwoDecimals(float64(d.ReadTime-prev.readTime) / float64(msElapsed) * 100)
+			diskWriteTime := utils.TwoDecimals(float64(d.WriteTime-prev.writeTime) / float64(msElapsed) * 100)
 
-			// Update per-interval snapshot
-			a.diskPrev[cacheTimeMs][name] = prevDisk{readBytes: d.ReadBytes, writeBytes: d.WriteBytes, readTime: d.ReadTime, writeTime: d.WriteTime, at: now}
+			// I/O utilization %: fraction of wall time the device had any I/O in progress (0-100).
+			diskIoUtilPct := utils.TwoDecimals(float64(d.IoTime-prev.ioTime) / float64(msElapsed) * 100)
+
+			// Weighted I/O: queue-depth weighted I/O time, normalized to interval (can exceed 100%).
+			// Linux kernel field 11: incremented by iops_in_progress × ms_since_last_update.
+			// Used to display queue depth. Multipled by 100 to increase accuracy of digit truncation (divided by 100 in UI).
+			diskWeightedIO := utils.TwoDecimals(float64(d.WeightedIO-prev.weightedIO) / float64(msElapsed) * 100)
+
+			// r_await / w_await: average time per read/write operation in milliseconds.
+			// Equivalent to r_await and w_await in iostat.
+			var rAwait, wAwait float64
+			if deltaReadCount := d.ReadCount - prev.readCount; deltaReadCount > 0 {
+				rAwait = utils.TwoDecimals(float64(d.ReadTime-prev.readTime) / float64(deltaReadCount))
+			}
+			if deltaWriteCount := d.WriteCount - prev.writeCount; deltaWriteCount > 0 {
+				wAwait = utils.TwoDecimals(float64(d.WriteTime-prev.writeTime) / float64(deltaWriteCount))
+			}
 
 			// Update global fsStats baseline for cross-interval correctness
 			stats.Time = now
@@ -624,16 +684,24 @@ func (a *Agent) updateDiskIo(cacheTimeMs uint16, systemStats *system.Stats) {
 			stats.DiskWritePs = writeMbPerSecond
 			stats.DiskReadBytes = diskIORead
 			stats.DiskWriteBytes = diskIOWrite
-			stats.DiskReadUtilPct = diskReadUtilPct
-			stats.DiskWriteUtilPct = diskWriteUtilPct
+			stats.DiskIoStats[0] = diskReadTime
+			stats.DiskIoStats[1] = diskWriteTime
+			stats.DiskIoStats[2] = diskIoUtilPct
+			stats.DiskIoStats[3] = rAwait
+			stats.DiskIoStats[4] = wAwait
+			stats.DiskIoStats[5] = diskWeightedIO
 
 			if stats.Root {
 				systemStats.DiskReadPs = stats.DiskReadPs
 				systemStats.DiskWritePs = stats.DiskWritePs
 				systemStats.DiskIO[0] = diskIORead
 				systemStats.DiskIO[1] = diskIOWrite
-				systemStats.DiskReadUtilPct = diskReadUtilPct
-				systemStats.DiskWriteUtilPct = diskWriteUtilPct
+				systemStats.DiskIoStats[0] = diskReadTime
+				systemStats.DiskIoStats[1] = diskWriteTime
+				systemStats.DiskIoStats[2] = diskIoUtilPct
+				systemStats.DiskIoStats[3] = rAwait
+				systemStats.DiskIoStats[4] = wAwait
+				systemStats.DiskIoStats[5] = diskWeightedIO
 			}
 		}
 	}
