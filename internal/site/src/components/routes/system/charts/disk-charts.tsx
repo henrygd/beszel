@@ -152,7 +152,7 @@ export function DiskIOChart({ systemData, extraFsName }: { systemData: SystemDat
 		return null
 	}
 
-	const title = extraFsName ? t`${extraFsName} I/O` : t`Disk I/O`
+	const title = extraFsName ? `${extraFsName} I/O` : t`Disk I/O`
 	const description = extraFsName ? t`Throughput of ${extraFsName}` : t`Throughput of root filesystem`
 
 	const hasMoreIOMetrics = chartData.systemStats?.some((record) => record.stats?.dios?.at(0))
@@ -225,7 +225,10 @@ export function DiskUtilizationChart({ systemData, extraFsName }: { systemData: 
 			cornerEl={maxValSelect}
 			empty={dataEmpty}
 			grid={grid}
-			title={t`I/O Utilization`}
+			title={t({
+				message: `I/O Utilization`,
+				context: "Percent of time the disk is busy with I/O",
+			})}
 			description={t`Percent of time the disk is busy with I/O`}
 			// legend={true}
 			className="min-h-auto"
@@ -239,7 +242,7 @@ export function DiskUtilizationChart({ systemData, extraFsName }: { systemData: 
 				chartProps={{ syncId: "io" }}
 				dataPoints={[
 					{
-						label: t`Utilization`,
+						label: t({ message: "Utilization", context: "Disk I/O utilization" }),
 						dataKey: utilFn,
 						color: 1,
 						opacity: 0.4,
