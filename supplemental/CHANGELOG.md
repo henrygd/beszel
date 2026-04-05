@@ -1,3 +1,31 @@
+## 0.18.7
+
+- Add more disk I/O metrics (utilization, read/write time, await, queue depth) (#1866)
+
+- Add ability to copy alerts between systems (#1853)
+
+- Add `SENSORS_TIMEOUT` environment variable (#1871)
+
+- Replace `distatus/battery` with an internal implementation (#1872)
+
+- Restrict universal token API to non-superuser accounts (#1870)
+
+- Fix macOS ARM64 crashes by upgrading `gopsutil` to v4.26.3 (#1881, #796)
+
+- Fix text size for system names in grid view (#1860)
+
+- Fix NVMe capacity reporting for Apple SSDs (#1873)
+
+- Fix Windows root disk detection when the executable is not on the root disk (#1863)
+
+- Fix nested virtual filesystem inclusion in Docker when mounting host root (#1859)
+
+- Fix OPNsense installation persistence by using the daemon user (#1880)
+
+- Upgrade JS dependencies with dependabot security alerts (#1882)
+
+- Upgrade PocketBase to latest version
+
 ## 0.18.6
 
 - Add apple-touch-icon link to index.html (#1850)
