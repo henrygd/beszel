@@ -8,7 +8,7 @@ msgstr ""
 "Language: ru\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2026-02-21 09:46\n"
+"PO-Revision-Date: 2026-03-27 22:12\n"
 "Last-Translator: \n"
 "Language-Team: Russian\n"
 "Plural-Forms: nplurals=4; plural=((n%10==1 && n%100!=11) ? 0 : ((n%10 >= 2 && n%10 <=4 && (n%100 < 12 || n%100 > 14)) ? 1 : ((n%10 == 0 || (n%10 >= 5 && n%10 <=9)) || (n%100 >= 11 && n%100 <= 14)) ? 2 : 3));\n"
@@ -22,7 +22,7 @@ msgstr ""
 #: src/components/footer-repo-link.tsx
 msgctxt "New version available"
 msgid "{0} available"
-msgstr ""
+msgstr "{0} доступно"
 
 #. placeholder {0}: table.getFilteredSelectedRowModel().rows.length
 #. placeholder {1}: table.getFilteredRowModel().rows.length
@@ -476,7 +476,7 @@ msgstr "Скопировать YAML"
 #: src/components/routes/system.tsx
 msgctxt "Core system metrics"
 msgid "Core"
-msgstr ""
+msgstr "Процессор"
 
 #: src/components/containers-table/containers-table-columns.tsx
 #: src/components/systemd-table/systemd-table-columns.tsx
@@ -550,7 +550,7 @@ msgstr "Ежедневно"
 #: src/components/routes/system/info-bar.tsx
 msgctxt "Default system layout option"
 msgid "Default"
-msgstr ""
+msgstr "По умолчанию"
 
 #: src/components/routes/settings/general.tsx
 msgid "Default time period"
@@ -611,7 +611,7 @@ msgstr "Использование диска {extraFsName}"
 #: src/components/routes/system/info-bar.tsx
 msgctxt "Layout display options"
 msgid "Display"
-msgstr ""
+msgstr "Отображение"
 
 #: src/components/routes/system/charts/cpu-charts.tsx
 msgid "Docker CPU Usage"
@@ -845,7 +845,7 @@ msgstr "Глобально"
 
 #: src/components/routes/system.tsx
 msgid "GPU"
-msgstr ""
+msgstr "GPU"
 
 #: src/components/routes/system/charts/gpu-charts.tsx
 msgid "GPU Engines"
@@ -870,7 +870,7 @@ msgstr "Здоровье"
 
 #: src/components/routes/settings/layout.tsx
 msgid "Heartbeat"
-msgstr ""
+msgstr "Heartbeat"
 
 #: src/components/routes/settings/heartbeat.tsx
 msgid "Heartbeat Monitoring"
@@ -1259,7 +1259,7 @@ msgstr "Порт"
 #: src/components/containers-table/containers-table-columns.tsx
 msgctxt "Container ports"
 msgid "Ports"
-msgstr ""
+msgstr "Порты"
 
 #. Power On Time
 #: src/components/routes/system/smart-table.tsx
@@ -1549,7 +1549,7 @@ msgstr "Таблица"
 #: src/components/routes/system/info-bar.tsx
 msgctxt "Tabs system layout option"
 msgid "Tabs"
-msgstr ""
+msgstr "Вкладки"
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Tasks"
@@ -1879,3 +1879,4 @@ msgstr "Да"
 #: src/components/routes/settings/layout.tsx
 msgid "Your user settings have been updated."
 msgstr "Ваши настройки пользователя были обновлены."
+

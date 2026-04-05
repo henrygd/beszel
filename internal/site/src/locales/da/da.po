@@ -8,7 +8,7 @@ msgstr ""
 "Language: da\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2026-03-27 19:17\n"
+"PO-Revision-Date: 2026-04-05 18:27\n"
 "Last-Translator: \n"
 "Language-Team: Danish\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
@@ -149,7 +149,7 @@ msgstr "Efter indstilling af miljøvariablerne skal du genstarte din Beszel-hub 
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Agent"
-msgstr ""
+msgstr "Agent"
 
 #: src/components/command-palette.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
@@ -280,7 +280,7 @@ msgstr "Binær"
 #: src/components/routes/settings/general.tsx
 #: src/components/routes/settings/general.tsx
 msgid "Bits (Kbps, Mbps, Gbps)"
-msgstr ""
+msgstr "Bits (Kbps, Mbps, Gbps)"
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Boot state"
@@ -289,7 +289,7 @@ msgstr "Opstartstilstand"
 #: src/components/routes/settings/general.tsx
 #: src/components/routes/settings/general.tsx
 msgid "Bytes (KB/s, MB/s, GB/s)"
-msgstr ""
+msgstr "Bytes (KB/s, MB/s, GB/s)"
 
 #: src/components/routes/system/charts/memory-charts.tsx
 msgid "Cache / Buffers"
@@ -327,7 +327,7 @@ msgstr "Forsigtig - muligt tab af data"
 
 #: src/components/routes/settings/general.tsx
 msgid "Celsius (°C)"
-msgstr ""
+msgstr "Celsius (°C)"
 
 #: src/components/routes/settings/general.tsx
 msgid "Change display units for metrics."
@@ -482,7 +482,7 @@ msgstr ""
 #: src/components/systemd-table/systemd-table-columns.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "CPU"
-msgstr ""
+msgstr "CPU"
 
 #: src/components/routes/system/cpu-sheet.tsx
 msgid "CPU Cores"
@@ -490,7 +490,7 @@ msgstr "CPU-kerner"
 
 #: src/components/systemd-table/systemd-table-columns.tsx
 msgid "CPU Peak"
-msgstr ""
+msgstr "CPU Peak"
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "CPU time"
@@ -587,11 +587,11 @@ msgstr "Aflader"
 #: src/components/routes/system.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Disk"
-msgstr ""
+msgstr "Disk"
 
 #: src/components/routes/system/charts/disk-charts.tsx
 msgid "Disk I/O"
-msgstr ""
+msgstr "Disk I/O"
 
 #: src/components/routes/settings/general.tsx
 msgid "Disk unit"
@@ -664,7 +664,7 @@ msgstr "Rediger {foo}"
 #: src/components/login/forgot-pass-form.tsx
 #: src/components/login/otp-forms.tsx
 msgid "Email"
-msgstr ""
+msgstr "Email"
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Email notifications"
@@ -759,7 +759,7 @@ msgstr "Eksporter din nuværende systemkonfiguration."
 
 #: src/components/routes/settings/general.tsx
 msgid "Fahrenheit (°F)"
-msgstr ""
+msgstr "Fahrenheit (°F)"
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Failed"
@@ -803,7 +803,7 @@ msgstr "Mislykkedes: {0}"
 #: src/components/systemd-table/systemd-table.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "Filter..."
-msgstr ""
+msgstr "Filter..."
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Fingerprint"
@@ -811,7 +811,7 @@ msgstr "Fingeraftryk"
 
 #: src/components/routes/system/smart-table.tsx
 msgid "Firmware"
-msgstr ""
+msgstr "Firmware"
 
 #: src/components/alerts/alerts-sheet.tsx
 msgid "For <0>{min}</0> {min, plural, one {minute} other {minutes}}"
@@ -841,7 +841,7 @@ msgstr "Generelt"
 
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Global"
-msgstr ""
+msgstr "Global"
 
 #: src/components/routes/system.tsx
 msgid "GPU"
@@ -993,7 +993,7 @@ msgstr "Loginforsøg mislykkedes"
 #: src/components/containers-table/containers-table.tsx
 #: src/components/navbar.tsx
 msgid "Logs"
-msgstr ""
+msgstr "Logs"
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Looking instead for where to create alerts? Click the bell <0/> icons in the systems table."
@@ -1046,7 +1046,7 @@ msgstr "Hukommelsesforbrug af dockercontainere"
 #. Device model
 #: src/components/routes/system/smart-table.tsx
 msgid "Model"
-msgstr ""
+msgstr "Model"
 
 #: src/components/add-system.tsx
 #: src/components/alerts-history-columns.tsx
@@ -1059,7 +1059,7 @@ msgstr "Navn"
 #: src/components/containers-table/containers-table-columns.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Net"
-msgstr ""
+msgstr "Net"
 
 #: src/components/routes/system/charts/network-charts.tsx
 msgid "Network traffic of docker containers"
@@ -1188,7 +1188,7 @@ msgstr "Tidligere"
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Pause"
-msgstr ""
+msgstr "Pause"
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Paused"
@@ -1254,7 +1254,7 @@ msgstr "Log venligst ind på din konto"
 
 #: src/components/add-system.tsx
 msgid "Port"
-msgstr ""
+msgstr "Port"
 
 #: src/components/containers-table/containers-table-columns.tsx
 msgctxt "Container ports"
@@ -1345,7 +1345,7 @@ msgstr "Genoptag"
 #: src/components/systems-table/systems-table-columns.tsx
 msgctxt "Root disk label"
 msgid "Root"
-msgstr ""
+msgstr "Root"
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Rotate token"
@@ -1497,7 +1497,7 @@ msgstr "Tilstand"
 #: src/components/systems-table/systems-table.tsx
 #: src/lib/alerts.ts
 msgid "Status"
-msgstr ""
+msgstr "Status"
 
 #: src/components/systemd-table/systemd-table-columns.tsx
 msgid "Sub State"
@@ -1524,7 +1524,7 @@ msgstr "Swap forbrug"
 #: src/components/systems-table/systems-table-columns.tsx
 #: src/lib/alerts.ts
 msgid "System"
-msgstr ""
+msgstr "System"
 
 #: src/components/routes/system/charts/load-average-chart.tsx
 msgid "System load averages over time"
@@ -1532,7 +1532,7 @@ msgstr "Gennemsnitlig system belastning over tid"
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Systemd Services"
-msgstr ""
+msgstr "Systemd Services"
 
 #: src/components/navbar.tsx
 msgid "Systems"
@@ -1576,7 +1576,7 @@ msgstr "Temperaturer i systemsensorer"
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Test <0>URL</0>"
-msgstr ""
+msgstr "Test <0>URL</0>"
 
 #: src/components/routes/settings/heartbeat.tsx
 msgid "Test heartbeat"
@@ -1716,7 +1716,7 @@ msgstr "Udløser når brugen af en disk overstiger en tærskel"
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/system/smart-table.tsx
 msgid "Type"
-msgstr ""
+msgstr "Type"
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Unit file"
@@ -1879,3 +1879,4 @@ msgstr "Ja"
 #: src/components/routes/settings/layout.tsx
 msgid "Your user settings have been updated."
 msgstr "Dine brugerindstillinger er opdateret."
+

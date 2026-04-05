@@ -8,7 +8,7 @@ msgstr ""
 "Language: cs\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2026-03-27 19:17\n"
+"PO-Revision-Date: 2026-04-05 18:27\n"
 "Last-Translator: \n"
 "Language-Team: Czech\n"
 "Plural-Forms: nplurals=4; plural=(n==1) ? 0 : (n>=2 && n<=4) ? 1 : 3;\n"
@@ -57,7 +57,7 @@ msgstr "1 hodina"
 #. Load average
 #: src/components/routes/system/charts/load-average-chart.tsx
 msgid "1 min"
-msgstr ""
+msgstr "1 min"
 
 #: src/lib/utils.ts
 msgid "1 minute"
@@ -74,7 +74,7 @@ msgstr "12 hodin"
 #. Load average
 #: src/components/routes/system/charts/load-average-chart.tsx
 msgid "15 min"
-msgstr ""
+msgstr "15 min"
 
 #: src/lib/utils.ts
 msgid "24 hours"
@@ -87,7 +87,7 @@ msgstr "30 dní"
 #. Load average
 #: src/components/routes/system/charts/load-average-chart.tsx
 msgid "5 min"
-msgstr ""
+msgstr "5 min"
 
 #. Table column
 #: src/components/routes/settings/quiet-hours.tsx
@@ -149,7 +149,7 @@ msgstr "Po nastavení proměnných prostředí restartujte hub Beszel, aby se zm
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Agent"
-msgstr ""
+msgstr "Agent"
 
 #: src/components/command-palette.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
@@ -573,7 +573,7 @@ msgstr "Popis"
 
 #: src/components/containers-table/containers-table.tsx
 msgid "Detail"
-msgstr ""
+msgstr "Detail"
 
 #: src/components/routes/system/smart-table.tsx
 msgid "Device"
@@ -1879,3 +1879,4 @@ msgstr "Ano"
 #: src/components/routes/settings/layout.tsx
 msgid "Your user settings have been updated."
 msgstr "Vaše uživatelská nastavení byla aktualizována."
+

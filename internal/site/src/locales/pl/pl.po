@@ -8,7 +8,7 @@ msgstr ""
 "Language: pl\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2026-03-27 19:17\n"
+"PO-Revision-Date: 2026-04-05 18:27\n"
 "Last-Translator: \n"
 "Language-Team: Polish\n"
 "Plural-Forms: nplurals=4; plural=(n==1 ? 0 : (n%10>=2 && n%10<=4) && (n%100<12 || n%100>14) ? 1 : n!=1 && (n%10>=0 && n%10<=1) || (n%10>=5 && n%10<=9) || (n%100>=12 && n%100<=14) ? 2 : 3);\n"
@@ -22,7 +22,7 @@ msgstr ""
 #: src/components/footer-repo-link.tsx
 msgctxt "New version available"
 msgid "{0} available"
-msgstr ""
+msgstr "{0} jest dostępna"
 
 #. placeholder {0}: table.getFilteredSelectedRowModel().rows.length
 #. placeholder {1}: table.getFilteredRowModel().rows.length
@@ -40,7 +40,7 @@ msgstr "{count, plural, one {{countString} dzień} few {{countString} dni} many 
 
 #: src/lib/utils.ts
 msgid "{count, plural, one {{countString} hour} other {{countString} hours}}"
-msgstr "{count, plural, one {godzinę} few {{countString} godziny} many {{countString} godzin} other {{countString} godziny}}"
+msgstr "{count, plural, one {godzina} few {{countString} godziny} many {{countString} godzin} other {{countString} godziny}}"
 
 #: src/lib/utils.ts
 msgid "{count, plural, one {{countString} minute} few {{countString} minutes} many {{countString} minutes} other {{countString} minutes}}"
@@ -57,7 +57,7 @@ msgstr "1 godzina"
 #. Load average
 #: src/components/routes/system/charts/load-average-chart.tsx
 msgid "1 min"
-msgstr ""
+msgstr "1 min"
 
 #: src/lib/utils.ts
 msgid "1 minute"
@@ -74,7 +74,7 @@ msgstr "12 godzin"
 #. Load average
 #: src/components/routes/system/charts/load-average-chart.tsx
 msgid "15 min"
-msgstr ""
+msgstr "15 min"
 
 #: src/lib/utils.ts
 msgid "24 hours"
@@ -87,7 +87,7 @@ msgstr "30 dni"
 #. Load average
 #: src/components/routes/system/charts/load-average-chart.tsx
 msgid "5 min"
-msgstr ""
+msgstr "5 min"
 
 #. Table column
 #: src/components/routes/settings/quiet-hours.tsx
@@ -110,7 +110,7 @@ msgstr "Aktywne alerty"
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Active state"
-msgstr "Stan aktywny"
+msgstr "Status aktywny"
 
 #: src/components/add-system.tsx
 #: src/components/add-system.tsx
@@ -137,7 +137,7 @@ msgstr "Dostosuj szerokość widoku"
 #: src/components/command-palette.tsx
 #: src/components/navbar.tsx
 msgid "Admin"
-msgstr ""
+msgstr "Admin"
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "After"
@@ -145,11 +145,11 @@ msgstr "Po"
 
 #: src/components/routes/settings/heartbeat.tsx
 msgid "After setting the environment variables, restart your Beszel hub for changes to take effect."
-msgstr "Po ustawieniu zmiennych środowiskowych zrestartuj hub Beszel, aby zmiany weszły w życie."
+msgstr "Po ustawieniu zmiennych środowiskowych zrestartuj Beszel hub, aby zmiany zostały zaaplikowane."
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Agent"
-msgstr ""
+msgstr "Agent"
 
 #: src/components/command-palette.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
@@ -476,7 +476,7 @@ msgstr "Kopiuj YAML"
 #: src/components/routes/system.tsx
 msgctxt "Core system metrics"
 msgid "Core"
-msgstr ""
+msgstr "Główne"
 
 #: src/components/containers-table/containers-table-columns.tsx
 #: src/components/systemd-table/systemd-table-columns.tsx
@@ -550,7 +550,7 @@ msgstr "Codziennie"
 #: src/components/routes/system/info-bar.tsx
 msgctxt "Default system layout option"
 msgid "Default"
-msgstr ""
+msgstr "Domyślne"
 
 #: src/components/routes/settings/general.tsx
 msgid "Default time period"
@@ -611,7 +611,7 @@ msgstr "Wykorzystanie dysku {extraFsName}"
 #: src/components/routes/system/info-bar.tsx
 msgctxt "Layout display options"
 msgid "Display"
-msgstr ""
+msgstr "Widok"
 
 #: src/components/routes/system/charts/cpu-charts.tsx
 msgid "Docker CPU Usage"
@@ -759,7 +759,7 @@ msgstr "Eksportuj aktualną konfigurację systemów."
 
 #: src/components/routes/settings/general.tsx
 msgid "Fahrenheit (°F)"
-msgstr ""
+msgstr "Fahrenheit (°F)"
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Failed"
@@ -845,7 +845,7 @@ msgstr "Globalny"
 
 #: src/components/routes/system.tsx
 msgid "GPU"
-msgstr ""
+msgstr "GPU"
 
 #: src/components/routes/system/charts/gpu-charts.tsx
 msgid "GPU Engines"
@@ -870,7 +870,7 @@ msgstr "Kondycja"
 
 #: src/components/routes/settings/layout.tsx
 msgid "Heartbeat"
-msgstr ""
+msgstr "Heartbeat"
 
 #: src/components/routes/settings/heartbeat.tsx
 msgid "Heartbeat Monitoring"
@@ -944,7 +944,7 @@ msgstr "Cykl życia"
 #: src/components/systemd-table/systemd-table.tsx
 #: src/components/systemd-table/systemd-table.tsx
 msgid "limit"
-msgstr ""
+msgstr "limit"
 
 #: src/components/routes/system/charts/load-average-chart.tsx
 msgid "Load Average"
@@ -1046,7 +1046,7 @@ msgstr "Użycie pamięci przez kontenery Docker."
 #. Device model
 #: src/components/routes/system/smart-table.tsx
 msgid "Model"
-msgstr ""
+msgstr "Model"
 
 #: src/components/add-system.tsx
 #: src/components/alerts-history-columns.tsx
@@ -1200,7 +1200,7 @@ msgstr "Wstrzymane ({pausedSystemsLength})"
 
 #: src/components/routes/settings/heartbeat.tsx
 msgid "Payload format"
-msgstr "Format ładunku"
+msgstr "Format payload'u"
 
 #: src/components/routes/system/cpu-sheet.tsx
 #: src/components/routes/system/cpu-sheet.tsx
@@ -1254,12 +1254,12 @@ msgstr "Zaloguj się na swoje konto"
 
 #: src/components/add-system.tsx
 msgid "Port"
-msgstr ""
+msgstr "Port"
 
 #: src/components/containers-table/containers-table-columns.tsx
 msgctxt "Container ports"
 msgid "Ports"
-msgstr ""
+msgstr "Porty"
 
 #. Power On Time
 #: src/components/routes/system/smart-table.tsx
@@ -1345,7 +1345,7 @@ msgstr "Wznów"
 #: src/components/systems-table/systems-table-columns.tsx
 msgctxt "Root disk label"
 msgid "Root"
-msgstr ""
+msgstr "Root"
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Rotate token"
@@ -1422,7 +1422,7 @@ msgstr "Wyślij pojedynczy ping heartbeat, aby sprawdzić, czy punkt końcowy dz
 
 #: src/components/routes/settings/heartbeat.tsx
 msgid "Send periodic outbound pings to an external monitoring service so you can monitor Beszel without exposing it to the internet."
-msgstr "Wysyłaj okresowe pingi wychodzące do zewnętrznej usługi monitorowania, dzięki czemu możesz monitorować Beszel bez wystawiania go na działanie Internetu."
+msgstr "Wysyłaj cyklicznie pingi wychodzące do zewnętrznej usługi monitorowania, co pozwala monitorować Beszel bez potrzeby udostępniania go publicznie w sieci."
 
 #: src/components/routes/settings/heartbeat.tsx
 msgid "Send test heartbeat"
@@ -1497,7 +1497,7 @@ msgstr "Stan"
 #: src/components/systems-table/systems-table.tsx
 #: src/lib/alerts.ts
 msgid "Status"
-msgstr ""
+msgstr "Status"
 
 #: src/components/systemd-table/systemd-table-columns.tsx
 msgid "Sub State"
@@ -1524,7 +1524,7 @@ msgstr "Użycie pamięci wymiany"
 #: src/components/systems-table/systems-table-columns.tsx
 #: src/lib/alerts.ts
 msgid "System"
-msgstr ""
+msgstr "System"
 
 #: src/components/routes/system/charts/load-average-chart.tsx
 msgid "System load averages over time"
@@ -1549,7 +1549,7 @@ msgstr "Tabela"
 #: src/components/routes/system/info-bar.tsx
 msgctxt "Tabs system layout option"
 msgid "Tabs"
-msgstr ""
+msgstr "Karty"
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Tasks"
@@ -1576,7 +1576,7 @@ msgstr "Temperatury czujników systemowych."
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Test <0>URL</0>"
-msgstr ""
+msgstr "Test <0>URL</0>"
 
 #: src/components/routes/settings/heartbeat.tsx
 msgid "Test heartbeat"
@@ -1588,7 +1588,7 @@ msgstr "Testowe powiadomienie wysłane."
 
 #: src/components/routes/settings/heartbeat.tsx
 msgid "The overall status is <0>ok</0> when all systems are up, <1>warn</1> when alerts are triggered, and <2>error</2> when any system is down."
-msgstr "Ogólny status to <0>ok</0>, gdy wszystkie systemy działają, <1>ostrzeżenie</1>, gdy wyzwalane są alerty, oraz <2>błąd</2>, gdy którykolwiek system nie działa."
+msgstr "Ogólny status to <0>ok</0>, gdy wszystkie systemy działają, <1>ostrzeżenie</1>, gdy wyzwalane są alerty, oraz <2>błąd</2>, gdy którykolwiek z systemów nie działa."
 
 #: src/components/login/forgot-pass-form.tsx
 msgid "Then log into the backend and reset your user account password in the users table."
@@ -1626,7 +1626,7 @@ msgstr "Zmień motyw"
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Token"
-msgstr ""
+msgstr "Token"
 
 #: src/components/command-palette.tsx
 #: src/components/routes/settings/layout.tsx
@@ -1848,7 +1848,7 @@ msgstr "Gdy jest włączony, ten token pozwala agentom na samodzielną rejestrac
 
 #: src/components/routes/settings/heartbeat.tsx
 msgid "When using POST, each heartbeat includes a JSON payload with system status summary, list of down systems, and triggered alerts."
-msgstr "W przypadku korzystania z POST każdy heartbeat zawiera ładunek JSON z podsumowaniem statusu systemu, listą wyłączonych systemów i wyzwolonymi alertami."
+msgstr "Przy użyciu metody POST każdy heartbeat zawiera payload JSON z podsumowaniem statusu systemu, listą niedostępnych systemów i wywołanymi alertami."
 
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
@@ -1879,3 +1879,4 @@ msgstr "Tak"
 #: src/components/routes/settings/layout.tsx
 msgid "Your user settings have been updated."
 msgstr "Twoje ustawienia użytkownika zostały zaktualizowane."
+
