@@ -8,7 +8,7 @@ msgstr ""
 "Language: sl\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2026-04-05 18:27\n"
+"PO-Revision-Date: 2026-04-05 20:37\n"
 "Last-Translator: \n"
 "Language-Team: Slovenian\n"
 "Plural-Forms: nplurals=4; plural=n%100==1 ? 0 : n%100==2 ? 1 : n%100==3 || n%100==4 ? 2 : 3;\n"
@@ -22,7 +22,7 @@ msgstr ""
 #: src/components/footer-repo-link.tsx
 msgctxt "New version available"
 msgid "{0} available"
-msgstr ""
+msgstr "{0} na voljo"
 
 #. placeholder {0}: table.getFilteredSelectedRowModel().rows.length
 #. placeholder {1}: table.getFilteredRowModel().rows.length
@@ -209,9 +209,18 @@ msgstr "Povprečje pade pod <0>{value}{0}</0>"
 msgid "Average exceeds <0>{value}{0}</0>"
 msgstr "Povprečje presega <0>{value}{0}</0>"
 
+#: src/components/routes/system/disk-io-sheet.tsx
+msgid "Average number of I/O operations waiting to be serviced"
+msgstr "Povprečno število I/O operacij, ki čakajo na obdelavo"
+
 #: src/components/routes/system/charts/gpu-charts.tsx
 msgid "Average power consumption of GPUs"
 msgstr "Povprečna poraba energije GPU"
+
+#: src/components/routes/system/disk-io-sheet.tsx
+msgctxt "Disk I/O average operation time (iostat await)"
+msgid "Average queue to completion time per operation"
+msgstr "Povprečni čas od čakalne vrste do zaključka na operacijo"
 
 #: src/components/routes/system/charts/cpu-charts.tsx
 msgid "Average system-wide CPU utilization"
@@ -239,7 +248,7 @@ msgstr "Pasovna širina"
 #. Battery label in systems table header
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Bat"
-msgstr ""
+msgstr "Baterija"
 
 #: src/components/routes/system/charts/sensor-charts.tsx
 #: src/lib/alerts.ts
@@ -444,6 +453,11 @@ msgctxt "Environment variables"
 msgid "Copy env"
 msgstr "Kopiraj okoljske spremenljivke"
 
+#: src/components/alerts/alerts-sheet.tsx
+msgctxt "Copy alerts from another system"
+msgid "Copy from"
+msgstr "Kopiraj iz"
+
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Copy host"
 msgstr "Kopiraj gostitelja"
@@ -476,7 +490,7 @@ msgstr "Kopiraj YAML"
 #: src/components/routes/system.tsx
 msgctxt "Core system metrics"
 msgid "Core"
-msgstr ""
+msgstr "Jedro"
 
 #: src/components/containers-table/containers-table-columns.tsx
 #: src/components/systemd-table/systemd-table-columns.tsx
@@ -550,7 +564,7 @@ msgstr "Dnevno"
 #: src/components/routes/system/info-bar.tsx
 msgctxt "Default system layout option"
 msgid "Default"
-msgstr ""
+msgstr "Privzeto"
 
 #: src/components/routes/settings/general.tsx
 msgid "Default time period"
@@ -599,19 +613,18 @@ msgstr "Enota diska"
 
 #: src/components/routes/system/charts/disk-charts.tsx
 #: src/components/routes/system/charts/disk-charts.tsx
-#: src/components/routes/system/charts/extra-fs-charts.tsx
 #: src/lib/alerts.ts
 msgid "Disk Usage"
 msgstr "Poraba diska"
 
-#: src/components/routes/system/charts/extra-fs-charts.tsx
+#: src/components/routes/system/charts/disk-charts.tsx
 msgid "Disk usage of {extraFsName}"
 msgstr "Poraba diska za {extraFsName}"
 
 #: src/components/routes/system/info-bar.tsx
 msgctxt "Layout display options"
 msgid "Display"
-msgstr ""
+msgstr "Zaslon"
 
 #: src/components/routes/system/charts/cpu-charts.tsx
 msgid "Docker CPU Usage"
@@ -897,6 +910,21 @@ msgstr "Metoda HTTP"
 #: src/components/routes/settings/heartbeat.tsx
 msgid "HTTP method: POST, GET, or HEAD (default: POST)"
 msgstr "Metoda HTTP: POST, GET ali HEAD (privzeto: POST)"
+
+#: src/components/routes/system/disk-io-sheet.tsx
+msgctxt "Disk I/O average operation time (iostat await)"
+msgid "I/O Await"
+msgstr "I/O čakanje"
+
+#: src/components/routes/system/disk-io-sheet.tsx
+msgctxt "Disk I/O total time spent on read/write"
+msgid "I/O Time"
+msgstr "I/O čas"
+
+#: src/components/routes/system/charts/disk-charts.tsx
+msgctxt "Percent of time the disk is busy with I/O"
+msgid "I/O Utilization"
+msgstr "I/O izkoriščenost"
 
 #. Context: Battery state
 #: src/lib/i18n.ts
@@ -1207,6 +1235,10 @@ msgstr "Oblika tovora (payload)"
 msgid "Per-core average utilization"
 msgstr "Povprečna izkoriščenost na jedro"
 
+#: src/components/routes/system/charts/disk-charts.tsx
+msgid "Percent of time the disk is busy with I/O"
+msgstr "Odstotek časa, ko je disk zaposlen z I/O operacijami"
+
 #: src/components/routes/system/cpu-sheet.tsx
 msgid "Percentage of time spent in each state"
 msgstr "Odstotek časa, preživetega v vsakem stanju"
@@ -1259,7 +1291,7 @@ msgstr "Vrata"
 #: src/components/containers-table/containers-table-columns.tsx
 msgctxt "Container ports"
 msgid "Ports"
-msgstr ""
+msgstr "Vrata"
 
 #. Power On Time
 #: src/components/routes/system/smart-table.tsx
@@ -1284,13 +1316,20 @@ msgstr "Proces začet"
 msgid "Public Key"
 msgstr "Javni ključ"
 
+#: src/components/routes/system/disk-io-sheet.tsx
+msgctxt "Disk I/O average queue depth"
+msgid "Queue Depth"
+msgstr "Globina čakalne vrste"
+
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Quiet Hours"
 msgstr "Tihi čas"
 
 #. Disk read
 #: src/components/routes/system/charts/disk-charts.tsx
-#: src/components/routes/system/charts/extra-fs-charts.tsx
+#: src/components/routes/system/disk-io-sheet.tsx
+#: src/components/routes/system/disk-io-sheet.tsx
+#: src/components/routes/system/disk-io-sheet.tsx
 msgid "Read"
 msgstr "Preberano"
 
@@ -1549,7 +1588,7 @@ msgstr "Tabela"
 #: src/components/routes/system/info-bar.tsx
 msgctxt "Tabs system layout option"
 msgid "Tabs"
-msgstr ""
+msgstr "Zavihki"
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Tasks"
@@ -1602,7 +1641,7 @@ msgstr "Tega dejanja ni mogoče razveljaviti. To bo trajno izbrisalo vse trenutn
 msgid "This will permanently delete all selected records from the database."
 msgstr "To bo trajno izbrisalo vse izbrane zapise iz zbirke podatkov."
 
-#: src/components/routes/system/charts/extra-fs-charts.tsx
+#: src/components/routes/system/charts/disk-charts.tsx
 msgid "Throughput of {extraFsName}"
 msgstr "Prepustnost {extraFsName}"
 
@@ -1654,6 +1693,11 @@ msgstr "Skupni prejeti podatki za vsak vmesnik"
 #: src/components/routes/system/network-sheet.tsx
 msgid "Total data sent for each interface"
 msgstr "Skupni poslani podatki za vsak vmesnik"
+
+#: src/components/routes/system/disk-io-sheet.tsx
+msgctxt "Disk I/O"
+msgid "Total time spent on read/write (can exceed 100%)"
+msgstr ""
 
 #. placeholder {0}: data.length
 #: src/components/systemd-table/systemd-table.tsx
@@ -1775,7 +1819,7 @@ msgstr "Naloži"
 msgid "Uptime"
 msgstr "Čas delovanja"
 
-#: src/components/routes/system/charts/extra-fs-charts.tsx
+#: src/components/routes/system/charts/disk-charts.tsx
 #: src/components/routes/system/charts/gpu-charts.tsx
 #: src/components/routes/system/charts/gpu-charts.tsx
 #: src/components/routes/system/charts/gpu-charts.tsx
@@ -1797,6 +1841,11 @@ msgstr "Uporabljeno"
 msgid "Users"
 msgstr "Uporabniki"
 
+#: src/components/routes/system/charts/disk-charts.tsx
+msgctxt "Disk I/O utilization"
+msgid "Utilization"
+msgstr "Izkoriščenost"
+
 #: src/components/alerts-history-columns.tsx
 msgid "Value"
 msgstr "Vrednost"
@@ -1806,6 +1855,7 @@ msgid "View"
 msgstr "Pogled"
 
 #: src/components/routes/system/cpu-sheet.tsx
+#: src/components/routes/system/disk-io-sheet.tsx
 #: src/components/routes/system/network-sheet.tsx
 msgid "View more"
 msgstr "Prikaži več"
@@ -1858,7 +1908,9 @@ msgstr "Ukaz Windows"
 
 #. Disk write
 #: src/components/routes/system/charts/disk-charts.tsx
-#: src/components/routes/system/charts/extra-fs-charts.tsx
+#: src/components/routes/system/disk-io-sheet.tsx
+#: src/components/routes/system/disk-io-sheet.tsx
+#: src/components/routes/system/disk-io-sheet.tsx
 msgid "Write"
 msgstr "Pisanje"
 
