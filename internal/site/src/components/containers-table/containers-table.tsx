@@ -20,6 +20,7 @@ import { TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/compon
 import { pb } from "@/lib/api"
 import type { ContainerRecord } from "@/types"
 import { containerChartCols } from "@/components/containers-table/containers-table-columns"
+import { Badge } from "@/components/ui/badge"
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { type ContainerHealth, ContainerHealthLabels } from "@/lib/enums"
 import { cn, useBrowserStorage } from "@/lib/utils"
@@ -162,6 +163,8 @@ export default function ContainersTable({ systemId }: { systemId?: string }) {
 	const rows = table.getRowModel().rows
 	const visibleColumns = table.getVisibleLeafColumns()
 
+	const totalCount = data?.length ?? 0
+
 	return (
 		<Card className="@container w-full px-3 py-5 sm:py-6 sm:px-6">
 			<CardHeader className="p-0 mb-3 sm:mb-4">
@@ -170,8 +173,13 @@ export default function ContainersTable({ systemId }: { systemId?: string }) {
 						<CardTitle className="mb-2">
 							<Trans>All Containers</Trans>
 						</CardTitle>
-						<CardDescription className="flex">
+						<CardDescription className="flex gap-3 items-center">
 							<Trans>Click on a container to view more information.</Trans>
+							{data && (
+								<Badge variant="outline">
+									<Trans>{totalCount} containers</Trans>
+								</Badge>
+							)}
 						</CardDescription>
 					</div>
 					<div className="relative ms-auto w-full max-w-full md:w-64">
