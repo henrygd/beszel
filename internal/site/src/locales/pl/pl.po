@@ -8,7 +8,7 @@ msgstr ""
 "Language: pl\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2026-03-29 01:19\n"
+"PO-Revision-Date: 2026-04-05 18:27\n"
 "Last-Translator: \n"
 "Language-Team: Polish\n"
 "Plural-Forms: nplurals=4; plural=(n==1 ? 0 : (n%10>=2 && n%10<=4) && (n%100<12 || n%100>14) ? 1 : n!=1 && (n%10>=0 && n%10<=1) || (n%10>=5 && n%10<=9) || (n%100>=12 && n%100<=14) ? 2 : 3);\n"
@@ -40,7 +40,7 @@ msgstr "{count, plural, one {{countString} dzień} few {{countString} dni} many 
 
 #: src/lib/utils.ts
 msgid "{count, plural, one {{countString} hour} other {{countString} hours}}"
-msgstr "{count, plural, one {godzinę} few {{countString} godziny} many {{countString} godzin} other {{countString} godziny}}"
+msgstr "{count, plural, one {godzina} few {{countString} godziny} many {{countString} godzin} other {{countString} godziny}}"
 
 #: src/lib/utils.ts
 msgid "{count, plural, one {{countString} minute} few {{countString} minutes} many {{countString} minutes} other {{countString} minutes}}"
@@ -110,7 +110,7 @@ msgstr "Aktywne alerty"
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Active state"
-msgstr "Stan aktywny"
+msgstr "Status aktywny"
 
 #: src/components/add-system.tsx
 #: src/components/add-system.tsx
