@@ -4,6 +4,7 @@ package users
 import (
 	"log"
 	"net/http"
+	"strings"
 
 	"github.com/henrygd/beszel/internal/migrations"
 
@@ -83,7 +84,7 @@ func (um *UserManager) CreateFirstUser(e *core.RequestEvent) error {
 
 	collection, _ := um.app.FindCollectionByNameOrId("users")
 	user := core.NewRecord(collection)
-	user.SetEmail(data.Email)
+	user.SetEmail(strings.ToLower(data.Email))
 	user.SetPassword(data.Password)
 	user.Set("role", "admin")
 	user.Set("verified", true)
@@ -93,7 +94,7 @@ func (um *UserManager) CreateFirstUser(e *core.RequestEvent) error {
 	// create superuser using the email of the first user
 	collection, _ = um.app.FindCollectionByNameOrId(core.CollectionNameSuperusers)
 	adminUser := core.NewRecord(collection)
-	adminUser.SetEmail(data.Email)
+	adminUser.SetEmail(strings.ToLower(data.Email))
 	adminUser.SetPassword(data.Password)
 	if err := um.app.Save(adminUser); err != nil {
 		return e.JSON(http.StatusInternalServerError, map[string]string{"err": err.Error()})
