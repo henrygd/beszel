@@ -117,3 +117,19 @@ func DeleteUserAlerts(e *core.RequestEvent) error {
 
 	return e.JSON(http.StatusOK, map[string]any{"success": true, "count": numDeleted})
 }
+
+// SendTestNotification handles API request to send a test notification to a specified Shoutrrr URL
+func (am *AlertManager) SendTestNotification(e *core.RequestEvent) error {
+	var data struct {
+		URL string `json:"url"`
+	}
+	err := e.BindBody(&data)
+	if err != nil || data.URL == "" {
+		return e.BadRequestError("URL is required", err)
+	}
+	err = am.SendShoutrrrAlert(data.URL, "Test Alert", "This is a notification from Beszel.", am.hub.Settings().Meta.AppURL, "View Beszel")
+	if err != nil {
+		return e.JSON(200, map[string]string{"err": err.Error()})
+	}
+	return e.JSON(200, map[string]bool{"err": false})
+}
