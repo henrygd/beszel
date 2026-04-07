@@ -67,31 +67,6 @@ func TestApiRoutesAuthentication(t *testing.T) {
 	scenarios := []beszelTests.ApiScenario{
 		// Auth Protected Routes - Should require authentication
 		{
-			Name:            "POST /test-notification - no auth should fail",
-			Method:          http.MethodPost,
-			URL:             "/api/beszel/test-notification",
-			ExpectedStatus:  401,
-			ExpectedContent: []string{"requires valid"},
-			TestAppFactory:  testAppFactory,
-			Body: jsonReader(map[string]any{
-				"url": "generic://127.0.0.1",
-			}),
-		},
-		{
-			Name:           "POST /test-notification - with auth should succeed",
-			Method:         http.MethodPost,
-			URL:            "/api/beszel/test-notification",
-			TestAppFactory: testAppFactory,
-			Headers: map[string]string{
-				"Authorization": userToken,
-			},
-			Body: jsonReader(map[string]any{
-				"url": "generic://127.0.0.1",
-			}),
-			ExpectedStatus:  200,
-			ExpectedContent: []string{"sending message"},
-		},
-		{
 			Name:            "GET /config-yaml - no auth should fail",
 			Method:          http.MethodGet,
 			URL:             "/api/beszel/config-yaml",

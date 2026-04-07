@@ -10,6 +10,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/henrygd/beszel/internal/alerts"
 	beszelTests "github.com/henrygd/beszel/internal/tests"
 	pbTests "github.com/pocketbase/pocketbase/tests"
 
@@ -26,6 +27,31 @@ func jsonReader(v any) io.Reader {
 		panic(err)
 	}
 	return bytes.NewReader(data)
+}
+
+func TestIsInternalURL(t *testing.T) {
+	testCases := []struct {
+		name     string
+		url      string
+		internal bool
+	}{
+		{name: "loopback ipv4", url: "generic://127.0.0.1", internal: true},
+		{name: "localhost hostname", url: "generic://localhost", internal: true},
+		{name: "localhost hostname", url: "generic+http://localhost/api/v1/postStuff", internal: true},
+		{name: "localhost hostname", url: "generic+http://127.0.0.1:8080/api/v1/postStuff", internal: true},
+		{name: "localhost hostname", url: "generic+https://beszel.dev/api/v1/postStuff", internal: false},
+		{name: "public ipv4", url: "generic://8.8.8.8", internal: false},
+		{name: "token style service url", url: "discord://abc123@123456789", internal: false},
+		{name: "single label service url", url: "slack://token@team/channel", internal: false},
+	}
+
+	for _, testCase := range testCases {
+		t.Run(testCase.name, func(t *testing.T) {
+			internal, err := alerts.IsInternalURL(testCase.url)
+			assert.NoError(t, err)
+			assert.Equal(t, testCase.internal, internal)
+		})
+	}
 }
 
 func TestUserAlertsApi(t *testing.T) {
@@ -359,6 +385,113 @@ func TestUserAlertsApi(t *testing.T) {
 				user2AlertCount, _ := app.CountRecords("alerts", dbx.HashExp{"user": user2.Id})
 				assert.Zero(t, user2AlertCount, "should have 0 alerts")
 			},
+		},
+	}
+
+	for _, scenario := range scenarios {
+		scenario.Test(t)
+	}
+}
+func TestSendTestNotification(t *testing.T) {
+	hub, user := beszelTests.GetHubWithUser(t)
+	defer hub.Cleanup()
+
+	userToken, err := user.NewAuthToken()
+
+	adminUser, err := beszelTests.CreateUserWithRole(hub, "admin@example.com", "password123", "admin")
+	assert.NoError(t, err, "Failed to create admin user")
+	adminUserToken, err := adminUser.NewAuthToken()
+
+	superuser, err := beszelTests.CreateSuperuser(hub, "superuser@example.com", "password123")
+	assert.NoError(t, err, "Failed to create superuser")
+	superuserToken, err := superuser.NewAuthToken()
+	assert.NoError(t, err, "Failed to create superuser auth token")
+
+	testAppFactory := func(t testing.TB) *pbTests.TestApp {
+		return hub.TestApp
+	}
+
+	scenarios := []beszelTests.ApiScenario{
+		{
+			Name:            "POST /test-notification - no auth should fail",
+			Method:          http.MethodPost,
+			URL:             "/api/beszel/test-notification",
+			ExpectedStatus:  401,
+			ExpectedContent: []string{"requires valid"},
+			TestAppFactory:  testAppFactory,
+			Body: jsonReader(map[string]any{
+				"url": "generic://127.0.0.1",
+			}),
+		},
+		{
+			Name:           "POST /test-notification - with external auth should succeed",
+			Method:         http.MethodPost,
+			URL:            "/api/beszel/test-notification",
+			TestAppFactory: testAppFactory,
+			Headers: map[string]string{
+				"Authorization": userToken,
+			},
+			Body: jsonReader(map[string]any{
+				"url": "generic://8.8.8.8",
+			}),
+			ExpectedStatus:  200,
+			ExpectedContent: []string{"\"err\":"},
+		},
+		{
+			Name:           "POST /test-notification - local url with user auth should fail",
+			Method:         http.MethodPost,
+			URL:            "/api/beszel/test-notification",
+			TestAppFactory: testAppFactory,
+			Headers: map[string]string{
+				"Authorization": userToken,
+			},
+			Body: jsonReader(map[string]any{
+				"url": "generic://localhost:8010",
+			}),
+			ExpectedStatus:  403,
+			ExpectedContent: []string{"Only admins"},
+		},
+		{
+			Name:           "POST /test-notification - internal url with user auth should fail",
+			Method:         http.MethodPost,
+			URL:            "/api/beszel/test-notification",
+			TestAppFactory: testAppFactory,
+			Headers: map[string]string{
+				"Authorization": userToken,
+			},
+			Body: jsonReader(map[string]any{
+				"url": "generic+http://192.168.0.5",
+			}),
+			ExpectedStatus:  403,
+			ExpectedContent: []string{"Only admins"},
+		},
+		{
+			Name:           "POST /test-notification - internal url with admin auth should succeed",
+			Method:         http.MethodPost,
+			URL:            "/api/beszel/test-notification",
+			TestAppFactory: testAppFactory,
+			Headers: map[string]string{
+				"Authorization": adminUserToken,
+			},
+			Body: jsonReader(map[string]any{
+				"url": "generic://127.0.0.1",
+			}),
+			ExpectedStatus:  200,
+			ExpectedContent: []string{"\"err\":"},
+		},
+		{
+			Name:           "POST /test-notification - internal url with superuser auth should succeed",
+			Method:         http.MethodPost,
+			URL:            "/api/beszel/test-notification",
+			TestAppFactory: testAppFactory,
+			Headers: map[string]string{
+				"Authorization": superuserToken,
+			},
+			Body: jsonReader(map[string]any{
+				"url": "generic://127.0.0.1",
+			}),
+			ExpectedStatus:  200,
+			ExpectedContent: []string{"\"err\":"},
 		},
 	}
 

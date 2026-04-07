@@ -15,6 +15,7 @@ import { isAdmin, pb } from "@/lib/api"
 import type { UserSettings } from "@/types"
 import { saveSettings } from "./layout"
 import { QuietHours } from "./quiet-hours"
+import type { ClientResponseError } from "pocketbase"
 
 interface ShoutrrrUrlCardProps {
 	url: string
@@ -59,10 +60,10 @@ const SettingsNotificationsPage = ({ userSettings }: { userSettings: UserSetting
 		try {
 			const parsedData = v.parse(NotificationSchema, { emails, webhooks })
 			await saveSettings(parsedData)
-		} catch (e: any) {
+		} catch (e: unknown) {
 			toast({
 				title: t`Failed to save settings`,
-				description: e.message,
+				description: (e as Error).message,
 				variant: "destructive",
 			})
 		}
@@ -136,12 +137,7 @@ const SettingsNotificationsPage = ({ userSettings }: { userSettings: UserSetting
 								</Trans>
 							</p>
 						</div>
-						<Button
-							type="button"
-							variant="outline"
-							className="h-10 shrink-0"
-							onClick={addWebhook}
-						>
+						<Button type="button" variant="outline" className="h-10 shrink-0" onClick={addWebhook}>
 							<PlusIcon className="size-4" />
 							<span className="ms-1">
 								<Trans>Add URL</Trans>
@@ -180,25 +176,34 @@ const SettingsNotificationsPage = ({ userSettings }: { userSettings: UserSetting
 	)
 }
 
+function showTestNotificationError(msg: string) {
+	toast({
+		title: t`Error`,
+		description: msg ?? t`Failed to send test notification`,
+		variant: "destructive",
+	})
+}
+
 const ShoutrrrUrlCard = ({ url, onUrlChange, onRemove }: ShoutrrrUrlCardProps) => {
 	const [isLoading, setIsLoading] = useState(false)
 
 	const sendTestNotification = async () => {
 		setIsLoading(true)
-		const res = await pb.send("/api/beszel/test-notification", { method: "POST", body: { url } })
-		if ("err" in res && !res.err) {
-			toast({
-				title: t`Test notification sent`,
-				description: t`Check your notification service`,
-			})
-		} else {
-			toast({
-				title: t`Error`,
-				description: res.err ?? t`Failed to send test notification`,
-				variant: "destructive",
-			})
+		try {
+			const res = await pb.send("/api/beszel/test-notification", { method: "POST", body: { url } })
+			if ("err" in res && !res.err) {
+				toast({
+					title: t`Test notification sent`,
+					description: t`Check your notification service`,
+				})
+			} else {
+				showTestNotificationError(res.err)
+			}
+		} catch (e: unknown) {
+			showTestNotificationError((e as ClientResponseError).data?.message)
+		} finally {
+			setIsLoading(false)
 		}
-		setIsLoading(false)
 	}
 
 	return (
