@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"fmt"
 	"io"
 	"math"
 	"os"
@@ -67,6 +68,9 @@ func ReadStringFileLimited(path string, maxSize int) (string, error) {
 	n, err := f.Read(buf)
 	if err != nil && err != io.EOF {
 		return "", err
+	}
+	if n < 0 {
+		return "", fmt.Errorf("%s returned negative bytes: %d", path, n)
 	}
 	return strings.TrimSpace(string(buf[:n])), nil
 }
