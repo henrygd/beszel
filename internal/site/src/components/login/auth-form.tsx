@@ -12,7 +12,7 @@ import { Label } from "@/components/ui/label"
 import { pb } from "@/lib/api"
 import { $authenticated } from "@/lib/stores"
 import { cn } from "@/lib/utils"
-import { $router, Link, prependBasePath } from "../router"
+import { $router, Link, basePath, prependBasePath } from "../router"
 import { toast } from "../ui/use-toast"
 import { OtpInputForm } from "./otp-forms"
 
@@ -149,11 +149,15 @@ export function UserAuthForm({
 		if (forcePopup || navigator.userAgent.match(/iPhone|iPad|iPod/i)) {
 			const authWindow = window.open()
 			if (!authWindow) {
-				setIsOauthLoading(false)
-				toast({
-					title: t`Error`,
-					description: t`Please enable pop-ups for this site`,
-				})
+				// Popup blocked — fall back to redirect-based OAuth flow.
+				// Requires the app's base URL to be registered as a redirect URI with the OAuth provider.
+				const redirectUrl = window.location.origin + basePath
+				const url = new URL(provider.authUrl)
+				url.searchParams.set("redirect_uri", redirectUrl)
+				sessionStorage.setItem("oauth_provider", provider.name)
+				sessionStorage.setItem("oauth_code_verifier", provider.codeVerifier)
+				sessionStorage.setItem("oauth_redirect_url", redirectUrl)
+				window.location.href = url.toString()
 				return
 			}
 			oAuthOpts.urlCallback = (url) => {
