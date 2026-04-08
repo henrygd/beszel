@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/henrygd/beszel"
+	"github.com/henrygd/beszel/internal/hub/utils"
 	"github.com/henrygd/beszel/internal/site"
 
 	"github.com/pocketbase/pocketbase/apis"
@@ -32,7 +33,7 @@ func (h *Hub) startServer(se *core.ServeEvent) error {
 	staticPaths := [2]string{"/static/", "/assets/"}
 	serveStatic := apis.Static(site.DistDirFS, false)
 	// get CSP configuration
-	csp, cspExists := GetEnv("CSP")
+	csp, cspExists := utils.GetEnv("CSP")
 	// add route
 	se.Router.GET("/{path...}", func(e *core.RequestEvent) error {
 		// serve static assets if path is in staticPaths

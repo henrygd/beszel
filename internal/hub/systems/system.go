@@ -15,6 +15,7 @@ import (
 
 	"github.com/henrygd/beszel/internal/common"
 	"github.com/henrygd/beszel/internal/hub/transport"
+	"github.com/henrygd/beszel/internal/hub/utils"
 	"github.com/henrygd/beszel/internal/hub/ws"
 
 	"github.com/henrygd/beszel/internal/entities/container"
@@ -353,14 +354,21 @@ func (sys *System) getRecord(app core.App) (*core.Record, error) {
 	return record, nil
 }
 
-// HasUser checks if the given user ID is in the system's users list.
-func (sys *System) HasUser(app core.App, userID string) bool {
+// HasUser checks if the given user is in the system's users list.
+// Returns true if SHARE_ALL_SYSTEMS is enabled (any authenticated user can access any system).
+func (sys *System) HasUser(app core.App, user *core.Record) bool {
+	if user == nil {
+		return false
+	}
+	if v, _ := utils.GetEnv("SHARE_ALL_SYSTEMS"); v == "true" {
+		return true
+	}
 	record, err := sys.getRecord(app)
 	if err != nil {
 		return false
 	}
 	users := record.GetStringSlice("users")
-	return slices.Contains(users, userID)
+	return slices.Contains(users, user.Id)
 }
 
 // setDown marks a system as down in the database.
