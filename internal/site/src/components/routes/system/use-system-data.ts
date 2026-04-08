@@ -192,7 +192,7 @@ export function useSystemData(id: string) {
 
 			// Skip the fetch if the latest cached point is recent enough that no new point is expected yet
 			const lastCreated = cachedSystemStats.at(-1)?.created as number | undefined
-			if (lastCreated && Date.now() - lastCreated < expectedInterval) {
+			if (lastCreated && Date.now() - lastCreated < expectedInterval * 0.9) {
 				return
 			}
 		} else {

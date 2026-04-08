@@ -84,6 +84,8 @@ export default memo(function DiskIOSheet({
 
 	const chartProps = { syncId: "io" }
 
+	const queueDepthTranslation = t({ message: "Queue Depth", context: "Disk I/O average queue depth" })
+
 	return (
 		<Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
 			<DialogTitle className="sr-only">{title}</DialogTitle>
@@ -120,7 +122,7 @@ export default memo(function DiskIOSheet({
 							reverseStackOrder={true}
 							dataPoints={[
 								{
-									label: t({ message: "Write", comment: "Disk write" }),
+									label: t`Write`,
 									dataKey: writeFn,
 									color: 3,
 									opacity: 0.4,
@@ -128,7 +130,7 @@ export default memo(function DiskIOSheet({
 									order: 0,
 								},
 								{
-									label: t({ message: "Read", comment: "Disk read" }),
+									label: t`Read`,
 									dataKey: readFn,
 									color: 1,
 									opacity: 0.4,
@@ -152,8 +154,11 @@ export default memo(function DiskIOSheet({
 					<ChartCard
 						empty={dataEmpty}
 						grid={grid}
-						title={t`I/O Time`}
-						description={t`Total time spent on read/write (can exceed 100%)`}
+						title={t({ message: "I/O Time", context: "Disk I/O total time spent on read/write" })}
+						description={t({
+							message: "Total time spent on read/write (can exceed 100%)",
+							context: "Disk I/O",
+						})}
 						className="min-h-auto"
 						cornerEl={maxValSelect}
 					>
@@ -192,7 +197,7 @@ export default memo(function DiskIOSheet({
 						<ChartCard
 							empty={dataEmpty}
 							grid={grid}
-							title={t`Average Queue Depth`}
+							title={queueDepthTranslation}
 							description={t`Average number of I/O operations waiting to be serviced`}
 							className="min-h-auto"
 							cornerEl={maxValSelect}
@@ -206,7 +211,7 @@ export default memo(function DiskIOSheet({
 								chartProps={chartProps}
 								dataPoints={[
 									{
-										label: t`Queue Depth`,
+										label: queueDepthTranslation,
 										dataKey: weightedIOFn,
 										color: 1,
 										opacity: 0.4,
@@ -220,8 +225,11 @@ export default memo(function DiskIOSheet({
 						<ChartCard
 							empty={dataEmpty}
 							grid={grid}
-							title={t`I/O Await`}
-							description={t`Average service time per operation`}
+							title={t({ message: "I/O Await", context: "Disk I/O average operation time (iostat await)" })}
+							description={t({
+								message: "Average queue to completion time per operation",
+								context: "Disk I/O average operation time (iostat await)",
+							})}
 							className="min-h-auto"
 							cornerEl={maxValSelect}
 							// legend={true}
