@@ -112,6 +112,7 @@ func (c *ConnectionManager) Start(serverOptions ServerOptions) error {
 		case <-sigCtx.Done():
 			slog.Info("Shutting down", "cause", context.Cause(sigCtx))
 			_ = c.agent.StopServer()
+			c.agent.probeManager.Stop()
 			c.closeWebSocket()
 			return health.CleanUp()
 		}
