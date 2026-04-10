@@ -85,8 +85,8 @@ github.com/mattn/go-isatty v0.0.20 h1:xfD0iDuEKnDkl03q4limB+vH+GxLEtL/jb4xVJSWWE
 github.com/mattn/go-isatty v0.0.20/go.mod h1:W+V8PltTTMOvKvAeJH7IuucS94S2C6jfK/D7dTCTo3Y=
 github.com/ncruces/go-strftime v1.0.0 h1:HMFp8mLCTPp341M/ZnA4qaf7ZlsbTc+miZjCLOFAw7w=
 github.com/ncruces/go-strftime v1.0.0/go.mod h1:Fwc5htZGVVkseilnfgOVb9mKy6w1naJmn9CehxcKcls=
-github.com/nicholas-fedor/shoutrrr v0.14.1 h1:6sx4cJNfNuUtD6ygGlB0dqcCQ+abfsUh+b+6jgujf6A=
-github.com/nicholas-fedor/shoutrrr v0.14.1/go.mod h1:U7IywBkLpBV7rgn8iLbQ9/LklJG1gm24bFv5cXXsDKs=
+github.com/nicholas-fedor/shoutrrr v0.14.3 h1:aBX2iw9a7jl5wfHd3bi9LnS5ucoYIy6KcLH9XVF+gig=
+github.com/nicholas-fedor/shoutrrr v0.14.3/go.mod h1:U7IywBkLpBV7rgn8iLbQ9/LklJG1gm24bFv5cXXsDKs=
 github.com/onsi/ginkgo/v2 v2.28.1 h1:S4hj+HbZp40fNKuLUQOYLDgZLwNUVn19N3Atb98NCyI=
 github.com/onsi/ginkgo/v2 v2.28.1/go.mod h1:CLtbVInNckU3/+gC8LzkGUb9oF+e8W8TdUsxPwvdOgE=
 github.com/onsi/gomega v1.39.1 h1:1IJLAad4zjPn2PsnhH70V4DKRFlrCzGBNrNaru+Vf28=
