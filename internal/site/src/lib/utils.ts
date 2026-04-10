@@ -470,3 +470,35 @@ export function secondsToUptimeString(seconds: number): string {
 		return secondsToString(seconds, "day")
 	}
 }
+/**
+ * Format a timestamp to a relative time string (e.g., "2 minutes ago", "just now")
+ * @param timestamp - ISO timestamp string
+ * @returns Relative time string
+ */
+export function formatRelativeTime(timestamp: string): string {
+	const date = new Date(timestamp)
+	const now = new Date()
+	const diffMs = now.getTime() - date.getTime()
+	const diffSeconds = Math.floor(diffMs / 1000)
+	const diffMinutes = Math.floor(diffSeconds / 60)
+	const diffHours = Math.floor(diffMinutes / 60)
+	const diffDays = Math.floor(diffHours / 24)
+
+	if (diffSeconds < 30) {
+		return t`just now`
+	}
+	if (diffMinutes < 1) {
+		return plural(diffSeconds, { one: `${diffSeconds} second ago`, other: `${diffSeconds} seconds ago` })
+	}
+	if (diffHours < 1) {
+		return plural(diffMinutes, { one: `${diffMinutes} minute ago`, other: `${diffMinutes} minutes ago` })
+	}
+	if (diffDays < 1) {
+		return plural(diffHours, { one: `${diffHours} hour ago`, other: `${diffHours} hours ago` })
+	}
+	if (diffDays < 7) {
+		return plural(diffDays, { one: `${diffDays} day ago`, other: `${diffDays} days ago` })
+	}
+	// For older timestamps, show the actual date
+	return formatShortDate(timestamp)
+}

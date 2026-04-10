@@ -32,6 +32,8 @@ import {
 	copyToClipboard,
 	decimalString,
 	formatBytes,
+	formatRelativeTime,
+	formatShortDate,
 	formatTemperature,
 	parseSemVer,
 	secondsToUptimeString,
@@ -419,6 +421,33 @@ export function SystemsTableColumns(viewMode: "table" | "grid"): ColumnDef<Syste
 						{!system.info.ct && <IndicatorDot system={system} className={cn(color, "bg-current mx-0.5")} />}
 						<span className="truncate max-w-14">{info.getValue() as string}</span>
 					</Link>
+				)
+			},
+		},
+		{
+			accessorFn: ({ updated }) => updated,
+			id: "lastSeen",
+			name: () => t({ message: "Last Seen", comment: "Column header for last updated timestamp" }),
+			size: 70,
+			Icon: ClockArrowDown,
+			header: sortableHeader,
+			hideSort: true,
+			cell(info) {
+				const timestamp = info.getValue() as string
+				if (!timestamp) {
+					return null
+				}
+				return (
+					<Tooltip>
+						<TooltipTrigger asChild>
+							<span className="tabular-nums whitespace-nowrap text-muted-foreground text-xs">
+								{formatRelativeTime(timestamp)}
+							</span>
+						</TooltipTrigger>
+						<TooltipContent side="top">
+							{formatShortDate(timestamp)}
+						</TooltipContent>
+					</Tooltip>
 				)
 			},
 		},
