@@ -1,4 +1,4 @@
-import { memo, useState } from "react"
+import { memo, useState, Suspense, lazy } from "react"
 import { Trans } from "@lingui/react/macro"
 import { compareSemVer, parseSemVer } from "@/lib/utils"
 import type { GPUData } from "@/types"
@@ -12,6 +12,7 @@ import { BandwidthChart, ContainerNetworkChart } from "./system/charts/network-c
 import { TemperatureChart, BatteryChart } from "./system/charts/sensor-charts"
 import { GpuPowerChart, GpuDetailCharts } from "./system/charts/gpu-charts"
 import { LazyContainersTable, LazySmartTable, LazySystemdTable } from "./system/lazy-tables"
+const NetworkProbes = lazy(() => import("./system/network-probes"))
 import { LoadAverageChart } from "./system/charts/load-average-chart"
 import { ContainerIcon, CpuIcon, HardDriveIcon, TerminalSquareIcon } from "lucide-react"
 import { GpuIcon } from "../ui/icons"
@@ -145,6 +146,10 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 				{hasContainersTable && <LazyContainersTable systemId={system.id} />}
 
 				{hasSystemd && <LazySystemdTable systemId={system.id} />}
+
+				<Suspense>
+					<NetworkProbes systemId={system.id} chartData={chartData} grid={grid} />
+				</Suspense>
 			</>
 		)
 	}
@@ -192,6 +197,9 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 						<SwapChart chartData={chartData} grid={grid} dataEmpty={dataEmpty} systemStats={systemStats} />
 						{pageBottomExtraMargin > 0 && <div style={{ marginBottom: pageBottomExtraMargin }}></div>}
 					</div>
+					<Suspense>
+						<NetworkProbes systemId={system.id} chartData={chartData} grid={grid} />
+					</Suspense>
 				</TabsContent>
 
 				<TabsContent value="disk" forceMount className={activeTab === "disk" ? "contents" : "hidden"}>
