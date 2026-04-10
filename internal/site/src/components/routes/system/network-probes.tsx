@@ -47,9 +47,16 @@ export default function NetworkProbes({
 		fetchProbes()
 	}, [fetchProbes])
 
+	// Build set of current probe keys to filter out deleted probes from stats
+	const activeProbeKeys = useMemo(() => new Set(probes.map(probeKey)), [probes])
+
 	// Fetch probe stats based on chart time
 	useEffect(() => {
-		if (probes.length === 0) return
+		if (probes.length === 0) {
+			setStats([])
+			setLatestResults({})
+			return
+		}
 		const controller = new AbortController()
 		const statsType = chartTimeData[chartTime]?.type ?? "1m"
 
@@ -58,10 +65,16 @@ export default function NetworkProbes({
 			signal: controller.signal,
 		})
 			.then((raw) => {
-				const data: NetworkProbeStatsRecord[] = raw.map((r) => ({
-					stats: r.stats,
-					created: new Date(r.created).getTime(),
-				}))
+				// Filter stats to only include currently active probes
+				const data: NetworkProbeStatsRecord[] = raw.map((r) => {
+					const filtered: NetworkProbeStatsRecord["stats"] = {}
+					for (const [key, val] of Object.entries(r.stats)) {
+						if (activeProbeKeys.has(key)) {
+							filtered[key] = val
+						}
+					}
+					return { stats: filtered, created: new Date(r.created).getTime() }
+				})
 				setStats(data)
 				if (data.length > 0) {
 					const last = data[data.length - 1].stats
@@ -75,7 +88,7 @@ export default function NetworkProbes({
 			.catch(() => setStats([]))
 
 		return () => controller.abort()
-	}, [systemId, chartTime, probes])
+	}, [systemId, chartTime, probes, activeProbeKeys])
 
 	const deleteProbe = async (id: string) => {
 		try {
