@@ -82,12 +82,16 @@ func (rm *RecordManager) CreateLongerRecords() {
 	// wrap the operations in a transaction
 	rm.app.RunInTransaction(func(txApp core.App) error {
 		var err error
-		collections := [2]*core.Collection{}
+		collections := [3]*core.Collection{}
 		collections[0], err = txApp.FindCachedCollectionByNameOrId("system_stats")
 		if err != nil {
 			return err
 		}
 		collections[1], err = txApp.FindCachedCollectionByNameOrId("container_stats")
+		if err != nil {
+			return err
+		}
+		collections[2], err = txApp.FindCachedCollectionByNameOrId("network_probe_stats")
 		if err != nil {
 			return err
 		}
@@ -150,8 +154,9 @@ func (rm *RecordManager) CreateLongerRecords() {
 					case "system_stats":
 						longerRecord.Set("stats", rm.AverageSystemStats(db, recordIds))
 					case "container_stats":
-
 						longerRecord.Set("stats", rm.AverageContainerStats(db, recordIds))
+					case "network_probe_stats":
+						longerRecord.Set("stats", rm.AverageProbeStats(db, recordIds))
 					}
 					if err := txApp.SaveNoValidate(longerRecord); err != nil {
 						log.Println("failed to save longer record", "err", err)
@@ -504,6 +509,67 @@ func (rm *RecordManager) AverageContainerStats(db dbx.Builder, records RecordIds
 	return result
 }
 
+// AverageProbeStats averages probe stats across multiple records.
+// For each probe key: avg of avgs, min of mins, max of maxes, avg of losses.
+func (rm *RecordManager) AverageProbeStats(db dbx.Builder, records RecordIds) map[string]map[string]float64 {
+	type probeValues struct {
+		avgSum  float64
+		minVal  float64
+		maxVal  float64
+		lossSum float64
+		count   float64
+	}
+
+	sums := make(map[string]*probeValues)
+	var rawStats map[string]map[string]float64
+
+	for _, record := range records {
+		statsRecord.Stats = statsRecord.Stats[:0]
+		rawStats = nil
+
+		queryParams["id"] = record.Id
+		db.NewQuery("SELECT stats FROM network_probe_stats WHERE id = {:id}").Bind(queryParams).One(&statsRecord)
+		if err := json.Unmarshal(statsRecord.Stats, &rawStats); err != nil {
+			continue
+		}
+
+		for key, vals := range rawStats {
+			s, ok := sums[key]
+			if !ok {
+				s = &probeValues{minVal: math.MaxFloat64}
+				sums[key] = s
+			}
+			s.avgSum += vals["avg"]
+			if vals["min"] < s.minVal {
+				s.minVal = vals["min"]
+			}
+			if vals["max"] > s.maxVal {
+				s.maxVal = vals["max"]
+			}
+			s.lossSum += vals["loss"]
+			s.count++
+		}
+	}
+
+	result := make(map[string]map[string]float64, len(sums))
+	for key, s := range sums {
+		if s.count == 0 {
+			continue
+		}
+		minVal := s.minVal
+		if minVal == math.MaxFloat64 {
+			minVal = 0
+		}
+		result[key] = map[string]float64{
+			"avg":  twoDecimals(s.avgSum / s.count),
+			"min":  twoDecimals(minVal),
+			"max":  twoDecimals(s.maxVal),
+			"loss": twoDecimals(s.lossSum / s.count),
+		}
+	}
+	return result
+}
+
 // Delete old records
 func (rm *RecordManager) DeleteOldRecords() {
 	rm.app.RunInTransaction(func(txApp core.App) error {
@@ -553,7 +619,7 @@ func deleteOldAlertsHistory(app core.App, countToKeep, countBeforeDeletion int) 
 // Deletes system_stats records older than what is displayed in the UI
 func deleteOldSystemStats(app core.App) error {
 	// Collections to process
-	collections := [2]string{"system_stats", "container_stats"}
+	collections := [3]string{"system_stats", "container_stats", "network_probe_stats"}
 
 	// Record types and their retention periods
 	type RecordDeletionData struct {

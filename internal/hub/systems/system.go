@@ -168,6 +168,9 @@ func (sys *System) update() error {
 		}
 	}
 
+	// Fetch and save network probe results
+	go sys.fetchAndSaveProbeResults()
+
 	return err
 }
 
