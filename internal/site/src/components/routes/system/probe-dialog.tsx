@@ -28,7 +28,7 @@ export function AddProbeDialog({
 	const [protocol, setProtocol] = useState<string>("icmp")
 	const [target, setTarget] = useState("")
 	const [port, setPort] = useState("")
-	const [interval, setInterval] = useState("10")
+	const [probeInterval, setProbeInterval] = useState("10")
 	const [name, setName] = useState("")
 	const [loading, setLoading] = useState(false)
 	const { toast } = useToast()
@@ -38,7 +38,7 @@ export function AddProbeDialog({
 		setProtocol("icmp")
 		setTarget("")
 		setPort("")
-		setInterval("10")
+		setProbeInterval("10")
 		setName("")
 	}
 
@@ -54,7 +54,7 @@ export function AddProbeDialog({
 					target,
 					protocol,
 					port: protocol === "tcp" ? Number(port) : 0,
-					interval: Number(interval),
+					interval: Number(probeInterval),
 				},
 			})
 			resetForm()
@@ -133,8 +133,8 @@ export function AddProbeDialog({
 						</Label>
 						<Input
 							type="number"
-							value={interval}
-							onChange={(e) => setInterval(e.target.value)}
+							value={probeInterval}
+							onChange={(e) => setProbeInterval(e.target.value)}
 							min={1}
 							max={3600}
 							required

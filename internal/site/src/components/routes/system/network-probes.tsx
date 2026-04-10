@@ -14,6 +14,11 @@ import LineChartDefault, { type DataPoint } from "@/components/charts/line-chart
 import { pinnedAxisDomain } from "@/components/ui/chart"
 import type { ChartData, NetworkProbeRecord, NetworkProbeStatsRecord } from "@/types"
 
+function probeKey(p: NetworkProbeRecord) {
+	if (p.protocol === "tcp") return `${p.protocol}:${p.target}:${p.port}`
+	return `${p.protocol}:${p.target}`
+}
+
 export default function NetworkProbes({
 	systemId,
 	chartData,
@@ -48,7 +53,7 @@ export default function NetworkProbes({
 		const controller = new AbortController()
 		const statsType = chartTimeData[chartTime]?.type ?? "1m"
 
-		pb.send<{ stats: any; created: string }[]>("/api/beszel/network-probe-stats", {
+		pb.send<{ stats: NetworkProbeStatsRecord["stats"]; created: string }[]>("/api/beszel/network-probe-stats", {
 			query: { system: systemId, type: statsType },
 			signal: controller.signal,
 		})
@@ -70,7 +75,7 @@ export default function NetworkProbes({
 			.catch(() => setStats([]))
 
 		return () => controller.abort()
-	}, [systemId, chartTime, probes.length])
+	}, [systemId, chartTime, probes])
 
 	const deleteProbe = async (id: string) => {
 		try {
@@ -82,11 +87,6 @@ export default function NetworkProbes({
 		} catch (err: any) {
 			toast({ variant: "destructive", title: t`Error`, description: err?.message })
 		}
-	}
-
-	const probeKey = (p: NetworkProbeRecord) => {
-		if (p.protocol === "tcp") return `${p.protocol}:${p.target}:${p.port}`
-		return `${p.protocol}:${p.target}`
 	}
 
 	const dataPoints: DataPoint<NetworkProbeStatsRecord>[] = useMemo(() => {
@@ -181,7 +181,7 @@ export default function NetworkProbes({
 								const result = latestResults[key]
 								return (
 									<tr key={p.id} className="border-b last:border-0">
-										<td className="px-3 sm:px-6 py-2.5 text-muted-foreground">{p.name || "-"}</td>
+										<td className="px-3 sm:px-6 py-2.5 text-muted-foreground">{p.name || p.target}</td>
 										<td className="px-3 py-2.5 font-mono text-xs">{p.target}</td>
 										<td className="px-3 py-2.5">{protocolBadge(p.protocol)}</td>
 										<td className="px-3 py-2.5">{p.interval}s</td>
