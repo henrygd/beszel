@@ -436,7 +436,7 @@ func TestHasUser(t *testing.T) {
 	user2, err := tests.CreateUser(hub, "user2@test.com", "password123")
 	require.NoError(t, err)
 
-	record, err := tests.CreateRecord(hub, "systems", map[string]any{
+	systemRecord, err := tests.CreateRecord(hub, "systems", map[string]any{
 		"name":  "has-user-test",
 		"host":  "127.0.0.1",
 		"port":  "33914",
@@ -444,7 +444,7 @@ func TestHasUser(t *testing.T) {
 	})
 	require.NoError(t, err)
 
-	sys, err := sm.GetSystemFromStore(record.Id)
+	sys, err := sm.GetSystemFromStore(systemRecord.Id)
 	require.NoError(t, err)
 
 	t.Run("user in list returns true", func(t *testing.T) {
@@ -466,6 +466,15 @@ func TestHasUser(t *testing.T) {
 
 	t.Run("BESZEL_HUB_SHARE_ALL_SYSTEMS=true grants access to non-member", func(t *testing.T) {
 		t.Setenv("BESZEL_HUB_SHARE_ALL_SYSTEMS", "true")
+		assert.True(t, sys.HasUser(hub, user2))
+	})
+
+	t.Run("additional user works", func(t *testing.T) {
+		assert.False(t, sys.HasUser(hub, user2))
+		systemRecord.Set("users", []string{user1.Id, user2.Id})
+		err = hub.Save(systemRecord)
+		require.NoError(t, err)
+		assert.True(t, sys.HasUser(hub, user1))
 		assert.True(t, sys.HasUser(hub, user2))
 	})
 }
