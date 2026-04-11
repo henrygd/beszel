@@ -201,9 +201,17 @@ func (pm *ProbeManager) executeProbe(task *probeTask) {
 	task.mu.Unlock()
 }
 
-// probeTCP measures TCP connection latency. Returns -1 on failure.
+// probeTCP measures pure TCP handshake latency (excluding DNS resolution).
+// Returns -1 on failure.
 func probeTCP(target string, port uint16) float64 {
-	addr := net.JoinHostPort(target, fmt.Sprintf("%d", port))
+	// Resolve DNS first, outside the timing window
+	ips, err := net.LookupHost(target)
+	if err != nil || len(ips) == 0 {
+		return -1
+	}
+	addr := net.JoinHostPort(ips[0], fmt.Sprintf("%d", port))
+
+	// Measure only the TCP handshake
 	start := time.Now()
 	conn, err := net.DialTimeout("tcp", addr, 3*time.Second)
 	if err != nil {
