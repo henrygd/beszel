@@ -7,9 +7,20 @@ import (
 	"time"
 
 	"github.com/henrygd/beszel/internal/common"
+	"github.com/henrygd/beszel/internal/entities/container"
+	"github.com/henrygd/beszel/internal/entities/probe"
+	"github.com/henrygd/beszel/internal/entities/system"
 	"github.com/pocketbase/pocketbase/core"
 	"github.com/pocketbase/pocketbase/tools/subscriptions"
 )
+
+// realtimePayload wraps system data with optional network probe results for realtime broadcast.
+type realtimePayload struct {
+	Stats      system.Stats             `json:"stats"`
+	Info       system.Info              `json:"info"`
+	Containers []*container.Stats       `json:"container"`
+	Probes     map[string]probe.Result  `json:"probes,omitempty"`
+}
 
 type subscriptionInfo struct {
 	subscription     string
@@ -142,16 +153,25 @@ func (sm *SystemManager) startRealtimeWorker() {
 // fetchRealtimeDataAndNotify fetches realtime data for all active subscriptions and notifies the clients.
 func (sm *SystemManager) fetchRealtimeDataAndNotify() {
 	for systemId, info := range activeSubscriptions {
-		system, err := sm.GetSystem(systemId)
+		sys, err := sm.GetSystem(systemId)
 		if err != nil {
 			continue
 		}
 		go func() {
-			data, err := system.fetchDataFromAgent(common.DataRequestOptions{CacheTimeMs: 1000})
+			data, err := sys.fetchDataFromAgent(common.DataRequestOptions{CacheTimeMs: 1000})
 			if err != nil {
 				return
 			}
-			bytes, err := json.Marshal(data)
+			payload := realtimePayload{
+				Stats:      data.Stats,
+				Info:       data.Info,
+				Containers: data.Containers,
+			}
+			// Fetch network probe results (lightweight in-memory read on agent)
+			if probes, err := sys.FetchNetworkProbeResults(); err == nil && len(probes) > 0 {
+				payload.Probes = probes
+			}
+			bytes, err := json.Marshal(payload)
 			if err == nil {
 				notify(sm.hub, info.subscription, bytes)
 			}

@@ -29,6 +29,7 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 		system,
 		systemStats,
 		containerData,
+		probeStats,
 		chartData,
 		containerChartConfigs,
 		details,
@@ -148,7 +149,7 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 				{hasSystemd && <LazySystemdTable systemId={system.id} />}
 
 				<Suspense>
-					<NetworkProbes systemId={system.id} chartData={chartData} grid={grid} />
+					<NetworkProbes systemId={system.id} chartData={chartData} grid={grid} realtimeProbeStats={probeStats} />
 				</Suspense>
 			</>
 		)
@@ -198,7 +199,7 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 						{pageBottomExtraMargin > 0 && <div style={{ marginBottom: pageBottomExtraMargin }}></div>}
 					</div>
 					<Suspense>
-						<NetworkProbes systemId={system.id} chartData={chartData} grid={grid} />
+						<NetworkProbes systemId={system.id} chartData={chartData} grid={grid} realtimeProbeStats={probeStats} />
 					</Suspense>
 				</TabsContent>
 

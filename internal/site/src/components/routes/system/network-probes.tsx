@@ -23,10 +23,12 @@ export default function NetworkProbes({
 	systemId,
 	chartData,
 	grid,
+	realtimeProbeStats,
 }: {
 	systemId: string
 	chartData: ChartData
 	grid: boolean
+	realtimeProbeStats?: NetworkProbeStatsRecord[]
 }) {
 	const [probes, setProbes] = useState<NetworkProbeRecord[]>([])
 	const [stats, setStats] = useState<NetworkProbeStatsRecord[]>([])
@@ -50,11 +52,40 @@ export default function NetworkProbes({
 	// Build set of current probe keys to filter out deleted probes from stats
 	const activeProbeKeys = useMemo(() => new Set(probes.map(probeKey)), [probes])
 
-	// Fetch probe stats based on chart time
+	// Use realtime probe stats when in 1m mode
+	useEffect(() => {
+		if (chartTime !== "1m" || !realtimeProbeStats) {
+			return
+		}
+		// Filter stats to only include currently active probes
+		const data: NetworkProbeStatsRecord[] = realtimeProbeStats.map((r) => {
+			const filtered: NetworkProbeStatsRecord["stats"] = {}
+			for (const [key, val] of Object.entries(r.stats)) {
+				if (activeProbeKeys.has(key)) {
+					filtered[key] = val
+				}
+			}
+			return { stats: filtered, created: r.created }
+		})
+		setStats(data)
+		if (data.length > 0) {
+			const last = data[data.length - 1].stats
+			const latest: Record<string, { avg: number; loss: number }> = {}
+			for (const [key, val] of Object.entries(last)) {
+				latest[key] = { avg: val.avg, loss: val.loss }
+			}
+			setLatestResults(latest)
+		}
+	}, [chartTime, realtimeProbeStats, activeProbeKeys])
+
+	// Fetch probe stats based on chart time (skip in realtime mode)
 	useEffect(() => {
 		if (probes.length === 0) {
 			setStats([])
 			setLatestResults({})
+			return
+		}
+		if (chartTime === "1m") {
 			return
 		}
 		const controller = new AbortController()

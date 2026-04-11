@@ -19,6 +19,7 @@ import { chartTimeData, listen, parseSemVer, useBrowserStorage } from "@/lib/uti
 import type {
 	ChartData,
 	ContainerStatsRecord,
+	NetworkProbeStatsRecord,
 	SystemDetailsRecord,
 	SystemInfo,
 	SystemRecord,
@@ -48,6 +49,7 @@ export function useSystemData(id: string) {
 	const [system, setSystem] = useState({} as SystemRecord)
 	const [systemStats, setSystemStats] = useState([] as SystemStatsRecord[])
 	const [containerData, setContainerData] = useState([] as ChartData["containerData"])
+	const [probeStats, setProbeStats] = useState([] as NetworkProbeStatsRecord[])
 	const persistChartTime = useRef(false)
 	const statsRequestId = useRef(0)
 	const [chartLoading, setChartLoading] = useState(true)
@@ -119,23 +121,35 @@ export function useSystemData(id: string) {
 		pb.realtime
 			.subscribe(
 				`rt_metrics`,
-				(data: { container: ContainerStatsRecord[]; info: SystemInfo; stats: SystemStats }) => {
+				(data: {
+					container: ContainerStatsRecord[]
+					info: SystemInfo
+					stats: SystemStats
+					probes?: NetworkProbeStatsRecord["stats"]
+				}) => {
 					const now = Date.now()
 					const statsPoint = { created: now, stats: data.stats } as SystemStatsRecord
 					const containerPoint =
 						data.container?.length > 0
 							? makeContainerPoint(now, data.container as unknown as ContainerStatsRecord["stats"])
 							: null
+					const probePoint: NetworkProbeStatsRecord | null = data.probes
+						? { stats: data.probes, created: now }
+						: null
 					// on first message, make sure we clear out data from other time periods
 					if (isFirst) {
 						isFirst = false
 						setSystemStats([statsPoint])
 						setContainerData(containerPoint ? [containerPoint] : [])
+						setProbeStats(probePoint ? [probePoint] : [])
 						return
 					}
 					setSystemStats((prev) => appendData(prev, [statsPoint], 1000, 60))
 					if (containerPoint) {
 						setContainerData((prev) => appendData(prev, [containerPoint], 1000, 60))
+					}
+					if (probePoint) {
+						setProbeStats((prev) => appendData(prev, [probePoint], 1000, 60))
 					}
 				},
 				{ query: { system: system.id } }
@@ -322,6 +336,7 @@ export function useSystemData(id: string) {
 		system,
 		systemStats,
 		containerData,
+		probeStats,
 		chartData,
 		containerChartConfigs,
 		details,
