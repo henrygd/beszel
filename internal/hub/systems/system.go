@@ -167,6 +167,11 @@ func (sys *System) update() error {
 		}
 	}
 
+	// Fetch and save network probe results
+	if sys.hasEnabledProbes() {
+		go sys.fetchAndSaveProbeResults()
+	}
+
 	return err
 }
 

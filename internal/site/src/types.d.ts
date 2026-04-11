@@ -545,3 +545,18 @@ export interface UpdateInfo {
 	v: string // new version
 	url: string // url to new version
 }
+
+export interface NetworkProbeRecord {
+	id: string
+	name: string
+	target: string
+	protocol: "icmp" | "tcp" | "http"
+	port: number
+	interval: number
+	enabled: boolean
+}
+
+export interface NetworkProbeStatsRecord {
+	stats: Record<string, { avg: number; min: number; max: number; loss: number }>
+	created: number // unix timestamp (ms) for Recharts xAxis
+}
