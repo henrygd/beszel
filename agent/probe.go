@@ -14,8 +14,9 @@ import (
 
 // ProbeManager manages network probe tasks.
 type ProbeManager struct {
-	mu     sync.RWMutex
-	probes map[string]*probeTask // key = probe.Config.Key()
+	mu         sync.RWMutex
+	probes     map[string]*probeTask // key = probe.Config.Key()
+	httpClient *http.Client
 }
 
 type probeTask struct {
@@ -33,6 +34,7 @@ type probeSample struct {
 func newProbeManager() *ProbeManager {
 	return &ProbeManager{
 		probes: make(map[string]*probeTask),
+		httpClient: &http.Client{Timeout: 10 * time.Second},
 	}
 }
 
@@ -168,7 +170,7 @@ func (pm *ProbeManager) executeProbe(task *probeTask) {
 	case "tcp":
 		latencyMs = probeTCP(task.config.Target, task.config.Port)
 	case "http":
-		latencyMs = probeHTTP(task.config.Target)
+		latencyMs = probeHTTP(pm.httpClient, task.config.Target)
 	default:
 		slog.Warn("unknown probe protocol", "protocol", task.config.Protocol)
 		return
@@ -212,8 +214,7 @@ func probeTCP(target string, port uint16) float64 {
 }
 
 // probeHTTP measures HTTP GET request latency. Returns -1 on failure.
-func probeHTTP(url string) float64 {
-	client := &http.Client{Timeout: 10 * time.Second}
+func probeHTTP(client *http.Client, url string) float64 {
 	start := time.Now()
 	resp, err := client.Get(url)
 	if err != nil {

@@ -3,6 +3,7 @@ package hub
 import (
 	"encoding/json"
 	"net/http"
+	"strings"
 
 	"github.com/pocketbase/dbx"
 	"github.com/pocketbase/pocketbase/core"
@@ -74,6 +75,9 @@ func (h *Hub) createNetworkProbe(e *core.RequestEvent) error {
 	}
 	if req.Protocol != "icmp" && req.Protocol != "tcp" && req.Protocol != "http" {
 		return e.BadRequestError("protocol must be icmp, tcp, or http", nil)
+	}
+	if req.Protocol == "http" && !strings.HasPrefix(req.Target, "http://") && !strings.HasPrefix(req.Target, "https://") {
+		return e.BadRequestError("http probe target must start with http:// or https://", nil)
 	}
 	if req.Interval <= 0 {
 		req.Interval = 10

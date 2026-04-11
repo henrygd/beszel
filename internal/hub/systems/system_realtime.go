@@ -168,8 +168,10 @@ func (sm *SystemManager) fetchRealtimeDataAndNotify() {
 				Containers: data.Containers,
 			}
 			// Fetch network probe results (lightweight in-memory read on agent)
-			if probes, err := sys.FetchNetworkProbeResults(); err == nil && len(probes) > 0 {
-				payload.Probes = probes
+			if sys.hasEnabledProbes() {
+				if probes, err := sys.FetchNetworkProbeResults(); err == nil && len(probes) > 0 {
+					payload.Probes = probes
+				}
 			}
 			bytes, err := json.Marshal(payload)
 			if err == nil {

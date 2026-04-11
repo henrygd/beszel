@@ -27,16 +27,16 @@ func (sys *System) FetchNetworkProbeResults() (map[string]probe.Result, error) {
 	return results, err
 }
 
+// hasEnabledProbes returns true if this system has any enabled network probes.
+func (sys *System) hasEnabledProbes() bool {
+	count, err := sys.manager.hub.CountRecords("network_probes",
+		dbx.NewExp("system = {:system} AND enabled = true", dbx.Params{"system": sys.Id}))
+	return err == nil && count > 0
+}
+
 // fetchAndSaveProbeResults fetches probe results and saves them to the database.
 func (sys *System) fetchAndSaveProbeResults() {
 	hub := sys.manager.hub
-
-	// Check if this system has any probes
-	count, err := hub.CountRecords("network_probes",
-		dbx.NewExp("system = {:system} AND enabled = true", dbx.Params{"system": sys.Id}))
-	if err != nil || count == 0 {
-		return
-	}
 
 	results, err := sys.FetchNetworkProbeResults()
 	if err != nil || len(results) == 0 {
