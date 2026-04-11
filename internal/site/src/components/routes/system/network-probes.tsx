@@ -12,7 +12,7 @@ import { AddProbeDialog } from "./probe-dialog"
 import { ChartCard } from "./chart-card"
 import LineChartDefault, { type DataPoint } from "@/components/charts/line-chart"
 import { pinnedAxisDomain } from "@/components/ui/chart"
-import type { ChartData, NetworkProbeRecord, NetworkProbeStatsRecord } from "@/types"
+import type { ChartData, NetworkProbeRecord, NetworkProbeStatsRecord, SystemRecord } from "@/types"
 
 function probeKey(p: NetworkProbeRecord) {
 	if (p.protocol === "tcp") return `${p.protocol}:${p.target}:${p.port}`
@@ -20,16 +20,17 @@ function probeKey(p: NetworkProbeRecord) {
 }
 
 export default function NetworkProbes({
-	systemId,
+	system,
 	chartData,
 	grid,
 	realtimeProbeStats,
 }: {
-	systemId: string
+	system: SystemRecord
 	chartData: ChartData
 	grid: boolean
 	realtimeProbeStats?: NetworkProbeStatsRecord[]
 }) {
+	const systemId = system.id
 	const [probes, setProbes] = useState<NetworkProbeRecord[]>([])
 	const [stats, setStats] = useState<NetworkProbeStatsRecord[]>([])
 	const [latestResults, setLatestResults] = useState<Record<string, { avg: number; loss: number }>>({})
@@ -119,7 +120,7 @@ export default function NetworkProbes({
 			.catch(() => setStats([]))
 
 		return () => controller.abort()
-	}, [systemId, chartTime, probes, activeProbeKeys])
+	}, [system, chartTime, probes, activeProbeKeys])
 
 	const deleteProbe = async (id: string) => {
 		try {
