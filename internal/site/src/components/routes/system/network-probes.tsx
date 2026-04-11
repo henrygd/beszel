@@ -8,6 +8,7 @@ import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/ca
 import { Button } from "@/components/ui/button"
 import { Trash2Icon } from "lucide-react"
 import { useToast } from "@/components/ui/use-toast"
+import { appendData } from "./chart-data"
 import { AddProbeDialog } from "./probe-dialog"
 import { ChartCard } from "./chart-card"
 import LineChartDefault, { type DataPoint } from "@/components/charts/line-chart"
@@ -58,8 +59,11 @@ export default function NetworkProbes({
 		if (chartTime !== "1m" || !realtimeProbeStats) {
 			return
 		}
-		// Filter stats to only include currently active probes
+		// Filter stats to only include currently active probes, preserving gap markers
 		const data: NetworkProbeStatsRecord[] = realtimeProbeStats.map((r) => {
+			if (!r.stats) {
+				return r // preserve gap markers from appendData
+			}
 			const filtered: NetworkProbeStatsRecord["stats"] = {}
 			for (const [key, val] of Object.entries(r.stats)) {
 				if (activeProbeKeys.has(key)) {
@@ -69,13 +73,16 @@ export default function NetworkProbes({
 			return { stats: filtered, created: r.created }
 		})
 		setStats(data)
-		if (data.length > 0) {
-			const last = data[data.length - 1].stats
-			const latest: Record<string, { avg: number; loss: number }> = {}
-			for (const [key, val] of Object.entries(last)) {
-				latest[key] = { avg: val.avg, loss: val.loss }
+		// Use last non-gap entry for latest results
+		for (let i = data.length - 1; i >= 0; i--) {
+			if (data[i].stats) {
+				const latest: Record<string, { avg: number; loss: number }> = {}
+				for (const [key, val] of Object.entries(data[i].stats)) {
+					latest[key] = { avg: val.avg, loss: val.loss }
+				}
+				setLatestResults(latest)
+				break
 			}
-			setLatestResults(latest)
 		}
 	}, [chartTime, realtimeProbeStats, activeProbeKeys])
 
@@ -90,7 +97,7 @@ export default function NetworkProbes({
 			return
 		}
 		const controller = new AbortController()
-		const statsType = chartTimeData[chartTime]?.type ?? "1m"
+		const { type: statsType = "1m", expectedInterval } = chartTimeData[chartTime] ?? {}
 
 		pb.send<{ stats: NetworkProbeStatsRecord["stats"]; created: string }[]>("/api/beszel/network-probe-stats", {
 			query: { system: systemId, type: statsType },
@@ -98,7 +105,7 @@ export default function NetworkProbes({
 		})
 			.then((raw) => {
 				// Filter stats to only include currently active probes
-				const data: NetworkProbeStatsRecord[] = raw.map((r) => {
+				const mapped: NetworkProbeStatsRecord[] = raw.map((r) => {
 					const filtered: NetworkProbeStatsRecord["stats"] = {}
 					for (const [key, val] of Object.entries(r.stats)) {
 						if (activeProbeKeys.has(key)) {
@@ -107,9 +114,11 @@ export default function NetworkProbes({
 					}
 					return { stats: filtered, created: new Date(r.created).getTime() }
 				})
+				// Apply gap detection — inserts null markers where data is missing
+				const data = appendData([] as NetworkProbeStatsRecord[], mapped, expectedInterval)
 				setStats(data)
-				if (data.length > 0) {
-					const last = data[data.length - 1].stats
+				if (mapped.length > 0) {
+					const last = mapped[mapped.length - 1].stats
 					const latest: Record<string, { avg: number; loss: number }> = {}
 					for (const [key, val] of Object.entries(last)) {
 						latest[key] = { avg: val.avg, loss: val.loss }
@@ -135,12 +144,16 @@ export default function NetworkProbes({
 	}
 
 	const dataPoints: DataPoint<NetworkProbeStatsRecord>[] = useMemo(() => {
+		const count = probes.length
 		return probes.map((p, i) => {
 			const key = probeKey(p)
 			return {
 				label: p.name || p.target,
-				dataKey: (record: NetworkProbeStatsRecord) => record.stats[key]?.avg ?? null,
-				color: (i % 10) + 1,
+				dataKey: (record: NetworkProbeStatsRecord) => record.stats?.[key]?.avg ?? null,
+				color:
+					count <= 5
+						? i + 1
+						: `hsl(${(i * 360) / count}, var(--chart-saturation), var(--chart-lightness))`,
 			}
 		})
 	}, [probes])
