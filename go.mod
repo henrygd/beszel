@@ -10,7 +10,7 @@ require (
 	github.com/gliderlabs/ssh v0.3.8
 	github.com/google/uuid v1.6.0
 	github.com/lxzan/gws v1.9.1
-	github.com/nicholas-fedor/shoutrrr v0.14.1
+	github.com/nicholas-fedor/shoutrrr v0.14.3
 	github.com/pocketbase/dbx v1.12.0
 	github.com/pocketbase/pocketbase v0.36.8
 	github.com/shirou/gopsutil/v4 v4.26.3

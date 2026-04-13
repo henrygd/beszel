@@ -345,6 +345,23 @@ func TestApiRoutesAuthentication(t *testing.T) {
 			},
 		},
 		{
+			Name:            "GET /containers/info - SHARE_ALL_SYSTEMS allows non-member user",
+			Method:          http.MethodGet,
+			URL:             fmt.Sprintf("/api/beszel/containers/info?system=%s&container=abababababab", system.Id),
+			ExpectedStatus:  500,
+			ExpectedContent: []string{"Something went wrong while processing your request."},
+			TestAppFactory:  testAppFactory,
+			Headers: map[string]string{
+				"Authorization": user2Token,
+			},
+			BeforeTestFunc: func(t testing.TB, app *pbTests.TestApp, e *core.ServeEvent) {
+				t.Setenv("SHARE_ALL_SYSTEMS", "true")
+			},
+			AfterTestFunc: func(t testing.TB, app *pbTests.TestApp, res *http.Response) {
+				t.Setenv("SHARE_ALL_SYSTEMS", "")
+			},
+		},
+		{
 			Name:   "GET /containers/logs - with auth but missing system param should fail",
 			Method: http.MethodGet,
 			URL:    "/api/beszel/containers/logs?container=abababababab",
