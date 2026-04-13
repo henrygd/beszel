@@ -5,10 +5,8 @@ package hub
 import (
 	"io/fs"
 	"net/http"
-	"net/url"
 	"strings"
 
-	"github.com/henrygd/beszel"
 	"github.com/henrygd/beszel/internal/hub/utils"
 	"github.com/henrygd/beszel/internal/site"
 
@@ -18,17 +16,8 @@ import (
 
 // startServer sets up the production server for Beszel
 func (h *Hub) startServer(se *core.ServeEvent) error {
-	// parse app url
-	parsedURL, err := url.Parse(h.appURL)
-	if err != nil {
-		return err
-	}
-	// fix base paths in html if using subpath
-	basePath := strings.TrimSuffix(parsedURL.Path, "/") + "/"
 	indexFile, _ := fs.ReadFile(site.DistDirFS, "index.html")
-	html := strings.ReplaceAll(string(indexFile), "./", basePath)
-	html = strings.Replace(html, "{{V}}", beszel.Version, 1)
-	html = strings.Replace(html, "{{HUB_URL}}", h.appURL, 1)
+	html := modifyIndexHTML(h, indexFile)
 	// set up static asset serving
 	staticPaths := [2]string{"/static/", "/assets/"}
 	serveStatic := apis.Static(site.DistDirFS, false)

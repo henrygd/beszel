@@ -1,5 +1,4 @@
 import "./index.css"
-import { t } from "@lingui/core/macro"
 import { i18n } from "@lingui/core"
 import { I18nProvider } from "@lingui/react"
 import { useStore } from "@nanostores/react"
@@ -12,7 +11,6 @@ import { $router } from "@/components/router.tsx"
 import Settings from "@/components/routes/settings/layout.tsx"
 import { ThemeProvider } from "@/components/theme-provider.tsx"
 import { Toaster } from "@/components/ui/toaster.tsx"
-import { toast } from "@/components/ui/use-toast"
 import { alertManager } from "@/lib/alerts"
 import { isAdmin, pb, updateUserSettings } from "@/lib/api.ts"
 import { dynamicActivate, getLocale } from "@/lib/i18n"
@@ -95,46 +93,6 @@ const Layout = () => {
 	useEffect(() => {
 		document.documentElement.dir = direction
 	}, [direction])
-
-	useEffect(() => {
-		// refresh auth if not authenticated (required for trusted auth header)
-		if (!authenticated) {
-			pb.collection("users")
-				.authRefresh()
-				.then((res) => {
-					pb.authStore.save(res.token, res.record)
-					$authenticated.set(!!pb.authStore.isValid)
-				})
-		}
-	}, [])
-
-	useEffect(() => {
-		// handle redirect-based OAuth callback (fallback for browsers that block popups)
-		const params = new URLSearchParams(window.location.search)
-		const code = params.get("code")
-		const state = params.get("state")
-		const provider = sessionStorage.getItem("oauth_provider")
-		const codeVerifier = sessionStorage.getItem("oauth_code_verifier")
-		const redirectUrl = sessionStorage.getItem("oauth_redirect_url")
-		if (code && state && provider && codeVerifier && redirectUrl) {
-			sessionStorage.removeItem("oauth_provider")
-			sessionStorage.removeItem("oauth_code_verifier")
-			sessionStorage.removeItem("oauth_redirect_url")
-			window.history.replaceState({}, "", window.location.pathname)
-			pb.collection("users")
-				.authWithOAuth2Code(provider, code, codeVerifier, redirectUrl)
-				.then(() => {
-					$authenticated.set(pb.authStore.isValid)
-				})
-				.catch(() => {
-					toast({
-						title: t`Login attempt failed`,
-						description: t`OAuth redirect failed. Ensure your app's base URL is registered as a redirect URI with your OAuth provider.`,
-						variant: "destructive",
-					})
-				})
-		}
-	}, [])
 
 	return (
 		<DirectionProvider dir={direction}>

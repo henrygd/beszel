@@ -37,8 +37,7 @@ const RegisterSchema = v.looseObject({
 	passwordConfirm: passwordSchema,
 })
 
-export const showLoginFaliedToast = (description?: string) => {
-	description ||= t`Please check your credentials and try again`
+export const showLoginFaliedToast = (description = t`Please check your credentials and try again`) => {
 	toast({
 		title: t`Login attempt failed`,
 		description,
@@ -130,10 +129,6 @@ export function UserAuthForm({
 		[isFirstRun]
 	)
 
-	if (!authMethods) {
-		return null
-	}
-
 	const authProviders = authMethods.oauth2.providers ?? []
 	const oauthEnabled = authMethods.oauth2.enabled && authProviders.length > 0
 	const passwordEnabled = authMethods.password.enabled
@@ -142,6 +137,12 @@ export function UserAuthForm({
 
 	function loginWithOauth(provider: AuthProviderInfo, forcePopup = false) {
 		setIsOauthLoading(true)
+
+		if (globalThis.BESZEL.OAUTH_DISABLE_POPUP) {
+			redirectToOauthProvider(provider)
+			return
+		}
+
 		const oAuthOpts: OAuth2AuthConfig = {
 			provider: provider.name,
 		}
@@ -149,15 +150,8 @@ export function UserAuthForm({
 		if (forcePopup || navigator.userAgent.match(/iPhone|iPad|iPod/i)) {
 			const authWindow = window.open()
 			if (!authWindow) {
-				// Popup blocked — fall back to redirect-based OAuth flow.
-				// Requires the app's base URL to be registered as a redirect URI with the OAuth provider.
-				const redirectUrl = window.location.origin + basePath
-				const url = new URL(provider.authUrl)
-				url.searchParams.set("redirect_uri", redirectUrl)
-				sessionStorage.setItem("oauth_provider", provider.name)
-				sessionStorage.setItem("oauth_code_verifier", provider.codeVerifier)
-				sessionStorage.setItem("oauth_redirect_url", redirectUrl)
-				window.location.href = url.toString()
+				setIsOauthLoading(false)
+				showLoginFaliedToast(t`Please enable pop-ups for this site`)
 				return
 			}
 			oAuthOpts.urlCallback = (url) => {
@@ -175,15 +169,56 @@ export function UserAuthForm({
 			})
 	}
 
+	/**
+	 * Redirects the user to the OAuth provider's authentication page in the same window.
+	 * Requires the app's base URL to be registered as a redirect URI with the OAuth provider.
+	 */
+	function redirectToOauthProvider(provider: AuthProviderInfo) {
+		const url = new URL(provider.authURL)
+		// url.searchParams.set("redirect_uri", `${window.location.origin}${basePath}`)
+		sessionStorage.setItem("provider", JSON.stringify(provider))
+		window.location.href = url.toString()
+	}
+
 	useEffect(() => {
-		// auto login if password disabled and only one auth provider
-		if (!passwordEnabled && authProviders.length === 1 && !sessionStorage.getItem("lo")) {
-			// Add a small timeout to ensure browser is ready to handle popups
-			setTimeout(() => {
-				loginWithOauth(authProviders[0], true)
-			}, 300)
+		// handle redirect-based OAuth callback if we have a code
+		const params = new URLSearchParams(window.location.search)
+		const code = params.get("code")
+		if (code) {
+			const state = params.get("state")
+			const provider: AuthProviderInfo = JSON.parse(sessionStorage.getItem("provider") ?? "{}")
+			if (!state || provider.state !== state) {
+				showLoginFaliedToast()
+			} else {
+				setIsOauthLoading(true)
+				window.history.replaceState({}, "", window.location.pathname)
+				pb.collection("users")
+					.authWithOAuth2Code(provider.name, code, provider.codeVerifier, `${window.location.origin}${basePath}`)
+					.then(() => $authenticated.set(pb.authStore.isValid))
+					.catch((e: unknown) => showLoginFaliedToast((e as Error).message))
+					.finally(() => setIsOauthLoading(false))
+			}
 		}
+
+		// auto login if password disabled and only one auth provider
+		if (!code && !passwordEnabled && authProviders.length === 1 && !sessionStorage.getItem("lo")) {
+			// Add a small timeout to ensure browser is ready to handle popups
+			setTimeout(() => loginWithOauth(authProviders[0], false), 300)
+			return
+		}
+
+		// refresh auth if not in above states (required for trusted auth header)
+		pb.collection("users")
+			.authRefresh()
+			.then((res) => {
+				pb.authStore.save(res.token, res.record)
+				$authenticated.set(!!pb.authStore.isValid)
+			})
 	}, [])
+
+	if (!authMethods) {
+		return null
+	}
 
 	if (otpId && mfaId) {
 		return <OtpInputForm otpId={otpId} mfaId={mfaId} />
@@ -252,7 +287,7 @@ export function UserAuthForm({
 							)}
 							<div className="sr-only">
 								{/* honeypot */}
-								<label htmlFor="website"></label>
+								<label htmlFor="website">Website</label>
 								<input
 									id="website"
 									type="text"
