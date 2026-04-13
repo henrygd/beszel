@@ -8,7 +8,7 @@ msgstr ""
 "Language: he\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2026-04-05 20:36\n"
+"PO-Revision-Date: 2026-04-13 09:19\n"
 "Last-Translator: \n"
 "Language-Team: Hebrew\n"
 "Plural-Forms: nplurals=4; plural=n%100==1 ? 0 : n%100==2 ? 1 : n%100==3 || n%100==4 ? 2 : 3;\n"
@@ -145,7 +145,7 @@ msgstr "אחרי"
 
 #: src/components/routes/settings/heartbeat.tsx
 msgid "After setting the environment variables, restart your Beszel hub for changes to take effect."
-msgstr "לאחר הגדרת משתני הסביבה, הפעל מחדש את ה-Beszel hub שלך כדי שהשינויים ייכנסו לתוקף."
+msgstr "לאחר הגדרת משתני הסביבה, יש להפעיל את ה־Beszel hub שלך מחדש כדי שהשינויים ייכנסו לתוקף."
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Agent"
@@ -202,7 +202,7 @@ msgstr "ניצול ממוצע של CPU בקונטיינרים"
 #. placeholder {0}: alertData.unit
 #: src/components/alerts/alerts-sheet.tsx
 msgid "Average drops below <0>{value}{0}</0>"
-msgstr "הממוצע יורד מתחת ל-<0>{value}{0}</0>"
+msgstr "הממוצע יורד מתחת ל־<0>{value}{0}</0>"
 
 #. placeholder {0}: alertData.unit
 #: src/components/alerts/alerts-sheet.tsx
@@ -272,7 +272,7 @@ msgstr "לפני"
 #. placeholder {2}: alert.min
 #: src/components/active-alerts.tsx
 msgid "Below {0}{1} in last {2, plural, one {# minute} other {# minutes}}"
-msgstr "מתחת ל-{0}{1} ב-{2, plural, one {דקה האחרונה} other {-# הדקות האחרונות}}"
+msgstr "מתחת ל־{0}{1} ב{2, plural, one {דקה האחרונה} other {־# הדקות האחרונות}}"
 
 #: src/components/login/auth-form.tsx
 msgid "Beszel supports OpenID Connect and many OAuth2 authentication providers."
@@ -456,7 +456,7 @@ msgstr "העתק env"
 #: src/components/alerts/alerts-sheet.tsx
 msgctxt "Copy alerts from another system"
 msgid "Copy from"
-msgstr "העתק מ-"
+msgstr "העתקה מ־"
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Copy host"
@@ -695,11 +695,11 @@ msgstr "זמן סיום"
 
 #: src/components/routes/settings/heartbeat.tsx
 msgid "Endpoint URL"
-msgstr "URL של נקודת קצה"
+msgstr "כתובת נקודת קצה"
 
 #: src/components/routes/settings/heartbeat.tsx
 msgid "Endpoint URL to ping (required)"
-msgstr "URL של נקודת קצה לפינג (חובה)"
+msgstr "כתובת נקודת קצה לפינג (חובה)"
 
 #: src/components/login/login.tsx
 msgid "Enter email address to reset password"
@@ -756,7 +756,7 @@ msgstr "יצא פעיל"
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Expires after one hour or on hub restart."
-msgstr "פג תוקף לאחר שעה או בהפעלה מחדש של ה-hub."
+msgstr "התוקף פג לאחר שעה או לאחר הפעלת ה־hub מחדש."
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Export"
@@ -794,7 +794,7 @@ msgstr "שמירת הגדרות נכשלה"
 
 #: src/components/routes/settings/heartbeat.tsx
 msgid "Failed to send heartbeat"
-msgstr "שליחת פעימת הלב נכשלה"
+msgstr "שליחת הדופק נכשלה"
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Failed to send test notification"
@@ -883,15 +883,15 @@ msgstr "בריאות"
 
 #: src/components/routes/settings/layout.tsx
 msgid "Heartbeat"
-msgstr "פעימת לב"
+msgstr "דופק"
 
 #: src/components/routes/settings/heartbeat.tsx
 msgid "Heartbeat Monitoring"
-msgstr "ניטור פעימות לב"
+msgstr "ניטור דופק"
 
 #: src/components/routes/settings/heartbeat.tsx
 msgid "Heartbeat sent successfully"
-msgstr "פעימת הלב נשלחה בהצלחה"
+msgstr "הדופק נשלח בהצלחה"
 
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
@@ -909,7 +909,7 @@ msgstr "שיטת HTTP"
 
 #: src/components/routes/settings/heartbeat.tsx
 msgid "HTTP method: POST, GET, or HEAD (default: POST)"
-msgstr "שיטת HTTP: POST, GET, או HEAD (ברירת מחדל: POST)"
+msgstr "שיטת HTTP:‏ POST,‏ GET, או HEAD (ברירת מחדל: POST)"
 
 #: src/components/routes/system/disk-io-sheet.tsx
 msgctxt "Disk I/O average operation time (iostat await)"
@@ -1228,7 +1228,7 @@ msgstr "מושהה ({pausedSystemsLength})"
 
 #: src/components/routes/settings/heartbeat.tsx
 msgid "Payload format"
-msgstr "פורמט מטען (Payload)"
+msgstr "תבנית מטען (Payload)"
 
 #: src/components/routes/system/cpu-sheet.tsx
 #: src/components/routes/system/cpu-sheet.tsx
@@ -1465,7 +1465,7 @@ msgstr "שלח פינגים יוצאים תקופתיים לשירות ניטו�
 
 #: src/components/routes/settings/heartbeat.tsx
 msgid "Send test heartbeat"
-msgstr "שלח פעימת לב לבדיקה"
+msgstr "שליחת דופק לבדיקה"
 
 #: src/components/routes/system/charts/network-charts.tsx
 msgid "Sent"
@@ -1619,7 +1619,7 @@ msgstr "בדוק <0>URL</0>"
 
 #: src/components/routes/settings/heartbeat.tsx
 msgid "Test heartbeat"
-msgstr "בדוק פעימת לב"
+msgstr "בדיקת דופק"
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Test notification sent"
@@ -1697,7 +1697,7 @@ msgstr "סך נתונים שנשלחו עבור כל ממשק"
 #: src/components/routes/system/disk-io-sheet.tsx
 msgctxt "Disk I/O"
 msgid "Total time spent on read/write (can exceed 100%)"
-msgstr ""
+msgstr "הזמן הכולל שהושקע בקריאה/כתיבה (יכול לחרוג מ־100%)"
 
 #. placeholder {0}: data.length
 #: src/components/systemd-table/systemd-table.tsx
