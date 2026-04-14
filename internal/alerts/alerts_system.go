@@ -275,8 +275,13 @@ func (am *AlertManager) HandleSystemAlerts(systemRecord *core.Record, data *syst
 		if float32(alert.count) >= minCount {
 			// Battery alert has inverted logic: trigger when value is BELOW threshold
 			lowAlert := isLowAlert(alert.name)
+			minDur := time.Duration(alert.min) * time.Minute
 			if lowAlert {
 				if !alert.triggered && alert.val < alert.threshold {
+					if time.Since(alert.alertData.LastSent) < minDur {
+						go func(ad CachedAlertData) { _ = am.setAlertTriggered(ad, true) }(alert.alertData)
+						continue
+					}
 					alert.triggered = true
 					go am.sendSystemAlert(alert)
 				} else if alert.triggered && alert.val >= alert.threshold {
@@ -285,6 +290,10 @@ func (am *AlertManager) HandleSystemAlerts(systemRecord *core.Record, data *syst
 				}
 			} else {
 				if !alert.triggered && alert.val > alert.threshold {
+					if time.Since(alert.alertData.LastSent) < minDur {
+						go func(ad CachedAlertData) { _ = am.setAlertTriggered(ad, true) }(alert.alertData)
+						continue
+					}
 					alert.triggered = true
 					go am.sendSystemAlert(alert)
 				} else if alert.triggered && alert.val <= alert.threshold {
@@ -344,6 +353,7 @@ func (am *AlertManager) sendSystemAlert(alert SystemAlertData) {
 		// app.Logger().Error("failed to save alert record", "err", err)
 		return
 	}
+	am.alertsCache.setLastSent(alert.alertData)
 	am.SendAlert(AlertMessageData{
 		UserID:   alert.alertData.UserID,
 		SystemID: alert.systemRecord.Id,

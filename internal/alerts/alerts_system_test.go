@@ -191,6 +191,43 @@ func setBatteryAlertValue(info *system.Info, stats *system.Stats, value [2]uint8
 	stats.Battery = value
 }
 
+func testRateLimitSystemAlert[T any](t *testing.T, alertName string, threshold float64, min int, setValue systemAlertValueSetter[T], baselineValue, triggerValue, resolveValue T) {
+	t.Helper()
+
+	synctest.Test(t, func(t *testing.T) {
+		fixture := newSystemAlertTestFixture(t, alertName, min, threshold)
+		defer fixture.cleanup()
+
+		submitValue(fixture, t, baselineValue, setValue)
+		waitForSystemAlert(time.Minute + time.Second)
+		fixture.assertTriggered(t, false, "Alert should not be triggered yet")
+
+		submitValue(fixture, t, triggerValue, setValue)
+		waitForSystemAlert(time.Minute)
+		fixture.assertTriggered(t, false, "Alert should not be triggered until the history window is full")
+
+		submitValue(fixture, t, triggerValue, setValue)
+		waitForSystemAlert(time.Second)
+		fixture.assertTriggered(t, true, "Alert should be triggered")
+		assert.Equal(t, 1, fixture.hub.TestMailer.TotalSend(), "Email sent for trigger")
+
+		submitValue(fixture, t, resolveValue, setValue)
+		waitForSystemAlert(time.Second)
+		fixture.assertTriggered(t, false, "Alert should be untriggered")
+		assert.Equal(t, 2, fixture.hub.TestMailer.TotalSend(), "Email sent for untrigger")
+
+		// Re-trigger quickly (within the cooldown window) - no email should be sent
+		submitValue(fixture, t, triggerValue, setValue)
+		waitForSystemAlert(time.Second)
+		fixture.assertTriggered(t, true, "triggered state should be true")
+		assert.Equal(t, 2, fixture.hub.TestMailer.TotalSend(), "No email sent due to rate limit")
+	})
+}
+
+func TestSystemAlertRateLimit(t *testing.T) {
+	testRateLimitSystemAlert(t, "CPU", 50, 2, setCPUAlertValue, 10, 51, 48)
+}
+
 func TestSystemAlertsOneMin(t *testing.T) {
 	testOneMinuteSystemAlert(t, "CPU", 50, setCPUAlertValue, 51, 49)
 	testOneMinuteSystemAlert(t, "Memory", 50, setMemoryAlertValue, 51, 49)
