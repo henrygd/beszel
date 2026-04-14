@@ -20,6 +20,7 @@ import (
 	"github.com/fxamacker/cbor/v2"
 	"github.com/lxzan/gws"
 	"golang.org/x/crypto/ssh"
+ 	"golang.org/x/net/proxy"
 )
 
 const (
@@ -111,6 +112,9 @@ func (client *WebSocketClient) getOptions() *gws.ClientOption {
 			"User-Agent": []string{getUserAgent()},
 			"X-Token":    []string{client.token},
 			"X-Beszel":   []string{beszel.Version},
+		},
+        NewDialer: func() (gws.Dialer, error) {
+			return proxy.FromEnvironment(), nil
 		},
 	}
 	return client.options
