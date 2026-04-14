@@ -1550,6 +1550,11 @@ msgstr "مساحة التبديل المستخدمة من قبل النظام"
 msgid "Swap Usage"
 msgstr "استخدام التبديل"
 
+#: src/components/mode-toggle.tsx
+#: src/components/mode-toggle.tsx
+msgid "Switch theme"
+msgstr ""
+
 #: src/components/add-system.tsx
 #: src/components/alerts-history-columns.tsx
 #: src/components/containers-table/containers-table-columns.tsx
@@ -1659,8 +1664,8 @@ msgstr "إلى البريد الإشباكي"
 
 #: src/components/mode-toggle.tsx
 #: src/components/mode-toggle.tsx
-msgid "Toggle theme"
-msgstr "تبديل السمة"
+#~ msgid "Toggle theme"
+#~ msgstr "تبديل السمة"
 
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
