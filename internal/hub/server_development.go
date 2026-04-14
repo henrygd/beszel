@@ -10,8 +10,6 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/henrygd/beszel"
-
 	"github.com/pocketbase/pocketbase/core"
 	"github.com/pocketbase/pocketbase/tools/osutils"
 )
@@ -38,25 +36,12 @@ func (rm *responseModifier) RoundTrip(req *http.Request) (*http.Response, error)
 	}
 	resp.Body.Close()
 	// Create a new response with the modified body
-	modifiedBody := rm.modifyHTML(string(body))
+	modifiedBody := modifyIndexHTML(rm.hub, body)
 	resp.Body = io.NopCloser(strings.NewReader(modifiedBody))
 	resp.ContentLength = int64(len(modifiedBody))
 	resp.Header.Set("Content-Length", fmt.Sprintf("%d", len(modifiedBody)))
 
 	return resp, nil
-}
-
-func (rm *responseModifier) modifyHTML(html string) string {
-	parsedURL, err := url.Parse(rm.hub.appURL)
-	if err != nil {
-		return html
-	}
-	// fix base paths in html if using subpath
-	basePath := strings.TrimSuffix(parsedURL.Path, "/") + "/"
-	html = strings.ReplaceAll(html, "./", basePath)
-	html = strings.Replace(html, "{{V}}", beszel.Version, 1)
-	html = strings.Replace(html, "{{HUB_URL}}", rm.hub.appURL, 1)
-	return html
 }
 
 // startServer sets up the development server for Beszel
