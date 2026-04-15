@@ -14,6 +14,7 @@ import (
 	"github.com/henrygd/beszel/internal/ghupdate"
 	"github.com/henrygd/beszel/internal/hub/config"
 	"github.com/henrygd/beszel/internal/hub/systems"
+	"github.com/henrygd/beszel/internal/hub/utils"
 	"github.com/pocketbase/dbx"
 	"github.com/pocketbase/pocketbase/apis"
 	"github.com/pocketbase/pocketbase/core"
@@ -70,13 +71,13 @@ func (h *Hub) registerMiddlewares(se *core.ServeEvent) {
 		return e.Next()
 	}
 	// authenticate with trusted header
-	if autoLogin, _ := GetEnv("AUTO_LOGIN"); autoLogin != "" {
+	if autoLogin, _ := utils.GetEnv("AUTO_LOGIN"); autoLogin != "" {
 		se.Router.BindFunc(func(e *core.RequestEvent) error {
 			return authorizeRequestWithEmail(e, autoLogin)
 		})
 	}
 	// authenticate with trusted header
-	if trustedHeader, _ := GetEnv("TRUSTED_AUTH_HEADER"); trustedHeader != "" {
+	if trustedHeader, _ := utils.GetEnv("TRUSTED_AUTH_HEADER"); trustedHeader != "" {
 		se.Router.BindFunc(func(e *core.RequestEvent) error {
 			return authorizeRequestWithEmail(e, e.Request.Header.Get(trustedHeader))
 		})
@@ -104,7 +105,7 @@ func (h *Hub) registerApiRoutes(se *core.ServeEvent) error {
 	apiAuth.GET("/info", h.getInfo)
 	apiAuth.GET("/getkey", h.getInfo) // deprecated - keep for compatibility w/ integrations
 	// check for updates
-	if optIn, _ := GetEnv("CHECK_UPDATES"); optIn == "true" {
+	if optIn, _ := utils.GetEnv("CHECK_UPDATES"); optIn == "true" {
 		var updateInfo UpdateInfo
 		apiAuth.GET("/update", updateInfo.getUpdate)
 	}
@@ -127,7 +128,7 @@ func (h *Hub) registerApiRoutes(se *core.ServeEvent) error {
 	// get systemd service details
 	apiAuth.GET("/systemd/info", h.getSystemdInfo)
 	// /containers routes
-	if enabled, _ := GetEnv("CONTAINER_DETAILS"); enabled != "false" {
+	if enabled, _ := utils.GetEnv("CONTAINER_DETAILS"); enabled != "false" {
 		// get container logs
 		apiAuth.GET("/containers/logs", h.getContainerLogs)
 		// get container info
@@ -147,7 +148,7 @@ func (h *Hub) getInfo(e *core.RequestEvent) error {
 		Key:     h.pubKey,
 		Version: beszel.Version,
 	}
-	if optIn, _ := GetEnv("CHECK_UPDATES"); optIn == "true" {
+	if optIn, _ := utils.GetEnv("CHECK_UPDATES"); optIn == "true" {
 		info.CheckUpdate = true
 	}
 	return e.JSON(http.StatusOK, info)
@@ -315,7 +316,7 @@ func (h *Hub) containerRequestHandler(e *core.RequestEvent, fetchFunc func(*syst
 	}
 
 	system, err := h.sm.GetSystem(systemID)
-	if err != nil || !system.HasUser(e.App, e.Auth.Id) {
+	if err != nil || !system.HasUser(e.App, e.Auth) {
 		return e.NotFoundError("", nil)
 	}
 
@@ -350,7 +351,7 @@ func (h *Hub) getSystemdInfo(e *core.RequestEvent) error {
 		return e.BadRequestError("Invalid system or service parameter", nil)
 	}
 	system, err := h.sm.GetSystem(systemID)
-	if err != nil || !system.HasUser(e.App, e.Auth.Id) {
+	if err != nil || !system.HasUser(e.App, e.Auth) {
 		return e.NotFoundError("", nil)
 	}
 	// verify service exists before fetching details
@@ -378,7 +379,7 @@ func (h *Hub) refreshSmartData(e *core.RequestEvent) error {
 	}
 
 	system, err := h.sm.GetSystem(systemID)
-	if err != nil || !system.HasUser(e.App, e.Auth.Id) {
+	if err != nil || !system.HasUser(e.App, e.Auth) {
 		return e.NotFoundError("", nil)
 	}
 

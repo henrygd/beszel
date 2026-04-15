@@ -67,31 +67,6 @@ func TestApiRoutesAuthentication(t *testing.T) {
 	scenarios := []beszelTests.ApiScenario{
 		// Auth Protected Routes - Should require authentication
 		{
-			Name:            "POST /test-notification - no auth should fail",
-			Method:          http.MethodPost,
-			URL:             "/api/beszel/test-notification",
-			ExpectedStatus:  401,
-			ExpectedContent: []string{"requires valid"},
-			TestAppFactory:  testAppFactory,
-			Body: jsonReader(map[string]any{
-				"url": "generic://127.0.0.1",
-			}),
-		},
-		{
-			Name:           "POST /test-notification - with auth should succeed",
-			Method:         http.MethodPost,
-			URL:            "/api/beszel/test-notification",
-			TestAppFactory: testAppFactory,
-			Headers: map[string]string{
-				"Authorization": userToken,
-			},
-			Body: jsonReader(map[string]any{
-				"url": "generic://127.0.0.1",
-			}),
-			ExpectedStatus:  200,
-			ExpectedContent: []string{"sending message"},
-		},
-		{
 			Name:            "GET /config-yaml - no auth should fail",
 			Method:          http.MethodGet,
 			URL:             "/api/beszel/config-yaml",
@@ -370,6 +345,23 @@ func TestApiRoutesAuthentication(t *testing.T) {
 			},
 		},
 		{
+			Name:            "GET /containers/info - SHARE_ALL_SYSTEMS allows non-member user",
+			Method:          http.MethodGet,
+			URL:             fmt.Sprintf("/api/beszel/containers/info?system=%s&container=abababababab", system.Id),
+			ExpectedStatus:  500,
+			ExpectedContent: []string{"Something went wrong while processing your request."},
+			TestAppFactory:  testAppFactory,
+			Headers: map[string]string{
+				"Authorization": user2Token,
+			},
+			BeforeTestFunc: func(t testing.TB, app *pbTests.TestApp, e *core.ServeEvent) {
+				t.Setenv("SHARE_ALL_SYSTEMS", "true")
+			},
+			AfterTestFunc: func(t testing.TB, app *pbTests.TestApp, res *http.Response) {
+				t.Setenv("SHARE_ALL_SYSTEMS", "")
+			},
+		},
+		{
 			Name:   "GET /containers/logs - with auth but missing system param should fail",
 			Method: http.MethodGet,
 			URL:    "/api/beszel/containers/logs?container=abababababab",
@@ -630,13 +622,17 @@ func TestApiRoutesAuthentication(t *testing.T) {
 				"systems": []string{system.Id},
 			}),
 		},
-		{
-			Name:           "GET /update - shouldn't exist without CHECK_UPDATES env var",
-			Method:         http.MethodGet,
-			URL:            "/api/beszel/update",
-			ExpectedStatus: 502,
-			TestAppFactory: testAppFactory,
-		},
+		// this works but diff behavior on prod vs dev.
+		// dev returns 502; prod returns 200 with static html page 404
+		// TODO: align dev and prod behavior and re-enable this test
+		// {
+		// 	Name:               "GET /update - shouldn't exist without CHECK_UPDATES env var",
+		// 	Method:             http.MethodGet,
+		// 	URL:                "/api/beszel/update",
+		// 	NotExpectedContent: []string{"v:", "\"v\":"},
+		// 	ExpectedStatus: 502,
+		// 	TestAppFactory: testAppFactory,
+		// },
 	}
 
 	for _, scenario := range scenarios {

@@ -7,6 +7,7 @@ declare global {
 		BASE_PATH: string
 		HUB_VERSION: string
 		HUB_URL: string
+		OAUTH_DISABLE_POPUP: boolean
 	}
 }
 
@@ -124,6 +125,10 @@ export interface SystemStats {
 	dio?: [number, number]
 	/** max disk I/O bytes [read, write] */
 	diom?: [number, number]
+	/** disk io stats [read time factor, write time factor, io utilization %, r_await ms, w_await ms, weighted io %] */
+	dios?: [number, number, number, number, number, number]
+	/** max disk io stats */
+	diosm?: [number, number, number, number, number, number]
 	/** network sent (mb) */
 	ns: number
 	/** network received (mb) */
@@ -186,6 +191,10 @@ export interface ExtraFsStats {
 	rbm: number
 	/** max write per second (mb) */
 	wbm: number
+	/** disk io stats [read time factor, write time factor, io utilization %, r_await ms, w_await ms, weighted io %] */
+	dios?: [number, number, number, number, number, number]
+	/** max disk io stats */
+	diosm?: [number, number, number, number, number, number]
 }
 
 export interface ContainerStatsRecord extends RecordModel {
@@ -413,118 +422,118 @@ export interface SystemdRecord extends RecordModel {
 }
 
 export interface SystemdServiceDetails {
-	AccessSELinuxContext: string;
-	ActivationDetails: any[];
-	ActiveEnterTimestamp: number;
-	ActiveEnterTimestampMonotonic: number;
-	ActiveExitTimestamp: number;
-	ActiveExitTimestampMonotonic: number;
-	ActiveState: string;
-	After: string[];
-	AllowIsolate: boolean;
-	AssertResult: boolean;
-	AssertTimestamp: number;
-	AssertTimestampMonotonic: number;
-	Asserts: any[];
-	Before: string[];
-	BindsTo: any[];
-	BoundBy: any[];
-	CPUUsageNSec: number;
-	CanClean: any[];
-	CanFreeze: boolean;
-	CanIsolate: boolean;
-	CanLiveMount: boolean;
-	CanReload: boolean;
-	CanStart: boolean;
-	CanStop: boolean;
-	CollectMode: string;
-	ConditionResult: boolean;
-	ConditionTimestamp: number;
-	ConditionTimestampMonotonic: number;
-	Conditions: any[];
-	ConflictedBy: any[];
-	Conflicts: string[];
-	ConsistsOf: any[];
-	DebugInvocation: boolean;
-	DefaultDependencies: boolean;
-	Description: string;
-	Documentation: string[];
-	DropInPaths: any[];
-	ExecMainPID: number;
-	FailureAction: string;
-	FailureActionExitStatus: number;
-	Following: string;
-	FragmentPath: string;
-	FreezerState: string;
-	Id: string;
-	IgnoreOnIsolate: boolean;
-	InactiveEnterTimestamp: number;
-	InactiveEnterTimestampMonotonic: number;
-	InactiveExitTimestamp: number;
-	InactiveExitTimestampMonotonic: number;
-	InvocationID: string;
-	Job: Array<number | string>;
-	JobRunningTimeoutUSec: number;
-	JobTimeoutAction: string;
-	JobTimeoutRebootArgument: string;
-	JobTimeoutUSec: number;
-	JoinsNamespaceOf: any[];
-	LoadError: string[];
-	LoadState: string;
-	MainPID: number;
-	Markers: any[];
-	MemoryCurrent: number;
-	MemoryLimit: number;
-	MemoryPeak: number;
-	NRestarts: number;
-	Names: string[];
-	NeedDaemonReload: boolean;
-	OnFailure: any[];
-	OnFailureJobMode: string;
-	OnFailureOf: any[];
-	OnSuccess: any[];
-	OnSuccessJobMode: string;
-	OnSuccessOf: any[];
-	PartOf: any[];
-	Perpetual: boolean;
-	PropagatesReloadTo: any[];
-	PropagatesStopTo: any[];
-	RebootArgument: string;
-	Refs: any[];
-	RefuseManualStart: boolean;
-	RefuseManualStop: boolean;
-	ReloadPropagatedFrom: any[];
-	RequiredBy: any[];
-	Requires: string[];
-	RequiresMountsFor: any[];
-	Requisite: any[];
-	RequisiteOf: any[];
-	Result: string;
-	SliceOf: any[];
-	SourcePath: string;
-	StartLimitAction: string;
-	StartLimitBurst: number;
-	StartLimitIntervalUSec: number;
-	StateChangeTimestamp: number;
-	StateChangeTimestampMonotonic: number;
-	StopPropagatedFrom: any[];
-	StopWhenUnneeded: boolean;
-	SubState: string;
-	SuccessAction: string;
-	SuccessActionExitStatus: number;
-	SurviveFinalKillSignal: boolean;
-	TasksCurrent: number;
-	TasksMax: number;
-	Transient: boolean;
-	TriggeredBy: string[];
-	Triggers: any[];
-	UnitFilePreset: string;
-	UnitFileState: string;
-	UpheldBy: any[];
-	Upholds: any[];
-	WantedBy: any[];
-	Wants: string[];
-	WantsMountsFor: any[];
+	AccessSELinuxContext: string
+	ActivationDetails: any[]
+	ActiveEnterTimestamp: number
+	ActiveEnterTimestampMonotonic: number
+	ActiveExitTimestamp: number
+	ActiveExitTimestampMonotonic: number
+	ActiveState: string
+	After: string[]
+	AllowIsolate: boolean
+	AssertResult: boolean
+	AssertTimestamp: number
+	AssertTimestampMonotonic: number
+	Asserts: any[]
+	Before: string[]
+	BindsTo: any[]
+	BoundBy: any[]
+	CPUUsageNSec: number
+	CanClean: any[]
+	CanFreeze: boolean
+	CanIsolate: boolean
+	CanLiveMount: boolean
+	CanReload: boolean
+	CanStart: boolean
+	CanStop: boolean
+	CollectMode: string
+	ConditionResult: boolean
+	ConditionTimestamp: number
+	ConditionTimestampMonotonic: number
+	Conditions: any[]
+	ConflictedBy: any[]
+	Conflicts: string[]
+	ConsistsOf: any[]
+	DebugInvocation: boolean
+	DefaultDependencies: boolean
+	Description: string
+	Documentation: string[]
+	DropInPaths: any[]
+	ExecMainPID: number
+	FailureAction: string
+	FailureActionExitStatus: number
+	Following: string
+	FragmentPath: string
+	FreezerState: string
+	Id: string
+	IgnoreOnIsolate: boolean
+	InactiveEnterTimestamp: number
+	InactiveEnterTimestampMonotonic: number
+	InactiveExitTimestamp: number
+	InactiveExitTimestampMonotonic: number
+	InvocationID: string
+	Job: Array<number | string>
+	JobRunningTimeoutUSec: number
+	JobTimeoutAction: string
+	JobTimeoutRebootArgument: string
+	JobTimeoutUSec: number
+	JoinsNamespaceOf: any[]
+	LoadError: string[]
+	LoadState: string
+	MainPID: number
+	Markers: any[]
+	MemoryCurrent: number
+	MemoryLimit: number
+	MemoryPeak: number
+	NRestarts: number
+	Names: string[]
+	NeedDaemonReload: boolean
+	OnFailure: any[]
+	OnFailureJobMode: string
+	OnFailureOf: any[]
+	OnSuccess: any[]
+	OnSuccessJobMode: string
+	OnSuccessOf: any[]
+	PartOf: any[]
+	Perpetual: boolean
+	PropagatesReloadTo: any[]
+	PropagatesStopTo: any[]
+	RebootArgument: string
+	Refs: any[]
+	RefuseManualStart: boolean
+	RefuseManualStop: boolean
+	ReloadPropagatedFrom: any[]
+	RequiredBy: any[]
+	Requires: string[]
+	RequiresMountsFor: any[]
+	Requisite: any[]
+	RequisiteOf: any[]
+	Result: string
+	SliceOf: any[]
+	SourcePath: string
+	StartLimitAction: string
+	StartLimitBurst: number
+	StartLimitIntervalUSec: number
+	StateChangeTimestamp: number
+	StateChangeTimestampMonotonic: number
+	StopPropagatedFrom: any[]
+	StopWhenUnneeded: boolean
+	SubState: string
+	SuccessAction: string
+	SuccessActionExitStatus: number
+	SurviveFinalKillSignal: boolean
+	TasksCurrent: number
+	TasksMax: number
+	Transient: boolean
+	TriggeredBy: string[]
+	Triggers: any[]
+	UnitFilePreset: string
+	UnitFileState: string
+	UpheldBy: any[]
+	Upholds: any[]
+	WantedBy: any[]
+	Wants: string[]
+	WantsMountsFor: any[]
 }
 
 export interface BeszelInfo {
