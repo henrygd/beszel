@@ -494,7 +494,7 @@ type SmartInfoForNvme struct {
 	FirmwareVersion string           `json:"firmware_version"`
 	// NVMePCIVendor                 NVMePCIVendor                 `json:"nvme_pci_vendor"`
 	// NVMeIEEEOUIIdentifier         uint32                        `json:"nvme_ieee_oui_identifier"`
-	// NVMeTotalCapacity             uint64                        `json:"nvme_total_capacity"`
+	NVMeTotalCapacity             uint64                        `json:"nvme_total_capacity"`
 	// NVMeUnallocatedCapacity       uint64                        `json:"nvme_unallocated_capacity"`
 	// NVMeControllerID              uint16                        `json:"nvme_controller_id"`
 	// NVMeVersion                   VersionStringInfo             `json:"nvme_version"`

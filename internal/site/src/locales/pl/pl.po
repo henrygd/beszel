@@ -8,7 +8,7 @@ msgstr ""
 "Language: pl\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2026-03-27 19:17\n"
+"PO-Revision-Date: 2026-04-05 18:27\n"
 "Last-Translator: \n"
 "Language-Team: Polish\n"
 "Plural-Forms: nplurals=4; plural=(n==1 ? 0 : (n%10>=2 && n%10<=4) && (n%100<12 || n%100>14) ? 1 : n!=1 && (n%10>=0 && n%10<=1) || (n%10>=5 && n%10<=9) || (n%100>=12 && n%100<=14) ? 2 : 3);\n"
@@ -22,7 +22,7 @@ msgstr ""
 #: src/components/footer-repo-link.tsx
 msgctxt "New version available"
 msgid "{0} available"
-msgstr ""
+msgstr "{0} jest dostępna"
 
 #. placeholder {0}: table.getFilteredSelectedRowModel().rows.length
 #. placeholder {1}: table.getFilteredRowModel().rows.length
@@ -40,7 +40,7 @@ msgstr "{count, plural, one {{countString} dzień} few {{countString} dni} many 
 
 #: src/lib/utils.ts
 msgid "{count, plural, one {{countString} hour} other {{countString} hours}}"
-msgstr "{count, plural, one {godzinę} few {{countString} godziny} many {{countString} godzin} other {{countString} godziny}}"
+msgstr "{count, plural, one {godzina} few {{countString} godziny} many {{countString} godzin} other {{countString} godziny}}"
 
 #: src/lib/utils.ts
 msgid "{count, plural, one {{countString} minute} few {{countString} minutes} many {{countString} minutes} other {{countString} minutes}}"
@@ -110,7 +110,7 @@ msgstr "Aktywne alerty"
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Active state"
-msgstr "Stan aktywny"
+msgstr "Status aktywny"
 
 #: src/components/add-system.tsx
 #: src/components/add-system.tsx
@@ -145,7 +145,7 @@ msgstr "Po"
 
 #: src/components/routes/settings/heartbeat.tsx
 msgid "After setting the environment variables, restart your Beszel hub for changes to take effect."
-msgstr "Po ustawieniu zmiennych środowiskowych zrestartuj hub Beszel, aby zmiany weszły w życie."
+msgstr "Po ustawieniu zmiennych środowiskowych zrestartuj Beszel hub, aby zmiany zostały zaaplikowane."
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Agent"
@@ -209,9 +209,18 @@ msgstr "Średnia spada poniżej <0>{value}{0}</0>"
 msgid "Average exceeds <0>{value}{0}</0>"
 msgstr "Średnia przekracza <0>{value}{0}</0>"
 
+#: src/components/routes/system/disk-io-sheet.tsx
+msgid "Average number of I/O operations waiting to be serviced"
+msgstr "Średnia liczba operacji I/O oczekujących na obsłużenie"
+
 #: src/components/routes/system/charts/gpu-charts.tsx
 msgid "Average power consumption of GPUs"
 msgstr "Średnie zużycie energii przez GPU"
+
+#: src/components/routes/system/disk-io-sheet.tsx
+msgctxt "Disk I/O average operation time (iostat await)"
+msgid "Average queue to completion time per operation"
+msgstr "Średni czas od kolejki do zakończenia operacji"
 
 #: src/components/routes/system/charts/cpu-charts.tsx
 msgid "Average system-wide CPU utilization"
@@ -444,6 +453,11 @@ msgctxt "Environment variables"
 msgid "Copy env"
 msgstr "Kopiuj env"
 
+#: src/components/alerts/alerts-sheet.tsx
+msgctxt "Copy alerts from another system"
+msgid "Copy from"
+msgstr "Kopiuj z"
+
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Copy host"
 msgstr "Kopiuj host"
@@ -476,7 +490,7 @@ msgstr "Kopiuj YAML"
 #: src/components/routes/system.tsx
 msgctxt "Core system metrics"
 msgid "Core"
-msgstr ""
+msgstr "Główne"
 
 #: src/components/containers-table/containers-table-columns.tsx
 #: src/components/systemd-table/systemd-table-columns.tsx
@@ -550,7 +564,7 @@ msgstr "Codziennie"
 #: src/components/routes/system/info-bar.tsx
 msgctxt "Default system layout option"
 msgid "Default"
-msgstr ""
+msgstr "Domyślne"
 
 #: src/components/routes/settings/general.tsx
 msgid "Default time period"
@@ -599,19 +613,18 @@ msgstr "Jednostka dysku"
 
 #: src/components/routes/system/charts/disk-charts.tsx
 #: src/components/routes/system/charts/disk-charts.tsx
-#: src/components/routes/system/charts/extra-fs-charts.tsx
 #: src/lib/alerts.ts
 msgid "Disk Usage"
 msgstr "Użycie dysku"
 
-#: src/components/routes/system/charts/extra-fs-charts.tsx
+#: src/components/routes/system/charts/disk-charts.tsx
 msgid "Disk usage of {extraFsName}"
 msgstr "Wykorzystanie dysku {extraFsName}"
 
 #: src/components/routes/system/info-bar.tsx
 msgctxt "Layout display options"
 msgid "Display"
-msgstr ""
+msgstr "Widok"
 
 #: src/components/routes/system/charts/cpu-charts.tsx
 msgid "Docker CPU Usage"
@@ -897,6 +910,21 @@ msgstr "Metoda HTTP"
 #: src/components/routes/settings/heartbeat.tsx
 msgid "HTTP method: POST, GET, or HEAD (default: POST)"
 msgstr "Metoda HTTP: POST, GET lub HEAD (domyślnie: POST)"
+
+#: src/components/routes/system/disk-io-sheet.tsx
+msgctxt "Disk I/O average operation time (iostat await)"
+msgid "I/O Await"
+msgstr "Oczekiwanie I/O"
+
+#: src/components/routes/system/disk-io-sheet.tsx
+msgctxt "Disk I/O total time spent on read/write"
+msgid "I/O Time"
+msgstr "Czas I/O"
+
+#: src/components/routes/system/charts/disk-charts.tsx
+msgctxt "Percent of time the disk is busy with I/O"
+msgid "I/O Utilization"
+msgstr "Użycie I/O"
 
 #. Context: Battery state
 #: src/lib/i18n.ts
@@ -1200,12 +1228,16 @@ msgstr "Wstrzymane ({pausedSystemsLength})"
 
 #: src/components/routes/settings/heartbeat.tsx
 msgid "Payload format"
-msgstr "Format ładunku"
+msgstr "Format payload'u"
 
 #: src/components/routes/system/cpu-sheet.tsx
 #: src/components/routes/system/cpu-sheet.tsx
 msgid "Per-core average utilization"
 msgstr "Średnie wykorzystanie na rdzeń"
+
+#: src/components/routes/system/charts/disk-charts.tsx
+msgid "Percent of time the disk is busy with I/O"
+msgstr "Procent czasu, w którym dysk jest zajęty operacjami I/O"
 
 #: src/components/routes/system/cpu-sheet.tsx
 msgid "Percentage of time spent in each state"
@@ -1259,7 +1291,7 @@ msgstr ""
 #: src/components/containers-table/containers-table-columns.tsx
 msgctxt "Container ports"
 msgid "Ports"
-msgstr ""
+msgstr "Porty"
 
 #. Power On Time
 #: src/components/routes/system/smart-table.tsx
@@ -1284,13 +1316,20 @@ msgstr "Proces uruchomiony"
 msgid "Public Key"
 msgstr "Klucz publiczny"
 
+#: src/components/routes/system/disk-io-sheet.tsx
+msgctxt "Disk I/O average queue depth"
+msgid "Queue Depth"
+msgstr "Głębokość kolejki"
+
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Quiet Hours"
 msgstr "Godziny ciszy"
 
 #. Disk read
 #: src/components/routes/system/charts/disk-charts.tsx
-#: src/components/routes/system/charts/extra-fs-charts.tsx
+#: src/components/routes/system/disk-io-sheet.tsx
+#: src/components/routes/system/disk-io-sheet.tsx
+#: src/components/routes/system/disk-io-sheet.tsx
 msgid "Read"
 msgstr "Odczyt"
 
@@ -1422,7 +1461,7 @@ msgstr "Wyślij pojedynczy ping heartbeat, aby sprawdzić, czy punkt końcowy dz
 
 #: src/components/routes/settings/heartbeat.tsx
 msgid "Send periodic outbound pings to an external monitoring service so you can monitor Beszel without exposing it to the internet."
-msgstr "Wysyłaj okresowe pingi wychodzące do zewnętrznej usługi monitorowania, dzięki czemu możesz monitorować Beszel bez wystawiania go na działanie Internetu."
+msgstr "Wysyłaj cyklicznie pingi wychodzące do zewnętrznej usługi monitorowania, co pozwala monitorować Beszel bez potrzeby udostępniania go publicznie w sieci."
 
 #: src/components/routes/settings/heartbeat.tsx
 msgid "Send test heartbeat"
@@ -1549,7 +1588,7 @@ msgstr "Tabela"
 #: src/components/routes/system/info-bar.tsx
 msgctxt "Tabs system layout option"
 msgid "Tabs"
-msgstr ""
+msgstr "Karty"
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Tasks"
@@ -1588,7 +1627,7 @@ msgstr "Testowe powiadomienie wysłane."
 
 #: src/components/routes/settings/heartbeat.tsx
 msgid "The overall status is <0>ok</0> when all systems are up, <1>warn</1> when alerts are triggered, and <2>error</2> when any system is down."
-msgstr "Ogólny status to <0>ok</0>, gdy wszystkie systemy działają, <1>ostrzeżenie</1>, gdy wyzwalane są alerty, oraz <2>błąd</2>, gdy którykolwiek system nie działa."
+msgstr "Ogólny status to <0>ok</0>, gdy wszystkie systemy działają, <1>ostrzeżenie</1>, gdy wyzwalane są alerty, oraz <2>błąd</2>, gdy którykolwiek z systemów nie działa."
 
 #: src/components/login/forgot-pass-form.tsx
 msgid "Then log into the backend and reset your user account password in the users table."
@@ -1602,7 +1641,7 @@ msgstr "Tej akcji nie można cofnąć. Spowoduje to trwałe usunięcie wszystkic
 msgid "This will permanently delete all selected records from the database."
 msgstr "Spowoduje to trwałe usunięcie wszystkich zaznaczonych rekordów z bazy danych."
 
-#: src/components/routes/system/charts/extra-fs-charts.tsx
+#: src/components/routes/system/charts/disk-charts.tsx
 msgid "Throughput of {extraFsName}"
 msgstr "Przepustowość {extraFsName}"
 
@@ -1654,6 +1693,11 @@ msgstr "Całkowita ilość danych odebranych dla każdego interfejsu"
 #: src/components/routes/system/network-sheet.tsx
 msgid "Total data sent for each interface"
 msgstr "Całkowita ilość danych wysłanych dla każdego interfejsu"
+
+#: src/components/routes/system/disk-io-sheet.tsx
+msgctxt "Disk I/O"
+msgid "Total time spent on read/write (can exceed 100%)"
+msgstr ""
 
 #. placeholder {0}: data.length
 #: src/components/systemd-table/systemd-table.tsx
@@ -1775,7 +1819,7 @@ msgstr "Wysyłanie"
 msgid "Uptime"
 msgstr "Czas pracy"
 
-#: src/components/routes/system/charts/extra-fs-charts.tsx
+#: src/components/routes/system/charts/disk-charts.tsx
 #: src/components/routes/system/charts/gpu-charts.tsx
 #: src/components/routes/system/charts/gpu-charts.tsx
 #: src/components/routes/system/charts/gpu-charts.tsx
@@ -1797,6 +1841,11 @@ msgstr "Używane"
 msgid "Users"
 msgstr "Użytkownicy"
 
+#: src/components/routes/system/charts/disk-charts.tsx
+msgctxt "Disk I/O utilization"
+msgid "Utilization"
+msgstr "Użycie"
+
 #: src/components/alerts-history-columns.tsx
 msgid "Value"
 msgstr "Wartość"
@@ -1806,6 +1855,7 @@ msgid "View"
 msgstr "Widok"
 
 #: src/components/routes/system/cpu-sheet.tsx
+#: src/components/routes/system/disk-io-sheet.tsx
 #: src/components/routes/system/network-sheet.tsx
 msgid "View more"
 msgstr "Zobacz więcej"
@@ -1848,7 +1898,7 @@ msgstr "Gdy jest włączony, ten token pozwala agentom na samodzielną rejestrac
 
 #: src/components/routes/settings/heartbeat.tsx
 msgid "When using POST, each heartbeat includes a JSON payload with system status summary, list of down systems, and triggered alerts."
-msgstr "W przypadku korzystania z POST każdy heartbeat zawiera ładunek JSON z podsumowaniem statusu systemu, listą wyłączonych systemów i wyzwolonymi alertami."
+msgstr "Przy użyciu metody POST każdy heartbeat zawiera payload JSON z podsumowaniem statusu systemu, listą niedostępnych systemów i wywołanymi alertami."
 
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
@@ -1858,7 +1908,9 @@ msgstr "Polecenie Windows"
 
 #. Disk write
 #: src/components/routes/system/charts/disk-charts.tsx
-#: src/components/routes/system/charts/extra-fs-charts.tsx
+#: src/components/routes/system/disk-io-sheet.tsx
+#: src/components/routes/system/disk-io-sheet.tsx
+#: src/components/routes/system/disk-io-sheet.tsx
 msgid "Write"
 msgstr "Zapis"
 
