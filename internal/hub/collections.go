@@ -1,6 +1,9 @@
 package hub
 
-import "github.com/pocketbase/pocketbase/core"
+import (
+	"github.com/henrygd/beszel/internal/hub/utils"
+	"github.com/pocketbase/pocketbase/core"
+)
 
 type collectionRules struct {
 	list   *string
@@ -22,11 +25,11 @@ func setCollectionAuthSettings(app core.App) error {
 	}
 
 	// disable email auth if DISABLE_PASSWORD_AUTH env var is set
-	disablePasswordAuth, _ := GetEnv("DISABLE_PASSWORD_AUTH")
+	disablePasswordAuth, _ := utils.GetEnv("DISABLE_PASSWORD_AUTH")
 	usersCollection.PasswordAuth.Enabled = disablePasswordAuth != "true"
 	usersCollection.PasswordAuth.IdentityFields = []string{"email"}
 	// allow oauth user creation if USER_CREATION is set
-	if userCreation, _ := GetEnv("USER_CREATION"); userCreation == "true" {
+	if userCreation, _ := utils.GetEnv("USER_CREATION"); userCreation == "true" {
 		cr := "@request.context = 'oauth2'"
 		usersCollection.CreateRule = &cr
 	} else {
@@ -34,7 +37,7 @@ func setCollectionAuthSettings(app core.App) error {
 	}
 
 	// enable mfaOtp mfa if MFA_OTP env var is set
-	mfaOtp, _ := GetEnv("MFA_OTP")
+	mfaOtp, _ := utils.GetEnv("MFA_OTP")
 	usersCollection.OTP.Length = 6
 	superusersCollection.OTP.Length = 6
 	usersCollection.OTP.Enabled = mfaOtp == "true"
@@ -50,7 +53,7 @@ func setCollectionAuthSettings(app core.App) error {
 
 	// When SHARE_ALL_SYSTEMS is enabled, any authenticated user can read
 	// system-scoped data. Write rules continue to block readonly users.
-	shareAllSystems, _ := GetEnv("SHARE_ALL_SYSTEMS")
+	shareAllSystems, _ := utils.GetEnv("SHARE_ALL_SYSTEMS")
 
 	authenticatedRule := "@request.auth.id != \"\""
 	systemsMemberRule := authenticatedRule + " && users.id ?= @request.auth.id"
