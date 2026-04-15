@@ -3,11 +3,8 @@ package records
 
 import (
 	"encoding/json"
-	"fmt"
 	"log"
-	"log/slog"
 	"math"
-	"strings"
 	"time"
 
 	"github.com/henrygd/beszel/internal/entities/container"
@@ -39,16 +36,6 @@ func NewRecordManager(app core.App) *RecordManager {
 type StatsRecord struct {
 	Stats []byte `db:"stats"`
 }
-
-// global variables for reusing allocations
-var (
-	statsRecord    StatsRecord
-	containerStats []container.Stats
-	sumStats       system.Stats
-	tempStats      system.Stats
-	queryParams    = make(dbx.Params, 1)
-	containerSums  = make(map[string]*container.Stats)
-)
 
 // Create longer records by averaging shorter records
 func (rm *RecordManager) CreateLongerRecords() {
@@ -164,41 +151,47 @@ func (rm *RecordManager) CreateLongerRecords() {
 		return nil
 	})
 
-	statsRecord.Stats = statsRecord.Stats[:0]
-
 	// log.Println("finished creating longer records", "time (ms)", time.Since(start).Milliseconds())
 }
 
 // Calculate the average stats of a list of system_stats records without reflect
 func (rm *RecordManager) AverageSystemStats(db dbx.Builder, records RecordIds) *system.Stats {
-	// Clear/reset global structs for reuse
-	sumStats = system.Stats{}
-	tempStats = system.Stats{}
-	sum := &sumStats
-	stats := &tempStats
+	stats := make([]system.Stats, 0, len(records))
+	var row StatsRecord
+	params := make(dbx.Params, 1)
+	for _, rec := range records {
+		row.Stats = row.Stats[:0]
+		params["id"] = rec.Id
+		db.NewQuery("SELECT stats FROM system_stats WHERE id = {:id}").Bind(params).One(&row)
+		var s system.Stats
+		if err := json.Unmarshal(row.Stats, &s); err != nil {
+			continue
+		}
+		stats = append(stats, s)
+	}
+	result := AverageSystemStatsSlice(stats)
+	return &result
+}
+
+// AverageSystemStatsSlice computes the average of a slice of system stats.
+func AverageSystemStatsSlice(records []system.Stats) system.Stats {
+	var sum system.Stats
+	count := float64(len(records))
+	if count == 0 {
+		return sum
+	}
+
 	// necessary because uint8 is not big enough for the sum
 	batterySum := 0
 	// accumulate per-core usage across records
 	var cpuCoresSums []uint64
 	// accumulate cpu breakdown [user, system, iowait, steal, idle]
 	var cpuBreakdownSums []float64
-
-	count := float64(len(records))
 	tempCount := float64(0)
 
 	// Accumulate totals
-	for _, record := range records {
-		id := record.Id
-		// clear global statsRecord for reuse
-		statsRecord.Stats = statsRecord.Stats[:0]
-		// reset tempStats each iteration to avoid omitzero fields retaining stale values
-		*stats = system.Stats{}
-
-		queryParams["id"] = id
-		db.NewQuery("SELECT stats FROM system_stats WHERE id = {:id}").Bind(queryParams).One(&statsRecord)
-		if err := json.Unmarshal(statsRecord.Stats, stats); err != nil {
-			continue
-		}
+	for i := range records {
+		stats := &records[i]
 
 		sum.Cpu += stats.Cpu
 		// accumulate cpu time breakdowns if present
@@ -206,8 +199,8 @@ func (rm *RecordManager) AverageSystemStats(db dbx.Builder, records RecordIds) *
 			if len(cpuBreakdownSums) < len(stats.CpuBreakdown) {
 				cpuBreakdownSums = append(cpuBreakdownSums, make([]float64, len(stats.CpuBreakdown)-len(cpuBreakdownSums))...)
 			}
-			for i, v := range stats.CpuBreakdown {
-				cpuBreakdownSums[i] += v
+			for j, v := range stats.CpuBreakdown {
+				cpuBreakdownSums[j] += v
 			}
 		}
 		sum.Mem += stats.Mem
@@ -243,8 +236,8 @@ func (rm *RecordManager) AverageSystemStats(db dbx.Builder, records RecordIds) *
 				// extend slices to accommodate core count
 				cpuCoresSums = append(cpuCoresSums, make([]uint64, len(stats.CpuCoresUsage)-len(cpuCoresSums))...)
 			}
-			for i, v := range stats.CpuCoresUsage {
-				cpuCoresSums[i] += uint64(v)
+			for j, v := range stats.CpuCoresUsage {
+				cpuCoresSums[j] += uint64(v)
 			}
 		}
 		// Set peak values
@@ -344,109 +337,107 @@ func (rm *RecordManager) AverageSystemStats(db dbx.Builder, records RecordIds) *
 		}
 	}
 
-	// Compute averages in place
-	if count > 0 {
-		sum.Cpu = twoDecimals(sum.Cpu / count)
-		sum.Mem = twoDecimals(sum.Mem / count)
-		sum.MemUsed = twoDecimals(sum.MemUsed / count)
-		sum.MemPct = twoDecimals(sum.MemPct / count)
-		sum.MemBuffCache = twoDecimals(sum.MemBuffCache / count)
-		sum.MemZfsArc = twoDecimals(sum.MemZfsArc / count)
-		sum.Swap = twoDecimals(sum.Swap / count)
-		sum.SwapUsed = twoDecimals(sum.SwapUsed / count)
-		sum.DiskTotal = twoDecimals(sum.DiskTotal / count)
-		sum.DiskUsed = twoDecimals(sum.DiskUsed / count)
-		sum.DiskPct = twoDecimals(sum.DiskPct / count)
-		sum.DiskReadPs = twoDecimals(sum.DiskReadPs / count)
-		sum.DiskWritePs = twoDecimals(sum.DiskWritePs / count)
-		sum.DiskIO[0] = sum.DiskIO[0] / uint64(count)
-		sum.DiskIO[1] = sum.DiskIO[1] / uint64(count)
-		for i := range sum.DiskIoStats {
-			sum.DiskIoStats[i] = twoDecimals(sum.DiskIoStats[i] / count)
-		}
-		sum.NetworkSent = twoDecimals(sum.NetworkSent / count)
-		sum.NetworkRecv = twoDecimals(sum.NetworkRecv / count)
-		sum.LoadAvg[0] = twoDecimals(sum.LoadAvg[0] / count)
-		sum.LoadAvg[1] = twoDecimals(sum.LoadAvg[1] / count)
-		sum.LoadAvg[2] = twoDecimals(sum.LoadAvg[2] / count)
-		sum.Bandwidth[0] = sum.Bandwidth[0] / uint64(count)
-		sum.Bandwidth[1] = sum.Bandwidth[1] / uint64(count)
-		sum.Battery[0] = uint8(batterySum / int(count))
+	// Compute averages
+	sum.Cpu = twoDecimals(sum.Cpu / count)
+	sum.Mem = twoDecimals(sum.Mem / count)
+	sum.MemUsed = twoDecimals(sum.MemUsed / count)
+	sum.MemPct = twoDecimals(sum.MemPct / count)
+	sum.MemBuffCache = twoDecimals(sum.MemBuffCache / count)
+	sum.MemZfsArc = twoDecimals(sum.MemZfsArc / count)
+	sum.Swap = twoDecimals(sum.Swap / count)
+	sum.SwapUsed = twoDecimals(sum.SwapUsed / count)
+	sum.DiskTotal = twoDecimals(sum.DiskTotal / count)
+	sum.DiskUsed = twoDecimals(sum.DiskUsed / count)
+	sum.DiskPct = twoDecimals(sum.DiskPct / count)
+	sum.DiskReadPs = twoDecimals(sum.DiskReadPs / count)
+	sum.DiskWritePs = twoDecimals(sum.DiskWritePs / count)
+	sum.DiskIO[0] = sum.DiskIO[0] / uint64(count)
+	sum.DiskIO[1] = sum.DiskIO[1] / uint64(count)
+	for i := range sum.DiskIoStats {
+		sum.DiskIoStats[i] = twoDecimals(sum.DiskIoStats[i] / count)
+	}
+	sum.NetworkSent = twoDecimals(sum.NetworkSent / count)
+	sum.NetworkRecv = twoDecimals(sum.NetworkRecv / count)
+	sum.LoadAvg[0] = twoDecimals(sum.LoadAvg[0] / count)
+	sum.LoadAvg[1] = twoDecimals(sum.LoadAvg[1] / count)
+	sum.LoadAvg[2] = twoDecimals(sum.LoadAvg[2] / count)
+	sum.Bandwidth[0] = sum.Bandwidth[0] / uint64(count)
+	sum.Bandwidth[1] = sum.Bandwidth[1] / uint64(count)
+	sum.Battery[0] = uint8(batterySum / int(count))
 
-		// Average network interfaces
-		if sum.NetworkInterfaces != nil {
-			for key := range sum.NetworkInterfaces {
-				sum.NetworkInterfaces[key] = [4]uint64{
-					sum.NetworkInterfaces[key][0] / uint64(count),
-					sum.NetworkInterfaces[key][1] / uint64(count),
-					sum.NetworkInterfaces[key][2],
-					sum.NetworkInterfaces[key][3],
+	// Average network interfaces
+	if sum.NetworkInterfaces != nil {
+		for key := range sum.NetworkInterfaces {
+			sum.NetworkInterfaces[key] = [4]uint64{
+				sum.NetworkInterfaces[key][0] / uint64(count),
+				sum.NetworkInterfaces[key][1] / uint64(count),
+				sum.NetworkInterfaces[key][2],
+				sum.NetworkInterfaces[key][3],
+			}
+		}
+	}
+
+	// Average temperatures
+	if sum.Temperatures != nil && tempCount > 0 {
+		for key := range sum.Temperatures {
+			sum.Temperatures[key] = twoDecimals(sum.Temperatures[key] / tempCount)
+		}
+	}
+
+	// Average extra filesystem stats
+	if sum.ExtraFs != nil {
+		for key := range sum.ExtraFs {
+			fs := sum.ExtraFs[key]
+			fs.DiskTotal = twoDecimals(fs.DiskTotal / count)
+			fs.DiskUsed = twoDecimals(fs.DiskUsed / count)
+			fs.DiskWritePs = twoDecimals(fs.DiskWritePs / count)
+			fs.DiskReadPs = twoDecimals(fs.DiskReadPs / count)
+			fs.DiskReadBytes = fs.DiskReadBytes / uint64(count)
+			fs.DiskWriteBytes = fs.DiskWriteBytes / uint64(count)
+			for i := range fs.DiskIoStats {
+				fs.DiskIoStats[i] = twoDecimals(fs.DiskIoStats[i] / count)
+			}
+		}
+	}
+
+	// Average GPU data
+	if sum.GPUData != nil {
+		for id := range sum.GPUData {
+			gpu := sum.GPUData[id]
+			gpu.Temperature = twoDecimals(gpu.Temperature / count)
+			gpu.MemoryUsed = twoDecimals(gpu.MemoryUsed / count)
+			gpu.MemoryTotal = twoDecimals(gpu.MemoryTotal / count)
+			gpu.Usage = twoDecimals(gpu.Usage / count)
+			gpu.Power = twoDecimals(gpu.Power / count)
+			gpu.Count = twoDecimals(gpu.Count / count)
+
+			if gpu.Engines != nil {
+				for engineKey := range gpu.Engines {
+					gpu.Engines[engineKey] = twoDecimals(gpu.Engines[engineKey] / count)
 				}
 			}
+
+			sum.GPUData[id] = gpu
 		}
+	}
 
-		// Average temperatures
-		if sum.Temperatures != nil && tempCount > 0 {
-			for key := range sum.Temperatures {
-				sum.Temperatures[key] = twoDecimals(sum.Temperatures[key] / tempCount)
-			}
+	// Average per-core usage
+	if len(cpuCoresSums) > 0 {
+		avg := make(system.Uint8Slice, len(cpuCoresSums))
+		for i := range cpuCoresSums {
+			v := math.Round(float64(cpuCoresSums[i]) / count)
+			avg[i] = uint8(v)
 		}
+		sum.CpuCoresUsage = avg
+	}
 
-		// Average extra filesystem stats
-		if sum.ExtraFs != nil {
-			for key := range sum.ExtraFs {
-				fs := sum.ExtraFs[key]
-				fs.DiskTotal = twoDecimals(fs.DiskTotal / count)
-				fs.DiskUsed = twoDecimals(fs.DiskUsed / count)
-				fs.DiskWritePs = twoDecimals(fs.DiskWritePs / count)
-				fs.DiskReadPs = twoDecimals(fs.DiskReadPs / count)
-				fs.DiskReadBytes = fs.DiskReadBytes / uint64(count)
-				fs.DiskWriteBytes = fs.DiskWriteBytes / uint64(count)
-				for i := range fs.DiskIoStats {
-					fs.DiskIoStats[i] = twoDecimals(fs.DiskIoStats[i] / count)
-				}
-			}
+	// Average CPU breakdown
+	if len(cpuBreakdownSums) > 0 {
+		avg := make([]float64, len(cpuBreakdownSums))
+		for i := range cpuBreakdownSums {
+			avg[i] = twoDecimals(cpuBreakdownSums[i] / count)
 		}
-
-		// Average GPU data
-		if sum.GPUData != nil {
-			for id := range sum.GPUData {
-				gpu := sum.GPUData[id]
-				gpu.Temperature = twoDecimals(gpu.Temperature / count)
-				gpu.MemoryUsed = twoDecimals(gpu.MemoryUsed / count)
-				gpu.MemoryTotal = twoDecimals(gpu.MemoryTotal / count)
-				gpu.Usage = twoDecimals(gpu.Usage / count)
-				gpu.Power = twoDecimals(gpu.Power / count)
-				gpu.Count = twoDecimals(gpu.Count / count)
-
-				if gpu.Engines != nil {
-					for engineKey := range gpu.Engines {
-						gpu.Engines[engineKey] = twoDecimals(gpu.Engines[engineKey] / count)
-					}
-				}
-
-				sum.GPUData[id] = gpu
-			}
-		}
-
-		// Average per-core usage
-		if len(cpuCoresSums) > 0 {
-			avg := make(system.Uint8Slice, len(cpuCoresSums))
-			for i := range cpuCoresSums {
-				v := math.Round(float64(cpuCoresSums[i]) / count)
-				avg[i] = uint8(v)
-			}
-			sum.CpuCoresUsage = avg
-		}
-
-		// Average CPU breakdown
-		if len(cpuBreakdownSums) > 0 {
-			avg := make([]float64, len(cpuBreakdownSums))
-			for i := range cpuBreakdownSums {
-				avg[i] = twoDecimals(cpuBreakdownSums[i] / count)
-			}
-			sum.CpuBreakdown = avg
-		}
+		sum.CpuBreakdown = avg
 	}
 
 	return sum
@@ -454,29 +445,33 @@ func (rm *RecordManager) AverageSystemStats(db dbx.Builder, records RecordIds) *
 
 // Calculate the average stats of a list of container_stats records
 func (rm *RecordManager) AverageContainerStats(db dbx.Builder, records RecordIds) []container.Stats {
-	// Clear global map for reuse
-	for k := range containerSums {
-		delete(containerSums, k)
-	}
-	sums := containerSums
-	count := float64(len(records))
-
-	for i := range records {
-		id := records[i].Id
-		// clear global statsRecord for reuse
-		statsRecord.Stats = statsRecord.Stats[:0]
-		// must set to nil (not [:0]) to avoid json.Unmarshal reusing backing array
-		// which causes omitzero fields to inherit stale values from previous iterations
-		containerStats = nil
-
-		queryParams["id"] = id
-		db.NewQuery("SELECT stats FROM container_stats WHERE id = {:id}").Bind(queryParams).One(&statsRecord)
-
-		if err := json.Unmarshal(statsRecord.Stats, &containerStats); err != nil {
+	allStats := make([][]container.Stats, 0, len(records))
+	var row StatsRecord
+	params := make(dbx.Params, 1)
+	for _, rec := range records {
+		row.Stats = row.Stats[:0]
+		params["id"] = rec.Id
+		db.NewQuery("SELECT stats FROM container_stats WHERE id = {:id}").Bind(params).One(&row)
+		var cs []container.Stats
+		if err := json.Unmarshal(row.Stats, &cs); err != nil {
 			return []container.Stats{}
 		}
+		allStats = append(allStats, cs)
+	}
+	return AverageContainerStatsSlice(allStats)
+}
+
+// AverageContainerStatsSlice computes the average of container stats across multiple time periods.
+func AverageContainerStatsSlice(records [][]container.Stats) []container.Stats {
+	if len(records) == 0 {
+		return []container.Stats{}
+	}
+	sums := make(map[string]*container.Stats)
+	count := float64(len(records))
+
+	for _, containerStats := range records {
 		for i := range containerStats {
-			stat := containerStats[i]
+			stat := &containerStats[i]
 			if _, ok := sums[stat.Name]; !ok {
 				sums[stat.Name] = &container.Stats{Name: stat.Name}
 			}
@@ -503,133 +498,6 @@ func (rm *RecordManager) AverageContainerStats(db dbx.Builder, records RecordIds
 		})
 	}
 	return result
-}
-
-// Delete old records
-func (rm *RecordManager) DeleteOldRecords() {
-	rm.app.RunInTransaction(func(txApp core.App) error {
-		err := deleteOldSystemStats(txApp)
-		if err != nil {
-			slog.Error("Error deleting old system stats", "err", err)
-		}
-		err = deleteOldContainerRecords(txApp)
-		if err != nil {
-			slog.Error("Error deleting old container records", "err", err)
-		}
-		err = deleteOldSystemdServiceRecords(txApp)
-		if err != nil {
-			slog.Error("Error deleting old systemd service records", "err", err)
-		}
-		err = deleteOldAlertsHistory(txApp, 200, 250)
-		if err != nil {
-			slog.Error("Error deleting old alerts history", "err", err)
-		}
-		err = deleteOldQuietHours(txApp)
-		if err != nil {
-			slog.Error("Error deleting old quiet hours", "err", err)
-		}
-		return nil
-	})
-}
-
-// Delete old alerts history records
-func deleteOldAlertsHistory(app core.App, countToKeep, countBeforeDeletion int) error {
-	db := app.DB()
-	var users []struct {
-		Id string `db:"user"`
-	}
-	err := db.NewQuery("SELECT user, COUNT(*) as count FROM alerts_history GROUP BY user HAVING count > {:countBeforeDeletion}").Bind(dbx.Params{"countBeforeDeletion": countBeforeDeletion}).All(&users)
-	if err != nil {
-		return err
-	}
-	for _, user := range users {
-		_, err = db.NewQuery("DELETE FROM alerts_history WHERE user = {:user} AND id NOT IN (SELECT id FROM alerts_history WHERE user = {:user} ORDER BY created DESC LIMIT {:countToKeep})").Bind(dbx.Params{"user": user.Id, "countToKeep": countToKeep}).Execute()
-		if err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
-// Deletes system_stats records older than what is displayed in the UI
-func deleteOldSystemStats(app core.App) error {
-	// Collections to process
-	collections := [2]string{"system_stats", "container_stats"}
-
-	// Record types and their retention periods
-	type RecordDeletionData struct {
-		recordType string
-		retention  time.Duration
-	}
-	recordData := []RecordDeletionData{
-		{recordType: "1m", retention: time.Hour},             // 1 hour
-		{recordType: "10m", retention: 12 * time.Hour},       // 12 hours
-		{recordType: "20m", retention: 24 * time.Hour},       // 1 day
-		{recordType: "120m", retention: 7 * 24 * time.Hour},  // 7 days
-		{recordType: "480m", retention: 30 * 24 * time.Hour}, // 30 days
-	}
-
-	now := time.Now().UTC()
-
-	for _, collection := range collections {
-		// Build the WHERE clause
-		var conditionParts []string
-		var params dbx.Params = make(map[string]any)
-		for i := range recordData {
-			rd := recordData[i]
-			// Create parameterized condition for this record type
-			dateParam := fmt.Sprintf("date%d", i)
-			conditionParts = append(conditionParts, fmt.Sprintf("(type = '%s' AND created < {:%s})", rd.recordType, dateParam))
-			params[dateParam] = now.Add(-rd.retention)
-		}
-		// Combine conditions with OR
-		conditionStr := strings.Join(conditionParts, " OR ")
-		// Construct and execute the full raw query
-		rawQuery := fmt.Sprintf("DELETE FROM %s WHERE %s", collection, conditionStr)
-		if _, err := app.DB().NewQuery(rawQuery).Bind(params).Execute(); err != nil {
-			return fmt.Errorf("failed to delete from %s: %v", collection, err)
-		}
-	}
-	return nil
-}
-
-// Deletes systemd service records that haven't been updated in the last 20 minutes
-func deleteOldSystemdServiceRecords(app core.App) error {
-	now := time.Now().UTC()
-	twentyMinutesAgo := now.Add(-20 * time.Minute)
-
-	// Delete systemd service records where updated < twentyMinutesAgo
-	_, err := app.DB().NewQuery("DELETE FROM systemd_services WHERE updated < {:updated}").Bind(dbx.Params{"updated": twentyMinutesAgo.UnixMilli()}).Execute()
-	if err != nil {
-		return fmt.Errorf("failed to delete old systemd service records: %v", err)
-	}
-
-	return nil
-}
-
-// Deletes container records that haven't been updated in the last 10 minutes
-func deleteOldContainerRecords(app core.App) error {
-	now := time.Now().UTC()
-	tenMinutesAgo := now.Add(-10 * time.Minute)
-
-	// Delete container records where updated < tenMinutesAgo
-	_, err := app.DB().NewQuery("DELETE FROM containers WHERE updated < {:updated}").Bind(dbx.Params{"updated": tenMinutesAgo.UnixMilli()}).Execute()
-	if err != nil {
-		return fmt.Errorf("failed to delete old container records: %v", err)
-	}
-
-	return nil
-}
-
-// Deletes old quiet hours records where end date has passed
-func deleteOldQuietHours(app core.App) error {
-	now := time.Now().UTC()
-	_, err := app.DB().NewQuery("DELETE FROM quiet_hours WHERE type = 'one-time' AND end < {:now}").Bind(dbx.Params{"now": now}).Execute()
-	if err != nil {
-		return err
-	}
-
-	return nil
 }
 
 /* Round float to two decimals */
