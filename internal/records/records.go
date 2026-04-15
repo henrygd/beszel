@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"log/slog"
 	"math"
 	"strings"
 	"time"
@@ -509,23 +510,23 @@ func (rm *RecordManager) DeleteOldRecords() {
 	rm.app.RunInTransaction(func(txApp core.App) error {
 		err := deleteOldSystemStats(txApp)
 		if err != nil {
-			return err
+			slog.Error("Error deleting old system stats", "err", err)
 		}
 		err = deleteOldContainerRecords(txApp)
 		if err != nil {
-			return err
+			slog.Error("Error deleting old container records", "err", err)
 		}
 		err = deleteOldSystemdServiceRecords(txApp)
 		if err != nil {
-			return err
+			slog.Error("Error deleting old systemd service records", "err", err)
 		}
 		err = deleteOldAlertsHistory(txApp, 200, 250)
 		if err != nil {
-			return err
+			slog.Error("Error deleting old alerts history", "err", err)
 		}
 		err = deleteOldQuietHours(txApp)
 		if err != nil {
-			return err
+			slog.Error("Error deleting old quiet hours", "err", err)
 		}
 		return nil
 	})
