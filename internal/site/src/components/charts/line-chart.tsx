@@ -40,8 +40,8 @@ export default function LineChartDefault({
 	hideYAxis = false,
 	filter,
 	truncate = false,
-}: // logRender = false,
-{
+	chartProps,
+}: {
 	chartData: ChartData
 	// biome-ignore lint/suspicious/noExplicitAny: accepts different data source types (systemStats or containerData)
 	customData?: any[]
@@ -61,7 +61,7 @@ export default function LineChartDefault({
 	hideYAxis?: boolean
 	filter?: string
 	truncate?: boolean
-	// logRender?: boolean
+	chartProps?: Omit<React.ComponentProps<typeof LineChart>, "data" | "margin">
 }) {
 	const { yAxisWidth, updateYAxisWidth } = useYAxisWidth()
 	const { isIntersecting, ref } = useIntersectionObserver({ freeze: false })
@@ -130,6 +130,7 @@ export default function LineChartDefault({
 					accessibilityLayer
 					data={displayData}
 					margin={hideYAxis ? { ...chartMargin, left: 5 } : chartMargin}
+					{...chartProps}
 				>
 					<CartesianGrid vertical={false} />
 					{!hideYAxis && (

@@ -5,16 +5,16 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: @lingui/cli\n"
-"Language: de\n"
+"Language: ro\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
 "PO-Revision-Date: 2026-04-05 18:27\n"
 "Last-Translator: \n"
-"Language-Team: German\n"
-"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"Language-Team: Romanian\n"
+"Plural-Forms: nplurals=3; plural=(n==1 ? 0 : (n==0 || (n%100>0 && n%100<20)) ? 1 : 2);\n"
 "X-Crowdin-Project: beszel\n"
 "X-Crowdin-Project-ID: 733311\n"
-"X-Crowdin-Language: de\n"
+"X-Crowdin-Language: ro\n"
 "X-Crowdin-File: /main/internal/site/src/locales/en/en.po\n"
 "X-Crowdin-File-ID: 32\n"
 
@@ -22,72 +22,72 @@ msgstr ""
 #: src/components/footer-repo-link.tsx
 msgctxt "New version available"
 msgid "{0} available"
-msgstr "{0} verfügbar"
+msgstr ""
 
 #. placeholder {0}: table.getFilteredSelectedRowModel().rows.length
 #. placeholder {1}: table.getFilteredRowModel().rows.length
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "{0} of {1} row(s) selected."
-msgstr "{0} von {1} Zeile(n) ausgewählt."
+msgstr ""
 
 #: src/components/routes/system/info-bar.tsx
 msgid "{cores, plural, one {# core} other {# cores}}"
-msgstr "{cores, plural, one {# Kern} other {# Kerne}}"
+msgstr ""
 
 #: src/lib/utils.ts
 msgid "{count, plural, one {{countString} day} other {{countString} days}}"
-msgstr "{count, plural, one {{countString} Tag} other {{countString} Tage}}"
+msgstr ""
 
 #: src/lib/utils.ts
 msgid "{count, plural, one {{countString} hour} other {{countString} hours}}"
-msgstr "{count, plural, one {{countString} Stunde} other {{countString} Stunden}}"
+msgstr ""
 
 #: src/lib/utils.ts
 msgid "{count, plural, one {{countString} minute} few {{countString} minutes} many {{countString} minutes} other {{countString} minutes}}"
-msgstr "{count, plural, one {{countString} Minute} other {{countString} Minuten}}"
+msgstr ""
 
 #: src/components/routes/system/info-bar.tsx
 msgid "{threads, plural, one {# thread} other {# threads}}"
-msgstr "{threads, plural, one {# Thread} other {# Threads}}"
+msgstr ""
 
 #: src/lib/utils.ts
 msgid "1 hour"
-msgstr "1 Stunde"
+msgstr "1 oră"
 
 #. Load average
 #: src/components/routes/system/charts/load-average-chart.tsx
 msgid "1 min"
-msgstr "1 Min"
+msgstr ""
 
 #: src/lib/utils.ts
 msgid "1 minute"
-msgstr "1 Minute"
+msgstr "1 minut"
 
 #: src/lib/utils.ts
 msgid "1 week"
-msgstr "1 Woche"
+msgstr "1 săptămână"
 
 #: src/lib/utils.ts
 msgid "12 hours"
-msgstr "12 Stunden"
+msgstr "12 ore"
 
 #. Load average
 #: src/components/routes/system/charts/load-average-chart.tsx
 msgid "15 min"
-msgstr "15 Min"
+msgstr ""
 
 #: src/lib/utils.ts
 msgid "24 hours"
-msgstr "24 Stunden"
+msgstr "24 ore"
 
 #: src/lib/utils.ts
 msgid "30 days"
-msgstr "30 Tage"
+msgstr "30 zile"
 
 #. Load average
 #: src/components/routes/system/charts/load-average-chart.tsx
 msgid "5 min"
-msgstr "5 Min"
+msgstr ""
 
 #. Table column
 #: src/components/routes/settings/quiet-hours.tsx
@@ -95,22 +95,22 @@ msgstr "5 Min"
 #: src/components/routes/system/smart-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Actions"
-msgstr "Aktionen"
+msgstr "Acțiuni"
 
 #: src/components/alerts-history-columns.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/settings/heartbeat.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Active"
-msgstr "Aktiv"
+msgstr "Activ"
 
 #: src/components/active-alerts.tsx
 msgid "Active Alerts"
-msgstr "Aktive Warnungen"
+msgstr "Alerte Active"
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Active state"
-msgstr "Aktiver Zustand"
+msgstr ""
 
 #: src/components/add-system.tsx
 #: src/components/add-system.tsx
@@ -119,19 +119,19 @@ msgstr "Aktiver Zustand"
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Add {foo}"
-msgstr "{foo} hinzufügen"
+msgstr ""
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Add URL"
-msgstr "URL hinzufügen"
+msgstr ""
 
 #: src/components/routes/settings/general.tsx
 msgid "Adjust display options for charts."
-msgstr "Anzeigeoptionen für Diagramme anpassen."
+msgstr ""
 
 #: src/components/routes/settings/general.tsx
 msgid "Adjust the width of the main layout"
-msgstr "Breite des Hauptlayouts anpassen"
+msgstr ""
 
 #: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
@@ -141,11 +141,11 @@ msgstr ""
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "After"
-msgstr "Nach"
+msgstr ""
 
 #: src/components/routes/settings/heartbeat.tsx
 msgid "After setting the environment variables, restart your Beszel hub for changes to take effect."
-msgstr "Starten Sie nach dem Festlegen der Umgebungsvariablen Ihren Beszel-Hub neu, damit die Änderungen wirksam werden."
+msgstr ""
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Agent"
@@ -155,12 +155,12 @@ msgstr ""
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/settings/layout.tsx
 msgid "Alert History"
-msgstr "Warnungsverlauf"
+msgstr "Istoric Alerte"
 
 #: src/components/alerts/alert-button.tsx
 #: src/components/alerts/alerts-sheet.tsx
 msgid "Alerts"
-msgstr "Warnungen"
+msgstr "Alerte"
 
 #: src/components/command-palette.tsx
 #: src/components/containers-table/containers-table.tsx
@@ -168,7 +168,7 @@ msgstr "Warnungen"
 #: src/components/navbar.tsx
 #: src/components/routes/containers.tsx
 msgid "All Containers"
-msgstr "Alle Container"
+msgstr ""
 
 #: src/components/alerts/alerts-sheet.tsx
 #: src/components/command-palette.tsx
@@ -177,63 +177,54 @@ msgstr "Alle Container"
 #: src/components/systems-table/systems-table.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "All Systems"
-msgstr "Alle Systeme"
+msgstr ""
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Are you sure you want to delete {name}?"
-msgstr "Möchtest du {name} wirklich löschen?"
+msgstr ""
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Are you sure?"
-msgstr "Bist du sicher?"
+msgstr "Ești sigur?"
 
 #: src/components/copy-to-clipboard.tsx
 msgid "Automatic copy requires a secure context."
-msgstr "Automatisches Kopieren erfordert einen sicheren Kontext."
+msgstr ""
 
 #: src/components/routes/system/chart-card.tsx
 msgid "Average"
-msgstr "Durchschnitt"
+msgstr ""
 
 #: src/components/routes/system/charts/cpu-charts.tsx
 msgid "Average CPU utilization of containers"
-msgstr "Durchschnittliche CPU-Auslastung der Container"
+msgstr ""
 
 #. placeholder {0}: alertData.unit
 #: src/components/alerts/alerts-sheet.tsx
 msgid "Average drops below <0>{value}{0}</0>"
-msgstr "Durchschnitt unterschreitet <0>{value}{0}</0>"
+msgstr ""
 
 #. placeholder {0}: alertData.unit
 #: src/components/alerts/alerts-sheet.tsx
 msgid "Average exceeds <0>{value}{0}</0>"
-msgstr "Durchschnitt überschreitet <0>{value}{0}</0>"
-
-#: src/components/routes/system/disk-io-sheet.tsx
-msgid "Average number of I/O operations waiting to be serviced"
-msgstr "Durchschnittliche Anzahl der auf Bearbeitung wartenden I/O-Operationen"
+msgstr ""
 
 #: src/components/routes/system/charts/gpu-charts.tsx
 msgid "Average power consumption of GPUs"
-msgstr "Durchschnittlicher Stromverbrauch der GPUs"
-
-#: src/components/routes/system/disk-io-sheet.tsx
-msgctxt "Disk I/O average operation time (iostat await)"
-msgid "Average queue to completion time per operation"
-msgstr "Durchschnittliche Warteschlangen- bis Abschlusszeit pro Operation"
+msgstr ""
 
 #: src/components/routes/system/charts/cpu-charts.tsx
 msgid "Average system-wide CPU utilization"
-msgstr "Durchschnittliche systemweite CPU-Auslastung"
+msgstr ""
 
 #. placeholder {0}: gpu.n
 #: src/components/routes/system/charts/gpu-charts.tsx
 msgid "Average utilization of {0}"
-msgstr "Durchschnittliche Auslastung von {0}"
+msgstr ""
 
 #: src/components/routes/system/charts/gpu-charts.tsx
 msgid "Average utilization of GPU engines"
-msgstr "Durchschnittliche Auslastung der GPU-Engines"
+msgstr ""
 
 #: src/components/command-palette.tsx
 #: src/components/navbar.tsx
@@ -243,48 +234,48 @@ msgstr ""
 #: src/components/routes/system/charts/network-charts.tsx
 #: src/lib/alerts.ts
 msgid "Bandwidth"
-msgstr "Bandbreite"
+msgstr "Trafic"
 
 #. Battery label in systems table header
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Bat"
-msgstr "Batt"
+msgstr ""
 
 #: src/components/routes/system/charts/sensor-charts.tsx
 #: src/lib/alerts.ts
 msgid "Battery"
-msgstr "Batterie"
+msgstr "Baterie"
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Became active"
-msgstr "Wurde aktiv"
+msgstr ""
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Became inactive"
-msgstr "Wurde inaktiv"
+msgstr ""
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Before"
-msgstr "Vor"
+msgstr "Înainte"
 
 #. placeholder {0}: alert.value
 #. placeholder {1}: info.unit
 #. placeholder {2}: alert.min
 #: src/components/active-alerts.tsx
 msgid "Below {0}{1} in last {2, plural, one {# minute} other {# minutes}}"
-msgstr "Unterschreitet {0}{1} in den letzten {2, plural, one {# Minute} other {# Minuten}}"
+msgstr ""
 
 #: src/components/login/auth-form.tsx
 msgid "Beszel supports OpenID Connect and many OAuth2 authentication providers."
-msgstr "Beszel unterstützt OpenID Connect und viele OAuth2-Authentifizierungsanbieter."
+msgstr ""
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Beszel uses <0>Shoutrrr</0> to integrate with popular notification services."
-msgstr "Beszel verwendet <0>Shoutrrr</0>, um sich mit beliebten Benachrichtigungsdiensten zu integrieren."
+msgstr ""
 
 #: src/components/add-system.tsx
 msgid "Binary"
-msgstr "Binär"
+msgstr "Binar"
 
 #: src/components/routes/settings/general.tsx
 #: src/components/routes/settings/general.tsx
@@ -293,7 +284,7 @@ msgstr ""
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Boot state"
-msgstr "Boot-Zustand"
+msgstr ""
 
 #: src/components/routes/settings/general.tsx
 #: src/components/routes/settings/general.tsx
@@ -302,37 +293,37 @@ msgstr ""
 
 #: src/components/routes/system/charts/memory-charts.tsx
 msgid "Cache / Buffers"
-msgstr "Cache / Puffer"
+msgstr "Cache / Bufferuri"
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Can reload"
-msgstr "Kann neu laden"
+msgstr ""
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Can start"
-msgstr "Kann starten"
+msgstr ""
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Can stop"
-msgstr "Kann stoppen"
+msgstr ""
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Cancel"
-msgstr "Abbrechen"
+msgstr "Anulare"
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Capabilities"
-msgstr "Fähigkeiten"
+msgstr "Capabilități"
 
 #: src/components/routes/system/smart-table.tsx
 msgid "Capacity"
-msgstr "Kapazität"
+msgstr "Capacitate"
 
 #: src/components/routes/settings/config-yaml.tsx
 msgid "Caution - potential data loss"
-msgstr "Vorsicht - potenzieller Datenverlust"
+msgstr ""
 
 #: src/components/routes/settings/general.tsx
 msgid "Celsius (°C)"
@@ -340,157 +331,152 @@ msgstr ""
 
 #: src/components/routes/settings/general.tsx
 msgid "Change display units for metrics."
-msgstr "Anzeigeeinheiten der Werte ändern."
+msgstr ""
 
 #: src/components/routes/settings/general.tsx
 msgid "Change general application options."
-msgstr "Allgemeine Anwendungsoptionen ändern."
+msgstr ""
 
 #: src/components/routes/system/charts/sensor-charts.tsx
 msgid "Charge"
-msgstr "Ladung"
+msgstr ""
 
 #. Context: Battery state
 #: src/lib/i18n.ts
 msgid "Charging"
-msgstr "Wird geladen"
+msgstr ""
 
 #: src/components/routes/settings/general.tsx
 msgid "Chart options"
-msgstr "Diagrammoptionen"
+msgstr ""
 
 #: src/components/routes/system/info-bar.tsx
 msgid "Chart width"
-msgstr "Diagrammbreite"
+msgstr ""
 
 #: src/components/login/forgot-pass-form.tsx
 msgid "Check {email} for a reset link."
-msgstr "Überprüfe {email} auf einen Link zum Zurücksetzen."
+msgstr ""
 
 #: src/components/routes/settings/layout.tsx
 msgid "Check logs for more details."
-msgstr "Überprüfe die Protokolle für weitere Details."
+msgstr ""
 
 #: src/components/routes/settings/heartbeat.tsx
 msgid "Check your monitoring service"
-msgstr "Überprüfen Sie Ihren Überwachungsdienst"
+msgstr ""
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Check your notification service"
-msgstr "Überprüfe deinen Benachrichtigungsdienst"
+msgstr ""
 
 #: src/components/containers-table/containers-table.tsx
 #: src/components/routes/system/smart-table.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "Clear"
-msgstr "Löschen"
+msgstr ""
 
 #: src/components/containers-table/containers-table.tsx
 msgid "Click on a container to view more information."
-msgstr "Klicke auf einen Container, um weitere Informationen zu sehen."
+msgstr ""
 
 #: src/components/routes/system/smart-table.tsx
 msgid "Click on a device to view more information."
-msgstr "Klicke auf ein Gerät, um weitere Informationen zu sehen."
+msgstr ""
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Click on a system to view more information."
-msgstr "Klicke auf ein System, um weitere Informationen zu sehen."
+msgstr ""
 
 #: src/components/ui/input-copy.tsx
 msgid "Click to copy"
-msgstr "Zum Kopieren klicken"
+msgstr ""
 
 #: src/components/login/forgot-pass-form.tsx
 #: src/components/login/forgot-pass-form.tsx
 msgid "Command line instructions"
-msgstr "Befehlszeilenanweisungen"
+msgstr ""
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Configure how you receive alert notifications."
-msgstr "Konfiguriere, wie du Warnbenachrichtigungen erhältst."
+msgstr ""
 
 #: src/components/login/auth-form.tsx
 #: src/components/login/auth-form.tsx
 msgid "Confirm password"
-msgstr "Passwort bestätigen"
+msgstr ""
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Conflicts"
-msgstr "Konflikte"
+msgstr "Conflicte"
 
 #: src/components/active-alerts.tsx
 msgid "Connection is down"
-msgstr "Verbindung unterbrochen"
+msgstr ""
 
 #: src/components/routes/system.tsx
 msgid "Containers"
-msgstr "Container"
+msgstr ""
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Continue"
-msgstr "Fortfahren"
+msgstr "Continuă"
 
 #: src/lib/utils.ts
 msgid "Copied to clipboard"
-msgstr "In die Zwischenablage kopiert"
+msgstr ""
 
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgctxt "Button to copy docker compose file content"
 msgid "Copy docker compose"
-msgstr "Docker compose kopieren"
+msgstr ""
 
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgctxt "Button to copy docker run command"
 msgid "Copy docker run"
-msgstr "Docker run kopieren"
+msgstr ""
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgctxt "Environment variables"
 msgid "Copy env"
-msgstr "Umgebungsvariablen kopieren"
-
-#: src/components/alerts/alerts-sheet.tsx
-msgctxt "Copy alerts from another system"
-msgid "Copy from"
-msgstr "Kopieren von"
+msgstr ""
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Copy host"
-msgstr "Host kopieren"
+msgstr ""
 
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Copy Linux command"
-msgstr "Linux-Befehl kopieren"
+msgstr ""
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Copy name"
-msgstr "Name kopieren"
+msgstr "Copiază nume"
 
 #: src/components/copy-to-clipboard.tsx
 msgid "Copy text"
-msgstr "Text kopieren"
+msgstr "Copiază text"
 
 #: src/components/add-system.tsx
 msgid "Copy the installation command for the agent below, or register agents automatically with a <0>universal token</0>."
-msgstr "Kopiere den Installationsbefehl für den Agent unten oder registriere Agents automatisch mit einem <0>universellen Token</0>."
+msgstr ""
 
 #: src/components/add-system.tsx
 msgid "Copy the<0>docker-compose.yml</0> content for the agent below, or register agents automatically with a <1>universal token</1>."
-msgstr "Kopiere den<0>docker-compose.yml</0> Inhalt für den Agent unten oder registriere Agents automatisch mit einem <1>universellen Token</1>."
+msgstr ""
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Copy YAML"
-msgstr "YAML kopieren"
+msgstr ""
 
 #: src/components/routes/system.tsx
 msgctxt "Core system metrics"
 msgid "Core"
-msgstr "Kern"
+msgstr ""
 
 #: src/components/containers-table/containers-table-columns.tsx
 #: src/components/systemd-table/systemd-table-columns.tsx
@@ -500,148 +486,149 @@ msgstr ""
 
 #: src/components/routes/system/cpu-sheet.tsx
 msgid "CPU Cores"
-msgstr "CPU-Kerne"
+msgstr "Nuclee CPU"
 
 #: src/components/systemd-table/systemd-table-columns.tsx
 msgid "CPU Peak"
-msgstr "CPU-Spitze"
+msgstr ""
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "CPU time"
-msgstr "CPU-Zeit"
+msgstr ""
 
 #: src/components/routes/system/cpu-sheet.tsx
 msgid "CPU Time Breakdown"
-msgstr "CPU-Zeit-Aufschlüsselung"
+msgstr ""
 
 #: src/components/routes/system/charts/cpu-charts.tsx
 #: src/components/routes/system/charts/cpu-charts.tsx
 #: src/components/routes/system/cpu-sheet.tsx
 #: src/lib/alerts.ts
 msgid "CPU Usage"
-msgstr "CPU-Auslastung"
+msgstr "Utilizare CPU"
 
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Create"
-msgstr "Erstellen"
+msgstr "Creează"
 
 #: src/components/login/auth-form.tsx
 msgid "Create account"
-msgstr "Konto erstellen"
+msgstr "Creează cont"
 
 #. Context: date created
 #: src/components/alerts-history-columns.tsx
 msgid "Created"
-msgstr "Erstellt"
+msgstr "Creat"
 
 #: src/components/routes/settings/general.tsx
 msgid "Critical (%)"
-msgstr "Kritisch (%)"
+msgstr "Critic (%)"
 
 #: src/components/routes/system/network-sheet.tsx
 msgid "Cumulative Download"
-msgstr "Kumulativer Download"
+msgstr ""
 
 #: src/components/routes/system/network-sheet.tsx
 msgid "Cumulative Upload"
-msgstr "Kumulativer Upload"
+msgstr ""
 
 #. Context: Battery state
 #: src/components/routes/system/charts/sensor-charts.tsx
 msgid "Current state"
-msgstr "Aktueller Zustand"
+msgstr ""
 
 #. Power Cycles
 #: src/components/routes/system/smart-table.tsx
 msgid "Cycles"
-msgstr "Zyklen"
+msgstr "Cicluri"
 
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Daily"
-msgstr "Täglich"
+msgstr "Zilnic"
 
 #: src/components/routes/system/info-bar.tsx
 msgctxt "Default system layout option"
 msgid "Default"
-msgstr "Standard"
+msgstr ""
 
 #: src/components/routes/settings/general.tsx
 msgid "Default time period"
-msgstr "Standardzeitraum"
+msgstr ""
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/system/smart-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Delete"
-msgstr "Löschen"
+msgstr "Șterge"
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Delete fingerprint"
-msgstr "Fingerabdruck löschen"
+msgstr ""
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Description"
-msgstr "Beschreibung"
+msgstr "Descriere"
 
 #: src/components/containers-table/containers-table.tsx
 msgid "Detail"
-msgstr "Details"
+msgstr "Detalii"
 
 #: src/components/routes/system/smart-table.tsx
 msgid "Device"
-msgstr "Gerät"
+msgstr "Dispozitiv"
 
 #. Context: Battery state
 #: src/lib/i18n.ts
 msgid "Discharging"
-msgstr "Wird entladen"
+msgstr ""
 
 #: src/components/routes/system.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Disk"
-msgstr "Festplatte"
+msgstr "Disc"
 
 #: src/components/routes/system/charts/disk-charts.tsx
 msgid "Disk I/O"
-msgstr "Festplatten-I/O"
+msgstr "Disc I/O"
 
 #: src/components/routes/settings/general.tsx
 msgid "Disk unit"
-msgstr "Festplatteneinheit"
+msgstr "Unitate disc"
 
 #: src/components/routes/system/charts/disk-charts.tsx
 #: src/components/routes/system/charts/disk-charts.tsx
+#: src/components/routes/system/charts/extra-fs-charts.tsx
 #: src/lib/alerts.ts
 msgid "Disk Usage"
-msgstr "Festplattennutzung"
+msgstr "Utilizare Disc"
 
-#: src/components/routes/system/charts/disk-charts.tsx
+#: src/components/routes/system/charts/extra-fs-charts.tsx
 msgid "Disk usage of {extraFsName}"
-msgstr "Festplattennutzung von {extraFsName}"
+msgstr ""
 
 #: src/components/routes/system/info-bar.tsx
 msgctxt "Layout display options"
 msgid "Display"
-msgstr "Anzeige"
+msgstr ""
 
 #: src/components/routes/system/charts/cpu-charts.tsx
 msgid "Docker CPU Usage"
-msgstr "Docker-CPU-Auslastung"
+msgstr ""
 
 #: src/components/routes/system/charts/memory-charts.tsx
 msgid "Docker Memory Usage"
-msgstr "Docker-Arbeitsspeichernutzung"
+msgstr ""
 
 #: src/components/routes/system/charts/network-charts.tsx
 msgid "Docker Network I/O"
-msgstr "Docker-Netzwerk-I/O"
+msgstr ""
 
 #: src/components/command-palette.tsx
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Documentation"
-msgstr "Dokumentation"
+msgstr ""
 
 #. Context: System is down
 #: src/components/alerts-history-columns.tsx
@@ -649,73 +636,73 @@ msgstr "Dokumentation"
 #: src/components/systems-table/systems-table-columns.tsx
 #: src/lib/alerts.ts
 msgid "Down"
-msgstr "Inaktiv"
+msgstr "Jos"
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Down ({downSystemsLength})"
-msgstr "Inaktiv ({downSystemsLength})"
+msgstr "Jos ({downSystemsLength})"
 
 #: src/components/routes/system/network-sheet.tsx
 msgid "Download"
-msgstr "Herunterladen"
+msgstr "Descarcă"
 
 #: src/components/alerts-history-columns.tsx
 msgid "Duration"
-msgstr "Dauer"
+msgstr "Durată"
 
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Edit"
-msgstr "Bearbeiten"
+msgstr "Editează"
 
 #: src/components/add-system.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Edit {foo}"
-msgstr "{foo} bearbeiten"
+msgstr "Editează {foo}"
 
 #: src/components/login/auth-form.tsx
 #: src/components/login/forgot-pass-form.tsx
 #: src/components/login/otp-forms.tsx
 msgid "Email"
-msgstr "E-Mail"
+msgstr ""
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Email notifications"
-msgstr "E-Mail-Benachrichtigungen"
+msgstr "Notificări email"
 
 #. Context: Battery state
 #: src/lib/i18n.ts
 msgid "Empty"
-msgstr "Leer"
+msgstr "Gol"
 
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "End Time"
-msgstr "Endzeit"
+msgstr ""
 
 #: src/components/routes/settings/heartbeat.tsx
 msgid "Endpoint URL"
-msgstr "Endpunkt-URL"
+msgstr ""
 
 #: src/components/routes/settings/heartbeat.tsx
 msgid "Endpoint URL to ping (required)"
-msgstr "Endpunkt-URL zum Pingen (erforderlich)"
+msgstr ""
 
 #: src/components/login/login.tsx
 msgid "Enter email address to reset password"
-msgstr "E-Mail-Adresse eingeben, um das Passwort zurückzusetzen"
+msgstr ""
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Enter email address..."
-msgstr "E-Mail-Adresse eingeben..."
+msgstr ""
 
 #: src/components/login/otp-forms.tsx
 msgid "Enter your one-time password."
-msgstr "Geben Sie Ihr Einmalpasswort ein."
+msgstr ""
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Ephemeral"
-msgstr "Flüchtig"
+msgstr ""
 
 #: src/components/login/auth-form.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
@@ -729,46 +716,46 @@ msgstr "Flüchtig"
 #: src/components/routes/settings/tokens-fingerprints.tsx
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Error"
-msgstr "Fehler"
+msgstr "Eroare"
 
 #: src/components/routes/settings/heartbeat.tsx
 msgid "Example:"
-msgstr "Beispiel:"
+msgstr ""
 
 #. placeholder {0}: alert.value
 #. placeholder {1}: info.unit
 #. placeholder {2}: alert.min
 #: src/components/active-alerts.tsx
 msgid "Exceeds {0}{1} in last {2, plural, one {# minute} other {# minutes}}"
-msgstr "Überschreitet {0}{1} in den letzten {2, plural, one {# Minute} other {# Minuten}}"
+msgstr ""
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Exec main PID"
-msgstr "Ausführungs-Haupt-PID"
+msgstr ""
 
 #: src/components/routes/settings/config-yaml.tsx
 msgid "Existing systems not defined in <0>config.yml</0> will be deleted. Please make regular backups."
-msgstr "Bestehende Systeme, die nicht in der <0>config.yml</0> definiert sind, werden gelöscht. Bitte mache regelmäßige Backups."
+msgstr ""
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Exited active"
-msgstr "Beendet aktiv"
+msgstr ""
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Expires after one hour or on hub restart."
-msgstr "Läuft nach einer Stunde oder bei Hub-Neustart ab."
+msgstr ""
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Export"
-msgstr "Exportieren"
+msgstr "Exportă"
 
 #: src/components/routes/settings/config-yaml.tsx
 msgid "Export configuration"
-msgstr "Konfiguration exportieren"
+msgstr "Exportă configurația"
 
 #: src/components/routes/settings/config-yaml.tsx
 msgid "Export your current systems configuration."
-msgstr "Exportiere die aktuelle Systemkonfiguration."
+msgstr ""
 
 #: src/components/routes/settings/general.tsx
 msgid "Fahrenheit (°F)"
@@ -776,38 +763,38 @@ msgstr ""
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Failed"
-msgstr "Fehlgeschlagen"
+msgstr ""
 
 #: src/components/routes/system/smart-table.tsx
 msgid "Failed Attributes:"
-msgstr "Fehlgeschlagene Attribute:"
+msgstr ""
 
 #: src/lib/api.ts
 msgid "Failed to authenticate"
-msgstr "Authentifizierung fehlgeschlagen"
+msgstr ""
 
 #: src/components/routes/settings/layout.tsx
 #: src/components/routes/settings/notifications.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Failed to save settings"
-msgstr "Einstellungen konnten nicht gespeichert werden"
+msgstr ""
 
 #: src/components/routes/settings/heartbeat.tsx
 msgid "Failed to send heartbeat"
-msgstr "Heartbeat konnte nicht gesendet werden"
+msgstr ""
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Failed to send test notification"
-msgstr "Testbenachrichtigung konnte nicht gesendet werden"
+msgstr ""
 
 #: src/components/alerts/alerts-sheet.tsx
 msgid "Failed to update alert"
-msgstr "Warnung konnte nicht aktualisiert werden"
+msgstr ""
 
 #. placeholder {0}: statusTotals[ServiceStatus.Failed]
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Failed: {0}"
-msgstr "Fehlgeschlagen: {0}"
+msgstr ""
 
 #: src/components/containers-table/containers-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
@@ -820,37 +807,37 @@ msgstr ""
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Fingerprint"
-msgstr "Fingerabdruck"
+msgstr ""
 
 #: src/components/routes/system/smart-table.tsx
 msgid "Firmware"
-msgstr "Firm­ware"
+msgstr ""
 
 #: src/components/alerts/alerts-sheet.tsx
 msgid "For <0>{min}</0> {min, plural, one {minute} other {minutes}}"
-msgstr "Für <0>{min}</0> {min, plural, one {Minute} other {Minuten}}"
+msgstr ""
 
 #: src/components/login/auth-form.tsx
 msgid "Forgot password?"
-msgstr "Passwort vergessen?"
+msgstr ""
 
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgctxt "Button to copy install command"
 msgid "FreeBSD command"
-msgstr "FreeBSD Befehl"
+msgstr ""
 
 #. Context: Battery state
 #: src/components/routes/system/info-bar.tsx
 #: src/lib/i18n.ts
 msgid "Full"
-msgstr "Voll"
+msgstr ""
 
 #. Context: General settings
 #: src/components/routes/settings/general.tsx
 #: src/components/routes/settings/layout.tsx
 msgid "General"
-msgstr "Allgemein"
+msgstr ""
 
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Global"
@@ -862,24 +849,24 @@ msgstr ""
 
 #: src/components/routes/system/charts/gpu-charts.tsx
 msgid "GPU Engines"
-msgstr "GPU-Engines"
+msgstr ""
 
 #: src/components/routes/system/charts/gpu-charts.tsx
 msgid "GPU Power Draw"
-msgstr "GPU-Leistungsaufnahme"
+msgstr ""
 
 #: src/lib/alerts.ts
 msgid "GPU Usage"
-msgstr "GPU-Auslastung"
+msgstr ""
 
 #: src/components/routes/system/info-bar.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "Grid"
-msgstr "Raster"
+msgstr ""
 
 #: src/components/containers-table/containers-table-columns.tsx
 msgid "Health"
-msgstr "Gesundheit"
+msgstr ""
 
 #: src/components/routes/settings/layout.tsx
 msgid "Heartbeat"
@@ -887,17 +874,17 @@ msgstr ""
 
 #: src/components/routes/settings/heartbeat.tsx
 msgid "Heartbeat Monitoring"
-msgstr "Heartbeat-Überwachung"
+msgstr ""
 
 #: src/components/routes/settings/heartbeat.tsx
 msgid "Heartbeat sent successfully"
-msgstr "Heartbeat erfolgreich gesendet"
+msgstr ""
 
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgctxt "Button to copy install command"
 msgid "Homebrew command"
-msgstr "Homebrew-Befehl"
+msgstr ""
 
 #: src/components/add-system.tsx
 msgid "Host / IP"
@@ -905,145 +892,130 @@ msgstr ""
 
 #: src/components/routes/settings/heartbeat.tsx
 msgid "HTTP Method"
-msgstr "HTTP-Methode"
+msgstr ""
 
 #: src/components/routes/settings/heartbeat.tsx
 msgid "HTTP method: POST, GET, or HEAD (default: POST)"
-msgstr "HTTP-Methode: POST, GET oder HEAD (Standard: POST)"
-
-#: src/components/routes/system/disk-io-sheet.tsx
-msgctxt "Disk I/O average operation time (iostat await)"
-msgid "I/O Await"
-msgstr "I/O-Wartezeit"
-
-#: src/components/routes/system/disk-io-sheet.tsx
-msgctxt "Disk I/O total time spent on read/write"
-msgid "I/O Time"
-msgstr "I/O-Zeit"
-
-#: src/components/routes/system/charts/disk-charts.tsx
-msgctxt "Percent of time the disk is busy with I/O"
-msgid "I/O Utilization"
-msgstr "I/O-Auslastung"
+msgstr ""
 
 #. Context: Battery state
 #: src/lib/i18n.ts
 msgid "Idle"
-msgstr "Untätig"
+msgstr ""
 
 #: src/components/login/forgot-pass-form.tsx
 msgid "If you've lost the password to your admin account, you may reset it using the following command."
-msgstr "Wenn du das Passwort für dein Administratorkonto verloren hast, kannst du es mit dem folgenden Befehl zurücksetzen."
+msgstr ""
 
 #: src/components/containers-table/containers-table-columns.tsx
 msgctxt "Docker image"
 msgid "Image"
-msgstr ""
+msgstr "Imagine"
 
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Inactive"
-msgstr "Inaktiv"
+msgstr "Inactiv"
 
 #: src/components/routes/settings/heartbeat.tsx
 msgid "Interval"
-msgstr "Intervall"
+msgstr ""
 
 #: src/components/login/auth-form.tsx
 msgid "Invalid email address."
-msgstr "Ungültige E-Mail-Adresse."
+msgstr ""
 
 #: src/components/lang-toggle.tsx
 #: src/components/routes/settings/general.tsx
 msgid "Language"
-msgstr "Sprache"
+msgstr "Limbă"
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Layout"
-msgstr "Anordnung"
+msgstr ""
 
 #: src/components/routes/settings/general.tsx
 msgid "Layout width"
-msgstr "Layoutbreite"
+msgstr ""
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Lifecycle"
-msgstr "Lebenszyklus"
+msgstr ""
 
 #: src/components/systemd-table/systemd-table.tsx
 #: src/components/systemd-table/systemd-table.tsx
 msgid "limit"
-msgstr "Limit"
+msgstr "limită"
 
 #: src/components/routes/system/charts/load-average-chart.tsx
 msgid "Load Average"
-msgstr "Durchschnittliche Systemlast"
+msgstr ""
 
 #: src/lib/alerts.ts
 msgid "Load Average 15m"
-msgstr "Durchschnittliche Systemlast 15 Min"
+msgstr ""
 
 #: src/lib/alerts.ts
 msgid "Load Average 1m"
-msgstr "Durchschnittliche Systemlast 1 Min"
+msgstr ""
 
 #: src/lib/alerts.ts
 msgid "Load Average 5m"
-msgstr "Durchschnittliche Systemlast 5 Min"
+msgstr ""
 
 #. Short label for load average
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Load Avg"
-msgstr "Systemlast"
+msgstr ""
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Load state"
-msgstr "Ladezustand"
+msgstr ""
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Loading..."
-msgstr "Lädt..."
+msgstr ""
 
 #: src/components/navbar.tsx
 #: src/components/navbar.tsx
 msgid "Log Out"
-msgstr "Abmelden"
+msgstr ""
 
 #: src/components/login/login.tsx
 msgid "Login"
-msgstr "Anmelden"
+msgstr ""
 
 #: src/components/login/auth-form.tsx
 #: src/components/login/forgot-pass-form.tsx
 msgid "Login attempt failed"
-msgstr "Anmeldeversuch fehlgeschlagen"
+msgstr ""
 
 #: src/components/command-palette.tsx
 #: src/components/containers-table/containers-table.tsx
 #: src/components/navbar.tsx
 msgid "Logs"
-msgstr "Protokolle"
+msgstr "Jurnale"
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Looking instead for where to create alerts? Click the bell <0/> icons in the systems table."
-msgstr "Du möchtest neue Warnungen erstellen? Klicke dafür auf die Glocken-<0/>-Symbole in der Systemtabelle."
+msgstr ""
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Main PID"
-msgstr "Haupt-PID"
+msgstr ""
 
 #: src/components/routes/settings/layout.tsx
 msgid "Manage display and notification preferences."
-msgstr "Anzeige- und Benachrichtigungseinstellungen verwalten."
+msgstr ""
 
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Manual setup instructions"
-msgstr "Anleitung zur manuellen Einrichtung"
+msgstr ""
 
 #. Chart select field. Please try to keep this short.
 #: src/components/routes/system/chart-card.tsx
 msgid "Max 1 min"
-msgstr "Max 1 Min"
+msgstr ""
 
 #: src/components/containers-table/containers-table-columns.tsx
 #: src/components/routes/system/info-bar.tsx
@@ -1051,30 +1023,30 @@ msgstr "Max 1 Min"
 #: src/components/systemd-table/systemd-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Memory"
-msgstr "Arbeitsspeicher"
+msgstr "Memorie"
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Memory limit"
-msgstr "Arbeitsspeicherlimit"
+msgstr "Limita memoriei"
 
 #: src/components/systemd-table/systemd-table-columns.tsx
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Memory Peak"
-msgstr "Arbeitsspeicher-Spitze"
+msgstr ""
 
 #: src/components/routes/system/charts/memory-charts.tsx
 #: src/lib/alerts.ts
 msgid "Memory Usage"
-msgstr "Arbeitsspeichernutzung"
+msgstr "Memorie Utilizată"
 
 #: src/components/routes/system/charts/memory-charts.tsx
 msgid "Memory usage of docker containers"
-msgstr "Arbeitsspeichernutzung der Docker-Container"
+msgstr ""
 
 #. Device model
 #: src/components/routes/system/smart-table.tsx
 msgid "Model"
-msgstr "Modell"
+msgstr ""
 
 #: src/components/add-system.tsx
 #: src/components/alerts-history-columns.tsx
@@ -1082,39 +1054,39 @@ msgstr "Modell"
 #: src/components/systemd-table/systemd-table-columns.tsx
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Name"
-msgstr ""
+msgstr "Nume"
 
 #: src/components/containers-table/containers-table-columns.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Net"
-msgstr "Netzwerk"
+msgstr "Rețea"
 
 #: src/components/routes/system/charts/network-charts.tsx
 msgid "Network traffic of docker containers"
-msgstr "Netzwerkverkehr der Docker-Container"
+msgstr ""
 
 #: src/components/routes/system/charts/network-charts.tsx
 #: src/components/routes/system/network-sheet.tsx
 #: src/components/routes/system/network-sheet.tsx
 #: src/components/routes/system/network-sheet.tsx
 msgid "Network traffic of public interfaces"
-msgstr "Netzwerkverkehr der öffentlichen Schnittstellen"
+msgstr ""
 
 #. Context: Bytes or bits
 #: src/components/routes/settings/general.tsx
 msgid "Network unit"
-msgstr "Netzwerkeinheit"
+msgstr ""
 
 #: src/components/systemd-table/systemd-table.tsx
 #: src/components/systemd-table/systemd-table.tsx
 #: src/components/systemd-table/systemd-table.tsx
 msgid "No"
-msgstr "Nein"
+msgstr "Nu"
 
 #: src/components/command-palette.tsx
 #: src/components/systemd-table/systemd-table.tsx
 msgid "No results found."
-msgstr "Keine Ergebnisse gefunden."
+msgstr ""
 
 #: src/components/containers-table/containers-table.tsx
 #: src/components/containers-table/containers-table.tsx
@@ -1123,39 +1095,39 @@ msgstr "Keine Ergebnisse gefunden."
 #: src/components/routes/system/smart-table.tsx
 #: src/components/systemd-table/systemd-table.tsx
 msgid "No results."
-msgstr "Keine Ergebnisse."
+msgstr ""
 
 #: src/components/routes/system/smart-table.tsx
 msgid "No S.M.A.R.T. attributes available for this device."
-msgstr "Für dieses Gerät sind keine S.M.A.R.T.-Attribute verfügbar."
+msgstr ""
 
 #: src/components/systems-table/systems-table.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "No systems found."
-msgstr "Keine Systeme gefunden."
+msgstr ""
 
 #: src/components/command-palette.tsx
 #: src/components/routes/settings/layout.tsx
 #: src/components/routes/settings/notifications.tsx
 msgid "Notifications"
-msgstr "Benachrichtigungen"
+msgstr "Notificări"
 
 #: src/components/login/auth-form.tsx
 msgid "OAuth 2 / OIDC support"
-msgstr "OAuth 2 / OIDC-Unterstützung"
+msgstr ""
 
 #: src/components/routes/settings/config-yaml.tsx
 msgid "On each restart, systems in the database will be updated to match the systems defined in the file."
-msgstr "Bei jedem Neustart werden die Systeme in der Datenbank aktualisiert, um den in der Datei definierten Systemen zu entsprechen."
+msgstr ""
 
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "One-time"
-msgstr "Einmalig"
+msgstr ""
 
 #: src/components/login/auth-form.tsx
 msgid "One-time password"
-msgstr "Einmalpasswort"
+msgstr ""
 
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
@@ -1163,126 +1135,122 @@ msgstr "Einmalpasswort"
 #: src/components/routes/system/smart-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Open menu"
-msgstr "Menü öffnen"
+msgstr ""
 
 #: src/components/login/auth-form.tsx
 msgid "Or continue with"
-msgstr "Oder fortfahren mit"
+msgstr ""
 
 #: src/components/routes/system/cpu-sheet.tsx
 msgid "Other"
-msgstr "Andere"
+msgstr "Altele"
 
 #: src/components/alerts/alerts-sheet.tsx
 msgid "Overwrite existing alerts"
-msgstr "Bestehende Warnungen überschreiben"
+msgstr ""
 
 #: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
 msgid "Page"
-msgstr "Seite"
+msgstr ""
 
 #. placeholder {0}: table.getState().pagination.pageIndex + 1
 #. placeholder {1}: table.getPageCount()
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Page {0} of {1}"
-msgstr "Seite {0} von {1}"
+msgstr ""
 
 #: src/components/command-palette.tsx
 msgid "Pages / Settings"
-msgstr "Seiten / Einstellungen"
+msgstr ""
 
 #: src/components/login/auth-form.tsx
 #: src/components/login/auth-form.tsx
 msgid "Password"
-msgstr "Passwort"
+msgstr ""
 
 #: src/components/login/auth-form.tsx
 msgid "Password must be at least 8 characters."
-msgstr "Das Passwort muss mindestens 8 Zeichen haben."
+msgstr ""
 
 #: src/components/login/auth-form.tsx
 msgid "Password must be less than 72 bytes."
-msgstr "Das Passwort muss weniger als 72 Bytes lang sein."
+msgstr ""
 
 #: src/components/login/forgot-pass-form.tsx
 msgid "Password reset request received"
-msgstr "Anfrage zum Zurücksetzen des Passworts erhalten"
+msgstr ""
 
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Past"
-msgstr "Vergangen"
-
-#: src/components/systems-table/systems-table-columns.tsx
-msgid "Pause"
 msgstr ""
 
 #: src/components/systems-table/systems-table-columns.tsx
+msgid "Pause"
+msgstr "Suspendare"
+
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Paused"
-msgstr "Pausiert"
+msgstr "Suspendat"
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Paused ({pausedSystemsLength})"
-msgstr "Pausiert ({pausedSystemsLength})"
+msgstr ""
 
 #: src/components/routes/settings/heartbeat.tsx
 msgid "Payload format"
-msgstr "Payload-Format"
+msgstr ""
 
 #: src/components/routes/system/cpu-sheet.tsx
 #: src/components/routes/system/cpu-sheet.tsx
 msgid "Per-core average utilization"
-msgstr "Durchschnittliche Auslastung pro Kern"
-
-#: src/components/routes/system/charts/disk-charts.tsx
-msgid "Percent of time the disk is busy with I/O"
-msgstr "Prozentsatz der Zeit, in der die Festplatte mit I/O beschäftigt ist"
+msgstr ""
 
 #: src/components/routes/system/cpu-sheet.tsx
 msgid "Percentage of time spent in each state"
-msgstr "Prozentsatz der Zeit in jedem Zustand"
+msgstr ""
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Permanent"
-msgstr "Dauerhaft"
+msgstr ""
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Persistence"
-msgstr "Persistenz"
+msgstr ""
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Please <0>configure an SMTP server</0> to ensure alerts are delivered."
-msgstr "Bitte <0>konfiguriere einen SMTP-Server</0>, um sicherzustellen, dass Warnungen zugestellt werden."
+msgstr ""
 
 #: src/components/alerts/alerts-sheet.tsx
 msgid "Please check logs for more details."
-msgstr "Bitte überprüfe die Protokolle für weitere Details."
+msgstr ""
 
 #: src/components/login/auth-form.tsx
 #: src/components/login/forgot-pass-form.tsx
 msgid "Please check your credentials and try again"
-msgstr "Bitte überprüfe deine Anmeldedaten und versuche es erneut"
+msgstr ""
 
 #: src/components/login/login.tsx
 msgid "Please create an admin account"
-msgstr "Bitte erstelle ein Administratorkonto"
+msgstr ""
 
 #: src/components/login/auth-form.tsx
 msgid "Please enable pop-ups for this site"
-msgstr "Bitte aktiviere Pop-ups für diese Seite"
+msgstr ""
 
 #: src/lib/api.ts
 msgid "Please log in again"
-msgstr "Bitte melde dich erneut an"
+msgstr ""
 
 #: src/components/login/auth-form.tsx
 msgid "Please see <0>the documentation</0> for instructions."
-msgstr "In der <0>Dokumentation</0> findest du weitere Anweisungen."
+msgstr ""
 
 #: src/components/login/login.tsx
 msgid "Please sign in to your account"
-msgstr "Bitte melde dich bei deinem Konto an"
+msgstr ""
 
 #: src/components/add-system.tsx
 msgid "Port"
@@ -1296,201 +1264,194 @@ msgstr ""
 #. Power On Time
 #: src/components/routes/system/smart-table.tsx
 msgid "Power On"
-msgstr "Eingeschaltet"
+msgstr ""
 
 #: src/components/routes/system/charts/gpu-charts.tsx
 #: src/components/routes/system/charts/memory-charts.tsx
 msgid "Precise utilization at the recorded time"
-msgstr "Genaue Nutzung zum aufgezeichneten Zeitpunkt"
+msgstr ""
 
 #: src/components/routes/settings/general.tsx
 msgid "Preferred Language"
-msgstr "Bevorzugte Sprache"
+msgstr ""
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Process started"
-msgstr "Prozess gestartet"
+msgstr ""
 
 #. Use 'Key' if your language requires many more characters
 #: src/components/add-system.tsx
 msgid "Public Key"
-msgstr "Öffentlicher Schlüssel"
-
-#: src/components/routes/system/disk-io-sheet.tsx
-msgctxt "Disk I/O average queue depth"
-msgid "Queue Depth"
-msgstr "Warteschlangentiefe"
+msgstr ""
 
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Quiet Hours"
-msgstr "Ruhezeiten"
+msgstr ""
 
 #. Disk read
 #: src/components/routes/system/charts/disk-charts.tsx
-#: src/components/routes/system/disk-io-sheet.tsx
-#: src/components/routes/system/disk-io-sheet.tsx
-#: src/components/routes/system/disk-io-sheet.tsx
+#: src/components/routes/system/charts/extra-fs-charts.tsx
 msgid "Read"
-msgstr "Lesen"
+msgstr "Citit"
 
 #: src/components/routes/system/charts/network-charts.tsx
 msgid "Received"
-msgstr "Empfangen"
+msgstr "Primit"
 
 #: src/components/containers-table/containers-table.tsx
 #: src/components/containers-table/containers-table.tsx
 #: src/components/routes/system/smart-table.tsx
 msgid "Refresh"
-msgstr "Aktualisieren"
+msgstr "Actualizează"
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Relationships"
-msgstr "Beziehungen"
+msgstr ""
 
 #: src/components/login/login.tsx
 msgid "Request a one-time password"
-msgstr "Einmalpasswort anfordern"
+msgstr ""
 
 #: src/components/login/otp-forms.tsx
 msgid "Request OTP"
-msgstr "OTP anfordern"
+msgstr ""
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Required by"
-msgstr "Benötigt von"
+msgstr ""
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Requires"
-msgstr "Benötigt"
+msgstr ""
 
 #: src/components/login/forgot-pass-form.tsx
 msgid "Reset Password"
-msgstr "Passwort zurücksetzen"
+msgstr ""
 
 #: src/components/alerts-history-columns.tsx
 #: src/components/alerts-history-columns.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Resolved"
-msgstr "Gelöst"
+msgstr ""
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Restarts"
-msgstr "Neustarts"
+msgstr ""
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Resume"
-msgstr "Fortsetzen"
+msgstr ""
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgctxt "Root disk label"
 msgid "Root"
-msgstr ""
+msgstr "Rădăcină"
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Rotate token"
-msgstr "Token rotieren"
+msgstr ""
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Rows per page"
-msgstr "Zeilen pro Seite"
+msgstr ""
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Runtime Metrics"
-msgstr "Laufzeitmetriken"
+msgstr ""
 
 #: src/components/routes/system/smart-table.tsx
 msgid "S.M.A.R.T. Details"
-msgstr "S.M.A.R.T.-Details"
+msgstr "Detalii S.M.A.R.T."
 
 #: src/components/routes/system/smart-table.tsx
 msgid "S.M.A.R.T. Self-Test"
-msgstr "S.M.A.R.T.-Selbsttest"
+msgstr ""
 
 #: src/components/add-system.tsx
 msgid "Save {foo}"
-msgstr "{foo} speichern"
+msgstr ""
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Save address using enter key or comma. Leave blank to disable email notifications."
-msgstr "Adresse mit der Enter-Taste oder Komma speichern. Leer lassen, um E-Mail-Benachrichtigungen zu deaktivieren."
+msgstr ""
 
 #: src/components/routes/settings/general.tsx
 #: src/components/routes/settings/notifications.tsx
 msgid "Save Settings"
-msgstr "Einstellungen speichern"
+msgstr ""
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Saved in the database and does not expire until you disable it."
-msgstr "In der Datenbank gespeichert und läuft nicht ab, bis Sie es deaktivieren."
+msgstr ""
 
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Schedule"
-msgstr "Zeitplan"
+msgstr ""
 
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Schedule quiet hours where notifications will not be sent, such as during maintenance periods."
-msgstr "Plane Ruhezeiten, in denen keine Benachrichtigungen gesendet werden, z. B. während Wartungszeiten."
+msgstr ""
 
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Schedule quiet hours where notifications will not be sent."
-msgstr "Plane Ruhezeiten, in denen keine Benachrichtigungen gesendet werden."
+msgstr ""
 
 #: src/components/navbar.tsx
 msgid "Search"
-msgstr "Suche"
+msgstr "Caută"
 
 #: src/components/command-palette.tsx
 msgid "Search for systems or settings..."
-msgstr "Nach Systemen oder Einstellungen suchen..."
+msgstr ""
 
 #: src/components/routes/settings/heartbeat.tsx
 msgid "Seconds between pings (default: 60)"
-msgstr "Sekunden zwischen Pings (Standard: 60)"
+msgstr ""
 
 #: src/components/alerts/alerts-sheet.tsx
 msgid "See <0>notification settings</0> to configure how you receive alerts."
-msgstr "Siehe <0>Benachrichtigungseinstellungen</0>, um zu konfigurieren, wie du Warnungen erhältst."
+msgstr ""
 
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Select {foo}"
-msgstr "Auswählen {foo}"
+msgstr ""
 
 #: src/components/routes/settings/heartbeat.tsx
 msgid "Send a single heartbeat ping to verify your endpoint is working."
-msgstr "Senden Sie einen einzelnen Heartbeat-Ping, um zu überprüfen, ob Ihr Endpunkt funktioniert."
+msgstr ""
 
 #: src/components/routes/settings/heartbeat.tsx
 msgid "Send periodic outbound pings to an external monitoring service so you can monitor Beszel without exposing it to the internet."
-msgstr "Senden Sie regelmäßige ausgehende Pings an einen externen Überwachungsdienst, damit Sie Beszel überwachen können, ohne es dem Internet auszusetzen."
+msgstr ""
 
 #: src/components/routes/settings/heartbeat.tsx
 msgid "Send test heartbeat"
-msgstr "Test-Heartbeat senden"
+msgstr ""
 
 #: src/components/routes/system/charts/network-charts.tsx
 msgid "Sent"
-msgstr "Gesendet"
+msgstr "Trimis"
 
 #: src/components/routes/system/smart-table.tsx
 msgid "Serial Number"
-msgstr "Seriennummer"
+msgstr "Număr Serial"
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Service Details"
-msgstr "Servicedetails"
+msgstr ""
 
 #: src/components/routes/system.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Services"
-msgstr "Dienste"
+msgstr ""
 
 #: src/components/routes/settings/general.tsx
 msgid "Set percentage thresholds for meter colors."
-msgstr "Prozentuale Schwellenwerte für Zählerfarben festlegen."
+msgstr ""
 
 #: src/components/routes/settings/heartbeat.tsx
 msgid "Set the following environment variables on your Beszel hub to enable heartbeat monitoring:"
-msgstr "Legen Sie die folgenden Umgebungsvariablen auf Ihrem Beszel-Hub fest, um die Heartbeat-Überwachung zu aktivieren:"
+msgstr ""
 
 #: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
@@ -1500,35 +1461,35 @@ msgstr "Legen Sie die folgenden Umgebungsvariablen auf Ihrem Beszel-Hub fest, um
 #: src/components/routes/settings/layout.tsx
 #: src/components/routes/system/info-bar.tsx
 msgid "Settings"
-msgstr "Einstellungen"
+msgstr ""
 
 #: src/components/routes/settings/layout.tsx
 msgid "Settings saved"
-msgstr "Einstellungen gespeichert"
+msgstr ""
 
 #: src/components/login/auth-form.tsx
 msgid "Sign in"
-msgstr "Anmelden"
+msgstr ""
 
 #: src/components/command-palette.tsx
 msgid "SMTP settings"
-msgstr "SMTP-Einstellungen"
+msgstr ""
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Sort By"
-msgstr "Sortieren nach"
+msgstr ""
 
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Start Time"
-msgstr "Startzeit"
+msgstr ""
 
 #. Context: alert state (active or resolved)
 #: src/components/alerts-history-columns.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/systemd-table/systemd-table-columns.tsx
 msgid "State"
-msgstr "Status"
+msgstr ""
 
 #: src/components/containers-table/containers-table-columns.tsx
 #: src/components/routes/system/smart-table.tsx
@@ -1540,15 +1501,15 @@ msgstr ""
 
 #: src/components/systemd-table/systemd-table-columns.tsx
 msgid "Sub State"
-msgstr "Unterzustand"
+msgstr ""
 
 #: src/components/routes/system/charts/memory-charts.tsx
 msgid "Swap space used by the system"
-msgstr "Vom System genutzter Swap-Speicher"
+msgstr ""
 
 #: src/components/routes/system/charts/memory-charts.tsx
 msgid "Swap Usage"
-msgstr "Swap-Nutzung"
+msgstr ""
 
 #: src/components/add-system.tsx
 #: src/components/alerts-history-columns.tsx
@@ -1563,27 +1524,27 @@ msgstr "Swap-Nutzung"
 #: src/components/systems-table/systems-table-columns.tsx
 #: src/lib/alerts.ts
 msgid "System"
-msgstr ""
+msgstr "Sistem"
 
 #: src/components/routes/system/charts/load-average-chart.tsx
 msgid "System load averages over time"
-msgstr "Systemlastdurchschnitt im Zeitverlauf"
+msgstr ""
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Systemd Services"
-msgstr "Systemd-Dienste"
+msgstr ""
 
 #: src/components/navbar.tsx
 msgid "Systems"
-msgstr "Systeme"
+msgstr "Sisteme"
 
 #: src/components/routes/settings/config-yaml.tsx
 msgid "Systems may be managed in a <0>config.yml</0> file inside your data directory."
-msgstr "Systeme können in einer <0>config.yml</0>-Datei im Datenverzeichnis verwaltet werden."
+msgstr ""
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Table"
-msgstr "Tabelle"
+msgstr ""
 
 #: src/components/routes/system/info-bar.tsx
 msgctxt "Tabs system layout option"
@@ -1592,26 +1553,26 @@ msgstr ""
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Tasks"
-msgstr "Aufgaben"
+msgstr "Sarcini"
 
 #. Temperature label in systems table
 #: src/components/routes/system/smart-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Temp"
-msgstr "Temperatur"
+msgstr ""
 
 #: src/components/routes/system/charts/sensor-charts.tsx
 #: src/lib/alerts.ts
 msgid "Temperature"
-msgstr "Temperatur"
+msgstr "Temperatură"
 
 #: src/components/routes/settings/general.tsx
 msgid "Temperature unit"
-msgstr "Temperatureinheit"
+msgstr "Unitate temperatură"
 
 #: src/components/routes/system/charts/sensor-charts.tsx
 msgid "Temperatures of system sensors"
-msgstr "Temperaturen der Systemsensoren"
+msgstr ""
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Test <0>URL</0>"
@@ -1619,48 +1580,48 @@ msgstr ""
 
 #: src/components/routes/settings/heartbeat.tsx
 msgid "Test heartbeat"
-msgstr "Test-Heartbeat"
+msgstr ""
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Test notification sent"
-msgstr "Testbenachrichtigung gesendet"
+msgstr ""
 
 #: src/components/routes/settings/heartbeat.tsx
 msgid "The overall status is <0>ok</0> when all systems are up, <1>warn</1> when alerts are triggered, and <2>error</2> when any system is down."
-msgstr "Der Gesamtstatus ist <0>ok</0>, wenn alle Systeme in Betrieb sind, <1>warn</1>, wenn Warnungen ausgelöst werden, und <2>error</2>, wenn ein System ausgefallen ist."
+msgstr ""
 
 #: src/components/login/forgot-pass-form.tsx
 msgid "Then log into the backend and reset your user account password in the users table."
-msgstr "Melde dich dann im Backend an und setze dein Benutzerkontopasswort in der Benutzertabelle zurück."
+msgstr ""
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "This action cannot be undone. This will permanently delete all current records for {name} from the database."
-msgstr "Diese Aktion kann nicht rückgängig gemacht werden. Dadurch werden alle aktuellen Datensätze für {name} dauerhaft aus der Datenbank gelöscht."
+msgstr ""
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "This will permanently delete all selected records from the database."
-msgstr "Dadurch werden alle ausgewählten Datensätze dauerhaft aus der Datenbank gelöscht."
+msgstr ""
 
-#: src/components/routes/system/charts/disk-charts.tsx
+#: src/components/routes/system/charts/extra-fs-charts.tsx
 msgid "Throughput of {extraFsName}"
-msgstr "Durchsatz von {extraFsName}"
+msgstr ""
 
 #: src/components/routes/system/charts/disk-charts.tsx
 msgid "Throughput of root filesystem"
-msgstr "Durchsatz des Root-Dateisystems"
+msgstr ""
 
 #: src/components/routes/settings/general.tsx
 msgid "Time format"
-msgstr "Zeitformat"
+msgstr ""
 
 #: src/components/routes/settings/notifications.tsx
 msgid "To email(s)"
-msgstr "An E-Mail(s)"
+msgstr ""
 
 #: src/components/mode-toggle.tsx
 #: src/components/mode-toggle.tsx
 msgid "Toggle theme"
-msgstr "Darstellung umschalten"
+msgstr ""
 
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
@@ -1671,263 +1632,251 @@ msgstr ""
 #: src/components/routes/settings/layout.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Tokens & Fingerprints"
-msgstr "Tokens & Fingerabdrücke"
+msgstr ""
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Tokens allow agents to connect and register. Fingerprints are stable identifiers unique to each system, set on first connection."
-msgstr "Tokens ermöglichen es Agents, sich zu verbinden und zu registrieren. Fingerabdrücke sind stabile, eindeutige Identifikatoren für jedes System, die bei der ersten Verbindung gesetzt werden."
+msgstr ""
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Tokens and fingerprints are used to authenticate WebSocket connections to the hub."
-msgstr "Tokens und Fingerabdrücke werden verwendet, um WebSocket-Verbindungen zum Hub zu authentifizieren."
+msgstr ""
 
 #: src/components/ui/chart.tsx
 #: src/components/ui/chart.tsx
 msgid "Total"
-msgstr "Gesamt"
+msgstr ""
 
 #: src/components/routes/system/network-sheet.tsx
 msgid "Total data received for each interface"
-msgstr "Empfangene Gesamtdatenmenge je Schnittstelle "
+msgstr ""
 
 #: src/components/routes/system/network-sheet.tsx
 msgid "Total data sent for each interface"
-msgstr "Gesendete Gesamtdatenmenge je Schnittstelle"
-
-#: src/components/routes/system/disk-io-sheet.tsx
-msgctxt "Disk I/O"
-msgid "Total time spent on read/write (can exceed 100%)"
-msgstr "Gesamtzeit für Lese-/Schreibvorgänge (kann 100% überschreiten)"
+msgstr ""
 
 #. placeholder {0}: data.length
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Total: {0}"
-msgstr "Gesamt: {0}"
+msgstr ""
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Triggered by"
-msgstr "Ausgelöst von"
+msgstr ""
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Triggers"
-msgstr "Trigger"
+msgstr ""
 
 #: src/lib/alerts.ts
 msgid "Triggers when 1 minute load average exceeds a threshold"
-msgstr "Löst aus, wenn der Lastdurchschnitt der letzten Minute einen Schwellenwert überschreitet"
+msgstr ""
 
 #: src/lib/alerts.ts
 msgid "Triggers when 15 minute load average exceeds a threshold"
-msgstr "Löst aus, wenn der Lastdurchschnitt der letzten 15 Minuten einen Schwellenwert überschreitet"
+msgstr ""
 
 #: src/lib/alerts.ts
 msgid "Triggers when 5 minute load average exceeds a threshold"
-msgstr "Löst aus, wenn der Lastdurchschnitt der letzten 5 Minuten einen Schwellenwert überschreitet"
+msgstr ""
 
 #: src/lib/alerts.ts
 msgid "Triggers when any sensor exceeds a threshold"
-msgstr "Löst aus, wenn ein Sensor einen Schwellenwert überschreitet"
+msgstr ""
 
 #: src/lib/alerts.ts
 msgid "Triggers when battery charge drops below a threshold"
-msgstr "Löst aus, wenn der Batterieladestand unter einen Schwellenwert fällt"
+msgstr ""
 
 #: src/lib/alerts.ts
 msgid "Triggers when combined up/down exceeds a threshold"
-msgstr "Löst aus, wenn die kombinierte Up- und Downloadrate einen Schwellenwert überschreitet"
+msgstr ""
 
 #: src/lib/alerts.ts
 msgid "Triggers when CPU usage exceeds a threshold"
-msgstr "Löst aus, wenn die CPU-Auslastung einen Schwellenwert überschreitet"
+msgstr ""
 
 #: src/lib/alerts.ts
 msgid "Triggers when GPU usage exceeds a threshold"
-msgstr "Löst aus, wenn die GPU-Auslastung einen Schwellenwert überschreitet"
+msgstr ""
 
 #: src/lib/alerts.ts
 msgid "Triggers when memory usage exceeds a threshold"
-msgstr "Löst aus, wenn die Arbeitsspeichernutzung einen Schwellenwert überschreitet"
+msgstr ""
 
 #: src/lib/alerts.ts
 msgid "Triggers when status switches between up and down"
-msgstr "Löst aus, wenn der Status zwischen online und offline wechselt"
+msgstr ""
 
 #: src/lib/alerts.ts
 msgid "Triggers when usage of any disk exceeds a threshold"
-msgstr "Löst aus, wenn die Nutzung einer Festplatte einen Schwellenwert überschreitet"
+msgstr ""
 
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/system/smart-table.tsx
 msgid "Type"
-msgstr "Typ"
+msgstr "Tip"
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Unit file"
-msgstr "Unit-Datei"
+msgstr ""
 
 #. Temperature / network units
 #: src/components/routes/settings/general.tsx
 msgid "Unit preferences"
-msgstr "Einheiten"
+msgstr ""
 
 #: src/components/command-palette.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Universal token"
-msgstr "Universeller Token"
+msgstr ""
 
 #. Context: Battery state
 #: src/lib/i18n.ts
 msgid "Unknown"
-msgstr "Unbekannt"
+msgstr ""
 
 #: src/components/systemd-table/systemd-table.tsx
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Unlimited"
-msgstr "Unbegrenzt"
+msgstr ""
 
 #. Context: System is up
 #: src/components/routes/system/info-bar.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Up"
-msgstr "Aktiv"
+msgstr ""
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Up ({upSystemsLength})"
-msgstr "Aktiv ({upSystemsLength})"
+msgstr ""
 
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Update"
-msgstr "Aktualisieren"
+msgstr ""
 
 #: src/components/containers-table/containers-table-columns.tsx
 #: src/components/routes/system/smart-table.tsx
 #: src/components/systemd-table/systemd-table-columns.tsx
 msgid "Updated"
-msgstr "Aktualisiert"
+msgstr ""
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Updated every 10 minutes."
-msgstr "Alle 10 Minuten aktualisiert."
+msgstr ""
 
 #: src/components/routes/system/network-sheet.tsx
 msgid "Upload"
-msgstr "Hochladen"
+msgstr ""
 
 #: src/components/routes/system/info-bar.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Uptime"
-msgstr "Betriebszeit"
+msgstr ""
 
-#: src/components/routes/system/charts/disk-charts.tsx
+#: src/components/routes/system/charts/extra-fs-charts.tsx
 #: src/components/routes/system/charts/gpu-charts.tsx
 #: src/components/routes/system/charts/gpu-charts.tsx
 #: src/components/routes/system/charts/gpu-charts.tsx
 #: src/components/routes/system/cpu-sheet.tsx
 msgid "Usage"
-msgstr "Nutzung"
+msgstr "Utilizare"
 
 #: src/components/routes/system/charts/disk-charts.tsx
 msgid "Usage of root partition"
-msgstr "Nutzung der Root-Partition"
+msgstr "Utilizarea partiţiei rădăcină"
 
 #: src/components/routes/system/charts/memory-charts.tsx
 #: src/components/routes/system/charts/memory-charts.tsx
 msgid "Used"
-msgstr "Verwendet"
+msgstr "Utilizat"
 
 #: src/components/command-palette.tsx
 #: src/components/navbar.tsx
 msgid "Users"
-msgstr "Benutzer"
-
-#: src/components/routes/system/charts/disk-charts.tsx
-msgctxt "Disk I/O utilization"
-msgid "Utilization"
-msgstr "Auslastung"
+msgstr "Utilizatori"
 
 #: src/components/alerts-history-columns.tsx
 msgid "Value"
-msgstr "Wert"
+msgstr ""
 
 #: src/components/systems-table/systems-table.tsx
 msgid "View"
-msgstr "Ansicht"
+msgstr ""
 
 #: src/components/routes/system/cpu-sheet.tsx
-#: src/components/routes/system/disk-io-sheet.tsx
 #: src/components/routes/system/network-sheet.tsx
 msgid "View more"
-msgstr "Mehr anzeigen"
+msgstr ""
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "View your 200 most recent alerts."
-msgstr "Sieh dir die neusten 200 Alarme an."
+msgstr ""
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Visible Fields"
-msgstr "Sichtbare Spalten"
+msgstr ""
 
 #: src/components/routes/system/chart-card.tsx
 msgid "Waiting for enough records to display"
-msgstr "Warten auf genügend Datensätze zur Anzeige"
+msgstr ""
 
 #: src/components/routes/settings/general.tsx
 msgid "Want to help improve our translations? Check <0>Crowdin</0> for details."
-msgstr "Möchtest du uns helfen, unsere Übersetzungen noch besser zu machen? Schau dir <0>Crowdin</0> für weitere Details an."
+msgstr ""
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Wants"
-msgstr "Möchte"
+msgstr ""
 
 #: src/components/routes/settings/general.tsx
 msgid "Warning (%)"
-msgstr "Warnung (%)"
+msgstr ""
 
 #: src/components/routes/settings/general.tsx
 msgid "Warning thresholds"
-msgstr "Warnschwellen"
+msgstr ""
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Webhook / Push notifications"
-msgstr "Webhook / Push-Benachrichtigungen"
+msgstr ""
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "When enabled, this token allows agents to self-register without prior system creation."
-msgstr "Wenn aktiviert, ermöglicht dieser Token Agenten die Selbstregistrierung ohne vorherige Systemerstellung."
+msgstr ""
 
 #: src/components/routes/settings/heartbeat.tsx
 msgid "When using POST, each heartbeat includes a JSON payload with system status summary, list of down systems, and triggered alerts."
-msgstr "Bei Verwendung von POST enthält jeder Heartbeat eine JSON-Payload mit einer Zusammenfassung des Systemstatus, einer Liste der ausgefallenen Systeme und ausgelösten Warnungen."
+msgstr ""
 
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgctxt "Button to copy install command"
 msgid "Windows command"
-msgstr "Windows-Befehl"
+msgstr ""
 
 #. Disk write
 #: src/components/routes/system/charts/disk-charts.tsx
-#: src/components/routes/system/disk-io-sheet.tsx
-#: src/components/routes/system/disk-io-sheet.tsx
-#: src/components/routes/system/disk-io-sheet.tsx
+#: src/components/routes/system/charts/extra-fs-charts.tsx
 msgid "Write"
-msgstr "Schreiben"
+msgstr ""
 
 #: src/components/routes/settings/layout.tsx
 msgid "YAML Config"
-msgstr "YAML-Konfiguration"
+msgstr ""
 
 #: src/components/routes/settings/config-yaml.tsx
 msgid "YAML Configuration"
-msgstr "YAML-Konfiguration"
+msgstr ""
 
 #: src/components/systemd-table/systemd-table.tsx
 #: src/components/systemd-table/systemd-table.tsx
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Yes"
-msgstr "Ja"
+msgstr "Da"
 
 #: src/components/routes/settings/layout.tsx
 msgid "Your user settings have been updated."
-msgstr "Deine Benutzereinstellungen wurden aktualisiert."
+msgstr ""
+
