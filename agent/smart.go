@@ -1118,6 +1118,9 @@ func (sm *SmartManager) parseSmartForNvme(output []byte) (bool, int) {
 	smartData.SerialNumber = data.SerialNumber
 	smartData.FirmwareVersion = data.FirmwareVersion
 	smartData.Capacity = data.UserCapacity.Bytes
+	if smartData.Capacity == 0 {
+		smartData.Capacity = data.NVMeTotalCapacity
+	}
 	if smartData.Capacity == 0 && (runtime.GOOS == "darwin" || sm.darwinNvmeProvider != nil) {
 		smartData.Capacity = sm.lookupDarwinNvmeCapacity(data.SerialNumber)
 	}
