@@ -16,10 +16,11 @@ import (
 
 // cli options
 type cmdOptions struct {
-	key    string // key is the public key(s) for SSH authentication.
-	listen string // listen is the address or port to listen on.
-	hubURL string // hubURL is the URL of the Beszel hub.
-	token  string // token is the token to use for authentication.
+	key                  string // key is the public key(s) for SSH authentication.
+	listen               string // listen is the address or port to listen on.
+	hubURL               string // hubURL is the URL of the Beszel hub.
+	token                string // token is the token to use for authentication.
+	exitOnInitialFailure bool   // exitOnInitialFailure exits if the initial connection fails.
 }
 
 // parse parses the command line flags and populates the config struct.
@@ -52,6 +53,7 @@ func (opts *cmdOptions) parse() bool {
 	chinaMirrors := pflag.BoolP("china-mirrors", "c", false, "Use mirror for update (gh.beszel.dev) instead of GitHub")
 	version := pflag.BoolP("version", "v", false, "Show version information")
 	help := pflag.BoolP("help", "h", false, "Show this help message")
+	pflag.BoolVar(&opts.exitOnInitialFailure, "exit-on-initial-failure", false, "Exit if initial connection fails (useful with restart policies)")
 
 	// Convert old single-dash long flags to double-dash for backward compatibility
 	flagsToConvert := []string{"key", "listen", "url", "token"}
@@ -105,6 +107,9 @@ func (opts *cmdOptions) parse() bool {
 	}
 	if opts.token != "" {
 		os.Setenv("TOKEN", opts.token)
+	}
+	if opts.exitOnInitialFailure {
+		os.Setenv("EXIT_ON_INITIAL_FAILURE", "true")
 	}
 	return false
 }

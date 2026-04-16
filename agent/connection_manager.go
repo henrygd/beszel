@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/henrygd/beszel/agent/health"
+	"github.com/henrygd/beszel/agent/utils"
 	"github.com/henrygd/beszel/internal/entities/system"
 )
 
@@ -16,14 +17,15 @@ import (
 // It handles both WebSocket and SSH connections, automatically switching between
 // them based on availability and managing reconnection attempts.
 type ConnectionManager struct {
-	agent          *Agent               // Reference to the parent agent
-	State          ConnectionState      // Current connection state
-	eventChan      chan ConnectionEvent // Channel for connection events
-	wsClient       *WebSocketClient     // WebSocket client for hub communication
-	serverOptions  ServerOptions        // Configuration for SSH server
-	wsTicker       *time.Ticker         // Ticker for WebSocket connection attempts
-	isConnecting   bool                 // Prevents multiple simultaneous reconnection attempts
-	ConnectionType system.ConnectionType
+	agent                *Agent               // Reference to the parent agent
+	State                ConnectionState      // Current connection state
+	eventChan            chan ConnectionEvent // Channel for connection events
+	wsClient             *WebSocketClient     // WebSocket client for hub communication
+	serverOptions        ServerOptions        // Configuration for SSH server
+	wsTicker             *time.Ticker         // Ticker for WebSocket connection attempts
+	isConnecting         bool                 // Prevents multiple simultaneous reconnection attempts
+	exitOnInitialFailure bool                 // Exit instead of retrying if initial connection fails
+	ConnectionType       system.ConnectionType
 }
 
 // ConnectionState represents the current connection state of the agent.
@@ -51,9 +53,11 @@ const wsTickerInterval = 10 * time.Second
 
 // newConnectionManager creates a new connection manager for the given agent.
 func newConnectionManager(agent *Agent) *ConnectionManager {
+	val, _ := utils.GetEnv("EXIT_ON_INITIAL_FAILURE")
 	cm := &ConnectionManager{
-		agent: agent,
-		State: Disconnected,
+		agent:                agent,
+		State:                Disconnected,
+		exitOnInitialFailure: val == "true" || val == "1",
 	}
 	return cm
 }
@@ -95,7 +99,12 @@ func (c *ConnectionManager) Start(serverOptions ServerOptions) error {
 	defer stopSignals()
 
 	c.startWsTicker()
-	c.connect()
+	if !c.connect() && c.exitOnInitialFailure {
+		c.stopWsTicker()
+		_ = c.agent.StopServer()
+		c.closeWebSocket()
+		return errors.New("initial connection failed")
+	}
 
 	// update health status immediately and every 90 seconds
 	_ = health.Update()
@@ -173,7 +182,8 @@ func (c *ConnectionManager) handleStateChange(newState ConnectionState) {
 
 // connect handles the connection logic with proper delays and priority.
 // It attempts WebSocket connection first, falling back to SSH server if needed.
-func (c *ConnectionManager) connect() {
+// Returns true if a WebSocket connection was initiated, false if it failed.
+func (c *ConnectionManager) connect() bool {
 	c.isConnecting = true
 	defer func() {
 		c.isConnecting = false
@@ -188,7 +198,9 @@ func (c *ConnectionManager) connect() {
 	if err != nil && c.State == Disconnected {
 		c.startSSHServer()
 		c.startWsTicker()
+		return false
 	}
+	return true
 }
 
 // startWebSocketConnection attempts to establish a WebSocket connection to the hub.

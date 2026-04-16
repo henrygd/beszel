@@ -298,3 +298,15 @@ func TestConnectionManager_ConnectFlow(t *testing.T) {
 		cm.connect()
 	}, "Connect should not panic without WebSocket client")
 }
+
+// TestConnectionManager_ExitOnInitialFailure tests that Start returns an error
+// when exitOnInitialFailure is set and the initial connection fails.
+func TestConnectionManager_ExitOnInitialFailure(t *testing.T) {
+	agent := createTestAgent(t)
+	cm := agent.connectionManager
+	serverOptions := createTestServerOptions(t)
+	cm.exitOnInitialFailure = true
+
+	err := cm.Start(serverOptions)
+	assert.EqualError(t, err, "initial connection failed")
+}
