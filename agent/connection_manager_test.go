@@ -355,7 +355,7 @@ func TestShouldExitOnErr(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			t.Setenv("EXIT_ON_DNS_ERR", tt.envValue)
+			t.Setenv("EXIT_ON_DNS_ERROR", tt.envValue)
 			result := shouldExitOnErr(tt.err)
 			assert.Equal(t, tt.expected, result)
 		})
