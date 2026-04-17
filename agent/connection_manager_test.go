@@ -4,6 +4,7 @@ package agent
 
 import (
 	"crypto/ed25519"
+	"errors"
 	"fmt"
 	"net"
 	"net/url"
@@ -299,14 +300,64 @@ func TestConnectionManager_ConnectFlow(t *testing.T) {
 	}, "Connect should not panic without WebSocket client")
 }
 
-// TestConnectionManager_ExitOnInitialFailure tests that Start returns an error
-// when exitOnInitialFailure is set and the initial connection fails.
-func TestConnectionManager_ExitOnInitialFailure(t *testing.T) {
-	agent := createTestAgent(t)
-	cm := agent.connectionManager
-	serverOptions := createTestServerOptions(t)
-	cm.exitOnInitialFailure = true
+func TestShouldExitOnErr(t *testing.T) {
+	createDialErr := func(msg string) error {
+		return &net.OpError{
+			Op:  "dial",
+			Net: "tcp",
+			Err: errors.New(msg),
+		}
+	}
 
-	err := cm.Start(serverOptions)
-	assert.EqualError(t, err, "initial connection failed")
+	tests := []struct {
+		name     string
+		err      error
+		envValue string
+		expected bool
+	}{
+		{
+			name:     "no env var",
+			err:      createDialErr("lookup lkahsdfasdf: no such host"),
+			envValue: "",
+			expected: false,
+		},
+		{
+			name:     "env var false",
+			err:      createDialErr("lookup lkahsdfasdf: no such host"),
+			envValue: "false",
+			expected: false,
+		},
+		{
+			name:     "env var true, matching error",
+			err:      createDialErr("lookup lkahsdfasdf: no such host"),
+			envValue: "true",
+			expected: true,
+		},
+		{
+			name:     "env var true, matching error with extra context",
+			err:      createDialErr("lookup beszel.server.lan on [::1]:53: read udp [::1]:44557->[::1]:53: read: connection refused"),
+			envValue: "true",
+			expected: true,
+		},
+		{
+			name:     "env var true, non-matching error",
+			err:      errors.New("connection refused"),
+			envValue: "true",
+			expected: false,
+		},
+		{
+			name:     "env var true, dial but not lookup",
+			err:      createDialErr("connection timeout"),
+			envValue: "true",
+			expected: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Setenv("EXIT_ON_DNS_ERR", tt.envValue)
+			result := shouldExitOnErr(tt.err)
+			assert.Equal(t, tt.expected, result)
+		})
+	}
 }
