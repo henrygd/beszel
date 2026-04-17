@@ -2,6 +2,7 @@ package agent
 
 import (
 	"context"
+	"fmt"
 	"log/slog"
 	"os"
 	"path/filepath"
@@ -95,6 +96,25 @@ func isDockerSpecialMountpoint(mountpoint string) bool {
 	return false
 }
 
+// uniqueFsStatsKey derives a fsStats map key that does not collide with an
+// existing entry by starting from the mountpoint's basename and appending a
+// numeric suffix when necessary. Used when the device-derived key would
+// otherwise overwrite a different mount (e.g. autofs reporting "systemd-1"
+// for every automount target).
+func uniqueFsStatsKey(existing map[string]*system.FsStats, mountpoint string) string {
+	base := filepath.Base(mountpoint)
+	if base == "" || base == "/" || base == "." {
+		base = "fs"
+	}
+	key := base
+	for i := 2; ; i++ {
+		if _, exists := existing[key]; !exists {
+			return key
+		}
+		key = fmt.Sprintf("%s-%d", base, i)
+	}
+}
+
 // registerFilesystemStats resolves the tracked key and stats payload for a
 // filesystem before it is inserted into fsStats.
 func registerFilesystemStats(existing map[string]*system.FsStats, device, mountpoint string, root bool, customName string, ctx fsRegistrationContext) (string, *system.FsStats, bool) {
@@ -140,8 +160,16 @@ func registerFilesystemStats(existing map[string]*system.FsStats, device, mountp
 		}
 	}
 
-	if _, exists := existing[key]; exists {
-		return "", nil, false
+	if existingStats, exists := existing[key]; exists {
+		if existingStats.Mountpoint == mountpoint {
+			return "", nil, false
+		}
+		// Key collides on a different mountpoint. Pseudo-device setups like
+		// systemd-automount report the same device ("systemd-1") for every
+		// mount, which would otherwise drop every entry after the first
+		// (see #1931). Derive a unique key from the mountpoint so each mount
+		// survives.
+		key = uniqueFsStatsKey(existing, mountpoint)
 	}
 
 	fsStats := &system.FsStats{Root: root, Mountpoint: mountpoint}
