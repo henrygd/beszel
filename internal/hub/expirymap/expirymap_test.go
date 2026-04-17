@@ -4,6 +4,7 @@ package expirymap
 
 import (
 	"testing"
+	"testing/synctest"
 	"time"
 
 	"github.com/stretchr/testify/assert"
@@ -174,6 +175,33 @@ func TestExpiryMap_GenericTypes(t *testing.T) {
 		assert.True(t, ok)
 		require.NotNil(t, value)
 		assert.Equal(t, "hello", *value)
+	})
+}
+
+func TestExpiryMap_UpdateExpiration(t *testing.T) {
+	em := New[string](time.Hour)
+
+	// Set a value with short TTL
+	em.Set("key1", "value1", time.Millisecond*50)
+
+	// Verify it exists
+	assert.True(t, em.Has("key1"))
+
+	// Update expiration to a longer TTL
+	em.UpdateExpiration("key1", time.Hour)
+
+	// Wait for the original TTL to pass
+	time.Sleep(time.Millisecond * 100)
+
+	// Should still exist because expiration was updated
+	assert.True(t, em.Has("key1"))
+	value, ok := em.GetOk("key1")
+	assert.True(t, ok)
+	assert.Equal(t, "value1", value)
+
+	// Try updating non-existent key (should not panic)
+	assert.NotPanics(t, func() {
+		em.UpdateExpiration("nonexistent", time.Hour)
 	})
 }
 
@@ -472,4 +500,53 @@ func TestExpiryMap_ValueOperations_Integration(t *testing.T) {
 	assert.True(t, ok)
 	assert.Equal(t, "unique", value)
 	assert.Equal(t, "key2", key)
+}
+
+func TestExpiryMap_Cleaner(t *testing.T) {
+	synctest.Test(t, func(t *testing.T) {
+		em := New[string](time.Second)
+		defer em.StopCleaner()
+
+		em.Set("test", "value", 500*time.Millisecond)
+
+		// Wait 600ms, value is expired but cleaner hasn't run yet (interval is 1s)
+		time.Sleep(600 * time.Millisecond)
+		synctest.Wait()
+
+		// Map should still hold the value in its internal store before lazy access or cleaner
+		assert.Equal(t, 1, len(em.store.GetAll()), "store should still have 1 item before cleaner runs")
+
+		// Wait another 500ms so cleaner (1s interval) runs
+		time.Sleep(500 * time.Millisecond)
+		synctest.Wait() // Wait for background goroutine to process the tick
+
+		assert.Equal(t, 0, len(em.store.GetAll()), "store should be empty after cleaner runs")
+	})
+}
+
+func TestExpiryMap_StopCleaner(t *testing.T) {
+	em := New[string](time.Hour)
+
+	// Initially, stopChan is open, reading would block
+	select {
+	case <-em.stopChan:
+		t.Fatal("stopChan should be open initially")
+	default:
+		// success
+	}
+
+	em.StopCleaner()
+
+	// After StopCleaner, stopChan is closed, reading returns immediately
+	select {
+	case <-em.stopChan:
+		// success
+	default:
+		t.Fatal("stopChan was not closed by StopCleaner")
+	}
+
+	// Calling StopCleaner again should NOT panic thanks to sync.Once
+	assert.NotPanics(t, func() {
+		em.StopCleaner()
+	})
 }

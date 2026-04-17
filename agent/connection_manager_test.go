@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"net"
 	"net/url"
-	"os"
 	"testing"
 	"time"
 
@@ -183,10 +182,6 @@ func TestConnectionManager_TickerManagement(t *testing.T) {
 
 // TestConnectionManager_WebSocketConnectionFlow tests WebSocket connection logic
 func TestConnectionManager_WebSocketConnectionFlow(t *testing.T) {
-	if testing.Short() {
-		t.Skip("Skipping WebSocket connection test in short mode")
-	}
-
 	agent := createTestAgent(t)
 	cm := agent.connectionManager
 
@@ -196,19 +191,18 @@ func TestConnectionManager_WebSocketConnectionFlow(t *testing.T) {
 	assert.Equal(t, Disconnected, cm.State, "State should remain Disconnected after failed connection")
 
 	// Test with invalid URL
-	os.Setenv("BESZEL_AGENT_HUB_URL", "invalid-url")
-	os.Setenv("BESZEL_AGENT_TOKEN", "test-token")
-	defer func() {
-		os.Unsetenv("BESZEL_AGENT_HUB_URL")
-		os.Unsetenv("BESZEL_AGENT_TOKEN")
-	}()
-
-	// Test with missing token
-	os.Setenv("BESZEL_AGENT_HUB_URL", "http://localhost:8080")
-	os.Unsetenv("BESZEL_AGENT_TOKEN")
+	t.Setenv("BESZEL_AGENT_HUB_URL", "1,33%")
+	t.Setenv("BESZEL_AGENT_TOKEN", "test-token")
 
 	_, err2 := newWebSocketClient(agent)
-	assert.Error(t, err2, "WebSocket client creation should fail without token")
+	assert.Error(t, err2, "WebSocket client creation should fail with invalid URL")
+
+	// Test with missing token
+	t.Setenv("BESZEL_AGENT_HUB_URL", "http://localhost:8080")
+	t.Setenv("BESZEL_AGENT_TOKEN", "")
+
+	_, err3 := newWebSocketClient(agent)
+	assert.Error(t, err3, "WebSocket client creation should fail without token")
 }
 
 // TestConnectionManager_ReconnectionLogic tests reconnection prevention logic
@@ -234,12 +228,8 @@ func TestConnectionManager_ConnectWithRateLimit(t *testing.T) {
 	cm := agent.connectionManager
 
 	// Set up environment for WebSocket client creation
-	os.Setenv("BESZEL_AGENT_HUB_URL", "ws://localhost:8080")
-	os.Setenv("BESZEL_AGENT_TOKEN", "test-token")
-	defer func() {
-		os.Unsetenv("BESZEL_AGENT_HUB_URL")
-		os.Unsetenv("BESZEL_AGENT_TOKEN")
-	}()
+	t.Setenv("BESZEL_AGENT_HUB_URL", "ws://localhost:8080")
+	t.Setenv("BESZEL_AGENT_TOKEN", "test-token")
 
 	// Create WebSocket client
 	wsClient, err := newWebSocketClient(agent)
@@ -285,12 +275,8 @@ func TestConnectionManager_CloseWebSocket(t *testing.T) {
 	}, "Should not panic when closing nil WebSocket client")
 
 	// Set up environment and create WebSocket client
-	os.Setenv("BESZEL_AGENT_HUB_URL", "ws://localhost:8080")
-	os.Setenv("BESZEL_AGENT_TOKEN", "test-token")
-	defer func() {
-		os.Unsetenv("BESZEL_AGENT_HUB_URL")
-		os.Unsetenv("BESZEL_AGENT_TOKEN")
-	}()
+	t.Setenv("BESZEL_AGENT_HUB_URL", "ws://localhost:8080")
+	t.Setenv("BESZEL_AGENT_TOKEN", "test-token")
 
 	wsClient, err := newWebSocketClient(agent)
 	require.NoError(t, err)

@@ -32,7 +32,7 @@ func createTestHub(t testing.TB) (*Hub, *pbtests.TestApp, error) {
 	if err != nil {
 		return nil, nil, err
 	}
-	return NewHub(testApp), testApp, nil
+	return NewHub(testApp), testApp, err
 }
 
 // cleanupTestHub stops background system goroutines before tearing down the app.
@@ -897,12 +897,8 @@ func TestAgentWebSocketIntegration(t *testing.T) {
 			require.NoError(t, err)
 
 			// Set up environment variables for the agent
-			os.Setenv("BESZEL_AGENT_HUB_URL", ts.URL)
-			os.Setenv("BESZEL_AGENT_TOKEN", tc.agentToken)
-			defer func() {
-				os.Unsetenv("BESZEL_AGENT_HUB_URL")
-				os.Unsetenv("BESZEL_AGENT_TOKEN")
-			}()
+			t.Setenv("BESZEL_AGENT_HUB_URL", ts.URL)
+			t.Setenv("BESZEL_AGENT_TOKEN", tc.agentToken)
 
 			// Start agent in background
 			done := make(chan error, 1)
@@ -917,7 +913,7 @@ func TestAgentWebSocketIntegration(t *testing.T) {
 
 			// Wait for connection result
 			maxWait := 2 * time.Second
-			time.Sleep(20 * time.Millisecond)
+			time.Sleep(40 * time.Millisecond)
 			checkInterval := 20 * time.Millisecond
 			timeout := time.After(maxWait)
 			ticker := time.Tick(checkInterval)
@@ -1080,12 +1076,8 @@ func TestMultipleSystemsWithSameUniversalToken(t *testing.T) {
 			require.NoError(t, err)
 
 			// Set up environment variables for the agent
-			os.Setenv("BESZEL_AGENT_HUB_URL", ts.URL)
-			os.Setenv("BESZEL_AGENT_TOKEN", universalToken)
-			defer func() {
-				os.Unsetenv("BESZEL_AGENT_HUB_URL")
-				os.Unsetenv("BESZEL_AGENT_TOKEN")
-			}()
+			t.Setenv("BESZEL_AGENT_HUB_URL", ts.URL)
+			t.Setenv("BESZEL_AGENT_TOKEN", universalToken)
 
 			// Count systems before connection
 			systemsBefore, err := testApp.FindRecordsByFilter("systems", "users ~ {:userId}", "", -1, 0, map[string]any{"userId": userRecord.Id})
@@ -1243,12 +1235,8 @@ func TestPermanentUniversalTokenFromDB(t *testing.T) {
 	require.NoError(t, err)
 
 	// Set up environment variables for the agent
-	os.Setenv("BESZEL_AGENT_HUB_URL", ts.URL)
-	os.Setenv("BESZEL_AGENT_TOKEN", universalToken)
-	defer func() {
-		os.Unsetenv("BESZEL_AGENT_HUB_URL")
-		os.Unsetenv("BESZEL_AGENT_TOKEN")
-	}()
+	t.Setenv("BESZEL_AGENT_HUB_URL", ts.URL)
+	t.Setenv("BESZEL_AGENT_TOKEN", universalToken)
 
 	// Start agent in background
 	done := make(chan error, 1)

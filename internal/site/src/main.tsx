@@ -12,10 +12,19 @@ import Settings from "@/components/routes/settings/layout.tsx"
 import { ThemeProvider } from "@/components/theme-provider.tsx"
 import { Toaster } from "@/components/ui/toaster.tsx"
 import { alertManager } from "@/lib/alerts"
-import { pb, updateUserSettings } from "@/lib/api.ts"
+import { isAdmin, pb, updateUserSettings } from "@/lib/api.ts"
 import { dynamicActivate, getLocale } from "@/lib/i18n"
-import { $authenticated, $copyContent, $direction, $publicKey, $userSettings } from "@/lib/stores.ts"
+import {
+	$authenticated,
+	$copyContent,
+	$direction,
+	$newVersion,
+	$publicKey,
+	$userSettings,
+	defaultLayoutWidth,
+} from "@/lib/stores.ts"
 import * as systemsManager from "@/lib/systemsManager.ts"
+import type { BeszelInfo, UpdateInfo } from "./types"
 
 const LoginPage = lazy(() => import("@/components/login/login.tsx"))
 const Home = lazy(() => import("@/components/routes/home.tsx"))
@@ -29,12 +38,16 @@ const App = memo(() => {
 
 	useEffect(() => {
 		// change auth store on auth change
-		pb.authStore.onChange(() => {
+		const unsubscribeAuth = pb.authStore.onChange(() => {
 			$authenticated.set(pb.authStore.isValid)
 		})
-		// get version / public key
-		pb.send("/api/beszel/getkey", {}).then((data) => {
+		// get general info for authenticated users, such as public key and version
+		pb.send<BeszelInfo>("/api/beszel/info", {}).then((data) => {
 			$publicKey.set(data.key)
+			// check for updates if enabled
+			if (data.cu && isAdmin()) {
+				pb.send<UpdateInfo>("/api/beszel/update", {}).then($newVersion.set)
+			}
 		})
 		// get user settings
 		updateUserSettings()
@@ -50,6 +63,7 @@ const App = memo(() => {
 			// subscribe to new alert updates
 			.then(alertManager.subscribe)
 		return () => {
+			unsubscribeAuth()
 			alertManager.unsubscribe()
 			systemsManager.unsubscribe()
 		}
@@ -74,24 +88,11 @@ const Layout = () => {
 	const authenticated = useStore($authenticated)
 	const copyContent = useStore($copyContent)
 	const direction = useStore($direction)
-	const userSettings = useStore($userSettings)
+	const { layoutWidth } = useStore($userSettings, { keys: ["layoutWidth"] })
 
 	useEffect(() => {
 		document.documentElement.dir = direction
 	}, [direction])
-
-	// biome-ignore lint/correctness/useExhaustiveDependencies: only run on mount
-	useEffect(() => {
-		// refresh auth if not authenticated (required for trusted auth header)
-		if (!authenticated) {
-			pb.collection("users")
-				.authRefresh()
-				.then((res) => {
-					pb.authStore.save(res.token, res.record)
-					$authenticated.set(!!pb.authStore.isValid)
-				})
-		}
-	}, [])
 
 	return (
 		<DirectionProvider dir={direction}>
@@ -100,7 +101,7 @@ const Layout = () => {
 					<LoginPage />
 				</Suspense>
 			) : (
-				<div style={{ "--container": `${userSettings.layoutWidth ?? 1580}px` } as React.CSSProperties}>
+				<div style={{ "--container": `${layoutWidth ?? defaultLayoutWidth}px` } as React.CSSProperties}>
 					<div className="container">
 						<Navbar />
 					</div>

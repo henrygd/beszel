@@ -1,28 +1,39 @@
 import { t } from "@lingui/core/macro"
-import { MoonStarIcon, SunIcon } from "lucide-react"
+import { MoonStarIcon, SunIcon, SunMoonIcon } from "lucide-react"
 import { useTheme } from "@/components/theme-provider"
 import { Button } from "@/components/ui/button"
 import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip"
 import { Trans } from "@lingui/react/macro"
+import { cn } from "@/lib/utils"
+
+const themes = ["light", "dark", "system"] as const
+const icons = [SunIcon, MoonStarIcon, SunMoonIcon] as const
 
 export function ModeToggle() {
 	const { theme, setTheme } = useTheme()
 
+	const currentIndex = themes.indexOf(theme)
+	const Icon = icons[currentIndex]
+
 	return (
 		<Tooltip>
-			<TooltipTrigger>
+			<TooltipTrigger asChild>
 				<Button
 					variant={"ghost"}
 					size="icon"
-					aria-label={t`Toggle theme`}
-					onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+					aria-label={t`Switch theme`}
+					onClick={() => setTheme(themes[(currentIndex + 1) % themes.length])}
 				>
-					<SunIcon className="h-[1.2rem] w-[1.2rem] transition-all -rotate-90 dark:opacity-0 dark:rotate-0" />
-					<MoonStarIcon className="absolute h-[1.2rem] w-[1.2rem] transition-all opacity-0 -rotate-90 dark:opacity-100 dark:rotate-0" />
+					<Icon
+						className={cn(
+							"animate-in fade-in spin-in-[-30deg] duration-200",
+							currentIndex === 2 ? "size-[1.35rem]" : "size-[1.2rem]"
+						)}
+					/>
 				</Button>
 			</TooltipTrigger>
 			<TooltipContent>
-				<Trans>Toggle theme</Trans>
+				<Trans>Switch theme</Trans>
 			</TooltipContent>
 		</Tooltip>
 	)

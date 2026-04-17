@@ -21,9 +21,9 @@ type hubLike interface {
 
 type AlertManager struct {
 	hub           hubLike
-	alertQueue    chan alertTask
-	stopChan      chan struct{}
+	stopOnce      sync.Once
 	pendingAlerts sync.Map
+	alertsCache   *AlertsCache
 }
 
 type AlertMessageData struct {
@@ -40,16 +40,22 @@ type UserNotificationSettings struct {
 	Webhooks []string `json:"webhooks"`
 }
 
+type SystemAlertFsStats struct {
+	DiskTotal float64 `json:"d"`
+	DiskUsed  float64 `json:"du"`
+}
+
+// Values pulled from system_stats.stats that are relevant to alerts.
 type SystemAlertStats struct {
 	Cpu          float64                       `json:"cpu"`
 	Mem          float64                       `json:"mp"`
 	Disk         float64                       `json:"dp"`
-	NetSent      float64                       `json:"ns"`
-	NetRecv      float64                       `json:"nr"`
+	Bandwidth    [2]uint64                     `json:"b"`
 	GPU          map[string]SystemAlertGPUData `json:"g"`
 	Temperatures map[string]float32            `json:"t"`
 	LoadAvg      [3]float64                    `json:"la"`
 	Battery      [2]uint8                      `json:"bat"`
+	ExtraFs      map[string]SystemAlertFsStats `json:"efs"`
 }
 
 type SystemAlertGPUData struct {
@@ -58,7 +64,7 @@ type SystemAlertGPUData struct {
 
 type SystemAlertData struct {
 	systemRecord *core.Record
-	alertRecord  *core.Record
+	alertData    CachedAlertData
 	name         string
 	unit         string
 	val          float64
@@ -92,12 +98,10 @@ var supportsTitle = map[string]struct{}{
 // NewAlertManager creates a new AlertManager instance.
 func NewAlertManager(app hubLike) *AlertManager {
 	am := &AlertManager{
-		hub:        app,
-		alertQueue: make(chan alertTask, 5),
-		stopChan:   make(chan struct{}),
+		hub:         app,
+		alertsCache: NewAlertsCache(app),
 	}
 	am.bindEvents()
-	go am.startWorker()
 	return am
 }
 
@@ -106,6 +110,19 @@ func (am *AlertManager) bindEvents() {
 	am.hub.OnRecordAfterUpdateSuccess("alerts").BindFunc(updateHistoryOnAlertUpdate)
 	am.hub.OnRecordAfterDeleteSuccess("alerts").BindFunc(resolveHistoryOnAlertDelete)
 	am.hub.OnRecordAfterUpdateSuccess("smart_devices").BindFunc(am.handleSmartDeviceAlert)
+
+	am.hub.OnServe().BindFunc(func(e *core.ServeEvent) error {
+		// Populate all alerts into cache on startup
+		_ = am.alertsCache.PopulateFromDB(true)
+
+		if err := resolveStatusAlerts(e.App); err != nil {
+			e.App.Logger().Error("Failed to resolve stale status alerts", "err", err)
+		}
+		if err := am.restorePendingStatusAlerts(); err != nil {
+			e.App.Logger().Error("Failed to restore pending status alerts", "err", err)
+		}
+		return e.Next()
+	})
 }
 
 // IsNotificationSilenced checks if a notification should be silenced based on configured quiet hours
@@ -259,13 +276,14 @@ func (am *AlertManager) SendShoutrrrAlert(notificationUrl, title, message, link,
 	}
 
 	// Add link
-	if scheme == "ntfy" {
+	switch scheme {
+	case "ntfy":
 		queryParams.Add("Actions", fmt.Sprintf("view, %s, %s", linkText, link))
-	} else if scheme == "lark" {
+	case "lark":
 		queryParams.Add("link", link)
-	} else if scheme == "bark" {
+	case "bark":
 		queryParams.Add("url", link)
-	} else {
+	default:
 		message += "\n\n" + link
 	}
 
@@ -284,17 +302,12 @@ func (am *AlertManager) SendShoutrrrAlert(notificationUrl, title, message, link,
 	return nil
 }
 
-func (am *AlertManager) SendTestNotification(e *core.RequestEvent) error {
-	var data struct {
-		URL string `json:"url"`
-	}
-	err := e.BindBody(&data)
-	if err != nil || data.URL == "" {
-		return e.BadRequestError("URL is required", err)
-	}
-	err = am.SendShoutrrrAlert(data.URL, "Test Alert", "This is a notification from Beszel.", am.hub.Settings().Meta.AppURL, "View Beszel")
+// setAlertTriggered updates the "triggered" status of an alert record in the database
+func (am *AlertManager) setAlertTriggered(alert CachedAlertData, triggered bool) error {
+	alertRecord, err := am.hub.FindRecordById("alerts", alert.Id)
 	if err != nil {
-		return e.JSON(200, map[string]string{"err": err.Error()})
+		return err
 	}
-	return e.JSON(200, map[string]bool{"err": false})
+	alertRecord.Set("triggered", triggered)
+	return am.hub.Save(alertRecord)
 }

@@ -10,6 +10,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/henrygd/beszel/agent/utils"
 	"github.com/henrygd/beszel/internal/entities/system"
 
 	"github.com/stretchr/testify/assert"
@@ -265,8 +266,8 @@ func TestParseNvtopData(t *testing.T) {
 	assert.Equal(t, 48.0, g0.Temperature)
 	assert.Equal(t, 5.0, g0.Usage)
 	assert.Equal(t, 13.0, g0.Power)
-	assert.Equal(t, bytesToMegabytes(349372416), g0.MemoryUsed)
-	assert.Equal(t, bytesToMegabytes(4294967296), g0.MemoryTotal)
+	assert.Equal(t, utils.BytesToMegabytes(349372416), g0.MemoryUsed)
+	assert.Equal(t, utils.BytesToMegabytes(4294967296), g0.MemoryTotal)
 	assert.Equal(t, 1.0, g0.Count)
 
 	g1, ok := gm.GpuDataMap["n1"]
@@ -275,8 +276,8 @@ func TestParseNvtopData(t *testing.T) {
 	assert.Equal(t, 48.0, g1.Temperature)
 	assert.Equal(t, 12.0, g1.Usage)
 	assert.Equal(t, 9.0, g1.Power)
-	assert.Equal(t, bytesToMegabytes(1213784064), g1.MemoryUsed)
-	assert.Equal(t, bytesToMegabytes(16929173504), g1.MemoryTotal)
+	assert.Equal(t, utils.BytesToMegabytes(1213784064), g1.MemoryUsed)
+	assert.Equal(t, utils.BytesToMegabytes(16929173504), g1.MemoryTotal)
 	assert.Equal(t, 1.0, g1.Count)
 }
 
@@ -1082,8 +1083,6 @@ func TestCalculateGPUAverage(t *testing.T) {
 
 func TestGPUCapabilitiesAndLegacyPriority(t *testing.T) {
 	// Save original PATH
-	origPath := os.Getenv("PATH")
-	defer os.Setenv("PATH", origPath)
 	hasAmdSysfs := (&GPUManager{}).hasAmdSysfs()
 
 	tests := []struct {
@@ -1177,7 +1176,7 @@ echo "[]"`
 		{
 			name: "no gpu tools available",
 			setupCommands: func(_ string) error {
-				os.Setenv("PATH", "")
+				t.Setenv("PATH", "")
 				return nil
 			},
 			wantErr: true,
@@ -1187,7 +1186,7 @@ echo "[]"`
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			tempDir := t.TempDir()
-			os.Setenv("PATH", tempDir)
+			t.Setenv("PATH", tempDir)
 			if err := tt.setupCommands(tempDir); err != nil {
 				t.Fatal(err)
 			}
@@ -1233,13 +1232,9 @@ echo "[]"`
 }
 
 func TestCollectorStartHelpers(t *testing.T) {
-	// Save original PATH
-	origPath := os.Getenv("PATH")
-	defer os.Setenv("PATH", origPath)
-
 	// Set up temp dir with the commands
 	dir := t.TempDir()
-	os.Setenv("PATH", dir)
+	t.Setenv("PATH", dir)
 
 	tests := []struct {
 		name     string
@@ -1369,11 +1364,8 @@ echo '[{"device_name":"NVIDIA Test GPU","temp":"52C","power_draw":"31W","gpu_uti
 }
 
 func TestNewGPUManagerPriorityNvtopFallback(t *testing.T) {
-	origPath := os.Getenv("PATH")
-	defer os.Setenv("PATH", origPath)
-
 	dir := t.TempDir()
-	os.Setenv("PATH", dir)
+	t.Setenv("PATH", dir)
 	t.Setenv("BESZEL_AGENT_GPU_COLLECTOR", "nvtop,nvidia-smi")
 
 	nvtopPath := filepath.Join(dir, "nvtop")
@@ -1398,11 +1390,8 @@ echo "0, NVIDIA Priority GPU, 45, 512, 2048, 12, 25"`
 }
 
 func TestNewGPUManagerPriorityMixedCollectors(t *testing.T) {
-	origPath := os.Getenv("PATH")
-	defer os.Setenv("PATH", origPath)
-
 	dir := t.TempDir()
-	os.Setenv("PATH", dir)
+	t.Setenv("PATH", dir)
 	t.Setenv("BESZEL_AGENT_GPU_COLLECTOR", "intel_gpu_top,rocm-smi")
 
 	intelPath := filepath.Join(dir, "intel_gpu_top")
@@ -1432,11 +1421,8 @@ echo '{"card0": {"Temperature (Sensor edge) (C)": "49.0", "Current Socket Graphi
 }
 
 func TestNewGPUManagerPriorityNvmlFallbackToNvidiaSmi(t *testing.T) {
-	origPath := os.Getenv("PATH")
-	defer os.Setenv("PATH", origPath)
-
 	dir := t.TempDir()
-	os.Setenv("PATH", dir)
+	t.Setenv("PATH", dir)
 	t.Setenv("BESZEL_AGENT_GPU_COLLECTOR", "nvml,nvidia-smi")
 
 	nvidiaPath := filepath.Join(dir, "nvidia-smi")
@@ -1455,11 +1441,8 @@ echo "0, NVIDIA Fallback GPU, 41, 256, 1024, 8, 14"`
 }
 
 func TestNewGPUManagerConfiguredCollectorsMustStart(t *testing.T) {
-	origPath := os.Getenv("PATH")
-	defer os.Setenv("PATH", origPath)
-
 	dir := t.TempDir()
-	os.Setenv("PATH", dir)
+	t.Setenv("PATH", dir)
 
 	t.Run("configured valid collector unavailable", func(t *testing.T) {
 		t.Setenv("BESZEL_AGENT_GPU_COLLECTOR", "nvidia-smi")
@@ -1478,12 +1461,28 @@ func TestNewGPUManagerConfiguredCollectorsMustStart(t *testing.T) {
 	})
 }
 
-func TestNewGPUManagerJetsonIgnoresCollectorConfig(t *testing.T) {
-	origPath := os.Getenv("PATH")
-	defer os.Setenv("PATH", origPath)
+func TestCollectorDefinitionsNvmlDoesNotRequireNvidiaSmi(t *testing.T) {
+	gm := &GPUManager{}
+	definitions := gm.collectorDefinitions(gpuCapabilities{})
+	require.Contains(t, definitions, collectorSourceNVML)
+	assert.True(t, definitions[collectorSourceNVML].available)
+}
 
+func TestNewGPUManagerConfiguredNvmlBypassesCapabilityGate(t *testing.T) {
 	dir := t.TempDir()
-	os.Setenv("PATH", dir)
+	t.Setenv("PATH", dir)
+	t.Setenv("BESZEL_AGENT_GPU_COLLECTOR", "nvml")
+
+	gm, err := NewGPUManager()
+	require.Nil(t, gm)
+	require.Error(t, err)
+	assert.Contains(t, err.Error(), "no configured GPU collectors are available")
+	assert.NotContains(t, err.Error(), noGPUFoundMsg)
+}
+
+func TestNewGPUManagerJetsonIgnoresCollectorConfig(t *testing.T) {
+	dir := t.TempDir()
+	t.Setenv("PATH", dir)
 	t.Setenv("BESZEL_AGENT_GPU_COLLECTOR", "nvidia-smi")
 
 	tegraPath := filepath.Join(dir, "tegrastats")
@@ -1718,12 +1717,8 @@ func TestIntelUpdateFromStats(t *testing.T) {
 }
 
 func TestIntelCollectorStreaming(t *testing.T) {
-	// Save and override PATH
-	origPath := os.Getenv("PATH")
-	defer os.Setenv("PATH", origPath)
-
 	dir := t.TempDir()
-	os.Setenv("PATH", dir)
+	t.Setenv("PATH", dir)
 
 	// Create a fake intel_gpu_top that prints -l format with four samples (first will be skipped) and exits
 	scriptPath := filepath.Join(dir, "intel_gpu_top")

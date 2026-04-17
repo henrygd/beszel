@@ -121,6 +121,78 @@ func TestParseSmartForSataDeviceStatisticsTemperature(t *testing.T) {
 	assert.Equal(t, uint8(22), deviceData.Temperature)
 }
 
+func TestParseSmartForSataAtaDeviceStatistics(t *testing.T) {
+	// tests that ata_device_statistics values are parsed correctly
+	jsonPayload := []byte(`{
+		"smartctl": {"exit_status": 0},
+		"device": {"name": "/dev/sdb", "type": "sat"},
+		"model_name": "SanDisk SSD U110 16GB",
+		"serial_number": "lksjfh23lhj",
+		"firmware_version": "U21B001",
+		"user_capacity": {"bytes": 16013942784},
+		"smart_status": {"passed": true},
+		"ata_smart_attributes": {"table": []},
+		"ata_device_statistics": {
+			"pages": [
+				{
+					"number": 5,
+					"name": "Temperature Statistics",
+					"table": [
+						{"name": "Current Temperature", "value": 43, "flags": {"valid": true}},
+						{"name": "Specified Minimum Operating Temperature", "value": -20, "flags": {"valid": true}}
+					]
+				}
+			]
+		}
+	}`)
+
+	sm := &SmartManager{SmartDataMap: make(map[string]*smart.SmartData)}
+	hasData, exitStatus := sm.parseSmartForSata(jsonPayload)
+	require.True(t, hasData)
+	assert.Equal(t, 0, exitStatus)
+
+	deviceData, ok := sm.SmartDataMap["lksjfh23lhj"]
+	require.True(t, ok, "expected smart data entry for serial lksjfh23lhj")
+	assert.Equal(t, uint8(43), deviceData.Temperature)
+}
+
+func TestParseSmartForSataNegativeDeviceStatistics(t *testing.T) {
+	// Tests that negative values in ata_device_statistics (e.g. min operating temp)
+	// do not cause the entire SAT parser to fail.
+	jsonPayload := []byte(`{
+		"smartctl": {"exit_status": 0},
+		"device": {"name": "/dev/sdb", "type": "sat"},
+		"model_name": "SanDisk SSD U110 16GB",
+		"serial_number": "NEGATIVE123",
+		"firmware_version": "U21B001",
+		"user_capacity": {"bytes": 16013942784},
+		"smart_status": {"passed": true},
+		"temperature": {"current": 38},
+		"ata_smart_attributes": {"table": []},
+		"ata_device_statistics": {
+			"pages": [
+				{
+					"number": 5,
+					"name": "Temperature Statistics",
+					"table": [
+						{"name": "Current Temperature", "value": 38, "flags": {"valid": true}},
+						{"name": "Specified Minimum Operating Temperature", "value": -20, "flags": {"valid": true}}
+					]
+				}
+			]
+		}
+	}`)
+
+	sm := &SmartManager{SmartDataMap: make(map[string]*smart.SmartData)}
+	hasData, exitStatus := sm.parseSmartForSata(jsonPayload)
+	require.True(t, hasData)
+	assert.Equal(t, 0, exitStatus)
+
+	deviceData, ok := sm.SmartDataMap["NEGATIVE123"]
+	require.True(t, ok, "expected smart data entry for serial NEGATIVE123")
+	assert.Equal(t, uint8(38), deviceData.Temperature)
+}
+
 func TestParseSmartForSataParentheticalRawValue(t *testing.T) {
 	jsonPayload := []byte(`{
 		"smartctl": {"exit_status": 0},
@@ -727,6 +799,182 @@ func TestIsVirtualDeviceScsi(t *testing.T) {
 	}
 }
 
+func TestFindAtaDeviceStatisticsValue(t *testing.T) {
+	val42 := int64(42)
+	val100 := int64(100)
+	valMinus20 := int64(-20)
+
+	tests := []struct {
+		name           string
+		data           smart.SmartInfoForSata
+		ataDeviceStats smart.AtaDeviceStatistics
+		entryNumber    uint8
+		entryName      string
+		minValue       int64
+		maxValue       int64
+		expectedValue  *int64
+	}{
+		{
+			name: "value in ataDeviceStats",
+			ataDeviceStats: smart.AtaDeviceStatistics{
+				Pages: []smart.AtaDeviceStatisticsPage{
+					{
+						Number: 5,
+						Table: []smart.AtaDeviceStatisticsEntry{
+							{Name: "Current Temperature", Value: &val42},
+						},
+					},
+				},
+			},
+			entryNumber:   5,
+			entryName:     "Current Temperature",
+			minValue:      0,
+			maxValue:      100,
+			expectedValue: &val42,
+		},
+		{
+			name: "value unmarshaled from data",
+			data: smart.SmartInfoForSata{
+				AtaDeviceStatistics: []byte(`{"pages":[{"number":5,"table":[{"name":"Current Temperature","value":100}]}]}`),
+			},
+			entryNumber:   5,
+			entryName:     "Current Temperature",
+			minValue:      0,
+			maxValue:      255,
+			expectedValue: &val100,
+		},
+		{
+			name: "value out of range (too high)",
+			ataDeviceStats: smart.AtaDeviceStatistics{
+				Pages: []smart.AtaDeviceStatisticsPage{
+					{
+						Number: 5,
+						Table: []smart.AtaDeviceStatisticsEntry{
+							{Name: "Current Temperature", Value: &val100},
+						},
+					},
+				},
+			},
+			entryNumber:   5,
+			entryName:     "Current Temperature",
+			minValue:      0,
+			maxValue:      50,
+			expectedValue: nil,
+		},
+		{
+			name: "value out of range (too low)",
+			ataDeviceStats: smart.AtaDeviceStatistics{
+				Pages: []smart.AtaDeviceStatisticsPage{
+					{
+						Number: 5,
+						Table: []smart.AtaDeviceStatisticsEntry{
+							{Name: "Min Temp", Value: &valMinus20},
+						},
+					},
+				},
+			},
+			entryNumber:   5,
+			entryName:     "Min Temp",
+			minValue:      0,
+			maxValue:      100,
+			expectedValue: nil,
+		},
+		{
+			name:          "no statistics available",
+			data:          smart.SmartInfoForSata{},
+			entryNumber:   5,
+			entryName:     "Current Temperature",
+			minValue:      0,
+			maxValue:      255,
+			expectedValue: nil,
+		},
+		{
+			name: "wrong page number",
+			ataDeviceStats: smart.AtaDeviceStatistics{
+				Pages: []smart.AtaDeviceStatisticsPage{
+					{
+						Number: 1,
+						Table: []smart.AtaDeviceStatisticsEntry{
+							{Name: "Current Temperature", Value: &val42},
+						},
+					},
+				},
+			},
+			entryNumber:   5,
+			entryName:     "Current Temperature",
+			minValue:      0,
+			maxValue:      100,
+			expectedValue: nil,
+		},
+		{
+			name: "wrong entry name",
+			ataDeviceStats: smart.AtaDeviceStatistics{
+				Pages: []smart.AtaDeviceStatisticsPage{
+					{
+						Number: 5,
+						Table: []smart.AtaDeviceStatisticsEntry{
+							{Name: "Other Stat", Value: &val42},
+						},
+					},
+				},
+			},
+			entryNumber:   5,
+			entryName:     "Current Temperature",
+			minValue:      0,
+			maxValue:      100,
+			expectedValue: nil,
+		},
+		{
+			name: "case insensitive name match",
+			ataDeviceStats: smart.AtaDeviceStatistics{
+				Pages: []smart.AtaDeviceStatisticsPage{
+					{
+						Number: 5,
+						Table: []smart.AtaDeviceStatisticsEntry{
+							{Name: "CURRENT TEMPERATURE", Value: &val42},
+						},
+					},
+				},
+			},
+			entryNumber:   5,
+			entryName:     "Current Temperature",
+			minValue:      0,
+			maxValue:      100,
+			expectedValue: &val42,
+		},
+		{
+			name: "entry value is nil",
+			ataDeviceStats: smart.AtaDeviceStatistics{
+				Pages: []smart.AtaDeviceStatisticsPage{
+					{
+						Number: 5,
+						Table: []smart.AtaDeviceStatisticsEntry{
+							{Name: "Current Temperature", Value: nil},
+						},
+					},
+				},
+			},
+			entryNumber:   5,
+			entryName:     "Current Temperature",
+			minValue:      0,
+			maxValue:      100,
+			expectedValue: nil,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := findAtaDeviceStatisticsValue(&tt.data, &tt.ataDeviceStats, tt.entryNumber, tt.entryName, tt.minValue, tt.maxValue)
+			if tt.expectedValue == nil {
+				assert.Nil(t, result)
+			} else {
+				require.NotNil(t, result)
+				assert.Equal(t, *tt.expectedValue, *result)
+			}
+		})
+	}
+}
+
 func TestRefreshExcludedDevices(t *testing.T) {
 	tests := []struct {
 		name         string
@@ -787,7 +1035,7 @@ func TestRefreshExcludedDevices(t *testing.T) {
 				t.Setenv("EXCLUDE_SMART", tt.envValue)
 			} else {
 				// Ensure env var is not set for empty test
-				os.Unsetenv("EXCLUDE_SMART")
+				t.Setenv("EXCLUDE_SMART", "")
 			}
 
 			sm := &SmartManager{}
@@ -950,4 +1198,82 @@ func TestIsNvmeControllerPath(t *testing.T) {
 			assert.Equal(t, tt.expected, result, "path: %s", tt.path)
 		})
 	}
+}
+
+func TestParseSmartForNvmeAppleSSD(t *testing.T) {
+	// Apple SSDs don't report user_capacity via smartctl; capacity should be fetched
+	// from system_profiler via the darwinNvmeProvider fallback.
+	fixturePath := filepath.Join("test-data", "smart", "apple_nvme.json")
+	data, err := os.ReadFile(fixturePath)
+	require.NoError(t, err)
+
+	providerCalls := 0
+	fakeProvider := func() ([]byte, error) {
+		providerCalls++
+		return []byte(`{
+			"SPNVMeDataType": [{
+				"_items": [{
+					"device_serial": "0ba0147940253c15",
+					"size_in_bytes": 251000193024
+				}]
+			}]
+		}`), nil
+	}
+
+	sm := &SmartManager{
+		SmartDataMap:       make(map[string]*smart.SmartData),
+		darwinNvmeProvider: fakeProvider,
+	}
+
+	hasData, _ := sm.parseSmartForNvme(data)
+	require.True(t, hasData)
+
+	deviceData, ok := sm.SmartDataMap["0ba0147940253c15"]
+	require.True(t, ok)
+	assert.Equal(t, "APPLE SSD AP0256Q", deviceData.ModelName)
+	assert.Equal(t, uint64(251000193024), deviceData.Capacity)
+	assert.Equal(t, uint8(42), deviceData.Temperature)
+	assert.Equal(t, "PASSED", deviceData.SmartStatus)
+	assert.Equal(t, 1, providerCalls, "system_profiler should be called once")
+
+	// Second parse: provider should NOT be called again (cache hit)
+	_, _ = sm.parseSmartForNvme(data)
+	assert.Equal(t, 1, providerCalls, "system_profiler should not be called again after caching")
+}
+
+func TestLookupDarwinNvmeCapacityMultipleDisks(t *testing.T) {
+	fakeProvider := func() ([]byte, error) {
+		return []byte(`{
+			"SPNVMeDataType": [
+				{
+					"_items": [
+						{"device_serial": "serial-disk0", "size_in_bytes": 251000193024},
+						{"device_serial": "serial-disk1", "size_in_bytes": 1000204886016}
+					]
+				},
+				{
+					"_items": [
+						{"device_serial": "serial-disk2", "size_in_bytes": 512110190592}
+					]
+				}
+			]
+		}`), nil
+	}
+
+	sm := &SmartManager{darwinNvmeProvider: fakeProvider}
+	assert.Equal(t, uint64(251000193024), sm.lookupDarwinNvmeCapacity("serial-disk0"))
+	assert.Equal(t, uint64(1000204886016), sm.lookupDarwinNvmeCapacity("serial-disk1"))
+	assert.Equal(t, uint64(512110190592), sm.lookupDarwinNvmeCapacity("serial-disk2"))
+	assert.Equal(t, uint64(0), sm.lookupDarwinNvmeCapacity("unknown-serial"))
+}
+
+func TestLookupDarwinNvmeCapacityProviderError(t *testing.T) {
+	fakeProvider := func() ([]byte, error) {
+		return nil, errors.New("system_profiler not found")
+	}
+
+	sm := &SmartManager{darwinNvmeProvider: fakeProvider}
+	assert.Equal(t, uint64(0), sm.lookupDarwinNvmeCapacity("any-serial"))
+	// Cache should be initialized even on error so we don't retry (Once already fired)
+	assert.NotNil(t, sm.darwinNvmeCapacity)
 }

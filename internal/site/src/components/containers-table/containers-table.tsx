@@ -1,3 +1,4 @@
+/** biome-ignore-all lint/security/noDangerouslySetInnerHtml: html comes directly from docker via agent */
 import { t } from "@lingui/core/macro"
 import { Trans } from "@lingui/react/macro"
 import {
@@ -13,7 +14,7 @@ import {
 	type VisibilityState,
 } from "@tanstack/react-table"
 import { useVirtualizer, type VirtualItem } from "@tanstack/react-virtual"
-import { memo, RefObject, useEffect, useRef, useState } from "react"
+import { memo, type RefObject, useEffect, useRef, useState } from "react"
 import { Input } from "@/components/ui/input"
 import { TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { pb } from "@/lib/api"
@@ -44,6 +45,20 @@ export default function ContainersTable({ systemId }: { systemId?: string }) {
 	)
 	const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
 	const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
+
+	// Hide ports column if no ports are present
+	useEffect(() => {
+		if (data) {
+			const hasPorts = data.some((container) => container.ports)
+			setColumnVisibility((prev) => {
+				if (prev.ports === hasPorts) {
+					return prev
+				}
+				return { ...prev, ports: hasPorts }
+			})
+		}
+	}, [data])
+
 	const [rowSelection, setRowSelection] = useState({})
 	const [globalFilter, setGlobalFilter] = useState("")
 
@@ -51,7 +66,7 @@ export default function ContainersTable({ systemId }: { systemId?: string }) {
 		function fetchData(systemId?: string) {
 			pb.collection<ContainerRecord>("containers")
 				.getList(0, 2000, {
-					fields: "id,name,image,cpu,memory,net,health,status,system,updated",
+					fields: "id,name,image,ports,cpu,memory,net,health,status,system,updated",
 					filter: systemId ? pb.filter("system={:system}", { system: systemId }) : undefined,
 				})
 				.then(({ items }) => {
@@ -67,7 +82,7 @@ export default function ContainersTable({ systemId }: { systemId?: string }) {
 					setData((curItems) => {
 						const lastUpdated = Math.max(items[0].updated, items.at(-1)?.updated ?? 0)
 						const containerIds = new Set()
-						const newItems = []
+						const newItems: ContainerRecord[] = []
 						for (const item of items) {
 							if (Math.abs(lastUpdated - item.updated) < 70_000) {
 								containerIds.add(item.id)
@@ -134,7 +149,8 @@ export default function ContainersTable({ systemId }: { systemId?: string }) {
 			const status = container.status ?? ""
 			const healthLabel = ContainerHealthLabels[container.health as ContainerHealth] ?? ""
 			const image = container.image ?? ""
-			const searchString = `${systemName} ${id} ${name} ${healthLabel} ${status} ${image}`.toLowerCase()
+			const ports = container.ports ?? ""
+			const searchString = `${systemName} ${id} ${name} ${healthLabel} ${status} ${image} ${ports}`.toLowerCase()
 
 			return (filterValue as string)
 				.toLowerCase()
@@ -147,9 +163,9 @@ export default function ContainersTable({ systemId }: { systemId?: string }) {
 	const visibleColumns = table.getVisibleLeafColumns()
 
 	return (
-		<Card className="p-6 @container w-full">
-			<CardHeader className="p-0 mb-4">
-				<div className="grid md:flex gap-5 w-full items-end">
+		<Card className="@container w-full px-3 py-5 sm:py-6 sm:px-6">
+			<CardHeader className="p-0 mb-3 sm:mb-4">
+				<div className="grid md:flex gap-x-5 gap-y-3 w-full items-end">
 					<div className="px-2 sm:px-1">
 						<CardTitle className="mb-2">
 							<Trans>All Containers</Trans>
@@ -300,15 +316,14 @@ function ContainerSheet({
 	setSheetOpen: (open: boolean) => void
 	activeContainer: RefObject<ContainerRecord | null>
 }) {
-	const container = activeContainer.current
-	if (!container) return null
-
 	const [logsDisplay, setLogsDisplay] = useState<string>("")
 	const [infoDisplay, setInfoDisplay] = useState<string>("")
 	const [logsFullscreenOpen, setLogsFullscreenOpen] = useState<boolean>(false)
 	const [infoFullscreenOpen, setInfoFullscreenOpen] = useState<boolean>(false)
 	const [isRefreshingLogs, setIsRefreshingLogs] = useState<boolean>(false)
 	const logsContainerRef = useRef<HTMLDivElement>(null)
+
+	const container = activeContainer.current
 
 	function scrollLogsToBottom() {
 		if (logsContainerRef.current) {
@@ -317,6 +332,7 @@ function ContainerSheet({
 	}
 
 	const refreshLogs = async () => {
+		if (!container) return
 		setIsRefreshingLogs(true)
 		const startTime = Date.now()
 
@@ -348,6 +364,8 @@ function ContainerSheet({
 		})()
 	}, [container])
 
+	if (!container) return null
+
 	return (
 		<>
 			<LogsFullscreenDialog
@@ -378,8 +396,14 @@ function ContainerSheet({
 							{container.image}
 							<Separator orientation="vertical" className="h-2.5 bg-muted-foreground opacity-70" />
 							{container.id}
-							<Separator orientation="vertical" className="h-2.5 bg-muted-foreground opacity-70" />
-							{ContainerHealthLabels[container.health as ContainerHealth]}
+							{/* {container.ports && (
+								<>
+									<Separator orientation="vertical" className="h-2.5 bg-muted-foreground opacity-70" />
+									{container.ports}
+								</>
+							)} */}
+							{/* <Separator orientation="vertical" className="h-2.5 bg-muted-foreground opacity-70" />
+							{ContainerHealthLabels[container.health as ContainerHealth]} */}
 						</SheetDescription>
 					</SheetHeader>
 					<div className="px-3 pb-3 -mt-4 flex flex-col gap-3 h-full items-start">
@@ -442,7 +466,7 @@ function ContainersTableHead({ table }: { table: TableType<ContainerRecord> }) {
 				<tr key={headerGroup.id}>
 					{headerGroup.headers.map((header) => {
 						return (
-							<TableHead className="px-2" key={header.id}>
+							<TableHead className="px-2" key={header.id} style={{ width: header.getSize() }}>
 								{header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
 							</TableHead>
 						)
@@ -474,6 +498,7 @@ const ContainerTableRow = memo(function ContainerTableRow({
 					className="py-0 ps-4.5"
 					style={{
 						height: virtualRow.size,
+						width: cell.column.getSize(),
 					}}
 				>
 					{flexRender(cell.column.columnDef.cell, cell.getContext())}

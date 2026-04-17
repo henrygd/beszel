@@ -110,20 +110,23 @@ export function SystemsTableColumns(viewMode: "table" | "grid"): ColumnDef<Syste
 
 				// match filter value against name or translated status
 				return (row, _, newFilterInput) => {
-					const { name, status } = row.original
+					const sys = row.original
+					if (sys.host.includes(newFilterInput) || sys.info.v?.includes(newFilterInput)) {
+						return true
+					}
 					if (newFilterInput !== filterInput) {
 						filterInput = newFilterInput
 						filterInputLower = newFilterInput.toLowerCase()
 					}
-					let nameLower = nameCache.get(name)
+					let nameLower = nameCache.get(sys.name)
 					if (nameLower === undefined) {
-						nameLower = name.toLowerCase()
-						nameCache.set(name, nameLower)
+						nameLower = sys.name.toLowerCase()
+						nameCache.set(sys.name, nameLower)
 					}
 					if (nameLower.includes(filterInputLower)) {
 						return true
 					}
-					const statusLower = statusTranslations[status as keyof typeof statusTranslations]
+					const statusLower = statusTranslations[sys.status as keyof typeof statusTranslations]
 					return statusLower?.includes(filterInputLower) || false
 				}
 			})(),
@@ -184,7 +187,8 @@ export function SystemsTableColumns(viewMode: "table" | "grid"): ColumnDef<Syste
 			accessorFn: ({ info }) => info.dp || undefined,
 			id: "disk",
 			name: () => t`Disk`,
-			cell: DiskCellWithMultiple,
+			cell: (info: CellContext<SystemRecord, unknown>) =>
+				info.row.original.info.efs ? DiskCellWithMultiple(info) : TableCellWithMeter(info),
 			Icon: HardDriveIcon,
 			header: sortableHeader,
 		},
@@ -198,32 +202,19 @@ export function SystemsTableColumns(viewMode: "table" | "grid"): ColumnDef<Syste
 		},
 		{
 			id: "loadAverage",
-			accessorFn: ({ info }) => {
-				const sum = info.la?.reduce((acc, curr) => acc + curr, 0)
-				// TODO: remove this in future release in favor of la array
-				if (!sum) {
-					return (info.l1 ?? 0) + (info.l5 ?? 0) + (info.l15 ?? 0) || undefined
-				}
-				return sum || undefined
-			},
+			accessorFn: ({ info }) => info.la?.reduce((acc, curr) => acc + curr, 0),
 			name: () => t({ message: "Load Avg", comment: "Short label for load average" }),
 			size: 0,
 			Icon: HourglassIcon,
 			header: sortableHeader,
 			cell(info: CellContext<SystemRecord, unknown>) {
 				const { info: sysInfo, status } = info.row.original
+				const { major, minor } = parseSemVer(sysInfo.v)
 				const { colorWarn = 65, colorCrit = 90 } = useStore($userSettings, { keys: ["colorWarn", "colorCrit"] })
-				// agent version
-				const { minor, patch } = parseSemVer(sysInfo.v)
-				let loadAverages = sysInfo.la
-
-				// use legacy load averages if agent version is less than 12.1.0
-				if (!loadAverages || (minor === 12 && patch < 1)) {
-					loadAverages = [sysInfo.l1 ?? 0, sysInfo.l5 ?? 0, sysInfo.l15 ?? 0]
-				}
+				const loadAverages = sysInfo.la || []
 
 				const max = Math.max(...loadAverages)
-				if (max === 0 && (status === SystemStatus.Paused || minor < 12)) {
+				if (max === 0 && (status === SystemStatus.Paused || (major < 1 && minor < 13))) {
 					return null
 				}
 
@@ -248,19 +239,20 @@ export function SystemsTableColumns(viewMode: "table" | "grid"): ColumnDef<Syste
 			},
 		},
 		{
-			accessorFn: ({ info }) => info.bb || (info.b || 0) * 1024 * 1024 || undefined,
+			accessorFn: ({ info, status }) => (status !== SystemStatus.Up ? undefined : info.bb),
 			id: "net",
 			name: () => t`Net`,
 			size: 0,
 			Icon: EthernetIcon,
 			header: sortableHeader,
+			sortUndefined: "last",
 			cell(info) {
-				const sys = info.row.original
-				const userSettings = useStore($userSettings, { keys: ["unitNet"] })
-				if (sys.status === SystemStatus.Paused) {
+				const val = info.getValue() as number | undefined
+				if (val === undefined) {
 					return null
 				}
-				const { value, unit } = formatBytes((info.getValue() || 0) as number, true, userSettings.unitNet, false)
+				const userSettings = useStore($userSettings, { keys: ["unitNet"] })
+				const { value, unit } = formatBytes(val, true, userSettings.unitNet, false)
 				return (
 					<span className="tabular-nums whitespace-nowrap">
 						{decimalString(value, value >= 100 ? 1 : 2)} {unit}
@@ -491,11 +483,6 @@ function DiskCellWithMultiple(info: CellContext<SystemRecord, unknown>) {
 	const { colorWarn = 65, colorCrit = 90 } = useStore($userSettings, { keys: ["colorWarn", "colorCrit"] })
 	const { info: sysInfo, status, id } = info.row.original
 	const extraFs = Object.entries(sysInfo.efs ?? {})
-
-	if (extraFs.length === 0) {
-		return TableCellWithMeter(info)
-	}
-
 	const rootDiskPct = sysInfo.dp
 
 	// sort extra disks by percentage descending

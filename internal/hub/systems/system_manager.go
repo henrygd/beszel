@@ -8,6 +8,7 @@ import (
 	"github.com/henrygd/beszel/internal/hub/ws"
 
 	"github.com/henrygd/beszel/internal/entities/system"
+	"github.com/henrygd/beszel/internal/hub/expirymap"
 
 	"github.com/henrygd/beszel/internal/common"
 
@@ -40,9 +41,10 @@ var errSystemExists = errors.New("system exists")
 // SystemManager manages a collection of monitored systems and their connections.
 // It handles system lifecycle, status updates, and maintains both SSH and WebSocket connections.
 type SystemManager struct {
-	hub       hubLike                       // Hub interface for database and alert operations
-	systems   *store.Store[string, *System] // Thread-safe store of active systems
-	sshConfig *ssh.ClientConfig             // SSH client configuration for system connections
+	hub           hubLike                               // Hub interface for database and alert operations
+	systems       *store.Store[string, *System]         // Thread-safe store of active systems
+	sshConfig     *ssh.ClientConfig                     // SSH client configuration for system connections
+	smartFetchMap *expirymap.ExpiryMap[smartFetchState] // Stores last SMART fetch time/result; TTL is only for cleanup
 }
 
 // hubLike defines the interface requirements for the hub dependency.
@@ -52,14 +54,16 @@ type hubLike interface {
 	GetSSHKey(dataDir string) (ssh.Signer, error)
 	HandleSystemAlerts(systemRecord *core.Record, data *system.CombinedData) error
 	HandleStatusAlerts(status string, systemRecord *core.Record) error
+	CancelPendingStatusAlerts(systemID string)
 }
 
 // NewSystemManager creates a new SystemManager instance with the provided hub.
 // The hub must implement the hubLike interface to provide database and alert functionality.
 func NewSystemManager(hub hubLike) *SystemManager {
 	return &SystemManager{
-		systems: store.New(map[string]*System{}),
-		hub:     hub,
+		systems:       store.New(map[string]*System{}),
+		hub:           hub,
+		smartFetchMap: expirymap.New[smartFetchState](time.Hour),
 	}
 }
 
@@ -186,6 +190,7 @@ func (sm *SystemManager) onRecordAfterUpdateSuccess(e *core.RecordEvent) error {
 			system.closeSSHConnection()
 		}
 		_ = deactivateAlerts(e.App, e.Record.Id)
+		sm.hub.CancelPendingStatusAlerts(e.Record.Id)
 		return e.Next()
 	case pending:
 		// Resume monitoring, preferring existing WebSocket connection
@@ -303,6 +308,7 @@ func (sm *SystemManager) AddWebSocketSystem(systemId string, agentVersion semver
 	if err != nil {
 		return err
 	}
+	sm.resetFailedSmartFetchState(systemId)
 
 	system := sm.NewSystem(systemId)
 	system.WsConn = wsConn
@@ -312,6 +318,15 @@ func (sm *SystemManager) AddWebSocketSystem(systemId string, agentVersion semver
 		return err
 	}
 	return nil
+}
+
+// resetFailedSmartFetchState clears only failed SMART cooldown entries so a fresh
+// agent reconnect retries SMART discovery immediately after configuration changes.
+func (sm *SystemManager) resetFailedSmartFetchState(systemID string) {
+	state, ok := sm.smartFetchMap.GetOk(systemID)
+	if ok && !state.Successful {
+		sm.smartFetchMap.Remove(systemID)
+	}
 }
 
 // createSSHClientConfig initializes the SSH client configuration for connecting to an agent's server

@@ -1,7 +1,10 @@
 import { atom, computed, listenKeys, map, type ReadableAtom } from "nanostores"
-import type { AlertMap, ChartTimes, SystemRecord, UserSettings } from "@/types"
+import type { AlertMap, ChartTimes, SystemRecord, UpdateInfo, UserSettings } from "@/types"
 import { pb } from "./api"
 import { Unit } from "./enums"
+
+/** Default layout width. Used as fallback when user setting is unset. */
+export const defaultLayoutWidth = 1580
 
 /** Store if user is authenticated */
 export const $authenticated = atom(pb.authStore.isValid)
@@ -24,6 +27,9 @@ export const $alerts = map<AlertMap>({})
 
 /** SSH public key */
 export const $publicKey = atom("")
+
+/** New version info if an update is available, otherwise undefined */
+export const $newVersion = atom<UpdateInfo | undefined>()
 
 /** Chart time period */
 export const $chartTime = atom<ChartTimes>("1h")

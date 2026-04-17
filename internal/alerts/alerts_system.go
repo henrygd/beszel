@@ -11,15 +11,11 @@ import (
 	"github.com/pocketbase/dbx"
 	"github.com/pocketbase/pocketbase/core"
 	"github.com/pocketbase/pocketbase/tools/types"
-	"github.com/spf13/cast"
 )
 
 func (am *AlertManager) HandleSystemAlerts(systemRecord *core.Record, data *system.CombinedData) error {
-	alertRecords, err := am.hub.FindAllRecords("alerts",
-		dbx.NewExp("system={:system} AND name!='Status'", dbx.Params{"system": systemRecord.Id}),
-	)
-	if err != nil || len(alertRecords) == 0 {
-		// log.Println("no alerts found for system")
+	alerts := am.alertsCache.GetAlertsExcludingNames(systemRecord.Id, "Status")
+	if len(alerts) == 0 {
 		return nil
 	}
 
@@ -27,8 +23,8 @@ func (am *AlertManager) HandleSystemAlerts(systemRecord *core.Record, data *syst
 	now := systemRecord.GetDateTime("updated").Time().UTC()
 	oldestTime := now
 
-	for _, alertRecord := range alertRecords {
-		name := alertRecord.GetString("name")
+	for _, alertData := range alerts {
+		name := alertData.Name
 		var val float64
 		unit := "%"
 
@@ -73,8 +69,8 @@ func (am *AlertManager) HandleSystemAlerts(systemRecord *core.Record, data *syst
 			val = float64(data.Stats.Battery[0])
 		}
 
-		triggered := alertRecord.GetBool("triggered")
-		threshold := alertRecord.GetFloat("value")
+		triggered := alertData.Triggered
+		threshold := alertData.Value
 
 		// Battery alert has inverted logic: trigger when value is BELOW threshold
 		lowAlert := isLowAlert(name)
@@ -92,11 +88,11 @@ func (am *AlertManager) HandleSystemAlerts(systemRecord *core.Record, data *syst
 			}
 		}
 
-		min := max(1, cast.ToUint8(alertRecord.Get("min")))
+		min := max(1, alertData.Min)
 
 		alert := SystemAlertData{
 			systemRecord: systemRecord,
-			alertRecord:  alertRecord,
+			alertData:    alertData,
 			name:         name,
 			unit:         unit,
 			val:          val,
@@ -129,7 +125,7 @@ func (am *AlertManager) HandleSystemAlerts(systemRecord *core.Record, data *syst
 		Created types.DateTime `db:"created"`
 	}{}
 
-	err = am.hub.DB().
+	err := am.hub.DB().
 		Select("stats", "created").
 		From("system_stats").
 		Where(dbx.NewExp(
@@ -192,22 +188,24 @@ func (am *AlertManager) HandleSystemAlerts(systemRecord *core.Record, data *syst
 			case "Memory":
 				alert.val += stats.Mem
 			case "Bandwidth":
-				alert.val += stats.NetSent + stats.NetRecv
+				alert.val += float64(stats.Bandwidth[0]+stats.Bandwidth[1]) / (1024 * 1024)
 			case "Disk":
 				if alert.mapSums == nil {
-					alert.mapSums = make(map[string]float32, len(data.Stats.ExtraFs)+1)
+					alert.mapSums = make(map[string]float32, len(stats.ExtraFs)+1)
 				}
 				// add root disk
 				if _, ok := alert.mapSums["root"]; !ok {
 					alert.mapSums["root"] = 0.0
 				}
 				alert.mapSums["root"] += float32(stats.Disk)
-				// add extra disks
-				for key, fs := range data.Stats.ExtraFs {
-					if _, ok := alert.mapSums[key]; !ok {
-						alert.mapSums[key] = 0.0
+				// add extra disks from historical record
+				for key, fs := range stats.ExtraFs {
+					if fs.DiskTotal > 0 {
+						if _, ok := alert.mapSums[key]; !ok {
+							alert.mapSums[key] = 0.0
+						}
+						alert.mapSums[key] += float32(fs.DiskUsed / fs.DiskTotal * 100)
 					}
-					alert.mapSums[key] += float32(fs.DiskUsed / fs.DiskTotal * 100)
 				}
 			case "Temperature":
 				if alert.mapSums == nil {
@@ -342,13 +340,12 @@ func (am *AlertManager) sendSystemAlert(alert SystemAlertData) {
 	}
 	body := fmt.Sprintf("%s averaged %.2f%s for the previous %v %s.", alert.descriptor, alert.val, alert.unit, alert.min, minutesLabel)
 
-	alert.alertRecord.Set("triggered", alert.triggered)
-	if err := am.hub.Save(alert.alertRecord); err != nil {
+	if err := am.setAlertTriggered(alert.alertData, alert.triggered); err != nil {
 		// app.Logger().Error("failed to save alert record", "err", err)
 		return
 	}
 	am.SendAlert(AlertMessageData{
-		UserID:   alert.alertRecord.GetString("user"),
+		UserID:   alert.alertData.UserID,
 		SystemID: alert.systemRecord.Id,
 		Title:    subject,
 		Message:  body,

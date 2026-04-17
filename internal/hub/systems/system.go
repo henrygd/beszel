@@ -14,6 +14,7 @@ import (
 
 	"github.com/henrygd/beszel/internal/common"
 	"github.com/henrygd/beszel/internal/hub/transport"
+	"github.com/henrygd/beszel/internal/hub/utils"
 	"github.com/henrygd/beszel/internal/hub/ws"
 
 	"github.com/henrygd/beszel/internal/entities/container"
@@ -48,7 +49,6 @@ type System struct {
 	detailsFetched atomic.Bool             // True if static system details have been fetched and saved
 	smartFetching  atomic.Bool             // True if SMART devices are currently being fetched
 	smartInterval  time.Duration           // Interval for periodic SMART data updates
-	lastSmartFetch atomic.Int64            // Unix milliseconds of last SMART data fetch
 }
 
 func (sm *SystemManager) NewSystem(systemId string) *System {
@@ -134,19 +134,34 @@ func (sys *System) update() error {
 		return err
 	}
 
+	// ensure deprecated fields from older agents are migrated to current fields
+	migrateDeprecatedFields(data, !sys.detailsFetched.Load())
+
 	// create system records
 	_, err = sys.createRecords(data)
 
+	// if details were included and fetched successfully, mark details as fetched and update smart interval if set by agent
+	if err == nil && data.Details != nil {
+		sys.detailsFetched.Store(true)
+		// update smart interval if it's set on the agent side
+		if data.Details.SmartInterval > 0 {
+			sys.smartInterval = data.Details.SmartInterval
+			sys.manager.hub.Logger().Info("SMART interval updated from agent details", "system", sys.Id, "interval", sys.smartInterval.String())
+			// make sure we reset expiration of lastFetch to remain as long as the new smart interval
+			// to prevent premature expiration leading to new fetch if interval is different.
+			sys.manager.smartFetchMap.UpdateExpiration(sys.Id, sys.smartInterval+time.Minute)
+		}
+	}
+
 	// Fetch and save SMART devices when system first comes online or at intervals
-	if backgroundSmartFetchEnabled() {
+	if backgroundSmartFetchEnabled() && sys.detailsFetched.Load() {
 		if sys.smartInterval <= 0 {
 			sys.smartInterval = time.Hour
 		}
-		lastFetch := sys.lastSmartFetch.Load()
-		if time.Since(time.UnixMilli(lastFetch)) >= sys.smartInterval && sys.smartFetching.CompareAndSwap(false, true) {
+		if sys.shouldFetchSmart() && sys.smartFetching.CompareAndSwap(false, true) {
+			sys.manager.hub.Logger().Info("SMART fetch", "system", sys.Id, "interval", sys.smartInterval.String())
 			go func() {
 				defer sys.smartFetching.Store(false)
-				sys.lastSmartFetch.Store(time.Now().UnixMilli())
 				_ = sys.FetchAndSaveSmartDevices()
 			}()
 		}
@@ -170,7 +185,7 @@ func (sys *System) handlePaused() {
 
 // createRecords updates the system record and adds system_stats and container_stats records
 func (sys *System) createRecords(data *system.CombinedData) (*core.Record, error) {
-	systemRecord, err := sys.getRecord()
+	systemRecord, err := sys.getRecord(sys.manager.hub)
 	if err != nil {
 		return nil, err
 	}
@@ -220,11 +235,6 @@ func (sys *System) createRecords(data *system.CombinedData) (*core.Record, error
 		if data.Details != nil {
 			if err := createSystemDetailsRecord(txApp, data.Details, sys.Id); err != nil {
 				return err
-			}
-			sys.detailsFetched.Store(true)
-			// update smart interval if it's set on the agent side
-			if data.Details.SmartInterval > 0 {
-				sys.smartInterval = data.Details.SmartInterval
 			}
 		}
 
@@ -309,10 +319,11 @@ func createContainerRecords(app core.App, data []*container.Stats, systemId stri
 	valueStrings := make([]string, 0, len(data))
 	for i, container := range data {
 		suffix := fmt.Sprintf("%d", i)
-		valueStrings = append(valueStrings, fmt.Sprintf("({:id%[1]s}, {:system}, {:name%[1]s}, {:image%[1]s}, {:status%[1]s}, {:health%[1]s}, {:cpu%[1]s}, {:memory%[1]s}, {:net%[1]s}, {:updated})", suffix))
+		valueStrings = append(valueStrings, fmt.Sprintf("({:id%[1]s}, {:system}, {:name%[1]s}, {:image%[1]s}, {:ports%[1]s}, {:status%[1]s}, {:health%[1]s}, {:cpu%[1]s}, {:memory%[1]s}, {:net%[1]s}, {:updated})", suffix))
 		params["id"+suffix] = container.Id
 		params["name"+suffix] = container.Name
 		params["image"+suffix] = container.Image
+		params["ports"+suffix] = container.Ports
 		params["status"+suffix] = container.Status
 		params["health"+suffix] = container.Health
 		params["cpu"+suffix] = container.Cpu
@@ -324,7 +335,7 @@ func createContainerRecords(app core.App, data []*container.Stats, systemId stri
 		params["net"+suffix] = netBytes
 	}
 	queryString := fmt.Sprintf(
-		"INSERT INTO containers (id, system, name, image, status, health, cpu, memory, net, updated) VALUES %s ON CONFLICT(id) DO UPDATE SET system = excluded.system, name = excluded.name, image = excluded.image, status = excluded.status, health = excluded.health, cpu = excluded.cpu, memory = excluded.memory, net = excluded.net, updated = excluded.updated",
+		"INSERT INTO containers (id, system, name, image, ports, status, health, cpu, memory, net, updated) VALUES %s ON CONFLICT(id) DO UPDATE SET system = excluded.system, name = excluded.name, image = excluded.image, ports = excluded.ports, status = excluded.status, health = excluded.health, cpu = excluded.cpu, memory = excluded.memory, net = excluded.net, updated = excluded.updated",
 		strings.Join(valueStrings, ","),
 	)
 	_, err := app.DB().NewQuery(queryString).Bind(params).Execute()
@@ -333,13 +344,34 @@ func createContainerRecords(app core.App, data []*container.Stats, systemId stri
 
 // getRecord retrieves the system record from the database.
 // If the record is not found, it removes the system from the manager.
-func (sys *System) getRecord() (*core.Record, error) {
-	record, err := sys.manager.hub.FindRecordById("systems", sys.Id)
+func (sys *System) getRecord(app core.App) (*core.Record, error) {
+	record, err := app.FindRecordById("systems", sys.Id)
 	if err != nil || record == nil {
 		_ = sys.manager.RemoveSystem(sys.Id)
 		return nil, err
 	}
 	return record, nil
+}
+
+// HasUser checks if the given user is in the system's users list.
+// Returns true if SHARE_ALL_SYSTEMS is enabled (any authenticated user can access any system).
+func (sys *System) HasUser(app core.App, user *core.Record) bool {
+	if user == nil {
+		return false
+	}
+	if v, _ := utils.GetEnv("SHARE_ALL_SYSTEMS"); v == "true" {
+		return true
+	}
+	var recordData = struct {
+		Users string
+	}{}
+	err := app.DB().NewQuery("SELECT users FROM systems WHERE id={:id}").
+		Bind(dbx.Params{"id": sys.Id}).
+		One(&recordData)
+	if err != nil || recordData.Users == "" {
+		return false
+	}
+	return strings.Contains(recordData.Users, user.Id)
 }
 
 // setDown marks a system as down in the database.
@@ -349,7 +381,7 @@ func (sys *System) setDown(originalError error) error {
 	if sys.Status == down || sys.Status == paused {
 		return nil
 	}
-	record, err := sys.getRecord()
+	record, err := sys.getRecord(sys.manager.hub)
 	if err != nil {
 		return err
 	}
@@ -633,6 +665,7 @@ func (s *System) createSSHClient() error {
 		return err
 	}
 	s.agentVersion, _ = extractAgentVersion(string(s.client.Conn.ServerVersion()))
+	s.manager.resetFailedSmartFetchState(s.Id)
 	return nil
 }
 
@@ -702,4 +735,51 @@ func getJitter() <-chan time.Time {
 	jitterRange := maxPercent - minPercent
 	msDelay := (interval * minPercent / 100) + rand.Intn(interval*jitterRange/100)
 	return time.After(time.Duration(msDelay) * time.Millisecond)
+}
+
+// migrateDeprecatedFields moves values from deprecated fields to their new locations if the new
+// fields are not already populated. Deprecated fields and refs may be removed at least 30 days
+// and one minor version release after the release that includes the migration.
+//
+// This is run when processing incoming system data from agents, which may be on older versions.
+func migrateDeprecatedFields(cd *system.CombinedData, createDetails bool) {
+	// migration added 0.19.0
+	if cd.Stats.Bandwidth[0] == 0 && cd.Stats.Bandwidth[1] == 0 {
+		cd.Stats.Bandwidth[0] = uint64(cd.Stats.NetworkSent * 1024 * 1024)
+		cd.Stats.Bandwidth[1] = uint64(cd.Stats.NetworkRecv * 1024 * 1024)
+		cd.Stats.NetworkSent, cd.Stats.NetworkRecv = 0, 0
+	}
+	// migration added 0.19.0
+	if cd.Info.BandwidthBytes == 0 {
+		cd.Info.BandwidthBytes = uint64(cd.Info.Bandwidth * 1024 * 1024)
+		cd.Info.Bandwidth = 0
+	}
+	// migration added 0.19.0
+	if cd.Stats.DiskIO[0] == 0 && cd.Stats.DiskIO[1] == 0 {
+		cd.Stats.DiskIO[0] = uint64(cd.Stats.DiskReadPs * 1024 * 1024)
+		cd.Stats.DiskIO[1] = uint64(cd.Stats.DiskWritePs * 1024 * 1024)
+		cd.Stats.DiskReadPs, cd.Stats.DiskWritePs = 0, 0
+	}
+	// migration added 0.19.0 - Move deprecated Info fields to Details struct
+	if cd.Details == nil && cd.Info.Hostname != "" {
+		if createDetails {
+			cd.Details = &system.Details{
+				Hostname:    cd.Info.Hostname,
+				Kernel:      cd.Info.KernelVersion,
+				Cores:       cd.Info.Cores,
+				Threads:     cd.Info.Threads,
+				CpuModel:    cd.Info.CpuModel,
+				Podman:      cd.Info.Podman,
+				Os:          cd.Info.Os,
+				MemoryTotal: uint64(cd.Stats.Mem * 1024 * 1024 * 1024),
+			}
+		}
+		// zero the deprecated fields to prevent saving them in systems.info DB json payload
+		cd.Info.Hostname = ""
+		cd.Info.KernelVersion = ""
+		cd.Info.Cores = 0
+		cd.Info.CpuModel = ""
+		cd.Info.Podman = false
+		cd.Info.Os = 0
+	}
 }

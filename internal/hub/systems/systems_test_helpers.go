@@ -7,6 +7,7 @@ import (
 	"fmt"
 
 	entities "github.com/henrygd/beszel/internal/entities/system"
+	"github.com/pocketbase/pocketbase/core"
 )
 
 // The hub integration tests create/replace systems and cleanup the test apps quickly.
@@ -113,4 +114,14 @@ func (sm *SystemManager) RemoveAllSystems() {
 	for _, system := range sm.systems.GetAll() {
 		sm.RemoveSystem(system.Id)
 	}
+	sm.smartFetchMap.StopCleaner()
+}
+
+func (s *System) StopUpdater() {
+	s.cancel()
+}
+
+func (s *System) CreateRecords(data *entities.CombinedData) (*core.Record, error) {
+	s.data = data
+	return s.createRecords(data)
 }

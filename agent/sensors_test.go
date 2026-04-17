@@ -5,8 +5,8 @@ package agent
 import (
 	"context"
 	"fmt"
-	"os"
 	"testing"
+	"time"
 
 	"github.com/henrygd/beszel/internal/entities/system"
 
@@ -168,6 +168,7 @@ func TestNewSensorConfigWithEnv(t *testing.T) {
 		primarySensor  string
 		sysSensors     string
 		sensors        string
+		sensorsTimeout string
 		skipCollection bool
 		expectedConfig *SensorConfig
 	}{
@@ -179,10 +180,35 @@ func TestNewSensorConfigWithEnv(t *testing.T) {
 			expectedConfig: &SensorConfig{
 				context:        context.Background(),
 				primarySensor:  "",
+				timeout:        2 * time.Second,
 				sensors:        map[string]struct{}{},
 				isBlacklist:    false,
 				hasWildcards:   false,
 				skipCollection: false,
+			},
+		},
+		{
+			name:           "Custom timeout",
+			primarySensor:  "",
+			sysSensors:     "",
+			sensors:        "",
+			sensorsTimeout: "5s",
+			expectedConfig: &SensorConfig{
+				context: context.Background(),
+				timeout: 5 * time.Second,
+				sensors: map[string]struct{}{},
+			},
+		},
+		{
+			name:           "Invalid timeout falls back to default",
+			primarySensor:  "",
+			sysSensors:     "",
+			sensors:        "",
+			sensorsTimeout: "notaduration",
+			expectedConfig: &SensorConfig{
+				context: context.Background(),
+				timeout: 2 * time.Second,
+				sensors: map[string]struct{}{},
 			},
 		},
 		{
@@ -194,6 +220,7 @@ func TestNewSensorConfigWithEnv(t *testing.T) {
 			expectedConfig: &SensorConfig{
 				context:        context.Background(),
 				primarySensor:  "",
+				timeout:        2 * time.Second,
 				sensors:        map[string]struct{}{},
 				isBlacklist:    false,
 				hasWildcards:   false,
@@ -208,6 +235,7 @@ func TestNewSensorConfigWithEnv(t *testing.T) {
 			expectedConfig: &SensorConfig{
 				context:       context.Background(),
 				primarySensor: "cpu_temp",
+				timeout:       2 * time.Second,
 				sensors:       map[string]struct{}{},
 				isBlacklist:   false,
 				hasWildcards:  false,
@@ -221,6 +249,7 @@ func TestNewSensorConfigWithEnv(t *testing.T) {
 			expectedConfig: &SensorConfig{
 				context:       context.Background(),
 				primarySensor: "cpu_temp",
+				timeout:       2 * time.Second,
 				sensors: map[string]struct{}{
 					"cpu_temp": {},
 					"gpu_temp": {},
@@ -237,6 +266,7 @@ func TestNewSensorConfigWithEnv(t *testing.T) {
 			expectedConfig: &SensorConfig{
 				context:       context.Background(),
 				primarySensor: "cpu_temp",
+				timeout:       2 * time.Second,
 				sensors: map[string]struct{}{
 					"cpu_temp": {},
 					"gpu_temp": {},
@@ -253,6 +283,7 @@ func TestNewSensorConfigWithEnv(t *testing.T) {
 			expectedConfig: &SensorConfig{
 				context:       context.Background(),
 				primarySensor: "cpu_temp",
+				timeout:       2 * time.Second,
 				sensors: map[string]struct{}{
 					"cpu_*":    {},
 					"gpu_temp": {},
@@ -269,6 +300,7 @@ func TestNewSensorConfigWithEnv(t *testing.T) {
 			expectedConfig: &SensorConfig{
 				context:       context.Background(),
 				primarySensor: "cpu_temp",
+				timeout:       2 * time.Second,
 				sensors: map[string]struct{}{
 					"cpu_*":    {},
 					"gpu_temp": {},
@@ -284,6 +316,7 @@ func TestNewSensorConfigWithEnv(t *testing.T) {
 			sensors:       "cpu_temp",
 			expectedConfig: &SensorConfig{
 				primarySensor: "cpu_temp",
+				timeout:       2 * time.Second,
 				sensors: map[string]struct{}{
 					"cpu_temp": {},
 				},
@@ -295,7 +328,7 @@ func TestNewSensorConfigWithEnv(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			result := agent.newSensorConfigWithEnv(tt.primarySensor, tt.sysSensors, tt.sensors, tt.skipCollection)
+			result := agent.newSensorConfigWithEnv(tt.primarySensor, tt.sysSensors, tt.sensors, tt.sensorsTimeout, tt.skipCollection)
 
 			// Check primary sensor
 			assert.Equal(t, tt.expectedConfig.primarySensor, result.primarySensor)
@@ -314,6 +347,7 @@ func TestNewSensorConfigWithEnv(t *testing.T) {
 			// Check flags
 			assert.Equal(t, tt.expectedConfig.isBlacklist, result.isBlacklist)
 			assert.Equal(t, tt.expectedConfig.hasWildcards, result.hasWildcards)
+			assert.Equal(t, tt.expectedConfig.timeout, result.timeout)
 
 			// Check context
 			if tt.sysSensors != "" {
@@ -329,40 +363,18 @@ func TestNewSensorConfigWithEnv(t *testing.T) {
 }
 
 func TestNewSensorConfig(t *testing.T) {
-	// Save original environment variables
-	originalPrimary, hasPrimary := os.LookupEnv("BESZEL_AGENT_PRIMARY_SENSOR")
-	originalSys, hasSys := os.LookupEnv("BESZEL_AGENT_SYS_SENSORS")
-	originalSensors, hasSensors := os.LookupEnv("BESZEL_AGENT_SENSORS")
-
-	// Restore environment variables after the test
-	defer func() {
-		// Clean up test environment variables
-		os.Unsetenv("BESZEL_AGENT_PRIMARY_SENSOR")
-		os.Unsetenv("BESZEL_AGENT_SYS_SENSORS")
-		os.Unsetenv("BESZEL_AGENT_SENSORS")
-
-		// Restore original values if they existed
-		if hasPrimary {
-			os.Setenv("BESZEL_AGENT_PRIMARY_SENSOR", originalPrimary)
-		}
-		if hasSys {
-			os.Setenv("BESZEL_AGENT_SYS_SENSORS", originalSys)
-		}
-		if hasSensors {
-			os.Setenv("BESZEL_AGENT_SENSORS", originalSensors)
-		}
-	}()
-
 	// Set test environment variables
-	os.Setenv("BESZEL_AGENT_PRIMARY_SENSOR", "test_primary")
-	os.Setenv("BESZEL_AGENT_SYS_SENSORS", "/test/path")
-	os.Setenv("BESZEL_AGENT_SENSORS", "test_sensor1,test_*,test_sensor3")
+	t.Setenv("BESZEL_AGENT_PRIMARY_SENSOR", "test_primary")
+	t.Setenv("BESZEL_AGENT_SYS_SENSORS", "/test/path")
+	t.Setenv("BESZEL_AGENT_SENSORS", "test_sensor1,test_*,test_sensor3")
+	t.Setenv("BESZEL_AGENT_SENSORS_TIMEOUT", "7s")
 
 	agent := &Agent{}
 	result := agent.newSensorConfig()
 
 	// Verify results
 	assert.Equal(t, "test_primary", result.primarySensor)
+	assert.Equal(t, 7*time.Second, result.timeout)
 	assert.NotNil(t, result.sensors)
 	assert.Equal(t, 3, len(result.sensors))
 	assert.True(t, result.hasWildcards)
@@ -550,4 +562,60 @@ func TestGetTempsWithPanicRecovery(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestGetTempsWithTimeout(t *testing.T) {
+	agent := &Agent{
+		sensorConfig: &SensorConfig{
+			context: context.Background(),
+			timeout: 10 * time.Millisecond,
+		},
+	}
+
+	t.Run("returns temperatures before timeout", func(t *testing.T) {
+		temps, err := agent.getTempsWithTimeout(func(ctx context.Context) ([]sensors.TemperatureStat, error) {
+			return []sensors.TemperatureStat{{SensorKey: "cpu_temp", Temperature: 42}}, nil
+		})
+
+		require.NoError(t, err)
+		require.Len(t, temps, 1)
+		assert.Equal(t, "cpu_temp", temps[0].SensorKey)
+	})
+
+	t.Run("returns timeout error when collector hangs", func(t *testing.T) {
+		temps, err := agent.getTempsWithTimeout(func(ctx context.Context) ([]sensors.TemperatureStat, error) {
+			time.Sleep(50 * time.Millisecond)
+			return []sensors.TemperatureStat{{SensorKey: "cpu_temp", Temperature: 42}}, nil
+		})
+
+		assert.Nil(t, temps)
+		assert.ErrorIs(t, err, errTemperatureFetchTimeout)
+	})
+}
+
+func TestUpdateTemperaturesSkipsOnTimeout(t *testing.T) {
+	agent := &Agent{
+		systemInfo: system.Info{DashboardTemp: 99},
+		sensorConfig: &SensorConfig{
+			context: context.Background(),
+			timeout: 10 * time.Millisecond,
+		},
+	}
+
+	t.Cleanup(func() {
+		getSensorTemps = sensors.TemperaturesWithContext
+	})
+	getSensorTemps = func(ctx context.Context) ([]sensors.TemperatureStat, error) {
+		time.Sleep(50 * time.Millisecond)
+		return nil, nil
+	}
+
+	stats := &system.Stats{
+		Temperatures: map[string]float64{"stale": 50},
+	}
+
+	agent.updateTemperatures(stats)
+
+	assert.Equal(t, 0.0, agent.systemInfo.DashboardTemp)
+	assert.Equal(t, map[string]float64{}, stats.Temperatures)
 }

@@ -77,6 +77,26 @@ func CreateUser(app core.App, email string, password string) (*core.Record, erro
 	return user, app.Save(user)
 }
 
+// Helper function to create a test superuser for config tests
+func CreateSuperuser(app core.App, email string, password string) (*core.Record, error) {
+	superusersCollection, _ := app.FindCachedCollectionByNameOrId(core.CollectionNameSuperusers)
+	superuser := core.NewRecord(superusersCollection)
+	superuser.Set("email", email)
+	superuser.Set("password", password)
+
+	return superuser, app.Save(superuser)
+}
+
+func CreateUserWithRole(app core.App, email string, password string, roleName string) (*core.Record, error) {
+	user, err := CreateUser(app, email, password)
+	if err != nil {
+		return nil, err
+	}
+
+	user.Set("role", roleName)
+	return user, app.Save(user)
+}
+
 // Helper function to create a test record
 func CreateRecord(app core.App, collectionName string, fields map[string]any) (*core.Record, error) {
 	collection, err := app.FindCachedCollectionByNameOrId(collectionName)
@@ -98,7 +118,7 @@ func ClearCollection(t testing.TB, app core.App, collectionName string) error {
 }
 
 func (h *TestHub) Cleanup() {
-	h.GetAlertManager().StopWorker()
+	h.GetAlertManager().Stop()
 	h.GetSystemManager().RemoveAllSystems()
 	h.TestApp.Cleanup()
 }

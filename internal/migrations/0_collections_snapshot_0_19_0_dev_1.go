@@ -11,11 +11,11 @@ func init() {
 		jsonData := `[
 	{
 		"id": "elngm8x1l60zi2v",
-		"listRule": "@request.auth.id != \"\" && user.id = @request.auth.id",
-		"viewRule": "",
-		"createRule": "@request.auth.id != \"\" && user.id = @request.auth.id",
-		"updateRule": "@request.auth.id != \"\" && user.id = @request.auth.id",
-		"deleteRule": "@request.auth.id != \"\" && user.id = @request.auth.id",
+		"listRule": "@request.auth.id != \"\" && user = @request.auth.id",
+		"viewRule": null,
+		"createRule": "@request.auth.id != \"\" && user = @request.auth.id",
+		"updateRule": "@request.auth.id != \"\" && user = @request.auth.id",
+		"deleteRule": "@request.auth.id != \"\" && user = @request.auth.id",
 		"name": "alerts",
 		"type": "base",
 		"fields": [
@@ -143,11 +143,11 @@ func init() {
 	},
 	{
 		"id": "pbc_1697146157",
-		"listRule": "@request.auth.id != \"\" && user.id = @request.auth.id",
-		"viewRule": "@request.auth.id != \"\" && user.id = @request.auth.id",
+		"listRule": "@request.auth.id != \"\" && user = @request.auth.id",
+		"viewRule": null,
 		"createRule": null,
 		"updateRule": null,
-		"deleteRule": "@request.auth.id != \"\" && user.id = @request.auth.id",
+		"deleteRule": "@request.auth.id != \"\" && user = @request.auth.id",
 		"name": "alerts_history",
 		"type": "base",
 		"fields": [
@@ -261,7 +261,7 @@ func init() {
 	},
 	{
 		"id": "juohu4jipgc13v7",
-		"listRule": "@request.auth.id != \"\"",
+		"listRule": null,
 		"viewRule": null,
 		"createRule": null,
 		"updateRule": null,
@@ -351,10 +351,10 @@ func init() {
 	},
 	{
 		"id": "pbc_3663931638",
-		"listRule": "@request.auth.id != \"\" && system.users.id ?= @request.auth.id",
-		"viewRule": "@request.auth.id != \"\" && system.users.id ?= @request.auth.id",
-		"createRule": "@request.auth.id != \"\" && system.users.id ?= @request.auth.id && @request.auth.role != \"readonly\"",
-		"updateRule": "@request.auth.id != \"\" && system.users.id ?= @request.auth.id && @request.auth.role != \"readonly\"",
+		"listRule": null,
+		"viewRule": null,
+		"createRule": null,
+		"updateRule": null,
 		"deleteRule": null,
 		"name": "fingerprints",
 		"type": "base",
@@ -433,7 +433,7 @@ func init() {
 	},
 	{
 		"id": "ej9oowivz8b2mht",
-		"listRule": "@request.auth.id != \"\"",
+		"listRule": null,
 		"viewRule": null,
 		"createRule": null,
 		"updateRule": null,
@@ -523,10 +523,10 @@ func init() {
 	},
 	{
 		"id": "4afacsdnlu8q8r2",
-		"listRule": "@request.auth.id != \"\" && user.id = @request.auth.id",
+		"listRule": "@request.auth.id != \"\" && user = @request.auth.id",
 		"viewRule": null,
-		"createRule": "@request.auth.id != \"\" && user.id = @request.auth.id",
-		"updateRule": "@request.auth.id != \"\" && user.id = @request.auth.id",
+		"createRule": "@request.auth.id != \"\" && user = @request.auth.id",
+		"updateRule": "@request.auth.id != \"\" && user = @request.auth.id",
 		"deleteRule": null,
 		"name": "user_settings",
 		"type": "base",
@@ -596,11 +596,11 @@ func init() {
 	},
 	{
 		"id": "2hz5ncl8tizk5nx",
-		"listRule": "@request.auth.id != \"\" && users.id ?= @request.auth.id",
-		"viewRule": "@request.auth.id != \"\" && users.id ?= @request.auth.id",
-		"createRule": "@request.auth.id != \"\" && users.id ?= @request.auth.id && @request.auth.role != \"readonly\"",
-		"updateRule": "@request.auth.id != \"\" && users.id ?= @request.auth.id && @request.auth.role != \"readonly\"",
-		"deleteRule": "@request.auth.id != \"\" && users.id ?= @request.auth.id && @request.auth.role != \"readonly\"",
+		"listRule": null,
+		"viewRule": null,
+		"createRule": null,
+		"updateRule": null,
+		"deleteRule": null,
 		"name": "systems",
 		"type": "base",
 		"fields": [
@@ -866,7 +866,7 @@ func init() {
 	},
 	{
 		"id": "pbc_1864144027",
-		"listRule": "@request.auth.id != \"\" && system.users.id ?= @request.auth.id",
+		"listRule": null,
 		"viewRule": null,
 		"createRule": null,
 		"updateRule": null,
@@ -978,18 +978,6 @@ func init() {
 					"type": "number"
 				},
 				{
-					"hidden": false,
-					"id": "number3332085495",
-					"max": null,
-					"min": null,
-					"name": "updated",
-					"onlyInt": true,
-					"presentable": false,
-					"required": true,
-					"system": false,
-					"type": "number"
-				},
-				{
 					"autogeneratePattern": "",
 					"hidden": false,
 					"id": "text3309110367",
@@ -1002,6 +990,32 @@ func init() {
 					"required": false,
 					"system": false,
 					"type": "text"
+				},
+				{
+					"autogeneratePattern": "",
+					"hidden": false,
+					"id": "text2308952269",
+					"max": 0,
+					"min": 0,
+					"name": "ports",
+					"pattern": "",
+					"presentable": false,
+					"primaryKey": false,
+					"required": false,
+					"system": false,
+					"type": "text"
+				},
+				{
+					"hidden": false,
+					"id": "number3332085495",
+					"max": null,
+					"min": null,
+					"name": "updated",
+					"onlyInt": true,
+					"presentable": false,
+					"required": true,
+					"system": false,
+					"type": "number"
 				}
 		],
 		"indexes": [
@@ -1145,7 +1159,7 @@ func init() {
 			"CREATE INDEX ` + "`" + `idx_4Z7LuLNdQb` + "`" + ` ON ` + "`" + `systemd_services` + "`" + ` (` + "`" + `system` + "`" + `)",
 			"CREATE INDEX ` + "`" + `idx_pBp1fF837e` + "`" + ` ON ` + "`" + `systemd_services` + "`" + ` (` + "`" + `updated` + "`" + `)"
 		],
-		"listRule": "@request.auth.id != \"\" && system.users.id ?= @request.auth.id",
+		"listRule": null,
 		"name": "systemd_services",
 		"system": false,
 		"type": "base",
@@ -1153,8 +1167,8 @@ func init() {
 		"viewRule": null
 	},
 	{
-		"createRule": "@request.auth.id != \"\" && user.id = @request.auth.id",
-		"deleteRule": "@request.auth.id != \"\" && user.id = @request.auth.id",
+		"createRule": "@request.auth.id != \"\" && user = @request.auth.id",
+		"deleteRule": "@request.auth.id != \"\" && user = @request.auth.id",
 		"fields": [
 			{
 				"autogeneratePattern": "[a-z0-9]{10}",
@@ -1238,16 +1252,16 @@ func init() {
 			"CREATE INDEX ` + "`" + `idx_q0iKnRP9v8` + "`" + ` ON ` + "`" + `quiet_hours` + "`" + ` (\n  ` + "`" + `user` + "`" + `,\n  ` + "`" + `system` + "`" + `\n)",
 			"CREATE INDEX ` + "`" + `idx_6T7ljT7FJd` + "`" + ` ON ` + "`" + `quiet_hours` + "`" + ` (\n  ` + "`" + `type` + "`" + `,\n  ` + "`" + `end` + "`" + `\n)"
 		],
-		"listRule": "@request.auth.id != \"\" && user.id = @request.auth.id",
+		"listRule": "@request.auth.id != \"\" && user = @request.auth.id",
 		"name": "quiet_hours",
 		"system": false,
 		"type": "base",
-		"updateRule": "@request.auth.id != \"\" && user.id = @request.auth.id",
-		"viewRule": "@request.auth.id != \"\" && user.id = @request.auth.id"
+		"updateRule": "@request.auth.id != \"\" && user = @request.auth.id",
+		"viewRule": "@request.auth.id != \"\" && user = @request.auth.id"
 	},
 	{
 		"createRule": null,
-		"deleteRule": "@request.auth.id != \"\" && system.users.id ?= @request.auth.id",
+		"deleteRule": null,
 		"fields": [
 			{
 				"autogeneratePattern": "[a-z0-9]{10}",
@@ -1433,16 +1447,16 @@ func init() {
 		"indexes": [
 			"CREATE INDEX ` + "`" + `idx_DZ9yhvgl44` + "`" + ` ON ` + "`" + `smart_devices` + "`" + ` (` + "`" + `system` + "`" + `)"
 		],
-		"listRule": "@request.auth.id != \"\" && system.users.id ?= @request.auth.id",
+		"listRule": null,
 		"name": "smart_devices",
 		"system": false,
 		"type": "base",
 		"updateRule": null,
-		"viewRule": "@request.auth.id != \"\" && system.users.id ?= @request.auth.id"
+		"viewRule": null
 	},
 	{
-		"createRule": "",
-		"deleteRule": "",
+		"createRule": null,
+		"deleteRule": null,
 		"fields": [
 			{
 				"autogeneratePattern": "[a-z0-9]{15}",
@@ -1611,12 +1625,12 @@ func init() {
 		],
 		"id": "pbc_3116237454",
 		"indexes": [],
-		"listRule": "@request.auth.id != \"\" && system.users.id ?= @request.auth.id",
 		"name": "system_details",
 		"system": false,
 		"type": "base",
-		"updateRule": "",
-		"viewRule": "@request.auth.id != \"\" && system.users.id ?= @request.auth.id"
+		"updateRule": null,
+		"listRule": null,
+		"viewRule": null
 	},
 	{
 		"createRule": null,

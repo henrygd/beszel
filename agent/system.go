@@ -8,10 +8,10 @@ import (
 	"os"
 	"runtime"
 	"strings"
-	"time"
 
 	"github.com/henrygd/beszel"
 	"github.com/henrygd/beszel/agent/battery"
+	"github.com/henrygd/beszel/agent/utils"
 	"github.com/henrygd/beszel/agent/zfs"
 	"github.com/henrygd/beszel/internal/entities/container"
 	"github.com/henrygd/beszel/internal/entities/system"
@@ -21,13 +21,6 @@ import (
 	"github.com/shirou/gopsutil/v4/load"
 	"github.com/shirou/gopsutil/v4/mem"
 )
-
-// prevDisk stores previous per-device disk counters for a given cache interval
-type prevDisk struct {
-	readBytes  uint64
-	writeBytes uint64
-	at         time.Time
-}
 
 // Sets initial / non-changing values about the host system
 func (a *Agent) refreshSystemDetails() {
@@ -114,6 +107,26 @@ func (a *Agent) refreshSystemDetails() {
 	}
 }
 
+// attachSystemDetails returns details only for fresh default-interval responses.
+func (a *Agent) attachSystemDetails(data *system.CombinedData, cacheTimeMs uint16, includeRequested bool) *system.CombinedData {
+	if cacheTimeMs != defaultDataCacheTimeMs || (!includeRequested && !a.detailsDirty) {
+		return data
+	}
+
+	// copy data to avoid adding details to the original cached struct
+	response := *data
+	response.Details = &a.systemDetails
+	a.detailsDirty = false
+	return &response
+}
+
+// updateSystemDetails applies a mutation to the static details payload and marks
+// it for inclusion on the next fresh default-interval response.
+func (a *Agent) updateSystemDetails(updateFunc func(details *system.Details)) {
+	updateFunc(&a.systemDetails)
+	a.detailsDirty = true
+}
+
 // Returns current info, stats about the host system
 func (a *Agent) getSystemStats(cacheTimeMs uint16) system.Stats {
 	var systemStats system.Stats
@@ -127,13 +140,13 @@ func (a *Agent) getSystemStats(cacheTimeMs uint16) system.Stats {
 	// cpu metrics
 	cpuMetrics, err := getCpuMetrics(cacheTimeMs)
 	if err == nil {
-		systemStats.Cpu = twoDecimals(cpuMetrics.Total)
+		systemStats.Cpu = utils.TwoDecimals(cpuMetrics.Total)
 		systemStats.CpuBreakdown = []float64{
-			twoDecimals(cpuMetrics.User),
-			twoDecimals(cpuMetrics.System),
-			twoDecimals(cpuMetrics.Iowait),
-			twoDecimals(cpuMetrics.Steal),
-			twoDecimals(cpuMetrics.Idle),
+			utils.TwoDecimals(cpuMetrics.User),
+			utils.TwoDecimals(cpuMetrics.System),
+			utils.TwoDecimals(cpuMetrics.Iowait),
+			utils.TwoDecimals(cpuMetrics.Steal),
+			utils.TwoDecimals(cpuMetrics.Idle),
 		}
 	} else {
 		slog.Error("Error getting cpu metrics", "err", err)
@@ -157,8 +170,8 @@ func (a *Agent) getSystemStats(cacheTimeMs uint16) system.Stats {
 	// memory
 	if v, err := mem.VirtualMemory(); err == nil {
 		// swap
-		systemStats.Swap = bytesToGigabytes(v.SwapTotal)
-		systemStats.SwapUsed = bytesToGigabytes(v.SwapTotal - v.SwapFree - v.SwapCached)
+		systemStats.Swap = utils.BytesToGigabytes(v.SwapTotal)
+		systemStats.SwapUsed = utils.BytesToGigabytes(v.SwapTotal - v.SwapFree - v.SwapCached)
 		// cache + buffers value for default mem calculation
 		// note: gopsutil automatically adds SReclaimable to v.Cached
 		cacheBuff := v.Cached + v.Buffers - v.Shared
@@ -181,13 +194,13 @@ func (a *Agent) getSystemStats(cacheTimeMs uint16) system.Stats {
 			if arcSize, _ := zfs.ARCSize(); arcSize > 0 && arcSize < v.Used {
 				v.Used = v.Used - arcSize
 				v.UsedPercent = float64(v.Used) / float64(v.Total) * 100.0
-				systemStats.MemZfsArc = bytesToGigabytes(arcSize)
+				systemStats.MemZfsArc = utils.BytesToGigabytes(arcSize)
 			}
 		}
-		systemStats.Mem = bytesToGigabytes(v.Total)
-		systemStats.MemBuffCache = bytesToGigabytes(cacheBuff)
-		systemStats.MemUsed = bytesToGigabytes(v.Used)
-		systemStats.MemPct = twoDecimals(v.UsedPercent)
+		systemStats.Mem = utils.BytesToGigabytes(v.Total)
+		systemStats.MemBuffCache = utils.BytesToGigabytes(cacheBuff)
+		systemStats.MemUsed = utils.BytesToGigabytes(v.Used)
+		systemStats.MemPct = utils.TwoDecimals(v.UsedPercent)
 	}
 
 	// disk usage

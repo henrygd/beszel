@@ -14,11 +14,13 @@ import (
 	"time"
 
 	"github.com/henrygd/beszel"
+	"github.com/henrygd/beszel/agent/utils"
 	"github.com/henrygd/beszel/internal/common"
 
 	"github.com/fxamacker/cbor/v2"
 	"github.com/lxzan/gws"
 	"golang.org/x/crypto/ssh"
+	"golang.org/x/net/proxy"
 )
 
 const (
@@ -43,7 +45,7 @@ type WebSocketClient struct {
 // newWebSocketClient creates a new WebSocket client for the given agent.
 // It reads configuration from environment variables and validates the hub URL.
 func newWebSocketClient(agent *Agent) (client *WebSocketClient, err error) {
-	hubURLStr, exists := GetEnv("HUB_URL")
+	hubURLStr, exists := utils.GetEnv("HUB_URL")
 	if !exists {
 		return nil, errors.New("HUB_URL environment variable not set")
 	}
@@ -72,12 +74,12 @@ func newWebSocketClient(agent *Agent) (client *WebSocketClient, err error) {
 // If neither is set, it returns an error.
 func getToken() (string, error) {
 	// get token from env var
-	token, _ := GetEnv("TOKEN")
+	token, _ := utils.GetEnv("TOKEN")
 	if token != "" {
 		return token, nil
 	}
 	// get token from file
-	tokenFile, _ := GetEnv("TOKEN_FILE")
+	tokenFile, _ := utils.GetEnv("TOKEN_FILE")
 	if tokenFile == "" {
 		return "", errors.New("must set TOKEN or TOKEN_FILE")
 	}
@@ -103,6 +105,11 @@ func (client *WebSocketClient) getOptions() *gws.ClientOption {
 	}
 	client.hubURL.Path = path.Join(client.hubURL.Path, "api/beszel/agent-connect")
 
+	// make sure BESZEL_AGENT_ALL_PROXY works (GWS only checks ALL_PROXY)
+	if val := os.Getenv("BESZEL_AGENT_ALL_PROXY"); val != "" {
+		os.Setenv("ALL_PROXY", val)
+	}
+
 	client.options = &gws.ClientOption{
 		Addr:      client.hubURL.String(),
 		TlsConfig: &tls.Config{InsecureSkipVerify: true},
@@ -110,6 +117,9 @@ func (client *WebSocketClient) getOptions() *gws.ClientOption {
 			"User-Agent": []string{getUserAgent()},
 			"X-Token":    []string{client.token},
 			"X-Beszel":   []string{beszel.Version},
+		},
+		NewDialer: func() (gws.Dialer, error) {
+			return proxy.FromEnvironment(), nil
 		},
 	}
 	return client.options
@@ -197,7 +207,7 @@ func (client *WebSocketClient) handleAuthChallenge(msg *common.HubRequest[cbor.R
 	}
 
 	if authRequest.NeedSysInfo {
-		response.Name, _ = GetEnv("SYSTEM_NAME")
+		response.Name, _ = utils.GetEnv("SYSTEM_NAME")
 		response.Hostname = client.agent.systemDetails.Hostname
 		serverAddr := client.agent.connectionManager.serverOptions.Addr
 		_, response.Port, _ = net.SplitHostPort(serverAddr)

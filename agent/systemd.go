@@ -15,6 +15,7 @@ import (
 	"time"
 
 	"github.com/coreos/go-systemd/v22/dbus"
+	"github.com/henrygd/beszel/agent/utils"
 	"github.com/henrygd/beszel/internal/entities/systemd"
 )
 
@@ -49,7 +50,7 @@ func isSystemdAvailable() bool {
 
 // newSystemdManager creates a new systemdManager.
 func newSystemdManager() (*systemdManager, error) {
-	if skipSystemd, _ := GetEnv("SKIP_SYSTEMD"); skipSystemd == "true" {
+	if skipSystemd, _ := utils.GetEnv("SKIP_SYSTEMD"); skipSystemd == "true" {
 		return nil, nil
 	}
 
@@ -294,13 +295,13 @@ func unescapeServiceName(name string) string {
 // otherwise defaults to "*service".
 func getServicePatterns() []string {
 	patterns := []string{}
-	if envPatterns, _ := GetEnv("SERVICE_PATTERNS"); envPatterns != "" {
+	if envPatterns, _ := utils.GetEnv("SERVICE_PATTERNS"); envPatterns != "" {
 		for pattern := range strings.SplitSeq(envPatterns, ",") {
 			pattern = strings.TrimSpace(pattern)
 			if pattern == "" {
 				continue
 			}
-			if !strings.HasSuffix(pattern, ".service") {
+			if !strings.HasSuffix(pattern, "timer") && !strings.HasSuffix(pattern, ".service") {
 				pattern += ".service"
 			}
 			patterns = append(patterns, pattern)

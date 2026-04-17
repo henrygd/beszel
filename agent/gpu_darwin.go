@@ -13,6 +13,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/henrygd/beszel/agent/utils"
 	"github.com/henrygd/beszel/internal/entities/system"
 )
 
@@ -171,7 +172,11 @@ type macmonSample struct {
 }
 
 func (gm *GPUManager) collectMacmonPipe() (err error) {
-	cmd := exec.Command(macmonCmd, "pipe", "-i", strconv.Itoa(macmonIntervalMs))
+	macmonPath, err := utils.LookPathHomebrew(macmonCmd)
+	if err != nil {
+		return err
+	}
+	cmd := exec.Command(macmonPath, "pipe", "-i", strconv.Itoa(macmonIntervalMs))
 	// Avoid blocking if macmon writes to stderr.
 	cmd.Stderr = io.Discard
 	stdout, err := cmd.StdoutPipe()

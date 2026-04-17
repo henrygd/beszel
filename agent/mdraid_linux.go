@@ -9,6 +9,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/henrygd/beszel/agent/utils"
 	"github.com/henrygd/beszel/internal/entities/smart"
 )
 
@@ -42,7 +43,7 @@ func scanMdraidDevices() []*DeviceInfo {
 			continue
 		}
 		mdDir := filepath.Join(blockDir, name, "md")
-		if !fileExists(filepath.Join(mdDir, "array_state")) {
+		if !utils.FileExists(filepath.Join(mdDir, "array_state")) {
 			continue
 		}
 
@@ -134,24 +135,24 @@ func readMdraidHealth(blockName string) (mdraidHealth, bool) {
 	}
 
 	mdDir := filepath.Join(mdraidSysfsRoot, "block", blockName, "md")
-	arrayState, okState := readStringFileOK(filepath.Join(mdDir, "array_state"))
+	arrayState, okState := utils.ReadStringFileOK(filepath.Join(mdDir, "array_state"))
 	if !okState {
 		return out, false
 	}
 
 	out.arrayState = arrayState
-	out.level = readStringFile(filepath.Join(mdDir, "level"))
-	out.syncAction = readStringFile(filepath.Join(mdDir, "sync_action"))
-	out.syncCompleted = readStringFile(filepath.Join(mdDir, "sync_completed"))
-	out.syncSpeed = readStringFile(filepath.Join(mdDir, "sync_speed"))
+	out.level = utils.ReadStringFile(filepath.Join(mdDir, "level"))
+	out.syncAction = utils.ReadStringFile(filepath.Join(mdDir, "sync_action"))
+	out.syncCompleted = utils.ReadStringFile(filepath.Join(mdDir, "sync_completed"))
+	out.syncSpeed = utils.ReadStringFile(filepath.Join(mdDir, "sync_speed"))
 
-	if val, ok := readUintFile(filepath.Join(mdDir, "raid_disks")); ok {
+	if val, ok := utils.ReadUintFile(filepath.Join(mdDir, "raid_disks")); ok {
 		out.raidDisks = val
 	}
-	if val, ok := readUintFile(filepath.Join(mdDir, "degraded")); ok {
+	if val, ok := utils.ReadUintFile(filepath.Join(mdDir, "degraded")); ok {
 		out.degraded = val
 	}
-	if val, ok := readUintFile(filepath.Join(mdDir, "mismatch_cnt")); ok {
+	if val, ok := utils.ReadUintFile(filepath.Join(mdDir, "mismatch_cnt")); ok {
 		out.mismatchCnt = val
 	}
 
@@ -169,11 +170,18 @@ func mdraidSmartStatus(health mdraidHealth) string {
 	case "inactive", "faulty", "broken", "stopped":
 		return "FAILED"
 	}
+	// During rebuild/recovery, arrays are often temporarily degraded; report as
+	// warning instead of hard failure while synchronization is in progress.
+	syncAction := strings.ToLower(strings.TrimSpace(health.syncAction))
+	switch syncAction {
+	case "resync", "recover", "reshape":
+		return "WARNING"
+	}
 	if health.degraded > 0 {
 		return "FAILED"
 	}
-	switch strings.ToLower(strings.TrimSpace(health.syncAction)) {
-	case "resync", "recover", "reshape", "check", "repair":
+	switch syncAction {
+	case "check", "repair":
 		return "WARNING"
 	}
 	switch state {
@@ -205,7 +213,7 @@ func readMdraidBlockCapacityBytes(blockName, root string) (uint64, bool) {
 	sizePath := filepath.Join(root, "block", blockName, "size")
 	lbsPath := filepath.Join(root, "block", blockName, "queue", "logical_block_size")
 
-	sizeStr, ok := readStringFileOK(sizePath)
+	sizeStr, ok := utils.ReadStringFileOK(sizePath)
 	if !ok {
 		return 0, false
 	}
@@ -215,7 +223,7 @@ func readMdraidBlockCapacityBytes(blockName, root string) (uint64, bool) {
 	}
 
 	logicalBlockSize := uint64(512)
-	if lbsStr, ok := readStringFileOK(lbsPath); ok {
+	if lbsStr, ok := utils.ReadStringFileOK(lbsPath); ok {
 		if parsed, err := strconv.ParseUint(lbsStr, 10, 64); err == nil && parsed > 0 {
 			logicalBlockSize = parsed
 		}

@@ -15,6 +15,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/henrygd/beszel/agent/utils"
 	"github.com/henrygd/beszel/internal/entities/system"
 )
 
@@ -291,8 +292,8 @@ func (gm *GPUManager) parseAmdData(output []byte) bool {
 		}
 		gpu := gm.GpuDataMap[id]
 		gpu.Temperature, _ = strconv.ParseFloat(v.Temperature, 64)
-		gpu.MemoryUsed = bytesToMegabytes(memoryUsage)
-		gpu.MemoryTotal = bytesToMegabytes(totalMemory)
+		gpu.MemoryUsed = utils.BytesToMegabytes(memoryUsage)
+		gpu.MemoryTotal = utils.BytesToMegabytes(totalMemory)
 		gpu.Usage += usage
 		gpu.Power += power
 		gpu.Count++
@@ -366,16 +367,16 @@ func (gm *GPUManager) calculateGPUAverage(id string, gpu *system.GPUData, cacheK
 	gpuAvg := *gpu
 	deltaUsage, deltaPower, deltaPowerPkg := gm.calculateDeltas(gpu, lastSnapshot)
 
-	gpuAvg.Power = twoDecimals(deltaPower / float64(deltaCount))
+	gpuAvg.Power = utils.TwoDecimals(deltaPower / float64(deltaCount))
 
 	if gpu.Engines != nil {
 		// make fresh map for averaged engine metrics to avoid mutating
 		// the accumulator map stored in gm.GpuDataMap
 		gpuAvg.Engines = make(map[string]float64, len(gpu.Engines))
 		gpuAvg.Usage = gm.calculateIntelGPUUsage(&gpuAvg, gpu, lastSnapshot, deltaCount)
-		gpuAvg.PowerPkg = twoDecimals(deltaPowerPkg / float64(deltaCount))
+		gpuAvg.PowerPkg = utils.TwoDecimals(deltaPowerPkg / float64(deltaCount))
 	} else {
-		gpuAvg.Usage = twoDecimals(deltaUsage / float64(deltaCount))
+		gpuAvg.Usage = utils.TwoDecimals(deltaUsage / float64(deltaCount))
 	}
 
 	gm.lastAvgData[id] = gpuAvg
@@ -410,17 +411,17 @@ func (gm *GPUManager) calculateIntelGPUUsage(gpuAvg, gpu *system.GPUData, lastSn
 		} else {
 			deltaEngine = engine
 		}
-		gpuAvg.Engines[name] = twoDecimals(deltaEngine / float64(deltaCount))
+		gpuAvg.Engines[name] = utils.TwoDecimals(deltaEngine / float64(deltaCount))
 		maxEngineUsage = max(maxEngineUsage, deltaEngine/float64(deltaCount))
 	}
-	return twoDecimals(maxEngineUsage)
+	return utils.TwoDecimals(maxEngineUsage)
 }
 
 // updateInstantaneousValues updates values that should reflect current state, not averages
 func (gm *GPUManager) updateInstantaneousValues(gpuAvg *system.GPUData, gpu *system.GPUData) {
-	gpuAvg.Temperature = twoDecimals(gpu.Temperature)
-	gpuAvg.MemoryUsed = twoDecimals(gpu.MemoryUsed)
-	gpuAvg.MemoryTotal = twoDecimals(gpu.MemoryTotal)
+	gpuAvg.Temperature = utils.TwoDecimals(gpu.Temperature)
+	gpuAvg.MemoryUsed = utils.TwoDecimals(gpu.MemoryUsed)
+	gpuAvg.MemoryTotal = utils.TwoDecimals(gpu.MemoryTotal)
 }
 
 // storeSnapshot saves the current GPU state for this cache key
@@ -460,7 +461,7 @@ func (gm *GPUManager) discoverGpuCapabilities() gpuCapabilities {
 		caps.hasNvtop = true
 	}
 	if runtime.GOOS == "darwin" {
-		if _, err := exec.LookPath(macmonCmd); err == nil {
+		if _, err := utils.LookPathHomebrew(macmonCmd); err == nil {
 			caps.hasMacmon = true
 		}
 		if _, err := exec.LookPath(powermetricsCmd); err == nil {
@@ -541,7 +542,7 @@ func (gm *GPUManager) collectorDefinitions(caps gpuCapabilities) map[collectorSo
 	return map[collectorSource]collectorDefinition{
 		collectorSourceNVML: {
 			group:     collectorGroupNvidia,
-			available: caps.hasNvidiaSmi,
+			available: true,
 			start: func(_ func()) bool {
 				return gm.startNvmlCollector()
 			},
@@ -687,7 +688,7 @@ func (gm *GPUManager) resolveLegacyCollectorPriority(caps gpuCapabilities) []col
 	priorities := make([]collectorSource, 0, 4)
 
 	if caps.hasNvidiaSmi && !caps.hasTegrastats {
-		if nvml, _ := GetEnv("NVML"); nvml == "true" {
+		if nvml, _ := utils.GetEnv("NVML"); nvml == "true" {
 			priorities = append(priorities, collectorSourceNVML, collectorSourceNvidiaSMI)
 		} else {
 			priorities = append(priorities, collectorSourceNvidiaSMI)
@@ -695,7 +696,7 @@ func (gm *GPUManager) resolveLegacyCollectorPriority(caps gpuCapabilities) []col
 	}
 
 	if caps.hasRocmSmi {
-		if val, _ := GetEnv("AMD_SYSFS"); val == "true" {
+		if val, _ := utils.GetEnv("AMD_SYSFS"); val == "true" {
 			priorities = append(priorities, collectorSourceAmdSysfs)
 		} else {
 			priorities = append(priorities, collectorSourceRocmSMI)
@@ -728,14 +729,11 @@ func (gm *GPUManager) resolveLegacyCollectorPriority(caps gpuCapabilities) []col
 
 // NewGPUManager creates and initializes a new GPUManager
 func NewGPUManager() (*GPUManager, error) {
-	if skipGPU, _ := GetEnv("SKIP_GPU"); skipGPU == "true" {
+	if skipGPU, _ := utils.GetEnv("SKIP_GPU"); skipGPU == "true" {
 		return nil, nil
 	}
 	var gm GPUManager
 	caps := gm.discoverGpuCapabilities()
-	if !hasAnyGpuCollector(caps) {
-		return nil, fmt.Errorf(noGPUFoundMsg)
-	}
 	gm.GpuDataMap = make(map[string]*system.GPUData)
 
 	// Jetson devices should always use tegrastats (ignore GPU_COLLECTOR).
@@ -744,13 +742,17 @@ func NewGPUManager() (*GPUManager, error) {
 		return &gm, nil
 	}
 
-	// if GPU_COLLECTOR is set, start user-defined collectors.
-	if collectorConfig, ok := GetEnv("GPU_COLLECTOR"); ok && strings.TrimSpace(collectorConfig) != "" {
+	// Respect explicit collector selection before capability auto-detection.
+	if collectorConfig, ok := utils.GetEnv("GPU_COLLECTOR"); ok && strings.TrimSpace(collectorConfig) != "" {
 		priorities := parseCollectorPriority(collectorConfig)
 		if gm.startCollectorsByPriority(priorities, caps) == 0 {
 			return nil, fmt.Errorf("no configured GPU collectors are available")
 		}
 		return &gm, nil
+	}
+
+	if !hasAnyGpuCollector(caps) {
+		return nil, fmt.Errorf(noGPUFoundMsg)
 	}
 
 	// auto-detect and start collectors when GPU_COLLECTOR is unset.

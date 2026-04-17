@@ -9,6 +9,7 @@ import (
 	"github.com/henrygd/beszel"
 	"github.com/henrygd/beszel/agent"
 	"github.com/henrygd/beszel/agent/health"
+	"github.com/henrygd/beszel/agent/utils"
 	"github.com/spf13/pflag"
 	"golang.org/x/crypto/ssh"
 )
@@ -116,12 +117,12 @@ func (opts *cmdOptions) loadPublicKeys() ([]ssh.PublicKey, error) {
 	}
 
 	// Try environment variable
-	if key, ok := agent.GetEnv("KEY"); ok && key != "" {
+	if key, ok := utils.GetEnv("KEY"); ok && key != "" {
 		return agent.ParseKeys(key)
 	}
 
 	// Try key file
-	keyFile, ok := agent.GetEnv("KEY_FILE")
+	keyFile, ok := utils.GetEnv("KEY_FILE")
 	if !ok {
 		return nil, fmt.Errorf("no key provided: must set -key flag, KEY env var, or KEY_FILE env var. Use 'beszel-agent help' for usage")
 	}

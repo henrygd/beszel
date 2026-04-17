@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/gosnmp/gosnmp"
+	"github.com/henrygd/beszel/agent/utils"
 	psutilNet "github.com/shirou/gopsutil/v4/net"
 )
 
@@ -232,15 +233,15 @@ type SNMPNetworkIO struct {
 }
 
 func SNMP_NetworkIO(target string) (*SNMPNetworkIO, error) {
-	community, _ := GetEnv("SNMP_COMMUNITY")
+	community, _ := utils.GetEnv("SNMP_COMMUNITY")
 	if community == "" {
 		community = "public"
 	}
-	port, _ := GetEnv("SNMP_PORT")
+	port, _ := utils.GetEnv("SNMP_PORT")
 	if port == "" {
 		port = "161"
 	}
-	version, _ := GetEnv("SNMP_VERSION")
+	version, _ := utils.GetEnv("SNMP_VERSION")
 	snmpVersion := gosnmp.Version2c
 	switch version {
 	case "1":

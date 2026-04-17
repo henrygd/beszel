@@ -134,8 +134,8 @@ export default function SystemsTable() {
 
 	const CardHead = useMemo(() => {
 		return (
-			<CardHeader className="pb-4.5 px-2 sm:px-6 max-sm:pt-5 max-sm:pb-1">
-				<div className="grid md:flex gap-5 w-full items-end">
+			<CardHeader className="p-0 mb-3 sm:mb-4">
+				<div className="grid md:flex gap-x-5 gap-y-3 w-full items-end">
 					<div className="px-2 sm:px-1">
 						<CardTitle className="mb-2">
 							<Trans>All Systems</Trans>
@@ -302,29 +302,27 @@ export default function SystemsTable() {
 	])
 
 	return (
-		<Card>
+		<Card className="w-full px-3 py-5 sm:py-6 sm:px-6">
 			{CardHead}
-			<div className="p-6 pt-0 max-sm:py-3 max-sm:px-2">
-				{viewMode === "table" ? (
-					// table layout
-					<div className="rounded-md">
-						<AllSystemsTable table={table} rows={rows} colLength={visibleColumns.length} />
-					</div>
-				) : (
-					// grid layout
-					<div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
-						{rows?.length ? (
-							rows.map((row) => {
-								return <SystemCard key={row.original.id} row={row} table={table} colLength={visibleColumns.length} />
-							})
-						) : (
-							<div className="col-span-full text-center py-8">
-								<Trans>No systems found.</Trans>
-							</div>
-						)}
-					</div>
-				)}
-			</div>
+			{viewMode === "table" ? (
+				// table layout
+				<div className="rounded-md">
+					<AllSystemsTable table={table} rows={rows} colLength={visibleColumns.length} />
+				</div>
+			) : (
+				// grid layout
+				<div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+					{rows?.length ? (
+						rows.map((row) => {
+							return <SystemCard key={row.original.id} row={row} table={table} colLength={visibleColumns.length} />
+						})
+					) : (
+						<div className="col-span-full text-center py-8">
+							<Trans>No systems found.</Trans>
+						</div>
+					)}
+				</div>
+			)}
 		</Card>
 	)
 }
@@ -462,14 +460,14 @@ const SystemCard = memo(
 						}
 					)}
 				>
-					<CardHeader className="py-1 ps-5 pe-3 bg-muted/30 border-b border-border/60">
-						<div className="flex items-center gap-2 w-full overflow-hidden">
-							<CardTitle className="text-base tracking-normal text-primary/90 flex items-center min-w-0 flex-1 gap-2.5">
+					<CardHeader className="py-1 ps-4 pe-2 bg-muted/30 border-b border-border/60">
+						<div className="flex items-center gap-1 w-full overflow-hidden">
+							<h3 className="text-primary/90 min-w-0 flex-1 gap-2.5 font-semibold">
 								<div className="flex items-center gap-2.5 min-w-0 flex-1">
 									<IndicatorDot system={system} />
 									<span className="text-[.95em]/normal tracking-normal text-primary/90 truncate">{system.name}</span>
 								</div>
-							</CardTitle>
+							</h3>
 							{table.getColumn("actions")?.getIsVisible() && (
 								<div className="flex gap-1 shrink-0 relative z-10">
 									<AlertButton system={system} />

@@ -11,7 +11,7 @@ import { DialogTitle } from "@/components/ui/dialog"
 import { $userSettings } from "@/lib/stores"
 import { decimalString, formatBytes, toFixedFloat } from "@/lib/utils"
 import type { ChartData } from "@/types"
-import { ChartCard } from "../system"
+import { ChartCard } from "./chart-card"
 
 export default memo(function NetworkSheet({
 	chartData,
@@ -46,7 +46,7 @@ export default memo(function NetworkSheet({
 					title={t`View more`}
 					variant="outline"
 					size="icon"
-					className="shrink-0 max-sm:absolute max-sm:top-3 max-sm:end-3"
+					className="shrink-0 max-sm:absolute max-sm:top-0 max-sm:end-0"
 				>
 					<MoreHorizontalIcon />
 				</Button>
