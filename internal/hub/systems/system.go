@@ -8,7 +8,6 @@ import (
 	"hash/fnv"
 	"math/rand"
 	"net"
-	"slices"
 	"strings"
 	"sync/atomic"
 	"time"
@@ -368,12 +367,16 @@ func (sys *System) HasUser(app core.App, user *core.Record) bool {
 	if v, _ := utils.GetEnv("SHARE_ALL_SYSTEMS"); v == "true" {
 		return true
 	}
-	record, err := sys.getRecord(app)
-	if err != nil {
+	var recordData = struct {
+		Users string
+	}{}
+	err := app.DB().NewQuery("SELECT users FROM systems WHERE id={:id}").
+		Bind(dbx.Params{"id": sys.Id}).
+		One(&recordData)
+	if err != nil || recordData.Users == "" {
 		return false
 	}
-	users := record.GetStringSlice("users")
-	return slices.Contains(users, user.Id)
+	return strings.Contains(recordData.Users, user.Id)
 }
 
 // setDown marks a system as down in the database.
