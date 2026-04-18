@@ -4,11 +4,15 @@ import (
 	"context"
 	"errors"
 	"log/slog"
+	"net"
+	"os"
 	"os/signal"
+	"strings"
 	"syscall"
 	"time"
 
 	"github.com/henrygd/beszel/agent/health"
+	"github.com/henrygd/beszel/agent/utils"
 	"github.com/henrygd/beszel/internal/entities/system"
 )
 
@@ -111,12 +115,35 @@ func (c *ConnectionManager) Start(serverOptions ServerOptions) error {
 			_ = health.Update()
 		case <-sigCtx.Done():
 			slog.Info("Shutting down", "cause", context.Cause(sigCtx))
-			_ = c.agent.StopServer()
-			c.agent.probeManager.Stop()
-			c.closeWebSocket()
-			return health.CleanUp()
+			return c.stop()
 		}
 	}
+}
+
+// stop does not stop the connection manager itself, just any active connections. The manager will attempt to reconnect after stopping, so this should only be called immediately before shutting down the entire agent.
+//
+// If we need or want to expose a graceful Stop method in the future, do something like this to actually stop the manager:
+//
+//	func (c *ConnectionManager) Start(serverOptions ServerOptions) error {
+//		ctx, cancel := context.WithCancel(context.Background())
+//		c.cancel = cancel
+//
+//		for {
+//			select {
+//			case <-ctx.Done():
+//				return c.stop()
+//			}
+//		}
+//	}
+//
+//	func (c *ConnectionManager) Stop() {
+//		c.cancel()
+//	}
+func (c *ConnectionManager) stop() error {
+	_ = c.agent.StopServer()
+	c.agent.probeManager.Stop()
+	c.closeWebSocket()
+	return health.CleanUp()
 }
 
 // handleEvent processes connection events and updates the connection state accordingly.
@@ -186,9 +213,16 @@ func (c *ConnectionManager) connect() {
 
 	// Try WebSocket first, if it fails, start SSH server
 	err := c.startWebSocketConnection()
-	if err != nil && c.State == Disconnected {
-		c.startSSHServer()
-		c.startWsTicker()
+	if err != nil {
+		if shouldExitOnErr(err) {
+			time.Sleep(2 * time.Second) // prevent tight restart loop
+			_ = c.stop()
+			os.Exit(1)
+		}
+		if c.State == Disconnected {
+			c.startSSHServer()
+			c.startWsTicker()
+		}
 	}
 }
 
@@ -224,4 +258,15 @@ func (c *ConnectionManager) closeWebSocket() {
 	if c.wsClient != nil {
 		c.wsClient.Close()
 	}
+}
+
+// shouldExitOnErr checks if the error is a DNS resolution failure and if the
+// EXIT_ON_DNS_ERROR env var is set. https://github.com/henrygd/beszel/issues/1924.
+func shouldExitOnErr(err error) bool {
+	if val, _ := utils.GetEnv("EXIT_ON_DNS_ERROR"); val == "true" {
+		if opErr, ok := errors.AsType[*net.OpError](err); ok {
+			return strings.Contains(opErr.Err.Error(), "lookup")
+		}
+	}
+	return false
 }
