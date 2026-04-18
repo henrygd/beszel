@@ -8,8 +8,9 @@ import (
 	"sync"
 	"time"
 
-	"github.com/henrygd/beszel/internal/entities/probe"
 	"log/slog"
+
+	"github.com/henrygd/beszel/internal/entities/probe"
 )
 
 // ProbeManager manages network probe tasks.
@@ -33,7 +34,7 @@ type probeSample struct {
 
 func newProbeManager() *ProbeManager {
 	return &ProbeManager{
-		probes: make(map[string]*probeTask),
+		probes:     make(map[string]*probeTask),
 		httpClient: &http.Client{Timeout: 10 * time.Second},
 	}
 }
@@ -145,8 +146,7 @@ func (pm *ProbeManager) runProbe(task *probeTask) {
 	if interval < time.Second {
 		interval = 10 * time.Second
 	}
-	ticker := time.NewTicker(interval)
-	defer ticker.Stop()
+	ticker := time.Tick(interval)
 
 	// Run immediately on start
 	pm.executeProbe(task)
@@ -155,7 +155,7 @@ func (pm *ProbeManager) runProbe(task *probeTask) {
 		select {
 		case <-task.cancel:
 			return
-		case <-ticker.C:
+		case <-ticker:
 			pm.executeProbe(task)
 		}
 	}
@@ -185,8 +185,8 @@ func (pm *ProbeManager) executeProbe(task *probeTask) {
 	// Trim old samples beyond 120s to bound memory
 	cutoff := time.Now().Add(-120 * time.Second)
 	start := 0
-	for i, s := range task.samples {
-		if s.timestamp.After(cutoff) {
+	for i := range task.samples {
+		if task.samples[i].timestamp.After(cutoff) {
 			start = i
 			break
 		}
@@ -195,7 +195,8 @@ func (pm *ProbeManager) executeProbe(task *probeTask) {
 		}
 	}
 	if start > 0 {
-		task.samples = task.samples[start:]
+		size := copy(task.samples, task.samples[start:])
+		task.samples = task.samples[:size]
 	}
 	task.samples = append(task.samples, sample)
 	task.mu.Unlock()

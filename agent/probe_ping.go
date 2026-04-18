@@ -24,10 +24,10 @@ var pingTimeRegex = regexp.MustCompile(`time[=<]([\d.]+)\s*ms`)
 type icmpMethod int
 
 const (
-	icmpUntried    icmpMethod = iota // haven't tried yet
-	icmpRaw                          // privileged raw socket (ip4:icmp)
-	icmpDatagram                     // unprivileged datagram socket (udp4)
-	icmpExecFallback                 // shell out to system ping command
+	icmpUntried      icmpMethod = iota // haven't tried yet
+	icmpRaw                            // privileged raw socket (ip4:icmp)
+	icmpDatagram                       // unprivileged datagram socket (udp4)
+	icmpExecFallback                   // shell out to system ping command
 )
 
 var (

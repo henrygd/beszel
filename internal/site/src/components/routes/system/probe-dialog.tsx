@@ -17,13 +17,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { PlusIcon } from "lucide-react"
 import { useToast } from "@/components/ui/use-toast"
 
-export function AddProbeDialog({
-	systemId,
-	onCreated,
-}: {
-	systemId: string
-	onCreated: () => void
-}) {
+export function AddProbeDialog({ systemId, onCreated }: { systemId: string; onCreated: () => void }) {
 	const [open, setOpen] = useState(false)
 	const [protocol, setProtocol] = useState<string>("icmp")
 	const [target, setTarget] = useState("")
@@ -60,8 +54,8 @@ export function AddProbeDialog({
 			resetForm()
 			setOpen(false)
 			onCreated()
-		} catch (err: any) {
-			toast({ variant: "destructive", title: t`Error`, description: err?.message })
+		} catch (err: unknown) {
+			toast({ variant: "destructive", title: t`Error`, description: (err as Error)?.message })
 		} finally {
 			setLoading(false)
 		}
@@ -87,6 +81,17 @@ export function AddProbeDialog({
 				<form onSubmit={handleSubmit} className="grid gap-4">
 					<div className="grid gap-2">
 						<Label>
+							<Trans>Target</Trans>
+						</Label>
+						<Input
+							value={target}
+							onChange={(e) => setTarget(e.target.value)}
+							placeholder={protocol === "http" ? "https://example.com" : "1.1.1.1"}
+							required
+						/>
+					</div>
+					<div className="grid gap-2">
+						<Label>
 							<Trans>Protocol</Trans>
 						</Label>
 						<Select value={protocol} onValueChange={setProtocol}>
@@ -99,17 +104,6 @@ export function AddProbeDialog({
 								<SelectItem value="http">HTTP</SelectItem>
 							</SelectContent>
 						</Select>
-					</div>
-					<div className="grid gap-2">
-						<Label>
-							<Trans>Target</Trans>
-						</Label>
-						<Input
-							value={target}
-							onChange={(e) => setTarget(e.target.value)}
-							placeholder={protocol === "http" ? "https://example.com" : "1.1.1.1"}
-							required
-						/>
 					</div>
 					{protocol === "tcp" && (
 						<div className="grid gap-2">
@@ -147,7 +141,7 @@ export function AddProbeDialog({
 						<Input
 							value={name}
 							onChange={(e) => setName(e.target.value)}
-							placeholder={t`e.g. Cloudflare DNS`}
+							placeholder={target || t`e.g. Cloudflare DNS`}
 						/>
 					</div>
 					<DialogFooter>
