@@ -17,7 +17,7 @@ import { toast } from "../ui/use-toast"
 import { OtpInputForm } from "./otp-forms"
 
 const honeypot = v.literal("")
-const emailSchema = v.pipe(v.string(), v.email(t`Invalid email address.`))
+const emailSchema = v.pipe(v.string(), v.rfcEmail(t`Invalid email address.`))
 const passwordSchema = v.pipe(
 	v.string(),
 	v.minLength(8, t`Password must be at least 8 characters.`),
