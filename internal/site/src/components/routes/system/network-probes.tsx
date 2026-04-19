@@ -1,12 +1,10 @@
-import { useCallback, useEffect, useMemo, useState } from "react"
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { Trans, useLingui } from "@lingui/react/macro"
 import { pb } from "@/lib/api"
 import { useStore } from "@nanostores/react"
 import { $chartTime } from "@/lib/stores"
-import { chartTimeData, cn, toFixedFloat, decimalString } from "@/lib/utils"
+import { chartTimeData, cn, toFixedFloat, decimalString, getVisualStringWidth } from "@/lib/utils"
 import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Trash2Icon } from "lucide-react"
 import { useToast } from "@/components/ui/use-toast"
 import { appendData } from "./chart-data"
 import { AddProbeDialog } from "./probe-dialog"
@@ -14,6 +12,17 @@ import { ChartCard } from "./chart-card"
 import LineChartDefault, { type DataPoint } from "@/components/charts/line-chart"
 import { pinnedAxisDomain } from "@/components/ui/chart"
 import type { ChartData, NetworkProbeRecord, NetworkProbeStatsRecord, SystemRecord } from "@/types"
+import {
+	type Row,
+	type SortingState,
+	flexRender,
+	getCoreRowModel,
+	getSortedRowModel,
+	useReactTable,
+} from "@tanstack/react-table"
+import { useVirtualizer, type VirtualItem } from "@tanstack/react-virtual"
+import { TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { getProbeColumns, type ProbeRow } from "./network-probes-columns"
 
 function probeKey(p: NetworkProbeRecord) {
 	if (p.protocol === "tcp") return `${p.protocol}:${p.target}:${p.port}`
@@ -131,17 +140,20 @@ export default function NetworkProbes({
 		return () => controller.abort()
 	}, [system, chartTime, probes, activeProbeKeys])
 
-	const deleteProbe = async (id: string) => {
-		try {
-			await pb.send("/api/beszel/network-probes", {
-				method: "DELETE",
-				query: { id },
-			})
-			fetchProbes()
-		} catch (err: any) {
-			toast({ variant: "destructive", title: t`Error`, description: err?.message })
-		}
-	}
+	const deleteProbe = useCallback(
+		async (id: string) => {
+			try {
+				await pb.send("/api/beszel/network-probes", {
+					method: "DELETE",
+					query: { id },
+				})
+				fetchProbes()
+			} catch (err: any) {
+				toast({ variant: "destructive", title: t`Error`, description: err?.message })
+			}
+		},
+		[fetchProbes, toast, t]
+	)
 
 	const dataPoints: DataPoint<NetworkProbeStatsRecord>[] = useMemo(() => {
 		const count = probes.length
@@ -150,53 +162,83 @@ export default function NetworkProbes({
 			return {
 				label: p.name || p.target,
 				dataKey: (record: NetworkProbeStatsRecord) => record.stats?.[key]?.avg ?? null,
-				color:
-					count <= 5
-						? i + 1
-						: `hsl(${(i * 360) / count}, var(--chart-saturation), var(--chart-lightness))`,
+				color: count <= 5 ? i + 1 : `hsl(${(i * 360) / count}, var(--chart-saturation), var(--chart-lightness))`,
 			}
 		})
 	}, [probes])
 
-	if (probes.length === 0 && stats.length === 0) {
-		return (
-			<Card className="px-3 py-5 sm:py-6 sm:px-6">
-				<CardHeader className="p-0">
-					<div className="flex items-center justify-between">
-						<div>
-							<CardTitle>
-								<Trans>Network Probes</Trans>
-							</CardTitle>
-							<CardDescription className="mt-1.5">
-								<Trans>ICMP/TCP/HTTP latency monitoring from this agent</Trans>
-							</CardDescription>
-						</div>
-						<AddProbeDialog systemId={systemId} onCreated={fetchProbes} />
-					</div>
-				</CardHeader>
-			</Card>
-		)
-	}
-
-	const protocolBadge = (protocol: string) => {
-		const colors: Record<string, string> = {
-			icmp: "bg-blue-500/15 text-blue-400",
-			tcp: "bg-purple-500/15 text-purple-400",
-			http: "bg-green-500/15 text-green-400",
+	const { longestName, longestTarget } = useMemo(() => {
+		let longestName = 0
+		let longestTarget = 0
+		for (const p of probes) {
+			longestName = Math.max(longestName, getVisualStringWidth(p.name || p.target))
+			longestTarget = Math.max(longestTarget, getVisualStringWidth(p.target))
 		}
-		return (
-			<span className={cn("px-2 py-0.5 rounded text-xs font-medium uppercase", colors[protocol] ?? "")}>
-				{protocol}
-			</span>
-		)
-	}
+		return { longestName, longestTarget }
+	}, [probes])
+
+	const columns = useMemo(
+		() => getProbeColumns(deleteProbe, longestName, longestTarget),
+		[deleteProbe, longestName, longestTarget]
+	)
+
+	const tableData: ProbeRow[] = useMemo(
+		() =>
+			probes.map((p) => {
+				const key = probeKey(p)
+				const result = latestResults[key]
+				return { ...p, key, latency: result?.avg, loss: result?.loss }
+			}),
+		[probes, latestResults]
+	)
+
+	const [sorting, setSorting] = useState<SortingState>([{ id: "name", desc: false }])
+
+	const table = useReactTable({
+		data: tableData,
+		columns,
+		getCoreRowModel: getCoreRowModel(),
+		getSortedRowModel: getSortedRowModel(),
+		onSortingChange: setSorting,
+		defaultColumn: {
+			sortUndefined: "last",
+			size: 100,
+			minSize: 0,
+		},
+		state: { sorting },
+	})
+
+	const rows = table.getRowModel().rows
+	const visibleColumns = table.getVisibleLeafColumns()
+
+	// if (probes.length === 0 && stats.length === 0) {
+	// 	return (
+	// 		<Card className="w-full px-3 py-5 sm:py-6 sm:px-6">
+	// 			<CardHeader className="p-0 mb-3 sm:mb-4">
+	// 				<div className="grid md:flex gap-x-5 gap-y-3 w-full items-end">
+	// 					<div className="px-2 sm:px-1">
+	// 						<CardTitle className="mb-2">
+	// 							<Trans>Network Probes</Trans>
+	// 						</CardTitle>
+	// 						<CardDescription>
+	// 							<Trans>ICMP/TCP/HTTP latency monitoring from this agent</Trans>
+	// 						</CardDescription>
+	// 					</div>
+	// 					{/* <div className="relative ms-auto w-full max-w-full md:w-64"> */}
+	// 					<AddProbeDialog systemId={systemId} onCreated={fetchProbes} />
+	// 					{/* </div> */}
+	// 				</div>
+	// 			</CardHeader>
+	// 		</Card>
+	// 	)
+	// }
 
 	return (
 		<div className="grid gap-4">
-			<Card className="px-3 py-5 sm:py-6 sm:px-6">
-				<CardHeader className="p-0 mb-4">
-					<div className="flex items-center justify-between">
-						<div>
+			<Card className="@container w-full px-3 py-5 sm:py-6 sm:px-6">
+				<CardHeader className="p-0 mb-3 sm:mb-4">
+					<div className="grid md:flex gap-x-5 gap-y-3 w-full items-end md:justify-between">
+						<div className="px-2 sm:px-1">
 							<CardTitle>
 								<Trans>Network Probes</Trans>
 							</CardTitle>
@@ -208,83 +250,17 @@ export default function NetworkProbes({
 					</div>
 				</CardHeader>
 
-				<div className="overflow-x-auto -mx-3 sm:-mx-6">
-					<table className="w-full text-sm">
-						<thead>
-							<tr className="border-b text-muted-foreground">
-								<th className="text-left font-medium px-3 sm:px-6 py-2">
-									<Trans>Name</Trans>
-								</th>
-								<th className="text-left font-medium px-3 py-2">
-									<Trans>Target</Trans>
-								</th>
-								<th className="text-left font-medium px-3 py-2">
-									<Trans>Protocol</Trans>
-								</th>
-								<th className="text-left font-medium px-3 py-2">
-									<Trans>Interval</Trans>
-								</th>
-								<th className="text-left font-medium px-3 py-2">
-									<Trans>Latency</Trans>
-								</th>
-								<th className="text-left font-medium px-3 py-2">
-									<Trans>Loss</Trans>
-								</th>
-								<th className="text-right font-medium px-3 sm:px-6 py-2"></th>
-							</tr>
-						</thead>
-						<tbody>
-							{probes.map((p) => {
-								const key = probeKey(p)
-								const result = latestResults[key]
-								return (
-									<tr key={p.id} className="border-b last:border-0">
-										<td className="px-3 sm:px-6 py-2.5 text-muted-foreground">{p.name || p.target}</td>
-										<td className="px-3 py-2.5 font-mono text-xs">{p.target}</td>
-										<td className="px-3 py-2.5">{protocolBadge(p.protocol)}</td>
-										<td className="px-3 py-2.5">{p.interval}s</td>
-										<td className="px-3 py-2.5">
-											{result ? (
-												<span className={result.avg > 100 ? "text-yellow-400" : "text-green-400"}>
-													{toFixedFloat(result.avg, 1)} ms
-												</span>
-											) : (
-												<span className="text-muted-foreground">-</span>
-											)}
-										</td>
-										<td className="px-3 py-2.5">
-											{result ? (
-												<span className={result.loss > 0 ? "text-red-400" : "text-green-400"}>
-													{toFixedFloat(result.loss, 1)}%
-												</span>
-											) : (
-												<span className="text-muted-foreground">-</span>
-											)}
-										</td>
-										<td className="px-3 sm:px-6 py-2.5 text-right">
-											<Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => deleteProbe(p.id)}>
-												<Trash2Icon className="h-3.5 w-3.5 text-destructive" />
-											</Button>
-										</td>
-									</tr>
-								)
-							})}
-						</tbody>
-					</table>
-				</div>
+				<ProbesTable table={table} rows={rows} colLength={visibleColumns.length} />
 			</Card>
 
 			{stats.length > 0 && (
-				<ChartCard
-					title={t`Latency`}
-					description={t`Average round-trip time (ms)`}
-					grid={grid}
-				>
+				<ChartCard title={t`Latency`} description={t`Average round-trip time (ms)`} grid={grid}>
 					<LineChartDefault
 						chartData={chartData}
 						customData={stats}
 						dataPoints={dataPoints}
 						domain={pinnedAxisDomain()}
+						connectNulls
 						tickFormatter={(value) => `${toFixedFloat(value, value >= 10 ? 0 : 1)} ms`}
 						contentFormatter={({ value }) => `${decimalString(value, 2)} ms`}
 						legend
@@ -294,3 +270,90 @@ export default function NetworkProbes({
 		</div>
 	)
 }
+
+const ProbesTable = memo(function ProbesTable({
+	table,
+	rows,
+	colLength,
+}: {
+	table: ReturnType<typeof useReactTable<ProbeRow>>
+	rows: Row<ProbeRow>[]
+	colLength: number
+}) {
+	const scrollRef = useRef<HTMLDivElement>(null)
+
+	const virtualizer = useVirtualizer<HTMLDivElement, HTMLTableRowElement>({
+		count: rows.length,
+		estimateSize: () => 54,
+		getScrollElement: () => scrollRef.current,
+		overscan: 5,
+	})
+	const virtualRows = virtualizer.getVirtualItems()
+
+	const paddingTop = Math.max(0, virtualRows[0]?.start ?? 0 - virtualizer.options.scrollMargin)
+	const paddingBottom = Math.max(0, virtualizer.getTotalSize() - (virtualRows[virtualRows.length - 1]?.end ?? 0))
+
+	return (
+		<div
+			className={cn(
+				"h-min max-h-[calc(100dvh-17rem)] w-full relative overflow-auto rounded-md border",
+				(!rows.length || rows.length > 2) && "min-h-50"
+			)}
+			ref={scrollRef}
+		>
+			<div style={{ height: `${virtualizer.getTotalSize() + 48}px`, paddingTop, paddingBottom }}>
+				<table className="w-full text-sm text-nowrap">
+					<ProbesTableHead table={table} />
+					<TableBody>
+						{rows.length ? (
+							virtualRows.map((virtualRow) => {
+								const row = rows[virtualRow.index]
+								return <ProbesTableRow key={row.id} row={row} virtualRow={virtualRow} />
+							})
+						) : (
+							<TableRow>
+								<TableCell colSpan={colLength} className="h-37 text-center pointer-events-none">
+									<Trans>No results.</Trans>
+								</TableCell>
+							</TableRow>
+						)}
+					</TableBody>
+				</table>
+			</div>
+		</div>
+	)
+})
+
+function ProbesTableHead({ table }: { table: ReturnType<typeof useReactTable<ProbeRow>> }) {
+	return (
+		<TableHeader className="sticky top-0 z-50 w-full border-b-2">
+			{table.getHeaderGroups().map((headerGroup) => (
+				<tr key={headerGroup.id}>
+					{headerGroup.headers.map((header) => (
+						<TableHead className="px-2" key={header.id}>
+							{header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
+						</TableHead>
+					))}
+				</tr>
+			))}
+		</TableHeader>
+	)
+}
+
+const ProbesTableRow = memo(function ProbesTableRow({
+	row,
+	virtualRow,
+}: {
+	row: Row<ProbeRow>
+	virtualRow: VirtualItem
+}) {
+	return (
+		<TableRow>
+			{row.getVisibleCells().map((cell) => (
+				<TableCell key={cell.id} className="py-0" style={{ height: virtualRow.size }}>
+					{flexRender(cell.column.columnDef.cell, cell.getContext())}
+				</TableCell>
+			))}
+		</TableRow>
+	)
+})

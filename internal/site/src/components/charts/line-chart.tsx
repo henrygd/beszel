@@ -41,6 +41,7 @@ export default function LineChartDefault({
 	filter,
 	truncate = false,
 	chartProps,
+	connectNulls,
 }: {
 	chartData: ChartData
 	// biome-ignore lint/suspicious/noExplicitAny: accepts different data source types (systemStats or containerData)
@@ -62,6 +63,7 @@ export default function LineChartDefault({
 	filter?: string
 	truncate?: boolean
 	chartProps?: Omit<React.ComponentProps<typeof LineChart>, "data" | "margin">
+	connectNulls?: boolean
 }) {
 	const { yAxisWidth, updateYAxisWidth } = useYAxisWidth()
 	const { isIntersecting, ref } = useIntersectionObserver({ freeze: false })
@@ -105,6 +107,7 @@ export default function LineChartDefault({
 					// stackId={dataPoint.stackId}
 					order={dataPoint.order || i}
 					// activeDot={dataPoint.activeDot ?? true}
+					connectNulls={connectNulls}
 				/>
 			)
 		})

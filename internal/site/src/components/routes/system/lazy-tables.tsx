@@ -34,3 +34,26 @@ export function LazySystemdTable({ systemId }: { systemId: string }) {
 		</div>
 	)
 }
+
+const NetworkProbesTable = lazy(() => import("@/components/routes/system/network-probes"))
+
+export function LazyNetworkProbesTable({
+	system,
+	chartData,
+	grid,
+	probeStats,
+}: {
+	system: any
+	chartData: any
+	grid: any
+	probeStats: any
+}) {
+	const { isIntersecting, ref } = useIntersectionObserver()
+	return (
+		<div ref={ref} className={cn(isIntersecting && "contents")}>
+			{isIntersecting && (
+				<NetworkProbesTable system={system} chartData={chartData} grid={grid} realtimeProbeStats={probeStats} />
+			)}
+		</div>
+	)
+}
