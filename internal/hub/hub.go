@@ -81,6 +81,7 @@ func (h *Hub) StartHub() error {
 		}
 		// register middlewares
 		h.registerMiddlewares(e)
+		// bind events that aren't set up in different
 		// register api routes
 		if err := h.registerApiRoutes(e); err != nil {
 			return err
@@ -108,6 +109,8 @@ func (h *Hub) StartHub() error {
 	// handle default values for user / user_settings creation
 	h.App.OnRecordCreate("users").BindFunc(h.um.InitializeUserRole)
 	h.App.OnRecordCreate("user_settings").BindFunc(h.um.InitializeUserSettings)
+
+	bindNetworkProbesEvents(h)
 
 	pb, ok := h.App.(*pocketbase.PocketBase)
 	if !ok {

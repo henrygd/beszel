@@ -92,7 +92,7 @@ func setCollectionAuthSettings(app core.App) error {
 		return err
 	}
 
-	if err := applyCollectionRules(app, []string{"fingerprints"}, collectionRules{
+	if err := applyCollectionRules(app, []string{"fingerprints", "network_probes"}, collectionRules{
 		list:   &systemScopedReadRule,
 		view:   &systemScopedReadRule,
 		create: &systemScopedWriteRule,

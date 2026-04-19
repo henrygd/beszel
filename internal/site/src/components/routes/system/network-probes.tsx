@@ -49,10 +49,12 @@ export default function NetworkProbes({
 	const { t } = useLingui()
 
 	const fetchProbes = useCallback(() => {
-		pb.send<NetworkProbeRecord[]>("/api/beszel/network-probes", {
-			query: { system: systemId },
-		})
-			.then(setProbes)
+		pb.collection<NetworkProbeRecord>("network_probes")
+			.getList(0, 2000, {
+				fields: "id,name,target,protocol,port,interval,enabled,updated",
+				filter: systemId ? pb.filter("system={:system}", { system: systemId }) : undefined,
+			})
+			.then((res) => setProbes(res.items))
 			.catch(() => setProbes([]))
 	}, [systemId])
 
@@ -143,16 +145,13 @@ export default function NetworkProbes({
 	const deleteProbe = useCallback(
 		async (id: string) => {
 			try {
-				await pb.send("/api/beszel/network-probes", {
-					method: "DELETE",
-					query: { id },
-				})
-				fetchProbes()
-			} catch (err: any) {
-				toast({ variant: "destructive", title: t`Error`, description: err?.message })
+				await pb.collection("network_probes").delete(id)
+				// fetchProbes()
+			} catch (err: unknown) {
+				toast({ variant: "destructive", title: t`Error`, description: (err as Error)?.message })
 			}
 		},
-		[fetchProbes, toast, t]
+		[systemId, t]
 	)
 
 	const dataPoints: DataPoint<NetworkProbeStatsRecord>[] = useMemo(() => {

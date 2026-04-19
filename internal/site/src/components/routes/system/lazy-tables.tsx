@@ -35,6 +35,16 @@ export function LazySystemdTable({ systemId }: { systemId: string }) {
 	)
 }
 
+const NetworkProbesTableNew = lazy(() => import("@/components/network-probes-table/network-probes-table"))
+
+export function LazyNetworkProbesTableNew({ systemId }: { systemId: string }) {
+	const { isIntersecting, ref } = useIntersectionObserver()
+	return (
+		<div ref={ref} className={cn(isIntersecting && "contents")}>
+			{isIntersecting && <NetworkProbesTableNew systemId={systemId} />}
+		</div>
+	)
+}
 const NetworkProbesTable = lazy(() => import("@/components/routes/system/network-probes"))
 
 export function LazyNetworkProbesTable({

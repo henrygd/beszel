@@ -549,12 +549,16 @@ export interface UpdateInfo {
 
 export interface NetworkProbeRecord {
 	id: string
+	system: string
 	name: string
 	target: string
 	protocol: "icmp" | "tcp" | "http"
 	port: number
+	latency: number
+	loss: number
 	interval: number
 	enabled: boolean
+	updated: string
 }
 
 export interface NetworkProbeStatsRecord {

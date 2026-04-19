@@ -134,11 +134,6 @@ func (h *Hub) registerApiRoutes(se *core.ServeEvent) error {
 		// get container info
 		apiAuth.GET("/containers/info", h.getContainerInfo)
 	}
-	// network probe routes
-	apiAuth.GET("/network-probes", h.listNetworkProbes)
-	apiAuth.POST("/network-probes", h.createNetworkProbe).BindFunc(excludeReadOnlyRole)
-	apiAuth.DELETE("/network-probes", h.deleteNetworkProbe).BindFunc(excludeReadOnlyRole)
-	apiAuth.GET("/network-probe-stats", h.getNetworkProbeStats)
 	return nil
 }
 

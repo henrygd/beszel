@@ -17,12 +17,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { PlusIcon } from "lucide-react"
 import { useToast } from "@/components/ui/use-toast"
 
-export function AddProbeDialog({ systemId, onCreated }: { systemId: string; onCreated: () => void }) {
+export function AddProbeDialog({ systemId }: { systemId: string }) {
 	const [open, setOpen] = useState(false)
 	const [protocol, setProtocol] = useState<string>("icmp")
 	const [target, setTarget] = useState("")
 	const [port, setPort] = useState("")
-	const [probeInterval, setProbeInterval] = useState("10")
+	const [probeInterval, setProbeInterval] = useState("60")
 	const [name, setName] = useState("")
 	const [loading, setLoading] = useState(false)
 	const { toast } = useToast()
@@ -32,7 +32,7 @@ export function AddProbeDialog({ systemId, onCreated }: { systemId: string; onCr
 		setProtocol("icmp")
 		setTarget("")
 		setPort("")
-		setProbeInterval("10")
+		setProbeInterval("60")
 		setName("")
 	}
 
@@ -40,20 +40,16 @@ export function AddProbeDialog({ systemId, onCreated }: { systemId: string; onCr
 		e.preventDefault()
 		setLoading(true)
 		try {
-			await pb.send("/api/beszel/network-probes", {
-				method: "POST",
-				body: {
-					system: systemId,
-					name,
-					target,
-					protocol,
-					port: protocol === "tcp" ? Number(port) : 0,
-					interval: Number(probeInterval),
-				},
+			await pb.collection("network_probes").create({
+				system: systemId,
+				name,
+				target,
+				protocol,
+				port: protocol === "tcp" ? Number(port) : 0,
+				interval: Number(probeInterval),
 			})
 			resetForm()
 			setOpen(false)
-			onCreated()
 		} catch (err: unknown) {
 			toast({ variant: "destructive", title: t`Error`, description: (err as Error)?.message })
 		} finally {
@@ -64,21 +60,21 @@ export function AddProbeDialog({ systemId, onCreated }: { systemId: string; onCr
 	return (
 		<Dialog open={open} onOpenChange={setOpen}>
 			<DialogTrigger asChild>
-				<Button variant="outline" size="sm">
+				<Button variant="outline">
 					<PlusIcon className="size-4 me-1" />
-					<Trans>Add Probe</Trans>
+					<Trans>Add {{ foo: t`Probe` }}</Trans>
 				</Button>
 			</DialogTrigger>
-			<DialogContent className="max-w-md">
+			<DialogContent>
 				<DialogHeader>
 					<DialogTitle>
-						<Trans>Add Network Probe</Trans>
+						<Trans>Add {{ foo: t`Network Probe` }}</Trans>
 					</DialogTitle>
 					<DialogDescription>
 						<Trans>Configure ICMP, TCP, or HTTP latency monitoring from this agent.</Trans>
 					</DialogDescription>
 				</DialogHeader>
-				<form onSubmit={handleSubmit} className="grid gap-4">
+				<form onSubmit={handleSubmit} className="grid gap-4 tabular-nums">
 					<div className="grid gap-2">
 						<Label>
 							<Trans>Target</Trans>
@@ -146,7 +142,7 @@ export function AddProbeDialog({ systemId, onCreated }: { systemId: string; onCr
 					</div>
 					<DialogFooter>
 						<Button type="submit" disabled={loading}>
-							{loading ? <Trans>Creating...</Trans> : <Trans>Create</Trans>}
+							{loading ? <Trans>Creating...</Trans> : <Trans>Add {{ foo: t`Probe` }}</Trans>}
 						</Button>
 					</DialogFooter>
 				</form>
