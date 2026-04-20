@@ -195,7 +195,7 @@ export default function NetworkProbesTableNew({ systemId }: { systemId?: string 
 								className="ms-auto px-4 w-full max-w-full md:w-64"
 							/>
 						)}
-						{systemId && !isReadOnlyUser() ? <AddProbeDialog systemId={systemId} /> : null}
+						{!isReadOnlyUser() ? <AddProbeDialog systemId={systemId} /> : null}
 					</div>
 				</div>
 			</CardHeader>

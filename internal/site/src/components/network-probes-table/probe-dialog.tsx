@@ -1,5 +1,6 @@
 import { useState } from "react"
 import { Trans, useLingui } from "@lingui/react/macro"
+import { useStore } from "@nanostores/react"
 import { pb } from "@/lib/api"
 import {
 	Dialog,
@@ -16,8 +17,9 @@ import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { PlusIcon } from "lucide-react"
 import { useToast } from "@/components/ui/use-toast"
+import { $systems } from "@/lib/stores"
 
-export function AddProbeDialog({ systemId }: { systemId: string }) {
+export function AddProbeDialog({ systemId }: { systemId?: string }) {
 	const [open, setOpen] = useState(false)
 	const [protocol, setProtocol] = useState<string>("icmp")
 	const [target, setTarget] = useState("")
@@ -25,6 +27,8 @@ export function AddProbeDialog({ systemId }: { systemId: string }) {
 	const [probeInterval, setProbeInterval] = useState("60")
 	const [name, setName] = useState("")
 	const [loading, setLoading] = useState(false)
+	const [selectedSystemId, setSelectedSystemId] = useState("")
+	const systems = useStore($systems)
 	const { toast } = useToast()
 	const { t } = useLingui()
 
@@ -34,6 +38,7 @@ export function AddProbeDialog({ systemId }: { systemId: string }) {
 		setPort("")
 		setProbeInterval("60")
 		setName("")
+		setSelectedSystemId("")
 	}
 
 	const handleSubmit = async (e: React.FormEvent) => {
@@ -41,7 +46,7 @@ export function AddProbeDialog({ systemId }: { systemId: string }) {
 		setLoading(true)
 		try {
 			await pb.collection("network_probes").create({
-				system: systemId,
+				system: systemId ?? selectedSystemId,
 				name,
 				target,
 				protocol,
@@ -76,6 +81,25 @@ export function AddProbeDialog({ systemId }: { systemId: string }) {
 					</DialogDescription>
 				</DialogHeader>
 				<form onSubmit={handleSubmit} className="grid gap-4 tabular-nums">
+					{!systemId && (
+						<div className="grid gap-2">
+							<Label>
+								<Trans>System</Trans>
+							</Label>
+							<Select value={selectedSystemId} onValueChange={setSelectedSystemId} required>
+								<SelectTrigger>
+									<SelectValue placeholder={t`Select a system`} />
+								</SelectTrigger>
+								<SelectContent>
+									{systems.map((sys) => (
+										<SelectItem key={sys.id} value={sys.id}>
+											{sys.name}
+										</SelectItem>
+									))}
+								</SelectContent>
+							</Select>
+						</div>
+					)}
 					<div className="grid gap-2">
 						<Label>
 							<Trans>Target</Trans>
@@ -142,7 +166,7 @@ export function AddProbeDialog({ systemId }: { systemId: string }) {
 						/>
 					</div>
 					<DialogFooter>
-						<Button type="submit" disabled={loading}>
+					<Button type="submit" disabled={loading || (!systemId && !selectedSystemId)}>
 							{loading ? <Trans>Creating...</Trans> : <Trans>Add {{ foo: t`Probe` }}</Trans>}
 						</Button>
 					</DialogFooter>

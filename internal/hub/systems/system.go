@@ -319,18 +319,18 @@ func updateNetworkProbesRecords(app core.App, data map[string]probe.Result, syst
 		return nil
 	}
 	collectionName := "network_probes"
+	nowString := time.Now().UTC().Format(types.DefaultDateLayout)
 	for key := range data {
 		probe := data[key]
 		id := MakeStableHashId(systemId, key)
 		params := dbx.Params{
-			// "system":  systemId,
 			"latency": probe[0],
 			"loss":    probe[3],
-			"updated": time.Now().UTC().Format(types.DefaultDateLayout),
+			"updated": nowString,
 		}
 		_, err := app.DB().Update(collectionName, params, dbx.HashExp{"id": id}).Execute()
 		if err != nil {
-			app.Logger().Warn("Failed to update network probe record", "system", systemId, "probe", key, "err", err)
+			app.Logger().Warn("Failed to update probe", "system", systemId, "probe", key, "err", err)
 		}
 	}
 	return nil

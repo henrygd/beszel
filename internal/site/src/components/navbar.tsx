@@ -8,6 +8,7 @@ import {
 	LogOutIcon,
 	LogsIcon,
 	MenuIcon,
+	NetworkIcon,
 	PlusIcon,
 	SearchIcon,
 	ServerIcon,
@@ -109,6 +110,10 @@ export default function Navbar() {
 								<HardDriveIcon className="h-4 w-4 me-2.5" strokeWidth={1.5} />
 								<span>S.M.A.R.T.</span>
 							</DropdownMenuItem>
+							<DropdownMenuItem onClick={() => navigate(getPagePath($router, "probes"))} className="flex items-center">
+								<NetworkIcon className="h-4 w-4 me-2.5" strokeWidth={1.5} />
+								<Trans>Network Probes</Trans>
+							</DropdownMenuItem>
 							<DropdownMenuItem
 								onClick={() => navigate(getPagePath($router, "settings", { name: "general" }))}
 								className="flex items-center"
@@ -179,6 +184,21 @@ export default function Navbar() {
 						</Link>
 					</TooltipTrigger>
 					<TooltipContent>S.M.A.R.T.</TooltipContent>
+				</Tooltip>
+				<Tooltip>
+					<TooltipTrigger asChild>
+						<Link
+							href={getPagePath($router, "probes")}
+							className={cn("hidden md:grid", buttonVariants({ variant: "ghost", size: "icon" }))}
+							aria-label="Network Probes"
+							onMouseEnter={() => import("@/components/routes/probes")}
+						>
+							<NetworkIcon className="h-[1.2rem] w-[1.2rem]" strokeWidth={1.5} />
+						</Link>
+					</TooltipTrigger>
+					<TooltipContent>
+						<Trans>Network Probes</Trans>
+					</TooltipContent>
 				</Tooltip>
 				<LangToggle />
 				<ModeToggle />
