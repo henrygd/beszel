@@ -18,6 +18,7 @@ import (
 	"github.com/henrygd/beszel/internal/hub/ws"
 
 	"github.com/henrygd/beszel/internal/entities/container"
+	"github.com/henrygd/beszel/internal/entities/probe"
 	"github.com/henrygd/beszel/internal/entities/smart"
 	"github.com/henrygd/beszel/internal/entities/system"
 	"github.com/henrygd/beszel/internal/entities/systemd"
@@ -29,6 +30,7 @@ import (
 	"github.com/lxzan/gws"
 	"github.com/pocketbase/dbx"
 	"github.com/pocketbase/pocketbase/core"
+	"github.com/pocketbase/pocketbase/tools/types"
 	"golang.org/x/crypto/ssh"
 )
 
@@ -167,11 +169,6 @@ func (sys *System) update() error {
 		}
 	}
 
-	// Fetch and save network probe results
-	if sys.hasEnabledProbes() {
-		go sys.fetchAndSaveProbeResults()
-	}
-
 	return err
 }
 
@@ -243,6 +240,12 @@ func (sys *System) createRecords(data *system.CombinedData) (*core.Record, error
 			}
 		}
 
+		if data.Probes != nil {
+			if err := updateNetworkProbesRecords(txApp, data.Probes, sys.Id); err != nil {
+				return err
+			}
+		}
+
 		// update system record (do this last because it triggers alerts and we need above records to be inserted first)
 		systemRecord.Set("status", up)
 		systemRecord.Set("info", data.Info)
@@ -294,7 +297,7 @@ func createSystemdStatsRecords(app core.App, data []*systemd.Service, systemId s
 	for i, service := range data {
 		suffix := fmt.Sprintf("%d", i)
 		valueStrings = append(valueStrings, fmt.Sprintf("({:id%[1]s}, {:system}, {:name%[1]s}, {:state%[1]s}, {:sub%[1]s}, {:cpu%[1]s}, {:cpuPeak%[1]s}, {:memory%[1]s}, {:memPeak%[1]s}, {:updated})", suffix))
-		params["id"+suffix] = makeStableHashId(systemId, service.Name)
+		params["id"+suffix] = MakeStableHashId(systemId, service.Name)
 		params["name"+suffix] = service.Name
 		params["state"+suffix] = service.State
 		params["sub"+suffix] = service.Sub
@@ -309,6 +312,28 @@ func createSystemdStatsRecords(app core.App, data []*systemd.Service, systemId s
 	)
 	_, err := app.DB().NewQuery(queryString).Bind(params).Execute()
 	return err
+}
+
+func updateNetworkProbesRecords(app core.App, data map[string]probe.Result, systemId string) error {
+	if len(data) == 0 {
+		return nil
+	}
+	collectionName := "network_probes"
+	for key := range data {
+		probe := data[key]
+		id := MakeStableHashId(systemId, key)
+		params := dbx.Params{
+			// "system":  systemId,
+			"latency": probe[0],
+			"loss":    probe[3],
+			"updated": time.Now().UTC().Format(types.DefaultDateLayout),
+		}
+		_, err := app.DB().Update(collectionName, params, dbx.HashExp{"id": id}).Execute()
+		if err != nil {
+			app.Logger().Warn("Failed to update network probe record", "system", systemId, "probe", key, "err", err)
+		}
+	}
+	return nil
 }
 
 // createContainerRecords creates container records
@@ -545,7 +570,7 @@ func (sys *System) FetchSmartDataFromAgent() (map[string]smart.SmartData, error)
 	return result, err
 }
 
-func makeStableHashId(strings ...string) string {
+func MakeStableHashId(strings ...string) string {
 	hash := fnv.New32a()
 	for _, str := range strings {
 		hash.Write([]byte(str))

@@ -24,8 +24,6 @@ const (
 	GetSystemdInfo
 	// Sync network probe configuration to agent
 	SyncNetworkProbes
-	// Request network probe results from agent
-	GetNetworkProbeResults
 	// Add new actions here...
 )
 

@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/henrygd/beszel/internal/entities/container"
+	"github.com/henrygd/beszel/internal/entities/probe"
 	"github.com/henrygd/beszel/internal/entities/systemd"
 )
 
@@ -174,9 +175,10 @@ type Details struct {
 
 // Final data structure to return to the hub
 type CombinedData struct {
-	Stats           Stats              `json:"stats" cbor:"0,keyasint"`
-	Info            Info               `json:"info" cbor:"1,keyasint"`
-	Containers      []*container.Stats `json:"container" cbor:"2,keyasint"`
-	SystemdServices []*systemd.Service `json:"systemd,omitempty" cbor:"3,keyasint,omitempty"`
-	Details         *Details           `cbor:"4,keyasint,omitempty"`
+	Stats           Stats                   `json:"stats" cbor:"0,keyasint"`
+	Info            Info                    `json:"info" cbor:"1,keyasint"`
+	Containers      []*container.Stats      `json:"container" cbor:"2,keyasint"`
+	SystemdServices []*systemd.Service      `json:"systemd,omitempty" cbor:"3,keyasint,omitempty"`
+	Details         *Details                `cbor:"4,keyasint,omitempty"`
+	Probes          map[string]probe.Result `cbor:"5,keyasint,omitempty"`
 }

@@ -84,7 +84,7 @@ func (sys *System) saveSmartDevices(smartData map[string]smart.SmartData) error 
 
 func (sys *System) upsertSmartDeviceRecord(collection *core.Collection, deviceKey string, device smart.SmartData) error {
 	hub := sys.manager.hub
-	recordID := makeStableHashId(sys.Id, deviceKey)
+	recordID := MakeStableHashId(sys.Id, deviceKey)
 
 	record, err := hub.FindRecordById(collection, recordID)
 	if err != nil {

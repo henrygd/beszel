@@ -25,7 +25,7 @@ import { cn, getVisualStringWidth, useBrowserStorage } from "@/lib/utils"
 import type { NetworkProbeRecord } from "@/types"
 import { AddProbeDialog } from "./probe-dialog"
 
-const NETWORK_PROBE_FIELDS = "id,name,system,target,protocol,port,interval,enabled,updated"
+const NETWORK_PROBE_FIELDS = "id,name,system,target,protocol,port,interval,latency,loss,enabled,updated"
 
 export default function NetworkProbesTableNew({ systemId }: { systemId?: string }) {
 	const loadTime = Date.now()
@@ -173,10 +173,6 @@ export default function NetworkProbesTableNew({ systemId }: { systemId?: string 
 
 	const rows = table.getRowModel().rows
 	const visibleColumns = table.getVisibleLeafColumns()
-
-	if (!data.length && !globalFilter) {
-		return null
-	}
 
 	return (
 		<Card className="@container w-full px-3 py-5 sm:py-6 sm:px-6">

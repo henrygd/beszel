@@ -53,7 +53,6 @@ func NewHandlerRegistry() *HandlerRegistry {
 	registry.Register(common.GetSmartData, &GetSmartDataHandler{})
 	registry.Register(common.GetSystemdInfo, &GetSystemdInfoHandler{})
 	registry.Register(common.SyncNetworkProbes, &SyncNetworkProbesHandler{})
-	registry.Register(common.GetNetworkProbeResults, &GetNetworkProbeResultsHandler{})
 
 	return registry
 }
@@ -221,15 +220,4 @@ func (h *SyncNetworkProbesHandler) Handle(hctx *HandlerContext) error {
 	hctx.Agent.probeManager.SyncProbes(configs)
 	slog.Info("network probes synced", "count", len(configs))
 	return hctx.SendResponse("ok", hctx.RequestID)
-}
-
-////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////
-
-// GetNetworkProbeResultsHandler handles probe results request from hub
-type GetNetworkProbeResultsHandler struct{}
-
-func (h *GetNetworkProbeResultsHandler) Handle(hctx *HandlerContext) error {
-	results := hctx.Agent.probeManager.GetResults()
-	return hctx.SendResponse(results, hctx.RequestID)
 }

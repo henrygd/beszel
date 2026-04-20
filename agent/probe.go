@@ -120,10 +120,10 @@ func (pm *ProbeManager) GetResults() map[string]probe.Result {
 		}
 
 		results[key] = probe.Result{
-			AvgMs: avg,
-			MinMs: math.Round(minMs*100) / 100,
-			MaxMs: math.Round(maxMs*100) / 100,
-			Loss:  math.Round(float64(lossCount)/float64(count)*10000) / 100,
+			avg,                         // average latency in ms
+			math.Round(minMs*100) / 100, // min latency in ms
+			math.Round(maxMs*100) / 100, // max latency in ms
+			math.Round(float64(lossCount)/float64(count)*10000) / 100, // packet loss percentage
 		}
 	}
 

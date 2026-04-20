@@ -110,9 +110,16 @@ export function getProbeColumns(longestName = 0, longestTarget = 0): ColumnDef<N
 				if (val === undefined) {
 					return <span className="ms-1.5 text-muted-foreground">-</span>
 				}
+				let color = "bg-green-500"
+				if (val > 200) {
+					color = "bg-yellow-500"
+				}
+				if (!val || val > 2000) {
+					color = "bg-red-500"
+				}
 				return (
 					<span className="ms-1.5 tabular-nums flex gap-2 items-center">
-						<span className={cn("shrink-0 size-2 rounded-full", val > 100 ? "bg-yellow-500" : "bg-green-500")} />
+						<span className={cn("shrink-0 size-2 rounded-full", color)} />
 						{decimalString(val, val < 100 ? 2 : 1).toLocaleString()} ms
 					</span>
 				)
@@ -128,9 +135,13 @@ export function getProbeColumns(longestName = 0, longestTarget = 0): ColumnDef<N
 				if (val === undefined) {
 					return <span className="ms-1.5 text-muted-foreground">-</span>
 				}
+				let color = "bg-green-500"
+				if (val > 0) {
+					color = val > 20 ? "bg-red-500" : "bg-yellow-500"
+				}
 				return (
 					<span className="ms-1.5 tabular-nums flex gap-2 items-center">
-						<span className={cn("shrink-0 size-2 rounded-full", val > 0 ? "bg-yellow-500" : "bg-green-500")} />
+						<span className={cn("shrink-0 size-2 rounded-full", color)} />
 						{val}%
 					</span>
 				)

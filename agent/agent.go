@@ -48,7 +48,7 @@ type Agent struct {
 	keys                      []gossh.PublicKey                                     // SSH public keys
 	smartManager              *SmartManager                                         // Manages SMART data
 	systemdManager            *systemdManager                                       // Manages systemd services
-	probeManager              *ProbeManager                                        // Manages network probes
+	probeManager              *ProbeManager                                         // Manages network probes
 }
 
 // NewAgent creates a new agent with the given data directory for persisting data.
@@ -180,6 +180,11 @@ func (a *Agent) gatherStats(options common.DataRequestOptions) *system.CombinedD
 		} else {
 			slog.Debug("Containers", "err", err)
 		}
+	}
+
+	if a.probeManager != nil {
+		data.Probes = a.probeManager.GetResults()
+		slog.Debug("Probes", "data", data.Probes)
 	}
 
 	// skip updating systemd services if cache time is not the default 60sec interval

@@ -47,6 +47,7 @@ export function AddProbeDialog({ systemId }: { systemId: string }) {
 				protocol,
 				port: protocol === "tcp" ? Number(port) : 0,
 				interval: Number(probeInterval),
+				enabled: true,
 			})
 			resetForm()
 			setOpen(false)
