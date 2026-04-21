@@ -1,6 +1,8 @@
 package alerts
 
 import (
+	"time"
+
 	"github.com/pocketbase/dbx"
 	"github.com/pocketbase/pocketbase/core"
 	"github.com/pocketbase/pocketbase/tools/store"
@@ -15,6 +17,7 @@ type CachedAlertData struct {
 	Value     float64
 	Triggered bool
 	Min       uint8
+	LastSent  time.Time
 	// Created   types.DateTime
 }
 
@@ -93,7 +96,20 @@ func (c *AlertsCache) Update(record *core.Record) {
 	}
 	var ca CachedAlertData
 	ca.PopulateFromRecord(record)
+	if existing, ok := systemStore.GetOk(record.Id); ok {
+		ca.LastSent = existing.LastSent
+	}
 	systemStore.Set(record.Id, ca)
+}
+
+// setLastSent updates the LastSent time for an alert in the cache.
+func (c *AlertsCache) setLastSent(alert CachedAlertData) {
+	if systemStore, ok := c.store.GetOk(alert.SystemID); ok {
+		if existing, ok := systemStore.GetOk(alert.Id); ok {
+			existing.LastSent = time.Now()
+			systemStore.Set(alert.Id, existing)
+		}
+	}
 }
 
 // Delete removes an alert record from the cache.
