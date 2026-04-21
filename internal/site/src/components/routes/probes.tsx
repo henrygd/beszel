@@ -1,13 +1,13 @@
 import { useLingui } from "@lingui/react/macro"
-import { memo, useEffect, useState } from "react"
+import { memo, useEffect } from "react"
 import NetworkProbesTableNew from "@/components/network-probes-table/network-probes-table"
 import { ActiveAlerts } from "@/components/active-alerts"
 import { FooterRepoLink } from "@/components/footer-repo-link"
-import type { NetworkProbeRecord } from "@/types"
+import { useNetworkProbesData } from "@/lib/use-network-probes"
 
 export default memo(() => {
 	const { t } = useLingui()
-	const [probes, setProbes] = useState<NetworkProbeRecord[]>([])
+	const { probes } = useNetworkProbesData({})
 
 	useEffect(() => {
 		document.title = `${t`Network Probes`} / Beszel`
@@ -17,7 +17,7 @@ export default memo(() => {
 		<>
 			<div className="grid gap-4">
 				<ActiveAlerts />
-				<NetworkProbesTableNew probes={probes} setProbes={setProbes} />
+				<NetworkProbesTableNew probes={probes} />
 			</div>
 			<FooterRepoLink />
 		</>

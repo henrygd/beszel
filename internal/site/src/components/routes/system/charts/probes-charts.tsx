@@ -15,27 +15,43 @@ function probeKey(p: NetworkProbeRecord) {
 
 const $filter = atom("")
 
-export function LatencyChart({
-	probeStats,
-	grid,
-	probes,
-	chartData,
-	empty,
-}: {
+type ProbeChartProps = {
 	probeStats: NetworkProbeStatsRecord[]
 	grid?: boolean
 	probes: NetworkProbeRecord[]
 	chartData: ChartData
 	empty: boolean
-}) {
-	const { t } = useLingui()
+}
+
+type ProbeChartBaseProps = ProbeChartProps & {
+	valueIndex: number
+	title: string
+	description: string
+	tickFormatter: (value: number) => string
+	contentFormatter: ({ value }: { value: number | string }) => string | number
+	domain?: [number | "auto", number | "auto"]
+}
+
+function ProbeChart({
+	probeStats,
+	grid,
+	probes,
+	chartData,
+	empty,
+	valueIndex,
+	title,
+	description,
+	tickFormatter,
+	contentFormatter,
+	domain,
+}: ProbeChartBaseProps) {
 	const filter = useStore($filter)
 
 	const { dataPoints, visibleKeys } = useMemo(() => {
-		const count = probes.length
+		const sortedProbes = [...probes].sort((a, b) => a.name.localeCompare(b.name))
+		const count = sortedProbes.length
 		const points: DataPoint<NetworkProbeStatsRecord>[] = []
 		const visibleKeys: string[] = []
-		probes.sort((a, b) => a.name.localeCompare(b.name))
 		const filterTerms = filter
 			? filter
 					.toLowerCase()
@@ -43,7 +59,7 @@ export function LatencyChart({
 					.filter((term) => term.length > 0)
 			: []
 		for (let i = 0; i < count; i++) {
-			const p = probes[i]
+			const p = sortedProbes[i]
 			const key = probeKey(p)
 			const filtered = filterTerms.length > 0 && !filterTerms.some((term) => key.toLowerCase().includes(term))
 			if (filtered) {
@@ -52,12 +68,12 @@ export function LatencyChart({
 			visibleKeys.push(key)
 			points.push({
 				label: p.name || p.target,
-				dataKey: (record: NetworkProbeStatsRecord) => record.stats?.[key]?.[0] ?? "-",
+				dataKey: (record: NetworkProbeStatsRecord) => record.stats?.[key]?.[valueIndex] ?? "-",
 				color: count <= 5 ? i + 1 : `hsl(${(i * 360) / count}, var(--chart-saturation), var(--chart-lightness))`,
 			})
 		}
 		return { dataPoints: points, visibleKeys }
-	}, [probes, filter])
+	}, [probes, filter, valueIndex])
 
 	const filteredProbeStats = useMemo(() => {
 		if (!visibleKeys.length) return probeStats
@@ -71,26 +87,70 @@ export function LatencyChart({
 			legend={legend}
 			cornerEl={<FilterBar store={$filter} />}
 			empty={empty}
-			title={t`Latency`}
-			description={t`Average round-trip time (ms)`}
+			title={title}
+			description={description}
 			grid={grid}
 		>
 			<LineChartDefault
 				chartData={chartData}
 				customData={filteredProbeStats}
 				dataPoints={dataPoints}
-				domain={["auto", "auto"]}
+				domain={domain ?? ["auto", "auto"]}
 				connectNulls
-				tickFormatter={(value) => `${toFixedFloat(value, value >= 10 ? 0 : 1)} ms`}
-				contentFormatter={({ value }) => {
-					if (value === "-") {
-						return value
-					}
-					return `${decimalString(value, 2)} ms`
-				}}
+				tickFormatter={tickFormatter}
+				contentFormatter={contentFormatter}
 				legend={legend}
 				filter={filter}
 			/>
 		</ChartCard>
+	)
+}
+
+export function LatencyChart({ probeStats, grid, probes, chartData, empty }: ProbeChartProps) {
+	const { t } = useLingui()
+
+	return (
+		<ProbeChart
+			probeStats={probeStats}
+			grid={grid}
+			probes={probes}
+			chartData={chartData}
+			empty={empty}
+			valueIndex={0}
+			title={t`Latency`}
+			description={t`Average round-trip time (ms)`}
+			tickFormatter={(value) => `${toFixedFloat(value, value >= 10 ? 0 : 1)} ms`}
+			contentFormatter={({ value }) => {
+				if (typeof value !== "number") {
+					return value
+				}
+				return `${decimalString(value, 2)} ms`
+			}}
+		/>
+	)
+}
+
+export function LossChart({ probeStats, grid, probes, chartData, empty }: ProbeChartProps) {
+	const { t } = useLingui()
+
+	return (
+		<ProbeChart
+			probeStats={probeStats}
+			grid={grid}
+			probes={probes}
+			chartData={chartData}
+			empty={empty}
+			valueIndex={3}
+			title={t`Loss`}
+			description={t`Packet loss (%)`}
+			domain={[0, 100]}
+			tickFormatter={(value) => `${toFixedFloat(value, value >= 10 ? 0 : 1)}%`}
+			contentFormatter={({ value }) => {
+				if (typeof value !== "number") {
+					return value
+				}
+				return `${decimalString(value, 2)}%`
+			}}
+		/>
 	)
 }

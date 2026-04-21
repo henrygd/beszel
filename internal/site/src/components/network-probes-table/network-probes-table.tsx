@@ -13,27 +13,23 @@ import {
 	type VisibilityState,
 } from "@tanstack/react-table"
 import { useVirtualizer, type VirtualItem } from "@tanstack/react-virtual"
-import { memo, useEffect, useMemo, useRef, useState } from "react"
+import { memo, useMemo, useRef, useState } from "react"
 import { getProbeColumns } from "@/components/network-probes-table/network-probes-columns"
 import { Card, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { isReadOnlyUser, pb } from "@/lib/api"
+import { isReadOnlyUser } from "@/lib/api"
 import { $allSystemsById } from "@/lib/stores"
 import { cn, getVisualStringWidth, useBrowserStorage } from "@/lib/utils"
 import type { NetworkProbeRecord } from "@/types"
 import { AddProbeDialog } from "./probe-dialog"
 
-const NETWORK_PROBE_FIELDS = "id,name,system,target,protocol,port,interval,latency,loss,enabled,updated"
-
 export default function NetworkProbesTableNew({
 	systemId,
 	probes,
-	setProbes,
 }: {
 	systemId?: string
 	probes: NetworkProbeRecord[]
-	setProbes: React.Dispatch<React.SetStateAction<NetworkProbeRecord[]>>
 }) {
 	const [sorting, setSorting] = useBrowserStorage<SortingState>(
 		`sort-np-${systemId ? 1 : 0}`,
@@ -43,88 +39,6 @@ export default function NetworkProbesTableNew({
 	const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
 	const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
 	const [globalFilter, setGlobalFilter] = useState("")
-
-	// clear old data when systemId changes
-	useEffect(() => {
-		return setProbes([])
-	}, [systemId])
-
-	useEffect(() => {
-		function fetchData(systemId?: string) {
-			pb.collection<NetworkProbeRecord>("network_probes")
-				.getList(0, 2000, {
-					fields: NETWORK_PROBE_FIELDS,
-					filter: systemId ? pb.filter("system={:system}", { system: systemId }) : undefined,
-				})
-				.then((res) => setProbes(res.items))
-		}
-
-		// initial load
-		fetchData(systemId)
-
-		// if no systemId, pull after every system update
-		// if (!systemId) {
-		// 	return $allSystemsById.listen((_value, _oldValue, systemId) => {
-		// 		// exclude initial load of systems
-		// 		if (Date.now() - loadTime > 500) {
-		// 			fetchData(systemId)
-		// 		}
-		// 	})
-		// }
-
-		// if systemId, fetch after the system is updated
-		// return listenKeys($allSystemsById, [systemId], (_newSystems) => {
-		// 	fetchData(systemId)
-		// })
-	}, [systemId])
-
-	// Subscribe to updates
-	useEffect(() => {
-		let unsubscribe: (() => void) | undefined
-		const pbOptions = systemId
-			? { fields: NETWORK_PROBE_FIELDS, filter: pb.filter("system = {:system}", { system: systemId }) }
-			: { fields: NETWORK_PROBE_FIELDS }
-
-		;(async () => {
-			try {
-				unsubscribe = await pb.collection<NetworkProbeRecord>("network_probes").subscribe(
-					"*",
-					(event) => {
-						const record = event.record
-						setProbes((currentProbes) => {
-							const probes = currentProbes ?? []
-							const matchesSystemScope = !systemId || record.system === systemId
-
-							if (event.action === "delete") {
-								return probes.filter((device) => device.id !== record.id)
-							}
-
-							if (!matchesSystemScope) {
-								// Record moved out of scope; ensure it disappears locally.
-								return probes.filter((device) => device.id !== record.id)
-							}
-
-							const existingIndex = probes.findIndex((device) => device.id === record.id)
-							if (existingIndex === -1) {
-								return [record, ...probes]
-							}
-
-							const next = [...probes]
-							next[existingIndex] = record
-							return next
-						})
-					},
-					pbOptions
-				)
-			} catch (error) {
-				console.error("Failed to subscribe to SMART device updates:", error)
-			}
-		})()
-
-		return () => {
-			unsubscribe?.()
-		}
-	}, [systemId])
 
 	const { longestName, longestTarget } = useMemo(() => {
 		let longestName = 0
