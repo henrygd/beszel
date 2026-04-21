@@ -84,6 +84,7 @@ export const SelectAvgMax = memo(({ max }: { max: boolean }) => {
 	)
 })
 
+
 export function ChartCard({
 	title,
 	description,

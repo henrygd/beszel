@@ -8,6 +8,8 @@ import { pinnedAxisDomain } from "@/components/ui/chart"
 import CpuCoresSheet from "../cpu-sheet"
 import { ChartCard, FilterBar, SelectAvgMax } from "../chart-card"
 import { dockerOrPodman } from "../chart-data"
+import { $userSettings } from "@/lib/stores"
+import { useStore } from "@nanostores/react"
 
 export function CpuChart({
 	chartData,
@@ -24,6 +26,7 @@ export function CpuChart({
 	isLongerChart: boolean
 	maxValues: boolean
 }) {
+	const cpuFixed = useStore($userSettings).cpuFixed
 	const maxValSelect = isLongerChart ? <SelectAvgMax max={maxValues} /> : null
 
 	return (
@@ -35,7 +38,7 @@ export function CpuChart({
 			cornerEl={
 				<div className="flex gap-2">
 					{maxValSelect}
-					<CpuCoresSheet chartData={chartData} dataEmpty={dataEmpty} grid={grid} maxValues={maxValues} />
+					<CpuCoresSheet chartData={chartData} dataEmpty={dataEmpty} grid={grid} maxValues={maxValues} cpuFixed={cpuFixed} />
 				</div>
 			}
 		>
@@ -52,7 +55,7 @@ export function CpuChart({
 				]}
 				tickFormatter={(val) => `${toFixedFloat(val, 2)}%`}
 				contentFormatter={({ value }) => `${decimalString(value)}%`}
-				domain={pinnedAxisDomain()}
+				domain={cpuFixed ? [0, 100] : pinnedAxisDomain()}
 			/>
 		</ChartCard>
 	)
