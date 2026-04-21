@@ -69,15 +69,15 @@ export function LazyNetworkProbesTableNew({ systemId, systemData }: { systemId: 
 		const cachedProbeStats = cache.get(ss_cache_key) as NetworkProbeStatsRecord[] | undefined
 
 		// Render from cache immediately if available
-		// if (cachedProbeStats?.length) {
-		// 	setProbeStats(cachedProbeStats)
+		if (cachedProbeStats?.length) {
+			setProbeStats(cachedProbeStats)
 
-		// 	// Skip the fetch if the latest cached point is recent enough that no new point is expected yet
-		// 	const lastCreated = cachedProbeStats.at(-1)?.created as number | undefined
-		// 	if (lastCreated && Date.now() - lastCreated < expectedInterval * 0.9) {
-		// 		return
-		// 	}
-		// }
+			// Skip the fetch if the latest cached point is recent enough that no new point is expected yet
+			const lastCreated = cachedProbeStats.at(-1)?.created as number | undefined
+			if (lastCreated && Date.now() - lastCreated < expectedInterval * 0.9) {
+				return
+			}
+		}
 
 		getStats<NetworkProbeStatsRecord>("network_probe_stats", systemId, chartTime, cachedProbeStats).then(
 			(probeStats) => {
