@@ -81,12 +81,15 @@ func (a *Agent) updateNetworkStats(cacheTimeMs uint16, systemStats *system.Stats
 	a.ensureNetInterfacesInitialized()
 
 	a.ensureNetworkInterfacesMap(systemStats)
-
-	if netIO, err := psutilNet.IOCounters(true); err == nil {
-		nis, msElapsed := a.loadAndTickNetBaseline(cacheTimeMs)
-		totalBytesSent, totalBytesRecv := a.sumAndTrackPerNicDeltas(cacheTimeMs, msElapsed, netIO, systemStats)
-		bytesSentPerSecond, bytesRecvPerSecond := a.computeBytesPerSecond(msElapsed, totalBytesSent, totalBytesRecv, nis)
-		a.applyNetworkTotals(cacheTimeMs, netIO, systemStats, nis, totalBytesSent, totalBytesRecv, bytesSentPerSecond, bytesRecvPerSecond)
+	// [upload bytes, download bytes, total upload, total download]
+	netIO, err := a.networkIO.IOCounters()
+	if err == nil {
+		if netIO != nil {
+			nis, msElapsed := a.loadAndTickNetBaseline(cacheTimeMs)
+			totalBytesSent, totalBytesRecv := a.sumAndTrackPerNicDeltas(cacheTimeMs, msElapsed, netIO, systemStats)
+			bytesSentPerSecond, bytesRecvPerSecond := a.computeBytesPerSecond(msElapsed, totalBytesSent, totalBytesRecv, nis)
+			a.applyNetworkTotals(cacheTimeMs, netIO, systemStats, nis, totalBytesSent, totalBytesRecv, bytesSentPerSecond, bytesRecvPerSecond)
+		}
 	}
 }
 
@@ -102,7 +105,9 @@ func (a *Agent) initializeNetIoStats() {
 	}
 
 	// get current network I/O stats and record valid interfaces
-	if netIO, err := psutilNet.IOCounters(true); err == nil {
+	// also if in here
+	netIO, err := a.networkIO.IOCounters()
+	if err == nil {
 		for _, v := range netIO {
 			if skipNetworkInterface(v, nicCfg) {
 				continue
@@ -159,6 +164,7 @@ func (a *Agent) sumAndTrackPerNicDeltas(cacheTimeMs uint16, msElapsed uint64, ne
 	tracker.Cycle()
 
 	for _, v := range netIO {
+		// fmt.Println("_", v)
 		if _, exists := a.netInterfaces[v.Name]; !exists {
 			continue
 		}

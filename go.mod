@@ -9,6 +9,7 @@ require (
 	github.com/fxamacker/cbor/v2 v2.9.0
 	github.com/gliderlabs/ssh v0.3.8
 	github.com/google/uuid v1.6.0
+	github.com/gosnmp/gosnmp v1.43.2
 	github.com/lxzan/gws v1.9.1
 	github.com/nicholas-fedor/shoutrrr v0.14.3
 	github.com/pocketbase/dbx v1.12.0
@@ -20,6 +21,7 @@ require (
 	github.com/stretchr/testify v1.11.1
 	golang.org/x/crypto v0.49.0
 	golang.org/x/exp v0.0.0-20260312153236-7ab1446f8b90
+	golang.org/x/net v0.52.0
 	golang.org/x/sys v0.42.0
 	gopkg.in/yaml.v3 v3.0.1
 	howett.net/plist v1.0.1
@@ -56,7 +58,6 @@ require (
 	github.com/x448/float16 v0.8.4 // indirect
 	github.com/yusufpapurcu/wmi v1.2.4 // indirect
 	golang.org/x/image v0.38.0 // indirect
-	golang.org/x/net v0.52.0 // indirect
 	golang.org/x/oauth2 v0.36.0 // indirect
 	golang.org/x/sync v0.20.0 // indirect
 	golang.org/x/term v0.41.0 // indirect
