@@ -1,5 +1,5 @@
-import LineChartDefault, { DataPoint } from "@/components/charts/line-chart"
-import { pinnedAxisDomain } from "@/components/ui/chart"
+import LineChartDefault from "@/components/charts/line-chart"
+import type { DataPoint } from "@/components/charts/line-chart"
 import { toFixedFloat, decimalString } from "@/lib/utils"
 import { useLingui } from "@lingui/react/macro"
 import { ChartCard, FilterBar } from "../chart-card"
@@ -31,33 +31,44 @@ export function LatencyChart({
 	const { t } = useLingui()
 	const filter = useStore($filter)
 
-	const dataPoints: DataPoint<NetworkProbeStatsRecord>[] = useMemo(() => {
+	const { dataPoints, visibleKeys } = useMemo(() => {
 		const count = probes.length
-		return probes
-			.sort((a, b) => a.name.localeCompare(b.name))
-			.map((p, i) => {
-				const key = probeKey(p)
-				const filterTerms = filter
-					? filter
-							.toLowerCase()
-							.split(" ")
-							.filter((term) => term.length > 0)
-					: []
-				const filtered = filterTerms.length > 0 && !filterTerms.some((term) => key.toLowerCase().includes(term))
-				const strokeOpacity = filtered ? 0.1 : 1
-				return {
-					label: p.name || p.target,
-					dataKey: (record: NetworkProbeStatsRecord) => record.stats?.[key]?.[0] ?? null,
-					color: count <= 5 ? i + 1 : `hsl(${(i * 360) / count}, var(--chart-saturation), var(--chart-lightness))`,
-					strokeOpacity,
-					activeDot: !filtered,
-				}
+		const points: DataPoint<NetworkProbeStatsRecord>[] = []
+		const visibleKeys: string[] = []
+		probes.sort((a, b) => a.name.localeCompare(b.name))
+		const filterTerms = filter
+			? filter
+					.toLowerCase()
+					.split(" ")
+					.filter((term) => term.length > 0)
+			: []
+		for (let i = 0; i < count; i++) {
+			const p = probes[i]
+			const key = probeKey(p)
+			const filtered = filterTerms.length > 0 && !filterTerms.some((term) => key.toLowerCase().includes(term))
+			if (filtered) {
+				continue
+			}
+			visibleKeys.push(key)
+			points.push({
+				label: p.name || p.target,
+				dataKey: (record: NetworkProbeStatsRecord) => record.stats?.[key]?.[0] ?? "-",
+				color: count <= 5 ? i + 1 : `hsl(${(i * 360) / count}, var(--chart-saturation), var(--chart-lightness))`,
 			})
+		}
+		return { dataPoints: points, visibleKeys }
 	}, [probes, filter])
+
+	const filteredProbeStats = useMemo(() => {
+		if (!visibleKeys.length) return probeStats
+		return probeStats.filter((record) => visibleKeys.some((key) => record.stats?.[key] != null))
+	}, [probeStats, visibleKeys])
+
+	const legend = dataPoints.length < 10
 
 	return (
 		<ChartCard
-			legend
+			legend={legend}
 			cornerEl={<FilterBar store={$filter} />}
 			empty={empty}
 			title={t`Latency`}
@@ -66,13 +77,18 @@ export function LatencyChart({
 		>
 			<LineChartDefault
 				chartData={chartData}
-				customData={probeStats}
+				customData={filteredProbeStats}
 				dataPoints={dataPoints}
-				domain={pinnedAxisDomain()}
+				domain={["auto", "auto"]}
 				connectNulls
 				tickFormatter={(value) => `${toFixedFloat(value, value >= 10 ? 0 : 1)} ms`}
-				contentFormatter={({ value }) => `${decimalString(value, 2)} ms`}
-				legend
+				contentFormatter={({ value }) => {
+					if (value === "-") {
+						return value
+					}
+					return `${decimalString(value, 2)} ms`
+				}}
+				legend={legend}
 				filter={filter}
 			/>
 		</ChartCard>

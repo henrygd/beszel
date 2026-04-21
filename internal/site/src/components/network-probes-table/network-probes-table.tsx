@@ -188,7 +188,7 @@ export default function NetworkProbesTableNew({
 							<Trans>Network Probes</Trans>
 						</CardTitle>
 						<div className="text-sm text-muted-foreground flex items-center flex-wrap">
-							<Trans>ICMP/TCP/HTTP latency monitoring from this agent</Trans>
+							<Trans>ICMP/TCP/HTTP latency monitoring from agents</Trans>
 						</div>
 					</div>
 					<div className="md:ms-auto flex items-center gap-2">

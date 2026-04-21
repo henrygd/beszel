@@ -42,11 +42,11 @@ export function LazySystemdTable({ systemId }: { systemId: string }) {
 	)
 }
 
-const NetworkProbesTableNew = lazy(() => import("@/components/network-probes-table/network-probes-table"))
+const NetworkProbesTable = lazy(() => import("@/components/network-probes-table/network-probes-table"))
 
 const cache = new Map<string, any>()
 
-export function LazyNetworkProbesTableNew({ systemId, systemData }: { systemId: string; systemData: SystemData }) {
+export function LazyNetworkProbesTable({ systemId, systemData }: { systemId: string; systemData: SystemData }) {
 	const { grid, chartData } = systemData ?? {}
 	const [probes, setProbes] = useState<NetworkProbeRecord[]>([])
 	const chartTime = useStore($chartTime)
@@ -101,7 +101,7 @@ export function LazyNetworkProbesTableNew({ systemId, systemData }: { systemId: 
 		<div ref={ref} className={cn(isIntersecting && "contents")}>
 			{isIntersecting && (
 				<>
-					<NetworkProbesTableNew systemId={systemId} probes={probes} setProbes={setProbes} />
+					<NetworkProbesTable systemId={systemId} probes={probes} setProbes={setProbes} />
 					{!!chartData && (
 						<LatencyChart
 							probeStats={probeStats}
@@ -112,28 +112,6 @@ export function LazyNetworkProbesTableNew({ systemId, systemData }: { systemId: 
 						/>
 					)}
 				</>
-			)}
-		</div>
-	)
-}
-const NetworkProbesTable = lazy(() => import("@/components/routes/system/network-probes"))
-
-export function LazyNetworkProbesTable({
-	system,
-	chartData,
-	grid,
-	probeStats,
-}: {
-	system: any
-	chartData: any
-	grid: any
-	probeStats: any
-}) {
-	const { isIntersecting, ref } = useIntersectionObserver()
-	return (
-		<div ref={ref} className={cn(isIntersecting && "contents")}>
-			{isIntersecting && (
-				<NetworkProbesTable system={system} chartData={chartData} grid={grid} realtimeProbeStats={probeStats} />
 			)}
 		</div>
 	)

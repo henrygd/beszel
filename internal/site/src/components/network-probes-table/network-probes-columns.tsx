@@ -97,15 +97,15 @@ export function getProbeColumns(longestName = 0, longestTarget = 0): ColumnDef<N
 		{
 			id: "latency",
 			accessorFn: (record) => record.latency,
-			// invertSorting: true,
+			invertSorting: true,
 			header: ({ column }) => <HeaderButton column={column} name={t`Latency`} Icon={ActivityIcon} />,
 			cell: ({ row }) => {
 				const val = row.original.latency
-				if (val === undefined) {
+				if (!val) {
 					return <span className="ms-1.5 text-muted-foreground">-</span>
 				}
 				let color = "bg-green-500"
-				if (!val || val > 200) {
+				if (val > 200) {
 					color = "bg-yellow-500"
 				}
 				if (val > 2000) {
@@ -125,18 +125,18 @@ export function getProbeColumns(longestName = 0, longestTarget = 0): ColumnDef<N
 			invertSorting: true,
 			header: ({ column }) => <HeaderButton column={column} name={t`Loss`} Icon={WifiOffIcon} />,
 			cell: ({ row }) => {
-				const val = row.original.loss
-				if (val === undefined) {
+				const { loss, latency } = row.original
+				if (loss === undefined || (!latency && !loss)) {
 					return <span className="ms-1.5 text-muted-foreground">-</span>
 				}
 				let color = "bg-green-500"
-				if (val > 0) {
-					color = val > 20 ? "bg-red-500" : "bg-yellow-500"
+				if (loss) {
+					color = loss > 20 ? "bg-red-500" : "bg-yellow-500"
 				}
 				return (
 					<span className="ms-1.5 tabular-nums flex gap-2 items-center">
 						<span className={cn("shrink-0 size-2 rounded-full", color)} />
-						{val}%
+						{loss}%
 					</span>
 				)
 			},

@@ -24,7 +24,7 @@ export function AddProbeDialog({ systemId }: { systemId?: string }) {
 	const [protocol, setProtocol] = useState<string>("icmp")
 	const [target, setTarget] = useState("")
 	const [port, setPort] = useState("")
-	const [probeInterval, setProbeInterval] = useState("60")
+	const [probeInterval, setProbeInterval] = useState("30")
 	const [name, setName] = useState("")
 	const [loading, setLoading] = useState(false)
 	const [selectedSystemId, setSelectedSystemId] = useState("")
@@ -37,7 +37,7 @@ export function AddProbeDialog({ systemId }: { systemId?: string }) {
 		setProtocol("icmp")
 		setTarget("")
 		setPort("")
-		setProbeInterval("60")
+		setProbeInterval("30")
 		setName("")
 		setSelectedSystemId("")
 	}
@@ -72,13 +72,13 @@ export function AddProbeDialog({ systemId }: { systemId?: string }) {
 					<Trans>Add {{ foo: t`Probe` }}</Trans>
 				</Button>
 			</DialogTrigger>
-			<DialogContent>
+			<DialogContent className="max-w-md">
 				<DialogHeader>
 					<DialogTitle>
 						<Trans>Add {{ foo: t`Network Probe` }}</Trans>
 					</DialogTitle>
 					<DialogDescription>
-						<Trans>Configure ICMP, TCP, or HTTP latency monitoring from this agent.</Trans>
+						<Trans>Configure latency monitoring from this agent.</Trans>
 					</DialogDescription>
 				</DialogHeader>
 				<form onSubmit={handleSubmit} className="grid gap-4 tabular-nums">
