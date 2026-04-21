@@ -402,7 +402,7 @@ function getPayloadConfigFromPayload(config: ChartConfig, payload: unknown, key:
 
 let cachedAxis: JSX.Element
 const xAxis = ({ domain, ticks, chartTime }: ChartData) => {
-	if (cachedAxis && domain[0] === cachedAxis.props.domain[0]) {
+	if (cachedAxis && ticks === cachedAxis.props.ticks) {
 		return cachedAxis
 	}
 	cachedAxis = (

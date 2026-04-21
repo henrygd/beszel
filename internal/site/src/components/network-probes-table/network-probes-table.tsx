@@ -13,7 +13,6 @@ import {
 	type VisibilityState,
 } from "@tanstack/react-table"
 import { useVirtualizer, type VirtualItem } from "@tanstack/react-virtual"
-import { listenKeys } from "nanostores"
 import { memo, useEffect, useMemo, useRef, useState } from "react"
 import { getProbeColumns } from "@/components/network-probes-table/network-probes-columns"
 import { Card, CardHeader, CardTitle } from "@/components/ui/card"
@@ -27,9 +26,15 @@ import { AddProbeDialog } from "./probe-dialog"
 
 const NETWORK_PROBE_FIELDS = "id,name,system,target,protocol,port,interval,latency,loss,enabled,updated"
 
-export default function NetworkProbesTableNew({ systemId }: { systemId?: string }) {
-	const loadTime = Date.now()
-	const [data, setData] = useState<NetworkProbeRecord[]>([])
+export default function NetworkProbesTableNew({
+	systemId,
+	probes,
+	setProbes,
+}: {
+	systemId?: string
+	probes: NetworkProbeRecord[]
+	setProbes: React.Dispatch<React.SetStateAction<NetworkProbeRecord[]>>
+}) {
 	const [sorting, setSorting] = useBrowserStorage<SortingState>(
 		`sort-np-${systemId ? 1 : 0}`,
 		[{ id: systemId ? "name" : "system", desc: false }],
@@ -41,7 +46,7 @@ export default function NetworkProbesTableNew({ systemId }: { systemId?: string 
 
 	// clear old data when systemId changes
 	useEffect(() => {
-		return setData([])
+		return setProbes([])
 	}, [systemId])
 
 	useEffect(() => {
@@ -51,26 +56,26 @@ export default function NetworkProbesTableNew({ systemId }: { systemId?: string 
 					fields: NETWORK_PROBE_FIELDS,
 					filter: systemId ? pb.filter("system={:system}", { system: systemId }) : undefined,
 				})
-				.then((res) => setData(res.items))
+				.then((res) => setProbes(res.items))
 		}
 
 		// initial load
 		fetchData(systemId)
 
 		// if no systemId, pull after every system update
-		if (!systemId) {
-			return $allSystemsById.listen((_value, _oldValue, systemId) => {
-				// exclude initial load of systems
-				if (Date.now() - loadTime > 500) {
-					fetchData(systemId)
-				}
-			})
-		}
+		// if (!systemId) {
+		// 	return $allSystemsById.listen((_value, _oldValue, systemId) => {
+		// 		// exclude initial load of systems
+		// 		if (Date.now() - loadTime > 500) {
+		// 			fetchData(systemId)
+		// 		}
+		// 	})
+		// }
 
 		// if systemId, fetch after the system is updated
-		return listenKeys($allSystemsById, [systemId], (_newSystems) => {
-			fetchData(systemId)
-		})
+		// return listenKeys($allSystemsById, [systemId], (_newSystems) => {
+		// 	fetchData(systemId)
+		// })
 	}, [systemId])
 
 	// Subscribe to updates
@@ -86,7 +91,7 @@ export default function NetworkProbesTableNew({ systemId }: { systemId?: string 
 					"*",
 					(event) => {
 						const record = event.record
-						setData((currentProbes) => {
+						setProbes((currentProbes) => {
 							const probes = currentProbes ?? []
 							const matchesSystemScope = !systemId || record.system === systemId
 
@@ -124,12 +129,12 @@ export default function NetworkProbesTableNew({ systemId }: { systemId?: string 
 	const { longestName, longestTarget } = useMemo(() => {
 		let longestName = 0
 		let longestTarget = 0
-		for (const p of data) {
+		for (const p of probes) {
 			longestName = Math.max(longestName, getVisualStringWidth(p.name || p.target))
 			longestTarget = Math.max(longestTarget, getVisualStringWidth(p.target))
 		}
 		return { longestName, longestTarget }
-	}, [data])
+	}, [probes])
 
 	// Filter columns based on whether systemId is provided
 	const columns = useMemo(() => {
@@ -140,7 +145,7 @@ export default function NetworkProbesTableNew({ systemId }: { systemId?: string 
 	}, [systemId, longestName, longestTarget])
 
 	const table = useReactTable({
-		data,
+		data: probes,
 		columns,
 		getCoreRowModel: getCoreRowModel(),
 		getSortedRowModel: getSortedRowModel(),
@@ -187,7 +192,7 @@ export default function NetworkProbesTableNew({ systemId }: { systemId?: string 
 						</div>
 					</div>
 					<div className="md:ms-auto flex items-center gap-2">
-						{data.length > 0 && (
+						{probes.length > 0 && (
 							<Input
 								placeholder={t`Filter...`}
 								value={globalFilter}

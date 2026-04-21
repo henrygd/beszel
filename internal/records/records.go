@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/henrygd/beszel/internal/entities/container"
+	"github.com/henrygd/beszel/internal/entities/probe"
 	"github.com/henrygd/beszel/internal/entities/system"
 
 	"github.com/pocketbase/dbx"
@@ -507,60 +508,57 @@ func AverageContainerStatsSlice(records [][]container.Stats) []container.Stats {
 
 // AverageProbeStats averages probe stats across multiple records.
 // For each probe key: avg of avgs, min of mins, max of maxes, avg of losses.
-func (rm *RecordManager) AverageProbeStats(db dbx.Builder, records RecordIds) map[string]map[string]float64 {
+func (rm *RecordManager) AverageProbeStats(db dbx.Builder, records RecordIds) map[string]probe.Result {
 	type probeValues struct {
-		avgSum  float64
-		minVal  float64
-		maxVal  float64
-		lossSum float64
-		count   float64
+		sums  probe.Result
+		count float64
 	}
 
+	query := db.NewQuery("SELECT stats FROM network_probe_stats WHERE id = {:id}")
+
+	// accumulate sums for each probe key across records
 	sums := make(map[string]*probeValues)
 	var row StatsRecord
-	params := make(dbx.Params, 1)
 	for _, rec := range records {
 		row.Stats = row.Stats[:0]
-		params["id"] = rec.Id
-		db.NewQuery("SELECT stats FROM network_probe_stats WHERE id = {:id}").Bind(params).One(&row)
-		var rawStats map[string]map[string]float64
+		query.Bind(dbx.Params{"id": rec.Id}).One(&row)
+		var rawStats map[string]probe.Result
 		if err := json.Unmarshal(row.Stats, &rawStats); err != nil {
 			continue
 		}
-
 		for key, vals := range rawStats {
 			s, ok := sums[key]
 			if !ok {
-				s = &probeValues{minVal: math.MaxFloat64}
+				s = &probeValues{sums: make(probe.Result, len(vals))}
 				sums[key] = s
 			}
-			s.avgSum += vals["avg"]
-			if vals["min"] < s.minVal {
-				s.minVal = vals["min"]
+			for i := range vals {
+				switch i {
+				case 1: // min fields
+					if s.count == 0 || vals[i] < s.sums[i] {
+						s.sums[i] = vals[i]
+					}
+				case 2: // max fields
+					if vals[i] > s.sums[i] {
+						s.sums[i] = vals[i]
+					}
+				default: // average fields
+					s.sums[i] += vals[i]
+				}
 			}
-			if vals["max"] > s.maxVal {
-				s.maxVal = vals["max"]
-			}
-			s.lossSum += vals["loss"]
 			s.count++
 		}
 	}
 
-	result := make(map[string]map[string]float64, len(sums))
+	// compute final averages
+	result := make(map[string]probe.Result, len(sums))
 	for key, s := range sums {
 		if s.count == 0 {
 			continue
 		}
-		minVal := s.minVal
-		if minVal == math.MaxFloat64 {
-			minVal = 0
-		}
-		result[key] = map[string]float64{
-			"avg":  twoDecimals(s.avgSum / s.count),
-			"min":  twoDecimals(minVal),
-			"max":  twoDecimals(s.maxVal),
-			"loss": twoDecimals(s.lossSum / s.count),
-		}
+		s.sums[0] = twoDecimals(s.sums[0] / s.count) // avg latency
+		s.sums[3] = twoDecimals(s.sums[3] / s.count) // packet loss
+		result[key] = s.sums
 	}
 	return result
 }

@@ -133,9 +133,7 @@ export function useSystemData(id: string) {
 						data.container?.length > 0
 							? makeContainerPoint(now, data.container as unknown as ContainerStatsRecord["stats"])
 							: null
-					const probePoint: NetworkProbeStatsRecord | null = data.probes
-						? { stats: data.probes, created: now }
-						: null
+					const probePoint: NetworkProbeStatsRecord | null = data.probes ? { stats: data.probes, created: now } : null
 					// on first message, make sure we clear out data from other time periods
 					if (isFirst) {
 						isFirst = false
@@ -214,8 +212,8 @@ export function useSystemData(id: string) {
 		}
 
 		Promise.allSettled([
-			getStats<SystemStatsRecord>("system_stats", systemId, chartTime),
-			getStats<ContainerStatsRecord>("container_stats", systemId, chartTime),
+			getStats<SystemStatsRecord>("system_stats", systemId, chartTime, cachedSystemStats),
+			getStats<ContainerStatsRecord>("container_stats", systemId, chartTime, cachedContainerData),
 		]).then(([systemStats, containerStats]) => {
 			// If another request has been made since this one, ignore the results
 			if (requestId !== statsRequestId.current) {

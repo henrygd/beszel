@@ -31,6 +31,7 @@ export function AddProbeDialog({ systemId }: { systemId?: string }) {
 	const systems = useStore($systems)
 	const { toast } = useToast()
 	const { t } = useLingui()
+	const targetName = target.replace(/^https?:\/\//, "")
 
 	const resetForm = () => {
 		setProtocol("icmp")
@@ -47,7 +48,7 @@ export function AddProbeDialog({ systemId }: { systemId?: string }) {
 		try {
 			await pb.collection("network_probes").create({
 				system: systemId ?? selectedSystemId,
-				name,
+				name: name || targetName,
 				target,
 				protocol,
 				port: protocol === "tcp" ? Number(port) : 0,
@@ -162,11 +163,11 @@ export function AddProbeDialog({ systemId }: { systemId?: string }) {
 						<Input
 							value={name}
 							onChange={(e) => setName(e.target.value)}
-							placeholder={target || t`e.g. Cloudflare DNS`}
+							placeholder={targetName || t`e.g. Cloudflare DNS`}
 						/>
 					</div>
 					<DialogFooter>
-					<Button type="submit" disabled={loading || (!systemId && !selectedSystemId)}>
+						<Button type="submit" disabled={loading || (!systemId && !selectedSystemId)}>
 							{loading ? <Trans>Creating...</Trans> : <Trans>Add {{ foo: t`Probe` }}</Trans>}
 						</Button>
 					</DialogFooter>

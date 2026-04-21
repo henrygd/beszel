@@ -11,13 +11,7 @@ import { RootDiskCharts, ExtraFsCharts } from "./system/charts/disk-charts"
 import { BandwidthChart, ContainerNetworkChart } from "./system/charts/network-charts"
 import { TemperatureChart, BatteryChart } from "./system/charts/sensor-charts"
 import { GpuPowerChart, GpuDetailCharts } from "./system/charts/gpu-charts"
-import {
-	LazyContainersTable,
-	LazyNetworkProbesTable,
-	LazySmartTable,
-	LazySystemdTable,
-	LazyNetworkProbesTableNew,
-} from "./system/lazy-tables"
+import { LazyContainersTable, LazySmartTable, LazySystemdTable, LazyNetworkProbesTableNew } from "./system/lazy-tables"
 import { LoadAverageChart } from "./system/charts/load-average-chart"
 import { ContainerIcon, CpuIcon, HardDriveIcon, TerminalSquareIcon } from "lucide-react"
 import { GpuIcon } from "../ui/icons"
@@ -153,7 +147,7 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 
 				{hasSystemd && <LazySystemdTable systemId={system.id} />}
 
-				<LazyNetworkProbesTableNew systemId={system.id} />
+				<LazyNetworkProbesTableNew systemId={system.id} systemData={systemData} />
 
 				{/* <LazyNetworkProbesTable system={system} chartData={chartData} grid={grid} probeStats={probeStats} /> */}
 			</>
@@ -203,7 +197,7 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 						<SwapChart chartData={chartData} grid={grid} dataEmpty={dataEmpty} systemStats={systemStats} />
 						{pageBottomExtraMargin > 0 && <div style={{ marginBottom: pageBottomExtraMargin }}></div>}
 					</div>
-					<LazyNetworkProbesTableNew systemId={system.id} />
+					<LazyNetworkProbesTableNew systemId={system.id} systemData={systemData} />
 					{/* <LazyNetworkProbesTable system={system} chartData={chartData} grid={grid} probeStats={probeStats} /> */}
 				</TabsContent>
 

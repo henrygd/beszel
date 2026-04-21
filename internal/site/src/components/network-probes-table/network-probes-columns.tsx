@@ -3,7 +3,6 @@ import { Button } from "@/components/ui/button"
 import { cn, decimalString, hourWithSeconds } from "@/lib/utils"
 import {
 	GlobeIcon,
-	TagIcon,
 	TimerIcon,
 	ActivityIcon,
 	WifiOffIcon,
@@ -12,6 +11,7 @@ import {
 	MoreHorizontalIcon,
 	ServerIcon,
 	ClockIcon,
+	NetworkIcon,
 } from "lucide-react"
 import { t } from "@lingui/core/macro"
 import type { NetworkProbeRecord } from "@/types"
@@ -21,12 +21,6 @@ import { pb } from "@/lib/api"
 import { toast } from "../ui/use-toast"
 import { $allSystemsById } from "@/lib/stores"
 import { useStore } from "@nanostores/react"
-
-// export interface ProbeRow extends NetworkProbeRecord {
-// 	key: string
-// 	latency?: number
-// 	loss?: number
-// }
 
 const protocolColors: Record<string, string> = {
 	icmp: "bg-blue-500/15 text-blue-400",
@@ -48,7 +42,7 @@ export function getProbeColumns(longestName = 0, longestTarget = 0): ColumnDef<N
 			id: "name",
 			sortingFn: (a, b) => (a.original.name || a.original.target).localeCompare(b.original.name || b.original.target),
 			accessorFn: (record) => record.name || record.target,
-			header: ({ column }) => <HeaderButton column={column} name={t`Name`} Icon={TagIcon} />,
+			header: ({ column }) => <HeaderButton column={column} name={t`Name`} Icon={NetworkIcon} />,
 			cell: ({ getValue }) => (
 				<div className="ms-1.5 max-w-40 block truncate tabular-nums" style={{ width: `${longestName / 1.05}ch` }}>
 					{getValue() as string}
@@ -103,7 +97,7 @@ export function getProbeColumns(longestName = 0, longestTarget = 0): ColumnDef<N
 		{
 			id: "latency",
 			accessorFn: (record) => record.latency,
-			invertSorting: true,
+			// invertSorting: true,
 			header: ({ column }) => <HeaderButton column={column} name={t`Latency`} Icon={ActivityIcon} />,
 			cell: ({ row }) => {
 				const val = row.original.latency
@@ -111,10 +105,10 @@ export function getProbeColumns(longestName = 0, longestTarget = 0): ColumnDef<N
 					return <span className="ms-1.5 text-muted-foreground">-</span>
 				}
 				let color = "bg-green-500"
-				if (val > 200) {
+				if (!val || val > 200) {
 					color = "bg-yellow-500"
 				}
-				if (!val || val > 2000) {
+				if (val > 2000) {
 					color = "bg-red-500"
 				}
 				return (

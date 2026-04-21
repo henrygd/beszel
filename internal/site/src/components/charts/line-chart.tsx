@@ -106,7 +106,7 @@ export default function LineChartDefault({
 					isAnimationActive={false}
 					// stackId={dataPoint.stackId}
 					order={dataPoint.order || i}
-					// activeDot={dataPoint.activeDot ?? true}
+					activeDot={dataPoint.activeDot ?? true}
 					connectNulls={connectNulls}
 				/>
 			)

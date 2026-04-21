@@ -561,7 +561,18 @@ export interface NetworkProbeRecord {
 	updated: string
 }
 
+/**
+ * 0: avg latency in ms
+ *
+ * 1: min latency in ms
+ *
+ * 2: max latency in ms
+ *
+ * 3: packet loss in %
+ */
+type ProbeResult = number[]
+
 export interface NetworkProbeStatsRecord {
-	stats: Record<string, { avg: number; min: number; max: number; loss: number }>
+	stats: Record<string, ProbeResult>
 	created: number // unix timestamp (ms) for Recharts xAxis
 }

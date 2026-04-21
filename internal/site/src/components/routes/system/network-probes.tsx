@@ -7,7 +7,7 @@ import { chartTimeData, cn, toFixedFloat, decimalString, getVisualStringWidth } 
 import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { useToast } from "@/components/ui/use-toast"
 import { appendData } from "./chart-data"
-import { AddProbeDialog } from "./probe-dialog"
+// import { AddProbeDialog } from "./probe-dialog"
 import { ChartCard } from "./chart-card"
 import LineChartDefault, { type DataPoint } from "@/components/charts/line-chart"
 import { pinnedAxisDomain } from "@/components/ui/chart"
@@ -89,7 +89,7 @@ export default function NetworkProbes({
 			if (data[i].stats) {
 				const latest: Record<string, { avg: number; loss: number }> = {}
 				for (const [key, val] of Object.entries(data[i].stats)) {
-					latest[key] = { avg: val.avg, loss: val.loss }
+					latest[key] = { avg: val?.[0], loss: val?.[3] }
 				}
 				setLatestResults(latest)
 				break
@@ -110,13 +110,22 @@ export default function NetworkProbes({
 		const controller = new AbortController()
 		const { type: statsType = "1m", expectedInterval } = chartTimeData[chartTime] ?? {}
 
-		pb.send<{ stats: NetworkProbeStatsRecord["stats"]; created: string }[]>("/api/beszel/network-probe-stats", {
-			query: { system: systemId, type: statsType },
-			signal: controller.signal,
-		})
+		console.log("Fetching probe stats", { systemId, statsType, expectedInterval })
+
+		pb.collection<NetworkProbeStatsRecord>("network_probe_stats")
+			.getList(0, 2000, {
+				fields: "stats,created",
+				filter: pb.filter("system={:system} && type={:type} && created <= {:created}", {
+					system: systemId,
+					type: statsType,
+					created: new Date(Date.now() - 60 * 60 * 1000).toISOString(),
+				}),
+				sort: "-created",
+			})
 			.then((raw) => {
+				console.log("Fetched probe stats", { raw })
 				// Filter stats to only include currently active probes
-				const mapped: NetworkProbeStatsRecord[] = raw.map((r) => {
+				const mapped: NetworkProbeStatsRecord[] = raw.items.map((r) => {
 					const filtered: NetworkProbeStatsRecord["stats"] = {}
 					for (const [key, val] of Object.entries(r.stats)) {
 						if (activeProbeKeys.has(key)) {
@@ -132,12 +141,15 @@ export default function NetworkProbes({
 					const last = mapped[mapped.length - 1].stats
 					const latest: Record<string, { avg: number; loss: number }> = {}
 					for (const [key, val] of Object.entries(last)) {
-						latest[key] = { avg: val.avg, loss: val.loss }
+						latest[key] = { avg: val?.[0], loss: val?.[3] }
 					}
 					setLatestResults(latest)
 				}
 			})
-			.catch(() => setStats([]))
+			.catch((e) => {
+				console.error("Error fetching probe stats", e)
+				setStats([])
+			})
 
 		return () => controller.abort()
 	}, [system, chartTime, probes, activeProbeKeys])
@@ -160,7 +172,7 @@ export default function NetworkProbes({
 			const key = probeKey(p)
 			return {
 				label: p.name || p.target,
-				dataKey: (record: NetworkProbeStatsRecord) => record.stats?.[key]?.avg ?? null,
+				dataKey: (record: NetworkProbeStatsRecord) => record.stats?.[key]?.[0] ?? null,
 				color: count <= 5 ? i + 1 : `hsl(${(i * 360) / count}, var(--chart-saturation), var(--chart-lightness))`,
 			}
 		})
@@ -231,6 +243,8 @@ export default function NetworkProbes({
 	// 		</Card>
 	// 	)
 	// }
+	//
+	// console.log("Rendering NetworkProbes", { probes, stats })
 
 	return (
 		<div className="grid gap-4">
@@ -245,7 +259,7 @@ export default function NetworkProbes({
 								<Trans>ICMP/TCP/HTTP latency monitoring from this agent</Trans>
 							</CardDescription>
 						</div>
-						<AddProbeDialog systemId={systemId} onCreated={fetchProbes} />
+						{/* <AddProbeDialog systemId={systemId} onCreated={fetchProbes} /> */}
 					</div>
 				</CardHeader>
 

@@ -1,7 +1,7 @@
 import { timeTicks } from "d3-time"
 import { getPbTimestamp, pb } from "@/lib/api"
 import { chartTimeData } from "@/lib/utils"
-import type { ChartData, ChartTimes, ContainerStatsRecord, SystemStatsRecord } from "@/types"
+import type { ChartData, ChartTimes, ContainerStatsRecord, NetworkProbeStatsRecord, SystemStatsRecord } from "@/types"
 
 type ChartTimeData = {
 	time: number
@@ -66,12 +66,12 @@ export function appendData<T extends { created: string | number | null }>(
 	return result
 }
 
-export async function getStats<T extends SystemStatsRecord | ContainerStatsRecord>(
+export async function getStats<T extends SystemStatsRecord | ContainerStatsRecord | NetworkProbeStatsRecord>(
 	collection: string,
 	systemId: string,
-	chartTime: ChartTimes
+	chartTime: ChartTimes,
+	cachedStats?: { created: string | number | null }[]
 ): Promise<T[]> {
-	const cachedStats = cache.get(`${systemId}_${chartTime}_${collection}`) as T[] | undefined
 	const lastCached = cachedStats?.at(-1)?.created as number
 	return await pb.collection<T>(collection).getFullList({
 		filter: pb.filter("system={:id} && created > {:created} && type={:type}", {
