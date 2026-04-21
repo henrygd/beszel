@@ -13,7 +13,7 @@ import { TemperatureChart, BatteryChart } from "./system/charts/sensor-charts"
 import { GpuPowerChart, GpuDetailCharts } from "./system/charts/gpu-charts"
 import { LazyContainersTable, LazySmartTable, LazySystemdTable, LazyNetworkProbesTable } from "./system/lazy-tables"
 import { LoadAverageChart } from "./system/charts/load-average-chart"
-import { ContainerIcon, CpuIcon, HardDriveIcon, TerminalSquareIcon } from "lucide-react"
+import { ContainerIcon, CpuIcon, HardDriveIcon, NetworkIcon, TerminalSquareIcon } from "lucide-react"
 import { GpuIcon } from "../ui/icons"
 import SystemdTable from "../systemd-table/systemd-table"
 import ContainersTable from "../containers-table/containers-table"
@@ -65,7 +65,7 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 	const hasGpu = hasGpuData || hasGpuPowerData
 
 	// keep tabsRef in sync for keyboard navigation
-	const tabs = ["core", "disk"]
+	const tabs = ["core", "network", "disk"]
 	if (hasGpu) tabs.push("gpu")
 	if (hasContainers) tabs.push("containers")
 	if (hasSystemd) tabs.push("services")
@@ -159,6 +159,10 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 						<CpuIcon className="size-3.5" />
 						<Trans context="Core system metrics">Core</Trans>
 					</TabsTrigger>
+					<TabsTrigger value="network" className="w-full flex items-center gap-1.5">
+						<NetworkIcon className="size-3.5" />
+						<Trans>Network</Trans>
+					</TabsTrigger>
 					<TabsTrigger value="disk" className="w-full flex items-center gap-1.5">
 						<HardDriveIcon className="size-3.5" />
 						<Trans>Disk</Trans>
@@ -186,15 +190,24 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 				<TabsContent value="core" forceMount className={activeTab === "core" ? "contents" : "hidden"}>
 					<div className="grid xl:grid-cols-2 gap-4">
 						<CpuChart {...coreProps} />
-						<MemoryChart {...coreProps} />
 						<LoadAverageChart chartData={chartData} grid={grid} dataEmpty={dataEmpty} />
-						<BandwidthChart {...coreProps} systemStats={systemStats} />
+						<MemoryChart {...coreProps} />
+						<SwapChart chartData={chartData} grid={grid} dataEmpty={dataEmpty} systemStats={systemStats} />
 						<TemperatureChart {...coreProps} setPageBottomExtraMargin={setPageBottomExtraMargin} />
 						<BatteryChart {...coreProps} />
-						<SwapChart chartData={chartData} grid={grid} dataEmpty={dataEmpty} systemStats={systemStats} />
 						{pageBottomExtraMargin > 0 && <div style={{ marginBottom: pageBottomExtraMargin }}></div>}
 					</div>
-					<LazyNetworkProbesTable systemId={system.id} systemData={systemData} />
+				</TabsContent>
+
+				<TabsContent value="network" forceMount className={activeTab === "network" ? "contents" : "hidden"}>
+					{mountedTabs.has("network") && (
+						<>
+							<div className="grid xl:grid-cols-2 gap-4">
+								<BandwidthChart {...coreProps} systemStats={systemStats} />
+							</div>
+							<LazyNetworkProbesTable systemId={system.id} systemData={systemData} />
+						</>
+					)}
 				</TabsContent>
 
 				<TabsContent value="disk" forceMount className={activeTab === "disk" ? "contents" : "hidden"}>
