@@ -47,6 +47,7 @@ type System struct {
 	agentVersion   semver.Version          // Agent version
 	updateTicker   *time.Ticker            // Ticker for updating the system
 	detailsFetched atomic.Bool             // True if static system details have been fetched and saved
+	syncName       atomic.Bool             // True if display name should be kept in sync with hostname
 	smartFetching  atomic.Bool             // True if SMART devices are currently being fetched
 	smartInterval  time.Duration           // Interval for periodic SMART data updates
 }
@@ -124,8 +125,8 @@ func (sys *System) update() error {
 	options := common.DataRequestOptions{
 		CacheTimeMs: uint16(interval),
 	}
-	// fetch system details if not already fetched
-	if !sys.detailsFetched.Load() {
+	// fetch system details if not already fetched or if sync_name is enabled
+	if !sys.detailsFetched.Load() || sys.syncName.Load() {
 		options.IncludeDetails = true
 	}
 
@@ -235,6 +236,10 @@ func (sys *System) createRecords(data *system.CombinedData) (*core.Record, error
 		if data.Details != nil {
 			if err := createSystemDetailsRecord(txApp, data.Details, sys.Id); err != nil {
 				return err
+			}
+			// sync display name with hostname if enabled
+			if systemRecord.GetBool("sync_name") {
+				systemRecord.Set("name", data.Details.Hostname)
 			}
 		}
 
