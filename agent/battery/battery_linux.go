@@ -9,6 +9,7 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
+	"strings"
 	"sync"
 
 	"github.com/henrygd/beszel/agent/utils"
@@ -17,6 +18,10 @@ import (
 // getBatteryPaths returns the paths of all batteries in /sys/class/power_supply
 var getBatteryPaths func() ([]string, error)
 
+// batteryFilter filters battery devices by name using the BATTERY_DEVICES env var.
+// When unset or empty, all batteries are included; otherwise only listed names pass.
+var batteryFilter func(name string) bool
+
 // HasReadableBattery checks if the system has a battery and returns true if it does.
 var HasReadableBattery func() bool
 
@@ -24,9 +29,35 @@ func init() {
 	resetBatteryState("/sys/class/power_supply")
 }
 
+// getBatteryFilter returns a filter function based on the BATTERY_DEVICES env var.
+// Format: comma-separated device names (e.g., "BAT0,BAT1").
+// If unset or empty, returns a filter that accepts all devices.
+func getBatteryFilter() func(name string) bool {
+	devicesRaw, ok := utils.GetEnv("BATTERY_DEVICES")
+	if !ok || devicesRaw == "" {
+		return nil
+	}
+	slog.Info("BATTERY_DEVICES", "value", devicesRaw)
+	devices := make(map[string]struct{})
+	for device := range strings.SplitSeq(devicesRaw, ",") {
+		device = strings.TrimSpace(device)
+		if device != "" {
+			devices[device] = struct{}{}
+		}
+	}
+	if len(devices) == 0 {
+		return nil
+	}
+	return func(name string) bool {
+		_, exists := devices[name]
+		return exists
+	}
+}
+
 // resetBatteryState resets the sync.Once functions to a fresh state.
 // Tests call this after swapping sysfsPowerSupply so the new path is picked up.
 func resetBatteryState(sysfsPowerSupplyPath string) {
+	batteryFilter = getBatteryFilter()
 	getBatteryPaths = sync.OnceValues(func() ([]string, error) {
 		entries, err := os.ReadDir(sysfsPowerSupplyPath)
 		if err != nil {
@@ -34,8 +65,9 @@ func resetBatteryState(sysfsPowerSupplyPath string) {
 		}
 		var paths []string
 		for _, e := range entries {
-			path := filepath.Join(sysfsPowerSupplyPath, e.Name())
-			if utils.ReadStringFile(filepath.Join(path, "type")) == "Battery" {
+			name := e.Name()
+			path := filepath.Join(sysfsPowerSupplyPath, name)
+			if utils.ReadStringFile(filepath.Join(path, "type")) == "Battery" && (batteryFilter == nil || batteryFilter(name)) {
 				paths = append(paths, path)
 			}
 		}
