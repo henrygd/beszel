@@ -18,6 +18,17 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { PlusIcon } from "lucide-react"
 import { useToast } from "@/components/ui/use-toast"
 import { $systems } from "@/lib/stores"
+import * as v from "valibot"
+
+const Schema = v.object({
+	system: v.string(),
+	target: v.string(),
+	protocol: v.picklist(["icmp", "tcp", "http"]),
+	port: v.number(),
+	interval: v.pipe(v.string(), v.toNumber(), v.minValue(1), v.maxValue(3600)),
+	enabled: v.boolean(),
+	name: v.optional(v.string()),
+})
 
 export function AddProbeDialog({ systemId }: { systemId?: string }) {
 	const [open, setOpen] = useState(false)
@@ -45,16 +56,20 @@ export function AddProbeDialog({ systemId }: { systemId?: string }) {
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault()
 		setLoading(true)
+
 		try {
-			await pb.collection("network_probes").create({
+			const payload = v.parse(Schema, {
 				system: systemId ?? selectedSystemId,
-				name: name || targetName,
 				target,
 				protocol,
 				port: protocol === "tcp" ? Number(port) : 0,
-				interval: Number(probeInterval),
+				interval: probeInterval,
 				enabled: true,
 			})
+			if (name && name !== target) {
+				payload.name = name
+			}
+			await pb.collection("network_probes").create(payload)
 			resetForm()
 			setOpen(false)
 		} catch (err: unknown) {
@@ -116,6 +131,7 @@ export function AddProbeDialog({ systemId }: { systemId?: string }) {
 						<Label>
 							<Trans>Protocol</Trans>
 						</Label>
+
 						<Select value={protocol} onValueChange={setProtocol}>
 							<SelectTrigger>
 								<SelectValue />
