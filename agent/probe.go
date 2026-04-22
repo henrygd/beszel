@@ -199,7 +199,6 @@ func (pm *ProbeManager) GetResults(durationMs uint16) map[string]probe.Result {
 	for key, task := range pm.probes {
 		task.mu.Lock()
 		agg := task.aggregateLocked(duration, now)
-		// The live request window still controls avg/loss, but the range fields are always 1h.
 		hourAgg := task.aggregateLocked(time.Hour, now)
 		task.mu.Unlock()
 
