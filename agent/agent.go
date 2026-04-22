@@ -183,7 +183,7 @@ func (a *Agent) gatherStats(options common.DataRequestOptions) *system.CombinedD
 	}
 
 	if a.probeManager != nil {
-		data.Probes = a.probeManager.GetResults()
+		data.Probes = a.probeManager.GetResults(cacheTimeMs)
 		slog.Debug("Probes", "data", data.Probes)
 	}
 

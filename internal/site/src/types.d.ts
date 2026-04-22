@@ -316,8 +316,6 @@ export interface ChartData {
 	systemStats: SystemStatsRecord[]
 	containerData: ChartDataContainer[]
 	orientation: "right" | "left"
-	ticks: number[]
-	domain: number[]
 	chartTime: ChartTimes
 }
 
@@ -573,6 +571,8 @@ export interface NetworkProbeRecord {
 type ProbeResult = number[]
 
 export interface NetworkProbeStatsRecord {
+	id?: string
+	type?: string
 	stats: Record<string, ProbeResult>
 	created: number // unix timestamp (ms) for Recharts xAxis
 }

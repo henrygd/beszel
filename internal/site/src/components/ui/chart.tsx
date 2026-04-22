@@ -3,9 +3,10 @@ import { useLingui } from "@lingui/react/macro"
 import * as React from "react"
 import * as RechartsPrimitive from "recharts"
 import { chartTimeData, cn } from "@/lib/utils"
-import type { ChartData } from "@/types"
+import type { ChartTimes } from "@/types"
 import { Separator } from "./separator"
 import { AxisDomain } from "recharts/types/util/types"
+import { timeTicks } from "d3-time"
 
 // Format: { THEME_NAME: CSS_SELECTOR }
 const THEMES = { light: "", dark: ".dark" } as const
@@ -400,26 +401,37 @@ function getPayloadConfigFromPayload(config: ChartConfig, payload: unknown, key:
 	return configLabelKey in config ? config[configLabelKey] : config[key as keyof typeof config]
 }
 
-let cachedAxis: JSX.Element
-const xAxis = ({ domain, ticks, chartTime }: ChartData) => {
-	if (cachedAxis && ticks === cachedAxis.props.ticks) {
-		return cachedAxis
+let cachedAxis: {
+	time: number
+	el: JSX.Element
+}
+
+const xAxis = (chartTime: ChartTimes, lastCreationTime: number) => {
+	if (Math.abs(lastCreationTime - cachedAxis?.time) < 1000) {
+		return cachedAxis.el
 	}
-	cachedAxis = (
-		<RechartsPrimitive.XAxis
-			dataKey="created"
-			domain={domain}
-			ticks={ticks}
-			allowDataOverflow
-			type="number"
-			scale="time"
-			minTickGap={12}
-			tickMargin={8}
-			axisLine={false}
-			tickFormatter={chartTimeData[chartTime].format}
-		/>
-	)
-	return cachedAxis
+	const now = new Date(lastCreationTime + 1000)
+	const startTime = chartTimeData[chartTime].getOffset(now)
+	const ticks = timeTicks(startTime, now, chartTimeData[chartTime].ticks ?? 12).map((date) => date.getTime())
+	const domain = [chartTimeData[chartTime].getOffset(now).getTime(), now.getTime()]
+	cachedAxis = {
+		time: lastCreationTime,
+		el: (
+			<RechartsPrimitive.XAxis
+				dataKey="created"
+				domain={domain}
+				ticks={ticks}
+				allowDataOverflow
+				type="number"
+				scale="time"
+				minTickGap={12}
+				tickMargin={8}
+				axisLine={false}
+				tickFormatter={chartTimeData[chartTime].format}
+			/>
+		),
+	}
+	return cachedAxis.el
 }
 
 export {

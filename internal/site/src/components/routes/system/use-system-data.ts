@@ -26,7 +26,7 @@ import type {
 	SystemStatsRecord,
 } from "@/types"
 import { $router, navigate } from "../../router"
-import { appendData, cache, getStats, getTimeData, makeContainerData, makeContainerPoint } from "./chart-data"
+import { appendData, cache, getStats, makeContainerData, makeContainerPoint } from "./chart-data"
 
 export type SystemData = ReturnType<typeof useSystemData>
 
@@ -151,16 +151,11 @@ export function useSystemData(id: string) {
 	const agentVersion = useMemo(() => parseSemVer(system?.info?.v), [system?.info?.v])
 
 	const chartData: ChartData = useMemo(() => {
-		const lastCreated = Math.max(
-			(systemStats.at(-1)?.created as number) ?? 0,
-			(containerData.at(-1)?.created as number) ?? 0
-		)
 		return {
 			systemStats,
 			containerData,
 			chartTime,
 			orientation: direction === "rtl" ? "right" : "left",
-			...getTimeData(chartTime, lastCreated),
 			agentVersion,
 		}
 	}, [systemStats, containerData, direction])

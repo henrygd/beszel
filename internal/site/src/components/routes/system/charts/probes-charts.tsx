@@ -7,11 +7,7 @@ import type { ChartData, NetworkProbeRecord, NetworkProbeStatsRecord } from "@/t
 import { useMemo } from "react"
 import { atom } from "nanostores"
 import { useStore } from "@nanostores/react"
-
-function probeKey(p: NetworkProbeRecord) {
-	if (p.protocol === "tcp") return `${p.protocol}:${p.target}:${p.port}`
-	return `${p.protocol}:${p.target}`
-}
+import { probeKey } from "@/lib/use-network-probes"
 
 const $filter = atom("")
 
@@ -48,7 +44,7 @@ function ProbeChart({
 	const filter = useStore($filter)
 
 	const { dataPoints, visibleKeys } = useMemo(() => {
-		const sortedProbes = [...probes].sort((a, b) => a.name.localeCompare(b.name))
+		const sortedProbes = [...probes].sort((a, b) => b.latency - a.latency)
 		const count = sortedProbes.length
 		const points: DataPoint<NetworkProbeStatsRecord>[] = []
 		const visibleKeys: string[] = []
@@ -67,6 +63,7 @@ function ProbeChart({
 			}
 			visibleKeys.push(key)
 			points.push({
+				order: i,
 				label: p.name || p.target,
 				dataKey: (record: NetworkProbeStatsRecord) => record.stats?.[key]?.[valueIndex] ?? "-",
 				color: count <= 5 ? i + 1 : `hsl(${(i * 360) / count}, var(--chart-saturation), var(--chart-lightness))`,

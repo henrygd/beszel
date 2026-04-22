@@ -148,7 +148,7 @@ export default function LineChartDefault({
 							axisLine={false}
 						/>
 					)}
-					{xAxis(chartData)}
+					{xAxis(chartData.chartTime, displayData.at(-1)?.created as number)}
 					<ChartTooltip
 						animationEasing="ease-out"
 						animationDuration={150}

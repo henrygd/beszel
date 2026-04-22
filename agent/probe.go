@@ -73,13 +73,13 @@ func (pm *ProbeManager) SyncProbes(configs []probe.Config) {
 	}
 }
 
-// GetResults returns aggregated results for all probes over the last 60s window.
-func (pm *ProbeManager) GetResults() map[string]probe.Result {
+// GetResults returns aggregated results for all probes over the last supplied duration in ms.
+func (pm *ProbeManager) GetResults(durationMs uint16) map[string]probe.Result {
 	pm.mu.RLock()
 	defer pm.mu.RUnlock()
 
 	results := make(map[string]probe.Result, len(pm.probes))
-	cutoff := time.Now().Add(-60 * time.Second)
+	cutoff := time.Now().Add(-time.Duration(durationMs) * time.Millisecond)
 
 	for key, task := range pm.probes {
 		task.mu.Lock()

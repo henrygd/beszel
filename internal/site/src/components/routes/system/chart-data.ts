@@ -1,4 +1,3 @@
-import { timeTicks } from "d3-time"
 import { getPbTimestamp, pb } from "@/lib/api"
 import { chartTimeData } from "@/lib/utils"
 import type { ChartData, ChartTimes, ContainerStatsRecord, NetworkProbeStatsRecord, SystemStatsRecord } from "@/types"
@@ -16,27 +15,6 @@ export const cache = new Map<
 	string,
 	ChartTimeData | SystemStatsRecord[] | ContainerStatsRecord[] | ChartData["containerData"]
 >()
-
-// create ticks and domain for charts
-export function getTimeData(chartTime: ChartTimes, lastCreated: number) {
-	const cached = cache.get("td") as ChartTimeData | undefined
-	if (cached && cached.chartTime === chartTime) {
-		if (!lastCreated || cached.time >= lastCreated) {
-			return cached.data
-		}
-	}
-
-	// const buffer = chartTime === "1m" ? 400 : 20_000
-	const now = new Date(Date.now())
-	const startTime = chartTimeData[chartTime].getOffset(now)
-	const ticks = timeTicks(startTime, now, chartTimeData[chartTime].ticks ?? 12).map((date) => date.getTime())
-	const data = {
-		ticks,
-		domain: [chartTimeData[chartTime].getOffset(now).getTime(), now.getTime()],
-	}
-	cache.set("td", { time: now.getTime(), data, chartTime })
-	return data
-}
 
 /** Append new records onto prev with gap detection. Converts string `created` values to ms timestamps in place.
  * Pass `maxLen` to cap the result length in one copy instead of slicing again after the call. */
