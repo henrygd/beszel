@@ -12,13 +12,15 @@ type Config struct {
 
 // Result holds aggregated probe results for a single target.
 //
-// 0: avg latency in ms
+// 0: avg response in ms
 //
-// 1: min latency in ms
+// 1: average response over the last hour in ms
 //
-// 2: max latency in ms
+// 2: min response over the last hour in ms
 //
-// 3: packet loss percentage (0-100)
+// 3: max response over the last hour in ms
+//
+// 4: packet loss percentage (0-100)
 type Result []float64
 
 // Key returns the map key used for this probe config (e.g. "icmp:1.1.1.1", "tcp:host:443", "http:https://example.com").

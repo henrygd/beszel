@@ -1,7 +1,7 @@
 import { lazy } from "react"
 import { useIntersectionObserver } from "@/lib/use-intersection-observer"
 import { cn } from "@/lib/utils"
-import { LatencyChart, LossChart } from "./charts/probes-charts"
+import { ResponseChart, LossChart } from "./charts/probes-charts"
 import type { SystemData } from "./use-system-data"
 import { $chartTime } from "@/lib/stores"
 import { useStore } from "@nanostores/react"
@@ -63,7 +63,7 @@ function ProbesTable({ systemId, systemData }: { systemId: string; systemData: S
 			<NetworkProbesTable systemId={systemId} probes={probes} />
 			{!!chartData && !!probes.length && (
 				<div className="grid xl:grid-cols-2 gap-4">
-					<LatencyChart
+					<ResponseChart
 						probeStats={probeStats}
 						grid={grid}
 						probes={probes}

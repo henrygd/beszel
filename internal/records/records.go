@@ -507,11 +507,11 @@ func AverageContainerStatsSlice(records [][]container.Stats) []container.Stats {
 }
 
 // AverageProbeStats averages probe stats across multiple records.
-// For each probe key: avg of avgs, min of mins, max of maxes, avg of losses.
+// For each probe key: avg of average fields, min of mins, and max of maxes.
 func (rm *RecordManager) AverageProbeStats(db dbx.Builder, records RecordIds) map[string]probe.Result {
 	type probeValues struct {
-		sums  probe.Result
-		count float64
+		sums   probe.Result
+		counts []int
 	}
 
 	query := db.NewQuery("SELECT stats FROM network_probe_stats WHERE id = {:id}")
@@ -529,35 +529,52 @@ func (rm *RecordManager) AverageProbeStats(db dbx.Builder, records RecordIds) ma
 		for key, vals := range rawStats {
 			s, ok := sums[key]
 			if !ok {
-				s = &probeValues{sums: make(probe.Result, len(vals))}
+				s = &probeValues{sums: make(probe.Result, len(vals)), counts: make([]int, len(vals))}
 				sums[key] = s
+			}
+			if len(vals) > len(s.sums) {
+				expandedSums := make(probe.Result, len(vals))
+				copy(expandedSums, s.sums)
+				s.sums = expandedSums
+
+				expandedCounts := make([]int, len(vals))
+				copy(expandedCounts, s.counts)
+				s.counts = expandedCounts
 			}
 			for i := range vals {
 				switch i {
-				case 1: // min fields
-					if s.count == 0 || vals[i] < s.sums[i] {
+				case 2: // min fields
+					if s.counts[i] == 0 || vals[i] < s.sums[i] {
 						s.sums[i] = vals[i]
 					}
-				case 2: // max fields
-					if vals[i] > s.sums[i] {
+				case 3: // max fields
+					if s.counts[i] == 0 || vals[i] > s.sums[i] {
 						s.sums[i] = vals[i]
 					}
 				default: // average fields
 					s.sums[i] += vals[i]
 				}
+				s.counts[i]++
 			}
-			s.count++
 		}
 	}
 
 	// compute final averages
 	result := make(map[string]probe.Result, len(sums))
 	for key, s := range sums {
-		if s.count == 0 {
+		if len(s.counts) == 0 {
 			continue
 		}
-		s.sums[0] = twoDecimals(s.sums[0] / s.count) // avg latency
-		s.sums[3] = twoDecimals(s.sums[3] / s.count) // packet loss
+		for i := range s.sums {
+			switch i {
+			case 2, 3: // min and max fields should not be averaged
+				continue
+			default:
+				if s.counts[i] > 0 {
+					s.sums[i] = twoDecimals(s.sums[i] / float64(s.counts[i]))
+				}
+			}
+		}
 		result[key] = s.sums
 	}
 	return result

@@ -95,12 +95,12 @@ export function getProbeColumns(longestName = 0, longestTarget = 0): ColumnDef<N
 			cell: ({ getValue }) => <span className="ms-1.5 tabular-nums">{getValue() as number}s</span>,
 		},
 		{
-			id: "latency",
-			accessorFn: (record) => record.latency,
+			id: "response",
+			accessorFn: (record) => record.response,
 			invertSorting: true,
-			header: ({ column }) => <HeaderButton column={column} name={t`Latency`} Icon={ActivityIcon} />,
+			header: ({ column }) => <HeaderButton column={column} name={t`Response`} Icon={ActivityIcon} />,
 			cell: ({ row }) => {
-				const val = row.original.latency
+				const val = row.original.response
 				if (!val) {
 					return <span className="ms-1.5 text-muted-foreground">-</span>
 				}
@@ -125,8 +125,8 @@ export function getProbeColumns(longestName = 0, longestTarget = 0): ColumnDef<N
 			invertSorting: true,
 			header: ({ column }) => <HeaderButton column={column} name={t`Loss`} Icon={WifiOffIcon} />,
 			cell: ({ row }) => {
-				const { loss, latency } = row.original
-				if (loss === undefined || (!latency && !loss)) {
+				const { loss, response } = row.original
+				if (loss === undefined || (!response && !loss)) {
 					return <span className="ms-1.5 text-muted-foreground">-</span>
 				}
 				let color = "bg-green-500"

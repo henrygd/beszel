@@ -335,7 +335,7 @@ func updateNetworkProbesRecords(app core.App, data map[string]probe.Result, syst
 	if !realtimeActive {
 		db = app.DB()
 		nowString = time.Now().UTC().Format(types.DefaultDateLayout)
-		sql := fmt.Sprintf("UPDATE %s SET latency={:latency}, loss={:loss}, updated={:updated} WHERE id={:id}", collectionName)
+		sql := fmt.Sprintf("UPDATE %s SET resAvg={:resAvg}, resMin1h={:resMin1h}, resMax1h={:resMax1h}, resAvg1h={:resAvg1h}, loss={:loss}, updated={:updated} WHERE id={:id}", collectionName)
 		updateQuery = db.NewQuery(sql)
 	}
 
@@ -349,12 +349,12 @@ func updateNetworkProbesRecords(app core.App, data map[string]probe.Result, syst
 		record.Set("type", "1m")
 		err = app.SaveNoValidate(record)
 	default:
-		if dataJson, e := json.Marshal(data); e == nil {
+		if dataJSON, marshalErr := json.Marshal(data); marshalErr == nil {
 			sql := "INSERT INTO network_probe_stats (system, stats, type, created) VALUES ({:system}, {:stats}, {:type}, {:created})"
 			insertQuery := db.NewQuery(sql)
 			_, err = insertQuery.Bind(dbx.Params{
 				"system":  systemId,
-				"stats":   dataJson,
+				"stats":   dataJSON,
 				"type":    "1m",
 				"created": nowString,
 			}).Execute()
@@ -365,24 +365,29 @@ func updateNetworkProbesRecords(app core.App, data map[string]probe.Result, syst
 	}
 
 	// update network_probes records
-	for key := range data {
-		probe := data[key]
+	for key, values := range data {
 		id := MakeStableHashId(systemId, key)
 		switch realtimeActive {
 		case true:
 			var record *core.Record
 			record, err = app.FindRecordById(collectionName, id)
 			if err == nil {
-				record.Set("latency", probe[0])
-				record.Set("loss", probe[3])
+				record.Set("resAvg", probeMetric(values, 0))
+				record.Set("resAvg1h", probeMetric(values, 1))
+				record.Set("resMin1h", probeMetric(values, 2))
+				record.Set("resMax1h", probeMetric(values, 3))
+				record.Set("loss", probeMetric(values, 4))
 				err = app.SaveNoValidate(record)
 			}
 		default:
 			_, err = updateQuery.Bind(dbx.Params{
-				"id":      id,
-				"latency": probe[0],
-				"loss":    probe[3],
-				"updated": nowString,
+				"id":       id,
+				"resAvg":   probeMetric(values, 0),
+				"resAvg1h": probeMetric(values, 1),
+				"resMin1h": probeMetric(values, 2),
+				"resMax1h": probeMetric(values, 3),
+				"loss":     probeMetric(values, 4),
+				"updated":  nowString,
 			}).Execute()
 		}
 		if err != nil {
@@ -391,6 +396,13 @@ func updateNetworkProbesRecords(app core.App, data map[string]probe.Result, syst
 	}
 
 	return nil
+}
+
+func probeMetric(values probe.Result, index int) float64 {
+	if index < len(values) {
+		return values[index]
+	}
+	return 0
 }
 
 // createContainerRecords creates container records

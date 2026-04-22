@@ -78,7 +78,7 @@ export function AddProbeDialog({ systemId }: { systemId?: string }) {
 						<Trans>Add {{ foo: t`Network Probe` }}</Trans>
 					</DialogTitle>
 					<DialogDescription>
-						<Trans>Configure latency monitoring from this agent.</Trans>
+						<Trans>Configure response monitoring from this agent.</Trans>
 					</DialogDescription>
 				</DialogHeader>
 				<form onSubmit={handleSubmit} className="grid gap-4 tabular-nums">

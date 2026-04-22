@@ -552,7 +552,10 @@ export interface NetworkProbeRecord {
 	target: string
 	protocol: "icmp" | "tcp" | "http"
 	port: number
-	latency: number
+	response: number
+	resMin1h: number
+	resMax1h: number
+	resAvg1h: number
 	loss: number
 	interval: number
 	enabled: boolean
@@ -560,13 +563,15 @@ export interface NetworkProbeRecord {
 }
 
 /**
- * 0: avg latency in ms
+ * 0: avg 1 minute response in ms
  *
- * 1: min latency in ms
+ * 1: avg response over 1 hour in ms
  *
- * 2: max latency in ms
+ * 2: min response over the last hour in ms
  *
- * 3: packet loss in %
+ * 3: max response over the last hour in ms
+ *
+ * 4: packet loss in %
  */
 type ProbeResult = number[]
 

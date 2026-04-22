@@ -44,7 +44,7 @@ function ProbeChart({
 	const filter = useStore($filter)
 
 	const { dataPoints, visibleKeys } = useMemo(() => {
-		const sortedProbes = [...probes].sort((a, b) => b.latency - a.latency)
+		const sortedProbes = [...probes].sort((a, b) => b.response - a.response)
 		const count = sortedProbes.length
 		const points: DataPoint<NetworkProbeStatsRecord>[] = []
 		const visibleKeys: string[] = []
@@ -103,7 +103,7 @@ function ProbeChart({
 	)
 }
 
-export function LatencyChart({ probeStats, grid, probes, chartData, empty }: ProbeChartProps) {
+export function ResponseChart({ probeStats, grid, probes, chartData, empty }: ProbeChartProps) {
 	const { t } = useLingui()
 
 	return (
@@ -114,7 +114,7 @@ export function LatencyChart({ probeStats, grid, probes, chartData, empty }: Pro
 			chartData={chartData}
 			empty={empty}
 			valueIndex={0}
-			title={t`Latency`}
+			title={t`Response`}
 			description={t`Average round-trip time (ms)`}
 			tickFormatter={(value) => `${toFixedFloat(value, value >= 10 ? 0 : 1)} ms`}
 			contentFormatter={({ value }) => {

@@ -71,11 +71,11 @@ var (
 	}
 )
 
-// probeICMP sends an ICMP echo request and measures round-trip latency.
+// probeICMP sends an ICMP echo request and measures round-trip response.
 // Supports both IPv4 and IPv6 targets. The ICMP method (raw socket,
 // unprivileged datagram, or exec fallback) is detected once per address
 // family and cached for subsequent probes.
-// Returns latency in milliseconds, or -1 on failure.
+// Returns response in milliseconds, or -1 on failure.
 func probeICMP(target string) float64 {
 	family, ip := resolveICMPTarget(target)
 	if family == nil {

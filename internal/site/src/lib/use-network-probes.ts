@@ -31,7 +31,8 @@ function appendCacheValue(
 	}
 }
 
-const NETWORK_PROBE_FIELDS = "id,name,system,target,protocol,port,interval,latency,loss,enabled,updated"
+const NETWORK_PROBE_FIELDS =
+	"id,name,system,target,protocol,port,interval,response,resMin1h,resMax1h,resAvg1h,loss,enabled,updated"
 
 interface UseNetworkProbesProps {
 	systemId?: string
@@ -253,7 +254,7 @@ function probesToStats(probes: NetworkProbeRecord[]): NetworkProbeStatsRecord["s
 	const stats: NetworkProbeStatsRecord["stats"] = {}
 	for (const probe of probes) {
 		const key = probeKey(probe)
-		stats[key] = [probe.latency, 0, 0, probe.loss]
+		stats[key] = [probe.response, 0, 0, probe.loss]
 	}
 	return stats
 }
