@@ -1,10 +1,9 @@
-import type { Column, ColumnDef } from "@tanstack/react-table"
+import type { CellContext, Column, ColumnDef } from "@tanstack/react-table"
 import { Button } from "@/components/ui/button"
 import { cn, decimalString, hourWithSeconds } from "@/lib/utils"
 import {
 	GlobeIcon,
 	TimerIcon,
-	ActivityIcon,
 	WifiOffIcon,
 	Trash2Icon,
 	ArrowLeftRightIcon,
@@ -12,6 +11,7 @@ import {
 	ServerIcon,
 	ClockIcon,
 	NetworkIcon,
+	RefreshCwIcon,
 } from "lucide-react"
 import { t } from "@lingui/core/macro"
 import type { NetworkProbeRecord } from "@/types"
@@ -61,7 +61,7 @@ export function getProbeColumns(longestName = 0, longestTarget = 0): ColumnDef<N
 			header: ({ column }) => <HeaderButton column={column} name={t`System`} Icon={ServerIcon} />,
 			cell: ({ getValue }) => {
 				const allSystems = useStore($allSystemsById)
-				return <span className="ms-1.5 xl:w-34 block truncate">{allSystems[getValue() as string]?.name ?? ""}</span>
+				return <span className="ms-1.5 xl:w-20 block truncate">{allSystems[getValue() as string]?.name ?? ""}</span>
 			},
 		},
 		{
@@ -91,33 +91,36 @@ export function getProbeColumns(longestName = 0, longestTarget = 0): ColumnDef<N
 		{
 			id: "interval",
 			accessorFn: (record) => record.interval,
-			header: ({ column }) => <HeaderButton column={column} name={t`Interval`} Icon={TimerIcon} />,
+			header: ({ column }) => <HeaderButton column={column} name={t`Interval`} Icon={RefreshCwIcon} />,
 			cell: ({ getValue }) => <span className="ms-1.5 tabular-nums">{getValue() as number}s</span>,
 		},
 		{
-			id: "response",
-			accessorFn: (record) => record.response,
+			id: "res",
+			accessorFn: (record) => record.res,
 			invertSorting: true,
-			header: ({ column }) => <HeaderButton column={column} name={t`Response`} Icon={ActivityIcon} />,
-			cell: ({ row }) => {
-				const val = row.original.response
-				if (!val) {
-					return <span className="ms-1.5 text-muted-foreground">-</span>
-				}
-				let color = "bg-green-500"
-				if (val > 200) {
-					color = "bg-yellow-500"
-				}
-				if (val > 2000) {
-					color = "bg-red-500"
-				}
-				return (
-					<span className="ms-1.5 tabular-nums flex gap-2 items-center">
-						<span className={cn("shrink-0 size-2 rounded-full", color)} />
-						{decimalString(val, val < 100 ? 2 : 1).toLocaleString()} ms
-					</span>
-				)
-			},
+			header: ({ column }) => <HeaderButton column={column} name={t`Response`} Icon={TimerIcon} />,
+			cell: responseTimeCell,
+		},
+		{
+			id: "res1h",
+			accessorFn: (record) => record.resAvg1h,
+			invertSorting: true,
+			header: ({ column }) => <HeaderButton column={column} name={t`Avg 1h`} Icon={TimerIcon} />,
+			cell: responseTimeCell,
+		},
+		{
+			id: "max1h",
+			accessorFn: (record) => record.resMax1h,
+			invertSorting: true,
+			header: ({ column }) => <HeaderButton column={column} name={t`Max 1h`} Icon={TimerIcon} />,
+			cell: responseTimeCell,
+		},
+		{
+			id: "min1h",
+			accessorFn: (record) => record.resMin1h,
+			invertSorting: true,
+			header: ({ column }) => <HeaderButton column={column} name={t`Min 1h`} Icon={TimerIcon} />,
+			cell: responseTimeCell,
 		},
 		{
 			id: "loss",
@@ -125,8 +128,8 @@ export function getProbeColumns(longestName = 0, longestTarget = 0): ColumnDef<N
 			invertSorting: true,
 			header: ({ column }) => <HeaderButton column={column} name={t`Loss`} Icon={WifiOffIcon} />,
 			cell: ({ row }) => {
-				const { loss, response } = row.original
-				if (loss === undefined || (!response && !loss)) {
+				const { loss, res } = row.original
+				if (loss === undefined || (!res && !loss)) {
 					return <span className="ms-1.5 text-muted-foreground">-</span>
 				}
 				let color = "bg-green-500"
@@ -187,6 +190,25 @@ export function getProbeColumns(longestName = 0, longestTarget = 0): ColumnDef<N
 			),
 		},
 	]
+}
+function responseTimeCell(cell: CellContext<NetworkProbeRecord, unknown>) {
+	const val = cell.getValue() as number | undefined
+	if (!val) {
+		return <span className="ms-1.5 text-muted-foreground">-</span>
+	}
+	let color = "bg-green-500"
+	if (val > 200) {
+		color = "bg-yellow-500"
+	}
+	if (val > 2000) {
+		color = "bg-red-500"
+	}
+	return (
+		<span className="ms-1.5 tabular-nums flex gap-2 items-center">
+			<span className={cn("shrink-0 size-2 rounded-full", color)} />
+			{decimalString(val, val < 100 ? 2 : 1).toLocaleString()}ms
+		</span>
+	)
 }
 
 function HeaderButton({

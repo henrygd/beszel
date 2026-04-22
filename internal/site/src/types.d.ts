@@ -552,7 +552,7 @@ export interface NetworkProbeRecord {
 	target: string
 	protocol: "icmp" | "tcp" | "http"
 	port: number
-	response: number
+	res: number
 	resMin1h: number
 	resMax1h: number
 	resAvg1h: number

@@ -44,7 +44,7 @@ function ProbeChart({
 	const filter = useStore($filter)
 
 	const { dataPoints, visibleKeys } = useMemo(() => {
-		const sortedProbes = [...probes].sort((a, b) => b.response - a.response)
+		const sortedProbes = [...probes].sort((a, b) => b.resAvg1h - a.resAvg1h)
 		const count = sortedProbes.length
 		const points: DataPoint<NetworkProbeStatsRecord>[] = []
 		const visibleKeys: string[] = []
@@ -115,7 +115,7 @@ export function ResponseChart({ probeStats, grid, probes, chartData, empty }: Pr
 			empty={empty}
 			valueIndex={0}
 			title={t`Response`}
-			description={t`Average round-trip time (ms)`}
+			description={t`Average response time (ms)`}
 			tickFormatter={(value) => `${toFixedFloat(value, value >= 10 ? 0 : 1)} ms`}
 			contentFormatter={({ value }) => {
 				if (typeof value !== "number") {
@@ -137,7 +137,7 @@ export function LossChart({ probeStats, grid, probes, chartData, empty }: ProbeC
 			probes={probes}
 			chartData={chartData}
 			empty={empty}
-			valueIndex={3}
+			valueIndex={4}
 			title={t`Loss`}
 			description={t`Packet loss (%)`}
 			domain={[0, 100]}

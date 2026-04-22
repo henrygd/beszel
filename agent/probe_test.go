@@ -85,5 +85,5 @@ func TestProbeManagerGetResultsIncludesHourResponseRange(t *testing.T) {
 	assert.Equal(t, 25.0, result[1])
 	assert.Equal(t, 10.0, result[2])
 	assert.Equal(t, 40.0, result[3])
-	assert.Equal(t, 0.0, result[4])
+	assert.Equal(t, 20.0, result[4])
 }

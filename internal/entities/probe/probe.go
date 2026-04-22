@@ -20,7 +20,7 @@ type Config struct {
 //
 // 3: max response over the last hour in ms
 //
-// 4: packet loss percentage (0-100)
+// 4: packet loss percentage over the last hour (0-100)
 type Result []float64
 
 // Key returns the map key used for this probe config (e.g. "icmp:1.1.1.1", "tcp:host:443", "http:https://example.com").
