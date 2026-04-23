@@ -157,6 +157,7 @@ export function getProbeColumns(longestName = 0, longestTarget = 0): ColumnDef<N
 		{
 			id: "actions",
 			enableSorting: false,
+			enableHiding: false,
 			header: () => null,
 			size: 40,
 			cell: ({ row }) => (
