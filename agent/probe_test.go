@@ -117,8 +117,8 @@ func TestProbeConfigResultKeyUsesSyncedID(t *testing.T) {
 }
 
 func TestProbeManagerSyncProbesSkipsConfigsWithoutStableID(t *testing.T) {
-	validCfg := probe.Config{ID: "probe-1", Target: "https://example.com", Protocol: "http", Interval: 10}
-	invalidCfg := probe.Config{Target: "1.1.1.1", Protocol: "icmp", Interval: 10}
+	validCfg := probe.Config{ID: "probe-1", Target: "ignored", Protocol: "noop", Interval: 10}
+	invalidCfg := probe.Config{Target: "ignored", Protocol: "noop", Interval: 10}
 
 	pm := newProbeManager()
 	pm.SyncProbes([]probe.Config{validCfg, invalidCfg})
@@ -131,8 +131,8 @@ func TestProbeManagerSyncProbesSkipsConfigsWithoutStableID(t *testing.T) {
 }
 
 func TestProbeManagerSyncProbesStopsRemovedTasksButKeepsExisting(t *testing.T) {
-	keepCfg := probe.Config{ID: "probe-1", Target: "https://example.com", Protocol: "http", Interval: 10}
-	removeCfg := probe.Config{ID: "probe-2", Target: "1.1.1.1", Protocol: "icmp", Interval: 10}
+	keepCfg := probe.Config{ID: "probe-1", Target: "ignored", Protocol: "noop", Interval: 10}
+	removeCfg := probe.Config{ID: "probe-2", Target: "ignored", Protocol: "noop", Interval: 10}
 
 	keptTask := &probeTask{config: keepCfg, cancel: make(chan struct{})}
 	removedTask := &probeTask{config: removeCfg, cancel: make(chan struct{})}
@@ -159,6 +159,83 @@ func TestProbeManagerSyncProbesStopsRemovedTasksButKeepsExisting(t *testing.T) {
 	case <-keptTask.cancel:
 		t.Fatal("expected existing probe task to remain active")
 	default:
+	}
+}
+
+func TestProbeManagerSyncProbesRestartsChangedConfig(t *testing.T) {
+	originalCfg := probe.Config{ID: "probe-1", Target: "ignored-a", Protocol: "noop", Interval: 10}
+	updatedCfg := probe.Config{ID: "probe-1", Target: "ignored-b", Protocol: "noop", Interval: 10}
+	originalTask := &probeTask{config: originalCfg, cancel: make(chan struct{})}
+	pm := &ProbeManager{
+		probes: map[string]*probeTask{
+			originalCfg.ID: originalTask,
+		},
+	}
+
+	pm.SyncProbes([]probe.Config{updatedCfg})
+	defer pm.Stop()
+
+	restartedTask := pm.probes[updatedCfg.ID]
+	assert.NotSame(t, originalTask, restartedTask)
+	assert.Equal(t, updatedCfg, restartedTask.config)
+
+	select {
+	case <-originalTask.cancel:
+	default:
+		t.Fatal("expected changed probe task to be cancelled")
+	}
+}
+
+func TestProbeManagerApplySyncUpsertRunsImmediatelyAndReturnsResult(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusNoContent)
+	}))
+	defer server.Close()
+
+	pm := &ProbeManager{
+		probes:     make(map[string]*probeTask),
+		httpClient: server.Client(),
+	}
+
+	resp, err := pm.ApplySync(probe.SyncRequest{
+		Action: probe.SyncActionUpsert,
+		Config: probe.Config{ID: "probe-1", Target: server.URL, Protocol: "http", Interval: 10},
+		RunNow: true,
+	})
+	defer pm.Stop()
+
+	require.NoError(t, err)
+	require.Len(t, resp.Result, 5)
+	assert.GreaterOrEqual(t, resp.Result[0], 0.0)
+	assert.Equal(t, 0.0, resp.Result[4])
+
+	task := pm.probes["probe-1"]
+	require.NotNil(t, task)
+	task.mu.Lock()
+	defer task.mu.Unlock()
+	require.Len(t, task.samples, 1)
+}
+
+func TestProbeManagerApplySyncDeleteRemovesTask(t *testing.T) {
+	config := probe.Config{ID: "probe-1", Target: "1.1.1.1", Protocol: "icmp", Interval: 10}
+	task := &probeTask{config: config, cancel: make(chan struct{})}
+	pm := &ProbeManager{
+		probes: map[string]*probeTask{config.ID: task},
+	}
+
+	_, err := pm.ApplySync(probe.SyncRequest{
+		Action: probe.SyncActionDelete,
+		Config: probe.Config{ID: config.ID},
+	})
+
+	require.NoError(t, err)
+	_, exists := pm.probes[config.ID]
+	assert.False(t, exists)
+
+	select {
+	case <-task.cancel:
+	default:
+		t.Fatal("expected deleted probe task to be cancelled")
 	}
 }
 

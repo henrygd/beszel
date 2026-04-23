@@ -213,11 +213,14 @@ func (h *GetSystemdInfoHandler) Handle(hctx *HandlerContext) error {
 type SyncNetworkProbesHandler struct{}
 
 func (h *SyncNetworkProbesHandler) Handle(hctx *HandlerContext) error {
-	var configs []probe.Config
-	if err := cbor.Unmarshal(hctx.Request.Data, &configs); err != nil {
+	var req probe.SyncRequest
+	if err := cbor.Unmarshal(hctx.Request.Data, &req); err != nil {
 		return err
 	}
-	hctx.Agent.probeManager.SyncProbes(configs)
-	slog.Info("network probes synced", "count", len(configs))
-	return hctx.SendResponse("ok", hctx.RequestID)
+	resp, err := hctx.Agent.probeManager.ApplySync(req)
+	if err != nil {
+		return err
+	}
+	slog.Info("network probes synced", "action", req.Action)
+	return hctx.SendResponse(resp, hctx.RequestID)
 }

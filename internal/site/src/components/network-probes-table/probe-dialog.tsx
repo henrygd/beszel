@@ -66,8 +66,10 @@ export function AddProbeDialog({ systemId }: { systemId?: string }) {
 				interval: probeInterval,
 				enabled: true,
 			})
-			if (name && name !== target) {
+			if (name) {
 				payload.name = name
+			} else if (targetName !== target) {
+				payload.name = targetName
 			}
 			await pb.collection("network_probes").create(payload)
 			resetForm()

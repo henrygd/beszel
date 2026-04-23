@@ -15,48 +15,106 @@ func generateProbeID(systemId string, config probe.Config) string {
 	return systems.MakeStableHashId(systemId, config.Protocol, config.Target, portStr, intervalStr)
 }
 
-func bindNetworkProbesEvents(h *Hub) {
+// bindNetworkProbesEvents keeps probe records and agent probe state in sync.
+func bindNetworkProbesEvents(hub *Hub) {
 	// on create, make sure the id is set to a stable hash
-	h.OnRecordCreate("network_probes").BindFunc(func(e *core.RecordEvent) error {
+	hub.OnRecordCreate("network_probes").BindFunc(func(e *core.RecordEvent) error {
 		systemID := e.Record.GetString("system")
-		config := &probe.Config{
-			Target:   e.Record.GetString("target"),
-			Protocol: e.Record.GetString("protocol"),
-			Port:     uint16(e.Record.GetInt("port")),
-			Interval: uint16(e.Record.GetInt("interval")),
-		}
+		config := probeConfigFromRecord(e.Record)
 		id := generateProbeID(systemID, *config)
 		e.Record.Set("id", id)
 		return e.Next()
 	})
 
-	// sync probe to agent on creation
-	h.OnRecordAfterCreateSuccess("network_probes").BindFunc(func(e *core.RecordEvent) error {
-		systemID := e.Record.GetString("system")
-		h.syncProbesToAgent(systemID)
-		return e.Next()
+	// sync probe to agent on creation and persist the first result immediately when available
+	hub.OnRecordCreateRequest("network_probes").BindFunc(func(e *core.RecordRequestEvent) error {
+		err := e.Next()
+		if err != nil {
+			return err
+		}
+		if !e.Record.GetBool("enabled") {
+			return nil
+		}
+		result, err := hub.upsertNetworkProbe(e.Record, true)
+		if err != nil {
+			hub.Logger().Warn("failed to sync probe to agent", "system", e.Record.GetString("system"), "probe", e.Record.Id, "err", err)
+			return nil
+		}
+		if result == nil {
+			return nil
+		}
+		setProbeResultFields(e.Record, *result)
+		if err := e.App.SaveNoValidate(e.Record); err != nil {
+			hub.Logger().Warn("failed to save initial probe result", "system", e.Record.GetString("system"), "probe", e.Record.Id, "err", err)
+		}
+		return nil
 	})
+
+	hub.OnRecordUpdateRequest("network_probes").BindFunc(func(e *core.RecordRequestEvent) error {
+		err := e.Next()
+		if err != nil {
+			return err
+		}
+		if e.Record.GetBool("enabled") {
+			_, err = hub.upsertNetworkProbe(e.Record, false)
+		} else {
+			err = hub.deleteNetworkProbe(e.Record)
+		}
+		if err != nil {
+			hub.Logger().Warn("failed to sync updated probe to agent", "system", e.Record.GetString("system"), "probe", e.Record.Id, "err", err)
+		}
+		return nil
+	})
+
 	// sync probe to agent on delete
-	h.OnRecordAfterDeleteSuccess("network_probes").BindFunc(func(e *core.RecordEvent) error {
-		systemID := e.Record.GetString("system")
-		h.syncProbesToAgent(systemID)
-		return e.Next()
+	hub.OnRecordDeleteRequest("network_probes").BindFunc(func(e *core.RecordRequestEvent) error {
+		err := e.Next()
+		if err != nil {
+			return err
+		}
+		if err := hub.deleteNetworkProbe(e.Record); err != nil {
+			hub.Logger().Warn("failed to delete probe on agent", "system", e.Record.GetString("system"), "probe", e.Record.Id, "err", err)
+		}
+		return nil
 	})
-	// TODO: if enabled changes, sync to agent
 }
 
-// syncProbesToAgent fetches enabled probes for a system and sends them to the agent.
-func (h *Hub) syncProbesToAgent(systemID string) {
+// probeConfigFromRecord builds a probe config from a network_probes record.
+func probeConfigFromRecord(record *core.Record) *probe.Config {
+	return &probe.Config{
+		ID:       record.Id,
+		Target:   record.GetString("target"),
+		Protocol: record.GetString("protocol"),
+		Port:     uint16(record.GetInt("port")),
+		Interval: uint16(record.GetInt("interval")),
+	}
+}
+
+// setProbeResultFields stores the latest probe result values on the record.
+func setProbeResultFields(record *core.Record, result probe.Result) {
+	record.Set("res", result.Get(0))
+	record.Set("resAvg1h", result.Get(1))
+	record.Set("resMin1h", result.Get(2))
+	record.Set("resMax1h", result.Get(3))
+	record.Set("loss1h", result.Get(4))
+}
+
+// upsertNetworkProbe applies the record's probe config to the target system.
+func (h *Hub) upsertNetworkProbe(record *core.Record, runNow bool) (*probe.Result, error) {
+	systemID := record.GetString("system")
 	system, err := h.sm.GetSystem(systemID)
 	if err != nil {
-		return
+		return nil, err
 	}
+	return system.UpsertNetworkProbe(*probeConfigFromRecord(record), runNow)
+}
 
-	configs := h.sm.GetProbeConfigsForSystem(systemID)
-
-	go func() {
-		if err := system.SyncNetworkProbes(configs); err != nil {
-			h.Logger().Warn("failed to sync probes to agent", "system", systemID, "err", err)
-		}
-	}()
+// deleteNetworkProbe removes the record's probe from the target system.
+func (h *Hub) deleteNetworkProbe(record *core.Record) error {
+	systemID := record.GetString("system")
+	system, err := h.sm.GetSystem(systemID)
+	if err != nil {
+		return err
+	}
+	return system.DeleteNetworkProbe(record.Id)
 }

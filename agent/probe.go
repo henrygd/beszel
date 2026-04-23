@@ -1,6 +1,7 @@
 package agent
 
 import (
+	"errors"
 	"fmt"
 	"math"
 	"net"
@@ -74,6 +75,14 @@ func newProbeManager() *ProbeManager {
 	return &ProbeManager{
 		probes:     make(map[string]*probeTask),
 		httpClient: &http.Client{Timeout: 10 * time.Second},
+	}
+}
+
+func newProbeTask(config probe.Config) *probeTask {
+	return &probeTask{
+		config:  config,
+		cancel:  make(chan struct{}),
+		samples: make([]probeSample, 0, 64),
 	}
 }
 
@@ -175,18 +184,94 @@ func (pm *ProbeManager) SyncProbes(configs []probe.Config) {
 		}
 	}
 
-	// Start new probes (skip existing ones with same key)
+	// Start new probes and restart tasks whose config changed.
 	for key, cfg := range newKeys {
-		if _, exists := pm.probes[key]; exists {
+		task, exists := pm.probes[key]
+		if exists && task.config == cfg {
 			continue
 		}
-		task := &probeTask{
-			config:  cfg,
-			cancel:  make(chan struct{}),
-			samples: make([]probeSample, 0, 64),
+		if exists {
+			close(task.cancel)
 		}
+		task = newProbeTask(cfg)
 		pm.probes[key] = task
-		go pm.runProbe(task)
+		go pm.runProbe(task, true)
+	}
+}
+
+// ApplySync applies a full or incremental probe sync request.
+func (pm *ProbeManager) ApplySync(req probe.SyncRequest) (probe.SyncResponse, error) {
+	switch req.Action {
+	case probe.SyncActionReplace:
+		pm.SyncProbes(req.Configs)
+		return probe.SyncResponse{}, nil
+	case probe.SyncActionUpsert:
+		result, err := pm.UpsertProbe(req.Config, req.RunNow)
+		if err != nil {
+			return probe.SyncResponse{}, err
+		}
+		if result == nil {
+			return probe.SyncResponse{}, nil
+		}
+		return probe.SyncResponse{Result: *result}, nil
+	case probe.SyncActionDelete:
+		if req.Config.ID == "" {
+			return probe.SyncResponse{}, errors.New("missing probe ID for delete action")
+		}
+		pm.DeleteProbe(req.Config.ID)
+		return probe.SyncResponse{}, nil
+	default:
+		return probe.SyncResponse{}, fmt.Errorf("unknown probe sync action: %d", req.Action)
+	}
+}
+
+// UpsertProbe creates or replaces a single probe task.
+func (pm *ProbeManager) UpsertProbe(config probe.Config, runNow bool) (*probe.Result, error) {
+	if config.ID == "" {
+		return nil, errors.New("missing probe ID")
+	}
+
+	pm.mu.Lock()
+	task, exists := pm.probes[config.ID]
+	startTask := false
+	if exists && task.config == config {
+		pm.mu.Unlock()
+		if !runNow {
+			return nil, nil
+		}
+		return pm.runProbeNow(task), nil
+	}
+	if exists {
+		close(task.cancel)
+	}
+	task = newProbeTask(config)
+	pm.probes[config.ID] = task
+	startTask = true
+	pm.mu.Unlock()
+
+	if runNow {
+		result := pm.runProbeNow(task)
+		if startTask {
+			go pm.runProbe(task, false)
+		}
+		return result, nil
+	}
+	if startTask {
+		go pm.runProbe(task, true)
+	}
+	return nil, nil
+}
+
+// DeleteProbe stops and removes a single probe task.
+func (pm *ProbeManager) DeleteProbe(id string) {
+	if id == "" {
+		return
+	}
+	pm.mu.Lock()
+	defer pm.mu.Unlock()
+	if task, exists := pm.probes[id]; exists {
+		close(task.cancel)
+		delete(pm.probes, id)
 	}
 }
 
@@ -201,27 +286,11 @@ func (pm *ProbeManager) GetResults(durationMs uint16) map[string]probe.Result {
 
 	for _, task := range pm.probes {
 		task.mu.Lock()
-		agg := task.aggregateLocked(duration, now)
-		hourAgg := task.aggregateLocked(time.Hour, now)
+		result, ok := task.resultLocked(duration, now)
 		task.mu.Unlock()
 
-		if !agg.hasData() {
+		if !ok {
 			continue
-		}
-
-		result := agg.result()
-		hourAvg := hourAgg.avgResponse()
-		hourLoss := hourAgg.lossPercentage()
-		if hourAgg.successCount > 0 {
-			result = probe.Result{
-				result[0],
-				hourAvg,
-				math.Round(hourAgg.minMs*100) / 100,
-				math.Round(hourAgg.maxMs*100) / 100,
-				hourLoss,
-			}
-		} else {
-			result = probe.Result{result[0], hourAvg, 0, 0, hourLoss}
 		}
 		results[task.config.ID] = result
 	}
@@ -240,24 +309,37 @@ func (pm *ProbeManager) Stop() {
 }
 
 // runProbe executes a single probe task in a loop.
-func (pm *ProbeManager) runProbe(task *probeTask) {
+func (pm *ProbeManager) runProbe(task *probeTask, runImmediately bool) {
 	interval := time.Duration(task.config.Interval) * time.Second
 	if interval < time.Second {
 		interval = 10 * time.Second
 	}
-	ticker := time.Tick(interval)
+	ticker := time.NewTicker(interval)
+	defer ticker.Stop()
 
-	// Run immediately on start
-	pm.executeProbe(task)
+	if runImmediately {
+		pm.executeProbe(task)
+	}
 
 	for {
 		select {
 		case <-task.cancel:
 			return
-		case <-ticker:
+		case <-ticker.C:
 			pm.executeProbe(task)
 		}
 	}
+}
+
+func (pm *ProbeManager) runProbeNow(task *probeTask) *probe.Result {
+	pm.executeProbe(task)
+	task.mu.Lock()
+	defer task.mu.Unlock()
+	result, ok := task.resultLocked(time.Minute, time.Now())
+	if !ok {
+		return nil
+	}
+	return &result
 }
 
 // aggregateLocked collects probe data for the requested time window.
@@ -268,6 +350,28 @@ func (task *probeTask) aggregateLocked(duration time.Duration, now time.Time) pr
 		return aggregateSamplesSince(task.samples, cutoff)
 	}
 	return aggregateBucketsSince(task.buckets[:], cutoff, now)
+}
+
+func (task *probeTask) resultLocked(duration time.Duration, now time.Time) (probe.Result, bool) {
+	agg := task.aggregateLocked(duration, now)
+	hourAgg := task.aggregateLocked(time.Hour, now)
+	if !agg.hasData() {
+		return nil, false
+	}
+
+	result := agg.result()
+	hourAvg := hourAgg.avgResponse()
+	hourLoss := hourAgg.lossPercentage()
+	if hourAgg.successCount > 0 {
+		return probe.Result{
+			result[0],
+			hourAvg,
+			math.Round(hourAgg.minMs*100) / 100,
+			math.Round(hourAgg.maxMs*100) / 100,
+			hourLoss,
+		}, true
+	}
+	return probe.Result{result[0], hourAvg, 0, 0, hourLoss}, true
 }
 
 // aggregateSamplesSince aggregates raw samples newer than the cutoff.
@@ -374,6 +478,9 @@ func probeTCP(target string, port uint16) float64 {
 
 // probeHTTP measures HTTP GET request response. Returns -1 on failure.
 func probeHTTP(client *http.Client, url string) float64 {
+	if client == nil {
+		client = http.DefaultClient
+	}
 	start := time.Now()
 	resp, err := client.Get(url)
 	if err != nil {

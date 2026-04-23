@@ -371,21 +371,21 @@ func updateNetworkProbesRecords(app core.App, data map[string]probe.Result, syst
 			var record *core.Record
 			record, err = app.FindRecordById(collectionName, id)
 			if err == nil {
-				record.Set("res", probeMetric(values, 0))
-				record.Set("resAvg1h", probeMetric(values, 1))
-				record.Set("resMin1h", probeMetric(values, 2))
-				record.Set("resMax1h", probeMetric(values, 3))
-				record.Set("loss1h", probeMetric(values, 4))
+				record.Set("res", values.Get(0))
+				record.Set("resAvg1h", values.Get(1))
+				record.Set("resMin1h", values.Get(2))
+				record.Set("resMax1h", values.Get(3))
+				record.Set("loss1h", values.Get(4))
 				err = app.SaveNoValidate(record)
 			}
 		default:
 			_, err = updateQuery.Bind(dbx.Params{
 				"id":       id,
-				"res":      probeMetric(values, 0),
-				"resAvg1h": probeMetric(values, 1),
-				"resMin1h": probeMetric(values, 2),
-				"resMax1h": probeMetric(values, 3),
-				"loss1h":   probeMetric(values, 4),
+				"res":      values.Get(0),
+				"resAvg1h": values.Get(1),
+				"resMin1h": values.Get(2),
+				"resMax1h": values.Get(3),
+				"loss1h":   values.Get(4),
 				"updated":  nowString,
 			}).Execute()
 		}
@@ -395,13 +395,6 @@ func updateNetworkProbesRecords(app core.App, data map[string]probe.Result, syst
 	}
 
 	return nil
-}
-
-func probeMetric(values probe.Result, index int) float64 {
-	if index < len(values) {
-		return values[index]
-	}
-	return 0
 }
 
 // createContainerRecords creates container records
