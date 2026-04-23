@@ -1,10 +1,19 @@
 package hub
 
 import (
+	"strconv"
+
 	"github.com/henrygd/beszel/internal/entities/probe"
 	"github.com/henrygd/beszel/internal/hub/systems"
 	"github.com/pocketbase/pocketbase/core"
 )
+
+// generateProbeID creates a stable hash ID for a probe based on its configuration and the system it belongs to.
+func generateProbeID(systemId string, config probe.Config) string {
+	intervalStr := strconv.FormatUint(uint64(config.Interval), 10)
+	portStr := strconv.FormatUint(uint64(config.Port), 10)
+	return systems.MakeStableHashId(systemId, config.Protocol, config.Target, portStr, intervalStr)
+}
 
 func bindNetworkProbesEvents(h *Hub) {
 	// on create, make sure the id is set to a stable hash
@@ -16,8 +25,7 @@ func bindNetworkProbesEvents(h *Hub) {
 			Port:     uint16(e.Record.GetInt("port")),
 			Interval: uint16(e.Record.GetInt("interval")),
 		}
-		key := config.Key()
-		id := systems.MakeStableHashId(systemID, key)
+		id := generateProbeID(systemID, *config)
 		e.Record.Set("id", id)
 		return e.Next()
 	})

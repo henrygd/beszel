@@ -335,7 +335,7 @@ func updateNetworkProbesRecords(app core.App, data map[string]probe.Result, syst
 	if !realtimeActive {
 		db = app.DB()
 		nowString = time.Now().UTC().Format(types.DefaultDateLayout)
-		sql := fmt.Sprintf("UPDATE %s SET resAvg={:resAvg}, resMin1h={:resMin1h}, resMax1h={:resMax1h}, resAvg1h={:resAvg1h}, loss1h={:loss1h}, updated={:updated} WHERE id={:id}", collectionName)
+		sql := fmt.Sprintf("UPDATE %s SET resAvg={:res}, resMin1h={:resMin1h}, resMax1h={:resMax1h}, resAvg1h={:resAvg1h}, loss1h={:loss1h}, updated={:updated} WHERE id={:id}", collectionName)
 		updateQuery = db.NewQuery(sql)
 	}
 
@@ -365,14 +365,13 @@ func updateNetworkProbesRecords(app core.App, data map[string]probe.Result, syst
 	}
 
 	// update network_probes records
-	for key, values := range data {
-		id := MakeStableHashId(systemId, key)
+	for id, values := range data {
 		switch realtimeActive {
 		case true:
 			var record *core.Record
 			record, err = app.FindRecordById(collectionName, id)
 			if err == nil {
-				record.Set("resAvg", probeMetric(values, 0))
+				record.Set("res", probeMetric(values, 0))
 				record.Set("resAvg1h", probeMetric(values, 1))
 				record.Set("resMin1h", probeMetric(values, 2))
 				record.Set("resMax1h", probeMetric(values, 3))
@@ -382,7 +381,7 @@ func updateNetworkProbesRecords(app core.App, data map[string]probe.Result, syst
 		default:
 			_, err = updateQuery.Bind(dbx.Params{
 				"id":       id,
-				"resAvg":   probeMetric(values, 0),
+				"res":      probeMetric(values, 0),
 				"resAvg1h": probeMetric(values, 1),
 				"resMin1h": probeMetric(values, 2),
 				"resMax1h": probeMetric(values, 3),
@@ -391,7 +390,7 @@ func updateNetworkProbesRecords(app core.App, data map[string]probe.Result, syst
 			}).Execute()
 		}
 		if err != nil {
-			app.Logger().Warn("Failed to update probe", "system", systemId, "probe", key, "err", err)
+			app.Logger().Warn("Failed to update probe", "system", systemId, "probe", id, "err", err)
 		}
 	}
 

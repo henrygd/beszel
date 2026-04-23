@@ -124,22 +124,22 @@ export function getProbeColumns(longestName = 0, longestTarget = 0): ColumnDef<N
 		},
 		{
 			id: "loss",
-			accessorFn: (record) => record.loss,
+			accessorFn: (record) => record.loss1h,
 			invertSorting: true,
-			header: ({ column }) => <HeaderButton column={column} name={t`Loss`} Icon={WifiOffIcon} />,
+			header: ({ column }) => <HeaderButton column={column} name={t`Loss 1h`} Icon={WifiOffIcon} />,
 			cell: ({ row }) => {
-				const { loss, res } = row.original
-				if (loss === undefined || (!res && !loss)) {
+				const { loss1h, res } = row.original
+				if (loss1h === undefined || (!res && !loss1h)) {
 					return <span className="ms-1.5 text-muted-foreground">-</span>
 				}
 				let color = "bg-green-500"
-				if (loss) {
-					color = loss > 20 ? "bg-red-500" : "bg-yellow-500"
+				if (loss1h) {
+					color = loss1h > 20 ? "bg-red-500" : "bg-yellow-500"
 				}
 				return (
 					<span className="ms-1.5 tabular-nums flex gap-2 items-center">
 						<span className={cn("shrink-0 size-2 rounded-full", color)} />
-						{loss}%
+						{loss1h}%
 					</span>
 				)
 			},
@@ -232,7 +232,6 @@ function HeaderButton({
 		>
 			{Icon && <Icon className="size-4" />}
 			{name}
-			{/* <ArrowUpDownIcon className="size-4" /> */}
 		</Button>
 	)
 }

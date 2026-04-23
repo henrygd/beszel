@@ -72,7 +72,7 @@ func TestProbeTaskAddSampleLockedTrimsRawSamplesButKeepsBucketHistory(t *testing
 
 func TestProbeManagerGetResultsIncludesHourResponseRange(t *testing.T) {
 	now := time.Now().UTC()
-	task := &probeTask{}
+	task := &probeTask{config: probe.Config{ID: "probe-1"}}
 	task.addSampleLocked(probeSample{responseMs: 10, timestamp: now.Add(-30 * time.Minute)})
 	task.addSampleLocked(probeSample{responseMs: 20, timestamp: now.Add(-9 * time.Minute)})
 	task.addSampleLocked(probeSample{responseMs: 40, timestamp: now.Add(-5 * time.Minute)})
@@ -82,7 +82,7 @@ func TestProbeManagerGetResultsIncludesHourResponseRange(t *testing.T) {
 	pm := &ProbeManager{probes: map[string]*probeTask{"icmp:example.com": task}}
 
 	results := pm.GetResults(uint16(time.Minute / time.Millisecond))
-	result, ok := results["icmp:example.com"]
+	result, ok := results["probe-1"]
 	require.True(t, ok)
 	require.Len(t, result, 5)
 	assert.Equal(t, 30.0, result[0])
@@ -94,14 +94,14 @@ func TestProbeManagerGetResultsIncludesHourResponseRange(t *testing.T) {
 
 func TestProbeManagerGetResultsIncludesLossOnlyHourData(t *testing.T) {
 	now := time.Now().UTC()
-	task := &probeTask{}
+	task := &probeTask{config: probe.Config{ID: "probe-1"}}
 	task.addSampleLocked(probeSample{responseMs: -1, timestamp: now.Add(-30 * time.Second)})
 	task.addSampleLocked(probeSample{responseMs: -1, timestamp: now.Add(-10 * time.Second)})
 
 	pm := &ProbeManager{probes: map[string]*probeTask{"icmp:example.com": task}}
 
 	results := pm.GetResults(uint16(time.Minute / time.Millisecond))
-	result, ok := results["icmp:example.com"]
+	result, ok := results["probe-1"]
 	require.True(t, ok)
 	require.Len(t, result, 5)
 	assert.Equal(t, 0.0, result[0])
@@ -111,23 +111,42 @@ func TestProbeManagerGetResultsIncludesLossOnlyHourData(t *testing.T) {
 	assert.Equal(t, 100.0, result[4])
 }
 
+func TestProbeConfigResultKeyUsesSyncedID(t *testing.T) {
+	cfg := probe.Config{ID: "probe-1", Target: "1.1.1.1", Protocol: "icmp", Interval: 10}
+	assert.Equal(t, "probe-1", cfg.ID)
+}
+
+func TestProbeManagerSyncProbesSkipsConfigsWithoutStableID(t *testing.T) {
+	validCfg := probe.Config{ID: "probe-1", Target: "https://example.com", Protocol: "http", Interval: 10}
+	invalidCfg := probe.Config{Target: "1.1.1.1", Protocol: "icmp", Interval: 10}
+
+	pm := newProbeManager()
+	pm.SyncProbes([]probe.Config{validCfg, invalidCfg})
+	defer pm.Stop()
+
+	_, validExists := pm.probes[validCfg.ID]
+	_, invalidExists := pm.probes[invalidCfg.ID]
+	assert.True(t, validExists)
+	assert.False(t, invalidExists)
+}
+
 func TestProbeManagerSyncProbesStopsRemovedTasksButKeepsExisting(t *testing.T) {
-	keepCfg := probe.Config{Target: "https://example.com", Protocol: "http", Interval: 10}
-	removeCfg := probe.Config{Target: "1.1.1.1", Protocol: "icmp", Interval: 10}
+	keepCfg := probe.Config{ID: "probe-1", Target: "https://example.com", Protocol: "http", Interval: 10}
+	removeCfg := probe.Config{ID: "probe-2", Target: "1.1.1.1", Protocol: "icmp", Interval: 10}
 
 	keptTask := &probeTask{config: keepCfg, cancel: make(chan struct{})}
 	removedTask := &probeTask{config: removeCfg, cancel: make(chan struct{})}
 	pm := &ProbeManager{
 		probes: map[string]*probeTask{
-			keepCfg.Key():   keptTask,
-			removeCfg.Key(): removedTask,
+			keepCfg.ID:   keptTask,
+			removeCfg.ID: removedTask,
 		},
 	}
 
 	pm.SyncProbes([]probe.Config{keepCfg})
 
-	assert.Same(t, keptTask, pm.probes[keepCfg.Key()])
-	_, exists := pm.probes[removeCfg.Key()]
+	assert.Same(t, keptTask, pm.probes[keepCfg.ID])
+	_, exists := pm.probes[removeCfg.ID]
 	assert.False(t, exists)
 
 	select {

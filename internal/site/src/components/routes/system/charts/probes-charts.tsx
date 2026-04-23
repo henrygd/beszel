@@ -7,7 +7,6 @@ import type { ChartData, NetworkProbeRecord, NetworkProbeStatsRecord } from "@/t
 import { useMemo } from "react"
 import { atom } from "nanostores"
 import { useStore } from "@nanostores/react"
-import { probeKey } from "@/lib/use-network-probes"
 
 const $filter = atom("")
 
@@ -47,7 +46,7 @@ function ProbeChart({
 		const sortedProbes = [...probes].sort((a, b) => b.resAvg1h - a.resAvg1h)
 		const count = sortedProbes.length
 		const points: DataPoint<NetworkProbeStatsRecord>[] = []
-		const visibleKeys: string[] = []
+		const visibleIDs: string[] = []
 		const filterTerms = filter
 			? filter
 					.toLowerCase()
@@ -56,25 +55,25 @@ function ProbeChart({
 			: []
 		for (let i = 0; i < count; i++) {
 			const p = sortedProbes[i]
-			const key = probeKey(p)
-			const filtered = filterTerms.length > 0 && !filterTerms.some((term) => key.toLowerCase().includes(term))
+			const label = p.name || p.target
+			const filtered = filterTerms.length > 0 && !filterTerms.some((term) => label.toLowerCase().includes(term))
 			if (filtered) {
 				continue
 			}
-			visibleKeys.push(key)
+			visibleIDs.push(p.id)
 			points.push({
 				order: i,
-				label: p.name || p.target,
-				dataKey: (record: NetworkProbeStatsRecord) => record.stats?.[key]?.[valueIndex] ?? "-",
+				label,
+				dataKey: (record: NetworkProbeStatsRecord) => record.stats?.[p.id]?.[valueIndex] ?? "-",
 				color: count <= 5 ? i + 1 : `hsl(${(i * 360) / count}, var(--chart-saturation), var(--chart-lightness))`,
 			})
 		}
-		return { dataPoints: points, visibleKeys }
+		return { dataPoints: points, visibleKeys: visibleIDs }
 	}, [probes, filter, valueIndex])
 
 	const filteredProbeStats = useMemo(() => {
 		if (!visibleKeys.length) return probeStats
-		return probeStats.filter((record) => visibleKeys.some((key) => record.stats?.[key] != null))
+		return probeStats.filter((record) => visibleKeys.some((id) => record.stats?.[id] != null))
 	}, [probeStats, visibleKeys])
 
 	const legend = dataPoints.length < 10

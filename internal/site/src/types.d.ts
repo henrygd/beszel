@@ -556,7 +556,7 @@ export interface NetworkProbeRecord {
 	resMin1h: number
 	resMax1h: number
 	resAvg1h: number
-	loss: number
+	loss1h: number
 	interval: number
 	enabled: boolean
 	updated: string

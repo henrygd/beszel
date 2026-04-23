@@ -32,7 +32,7 @@ function appendCacheValue(
 }
 
 const NETWORK_PROBE_FIELDS =
-	"id,name,system,target,protocol,port,interval,res,resMin1h,resMax1h,resAvg1h,loss,enabled,updated"
+	"id,name,system,target,protocol,port,interval,res,resMin1h,resMax1h,resAvg1h,loss1h,enabled,updated"
 
 interface UseNetworkProbesProps {
 	systemId?: string
@@ -245,16 +245,10 @@ export function useNetworkProbesData(props: UseNetworkProbesProps) {
 	}
 }
 
-export function probeKey(p: NetworkProbeRecord) {
-	if (p.protocol === "tcp") return `${p.protocol}:${p.target}:${p.port}`
-	return `${p.protocol}:${p.target}`
-}
-
 function probesToStats(probes: NetworkProbeRecord[]): NetworkProbeStatsRecord["stats"] {
 	const stats: NetworkProbeStatsRecord["stats"] = {}
 	for (const probe of probes) {
-		const key = probeKey(probe)
-		stats[key] = [probe.res, probe.resAvg1h, probe.resMin1h, probe.resMax1h, probe.loss]
+		stats[probe.id] = [probe.res, probe.resAvg1h, probe.resMin1h, probe.resMax1h, probe.loss1h]
 	}
 	return stats
 }

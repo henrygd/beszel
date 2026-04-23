@@ -325,7 +325,7 @@ func (sm *SystemManager) AddWebSocketSystem(systemId string, agentVersion semver
 		configs := sm.GetProbeConfigsForSystem(systemId)
 		if len(configs) > 0 {
 			if err := system.SyncNetworkProbes(configs); err != nil {
-				sm.hub.Logger().Warn("failed to sync probes on connect", "system", systemId, "err", err)
+				sm.hub.Logger().Warn("failed to sync probes to agent", "system", systemId, "err", err)
 			}
 		}
 	}()
@@ -344,26 +344,11 @@ func (sm *SystemManager) resetFailedSmartFetchState(systemID string) {
 
 // GetProbeConfigsForSystem returns all enabled probe configs for a system.
 func (sm *SystemManager) GetProbeConfigsForSystem(systemID string) []probe.Config {
-	records, err := sm.hub.FindRecordsByFilter(
-		"network_probes",
-		"system = {:system} && enabled = true",
-		"",
-		0, 0,
-		dbx.Params{"system": systemID},
-	)
-	if err != nil || len(records) == 0 {
-		return nil
-	}
-
-	configs := make([]probe.Config, 0, len(records))
-	for _, r := range records {
-		configs = append(configs, probe.Config{
-			Target:   r.GetString("target"),
-			Protocol: r.GetString("protocol"),
-			Port:     uint16(r.GetInt("port")),
-			Interval: uint16(r.GetInt("interval")),
-		})
-	}
+	var configs []probe.Config
+	_ = sm.hub.DB().
+		NewQuery("SELECT id, target, protocol, port, interval FROM network_probes WHERE system = {:system} AND enabled = true").
+		Bind(dbx.Params{"system": systemID}).
+		All(&configs)
 	return configs
 }
 

@@ -161,7 +161,10 @@ func (pm *ProbeManager) SyncProbes(configs []probe.Config) {
 	// Build set of new keys
 	newKeys := make(map[string]probe.Config, len(configs))
 	for _, cfg := range configs {
-		newKeys[cfg.Key()] = cfg
+		if cfg.ID == "" {
+			continue
+		}
+		newKeys[cfg.ID] = cfg
 	}
 
 	// Stop removed probes
@@ -196,7 +199,7 @@ func (pm *ProbeManager) GetResults(durationMs uint16) map[string]probe.Result {
 	now := time.Now()
 	duration := time.Duration(durationMs) * time.Millisecond
 
-	for key, task := range pm.probes {
+	for _, task := range pm.probes {
 		task.mu.Lock()
 		agg := task.aggregateLocked(duration, now)
 		hourAgg := task.aggregateLocked(time.Hour, now)
@@ -220,7 +223,7 @@ func (pm *ProbeManager) GetResults(durationMs uint16) map[string]probe.Result {
 		} else {
 			result = probe.Result{result[0], hourAvg, 0, 0, hourLoss}
 		}
-		results[key] = result
+		results[task.config.ID] = result
 	}
 
 	return results
