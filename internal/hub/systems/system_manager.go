@@ -1,6 +1,7 @@
 package systems
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"time"
@@ -45,6 +46,8 @@ type SystemManager struct {
 	systems       *store.Store[string, *System]         // Thread-safe store of active systems
 	sshConfig     *ssh.ClientConfig                     // SSH client configuration for system connections
 	smartFetchMap *expirymap.ExpiryMap[smartFetchState] // Stores last SMART fetch time/result; TTL is only for cleanup
+	ctx           context.Context                       // Cancelled when the manager is shutting down
+	cancel        context.CancelFunc                    // Cancels ctx
 }
 
 // hubLike defines the interface requirements for the hub dependency.
@@ -60,10 +63,13 @@ type hubLike interface {
 // NewSystemManager creates a new SystemManager instance with the provided hub.
 // The hub must implement the hubLike interface to provide database and alert functionality.
 func NewSystemManager(hub hubLike) *SystemManager {
+	ctx, cancel := context.WithCancel(context.Background())
 	return &SystemManager{
 		systems:       store.New(map[string]*System{}),
 		hub:           hub,
 		smartFetchMap: expirymap.New[smartFetchState](time.Hour),
+		ctx:           ctx,
+		cancel:        cancel,
 	}
 }
 
@@ -103,7 +109,13 @@ func (sm *SystemManager) Initialize() error {
 		sleepTime := time.Duration(delta) * time.Millisecond
 
 		for _, system := range systems {
-			time.Sleep(sleepTime)
+			select {
+			case <-sm.ctx.Done():
+				// Abort if the manager has been shut down (e.g. test cleanup)
+				// to avoid starting updater goroutines against a torn-down hub. See #1950.
+				return
+			case <-time.After(sleepTime):
+			}
 			_ = sm.AddSystem(system)
 		}
 	}()
@@ -238,6 +250,11 @@ func (sm *SystemManager) onRecordAfterDeleteSuccess(e *core.RecordEvent) error {
 // It validates required fields, initializes the system context, and starts the update goroutine.
 // Returns error if a system with the same ID already exists.
 func (sm *SystemManager) AddSystem(sys *System) error {
+	if sm.ctx.Err() != nil {
+		// Manager is shutting down; do not start new updater goroutines
+		// against a hub that may be torn down. See #1950.
+		return sm.ctx.Err()
+	}
 	if sm.systems.Has(sys.Id) {
 		return errSystemExists
 	}

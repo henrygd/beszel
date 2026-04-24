@@ -111,6 +111,11 @@ func (sm *SystemManager) SetSystemStatusInDB(systemID string, status string) boo
 
 // TESTING ONLY: RemoveAllSystems removes all systems from the store
 func (sm *SystemManager) RemoveAllSystems() {
+	// Signal shutdown first so any in-flight Initialize staggered-start goroutine
+	// stops adding new systems against a hub that is about to be torn down. See #1950.
+	if sm.cancel != nil {
+		sm.cancel()
+	}
 	for _, system := range sm.systems.GetAll() {
 		sm.RemoveSystem(system.Id)
 	}
