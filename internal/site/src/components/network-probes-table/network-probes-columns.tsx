@@ -13,9 +13,11 @@ import {
 	NetworkIcon,
 	RefreshCwIcon,
 	PenBoxIcon,
+	PauseCircleIcon,
+	PlayCircleIcon,
 } from "lucide-react"
 import { t } from "@lingui/core/macro"
-import type { NetworkProbeRecord } from "@/types"
+import type { NetworkProbeRecord, SystemRecord } from "@/types"
 import {
 	DropdownMenu,
 	DropdownMenuContent,
@@ -25,9 +27,12 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Trans } from "@lingui/react/macro"
 import { pb } from "@/lib/api"
-import { toast } from "../ui/use-toast"
+import { toast } from "@/components/ui/use-toast"
 import { $allSystemsById } from "@/lib/stores"
 import { useStore } from "@nanostores/react"
+import { SystemStatus } from "@/lib/enums"
+import { Checkbox } from "@/components/ui/checkbox"
+import { useMemo } from "react"
 
 const protocolColors: Record<string, string> = {
 	icmp: "bg-blue-500/15 text-blue-400",
@@ -43,12 +48,54 @@ async function deleteProbe(id: string) {
 	}
 }
 
+async function setProbeEnabled(id: string, enabled: boolean) {
+	try {
+		await pb.collection("network_probes").update(id, { enabled })
+	} catch (err: unknown) {
+		toast({ variant: "destructive", title: t`Error`, description: (err as Error)?.message })
+	}
+}
+
+const STATUS_COLORS = {
+	[SystemStatus.Up]: "bg-green-500",
+	[SystemStatus.Down]: "bg-red-500",
+	[SystemStatus.Paused]: "bg-primary/40",
+	[SystemStatus.Pending]: "bg-yellow-500",
+} as const
+
+/**
+ * A probe is considered muted if it's disabled or if its associated system is not up.
+ */
+const isMuted = (record: NetworkProbeRecord, systemRecord: SystemRecord | undefined) =>
+	!record.enabled || systemRecord?.status !== SystemStatus.Up
+
 export function getProbeColumns(
 	longestName = 0,
 	longestTarget = 0,
 	onEdit?: (probe: NetworkProbeRecord) => void
 ): ColumnDef<NetworkProbeRecord>[] {
 	return [
+		{
+			id: "select",
+			header: ({ table }) => (
+				<Checkbox
+					className="ms-2"
+					checked={table.getIsAllRowsSelected() || (table.getIsSomeRowsSelected() && "indeterminate")}
+					onCheckedChange={(value) => table.toggleAllRowsSelected(!!value)}
+					aria-label={t`Select all`}
+				/>
+			),
+			cell: ({ row }) => (
+				<Checkbox
+					checked={row.getIsSelected()}
+					onCheckedChange={(value) => row.toggleSelected(!!value)}
+					aria-label={t`Select row`}
+				/>
+			),
+			enableSorting: false,
+			enableHiding: false,
+			size: 44,
+		},
 		{
 			id: "name",
 			sortingFn: (a, b) => (a.original.name || a.original.target).localeCompare(b.original.name || b.original.target),
@@ -71,8 +118,19 @@ export function getProbeColumns(
 			},
 			header: ({ column }) => <HeaderButton column={column} name={t`System`} Icon={ServerIcon} />,
 			cell: ({ getValue }) => {
-				const allSystems = useStore($allSystemsById)
-				return <span className="ms-1.5 xl:w-20 block truncate">{allSystems[getValue() as string]?.name ?? ""}</span>
+				const system = useStore($allSystemsById)[getValue() as string] as SystemRecord | undefined
+				const name = system?.name
+				const status = system?.status as SystemStatus // undefined val is fine but makes lsp mad
+
+				return useMemo(
+					() => (
+						<span className="ms-1.5 xl:w-20 truncate flex items-center gap-2">
+							<span className={cn("shrink-0 size-2 rounded-full", STATUS_COLORS[status])} />
+							{name}
+						</span>
+					),
+					[status, name]
+				)
 			},
 		},
 		{
@@ -139,12 +197,18 @@ export function getProbeColumns(
 			invertSorting: true,
 			header: ({ column }) => <HeaderButton column={column} name={t`Loss 1h`} Icon={WifiOffIcon} />,
 			cell: ({ row }) => {
-				const { loss1h, res } = row.original
+				const { loss1h, res, system } = row.original
+				const systemRecord = useStore($allSystemsById)[system]
+
 				if (loss1h === undefined || (!res && !loss1h)) {
 					return <span className="ms-1.5 text-muted-foreground">-</span>
 				}
+
+				const muted = isMuted(row.original, systemRecord)
 				let color = "bg-green-500"
-				if (loss1h) {
+				if (muted) {
+					color = "bg-muted-foreground/50"
+				} else if (loss1h) {
 					color = loss1h > 20 ? "bg-red-500" : "bg-yellow-500"
 				}
 				return (
@@ -171,64 +235,82 @@ export function getProbeColumns(
 			enableHiding: false,
 			header: () => null,
 			size: 40,
-			cell: ({ row }) => (
-				<DropdownMenu>
-					<DropdownMenuTrigger asChild>
-						<Button
-							variant="ghost"
-							size="icon"
-							className="size-10"
-							onClick={(event) => event.stopPropagation()}
-							onMouseDown={(event) => event.stopPropagation()}
-						>
-							<span className="sr-only">
-								<Trans>Open menu</Trans>
-							</span>
-							<MoreHorizontalIcon className="w-5" />
-						</Button>
-					</DropdownMenuTrigger>
-					<DropdownMenuContent align="end" onClick={(event) => event.stopPropagation()}>
-						<DropdownMenuItem
-							onClick={(event) => {
-								event.stopPropagation()
-								onEdit?.(row.original)
-							}}
-						>
-							<PenBoxIcon className="me-2.5 size-4" />
-							<Trans>Edit</Trans>
-						</DropdownMenuItem>
-						<DropdownMenuSeparator />
-						<DropdownMenuItem
-							onClick={(event) => {
-								event.stopPropagation()
-								deleteProbe(row.original.id)
-							}}
-						>
-							<Trash2Icon className="me-2.5 size-4" />
-							<Trans>Delete</Trans>
-						</DropdownMenuItem>
-					</DropdownMenuContent>
-				</DropdownMenu>
-			),
+			cell: ({ row }) => {
+				const { enabled } = row.original
+				return (
+					<DropdownMenu>
+						<DropdownMenuTrigger asChild>
+							<Button
+								variant="ghost"
+								size="icon"
+								className="size-10"
+								onClick={(event) => event.stopPropagation()}
+								onMouseDown={(event) => event.stopPropagation()}
+							>
+								<span className="sr-only">
+									<Trans>Open menu</Trans>
+								</span>
+								<MoreHorizontalIcon className="w-5" />
+							</Button>
+						</DropdownMenuTrigger>
+						<DropdownMenuContent align="end" onClick={(event) => event.stopPropagation()}>
+							<DropdownMenuItem onClick={() => onEdit?.(row.original)}>
+								<PenBoxIcon className="me-2.5 size-4" />
+								<Trans>Edit</Trans>
+							</DropdownMenuItem>
+							<DropdownMenuItem onClick={() => setProbeEnabled(row.original.id, !enabled)}>
+								{enabled ? (
+									<>
+										<PauseCircleIcon className="me-2.5 size-4" />
+										<Trans>Pause</Trans>
+									</>
+								) : (
+									<>
+										<PlayCircleIcon className="me-2.5 size-4" />
+										<Trans>Resume</Trans>
+									</>
+								)}
+							</DropdownMenuItem>
+							<DropdownMenuSeparator />
+							<DropdownMenuItem
+								onClick={(event) => {
+									event.stopPropagation()
+									deleteProbe(row.original.id)
+								}}
+							>
+								<Trash2Icon className="me-2.5 size-4" />
+								<Trans>Delete</Trans>
+							</DropdownMenuItem>
+						</DropdownMenuContent>
+					</DropdownMenu>
+				)
+			},
 		},
 	]
 }
 function responseTimeCell(cell: CellContext<NetworkProbeRecord, unknown>) {
-	const val = cell.getValue() as number | undefined
-	if (!val) {
+	const probe = cell.row.original
+	const systemRecord = useStore($allSystemsById)[probe.system]
+	const responseTime = cell.getValue() as number | undefined
+
+	if (!responseTime) {
 		return <span className="ms-1.5 text-muted-foreground">-</span>
 	}
+
+	const muted = isMuted(probe, systemRecord)
 	let color = "bg-green-500"
-	if (val > 200) {
+	if (muted) {
+		color = "bg-muted-foreground/50"
+	} else if (responseTime > 200) {
 		color = "bg-yellow-500"
 	}
-	if (val > 2000) {
+	if (!muted && responseTime > 2000) {
 		color = "bg-red-500"
 	}
 	return (
 		<span className="ms-1.5 tabular-nums flex gap-2 items-center">
 			<span className={cn("shrink-0 size-2 rounded-full", color)} />
-			{decimalString(val, val < 100 ? 2 : 1).toLocaleString()}ms
+			{decimalString(responseTime, responseTime < 100 ? 2 : 1).toLocaleString()}ms
 		</span>
 	)
 }

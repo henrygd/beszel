@@ -62,16 +62,19 @@ func bindNetworkProbesEvents(hub *Hub) {
 			return nil
 		}
 		err := e.Next()
-		if err != nil {
-			return err
-		}
 		if e.Record.GetBool("enabled") {
-			_, err = hub.upsertNetworkProbe(e.Record, false)
+			var result *probe.Result
+			runNow := !e.Record.Original().GetBool("enabled")
+			result, err = hub.upsertNetworkProbe(e.Record, runNow)
+			if result != nil {
+				setProbeResultFields(e.Record, *result)
+				_ = e.App.SaveNoValidate(e.Record)
+			}
 		} else {
 			err = hub.deleteNetworkProbe(e.Record)
 		}
 		if err != nil {
-			hub.Logger().Warn("failed to sync updated probe to agent", "system", e.Record.GetString("system"), "probe", e.Record.Id, "err", err)
+			hub.Logger().Warn("failed to sync updated probe", "system", e.Record.GetString("system"), "probe", e.Record.Id, "err", err)
 		}
 		return nil
 	})

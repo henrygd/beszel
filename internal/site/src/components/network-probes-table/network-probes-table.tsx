@@ -2,7 +2,6 @@ import { t } from "@lingui/core/macro"
 import { Trans } from "@lingui/react/macro"
 import {
 	type ColumnFiltersState,
-	type ColumnDef,
 	flexRender,
 	getCoreRowModel,
 	getFilteredRowModel,
@@ -30,7 +29,6 @@ import { Button, buttonVariants } from "@/components/ui/button"
 import { memo, useMemo, useRef, useState } from "react"
 import { getProbeColumns } from "@/components/network-probes-table/network-probes-columns"
 import { Card, CardHeader, CardTitle } from "@/components/ui/card"
-import { Checkbox } from "@/components/ui/checkbox"
 import { Input } from "@/components/ui/input"
 import { TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { useToast } from "@/components/ui/use-toast"
@@ -78,34 +76,8 @@ export default function NetworkProbesTableNew({
 		let columns = getProbeColumns(longestName, longestTarget, setEditingProbe)
 		columns = systemId ? columns.filter((col) => col.id !== "system") : columns
 		columns = canManageProbes ? columns : columns.filter((col) => col.id !== "actions")
-		if (!canManageProbes) {
-			return columns
-		}
-
-		const selectionColumn: ColumnDef<NetworkProbeRecord> = {
-			id: "select",
-			header: ({ table }) => (
-				<Checkbox
-					className="ms-2"
-					checked={table.getIsAllRowsSelected() || (table.getIsSomeRowsSelected() && "indeterminate")}
-					onCheckedChange={(value) => table.toggleAllRowsSelected(!!value)}
-					aria-label={t`Select all`}
-				/>
-			),
-			cell: ({ row }) => (
-				<Checkbox
-					checked={row.getIsSelected()}
-					onCheckedChange={(value) => row.toggleSelected(!!value)}
-					aria-label={t`Select row`}
-				/>
-			),
-			enableSorting: false,
-			enableHiding: false,
-			size: 44,
-		}
-
-		return [selectionColumn, ...columns]
-	}, [systemId, longestName, longestTarget, canManageProbes])
+		return columns
+	}, [systemId, longestName, longestTarget])
 
 	const handleBulkDelete = async () => {
 		setDeleteOpen(false)
