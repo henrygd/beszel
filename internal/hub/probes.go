@@ -1,8 +1,6 @@
 package hub
 
 import (
-	"strconv"
-
 	"github.com/henrygd/beszel/internal/entities/probe"
 	"github.com/henrygd/beszel/internal/hub/systems"
 	"github.com/pocketbase/pocketbase/core"
@@ -10,9 +8,7 @@ import (
 
 // generateProbeID creates a stable hash ID for a probe based on its configuration and the system it belongs to.
 func generateProbeID(systemId string, config probe.Config) string {
-	intervalStr := strconv.FormatUint(uint64(config.Interval), 10)
-	portStr := strconv.FormatUint(uint64(config.Port), 10)
-	return systems.MakeStableHashId(systemId, config.Protocol, config.Target, portStr, intervalStr)
+	return systems.MakeStableHashId(systemId, config.Target, config.Protocol)
 }
 
 // bindNetworkProbesEvents keeps probe records and agent probe state in sync.
@@ -27,7 +23,7 @@ func bindNetworkProbesEvents(hub *Hub) {
 	})
 
 	// sync probe to agent on creation and persist the first result immediately when available
-	hub.OnRecordCreateRequest("network_probes").BindFunc(func(e *core.RecordRequestEvent) error {
+	hub.OnRecordAfterCreateSuccess("network_probes").BindFunc(func(e *core.RecordEvent) error {
 		err := e.Next()
 		if err != nil {
 			return err
@@ -47,10 +43,24 @@ func bindNetworkProbesEvents(hub *Hub) {
 		if err := e.App.SaveNoValidate(e.Record); err != nil {
 			hub.Logger().Warn("failed to save initial probe result", "system", e.Record.GetString("system"), "probe", e.Record.Id, "err", err)
 		}
-		return nil
+		return e.Next()
 	})
 
+	// On API update requests, if the probe config changed in a way that requires a new ID, we will create a new
+	// record with the new ID and delete the old one. Otherwise, we will just update the existing probe on the agent.
 	hub.OnRecordUpdateRequest("network_probes").BindFunc(func(e *core.RecordRequestEvent) error {
+		systemID := e.Record.GetString("system")
+		ID := generateProbeID(systemID, *probeConfigFromRecord(e.Record))
+		if ID != e.Record.Id {
+			newRecord := copyProbeToNewRecord(e.Record, ID)
+			if err := e.App.Save(newRecord); err != nil {
+				return err
+			}
+			if err := e.App.Delete(e.Record); err != nil {
+				return err
+			}
+			return nil
+		}
 		err := e.Next()
 		if err != nil {
 			return err
@@ -67,15 +77,11 @@ func bindNetworkProbesEvents(hub *Hub) {
 	})
 
 	// sync probe to agent on delete
-	hub.OnRecordDeleteRequest("network_probes").BindFunc(func(e *core.RecordRequestEvent) error {
-		err := e.Next()
-		if err != nil {
-			return err
-		}
+	hub.OnRecordAfterDeleteSuccess("network_probes").BindFunc(func(e *core.RecordEvent) error {
 		if err := hub.deleteNetworkProbe(e.Record); err != nil {
 			hub.Logger().Warn("failed to delete probe on agent", "system", e.Record.GetString("system"), "probe", e.Record.Id, "err", err)
 		}
-		return nil
+		return e.Next()
 	})
 }
 
@@ -97,6 +103,17 @@ func setProbeResultFields(record *core.Record, result probe.Result) {
 	record.Set("resMin1h", result.Get(2))
 	record.Set("resMax1h", result.Get(3))
 	record.Set("loss1h", result.Get(4))
+}
+
+// copyProbeToNewRecord creates a new record with the same field values as the old one.
+// This is used when the probe config changes in a way that requires a new ID, so we need
+// to create a new record with the new ID and delete the old one.
+func copyProbeToNewRecord(oldRecord *core.Record, newID string) *core.Record {
+	collection := oldRecord.Collection()
+	newRecord := core.NewRecord(collection)
+	newRecord.Load(oldRecord.FieldsData())
+	newRecord.Set("id", newID)
+	return newRecord
 }
 
 // upsertNetworkProbe applies the record's probe config to the target system.

@@ -40,7 +40,7 @@ import { $allSystemsById } from "@/lib/stores"
 import { cn, getVisualStringWidth, useBrowserStorage } from "@/lib/utils"
 import { Trash2Icon } from "lucide-react"
 import type { NetworkProbeRecord } from "@/types"
-import { AddProbeDialog } from "./probe-dialog"
+import { AddProbeDialog, EditProbeDialog } from "./probe-dialog"
 
 export default function NetworkProbesTableNew({
 	systemId,
@@ -59,6 +59,7 @@ export default function NetworkProbesTableNew({
 	const [rowSelection, setRowSelection] = useState<RowSelectionState>({})
 	const [globalFilter, setGlobalFilter] = useState("")
 	const [deleteOpen, setDeleteOpen] = useState(false)
+	const [editingProbe, setEditingProbe] = useState<NetworkProbeRecord>()
 	const { toast } = useToast()
 	const canManageProbes = !isReadOnlyUser()
 
@@ -74,7 +75,7 @@ export default function NetworkProbesTableNew({
 
 	// Filter columns based on whether systemId is provided
 	const columns = useMemo(() => {
-		let columns = getProbeColumns(longestName, longestTarget)
+		let columns = getProbeColumns(longestName, longestTarget, setEditingProbe)
 		columns = systemId ? columns.filter((col) => col.id !== "system") : columns
 		columns = canManageProbes ? columns : columns.filter((col) => col.id !== "actions")
 		if (!canManageProbes) {
@@ -233,6 +234,18 @@ export default function NetworkProbesTableNew({
 							/>
 						)}
 						{canManageProbes ? <AddProbeDialog systemId={systemId} /> : null}
+						{canManageProbes ? (
+							<EditProbeDialog
+								systemId={systemId}
+								probe={editingProbe}
+								open={!!editingProbe}
+								setOpen={(open) => {
+									if (!open) {
+										setEditingProbe(undefined)
+									}
+								}}
+							/>
+						) : null}
 					</div>
 				</div>
 			</CardHeader>

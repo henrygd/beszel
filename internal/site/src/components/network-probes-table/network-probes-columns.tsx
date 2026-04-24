@@ -12,10 +12,17 @@ import {
 	ClockIcon,
 	NetworkIcon,
 	RefreshCwIcon,
+	PenBoxIcon,
 } from "lucide-react"
 import { t } from "@lingui/core/macro"
 import type { NetworkProbeRecord } from "@/types"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import {
+	DropdownMenu,
+	DropdownMenuContent,
+	DropdownMenuItem,
+	DropdownMenuSeparator,
+	DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 import { Trans } from "@lingui/react/macro"
 import { pb } from "@/lib/api"
 import { toast } from "../ui/use-toast"
@@ -36,7 +43,11 @@ async function deleteProbe(id: string) {
 	}
 }
 
-export function getProbeColumns(longestName = 0, longestTarget = 0): ColumnDef<NetworkProbeRecord>[] {
+export function getProbeColumns(
+	longestName = 0,
+	longestTarget = 0,
+	onEdit?: (probe: NetworkProbeRecord) => void
+): ColumnDef<NetworkProbeRecord>[] {
 	return [
 		{
 			id: "name",
@@ -177,6 +188,16 @@ export function getProbeColumns(longestName = 0, longestTarget = 0): ColumnDef<N
 						</Button>
 					</DropdownMenuTrigger>
 					<DropdownMenuContent align="end" onClick={(event) => event.stopPropagation()}>
+						<DropdownMenuItem
+							onClick={(event) => {
+								event.stopPropagation()
+								onEdit?.(row.original)
+							}}
+						>
+							<PenBoxIcon className="me-2.5 size-4" />
+							<Trans>Edit</Trans>
+						</DropdownMenuItem>
+						<DropdownMenuSeparator />
 						<DropdownMenuItem
 							onClick={(event) => {
 								event.stopPropagation()

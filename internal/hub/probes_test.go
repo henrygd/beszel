@@ -23,7 +23,7 @@ func TestGenerateProbeID(t *testing.T) {
 				Port:     80,
 				Interval: 60,
 			},
-			expected: "d5f27931",
+			expected: "a20a5827",
 		},
 		{
 			name:     "HTTP probe on example.com with different system ID",
@@ -34,7 +34,7 @@ func TestGenerateProbeID(t *testing.T) {
 				Port:     80,
 				Interval: 60,
 			},
-			expected: "6f8b17f1",
+			expected: "ab602ae7",
 		},
 		{
 			name:     "Same probe, different interval",
@@ -45,7 +45,7 @@ func TestGenerateProbeID(t *testing.T) {
 				Port:     80,
 				Interval: 120,
 			},
-			expected: "6d4baf8",
+			expected: "ab602ae7",
 		},
 		{
 			name:     "ICMP probe on 1.1.1.1",
@@ -56,7 +56,7 @@ func TestGenerateProbeID(t *testing.T) {
 				Port:     0,
 				Interval: 10,
 			},
-			expected: "80b5836b",
+			expected: "6d13a4a4",
 		}, {
 			name:     "ICMP probe on 1.1.1.1 with different system ID",
 			systemID: "sys4567",
@@ -66,7 +66,7 @@ func TestGenerateProbeID(t *testing.T) {
 				Port:     0,
 				Interval: 10,
 			},
-			expected: "a6652680",
+			expected: "ddd6c81",
 		},
 	}
 
