@@ -31,6 +31,12 @@ func bindNetworkProbesEvents(hub *Hub) {
 		if !e.Record.GetBool("enabled") {
 			return nil
 		}
+		// if system connected, run the probe immediately
+		// if not, return and wait for the system to connect and sync probes then
+		system, err := hub.sm.GetSystem(e.Record.GetString("system"))
+		if err != nil || system.Status != "up" {
+			return nil
+		}
 		result, err := hub.upsertNetworkProbe(e.Record, true)
 		if err != nil {
 			hub.Logger().Warn("failed to sync probe to agent", "system", e.Record.GetString("system"), "probe", e.Record.Id, "err", err)

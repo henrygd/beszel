@@ -42,6 +42,7 @@ export default function LineChartDefault({
 	truncate = false,
 	chartProps,
 	connectNulls,
+	dot = false,
 }: {
 	chartData: ChartData
 	// biome-ignore lint/suspicious/noExplicitAny: accepts different data source types (systemStats or containerData)
@@ -64,6 +65,7 @@ export default function LineChartDefault({
 	truncate?: boolean
 	chartProps?: Omit<React.ComponentProps<typeof LineChart>, "data" | "margin">
 	connectNulls?: boolean
+	dot?: boolean
 }) {
 	const { yAxisWidth, updateYAxisWidth } = useYAxisWidth()
 	const { isIntersecting, ref } = useIntersectionObserver({ freeze: false })
@@ -87,6 +89,8 @@ export default function LineChartDefault({
 	// Use a stable key derived from data point identities and visual properties
 	const linesKey = dataPoints?.map((d) => `${d.label}:${d.strokeOpacity ?? ""}`).join("\0")
 
+	const XAxis = xAxis(chartData.chartTime, displayData.at(-1)?.created)
+
 	const Lines = useMemo(() => {
 		return dataPoints?.map((dataPoint, i) => {
 			let { color } = dataPoint
@@ -99,7 +103,7 @@ export default function LineChartDefault({
 					dataKey={dataPoint.dataKey}
 					name={dataPoint.label}
 					type="monotoneX"
-					dot={false}
+					dot={dot}
 					strokeWidth={1.5}
 					stroke={color}
 					strokeOpacity={dataPoint.strokeOpacity}
@@ -148,7 +152,7 @@ export default function LineChartDefault({
 							axisLine={false}
 						/>
 					)}
-					{xAxis(chartData.chartTime, displayData.at(-1)?.created as number)}
+					{XAxis}
 					<ChartTooltip
 						animationEasing="ease-out"
 						animationDuration={150}
@@ -169,5 +173,5 @@ export default function LineChartDefault({
 				</LineChart>
 			</ChartContainer>
 		)
-	}, [displayData, yAxisWidth, filter, Lines])
+	}, [displayData, yAxisWidth, filter, Lines, XAxis])
 }

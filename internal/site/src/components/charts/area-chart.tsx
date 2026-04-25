@@ -111,6 +111,8 @@ export default function AreaChartDefault({
 		})
 	}, [areasKey, displayMaxToggled])
 
+	const XAxis = xAxis(chartData.chartTime, displayData.at(-1)?.created)
+
 	return useMemo(() => {
 		if (displayData.length === 0) {
 			return null
@@ -146,7 +148,7 @@ export default function AreaChartDefault({
 							axisLine={false}
 						/>
 					)}
-					{xAxis(chartData.chartTime, displayData.at(-1)?.created as number)}
+					{XAxis}
 					<ChartTooltip
 						animationEasing="ease-out"
 						animationDuration={150}
@@ -167,5 +169,5 @@ export default function AreaChartDefault({
 				</AreaChart>
 			</ChartContainer>
 		)
-	}, [displayData, yAxisWidth, filter, Areas])
+	}, [displayData, yAxisWidth, filter, Areas, XAxis])
 }

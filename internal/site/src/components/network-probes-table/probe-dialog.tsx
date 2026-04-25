@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useRef, useState } from "react"
 import { Trans, useLingui } from "@lingui/react/macro"
 import { useStore } from "@nanostores/react"
 import { pb } from "@/lib/api"
@@ -111,13 +111,14 @@ export function AddProbeDialog({ systemId }: { systemId?: string }) {
 	const [bulkInput, setBulkInput] = useState("")
 	const [bulkLoading, setBulkLoading] = useState(false)
 	const [bulkSelectedSystemId, setBulkSelectedSystemId] = useState("")
+	const bulkFormRef = useRef<HTMLFormElement>(null)
 	const { toast } = useToast()
 	const { t } = useLingui()
 	const systems = useStore($systems)
 
 	const resetBulkForm = () => {
 		setBulkInput("")
-		setBulkSelectedSystemId("")
+		// setBulkSelectedSystemId("")
 	}
 
 	const openBulkAdd = (selectedSystemId?: string) => {
@@ -140,13 +141,15 @@ export function AddProbeDialog({ systemId }: { systemId?: string }) {
 
 		try {
 			const system = systemId ?? bulkSelectedSystemId
+			if (!system) {
+				throw new Error("Select a system.")
+			}
 			const rawLines = bulkInput.split(/\r?\n/).filter((line) => line.trim())
 			if (!rawLines.length) {
 				throw new Error("Enter at least one probe.")
 			}
 
 			const payloads = rawLines.map((line, index) => parseBulkProbeLine(line, index + 1, system))
-			setBulkOpen(false)
 			closedForSubmit = true
 			let batch = pb.createBatch()
 			let inBatch = 0
@@ -221,16 +224,10 @@ export function AddProbeDialog({ systemId }: { systemId?: string }) {
 							<Trans>Bulk Add {{ foo: t`Network Probes` }}</Trans>
 						</SheetTitle>
 						<SheetDescription>
-							<Trans>
-								Paste one probe per line. See{" "}
-								<a href={"#bulk-add-probes-docs"} className="underline underline-offset-2">
-									the documentation
-								</a>
-								.
-							</Trans>
+							target[,protocol[,port[,interval[,name]]]] - TCP/HTTP default to port 443.
 						</SheetDescription>
 					</SheetHeader>
-					<form onSubmit={handleBulkSubmit} className="flex h-full flex-col overflow-hidden">
+					<form ref={bulkFormRef} onSubmit={handleBulkSubmit} className="flex h-full flex-col overflow-hidden">
 						<div className="flex-1 space-y-4 overflow-auto p-4">
 							{!systemId && (
 								<div className="grid gap-2">
@@ -252,8 +249,8 @@ export function AddProbeDialog({ systemId }: { systemId?: string }) {
 								</div>
 							)}
 							<div className="grid gap-2">
-								<Label htmlFor="bulk-probes">
-									<Trans>Entries</Trans>
+								<Label htmlFor="bulk-probes" className="sr-only">
+									Entries
 								</Label>
 								<Textarea
 									id="bulk-probes"
@@ -262,10 +259,10 @@ export function AddProbeDialog({ systemId }: { systemId?: string }) {
 									onKeyDown={(e) => {
 										if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
 											e.preventDefault()
-											handleBulkSubmit(e)
+											bulkFormRef.current?.requestSubmit()
 										}
 									}}
-									className="h-120 font-mono text-sm bg-muted/40"
+									className="h-200 font-mono text-sm bg-muted/40"
 									style={{ maxHeight: `calc(100vh - 20rem)` }}
 									placeholder={["1.1.1.1", "example.com,tcp", "https://example.com,http,,60,Homepage"].join("\n")}
 									required
@@ -338,8 +335,12 @@ function ProbeDialogContent({
 		setLoading(true)
 
 		try {
+			const selectedSystem = systemId ?? selectedSystemId
+			if (!selectedSystem) {
+				throw new Error("Select a system.")
+			}
 			const payload = buildProbePayload({
-				system: systemId ?? selectedSystemId,
+				system: selectedSystem,
 				target,
 				protocol,
 				port: protocol === "tcp" ? Number(port) : 0,

@@ -97,6 +97,7 @@ function ProbeChart({
 				contentFormatter={contentFormatter}
 				legend={legend}
 				filter={filter}
+				dot={chartData.chartTime === "1m"}
 			/>
 		</ChartCard>
 	)

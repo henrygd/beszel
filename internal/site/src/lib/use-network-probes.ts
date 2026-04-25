@@ -224,7 +224,7 @@ export function useNetworkProbesData(props: UseNetworkProbesProps) {
 					// if no previous data or the last data point is older than 1min,
 					// create a new data set starting with a point 1 second ago to seed the chart data
 					if (!prev || (prev.at(-1)?.created ?? 0) < now - 60_000) {
-						prev = [{ created: now - 1000, stats: probesToStats(probes) }]
+						prev = [{ created: now - 2000, stats: probesToStats(probes) }]
 					}
 					const stats = { created: now, stats: data.Probes } as NetworkProbeStatsRecord
 					const newStats = appendData(prev, [stats], 1000, 120)
@@ -248,6 +248,7 @@ export function useNetworkProbesData(props: UseNetworkProbesProps) {
 function probesToStats(probes: NetworkProbeRecord[]): NetworkProbeStatsRecord["stats"] {
 	const stats: NetworkProbeStatsRecord["stats"] = {}
 	for (const probe of probes) {
+		// TODO: include only if probe.updated < charttime
 		stats[probe.id] = [probe.res, probe.resAvg1h, probe.resMin1h, probe.resMax1h, probe.loss1h]
 	}
 	return stats

@@ -1,11 +1,10 @@
-import type { JSX } from "react"
 import { useLingui } from "@lingui/react/macro"
 import * as React from "react"
 import * as RechartsPrimitive from "recharts"
 import { chartTimeData, cn } from "@/lib/utils"
 import type { ChartTimes } from "@/types"
 import { Separator } from "./separator"
-import { AxisDomain } from "recharts/types/util/types"
+import type { AxisDomain } from "recharts/types/util/types"
 import { timeTicks } from "d3-time"
 
 // Format: { THEME_NAME: CSS_SELECTOR }
@@ -102,7 +101,7 @@ const ChartTooltipContent = React.forwardRef<
 			labelKey?: string
 			unit?: string
 			filter?: string
-			contentFormatter?: (item: any, key: string) => React.ReactNode | string
+			contentFormatter?: (item: unknown, key: string) => React.ReactNode | string
 			truncate?: boolean
 			showTotal?: boolean
 			totalLabel?: React.ReactNode
@@ -176,7 +175,13 @@ const ChartTooltipContent = React.forwardRef<
 			}
 
 			const totalKey = "__total__"
-			const totalItem: any = {
+			const totalItem: {
+				value: number
+				name: string
+				dataKey: string
+				color: string | undefined
+				payload?: unknown
+			} = {
 				value: totalValue,
 				name: totalName,
 				dataKey: totalKey,
@@ -401,21 +406,23 @@ function getPayloadConfigFromPayload(config: ChartConfig, payload: unknown, key:
 	return configLabelKey in config ? config[configLabelKey] : config[key as keyof typeof config]
 }
 
-let cachedAxis: {
-	time: number
-	el: JSX.Element
+interface XAxisData {
+	el: React.ReactElement
+	domain: [number, number]
 }
 
-const xAxis = (chartTime: ChartTimes, lastCreationTime: number) => {
-	if (Math.abs(lastCreationTime - cachedAxis?.time) < 1000) {
-		return cachedAxis.el
-	}
-	const now = new Date(lastCreationTime + 1000)
-	const startTime = chartTimeData[chartTime].getOffset(now)
-	const ticks = timeTicks(startTime, now, chartTimeData[chartTime].ticks ?? 12).map((date) => date.getTime())
-	const domain = [chartTimeData[chartTime].getOffset(now).getTime(), now.getTime()]
-	cachedAxis = {
-		time: lastCreationTime,
+const xAxisCache = new Map<ChartTimes, XAxisData>()
+
+function createXAxisData(chartTime: ChartTimes): XAxisData {
+	// console.log("Creating XAxis for", chartTime, new Date())
+	const axisEndTime = Date.now() + 500
+	const axisEndDate = new Date(axisEndTime)
+	const startTime = chartTimeData[chartTime].getOffset(axisEndDate)
+	const ticks = timeTicks(startTime, axisEndDate, chartTimeData[chartTime].ticks ?? 12).map((date) => date.getTime())
+	const domain: [number, number] = [startTime.getTime(), axisEndTime]
+
+	return {
+		domain,
 		el: (
 			<RechartsPrimitive.XAxis
 				dataKey="created"
@@ -431,7 +438,25 @@ const xAxis = (chartTime: ChartTimes, lastCreationTime: number) => {
 			/>
 		),
 	}
-	return cachedAxis.el
+}
+
+function xAxis(chartTime: ChartTimes, lastCreated: number) {
+	if (!lastCreated) {
+		return null
+	}
+	const cachedAxis = xAxisCache.get(chartTime)
+
+	const expectedInterval = chartTimeData[chartTime].expectedInterval
+	const conservativeEndTime = Date.now() - expectedInterval / 2
+	const axisEndTime = Math.max(lastCreated, conservativeEndTime)
+
+	if (cachedAxis && axisEndTime < cachedAxis.domain[1]) {
+		return cachedAxis.el
+	}
+
+	const axisData = createXAxisData(chartTime)
+	xAxisCache.set(chartTime, axisData)
+	return axisData.el
 }
 
 export {
