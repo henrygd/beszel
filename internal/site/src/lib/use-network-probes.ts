@@ -196,7 +196,7 @@ export function useNetworkProbesData(props: UseNetworkProbesProps) {
 			}
 		}
 
-		getStats<NetworkProbeStatsRecord>("network_probe_stats", systemId, chartTime, cachedProbeStats).then(
+		getStats<NetworkProbeStatsRecord>("network_probe_stats", systemId, chartTime, cachedProbeStats, true).then(
 			(probeStats) => {
 				// If another request has been made since this one, ignore the results
 				if (requestId !== statsRequestId.current) {

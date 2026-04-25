@@ -327,12 +327,13 @@ func updateNetworkProbesRecords(app core.App, data map[string]probe.Result, syst
 		return !strings.Contains(filterQuery, "system") || strings.Contains(filterQuery, systemId)
 	})
 
+	now := time.Now().UTC()
+	nowMilli := now.UnixMilli()
+	nowString := now.Format(types.DefaultDateLayout)
 	var db dbx.Builder
-	var nowString string
 	var updateQuery *dbx.Query
 	if !realtimeActive {
 		db = app.DB()
-		nowString = time.Now().UTC().Format(types.DefaultDateLayout)
 		sql := fmt.Sprintf("UPDATE %s SET res={:res}, resMin1h={:resMin1h}, resMax1h={:resMax1h}, resAvg1h={:resAvg1h}, loss1h={:loss1h}, updated={:updated} WHERE id={:id}", collectionName)
 		updateQuery = db.NewQuery(sql)
 	}
@@ -349,6 +350,7 @@ func updateNetworkProbesRecords(app core.App, data map[string]probe.Result, syst
 				record.Set("resMin1h", values.Get(2))
 				record.Set("resMax1h", values.Get(3))
 				record.Set("loss1h", values.Get(4))
+				record.Set("updated", nowString)
 				err = app.SaveNoValidate(record)
 			}
 		default:
@@ -375,6 +377,7 @@ func updateNetworkProbesRecords(app core.App, data map[string]probe.Result, syst
 		record.Set("system", systemId)
 		record.Set("stats", data)
 		record.Set("type", "1m")
+		record.Set("created", nowMilli)
 		err = app.SaveNoValidate(record)
 	default:
 		var statsJson types.JSONRaw
@@ -384,7 +387,7 @@ func updateNetworkProbesRecords(app core.App, data map[string]probe.Result, syst
 				"system":  systemId,
 				"stats":   statsJson,
 				"type":    "1m",
-				"created": nowString,
+				"created": nowMilli,
 			}).Execute()
 		}
 	}

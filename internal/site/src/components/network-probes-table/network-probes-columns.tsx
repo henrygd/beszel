@@ -226,7 +226,10 @@ export function getProbeColumns(
 			header: ({ column }) => <HeaderButton column={column} name={t`Updated`} Icon={ClockIcon} />,
 			cell: ({ getValue }) => {
 				const timestamp = getValue() as number
-				return <span className="ms-1.5 tabular-nums">{hourWithSeconds(new Date(timestamp).toISOString())}</span>
+				if (!timestamp) {
+					return <span className="ms-1.5 text-muted-foreground">-</span>
+				}
+				return <span className="ms-1.5 tabular-nums">{hourWithSeconds(timestamp)}</span>
 			},
 		},
 		{

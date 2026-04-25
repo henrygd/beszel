@@ -48,13 +48,14 @@ export async function getStats<T extends SystemStatsRecord | ContainerStatsRecor
 	collection: string,
 	systemId: string,
 	chartTime: ChartTimes,
-	cachedStats?: { created: string | number | null }[]
+	cachedStats?: { created: string | number | null }[],
+	createdIsNumber?: boolean
 ): Promise<T[]> {
 	const lastCached = cachedStats?.at(-1)?.created as number
 	return await pb.collection<T>(collection).getFullList({
 		filter: pb.filter("system={:id} && created > {:created} && type={:type}", {
 			id: systemId,
-			created: getPbTimestamp(chartTime, lastCached ? new Date(lastCached + 1000) : undefined),
+			created: getPbTimestamp(chartTime, lastCached ? new Date(lastCached + 1000) : undefined, createdIsNumber),
 			type: chartTimeData[chartTime].type,
 		}),
 		fields: "created,stats",

@@ -1,9 +1,12 @@
 package hub
 
 import (
+	"time"
+
 	"github.com/henrygd/beszel/internal/entities/probe"
 	"github.com/henrygd/beszel/internal/hub/systems"
 	"github.com/pocketbase/pocketbase/core"
+	"github.com/pocketbase/pocketbase/tools/types"
 )
 
 // generateProbeID creates a stable hash ID for a probe based on its configuration and the system it belongs to.
@@ -107,11 +110,14 @@ func probeConfigFromRecord(record *core.Record) *probe.Config {
 
 // setProbeResultFields stores the latest probe result values on the record.
 func setProbeResultFields(record *core.Record, result probe.Result) {
+	now := time.Now().UTC()
+	nowString := now.Format(types.DefaultDateLayout)
 	record.Set("res", result.Get(0))
 	record.Set("resAvg1h", result.Get(1))
 	record.Set("resMin1h", result.Get(2))
 	record.Set("resMax1h", result.Get(3))
 	record.Set("loss1h", result.Get(4))
+	record.Set("updated", nowString)
 }
 
 // copyProbeToNewRecord creates a new record with the same field values as the old one.
