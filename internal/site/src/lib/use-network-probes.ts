@@ -191,7 +191,6 @@ export function useNetworkProbesData(props: UseNetworkProbesProps) {
 			// Skip the fetch if the latest cached point is recent enough that no new point is expected yet
 			const lastCreated = cachedProbeStats.at(-1)?.created
 			if (lastCreated && Date.now() - lastCreated < expectedInterval * 0.9) {
-				console.log("Using cached probe stats, skipping fetch")
 				return
 			}
 		}
@@ -219,13 +218,13 @@ export function useNetworkProbesData(props: UseNetworkProbesProps) {
 			.subscribe(
 				`rt_metrics`,
 				(data: { Probes: NetworkProbeStatsRecord["stats"] }) => {
-					let prev = getCacheValue(systemId, "rt")
+					const prev = getCacheValue(systemId, "rt")
 					const now = Date.now()
 					// if no previous data or the last data point is older than 1min,
 					// create a new data set starting with a point 1 second ago to seed the chart data
-					if (!prev || (prev.at(-1)?.created ?? 0) < now - 60_000) {
-						prev = [{ created: now - 2000, stats: probesToStats(probes) }]
-					}
+					// if (!prev || (prev.at(-1)?.created ?? 0) < now - 60_000) {
+					// 	prev = [{ created: now - 30_000, stats: probesToStats(probes) }]
+					// }
 					const stats = { created: now, stats: data.Probes } as NetworkProbeStatsRecord
 					const newStats = appendData(prev, [stats], 1000, 120)
 					setProbeStats(() => newStats)
@@ -245,14 +244,14 @@ export function useNetworkProbesData(props: UseNetworkProbesProps) {
 	}
 }
 
-function probesToStats(probes: NetworkProbeRecord[]): NetworkProbeStatsRecord["stats"] {
-	const stats: NetworkProbeStatsRecord["stats"] = {}
-	for (const probe of probes) {
-		// TODO: include only if probe.updated < charttime
-		stats[probe.id] = [probe.res, probe.resAvg1h, probe.resMin1h, probe.resMax1h, probe.loss1h]
-	}
-	return stats
-}
+// function probesToStats(probes: NetworkProbeRecord[]): NetworkProbeStatsRecord["stats"] {
+// 	const stats: NetworkProbeStatsRecord["stats"] = {}
+// 	for (const probe of probes) {
+// 		// TODO: include only if probe.updated < charttime
+// 		stats[probe.id] = [probe.res, probe.resAvg1h, probe.resMin1h, probe.resMax1h, probe.loss1h]
+// 	}
+// 	return stats
+// }
 
 async function fetchProbes(systemId?: string) {
 	try {

@@ -53,6 +53,7 @@ function ProbeChart({
 					.split(" ")
 					.filter((term) => term.length > 0)
 			: []
+		const dot = chartData.chartTime === "1m"
 		for (let i = 0; i < count; i++) {
 			const p = sortedProbes[i]
 			const label = p.name || p.target
@@ -65,11 +66,12 @@ function ProbeChart({
 				order: i,
 				label,
 				dataKey: (record: NetworkProbeStatsRecord) => record.stats?.[p.id]?.[valueIndex] ?? "-",
+				dot,
 				color: count <= 5 ? i + 1 : `hsl(${(i * 360) / count}, var(--chart-saturation), var(--chart-lightness))`,
 			})
 		}
 		return { dataPoints: points, visibleKeys: visibleIDs }
-	}, [probes, filter, valueIndex])
+	}, [probes, filter, valueIndex, chartData.chartTime])
 
 	const filteredProbeStats = useMemo(() => {
 		if (!visibleKeys.length) return probeStats
@@ -97,7 +99,6 @@ function ProbeChart({
 				contentFormatter={contentFormatter}
 				legend={legend}
 				filter={filter}
-				dot={chartData.chartTime === "1m"}
 			/>
 		</ChartCard>
 	)

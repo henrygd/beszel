@@ -34,31 +34,88 @@ type ProbeValues = {
 	name?: string
 }
 
-const Schema = v.object({
-	system: v.string(),
-	target: v.string(),
-	protocol: v.picklist(["icmp", "tcp", "http"]),
-	port: v.number(),
-	interval: v.pipe(v.string(), v.toNumber(), v.minValue(1), v.maxValue(3600)),
-	enabled: v.boolean(),
-	name: v.optional(v.string()),
+type NormalizedProbeValues = Omit<ProbeValues, "system" | "interval"> & {
+	interval: number
+}
+
+const ProbeProtocolSchema = v.picklist(["icmp", "tcp", "http"])
+
+const ProbeIntervalSchema = v.pipe(v.string(), v.toNumber(), v.minValue(1), v.maxValue(3600))
+
+// Both the single-probe form and the bulk importer flow through this schema so
+// defaults and HTTP target normalization stay in one place.
+const NormalizedProbeValuesSchema = v.pipe(
+	v.object({
+		target: v.pipe(v.string(), v.trim(), v.nonEmpty("target is required")),
+		protocol: ProbeProtocolSchema,
+		port: v.number(),
+		interval: ProbeIntervalSchema,
+		name: v.optional(v.pipe(v.string(), v.trim())),
+	}),
+	v.transform((input): NormalizedProbeValues => {
+		let { protocol, port } = input
+		if (protocol === "icmp") {
+			port = 0
+		} else if ((protocol === "tcp" || protocol === "http") && !port) {
+			port = 443
+		}
+		return {
+			// HTTP probes may be entered as bare hostnames, so normalize them to a
+			// scheme-bearing URL before the payload is sent to PocketBase.
+			target: protocol === "http" ? normalizeHttpTarget(input.target, port) : input.target,
+			protocol,
+			port,
+			interval: input.interval,
+			name: input.name || undefined,
+		}
+	}),
+	v.forward(
+		v.check((input) => {
+			if (input.protocol === "icmp") {
+				return input.port === 0
+			}
+
+			return Number.isInteger(input.port) && input.port >= 1 && input.port <= 65535
+		}, "Port must be between 1 and 65535"),
+		["port"]
+	)
+)
+
+// Bulk parsing only trims raw CSV fields. Inference, defaults, and protocol-
+// specific validation still go through the shared normalization schema above.
+const BulkProbeSchema = v.object({
+	target: v.pipe(v.string(), v.trim(), v.nonEmpty("target is required")),
+	protocol: v.optional(v.pipe(v.string(), v.trim())),
+	port: v.optional(v.pipe(v.string(), v.trim())),
+	interval: v.optional(v.pipe(v.string(), v.trim())),
+	name: v.optional(v.pipe(v.string(), v.trim())),
 })
 
+function normalizeHttpTarget(target: string, port: number) {
+	if (/^https?:\/\//i.test(target)) {
+		return target
+	}
+
+	return `${port === 443 ? "https" : "http"}://${target}`
+}
+
 function buildProbePayload(values: ProbeValues) {
-	const normalizedPort = (values.protocol === "tcp" || values.protocol === "http") && !values.port ? 443 : values.port
-	const payload = v.parse(Schema, {
+	const normalizedValues = v.safeParse(NormalizedProbeValuesSchema, values)
+	if (!normalizedValues.success) {
+		throw new Error(normalizedValues.issues[0]?.message || "Invalid probe")
+	}
+
+	const payload = {
 		system: values.system,
-		target: values.target,
-		protocol: values.protocol,
-		port: normalizedPort,
-		interval: values.interval,
 		enabled: true,
-	})
-	const trimmedName = values.name?.trim()
-	const targetName = values.target.replace(/^https?:\/\//i, "")
+		...normalizedValues.output,
+	}
+
+	const trimmedName = normalizedValues.output.name?.trim()
+	const targetName = normalizedValues.output.target.replace(/^https?:\/\//i, "")
 	if (trimmedName) {
 		payload.name = trimmedName
-	} else if (targetName !== values.target) {
+	} else if (targetName !== normalizedValues.output.target) {
 		payload.name = targetName
 	} else {
 		payload.name = ""
@@ -68,40 +125,25 @@ function buildProbePayload(values: ProbeValues) {
 
 function parseBulkProbeLine(line: string, lineNumber: number, system: string) {
 	const [rawTarget = "", rawProtocol = "", rawPort = "", rawInterval = "", ...rawName] = line.split(",")
-	const target = rawTarget.trim()
-	if (!target) {
-		throw new Error(`Line ${lineNumber}: target is required`)
-	}
-
-	const inferredProtocol: ProbeProtocol = /^https?:\/\//i.test(target) ? "http" : "icmp"
-	const protocolValue = rawProtocol.trim().toLowerCase() || inferredProtocol
-	if (protocolValue !== "icmp" && protocolValue !== "tcp" && protocolValue !== "http") {
-		throw new Error(`Line ${lineNumber}: protocol must be icmp, tcp, or http`)
-	}
-
-	const portValue = rawPort.trim()
-	if (protocolValue === "tcp") {
-		const port = portValue ? Number(portValue) : 443
-		if (!Number.isInteger(port) || port < 1 || port > 65535) {
-			throw new Error(`Line ${lineNumber}: TCP entries require a port between 1 and 65535`)
-		}
-		return buildProbePayload({
-			system,
-			target,
-			protocol: "tcp",
-			port,
-			interval: rawInterval.trim() || "30",
-			name: rawName.join(",").trim() || undefined,
-		})
+	const parsed = v.safeParse(BulkProbeSchema, {
+		target: rawTarget,
+		protocol: rawProtocol,
+		port: rawPort,
+		interval: rawInterval,
+		name: rawName.join(","),
+	})
+	if (!parsed.success) {
+		throw new Error(`Line ${lineNumber}: ${parsed.issues[0]?.message || "invalid probe entry"}`)
 	}
 
 	return buildProbePayload({
 		system,
-		target,
-		protocol: protocolValue,
-		port: 0,
-		interval: rawInterval.trim() || "30",
-		name: rawName.join(",").trim() || undefined,
+		target: parsed.output.target,
+		protocol: (parsed.output.protocol?.toLowerCase() ||
+			(/^https?:\/\//i.test(parsed.output.target) ? "http" : "icmp")) as ProbeProtocol,
+		port: parsed.output.port ? Number(parsed.output.port) : 0,
+		interval: parsed.output.interval || "30",
+		name: parsed.output.name || undefined,
 	})
 }
 
@@ -319,7 +361,9 @@ function ProbeDialogContent({
 }) {
 	const [protocol, setProtocol] = useState<ProbeProtocol>(probe?.protocol ?? "icmp")
 	const [target, setTarget] = useState(probe?.target ?? "")
-	const [port, setPort] = useState(probe?.protocol === "tcp" && probe.port ? String(probe.port) : "")
+	const [port, setPort] = useState(
+		(probe?.protocol === "tcp" || probe?.protocol === "http") && probe.port ? String(probe.port) : ""
+	)
 	const [probeInterval, setProbeInterval] = useState(String(probe?.interval ?? 30))
 	const [name, setName] = useState(probe?.name ?? "")
 	const [loading, setLoading] = useState(false)
@@ -343,7 +387,7 @@ function ProbeDialogContent({
 				system: selectedSystem,
 				target,
 				protocol,
-				port: protocol === "tcp" ? Number(port) : 0,
+				port: protocol === "tcp" || protocol === "http" ? Number(port) : 0,
 				interval: probeInterval,
 				name,
 			})
@@ -417,7 +461,7 @@ function ProbeDialogContent({
 						</SelectContent>
 					</Select>
 				</div>
-				{protocol === "tcp" && (
+				{(protocol === "tcp" || protocol === "http") && (
 					<div className="grid gap-2">
 						<Label>
 							<Trans>Port</Trans>
@@ -429,7 +473,7 @@ function ProbeDialogContent({
 							placeholder="443"
 							min={1}
 							max={65535}
-							required
+							required={protocol === "tcp"}
 						/>
 					</div>
 				)}

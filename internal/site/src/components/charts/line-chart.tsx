@@ -22,6 +22,7 @@ export type DataPoint<T = SystemStatsRecord> = {
 	order?: number
 	strokeOpacity?: number
 	activeDot?: boolean
+	dot?: boolean
 }
 
 export default function LineChartDefault({
@@ -42,7 +43,6 @@ export default function LineChartDefault({
 	truncate = false,
 	chartProps,
 	connectNulls,
-	dot = false,
 }: {
 	chartData: ChartData
 	// biome-ignore lint/suspicious/noExplicitAny: accepts different data source types (systemStats or containerData)
@@ -65,7 +65,6 @@ export default function LineChartDefault({
 	truncate?: boolean
 	chartProps?: Omit<React.ComponentProps<typeof LineChart>, "data" | "margin">
 	connectNulls?: boolean
-	dot?: boolean
 }) {
 	const { yAxisWidth, updateYAxisWidth } = useYAxisWidth()
 	const { isIntersecting, ref } = useIntersectionObserver({ freeze: false })
@@ -87,7 +86,7 @@ export default function LineChartDefault({
 	}, [displayData, displayMaxToggled, isIntersecting, maxToggled, sourceData])
 
 	// Use a stable key derived from data point identities and visual properties
-	const linesKey = dataPoints?.map((d) => `${d.label}:${d.strokeOpacity ?? ""}`).join("\0")
+	const linesKey = dataPoints?.map((d) => `${d.label}:${d.strokeOpacity}${d.dot}`).join("\0")
 
 	const XAxis = xAxis(chartData.chartTime, displayData.at(-1)?.created)
 
@@ -103,7 +102,7 @@ export default function LineChartDefault({
 					dataKey={dataPoint.dataKey}
 					name={dataPoint.label}
 					type="monotoneX"
-					dot={dot}
+					dot={dataPoint.dot || false}
 					strokeWidth={1.5}
 					stroke={color}
 					strokeOpacity={dataPoint.strokeOpacity}

@@ -23,10 +23,9 @@ import {
 	AlertDialogFooter,
 	AlertDialogHeader,
 	AlertDialogTitle,
-	AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
-import { Button, buttonVariants } from "@/components/ui/button"
-import { memo, useMemo, useRef, useState } from "react"
+import { buttonVariants } from "@/components/ui/button"
+import { memo, useCallback, useMemo, useRef, useState } from "react"
 import { getProbeColumns } from "@/components/network-probes-table/network-probes-columns"
 import { Card, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -36,7 +35,6 @@ import { isReadOnlyUser } from "@/lib/api"
 import { pb } from "@/lib/api"
 import { $allSystemsById } from "@/lib/stores"
 import { cn, getVisualStringWidth, useBrowserStorage } from "@/lib/utils"
-import { Trash2Icon } from "lucide-react"
 import type { NetworkProbeRecord } from "@/types"
 import { AddProbeDialog, EditProbeDialog } from "./probe-dialog"
 
@@ -57,6 +55,7 @@ export default function NetworkProbesTableNew({
 	const [rowSelection, setRowSelection] = useState<RowSelectionState>({})
 	const [globalFilter, setGlobalFilter] = useState("")
 	const [deleteOpen, setDeleteOpen] = useState(false)
+	const [pendingDeleteIds, setPendingDeleteIds] = useState<string[]>([])
 	const [editingProbe, setEditingProbe] = useState<NetworkProbeRecord>()
 	const { toast } = useToast()
 	const canManageProbes = !isReadOnlyUser()
@@ -71,26 +70,12 @@ export default function NetworkProbesTableNew({
 		return { longestName, longestTarget }
 	}, [probes])
 
-	// Filter columns based on whether systemId is provided
-	const columns = useMemo(() => {
-		let columns = getProbeColumns(longestName, longestTarget, setEditingProbe)
-		columns = systemId ? columns.filter((col) => col.id !== "system") : columns
-		columns = canManageProbes ? columns : columns.filter((col) => col.id !== "actions")
-		return columns
-	}, [systemId, longestName, longestTarget])
-
-	const handleBulkDelete = async () => {
-		setDeleteOpen(false)
-		const selectedIds = Object.keys(rowSelection)
-		if (!selectedIds.length) {
-			return
-		}
-
-		try {
+	const runProbeBatch = useCallback(
+		async (ids: string[], enqueue: (batch: ReturnType<typeof pb.createBatch>, id: string) => void) => {
 			let batch = pb.createBatch()
 			let inBatch = 0
-			for (const id of selectedIds) {
-				batch.collection("network_probes").delete(id)
+			for (const id of ids) {
+				enqueue(batch, id)
 				inBatch++
 				if (inBatch >= 20) {
 					await batch.send()
@@ -101,7 +86,46 @@ export default function NetworkProbesTableNew({
 			if (inBatch) {
 				await batch.send()
 			}
-			table.resetRowSelection()
+		},
+		[]
+	)
+
+	const handleDeleteRequest = useCallback(
+		async (probesToDelete: NetworkProbeRecord[]) => {
+			if (!probesToDelete.length) {
+				return
+			}
+
+			const ids = probesToDelete.map((probe) => probe.id)
+			if (ids.length === 1) {
+				try {
+					await pb.collection("network_probes").delete(ids[0])
+				} catch (err: unknown) {
+					toast({
+						variant: "destructive",
+						title: t`Error`,
+						description: (err as Error)?.message || t`Failed to delete probes.`,
+					})
+				}
+				return
+			}
+
+			setPendingDeleteIds(ids)
+			setDeleteOpen(true)
+		},
+		[toast]
+	)
+
+	const handleBulkDelete = async () => {
+		setDeleteOpen(false)
+		if (!pendingDeleteIds.length) {
+			return
+		}
+
+		try {
+			await runProbeBatch(pendingDeleteIds, (batch, id) => batch.collection("network_probes").delete(id))
+			setPendingDeleteIds([])
+			setRowSelection({})
 		} catch (err: unknown) {
 			toast({
 				variant: "destructive",
@@ -110,6 +134,51 @@ export default function NetworkProbesTableNew({
 			})
 		}
 	}
+
+	const handleSetEnabled = useCallback(
+		async (probesToUpdate: NetworkProbeRecord[], enabled: boolean) => {
+			if (!probesToUpdate.length) {
+				return
+			}
+
+			const pendingUpdates = probesToUpdate.filter((probe) => probe.enabled !== enabled)
+			if (!pendingUpdates.length) {
+				return
+			}
+
+			try {
+				if (pendingUpdates.length === 1) {
+					await pb.collection("network_probes").update(pendingUpdates[0].id, { enabled })
+					return
+				}
+				await runProbeBatch(
+					pendingUpdates.map((probe) => probe.id),
+					(batch, id) => batch.collection("network_probes").update(id, { enabled })
+				)
+				if (probesToUpdate.length > 1) {
+					setRowSelection({})
+				}
+			} catch (err: unknown) {
+				toast({
+					variant: "destructive",
+					title: t`Error`,
+					description: (err as Error)?.message || t`Failed to update probes.`,
+				})
+			}
+		},
+		[runProbeBatch, toast]
+	)
+
+	const columns = useMemo(() => {
+		let columns = getProbeColumns(longestName, longestTarget, {
+			onEdit: setEditingProbe,
+			onDelete: handleDeleteRequest,
+			onSetEnabled: handleSetEnabled,
+		})
+		columns = systemId ? columns.filter((col) => col.id !== "system") : columns
+		columns = canManageProbes ? columns : columns.filter((col) => col.id !== "actions")
+		return columns
+	}, [canManageProbes, handleDeleteRequest, handleSetEnabled, longestName, systemId, longestTarget])
 
 	const table = useReactTable({
 		data: probes,
@@ -162,41 +231,6 @@ export default function NetworkProbesTableNew({
 						</div>
 					</div>
 					<div className="md:ms-auto flex items-center gap-2">
-						{canManageProbes && table.getFilteredSelectedRowModel().rows.length > 0 && (
-							<div className="fixed bottom-0 left-0 w-full p-4 grid grid-cols-1 items-center gap-4 z-50 backdrop-blur-md shrink-0 md:static md:p-0 md:w-auto md:gap-3">
-								<AlertDialog open={deleteOpen} onOpenChange={setDeleteOpen}>
-									<AlertDialogTrigger asChild>
-										<Button variant="destructive" className="h-9 shrink-0">
-											<Trash2Icon className="size-4 shrink-0" />
-											<span className="ms-1">
-												<Trans>Delete</Trans>
-											</span>
-										</Button>
-									</AlertDialogTrigger>
-									<AlertDialogContent>
-										<AlertDialogHeader>
-											<AlertDialogTitle>
-												<Trans>Are you sure?</Trans>
-											</AlertDialogTitle>
-											<AlertDialogDescription>
-												<Trans>This will permanently delete all selected records from the database.</Trans>
-											</AlertDialogDescription>
-										</AlertDialogHeader>
-										<AlertDialogFooter>
-											<AlertDialogCancel>
-												<Trans>Cancel</Trans>
-											</AlertDialogCancel>
-											<AlertDialogAction
-												className={cn(buttonVariants({ variant: "destructive" }))}
-												onClick={handleBulkDelete}
-											>
-												<Trans>Continue</Trans>
-											</AlertDialogAction>
-										</AlertDialogFooter>
-									</AlertDialogContent>
-								</AlertDialog>
-							</div>
-						)}
 						{probes.length > 0 && (
 							<Input
 								placeholder={t`Filter...`}
@@ -218,6 +252,37 @@ export default function NetworkProbesTableNew({
 								}}
 							/>
 						) : null}
+						<AlertDialog
+							open={deleteOpen}
+							onOpenChange={(open) => {
+								setDeleteOpen(open)
+								if (!open) {
+									setPendingDeleteIds([])
+								}
+							}}
+						>
+							<AlertDialogContent>
+								<AlertDialogHeader>
+									<AlertDialogTitle>
+										<Trans>Are you sure?</Trans>
+									</AlertDialogTitle>
+									<AlertDialogDescription>
+										<Trans>This will permanently delete all selected records from the database.</Trans>
+									</AlertDialogDescription>
+								</AlertDialogHeader>
+								<AlertDialogFooter>
+									<AlertDialogCancel>
+										<Trans>Cancel</Trans>
+									</AlertDialogCancel>
+									<AlertDialogAction
+										className={cn(buttonVariants({ variant: "destructive" }))}
+										onClick={handleBulkDelete}
+									>
+										<Trans>Continue</Trans>
+									</AlertDialogAction>
+								</AlertDialogFooter>
+							</AlertDialogContent>
+						</AlertDialog>
 					</div>
 				</div>
 			</CardHeader>

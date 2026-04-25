@@ -26,8 +26,6 @@ import {
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Trans } from "@lingui/react/macro"
-import { pb } from "@/lib/api"
-import { toast } from "@/components/ui/use-toast"
 import { $allSystemsById } from "@/lib/stores"
 import { useStore } from "@nanostores/react"
 import { SystemStatus } from "@/lib/enums"
@@ -40,23 +38,7 @@ const protocolColors: Record<string, string> = {
 	http: "bg-green-500/15 text-green-400",
 }
 
-async function deleteProbe(id: string) {
-	try {
-		await pb.collection("network_probes").delete(id)
-	} catch (err: unknown) {
-		toast({ variant: "destructive", title: t`Error`, description: (err as Error)?.message })
-	}
-}
-
-async function setProbeEnabled(id: string, enabled: boolean) {
-	try {
-		await pb.collection("network_probes").update(id, { enabled })
-	} catch (err: unknown) {
-		toast({ variant: "destructive", title: t`Error`, description: (err as Error)?.message })
-	}
-}
-
-const STATUS_COLORS = {
+const SYSTEM_STATUS_COLORS = {
 	[SystemStatus.Up]: "bg-green-500",
 	[SystemStatus.Down]: "bg-red-500",
 	[SystemStatus.Paused]: "bg-primary/40",
@@ -72,7 +54,15 @@ const isMuted = (record: NetworkProbeRecord, systemRecord: SystemRecord | undefi
 export function getProbeColumns(
 	longestName = 0,
 	longestTarget = 0,
-	onEdit?: (probe: NetworkProbeRecord) => void
+	{
+		onEdit,
+		onDelete,
+		onSetEnabled,
+	}: {
+		onEdit?: (probe: NetworkProbeRecord) => void
+		onDelete?: (probes: NetworkProbeRecord[]) => void | Promise<void>
+		onSetEnabled?: (probes: NetworkProbeRecord[], enabled: boolean) => void | Promise<void>
+	} = {}
 ): ColumnDef<NetworkProbeRecord>[] {
 	return [
 		{
@@ -101,11 +91,17 @@ export function getProbeColumns(
 			sortingFn: (a, b) => (a.original.name || a.original.target).localeCompare(b.original.name || b.original.target),
 			accessorFn: (record) => record.name || record.target,
 			header: ({ column }) => <HeaderButton column={column} name={t`Name`} Icon={NetworkIcon} />,
-			cell: ({ getValue }) => (
-				<div className="ms-1.5 max-w-40 block truncate tabular-nums" style={{ width: `${longestName / 1.05}ch` }}>
-					{getValue() as string}
-				</div>
-			),
+			cell: ({ row, getValue }) => {
+				const probe = row.original
+				return (
+					<div className="ms-1.5 max-w-40 flex gap-2 items-center truncate tabular-nums">
+						<span className={cn("shrink-0 size-2 rounded-full", probe.enabled ? "bg-green-500" : "bg-primary/40")} />
+						<div className="block" style={{ width: `${longestName / 1.05}ch` }}>
+							{getValue() as string}
+						</div>
+					</div>
+				)
+			},
 		},
 		{
 			id: "system",
@@ -125,7 +121,7 @@ export function getProbeColumns(
 				return useMemo(
 					() => (
 						<span className="ms-1.5 xl:w-20 truncate flex items-center gap-2">
-							<span className={cn("shrink-0 size-2 rounded-full", STATUS_COLORS[status])} />
+							<span className={cn("shrink-0 size-2 rounded-full", SYSTEM_STATUS_COLORS[status])} />
 							{name}
 						</span>
 					),
@@ -238,31 +234,33 @@ export function getProbeColumns(
 			enableHiding: false,
 			header: () => null,
 			size: 40,
-			cell: ({ row }) => {
-				const { enabled } = row.original
+			cell: ({ row, table }) => {
+				const selectedRows = table.getSelectedRowModel().rows
+				const actionRows =
+					row.getIsSelected() && selectedRows.length > 1
+						? selectedRows.map((selectedRow) => selectedRow.original)
+						: [row.original]
+				const isBulkAction = actionRows.length > 1
+				const shouldPause = actionRows.some((probe) => probe.enabled)
 				return (
 					<DropdownMenu>
 						<DropdownMenuTrigger asChild>
-							<Button
-								variant="ghost"
-								size="icon"
-								className="size-10"
-								onClick={(event) => event.stopPropagation()}
-								onMouseDown={(event) => event.stopPropagation()}
-							>
+							<Button variant="ghost" size="icon" className="size-10">
 								<span className="sr-only">
 									<Trans>Open menu</Trans>
 								</span>
 								<MoreHorizontalIcon className="w-5" />
 							</Button>
 						</DropdownMenuTrigger>
-						<DropdownMenuContent align="end" onClick={(event) => event.stopPropagation()}>
-							<DropdownMenuItem onClick={() => onEdit?.(row.original)}>
-								<PenBoxIcon className="me-2.5 size-4" />
-								<Trans>Edit</Trans>
-							</DropdownMenuItem>
-							<DropdownMenuItem onClick={() => setProbeEnabled(row.original.id, !enabled)}>
-								{enabled ? (
+						<DropdownMenuContent align="end">
+							{!isBulkAction && (
+								<DropdownMenuItem onClick={() => onEdit?.(row.original)}>
+									<PenBoxIcon className="me-2.5 size-4" />
+									<Trans>Edit</Trans>
+								</DropdownMenuItem>
+							)}
+							<DropdownMenuItem onClick={() => onSetEnabled?.(actionRows, !shouldPause)}>
+								{shouldPause ? (
 									<>
 										<PauseCircleIcon className="me-2.5 size-4" />
 										<Trans>Pause</Trans>
@@ -276,9 +274,8 @@ export function getProbeColumns(
 							</DropdownMenuItem>
 							<DropdownMenuSeparator />
 							<DropdownMenuItem
-								onClick={(event) => {
-									event.stopPropagation()
-									deleteProbe(row.original.id)
+								onClick={() => {
+									onDelete?.(actionRows)
 								}}
 							>
 								<Trash2Icon className="me-2.5 size-4" />
@@ -291,6 +288,13 @@ export function getProbeColumns(
 		},
 	]
 }
+
+const responseTimeThresholds = {
+	http: { warning: 800, critical: 3000 },
+	tcp: { warning: 500, critical: 2000 },
+	icmp: { warning: 100, critical: 500 },
+}
+
 function responseTimeCell(cell: CellContext<NetworkProbeRecord, unknown>) {
 	const probe = cell.row.original
 	const systemRecord = useStore($allSystemsById)[probe.system]
@@ -304,10 +308,10 @@ function responseTimeCell(cell: CellContext<NetworkProbeRecord, unknown>) {
 	let color = "bg-green-500"
 	if (muted) {
 		color = "bg-muted-foreground/50"
-	} else if (responseTime > 200) {
+	} else if (responseTime > responseTimeThresholds[probe.protocol].warning) {
 		color = "bg-yellow-500"
 	}
-	if (!muted && responseTime > 2000) {
+	if (!muted && responseTime > responseTimeThresholds[probe.protocol].critical) {
 		color = "bg-red-500"
 	}
 	return (
