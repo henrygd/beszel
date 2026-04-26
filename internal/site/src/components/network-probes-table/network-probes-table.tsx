@@ -24,7 +24,7 @@ import {
 	AlertDialogHeader,
 	AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
-import { buttonVariants } from "@/components/ui/button"
+import { Button, buttonVariants } from "@/components/ui/button"
 import { memo, useCallback, useMemo, useRef, useState } from "react"
 import { getProbeColumns } from "@/components/network-probes-table/network-probes-columns"
 import { Card, CardHeader, CardTitle } from "@/components/ui/card"
@@ -37,6 +37,7 @@ import { $allSystemsById } from "@/lib/stores"
 import { cn, getVisualStringWidth, useBrowserStorage } from "@/lib/utils"
 import type { NetworkProbeRecord } from "@/types"
 import { AddProbeDialog, EditProbeDialog } from "./probe-dialog"
+import { XIcon } from "lucide-react"
 
 export default function NetworkProbesTableNew({
 	systemId,
@@ -232,12 +233,26 @@ export default function NetworkProbesTableNew({
 					</div>
 					<div className="md:ms-auto flex items-center gap-2">
 						{probes.length > 0 && (
-							<Input
-								placeholder={t`Filter...`}
-								value={globalFilter}
-								onChange={(e) => setGlobalFilter(e.target.value)}
-								className="ms-auto px-4 w-full max-w-full md:w-50"
-							/>
+							<div className="relative">
+								<Input
+									placeholder={t`Filter...`}
+									value={globalFilter}
+									onChange={(e) => setGlobalFilter(e.target.value)}
+									className="ms-auto px-4 w-full max-w-full md:w-50"
+								/>
+								{globalFilter && (
+									<Button
+										type="button"
+										variant="ghost"
+										size="icon"
+										aria-label={t`Clear`}
+										className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 text-muted-foreground"
+										onClick={() => setGlobalFilter("")}
+									>
+										<XIcon className="h-4 w-4" />
+									</Button>
+								)}
+							</div>
 						)}
 						{canManageProbes ? <AddProbeDialog systemId={systemId} /> : null}
 						{canManageProbes ? (

@@ -4,8 +4,11 @@ import (
 	"errors"
 	"fmt"
 	"math"
+	"math/rand"
 	"net"
 	"net/http"
+
+	// "strconv"
 	"sync"
 	"time"
 
@@ -208,7 +211,7 @@ func (pm *ProbeManager) SyncProbes(configs []probe.Config) {
 		}
 		task = newProbeTaskFromExisting(cfg, task)
 		pm.probes[key] = task
-		go pm.runProbe(task, true)
+		go pm.runProbe(task, false)
 	}
 }
 
@@ -270,7 +273,7 @@ func (pm *ProbeManager) UpsertProbe(config probe.Config, runNow bool) (*probe.Re
 		return result, nil
 	}
 	if startTask {
-		go pm.runProbe(task, true)
+		go pm.runProbe(task, false)
 	}
 	return nil, nil
 }
@@ -325,23 +328,47 @@ func (pm *ProbeManager) Stop() {
 func (pm *ProbeManager) runProbe(task *probeTask, runNow bool) {
 	interval := time.Duration(task.config.Interval) * time.Second
 	if interval < time.Second {
-		interval = 10 * time.Second
+		interval = 30 * time.Second
 	}
-	ticker := time.NewTicker(interval)
-	defer ticker.Stop()
+
+	stagger := getStagger(interval.Milliseconds())
+	slog.Info("starting probe task", "id", task.config.ID, "initial_delay", stagger.String(), "interval", interval.String())
 
 	if runNow {
 		pm.executeProbe(task)
 	}
 
+	select {
+	case <-task.cancel:
+		slog.Info("removed probe", "id", task.config.ID)
+		return
+	case <-time.After(stagger):
+		slog.Info("initial probe execution", "id", task.config.ID)
+		pm.executeProbe(task)
+	}
+
+	ticker := time.Tick(interval)
+
 	for {
 		select {
 		case <-task.cancel:
+			slog.Info("removed probe", "id", task.config.ID)
 			return
-		case <-ticker.C:
+		case <-ticker:
+			slog.Info("running probe in main loop", "id", task.config.ID, "interval", interval.String())
 			pm.executeProbe(task)
 		}
 	}
+}
+
+// getStagger returns a random duration between intervalSeconds/2 and intervalSeconds to stagger probe executions
+func getStagger(intervalMilli int64) time.Duration {
+	intervalMilliInt := int(intervalMilli)
+	randomDelayInt := rand.Intn(intervalMilliInt)
+	if randomDelayInt < intervalMilliInt/2 {
+		randomDelayInt += intervalMilliInt / 2
+	}
+	return time.Duration(randomDelayInt) * time.Millisecond
 }
 
 func (pm *ProbeManager) runProbeNow(task *probeTask) *probe.Result {

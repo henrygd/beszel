@@ -281,6 +281,14 @@ func TestProbeManagerApplySyncDeleteRemovesTask(t *testing.T) {
 	}
 }
 
+func TestProbeManagerGetRandomDelay(t *testing.T) {
+	for i := 1000; i < 360_000; i += 1000 {
+		delay := getStagger(int64(i))
+		assert.GreaterOrEqual(t, delay, time.Duration(i/2)*time.Millisecond)
+		assert.LessOrEqual(t, delay, time.Duration(i)*time.Millisecond)
+	}
+}
+
 func TestProbeHTTP(t *testing.T) {
 	t.Run("success", func(t *testing.T) {
 		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
