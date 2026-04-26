@@ -5,19 +5,16 @@ import {
 	$allSystemsById,
 	$allSystemsByName,
 	$downSystems,
-	$longestSystemNameLen,
+	$longestSystemName,
 	$pausedSystems,
 	$upSystems,
 } from "@/lib/stores"
-import { getVisualStringWidth, updateFavicon } from "@/lib/utils"
+import { updateFavicon } from "@/lib/utils"
 import type { SystemRecord } from "@/types"
 import { SystemStatus } from "./enums"
 
 const COLLECTION = pb.collection<SystemRecord>("systems")
 const FIELDS_DEFAULT = "id,name,host,port,info,status"
-
-/** Maximum system name length for display purposes */
-const MAX_SYSTEM_NAME_LENGTH = 22
 
 let initialized = false
 // biome-ignore lint/suspicious/noConfusingVoidType: typescript rocks
@@ -72,16 +69,19 @@ export function init() {
 	})
 }
 
-/** Update the longest system name length and favicon based on system status */
-function onSystemsChanged(_: Record<string, SystemRecord>, changedSystem: SystemRecord | undefined) {
+/** Update the longest system name string and favicon based on system status */
+function onSystemsChanged(systems: Record<string, SystemRecord>, _changedSystem: SystemRecord | undefined) {
 	const downSystemsStore = $downSystems.get()
 	const downSystems = Object.values(downSystemsStore)
 
-	// Update longest system name length
-	const longestName = $longestSystemNameLen.get()
-	const nameLen = Math.min(MAX_SYSTEM_NAME_LENGTH, getVisualStringWidth(changedSystem?.name || ""))
-	if (nameLen > longestName) {
-		$longestSystemNameLen.set(nameLen)
+	let longestName = ""
+	for (const system of Object.values(systems)) {
+		if (system.name.length > longestName.length) {
+			longestName = system.name
+		}
+	}
+	if ($longestSystemName.get() !== longestName) {
+		$longestSystemName.set(longestName)
 	}
 
 	updateFavicon(downSystems.length)

@@ -15,7 +15,7 @@ import {
 import { EthernetIcon, HourglassIcon, SquareArrowRightEnterIcon } from "../ui/icons"
 import { Badge } from "../ui/badge"
 import { t } from "@lingui/core/macro"
-import { $allSystemsById, $longestSystemNameLen } from "@/lib/stores"
+import { $allSystemsById, $longestSystemName } from "@/lib/stores"
 import { useStore } from "@nanostores/react"
 import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip"
 
@@ -63,10 +63,13 @@ export const containerChartCols: ColumnDef<ContainerRecord>[] = [
 		header: ({ column }) => <HeaderButton column={column} name={t`System`} Icon={ServerIcon} />,
 		cell: ({ getValue }) => {
 			const allSystems = useStore($allSystemsById)
-			const longestName = useStore($longestSystemNameLen)
+			const longestName = useStore($longestSystemName)
 			return (
-				<div className="ms-1 max-w-40 truncate" style={{ width: `${longestName / 1.05}ch` }}>
-					{allSystems[getValue() as string]?.name ?? ""}
+				<div className="ms-1 relative w-fit max-w-40">
+					<span className="invisible block whitespace-nowrap" aria-hidden="true">
+						{longestName}
+					</span>
+					<span className="absolute inset-0 truncate">{allSystems[getValue() as string]?.name ?? ""}</span>
 				</div>
 			)
 		},

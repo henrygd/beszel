@@ -90,6 +90,7 @@ function ProbeChart({
 			grid={grid}
 		>
 			<LineChartDefault
+				truncate
 				chartData={chartData}
 				customData={filteredProbeStats}
 				dataPoints={dataPoints}

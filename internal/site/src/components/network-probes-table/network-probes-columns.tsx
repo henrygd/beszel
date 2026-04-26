@@ -26,7 +26,7 @@ import {
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Trans } from "@lingui/react/macro"
-import { $allSystemsById } from "@/lib/stores"
+import { $allSystemsById, $longestSystemName } from "@/lib/stores"
 import { useStore } from "@nanostores/react"
 import { SystemStatus } from "@/lib/enums"
 import { Checkbox } from "@/components/ui/checkbox"
@@ -52,8 +52,8 @@ const isMuted = (record: NetworkProbeRecord, systemRecord: SystemRecord | undefi
 	!record.enabled || systemRecord?.status !== SystemStatus.Up
 
 export function getProbeColumns(
-	longestName = 0,
-	longestTarget = 0,
+	longestName = "",
+	longestTarget = "",
 	{
 		onEdit,
 		onDelete,
@@ -94,10 +94,13 @@ export function getProbeColumns(
 			cell: ({ row, getValue }) => {
 				const probe = row.original
 				return (
-					<div className="ms-1.5 max-w-40 flex gap-2 items-center truncate tabular-nums">
+					<div className="ms-1.5 max-w-40 flex gap-2 items-center tabular-nums">
 						<span className={cn("shrink-0 size-2 rounded-full", probe.enabled ? "bg-green-500" : "bg-primary/40")} />
-						<div className="block" style={{ width: `${longestName / 1.05}ch` }}>
-							{getValue() as string}
+						<div className="relative w-fit min-w-0 max-w-full">
+							<span className="invisible block overflow-hidden whitespace-nowrap" aria-hidden="true">
+								{longestName}
+							</span>
+							<span className="absolute inset-0 truncate">{getValue() as string}</span>
 						</div>
 					</div>
 				)
@@ -115,15 +118,21 @@ export function getProbeColumns(
 			header: ({ column }) => <HeaderButton column={column} name={t`System`} Icon={ServerIcon} />,
 			cell: ({ getValue }) => {
 				const system = useStore($allSystemsById)[getValue() as string] as SystemRecord | undefined
+				const longestSystemName = useStore($longestSystemName)
 				const name = system?.name
 				const status = system?.status as SystemStatus // undefined val is fine but makes lsp mad
 
 				return useMemo(
 					() => (
-						<span className="ms-1.5 xl:w-20 truncate flex items-center gap-2">
+						<div className="ms-1.5 max-w-44 flex gap-2 items-center tabular-nums">
 							<span className={cn("shrink-0 size-2 rounded-full", SYSTEM_STATUS_COLORS[status])} />
-							{name}
-						</span>
+							<div className="relative w-fit min-w-0 max-w-full">
+								<span className="invisible block whitespace-nowrap" aria-hidden="true">
+									{longestSystemName}
+								</span>
+								<span className="absolute inset-0 truncate">{name}</span>
+							</div>
+						</div>
 					),
 					[status, name]
 				)
@@ -135,8 +144,11 @@ export function getProbeColumns(
 			accessorFn: (record) => record.target,
 			header: ({ column }) => <HeaderButton column={column} name={t`Target`} Icon={GlobeIcon} />,
 			cell: ({ getValue }) => (
-				<div className="ms-1.5 tabular-nums block truncate max-w-44" style={{ width: `${longestTarget / 1.05}ch` }}>
-					{getValue() as string}
+				<div className="ms-1.5 relative w-fit max-w-44 tabular-nums">
+					<span className="invisible block whitespace-nowrap" aria-hidden="true">
+						{longestTarget}
+					</span>
+					<span className="absolute inset-0 truncate">{getValue() as string}</span>
 				</div>
 			),
 		},

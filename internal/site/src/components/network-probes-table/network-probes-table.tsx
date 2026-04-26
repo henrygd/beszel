@@ -34,7 +34,7 @@ import { useToast } from "@/components/ui/use-toast"
 import { isReadOnlyUser } from "@/lib/api"
 import { pb } from "@/lib/api"
 import { $allSystemsById } from "@/lib/stores"
-import { cn, getVisualStringWidth, useBrowserStorage } from "@/lib/utils"
+import { cn, useBrowserStorage } from "@/lib/utils"
 import type { NetworkProbeRecord } from "@/types"
 import { AddProbeDialog, EditProbeDialog } from "./probe-dialog"
 import { XIcon } from "lucide-react"
@@ -61,14 +61,19 @@ export default function NetworkProbesTableNew({
 	const { toast } = useToast()
 	const canManageProbes = !isReadOnlyUser()
 
-	const { longestName, longestTarget } = useMemo(() => {
-		let longestName = 0
-		let longestTarget = 0
+	const [longestName, longestTarget] = useMemo(() => {
+		let longestName = ""
+		let longestTarget = ""
 		for (const p of probes) {
-			longestName = Math.max(longestName, getVisualStringWidth(p.name || p.target))
-			longestTarget = Math.max(longestTarget, getVisualStringWidth(p.target))
+			const name = p.name || p.target
+			if (name.length > longestName.length) {
+				longestName = name
+			}
+			if (p.target.length > longestTarget.length) {
+				longestTarget = p.target
+			}
 		}
-		return { longestName, longestTarget }
+		return [longestName, longestTarget]
 	}, [probes])
 
 	const runProbeBatch = useCallback(
@@ -77,8 +82,7 @@ export default function NetworkProbesTableNew({
 			let inBatch = 0
 			for (const id of ids) {
 				enqueue(batch, id)
-				inBatch++
-				if (inBatch >= 20) {
+				if (++inBatch >= 20) {
 					await batch.send()
 					batch = pb.createBatch()
 					inBatch = 0
