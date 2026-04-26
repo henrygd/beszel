@@ -8,7 +8,7 @@ msgstr ""
 "Language: no\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2026-04-26 21:32\n"
+"PO-Revision-Date: 2026-04-26 23:25\n"
 "Last-Translator: \n"
 "Language-Team: Norwegian\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
@@ -361,7 +361,7 @@ msgstr "Diagraminnstillinger"
 
 #: src/components/routes/system/info-bar.tsx
 msgid "Chart width"
-msgstr "Grafbredde"
+msgstr "Diagrambredde"
 
 #: src/components/login/forgot-pass-form.tsx
 msgid "Check {email} for a reset link."
@@ -715,7 +715,7 @@ msgstr "Skriv inn ditt engangspassord."
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Ephemeral"
-msgstr "Flyktig"
+msgstr "Midlertidig"
 
 #: src/components/login/auth-form.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
@@ -794,7 +794,7 @@ msgstr "Kunne ikke lagre innstillingene"
 
 #: src/components/routes/settings/heartbeat.tsx
 msgid "Failed to send heartbeat"
-msgstr "Kunne ikke sende heartbeat"
+msgstr "Kunne ikke sende hjerteslag"
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Failed to send test notification"
@@ -887,11 +887,11 @@ msgstr "Hjerteslag"
 
 #: src/components/routes/settings/heartbeat.tsx
 msgid "Heartbeat Monitoring"
-msgstr "Heartbeat-overvåking"
+msgstr "Hjerteslagsovervåking"
 
 #: src/components/routes/settings/heartbeat.tsx
 msgid "Heartbeat sent successfully"
-msgstr "Heartbeat sendt"
+msgstr "Hjerteslag sendt vellykket"
 
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
@@ -1228,7 +1228,7 @@ msgstr "Pauset ({pausedSystemsLength})"
 
 #: src/components/routes/settings/heartbeat.tsx
 msgid "Payload format"
-msgstr "Nyttelastformat"
+msgstr "Lastformat"
 
 #: src/components/routes/system/cpu-sheet.tsx
 #: src/components/routes/system/cpu-sheet.tsx
@@ -1457,7 +1457,7 @@ msgstr "Velg {foo}"
 
 #: src/components/routes/settings/heartbeat.tsx
 msgid "Send a single heartbeat ping to verify your endpoint is working."
-msgstr "Send en enkelt heartbeat-ping for å bekrefte at endepunktet fungerer."
+msgstr "Send en enkelt hjerteslag-ping for å verifisere at endepunktet ditt fungerer."
 
 #: src/components/routes/settings/heartbeat.tsx
 msgid "Send periodic outbound pings to an external monitoring service so you can monitor Beszel without exposing it to the internet."
@@ -1465,7 +1465,7 @@ msgstr "Send periodiske utgående pinger til en ekstern overvåkingstjeneste sli
 
 #: src/components/routes/settings/heartbeat.tsx
 msgid "Send test heartbeat"
-msgstr "Send test-heartbeat"
+msgstr "Send test-hjerteslag"
 
 #: src/components/routes/system/charts/network-charts.tsx
 msgid "Sent"
@@ -1490,7 +1490,7 @@ msgstr "Angi prosentvise terskler for målerfarger."
 
 #: src/components/routes/settings/heartbeat.tsx
 msgid "Set the following environment variables on your Beszel hub to enable heartbeat monitoring:"
-msgstr "Angi følgende miljøvariabler på Beszel-huben din for å aktivere heartbeat-overvåking:"
+msgstr "Sett følgende miljøvariabler på Beszel-huben din for å aktivere hjerteslagsovervåking:"
 
 #: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
@@ -1619,7 +1619,7 @@ msgstr "Test <0>URL</0>"
 
 #: src/components/routes/settings/heartbeat.tsx
 msgid "Test heartbeat"
-msgstr "Test-heartbeat"
+msgstr "Test-hjerteslag"
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Test notification sent"
@@ -1898,7 +1898,7 @@ msgstr "Når aktivert, tillater denne tokenen agenter å registrere seg selv ute
 
 #: src/components/routes/settings/heartbeat.tsx
 msgid "When using POST, each heartbeat includes a JSON payload with system status summary, list of down systems, and triggered alerts."
-msgstr "Ved bruk av POST inkluderer hver heartbeat en JSON-nyttelast med systemstatussammendrag, liste over nede systemer og utløste varsler."
+msgstr "Ved bruk av POST inkluderer hver hjerteslag en JSON-nyttelast med systemstatussammendrag, liste over nede systemer og utløste varsler."
 
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
