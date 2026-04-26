@@ -44,7 +44,9 @@ type SyncResponse struct {
 //
 // 3: max response over the last hour in microseconds
 //
-// 4: packet loss percentage over the last hour (0-100)
+// 4: packet loss percentage (0-100)
+//
+// 5: packet loss percentage over the last hour (0-100)
 type Result []float64
 
 // Get returns the value at the specified index or 0 if the index is out of range.

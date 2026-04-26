@@ -248,7 +248,7 @@ export function useNetworkProbesData(props: UseNetworkProbesProps) {
 // 	const stats: NetworkProbeStatsRecord["stats"] = {}
 // 	for (const probe of probes) {
 // 		// TODO: include only if probe.updated < charttime
-// 		stats[probe.id] = [probe.res, probe.resAvg1h, probe.resMin1h, probe.resMax1h, probe.loss1h]
+// 		stats[probe.id] = [probe.res, probe.resAvg1h, probe.resMin1h, probe.resMax1h, probe.loss, probe.loss1h]
 // 	}
 // 	return stats
 // }

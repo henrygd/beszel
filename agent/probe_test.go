@@ -22,8 +22,8 @@ func TestProbeTaskAggregateLockedUsesRawSamplesForShortWindows(t *testing.T) {
 
 	agg := task.aggregateLocked(time.Minute, now)
 	require.True(t, agg.hasData())
-	assert.Equal(t, 2, agg.totalCount)
-	assert.Equal(t, 1, agg.successCount)
+	assert.Equal(t, int64(2), agg.totalCount)
+	assert.Equal(t, int64(1), agg.successCount)
 	assert.Equal(t, 20.0, agg.result()[0])
 	assert.Equal(t, 20.0, agg.result()[1])
 	assert.Equal(t, 20.0, agg.result()[2])
@@ -42,8 +42,8 @@ func TestProbeTaskAggregateLockedUsesMinuteBucketsForLongWindows(t *testing.T) {
 
 	agg := task.aggregateLocked(10*time.Minute, now)
 	require.True(t, agg.hasData())
-	assert.Equal(t, 4, agg.totalCount)
-	assert.Equal(t, 3, agg.successCount)
+	assert.Equal(t, int64(4), agg.totalCount)
+	assert.Equal(t, int64(3), agg.successCount)
 	assert.Equal(t, 30.0, agg.result()[0])
 	assert.Equal(t, 20.0, agg.result()[1])
 	assert.Equal(t, 40.0, agg.result()[2])
@@ -62,8 +62,8 @@ func TestProbeTaskAddSampleLockedTrimsRawSamplesButKeepsBucketHistory(t *testing
 
 	agg := task.aggregateLocked(10*time.Minute, now)
 	require.True(t, agg.hasData())
-	assert.Equal(t, 2, agg.totalCount)
-	assert.Equal(t, 2, agg.successCount)
+	assert.Equal(t, int64(2), agg.totalCount)
+	assert.Equal(t, int64(2), agg.successCount)
 	assert.Equal(t, 15.0, agg.result()[0])
 	assert.Equal(t, 10.0, agg.result()[1])
 	assert.Equal(t, 20.0, agg.result()[2])
@@ -76,20 +76,21 @@ func TestProbeManagerGetResultsIncludesHourResponseRange(t *testing.T) {
 	task.addSampleLocked(probeSample{responseUs: 10, timestamp: now.Add(-30 * time.Minute)})
 	task.addSampleLocked(probeSample{responseUs: 20, timestamp: now.Add(-9 * time.Minute)})
 	task.addSampleLocked(probeSample{responseUs: 40, timestamp: now.Add(-5 * time.Minute)})
-	task.addSampleLocked(probeSample{responseUs: -1, timestamp: now.Add(-90 * time.Second)})
-	task.addSampleLocked(probeSample{responseUs: 30, timestamp: now.Add(-30 * time.Second)})
+	task.addSampleLocked(probeSample{responseUs: 30, timestamp: now.Add(-50 * time.Second)})
+	task.addSampleLocked(probeSample{responseUs: -1, timestamp: now.Add(-30 * time.Second)})
 
 	pm := &ProbeManager{probes: map[string]*probeTask{"icmp:example.com": task}}
 
 	results := pm.GetResults(uint16(time.Minute / time.Millisecond))
 	result, ok := results["probe-1"]
 	require.True(t, ok)
-	require.Len(t, result, 5)
+	require.Len(t, result, 6)
 	assert.Equal(t, 30.0, result[0])
 	assert.Equal(t, 25.0, result[1])
 	assert.Equal(t, 10.0, result[2])
 	assert.Equal(t, 40.0, result[3])
-	assert.Equal(t, 20.0, result[4])
+	assert.Equal(t, 50.0, result[4])
+	assert.Equal(t, 20.0, result[5])
 }
 
 func TestProbeManagerGetResultsIncludesLossOnlyHourData(t *testing.T) {
@@ -103,12 +104,13 @@ func TestProbeManagerGetResultsIncludesLossOnlyHourData(t *testing.T) {
 	results := pm.GetResults(uint16(time.Minute / time.Millisecond))
 	result, ok := results["probe-1"]
 	require.True(t, ok)
-	require.Len(t, result, 5)
+	require.Len(t, result, 6)
 	assert.Equal(t, 0.0, result[0])
 	assert.Equal(t, 0.0, result[1])
 	assert.Equal(t, 0.0, result[2])
 	assert.Equal(t, 0.0, result[3])
 	assert.Equal(t, 100.0, result[4])
+	assert.Equal(t, 100.0, result[5])
 }
 
 func TestProbeConfigResultKeyUsesSyncedID(t *testing.T) {
@@ -205,9 +207,10 @@ func TestProbeManagerApplySyncUpsertRunsImmediatelyAndReturnsResult(t *testing.T
 	defer pm.Stop()
 
 	require.NoError(t, err)
-	require.Len(t, resp.Result, 5)
+	require.Len(t, resp.Result, 6)
 	assert.GreaterOrEqual(t, resp.Result[0], 0.0)
 	assert.Equal(t, 0.0, resp.Result[4])
+	assert.Equal(t, 0.0, resp.Result[5])
 
 	task := pm.probes["probe-1"]
 	require.NotNil(t, task)
@@ -247,8 +250,8 @@ func TestProbeManagerUpsertProbeKeepsHistoryWhenOnlyIntervalChanges(t *testing.T
 
 	agg := updatedTask.aggregateLocked(time.Hour, now)
 	require.True(t, agg.hasData())
-	assert.Equal(t, 2, agg.totalCount)
-	assert.Equal(t, 2, agg.successCount)
+	assert.Equal(t, int64(2), agg.totalCount)
+	assert.Equal(t, int64(2), agg.successCount)
 	assert.Equal(t, 18.0, agg.avgResponse())
 
 	select {

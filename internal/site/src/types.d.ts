@@ -556,6 +556,7 @@ export interface NetworkProbeRecord {
 	resMin1h: number
 	resMax1h: number
 	resAvg1h: number
+	loss: number
 	loss1h: number
 	interval: number
 	enabled: boolean
@@ -571,7 +572,9 @@ export interface NetworkProbeRecord {
  *
  * 3: max response over the last hour in microseconds
  *
- * 4: packet loss over 1 hour in %
+ * 4: packet loss %
+ *
+ * 5: packet loss over the last hour in %
  */
 type ProbeResult = number[]
 

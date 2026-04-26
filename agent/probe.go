@@ -393,6 +393,7 @@ func (task *probeTask) aggregateLocked(duration time.Duration, now time.Time) pr
 	return aggregateBucketsSince(task.buckets[:], cutoff, now)
 }
 
+// resultLocked returns the aggregated probe result for the requested duration along with a bool indicating whether any data was available.
 func (task *probeTask) resultLocked(duration time.Duration, now time.Time) (probe.Result, bool) {
 	agg := task.aggregateLocked(duration, now)
 	hourAgg := task.aggregateLocked(time.Hour, now)
@@ -401,18 +402,20 @@ func (task *probeTask) resultLocked(duration time.Duration, now time.Time) (prob
 	}
 
 	result := agg.result()
-	hourAvg := hourAgg.avgResponse()
-	hourLoss := hourAgg.lossPercentage()
+	loss1m := result[3]
+	response1h := hourAgg.avgResponse()
+	loss1h := hourAgg.lossPercentage()
 	if hourAgg.successCount > 0 {
 		return probe.Result{
 			result[0],
-			hourAvg,
+			response1h,
 			float64(hourAgg.minUs),
 			float64(hourAgg.maxUs),
-			hourLoss,
+			loss1m,
+			loss1h,
 		}, true
 	}
-	return probe.Result{result[0], hourAvg, 0, 0, hourLoss}, true
+	return probe.Result{result[0], response1h, 0, 0, loss1m, loss1h}, true
 }
 
 // aggregateSamplesSince aggregates raw samples newer than the cutoff.

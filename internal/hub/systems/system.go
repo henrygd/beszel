@@ -334,7 +334,7 @@ func updateNetworkProbesRecords(app core.App, data map[string]probe.Result, syst
 	var updateQuery *dbx.Query
 	if !realtimeActive {
 		db = app.DB()
-		sql := fmt.Sprintf("UPDATE %s SET res={:res}, resMin1h={:resMin1h}, resMax1h={:resMax1h}, resAvg1h={:resAvg1h}, loss1h={:loss1h}, updated={:updated} WHERE id={:id}", collectionName)
+		sql := fmt.Sprintf("UPDATE %s SET res={:res}, resMin1h={:resMin1h}, resMax1h={:resMax1h}, resAvg1h={:resAvg1h}, loss={:loss}, loss1h={:loss1h}, updated={:updated} WHERE id={:id}", collectionName)
 		updateQuery = db.NewQuery(sql)
 	}
 
@@ -349,7 +349,8 @@ func updateNetworkProbesRecords(app core.App, data map[string]probe.Result, syst
 				record.Set("resAvg1h", values.Get(1))
 				record.Set("resMin1h", values.Get(2))
 				record.Set("resMax1h", values.Get(3))
-				record.Set("loss1h", values.Get(4))
+				record.Set("loss", values.Get(4))
+				record.Set("loss1h", values.Get(5))
 				record.Set("updated", nowString)
 				err = app.SaveNoValidate(record)
 			}
@@ -360,7 +361,8 @@ func updateNetworkProbesRecords(app core.App, data map[string]probe.Result, syst
 				"resAvg1h": values.Get(1),
 				"resMin1h": values.Get(2),
 				"resMax1h": values.Get(3),
-				"loss1h":   values.Get(4),
+				"loss":     values.Get(4),
+				"loss1h":   values.Get(5),
 				"updated":  nowString,
 			}).Execute()
 		}

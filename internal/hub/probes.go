@@ -117,7 +117,8 @@ func setProbeResultFields(record *core.Record, result probe.Result) {
 	record.Set("resAvg1h", result.Get(1))
 	record.Set("resMin1h", result.Get(2))
 	record.Set("resMax1h", result.Get(3))
-	record.Set("loss1h", result.Get(4))
+	record.Set("loss", result.Get(4))
+	record.Set("loss1h", result.Get(5))
 	record.Set("updated", nowString)
 }
 
