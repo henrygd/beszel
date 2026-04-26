@@ -1,6 +1,6 @@
 import LineChartDefault from "@/components/charts/line-chart"
 import type { DataPoint } from "@/components/charts/line-chart"
-import { toFixedFloat, decimalString } from "@/lib/utils"
+import { decimalString, formatMicroseconds, toFixedFloat } from "@/lib/utils"
 import { useLingui } from "@lingui/react/macro"
 import { ChartCard, FilterBar } from "../chart-card"
 import type { ChartData, NetworkProbeRecord, NetworkProbeStatsRecord } from "@/types"
@@ -116,13 +116,13 @@ export function ResponseChart({ probeStats, grid, probes, chartData, empty }: Pr
 			empty={empty}
 			valueIndex={0}
 			title={t`Response`}
-			description={t`Average response time (ms)`}
-			tickFormatter={(value) => `${toFixedFloat(value, value >= 10 ? 0 : 1)} ms`}
+			description={t`Average response time`}
+			tickFormatter={(value) => formatMicroseconds(value, false)}
 			contentFormatter={({ value }) => {
 				if (typeof value !== "number") {
 					return value
 				}
-				return `${decimalString(value, 2)} ms`
+				return formatMicroseconds(value)
 			}}
 		/>
 	)

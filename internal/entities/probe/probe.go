@@ -36,13 +36,13 @@ type SyncResponse struct {
 
 // Result holds aggregated probe results for a single target.
 //
-// 0: avg response in ms
+// 0: avg response in microseconds
 //
-// 1: average response over the last hour in ms
+// 1: average response over the last hour in microseconds
 //
-// 2: min response over the last hour in ms
+// 2: min response over the last hour in microseconds
 //
-// 3: max response over the last hour in ms
+// 3: max response over the last hour in microseconds
 //
 // 4: packet loss percentage over the last hour (0-100)
 type Result []float64

@@ -563,15 +563,15 @@ export interface NetworkProbeRecord {
 }
 
 /**
- * 0: avg 1 minute response in ms
+ * 0: avg 1 minute response in microseconds
  *
- * 1: avg response over 1 hour in ms
+ * 1: avg response over 1 hour in microseconds
  *
- * 2: min response over the last hour in ms
+ * 2: min response over the last hour in microseconds
  *
- * 3: max response over the last hour in ms
+ * 3: max response over the last hour in microseconds
  *
- * 4: packet loss in %
+ * 4: packet loss over 1 hour in %
  */
 type ProbeResult = number[]
 

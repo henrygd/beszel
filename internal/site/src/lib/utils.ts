@@ -199,6 +199,26 @@ export function decimalString(num: number, digits = 2) {
 	return formatter.format(num)
 }
 
+export function formatMicroseconds(microseconds: number, showDigits = true): string {
+	if (!Number.isFinite(microseconds)) {
+		return "-"
+	}
+
+	if (microseconds < 1000) {
+		return `${microseconds}μs`
+	}
+
+	if (microseconds < 1_000_000) {
+		const milliseconds = microseconds / 1000
+		const digits = milliseconds >= 10 ? 1 : 2
+		return `${decimalString(milliseconds, showDigits ? digits : 0)}ms`
+	}
+
+	const seconds = microseconds / 1_000_000
+	const digits = seconds >= 10 ? 1 : 2
+	return `${decimalString(seconds, showDigits ? digits : 0)}s`
+}
+
 /** Get value from local or session storage */
 function getStorageValue(key: string, defaultValue: unknown, storageInterface: Storage = localStorage) {
 	const saved = storageInterface?.getItem(key)

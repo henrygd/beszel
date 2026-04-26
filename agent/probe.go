@@ -31,7 +31,7 @@ import (
 
 const (
 	// probeRawRetention is the duration to keep individual samples for high-precision short-term requests
-	probeRawRetention = 80 * time.Second
+	probeRawRetention = 70 * time.Second
 	// probeMinuteBucketLen is the number of 1-minute buckets to keep (1 hour + 1 for partials)
 	probeMinuteBucketLen int32 = 61
 )
@@ -54,7 +54,7 @@ type probeTask struct {
 
 // probeSample stores one probe attempt and its collection time.
 type probeSample struct {
-	responseMs float64 // -1 means loss
+	responseUs int64 // -1 means loss
 	timestamp  time.Time
 }
 
@@ -67,11 +67,11 @@ type probeBucket struct {
 
 // probeAggregate accumulates successful response stats and total sample counts.
 type probeAggregate struct {
-	sumMs        float64
-	minMs        float64
-	maxMs        float64
-	totalCount   int
-	successCount int
+	sumUs        int64
+	minUs        int64
+	maxUs        int64
+	totalCount   int64
+	successCount int64
 }
 
 func newProbeManager() *ProbeManager {
@@ -104,22 +104,22 @@ func newProbeTaskFromExisting(config probe.Config, existing *probeTask) *probeTa
 
 // newProbeAggregate initializes an aggregate with an unset minimum value.
 func newProbeAggregate() probeAggregate {
-	return probeAggregate{minMs: math.MaxFloat64}
+	return probeAggregate{minUs: math.MaxInt64}
 }
 
 // addResponse folds a single probe sample into the aggregate.
-func (agg *probeAggregate) addResponse(responseMs float64) {
+func (agg *probeAggregate) addResponse(responseUs int64) {
 	agg.totalCount++
-	if responseMs < 0 {
+	if responseUs < 0 {
 		return
 	}
 	agg.successCount++
-	agg.sumMs += responseMs
-	if responseMs < agg.minMs {
-		agg.minMs = responseMs
+	agg.sumUs += responseUs
+	if responseUs < agg.minUs {
+		agg.minUs = responseUs
 	}
-	if responseMs > agg.maxMs {
-		agg.maxMs = responseMs
+	if responseUs > agg.maxUs {
+		agg.maxUs = responseUs
 	}
 }
 
@@ -130,15 +130,15 @@ func (agg *probeAggregate) addAggregate(other probeAggregate) {
 	}
 	agg.totalCount += other.totalCount
 	agg.successCount += other.successCount
-	agg.sumMs += other.sumMs
+	agg.sumUs += other.sumUs
 	if other.successCount == 0 {
 		return
 	}
-	if agg.minMs == math.MaxFloat64 || other.minMs < agg.minMs {
-		agg.minMs = other.minMs
+	if agg.minUs == math.MaxInt64 || other.minUs < agg.minUs {
+		agg.minUs = other.minUs
 	}
-	if other.maxMs > agg.maxMs {
-		agg.maxMs = other.maxMs
+	if other.maxUs > agg.maxUs {
+		agg.maxUs = other.maxUs
 	}
 }
 
@@ -150,14 +150,14 @@ func (agg probeAggregate) hasData() bool {
 // result converts the aggregate into the probe result slice format.
 func (agg probeAggregate) result() probe.Result {
 	avg := agg.avgResponse()
-	minMs := 0.0
+	minUs := 0.0
 	if agg.successCount > 0 {
-		minMs = math.Round(agg.minMs*100) / 100
+		minUs = float64(agg.minUs)
 	}
 	return probe.Result{
 		avg,
-		minMs,
-		math.Round(agg.maxMs*100) / 100,
+		minUs,
+		float64(agg.maxUs),
 		agg.lossPercentage(),
 	}
 }
@@ -167,7 +167,8 @@ func (agg probeAggregate) avgResponse() float64 {
 	if agg.successCount == 0 {
 		return 0
 	}
-	return math.Round(agg.sumMs/float64(agg.successCount)*100) / 100
+	return float64(agg.sumUs / agg.successCount)
+
 }
 
 // lossPercentage returns the rounded failure rate for the aggregate.
@@ -406,8 +407,8 @@ func (task *probeTask) resultLocked(duration time.Duration, now time.Time) (prob
 		return probe.Result{
 			result[0],
 			hourAvg,
-			math.Round(hourAgg.minMs*100) / 100,
-			math.Round(hourAgg.maxMs*100) / 100,
+			float64(hourAgg.minUs),
+			float64(hourAgg.maxUs),
 			hourLoss,
 		}, true
 	}
@@ -421,7 +422,7 @@ func aggregateSamplesSince(samples []probeSample, cutoff time.Time) probeAggrega
 		if sample.timestamp.Before(cutoff) {
 			continue
 		}
-		agg.addResponse(sample.responseMs)
+		agg.addResponse(sample.responseUs)
 	}
 	return agg
 }
@@ -467,27 +468,27 @@ func (task *probeTask) addSampleLocked(sample probeSample) {
 		bucket.filled = true
 		bucket.stats = newProbeAggregate()
 	}
-	bucket.stats.addResponse(sample.responseMs)
+	bucket.stats.addResponse(sample.responseUs)
 }
 
 // executeProbe runs the configured probe and records the sample.
 func (pm *ProbeManager) executeProbe(task *probeTask) {
-	var responseMs float64
+	var responseUs int64
 
 	switch task.config.Protocol {
 	case "icmp":
-		responseMs = probeICMP(task.config.Target)
+		responseUs = probeICMP(task.config.Target)
 	case "tcp":
-		responseMs = probeTCP(task.config.Target, task.config.Port)
+		responseUs = probeTCP(task.config.Target, task.config.Port)
 	case "http":
-		responseMs = probeHTTP(pm.httpClient, task.config.Target)
+		responseUs = probeHTTP(pm.httpClient, task.config.Target)
 	default:
 		slog.Warn("unknown probe protocol", "protocol", task.config.Protocol)
 		return
 	}
 
 	sample := probeSample{
-		responseMs: responseMs,
+		responseUs: responseUs,
 		timestamp:  time.Now(),
 	}
 
@@ -498,7 +499,7 @@ func (pm *ProbeManager) executeProbe(task *probeTask) {
 
 // probeTCP measures pure TCP handshake response (excluding DNS resolution).
 // Returns -1 on failure.
-func probeTCP(target string, port uint16) float64 {
+func probeTCP(target string, port uint16) int64 {
 	// Resolve DNS first, outside the timing window
 	ips, err := net.LookupHost(target)
 	if err != nil || len(ips) == 0 {
@@ -513,11 +514,11 @@ func probeTCP(target string, port uint16) float64 {
 		return -1
 	}
 	conn.Close()
-	return float64(time.Since(start).Microseconds()) / 1000.0
+	return time.Since(start).Microseconds()
 }
 
-// probeHTTP measures HTTP GET request response. Returns -1 on failure.
-func probeHTTP(client *http.Client, url string) float64 {
+// probeHTTP measures HTTP GET request response in microseconds. Returns -1 on failure.
+func probeHTTP(client *http.Client, url string) int64 {
 	if client == nil {
 		client = http.DefaultClient
 	}
@@ -530,5 +531,5 @@ func probeHTTP(client *http.Client, url string) float64 {
 	if resp.StatusCode >= 400 {
 		return -1
 	}
-	return float64(time.Since(start).Microseconds()) / 1000.0
+	return time.Since(start).Microseconds()
 }

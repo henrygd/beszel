@@ -16,9 +16,9 @@ func TestProbeTaskAggregateLockedUsesRawSamplesForShortWindows(t *testing.T) {
 	now := time.Date(2026, time.April, 21, 12, 0, 0, 0, time.UTC)
 	task := &probeTask{}
 
-	task.addSampleLocked(probeSample{responseMs: 10, timestamp: now.Add(-90 * time.Second)})
-	task.addSampleLocked(probeSample{responseMs: 20, timestamp: now.Add(-30 * time.Second)})
-	task.addSampleLocked(probeSample{responseMs: -1, timestamp: now.Add(-10 * time.Second)})
+	task.addSampleLocked(probeSample{responseUs: 10, timestamp: now.Add(-90 * time.Second)})
+	task.addSampleLocked(probeSample{responseUs: 20, timestamp: now.Add(-30 * time.Second)})
+	task.addSampleLocked(probeSample{responseUs: -1, timestamp: now.Add(-10 * time.Second)})
 
 	agg := task.aggregateLocked(time.Minute, now)
 	require.True(t, agg.hasData())
@@ -34,11 +34,11 @@ func TestProbeTaskAggregateLockedUsesMinuteBucketsForLongWindows(t *testing.T) {
 	now := time.Date(2026, time.April, 21, 12, 0, 30, 0, time.UTC)
 	task := &probeTask{}
 
-	task.addSampleLocked(probeSample{responseMs: 10, timestamp: now.Add(-11 * time.Minute)})
-	task.addSampleLocked(probeSample{responseMs: 20, timestamp: now.Add(-9 * time.Minute)})
-	task.addSampleLocked(probeSample{responseMs: 40, timestamp: now.Add(-5 * time.Minute)})
-	task.addSampleLocked(probeSample{responseMs: -1, timestamp: now.Add(-90 * time.Second)})
-	task.addSampleLocked(probeSample{responseMs: 30, timestamp: now.Add(-30 * time.Second)})
+	task.addSampleLocked(probeSample{responseUs: 10, timestamp: now.Add(-11 * time.Minute)})
+	task.addSampleLocked(probeSample{responseUs: 20, timestamp: now.Add(-9 * time.Minute)})
+	task.addSampleLocked(probeSample{responseUs: 40, timestamp: now.Add(-5 * time.Minute)})
+	task.addSampleLocked(probeSample{responseUs: -1, timestamp: now.Add(-90 * time.Second)})
+	task.addSampleLocked(probeSample{responseUs: 30, timestamp: now.Add(-30 * time.Second)})
 
 	agg := task.aggregateLocked(10*time.Minute, now)
 	require.True(t, agg.hasData())
@@ -54,11 +54,11 @@ func TestProbeTaskAddSampleLockedTrimsRawSamplesButKeepsBucketHistory(t *testing
 	now := time.Date(2026, time.April, 21, 12, 0, 0, 0, time.UTC)
 	task := &probeTask{}
 
-	task.addSampleLocked(probeSample{responseMs: 10, timestamp: now.Add(-10 * time.Minute)})
-	task.addSampleLocked(probeSample{responseMs: 20, timestamp: now})
+	task.addSampleLocked(probeSample{responseUs: 10, timestamp: now.Add(-10 * time.Minute)})
+	task.addSampleLocked(probeSample{responseUs: 20, timestamp: now})
 
 	require.Len(t, task.samples, 1)
-	assert.Equal(t, 20.0, task.samples[0].responseMs)
+	assert.Equal(t, int64(20), task.samples[0].responseUs)
 
 	agg := task.aggregateLocked(10*time.Minute, now)
 	require.True(t, agg.hasData())
@@ -73,11 +73,11 @@ func TestProbeTaskAddSampleLockedTrimsRawSamplesButKeepsBucketHistory(t *testing
 func TestProbeManagerGetResultsIncludesHourResponseRange(t *testing.T) {
 	now := time.Now().UTC()
 	task := &probeTask{config: probe.Config{ID: "probe-1"}}
-	task.addSampleLocked(probeSample{responseMs: 10, timestamp: now.Add(-30 * time.Minute)})
-	task.addSampleLocked(probeSample{responseMs: 20, timestamp: now.Add(-9 * time.Minute)})
-	task.addSampleLocked(probeSample{responseMs: 40, timestamp: now.Add(-5 * time.Minute)})
-	task.addSampleLocked(probeSample{responseMs: -1, timestamp: now.Add(-90 * time.Second)})
-	task.addSampleLocked(probeSample{responseMs: 30, timestamp: now.Add(-30 * time.Second)})
+	task.addSampleLocked(probeSample{responseUs: 10, timestamp: now.Add(-30 * time.Minute)})
+	task.addSampleLocked(probeSample{responseUs: 20, timestamp: now.Add(-9 * time.Minute)})
+	task.addSampleLocked(probeSample{responseUs: 40, timestamp: now.Add(-5 * time.Minute)})
+	task.addSampleLocked(probeSample{responseUs: -1, timestamp: now.Add(-90 * time.Second)})
+	task.addSampleLocked(probeSample{responseUs: 30, timestamp: now.Add(-30 * time.Second)})
 
 	pm := &ProbeManager{probes: map[string]*probeTask{"icmp:example.com": task}}
 
@@ -95,8 +95,8 @@ func TestProbeManagerGetResultsIncludesHourResponseRange(t *testing.T) {
 func TestProbeManagerGetResultsIncludesLossOnlyHourData(t *testing.T) {
 	now := time.Now().UTC()
 	task := &probeTask{config: probe.Config{ID: "probe-1"}}
-	task.addSampleLocked(probeSample{responseMs: -1, timestamp: now.Add(-30 * time.Second)})
-	task.addSampleLocked(probeSample{responseMs: -1, timestamp: now.Add(-10 * time.Second)})
+	task.addSampleLocked(probeSample{responseUs: -1, timestamp: now.Add(-30 * time.Second)})
+	task.addSampleLocked(probeSample{responseUs: -1, timestamp: now.Add(-10 * time.Second)})
 
 	pm := &ProbeManager{probes: map[string]*probeTask{"icmp:example.com": task}}
 
@@ -222,8 +222,8 @@ func TestProbeManagerUpsertProbeKeepsHistoryWhenOnlyIntervalChanges(t *testing.T
 	now := time.Now().UTC()
 
 	existingTask := &probeTask{config: originalCfg, cancel: make(chan struct{})}
-	existingTask.addSampleLocked(probeSample{responseMs: 12, timestamp: now.Add(-50 * time.Minute)})
-	existingTask.addSampleLocked(probeSample{responseMs: 24, timestamp: now.Add(-30 * time.Second)})
+	existingTask.addSampleLocked(probeSample{responseUs: 12, timestamp: now.Add(-50 * time.Minute)})
+	existingTask.addSampleLocked(probeSample{responseUs: 24, timestamp: now.Add(-30 * time.Second)})
 
 	pm := &ProbeManager{
 		probes: map[string]*probeTask{originalCfg.ID: existingTask},
@@ -243,7 +243,7 @@ func TestProbeManagerUpsertProbeKeepsHistoryWhenOnlyIntervalChanges(t *testing.T
 	updatedTask.mu.Lock()
 	defer updatedTask.mu.Unlock()
 	require.Len(t, updatedTask.samples, 1)
-	assert.Equal(t, 24.0, updatedTask.samples[0].responseMs)
+	assert.Equal(t, int64(24), updatedTask.samples[0].responseUs)
 
 	agg := updatedTask.aggregateLocked(time.Hour, now)
 	require.True(t, agg.hasData())
@@ -296,8 +296,8 @@ func TestProbeHTTP(t *testing.T) {
 		}))
 		defer server.Close()
 
-		responseMs := probeHTTP(server.Client(), server.URL)
-		assert.GreaterOrEqual(t, responseMs, 0.0)
+		responseUs := probeHTTP(server.Client(), server.URL)
+		assert.GreaterOrEqual(t, responseUs, int64(0))
 	})
 
 	t.Run("server error", func(t *testing.T) {
@@ -306,7 +306,7 @@ func TestProbeHTTP(t *testing.T) {
 		}))
 		defer server.Close()
 
-		assert.Equal(t, -1.0, probeHTTP(server.Client(), server.URL))
+		assert.Equal(t, int64(-1), probeHTTP(server.Client(), server.URL))
 	})
 }
 
@@ -326,8 +326,8 @@ func TestProbeTCP(t *testing.T) {
 		}()
 
 		port := uint16(listener.Addr().(*net.TCPAddr).Port)
-		responseMs := probeTCP("127.0.0.1", port)
-		assert.GreaterOrEqual(t, responseMs, 0.0)
+		responseUs := probeTCP("127.0.0.1", port)
+		assert.GreaterOrEqual(t, responseUs, int64(0))
 		<-accepted
 	})
 
@@ -338,6 +338,6 @@ func TestProbeTCP(t *testing.T) {
 		port := uint16(listener.Addr().(*net.TCPAddr).Port)
 		require.NoError(t, listener.Close())
 
-		assert.Equal(t, -1.0, probeTCP("127.0.0.1", port))
+		assert.Equal(t, int64(-1), probeTCP("127.0.0.1", port))
 	})
 }

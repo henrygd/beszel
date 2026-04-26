@@ -1,6 +1,6 @@
 import type { CellContext, Column, ColumnDef } from "@tanstack/react-table"
 import { Button } from "@/components/ui/button"
-import { cn, decimalString, hourWithSeconds } from "@/lib/utils"
+import { cn, formatMicroseconds, hourWithSeconds } from "@/lib/utils"
 import {
 	GlobeIcon,
 	TimerIcon,
@@ -290,9 +290,9 @@ export function getProbeColumns(
 }
 
 const responseTimeThresholds = {
-	http: { warning: 800, critical: 3000 },
-	tcp: { warning: 500, critical: 2000 },
-	icmp: { warning: 100, critical: 500 },
+	http: { warning: 800_000, critical: 3_000_000 },
+	tcp: { warning: 500_000, critical: 2_000_000 },
+	icmp: { warning: 100_000, critical: 500_000 },
 }
 
 function responseTimeCell(cell: CellContext<NetworkProbeRecord, unknown>) {
@@ -317,7 +317,7 @@ function responseTimeCell(cell: CellContext<NetworkProbeRecord, unknown>) {
 	return (
 		<span className="ms-1.5 tabular-nums flex gap-2 items-center">
 			<span className={cn("shrink-0 size-2 rounded-full", color)} />
-			{decimalString(responseTime, responseTime < 100 ? 2 : 1).toLocaleString()}ms
+			{formatMicroseconds(responseTime)}
 		</span>
 	)
 }

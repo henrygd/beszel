@@ -1,6 +1,7 @@
 package agent
 
 import (
+	"math"
 	"net"
 	"os"
 	"os/exec"
@@ -75,8 +76,8 @@ var (
 // Supports both IPv4 and IPv6 targets. The ICMP method (raw socket,
 // unprivileged datagram, or exec fallback) is detected once per address
 // family and cached for subsequent probes.
-// Returns response in milliseconds, or -1 on failure.
-func probeICMP(target string) float64 {
+// Returns response in microseconds, or -1 on failure.
+func probeICMP(target string) int64 {
 	family, ip := resolveICMPTarget(target)
 	if family == nil {
 		return -1
@@ -150,7 +151,7 @@ func detectICMPMode(family *icmpFamily, listen func(network, listenAddr string) 
 }
 
 // probeICMPNative sends an ICMP echo request using Go's x/net/icmp package.
-func probeICMPNative(network string, family *icmpFamily, dst net.Addr) float64 {
+func probeICMPNative(network string, family *icmpFamily, dst net.Addr) int64 {
 	conn, err := icmp.ListenPacket(network, family.listenAddr)
 	if err != nil {
 		return -1
@@ -194,14 +195,14 @@ func probeICMPNative(network string, family *icmpFamily, dst net.Addr) float64 {
 		}
 
 		if reply.Type == family.replyType {
-			return float64(time.Since(start).Microseconds()) / 1000.0
+			return time.Since(start).Microseconds()
 		}
 		// Ignore non-echo-reply messages (e.g. destination unreachable) and keep reading
 	}
 }
 
 // probeICMPExec falls back to the system ping command. Returns -1 on failure.
-func probeICMPExec(target string, isIPv6 bool) float64 {
+func probeICMPExec(target string, isIPv6 bool) int64 {
 	var cmd *exec.Cmd
 	switch runtime.GOOS {
 	case "windows":
@@ -230,13 +231,13 @@ func probeICMPExec(target string, isIPv6 bool) float64 {
 	matches := pingTimeRegex.FindSubmatch(output)
 	if len(matches) >= 2 {
 		if ms, err := strconv.ParseFloat(string(matches[1]), 64); err == nil {
-			return ms
+			return int64(math.Round(ms * 1000))
 		}
 	}
 
 	// Fallback: use wall clock time if ping succeeded but parsing failed
 	if err == nil {
-		return float64(time.Since(start).Microseconds()) / 1000.0
+		return time.Since(start).Microseconds()
 	}
 	return -1
 }
