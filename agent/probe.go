@@ -86,6 +86,19 @@ func newProbeTask(config probe.Config) *probeTask {
 	}
 }
 
+func newProbeTaskFromExisting(config probe.Config, existing *probeTask) *probeTask {
+	task := newProbeTask(config)
+	if existing == nil {
+		return task
+	}
+
+	existing.mu.Lock()
+	defer existing.mu.Unlock()
+	task.samples = append(task.samples, existing.samples...)
+	task.buckets = existing.buckets
+	return task
+}
+
 // newProbeAggregate initializes an aggregate with an unset minimum value.
 func newProbeAggregate() probeAggregate {
 	return probeAggregate{minMs: math.MaxFloat64}
@@ -193,14 +206,14 @@ func (pm *ProbeManager) SyncProbes(configs []probe.Config) {
 		if exists {
 			close(task.cancel)
 		}
-		task = newProbeTask(cfg)
+		task = newProbeTaskFromExisting(cfg, task)
 		pm.probes[key] = task
 		go pm.runProbe(task, true)
 	}
 }
 
-// ApplySync applies a full or incremental probe sync request.
-func (pm *ProbeManager) ApplySync(req probe.SyncRequest) (probe.SyncResponse, error) {
+// HandleSyncRequest applies a full or incremental probe sync request.
+func (pm *ProbeManager) HandleSyncRequest(req probe.SyncRequest) (probe.SyncResponse, error) {
 	switch req.Action {
 	case probe.SyncActionReplace:
 		pm.SyncProbes(req.Configs)
@@ -216,7 +229,7 @@ func (pm *ProbeManager) ApplySync(req probe.SyncRequest) (probe.SyncResponse, er
 		return probe.SyncResponse{Result: *result}, nil
 	case probe.SyncActionDelete:
 		if req.Config.ID == "" {
-			return probe.SyncResponse{}, errors.New("missing probe ID for delete action")
+			return probe.SyncResponse{}, errors.New("missing probe ID for delete")
 		}
 		pm.DeleteProbe(req.Config.ID)
 		return probe.SyncResponse{}, nil
@@ -244,7 +257,7 @@ func (pm *ProbeManager) UpsertProbe(config probe.Config, runNow bool) (*probe.Re
 	if exists {
 		close(task.cancel)
 	}
-	task = newProbeTask(config)
+	task = newProbeTaskFromExisting(config, task)
 	pm.probes[config.ID] = task
 	startTask = true
 	pm.mu.Unlock()
@@ -309,7 +322,7 @@ func (pm *ProbeManager) Stop() {
 }
 
 // runProbe executes a single probe task in a loop.
-func (pm *ProbeManager) runProbe(task *probeTask, runImmediately bool) {
+func (pm *ProbeManager) runProbe(task *probeTask, runNow bool) {
 	interval := time.Duration(task.config.Interval) * time.Second
 	if interval < time.Second {
 		interval = 10 * time.Second
@@ -317,7 +330,7 @@ func (pm *ProbeManager) runProbe(task *probeTask, runImmediately bool) {
 	ticker := time.NewTicker(interval)
 	defer ticker.Stop()
 
-	if runImmediately {
+	if runNow {
 		pm.executeProbe(task)
 	}
 

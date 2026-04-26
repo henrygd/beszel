@@ -217,7 +217,7 @@ func (h *SyncNetworkProbesHandler) Handle(hctx *HandlerContext) error {
 	if err := cbor.Unmarshal(hctx.Request.Data, &req); err != nil {
 		return err
 	}
-	resp, err := hctx.Agent.probeManager.ApplySync(req)
+	resp, err := hctx.Agent.probeManager.HandleSyncRequest(req)
 	if err != nil {
 		return err
 	}

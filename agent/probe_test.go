@@ -197,7 +197,7 @@ func TestProbeManagerApplySyncUpsertRunsImmediatelyAndReturnsResult(t *testing.T
 		httpClient: server.Client(),
 	}
 
-	resp, err := pm.ApplySync(probe.SyncRequest{
+	resp, err := pm.HandleSyncRequest(probe.SyncRequest{
 		Action: probe.SyncActionUpsert,
 		Config: probe.Config{ID: "probe-1", Target: server.URL, Protocol: "http", Interval: 10},
 		RunNow: true,
@@ -216,6 +216,48 @@ func TestProbeManagerApplySyncUpsertRunsImmediatelyAndReturnsResult(t *testing.T
 	require.Len(t, task.samples, 1)
 }
 
+func TestProbeManagerUpsertProbeKeepsHistoryWhenOnlyIntervalChanges(t *testing.T) {
+	originalCfg := probe.Config{ID: "probe-1", Target: "1.1.1.1", Protocol: "icmp", Interval: 10}
+	updatedCfg := probe.Config{ID: "probe-1", Target: "1.1.1.1", Protocol: "icmp", Interval: 30}
+	now := time.Now().UTC()
+
+	existingTask := &probeTask{config: originalCfg, cancel: make(chan struct{})}
+	existingTask.addSampleLocked(probeSample{responseMs: 12, timestamp: now.Add(-50 * time.Minute)})
+	existingTask.addSampleLocked(probeSample{responseMs: 24, timestamp: now.Add(-30 * time.Second)})
+
+	pm := &ProbeManager{
+		probes: map[string]*probeTask{originalCfg.ID: existingTask},
+	}
+
+	result, err := pm.UpsertProbe(updatedCfg, false)
+	defer pm.Stop()
+
+	require.NoError(t, err)
+	assert.Nil(t, result)
+
+	updatedTask := pm.probes[updatedCfg.ID]
+	require.NotNil(t, updatedTask)
+	assert.NotSame(t, existingTask, updatedTask)
+	assert.Equal(t, updatedCfg, updatedTask.config)
+
+	updatedTask.mu.Lock()
+	defer updatedTask.mu.Unlock()
+	require.Len(t, updatedTask.samples, 1)
+	assert.Equal(t, 24.0, updatedTask.samples[0].responseMs)
+
+	agg := updatedTask.aggregateLocked(time.Hour, now)
+	require.True(t, agg.hasData())
+	assert.Equal(t, 2, agg.totalCount)
+	assert.Equal(t, 2, agg.successCount)
+	assert.Equal(t, 18.0, agg.avgResponse())
+
+	select {
+	case <-existingTask.cancel:
+	default:
+		t.Fatal("expected original probe task to be cancelled")
+	}
+}
+
 func TestProbeManagerApplySyncDeleteRemovesTask(t *testing.T) {
 	config := probe.Config{ID: "probe-1", Target: "1.1.1.1", Protocol: "icmp", Interval: 10}
 	task := &probeTask{config: config, cancel: make(chan struct{})}
@@ -223,7 +265,7 @@ func TestProbeManagerApplySyncDeleteRemovesTask(t *testing.T) {
 		probes: map[string]*probeTask{config.ID: task},
 	}
 
-	_, err := pm.ApplySync(probe.SyncRequest{
+	_, err := pm.HandleSyncRequest(probe.SyncRequest{
 		Action: probe.SyncActionDelete,
 		Config: probe.Config{ID: config.ID},
 	})

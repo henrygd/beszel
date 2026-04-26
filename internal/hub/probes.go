@@ -1,6 +1,7 @@
 package hub
 
 import (
+	"strconv"
 	"time"
 
 	"github.com/henrygd/beszel/internal/entities/probe"
@@ -11,7 +12,7 @@ import (
 
 // generateProbeID creates a stable hash ID for a probe based on its configuration and the system it belongs to.
 func generateProbeID(systemId string, config probe.Config) string {
-	return systems.MakeStableHashId(systemId, config.Target, config.Protocol)
+	return systems.MakeStableHashId(systemId, config.Target, config.Protocol, strconv.FormatUint(uint64(config.Port), 10))
 }
 
 // bindNetworkProbesEvents keeps probe records and agent probe state in sync.

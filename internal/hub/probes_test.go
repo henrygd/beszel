@@ -23,7 +23,7 @@ func TestGenerateProbeID(t *testing.T) {
 				Port:     80,
 				Interval: 60,
 			},
-			expected: "a20a5827",
+			expected: "de7b3647",
 		},
 		{
 			name:     "HTTP probe on example.com with different system ID",
@@ -34,7 +34,7 @@ func TestGenerateProbeID(t *testing.T) {
 				Port:     80,
 				Interval: 60,
 			},
-			expected: "ab602ae7",
+			expected: "be9e2707",
 		},
 		{
 			name:     "Same probe, different interval",
@@ -45,7 +45,7 @@ func TestGenerateProbeID(t *testing.T) {
 				Port:     80,
 				Interval: 120,
 			},
-			expected: "ab602ae7",
+			expected: "be9e2707",
 		},
 		{
 			name:     "ICMP probe on 1.1.1.1",
@@ -56,7 +56,7 @@ func TestGenerateProbeID(t *testing.T) {
 				Port:     0,
 				Interval: 10,
 			},
-			expected: "6d13a4a4",
+			expected: "49ec14fc",
 		}, {
 			name:     "ICMP probe on 1.1.1.1 with different system ID",
 			systemID: "sys4567",
@@ -66,7 +66,29 @@ func TestGenerateProbeID(t *testing.T) {
 				Port:     0,
 				Interval: 10,
 			},
-			expected: "ddd6c81",
+			expected: "84921aa3",
+		},
+		{
+			name:     "TCP probe on example.com with port 443",
+			systemID: "sys789",
+			config: probe.Config{
+				Protocol: "tcp",
+				Target:   "example.com",
+				Port:     443,
+				Interval: 30,
+			},
+			expected: "677b991",
+		},
+		{
+			name:     "TCP probe on example.com with port 8443",
+			systemID: "sys789",
+			config: probe.Config{
+				Protocol: "tcp",
+				Target:   "example.com",
+				Port:     8443,
+				Interval: 30,
+			},
+			expected: "84167969",
 		},
 	}
 
