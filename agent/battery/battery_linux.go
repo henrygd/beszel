@@ -102,6 +102,7 @@ func GetBatteryStats() (batteryPercent uint8, batteryState uint8, err error) {
 		if parseErr != nil {
 			continue
 		}
+		cap = min(max(cap, 0), 100)
 		totalPercent += cap
 		count++
 

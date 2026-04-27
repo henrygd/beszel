@@ -91,6 +91,16 @@ func TestGetBatteryStats_FullBattery(t *testing.T) {
 	assert.Equal(t, stateFull, state)
 }
 
+func TestGetBatteryStats_CapacityClamped(t *testing.T) {
+	_, addBattery := setupFakeSysfs(t)
+	addBattery("BAT0", "105", "Charging")
+
+	pct, state, err := GetBatteryStats()
+	assert.NoError(t, err)
+	assert.Equal(t, uint8(100), pct)
+	assert.Equal(t, stateCharging, state)
+}
+
 func TestGetBatteryStats_EmptyBattery(t *testing.T) {
 	_, addBattery := setupFakeSysfs(t)
 	addBattery("BAT0", "0", "Empty")
