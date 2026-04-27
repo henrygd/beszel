@@ -71,6 +71,7 @@ export function getProbeColumns(
 				<Checkbox
 					className="ms-2"
 					checked={table.getIsAllRowsSelected() || (table.getIsSomeRowsSelected() && "indeterminate")}
+					onClick={(event) => event.stopPropagation()}
 					onCheckedChange={(value) => table.toggleAllRowsSelected(!!value)}
 					aria-label={t`Select all`}
 				/>
@@ -78,6 +79,7 @@ export function getProbeColumns(
 			cell: ({ row }) => (
 				<Checkbox
 					checked={row.getIsSelected()}
+					onClick={(event) => event.stopPropagation()}
 					onCheckedChange={(value) => row.toggleSelected(!!value)}
 					aria-label={t`Select row`}
 				/>
@@ -264,14 +266,24 @@ export function getProbeColumns(
 								<MoreHorizontalIcon className="w-5" />
 							</Button>
 						</DropdownMenuTrigger>
-						<DropdownMenuContent align="end">
+						<DropdownMenuContent align="end" onClick={(event) => event.stopPropagation()}>
 							{!isBulkAction && (
-								<DropdownMenuItem onClick={() => onEdit?.(row.original)}>
+								<DropdownMenuItem
+									onClick={(event) => {
+										event.stopPropagation()
+										onEdit?.(row.original)
+									}}
+								>
 									<PenBoxIcon className="me-2.5 size-4" />
 									<Trans>Edit</Trans>
 								</DropdownMenuItem>
 							)}
-							<DropdownMenuItem onClick={() => onSetEnabled?.(actionRows, !shouldPause)}>
+							<DropdownMenuItem
+								onClick={(event) => {
+									event.stopPropagation()
+									onSetEnabled?.(actionRows, !shouldPause)
+								}}
+							>
 								{shouldPause ? (
 									<>
 										<PauseCircleIcon className="me-2.5 size-4" />
@@ -286,7 +298,8 @@ export function getProbeColumns(
 							</DropdownMenuItem>
 							<DropdownMenuSeparator />
 							<DropdownMenuItem
-								onClick={() => {
+								onClick={(event) => {
+									event.stopPropagation()
 									onDelete?.(actionRows)
 								}}
 							>

@@ -288,7 +288,7 @@ export function useSystemData(id: string) {
 	// derived values
 	const isLongerChart = !["1m", "1h"].includes(chartTime)
 	const showMax = maxValues && isLongerChart
-	const dataEmpty = !chartLoading && chartData.systemStats.length === 0
+	const dataEmpty = !chartLoading && chartData.systemStats?.length === 0
 	const lastGpus = systemStats.at(-1)?.stats?.g
 	const isPodman = details?.podman ?? system.info?.p ?? false
 

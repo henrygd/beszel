@@ -16,6 +16,7 @@ type ProbeChartProps = {
 	probes: NetworkProbeRecord[]
 	chartData: ChartData
 	empty: boolean
+	showFilter?: boolean
 }
 
 type ProbeChartBaseProps = ProbeChartProps & {
@@ -39,8 +40,10 @@ function ProbeChart({
 	tickFormatter,
 	contentFormatter,
 	domain,
+	showFilter = probes.length > 1,
 }: ProbeChartBaseProps) {
-	const filter = useStore($filter)
+	const storedFilter = useStore($filter)
+	const filter = showFilter ? storedFilter : ""
 
 	const { dataPoints, visibleKeys } = useMemo(() => {
 		const sortedProbes = [...probes].sort((a, b) => b.resAvg1h - a.resAvg1h)
@@ -78,12 +81,12 @@ function ProbeChart({
 		return probeStats.filter((record) => visibleKeys.some((id) => record.stats?.[id] != null))
 	}, [probeStats, visibleKeys])
 
-	const legend = dataPoints.length < 10
+	const legend = dataPoints.length < 10 && dataPoints.length > 1
 
 	return (
 		<ChartCard
-			legend={legend}
-			cornerEl={<FilterBar store={$filter} />}
+			legend={legend || !showFilter}
+			cornerEl={showFilter ? <FilterBar store={$filter} /> : undefined}
 			empty={empty}
 			title={title}
 			description={description}
@@ -106,6 +109,30 @@ function ProbeChart({
 }
 
 export function ResponseChart({ probeStats, grid, probes, chartData, empty }: ProbeChartProps) {
+	const { t } = useLingui()
+
+	return (
+		<ProbeChart
+			probeStats={probeStats}
+			grid={grid}
+			probes={probes}
+			chartData={chartData}
+			empty={empty}
+			valueIndex={0}
+			title={t`Response`}
+			description={t`Average response time`}
+			tickFormatter={(value) => formatMicroseconds(value, false)}
+			contentFormatter={({ value }) => {
+				if (typeof value !== "number") {
+					return value
+				}
+				return formatMicroseconds(value)
+			}}
+		/>
+	)
+}
+
+export function MaxResponseChart({ probeStats, grid, probes, chartData, empty }: ProbeChartProps) {
 	const { t } = useLingui()
 
 	return (

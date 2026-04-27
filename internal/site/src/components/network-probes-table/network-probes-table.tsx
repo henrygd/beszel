@@ -33,11 +33,19 @@ import { TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/compon
 import { useToast } from "@/components/ui/use-toast"
 import { isReadOnlyUser } from "@/lib/api"
 import { pb } from "@/lib/api"
-import { $allSystemsById } from "@/lib/stores"
+import { $allSystemsById, $chartTime, $direction } from "@/lib/stores"
 import { cn, useBrowserStorage } from "@/lib/utils"
 import type { NetworkProbeRecord } from "@/types"
 import { AddProbeDialog, EditProbeDialog } from "./probe-dialog"
 import { XIcon } from "lucide-react"
+import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet"
+import ChartTimeSelect from "@/components/charts/chart-time-select"
+import { ResponseChart, LossChart } from "@/components/routes/system/charts/probes-charts"
+import { useNetworkProbeStats } from "@/lib/use-network-probes"
+import { useStore } from "@nanostores/react"
+import type { ChartData } from "@/types"
+import { parseSemVer } from "@/lib/utils"
+import { Separator } from "../ui/separator"
 
 export default function NetworkProbesTableNew({
 	systemId,
@@ -325,6 +333,13 @@ const NetworkProbesTable = memo(function NetworkProbeTable({
 }) {
 	// The virtualizer will need a reference to the scrollable container element
 	const scrollRef = useRef<HTMLDivElement>(null)
+	const [sheetOpen, setSheetOpen] = useState(false)
+	const [activeProbeId, setActiveProbeId] = useState<string | null>(null)
+	const activeProbe = activeProbeId ? table.options.data.find((probe) => probe.id === activeProbeId) : undefined
+	const openSheet = useCallback((probe: NetworkProbeRecord) => {
+		setActiveProbeId(probe.id)
+		setSheetOpen(true)
+	}, [])
 
 	const virtualizer = useVirtualizer<HTMLDivElement, HTMLTableRowElement>({
 		count: rows.length,
@@ -360,6 +375,7 @@ const NetworkProbesTable = memo(function NetworkProbeTable({
 										row={row}
 										virtualRow={virtualRow}
 										isSelected={row.getIsSelected()}
+										openSheet={openSheet}
 									/>
 								)
 							})
@@ -373,6 +389,13 @@ const NetworkProbesTable = memo(function NetworkProbeTable({
 					</TableBody>
 				</table>
 			</div>
+			<NetworkProbeSheet
+				open={sheetOpen}
+				onOpenChange={(nextOpen) => {
+					setSheetOpen(nextOpen)
+				}}
+				probe={activeProbe}
+			/>
 		</div>
 	)
 })
@@ -399,13 +422,19 @@ const NetworkProbeTableRow = memo(function NetworkProbeTableRow({
 	row,
 	virtualRow,
 	isSelected,
+	openSheet,
 }: {
 	row: Row<NetworkProbeRecord>
 	virtualRow: VirtualItem
 	isSelected: boolean
+	openSheet: (probe: NetworkProbeRecord) => void
 }) {
 	return (
-		<TableRow data-state={isSelected && "selected"} className="transition-opacity">
+		<TableRow
+			data-state={isSelected && "selected"}
+			className="cursor-pointer transition-opacity"
+			onClick={() => openSheet(row.original)}
+		>
 			{row.getVisibleCells().map((cell) => (
 				<TableCell
 					key={cell.id}
@@ -421,3 +450,88 @@ const NetworkProbeTableRow = memo(function NetworkProbeTableRow({
 		</TableRow>
 	)
 })
+
+function NetworkProbeSheet({
+	open,
+	onOpenChange,
+	probe,
+}: {
+	open: boolean
+	onOpenChange: (open: boolean) => void
+	probe?: NetworkProbeRecord
+}) {
+	if (!probe) {
+		return null
+	}
+
+	return <NetworkProbeSheetContent key={probe.system} open={open} onOpenChange={onOpenChange} probe={probe} />
+}
+
+function NetworkProbeSheetContent({
+	open,
+	onOpenChange,
+	probe,
+}: {
+	open: boolean
+	onOpenChange: (open: boolean) => void
+	probe: NetworkProbeRecord
+}) {
+	const chartTime = useStore($chartTime)
+	const direction = useStore($direction)
+	const system = useStore($allSystemsById)[probe.system]
+
+	const probeStats = useNetworkProbeStats({ systemId: probe.system, chartTime })
+
+	const chartData = useMemo<ChartData>(
+		() => ({
+			agentVersion: parseSemVer(system?.info?.v),
+			orientation: direction === "rtl" ? "right" : "left",
+			chartTime,
+		}),
+		[chartTime]
+	)
+	const hasProbeStats = probeStats.some((record) => record.stats?.[probe.id] != null)
+	const probeLabel = probe.name || probe.target
+
+	return (
+		<Sheet open={open} onOpenChange={onOpenChange}>
+			<SheetContent className="w-full sm:max-w-220 overflow-auto p-4 sm:p-6">
+				<SheetHeader className="mb-0 border-b p-0 pb-4">
+					<SheetTitle>{probeLabel}</SheetTitle>
+					<SheetDescription className="flex flex-wrap items-center gap-x-2 gap-y-1">
+						{system?.name ?? ""}
+						<Separator orientation="vertical" className="h-2.5 bg-muted-foreground opacity-70" />
+						{probe.protocol.toUpperCase()}
+						<Separator orientation="vertical" className="h-2.5 bg-muted-foreground opacity-70" />
+						{probe.target}
+						{probe.port > 0 && (
+							<>
+								<Separator orientation="vertical" className="h-2.5 bg-muted-foreground opacity-70" />
+								<span>{probe.port}</span>
+							</>
+						)}
+					</SheetDescription>
+				</SheetHeader>
+				<div className="grid gap-4">
+					<ChartTimeSelect className="bg-card" agentVersion={chartData.agentVersion} />
+					<ResponseChart
+						probeStats={probeStats}
+						grid={false}
+						probes={[probe]}
+						chartData={chartData}
+						empty={!hasProbeStats}
+						showFilter={false}
+					/>
+					<LossChart
+						probeStats={probeStats}
+						grid={false}
+						probes={[probe]}
+						chartData={chartData}
+						empty={!hasProbeStats}
+						showFilter={false}
+					/>
+				</div>
+			</SheetContent>
+		</Sheet>
+	)
+}

@@ -3,7 +3,6 @@ package records
 import (
 	"fmt"
 	"log/slog"
-	"strings"
 	"time"
 
 	"github.com/pocketbase/dbx"
@@ -75,24 +74,17 @@ func deleteOldSystemStats(app core.App) error {
 	}
 
 	now := time.Now().UTC()
+	db := app.DB()
 
 	for _, collection := range collections {
-		// Build the WHERE clause
-		var conditionParts []string
-		var params dbx.Params = make(map[string]any)
-		for i := range recordData {
-			rd := recordData[i]
-			// Create parameterized condition for this record type
-			dateParam := fmt.Sprintf("date%d", i)
-			conditionParts = append(conditionParts, fmt.Sprintf("(type = '%s' AND created < {:%s})", rd.recordType, dateParam))
-			params[dateParam] = now.Add(-rd.retention)
-		}
-		// Combine conditions with OR
-		conditionStr := strings.Join(conditionParts, " OR ")
-		// Construct and execute the full raw query
-		rawQuery := fmt.Sprintf("DELETE FROM %s WHERE %s", collection, conditionStr)
-		if _, err := app.DB().NewQuery(rawQuery).Bind(params).Execute(); err != nil {
-			return fmt.Errorf("failed to delete from %s: %v", collection, err)
+		query := db.Delete(collection, dbx.NewExp("type={:type} AND created<{:created}"))
+		for _, rd := range recordData {
+			if _, err := query.Bind(dbx.Params{
+				"type":    rd.recordType,
+				"created": getCreatedTimeField(collection, now.Add(-rd.retention)),
+			}).Execute(); err != nil {
+				return fmt.Errorf("failed to delete from %s: %v", collection, err)
+			}
 		}
 	}
 	return nil

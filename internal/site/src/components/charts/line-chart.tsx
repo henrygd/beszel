@@ -68,7 +68,7 @@ export default function LineChartDefault({
 }) {
 	const { yAxisWidth, updateYAxisWidth } = useYAxisWidth()
 	const { isIntersecting, ref } = useIntersectionObserver({ freeze: false })
-	const sourceData = customData ?? chartData.systemStats
+	const sourceData = customData ?? chartData.systemStats ?? []
 	const [displayData, setDisplayData] = useState(sourceData)
 	const [displayMaxToggled, setDisplayMaxToggled] = useState(maxToggled)
 

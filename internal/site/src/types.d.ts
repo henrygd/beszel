@@ -313,8 +313,8 @@ export interface SemVer {
 
 export interface ChartData {
 	agentVersion: SemVer
-	systemStats: SystemStatsRecord[]
-	containerData: ChartDataContainer[]
+	systemStats?: SystemStatsRecord[]
+	containerData?: ChartDataContainer[]
 	orientation: "right" | "left"
 	chartTime: ChartTimes
 }

@@ -36,21 +36,14 @@ const NETWORK_PROBE_FIELDS =
 
 interface UseNetworkProbesProps {
 	systemId?: string
-	loadStats?: boolean
-	chartTime?: ChartTimes
-	existingProbes?: NetworkProbeRecord[]
 }
 
-export function useNetworkProbesData(props: UseNetworkProbesProps) {
-	const { systemId, loadStats, chartTime, existingProbes } = props
+export function useNetworkProbes(props: UseNetworkProbesProps) {
+	const { systemId } = props
 
-	const [p, setProbes] = useState<NetworkProbeRecord[]>([])
-	const [probeStats, setProbeStats] = useState<NetworkProbeStatsRecord[]>([])
-	const statsRequestId = useRef(0)
+	const [probes, setProbes] = useState<NetworkProbeRecord[]>([])
 	const pendingProbeEvents = useRef(new Map<string, RecordSubscription<NetworkProbeRecord>>())
 	const probeBatchTimeout = useRef<ReturnType<typeof setTimeout> | null>(null)
-
-	const probes = existingProbes ?? p
 
 	// clear old data when systemId changes
 	// useEffect(() => {
@@ -59,16 +52,11 @@ export function useNetworkProbesData(props: UseNetworkProbesProps) {
 
 	// initial load - fetch probes if not provided by caller
 	useEffect(() => {
-		if (!existingProbes) {
-			fetchProbes(systemId).then((probes) => setProbes(probes))
-		}
+		fetchProbes(systemId).then((probes) => setProbes(probes))
 	}, [systemId])
 
 	// Subscribe to updates if probes not provided by caller
 	useEffect(() => {
-		if (existingProbes) {
-			return
-		}
 		let unsubscribe: (() => void) | undefined
 
 		function flushPendingProbeEvents() {
@@ -115,9 +103,22 @@ export function useNetworkProbesData(props: UseNetworkProbesProps) {
 		}
 	}, [systemId])
 
+	return probes
+}
+
+interface UseNetworkProbeStatsProps {
+	systemId?: string
+	chartTime: ChartTimes
+}
+
+export function useNetworkProbeStats(props: UseNetworkProbeStatsProps) {
+	const { systemId, chartTime } = props
+	const [probeStats, setProbeStats] = useState<NetworkProbeStatsRecord[]>([])
+	const requestID = useRef(0)
+
 	// Subscribe to new probe stats
 	useEffect(() => {
-		if (!loadStats || !systemId) {
+		if (!systemId) {
 			return
 		}
 		let unsubscribe: (() => void) | undefined
@@ -175,12 +176,12 @@ export function useNetworkProbesData(props: UseNetworkProbesProps) {
 
 	// fetch missing probe stats on load and when chart time changes
 	useEffect(() => {
-		if (!loadStats || !systemId || !chartTime || chartTime === "1m") {
+		if (!systemId || !chartTime || chartTime === "1m") {
 			return
 		}
 
 		const { expectedInterval } = chartTimeData[chartTime]
-		const requestId = ++statsRequestId.current
+		const requestId = ++requestID.current
 
 		const cachedProbeStats = getCacheValue(systemId, chartTime)
 
@@ -198,7 +199,7 @@ export function useNetworkProbesData(props: UseNetworkProbesProps) {
 		getStats<NetworkProbeStatsRecord>("network_probe_stats", systemId, chartTime, cachedProbeStats, true).then(
 			(probeStats) => {
 				// If another request has been made since this one, ignore the results
-				if (requestId !== statsRequestId.current) {
+				if (requestId !== requestID.current) {
 					return
 				}
 				const newStats = appendCacheValue(systemId, chartTime, probeStats)
@@ -209,7 +210,7 @@ export function useNetworkProbesData(props: UseNetworkProbesProps) {
 
 	// subscribe to realtime metrics if chart time is 1m
 	useEffect(() => {
-		if (!loadStats || !systemId || chartTime !== "1m") {
+		if (!systemId || chartTime !== "1m") {
 			return
 		}
 		let unsubscribe: (() => void) | undefined
@@ -238,12 +239,8 @@ export function useNetworkProbesData(props: UseNetworkProbesProps) {
 		return () => unsubscribe?.()
 	}, [chartTime, systemId])
 
-	return {
-		probes,
-		probeStats,
-	}
+	return probeStats
 }
-
 // function probesToStats(probes: NetworkProbeRecord[]): NetworkProbeStatsRecord["stats"] {
 // 	const stats: NetworkProbeStatsRecord["stats"] = {}
 // 	for (const probe of probes) {

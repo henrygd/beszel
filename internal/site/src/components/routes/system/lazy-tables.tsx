@@ -5,7 +5,7 @@ import { ResponseChart, LossChart } from "./charts/probes-charts"
 import type { SystemData } from "./use-system-data"
 import { $chartTime } from "@/lib/stores"
 import { useStore } from "@nanostores/react"
-import { useNetworkProbesData } from "@/lib/use-network-probes"
+import { useNetworkProbes, useNetworkProbeStats } from "@/lib/use-network-probes"
 
 const ContainersTable = lazy(() => import("../../containers-table/containers-table"))
 
@@ -56,7 +56,8 @@ function ProbesTable({ systemId, systemData }: { systemId: string; systemData: S
 	const { grid, chartData } = systemData ?? {}
 	const chartTime = useStore($chartTime)
 
-	const { probes, probeStats } = useNetworkProbesData({ systemId, loadStats: !!chartData, chartTime })
+	const probes = useNetworkProbes({ systemId })
+	const probeStats = useNetworkProbeStats({ systemId, chartTime })
 
 	return (
 		<>
