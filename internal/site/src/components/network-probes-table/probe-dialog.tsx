@@ -1,4 +1,4 @@
-import { useRef, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { Trans, useLingui } from "@lingui/react/macro"
 import { useStore } from "@nanostores/react"
 import { pb } from "@/lib/api"
@@ -248,7 +248,7 @@ export function AddProbeDialog({ systemId }: { systemId?: string }) {
 					setOpen(nextOpen)
 				}}
 			>
-				{open && <ProbeDialogContent setOpen={setOpen} systemId={systemId} onOpenBulkAdd={openBulkAdd} />}
+				<ProbeDialogContent open={open} setOpen={setOpen} systemId={systemId} onOpenBulkAdd={openBulkAdd} />
 			</Dialog>
 
 			<Sheet
@@ -343,17 +343,19 @@ export function EditProbeDialog({
 
 	return (
 		<Dialog open={open} onOpenChange={setOpen}>
-			{open && <ProbeDialogContent setOpen={setOpen} systemId={systemId} probe={probe} />}
+			<ProbeDialogContent open={open} setOpen={setOpen} systemId={systemId} probe={probe} />
 		</Dialog>
 	)
 }
 
 function ProbeDialogContent({
+	open,
 	setOpen,
 	systemId,
 	probe,
 	onOpenBulkAdd,
 }: {
+	open: boolean
 	setOpen: (open: boolean) => void
 	systemId?: string
 	probe?: NetworkProbeRecord
@@ -373,6 +375,21 @@ function ProbeDialogContent({
 	const { t } = useLingui()
 	const isEditing = !!probe
 	const targetName = target.replace(/^https?:\/\//, "")
+
+	// When the dialog is opened, initialize form fields with probe values (if editing) or defaults (if adding).
+	useEffect(() => {
+		if (!open) {
+			return
+		}
+
+		setProtocol(probe?.protocol ?? "icmp")
+		setTarget(probe?.target ?? "")
+		setPort((probe?.protocol === "tcp" || probe?.protocol === "http") && probe.port ? String(probe.port) : "")
+		setProbeInterval(String(probe?.interval ?? 30))
+		setName(probe?.name ?? "")
+		setSelectedSystemId(probe?.system ?? "")
+		setLoading(false)
+	}, [open, probe])
 
 	async function handleSubmit(e: React.FormEvent) {
 		e.preventDefault()
