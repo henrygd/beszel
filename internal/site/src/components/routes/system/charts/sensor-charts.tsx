@@ -120,7 +120,8 @@ export function TemperatureChart({
 				label: key,
 				dataKey: dataKeys[key],
 				color: colorMap[key],
-				opacity: strokeOpacity,
+				strokeOpacity,
+				activeDot: !filtered,
 			}
 		})
 	}, [sortedKeys, filter, dataKeys, colorMap])
@@ -134,7 +135,7 @@ export function TemperatureChart({
 	// 			label: `Test ${++i}`,
 	// 			dataKey: () => 0,
 	// 			color: "red",
-	// 			opacity: 1,
+	// 			strokeOpacity: 1,
 	// 		})
 	// 	}
 	// }
@@ -202,6 +203,7 @@ export function TemperatureChart({
 						return `${decimalString(value)} ${unit}`
 					}}
 					dataPoints={dataPoints}
+					filter={filter}
 				></LineChartDefault>
 			</ChartCard>
 		</div>
