@@ -116,64 +116,6 @@ export function useNetworkProbeStats(props: UseNetworkProbeStatsProps) {
 	const [probeStats, setProbeStats] = useState<NetworkProbeStatsRecord[]>([])
 	const requestID = useRef(0)
 
-	// Subscribe to new probe stats
-	useEffect(() => {
-		if (!systemId) {
-			return
-		}
-		let unsubscribe: (() => void) | undefined
-		const pbOptions = {
-			fields: "stats,created,type",
-			filter: pb.filter("system = {:system}", { system: systemId }),
-		}
-
-		;(async () => {
-			try {
-				unsubscribe = await pb.collection<NetworkProbeStatsRecord>("network_probe_stats").subscribe(
-					"*",
-					(event) => {
-						if (!chartTime || event.action !== "create") {
-							return
-						}
-						// if (typeof event.record.created === "string") {
-						// 	event.record.created = new Date(event.record.created).getTime()
-						// }
-						// return if not current chart time
-						// we could append to other chart times, but we would need to check the timestamps
-						// to make sure they fit in correctly, so for simplicity just ignore non-chart-time updates
-						// and fetch them via API when the user switches to that chart time
-						const chartTimeRecordType = chartTimeData[chartTime].type as ChartTimes
-						if (event.record.type !== chartTimeRecordType) {
-							// const lastCreated = getCacheValue(systemId, chartTime)?.at(-1)?.created ?? 0
-							// if (lastCreated) {
-							// 	// if the new record is close enough to the last cached record, append it to the cache so it's available immediately if the user switches to that chart time
-							// 	const { expectedInterval } = chartTimeData[chartTime]
-							// 	if (event.record.created - lastCreated < expectedInterval * 1.5) {
-							// 		console.log(
-							// 			`Caching out-of-chart-time probe stats record for chart time ${chartTime} (record type: ${event.record.type})`
-							// 		)
-							// 		const newStats = appendCacheValue(systemId, chartTime, [event.record])
-							// 		cache.set(`${systemId}${chartTime}`, newStats)
-							// 	}
-							// }
-							// console.log(`Received probe stats for non-current chart time (${event.record.type}), ignoring for now`)
-							return
-						}
-
-						// console.log("Appending new probe stats to chart:", event.record)
-						const newStats = appendCacheValue(systemId, chartTime, [event.record])
-						setProbeStats(newStats)
-					},
-					pbOptions
-				)
-			} catch (error) {
-				console.error("Failed to subscribe to probe stats:", error)
-			}
-		})()
-
-		return () => unsubscribe?.()
-	}, [systemId])
-
 	// fetch missing probe stats on load and when chart time changes
 	useEffect(() => {
 		if (!systemId || !chartTime || chartTime === "1m") {
@@ -207,6 +149,39 @@ export function useNetworkProbeStats(props: UseNetworkProbeStatsProps) {
 			}
 		)
 	}, [chartTime])
+
+	// Subscribe to new probe stats on non-1m chart times (1h, 12h, etc)
+	useEffect(() => {
+		if (!systemId || !chartTime || chartTime === "1m") {
+			return
+		}
+		let unsubscribe: (() => void) | undefined
+		const pbOptions = {
+			fields: "stats,created,type",
+			filter: pb.filter("system={:system} && type={:type}", { system: systemId, type: chartTimeData[chartTime].type }),
+		}
+
+		;(async () => {
+			try {
+				unsubscribe = await pb.collection<NetworkProbeStatsRecord>("network_probe_stats").subscribe(
+					"*",
+					(event) => {
+						if (event.action !== "create") {
+							return
+						}
+						// console.log("Appending new probe stats to chart:", event.record)
+						const newStats = appendCacheValue(systemId, chartTime, [event.record])
+						setProbeStats(newStats)
+					},
+					pbOptions
+				)
+			} catch (error) {
+				console.error("Failed to subscribe to probe stats:", error)
+			}
+		})()
+
+		return () => unsubscribe?.()
+	}, [systemId, chartTime])
 
 	// subscribe to realtime metrics if chart time is 1m
 	useEffect(() => {

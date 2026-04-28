@@ -132,27 +132,82 @@ export function ResponseChart({ probeStats, grid, probes, chartData, empty }: Pr
 	)
 }
 
-export function MaxResponseChart({ probeStats, grid, probes, chartData, empty }: ProbeChartProps) {
+interface AvgMinMaxResponseChartProps {
+	probeStats: NetworkProbeStatsRecord[]
+	probe: NetworkProbeRecord | null
+	chartData: ChartData
+	empty: boolean
+}
+
+export function AvgMinMaxResponseChart({ probeStats, probe, chartData, empty }: AvgMinMaxResponseChartProps) {
 	const { t } = useLingui()
 
+	const { chartTime } = chartData
+	const hasLongInterval = (probe?.interval ?? 61) > 60
+
+	// only one probe is relevant for this chart
+	const dataPoints: DataPoint<NetworkProbeStatsRecord>[] = useMemo(() => {
+		const dataFn = (index: number) => (record: NetworkProbeStatsRecord) =>
+			record.stats?.[probe?.id ?? ""]?.[index] ?? "-"
+		const avgPoint = {
+			label: "Avg",
+			dataKey: dataFn(0),
+			color: 1,
+			order: 0,
+		}
+		if (chartTime === "1m" || (hasLongInterval && chartTime === "1h")) {
+			// avg, min, max are all the same for 1m interval, so just show avg
+			return [avgPoint]
+		}
+		return [
+			{
+				label: "Max",
+				dataKey: dataFn(2),
+				color: 3,
+				order: 0,
+			},
+			avgPoint,
+			{
+				label: "Min",
+				dataKey: dataFn(1),
+				color: 2,
+				order: 2,
+			},
+		]
+	}, [chartTime, hasLongInterval])
+
+	const data = useMemo(() => {
+		if (!probe) return []
+		return probeStats.filter((record) => record.stats && probe.id in record.stats)
+	}, [probe, probeStats])
+
+	const legend = dataPoints.length > 1
+
 	return (
-		<ProbeChart
-			probeStats={probeStats}
-			grid={grid}
-			probes={probes}
-			chartData={chartData}
+		<ChartCard
+			legend={true}
 			empty={empty}
-			valueIndex={0}
 			title={t`Response`}
-			description={t`Average response time`}
-			tickFormatter={(value) => formatMicroseconds(value, false)}
-			contentFormatter={({ value }) => {
-				if (typeof value !== "number") {
-					return value
-				}
-				return formatMicroseconds(value)
-			}}
-		/>
+			description={t`Average, minimum, and maximum response time`}
+			grid={false}
+		>
+			<LineChartDefault
+				truncate
+				chartData={chartData}
+				customData={data}
+				dataPoints={dataPoints}
+				domain={["auto", "auto"]}
+				connectNulls
+				legend={legend}
+				tickFormatter={(value) => formatMicroseconds(value, false)}
+				contentFormatter={({ value }) => {
+					if (typeof value !== "number") {
+						return value
+					}
+					return formatMicroseconds(value)
+				}}
+			/>
+		</ChartCard>
 	)
 }
 
@@ -166,7 +221,7 @@ export function LossChart({ probeStats, grid, probes, chartData, empty }: ProbeC
 			probes={probes}
 			chartData={chartData}
 			empty={empty}
-			valueIndex={4}
+			valueIndex={3}
 			title={t`Loss`}
 			description={t`Packet loss (%)`}
 			domain={[0, 100]}

@@ -402,20 +402,29 @@ func (task *probeTask) resultLocked(duration time.Duration, now time.Time) (prob
 	}
 
 	result := agg.result()
-	loss1m := result[3]
-	response1h := hourAgg.avgResponse()
+
+	res := result[0]
+	res1h := hourAgg.avgResponse()
+	resMin := result[1]
+	resMin1h := float64(hourAgg.minUs)
+	resMax := result[2]
+	resMax1h := float64(hourAgg.maxUs)
+	loss := result[3]
 	loss1h := hourAgg.lossPercentage()
-	if hourAgg.successCount > 0 {
-		return probe.Result{
-			result[0],
-			response1h,
-			float64(hourAgg.minUs),
-			float64(hourAgg.maxUs),
-			loss1m,
-			loss1h,
-		}, true
+
+	if hourAgg.successCount == 0 {
+		resMin1h, resMax1h = 0, 0
 	}
-	return probe.Result{result[0], response1h, 0, 0, loss1m, loss1h}, true
+	return probe.Result{
+		res,
+		res1h,
+		resMin,
+		resMin1h,
+		resMax,
+		resMax1h,
+		loss,
+		loss1h,
+	}, true
 }
 
 // aggregateSamplesSince aggregates raw samples newer than the cutoff.

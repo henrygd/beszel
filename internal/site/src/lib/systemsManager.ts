@@ -9,7 +9,7 @@ import {
 	$pausedSystems,
 	$upSystems,
 } from "@/lib/stores"
-import { updateFavicon } from "@/lib/utils"
+import { isVisuallyLonger, updateFavicon } from "@/lib/utils"
 import type { SystemRecord } from "@/types"
 import { SystemStatus } from "./enums"
 
@@ -41,7 +41,7 @@ export function init() {
 		}
 
 		if (!newSystem) {
-			onSystemsChanged(newSystems, undefined)
+			onSystemsChanged(newSystems, newSystem, oldSystem)
 			return
 		}
 
@@ -65,23 +65,28 @@ export function init() {
 		}
 
 		// run things that need to be done when systems change
-		onSystemsChanged(newSystems, newSystem)
+		onSystemsChanged(newSystems, newSystem, oldSystem)
 	})
 }
 
 /** Update the longest system name string and favicon based on system status */
-function onSystemsChanged(systems: Record<string, SystemRecord>, _changedSystem: SystemRecord | undefined) {
+function onSystemsChanged(systems: Record<string, SystemRecord>, newSystem?: SystemRecord, oldSystem?: SystemRecord) {
 	const downSystemsStore = $downSystems.get()
 	const downSystems = Object.values(downSystemsStore)
 
-	let longestName = ""
-	for (const system of Object.values(systems)) {
-		if (system.name.length > longestName.length) {
-			longestName = system.name
+	// if the old system's old name was the longest, we need to find the new longest name
+	// otherwise, if the changed system's new name is longer than the current longest, update it
+	const longestName = $longestSystemName.get()
+	if (oldSystem?.name === longestName && oldSystem.name !== newSystem?.name) {
+		let newLongest = ""
+		for (const id in systems) {
+			if (isVisuallyLonger(systems[id].name, newLongest)) {
+				newLongest = systems[id].name
+			}
 		}
-	}
-	if ($longestSystemName.get() !== longestName) {
-		$longestSystemName.set(longestName)
+		$longestSystemName.set(newLongest)
+	} else if (newSystem && newSystem.name !== longestName && isVisuallyLonger(newSystem.name, longestName)) {
+		$longestSystemName.set(newSystem.name)
 	}
 
 	updateFavicon(downSystems.length)

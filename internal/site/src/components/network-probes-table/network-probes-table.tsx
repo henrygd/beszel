@@ -34,18 +34,20 @@ import { useToast } from "@/components/ui/use-toast"
 import { isReadOnlyUser } from "@/lib/api"
 import { pb } from "@/lib/api"
 import { $allSystemsById, $chartTime, $direction } from "@/lib/stores"
-import { cn, useBrowserStorage } from "@/lib/utils"
+import { cn, isVisuallyLonger, useBrowserStorage } from "@/lib/utils"
 import type { NetworkProbeRecord } from "@/types"
 import { AddProbeDialog, EditProbeDialog } from "./probe-dialog"
 import { XIcon } from "lucide-react"
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet"
 import ChartTimeSelect from "@/components/charts/chart-time-select"
-import { ResponseChart, LossChart } from "@/components/routes/system/charts/probes-charts"
+import { LossChart, AvgMinMaxResponseChart } from "@/components/routes/system/charts/probes-charts"
 import { useNetworkProbeStats } from "@/lib/use-network-probes"
 import { useStore } from "@nanostores/react"
 import type { ChartData } from "@/types"
 import { parseSemVer } from "@/lib/utils"
 import { Separator } from "../ui/separator"
+import { $router, Link } from "../router"
+import { getPagePath } from "@nanostores/router"
 
 export default function NetworkProbesTableNew({
 	systemId,
@@ -74,10 +76,10 @@ export default function NetworkProbesTableNew({
 		let longestTarget = ""
 		for (const p of probes) {
 			const name = p.name || p.target
-			if (name.length > longestName.length) {
+			if (isVisuallyLonger(name, longestName)) {
 				longestName = name
 			}
-			if (p.target.length > longestTarget.length) {
+			if (isVisuallyLonger(p.target, longestTarget)) {
 				longestTarget = p.target
 			}
 		}
@@ -266,7 +268,7 @@ export default function NetworkProbesTableNew({
 								)}
 							</div>
 						)}
-						{canManageProbes ? <AddProbeDialog systemId={systemId} /> : null}
+						{canManageProbes ? <AddProbeDialog systemId={systemId} probes={probes} /> : null}
 						{canManageProbes ? (
 							<EditProbeDialog
 								systemId={systemId}
@@ -488,7 +490,7 @@ function NetworkProbeSheetContent({
 			orientation: direction === "rtl" ? "right" : "left",
 			chartTime,
 		}),
-		[chartTime]
+		[probeStats]
 	)
 	const hasProbeStats = probeStats.some((record) => record.stats?.[probe.id] != null)
 	const probeLabel = probe.name || probe.target
@@ -499,7 +501,9 @@ function NetworkProbeSheetContent({
 				<SheetHeader className="mb-0 border-b p-0 pb-4">
 					<SheetTitle>{probeLabel}</SheetTitle>
 					<SheetDescription className="flex flex-wrap items-center gap-x-2 gap-y-1">
-						{system?.name ?? ""}
+						<Link className="hover:underline" href={getPagePath($router, "system", { id: system?.id ?? "" })}>
+							{system?.name ?? ""}
+						</Link>
 						<Separator orientation="vertical" className="h-2.5 bg-muted-foreground opacity-70" />
 						{probe.protocol.toUpperCase()}
 						<Separator orientation="vertical" className="h-2.5 bg-muted-foreground opacity-70" />
@@ -514,14 +518,7 @@ function NetworkProbeSheetContent({
 				</SheetHeader>
 				<div className="grid gap-4">
 					<ChartTimeSelect className="bg-card" agentVersion={chartData.agentVersion} />
-					<ResponseChart
-						probeStats={probeStats}
-						grid={false}
-						probes={[probe]}
-						chartData={chartData}
-						empty={!hasProbeStats}
-						showFilter={false}
-					/>
+					<AvgMinMaxResponseChart probeStats={probeStats} probe={probe} chartData={chartData} empty={!hasProbeStats} />
 					<LossChart
 						probeStats={probeStats}
 						grid={false}

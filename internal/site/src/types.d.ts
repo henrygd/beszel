@@ -564,23 +564,21 @@ export interface NetworkProbeRecord {
 }
 
 /**
- * 0: avg 1 minute response in microseconds
+ * Stats holds only 1m values for a single target, which are used for charts.
  *
- * 1: avg response over 1 hour in microseconds
+ * 0: avg response in microseconds
  *
- * 2: min response over the last hour in microseconds
+ * 1: min response in microseconds
  *
- * 3: max response over the last hour in microseconds
+ * 2: max response in microseconds
  *
- * 4: packet loss %
- *
- * 5: packet loss over the last hour in %
+ * 3: packet loss percentage (0-100)
  */
-type ProbeResult = number[]
+type ProbeStats = number[]
 
 export interface NetworkProbeStatsRecord {
 	id?: string
 	type?: string
-	stats: Record<string, ProbeResult>
+	stats: Record<string, ProbeStats>
 	created: number // unix timestamp (ms) for Recharts xAxis
 }

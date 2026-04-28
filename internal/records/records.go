@@ -174,7 +174,7 @@ func (rm *RecordManager) CreateLongerRecords() {
 		return nil
 	})
 
-	// log.Println("finished creating longer records", "time (ms)", time.Since(start).Milliseconds())
+	// slog.Info("finished creating longer records", "time (ms)", time.Since(now).Milliseconds())
 }
 
 func getCreatedTimeField(collectionName string, period time.Time) any {
@@ -567,11 +567,11 @@ func (rm *RecordManager) AverageProbeStats(db dbx.Builder, records RecordIds) ma
 			}
 			for i := range vals {
 				switch i {
-				case 2: // min fields
+				case 1: // min fields
 					if s.counts[i] == 0 || vals[i] < s.sums[i] {
 						s.sums[i] = vals[i]
 					}
-				case 3: // max fields
+				case 2: // max fields
 					if s.counts[i] == 0 || vals[i] > s.sums[i] {
 						s.sums[i] = vals[i]
 					}
@@ -591,7 +591,7 @@ func (rm *RecordManager) AverageProbeStats(db dbx.Builder, records RecordIds) ma
 		}
 		for i := range s.sums {
 			switch i {
-			case 2, 3: // min and max fields should not be averaged
+			case 1, 2: // min and max fields should not be averaged
 				continue
 			default:
 				if s.counts[i] > 0 {

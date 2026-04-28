@@ -36,28 +36,16 @@ func bindNetworkProbesEvents(hub *Hub) {
 			return nil
 		}
 		// if system connected, run the probe immediately
-		// if not, return and wait for the system to connect and sync probes then
+		// if not, return and wait for the system to connect and sync probes on reg schedule
 		system, err := hub.sm.GetSystem(e.Record.GetString("system"))
-		if err != nil || system.Status != "up" {
-			return nil
+		if err == nil && system.Status == "up" {
+			go hub.upsertNetworkProbe(e.Record, true)
 		}
-		result, err := hub.upsertNetworkProbe(e.Record, true)
-		if err != nil {
-			hub.Logger().Warn("failed to sync probe to agent", "system", e.Record.GetString("system"), "probe", e.Record.Id, "err", err)
-			return nil
-		}
-		if result == nil {
-			return nil
-		}
-		setProbeResultFields(e.Record, *result)
-		if err := e.App.SaveNoValidate(e.Record); err != nil {
-			hub.Logger().Warn("failed to save initial probe result", "system", e.Record.GetString("system"), "probe", e.Record.Id, "err", err)
-		}
-		return e.Next()
+		return err
 	})
 
-	// On API update requests, if the probe config changed in a way that requires a new ID, we will create a new
-	// record with the new ID and delete the old one. Otherwise, we will just update the existing probe on the agent.
+	// On API update requests, if the probe config changed in a way that requires a new ID, create a new
+	// record with the new ID and delete the old one. Otherwise, just update the existing probe on the agent.
 	hub.OnRecordUpdateRequest("network_probes").BindFunc(func(e *core.RecordRequestEvent) error {
 		systemID := e.Record.GetString("system")
 		ID := generateProbeID(systemID, *probeConfigFromRecord(e.Record))
@@ -73,18 +61,15 @@ func bindNetworkProbesEvents(hub *Hub) {
 		}
 		err := e.Next()
 		if e.Record.GetBool("enabled") {
-			var result *probe.Result
+			// if the probe is enabled, sync the updated config to the agent now
 			runNow := !e.Record.Original().GetBool("enabled")
-			result, err = hub.upsertNetworkProbe(e.Record, runNow)
-			if result != nil {
-				setProbeResultFields(e.Record, *result)
-				_ = e.App.SaveNoValidate(e.Record)
-			}
+			err = hub.upsertNetworkProbe(e.Record, runNow)
 		} else {
+			// if the probe is paused, remove it from the agent
 			err = hub.deleteNetworkProbe(e.Record)
 		}
 		if err != nil {
-			hub.Logger().Warn("failed to sync updated probe", "system", e.Record.GetString("system"), "probe", e.Record.Id, "err", err)
+			hub.Logger().Warn("failed to sync updated probe", "system", systemID, "probe", e.Record.Id, "err", err)
 		}
 		return nil
 	})
@@ -115,10 +100,10 @@ func setProbeResultFields(record *core.Record, result probe.Result) {
 	nowString := now.Format(types.DefaultDateLayout)
 	record.Set("res", result.Get(0))
 	record.Set("resAvg1h", result.Get(1))
-	record.Set("resMin1h", result.Get(2))
-	record.Set("resMax1h", result.Get(3))
-	record.Set("loss", result.Get(4))
-	record.Set("loss1h", result.Get(5))
+	record.Set("resMin1h", result.Get(3))
+	record.Set("resMax1h", result.Get(5))
+	// record.Set("loss", result.Get(4))
+	record.Set("loss1h", result.Get(7))
 	record.Set("updated", nowString)
 }
 
@@ -133,14 +118,20 @@ func copyProbeToNewRecord(oldRecord *core.Record, newID string) *core.Record {
 	return newRecord
 }
 
-// upsertNetworkProbe applies the record's probe config to the target system.
-func (h *Hub) upsertNetworkProbe(record *core.Record, runNow bool) (*probe.Result, error) {
+// upsertNetworkProbe creates or updates the record's probe on the target system. If runNow
+// is true, it will also trigger an immediate probe run and update the record with the result.
+func (h *Hub) upsertNetworkProbe(record *core.Record, runNow bool) error {
 	systemID := record.GetString("system")
 	system, err := h.sm.GetSystem(systemID)
 	if err != nil {
-		return nil, err
+		return err
 	}
-	return system.UpsertNetworkProbe(*probeConfigFromRecord(record), runNow)
+	result, err := system.UpsertNetworkProbe(*probeConfigFromRecord(record), runNow)
+	if err != nil || result == nil {
+		return err
+	}
+	setProbeResultFields(record, *result)
+	return h.App.SaveNoValidate(record)
 }
 
 // deleteNetworkProbe removes the record's probe from the target system.

@@ -38,6 +38,8 @@ type NormalizedProbeValues = Omit<ProbeValues, "system" | "interval"> & {
 	interval: number
 }
 
+const defaultInterval = 20
+
 const ProbeProtocolSchema = v.picklist(["icmp", "tcp", "http"])
 
 const ProbeIntervalSchema = v.pipe(v.string(), v.toNumber(), v.minValue(1), v.maxValue(3600))
@@ -99,7 +101,7 @@ function normalizeHttpTarget(target: string, port: number) {
 	return `${port === 443 ? "https" : "http"}://${target}`
 }
 
-function buildProbePayload(values: ProbeValues) {
+function buildProbePayload(values: ProbeValues, enabled = true) {
 	const normalizedValues = v.safeParse(NormalizedProbeValuesSchema, values)
 	if (!normalizedValues.success) {
 		throw new Error(normalizedValues.issues[0]?.message || "Invalid probe")
@@ -107,7 +109,7 @@ function buildProbePayload(values: ProbeValues) {
 
 	const payload = {
 		system: values.system,
-		enabled: true,
+		enabled,
 		...normalizedValues.output,
 	}
 
@@ -121,6 +123,11 @@ function buildProbePayload(values: ProbeValues) {
 		payload.name = ""
 	}
 	return payload
+}
+
+type ProbeIdentity = Pick<ProbeValues, "system" | "target" | "protocol" | "port">
+function getProbeIdentityKey({ system, target, protocol, port }: ProbeIdentity) {
+	return `${system}${target}${protocol}${port}`
 }
 
 function parseBulkProbeLine(line: string, lineNumber: number, system: string) {
@@ -142,12 +149,12 @@ function parseBulkProbeLine(line: string, lineNumber: number, system: string) {
 		protocol: (parsed.output.protocol?.toLowerCase() ||
 			(/^https?:\/\//i.test(parsed.output.target) ? "http" : "icmp")) as ProbeProtocol,
 		port: parsed.output.port ? Number(parsed.output.port) : 0,
-		interval: parsed.output.interval || "30",
+		interval: parsed.output.interval || `${defaultInterval}`,
 		name: parsed.output.name || undefined,
 	})
 }
 
-export function AddProbeDialog({ systemId }: { systemId?: string }) {
+export function AddProbeDialog({ systemId, probes }: { systemId?: string; probes: NetworkProbeRecord[] }) {
 	const [open, setOpen] = useState(false)
 	const [bulkOpen, setBulkOpen] = useState(false)
 	const [bulkInput, setBulkInput] = useState("")
@@ -192,10 +199,29 @@ export function AddProbeDialog({ systemId }: { systemId?: string }) {
 			}
 
 			const payloads = rawLines.map((line, index) => parseBulkProbeLine(line, index + 1, system))
+			const existingProbeKeys = new Set(
+				probes.filter((probe) => probe.system === system).map((probe) => getProbeIdentityKey(probe))
+			)
+			const newPayloads = [] as typeof payloads
+
+			for (const payload of payloads) {
+				const probeKey = getProbeIdentityKey(payload)
+				if (existingProbeKeys.has(probeKey)) {
+					continue
+				}
+
+				existingProbeKeys.add(probeKey)
+				newPayloads.push(payload)
+			}
+
+			if (!newPayloads.length) {
+				throw new Error("No new probes to add. All entries already exist.")
+			}
+
 			closedForSubmit = true
 			let batch = pb.createBatch()
 			let inBatch = 0
-			for (const payload of payloads) {
+			for (const payload of newPayloads) {
 				batch.collection("network_probes").create(payload)
 				inBatch++
 				if (inBatch > 20) {
@@ -209,7 +235,7 @@ export function AddProbeDialog({ systemId }: { systemId?: string }) {
 			}
 
 			resetBulkForm()
-			toast({ title: t`Probes created`, description: `${payloads.length} probe(s) added.` })
+			toast({ title: t`Probes created`, description: `${newPayloads.length} probe(s) added.` })
 		} catch (err: unknown) {
 			if (closedForSubmit) {
 				setBulkOpen(true)
@@ -337,10 +363,11 @@ export function EditProbeDialog({
 	systemId?: string
 	probe?: NetworkProbeRecord
 }) {
-	if (!probe) {
+	const hasOpened = useRef(false)
+	if (!probe && !hasOpened.current) {
 		return null
 	}
-
+	hasOpened.current = true
 	return (
 		<Dialog open={open} onOpenChange={setOpen}>
 			<ProbeDialogContent open={open} setOpen={setOpen} systemId={systemId} probe={probe} />
@@ -366,7 +393,7 @@ function ProbeDialogContent({
 	const [port, setPort] = useState(
 		(probe?.protocol === "tcp" || probe?.protocol === "http") && probe.port ? String(probe.port) : ""
 	)
-	const [probeInterval, setProbeInterval] = useState(String(probe?.interval ?? 30))
+	const [probeInterval, setProbeInterval] = useState(String(probe?.interval ?? defaultInterval))
 	const [name, setName] = useState(probe?.name ?? "")
 	const [loading, setLoading] = useState(false)
 	const [selectedSystemId, setSelectedSystemId] = useState(probe?.system ?? "")
@@ -385,7 +412,7 @@ function ProbeDialogContent({
 		setProtocol(probe?.protocol ?? "icmp")
 		setTarget(probe?.target ?? "")
 		setPort((probe?.protocol === "tcp" || probe?.protocol === "http") && probe.port ? String(probe.port) : "")
-		setProbeInterval(String(probe?.interval ?? 30))
+		setProbeInterval(String(probe?.interval ?? defaultInterval))
 		setName(probe?.name ?? "")
 		setSelectedSystemId(probe?.system ?? "")
 		setLoading(false)
@@ -400,14 +427,17 @@ function ProbeDialogContent({
 			if (!selectedSystem) {
 				throw new Error("Select a system.")
 			}
-			const payload = buildProbePayload({
-				system: selectedSystem,
-				target,
-				protocol,
-				port: protocol === "tcp" || protocol === "http" ? Number(port) : 0,
-				interval: probeInterval,
-				name,
-			})
+			const payload = buildProbePayload(
+				{
+					system: selectedSystem,
+					target,
+					protocol,
+					port: protocol === "tcp" || protocol === "http" ? Number(port) : 0,
+					interval: probeInterval,
+					name,
+				},
+				probe ? probe.enabled : true
+			)
 			if (probe) {
 				await pb.collection("network_probes").update(probe.id, payload)
 			} else {
@@ -490,7 +520,6 @@ function ProbeDialogContent({
 							placeholder="443"
 							min={1}
 							max={65535}
-							required={protocol === "tcp"}
 						/>
 					</div>
 				)}

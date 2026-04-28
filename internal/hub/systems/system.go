@@ -30,6 +30,7 @@ import (
 	"github.com/lxzan/gws"
 	"github.com/pocketbase/dbx"
 	"github.com/pocketbase/pocketbase/core"
+	"github.com/pocketbase/pocketbase/tools/security"
 	"github.com/pocketbase/pocketbase/tools/types"
 	"golang.org/x/crypto/ssh"
 )
@@ -314,16 +315,16 @@ func createSystemdStatsRecords(app core.App, data []*systemd.Service, systemId s
 	return err
 }
 
-func updateNetworkProbesRecords(app core.App, data map[string]probe.Result, systemId string) error {
-	if len(data) == 0 {
+func updateNetworkProbesRecords(app core.App, probeResults map[string]probe.Result, systemId string) error {
+	if len(probeResults) == 0 {
 		return nil
 	}
 	var err error
-	collectionName := "network_probes"
+	probeCollectionName := "network_probes"
 
 	// If realtime updates are active, we save via PocketBase records to trigger realtime events.
 	// Otherwise we can do a more efficient direct update via SQL
-	realtimeActive := utils.RealtimeActiveForCollection(app, collectionName, func(filterQuery string) bool {
+	realtimeActive := utils.RealtimeActiveForCollection(app, probeCollectionName, func(filterQuery string) bool {
 		return !strings.Contains(filterQuery, "system") || strings.Contains(filterQuery, systemId)
 	})
 
@@ -334,63 +335,68 @@ func updateNetworkProbesRecords(app core.App, data map[string]probe.Result, syst
 	var updateQuery *dbx.Query
 	if !realtimeActive {
 		db = app.DB()
-		sql := fmt.Sprintf("UPDATE %s SET res={:res}, resMin1h={:resMin1h}, resMax1h={:resMax1h}, resAvg1h={:resAvg1h}, loss={:loss}, loss1h={:loss1h}, updated={:updated} WHERE id={:id}", collectionName)
-		updateQuery = db.NewQuery(sql)
+		probeFields := []string{"res", "resMin1h", "resMax1h", "resAvg1h", "loss1h", "updated"}
+		setClauses := make([]string, len(probeFields))
+		for i, f := range probeFields {
+			setClauses[i] = fmt.Sprintf("%s={:%s}", f, f)
+		}
+		queryString := fmt.Sprintf("UPDATE %s SET %s WHERE id={:id}", probeCollectionName, strings.Join(setClauses, ", "))
+		updateQuery = db.NewQuery(queryString)
 	}
 
 	// update network_probes records
-	for id, values := range data {
+	for id, values := range probeResults {
+		probeData := map[string]any{
+			"id":       id,
+			"res":      values.Get(0),
+			"resAvg1h": values.Get(1),
+			"resMin1h": values.Get(3),
+			"resMax1h": values.Get(5),
+			"loss1h":   values.Get(7),
+			"updated":  nowString,
+		}
 		switch realtimeActive {
 		case true:
 			var record *core.Record
-			record, err = app.FindRecordById(collectionName, id)
+			record, err = app.FindRecordById(probeCollectionName, id)
 			if err == nil {
-				record.Set("res", values.Get(0))
-				record.Set("resAvg1h", values.Get(1))
-				record.Set("resMin1h", values.Get(2))
-				record.Set("resMax1h", values.Get(3))
-				record.Set("loss", values.Get(4))
-				record.Set("loss1h", values.Get(5))
-				record.Set("updated", nowString)
+				record.Load(probeData)
 				err = app.SaveNoValidate(record)
 			}
 		default:
-			_, err = updateQuery.Bind(dbx.Params{
-				"id":       id,
-				"res":      values.Get(0),
-				"resAvg1h": values.Get(1),
-				"resMin1h": values.Get(2),
-				"resMax1h": values.Get(3),
-				"loss":     values.Get(4),
-				"loss1h":   values.Get(5),
-				"updated":  nowString,
-			}).Execute()
+			_, err = updateQuery.Bind(dbx.Params(probeData)).Execute()
 		}
 		if err != nil {
 			app.Logger().Warn("Failed to update probe", "system", systemId, "probe", id, "err", err)
 		}
 	}
 
-	// insert network probe stats records
-	switch realtimeActive {
-	case true:
-		collection, _ := app.FindCachedCollectionByNameOrId("network_probe_stats")
-		record := core.NewRecord(collection)
-		record.Set("system", systemId)
-		record.Set("stats", data)
-		record.Set("type", "1m")
-		record.Set("created", nowMilli)
-		err = app.SaveNoValidate(record)
-	default:
-		var statsJson types.JSONRaw
-		if err := statsJson.Scan(data); err == nil {
-			insertQuery := db.NewQuery("INSERT INTO network_probe_stats (system, stats, type, created) VALUES ({:system}, {:stats}, {:type}, {:created})")
-			_, err = insertQuery.Bind(dbx.Params{
-				"system":  systemId,
-				"stats":   statsJson,
-				"type":    "1m",
-				"created": nowMilli,
-			}).Execute()
+	// handle stats collection as well
+	statsCollectionName := "network_probe_stats"
+
+	// we don't need the hour values for the stats collection
+	stats := make(map[string]probe.Stats, len(probeResults))
+	for key, values := range probeResults {
+		stats[key] = probe.Stats{}.FromResult(values)
+	}
+
+	statsRecordData := map[string]any{
+		"system":  systemId,
+		"type":    "1m",
+		"created": nowMilli,
+	}
+	var statsJson types.JSONRaw
+	if err = statsJson.Scan(stats); err == nil {
+		statsRecordData["stats"] = statsJson
+		switch realtimeActive {
+		case true:
+			collection, _ := app.FindCachedCollectionByNameOrId(statsCollectionName)
+			record := core.NewRecord(collection)
+			record.Load(statsRecordData)
+			err = app.SaveNoValidate(record)
+		default:
+			statsRecordData["id"] = security.PseudorandomStringWithAlphabet(10, core.DefaultIdAlphabet)
+			_, err = db.Insert(statsCollectionName, dbx.Params(statsRecordData)).Execute()
 		}
 	}
 	if err != nil {

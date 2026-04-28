@@ -472,3 +472,45 @@ export function secondsToUptimeString(seconds: number): string {
 		return secondsToString(seconds, "day")
 	}
 }
+
+const visualWidthCache = new Map<string, number>()
+
+/** Get the visual width of a string, accounting for full-width and narrow punctuation characters.
+ *  Don't use for monospaced fonts, use .length instead
+ */
+export function getVisualStringWidth(str: string): number {
+	const cached = visualWidthCache.get(str)
+	if (cached !== undefined) {
+		return cached
+	}
+	let width = 0
+	for (const char of str) {
+		if (char === ".") {
+			width += 0.7
+			continue
+		}
+		const code = char.codePointAt(0) || 0
+		// Hangul Jamo and Syllables are often slightly thinner than Hanzi/Kanji
+		if ((code >= 0x1100 && code <= 0x115f) || (code >= 0xac00 && code <= 0xd7af)) {
+			width += 1.8
+			continue
+		}
+		// Count CJK and other full-width characters as 2 units, others as 1
+		// Arabic and Cyrillic are counted as 1
+		const isFullWidth =
+			(code >= 0x2e80 && code <= 0x9fff) || // CJK Radicals, Symbols, and Ideographs
+			(code >= 0xf900 && code <= 0xfaff) || // CJK Compatibility Ideographs
+			(code >= 0xfe30 && code <= 0xfe6f) || // CJK Compatibility Forms
+			(code >= 0xff00 && code <= 0xff60) || // Fullwidth Forms
+			(code >= 0xffe0 && code <= 0xffe6) || // Fullwidth Symbols
+			code > 0xffff // Emojis and other supplementary plane characters
+		width += isFullWidth ? 2 : 1
+	}
+	visualWidthCache.set(str, width)
+
+	return width
+}
+
+export function isVisuallyLonger(str1: string, str2: string): boolean {
+	return getVisualStringWidth(str1) > getVisualStringWidth(str2)
+}
