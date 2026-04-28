@@ -1701,21 +1701,15 @@ func init() {
 		"viewRule": null
 	},
 	{
-		"id": "np_probes_001",
-		"listRule": null,
-		"viewRule": null,
 		"createRule": null,
-		"updateRule": null,
 		"deleteRule": null,
-		"name": "network_probes",
-		"type": "base",
 		"fields": [
 			{
-				"autogeneratePattern": "[a-z0-9]{15}",
+				"autogeneratePattern": "[a-z0-9]{10}",
 				"hidden": false,
 				"id": "text3208210256",
-				"max": 15,
-				"min": 15,
+				"max": 10,
+				"min": 6,
 				"name": "id",
 				"pattern": "^[a-z0-9]+$",
 				"presentable": false,
@@ -1738,6 +1732,7 @@ func init() {
 				"type": "relation"
 			},
 			{
+				"autogeneratePattern": "",
 				"hidden": false,
 				"id": "np_name",
 				"max": 200,
@@ -1751,6 +1746,7 @@ func init() {
 				"type": "text"
 			},
 			{
+				"autogeneratePattern": "",
 				"hidden": false,
 				"id": "np_target",
 				"max": 500,
@@ -1772,7 +1768,11 @@ func init() {
 				"required": true,
 				"system": false,
 				"type": "select",
-				"values": ["icmp", "tcp", "http"]
+				"values": [
+					"icmp",
+					"tcp",
+					"http"
+				]
 			},
 			{
 				"hidden": false,
@@ -1800,6 +1800,66 @@ func init() {
 			},
 			{
 				"hidden": false,
+				"id": "number926446584",
+				"max": null,
+				"min": null,
+				"name": "res",
+				"onlyInt": false,
+				"presentable": false,
+				"required": false,
+				"system": false,
+				"type": "number"
+			},
+			{
+				"hidden": false,
+				"id": "number1006954605",
+				"max": null,
+				"min": null,
+				"name": "resAvg1h",
+				"onlyInt": false,
+				"presentable": false,
+				"required": false,
+				"system": false,
+				"type": "number"
+			},
+			{
+				"hidden": false,
+				"id": "number4267669802",
+				"max": null,
+				"min": null,
+				"name": "resMin1h",
+				"onlyInt": false,
+				"presentable": false,
+				"required": false,
+				"system": false,
+				"type": "number"
+			},
+			{
+				"hidden": false,
+				"id": "number591433223",
+				"max": null,
+				"min": null,
+				"name": "resMax1h",
+				"onlyInt": false,
+				"presentable": false,
+				"required": false,
+				"system": false,
+				"type": "number"
+			},
+			{
+				"hidden": false,
+				"id": "number3726709001",
+				"max": null,
+				"min": null,
+				"name": "loss1h",
+				"onlyInt": false,
+				"presentable": false,
+				"required": false,
+				"system": false,
+				"type": "number"
+			},
+			{
+				"hidden": false,
 				"id": "np_enabled",
 				"name": "enabled",
 				"presentable": false,
@@ -1819,36 +1879,37 @@ func init() {
 			},
 			{
 				"hidden": false,
-				"id": "autodate3332085495",
+				"id": "date3332085495",
+				"max": "",
+				"min": "",
 				"name": "updated",
-				"onCreate": true,
-				"onUpdate": true,
 				"presentable": false,
+				"required": false,
 				"system": false,
-				"type": "autodate"
+				"type": "date"
 			}
 		],
+		"id": "np_probes_001",
 		"indexes": [
-			"CREATE INDEX ` + "`" + `idx_np_system_enabled` + "`" + ` ON ` + "`" + `network_probes` + "`" + ` (\n  ` + "`" + `system` + "`" + `,\n  ` + "`" + `enabled` + "`" + `\n)"
+			"CREATE INDEX ` + "`" + `idx_np_system_enabled` + "`" + ` ON ` + "`" + `network_probes` + "`" + ` (` + "`" + `system` + "`" + `)"
 		],
-		"system": false
+		"listRule": null,
+		"name": "network_probes",
+		"system": false,
+		"type": "base",
+		"updateRule": null,
+		"viewRule": null
 	},
 	{
-		"id": "np_stats_001",
-		"listRule": null,
-		"viewRule": null,
 		"createRule": null,
-		"updateRule": null,
 		"deleteRule": null,
-		"name": "network_probe_stats",
-		"type": "base",
 		"fields": [
 			{
-				"autogeneratePattern": "[a-z0-9]{15}",
+				"autogeneratePattern": "[a-z0-9]{10}",
 				"hidden": false,
 				"id": "text3208210256",
-				"max": 15,
-				"min": 15,
+				"max": 10,
+				"min": 10,
 				"name": "id",
 				"pattern": "^[a-z0-9]+$",
 				"presentable": false,
@@ -1889,33 +1950,37 @@ func init() {
 				"required": true,
 				"system": false,
 				"type": "select",
-				"values": ["1m", "10m", "20m", "120m", "480m"]
+				"values": [
+					"1m",
+					"10m",
+					"20m",
+					"120m",
+					"480m"
+				]
 			},
 			{
 				"hidden": false,
-				"id": "autodate2990389176",
+				"id": "number2990389176",
+				"max": null,
+				"min": null,
 				"name": "created",
-				"onCreate": true,
-				"onUpdate": false,
+				"onlyInt": false,
 				"presentable": false,
+				"required": false,
 				"system": false,
-				"type": "autodate"
-			},
-			{
-				"hidden": false,
-				"id": "autodate3332085495",
-				"name": "updated",
-				"onCreate": true,
-				"onUpdate": true,
-				"presentable": false,
-				"system": false,
-				"type": "autodate"
+				"type": "number"
 			}
 		],
+		"id": "np_stats_001",
 		"indexes": [
 			"CREATE INDEX ` + "`" + `idx_nps_system_type_created` + "`" + ` ON ` + "`" + `network_probe_stats` + "`" + ` (\n  ` + "`" + `system` + "`" + `,\n  ` + "`" + `type` + "`" + `,\n  ` + "`" + `created` + "`" + `\n)"
 		],
-		"system": false
+		"listRule": null,
+		"name": "network_probe_stats",
+		"system": false,
+		"type": "base",
+		"updateRule": null,
+		"viewRule": null
 	}
 ]`
 
