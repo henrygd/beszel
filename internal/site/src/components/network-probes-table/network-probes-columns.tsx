@@ -1,6 +1,6 @@
 import type { CellContext, Column, ColumnDef } from "@tanstack/react-table"
 import { Button } from "@/components/ui/button"
-import { cn, formatMicroseconds, hourWithSeconds } from "@/lib/utils"
+import { cn, copyToClipboard, formatMicroseconds, hourWithSeconds } from "@/lib/utils"
 import {
 	GlobeIcon,
 	TimerIcon,
@@ -15,6 +15,7 @@ import {
 	PenBoxIcon,
 	PauseCircleIcon,
 	PlayCircleIcon,
+	CopyIcon,
 } from "lucide-react"
 import { t } from "@lingui/core/macro"
 import type { NetworkProbeRecord, SystemRecord } from "@/types"
@@ -31,6 +32,7 @@ import { useStore } from "@nanostores/react"
 import { SystemStatus } from "@/lib/enums"
 import { Checkbox } from "@/components/ui/checkbox"
 import { useMemo } from "react"
+import { formatBulkProbeLine } from "@/components/network-probes-table/probe-dialog"
 
 const protocolColors: Record<string, string> = {
 	icmp: "bg-blue-500/15 text-blue-400",
@@ -256,6 +258,7 @@ export function getProbeColumns(
 						: [row.original]
 				const isBulkAction = actionRows.length > 1
 				const shouldPause = actionRows.some((probe) => probe.enabled)
+				const bulkCopyContent = actionRows.map((probe) => formatBulkProbeLine(probe)).join("\n")
 				return (
 					<DropdownMenu>
 						<DropdownMenuTrigger asChild>
@@ -269,8 +272,7 @@ export function getProbeColumns(
 						<DropdownMenuContent align="end" onClick={(event) => event.stopPropagation()}>
 							{!isBulkAction && (
 								<DropdownMenuItem
-									onClick={(event) => {
-										event.stopPropagation()
+									onClick={() => {
 										onEdit?.(row.original)
 									}}
 								>
@@ -279,8 +281,7 @@ export function getProbeColumns(
 								</DropdownMenuItem>
 							)}
 							<DropdownMenuItem
-								onClick={(event) => {
-									event.stopPropagation()
+								onClick={() => {
 									onSetEnabled?.(actionRows, !shouldPause)
 								}}
 							>
@@ -296,10 +297,17 @@ export function getProbeColumns(
 									</>
 								)}
 							</DropdownMenuItem>
+							<DropdownMenuItem
+								onClick={() => {
+									copyToClipboard(bulkCopyContent)
+								}}
+							>
+								<CopyIcon className="me-2.5 size-4" />
+								<Trans>Bulk copy</Trans>
+							</DropdownMenuItem>
 							<DropdownMenuSeparator />
 							<DropdownMenuItem
-								onClick={(event) => {
-									event.stopPropagation()
+								onClick={() => {
 									onDelete?.(actionRows)
 								}}
 							>

@@ -17,7 +17,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Textarea } from "@/components/ui/textarea"
-import { ChevronDownIcon, ListIcon } from "lucide-react"
+import { ChevronDownIcon, ListIcon, ServerIcon } from "lucide-react"
 import { useToast } from "@/components/ui/use-toast"
 import { $systems } from "@/lib/stores"
 import type { NetworkProbeRecord } from "@/types"
@@ -37,6 +37,8 @@ type ProbeValues = {
 type NormalizedProbeValues = Omit<ProbeValues, "system" | "interval"> & {
 	interval: number
 }
+
+type BulkProbeLineSource = Pick<NetworkProbeRecord, "target" | "protocol" | "port" | "interval" | "name">
 
 const defaultInterval = 20
 
@@ -101,6 +103,14 @@ function normalizeHttpTarget(target: string, port: number) {
 	return `${port === 443 ? "https" : "http"}://${target}`
 }
 
+function trimTrailingEmptyFields(fields: string[]) {
+	let lastValueIndex = fields.length - 1
+	while (lastValueIndex > 0 && !fields[lastValueIndex]) {
+		lastValueIndex--
+	}
+	return fields.slice(0, lastValueIndex + 1)
+}
+
 function buildProbePayload(values: ProbeValues, enabled = true) {
 	const normalizedValues = v.safeParse(NormalizedProbeValuesSchema, values)
 	if (!normalizedValues.success) {
@@ -152,6 +162,12 @@ function parseBulkProbeLine(line: string, lineNumber: number, system: string) {
 		interval: parsed.output.interval || `${defaultInterval}`,
 		name: parsed.output.name || undefined,
 	})
+}
+
+export function formatBulkProbeLine(probe: BulkProbeLineSource) {
+	const port = probe.protocol === "icmp" || probe.port === 443 ? "" : `${probe.port}`
+	const interval = probe.interval === defaultInterval ? "" : `${probe.interval}`
+	return trimTrailingEmptyFields([probe.target, probe.protocol, port, interval, probe.name?.trim() || ""]).join(",")
 }
 
 export function AddProbeDialog({ systemId, probes }: { systemId?: string; probes: NetworkProbeRecord[] }) {
@@ -215,7 +231,7 @@ export function AddProbeDialog({ systemId, probes }: { systemId?: string; probes
 			}
 
 			if (!newPayloads.length) {
-				throw new Error("No new probes to add. All entries already exist.")
+				throw new Error("No new probes. All entries exist.")
 			}
 
 			closedForSubmit = true
@@ -291,19 +307,18 @@ export function AddProbeDialog({ systemId, probes }: { systemId?: string; probes
 						<SheetTitle>
 							<Trans>Bulk Add {{ foo: t`Network Probes` }}</Trans>
 						</SheetTitle>
-						<SheetDescription>
-							target[,protocol[,port[,interval[,name]]]] - TCP/HTTP default to port 443.
-						</SheetDescription>
+						<SheetDescription>target[,protocol[,port[,interval[,name]]]]</SheetDescription>
 					</SheetHeader>
 					<form ref={bulkFormRef} onSubmit={handleBulkSubmit} className="flex h-full flex-col overflow-hidden">
-						<div className="flex-1 space-y-4 overflow-auto p-4">
+						<div className="flex-1 flex flex-col space-y-4 overflow-auto p-4">
 							{!systemId && (
 								<div className="grid gap-2">
-									<Label>
+									<Label className="sr-only">
 										<Trans>System</Trans>
 									</Label>
 									<Select value={bulkSelectedSystemId} onValueChange={setBulkSelectedSystemId} required>
-										<SelectTrigger>
+										<SelectTrigger className="relative ps-10 pe-5 bg-card">
+											<ServerIcon className="size-3.5 absolute start-4 top-1/2 -translate-y-1/2 opacity-85" />
 											<SelectValue placeholder={t`Select a system`} />
 										</SelectTrigger>
 										<SelectContent>
@@ -316,7 +331,7 @@ export function AddProbeDialog({ systemId, probes }: { systemId?: string; probes
 									</Select>
 								</div>
 							)}
-							<div className="grid gap-2">
+							<div className="grow flex flex-col gap-2">
 								<Label htmlFor="bulk-probes" className="sr-only">
 									Entries
 								</Label>
@@ -330,14 +345,11 @@ export function AddProbeDialog({ systemId, probes }: { systemId?: string; probes
 											bulkFormRef.current?.requestSubmit()
 										}
 									}}
-									className="h-200 font-mono text-sm bg-muted/40"
-									style={{ maxHeight: `calc(100vh - 20rem)` }}
-									placeholder={["1.1.1.1", "example.com,tcp", "https://example.com,http,,60,Homepage"].join("\n")}
+									className="font-mono grow text-sm bg-card"
+									placeholder={["1.1.1.1", "example.com,tcp", "https://example.com,http,,60,Example"].join("\n")}
 									required
 								/>
-								<p className="text-xs text-muted-foreground">
-									target[,protocol[,port[,interval[,name]]]] • TCP and HTTP default to port 443.
-								</p>
+								<p className="text-xs text-muted-foreground">target[,protocol[,port[,interval[,name]]]]</p>
 							</div>
 						</div>
 						<SheetFooter className="border-t">
