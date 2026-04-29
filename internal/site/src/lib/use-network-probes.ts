@@ -216,20 +216,11 @@ export function useNetworkProbeStats(props: UseNetworkProbeStatsProps) {
 
 	return probeStats
 }
-// function probesToStats(probes: NetworkProbeRecord[]): NetworkProbeStatsRecord["stats"] {
-// 	const stats: NetworkProbeStatsRecord["stats"] = {}
-// 	for (const probe of probes) {
-// 		// TODO: include only if probe.updated < charttime
-// 		stats[probe.id] = [probe.res, probe.resAvg1h, probe.resMin1h, probe.resMax1h, probe.loss, probe.loss1h]
-// 	}
-// 	return stats
-// }
-
-async function fetchProbes(systemId?: string) {
+async function fetchProbes(system?: string) {
 	try {
 		const res = await pb.collection<NetworkProbeRecord>("network_probes").getList(0, 2000, {
 			fields: NETWORK_PROBE_FIELDS,
-			filter: systemId ? pb.filter("system={:system}", { system: systemId }) : undefined,
+			filter: system ? pb.filter("system={:system}", { system }) : undefined,
 		})
 		return res.items
 	} catch (error) {
