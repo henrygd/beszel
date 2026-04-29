@@ -32,13 +32,13 @@ func TestAverageProbeStats(t *testing.T) {
 	recordA, err := tests.CreateRecord(hub, "network_probe_stats", map[string]any{
 		"system": system.Id,
 		"type":   "1m",
-		"stats":  `{"icmp:1.1.1.1":[10,80,8,14,1]}`,
+		"stats":  `{"icmp:1.1.1.1":[10,5,20,1.5]}`,
 	})
 	require.NoError(t, err)
 	recordB, err := tests.CreateRecord(hub, "network_probe_stats", map[string]any{
 		"system": system.Id,
 		"type":   "1m",
-		"stats":  `{"icmp:1.1.1.1":[40,100,9,50,5]}`,
+		"stats":  `{"icmp:1.1.1.1":[22.5,10,60,0]}`,
 	})
 	require.NoError(t, err)
 
@@ -49,10 +49,9 @@ func TestAverageProbeStats(t *testing.T) {
 
 	stats, ok := result["icmp:1.1.1.1"]
 	require.True(t, ok)
-	require.Len(t, stats, 5)
-	assert.Equal(t, 25.0, stats[0])
-	assert.Equal(t, 90.0, stats[1])
-	assert.Equal(t, 8.0, stats[2])
-	assert.Equal(t, 50.0, stats[3])
-	assert.Equal(t, 3.0, stats[4])
+	require.Len(t, stats, 4)
+	assert.InDelta(t, 16.25, stats[0], 0.001) // avg of avg
+	assert.InDelta(t, 5, stats[1], 0.001)     // min of mins
+	assert.InDelta(t, 60, stats[2], 0.001)    // max of maxes
+	assert.InDelta(t, 0.75, stats[3], 0.001)  // avg of packet loss
 }

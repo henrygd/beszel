@@ -24,10 +24,11 @@ func TestProbeTaskAggregateLockedUsesRawSamplesForShortWindows(t *testing.T) {
 	require.True(t, agg.hasData())
 	assert.Equal(t, int64(2), agg.totalCount)
 	assert.Equal(t, int64(1), agg.successCount)
-	assert.Equal(t, 20.0, agg.result()[0])
-	assert.Equal(t, 20.0, agg.result()[1])
-	assert.Equal(t, 20.0, agg.result()[2])
-	assert.Equal(t, 50.0, agg.result()[3])
+	result := agg.result()
+	assert.Equal(t, int64(20), result.AvgResponse)
+	assert.Equal(t, int64(20), result.MinResponse)
+	assert.Equal(t, int64(20), result.MaxResponse)
+	assert.Equal(t, 50.0, result.PacketLoss)
 }
 
 func TestProbeTaskAggregateLockedUsesMinuteBucketsForLongWindows(t *testing.T) {
@@ -44,10 +45,11 @@ func TestProbeTaskAggregateLockedUsesMinuteBucketsForLongWindows(t *testing.T) {
 	require.True(t, agg.hasData())
 	assert.Equal(t, int64(4), agg.totalCount)
 	assert.Equal(t, int64(3), agg.successCount)
-	assert.Equal(t, 30.0, agg.result()[0])
-	assert.Equal(t, 20.0, agg.result()[1])
-	assert.Equal(t, 40.0, agg.result()[2])
-	assert.Equal(t, 25.0, agg.result()[3])
+	result := agg.result()
+	assert.Equal(t, int64(30), result.AvgResponse)
+	assert.Equal(t, int64(20), result.MinResponse)
+	assert.Equal(t, int64(40), result.MaxResponse)
+	assert.Equal(t, 25.0, result.PacketLoss)
 }
 
 func TestProbeTaskAddSampleLockedTrimsRawSamplesButKeepsBucketHistory(t *testing.T) {
@@ -64,10 +66,11 @@ func TestProbeTaskAddSampleLockedTrimsRawSamplesButKeepsBucketHistory(t *testing
 	require.True(t, agg.hasData())
 	assert.Equal(t, int64(2), agg.totalCount)
 	assert.Equal(t, int64(2), agg.successCount)
-	assert.Equal(t, 15.0, agg.result()[0])
-	assert.Equal(t, 10.0, agg.result()[1])
-	assert.Equal(t, 20.0, agg.result()[2])
-	assert.Equal(t, 0.0, agg.result()[3])
+	result := agg.result()
+	assert.Equal(t, int64(15), result.AvgResponse)
+	assert.Equal(t, int64(10), result.MinResponse)
+	assert.Equal(t, int64(20), result.MaxResponse)
+	assert.Equal(t, 0.0, result.PacketLoss)
 }
 
 func TestProbeManagerGetResultsIncludesHourResponseRange(t *testing.T) {
@@ -84,13 +87,14 @@ func TestProbeManagerGetResultsIncludesHourResponseRange(t *testing.T) {
 	results := pm.GetResults(uint16(time.Minute / time.Millisecond))
 	result, ok := results["probe-1"]
 	require.True(t, ok)
-	require.Len(t, result, 6)
-	assert.Equal(t, 30.0, result[0])
-	assert.Equal(t, 25.0, result[1])
-	assert.Equal(t, 10.0, result[2])
-	assert.Equal(t, 40.0, result[3])
-	assert.Equal(t, 50.0, result[4])
-	assert.Equal(t, 20.0, result[5])
+	assert.Equal(t, int64(30), result.AvgResponse)
+	assert.Equal(t, int64(25), result.AvgResponse1h)
+	assert.Equal(t, int64(30), result.MinResponse)
+	assert.Equal(t, int64(10), result.MinResponse1h)
+	assert.Equal(t, int64(30), result.MaxResponse)
+	assert.Equal(t, int64(40), result.MaxResponse1h)
+	assert.Equal(t, 50.0, result.PacketLoss)
+	assert.Equal(t, 20.0, result.PacketLoss1h)
 }
 
 func TestProbeManagerGetResultsIncludesLossOnlyHourData(t *testing.T) {
@@ -104,13 +108,14 @@ func TestProbeManagerGetResultsIncludesLossOnlyHourData(t *testing.T) {
 	results := pm.GetResults(uint16(time.Minute / time.Millisecond))
 	result, ok := results["probe-1"]
 	require.True(t, ok)
-	require.Len(t, result, 6)
-	assert.Equal(t, 0.0, result[0])
-	assert.Equal(t, 0.0, result[1])
-	assert.Equal(t, 0.0, result[2])
-	assert.Equal(t, 0.0, result[3])
-	assert.Equal(t, 100.0, result[4])
-	assert.Equal(t, 100.0, result[5])
+	assert.Equal(t, int64(0), result.AvgResponse)
+	assert.Equal(t, int64(0), result.AvgResponse1h)
+	assert.Equal(t, int64(0), result.MinResponse)
+	assert.Equal(t, int64(0), result.MinResponse1h)
+	assert.Equal(t, int64(0), result.MaxResponse)
+	assert.Equal(t, int64(0), result.MaxResponse1h)
+	assert.Equal(t, 100.0, result.PacketLoss)
+	assert.Equal(t, 100.0, result.PacketLoss1h)
 }
 
 func TestProbeConfigResultKeyUsesSyncedID(t *testing.T) {
@@ -207,10 +212,9 @@ func TestProbeManagerApplySyncUpsertRunsImmediatelyAndReturnsResult(t *testing.T
 	defer pm.Stop()
 
 	require.NoError(t, err)
-	require.Len(t, resp.Result, 6)
-	assert.GreaterOrEqual(t, resp.Result[0], 0.0)
-	assert.Equal(t, 0.0, resp.Result[4])
-	assert.Equal(t, 0.0, resp.Result[5])
+	assert.GreaterOrEqual(t, resp.Result.AvgResponse, int64(0))
+	assert.Equal(t, 0.0, resp.Result.PacketLoss)
+	assert.Equal(t, 0.0, resp.Result.PacketLoss1h)
 
 	task := pm.probes["probe-1"]
 	require.NotNil(t, task)
@@ -252,7 +256,7 @@ func TestProbeManagerUpsertProbeKeepsHistoryWhenOnlyIntervalChanges(t *testing.T
 	require.True(t, agg.hasData())
 	assert.Equal(t, int64(2), agg.totalCount)
 	assert.Equal(t, int64(2), agg.successCount)
-	assert.Equal(t, 18.0, agg.avgResponse())
+	assert.Equal(t, int64(18), agg.avgResponse())
 
 	select {
 	case <-existingTask.cancel:

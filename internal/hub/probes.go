@@ -96,14 +96,12 @@ func probeConfigFromRecord(record *core.Record) *probe.Config {
 
 // setProbeResultFields stores the latest probe result values on the record.
 func setProbeResultFields(record *core.Record, result probe.Result) {
-	now := time.Now().UTC()
-	nowString := now.Format(types.DefaultDateLayout)
-	record.Set("res", result.Get(0))
-	record.Set("resAvg1h", result.Get(1))
-	record.Set("resMin1h", result.Get(3))
-	record.Set("resMax1h", result.Get(5))
-	// record.Set("loss", result.Get(4))
-	record.Set("loss1h", result.Get(7))
+	nowString := time.Now().UTC().Format(types.DefaultDateLayout)
+	record.Set("res", result.AvgResponse)
+	record.Set("resAvg1h", result.AvgResponse1h)
+	record.Set("resMin1h", result.MinResponse1h)
+	record.Set("resMax1h", result.MaxResponse1h)
+	record.Set("loss1h", result.PacketLoss1h)
 	record.Set("updated", nowString)
 }
 

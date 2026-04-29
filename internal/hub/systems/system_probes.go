@@ -24,7 +24,7 @@ func (sys *System) UpsertNetworkProbe(config probe.Config, runNow bool) (*probe.
 	if err != nil {
 		return nil, err
 	}
-	if len(resp.Result) == 0 {
+	if resp.Result == (probe.Result{}) {
 		return nil, nil
 	}
 	result := resp.Result

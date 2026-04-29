@@ -320,7 +320,7 @@ func updateNetworkProbesRecords(app core.App, probeResults map[string]probe.Resu
 		return nil
 	}
 	var err error
-	probeCollectionName := "network_probes"
+	const probeCollectionName = "network_probes"
 
 	// If realtime updates are active, we save via PocketBase records to trigger realtime events.
 	// Otherwise we can do a more efficient direct update via SQL
@@ -345,14 +345,14 @@ func updateNetworkProbesRecords(app core.App, probeResults map[string]probe.Resu
 	}
 
 	// update network_probes records
-	for id, values := range probeResults {
+	for id, result := range probeResults {
 		probeData := map[string]any{
 			"id":       id,
-			"res":      values.Get(0),
-			"resAvg1h": values.Get(1),
-			"resMin1h": values.Get(3),
-			"resMax1h": values.Get(5),
-			"loss1h":   values.Get(7),
+			"res":      result.AvgResponse,
+			"resAvg1h": result.AvgResponse1h,
+			"resMin1h": result.MinResponse1h,
+			"resMax1h": result.MaxResponse1h,
+			"loss1h":   result.PacketLoss1h,
 			"updated":  nowString,
 		}
 		switch realtimeActive {
@@ -372,12 +372,12 @@ func updateNetworkProbesRecords(app core.App, probeResults map[string]probe.Resu
 	}
 
 	// handle stats collection as well
-	statsCollectionName := "network_probe_stats"
+	const statsCollectionName = "network_probe_stats"
 
 	// we don't need the hour values for the stats collection
 	stats := make(map[string]probe.Stats, len(probeResults))
-	for key, values := range probeResults {
-		stats[key] = probe.Stats{}.FromResult(values)
+	for key, result := range probeResults {
+		stats[key] = probe.Stats{}.FromResult(result)
 	}
 
 	statsRecordData := map[string]any{

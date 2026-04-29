@@ -147,27 +147,27 @@ func (agg probeAggregate) hasData() bool {
 	return agg.totalCount > 0
 }
 
-// result converts the aggregate into the probe result slice format.
+// result converts the aggregate into the probe result format.
 func (agg probeAggregate) result() probe.Result {
 	avg := agg.avgResponse()
-	minUs := 0.0
-	if agg.successCount > 0 {
-		minUs = float64(agg.minUs)
+	result := probe.Result{
+		AvgResponse: avg,
+		MinResponse: agg.minUs,
+		MaxResponse: agg.maxUs,
+		PacketLoss:  agg.lossPercentage(),
 	}
-	return probe.Result{
-		avg,
-		minUs,
-		float64(agg.maxUs),
-		agg.lossPercentage(),
+	if agg.successCount == 0 {
+		result.MinResponse, result.MaxResponse = 0, 0
 	}
+	return result
 }
 
 // avgResponse returns the rounded average of successful samples.
-func (agg probeAggregate) avgResponse() float64 {
+func (agg probeAggregate) avgResponse() int64 {
 	if agg.successCount == 0 {
 		return 0
 	}
-	return float64(agg.sumUs / agg.successCount)
+	return agg.sumUs / agg.successCount
 
 }
 
@@ -398,33 +398,20 @@ func (task *probeTask) resultLocked(duration time.Duration, now time.Time) (prob
 	agg := task.aggregateLocked(duration, now)
 	hourAgg := task.aggregateLocked(time.Hour, now)
 	if !agg.hasData() {
-		return nil, false
+		return probe.Result{}, false
 	}
 
 	result := agg.result()
 
-	res := result[0]
-	res1h := hourAgg.avgResponse()
-	resMin := result[1]
-	resMin1h := float64(hourAgg.minUs)
-	resMax := result[2]
-	resMax1h := float64(hourAgg.maxUs)
-	loss := result[3]
-	loss1h := hourAgg.lossPercentage()
+	result.AvgResponse1h = hourAgg.avgResponse()
+	result.MinResponse1h = hourAgg.minUs
+	result.MaxResponse1h = hourAgg.maxUs
+	result.PacketLoss1h = hourAgg.lossPercentage()
 
 	if hourAgg.successCount == 0 {
-		resMin1h, resMax1h = 0, 0
+		result.MinResponse1h, result.MaxResponse1h = 0, 0
 	}
-	return probe.Result{
-		res,
-		res1h,
-		resMin,
-		resMin1h,
-		resMax,
-		resMax1h,
-		loss,
-		loss1h,
-	}, true
+	return result, true
 }
 
 // aggregateSamplesSince aggregates raw samples newer than the cutoff.

@@ -81,7 +81,7 @@ function ProbeChart({
 		return probeStats.filter((record) => visibleKeys.some((id) => record.stats?.[id] != null))
 	}, [probeStats, visibleKeys])
 
-	const legend = dataPoints.length < 10 && dataPoints.length > 1
+	const legend = dataPoints.length < 10 && showFilter
 
 	return (
 		<ChartCard

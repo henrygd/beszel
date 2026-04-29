@@ -51,14 +51,15 @@ type SyncResponse struct {
 // 6: packet loss percentage (0-100)
 //
 // 7: 1h packet loss percentage (0-100)
-type Result []float64
-
-// Get returns the value at the specified index or 0 if the index is out of range.
-func (r Result) Get(index int) float64 {
-	if index < len(r) {
-		return r[index]
-	}
-	return 0
+type Result struct {
+	AvgResponse   int64   `cbor:"0,keyasint,omitempty"`
+	AvgResponse1h int64   `cbor:"1,keyasint,omitempty"`
+	MinResponse   int64   `cbor:"2,keyasint,omitempty"`
+	MinResponse1h int64   `cbor:"3,keyasint,omitempty"`
+	MaxResponse   int64   `cbor:"4,keyasint,omitempty"`
+	MaxResponse1h int64   `cbor:"5,keyasint,omitempty"`
+	PacketLoss    float64 `cbor:"6,keyasint,omitempty"`
+	PacketLoss1h  float64 `cbor:"7,keyasint,omitempty"`
 }
 
 // Stats holds only 1m values for a single target, which are used for charts.
@@ -74,9 +75,9 @@ type Stats []float64
 
 func (s Stats) FromResult(result Result) Stats {
 	return Stats{
-		result.Get(0), // avg response
-		result.Get(2), // min response
-		result.Get(4), // max response
-		result.Get(6), // packet loss
+		float64(result.AvgResponse),
+		float64(result.MinResponse),
+		float64(result.MaxResponse),
+		result.PacketLoss,
 	}
 }

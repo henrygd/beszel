@@ -532,9 +532,9 @@ func AverageContainerStatsSlice(records [][]container.Stats) []container.Stats {
 
 // AverageProbeStats averages probe stats across multiple records.
 // For each probe key: avg of average fields, min of mins, and max of maxes.
-func (rm *RecordManager) AverageProbeStats(db dbx.Builder, records RecordIds) map[string]probe.Result {
+func (rm *RecordManager) AverageProbeStats(db dbx.Builder, records RecordIds) map[string]probe.Stats {
 	type probeValues struct {
-		sums   probe.Result
+		sums   probe.Stats
 		counts []int
 	}
 
@@ -546,18 +546,18 @@ func (rm *RecordManager) AverageProbeStats(db dbx.Builder, records RecordIds) ma
 	for _, rec := range records {
 		row.Stats = row.Stats[:0]
 		query.Bind(dbx.Params{"id": rec.Id}).One(&row)
-		var rawStats map[string]probe.Result
+		var rawStats map[string]probe.Stats
 		if err := json.Unmarshal(row.Stats, &rawStats); err != nil {
 			continue
 		}
 		for key, vals := range rawStats {
 			s, ok := sums[key]
 			if !ok {
-				s = &probeValues{sums: make(probe.Result, len(vals)), counts: make([]int, len(vals))}
+				s = &probeValues{sums: make(probe.Stats, len(vals)), counts: make([]int, len(vals))}
 				sums[key] = s
 			}
 			if len(vals) > len(s.sums) {
-				expandedSums := make(probe.Result, len(vals))
+				expandedSums := make(probe.Stats, len(vals))
 				copy(expandedSums, s.sums)
 				s.sums = expandedSums
 
@@ -584,7 +584,7 @@ func (rm *RecordManager) AverageProbeStats(db dbx.Builder, records RecordIds) ma
 	}
 
 	// compute final averages
-	result := make(map[string]probe.Result, len(sums))
+	result := make(map[string]probe.Stats, len(sums))
 	for key, s := range sums {
 		if len(s.counts) == 0 {
 			continue

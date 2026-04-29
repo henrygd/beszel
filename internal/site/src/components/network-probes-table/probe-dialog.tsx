@@ -40,7 +40,7 @@ type NormalizedProbeValues = Omit<ProbeValues, "system" | "interval"> & {
 
 type BulkProbeLineSource = Pick<NetworkProbeRecord, "target" | "protocol" | "port" | "interval" | "name">
 
-const defaultInterval = 20
+const defaultInterval = 30
 
 const ProbeProtocolSchema = v.picklist(["icmp", "tcp", "http"])
 

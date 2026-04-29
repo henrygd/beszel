@@ -37,7 +37,7 @@ import { $allSystemsById, $chartTime, $direction } from "@/lib/stores"
 import { cn, isVisuallyLonger, useBrowserStorage } from "@/lib/utils"
 import type { NetworkProbeRecord } from "@/types"
 import { AddProbeDialog, EditProbeDialog } from "./probe-dialog"
-import { XIcon } from "lucide-react"
+import { ArrowLeftRightIcon, EthernetPortIcon, GlobeIcon, ServerIcon, XIcon } from "lucide-react"
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet"
 import ChartTimeSelect from "@/components/charts/chart-time-select"
 import { LossChart, AvgMinMaxResponseChart } from "@/components/routes/system/charts/probes-charts"
@@ -501,16 +501,20 @@ function NetworkProbeSheetContent({
 				<SheetHeader className="mb-0 border-b p-0 pb-4">
 					<SheetTitle>{probeLabel}</SheetTitle>
 					<SheetDescription className="flex flex-wrap items-center gap-x-2 gap-y-1">
+						<ServerIcon className="size-3.5 text-muted-foreground" />
 						<Link className="hover:underline" href={getPagePath($router, "system", { id: system?.id ?? "" })}>
 							{system?.name ?? ""}
 						</Link>
 						<Separator orientation="vertical" className="h-2.5 bg-muted-foreground opacity-70" />
+						<ArrowLeftRightIcon className="size-3.5 text-muted-foreground" />
 						{probe.protocol.toUpperCase()}
 						<Separator orientation="vertical" className="h-2.5 bg-muted-foreground opacity-70" />
+						<GlobeIcon className="size-3.5 text-muted-foreground" />
 						{probe.target}
 						{probe.port > 0 && (
 							<>
 								<Separator orientation="vertical" className="h-2.5 bg-muted-foreground opacity-70" />
+								<EthernetPortIcon className="size-3.5 text-muted-foreground" />
 								<span>{probe.port}</span>
 							</>
 						)}
