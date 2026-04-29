@@ -17,7 +17,6 @@ import (
 	"github.com/henrygd/beszel/internal/entities/probe"
 )
 
-// Probe functionality overview:
 // Probes run at user-defined intervals (e.g., every 10s).
 // To keep memory usage low and constant, data is stored in two layers:
 // 1. Raw samples: The most recent individual results (kept for probeRawRetention).
@@ -25,7 +24,7 @@ import (
 //    wall-clock minute. Samples collected within the same minute are aggregated
 //    (sum, min, max, count) into a single bucket.
 //
-// Short-term requests (<= 2m) use raw samples for perfect accuracy.
+// Short-term requests (<= 70s) use raw samples.
 // Long-term requests (up to 1h) use the minute buckets to avoid storing thousands
 // of individual data points.
 

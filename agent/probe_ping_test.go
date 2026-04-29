@@ -96,21 +96,24 @@ func TestDetectICMPMode(t *testing.T) {
 
 func TestResolveICMPTarget(t *testing.T) {
 	t.Run("IPv4 literal", func(t *testing.T) {
-		family, ip := resolveICMPTarget("127.0.0.1")
+		family, ip, err := resolveICMPTarget("127.0.0.1")
+		require.NoError(t, err)
 		require.NotNil(t, family)
 		assert.False(t, family.isIPv6)
 		assert.Equal(t, "127.0.0.1", ip.String())
 	})
 
 	t.Run("IPv6 literal", func(t *testing.T) {
-		family, ip := resolveICMPTarget("::1")
+		family, ip, err := resolveICMPTarget("::1")
+		require.NoError(t, err)
 		require.NotNil(t, family)
 		assert.True(t, family.isIPv6)
 		assert.Equal(t, "::1", ip.String())
 	})
 
 	t.Run("IPv4-mapped IPv6 resolves as IPv4", func(t *testing.T) {
-		family, ip := resolveICMPTarget("::ffff:127.0.0.1")
+		family, ip, err := resolveICMPTarget("::ffff:127.0.0.1")
+		require.NoError(t, err)
 		require.NotNil(t, family)
 		assert.False(t, family.isIPv6)
 		assert.Equal(t, "127.0.0.1", ip.String())
