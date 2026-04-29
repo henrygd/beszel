@@ -20,7 +20,7 @@ import (
 // Probes run at user-defined intervals (e.g., every 10s).
 // To keep memory usage low and constant, data is stored in two layers:
 // 1. Raw samples: The most recent individual results (kept for probeRawRetention).
-// 2. Minute buckets: A fixed-size ring buffer of 61 buckets, each representing one
+// 2. Minute buckets: A ring buffer of 61 buckets, each representing one
 //    wall-clock minute. Samples collected within the same minute are aggregated
 //    (sum, min, max, count) into a single bucket.
 //
@@ -29,8 +29,8 @@ import (
 // of individual data points.
 
 const (
-	// probeRawRetention is the duration to keep individual samples for high-precision short-term requests
-	probeRawRetention = 70 * time.Second
+	// probeRawRetention is the duration to keep individual samples
+	probeRawRetention = 61 * time.Second
 	// probeMinuteBucketLen is the number of 1-minute buckets to keep (1 hour + 1 for partials)
 	probeMinuteBucketLen int32 = 61
 )
@@ -381,16 +381,6 @@ func (pm *ProbeManager) runProbeNow(task *probeTask) *probe.Result {
 	return &result
 }
 
-// aggregateLocked collects probe data for the requested time window.
-func (task *probeTask) aggregateLocked(duration time.Duration, now time.Time) probeAggregate {
-	cutoff := now.Add(-duration)
-	// Keep short windows exact; longer windows read from minute buckets to avoid raw-sample retention.
-	if duration <= probeRawRetention {
-		return aggregateSamplesSince(task.samples, cutoff)
-	}
-	return aggregateBucketsSince(task.buckets[:], cutoff, now)
-}
-
 // resultLocked returns the aggregated probe result for the requested duration along with a bool indicating whether any data was available.
 func (task *probeTask) resultLocked(duration time.Duration, now time.Time) (probe.Result, bool) {
 	agg := task.aggregateLocked(duration, now)
@@ -410,6 +400,16 @@ func (task *probeTask) resultLocked(duration time.Duration, now time.Time) (prob
 		result.MinResponse1h, result.MaxResponse1h = 0, 0
 	}
 	return result, true
+}
+
+// aggregateLocked collects probe data for the requested time window.
+func (task *probeTask) aggregateLocked(duration time.Duration, now time.Time) probeAggregate {
+	cutoff := now.Add(-duration)
+	// Keep short windows exact; longer windows read from minute buckets to avoid raw-sample retention.
+	if duration <= probeRawRetention {
+		return aggregateSamplesSince(task.samples, cutoff)
+	}
+	return aggregateBucketsSince(task.buckets[:], cutoff, now)
 }
 
 // aggregateSamplesSince aggregates raw samples newer than the cutoff.
