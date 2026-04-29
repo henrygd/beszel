@@ -443,42 +443,12 @@ export function runOnce<T extends (...args: any[]) => any>(fn: T): T {
 	}) as T
 }
 
-/** Format seconds to hours, minutes, or seconds */
-export function secondsToString(seconds: number, unit: "hour" | "minute" | "day"): string {
-	const count = Math.floor(seconds / (unit === "hour" ? 3600 : unit === "minute" ? 60 : 86400))
-	const countString = count.toLocaleString()
-	switch (unit) {
-		case "minute":
-			return plural(count, {
-				one: `${countString} minute`,
-				few: `${countString} minutes`,
-				many: `${countString} minutes`,
-				other: `${countString} minutes`,
-			})
-		case "hour":
-			return plural(count, { one: `${countString} hour`, other: `${countString} hours` })
-		case "day":
-			return plural(count, { one: `${countString} day`, other: `${countString} days` })
-	}
-}
-
-/** Format seconds to uptime string - "X minutes", "X hours", "X days" */
-export function secondsToUptimeString(seconds: number): string {
-	if (seconds < 3600) {
-		return secondsToString(seconds, "minute")
-	} else if (seconds < 360000) {
-		return secondsToString(seconds, "hour")
-	} else {
-		return secondsToString(seconds, "day")
-	}
-}
-
 const visualWidthCache = new Map<string, number>()
 
 /** Get the visual width of a string, accounting for full-width and narrow punctuation characters.
  *  Don't use for monospaced fonts, use .length instead
  */
-export function getVisualStringWidth(str: string): number {
+function getVisualStringWidth(str: string): number {
 	const cached = visualWidthCache.get(str)
 	if (cached !== undefined) {
 		return cached
@@ -507,10 +477,40 @@ export function getVisualStringWidth(str: string): number {
 		width += isFullWidth ? 2 : 1
 	}
 	visualWidthCache.set(str, width)
-
 	return width
 }
 
+/** Compare the visual width of two strings imprecisely */
 export function isVisuallyLonger(str1: string, str2: string): boolean {
 	return getVisualStringWidth(str1) > getVisualStringWidth(str2)
+}
+
+/** Format seconds to hours, minutes, or seconds */
+export function secondsToString(seconds: number, unit: "hour" | "minute" | "day"): string {
+	const count = Math.floor(seconds / (unit === "hour" ? 3600 : unit === "minute" ? 60 : 86400))
+	const countString = count.toLocaleString()
+	switch (unit) {
+		case "minute":
+			return plural(count, {
+				one: `${countString} minute`,
+				few: `${countString} minutes`,
+				many: `${countString} minutes`,
+				other: `${countString} minutes`,
+			})
+		case "hour":
+			return plural(count, { one: `${countString} hour`, other: `${countString} hours` })
+		case "day":
+			return plural(count, { one: `${countString} day`, other: `${countString} days` })
+	}
+}
+
+/** Format seconds to uptime string - "X minutes", "X hours", "X days" */
+export function secondsToUptimeString(seconds: number): string {
+	if (seconds < 3600) {
+		return secondsToString(seconds, "minute")
+	} else if (seconds < 360000) {
+		return secondsToString(seconds, "hour")
+	} else {
+		return secondsToString(seconds, "day")
+	}
 }

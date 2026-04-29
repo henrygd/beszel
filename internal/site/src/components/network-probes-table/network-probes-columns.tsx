@@ -33,11 +33,12 @@ import { SystemStatus } from "@/lib/enums"
 import { Checkbox } from "@/components/ui/checkbox"
 import { useMemo } from "react"
 import { formatBulkProbeLine } from "@/components/network-probes-table/probe-dialog"
+import { Badge } from "../ui/badge"
 
 const protocolColors: Record<string, string> = {
-	icmp: "bg-blue-500/15 text-blue-400",
-	tcp: "bg-purple-500/15 text-purple-400",
-	http: "bg-green-500/15 text-green-400",
+	icmp: "bg-blue-500/15 text-blue-600 dark:text-blue-400",
+	tcp: "bg-purple-500/15 text-purple-600 dark:text-purple-400",
+	http: "bg-green-500/15 text-green-700 dark:text-green-400",
 }
 
 const SYSTEM_STATUS_COLORS = {
@@ -97,9 +98,17 @@ export function getProbeColumns(
 			header: ({ column }) => <HeaderButton column={column} name={t`Name`} Icon={NetworkIcon} />,
 			cell: ({ row, getValue }) => {
 				const probe = row.original
+				const { status } = useStore($allSystemsById)[probe.system] || {}
+
+				let color = "bg-green-500"
+				if (!probe.enabled || status === SystemStatus.Paused) {
+					color = "bg-primary/40"
+				} else if (status === SystemStatus.Down || status === SystemStatus.Pending) {
+					color = "bg-yellow-500"
+				}
 				return (
 					<div className="ms-1.5 max-w-40 flex gap-2 items-center tabular-nums">
-						<span className={cn("shrink-0 size-2 rounded-full", probe.enabled ? "bg-green-500" : "bg-primary/40")} />
+						<span className={cn("shrink-0 size-2 rounded-full", color)} />
 						<div className="relative w-fit min-w-0 max-w-full">
 							<span className="invisible block overflow-hidden whitespace-nowrap" aria-hidden="true">
 								{longestName}
@@ -117,7 +126,11 @@ export function getProbeColumns(
 				const allSystems = $allSystemsById.get()
 				const systemNameA = allSystems[a.original.system]?.name ?? ""
 				const systemNameB = allSystems[b.original.system]?.name ?? ""
-				return systemNameA.localeCompare(systemNameB)
+				const primary = systemNameA.localeCompare(systemNameB)
+				if (primary !== 0) {
+					return primary
+				}
+				return (a.original.name || a.original.target).localeCompare(b.original.name || b.original.target)
 			},
 			header: ({ column }) => <HeaderButton column={column} name={t`System`} Icon={ServerIcon} />,
 			cell: ({ getValue }) => {
@@ -162,16 +175,13 @@ export function getProbeColumns(
 			header: ({ column }) => <HeaderButton column={column} name={t`Protocol`} Icon={ArrowLeftRightIcon} />,
 			cell: ({ getValue }) => {
 				const protocol = getValue() as string
-				return (
-					<span className={cn("ms-1.5 px-2 py-0.5 rounded text-xs font-medium uppercase", protocolColors[protocol])}>
-						{protocol}
-					</span>
-				)
+				return <Badge className={cn("uppercase", protocolColors[protocol])}>{protocol}</Badge>
 			},
 		},
 		{
 			id: "interval",
 			accessorFn: (record) => record.interval,
+			invertSorting: true,
 			header: ({ column }) => <HeaderButton column={column} name={t`Interval`} Icon={RefreshCwIcon} />,
 			cell: ({ getValue }) => <span className="ms-1.5 tabular-nums">{getValue() as number}s</span>,
 		},

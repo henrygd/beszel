@@ -303,7 +303,8 @@ func TestProbeHTTP(t *testing.T) {
 		}))
 		defer server.Close()
 
-		responseUs := probeHTTP(server.Client(), server.URL)
+		responseUs, err := probeHTTP(server.Client(), server.URL)
+		require.NoError(t, err)
 		assert.GreaterOrEqual(t, responseUs, int64(0))
 	})
 
@@ -313,7 +314,9 @@ func TestProbeHTTP(t *testing.T) {
 		}))
 		defer server.Close()
 
-		assert.Equal(t, int64(-1), probeHTTP(server.Client(), server.URL))
+		responseUs, err := probeHTTP(server.Client(), server.URL)
+		assert.Equal(t, int64(-1), responseUs)
+		require.Error(t, err)
 	})
 }
 
@@ -333,7 +336,8 @@ func TestProbeTCP(t *testing.T) {
 		}()
 
 		port := uint16(listener.Addr().(*net.TCPAddr).Port)
-		responseUs := probeTCP("127.0.0.1", port)
+		responseUs, err := probeTCP("127.0.0.1", port)
+		require.NoError(t, err)
 		assert.GreaterOrEqual(t, responseUs, int64(0))
 		<-accepted
 	})
@@ -345,6 +349,8 @@ func TestProbeTCP(t *testing.T) {
 		port := uint16(listener.Addr().(*net.TCPAddr).Port)
 		require.NoError(t, listener.Close())
 
-		assert.Equal(t, int64(-1), probeTCP("127.0.0.1", port))
+		responseUs, err := probeTCP("127.0.0.1", port)
+		assert.Equal(t, int64(-1), responseUs)
+		require.Error(t, err)
 	})
 }

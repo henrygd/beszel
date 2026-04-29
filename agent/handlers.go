@@ -221,6 +221,5 @@ func (h *SyncNetworkProbesHandler) Handle(hctx *HandlerContext) error {
 	if err != nil {
 		return err
 	}
-	slog.Info("network probes synced", "action", req.Action)
 	return hctx.SendResponse(resp, hctx.RequestID)
 }

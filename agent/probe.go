@@ -333,7 +333,8 @@ func (pm *ProbeManager) runProbe(task *probeTask, runNow bool) {
 	}
 
 	stagger := getStagger(interval.Milliseconds())
-	slog.Info("starting probe task", "id", task.config.ID, "initial_delay", stagger.String(), "interval", interval.String())
+
+	slog.Debug("starting probe task", "target", task.config.Target, "delay", stagger.String(), "interval", interval.String())
 
 	if runNow {
 		pm.executeProbe(task)
@@ -341,10 +342,9 @@ func (pm *ProbeManager) runProbe(task *probeTask, runNow bool) {
 
 	select {
 	case <-task.cancel:
-		slog.Info("removed probe", "id", task.config.ID)
+		// slog.Info("removed probe", "target", task.config.Target)
 		return
 	case <-time.After(stagger):
-		slog.Info("initial probe execution", "id", task.config.ID)
 		pm.executeProbe(task)
 	}
 
@@ -353,16 +353,15 @@ func (pm *ProbeManager) runProbe(task *probeTask, runNow bool) {
 	for {
 		select {
 		case <-task.cancel:
-			slog.Info("removed probe", "id", task.config.ID)
+			// slog.Info("removed probe", "target", task.config.Target)
 			return
 		case <-ticker:
-			slog.Info("running probe in main loop", "id", task.config.ID, "interval", interval.String())
 			pm.executeProbe(task)
 		}
 	}
 }
 
-// getStagger returns a random duration between intervalSeconds/2 and intervalSeconds to stagger probe executions
+// getStagger returns a random duration between intervalSeconds/2 and intervalSeconds to stagger initial probe executions
 func getStagger(intervalMilli int64) time.Duration {
 	intervalMilliInt := int(intervalMilli)
 	randomDelayInt := rand.Intn(intervalMilliInt)
@@ -472,18 +471,24 @@ func (task *probeTask) addSampleLocked(sample probeSample) {
 
 // executeProbe runs the configured probe and records the sample.
 func (pm *ProbeManager) executeProbe(task *probeTask) {
+	// slog.Info("running probe", "id", task.config.ID, "interval", task.config.Interval)
 	var responseUs int64
+	var err error
 
 	switch task.config.Protocol {
 	case "icmp":
-		responseUs = probeICMP(task.config.Target)
+		responseUs, err = probeICMP(task.config.Target)
 	case "tcp":
-		responseUs = probeTCP(task.config.Target, task.config.Port)
+		responseUs, err = probeTCP(task.config.Target, task.config.Port)
 	case "http":
-		responseUs = probeHTTP(pm.httpClient, task.config.Target)
+		responseUs, err = probeHTTP(pm.httpClient, task.config.Target)
 	default:
 		slog.Warn("unknown probe protocol", "protocol", task.config.Protocol)
 		return
+	}
+
+	if err != nil {
+		slog.Warn("probe failed", "err", err, "target", task.config.Target, "protocol", task.config.Protocol)
 	}
 
 	sample := probeSample{
@@ -497,12 +502,12 @@ func (pm *ProbeManager) executeProbe(task *probeTask) {
 }
 
 // probeTCP measures pure TCP handshake response (excluding DNS resolution).
-// Returns -1 on failure.
-func probeTCP(target string, port uint16) int64 {
+// Returns -1 and an error on failure.
+func probeTCP(target string, port uint16) (int64, error) {
 	// Resolve DNS first, outside the timing window
 	ips, err := net.LookupHost(target)
 	if err != nil || len(ips) == 0 {
-		return -1
+		return -1, err
 	}
 	addr := net.JoinHostPort(ips[0], fmt.Sprintf("%d", port))
 
@@ -510,25 +515,25 @@ func probeTCP(target string, port uint16) int64 {
 	start := time.Now()
 	conn, err := net.DialTimeout("tcp", addr, 3*time.Second)
 	if err != nil {
-		return -1
+		return -1, err
 	}
 	conn.Close()
-	return time.Since(start).Microseconds()
+	return time.Since(start).Microseconds(), nil
 }
 
-// probeHTTP measures HTTP GET request response in microseconds. Returns -1 on failure.
-func probeHTTP(client *http.Client, url string) int64 {
+// probeHTTP measures HTTP GET request response in microseconds. Returns -1 and an error on failure.
+func probeHTTP(client *http.Client, url string) (int64, error) {
 	if client == nil {
 		client = http.DefaultClient
 	}
 	start := time.Now()
 	resp, err := client.Get(url)
 	if err != nil {
-		return -1
+		return -1, err
 	}
 	resp.Body.Close()
 	if resp.StatusCode >= 400 {
-		return -1
+		return -1, fmt.Errorf("HTTP error: %s", resp.Status)
 	}
-	return time.Since(start).Microseconds()
+	return time.Since(start).Microseconds(), nil
 }

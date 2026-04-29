@@ -1,6 +1,7 @@
 package agent
 
 import (
+	"errors"
 	"math"
 	"net"
 	"os"
@@ -27,7 +28,7 @@ type icmpPacketConn interface {
 // icmpMethod tracks which ICMP approach to use. Once a method succeeds or
 // all native methods fail, the choice is cached so subsequent probes skip
 // the trial-and-error overhead.
-type icmpMethod int
+type icmpMethod uint8
 
 const (
 	icmpUntried      icmpMethod = iota // haven't tried yet
@@ -76,11 +77,11 @@ var (
 // Supports both IPv4 and IPv6 targets. The ICMP method (raw socket,
 // unprivileged datagram, or exec fallback) is detected once per address
 // family and cached for subsequent probes.
-// Returns response in microseconds, or -1 on failure.
-func probeICMP(target string) int64 {
-	family, ip := resolveICMPTarget(target)
-	if family == nil {
-		return -1
+// Returns response in microseconds, or -1 and an error on failure.
+func probeICMP(target string) (int64, error) {
+	family, ip, err := resolveICMPTarget(target)
+	if err != nil {
+		return -1, err
 	}
 
 	icmpModeMu.Lock()
@@ -98,30 +99,30 @@ func probeICMP(target string) int64 {
 	case icmpExecFallback:
 		return probeICMPExec(target, family.isIPv6)
 	default:
-		return -1
+		return -1, errors.New("unsupported ICMP mode")
 	}
 }
 
 // resolveICMPTarget resolves a target hostname or IP to determine the address
 // family and concrete IP address. Prefers IPv4 for dual-stack hostnames.
-func resolveICMPTarget(target string) (*icmpFamily, net.IP) {
+func resolveICMPTarget(target string) (*icmpFamily, net.IP, error) {
 	if ip := net.ParseIP(target); ip != nil {
 		if ip.To4() != nil {
-			return &icmpV4, ip.To4()
+			return &icmpV4, ip.To4(), nil
 		}
-		return &icmpV6, ip
+		return &icmpV6, ip, nil
 	}
 
 	ips, err := net.LookupIP(target)
 	if err != nil || len(ips) == 0 {
-		return nil, nil
+		return nil, nil, err
 	}
 	for _, ip := range ips {
 		if v4 := ip.To4(); v4 != nil {
-			return &icmpV4, v4
+			return &icmpV4, v4, nil
 		}
 	}
-	return &icmpV6, ips[0]
+	return &icmpV6, ips[0], nil
 }
 
 func detectICMPMode(family *icmpFamily, listen func(network, listenAddr string) (icmpPacketConn, error)) icmpMethod {
@@ -130,31 +131,28 @@ func detectICMPMode(family *icmpFamily, listen func(network, listenAddr string) 
 		label = "IPv6"
 	}
 
-	if conn, err := listen(family.rawNetwork, family.listenAddr); err == nil {
+	conn, err := listen(family.rawNetwork, family.listenAddr)
+	slog.Debug("ICMP raw socket test", "family", label, "err", err)
+	if err == nil {
 		conn.Close()
-		slog.Info("ICMP probe using raw socket", "family", label)
 		return icmpRaw
-	} else {
-		slog.Debug("ICMP raw socket unavailable", "family", label, "err", err)
 	}
 
-	if conn, err := listen(family.dgramNetwork, family.listenAddr); err == nil {
+	conn, err = listen(family.dgramNetwork, family.listenAddr)
+	slog.Debug("ICMP datagram socket test", "family", label, "err", err)
+	if err == nil {
 		conn.Close()
-		slog.Info("ICMP probe using unprivileged datagram socket", "family", label)
 		return icmpDatagram
-	} else {
-		slog.Debug("ICMP datagram socket unavailable", "family", label, "err", err)
 	}
 
-	slog.Info("ICMP probe falling back to system ping command", "family", label)
 	return icmpExecFallback
 }
 
 // probeICMPNative sends an ICMP echo request using Go's x/net/icmp package.
-func probeICMPNative(network string, family *icmpFamily, dst net.Addr) int64 {
+func probeICMPNative(network string, family *icmpFamily, dst net.Addr) (int64, error) {
 	conn, err := icmp.ListenPacket(network, family.listenAddr)
 	if err != nil {
-		return -1
+		return -1, err
 	}
 	defer conn.Close()
 
@@ -170,7 +168,7 @@ func probeICMPNative(network string, family *icmpFamily, dst net.Addr) int64 {
 	}
 	msgBytes, err := msg.Marshal(nil)
 	if err != nil {
-		return -1
+		return -1, err
 	}
 
 	// Set deadline before sending
@@ -178,7 +176,7 @@ func probeICMPNative(network string, family *icmpFamily, dst net.Addr) int64 {
 
 	start := time.Now()
 	if _, err := conn.WriteTo(msgBytes, dst); err != nil {
-		return -1
+		return -1, err
 	}
 
 	// Read reply
@@ -186,23 +184,23 @@ func probeICMPNative(network string, family *icmpFamily, dst net.Addr) int64 {
 	for {
 		n, _, err := conn.ReadFrom(buf)
 		if err != nil {
-			return -1
+			return -1, err
 		}
 
 		reply, err := icmp.ParseMessage(family.proto, buf[:n])
 		if err != nil {
-			return -1
+			return -1, err
 		}
 
 		if reply.Type == family.replyType {
-			return time.Since(start).Microseconds()
+			return time.Since(start).Microseconds(), nil
 		}
 		// Ignore non-echo-reply messages (e.g. destination unreachable) and keep reading
 	}
 }
 
-// probeICMPExec falls back to the system ping command. Returns -1 on failure.
-func probeICMPExec(target string, isIPv6 bool) int64 {
+// probeICMPExec falls back to the system ping command. Returns -1 and an error on failure.
+func probeICMPExec(target string, isIPv6 bool) (int64, error) {
 	var cmd *exec.Cmd
 	switch runtime.GOOS {
 	case "windows":
@@ -211,7 +209,7 @@ func probeICMPExec(target string, isIPv6 bool) int64 {
 		} else {
 			cmd = exec.Command("ping", "-n", "1", "-w", "3000", target)
 		}
-	default: // linux, darwin, freebsd
+	default:
 		if isIPv6 {
 			cmd = exec.Command("ping", "-6", "-c", "1", "-W", "3", target)
 		} else {
@@ -224,20 +222,20 @@ func probeICMPExec(target string, isIPv6 bool) int64 {
 	if err != nil {
 		// If ping fails but we got output, still try to parse
 		if len(output) == 0 {
-			return -1
+			return -1, err
 		}
 	}
 
 	matches := pingTimeRegex.FindSubmatch(output)
 	if len(matches) >= 2 {
 		if ms, err := strconv.ParseFloat(string(matches[1]), 64); err == nil {
-			return int64(math.Round(ms * 1000))
+			return int64(math.Round(ms * 1000)), nil
 		}
 	}
 
 	// Fallback: use wall clock time if ping succeeded but parsing failed
 	if err == nil {
-		return time.Since(start).Microseconds()
+		return time.Since(start).Microseconds(), nil
 	}
-	return -1
+	return -1, err
 }
