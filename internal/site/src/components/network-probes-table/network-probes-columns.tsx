@@ -36,9 +36,9 @@ import { formatBulkProbeLine } from "@/components/network-probes-table/probe-dia
 import { Badge } from "../ui/badge"
 
 const protocolColors: Record<string, string> = {
-	icmp: "bg-blue-500/15 text-blue-600 dark:text-blue-400",
-	tcp: "bg-purple-500/15 text-purple-600 dark:text-purple-400",
-	http: "bg-green-500/15 text-green-700 dark:text-green-400",
+	icmp: "bg-blue-500/15! text-blue-600 dark:text-blue-400",
+	tcp: "bg-purple-500/15! text-purple-600 dark:text-purple-400",
+	http: "bg-green-500/15! text-green-700 dark:text-green-400",
 }
 
 const SYSTEM_STATUS_COLORS = {
