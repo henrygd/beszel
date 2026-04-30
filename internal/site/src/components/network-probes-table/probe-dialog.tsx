@@ -58,15 +58,19 @@ const NormalizedProbeValuesSchema = v.pipe(
 	}),
 	v.transform((input): NormalizedProbeValues => {
 		let { protocol, port } = input
-		if (protocol === "icmp") {
+		let httpTarget = input.target
+		if (protocol === "icmp" || protocol === "http") {
+			if (protocol === "http") {
+				httpTarget = normalizeHttpTarget(input.target, port)
+			}
 			port = 0
-		} else if ((protocol === "tcp" || protocol === "http") && !port) {
+		} else if (protocol === "tcp" && !port) {
 			port = 443
 		}
 		return {
 			// HTTP probes may be entered as bare hostnames, so normalize them to a
 			// scheme-bearing URL before the payload is sent to PocketBase.
-			target: protocol === "http" ? normalizeHttpTarget(input.target, port) : input.target,
+			target: protocol === "http" ? httpTarget : input.target,
 			protocol,
 			port,
 			interval: input.interval,
@@ -75,7 +79,7 @@ const NormalizedProbeValuesSchema = v.pipe(
 	}),
 	v.forward(
 		v.check((input) => {
-			if (input.protocol === "icmp") {
+			if (input.protocol === "icmp" || input.protocol === "http") {
 				return input.port === 0
 			}
 
@@ -95,12 +99,31 @@ const BulkProbeSchema = v.object({
 	name: v.optional(v.pipe(v.string(), v.trim())),
 })
 
-function normalizeHttpTarget(target: string, port: number) {
-	if (/^https?:\/\//i.test(target)) {
+function normalizeHttpTarget(target: string, port = 0) {
+	const useExplicitPort = port > 0 && port !== 80 && port !== 443
+	const hasOriginOnlyTarget = /^https?:\/\/[^/?#]+$/i.test(target)
+	if (!/^https?:\/\//i.test(target)) {
+		const scheme = port === 80 ? "http" : "https"
+		return `${scheme}://${target}${useExplicitPort ? `:${port}` : ""}`
+	}
+
+	let parsedUrl: URL
+	try {
+		parsedUrl = new URL(target)
+	} catch {
 		return target
 	}
 
-	return `${port === 443 ? "https" : "http"}://${target}`
+	if (!parsedUrl.port && useExplicitPort) {
+		parsedUrl.port = `${port}`
+	}
+
+	// avoid converting "http://localhost:8090" to "http://localhost:8090/" - keep the original formatting if the URL is just an origin
+	if (hasOriginOnlyTarget && parsedUrl.pathname === "/" && !parsedUrl.search && !parsedUrl.hash) {
+		return parsedUrl.origin
+	}
+
+	return parsedUrl.toString()
 }
 
 function trimTrailingEmptyFields(fields: string[]) {
@@ -152,12 +175,13 @@ function parseBulkProbeLine(line: string, lineNumber: number, system: string) {
 	if (!parsed.success) {
 		throw new Error(`Line ${lineNumber}: ${parsed.issues[0]?.message || "invalid probe entry"}`)
 	}
+	const protocol = (parsed.output.protocol?.toLowerCase() ||
+		(/^https?:\/\//i.test(parsed.output.target) ? "http" : "icmp")) as ProbeProtocol
 
 	return buildProbePayload({
 		system,
 		target: parsed.output.target,
-		protocol: (parsed.output.protocol?.toLowerCase() ||
-			(/^https?:\/\//i.test(parsed.output.target) ? "http" : "icmp")) as ProbeProtocol,
+		protocol,
 		port: parsed.output.port ? Number(parsed.output.port) : 0,
 		interval: parsed.output.interval || `${defaultInterval}`,
 		name: parsed.output.name || undefined,
@@ -165,7 +189,7 @@ function parseBulkProbeLine(line: string, lineNumber: number, system: string) {
 }
 
 export function formatBulkProbeLine(probe: BulkProbeLineSource) {
-	const port = probe.protocol === "icmp" || probe.port === 443 ? "" : `${probe.port}`
+	const port = probe.protocol !== "tcp" || probe.port === 443 ? "" : `${probe.port}`
 	const interval = probe.interval === defaultInterval ? "" : `${probe.interval}`
 	return trimTrailingEmptyFields([probe.target, probe.protocol, port, interval, probe.name?.trim() || ""]).join(",")
 }
@@ -402,9 +426,7 @@ function ProbeDialogContent({
 }) {
 	const [protocol, setProtocol] = useState<ProbeProtocol>(probe?.protocol ?? "icmp")
 	const [target, setTarget] = useState(probe?.target ?? "")
-	const [port, setPort] = useState(
-		(probe?.protocol === "tcp" || probe?.protocol === "http") && probe.port ? String(probe.port) : ""
-	)
+	const [port, setPort] = useState(probe?.protocol === "tcp" && probe.port ? String(probe.port) : "")
 	const [probeInterval, setProbeInterval] = useState(String(probe?.interval ?? defaultInterval))
 	const [name, setName] = useState(probe?.name ?? "")
 	const [loading, setLoading] = useState(false)
@@ -423,7 +445,7 @@ function ProbeDialogContent({
 
 		setProtocol(probe?.protocol ?? "icmp")
 		setTarget(probe?.target ?? "")
-		setPort((probe?.protocol === "tcp" || probe?.protocol === "http") && probe.port ? String(probe.port) : "")
+		setPort(probe?.protocol === "tcp" && probe.port ? String(probe.port) : "")
 		setProbeInterval(String(probe?.interval ?? defaultInterval))
 		setName(probe?.name ?? "")
 		setSelectedSystemId(probe?.system ?? "")
@@ -444,7 +466,7 @@ function ProbeDialogContent({
 					system: selectedSystem,
 					target,
 					protocol,
-					port: protocol === "tcp" || protocol === "http" ? Number(port) : 0,
+					port: protocol === "tcp" ? Number(port) : 0,
 					interval: probeInterval,
 					name,
 				},
@@ -500,7 +522,7 @@ function ProbeDialogContent({
 					<Input
 						value={target}
 						onChange={(e) => setTarget(e.target.value)}
-						placeholder={protocol === "http" ? "https://example.com" : "1.1.1.1"}
+						placeholder={protocol === "http" ? "http://localhost:8090" : "1.1.1.1"}
 						required
 					/>
 				</div>
@@ -520,7 +542,7 @@ function ProbeDialogContent({
 						</SelectContent>
 					</Select>
 				</div>
-				{(protocol === "tcp" || protocol === "http") && (
+				{protocol === "tcp" && (
 					<div className="grid gap-2">
 						<Label>
 							<Trans>Port</Trans>

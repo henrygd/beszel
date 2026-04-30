@@ -12,7 +12,12 @@ import (
 
 // generateProbeID creates a stable hash ID for a probe based on its configuration and the system it belongs to.
 func generateProbeID(systemId string, config probe.Config) string {
-	return systems.MakeStableHashId(systemId, config.Target, config.Protocol, strconv.FormatUint(uint64(config.Port), 10))
+	args := []string{systemId, config.Target, config.Protocol}
+	// only use port for TCP probes, since for other protocols it's not relevant as standalone value
+	if config.Protocol == "tcp" {
+		args = append(args, strconv.FormatUint(uint64(config.Port), 10))
+	}
+	return systems.MakeStableHashId(args...)
 }
 
 // bindNetworkProbesEvents keeps probe records and agent probe state in sync.
@@ -48,6 +53,10 @@ func bindNetworkProbesEvents(hub *Hub) {
 	// record with the new ID and delete the old one. Otherwise, just update the existing probe on the agent.
 	hub.OnRecordUpdateRequest("network_probes").BindFunc(func(e *core.RecordRequestEvent) error {
 		systemID := e.Record.GetString("system")
+		// only tcp uses port - set other protocols port to zero
+		if e.Record.GetString("protocol") != "tcp" {
+			e.Record.Set("port", 0)
+		}
 		ID := generateProbeID(systemID, *probeConfigFromRecord(e.Record))
 		if ID != e.Record.Id {
 			newRecord := copyProbeToNewRecord(e.Record, ID)
@@ -111,8 +120,11 @@ func setProbeResultFields(record *core.Record, result probe.Result) {
 func copyProbeToNewRecord(oldRecord *core.Record, newID string) *core.Record {
 	collection := oldRecord.Collection()
 	newRecord := core.NewRecord(collection)
-	newRecord.Load(oldRecord.FieldsData())
-	newRecord.Set("id", newID)
+	newRecord.Id = newID
+	fields := []string{"system", "name", "target", "protocol", "port", "interval", "enabled"}
+	for _, field := range fields {
+		newRecord.Set(field, oldRecord.Get(field))
+	}
 	return newRecord
 }
 

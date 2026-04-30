@@ -1,6 +1,6 @@
 import type { CellContext, Column, ColumnDef } from "@tanstack/react-table"
 import { Button } from "@/components/ui/button"
-import { cn, copyToClipboard, formatMicroseconds, hourWithSeconds } from "@/lib/utils"
+import { cn, copyToClipboard, decimalString, formatMicroseconds, hourWithSeconds } from "@/lib/utils"
 import {
 	GlobeIcon,
 	TimerIcon,
@@ -236,7 +236,7 @@ export function getProbeColumns(
 				return (
 					<span className="ms-1.5 tabular-nums flex gap-2 items-center">
 						<span className={cn("shrink-0 size-2 rounded-full", color)} />
-						{loss1h}%
+						{loss1h === 100 ? loss1h : decimalString(loss1h, loss1h >= 10 ? 1 : 2)}%
 					</span>
 				)
 			},

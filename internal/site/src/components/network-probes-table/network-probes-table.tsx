@@ -511,7 +511,7 @@ function NetworkProbeSheetContent({
 						<Separator orientation="vertical" className="h-2.5 bg-muted-foreground opacity-70" />
 						<GlobeIcon className="size-3.5 text-muted-foreground" />
 						{probe.target}
-						{probe.port > 0 && (
+						{probe.protocol === "tcp" && probe.port > 0 && (
 							<>
 								<Separator orientation="vertical" className="h-2.5 bg-muted-foreground opacity-70" />
 								<EthernetPortIcon className="size-3.5 text-muted-foreground" />

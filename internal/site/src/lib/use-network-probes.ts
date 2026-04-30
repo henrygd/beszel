@@ -116,6 +116,18 @@ export function useNetworkProbeStats(props: UseNetworkProbeStatsProps) {
 	const [probeStats, setProbeStats] = useState<NetworkProbeStatsRecord[]>([])
 	const requestID = useRef(0)
 
+	useEffect(() => {
+		if (!systemId) {
+			setProbeStats([])
+			return
+		}
+		if (chartTime === "1m") {
+			setProbeStats(getCacheValue(systemId, "rt"))
+			return
+		}
+		setProbeStats(getCacheValue(systemId, chartTime))
+	}, [systemId, chartTime])
+
 	// fetch missing probe stats on load and when chart time changes
 	useEffect(() => {
 		if (!systemId || !chartTime || chartTime === "1m") {
@@ -148,7 +160,7 @@ export function useNetworkProbeStats(props: UseNetworkProbeStatsProps) {
 				setProbeStats(newStats)
 			}
 		)
-	}, [chartTime])
+	}, [systemId, chartTime])
 
 	// Subscribe to new probe stats on non-1m chart times (1h, 12h, etc)
 	useEffect(() => {
