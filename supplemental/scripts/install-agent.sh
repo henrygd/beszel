@@ -230,6 +230,9 @@ detect_mips_endianness() {
   echo "mips"
 }
 
+# Ensure script exits immediately on errors
+set -eu
+
 # Default values
 PORT=45876
 UNINSTALL=false
