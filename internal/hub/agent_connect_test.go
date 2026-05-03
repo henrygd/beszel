@@ -1796,6 +1796,24 @@ func TestGetRealIP(t *testing.T) {
 			remoteAddr: "127.0.0.1:12345",
 			expectedIP: "192.168.1.8",
 		},
+		{
+			name:       "X-Real-IP header",
+			headers:    map[string]string{"X-Real-IP": "10.8.0.4"},
+			remoteAddr: "172.21.0.1:12345",
+			expectedIP: "10.8.0.4",
+		},
+		{
+			name:       "X-Real-IP takes precedence over X-Forwarded-For",
+			headers:    map[string]string{"X-Real-IP": "10.8.0.4", "X-Forwarded-For": "10.8.0.5"},
+			remoteAddr: "172.21.0.1:12345",
+			expectedIP: "10.8.0.4",
+		},
+		{
+			name:       "CF-Connecting-IP takes precedence over X-Real-IP",
+			headers:    map[string]string{"CF-Connecting-IP": "1.2.3.4", "X-Real-IP": "10.8.0.4"},
+			remoteAddr: "172.21.0.1:12345",
+			expectedIP: "1.2.3.4",
+		},
 	}
 
 	for _, tc := range testCases {
