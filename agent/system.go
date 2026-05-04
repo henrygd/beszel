@@ -168,15 +168,21 @@ func (a *Agent) getSystemStats(cacheTimeMs uint16) system.Stats {
 	}
 
 	// memory
-	if v, err := mem.VirtualMemory(); err == nil {
+	// skip anomalous readings caused by transient /proc/meminfo inconsistencies (uint64 underflow in gopsutil)
+	if v, err := mem.VirtualMemory(); err == nil && v.Used <= v.Total {
 		// swap
 		systemStats.Swap = utils.BytesToGigabytes(v.SwapTotal)
-		systemStats.SwapUsed = utils.BytesToGigabytes(v.SwapTotal - v.SwapFree - v.SwapCached)
+		if v.SwapTotal >= v.SwapFree+v.SwapCached {
+			systemStats.SwapUsed = utils.BytesToGigabytes(v.SwapTotal - v.SwapFree - v.SwapCached)
+		}
 		// cache + buffers value for default mem calculation
 		// note: gopsutil automatically adds SReclaimable to v.Cached
-		cacheBuff := v.Cached + v.Buffers - v.Shared
-		if cacheBuff <= 0 {
-			cacheBuff = max(v.Total-v.Free-v.Used, 0)
+		var cacheBuff uint64
+		if v.Cached+v.Buffers > v.Shared {
+			cacheBuff = v.Cached + v.Buffers - v.Shared
+		}
+		if cacheBuff == 0 && v.Total > v.Free+v.Used {
+			cacheBuff = v.Total - v.Free - v.Used
 		}
 		// htop memory calculation overrides (likely outdated as of mid 2025)
 		if a.memCalc == "htop" {
