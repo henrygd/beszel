@@ -94,6 +94,18 @@ func TestMdraidSmartStatus(t *testing.T) {
 	if got := mdraidSmartStatus(mdraidHealth{arrayState: "active", syncAction: "recover"}); got != "WARNING" {
 		t.Fatalf("mdraidSmartStatus(recover) = %q, want WARNING", got)
 	}
+	if got := mdraidSmartStatus(mdraidHealth{arrayState: "active", syncAction: "check"}); got != "PASSED" {
+		t.Fatalf("mdraidSmartStatus(check, no mismatches) = %q, want PASSED", got)
+	}
+	if got := mdraidSmartStatus(mdraidHealth{arrayState: "active", syncAction: "check", mismatchCnt: 5}); got != "WARNING" {
+		t.Fatalf("mdraidSmartStatus(check, mismatches) = %q, want WARNING", got)
+	}
+	if got := mdraidSmartStatus(mdraidHealth{arrayState: "active", syncAction: "repair"}); got != "PASSED" {
+		t.Fatalf("mdraidSmartStatus(repair, no mismatches) = %q, want PASSED", got)
+	}
+	if got := mdraidSmartStatus(mdraidHealth{arrayState: "active", syncAction: "repair", mismatchCnt: 1}); got != "WARNING" {
+		t.Fatalf("mdraidSmartStatus(repair, mismatches) = %q, want WARNING", got)
+	}
 	if got := mdraidSmartStatus(mdraidHealth{arrayState: "clean"}); got != "PASSED" {
 		t.Fatalf("mdraidSmartStatus(clean) = %q, want PASSED", got)
 	}

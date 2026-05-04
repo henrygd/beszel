@@ -182,7 +182,10 @@ func mdraidSmartStatus(health mdraidHealth) string {
 	}
 	switch syncAction {
 	case "check", "repair":
-		return "WARNING"
+		// Routine consistency checks are not a problem unless mismatches are found.
+		if health.mismatchCnt > 0 {
+			return "WARNING"
+		}
 	}
 	switch state {
 	case "clean", "active", "active-idle", "write-pending", "read-auto", "readonly":
