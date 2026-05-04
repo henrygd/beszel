@@ -181,7 +181,7 @@ func mdraidSmartStatus(health mdraidHealth) string {
 		return "FAILED"
 	}
 	switch syncAction {
-	case "check", "repair":
+	case "repair":
 		return "WARNING"
 	}
 	switch state {
