@@ -51,6 +51,8 @@ func NewHandlerRegistry() *HandlerRegistry {
 	registry.Register(common.GetContainerInfo, &GetContainerInfoHandler{})
 	registry.Register(common.GetSmartData, &GetSmartDataHandler{})
 	registry.Register(common.GetSystemdInfo, &GetSystemdInfoHandler{})
+	registry.Register(common.GetPodLogs, &GetPodLogsHandler{})
+	registry.Register(common.GetPodInfo, &GetPodInfoHandler{})
 
 	return registry
 }
@@ -151,6 +153,56 @@ func (h *GetContainerInfoHandler) Handle(hctx *HandlerContext) error {
 
 	ctx := context.Background()
 	info, err := hctx.Agent.dockerManager.getContainerInfo(ctx, req.ContainerID)
+	if err != nil {
+		return err
+	}
+
+	return hctx.SendResponse(string(info), hctx.RequestID)
+}
+
+////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
+
+// GetPodLogsHandler handles pod log requests
+type GetPodLogsHandler struct{}
+
+func (h *GetPodLogsHandler) Handle(hctx *HandlerContext) error {
+	if hctx.Agent.kubernetesManager == nil {
+		return hctx.SendResponse("", hctx.RequestID)
+	}
+
+	var req common.PodLogsRequest
+	if err := cbor.Unmarshal(hctx.Request.Data, &req); err != nil {
+		return err
+	}
+
+	ctx := context.Background()
+	logContent, err := hctx.Agent.kubernetesManager.getPodLogs(ctx, req.Namespace, req.PodName)
+	if err != nil {
+		return err
+	}
+
+	return hctx.SendResponse(logContent, hctx.RequestID)
+}
+
+////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
+
+// GetPodInfoHandler handles pod info requests
+type GetPodInfoHandler struct{}
+
+func (h *GetPodInfoHandler) Handle(hctx *HandlerContext) error {
+	if hctx.Agent.kubernetesManager == nil {
+		return hctx.SendResponse("", hctx.RequestID)
+	}
+
+	var req common.PodInfoRequest
+	if err := cbor.Unmarshal(hctx.Request.Data, &req); err != nil {
+		return err
+	}
+
+	ctx := context.Background()
+	info, err := hctx.Agent.kubernetesManager.getPodInfo(ctx, req.Namespace, req.PodName)
 	if err != nil {
 		return err
 	}

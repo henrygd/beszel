@@ -131,6 +131,9 @@ func (a *Agent) updateSystemDetails(updateFunc func(details *system.Details)) {
 func (a *Agent) getSystemStats(cacheTimeMs uint16) system.Stats {
 	var systemStats system.Stats
 
+	// Try to use Kubernetes node metrics if available and host metrics fail
+	useK8sMetrics := false
+
 	// battery
 	if batteryPercent, batteryState, err := battery.GetBatteryStats(); err == nil {
 		systemStats.Battery[0] = batteryPercent
@@ -149,7 +152,8 @@ func (a *Agent) getSystemStats(cacheTimeMs uint16) system.Stats {
 			utils.TwoDecimals(cpuMetrics.Idle),
 		}
 	} else {
-		slog.Error("Error getting cpu metrics", "err", err)
+		slog.Debug("Error getting cpu metrics from host, will try Kubernetes", "err", err)
+		useK8sMetrics = true
 	}
 
 	// per-core cpu usage
@@ -201,6 +205,34 @@ func (a *Agent) getSystemStats(cacheTimeMs uint16) system.Stats {
 		systemStats.MemBuffCache = utils.BytesToGigabytes(cacheBuff)
 		systemStats.MemUsed = utils.BytesToGigabytes(v.Used)
 		systemStats.MemPct = utils.TwoDecimals(v.UsedPercent)
+	} else {
+		slog.Debug("Error getting memory from host, will try Kubernetes", "err", err)
+		useK8sMetrics = true
+	}
+
+	// If host metrics failed and Kubernetes is available, use node metrics from Metrics Server
+	if useK8sMetrics && a.kubernetesManager != nil {
+		if cpuPercent, memUsedGB, memTotalGB, err := a.kubernetesManager.getNodeStats(); err == nil {
+			slog.Debug("Using Kubernetes node metrics", "cpu", cpuPercent, "mem", memUsedGB)
+			systemStats.Cpu = utils.TwoDecimals(cpuPercent)
+			systemStats.Mem = memTotalGB
+			systemStats.MemUsed = memUsedGB
+			systemStats.MemPct = utils.TwoDecimals((memUsedGB / memTotalGB) * 100.0)
+
+			// Also try to get network stats from kubelet
+			if rxMBps, txMBps, netErr := a.kubernetesManager.getNodeNetworkStats(cacheTimeMs); netErr == nil {
+				systemStats.NetworkSent = utils.TwoDecimals(txMBps)
+				systemStats.NetworkRecv = utils.TwoDecimals(rxMBps)
+				slog.Debug("Using kubelet network metrics", "rx", rxMBps, "tx", txMBps)
+			} else {
+				slog.Debug("Kubelet network stats not available", "err", netErr)
+			}
+
+			// Note: Metrics Server doesn't provide CPU breakdown, swap, or cache/buffer details
+			// These will remain at default zero values
+		} else {
+			slog.Warn("Failed to get Kubernetes node metrics", "err", err)
+		}
 	}
 
 	// disk usage
