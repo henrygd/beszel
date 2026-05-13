@@ -522,6 +522,15 @@ func (sys *System) FetchContainerLogsFromAgent(containerID string) (string, erro
 	return result, err
 }
 
+// FetchSystemLogsFromAgent fetches system journal logs from the agent, optionally filtered by service name.
+func (sys *System) FetchSystemLogsFromAgent(serviceName string) (string, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	var result string
+	err := sys.request(ctx, common.GetSystemLogs, common.SystemLogsRequest{ServiceName: serviceName}, &result)
+	return result, err
+}
+
 // FetchSystemdInfoFromAgent fetches detailed systemd service information from the agent
 func (sys *System) FetchSystemdInfoFromAgent(serviceName string) (systemd.ServiceDetails, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)

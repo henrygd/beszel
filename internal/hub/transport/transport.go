@@ -107,6 +107,16 @@ func unmarshalLegacyResponse(resp common.AgentResponse, action common.WebSocketA
 		}
 		*d = resp.ServiceInfo
 		return nil
+	case common.GetSystemLogs:
+		d, ok := dest.(*string)
+		if !ok {
+			return fmt.Errorf("unexpected dest type for GetSystemLogs: %T", dest)
+		}
+		if resp.String == nil {
+			return errors.New("no logs in response")
+		}
+		*d = *resp.String
+		return nil
 	}
 	return fmt.Errorf("unsupported action: %d", action)
 }
