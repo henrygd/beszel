@@ -9,6 +9,12 @@ services:
       - ./beszel_data:/beszel_data
     extra_hosts:
       - 'host.docker.internal:host-gateway'
+    healthcheck:
+      test: ["CMD", "/beszel", "health", "--url", "http://127.0.0.1:8090"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
 
   beszel-agent:
     image: 'henrygd/beszel-agent' #Add -nvidia for nvidia gpus
