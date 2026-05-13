@@ -7,3 +7,9 @@ services:
       - '8090:8090'
     volumes:
       - ./beszel_data:/beszel_data
+    healthcheck:
+      test: ["CMD", "/beszel", "health", "--url", "http://127.0.0.1:8090"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
