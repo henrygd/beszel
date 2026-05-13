@@ -86,7 +86,7 @@ export default function SystemLogsTab({
 				isRefreshing={isRefreshing}
 			/>
 			<div className="flex flex-col gap-3 w-full min-w-0">
-				<div className="flex items-center gap-2 min-w-0">
+				<div className="flex items-center gap-2 ps-1">
 					<Input
 						placeholder={t`Filter by service (e.g. nginx.service)`}
 						value={serviceName}
