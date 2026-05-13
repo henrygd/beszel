@@ -240,6 +240,7 @@ func (sys *System) createRecords(data *system.CombinedData) (*core.Record, error
 
 		// update system record (do this last because it triggers alerts and we need above records to be inserted first)
 		systemRecord.Set("status", up)
+		data.Info.Ls = time.Now().Unix()
 		systemRecord.Set("info", data.Info)
 		if err := txApp.SaveNoValidate(systemRecord); err != nil {
 			return err
