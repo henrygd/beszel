@@ -11,23 +11,19 @@ import { cn } from "@/lib/utils"
 
 const syntaxTheme = "github-dark-dimmed"
 
-async function getSystemLogsHtml(systemId: string, serviceName: string): Promise<string> {
-	try {
-		const query: Record<string, string> = { system: systemId }
-		if (serviceName) {
-			query.service = serviceName
-		}
-		const [{ highlighter }, response] = await Promise.all([
-			import("@/lib/shiki"),
-			pb.send<{ logs: string }>("/api/beszel/system/logs", { query }),
-		])
-		return response.logs
-			? highlighter.codeToHtml(response.logs, { lang: "log", theme: syntaxTheme })
-			: t`No results.`
-	} catch (error) {
-		console.error(error)
-		return ""
+async function fetchRawLogs(systemId: string, serviceName: string): Promise<string> {
+	const query: Record<string, string> = { system: systemId }
+	if (serviceName) {
+		query.service = serviceName
 	}
+	const response = await pb.send<{ logs: string }>("/api/beszel/system/logs", { query })
+	return response.logs ?? ""
+}
+
+async function highlightLogs(raw: string): Promise<string> {
+	if (!raw) return t`No results.`
+	const { highlighter } = await import("@/lib/shiki")
+	return highlighter.codeToHtml(raw, { lang: "log", theme: syntaxTheme })
 }
 
 export default function SystemLogsTab({
@@ -37,10 +33,12 @@ export default function SystemLogsTab({
 	systemId: string
 	logsRequest?: { service: string; seq: number }
 }) {
+	const [rawLogs, setRawLogs] = useState<string>("")
 	const [logsDisplay, setLogsDisplay] = useState<string>("")
 	const [isRefreshing, setIsRefreshing] = useState<boolean>(false)
 	const [fullscreenOpen, setFullscreenOpen] = useState<boolean>(false)
 	const [serviceName, setServiceName] = useState<string>("")
+	const [logSearch, setLogSearch] = useState<string>("")
 	const logsContainerRef = useRef<HTMLDivElement>(null)
 
 	function scrollToBottom() {
@@ -49,12 +47,27 @@ export default function SystemLogsTab({
 		}
 	}
 
+	// Re-highlight whenever rawLogs or logSearch changes
+	useEffect(() => {
+		if (!rawLogs) {
+			setLogsDisplay("")
+			return
+		}
+		const filtered = logSearch
+			? rawLogs
+					.split("\n")
+					.filter((line) => line.toLowerCase().includes(logSearch.toLowerCase()))
+					.join("\n")
+			: rawLogs
+		highlightLogs(filtered).then(setLogsDisplay)
+	}, [rawLogs, logSearch])
+
 	const fetchLogs = async (service: string) => {
 		setIsRefreshing(true)
 		const startTime = Date.now()
 		try {
-			const html = await getSystemLogsHtml(systemId, service)
-			setLogsDisplay(html)
+			const raw = await fetchRawLogs(systemId, service)
+			setRawLogs(raw)
 			setTimeout(scrollToBottom, 20)
 		} catch (error) {
 			console.error(error)
@@ -72,6 +85,7 @@ export default function SystemLogsTab({
 	useEffect(() => {
 		if (logsRequest && logsRequest.seq > 0) {
 			setServiceName(logsRequest.service)
+			setLogSearch("")
 			fetchLogs(logsRequest.service)
 		}
 	}, [logsRequest?.seq])
@@ -99,7 +113,7 @@ export default function SystemLogsTab({
 					<Button
 						variant="outline"
 						size="sm"
-						className="h-8"
+						className="h-8 gap-1.5"
 						onClick={() => fetchLogs(serviceName)}
 						disabled={isRefreshing}
 					>
@@ -108,11 +122,17 @@ export default function SystemLogsTab({
 						/>
 						<Trans>Refresh</Trans>
 					</Button>
+					<Input
+						placeholder={t`Search logs...`}
+						value={logSearch}
+						onChange={(e) => setLogSearch(e.target.value)}
+						className="min-w-0 max-w-xs h-8 text-sm ms-auto"
+					/>
 					<Button
 						variant="ghost"
 						size="sm"
 						onClick={() => setFullscreenOpen(true)}
-						className="h-8 w-8 p-0 ms-auto"
+						className="h-8 w-8 p-0"
 					>
 						<MaximizeIcon className="size-4" />
 					</Button>
