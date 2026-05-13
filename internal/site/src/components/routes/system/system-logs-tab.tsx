@@ -19,7 +19,7 @@ async function getSystemLogsHtml(systemId: string, serviceName: string): Promise
 		}
 		const [{ highlighter }, response] = await Promise.all([
 			import("@/lib/shiki"),
-			pb.send<{ logs: string }>("/api/beszel/system/logs", query),
+			pb.send<{ logs: string }>("/api/beszel/system/logs", { query }),
 		])
 		return response.logs
 			? highlighter.codeToHtml(response.logs, { lang: "log", theme: syntaxTheme })
@@ -30,7 +30,13 @@ async function getSystemLogsHtml(systemId: string, serviceName: string): Promise
 	}
 }
 
-export default function SystemLogsTab({ systemId }: { systemId: string }) {
+export default function SystemLogsTab({
+	systemId,
+	logsRequest,
+}: {
+	systemId: string
+	logsRequest?: { service: string; seq: number }
+}) {
 	const [logsDisplay, setLogsDisplay] = useState<string>("")
 	const [isRefreshing, setIsRefreshing] = useState<boolean>(false)
 	const [fullscreenOpen, setFullscreenOpen] = useState<boolean>(false)
@@ -62,6 +68,13 @@ export default function SystemLogsTab({ systemId }: { systemId: string }) {
 	useEffect(() => {
 		fetchLogs("")
 	}, [systemId])
+
+	useEffect(() => {
+		if (logsRequest && logsRequest.seq > 0) {
+			setServiceName(logsRequest.service)
+			fetchLogs(logsRequest.service)
+		}
+	}, [logsRequest?.seq])
 
 	return (
 		<>

@@ -55,6 +55,12 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 	// where the tooltip can go past the bottom of the page if lots of sensors
 	const [pageBottomExtraMargin, setPageBottomExtraMargin] = useState(0)
 
+	const [logsRequest, setLogsRequest] = useState({ service: "", seq: 0 })
+	const handleViewServiceLogs = (serviceName: string) => {
+		setLogsRequest((r) => ({ service: serviceName, seq: r.seq + 1 }))
+		setActiveTab("logs")
+	}
+
 	if (!system.id) {
 		return null
 	}
@@ -266,12 +272,12 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 
 				{hasSystemd && (
 					<TabsContent value="services" forceMount className={activeTab === "services" ? "contents" : "hidden"}>
-						{mountedTabs.has("services") && <SystemdTable systemId={system.id} />}
+						{mountedTabs.has("services") && <SystemdTable systemId={system.id} onViewLogs={handleViewServiceLogs} />}
 					</TabsContent>
 				)}
 				{hasSystemd && (
 					<TabsContent value="logs" forceMount className={activeTab === "logs" ? "contents" : "hidden"}>
-						{mountedTabs.has("logs") && <SystemLogsTab systemId={system.id} />}
+						{mountedTabs.has("logs") && <SystemLogsTab systemId={system.id} logsRequest={logsRequest} />}
 					</TabsContent>
 				)}
 			</Tabs>
