@@ -1,7 +1,7 @@
 import { t } from "@lingui/core/macro"
 import { Plural, Trans } from "@lingui/react/macro"
 import { useStore } from "@nanostores/react"
-import { CheckIcon, ChevronDownIcon } from "lucide-react"
+import { ChevronDownIcon } from "lucide-react"
 import { lazy, memo, Suspense, useState } from "react"
 import { Button } from "@/components/ui/button"
 import {
@@ -11,6 +11,7 @@ import {
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Input } from "@/components/ui/input"
+import { Separator } from "@/components/ui/separator"
 import { Switch } from "@/components/ui/switch"
 import { toast } from "@/components/ui/use-toast"
 import { alertInfo } from "@/lib/alerts"
@@ -55,17 +56,18 @@ export default function GlobalAlertsSettings() {
 
 	return (
 		<div>
-			<div className="mb-5">
-				<h3 className="text-base font-semibold mb-1">
+			<div>
+				<h3 className="text-xl font-medium mb-2">
 					<Trans>Global Alerts</Trans>
 				</h3>
-				<p className="text-sm text-muted-foreground">
+				<p className="text-sm text-muted-foreground leading-relaxed">
 					<Trans>
 						Alert defaults applied to all systems automatically. Changes sync immediately to all non-excluded
 						systems. New systems added later will also receive these alerts.
 					</Trans>
 				</p>
 			</div>
+			<Separator className="my-4" />
 			<div className="grid gap-3">
 				{alertKeys.map((name) => (
 					<GlobalAlertRow key={name} alertKey={name} data={alertInfo[name]} alert={globalAlerts.get(name)} />
