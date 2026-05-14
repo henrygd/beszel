@@ -114,8 +114,10 @@ export function DiskUsageChart({ systemData, extraFsName }: { systemData: System
 		diskSize = Math.round(diskSize)
 	}
 
-	const title = extraFsName ? `${extraFsName} ${t`Usage`}` : t`Disk Usage`
-	const description = extraFsName ? t`Disk usage of ${extraFsName}` : t`Usage of root partition`
+	const rootName = systemData.system?.info?.rdn
+	const rootLabel = rootName ?? t`Root`
+	const title = extraFsName ? `${extraFsName} ${t`Usage`}` : `${rootLabel} ${t`Usage`}`
+	const description = extraFsName ? t`Disk usage of ${extraFsName}` : t`Disk usage of ${rootLabel}`
 
 	return (
 		<ChartCard empty={dataEmpty} grid={grid} title={title} description={description}>
@@ -152,8 +154,10 @@ export function DiskIOChart({ systemData, extraFsName }: { systemData: SystemDat
 		return null
 	}
 
-	const title = extraFsName ? `${extraFsName} I/O` : t`Disk I/O`
-	const description = extraFsName ? t`Throughput of ${extraFsName}` : t`Throughput of root filesystem`
+	const rootName = systemData.system?.info?.rdn
+	const rootLabel = rootName ?? t`Root`
+	const title = extraFsName ? `${extraFsName} I/O` : `${rootLabel} I/O`
+	const description = extraFsName ? t`Throughput of ${extraFsName}` : t`Throughput of ${rootLabel}`
 
 	const hasMoreIOMetrics = chartData.systemStats?.some((record) => record.stats?.dios?.at(0))
 
@@ -264,7 +268,7 @@ export function ExtraFsCharts({ systemData }: { systemData: SystemData }) {
 
 	return (
 		<div className="grid xl:grid-cols-2 gap-4">
-			{Object.keys(extraFs).map((extraFsName) => {
+			{Object.keys(extraFs).sort((a, b) => a.localeCompare(b)).map((extraFsName) => {
 				let diskSize = systemStats.at(-1)?.stats.efs?.[extraFsName].d ?? NaN
 				// round to nearest GB
 				if (diskSize >= 100) {
