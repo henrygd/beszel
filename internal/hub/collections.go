@@ -55,6 +55,20 @@ func setCollectionAuthSettings(app core.App) error {
 	// Only admin users can modify systems.
 	authenticatedRule := "@request.auth.id != \"\""
 	adminRule := authenticatedRule + " && @request.auth.role = \"admin\""
+	selfOrAdminRule := "@request.auth.id = id || @request.auth.role = \"admin\""
+
+	// users collection: admins can manage all users; users can view/update themselves.
+	// CreateRule is set here only when USER_CREATION is not active (oauth2 rule takes precedence).
+	usersCollection.ListRule = &adminRule
+	usersCollection.ViewRule = &selfOrAdminRule
+	if usersCollection.CreateRule == nil {
+		usersCollection.CreateRule = &adminRule
+	}
+	usersCollection.UpdateRule = &selfOrAdminRule
+	usersCollection.DeleteRule = &adminRule
+	if err := app.Save(usersCollection); err != nil {
+		return err
+	}
 
 	if err := applyCollectionRules(app, []string{"systems"}, collectionRules{
 		list:   &authenticatedRule,

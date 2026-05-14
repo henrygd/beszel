@@ -21,13 +21,18 @@ func TestCollectionRulesDefault(t *testing.T) {
 	const isAuthenticated = `@request.auth.id != ""`
 	const isAdmin = `@request.auth.id != "" && @request.auth.role = "admin"`
 	const isUserMatchesUser = `@request.auth.id != "" && user = @request.auth.id`
+	const isSelfOrAdmin = `@request.auth.id = id || @request.auth.role = "admin"`
 
 	// users collection
 	usersCollection, err := hub.FindCollectionByNameOrId("users")
 	assert.NoError(t, err, "Failed to find users collection")
 	assert.True(t, usersCollection.PasswordAuth.Enabled)
 	assert.Equal(t, usersCollection.PasswordAuth.IdentityFields, []string{"email"})
-	assert.Nil(t, usersCollection.CreateRule)
+	assert.Equal(t, isAdmin, *usersCollection.ListRule)
+	assert.Equal(t, isSelfOrAdmin, *usersCollection.ViewRule)
+	assert.Equal(t, isAdmin, *usersCollection.CreateRule)
+	assert.Equal(t, isSelfOrAdmin, *usersCollection.UpdateRule)
+	assert.Equal(t, isAdmin, *usersCollection.DeleteRule)
 	assert.False(t, usersCollection.MFA.Enabled)
 
 	// superusers collection

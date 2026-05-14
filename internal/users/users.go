@@ -21,11 +21,13 @@ func NewUserManager(app core.App) *UserManager {
 	}
 }
 
-// Initialize user role if not set
+// Initialize user role if not set, and mark new users as verified
 func (um *UserManager) InitializeUserRole(e *core.RecordEvent) error {
 	if e.Record.GetString("role") == "" {
 		e.Record.Set("role", "user")
 	}
+	e.Record.Set("verified", true)
+	e.Record.Set("emailVisibility", true)
 	return e.Next()
 }
 

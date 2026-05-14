@@ -156,14 +156,25 @@ func TestApiRoutesAuthentication(t *testing.T) {
 			TestAppFactory:  testAppFactory,
 		},
 		{
-			Name:   "GET /universal-token - with auth should succeed",
+			Name:   "GET /universal-token - with admin auth should succeed",
+			Method: http.MethodGet,
+			URL:    "/api/beszel/universal-token",
+			Headers: map[string]string{
+				"Authorization": adminUserToken,
+			},
+			ExpectedStatus:  200,
+			ExpectedContent: []string{"active", "token", "permanent"},
+			TestAppFactory:  testAppFactory,
+		},
+		{
+			Name:   "GET /universal-token - with regular user auth should fail",
 			Method: http.MethodGet,
 			URL:    "/api/beszel/universal-token",
 			Headers: map[string]string{
 				"Authorization": userToken,
 			},
-			ExpectedStatus:  200,
-			ExpectedContent: []string{"active", "token", "permanent"},
+			ExpectedStatus:  403,
+			ExpectedContent: []string{"The authorized record is not allowed to perform this action."},
 			TestAppFactory:  testAppFactory,
 		},
 		{
@@ -171,7 +182,7 @@ func TestApiRoutesAuthentication(t *testing.T) {
 			Method: http.MethodGet,
 			URL:    "/api/beszel/universal-token?enable=1&permanent=1&token=permanent-token-123",
 			Headers: map[string]string{
-				"Authorization": userToken,
+				"Authorization": adminUserToken,
 			},
 			ExpectedStatus:  200,
 			ExpectedContent: []string{"\"permanent\":true", "permanent-token-123"},

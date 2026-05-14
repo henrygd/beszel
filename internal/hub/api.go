@@ -29,9 +29,9 @@ type UpdateInfo struct {
 
 var containerIDPattern = regexp.MustCompile(`^[a-fA-F0-9]{12,64}$`)
 
-// Middleware to allow only admin role users
+// Middleware to allow only admin role users (superusers pass through to be handled by the endpoint)
 var requireAdminRole = customAuthMiddleware(func(e *core.RequestEvent) bool {
-	return e.Auth.GetString("role") == "admin"
+	return e.Auth.IsSuperuser() || e.Auth.GetString("role") == "admin"
 })
 
 // Middleware to exclude readonly users
