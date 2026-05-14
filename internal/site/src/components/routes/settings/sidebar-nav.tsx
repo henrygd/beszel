@@ -31,7 +31,7 @@ export function SidebarNav({ className, items, ...props }: SidebarNavProps) {
 					</SelectTrigger>
 					<SelectContent>
 						{items.map((item) => {
-							if (item.admin && !isAdmin()) return null
+							if ((item.admin && !isAdmin()) || (item.noReadOnly && isReadOnlyUser())) return null
 							return (
 								<SelectItem key={item.href} value={item.href}>
 									<span className="flex items-center gap-2 truncate">

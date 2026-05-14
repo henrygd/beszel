@@ -21,11 +21,10 @@ type config struct {
 }
 
 type systemConfig struct {
-	Name  string   `yaml:"name"`
-	Host  string   `yaml:"host"`
-	Port  uint16   `yaml:"port,omitempty"`
-	Token string   `yaml:"token,omitempty"`
-	Users []string `yaml:"users"`
+	Name  string `yaml:"name"`
+	Host  string `yaml:"host"`
+	Port  uint16 `yaml:"port,omitempty"`
+	Token string `yaml:"token,omitempty"`
 }
 
 // Syncs systems with the config.yml file
@@ -48,41 +47,11 @@ func SyncSystems(e *core.ServeEvent) error {
 		return nil
 	}
 
-	var firstUser *core.Record
-
-	// Create a map of email to user ID
-	userEmailToID := make(map[string]string)
-	users, err := h.FindAllRecords("users", dbx.NewExp("id != ''"))
-	if err != nil {
-		return err
-	}
-	if len(users) > 0 {
-		firstUser = users[0]
-		for _, user := range users {
-			userEmailToID[user.GetString("email")] = user.Id
-		}
-	}
-
 	// add default settings for systems if not defined in config
 	for i := range config.Systems {
 		system := &config.Systems[i]
 		if system.Port == 0 {
 			system.Port = 45876
-		}
-		if len(users) > 0 && len(system.Users) == 0 {
-			// default to first user if none are defined
-			system.Users = []string{firstUser.Id}
-		} else {
-			// Convert email addresses to user IDs
-			userIDs := make([]string, 0, len(system.Users))
-			for _, email := range system.Users {
-				if id, ok := userEmailToID[email]; ok {
-					userIDs = append(userIDs, id)
-				} else {
-					log.Printf("User %s not found", email)
-				}
-			}
-			system.Users = userIDs
 		}
 	}
 
@@ -105,7 +74,6 @@ func SyncSystems(e *core.ServeEvent) error {
 		if existingSystem, ok := existingSystemsMap[key]; ok {
 			// Update existing system
 			existingSystem.Set("name", sysConfig.Name)
-			existingSystem.Set("users", sysConfig.Users)
 			existingSystem.Set("port", sysConfig.Port)
 			if err := h.Save(existingSystem); err != nil {
 				return err
@@ -129,7 +97,6 @@ func SyncSystems(e *core.ServeEvent) error {
 			newSystem.Set("name", sysConfig.Name)
 			newSystem.Set("host", sysConfig.Host)
 			newSystem.Set("port", sysConfig.Port)
-			newSystem.Set("users", sysConfig.Users)
 			newSystem.Set("info", system.Info{})
 			newSystem.Set("status", "pending")
 			if err := h.Save(newSystem); err != nil {
@@ -168,21 +135,6 @@ func generateYAML(h core.App) (string, error) {
 		return "", err
 	}
 
-	// Create a Config struct to hold the data
-	config := config{
-		Systems: make([]systemConfig, 0, len(systems)),
-	}
-
-	// Fetch all users at once
-	allUserIDs := make([]string, 0)
-	for _, system := range systems {
-		allUserIDs = append(allUserIDs, system.GetStringSlice("users")...)
-	}
-	userEmailMap, err := getUserEmailMap(h, allUserIDs)
-	if err != nil {
-		return "", err
-	}
-
 	// Fetch all fingerprint records to get tokens
 	type fingerprintData struct {
 		ID     string `db:"id"`
@@ -202,20 +154,14 @@ func generateYAML(h core.App) (string, error) {
 	}
 
 	// Populate the Config struct with system data
+	config := config{
+		Systems: make([]systemConfig, 0, len(systems)),
+	}
 	for _, system := range systems {
-		userIDs := system.GetStringSlice("users")
-		userEmails := make([]string, 0, len(userIDs))
-		for _, userID := range userIDs {
-			if email, ok := userEmailMap[userID]; ok {
-				userEmails = append(userEmails, email)
-			}
-		}
-
 		sysConfig := systemConfig{
 			Name:  system.GetString("name"),
 			Host:  system.GetString("host"),
 			Port:  cast.ToUint16(system.Get("port")),
-			Users: userEmails,
 			Token: systemTokenMap[system.Id],
 		}
 		config.Systems = append(config.Systems, sysConfig)
@@ -228,24 +174,9 @@ func generateYAML(h core.App) (string, error) {
 	}
 
 	// Add a header to the YAML
-	yamlData = append([]byte("# Values for port, users, and token are optional.\n# Defaults are port 45876, the first created user, and a generated UUID token.\n\n"), yamlData...)
+	yamlData = append([]byte("# Values for port and token are optional.\n# Defaults are port 45876 and a generated UUID token.\n\n"), yamlData...)
 
 	return string(yamlData), nil
-}
-
-// New helper function to get a map of user IDs to emails
-func getUserEmailMap(h core.App, userIDs []string) (map[string]string, error) {
-	users, err := h.FindRecordsByIds("users", userIDs)
-	if err != nil {
-		return nil, err
-	}
-
-	userEmailMap := make(map[string]string, len(users))
-	for _, user := range users {
-		userEmailMap[user.Id] = user.GetString("email")
-	}
-
-	return userEmailMap, nil
 }
 
 // Helper function to update or create fingerprint token for an existing system

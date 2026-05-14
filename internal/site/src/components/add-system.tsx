@@ -16,7 +16,7 @@ import {
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { isReadOnlyUser, pb } from "@/lib/api"
+import { isAdmin, pb } from "@/lib/api"
 import { SystemStatus } from "@/lib/enums"
 import { $publicKey } from "@/lib/stores"
 import { cn, generateToken, tokenMap, useBrowserStorage } from "@/lib/utils"
@@ -41,7 +41,7 @@ export function AddSystemDialog({ open, setOpen }: { open: boolean; setOpen: (op
 		opened.current = true
 	}
 
-	if (isReadOnlyUser()) {
+	if (!isAdmin()) {
 		return null
 	}
 
@@ -95,7 +95,6 @@ export const SystemDialog = ({ setOpen, system }: { setOpen: (open: boolean) => 
 		e.preventDefault()
 		const formData = new FormData(e.target as HTMLFormElement)
 		const data = Object.fromEntries(formData) as Record<string, any>
-		data.users = pb.authStore.record!.id
 		try {
 			setOpen(false)
 			if (system) {

@@ -24,7 +24,7 @@ import {
 } from "lucide-react"
 import { memo, useMemo, useRef, useState } from "react"
 import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip"
-import { isReadOnlyUser, pb } from "@/lib/api"
+import { isAdmin, pb } from "@/lib/api"
 import { BatteryState, ConnectionType, connectionTypeLabels, MeterState, SystemStatus } from "@/lib/enums"
 import { $longestSystemNameLen, $userSettings } from "@/lib/stores"
 import {
@@ -602,7 +602,7 @@ export const ActionsButton = memo(({ system }: { system: SystemRecord }) => {
 						</Button>
 					</DropdownMenuTrigger>
 					<DropdownMenuContent align="end">
-						{!isReadOnlyUser() && (
+						{!!isAdmin() && (
 							<DropdownMenuItem
 								onSelect={() => {
 									editOpened.current = true
@@ -614,7 +614,7 @@ export const ActionsButton = memo(({ system }: { system: SystemRecord }) => {
 							</DropdownMenuItem>
 						)}
 						<DropdownMenuItem
-							className={cn(isReadOnlyUser() && "hidden")}
+							className={cn(!isAdmin() && "hidden")}
 							onClick={() => {
 								pb.collection("systems").update(id, {
 									status: status === SystemStatus.Paused ? SystemStatus.Pending : SystemStatus.Paused,
@@ -641,8 +641,8 @@ export const ActionsButton = memo(({ system }: { system: SystemRecord }) => {
 							<CopyIcon className="me-2.5 size-4" />
 							<Trans>Copy host</Trans>
 						</DropdownMenuItem>
-						<DropdownMenuSeparator className={cn(isReadOnlyUser() && "hidden")} />
-						<DropdownMenuItem className={cn(isReadOnlyUser() && "hidden")} onSelect={() => setDeleteOpen(true)}>
+						<DropdownMenuSeparator className={cn(!isAdmin() && "hidden")} />
+						<DropdownMenuItem className={cn(!isAdmin() && "hidden")} onSelect={() => setDeleteOpen(true)}>
 							<Trash2Icon className="me-2.5 size-4" />
 							<Trans>Delete</Trans>
 						</DropdownMenuItem>

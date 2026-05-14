@@ -119,7 +119,7 @@ func (h *Hub) registerApiRoutes(se *core.ServeEvent) error {
 	// handle agent websocket connection
 	apiNoAuth.GET("/agent-connect", h.handleAgentConnect)
 	// get or create universal tokens
-	apiAuth.GET("/universal-token", h.getUniversalToken).BindFunc(excludeReadOnlyRole)
+	apiAuth.GET("/universal-token", h.getUniversalToken).BindFunc(requireAdminRole)
 	// update / delete user alerts
 	apiAuth.POST("/user-alerts", alerts.UpsertUserAlerts)
 	apiAuth.DELETE("/user-alerts", alerts.DeleteUserAlerts)

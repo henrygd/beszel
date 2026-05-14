@@ -26,17 +26,16 @@ func TestSystemManagerNew(t *testing.T) {
 	defer hub.Cleanup()
 	sm := hub.GetSystemManager()
 
-	user, err := tests.CreateUser(hub, "test@test.com", "testtesttest")
+	_, err = tests.CreateUser(hub, "test@test.com", "testtesttest")
 	require.NoError(t, err)
 
 	synctest.Test(t, func(t *testing.T) {
 		sm.Initialize()
 
 		record, err := tests.CreateRecord(hub, "systems", map[string]any{
-			"name":  "it-was-coney-island",
-			"host":  "the-playground-of-the-world",
-			"port":  "33914",
-			"users": []string{user.Id},
+			"name": "it-was-coney-island",
+			"host": "the-playground-of-the-world",
+			"port": "33914",
 		})
 		require.NoError(t, err)
 
@@ -75,10 +74,9 @@ func TestSystemManagerNew(t *testing.T) {
 
 		// let's also make sure a system is removed from the store when the record is deleted
 		record, err = tests.CreateRecord(hub, "systems", map[string]any{
-			"name":  "there-was-no-place-like-it",
-			"host":  "in-the-whole-world",
-			"port":  "33914",
-			"users": []string{user.Id},
+			"name": "there-was-no-place-like-it",
+			"host": "in-the-whole-world",
+			"port": "33914",
 		})
 		require.NoError(t, err)
 
@@ -131,7 +129,7 @@ func TestSystemManagerNew(t *testing.T) {
 }
 
 func testOld(t *testing.T, hub *tests.TestHub) {
-	user, err := tests.CreateUser(hub, "test@testy.com", "testtesttest")
+	_, err := tests.CreateUser(hub, "test@testy.com", "testtesttest")
 	require.NoError(t, err)
 
 	sm := hub.GetSystemManager()
@@ -163,10 +161,9 @@ func testOld(t *testing.T, hub *tests.TestHub) {
 
 		// Create a test system record
 		record, err := tests.CreateRecord(hub, "systems", map[string]any{
-			"name":  "i-even-got-lost-at-coney-island",
-			"host":  "but-they-found-me",
-			"port":  "33914",
-			"users": []string{user.Id},
+			"name": "i-even-got-lost-at-coney-island",
+			"host": "but-they-found-me",
+			"port": "33914",
 		})
 		require.NoError(t, err)
 
@@ -204,10 +201,9 @@ func testOld(t *testing.T, hub *tests.TestHub) {
 	t.Run("NewRecordPending", func(t *testing.T) {
 		// Create a test system
 		record, err := tests.CreateRecord(hub, "systems", map[string]any{
-			"name":  "and-you-know",
-			"host":  "i-feel-very-bad",
-			"port":  "33914",
-			"users": []string{user.Id},
+			"name": "and-you-know",
+			"host": "i-feel-very-bad",
+			"port": "33914",
 		})
 		require.NoError(t, err)
 
@@ -225,10 +221,9 @@ func testOld(t *testing.T, hub *tests.TestHub) {
 	t.Run("SystemStatusUpdate", func(t *testing.T) {
 		// Create a test system record
 		record, err := tests.CreateRecord(hub, "systems", map[string]any{
-			"name":  "we-used-to-sleep-on-the-beach",
-			"host":  "sleep-overnight-here",
-			"port":  "33914",
-			"users": []string{user.Id},
+			"name": "we-used-to-sleep-on-the-beach",
+			"host": "sleep-overnight-here",
+			"port": "33914",
 		})
 		require.NoError(t, err)
 
@@ -256,10 +251,9 @@ func testOld(t *testing.T, hub *tests.TestHub) {
 	t.Run("HandleSystemData", func(t *testing.T) {
 		// Create a test system record
 		record, err := tests.CreateRecord(hub, "systems", map[string]any{
-			"name":  "things-changed-you-know",
-			"host":  "they-dont-sleep-anymore-on-the-beach",
-			"port":  "33914",
-			"users": []string{user.Id},
+			"name": "things-changed-you-know",
+			"host": "they-dont-sleep-anymore-on-the-beach",
+			"port": "33914",
 		})
 		require.NoError(t, err)
 
@@ -316,10 +310,9 @@ func testOld(t *testing.T, hub *tests.TestHub) {
 	t.Run("ConcurrentOperations", func(t *testing.T) {
 		// Create a test system
 		record, err := tests.CreateRecord(hub, "systems", map[string]any{
-			"name":  "jfkjahkfajs",
-			"host":  "localhost",
-			"port":  "33914",
-			"users": []string{user.Id},
+			"name": "jfkjahkfajs",
+			"host": "localhost",
+			"port": "33914",
 		})
 		require.NoError(t, err)
 
@@ -356,10 +349,9 @@ func testOld(t *testing.T, hub *tests.TestHub) {
 	t.Run("ContextCancellation", func(t *testing.T) {
 		// Create a test system record
 		record, err := tests.CreateRecord(hub, "systems", map[string]any{
-			"name":  "lkhsdfsjf",
-			"host":  "localhost",
-			"port":  "33914",
-			"users": []string{user.Id},
+			"name": "lkhsdfsjf",
+			"host": "localhost",
+			"port": "33914",
 		})
 		require.NoError(t, err)
 
@@ -437,44 +429,21 @@ func TestHasUser(t *testing.T) {
 	require.NoError(t, err)
 
 	systemRecord, err := tests.CreateRecord(hub, "systems", map[string]any{
-		"name":  "has-user-test",
-		"host":  "127.0.0.1",
-		"port":  "33914",
-		"users": []string{user1.Id},
+		"name": "has-user-test",
+		"host": "127.0.0.1",
+		"port": "33914",
 	})
 	require.NoError(t, err)
 
 	sys, err := sm.GetSystemFromStore(systemRecord.Id)
 	require.NoError(t, err)
 
-	t.Run("user in list returns true", func(t *testing.T) {
+	t.Run("any authenticated user returns true", func(t *testing.T) {
 		assert.True(t, sys.HasUser(hub, user1))
+		assert.True(t, sys.HasUser(hub, user2))
 	})
 
-	t.Run("user not in list returns false", func(t *testing.T) {
-		assert.False(t, sys.HasUser(hub, user2))
-	})
-
-	t.Run("unknown user ID returns false", func(t *testing.T) {
+	t.Run("nil user returns false", func(t *testing.T) {
 		assert.False(t, sys.HasUser(hub, nil))
-	})
-
-	t.Run("SHARE_ALL_SYSTEMS=true grants access to non-member", func(t *testing.T) {
-		t.Setenv("SHARE_ALL_SYSTEMS", "true")
-		assert.True(t, sys.HasUser(hub, user2))
-	})
-
-	t.Run("BESZEL_HUB_SHARE_ALL_SYSTEMS=true grants access to non-member", func(t *testing.T) {
-		t.Setenv("BESZEL_HUB_SHARE_ALL_SYSTEMS", "true")
-		assert.True(t, sys.HasUser(hub, user2))
-	})
-
-	t.Run("additional user works", func(t *testing.T) {
-		assert.False(t, sys.HasUser(hub, user2))
-		systemRecord.Set("users", []string{user1.Id, user2.Id})
-		err = hub.Save(systemRecord)
-		require.NoError(t, err)
-		assert.True(t, sys.HasUser(hub, user1))
-		assert.True(t, sys.HasUser(hub, user2))
 	})
 }

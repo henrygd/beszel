@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/pocketbase/dbx"
 	"github.com/pocketbase/pocketbase/core"
 )
 
@@ -22,7 +23,7 @@ func (am *AlertManager) handleSmartDeviceAlert(e *core.RecordEvent) error {
 		return e.Next()
 	}
 
-	// Fetch the system record to get the name and users
+	// Fetch the system record to get the name
 	systemRecord, err := e.App.FindRecordById("systems", systemID)
 	if err != nil {
 		e.App.Logger().Error("Failed to find system for SMART alert", "err", err, "systemID", systemID)
@@ -43,10 +44,14 @@ func (am *AlertManager) handleSmartDeviceAlert(e *core.RecordEvent) error {
 		message = fmt.Sprintf("Disk %s SMART status changed to %s", deviceName, newState)
 	}
 
-	// Get users associated with the system
-	userIDs := systemRecord.GetStringSlice("users")
-	if len(userIDs) == 0 {
+	// Get all users to notify
+	userRecords, err := e.App.FindAllRecords("users", dbx.NewExp("id != ''"))
+	if err != nil || len(userRecords) == 0 {
 		return e.Next()
+	}
+	userIDs := make([]string, 0, len(userRecords))
+	for _, u := range userRecords {
+		userIDs = append(userIDs, u.Id)
 	}
 
 	// Send alert to each user

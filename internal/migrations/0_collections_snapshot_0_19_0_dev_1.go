@@ -687,19 +687,6 @@ func init() {
 				"type": "json"
 			},
 			{
-				"cascadeDelete": true,
-				"collectionId": "_pb_users_auth_",
-				"hidden": false,
-				"id": "jcarjnjj",
-				"maxSelect": 2147483647,
-				"minSelect": 0,
-				"name": "users",
-				"presentable": false,
-				"required": true,
-				"system": false,
-				"type": "relation"
-			},
-			{
 				"hidden": false,
 				"id": "autodate2990389176",
 				"name": "created",

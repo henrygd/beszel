@@ -81,7 +81,7 @@ export default function SettingsLayout() {
 			title: t`Tokens & Fingerprints`,
 			href: getPagePath($router, "settings", { name: "tokens" }),
 			icon: FingerprintIcon,
-			noReadOnly: true,
+			admin: true,
 			preload: fingerprintsSettingsImport,
 		},
 		{
