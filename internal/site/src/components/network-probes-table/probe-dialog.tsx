@@ -10,7 +10,13 @@ import {
 	DialogHeader,
 	DialogTitle,
 } from "@/components/ui/dialog"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import {
+	DropdownMenu,
+	DropdownMenuCheckboxItem,
+	DropdownMenuContent,
+	DropdownMenuItem,
+	DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 import { Sheet, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle } from "@/components/ui/sheet"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -199,7 +205,7 @@ export function AddProbeDialog({ systemId, probes }: { systemId?: string; probes
 	const [bulkOpen, setBulkOpen] = useState(false)
 	const [bulkInput, setBulkInput] = useState("")
 	const [bulkLoading, setBulkLoading] = useState(false)
-	const [bulkSelectedSystemId, setBulkSelectedSystemId] = useState("")
+	const [bulkSelectedSystemIds, setBulkSelectedSystemIds] = useState<Set<string>>(new Set())
 	const bulkFormRef = useRef<HTMLFormElement>(null)
 	const { toast } = useToast()
 	const { t } = useLingui()
@@ -207,15 +213,26 @@ export function AddProbeDialog({ systemId, probes }: { systemId?: string; probes
 
 	const resetBulkForm = () => {
 		setBulkInput("")
-		// setBulkSelectedSystemId("")
 	}
 
 	const openBulkAdd = (selectedSystemId?: string) => {
 		if (!systemId && selectedSystemId) {
-			setBulkSelectedSystemId(selectedSystemId)
+			setBulkSelectedSystemIds(new Set([selectedSystemId]))
 		}
 		setOpen(false)
 		setBulkOpen(true)
+	}
+
+	const toggleBulkSystem = (sysId: string) => {
+		setBulkSelectedSystemIds((prev) => {
+			const next = new Set(prev)
+			if (next.has(sysId)) {
+				next.delete(sysId)
+			} else {
+				next.add(sysId)
+			}
+			return next
+		})
 	}
 
 	const openAdd = () => {
@@ -229,53 +246,59 @@ export function AddProbeDialog({ systemId, probes }: { systemId?: string; probes
 		let closedForSubmit = false
 
 		try {
-			const system = systemId ?? bulkSelectedSystemId
-			if (!system) {
-				throw new Error("Select a system.")
+			const targetSystems = systemId ? [systemId] : Array.from(bulkSelectedSystemIds)
+			if (!targetSystems.length) {
+				throw new Error("Select at least one system.")
 			}
 			const rawLines = bulkInput.split(/\r?\n/).filter((line) => line.trim())
 			if (!rawLines.length) {
 				throw new Error("Enter at least one probe.")
 			}
 
-			const payloads = rawLines.map((line, index) => parseBulkProbeLine(line, index + 1, system))
-			const existingProbeKeys = new Set(
-				probes.filter((probe) => probe.system === system).map((probe) => getProbeIdentityKey(probe))
-			)
-			const newPayloads = [] as typeof payloads
-
-			for (const payload of payloads) {
-				const probeKey = getProbeIdentityKey(payload)
-				if (existingProbeKeys.has(probeKey)) {
-					continue
-				}
-
-				existingProbeKeys.add(probeKey)
-				newPayloads.push(payload)
-			}
-
-			if (!newPayloads.length) {
-				throw new Error("No new probes. All entries exist.")
-			}
-
+			let totalCreated = 0
 			closedForSubmit = true
-			let batch = pb.createBatch()
-			let inBatch = 0
-			for (const payload of newPayloads) {
-				batch.collection("network_probes").create(payload)
-				inBatch++
-				if (inBatch > 20) {
-					await batch.send()
-					batch = pb.createBatch()
-					inBatch = 0
+
+			for (const system of targetSystems) {
+				const payloads = rawLines.map((line, index) => parseBulkProbeLine(line, index + 1, system))
+				const existingProbeKeys = new Set(
+					probes.filter((probe) => probe.system === system).map((probe) => getProbeIdentityKey(probe))
+				)
+				const newPayloads: typeof payloads = []
+
+				for (const payload of payloads) {
+					const probeKey = getProbeIdentityKey(payload)
+					if (existingProbeKeys.has(probeKey)) {
+						continue
+					}
+					existingProbeKeys.add(probeKey)
+					newPayloads.push(payload)
 				}
+
+				if (!newPayloads.length) continue
+
+				let batch = pb.createBatch()
+				let inBatch = 0
+				for (const payload of newPayloads) {
+					batch.collection("network_probes").create(payload)
+					inBatch++
+					if (inBatch > 20) {
+						await batch.send()
+						batch = pb.createBatch()
+						inBatch = 0
+					}
+				}
+				if (inBatch) {
+					await batch.send()
+				}
+				totalCreated += newPayloads.length
 			}
-			if (inBatch) {
-				await batch.send()
+
+			if (!totalCreated) {
+				throw new Error("No new probes. All entries already exist.")
 			}
 
 			resetBulkForm()
-			toast({ title: t`Probes created`, description: `${newPayloads.length} probe(s) added.` })
+			toast({ title: t`Probes created`, description: `${totalCreated} probe(s) added.` })
 		} catch (err: unknown) {
 			if (closedForSubmit) {
 				setBulkOpen(true)
@@ -338,21 +361,34 @@ export function AddProbeDialog({ systemId, probes }: { systemId?: string; probes
 							{!systemId && (
 								<div className="grid gap-2">
 									<Label className="sr-only">
-										<Trans>System</Trans>
+										<Trans>Systems</Trans>
 									</Label>
-									<Select value={bulkSelectedSystemId} onValueChange={setBulkSelectedSystemId} required>
-										<SelectTrigger className="relative ps-10 pe-5 bg-card">
-											<ServerIcon className="size-3.5 absolute start-4 top-1/2 -translate-y-1/2 opacity-85" />
-											<SelectValue placeholder={t`Select a system`} />
-										</SelectTrigger>
-										<SelectContent>
+									<DropdownMenu>
+										<DropdownMenuTrigger asChild>
+											<Button
+												variant="outline"
+												className="relative ps-10 pe-5 justify-start font-normal bg-card text-start"
+											>
+												<ServerIcon className="size-3.5 absolute start-4 top-1/2 -translate-y-1/2 opacity-85" />
+												{bulkSelectedSystemIds.size === 0
+													? t`Select systems`
+													: bulkSelectedSystemIds.size === 1
+														? systems.find((s) => bulkSelectedSystemIds.has(s.id))?.name
+														: t`${bulkSelectedSystemIds.size} systems selected`}
+											</Button>
+										</DropdownMenuTrigger>
+										<DropdownMenuContent className="w-56">
 											{systems.map((sys) => (
-												<SelectItem key={sys.id} value={sys.id}>
+												<DropdownMenuCheckboxItem
+													key={sys.id}
+													checked={bulkSelectedSystemIds.has(sys.id)}
+													onCheckedChange={() => toggleBulkSystem(sys.id)}
+												>
 													{sys.name}
-												</SelectItem>
+												</DropdownMenuCheckboxItem>
 											))}
-										</SelectContent>
-									</Select>
+										</DropdownMenuContent>
+									</DropdownMenu>
 								</div>
 							)}
 							<div className="grow flex flex-col gap-2">
@@ -377,7 +413,7 @@ export function AddProbeDialog({ systemId, probes }: { systemId?: string; probes
 							</div>
 						</div>
 						<SheetFooter className="border-t">
-							<Button type="submit" disabled={bulkLoading || (!systemId && !bulkSelectedSystemId)}>
+							<Button type="submit" disabled={bulkLoading || (!systemId && !bulkSelectedSystemIds.size)}>
 								<Trans>Add {{ foo: t`Network Probes` }}</Trans>
 							</Button>
 						</SheetFooter>

@@ -371,36 +371,39 @@ func updateNetworkProbesRecords(app core.App, probeResults map[string]probe.Resu
 		}
 	}
 
-	// handle stats collection as well
+	// handle stats collection — one record per probe
 	const statsCollectionName = "network_probe_stats"
 
-	// we don't need the hour values for the stats collection
-	stats := make(map[string]probe.Stats, len(probeResults))
-	for key, result := range probeResults {
-		stats[key] = probe.Stats{}.FromResult(result)
+	var statsCollection *core.Collection
+	if realtimeActive {
+		statsCollection, _ = app.FindCachedCollectionByNameOrId(statsCollectionName)
 	}
 
-	statsRecordData := map[string]any{
-		"system":  systemId,
-		"type":    "1m",
-		"created": nowMilli,
-	}
-	var statsJson types.JSONRaw
-	if err = statsJson.Scan(stats); err == nil {
-		statsRecordData["stats"] = statsJson
+	for probeId, result := range probeResults {
+		probeStats := probe.Stats{}.FromResult(result)
+		var statsJson types.JSONRaw
+		if err = statsJson.Scan(probeStats); err != nil {
+			continue
+		}
+		statsRecordData := map[string]any{
+			"system":  systemId,
+			"probe":   probeId,
+			"type":    "1m",
+			"created": nowMilli,
+			"stats":   statsJson,
+		}
 		switch realtimeActive {
 		case true:
-			collection, _ := app.FindCachedCollectionByNameOrId(statsCollectionName)
-			record := core.NewRecord(collection)
+			record := core.NewRecord(statsCollection)
 			record.Load(statsRecordData)
 			err = app.SaveNoValidate(record)
 		default:
 			statsRecordData["id"] = security.PseudorandomStringWithAlphabet(10, core.DefaultIdAlphabet)
 			_, err = db.Insert(statsCollectionName, dbx.Params(statsRecordData)).Execute()
 		}
-	}
-	if err != nil {
-		app.Logger().Error("Failed to update probe stats", "system", systemId, "err", err)
+		if err != nil {
+			app.Logger().Error("Failed to update probe stats", "system", systemId, "probe", probeId, "err", err)
+		}
 	}
 
 	return nil

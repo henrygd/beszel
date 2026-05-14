@@ -37,6 +37,7 @@ import { $allSystemsById, $chartTime, $direction } from "@/lib/stores"
 import { cn, isVisuallyLonger, useBrowserStorage } from "@/lib/utils"
 import type { NetworkProbeRecord } from "@/types"
 import { AddProbeDialog, EditProbeDialog } from "./probe-dialog"
+import TargetComparisonSheet from "./target-comparison-sheet"
 import { ArrowLeftRightIcon, EthernetPortIcon, GlobeIcon, ServerIcon, XIcon } from "lucide-react"
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet"
 import ChartTimeSelect from "@/components/charts/chart-time-select"
@@ -68,6 +69,22 @@ export default function NetworkProbesTableNew({
 	const [deleteOpen, setDeleteOpen] = useState(false)
 	const [pendingDeleteIds, setPendingDeleteIds] = useState<string[]>([])
 	const [editingProbe, setEditingProbe] = useState<NetworkProbeRecord>()
+	const [compareTarget, setCompareTarget] = useState<string | null>(null)
+
+	// Targets that appear across 2+ different systems (enables comparison view)
+	const compareTargets = useMemo(() => {
+		const targetSystems = new Map<string, Set<string>>()
+		for (const p of probes) {
+			const systems = targetSystems.get(p.target) ?? new Set()
+			systems.add(p.system)
+			targetSystems.set(p.target, systems)
+		}
+		const result = new Set<string>()
+		for (const [target, systems] of targetSystems) {
+			if (systems.size >= 2) result.add(target)
+		}
+		return result
+	}, [probes])
 	const { toast } = useToast()
 	const canManageProbes = !isReadOnlyUser()
 
@@ -189,11 +206,13 @@ export default function NetworkProbesTableNew({
 			onEdit: setEditingProbe,
 			onDelete: handleDeleteRequest,
 			onSetEnabled: handleSetEnabled,
+			onCompare: setCompareTarget,
+			compareTargets,
 		})
 		columns = systemId ? columns.filter((col) => col.id !== "system") : columns
 		columns = canManageProbes ? columns : columns.filter((col) => col.id !== "actions")
 		return columns
-	}, [canManageProbes, handleDeleteRequest, handleSetEnabled, longestName, systemId, longestTarget])
+	}, [canManageProbes, compareTargets, handleDeleteRequest, handleSetEnabled, longestName, systemId, longestTarget])
 
 	const table = useReactTable({
 		data: probes,
@@ -318,6 +337,7 @@ export default function NetworkProbesTableNew({
 			<div className="rounded-md">
 				<NetworkProbesTable table={table} rows={rows} colLength={visibleColumns.length} rowSelection={rowSelection} />
 			</div>
+			<TargetComparisonSheet target={compareTarget} onClose={() => setCompareTarget(null)} />
 		</Card>
 	)
 }

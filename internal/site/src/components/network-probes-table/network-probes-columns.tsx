@@ -16,6 +16,8 @@ import {
 	PauseCircleIcon,
 	PlayCircleIcon,
 	CopyIcon,
+	GitCompareArrowsIcon,
+	CopyPlusIcon,
 } from "lucide-react"
 import { t } from "@lingui/core/macro"
 import type { NetworkProbeRecord, SystemRecord } from "@/types"
@@ -24,6 +26,9 @@ import {
 	DropdownMenuContent,
 	DropdownMenuItem,
 	DropdownMenuSeparator,
+	DropdownMenuSub,
+	DropdownMenuSubContent,
+	DropdownMenuSubTrigger,
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Trans } from "@lingui/react/macro"
@@ -34,6 +39,7 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { useMemo } from "react"
 import { formatBulkProbeLine } from "@/components/network-probes-table/probe-dialog"
 import { Badge } from "../ui/badge"
+import { pb } from "@/lib/api"
 
 const protocolColors: Record<string, string> = {
 	icmp: "bg-blue-500/15! text-blue-600 dark:text-blue-400",
@@ -61,10 +67,16 @@ export function getProbeColumns(
 		onEdit,
 		onDelete,
 		onSetEnabled,
+		onCompare,
+		compareTargets,
 	}: {
 		onEdit?: (probe: NetworkProbeRecord) => void
 		onDelete?: (probes: NetworkProbeRecord[]) => void | Promise<void>
 		onSetEnabled?: (probes: NetworkProbeRecord[], enabled: boolean) => void | Promise<void>
+		/** Open the cross-system comparison sheet for a given target. */
+		onCompare?: (target: string) => void
+		/** Set of targets that appear across 2+ different systems. */
+		compareTargets?: Set<string>
 	} = {}
 ): ColumnDef<NetworkProbeRecord>[] {
 	return [
@@ -160,14 +172,34 @@ export function getProbeColumns(
 			sortingFn: (a, b) => a.original.target.localeCompare(b.original.target),
 			accessorFn: (record) => record.target,
 			header: ({ column }) => <HeaderButton column={column} name={t`Target`} Icon={GlobeIcon} />,
-			cell: ({ getValue }) => (
-				<div className="ms-1.5 relative w-fit max-w-44 tabular-nums">
-					<span className="invisible block whitespace-nowrap" aria-hidden="true">
-						{longestTarget}
-					</span>
-					<span className="absolute inset-0 truncate">{getValue() as string}</span>
-				</div>
-			),
+			cell: ({ getValue }) => {
+				const target = getValue() as string
+				const canCompare = compareTargets?.has(target)
+				return (
+					<div className="ms-1.5 flex items-center gap-1 max-w-48">
+						<div className="relative w-fit min-w-0 max-w-full tabular-nums">
+							<span className="invisible block whitespace-nowrap" aria-hidden="true">
+								{longestTarget}
+							</span>
+							<span className="absolute inset-0 truncate">{target}</span>
+						</div>
+						{canCompare && (
+							<Button
+								variant="ghost"
+								size="icon"
+								className="shrink-0 size-6 text-muted-foreground hover:text-foreground"
+								title={t`Compare across systems`}
+								onClick={(e) => {
+									e.stopPropagation()
+									onCompare?.(target)
+								}}
+							>
+								<GitCompareArrowsIcon className="size-3.5" />
+							</Button>
+						)}
+					</div>
+				)
+			},
 		},
 		{
 			id: "protocol",
@@ -269,6 +301,11 @@ export function getProbeColumns(
 				const isBulkAction = actionRows.length > 1
 				const shouldPause = actionRows.some((probe) => probe.enabled)
 				const bulkCopyContent = actionRows.map((probe) => formatBulkProbeLine(probe)).join("\n")
+				const allSystems = useStore($allSystemsById)
+				const otherSystems = useMemo(
+					() => Object.values(allSystems).filter((s) => !isBulkAction && s.id !== row.original.system),
+					[allSystems, isBulkAction]
+				)
 				return (
 					<DropdownMenu>
 						<DropdownMenuTrigger asChild>
@@ -315,6 +352,29 @@ export function getProbeColumns(
 								<CopyIcon className="me-2.5 size-4" />
 								<Trans>Bulk copy</Trans>
 							</DropdownMenuItem>
+							{!isBulkAction && otherSystems.length > 0 && (
+								<DropdownMenuSub>
+									<DropdownMenuSubTrigger>
+										<CopyPlusIcon className="me-2.5 size-4" />
+										<Trans>Copy to system</Trans>
+									</DropdownMenuSubTrigger>
+									<DropdownMenuSubContent>
+										{otherSystems.map((sys) => (
+											<DropdownMenuItem
+												key={sys.id}
+												onClick={() => {
+													const { id: _id, system: _system, ...rest } = row.original
+													pb.collection("network_probes")
+														.create({ ...rest, system: sys.id })
+														.catch(() => {})
+												}}
+											>
+												{sys.name}
+											</DropdownMenuItem>
+										))}
+									</DropdownMenuSubContent>
+								</DropdownMenuSub>
+							)}
 							<DropdownMenuSeparator />
 							<DropdownMenuItem
 								onClick={() => {

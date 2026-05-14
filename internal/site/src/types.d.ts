@@ -576,6 +576,19 @@ export interface NetworkProbeRecord {
  */
 type ProbeStats = number[]
 
+/** Raw per-probe record stored in the DB. stats is a flat ProbeStats array. */
+export interface RawProbeStatsRecord {
+	id?: string
+	type?: string
+	probe: string
+	stats: ProbeStats
+	created: number // unix timestamp (ms)
+}
+
+/**
+ * Merged stats record keyed by probe ID, used by chart components.
+ * Constructed from multiple RawProbeStatsRecord entries sharing the same timestamp.
+ */
 export interface NetworkProbeStatsRecord {
 	id?: string
 	type?: string

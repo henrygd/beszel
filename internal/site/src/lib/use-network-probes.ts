@@ -1,8 +1,14 @@
 import { chartTimeData } from "@/lib/utils"
-import type { ChartTimes, NetworkProbeRecord, NetworkProbeStatsRecord } from "@/types"
+import type {
+	ChartTimes,
+	NetworkProbeRecord,
+	NetworkProbeStatsRecord,
+	RawProbeStatsRecord,
+	SystemRecord,
+} from "@/types"
 import { useEffect, useRef, useState } from "react"
-import { getStats, appendData } from "@/components/routes/system/chart-data"
-import { pb } from "@/lib/api"
+import { appendData } from "@/components/routes/system/chart-data"
+import { pb, getPbTimestamp } from "@/lib/api"
 import { toast } from "@/components/ui/use-toast"
 import type { RecordListOptions, RecordSubscription } from "pocketbase"
 
@@ -31,6 +37,41 @@ function appendCacheValue(
 	}
 }
 
+/** Merge an array of per-probe raw records into the map-keyed format expected by chart components. */
+export function mergeProbeStats(rawRecords: RawProbeStatsRecord[]): NetworkProbeStatsRecord[] {
+	const byTimestamp = new Map<number, Record<string, number[]>>()
+	for (const rec of rawRecords) {
+		let statsMap = byTimestamp.get(rec.created)
+		if (!statsMap) {
+			statsMap = {}
+			byTimestamp.set(rec.created, statsMap)
+		}
+		statsMap[rec.probe] = rec.stats
+	}
+	return Array.from(byTimestamp.entries())
+		.sort(([a], [b]) => a - b)
+		.map(([created, stats]) => ({ created, stats }))
+}
+
+/** Fetch raw per-probe stats records for a system and time range, returning merged chart records. */
+async function fetchProbeStats(
+	systemId: string,
+	chartTime: ChartTimes,
+	cached?: NetworkProbeStatsRecord[]
+): Promise<NetworkProbeStatsRecord[]> {
+	const lastCached = cached?.at(-1)?.created as number | undefined
+	const rawRecords = await pb.collection<RawProbeStatsRecord>("network_probe_stats").getFullList({
+		filter: pb.filter("system={:id} && created>{:created} && type={:type}", {
+			id: systemId,
+			created: getPbTimestamp(chartTime, lastCached ? new Date(lastCached + 1000) : undefined, true),
+			type: chartTimeData[chartTime].type,
+		}),
+		fields: "probe,stats,created",
+		sort: "created",
+	})
+	return mergeProbeStats(rawRecords)
+}
+
 const NETWORK_PROBE_FIELDS =
 	"id,name,system,target,protocol,port,interval,res,resMin1h,resMax1h,resAvg1h,loss1h,enabled,updated"
 
@@ -45,17 +86,12 @@ export function useNetworkProbes(props: UseNetworkProbesProps) {
 	const pendingProbeEvents = useRef(new Map<string, RecordSubscription<NetworkProbeRecord>>())
 	const probeBatchTimeout = useRef<ReturnType<typeof setTimeout> | null>(null)
 
-	// clear old data when systemId changes
-	// useEffect(() => {
-	// 	return setProbes([])
-	// }, [systemId])
-
-	// initial load - fetch probes if not provided by caller
+	// initial load
 	useEffect(() => {
 		fetchProbes(systemId).then((probes) => setProbes(probes))
 	}, [systemId])
 
-	// Subscribe to updates if probes not provided by caller
+	// subscribe to updates
 	useEffect(() => {
 		let unsubscribe: (() => void) | undefined
 
@@ -115,6 +151,9 @@ export function useNetworkProbeStats(props: UseNetworkProbeStatsProps) {
 	const { systemId, chartTime } = props
 	const [probeStats, setProbeStats] = useState<NetworkProbeStatsRecord[]>([])
 	const requestID = useRef(0)
+	// pending raw events to be merged (keyed by probe+created)
+	const pendingRaw = useRef(new Map<string, RawProbeStatsRecord>())
+	const mergeBatchTimeout = useRef<ReturnType<typeof setTimeout> | null>(null)
 
 	useEffect(() => {
 		if (!systemId) {
@@ -139,51 +178,61 @@ export function useNetworkProbeStats(props: UseNetworkProbeStatsProps) {
 
 		const cachedProbeStats = getCacheValue(systemId, chartTime)
 
-		// Render from cache immediately if available
 		if (cachedProbeStats.length) {
 			setProbeStats(cachedProbeStats)
-
-			// Skip the fetch if the latest cached point is recent enough that no new point is expected yet
 			const lastCreated = cachedProbeStats.at(-1)?.created
 			if (lastCreated && Date.now() - lastCreated < expectedInterval * 0.9) {
 				return
 			}
 		}
 
-		getStats<NetworkProbeStatsRecord>("network_probe_stats", systemId, chartTime, cachedProbeStats, true).then(
-			(probeStats) => {
-				// If another request has been made since this one, ignore the results
-				if (requestId !== requestID.current) {
-					return
-				}
-				const newStats = appendCacheValue(systemId, chartTime, probeStats)
-				setProbeStats(newStats)
+		fetchProbeStats(systemId, chartTime, cachedProbeStats).then((newProbeStats) => {
+			if (requestId !== requestID.current) {
+				return
 			}
-		)
+			const merged = appendCacheValue(systemId, chartTime, newProbeStats)
+			setProbeStats(merged)
+		})
 	}, [systemId, chartTime])
 
-	// Subscribe to new probe stats on non-1m chart times (1h, 12h, etc)
+	// subscribe to new per-probe stats records; batch them into merged chart records
 	useEffect(() => {
 		if (!systemId || !chartTime || chartTime === "1m") {
 			return
 		}
 		let unsubscribe: (() => void) | undefined
 		const pbOptions = {
-			fields: "stats,created,type",
-			filter: pb.filter("system={:system} && type={:type}", { system: systemId, type: chartTimeData[chartTime].type }),
+			fields: "probe,stats,created,type",
+			filter: pb.filter("system={:system} && type={:type}", {
+				system: systemId,
+				type: chartTimeData[chartTime].type,
+			}),
+		}
+
+		function flushPending() {
+			mergeBatchTimeout.current = null
+			const pending = pendingRaw.current
+			pendingRaw.current = new Map()
+			const merged = mergeProbeStats(Array.from(pending.values()))
+			if (merged.length > 0) {
+				const newStats = appendCacheValue(systemId!, chartTime, merged)
+				setProbeStats(newStats)
+			}
 		}
 
 		;(async () => {
 			try {
-				unsubscribe = await pb.collection<NetworkProbeStatsRecord>("network_probe_stats").subscribe(
+				unsubscribe = await pb.collection<RawProbeStatsRecord>("network_probe_stats").subscribe(
 					"*",
 					(event) => {
 						if (event.action !== "create") {
 							return
 						}
-						// console.log("Appending new probe stats to chart:", event.record)
-						const newStats = appendCacheValue(systemId, chartTime, [event.record])
-						setProbeStats(newStats)
+						const rec = event.record
+						pendingRaw.current.set(`${rec.probe}:${rec.created}`, rec)
+						if (!mergeBatchTimeout.current) {
+							mergeBatchTimeout.current = setTimeout(flushPending, 200)
+						}
 					},
 					pbOptions
 				)
@@ -192,7 +241,14 @@ export function useNetworkProbeStats(props: UseNetworkProbeStatsProps) {
 			}
 		})()
 
-		return () => unsubscribe?.()
+		return () => {
+			if (mergeBatchTimeout.current) {
+				clearTimeout(mergeBatchTimeout.current)
+				mergeBatchTimeout.current = null
+			}
+			pendingRaw.current.clear()
+			unsubscribe?.()
+		}
 	}, [systemId, chartTime])
 
 	// subscribe to realtime metrics if chart time is 1m
@@ -208,11 +264,6 @@ export function useNetworkProbeStats(props: UseNetworkProbeStatsProps) {
 				(data: { Probes: NetworkProbeStatsRecord["stats"] }) => {
 					const prev = getCacheValue(systemId, "rt")
 					const now = Date.now()
-					// if no previous data or the last data point is older than 1min,
-					// create a new data set starting with a point 1 second ago to seed the chart data
-					// if (!prev || (prev.at(-1)?.created ?? 0) < now - 60_000) {
-					// 	prev = [{ created: now - 30_000, stats: probesToStats(probes) }]
-					// }
 					const stats = { created: now, stats: data.Probes } as NetworkProbeStatsRecord
 					const newStats = appendData(prev, [stats], 1000, 120)
 					setProbeStats(() => newStats)
@@ -228,6 +279,7 @@ export function useNetworkProbeStats(props: UseNetworkProbeStatsProps) {
 
 	return probeStats
 }
+
 async function fetchProbes(system?: string) {
 	try {
 		const res = await pb.collection<NetworkProbeRecord>("network_probes").getList(0, 2000, {
@@ -250,7 +302,6 @@ function applyProbeEvents(
 	events: Iterable<RecordSubscription<NetworkProbeRecord>>,
 	systemId?: string
 ) {
-	// Use a map to handle updates/deletes in constant time
 	const probeById = new Map(probes.map((probe) => [probe.id, probe]))
 	const createdProbes: NetworkProbeRecord[] = []
 
@@ -270,12 +321,10 @@ function applyProbeEvents(
 	}
 
 	const nextProbes: NetworkProbeRecord[] = []
-	// Prepend brand new probes (matching previous behavior)
 	for (let index = createdProbes.length - 1; index >= 0; index -= 1) {
 		nextProbes.push(createdProbes[index])
 	}
 
-	// Rebuild the final list while preserving original order for existing probes
 	for (const probe of probes) {
 		const nextProbe = probeById.get(probe.id)
 		if (!nextProbe) {
@@ -286,4 +335,63 @@ function applyProbeEvents(
 	}
 
 	return nextProbes
+}
+
+export interface ComparisonResult {
+	/** Synthetic probe-like objects: id is the probe ID, name is the system name. */
+	syntheticProbes: Array<{ id: string; name: string }>
+	/** Merged stats keyed by probe ID (same format as NetworkProbeStatsRecord). */
+	stats: NetworkProbeStatsRecord[]
+}
+
+/**
+ * Fetches stats for all probes sharing the same target across all systems.
+ * Returns merged data suitable for the comparison chart.
+ */
+export async function fetchTargetComparison(
+	target: string,
+	chartTime: ChartTimes
+): Promise<ComparisonResult> {
+	const empty: ComparisonResult = { syntheticProbes: [], stats: [] }
+
+	// Find all probes that match this target
+	const probeList = await pb
+		.collection<NetworkProbeRecord>("network_probes")
+		.getFullList({ filter: pb.filter("target={:target}", { target }), fields: "id,system" })
+	if (probeList.length === 0) {
+		return empty
+	}
+
+	const systemIds = [...new Set(probeList.map((p) => p.system))]
+	const systemFilter = systemIds.map((id) => `id='${id}'`).join(" || ")
+	const systems = await pb
+		.collection<SystemRecord>("systems")
+		.getFullList({ filter: systemFilter, fields: "id,name" })
+	const systemById = new Map(systems.map((s) => [s.id, s]))
+
+	// Fetch raw per-probe stats for all matching probes in one query
+	const probeIdFilter = probeList.map((p) => `probe='${p.id}'`).join(" || ")
+	const statsType = chartTimeData[chartTime].type
+	const rawRecords = await pb.collection<RawProbeStatsRecord>("network_probe_stats").getFullList({
+		filter: `(${probeIdFilter}) && type='${statsType}'`,
+		fields: "probe,stats,created",
+		sort: "created",
+	})
+
+	// mergeProbeStats groups by timestamp and keys by probe ID — exactly what the chart needs
+	const stats = mergeProbeStats(rawRecords)
+
+	// Build synthetic probe list (one entry per system that monitors this target)
+	const probeToSystem = new Map(probeList.map((p) => [p.id, p.system]))
+	const seen = new Set<string>()
+	const syntheticProbes: ComparisonResult["syntheticProbes"] = []
+	for (const p of probeList) {
+		const sId = probeToSystem.get(p.id)!
+		if (seen.has(sId)) continue
+		seen.add(sId)
+		const sys = systemById.get(sId)
+		syntheticProbes.push({ id: p.id, name: sys?.name ?? sId })
+	}
+
+	return { syntheticProbes, stats }
 }
