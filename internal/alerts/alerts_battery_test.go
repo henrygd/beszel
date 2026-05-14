@@ -31,7 +31,6 @@ func TestBatteryAlertLogic(t *testing.T) {
 	batteryAlert, err := beszelTests.CreateRecord(hub, "alerts", map[string]any{
 		"name":   "Battery",
 		"system": systemRecord.Id,
-		"user":   user.Id,
 		"value":  20, // threshold: 20%
 		"min":    1,  // 1 minute (immediate trigger for testing)
 	})
@@ -180,7 +179,6 @@ func TestBatteryAlertNoBattery(t *testing.T) {
 	batteryAlert, err := beszelTests.CreateRecord(hub, "alerts", map[string]any{
 		"name":   "Battery",
 		"system": systemRecord.Id,
-		"user":   user.Id,
 		"value":  20,
 		"min":    1,
 	})
@@ -238,7 +236,6 @@ func TestBatteryAlertAveragedSamples(t *testing.T) {
 	batteryAlert, err := beszelTests.CreateRecord(hub, "alerts", map[string]any{
 		"name":   "Battery",
 		"system": systemRecord.Id,
-		"user":   user.Id,
 		"value":  25, // threshold: 25%
 		"min":    2,  // 2 minutes - requires averaging
 	})

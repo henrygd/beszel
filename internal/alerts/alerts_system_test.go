@@ -49,7 +49,6 @@ func newSystemAlertTestFixture(t *testing.T, alertName string, min int, threshol
 	alertRecord, err := beszelTests.CreateRecord(hub, "alerts", map[string]any{
 		"name":   alertName,
 		"system": systemRecord.Id,
-		"user":   user.Id,
 		"min":    min,
 		"value":  threshold,
 	})

@@ -27,7 +27,6 @@ type AlertManager struct {
 }
 
 type AlertMessageData struct {
-	UserID   string
 	SystemID string
 	Title    string
 	Message  string
@@ -110,6 +109,7 @@ func (am *AlertManager) bindEvents() {
 	am.hub.OnRecordAfterUpdateSuccess("alerts").BindFunc(updateHistoryOnAlertUpdate)
 	am.hub.OnRecordAfterDeleteSuccess("alerts").BindFunc(resolveHistoryOnAlertDelete)
 	am.hub.OnRecordAfterUpdateSuccess("smart_devices").BindFunc(am.handleSmartDeviceAlert)
+	am.registerGlobalAlertHooks()
 
 	am.hub.OnServe().BindFunc(func(e *core.ServeEvent) error {
 		// Populate all alerts into cache on startup
@@ -192,58 +192,53 @@ func (am *AlertManager) IsNotificationSilenced(userID, systemID string) bool {
 	return false
 }
 
-// SendAlert sends an alert to the user
+// SendAlert sends an alert to all users via their configured notification channels.
+// Each user's quiet hours are respected individually.
 func (am *AlertManager) SendAlert(data AlertMessageData) error {
-	// Check if alert is silenced
-	if am.IsNotificationSilenced(data.UserID, data.SystemID) {
-		am.hub.Logger().Info("Notification silenced", "user", data.UserID, "system", data.SystemID, "title", data.Title)
-		return nil
-	}
-
-	// get user settings
-	record, err := am.hub.FindFirstRecordByFilter(
-		"user_settings", "user={:user}",
-		dbx.Params{"user": data.UserID},
-	)
+	records, err := am.hub.FindAllRecords("user_settings")
 	if err != nil {
 		return err
 	}
-	// unmarshal user settings
-	userAlertSettings := UserNotificationSettings{
-		Emails:   []string{},
-		Webhooks: []string{},
-	}
-	if err := record.UnmarshalJSONField("settings", &userAlertSettings); err != nil {
-		am.hub.Logger().Error("Failed to unmarshal user settings", "err", err)
-	}
-	// send alerts via webhooks
-	for _, webhook := range userAlertSettings.Webhooks {
-		if err := am.SendShoutrrrAlert(webhook, data.Title, data.Message, data.Link, data.LinkText); err != nil {
-			am.hub.Logger().Error("Failed to send shoutrrr alert", "err", err)
+	for _, record := range records {
+		userID := record.GetString("user")
+		if am.IsNotificationSilenced(userID, data.SystemID) {
+			am.hub.Logger().Info("Notification silenced", "user", userID, "system", data.SystemID, "title", data.Title)
+			continue
+		}
+		userAlertSettings := UserNotificationSettings{
+			Emails:   []string{},
+			Webhooks: []string{},
+		}
+		if err := record.UnmarshalJSONField("settings", &userAlertSettings); err != nil {
+			am.hub.Logger().Error("Failed to unmarshal user settings", "err", err)
+			continue
+		}
+		for _, webhook := range userAlertSettings.Webhooks {
+			if err := am.SendShoutrrrAlert(webhook, data.Title, data.Message, data.Link, data.LinkText); err != nil {
+				am.hub.Logger().Error("Failed to send shoutrrr alert", "err", err)
+			}
+		}
+		if len(userAlertSettings.Emails) > 0 {
+			addresses := make([]mail.Address, 0, len(userAlertSettings.Emails))
+			for _, email := range userAlertSettings.Emails {
+				addresses = append(addresses, mail.Address{Address: email})
+			}
+			message := mailer.Message{
+				To:      addresses,
+				Subject: data.Title,
+				Text:    data.Message + fmt.Sprintf("\n\n%s", data.Link),
+				From: mail.Address{
+					Address: am.hub.Settings().Meta.SenderAddress,
+					Name:    am.hub.Settings().Meta.SenderName,
+				},
+			}
+			if err := am.hub.NewMailClient().Send(&message); err != nil {
+				am.hub.Logger().Error("Failed to send email alert", "err", err, "to", message.To)
+			} else {
+				am.hub.Logger().Info("Sent email alert", "to", message.To, "subj", message.Subject)
+			}
 		}
 	}
-	// send alerts via email
-	if len(userAlertSettings.Emails) == 0 {
-		return nil
-	}
-	addresses := []mail.Address{}
-	for _, email := range userAlertSettings.Emails {
-		addresses = append(addresses, mail.Address{Address: email})
-	}
-	message := mailer.Message{
-		To:      addresses,
-		Subject: data.Title,
-		Text:    data.Message + fmt.Sprintf("\n\n%s", data.Link),
-		From: mail.Address{
-			Address: am.hub.Settings().Meta.SenderAddress,
-			Name:    am.hub.Settings().Meta.SenderName,
-		},
-	}
-	err = am.hub.NewMailClient().Send(&message)
-	if err != nil {
-		return err
-	}
-	am.hub.Logger().Info("Sent email alert", "to", message.To, "subj", message.Subject)
 	return nil
 }
 

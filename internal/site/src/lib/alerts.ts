@@ -2,8 +2,8 @@ import { t } from "@lingui/core/macro"
 import { CpuIcon, HardDriveIcon, MemoryStickIcon, ServerIcon } from "lucide-react"
 import type { RecordSubscription } from "pocketbase"
 import { EthernetIcon, GpuIcon } from "@/components/ui/icons"
-import { $alerts } from "@/lib/stores"
-import type { AlertInfo, AlertRecord } from "@/types"
+import { $alerts, $globalAlerts } from "@/lib/stores"
+import type { AlertInfo, AlertRecord, GlobalAlertRecord } from "@/types"
 import { pb } from "./api"
 import { ThermometerIcon, BatteryMediumIcon, HourglassIcon } from "@/components/ui/icons"
 
@@ -183,4 +183,46 @@ export const alertManager = (() => {
 		/** Refresh alerts with latest data from hub */
 		refresh,
 	}
+})()
+
+/** Helper to manage global alerts */
+export const globalAlertManager = (() => {
+	const collection = pb.collection<GlobalAlertRecord>("global_alerts")
+	let unsub: () => void
+
+	const fields = "id,name,value,min,excluded_systems"
+
+	function set(records: GlobalAlertRecord[]) {
+		const current = new Map($globalAlerts.get())
+		for (const record of records) {
+			current.set(record.name, record)
+		}
+		$globalAlerts.set(current)
+	}
+
+	function remove(records: Pick<GlobalAlertRecord, "name">[]) {
+		const current = new Map($globalAlerts.get())
+		for (const record of records) {
+			current.delete(record.name)
+		}
+		$globalAlerts.set(current)
+	}
+
+	async function subscribe() {
+		const records = await collection.getFullList<GlobalAlertRecord>({ fields })
+		set(records)
+		unsub = await collection.subscribe("*", ({ action, record }) => {
+			if (action === "delete") {
+				remove([record])
+			} else {
+				set([record])
+			}
+		}, { fields })
+	}
+
+	function unsubscribe() {
+		unsub?.()
+	}
+
+	return { subscribe, unsubscribe }
 })()

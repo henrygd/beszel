@@ -6,16 +6,15 @@ import { ChevronDownIcon, GlobeIcon, ServerIcon } from "lucide-react"
 import { lazy, memo, Suspense, useMemo, useState } from "react"
 import { $router, Link } from "@/components/router"
 import { Button } from "@/components/ui/button"
-import { Checkbox } from "@/components/ui/checkbox"
 import { DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Input } from "@/components/ui/input"
 import { Switch } from "@/components/ui/switch"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { toast } from "@/components/ui/use-toast"
 import { alertInfo } from "@/lib/alerts"
-import { pb } from "@/lib/api"
-import { $alerts, $systems } from "@/lib/stores"
+import { isAdmin, pb } from "@/lib/api"
+import { $alerts, $globalAlerts, $systems } from "@/lib/stores"
 import { cn, debounce } from "@/lib/utils"
 import type { AlertInfo, AlertRecord, SystemRecord } from "@/types"
 
@@ -42,7 +41,6 @@ const upsertAlerts = debounce(
 		try {
 			await pb.send<{ success: boolean }>(endpoint, {
 				method: "POST",
-				// overwrite is always true because we've done filtering client side
 				body: { name, value, min, systems, overwrite: true },
 			})
 		} catch (error) {
@@ -67,8 +65,7 @@ const deleteAlerts = debounce(async ({ name, systems }: { name: string; systems:
 export const AlertDialogContent = memo(function AlertDialogContent({ system }: { system: SystemRecord }) {
 	const alerts = useStore($alerts)
 	const systems = useStore($systems)
-	const [overwriteExisting, setOverwriteExisting] = useState<boolean | "indeterminate">(false)
-	const [currentTab, setCurrentTab] = useState("system")
+	const canEdit = isAdmin()
 	// copyKey is used to force remount AlertContent components with
 	// new alert data after copying alerts from another system
 	const [copyKey, setCopyKey] = useState(0)
@@ -85,11 +82,24 @@ export const AlertDialogContent = memo(function AlertDialogContent({ system }: {
 		const sourceAlerts = $alerts.get()[sourceSystemId]
 		if (!sourceAlerts?.size) return
 		try {
+			const currentGlobalAlerts = $globalAlerts.get()
+			const skipped: string[] = []
+			const alertsToCopy = Array.from(sourceAlerts.values()).filter(({ name }) => {
+				const ga = currentGlobalAlerts.get(name)
+				if (ga && !ga.excluded_systems.includes(system.id)) {
+					skipped.push(name)
+					return false
+				}
+				return true
+			})
 			const currentTargetAlerts = $alerts.get()[system.id] ?? new Map()
-			// Alert names present on target but absent from source should be deleted
-			const namesToDelete = Array.from(currentTargetAlerts.keys()).filter((name) => !sourceAlerts.has(name))
+			const namesToDelete = Array.from(currentTargetAlerts.keys()).filter((name) => {
+				if (sourceAlerts.has(name)) return false
+				const ga = currentGlobalAlerts.get(name)
+				return !(ga && !ga.excluded_systems.includes(system.id))
+			})
 			await Promise.all([
-				...Array.from(sourceAlerts.values()).map(({ name, value, min }) =>
+				...alertsToCopy.map(({ name, value, min }) =>
 					pb.send<{ success: boolean }>(endpoint, {
 						method: "POST",
 						body: { name, value, min, systems: [system.id], overwrite: true },
@@ -104,25 +114,25 @@ export const AlertDialogContent = memo(function AlertDialogContent({ system }: {
 					})
 				),
 			])
-			// Optimistically update the store so components re-mount with correct data
-			// before the realtime subscription event arrives.
-			const newSystemAlerts = new Map<string, AlertRecord>()
-			for (const alert of sourceAlerts.values()) {
+			const newSystemAlerts = new Map<string, AlertRecord>($alerts.get()[system.id] ?? [])
+			for (const alert of alertsToCopy) {
 				newSystemAlerts.set(alert.name, { ...alert, system: system.id, triggered: false })
+			}
+			for (const name of namesToDelete) {
+				newSystemAlerts.delete(name)
 			}
 			$alerts.setKey(system.id, newSystemAlerts)
 			setCopyKey((k) => k + 1)
+			if (skipped.length > 0) {
+				toast({
+					title: t`Some alerts were skipped`,
+					description: t`Globally managed alerts were not copied.`,
+				})
+			}
 		} catch (error) {
 			failedUpdateToast(error)
 		}
 	}
-
-	// We need to keep a copy of alerts when we switch to global tab. If we always compare to
-	// current alerts, it will only be updated when first checked, then won't be updated because
-	// after that it exists.
-	const alertsWhenGlobalSelected = useMemo(() => {
-		return currentTab === "global" ? structuredClone(alerts) : alerts
-	}, [currentTab])
 
 	return (
 		<>
@@ -140,78 +150,41 @@ export const AlertDialogContent = memo(function AlertDialogContent({ system }: {
 					</Trans>
 				</DialogDescription>
 			</DialogHeader>
-			<Tabs defaultValue="system" onValueChange={setCurrentTab}>
-				<div className="flex items-center justify-between mb-1 -mt-0.5">
-					<TabsList>
-						<TabsTrigger value="system">
-							<ServerIcon className="me-2 h-3.5 w-3.5" />
-							<span className="truncate max-w-60">{system.name}</span>
-						</TabsTrigger>
-						<TabsTrigger value="global">
-							<GlobeIcon className="me-1.5 h-3.5 w-3.5" />
-							<Trans>All Systems</Trans>
-						</TabsTrigger>
-					</TabsList>
-					{systemsWithAlerts.length > 0 && currentTab === "system" && (
-						<DropdownMenu>
-							<DropdownMenuTrigger asChild>
-								<Button variant="ghost" size="sm" className="text-muted-foreground text-xs gap-1.5">
-									<Trans context="Copy alerts from another system">Copy from</Trans>
-									<ChevronDownIcon className="h-3.5 w-3.5" />
-								</Button>
-							</DropdownMenuTrigger>
-							<DropdownMenuContent align="end" className="max-h-100 overflow-auto">
-								{systemsWithAlerts.map((s) => (
-									<DropdownMenuItem key={s.id} className="min-w-44" onSelect={() => copyAlertsFromSystem(s.id)}>
-										{s.name}
-									</DropdownMenuItem>
-								))}
-							</DropdownMenuContent>
-						</DropdownMenu>
-					)}
-				</div>
-				<TabsContent value="system">
-					<div key={copyKey} className="grid gap-3">
-						{alertKeys.map((name) => (
-							<AlertContent
-								key={name}
-								alertKey={name}
-								data={alertInfo[name as keyof typeof alertInfo]}
-								alert={systemAlerts.get(name)}
-								system={system}
-							/>
-						))}
-					</div>
-				</TabsContent>
-				<TabsContent value="global">
-					<label
-						htmlFor="ovw"
-						className="mb-3 flex gap-2 items-center justify-center cursor-pointer border rounded-sm py-3 px-4 border-destructive text-destructive font-semibold text-sm"
-					>
-						<Checkbox
-							id="ovw"
-							className="text-destructive border-destructive data-[state=checked]:bg-destructive"
-							checked={overwriteExisting}
-							onCheckedChange={setOverwriteExisting}
-						/>
-						<Trans>Overwrite existing alerts</Trans>
-					</label>
-					<div className="grid gap-3">
-						{alertKeys.map((name) => (
-							<AlertContent
-								key={name}
-								alertKey={name}
-								system={system}
-								alert={systemAlerts.get(name)}
-								data={alertInfo[name as keyof typeof alertInfo]}
-								global={true}
-								overwriteExisting={!!overwriteExisting}
-								initialAlertsState={alertsWhenGlobalSelected}
-							/>
-						))}
-					</div>
-				</TabsContent>
-			</Tabs>
+			<div className="flex items-center justify-between mb-1">
+				<p className="flex items-center gap-1.5 text-sm font-medium">
+					<ServerIcon className="h-3.5 w-3.5" />
+					<span className="truncate max-w-60">{system.name}</span>
+				</p>
+				{systemsWithAlerts.length > 0 && (
+					<DropdownMenu>
+						<DropdownMenuTrigger asChild>
+							<Button variant="ghost" size="sm" className="text-muted-foreground text-xs gap-1.5">
+								<Trans context="Copy alerts from another system">Copy from</Trans>
+								<ChevronDownIcon className="h-3.5 w-3.5" />
+							</Button>
+						</DropdownMenuTrigger>
+						<DropdownMenuContent align="end" className="max-h-100 overflow-auto">
+							{systemsWithAlerts.map((s) => (
+								<DropdownMenuItem key={s.id} className="min-w-44" onSelect={() => copyAlertsFromSystem(s.id)}>
+									{s.name}
+								</DropdownMenuItem>
+							))}
+						</DropdownMenuContent>
+					</DropdownMenu>
+				)}
+			</div>
+			<div key={copyKey} className="grid gap-3">
+				{alertKeys.map((name) => (
+					<AlertContent
+						key={name}
+						alertKey={name}
+						data={alertInfo[name as keyof typeof alertInfo]}
+						alert={systemAlerts.get(name)}
+						system={system}
+						canEdit={canEdit}
+					/>
+				))}
+			</div>
 		</>
 	)
 })
@@ -221,55 +194,29 @@ export function AlertContent({
 	data: alertData,
 	system,
 	alert,
-	global = false,
-	overwriteExisting = false,
-	initialAlertsState = {},
+	canEdit = true,
 }: {
 	alertKey: string
 	data: AlertInfo
 	system: SystemRecord
 	alert?: AlertRecord
-	global?: boolean
-	overwriteExisting?: boolean
-	initialAlertsState?: Record<string, Map<string, AlertRecord>>
+	canEdit?: boolean
 }) {
 	const { name } = alertData
+	const globalAlerts = useStore($globalAlerts)
+	const globalAlert = globalAlerts.get(alertKey)
+	const isManagedGlobally = !!globalAlert && !globalAlert.excluded_systems.includes(system.id)
 
 	const singleDescription = alertData.singleDesc?.()
 
-	const [checked, setChecked] = useState(global ? false : !!alert)
+	const [checked, setChecked] = useState(!!alert)
 	const [min, setMin] = useState(alert?.min || 10)
 	const [value, setValue] = useState(alert?.value || (singleDescription ? 0 : (alertData.start ?? 80)))
 
 	const Icon = alertData.icon
 
-	/** Get system ids to update */
-	function getSystemIds(): string[] {
-		// if not global, update only the current system
-		if (!global) {
-			return [system.id]
-		}
-		// if global, update all systems when overwriteExisting is true
-		// update only systems without an existing alert when overwriteExisting is false
-		const allSystems = $systems.get()
-		const systemIds: string[] = []
-		for (const system of allSystems) {
-			if (overwriteExisting || !initialAlertsState[system.id]?.has(alertKey)) {
-				systemIds.push(system.id)
-			}
-		}
-		return systemIds
-	}
-
 	function sendUpsert(min: number, value: number) {
-		const systems = getSystemIds()
-		systems.length &&
-			upsertAlerts({
-				name: alertKey,
-				value,
-				min,
-				systems,
-			})
+		upsertAlerts({ name: alertKey, value, min, systems: [system.id] })
 	}
 
 	return (
@@ -283,26 +230,43 @@ export function AlertContent({
 				<div className="grid gap-1 select-none">
 					<p className="font-semibold flex gap-3 items-center">
 						<Icon className="h-4 w-4 opacity-85" /> {alertData.name()}
+						{isManagedGlobally && (
+							<TooltipProvider>
+								<Tooltip>
+									<TooltipTrigger asChild>
+										<span className="flex items-center gap-1 text-xs font-normal text-muted-foreground">
+											<GlobeIcon className="h-3 w-3" />
+											<Trans>Global</Trans>
+										</span>
+									</TooltipTrigger>
+									<TooltipContent className="max-w-64">
+										<Trans>
+											Globally managed — changes may be overwritten. Exclude this system in{" "}
+											<Link
+												href={getPagePath($router, "settings", { name: "global-alerts" })}
+												className="underline"
+											>
+												global alerts
+											</Link>
+											.
+										</Trans>
+									</TooltipContent>
+								</Tooltip>
+							</TooltipProvider>
+						)}
 					</p>
 					{!checked && <span className="block text-sm text-muted-foreground">{alertData.desc()}</span>}
 				</div>
 				<Switch
 					id={`s${name}`}
 					checked={checked}
+					disabled={!canEdit}
 					onCheckedChange={(newChecked) => {
 						setChecked(newChecked)
 						if (newChecked) {
-							// if alert checked, create or update alert
 							sendUpsert(min, value)
 						} else {
-							// if unchecked, delete alert (unless global and overwriteExisting is false)
-							deleteAlerts({ name: alertKey, systems: getSystemIds() })
-							// when force deleting all alerts of a type, also remove them from initialAlertsState
-							if (overwriteExisting) {
-								for (const curAlerts of Object.values(initialAlertsState)) {
-									curAlerts.delete(alertKey)
-								}
-							}
+							deleteAlerts({ name: alertKey, systems: [system.id] })
 						}
 					}}
 				/>
@@ -340,6 +304,7 @@ export function AlertContent({
 										step={alertData.step ?? 1}
 										min={alertData.min ?? 1}
 										max={alertData.max ?? 99}
+										disabled={!canEdit}
 									/>
 									<Input
 										type="number"
@@ -357,6 +322,7 @@ export function AlertContent({
 										min={alertData.min ?? 1}
 										max={alertData.max ?? 99}
 										className="w-16 h-8 text-center px-1"
+										disabled={!canEdit}
 									/>
 								</div>
 							</div>
@@ -382,6 +348,7 @@ export function AlertContent({
 									onValueChange={(val) => setMin(val[0])}
 									min={1}
 									max={60}
+									disabled={!canEdit}
 								/>
 								<Input
 									type="number"
@@ -397,6 +364,7 @@ export function AlertContent({
 									min={1}
 									max={60}
 									className="w-16 h-8 text-center px-1"
+									disabled={!canEdit}
 								/>
 							</div>
 						</div>
