@@ -246,7 +246,6 @@ func TestStatusAlertTimerCancellationPreventsBoundaryDelivery(t *testing.T) {
 		system.Set("name", "test-system")
 		system.Set("status", "up")
 		system.Set("host", "127.0.0.1")
-		system.Set("users", []string{user.Id})
 		require.NoError(t, hub.Save(system))
 
 		alertCollection, err := hub.FindCollectionByNameOrId("alerts")
@@ -297,7 +296,6 @@ func TestStatusAlertDownFiresAfterDelayExpires(t *testing.T) {
 	system.Set("name", "test-system")
 	system.Set("status", "up")
 	system.Set("host", "127.0.0.1")
-	system.Set("users", []string{user.Id})
 	require.NoError(t, hub.Save(system))
 
 	alertCollection, err := hub.FindCollectionByNameOrId("alerts")
