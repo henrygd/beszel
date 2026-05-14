@@ -342,22 +342,32 @@ export interface ComparisonResult {
 	syntheticProbes: Array<{ id: string; name: string }>
 	/** Merged stats keyed by probe ID (same format as NetworkProbeStatsRecord). */
 	stats: NetworkProbeStatsRecord[]
+	/** Probe interval in seconds (from the first matching probe). */
+	interval: number
+	/** TCP port, if applicable. */
+	port: number
 }
 
 /**
- * Fetches stats for all probes sharing the same target across all systems.
+ * Fetches stats for all probes sharing the same target+protocol across all systems.
  * Returns merged data suitable for the comparison chart.
  */
 export async function fetchTargetComparison(
 	target: string,
+	protocol: string,
 	chartTime: ChartTimes
 ): Promise<ComparisonResult> {
-	const empty: ComparisonResult = { syntheticProbes: [], stats: [] }
+	const empty: ComparisonResult = { syntheticProbes: [], stats: [], interval: 0, port: 0 }
 
-	// Find all probes that match this target
+	// Find all probes that match this target + protocol
+	const requestKey = `compare-${target}-${protocol}`
 	const probeList = await pb
 		.collection<NetworkProbeRecord>("network_probes")
-		.getFullList({ filter: pb.filter("target={:target}", { target }), fields: "id,system" })
+		.getFullList({
+			filter: pb.filter("target={:target} && protocol={:protocol}", { target, protocol }),
+			fields: "id,system,interval,port",
+			requestKey,
+		})
 	if (probeList.length === 0) {
 		return empty
 	}
@@ -366,7 +376,7 @@ export async function fetchTargetComparison(
 	const systemFilter = systemIds.map((id) => `id='${id}'`).join(" || ")
 	const systems = await pb
 		.collection<SystemRecord>("systems")
-		.getFullList({ filter: systemFilter, fields: "id,name" })
+		.getFullList({ filter: systemFilter, fields: "id,name", requestKey: `${requestKey}-systems` })
 	const systemById = new Map(systems.map((s) => [s.id, s]))
 
 	// Fetch raw per-probe stats for all matching probes in one query
@@ -376,6 +386,7 @@ export async function fetchTargetComparison(
 		filter: `(${probeIdFilter}) && type='${statsType}'`,
 		fields: "probe,stats,created",
 		sort: "created",
+		requestKey: `${requestKey}-stats`,
 	})
 
 	// mergeProbeStats groups by timestamp and keys by probe ID — exactly what the chart needs
@@ -393,5 +404,5 @@ export async function fetchTargetComparison(
 		syntheticProbes.push({ id: p.id, name: sys?.name ?? sId })
 	}
 
-	return { syntheticProbes, stats }
+	return { syntheticProbes, stats, interval: probeList[0].interval, port: probeList[0].port }
 }

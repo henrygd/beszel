@@ -34,20 +34,17 @@ import { useToast } from "@/components/ui/use-toast"
 import { isReadOnlyUser } from "@/lib/api"
 import { pb } from "@/lib/api"
 import { $allSystemsById, $chartTime, $direction } from "@/lib/stores"
-import { cn, isVisuallyLonger, useBrowserStorage } from "@/lib/utils"
-import type { NetworkProbeRecord } from "@/types"
+import { cn, isVisuallyLonger, parseSemVer, useBrowserStorage } from "@/lib/utils"
+import type { ChartData, NetworkProbeRecord } from "@/types"
 import { AddProbeDialog, EditProbeDialog } from "./probe-dialog"
-import TargetComparisonSheet from "./target-comparison-sheet"
-import { ArrowLeftRightIcon, EthernetPortIcon, GlobeIcon, ServerIcon, XIcon } from "lucide-react"
+import { ArrowLeftRightIcon, EthernetPortIcon, GitCompareArrowsIcon, GlobeIcon, ServerIcon, XIcon } from "lucide-react"
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet"
 import ChartTimeSelect from "@/components/charts/chart-time-select"
 import { LossChart, AvgMinMaxResponseChart } from "@/components/routes/system/charts/probes-charts"
 import { useNetworkProbeStats } from "@/lib/use-network-probes"
 import { useStore } from "@nanostores/react"
-import type { ChartData } from "@/types"
-import { parseSemVer } from "@/lib/utils"
 import { Separator } from "../ui/separator"
-import { $router, Link } from "../router"
+import { $router, Link, navigate } from "../router"
 import { getPagePath } from "@nanostores/router"
 
 export default function NetworkProbesTableNew({
@@ -69,23 +66,22 @@ export default function NetworkProbesTableNew({
 	const [deleteOpen, setDeleteOpen] = useState(false)
 	const [pendingDeleteIds, setPendingDeleteIds] = useState<string[]>([])
 	const [editingProbe, setEditingProbe] = useState<NetworkProbeRecord>()
-	const [compareTarget, setCompareTarget] = useState<string | null>(null)
 
-	// Targets that appear across 2+ different systems (enables comparison view)
-	const compareTargets = useMemo(() => {
-		const targetSystems = new Map<string, Set<string>>()
+	// (target, protocol) pairs monitored by 2+ different systems
+	const compareEntries = useMemo(() => {
+		const map = new Map<string, { target: string; protocol: string; systems: Set<string> }>()
 		for (const p of probes) {
-			const systems = targetSystems.get(p.target) ?? new Set()
-			systems.add(p.system)
-			targetSystems.set(p.target, systems)
+			const key = `${p.target}\x00${p.protocol}`
+			const entry = map.get(key) ?? { target: p.target, protocol: p.protocol, systems: new Set() }
+			entry.systems.add(p.system)
+			map.set(key, entry)
 		}
-		const result = new Set<string>()
-		for (const [target, systems] of targetSystems) {
-			if (systems.size >= 2) result.add(target)
-		}
-		return result
+		return [...map.entries()]
+			.filter(([, e]) => e.systems.size >= 2)
+			.map(([key, e]) => ({ key, target: e.target, protocol: e.protocol }))
 	}, [probes])
-	const { toast } = useToast()
+
+const { toast } = useToast()
 	const canManageProbes = !isReadOnlyUser()
 
 	const [longestName, longestTarget] = useMemo(() => {
@@ -206,13 +202,11 @@ export default function NetworkProbesTableNew({
 			onEdit: setEditingProbe,
 			onDelete: handleDeleteRequest,
 			onSetEnabled: handleSetEnabled,
-			onCompare: setCompareTarget,
-			compareTargets,
 		})
 		columns = systemId ? columns.filter((col) => col.id !== "system") : columns
 		columns = canManageProbes ? columns : columns.filter((col) => col.id !== "actions")
 		return columns
-	}, [canManageProbes, compareTargets, handleDeleteRequest, handleSetEnabled, longestName, systemId, longestTarget])
+	}, [canManageProbes, handleDeleteRequest, handleSetEnabled, longestName, systemId, longestTarget])
 
 	const table = useReactTable({
 		data: probes,
@@ -287,6 +281,15 @@ export default function NetworkProbesTableNew({
 								)}
 							</div>
 						)}
+						{compareEntries.length > 0 && (
+							<Button
+								variant="outline"
+								onClick={() => navigate(getPagePath($router, "probes_compare"))}
+							>
+								<GitCompareArrowsIcon className="size-4 me-1" />
+								<Trans>Compare</Trans>
+							</Button>
+						)}
 						{canManageProbes ? <AddProbeDialog systemId={systemId} probes={probes} /> : null}
 						{canManageProbes ? (
 							<EditProbeDialog
@@ -337,7 +340,6 @@ export default function NetworkProbesTableNew({
 			<div className="rounded-md">
 				<NetworkProbesTable table={table} rows={rows} colLength={visibleColumns.length} rowSelection={rowSelection} />
 			</div>
-			<TargetComparisonSheet target={compareTarget} onClose={() => setCompareTarget(null)} />
 		</Card>
 	)
 }
@@ -353,7 +355,6 @@ const NetworkProbesTable = memo(function NetworkProbeTable({
 	colLength: number
 	rowSelection: RowSelectionState
 }) {
-	// The virtualizer will need a reference to the scrollable container element
 	const scrollRef = useRef<HTMLDivElement>(null)
 	const [sheetOpen, setSheetOpen] = useState(false)
 	const [activeProbeId, setActiveProbeId] = useState<string | null>(null)
@@ -378,12 +379,10 @@ const NetworkProbesTable = memo(function NetworkProbeTable({
 		<div
 			className={cn(
 				"h-min max-h-[calc(100dvh-17rem)] max-w-full relative overflow-auto border rounded-md",
-				// don't set min height if there are less than 2 rows, do set if we need to display the empty state
 				(!rows.length || rows.length > 2) && "min-h-50"
 			)}
 			ref={scrollRef}
 		>
-			{/* add header height to table size */}
 			<div style={{ height: `${virtualizer.getTotalSize() + 48}px`, paddingTop, paddingBottom }}>
 				<table className="text-sm w-full h-full text-nowrap">
 					<NetworkProbeTableHead table={table} />

@@ -31,6 +31,7 @@ const Home = lazy(() => import("@/components/routes/home.tsx"))
 const Containers = lazy(() => import("@/components/routes/containers.tsx"))
 const Smart = lazy(() => import("@/components/routes/smart.tsx"))
 const Probes = lazy(() => import("@/components/routes/probes.tsx"))
+const ProbesCompare = lazy(() => import("@/components/routes/probes-compare.tsx"))
 const SystemDetail = lazy(() => import("@/components/routes/system.tsx"))
 const CopyToClipboardDialog = lazy(() => import("@/components/copy-to-clipboard.tsx"))
 
@@ -82,6 +83,8 @@ const App = memo(() => {
 		return <Smart />
 	} else if (page.route === "probes") {
 		return <Probes />
+	} else if (page.route === "probes_compare") {
+		return <ProbesCompare protocol={page.params.protocol} />
 	} else if (page.route === "settings") {
 		return <Settings />
 	}

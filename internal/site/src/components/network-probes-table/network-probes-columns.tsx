@@ -16,7 +16,6 @@ import {
 	PauseCircleIcon,
 	PlayCircleIcon,
 	CopyIcon,
-	GitCompareArrowsIcon,
 	CopyPlusIcon,
 } from "lucide-react"
 import { t } from "@lingui/core/macro"
@@ -67,16 +66,10 @@ export function getProbeColumns(
 		onEdit,
 		onDelete,
 		onSetEnabled,
-		onCompare,
-		compareTargets,
 	}: {
 		onEdit?: (probe: NetworkProbeRecord) => void
 		onDelete?: (probes: NetworkProbeRecord[]) => void | Promise<void>
 		onSetEnabled?: (probes: NetworkProbeRecord[], enabled: boolean) => void | Promise<void>
-		/** Open the cross-system comparison sheet for a given target. */
-		onCompare?: (target: string) => void
-		/** Set of targets that appear across 2+ different systems. */
-		compareTargets?: Set<string>
 	} = {}
 ): ColumnDef<NetworkProbeRecord>[] {
 	return [
@@ -174,7 +167,6 @@ export function getProbeColumns(
 			header: ({ column }) => <HeaderButton column={column} name={t`Target`} Icon={GlobeIcon} />,
 			cell: ({ getValue }) => {
 				const target = getValue() as string
-				const canCompare = compareTargets?.has(target)
 				return (
 					<div className="ms-1.5 flex items-center gap-1 max-w-48">
 						<div className="relative w-fit min-w-0 max-w-full tabular-nums">
@@ -183,20 +175,6 @@ export function getProbeColumns(
 							</span>
 							<span className="absolute inset-0 truncate">{target}</span>
 						</div>
-						{canCompare && (
-							<Button
-								variant="ghost"
-								size="icon"
-								className="shrink-0 size-6 text-muted-foreground hover:text-foreground"
-								title={t`Compare across systems`}
-								onClick={(e) => {
-									e.stopPropagation()
-									onCompare?.(target)
-								}}
-							>
-								<GitCompareArrowsIcon className="size-3.5" />
-							</Button>
-						)}
 					</div>
 				)
 			},
