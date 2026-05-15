@@ -27,11 +27,6 @@ export function ProcessesChart({
 				legend={true}
 				dataPoints={[
 					{
-						label: t`Total`,
-						color: "hsl(217, 91%, 60%)",
-						dataKey: ({ stats }) => stats?.ps?.[0],
-					},
-					{
 						label: t`Running`,
 						color: "hsl(142, 72%, 36%)",
 						dataKey: ({ stats }) => stats?.ps?.[1],
@@ -48,11 +43,11 @@ export function ProcessesChart({
 					},
 					{
 						label: t`Zombie`,
-						color: "hsl(0, 84%, 60%)",
+						color: "hsl(340, 82%, 52%)",
 						dataKey: ({ stats }) => stats?.ps?.[5],
 					},
 				]}
-			/>
+			></LineChartDefault>
 		</ChartCard>
 	)
 }
