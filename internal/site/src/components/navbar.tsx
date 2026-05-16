@@ -13,7 +13,6 @@ import {
 	ServerIcon,
 	SettingsIcon,
 	UserIcon,
-	UsersIcon,
 } from "lucide-react"
 import { lazy, Suspense, useState } from "react"
 import { Button, buttonVariants } from "@/components/ui/button"
@@ -239,14 +238,6 @@ const Kbd = ({ children }: { children: React.ReactNode }) => (
 function AdminDropdownGroup() {
 	return (
 		<DropdownMenuGroup>
-			<DropdownMenuItem asChild>
-				<a href={prependBasePath("/_/")} target="_blank">
-					<UsersIcon className="me-2.5 h-4 w-4" />
-					<span>
-						<Trans>Users</Trans>
-					</span>
-				</a>
-			</DropdownMenuItem>
 			<DropdownMenuItem asChild>
 				<a href={prependBasePath("/_/#/collections?collection=systems")} target="_blank">
 					<ServerIcon className="me-2.5 h-4 w-4" />

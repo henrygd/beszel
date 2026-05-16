@@ -73,31 +73,36 @@ export default function SettingsLayout() {
 			title: t({ message: `General`, comment: "Context: General settings" }),
 			href: getPagePath($router, "settings", { name: "general" }),
 			icon: SettingsIcon,
+			group: t`User`,
 		},
 		{
 			title: t`Notifications`,
 			href: getPagePath($router, "settings", { name: "notifications" }),
 			icon: BellIcon,
+			group: t`User`,
 			preload: notificationsSettingsImport,
+		},
+		{
+			title: t`Alert History`,
+			href: getPagePath($router, "settings", { name: "alert-history" }),
+			icon: AlertOctagonIcon,
+			group: t`User`,
+			preload: alertsHistoryDataTableSettingsImport,
 		},
 		{
 			title: t`Tokens & Fingerprints`,
 			href: getPagePath($router, "settings", { name: "tokens" }),
 			icon: FingerprintIcon,
 			admin: true,
+			group: t`System`,
 			preload: fingerprintsSettingsImport,
-		},
-		{
-			title: t`Alert History`,
-			href: getPagePath($router, "settings", { name: "alert-history" }),
-			icon: AlertOctagonIcon,
-			preload: alertsHistoryDataTableSettingsImport,
 		},
 		{
 			title: t`Users`,
 			href: getPagePath($router, "settings", { name: "users" }),
 			icon: UsersIcon,
 			admin: true,
+			group: t`System`,
 			preload: userManagementImport,
 		},
 		{
@@ -105,6 +110,7 @@ export default function SettingsLayout() {
 			href: getPagePath($router, "settings", { name: "heartbeat" }),
 			icon: HeartPulseIcon,
 			admin: true,
+			group: t`System`,
 			preload: heartbeatSettingsImport,
 		},
 		{
@@ -112,6 +118,7 @@ export default function SettingsLayout() {
 			href: getPagePath($router, "settings", { name: "config" }),
 			icon: FileSlidersIcon,
 			admin: true,
+			group: t`System`,
 			preload: configYamlSettingsImport,
 		},
 	]
