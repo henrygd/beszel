@@ -287,6 +287,8 @@ export interface ChartTimeData {
 
 export interface UserSettings {
 	chartTime: ChartTimes
+	notificationsEnabled?: boolean
+	systems?: string[]
 	emails?: string[]
 	webhooks?: string[]
 	unitTemp?: Unit

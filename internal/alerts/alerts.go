@@ -37,6 +37,8 @@ type AlertMessageData struct {
 }
 
 type UserNotificationSettings struct {
+	Enabled  bool     `json:"notificationsEnabled"`
+	Systems  []string `json:"systems"` // empty = all systems; non-empty = only these systems
 	Emails   []string `json:"emails"`
 	Webhooks []string `json:"webhooks"`
 }
@@ -232,17 +234,23 @@ func (am *AlertManager) SendAlert(data AlertMessageData) error {
 		return err
 	}
 	for _, record := range records {
-		userID := record.GetString("user")
-		if am.IsNotificationSilenced(userID, data.SystemID) {
-			am.hub.Logger().Info("Notification silenced", "user", userID, "system", data.SystemID, "title", data.Title)
-			continue
-		}
 		userAlertSettings := UserNotificationSettings{
 			Emails:   []string{},
 			Webhooks: []string{},
 		}
 		if err := record.UnmarshalJSONField("settings", &userAlertSettings); err != nil {
 			am.hub.Logger().Error("Failed to unmarshal user settings", "err", err)
+			continue
+		}
+		if !userAlertSettings.Enabled {
+			continue
+		}
+		if len(userAlertSettings.Systems) > 0 && !sliceToSet(userAlertSettings.Systems)[data.SystemID] {
+			continue
+		}
+		userID := record.GetString("user")
+		if am.IsNotificationSilenced(userID, data.SystemID) {
+			am.hub.Logger().Info("Notification silenced", "user", userID, "system", data.SystemID, "title", data.Title)
 			continue
 		}
 		for _, webhook := range userAlertSettings.Webhooks {
