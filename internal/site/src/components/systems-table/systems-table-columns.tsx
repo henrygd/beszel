@@ -602,7 +602,7 @@ export const ActionsButton = memo(({ system }: { system: SystemRecord }) => {
 						</Button>
 					</DropdownMenuTrigger>
 					<DropdownMenuContent align="end">
-						{!!isAdmin() && (
+						{isAdmin() && (
 							<DropdownMenuItem
 								onSelect={() => {
 									editOpened.current = true

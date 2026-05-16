@@ -295,7 +295,7 @@ const ActionsButtonUniversalToken = memo(({ token, checked }: { token: string; c
 
 const SectionTable = memo(({ fingerprints = [] }: { fingerprints: FingerprintRecord[] }) => {
 	const { t } = useLingui()
-	const isReadOnly = !isAdmin()
+	const canEdit = isAdmin()
 
 	const headerCols = useMemo(
 		() => [
@@ -330,7 +330,7 @@ const SectionTable = memo(({ fingerprints = [] }: { fingerprints: FingerprintRec
 								</span>
 							</TableHead>
 						))}
-						{!isReadOnly && (
+						{canEdit && (
 							<TableHead className="w-0">
 								<span className="sr-only">
 									<Trans>Actions</Trans>
@@ -347,7 +347,7 @@ const SectionTable = memo(({ fingerprints = [] }: { fingerprints: FingerprintRec
 							</TableCell>
 							<TableCell className="font-mono text-[0.95em] py-2">{fingerprint.token}</TableCell>
 							<TableCell className="font-mono text-[0.95em] py-2">{fingerprint.fingerprint}</TableCell>
-							{!isReadOnly && (
+							{canEdit && (
 								<TableCell className="py-2 px-4 xl:px-2">
 									<ActionsButtonTable fingerprint={fingerprint} />
 								</TableCell>

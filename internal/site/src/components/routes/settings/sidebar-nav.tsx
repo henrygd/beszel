@@ -2,7 +2,7 @@ import { useStore } from "@nanostores/react"
 import type React from "react"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Separator } from "@/components/ui/separator"
-import { isAdmin, isReadOnlyUser } from "@/lib/api"
+import { isAdmin } from "@/lib/api"
 import { cn } from "@/lib/utils"
 import { $router, Link, navigate } from "../../router"
 import { buttonVariants } from "../../ui/button"
@@ -13,7 +13,6 @@ interface SidebarNavProps extends React.HTMLAttributes<HTMLElement> {
 		title: string
 		icon?: React.FC<React.SVGProps<SVGSVGElement>>
 		admin?: boolean
-		noReadOnly?: boolean
 		preload?: () => Promise<{ default: React.ComponentType<any> }>
 	}[]
 }
@@ -31,7 +30,7 @@ export function SidebarNav({ className, items, ...props }: SidebarNavProps) {
 					</SelectTrigger>
 					<SelectContent>
 						{items.map((item) => {
-							if ((item.admin && !isAdmin()) || (item.noReadOnly && isReadOnlyUser())) return null
+							if (item.admin && !isAdmin()) return null
 							return (
 								<SelectItem key={item.href} value={item.href}>
 									<span className="flex items-center gap-2 truncate">
@@ -49,7 +48,7 @@ export function SidebarNav({ className, items, ...props }: SidebarNavProps) {
 			{/* Desktop View */}
 			<nav className={cn("hidden md:grid gap-1 sticky top-6", className)} {...props}>
 				{items.map((item) => {
-					if ((item.admin && !isAdmin()) || (item.noReadOnly && isReadOnlyUser())) {
+					if (item.admin && !isAdmin()) {
 						return null
 					}
 					return (

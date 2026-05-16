@@ -33,18 +33,18 @@ import type { UserRecord } from "@/types"
 
 type UserRole = "admin" | "user" | "readonly"
 
-const roleLabel: Record<UserRole, () => string> = {
-	admin: () => "Admin",
-	user: () => "User",
-	readonly: () => "Read Only",
-}
-
 export default memo(function UserManagementPage() {
 	if (!isAdmin()) {
 		redirectPage($router, "settings", { name: "general" })
 	}
 
 	const { t } = useLingui()
+
+	const roleLabel: Record<UserRole, string> = {
+		admin: t`Admin`,
+		user: t`User`,
+		readonly: t`Read Only`,
+	}
 	const [users, setUsers] = useState<UserRecord[]>([])
 	const [dialogOpen, setDialogOpen] = useState(false)
 	const [editUser, setEditUser] = useState<UserRecord | null>(null)
@@ -160,7 +160,7 @@ export default memo(function UserManagementPage() {
 						{users.map((user) => (
 							<TableRow key={user.id}>
 								<TableCell className="font-medium">{user.email}</TableCell>
-								<TableCell>{roleLabel[user.role as UserRole]?.() ?? user.role}</TableCell>
+								<TableCell>{roleLabel[user.role as UserRole] ?? user.role}</TableCell>
 								<TableCell className="text-muted-foreground text-sm">
 									{new Date(user.created).toLocaleDateString()}
 								</TableCell>
@@ -217,9 +217,9 @@ export default memo(function UserManagementPage() {
 									<SelectValue />
 								</SelectTrigger>
 								<SelectContent>
-									<SelectItem value="admin">Admin</SelectItem>
-									<SelectItem value="user">User</SelectItem>
-									<SelectItem value="readonly">Read Only</SelectItem>
+									<SelectItem value="admin"><Trans>Admin</Trans></SelectItem>
+									<SelectItem value="user"><Trans>User</Trans></SelectItem>
+									<SelectItem value="readonly"><Trans>Read Only</Trans></SelectItem>
 								</SelectContent>
 							</Select>
 						</div>

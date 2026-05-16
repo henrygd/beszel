@@ -1675,9 +1675,9 @@ func TestFindOrCreateSystemForToken(t *testing.T) {
 				assert.Equal(t, tc.agentFingerprint.Hostname, system.GetString("name"), "System name should match hostname")
 				assert.Equal(t, getRealIP(acr.req), system.GetString("host"), "System host should match remote address")
 				assert.Equal(t, tc.agentFingerprint.Port, system.GetString("port"), "System port should match agent port")
-			// Verify the system is accessible (all authenticated users have access)
-			_, err = testApp.FindRecordById("systems", result.SystemId)
-			require.NoError(t, err, "system should be accessible")
+				// Verify the system is accessible (all authenticated users have access)
+				_, err = testApp.FindRecordById("systems", result.SystemId)
+				require.NoError(t, err, "system should be accessible")
 			}
 
 			t.Logf("%s - Result: SystemId=%s, Fingerprint=%s", tc.description, result.SystemId, result.Fingerprint)
