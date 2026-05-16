@@ -247,9 +247,9 @@ func TestApiRoutesAuthentication(t *testing.T) {
 			TestAppFactory:  testAppFactory,
 		},
 		{
-			Name:            "POST /user-alerts - no auth should fail",
+			Name:            "POST /alerts - no auth should fail",
 			Method:          http.MethodPost,
-			URL:             "/api/beszel/user-alerts",
+			URL:             "/api/beszel/alerts",
 			ExpectedStatus:  401,
 			ExpectedContent: []string{"requires valid"},
 			TestAppFactory:  testAppFactory,
@@ -261,9 +261,9 @@ func TestApiRoutesAuthentication(t *testing.T) {
 			}),
 		},
 		{
-			Name:   "POST /user-alerts - with auth should succeed",
+			Name:   "POST /alerts - with auth should succeed",
 			Method: http.MethodPost,
-			URL:    "/api/beszel/user-alerts",
+			URL:    "/api/beszel/alerts",
 			Headers: map[string]string{
 				"Authorization": userToken,
 			},
@@ -278,9 +278,9 @@ func TestApiRoutesAuthentication(t *testing.T) {
 			}),
 		},
 		{
-			Name:            "DELETE /user-alerts - no auth should fail",
+			Name:            "DELETE /alerts - no auth should fail",
 			Method:          http.MethodDelete,
-			URL:             "/api/beszel/user-alerts",
+			URL:             "/api/beszel/alerts",
 			ExpectedStatus:  401,
 			ExpectedContent: []string{"requires valid"},
 			TestAppFactory:  testAppFactory,
@@ -290,9 +290,9 @@ func TestApiRoutesAuthentication(t *testing.T) {
 			}),
 		},
 		{
-			Name:   "DELETE /user-alerts - with auth should succeed",
+			Name:   "DELETE /alerts - with auth should succeed",
 			Method: http.MethodDelete,
-			URL:    "/api/beszel/user-alerts",
+			URL:    "/api/beszel/alerts",
 			Headers: map[string]string{
 				"Authorization": userToken,
 			},
@@ -606,9 +606,9 @@ func TestApiRoutesAuthentication(t *testing.T) {
 			TestAppFactory:  testAppFactory,
 		},
 		{
-			Name:   "POST /user-alerts - invalid auth token should fail",
+			Name:   "POST /alerts - invalid auth token should fail",
 			Method: http.MethodPost,
-			URL:    "/api/beszel/user-alerts",
+			URL:    "/api/beszel/alerts",
 			Headers: map[string]string{
 				"Authorization": "invalid-token",
 			},

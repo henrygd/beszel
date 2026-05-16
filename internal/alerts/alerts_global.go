@@ -71,20 +71,13 @@ func (am *AlertManager) onGlobalAlertChange(e *core.RecordEvent) error {
 	return e.Next()
 }
 
-// onGlobalAlertDelete removes the matching per-system alert from every system when a global alert is deleted.
+// onGlobalAlertDelete removes all per-system alerts matching the deleted global alert name.
 func (am *AlertManager) onGlobalAlertDelete(e *core.RecordEvent) error {
 	alertName := e.Record.GetString("name")
-
-	systems, err := e.App.FindAllRecords("systems")
-	if err != nil {
-		e.App.Logger().Error("Global alert delete: failed to fetch systems", "err", err)
-		return e.Next()
+	if _, err := e.App.DB().NewQuery("DELETE FROM alerts WHERE name={:name}").
+		Bind(dbx.Params{"name": alertName}).Execute(); err != nil {
+		e.App.Logger().Error("Global alert delete: failed to bulk delete", "err", err)
 	}
-
-	for _, system := range systems {
-		am.deletePerSystemAlert(e.App, system.Id, alertName)
-	}
-
 	return e.Next()
 }
 
@@ -105,7 +98,7 @@ func (am *AlertManager) applyGlobalAlertsToNewSystem(e *core.RecordEvent) error 
 	}
 
 	for _, ga := range globalAlerts {
-		if sliceContains(ga.GetStringSlice("excluded_systems"), systemID) {
+		if sliceToSet(ga.GetStringSlice("excluded_systems"))[systemID] {
 			continue
 		}
 		alertRecord := core.NewRecord(alertsCollection)
@@ -126,7 +119,10 @@ func (am *AlertManager) deletePerSystemAlert(app core.App, systemID, alertName s
 	record, err := app.FindFirstRecordByFilter("alerts",
 		"system={:system} && name={:name}",
 		dbx.Params{"system": systemID, "name": alertName})
-	if err != nil || record == nil {
+	if err != nil {
+		if !errors.Is(err, sql.ErrNoRows) {
+			app.Logger().Error("Global alert: failed to find per-system alert", "err", err, "system", systemID)
+		}
 		return
 	}
 	if err := app.Delete(record); err != nil {
@@ -142,11 +138,3 @@ func sliceToSet(s []string) map[string]bool {
 	return m
 }
 
-func sliceContains(s []string, v string) bool {
-	for _, item := range s {
-		if item == v {
-			return true
-		}
-	}
-	return false
-}

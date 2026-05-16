@@ -4,7 +4,7 @@ import type { RecordSubscription } from "pocketbase"
 import { EthernetIcon, GpuIcon } from "@/components/ui/icons"
 import { $alerts, $globalAlerts } from "@/lib/stores"
 import type { AlertInfo, AlertRecord, GlobalAlertRecord } from "@/types"
-import { pb } from "./api"
+import { isAdmin, pb } from "./api"
 import { ThermometerIcon, BatteryMediumIcon, HourglassIcon } from "@/components/ui/icons"
 
 /** Alert info for each alert type */
@@ -211,6 +211,9 @@ export const globalAlertManager = (() => {
 	async function subscribe() {
 		const records = await collection.getFullList<GlobalAlertRecord>({ fields })
 		set(records)
+		// Non-admin users only need a snapshot for the "Global" badge in the alert sheet.
+		// Admins subscribe for realtime so the Global Alerts settings page stays live.
+		if (!isAdmin()) return
 		unsub = await collection.subscribe("*", ({ action, record }) => {
 			if (action === "delete") {
 				remove([record])

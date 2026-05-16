@@ -121,8 +121,8 @@ func (h *Hub) registerApiRoutes(se *core.ServeEvent) error {
 	// get or create universal tokens
 	apiAuth.GET("/universal-token", h.getUniversalToken).BindFunc(excludeReadOnlyRole)
 	// update / delete alerts (admin only)
-	apiAuth.POST("/user-alerts", alerts.UpsertAlerts)
-	apiAuth.DELETE("/user-alerts", alerts.DeleteAlerts)
+	apiAuth.POST("/alerts", alerts.UpsertAlerts)
+	apiAuth.DELETE("/alerts", alerts.DeleteAlerts)
 	// refresh SMART devices for a system
 	apiAuth.POST("/smart/refresh", h.refreshSmartData).BindFunc(excludeReadOnlyRole)
 	// get systemd service details

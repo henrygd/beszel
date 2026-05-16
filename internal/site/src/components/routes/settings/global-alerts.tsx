@@ -2,7 +2,7 @@ import { t } from "@lingui/core/macro"
 import { Plural, Trans } from "@lingui/react/macro"
 import { useStore } from "@nanostores/react"
 import { ChevronDownIcon } from "lucide-react"
-import { lazy, memo, Suspense, useState } from "react"
+import { lazy, memo, Suspense, useEffect, useMemo, useState } from "react"
 import { Button } from "@/components/ui/button"
 import {
 	DropdownMenu,
@@ -34,22 +34,6 @@ const failedUpdateToast = (error: unknown) => {
 		variant: "destructive",
 	})
 }
-
-const upsertGlobalAlert = debounce(
-	async ({ name, value, min, excluded_systems }: { name: string; value: number; min: number; excluded_systems: string[] }) => {
-		try {
-			const existing = $globalAlerts.get().get(name)
-			if (existing) {
-				await pb.collection("global_alerts").update(existing.id, { value, min, excluded_systems })
-			} else {
-				await pb.collection("global_alerts").create({ name, value, min, excluded_systems })
-			}
-		} catch (error) {
-			failedUpdateToast(error)
-		}
-	},
-	alertDebounce
-)
 
 export default function GlobalAlertsSettings() {
 	const globalAlerts = useStore($globalAlerts)
@@ -95,10 +79,42 @@ const GlobalAlertRow = memo(function GlobalAlertRow({
 	const [value, setValue] = useState(alert?.value || (singleDescription ? 0 : (alertData.start ?? 80)))
 	const [excludedSystems, setExcludedSystems] = useState<string[]>(alert?.excluded_systems ?? [])
 
+	// Sync local state when the server record changes (realtime updates from another session)
+	useEffect(() => {
+		setChecked(!!alert)
+		if (alert) {
+			setMin(alert.min)
+			setValue(alert.value)
+			setExcludedSystems(alert.excluded_systems)
+		}
+	}, [alert])
+
 	const Icon = alertData.icon
 
+	// Per-row debounce so adjusting one alert doesn't cancel another alert's pending save
+	const debouncedUpsert = useMemo(
+		() =>
+			debounce(
+				async ({ name, value, min, excluded_systems }: { name: string; value: number; min: number; excluded_systems: string[] }) => {
+					try {
+						const existing = $globalAlerts.get().get(name)
+						if (existing) {
+							await pb.collection("global_alerts").update(existing.id, { value, min, excluded_systems })
+						} else {
+							await pb.collection("global_alerts").create({ name, value, min, excluded_systems })
+						}
+					} catch (error) {
+						failedUpdateToast(error)
+					}
+				},
+				alertDebounce
+			),
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+		[] // intentionally empty — one debounce instance per row mount
+	)
+
 	function sendUpsert(newMin: number, newValue: number, newExcluded: string[] = excludedSystems) {
-		upsertGlobalAlert({ name: alertKey, value: newValue, min: newMin, excluded_systems: newExcluded })
+		debouncedUpsert({ name: alertKey, value: newValue, min: newMin, excluded_systems: newExcluded })
 	}
 
 	async function handleToggle(newChecked: boolean) {

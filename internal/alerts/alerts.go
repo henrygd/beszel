@@ -20,10 +20,12 @@ type hubLike interface {
 }
 
 type AlertManager struct {
-	hub           hubLike
-	stopOnce      sync.Once
-	pendingAlerts sync.Map
-	alertsCache   *AlertsCache
+	hub               hubLike
+	stopOnce          sync.Once
+	pendingAlerts     sync.Map
+	alertsCache       *AlertsCache
+	userSettingsMu    sync.RWMutex
+	userSettingsCache []*core.Record // nil means stale; populated lazily
 }
 
 type AlertMessageData struct {
@@ -111,6 +113,17 @@ func (am *AlertManager) bindEvents() {
 	am.hub.OnRecordAfterUpdateSuccess("smart_devices").BindFunc(am.handleSmartDeviceAlert)
 	am.registerGlobalAlertHooks()
 
+	// Invalidate the user_settings cache whenever settings change
+	invalidateUserSettings := func(e *core.RecordEvent) error {
+		am.userSettingsMu.Lock()
+		am.userSettingsCache = nil
+		am.userSettingsMu.Unlock()
+		return e.Next()
+	}
+	am.hub.OnRecordAfterCreateSuccess("user_settings").BindFunc(invalidateUserSettings)
+	am.hub.OnRecordAfterUpdateSuccess("user_settings").BindFunc(invalidateUserSettings)
+	am.hub.OnRecordAfterDeleteSuccess("user_settings").BindFunc(invalidateUserSettings)
+
 	am.hub.OnServe().BindFunc(func(e *core.ServeEvent) error {
 		// Populate all alerts into cache on startup
 		_ = am.alertsCache.PopulateFromDB(true)
@@ -192,10 +205,29 @@ func (am *AlertManager) IsNotificationSilenced(userID, systemID string) bool {
 	return false
 }
 
+// getUserSettings returns all user_settings records, using a cache that is
+// invalidated whenever a user_settings record is created, updated, or deleted.
+func (am *AlertManager) getUserSettings() ([]*core.Record, error) {
+	am.userSettingsMu.RLock()
+	cached := am.userSettingsCache
+	am.userSettingsMu.RUnlock()
+	if cached != nil {
+		return cached, nil
+	}
+	records, err := am.hub.FindAllRecords("user_settings")
+	if err != nil {
+		return nil, err
+	}
+	am.userSettingsMu.Lock()
+	am.userSettingsCache = records
+	am.userSettingsMu.Unlock()
+	return records, nil
+}
+
 // SendAlert sends an alert to all users via their configured notification channels.
 // Each user's quiet hours are respected individually.
 func (am *AlertManager) SendAlert(data AlertMessageData) error {
-	records, err := am.hub.FindAllRecords("user_settings")
+	records, err := am.getUserSettings()
 	if err != nil {
 		return err
 	}
