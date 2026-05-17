@@ -74,9 +74,10 @@ func (a *Agent) refreshSystemDetails() {
 		}
 	}
 
-	// cpu model
+	// cpu model and base clock
 	if info, err := cpu.Info(); err == nil && len(info) > 0 {
 		a.systemDetails.CpuModel = info[0].ModelName
+		a.systemDetails.CpuMHz = getCpuBaseClockMHz()
 	}
 	// cores / threads
 	cores, _ := cpu.Counts(false)

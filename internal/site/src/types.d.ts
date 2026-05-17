@@ -392,6 +392,7 @@ export interface SystemDetailsRecord extends RecordModel {
 	os_name: string
 	memory: number
 	podman: boolean
+	cpu_mhz?: number
 }
 
 export interface SmartDeviceRecord extends RecordModel {

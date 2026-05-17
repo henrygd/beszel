@@ -171,6 +171,7 @@ type Details struct {
 	Podman        bool          `cbor:"8,keyasint,omitempty"`
 	MemoryTotal   uint64        `cbor:"9,keyasint"`
 	SmartInterval time.Duration `cbor:"10,keyasint,omitempty"`
+	CpuMHz        float64       `cbor:"11,keyasint,omitempty"` // base/advertised clock speed
 }
 
 // Final data structure to return to the hub
