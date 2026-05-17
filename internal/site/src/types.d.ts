@@ -85,10 +85,12 @@ export interface SystemStats {
 	cpu: number
 	/** peak cpu */
 	cpum?: number
-	/** cpu breakdown [user, system, iowait, steal, idle] (0-100 integers) */
+	/** cpu breakdown [user, system, iowait, steal, idle, irq, softirq, nice] (0-100 integers) */
 	cpub?: number[]
 	/** per-core cpu usage [CPU0..] (0-100 integers) */
 	cpus?: number[]
+	/** per-core CPU frequency (GHz) */
+	cf?: number[]
 	/** load average */
 	la?: [number, number, number]
 	/** total memory (gb) */
