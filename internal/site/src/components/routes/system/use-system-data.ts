@@ -32,6 +32,8 @@ import { appendData, cache, getStats, getTimeData, makeContainerData, makeContai
 const saveGrid = debounce((grid: boolean) => saveSettings({ grid }, true), 1000)
 const saveDisplayMode = debounce((displayMode: "default" | "tabs") => saveSettings({ displayMode }, true), 1000)
 
+export type SystemData = ReturnType<typeof useSystemData>
+
 export function useSystemData(id: string) {
 	const direction = useStore($direction)
 	const systems = useStore($systems)
@@ -226,7 +228,7 @@ export function useSystemData(id: string) {
 
 			// Skip the fetch if the latest cached point is recent enough that no new point is expected yet
 			const lastCreated = cachedSystemStats.at(-1)?.created as number | undefined
-			if (lastCreated && Date.now() - lastCreated < expectedInterval) {
+			if (lastCreated && Date.now() - lastCreated < expectedInterval * 0.9) {
 				return
 			}
 		} else {

@@ -20,6 +20,7 @@ import (
 	"github.com/fxamacker/cbor/v2"
 	"github.com/lxzan/gws"
 	"golang.org/x/crypto/ssh"
+	"golang.org/x/net/proxy"
 )
 
 const (
@@ -104,6 +105,11 @@ func (client *WebSocketClient) getOptions() *gws.ClientOption {
 	}
 	client.hubURL.Path = path.Join(client.hubURL.Path, "api/beszel/agent-connect")
 
+	// make sure BESZEL_AGENT_ALL_PROXY works (GWS only checks ALL_PROXY)
+	if val := os.Getenv("BESZEL_AGENT_ALL_PROXY"); val != "" {
+		os.Setenv("ALL_PROXY", val)
+	}
+
 	client.options = &gws.ClientOption{
 		Addr:      client.hubURL.String(),
 		TlsConfig: &tls.Config{InsecureSkipVerify: true},
@@ -111,6 +117,9 @@ func (client *WebSocketClient) getOptions() *gws.ClientOption {
 			"User-Agent": []string{getUserAgent()},
 			"X-Token":    []string{client.token},
 			"X-Beszel":   []string{beszel.Version},
+		},
+		NewDialer: func() (gws.Dialer, error) {
+			return proxy.FromEnvironment(), nil
 		},
 	}
 	return client.options

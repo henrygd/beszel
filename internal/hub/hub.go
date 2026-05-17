@@ -15,6 +15,7 @@ import (
 	"github.com/henrygd/beszel/internal/hub/config"
 	"github.com/henrygd/beszel/internal/hub/heartbeat"
 	"github.com/henrygd/beszel/internal/hub/systems"
+	"github.com/henrygd/beszel/internal/hub/utils"
 	"github.com/henrygd/beszel/internal/records"
 	"github.com/henrygd/beszel/internal/users"
 
@@ -44,21 +45,12 @@ func NewHub(app core.App) *Hub {
 	hub.um = users.NewUserManager(hub)
 	hub.rm = records.NewRecordManager(hub)
 	hub.sm = systems.NewSystemManager(hub)
-	hub.hb = heartbeat.New(app, GetEnv)
+	hub.hb = heartbeat.New(app, utils.GetEnv)
 	if hub.hb != nil {
 		hub.hbStop = make(chan struct{})
 	}
 	_ = onAfterBootstrapAndMigrations(app, hub.initialize)
 	return hub
-}
-
-// GetEnv retrieves an environment variable with a "BESZEL_HUB_" prefix, or falls back to the unprefixed key.
-func GetEnv(key string) (value string, exists bool) {
-	if value, exists = os.LookupEnv("BESZEL_HUB_" + key); exists {
-		return value, exists
-	}
-	// Fallback to the old unprefixed key
-	return os.LookupEnv(key)
 }
 
 // onAfterBootstrapAndMigrations ensures the provided function runs after the database is set up and migrations are applied.
@@ -131,7 +123,7 @@ func (h *Hub) initialize(app core.App) error {
 	// batch requests (for alerts)
 	settings.Batch.Enabled = true
 	// set URL if APP_URL env is set
-	if appURL, isSet := GetEnv("APP_URL"); isSet {
+	if appURL, isSet := utils.GetEnv("APP_URL"); isSet {
 		h.appURL = appURL
 		settings.Meta.AppURL = appURL
 	}

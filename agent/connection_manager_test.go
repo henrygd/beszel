@@ -4,6 +4,7 @@ package agent
 
 import (
 	"crypto/ed25519"
+	"errors"
 	"fmt"
 	"net"
 	"net/url"
@@ -297,4 +298,66 @@ func TestConnectionManager_ConnectFlow(t *testing.T) {
 	assert.NotPanics(t, func() {
 		cm.connect()
 	}, "Connect should not panic without WebSocket client")
+}
+
+func TestShouldExitOnErr(t *testing.T) {
+	createDialErr := func(msg string) error {
+		return &net.OpError{
+			Op:  "dial",
+			Net: "tcp",
+			Err: errors.New(msg),
+		}
+	}
+
+	tests := []struct {
+		name     string
+		err      error
+		envValue string
+		expected bool
+	}{
+		{
+			name:     "no env var",
+			err:      createDialErr("lookup lkahsdfasdf: no such host"),
+			envValue: "",
+			expected: false,
+		},
+		{
+			name:     "env var false",
+			err:      createDialErr("lookup lkahsdfasdf: no such host"),
+			envValue: "false",
+			expected: false,
+		},
+		{
+			name:     "env var true, matching error",
+			err:      createDialErr("lookup lkahsdfasdf: no such host"),
+			envValue: "true",
+			expected: true,
+		},
+		{
+			name:     "env var true, matching error with extra context",
+			err:      createDialErr("lookup beszel.server.lan on [::1]:53: read udp [::1]:44557->[::1]:53: read: connection refused"),
+			envValue: "true",
+			expected: true,
+		},
+		{
+			name:     "env var true, non-matching error",
+			err:      errors.New("connection refused"),
+			envValue: "true",
+			expected: false,
+		},
+		{
+			name:     "env var true, dial but not lookup",
+			err:      createDialErr("connection timeout"),
+			envValue: "true",
+			expected: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Setenv("EXIT_ON_DNS_ERROR", tt.envValue)
+			result := shouldExitOnErr(tt.err)
+			assert.Equal(t, tt.expected, result)
+		})
+	}
 }

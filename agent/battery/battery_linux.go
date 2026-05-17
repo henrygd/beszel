@@ -82,6 +82,9 @@ func GetBatteryStats() (batteryPercent uint8, batteryState uint8, err error) {
 		return batteryPercent, batteryState, errors.ErrUnsupported
 	}
 	paths, err := getBatteryPaths()
+	if err != nil {
+		return batteryPercent, batteryState, err
+	}
 	if len(paths) == 0 {
 		return batteryPercent, batteryState, errors.New("no batteries")
 	}
