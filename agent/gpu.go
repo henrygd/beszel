@@ -374,12 +374,13 @@ func (gm *GPUManager) calculateGPUAverage(id string, gpu *system.GPUData, cacheK
 
 	gpuAvg.Power = utils.TwoDecimals(deltaPower / float64(deltaCount))
 
+	gpuAvg.PowerPkg = utils.TwoDecimals(deltaPowerPkg / float64(deltaCount))
+
 	if gpu.Engines != nil {
 		// make fresh map for averaged engine metrics to avoid mutating
 		// the accumulator map stored in gm.GpuDataMap
 		gpuAvg.Engines = make(map[string]float64, len(gpu.Engines))
 		gpuAvg.Usage = gm.calculateIntelGPUUsage(&gpuAvg, gpu, lastSnapshot, deltaCount)
-		gpuAvg.PowerPkg = utils.TwoDecimals(deltaPowerPkg / float64(deltaCount))
 	} else {
 		gpuAvg.Usage = utils.TwoDecimals(deltaUsage / float64(deltaCount))
 	}
