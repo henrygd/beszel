@@ -85,7 +85,7 @@ export const systemdTableCols: ColumnDef<SystemdRecord>[] = [
 			const [StatusIcon, color] = getStatusIcon(statusValue)
 			return (
 				<Badge variant="outline" className="dark:border-white/12">
-					<StatusIcon className={cn("size-3 me-1.5", color)} />
+					<StatusIcon className={cn("size-4 me-1.5", color)} />
 					{statusLabel}
 				</Badge>
 			)
@@ -101,7 +101,7 @@ export const systemdTableCols: ColumnDef<SystemdRecord>[] = [
 			const [SubStateIcon, color] = getSubStateIcon(subState)
 			return (
 				<Badge variant="outline" className="dark:border-white/12 text-xs capitalize">
-					<SubStateIcon className={cn("size-3 me-1.5", color)} />
+					<SubStateIcon className={cn("size-4 me-1.5", color)} />
 					{subStateLabel}
 				</Badge>
 			)

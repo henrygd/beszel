@@ -394,7 +394,7 @@ function SystemdSheet({
 		const [StatusIcon, color] = getStatusIcon(service.state)
 		return (
 			<div className="flex items-center gap-2">
-				<StatusIcon className={cn("size-3 flex-shrink-0", color)} />
+				<StatusIcon className={cn("size-4 flex-shrink-0", color)} />
 				{stateText}
 			</div>
 		)
