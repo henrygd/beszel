@@ -24,13 +24,13 @@ import { t } from "@lingui/core/macro"
 export function getStatusIcon(status: ServiceStatus): [LucideIcon, string] {
 	switch (status) {
 		case ServiceStatus.Active:
-			return [CircleCheckIcon, "text-green-500"]
+			return [CircleCheckIcon, "text-[#356144] dark:text-green-500"]
 		case ServiceStatus.Failed:
-			return [CircleXIcon, "text-red-500"]
+			return [CircleXIcon, "text-[#913e42] dark:text-red-500"]
 		case ServiceStatus.Reloading:
 		case ServiceStatus.Activating:
 		case ServiceStatus.Deactivating:
-			return [CircleDashedIcon, "text-yellow-500"]
+			return [CircleDashedIcon, "text-[#976f00] dark:text-yellow-500"]
 		default:
 			return [CircleMinusIcon, "text-zinc-500"]
 	}
@@ -39,11 +39,11 @@ export function getStatusIcon(status: ServiceStatus): [LucideIcon, string] {
 function getSubStateIcon(subState: ServiceSubState): [LucideIcon, string] {
 	switch (subState) {
 		case ServiceSubState.Running:
-			return [CircleCheckIcon, "text-green-500"]
+			return [CircleCheckIcon, "text-[#356144] dark:text-green-500"]
 		case ServiceSubState.Failed:
-			return [CircleXIcon, "text-red-500"]
+			return [CircleXIcon, "text-[#913e42] dark:text-red-500"]
 		case ServiceSubState.Dead:
-			return [CircleDashedIcon, "text-yellow-500"]
+			return [CircleDashedIcon, "text-[#976f00] dark:text-yellow-500"]
 		default:
 			return [CircleMinusIcon, "text-zinc-500"]
 	}

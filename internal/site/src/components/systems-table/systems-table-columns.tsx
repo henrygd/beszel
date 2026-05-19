@@ -92,10 +92,10 @@ const STATUS_ICONS = {
 } as const
 
 const STATUS_ICON_COLORS = {
-	[SystemStatus.Up]: "text-green-500",
-	[SystemStatus.Down]: "text-red-500",
+	[SystemStatus.Up]: "text-[#356144] dark:text-green-500",
+	[SystemStatus.Down]: "text-[#913e42] dark:text-red-500",
 	[SystemStatus.Paused]: "text-primary/40",
-	[SystemStatus.Pending]: "text-yellow-500",
+	[SystemStatus.Pending]: "text-[#976f00] dark:text-yellow-500",
 } as const
 
 function getMeterStateByThresholds(value: number, warn = 65, crit = 90): MeterState {

@@ -132,9 +132,9 @@ export const containerChartCols: ColumnDef<ContainerRecord>[] = [
 			const healthStatus = ContainerHealthLabels[healthValue] || "Unknown"
 			return (
 				<Badge variant="outline" className="dark:border-white/12">
-					{healthValue === ContainerHealth.Healthy && <CircleCheckIcon className="size-4 me-1.5 text-green-500" />}
-					{healthValue === ContainerHealth.Unhealthy && <CircleXIcon className="size-4 me-1.5 text-red-500" />}
-					{healthValue === ContainerHealth.Starting && <CircleDashedIcon className="size-4 me-1.5 text-yellow-500" />}
+					{healthValue === ContainerHealth.Healthy && <CircleCheckIcon className="size-4 me-1.5 text-[#356144] dark:text-green-500" />}
+					{healthValue === ContainerHealth.Unhealthy && <CircleXIcon className="size-4 me-1.5 text-[#913e42] dark:text-red-500" />}
+					{healthValue === ContainerHealth.Starting && <CircleDashedIcon className="size-4 me-1.5 text-[#976f00] dark:text-yellow-500" />}
 					{healthValue === ContainerHealth.None && <CircleMinusIcon className="size-4 me-1.5 text-zinc-500" />}
 					{healthStatus}
 				</Badge>

@@ -31,7 +31,7 @@ import { FreeBsdIcon, TuxIcon, WebSocketIcon, WindowsIcon } from "@/components/u
 import { Separator } from "@/components/ui/separator"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 import { ConnectionType, connectionTypeLabels, Os, SystemStatus } from "@/lib/enums"
-import { cn, formatBytes, getHostDisplayValue, secondsToUptimeString, toFixedFloat } from "@/lib/utils"
+import { formatBytes, getHostDisplayValue, secondsToUptimeString, toFixedFloat } from "@/lib/utils"
 import type { ChartData, SystemDetailsRecord, SystemRecord } from "@/types"
 
 export default function InfoBar({
@@ -152,17 +152,17 @@ export default function InfoBar({
 												className="animate-ping absolute inline-flex size-2 rounded-full bg-green-400 opacity-75"
 												style={{ animationDuration: "1.5s" }}
 											/>
-											<CircleCheckIcon className="relative size-4 text-green-500" />
+											<CircleCheckIcon className="relative size-4 text-[#356144] dark:text-green-500" />
 										</span>
 									)}
 									{system.status === SystemStatus.Down && (
-										<CircleXIcon className="size-4 text-red-500" />
+										<CircleXIcon className="size-4 text-[#913e42] dark:text-red-500" />
 									)}
 									{system.status === SystemStatus.Paused && (
 										<CirclePauseIcon className="size-4 text-primary/40" />
 									)}
 									{system.status === SystemStatus.Pending && (
-										<CircleDashedIcon className="size-4 text-yellow-500" />
+										<CircleDashedIcon className="size-4 text-[#976f00] dark:text-yellow-500" />
 									)}
 									{translatedStatus}
 								</div>
