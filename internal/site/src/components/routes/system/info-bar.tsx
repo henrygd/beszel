@@ -3,6 +3,10 @@ import { Trans, useLingui } from "@lingui/react/macro"
 import {
 	AppleIcon,
 	ChevronRightSquareIcon,
+	CircleCheckIcon,
+	CircleDashedIcon,
+	CirclePauseIcon,
+	CircleXIcon,
 	ClockArrowUp,
 	CpuIcon,
 	GlobeIcon,
@@ -142,22 +146,24 @@ export default function InfoBar({
 						<Tooltip>
 							<TooltipTrigger asChild>
 								<div className="capitalize flex gap-2 items-center">
-									<span className={cn("relative flex h-3 w-3")}>
-										{system.status === SystemStatus.Up && (
+									{system.status === SystemStatus.Up && (
+										<span className="relative flex size-4 items-center justify-center">
 											<span
-												className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"
+												className="animate-ping absolute inline-flex size-2 rounded-full bg-green-400 opacity-75"
 												style={{ animationDuration: "1.5s" }}
-											></span>
-										)}
-										<span
-											className={cn("relative inline-flex rounded-full h-3 w-3", {
-												"bg-green-500": system.status === SystemStatus.Up,
-												"bg-red-500": system.status === SystemStatus.Down,
-												"bg-primary/40": system.status === SystemStatus.Paused,
-												"bg-yellow-500": system.status === SystemStatus.Pending,
-											})}
-										></span>
-									</span>
+											/>
+											<CircleCheckIcon className="relative size-4 text-green-500" />
+										</span>
+									)}
+									{system.status === SystemStatus.Down && (
+										<CircleXIcon className="size-4 text-red-500" />
+									)}
+									{system.status === SystemStatus.Paused && (
+										<CirclePauseIcon className="size-4 text-primary/40" />
+									)}
+									{system.status === SystemStatus.Pending && (
+										<CircleDashedIcon className="size-4 text-yellow-500" />
+									)}
 									{translatedStatus}
 								</div>
 							</TooltipTrigger>

@@ -4,6 +4,10 @@ import { cn, decimalString, formatBytes, hourWithSeconds } from "@/lib/utils"
 import type { ContainerRecord } from "@/types"
 import { ContainerHealth, ContainerHealthLabels } from "@/lib/enums"
 import {
+	CircleCheckIcon,
+	CircleDashedIcon,
+	CircleMinusIcon,
+	CircleXIcon,
 	ClockIcon,
 	ContainerIcon,
 	CpuIcon,
@@ -128,14 +132,10 @@ export const containerChartCols: ColumnDef<ContainerRecord>[] = [
 			const healthStatus = ContainerHealthLabels[healthValue] || "Unknown"
 			return (
 				<Badge variant="outline" className="dark:border-white/12">
-					<span
-						className={cn("size-2 me-1.5 rounded-full", {
-							"bg-green-500": healthValue === ContainerHealth.Healthy,
-							"bg-red-500": healthValue === ContainerHealth.Unhealthy,
-							"bg-yellow-500": healthValue === ContainerHealth.Starting,
-							"bg-zinc-500": healthValue === ContainerHealth.None,
-						})}
-					></span>
+					{healthValue === ContainerHealth.Healthy && <CircleCheckIcon className="size-3 me-1.5 text-green-500" />}
+					{healthValue === ContainerHealth.Unhealthy && <CircleXIcon className="size-3 me-1.5 text-red-500" />}
+					{healthValue === ContainerHealth.Starting && <CircleDashedIcon className="size-3 me-1.5 text-yellow-500" />}
+					{healthValue === ContainerHealth.None && <CircleMinusIcon className="size-3 me-1.5 text-zinc-500" />}
 					{healthStatus}
 				</Badge>
 			)

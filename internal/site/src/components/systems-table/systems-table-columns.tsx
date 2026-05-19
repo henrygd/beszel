@@ -8,6 +8,10 @@ import type { ClassValue } from "clsx"
 import {
 	ArrowUpDownIcon,
 	ChevronRightSquareIcon,
+	CircleCheckIcon,
+	CircleDashedIcon,
+	CirclePauseIcon,
+	CircleXIcon,
 	ClockArrowUp,
 	CopyIcon,
 	CpuIcon,
@@ -78,6 +82,20 @@ const STATUS_COLORS = {
 	[SystemStatus.Down]: "bg-red-500",
 	[SystemStatus.Paused]: "bg-primary/40",
 	[SystemStatus.Pending]: "bg-yellow-500",
+} as const
+
+const STATUS_ICONS = {
+	[SystemStatus.Up]: CircleCheckIcon,
+	[SystemStatus.Down]: CircleXIcon,
+	[SystemStatus.Paused]: CirclePauseIcon,
+	[SystemStatus.Pending]: CircleDashedIcon,
+} as const
+
+const STATUS_ICON_COLORS = {
+	[SystemStatus.Up]: "text-green-500",
+	[SystemStatus.Down]: "text-red-500",
+	[SystemStatus.Paused]: "text-primary/40",
+	[SystemStatus.Pending]: "text-yellow-500",
 } as const
 
 function getMeterStateByThresholds(value: number, warn = 65, crit = 90): MeterState {
@@ -419,7 +437,7 @@ export function SystemsTableColumns(viewMode: "table" | "grid"): ColumnDef<Syste
 						{system.info.ct === ConnectionType.SSH && (
 							<ChevronRightSquareIcon className={cn("size-3 pointer-events-none", color)} />
 						)}
-						{!system.info.ct && <IndicatorDot system={system} className={cn(color, "bg-current mx-0.5")} />}
+						{!system.info.ct && <IndicatorDot system={system} className={cn(color, "mx-0.5")} />}
 						<span className="truncate max-w-14">{info.getValue() as string}</span>
 					</Link>
 				)
@@ -573,11 +591,14 @@ function DiskCellWithMultiple(info: CellContext<SystemRecord, unknown>) {
 }
 
 export function IndicatorDot({ system, className }: { system: SystemRecord; className?: ClassValue }) {
-	className ||= STATUS_COLORS[system.status as keyof typeof STATUS_COLORS] || ""
+	const Icon = STATUS_ICONS[system.status as keyof typeof STATUS_ICONS] ?? CircleDashedIcon
 	return (
-		<span
-			className={cn("shrink-0 size-2 rounded-full", className)}
-			// style={{ marginBottom: "-1px" }}
+		<Icon
+			className={cn(
+				"shrink-0 size-3",
+				STATUS_ICON_COLORS[system.status as keyof typeof STATUS_ICON_COLORS],
+				className
+			)}
 		/>
 	)
 }

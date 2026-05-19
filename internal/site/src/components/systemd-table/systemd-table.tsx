@@ -16,7 +16,7 @@ import { useVirtualizer, type VirtualItem } from "@tanstack/react-virtual"
 import { LoaderCircleIcon } from "lucide-react"
 import { listenKeys } from "nanostores"
 import { memo, type ReactNode, useEffect, useMemo, useRef, useState } from "react"
-import { getStatusColor, systemdTableCols } from "@/components/systemd-table/systemd-table-columns"
+import { getStatusIcon, systemdTableCols } from "@/components/systemd-table/systemd-table-columns"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Card, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -391,9 +391,10 @@ function SystemdSheet({
 			}
 		}
 
+		const [StatusIcon, color] = getStatusIcon(service.state)
 		return (
 			<div className="flex items-center gap-2">
-				<div className={cn("w-2 h-2 rounded-full flex-shrink-0", getStatusColor(service.state))} />
+				<StatusIcon className={cn("size-3 flex-shrink-0", color)} />
 				{stateText}
 			</div>
 		)

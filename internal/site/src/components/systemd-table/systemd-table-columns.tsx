@@ -6,26 +6,46 @@ import { ServiceStatus, ServiceStatusLabels, ServiceSubState, ServiceSubStateLab
 import {
 	ActivityIcon,
 	ArrowUpDownIcon,
+	CircleCheckIcon,
+	CircleDashedIcon,
+	CircleMinusIcon,
+	CircleXIcon,
 	ClockIcon,
 	CpuIcon,
 	MemoryStickIcon,
 	TerminalSquareIcon,
 } from "lucide-react"
+import type { LucideIcon } from "lucide-react"
 import { Badge } from "../ui/badge"
 import { t } from "@lingui/core/macro"
 // import { $allSystemsById } from "@/lib/stores"
 // import { useStore } from "@nanostores/react"
 
-function getSubStateColor(subState: ServiceSubState) {
+export function getStatusIcon(status: ServiceStatus): [LucideIcon, string] {
+	switch (status) {
+		case ServiceStatus.Active:
+			return [CircleCheckIcon, "text-green-500"]
+		case ServiceStatus.Failed:
+			return [CircleXIcon, "text-red-500"]
+		case ServiceStatus.Reloading:
+		case ServiceStatus.Activating:
+		case ServiceStatus.Deactivating:
+			return [CircleDashedIcon, "text-yellow-500"]
+		default:
+			return [CircleMinusIcon, "text-zinc-500"]
+	}
+}
+
+function getSubStateIcon(subState: ServiceSubState): [LucideIcon, string] {
 	switch (subState) {
 		case ServiceSubState.Running:
-			return "bg-green-500"
+			return [CircleCheckIcon, "text-green-500"]
 		case ServiceSubState.Failed:
-			return "bg-red-500"
+			return [CircleXIcon, "text-red-500"]
 		case ServiceSubState.Dead:
-			return "bg-yellow-500"
+			return [CircleDashedIcon, "text-yellow-500"]
 		default:
-			return "bg-zinc-500"
+			return [CircleMinusIcon, "text-zinc-500"]
 	}
 }
 
@@ -62,9 +82,10 @@ export const systemdTableCols: ColumnDef<SystemdRecord>[] = [
 		cell: ({ getValue }) => {
 			const statusValue = getValue() as ServiceStatus
 			const statusLabel = ServiceStatusLabels[statusValue] || "Unknown"
+			const [StatusIcon, color] = getStatusIcon(statusValue)
 			return (
 				<Badge variant="outline" className="dark:border-white/12">
-					<span className={cn("size-2 me-1.5 rounded-full", getStatusColor(statusValue))} />
+					<StatusIcon className={cn("size-3 me-1.5", color)} />
 					{statusLabel}
 				</Badge>
 			)
@@ -77,9 +98,10 @@ export const systemdTableCols: ColumnDef<SystemdRecord>[] = [
 		cell: ({ getValue }) => {
 			const subState = getValue() as ServiceSubState
 			const subStateLabel = ServiceSubStateLabels[subState] || "Unknown"
+			const [SubStateIcon, color] = getSubStateIcon(subState)
 			return (
 				<Badge variant="outline" className="dark:border-white/12 text-xs capitalize">
-					<span className={cn("size-2 me-1.5 rounded-full", getSubStateColor(subState))} />
+					<SubStateIcon className={cn("size-3 me-1.5", color)} />
 					{subStateLabel}
 				</Badge>
 			)
@@ -184,17 +206,3 @@ function HeaderButton({ column, name, Icon }: { column: Column<SystemdRecord>; n
 	)
 }
 
-export function getStatusColor(status: ServiceStatus) {
-	switch (status) {
-		case ServiceStatus.Active:
-			return "bg-green-500"
-		case ServiceStatus.Failed:
-			return "bg-red-500"
-		case ServiceStatus.Reloading:
-		case ServiceStatus.Activating:
-		case ServiceStatus.Deactivating:
-			return "bg-yellow-500"
-		default:
-			return "bg-zinc-500"
-	}
-}
