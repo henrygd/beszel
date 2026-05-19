@@ -13,6 +13,8 @@ import {
 	CirclePauseIcon,
 	CircleXIcon,
 	ClockArrowUp,
+	OctagonXIcon,
+	TriangleAlertIcon,
 	CopyIcon,
 	CpuIcon,
 	HardDriveIcon,
@@ -241,14 +243,18 @@ export function SystemsTableColumns(viewMode: "table" | "grid"): ColumnDef<Syste
 
 				return (
 					<div className="flex items-center gap-[.35em] w-full tabular-nums tracking-tight">
-						<span
-							className={cn("inline-block size-2 rounded-full me-0.5", {
-								[STATUS_COLORS[SystemStatus.Up]]: threshold === MeterState.Good,
-								[STATUS_COLORS[SystemStatus.Pending]]: threshold === MeterState.Warn,
-								[STATUS_COLORS[SystemStatus.Down]]: threshold === MeterState.Crit,
-								[STATUS_COLORS[SystemStatus.Paused]]: status !== SystemStatus.Up,
-							})}
-						/>
+						{status === SystemStatus.Up && threshold === MeterState.Good && (
+							<CircleCheckIcon className="size-4 shrink-0 text-[#356144] dark:text-green-500" />
+						)}
+						{status === SystemStatus.Up && threshold === MeterState.Warn && (
+							<TriangleAlertIcon className="size-4 shrink-0 text-[#976f00] dark:text-yellow-500" />
+						)}
+						{status === SystemStatus.Up && threshold === MeterState.Crit && (
+							<OctagonXIcon className="size-4 shrink-0 text-[#913e42] dark:text-red-500" />
+						)}
+						{status !== SystemStatus.Up && (
+							<CircleDashedIcon className="size-4 shrink-0 text-primary/40" />
+						)}
 						{loadAverages?.map((la, i) => (
 							<span key={i}>{decimalString(la, la >= 10 ? 1 : 2)}</span>
 						))}
@@ -371,12 +377,11 @@ export function SystemsTableColumns(viewMode: "table" | "grid"): ColumnDef<Syste
 				}
 				return (
 					<span className="tabular-nums whitespace-nowrap flex gap-1.5 items-center">
-						<span
-							className={cn("block size-2 rounded-full", {
-								[STATUS_COLORS[SystemStatus.Down]]: numFailed > 0,
-								[STATUS_COLORS[SystemStatus.Up]]: numFailed === 0,
-							})}
-						/>
+						{numFailed > 0 ? (
+							<CircleXIcon className="size-4 shrink-0 text-[#913e42] dark:text-red-500" />
+						) : (
+							<CircleCheckIcon className="size-4 shrink-0 text-[#356144] dark:text-green-500" />
+						)}
 						{totalCount}{" "}
 						<span className="text-muted-foreground text-sm -ms-0.5">
 							({t`Failed`.toLowerCase()}: {numFailed})
@@ -416,9 +421,9 @@ export function SystemsTableColumns(viewMode: "table" | "grid"): ColumnDef<Syste
 				}
 				const system = info.row.original
 				const color = {
-					"text-green-500": version === globalThis.BESZEL.HUB_VERSION,
-					"text-yellow-500": version !== globalThis.BESZEL.HUB_VERSION,
-					"text-red-500": system.status !== SystemStatus.Up,
+					"text-[#356144] dark:text-green-500": version === globalThis.BESZEL.HUB_VERSION,
+					"text-[#976f00] dark:text-yellow-500": version !== globalThis.BESZEL.HUB_VERSION,
+					"text-[#913e42] dark:text-red-500": system.status !== SystemStatus.Up,
 				}
 				return (
 					<Link
@@ -432,10 +437,10 @@ export function SystemsTableColumns(viewMode: "table" | "grid"): ColumnDef<Syste
 						role="none"
 					>
 						{system.info.ct === ConnectionType.WebSocket && (
-							<WebSocketIcon className={cn("size-3 pointer-events-none", color)} />
+							<WebSocketIcon className={cn("size-4 pointer-events-none", color)} />
 						)}
 						{system.info.ct === ConnectionType.SSH && (
-							<ChevronRightSquareIcon className={cn("size-3 pointer-events-none", color)} />
+							<ChevronRightSquareIcon className={cn("size-4 pointer-events-none", color)} />
 						)}
 						{!system.info.ct && <IndicatorDot system={system} className={cn(color, "mx-0.5")} />}
 						<span className="truncate max-w-14">{info.getValue() as string}</span>
@@ -487,9 +492,20 @@ function TableCellWithMeter(info: CellContext<SystemRecord, unknown>) {
 			(threshold === MeterState.Warn && STATUS_COLORS.pending) ||
 			STATUS_COLORS.down
 	)
+	const status = info.row.original.status
 	return (
 		<div className="flex gap-2 items-center tabular-nums tracking-tight w-full">
-			<span className="min-w-8 shrink-0">{decimalString(val, val >= 10 ? 1 : 2)}%</span>
+			<span className="flex items-center gap-0.5 shrink-0">
+				<span className="size-3 flex items-center justify-center">
+					{status === SystemStatus.Up && threshold === MeterState.Warn && (
+						<TriangleAlertIcon className="size-3 text-[#976f00] dark:text-yellow-500" />
+					)}
+					{status === SystemStatus.Up && threshold === MeterState.Crit && (
+						<OctagonXIcon className="size-3 text-[#913e42] dark:text-red-500" />
+					)}
+				</span>
+				<span className="min-w-8">{decimalString(val, val >= 10 ? 1 : 2)}%</span>
+			</span>
 			<span className="flex-1 min-w-8 grid bg-muted h-[1em] rounded-sm overflow-hidden">
 				<span className={meterClass} style={{ width: `${val}%` }}></span>
 			</span>
@@ -538,7 +554,17 @@ function DiskCellWithMultiple(info: CellContext<SystemRecord, unknown>) {
 					className="flex flex-col gap-0.5 w-full relative z-10"
 				>
 					<div className="flex gap-2 items-center tabular-nums tracking-tight">
-						<span className="min-w-8 shrink-0">{decimalString(rootDiskPct, rootDiskPct >= 10 ? 1 : 2)}%</span>
+						<span className="flex items-center gap-0.5 shrink-0">
+							<span className="size-3 flex items-center justify-center">
+								{status === SystemStatus.Up && getMeterStateByThresholds(rootDiskPct, colorWarn, colorCrit) === MeterState.Warn && (
+									<TriangleAlertIcon className="size-3 text-[#976f00] dark:text-yellow-500" />
+								)}
+								{status === SystemStatus.Up && getMeterStateByThresholds(rootDiskPct, colorWarn, colorCrit) === MeterState.Crit && (
+									<OctagonXIcon className="size-3 text-[#913e42] dark:text-red-500" />
+								)}
+							</span>
+							<span className="min-w-8">{decimalString(rootDiskPct, rootDiskPct >= 10 ? 1 : 2)}%</span>
+						</span>
 						<span className="flex-1 min-w-8 flex items-center gap-0.5 px-1 justify-end bg-muted h-[1em] rounded-sm overflow-hidden relative">
 							{/* Root disk */}
 							<span
