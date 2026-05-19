@@ -595,7 +595,7 @@ export function IndicatorDot({ system, className }: { system: SystemRecord; clas
 	return (
 		<Icon
 			className={cn(
-				"shrink-0 size-3",
+				"shrink-0 size-4",
 				STATUS_ICON_COLORS[system.status as keyof typeof STATUS_ICON_COLORS],
 				className
 			)}
