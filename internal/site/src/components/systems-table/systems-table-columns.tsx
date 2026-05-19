@@ -244,16 +244,16 @@ export function SystemsTableColumns(viewMode: "table" | "grid"): ColumnDef<Syste
 				return (
 					<div className="flex items-center gap-[.35em] w-full tabular-nums tracking-tight">
 						{status === SystemStatus.Up && threshold === MeterState.Good && (
-							<CircleCheckIcon className="size-4 shrink-0 text-[#356144] dark:text-green-500" />
+							<CircleCheckIcon aria-hidden="true" className="size-4 shrink-0 text-[#356144] dark:text-green-500" />
 						)}
 						{status === SystemStatus.Up && threshold === MeterState.Warn && (
-							<TriangleAlertIcon className="size-4 shrink-0 text-[#976f00] dark:text-yellow-500" />
+							<TriangleAlertIcon aria-hidden="true" className="size-4 shrink-0 text-[#976f00] dark:text-yellow-500" />
 						)}
 						{status === SystemStatus.Up && threshold === MeterState.Crit && (
-							<OctagonXIcon className="size-4 shrink-0 text-[#913e42] dark:text-red-500" />
+							<OctagonXIcon aria-hidden="true" className="size-4 shrink-0 text-[#913e42] dark:text-red-500" />
 						)}
 						{status !== SystemStatus.Up && (
-							<CircleDashedIcon className="size-4 shrink-0 text-primary/40" />
+							<CircleDashedIcon aria-hidden="true" className="size-4 shrink-0 text-primary/40" />
 						)}
 						{loadAverages?.map((la, i) => (
 							<span key={i}>{decimalString(la, la >= 10 ? 1 : 2)}</span>
@@ -378,9 +378,9 @@ export function SystemsTableColumns(viewMode: "table" | "grid"): ColumnDef<Syste
 				return (
 					<span className="tabular-nums whitespace-nowrap flex gap-1.5 items-center">
 						{numFailed > 0 ? (
-							<CircleXIcon className="size-4 shrink-0 text-[#913e42] dark:text-red-500" />
+							<CircleXIcon aria-hidden="true" className="size-4 shrink-0 text-[#913e42] dark:text-red-500" />
 						) : (
-							<CircleCheckIcon className="size-4 shrink-0 text-[#356144] dark:text-green-500" />
+							<CircleCheckIcon aria-hidden="true" className="size-4 shrink-0 text-[#356144] dark:text-green-500" />
 						)}
 						{totalCount}{" "}
 						<span className="text-muted-foreground text-sm -ms-0.5">
@@ -498,10 +498,10 @@ function TableCellWithMeter(info: CellContext<SystemRecord, unknown>) {
 			<span className="flex items-center gap-0.5 shrink-0">
 				<span className="size-3 flex items-center justify-center">
 					{status === SystemStatus.Up && threshold === MeterState.Warn && (
-						<TriangleAlertIcon className="size-3 text-[#976f00] dark:text-yellow-500" />
+						<TriangleAlertIcon aria-hidden="true" className="size-3 text-[#976f00] dark:text-yellow-500" />
 					)}
 					{status === SystemStatus.Up && threshold === MeterState.Crit && (
-						<OctagonXIcon className="size-3 text-[#913e42] dark:text-red-500" />
+						<OctagonXIcon aria-hidden="true" className="size-3 text-[#913e42] dark:text-red-500" />
 					)}
 				</span>
 				<span className="min-w-8">{decimalString(val, val >= 10 ? 1 : 2)}%</span>
@@ -557,10 +557,10 @@ function DiskCellWithMultiple(info: CellContext<SystemRecord, unknown>) {
 						<span className="flex items-center gap-0.5 shrink-0">
 							<span className="size-3 flex items-center justify-center">
 								{status === SystemStatus.Up && getMeterStateByThresholds(rootDiskPct, colorWarn, colorCrit) === MeterState.Warn && (
-									<TriangleAlertIcon className="size-3 text-[#976f00] dark:text-yellow-500" />
+									<TriangleAlertIcon aria-hidden="true" className="size-3 text-[#976f00] dark:text-yellow-500" />
 								)}
 								{status === SystemStatus.Up && getMeterStateByThresholds(rootDiskPct, colorWarn, colorCrit) === MeterState.Crit && (
-									<OctagonXIcon className="size-3 text-[#913e42] dark:text-red-500" />
+									<OctagonXIcon aria-hidden="true" className="size-3 text-[#913e42] dark:text-red-500" />
 								)}
 							</span>
 							<span className="min-w-8">{decimalString(rootDiskPct, rootDiskPct >= 10 ? 1 : 2)}%</span>
@@ -620,6 +620,7 @@ export function IndicatorDot({ system, className }: { system: SystemRecord; clas
 	const Icon = STATUS_ICONS[system.status as keyof typeof STATUS_ICONS] ?? CircleDashedIcon
 	return (
 		<Icon
+			aria-hidden="true"
 			className={cn(
 				"shrink-0 size-4",
 				STATUS_ICON_COLORS[system.status as keyof typeof STATUS_ICON_COLORS],

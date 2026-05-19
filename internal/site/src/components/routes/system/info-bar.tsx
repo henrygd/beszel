@@ -152,17 +152,17 @@ export default function InfoBar({
 												className="animate-ping absolute inline-flex size-2 rounded-full bg-green-400 opacity-75"
 												style={{ animationDuration: "1.5s" }}
 											/>
-											<CircleCheckIcon className="relative size-4 text-[#356144] dark:text-green-500" />
+											<CircleCheckIcon aria-hidden="true" className="relative size-4 text-[#356144] dark:text-green-500" />
 										</span>
 									)}
 									{system.status === SystemStatus.Down && (
-										<CircleXIcon className="size-4 text-[#913e42] dark:text-red-500" />
+										<CircleXIcon aria-hidden="true" className="size-4 text-[#913e42] dark:text-red-500" />
 									)}
 									{system.status === SystemStatus.Paused && (
-										<CirclePauseIcon className="size-4 text-primary/40" />
+										<CirclePauseIcon aria-hidden="true" className="size-4 text-primary/40" />
 									)}
 									{system.status === SystemStatus.Pending && (
-										<CircleDashedIcon className="size-4 text-[#976f00] dark:text-yellow-500" />
+										<CircleDashedIcon aria-hidden="true" className="size-4 text-[#976f00] dark:text-yellow-500" />
 									)}
 									{translatedStatus}
 								</div>
