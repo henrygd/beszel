@@ -169,6 +169,37 @@ func (am *AlertManager) sendStatusAlert(alertStatus string, systemName string, a
 	})
 }
 
+// HandleRebootAlert sends an immediate notification when a system reboot is detected.
+func (am *AlertManager) HandleRebootAlert(systemRecord *core.Record) error {
+	alerts := am.alertsCache.GetAlertsByName(systemRecord.Id, "Reboot")
+	if len(alerts) == 0 {
+		return nil
+	}
+	systemName := systemRecord.GetString("name")
+	systemID := systemRecord.Id
+	for _, alertData := range alerts {
+		// triggered=true creates a history record; triggered=false immediately resolves it
+		if err := am.setAlertTriggered(alertData, true); err != nil {
+			am.hub.Logger().Error("Failed to set reboot alert triggered", "err", err)
+			continue
+		}
+		if err := am.setAlertTriggered(alertData, false); err != nil {
+			am.hub.Logger().Error("Failed to resolve reboot alert", "err", err)
+		}
+		if err := am.SendAlert(AlertMessageData{
+			UserID:   alertData.UserID,
+			SystemID: systemID,
+			Title:    fmt.Sprintf("System rebooted: %s \U0001F504", systemName),
+			Message:  fmt.Sprintf("System rebooted: %s", systemName),
+			Link:     am.hub.MakeLink("system", systemID),
+			LinkText: "View " + systemName,
+		}); err != nil {
+			am.hub.Logger().Error("Failed to send reboot alert", "err", err)
+		}
+	}
+	return nil
+}
+
 // resolveStatusAlerts resolves any triggered status alerts that weren't resolved
 // when system came up (https://github.com/henrygd/beszel/issues/1052).
 func resolveStatusAlerts(app core.App) error {

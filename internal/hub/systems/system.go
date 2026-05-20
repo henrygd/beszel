@@ -137,8 +137,17 @@ func (sys *System) update() error {
 	// ensure deprecated fields from older agents are migrated to current fields
 	migrateDeprecatedFields(data, !sys.detailsFetched.Load())
 
+	prevUptime := sys.getPrevUptime()
+
 	// create system records
-	_, err = sys.createRecords(data)
+	systemRecord, err := sys.createRecords(data)
+
+	// Detect reboot: uptime decreased since last recorded stats
+	if err == nil && prevUptime > 0 && data.Info.Uptime < prevUptime {
+		if alertErr := sys.manager.hub.HandleRebootAlert(systemRecord); alertErr != nil {
+			sys.manager.hub.Logger().Error("Error handling reboot alert", "err", alertErr)
+		}
+	}
 
 	// if details were included and fetched successfully, mark details as fetched and update smart interval if set by agent
 	if err == nil && data.Details != nil {
@@ -181,6 +190,28 @@ func (sys *System) handlePaused() {
 			_ = sys.manager.RemoveSystem(sys.Id)
 		}
 	}
+}
+
+// getPrevUptime returns the uptime from the most recent system_stats record, or 0 if unavailable.
+func (sys *System) getPrevUptime() uint64 {
+	var row struct {
+		Stats []byte `db:"stats"`
+	}
+	err := sys.manager.hub.DB().
+		Select("stats").
+		From("system_stats").
+		Where(dbx.NewExp("system={:system} AND type='1m'", dbx.Params{"system": sys.Id})).
+		OrderBy("created DESC").
+		Limit(1).
+		One(&row)
+	if err != nil || len(row.Stats) == 0 {
+		return 0
+	}
+	var stats system.Stats
+	if err := json.Unmarshal(row.Stats, &stats); err != nil {
+		return 0
+	}
+	return stats.Uptime
 }
 
 // createRecords updates the system record and adds system_stats and container_stats records
