@@ -3,7 +3,7 @@ pb_data
 data
 temp
 .vscode
-beszel-agent
+/beszel-agent
 beszel_data
 beszel_data*
 dist

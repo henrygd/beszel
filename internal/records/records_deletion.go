@@ -59,7 +59,7 @@ func deleteOldAlertsHistory(app core.App, countToKeep, countBeforeDeletion int) 
 // Deletes system_stats records older than what is displayed in the UI
 func deleteOldSystemStats(app core.App) error {
 	// Collections to process
-	collections := [2]string{"system_stats", "container_stats"}
+	collections := [3]string{"system_stats", "container_stats", "pod_stats"}
 
 	// Record types and their retention periods
 	type RecordDeletionData struct {
@@ -112,15 +112,18 @@ func deleteOldSystemdServiceRecords(app core.App) error {
 	return nil
 }
 
-// Deletes container records that haven't been updated in the last 10 minutes
+// Deletes container and pod records that haven't been updated in the last 10 minutes
 func deleteOldContainerRecords(app core.App) error {
 	now := time.Now().UTC()
 	tenMinutesAgo := now.Add(-10 * time.Minute)
+	cutoff := tenMinutesAgo.UnixMilli()
 
-	// Delete container records where updated < tenMinutesAgo
-	_, err := app.DB().NewQuery("DELETE FROM containers WHERE updated < {:updated}").Bind(dbx.Params{"updated": tenMinutesAgo.UnixMilli()}).Execute()
-	if err != nil {
+	if _, err := app.DB().NewQuery("DELETE FROM containers WHERE updated < {:updated}").Bind(dbx.Params{"updated": cutoff}).Execute(); err != nil {
 		return fmt.Errorf("failed to delete old container records: %v", err)
+	}
+
+	if _, err := app.DB().NewQuery("DELETE FROM pods WHERE updated < {:updated}").Bind(dbx.Params{"updated": cutoff}).Execute(); err != nil {
+		return fmt.Errorf("failed to delete old pod records: %v", err)
 	}
 
 	return nil

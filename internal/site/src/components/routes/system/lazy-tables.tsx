@@ -34,3 +34,14 @@ export function LazySystemdTable({ systemId }: { systemId: string }) {
 		</div>
 	)
 }
+
+const PodsTable = lazy(() => import("../../pods-table/pods-table"))
+
+export function LazyPodsTable({ systemId }: { systemId: string }) {
+	const { isIntersecting, ref } = useIntersectionObserver({ rootMargin: "90px" })
+	return (
+		<div ref={ref} className={cn(isIntersecting && "contents")}>
+			{isIntersecting && <PodsTable systemId={systemId} />}
+		</div>
+	)
+}

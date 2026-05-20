@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/henrygd/beszel/internal/entities/container"
+	"github.com/henrygd/beszel/internal/entities/kubernetes"
 	"github.com/henrygd/beszel/internal/entities/system"
 
 	"github.com/pocketbase/dbx"
@@ -70,12 +71,16 @@ func (rm *RecordManager) CreateLongerRecords() {
 	// wrap the operations in a transaction
 	rm.app.RunInTransaction(func(txApp core.App) error {
 		var err error
-		collections := [2]*core.Collection{}
+		collections := [3]*core.Collection{}
 		collections[0], err = txApp.FindCachedCollectionByNameOrId("system_stats")
 		if err != nil {
 			return err
 		}
 		collections[1], err = txApp.FindCachedCollectionByNameOrId("container_stats")
+		if err != nil {
+			return err
+		}
+		collections[2], err = txApp.FindCachedCollectionByNameOrId("pod_stats")
 		if err != nil {
 			return err
 		}
@@ -138,8 +143,9 @@ func (rm *RecordManager) CreateLongerRecords() {
 					case "system_stats":
 						longerRecord.Set("stats", rm.AverageSystemStats(db, recordIds))
 					case "container_stats":
-
 						longerRecord.Set("stats", rm.AverageContainerStats(db, recordIds))
+					case "pod_stats":
+						longerRecord.Set("stats", rm.AveragePodStats(db, recordIds))
 					}
 					if err := txApp.SaveNoValidate(longerRecord); err != nil {
 						log.Println("failed to save longer record", "err", err)
@@ -495,6 +501,73 @@ func AverageContainerStatsSlice(records [][]container.Stats) []container.Stats {
 			Cpu:       twoDecimals(value.Cpu / count),
 			Mem:       twoDecimals(value.Mem / count),
 			Bandwidth: [2]uint64{uint64(float64(value.Bandwidth[0]) / count), uint64(float64(value.Bandwidth[1]) / count)},
+		})
+	}
+	return result
+}
+
+// AveragePodStats calculates the average stats of a list of pod_stats records.
+func (rm *RecordManager) AveragePodStats(db dbx.Builder, records RecordIds) []kubernetes.PodStats {
+	allStats := make([][]kubernetes.PodStats, 0, len(records))
+	var row StatsRecord
+	params := make(dbx.Params, 1)
+	for _, rec := range records {
+		row.Stats = row.Stats[:0]
+		params["id"] = rec.Id
+		db.NewQuery("SELECT stats FROM pod_stats WHERE id = {:id}").Bind(params).One(&row)
+		var ps []kubernetes.PodStats
+		if err := json.Unmarshal(row.Stats, &ps); err != nil {
+			return []kubernetes.PodStats{}
+		}
+		allStats = append(allStats, ps)
+	}
+	return AveragePodStatsSlice(allStats)
+}
+
+// AveragePodStatsSlice computes the average of pod stats across multiple time periods.
+func AveragePodStatsSlice(records [][]kubernetes.PodStats) []kubernetes.PodStats {
+	if len(records) == 0 {
+		return []kubernetes.PodStats{}
+	}
+	sums := make(map[string]*kubernetes.PodStats)
+	count := float64(len(records))
+
+	for _, podStats := range records {
+		for i := range podStats {
+			stat := &podStats[i]
+			podKey := stat.Namespace + "/" + stat.Name
+			if _, ok := sums[podKey]; !ok {
+				sums[podKey] = &kubernetes.PodStats{
+					Name:           stat.Name,
+					Namespace:      stat.Namespace,
+					Node:           stat.Node,
+					Status:         stat.Status,
+					RestartCount:   stat.RestartCount,
+					ContainerCount: stat.ContainerCount,
+				}
+			}
+			sums[podKey].Cpu += stat.Cpu
+			sums[podKey].Mem += stat.Mem
+			sums[podKey].MemLimit += stat.MemLimit
+			sums[podKey].NetworkSent += stat.NetworkSent
+			sums[podKey].NetworkRecv += stat.NetworkRecv
+		}
+	}
+
+	result := make([]kubernetes.PodStats, 0, len(sums))
+	for _, value := range sums {
+		result = append(result, kubernetes.PodStats{
+			Name:           value.Name,
+			Namespace:      value.Namespace,
+			Node:           value.Node,
+			Cpu:            twoDecimals(value.Cpu / count),
+			Mem:            twoDecimals(value.Mem / count),
+			MemLimit:       twoDecimals(value.MemLimit / count),
+			NetworkSent:    twoDecimals(value.NetworkSent / count),
+			NetworkRecv:    twoDecimals(value.NetworkRecv / count),
+			Status:         value.Status,
+			RestartCount:   value.RestartCount,
+			ContainerCount: value.ContainerCount,
 		})
 	}
 	return result

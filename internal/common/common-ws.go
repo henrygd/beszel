@@ -22,6 +22,10 @@ const (
 	GetSmartData
 	// Request detailed systemd service info from agent
 	GetSystemdInfo
+	// Request pod logs from agent
+	GetPodLogs
+	// Request pod info from agent
+	GetPodInfo
 	// Add new actions here...
 )
 
@@ -73,4 +77,14 @@ type ContainerInfoRequest struct {
 
 type SystemdInfoRequest struct {
 	ServiceName string `cbor:"0,keyasint"`
+}
+
+type PodLogsRequest struct {
+	Namespace string `cbor:"0,keyasint"`
+	PodName   string `cbor:"1,keyasint"`
+}
+
+type PodInfoRequest struct {
+	Namespace string `cbor:"0,keyasint"`
+	PodName   string `cbor:"1,keyasint"`
 }
