@@ -177,14 +177,23 @@ func (am *AlertManager) HandleRebootAlert(systemRecord *core.Record) error {
 	}
 	systemName := systemRecord.GetString("name")
 	systemID := systemRecord.Id
+	now := time.Now().UTC()
 	for _, alertData := range alerts {
-		// triggered=true creates a history record; triggered=false immediately resolves it
-		if err := am.setAlertTriggered(alertData, true); err != nil {
-			am.hub.Logger().Error("Failed to set reboot alert triggered", "err", err)
+		// Write history record directly as resolved — reboot is a point-in-time event
+		historyCollection, err := am.hub.FindCachedCollectionByNameOrId("alerts_history")
+		if err != nil {
+			am.hub.Logger().Error("Failed to find alerts_history collection", "err", err)
 			continue
 		}
-		if err := am.setAlertTriggered(alertData, false); err != nil {
-			am.hub.Logger().Error("Failed to resolve reboot alert", "err", err)
+		historyRecord := core.NewRecord(historyCollection)
+		historyRecord.Set("alert_id", alertData.Id)
+		historyRecord.Set("user", alertData.UserID)
+		historyRecord.Set("system", systemID)
+		historyRecord.Set("name", "Reboot")
+		historyRecord.Set("value", 0)
+		historyRecord.Set("resolved", now)
+		if err := am.hub.Save(historyRecord); err != nil {
+			am.hub.Logger().Error("Failed to save reboot alert history", "err", err)
 		}
 		if err := am.SendAlert(AlertMessageData{
 			UserID:   alertData.UserID,

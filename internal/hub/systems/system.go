@@ -207,11 +207,13 @@ func (sys *System) getPrevUptime() uint64 {
 	if err != nil || len(row.Stats) == 0 {
 		return 0
 	}
-	var stats system.Stats
-	if err := json.Unmarshal(row.Stats, &stats); err != nil {
+	var partial struct {
+		Uptime uint64 `json:"u"`
+	}
+	if err := json.Unmarshal(row.Stats, &partial); err != nil {
 		return 0
 	}
-	return stats.Uptime
+	return partial.Uptime
 }
 
 // createRecords updates the system record and adds system_stats and container_stats records
