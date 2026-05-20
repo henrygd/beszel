@@ -48,6 +48,7 @@ type Agent struct {
 	keys                      []gossh.PublicKey                                     // SSH public keys
 	smartManager              *SmartManager                                         // Manages SMART data
 	systemdManager            *systemdManager                                       // Manages systemd services
+	networkIO                 NetworkIOProvider                                     // NetworkIOProvider implementation (e.g., SNMP-based for MikroTik)
 }
 
 // NewAgent creates a new agent with the given data directory for persisting data.
@@ -120,6 +121,18 @@ func NewAgent(dataDir ...string) (agent *Agent, err error) {
 
 	// initialize handler registry
 	agent.handlerRegistry = NewHandlerRegistry()
+
+	// Initialize networkIO provider first (before initializeNetIoStats needs it)
+	if target, exists := utils.GetEnv("SNMP_TARGET"); exists {
+		slog.Info("Mikrotik device detected. Adding Mikrotik SNMP stats to network stats.")
+		agent.networkIO, err = SNMP_NetworkIO(target)
+		if err != nil {
+			slog.Error("Failed to initialize SNMP network IO", "err", err)
+		}
+	} else {
+		slog.Info("Non-Mikrotik device detected. Adding local network stats.")
+		agent.networkIO = &localNetworkIO{}
+	}
 
 	// initialize disk info
 	agent.initializeDiskInfo()
