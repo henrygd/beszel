@@ -238,8 +238,8 @@ export function AlertContent({
 	const singleDescription = alertData.singleDesc?.()
 
 	const [checked, setChecked] = useState(global ? false : !!alert)
-	const [min, setMin] = useState(alert?.min || 10)
-	const [value, setValue] = useState(alert?.value || (singleDescription ? 0 : (alertData.start ?? 80)))
+	const [min, setMin] = useState(alertData.noSliders ? 0 : (alert?.min || 10))
+	const [value, setValue] = useState(alertData.noSliders ? 0 : (alert?.value || (singleDescription ? 0 : (alertData.start ?? 80))))
 
 	const Icon = alertData.icon
 
