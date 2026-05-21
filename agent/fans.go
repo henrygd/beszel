@@ -13,6 +13,7 @@ import (
 // updateFans populates systemStats.Fans from the host's hwmon sysfs tree.
 // No-op on platforms where hwmon isn't available (see fans_other.go).
 func (a *Agent) updateFans(systemStats *system.Stats) {
+	a.systemInfo.DashboardFan = 0
 	if hwmonRoot == "" {
 		return
 	}
@@ -21,8 +22,20 @@ func (a *Agent) updateFans(systemStats *system.Stats) {
 		slog.Debug("Error reading fans", "err", err)
 		return
 	}
-	if len(fans) > 0 {
-		systemStats.Fans = fans
+	if len(fans) == 0 {
+		return
+	}
+	systemStats.Fans = fans
+	// Compute the single "dashboard" value used by the FanSpeed alert.
+	// Per-sensor RPMs live in Stats.Fans and drive the multi-line FanChart
+	// in the UI; the alert path only needs one number to compare against
+	// the user's threshold, so we use the highest RPM across all fans —
+	// mirrors DashboardTemp semantics (max temp) so the alert direction
+	// stays consistent across the app.
+	for _, rpm := range fans {
+		if rpm > a.systemInfo.DashboardFan {
+			a.systemInfo.DashboardFan = rpm
+		}
 	}
 }
 
