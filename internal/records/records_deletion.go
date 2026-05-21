@@ -59,7 +59,7 @@ func deleteOldAlertsHistory(app core.App, countToKeep, countBeforeDeletion int) 
 // Deletes system_stats records older than what is displayed in the UI
 func deleteOldSystemStats(app core.App) error {
 	// Collections to process
-	collections := [2]string{"system_stats", "container_stats"}
+	collections := [3]string{"system_stats", "container_stats", "network_probe_stats"}
 
 	// Record types and their retention periods
 	type RecordDeletionData struct {
