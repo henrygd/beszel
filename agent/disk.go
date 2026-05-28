@@ -304,7 +304,15 @@ func (a *Agent) initializeDiskInfo() {
 	hasRoot := false
 	isWindows := runtime.GOOS == "windows"
 
-	partitions, err := disk.PartitionsWithContext(context.Background(), true)
+	var partitions []disk.PartitionStat
+	var err error
+	// On Windows, disk.Partitions busy-loops and pins a CPU core forever on an
+	// unresponsive or spun-down external/USB volume (both all=true and all=false),
+	// hanging agent startup. Skip it there and rely on the I/O-counter + root
+	// device fallback below for root disk usage.
+	if !isWindows {
+		partitions, err = disk.PartitionsWithContext(context.Background(), true)
+	}
 	if err != nil {
 		slog.Error("Error getting disk partitions", "err", err)
 	}
