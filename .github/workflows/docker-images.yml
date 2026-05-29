@@ -52,6 +52,19 @@ jobs:
               type=semver,pattern={{major}}
               type=raw,value={{sha}},enable=${{ github.ref_type != 'tag' }}
 
+          # henrygd/beszel-agent-nvidia:slim
+          - image: henrygd/beszel-agent-nvidia
+            dockerfile: ./internal/dockerfile_agent_nvidia_slim
+            platforms: linux/amd64,linux/arm64,linux/arm/v7
+            registry: docker.io
+            username_secret: DOCKERHUB_USERNAME
+            password_secret: DOCKERHUB_TOKEN
+            tags: |
+              type=raw,value=slim
+              type=semver,pattern={{version}}-slim
+              type=semver,pattern={{major}}.{{minor}}-slim
+              type=semver,pattern={{major}}-slim
+
           # henrygd/beszel-agent-intel
           - image: henrygd/beszel-agent-intel
             dockerfile: ./internal/dockerfile_agent_intel
@@ -106,6 +119,19 @@ jobs:
               type=semver,pattern={{major}}.{{minor}}
               type=semver,pattern={{major}}
               type=raw,value={{sha}},enable=${{ github.ref_type != 'tag' }}
+
+          # ghcr.io/henrygd/beszel-agent-nvidia:slim
+          - image: ghcr.io/${{ github.repository }}/beszel-agent-nvidia
+            dockerfile: ./internal/dockerfile_agent_nvidia_slim
+            platforms: linux/amd64,linux/arm64,linux/arm/v7
+            registry: ghcr.io
+            username: ${{ github.actor }}
+            password_secret: GITHUB_TOKEN
+            tags: |
+              type=raw,value=slim
+              type=semver,pattern={{version}}-slim
+              type=semver,pattern={{major}}.{{minor}}-slim
+              type=semver,pattern={{major}}-slim
 
           # ghcr.io/henrygd/beszel-agent-intel
           - image: ghcr.io/${{ github.repository }}/beszel-agent-intel
