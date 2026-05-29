@@ -240,6 +240,10 @@ msgstr "Backups"
 msgid "Bandwidth"
 msgstr "Bandwidth"
 
+#: src/components/routes/system/charts/fail2ban-chart.tsx
+msgid "Banned IPs per jail"
+msgstr "Banned IPs per jail"
+
 #. Battery label in systems table header
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Bat"
@@ -768,6 +772,10 @@ msgstr "Export your current systems configuration."
 #: src/components/routes/settings/general.tsx
 msgid "Fahrenheit (°F)"
 msgstr "Fahrenheit (°F)"
+
+#: src/components/routes/system/charts/fail2ban-chart.tsx
+msgid "Fail2ban"
+msgstr "Fail2ban"
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Failed"

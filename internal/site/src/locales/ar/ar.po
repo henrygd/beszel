@@ -245,6 +245,10 @@ msgstr "النسخ الاحتياطية"
 msgid "Bandwidth"
 msgstr "عرض النطاق الترددي"
 
+#: src/components/routes/system/charts/fail2ban-chart.tsx
+msgid "Banned IPs per jail"
+msgstr ""
+
 #. Battery label in systems table header
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Bat"
@@ -773,6 +777,10 @@ msgstr "تصدير تكوين الأنظمة الحالية الخاصة بك."
 #: src/components/routes/settings/general.tsx
 msgid "Fahrenheit (°F)"
 msgstr "فهرنهايت (°ف)"
+
+#: src/components/routes/system/charts/fail2ban-chart.tsx
+msgid "Fail2ban"
+msgstr ""
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Failed"

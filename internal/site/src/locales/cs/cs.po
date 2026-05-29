@@ -245,6 +245,10 @@ msgstr "Zálohy"
 msgid "Bandwidth"
 msgstr "Přenos"
 
+#: src/components/routes/system/charts/fail2ban-chart.tsx
+msgid "Banned IPs per jail"
+msgstr ""
+
 #. Battery label in systems table header
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Bat"
@@ -773,6 +777,10 @@ msgstr "Exportovat aktuální konfiguraci systémů."
 #: src/components/routes/settings/general.tsx
 msgid "Fahrenheit (°F)"
 msgstr "Fahrenheita (°F)"
+
+#: src/components/routes/system/charts/fail2ban-chart.tsx
+msgid "Fail2ban"
+msgstr ""
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Failed"

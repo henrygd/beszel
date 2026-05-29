@@ -188,6 +188,8 @@ func AverageSystemStatsSlice(records []system.Stats) system.Stats {
 	// accumulate cpu breakdown [user, system, iowait, steal, idle]
 	var cpuBreakdownSums []float64
 	tempCount := float64(0)
+	fail2banSums := make(map[string]float64)
+	fail2banCount := float64(0)
 
 	// Accumulate totals
 	for i := range records {
@@ -276,6 +278,14 @@ func AverageSystemStatsSlice(records []system.Stats) system.Stats {
 			tempCount++
 			for key, value := range stats.Temperatures {
 				sum.Temperatures[key] += value
+			}
+		}
+
+		// Accumulate fail2ban ban counts
+		if stats.Fail2ban != nil {
+			fail2banCount++
+			for key, value := range stats.Fail2ban {
+				fail2banSums[key] += float64(value)
 			}
 		}
 
@@ -381,6 +391,14 @@ func AverageSystemStatsSlice(records []system.Stats) system.Stats {
 	if sum.Temperatures != nil && tempCount > 0 {
 		for key := range sum.Temperatures {
 			sum.Temperatures[key] = twoDecimals(sum.Temperatures[key] / tempCount)
+		}
+	}
+
+	// Average fail2ban ban counts
+	if len(fail2banSums) > 0 && fail2banCount > 0 {
+		sum.Fail2ban = make(map[string]uint32, len(fail2banSums))
+		for key, total := range fail2banSums {
+			sum.Fail2ban[key] = uint32(math.Round(total / fail2banCount))
 		}
 	}
 

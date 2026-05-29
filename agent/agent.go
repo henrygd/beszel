@@ -48,6 +48,7 @@ type Agent struct {
 	keys                      []gossh.PublicKey                                     // SSH public keys
 	smartManager              *SmartManager                                         // Manages SMART data
 	systemdManager            *systemdManager                                       // Manages systemd services
+	fail2banManager           *fail2banManager                                      // Manages fail2ban data
 }
 
 // NewAgent creates a new agent with the given data directory for persisting data.
@@ -132,6 +133,8 @@ func NewAgent(dataDir ...string) (agent *Agent, err error) {
 		slog.Debug("Systemd", "err", err)
 	}
 
+	agent.fail2banManager = newFail2banManager()
+
 	agent.smartManager, err = NewSmartManager()
 	if err != nil {
 		slog.Debug("SMART", "err", err)
@@ -187,6 +190,12 @@ func (a *Agent) gatherStats(options common.DataRequestOptions) *system.CombinedD
 		}
 		if a.systemdManager.hasFreshStats {
 			data.SystemdServices = a.systemdManager.getServiceStats(nil, false)
+		}
+	}
+
+	if a.fail2banManager != nil && cacheTimeMs == defaultDataCacheTimeMs {
+		if counts := a.fail2banManager.getBannedCounts(); counts != nil {
+			data.Stats.Fail2ban = counts
 		}
 	}
 

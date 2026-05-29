@@ -245,6 +245,10 @@ msgstr "גיבויים"
 msgid "Bandwidth"
 msgstr "רוחב פס"
 
+#: src/components/routes/system/charts/fail2ban-chart.tsx
+msgid "Banned IPs per jail"
+msgstr ""
+
 #. Battery label in systems table header
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Bat"
@@ -773,6 +777,10 @@ msgstr "ייצא את תצורת המערכות הנוכחית שלך."
 #: src/components/routes/settings/general.tsx
 msgid "Fahrenheit (°F)"
 msgstr "פרנהייט (°F)"
+
+#: src/components/routes/system/charts/fail2ban-chart.tsx
+msgid "Fail2ban"
+msgstr ""
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Failed"

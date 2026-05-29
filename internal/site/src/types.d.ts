@@ -151,6 +151,8 @@ export interface SystemStats {
 	bat?: [number, BatteryState]
 	/** network interfaces [upload bytes, download bytes, total upload bytes, total download bytes] */
 	ni?: Record<string, [number, number, number, number]>
+	/** fail2ban banned IPs per jail */
+	f2b?: Record<string, number>
 }
 
 export interface GPUData {

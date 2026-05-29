@@ -818,3 +818,50 @@ func TestAverageContainerStatsSlice_ManyContainers(t *testing.T) {
 	assert.Equal(t, 35.0, result[2].Cpu)
 	assert.Equal(t, 45.0, result[3].Cpu)
 }
+
+func TestAverageSystemStatsSlice_Fail2ban(t *testing.T) {
+	input := []system.Stats{
+		{
+			Cpu:      10.0,
+			Fail2ban: map[string]uint32{"sshd": 4, "nginx": 2},
+		},
+		{
+			Cpu:      20.0,
+			Fail2ban: map[string]uint32{"sshd": 6, "nginx": 4},
+		},
+		{
+			// No Fail2ban - should not dilute the average
+			Cpu: 30.0,
+		},
+	}
+
+	result := records.AverageSystemStatsSlice(input)
+
+	require.NotNil(t, result.Fail2ban)
+	// Average over 2 records that had Fail2ban, not 3
+	assert.Equal(t, uint32(5), result.Fail2ban["sshd"])  // (4+6)/2 = 5
+	assert.Equal(t, uint32(3), result.Fail2ban["nginx"]) // (2+4)/2 = 3
+}
+
+func TestAverageSystemStatsSlice_Fail2ban_Nil(t *testing.T) {
+	input := []system.Stats{
+		{Cpu: 10.0},
+		{Cpu: 20.0},
+	}
+
+	result := records.AverageSystemStatsSlice(input)
+	assert.Nil(t, result.Fail2ban)
+}
+
+func TestAverageSystemStatsSlice_Fail2ban_Rounding(t *testing.T) {
+	input := []system.Stats{
+		{Fail2ban: map[string]uint32{"sshd": 1}},
+		{Fail2ban: map[string]uint32{"sshd": 2}},
+		{Fail2ban: map[string]uint32{"sshd": 2}},
+	}
+
+	result := records.AverageSystemStatsSlice(input)
+	require.NotNil(t, result.Fail2ban)
+	// (1+2+2)/3 = 1.666... rounds to 2
+	assert.Equal(t, uint32(2), result.Fail2ban["sshd"])
+}
