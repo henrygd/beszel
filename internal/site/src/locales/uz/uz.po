@@ -5,89 +5,84 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: @lingui/cli\n"
-"Language: ja\n"
+"Language: uz\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2026-04-05 18:27\n"
+"PO-Revision-Date: 2026-05-22 00:00\n"
 "Last-Translator: \n"
-"Language-Team: Japanese\n"
+"Language-Team: Uzbek\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Crowdin-Project: beszel\n"
-"X-Crowdin-Project-ID: 733311\n"
-"X-Crowdin-Language: ja\n"
-"X-Crowdin-File: /main/internal/site/src/locales/en/en.po\n"
-"X-Crowdin-File-ID: 32\n"
 
 #. placeholder {0}: newVersion.v
 #: src/components/footer-repo-link.tsx
 msgctxt "New version available"
 msgid "{0} available"
-msgstr "{0} が利用可能"
+msgstr "{0} mavjud"
 
 #. placeholder {0}: table.getFilteredSelectedRowModel().rows.length
 #. placeholder {1}: table.getFilteredRowModel().rows.length
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "{0} of {1} row(s) selected."
-msgstr "{1}行のうち{0}行が選択されました。"
+msgstr "{1} dan {0} qator tanlandi."
 
 #: src/components/routes/system/info-bar.tsx
 msgid "{cores, plural, one {# core} other {# cores}}"
-msgstr "{cores, plural, one {# コア} other {# コア}}"
+msgstr "{cores, plural, other {# yadro}}"
 
 #: src/lib/utils.ts
 msgid "{count, plural, one {{countString} day} other {{countString} days}}"
-msgstr "{count, plural, one {{countString} 日} other {{countString} 日}}"
+msgstr "{count, plural, other {{countString} kun}}"
 
 #: src/lib/utils.ts
 msgid "{count, plural, one {{countString} hour} other {{countString} hours}}"
-msgstr "{count, plural, one {{countString} 時間} other {{countString} 時間}}"
+msgstr "{count, plural, other {{countString} soat}}"
 
 #: src/lib/utils.ts
 msgid "{count, plural, one {{countString} minute} few {{countString} minutes} many {{countString} minutes} other {{countString} minutes}}"
-msgstr "{count, plural, one {{countString} 分} few {{countString} 分} many {{countString} 分} other {{countString} 分}}"
+msgstr "{count, plural, other {{countString} daqiqa}}"
 
 #: src/components/routes/system/info-bar.tsx
 msgid "{threads, plural, one {# thread} other {# threads}}"
-msgstr "{threads, plural, one {# スレッド} other {# スレッド}}"
+msgstr "{threads, plural, other {# ip}}"
 
 #: src/lib/utils.ts
 msgid "1 hour"
-msgstr "1時間"
+msgstr "1 soat"
 
 #. Load average
 #: src/components/routes/system/charts/load-average-chart.tsx
 msgid "1 min"
-msgstr "1分"
+msgstr "1 daq"
 
 #: src/lib/utils.ts
 msgid "1 minute"
-msgstr "1分"
+msgstr "1 daqiqa"
 
 #: src/lib/utils.ts
 msgid "1 week"
-msgstr "1週間"
+msgstr "1 hafta"
 
 #: src/lib/utils.ts
 msgid "12 hours"
-msgstr "12時間"
+msgstr "12 soat"
 
 #. Load average
 #: src/components/routes/system/charts/load-average-chart.tsx
 msgid "15 min"
-msgstr "15分"
+msgstr "15 daq"
 
 #: src/lib/utils.ts
 msgid "24 hours"
-msgstr "24時間"
+msgstr "24 soat"
 
 #: src/lib/utils.ts
 msgid "30 days"
-msgstr "30日間"
+msgstr "30 kun"
 
 #. Load average
 #: src/components/routes/system/charts/load-average-chart.tsx
 msgid "5 min"
-msgstr "5分"
+msgstr "5 daq"
 
 #. Table column
 #: src/components/routes/settings/quiet-hours.tsx
@@ -95,22 +90,22 @@ msgstr "5分"
 #: src/components/routes/system/smart-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Actions"
-msgstr "アクション"
+msgstr "Amallar"
 
 #: src/components/alerts-history-columns.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/settings/heartbeat.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Active"
-msgstr "アクティブ"
+msgstr "Faol"
 
 #: src/components/active-alerts.tsx
 msgid "Active Alerts"
-msgstr "アクティブなアラート"
+msgstr "Faol ogohlantirishlar"
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Active state"
-msgstr "アクティブ状態"
+msgstr "Faol holat"
 
 #: src/components/add-system.tsx
 #: src/components/add-system.tsx
@@ -119,48 +114,48 @@ msgstr "アクティブ状態"
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Add {foo}"
-msgstr "{foo}を追加"
+msgstr "{foo} qo'shish"
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Add URL"
-msgstr "URLを追加"
+msgstr "URL qo'shish"
 
 #: src/components/routes/settings/general.tsx
 msgid "Adjust display options for charts."
-msgstr "チャートの表示オプションを調整します。"
+msgstr "Grafiklar uchun ko'rsatish parametrlarini sozlang."
 
 #: src/components/routes/settings/general.tsx
 msgid "Adjust the width of the main layout"
-msgstr "メインレイアウトの幅を調整"
+msgstr "Asosiy tartib kengligini sozlang"
 
 #: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
 #: src/components/navbar.tsx
 msgid "Admin"
-msgstr "管理者"
+msgstr "Admin"
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "After"
-msgstr "後"
+msgstr "Keyin"
 
 #: src/components/routes/settings/heartbeat.tsx
 msgid "After setting the environment variables, restart your Beszel hub for changes to take effect."
-msgstr "環境変数を設定した後、変更を有効にするために Beszel ハブを再起動してください。"
+msgstr "Muhit o'zgaruvchilarini sozlagandan so'ng, o'zgarishlar kuchga kirishi uchun Beszel hub'ini qayta ishga tushiring."
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Agent"
-msgstr "エージェント"
+msgstr "Agent"
 
 #: src/components/command-palette.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/settings/layout.tsx
 msgid "Alert History"
-msgstr "アラート履歴"
+msgstr "Ogohlantirish tarixi"
 
 #: src/components/alerts/alert-button.tsx
 #: src/components/alerts/alerts-sheet.tsx
 msgid "Alerts"
-msgstr "アラート"
+msgstr "Ogohlantirishlar"
 
 #: src/components/command-palette.tsx
 #: src/components/containers-table/containers-table.tsx
@@ -168,7 +163,7 @@ msgstr "アラート"
 #: src/components/navbar.tsx
 #: src/components/routes/containers.tsx
 msgid "All Containers"
-msgstr "すべてのコンテナ"
+msgstr "Barcha konteynerlar"
 
 #: src/components/alerts/alerts-sheet.tsx
 #: src/components/command-palette.tsx
@@ -177,471 +172,471 @@ msgstr "すべてのコンテナ"
 #: src/components/systems-table/systems-table.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "All Systems"
-msgstr "すべてのシステム"
+msgstr "Barcha tizimlar"
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Are you sure you want to delete {name}?"
-msgstr "{name}を削除してもよろしいですか？"
+msgstr "{name} ni o'chirishni xohlaysizmi?"
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Are you sure?"
-msgstr "よろしいですか？"
+msgstr "Ishonchingiz komilmi?"
 
 #: src/components/copy-to-clipboard.tsx
 msgid "Automatic copy requires a secure context."
-msgstr "自動コピーには安全なコンテキストが必要です。"
+msgstr "Avtomatik nusxalash xavfsiz kontekstni talab qiladi."
 
 #: src/components/routes/system/chart-card.tsx
 msgid "Average"
-msgstr "平均"
+msgstr "O'rtacha"
 
 #: src/components/routes/system/charts/cpu-charts.tsx
 msgid "Average CPU utilization of containers"
-msgstr "コンテナの平均CPU使用率"
+msgstr "Konteynerlarning o'rtacha CPU yuklanishi"
 
 #. placeholder {0}: alertData.unit
 #: src/components/alerts/alerts-sheet.tsx
 msgid "Average drops below <0>{value}{0}</0>"
-msgstr "平均が<0>{value}{0}</0>を下回っています"
+msgstr "O'rtacha <0>{value}{0}</0> dan pastga tushadi"
 
 #. placeholder {0}: alertData.unit
 #: src/components/alerts/alerts-sheet.tsx
 msgid "Average exceeds <0>{value}{0}</0>"
-msgstr "平均が<0>{value}{0}</0>を超えています"
+msgstr "O'rtacha <0>{value}{0}</0> dan oshadi"
 
 #: src/components/routes/system/disk-io-sheet.tsx
 msgid "Average number of I/O operations waiting to be serviced"
-msgstr "サービスを待機している I/O 操作の平均数"
+msgstr "Xizmat ko'rsatishni kutayotgan I/O operatsiyalarining o'rtacha soni"
 
 #: src/components/routes/system/charts/gpu-charts.tsx
 msgid "Average power consumption of GPUs"
-msgstr "GPUの平均消費電力"
+msgstr "GPU'larning o'rtacha quvvat sarfi"
 
 #: src/components/routes/system/disk-io-sheet.tsx
 msgctxt "Disk I/O average operation time (iostat await)"
 msgid "Average queue to completion time per operation"
-msgstr "操作ごとの平均キューから完了までの時間"
+msgstr "Operatsiya boshlanishidan yakunlanishigacha o'rtacha vaqt"
 
 #: src/components/routes/system/charts/cpu-charts.tsx
 msgid "Average system-wide CPU utilization"
-msgstr "システム全体の平均CPU使用率"
+msgstr "Tizim bo'yicha o'rtacha CPU yuklanishi"
 
 #. placeholder {0}: gpu.n
 #: src/components/routes/system/charts/gpu-charts.tsx
 msgid "Average utilization of {0}"
-msgstr "{0}の平均使用率"
+msgstr "{0} ning o'rtacha yuklanishi"
 
 #: src/components/routes/system/charts/gpu-charts.tsx
 msgid "Average utilization of GPU engines"
-msgstr "GPUエンジンの平均使用率"
+msgstr "GPU dvigatellarining o'rtacha yuklanishi"
 
 #: src/components/command-palette.tsx
 #: src/components/navbar.tsx
 msgid "Backups"
-msgstr "バックアップ"
+msgstr "Zaxira nusxalar"
 
 #: src/components/routes/system/charts/network-charts.tsx
 #: src/lib/alerts.ts
 msgid "Bandwidth"
-msgstr "帯域幅"
+msgstr "O'tkazish qobiliyati"
 
 #. Battery label in systems table header
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Bat"
-msgstr "バッテリー"
+msgstr "Bat"
 
 #: src/components/routes/system/charts/sensor-charts.tsx
 #: src/lib/alerts.ts
 msgid "Battery"
-msgstr "バッテリー"
+msgstr "Batareya"
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Became active"
-msgstr "アクティブになった"
+msgstr "Faollashdi"
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Became inactive"
-msgstr "非アクティブになった"
+msgstr "Faolsizlashdi"
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Before"
-msgstr "前"
+msgstr "Oldin"
 
 #. placeholder {0}: alert.value
 #. placeholder {1}: info.unit
 #. placeholder {2}: alert.min
 #: src/components/active-alerts.tsx
 msgid "Below {0}{1} in last {2, plural, one {# minute} other {# minutes}}"
-msgstr "過去{2, plural, one {# 分} other {# 分}}で{0}{1}を下回っています"
+msgstr "So'nggi {2, plural, other {# daqiqa}} da {0}{1} dan past"
 
 #: src/components/login/auth-form.tsx
 msgid "Beszel supports OpenID Connect and many OAuth2 authentication providers."
-msgstr "BeszelはOpenID Connectと多くのOAuth2認証プロバイダーをサポートしています。"
+msgstr "Beszel OpenID Connect va ko'plab OAuth2 autentifikatsiya provayderlarini qo'llab-quvvatlaydi."
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Beszel uses <0>Shoutrrr</0> to integrate with popular notification services."
-msgstr "Beszelは<0>Shoutrrr</0>を使用して、人気のある通知サービスと統合します。"
+msgstr "Beszel mashhur bildirishnoma xizmatlarini birlashtirish uchun <0>Shoutrrr</0> dan foydalanadi."
 
 #: src/components/add-system.tsx
 msgid "Binary"
-msgstr "バイナリ"
+msgstr "Ikkilik"
 
 #: src/components/routes/settings/general.tsx
 #: src/components/routes/settings/general.tsx
 msgid "Bits (Kbps, Mbps, Gbps)"
-msgstr "ビット (Kbps, Mbps, Gbps)"
+msgstr "Bitlar (Kbps, Mbps, Gbps)"
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Boot state"
-msgstr "ブート状態"
+msgstr "Yuklash holati"
 
 #: src/components/routes/settings/general.tsx
 #: src/components/routes/settings/general.tsx
 msgid "Bytes (KB/s, MB/s, GB/s)"
-msgstr "バイト (KB/s, MB/s, GB/s)"
+msgstr "Baytlar (KB/s, MB/s, GB/s)"
 
 #: src/components/routes/system/charts/memory-charts.tsx
 msgid "Cache / Buffers"
-msgstr "キャッシュ / バッファ"
+msgstr "Kesh / Buferlar"
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Can reload"
-msgstr "リロード可能"
+msgstr "Qayta yuklay oladi"
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Can start"
-msgstr "開始可能"
+msgstr "Ishga tushira oladi"
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Can stop"
-msgstr "停止可能"
+msgstr "To'xtata oladi"
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Cancel"
-msgstr "キャンセル"
+msgstr "Bekor qilish"
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Capabilities"
-msgstr "機能"
+msgstr "Imkoniyatlar"
 
 #: src/components/routes/system/smart-table.tsx
 msgid "Capacity"
-msgstr "容量"
+msgstr "Sig'im"
 
 #: src/components/routes/settings/config-yaml.tsx
 msgid "Caution - potential data loss"
-msgstr "注意 - データ損失の可能性"
+msgstr "Ehtiyot bo'ling - ma'lumotlar yo'qolishi mumkin"
 
 #: src/components/routes/settings/general.tsx
 msgid "Celsius (°C)"
-msgstr "摂氏 (°C)"
+msgstr "Selsiy (°C)"
 
 #: src/components/routes/settings/general.tsx
 msgid "Change display units for metrics."
-msgstr "メトリックの表示単位を変更します。"
+msgstr "Metrikalar uchun ko'rsatish birliklarini o'zgartiring."
 
 #: src/components/routes/settings/general.tsx
 msgid "Change general application options."
-msgstr "一般的なアプリケーションオプションを変更します。"
+msgstr "Umumiy dastur parametrlarini o'zgartiring."
 
 #: src/components/routes/system/charts/sensor-charts.tsx
 msgid "Charge"
-msgstr "充電"
+msgstr "Zaryad"
 
 #. Context: Battery state
 #: src/lib/i18n.ts
 msgid "Charging"
-msgstr "充電中"
+msgstr "Zaryadlanmoqda"
 
 #: src/components/routes/settings/general.tsx
 msgid "Chart options"
-msgstr "チャートオプション"
+msgstr "Grafik parametrlari"
 
 #: src/components/routes/system/info-bar.tsx
 msgid "Chart width"
-msgstr "チャートの幅"
+msgstr "Grafik kengligi"
 
 #: src/components/login/forgot-pass-form.tsx
 msgid "Check {email} for a reset link."
-msgstr "{email}を確認してリセットリンクを探してください。"
+msgstr "Tiklash havolasi uchun {email} ni tekshiring."
 
 #: src/components/routes/settings/layout.tsx
 msgid "Check logs for more details."
-msgstr "詳細についてはログを確認してください。"
+msgstr "Batafsil ma'lumot uchun jurnallarni tekshiring."
 
 #: src/components/routes/settings/heartbeat.tsx
 msgid "Check your monitoring service"
-msgstr "監視サービスを確認する"
+msgstr "Monitoring xizmatingizni tekshiring"
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Check your notification service"
-msgstr "通知サービスを確認してください"
+msgstr "Bildirishnoma xizmatingizni tekshiring"
 
 #: src/components/containers-table/containers-table.tsx
 #: src/components/routes/system/smart-table.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "Clear"
-msgstr "クリア"
+msgstr "Tozalash"
 
 #: src/components/containers-table/containers-table.tsx
 msgid "Click on a container to view more information."
-msgstr "詳細情報を表示するにはコンテナをクリックしてください。"
+msgstr "Batafsil ma'lumot uchun konteynerni bosing."
 
 #: src/components/routes/system/smart-table.tsx
 msgid "Click on a device to view more information."
-msgstr "詳細情報を表示するにはデバイスをクリックしてください。"
+msgstr "Batafsil ma'lumot uchun qurilmani bosing."
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Click on a system to view more information."
-msgstr "システムをクリックして詳細を表示します。"
+msgstr "Batafsil ma'lumot uchun tizimni bosing."
 
 #: src/components/ui/input-copy.tsx
 msgid "Click to copy"
-msgstr "クリックしてコピー"
+msgstr "Nusxalash uchun bosing"
 
 #: src/components/login/forgot-pass-form.tsx
 #: src/components/login/forgot-pass-form.tsx
 msgid "Command line instructions"
-msgstr "コマンドラインの指示"
+msgstr "Buyruq qatori ko'rsatmalari"
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Configure how you receive alert notifications."
-msgstr "アラート通知の受信方法を設定します。"
+msgstr "Ogohlantirish bildirishnomalarini qanday olishingizni sozlang."
 
 #: src/components/login/auth-form.tsx
 #: src/components/login/auth-form.tsx
 msgid "Confirm password"
-msgstr "パスワードを確認"
+msgstr "Parolni tasdiqlang"
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Conflicts"
-msgstr "競合"
+msgstr "Ziddiyatlar"
 
 #: src/components/active-alerts.tsx
 msgid "Connection is down"
-msgstr "接続が切断されました"
+msgstr "Ulanish uzildi"
 
 #: src/components/routes/system.tsx
 msgid "Containers"
-msgstr "コンテナ"
+msgstr "Konteynerlar"
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Continue"
-msgstr "続行"
+msgstr "Davom etish"
 
 #: src/lib/utils.ts
 msgid "Copied to clipboard"
-msgstr "クリップボードにコピーされました"
+msgstr "Buferga nusxalandi"
 
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgctxt "Button to copy docker compose file content"
 msgid "Copy docker compose"
-msgstr "docker compose をコピー"
+msgstr "Docker compose nusxalash"
 
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgctxt "Button to copy docker run command"
 msgid "Copy docker run"
-msgstr "docker run をコピー"
+msgstr "Docker run nusxalash"
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgctxt "Environment variables"
 msgid "Copy env"
-msgstr "環境変数をコピー"
+msgstr "Muhit o'zgaruvchilarini nusxalash"
 
 #: src/components/alerts/alerts-sheet.tsx
 msgctxt "Copy alerts from another system"
 msgid "Copy from"
-msgstr "コピー元"
+msgstr "Nusxalash manba"
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Copy host"
-msgstr "ホストをコピー"
+msgstr "Xostni nusxalash"
 
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Copy Linux command"
-msgstr "Linuxコマンドをコピー"
+msgstr "Linux buyrug'ini nusxalash"
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Copy name"
-msgstr "名前をコピーする"
+msgstr "Nomni nusxalash"
 
 #: src/components/copy-to-clipboard.tsx
 msgid "Copy text"
-msgstr "テキストをコピー"
+msgstr "Matnni nusxalash"
 
 #: src/components/add-system.tsx
 msgid "Copy the installation command for the agent below, or register agents automatically with a <0>universal token</0>."
-msgstr "下記のエージェントのインストールコマンドをコピーするか、<0>ユニバーサルトークン</0>を使用してエージェントを自動登録してください。"
+msgstr "Agentni o'rnatish buyrug'ini pastdan nusxalang yoki agentlarni <0>universal token</0> bilan avtomatik ro'yxatdan o'tkazing."
 
 #: src/components/add-system.tsx
 msgid "Copy the<0>docker-compose.yml</0> content for the agent below, or register agents automatically with a <1>universal token</1>."
-msgstr "下記のエージェントの<0>docker-compose.yml</0>内容をコピーするか、<1>ユニバーサルトークン</1>を使用してエージェントを自動登録してください。"
+msgstr "Agent uchun<0>docker-compose.yml</0> mazmunini pastdan nusxalang yoki agentlarni <1>universal token</1> bilan avtomatik ro'yxatdan o'tkazing."
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Copy YAML"
-msgstr "YAMLをコピー"
+msgstr "YAML nusxalash"
 
 #: src/components/routes/system.tsx
 msgctxt "Core system metrics"
 msgid "Core"
-msgstr "コア"
+msgstr "Asosiy"
 
 #: src/components/containers-table/containers-table-columns.tsx
 #: src/components/systemd-table/systemd-table-columns.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "CPU"
-msgstr ""
+msgstr "CPU"
 
 #: src/components/routes/system/cpu-sheet.tsx
 msgid "CPU Cores"
-msgstr "CPU コア"
+msgstr "CPU yadrolar"
 
 #: src/components/systemd-table/systemd-table-columns.tsx
 msgid "CPU Peak"
-msgstr "CPUピーク"
+msgstr "CPU yuqori ko'rsatkichi"
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "CPU time"
-msgstr "CPU時間"
+msgstr "CPU vaqti"
 
 #: src/components/routes/system/cpu-sheet.tsx
 msgid "CPU Time Breakdown"
-msgstr "CPU 時間の内訳"
+msgstr "CPU vaqti taqsimoti"
 
 #: src/components/routes/system/charts/cpu-charts.tsx
 #: src/components/routes/system/charts/cpu-charts.tsx
 #: src/components/routes/system/cpu-sheet.tsx
 #: src/lib/alerts.ts
 msgid "CPU Usage"
-msgstr "CPU使用率"
+msgstr "CPU yuklanishi"
 
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Create"
-msgstr "作成"
+msgstr "Yaratish"
 
 #: src/components/login/auth-form.tsx
 msgid "Create account"
-msgstr "アカウントを作成"
+msgstr "Hisob yaratish"
 
 #. Context: date created
 #: src/components/alerts-history-columns.tsx
 msgid "Created"
-msgstr "作成日"
+msgstr "Yaratilgan"
 
 #: src/components/routes/settings/general.tsx
 msgid "Critical (%)"
-msgstr "致命的 (%)"
+msgstr "Kritik (%)"
 
 #: src/components/routes/system/network-sheet.tsx
 msgid "Cumulative Download"
-msgstr "累積ダウンロード"
+msgstr "Jami yuklab olish"
 
 #: src/components/routes/system/network-sheet.tsx
 msgid "Cumulative Upload"
-msgstr "累積アップロード"
+msgstr "Jami yuklash"
 
 #. Context: Battery state
 #: src/components/routes/system/charts/sensor-charts.tsx
 msgid "Current state"
-msgstr "現在の状態"
+msgstr "Joriy holat"
 
 #. Power Cycles
 #: src/components/routes/system/smart-table.tsx
 msgid "Cycles"
-msgstr "サイクル"
+msgstr "Sikllar"
 
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Daily"
-msgstr "毎日"
+msgstr "Kunlik"
 
 #: src/components/routes/system/info-bar.tsx
 msgctxt "Default system layout option"
 msgid "Default"
-msgstr "デフォルト"
+msgstr "Standart"
 
 #: src/components/routes/settings/general.tsx
 msgid "Default time period"
-msgstr "デフォルトの期間"
+msgstr "Standart vaqt oralig'i"
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/system/smart-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Delete"
-msgstr "削除"
+msgstr "O'chirish"
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Delete fingerprint"
-msgstr "フィンガープリントを削除"
+msgstr "Barmoq izini o'chirish"
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Description"
-msgstr "説明"
+msgstr "Tavsif"
 
 #: src/components/containers-table/containers-table.tsx
 msgid "Detail"
-msgstr "詳細"
+msgstr "Batafsil"
 
 #: src/components/routes/system/smart-table.tsx
 msgid "Device"
-msgstr "デバイス"
+msgstr "Qurilma"
 
 #. Context: Battery state
 #: src/lib/i18n.ts
 msgid "Discharging"
-msgstr "放電中"
+msgstr "Razryadlanmoqda"
 
 #: src/components/routes/system.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Disk"
-msgstr "ディスク"
+msgstr "Disk"
 
 #: src/components/routes/system/charts/disk-charts.tsx
 msgid "Disk I/O"
-msgstr "ディスクI/O"
+msgstr "Disk I/O"
 
 #: src/components/routes/settings/general.tsx
 msgid "Disk unit"
-msgstr "ディスク単位"
+msgstr "Disk birligi"
 
 #: src/components/routes/system/charts/disk-charts.tsx
 #: src/components/routes/system/charts/disk-charts.tsx
 #: src/lib/alerts.ts
 msgid "Disk Usage"
-msgstr "ディスク使用率"
+msgstr "Disk ishlatilishi"
 
 #: src/components/routes/system/charts/disk-charts.tsx
 msgid "Disk usage of {extraFsName}"
-msgstr "{extraFsName}のディスク使用率"
+msgstr "{extraFsName} ning disk ishlatilishi"
 
 #: src/components/routes/system/info-bar.tsx
 msgctxt "Layout display options"
 msgid "Display"
-msgstr "表示"
+msgstr "Ko'rsatish"
 
 #: src/components/routes/system/charts/cpu-charts.tsx
 msgid "Docker CPU Usage"
-msgstr "Docker CPU使用率"
+msgstr "Docker CPU yuklanishi"
 
 #: src/components/routes/system/charts/memory-charts.tsx
 msgid "Docker Memory Usage"
-msgstr "Dockerメモリ使用率"
+msgstr "Docker xotira ishlatilishi"
 
 #: src/components/routes/system/charts/network-charts.tsx
 msgid "Docker Network I/O"
-msgstr "DockerネットワークI/O"
+msgstr "Docker tarmoq I/O"
 
 #: src/components/command-palette.tsx
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Documentation"
-msgstr "ドキュメント"
+msgstr "Hujjatlar"
 
 #. Context: System is down
 #: src/components/alerts-history-columns.tsx
@@ -649,73 +644,73 @@ msgstr "ドキュメント"
 #: src/components/systems-table/systems-table-columns.tsx
 #: src/lib/alerts.ts
 msgid "Down"
-msgstr "停止"
+msgstr "Ishlamayapti"
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Down ({downSystemsLength})"
-msgstr "停止 ({downSystemsLength})"
+msgstr "Ishlamayapti ({downSystemsLength})"
 
 #: src/components/routes/system/network-sheet.tsx
 msgid "Download"
-msgstr "ダウンロード"
+msgstr "Yuklab olish"
 
 #: src/components/alerts-history-columns.tsx
 msgid "Duration"
-msgstr "期間"
+msgstr "Davomiylik"
 
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Edit"
-msgstr "編集"
+msgstr "Tahrirlash"
 
 #: src/components/add-system.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Edit {foo}"
-msgstr "{foo}を編集"
+msgstr "{foo} tahrirlash"
 
 #: src/components/login/auth-form.tsx
 #: src/components/login/forgot-pass-form.tsx
 #: src/components/login/otp-forms.tsx
 msgid "Email"
-msgstr "メール"
+msgstr "Elektron pochta"
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Email notifications"
-msgstr "メール通知"
+msgstr "Elektron pochta bildirishnomalari"
 
 #. Context: Battery state
 #: src/lib/i18n.ts
 msgid "Empty"
-msgstr "空"
+msgstr "Bo'sh"
 
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "End Time"
-msgstr "終了時間"
+msgstr "Tugash vaqti"
 
 #: src/components/routes/settings/heartbeat.tsx
 msgid "Endpoint URL"
-msgstr "エンドポイント URL"
+msgstr "Endpoint URL"
 
 #: src/components/routes/settings/heartbeat.tsx
 msgid "Endpoint URL to ping (required)"
-msgstr "ping するエンドポイント URL (必須)"
+msgstr "Ping uchun endpoint URL (majburiy)"
 
 #: src/components/login/login.tsx
 msgid "Enter email address to reset password"
-msgstr "パスワードをリセットするためにメールアドレスを入力してください"
+msgstr "Parolni tiklash uchun elektron pochta manzilini kiriting"
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Enter email address..."
-msgstr "メールアドレスを入力..."
+msgstr "Elektron pochta manzilini kiriting..."
 
 #: src/components/login/otp-forms.tsx
 msgid "Enter your one-time password."
-msgstr "ワンタイムパスワードを入力してください。"
+msgstr "Bir martalik parolingizni kiriting."
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Ephemeral"
-msgstr "一時的"
+msgstr "Vaqtinchalik"
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/settings/config-yaml.tsx
@@ -728,85 +723,85 @@ msgstr "一時的"
 #: src/components/routes/settings/tokens-fingerprints.tsx
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Error"
-msgstr "エラー"
+msgstr "Xato"
 
 #: src/components/routes/settings/heartbeat.tsx
 msgid "Example:"
-msgstr "例:"
+msgstr "Misol:"
 
 #. placeholder {0}: alert.value
 #. placeholder {1}: info.unit
 #. placeholder {2}: alert.min
 #: src/components/active-alerts.tsx
 msgid "Exceeds {0}{1} in last {2, plural, one {# minute} other {# minutes}}"
-msgstr "過去{2, plural, one {# 分} other {# 分}}で{0}{1}を超えています"
+msgstr "So'nggi {2, plural, other {# daqiqa}} da {0}{1} dan oshadi"
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Exec main PID"
-msgstr "実行メインPID"
+msgstr "Asosiy PID"
 
 #: src/components/routes/settings/config-yaml.tsx
 msgid "Existing systems not defined in <0>config.yml</0> will be deleted. Please make regular backups."
-msgstr "<0>config.yml</0>に定義されていない既存のシステムは削除されます。定期的にバックアップを作成してください。"
+msgstr "<0>config.yml</0> da aniqlanmagan mavjud tizimlar o'chiriladi. Iltimos, muntazam zaxira nusxalarni saqlang."
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Exited active"
-msgstr "アクティブ状態で終了"
+msgstr "Faollikdan chiqdi"
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Expires after one hour or on hub restart."
-msgstr "1時間後、またはハブの再起動時に有効期限が切れます。"
+msgstr "Bir soatdan keyin yoki hub qayta ishga tushganda muddati tugaydi."
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Export"
-msgstr "エクスポート"
+msgstr "Eksport"
 
 #: src/components/routes/settings/config-yaml.tsx
 msgid "Export configuration"
-msgstr "設定をエクスポート"
+msgstr "Konfiguratsiyani eksport qilish"
 
 #: src/components/routes/settings/config-yaml.tsx
 msgid "Export your current systems configuration."
-msgstr "現在のシステム設定をエクスポートします。"
+msgstr "Joriy tizimlar konfiguratsiyasini eksport qiling."
 
 #: src/components/routes/settings/general.tsx
 msgid "Fahrenheit (°F)"
-msgstr "華氏 (°F)"
+msgstr "Farengeyt (°F)"
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Failed"
-msgstr "失敗"
+msgstr "Muvaffaqiyatsiz"
 
 #: src/components/routes/system/smart-table.tsx
 msgid "Failed Attributes:"
-msgstr "失敗した属性:"
+msgstr "Muvaffaqiyatsiz atributlar:"
 
 #: src/lib/api.ts
 msgid "Failed to authenticate"
-msgstr "認証に失敗しました"
+msgstr "Autentifikatsiya muvaffaqiyatsiz tugadi"
 
 #: src/components/routes/settings/layout.tsx
 #: src/components/routes/settings/notifications.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Failed to save settings"
-msgstr "設定の保存に失敗しました"
+msgstr "Sozlamalarni saqlash muvaffaqiyatsiz tugadi"
 
 #: src/components/routes/settings/heartbeat.tsx
 msgid "Failed to send heartbeat"
-msgstr "ハートビートの送信に失敗しました"
+msgstr "Heartbeat yuborish muvaffaqiyatsiz tugadi"
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Failed to send test notification"
-msgstr "テスト通知の送信に失敗しました"
+msgstr "Test bildirishnoma yuborish muvaffaqiyatsiz tugadi"
 
 #: src/components/alerts/alerts-sheet.tsx
 msgid "Failed to update alert"
-msgstr "アラートの更新に失敗しました"
+msgstr "Ogohlantirishni yangilash muvaffaqiyatsiz tugadi"
 
 #. placeholder {0}: statusTotals[ServiceStatus.Failed]
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Failed: {0}"
-msgstr "失敗: {0}"
+msgstr "Muvaffaqiyatsiz: {0}"
 
 #: src/components/containers-table/containers-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
@@ -815,234 +810,234 @@ msgstr "失敗: {0}"
 #: src/components/systemd-table/systemd-table.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "Filter..."
-msgstr "フィルター..."
+msgstr "Filtrlash..."
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Fingerprint"
-msgstr "フィンガープリント"
+msgstr "Barmoq izi"
 
 #: src/components/routes/system/smart-table.tsx
 msgid "Firmware"
-msgstr "ファームウェア"
+msgstr "Proshivka"
 
 #: src/components/alerts/alerts-sheet.tsx
 msgid "For <0>{min}</0> {min, plural, one {minute} other {minutes}}"
-msgstr "<0>{min}</0> {min, plural, one {分} other {分}}の間"
+msgstr "<0>{min}</0> {min, plural, other {daqiqa}} uchun"
 
 #: src/components/login/auth-form.tsx
 msgid "Forgot password?"
-msgstr "パスワードをお忘れですか？"
+msgstr "Parolni unutdingizmi?"
 
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgctxt "Button to copy install command"
 msgid "FreeBSD command"
-msgstr "FreeBSD コマンド"
+msgstr "FreeBSD buyrug'i"
 
 #. Context: Battery state
 #: src/components/routes/system/info-bar.tsx
 #: src/lib/i18n.ts
 msgid "Full"
-msgstr "満充電"
+msgstr "To'liq"
 
 #. Context: General settings
 #: src/components/routes/settings/general.tsx
 #: src/components/routes/settings/layout.tsx
 msgid "General"
-msgstr "一般"
+msgstr "Umumiy"
 
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Global"
-msgstr "グローバル"
+msgstr "Global"
 
 #: src/components/routes/system.tsx
 msgid "GPU"
-msgstr ""
+msgstr "GPU"
 
 #: src/components/routes/system/charts/gpu-charts.tsx
 msgid "GPU Engines"
-msgstr "GPUエンジン"
+msgstr "GPU dvigatellari"
 
 #: src/components/routes/system/charts/gpu-charts.tsx
 msgid "GPU Power Draw"
-msgstr "GPUの消費電力"
+msgstr "GPU quvvat sarfi"
 
 #: src/lib/alerts.ts
 msgid "GPU Usage"
-msgstr "GPU使用率"
+msgstr "GPU yuklanishi"
 
 #: src/components/routes/system/info-bar.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "Grid"
-msgstr "グリッド"
+msgstr "Grid"
 
 #: src/components/containers-table/containers-table-columns.tsx
 msgid "Health"
-msgstr "ヘルス"
+msgstr "Sog'lik"
 
 #: src/components/routes/settings/layout.tsx
 msgid "Heartbeat"
-msgstr "ハートビート"
+msgstr "Heartbeat"
 
 #: src/components/routes/settings/heartbeat.tsx
 msgid "Heartbeat Monitoring"
-msgstr "ハートビート監視"
+msgstr "Heartbeat monitoring"
 
 #: src/components/routes/settings/heartbeat.tsx
 msgid "Heartbeat sent successfully"
-msgstr "ハートビートが正常に送信されました"
+msgstr "Heartbeat muvaffaqiyatli yuborildi"
 
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgctxt "Button to copy install command"
 msgid "Homebrew command"
-msgstr "Homebrew コマンド"
+msgstr "Homebrew buyrug'i"
 
 #: src/components/add-system.tsx
 msgid "Host / IP"
-msgstr "ホスト / IP"
+msgstr "Xost / IP"
 
 #: src/components/routes/settings/heartbeat.tsx
 msgid "HTTP Method"
-msgstr "HTTP メソッド"
+msgstr "HTTP usul"
 
 #: src/components/routes/settings/heartbeat.tsx
 msgid "HTTP method: POST, GET, or HEAD (default: POST)"
-msgstr "HTTP メソッド: POST、GET、または HEAD (デフォルト: POST)"
+msgstr "HTTP usul: POST, GET yoki HEAD (standart: POST)"
 
 #: src/components/routes/system/disk-io-sheet.tsx
 msgctxt "Disk I/O average operation time (iostat await)"
 msgid "I/O Await"
-msgstr "I/O 待機"
+msgstr "I/O kutish"
 
 #: src/components/routes/system/disk-io-sheet.tsx
 msgctxt "Disk I/O total time spent on read/write"
 msgid "I/O Time"
-msgstr "I/O 時間"
+msgstr "I/O vaqti"
 
 #: src/components/routes/system/charts/disk-charts.tsx
 msgctxt "Percent of time the disk is busy with I/O"
 msgid "I/O Utilization"
-msgstr "I/O 利用率"
+msgstr "I/O yuklanishi"
 
 #. Context: Battery state
 #: src/lib/i18n.ts
 msgid "Idle"
-msgstr "アイドル"
+msgstr "Faolsiz"
 
 #: src/components/login/forgot-pass-form.tsx
 msgid "If you've lost the password to your admin account, you may reset it using the following command."
-msgstr "管理者アカウントのパスワードを忘れた場合は、次のコマンドを使用してリセットできます。"
+msgstr "Agar admin hisobingiz parolini yo'qotgan bo'lsangiz, quyidagi buyruq yordamida uni tiklashingiz mumkin."
 
 #: src/components/containers-table/containers-table-columns.tsx
 msgctxt "Docker image"
 msgid "Image"
-msgstr "イメージ"
+msgstr "Obraz"
 
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Inactive"
-msgstr "非アクティブ"
+msgstr "Nofaol"
 
 #: src/components/routes/settings/heartbeat.tsx
 msgid "Interval"
-msgstr "間隔"
+msgstr "Interval"
 
 #: src/components/login/auth-form.tsx
 msgid "Invalid email address."
-msgstr "無効なメールアドレスです。"
+msgstr "Noto'g'ri elektron pochta manzili."
 
 #: src/components/lang-toggle.tsx
 #: src/components/routes/settings/general.tsx
 msgid "Language"
-msgstr "言語"
+msgstr "Til"
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Layout"
-msgstr "レイアウト"
+msgstr "Tartib"
 
 #: src/components/routes/settings/general.tsx
 msgid "Layout width"
-msgstr "レイアウト幅"
+msgstr "Tartib kengligi"
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Lifecycle"
-msgstr "ライフサイクル"
+msgstr "Hayot sikli"
 
 #: src/components/systemd-table/systemd-table.tsx
 #: src/components/systemd-table/systemd-table.tsx
 msgid "limit"
-msgstr "制限"
+msgstr "chegara"
 
 #: src/components/routes/system/charts/load-average-chart.tsx
 msgid "Load Average"
-msgstr "負荷平均"
+msgstr "O'rtacha yuklanish"
 
 #: src/lib/alerts.ts
 msgid "Load Average 15m"
-msgstr "負荷平均 (15分)"
+msgstr "O'rtacha yuklanish 15m"
 
 #: src/lib/alerts.ts
 msgid "Load Average 1m"
-msgstr "負荷平均 (1分)"
+msgstr "O'rtacha yuklanish 1m"
 
 #: src/lib/alerts.ts
 msgid "Load Average 5m"
-msgstr "負荷平均 (5分)"
+msgstr "O'rtacha yuklanish 5m"
 
 #. Short label for load average
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Load Avg"
-msgstr "負荷平均"
+msgstr "O'rt. yuklanish"
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Load state"
-msgstr "ロード状態"
+msgstr "Yuklash holati"
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Loading..."
-msgstr "読み込み中..."
+msgstr "Yuklanmoqda..."
 
 #: src/components/navbar.tsx
 #: src/components/navbar.tsx
 msgid "Log Out"
-msgstr "ログアウト"
+msgstr "Chiqish"
 
 #: src/components/login/login.tsx
 msgid "Login"
-msgstr "ログイン"
+msgstr "Kirish"
 
 #: src/components/login/auth-form.tsx
 #: src/components/login/forgot-pass-form.tsx
 msgid "Login attempt failed"
-msgstr "ログイン試行に失敗しました"
+msgstr "Kirish urinishi muvaffaqiyatsiz tugadi"
 
 #: src/components/command-palette.tsx
 #: src/components/containers-table/containers-table.tsx
 #: src/components/navbar.tsx
 msgid "Logs"
-msgstr "ログ"
+msgstr "Jurnallar"
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Looking instead for where to create alerts? Click the bell <0/> icons in the systems table."
-msgstr "アラートを作成する場所を探していますか？システムテーブルのベル<0/>アイコンをクリックしてください。"
+msgstr "Ogohlantirishlarni qayerda yaratishni izlayapsizmi? Tizimlar jadvalidagi qo'ng'iroq <0/> ikonkalarini bosing."
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Main PID"
-msgstr "メインPID"
+msgstr "Asosiy PID"
 
 #: src/components/routes/settings/layout.tsx
 msgid "Manage display and notification preferences."
-msgstr "表示と通知の設定を管理します。"
+msgstr "Ko'rsatish va bildirishnoma parametrlarini boshqaring."
 
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Manual setup instructions"
-msgstr "手動セットアップの手順"
+msgstr "Qo'lda o'rnatish ko'rsatmalari"
 
 #. Chart select field. Please try to keep this short.
 #: src/components/routes/system/chart-card.tsx
 msgid "Max 1 min"
-msgstr "最大1分"
+msgstr "Maks 1 daq"
 
 #: src/components/containers-table/containers-table-columns.tsx
 #: src/components/routes/system/info-bar.tsx
@@ -1050,30 +1045,30 @@ msgstr "最大1分"
 #: src/components/systemd-table/systemd-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Memory"
-msgstr "メモリ"
+msgstr "Xotira"
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Memory limit"
-msgstr "メモリ制限"
+msgstr "Xotira chegarasi"
 
 #: src/components/systemd-table/systemd-table-columns.tsx
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Memory Peak"
-msgstr "メモリピーク"
+msgstr "Xotira yuqori ko'rsatkichi"
 
 #: src/components/routes/system/charts/memory-charts.tsx
 #: src/lib/alerts.ts
 msgid "Memory Usage"
-msgstr "メモリ使用率"
+msgstr "Xotira ishlatilishi"
 
 #: src/components/routes/system/charts/memory-charts.tsx
 msgid "Memory usage of docker containers"
-msgstr "Dockerコンテナのメモリ使用率"
+msgstr "Docker konteynerlarining xotira ishlatilishi"
 
 #. Device model
 #: src/components/routes/system/smart-table.tsx
 msgid "Model"
-msgstr "モデル"
+msgstr "Model"
 
 #: src/components/add-system.tsx
 #: src/components/alerts-history-columns.tsx
@@ -1081,39 +1076,39 @@ msgstr "モデル"
 #: src/components/systemd-table/systemd-table-columns.tsx
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Name"
-msgstr "名前"
+msgstr "Nom"
 
 #: src/components/containers-table/containers-table-columns.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Net"
-msgstr "帯域"
+msgstr "Tarmoq"
 
 #: src/components/routes/system/charts/network-charts.tsx
 msgid "Network traffic of docker containers"
-msgstr "Dockerコンテナのネットワークトラフィック"
+msgstr "Docker konteynerlarining tarmoq trafigi"
 
 #: src/components/routes/system/charts/network-charts.tsx
 #: src/components/routes/system/network-sheet.tsx
 #: src/components/routes/system/network-sheet.tsx
 #: src/components/routes/system/network-sheet.tsx
 msgid "Network traffic of public interfaces"
-msgstr "パブリックインターフェースのネットワークトラフィック"
+msgstr "Ommaviy interfeyslarning tarmoq trafigi"
 
 #. Context: Bytes or bits
 #: src/components/routes/settings/general.tsx
 msgid "Network unit"
-msgstr "ネットワーク単位"
+msgstr "Tarmoq birligi"
 
 #: src/components/systemd-table/systemd-table.tsx
 #: src/components/systemd-table/systemd-table.tsx
 #: src/components/systemd-table/systemd-table.tsx
 msgid "No"
-msgstr "いいえ"
+msgstr "Yo'q"
 
 #: src/components/command-palette.tsx
 #: src/components/systemd-table/systemd-table.tsx
 msgid "No results found."
-msgstr "結果が見つかりませんでした。"
+msgstr "Natijalar topilmadi."
 
 #: src/components/containers-table/containers-table.tsx
 #: src/components/containers-table/containers-table.tsx
@@ -1122,39 +1117,39 @@ msgstr "結果が見つかりませんでした。"
 #: src/components/routes/system/smart-table.tsx
 #: src/components/systemd-table/systemd-table.tsx
 msgid "No results."
-msgstr "結果がありません。"
+msgstr "Natijalar yo'q."
 
 #: src/components/routes/system/smart-table.tsx
 msgid "No S.M.A.R.T. attributes available for this device."
-msgstr "このデバイスのS.M.A.R.T.属性は利用できません。"
+msgstr "Ushbu qurilma uchun S.M.A.R.T. atributlari mavjud emas."
 
 #: src/components/systems-table/systems-table.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "No systems found."
-msgstr "システムが見つかりませんでした。"
+msgstr "Tizimlar topilmadi."
 
 #: src/components/command-palette.tsx
 #: src/components/routes/settings/layout.tsx
 #: src/components/routes/settings/notifications.tsx
 msgid "Notifications"
-msgstr "通知"
+msgstr "Bildirishnomalar"
 
 #: src/components/login/auth-form.tsx
 msgid "OAuth 2 / OIDC support"
-msgstr "OAuth 2 / OIDCサポート"
+msgstr "OAuth 2 / OIDC qo'llab-quvvatlash"
 
 #: src/components/routes/settings/config-yaml.tsx
 msgid "On each restart, systems in the database will be updated to match the systems defined in the file."
-msgstr "再起動のたびに、データベース内のシステムはファイルに定義されたシステムに一致するように更新されます。"
+msgstr "Har qayta ishga tushirilganda, ma'lumotlar bazasidagi tizimlar fayldagi tizimlarga mos yangilanadi."
 
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "One-time"
-msgstr "1回限り"
+msgstr "Bir martalik"
 
 #: src/components/login/auth-form.tsx
 msgid "One-time password"
-msgstr "ワンタイムパスワード"
+msgstr "Bir martalik parol"
 
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
@@ -1162,167 +1157,167 @@ msgstr "ワンタイムパスワード"
 #: src/components/routes/system/smart-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Open menu"
-msgstr "メニューを開く"
+msgstr "Menyuni ochish"
 
 #: src/components/login/auth-form.tsx
 msgid "Or continue with"
-msgstr "または、以下の方法でログイン"
+msgstr "Yoki bilan davom eting"
 
 #: src/components/routes/system/cpu-sheet.tsx
 msgid "Other"
-msgstr "その他"
+msgstr "Boshqa"
 
 #: src/components/alerts/alerts-sheet.tsx
 msgid "Overwrite existing alerts"
-msgstr "既存のアラートを上書き"
+msgstr "Mavjud ogohlantirishlarni qayta yozish"
 
 #: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
 msgid "Page"
-msgstr "ページ"
+msgstr "Sahifa"
 
 #. placeholder {0}: table.getState().pagination.pageIndex + 1
 #. placeholder {1}: table.getPageCount()
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Page {0} of {1}"
-msgstr "{1}ページ中{0}ページ目"
+msgstr "{0} / {1} sahifa"
 
 #: src/components/command-palette.tsx
 msgid "Pages / Settings"
-msgstr "ページ / 設定"
+msgstr "Sahifalar / Sozlamalar"
 
 #: src/components/login/auth-form.tsx
 #: src/components/login/auth-form.tsx
 msgid "Password"
-msgstr "パスワード"
+msgstr "Parol"
 
 #: src/components/login/auth-form.tsx
 msgid "Password must be at least 8 characters."
-msgstr "パスワードは8文字以上である必要があります。"
+msgstr "Parol kamida 8 ta belgidan iborat bo'lishi kerak."
 
 #: src/components/login/auth-form.tsx
 msgid "Password must be less than 72 bytes."
-msgstr "パスワードは72バイト未満でなければなりません。"
+msgstr "Parol 72 baytdan kam bo'lishi kerak."
 
 #: src/components/login/forgot-pass-form.tsx
 msgid "Password reset request received"
-msgstr "パスワードリセットのリクエストを受け取りました"
+msgstr "Parolni tiklash so'rovi qabul qilindi"
 
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Past"
-msgstr "過去"
+msgstr "O'tgan"
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Pause"
-msgstr "一時停止"
+msgstr "Pauza"
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Paused"
-msgstr "一時停止中"
+msgstr "To'xtatilgan"
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Paused ({pausedSystemsLength})"
-msgstr "一時停止 ({pausedSystemsLength})"
+msgstr "To'xtatilgan ({pausedSystemsLength})"
 
 #: src/components/routes/settings/heartbeat.tsx
 msgid "Payload format"
-msgstr "ペイロード形式"
+msgstr "Yuklanma formati"
 
 #: src/components/routes/system/cpu-sheet.tsx
 #: src/components/routes/system/cpu-sheet.tsx
 msgid "Per-core average utilization"
-msgstr "コアごとの平均使用率"
+msgstr "Har yadro uchun o'rtacha yuklanish"
 
 #: src/components/routes/system/charts/disk-charts.tsx
 msgid "Percent of time the disk is busy with I/O"
-msgstr "ディスクが I/O でビジー状態である時間の割合"
+msgstr "Diskni I/O bilan band bo'lish vaqti foizi"
 
 #: src/components/routes/system/cpu-sheet.tsx
 msgid "Percentage of time spent in each state"
-msgstr "各状態で費やした時間の割合"
+msgstr "Har bir holatda sarflangan vaqt foizi"
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Permanent"
-msgstr "永久"
+msgstr "Doimiy"
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Persistence"
-msgstr "永続性"
+msgstr "Saqlash"
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Please <0>configure an SMTP server</0> to ensure alerts are delivered."
-msgstr "アラートが配信されるように<0>SMTPサーバーを設定</0>してください。"
+msgstr "Ogohlantirishlar yetkazilishini ta'minlash uchun <0>SMTP serverni sozlang</0>."
 
 #: src/components/alerts/alerts-sheet.tsx
 msgid "Please check logs for more details."
-msgstr "詳細についてはログを確認してください。"
+msgstr "Batafsil ma'lumot uchun jurnallarni tekshiring."
 
 #: src/components/login/auth-form.tsx
 #: src/components/login/forgot-pass-form.tsx
 msgid "Please check your credentials and try again"
-msgstr "資格情報を確認して再試行してください"
+msgstr "Hisobingizni tekshirib, qayta urinib ko'ring"
 
 #: src/components/login/login.tsx
 msgid "Please create an admin account"
-msgstr "管理者アカウントを作成してください"
+msgstr "Admin hisob yarating"
 
 #: src/components/login/auth-form.tsx
 msgid "Please enable pop-ups for this site"
-msgstr "このサイトのポップアップを有効にしてください"
+msgstr "Ushbu sayt uchun qalqib chiquvchi oynalarni yoqing"
 
 #: src/lib/api.ts
 msgid "Please log in again"
-msgstr "再度ログインしてください"
+msgstr "Iltimos, qayta kiring"
 
 #: src/components/login/auth-form.tsx
 msgid "Please see <0>the documentation</0> for instructions."
-msgstr "手順については<0>ドキュメント</0>を参照してください。"
+msgstr "Ko'rsatmalar uchun <0>hujjatlarni</0> ko'ring."
 
 #: src/components/login/login.tsx
 msgid "Please sign in to your account"
-msgstr "アカウントにサインインしてください"
+msgstr "Hisobingizga kiring"
 
 #: src/components/add-system.tsx
 msgid "Port"
-msgstr "ポート"
+msgstr "Port"
 
 #: src/components/containers-table/containers-table-columns.tsx
 msgctxt "Container ports"
 msgid "Ports"
-msgstr "ポート"
+msgstr "Portlar"
 
 #. Power On Time
 #: src/components/routes/system/smart-table.tsx
 msgid "Power On"
-msgstr "電源オン"
+msgstr "Yoqish"
 
 #: src/components/routes/system/charts/gpu-charts.tsx
 #: src/components/routes/system/charts/memory-charts.tsx
 msgid "Precise utilization at the recorded time"
-msgstr "記録された時点での正確な利用"
+msgstr "Qayd etilgan vaqtdagi aniq yuklanish"
 
 #: src/components/routes/settings/general.tsx
 msgid "Preferred Language"
-msgstr "優先言語"
+msgstr "Afzal til"
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Process started"
-msgstr "プロセス開始"
+msgstr "Jarayon boshlandi"
 
 #. Use 'Key' if your language requires many more characters
 #: src/components/add-system.tsx
 msgid "Public Key"
-msgstr "公開鍵"
+msgstr "Ochiq kalit"
 
 #: src/components/routes/system/disk-io-sheet.tsx
 msgctxt "Disk I/O average queue depth"
 msgid "Queue Depth"
-msgstr "キューの深さ"
+msgstr "Navbat chuqurligi"
 
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Quiet Hours"
-msgstr "サイレント時間"
+msgstr "Tinch soatlar"
 
 #. Disk read
 #: src/components/routes/system/charts/disk-charts.tsx
@@ -1330,166 +1325,166 @@ msgstr "サイレント時間"
 #: src/components/routes/system/disk-io-sheet.tsx
 #: src/components/routes/system/disk-io-sheet.tsx
 msgid "Read"
-msgstr "読み取り"
+msgstr "O'qish"
 
 #: src/components/routes/system/charts/network-charts.tsx
 msgid "Received"
-msgstr "受信"
+msgstr "Qabul qilindi"
 
 #: src/components/containers-table/containers-table.tsx
 #: src/components/containers-table/containers-table.tsx
 #: src/components/routes/system/smart-table.tsx
 msgid "Refresh"
-msgstr "更新"
+msgstr "Yangilash"
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Relationships"
-msgstr "関係"
+msgstr "Munosabatlar"
 
 #: src/components/login/login.tsx
 msgid "Request a one-time password"
-msgstr "ワンタイムパスワードをリクエスト"
+msgstr "Bir martalik parol so'rash"
 
 #: src/components/login/otp-forms.tsx
 msgid "Request OTP"
-msgstr "OTP をリクエスト"
+msgstr "OTP so'rash"
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Required by"
-msgstr "必要とされる"
+msgstr "Talab qilinadi"
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Requires"
-msgstr "必要とする"
+msgstr "Talab qiladi"
 
 #: src/components/login/forgot-pass-form.tsx
 msgid "Reset Password"
-msgstr "パスワードをリセット"
+msgstr "Parolni tiklash"
 
 #: src/components/alerts-history-columns.tsx
 #: src/components/alerts-history-columns.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Resolved"
-msgstr "解決済み"
+msgstr "Hal qilindi"
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Restarts"
-msgstr "再起動"
+msgstr "Qayta ishga tushirishlar"
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Resume"
-msgstr "再開"
+msgstr "Davom ettirish"
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgctxt "Root disk label"
 msgid "Root"
-msgstr "ルート"
+msgstr "Ildiz"
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Rotate token"
-msgstr "トークンをローテート"
+msgstr "Tokenni yangilash"
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Rows per page"
-msgstr "ページあたりの行数"
+msgstr "Sahifadagi qatorlar"
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Runtime Metrics"
-msgstr "ランタイムメトリクス"
+msgstr "Ishlash vaqti metrikasi"
 
 #: src/components/routes/system/smart-table.tsx
 msgid "S.M.A.R.T. Details"
-msgstr "S.M.A.R.T.詳細"
+msgstr "S.M.A.R.T. tafsilotlar"
 
 #: src/components/routes/system/smart-table.tsx
 msgid "S.M.A.R.T. Self-Test"
-msgstr "S.M.A.R.T.セルフテスト"
+msgstr "S.M.A.R.T. o'z-o'zini test"
 
 #: src/components/add-system.tsx
 msgid "Save {foo}"
-msgstr "{foo} を保存"
+msgstr "{foo} saqlash"
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Save address using enter key or comma. Leave blank to disable email notifications."
-msgstr "Enterキーまたはカンマを使用してアドレスを保存します。空白のままにするとメール通知が無効になります。"
+msgstr "Manzilni enter tugmasi yoki vergul yordamida saqlang. Elektron pochta bildirishnomalarini o'chirish uchun bo'sh qoldiring."
 
 #: src/components/routes/settings/general.tsx
 #: src/components/routes/settings/notifications.tsx
 msgid "Save Settings"
-msgstr "設定を保存"
+msgstr "Sozlamalarni saqlash"
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Saved in the database and does not expire until you disable it."
-msgstr "データベースに保存され、無効にするまで有効期限が切れません。"
+msgstr "Ma'lumotlar bazasida saqlanadi va siz o'chirishingizcha muddati tugamaydi."
 
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Schedule"
-msgstr "スケジュール"
+msgstr "Jadval"
 
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Schedule quiet hours where notifications will not be sent, such as during maintenance periods."
-msgstr "メンテナンス期間中などの通知が送信されないサイレント時間をスケジュールします。"
+msgstr "Texnik xizmat vaqtida bo'lgani kabi bildirishnomalar yuborilmaydigan tinch soatlarni belgilang."
 
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Schedule quiet hours where notifications will not be sent."
-msgstr "通知が送信されないサイレント時間をスケジュールします。"
+msgstr "Bildirishnomalar yuborilmaydigan tinch soatlarni belgilang."
 
 #: src/components/navbar.tsx
 msgid "Search"
-msgstr "検索"
+msgstr "Qidirish"
 
 #: src/components/command-palette.tsx
 msgid "Search for systems or settings..."
-msgstr "システムまたは設定を検索..."
+msgstr "Tizimlar yoki sozlamalarni qidiring..."
 
 #: src/components/routes/settings/heartbeat.tsx
 msgid "Seconds between pings (default: 60)"
-msgstr "ping 間の秒数 (デフォルト: 60)"
+msgstr "Pinglar orasidagi soniyalar (standart: 60)"
 
 #: src/components/alerts/alerts-sheet.tsx
 msgid "See <0>notification settings</0> to configure how you receive alerts."
-msgstr "アラートの受信方法を設定するには<0>通知設定</0>を参照してください。"
+msgstr "Ogohlantirishlarni qanday olishingizni sozlash uchun <0>bildirishnoma sozlamalarini</0> ko'ring."
 
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Select {foo}"
-msgstr "{foo}を選択"
+msgstr "{foo} tanlash"
 
 #: src/components/routes/settings/heartbeat.tsx
 msgid "Send a single heartbeat ping to verify your endpoint is working."
-msgstr "エンドポイントが機能していることを確認するために、単一のハートビート ping を送信します。"
+msgstr "Endpoint'ingiz ishlayotganligini tekshirish uchun bitta heartbeat ping yuboring."
 
 #: src/components/routes/settings/heartbeat.tsx
 msgid "Send periodic outbound pings to an external monitoring service so you can monitor Beszel without exposing it to the internet."
-msgstr "外部監視サービスに定期的にアウトバウンド ping を送信することで、Beszel をインターネットに公開せずに監視できます。"
+msgstr "Beszel'ni internetga ochmasdan monitoring qilish uchun tashqi monitoring xizmatiga davriy ping'lar yuboring."
 
 #: src/components/routes/settings/heartbeat.tsx
 msgid "Send test heartbeat"
-msgstr "テストハートビートを送信"
+msgstr "Test heartbeat yuborish"
 
 #: src/components/routes/system/charts/network-charts.tsx
 msgid "Sent"
-msgstr "送信"
+msgstr "Yuborildi"
 
 #: src/components/routes/system/smart-table.tsx
 msgid "Serial Number"
-msgstr "シリアル番号"
+msgstr "Seriya raqami"
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Service Details"
-msgstr "サービス詳細"
+msgstr "Xizmat tafsilotlari"
 
 #: src/components/routes/system.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Services"
-msgstr "サービス"
+msgstr "Xizmatlar"
 
 #: src/components/routes/settings/general.tsx
 msgid "Set percentage thresholds for meter colors."
-msgstr "メーターの色を変更するしきい値（パーセンテージ）を設定します。"
+msgstr "O'lchagich ranglari uchun foiz chegaralarini belgilang."
 
 #: src/components/routes/settings/heartbeat.tsx
 msgid "Set the following environment variables on your Beszel hub to enable heartbeat monitoring:"
-msgstr "ハートビート監視を有効にするには、Beszel ハブで次の環境変数を設定します。"
+msgstr "Heartbeat monitoringni yoqish uchun Beszel hub'ingizda quyidagi muhit o'zgaruvchilarini belgilang:"
 
 #: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
@@ -1499,35 +1494,35 @@ msgstr "ハートビート監視を有効にするには、Beszel ハブで次�
 #: src/components/routes/settings/layout.tsx
 #: src/components/routes/system/info-bar.tsx
 msgid "Settings"
-msgstr "設定"
+msgstr "Sozlamalar"
 
 #: src/components/routes/settings/layout.tsx
 msgid "Settings saved"
-msgstr "設定が保存されました"
+msgstr "Sozlamalar saqlandi"
 
 #: src/components/login/auth-form.tsx
 msgid "Sign in"
-msgstr "サインイン"
+msgstr "Kirish"
 
 #: src/components/command-palette.tsx
 msgid "SMTP settings"
-msgstr "SMTP設定"
+msgstr "SMTP sozlamalari"
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Sort By"
-msgstr "並び替え基準"
+msgstr "Saralash"
 
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Start Time"
-msgstr "開始時間"
+msgstr "Boshlanish vaqti"
 
 #. Context: alert state (active or resolved)
 #: src/components/alerts-history-columns.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/systemd-table/systemd-table-columns.tsx
 msgid "State"
-msgstr "状態"
+msgstr "Holat"
 
 #: src/components/containers-table/containers-table-columns.tsx
 #: src/components/routes/system/smart-table.tsx
@@ -1535,24 +1530,24 @@ msgstr "状態"
 #: src/components/systems-table/systems-table.tsx
 #: src/lib/alerts.ts
 msgid "Status"
-msgstr "ステータス"
+msgstr "Holat"
 
 #: src/components/systemd-table/systemd-table-columns.tsx
 msgid "Sub State"
-msgstr "サブ状態"
+msgstr "Kichik holat"
 
 #: src/components/routes/system/charts/memory-charts.tsx
 msgid "Swap space used by the system"
-msgstr "システムが使用するスワップ領域"
+msgstr "Tizim tomonidan ishlatiladigan swap maydoni"
 
 #: src/components/routes/system/charts/memory-charts.tsx
 msgid "Swap Usage"
-msgstr "スワップ使用量"
+msgstr "Swap ishlatilishi"
 
 #: src/components/mode-toggle.tsx
 #: src/components/mode-toggle.tsx
 msgid "Switch theme"
-msgstr ""
+msgstr "Mavzuni almashtirish"
 
 #: src/components/add-system.tsx
 #: src/components/alerts-history-columns.tsx
@@ -1567,261 +1562,261 @@ msgstr ""
 #: src/components/systems-table/systems-table-columns.tsx
 #: src/lib/alerts.ts
 msgid "System"
-msgstr "システム"
+msgstr "Tizim"
 
 #: src/components/routes/system/charts/load-average-chart.tsx
 msgid "System load averages over time"
-msgstr "システムの負荷平均の推移"
+msgstr "Tizim yuklanishi o'rtachalari vaqt bo'yicha"
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Systemd Services"
-msgstr "Systemdサービス"
+msgstr "Systemd xizmatlari"
 
 #: src/components/navbar.tsx
 msgid "Systems"
-msgstr "システム"
+msgstr "Tizimlar"
 
 #: src/components/routes/settings/config-yaml.tsx
 msgid "Systems may be managed in a <0>config.yml</0> file inside your data directory."
-msgstr "システムはデータディレクトリ内の<0>config.yml</0>ファイルで管理できます。"
+msgstr "Tizimlar ma'lumotlar katalogingiz ichidagi <0>config.yml</0> faylida boshqarilishi mumkin."
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Table"
-msgstr "テーブル"
+msgstr "Jadval"
 
 #: src/components/routes/system/info-bar.tsx
 msgctxt "Tabs system layout option"
 msgid "Tabs"
-msgstr "タブ"
+msgstr "Yorliqlar"
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Tasks"
-msgstr "タスク"
+msgstr "Vazifalar"
 
 #. Temperature label in systems table
 #: src/components/routes/system/smart-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Temp"
-msgstr "温度"
+msgstr "Harorat"
 
 #: src/components/routes/system/charts/sensor-charts.tsx
 #: src/lib/alerts.ts
 msgid "Temperature"
-msgstr "温度"
+msgstr "Harorat"
 
 #: src/components/routes/settings/general.tsx
 msgid "Temperature unit"
-msgstr "温度単位"
+msgstr "Harorat birligi"
 
 #: src/components/routes/system/charts/sensor-charts.tsx
 msgid "Temperatures of system sensors"
-msgstr "システムセンサーの温度"
+msgstr "Tizim sensorlarining haroratlari"
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Test <0>URL</0>"
-msgstr "テスト<0>URL</0>"
+msgstr "Test <0>URL</0>"
 
 #: src/components/routes/settings/heartbeat.tsx
 msgid "Test heartbeat"
-msgstr "テストハートビート"
+msgstr "Test heartbeat"
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Test notification sent"
-msgstr "テスト通知が送信されました"
+msgstr "Test bildirishnoma yuborildi"
 
 #: src/components/routes/settings/heartbeat.tsx
 msgid "The overall status is <0>ok</0> when all systems are up, <1>warn</1> when alerts are triggered, and <2>error</2> when any system is down."
-msgstr "全体的なステータスは、すべてのシステムが稼働している場合は <0>ok</0>、アラートがトリガーされた場合は <1>警告</1>、いずれかのシステムがダウンしている場合は <2>エラー</2> になります。"
+msgstr "Barcha tizimlar ishlayotganida umumiy holat <0>yaxshi</0>, ogohlantirishlar ishga tushganda <1>ogohlantirish</1> va biron-bir tizim ishlamayotganida <2>xato</2>."
 
 #: src/components/login/forgot-pass-form.tsx
 msgid "Then log into the backend and reset your user account password in the users table."
-msgstr "その後、バックエンドにログインして、ユーザーテーブルでユーザーアカウントのパスワードをリセットしてください。"
+msgstr "Keyin backend'ga kiring va foydalanuvchilar jadvalidagi foydalanuvchi hisob parolingizni tiklang."
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "This action cannot be undone. This will permanently delete all current records for {name} from the database."
-msgstr "この操作は元に戻せません。これにより、データベースから{name}のすべての現在のレコードが永久に削除されます。"
+msgstr "Bu amalni bekor qilib bo'lmaydi. Bu {name} uchun barcha joriy yozuvlarni ma'lumotlar bazasidan butunlay o'chiradi."
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "This will permanently delete all selected records from the database."
-msgstr "これにより、選択したすべてのレコードがデータベースから完全に削除されます。"
+msgstr "Bu barcha tanlangan yozuvlarni ma'lumotlar bazasidan butunlay o'chiradi."
 
 #: src/components/routes/system/charts/disk-charts.tsx
 msgid "Throughput of {extraFsName}"
-msgstr "{extraFsName}のスループット"
+msgstr "{extraFsName} ning o'tkazish qobiliyati"
 
 #: src/components/routes/system/charts/disk-charts.tsx
 msgid "Throughput of root filesystem"
-msgstr "ルートファイルシステムのスループット"
+msgstr "Ildiz fayl tizimining o'tkazish qobiliyati"
 
 #: src/components/routes/settings/general.tsx
 msgid "Time format"
-msgstr "時間形式"
+msgstr "Vaqt formati"
 
 #: src/components/routes/settings/notifications.tsx
 msgid "To email(s)"
-msgstr "宛先メールアドレス"
+msgstr "Kimga (elektron pochta)"
 
 #: src/components/mode-toggle.tsx
 #: src/components/mode-toggle.tsx
 #~ msgid "Toggle theme"
-#~ msgstr "テーマを切り替え"
+#~ msgstr "Mavzuni o'zgartirish"
 
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Token"
-msgstr "トークン"
+msgstr "Token"
 
 #: src/components/command-palette.tsx
 #: src/components/routes/settings/layout.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Tokens & Fingerprints"
-msgstr "トークンとフィンガープリント"
+msgstr "Tokenlar va barmoq izlari"
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Tokens allow agents to connect and register. Fingerprints are stable identifiers unique to each system, set on first connection."
-msgstr "トークンはエージェントの接続と登録を可能にします。フィンガープリントは各システム固有の安定した識別子で、初回接続時に設定されます。"
+msgstr "Tokenlar agentlarga ulanish va ro'yxatdan o'tish imkonini beradi. Barmoq izlari - birinchi ulanishda o'rnatiladigan, har bir tizimga xos barqaror identifikatorlar."
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Tokens and fingerprints are used to authenticate WebSocket connections to the hub."
-msgstr "トークンとフィンガープリントは、ハブへのWebSocket接続の認証に使用されます。"
+msgstr "Tokenlar va barmoq izlari hub'ga WebSocket ulanishlarini autentifikatsiya qilish uchun ishlatiladi."
 
 #: src/components/ui/chart.tsx
 #: src/components/ui/chart.tsx
 msgid "Total"
-msgstr "総数"
+msgstr "Jami"
 
 #: src/components/routes/system/network-sheet.tsx
 msgid "Total data received for each interface"
-msgstr "各インターフェースの総受信データ量"
+msgstr "Har bir interfeys uchun qabul qilingan jami ma'lumotlar"
 
 #: src/components/routes/system/network-sheet.tsx
 msgid "Total data sent for each interface"
-msgstr "各インターフェースの総送信データ量"
+msgstr "Har bir interfeys uchun yuborilgan jami ma'lumotlar"
 
 #: src/components/routes/system/disk-io-sheet.tsx
 msgctxt "Disk I/O"
 msgid "Total time spent on read/write (can exceed 100%)"
-msgstr ""
+msgstr "O'qish/yozishga sarflangan jami vaqt (100% dan oshishi mumkin)"
 
 #. placeholder {0}: data.length
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Total: {0}"
-msgstr "合計: {0}"
+msgstr "Jami: {0}"
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Triggered by"
-msgstr "トリガー元"
+msgstr "Ishga tushirdi"
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Triggers"
-msgstr "トリガー"
+msgstr "Ishga tushiruvchilar"
 
 #: src/lib/alerts.ts
 msgid "Triggers when 1 minute load average exceeds a threshold"
-msgstr "1分間の負荷平均がしきい値を超えたときにトリガーされます"
+msgstr "1 daqiqalik o'rtacha yuklanish chegaradan oshganda ishga tushadi"
 
 #: src/lib/alerts.ts
 msgid "Triggers when 15 minute load average exceeds a threshold"
-msgstr "15分間の負荷平均がしきい値を超えたときにトリガーされます"
+msgstr "15 daqiqalik o'rtacha yuklanish chegaradan oshganda ishga tushadi"
 
 #: src/lib/alerts.ts
 msgid "Triggers when 5 minute load average exceeds a threshold"
-msgstr "5分間の負荷平均がしきい値を超えたときにトリガーされます"
+msgstr "5 daqiqalik o'rtacha yuklanish chegaradan oshganda ishga tushadi"
 
 #: src/lib/alerts.ts
 msgid "Triggers when any sensor exceeds a threshold"
-msgstr "センサーがしきい値を超えたときにトリガーされます"
+msgstr "Biron-bir sensor chegaradan oshganda ishga tushadi"
 
 #: src/lib/alerts.ts
 msgid "Triggers when battery charge drops below a threshold"
-msgstr "バッテリーの充電量がしきい値を下回ったときにトリガーされます"
+msgstr "Batareya zaryadi chegaradan pastga tushganda ishga tushadi"
 
 #: src/lib/alerts.ts
 msgid "Triggers when combined up/down exceeds a threshold"
-msgstr "上り/下りの合計がしきい値を超えたときにトリガーされます"
+msgstr "Birlashtirilgan yuklash/yuklab olish chegaradan oshganda ishga tushadi"
 
 #: src/lib/alerts.ts
 msgid "Triggers when CPU usage exceeds a threshold"
-msgstr "CPU使用率がしきい値を超えたときにトリガーされます"
+msgstr "CPU yuklanishi chegaradan oshganda ishga tushadi"
 
 #: src/lib/alerts.ts
 msgid "Triggers when GPU usage exceeds a threshold"
-msgstr "GPU使用率がしきい値を超えたときにトリガーされます"
+msgstr "GPU yuklanishi chegaradan oshganda ishga tushadi"
 
 #: src/lib/alerts.ts
 msgid "Triggers when memory usage exceeds a threshold"
-msgstr "メモリ使用率がしきい値を超えたときにトリガーされます"
+msgstr "Xotira yuklanishi chegaradan oshganda ishga tushadi"
 
 #: src/lib/alerts.ts
 msgid "Triggers when status switches between up and down"
-msgstr "ステータスが上から下に切り替わるときにトリガーされます"
+msgstr "Holat ishlayapti/ishlamayapti o'rtasida o'zgarganda ishga tushadi"
 
 #: src/lib/alerts.ts
 msgid "Triggers when usage of any disk exceeds a threshold"
-msgstr "ディスクの使用量がしきい値を超えたときにトリガーされます"
+msgstr "Biron-bir disk ishlatilishi chegaradan oshganda ishga tushadi"
 
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/system/smart-table.tsx
 msgid "Type"
-msgstr "タイプ"
+msgstr "Tur"
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Unit file"
-msgstr "ユニットファイル"
+msgstr "Birlik fayl"
 
 #. Temperature / network units
 #: src/components/routes/settings/general.tsx
 msgid "Unit preferences"
-msgstr "単位の設定"
+msgstr "Birlik parametrlari"
 
 #: src/components/command-palette.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Universal token"
-msgstr "ユニバーサルトークン"
+msgstr "Universal token"
 
 #. Context: Battery state
 #: src/lib/i18n.ts
 msgid "Unknown"
-msgstr "不明"
+msgstr "Noma'lum"
 
 #: src/components/systemd-table/systemd-table.tsx
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Unlimited"
-msgstr "無制限"
+msgstr "Cheksiz"
 
 #. Context: System is up
 #: src/components/routes/system/info-bar.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Up"
-msgstr "正常"
+msgstr "Ishlayapti"
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Up ({upSystemsLength})"
-msgstr "正常 ({upSystemsLength})"
+msgstr "Ishlayapti ({upSystemsLength})"
 
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Update"
-msgstr "更新"
+msgstr "Yangilash"
 
 #: src/components/containers-table/containers-table-columns.tsx
 #: src/components/routes/system/smart-table.tsx
 #: src/components/systemd-table/systemd-table-columns.tsx
 msgid "Updated"
-msgstr "更新済み"
+msgstr "Yangilandi"
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Updated every 10 minutes."
-msgstr "10分ごとに更新されます。"
+msgstr "Har 10 daqiqada yangilanadi."
 
 #: src/components/routes/system/network-sheet.tsx
 msgid "Upload"
-msgstr "アップロード"
+msgstr "Yuklash"
 
 #: src/components/routes/system/info-bar.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Uptime"
-msgstr "稼働時間"
+msgstr "Ishlash vaqti"
 
 #: src/components/routes/system/charts/disk-charts.tsx
 #: src/components/routes/system/charts/gpu-charts.tsx
@@ -1829,86 +1824,86 @@ msgstr "稼働時間"
 #: src/components/routes/system/charts/gpu-charts.tsx
 #: src/components/routes/system/cpu-sheet.tsx
 msgid "Usage"
-msgstr "使用量"
+msgstr "Ishlatilishi"
 
 #: src/components/routes/system/charts/disk-charts.tsx
 msgid "Usage of root partition"
-msgstr "ルートパーティションの使用量"
+msgstr "Ildiz bo'limi ishlatilishi"
 
 #: src/components/routes/system/charts/memory-charts.tsx
 #: src/components/routes/system/charts/memory-charts.tsx
 msgid "Used"
-msgstr "使用中"
+msgstr "Ishlatilgan"
 
 #: src/components/command-palette.tsx
 #: src/components/navbar.tsx
 msgid "Users"
-msgstr "ユーザー"
+msgstr "Foydalanuvchilar"
 
 #: src/components/routes/system/charts/disk-charts.tsx
 msgctxt "Disk I/O utilization"
 msgid "Utilization"
-msgstr "利用率"
+msgstr "Yuklanish"
 
 #: src/components/alerts-history-columns.tsx
 msgid "Value"
-msgstr "値"
+msgstr "Qiymat"
 
 #: src/components/systems-table/systems-table.tsx
 msgid "View"
-msgstr "表示"
+msgstr "Ko'rish"
 
 #: src/components/routes/system/cpu-sheet.tsx
 #: src/components/routes/system/disk-io-sheet.tsx
 #: src/components/routes/system/network-sheet.tsx
 msgid "View more"
-msgstr "もっと見る"
+msgstr "Ko'proq ko'rish"
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "View your 200 most recent alerts."
-msgstr "直近200件のアラートを表示します。"
+msgstr "So'nggi 200 ta ogohlantirishingizni ko'ring."
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Visible Fields"
-msgstr "表示列"
+msgstr "Ko'rinadigan maydonlar"
 
 #: src/components/routes/system/chart-card.tsx
 msgid "Waiting for enough records to display"
-msgstr "表示するのに十分なレコードを待っています"
+msgstr "Ko'rsatish uchun yetarli yozuvlar kutilmoqda"
 
 #: src/components/routes/settings/general.tsx
 msgid "Want to help improve our translations? Check <0>Crowdin</0> for details."
-msgstr "翻訳をさらに良くするためにご協力をお願いします。詳細については<0>Crowdin</0>をご覧ください。"
+msgstr "Tarjimalarimizni yaxshilashga yordam bermoqchimisiz? Batafsil ma'lumot uchun <0>Crowdin</0> ni tekshiring."
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Wants"
-msgstr "要求"
+msgstr "Kerak qiladi"
 
 #: src/components/routes/settings/general.tsx
 msgid "Warning (%)"
-msgstr "警告 (%)"
+msgstr "Ogohlantirish (%)"
 
 #: src/components/routes/settings/general.tsx
 msgid "Warning thresholds"
-msgstr "警告のしきい値"
+msgstr "Ogohlantirish chegaralari"
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Webhook / Push notifications"
-msgstr "Webhook / プッシュ通知"
+msgstr "Webhook / Push bildirishnomalar"
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "When enabled, this token allows agents to self-register without prior system creation."
-msgstr "有効にすると、このトークンによりエージェントは事前のシステム作成なしで自己登録できます。"
+msgstr "Yoqilganda, ushbu token agentlarga oldindan tizim yaratmasdan o'z-o'zini ro'yxatdan o'tkazish imkonini beradi."
 
 #: src/components/routes/settings/heartbeat.tsx
 msgid "When using POST, each heartbeat includes a JSON payload with system status summary, list of down systems, and triggered alerts."
-msgstr "POST を使用する場合、各ハートビートには、システムステータスの概要、ダウンしているシステムのリスト、およびトリガーされたアラートを含む JSON ペイロードが含まれます。"
+msgstr "POST ishlatilganda, har bir heartbeat tizim holati xulosasi, ishlamayotgan tizimlar ro'yxati va ishga tushirilgan ogohlantirishlarni o'z ichiga olgan JSON yuklamani o'z ichiga oladi."
 
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgctxt "Button to copy install command"
 msgid "Windows command"
-msgstr "Windows コマンド"
+msgstr "Windows buyrug'i"
 
 #. Disk write
 #: src/components/routes/system/charts/disk-charts.tsx
@@ -1916,22 +1911,22 @@ msgstr "Windows コマンド"
 #: src/components/routes/system/disk-io-sheet.tsx
 #: src/components/routes/system/disk-io-sheet.tsx
 msgid "Write"
-msgstr "書き込み"
+msgstr "Yozish"
 
 #: src/components/routes/settings/layout.tsx
 msgid "YAML Config"
-msgstr "YAML設定"
+msgstr "YAML konfiguratsiya"
 
 #: src/components/routes/settings/config-yaml.tsx
 msgid "YAML Configuration"
-msgstr "YAML設定"
+msgstr "YAML konfiguratsiyasi"
 
 #: src/components/systemd-table/systemd-table.tsx
 #: src/components/systemd-table/systemd-table.tsx
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Yes"
-msgstr "はい"
+msgstr "Ha"
 
 #: src/components/routes/settings/layout.tsx
 msgid "Your user settings have been updated."
-msgstr "ユーザー設定が更新されました。"
+msgstr "Foydalanuvchi sozlamalaringiz yangilandi."

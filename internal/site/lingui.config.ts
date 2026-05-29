@@ -28,6 +28,7 @@ export default defineConfig({
 		"sr",
 		"sv",
 		"uk",
+		"uz",
 		"vi",
 		"zh",
 		"zh-CN",
