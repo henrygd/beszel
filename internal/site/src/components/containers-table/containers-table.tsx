@@ -14,7 +14,7 @@ import {
 	type VisibilityState,
 } from "@tanstack/react-table"
 import { useVirtualizer, type VirtualItem } from "@tanstack/react-virtual"
-import { memo, type RefObject, useEffect, useRef, useState } from "react"
+import { memo, type RefObject, useEffect, useMemo, useRef, useState } from "react"
 import { Input } from "@/components/ui/input"
 import { TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { pb } from "@/lib/api"
@@ -27,13 +27,88 @@ import { Sheet, SheetTitle, SheetHeader, SheetContent, SheetDescription } from "
 import { Dialog, DialogContent, DialogTitle } from "../ui/dialog"
 import { Button } from "@/components/ui/button"
 import { $allSystemsById } from "@/lib/stores"
-import { LoaderCircleIcon, MaximizeIcon, RefreshCwIcon, XIcon } from "lucide-react"
+import { ChevronDownIcon, ChevronRightIcon, LoaderCircleIcon, MaximizeIcon, RefreshCwIcon, XIcon } from "lucide-react"
 import { Separator } from "../ui/separator"
 import { $router, Link } from "../router"
 import { listenKeys } from "nanostores"
 import { getPagePath } from "@nanostores/router"
 
 const syntaxTheme = "github-dark-dimmed"
+
+type GroupHeader = {
+	type: "group-header"
+	groupKey: string
+	label: string
+	count: number
+}
+type RowItem = {
+	type: "row"
+	row: Row<ContainerRecord>
+}
+type DisplayItem = GroupHeader | RowItem
+
+function buildDisplayItems(
+	rows: Row<ContainerRecord>[],
+	collapsedGroups: Set<string>
+): { items: DisplayItem[]; hasGroups: boolean } {
+	const standaloneRows: Row<ContainerRecord>[] = []
+	const composeGroups = new Map<string, Row<ContainerRecord>[]>()
+
+	const composeGroupsRaw = new Map<string, Row<ContainerRecord>[]>()
+	for (const row of rows) {
+		const compose = row.original.compose || ""
+		if (!compose) {
+			standaloneRows.push(row)
+		} else {
+			if (!composeGroupsRaw.has(compose)) {
+				composeGroupsRaw.set(compose, [])
+			}
+			composeGroupsRaw.get(compose)!.push(row)
+		}
+	}
+	// Single-container compose projects are treated as standalone
+	for (const [project, projectRows] of composeGroupsRaw) {
+		if (projectRows.length < 2) {
+			standaloneRows.push(...projectRows)
+		} else {
+			composeGroups.set(project, projectRows)
+		}
+	}
+
+	const hasGroups = composeGroups.size > 0
+	const items: DisplayItem[] = []
+
+	if (!hasGroups) {
+		for (const row of standaloneRows) {
+			items.push({ type: "row", row })
+		}
+		return { items, hasGroups }
+	}
+
+	// Standalone containers section (only show header if there are also compose groups)
+	if (standaloneRows.length > 0) {
+		items.push({ type: "group-header", groupKey: "__standalone__", label: t`Standalone Containers`, count: standaloneRows.length })
+		if (!collapsedGroups.has("__standalone__")) {
+			for (const row of standaloneRows) {
+				items.push({ type: "row", row })
+			}
+		}
+	}
+
+	// Compose project sections sorted alphabetically
+	const sortedProjects = [...composeGroups.keys()].sort()
+	for (const project of sortedProjects) {
+		const projectRows = composeGroups.get(project)!
+		items.push({ type: "group-header", groupKey: project, label: `Compose: ${project}`, count: projectRows.length })
+		if (!collapsedGroups.has(project)) {
+			for (const row of projectRows) {
+				items.push({ type: "row", row })
+			}
+		}
+	}
+
+	return { items, hasGroups }
+}
 
 export default function ContainersTable({ systemId }: { systemId?: string }) {
 	const loadTime = Date.now()
@@ -66,7 +141,7 @@ export default function ContainersTable({ systemId }: { systemId?: string }) {
 		function fetchData(systemId?: string) {
 			pb.collection<ContainerRecord>("containers")
 				.getList(0, 2000, {
-					fields: "id,name,image,ports,cpu,memory,net,health,status,system,updated",
+					fields: "id,name,image,ports,cpu,memory,net,health,status,system,updated,compose,traffic_in,traffic_out",
 					filter: systemId ? pb.filter("system={:system}", { system: systemId }) : undefined,
 				})
 				.then(({ items }) => {
@@ -150,7 +225,8 @@ export default function ContainersTable({ systemId }: { systemId?: string }) {
 			const healthLabel = ContainerHealthLabels[container.health as ContainerHealth] ?? ""
 			const image = container.image ?? ""
 			const ports = container.ports ?? ""
-			const searchString = `${systemName} ${id} ${name} ${healthLabel} ${status} ${image} ${ports}`.toLowerCase()
+			const compose = container.compose ?? ""
+			const searchString = `${systemName} ${id} ${name} ${healthLabel} ${status} ${image} ${ports} ${compose}`.toLowerCase()
 
 			return (filterValue as string)
 				.toLowerCase()
@@ -161,6 +237,10 @@ export default function ContainersTable({ systemId }: { systemId?: string }) {
 
 	const rows = table.getRowModel().rows
 	const visibleColumns = table.getVisibleLeafColumns()
+
+	const totalCount = data?.length ?? 0
+	const runningCount = data?.filter((c) => c.status.startsWith("Up")).length ?? 0
+	const stoppedCount = totalCount - runningCount
 
 	return (
 		<Card className="@container w-full px-3 py-5 sm:py-6 sm:px-6">
@@ -199,6 +279,21 @@ export default function ContainersTable({ systemId }: { systemId?: string }) {
 			<div className="rounded-md">
 				<AllContainersTable table={table} rows={rows} colLength={visibleColumns.length} data={data} />
 			</div>
+			{data && (
+				<div className="flex items-center gap-4 mt-3 px-1 text-xs text-muted-foreground">
+					<span className="flex items-center gap-1.5">
+						<span className="size-2 rounded-full bg-green-500 shrink-0" />
+						<Trans>{runningCount} running</Trans>
+					</span>
+					{stoppedCount > 0 && (
+						<span className="flex items-center gap-1.5">
+							<span className="size-2 rounded-full bg-zinc-500 shrink-0" />
+							<Trans>{stoppedCount} stopped</Trans>
+						</span>
+					)}
+					<span className="ms-auto">{t`${totalCount} total`}</span>
+				</div>
+			)}
 		</Card>
 	)
 }
@@ -214,18 +309,36 @@ const AllContainersTable = memo(function AllContainersTable({
 	colLength: number
 	data: ContainerRecord[] | undefined
 }) {
-	// The virtualizer will need a reference to the scrollable container element
 	const scrollRef = useRef<HTMLDivElement>(null)
 	const activeContainer = useRef<ContainerRecord | null>(null)
 	const [sheetOpen, setSheetOpen] = useState(false)
+	const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(new Set())
+
 	const openSheet = (container: ContainerRecord) => {
 		activeContainer.current = container
 		setSheetOpen(true)
 	}
 
+	const toggleGroup = (groupKey: string) => {
+		setCollapsedGroups((prev) => {
+			const next = new Set(prev)
+			if (next.has(groupKey)) {
+				next.delete(groupKey)
+			} else {
+				next.add(groupKey)
+			}
+			return next
+		})
+	}
+
+	const { items: displayItems, hasGroups } = useMemo(
+		() => buildDisplayItems(rows, collapsedGroups),
+		[rows, collapsedGroups]
+	)
+
 	const virtualizer = useVirtualizer<HTMLDivElement, HTMLTableRowElement>({
-		count: rows.length,
-		estimateSize: () => 54,
+		count: displayItems.length,
+		estimateSize: (index) => (displayItems[index]?.type === "group-header" ? 42 : 54),
 		getScrollElement: () => scrollRef.current,
 		overscan: 5,
 	})
@@ -238,20 +351,38 @@ const AllContainersTable = memo(function AllContainersTable({
 		<div
 			className={cn(
 				"h-min max-h-[calc(100dvh-17rem)] max-w-full relative overflow-auto border rounded-md",
-				// don't set min height if there are less than 2 rows, do set if we need to display the empty state
-				(!rows.length || rows.length > 2) && "min-h-50"
+				(!displayItems.length || displayItems.length > 2) && "min-h-50"
 			)}
 			ref={scrollRef}
 		>
-			{/* add header height to table size */}
 			<div style={{ height: `${virtualizer.getTotalSize() + 48}px`, paddingTop, paddingBottom }}>
 				<table className="text-sm w-full h-full text-nowrap">
 					<ContainersTableHead table={table} />
 					<TableBody>
-						{rows.length ? (
+						{displayItems.length ? (
 							virtualRows.map((virtualRow) => {
-								const row = rows[virtualRow.index]
-								return <ContainerTableRow key={row.id} row={row} virtualRow={virtualRow} openSheet={openSheet} />
+								const item = displayItems[virtualRow.index]
+								if (item.type === "group-header") {
+									return (
+										<GroupHeaderRow
+											key={item.groupKey}
+											item={item}
+											virtualRow={virtualRow}
+											colLength={colLength}
+											collapsed={collapsedGroups.has(item.groupKey)}
+											onToggle={() => toggleGroup(item.groupKey)}
+										/>
+									)
+								}
+								return (
+									<ContainerTableRow
+										key={item.row.id}
+										row={item.row}
+										virtualRow={virtualRow}
+										openSheet={openSheet}
+										hasGroups={hasGroups}
+									/>
+								)
 							})
 						) : (
 							<TableRow>
@@ -269,6 +400,43 @@ const AllContainersTable = memo(function AllContainersTable({
 			</div>
 			<ContainerSheet sheetOpen={sheetOpen} setSheetOpen={setSheetOpen} activeContainer={activeContainer} />
 		</div>
+	)
+})
+
+const GroupHeaderRow = memo(function GroupHeaderRow({
+	item,
+	virtualRow,
+	colLength,
+	collapsed,
+	onToggle,
+}: {
+	item: GroupHeader
+	virtualRow: VirtualItem
+	colLength: number
+	collapsed: boolean
+	onToggle: () => void
+}) {
+	return (
+		<TableRow
+			className="bg-muted/40 hover:bg-muted/60 cursor-pointer select-none border-y"
+			onClick={onToggle}
+		>
+			<TableCell
+				colSpan={colLength}
+				className="py-0 ps-3"
+				style={{ height: virtualRow.size }}
+			>
+				<div className="flex items-center gap-2 font-medium text-muted-foreground text-xs">
+					{collapsed ? (
+						<ChevronRightIcon className="size-3.5 shrink-0" />
+					) : (
+						<ChevronDownIcon className="size-3.5 shrink-0" />
+					)}
+					<span>{item.label}</span>
+					<span className="ms-auto me-2 tabular-nums opacity-60">{item.count}</span>
+				</div>
+			</TableCell>
+		</TableRow>
 	)
 })
 
@@ -396,14 +564,6 @@ function ContainerSheet({
 							{container.image}
 							<Separator orientation="vertical" className="h-2.5 bg-muted-foreground opacity-70" />
 							{container.id}
-							{/* {container.ports && (
-								<>
-									<Separator orientation="vertical" className="h-2.5 bg-muted-foreground opacity-70" />
-									{container.ports}
-								</>
-							)} */}
-							{/* <Separator orientation="vertical" className="h-2.5 bg-muted-foreground opacity-70" />
-							{ContainerHealthLabels[container.health as ContainerHealth]} */}
 						</SheetDescription>
 					</SheetHeader>
 					<div className="px-3 pb-3 -mt-4 flex flex-col gap-3 h-full items-start">
@@ -481,10 +641,12 @@ const ContainerTableRow = memo(function ContainerTableRow({
 	row,
 	virtualRow,
 	openSheet,
+	hasGroups,
 }: {
 	row: Row<ContainerRecord>
 	virtualRow: VirtualItem
 	openSheet: (container: ContainerRecord) => void
+	hasGroups: boolean
 }) {
 	return (
 		<TableRow
@@ -495,7 +657,7 @@ const ContainerTableRow = memo(function ContainerTableRow({
 			{row.getVisibleCells().map((cell) => (
 				<TableCell
 					key={cell.id}
-					className="py-0 ps-4.5"
+					className={cn("py-0 ps-4.5", hasGroups && "ps-7")}
 					style={{
 						height: virtualRow.size,
 						width: cell.column.getSize(),
