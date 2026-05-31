@@ -3,6 +3,7 @@
 package battery
 
 import (
+	"errors"
 	"os"
 	"path/filepath"
 	"testing"
@@ -198,4 +199,62 @@ func TestHasReadableBattery_NoCapacityFile(t *testing.T) {
 	assert.NoError(t, err)
 
 	assert.False(t, HasReadableBattery())
+}
+
+func TestGetBatteryStats_BatteryDevicesFilter(t *testing.T) {
+	t.Setenv("BATTERY_DEVICES", "BAT0")
+	_, addBattery := setupFakeSysfs(t)
+	addBattery("BAT0", "50", "Charging")
+	addBattery("BAT1", "80", "Discharging")
+
+	pct, state, err := GetBatteryStats()
+	assert.NoError(t, err)
+	assert.Equal(t, uint8(50), pct) // only BAT0 counted
+	assert.Equal(t, stateCharging, state)
+}
+
+func TestGetBatteryStats_BatteryDevicesMultiple(t *testing.T) {
+	t.Setenv("BATTERY_DEVICES", "BAT0, BAT2")
+	_, addBattery := setupFakeSysfs(t)
+	addBattery("BAT0", "50", "Charging")
+	addBattery("BAT1", "80", "Discharging")
+	addBattery("BAT2", "30", "Full")
+
+	pct, state, err := GetBatteryStats()
+	assert.NoError(t, err)
+	assert.EqualValues(t, 40, pct) // average of 50 and 30
+	assert.Equal(t, stateFull, state)
+}
+
+func TestGetBatteryStats_BatteryDevicesEmpty(t *testing.T) {
+	t.Setenv("BATTERY_DEVICES", "")
+	_, addBattery := setupFakeSysfs(t)
+	addBattery("BAT0", "50", "Charging")
+	addBattery("BAT1", "80", "Discharging")
+
+	pct, _, err := GetBatteryStats()
+	assert.NoError(t, err)
+	assert.EqualValues(t, 65, pct)
+}
+
+func TestGetBatteryStats_BatteryDevicesWhitespace(t *testing.T) {
+	t.Setenv("BATTERY_DEVICES", "   ")
+	_, addBattery := setupFakeSysfs(t)
+	addBattery("BAT0", "50", "Charging")
+	addBattery("BAT1", "80", "Discharging")
+
+	pct, _, err := GetBatteryStats()
+	assert.NoError(t, err)
+	assert.EqualValues(t, 65, pct)
+}
+
+func TestGetBatteryStats_BatteryDevicesNoMatch(t *testing.T) {
+	t.Setenv("BATTERY_DEVICES", "BAT9")
+	_, addBattery := setupFakeSysfs(t)
+	addBattery("BAT0", "50", "Charging")
+	addBattery("BAT1", "80", "Discharging")
+
+	_, _, err := GetBatteryStats()
+	assert.Error(t, err)
+	assert.ErrorIs(t, err, errors.ErrUnsupported)
 }
