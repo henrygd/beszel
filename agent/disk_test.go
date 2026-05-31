@@ -258,9 +258,9 @@ func TestBuildFsStatRegistration(t *testing.T) {
 		assert.Equal(t, `C:`, key)
 	})
 
-	t.Run("skips existing key", func(t *testing.T) {
+	t.Run("skips re-registration of the same mountpoint", func(t *testing.T) {
 		key, stats, ok := registerFilesystemStats(
-			map[string]*system.FsStats{"sda1": {Mountpoint: "/existing"}},
+			map[string]*system.FsStats{"sda1": {Mountpoint: "/mnt/data"}},
 			"/dev/sda1",
 			"/mnt/data",
 			false,
@@ -276,6 +276,52 @@ func TestBuildFsStatRegistration(t *testing.T) {
 		assert.False(t, ok)
 		assert.Empty(t, key)
 		assert.Nil(t, stats)
+	})
+
+	t.Run("keeps both mounts when a pseudo-device key collides (issue #1931)", func(t *testing.T) {
+		// systemd-automount reports every mount with device="systemd-1", so
+		// registering the second entry must not silently drop it.
+		existing := map[string]*system.FsStats{
+			"systemd-1": {Mountpoint: "/media/video"},
+		}
+		key, stats, ok := registerFilesystemStats(
+			existing,
+			"systemd-1",
+			"/media/backup",
+			false,
+			"Backup",
+			fsRegistrationContext{
+				isWindows:      false,
+				diskIoCounters: map[string]disk.IOCountersStat{},
+			},
+		)
+
+		assert.True(t, ok)
+		assert.NotEqual(t, "systemd-1", key, "key must differ from the colliding entry")
+		assert.Equal(t, "backup", key)
+		assert.Equal(t, "/media/backup", stats.Mountpoint)
+		assert.Equal(t, "Backup", stats.Name)
+	})
+
+	t.Run("derives a suffixed unique key when the mountpoint basename also collides", func(t *testing.T) {
+		existing := map[string]*system.FsStats{
+			"systemd-1": {Mountpoint: "/srv/backup"},
+			"backup":    {Mountpoint: "/media/backup"},
+		}
+		key, _, ok := registerFilesystemStats(
+			existing,
+			"systemd-1",
+			"/mnt/backup",
+			false,
+			"",
+			fsRegistrationContext{
+				isWindows:      false,
+				diskIoCounters: map[string]disk.IOCountersStat{},
+			},
+		)
+
+		assert.True(t, ok)
+		assert.Equal(t, "backup-2", key)
 	})
 }
 
