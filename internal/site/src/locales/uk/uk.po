@@ -1550,6 +1550,11 @@ msgstr "Область підкачки, використана системою
 msgid "Swap Usage"
 msgstr "Використання підкачки"
 
+#: src/components/mode-toggle.tsx
+#: src/components/mode-toggle.tsx
+msgid "Switch theme"
+msgstr ""
+
 #: src/components/add-system.tsx
 #: src/components/alerts-history-columns.tsx
 #: src/components/containers-table/containers-table-columns.tsx
@@ -1659,8 +1664,8 @@ msgstr "На електронну пошту"
 
 #: src/components/mode-toggle.tsx
 #: src/components/mode-toggle.tsx
-msgid "Toggle theme"
-msgstr "Перемкнути тему"
+#~ msgid "Toggle theme"
+#~ msgstr "Перемкнути тему"
 
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
