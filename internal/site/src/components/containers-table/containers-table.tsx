@@ -238,10 +238,6 @@ export default function ContainersTable({ systemId }: { systemId?: string }) {
 	const rows = table.getRowModel().rows
 	const visibleColumns = table.getVisibleLeafColumns()
 
-	const totalCount = data?.length ?? 0
-	const runningCount = data?.filter((c) => c.status.startsWith("Up")).length ?? 0
-	const stoppedCount = totalCount - runningCount
-
 	return (
 		<Card className="@container w-full px-3 py-5 sm:py-6 sm:px-6">
 			<CardHeader className="p-0 mb-3 sm:mb-4">
@@ -276,24 +272,7 @@ export default function ContainersTable({ systemId }: { systemId?: string }) {
 					</div>
 				</div>
 			</CardHeader>
-			<div className="rounded-md">
-				<AllContainersTable table={table} rows={rows} colLength={visibleColumns.length} data={data} />
-			</div>
-			{data && (
-				<div className="flex items-center gap-4 mt-3 px-1 text-xs text-muted-foreground">
-					<span className="flex items-center gap-1.5">
-						<span className="size-2 rounded-full bg-green-500 shrink-0" />
-						<Trans>{runningCount} running</Trans>
-					</span>
-					{stoppedCount > 0 && (
-						<span className="flex items-center gap-1.5">
-							<span className="size-2 rounded-full bg-zinc-500 shrink-0" />
-							<Trans>{stoppedCount} stopped</Trans>
-						</span>
-					)}
-					<span className="ms-auto">{t`${totalCount} total`}</span>
-				</div>
-			)}
+			<AllContainersTable table={table} rows={rows} colLength={visibleColumns.length} data={data} />
 		</Card>
 	)
 }
@@ -347,57 +326,78 @@ const AllContainersTable = memo(function AllContainersTable({
 	const paddingTop = Math.max(0, virtualRows[0]?.start ?? 0 - virtualizer.options.scrollMargin)
 	const paddingBottom = Math.max(0, virtualizer.getTotalSize() - (virtualRows[virtualRows.length - 1]?.end ?? 0))
 
+	const totalCount = data?.length ?? 0
+	const runningCount = data?.filter((c) => c.status.startsWith("Up")).length ?? 0
+	const stoppedCount = totalCount - runningCount
+
 	return (
-		<div
-			className={cn(
-				"h-min max-h-[calc(100dvh-17rem)] max-w-full relative overflow-auto border rounded-md",
-				(!displayItems.length || displayItems.length > 2) && "min-h-50"
-			)}
-			ref={scrollRef}
-		>
-			<div style={{ height: `${virtualizer.getTotalSize() + 48}px`, paddingTop, paddingBottom }}>
-				<table className="text-sm w-full h-full text-nowrap">
-					<ContainersTableHead table={table} />
-					<TableBody>
-						{displayItems.length ? (
-							virtualRows.map((virtualRow) => {
-								const item = displayItems[virtualRow.index]
-								if (item.type === "group-header") {
+		<div className="border rounded-md overflow-hidden">
+			<div
+				className={cn(
+					"h-min max-h-[calc(100dvh-17rem)] max-w-full relative overflow-auto",
+					(!displayItems.length || displayItems.length > 2) && "min-h-50"
+				)}
+				ref={scrollRef}
+			>
+				<div style={{ height: `${virtualizer.getTotalSize() + 48}px`, paddingTop, paddingBottom }}>
+					<table className="text-sm w-full h-full text-nowrap">
+						<ContainersTableHead table={table} />
+						<TableBody>
+							{displayItems.length ? (
+								virtualRows.map((virtualRow) => {
+									const item = displayItems[virtualRow.index]
+									if (item.type === "group-header") {
+										return (
+											<GroupHeaderRow
+												key={item.groupKey}
+												item={item}
+												virtualRow={virtualRow}
+												colLength={colLength}
+												collapsed={collapsedGroups.has(item.groupKey)}
+												onToggle={() => toggleGroup(item.groupKey)}
+											/>
+										)
+									}
 									return (
-										<GroupHeaderRow
-											key={item.groupKey}
-											item={item}
+										<ContainerTableRow
+											key={item.row.id}
+											row={item.row}
 											virtualRow={virtualRow}
-											colLength={colLength}
-											collapsed={collapsedGroups.has(item.groupKey)}
-											onToggle={() => toggleGroup(item.groupKey)}
+											openSheet={openSheet}
+											hasGroups={hasGroups}
 										/>
 									)
-								}
-								return (
-									<ContainerTableRow
-										key={item.row.id}
-										row={item.row}
-										virtualRow={virtualRow}
-										openSheet={openSheet}
-										hasGroups={hasGroups}
-									/>
-								)
-							})
-						) : (
-							<TableRow>
-								<TableCell colSpan={colLength} className="h-37 text-center pointer-events-none">
-									{data ? (
-										<Trans>No results.</Trans>
-									) : (
-										<LoaderCircleIcon className="animate-spin size-10 opacity-60 mx-auto" />
-									)}
-								</TableCell>
-							</TableRow>
-						)}
-					</TableBody>
-				</table>
+								})
+							) : (
+								<TableRow>
+									<TableCell colSpan={colLength} className="h-37 text-center pointer-events-none">
+										{data ? (
+											<Trans>No results.</Trans>
+										) : (
+											<LoaderCircleIcon className="animate-spin size-10 opacity-60 mx-auto" />
+										)}
+									</TableCell>
+								</TableRow>
+							)}
+						</TableBody>
+					</table>
+				</div>
 			</div>
+			{data && (
+				<div className="flex items-center gap-4 border-t px-4 py-2 text-xs text-muted-foreground bg-muted/30">
+					<span className="flex items-center gap-1.5">
+						<span className="size-2 rounded-full bg-green-500 shrink-0" />
+						<Trans>{runningCount} running</Trans>
+					</span>
+					{stoppedCount > 0 && (
+						<span className="flex items-center gap-1.5">
+							<span className="size-2 rounded-full bg-zinc-500 shrink-0" />
+							<Trans>{stoppedCount} stopped</Trans>
+						</span>
+					)}
+					<span className="ms-auto tabular-nums">{t`${totalCount} total`}</span>
+				</div>
+			)}
 			<ContainerSheet sheetOpen={sheetOpen} setSheetOpen={setSheetOpen} activeContainer={activeContainer} />
 		</div>
 	)
