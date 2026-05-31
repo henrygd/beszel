@@ -319,7 +319,7 @@ func createContainerRecords(app core.App, data []*container.Stats, systemId stri
 	valueStrings := make([]string, 0, len(data))
 	for i, container := range data {
 		suffix := fmt.Sprintf("%d", i)
-		valueStrings = append(valueStrings, fmt.Sprintf("({:id%[1]s}, {:system}, {:name%[1]s}, {:image%[1]s}, {:ports%[1]s}, {:status%[1]s}, {:health%[1]s}, {:cpu%[1]s}, {:memory%[1]s}, {:net%[1]s}, {:updated})", suffix))
+		valueStrings = append(valueStrings, fmt.Sprintf("({:id%[1]s}, {:system}, {:name%[1]s}, {:image%[1]s}, {:ports%[1]s}, {:status%[1]s}, {:health%[1]s}, {:cpu%[1]s}, {:memory%[1]s}, {:net%[1]s}, {:compose%[1]s}, {:traffic_out%[1]s}, {:traffic_in%[1]s}, {:updated})", suffix))
 		params["id"+suffix] = container.Id
 		params["name"+suffix] = container.Name
 		params["image"+suffix] = container.Image
@@ -333,9 +333,12 @@ func createContainerRecords(app core.App, data []*container.Stats, systemId stri
 			netBytes = uint64((container.NetworkSent + container.NetworkRecv) * 1024 * 1024)
 		}
 		params["net"+suffix] = netBytes
+		params["compose"+suffix] = container.ComposeProject
+		params["traffic_out"+suffix] = container.NetTotal[0]
+		params["traffic_in"+suffix] = container.NetTotal[1]
 	}
 	queryString := fmt.Sprintf(
-		"INSERT INTO containers (id, system, name, image, ports, status, health, cpu, memory, net, updated) VALUES %s ON CONFLICT(id) DO UPDATE SET system = excluded.system, name = excluded.name, image = excluded.image, ports = excluded.ports, status = excluded.status, health = excluded.health, cpu = excluded.cpu, memory = excluded.memory, net = excluded.net, updated = excluded.updated",
+		"INSERT INTO containers (id, system, name, image, ports, status, health, cpu, memory, net, compose, traffic_out, traffic_in, updated) VALUES %s ON CONFLICT(id) DO UPDATE SET system = excluded.system, name = excluded.name, image = excluded.image, ports = excluded.ports, status = excluded.status, health = excluded.health, cpu = excluded.cpu, memory = excluded.memory, net = excluded.net, compose = excluded.compose, traffic_out = excluded.traffic_out, traffic_in = excluded.traffic_in, updated = excluded.updated",
 		strings.Join(valueStrings, ","),
 	)
 	_, err := app.DB().NewQuery(queryString).Bind(params).Execute()
