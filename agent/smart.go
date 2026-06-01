@@ -888,7 +888,7 @@ func (sm *SmartManager) parseSmartForSata(output []byte, configuredType string) 
 	smartData.DiskName = data.Device.Name
 	smartData.DiskType = data.Device.Type
 	if configuredType != "" {
-		smartData.DiskType = strings.ToLower(strings.TrimSpace(configuredType))
+		smartData.DiskType = normalizeParserType(configuredType)
 	}
 
 	// get values from ata_device_statistics if necessary
@@ -999,7 +999,7 @@ func (sm *SmartManager) parseSmartForScsi(output []byte, configuredType string) 
 	smartData.DiskName = data.Device.Name
 	smartData.DiskType = data.Device.Type
 	if configuredType != "" {
-		smartData.DiskType = strings.ToLower(strings.TrimSpace(configuredType))
+		smartData.DiskType = normalizeParserType(configuredType)
 	}
 
 	attributes := make([]*smart.SmartAttribute, 0, 10)
@@ -1148,7 +1148,7 @@ func (sm *SmartManager) parseSmartForNvme(output []byte, configuredType string) 
 	smartData.DiskName = data.Device.Name
 	smartData.DiskType = data.Device.Type
 	if configuredType != "" {
-		smartData.DiskType = strings.ToLower(strings.TrimSpace(configuredType))
+		smartData.DiskType = normalizeParserType(configuredType)
 	}
 
 	// nvme attributes does not follow the same format as ata attributes,
