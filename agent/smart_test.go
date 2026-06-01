@@ -88,6 +88,26 @@ func TestParseSmartForSata(t *testing.T) {
 	}
 }
 
+func TestParseSmartForSataWithConfiguredType(t *testing.T) {
+	fixturePath := filepath.Join("test-data", "smart", "sda.json")
+	data, err := os.ReadFile(fixturePath)
+	require.NoError(t, err)
+
+	sm := &SmartManager{
+		SmartDataMap: make(map[string]*smart.SmartData),
+	}
+
+	hasData, exitStatus := sm.parseSmartForSata(data, "sat+megaraid")
+	require.True(t, hasData)
+	assert.Equal(t, 64, exitStatus)
+
+	deviceData, ok := sm.SmartDataMap["9C40918040082"]
+	require.True(t, ok, "expected smart data entry for serial 9C40918040082")
+
+	assert.Equal(t, "sat+megaraid", deviceData.DiskType,
+		"DiskType should be overridden by configuredType")
+}
+
 func TestParseSmartForSataDeviceStatisticsTemperature(t *testing.T) {
 	jsonPayload := []byte(`{
 		"smartctl": {"exit_status": 0},

@@ -843,8 +843,11 @@ func (sm *SmartManager) isVirtualDeviceFromStrings(fields ...string) bool {
 	return false
 }
 
-// parseSmartForSata parses the output of smartctl --all -j for SATA/ATA devices and updates the SmartDataMap
-// Returns hasValidData and exitStatus
+// parseSmartForSata parses the output of smartctl --all -j for SATA/ATA devices and updates the SmartDataMap.
+// configuredType is the user-specified device type (e.g., "sat", "jms56x,0") from SMART_DEVICES.
+// When non-empty, it overrides the disk type reported by smartctl in SmartData.DiskType so that
+// updateSmartDevices can match entries by the configured composite (name, type) key.
+// Returns hasValidData and exitStatus.
 func (sm *SmartManager) parseSmartForSata(output []byte, configuredType string) (bool, int) {
 	var data smart.SmartInfoForSata
 
@@ -885,7 +888,7 @@ func (sm *SmartManager) parseSmartForSata(output []byte, configuredType string) 
 	smartData.DiskName = data.Device.Name
 	smartData.DiskType = data.Device.Type
 	if configuredType != "" {
-		smartData.DiskType = configuredType
+		smartData.DiskType = strings.ToLower(strings.TrimSpace(configuredType))
 	}
 
 	// get values from ata_device_statistics if necessary
@@ -996,7 +999,7 @@ func (sm *SmartManager) parseSmartForScsi(output []byte, configuredType string) 
 	smartData.DiskName = data.Device.Name
 	smartData.DiskType = data.Device.Type
 	if configuredType != "" {
-		smartData.DiskType = configuredType
+		smartData.DiskType = strings.ToLower(strings.TrimSpace(configuredType))
 	}
 
 	attributes := make([]*smart.SmartAttribute, 0, 10)
@@ -1095,8 +1098,11 @@ func (sm *SmartManager) lookupDarwinNvmeCapacity(serial string) uint64 {
 	return sm.darwinNvmeCapacity[serial]
 }
 
-// parseSmartForNvme parses the output of smartctl --all -j /dev/nvmeX and updates the SmartDataMap
-// Returns hasValidData and exitStatus
+// parseSmartForNvme parses the output of smartctl --all -j /dev/nvmeX and updates the SmartDataMap.
+// configuredType is the user-specified device type (e.g., "nvme") from SMART_DEVICES.
+// When non-empty, it overrides the disk type reported by smartctl in SmartData.DiskType so that
+// updateSmartDevices can match entries by the configured composite (name, type) key.
+// Returns hasValidData and exitStatus.
 func (sm *SmartManager) parseSmartForNvme(output []byte, configuredType string) (bool, int) {
 	data := &smart.SmartInfoForNvme{}
 
@@ -1142,7 +1148,7 @@ func (sm *SmartManager) parseSmartForNvme(output []byte, configuredType string) 
 	smartData.DiskName = data.Device.Name
 	smartData.DiskType = data.Device.Type
 	if configuredType != "" {
-		smartData.DiskType = configuredType
+		smartData.DiskType = strings.ToLower(strings.TrimSpace(configuredType))
 	}
 
 	// nvme attributes does not follow the same format as ata attributes,
