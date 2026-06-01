@@ -65,6 +65,14 @@ type deviceKey struct {
 
 var errNoValidSmartData = fmt.Errorf("no valid SMART data found") // Error for missing data
 
+// isBridgePassthroughType reports whether the device type uses a USB bridge
+// passthrough driver that may fail transiently (exit 2) due to wakeup data
+// or other bridge-specific quirks. A single retry is attempted in CollectSmart.
+func isBridgePassthroughType(deviceType string) bool {
+	dt := strings.ToLower(deviceType)
+	return strings.HasPrefix(dt, "jms56x") || strings.HasPrefix(dt, "jmb39x")
+}
+
 // Refresh updates SMART data for all known devices
 func (sm *SmartManager) Refresh(forceScan bool) error {
 	sm.refreshMutex.Lock()
@@ -501,15 +509,22 @@ func (sm *SmartManager) CollectSmart(deviceInfo *DeviceInfo) error {
 	// Check if device is in standby (exit status 2)
 	if exitErr, ok := errors.AsType[*exec.ExitError](err); ok && exitErr.ExitCode() == 2 {
 		if hasExistingData {
-			// Device is in standby and we have cached data, keep using cache
 			return nil
 		}
-		// No cached data, need to collect initial data by bypassing standby
-		ctx2, cancel2 := context.WithTimeout(context.Background(), 15*time.Second)
-		defer cancel2()
+		// No cached data, retry without -n standby
 		args = sm.smartctlArgs(deviceInfo, false)
-		cmd = exec.CommandContext(ctx2, sm.smartctlPath, args...)
+		cmd = exec.CommandContext(ctx, sm.smartctlPath, args...)
 		output, err = cmd.CombinedOutput()
+
+		// Bridge passthrough drivers (jms56x, jmb39x) can fail siently due
+		// to wakeup data left by the bridge firmware. A second retry succeeds
+		// after the first attempt has cleared the bridge state.
+		if deviceInfo != nil && isBridgePassthroughType(deviceInfo.Type) {
+			if exitErr2, ok2 := errors.AsType[*exec.ExitError](err); ok2 && exitErr2.ExitCode() == 2 {
+				cmd = exec.CommandContext(ctx, sm.smartctlPath, args...)
+				output, err = cmd.CombinedOutput()
+			}
+		}
 	}
 
 	hasValidData := sm.parseSmartOutput(deviceInfo, output)
