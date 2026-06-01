@@ -368,9 +368,15 @@ func (sm *SmartManager) parseSmartOutput(deviceInfo *DeviceInfo, output []byte) 
 		Type  string
 		Parse func([]byte) (bool, int)
 	}{
-		{Type: "nvme", Parse: sm.parseSmartForNvme},
-		{Type: "sat", Parse: sm.parseSmartForSata},
-		{Type: "scsi", Parse: sm.parseSmartForScsi},
+		{Type: "nvme", Parse: func(output []byte) (bool, int) {
+			return sm.parseSmartForNvme(output, deviceInfo.Type)
+		}},
+		{Type: "sat", Parse: func(output []byte) (bool, int) {
+			return sm.parseSmartForSata(output, deviceInfo.Type)
+		}},
+		{Type: "scsi", Parse: func(output []byte) (bool, int) {
+			return sm.parseSmartForScsi(output, deviceInfo.Type)
+		}},
 	}
 
 	deviceType := normalizeParserType(deviceInfo.parserType)
@@ -733,6 +739,7 @@ func mergeDeviceLists(existing, scanned, configured []*DeviceInfo) []*DeviceInfo
 		}
 		if existingDev := deviceIndexByName[configuredDevice.Name]; existingDev != nil {
 			applyConfiguredMetadata(existingDev, configuredDevice)
+			delete(deviceIndexByName, configuredDevice.Name)
 			continue
 		}
 
@@ -838,7 +845,7 @@ func (sm *SmartManager) isVirtualDeviceFromStrings(fields ...string) bool {
 
 // parseSmartForSata parses the output of smartctl --all -j for SATA/ATA devices and updates the SmartDataMap
 // Returns hasValidData and exitStatus
-func (sm *SmartManager) parseSmartForSata(output []byte) (bool, int) {
+func (sm *SmartManager) parseSmartForSata(output []byte, configuredType string) (bool, int) {
 	var data smart.SmartInfoForSata
 
 	if err := json.Unmarshal(output, &data); err != nil {
@@ -877,6 +884,9 @@ func (sm *SmartManager) parseSmartForSata(output []byte) (bool, int) {
 	smartData.SmartStatus = getSmartStatus(smartData.Temperature, data.SmartStatus.Passed)
 	smartData.DiskName = data.Device.Name
 	smartData.DiskType = data.Device.Type
+	if configuredType != "" {
+		smartData.DiskType = configuredType
+	}
 
 	// get values from ata_device_statistics if necessary
 	var ataDeviceStats smart.AtaDeviceStatistics
@@ -950,7 +960,7 @@ func findAtaDeviceStatisticsValue(data *smart.SmartInfoForSata, ataDeviceStats *
 	return nil
 }
 
-func (sm *SmartManager) parseSmartForScsi(output []byte) (bool, int) {
+func (sm *SmartManager) parseSmartForScsi(output []byte, configuredType string) (bool, int) {
 	var data smart.SmartInfoForScsi
 
 	if err := json.Unmarshal(output, &data); err != nil {
@@ -985,6 +995,9 @@ func (sm *SmartManager) parseSmartForScsi(output []byte) (bool, int) {
 	smartData.SmartStatus = getSmartStatus(smartData.Temperature, data.SmartStatus.Passed)
 	smartData.DiskName = data.Device.Name
 	smartData.DiskType = data.Device.Type
+	if configuredType != "" {
+		smartData.DiskType = configuredType
+	}
 
 	attributes := make([]*smart.SmartAttribute, 0, 10)
 	attributes = append(attributes, &smart.SmartAttribute{Name: "PowerOnHours", RawValue: data.PowerOnTime.Hours})
@@ -1084,7 +1097,7 @@ func (sm *SmartManager) lookupDarwinNvmeCapacity(serial string) uint64 {
 
 // parseSmartForNvme parses the output of smartctl --all -j /dev/nvmeX and updates the SmartDataMap
 // Returns hasValidData and exitStatus
-func (sm *SmartManager) parseSmartForNvme(output []byte) (bool, int) {
+func (sm *SmartManager) parseSmartForNvme(output []byte, configuredType string) (bool, int) {
 	data := &smart.SmartInfoForNvme{}
 
 	if err := json.Unmarshal(output, &data); err != nil {
@@ -1128,6 +1141,9 @@ func (sm *SmartManager) parseSmartForNvme(output []byte) (bool, int) {
 	smartData.SmartStatus = getSmartStatus(smartData.Temperature, data.SmartStatus.Passed)
 	smartData.DiskName = data.Device.Name
 	smartData.DiskType = data.Device.Type
+	if configuredType != "" {
+		smartData.DiskType = configuredType
+	}
 
 	// nvme attributes does not follow the same format as ata attributes,
 	// so we manually map each field to SmartAttributes
