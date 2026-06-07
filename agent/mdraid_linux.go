@@ -180,8 +180,11 @@ func mdraidSmartStatus(health mdraidHealth) string {
 	if health.degraded > 0 {
 		return "FAILED"
 	}
-	// "check" is a read-only consistency check. If the array is otherwise
-	// healthy, keep it green while still reporting the sync progress attributes.
+	if health.mismatchCnt > 0 {
+		return "WARNING"
+	}
+	// "check" scans for consistency problems without repairing mismatches.
+	// With no mismatches, keep it green while reporting progress attributes.
 	switch syncAction {
 	case "repair":
 		return "WARNING"
