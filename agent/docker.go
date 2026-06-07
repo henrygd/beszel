@@ -65,7 +65,6 @@ type dockerManager struct {
 	dockerVersionChecked bool                        // Whether a version probe has completed successfully
 	isWindows            bool                        // Whether the Docker Engine API is running on Windows
 	buf                  *bytes.Buffer               // Buffer to store and read response bodies
-	decoder              *json.Decoder               // Reusable JSON decoder that reads from buf
 	apiStats             *container.ApiStats         // Reusable API stats object
 	excludeContainers    []string                    // Patterns to exclude containers by name
 	usingPodman          bool                        // Whether the Docker Engine API is running on Podman
@@ -747,20 +746,18 @@ func (dm *dockerManager) applyDockerVersionInfo(serverHeader string, versionInfo
 	}
 }
 
-// Decodes Docker API JSON response using a reusable buffer and decoder. Not thread safe.
+// Decodes a Docker API JSON response using a reusable buffer. Not thread safe.
 func (dm *dockerManager) decode(resp *http.Response, d any) error {
 	if dm.buf == nil {
 		// initialize buffer with 256kb starting size
 		dm.buf = bytes.NewBuffer(make([]byte, 0, 1024*256))
-		dm.decoder = json.NewDecoder(dm.buf)
 	}
 	defer resp.Body.Close()
 	defer dm.buf.Reset()
-	_, err := dm.buf.ReadFrom(resp.Body)
-	if err != nil {
+	if _, err := dm.buf.ReadFrom(resp.Body); err != nil {
 		return err
 	}
-	return dm.decoder.Decode(d)
+	return json.Unmarshal(dm.buf.Bytes(), d)
 }
 
 // Test docker / podman sockets and return if one exists
