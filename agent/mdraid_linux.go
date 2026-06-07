@@ -20,6 +20,7 @@ type mdraidHealth struct {
 	level         string
 	arrayState    string
 	degraded      uint64
+	faultyDisks   uint64
 	raidDisks     uint64
 	syncAction    string
 	syncCompleted string
@@ -92,6 +93,9 @@ func (sm *SmartManager) collectMdraidHealth(deviceInfo *DeviceInfo) (bool, error
 	if health.degraded > 0 {
 		attrs = append(attrs, &smart.SmartAttribute{Name: "Degraded", RawValue: health.degraded})
 	}
+	if health.faultyDisks > 0 {
+		attrs = append(attrs, &smart.SmartAttribute{Name: "FaultyDisks", RawValue: health.faultyDisks})
+	}
 	if health.syncAction != "" {
 		attrs = append(attrs, &smart.SmartAttribute{Name: "SyncAction", RawString: health.syncAction})
 	}
@@ -152,6 +156,7 @@ func readMdraidHealth(blockName string) (mdraidHealth, bool) {
 	if val, ok := utils.ReadUintFile(filepath.Join(mdDir, "degraded")); ok {
 		out.degraded = val
 	}
+	out.faultyDisks = countFaultyMdraidDisks(blockName, mdraidSysfsRoot)
 	if val, ok := utils.ReadUintFile(filepath.Join(mdDir, "mismatch_cnt")); ok {
 		out.mismatchCnt = val
 	}
@@ -177,7 +182,11 @@ func mdraidSmartStatus(health mdraidHealth) string {
 	case "resync", "recover", "reshape":
 		return "WARNING"
 	}
-	if health.degraded > 0 {
+	// Use actual faulty member count rather than the degraded counter, which
+	// equals raid_disks minus active_disks. On QNAP systems raid_disks may be
+	// set to a large value (e.g. 32) while only a few slots are ever used,
+	// making degraded misleadingly large despite zero failed disks.
+	if health.faultyDisks > 0 {
 		return "FAILED"
 	}
 	switch syncAction {
@@ -189,6 +198,30 @@ func mdraidSmartStatus(health mdraidHealth) string {
 		return "PASSED"
 	}
 	return "UNKNOWN"
+}
+
+// countFaultyMdraidDisks reads member device states and returns the number
+// explicitly marked "faulty". This is more reliable than the sysfs "degraded"
+// counter, which counts empty RAID slots (raid_disks - active_disks) and can
+// be non-zero for sparse arrays like those created by QNAP.
+func countFaultyMdraidDisks(blockName, root string) uint64 {
+	devDir := filepath.Join(root, "block", blockName, "md")
+	entries, err := os.ReadDir(devDir)
+	if err != nil {
+		return 0
+	}
+	var count uint64
+	for _, ent := range entries {
+		if !strings.HasPrefix(ent.Name(), "dev-") {
+			continue
+		}
+		statePath := filepath.Join(devDir, ent.Name(), "state")
+		state := utils.ReadStringFile(statePath)
+		if strings.Contains(state, "faulty") {
+			count++
+		}
+	}
+	return count
 }
 
 // isMdraidBlockName matches /dev/mdN-style block device names.

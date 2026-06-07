@@ -40,6 +40,15 @@ func TestMdraidMockSysfsScanAndCollect(t *testing.T) {
 	write(filepath.Join(mdDir, "sync_completed"), "10%\n")
 	write(filepath.Join(mdDir, "sync_speed"), "100M\n")
 	write(filepath.Join(mdDir, "mismatch_cnt"), "0\n")
+
+	// Simulate two healthy member devices (no faulty state).
+	for _, dev := range []string{"dev-sda", "dev-sdb"} {
+		devPath := filepath.Join(mdDir, dev)
+		if err := os.MkdirAll(devPath, 0o755); err != nil {
+			t.Fatal(err)
+		}
+		write(filepath.Join(devPath, "state"), "in_sync\n")
+	}
 	write(filepath.Join(queueDir, "logical_block_size"), "512\n")
 	write(filepath.Join(tmp, "block", "md0", "size"), "2048\n")
 
@@ -81,15 +90,61 @@ func TestMdraidMockSysfsScanAndCollect(t *testing.T) {
 	}
 }
 
+func TestCountFaultyMdraidDisks(t *testing.T) {
+	tmp := t.TempDir()
+
+	write := func(path, content string) {
+		t.Helper()
+		if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
+			t.Fatal(err)
+		}
+		if err := os.WriteFile(path, []byte(content), 0o644); err != nil {
+			t.Fatal(err)
+		}
+	}
+
+	mdDir := filepath.Join(tmp, "block", "md0", "md")
+
+	// No dev-* entries: zero faulty.
+	if got := countFaultyMdraidDisks("md0", tmp); got != 0 {
+		t.Fatalf("no members: got %d, want 0", got)
+	}
+
+	// Two healthy members.
+	write(filepath.Join(mdDir, "dev-sda", "state"), "in_sync\n")
+	write(filepath.Join(mdDir, "dev-sdb", "state"), "in_sync\n")
+	if got := countFaultyMdraidDisks("md0", tmp); got != 0 {
+		t.Fatalf("all in_sync: got %d, want 0", got)
+	}
+
+	// One faulty member.
+	write(filepath.Join(mdDir, "dev-sdb", "state"), "faulty\n")
+	if got := countFaultyMdraidDisks("md0", tmp); got != 1 {
+		t.Fatalf("one faulty: got %d, want 1", got)
+	}
+
+	// QNAP-style: 28 degraded slots but no dev-* entries for them, 4 in_sync.
+	write(filepath.Join(mdDir, "dev-sdb", "state"), "in_sync\n")
+	write(filepath.Join(mdDir, "dev-sdc", "state"), "in_sync\n")
+	write(filepath.Join(mdDir, "dev-sdd", "state"), "in_sync\n")
+	if got := countFaultyMdraidDisks("md0", tmp); got != 0 {
+		t.Fatalf("qnap sparse: got %d, want 0", got)
+	}
+}
+
 func TestMdraidSmartStatus(t *testing.T) {
 	if got := mdraidSmartStatus(mdraidHealth{arrayState: "inactive"}); got != "FAILED" {
 		t.Fatalf("mdraidSmartStatus(inactive) = %q, want FAILED", got)
 	}
-	if got := mdraidSmartStatus(mdraidHealth{arrayState: "active", degraded: 1, syncAction: "recover"}); got != "WARNING" {
+	if got := mdraidSmartStatus(mdraidHealth{arrayState: "active", degraded: 1, faultyDisks: 1, syncAction: "recover"}); got != "WARNING" {
 		t.Fatalf("mdraidSmartStatus(degraded+recover) = %q, want WARNING", got)
 	}
-	if got := mdraidSmartStatus(mdraidHealth{arrayState: "active", degraded: 1}); got != "FAILED" {
-		t.Fatalf("mdraidSmartStatus(degraded) = %q, want FAILED", got)
+	if got := mdraidSmartStatus(mdraidHealth{arrayState: "active", degraded: 1, faultyDisks: 1}); got != "FAILED" {
+		t.Fatalf("mdraidSmartStatus(degraded+faulty) = %q, want FAILED", got)
+	}
+	// QNAP-style: raid_disks=32 but only 4 populated; degraded=28 but no faulty devices.
+	if got := mdraidSmartStatus(mdraidHealth{arrayState: "clean", degraded: 28, faultyDisks: 0}); got != "PASSED" {
+		t.Fatalf("mdraidSmartStatus(qnap sparse) = %q, want PASSED", got)
 	}
 	if got := mdraidSmartStatus(mdraidHealth{arrayState: "active", syncAction: "recover"}); got != "WARNING" {
 		t.Fatalf("mdraidSmartStatus(recover) = %q, want WARNING", got)
