@@ -297,6 +297,7 @@ export interface UserSettings {
 	colorCrit?: number
 	hourFormat?: HourFormat
 	layoutWidth?: number
+	singleNodeMode?: boolean
 }
 
 type ChartDataContainer = {
