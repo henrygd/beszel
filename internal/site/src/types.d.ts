@@ -78,6 +78,8 @@ export interface SystemInfo {
 	efs?: Record<string, number>
 	/** services [totalServices, numFailedServices] */
 	sv?: [number, number]
+	/** custom root disk name */
+	rdn?: string
 }
 
 export interface SystemStats {
