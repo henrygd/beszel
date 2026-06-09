@@ -51,60 +51,62 @@ func setCollectionAuthSettings(app core.App) error {
 		return err
 	}
 
-	// When SHARE_ALL_SYSTEMS is enabled, any authenticated user can read
-	// system-scoped data. Write rules continue to block readonly users.
-	shareAllSystems, _ := utils.GetEnv("SHARE_ALL_SYSTEMS")
-
+	// All authenticated users can view all systems and system-scoped data.
+	// Only admin users can modify systems.
 	authenticatedRule := "@request.auth.id != \"\""
-	systemsMemberRule := authenticatedRule + " && users.id ?= @request.auth.id"
-	systemMemberRule := authenticatedRule + " && system.users.id ?= @request.auth.id"
+	adminRule := authenticatedRule + " && @request.auth.role = \"admin\""
+	selfOrAdminRule := "@request.auth.id = id || @request.auth.role = \"admin\""
 
-	systemsReadRule := systemsMemberRule
-	systemScopedReadRule := systemMemberRule
-	if shareAllSystems == "true" {
-		systemsReadRule = authenticatedRule
-		systemScopedReadRule = authenticatedRule
+	// users collection: admins can manage all users; users can view/update themselves.
+	// CreateRule is set here only when USER_CREATION is not active (oauth2 rule takes precedence).
+	usersCollection.ListRule = &adminRule
+	usersCollection.ViewRule = &selfOrAdminRule
+	if usersCollection.CreateRule == nil {
+		usersCollection.CreateRule = &adminRule
 	}
-	systemsWriteRule := systemsReadRule + " && @request.auth.role != \"readonly\""
-	systemScopedWriteRule := systemScopedReadRule + " && @request.auth.role != \"readonly\""
+	usersCollection.UpdateRule = &selfOrAdminRule
+	usersCollection.DeleteRule = &adminRule
+	if err := app.Save(usersCollection); err != nil {
+		return err
+	}
 
 	if err := applyCollectionRules(app, []string{"systems"}, collectionRules{
-		list:   &systemsReadRule,
-		view:   &systemsReadRule,
-		create: &systemsWriteRule,
-		update: &systemsWriteRule,
-		delete: &systemsWriteRule,
+		list:   &authenticatedRule,
+		view:   &authenticatedRule,
+		create: &adminRule,
+		update: &adminRule,
+		delete: &adminRule,
 	}); err != nil {
 		return err
 	}
 
 	if err := applyCollectionRules(app, []string{"containers", "container_stats", "system_stats", "systemd_services"}, collectionRules{
-		list: &systemScopedReadRule,
+		list: &authenticatedRule,
 	}); err != nil {
 		return err
 	}
 
 	if err := applyCollectionRules(app, []string{"smart_devices"}, collectionRules{
-		list:   &systemScopedReadRule,
-		view:   &systemScopedReadRule,
-		delete: &systemScopedWriteRule,
+		list:   &authenticatedRule,
+		view:   &authenticatedRule,
+		delete: &adminRule,
 	}); err != nil {
 		return err
 	}
 
 	if err := applyCollectionRules(app, []string{"fingerprints"}, collectionRules{
-		list:   &systemScopedReadRule,
-		view:   &systemScopedReadRule,
-		create: &systemScopedWriteRule,
-		update: &systemScopedWriteRule,
-		delete: &systemScopedWriteRule,
+		list:   &authenticatedRule,
+		view:   &authenticatedRule,
+		create: &adminRule,
+		update: &adminRule,
+		delete: &adminRule,
 	}); err != nil {
 		return err
 	}
 
 	if err := applyCollectionRules(app, []string{"system_details"}, collectionRules{
-		list: &systemScopedReadRule,
-		view: &systemScopedReadRule,
+		list: &authenticatedRule,
+		view: &authenticatedRule,
 	}); err != nil {
 		return err
 	}

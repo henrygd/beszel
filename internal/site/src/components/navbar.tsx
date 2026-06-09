@@ -13,7 +13,6 @@ import {
 	ServerIcon,
 	SettingsIcon,
 	UserIcon,
-	UsersIcon,
 } from "lucide-react"
 import { lazy, Suspense, useState } from "react"
 import { Button, buttonVariants } from "@/components/ui/button"
@@ -29,7 +28,7 @@ import {
 	DropdownMenuSubTrigger,
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { isAdmin, isReadOnlyUser, logOut, pb } from "@/lib/api"
+import { isAdmin, logOut, pb } from "@/lib/api"
 import { cn, runOnce } from "@/lib/utils"
 import { AddSystemDialog } from "./add-system"
 import { LangToggle } from "./lang-toggle"
@@ -125,7 +124,7 @@ export default function Navbar() {
 									<DropdownMenuSubContent>{AdminLinks}</DropdownMenuSubContent>
 								</DropdownMenuSub>
 							)}
-							{!isReadOnlyUser() && (
+							{isAdmin() && (
 								<DropdownMenuItem
 									className="flex items-center"
 									onSelect={() => {
@@ -202,7 +201,7 @@ export default function Navbar() {
 							<UserIcon className="h-[1.2rem] w-[1.2rem]" />
 						</button>
 					</DropdownMenuTrigger>
-					<DropdownMenuContent align={isReadOnlyUser() ? "end" : "center"} className="min-w-44">
+					<DropdownMenuContent align={isAdmin() ? "center" : "end"} className="min-w-44">
 						<DropdownMenuLabel>{pb.authStore.record?.email}</DropdownMenuLabel>
 						<DropdownMenuSeparator />
 						{isAdmin() && (
@@ -219,7 +218,7 @@ export default function Navbar() {
 						</DropdownMenuItem>
 					</DropdownMenuContent>
 				</DropdownMenu>
-				{!isReadOnlyUser() && (
+				{isAdmin() && (
 					<Button variant="outline" className="flex gap-1 ms-2" onClick={() => setAddSystemDialogOpen(true)}>
 						<PlusIcon className="h-4 w-4 -ms-1" />
 						<Trans>Add {{ foo: systemTranslation }}</Trans>
@@ -239,14 +238,6 @@ const Kbd = ({ children }: { children: React.ReactNode }) => (
 function AdminDropdownGroup() {
 	return (
 		<DropdownMenuGroup>
-			<DropdownMenuItem asChild>
-				<a href={prependBasePath("/_/")} target="_blank">
-					<UsersIcon className="me-2.5 h-4 w-4" />
-					<span>
-						<Trans>Users</Trans>
-					</span>
-				</a>
-			</DropdownMenuItem>
 			<DropdownMenuItem asChild>
 				<a href={prependBasePath("/_/#/collections?collection=systems")} target="_blank">
 					<ServerIcon className="me-2.5 h-4 w-4" />

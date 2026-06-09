@@ -167,19 +167,12 @@ func TestGetAllFingerprintRecordsByToken(t *testing.T) {
 	}
 	defer cleanupTestHub(hub, testApp)
 
-	// create test user
-	userRecord, err := createTestUser(testApp)
-	if err != nil {
-		t.Fatal(err)
-	}
-
 	// Create test data
 	systemRecord, err := createTestRecord(testApp, "systems", map[string]any{
 		"name":   "test-system",
 		"host":   "localhost",
 		"port":   "45876",
 		"status": "pending",
-		"users":  []string{userRecord.Id},
 	})
 	if err != nil {
 		t.Fatal(err)
@@ -196,7 +189,6 @@ func TestGetAllFingerprintRecordsByToken(t *testing.T) {
 			"host":   "localhost",
 			"port":   "45876",
 			"status": "pending",
-			"users":  []string{userRecord.Id},
 		})
 		createTestRecord(testApp, "fingerprints", map[string]any{
 			"system":      systemRecord.Id,
@@ -257,19 +249,12 @@ func TestSetFingerprint(t *testing.T) {
 	}
 	defer cleanupTestHub(hub, testApp)
 
-	// Create test user
-	userRecord, err := createTestUser(testApp)
-	if err != nil {
-		t.Fatal(err)
-	}
-
 	// Create test system
 	systemRecord, err := createTestRecord(testApp, "systems", map[string]any{
 		"name":   "test-system",
 		"host":   "localhost",
 		"port":   "45876",
 		"status": "pending",
-		"users":  []string{userRecord.Id},
 	})
 	if err != nil {
 		t.Fatal(err)
@@ -344,14 +329,13 @@ func TestCreateSystemFromAgentData(t *testing.T) {
 	}
 
 	testCases := []struct {
-		name          string
-		agentConnReq  agentConnectRequest
-		fingerprint   common.FingerprintResponse
-		expectError   bool
-		expectedName  string
-		expectedHost  string
-		expectedPort  string
-		expectedUsers []string
+		name         string
+		agentConnReq agentConnectRequest
+		fingerprint  common.FingerprintResponse
+		expectError  bool
+		expectedName string
+		expectedHost string
+		expectedPort string
 	}{
 		{
 			name: "successful system creation with all fields",
@@ -370,7 +354,6 @@ func TestCreateSystemFromAgentData(t *testing.T) {
 			expectedName:  "test-server",
 			expectedHost:  "192.168.0.1", // This will be the parsed IP from the mock request
 			expectedPort:  "8080",
-			expectedUsers: []string{userRecord.Id},
 		},
 		{
 			name: "system creation with default port",
@@ -389,7 +372,6 @@ func TestCreateSystemFromAgentData(t *testing.T) {
 			expectedName:  "default-port-server",
 			expectedHost:  "192.168.0.1", // This will be the parsed IP from the mock request
 			expectedPort:  "45876",
-			expectedUsers: []string{userRecord.Id},
 		},
 		{
 			name: "system creation with empty hostname",
@@ -408,7 +390,6 @@ func TestCreateSystemFromAgentData(t *testing.T) {
 			expectedName:  "192.168.0.1", // Should fall back to host IP when hostname is empty
 			expectedHost:  "192.168.0.1", // This will be the parsed IP from the mock request
 			expectedPort:  "9090",
-			expectedUsers: []string{userRecord.Id},
 		},
 	}
 
@@ -432,9 +413,9 @@ func TestCreateSystemFromAgentData(t *testing.T) {
 			assert.Equal(t, tc.expectedHost, systemRecord.GetString("host"))
 			assert.Equal(t, tc.expectedPort, systemRecord.GetString("port"))
 
-			// Verify users array
-			users := systemRecord.Get("users")
-			assert.Equal(t, tc.expectedUsers, users)
+			// Verify the system is accessible (all authenticated users have access)
+			_, err = testApp.FindRecordById("systems", recordId)
+			require.NoError(t, err, "system should be accessible")
 		})
 	}
 }
@@ -515,19 +496,12 @@ func TestAgentConnect(t *testing.T) {
 	}
 	defer cleanupTestHub(hub, testApp)
 
-	// Create test user
-	userRecord, err := createTestUser(testApp)
-	if err != nil {
-		t.Fatal(err)
-	}
-
 	// Create test system
 	systemRecord, err := createTestRecord(testApp, "systems", map[string]any{
 		"name":   "test-system",
 		"host":   "localhost",
 		"port":   "45876",
 		"status": "pending",
-		"users":  []string{userRecord.Id},
 	})
 	if err != nil {
 		t.Fatal(err)
@@ -674,19 +648,12 @@ func TestHandleAgentConnect(t *testing.T) {
 	}
 	defer cleanupTestHub(hub, testApp)
 
-	// Create test user
-	userRecord, err := createTestUser(testApp)
-	if err != nil {
-		t.Fatal(err)
-	}
-
 	// Create test system
 	systemRecord, err := createTestRecord(testApp, "systems", map[string]any{
 		"name":   "test-system",
 		"host":   "localhost",
 		"port":   "45876",
 		"status": "pending",
-		"users":  []string{userRecord.Id},
 	})
 	if err != nil {
 		t.Fatal(err)
@@ -768,10 +735,6 @@ func TestAgentWebSocketIntegration(t *testing.T) {
 	_, badPrivKey, err := ed25519.GenerateKey(nil)
 	require.NoError(t, err)
 	badPubKey, err := ssh.NewPublicKey(badPrivKey.Public().(ed25519.PublicKey))
-	require.NoError(t, err)
-
-	// Create test user
-	userRecord, err := createTestUser(testApp)
 	require.NoError(t, err)
 
 	// Create HTTP server with the actual API route
@@ -873,7 +836,6 @@ func TestAgentWebSocketIntegration(t *testing.T) {
 				"host":   "localhost",
 				"port":   fmt.Sprintf("%d", portNum),
 				"status": "pending",
-				"users":  []string{userRecord.Id},
 			})
 			require.NoError(t, err)
 
@@ -1080,7 +1042,7 @@ func TestMultipleSystemsWithSameUniversalToken(t *testing.T) {
 			t.Setenv("BESZEL_AGENT_TOKEN", universalToken)
 
 			// Count systems before connection
-			systemsBefore, err := testApp.FindRecordsByFilter("systems", "users ~ {:userId}", "", -1, 0, map[string]any{"userId": userRecord.Id})
+			systemsBefore, err := testApp.FindAllRecords("systems")
 			require.NoError(t, err)
 			systemsBeforeCount := len(systemsBefore)
 
@@ -1143,7 +1105,7 @@ func TestMultipleSystemsWithSameUniversalToken(t *testing.T) {
 			// Verify system creation/reuse behavior
 			if tc.expectConnection {
 				// Count systems after connection
-				systemsAfter, err := testApp.FindRecordsByFilter("systems", "users ~ {:userId}", "", -1, 0, map[string]any{"userId": userRecord.Id})
+				systemsAfter, err := testApp.FindAllRecords("systems")
 				require.NoError(t, err)
 				systemsAfterCount := len(systemsAfter)
 
@@ -1275,8 +1237,8 @@ func TestPermanentUniversalTokenFromDB(t *testing.T) {
 	}
 
 verify:
-	// Verify that a system was created for the user (self-registration path)
-	systemsAfter, err := testApp.FindRecordsByFilter("systems", "users ~ {:userId}", "", -1, 0, map[string]any{"userId": userRecord.Id})
+	// Verify that a system was created (self-registration path via universal token)
+	systemsAfter, err := testApp.FindAllRecords("systems")
 	require.NoError(t, err)
 	require.NotEmpty(t, systemsAfter, "Expected a system to be created for DB-backed universal token")
 }
@@ -1311,7 +1273,6 @@ func TestFindOrCreateSystemForToken(t *testing.T) {
 					"host":   "192.168.1.100",
 					"port":   "45876",
 					"status": "pending",
-					"users":  []string{userRecord.Id},
 				})
 				require.NoError(t, err)
 
@@ -1363,7 +1324,6 @@ func TestFindOrCreateSystemForToken(t *testing.T) {
 					"host":   "192.168.1.101",
 					"port":   "45876",
 					"status": "pending",
-					"users":  []string{userRecord.Id},
 				})
 				require.NoError(t, err)
 
@@ -1442,7 +1402,6 @@ func TestFindOrCreateSystemForToken(t *testing.T) {
 					"host":   "192.168.1.200",
 					"port":   "45876",
 					"status": "pending",
-					"users":  []string{userRecord.Id},
 				})
 				require.NoError(t, err)
 
@@ -1490,7 +1449,6 @@ func TestFindOrCreateSystemForToken(t *testing.T) {
 					"host":   "192.168.1.250",
 					"port":   "45876",
 					"status": "pending",
-					"users":  []string{userRecord.Id},
 				})
 				require.NoError(t, err)
 
@@ -1561,7 +1519,6 @@ func TestFindOrCreateSystemForToken(t *testing.T) {
 					"host":   "192.168.1.500",
 					"port":   "45876",
 					"status": "pending",
-					"users":  []string{userRecord.Id},
 				})
 				require.NoError(t, err)
 
@@ -1570,7 +1527,6 @@ func TestFindOrCreateSystemForToken(t *testing.T) {
 					"host":   "192.168.1.501",
 					"port":   "45876",
 					"status": "pending",
-					"users":  []string{userRecord.Id},
 				})
 				require.NoError(t, err)
 
@@ -1632,7 +1588,6 @@ func TestFindOrCreateSystemForToken(t *testing.T) {
 					"host":   "192.168.1.600",
 					"port":   "45876",
 					"status": "pending",
-					"users":  []string{userRecord.Id},
 				})
 				require.NoError(t, err)
 
@@ -1720,7 +1675,9 @@ func TestFindOrCreateSystemForToken(t *testing.T) {
 				assert.Equal(t, tc.agentFingerprint.Hostname, system.GetString("name"), "System name should match hostname")
 				assert.Equal(t, getRealIP(acr.req), system.GetString("host"), "System host should match remote address")
 				assert.Equal(t, tc.agentFingerprint.Port, system.GetString("port"), "System port should match agent port")
-				assert.Equal(t, []string{acr.userId}, system.Get("users"), "System users should match")
+				// Verify the system is accessible (all authenticated users have access)
+				_, err = testApp.FindRecordById("systems", result.SystemId)
+				require.NoError(t, err, "system should be accessible")
 			}
 
 			t.Logf("%s - Result: SystemId=%s, Fingerprint=%s", tc.description, result.SystemId, result.Fingerprint)

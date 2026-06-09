@@ -35,7 +35,7 @@ import { Switch } from "@/components/ui/switch"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { toast } from "@/components/ui/use-toast"
-import { isReadOnlyUser, pb } from "@/lib/api"
+import { isAdmin, pb } from "@/lib/api"
 import { $publicKey } from "@/lib/stores"
 import { cn, copyToClipboard, generateToken, getHubURL, tokenMap } from "@/lib/utils"
 import type { FingerprintRecord } from "@/types"
@@ -50,7 +50,7 @@ function sortFingerprints(fingerprints: FingerprintRecord[]) {
 }
 
 const SettingsFingerprintsPage = memo(() => {
-	if (isReadOnlyUser()) {
+	if (!isAdmin()) {
 		redirectPage($router, "settings", { name: "general" })
 	}
 	const [fingerprints, setFingerprints] = useState<FingerprintRecord[]>([])
@@ -295,7 +295,7 @@ const ActionsButtonUniversalToken = memo(({ token, checked }: { token: string; c
 
 const SectionTable = memo(({ fingerprints = [] }: { fingerprints: FingerprintRecord[] }) => {
 	const { t } = useLingui()
-	const isReadOnly = isReadOnlyUser()
+	const canEdit = isAdmin()
 
 	const headerCols = useMemo(
 		() => [
@@ -330,7 +330,7 @@ const SectionTable = memo(({ fingerprints = [] }: { fingerprints: FingerprintRec
 								</span>
 							</TableHead>
 						))}
-						{!isReadOnly && (
+						{canEdit && (
 							<TableHead className="w-0">
 								<span className="sr-only">
 									<Trans>Actions</Trans>
@@ -347,7 +347,7 @@ const SectionTable = memo(({ fingerprints = [] }: { fingerprints: FingerprintRec
 							</TableCell>
 							<TableCell className="font-mono text-[0.95em] py-2">{fingerprint.token}</TableCell>
 							<TableCell className="font-mono text-[0.95em] py-2">{fingerprint.fingerprint}</TableCell>
-							{!isReadOnly && (
+							{canEdit && (
 								<TableCell className="py-2 px-4 xl:px-2">
 									<ActionsButtonTable fingerprint={fingerprint} />
 								</TableCell>

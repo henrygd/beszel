@@ -285,7 +285,6 @@ func (acr *agentConnectRequest) createSystem(agentFingerprint common.Fingerprint
 	systemRecord.Set("name", agentFingerprint.Name)
 	systemRecord.Set("host", remoteAddr)
 	systemRecord.Set("port", agentFingerprint.Port)
-	systemRecord.Set("users", []string{acr.userId})
 
 	return systemRecord.Id, acr.hub.Save(systemRecord)
 }
