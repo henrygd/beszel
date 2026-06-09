@@ -62,7 +62,6 @@ func createAlertHistoryRecord(app core.App, alertRecord *core.Record) (alertHist
 	}
 	alertHistoryRecord = core.NewRecord(alertHistoryCollection)
 	alertHistoryRecord.Set("alert_id", alertRecord.Id)
-	alertHistoryRecord.Set("user", alertRecord.GetString("user"))
 	alertHistoryRecord.Set("system", alertRecord.GetString("system"))
 	alertHistoryRecord.Set("name", alertRecord.GetString("name"))
 	alertHistoryRecord.Set("value", alertRecord.GetFloat("value"))
