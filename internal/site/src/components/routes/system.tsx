@@ -13,10 +13,11 @@ import { TemperatureChart, BatteryChart } from "./system/charts/sensor-charts"
 import { GpuPowerChart, GpuDetailCharts } from "./system/charts/gpu-charts"
 import { LazyContainersTable, LazySmartTable, LazySystemdTable } from "./system/lazy-tables"
 import { LoadAverageChart } from "./system/charts/load-average-chart"
-import { ContainerIcon, CpuIcon, HardDriveIcon, TerminalSquareIcon } from "lucide-react"
+import { ContainerIcon, CpuIcon, HardDriveIcon, ScrollTextIcon, TerminalSquareIcon } from "lucide-react"
 import { GpuIcon } from "../ui/icons"
 import SystemdTable from "../systemd-table/systemd-table"
 import ContainersTable from "../containers-table/containers-table"
+import SystemLogsTab from "./system/system-logs-tab"
 
 const SEMVER_0_14_0 = parseSemVer("0.14.0")
 const SEMVER_0_15_0 = parseSemVer("0.15.0")
@@ -54,6 +55,12 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 	// where the tooltip can go past the bottom of the page if lots of sensors
 	const [pageBottomExtraMargin, setPageBottomExtraMargin] = useState(0)
 
+	const [logsRequest, setLogsRequest] = useState({ service: "", seq: 0 })
+	const handleViewServiceLogs = (serviceName: string) => {
+		setLogsRequest((r) => ({ service: serviceName, seq: r.seq + 1 }))
+		setActiveTab("logs")
+	}
+
 	if (!system.id) {
 		return null
 	}
@@ -69,6 +76,7 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 	if (hasGpu) tabs.push("gpu")
 	if (hasContainers) tabs.push("containers")
 	if (hasSystemd) tabs.push("services")
+	if (hasSystemd) tabs.push("logs")
 	tabsRef.current = tabs
 
 	// shared chart props
@@ -179,6 +187,12 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 							<Trans>Services</Trans>
 						</TabsTrigger>
 					)}
+					{hasSystemd && (
+						<TabsTrigger value="logs" className="w-full flex items-center gap-2">
+							<ScrollTextIcon className="size-3.5" />
+							<Trans>Logs</Trans>
+						</TabsTrigger>
+					)}
 				</TabsList>
 
 				<TabsContent value="core" forceMount className={activeTab === "core" ? "contents" : "hidden"}>
@@ -258,7 +272,12 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 
 				{hasSystemd && (
 					<TabsContent value="services" forceMount className={activeTab === "services" ? "contents" : "hidden"}>
-						{mountedTabs.has("services") && <SystemdTable systemId={system.id} />}
+						{mountedTabs.has("services") && <SystemdTable systemId={system.id} onViewLogs={handleViewServiceLogs} />}
+					</TabsContent>
+				)}
+				{hasSystemd && (
+					<TabsContent value="logs" forceMount className={activeTab === "logs" ? "contents" : "hidden"}>
+						{mountedTabs.has("logs") && <SystemLogsTab systemId={system.id} logsRequest={logsRequest} />}
 					</TabsContent>
 				)}
 			</Tabs>
