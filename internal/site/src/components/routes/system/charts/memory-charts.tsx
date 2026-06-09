@@ -8,6 +8,9 @@ import { ChartCard, FilterBar, SelectAvgMax } from "../chart-card"
 import { dockerOrPodman } from "../chart-data"
 import { decimalString, formatBytes, toFixedFloat } from "@/lib/utils"
 import { pinnedAxisDomain } from "@/components/ui/chart"
+import MemorySheet from "../memory-sheet"
+import SwapSheet from "../swap-sheet"
+import type { SystemData } from "../use-system-data"
 
 export function MemoryChart({
 	chartData,
@@ -16,6 +19,7 @@ export function MemoryChart({
 	showMax,
 	isLongerChart,
 	maxValues,
+	systemData,
 }: {
 	chartData: ChartData
 	grid: boolean
@@ -23,9 +27,20 @@ export function MemoryChart({
 	showMax: boolean
 	isLongerChart: boolean
 	maxValues: boolean
+	systemData?: SystemData
 }) {
 	const maxValSelect = isLongerChart ? <SelectAvgMax max={maxValues} /> : null
 	const totalMem = toFixedFloat(chartData.systemStats.at(-1)?.stats.m ?? 0, 1)
+
+	let cornerEl = maxValSelect
+	if (systemData) {
+		cornerEl = (
+			<div className="flex gap-2">
+				{maxValSelect}
+				<MemorySheet systemData={systemData} />
+			</div>
+		)
+	}
 
 	return (
 		<ChartCard
@@ -33,7 +48,7 @@ export function MemoryChart({
 			grid={grid}
 			title={t`Memory Usage`}
 			description={t`Precise utilization at the recorded time`}
-			cornerEl={maxValSelect}
+			cornerEl={cornerEl}
 		>
 			<AreaChartDefault
 				chartData={chartData}
@@ -129,21 +144,22 @@ export function SwapChart({
 	chartData,
 	grid,
 	dataEmpty,
-	systemStats,
+	systemData,
 }: {
 	chartData: ChartData
 	grid: boolean
 	dataEmpty: boolean
-	systemStats: SystemStatsRecord[]
+	systemData?: SystemData
 }) {
-	// const userSettings = useStore($userSettings)
-
-	const hasSwapData = (systemStats.at(-1)?.stats.su ?? 0) > 0
-	if (!hasSwapData) {
-		return null
-	}
+	const cornerEl = systemData ? <SwapSheet systemData={systemData} /> : null
 	return (
-		<ChartCard empty={dataEmpty} grid={grid} title={t`Swap Usage`} description={t`Swap space used by the system`}>
+		<ChartCard
+			empty={dataEmpty}
+			grid={grid}
+			title={t`Swap Usage`}
+			description={t`Swap space used by the system`}
+			cornerEl={cornerEl}
+		>
 			<AreaChartDefault
 				chartData={chartData}
 				domain={[0, () => toFixedFloat(chartData.systemStats.at(-1)?.stats.s ?? 0.04, 2)]}
@@ -159,7 +175,7 @@ export function SwapChart({
 				dataPoints={[
 					{
 						label: t`Used`,
-						dataKey: ({ stats }) => stats?.su,
+						dataKey: ({ stats }) => stats?.su ?? 0,
 						color: 2,
 						opacity: 0.4,
 					},

@@ -50,6 +50,11 @@ type Stats struct {
 	CpuCoresUsage     Uint8Slice           `json:"cpus,omitempty" cbor:"34,keyasint,omitempty"` // per-core busy usage [CPU0..]
 	DiskIoStats       [6]float64           `json:"dios,omitzero" cbor:"35,keyasint,omitzero"`   // [read time %, write time %, io utilization %, r_await ms, w_await ms, weighted io %]
 	MaxDiskIoStats    [6]float64           `json:"diosm,omitzero" cbor:"-"`                     // max values for DiskIoStats
+	SwapIn            float64              `json:"si,omitzero" cbor:"36,keyasint,omitzero"`     // swap in rate (bytes/sec)
+	SwapOut           float64              `json:"so,omitzero" cbor:"37,keyasint,omitzero"`     // swap out rate (bytes/sec)
+	MemPsi            []float64            `json:"mpsi,omitempty" cbor:"38,keyasint,omitempty"` // PSI [some_avg10, some_avg60, full_avg10, full_avg60]
+	MemOomKills       uint32               `json:"moom,omitzero" cbor:"39,keyasint,omitzero"`   // OOM kill event count delta
+	MemSlab           float64              `json:"msl,omitzero" cbor:"40,keyasint,omitzero"`    // total slab memory (GB)
 }
 
 // Uint8Slice wraps []uint8 to customize JSON encoding while keeping CBOR efficient.
