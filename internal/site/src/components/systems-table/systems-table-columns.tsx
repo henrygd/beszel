@@ -239,19 +239,36 @@ export function SystemsTableColumns(viewMode: "table" | "grid"): ColumnDef<Syste
 			},
 		},
 		{
-			accessorFn: ({ info, status }) => (status !== SystemStatus.Up ? undefined : info.bb),
+			accessorFn: ({ info, status }) => (status !== SystemStatus.Up ? undefined : (info.bs ?? info.bb)),
 			id: "net",
-			name: () => t`Net`,
+			name: () => t`Network`,
 			size: 0,
 			Icon: EthernetIcon,
 			header: sortableHeader,
 			sortUndefined: "last",
 			cell(info) {
-				const val = info.getValue() as number | undefined
-				if (val === undefined) {
+				const row = info.row.original
+				if (row.status !== SystemStatus.Up) {
 					return null
 				}
 				const userSettings = useStore($userSettings, { keys: ["unitNet"] })
+				const { bs, br, bb } = row.info
+				if (bs !== undefined && br !== undefined) {
+					const up = formatBytes(bs, true, userSettings.unitNet, false)
+					const dn = formatBytes(br, true, userSettings.unitNet, false)
+					return (
+						<span className="tabular-nums whitespace-nowrap">
+							<span style={{ color: "var(--chart-1)" }}>↑</span>{" "}
+							{decimalString(up.value, up.value >= 100 ? 1 : 2)} {up.unit}{" "}
+							<span style={{ color: "hsl(160 60% 32%)" }}>↓</span>{" "}
+							{decimalString(dn.value, dn.value >= 100 ? 1 : 2)} {dn.unit}
+						</span>
+					)
+				}
+				const val = bb
+				if (val === undefined) {
+					return null
+				}
 				const { value, unit } = formatBytes(val, true, userSettings.unitNet, false)
 				return (
 					<span className="tabular-nums whitespace-nowrap">

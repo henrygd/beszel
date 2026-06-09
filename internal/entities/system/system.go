@@ -149,8 +149,10 @@ type Info struct {
 	// LoadAvg5       float64 `json:"l5,omitempty" cbor:"16,keyasint,omitempty"`  // deprecated - use `la` array instead
 	// LoadAvg15      float64 `json:"l15,omitempty" cbor:"17,keyasint,omitempty"` // deprecated - use `la` array instead
 
-	BandwidthBytes uint64             `json:"bb" cbor:"18,keyasint"`
-	LoadAvg        [3]float64         `json:"la,omitempty" cbor:"19,keyasint"`
+	BandwidthBytes     uint64             `json:"bb" cbor:"18,keyasint"`
+	LoadAvg            [3]float64         `json:"la,omitempty" cbor:"19,keyasint"`
+	BandwidthBytesSent uint64             `json:"bs,omitempty" cbor:"24,keyasint,omitempty"`
+	BandwidthBytesRecv uint64             `json:"br,omitempty" cbor:"25,keyasint,omitempty"`
 	ConnectionType ConnectionType     `json:"ct,omitempty" cbor:"20,keyasint,omitempty,omitzero"`
 	ExtraFsPct     map[string]float64 `json:"efs,omitempty" cbor:"21,keyasint,omitempty"`
 	Services       []uint16           `json:"sv,omitempty" cbor:"22,keyasint,omitempty"` // [totalServices, numFailedServices]
