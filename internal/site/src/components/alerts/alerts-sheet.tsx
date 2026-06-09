@@ -238,8 +238,8 @@ export function AlertContent({
 	const singleDescription = alertData.singleDesc?.()
 
 	const [checked, setChecked] = useState(global ? false : !!alert)
-	const [min, setMin] = useState(alert?.min || 10)
-	const [value, setValue] = useState(alert?.value || (singleDescription ? 0 : (alertData.start ?? 80)))
+	const [min, setMin] = useState(alertData.noSliders ? 0 : (alert?.min || 10))
+	const [value, setValue] = useState(alertData.noSliders ? 0 : (alert?.value || (singleDescription ? 0 : (alertData.start ?? 80))))
 
 	const Icon = alertData.icon
 
@@ -277,14 +277,14 @@ export function AlertContent({
 			<label
 				htmlFor={`s${name}`}
 				className={cn("flex flex-row items-center justify-between gap-4 cursor-pointer p-4", {
-					"pb-0": checked,
+					"pb-0": checked && !alertData.noSliders,
 				})}
 			>
 				<div className="grid gap-1 select-none">
 					<p className="font-semibold flex gap-3 items-center">
 						<Icon className="h-4 w-4 opacity-85" /> {alertData.name()}
 					</p>
-					{!checked && <span className="block text-sm text-muted-foreground">{alertData.desc()}</span>}
+					{(!checked || alertData.noSliders) && <span className="block text-sm text-muted-foreground">{alertData.desc()}</span>}
 				</div>
 				<Switch
 					id={`s${name}`}
@@ -307,7 +307,7 @@ export function AlertContent({
 					}}
 				/>
 			</label>
-			{checked && (
+			{checked && !alertData.noSliders && (
 				<div className="grid sm:grid-cols-2 mt-1.5 gap-5 px-4 pb-5 tabular-nums text-muted-foreground">
 					<Suspense fallback={<div className="h-10" />}>
 						{!singleDescription && (
