@@ -24,7 +24,9 @@ import (
 )
 
 const (
-	wsDeadline = 70 * time.Second
+	wsDeadline        = 70 * time.Second
+	maxWSRedirects    = 5
+	agentConnectRoute = "api/beszel/agent-connect"
 )
 
 // WebSocketClient manages the WebSocket connection between the agent and hub.
@@ -97,13 +99,9 @@ func (client *WebSocketClient) getOptions() *gws.ClientOption {
 		return client.options
 	}
 
-	// update the hub url to use websocket scheme and api path
-	if client.hubURL.Scheme == "https" {
-		client.hubURL.Scheme = "wss"
-	} else {
-		client.hubURL.Scheme = "ws"
-	}
-	client.hubURL.Path = path.Join(client.hubURL.Path, "api/beszel/agent-connect")
+	hubURL := *client.hubURL
+	hubURL.Path = path.Join(hubURL.Path, agentConnectRoute)
+	updateURLToWebSocketScheme(&hubURL)
 
 	// make sure BESZEL_AGENT_ALL_PROXY works (GWS only checks ALL_PROXY)
 	if val := os.Getenv("BESZEL_AGENT_ALL_PROXY"); val != "" {
@@ -111,7 +109,7 @@ func (client *WebSocketClient) getOptions() *gws.ClientOption {
 	}
 
 	client.options = &gws.ClientOption{
-		Addr:      client.hubURL.String(),
+		Addr:      hubURL.String(),
 		TlsConfig: &tls.Config{InsecureSkipVerify: true},
 		RequestHeader: http.Header{
 			"User-Agent": []string{getUserAgent()},
@@ -133,14 +131,80 @@ func (client *WebSocketClient) Connect() (err error) {
 	// make sure previous connection is closed
 	client.Close()
 
-	client.Conn, _, err = gws.NewClient(client, client.getOptions())
-	if err != nil {
-		return err
+	options := client.getOptions()
+	for redirectCount := 0; ; redirectCount++ {
+		var resp *http.Response
+		client.Conn, resp, err = gws.NewClient(client, options)
+		if err == nil {
+			break
+		}
+
+		nextAddr, redirected, redirectErr := resolveWebSocketRedirect(options.Addr, resp)
+		if resp != nil && resp.Body != nil {
+			_ = resp.Body.Close()
+		}
+		if redirectErr != nil {
+			return fmt.Errorf("%w: %v", err, redirectErr)
+		}
+		if !redirected {
+			return err
+		}
+		if redirectCount >= maxWSRedirects {
+			return fmt.Errorf("%w: stopped after %d websocket redirects", err, maxWSRedirects)
+		}
+
+		slog.Info("Following WebSocket redirect", "from", options.Addr, "to", nextAddr)
+		options.Addr = nextAddr
 	}
 
 	go client.Conn.ReadLoop()
 
 	return nil
+}
+
+func resolveWebSocketRedirect(currentAddr string, resp *http.Response) (string, bool, error) {
+	if resp == nil || !isHTTPRedirect(resp.StatusCode) {
+		return "", false, nil
+	}
+
+	location := resp.Header.Get("Location")
+	if location == "" {
+		return "", false, fmt.Errorf("websocket redirect status %d missing Location header", resp.StatusCode)
+	}
+
+	baseURL, err := url.Parse(currentAddr)
+	if err != nil {
+		return "", false, fmt.Errorf("invalid current websocket URL: %w", err)
+	}
+
+	redirectURL, err := baseURL.Parse(location)
+	if err != nil {
+		return "", false, fmt.Errorf("invalid websocket redirect URL %q: %w", location, err)
+	}
+	updateURLToWebSocketScheme(redirectURL)
+	return redirectURL.String(), true, nil
+}
+
+func isHTTPRedirect(statusCode int) bool {
+	switch statusCode {
+	case http.StatusMovedPermanently,
+		http.StatusFound,
+		http.StatusSeeOther,
+		http.StatusTemporaryRedirect,
+		http.StatusPermanentRedirect:
+		return true
+	default:
+		return false
+	}
+}
+
+func updateURLToWebSocketScheme(u *url.URL) {
+	switch u.Scheme {
+	case "https", "wss":
+		u.Scheme = "wss"
+	default:
+		u.Scheme = "ws"
+	}
 }
 
 // OnOpen handles WebSocket connection establishment.

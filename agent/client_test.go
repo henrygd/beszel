@@ -4,6 +4,7 @@ package agent
 
 import (
 	"crypto/ed25519"
+	"net/http"
 	"net/url"
 	"os"
 	"strings"
@@ -153,6 +154,85 @@ func TestWebSocketClient_GetOptions(t *testing.T) {
 			// Test options caching
 			options2 := client.getOptions()
 			assert.Same(t, options, options2, "Options should be cached")
+		})
+	}
+}
+
+func TestResolveWebSocketRedirect(t *testing.T) {
+	testCases := []struct {
+		name           string
+		currentAddr    string
+		statusCode     int
+		location       string
+		expectedAddr   string
+		expectedFollow bool
+		expectError    bool
+	}{
+		{
+			name:           "308 http to https redirect",
+			currentAddr:    "ws://hub.example.com/api/beszel/agent-connect",
+			statusCode:     http.StatusPermanentRedirect,
+			location:       "https://hub.example.com/api/beszel/agent-connect",
+			expectedAddr:   "wss://hub.example.com/api/beszel/agent-connect",
+			expectedFollow: true,
+		},
+		{
+			name:           "relative redirect",
+			currentAddr:    "ws://hub.example.com/api/beszel/agent-connect",
+			statusCode:     http.StatusTemporaryRedirect,
+			location:       "/new/api/beszel/agent-connect",
+			expectedAddr:   "ws://hub.example.com/new/api/beszel/agent-connect",
+			expectedFollow: true,
+		},
+		{
+			name:           "wss redirect stays wss",
+			currentAddr:    "wss://hub.example.com/api/beszel/agent-connect",
+			statusCode:     http.StatusMovedPermanently,
+			location:       "wss://other.example.com/api/beszel/agent-connect",
+			expectedAddr:   "wss://other.example.com/api/beszel/agent-connect",
+			expectedFollow: true,
+		},
+		{
+			name:           "non redirect response",
+			currentAddr:    "ws://hub.example.com/api/beszel/agent-connect",
+			statusCode:     http.StatusBadGateway,
+			expectedFollow: false,
+		},
+		{
+			name:        "redirect missing location",
+			currentAddr: "ws://hub.example.com/api/beszel/agent-connect",
+			statusCode:  http.StatusPermanentRedirect,
+			expectError: true,
+		},
+		{
+			name:        "invalid location",
+			currentAddr: "ws://hub.example.com/api/beszel/agent-connect",
+			statusCode:  http.StatusPermanentRedirect,
+			location:    "http://[::1",
+			expectError: true,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			resp := &http.Response{
+				StatusCode: tc.statusCode,
+				Header:     http.Header{},
+			}
+			if tc.location != "" {
+				resp.Header.Set("Location", tc.location)
+			}
+
+			addr, followed, err := resolveWebSocketRedirect(tc.currentAddr, resp)
+
+			if tc.expectError {
+				assert.Error(t, err)
+				return
+			}
+
+			require.NoError(t, err)
+			assert.Equal(t, tc.expectedFollow, followed)
+			assert.Equal(t, tc.expectedAddr, addr)
 		})
 	}
 }
