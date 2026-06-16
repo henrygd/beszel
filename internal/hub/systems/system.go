@@ -388,6 +388,7 @@ func (sys *System) setDown(originalError error) error {
 	if originalError != nil {
 		sys.manager.hub.Logger().Error("System down", "system", record.GetString("name"), "err", originalError)
 	}
+	sys.detailsFetched.Store(false)
 	record.Set("status", down)
 	return sys.manager.hub.SaveNoValidate(record)
 }
