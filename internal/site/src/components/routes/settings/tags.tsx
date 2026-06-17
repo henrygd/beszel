@@ -53,7 +53,7 @@ export default function TagsSettings() {
 	const [editingTag, setEditingTag] = useState<TagWithSystems | null>(null)
 	const [selectedSystems, setSelectedSystems] = useState<string[]>([])
 	const [newTagName, setNewTagName] = useState("")
-	const [newTagColor, setNewTagColor] = useState("#3b82f6")
+	const [newTagColor, setNewTagColor] = useState("blue")
 	const [systemSearchQuery, setSystemSearchQuery] = useState("")
 	const [globalFilter, setGlobalFilter] = useState("")
 	const [sorting, setSorting] = useState<SortingState>([])
@@ -124,7 +124,7 @@ export default function TagsSettings() {
 	function openEditDialog(tag: TagWithSystems) {
 		setEditingTag(tag)
 		setNewTagName(tag.name)
-		setNewTagColor(tag.color || "#3b82f6")
+		setNewTagColor(tag.color || "blue")
 		setSelectedSystems(tag.systems.map((s) => s.id))
 		setSystemSearchQuery("")
 		setDialogOpen(true)

@@ -27,10 +27,10 @@ func init() {
 		)
 		tagsCollection.Fields.Add(
 			&core.TextField{
-				Id:      "color",
-				Name:    "color",
+				Id:       "color",
+				Name:     "color",
 				Required: false,
-				Max:     7, // hex color #RRGGBB
+				Max:      10,
 			},
 		)
 

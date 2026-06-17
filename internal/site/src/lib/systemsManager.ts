@@ -187,7 +187,9 @@ const actionFns: Record<string, (system: SystemRecord) => void> = {
 	delete: remove,
 }
 
-/** Subscribe to real-time system updates from the collection */
+let unsubTags: (() => void) | undefined | void
+
+/** Subscribe to real-time system and tag updates */
 export async function subscribe() {
 	try {
 		unsub = await COLLECTION.subscribe("*", ({ action, record }) => actionFns[action]?.(record), {
@@ -196,6 +198,24 @@ export async function subscribe() {
 		})
 	} catch (error) {
 		console.error("Failed to subscribe to systems collection:", error)
+	}
+	try {
+		unsubTags = await pb.collection("tags").subscribe<TagRecord>("*", ({ action, record }) => {
+			if (action === "delete") {
+				delete tagsCache[record.id]
+			} else {
+				tagsCache[record.id] = record
+			}
+			// Re-expand tags on all systems that reference this tag
+			const systems = $allSystemsById.get()
+			for (const system of Object.values(systems)) {
+				if (system.tags?.includes(record.id)) {
+					update({ ...system })
+				}
+			}
+		})
+	} catch (error) {
+		console.error("Failed to subscribe to tags collection:", error)
 	}
 }
 
@@ -218,5 +238,8 @@ export async function refresh() {
 	}
 }
 
-/** Unsubscribe from real-time system updates */
-export const unsubscribe = () => (unsub = unsub?.())
+/** Unsubscribe from real-time system and tag updates */
+export const unsubscribe = () => {
+	unsub = unsub?.()
+	unsubTags = unsubTags?.()
+}

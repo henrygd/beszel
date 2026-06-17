@@ -75,22 +75,35 @@ export default function SystemsTable() {
 		sessionStorage
 	)
 	const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
-	const [columnVisibility, setColumnVisibility] = useBrowserStorage<VisibilityState>("cols", {})
+	const [columnVisibility, setColumnVisibility] = useBrowserStorage<VisibilityState>("cols", { tags: false })
 
 	const locale = i18n.locale
 
-	// Extract unique tags from all systems
+	// Load all tags from collection and subscribe to live updates
 	useEffect(() => {
-		const tagsMap = new Map<string, TagRecord>()
-		for (const system of data) {
-			if (system.expand?.tags) {
-				for (const tag of system.expand.tags) {
-					tagsMap.set(tag.id, tag)
-				}
-			}
-		}
-		setAvailableTags(Array.from(tagsMap.values()).sort((a, b) => a.name.localeCompare(b.name)))
-	}, [data])
+		pb.collection("tags")
+			.getFullList<TagRecord>({ sort: "name", requestKey: null })
+			.then(setAvailableTags)
+		let unsubscribe: (() => void) | undefined
+		;(async () => {
+			unsubscribe = await pb.collection("tags").subscribe<TagRecord>("*", (e) => {
+				setAvailableTags((prev) => {
+					if (e.action === "create") {
+						return [...prev, e.record].sort((a, b) => a.name.localeCompare(b.name))
+					}
+					if (e.action === "update") {
+						return prev.map((t) => (t.id === e.record.id ? e.record : t))
+					}
+					if (e.action === "delete") {
+						setSelectedTagFilter((f) => f.filter((id) => id !== e.record.id))
+						return prev.filter((t) => t.id !== e.record.id)
+					}
+					return prev
+				})
+			})
+		})()
+		return () => unsubscribe?.()
+	}, [])
 
 	// Filter data based on status and tag filters
 	const filteredData = useMemo(() => {
