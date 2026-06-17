@@ -8,13 +8,13 @@ import (
 	"hash/fnv"
 	"math/rand"
 	"net"
-	"slices"
 	"strings"
 	"sync/atomic"
 	"time"
 
 	"github.com/henrygd/beszel/internal/common"
 	"github.com/henrygd/beszel/internal/hub/transport"
+	"github.com/henrygd/beszel/internal/hub/utils"
 	"github.com/henrygd/beszel/internal/hub/ws"
 
 	"github.com/henrygd/beszel/internal/entities/container"
@@ -353,14 +353,25 @@ func (sys *System) getRecord(app core.App) (*core.Record, error) {
 	return record, nil
 }
 
-// HasUser checks if the given user ID is in the system's users list.
-func (sys *System) HasUser(app core.App, userID string) bool {
-	record, err := sys.getRecord(app)
-	if err != nil {
+// HasUser checks if the given user is in the system's users list.
+// Returns true if SHARE_ALL_SYSTEMS is enabled (any authenticated user can access any system).
+func (sys *System) HasUser(app core.App, user *core.Record) bool {
+	if user == nil {
 		return false
 	}
-	users := record.GetStringSlice("users")
-	return slices.Contains(users, userID)
+	if v, _ := utils.GetEnv("SHARE_ALL_SYSTEMS"); v == "true" {
+		return true
+	}
+	var recordData = struct {
+		Users string
+	}{}
+	err := app.DB().NewQuery("SELECT users FROM systems WHERE id={:id}").
+		Bind(dbx.Params{"id": sys.Id}).
+		One(&recordData)
+	if err != nil || recordData.Users == "" {
+		return false
+	}
+	return strings.Contains(recordData.Users, user.Id)
 }
 
 // setDown marks a system as down in the database.

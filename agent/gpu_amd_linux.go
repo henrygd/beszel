@@ -156,6 +156,7 @@ func (gm *GPUManager) updateAmdGpuData(cardPath string) bool {
 func readSysfsFloat(path string) (float64, error) {
 	val, err := utils.ReadStringFileLimited(path, 64)
 	if err != nil {
+		slog.Debug("Failed to read sysfs value", "path", path, "error", err)
 		return 0, err
 	}
 	return strconv.ParseFloat(val, 64)

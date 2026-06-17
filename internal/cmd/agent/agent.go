@@ -195,6 +195,6 @@ func main() {
 	}
 
 	if err := a.Start(serverConfig); err != nil {
-		log.Fatal("Failed to start server: ", err)
+		log.Fatal("Failed to start: ", err)
 	}
 }

@@ -113,26 +113,29 @@ export function SystemsTableColumns(viewMode: "table" | "grid"): ColumnDef<Syste
 
 				// match filter value against name or translated status
 				return (row, _, newFilterInput) => {
-					const { name, status, expand } = row.original
+					const sys = row.original
+					if (sys.host.includes(newFilterInput) || sys.info.v?.includes(newFilterInput)) {
+						return true
+					}
 					if (newFilterInput !== filterInput) {
 						filterInput = newFilterInput
 						filterInputLower = newFilterInput.toLowerCase()
 					}
-					let nameLower = nameCache.get(name)
+					let nameLower = nameCache.get(sys.name)
 					if (nameLower === undefined) {
-						nameLower = name.toLowerCase()
-						nameCache.set(name, nameLower)
+						nameLower = sys.name.toLowerCase()
+						nameCache.set(sys.name, nameLower)
 					}
 					if (nameLower.includes(filterInputLower)) {
 						return true
 					}
-					const statusLower = statusTranslations[status as keyof typeof statusTranslations]
+					const statusLower = statusTranslations[sys.status as keyof typeof statusTranslations]
 					if (statusLower?.includes(filterInputLower)) {
 						return true
 					}
 					// Search in tags
-					if (expand?.tags) {
-						for (const tag of expand.tags) {
+					if (sys.expand?.tags) {
+						for (const tag of sys.expand.tags) {
 							if (tag.name.toLowerCase().includes(filterInputLower)) {
 								return true
 							}

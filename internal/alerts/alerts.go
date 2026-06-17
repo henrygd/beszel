@@ -302,21 +302,6 @@ func (am *AlertManager) SendShoutrrrAlert(notificationUrl, title, message, link,
 	return nil
 }
 
-func (am *AlertManager) SendTestNotification(e *core.RequestEvent) error {
-	var data struct {
-		URL string `json:"url"`
-	}
-	err := e.BindBody(&data)
-	if err != nil || data.URL == "" {
-		return e.BadRequestError("URL is required", err)
-	}
-	err = am.SendShoutrrrAlert(data.URL, "Test Alert", "This is a notification from Beszel.", am.hub.Settings().Meta.AppURL, "View Beszel")
-	if err != nil {
-		return e.JSON(200, map[string]string{"err": err.Error()})
-	}
-	return e.JSON(200, map[string]bool{"err": false})
-}
-
 // setAlertTriggered updates the "triggered" status of an alert record in the database
 func (am *AlertManager) setAlertTriggered(alert CachedAlertData, triggered bool) error {
 	alertRecord, err := am.hub.FindRecordById("alerts", alert.Id)
