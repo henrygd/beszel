@@ -178,7 +178,7 @@ export default function InfoBar({
 							)}
 						</Tooltip>
 
-						{systemInfo.map(({ value, label, Icon, hide }, index) => {
+						{systemInfo.map(({ value, label, Icon, hide }) => {
 							if (hide || !value) {
 								return null
 							}
@@ -198,37 +198,54 @@ export default function InfoBar({
 									) : (
 										content
 									)}
-									{/* Render tags after host/IP (index 0) */}
-									{index === 1 && system.expand?.tags && system.expand.tags.length > 0 && (
-										<>
-											<Separator orientation="vertical" className="h-4 bg-primary/30" />
-											<TooltipProvider>
-												<Tooltip delayDuration={150}>
-													<TooltipTrigger asChild>
-														<div className="flex gap-1.5 items-center cursor-default">
-															<TagIcon className="h-4 w-4" />
-															<span>{system.expand.tags.length}</span>
-														</div>
-													</TooltipTrigger>
-													<TooltipContent>
-														<div className="flex flex-wrap gap-1.5 max-w-64">
-															{system.expand.tags.map((tag: TagRecord) => (
-																<Badge
-																	key={tag.id}
-																	className={`text-xs pointer-events-none ${getTagColorClasses(tag.color)}`}
-																>
-																	{tag.name}
-																</Badge>
-															))}
-														</div>
-													</TooltipContent>
-												</Tooltip>
-											</TooltipProvider>
-										</>
-									)}
 								</div>
 							)
 						})}
+						{/* Tags — rendered independently so they show even if hostname is hidden */}
+						{system.expand?.tags && system.expand.tags.length > 0 && (() => {
+							const tags = system.expand.tags as TagRecord[]
+							const MAX_INLINE = 3
+							return (
+								<>
+									<Separator orientation="vertical" className="h-4 bg-primary/30" />
+									{tags.length <= MAX_INLINE ? (
+										<div className="flex gap-1 items-center flex-wrap">
+											{tags.map((tag) => (
+												<Badge
+													key={tag.id}
+													className={`text-xs pointer-events-none ${getTagColorClasses(tag.color)}`}
+												>
+													{tag.name}
+												</Badge>
+											))}
+										</div>
+									) : (
+										<TooltipProvider>
+											<Tooltip delayDuration={150}>
+												<TooltipTrigger asChild>
+													<div className="flex gap-1.5 items-center cursor-default">
+														<TagIcon className="h-4 w-4" />
+														<span>{tags.length}</span>
+													</div>
+												</TooltipTrigger>
+												<TooltipContent>
+													<div className="flex flex-wrap gap-1.5 max-w-64">
+														{tags.map((tag) => (
+															<Badge
+																key={tag.id}
+																className={`text-xs pointer-events-none ${getTagColorClasses(tag.color)}`}
+															>
+																{tag.name}
+															</Badge>
+														))}
+													</div>
+												</TooltipContent>
+											</Tooltip>
+										</TooltipProvider>
+									)}
+								</>
+							)
+						})()}
 					</div>
 				</div>
 				<div className="xl:ms-auto flex items-center gap-2 max-sm:-mb-1">

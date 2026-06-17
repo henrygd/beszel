@@ -84,6 +84,8 @@ export function TagEditDialog({
 								<button
 									key={color}
 									type="button"
+									aria-label={color}
+									aria-pressed={tagColor === color}
 									onClick={() => onTagColorChange(color)}
 									className={cn(
 										"w-6 h-6 rounded-full transition-all",

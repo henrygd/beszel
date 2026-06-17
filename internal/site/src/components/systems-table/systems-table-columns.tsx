@@ -195,7 +195,11 @@ export function SystemsTableColumns(viewMode: "table" | "grid"): ColumnDef<Syste
 				}
 				const maxTags = viewMode === "table" ? 1 : 3
 				return (
-					<div className="flex flex-wrap gap-1 relative z-10" onClick={(e) => e.stopPropagation()}>
+					<Link
+						href={getPagePath($router, "system", { id: system.id })}
+						tabIndex={-1}
+						className="flex flex-wrap gap-1 relative z-10"
+					>
 						{system.expand.tags.slice(0, maxTags).map((tag: TagRecord) => (
 							<Badge
 								key={tag.id}
@@ -205,11 +209,27 @@ export function SystemsTableColumns(viewMode: "table" | "grid"): ColumnDef<Syste
 							</Badge>
 						))}
 						{system.expand.tags.length > maxTags && (
-							<Badge variant="secondary" className="text-xs px-1.5 py-0">
-								+{system.expand.tags.length - maxTags}
-							</Badge>
+							<Tooltip>
+								<TooltipTrigger asChild>
+									<Badge variant="secondary" className="text-xs px-1.5 py-0 cursor-default">
+										+{system.expand.tags.length - maxTags}
+									</Badge>
+								</TooltipTrigger>
+								<TooltipContent>
+									<div className="flex flex-wrap gap-1">
+										{system.expand.tags.slice(maxTags).map((tag: TagRecord) => (
+											<Badge
+												key={tag.id}
+												className={cn("text-xs px-1.5 py-0 pointer-events-none", getTagColorClasses(tag.color))}
+											>
+												{tag.name}
+											</Badge>
+										))}
+									</div>
+								</TooltipContent>
+							</Tooltip>
 						)}
-					</div>
+					</Link>
 				)
 			},
 		},
