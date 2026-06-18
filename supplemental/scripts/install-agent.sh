@@ -183,6 +183,25 @@ run_rc_command "$1"
 EOF
 }
 
+# Generate OPNsense boot hook content
+# OPNsense does not process enabled rc.d services at boot the way base FreeBSD
+# does, so beszel_agent_enable="YES" is ignored at startup. OPNsense does run
+# every executable in /usr/local/etc/rc.syshook.d/start/ at boot, so we use that
+# to start the agent. The running-check avoids a double start in the event that
+# a future OPNsense release begins honoring the rc.d enable flag.
+generate_opnsense_syshook() {
+  cat <<'EOF'
+#!/bin/sh
+
+# Start the Beszel Agent on boot under OPNsense.
+# Installed by the Beszel agent install script.
+
+if ! /usr/sbin/service beszel-agent status >/dev/null 2>&1; then
+    /usr/sbin/service beszel-agent onestart
+fi
+EOF
+}
+
 # Detect system architecture
 detect_architecture() {
   local arch=$(uname -m)
@@ -437,6 +456,9 @@ if [ "$UNINSTALL" = true ]; then
 
     echo "Removing the FreeBSD service files..."
     rm -f /usr/local/etc/rc.d/beszel-agent
+
+    # Remove the OPNsense boot hook if it exists
+    rm -f /usr/local/etc/rc.syshook.d/start/99-beszel-agent
 
     # Remove the daily update cron job if it exists
     echo "Removing the daily update cron job..."
@@ -922,6 +944,15 @@ EOF
     chmod 755 /usr/local/etc/rc.d/beszel-agent
   else
     echo "FreeBSD rc service file already exists. Skipping creation."
+  fi
+
+  # On OPNsense, enabled rc.d services are not started at boot, so install a
+  # boot hook in rc.syshook.d/start to ensure the agent comes up after reboot.
+  if is_opnsense; then
+    echo "OPNsense detected: installing boot hook for automatic startup..."
+    mkdir -p /usr/local/etc/rc.syshook.d/start
+    generate_opnsense_syshook > /usr/local/etc/rc.syshook.d/start/99-beszel-agent
+    chmod 755 /usr/local/etc/rc.syshook.d/start/99-beszel-agent
   fi
 
   # Enable and start the service
