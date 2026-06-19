@@ -479,6 +479,7 @@ if [ "$UNINSTALL" = true ]; then
     deluser beszel 2>/dev/null
   elif is_freebsd; then
     pw user del beszel 2>/dev/null
+    pw group del beszel 2>/dev/null
   else
     userdel beszel 2>/dev/null
   fi
@@ -600,7 +601,11 @@ elif is_freebsd; then
     AGENT_USER="daemon"
   else
     if ! id -u beszel >/dev/null 2>&1; then
-      pw user add beszel -d /nonexistent -s /usr/sbin/nologin -c "beszel user"
+      if pw group show beszel >/dev/null 2>&1; then
+        pw user add beszel -g beszel -d /nonexistent -s /usr/sbin/nologin -c "beszel user"
+      else
+        pw user add beszel -d /nonexistent -s /usr/sbin/nologin -c "beszel user"
+      fi
     fi
     # Add the user to the wheel group to allow self-updates
     if pw group show wheel >/dev/null 2>&1; then
