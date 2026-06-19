@@ -600,12 +600,11 @@ elif is_freebsd; then
     echo "OPNsense detected: skipping user creation (using daemon user instead)"
     AGENT_USER="daemon"
   else
+    if ! pw group show beszel >/dev/null 2>&1; then
+      pw group add beszel
+    fi
     if ! id -u beszel >/dev/null 2>&1; then
-      if pw group show beszel >/dev/null 2>&1; then
-        pw user add beszel -g beszel -d /nonexistent -s /usr/sbin/nologin -c "beszel user"
-      else
-        pw user add beszel -d /nonexistent -s /usr/sbin/nologin -c "beszel user"
-      fi
+      pw user add beszel -g beszel -d /nonexistent -s /usr/sbin/nologin -c "beszel user"
     fi
     # Add the user to the wheel group to allow self-updates
     if pw group show wheel >/dev/null 2>&1; then
