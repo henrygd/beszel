@@ -65,6 +65,7 @@ func createAlertHistoryRecord(app core.App, alertRecord *core.Record) (alertHist
 	alertHistoryRecord.Set("user", alertRecord.GetString("user"))
 	alertHistoryRecord.Set("system", alertRecord.GetString("system"))
 	alertHistoryRecord.Set("name", alertRecord.GetString("name"))
+	alertHistoryRecord.Set("container", alertRecord.GetString("container"))
 	alertHistoryRecord.Set("value", alertRecord.GetFloat("value"))
 	err = app.Save(alertHistoryRecord)
 	if err != nil {

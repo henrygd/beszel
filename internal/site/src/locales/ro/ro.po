@@ -179,6 +179,15 @@ msgstr ""
 msgid "All Systems"
 msgstr ""
 
+#: src/components/alerts/alerts-sheet.tsx
+msgid "Any container unhealthy"
+msgstr ""
+
+#. placeholder {0}: alert.min
+#: src/components/active-alerts.tsx
+msgid "Any container unhealthy for {0, plural, one {# minute} other {# minutes}}"
+msgstr ""
+
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Are you sure you want to delete {name}?"
 msgstr ""
@@ -412,6 +421,10 @@ msgstr "Conflicte"
 
 #: src/components/active-alerts.tsx
 msgid "Connection is down"
+msgstr ""
+
+#: src/lib/alerts.ts
+msgid "Container Health"
 msgstr ""
 
 #: src/components/routes/system.tsx
@@ -1400,6 +1413,10 @@ msgstr ""
 msgid "Search"
 msgstr "Caută"
 
+#: src/components/alerts/alerts-sheet.tsx
+msgid "Search containers..."
+msgstr ""
+
 #: src/components/command-palette.tsx
 msgid "Search for systems or settings..."
 msgstr ""
@@ -1681,6 +1698,14 @@ msgid "Triggers when 5 minute load average exceeds a threshold"
 msgstr ""
 
 #: src/lib/alerts.ts
+msgid "Triggers when a container is unhealthy"
+msgstr ""
+
+#: src/components/alerts/alerts-sheet.tsx
+msgid "Triggers when any container is unhealthy"
+msgstr ""
+
+#: src/lib/alerts.ts
 msgid "Triggers when any sensor exceeds a threshold"
 msgstr ""
 
@@ -1708,6 +1733,10 @@ msgstr ""
 msgid "Triggers when status switches between up and down"
 msgstr ""
 
+#: src/components/alerts/alerts-sheet.tsx
+msgid "Triggers when this container is unhealthy"
+msgstr ""
+
 #: src/lib/alerts.ts
 msgid "Triggers when usage of any disk exceeds a threshold"
 msgstr ""
@@ -1717,6 +1746,17 @@ msgstr ""
 #: src/components/routes/system/smart-table.tsx
 msgid "Type"
 msgstr "Tip"
+
+#: src/components/alerts-history-columns.tsx
+#: src/components/alerts/alerts-sheet.tsx
+#: src/lib/alerts.ts
+msgid "Unhealthy"
+msgstr ""
+
+#. placeholder {0}: alert.min
+#: src/components/active-alerts.tsx
+msgid "Unhealthy for {0, plural, one {# minute} other {# minutes}}"
+msgstr ""
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Unit file"
@@ -1879,4 +1919,3 @@ msgstr "Da"
 #: src/components/routes/settings/layout.tsx
 msgid "Your user settings have been updated."
 msgstr ""
-

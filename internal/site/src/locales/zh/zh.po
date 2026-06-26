@@ -179,6 +179,15 @@ msgstr "所有容器"
 msgid "All Systems"
 msgstr "所有系統"
 
+#: src/components/alerts/alerts-sheet.tsx
+msgid "Any container unhealthy"
+msgstr ""
+
+#. placeholder {0}: alert.min
+#: src/components/active-alerts.tsx
+msgid "Any container unhealthy for {0, plural, one {# minute} other {# minutes}}"
+msgstr ""
+
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Are you sure you want to delete {name}?"
 msgstr "您確定要刪除 {name} 嗎？"
@@ -422,6 +431,10 @@ msgstr "衝突"
 #: src/components/active-alerts.tsx
 msgid "Connection is down"
 msgstr "連線中斷"
+
+#: src/lib/alerts.ts
+msgid "Container Health"
+msgstr ""
 
 #: src/components/routes/system.tsx
 msgid "Containers"
@@ -1439,6 +1452,10 @@ msgstr "安排不會發送通知的靜音時段。"
 msgid "Search"
 msgstr "搜尋"
 
+#: src/components/alerts/alerts-sheet.tsx
+msgid "Search containers..."
+msgstr ""
+
 #: src/components/command-palette.tsx
 msgid "Search for systems or settings..."
 msgstr "在設定或系統中搜尋..."
@@ -1725,6 +1742,14 @@ msgid "Triggers when 5 minute load average exceeds a threshold"
 msgstr "當 5 分鐘平均負載超過閾值時觸發"
 
 #: src/lib/alerts.ts
+msgid "Triggers when a container is unhealthy"
+msgstr ""
+
+#: src/components/alerts/alerts-sheet.tsx
+msgid "Triggers when any container is unhealthy"
+msgstr ""
+
+#: src/lib/alerts.ts
 msgid "Triggers when any sensor exceeds a threshold"
 msgstr "當任何感應器超過閾值時觸發"
 
@@ -1752,6 +1777,10 @@ msgstr "當記憶體使用率超過閾值時觸發"
 msgid "Triggers when status switches between up and down"
 msgstr "當連線和離線時觸發"
 
+#: src/components/alerts/alerts-sheet.tsx
+msgid "Triggers when this container is unhealthy"
+msgstr ""
+
 #: src/lib/alerts.ts
 msgid "Triggers when usage of any disk exceeds a threshold"
 msgstr "當任何磁碟使用率超過閾值時觸發"
@@ -1761,6 +1790,17 @@ msgstr "當任何磁碟使用率超過閾值時觸發"
 #: src/components/routes/system/smart-table.tsx
 msgid "Type"
 msgstr "類型"
+
+#: src/components/alerts-history-columns.tsx
+#: src/components/alerts/alerts-sheet.tsx
+#: src/lib/alerts.ts
+msgid "Unhealthy"
+msgstr ""
+
+#. placeholder {0}: alert.min
+#: src/components/active-alerts.tsx
+msgid "Unhealthy for {0, plural, one {# minute} other {# minutes}}"
+msgstr ""
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Unit file"

@@ -79,8 +79,23 @@ func init() {
 					"LoadAvg1",
 					"LoadAvg5",
 					"LoadAvg15",
-					"Battery"
+					"Battery",
+					"ContainerHealth"
 				]
+			},
+			{
+				"autogeneratePattern": "",
+				"hidden": false,
+				"id": "textcontaineral",
+				"max": 0,
+				"min": 0,
+				"name": "container",
+				"pattern": "",
+				"presentable": false,
+				"primaryKey": false,
+				"required": false,
+				"system": false,
+				"type": "text"
 			},
 			{
 				"hidden": false,
@@ -137,7 +152,7 @@ func init() {
 			}
 		],
 		"indexes": [
-			"CREATE UNIQUE INDEX ` + "`" + `idx_MnhEt21L5r` + "`" + ` ON ` + "`" + `alerts` + "`" + ` (\n  ` + "`" + `user` + "`" + `,\n  ` + "`" + `system` + "`" + `,\n  ` + "`" + `name` + "`" + `\n)"
+			"CREATE UNIQUE INDEX ` + "`" + `idx_MnhEt21L5r` + "`" + ` ON ` + "`" + `alerts` + "`" + ` (\n  ` + "`" + `user` + "`" + `,\n  ` + "`" + `system` + "`" + `,\n  ` + "`" + `name` + "`" + `,\n  ` + "`" + `container` + "`" + `\n)"
 		],
 		"system": false
 	},
@@ -216,6 +231,20 @@ func init() {
 					"presentable": false,
 					"primaryKey": false,
 					"required": true,
+					"system": false,
+					"type": "text"
+				},
+				{
+					"autogeneratePattern": "",
+					"hidden": false,
+					"id": "texthistcontain",
+					"max": 0,
+					"min": 0,
+					"name": "container",
+					"pattern": "",
+					"presentable": false,
+					"primaryKey": false,
+					"required": false,
 					"system": false,
 					"type": "text"
 				},

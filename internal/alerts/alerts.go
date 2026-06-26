@@ -20,10 +20,11 @@ type hubLike interface {
 }
 
 type AlertManager struct {
-	hub           hubLike
-	stopOnce      sync.Once
-	pendingAlerts sync.Map
-	alertsCache   *AlertsCache
+	hub             hubLike
+	stopOnce        sync.Once
+	pendingAlerts   sync.Map
+	alertsCache     *AlertsCache
+	containerHealth *containerHealthTracker
 }
 
 type AlertMessageData struct {
@@ -98,8 +99,9 @@ var supportsTitle = map[string]struct{}{
 // NewAlertManager creates a new AlertManager instance.
 func NewAlertManager(app hubLike) *AlertManager {
 	am := &AlertManager{
-		hub:         app,
-		alertsCache: NewAlertsCache(app),
+		hub:             app,
+		alertsCache:     NewAlertsCache(app),
+		containerHealth: newContainerHealthTracker(),
 	}
 	am.bindEvents()
 	return am

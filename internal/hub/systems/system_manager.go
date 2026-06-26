@@ -54,7 +54,9 @@ type hubLike interface {
 	GetSSHKey(dataDir string) (ssh.Signer, error)
 	HandleSystemAlerts(systemRecord *core.Record, data *system.CombinedData) error
 	HandleStatusAlerts(status string, systemRecord *core.Record) error
+	HandleContainerAlerts(systemRecord *core.Record, data *system.CombinedData) error
 	CancelPendingStatusAlerts(systemID string)
+	ClearContainerHealthState(systemID string)
 }
 
 // NewSystemManager creates a new SystemManager instance with the provided hub.
@@ -191,6 +193,7 @@ func (sm *SystemManager) onRecordAfterUpdateSuccess(e *core.RecordEvent) error {
 		}
 		_ = deactivateAlerts(e.App, e.Record.Id)
 		sm.hub.CancelPendingStatusAlerts(e.Record.Id)
+		sm.hub.ClearContainerHealthState(e.Record.Id)
 		return e.Next()
 	case pending:
 		// Resume monitoring, preferring existing WebSocket connection
@@ -215,6 +218,9 @@ func (sm *SystemManager) onRecordAfterUpdateSuccess(e *core.RecordEvent) error {
 	if newStatus == up {
 		if err := sm.hub.HandleSystemAlerts(e.Record, system.data); err != nil {
 			e.App.Logger().Error("Error handling system alerts", "err", err)
+		}
+		if err := sm.hub.HandleContainerAlerts(e.Record, system.data); err != nil {
+			e.App.Logger().Error("Error handling container alerts", "err", err)
 		}
 	}
 
@@ -273,6 +279,7 @@ func (sm *SystemManager) RemoveSystem(systemID string) error {
 	// Clean up all connections
 	system.closeSSHConnection()
 	system.closeWebSocketConnection()
+	sm.hub.ClearContainerHealthState(systemID)
 	sm.systems.Remove(systemID)
 	return nil
 }

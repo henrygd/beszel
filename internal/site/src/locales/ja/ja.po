@@ -179,6 +179,15 @@ msgstr "すべてのコンテナ"
 msgid "All Systems"
 msgstr "すべてのシステム"
 
+#: src/components/alerts/alerts-sheet.tsx
+msgid "Any container unhealthy"
+msgstr ""
+
+#. placeholder {0}: alert.min
+#: src/components/active-alerts.tsx
+msgid "Any container unhealthy for {0, plural, one {# minute} other {# minutes}}"
+msgstr ""
+
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Are you sure you want to delete {name}?"
 msgstr "{name}を削除してもよろしいですか？"
@@ -422,6 +431,10 @@ msgstr "競合"
 #: src/components/active-alerts.tsx
 msgid "Connection is down"
 msgstr "接続が切断されました"
+
+#: src/lib/alerts.ts
+msgid "Container Health"
+msgstr ""
 
 #: src/components/routes/system.tsx
 msgid "Containers"
@@ -1439,6 +1452,10 @@ msgstr "通知が送信されないサイレント時間をスケジュールし
 msgid "Search"
 msgstr "検索"
 
+#: src/components/alerts/alerts-sheet.tsx
+msgid "Search containers..."
+msgstr ""
+
 #: src/components/command-palette.tsx
 msgid "Search for systems or settings..."
 msgstr "システムまたは設定を検索..."
@@ -1725,6 +1742,14 @@ msgid "Triggers when 5 minute load average exceeds a threshold"
 msgstr "5分間の負荷平均がしきい値を超えたときにトリガーされます"
 
 #: src/lib/alerts.ts
+msgid "Triggers when a container is unhealthy"
+msgstr ""
+
+#: src/components/alerts/alerts-sheet.tsx
+msgid "Triggers when any container is unhealthy"
+msgstr ""
+
+#: src/lib/alerts.ts
 msgid "Triggers when any sensor exceeds a threshold"
 msgstr "センサーがしきい値を超えたときにトリガーされます"
 
@@ -1752,6 +1777,10 @@ msgstr "メモリ使用率がしきい値を超えたときにトリガーされ
 msgid "Triggers when status switches between up and down"
 msgstr "ステータスが上から下に切り替わるときにトリガーされます"
 
+#: src/components/alerts/alerts-sheet.tsx
+msgid "Triggers when this container is unhealthy"
+msgstr ""
+
 #: src/lib/alerts.ts
 msgid "Triggers when usage of any disk exceeds a threshold"
 msgstr "ディスクの使用量がしきい値を超えたときにトリガーされます"
@@ -1761,6 +1790,17 @@ msgstr "ディスクの使用量がしきい値を超えたときにトリガー
 #: src/components/routes/system/smart-table.tsx
 msgid "Type"
 msgstr "タイプ"
+
+#: src/components/alerts-history-columns.tsx
+#: src/components/alerts/alerts-sheet.tsx
+#: src/lib/alerts.ts
+msgid "Unhealthy"
+msgstr ""
+
+#. placeholder {0}: alert.min
+#: src/components/active-alerts.tsx
+msgid "Unhealthy for {0, plural, one {# minute} other {# minutes}}"
+msgstr ""
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Unit file"

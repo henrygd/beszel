@@ -179,6 +179,15 @@ msgstr "Všechny kontejnery"
 msgid "All Systems"
 msgstr "Všechny systémy"
 
+#: src/components/alerts/alerts-sheet.tsx
+msgid "Any container unhealthy"
+msgstr ""
+
+#. placeholder {0}: alert.min
+#: src/components/active-alerts.tsx
+msgid "Any container unhealthy for {0, plural, one {# minute} other {# minutes}}"
+msgstr ""
+
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Are you sure you want to delete {name}?"
 msgstr "Opravdu chcete odstranit {name}?"
@@ -422,6 +431,10 @@ msgstr "Konflikty"
 #: src/components/active-alerts.tsx
 msgid "Connection is down"
 msgstr "Připojení je nedostupné"
+
+#: src/lib/alerts.ts
+msgid "Container Health"
+msgstr ""
 
 #: src/components/routes/system.tsx
 msgid "Containers"
@@ -1439,6 +1452,10 @@ msgstr "Naplánujte tiché hodiny, kdy se nebudou odesílat oznámení."
 msgid "Search"
 msgstr "Hledat"
 
+#: src/components/alerts/alerts-sheet.tsx
+msgid "Search containers..."
+msgstr ""
+
 #: src/components/command-palette.tsx
 msgid "Search for systems or settings..."
 msgstr "Hledat systémy nebo nastavení..."
@@ -1725,6 +1742,14 @@ msgid "Triggers when 5 minute load average exceeds a threshold"
 msgstr "Spustí se, když využití paměti během 5 minut překročí prahovou hodnotu"
 
 #: src/lib/alerts.ts
+msgid "Triggers when a container is unhealthy"
+msgstr ""
+
+#: src/components/alerts/alerts-sheet.tsx
+msgid "Triggers when any container is unhealthy"
+msgstr ""
+
+#: src/lib/alerts.ts
 msgid "Triggers when any sensor exceeds a threshold"
 msgstr "Spustí se, když některý senzor překročí prahovou hodnotu"
 
@@ -1752,6 +1777,10 @@ msgstr "Spustí se, když využití paměti překročí prahovou hodnotu"
 msgid "Triggers when status switches between up and down"
 msgstr "Spouští se, když se změní dostupnost"
 
+#: src/components/alerts/alerts-sheet.tsx
+msgid "Triggers when this container is unhealthy"
+msgstr ""
+
 #: src/lib/alerts.ts
 msgid "Triggers when usage of any disk exceeds a threshold"
 msgstr "Spustí se, když využití disku překročí prahovou hodnotu"
@@ -1761,6 +1790,17 @@ msgstr "Spustí se, když využití disku překročí prahovou hodnotu"
 #: src/components/routes/system/smart-table.tsx
 msgid "Type"
 msgstr "Typ"
+
+#: src/components/alerts-history-columns.tsx
+#: src/components/alerts/alerts-sheet.tsx
+#: src/lib/alerts.ts
+msgid "Unhealthy"
+msgstr ""
+
+#. placeholder {0}: alert.min
+#: src/components/active-alerts.tsx
+msgid "Unhealthy for {0, plural, one {# minute} other {# minutes}}"
+msgstr ""
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Unit file"

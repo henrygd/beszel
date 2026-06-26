@@ -56,11 +56,22 @@ export const ActiveAlerts = () => {
 									>
 										<info.icon className="h-4 w-4" />
 										<AlertTitle>
-											{systems[alert.system]?.name} {info.name()}
+											{systems[alert.system]?.name}{" "}
+											{alert.name === "ContainerHealth" && alert.container ? alert.container : info.name()}
 										</AlertTitle>
 										<AlertDescription>
 											{alert.name === "Status" ? (
 												<Trans>Connection is down</Trans>
+											) : alert.name === "ContainerHealth" ? (
+												alert.container ? (
+													<Trans>
+														Unhealthy for <Plural value={alert.min} one="# minute" other="# minutes" />
+													</Trans>
+												) : (
+													<Trans>
+														Any container unhealthy for <Plural value={alert.min} one="# minute" other="# minutes" />
+													</Trans>
+												)
 											) : info.invert ? (
 												<Trans>
 													Below {alert.value}

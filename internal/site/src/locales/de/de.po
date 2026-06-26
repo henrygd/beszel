@@ -179,6 +179,15 @@ msgstr "Alle Container"
 msgid "All Systems"
 msgstr "Alle Systeme"
 
+#: src/components/alerts/alerts-sheet.tsx
+msgid "Any container unhealthy"
+msgstr ""
+
+#. placeholder {0}: alert.min
+#: src/components/active-alerts.tsx
+msgid "Any container unhealthy for {0, plural, one {# minute} other {# minutes}}"
+msgstr ""
+
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Are you sure you want to delete {name}?"
 msgstr "Möchtest du {name} wirklich löschen?"
@@ -422,6 +431,10 @@ msgstr "Konflikte"
 #: src/components/active-alerts.tsx
 msgid "Connection is down"
 msgstr "Verbindung unterbrochen"
+
+#: src/lib/alerts.ts
+msgid "Container Health"
+msgstr ""
 
 #: src/components/routes/system.tsx
 msgid "Containers"
@@ -1439,6 +1452,10 @@ msgstr "Plane Ruhezeiten, in denen keine Benachrichtigungen gesendet werden."
 msgid "Search"
 msgstr "Suche"
 
+#: src/components/alerts/alerts-sheet.tsx
+msgid "Search containers..."
+msgstr ""
+
 #: src/components/command-palette.tsx
 msgid "Search for systems or settings..."
 msgstr "Nach Systemen oder Einstellungen suchen..."
@@ -1725,6 +1742,14 @@ msgid "Triggers when 5 minute load average exceeds a threshold"
 msgstr "Löst aus, wenn der Lastdurchschnitt der letzten 5 Minuten einen Schwellenwert überschreitet"
 
 #: src/lib/alerts.ts
+msgid "Triggers when a container is unhealthy"
+msgstr ""
+
+#: src/components/alerts/alerts-sheet.tsx
+msgid "Triggers when any container is unhealthy"
+msgstr ""
+
+#: src/lib/alerts.ts
 msgid "Triggers when any sensor exceeds a threshold"
 msgstr "Löst aus, wenn ein Sensor einen Schwellenwert überschreitet"
 
@@ -1752,6 +1777,10 @@ msgstr "Löst aus, wenn die Arbeitsspeichernutzung einen Schwellenwert überschr
 msgid "Triggers when status switches between up and down"
 msgstr "Löst aus, wenn der Status zwischen online und offline wechselt"
 
+#: src/components/alerts/alerts-sheet.tsx
+msgid "Triggers when this container is unhealthy"
+msgstr ""
+
 #: src/lib/alerts.ts
 msgid "Triggers when usage of any disk exceeds a threshold"
 msgstr "Löst aus, wenn die Nutzung einer Festplatte einen Schwellenwert überschreitet"
@@ -1761,6 +1790,17 @@ msgstr "Löst aus, wenn die Nutzung einer Festplatte einen Schwellenwert übersc
 #: src/components/routes/system/smart-table.tsx
 msgid "Type"
 msgstr "Typ"
+
+#: src/components/alerts-history-columns.tsx
+#: src/components/alerts/alerts-sheet.tsx
+#: src/lib/alerts.ts
+msgid "Unhealthy"
+msgstr ""
+
+#. placeholder {0}: alert.min
+#: src/components/active-alerts.tsx
+msgid "Unhealthy for {0, plural, one {# minute} other {# minutes}}"
+msgstr ""
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Unit file"

@@ -2,8 +2,8 @@ import { t } from "@lingui/core/macro"
 import { Plural, Trans } from "@lingui/react/macro"
 import { useStore } from "@nanostores/react"
 import { getPagePath } from "@nanostores/router"
-import { ChevronDownIcon, GlobeIcon, ServerIcon } from "lucide-react"
-import { lazy, memo, Suspense, useMemo, useState } from "react"
+import { ChevronDownIcon, ContainerIcon, GlobeIcon, SearchIcon, ServerIcon } from "lucide-react"
+import { lazy, memo, Suspense, useEffect, useMemo, useState } from "react"
 import { $router, Link } from "@/components/router"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
@@ -13,7 +13,7 @@ import { Input } from "@/components/ui/input"
 import { Switch } from "@/components/ui/switch"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { toast } from "@/components/ui/use-toast"
-import { alertInfo } from "@/lib/alerts"
+import { alertInfo, alertStoreKey } from "@/lib/alerts"
 import { pb } from "@/lib/api"
 import { $alerts, $systems } from "@/lib/stores"
 import { cn, debounce } from "@/lib/utils"
@@ -38,12 +38,24 @@ const failedUpdateToast = (error: unknown) => {
 
 /** Create or update alerts for a given name and systems */
 const upsertAlerts = debounce(
-	async ({ name, value, min, systems }: { name: string; value: number; min: number; systems: string[] }) => {
+	async ({
+		name,
+		value,
+		min,
+		systems,
+		container = "",
+	}: {
+		name: string
+		value: number
+		min: number
+		systems: string[]
+		container?: string
+	}) => {
 		try {
 			await pb.send<{ success: boolean }>(endpoint, {
 				method: "POST",
 				// overwrite is always true because we've done filtering client side
-				body: { name, value, min, systems, overwrite: true },
+				body: { name, value, min, systems, container, overwrite: true },
 			})
 		} catch (error) {
 			failedUpdateToast(error)
@@ -53,16 +65,19 @@ const upsertAlerts = debounce(
 )
 
 /** Delete alerts for a given name and systems */
-const deleteAlerts = debounce(async ({ name, systems }: { name: string; systems: string[] }) => {
-	try {
-		await pb.send<{ success: boolean }>(endpoint, {
-			method: "DELETE",
-			body: { name, systems },
-		})
-	} catch (error) {
-		failedUpdateToast(error)
-	}
-}, alertDebounce)
+const deleteAlerts = debounce(
+	async ({ name, systems, container = "" }: { name: string; systems: string[]; container?: string }) => {
+		try {
+			await pb.send<{ success: boolean }>(endpoint, {
+				method: "DELETE",
+				body: { name, systems, container },
+			})
+		} catch (error) {
+			failedUpdateToast(error)
+		}
+	},
+	alertDebounce
+)
 
 export const AlertDialogContent = memo(function AlertDialogContent({ system }: { system: SystemRecord }) {
 	const alerts = useStore($alerts)
@@ -86,21 +101,23 @@ export const AlertDialogContent = memo(function AlertDialogContent({ system }: {
 		if (!sourceAlerts?.size) return
 		try {
 			const currentTargetAlerts = $alerts.get()[system.id] ?? new Map()
-			// Alert names present on target but absent from source should be deleted
-			const namesToDelete = Array.from(currentTargetAlerts.keys()).filter((name) => !sourceAlerts.has(name))
+			// Alerts present on target but absent from source should be deleted
+			const recordsToDelete = Array.from(currentTargetAlerts.entries())
+				.filter(([key]) => !sourceAlerts.has(key))
+				.map(([, record]) => record)
 			await Promise.all([
-				...Array.from(sourceAlerts.values()).map(({ name, value, min }) =>
+				...Array.from(sourceAlerts.entries()).map(([key, { name, value, min, container = "" }]) =>
 					pb.send<{ success: boolean }>(endpoint, {
 						method: "POST",
-						body: { name, value, min, systems: [system.id], overwrite: true },
-						requestKey: name,
+						body: { name, value, min, container, systems: [system.id], overwrite: true },
+						requestKey: key,
 					})
 				),
-				...namesToDelete.map((name) =>
+				...recordsToDelete.map(({ name, container = "" }) =>
 					pb.send<{ success: boolean }>(endpoint, {
 						method: "DELETE",
-						body: { name, systems: [system.id] },
-						requestKey: name,
+						body: { name, container, systems: [system.id] },
+						requestKey: alertStoreKey({ name, container }),
 					})
 				),
 			])
@@ -108,7 +125,7 @@ export const AlertDialogContent = memo(function AlertDialogContent({ system }: {
 			// before the realtime subscription event arrives.
 			const newSystemAlerts = new Map<string, AlertRecord>()
 			for (const alert of sourceAlerts.values()) {
-				newSystemAlerts.set(alert.name, { ...alert, system: system.id, triggered: false })
+				newSystemAlerts.set(alertStoreKey(alert), { ...alert, system: system.id, triggered: false })
 			}
 			$alerts.setKey(system.id, newSystemAlerts)
 			setCopyKey((k) => k + 1)
@@ -172,15 +189,19 @@ export const AlertDialogContent = memo(function AlertDialogContent({ system }: {
 				</div>
 				<TabsContent value="system">
 					<div key={copyKey} className="grid gap-3">
-						{alertKeys.map((name) => (
-							<AlertContent
-								key={name}
-								alertKey={name}
-								data={alertInfo[name as keyof typeof alertInfo]}
-								alert={systemAlerts.get(name)}
-								system={system}
-							/>
-						))}
+						{alertKeys.map((name) =>
+							name === "ContainerHealth" ? (
+								<ContainerAlerts key={name} system={system} systemAlerts={systemAlerts} />
+							) : (
+								<AlertContent
+									key={name}
+									alertKey={name}
+									data={alertInfo[name as keyof typeof alertInfo]}
+									alert={systemAlerts.get(name)}
+									system={system}
+								/>
+							)
+						)}
 					</div>
 				</TabsContent>
 				<TabsContent value="global">
@@ -197,18 +218,29 @@ export const AlertDialogContent = memo(function AlertDialogContent({ system }: {
 						<Trans>Overwrite existing alerts</Trans>
 					</label>
 					<div className="grid gap-3">
-						{alertKeys.map((name) => (
-							<AlertContent
-								key={name}
-								alertKey={name}
-								system={system}
-								alert={systemAlerts.get(name)}
-								data={alertInfo[name as keyof typeof alertInfo]}
-								global={true}
-								overwriteExisting={!!overwriteExisting}
-								initialAlertsState={alertsWhenGlobalSelected}
-							/>
-						))}
+						{alertKeys.map((name) =>
+							name === "ContainerHealth" ? (
+								<ContainerAlerts
+									key={name}
+									system={system}
+									systemAlerts={systemAlerts}
+									global={true}
+									overwriteExisting={!!overwriteExisting}
+									initialAlertsState={alertsWhenGlobalSelected}
+								/>
+							) : (
+								<AlertContent
+									key={name}
+									alertKey={name}
+									system={system}
+									alert={systemAlerts.get(name)}
+									data={alertInfo[name as keyof typeof alertInfo]}
+									global={true}
+									overwriteExisting={!!overwriteExisting}
+									initialAlertsState={alertsWhenGlobalSelected}
+								/>
+							)
+						)}
 					</div>
 				</TabsContent>
 			</Tabs>
@@ -218,6 +250,8 @@ export const AlertDialogContent = memo(function AlertDialogContent({ system }: {
 
 export function AlertContent({
 	alertKey,
+	apiName = alertKey,
+	container = "",
 	data: alertData,
 	system,
 	alert,
@@ -226,6 +260,10 @@ export function AlertContent({
 	initialAlertsState = {},
 }: {
 	alertKey: string
+	/** alert type name sent to the API (defaults to alertKey) */
+	apiName?: string
+	/** optional container name for ContainerHealth alerts */
+	container?: string
 	data: AlertInfo
 	system: SystemRecord
 	alert?: AlertRecord
@@ -265,7 +303,8 @@ export function AlertContent({
 		const systems = getSystemIds()
 		systems.length &&
 			upsertAlerts({
-				name: alertKey,
+				name: apiName,
+				container,
 				value,
 				min,
 				systems,
@@ -296,7 +335,7 @@ export function AlertContent({
 							sendUpsert(min, value)
 						} else {
 							// if unchecked, delete alert (unless global and overwriteExisting is false)
-							deleteAlerts({ name: alertKey, systems: getSystemIds() })
+							deleteAlerts({ name: apiName, container, systems: getSystemIds() })
 							// when force deleting all alerts of a type, also remove them from initialAlertsState
 							if (overwriteExisting) {
 								for (const curAlerts of Object.values(initialAlertsState)) {
@@ -402,6 +441,119 @@ export function AlertContent({
 						</div>
 					</Suspense>
 				</div>
+			)}
+		</div>
+	)
+}
+
+const containerHealthName = "ContainerHealth"
+
+/** AlertInfo for the "All Containers" (any container) card */
+const allContainersInfo: AlertInfo = {
+	name: () => t`All Containers`,
+	unit: "",
+	icon: ContainerIcon,
+	desc: () => t`Triggers when any container is unhealthy`,
+	singleDesc: () => t`Any container unhealthy`,
+}
+
+/** Build AlertInfo for a specific container card */
+function containerInfo(name: string): AlertInfo {
+	return {
+		name: () => name,
+		unit: "",
+		icon: ContainerIcon,
+		desc: () => t`Triggers when this container is unhealthy`,
+		singleDesc: () => t`Unhealthy`,
+	}
+}
+
+/** Renders the container health alerts: an "all containers" card plus, for a
+ *  single system, a searchable list of per-container cards. */
+function ContainerAlerts({
+	system,
+	systemAlerts,
+	global = false,
+	overwriteExisting = false,
+	initialAlertsState = {},
+}: {
+	system: SystemRecord
+	systemAlerts: Map<string, AlertRecord>
+	global?: boolean
+	overwriteExisting?: boolean
+	initialAlertsState?: Record<string, Map<string, AlertRecord>>
+}) {
+	const [containers, setContainers] = useState<string[]>([])
+	const [search, setSearch] = useState("")
+
+	useEffect(() => {
+		// per-container alerts only make sense when targeting a single system
+		if (global) {
+			return
+		}
+		let cancelled = false
+		pb.collection("containers")
+			.getList(1, 2000, {
+				fields: "name",
+				filter: pb.filter("system={:system}", { system: system.id }),
+			})
+			.then(({ items }) => {
+				if (cancelled) {
+					return
+				}
+				const names = Array.from(new Set(items.map((i) => i.name as string))).sort((a, b) => a.localeCompare(b))
+				setContainers(names)
+			})
+			.catch(() => {})
+		return () => {
+			cancelled = true
+		}
+	}, [global, system.id])
+
+	const filtered = useMemo(() => {
+		const q = search.trim().toLowerCase()
+		return q ? containers.filter((n) => n.toLowerCase().includes(q)) : containers
+	}, [containers, search])
+
+	return (
+		<div className="grid gap-3">
+			<AlertContent
+				alertKey={containerHealthName}
+				apiName={containerHealthName}
+				container=""
+				data={allContainersInfo}
+				alert={systemAlerts.get(containerHealthName)}
+				system={system}
+				global={global}
+				overwriteExisting={overwriteExisting}
+				initialAlertsState={initialAlertsState}
+			/>
+			{!global && containers.length > 0 && (
+				<>
+					<div className="relative">
+						<SearchIcon className="absolute start-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+						<Input
+							value={search}
+							onChange={(e) => setSearch(e.target.value)}
+							placeholder={t`Search containers...`}
+							className="ps-9"
+						/>
+					</div>
+					{filtered.map((name) => {
+						const key = `${containerHealthName}:${name}`
+						return (
+							<AlertContent
+								key={key}
+								alertKey={key}
+								apiName={containerHealthName}
+								container={name}
+								data={containerInfo(name)}
+								alert={systemAlerts.get(key)}
+								system={system}
+							/>
+						)
+					})}
+				</>
 			)}
 		</div>
 	)

@@ -174,6 +174,15 @@ msgstr "All Containers"
 msgid "All Systems"
 msgstr "All Systems"
 
+#: src/components/alerts/alerts-sheet.tsx
+msgid "Any container unhealthy"
+msgstr "Any container unhealthy"
+
+#. placeholder {0}: alert.min
+#: src/components/active-alerts.tsx
+msgid "Any container unhealthy for {0, plural, one {# minute} other {# minutes}}"
+msgstr "Any container unhealthy for {0, plural, one {# minute} other {# minutes}}"
+
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Are you sure you want to delete {name}?"
 msgstr "Are you sure you want to delete {name}?"
@@ -417,6 +426,10 @@ msgstr "Conflicts"
 #: src/components/active-alerts.tsx
 msgid "Connection is down"
 msgstr "Connection is down"
+
+#: src/lib/alerts.ts
+msgid "Container Health"
+msgstr "Container Health"
 
 #: src/components/routes/system.tsx
 msgid "Containers"
@@ -1434,6 +1447,10 @@ msgstr "Schedule quiet hours where notifications will not be sent."
 msgid "Search"
 msgstr "Search"
 
+#: src/components/alerts/alerts-sheet.tsx
+msgid "Search containers..."
+msgstr "Search containers..."
+
 #: src/components/command-palette.tsx
 msgid "Search for systems or settings..."
 msgstr "Search for systems or settings..."
@@ -1720,6 +1737,14 @@ msgid "Triggers when 5 minute load average exceeds a threshold"
 msgstr "Triggers when 5 minute load average exceeds a threshold"
 
 #: src/lib/alerts.ts
+msgid "Triggers when a container is unhealthy"
+msgstr "Triggers when a container is unhealthy"
+
+#: src/components/alerts/alerts-sheet.tsx
+msgid "Triggers when any container is unhealthy"
+msgstr "Triggers when any container is unhealthy"
+
+#: src/lib/alerts.ts
 msgid "Triggers when any sensor exceeds a threshold"
 msgstr "Triggers when any sensor exceeds a threshold"
 
@@ -1747,6 +1772,10 @@ msgstr "Triggers when memory usage exceeds a threshold"
 msgid "Triggers when status switches between up and down"
 msgstr "Triggers when status switches between up and down"
 
+#: src/components/alerts/alerts-sheet.tsx
+msgid "Triggers when this container is unhealthy"
+msgstr "Triggers when this container is unhealthy"
+
 #: src/lib/alerts.ts
 msgid "Triggers when usage of any disk exceeds a threshold"
 msgstr "Triggers when usage of any disk exceeds a threshold"
@@ -1756,6 +1785,17 @@ msgstr "Triggers when usage of any disk exceeds a threshold"
 #: src/components/routes/system/smart-table.tsx
 msgid "Type"
 msgstr "Type"
+
+#: src/components/alerts-history-columns.tsx
+#: src/components/alerts/alerts-sheet.tsx
+#: src/lib/alerts.ts
+msgid "Unhealthy"
+msgstr "Unhealthy"
+
+#. placeholder {0}: alert.min
+#: src/components/active-alerts.tsx
+msgid "Unhealthy for {0, plural, one {# minute} other {# minutes}}"
+msgstr "Unhealthy for {0, plural, one {# minute} other {# minutes}}"
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Unit file"

@@ -67,7 +67,7 @@ export default function AlertsHistoryDataTable() {
 	const [globalFilter, setGlobalFilter] = useState("")
 	const { toast } = useToast()
 	const [deleteOpen, setDeleteDialogOpen] = useState(false)
-	
+
 	// Store pagination preference in local storage
 	const [pagination, setPagination] = useBrowserStorage<PaginationState>("ah-pagination", {
 		pageIndex: 0,
@@ -78,7 +78,7 @@ export default function AlertsHistoryDataTable() {
 		let unsubscribe: (() => void) | undefined
 		const pbOptions = {
 			expand: "system",
-			fields: "id,name,value,state,created,resolved,expand.system.name",
+			fields: "id,name,container,value,state,created,resolved,expand.system.name",
 		}
 		// Initial load
 		pb.collection<AlertsHistoryRecord>("alerts_history")
@@ -327,7 +327,7 @@ export default function AlertsHistoryDataTable() {
 						<Select
 							value={`${table.getState().pagination.pageSize}`}
 							onValueChange={(value) => {
-								table.setPageSize(Number(value));
+								table.setPageSize(Number(value))
 							}}
 						>
 							<SelectTrigger className="w-18" id="rows-per-page">

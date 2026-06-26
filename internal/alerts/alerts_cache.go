@@ -12,6 +12,7 @@ type CachedAlertData struct {
 	SystemID  string
 	UserID    string
 	Name      string
+	Container string
 	Value     float64
 	Triggered bool
 	Min       uint8
@@ -23,6 +24,7 @@ func (a *CachedAlertData) PopulateFromRecord(record *core.Record) {
 	a.SystemID = record.GetString("system")
 	a.UserID = record.GetString("user")
 	a.Name = record.GetString("name")
+	a.Container = record.GetString("container")
 	a.Value = record.GetFloat("value")
 	a.Triggered = record.GetBool("triggered")
 	a.Min = uint8(record.GetInt("min"))

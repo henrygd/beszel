@@ -228,6 +228,8 @@ export interface AlertRecord extends RecordModel {
 	id: string
 	system: string
 	name: string
+	/** Optional container name for ContainerHealth alerts; empty = any container */
+	container?: string
 	triggered: boolean
 	value: number
 	min: number
@@ -239,6 +241,8 @@ export interface AlertsHistoryRecord extends RecordModel {
 	user: string
 	system: string
 	name: string
+	/** Optional container name for ContainerHealth alerts */
+	container?: string
 	val: number
 	created: string
 	resolved?: string | null
