@@ -55,6 +55,11 @@ type DeviceInfo struct {
 	typeVerified bool
 	// parserType holds the parser type (nvme, sat, scsi) that last succeeded.
 	parserType string
+	// explicitType reports whether Type came from an explicit ":type" hint in
+	// SMART_DEVICES. Such a type is a deliberate user override and must always be
+	// passed to smartctl via -d, even for scsi/ata where a scan-detected type is
+	// otherwise left off (see smartctlArgs and issue #1345).
+	explicitType bool
 }
 
 // deviceKey is a composite key for a device, used to identify a device uniquely.
@@ -251,8 +256,9 @@ func (sm *SmartManager) parseConfiguredDevices(config string) ([]*DeviceInfo, er
 		}
 
 		devices = append(devices, &DeviceInfo{
-			Name: name,
-			Type: devType,
+			Name:         name,
+			Type:         devType,
+			explicitType: devType != "",
 		})
 	}
 
@@ -558,7 +564,9 @@ func (sm *SmartManager) smartctlArgs(deviceInfo *DeviceInfo, includeStandby bool
 		deviceType = strings.ToLower(deviceInfo.Type)
 		parserType = strings.ToLower(deviceInfo.parserType)
 		// types sometimes misidentified in scan; see github.com/henrygd/beszel/issues/1345
-		if deviceType != "" && deviceType != "scsi" && deviceType != "ata" {
+		// An explicit SMART_DEVICES ":type" hint is a deliberate override, so always
+		// pass it through; otherwise scsi/ata are left off so smartctl can auto-detect.
+		if deviceType != "" && (deviceInfo.explicitType || (deviceType != "scsi" && deviceType != "ata")) {
 			args = append(args, "-d", deviceInfo.Type)
 		}
 	}
@@ -663,6 +671,9 @@ func mergeDeviceLists(existing, scanned, configured []*DeviceInfo) []*DeviceInfo
 		target.Type = prev.Type
 		target.typeVerified = true
 		target.parserType = prev.parserType
+		if prev.explicitType {
+			target.explicitType = true
+		}
 	}
 
 	// applyConfiguredMetadata updates a matched device with any configured
@@ -675,6 +686,9 @@ func mergeDeviceLists(existing, scanned, configured []*DeviceInfo) []*DeviceInfo
 			existingDev.Type = newType
 			existingDev.typeVerified = false
 			existingDev.parserType = normalizeParserType(newType)
+		}
+		if configuredDev.explicitType {
+			existingDev.explicitType = true
 		}
 		if configuredDev.InfoName != "" {
 			existingDev.InfoName = configuredDev.InfoName
