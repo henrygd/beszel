@@ -804,7 +804,11 @@ EOF
     chmod +x /etc/init.d/beszel-agent
     rc-update add beszel-agent default
   else
-    echo "Alpine OpenRC service file already exists. Skipping creation."
+    echo "Alpine OpenRC service file already exists. Updating environment variables..."
+    sed -i "s|^export PORT=.*|export PORT=\"$PORT\"|" /etc/init.d/beszel-agent
+    sed -i "s|^export KEY=.*|export KEY=\"$KEY\"|" /etc/init.d/beszel-agent
+    sed -i "s|^export TOKEN=.*|export TOKEN=\"$TOKEN\"|" /etc/init.d/beszel-agent
+    sed -i "s|^export HUB_URL=.*|export HUB_URL=\"$HUB_URL\"|" /etc/init.d/beszel-agent
   fi
 
   # Create log files with proper permissions
@@ -886,7 +890,8 @@ EOF
     chmod +x /etc/init.d/beszel-agent
     /etc/init.d/beszel-agent enable
   else
-    echo "OpenWRT init script already exists. Skipping creation."
+    echo "OpenWRT init script already exists. Updating environment variables..."
+    sed -i "s|procd_set_param env PORT=.*|procd_set_param env PORT=\"$PORT\" KEY=\"$KEY\" TOKEN=\"$TOKEN\" HUB_URL=\"$HUB_URL\"|" /etc/init.d/beszel-agent
   fi
 
   # Start the service
@@ -929,18 +934,14 @@ elif is_freebsd; then
   # Ensure rc.d directory exists on minimal FreeBSD installs
   mkdir -p /usr/local/etc/rc.d
   
-  # Create environment configuration file with proper permissions if it doesn't exist
-  if [ ! -f "$AGENT_DIR/env" ]; then
-    echo "Creating environment configuration file..."
-    cat >"$AGENT_DIR/env" <<EOF
+  # Create or update environment configuration file
+  echo "Writing environment configuration file..."
+  cat >"$AGENT_DIR/env" <<EOF
 LISTEN=$PORT
 KEY="$KEY"
 TOKEN=$TOKEN
 HUB_URL=$HUB_URL
 EOF
-  else
-    echo "FreeBSD environment file already exists. Skipping creation."
-  fi
   chmod 640 "$AGENT_DIR/env"
   chown "root:${AGENT_USER}" "$AGENT_DIR/env"
   
@@ -1074,7 +1075,11 @@ $(if [ -n "$NVIDIA_DEVICES" ]; then printf "%b" "# NVIDIA device permissions\n${
 WantedBy=multi-user.target
 EOF
   else
-    echo "Systemd service file already exists. Skipping creation."
+    echo "Systemd service file already exists. Updating environment variables..."
+    sed -i "s|^Environment=\"PORT=.*\"|Environment=\"PORT=$PORT\"|" /etc/systemd/system/beszel-agent.service
+    sed -i "s|^Environment=\"KEY=.*\"|Environment=\"KEY=$KEY\"|" /etc/systemd/system/beszel-agent.service
+    sed -i "s|^Environment=\"TOKEN=.*\"|Environment=\"TOKEN=$TOKEN\"|" /etc/systemd/system/beszel-agent.service
+    sed -i "s|^Environment=\"HUB_URL=.*\"|Environment=\"HUB_URL=$HUB_URL\"|" /etc/systemd/system/beszel-agent.service
   fi
 
   # Load and start the service
