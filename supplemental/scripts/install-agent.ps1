@@ -330,15 +330,20 @@ function Install-NSSMService {
     $existingService = Get-Service -Name "beszel-agent" -ErrorAction SilentlyContinue
     if ($existingService) {
         Write-Host "Service already exists. Checking if path update is needed..."
-        
-        # Get current service path 
+
+        # Get current service path
+        $pathNeedsUpdate = $true
         try {
             $currentPath = & $nssmCommand get beszel-agent Application
             if ($LASTEXITCODE -eq 0 -and $currentPath.Trim() -eq $AgentPath) {
-                Write-Host "Service already configured with correct path. Skipping service recreation." -ForegroundColor Green
+                Write-Host "Service path is already correct. Updating environment variables..."
+                & $nssmCommand set beszel-agent AppEnvironmentExtra "+KEY=$Key"
+                & $nssmCommand set beszel-agent AppEnvironmentExtra "+TOKEN=$Token"
+                & $nssmCommand set beszel-agent AppEnvironmentExtra "+HUB_URL=$HubUrl"
+                & $nssmCommand set beszel-agent AppEnvironmentExtra "+PORT=$Port"
                 return
             }
-            
+
             Write-Host "Service path needs updating. Stopping and removing existing service..."
             Write-Host "  Current path: $($currentPath.Trim())"
             Write-Host "  New path: $AgentPath"
@@ -346,7 +351,7 @@ function Install-NSSMService {
             Write-Host "Could not retrieve current service path, will recreate service: $($_.Exception.Message)" -ForegroundColor Yellow
             Write-Host "Service path needs updating. Stopping and removing existing service..."
         }
-        
+
         try {
             & $nssmCommand stop beszel-agent
             & $nssmCommand remove beszel-agent confirm
