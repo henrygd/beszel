@@ -282,20 +282,56 @@ func (d *diskDiscovery) addPartitionExtraFs(p disk.PartitionStat) {
 // that may not appear in partition discovery, while skipping mountpoints that
 // were already registered from higher-fidelity sources.
 func (d *diskDiscovery) addExtraFilesystemFolders(folderNames []string) {
-	existingMountpoints := make(map[string]bool, len(d.agent.fsStats))
-	for _, stats := range d.agent.fsStats {
-		existingMountpoints[stats.Mountpoint] = true
-	}
+    existingMountpoints := make(map[string]bool, len(d.agent.fsStats))
+    for _, stats := range d.agent.fsStats {
+        existingMountpoints[stats.Mountpoint] = true
+    }
 
-	for _, folderName := range folderNames {
-		mountpoint := filepath.Join(d.ctx.efPath, folderName)
-		slog.Debug("/extra-filesystems", "mountpoint", mountpoint)
-		if existingMountpoints[mountpoint] {
-			continue
-		}
-		device, customName := parseFilesystemEntry(folderName)
-		d.addFsStat(device, mountpoint, false, customName)
-	}
+    for _, folderName := range folderNames {
+        mountpoint := filepath.Join(d.ctx.efPath, folderName)
+        slog.Debug("/extra-filesystems", "mountpoint", mountpoint)
+        if existingMountpoints[mountpoint] {
+            slog.Debug("Skipping existing mountpoint", "mountpoint", mountpoint)
+            continue
+        }
+
+        slog.Debug("Processing folder", "folderName", folderName, "mountpoint", mountpoint)
+
+        // parseFilesystemEntry verarbeitet bereits die __ Syntax
+        device, customName := parseFilesystemEntry(folderName)
+
+        // Versuche das echte Device zu finden
+        realDevice := ""
+        for _, p := range d.partitions {
+            // Prüfe ob der Host-Mountpoint zu diesem Ordner passt
+            hostMountpoint := ""
+            switch folderName {
+            case "DATA":
+                hostMountpoint = "/mnt/data"
+            case "BACKUP":
+                hostMountpoint = "/mnt/backup"
+            case "HOME":
+                hostMountpoint = "/home"
+            case "BOOT":
+                hostMountpoint = "/boot"
+            }
+
+            if hostMountpoint != "" && p.Mountpoint == hostMountpoint {
+                realDevice = strings.TrimPrefix(p.Device, "/dev/")
+                slog.Debug("Found real device from partition", "folderName", folderName, "realDevice", realDevice, "partitionDevice", p.Device, "hostMountpoint", hostMountpoint)
+                break
+            }
+        }
+
+        if realDevice == "" {
+            slog.Debug("No real device found, using folder name", "folderName", folderName, "device", device)
+        } else {
+            device = realDevice
+            slog.Debug("Using real device for IO", "folderName", folderName, "device", device)
+        }
+
+        d.addFsStat(device, mountpoint, false, customName)
+    }
 }
 
 // Sets up the filesystems to monitor for disk usage and I/O.
@@ -377,92 +413,74 @@ func (a *Agent) initializeDiskInfo() {
 
 // Removes extra filesystems that mirror root usage (https://github.com/henrygd/beszel/issues/1428).
 func (a *Agent) pruneDuplicateRootExtraFilesystems() {
-	var rootMountpoint string
-	var rootDevice string
-	for _, stats := range a.fsStats {
-		if stats != nil && stats.Root {
-			rootMountpoint = stats.Mountpoint
-			for _, p := range a.partitions {
-				if p.Mountpoint == rootMountpoint {
-					rootDevice = p.Device
-					break
-				}
-			}
-			break
-		}
-	}
-	if rootMountpoint == "" {
-		return
-	}
+        var rootMountpoint string
+        var rootDevice string
+        for _, stats := range a.fsStats {
+                if stats != nil && stats.Root {
+                        rootMountpoint = stats.Mountpoint
+                        for _, p := range a.partitions {
+                                if p.Mountpoint == rootMountpoint {
+                                        rootDevice = p.Device
+                                        break
+                                }
+                        }
+                        break
+                }
+        }
+        if rootMountpoint == "" {
+                return
+        }
 
-	// Build map of extra-filesystem names to their real mountpoints
-	extraFsMountpoints := make(map[string]string)
-	for _, p := range a.partitions {
-		if strings.HasPrefix(p.Mountpoint, "/mnt/") || strings.HasPrefix(p.Mountpoint, "/home") || strings.HasPrefix(p.Mountpoint, "/boot") {
-			for name, stats := range a.fsStats {
-				if stats == nil || stats.Root {
-					continue
-				}
-				if p.Device == stats.Mountpoint || p.Mountpoint == stats.Mountpoint {
-					extraFsMountpoints[name] = p.Mountpoint
-				}
-			}
-		}
-	}
+        // Generisch: Für jeden Extra-Filesystem-Eintrag das Device finden
+        for name, stats := range a.fsStats {
+                if stats == nil || stats.Root {
+                        continue
+                }
 
-	for name, stats := range a.fsStats {
-		if stats == nil || stats.Root {
-			continue
-		}
-		for _, p := range a.partitions {
-			if p.Mountpoint == stats.Mountpoint {
-				extraFsMountpoints[name] = p.Mountpoint
-				break
-			}
-			if strings.HasSuffix(p.Mountpoint, "/"+name) {
-				extraFsMountpoints[name] = p.Mountpoint
-				break
-			}
-		}
-	}
+                // Versuche das Device für diesen Mountpoint zu finden
+                var extraDevice string
 
-	for name, stats := range a.fsStats {
-		if stats == nil || stats.Root {
-			continue
-		}
+                // 1. Versuche den Mountpoint direkt zu finden
+                for _, p := range a.partitions {
+                        if p.Mountpoint == stats.Mountpoint {
+                                extraDevice = p.Device
+                                break
+                        }
+                }
 
-		realMountpoint, ok := extraFsMountpoints[name]
-		if !ok {
-			lowerName := strings.ToLower(name)
-			for _, p := range a.partitions {
-				if strings.HasSuffix(p.Mountpoint, "/"+lowerName) ||
-					strings.Contains(p.Mountpoint, lowerName) {
-					realMountpoint = p.Mountpoint
-					break
-				}
-			}
-		}
+                // 2. Wenn nicht gefunden, versuche den Namen zu matchen
+                if extraDevice == "" {
+                        for _, p := range a.partitions {
+                                // Prüfe ob der Ordnername im Host-Mountpoint vorkommt
+                                if strings.Contains(strings.ToLower(p.Mountpoint), strings.ToLower(name)) {
+                                        extraDevice = p.Device
+                                        break
+                                }
+                        }
+                }
 
-		var extraDevice string
-		if realMountpoint != "" {
-			for _, p := range a.partitions {
-				if p.Mountpoint == realMountpoint {
-					extraDevice = p.Device
-					break
-				}
-			}
-		}
+                // 3. Wenn immer noch nicht gefunden, versuche mit dem Device-Key
+                if extraDevice == "" {
+                        // Der Key in fsStats ist der Device-Name (z.B. "nvme0n1p6")
+                        for _, p := range a.partitions {
+                                if strings.TrimPrefix(p.Device, "/dev/") == name {
+                                        extraDevice = p.Device
+                                        break
+                                }
+                        }
+                }
 
-		if rootDevice != "" && extraDevice != "" && rootDevice != extraDevice {
-			continue
-		}
+                // Wenn kein Device gefunden wurde, überspringen (behalten)
+                if extraDevice == "" {
+                        continue
+                }
 
-		rootUsage := a.diskUsage(rootMountpoint)
-		candidateUsage := a.diskUsage(stats.Mountpoint)
-		if rootUsage == candidateUsage && rootUsage > 0 {
-			delete(a.fsStats, name)
-		}
-	}
+                // Nur löschen wenn es wirklich das gleiche Device ist
+                if rootDevice != "" && extraDevice != "" && rootDevice == extraDevice {
+                        slog.Info("Ignoring duplicate FS", "name", name, "mount", stats.Mountpoint, "device", extraDevice)
+                        delete(a.fsStats, name)
+                }
+        }
 }
 
 // hasSameDiskUsage compares root/extra usage with a small byte tolerance.
