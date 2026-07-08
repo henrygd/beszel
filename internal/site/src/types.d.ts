@@ -78,6 +78,8 @@ export interface SystemInfo {
 	efs?: Record<string, number>
 	/** services [totalServices, numFailedServices] */
 	sv?: [number, number]
+	/** containers [totalContainers, numUnhealthyContainers] */
+	cn?: [number, number]
 }
 
 export interface SystemStats {

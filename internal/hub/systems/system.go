@@ -240,6 +240,7 @@ func (sys *System) createRecords(data *system.CombinedData) (*core.Record, error
 
 		// update system record (do this last because it triggers alerts and we need above records to be inserted first)
 		systemRecord.Set("status", up)
+		data.Info.Containers = getContainerCounts(data.Containers)
 		systemRecord.Set("info", data.Info)
 		if err := txApp.SaveNoValidate(systemRecord); err != nil {
 			return err
@@ -248,6 +249,19 @@ func (sys *System) createRecords(data *system.CombinedData) (*core.Record, error
 	})
 
 	return systemRecord, err
+}
+
+func getContainerCounts(stats []*container.Stats) []uint16 {
+	if len(stats) == 0 {
+		return nil
+	}
+	unhealthy := uint16(0)
+	for _, stat := range stats {
+		if stat.Health == container.DockerHealthUnhealthy {
+			unhealthy++
+		}
+	}
+	return []uint16{uint16(len(stats)), unhealthy}
 }
 
 func createSystemDetailsRecord(app core.App, data *system.Details, systemId string) error {
