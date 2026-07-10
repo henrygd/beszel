@@ -11,6 +11,7 @@ import (
 	"io"
 	"log/slog"
 	"math"
+	"math/bits"
 	"net"
 	"net/http"
 	"net/url"
@@ -82,6 +83,19 @@ type dockerManager struct {
 	networkSentTrackers map[uint16]*deltatracker.DeltaTracker[string, uint64]
 	networkRecvTrackers map[uint16]*deltatracker.DeltaTracker[string, uint64]
 	lastNetworkReadTime map[uint16]map[string]time.Time // cacheTimeMs -> containerId -> last network read time
+
+	blockIOMutex  sync.Mutex
+	blockIOStates map[uint16]*blockIOCacheState
+}
+
+type blockIOCounters struct {
+	readBytes  uint64
+	writeBytes uint64
+}
+
+type blockIOCacheState struct {
+	baselines              map[string]blockIOCounters
+	previousCollectionTime time.Time
 }
 
 // userAgentRoundTripper is a custom http.RoundTripper that adds a User-Agent header to all requests
@@ -153,6 +167,7 @@ func (dm *dockerManager) getDockerStats(cacheTimeMs uint16) ([]*container.Stats,
 	dm.isWindows = strings.Contains(serverHeader, "windows")
 
 	dm.ensureDockerVersionChecked()
+	collectionTime := time.Now()
 
 	containersLength := len(dm.apiContainerList)
 
@@ -184,11 +199,12 @@ func (dm *dockerManager) getDockerStats(cacheTimeMs uint16) ([]*container.Stats,
 		dm.queue()
 		go func(ctr *container.ApiInfo) {
 			defer dm.dequeue()
-			err := dm.updateContainerStats(ctr, cacheTimeMs)
+			err := dm.updateContainerStats(ctr, cacheTimeMs, collectionTime)
 			// if error, delete from map and add to failed list to retry
 			if err != nil {
 				dm.containerStatsMutex.Lock()
 				delete(dm.containerStatsMap, ctr.IdShort)
+				dm.deleteBlockIOContainer(ctr.IdShort)
 				failedContainers = append(failedContainers, ctr)
 				dm.containerStatsMutex.Unlock()
 			}
@@ -205,8 +221,9 @@ func (dm *dockerManager) getDockerStats(cacheTimeMs uint16) ([]*container.Stats,
 			dm.queue()
 			go func(ctr *container.ApiInfo) {
 				defer dm.dequeue()
-				if err2 := dm.updateContainerStats(ctr, cacheTimeMs); err2 != nil {
+				if err2 := dm.updateContainerStats(ctr, cacheTimeMs, collectionTime); err2 != nil {
 					slog.Error("Error getting container stats", "err", err2)
+					dm.deleteBlockIOContainer(ctr.IdShort)
 				}
 			}(ctr)
 		}
@@ -222,6 +239,8 @@ func (dm *dockerManager) getDockerStats(cacheTimeMs uint16) ([]*container.Stats,
 			stats = append(stats, v)
 		}
 	}
+	dm.cleanupBlockIOContainers(dm.validIds)
+	dm.finishBlockIOCollection(cacheTimeMs, collectionTime)
 
 	// prepare network trackers for next interval for this cache time
 	dm.cycleNetworkDeltasForCacheTime(cacheTimeMs)
@@ -298,6 +317,90 @@ func calculateBlockIOTotals(blkioStats *container.BlkioStats) (readBytes uint64,
 	}
 
 	return readBytes, writeBytes, true
+}
+
+// maxBlockIORateBps is a corruption/reset guard, not a hardware capability assumption.
+const maxBlockIORateBps uint64 = 1 << 40
+
+func calculateBlockIORate(previous, current uint64, elapsed time.Duration) uint64 {
+	if elapsed <= 0 || current < previous {
+		return 0
+	}
+
+	delta := current - previous
+	hi, lo := bits.Mul64(delta, uint64(time.Second))
+	elapsedNanoseconds := uint64(elapsed)
+	if hi >= elapsedNanoseconds {
+		return 0
+	}
+	rate, _ := bits.Div64(hi, lo, elapsedNanoseconds)
+	if rate > maxBlockIORateBps {
+		return 0
+	}
+	return rate
+}
+
+func (dm *dockerManager) blockIOState(cacheTimeMs uint16) *blockIOCacheState {
+	if dm.blockIOStates == nil {
+		dm.blockIOStates = make(map[uint16]*blockIOCacheState)
+	}
+	state := dm.blockIOStates[cacheTimeMs]
+	if state == nil {
+		state = &blockIOCacheState{baselines: make(map[string]blockIOCounters)}
+		dm.blockIOStates[cacheTimeMs] = state
+	}
+	return state
+}
+
+func (dm *dockerManager) calculateBlockIORates(containerID string, blkioStats *container.BlkioStats, cacheTimeMs uint16, collectionTime time.Time) *[2]uint64 {
+	dm.blockIOMutex.Lock()
+	defer dm.blockIOMutex.Unlock()
+
+	state := dm.blockIOState(cacheTimeMs)
+	readBytes, writeBytes, available := calculateBlockIOTotals(blkioStats)
+	if !available {
+		delete(state.baselines, containerID)
+		return nil
+	}
+
+	current := blockIOCounters{readBytes: readBytes, writeBytes: writeBytes}
+	previous, hasPrevious := state.baselines[containerID]
+	state.baselines[containerID] = current
+	rates := &[2]uint64{}
+	if !hasPrevious || state.previousCollectionTime.IsZero() {
+		return rates
+	}
+
+	elapsed := collectionTime.Sub(state.previousCollectionTime)
+	rates[0] = calculateBlockIORate(previous.readBytes, current.readBytes, elapsed)
+	rates[1] = calculateBlockIORate(previous.writeBytes, current.writeBytes, elapsed)
+	return rates
+}
+
+func (dm *dockerManager) finishBlockIOCollection(cacheTimeMs uint16, collectionTime time.Time) {
+	dm.blockIOMutex.Lock()
+	defer dm.blockIOMutex.Unlock()
+	dm.blockIOState(cacheTimeMs).previousCollectionTime = collectionTime
+}
+
+func (dm *dockerManager) deleteBlockIOContainer(containerID string) {
+	dm.blockIOMutex.Lock()
+	defer dm.blockIOMutex.Unlock()
+	for _, state := range dm.blockIOStates {
+		delete(state.baselines, containerID)
+	}
+}
+
+func (dm *dockerManager) cleanupBlockIOContainers(validIDs map[string]struct{}) {
+	dm.blockIOMutex.Lock()
+	defer dm.blockIOMutex.Unlock()
+	for _, state := range dm.blockIOStates {
+		for containerID := range state.baselines {
+			if _, valid := validIDs[containerID]; !valid {
+				delete(state.baselines, containerID)
+			}
+		}
+	}
 }
 
 // getNetworkTracker returns the DeltaTracker for a specific cache time, creating it if needed
@@ -498,7 +601,7 @@ func (dm *dockerManager) getPodmanContainerHealth(containerID string) (container
 }
 
 // Updates stats for individual container with cache-time-aware delta tracking
-func (dm *dockerManager) updateContainerStats(ctr *container.ApiInfo, cacheTimeMs uint16) error {
+func (dm *dockerManager) updateContainerStats(ctr *container.ApiInfo, cacheTimeMs uint16, collectionTime time.Time) error {
 	name := ctr.Names[0][1:]
 
 	resp, err := dm.client.Get(fmt.Sprintf("http://localhost/containers/%s/stats?stream=0&one-shot=1", ctr.IdShort))
@@ -543,13 +646,13 @@ func (dm *dockerManager) updateContainerStats(ctr *container.ApiInfo, cacheTimeM
 	stats.Cpu = 0
 	stats.Mem = 0
 	stats.Bandwidth = [2]uint64{0, 0}
+	stats.DiskIO = nil
 	// TODO(0.19+): stop populating NetworkSent/NetworkRecv (deprecated in 0.18.3)
 	stats.NetworkSent = 0
 	stats.NetworkRecv = 0
 
 	res := dm.apiStats
-	res.Networks = nil
-	if err := dm.decode(resp, res); err != nil {
+	if err := dm.decodeContainerStats(resp, res); err != nil {
 		return err
 	}
 
@@ -586,6 +689,7 @@ func (dm *dockerManager) updateContainerStats(ctr *container.ApiInfo, cacheTimeM
 
 	// Calculate network stats using DeltaTracker
 	sent_delta, recv_delta := dm.calculateNetworkStats(ctr, res, name, cacheTimeMs)
+	stats.DiskIO = dm.calculateBlockIORates(ctr.IdShort, res.BlkioStats, cacheTimeMs, collectionTime)
 
 	// Store per-cache-time network read time for next rate calculation
 	if dm.lastNetworkReadTime[cacheTimeMs] == nil {
@@ -626,6 +730,7 @@ func (dm *dockerManager) deleteContainerStatsSync(id string) {
 	for ct := range dm.lastNetworkReadTime {
 		delete(dm.lastNetworkReadTime[ct], id)
 	}
+	dm.deleteBlockIOContainer(id)
 }
 
 // Creates a new http client for Docker or Podman API
@@ -713,6 +818,7 @@ func newDockerManager(agent *Agent) *dockerManager {
 		networkSentTrackers: make(map[uint16]*deltatracker.DeltaTracker[string, uint64]),
 		networkRecvTrackers: make(map[uint16]*deltatracker.DeltaTracker[string, uint64]),
 		lastNetworkReadTime: make(map[uint16]map[string]time.Time),
+		blockIOStates:       make(map[uint16]*blockIOCacheState),
 	}
 
 	// Best-effort startup probe. If the engine is not ready yet, getDockerStats will
@@ -785,6 +891,12 @@ func (dm *dockerManager) decode(resp *http.Response, d any) error {
 		return err
 	}
 	return dm.decoder.Decode(d)
+}
+
+func (dm *dockerManager) decodeContainerStats(resp *http.Response, stats *container.ApiStats) error {
+	stats.Networks = nil
+	stats.BlkioStats = nil
+	return dm.decode(resp, stats)
 }
 
 // Test docker / podman sockets and return if one exists

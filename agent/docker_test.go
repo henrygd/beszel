@@ -187,6 +187,248 @@ func TestCalculateBlockIOTotals(t *testing.T) {
 	}
 }
 
+func testBlockIOStats(readBytes, writeBytes uint64) *container.BlkioStats {
+	return &container.BlkioStats{IoServiceBytesRecursive: []container.BlkioStatEntry{
+		{Op: "Read", Value: readBytes},
+		{Op: "Write", Value: writeBytes},
+	}}
+}
+
+func requireDiskIORates(t *testing.T, rates *[2]uint64, expected [2]uint64) {
+	t.Helper()
+	require.NotNil(t, rates)
+	assert.Equal(t, expected, *rates)
+}
+
+func TestCalculateBlockIORatesAvailability(t *testing.T) {
+	collectionTime := time.Unix(100, 0)
+
+	t.Run("unavailable is nil", func(t *testing.T) {
+		dm := &dockerManager{}
+		assert.Nil(t, dm.calculateBlockIORates("container", nil, 1000, collectionTime))
+	})
+
+	t.Run("explicit empty is supported", func(t *testing.T) {
+		dm := &dockerManager{}
+		empty := &container.BlkioStats{IoServiceBytesRecursive: []container.BlkioStatEntry{}}
+		requireDiskIORates(t, dm.calculateBlockIORates("container", empty, 1000, collectionTime), [2]uint64{})
+	})
+
+	t.Run("first valid sample is supported idle", func(t *testing.T) {
+		dm := &dockerManager{}
+		requireDiskIORates(t, dm.calculateBlockIORates("container", testBlockIOStats(100, 200), 1000, collectionTime), [2]uint64{})
+	})
+}
+
+func TestCalculateBlockIORatesDeltas(t *testing.T) {
+	tests := []struct {
+		name     string
+		elapsed  time.Duration
+		initial  [2]uint64
+		current  [2]uint64
+		expected [2]uint64
+	}{
+		{
+			name:     "one second",
+			elapsed:  time.Second,
+			initial:  [2]uint64{100, 200},
+			current:  [2]uint64{1100, 2200},
+			expected: [2]uint64{1000, 2000},
+		},
+		{
+			name:     "non one second interval",
+			elapsed:  2500 * time.Millisecond,
+			initial:  [2]uint64{100, 200},
+			current:  [2]uint64{2600, 5200},
+			expected: [2]uint64{1000, 2000},
+		},
+		{
+			name:     "directions tracked independently",
+			elapsed:  time.Second,
+			initial:  [2]uint64{1000, 2000},
+			current:  [2]uint64{1123, 2456},
+			expected: [2]uint64{123, 456},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			dm := &dockerManager{}
+			firstCollection := time.Unix(100, 0)
+			dm.calculateBlockIORates("container", testBlockIOStats(test.initial[0], test.initial[1]), 1000, firstCollection)
+			dm.finishBlockIOCollection(1000, firstCollection)
+
+			rates := dm.calculateBlockIORates("container", testBlockIOStats(test.current[0], test.current[1]), 1000, firstCollection.Add(test.elapsed))
+			requireDiskIORates(t, rates, test.expected)
+		})
+	}
+}
+
+func TestCalculateBlockIORatesCounterResets(t *testing.T) {
+	tests := []struct {
+		name     string
+		current  [2]uint64
+		expected [2]uint64
+	}{
+		{name: "read reset", current: [2]uint64{100, 2000}, expected: [2]uint64{0, 1000}},
+		{name: "write reset", current: [2]uint64{2000, 100}, expected: [2]uint64{1000, 0}},
+		{name: "both reset", current: [2]uint64{100, 200}, expected: [2]uint64{0, 0}},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			dm := &dockerManager{}
+			firstCollection := time.Unix(100, 0)
+			dm.calculateBlockIORates("container", testBlockIOStats(1000, 1000), 1000, firstCollection)
+			dm.finishBlockIOCollection(1000, firstCollection)
+
+			resetCollection := firstCollection.Add(time.Second)
+			rates := dm.calculateBlockIORates("container", testBlockIOStats(test.current[0], test.current[1]), 1000, resetCollection)
+			requireDiskIORates(t, rates, test.expected)
+			dm.finishBlockIOCollection(1000, resetCollection)
+
+			recoveryCollection := resetCollection.Add(time.Second)
+			rates = dm.calculateBlockIORates("container", testBlockIOStats(test.current[0]+500, test.current[1]+700), 1000, recoveryCollection)
+			requireDiskIORates(t, rates, [2]uint64{500, 700})
+		})
+	}
+}
+
+func TestCalculateBlockIORatesUnavailableClearsBaseline(t *testing.T) {
+	dm := &dockerManager{}
+	cacheTimeMs := uint16(1000)
+	firstCollection := time.Unix(100, 0)
+	dm.calculateBlockIORates("container", testBlockIOStats(100, 200), cacheTimeMs, firstCollection)
+	dm.finishBlockIOCollection(cacheTimeMs, firstCollection)
+
+	unavailableCollection := firstCollection.Add(time.Second)
+	assert.Nil(t, dm.calculateBlockIORates("container", nil, cacheTimeMs, unavailableCollection))
+	dm.finishBlockIOCollection(cacheTimeMs, unavailableCollection)
+
+	reappearedCollection := unavailableCollection.Add(time.Second)
+	rates := dm.calculateBlockIORates("container", testBlockIOStats(1100, 2200), cacheTimeMs, reappearedCollection)
+	requireDiskIORates(t, rates, [2]uint64{})
+}
+
+func TestCalculateBlockIORatesInvalidElapsedTime(t *testing.T) {
+	tests := []struct {
+		name    string
+		elapsed time.Duration
+	}{
+		{name: "zero", elapsed: 0},
+		{name: "negative", elapsed: -time.Second},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			dm := &dockerManager{}
+			cacheTimeMs := uint16(1000)
+			firstCollection := time.Unix(100, 0)
+			dm.calculateBlockIORates("container", testBlockIOStats(100, 200), cacheTimeMs, firstCollection)
+			dm.finishBlockIOCollection(cacheTimeMs, firstCollection)
+
+			invalidCollection := firstCollection.Add(test.elapsed)
+			rates := dm.calculateBlockIORates("container", testBlockIOStats(200, 400), cacheTimeMs, invalidCollection)
+			requireDiskIORates(t, rates, [2]uint64{})
+			dm.finishBlockIOCollection(cacheTimeMs, invalidCollection)
+
+			recoveryCollection := invalidCollection.Add(time.Second)
+			rates = dm.calculateBlockIORates("container", testBlockIOStats(300, 600), cacheTimeMs, recoveryCollection)
+			requireDiskIORates(t, rates, [2]uint64{100, 200})
+		})
+	}
+}
+
+func TestCalculateBlockIORatesRejectsAbsurdRatesIndependently(t *testing.T) {
+	tests := []struct {
+		name     string
+		current  [2]uint64
+		expected [2]uint64
+	}{
+		{
+			name:     "read above ceiling",
+			current:  [2]uint64{maxBlockIORateBps + 1, 123},
+			expected: [2]uint64{0, 123},
+		},
+		{
+			name:     "write above ceiling",
+			current:  [2]uint64{123, maxBlockIORateBps + 1},
+			expected: [2]uint64{123, 0},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			dm := &dockerManager{}
+			firstCollection := time.Unix(100, 0)
+			dm.calculateBlockIORates("container", testBlockIOStats(0, 0), 1000, firstCollection)
+			dm.finishBlockIOCollection(1000, firstCollection)
+
+			absurdCollection := firstCollection.Add(time.Second)
+			rates := dm.calculateBlockIORates("container", testBlockIOStats(test.current[0], test.current[1]), 1000, absurdCollection)
+			requireDiskIORates(t, rates, test.expected)
+			dm.finishBlockIOCollection(1000, absurdCollection)
+
+			recoveryCollection := absurdCollection.Add(time.Second)
+			rates = dm.calculateBlockIORates("container", testBlockIOStats(test.current[0]+10, test.current[1]+20), 1000, recoveryCollection)
+			requireDiskIORates(t, rates, [2]uint64{10, 20})
+		})
+	}
+}
+
+func TestBlockIOStateIsolationBetweenCacheTimes(t *testing.T) {
+	dm := &dockerManager{}
+	firstCollection := time.Unix(100, 0)
+	dm.calculateBlockIORates("container", testBlockIOStats(100, 200), 1000, firstCollection)
+	dm.finishBlockIOCollection(1000, firstCollection)
+
+	requireDiskIORates(t, dm.calculateBlockIORates("container", testBlockIOStats(1000, 2000), 60000, firstCollection.Add(time.Second)), [2]uint64{})
+	requireDiskIORates(t, dm.calculateBlockIORates("container", testBlockIOStats(1100, 2200), 1000, firstCollection.Add(time.Second)), [2]uint64{1000, 2000})
+}
+
+func TestBlockIOCollectionTimestampSharedAcrossContainers(t *testing.T) {
+	dm := &dockerManager{}
+	firstCollection := time.Unix(100, 0)
+	requireDiskIORates(t, dm.calculateBlockIORates("one", testBlockIOStats(100, 200), 1000, firstCollection), [2]uint64{})
+	requireDiskIORates(t, dm.calculateBlockIORates("two", testBlockIOStats(300, 400), 1000, firstCollection), [2]uint64{})
+	dm.finishBlockIOCollection(1000, firstCollection)
+
+	secondCollection := firstCollection.Add(2 * time.Second)
+	requireDiskIORates(t, dm.calculateBlockIORates("one", testBlockIOStats(300, 600), 1000, secondCollection), [2]uint64{100, 200})
+	requireDiskIORates(t, dm.calculateBlockIORates("two", testBlockIOStats(900, 1200), 1000, secondCollection), [2]uint64{300, 400})
+}
+
+func TestCleanupBlockIOContainersRemovesStaleBaselines(t *testing.T) {
+	dm := &dockerManager{}
+	firstCollection := time.Unix(100, 0)
+	dm.calculateBlockIORates("stale", testBlockIOStats(100, 200), 1000, firstCollection)
+	dm.finishBlockIOCollection(1000, firstCollection)
+	dm.calculateBlockIORates("stale", testBlockIOStats(300, 400), 60000, firstCollection)
+	dm.finishBlockIOCollection(60000, firstCollection)
+
+	dm.cleanupBlockIOContainers(map[string]struct{}{})
+	for _, state := range dm.blockIOStates {
+		assert.NotContains(t, state.baselines, "stale")
+	}
+
+	rates := dm.calculateBlockIORates("stale", testBlockIOStats(1000, 2000), 1000, firstCollection.Add(time.Second))
+	requireDiskIORates(t, rates, [2]uint64{})
+}
+
+func TestDecodeContainerStatsClearsReusedBlockIOData(t *testing.T) {
+	dm := &dockerManager{}
+	stats := &container.ApiStats{}
+
+	firstResponse := &http.Response{Body: io.NopCloser(strings.NewReader(`{"blkio_stats":{"io_service_bytes_recursive":[]}}`))}
+	require.NoError(t, dm.decodeContainerStats(firstResponse, stats))
+	require.NotNil(t, stats.BlkioStats)
+	assert.NotNil(t, stats.BlkioStats.IoServiceBytesRecursive)
+
+	secondResponse := &http.Response{Body: io.NopCloser(strings.NewReader(`{}`))}
+	require.NoError(t, dm.decodeContainerStats(secondResponse, stats))
+	assert.Nil(t, stats.BlkioStats)
+}
+
 func TestCalculateMemoryUsage(t *testing.T) {
 	tests := []struct {
 		name        string
@@ -1592,7 +1834,7 @@ func TestUpdateContainerStatsUsesPodmanInspectHealthFallback(t *testing.T) {
 		Image:   "beszel:latest",
 	}
 
-	err := dm.updateContainerStats(ctr, defaultCacheTimeMs)
+	err := dm.updateContainerStats(ctr, defaultCacheTimeMs, time.Now())
 	require.NoError(t, err)
 	assert.Equal(t, []string{"/containers/0123456789ab/stats", "/containers/0123456789ab/json"}, requestedPaths)
 	assert.Equal(t, container.DockerHealthHealthy, dm.containerStatsMap[ctr.IdShort].Health)
