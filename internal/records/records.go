@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"log"
 	"math"
+	"math/bits"
 	"time"
 
 	"github.com/henrygd/beszel/internal/entities/container"
@@ -467,6 +468,7 @@ func AverageContainerStatsSlice(records [][]container.Stats) []container.Stats {
 		return []container.Stats{}
 	}
 	sums := make(map[string]*container.Stats)
+	diskIOAverages := make(map[string]*[2]uint64Average)
 	count := float64(len(records))
 
 	for _, containerStats := range records {
@@ -485,19 +487,55 @@ func AverageContainerStatsSlice(records [][]container.Stats) []container.Stats {
 			}
 			sums[stat.Name].Bandwidth[0] += sentBytes
 			sums[stat.Name].Bandwidth[1] += recvBytes
+			if stat.DiskIO != nil {
+				averages := diskIOAverages[stat.Name]
+				if averages == nil {
+					averages = &[2]uint64Average{}
+					diskIOAverages[stat.Name] = averages
+				}
+				averages[0].Add(stat.DiskIO[0])
+				averages[1].Add(stat.DiskIO[1])
+			}
 		}
 	}
 
 	result := make([]container.Stats, 0, len(sums))
 	for _, value := range sums {
+		var diskIO *[2]uint64
+		if averages := diskIOAverages[value.Name]; averages != nil {
+			diskIO = &[2]uint64{averages[0].Value(), averages[1].Value()}
+		}
 		result = append(result, container.Stats{
 			Name:      value.Name,
 			Cpu:       twoDecimals(value.Cpu / count),
 			Mem:       twoDecimals(value.Mem / count),
 			Bandwidth: [2]uint64{uint64(float64(value.Bandwidth[0]) / count), uint64(float64(value.Bandwidth[1]) / count)},
+			DiskIO:    diskIO,
 		})
 	}
 	return result
+}
+
+type uint64Average struct {
+	high  uint64
+	low   uint64
+	count uint64
+}
+
+func (average *uint64Average) Add(value uint64) {
+	var carry uint64
+	average.low, carry = bits.Add64(average.low, value, 0)
+	average.high, _ = bits.Add64(average.high, 0, carry)
+	average.count++
+}
+
+// Value returns the exact integer mean, truncated toward zero.
+func (average *uint64Average) Value() uint64 {
+	if average.count == 0 {
+		return 0
+	}
+	value, _ := bits.Div64(average.high, average.low, average.count)
+	return value
 }
 
 /* Round float to two decimals */

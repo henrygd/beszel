@@ -3,6 +3,7 @@
 package records_test
 
 import (
+	"math"
 	"sort"
 	"testing"
 
@@ -660,6 +661,10 @@ func TestAverageSystemStatsSlice_TenRecords(t *testing.T) {
 
 // --- Container Stats Tests ---
 
+func containerDiskIO(readBytes, writeBytes uint64) *[2]uint64 {
+	return &[2]uint64{readBytes, writeBytes}
+}
+
 func TestAverageContainerStatsSlice_Empty(t *testing.T) {
 	result := records.AverageContainerStatsSlice(nil)
 	assert.Equal(t, []container.Stats{}, result)
@@ -671,7 +676,7 @@ func TestAverageContainerStatsSlice_Empty(t *testing.T) {
 func TestAverageContainerStatsSlice_SingleRecord(t *testing.T) {
 	input := [][]container.Stats{
 		{
-			{Name: "nginx", Cpu: 5.0, Mem: 128.0, Bandwidth: [2]uint64{1000, 2000}},
+			{Name: "nginx", Cpu: 5.0, Mem: 128.0, Bandwidth: [2]uint64{1000, 2000}, DiskIO: containerDiskIO(3000, 4000)},
 		},
 	}
 
@@ -682,6 +687,92 @@ func TestAverageContainerStatsSlice_SingleRecord(t *testing.T) {
 	assert.Equal(t, 5.0, result[0].Cpu)
 	assert.Equal(t, 128.0, result[0].Mem)
 	assert.Equal(t, [2]uint64{1000, 2000}, result[0].Bandwidth)
+	require.NotNil(t, result[0].DiskIO)
+	assert.Equal(t, [2]uint64{3000, 4000}, *result[0].DiskIO)
+}
+
+func TestAverageContainerStatsSlice_DiskIOPresentSamplesOnly(t *testing.T) {
+	input := [][]container.Stats{
+		{{Name: "nginx"}},
+		{{Name: "nginx"}},
+		{{Name: "nginx", DiskIO: containerDiskIO(100, 200)}},
+		{{Name: "nginx", DiskIO: containerDiskIO(300, 400)}},
+	}
+
+	result := records.AverageContainerStatsSlice(input)
+	require.Len(t, result, 1)
+	require.NotNil(t, result[0].DiskIO)
+	assert.Equal(t, [2]uint64{200, 300}, *result[0].DiskIO)
+}
+
+func TestAverageContainerStatsSlice_DiskIOExplicitZeroParticipates(t *testing.T) {
+	input := [][]container.Stats{
+		{{Name: "nginx", DiskIO: containerDiskIO(0, 0)}},
+		{{Name: "nginx", DiskIO: containerDiskIO(100, 200)}},
+	}
+
+	result := records.AverageContainerStatsSlice(input)
+	require.Len(t, result, 1)
+	require.NotNil(t, result[0].DiskIO)
+	assert.Equal(t, [2]uint64{50, 100}, *result[0].DiskIO)
+}
+
+func TestAverageContainerStatsSlice_DiskIOAllMissingRemainsNil(t *testing.T) {
+	result := records.AverageContainerStatsSlice([][]container.Stats{
+		{{Name: "nginx"}},
+		{{Name: "nginx"}},
+	})
+
+	require.Len(t, result, 1)
+	assert.Nil(t, result[0].DiskIO)
+}
+
+func TestAverageContainerStatsSlice_DiskIOCountsArePerContainer(t *testing.T) {
+	input := [][]container.Stats{
+		{
+			{Name: "nginx", DiskIO: containerDiskIO(100, 1000)},
+			{Name: "redis"},
+		},
+		{
+			{Name: "nginx", DiskIO: containerDiskIO(300, 3000)},
+			{Name: "redis", DiskIO: containerDiskIO(900, 90)},
+		},
+		{
+			{Name: "nginx"},
+		},
+	}
+
+	result := records.AverageContainerStatsSlice(input)
+	sort.Slice(result, func(i, j int) bool { return result[i].Name < result[j].Name })
+	require.Len(t, result, 2)
+	require.NotNil(t, result[0].DiskIO)
+	require.NotNil(t, result[1].DiskIO)
+	assert.Equal(t, [2]uint64{200, 2000}, *result[0].DiskIO)
+	assert.Equal(t, [2]uint64{900, 90}, *result[1].DiskIO)
+}
+
+func TestAverageContainerStatsSlice_DiskIOLargeValuesDoNotOverflow(t *testing.T) {
+	input := [][]container.Stats{
+		{{Name: "nginx", DiskIO: containerDiskIO(math.MaxUint64, math.MaxUint64)}},
+		{{Name: "nginx", DiskIO: containerDiskIO(math.MaxUint64, 0)}},
+	}
+
+	result := records.AverageContainerStatsSlice(input)
+	require.Len(t, result, 1)
+	require.NotNil(t, result[0].DiskIO)
+	assert.Equal(t, [2]uint64{math.MaxUint64, math.MaxUint64 / 2}, *result[0].DiskIO)
+}
+
+func TestAverageContainerStatsSlice_DiskIOSurvivesRepeatedRollup(t *testing.T) {
+	firstRollup := records.AverageContainerStatsSlice([][]container.Stats{
+		{{Name: "nginx", DiskIO: containerDiskIO(100, 200)}},
+		{{Name: "nginx", DiskIO: containerDiskIO(300, 400)}},
+	})
+	secondRollup := records.AverageContainerStatsSlice([][]container.Stats{firstRollup, firstRollup})
+
+	require.Len(t, secondRollup, 1)
+	require.NotNil(t, secondRollup[0].DiskIO)
+	assert.Equal(t, [2]uint64{200, 300}, *secondRollup[0].DiskIO)
 }
 
 func TestAverageContainerStatsSlice_BasicAveraging(t *testing.T) {

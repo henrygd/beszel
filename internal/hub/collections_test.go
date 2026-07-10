@@ -68,6 +68,17 @@ func TestCollectionRulesDefault(t *testing.T) {
 	assert.Nil(t, containersCollection.CreateRule)
 	assert.Nil(t, containersCollection.UpdateRule)
 	assert.Nil(t, containersCollection.DeleteRule)
+	for _, fieldName := range []string{"diskRead", "diskWrite"} {
+		field, ok := containersCollection.Fields.GetByName(fieldName).(*core.NumberField)
+		require.True(t, ok, "%s should be a number field", fieldName)
+		assert.False(t, field.Required)
+		assert.False(t, field.OnlyInt)
+		assert.Nil(t, field.Min)
+		assert.Nil(t, field.Max)
+	}
+	for _, fieldName := range []string{"name", "cpu", "memory", "net", "updated"} {
+		assert.NotNil(t, containersCollection.Fields.GetByName(fieldName), "existing containers field %s should remain", fieldName)
+	}
 
 	// container_stats collection
 	containerStatsCollection, err := hub.FindCollectionByNameOrId("container_stats")
