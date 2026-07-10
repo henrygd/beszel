@@ -68,6 +68,9 @@ func TestCollectionRulesDefault(t *testing.T) {
 	assert.Nil(t, containersCollection.CreateRule)
 	assert.Nil(t, containersCollection.UpdateRule)
 	assert.Nil(t, containersCollection.DeleteRule)
+	diskIOField, ok := containersCollection.Fields.GetByName("diskIo").(*core.BoolField)
+	require.True(t, ok, "diskIo should be a boolean field")
+	assert.False(t, diskIOField.Required)
 	for _, fieldName := range []string{"diskRead", "diskWrite"} {
 		field, ok := containersCollection.Fields.GetByName(fieldName).(*core.NumberField)
 		require.True(t, ok, "%s should be a number field", fieldName)

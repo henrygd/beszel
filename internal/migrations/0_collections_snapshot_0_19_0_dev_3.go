@@ -1040,6 +1040,15 @@ func init() {
 					"required": false,
 					"system": false,
 					"type": "number"
+				},
+				{
+					"hidden": false,
+					"id": "bool2000378597",
+					"name": "diskIo",
+					"presentable": false,
+					"required": false,
+					"system": false,
+					"type": "bool"
 				}
 		],
 		"indexes": [

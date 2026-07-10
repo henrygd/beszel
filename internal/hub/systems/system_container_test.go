@@ -57,6 +57,7 @@ func TestCreateContainerRecordsPersistsDiskIO(t *testing.T) {
 
 	record, err := app.FindRecordById("containers", stats.Id)
 	require.NoError(t, err)
+	assert.True(t, record.GetBool("diskIo"))
 	assert.Equal(t, float64(diskIO[0]), record.GetFloat("diskRead"))
 	assert.Equal(t, float64(diskIO[1]), record.GetFloat("diskWrite"))
 	assert.Equal(t, stats.Name, record.GetString("name"))
@@ -73,15 +74,19 @@ func TestCreateContainerRecordsPersistsExplicitZeroDiskIO(t *testing.T) {
 	app := newContainerPersistenceTestApp(t)
 	systemID := createContainerPersistenceTestSystem(t, app)
 	zeroDiskIO := [2]uint64{}
+	stats := &container.Stats{Id: "abcdee", Name: "idle"}
+	require.NoError(t, createContainerRecords(app, []*container.Stats{stats}, systemID))
 
-	require.NoError(t, createContainerRecords(app, []*container.Stats{{
-		Id:     "abcdee",
-		Name:   "idle",
-		DiskIO: &zeroDiskIO,
-	}}, systemID))
-
-	record, err := app.FindRecordById("containers", "abcdee")
+	record, err := app.FindRecordById("containers", stats.Id)
 	require.NoError(t, err)
+	assert.False(t, record.GetBool("diskIo"))
+
+	stats.DiskIO = &zeroDiskIO
+	require.NoError(t, createContainerRecords(app, []*container.Stats{stats}, systemID))
+
+	record, err = app.FindRecordById("containers", stats.Id)
+	require.NoError(t, err)
+	assert.True(t, record.GetBool("diskIo"))
 	assert.Equal(t, float64(0), record.GetFloat("diskRead"))
 	assert.Equal(t, float64(0), record.GetFloat("diskWrite"))
 }
@@ -101,6 +106,7 @@ func TestCreateContainerRecordsNilDiskIOClearsPreviousValues(t *testing.T) {
 
 	record, err := app.FindRecordById("containers", stats.Id)
 	require.NoError(t, err)
+	assert.False(t, record.GetBool("diskIo"))
 	assert.Equal(t, float64(0), record.GetFloat("diskRead"))
 	assert.Equal(t, float64(0), record.GetFloat("diskWrite"))
 	assert.Equal(t, "after", record.GetString("name"))
@@ -121,6 +127,7 @@ func TestCreateContainerRecordsAcceptsOldAgentPayload(t *testing.T) {
 	record, err := app.FindRecordById("containers", stats.Id)
 	require.NoError(t, err)
 	assert.Equal(t, "old-agent", record.GetString("name"))
+	assert.False(t, record.GetBool("diskIo"))
 	assert.Equal(t, float64(0), record.GetFloat("diskRead"))
 	assert.Equal(t, float64(0), record.GetFloat("diskWrite"))
 }
