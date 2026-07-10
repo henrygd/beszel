@@ -216,6 +216,8 @@ interface ContainerStats {
 	nr?: number
 	/** bandwidth bytes [sent, recv] */
 	b?: [number, number]
+	/** disk bytes/second [read, write] */
+	d?: [number, number]
 }
 
 export interface SystemStatsRecord extends RecordModel {
@@ -267,6 +269,9 @@ export interface ContainerRecord extends RecordModel {
 	cpu: number
 	memory: number
 	net: number
+	diskIo?: boolean
+	diskRead?: number
+	diskWrite?: number
 	health: number
 	status: string
 	updated: number

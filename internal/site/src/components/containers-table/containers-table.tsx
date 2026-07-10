@@ -44,17 +44,18 @@ export default function ContainersTable({ systemId }: { systemId?: string }) {
 		sessionStorage
 	)
 	const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
-	const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
+	const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({ diskRead: false, diskWrite: false })
 
-	// Hide ports column if no ports are present
+	// Hide capability-dependent columns when no loaded container supports them
 	useEffect(() => {
 		if (data) {
 			const hasPorts = data.some((container) => container.ports)
+			const hasDiskIo = data.some((container) => container.diskIo === true)
 			setColumnVisibility((prev) => {
-				if (prev.ports === hasPorts) {
+				if (prev.ports === hasPorts && prev.diskRead === hasDiskIo && prev.diskWrite === hasDiskIo) {
 					return prev
 				}
-				return { ...prev, ports: hasPorts }
+				return { ...prev, ports: hasPorts, diskRead: hasDiskIo, diskWrite: hasDiskIo }
 			})
 		}
 	}, [data])
@@ -66,7 +67,7 @@ export default function ContainersTable({ systemId }: { systemId?: string }) {
 		function fetchData(systemId?: string) {
 			pb.collection<ContainerRecord>("containers")
 				.getList(0, 2000, {
-					fields: "id,name,image,ports,cpu,memory,net,health,status,system,updated",
+					fields: "id,name,image,ports,cpu,memory,net,diskIo,diskRead,diskWrite,health,status,system,updated",
 					filter: systemId ? pb.filter("system={:system}", { system: systemId }) : undefined,
 				})
 				.then(({ items }) => {
