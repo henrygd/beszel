@@ -423,6 +423,11 @@ msgstr "تعارض‌ها"
 msgid "Connection is down"
 msgstr "اتصال قطع است"
 
+#: src/components/routes/system/charts/container-disk-io-chart.tsx
+#: src/components/routes/system/charts/container-disk-io-chart.tsx
+msgid "Container Disk I/O"
+msgstr ""
+
 #: src/components/routes/system.tsx
 msgid "Containers"
 msgstr "کانتینرها"
@@ -607,6 +612,14 @@ msgstr "دیسک"
 msgid "Disk I/O"
 msgstr "ورودی/خروجی دیسک"
 
+#: src/components/containers-table/containers-table-columns.tsx
+msgid "Disk Read"
+msgstr ""
+
+#: src/components/routes/system/charts/container-disk-io-chart.tsx
+msgid "Disk read and write rates of containers"
+msgstr ""
+
 #: src/components/routes/settings/general.tsx
 msgid "Disk unit"
 msgstr "واحد دیسک"
@@ -620,6 +633,10 @@ msgstr "میزان استفاده از دیسک"
 #: src/components/routes/system/charts/disk-charts.tsx
 msgid "Disk usage of {extraFsName}"
 msgstr "میزان استفاده از دیسک {extraFsName}"
+
+#: src/components/containers-table/containers-table-columns.tsx
+msgid "Disk Write"
+msgstr ""
 
 #: src/components/routes/system/info-bar.tsx
 msgctxt "Layout display options"
@@ -1326,6 +1343,8 @@ msgid "Quiet Hours"
 msgstr "ساعات آرام"
 
 #. Disk read
+#: src/components/routes/system/charts/container-disk-io-chart.tsx
+#: src/components/routes/system/charts/container-disk-io-chart.tsx
 #: src/components/routes/system/charts/disk-charts.tsx
 #: src/components/routes/system/disk-io-sheet.tsx
 #: src/components/routes/system/disk-io-sheet.tsx
@@ -1550,6 +1569,7 @@ msgstr "فضای Swap استفاده شده توسط سیستم"
 msgid "Swap Usage"
 msgstr "میزان استفاده از Swap"
 
+
 #: src/components/add-system.tsx
 #: src/components/alerts-history-columns.tsx
 #: src/components/containers-table/containers-table-columns.tsx
@@ -1681,6 +1701,7 @@ msgstr "توکن‌ها به عامل‌ها اجازه اتصال و ثبت‌�
 msgid "Tokens and fingerprints are used to authenticate WebSocket connections to the hub."
 msgstr "توکن‌ها و اثرات انگشت برای احراز هویت اتصالات WebSocket به هاب استفاده می‌شوند."
 
+#: src/components/routes/system/charts/container-disk-io-chart.tsx
 #: src/components/ui/chart.tsx
 #: src/components/ui/chart.tsx
 msgid "Total"
@@ -1907,6 +1928,8 @@ msgid "Windows command"
 msgstr "دستور Windows"
 
 #. Disk write
+#: src/components/routes/system/charts/container-disk-io-chart.tsx
+#: src/components/routes/system/charts/container-disk-io-chart.tsx
 #: src/components/routes/system/charts/disk-charts.tsx
 #: src/components/routes/system/disk-io-sheet.tsx
 #: src/components/routes/system/disk-io-sheet.tsx
