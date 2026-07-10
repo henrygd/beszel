@@ -775,6 +775,42 @@ func TestAverageContainerStatsSlice_DiskIOSurvivesRepeatedRollup(t *testing.T) {
 	assert.Equal(t, [2]uint64{200, 300}, *secondRollup[0].DiskIO)
 }
 
+func TestAverageContainerStatsSlice_DiskIOExactRepeatedRollups(t *testing.T) {
+	rollup := records.AverageContainerStatsSlice([][]container.Stats{
+		{{Name: "nginx", DiskIO: containerDiskIO(100, 10)}},
+		{{Name: "nginx", DiskIO: containerDiskIO(300, 30)}, {Name: "nginx", DiskIO: containerDiskIO(500, 50)}},
+	})
+	second := records.AverageContainerStatsSlice([][]container.Stats{rollup, {{Name: "nginx", DiskIO: containerDiskIO(300, 30)}}})
+	require.NotNil(t, second[0].DiskIO)
+	assert.Equal(t, [2]uint64{300, 30}, *second[0].DiskIO)
+
+	truncated := records.AverageContainerStatsSlice([][]container.Stats{
+		{{Name: "nginx", DiskIO: containerDiskIO(0, 10)}, {Name: "nginx", DiskIO: containerDiskIO(1, 11)}},
+		{{Name: "nginx", DiskIO: containerDiskIO(2, 12)}},
+	})
+	repeated := records.AverageContainerStatsSlice([][]container.Stats{truncated, {{Name: "nginx", DiskIO: containerDiskIO(2, 12)}}})
+	assert.Equal(t, [2]uint64{1, 11}, *repeated[0].DiskIO)
+}
+
+func TestAverageContainerStatsSlice_DiskIOAggregationMetadataAndOldRecords(t *testing.T) {
+	metadata := &[5]uint64{2, 0, 4, 0, 2}
+	result := records.AverageContainerStatsSlice([][]container.Stats{{
+		{Name: "nginx", DiskIO: containerDiskIO(9, 9), DiskIOAggregation: metadata},
+		{Name: "redis", DiskIO: containerDiskIO(7, 8)},
+		{Name: "missing"},
+	}})
+	for _, stat := range result {
+		switch stat.Name {
+		case "nginx":
+			assert.Equal(t, [2]uint64{1, 2}, *stat.DiskIO)
+		case "redis":
+			assert.Equal(t, [2]uint64{7, 8}, *stat.DiskIO)
+		case "missing":
+			assert.Nil(t, stat.DiskIO)
+		}
+	}
+}
+
 func TestAverageContainerStatsSlice_BasicAveraging(t *testing.T) {
 	input := [][]container.Stats{
 		{

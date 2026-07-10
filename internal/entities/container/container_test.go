@@ -133,3 +133,35 @@ func TestStatsDiskIOCBORKey(t *testing.T) {
 	require.NoError(t, cbor.Unmarshal(encoded, &decoded))
 	assert.NotContains(t, decoded, uint64(11))
 }
+
+func TestStatsDiskIOCBORCompatibility(t *testing.T) {
+	type oldStats struct {
+		Name string `cbor:"0,keyasint"`
+	}
+	type newStats struct {
+		DiskIO *[2]uint64 `cbor:"11,keyasint,omitempty"`
+	}
+
+	oldPayload, err := cbor.Marshal(oldStats{Name: "old"})
+	require.NoError(t, err)
+	var decodedNew newStats
+	require.NoError(t, cbor.Unmarshal(oldPayload, &decodedNew))
+	assert.Nil(t, decodedNew.DiskIO)
+
+	newPayload, err := cbor.Marshal(struct {
+		Name  string `cbor:"0,keyasint"`
+		Extra uint64 `cbor:"11,keyasint"`
+	}{Name: "new", Extra: 1})
+	require.NoError(t, err)
+	var decodedOld oldStats
+	require.NoError(t, cbor.Unmarshal(newPayload, &decodedOld))
+	assert.Equal(t, "new", decodedOld.Name)
+
+	zero := &[2]uint64{}
+	encoded, err := cbor.Marshal(newStats{DiskIO: zero})
+	require.NoError(t, err)
+	var decodedZero newStats
+	require.NoError(t, cbor.Unmarshal(encoded, &decodedZero))
+	require.NotNil(t, decodedZero.DiskIO)
+	assert.Equal(t, [2]uint64{}, *decodedZero.DiskIO)
+}

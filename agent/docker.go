@@ -204,7 +204,7 @@ func (dm *dockerManager) getDockerStats(cacheTimeMs uint16) ([]*container.Stats,
 			if err != nil {
 				dm.containerStatsMutex.Lock()
 				delete(dm.containerStatsMap, ctr.IdShort)
-				dm.deleteBlockIOContainer(ctr.IdShort)
+				dm.deleteBlockIOBaseline(cacheTimeMs, ctr.IdShort)
 				failedContainers = append(failedContainers, ctr)
 				dm.containerStatsMutex.Unlock()
 			}
@@ -223,7 +223,7 @@ func (dm *dockerManager) getDockerStats(cacheTimeMs uint16) ([]*container.Stats,
 				defer dm.dequeue()
 				if err2 := dm.updateContainerStats(ctr, cacheTimeMs, collectionTime); err2 != nil {
 					slog.Error("Error getting container stats", "err", err2)
-					dm.deleteBlockIOContainer(ctr.IdShort)
+					dm.deleteBlockIOBaseline(cacheTimeMs, ctr.IdShort)
 				}
 			}(ctr)
 		}
@@ -387,6 +387,18 @@ func (dm *dockerManager) deleteBlockIOContainer(containerID string) {
 	dm.blockIOMutex.Lock()
 	defer dm.blockIOMutex.Unlock()
 	for _, state := range dm.blockIOStates {
+		delete(state.baselines, containerID)
+	}
+}
+
+func (dm *dockerManager) deleteBlockIOBaseline(cacheTimeMs uint16, containerID string) {
+	dm.blockIOMutex.Lock()
+	defer dm.blockIOMutex.Unlock()
+	dm.deleteBlockIOBaselineLocked(cacheTimeMs, containerID)
+}
+
+func (dm *dockerManager) deleteBlockIOBaselineLocked(cacheTimeMs uint16, containerID string) {
+	if state := dm.blockIOStates[cacheTimeMs]; state != nil {
 		delete(state.baselines, containerID)
 	}
 }

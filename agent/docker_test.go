@@ -386,6 +386,21 @@ func TestBlockIOStateIsolationBetweenCacheTimes(t *testing.T) {
 	requireDiskIORates(t, dm.calculateBlockIORates("container", testBlockIOStats(1100, 2200), 1000, firstCollection.Add(time.Second)), [2]uint64{1000, 2000})
 }
 
+func TestBlockIOUnavailableClearsOnlyItsCacheTime(t *testing.T) {
+	dm := &dockerManager{}
+	firstCollection := time.Unix(100, 0)
+	dm.calculateBlockIORates("container", testBlockIOStats(100, 200), 1000, firstCollection)
+	dm.finishBlockIOCollection(1000, firstCollection)
+	dm.calculateBlockIORates("container", testBlockIOStats(1000, 2000), 60000, firstCollection)
+	dm.finishBlockIOCollection(60000, firstCollection)
+
+	assert.Nil(t, dm.calculateBlockIORates("container", nil, 1000, firstCollection.Add(time.Second)))
+	dm.finishBlockIOCollection(1000, firstCollection.Add(time.Second))
+
+	rates := dm.calculateBlockIORates("container", testBlockIOStats(1100, 2200), 60000, firstCollection.Add(time.Second))
+	requireDiskIORates(t, rates, [2]uint64{100, 200})
+}
+
 func TestBlockIOCollectionTimestampSharedAcrossContainers(t *testing.T) {
 	dm := &dockerManager{}
 	firstCollection := time.Unix(100, 0)

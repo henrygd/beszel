@@ -157,6 +157,8 @@ type Stats struct {
 	NetworkRecv float64    `json:"nr,omitzero" cbor:"4,keyasint,omitzero"`   // deprecated 0.18.3 (MB) - keep field for old agents/records
 	Bandwidth   [2]uint64  `json:"b,omitzero" cbor:"9,keyasint,omitzero"`    // [sent bytes, recv bytes]
 	DiskIO      *[2]uint64 `json:"d,omitempty" cbor:"11,keyasint,omitempty"` // [read bytes/second, write bytes/second]
+	// DiskIOAggregation is historical JSON metadata only: [read low, read high, write low, write high, sample count].
+	DiskIOAggregation *[5]uint64 `json:"a,omitempty" cbor:"-"`
 
 	Health DockerHealth `json:"-" cbor:"5,keyasint"`
 	Status string       `json:"-" cbor:"6,keyasint"`
