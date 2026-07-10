@@ -9,6 +9,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"math"
 	"net"
 	"net/http"
 	"net/http/httptest"
@@ -71,6 +72,118 @@ func (dm *dockerManager) cycleCpuDeltas(cacheTimeMs uint16) {
 	}
 	if dm.lastCpuSystem[cacheTimeMs] != nil {
 		clear(dm.lastCpuSystem[cacheTimeMs])
+	}
+}
+
+func TestCalculateBlockIOTotals(t *testing.T) {
+	tests := []struct {
+		name          string
+		blkioStats    *container.BlkioStats
+		expectedRead  uint64
+		expectedWrite uint64
+		available     bool
+	}{
+		{name: "nil stats"},
+		{name: "nil entries", blkioStats: &container.BlkioStats{}},
+		{
+			name:       "empty entries",
+			blkioStats: &container.BlkioStats{IoServiceBytesRecursive: []container.BlkioStatEntry{}},
+			available:  true,
+		},
+		{
+			name: "one read entry",
+			blkioStats: &container.BlkioStats{IoServiceBytesRecursive: []container.BlkioStatEntry{
+				{Major: 8, Minor: 0, Op: "Read", Value: 100},
+			}},
+			expectedRead: 100,
+			available:    true,
+		},
+		{
+			name: "one write entry",
+			blkioStats: &container.BlkioStats{IoServiceBytesRecursive: []container.BlkioStatEntry{
+				{Major: 8, Minor: 0, Op: "Write", Value: 200},
+			}},
+			expectedWrite: 200,
+			available:     true,
+		},
+		{
+			name: "multiple devices",
+			blkioStats: &container.BlkioStats{IoServiceBytesRecursive: []container.BlkioStatEntry{
+				{Major: 8, Minor: 0, Op: "Read", Value: 100},
+				{Major: 8, Minor: 16, Op: "Read", Value: 200},
+			}},
+			expectedRead: 300,
+			available:    true,
+		},
+		{
+			name: "multiple reads and writes",
+			blkioStats: &container.BlkioStats{IoServiceBytesRecursive: []container.BlkioStatEntry{
+				{Op: "Read", Value: 100},
+				{Op: "Write", Value: 200},
+				{Op: "Read", Value: 300},
+				{Op: "Write", Value: 400},
+			}},
+			expectedRead:  400,
+			expectedWrite: 600,
+			available:     true,
+		},
+		{
+			name: "operation casing",
+			blkioStats: &container.BlkioStats{IoServiceBytesRecursive: []container.BlkioStatEntry{
+				{Op: "read", Value: 10},
+				{Op: "READ", Value: 20},
+				{Op: "Write", Value: 30},
+				{Op: "wRiTe", Value: 40},
+			}},
+			expectedRead:  30,
+			expectedWrite: 70,
+			available:     true,
+		},
+		{
+			name: "total ignored",
+			blkioStats: &container.BlkioStats{IoServiceBytesRecursive: []container.BlkioStatEntry{
+				{Op: "Read", Value: 10},
+				{Op: "Total", Value: 999},
+			}},
+			expectedRead: 10,
+			available:    true,
+		},
+		{
+			name: "other operations ignored",
+			blkioStats: &container.BlkioStats{IoServiceBytesRecursive: []container.BlkioStatEntry{
+				{Op: "Sync", Value: 1},
+				{Op: "Async", Value: 2},
+				{Op: "Discard", Value: 3},
+				{Op: "", Value: 4},
+				{Op: "unknown", Value: 5},
+			}},
+			available: true,
+		},
+		{
+			name: "read overflow",
+			blkioStats: &container.BlkioStats{IoServiceBytesRecursive: []container.BlkioStatEntry{
+				{Op: "Write", Value: 7},
+				{Op: "Read", Value: math.MaxUint64},
+				{Op: "Read", Value: 1},
+			}},
+		},
+		{
+			name: "write overflow",
+			blkioStats: &container.BlkioStats{IoServiceBytesRecursive: []container.BlkioStatEntry{
+				{Op: "Read", Value: 7},
+				{Op: "Write", Value: math.MaxUint64},
+				{Op: "Write", Value: 1},
+			}},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			readBytes, writeBytes, available := calculateBlockIOTotals(test.blkioStats)
+			assert.Equal(t, test.expectedRead, readBytes)
+			assert.Equal(t, test.expectedWrite, writeBytes)
+			assert.Equal(t, test.available, available)
+		})
 	}
 }
 

@@ -10,6 +10,7 @@ import (
 	"fmt"
 	"io"
 	"log/slog"
+	"math"
 	"net"
 	"net/http"
 	"net/url"
@@ -274,6 +275,29 @@ func calculateMemoryUsage(apiStats *container.ApiStats, isWindows bool) (uint64,
 	}
 
 	return usedDelta, nil
+}
+
+func calculateBlockIOTotals(blkioStats *container.BlkioStats) (readBytes uint64, writeBytes uint64, available bool) {
+	if blkioStats == nil || blkioStats.IoServiceBytesRecursive == nil {
+		return 0, 0, false
+	}
+
+	for _, entry := range blkioStats.IoServiceBytesRecursive {
+		switch {
+		case strings.EqualFold(entry.Op, "read"):
+			if entry.Value > math.MaxUint64-readBytes {
+				return 0, 0, false
+			}
+			readBytes += entry.Value
+		case strings.EqualFold(entry.Op, "write"):
+			if entry.Value > math.MaxUint64-writeBytes {
+				return 0, 0, false
+			}
+			writeBytes += entry.Value
+		}
+	}
+
+	return readBytes, writeBytes, true
 }
 
 // getNetworkTracker returns the DeltaTracker for a specific cache time, creating it if needed
