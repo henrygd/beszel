@@ -1,4 +1,5 @@
 import { useStore } from "@nanostores/react"
+import { useLingui } from "@lingui/react/macro"
 import { HistoryIcon } from "lucide-react"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { $chartTime } from "@/lib/stores"
@@ -14,6 +15,7 @@ export default memo(function ChartTimeSelect({
 	agentVersion: SemVer
 }) {
 	const chartTime = useStore($chartTime)
+	const { i18n } = useLingui()
 
 	// remove chart times that are not supported by the system agent version
 	const availableChartTimes = Object.entries(chartTimeData).filter(([_, { minVersion }]) => {
@@ -24,7 +26,12 @@ export default memo(function ChartTimeSelect({
 	})
 
 	return (
-		<Select defaultValue="1h" value={chartTime} onValueChange={(value: ChartTimes) => $chartTime.set(value)}>
+		<Select
+			key={i18n.locale}
+			defaultValue="1h"
+			value={chartTime}
+			onValueChange={(value: ChartTimes) => $chartTime.set(value)}
+		>
 			<SelectTrigger className={cn(className, "relative ps-10 pe-5")}>
 				<HistoryIcon className="h-4 w-4 absolute start-4 top-1/2 -translate-y-1/2 opacity-85" />
 				<SelectValue />
