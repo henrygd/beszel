@@ -36,6 +36,12 @@ func (am *AlertManager) HandleSystemAlerts(systemRecord *core.Record, data *syst
 		case "Bandwidth":
 			val = float64(data.Info.BandwidthBytes) / (1024 * 1024)
 			unit = " MB/s"
+		case "Latency":
+			if data.Info.Latency <= 0 {
+				continue
+			}
+			val = data.Info.Latency
+			unit = " ms"
 		case "Disk":
 			maxUsedPct := data.Info.DiskPct
 			for _, fs := range data.Stats.ExtraFs {
@@ -189,6 +195,8 @@ func (am *AlertManager) HandleSystemAlerts(systemRecord *core.Record, data *syst
 				alert.val += stats.Mem
 			case "Bandwidth":
 				alert.val += float64(stats.Bandwidth[0]+stats.Bandwidth[1]) / (1024 * 1024)
+			case "Latency":
+				alert.val += stats.Latency
 			case "Disk":
 				if alert.mapSums == nil {
 					alert.mapSums = make(map[string]float32, len(stats.ExtraFs)+1)

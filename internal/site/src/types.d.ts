@@ -62,6 +62,8 @@ export interface SystemInfo {
 	b: number
 	/** bandwidth bytes */
 	bb?: number
+	/** network latency ms (average TCP RTT) */
+	lat?: number
 	/** agent version */
 	v: string
 	/** system is using podman */
@@ -151,6 +153,12 @@ export interface SystemStats {
 	bat?: [number, BatteryState]
 	/** network interfaces [upload bytes, download bytes, total upload bytes, total download bytes] */
 	ni?: Record<string, [number, number, number, number]>
+	/** network latency ms (average TCP RTT) */
+	lat?: number
+	/** peak network latency ms */
+	latm?: number
+	/** per-target latency ms */
+	latt?: Record<string, number>
 }
 
 export interface GPUData {

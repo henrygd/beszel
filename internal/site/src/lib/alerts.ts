@@ -42,6 +42,16 @@ export const alertInfo: Record<string, AlertInfo> = {
 		desc: () => t`Triggers when combined up/down exceeds a threshold`,
 		max: 250,
 	},
+	Latency: {
+		name: () => t`Latency`,
+		unit: " ms",
+		icon: HourglassIcon,
+		desc: () => t`Triggers when network latency exceeds a threshold`,
+		max: 2000,
+		min: 1,
+		start: 100,
+		step: 1,
+	},
 	GPU: {
 		name: () => t`GPU Usage`,
 		unit: "%",

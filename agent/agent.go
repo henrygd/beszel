@@ -48,6 +48,7 @@ type Agent struct {
 	keys                      []gossh.PublicKey                                     // SSH public keys
 	smartManager              *SmartManager                                         // Manages SMART data
 	systemdManager            *systemdManager                                       // Manages systemd services
+	latencyManager            *latencyManager                                       // Probes TCP latency targets
 }
 
 // NewAgent creates a new agent with the given data directory for persisting data.
@@ -126,6 +127,9 @@ func NewAgent(dataDir ...string) (agent *Agent, err error) {
 
 	// initialize net io stats
 	agent.initializeNetIoStats()
+
+	// initialize latency probes (Nezha-style delay monitoring)
+	agent.latencyManager = newLatencyManager()
 
 	agent.systemdManager, err = newSystemdManager()
 	if err != nil {

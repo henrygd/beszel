@@ -212,6 +212,9 @@ func (a *Agent) getSystemStats(cacheTimeMs uint16) system.Stats {
 	// network stats (per cache interval)
 	a.updateNetworkStats(cacheTimeMs, &systemStats)
 
+	// network latency (TCP RTT to configured targets)
+	a.updateLatency(&systemStats)
+
 	// temperatures
 	// TODO: maybe refactor to methods on systemStats
 	a.updateTemperatures(&systemStats)
@@ -258,6 +261,7 @@ func (a *Agent) getSystemStats(cacheTimeMs uint16) system.Stats {
 	a.systemInfo.Battery = systemStats.Battery
 	a.systemInfo.Uptime, _ = host.Uptime()
 	a.systemInfo.BandwidthBytes = systemStats.Bandwidth[0] + systemStats.Bandwidth[1]
+	a.systemInfo.Latency = systemStats.Latency
 	a.systemInfo.Threads = a.systemDetails.Threads
 
 	return systemStats

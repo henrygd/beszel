@@ -19,6 +19,7 @@ import {
 	PlayCircleIcon,
 	ServerIcon,
 	TerminalSquareIcon,
+	TimerIcon,
 	Trash2Icon,
 	WifiIcon,
 } from "lucide-react"
@@ -257,6 +258,35 @@ export function SystemsTableColumns(viewMode: "table" | "grid"): ColumnDef<Syste
 					<span className="tabular-nums whitespace-nowrap">
 						{decimalString(value, value >= 100 ? 1 : 2)} {unit}
 					</span>
+				)
+			},
+		},
+		{
+			accessorFn: ({ info, status }) => (status !== SystemStatus.Up ? undefined : info.lat),
+			id: "latency",
+			name: () => t`Latency`,
+			size: 0,
+			Icon: TimerIcon,
+			header: sortableHeader,
+			sortUndefined: "last",
+			cell(info) {
+				const val = info.getValue() as number | undefined
+				if (val === undefined || val <= 0) {
+					return null
+				}
+				// Absolute ms thresholds for latency readability (Nezha-style)
+				const state = val >= 300 ? MeterState.Crit : val >= 100 ? MeterState.Warn : MeterState.Good
+				return (
+					<div className="flex items-center gap-[.35em] w-full tabular-nums tracking-tight">
+						<span
+							className={cn("inline-block size-2 rounded-full me-0.5", {
+								[STATUS_COLORS[SystemStatus.Up]]: state === MeterState.Good,
+								[STATUS_COLORS[SystemStatus.Pending]]: state === MeterState.Warn,
+								[STATUS_COLORS[SystemStatus.Down]]: state === MeterState.Crit,
+							})}
+						/>
+						<span className="whitespace-nowrap">{decimalString(val, val >= 100 ? 0 : 1)} ms</span>
+					</div>
 				)
 			},
 		},

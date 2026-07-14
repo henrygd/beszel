@@ -50,6 +50,12 @@ type Stats struct {
 	CpuCoresUsage     Uint8Slice           `json:"cpus,omitempty" cbor:"34,keyasint,omitempty"` // per-core busy usage [CPU0..]
 	DiskIoStats       [6]float64           `json:"dios,omitzero" cbor:"35,keyasint,omitzero"`   // [read time %, write time %, io utilization %, r_await ms, w_await ms, weighted io %]
 	MaxDiskIoStats    [6]float64           `json:"diosm,omitzero" cbor:"-"`                     // max values for DiskIoStats
+	// Latency is average TCP connect RTT in milliseconds across configured ping targets (Nezha-style).
+	Latency float64 `json:"lat,omitempty" cbor:"36,keyasint,omitempty"`
+	// MaxLatency is the peak average latency within a longer stats window.
+	MaxLatency float64 `json:"latm,omitempty" cbor:"-"`
+	// LatencyTargets holds per-target RTT in milliseconds (key = host:port).
+	LatencyTargets map[string]float64 `json:"latt,omitempty" cbor:"37,keyasint,omitempty"`
 }
 
 // Uint8Slice wraps []uint8 to customize JSON encoding while keeping CBOR efficient.
@@ -155,6 +161,8 @@ type Info struct {
 	ExtraFsPct     map[string]float64 `json:"efs,omitempty" cbor:"21,keyasint,omitempty"`
 	Services       []uint16           `json:"sv,omitempty" cbor:"22,keyasint,omitempty"` // [totalServices, numFailedServices]
 	Battery        [2]uint8           `json:"bat,omitzero" cbor:"23,keyasint,omitzero"`  // [percent, charge state]
+	// Latency is average TCP connect RTT in milliseconds for dashboard table (Nezha-style).
+	Latency float64 `json:"lat,omitempty" cbor:"24,keyasint,omitempty"`
 }
 
 // Data that does not change during process lifetime and is not needed in All Systems table
