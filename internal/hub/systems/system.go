@@ -122,15 +122,18 @@ func (sys *System) update() error {
 		sys.handlePaused()
 		return nil
 	}
-	// Prefer per-system targets; fall back to hub Settings → Latency global list.
-	pingTargets := strings.TrimSpace(sys.PingTargets)
-	if pingTargets == "" && sys.manager != nil {
-		pingTargets = sys.manager.hub.GetPingTargets()
-	}
 	options := common.DataRequestOptions{
-		CacheTimeMs:      uint16(interval),
-		ConfigureLatency: true,
-		PingTargets:      pingTargets,
+		CacheTimeMs: uint16(interval),
+	}
+	// Per-system DB override, else hub Settings (all / selected systems).
+	if pt := strings.TrimSpace(sys.PingTargets); pt != "" {
+		options.ConfigureLatency = true
+		options.PingTargets = pt
+	} else if sys.manager != nil {
+		configure, disable, targets := sys.manager.hub.LatencyProbeForSystem(sys.Id)
+		options.ConfigureLatency = configure
+		options.DisableLatency = disable
+		options.PingTargets = targets
 	}
 	// fetch system details if not already fetched
 	if !sys.detailsFetched.Load() {

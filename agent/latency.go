@@ -75,6 +75,20 @@ func (lm *latencyManager) applyHubTargets(raw string) bool {
 	return true
 }
 
+// disableHubProbes clears probes so this agent does not measure latency
+// (used when hub has targets but this system is not selected).
+func (lm *latencyManager) disableHubProbes() bool {
+	lm.mu.Lock()
+	defer lm.mu.Unlock()
+	if lm.hubOverride && len(lm.targets) == 0 {
+		return false
+	}
+	lm.hubOverride = true
+	lm.targets = nil
+	slog.Info("Latency probes disabled by hub")
+	return true
+}
+
 func namedTargetsEqual(a, b []namedTarget) bool {
 	if len(a) != len(b) {
 		return false

@@ -57,6 +57,8 @@ type hubLike interface {
 	CancelPendingStatusAlerts(systemID string)
 	// GetPingTargets returns hub-wide latency probe targets (Settings → Latency).
 	GetPingTargets() string
+	// LatencyProbeForSystem returns hub latency push flags for a system.
+	LatencyProbeForSystem(systemID string) (configure bool, disable bool, targets string)
 }
 
 // NewSystemManager creates a new SystemManager instance with the provided hub.

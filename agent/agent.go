@@ -161,7 +161,13 @@ func (a *Agent) gatherStats(options common.DataRequestOptions) *system.CombinedD
 
 	// Apply hub-configured latency targets before collection (invalidates cache on change)
 	if options.ConfigureLatency && a.latencyManager != nil {
-		if a.latencyManager.applyHubTargets(options.PingTargets) {
+		var changed bool
+		if options.DisableLatency {
+			changed = a.latencyManager.disableHubProbes()
+		} else {
+			changed = a.latencyManager.applyHubTargets(options.PingTargets)
+		}
+		if changed {
 			a.cache = NewSystemDataCache()
 		}
 	}

@@ -63,6 +63,23 @@ func (h *Hub) GetPingTargets() string {
 	return h.latency.PingTargets()
 }
 
+// LatencyProbeForSystem returns whether the hub should push latency config to this system,
+// and the targets string (empty when the system is excluded / disabled).
+func (h *Hub) LatencyProbeForSystem(systemID string) (configure bool, disable bool, targets string) {
+	if h.latency == nil {
+		return false, false, ""
+	}
+	if !h.latency.HasTargets() {
+		// No hub targets: leave agent env alone
+		return false, false, ""
+	}
+	if h.latency.AppliesTo(systemID) {
+		return true, false, h.latency.PingTargets()
+	}
+	// Targets exist but this system is not selected → disable probing on agent
+	return true, true, ""
+}
+
 // onAfterBootstrapAndMigrations ensures the provided function runs after the database is set up and migrations are applied.
 // This is a workaround for behavior in PocketBase where onBootstrap runs before migrations, forcing use of onServe for this purpose.
 // However, PB's tests.TestApp is already bootstrapped, generally doesn't serve, but does handle migrations.
