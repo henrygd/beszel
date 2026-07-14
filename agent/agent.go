@@ -159,6 +159,13 @@ func (a *Agent) gatherStats(options common.DataRequestOptions) *system.CombinedD
 	a.Lock()
 	defer a.Unlock()
 
+	// Apply hub-configured latency targets before collection (invalidates cache on change)
+	if options.ConfigureLatency && a.latencyManager != nil {
+		if a.latencyManager.applyHubTargets(options.PingTargets) {
+			a.cache = NewSystemDataCache()
+		}
+	}
+
 	cacheTimeMs := options.CacheTimeMs
 	data, isCached := a.cache.Get(cacheTimeMs)
 	if isCached {

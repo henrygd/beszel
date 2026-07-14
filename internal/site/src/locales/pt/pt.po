@@ -401,6 +401,10 @@ msgstr "Clique em um sistema para ver mais informações."
 msgid "Click to copy"
 msgstr "Clique para copiar"
 
+#: src/components/add-system.tsx
+#~ msgid "Comma-separated host:port for latency probes. Leave empty to use agent defaults."
+#~ msgstr ""
+
 #: src/components/login/forgot-pass-form.tsx
 #: src/components/login/forgot-pass-form.tsx
 msgid "Command line instructions"
@@ -409,6 +413,10 @@ msgstr "Instruções de linha de comando"
 #: src/components/routes/settings/notifications.tsx
 msgid "Configure how you receive alert notifications."
 msgstr "Configure como você recebe notificações de alerta."
+
+#: src/components/routes/settings/latency.tsx
+msgid "Configure TCP latency probe targets for all agents (Nezha-style). Use comma-separated host:port values."
+msgstr ""
 
 #: src/components/login/auth-form.tsx
 #: src/components/login/auth-form.tsx
@@ -717,12 +725,12 @@ msgstr "Insira a sua senha de uso único."
 msgid "Ephemeral"
 msgstr "Efêmero"
 
-#: src/components/login/auth-form.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/settings/config-yaml.tsx
 #: src/components/routes/settings/heartbeat.tsx
 #: src/components/routes/settings/heartbeat.tsx
 #: src/components/routes/settings/heartbeat.tsx
+#: src/components/routes/settings/latency.tsx
 #: src/components/routes/settings/notifications.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/quiet-hours.tsx
@@ -734,6 +742,10 @@ msgstr "Erro"
 #: src/components/routes/settings/heartbeat.tsx
 msgid "Example:"
 msgstr "Exemplo:"
+
+#: src/components/routes/settings/latency.tsx
+msgid "Example: telecom / mobile / unicom CDN endpoints. Leave empty to use each agent's PING_TARGETS env or defaults."
+msgstr ""
 
 #. placeholder {0}: alert.value
 #. placeholder {1}: info.unit
@@ -786,6 +798,7 @@ msgstr "Atributos com Falha:"
 msgid "Failed to authenticate"
 msgstr "Falha na autenticação"
 
+#: src/components/routes/settings/latency.tsx
 #: src/components/routes/settings/layout.tsx
 #: src/components/routes/settings/notifications.tsx
 #: src/components/routes/settings/quiet-hours.tsx
@@ -956,6 +969,19 @@ msgstr "Endereço de email inválido."
 #: src/components/routes/settings/general.tsx
 msgid "Language"
 msgstr "Idioma"
+
+#: src/components/routes/settings/latency.tsx
+#: src/components/routes/settings/layout.tsx
+#: src/components/routes/system/charts/network-charts.tsx
+#: src/components/routes/system/charts/network-charts.tsx
+#: src/components/systems-table/systems-table-columns.tsx
+#: src/lib/alerts.ts
+msgid "Latency"
+msgstr ""
+
+#: src/components/routes/settings/latency.tsx
+msgid "Latency probe targets updated. Agents pick them up on the next poll."
+msgstr ""
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Layout"
@@ -1251,6 +1277,10 @@ msgstr "Permanente"
 msgid "Persistence"
 msgstr "Persistência"
 
+#: src/components/routes/settings/latency.tsx
+msgid "Ping Targets"
+msgstr ""
+
 #: src/components/routes/settings/notifications.tsx
 msgid "Please <0>configure an SMTP server</0> to ensure alerts are delivered."
 msgstr "Por favor, <0>configure um servidor SMTP</0> para garantir que os alertas sejam entregues."
@@ -1415,6 +1445,7 @@ msgid "Save address using enter key or comma. Leave blank to disable email notif
 msgstr "Salve o endereço usando a tecla enter ou vírgula. Deixe em branco para desativar notificações por email."
 
 #: src/components/routes/settings/general.tsx
+#: src/components/routes/settings/latency.tsx
 #: src/components/routes/settings/notifications.tsx
 msgid "Save Settings"
 msgstr "Guardar Definições"
@@ -1422,6 +1453,10 @@ msgstr "Guardar Definições"
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Saved in the database and does not expire until you disable it."
 msgstr "Salvo no banco de dados e não expira até você desativá-lo."
+
+#: src/components/routes/settings/latency.tsx
+msgid "Saving..."
+msgstr ""
 
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Schedule"
@@ -1502,6 +1537,7 @@ msgstr "Defina as seguintes variáveis de ambiente no seu hub do Beszel para ati
 msgid "Settings"
 msgstr "Configurações"
 
+#: src/components/routes/settings/latency.tsx
 #: src/components/routes/settings/layout.tsx
 msgid "Settings saved"
 msgstr "Definições guardadas"
@@ -1550,6 +1586,11 @@ msgstr "Espaço de swap usado pelo sistema"
 msgid "Swap Usage"
 msgstr "Uso de Swap"
 
+#: src/components/mode-toggle.tsx
+#: src/components/mode-toggle.tsx
+msgid "Switch theme"
+msgstr ""
+
 #: src/components/add-system.tsx
 #: src/components/alerts-history-columns.tsx
 #: src/components/containers-table/containers-table-columns.tsx
@@ -1593,6 +1634,10 @@ msgstr "Separadores"
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Tasks"
 msgstr "Tarefas"
+
+#: src/components/routes/system/charts/network-charts.tsx
+msgid "TCP connect latency to configured targets"
+msgstr ""
 
 #. Temperature label in systems table
 #: src/components/routes/system/smart-table.tsx
@@ -1659,8 +1704,8 @@ msgstr "Para email(s)"
 
 #: src/components/mode-toggle.tsx
 #: src/components/mode-toggle.tsx
-msgid "Toggle theme"
-msgstr "Alternar tema"
+#~ msgid "Toggle theme"
+#~ msgstr "Alternar tema"
 
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
@@ -1747,6 +1792,10 @@ msgstr "Dispara quando o uso de GPU excede um limite"
 #: src/lib/alerts.ts
 msgid "Triggers when memory usage exceeds a threshold"
 msgstr "Dispara quando o uso de memória excede um limite"
+
+#: src/lib/alerts.ts
+msgid "Triggers when network latency exceeds a threshold"
+msgstr ""
 
 #: src/lib/alerts.ts
 msgid "Triggers when status switches between up and down"

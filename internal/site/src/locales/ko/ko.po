@@ -401,6 +401,10 @@ msgstr "더 많은 정보를 보려면 시스템을 클릭하세요."
 msgid "Click to copy"
 msgstr "클릭하여 복사"
 
+#: src/components/add-system.tsx
+#~ msgid "Comma-separated host:port for latency probes. Leave empty to use agent defaults."
+#~ msgstr ""
+
 #: src/components/login/forgot-pass-form.tsx
 #: src/components/login/forgot-pass-form.tsx
 msgid "Command line instructions"
@@ -409,6 +413,10 @@ msgstr "명령어 사용 지침"
 #: src/components/routes/settings/notifications.tsx
 msgid "Configure how you receive alert notifications."
 msgstr "알림을 수신할 방법을 설정하세요."
+
+#: src/components/routes/settings/latency.tsx
+msgid "Configure TCP latency probe targets for all agents (Nezha-style). Use comma-separated host:port values."
+msgstr ""
 
 #: src/components/login/auth-form.tsx
 #: src/components/login/auth-form.tsx
@@ -717,12 +725,12 @@ msgstr "OTP를 입력하세요."
 msgid "Ephemeral"
 msgstr "일시적"
 
-#: src/components/login/auth-form.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/settings/config-yaml.tsx
 #: src/components/routes/settings/heartbeat.tsx
 #: src/components/routes/settings/heartbeat.tsx
 #: src/components/routes/settings/heartbeat.tsx
+#: src/components/routes/settings/latency.tsx
 #: src/components/routes/settings/notifications.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/quiet-hours.tsx
@@ -734,6 +742,10 @@ msgstr "오류"
 #: src/components/routes/settings/heartbeat.tsx
 msgid "Example:"
 msgstr "예시:"
+
+#: src/components/routes/settings/latency.tsx
+msgid "Example: telecom / mobile / unicom CDN endpoints. Leave empty to use each agent's PING_TARGETS env or defaults."
+msgstr ""
 
 #. placeholder {0}: alert.value
 #. placeholder {1}: info.unit
@@ -786,6 +798,7 @@ msgstr "실패한 속성:"
 msgid "Failed to authenticate"
 msgstr "인증 실패"
 
+#: src/components/routes/settings/latency.tsx
 #: src/components/routes/settings/layout.tsx
 #: src/components/routes/settings/notifications.tsx
 #: src/components/routes/settings/quiet-hours.tsx
@@ -956,6 +969,19 @@ msgstr "잘못된 이메일 주소입니다."
 #: src/components/routes/settings/general.tsx
 msgid "Language"
 msgstr "언어"
+
+#: src/components/routes/settings/latency.tsx
+#: src/components/routes/settings/layout.tsx
+#: src/components/routes/system/charts/network-charts.tsx
+#: src/components/routes/system/charts/network-charts.tsx
+#: src/components/systems-table/systems-table-columns.tsx
+#: src/lib/alerts.ts
+msgid "Latency"
+msgstr ""
+
+#: src/components/routes/settings/latency.tsx
+msgid "Latency probe targets updated. Agents pick them up on the next poll."
+msgstr ""
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Layout"
@@ -1251,6 +1277,10 @@ msgstr "영구적"
 msgid "Persistence"
 msgstr "지속성"
 
+#: src/components/routes/settings/latency.tsx
+msgid "Ping Targets"
+msgstr ""
+
 #: src/components/routes/settings/notifications.tsx
 msgid "Please <0>configure an SMTP server</0> to ensure alerts are delivered."
 msgstr "알림이 전달되도록 <0>SMTP 서버를 구성</0>하세요."
@@ -1415,6 +1445,7 @@ msgid "Save address using enter key or comma. Leave blank to disable email notif
 msgstr "Enter 키 또는 쉼표를 사용하여 주소를 저장하세요. 이메일 알림을 비활성화하려면 비워 두세요."
 
 #: src/components/routes/settings/general.tsx
+#: src/components/routes/settings/latency.tsx
 #: src/components/routes/settings/notifications.tsx
 msgid "Save Settings"
 msgstr "설정 저장"
@@ -1422,6 +1453,10 @@ msgstr "설정 저장"
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Saved in the database and does not expire until you disable it."
 msgstr "데이터베이스에 저장되며 비활성화할 때까지 만료되지 않습니다."
+
+#: src/components/routes/settings/latency.tsx
+msgid "Saving..."
+msgstr ""
 
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Schedule"
@@ -1502,6 +1537,7 @@ msgstr "하트비트 모니터링을 활성화하려면 Beszel 허브에 다음 
 msgid "Settings"
 msgstr "설정"
 
+#: src/components/routes/settings/latency.tsx
 #: src/components/routes/settings/layout.tsx
 msgid "Settings saved"
 msgstr "설정이 저장되었습니다."
@@ -1550,6 +1586,11 @@ msgstr "시스템에서 사용된 스왑 공간"
 msgid "Swap Usage"
 msgstr "스왑 사용량"
 
+#: src/components/mode-toggle.tsx
+#: src/components/mode-toggle.tsx
+msgid "Switch theme"
+msgstr ""
+
 #: src/components/add-system.tsx
 #: src/components/alerts-history-columns.tsx
 #: src/components/containers-table/containers-table-columns.tsx
@@ -1593,6 +1634,10 @@ msgstr "탭"
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Tasks"
 msgstr "작업"
+
+#: src/components/routes/system/charts/network-charts.tsx
+msgid "TCP connect latency to configured targets"
+msgstr ""
 
 #. Temperature label in systems table
 #: src/components/routes/system/smart-table.tsx
@@ -1659,8 +1704,8 @@ msgstr "받는사람(들)"
 
 #: src/components/mode-toggle.tsx
 #: src/components/mode-toggle.tsx
-msgid "Toggle theme"
-msgstr "테마 전환"
+#~ msgid "Toggle theme"
+#~ msgstr "테마 전환"
 
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
@@ -1747,6 +1792,10 @@ msgstr "GPU 사용량이 임계값을 초과할 때 트리거됩니다."
 #: src/lib/alerts.ts
 msgid "Triggers when memory usage exceeds a threshold"
 msgstr "메모리 사용량이 임계값을 초과할 때 트리거됩니다."
+
+#: src/lib/alerts.ts
+msgid "Triggers when network latency exceeds a threshold"
+msgstr ""
 
 #: src/lib/alerts.ts
 msgid "Triggers when status switches between up and down"

@@ -20,20 +20,65 @@ const (
 
 // latencyManager probes TCP connect RTT to configured targets (Nezha-style delay monitoring).
 type latencyManager struct {
-	targets []string
-	timeout time.Duration
+	mu          sync.Mutex
+	targets     []string
+	envTargets  []string // defaults from PING_TARGETS / HUB_URL
+	hubOverride bool     // true when hub last sent ConfigureLatency
+	timeout     time.Duration
 }
 
 func newLatencyManager() *latencyManager {
-	lm := &latencyManager{
-		timeout: defaultPingTimeout,
-		targets: parsePingTargets(),
+	envTargets := parsePingTargets()
+	if len(envTargets) == 0 {
+		envTargets = []string{defaultPingTarget}
 	}
-	if len(lm.targets) == 0 {
-		lm.targets = []string{defaultPingTarget}
+	lm := &latencyManager{
+		timeout:    defaultPingTimeout,
+		envTargets: envTargets,
+		targets:    append([]string(nil), envTargets...),
 	}
 	slog.Info("Latency targets", "targets", lm.targets)
 	return lm
+}
+
+// applyHubTargets updates targets from hub config.
+// empty raw falls back to env defaults. Returns true if targets changed.
+func (lm *latencyManager) applyHubTargets(raw string) bool {
+	lm.mu.Lock()
+	defer lm.mu.Unlock()
+
+	var next []string
+	if strings.TrimSpace(raw) == "" {
+		next = append([]string(nil), lm.envTargets...)
+		lm.hubOverride = false
+	} else {
+		next = normalizeTargets(strings.Split(raw, ","))
+		if len(next) == 0 {
+			next = append([]string(nil), lm.envTargets...)
+			lm.hubOverride = false
+		} else {
+			lm.hubOverride = true
+		}
+	}
+
+	if targetsEqual(lm.targets, next) {
+		return false
+	}
+	lm.targets = next
+	slog.Info("Latency targets updated", "targets", lm.targets, "source", map[bool]string{true: "hub", false: "env"}[lm.hubOverride])
+	return true
+}
+
+func targetsEqual(a, b []string) bool {
+	if len(a) != len(b) {
+		return false
+	}
+	for i := range a {
+		if a[i] != b[i] {
+			return false
+		}
+	}
+	return true
 }
 
 // parsePingTargets reads PING_TARGETS (comma-separated host or host:port).
@@ -130,7 +175,12 @@ func (a *Agent) updateLatency(systemStats *system.Stats) {
 }
 
 func (lm *latencyManager) probe() (avg float64, results map[string]float64) {
-	if len(lm.targets) == 0 {
+	lm.mu.Lock()
+	targets := append([]string(nil), lm.targets...)
+	timeout := lm.timeout
+	lm.mu.Unlock()
+
+	if len(targets) == 0 {
 		return 0, nil
 	}
 
@@ -140,13 +190,13 @@ func (lm *latencyManager) probe() (avg float64, results map[string]float64) {
 		ok     bool
 	}
 
-	ch := make(chan result, len(lm.targets))
+	ch := make(chan result, len(targets))
 	var wg sync.WaitGroup
-	for _, target := range lm.targets {
+	for _, target := range targets {
 		wg.Add(1)
 		go func(t string) {
 			defer wg.Done()
-			ms, err := tcpConnectLatency(t, lm.timeout)
+			ms, err := tcpConnectLatency(t, timeout)
 			if err != nil {
 				slog.Debug("Latency probe failed", "target", t, "err", err)
 				ch <- result{target: t, ok: false}
@@ -158,7 +208,7 @@ func (lm *latencyManager) probe() (avg float64, results map[string]float64) {
 	wg.Wait()
 	close(ch)
 
-	results = make(map[string]float64, len(lm.targets))
+	results = make(map[string]float64, len(targets))
 	var sum float64
 	var n int
 	for r := range ch {

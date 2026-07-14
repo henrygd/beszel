@@ -401,6 +401,10 @@ msgstr "システムをクリックして詳細を表示します。"
 msgid "Click to copy"
 msgstr "クリックしてコピー"
 
+#: src/components/add-system.tsx
+#~ msgid "Comma-separated host:port for latency probes. Leave empty to use agent defaults."
+#~ msgstr ""
+
 #: src/components/login/forgot-pass-form.tsx
 #: src/components/login/forgot-pass-form.tsx
 msgid "Command line instructions"
@@ -409,6 +413,10 @@ msgstr "コマンドラインの指示"
 #: src/components/routes/settings/notifications.tsx
 msgid "Configure how you receive alert notifications."
 msgstr "アラート通知の受信方法を設定します。"
+
+#: src/components/routes/settings/latency.tsx
+msgid "Configure TCP latency probe targets for all agents (Nezha-style). Use comma-separated host:port values."
+msgstr ""
 
 #: src/components/login/auth-form.tsx
 #: src/components/login/auth-form.tsx
@@ -717,12 +725,12 @@ msgstr "ワンタイムパスワードを入力してください。"
 msgid "Ephemeral"
 msgstr "一時的"
 
-#: src/components/login/auth-form.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/settings/config-yaml.tsx
 #: src/components/routes/settings/heartbeat.tsx
 #: src/components/routes/settings/heartbeat.tsx
 #: src/components/routes/settings/heartbeat.tsx
+#: src/components/routes/settings/latency.tsx
 #: src/components/routes/settings/notifications.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/quiet-hours.tsx
@@ -734,6 +742,10 @@ msgstr "エラー"
 #: src/components/routes/settings/heartbeat.tsx
 msgid "Example:"
 msgstr "例:"
+
+#: src/components/routes/settings/latency.tsx
+msgid "Example: telecom / mobile / unicom CDN endpoints. Leave empty to use each agent's PING_TARGETS env or defaults."
+msgstr ""
 
 #. placeholder {0}: alert.value
 #. placeholder {1}: info.unit
@@ -786,6 +798,7 @@ msgstr "失敗した属性:"
 msgid "Failed to authenticate"
 msgstr "認証に失敗しました"
 
+#: src/components/routes/settings/latency.tsx
 #: src/components/routes/settings/layout.tsx
 #: src/components/routes/settings/notifications.tsx
 #: src/components/routes/settings/quiet-hours.tsx
@@ -956,6 +969,19 @@ msgstr "無効なメールアドレスです。"
 #: src/components/routes/settings/general.tsx
 msgid "Language"
 msgstr "言語"
+
+#: src/components/routes/settings/latency.tsx
+#: src/components/routes/settings/layout.tsx
+#: src/components/routes/system/charts/network-charts.tsx
+#: src/components/routes/system/charts/network-charts.tsx
+#: src/components/systems-table/systems-table-columns.tsx
+#: src/lib/alerts.ts
+msgid "Latency"
+msgstr ""
+
+#: src/components/routes/settings/latency.tsx
+msgid "Latency probe targets updated. Agents pick them up on the next poll."
+msgstr ""
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Layout"
@@ -1251,6 +1277,10 @@ msgstr "永久"
 msgid "Persistence"
 msgstr "永続性"
 
+#: src/components/routes/settings/latency.tsx
+msgid "Ping Targets"
+msgstr ""
+
 #: src/components/routes/settings/notifications.tsx
 msgid "Please <0>configure an SMTP server</0> to ensure alerts are delivered."
 msgstr "アラートが配信されるように<0>SMTPサーバーを設定</0>してください。"
@@ -1415,6 +1445,7 @@ msgid "Save address using enter key or comma. Leave blank to disable email notif
 msgstr "Enterキーまたはカンマを使用してアドレスを保存します。空白のままにするとメール通知が無効になります。"
 
 #: src/components/routes/settings/general.tsx
+#: src/components/routes/settings/latency.tsx
 #: src/components/routes/settings/notifications.tsx
 msgid "Save Settings"
 msgstr "設定を保存"
@@ -1422,6 +1453,10 @@ msgstr "設定を保存"
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Saved in the database and does not expire until you disable it."
 msgstr "データベースに保存され、無効にするまで有効期限が切れません。"
+
+#: src/components/routes/settings/latency.tsx
+msgid "Saving..."
+msgstr ""
 
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Schedule"
@@ -1502,6 +1537,7 @@ msgstr "ハートビート監視を有効にするには、Beszel ハブで次�
 msgid "Settings"
 msgstr "設定"
 
+#: src/components/routes/settings/latency.tsx
 #: src/components/routes/settings/layout.tsx
 msgid "Settings saved"
 msgstr "設定が保存されました"
@@ -1550,6 +1586,11 @@ msgstr "システムが使用するスワップ領域"
 msgid "Swap Usage"
 msgstr "スワップ使用量"
 
+#: src/components/mode-toggle.tsx
+#: src/components/mode-toggle.tsx
+msgid "Switch theme"
+msgstr ""
+
 #: src/components/add-system.tsx
 #: src/components/alerts-history-columns.tsx
 #: src/components/containers-table/containers-table-columns.tsx
@@ -1593,6 +1634,10 @@ msgstr "タブ"
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Tasks"
 msgstr "タスク"
+
+#: src/components/routes/system/charts/network-charts.tsx
+msgid "TCP connect latency to configured targets"
+msgstr ""
 
 #. Temperature label in systems table
 #: src/components/routes/system/smart-table.tsx
@@ -1659,8 +1704,8 @@ msgstr "宛先メールアドレス"
 
 #: src/components/mode-toggle.tsx
 #: src/components/mode-toggle.tsx
-msgid "Toggle theme"
-msgstr "テーマを切り替え"
+#~ msgid "Toggle theme"
+#~ msgstr "テーマを切り替え"
 
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
@@ -1747,6 +1792,10 @@ msgstr "GPU使用率がしきい値を超えたときにトリガーされます
 #: src/lib/alerts.ts
 msgid "Triggers when memory usage exceeds a threshold"
 msgstr "メモリ使用率がしきい値を超えたときにトリガーされます"
+
+#: src/lib/alerts.ts
+msgid "Triggers when network latency exceeds a threshold"
+msgstr ""
 
 #: src/lib/alerts.ts
 msgid "Triggers when status switches between up and down"

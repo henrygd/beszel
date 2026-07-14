@@ -401,6 +401,10 @@ msgstr "Кликнете върху система, за да видите по�
 msgid "Click to copy"
 msgstr "Настисни за да копираш"
 
+#: src/components/add-system.tsx
+#~ msgid "Comma-separated host:port for latency probes. Leave empty to use agent defaults."
+#~ msgstr ""
+
 #: src/components/login/forgot-pass-form.tsx
 #: src/components/login/forgot-pass-form.tsx
 msgid "Command line instructions"
@@ -409,6 +413,10 @@ msgstr "Инструкции за командната линия"
 #: src/components/routes/settings/notifications.tsx
 msgid "Configure how you receive alert notifications."
 msgstr "Настрой как получаваш нотификации за тревоги."
+
+#: src/components/routes/settings/latency.tsx
+msgid "Configure TCP latency probe targets for all agents (Nezha-style). Use comma-separated host:port values."
+msgstr ""
 
 #: src/components/login/auth-form.tsx
 #: src/components/login/auth-form.tsx
@@ -717,12 +725,12 @@ msgstr "Въведете Вашата еднократна парола."
 msgid "Ephemeral"
 msgstr "Ефимерен"
 
-#: src/components/login/auth-form.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/settings/config-yaml.tsx
 #: src/components/routes/settings/heartbeat.tsx
 #: src/components/routes/settings/heartbeat.tsx
 #: src/components/routes/settings/heartbeat.tsx
+#: src/components/routes/settings/latency.tsx
 #: src/components/routes/settings/notifications.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/quiet-hours.tsx
@@ -734,6 +742,10 @@ msgstr "Грешка"
 #: src/components/routes/settings/heartbeat.tsx
 msgid "Example:"
 msgstr "Пример:"
+
+#: src/components/routes/settings/latency.tsx
+msgid "Example: telecom / mobile / unicom CDN endpoints. Leave empty to use each agent's PING_TARGETS env or defaults."
+msgstr ""
 
 #. placeholder {0}: alert.value
 #. placeholder {1}: info.unit
@@ -786,6 +798,7 @@ msgstr "Неуспешни атрибути:"
 msgid "Failed to authenticate"
 msgstr "Неуспешно удостоверяване"
 
+#: src/components/routes/settings/latency.tsx
 #: src/components/routes/settings/layout.tsx
 #: src/components/routes/settings/notifications.tsx
 #: src/components/routes/settings/quiet-hours.tsx
@@ -956,6 +969,19 @@ msgstr "Невалиден имейл адрес."
 #: src/components/routes/settings/general.tsx
 msgid "Language"
 msgstr "Език"
+
+#: src/components/routes/settings/latency.tsx
+#: src/components/routes/settings/layout.tsx
+#: src/components/routes/system/charts/network-charts.tsx
+#: src/components/routes/system/charts/network-charts.tsx
+#: src/components/systems-table/systems-table-columns.tsx
+#: src/lib/alerts.ts
+msgid "Latency"
+msgstr ""
+
+#: src/components/routes/settings/latency.tsx
+msgid "Latency probe targets updated. Agents pick them up on the next poll."
+msgstr ""
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Layout"
@@ -1251,6 +1277,10 @@ msgstr "Постоянен"
 msgid "Persistence"
 msgstr "Устойчивост"
 
+#: src/components/routes/settings/latency.tsx
+msgid "Ping Targets"
+msgstr ""
+
 #: src/components/routes/settings/notifications.tsx
 msgid "Please <0>configure an SMTP server</0> to ensure alerts are delivered."
 msgstr "Моля <0>конфигурурай SMTP сървър</0> за да се подсигуриш, че тревогите са доставени."
@@ -1415,6 +1445,7 @@ msgid "Save address using enter key or comma. Leave blank to disable email notif
 msgstr "Запази адреса с enter или запетая. Остави празно за да изключиш нотификациите чрез имейл."
 
 #: src/components/routes/settings/general.tsx
+#: src/components/routes/settings/latency.tsx
 #: src/components/routes/settings/notifications.tsx
 msgid "Save Settings"
 msgstr "Запази настройките"
@@ -1422,6 +1453,10 @@ msgstr "Запази настройките"
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Saved in the database and does not expire until you disable it."
 msgstr "Запазен е в базата данни и не изтича, докато не го деактивирате."
+
+#: src/components/routes/settings/latency.tsx
+msgid "Saving..."
+msgstr ""
 
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Schedule"
@@ -1502,6 +1537,7 @@ msgstr "Задайте следните променливи на средата
 msgid "Settings"
 msgstr "Настройки"
 
+#: src/components/routes/settings/latency.tsx
 #: src/components/routes/settings/layout.tsx
 msgid "Settings saved"
 msgstr "Настройките са запазени"
@@ -1550,6 +1586,11 @@ msgstr "Изполван swap от системата"
 msgid "Swap Usage"
 msgstr "Използване на swap"
 
+#: src/components/mode-toggle.tsx
+#: src/components/mode-toggle.tsx
+msgid "Switch theme"
+msgstr ""
+
 #: src/components/add-system.tsx
 #: src/components/alerts-history-columns.tsx
 #: src/components/containers-table/containers-table-columns.tsx
@@ -1593,6 +1634,10 @@ msgstr "Табове"
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Tasks"
 msgstr "Задачи"
+
+#: src/components/routes/system/charts/network-charts.tsx
+msgid "TCP connect latency to configured targets"
+msgstr ""
 
 #. Temperature label in systems table
 #: src/components/routes/system/smart-table.tsx
@@ -1659,8 +1704,8 @@ msgstr "До имейл(ите)"
 
 #: src/components/mode-toggle.tsx
 #: src/components/mode-toggle.tsx
-msgid "Toggle theme"
-msgstr "Включи тема"
+#~ msgid "Toggle theme"
+#~ msgstr "Включи тема"
 
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
@@ -1747,6 +1792,10 @@ msgstr "Задейства се, когато използването на GPU 
 #: src/lib/alerts.ts
 msgid "Triggers when memory usage exceeds a threshold"
 msgstr "Задейства се, когато употребата на паметта надвиши зададен праг"
+
+#: src/lib/alerts.ts
+msgid "Triggers when network latency exceeds a threshold"
+msgstr ""
 
 #: src/lib/alerts.ts
 msgid "Triggers when status switches between up and down"

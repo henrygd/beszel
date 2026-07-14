@@ -28,14 +28,15 @@ import (
 type Hub struct {
 	core.App
 	*alerts.AlertManager
-	um     *users.UserManager
-	rm     *records.RecordManager
-	sm     *systems.SystemManager
-	hb     *heartbeat.Heartbeat
-	hbStop chan struct{}
-	pubKey string
-	signer ssh.Signer
-	appURL string
+	um       *users.UserManager
+	rm       *records.RecordManager
+	sm       *systems.SystemManager
+	hb       *heartbeat.Heartbeat
+	hbStop   chan struct{}
+	latency  *latencyConfigStore
+	pubKey   string
+	signer   ssh.Signer
+	appURL   string
 }
 
 // NewHub creates a new Hub instance with default configuration
@@ -49,8 +50,17 @@ func NewHub(app core.App) *Hub {
 	if hub.hb != nil {
 		hub.hbStop = make(chan struct{})
 	}
+	// latency config lives in data dir; available after bootstrap
 	_ = onAfterBootstrapAndMigrations(app, hub.initialize)
 	return hub
+}
+
+// GetPingTargets returns hub-wide latency probe targets from Settings.
+func (h *Hub) GetPingTargets() string {
+	if h.latency == nil {
+		return ""
+	}
+	return h.latency.PingTargets()
 }
 
 // onAfterBootstrapAndMigrations ensures the provided function runs after the database is set up and migrations are applied.
@@ -130,6 +140,8 @@ func (h *Hub) initialize(app core.App) error {
 	if err := app.Save(settings); err != nil {
 		return err
 	}
+	// hub-wide latency probe targets (Settings → Latency)
+	h.latency = newLatencyConfigStore(app.DataDir())
 	// set auth settings
 	return setCollectionAuthSettings(app)
 }

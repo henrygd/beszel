@@ -61,6 +61,10 @@ type FingerprintResponse struct {
 type DataRequestOptions struct {
 	CacheTimeMs    uint16 `cbor:"0,keyasint"`
 	IncludeDetails bool   `cbor:"1,keyasint"`
+	// ConfigureLatency tells the agent to apply PingTargets from the hub.
+	// When true, empty PingTargets falls back to agent env defaults.
+	ConfigureLatency bool   `cbor:"2,keyasint,omitempty"`
+	PingTargets      string `cbor:"3,keyasint,omitempty"` // comma-separated host or host:port
 }
 
 type ContainerLogsRequest struct {

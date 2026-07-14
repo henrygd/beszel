@@ -114,6 +114,9 @@ func (h *Hub) registerApiRoutes(se *core.ServeEvent) error {
 	// heartbeat status and test
 	apiAuth.GET("/heartbeat-status", h.getHeartbeatStatus).BindFunc(requireAdminRole)
 	apiAuth.POST("/test-heartbeat", h.testHeartbeat).BindFunc(requireAdminRole)
+	// hub-wide latency probe targets (Settings → Latency)
+	apiAuth.GET("/latency-config", h.getLatencyConfig).BindFunc(requireAdminRole)
+	apiAuth.POST("/latency-config", h.saveLatencyConfig).BindFunc(requireAdminRole)
 	// get config.yml content
 	apiAuth.GET("/config-yaml", config.GetYamlConfig).BindFunc(requireAdminRole)
 	// handle agent websocket connection
@@ -135,6 +138,29 @@ func (h *Hub) registerApiRoutes(se *core.ServeEvent) error {
 		apiAuth.GET("/containers/info", h.getContainerInfo)
 	}
 	return nil
+}
+
+// getLatencyConfig returns hub-wide latency probe configuration.
+func (h *Hub) getLatencyConfig(e *core.RequestEvent) error {
+	if h.latency == nil {
+		return e.JSON(http.StatusOK, LatencyConfig{})
+	}
+	return e.JSON(http.StatusOK, h.latency.Get())
+}
+
+// saveLatencyConfig updates hub-wide latency probe configuration.
+func (h *Hub) saveLatencyConfig(e *core.RequestEvent) error {
+	var cfg LatencyConfig
+	if err := e.BindBody(&cfg); err != nil {
+		return e.BadRequestError("Invalid body", err)
+	}
+	if h.latency == nil {
+		h.latency = newLatencyConfigStore(e.App.DataDir())
+	}
+	if err := h.latency.Save(cfg); err != nil {
+		return e.InternalServerError("Failed to save latency config", err)
+	}
+	return e.JSON(http.StatusOK, h.latency.Get())
 }
 
 // getInfo returns data needed by authenticated users, such as the public key and current version
