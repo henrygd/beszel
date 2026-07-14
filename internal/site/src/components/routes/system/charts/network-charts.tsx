@@ -108,31 +108,30 @@ export function LatencyChart({
 	const targetKeys = lastTargets ? Object.keys(lastTargets).sort() : []
 
 	const dataPoints = useMemo(() => {
-		const points = [
-			{
-				label: t`Latency`,
-				dataKey(data: SystemStatsRecord) {
-					if (showMax) {
-						return data?.stats?.latm ?? data?.stats?.lat ?? 0
-					}
-					return data?.stats?.lat ?? 0
+		// Prefer per-target named series; fall back to average when no targets yet
+		if (targetKeys.length === 0) {
+			return [
+				{
+					label: t`Latency`,
+					dataKey(data: SystemStatsRecord) {
+						if (showMax) {
+							return data?.stats?.latm ?? data?.stats?.lat ?? 0
+						}
+						return data?.stats?.lat ?? 0
+					},
+					color: 1,
+					opacity: 0.25,
 				},
-				color: 1,
-				opacity: 0.25,
-			},
-		]
-		for (let i = 0; i < targetKeys.length; i++) {
-			const key = targetKeys[i]
-			points.push({
-				label: key,
-				dataKey(data: SystemStatsRecord) {
-					return data?.stats?.latt?.[key] ?? 0
-				},
-				color: ((i + 3) % 8) + 1,
-				opacity: 0.15,
-			})
+			]
 		}
-		return points
+		return targetKeys.map((key, i) => ({
+			label: key,
+			dataKey(data: SystemStatsRecord) {
+				return data?.stats?.latt?.[key] ?? 0
+			},
+			color: (i % 8) + 1,
+			opacity: 0.2,
+		}))
 	}, [showMax, targetKeys.join("|")])
 
 	return (
@@ -141,7 +140,7 @@ export function LatencyChart({
 			grid={grid}
 			title={t`Latency`}
 			cornerEl={maxValSelect}
-			description={t`TCP connect latency to configured targets`}
+			description={t`Per-target TCP connect latency (ms)`}
 		>
 			<AreaChartDefault
 				chartData={chartData}

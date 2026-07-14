@@ -18,26 +18,32 @@ const (
 	defaultPingTarget  = "1.1.1.1:443"
 )
 
+// namedTarget is a latency probe endpoint with an optional display name.
+type namedTarget struct {
+	Name string // chart/table label (e.g. 电信广东)
+	Addr string // host:port to dial
+}
+
 // latencyManager probes TCP connect RTT to configured targets (Nezha-style delay monitoring).
 type latencyManager struct {
 	mu          sync.Mutex
-	targets     []string
-	envTargets  []string // defaults from PING_TARGETS / HUB_URL
-	hubOverride bool     // true when hub last sent ConfigureLatency
+	targets     []namedTarget
+	envTargets  []namedTarget // defaults from PING_TARGETS / HUB_URL
+	hubOverride bool          // true when hub last sent ConfigureLatency
 	timeout     time.Duration
 }
 
 func newLatencyManager() *latencyManager {
 	envTargets := parsePingTargets()
 	if len(envTargets) == 0 {
-		envTargets = []string{defaultPingTarget}
+		envTargets = []namedTarget{{Name: defaultPingTarget, Addr: defaultPingTarget}}
 	}
 	lm := &latencyManager{
 		timeout:    defaultPingTimeout,
 		envTargets: envTargets,
-		targets:    append([]string(nil), envTargets...),
+		targets:    append([]namedTarget(nil), envTargets...),
 	}
-	slog.Info("Latency targets", "targets", lm.targets)
+	slog.Info("Latency targets", "targets", formatTargetsLog(lm.targets))
 	return lm
 }
 
@@ -47,77 +53,143 @@ func (lm *latencyManager) applyHubTargets(raw string) bool {
 	lm.mu.Lock()
 	defer lm.mu.Unlock()
 
-	var next []string
+	var next []namedTarget
 	if strings.TrimSpace(raw) == "" {
-		next = append([]string(nil), lm.envTargets...)
+		next = append([]namedTarget(nil), lm.envTargets...)
 		lm.hubOverride = false
 	} else {
-		next = normalizeTargets(strings.Split(raw, ","))
+		next = parseNamedTargets(raw)
 		if len(next) == 0 {
-			next = append([]string(nil), lm.envTargets...)
+			next = append([]namedTarget(nil), lm.envTargets...)
 			lm.hubOverride = false
 		} else {
 			lm.hubOverride = true
 		}
 	}
 
-	if targetsEqual(lm.targets, next) {
+	if namedTargetsEqual(lm.targets, next) {
 		return false
 	}
 	lm.targets = next
-	slog.Info("Latency targets updated", "targets", lm.targets, "source", map[bool]string{true: "hub", false: "env"}[lm.hubOverride])
+	slog.Info("Latency targets updated", "targets", formatTargetsLog(lm.targets), "source", map[bool]string{true: "hub", false: "env"}[lm.hubOverride])
 	return true
 }
 
-func targetsEqual(a, b []string) bool {
+func namedTargetsEqual(a, b []namedTarget) bool {
 	if len(a) != len(b) {
 		return false
 	}
 	for i := range a {
-		if a[i] != b[i] {
+		if a[i].Name != b[i].Name || a[i].Addr != b[i].Addr {
 			return false
 		}
 	}
 	return true
 }
 
-// parsePingTargets reads PING_TARGETS (comma-separated host or host:port).
-// If unset, uses HUB_URL host (with its port or 443) plus the default public target.
-func parsePingTargets() []string {
-	if raw, ok := utils.GetEnv("PING_TARGETS"); ok {
-		return normalizeTargets(strings.Split(raw, ","))
-	}
-
-	var targets []string
-	if hubURL, ok := utils.GetEnv("HUB_URL"); ok {
-		if t := targetFromURL(hubURL); t != "" {
-			targets = append(targets, t)
+func formatTargetsLog(targets []namedTarget) []string {
+	out := make([]string, len(targets))
+	for i, t := range targets {
+		if t.Name == t.Addr {
+			out[i] = t.Addr
+		} else {
+			out[i] = t.Name + "=" + t.Addr
 		}
 	}
-	targets = append(targets, defaultPingTarget)
-	return uniqueTargets(targets)
+	return out
 }
 
-func normalizeTargets(parts []string) []string {
-	out := make([]string, 0, len(parts))
+// parsePingTargets reads PING_TARGETS (comma/newline separated, optional name=addr).
+// If unset, uses HUB_URL host (with its port or 443) plus the default public target.
+func parsePingTargets() []namedTarget {
+	if raw, ok := utils.GetEnv("PING_TARGETS"); ok {
+		return parseNamedTargets(raw)
+	}
+
+	var targets []namedTarget
+	if hubURL, ok := utils.GetEnv("HUB_URL"); ok {
+		if t := targetFromURL(hubURL); t != "" {
+			targets = append(targets, namedTarget{Name: t, Addr: t})
+		}
+	}
+	targets = append(targets, namedTarget{Name: defaultPingTarget, Addr: defaultPingTarget})
+	return uniqueNamedTargets(targets)
+}
+
+// parseNamedTargets accepts:
+//   - name=host:port (display name for charts)
+//   - host:port (name defaults to address)
+// Separators: comma and/or newline.
+func parseNamedTargets(raw string) []namedTarget {
+	raw = strings.ReplaceAll(raw, "\r\n", "\n")
+	raw = strings.ReplaceAll(raw, "\r", "\n")
+	// split on commas and newlines
+	parts := strings.FieldsFunc(raw, func(r rune) bool {
+		return r == ',' || r == '\n'
+	})
+	out := make([]namedTarget, 0, len(parts))
 	for _, p := range parts {
 		p = strings.TrimSpace(p)
 		if p == "" {
 			continue
 		}
-		out = append(out, ensureHostPort(p))
-	}
-	return uniqueTargets(out)
-}
-
-func uniqueTargets(in []string) []string {
-	seen := make(map[string]struct{}, len(in))
-	out := make([]string, 0, len(in))
-	for _, t := range in {
-		if _, ok := seen[t]; ok {
+		name, addr := splitNameAddr(p)
+		addr = ensureHostPort(addr)
+		if addr == "" {
 			continue
 		}
-		seen[t] = struct{}{}
+		if name == "" {
+			name = addr
+		}
+		out = append(out, namedTarget{Name: name, Addr: addr})
+	}
+	return uniqueNamedTargets(out)
+}
+
+// splitNameAddr parses "电信广东=host:80" or bare "host:80".
+// Only the first '=' splits name from address (IPv6 uses brackets, not bare =).
+func splitNameAddr(p string) (name, addr string) {
+	// Support "name=host:port" but not treat IPv6 as name=
+	if i := strings.Index(p, "="); i > 0 {
+		left := strings.TrimSpace(p[:i])
+		right := strings.TrimSpace(p[i+1:])
+		// if left looks like a host:port or IP, treat whole thing as address without name
+		if looksLikeAddress(left) {
+			return "", p
+		}
+		if right != "" {
+			return left, right
+		}
+	}
+	return "", p
+}
+
+func looksLikeAddress(s string) bool {
+	if strings.Contains(s, ":") || strings.Contains(s, ".") || strings.HasPrefix(s, "[") {
+		// hostname/IP style — not a human label like 电信广东
+		if _, _, err := net.SplitHostPort(s); err == nil {
+			return true
+		}
+		if net.ParseIP(s) != nil {
+			return true
+		}
+		// host.domain without port
+		if strings.Contains(s, ".") && !strings.Contains(s, " ") {
+			return true
+		}
+	}
+	return false
+}
+
+func uniqueNamedTargets(in []namedTarget) []namedTarget {
+	seen := make(map[string]struct{}, len(in))
+	out := make([]namedTarget, 0, len(in))
+	for _, t := range in {
+		key := t.Name + "\x00" + t.Addr
+		if _, ok := seen[key]; ok {
+			continue
+		}
+		seen[key] = struct{}{}
 		out = append(out, t)
 	}
 	return out
@@ -148,6 +220,10 @@ func targetFromURL(raw string) string {
 }
 
 func ensureHostPort(target string) string {
+	target = strings.TrimSpace(target)
+	if target == "" {
+		return ""
+	}
 	// IPv6 with brackets already ok for SplitHostPort
 	if _, _, err := net.SplitHostPort(target); err == nil {
 		return target
@@ -176,7 +252,7 @@ func (a *Agent) updateLatency(systemStats *system.Stats) {
 
 func (lm *latencyManager) probe() (avg float64, results map[string]float64) {
 	lm.mu.Lock()
-	targets := append([]string(nil), lm.targets...)
+	targets := append([]namedTarget(nil), lm.targets...)
 	timeout := lm.timeout
 	lm.mu.Unlock()
 
@@ -185,24 +261,24 @@ func (lm *latencyManager) probe() (avg float64, results map[string]float64) {
 	}
 
 	type result struct {
-		target string
-		ms     float64
-		ok     bool
+		name string
+		ms   float64
+		ok   bool
 	}
 
 	ch := make(chan result, len(targets))
 	var wg sync.WaitGroup
 	for _, target := range targets {
 		wg.Add(1)
-		go func(t string) {
+		go func(t namedTarget) {
 			defer wg.Done()
-			ms, err := tcpConnectLatency(t, timeout)
+			ms, err := tcpConnectLatency(t.Addr, timeout)
 			if err != nil {
-				slog.Debug("Latency probe failed", "target", t, "err", err)
-				ch <- result{target: t, ok: false}
+				slog.Debug("Latency probe failed", "name", t.Name, "addr", t.Addr, "err", err)
+				ch <- result{name: t.Name, ok: false}
 				return
 			}
-			ch <- result{target: t, ms: ms, ok: true}
+			ch <- result{name: t.Name, ms: ms, ok: true}
 		}(target)
 	}
 	wg.Wait()
@@ -215,7 +291,7 @@ func (lm *latencyManager) probe() (avg float64, results map[string]float64) {
 		if !r.ok {
 			continue
 		}
-		results[r.target] = r.ms
+		results[r.name] = r.ms
 		sum += r.ms
 		n++
 	}

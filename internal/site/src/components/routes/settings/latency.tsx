@@ -4,7 +4,6 @@ import { redirectPage } from "@nanostores/router"
 import { useEffect, useState } from "react"
 import { $router } from "@/components/router"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { toast } from "@/components/ui/use-toast"
 import { isAdmin, pb } from "@/lib/api"
@@ -12,6 +11,10 @@ import { isAdmin, pb } from "@/lib/api"
 interface LatencyConfig {
 	ping_targets?: string
 }
+
+const EXAMPLE = `电信广东=gd-ct-v4.ip.zstaticcdn.com:80
+移动广东=gd-cm-v4.ip.zstaticcdn.com:80
+联通广东=gd-cu-v4.ip.zstaticcdn.com:80`
 
 export default function LatencySettings() {
 	const [targets, setTargets] = useState("")
@@ -27,7 +30,9 @@ export default function LatencySettings() {
 			try {
 				setIsLoading(true)
 				const res = await pb.send<LatencyConfig>("/api/beszel/latency-config", {})
-				setTargets(res.ping_targets ?? "")
+				// show multi-line for readability (commas → newlines)
+				const raw = res.ping_targets ?? ""
+				setTargets(raw.includes("\n") ? raw : raw.split(",").map((s) => s.trim()).filter(Boolean).join("\n"))
 			} catch (error: unknown) {
 				toast({
 					title: t`Error`,
@@ -47,7 +52,8 @@ export default function LatencySettings() {
 				method: "POST",
 				body: { ping_targets: targets.trim() },
 			})
-			setTargets(res.ping_targets ?? "")
+			const raw = res.ping_targets ?? ""
+			setTargets(raw.includes("\n") ? raw : raw.split(",").map((s) => s.trim()).filter(Boolean).join("\n"))
 			toast({
 				title: t`Settings saved`,
 				description: t`Latency probe targets updated. Agents pick them up on the next poll.`,
@@ -71,7 +77,7 @@ export default function LatencySettings() {
 				</h3>
 				<p className="text-sm text-muted-foreground mt-1">
 					<Trans>
-						Configure TCP latency probe targets for all agents (Nezha-style). Use comma-separated host:port values.
+						Configure named TCP latency probes for all agents. Each line is shown separately on the latency chart.
 					</Trans>
 				</p>
 			</div>
@@ -80,24 +86,35 @@ export default function LatencySettings() {
 				<Label htmlFor="ping_targets">
 					<Trans>Ping Targets</Trans>
 				</Label>
-				<Input
+				<textarea
 					id="ping_targets"
 					value={targets}
 					disabled={isLoading || isSaving}
 					onChange={(e) => setTargets(e.target.value)}
-					placeholder="gd-ct-v4.ip.zstaticcdn.com:80,gd-cm-v4.ip.zstaticcdn.com:80,gd-cu-v4.ip.zstaticcdn.com:80"
+					rows={6}
+					placeholder={EXAMPLE}
+					className="flex w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 font-mono leading-relaxed"
 				/>
-				<p className="text-xs text-muted-foreground leading-relaxed">
-					<Trans>
-						Example: telecom / mobile / unicom CDN endpoints. Leave empty to use each agent&apos;s PING_TARGETS env or
-						defaults.
-					</Trans>
+				<p className="text-xs text-muted-foreground leading-relaxed whitespace-pre-line">
+					{t`Format: 显示名=主机:端口 (one per line). Example:`}
+					{"\n"}
+					{EXAMPLE}
 				</p>
 			</div>
 
-			<Button onClick={save} disabled={isLoading || isSaving}>
-				{isSaving ? <Trans>Saving...</Trans> : <Trans>Save Settings</Trans>}
-			</Button>
+			<div className="flex gap-2">
+				<Button onClick={save} disabled={isLoading || isSaving}>
+					{isSaving ? <Trans>Saving...</Trans> : <Trans>Save Settings</Trans>}
+				</Button>
+				<Button
+					type="button"
+					variant="outline"
+					disabled={isLoading || isSaving}
+					onClick={() => setTargets(EXAMPLE)}
+				>
+					<Trans>Fill example</Trans>
+				</Button>
+			</div>
 		</div>
 	)
 }
