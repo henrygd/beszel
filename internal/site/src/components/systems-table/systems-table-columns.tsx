@@ -285,41 +285,29 @@ export function SystemsTableColumns(viewMode: "table" | "grid"): ColumnDef<Syste
 					return null
 				}
 				const entries = Object.entries(sysInfo.latt ?? {}).filter(([, v]) => v > 0)
+				const latencyColor = (ms: number) =>
+					ms >= 300
+						? "text-red-600 dark:text-red-400"
+						: ms >= 100
+							? "text-amber-600 dark:text-amber-400"
+							: "text-emerald-600 dark:text-emerald-400"
+				const formatMs = (ms: number) => `${decimalString(ms, ms >= 100 ? 0 : 1)}ms`
+
 				if (entries.length === 0) {
 					const val = sysInfo.lat
 					if (!val || val <= 0) {
 						return null
 					}
-					const state = val >= 300 ? MeterState.Crit : val >= 100 ? MeterState.Warn : MeterState.Good
-					return (
-						<div className="flex items-center gap-[.35em] w-full tabular-nums tracking-tight">
-							<span
-								className={cn("inline-block size-2 rounded-full me-0.5", {
-									[STATUS_COLORS[SystemStatus.Up]]: state === MeterState.Good,
-									[STATUS_COLORS[SystemStatus.Pending]]: state === MeterState.Warn,
-									[STATUS_COLORS[SystemStatus.Down]]: state === MeterState.Crit,
-								})}
-							/>
-							<span className="whitespace-nowrap">{decimalString(val, val >= 100 ? 0 : 1)} ms</span>
-						</div>
-					)
+					return <span className={cn("tabular-nums text-xs", latencyColor(val))}>{formatMs(val)}</span>
 				}
-				const worst = Math.max(...entries.map(([, v]) => v))
-				const state = worst >= 300 ? MeterState.Crit : worst >= 100 ? MeterState.Warn : MeterState.Good
+
 				return (
-					<div className="flex items-center gap-x-2 gap-y-0.5 flex-wrap w-full tabular-nums tracking-tight">
-						<span
-							className={cn("inline-block size-2 rounded-full shrink-0", {
-								[STATUS_COLORS[SystemStatus.Up]]: state === MeterState.Good,
-								[STATUS_COLORS[SystemStatus.Pending]]: state === MeterState.Warn,
-								[STATUS_COLORS[SystemStatus.Down]]: state === MeterState.Crit,
-							})}
-						/>
+					<div className="flex flex-col gap-0.5 min-w-[5.5rem] leading-none">
 						{entries.map(([name, ms]) => (
-							<span key={name} className="whitespace-nowrap" title={`${name}: ${decimalString(ms, 1)} ms`}>
-								<span className="text-muted-foreground me-0.5">{name}</span>
-								{decimalString(ms, ms >= 100 ? 0 : 1)}
-							</span>
+							<div key={name} className="flex items-center justify-between gap-2 text-[0.7rem] tabular-nums">
+								<span className="text-muted-foreground truncate max-w-[4.5rem]">{name}</span>
+								<span className={cn("shrink-0 font-medium", latencyColor(ms))}>{formatMs(ms)}</span>
+							</div>
 						))}
 					</div>
 				)
