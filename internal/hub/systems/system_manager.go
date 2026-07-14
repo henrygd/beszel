@@ -55,6 +55,10 @@ type hubLike interface {
 	HandleSystemAlerts(systemRecord *core.Record, data *system.CombinedData) error
 	HandleStatusAlerts(status string, systemRecord *core.Record) error
 	CancelPendingStatusAlerts(systemID string)
+	// GetPingTargets returns hub-wide latency probe targets (Settings → Latency).
+	GetPingTargets() string
+	// LatencyProbeForSystem returns hub latency push flags for a system.
+	LatencyProbeForSystem(systemID string) (configure bool, disable bool, targets string)
 }
 
 // NewSystemManager creates a new SystemManager instance with the provided hub.
@@ -181,6 +185,9 @@ func (sm *SystemManager) onRecordAfterUpdateSuccess(e *core.RecordEvent) error {
 	if ok {
 		prevStatus = system.Status
 		system.Status = newStatus
+		system.Host = e.Record.GetString("host")
+		system.Port = e.Record.GetString("port")
+		system.PingTargets = e.Record.GetString("ping_targets")
 	}
 
 	switch newStatus {
@@ -296,6 +303,7 @@ func (sm *SystemManager) AddRecord(record *core.Record, system *System) (err err
 	system.Status = record.GetString("status")
 	system.Host = record.GetString("host")
 	system.Port = record.GetString("port")
+	system.PingTargets = record.GetString("ping_targets")
 
 	return sm.AddSystem(system)
 }

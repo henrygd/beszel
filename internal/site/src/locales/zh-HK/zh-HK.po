@@ -30,6 +30,11 @@ msgstr "{0} 可用"
 msgid "{0} of {1} row(s) selected."
 msgstr "已選擇 {1} 個項目中的 {0} 個"
 
+#. placeholder {0}: selectedIds.size
+#: src/components/routes/settings/latency.tsx
+msgid "{0} selected"
+msgstr "已選 {0} 個"
+
 #: src/components/routes/system/info-bar.tsx
 msgid "{cores, plural, one {# core} other {# cores}}"
 msgstr "{cores, plural, one {# 核心} other {# 核心}}"
@@ -121,9 +126,26 @@ msgstr "活動狀態"
 msgid "Add {foo}"
 msgstr "新增 {foo}"
 
+#: src/components/routes/settings/latency.tsx
+#~ msgid "Add named TCP latency probes for all agents. Name is shown on the chart; address is host:port only."
+#~ msgstr "為所有 Agent 新增具名的 TCP 延遲探測。名稱顯示在圖表中，地址僅填寫 host:port。"
+
+#: src/components/routes/settings/latency.tsx
+msgid "Add named TCP latency probes. Choose all systems or only selected machines."
+msgstr "新增具名的 TCP 延遲探測。可對全部系統生效，或僅指定部分機器。"
+
+#: src/components/routes/settings/latency.tsx
+msgid "Add target"
+msgstr "新增探測點"
+
 #: src/components/routes/settings/notifications.tsx
 msgid "Add URL"
 msgstr "添加 URL"
+
+#: src/components/routes/settings/latency.tsx
+#: src/components/routes/settings/latency.tsx
+msgid "Address"
+msgstr "地址"
 
 #: src/components/routes/settings/general.tsx
 msgid "Adjust display options for charts."
@@ -170,6 +192,10 @@ msgstr "警報"
 msgid "All Containers"
 msgstr "所有容器"
 
+#: src/components/routes/settings/latency.tsx
+msgid "All systems"
+msgstr "全部系統"
+
 #: src/components/alerts/alerts-sheet.tsx
 #: src/components/command-palette.tsx
 #: src/components/routes/home.tsx
@@ -178,6 +204,10 @@ msgstr "所有容器"
 #: src/components/systems-table/systems-table.tsx
 msgid "All Systems"
 msgstr "所有系統"
+
+#: src/components/routes/settings/latency.tsx
+msgid "Apply to systems"
+msgstr "套用到系統"
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Are you sure you want to delete {name}?"
@@ -380,6 +410,7 @@ msgid "Check your notification service"
 msgstr "檢查您的通知服務"
 
 #: src/components/containers-table/containers-table.tsx
+#: src/components/routes/settings/latency.tsx
 #: src/components/routes/system/smart-table.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "Clear"
@@ -401,6 +432,10 @@ msgstr "點擊系統以查看更多資訊。"
 msgid "Click to copy"
 msgstr "點擊以複製"
 
+#: src/components/add-system.tsx
+#~ msgid "Comma-separated host:port for latency probes. Leave empty to use agent defaults."
+#~ msgstr ""
+
 #: src/components/login/forgot-pass-form.tsx
 #: src/components/login/forgot-pass-form.tsx
 msgid "Command line instructions"
@@ -409,6 +444,14 @@ msgstr "命令行指令"
 #: src/components/routes/settings/notifications.tsx
 msgid "Configure how you receive alert notifications."
 msgstr "配置您接收警報通知的方式。"
+
+#: src/components/routes/settings/latency.tsx
+#~ msgid "Configure named TCP latency probes for all agents. Each line is shown separately on the latency chart."
+#~ msgstr ""
+
+#: src/components/routes/settings/latency.tsx
+#~ msgid "Configure TCP latency probe targets for all agents (Nezha-style). Use comma-separated host:port values."
+#~ msgstr ""
 
 #: src/components/login/auth-form.tsx
 #: src/components/login/auth-form.tsx
@@ -663,6 +706,10 @@ msgstr "下載"
 msgid "Duration"
 msgstr "持續時間"
 
+#: src/components/routes/settings/latency.tsx
+msgid "e.g. 电信广东"
+msgstr "例如：電信廣東"
+
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Edit"
@@ -717,12 +764,12 @@ msgstr "輸入您的一次性密碼。"
 msgid "Ephemeral"
 msgstr "臨時"
 
-#: src/components/login/auth-form.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/settings/config-yaml.tsx
 #: src/components/routes/settings/heartbeat.tsx
 #: src/components/routes/settings/heartbeat.tsx
 #: src/components/routes/settings/heartbeat.tsx
+#: src/components/routes/settings/latency.tsx
 #: src/components/routes/settings/notifications.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/quiet-hours.tsx
@@ -731,9 +778,17 @@ msgstr "臨時"
 msgid "Error"
 msgstr "錯誤"
 
+#: src/components/routes/settings/latency.tsx
+msgid "Every connected agent probes these targets."
+msgstr "所有已連線的 Agent 都會探測這些目標。"
+
 #: src/components/routes/settings/heartbeat.tsx
 msgid "Example:"
 msgstr "範例："
+
+#: src/components/routes/settings/latency.tsx
+#~ msgid "Example: telecom / mobile / unicom CDN endpoints. Leave empty to use each agent's PING_TARGETS env or defaults."
+#~ msgstr ""
 
 #. placeholder {0}: alert.value
 #. placeholder {1}: info.unit
@@ -786,6 +841,7 @@ msgstr "失敗屬性："
 msgid "Failed to authenticate"
 msgstr "認證失敗"
 
+#: src/components/routes/settings/latency.tsx
 #: src/components/routes/settings/layout.tsx
 #: src/components/routes/settings/notifications.tsx
 #: src/components/routes/settings/quiet-hours.tsx
@@ -808,6 +864,10 @@ msgstr "更新警報失敗"
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Failed: {0}"
 msgstr "失敗: {0}"
+
+#: src/components/routes/settings/latency.tsx
+#~ msgid "Fill example"
+#~ msgstr ""
 
 #: src/components/containers-table/containers-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
@@ -833,6 +893,10 @@ msgstr "持續<0>{min}</0> {min, plural, one {分鐘} other {分鐘}}"
 #: src/components/login/auth-form.tsx
 msgid "Forgot password?"
 msgstr "忘記密碼？"
+
+#: src/components/routes/settings/latency.tsx
+#~ msgid "Format: 显示名=主机:端口 (one per line). Example:"
+#~ msgstr ""
 
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
@@ -957,6 +1021,19 @@ msgstr "無效的電子郵件地址。"
 msgid "Language"
 msgstr "語言"
 
+#: src/components/routes/settings/latency.tsx
+#: src/components/routes/settings/layout.tsx
+#: src/components/routes/system/charts/network-charts.tsx
+#: src/components/routes/system/charts/network-charts.tsx
+#: src/components/systems-table/systems-table-columns.tsx
+#: src/lib/alerts.ts
+msgid "Latency"
+msgstr "延遲"
+
+#: src/components/routes/settings/latency.tsx
+msgid "Latency probe targets updated. Agents pick them up on the next poll."
+msgstr "延遲探測目標已更新，Agent 將於下次輪詢時生效。"
+
 #: src/components/systems-table/systems-table.tsx
 msgid "Layout"
 msgstr "版面配置"
@@ -1079,6 +1156,8 @@ msgstr "型號"
 #: src/components/add-system.tsx
 #: src/components/alerts-history-columns.tsx
 #: src/components/containers-table/containers-table-columns.tsx
+#: src/components/routes/settings/latency.tsx
+#: src/components/routes/settings/latency.tsx
 #: src/components/systemd-table/systemd-table-columns.tsx
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Name"
@@ -1134,6 +1213,10 @@ msgstr "此裝置沒有可用的 S.M.A.R.T. 屬性。"
 msgid "No systems found."
 msgstr "未找到系統。"
 
+#: src/components/routes/settings/latency.tsx
+msgid "No systems yet."
+msgstr "尚無系統。"
+
 #: src/components/command-palette.tsx
 #: src/components/routes/settings/layout.tsx
 #: src/components/routes/settings/notifications.tsx
@@ -1157,6 +1240,10 @@ msgstr "一次性"
 msgid "One-time password"
 msgstr "一次性密碼"
 
+#: src/components/routes/settings/latency.tsx
+msgid "Only checked machines probe; others stop hub-driven latency checks."
+msgstr "僅勾選的機器會探測；未勾選的會停止面板下發的延遲檢測。"
+
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
@@ -1168,6 +1255,10 @@ msgstr "開啟選單"
 #: src/components/login/auth-form.tsx
 msgid "Or continue with"
 msgstr "或繼續使用"
+
+#: src/components/routes/settings/latency.tsx
+msgid "Or switch to all systems."
+msgstr "或切換為全部系統。"
 
 #: src/components/routes/system/cpu-sheet.tsx
 msgid "Other"
@@ -1235,6 +1326,10 @@ msgstr "負載 (Payload) 格式"
 msgid "Per-core average utilization"
 msgstr "每個核心的平均使用率"
 
+#: src/components/routes/system/charts/network-charts.tsx
+msgid "Per-target TCP connect latency (ms)"
+msgstr "各探測點 TCP 連線延遲（毫秒）"
+
 #: src/components/routes/system/charts/disk-charts.tsx
 msgid "Percent of time the disk is busy with I/O"
 msgstr "磁碟忙於 I/O 操作的時間百分比"
@@ -1250,6 +1345,10 @@ msgstr "永久"
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Persistence"
 msgstr "持久性"
+
+#: src/components/routes/settings/latency.tsx
+#~ msgid "Ping Targets"
+#~ msgstr ""
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Please <0>configure an SMTP server</0> to ensure alerts are delivered."
@@ -1307,6 +1406,10 @@ msgstr "記錄時間的精確使用率"
 msgid "Preferred Language"
 msgstr "首選語言"
 
+#: src/components/routes/settings/latency.tsx
+msgid "Probe targets"
+msgstr "探測目標"
+
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Process started"
 msgstr "進程啟動"
@@ -1346,6 +1449,10 @@ msgstr "重新整理"
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Relationships"
 msgstr "關係"
+
+#: src/components/routes/settings/latency.tsx
+msgid "Remove"
+msgstr "刪除"
 
 #: src/components/login/login.tsx
 msgid "Request a one-time password"
@@ -1415,6 +1522,7 @@ msgid "Save address using enter key or comma. Leave blank to disable email notif
 msgstr "使用回車鍵或逗號保存地址。留空以禁用電子郵件通知。"
 
 #: src/components/routes/settings/general.tsx
+#: src/components/routes/settings/latency.tsx
 #: src/components/routes/settings/notifications.tsx
 msgid "Save Settings"
 msgstr "儲存設定"
@@ -1422,6 +1530,10 @@ msgstr "儲存設定"
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Saved in the database and does not expire until you disable it."
 msgstr "儲存在資料庫中，在您停用之前不會過期。"
+
+#: src/components/routes/settings/latency.tsx
+msgid "Saving..."
+msgstr "儲存中…"
 
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Schedule"
@@ -1454,6 +1566,18 @@ msgstr "查看<0>通知設置</0>以配置您接收警報的方式。"
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Select {foo}"
 msgstr "選擇 {foo}"
+
+#: src/components/routes/settings/latency.tsx
+msgid "Select all"
+msgstr "全選"
+
+#: src/components/routes/settings/latency.tsx
+msgid "Select at least one system"
+msgstr "請至少選擇一台系統"
+
+#: src/components/routes/settings/latency.tsx
+msgid "Selected systems only"
+msgstr "僅指定系統"
 
 #: src/components/routes/settings/heartbeat.tsx
 msgid "Send a single heartbeat ping to verify your endpoint is working."
@@ -1502,6 +1626,7 @@ msgstr "在您的 Beszel hub 上設置以下環境變數以啟用 heartbeat 監�
 msgid "Settings"
 msgstr "設置"
 
+#: src/components/routes/settings/latency.tsx
 #: src/components/routes/settings/layout.tsx
 msgid "Settings saved"
 msgstr "設置已保存"
@@ -1550,6 +1675,11 @@ msgstr "系統使用的交換空間"
 msgid "Swap Usage"
 msgstr "交換使用"
 
+#: src/components/mode-toggle.tsx
+#: src/components/mode-toggle.tsx
+msgid "Switch theme"
+msgstr ""
+
 #: src/components/add-system.tsx
 #: src/components/alerts-history-columns.tsx
 #: src/components/containers-table/containers-table-columns.tsx
@@ -1593,6 +1723,10 @@ msgstr "分頁"
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Tasks"
 msgstr "任務數"
+
+#: src/components/routes/system/charts/network-charts.tsx
+#~ msgid "TCP connect latency to configured targets"
+#~ msgstr ""
 
 #. Temperature label in systems table
 #: src/components/routes/system/smart-table.tsx
@@ -1659,8 +1793,8 @@ msgstr "發送到電子郵件"
 
 #: src/components/mode-toggle.tsx
 #: src/components/mode-toggle.tsx
-msgid "Toggle theme"
-msgstr "切換主題"
+#~ msgid "Toggle theme"
+#~ msgstr "切換主題"
 
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
@@ -1747,6 +1881,10 @@ msgstr "當 GPU 使用率超過閾值時觸發"
 #: src/lib/alerts.ts
 msgid "Triggers when memory usage exceeds a threshold"
 msgstr "當記憶體使用率超過閾值時觸發"
+
+#: src/lib/alerts.ts
+msgid "Triggers when network latency exceeds a threshold"
+msgstr "當網路延遲超過閾值時觸發"
 
 #: src/lib/alerts.ts
 msgid "Triggers when status switches between up and down"

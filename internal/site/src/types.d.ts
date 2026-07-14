@@ -28,6 +28,8 @@ export interface SystemRecord extends RecordModel {
 	host: string
 	status: "up" | "down" | "paused" | "pending"
 	port: string
+	/** comma-separated latency probe targets (host or host:port) */
+	ping_targets?: string
 	info: SystemInfo
 	v: string
 	updated: string
@@ -62,6 +64,10 @@ export interface SystemInfo {
 	b: number
 	/** bandwidth bytes */
 	bb?: number
+	/** network latency ms (average TCP RTT, alerts/compat) */
+	lat?: number
+	/** per-target TCP connect latency ms (key = display name) */
+	latt?: Record<string, number>
 	/** agent version */
 	v: string
 	/** system is using podman */
@@ -151,6 +157,12 @@ export interface SystemStats {
 	bat?: [number, BatteryState]
 	/** network interfaces [upload bytes, download bytes, total upload bytes, total download bytes] */
 	ni?: Record<string, [number, number, number, number]>
+	/** network latency ms (average TCP RTT) */
+	lat?: number
+	/** peak network latency ms */
+	latm?: number
+	/** per-target latency ms */
+	latt?: Record<string, number>
 }
 
 export interface GPUData {

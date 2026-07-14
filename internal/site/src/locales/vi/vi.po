@@ -30,6 +30,11 @@ msgstr "{0} có sẵn"
 msgid "{0} of {1} row(s) selected."
 msgstr "Đã chọn {0} trên {1} hàng."
 
+#. placeholder {0}: selectedIds.size
+#: src/components/routes/settings/latency.tsx
+msgid "{0} selected"
+msgstr ""
+
 #: src/components/routes/system/info-bar.tsx
 msgid "{cores, plural, one {# core} other {# cores}}"
 msgstr "{cores, plural, one {# nhân} other {# nhân}}"
@@ -121,9 +126,26 @@ msgstr "Trạng thái hoạt động"
 msgid "Add {foo}"
 msgstr "Thêm {foo}"
 
+#: src/components/routes/settings/latency.tsx
+#~ msgid "Add named TCP latency probes for all agents. Name is shown on the chart; address is host:port only."
+#~ msgstr ""
+
+#: src/components/routes/settings/latency.tsx
+msgid "Add named TCP latency probes. Choose all systems or only selected machines."
+msgstr ""
+
+#: src/components/routes/settings/latency.tsx
+msgid "Add target"
+msgstr ""
+
 #: src/components/routes/settings/notifications.tsx
 msgid "Add URL"
 msgstr "Thêm URL"
+
+#: src/components/routes/settings/latency.tsx
+#: src/components/routes/settings/latency.tsx
+msgid "Address"
+msgstr ""
 
 #: src/components/routes/settings/general.tsx
 msgid "Adjust display options for charts."
@@ -170,6 +192,10 @@ msgstr "Cảnh báo"
 msgid "All Containers"
 msgstr "Tất cả container"
 
+#: src/components/routes/settings/latency.tsx
+msgid "All systems"
+msgstr ""
+
 #: src/components/alerts/alerts-sheet.tsx
 #: src/components/command-palette.tsx
 #: src/components/routes/home.tsx
@@ -178,6 +204,10 @@ msgstr "Tất cả container"
 #: src/components/systems-table/systems-table.tsx
 msgid "All Systems"
 msgstr "Tất cả Hệ thống"
+
+#: src/components/routes/settings/latency.tsx
+msgid "Apply to systems"
+msgstr ""
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Are you sure you want to delete {name}?"
@@ -380,6 +410,7 @@ msgid "Check your notification service"
 msgstr "Kiểm tra dịch vụ thông báo của bạn"
 
 #: src/components/containers-table/containers-table.tsx
+#: src/components/routes/settings/latency.tsx
 #: src/components/routes/system/smart-table.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "Clear"
@@ -401,6 +432,10 @@ msgstr "Nhấp vào hệ thống để xem thêm thông tin."
 msgid "Click to copy"
 msgstr "Nhấp để sao chép"
 
+#: src/components/add-system.tsx
+#~ msgid "Comma-separated host:port for latency probes. Leave empty to use agent defaults."
+#~ msgstr ""
+
 #: src/components/login/forgot-pass-form.tsx
 #: src/components/login/forgot-pass-form.tsx
 msgid "Command line instructions"
@@ -409,6 +444,14 @@ msgstr "Hướng dẫn dòng lệnh"
 #: src/components/routes/settings/notifications.tsx
 msgid "Configure how you receive alert notifications."
 msgstr "Cấu hình cách bạn nhận thông báo cảnh báo."
+
+#: src/components/routes/settings/latency.tsx
+#~ msgid "Configure named TCP latency probes for all agents. Each line is shown separately on the latency chart."
+#~ msgstr ""
+
+#: src/components/routes/settings/latency.tsx
+#~ msgid "Configure TCP latency probe targets for all agents (Nezha-style). Use comma-separated host:port values."
+#~ msgstr ""
 
 #: src/components/login/auth-form.tsx
 #: src/components/login/auth-form.tsx
@@ -663,6 +706,10 @@ msgstr "Tải xuống"
 msgid "Duration"
 msgstr "Thời lượng"
 
+#: src/components/routes/settings/latency.tsx
+msgid "e.g. 电信广东"
+msgstr ""
+
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Edit"
@@ -717,12 +764,12 @@ msgstr "Nhập mật khẩu một lần của bạn."
 msgid "Ephemeral"
 msgstr "Tạm thời"
 
-#: src/components/login/auth-form.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/settings/config-yaml.tsx
 #: src/components/routes/settings/heartbeat.tsx
 #: src/components/routes/settings/heartbeat.tsx
 #: src/components/routes/settings/heartbeat.tsx
+#: src/components/routes/settings/latency.tsx
 #: src/components/routes/settings/notifications.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/quiet-hours.tsx
@@ -731,9 +778,17 @@ msgstr "Tạm thời"
 msgid "Error"
 msgstr "Lỗi"
 
+#: src/components/routes/settings/latency.tsx
+msgid "Every connected agent probes these targets."
+msgstr ""
+
 #: src/components/routes/settings/heartbeat.tsx
 msgid "Example:"
 msgstr "Ví dụ:"
+
+#: src/components/routes/settings/latency.tsx
+#~ msgid "Example: telecom / mobile / unicom CDN endpoints. Leave empty to use each agent's PING_TARGETS env or defaults."
+#~ msgstr ""
 
 #. placeholder {0}: alert.value
 #. placeholder {1}: info.unit
@@ -786,6 +841,7 @@ msgstr "Thuộc tính thất bại:"
 msgid "Failed to authenticate"
 msgstr "Xác thực thất bại"
 
+#: src/components/routes/settings/latency.tsx
 #: src/components/routes/settings/layout.tsx
 #: src/components/routes/settings/notifications.tsx
 #: src/components/routes/settings/quiet-hours.tsx
@@ -808,6 +864,10 @@ msgstr "Cập nhật cảnh báo thất bại"
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Failed: {0}"
 msgstr "Thất bại: {0}"
+
+#: src/components/routes/settings/latency.tsx
+#~ msgid "Fill example"
+#~ msgstr ""
 
 #: src/components/containers-table/containers-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
@@ -833,6 +893,10 @@ msgstr "Trong <0>{min}</0> {min, plural, one {phút} other {phút}}"
 #: src/components/login/auth-form.tsx
 msgid "Forgot password?"
 msgstr "Quên mật khẩu?"
+
+#: src/components/routes/settings/latency.tsx
+#~ msgid "Format: 显示名=主机:端口 (one per line). Example:"
+#~ msgstr ""
 
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
@@ -957,6 +1021,19 @@ msgstr "Địa chỉ email không hợp lệ."
 msgid "Language"
 msgstr "Ngôn ngữ"
 
+#: src/components/routes/settings/latency.tsx
+#: src/components/routes/settings/layout.tsx
+#: src/components/routes/system/charts/network-charts.tsx
+#: src/components/routes/system/charts/network-charts.tsx
+#: src/components/systems-table/systems-table-columns.tsx
+#: src/lib/alerts.ts
+msgid "Latency"
+msgstr ""
+
+#: src/components/routes/settings/latency.tsx
+msgid "Latency probe targets updated. Agents pick them up on the next poll."
+msgstr ""
+
 #: src/components/systems-table/systems-table.tsx
 msgid "Layout"
 msgstr "Bố cục"
@@ -1079,6 +1156,8 @@ msgstr "Mô hình"
 #: src/components/add-system.tsx
 #: src/components/alerts-history-columns.tsx
 #: src/components/containers-table/containers-table-columns.tsx
+#: src/components/routes/settings/latency.tsx
+#: src/components/routes/settings/latency.tsx
 #: src/components/systemd-table/systemd-table-columns.tsx
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Name"
@@ -1134,6 +1213,10 @@ msgstr "Không có thuộc tính S.M.A.R.T. nào khả dụng cho thiết bị n
 msgid "No systems found."
 msgstr "Không tìm thấy hệ thống."
 
+#: src/components/routes/settings/latency.tsx
+msgid "No systems yet."
+msgstr ""
+
 #: src/components/command-palette.tsx
 #: src/components/routes/settings/layout.tsx
 #: src/components/routes/settings/notifications.tsx
@@ -1157,6 +1240,10 @@ msgstr "Một lần"
 msgid "One-time password"
 msgstr "Mật khẩu một lần"
 
+#: src/components/routes/settings/latency.tsx
+msgid "Only checked machines probe; others stop hub-driven latency checks."
+msgstr ""
+
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
@@ -1168,6 +1255,10 @@ msgstr "Mở menu"
 #: src/components/login/auth-form.tsx
 msgid "Or continue with"
 msgstr "Hoặc tiếp tục với"
+
+#: src/components/routes/settings/latency.tsx
+msgid "Or switch to all systems."
+msgstr ""
 
 #: src/components/routes/system/cpu-sheet.tsx
 msgid "Other"
@@ -1235,6 +1326,10 @@ msgstr "Định dạng tải trọng (payload)"
 msgid "Per-core average utilization"
 msgstr "Tỷ lệ sử dụng trung bình mỗi nhân"
 
+#: src/components/routes/system/charts/network-charts.tsx
+msgid "Per-target TCP connect latency (ms)"
+msgstr ""
+
 #: src/components/routes/system/charts/disk-charts.tsx
 msgid "Percent of time the disk is busy with I/O"
 msgstr "Phần trăm thời gian đĩa bận rộn với các hoạt động I/O"
@@ -1250,6 +1345,10 @@ msgstr "Vĩnh viễn"
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Persistence"
 msgstr "Tính bền vững"
+
+#: src/components/routes/settings/latency.tsx
+#~ msgid "Ping Targets"
+#~ msgstr ""
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Please <0>configure an SMTP server</0> to ensure alerts are delivered."
@@ -1307,6 +1406,10 @@ msgstr "Sử dụng chính xác tại thời điểm ghi nhận"
 msgid "Preferred Language"
 msgstr "Ngôn ngữ Ưa thích"
 
+#: src/components/routes/settings/latency.tsx
+msgid "Probe targets"
+msgstr ""
+
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Process started"
 msgstr "Tiến trình đã khởi động"
@@ -1346,6 +1449,10 @@ msgstr "Làm mới"
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Relationships"
 msgstr "Mối quan hệ"
+
+#: src/components/routes/settings/latency.tsx
+msgid "Remove"
+msgstr ""
 
 #: src/components/login/login.tsx
 msgid "Request a one-time password"
@@ -1415,6 +1522,7 @@ msgid "Save address using enter key or comma. Leave blank to disable email notif
 msgstr "Lưu địa chỉ bằng cách sử dụng phím enter hoặc dấu phẩy. Để trống để vô hiệu hóa thông báo email."
 
 #: src/components/routes/settings/general.tsx
+#: src/components/routes/settings/latency.tsx
 #: src/components/routes/settings/notifications.tsx
 msgid "Save Settings"
 msgstr "Lưu Cài đặt"
@@ -1422,6 +1530,10 @@ msgstr "Lưu Cài đặt"
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Saved in the database and does not expire until you disable it."
 msgstr "Được lưu trong cơ sở dữ liệu và không hết hạn cho đến khi bạn tắt nó."
+
+#: src/components/routes/settings/latency.tsx
+msgid "Saving..."
+msgstr ""
 
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Schedule"
@@ -1454,6 +1566,18 @@ msgstr "Xem <0>cài đặt thông báo</0> để cấu hình cách bạn nhận 
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Select {foo}"
 msgstr "Chọn {foo}"
+
+#: src/components/routes/settings/latency.tsx
+msgid "Select all"
+msgstr ""
+
+#: src/components/routes/settings/latency.tsx
+msgid "Select at least one system"
+msgstr ""
+
+#: src/components/routes/settings/latency.tsx
+msgid "Selected systems only"
+msgstr ""
 
 #: src/components/routes/settings/heartbeat.tsx
 msgid "Send a single heartbeat ping to verify your endpoint is working."
@@ -1502,6 +1626,7 @@ msgstr "Thiết lập các biến môi trường sau trên hub Beszel của bạ
 msgid "Settings"
 msgstr "Cài đặt"
 
+#: src/components/routes/settings/latency.tsx
 #: src/components/routes/settings/layout.tsx
 msgid "Settings saved"
 msgstr "Cài đặt đã được lưu"
@@ -1550,6 +1675,11 @@ msgstr "Không gian hoán đổi được sử dụng bởi hệ thống"
 msgid "Swap Usage"
 msgstr "Sử dụng Hoán đổi"
 
+#: src/components/mode-toggle.tsx
+#: src/components/mode-toggle.tsx
+msgid "Switch theme"
+msgstr ""
+
 #: src/components/add-system.tsx
 #: src/components/alerts-history-columns.tsx
 #: src/components/containers-table/containers-table-columns.tsx
@@ -1593,6 +1723,10 @@ msgstr "Tab"
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Tasks"
 msgstr "Tác vụ"
+
+#: src/components/routes/system/charts/network-charts.tsx
+#~ msgid "TCP connect latency to configured targets"
+#~ msgstr ""
 
 #. Temperature label in systems table
 #: src/components/routes/system/smart-table.tsx
@@ -1659,8 +1793,8 @@ msgstr "Đến email(s)"
 
 #: src/components/mode-toggle.tsx
 #: src/components/mode-toggle.tsx
-msgid "Toggle theme"
-msgstr "Chuyển đổi chủ đề"
+#~ msgid "Toggle theme"
+#~ msgstr "Chuyển đổi chủ đề"
 
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
@@ -1747,6 +1881,10 @@ msgstr "Kích hoạt khi sử dụng GPU vượt quá ngưỡng"
 #: src/lib/alerts.ts
 msgid "Triggers when memory usage exceeds a threshold"
 msgstr "Kích hoạt khi sử dụng bộ nhớ vượt quá ngưỡng"
+
+#: src/lib/alerts.ts
+msgid "Triggers when network latency exceeds a threshold"
+msgstr ""
 
 #: src/lib/alerts.ts
 msgid "Triggers when status switches between up and down"

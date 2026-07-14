@@ -30,6 +30,11 @@ msgstr "{0} tersedia"
 msgid "{0} of {1} row(s) selected."
 msgstr "{0} dari {1} baris terpilih."
 
+#. placeholder {0}: selectedIds.size
+#: src/components/routes/settings/latency.tsx
+msgid "{0} selected"
+msgstr ""
+
 #: src/components/routes/system/info-bar.tsx
 msgid "{cores, plural, one {# core} other {# cores}}"
 msgstr "{cores, plural, one {# inti} other {# inti}}"
@@ -121,9 +126,26 @@ msgstr "Status aktif"
 msgid "Add {foo}"
 msgstr "Tambah {foo}"
 
+#: src/components/routes/settings/latency.tsx
+#~ msgid "Add named TCP latency probes for all agents. Name is shown on the chart; address is host:port only."
+#~ msgstr ""
+
+#: src/components/routes/settings/latency.tsx
+msgid "Add named TCP latency probes. Choose all systems or only selected machines."
+msgstr ""
+
+#: src/components/routes/settings/latency.tsx
+msgid "Add target"
+msgstr ""
+
 #: src/components/routes/settings/notifications.tsx
 msgid "Add URL"
 msgstr "Tambah URL"
+
+#: src/components/routes/settings/latency.tsx
+#: src/components/routes/settings/latency.tsx
+msgid "Address"
+msgstr ""
 
 #: src/components/routes/settings/general.tsx
 msgid "Adjust display options for charts."
@@ -170,6 +192,10 @@ msgstr "Peringatan"
 msgid "All Containers"
 msgstr "Semua Container"
 
+#: src/components/routes/settings/latency.tsx
+msgid "All systems"
+msgstr ""
+
 #: src/components/alerts/alerts-sheet.tsx
 #: src/components/command-palette.tsx
 #: src/components/routes/home.tsx
@@ -178,6 +204,10 @@ msgstr "Semua Container"
 #: src/components/systems-table/systems-table.tsx
 msgid "All Systems"
 msgstr "Semua Sistem"
+
+#: src/components/routes/settings/latency.tsx
+msgid "Apply to systems"
+msgstr ""
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Are you sure you want to delete {name}?"
@@ -380,6 +410,7 @@ msgid "Check your notification service"
 msgstr "Periksa jasa penyedia notifikasi anda"
 
 #: src/components/containers-table/containers-table.tsx
+#: src/components/routes/settings/latency.tsx
 #: src/components/routes/system/smart-table.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "Clear"
@@ -401,6 +432,10 @@ msgstr "Klik pada sistem untuk melihat informasi lebih banyak."
 msgid "Click to copy"
 msgstr "Klik untuk menyalin"
 
+#: src/components/add-system.tsx
+#~ msgid "Comma-separated host:port for latency probes. Leave empty to use agent defaults."
+#~ msgstr ""
+
 #: src/components/login/forgot-pass-form.tsx
 #: src/components/login/forgot-pass-form.tsx
 msgid "Command line instructions"
@@ -409,6 +444,14 @@ msgstr "Instruksi command line"
 #: src/components/routes/settings/notifications.tsx
 msgid "Configure how you receive alert notifications."
 msgstr "Konfigurasi bagaimana anda menerima notifikasi peringatan."
+
+#: src/components/routes/settings/latency.tsx
+#~ msgid "Configure named TCP latency probes for all agents. Each line is shown separately on the latency chart."
+#~ msgstr ""
+
+#: src/components/routes/settings/latency.tsx
+#~ msgid "Configure TCP latency probe targets for all agents (Nezha-style). Use comma-separated host:port values."
+#~ msgstr ""
 
 #: src/components/login/auth-form.tsx
 #: src/components/login/auth-form.tsx
@@ -663,6 +706,10 @@ msgstr "Unduh"
 msgid "Duration"
 msgstr "Durasi"
 
+#: src/components/routes/settings/latency.tsx
+msgid "e.g. 电信广东"
+msgstr ""
+
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Edit"
@@ -717,12 +764,12 @@ msgstr "Masukkan otp anda."
 msgid "Ephemeral"
 msgstr "Sementara"
 
-#: src/components/login/auth-form.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/settings/config-yaml.tsx
 #: src/components/routes/settings/heartbeat.tsx
 #: src/components/routes/settings/heartbeat.tsx
 #: src/components/routes/settings/heartbeat.tsx
+#: src/components/routes/settings/latency.tsx
 #: src/components/routes/settings/notifications.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/quiet-hours.tsx
@@ -731,9 +778,17 @@ msgstr "Sementara"
 msgid "Error"
 msgstr ""
 
+#: src/components/routes/settings/latency.tsx
+msgid "Every connected agent probes these targets."
+msgstr ""
+
 #: src/components/routes/settings/heartbeat.tsx
 msgid "Example:"
 msgstr "Contoh:"
+
+#: src/components/routes/settings/latency.tsx
+#~ msgid "Example: telecom / mobile / unicom CDN endpoints. Leave empty to use each agent's PING_TARGETS env or defaults."
+#~ msgstr ""
 
 #. placeholder {0}: alert.value
 #. placeholder {1}: info.unit
@@ -786,6 +841,7 @@ msgstr "Atribut yang Gagal:"
 msgid "Failed to authenticate"
 msgstr "Gagal mengautentikasi"
 
+#: src/components/routes/settings/latency.tsx
 #: src/components/routes/settings/layout.tsx
 #: src/components/routes/settings/notifications.tsx
 #: src/components/routes/settings/quiet-hours.tsx
@@ -808,6 +864,10 @@ msgstr "Gagal memperbarui peringatan"
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Failed: {0}"
 msgstr "Gagal: {0}"
+
+#: src/components/routes/settings/latency.tsx
+#~ msgid "Fill example"
+#~ msgstr ""
 
 #: src/components/containers-table/containers-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
@@ -833,6 +893,10 @@ msgstr "Untuk <0>{min}</0> {min, plural, one {menit} other {menit}}"
 #: src/components/login/auth-form.tsx
 msgid "Forgot password?"
 msgstr "Lupa kata sandi?"
+
+#: src/components/routes/settings/latency.tsx
+#~ msgid "Format: 显示名=主机:端口 (one per line). Example:"
+#~ msgstr ""
 
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
@@ -957,6 +1021,19 @@ msgstr "Alamat email tidak valid."
 msgid "Language"
 msgstr "Bahasa"
 
+#: src/components/routes/settings/latency.tsx
+#: src/components/routes/settings/layout.tsx
+#: src/components/routes/system/charts/network-charts.tsx
+#: src/components/routes/system/charts/network-charts.tsx
+#: src/components/systems-table/systems-table-columns.tsx
+#: src/lib/alerts.ts
+msgid "Latency"
+msgstr ""
+
+#: src/components/routes/settings/latency.tsx
+msgid "Latency probe targets updated. Agents pick them up on the next poll."
+msgstr ""
+
 #: src/components/systems-table/systems-table.tsx
 msgid "Layout"
 msgstr "Tampilan"
@@ -1079,6 +1156,8 @@ msgstr ""
 #: src/components/add-system.tsx
 #: src/components/alerts-history-columns.tsx
 #: src/components/containers-table/containers-table-columns.tsx
+#: src/components/routes/settings/latency.tsx
+#: src/components/routes/settings/latency.tsx
 #: src/components/systemd-table/systemd-table-columns.tsx
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Name"
@@ -1134,6 +1213,10 @@ msgstr "Tidak ada atribut S.M.A.R.T. yang tersedia untuk perangkat ini."
 msgid "No systems found."
 msgstr "Sistem tidak ditemukan."
 
+#: src/components/routes/settings/latency.tsx
+msgid "No systems yet."
+msgstr ""
+
 #: src/components/command-palette.tsx
 #: src/components/routes/settings/layout.tsx
 #: src/components/routes/settings/notifications.tsx
@@ -1157,6 +1240,10 @@ msgstr "Sekali pakai"
 msgid "One-time password"
 msgstr "Kata sandi sekali pakai (OTP)"
 
+#: src/components/routes/settings/latency.tsx
+msgid "Only checked machines probe; others stop hub-driven latency checks."
+msgstr ""
+
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
@@ -1168,6 +1255,10 @@ msgstr "Buka menu"
 #: src/components/login/auth-form.tsx
 msgid "Or continue with"
 msgstr "Atau lanjutkan dengan"
+
+#: src/components/routes/settings/latency.tsx
+msgid "Or switch to all systems."
+msgstr ""
 
 #: src/components/routes/system/cpu-sheet.tsx
 msgid "Other"
@@ -1235,6 +1326,10 @@ msgstr "Format payload"
 msgid "Per-core average utilization"
 msgstr "Rata-rata utilisasi per-inti"
 
+#: src/components/routes/system/charts/network-charts.tsx
+msgid "Per-target TCP connect latency (ms)"
+msgstr ""
+
 #: src/components/routes/system/charts/disk-charts.tsx
 msgid "Percent of time the disk is busy with I/O"
 msgstr "Persentase waktu disk sibuk dengan I/O"
@@ -1250,6 +1345,10 @@ msgstr "Permanen"
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Persistence"
 msgstr "Tetap berlaku"
+
+#: src/components/routes/settings/latency.tsx
+#~ msgid "Ping Targets"
+#~ msgstr ""
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Please <0>configure an SMTP server</0> to ensure alerts are delivered."
@@ -1307,6 +1406,10 @@ msgstr "Utilisasi tepat pada waktu yang direkam"
 msgid "Preferred Language"
 msgstr "Pilihan Bahasa"
 
+#: src/components/routes/settings/latency.tsx
+msgid "Probe targets"
+msgstr ""
+
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Process started"
 msgstr "Proses dimulai"
@@ -1346,6 +1449,10 @@ msgstr "Muat ulang"
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Relationships"
 msgstr "Relasi"
+
+#: src/components/routes/settings/latency.tsx
+msgid "Remove"
+msgstr ""
 
 #: src/components/login/login.tsx
 msgid "Request a one-time password"
@@ -1415,6 +1522,7 @@ msgid "Save address using enter key or comma. Leave blank to disable email notif
 msgstr "Simpan alamat menggunakan tombol enter atau koma. Biarkan kosong untuk menonaktifkan notifikasi email."
 
 #: src/components/routes/settings/general.tsx
+#: src/components/routes/settings/latency.tsx
 #: src/components/routes/settings/notifications.tsx
 msgid "Save Settings"
 msgstr "Simpan Pengaturan"
@@ -1422,6 +1530,10 @@ msgstr "Simpan Pengaturan"
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Saved in the database and does not expire until you disable it."
 msgstr "Disimpan di database dan tidak kedaluwarsa sampai Anda menonaktifkannya."
+
+#: src/components/routes/settings/latency.tsx
+msgid "Saving..."
+msgstr ""
 
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Schedule"
@@ -1454,6 +1566,18 @@ msgstr "Lihat <0>pengaturan notifikasi</0> untuk mengkonfigurasi bagaimana anda 
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Select {foo}"
 msgstr "Pilih {foo}"
+
+#: src/components/routes/settings/latency.tsx
+msgid "Select all"
+msgstr ""
+
+#: src/components/routes/settings/latency.tsx
+msgid "Select at least one system"
+msgstr ""
+
+#: src/components/routes/settings/latency.tsx
+msgid "Selected systems only"
+msgstr ""
 
 #: src/components/routes/settings/heartbeat.tsx
 msgid "Send a single heartbeat ping to verify your endpoint is working."
@@ -1502,6 +1626,7 @@ msgstr "Setel variabel lingkungan berikut di hub Beszel Anda untuk mengaktifkan 
 msgid "Settings"
 msgstr "Pengaturan"
 
+#: src/components/routes/settings/latency.tsx
 #: src/components/routes/settings/layout.tsx
 msgid "Settings saved"
 msgstr "Pengaturan disimpan"
@@ -1550,6 +1675,11 @@ msgstr "Ruang swap yang digunakan oleh sistem"
 msgid "Swap Usage"
 msgstr "Penggunaan Swap"
 
+#: src/components/mode-toggle.tsx
+#: src/components/mode-toggle.tsx
+msgid "Switch theme"
+msgstr ""
+
 #: src/components/add-system.tsx
 #: src/components/alerts-history-columns.tsx
 #: src/components/containers-table/containers-table-columns.tsx
@@ -1593,6 +1723,10 @@ msgstr "Tab"
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Tasks"
 msgstr "Tugas"
+
+#: src/components/routes/system/charts/network-charts.tsx
+#~ msgid "TCP connect latency to configured targets"
+#~ msgstr ""
 
 #. Temperature label in systems table
 #: src/components/routes/system/smart-table.tsx
@@ -1659,8 +1793,8 @@ msgstr "Ke email"
 
 #: src/components/mode-toggle.tsx
 #: src/components/mode-toggle.tsx
-msgid "Toggle theme"
-msgstr "Ganti tema"
+#~ msgid "Toggle theme"
+#~ msgstr "Ganti tema"
 
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
@@ -1747,6 +1881,10 @@ msgstr "Dipicu ketika penggunaan GPU melebihi ambang batas"
 #: src/lib/alerts.ts
 msgid "Triggers when memory usage exceeds a threshold"
 msgstr "Dipicu ketika penggunaan memori melebihi ambang batas"
+
+#: src/lib/alerts.ts
+msgid "Triggers when network latency exceeds a threshold"
+msgstr ""
 
 #: src/lib/alerts.ts
 msgid "Triggers when status switches between up and down"

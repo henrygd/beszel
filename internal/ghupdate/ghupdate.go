@@ -374,3 +374,19 @@ func getApiURL(useMirror bool, owner, repo string) string {
 	}
 	return fmt.Sprintf("https://api.github.com/repos/%s/%s/releases/latest", owner, repo)
 }
+
+// ProbeLatestTag fetches the latest upstream release tag without downloading.
+// Returns tag like "v0.18.8" and whether it is newer than the current beszel.Version.
+func ProbeLatestTag(useMirror bool) (tag string, newer bool, err error) {
+	ctx := context.Background()
+	client := http.DefaultClient
+	apiURL := getApiURL(useMirror, "henrygd", "beszel")
+	latest, err := FetchLatestRelease(ctx, client, apiURL)
+	if err != nil {
+		return "", false, err
+	}
+	tag = latest.Tag
+	currentVersion := semver.MustParse(strings.TrimPrefix(beszel.Version, "v"))
+	newVersion := semver.MustParse(strings.TrimPrefix(tag, "v"))
+	return tag, newVersion.GT(currentVersion), nil
+}

@@ -6,6 +6,7 @@ import (
 	"os/exec"
 	"runtime"
 
+	"github.com/henrygd/beszel"
 	"github.com/henrygd/beszel/internal/ghupdate"
 )
 
@@ -74,22 +75,29 @@ func detectRestarter() restarter {
 	return nil
 }
 
-// Update checks GitHub for a newer release of beszel-agent, applies it,
-// fixes SELinux context if needed, and restarts the service.
+// Update updates the agent.
+//
+// With HUB_URL set (latency fork): only install from hub so official releases never
+// overwrite the custom binary. Still probes GitHub and prints when upstream is newer.
+// Without HUB_URL: standard GitHub self-update.
 func Update(useMirror bool) error {
 	exePath, _ := os.Executable()
 
-	dataDir, err := GetDataDir()
-	if err != nil {
-		dataDir = os.TempDir()
-	}
-	updated, err := ghupdate.Update(ghupdate.Config{
-		ArchiveExecutable: "beszel-agent",
-		DataDir:           dataDir,
-		UseMirror:         useMirror,
-	})
-	if err != nil {
-		log.Fatal(err)
+	var updated bool
+	var err error
+	if hubURL := hubBaseURL(); hubURL != "" {
+		// Probe upstream so we don't fall behind, but never install official over hub build.
+		probeUpstream(useMirror)
+		updated, err = updateFromHub(hubURL)
+		if err != nil {
+			// Do not fall back to GitHub — that would strip latency features.
+			log.Fatalf("hub update failed (not overwriting with official release): %v", err)
+		}
+	} else {
+		updated, err = updateFromGitHub(useMirror)
+		if err != nil {
+			log.Fatal(err)
+		}
 	}
 	if !updated {
 		return nil
@@ -124,4 +132,31 @@ func Update(useMirror bool) error {
 	}
 
 	return nil
+}
+
+func probeUpstream(useMirror bool) {
+	tag, newer, err := ghupdate.ProbeLatestTag(useMirror)
+	if err != nil {
+		ghupdate.ColorPrintf(ghupdate.ColorYellow, "Upstream probe failed: %v", err)
+		return
+	}
+	if newer {
+		ghupdate.ColorPrintf(ghupdate.ColorYellow,
+			"Upstream %s available (running hub build %s). Rebuild hub agent-binaries to pick it up — will not auto-install official binary.",
+			tag, beszel.Version)
+		return
+	}
+	ghupdate.ColorPrintf(ghupdate.ColorGreen, "Upstream is %s (current hub build %s).", tag, beszel.Version)
+}
+
+func updateFromGitHub(useMirror bool) (bool, error) {
+	dataDir, err := GetDataDir()
+	if err != nil {
+		dataDir = os.TempDir()
+	}
+	return ghupdate.Update(ghupdate.Config{
+		ArchiveExecutable: "beszel-agent",
+		DataDir:           dataDir,
+		UseMirror:         useMirror,
+	})
 }

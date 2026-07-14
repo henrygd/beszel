@@ -48,6 +48,7 @@ type Agent struct {
 	keys                      []gossh.PublicKey                                     // SSH public keys
 	smartManager              *SmartManager                                         // Manages SMART data
 	systemdManager            *systemdManager                                       // Manages systemd services
+	latencyManager            *latencyManager                                       // Probes TCP latency targets
 }
 
 // NewAgent creates a new agent with the given data directory for persisting data.
@@ -127,6 +128,9 @@ func NewAgent(dataDir ...string) (agent *Agent, err error) {
 	// initialize net io stats
 	agent.initializeNetIoStats()
 
+	// initialize latency probes (Nezha-style delay monitoring)
+	agent.latencyManager = newLatencyManager()
+
 	agent.systemdManager, err = newSystemdManager()
 	if err != nil {
 		slog.Debug("Systemd", "err", err)
@@ -154,6 +158,19 @@ func NewAgent(dataDir ...string) (agent *Agent, err error) {
 func (a *Agent) gatherStats(options common.DataRequestOptions) *system.CombinedData {
 	a.Lock()
 	defer a.Unlock()
+
+	// Apply hub-configured latency targets before collection (invalidates cache on change)
+	if options.ConfigureLatency && a.latencyManager != nil {
+		var changed bool
+		if options.DisableLatency {
+			changed = a.latencyManager.disableHubProbes()
+		} else {
+			changed = a.latencyManager.applyHubTargets(options.PingTargets)
+		}
+		if changed {
+			a.cache = NewSystemDataCache()
+		}
+	}
 
 	cacheTimeMs := options.CacheTimeMs
 	data, isCached := a.cache.Get(cacheTimeMs)

@@ -88,6 +88,71 @@ export function BandwidthChart({
 	)
 }
 
+export function LatencyChart({
+	chartData,
+	grid,
+	dataEmpty,
+	showMax,
+	isLongerChart,
+	maxValues,
+}: {
+	chartData: ChartData
+	grid: boolean
+	dataEmpty: boolean
+	showMax: boolean
+	isLongerChart: boolean
+	maxValues: boolean
+}) {
+	const maxValSelect = isLongerChart ? <SelectAvgMax max={maxValues} /> : null
+	const lastTargets = chartData.systemStats?.at(-1)?.stats?.latt
+	const targetKeys = lastTargets ? Object.keys(lastTargets).sort() : []
+
+	const dataPoints = useMemo(() => {
+		// Prefer per-target named series; fall back to average when no targets yet
+		if (targetKeys.length === 0) {
+			return [
+				{
+					label: t`Latency`,
+					dataKey(data: SystemStatsRecord) {
+						if (showMax) {
+							return data?.stats?.latm ?? data?.stats?.lat ?? 0
+						}
+						return data?.stats?.lat ?? 0
+					},
+					color: 1,
+					opacity: 0.25,
+				},
+			]
+		}
+		return targetKeys.map((key, i) => ({
+			label: key,
+			dataKey(data: SystemStatsRecord) {
+				return data?.stats?.latt?.[key] ?? 0
+			},
+			color: (i % 8) + 1,
+			opacity: 0.2,
+		}))
+	}, [showMax, targetKeys.join("|")])
+
+	return (
+		<ChartCard
+			empty={dataEmpty}
+			grid={grid}
+			title={t`Latency`}
+			cornerEl={maxValSelect}
+			description={t`Per-target TCP connect latency (ms)`}
+		>
+			<AreaChartDefault
+				chartData={chartData}
+				maxToggled={showMax}
+				dataPoints={dataPoints}
+				tickFormatter={(val) => `${toFixedFloat(val, val >= 100 ? 0 : 1)} ms`}
+				contentFormatter={(data) => `${decimalString(data.value, data.value >= 100 ? 1 : 2)} ms`}
+			/>
+		</ChartCard>
+	)
+}
+
 export function ContainerNetworkChart({
 	chartData,
 	grid,

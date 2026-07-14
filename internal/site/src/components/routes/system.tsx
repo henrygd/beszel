@@ -8,7 +8,7 @@ import { useSystemData } from "./system/use-system-data"
 import { CpuChart, ContainerCpuChart } from "./system/charts/cpu-charts"
 import { MemoryChart, ContainerMemoryChart, SwapChart } from "./system/charts/memory-charts"
 import { RootDiskCharts, ExtraFsCharts } from "./system/charts/disk-charts"
-import { BandwidthChart, ContainerNetworkChart } from "./system/charts/network-charts"
+import { BandwidthChart, ContainerNetworkChart, LatencyChart } from "./system/charts/network-charts"
 import { TemperatureChart, BatteryChart } from "./system/charts/sensor-charts"
 import { GpuPowerChart, GpuDetailCharts } from "./system/charts/gpu-charts"
 import { LazyContainersTable, LazySmartTable, LazySystemdTable } from "./system/lazy-tables"
@@ -106,6 +106,8 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 					<RootDiskCharts systemData={systemData} />
 
 					<BandwidthChart {...coreProps} systemStats={systemStats} />
+
+					<LatencyChart {...coreProps} />
 
 					{hasContainers && (
 						<ContainerNetworkChart

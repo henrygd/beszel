@@ -8,18 +8,14 @@ import { DropdownMenuContent, DropdownMenuItem } from "./ui/dropdown-menu"
 
 /**
  * Get the URL of the script to install the agent.
- * @param path - The path to the script (e.g. "/brew").
- * @returns The URL for the script.
+ * Linux install uses this hub so new agents get the latency build.
+ * Other platforms still use official get.beszel.dev.
  */
 const getScriptUrl = (path: string = "") => {
+	if (!path) {
+		return `${getHubURL().replace(/\/$/, "")}/api/beszel/agent/install.sh`
+	}
 	return `https://get.beszel.dev${path}`
-	// no beta for now
-	// const url = new URL("https://get.beszel.dev")
-	// url.pathname = path
-	// if (isBeta) {
-	// 	url.searchParams.set("beta", "1")
-	// }
-	// return url.toString()
 }
 
 export function copyDockerCompose(port = "45876", publicKey: string, token: string) {

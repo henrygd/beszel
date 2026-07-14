@@ -37,6 +37,7 @@ type System struct {
 	Host           string                  `db:"host"`
 	Port           string                  `db:"port"`
 	Status         string                  `db:"status"`
+	PingTargets    string                  `db:"ping_targets"` // hub-configured latency targets (comma-separated)
 	manager        *SystemManager          // Manager that this system belongs to
 	client         *ssh.Client             // SSH client for fetching data
 	sshTransport   *transport.SSHTransport // SSH transport for requests
@@ -123,6 +124,16 @@ func (sys *System) update() error {
 	}
 	options := common.DataRequestOptions{
 		CacheTimeMs: uint16(interval),
+	}
+	// Per-system DB override, else hub Settings (all / selected systems).
+	if pt := strings.TrimSpace(sys.PingTargets); pt != "" {
+		options.ConfigureLatency = true
+		options.PingTargets = pt
+	} else if sys.manager != nil {
+		configure, disable, targets := sys.manager.hub.LatencyProbeForSystem(sys.Id)
+		options.ConfigureLatency = configure
+		options.DisableLatency = disable
+		options.PingTargets = targets
 	}
 	// fetch system details if not already fetched
 	if !sys.detailsFetched.Load() {
