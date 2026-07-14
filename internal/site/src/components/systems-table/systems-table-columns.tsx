@@ -19,7 +19,6 @@ import {
 	PlayCircleIcon,
 	ServerIcon,
 	TerminalSquareIcon,
-	TimerIcon,
 	Trash2Icon,
 	WifiIcon,
 } from "lucide-react"
@@ -258,58 +257,6 @@ export function SystemsTableColumns(viewMode: "table" | "grid"): ColumnDef<Syste
 					<span className="tabular-nums whitespace-nowrap">
 						{decimalString(value, value >= 100 ? 1 : 2)} {unit}
 					</span>
-				)
-			},
-		},
-		{
-			// Sort by worst (max) per-target latency; fall back to average.
-			accessorFn: ({ info, status }) => {
-				if (status !== SystemStatus.Up) {
-					return undefined
-				}
-				const targets = info.latt
-				if (targets && Object.keys(targets).length > 0) {
-					return Math.max(...Object.values(targets))
-				}
-				return info.lat || undefined
-			},
-			id: "latency",
-			name: () => t`Latency`,
-			size: 0,
-			Icon: TimerIcon,
-			header: sortableHeader,
-			sortUndefined: "last",
-			cell(info) {
-				const { info: sysInfo, status } = info.row.original
-				if (status !== SystemStatus.Up) {
-					return null
-				}
-				const entries = Object.entries(sysInfo.latt ?? {}).filter(([, v]) => v > 0)
-				const latencyColor = (ms: number) =>
-					ms >= 300
-						? "text-red-600 dark:text-red-400"
-						: ms >= 100
-							? "text-amber-600 dark:text-amber-400"
-							: "text-emerald-600 dark:text-emerald-400"
-				const formatMs = (ms: number) => `${decimalString(ms, ms >= 100 ? 0 : 1)}ms`
-
-				if (entries.length === 0) {
-					const val = sysInfo.lat
-					if (!val || val <= 0) {
-						return null
-					}
-					return <span className={cn("tabular-nums text-xs", latencyColor(val))}>{formatMs(val)}</span>
-				}
-
-				return (
-					<div className="flex flex-col gap-0.5 min-w-[5.5rem] leading-none">
-						{entries.map(([name, ms]) => (
-							<div key={name} className="flex items-center justify-between gap-2 text-[0.7rem] tabular-nums">
-								<span className="text-muted-foreground truncate max-w-[4.5rem]">{name}</span>
-								<span className={cn("shrink-0 font-medium", latencyColor(ms))}>{formatMs(ms)}</span>
-							</div>
-						))}
-					</div>
 				)
 			},
 		},
