@@ -117,6 +117,10 @@ func (h *Hub) registerApiRoutes(se *core.ServeEvent) error {
 	// hub-wide latency probe targets (Settings → Latency)
 	apiAuth.GET("/latency-config", h.getLatencyConfig).BindFunc(requireAdminRole)
 	apiAuth.POST("/latency-config", h.saveLatencyConfig).BindFunc(requireAdminRole)
+	// hub-hosted agent binary + install script (no auth; used by install/update)
+	apiNoAuth.GET("/agent/meta", h.getAgentMeta)
+	apiNoAuth.GET("/agent/binary", h.downloadAgentBinary)
+	apiNoAuth.GET("/agent/install.sh", h.getAgentInstallScript)
 	// get config.yml content
 	apiAuth.GET("/config-yaml", config.GetYamlConfig).BindFunc(requireAdminRole)
 	// handle agent websocket connection

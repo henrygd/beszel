@@ -74,20 +74,22 @@ func detectRestarter() restarter {
 	return nil
 }
 
-// Update checks GitHub for a newer release of beszel-agent, applies it,
-// fixes SELinux context if needed, and restarts the service.
+// Update prefers the hub-hosted agent binary (latency build) when HUB_URL is set,
+// otherwise falls back to GitHub releases.
 func Update(useMirror bool) error {
 	exePath, _ := os.Executable()
 
-	dataDir, err := GetDataDir()
-	if err != nil {
-		dataDir = os.TempDir()
+	var updated bool
+	var err error
+	if hubURL := hubBaseURL(); hubURL != "" {
+		updated, err = updateFromHub(hubURL)
+		if err != nil {
+			ghupdate.ColorPrintf(ghupdate.ColorYellow, "Hub update failed (%v); falling back to GitHub.\n", err)
+			updated, err = updateFromGitHub(useMirror)
+		}
+	} else {
+		updated, err = updateFromGitHub(useMirror)
 	}
-	updated, err := ghupdate.Update(ghupdate.Config{
-		ArchiveExecutable: "beszel-agent",
-		DataDir:           dataDir,
-		UseMirror:         useMirror,
-	})
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -124,4 +126,16 @@ func Update(useMirror bool) error {
 	}
 
 	return nil
+}
+
+func updateFromGitHub(useMirror bool) (bool, error) {
+	dataDir, err := GetDataDir()
+	if err != nil {
+		dataDir = os.TempDir()
+	}
+	return ghupdate.Update(ghupdate.Config{
+		ArchiveExecutable: "beszel-agent",
+		DataDir:           dataDir,
+		UseMirror:         useMirror,
+	})
 }
