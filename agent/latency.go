@@ -262,6 +262,7 @@ func (a *Agent) updateLatency(systemStats *system.Stats) {
 	systemStats.Latency = avg
 	systemStats.LatencyTargets = targets
 	a.systemInfo.Latency = avg
+	a.systemInfo.LatencyTargets = targets
 }
 
 func (lm *latencyManager) probe() (avg float64, results map[string]float64) {

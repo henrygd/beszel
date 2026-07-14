@@ -262,7 +262,17 @@ export function SystemsTableColumns(viewMode: "table" | "grid"): ColumnDef<Syste
 			},
 		},
 		{
-			accessorFn: ({ info, status }) => (status !== SystemStatus.Up ? undefined : info.lat),
+			// Sort by worst (max) per-target latency; fall back to average.
+			accessorFn: ({ info, status }) => {
+				if (status !== SystemStatus.Up) {
+					return undefined
+				}
+				const targets = info.latt
+				if (targets && Object.keys(targets).length > 0) {
+					return Math.max(...Object.values(targets))
+				}
+				return info.lat || undefined
+			},
 			id: "latency",
 			name: () => t`Latency`,
 			size: 0,
@@ -270,22 +280,47 @@ export function SystemsTableColumns(viewMode: "table" | "grid"): ColumnDef<Syste
 			header: sortableHeader,
 			sortUndefined: "last",
 			cell(info) {
-				const val = info.getValue() as number | undefined
-				if (val === undefined || val <= 0) {
+				const { info: sysInfo, status } = info.row.original
+				if (status !== SystemStatus.Up) {
 					return null
 				}
-				// Absolute ms thresholds for latency readability (Nezha-style)
-				const state = val >= 300 ? MeterState.Crit : val >= 100 ? MeterState.Warn : MeterState.Good
+				const entries = Object.entries(sysInfo.latt ?? {}).filter(([, v]) => v > 0)
+				if (entries.length === 0) {
+					const val = sysInfo.lat
+					if (!val || val <= 0) {
+						return null
+					}
+					const state = val >= 300 ? MeterState.Crit : val >= 100 ? MeterState.Warn : MeterState.Good
+					return (
+						<div className="flex items-center gap-[.35em] w-full tabular-nums tracking-tight">
+							<span
+								className={cn("inline-block size-2 rounded-full me-0.5", {
+									[STATUS_COLORS[SystemStatus.Up]]: state === MeterState.Good,
+									[STATUS_COLORS[SystemStatus.Pending]]: state === MeterState.Warn,
+									[STATUS_COLORS[SystemStatus.Down]]: state === MeterState.Crit,
+								})}
+							/>
+							<span className="whitespace-nowrap">{decimalString(val, val >= 100 ? 0 : 1)} ms</span>
+						</div>
+					)
+				}
+				const worst = Math.max(...entries.map(([, v]) => v))
+				const state = worst >= 300 ? MeterState.Crit : worst >= 100 ? MeterState.Warn : MeterState.Good
 				return (
-					<div className="flex items-center gap-[.35em] w-full tabular-nums tracking-tight">
+					<div className="flex items-center gap-x-2 gap-y-0.5 flex-wrap w-full tabular-nums tracking-tight">
 						<span
-							className={cn("inline-block size-2 rounded-full me-0.5", {
+							className={cn("inline-block size-2 rounded-full shrink-0", {
 								[STATUS_COLORS[SystemStatus.Up]]: state === MeterState.Good,
 								[STATUS_COLORS[SystemStatus.Pending]]: state === MeterState.Warn,
 								[STATUS_COLORS[SystemStatus.Down]]: state === MeterState.Crit,
 							})}
 						/>
-						<span className="whitespace-nowrap">{decimalString(val, val >= 100 ? 0 : 1)} ms</span>
+						{entries.map(([name, ms]) => (
+							<span key={name} className="whitespace-nowrap" title={`${name}: ${decimalString(ms, 1)} ms`}>
+								<span className="text-muted-foreground me-0.5">{name}</span>
+								{decimalString(ms, ms >= 100 ? 0 : 1)}
+							</span>
+						))}
 					</div>
 				)
 			},

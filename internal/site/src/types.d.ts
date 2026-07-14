@@ -64,8 +64,10 @@ export interface SystemInfo {
 	b: number
 	/** bandwidth bytes */
 	bb?: number
-	/** network latency ms (average TCP RTT) */
+	/** network latency ms (average TCP RTT, alerts/compat) */
 	lat?: number
+	/** per-target TCP connect latency ms (key = display name) */
+	latt?: Record<string, number>
 	/** agent version */
 	v: string
 	/** system is using podman */

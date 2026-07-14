@@ -161,8 +161,10 @@ type Info struct {
 	ExtraFsPct     map[string]float64 `json:"efs,omitempty" cbor:"21,keyasint,omitempty"`
 	Services       []uint16           `json:"sv,omitempty" cbor:"22,keyasint,omitempty"` // [totalServices, numFailedServices]
 	Battery        [2]uint8           `json:"bat,omitzero" cbor:"23,keyasint,omitzero"`  // [percent, charge state]
-	// Latency is average TCP connect RTT in milliseconds for dashboard table (Nezha-style).
+	// Latency is average TCP connect RTT in milliseconds (kept for alerts/compat).
 	Latency float64 `json:"lat,omitempty" cbor:"24,keyasint,omitempty"`
+	// LatencyTargets holds per-target RTT in milliseconds for dashboard table.
+	LatencyTargets map[string]float64 `json:"latt,omitempty" cbor:"25,keyasint,omitempty"`
 }
 
 // Data that does not change during process lifetime and is not needed in All Systems table
