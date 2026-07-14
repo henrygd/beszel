@@ -221,11 +221,10 @@ export function SystemsTableColumns(viewMode: "table" | "grid"): ColumnDef<Syste
 				const normalizedLoad = max / (sysInfo.t ?? 1)
 				const threshold = getMeterStateByThresholds(normalizedLoad * 100, colorWarn, colorCrit)
 
-				const loadLabels = ["1m", "5m", "15m"] as const
 				return (
-					<div className="flex items-center gap-1.5 w-full tabular-nums tracking-tight">
+					<div className="flex items-center gap-[.35em] w-full tabular-nums tracking-tight">
 						<span
-							className={cn("inline-block size-2 rounded-full me-0.5 shrink-0", {
+							className={cn("inline-block size-2 rounded-full me-0.5", {
 								[STATUS_COLORS[SystemStatus.Up]]: threshold === MeterState.Good,
 								[STATUS_COLORS[SystemStatus.Pending]]: threshold === MeterState.Warn,
 								[STATUS_COLORS[SystemStatus.Down]]: threshold === MeterState.Crit,
@@ -233,10 +232,7 @@ export function SystemsTableColumns(viewMode: "table" | "grid"): ColumnDef<Syste
 							})}
 						/>
 						{loadAverages?.map((la, i) => (
-							<span key={loadLabels[i] ?? i} className="whitespace-nowrap" title={loadLabels[i]}>
-								<span className="text-muted-foreground text-[0.65rem] me-0.5">{loadLabels[i]}</span>
-								{decimalString(la, la >= 10 ? 1 : 2)}
-							</span>
+							<span key={i}>{decimalString(la, la >= 10 ? 1 : 2)}</span>
 						))}
 					</div>
 				)
