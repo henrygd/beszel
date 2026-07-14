@@ -121,9 +121,22 @@ msgstr "活動狀態"
 msgid "Add {foo}"
 msgstr "新增{foo}"
 
+#: src/components/routes/settings/latency.tsx
+msgid "Add named TCP latency probes for all agents. Name is shown on the chart; address is host:port only."
+msgstr "为所有 Agent 添加命名的 TCP 延迟探测。名称显示在图表中，地址仅填写 host:port。"
+
+#: src/components/routes/settings/latency.tsx
+msgid "Add target"
+msgstr "添加探测点"
+
 #: src/components/routes/settings/notifications.tsx
 msgid "Add URL"
 msgstr "新增 URL"
+
+#: src/components/routes/settings/latency.tsx
+#: src/components/routes/settings/latency.tsx
+msgid "Address"
+msgstr "地址"
 
 #: src/components/routes/settings/general.tsx
 msgid "Adjust display options for charts."
@@ -415,8 +428,12 @@ msgid "Configure how you receive alert notifications."
 msgstr "設定您要如何接收警報通知"
 
 #: src/components/routes/settings/latency.tsx
-msgid "Configure TCP latency probe targets for all agents (Nezha-style). Use comma-separated host:port values."
-msgstr ""
+#~ msgid "Configure named TCP latency probes for all agents. Each line is shown separately on the latency chart."
+#~ msgstr ""
+
+#: src/components/routes/settings/latency.tsx
+#~ msgid "Configure TCP latency probe targets for all agents (Nezha-style). Use comma-separated host:port values."
+#~ msgstr ""
 
 #: src/components/login/auth-form.tsx
 #: src/components/login/auth-form.tsx
@@ -671,6 +688,10 @@ msgstr "下載"
 msgid "Duration"
 msgstr "持續時間"
 
+#: src/components/routes/settings/latency.tsx
+msgid "e.g. 电信广东"
+msgstr "例如：电信广东"
+
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Edit"
@@ -744,8 +765,8 @@ msgid "Example:"
 msgstr "範例："
 
 #: src/components/routes/settings/latency.tsx
-msgid "Example: telecom / mobile / unicom CDN endpoints. Leave empty to use each agent's PING_TARGETS env or defaults."
-msgstr ""
+#~ msgid "Example: telecom / mobile / unicom CDN endpoints. Leave empty to use each agent's PING_TARGETS env or defaults."
+#~ msgstr ""
 
 #. placeholder {0}: alert.value
 #. placeholder {1}: info.unit
@@ -822,6 +843,10 @@ msgstr "更新警報失敗"
 msgid "Failed: {0}"
 msgstr "失敗：{0}"
 
+#: src/components/routes/settings/latency.tsx
+#~ msgid "Fill example"
+#~ msgstr ""
+
 #: src/components/containers-table/containers-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/system/chart-card.tsx
@@ -846,6 +871,10 @@ msgstr "持續<0>{min}</0> {min, plural, one {分鐘} other {分鐘}}"
 #: src/components/login/auth-form.tsx
 msgid "Forgot password?"
 msgstr "忘記密碼？"
+
+#: src/components/routes/settings/latency.tsx
+#~ msgid "Format: 显示名=主机:端口 (one per line). Example:"
+#~ msgstr ""
 
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
@@ -977,11 +1006,11 @@ msgstr "語言"
 #: src/components/systems-table/systems-table-columns.tsx
 #: src/lib/alerts.ts
 msgid "Latency"
-msgstr ""
+msgstr "延迟"
 
 #: src/components/routes/settings/latency.tsx
 msgid "Latency probe targets updated. Agents pick them up on the next poll."
-msgstr ""
+msgstr "延迟探测目标已更新，Agent 将在下次轮询时生效。"
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Layout"
@@ -1105,6 +1134,8 @@ msgstr "型號"
 #: src/components/add-system.tsx
 #: src/components/alerts-history-columns.tsx
 #: src/components/containers-table/containers-table-columns.tsx
+#: src/components/routes/settings/latency.tsx
+#: src/components/routes/settings/latency.tsx
 #: src/components/systemd-table/systemd-table-columns.tsx
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Name"
@@ -1261,6 +1292,10 @@ msgstr "Payload 格式"
 msgid "Per-core average utilization"
 msgstr "核心平均使用率"
 
+#: src/components/routes/system/charts/network-charts.tsx
+msgid "Per-target TCP connect latency (ms)"
+msgstr "各探测点 TCP 连接延迟（毫秒）"
+
 #: src/components/routes/system/charts/disk-charts.tsx
 msgid "Percent of time the disk is busy with I/O"
 msgstr "磁碟忙於 I/O 操作的時間百分比"
@@ -1278,8 +1313,8 @@ msgid "Persistence"
 msgstr "持久性"
 
 #: src/components/routes/settings/latency.tsx
-msgid "Ping Targets"
-msgstr ""
+#~ msgid "Ping Targets"
+#~ msgstr ""
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Please <0>configure an SMTP server</0> to ensure alerts are delivered."
@@ -1377,6 +1412,10 @@ msgstr "重新整理"
 msgid "Relationships"
 msgstr "關係"
 
+#: src/components/routes/settings/latency.tsx
+msgid "Remove"
+msgstr "删除"
+
 #: src/components/login/login.tsx
 msgid "Request a one-time password"
 msgstr "請求一次性密碼"
@@ -1456,7 +1495,7 @@ msgstr "儲存在資料庫中，在您停用之前不會過期。"
 
 #: src/components/routes/settings/latency.tsx
 msgid "Saving..."
-msgstr ""
+msgstr "保存中…"
 
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Schedule"
@@ -1636,8 +1675,8 @@ msgid "Tasks"
 msgstr "任務數"
 
 #: src/components/routes/system/charts/network-charts.tsx
-msgid "TCP connect latency to configured targets"
-msgstr ""
+#~ msgid "TCP connect latency to configured targets"
+#~ msgstr ""
 
 #. Temperature label in systems table
 #: src/components/routes/system/smart-table.tsx
@@ -1795,7 +1834,7 @@ msgstr "當記憶體使用率超過閾值時觸發"
 
 #: src/lib/alerts.ts
 msgid "Triggers when network latency exceeds a threshold"
-msgstr ""
+msgstr "当网络延迟超过阈值时触发"
 
 #: src/lib/alerts.ts
 msgid "Triggers when status switches between up and down"

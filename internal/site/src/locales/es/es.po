@@ -121,9 +121,22 @@ msgstr "Estado activo"
 msgid "Add {foo}"
 msgstr "Agregar {foo}"
 
+#: src/components/routes/settings/latency.tsx
+msgid "Add named TCP latency probes for all agents. Name is shown on the chart; address is host:port only."
+msgstr ""
+
+#: src/components/routes/settings/latency.tsx
+msgid "Add target"
+msgstr ""
+
 #: src/components/routes/settings/notifications.tsx
 msgid "Add URL"
 msgstr "Agregar URL"
+
+#: src/components/routes/settings/latency.tsx
+#: src/components/routes/settings/latency.tsx
+msgid "Address"
+msgstr ""
 
 #: src/components/routes/settings/general.tsx
 msgid "Adjust display options for charts."
@@ -415,8 +428,12 @@ msgid "Configure how you receive alert notifications."
 msgstr "Configura cómo recibe las notificaciones de alertas."
 
 #: src/components/routes/settings/latency.tsx
-msgid "Configure TCP latency probe targets for all agents (Nezha-style). Use comma-separated host:port values."
-msgstr ""
+#~ msgid "Configure named TCP latency probes for all agents. Each line is shown separately on the latency chart."
+#~ msgstr ""
+
+#: src/components/routes/settings/latency.tsx
+#~ msgid "Configure TCP latency probe targets for all agents (Nezha-style). Use comma-separated host:port values."
+#~ msgstr ""
 
 #: src/components/login/auth-form.tsx
 #: src/components/login/auth-form.tsx
@@ -671,6 +688,10 @@ msgstr "Descargar"
 msgid "Duration"
 msgstr "Duración"
 
+#: src/components/routes/settings/latency.tsx
+msgid "e.g. 电信广东"
+msgstr ""
+
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Edit"
@@ -744,8 +765,8 @@ msgid "Example:"
 msgstr "Ejemplo:"
 
 #: src/components/routes/settings/latency.tsx
-msgid "Example: telecom / mobile / unicom CDN endpoints. Leave empty to use each agent's PING_TARGETS env or defaults."
-msgstr ""
+#~ msgid "Example: telecom / mobile / unicom CDN endpoints. Leave empty to use each agent's PING_TARGETS env or defaults."
+#~ msgstr ""
 
 #. placeholder {0}: alert.value
 #. placeholder {1}: info.unit
@@ -822,6 +843,10 @@ msgstr "Error al actualizar la alerta"
 msgid "Failed: {0}"
 msgstr "Fallidos: {0}"
 
+#: src/components/routes/settings/latency.tsx
+#~ msgid "Fill example"
+#~ msgstr ""
+
 #: src/components/containers-table/containers-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/system/chart-card.tsx
@@ -846,6 +871,10 @@ msgstr "Por <0>{min}</0> {min, plural, one {minuto} other {minutos}}"
 #: src/components/login/auth-form.tsx
 msgid "Forgot password?"
 msgstr "¿Olvidaste tu contraseña?"
+
+#: src/components/routes/settings/latency.tsx
+#~ msgid "Format: 显示名=主机:端口 (one per line). Example:"
+#~ msgstr ""
 
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
@@ -1105,6 +1134,8 @@ msgstr "Modelo"
 #: src/components/add-system.tsx
 #: src/components/alerts-history-columns.tsx
 #: src/components/containers-table/containers-table-columns.tsx
+#: src/components/routes/settings/latency.tsx
+#: src/components/routes/settings/latency.tsx
 #: src/components/systemd-table/systemd-table-columns.tsx
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Name"
@@ -1261,6 +1292,10 @@ msgstr "Formato de carga útil (payload)"
 msgid "Per-core average utilization"
 msgstr "Uso promedio por núcleo"
 
+#: src/components/routes/system/charts/network-charts.tsx
+msgid "Per-target TCP connect latency (ms)"
+msgstr ""
+
 #: src/components/routes/system/charts/disk-charts.tsx
 msgid "Percent of time the disk is busy with I/O"
 msgstr "Porcentaje de tiempo que el disco está ocupado con E/S"
@@ -1278,8 +1313,8 @@ msgid "Persistence"
 msgstr "Persistencia"
 
 #: src/components/routes/settings/latency.tsx
-msgid "Ping Targets"
-msgstr ""
+#~ msgid "Ping Targets"
+#~ msgstr ""
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Please <0>configure an SMTP server</0> to ensure alerts are delivered."
@@ -1376,6 +1411,10 @@ msgstr "Actualizar"
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Relationships"
 msgstr "Relaciones"
+
+#: src/components/routes/settings/latency.tsx
+msgid "Remove"
+msgstr ""
 
 #: src/components/login/login.tsx
 msgid "Request a one-time password"
@@ -1636,8 +1675,8 @@ msgid "Tasks"
 msgstr "Tareas"
 
 #: src/components/routes/system/charts/network-charts.tsx
-msgid "TCP connect latency to configured targets"
-msgstr ""
+#~ msgid "TCP connect latency to configured targets"
+#~ msgstr ""
 
 #. Temperature label in systems table
 #: src/components/routes/system/smart-table.tsx
