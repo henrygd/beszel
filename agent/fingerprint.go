@@ -50,6 +50,9 @@ func generateFingerprint(hostname, cpuModel string) string {
 			if info, err := cpu.Info(); err == nil && len(info) > 0 {
 				cpuModel = info[0].ModelName
 			}
+			if cpuModel == "" {
+				cpuModel = getCpuModelFromCpuinfo()
+			}
 		}
 		fingerprint = hostname + cpuModel
 	}
