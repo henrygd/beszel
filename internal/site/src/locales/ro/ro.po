@@ -8,7 +8,7 @@ msgstr ""
 "Language: ro\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2026-04-05 18:27\n"
+"PO-Revision-Date: 2026-07-19 13:06\n"
 "Last-Translator: \n"
 "Language-Team: Romanian\n"
 "Plural-Forms: nplurals=3; plural=(n==1 ? 0 : (n==0 || (n%100>0 && n%100<20)) ? 1 : 2);\n"
@@ -57,7 +57,7 @@ msgstr "1 oră"
 #. Load average
 #: src/components/routes/system/charts/load-average-chart.tsx
 msgid "1 min"
-msgstr ""
+msgstr "1 min"
 
 #: src/lib/utils.ts
 msgid "1 minute"
@@ -74,7 +74,7 @@ msgstr "12 ore"
 #. Load average
 #: src/components/routes/system/charts/load-average-chart.tsx
 msgid "15 min"
-msgstr ""
+msgstr "15 min"
 
 #: src/lib/utils.ts
 msgid "24 hours"
@@ -87,7 +87,7 @@ msgstr "30 zile"
 #. Load average
 #: src/components/routes/system/charts/load-average-chart.tsx
 msgid "5 min"
-msgstr ""
+msgstr "5 min"
 
 #. Table column
 #: src/components/routes/settings/quiet-hours.tsx
@@ -110,7 +110,7 @@ msgstr "Alerte Active"
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Active state"
-msgstr ""
+msgstr "Stare activă"
 
 #: src/components/add-system.tsx
 #: src/components/add-system.tsx
@@ -119,11 +119,11 @@ msgstr ""
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Add {foo}"
-msgstr ""
+msgstr "Adaugă {foo}"
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Add URL"
-msgstr ""
+msgstr "Adaugă URL"
 
 #: src/components/routes/settings/general.tsx
 msgid "Adjust display options for charts."
@@ -131,25 +131,25 @@ msgstr ""
 
 #: src/components/routes/settings/general.tsx
 msgid "Adjust the width of the main layout"
-msgstr ""
+msgstr "Reglaţi lăţimea aspectului principal"
 
 #: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
 #: src/components/navbar.tsx
 msgid "Admin"
-msgstr ""
+msgstr "Admin"
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "After"
-msgstr ""
+msgstr "După"
 
 #: src/components/routes/settings/heartbeat.tsx
 msgid "After setting the environment variables, restart your Beszel hub for changes to take effect."
-msgstr ""
+msgstr "După setarea variabilelor de mediu, reporniţi centrul Beszel pentru ca modificările să aibă efect."
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Agent"
-msgstr ""
+msgstr "Agent"
 
 #: src/components/command-palette.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
@@ -168,7 +168,7 @@ msgstr "Alerte"
 #: src/components/navbar.tsx
 #: src/components/routes/containers.tsx
 msgid "All Containers"
-msgstr ""
+msgstr "Toate Containerele"
 
 #: src/components/alerts/alerts-sheet.tsx
 #: src/components/command-palette.tsx
@@ -177,11 +177,11 @@ msgstr ""
 #: src/components/systems-table/systems-table.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "All Systems"
-msgstr ""
+msgstr "Toate sistemele"
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Are you sure you want to delete {name}?"
-msgstr ""
+msgstr "Sigur vrei să ștergi {name}?"
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Are you sure?"
@@ -189,11 +189,11 @@ msgstr "Ești sigur?"
 
 #: src/components/copy-to-clipboard.tsx
 msgid "Automatic copy requires a secure context."
-msgstr ""
+msgstr "Copierea automată necesită un context securizat."
 
 #: src/components/routes/system/chart-card.tsx
 msgid "Average"
-msgstr ""
+msgstr "Medie"
 
 #: src/components/routes/system/charts/cpu-charts.tsx
 msgid "Average CPU utilization of containers"
@@ -209,8 +209,17 @@ msgstr ""
 msgid "Average exceeds <0>{value}{0}</0>"
 msgstr ""
 
+#: src/components/routes/system/disk-io-sheet.tsx
+msgid "Average number of I/O operations waiting to be serviced"
+msgstr ""
+
 #: src/components/routes/system/charts/gpu-charts.tsx
 msgid "Average power consumption of GPUs"
+msgstr ""
+
+#: src/components/routes/system/disk-io-sheet.tsx
+msgctxt "Disk I/O average operation time (iostat await)"
+msgid "Average queue to completion time per operation"
 msgstr ""
 
 #: src/components/routes/system/charts/cpu-charts.tsx
@@ -327,7 +336,7 @@ msgstr ""
 
 #: src/components/routes/settings/general.tsx
 msgid "Celsius (°C)"
-msgstr ""
+msgstr "Celsius (°C)"
 
 #: src/components/routes/settings/general.tsx
 msgid "Change display units for metrics."
@@ -444,6 +453,11 @@ msgctxt "Environment variables"
 msgid "Copy env"
 msgstr ""
 
+#: src/components/alerts/alerts-sheet.tsx
+msgctxt "Copy alerts from another system"
+msgid "Copy from"
+msgstr ""
+
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Copy host"
 msgstr ""
@@ -482,7 +496,7 @@ msgstr ""
 #: src/components/systemd-table/systemd-table-columns.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "CPU"
-msgstr ""
+msgstr "CPU"
 
 #: src/components/routes/system/cpu-sheet.tsx
 msgid "CPU Cores"
@@ -599,12 +613,11 @@ msgstr "Unitate disc"
 
 #: src/components/routes/system/charts/disk-charts.tsx
 #: src/components/routes/system/charts/disk-charts.tsx
-#: src/components/routes/system/charts/extra-fs-charts.tsx
 #: src/lib/alerts.ts
 msgid "Disk Usage"
 msgstr "Utilizare Disc"
 
-#: src/components/routes/system/charts/extra-fs-charts.tsx
+#: src/components/routes/system/charts/disk-charts.tsx
 msgid "Disk usage of {extraFsName}"
 msgstr ""
 
@@ -664,7 +677,7 @@ msgstr "Editează {foo}"
 #: src/components/login/forgot-pass-form.tsx
 #: src/components/login/otp-forms.tsx
 msgid "Email"
-msgstr ""
+msgstr "Email"
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Email notifications"
@@ -841,7 +854,7 @@ msgstr ""
 
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Global"
-msgstr ""
+msgstr "Global"
 
 #: src/components/routes/system.tsx
 msgid "GPU"
@@ -896,6 +909,21 @@ msgstr ""
 
 #: src/components/routes/settings/heartbeat.tsx
 msgid "HTTP method: POST, GET, or HEAD (default: POST)"
+msgstr ""
+
+#: src/components/routes/system/disk-io-sheet.tsx
+msgctxt "Disk I/O average operation time (iostat await)"
+msgid "I/O Await"
+msgstr ""
+
+#: src/components/routes/system/disk-io-sheet.tsx
+msgctxt "Disk I/O total time spent on read/write"
+msgid "I/O Time"
+msgstr ""
+
+#: src/components/routes/system/charts/disk-charts.tsx
+msgctxt "Percent of time the disk is busy with I/O"
+msgid "I/O Utilization"
 msgstr ""
 
 #. Context: Battery state
@@ -1046,7 +1074,7 @@ msgstr ""
 #. Device model
 #: src/components/routes/system/smart-table.tsx
 msgid "Model"
-msgstr ""
+msgstr "Model"
 
 #: src/components/add-system.tsx
 #: src/components/alerts-history-columns.tsx
@@ -1207,6 +1235,10 @@ msgstr ""
 msgid "Per-core average utilization"
 msgstr ""
 
+#: src/components/routes/system/charts/disk-charts.tsx
+msgid "Percent of time the disk is busy with I/O"
+msgstr ""
+
 #: src/components/routes/system/cpu-sheet.tsx
 msgid "Percentage of time spent in each state"
 msgstr ""
@@ -1254,7 +1286,7 @@ msgstr ""
 
 #: src/components/add-system.tsx
 msgid "Port"
-msgstr ""
+msgstr "Port"
 
 #: src/components/containers-table/containers-table-columns.tsx
 msgctxt "Container ports"
@@ -1284,13 +1316,20 @@ msgstr ""
 msgid "Public Key"
 msgstr ""
 
+#: src/components/routes/system/disk-io-sheet.tsx
+msgctxt "Disk I/O average queue depth"
+msgid "Queue Depth"
+msgstr ""
+
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Quiet Hours"
 msgstr ""
 
 #. Disk read
 #: src/components/routes/system/charts/disk-charts.tsx
-#: src/components/routes/system/charts/extra-fs-charts.tsx
+#: src/components/routes/system/disk-io-sheet.tsx
+#: src/components/routes/system/disk-io-sheet.tsx
+#: src/components/routes/system/disk-io-sheet.tsx
 msgid "Read"
 msgstr "Citit"
 
@@ -1602,7 +1641,7 @@ msgstr ""
 msgid "This will permanently delete all selected records from the database."
 msgstr ""
 
-#: src/components/routes/system/charts/extra-fs-charts.tsx
+#: src/components/routes/system/charts/disk-charts.tsx
 msgid "Throughput of {extraFsName}"
 msgstr ""
 
@@ -1645,7 +1684,7 @@ msgstr ""
 #: src/components/ui/chart.tsx
 #: src/components/ui/chart.tsx
 msgid "Total"
-msgstr ""
+msgstr "Total"
 
 #: src/components/routes/system/network-sheet.tsx
 msgid "Total data received for each interface"
@@ -1655,10 +1694,15 @@ msgstr ""
 msgid "Total data sent for each interface"
 msgstr ""
 
+#: src/components/routes/system/disk-io-sheet.tsx
+msgctxt "Disk I/O"
+msgid "Total time spent on read/write (can exceed 100%)"
+msgstr ""
+
 #. placeholder {0}: data.length
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Total: {0}"
-msgstr ""
+msgstr "Total: {0}"
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Triggered by"
@@ -1775,7 +1819,7 @@ msgstr ""
 msgid "Uptime"
 msgstr ""
 
-#: src/components/routes/system/charts/extra-fs-charts.tsx
+#: src/components/routes/system/charts/disk-charts.tsx
 #: src/components/routes/system/charts/gpu-charts.tsx
 #: src/components/routes/system/charts/gpu-charts.tsx
 #: src/components/routes/system/charts/gpu-charts.tsx
@@ -1797,6 +1841,11 @@ msgstr "Utilizat"
 msgid "Users"
 msgstr "Utilizatori"
 
+#: src/components/routes/system/charts/disk-charts.tsx
+msgctxt "Disk I/O utilization"
+msgid "Utilization"
+msgstr ""
+
 #: src/components/alerts-history-columns.tsx
 msgid "Value"
 msgstr ""
@@ -1806,6 +1855,7 @@ msgid "View"
 msgstr ""
 
 #: src/components/routes/system/cpu-sheet.tsx
+#: src/components/routes/system/disk-io-sheet.tsx
 #: src/components/routes/system/network-sheet.tsx
 msgid "View more"
 msgstr ""
@@ -1858,7 +1908,9 @@ msgstr ""
 
 #. Disk write
 #: src/components/routes/system/charts/disk-charts.tsx
-#: src/components/routes/system/charts/extra-fs-charts.tsx
+#: src/components/routes/system/disk-io-sheet.tsx
+#: src/components/routes/system/disk-io-sheet.tsx
+#: src/components/routes/system/disk-io-sheet.tsx
 msgid "Write"
 msgstr ""
 
