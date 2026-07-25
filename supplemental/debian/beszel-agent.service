@@ -12,7 +12,23 @@ User=beszel
 Restart=on-failure
 StateDirectory=beszel-agent
 
+# S.M.A.R.T. monitoring needs more than the plain `beszel` user has:
+#   - SupplementaryGroups=disk    -> open() the root:disk 0660 device nodes
+#                                    (/dev/sd*, /dev/nvme*n*)
+#   - CAP_SYS_RAWIO / CAP_SYS_ADMIN -> issue the SG_IO and NVMe admin ioctls
+#                                      smartctl uses to read the data
+# Without these, every smartctl call fails and no SMART data is ever reported.
+# Granting the two capabilities keeps the agent unprivileged otherwise, which
+# is why this is preferred over running the whole service as root.
+#
+# Note: some distros ship the NVMe *controller* node (/dev/nvme0) as root:root
+# 0600, which the disk group does not cover. smartctl can normally read the
+# namespace node (/dev/nvme0n1) instead; if not, add a udev rule for it.
+SupplementaryGroups=disk
+AmbientCapabilities=CAP_SYS_RAWIO CAP_SYS_ADMIN
+
 # Security/sandboxing settings
+CapabilityBoundingSet=CAP_SYS_RAWIO CAP_SYS_ADMIN
 KeyringMode=private
 LockPersonality=yes
 ProtectClock=yes
