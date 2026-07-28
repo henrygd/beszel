@@ -8,6 +8,7 @@ import (
 	"os"
 	"os/signal"
 	"strings"
+	"sync/atomic"
 	"syscall"
 	"time"
 
@@ -20,14 +21,41 @@ import (
 // It handles both WebSocket and SSH connections, automatically switching between
 // them based on availability and managing reconnection attempts.
 type ConnectionManager struct {
-	agent          *Agent               // Reference to the parent agent
-	State          ConnectionState      // Current connection state
-	eventChan      chan ConnectionEvent // Channel for connection events
-	wsClient       *WebSocketClient     // WebSocket client for hub communication
-	serverOptions  ServerOptions        // Configuration for SSH server
-	wsTicker       *time.Ticker         // Ticker for WebSocket connection attempts
-	isConnecting   bool                 // Prevents multiple simultaneous reconnection attempts
-	ConnectionType system.ConnectionType
+	agent         *Agent               // Reference to the parent agent
+	eventChan     chan ConnectionEvent // Channel for connection events
+	wsClient      *WebSocketClient     // WebSocket client for hub communication
+	serverOptions ServerOptions        // Configuration for SSH server
+	wsTicker      *time.Ticker         // Ticker for WebSocket connection attempts
+	// isConnecting guards against duplicate reconnection attempts. It is
+	// written both by the event loop (handleStateChange) and by the
+	// connect() goroutine it spawns, so it must be atomic.
+	isConnecting atomic.Bool
+	// state and connectionType are written by the event loop in
+	// handleStateChange while other goroutines read them concurrently -
+	// getSystemStats reads the connection type on the WebSocket handler
+	// goroutine. Both are atomic; use the accessors, not the fields.
+	state          atomic.Uint32 // ConnectionState
+	connectionType atomic.Uint32 // system.ConnectionType
+}
+
+// State returns the current connection state. Safe for concurrent use.
+func (c *ConnectionManager) State() ConnectionState {
+	return ConnectionState(c.state.Load())
+}
+
+// setState stores the current connection state. Safe for concurrent use.
+func (c *ConnectionManager) setState(state ConnectionState) {
+	c.state.Store(uint32(state))
+}
+
+// ConnectionType returns the active connection type. Safe for concurrent use.
+func (c *ConnectionManager) ConnectionType() system.ConnectionType {
+	return system.ConnectionType(c.connectionType.Load())
+}
+
+// setConnectionType stores the active connection type. Safe for concurrent use.
+func (c *ConnectionManager) setConnectionType(connectionType system.ConnectionType) {
+	c.connectionType.Store(uint32(connectionType))
 }
 
 // ConnectionState represents the current connection state of the agent.
@@ -57,8 +85,8 @@ const wsTickerInterval = 10 * time.Second
 func newConnectionManager(agent *Agent) *ConnectionManager {
 	cm := &ConnectionManager{
 		agent: agent,
-		State: Disconnected,
 	}
+	cm.setState(Disconnected)
 	return cm
 }
 
@@ -153,11 +181,11 @@ func (c *ConnectionManager) handleEvent(event ConnectionEvent) {
 	case SSHConnect:
 		c.handleStateChange(SSHConnected)
 	case WebSocketDisconnect:
-		if c.State == WebSocketConnected {
+		if c.State() == WebSocketConnected {
 			c.handleStateChange(Disconnected)
 		}
 	case SSHDisconnect:
-		if c.State == SSHConnected {
+		if c.State() == SSHConnected {
 			c.handleStateChange(Disconnected)
 		}
 	}
@@ -166,30 +194,30 @@ func (c *ConnectionManager) handleEvent(event ConnectionEvent) {
 // handleStateChange updates the connection state and performs necessary actions
 // based on the new state, including stopping services and initiating reconnections.
 func (c *ConnectionManager) handleStateChange(newState ConnectionState) {
-	if c.State == newState {
+	if c.State() == newState {
 		return
 	}
-	c.State = newState
+	c.setState(newState)
 	switch newState {
 	case WebSocketConnected:
 		slog.Info("WebSocket connected", "host", c.wsClient.hubURL.Host)
-		c.ConnectionType = system.ConnectionTypeWebSocket
+		c.setConnectionType(system.ConnectionTypeWebSocket)
 		c.stopWsTicker()
 		_ = c.agent.StopServer()
-		c.isConnecting = false
+		c.isConnecting.Store(false)
 	case SSHConnected:
 		// stop new ws connection attempts
 		slog.Info("SSH connection established")
-		c.ConnectionType = system.ConnectionTypeSSH
+		c.setConnectionType(system.ConnectionTypeSSH)
 		c.stopWsTicker()
-		c.isConnecting = false
+		c.isConnecting.Store(false)
 	case Disconnected:
-		c.ConnectionType = system.ConnectionTypeNone
-		if c.isConnecting {
+		c.setConnectionType(system.ConnectionTypeNone)
+		if c.isConnecting.Load() {
 			// Already handling reconnection, avoid duplicate attempts
 			return
 		}
-		c.isConnecting = true
+		c.isConnecting.Store(true)
 		slog.Warn("Disconnected from hub")
 		// make sure old ws connection is closed
 		c.closeWebSocket()
@@ -201,9 +229,9 @@ func (c *ConnectionManager) handleStateChange(newState ConnectionState) {
 // connect handles the connection logic with proper delays and priority.
 // It attempts WebSocket connection first, falling back to SSH server if needed.
 func (c *ConnectionManager) connect() {
-	c.isConnecting = true
+	c.isConnecting.Store(true)
 	defer func() {
-		c.isConnecting = false
+		c.isConnecting.Store(false)
 	}()
 
 	if c.wsClient != nil && time.Since(c.wsClient.lastConnectAttempt) < 5*time.Second {
@@ -218,7 +246,7 @@ func (c *ConnectionManager) connect() {
 			_ = c.stop()
 			os.Exit(1)
 		}
-		if c.State == Disconnected {
+		if c.State() == Disconnected {
 			c.startSSHServer()
 			c.startWsTicker()
 		}
@@ -227,7 +255,7 @@ func (c *ConnectionManager) connect() {
 
 // startWebSocketConnection attempts to establish a WebSocket connection to the hub.
 func (c *ConnectionManager) startWebSocketConnection() error {
-	if c.State != Disconnected {
+	if c.State() != Disconnected {
 		return errors.New("already connected")
 	}
 	if c.wsClient == nil {
@@ -247,7 +275,7 @@ func (c *ConnectionManager) startWebSocketConnection() error {
 
 // startSSHServer starts the SSH server if the agent is currently disconnected.
 func (c *ConnectionManager) startSSHServer() {
-	if c.State == Disconnected {
+	if c.State() == Disconnected {
 		go c.agent.StartServer(c.serverOptions)
 	}
 }

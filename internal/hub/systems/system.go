@@ -9,6 +9,7 @@ import (
 	"math/rand"
 	"net"
 	"strings"
+	"sync"
 	"sync/atomic"
 	"time"
 
@@ -33,22 +34,41 @@ import (
 )
 
 type System struct {
-	Id             string                  `db:"id"`
-	Host           string                  `db:"host"`
-	Port           string                  `db:"port"`
-	Status         string                  `db:"status"`
+	Id   string
+	Host string
+	Port string
+	// status is guarded by statusMu: it is written from PocketBase record-update
+	// hooks while the per-system StartUpdater goroutine reads it concurrently.
+	// Use Status()/setStatus() rather than touching it directly.
+	statusMu       sync.RWMutex
+	status         string
 	manager        *SystemManager          // Manager that this system belongs to
 	client         *ssh.Client             // SSH client for fetching data
 	sshTransport   *transport.SSHTransport // SSH transport for requests
 	data           *system.CombinedData    // system data from agent
 	ctx            context.Context         // Context for stopping the updater
 	cancel         context.CancelFunc      // Stops and removes system from updater
+	done           chan struct{}           // Closed when StartUpdater returns; lets shutdown wait it out
 	WsConn         *ws.WsConn              // Handler for agent WebSocket connection
 	agentVersion   semver.Version          // Agent version
 	updateTicker   *time.Ticker            // Ticker for updating the system
 	detailsFetched atomic.Bool             // True if static system details have been fetched and saved
 	smartFetching  atomic.Bool             // True if SMART devices are currently being fetched
 	smartInterval  time.Duration           // Interval for periodic SMART data updates
+}
+
+// Status returns the system's current status. Safe for concurrent use.
+func (sys *System) Status() string {
+	sys.statusMu.RLock()
+	defer sys.statusMu.RUnlock()
+	return sys.status
+}
+
+// setStatus updates the system's status. Safe for concurrent use.
+func (sys *System) setStatus(status string) {
+	sys.statusMu.Lock()
+	sys.status = status
+	sys.statusMu.Unlock()
 }
 
 func (sm *SystemManager) NewSystem(systemId string) *System {
@@ -64,6 +84,12 @@ func (sm *SystemManager) NewSystem(systemId string) *System {
 // It first fetches the data from the agent then updates the records.
 // If the data is not found or the system is down, it sets the system down.
 func (sys *System) StartUpdater() {
+	// Signal completion so shutdown can wait for this goroutine to finish
+	// before the app (and its DB) goes away.
+	if sys.done != nil {
+		defer close(sys.done)
+	}
+
 	// Channel that can be used to set the system down. Currently only used to
 	// allow a short delay for reconnection after websocket connection is closed.
 	var downChan chan struct{}
@@ -79,12 +105,18 @@ func (sys *System) StartUpdater() {
 	} else {
 		// if the system does not have a websocket connection, wait before updating
 		// to allow the agent to connect via websocket (makes sure fingerprint is set).
-		time.Sleep(11 * time.Second)
+		// Abort early if the system is removed while waiting, so shutdown isn't
+		// held up for the full delay.
+		select {
+		case <-time.After(11 * time.Second):
+		case <-sys.ctx.Done():
+			return
+		}
 	}
 
 	// update immediately if system is not paused (only for ws connections)
 	// we'll wait a minute before connecting via SSH to prioritize ws connections
-	if sys.Status != paused && sys.ctx.Err() == nil {
+	if sys.Status() != paused && sys.ctx.Err() == nil {
 		if err := sys.update(); err != nil {
 			_ = sys.setDown(err)
 		}
@@ -117,7 +149,7 @@ func (sys *System) StartUpdater() {
 
 // update updates the system data and records.
 func (sys *System) update() error {
-	if sys.Status == paused {
+	if sys.Status() == paused {
 		sys.handlePaused()
 		return nil
 	}
@@ -345,6 +377,12 @@ func createContainerRecords(app core.App, data []*container.Stats, systemId stri
 // getRecord retrieves the system record from the database.
 // If the record is not found, it removes the system from the manager.
 func (sys *System) getRecord(app core.App) (*core.Record, error) {
+	// The updater goroutine can still be in flight while the system is being
+	// removed and the app torn down; querying a closed app panics, so bail out
+	// as soon as our context is cancelled.
+	if sys.ctx != nil && sys.ctx.Err() != nil {
+		return nil, sys.ctx.Err()
+	}
 	record, err := app.FindRecordById("systems", sys.Id)
 	if err != nil || record == nil {
 		_ = sys.manager.RemoveSystem(sys.Id)
@@ -378,7 +416,13 @@ func (sys *System) HasUser(app core.App, user *core.Record) bool {
 // It takes the original error that caused the system to go down and returns any error
 // encountered during the process of updating the system status.
 func (sys *System) setDown(originalError error) error {
-	if sys.Status == down || sys.Status == paused {
+	// An update can still be in flight when the system is removed (AddRecord
+	// replaces systems mid-run, and shutdown cancels them). Writing to the DB
+	// after that point can hit an already-closed app, so stop here.
+	if sys.ctx != nil && sys.ctx.Err() != nil {
+		return nil
+	}
+	if sys.Status() == down || sys.Status() == paused {
 		return nil
 	}
 	record, err := sys.getRecord(sys.manager.hub)
@@ -607,7 +651,7 @@ func (sys *System) fetchDataViaSSH(options common.DataRequestOptions) (*system.C
 // The operation can request a retry by returning true as the first return value.
 func (sys *System) runSSHOperation(timeout time.Duration, retries int, operation func(*ssh.Session) (bool, error)) error {
 	for attempt := 0; attempt <= retries; attempt++ {
-		if sys.client == nil || sys.Status == down {
+		if sys.client == nil || sys.Status() == down {
 			if err := sys.createSSHClient(); err != nil {
 				return err
 			}

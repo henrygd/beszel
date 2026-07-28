@@ -110,11 +110,26 @@ func (sm *SystemManager) Initialize() error {
 		sm.hub.Logger().Error("Failed to start recovery prober", "err", err)
 	}
 
-	// Load existing systems from database (excluding paused ones)
-	var systems []*System
-	err = sm.hub.DB().NewQuery("SELECT id, host, port, status FROM systems WHERE status != 'paused'").All(&systems)
-	if err != nil || len(systems) == 0 {
+	// Load existing systems from database (excluding paused ones).
+	// Scanned into a DTO rather than directly into System: System.status is
+	// unexported and mutex-guarded (it is mutated concurrently once the system
+	// is running), so it cannot be a dbx scan target.
+	var rows []struct {
+		Id     string `db:"id"`
+		Host   string `db:"host"`
+		Port   string `db:"port"`
+		Status string `db:"status"`
+	}
+	err = sm.hub.DB().NewQuery("SELECT id, host, port, status FROM systems WHERE status != 'paused'").All(&rows)
+	if err != nil || len(rows) == 0 {
 		return err
+	}
+
+	systems := make([]*System, 0, len(rows))
+	for _, row := range rows {
+		sys := &System{Id: row.Id, Host: row.Host, Port: row.Port}
+		sys.setStatus(row.Status)
+		systems = append(systems, sys)
 	}
 
 	// Start systems in background with staggered timing
@@ -201,8 +216,8 @@ func (sm *SystemManager) onRecordAfterUpdateSuccess(e *core.RecordEvent) error {
 	prevStatus := pending
 	system, ok := sm.systems.GetOk(e.Record.Id)
 	if ok {
-		prevStatus = system.Status
-		system.Status = newStatus
+		prevStatus = system.Status()
+		system.setStatus(newStatus)
 	}
 
 	switch newStatus {
@@ -271,6 +286,7 @@ func (sm *SystemManager) AddSystem(sys *System) error {
 	sys.manager = sm
 	sys.ctx, sys.cancel = sys.getContext()
 	sys.data = &system.CombinedData{}
+	sys.done = make(chan struct{})
 	sm.systems.Set(sys.Id, sys)
 
 	// Start monitoring in background
@@ -315,7 +331,7 @@ func (sm *SystemManager) AddRecord(record *core.Record, system *System) (err err
 	}
 
 	// Populate system from record
-	system.Status = record.GetString("status")
+	system.setStatus(record.GetString("status"))
 	system.Host = record.GetString("host")
 	system.Port = record.GetString("port")
 
