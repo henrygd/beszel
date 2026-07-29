@@ -175,7 +175,7 @@ export function UserAuthForm({
 	 */
 	function redirectToOauthProvider(provider: AuthProviderInfo) {
 		const url = new URL(provider.authURL)
-		// url.searchParams.set("redirect_uri", `${window.location.origin}${basePath}`)
+		url.searchParams.set("redirect_uri", `${window.location.origin}${basePath}`)
 		sessionStorage.setItem("provider", JSON.stringify(provider))
 		window.location.href = url.toString()
 	}
