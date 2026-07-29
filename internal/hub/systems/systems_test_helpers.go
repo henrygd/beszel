@@ -5,6 +5,7 @@ package systems
 import (
 	"context"
 	"fmt"
+	"time"
 
 	entities "github.com/henrygd/beszel/internal/entities/system"
 	"github.com/pocketbase/pocketbase/core"
@@ -34,7 +35,7 @@ func (sm *SystemManager) GetSystemStatusFromStore(systemID string) string {
 	if !ok {
 		return ""
 	}
-	return sys.Status
+	return sys.Status()
 }
 
 // TESTING ONLY: GetSystemContextFromStore returns the context and cancel function for a system
@@ -111,8 +112,22 @@ func (sm *SystemManager) SetSystemStatusInDB(systemID string, status string) boo
 
 // TESTING ONLY: RemoveAllSystems removes all systems from the store
 func (sm *SystemManager) RemoveAllSystems() {
-	for _, system := range sm.systems.GetAll() {
+	systems := sm.systems.GetAll()
+	for _, system := range systems {
 		sm.RemoveSystem(system.Id)
+	}
+	// RemoveSystem only cancels the updater; it does not wait for it. Block
+	// until each goroutine has actually exited, otherwise an in-flight update
+	// can hit the test app's DB after Cleanup() closes it and panic with a nil
+	// pointer dereference.
+	for _, system := range systems {
+		if system.done == nil {
+			continue
+		}
+		select {
+		case <-system.done:
+		case <-time.After(10 * time.Second):
+		}
 	}
 	sm.smartFetchMap.StopCleaner()
 }

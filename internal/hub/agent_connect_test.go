@@ -926,15 +926,15 @@ func TestAgentWebSocketIntegration(t *testing.T) {
 				case <-timeout:
 					// Timeout reached
 					if tc.expectConnection {
-						t.Fatalf("Expected connection to succeed but timed out - agent state: %d", connectionManager.State)
+						t.Fatalf("Expected connection to succeed but timed out - agent state: %d", connectionManager.State())
 					} else {
-						t.Logf("Connection properly rejected (timeout) - agent state: %d", connectionManager.State)
+						t.Logf("Connection properly rejected (timeout) - agent state: %d", connectionManager.State())
 					}
 					connectionResult = false
 				case <-ticker:
-					if connectionManager.State == agent.WebSocketConnected {
+					if connectionManager.State() == agent.WebSocketConnected {
 						if tc.expectConnection {
-							t.Logf("WebSocket connection successful - agent state: %d", connectionManager.State)
+							t.Logf("WebSocket connection successful - agent state: %d", connectionManager.State())
 							connectionResult = true
 						} else {
 							t.Errorf("Unexpected: Connection succeeded when it should have been rejected")
@@ -1109,15 +1109,15 @@ func TestMultipleSystemsWithSameUniversalToken(t *testing.T) {
 				select {
 				case <-timeout:
 					if tc.expectConnection {
-						t.Fatalf("Expected connection to succeed but timed out - agent state: %d", connectionManager.State)
+						t.Fatalf("Expected connection to succeed but timed out - agent state: %d", connectionManager.State())
 					} else {
-						t.Logf("Connection properly rejected (timeout) - agent state: %d", connectionManager.State)
+						t.Logf("Connection properly rejected (timeout) - agent state: %d", connectionManager.State())
 					}
 					connectionResult = false
 				case <-ticker:
-					if connectionManager.State == agent.WebSocketConnected {
+					if connectionManager.State() == agent.WebSocketConnected {
 						if tc.expectConnection {
-							t.Logf("WebSocket connection successful - agent state: %d", connectionManager.State)
+							t.Logf("WebSocket connection successful - agent state: %d", connectionManager.State())
 							connectionResult = true
 						} else {
 							t.Errorf("Unexpected: Connection succeeded when it should have been rejected")
@@ -1260,9 +1260,9 @@ func TestPermanentUniversalTokenFromDB(t *testing.T) {
 	for {
 		select {
 		case <-timeout:
-			t.Fatalf("Expected connection to succeed but timed out - agent state: %d", connectionManager.State)
+			t.Fatalf("Expected connection to succeed but timed out - agent state: %d", connectionManager.State())
 		case <-ticker:
-			if connectionManager.State == agent.WebSocketConnected {
+			if connectionManager.State() == agent.WebSocketConnected {
 				// Success
 				goto verify
 			}

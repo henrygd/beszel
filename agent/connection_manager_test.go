@@ -50,18 +50,18 @@ func TestConnectionManager_NewConnectionManager(t *testing.T) {
 
 	assert.NotNil(t, cm, "Connection manager should not be nil")
 	assert.Equal(t, agent, cm.agent, "Agent reference should be set")
-	assert.Equal(t, Disconnected, cm.State, "Initial state should be Disconnected")
+	assert.Equal(t, Disconnected, cm.State(), "Initial state should be Disconnected")
 	assert.Nil(t, cm.eventChan, "Event channel should be nil initially")
 	assert.Nil(t, cm.wsClient, "WebSocket client should be nil initially")
 	assert.Nil(t, cm.wsTicker, "WebSocket ticker should be nil initially")
-	assert.False(t, cm.isConnecting, "isConnecting should be false initially")
+	assert.False(t, cm.isConnecting.Load(), "isConnecting should be false initially")
 }
 
 // TestConnectionManager_StateTransitions tests basic state transitions
 func TestConnectionManager_StateTransitions(t *testing.T) {
 	agent := createTestAgent(t)
 	cm := agent.connectionManager
-	initialState := cm.State
+	initialState := cm.State()
 	cm.wsClient = &WebSocketClient{
 		hubURL: &url.URL{
 			Host: "localhost:8080",
@@ -72,18 +72,18 @@ func TestConnectionManager_StateTransitions(t *testing.T) {
 
 	// Test state transitions
 	cm.handleStateChange(WebSocketConnected)
-	assert.Equal(t, WebSocketConnected, cm.State, "State should change to WebSocketConnected")
+	assert.Equal(t, WebSocketConnected, cm.State(), "State should change to WebSocketConnected")
 
 	cm.handleStateChange(SSHConnected)
-	assert.Equal(t, SSHConnected, cm.State, "State should change to SSHConnected")
+	assert.Equal(t, SSHConnected, cm.State(), "State should change to SSHConnected")
 
 	cm.handleStateChange(Disconnected)
-	assert.Equal(t, Disconnected, cm.State, "State should change to Disconnected")
+	assert.Equal(t, Disconnected, cm.State(), "State should change to Disconnected")
 
 	// Test that same state doesn't trigger changes
-	cm.State = WebSocketConnected
+	cm.setState(WebSocketConnected)
 	cm.handleStateChange(WebSocketConnected)
-	assert.Equal(t, WebSocketConnected, cm.State, "Same state should not trigger change")
+	assert.Equal(t, WebSocketConnected, cm.State(), "Same state should not trigger change")
 }
 
 // TestConnectionManager_EventHandling tests event handling logic
@@ -142,9 +142,9 @@ func TestConnectionManager_EventHandling(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			cm.State = tc.initialState
+			cm.setState(tc.initialState)
 			cm.handleEvent(tc.event)
-			assert.Equal(t, tc.expectedState, cm.State, "State should match expected after event")
+			assert.Equal(t, tc.expectedState, cm.State(), "State should match expected after event")
 		})
 	}
 }
@@ -189,7 +189,7 @@ func TestConnectionManager_WebSocketConnectionFlow(t *testing.T) {
 	// Test WebSocket connection without proper environment
 	err := cm.startWebSocketConnection()
 	assert.Error(t, err, "WebSocket connection should fail without proper environment")
-	assert.Equal(t, Disconnected, cm.State, "State should remain Disconnected after failed connection")
+	assert.Equal(t, Disconnected, cm.State(), "State should remain Disconnected after failed connection")
 
 	// Test with invalid URL
 	t.Setenv("BESZEL_AGENT_HUB_URL", "1,33%")
@@ -214,13 +214,13 @@ func TestConnectionManager_ReconnectionLogic(t *testing.T) {
 
 	// Test that isConnecting flag prevents duplicate reconnection attempts
 	// Start from connected state, then simulate disconnect
-	cm.State = WebSocketConnected
-	cm.isConnecting = false
+	cm.setState(WebSocketConnected)
+	cm.isConnecting.Store(false)
 
 	// First disconnect should trigger reconnection logic
 	cm.handleStateChange(Disconnected)
-	assert.Equal(t, Disconnected, cm.State, "Should change to disconnected")
-	assert.True(t, cm.isConnecting, "Should set isConnecting flag")
+	assert.Equal(t, Disconnected, cm.State(), "Should change to disconnected")
+	assert.True(t, cm.isConnecting.Load(), "Should set isConnecting flag")
 }
 
 // TestConnectionManager_ConnectWithRateLimit tests connection rate limiting

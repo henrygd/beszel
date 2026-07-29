@@ -1358,6 +1358,10 @@ echo '[{"device_name":"NVIDIA Test GPU","temp":"52C","power_draw":"31W","gpu_uti
 				t.Fatalf("unknown test command %q", tt.command)
 			}
 			time.Sleep(50 * time.Millisecond) // Give collector time to run
+			// The collector goroutine keeps writing GpuDataMap under the
+			// manager's lock, so reads in validate must hold it too.
+			tt.gm.Lock()
+			defer tt.gm.Unlock()
 			tt.validate(t, tt.gm)
 		})
 	}
@@ -1383,6 +1387,10 @@ echo "0, NVIDIA Priority GPU, 45, 512, 2048, 12, 25"`
 	require.NotNil(t, gm)
 
 	time.Sleep(150 * time.Millisecond)
+	// Collector goroutines keep writing GpuDataMap under the manager lock;
+	// hold it while reading the map and the GPUData it points at.
+	gm.Lock()
+	defer gm.Unlock()
 	gpu, ok := gm.GpuDataMap["0"]
 	require.True(t, ok)
 	assert.Equal(t, "Priority GPU", gpu.Name)
@@ -1414,6 +1422,10 @@ echo '{"card0": {"Temperature (Sensor edge) (C)": "49.0", "Current Socket Graphi
 	require.NotNil(t, gm)
 
 	time.Sleep(150 * time.Millisecond)
+	// Collector goroutines keep writing GpuDataMap under the manager lock;
+	// hold it while reading the map and the GPUData it points at.
+	gm.Lock()
+	defer gm.Unlock()
 	_, intelOk := gm.GpuDataMap["i0"]
 	_, amdOk := gm.GpuDataMap["34756"]
 	assert.True(t, intelOk)
@@ -1435,6 +1447,10 @@ echo "0, NVIDIA Fallback GPU, 41, 256, 1024, 8, 14"`
 	require.NotNil(t, gm)
 
 	time.Sleep(150 * time.Millisecond)
+	// Collector goroutines keep writing GpuDataMap under the manager lock;
+	// hold it while reading the map and the GPUData it points at.
+	gm.Lock()
+	defer gm.Unlock()
 	gpu, ok := gm.GpuDataMap["0"]
 	require.True(t, ok)
 	assert.Equal(t, "Fallback GPU", gpu.Name)
@@ -1495,6 +1511,10 @@ echo "11-14-2024 22:54:33 RAM 1024/4096MB GR3D_FREQ 80% tj@70C VDD_GPU_SOC 1000m
 	require.NotNil(t, gm)
 
 	time.Sleep(100 * time.Millisecond)
+	// Collector goroutines keep writing GpuDataMap under the manager lock;
+	// hold it while reading the map and the GPUData it points at.
+	gm.Lock()
+	defer gm.Unlock()
 	gpu, ok := gm.GpuDataMap["0"]
 	require.True(t, ok)
 	assert.Equal(t, "GPU", gpu.Name)
