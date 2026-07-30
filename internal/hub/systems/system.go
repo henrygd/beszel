@@ -154,16 +154,13 @@ func (sys *System) update() error {
 	}
 
 	// Fetch and save SMART devices when system first comes online or at intervals
-	if backgroundSmartFetchEnabled() && sys.detailsFetched.Load() {
+	if backgroundSmartFetchEnabled() && sys.detailsFetched.Load() && !sys.manager.stopping.Load() {
 		if sys.smartInterval <= 0 {
 			sys.smartInterval = time.Hour
 		}
 		if sys.shouldFetchSmart() && sys.smartFetching.CompareAndSwap(false, true) {
 			sys.manager.hub.Logger().Info("SMART fetch", "system", sys.Id, "interval", sys.smartInterval.String())
-			go func() {
-				defer sys.smartFetching.Store(false)
-				_ = sys.FetchAndSaveSmartDevices()
-			}()
+			sys.startBackgroundSmartFetch()
 		}
 	}
 
