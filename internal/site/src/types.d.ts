@@ -1,4 +1,5 @@
 import type { RecordModel } from "pocketbase"
+import type { Theme } from "@/components/theme-provider"
 import type { Unit, Os, BatteryState, HourFormat, ConnectionType, ServiceStatus, ServiceSubState } from "@/lib/enums"
 
 // global window properties
@@ -361,6 +362,7 @@ export interface UserSettings {
 	colorCrit?: number
 	hourFormat?: HourFormat
 	layoutWidth?: number
+	theme?: Theme
 }
 
 type ChartDataContainer = {
