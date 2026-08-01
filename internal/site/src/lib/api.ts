@@ -37,6 +37,19 @@ export function logOut() {
 	pb.realtime.unsubscribe()
 }
 
+/** Save a partial update to user settings in database */
+export async function saveUserSettings(newSettings: Partial<UserSettings>) {
+	// get fresh copy of settings so concurrent changes aren't overwritten
+	const req = await pb.collection("user_settings").getFirstListItem("", { fields: "id,settings" })
+	const updatedSettings = await pb.collection("user_settings").update(req.id, {
+		settings: {
+			...req.settings,
+			...newSettings,
+		},
+	})
+	$userSettings.set(updatedSettings.settings)
+}
+
 /** Fetch or create user settings in database */
 export async function updateUserSettings() {
 	try {

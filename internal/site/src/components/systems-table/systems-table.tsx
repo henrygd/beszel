@@ -44,9 +44,9 @@ import {
 import { Input } from "@/components/ui/input"
 import { TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { SystemStatus } from "@/lib/enums"
+import { saveUserSettings } from "@/lib/api"
 import { $downSystems, $pausedSystems, $systems, $upSystems, $userSettings } from "@/lib/stores"
 import { cn, debounce, runOnce } from "@/lib/utils"
-import { saveSettings } from "@/components/routes/settings/layout"
 import type { SystemRecord } from "@/types"
 import AlertButton from "../alerts/alert-button"
 import { $router, Link } from "../router"
@@ -58,10 +58,13 @@ type StatusFilter = "all" | SystemRecord["status"]
 
 const preloadSystemDetail = runOnce(() => import("@/components/routes/system.tsx"))
 
-const saveCols = debounce((cols: VisibilityState) => saveSettings({ cols }, true), 1000)
-const saveStatusFilter = debounce((statusFilter: StatusFilter) => saveSettings({ statusFilter }, true), 1000)
-const saveViewMode = debounce((viewMode: ViewMode) => saveSettings({ viewMode }, true), 1000)
-const saveSortMode = debounce((sortMode: SortingState) => saveSettings({ sortMode }, true), 1000)
+const saveCols = debounce((cols: VisibilityState) => saveUserSettings({ cols }).catch(console.error), 1000)
+const saveStatusFilter = debounce(
+	(statusFilter: StatusFilter) => saveUserSettings({ statusFilter }).catch(console.error),
+	1000
+)
+const saveViewMode = debounce((viewMode: ViewMode) => saveUserSettings({ viewMode }).catch(console.error), 1000)
+const saveSortMode = debounce((sortMode: SortingState) => saveUserSettings({ sortMode }).catch(console.error), 1000)
 
 export default function SystemsTable() {
 	const data = useStore($systems)
@@ -119,6 +122,7 @@ export default function SystemsTable() {
 		(updater: VisibilityState | ((prev: VisibilityState) => VisibilityState)) => {
 			setColumnVisibility((prev) => {
 				const next = typeof updater === "function" ? updater(prev) : updater
+				localStorage.setItem("besz-cols", JSON.stringify(next))
 				$userSettings.setKey("cols", next)
 				saveCols(next)
 				return next
@@ -139,6 +143,7 @@ export default function SystemsTable() {
 	const handleViewModeChange = useCallback((view: string) => {
 		const next = view as ViewMode
 		setViewMode(next)
+		localStorage.setItem("besz-viewMode", JSON.stringify(next))
 		$userSettings.setKey("viewMode", next)
 		saveViewMode(next)
 		showSaved()
@@ -148,6 +153,7 @@ export default function SystemsTable() {
 		(updater: SortingState | ((prev: SortingState) => SortingState)) => {
 			setSorting((prev) => {
 				const next = typeof updater === "function" ? updater(prev) : updater
+				sessionStorage.setItem("besz-sortMode", JSON.stringify(next))
 				$userSettings.setKey("sortMode", next)
 				saveSortMode(next)
 				return next

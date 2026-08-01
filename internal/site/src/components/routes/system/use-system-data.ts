@@ -3,7 +3,7 @@ import { getPagePath } from "@nanostores/router"
 import { subscribeKeys } from "nanostores"
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useContainerChartConfigs } from "@/components/charts/hooks"
-import { pb } from "@/lib/api"
+import { pb, saveUserSettings } from "@/lib/api"
 import { SystemStatus } from "@/lib/enums"
 import {
 	$allSystemsById,
@@ -25,12 +25,14 @@ import type {
 	SystemStats,
 	SystemStatsRecord,
 } from "@/types"
-import { saveSettings } from "@/components/routes/settings/layout"
 import { $router, navigate } from "../../router"
 import { appendData, cache, getStats, getTimeData, makeContainerData, makeContainerPoint } from "./chart-data"
 
-const saveGrid = debounce((grid: boolean) => saveSettings({ grid }, true), 1000)
-const saveDisplayMode = debounce((displayMode: "default" | "tabs") => saveSettings({ displayMode }, true), 1000)
+const saveGrid = debounce((grid: boolean) => saveUserSettings({ grid }).catch(console.error), 1000)
+const saveDisplayMode = debounce(
+	(displayMode: "default" | "tabs") => saveUserSettings({ displayMode }).catch(console.error),
+	1000
+)
 
 export type SystemData = ReturnType<typeof useSystemData>
 
@@ -65,11 +67,13 @@ export function useSystemData(id: string) {
 
 	const setGrid = useCallback((v: boolean) => {
 		_setGrid(v)
+		localStorage.setItem("besz-grid", JSON.stringify(v))
 		$userSettings.setKey("grid", v)
 		saveGrid(v)
 	}, [])
 	const setDisplayMode = useCallback((v: "default" | "tabs") => {
 		_setDisplayMode(v)
+		localStorage.setItem("besz-displayMode", JSON.stringify(v))
 		$userSettings.setKey("displayMode", v)
 		saveDisplayMode(v)
 	}, [])
