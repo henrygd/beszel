@@ -88,6 +88,10 @@ func ResolveStatusAlerts(app core.App) error {
 	return resolveStatusAlerts(app)
 }
 
+func ResolveSystemdAlerts(app core.App) error {
+	return resolveSystemdAlerts(app)
+}
+
 func (am *AlertManager) RestorePendingStatusAlerts() error {
 	return am.restorePendingStatusAlerts()
 }
