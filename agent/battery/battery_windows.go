@@ -107,7 +107,19 @@ func setupDiCall(proc *windows.LazyProc, nargs, a1, a2, a3, a4, a5, a6 uintptr) 
 	return 0
 }
 
-func readWinBatteryState(powerState uint32) uint8 {
+// readWinBatteryState derives a charge state from BATTERY_STATUS.PowerState
+// plus the capacity values from the same query. current/full let it tell a
+// genuinely full battery apart from one that's merely on AC power: per
+// Microsoft's docs, BATTERY_POWER_ON_LINE (bit 0x1) means only "the system
+// has access to AC power, so no batteries are being discharged" - it says
+// nothing about charge level. Treating that bit alone as "Full" mislabels
+// any battery that's plugged in but not at 100%, which is routine: many
+// laptops stop actively charging below 100% to preserve battery health
+// (OEM "battery care"/charge-limit features), leaving PowerState with only
+// BATTERY_POWER_ON_LINE set while sitting at whatever percentage the limit
+// is - commonly 60-80%. That combination was previously reported as "Full"
+// regardless of actual charge.
+func readWinBatteryState(powerState uint32, current, full uint32) uint8 {
 	switch {
 	case powerState&0x00000004 != 0:
 		return stateCharging
@@ -115,8 +127,12 @@ func readWinBatteryState(powerState uint32) uint8 {
 		return stateEmpty
 	case powerState&0x00000002 != 0:
 		return stateDischarging
-	case powerState&0x00000001 != 0:
+	case full > 0 && current >= full:
 		return stateFull
+	case powerState&0x00000001 != 0:
+		// On AC power, not charging/discharging/critical, and not (yet) at
+		// full capacity.
+		return stateIdle
 	default:
 		return stateUnknown
 	}
@@ -250,7 +266,7 @@ func winBatteryGet(idx int) (full, current uint32, state uint8, err error) {
 		return 0, 0, stateUnknown, errors.New("battery capacity unknown")
 	}
 
-	return bi.FullChargedCapacity, bs.Capacity, readWinBatteryState(bs.PowerState), nil
+	return bi.FullChargedCapacity, bs.Capacity, readWinBatteryState(bs.PowerState, bs.Capacity, bi.FullChargedCapacity), nil
 }
 
 // HasReadableBattery checks if the system has a battery and returns true if it does.

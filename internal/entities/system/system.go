@@ -42,7 +42,7 @@ type Stats struct {
 	MaxBandwidth [2]uint64 `json:"bm,omitzero" cbor:"-"`                   // [sent bytes, recv bytes]
 	// TODO: remove other load fields in future release in favor of load avg array
 	LoadAvg           [3]float64           `json:"la,omitempty" cbor:"28,keyasint"`
-	Battery           [2]uint8             `json:"bat,omitzero" cbor:"29,keyasint,omitzero"`    // [percent, charge state, current]
+	Battery           [2]uint8             `json:"bat,omitzero" cbor:"29,keyasint,omitzero"`    // [percent, charge state]
 	NetworkInterfaces map[string][4]uint64 `json:"ni,omitempty" cbor:"31,keyasint,omitempty"`   // [upload bytes, download bytes, total upload, total download]
 	DiskIO            [2]uint64            `json:"dio,omitzero" cbor:"32,keyasint,omitzero"`    // [read bytes, write bytes]
 	MaxDiskIO         [2]uint64            `json:"diom,omitzero" cbor:"-"`                      // [max read bytes, max write bytes]
