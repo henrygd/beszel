@@ -66,15 +66,21 @@ func (am *AlertManager) schedulePendingStatusAlert(systemName string, alertData 
 		expireTime: time.Now().Add(delay),
 	}
 
-	storedAlert, loaded := am.pendingAlerts.LoadOrStore(alertData.Id, alert)
-	if loaded {
+	// Start the timer before publishing the entry. Assigning alert.timer after
+	// LoadOrStore raced with Stop()/cancelPendingAlert, which iterate the map
+	// and read info.timer - they could observe an entry whose timer field was
+	// still being written.
+	alert.timer = time.AfterFunc(delay, func() {
+		am.processPendingAlert(alertData.Id)
+	})
+
+	if _, loaded := am.pendingAlerts.LoadOrStore(alertData.Id, alert); loaded {
+		// Another alert for this id got there first; drop the timer we created
+		// so it can't fire for an entry that was never published.
+		alert.timer.Stop()
 		return false
 	}
 
-	stored := storedAlert.(*alertInfo)
-	stored.timer = time.AfterFunc(time.Until(stored.expireTime), func() {
-		am.processPendingAlert(alertData.Id)
-	})
 	return true
 }
 
@@ -123,6 +129,15 @@ func (am *AlertManager) CancelPendingStatusAlerts(systemID string) {
 
 // processPendingAlert sends a "down" alert if the pending alert has expired and the system is still down.
 func (am *AlertManager) processPendingAlert(alertID string) {
+	// This runs from a time.AfterFunc goroutine. Stop() stops the timers, but a
+	// timer that has already fired can't be stopped, so this can still run while
+	// the app is shutting down. PocketBase's RecordQuery dereferences
+	// app.ConcurrentDB() without a nil check, making that a panic rather than an
+	// error, so bail out if the app is gone.
+	if am.hub == nil || am.hub.ConcurrentDB() == nil {
+		return
+	}
+
 	value, loaded := am.pendingAlerts.LoadAndDelete(alertID)
 	if !loaded {
 		return

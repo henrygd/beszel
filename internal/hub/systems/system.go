@@ -43,7 +43,12 @@ type System struct {
 	// Use Status()/setStatus() rather than touching it directly.
 	statusMu       sync.RWMutex
 	status         string
-	manager        *SystemManager          // Manager that this system belongs to
+	manager        *SystemManager // Manager that this system belongs to
+	// client is guarded by clientMu: the updater goroutine reads/writes it
+	// while establishing and using SSH sessions, but closeSSHConnection can
+	// also run from RemoveSystem on a different goroutine (a PocketBase
+	// record-event hook, or test teardown). Use getClient()/setClient().
+	clientMu       sync.Mutex
 	client         *ssh.Client             // SSH client for fetching data
 	sshTransport   *transport.SSHTransport // SSH transport for requests
 	data           *system.CombinedData    // system data from agent
@@ -70,6 +75,20 @@ func (sys *System) setStatus(status string) {
 	sys.statusMu.Lock()
 	sys.status = status
 	sys.statusMu.Unlock()
+}
+
+// getClient returns the current SSH client. Safe for concurrent use.
+func (sys *System) getClient() *ssh.Client {
+	sys.clientMu.Lock()
+	defer sys.clientMu.Unlock()
+	return sys.client
+}
+
+// setClient replaces the current SSH client. Safe for concurrent use.
+func (sys *System) setClient(client *ssh.Client) {
+	sys.clientMu.Lock()
+	sys.client = client
+	sys.clientMu.Unlock()
 }
 
 func (sm *SystemManager) NewSystem(systemId string) *System {
@@ -386,11 +405,13 @@ func createContainerRecords(app core.App, data []*container.Stats, systemId stri
 // getRecord retrieves the system record from the database.
 // If the record is not found, it removes the system from the manager.
 func (sys *System) getRecord(app core.App) (*core.Record, error) {
-	// The updater goroutine can still be in flight while the system is being
-	// removed and the app torn down; querying a closed app panics, so bail out
-	// as soon as our context is cancelled.
-	if sys.ctx != nil && sys.ctx.Err() != nil {
-		return nil, sys.ctx.Err()
+	// An updater goroutine can still be in flight while the app is torn down.
+	// PocketBase's RecordQuery does app.ConcurrentDB().Select(...) with no nil
+	// check, so querying a closed app is a nil pointer dereference rather than
+	// an error. Check liveness rather than the system's context: a cancelled
+	// system may still legitimately need to read its record.
+	if app == nil || app.ConcurrentDB() == nil {
+		return nil, errors.New("app is closed")
 	}
 	record, err := app.FindRecordById("systems", sys.Id)
 	if err != nil || record == nil {
@@ -474,7 +495,7 @@ func (sys *System) request(ctx context.Context, action common.WebSocketAction, r
 	err := sys.sshTransport.RequestWithRetry(ctx, action, req, dest, 1)
 	// Keep legacy SSH client/version fields in sync for other code paths.
 	if sys.sshTransport != nil {
-		sys.client = sys.sshTransport.GetClient()
+		sys.setClient(sys.sshTransport.GetClient())
 		sys.agentVersion = sys.sshTransport.GetAgentVersion()
 	}
 	return err
@@ -516,8 +537,8 @@ func (sys *System) ensureSSHTransport() error {
 		})
 	}
 	// Sync client state with transport
-	if sys.client != nil {
-		sys.sshTransport.SetClient(sys.client)
+	if client := sys.getClient(); client != nil {
+		sys.sshTransport.SetClient(client)
 		sys.sshTransport.SetAgentVersion(sys.agentVersion)
 	}
 	return nil
@@ -660,7 +681,7 @@ func (sys *System) fetchDataViaSSH(options common.DataRequestOptions) (*system.C
 // The operation can request a retry by returning true as the first return value.
 func (sys *System) runSSHOperation(timeout time.Duration, retries int, operation func(*ssh.Session) (bool, error)) error {
 	for attempt := 0; attempt <= retries; attempt++ {
-		if sys.client == nil || sys.Status() == down {
+		if sys.getClient() == nil || sys.Status() == down {
 			if err := sys.createSSHClient(); err != nil {
 				return err
 			}
@@ -712,12 +733,12 @@ func (s *System) createSSHClient() error {
 	} else {
 		host = net.JoinHostPort(host, s.Port)
 	}
-	var err error
-	s.client, err = ssh.Dial(network, host, s.manager.sshConfig)
+	client, err := ssh.Dial(network, host, s.manager.sshConfig)
 	if err != nil {
 		return err
 	}
-	s.agentVersion, _ = extractAgentVersion(string(s.client.Conn.ServerVersion()))
+	s.setClient(client)
+	s.agentVersion, _ = extractAgentVersion(string(client.Conn.ServerVersion()))
 	s.manager.resetFailedSmartFetchState(s.Id)
 	return nil
 }
@@ -725,7 +746,8 @@ func (s *System) createSSHClient() error {
 // createSessionWithTimeout creates a new SSH session with a timeout to avoid hanging
 // in case of network issues
 func (sys *System) createSessionWithTimeout(timeout time.Duration) (*ssh.Session, error) {
-	if sys.client == nil {
+	client := sys.getClient()
+	if client == nil {
 		return nil, fmt.Errorf("client not initialized")
 	}
 
@@ -736,7 +758,7 @@ func (sys *System) createSessionWithTimeout(timeout time.Duration) (*ssh.Session
 	errChan := make(chan error, 1)
 
 	go func() {
-		if session, err := sys.client.NewSession(); err != nil {
+		if session, err := client.NewSession(); err != nil {
 			errChan <- err
 		} else {
 			sessionChan <- session
@@ -758,9 +780,9 @@ func (sys *System) closeSSHConnection() {
 	if sys.sshTransport != nil {
 		sys.sshTransport.Close()
 	}
-	if sys.client != nil {
-		sys.client.Close()
-		sys.client = nil
+	if client := sys.getClient(); client != nil {
+		client.Close()
+		sys.setClient(nil)
 	}
 }
 
