@@ -87,6 +87,11 @@ export const SystemDialog = ({ setOpen, system }: { setOpen: (open: boolean) => 
 				setAvailableTags(tags)
 			} catch (e) {
 				console.error("Failed to load tags", e)
+				toast({
+					title: t`Failed to load tags`,
+					description: t`Check logs for more details.`,
+					variant: "destructive",
+				})
 			}
 
 			// if no system, generate a new token
@@ -119,7 +124,6 @@ export const SystemDialog = ({ setOpen, system }: { setOpen: (open: boolean) => 
 		data.users = pb.authStore.record!.id
 		data.tags = selectedTags
 		try {
-			setOpen(false)
 			if (system) {
 				await pb.collection("systems").update(system.id, { ...data, status: SystemStatus.Pending })
 			} else {
@@ -132,9 +136,15 @@ export const SystemDialog = ({ setOpen, system }: { setOpen: (open: boolean) => 
 				// creation so next system gets a new token
 				nextSystemToken = null
 			}
+			setOpen(false)
 			navigate(basePath)
-		} catch (e) {
+		} catch (e: any) {
 			console.error(e)
+			toast({
+				title: system ? t`Failed to update system` : t`Failed to add system`,
+				description: e?.message || t`Check logs for more details.`,
+				variant: "destructive",
+			})
 		}
 	}
 	

@@ -18,44 +18,11 @@ import {
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { cn } from "@/lib/utils"
+import { getTagColorClasses } from "@/lib/tag-utils"
 import type { SystemRecord, TagRecord } from "@/types"
 
 export interface TagWithSystems extends TagRecord {
 	systems: SystemRecord[]
-}
-
-// Tag color names (Tailwind colors)
-export const tagColors = ["red", "orange", "amber", "yellow", "lime", "green", "emerald", "teal", "cyan", "sky", "blue", "indigo", "violet", "purple", "fuchsia", "pink", "rose"]
-
-// Tag color classes mapping
-export const tagColorClasses: Record<string, string> = {
-	red: "bg-red-100 text-red-700 dark:bg-red-950 dark:text-red-300",
-	orange: "bg-orange-100 text-orange-700 dark:bg-orange-950 dark:text-orange-300",
-	amber: "bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-300",
-	yellow: "bg-yellow-100 text-yellow-700 dark:bg-yellow-950 dark:text-yellow-300",
-	lime: "bg-lime-100 text-lime-700 dark:bg-lime-950 dark:text-lime-300",
-	green: "bg-green-100 text-green-700 dark:bg-green-950 dark:text-green-300",
-	emerald: "bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300",
-	teal: "bg-teal-100 text-teal-700 dark:bg-teal-950 dark:text-teal-300",
-	cyan: "bg-cyan-100 text-cyan-700 dark:bg-cyan-950 dark:text-cyan-300",
-	sky: "bg-sky-100 text-sky-700 dark:bg-sky-950 dark:text-sky-300",
-	blue: "bg-blue-100 text-blue-700 dark:bg-blue-950 dark:text-blue-300",
-	indigo: "bg-indigo-100 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300",
-	violet: "bg-violet-100 text-violet-700 dark:bg-violet-950 dark:text-violet-300",
-	purple: "bg-purple-100 text-purple-700 dark:bg-purple-950 dark:text-purple-300",
-	fuchsia: "bg-fuchsia-100 text-fuchsia-700 dark:bg-fuchsia-950 dark:text-fuchsia-300",
-	pink: "bg-pink-100 text-pink-700 dark:bg-pink-950 dark:text-pink-300",
-	rose: "bg-rose-100 text-rose-700 dark:bg-rose-950 dark:text-rose-300",
-}
-
-// Generate a random color name
-export function getRandomColor(): string {
-	return tagColors[Math.floor(Math.random() * tagColors.length)]
-}
-
-// Get classes for a tag color
-export function getTagColorClasses(color?: string): string {
-	return tagColorClasses[color || "blue"] || tagColorClasses.blue
 }
 
 // Create columns generator function that accepts callbacks

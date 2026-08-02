@@ -43,16 +43,15 @@ import {
 import { Input } from "@/components/ui/input"
 import { TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { SystemStatus } from "@/lib/enums"
-import { $downSystems, $pausedSystems, $systems, $upSystems } from "@/lib/stores"
+import { $downSystems, $pausedSystems, $systems, $tags, $upSystems } from "@/lib/stores"
 import { cn, runOnce, useBrowserStorage } from "@/lib/utils"
-import { pb } from "@/lib/api"
 import { Badge } from "../ui/badge"
-import type { SystemRecord, TagRecord} from "@/types"
+import type { SystemRecord } from "@/types"
 import AlertButton from "../alerts/alert-button"
 import { $router, Link } from "../router"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui/card"
 import { SystemsTableColumns, ActionsButton, IndicatorDot } from "./systems-table-columns"
-import { getTagColorClasses } from "../tags/tags-columns"
+import { getTagColorClasses } from "@/lib/tag-utils"
 
 type ViewMode = "table" | "grid"
 type StatusFilter = "all" | SystemRecord["status"]
@@ -67,7 +66,7 @@ export default function SystemsTable() {
 	const { i18n, t } = useLingui()
 	const [filter, setFilter] = useState<string>("")
 	const [statusFilter, setStatusFilter] = useState<StatusFilter>("all")
-	const [availableTags, setAvailableTags] = useState<TagRecord[]>([])
+	const availableTags = useStore($tags)
 	const [selectedTagFilter, setSelectedTagFilter] = useState<string[]>([])
 	const [sorting, setSorting] = useBrowserStorage<SortingState>(
 		"sortMode",
@@ -79,31 +78,10 @@ export default function SystemsTable() {
 
 	const locale = i18n.locale
 
-	// Load all tags from collection and subscribe to live updates
+	// Prune any tags that no longer exist out of the active filter
 	useEffect(() => {
-		pb.collection("tags")
-			.getFullList<TagRecord>({ sort: "name", requestKey: null })
-			.then(setAvailableTags)
-		let unsubscribe: (() => void) | undefined
-		;(async () => {
-			unsubscribe = await pb.collection("tags").subscribe<TagRecord>("*", (e) => {
-				setAvailableTags((prev) => {
-					if (e.action === "create") {
-						return [...prev, e.record].sort((a, b) => a.name.localeCompare(b.name))
-					}
-					if (e.action === "update") {
-						return prev.map((t) => (t.id === e.record.id ? e.record : t))
-					}
-					if (e.action === "delete") {
-						setSelectedTagFilter((f) => f.filter((id) => id !== e.record.id))
-						return prev.filter((t) => t.id !== e.record.id)
-					}
-					return prev
-				})
-			})
-		})()
-		return () => unsubscribe?.()
-	}, [])
+		setSelectedTagFilter((prev) => prev.filter((id) => availableTags.some((t) => t.id === id)))
+	}, [availableTags])
 
 	// Filter data based on status and tag filters
 	const filteredData = useMemo(() => {

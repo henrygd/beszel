@@ -20,6 +20,7 @@ import {
 	TagIcon,
 	Trash2Icon,
 } from "lucide-react"
+import { useStore } from "@nanostores/react"
 import { useEffect, useMemo, useState } from "react"
 import {
 	AlertDialog,
@@ -39,14 +40,15 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { toast } from "@/components/ui/use-toast"
 import { cn, useBrowserStorage } from "@/lib/utils"
 import { pb } from "@/lib/api"
+import { $tags } from "@/lib/stores"
 import type { SystemRecord, TagRecord } from "@/types"
-import { createTagsColumns, getRandomColor, type TagWithSystems } from "@/components/tags/tags-columns"
+import { createTagsColumns, type TagWithSystems } from "@/components/tags/tags-columns"
 import { TagEditDialog } from "@/components/tags/tag-edit-dialog"
-import { syncTagAssignments, updateSystemsStateAfterTagAssignment } from "@/lib/tag-utils"
+import { getRandomColor, syncTagAssignments, updateSystemsStateAfterTagAssignment } from "@/lib/tag-utils"
 
 export default function TagsSettings() {
 	const { t: tFunc } = useLingui()
-	const [tags, setTags] = useState<TagRecord[]>([])
+	const tags = useStore($tags)
 	const [systems, setSystems] = useState<SystemRecord[]>([])
 	const [loading, setLoading] = useState(true)
 	const [dialogOpen, setDialogOpen] = useState(false)
@@ -65,43 +67,14 @@ export default function TagsSettings() {
 		pageSize: 10,
 	})
 
-	// Initial data load
+	// Initial data load (tags come from the shared $tags store, kept live by systemsManager)
 	useEffect(() => {
-		Promise.all([
-			pb.collection("tags").getFullList<TagRecord>({ sort: "name", requestKey: null }),
-			pb.collection("systems").getFullList<SystemRecord>({ sort: "name", fields: "id,name,tags", requestKey: null }),
-		]).then(([tagsRecords, systemsRecords]) => {
-			setTags(tagsRecords)
-			setSystems(systemsRecords)
-			setLoading(false)
-		})
-	}, [])
-
-	// Subscribe to tag updates
-	useEffect(() => {
-		let unsubscribe: (() => void) | undefined
-		;(async () => {
-			unsubscribe = await pb.collection("tags").subscribe(
-				"*",
-				(e) => {
-					setTags((current) => {
-						if (e.action === "create") {
-							return [...current, e.record as TagRecord].sort((a, b) => a.name.localeCompare(b.name))
-						}
-						if (e.action === "update") {
-							return current.map((tag) =>
-								tag.id === e.record.id ? (e.record as TagRecord) : tag
-							)
-						}
-						if (e.action === "delete") {
-							return current.filter((tag) => tag.id !== e.record.id)
-						}
-						return current
-					})
-				}
-			)
-		})()
-		return () => unsubscribe?.()
+		pb.collection("systems")
+			.getFullList<SystemRecord>({ sort: "name", fields: "id,name,tags", requestKey: null })
+			.then((systemsRecords) => {
+				setSystems(systemsRecords)
+				setLoading(false)
+			})
 	}, [])
 
 	// Combine tags with their systems
@@ -144,19 +117,15 @@ export default function TagsSettings() {
 			let tagId: string
 			if (editingTag) {
 				// Update tag
-				const record = await pb.collection("tags").update<TagRecord>(editingTag.id, {
+				await pb.collection("tags").update<TagRecord>(editingTag.id, {
 					name: newTagName.trim(),
 					color: newTagColor,
 				})
-				setTags(tags.map((t) => (t.id === record.id ? record : t)).sort((a, b) => a.name.localeCompare(b.name)))
 				tagId = editingTag.id
 
 				// Update system assignments
 				const currentSystems = systems.filter((s) => s.tags?.includes(tagId)).map((s) => s.id)
-				const toAdd = selectedSystems.filter((id) => !currentSystems.includes(id))
-				const toRemove = currentSystems.filter((id) => !selectedSystems.includes(id))
-
-				await syncTagAssignments(tagId, currentSystems, selectedSystems, systems)
+				const { toAdd, toRemove } = await syncTagAssignments(tagId, currentSystems, selectedSystems, systems)
 				setSystems((prev) => updateSystemsStateAfterTagAssignment(prev, tagId, toAdd, toRemove))
 
 				toast({
@@ -169,13 +138,12 @@ export default function TagsSettings() {
 					name: newTagName.trim(),
 					color: newTagColor,
 				})
-				setTags([...tags, record].sort((a, b) => a.name.localeCompare(b.name)))
 				tagId = record.id
 
 				// Assign to selected systems
 				if (selectedSystems.length > 0) {
-					await syncTagAssignments(tagId, [], selectedSystems, systems)
-					setSystems((prev) => updateSystemsStateAfterTagAssignment(prev, tagId, selectedSystems, []))
+					const { toAdd, toRemove } = await syncTagAssignments(tagId, [], selectedSystems, systems)
+					setSystems((prev) => updateSystemsStateAfterTagAssignment(prev, tagId, toAdd, toRemove))
 				}
 
 				toast({
@@ -224,7 +192,6 @@ export default function TagsSettings() {
 				}
 				inBatch && (await batch.send())
 			}
-			setTags((prev) => prev.filter((tag) => !selectedIds.includes(tag.id)))
 			if (!isSingleDelete) {
 				table.resetRowSelection()
 			}

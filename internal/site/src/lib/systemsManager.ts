@@ -7,14 +7,12 @@ import {
 	$downSystems,
 	$longestSystemNameLen,
 	$pausedSystems,
+	$tagsById,
 	$upSystems,
 } from "@/lib/stores"
 import { getVisualStringWidth, updateFavicon } from "@/lib/utils"
 import type { SystemRecord, TagRecord } from "@/types"
 import { SystemStatus } from "./enums"
-
-// Cache for tags
-let tagsCache: Record<string, TagRecord> = {}
 
 const COLLECTION = pb.collection<SystemRecord>("systems")
 const FIELDS_DEFAULT = "id,name,host,port,info,status,tags"
@@ -27,14 +25,15 @@ let initialized = false
 // biome-ignore lint/suspicious/noConfusingVoidType: typescript rocks
 let unsub: (() => void) | undefined | void
 
-/** Load tags into cache */
+/** Load tags into the shared tags store */
 async function loadTags() {
 	try {
 		const tags = await pb.collection("tags").getFullList<TagRecord>()
-		tagsCache = {}
+		const tagsMap: Record<string, TagRecord> = {}
 		for (const tag of tags) {
-			tagsCache[tag.id] = tag
+			tagsMap[tag.id] = tag
 		}
+		$tagsById.set(tagsMap)
 	} catch (error: any) {
 		// Ignore auto-cancellation errors
 		if (error.isAbort || error.name === 'AbortError') {
@@ -47,8 +46,9 @@ async function loadTags() {
 /** Expand tags for a system record */
 function expandTags(system: SystemRecord): SystemRecord {
 	if (system.tags && system.tags.length > 0) {
+		const tagsById = $tagsById.get()
 		system.expand = system.expand || {}
-		system.expand.tags = system.tags.map(tagId => tagsCache[tagId]).filter(Boolean)
+		system.expand.tags = system.tags.map(tagId => tagsById[tagId]).filter(Boolean)
 	}
 	return system
 }
@@ -59,9 +59,6 @@ export function init() {
 		return
 	}
 	initialized = true
-
-// Load tags cache
-	loadTags()
 
 	// sync system stores on change
 	$allSystemsById.listen((newSystems, oldSystems, changedKey) => {
@@ -202,9 +199,9 @@ export async function subscribe() {
 	try {
 		unsubTags = await pb.collection("tags").subscribe<TagRecord>("*", ({ action, record }) => {
 			if (action === "delete") {
-				delete tagsCache[record.id]
+				$tagsById.setKey(record.id, undefined as unknown as TagRecord)
 			} else {
-				tagsCache[record.id] = record
+				$tagsById.setKey(record.id, record)
 			}
 			// Re-expand tags on all systems that reference this tag
 			const systems = $allSystemsById.get()

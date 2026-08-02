@@ -36,7 +36,7 @@ func init() {
 
 		// Create unique index on name
 		tagsCollection.Indexes = []string{
-			"CREATE UNIQUE INDEX `idx_tags_name` ON `tags` (`name`)",
+			"CREATE UNIQUE INDEX `idx_tags_name` ON `tags` (name COLLATE NOCASE)",
 		}
 
 		if err := app.Save(tagsCollection); err != nil {
@@ -66,12 +66,16 @@ func init() {
 		systemsCollection, err := app.FindCollectionByNameOrId("systems")
 		if err == nil {
 			systemsCollection.Fields.RemoveById("tags")
-			app.Save(systemsCollection)
+			if err := app.Save(systemsCollection); err != nil {
+				return err
+			}
 		}
 
 		tagsCollection, err := app.FindCollectionByNameOrId("tags")
 		if err == nil {
-			app.Delete(tagsCollection)
+			if err := app.Delete(tagsCollection); err != nil {
+				return err
+			}
 		}
 
 		return nil

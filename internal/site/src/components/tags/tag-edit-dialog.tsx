@@ -16,7 +16,8 @@ import { SearchableDropdown } from "@/components/ui/searchable-dropdown"
 import { SelectedBadgeList } from "@/components/ui/selected-badge-list"
 import { cn } from "@/lib/utils"
 import type { SystemRecord, TagRecord } from "@/types"
-import { tagColors, tagColorClasses, getTagColorClasses, type TagWithSystems } from "./tags-columns"
+import type { TagWithSystems } from "./tags-columns"
+import { tagColors, tagColorClasses, getTagColorClasses } from "@/lib/tag-utils"
 
 interface TagEditDialogProps {
 	open: boolean
