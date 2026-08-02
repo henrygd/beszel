@@ -65,11 +65,54 @@ type deviceKey struct {
 
 var errNoValidSmartData = fmt.Errorf("no valid SMART data found") // Error for missing data
 
-// Refresh updates SMART data for all known devices
+// Refresh updates SMART data for all known devices. Runs smartctl against
+// every device sequentially (up to 15s each, doubled for a spun-down disk
+// that needs a second attempt bypassing standby), so this can take anywhere
+// from instant to well over a minute depending on disk state and count.
+// Blocking callers should generally prefer RefreshAsync - see its comment.
 func (sm *SmartManager) Refresh(forceScan bool) error {
 	sm.refreshMutex.Lock()
 	defer sm.refreshMutex.Unlock()
+	return sm.refreshLocked(forceScan)
+}
 
+// RefreshAsync starts a refresh in the background if one isn't already
+// running, and returns immediately without waiting for it.
+//
+// GetSmartDataHandler.Handle runs synchronously on the WebSocket connection's
+// single read/dispatch goroutine (see WebSocketClient.OnMessage in client.go
+// - there is exactly one goroutine per connection reading and handling every
+// incoming frame in sequence). Calling the blocking Refresh directly from
+// that handler stalls the entire connection - including the regular polling
+// requests that keep the hub's liveness deadline alive - for as long as
+// smartctl takes across every device. With more than a couple of disks, or
+// any disk that's spun down, that routinely exceeds the hub's 70s connection
+// deadline (internal/hub/ws/ws.go), causing the hub to force-close the
+// connection and mark the system down for a few seconds even though nothing
+// is actually wrong - it just looks identical to a real outage.
+//
+// The handler instead calls this and responds immediately with whatever data
+// GetCurrentData already has cached; the response may lag the true device
+// state by up to one refresh cycle, which is the same tradeoff the agent's
+// systemd stats collection already makes for the same reason (see
+// systemdManager.startWorker in systemd.go).
+func (sm *SmartManager) RefreshAsync() {
+	if !sm.refreshMutex.TryLock() {
+		// a refresh is already in flight; let it finish on its own rather
+		// than piling up redundant smartctl runs
+		return
+	}
+	go func() {
+		defer sm.refreshMutex.Unlock()
+		if err := sm.refreshLocked(false); err != nil {
+			slog.Debug("smart background refresh failed", "err", err)
+		}
+	}()
+}
+
+// refreshLocked does the actual work of Refresh/RefreshAsync. Callers must
+// hold refreshMutex.
+func (sm *SmartManager) refreshLocked(forceScan bool) error {
 	scanErr := sm.ScanDevices(false)
 	if scanErr != nil {
 		slog.Debug("smartctl scan failed", "err", scanErr)
@@ -1208,13 +1251,18 @@ func NewSmartManager() (*SmartManager, error) {
 	if err != nil {
 		// Keep the previous fail-fast behavior unless this Linux host exposes
 		// eMMC or mdraid health via sysfs, in which case smartctl is optional.
-		if runtime.GOOS == "linux" {
-			if len(scanEmmcDevices()) > 0 || len(scanMdraidDevices()) > 0 {
-				return sm, nil
-			}
+		if runtime.GOOS != "linux" || (len(scanEmmcDevices()) == 0 && len(scanMdraidDevices()) == 0) {
+			return nil, err
 		}
-		return nil, err
+	} else {
+		sm.smartctlPath = path
 	}
-	sm.smartctlPath = path
+	// Warm the cache in the background so real data is likely already present
+	// by the time the hub makes its first GetSmartData request - otherwise
+	// that request (see GetSmartDataHandler.Handle / RefreshAsync) would
+	// return an empty result and the hub wouldn't retry SMART for a full
+	// SMART_INTERVAL. This runs well before any hub connection exists, so
+	// there's no connection to stall.
+	sm.RefreshAsync()
 	return sm, nil
 }

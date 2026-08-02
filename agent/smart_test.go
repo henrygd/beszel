@@ -7,6 +7,7 @@ import (
 	"os"
 	"path/filepath"
 	"testing"
+	"time"
 
 	"github.com/henrygd/beszel/internal/entities/smart"
 	"github.com/stretchr/testify/assert"
@@ -1276,4 +1277,70 @@ func TestLookupDarwinNvmeCapacityProviderError(t *testing.T) {
 	assert.Equal(t, uint64(0), sm.lookupDarwinNvmeCapacity("any-serial"))
 	// Cache should be initialized even on error so we don't retry (Once already fired)
 	assert.NotNil(t, sm.darwinNvmeCapacity)
+}
+
+// RefreshAsync exists so GetSmartDataHandler.Handle never blocks the
+// WebSocket connection's single read/dispatch goroutine while smartctl runs -
+// see the comment on RefreshAsync for the full mechanism. These tests cover
+// the two properties that make that true: a call never blocks its caller,
+// and a refresh already in flight is not duplicated.
+
+func TestRefreshAsyncDoesNotBlockWhenAlreadyRunning(t *testing.T) {
+	sm := &SmartManager{SmartDataMap: make(map[string]*smart.SmartData)}
+
+	// Simulate a refresh already in progress, exactly as RefreshAsync's own
+	// background goroutine would hold it for the duration of a slow
+	// smartctl run.
+	sm.refreshMutex.Lock()
+	defer sm.refreshMutex.Unlock()
+
+	done := make(chan struct{})
+	go func() {
+		sm.RefreshAsync()
+		close(done)
+	}()
+
+	select {
+	case <-done:
+		// returned without waiting for the lock - correct
+	case <-time.After(time.Second):
+		t.Fatal("RefreshAsync blocked instead of returning immediately when a refresh was already in flight")
+	}
+}
+
+func TestRefreshAsyncReleasesLockWhenDone(t *testing.T) {
+	sm := &SmartManager{SmartDataMap: make(map[string]*smart.SmartData)}
+
+	sm.RefreshAsync()
+
+	// The background goroutine should finish (there's no real smartctl to
+	// run in this test env, so ScanDevices/CollectSmart return quickly) and
+	// release refreshMutex, letting a subsequent call proceed.
+	deadline := time.Now().Add(2 * time.Second)
+	for {
+		if sm.refreshMutex.TryLock() {
+			sm.refreshMutex.Unlock()
+			return
+		}
+		if time.Now().After(deadline) {
+			t.Fatal("RefreshAsync's background goroutine never released refreshMutex")
+		}
+		time.Sleep(10 * time.Millisecond)
+	}
+}
+
+func TestNewSmartManagerWarmsCacheAsyncWithoutBlocking(t *testing.T) {
+	start := time.Now()
+	sm, err := NewSmartManager()
+	elapsed := time.Since(start)
+
+	// Whatever the outcome (smartctl may not be present in the test
+	// environment), construction itself must not block waiting on the
+	// warmup scan/collect it kicks off.
+	if elapsed > time.Second {
+		t.Fatalf("NewSmartManager took %v - RefreshAsync warmup must not block construction", elapsed)
+	}
+	if err == nil {
+		require.NotNil(t, sm)
+	}
 }

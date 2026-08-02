@@ -8,8 +8,6 @@ import (
 	"github.com/fxamacker/cbor/v2"
 	"github.com/henrygd/beszel/internal/common"
 	"github.com/henrygd/beszel/internal/entities/smart"
-
-	"log/slog"
 )
 
 // HandlerContext provides context for request handlers
@@ -169,9 +167,12 @@ func (h *GetSmartDataHandler) Handle(hctx *HandlerContext) error {
 		// return empty map to indicate no data
 		return hctx.SendResponse(map[string]smart.SmartData{}, hctx.RequestID)
 	}
-	if err := hctx.Agent.smartManager.Refresh(false); err != nil {
-		slog.Debug("smart refresh failed", "err", err)
-	}
+	// Refresh runs smartctl against every device and can take well over a
+	// minute; this handler runs on the WebSocket connection's single
+	// read/dispatch goroutine, so calling it synchronously here would stall
+	// the whole connection - see RefreshAsync's comment. Kick the refresh off
+	// in the background and respond immediately with whatever is cached.
+	hctx.Agent.smartManager.RefreshAsync()
 	data := hctx.Agent.smartManager.GetCurrentData()
 	return hctx.SendResponse(data, hctx.RequestID)
 }
