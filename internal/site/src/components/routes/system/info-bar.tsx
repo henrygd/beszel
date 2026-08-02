@@ -233,7 +233,10 @@ export default function InfoBar({
 							<DropdownMenuRadioGroup
 								className="px-1 pb-1"
 								value={displayMode}
-								onValueChange={(v) => { setDisplayMode(v as "default" | "tabs"); showSaved() }}
+								onValueChange={(v) => {
+									setDisplayMode(v as "default" | "tabs")
+									showSaved()
+								}}
 							>
 								<DropdownMenuRadioItem value="default" onSelect={(e) => e.preventDefault()}>
 									<Trans context="Default system layout option">Default</Trans>
@@ -250,7 +253,10 @@ export default function InfoBar({
 							<DropdownMenuRadioGroup
 								className="px-1 pb-1"
 								value={grid ? "grid" : "full"}
-								onValueChange={(v) => { setGrid(v === "grid"); showSaved() }}
+								onValueChange={(v) => {
+									setGrid(v === "grid")
+									showSaved()
+								}}
 							>
 								<DropdownMenuRadioItem value="grid" onSelect={(e) => e.preventDefault()}>
 									<Trans>Grid</Trans>

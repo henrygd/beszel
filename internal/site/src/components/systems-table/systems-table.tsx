@@ -44,9 +44,9 @@ import {
 import { Input } from "@/components/ui/input"
 import { TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { SystemStatus } from "@/lib/enums"
-import { saveUserSettings } from "@/lib/api"
+import { queueUserSettings } from "@/lib/api"
 import { $downSystems, $pausedSystems, $systems, $upSystems, $userSettings } from "@/lib/stores"
-import { cn, debounce, runOnce } from "@/lib/utils"
+import { cn, runOnce } from "@/lib/utils"
 import type { SystemRecord } from "@/types"
 import AlertButton from "../alerts/alert-button"
 import { $router, Link } from "../router"
@@ -58,14 +58,6 @@ type StatusFilter = "all" | SystemRecord["status"]
 
 const preloadSystemDetail = runOnce(() => import("@/components/routes/system.tsx"))
 
-const saveCols = debounce((cols: VisibilityState) => saveUserSettings({ cols }).catch(console.error), 1000)
-const saveStatusFilter = debounce(
-	(statusFilter: StatusFilter) => saveUserSettings({ statusFilter }).catch(console.error),
-	1000
-)
-const saveViewMode = debounce((viewMode: ViewMode) => saveUserSettings({ viewMode }).catch(console.error), 1000)
-const saveSortMode = debounce((sortMode: SortingState) => saveUserSettings({ sortMode }).catch(console.error), 1000)
-
 export default function SystemsTable() {
 	const data = useStore($systems)
 	const downSystems = $downSystems.get()
@@ -74,13 +66,15 @@ export default function SystemsTable() {
 	const { i18n, t } = useLingui()
 	const [filter, setFilter] = useState<string>("")
 	const [statusFilter, setStatusFilter] = useState<StatusFilter>(
-		() => $userSettings.get().statusFilter ?? "all"
+		() =>
+			$userSettings.get().statusFilter ??
+			(JSON.parse(localStorage.getItem("besz-statusFilter") || "null") as StatusFilter | null) ??
+			"all"
 	)
 	const [sorting, setSorting] = useState<SortingState>(
 		() =>
 			$userSettings.get().sortMode ??
-			JSON.parse(sessionStorage.getItem("besz-sortMode") || "null") ??
-			[{ id: "system", desc: false }]
+			JSON.parse(sessionStorage.getItem("besz-sortMode") || "null") ?? [{ id: "system", desc: false }]
 	)
 	const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
 	const [columnVisibility, setColumnVisibility] = useState<VisibilityState>(
@@ -124,7 +118,7 @@ export default function SystemsTable() {
 				const next = typeof updater === "function" ? updater(prev) : updater
 				localStorage.setItem("besz-cols", JSON.stringify(next))
 				$userSettings.setKey("cols", next)
-				saveCols(next)
+				queueUserSettings({ cols: next })
 				return next
 			})
 			showSaved()
@@ -132,22 +126,29 @@ export default function SystemsTable() {
 		[showSaved]
 	)
 
-	const handleStatusFilterChange = useCallback((value: string) => {
-		const next = value as StatusFilter
-		setStatusFilter(next)
-		$userSettings.setKey("statusFilter", next)
-		saveStatusFilter(next)
-		showSaved()
-	}, [showSaved])
+	const handleStatusFilterChange = useCallback(
+		(value: string) => {
+			const next = value as StatusFilter
+			setStatusFilter(next)
+			localStorage.setItem("besz-statusFilter", JSON.stringify(next))
+			$userSettings.setKey("statusFilter", next)
+			queueUserSettings({ statusFilter: next })
+			showSaved()
+		},
+		[showSaved]
+	)
 
-	const handleViewModeChange = useCallback((view: string) => {
-		const next = view as ViewMode
-		setViewMode(next)
-		localStorage.setItem("besz-viewMode", JSON.stringify(next))
-		$userSettings.setKey("viewMode", next)
-		saveViewMode(next)
-		showSaved()
-	}, [showSaved])
+	const handleViewModeChange = useCallback(
+		(view: string) => {
+			const next = view as ViewMode
+			setViewMode(next)
+			localStorage.setItem("besz-viewMode", JSON.stringify(next))
+			$userSettings.setKey("viewMode", next)
+			queueUserSettings({ viewMode: next })
+			showSaved()
+		},
+		[showSaved]
+	)
 
 	const handleSortingChange = useCallback(
 		(updater: SortingState | ((prev: SortingState) => SortingState)) => {
@@ -155,7 +156,7 @@ export default function SystemsTable() {
 				const next = typeof updater === "function" ? updater(prev) : updater
 				sessionStorage.setItem("besz-sortMode", JSON.stringify(next))
 				$userSettings.setKey("sortMode", next)
-				saveSortMode(next)
+				queueUserSettings({ sortMode: next })
 				return next
 			})
 			showSaved()
@@ -279,11 +280,7 @@ export default function SystemsTable() {
 											<Trans>Layout</Trans>
 										</DropdownMenuLabel>
 										<DropdownMenuSeparator />
-										<DropdownMenuRadioGroup
-											className="px-1 pb-1"
-											value={viewMode}
-											onValueChange={handleViewModeChange}
-										>
+										<DropdownMenuRadioGroup className="px-1 pb-1" value={viewMode} onValueChange={handleViewModeChange}>
 											<DropdownMenuRadioItem value="table" onSelect={(e) => e.preventDefault()} className="gap-2">
 												<LayoutListIcon className="size-4" />
 												<Trans>Table</Trans>
@@ -343,7 +340,9 @@ export default function SystemsTable() {
 													<DropdownMenuItem
 														onSelect={(e) => {
 															e.preventDefault()
-															handleSortingChange([{ id: column.id, desc: sorting[0]?.id === column.id && !sorting[0]?.desc }])
+															handleSortingChange([
+																{ id: column.id, desc: sorting[0]?.id === column.id && !sorting[0]?.desc },
+															])
 														}}
 														key={column.id}
 													>
