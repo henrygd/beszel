@@ -109,7 +109,15 @@ func (a *Agent) refreshSystemDetails() {
 
 // attachSystemDetails returns details only for fresh default-interval responses.
 func (a *Agent) attachSystemDetails(data *system.CombinedData, cacheTimeMs uint16, includeRequested bool) *system.CombinedData {
-	if cacheTimeMs != defaultDataCacheTimeMs || (!includeRequested && !a.detailsDirty) {
+	// Attach details when the hub explicitly asks for them, or when they've
+	// changed since the last full-interval response.
+	//
+	// This used to also require cacheTimeMs to equal defaultDataCacheTimeMs,
+	// which silently ignored an explicit request whenever the hub ran with a
+	// non-default POLL_INTERVAL. Details then never arrived, so the hub never
+	// set detailsFetched - which in turn permanently disabled system_details,
+	// systemd info and S.M.A.R.T. collection, with no error logged anywhere.
+	if !includeRequested && (cacheTimeMs != defaultDataCacheTimeMs || !a.detailsDirty) {
 		return data
 	}
 

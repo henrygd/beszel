@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"hash/fnv"
+	"math"
 	"math/rand"
 	"net"
 	"strings"
@@ -153,8 +154,16 @@ func (sys *System) update() error {
 		sys.handlePaused()
 		return nil
 	}
+	// interval is in milliseconds and can exceed uint16 once POLL_INTERVAL is
+	// above ~65 seconds, where a plain conversion silently wraps around (e.g.
+	// POLL_INTERVAL=120 -> 120000 -> 54464) and asks the agent for a cache time
+	// nobody configured. Clamp instead of wrapping.
+	cacheTimeMs := interval
+	if cacheTimeMs > math.MaxUint16 {
+		cacheTimeMs = math.MaxUint16
+	}
 	options := common.DataRequestOptions{
-		CacheTimeMs: uint16(interval),
+		CacheTimeMs: uint16(cacheTimeMs),
 	}
 	// fetch system details if not already fetched
 	if !sys.detailsFetched.Load() {
