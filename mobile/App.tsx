@@ -366,13 +366,44 @@ export default function App() {
         injectedJavaScript={injectedJsScript}
         onMessage={handleWebViewMessage}
         style={styles.webview}
+        originWhitelist={['*']}
+        mixedContentMode="always"
+        userAgent="Mozilla/5.0 (Linux; Android 10; Mobile) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Mobile Safari/537.36"
         domStorageEnabled={true}
         javaScriptEnabled={true}
         allowsBackForwardNavigationGestures={true}
         startInLoadingState={true}
+        onError={(syntheticEvent) => {
+          const { nativeEvent } = syntheticEvent
+          console.warn("WebView error: ", nativeEvent)
+        }}
         renderLoading={() => (
           <View style={styles.webviewLoading}>
             <ActivityIndicator size="large" color="#a855f7" />
+          </View>
+        )}
+        renderError={(errorName) => (
+          <View style={styles.errorContainer}>
+            <Text style={styles.errorTitle}>Unable to connect to Hub</Text>
+            <Text style={styles.errorSubtext}>
+              Could not reach <Text style={styles.errorUrl}>{hubUrl}</Text>.
+            </Text>
+            <Text style={styles.errorHelp}>
+              • Check your internet connection or server status{"\n"}
+              • If using local hub, use http://10.0.2.2:8090
+            </Text>
+            <TouchableOpacity
+              style={styles.retryButton}
+              onPress={() => webViewRef.current?.reload()}
+            >
+              <Text style={styles.retryButtonText}>Retry Connection</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.changeUrlButton}
+              onPress={() => setHubUrl("")}
+            >
+              <Text style={styles.changeUrlButtonText}>Change Hub URL</Text>
+            </TouchableOpacity>
           </View>
         )}
       />
@@ -510,5 +541,64 @@ const styles = StyleSheet.create({
     backgroundColor: "#0f172a",
     justifyContent: "center",
     alignItems: "center",
+  },
+  errorContainer: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: "#0f172a",
+    justifyContent: "center",
+    alignItems: "center",
+    paddingHorizontal: 24,
+  },
+  errorTitle: {
+    fontSize: 20,
+    fontWeight: "bold",
+    color: "#f87171",
+    marginBottom: 12,
+  },
+  errorSubtext: {
+    fontSize: 14,
+    color: "#94a3b8",
+    textAlign: "center",
+    marginBottom: 16,
+  },
+  errorUrl: {
+    color: "#ffffff",
+    fontWeight: "bold",
+  },
+  errorHelp: {
+    fontSize: 12,
+    color: "#64748b",
+    lineHeight: 20,
+    marginBottom: 28,
+    textAlign: "center",
+  },
+  retryButton: {
+    backgroundColor: "#a855f7",
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 8,
+    width: "100%",
+    alignItems: "center",
+    marginBottom: 12,
+  },
+  retryButtonText: {
+    color: "#ffffff",
+    fontSize: 15,
+    fontWeight: "bold",
+  },
+  changeUrlButton: {
+    backgroundColor: "#1e293b",
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 8,
+    width: "100%",
+    alignItems: "center",
+    borderWidth: 1,
+    borderColor: "#334155",
+  },
+  changeUrlButtonText: {
+    color: "#cbd5e1",
+    fontSize: 15,
+    fontWeight: "600",
   },
 })
