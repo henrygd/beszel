@@ -696,6 +696,8 @@ func (a *Agent) updateDiskIo(cacheTimeMs uint16, systemStats *system.Stats) {
 				systemStats.DiskWritePs = stats.DiskWritePs
 				systemStats.DiskIO[0] = diskIORead
 				systemStats.DiskIO[1] = diskIOWrite
+				systemStats.DiskIOTotal[0] = d.ReadBytes
+				systemStats.DiskIOTotal[1] = d.WriteBytes
 				systemStats.DiskIoStats[0] = diskReadTime
 				systemStats.DiskIoStats[1] = diskWriteTime
 				systemStats.DiskIoStats[2] = diskIoUtilPct

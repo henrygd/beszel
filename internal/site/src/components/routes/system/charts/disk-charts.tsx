@@ -57,6 +57,17 @@ export const diskDataFns = {
 		(name: string) =>
 		({ stats }: SystemStatsRecord) =>
 			stats?.efs?.[name]?.wbm ?? (stats?.efs?.[name]?.wm ?? 0) * 1024 * 1024,
+	// cumulative totals
+	totalRead: ({ stats }: SystemStatsRecord) => stats?.diot?.[0] ?? 0,
+	totalWrite: ({ stats }: SystemStatsRecord) => stats?.diot?.[1] ?? 0,
+	extraTotalRead:
+		(name: string) =>
+		({ stats }: SystemStatsRecord) =>
+			stats?.efs?.[name]?.tr ?? 0,
+	extraTotalWrite:
+		(name: string) =>
+		({ stats }: SystemStatsRecord) =>
+			stats?.efs?.[name]?.tw ?? 0,
 	// read/write time
 	readTime: dios(0),
 	readTimeMax: diosMax(0),
