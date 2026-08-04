@@ -16,11 +16,10 @@
 
 services:
   beszel-agent:
-    # :alpine (not :latest/scratch) because S.M.A.R.T. monitoring needs the
-    # smartctl binary, which is only installed in the alpine image
-    # (internal/dockerfile_agent_alpine) - the default scratch-based image
-    # ships just the Go binary with no shell or smartmontools at all.
-    image: ghcr.io/hari-craz/beszel/beszel-agent:alpine
+    build:
+      context: .
+      dockerfile: internal/dockerfile_agent_alpine
+    image: beszel-agent:local
     container_name: beszel-agent
     restart: unless-stopped
     network_mode: host
