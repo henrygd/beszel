@@ -46,7 +46,7 @@ import { pb } from "@/lib/api"
 import { SystemStatus } from "@/lib/enums"
 import { $allSystemsById, $downSystems, $pausedSystems, $systems, $upSystems } from "@/lib/stores"
 import { cn, getServerWebUrl, runOnce, useBrowserStorage } from "@/lib/utils"
-import type { SystemRecord } from "@/types"
+import type { SystemInfo, SystemRecord } from "@/types"
 import AlertButton from "../alerts/alert-button"
 import { $router, Link } from "../router"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui/card"
@@ -86,12 +86,24 @@ export default function SystemsTable() {
 			try {
 				const unsubFn = await pb.realtime.subscribe(
 					`rt_metrics`,
-					(data: { container: any[]; info: any; stats: any }) => {
+					// info is Partial: the hub marshals it with omitempty, so any field
+					// the agent didn't report is absent rather than zero. Typing it that
+					// way is what makes the merge below obviously necessary.
+					(data: { container: unknown[]; info: Partial<SystemInfo>; stats: unknown }) => {
 						const sys = $allSystemsById.get()[systemId]
 						if (sys && data.info) {
 							$allSystemsById.setKey(systemId, {
 								...sys,
-								info: data.info,
+								// Merge rather than replace. These realtime payloads arrive
+								// once a second and any field the agent didn't report is
+								// simply absent from the JSON, so assigning data.info
+								// wholesale deletes it from the store. That is what made the
+								// Services value flicker: the systems-collection record
+								// (written every poll interval) supplies info.sv, then the
+								// next realtime payload - which omits sv whenever the agent
+								// didn't report systemd counts - wiped it a second later,
+								// and the cell renders nothing for a missing sv.
+								info: { ...sys.info, ...data.info },
 							})
 						}
 					},

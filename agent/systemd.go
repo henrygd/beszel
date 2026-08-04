@@ -94,6 +94,8 @@ func (sm *systemdManager) startWorker(conn *dbus.Conn) {
 
 // getServiceStatsCount returns the number of systemd services.
 func (sm *systemdManager) getServiceStatsCount() int {
+	sm.Lock()
+	defer sm.Unlock()
 	return len(sm.serviceStatsMap)
 }
 

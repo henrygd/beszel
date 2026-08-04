@@ -178,14 +178,24 @@ func (a *Agent) gatherStats(options common.DataRequestOptions) *system.CombinedD
 		}
 	}
 
-	// skip updating systemd services if cache time is not the default 60sec interval
-	if a.systemdManager != nil && cacheTimeMs == defaultDataCacheTimeMs {
+	if a.systemdManager != nil {
+		// The service counts are read straight from the already-collected
+		// serviceStatsMap - no D-Bus I/O - so they're cheap enough to include on
+		// every response regardless of cache time. They must be, in fact: the hub's
+		// realtime path (internal/hub/systems/system_realtime.go) polls once a
+		// second with CacheTimeMs=1000, and the dashboard replaces a system's whole
+		// info object with each of those payloads. Gating the counts on an exact
+		// 60s cache-time match meant every realtime payload omitted Info.Services,
+		// blanking the "Services" value in the UI.
 		totalCount := uint16(a.systemdManager.getServiceStatsCount())
 		if totalCount > 0 {
 			numFailed := a.systemdManager.getFailedServiceCount()
 			data.Info.Services = []uint16{totalCount, numFailed}
 		}
-		if a.systemdManager.hasFreshStats {
+		// The per-service detail list stays gated to the default interval: it's a
+		// full copy of every service and is only consumed by the systemd table,
+		// so there's no reason to ship it on 1s realtime polls.
+		if cacheTimeMs == defaultDataCacheTimeMs && a.systemdManager.hasFreshStats {
 			data.SystemdServices = a.systemdManager.getServiceStats(nil, false)
 		}
 	}
