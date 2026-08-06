@@ -18,6 +18,7 @@ import {
 	PenBoxIcon,
 	PlayCircleIcon,
 	ServerIcon,
+	TagIcon,
 	TerminalSquareIcon,
 	Trash2Icon,
 	WifiIcon,
@@ -37,9 +38,11 @@ import {
 	secondsToUptimeString,
 } from "@/lib/utils"
 import { batteryStateTranslations } from "@/lib/i18n"
-import type { SystemRecord } from "@/types"
+import type { SystemRecord, TagRecord } from "@/types"
+import { getTagColorClasses } from "@/lib/tag-utils"
 import { SystemDialog } from "../add-system"
 import AlertButton from "../alerts/alert-button"
+import { Badge } from "../ui/badge"
 import { $router, Link } from "../router"
 import {
 	AlertDialog,
@@ -127,7 +130,18 @@ export function SystemsTableColumns(viewMode: "table" | "grid"): ColumnDef<Syste
 						return true
 					}
 					const statusLower = statusTranslations[sys.status as keyof typeof statusTranslations]
-					return statusLower?.includes(filterInputLower) || false
+					if (statusLower?.includes(filterInputLower)) {
+						return true
+					}
+					// Search in tags
+					if (sys.expand?.tags) {
+						for (const tag of sys.expand.tags) {
+							if (tag.name.toLowerCase().includes(filterInputLower)) {
+								return true
+							}
+						}
+					}
+					return false
 				}
 			})(),
 			enableHiding: false,
@@ -165,6 +179,59 @@ export function SystemsTableColumns(viewMode: "table" | "grid"): ColumnDef<Syste
 				)
 			},
 			header: sortableHeader,
+		},
+		{
+			accessorKey: "tags",
+			id: "tags",
+			name: () => t`Tags`,
+			size: 120,
+			hideSort: true,
+			Icon: TagIcon,
+			header: sortableHeader,
+			cell: ({ row }) => {
+				const system = row.original
+				if (!system.expand?.tags || system.expand.tags.length === 0) {
+					return null
+				}
+				const maxTags = viewMode === "table" ? 1 : 3
+				return (
+					<Link
+						href={getPagePath($router, "system", { id: system.id })}
+						tabIndex={-1}
+						className="flex flex-wrap gap-1 relative z-10"
+					>
+						{system.expand.tags.slice(0, maxTags).map((tag: TagRecord) => (
+							<Badge
+								key={tag.id}
+								className={cn("text-xs px-1.5 py-0 pointer-events-none", getTagColorClasses(tag.color))}
+							>
+								{tag.name}
+							</Badge>
+						))}
+						{system.expand.tags.length > maxTags && (
+							<Tooltip>
+								<TooltipTrigger asChild>
+									<Badge variant="secondary" className="text-xs px-1.5 py-0 cursor-default">
+										+{system.expand.tags.length - maxTags}
+									</Badge>
+								</TooltipTrigger>
+								<TooltipContent>
+									<div className="flex flex-wrap gap-1">
+										{system.expand.tags.slice(maxTags).map((tag: TagRecord) => (
+											<Badge
+												key={tag.id}
+												className={cn("text-xs px-1.5 py-0 pointer-events-none", getTagColorClasses(tag.color))}
+											>
+												{tag.name}
+											</Badge>
+										))}
+									</div>
+								</TooltipContent>
+							</Tooltip>
+						)}
+					</Link>
+				)
+			},
 		},
 		{
 			accessorFn: ({ info }) => info.cpu || undefined,

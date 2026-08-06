@@ -8,10 +8,12 @@ import {
 	GlobeIcon,
 	MemoryStickIcon,
 	MonitorIcon,
+	TagIcon,
 	Settings2Icon,
 } from "lucide-react"
 import { useMemo } from "react"
 import ChartTimeSelect from "@/components/charts/chart-time-select"
+import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import {
@@ -25,10 +27,11 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { FreeBsdIcon, TuxIcon, WebSocketIcon, WindowsIcon } from "@/components/ui/icons"
 import { Separator } from "@/components/ui/separator"
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { ConnectionType, connectionTypeLabels, Os, SystemStatus } from "@/lib/enums"
 import { cn, formatBytes, getHostDisplayValue, secondsToUptimeString, toFixedFloat } from "@/lib/utils"
-import type { ChartData, SystemDetailsRecord, SystemRecord } from "@/types"
+import type { ChartData, SystemDetailsRecord, SystemRecord, TagRecord } from "@/types"
+import { getTagColorClasses } from "@/lib/tag-utils"
 
 export default function InfoBar({
 	system,
@@ -198,6 +201,51 @@ export default function InfoBar({
 								</div>
 							)
 						})}
+						{/* Tags — rendered independently so they show even if hostname is hidden */}
+						{system.expand?.tags && system.expand.tags.length > 0 && (() => {
+							const tags = system.expand.tags as TagRecord[]
+							const MAX_INLINE = 3
+							return (
+								<>
+									<Separator orientation="vertical" className="h-4 bg-primary/30" />
+									{tags.length <= MAX_INLINE ? (
+										<div className="flex gap-1 items-center flex-wrap">
+											{tags.map((tag) => (
+												<Badge
+													key={tag.id}
+													className={`text-xs pointer-events-none ${getTagColorClasses(tag.color)}`}
+												>
+													{tag.name}
+												</Badge>
+											))}
+										</div>
+									) : (
+										<TooltipProvider>
+											<Tooltip delayDuration={150}>
+												<TooltipTrigger asChild>
+													<div className="flex gap-1.5 items-center cursor-default">
+														<TagIcon className="h-4 w-4" />
+														<span>{tags.length}</span>
+													</div>
+												</TooltipTrigger>
+												<TooltipContent>
+													<div className="flex flex-wrap gap-1.5 max-w-64">
+														{tags.map((tag) => (
+															<Badge
+																key={tag.id}
+																className={`text-xs pointer-events-none ${getTagColorClasses(tag.color)}`}
+															>
+																{tag.name}
+															</Badge>
+														))}
+													</div>
+												</TooltipContent>
+											</Tooltip>
+										</TooltipProvider>
+									)}
+								</>
+							)
+						})()}
 					</div>
 				</div>
 				<div className="xl:ms-auto flex items-center gap-2 max-sm:-mb-1">
