@@ -5,7 +5,7 @@ go 1.26.3
 require (
 	github.com/blang/semver v3.5.1+incompatible
 	github.com/coreos/go-systemd/v22 v22.7.0
-	github.com/ebitengine/purego v0.10.0
+	github.com/ebitengine/purego v0.10.2
 	github.com/fxamacker/cbor/v2 v2.9.2
 	github.com/gliderlabs/ssh v0.3.8
 	github.com/google/uuid v1.6.0
@@ -13,7 +13,7 @@ require (
 	github.com/nicholas-fedor/shoutrrr v0.17.0
 	github.com/pocketbase/dbx v1.12.0
 	github.com/pocketbase/pocketbase v0.36.8
-	github.com/shirou/gopsutil/v4 v4.26.3
+	github.com/shirou/gopsutil/v4 v4.26.7
 	github.com/spf13/cast v1.10.0
 	github.com/spf13/cobra v1.10.2
 	github.com/spf13/pflag v1.0.10
