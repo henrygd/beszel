@@ -1,9 +1,9 @@
 import { useStore } from "@nanostores/react"
 import { getPagePath } from "@nanostores/router"
 import { subscribeKeys } from "nanostores"
-import { useEffect, useMemo, useRef, useState } from "react"
+import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useContainerChartConfigs } from "@/components/charts/hooks"
-import { pb } from "@/lib/api"
+import { pb, queueUserSettings } from "@/lib/api"
 import { SystemStatus } from "@/lib/enums"
 import {
 	$allSystemsById,
@@ -15,7 +15,7 @@ import {
 	$systems,
 	$userSettings,
 } from "@/lib/stores"
-import { chartTimeData, listen, parseSemVer, useBrowserStorage } from "@/lib/utils"
+import { chartTimeData, listen, parseSemVer } from "@/lib/utils"
 import type {
 	ChartData,
 	ContainerStatsRecord,
@@ -35,8 +35,42 @@ export function useSystemData(id: string) {
 	const systems = useStore($systems)
 	const chartTime = useStore($chartTime)
 	const maxValues = useStore($maxValues)
-	const [grid, setGrid] = useBrowserStorage("grid", true)
-	const [displayMode, setDisplayMode] = useBrowserStorage<"default" | "tabs">("displayMode", "default")
+	const [grid, _setGrid] = useState<boolean>(
+		() => $userSettings.get().grid ?? JSON.parse(localStorage.getItem("besz-grid") ?? "null") ?? true
+	)
+	const [displayMode, _setDisplayMode] = useState<"default" | "tabs">(
+		() =>
+			$userSettings.get().displayMode ??
+			(JSON.parse(localStorage.getItem("besz-displayMode") || "null") as "default" | "tabs" | null) ??
+			"default"
+	)
+
+	const applied = useRef(new Set<string>())
+	useEffect(() => {
+		return subscribeKeys($userSettings, ["grid", "displayMode"], (vals) => {
+			if (!applied.current.has("grid") && vals.grid !== undefined) {
+				applied.current.add("grid")
+				_setGrid(vals.grid)
+			}
+			if (!applied.current.has("displayMode") && vals.displayMode !== undefined) {
+				applied.current.add("displayMode")
+				_setDisplayMode(vals.displayMode)
+			}
+		})
+	}, [])
+
+	const setGrid = useCallback((v: boolean) => {
+		_setGrid(v)
+		localStorage.setItem("besz-grid", JSON.stringify(v))
+		$userSettings.setKey("grid", v)
+		queueUserSettings({ grid: v })
+	}, [])
+	const setDisplayMode = useCallback((v: "default" | "tabs") => {
+		_setDisplayMode(v)
+		localStorage.setItem("besz-displayMode", JSON.stringify(v))
+		$userSettings.setKey("displayMode", v)
+		queueUserSettings({ displayMode: v })
+	}, [])
 	const [activeTab, setActiveTabRaw] = useState("core")
 	const [mountedTabs, setMountedTabs] = useState(() => new Set<string>(["core"]))
 	const tabsRef = useRef<string[]>(["core", "disk"])
