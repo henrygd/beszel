@@ -423,6 +423,11 @@ msgstr "Conflits"
 msgid "Connection is down"
 msgstr "Connexion interrompue"
 
+#: src/components/routes/system/charts/container-disk-io-chart.tsx
+#: src/components/routes/system/charts/container-disk-io-chart.tsx
+msgid "Container Disk I/O"
+msgstr ""
+
 #: src/components/routes/system.tsx
 msgid "Containers"
 msgstr "Conteneurs"
@@ -607,6 +612,14 @@ msgstr "Disque"
 msgid "Disk I/O"
 msgstr "Entrée/Sortie disque"
 
+#: src/components/containers-table/containers-table-columns.tsx
+msgid "Disk Read"
+msgstr ""
+
+#: src/components/routes/system/charts/container-disk-io-chart.tsx
+msgid "Disk read and write rates of containers"
+msgstr ""
+
 #: src/components/routes/settings/general.tsx
 msgid "Disk unit"
 msgstr "Unité disque"
@@ -620,6 +633,10 @@ msgstr "Utilisation du disque"
 #: src/components/routes/system/charts/disk-charts.tsx
 msgid "Disk usage of {extraFsName}"
 msgstr "Utilisation du disque de {extraFsName}"
+
+#: src/components/containers-table/containers-table-columns.tsx
+msgid "Disk Write"
+msgstr ""
 
 #: src/components/routes/system/info-bar.tsx
 msgctxt "Layout display options"
@@ -1326,6 +1343,8 @@ msgid "Quiet Hours"
 msgstr "Heures calmes"
 
 #. Disk read
+#: src/components/routes/system/charts/container-disk-io-chart.tsx
+#: src/components/routes/system/charts/container-disk-io-chart.tsx
 #: src/components/routes/system/charts/disk-charts.tsx
 #: src/components/routes/system/disk-io-sheet.tsx
 #: src/components/routes/system/disk-io-sheet.tsx
@@ -1550,6 +1569,7 @@ msgstr "Espace Swap utilisé par le système"
 msgid "Swap Usage"
 msgstr "Utilisation du swap"
 
+
 #: src/components/add-system.tsx
 #: src/components/alerts-history-columns.tsx
 #: src/components/containers-table/containers-table-columns.tsx
@@ -1681,6 +1701,7 @@ msgstr "Les tokens permettent aux agents de se connecter et de s'enregistrer. Le
 msgid "Tokens and fingerprints are used to authenticate WebSocket connections to the hub."
 msgstr "Les tokens et les empreintes sont utilisés pour authentifier les connexions WebSocket vers le hub."
 
+#: src/components/routes/system/charts/container-disk-io-chart.tsx
 #: src/components/ui/chart.tsx
 #: src/components/ui/chart.tsx
 msgid "Total"
@@ -1907,6 +1928,8 @@ msgid "Windows command"
 msgstr "Commande Windows"
 
 #. Disk write
+#: src/components/routes/system/charts/container-disk-io-chart.tsx
+#: src/components/routes/system/charts/container-disk-io-chart.tsx
 #: src/components/routes/system/charts/disk-charts.tsx
 #: src/components/routes/system/disk-io-sheet.tsx
 #: src/components/routes/system/disk-io-sheet.tsx

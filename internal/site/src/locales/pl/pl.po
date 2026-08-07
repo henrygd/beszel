@@ -423,6 +423,11 @@ msgstr "Konflikty"
 msgid "Connection is down"
 msgstr "Brak połączenia"
 
+#: src/components/routes/system/charts/container-disk-io-chart.tsx
+#: src/components/routes/system/charts/container-disk-io-chart.tsx
+msgid "Container Disk I/O"
+msgstr ""
+
 #: src/components/routes/system.tsx
 msgid "Containers"
 msgstr "Kontenery"
@@ -607,6 +612,14 @@ msgstr "Dysk"
 msgid "Disk I/O"
 msgstr "Dysk I/O"
 
+#: src/components/containers-table/containers-table-columns.tsx
+msgid "Disk Read"
+msgstr ""
+
+#: src/components/routes/system/charts/container-disk-io-chart.tsx
+msgid "Disk read and write rates of containers"
+msgstr ""
+
 #: src/components/routes/settings/general.tsx
 msgid "Disk unit"
 msgstr "Jednostka dysku"
@@ -620,6 +633,10 @@ msgstr "Użycie dysku"
 #: src/components/routes/system/charts/disk-charts.tsx
 msgid "Disk usage of {extraFsName}"
 msgstr "Wykorzystanie dysku {extraFsName}"
+
+#: src/components/containers-table/containers-table-columns.tsx
+msgid "Disk Write"
+msgstr ""
 
 #: src/components/routes/system/info-bar.tsx
 msgctxt "Layout display options"
@@ -1326,6 +1343,8 @@ msgid "Quiet Hours"
 msgstr "Godziny ciszy"
 
 #. Disk read
+#: src/components/routes/system/charts/container-disk-io-chart.tsx
+#: src/components/routes/system/charts/container-disk-io-chart.tsx
 #: src/components/routes/system/charts/disk-charts.tsx
 #: src/components/routes/system/disk-io-sheet.tsx
 #: src/components/routes/system/disk-io-sheet.tsx
@@ -1550,6 +1569,7 @@ msgstr "Pamięć wymiany używana przez system"
 msgid "Swap Usage"
 msgstr "Użycie pamięci wymiany"
 
+
 #: src/components/add-system.tsx
 #: src/components/alerts-history-columns.tsx
 #: src/components/containers-table/containers-table-columns.tsx
@@ -1681,6 +1701,7 @@ msgstr "Tokeny umożliwiają agentom łączenie się i rejestrację. Odciski pal
 msgid "Tokens and fingerprints are used to authenticate WebSocket connections to the hub."
 msgstr "Tokeny i odciski palców (fingerprinty) służą do uwierzytelniania połączeń WebSocket z hubem."
 
+#: src/components/routes/system/charts/container-disk-io-chart.tsx
 #: src/components/ui/chart.tsx
 #: src/components/ui/chart.tsx
 msgid "Total"
@@ -1907,6 +1928,8 @@ msgid "Windows command"
 msgstr "Polecenie Windows"
 
 #. Disk write
+#: src/components/routes/system/charts/container-disk-io-chart.tsx
+#: src/components/routes/system/charts/container-disk-io-chart.tsx
 #: src/components/routes/system/charts/disk-charts.tsx
 #: src/components/routes/system/disk-io-sheet.tsx
 #: src/components/routes/system/disk-io-sheet.tsx

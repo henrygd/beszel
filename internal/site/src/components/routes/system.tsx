@@ -9,6 +9,7 @@ import { CpuChart, ContainerCpuChart } from "./system/charts/cpu-charts"
 import { MemoryChart, ContainerMemoryChart, SwapChart } from "./system/charts/memory-charts"
 import { RootDiskCharts, ExtraFsCharts } from "./system/charts/disk-charts"
 import { BandwidthChart, ContainerNetworkChart } from "./system/charts/network-charts"
+import { ContainerDiskIoChart } from "./system/charts/container-disk-io-chart"
 import { TemperatureChart, BatteryChart } from "./system/charts/sensor-charts"
 import { GpuPowerChart, GpuDetailCharts } from "./system/charts/gpu-charts"
 import { LazyContainersTable, LazySmartTable, LazySystemdTable } from "./system/lazy-tables"
@@ -114,6 +115,15 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 							dataEmpty={dataEmpty}
 							isPodman={isPodman}
 							networkConfig={containerChartConfigs.network}
+						/>
+					)}
+
+					{hasContainers && (
+						<ContainerDiskIoChart
+							chartData={chartData}
+							grid={grid}
+							dataEmpty={dataEmpty}
+							diskConfig={containerChartConfigs.disk}
 						/>
 					)}
 
@@ -248,6 +258,12 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 										dataEmpty={dataEmpty}
 										isPodman={isPodman}
 										networkConfig={containerChartConfigs.network}
+									/>
+									<ContainerDiskIoChart
+										chartData={chartData}
+										grid={grid}
+										dataEmpty={dataEmpty}
+										diskConfig={containerChartConfigs.disk}
 									/>
 								</div>
 								{hasContainersTable && <ContainersTable systemId={system.id} />}
