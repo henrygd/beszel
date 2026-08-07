@@ -8,7 +8,7 @@ msgstr ""
 "Language: ar\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2026-04-05 18:27\n"
+"PO-Revision-Date: 2026-06-03 00:49\n"
 "Last-Translator: \n"
 "Language-Team: Arabic\n"
 "Plural-Forms: nplurals=6; plural=(n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 && n%100<=10 ? 3 : n%100>=11 && n%100<=99 ? 4 : 5);\n"
@@ -425,7 +425,7 @@ msgstr "الاتصال مقطوع"
 
 #: src/components/routes/system.tsx
 msgid "Containers"
-msgstr "الحاويات"
+msgstr "حاويات"
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
@@ -699,7 +699,7 @@ msgstr "عنوان URL للنقطة النهائية"
 
 #: src/components/routes/settings/heartbeat.tsx
 msgid "Endpoint URL to ping (required)"
-msgstr "عنوان URL للنقطة النهائية لل ping (مطلوب)"
+msgstr "رابط نقطة النهاية إلى ping (مطلوب)"
 
 #: src/components/login/login.tsx
 msgid "Enter email address to reset password"
@@ -1697,7 +1697,7 @@ msgstr "إجمالي البيانات المرسلة لكل واجهة"
 #: src/components/routes/system/disk-io-sheet.tsx
 msgctxt "Disk I/O"
 msgid "Total time spent on read/write (can exceed 100%)"
-msgstr ""
+msgstr "إجمالي الوقت المستغرق في القراءة/الكتابة (يمكن أن يتجاوز 100٪)"
 
 #. placeholder {0}: data.length
 #: src/components/systemd-table/systemd-table.tsx
@@ -1931,3 +1931,4 @@ msgstr "نعم"
 #: src/components/routes/settings/layout.tsx
 msgid "Your user settings have been updated."
 msgstr "تم تحديث إعدادات المستخدم الخاصة بك."
+
