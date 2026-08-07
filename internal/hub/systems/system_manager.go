@@ -3,8 +3,10 @@ package systems
 import (
 	"errors"
 	"fmt"
+	"sync/atomic"
 	"time"
 
+	"github.com/henrygd/beszel/internal/hub/utils"
 	"github.com/henrygd/beszel/internal/hub/ws"
 
 	"github.com/henrygd/beszel/internal/entities/system"
@@ -38,6 +40,9 @@ const (
 // errSystemExists is returned when attempting to add a system that already exists
 var errSystemExists = errors.New("system exists")
 
+// errManagerStopped is returned when adding a system after the manager has shut down
+var errManagerStopped = errors.New("system manager is shutting down")
+
 // SystemManager manages a collection of monitored systems and their connections.
 // It handles system lifecycle, status updates, and maintains both SSH and WebSocket connections.
 type SystemManager struct {
@@ -45,6 +50,7 @@ type SystemManager struct {
 	systems       *store.Store[string, *System]         // Thread-safe store of active systems
 	sshConfig     *ssh.ClientConfig                     // SSH client configuration for system connections
 	smartFetchMap *expirymap.ExpiryMap[smartFetchState] // Stores last SMART fetch time/result; TTL is only for cleanup
+	stopping      atomic.Bool                           // True once Shutdown has run; stops new background work from starting
 }
 
 // hubLike defines the interface requirements for the hub dependency.
@@ -96,7 +102,7 @@ func (sm *SystemManager) Initialize() error {
 	}
 
 	// Start systems in background with staggered timing
-	go func() {
+	utils.SafeGo("system manager startup", func() {
 		// Calculate staggered delay between system starts (max 2 seconds per system)
 		delta := interval / max(1, len(systems))
 		delta = min(delta, 2_000)
@@ -104,10 +110,31 @@ func (sm *SystemManager) Initialize() error {
 
 		for _, system := range systems {
 			time.Sleep(sleepTime)
+			// the hub may shut down while we're still working through the list
+			if sm.stopping.Load() {
+				return
+			}
 			_ = sm.AddSystem(system)
 		}
-	}()
+	})
 	return nil
+}
+
+// Shutdown stops all background work owned by the manager.
+//
+// It runs on app terminate, which PocketBase triggers before it tears down the
+// database (ResetBootstrapState). Without this, per-system goroutines keep
+// issuing queries against a database that is being closed underneath them.
+func (sm *SystemManager) Shutdown() {
+	if sm.stopping.Swap(true) {
+		// PocketBase triggers OnTerminate again on restart, so this can run twice
+		return
+	}
+	for _, sys := range sm.systems.GetAll() {
+		if sys != nil && sys.cancel != nil {
+			sys.cancel()
+		}
+	}
 }
 
 // bindEventHooks registers event handlers for system and fingerprint record changes.
@@ -195,7 +222,7 @@ func (sm *SystemManager) onRecordAfterUpdateSuccess(e *core.RecordEvent) error {
 	case pending:
 		// Resume monitoring, preferring existing WebSocket connection
 		if ok && system.WsConn != nil {
-			go system.update()
+			utils.SafeGo("system update", func() { _ = system.update() })
 			return e.Next()
 		}
 		// Start new monitoring session
@@ -238,6 +265,9 @@ func (sm *SystemManager) onRecordAfterDeleteSuccess(e *core.RecordEvent) error {
 // It validates required fields, initializes the system context, and starts the update goroutine.
 // Returns error if a system with the same ID already exists.
 func (sm *SystemManager) AddSystem(sys *System) error {
+	if sm.stopping.Load() {
+		return errManagerStopped
+	}
 	if sm.systems.Has(sys.Id) {
 		return errSystemExists
 	}
@@ -252,7 +282,7 @@ func (sm *SystemManager) AddSystem(sys *System) error {
 	sm.systems.Set(sys.Id, sys)
 
 	// Start monitoring in background
-	go sys.StartUpdater()
+	utils.SafeGo("system updater", sys.StartUpdater)
 	return nil
 }
 

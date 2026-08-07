@@ -10,6 +10,7 @@ import (
 	"os"
 	"path"
 	"strings"
+	"sync"
 
 	"github.com/henrygd/beszel/internal/alerts"
 	"github.com/henrygd/beszel/internal/hub/config"
@@ -28,14 +29,15 @@ import (
 type Hub struct {
 	core.App
 	*alerts.AlertManager
-	um     *users.UserManager
-	rm     *records.RecordManager
-	sm     *systems.SystemManager
-	hb     *heartbeat.Heartbeat
-	hbStop chan struct{}
-	pubKey string
-	signer ssh.Signer
-	appURL string
+	um       *users.UserManager
+	rm       *records.RecordManager
+	sm       *systems.SystemManager
+	hb       *heartbeat.Heartbeat
+	hbStop   chan struct{}
+	stopOnce sync.Once
+	pubKey   string
+	signer   ssh.Signer
+	appURL   string
 }
 
 // NewHub creates a new Hub instance with default configuration
@@ -72,6 +74,17 @@ func onAfterBootstrapAndMigrations(app core.App, fn func(app core.App) error) er
 	return nil
 }
 
+// stop shuts down the hub's background workers. Safe to call more than once,
+// which matters because PocketBase also triggers OnTerminate on restart.
+func (h *Hub) stop() {
+	h.stopOnce.Do(func() {
+		h.sm.Shutdown()
+		if h.hbStop != nil {
+			close(h.hbStop)
+		}
+	})
+}
+
 // StartHub sets up event handlers and starts the PocketBase server
 func (h *Hub) StartHub() error {
 	h.App.OnServe().BindFunc(func(e *core.ServeEvent) error {
@@ -101,6 +114,14 @@ func (h *Hub) StartHub() error {
 		if h.hb != nil {
 			go h.hb.Start(h.hbStop)
 		}
+		return e.Next()
+	})
+
+	// Stop background work before PocketBase tears down the database.
+	// OnTerminate runs ahead of ResetBootstrapState, which closes the DB handles
+	// out from under any goroutine still running a query (see issue #2154).
+	h.App.OnTerminate().BindFunc(func(e *core.TerminateEvent) error {
+		h.stop()
 		return e.Next()
 	})
 

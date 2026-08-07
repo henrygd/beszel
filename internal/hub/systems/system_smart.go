@@ -7,8 +7,13 @@ import (
 	"time"
 
 	"github.com/henrygd/beszel/internal/entities/smart"
+	"github.com/henrygd/beszel/internal/hub/utils"
 	"github.com/pocketbase/pocketbase/core"
 )
+
+// errNoHub is returned when a system has no hub to persist through, which can
+// happen if the manager is torn down while a background fetch is in flight.
+var errNoHub = errors.New("no hub available")
 
 type smartFetchState struct {
 	LastAttempt int64
@@ -61,10 +66,30 @@ func (sys *System) smartFetchInterval() time.Duration {
 	return time.Hour
 }
 
+// startBackgroundSmartFetch fetches and stores SMART data without blocking the update loop.
+//
+// The goroutine is detached, so a panic inside it would take the whole hub down
+// with it (see issue #2154): the fetch can still be in flight when the app shuts
+// down or restarts, at which point PocketBase has already nilled its database
+// handle and any query panics. SafeGo keeps that from being fatal, and the
+// context check avoids starting the work at all once the system is cancelled.
+func (sys *System) startBackgroundSmartFetch() {
+	utils.SafeGo("smart fetch", func() {
+		defer sys.smartFetching.Store(false)
+		if sys.ctx != nil && sys.ctx.Err() != nil {
+			return
+		}
+		_ = sys.FetchAndSaveSmartDevices()
+	})
+}
+
 // saveSmartDevices saves SMART device data to the smart_devices collection
 func (sys *System) saveSmartDevices(smartData map[string]smart.SmartData) error {
 	if len(smartData) == 0 {
 		return nil
+	}
+	if sys.manager == nil || sys.manager.hub == nil {
+		return errNoHub
 	}
 
 	hub := sys.manager.hub

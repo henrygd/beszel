@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/henrygd/beszel/internal/common"
+	"github.com/henrygd/beszel/internal/hub/utils"
 	"github.com/pocketbase/pocketbase/core"
 	"github.com/pocketbase/pocketbase/tools/subscriptions"
 )
@@ -75,11 +76,11 @@ func (sm *SystemManager) onRealtimeSubscriptionAdded() {
 	defer realtimeMutex.Unlock()
 
 	// Start the worker if it's not already running
-	if !workerRunning {
+	if !workerRunning && !sm.stopping.Load() {
 		workerRunning = true
 		// Create a new stop channel for this worker instance
 		tickerStopChan = make(chan struct{})
-		go sm.startRealtimeWorker()
+		utils.SafeGo("realtime worker", sm.startRealtimeWorker)
 	}
 }
 
@@ -141,12 +142,15 @@ func (sm *SystemManager) startRealtimeWorker() {
 
 // fetchRealtimeDataAndNotify fetches realtime data for all active subscriptions and notifies the clients.
 func (sm *SystemManager) fetchRealtimeDataAndNotify() {
+	if sm.stopping.Load() {
+		return
+	}
 	for systemId, info := range activeSubscriptions {
 		system, err := sm.GetSystem(systemId)
 		if err != nil {
 			continue
 		}
-		go func() {
+		utils.SafeGo("realtime notify", func() {
 			data, err := system.fetchDataFromAgent(common.DataRequestOptions{CacheTimeMs: 1000})
 			if err != nil {
 				return
@@ -155,7 +159,7 @@ func (sm *SystemManager) fetchRealtimeDataAndNotify() {
 			if err == nil {
 				notify(sm.hub, info.subscription, bytes)
 			}
-		}()
+		})
 	}
 }
 
