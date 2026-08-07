@@ -1003,7 +1003,154 @@ func TestCpuPercentageCalculationWithRealData(t *testing.T) {
 	assert.InDelta(t, expectedPct, actualPct, 0.01)
 }
 
-func TestNetworkStatsCalculationWithRealData(t *testing.T) {
+func TestCalculateCpuPercentPodman(t *testing.T) {
+	baseTime := time.Date(2026, 3, 15, 12, 0, 0, 0, time.UTC)
+
+	tests := []struct {
+		name             string
+		prevCpuContainer uint64
+		prevRead         time.Time
+		currentUsage     uint64
+		currentRead      time.Time
+		onlineCPUs       uint32
+		expectedPct      float64
+	}{
+		{
+			name:             "normal calculation",
+			// container used 2ms of CPU over 1s with 2 CPUs → 0.1%
+			prevCpuContainer: 1_000_000_000,
+			prevRead:         baseTime,
+			currentUsage:     1_002_000_000, // +2ms CPU time
+			currentRead:      baseTime.Add(time.Second),
+			onlineCPUs:       2,
+			expectedPct:      0.1, // 2e6 / (1e9 * 2) * 100
+		},
+		{
+			name:             "first run returns zero",
+			prevCpuContainer: 0,
+			prevRead:         baseTime,
+			currentUsage:     5_000_000,
+			currentRead:      baseTime.Add(time.Second),
+			onlineCPUs:       4,
+			expectedPct:      0.0,
+		},
+		{
+			name:             "zero online cpus returns zero",
+			prevCpuContainer: 1_000_000_000,
+			prevRead:         baseTime,
+			currentUsage:     1_010_000_000,
+			currentRead:      baseTime.Add(time.Second),
+			onlineCPUs:       0,
+			expectedPct:      0.0,
+		},
+		{
+			name:             "same read time returns zero",
+			prevCpuContainer: 1_000_000_000,
+			prevRead:         baseTime,
+			currentUsage:     1_010_000_000,
+			currentRead:      baseTime, // no elapsed time
+			onlineCPUs:       2,
+			expectedPct:      0.0,
+		},
+		{
+			name:             "100% single cpu",
+			// container consumed a full CPU-second over 1s on a 1-CPU host → 100%
+			prevCpuContainer: 1_000_000_000,
+			prevRead:         baseTime,
+			currentUsage:     2_000_000_000, // +1s CPU time
+			currentRead:      baseTime.Add(time.Second),
+			onlineCPUs:       1,
+			expectedPct:      100.0, // 1e9 / (1e9 * 1) * 100
+		},
+		{
+			name:             "high utilization on multi-cpu host",
+			// container used 800ms on a 4-CPU host over 1s → 20%
+			prevCpuContainer: 10_000_000_000,
+			prevRead:         baseTime,
+			currentUsage:     10_800_000_000,
+			currentRead:      baseTime.Add(time.Second),
+			onlineCPUs:       4,
+			expectedPct:      20.0, // 800e6 / (1e9 * 4) * 100
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			s := &container.ApiStats{
+				Read: tt.currentRead,
+				CPUStats: container.CPUStats{
+					CPUUsage:   container.CPUUsage{TotalUsage: tt.currentUsage},
+					OnlineCPUs: tt.onlineCPUs,
+				},
+			}
+			got := s.CalculateCpuPercentPodman(tt.prevCpuContainer, tt.prevRead)
+			assert.InDelta(t, tt.expectedPct, got, 0.001, "test %q", tt.name)
+		})
+	}
+}
+
+func TestUpdateContainerStatsPodmanCpuCalculation(t *testing.T) {
+	// Verify that Podman containers use the time-based CPU calculation
+	// when online_cpus is provided in the stats response.
+	// container used 20ms CPU over 1s with 2 CPUs → 1%
+	prevReadTime := time.Date(2026, 3, 15, 21, 26, 58, 0, time.UTC) // 1 second before stats read
+	const prevCpuUsage = uint64(5_000_000_000)
+
+	dm := &dockerManager{
+		client: &http.Client{Transport: roundTripFunc(func(req *http.Request) (*http.Response, error) {
+			switch req.URL.EscapedPath() {
+			case "/containers/0123456789ab/stats":
+				return &http.Response{
+					StatusCode: http.StatusOK,
+					Status:     "200 OK",
+					Header:     make(http.Header),
+					Body: io.NopCloser(strings.NewReader(`{
+						"read":"2026-03-15T21:26:59Z",
+						"cpu_stats":{"cpu_usage":{"total_usage":5020000000},"system_cpu_usage":9999999,"online_cpus":2},
+						"memory_stats":{"usage":1048576,"stats":{"inactive_file":262144}},
+						"networks":{"eth0":{"rx_bytes":0,"tx_bytes":0}}
+					}`)),
+					Request: req,
+				}, nil
+			default:
+				return nil, fmt.Errorf("unexpected path: %s", req.URL.EscapedPath())
+			}
+		})},
+		containerStatsMap: make(map[string]*container.Stats),
+		apiStats:          &container.ApiStats{},
+		usingPodman:       true,
+		lastCpuContainer: map[uint16]map[string]uint64{
+			defaultCacheTimeMs: {"0123456789ab": prevCpuUsage},
+		},
+		lastCpuSystem: map[uint16]map[string]uint64{
+			defaultCacheTimeMs: {"0123456789ab": 1}, // intentionally tiny — should NOT be used
+		},
+		lastCpuReadTime: map[uint16]map[string]time.Time{
+			defaultCacheTimeMs: {"0123456789ab": prevReadTime},
+		},
+		networkSentTrackers: make(map[uint16]*deltatracker.DeltaTracker[string, uint64]),
+		networkRecvTrackers: make(map[uint16]*deltatracker.DeltaTracker[string, uint64]),
+		lastNetworkReadTime: make(map[uint16]map[string]time.Time),
+	}
+
+	ctr := &container.ApiInfo{
+		IdShort: "0123456789ab",
+		Names:   []string{"/myapp"},
+		Status:  "Up 5 minutes",
+		Image:   "myapp:latest",
+	}
+
+	err := dm.updateContainerStats(ctr, defaultCacheTimeMs)
+	require.NoError(t, err)
+
+	// cpu delta = 5020000000 - 5000000000 = 20000000 ns (20ms)
+	// elapsed = 1s = 1000000000 ns, online_cpus = 2
+	// expected = 20000000 / (1000000000 * 2) * 100 = 1.0%
+	expectedCpu := 1.0
+	assert.InDelta(t, expectedCpu, dm.containerStatsMap[ctr.IdShort].Cpu, 0.01)
+}
+
+
 	// Create synthetic test data to avoid timing issues
 	apiStats1 := &container.ApiStats{
 		Networks: map[string]container.NetworkStats{
