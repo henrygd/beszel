@@ -33,6 +33,7 @@ type Stats struct {
 	MaxNetworkSent float64             `json:"nsm,omitempty" cbor:"-"`
 	MaxNetworkRecv float64             `json:"nrm,omitempty" cbor:"-"`
 	Temperatures   map[string]float64  `json:"t,omitempty" cbor:"20,keyasint,omitempty"`
+	Fans           map[string]float64  `json:"f,omitempty" cbor:"36,keyasint,omitempty"`
 	ExtraFs        map[string]*FsStats `json:"efs,omitempty" cbor:"21,keyasint,omitempty"`
 	GPUData        map[string]GPUData  `json:"g,omitempty" cbor:"22,keyasint,omitempty"`
 	// LoadAvg1       float64             `json:"l1,omitempty" cbor:"23,keyasint,omitempty"`
@@ -144,6 +145,7 @@ type Info struct {
 	Podman        bool    `json:"p,omitempty" cbor:"11,keyasint,omitempty"` // deprecated - moved to Details struct
 	GpuPct        float64 `json:"g,omitempty" cbor:"12,keyasint,omitempty"`
 	DashboardTemp float64 `json:"dt,omitempty" cbor:"13,keyasint,omitempty"`
+	DashboardFan  float64 `json:"df,omitempty" cbor:"24,keyasint,omitempty"`
 	Os            Os      `json:"os,omitempty" cbor:"14,keyasint,omitempty"` // deprecated - moved to Details struct
 	// LoadAvg1       float64 `json:"l1,omitempty" cbor:"15,keyasint,omitempty"`  // deprecated - use `la` array instead
 	// LoadAvg5       float64 `json:"l5,omitempty" cbor:"16,keyasint,omitempty"`  // deprecated - use `la` array instead

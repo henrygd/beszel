@@ -181,6 +181,13 @@ func setTemperatureAlertValue(info *system.Info, stats *system.Stats, value floa
 	}
 }
 
+func setFanSpeedAlertValue(info *system.Info, stats *system.Stats, value float64) {
+	info.DashboardFan = value
+	stats.Fans = map[string]float64{
+		"fan0": value,
+	}
+}
+
 func setLoadAvgAlertValue(info *system.Info, stats *system.Stats, value [3]float64) {
 	info.LoadAvg = value
 	stats.LoadAvg = value
@@ -198,6 +205,7 @@ func TestSystemAlertsOneMin(t *testing.T) {
 	testOneMinuteSystemAlert(t, "Bandwidth", 50, setBandwidthAlertValue, [2]uint64{megabytesToBytes(26), megabytesToBytes(25)}, [2]uint64{megabytesToBytes(25), megabytesToBytes(24)})
 	testOneMinuteSystemAlert(t, "GPU", 50, setGPUAlertValue, 51, 49)
 	testOneMinuteSystemAlert(t, "Temperature", 70, setTemperatureAlertValue, 71, 69)
+	testOneMinuteSystemAlert(t, "FanSpeed", 7000, setFanSpeedAlertValue, 7001.0, 6999.0)
 	testOneMinuteSystemAlert(t, "LoadAvg1", 4, setLoadAvgAlertValue, [3]float64{4.1, 0, 0}, [3]float64{3.9, 0, 0})
 	testOneMinuteSystemAlert(t, "LoadAvg5", 4, setLoadAvgAlertValue, [3]float64{0, 4.1, 0}, [3]float64{0, 3.9, 0})
 	testOneMinuteSystemAlert(t, "LoadAvg15", 4, setLoadAvgAlertValue, [3]float64{0, 0, 4.1}, [3]float64{0, 0, 3.9})
@@ -211,6 +219,7 @@ func TestSystemAlertsTwoMin(t *testing.T) {
 	testMultiMinuteSystemAlert(t, "Bandwidth", 50, 2, setBandwidthAlertValue, [2]uint64{megabytesToBytes(10), megabytesToBytes(10)}, [2]uint64{megabytesToBytes(26), megabytesToBytes(25)}, [2]uint64{megabytesToBytes(10), megabytesToBytes(10)})
 	testMultiMinuteSystemAlert(t, "GPU", 50, 2, setGPUAlertValue, 10, 51, 48)
 	testMultiMinuteSystemAlert(t, "Temperature", 70, 2, setTemperatureAlertValue, 10, 71, 67)
+	testMultiMinuteSystemAlert(t, "FanSpeed", 7000, 2, setFanSpeedAlertValue, 10.0, 7100.0, 6800.0)
 	testMultiMinuteSystemAlert(t, "LoadAvg1", 4, 2, setLoadAvgAlertValue, [3]float64{0, 0, 0}, [3]float64{4.1, 0, 0}, [3]float64{3.5, 0, 0})
 	testMultiMinuteSystemAlert(t, "LoadAvg5", 4, 2, setLoadAvgAlertValue, [3]float64{0, 2, 0}, [3]float64{0, 4.1, 0}, [3]float64{0, 3.5, 0})
 	testMultiMinuteSystemAlert(t, "LoadAvg15", 4, 2, setLoadAvgAlertValue, [3]float64{0, 0, 2}, [3]float64{0, 0, 4.1}, [3]float64{0, 0, 3.5})
