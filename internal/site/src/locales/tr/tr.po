@@ -77,12 +77,20 @@ msgid "15 min"
 msgstr "15 dk"
 
 #: src/lib/utils.ts
+msgid "15 minutes"
+msgstr "15 dakika"
+
+#: src/lib/utils.ts
 msgid "24 hours"
 msgstr "24 saat"
 
 #: src/lib/utils.ts
 msgid "30 days"
 msgstr "30 gün"
+
+#: src/lib/utils.ts
+msgid "30 minutes"
+msgstr "30 dakika"
 
 #. Load average
 #: src/components/routes/system/charts/load-average-chart.tsx
