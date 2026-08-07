@@ -15,7 +15,7 @@ jobs:
     name: Lock Inactive Issues
     runs-on: ubuntu-24.04
     steps:
-      - uses: klaasnicolaas/action-inactivity-lock@v1.1.3
+      - uses: klaasnicolaas/action-inactivity-lock@v2.0.1
         id: lock
         with:
           days-inactive-issues: 14
