@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"errors"
 	"fmt"
+	"io"
 	"log/slog"
 	"os"
 	"runtime"
@@ -77,6 +78,12 @@ func (a *Agent) refreshSystemDetails() {
 	// cpu model
 	if info, err := cpu.Info(); err == nil && len(info) > 0 {
 		a.systemDetails.CpuModel = info[0].ModelName
+	}
+	// gopsutil doesn't parse the "cpu model" field from /proc/cpuinfo, which
+	// is the only source of the CPU model name on MIPS. Fall back to reading
+	// it directly when ModelName is empty.
+	if a.systemDetails.CpuModel == "" {
+		a.systemDetails.CpuModel = getCpuModelFromCpuinfo()
 	}
 	// cores / threads
 	cores, _ := cpu.Counts(false)
@@ -261,6 +268,59 @@ func (a *Agent) getSystemStats(cacheTimeMs uint16) system.Stats {
 	a.systemInfo.Threads = a.systemDetails.Threads
 
 	return systemStats
+}
+
+// cpuModelFallbackKeys are the field names to look for in /proc/cpuinfo when
+// gopsutil fails to return a ModelName. The "cpu model" key is used on MIPS
+// (e.g. "MIPS 1004Kc V2.15"), while "system type" provides SoC information
+// on various embedded architectures.
+var cpuModelFallbackKeys = []string{"cpu model", "system type"}
+
+// getCpuModelFromCpuinfo reads /proc/cpuinfo and returns a CPU model string.
+// This is a fallback for architectures where gopsutil's cpu.Info() does not
+// populate ModelName, most notably MIPS.
+func getCpuModelFromCpuinfo() string {
+	file, err := os.Open("/proc/cpuinfo")
+	if err != nil {
+		return ""
+	}
+	defer file.Close()
+	return parseCpuModel(file)
+}
+
+// parseCpuModel scans r (expected to be /proc/cpuinfo content) and returns
+// a combined CPU model string. It collects values from all matching keys
+// and joins them with " / " when multiple are found.
+func parseCpuModel(r io.Reader) string {
+	lines := readLines(r)
+	var parts []string
+	for _, key := range cpuModelFallbackKeys {
+		for _, line := range lines {
+			after, found := strings.CutPrefix(line, key)
+			if !found {
+				continue
+			}
+			after = strings.TrimSpace(after)
+			if len(after) < 2 || after[0] != ':' {
+				continue
+			}
+			if value := strings.TrimSpace(after[1:]); value != "" {
+				parts = append(parts, value)
+				break
+			}
+		}
+	}
+	return strings.Join(parts, " / ")
+}
+
+// readLines reads all lines from r into a slice.
+func readLines(r io.Reader) []string {
+	scanner := bufio.NewScanner(r)
+	var lines []string
+	for scanner.Scan() {
+		lines = append(lines, scanner.Text())
+	}
+	return lines
 }
 
 // getOsPrettyName attempts to get the pretty OS name from /etc/os-release on Linux systems
