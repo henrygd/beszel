@@ -332,6 +332,8 @@ export interface AlertRecord extends RecordModel {
 	name: string
 	triggered: boolean
 	value: number
+	/** Optional per-sensor thresholds for temperature alerts */
+	thresholds?: Record<string, number>
 	min: number
 	// user: string
 }

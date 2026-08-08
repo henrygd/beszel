@@ -2,6 +2,7 @@ package alerts
 
 import (
 	"database/sql"
+	"encoding/json"
 	"errors"
 	"net/http"
 	"slices"
@@ -18,15 +19,28 @@ func UpsertUserAlerts(e *core.RequestEvent) error {
 	userID := e.Auth.Id
 
 	reqData := struct {
-		Min       uint8    `json:"min"`
-		Value     float64  `json:"value"`
-		Name      string   `json:"name"`
-		Systems   []string `json:"systems"`
-		Overwrite bool     `json:"overwrite"`
+		Min        uint8              `json:"min"`
+		Value      float64            `json:"value"`
+		Thresholds map[string]float64 `json:"thresholds"`
+		Name       string             `json:"name"`
+		Systems    []string           `json:"systems"`
+		Overwrite  bool               `json:"overwrite"`
 	}{}
 	err := e.BindBody(&reqData)
 	if err != nil || userID == "" || reqData.Name == "" || len(reqData.Systems) == 0 {
 		return e.BadRequestError("Bad data", err)
+	}
+
+	if reqData.Name == "Temperature" {
+		for sensor, threshold := range reqData.Thresholds {
+			if sensor == "" || !validTemperature(threshold) {
+				return e.BadRequestError("Temperature sensor thresholds must be positive finite numbers with nonempty sensor names", nil)
+			}
+		}
+		encoded, err := json.Marshal(reqData.Thresholds)
+		if err != nil || len(encoded) > 10_000 {
+			return e.BadRequestError("Temperature sensor thresholds exceed maximum size", err)
+		}
 	}
 
 	if reqData.Name == alertNameNetworkMonitorLoss {
@@ -70,6 +84,9 @@ func UpsertUserAlerts(e *core.RequestEvent) error {
 
 			alertRecord.Set("value", reqData.Value)
 			alertRecord.Set("min", reqData.Min)
+			if reqData.Name == "Temperature" {
+				alertRecord.Set("thresholds", reqData.Thresholds)
+			}
 
 			if err := txApp.SaveNoValidate(alertRecord); err != nil {
 				return err
