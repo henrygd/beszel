@@ -3,7 +3,7 @@ import { Plural, Trans } from "@lingui/react/macro"
 import { useStore } from "@nanostores/react"
 import { getPagePath } from "@nanostores/router"
 import { ChevronDownIcon, GlobeIcon, ServerIcon } from "lucide-react"
-import { lazy, memo, Suspense, useMemo, useState } from "react"
+import { lazy, memo, Suspense, useEffect, useMemo, useRef, useState } from "react"
 import { $router, Link } from "@/components/router"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
@@ -17,8 +17,9 @@ import { toast } from "@/components/ui/use-toast"
 import { alertInfo } from "@/lib/alerts"
 import { pb } from "@/lib/api"
 import { $alerts, $systems } from "@/lib/stores"
+import { temperatureSensorNames, temperatureThresholdInput } from "@/lib/temperature-alerts"
 import { cn, debounceByKey } from "@/lib/utils"
-import type { AlertInfo, AlertRecord, AlertUnit, SystemRecord } from "@/types"
+import type { AlertInfo, AlertRecord, AlertUnit, SystemRecord, SystemStatsRecord } from "@/types"
 
 const Slider = lazy(() => import("@/components/ui/slider"))
 
@@ -60,12 +61,24 @@ const failedUpdateToast = (error: unknown) => {
 
 /** Create or update alerts for a given name and systems (debounced per alert name) */
 const upsertAlerts = debounceByKey(
-	async ({ name, value, min, systems }: { name: string; value: number; min: number; systems: string[] }) => {
+	async ({
+		name,
+		value,
+		thresholds,
+		min,
+		systems,
+	}: {
+		name: string
+		value: number
+		thresholds?: Record<string, number>
+		min: number
+		systems: string[]
+	}) => {
 		try {
 			await pb.send<{ success: boolean }>(endpoint, {
 				method: "POST",
 				// overwrite is always true because we've done filtering client side
-				body: { name, value, min, systems, overwrite: true },
+				body: { name, value, thresholds, min, systems, overwrite: true },
 				// scope auto-cancellation per alert so a request for one alert doesn't abort another's
 				requestKey: `POST:${name}`,
 			})
@@ -114,10 +127,10 @@ export const AlertDialogContent = memo(function AlertDialogContent({ system }: {
 			// Alert names present on target but absent from source should be deleted
 			const namesToDelete = Array.from(currentTargetAlerts.keys()).filter((name) => !sourceAlerts.has(name))
 			await Promise.all([
-				...Array.from(sourceAlerts.values()).map(({ name, value, min }) =>
+				...Array.from(sourceAlerts.values()).map(({ name, value, thresholds, min }) =>
 					pb.send<{ success: boolean }>(endpoint, {
 						method: "POST",
-						body: { name, value, min, systems: [system.id], overwrite: true },
+						body: { name, value, thresholds, min, systems: [system.id], overwrite: true },
 						requestKey: name,
 					})
 				),
@@ -281,8 +294,47 @@ export function AlertContent({
 	const { min: inputMin, step: inputStep } = unit ? getInputRange(unit) : { min: valueMin, step }
 	/** Threshold value in the selected unit */
 	const [value, setValue] = useState(() => Number((storedValue / factor).toFixed(6)))
+	const [temperatureMode, setTemperatureMode] = useState<"any" | "sensors">(
+		Object.keys(alert?.thresholds ?? {}).length ? "sensors" : "any"
+	)
+	const [sensorThresholds, setSensorThresholds] = useState<Record<string, number>>(alert?.thresholds ?? {})
+	const sensorThresholdsRef = useRef(sensorThresholds)
+	const [temperatureSensors, setTemperatureSensors] = useState(() => Object.keys(alert?.thresholds ?? {}).sort())
+	const [loadingTemperatureSensors, setLoadingTemperatureSensors] = useState(false)
+	const isTemperatureAlert = alertKey === "Temperature"
+	const canConfigureTemperatureSensors = isTemperatureAlert && !global
 
 	const Icon = alertData.icon
+
+	function updateSensorThresholds(
+		update: Record<string, number> | ((currentThresholds: Record<string, number>) => Record<string, number>)
+	) {
+		const nextThresholds = typeof update === "function" ? update(sensorThresholdsRef.current) : update
+		sensorThresholdsRef.current = nextThresholds
+		setSensorThresholds(nextThresholds)
+		return nextThresholds
+	}
+
+	useEffect(() => {
+		if (!canConfigureTemperatureSensors || !checked) return
+		let cancelled = false
+		setLoadingTemperatureSensors(true)
+		pb.collection<SystemStatsRecord>("system_stats")
+			.getList(1, 1, {
+				filter: pb.filter("system={:system} && type={:type}", { system: system.id, type: "1m" }),
+				fields: "stats",
+				sort: "-created",
+			})
+			.then(({ items }) => {
+				if (cancelled) return
+				setTemperatureSensors(temperatureSensorNames(sensorThresholds, items[0]?.stats?.t))
+			})
+			.catch((error) => console.error("Failed to load temperature sensors", error))
+			.finally(() => !cancelled && setLoadingTemperatureSensors(false))
+		return () => {
+			cancelled = true
+		}
+	}, [canConfigureTemperatureSensors, checked, system.id])
 
 	/** Get system ids to update */
 	function getSystemIds(): string[] {
@@ -302,12 +354,19 @@ export function AlertContent({
 		return systemIds
 	}
 
-	function sendUpsert(min: number, value: number, valueFactor = factor) {
+	function sendUpsert(min: number, value: number, thresholds?: Record<string, number>, valueFactor = factor) {
 		const systems = getSystemIds()
 		systems.length &&
 			upsertAlerts(alertKey, {
 				name: alertKey,
 				value: Number((value * valueFactor).toFixed(6)),
+				thresholds:
+					thresholds ??
+					(isTemperatureAlert
+						? canConfigureTemperatureSensors && temperatureMode === "sensors"
+							? sensorThresholdsRef.current
+							: {}
+						: undefined),
 				min,
 				systems,
 			})
@@ -353,7 +412,42 @@ export function AlertContent({
 			{checked && hasControls && (
 				<div className="grid sm:grid-cols-2 mt-1.5 gap-5 px-4 pb-5 tabular-nums text-muted-foreground">
 					<Suspense fallback={<div className="h-10" />}>
-						{!noThreshold && (
+						{canConfigureTemperatureSensors && (
+							<div className="col-span-full">
+								<p className="text-sm block h-6">
+									<Trans>Temperature source</Trans>
+								</p>
+								<Select
+									value={temperatureMode}
+									onValueChange={(mode: "any" | "sensors") => {
+										setTemperatureMode(mode)
+										if (mode === "any") {
+											sendUpsert(min, value, {})
+											return
+										}
+										const currentThresholds = sensorThresholdsRef.current
+										const nextThresholds = Object.keys(currentThresholds).length
+											? currentThresholds
+											: Object.fromEntries(temperatureSensors.map((sensor) => [sensor, value]))
+										updateSensorThresholds(nextThresholds)
+										if (Object.keys(nextThresholds).length) sendUpsert(min, value, nextThresholds)
+									}}
+								>
+									<SelectTrigger className="h-9" aria-label={t`Temperature source`}>
+										<SelectValue />
+									</SelectTrigger>
+									<SelectContent>
+										<SelectItem value="any">
+											<Trans>Any sensor</Trans>
+										</SelectItem>
+										<SelectItem value="sensors" disabled={!temperatureSensors.length}>
+											<Trans>Individual sensors</Trans>
+										</SelectItem>
+									</SelectContent>
+								</Select>
+							</div>
+						)}
+						{!noThreshold && (!canConfigureTemperatureSensors || temperatureMode === "any") && (
 							<div className={cn(noDuration && "col-span-full")}>
 								<p id={`v${name}`} className="text-sm block h-6">
 									{alertKey === "NetworkMonitorCert" ? (
@@ -423,7 +517,7 @@ export function AlertContent({
 												const clamped = Math.min(Math.max(val, nextInput.min), next.max)
 												setUnitIndex(Number(index))
 												setValue(clamped)
-												sendUpsert(min, clamped, next.factor)
+												sendUpsert(min, clamped, undefined, next.factor)
 											}}
 										>
 											<SelectTrigger className="w-auto shrink-0 h-8 gap-1.5 px-2.5">
@@ -441,8 +535,96 @@ export function AlertContent({
 								</div>
 							</div>
 						)}
+						{canConfigureTemperatureSensors && temperatureMode === "sensors" && (
+							<div className="col-span-full grid gap-3">
+								{loadingTemperatureSensors && !temperatureSensors.length ? (
+									<p className="text-sm">
+										<Trans>Loading temperature sensors...</Trans>
+									</p>
+								) : (
+									temperatureSensors.map((sensor, index) => {
+										const enabled = Object.hasOwn(sensorThresholds, sensor)
+										const sensorValue = sensorThresholds[sensor] ?? value
+										const sensorId = `temperature-sensor-${index}`
+										const updateSensor = (nextValue: number) => {
+											const nextThresholds = updateSensorThresholds((currentThresholds) => ({
+												...currentThresholds,
+												[sensor]: nextValue,
+											}))
+											sendUpsert(min, value, nextThresholds)
+										}
+										return (
+											<div key={sensor} className="grid gap-2 rounded-md border border-muted-foreground/15 p-3">
+												<div className="flex items-center justify-between gap-3">
+													<label htmlFor={sensorId} className="min-w-0 truncate text-sm font-medium text-foreground">
+														{sensor}
+													</label>
+													<Checkbox
+														id={sensorId}
+														checked={enabled}
+														onCheckedChange={(nextChecked) => {
+															if (nextChecked) {
+																updateSensor(sensorValue)
+																return
+															}
+															const nextThresholds = updateSensorThresholds((currentThresholds) => {
+																const nextThresholds = { ...currentThresholds }
+																delete nextThresholds[sensor]
+																return nextThresholds
+															})
+															if (!Object.keys(nextThresholds).length) setTemperatureMode("any")
+															sendUpsert(min, value, nextThresholds)
+														}}
+													/>
+												</div>
+												<div className="flex gap-3 items-center">
+													<Slider
+														aria-label={sensor}
+														disabled={!enabled}
+														value={[sensorValue]}
+														onValueChange={(val) =>
+															updateSensorThresholds((currentThresholds) => ({
+																...currentThresholds,
+																[sensor]: val[0],
+															}))
+														}
+														onValueCommit={(val) => updateSensor(val[0])}
+														step={alertData.step ?? 1}
+														min={alertData.min ?? 1}
+														max={alertData.max ?? 99}
+													/>
+													<Input
+														type="number"
+														disabled={!enabled}
+														aria-label={sensor}
+														min={alertData.min ?? 1}
+														max={alertData.max ?? 99}
+														step={alertData.step ?? 1}
+														value={sensorValue}
+														onChange={(e) => {
+															const nextValue = temperatureThresholdInput(e.target.value, alertData.min, alertData.max)
+															if (nextValue !== undefined) {
+																updateSensor(nextValue)
+															}
+														}}
+														className="w-16 h-8 text-center px-1"
+													/>
+													<span className="sr-only">°C</span>
+												</div>
+											</div>
+										)
+									})
+								)}
+							</div>
+						)}
 						{!noDuration && (
-							<div className={cn(singleDescription && "col-span-full lowercase")}>
+							<div
+								className={cn(
+									(singleDescription || (canConfigureTemperatureSensors && temperatureMode === "sensors")) &&
+										"col-span-full",
+									singleDescription && "lowercase"
+								)}
+							>
 								<p id={`t${name}`} className="text-sm block h-6 first-letter:uppercase">
 									{singleDescription && (
 										<>
@@ -483,7 +665,9 @@ export function AlertContent({
 							</div>
 						)}
 					</Suspense>
-          {checked && alertData.note && <span className="block col-span-full text-sm text-muted-foreground -mt-3">{alertData.note()}</span>}
+					{checked && alertData.note && (
+						<span className="block col-span-full text-sm text-muted-foreground -mt-3">{alertData.note()}</span>
+					)}
 				</div>
 			)}
 		</div>

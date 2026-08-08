@@ -58,6 +58,7 @@ func TestCollectionRulesDefault(t *testing.T) {
 	for _, name := range []string{"CPUSystem", "CPUUser", "CPUIdle", "CPUOther"} {
 		assert.NotContains(t, alertNames, name)
 	}
+	assert.IsType(t, &core.JSONField{}, alertsCollection.Fields.GetByName("thresholds"))
 
 	// alerts_history collection
 	alertsHistoryCollection, err := hub.FindCollectionByNameOrId("alerts_history")
