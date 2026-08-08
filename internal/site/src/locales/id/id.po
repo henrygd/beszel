@@ -179,6 +179,10 @@ msgstr "Semua Container"
 msgid "All Systems"
 msgstr "Semua Sistem"
 
+#: src/components/alerts/alerts-sheet.tsx
+msgid "Any sensor"
+msgstr ""
+
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Are you sure you want to delete {name}?"
 msgstr "Apakah anda yakin ingin menghapus {name}?"
@@ -944,6 +948,10 @@ msgstr "Gambar"
 msgid "Inactive"
 msgstr "Tidak aktif"
 
+#: src/components/alerts/alerts-sheet.tsx
+msgid "Individual sensors"
+msgstr ""
+
 #: src/components/routes/settings/heartbeat.tsx
 msgid "Interval"
 msgstr ""
@@ -998,6 +1006,10 @@ msgstr "Rata-rata Beban"
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Load state"
 msgstr "Beban saat ini"
+
+#: src/components/alerts/alerts-sheet.tsx
+msgid "Loading temperature sensors..."
+msgstr ""
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Loading..."
@@ -1467,6 +1479,11 @@ msgstr "Kirim ping keluar secara berkala ke layanan pemantauan eksternal sehingg
 msgid "Send test heartbeat"
 msgstr "Kirim tes heartbeat"
 
+#. placeholder {0}: alert.min
+#: src/components/active-alerts.tsx
+msgid "Sensor threshold exceeded in last {0, plural, one {# minute} other {# minutes}}"
+msgstr ""
+
 #: src/components/routes/system/charts/network-charts.tsx
 msgid "Sent"
 msgstr "Dikirim"
@@ -1604,6 +1621,10 @@ msgstr "Temperatur"
 #: src/lib/alerts.ts
 msgid "Temperature"
 msgstr "Temperatur"
+
+#: src/components/alerts/alerts-sheet.tsx
+msgid "Temperature source"
+msgstr ""
 
 #: src/components/routes/settings/general.tsx
 msgid "Temperature unit"

@@ -22,7 +22,7 @@ export const ActiveAlerts = () => {
 			for (const alert of alerts[systemId].values()) {
 				if (alert.triggered && alert.name in alertInfo) {
 					activeAlerts.push(alert)
-					alertsKey.push(`${alert.system}${alert.value}${alert.min}`)
+					alertsKey.push(`${alert.system}${alert.value}${JSON.stringify(alert.thresholds)}${alert.min}`)
 				}
 			}
 		}
@@ -49,6 +49,8 @@ export const ActiveAlerts = () => {
 						<div className="grid sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-3">
 							{activeAlerts.map((alert) => {
 								const info = alertInfo[alert.name as keyof typeof alertInfo]
+								const hasSensorThresholds =
+									alert.name === "Temperature" && Object.keys(alert.thresholds ?? {}).length > 0
 								return (
 									<Alert
 										key={alert.id}
@@ -61,6 +63,11 @@ export const ActiveAlerts = () => {
 										<AlertDescription>
 											{alert.name === "Status" ? (
 												<Trans>Connection is down</Trans>
+											) : hasSensorThresholds ? (
+												<Trans>
+													Sensor threshold exceeded in last{" "}
+													<Plural value={alert.min} one="# minute" other="# minutes" />
+												</Trans>
 											) : info.invert ? (
 												<Trans>
 													Below {alert.value}

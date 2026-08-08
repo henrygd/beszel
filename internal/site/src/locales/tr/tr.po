@@ -179,6 +179,10 @@ msgstr "Tüm Konteynerler"
 msgid "All Systems"
 msgstr "Tüm Sistemler"
 
+#: src/components/alerts/alerts-sheet.tsx
+msgid "Any sensor"
+msgstr ""
+
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Are you sure you want to delete {name}?"
 msgstr "{name} silmek istediğinizden emin misiniz?"
@@ -944,6 +948,10 @@ msgstr "İmaj"
 msgid "Inactive"
 msgstr "Pasif"
 
+#: src/components/alerts/alerts-sheet.tsx
+msgid "Individual sensors"
+msgstr ""
+
 #: src/components/routes/settings/heartbeat.tsx
 msgid "Interval"
 msgstr "Aralık"
@@ -998,6 +1006,10 @@ msgstr "Yük Ort."
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Load state"
 msgstr "Yükleme durumu"
+
+#: src/components/alerts/alerts-sheet.tsx
+msgid "Loading temperature sensors..."
+msgstr ""
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Loading..."
@@ -1467,6 +1479,11 @@ msgstr "Beszel'i internete maruz bırakmadan izleyebilmeniz için harici bir izl
 msgid "Send test heartbeat"
 msgstr "Test heartbeat gönder"
 
+#. placeholder {0}: alert.min
+#: src/components/active-alerts.tsx
+msgid "Sensor threshold exceeded in last {0, plural, one {# minute} other {# minutes}}"
+msgstr ""
+
 #: src/components/routes/system/charts/network-charts.tsx
 msgid "Sent"
 msgstr "Gönderildi"
@@ -1604,6 +1621,10 @@ msgstr "Sıc"
 #: src/lib/alerts.ts
 msgid "Temperature"
 msgstr "Sıcaklık"
+
+#: src/components/alerts/alerts-sheet.tsx
+msgid "Temperature source"
+msgstr ""
 
 #: src/components/routes/settings/general.tsx
 msgid "Temperature unit"

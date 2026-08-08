@@ -3,13 +3,14 @@ import { Plural, Trans } from "@lingui/react/macro"
 import { useStore } from "@nanostores/react"
 import { getPagePath } from "@nanostores/router"
 import { ChevronDownIcon, GlobeIcon, ServerIcon } from "lucide-react"
-import { lazy, memo, Suspense, useMemo, useState } from "react"
+import { lazy, memo, Suspense, useEffect, useMemo, useState } from "react"
 import { $router, Link } from "@/components/router"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
 import { DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Input } from "@/components/ui/input"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Switch } from "@/components/ui/switch"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { toast } from "@/components/ui/use-toast"
@@ -17,7 +18,7 @@ import { alertInfo } from "@/lib/alerts"
 import { pb } from "@/lib/api"
 import { $alerts, $systems } from "@/lib/stores"
 import { cn, debounce } from "@/lib/utils"
-import type { AlertInfo, AlertRecord, SystemRecord } from "@/types"
+import type { AlertInfo, AlertRecord, SystemRecord, SystemStatsRecord } from "@/types"
 
 const Slider = lazy(() => import("@/components/ui/slider"))
 
@@ -38,12 +39,24 @@ const failedUpdateToast = (error: unknown) => {
 
 /** Create or update alerts for a given name and systems */
 const upsertAlerts = debounce(
-	async ({ name, value, min, systems }: { name: string; value: number; min: number; systems: string[] }) => {
+	async ({
+		name,
+		value,
+		thresholds,
+		min,
+		systems,
+	}: {
+		name: string
+		value: number
+		thresholds?: Record<string, number>
+		min: number
+		systems: string[]
+	}) => {
 		try {
 			await pb.send<{ success: boolean }>(endpoint, {
 				method: "POST",
 				// overwrite is always true because we've done filtering client side
-				body: { name, value, min, systems, overwrite: true },
+				body: { name, value, thresholds, min, systems, overwrite: true },
 			})
 		} catch (error) {
 			failedUpdateToast(error)
@@ -89,10 +102,10 @@ export const AlertDialogContent = memo(function AlertDialogContent({ system }: {
 			// Alert names present on target but absent from source should be deleted
 			const namesToDelete = Array.from(currentTargetAlerts.keys()).filter((name) => !sourceAlerts.has(name))
 			await Promise.all([
-				...Array.from(sourceAlerts.values()).map(({ name, value, min }) =>
+				...Array.from(sourceAlerts.values()).map(({ name, value, thresholds, min }) =>
 					pb.send<{ success: boolean }>(endpoint, {
 						method: "POST",
-						body: { name, value, min, systems: [system.id], overwrite: true },
+						body: { name, value, thresholds, min, systems: [system.id], overwrite: true },
 						requestKey: name,
 					})
 				),
@@ -240,8 +253,38 @@ export function AlertContent({
 	const [checked, setChecked] = useState(global ? false : !!alert)
 	const [min, setMin] = useState(alert?.min || 10)
 	const [value, setValue] = useState(alert?.value || (singleDescription ? 0 : (alertData.start ?? 80)))
+	const [temperatureMode, setTemperatureMode] = useState<"any" | "sensors">(
+		Object.keys(alert?.thresholds ?? {}).length ? "sensors" : "any"
+	)
+	const [sensorThresholds, setSensorThresholds] = useState<Record<string, number>>(alert?.thresholds ?? {})
+	const [temperatureSensors, setTemperatureSensors] = useState(() => Object.keys(alert?.thresholds ?? {}).sort())
+	const [loadingTemperatureSensors, setLoadingTemperatureSensors] = useState(false)
+	const isTemperatureAlert = alertKey === "Temperature"
+	const canConfigureTemperatureSensors = isTemperatureAlert && !global
 
 	const Icon = alertData.icon
+
+	useEffect(() => {
+		if (!canConfigureTemperatureSensors || !checked) return
+		let cancelled = false
+		setLoadingTemperatureSensors(true)
+		pb.collection<SystemStatsRecord>("system_stats")
+			.getList(1, 1, {
+				filter: pb.filter("system={:system} && type={:type}", { system: system.id, type: "1m" }),
+				fields: "stats",
+				sort: "-created",
+			})
+			.then(({ items }) => {
+				if (cancelled) return
+				const sensors = new Set([...Object.keys(sensorThresholds), ...Object.keys(items[0]?.stats?.t ?? {})])
+				setTemperatureSensors([...sensors].sort((a, b) => a.localeCompare(b)))
+			})
+			.catch((error) => console.error("Failed to load temperature sensors", error))
+			.finally(() => !cancelled && setLoadingTemperatureSensors(false))
+		return () => {
+			cancelled = true
+		}
+	}, [canConfigureTemperatureSensors, checked, system.id])
 
 	/** Get system ids to update */
 	function getSystemIds(): string[] {
@@ -261,12 +304,19 @@ export function AlertContent({
 		return systemIds
 	}
 
-	function sendUpsert(min: number, value: number) {
+	function sendUpsert(min: number, value: number, thresholds?: Record<string, number>) {
 		const systems = getSystemIds()
 		systems.length &&
 			upsertAlerts({
 				name: alertKey,
 				value,
+				thresholds:
+					thresholds ??
+					(isTemperatureAlert
+						? canConfigureTemperatureSensors && temperatureMode === "sensors"
+							? sensorThresholds
+							: {}
+						: undefined),
 				min,
 				systems,
 			})
@@ -310,7 +360,41 @@ export function AlertContent({
 			{checked && (
 				<div className="grid sm:grid-cols-2 mt-1.5 gap-5 px-4 pb-5 tabular-nums text-muted-foreground">
 					<Suspense fallback={<div className="h-10" />}>
-						{!singleDescription && (
+						{canConfigureTemperatureSensors && (
+							<div className="col-span-full">
+								<p className="text-sm block h-6">
+									<Trans>Temperature source</Trans>
+								</p>
+								<Select
+									value={temperatureMode}
+									onValueChange={(mode: "any" | "sensors") => {
+										setTemperatureMode(mode)
+										if (mode === "any") {
+											sendUpsert(min, value, {})
+											return
+										}
+										const nextThresholds = Object.keys(sensorThresholds).length
+											? sensorThresholds
+											: Object.fromEntries(temperatureSensors.map((sensor) => [sensor, value]))
+										setSensorThresholds(nextThresholds)
+										if (Object.keys(nextThresholds).length) sendUpsert(min, value, nextThresholds)
+									}}
+								>
+									<SelectTrigger className="h-9">
+										<SelectValue />
+									</SelectTrigger>
+									<SelectContent>
+										<SelectItem value="any">
+											<Trans>Any sensor</Trans>
+										</SelectItem>
+										<SelectItem value="sensors" disabled={!temperatureSensors.length}>
+											<Trans>Individual sensors</Trans>
+										</SelectItem>
+									</SelectContent>
+								</Select>
+							</div>
+						)}
+						{!singleDescription && (!canConfigureTemperatureSensors || temperatureMode === "any") && (
 							<div>
 								<p id={`v${name}`} className="text-sm block h-6">
 									{alertData.invert ? (
@@ -361,7 +445,82 @@ export function AlertContent({
 								</div>
 							</div>
 						)}
-						<div className={cn(singleDescription && "col-span-full lowercase")}>
+						{canConfigureTemperatureSensors && temperatureMode === "sensors" && (
+							<div className="col-span-full grid gap-3">
+								{loadingTemperatureSensors && !temperatureSensors.length ? (
+									<p className="text-sm">
+										<Trans>Loading temperature sensors...</Trans>
+									</p>
+								) : (
+									temperatureSensors.map((sensor, index) => {
+										const enabled = Object.hasOwn(sensorThresholds, sensor)
+										const sensorValue = sensorThresholds[sensor] ?? value
+										const sensorId = `temperature-sensor-${index}`
+										const updateSensor = (nextValue: number) => {
+											const nextThresholds = { ...sensorThresholds, [sensor]: nextValue }
+											setSensorThresholds(nextThresholds)
+											sendUpsert(min, value, nextThresholds)
+										}
+										return (
+											<div key={sensor} className="grid gap-2 rounded-md border border-muted-foreground/15 p-3">
+												<div className="flex items-center justify-between gap-3">
+													<label htmlFor={sensorId} className="min-w-0 truncate text-sm font-medium text-foreground">
+														{sensor}
+													</label>
+													<Checkbox
+														id={sensorId}
+														checked={enabled}
+														onCheckedChange={(nextChecked) => {
+															if (nextChecked) {
+																updateSensor(sensorValue)
+																return
+															}
+															const nextThresholds = { ...sensorThresholds }
+															delete nextThresholds[sensor]
+															setSensorThresholds(nextThresholds)
+															if (!Object.keys(nextThresholds).length) setTemperatureMode("any")
+															sendUpsert(min, value, nextThresholds)
+														}}
+													/>
+												</div>
+												<div className="flex gap-3 items-center">
+													<Slider
+														aria-label={sensor}
+														disabled={!enabled}
+														value={[sensorValue]}
+														onValueCommit={(val) => updateSensor(val[0])}
+														step={alertData.step ?? 1}
+														min={alertData.min ?? 1}
+														max={alertData.max ?? 99}
+													/>
+													<Input
+														type="number"
+														disabled={!enabled}
+														value={sensorValue}
+														onChange={(e) => {
+															let nextValue = parseFloat(e.target.value)
+															if (!Number.isNaN(nextValue)) {
+																nextValue = Math.max(alertData.min ?? 1, Math.min(nextValue, alertData.max ?? 99))
+																updateSensor(nextValue)
+															}
+														}}
+														className="w-16 h-8 text-center px-1"
+													/>
+													<span className="sr-only">°C</span>
+												</div>
+											</div>
+										)
+									})
+								)}
+							</div>
+						)}
+						<div
+							className={cn(
+								(singleDescription || (canConfigureTemperatureSensors && temperatureMode === "sensors")) &&
+									"col-span-full",
+								singleDescription && "lowercase"
+							)}
+						>
 							<p id={`t${name}`} className="text-sm block h-6 first-letter:uppercase">
 								{singleDescription && (
 									<>

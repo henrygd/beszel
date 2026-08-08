@@ -8,13 +8,14 @@ import (
 
 // CachedAlertData represents the relevant fields of an alert record for status checking and updates.
 type CachedAlertData struct {
-	Id        string
-	SystemID  string
-	UserID    string
-	Name      string
-	Value     float64
-	Triggered bool
-	Min       uint8
+	Id         string
+	SystemID   string
+	UserID     string
+	Name       string
+	Value      float64
+	Thresholds map[string]float64
+	Triggered  bool
+	Min        uint8
 	// Created   types.DateTime
 }
 
@@ -24,6 +25,7 @@ func (a *CachedAlertData) PopulateFromRecord(record *core.Record) {
 	a.UserID = record.GetString("user")
 	a.Name = record.GetString("name")
 	a.Value = record.GetFloat("value")
+	_ = record.UnmarshalJSONField("thresholds", &a.Thresholds)
 	a.Triggered = record.GetBool("triggered")
 	a.Min = uint8(record.GetInt("min"))
 	// a.Created = record.GetDateTime("created")

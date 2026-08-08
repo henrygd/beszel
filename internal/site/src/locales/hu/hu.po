@@ -179,6 +179,10 @@ msgstr "Minden konténer"
 msgid "All Systems"
 msgstr "Minden rendszer"
 
+#: src/components/alerts/alerts-sheet.tsx
+msgid "Any sensor"
+msgstr ""
+
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Are you sure you want to delete {name}?"
 msgstr "Biztosan törölni szeretnéd {name}-t?"
@@ -944,6 +948,10 @@ msgstr "Kép"
 msgid "Inactive"
 msgstr "Inaktív"
 
+#: src/components/alerts/alerts-sheet.tsx
+msgid "Individual sensors"
+msgstr ""
+
 #: src/components/routes/settings/heartbeat.tsx
 msgid "Interval"
 msgstr "Intervallum"
@@ -998,6 +1006,10 @@ msgstr "Terhelési átlag"
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Load state"
 msgstr "Betöltési állapot"
+
+#: src/components/alerts/alerts-sheet.tsx
+msgid "Loading temperature sensors..."
+msgstr ""
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Loading..."
@@ -1467,6 +1479,11 @@ msgstr "Küldjön időszakos kimenő pingeket egy külső megfigyelő szolgálta
 msgid "Send test heartbeat"
 msgstr "Teszt heartbeat küldése"
 
+#. placeholder {0}: alert.min
+#: src/components/active-alerts.tsx
+msgid "Sensor threshold exceeded in last {0, plural, one {# minute} other {# minutes}}"
+msgstr ""
+
 #: src/components/routes/system/charts/network-charts.tsx
 msgid "Sent"
 msgstr "Elküldve"
@@ -1604,6 +1621,10 @@ msgstr "Hőmérséklet"
 #: src/lib/alerts.ts
 msgid "Temperature"
 msgstr "Hőmérséklet"
+
+#: src/components/alerts/alerts-sheet.tsx
+msgid "Temperature source"
+msgstr ""
 
 #: src/components/routes/settings/general.tsx
 msgid "Temperature unit"

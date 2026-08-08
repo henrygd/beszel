@@ -50,6 +50,7 @@ func TestCollectionRulesDefault(t *testing.T) {
 	assert.Equal(t, isUserMatchesUser, *alertsCollection.CreateRule)
 	assert.Equal(t, isUserMatchesUser, *alertsCollection.UpdateRule)
 	assert.Equal(t, isUserMatchesUser, *alertsCollection.DeleteRule)
+	assert.IsType(t, &core.JSONField{}, alertsCollection.Fields.GetByName("thresholds"))
 
 	// alerts_history collection
 	alertsHistoryCollection, err := hub.FindCollectionByNameOrId("alerts_history")

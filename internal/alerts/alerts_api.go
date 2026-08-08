@@ -19,11 +19,12 @@ func UpsertUserAlerts(e *core.RequestEvent) error {
 	userID := e.Auth.Id
 
 	reqData := struct {
-		Min       uint8    `json:"min"`
-		Value     float64  `json:"value"`
-		Name      string   `json:"name"`
-		Systems   []string `json:"systems"`
-		Overwrite bool     `json:"overwrite"`
+		Min        uint8              `json:"min"`
+		Value      float64            `json:"value"`
+		Thresholds map[string]float64 `json:"thresholds"`
+		Name       string             `json:"name"`
+		Systems    []string           `json:"systems"`
+		Overwrite  bool               `json:"overwrite"`
 	}{}
 	err := e.BindBody(&reqData)
 	if err != nil || userID == "" || reqData.Name == "" || len(reqData.Systems) == 0 {
@@ -61,6 +62,9 @@ func UpsertUserAlerts(e *core.RequestEvent) error {
 
 			alertRecord.Set("value", reqData.Value)
 			alertRecord.Set("min", reqData.Min)
+			if reqData.Name == "Temperature" {
+				alertRecord.Set("thresholds", reqData.Thresholds)
+			}
 
 			if err := txApp.SaveNoValidate(alertRecord); err != nil {
 				return err

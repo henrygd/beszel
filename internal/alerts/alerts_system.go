@@ -27,6 +27,8 @@ func (am *AlertManager) HandleSystemAlerts(systemRecord *core.Record, data *syst
 		name := alertData.Name
 		var val float64
 		unit := "%"
+		threshold := alertData.Value
+		descriptor := ""
 
 		switch name {
 		case "CPU":
@@ -46,10 +48,16 @@ func (am *AlertManager) HandleSystemAlerts(systemRecord *core.Record, data *syst
 			}
 			val = maxUsedPct
 		case "Temperature":
-			if data.Info.DashboardTemp < 1 {
+			var ok bool
+			val, threshold, descriptor, _, ok = selectTemperatureValue(
+				alertData.Thresholds,
+				data.Stats.Temperatures,
+				data.Info.DashboardTemp,
+				alertData.Value,
+			)
+			if !ok {
 				continue
 			}
-			val = data.Info.DashboardTemp
 			unit = "°C"
 		case "LoadAvg1":
 			val = data.Info.LoadAvg[0]
@@ -70,7 +78,6 @@ func (am *AlertManager) HandleSystemAlerts(systemRecord *core.Record, data *syst
 		}
 
 		triggered := alertData.Triggered
-		threshold := alertData.Value
 
 		// Battery alert has inverted logic: trigger when value is BELOW threshold
 		lowAlert := isLowAlert(name)
@@ -99,6 +106,7 @@ func (am *AlertManager) HandleSystemAlerts(systemRecord *core.Record, data *syst
 			threshold:    threshold,
 			triggered:    triggered,
 			min:          min,
+			descriptor:   descriptor,
 		}
 
 		// send alert immediately if min is 1 - no need to sum up values.
@@ -210,12 +218,19 @@ func (am *AlertManager) HandleSystemAlerts(systemRecord *core.Record, data *syst
 			case "Temperature":
 				if alert.mapSums == nil {
 					alert.mapSums = make(map[string]float32, len(stats.Temperatures))
+					alert.mapCounts = make(map[string]uint8, len(stats.Temperatures))
 				}
 				for key, temp := range stats.Temperatures {
+					if len(alert.alertData.Thresholds) > 0 {
+						if _, selected := alert.alertData.Thresholds[key]; !selected {
+							continue
+						}
+					}
 					if _, ok := alert.mapSums[key]; !ok {
 						alert.mapSums[key] = float32(0)
 					}
 					alert.mapSums[key] += temp
+					alert.mapCounts[key]++
 				}
 			case "LoadAvg1":
 				alert.val += stats.LoadAvg[0]
@@ -244,6 +259,7 @@ func (am *AlertManager) HandleSystemAlerts(systemRecord *core.Record, data *syst
 	}
 	// sum up vals for each alert
 	for _, alert := range validAlerts {
+		minCount := float32(alert.min) / 1.2
 		switch alert.name {
 		case "Disk":
 			maxPct := float32(0)
@@ -256,19 +272,30 @@ func (am *AlertManager) HandleSystemAlerts(systemRecord *core.Record, data *syst
 			}
 			alert.val = float64(maxPct / float32(alert.count))
 		case "Temperature":
-			maxTemp := float32(0)
-			for key, value := range alert.mapSums {
-				sumTemp := float32(value) / float32(alert.count)
-				if sumTemp > maxTemp {
-					maxTemp = sumTemp
-					alert.descriptor = fmt.Sprintf("Highest sensor %s", key)
+			averages := make(map[string]float64, len(alert.mapSums))
+			for key, sum := range alert.mapSums {
+				count := alert.mapCounts[key]
+				if count == 0 || float32(count) < minCount {
+					continue
 				}
+				averages[key] = float64(sum) / float64(count)
 			}
-			alert.val = float64(maxTemp)
+			value, threshold, descriptor, sensor, ok := selectTemperatureValue(
+				alert.alertData.Thresholds,
+				averages,
+				0,
+				alert.alertData.Value,
+			)
+			if !ok {
+				continue
+			}
+			alert.val = value
+			alert.threshold = threshold
+			alert.descriptor = descriptor
+			alert.count = alert.mapCounts[sensor]
 		default:
 			alert.val = alert.val / float64(alert.count)
 		}
-		minCount := float32(alert.min) / 1.2
 		// log.Println("alert", alert.name, "val", alert.val, "threshold", alert.threshold, "triggered", alert.triggered)
 		// log.Printf("%s: val %f | count %d | min-count %f | threshold %f\n", alert.name, alert.val, alert.count, minCount, alert.threshold)
 		// pass through alert if count is greater than or equal to minCount
@@ -295,6 +322,51 @@ func (am *AlertManager) HandleSystemAlerts(systemRecord *core.Record, data *syst
 		}
 	}
 	return nil
+}
+
+// selectTemperatureValue returns the temperature reading that determines the
+// aggregate alert state. With per-sensor thresholds, this is the sensor furthest
+// above its own threshold. Otherwise it is the hottest available sensor.
+func selectTemperatureValue(
+	thresholds map[string]float64,
+	temperatures map[string]float64,
+	fallback float64,
+	defaultThreshold float64,
+) (value float64, threshold float64, descriptor string, sensor string, ok bool) {
+	bestMargin := 0.0
+	for key, temp := range temperatures {
+		sensorThreshold := defaultThreshold
+		if len(thresholds) > 0 {
+			var selected bool
+			sensorThreshold, selected = thresholds[key]
+			if !selected {
+				continue
+			}
+		}
+
+		margin := temp - sensorThreshold
+		if !ok || margin > bestMargin || (margin == bestMargin && key < sensor) {
+			value = temp
+			threshold = sensorThreshold
+			sensor = key
+			bestMargin = margin
+			ok = true
+		}
+	}
+
+	if ok {
+		if len(thresholds) > 0 {
+			descriptor = fmt.Sprintf("Temperature sensor %s", sensor)
+		} else {
+			descriptor = fmt.Sprintf("Highest sensor %s", sensor)
+		}
+		return value, threshold, descriptor, sensor, true
+	}
+
+	if len(thresholds) == 0 && fallback >= 1 {
+		return fallback, defaultThreshold, "", "", true
+	}
+	return 0, 0, "", "", false
 }
 
 func (am *AlertManager) sendSystemAlert(alert SystemAlertData) {

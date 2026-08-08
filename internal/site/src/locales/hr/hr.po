@@ -179,6 +179,10 @@ msgstr "Svi spremnici"
 msgid "All Systems"
 msgstr "Svi Sustavi"
 
+#: src/components/alerts/alerts-sheet.tsx
+msgid "Any sensor"
+msgstr ""
+
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Are you sure you want to delete {name}?"
 msgstr "Jeste li sigurni da želite izbrisati {name}?"
@@ -944,6 +948,10 @@ msgstr "Slika"
 msgid "Inactive"
 msgstr "Neaktivno"
 
+#: src/components/alerts/alerts-sheet.tsx
+msgid "Individual sensors"
+msgstr ""
+
 #: src/components/routes/settings/heartbeat.tsx
 msgid "Interval"
 msgstr ""
@@ -998,6 +1006,10 @@ msgstr "Prosječno Opterećenje"
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Load state"
 msgstr "Stanje učitavanja"
+
+#: src/components/alerts/alerts-sheet.tsx
+msgid "Loading temperature sensors..."
+msgstr ""
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Loading..."
@@ -1467,6 +1479,11 @@ msgstr "Šaljite povremene odlazne pingove vanjskoj usluzi nadzora kako biste mo
 msgid "Send test heartbeat"
 msgstr "Pošalji testni heartbeat"
 
+#. placeholder {0}: alert.min
+#: src/components/active-alerts.tsx
+msgid "Sensor threshold exceeded in last {0, plural, one {# minute} other {# minutes}}"
+msgstr ""
+
 #: src/components/routes/system/charts/network-charts.tsx
 msgid "Sent"
 msgstr "Poslano"
@@ -1604,6 +1621,10 @@ msgstr ""
 #: src/lib/alerts.ts
 msgid "Temperature"
 msgstr "Temperatura"
+
+#: src/components/alerts/alerts-sheet.tsx
+msgid "Temperature source"
+msgstr ""
 
 #: src/components/routes/settings/general.tsx
 msgid "Temperature unit"

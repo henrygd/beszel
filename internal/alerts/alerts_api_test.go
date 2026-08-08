@@ -191,6 +191,31 @@ func TestUserAlertsApi(t *testing.T) {
 			},
 		},
 		{
+			Name:   "POST temperature alert with per-sensor thresholds",
+			Method: http.MethodPost,
+			URL:    "/api/beszel/user-alerts",
+			Headers: map[string]string{
+				"Authorization": user1Token,
+			},
+			ExpectedStatus:  200,
+			ExpectedContent: []string{"\"success\":true"},
+			TestAppFactory:  testAppFactory,
+			Body: jsonReader(map[string]any{
+				"name":       "Temperature",
+				"systems":    []string{system1.Id},
+				"value":      80,
+				"thresholds": map[string]float64{"CPU Package": 85, "NVMe": 70},
+				"min":        10,
+			}),
+			AfterTestFunc: func(t testing.TB, app *pbTests.TestApp, res *http.Response) {
+				alert, err := app.FindFirstRecordByFilter("alerts", "name = 'Temperature' && user = {:user}", dbx.Params{"user": user1.Id})
+				assert.NoError(t, err)
+				var thresholds map[string]float64
+				assert.NoError(t, alert.UnmarshalJSONField("thresholds", &thresholds))
+				assert.Equal(t, map[string]float64{"CPU Package": 85, "NVMe": 70}, thresholds)
+			},
+		},
+		{
 			Name:   "Overwrite: false, should not overwrite existing alert",
 			Method: http.MethodPost,
 			URL:    "/api/beszel/user-alerts",

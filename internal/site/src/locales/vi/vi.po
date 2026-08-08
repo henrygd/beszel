@@ -179,6 +179,10 @@ msgstr "Tất cả container"
 msgid "All Systems"
 msgstr "Tất cả Hệ thống"
 
+#: src/components/alerts/alerts-sheet.tsx
+msgid "Any sensor"
+msgstr ""
+
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Are you sure you want to delete {name}?"
 msgstr "Bạn có chắc chắn muốn xóa {name} không?"
@@ -944,6 +948,10 @@ msgstr "Hình ảnh"
 msgid "Inactive"
 msgstr "Không hoạt động"
 
+#: src/components/alerts/alerts-sheet.tsx
+msgid "Individual sensors"
+msgstr ""
+
 #: src/components/routes/settings/heartbeat.tsx
 msgid "Interval"
 msgstr "Khoảng thời gian"
@@ -998,6 +1006,10 @@ msgstr "Tải TB"
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Load state"
 msgstr "Trạng thái tải"
+
+#: src/components/alerts/alerts-sheet.tsx
+msgid "Loading temperature sensors..."
+msgstr ""
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Loading..."
@@ -1467,6 +1479,11 @@ msgstr "Gửi các ping gửi đi định kỳ đến dịch vụ giám sát bê
 msgid "Send test heartbeat"
 msgstr "Gửi heartbeat thử nghiệm"
 
+#. placeholder {0}: alert.min
+#: src/components/active-alerts.tsx
+msgid "Sensor threshold exceeded in last {0, plural, one {# minute} other {# minutes}}"
+msgstr ""
+
 #: src/components/routes/system/charts/network-charts.tsx
 msgid "Sent"
 msgstr "Đã gửi"
@@ -1604,6 +1621,10 @@ msgstr "Nhiệt độ"
 #: src/lib/alerts.ts
 msgid "Temperature"
 msgstr "Nhiệt độ"
+
+#: src/components/alerts/alerts-sheet.tsx
+msgid "Temperature source"
+msgstr ""
 
 #: src/components/routes/settings/general.tsx
 msgid "Temperature unit"

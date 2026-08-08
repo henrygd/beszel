@@ -179,6 +179,10 @@ msgstr "所有容器"
 msgid "All Systems"
 msgstr "所有系統"
 
+#: src/components/alerts/alerts-sheet.tsx
+msgid "Any sensor"
+msgstr ""
+
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Are you sure you want to delete {name}?"
 msgstr "您確定要刪除 {name} 嗎？"
@@ -944,6 +948,10 @@ msgstr "鏡像"
 msgid "Inactive"
 msgstr "未啟用"
 
+#: src/components/alerts/alerts-sheet.tsx
+msgid "Individual sensors"
+msgstr ""
+
 #: src/components/routes/settings/heartbeat.tsx
 msgid "Interval"
 msgstr "間隔"
@@ -998,6 +1006,10 @@ msgstr "平均負載"
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Load state"
 msgstr "載入狀態"
+
+#: src/components/alerts/alerts-sheet.tsx
+msgid "Loading temperature sensors..."
+msgstr ""
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Loading..."
@@ -1467,6 +1479,11 @@ msgstr "定期向外部監控服務發送出站 ping，以便您在不將 Beszel
 msgid "Send test heartbeat"
 msgstr "發送測試 heartbeat"
 
+#. placeholder {0}: alert.min
+#: src/components/active-alerts.tsx
+msgid "Sensor threshold exceeded in last {0, plural, one {# minute} other {# minutes}}"
+msgstr ""
+
 #: src/components/routes/system/charts/network-charts.tsx
 msgid "Sent"
 msgstr "發送"
@@ -1604,6 +1621,10 @@ msgstr "溫度"
 #: src/lib/alerts.ts
 msgid "Temperature"
 msgstr "溫度"
+
+#: src/components/alerts/alerts-sheet.tsx
+msgid "Temperature source"
+msgstr ""
 
 #: src/components/routes/settings/general.tsx
 msgid "Temperature unit"

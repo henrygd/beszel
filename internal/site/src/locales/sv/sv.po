@@ -179,6 +179,10 @@ msgstr "Alla behållare"
 msgid "All Systems"
 msgstr "Alla system"
 
+#: src/components/alerts/alerts-sheet.tsx
+msgid "Any sensor"
+msgstr ""
+
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Are you sure you want to delete {name}?"
 msgstr "Är du säker på att du vill ta bort {name}?"
@@ -944,6 +948,10 @@ msgstr "Avbild"
 msgid "Inactive"
 msgstr "Inaktiv"
 
+#: src/components/alerts/alerts-sheet.tsx
+msgid "Individual sensors"
+msgstr ""
+
 #: src/components/routes/settings/heartbeat.tsx
 msgid "Interval"
 msgstr "Intervall"
@@ -998,6 +1006,10 @@ msgstr "Belastning"
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Load state"
 msgstr "Laddningstillstånd"
+
+#: src/components/alerts/alerts-sheet.tsx
+msgid "Loading temperature sensors..."
+msgstr ""
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Loading..."
@@ -1467,6 +1479,11 @@ msgstr "Skicka periodiska utgående pingar till en extern övervakningstjänst s
 msgid "Send test heartbeat"
 msgstr "Skicka test-heartbeat"
 
+#. placeholder {0}: alert.min
+#: src/components/active-alerts.tsx
+msgid "Sensor threshold exceeded in last {0, plural, one {# minute} other {# minutes}}"
+msgstr ""
+
 #: src/components/routes/system/charts/network-charts.tsx
 msgid "Sent"
 msgstr "Skickat"
@@ -1604,6 +1621,10 @@ msgstr ""
 #: src/lib/alerts.ts
 msgid "Temperature"
 msgstr "Temperatur"
+
+#: src/components/alerts/alerts-sheet.tsx
+msgid "Temperature source"
+msgstr ""
 
 #: src/components/routes/settings/general.tsx
 msgid "Temperature unit"
