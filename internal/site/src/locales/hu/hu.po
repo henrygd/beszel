@@ -423,11 +423,6 @@ msgstr "Konfliktusok"
 msgid "Connection is down"
 msgstr "Kapcsolat megszakadt"
 
-#: src/components/routes/system/charts/container-disk-io-chart.tsx
-#: src/components/routes/system/charts/container-disk-io-chart.tsx
-msgid "Container Disk I/O"
-msgstr ""
-
 #: src/components/routes/system.tsx
 msgid "Containers"
 msgstr "Konténerek"
@@ -612,14 +607,6 @@ msgstr "Lemez"
 msgid "Disk I/O"
 msgstr "Lemez I/O"
 
-#: src/components/containers-table/containers-table-columns.tsx
-msgid "Disk Read"
-msgstr ""
-
-#: src/components/routes/system/charts/container-disk-io-chart.tsx
-msgid "Disk read and write rates of containers"
-msgstr ""
-
 #: src/components/routes/settings/general.tsx
 msgid "Disk unit"
 msgstr "Lemez mértékegysége"
@@ -633,10 +620,6 @@ msgstr "Lemezhasználat"
 #: src/components/routes/system/charts/disk-charts.tsx
 msgid "Disk usage of {extraFsName}"
 msgstr "Lemezhasználat a {extraFsName}"
-
-#: src/components/containers-table/containers-table-columns.tsx
-msgid "Disk Write"
-msgstr ""
 
 #: src/components/routes/system/info-bar.tsx
 msgctxt "Layout display options"
@@ -1343,8 +1326,6 @@ msgid "Quiet Hours"
 msgstr "Csendes órák"
 
 #. Disk read
-#: src/components/routes/system/charts/container-disk-io-chart.tsx
-#: src/components/routes/system/charts/container-disk-io-chart.tsx
 #: src/components/routes/system/charts/disk-charts.tsx
 #: src/components/routes/system/disk-io-sheet.tsx
 #: src/components/routes/system/disk-io-sheet.tsx
@@ -1569,7 +1550,6 @@ msgstr "Rendszer által használt swap terület"
 msgid "Swap Usage"
 msgstr "Swap használat"
 
-
 #: src/components/add-system.tsx
 #: src/components/alerts-history-columns.tsx
 #: src/components/containers-table/containers-table-columns.tsx
@@ -1701,7 +1681,6 @@ msgstr "A tokenek lehetővé teszik az ügynökök csatlakozását és regisztr�
 msgid "Tokens and fingerprints are used to authenticate WebSocket connections to the hub."
 msgstr "A tokeneket és fingeravtrykkokat a hubhoz való WebSocket kapcsolatok hitelesítésére használják."
 
-#: src/components/routes/system/charts/container-disk-io-chart.tsx
 #: src/components/ui/chart.tsx
 #: src/components/ui/chart.tsx
 msgid "Total"
@@ -1928,8 +1907,6 @@ msgid "Windows command"
 msgstr "Windows parancs"
 
 #. Disk write
-#: src/components/routes/system/charts/container-disk-io-chart.tsx
-#: src/components/routes/system/charts/container-disk-io-chart.tsx
 #: src/components/routes/system/charts/disk-charts.tsx
 #: src/components/routes/system/disk-io-sheet.tsx
 #: src/components/routes/system/disk-io-sheet.tsx

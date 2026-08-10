@@ -423,11 +423,6 @@ msgstr "衝突"
 msgid "Connection is down"
 msgstr "連線中斷"
 
-#: src/components/routes/system/charts/container-disk-io-chart.tsx
-#: src/components/routes/system/charts/container-disk-io-chart.tsx
-msgid "Container Disk I/O"
-msgstr ""
-
 #: src/components/routes/system.tsx
 msgid "Containers"
 msgstr "容器"
@@ -612,14 +607,6 @@ msgstr "磁碟"
 msgid "Disk I/O"
 msgstr "磁碟 I/O"
 
-#: src/components/containers-table/containers-table-columns.tsx
-msgid "Disk Read"
-msgstr ""
-
-#: src/components/routes/system/charts/container-disk-io-chart.tsx
-msgid "Disk read and write rates of containers"
-msgstr ""
-
 #: src/components/routes/settings/general.tsx
 msgid "Disk unit"
 msgstr "磁碟單位"
@@ -633,10 +620,6 @@ msgstr "磁碟使用量"
 #: src/components/routes/system/charts/disk-charts.tsx
 msgid "Disk usage of {extraFsName}"
 msgstr "{extraFsName}的磁碟使用量"
-
-#: src/components/containers-table/containers-table-columns.tsx
-msgid "Disk Write"
-msgstr ""
 
 #: src/components/routes/system/info-bar.tsx
 msgctxt "Layout display options"
@@ -1343,8 +1326,6 @@ msgid "Quiet Hours"
 msgstr "靜音時段"
 
 #. Disk read
-#: src/components/routes/system/charts/container-disk-io-chart.tsx
-#: src/components/routes/system/charts/container-disk-io-chart.tsx
 #: src/components/routes/system/charts/disk-charts.tsx
 #: src/components/routes/system/disk-io-sheet.tsx
 #: src/components/routes/system/disk-io-sheet.tsx
@@ -1569,7 +1550,6 @@ msgstr "系統的虛擬記憶體使用量"
 msgid "Swap Usage"
 msgstr "交換空間使用量"
 
-
 #: src/components/add-system.tsx
 #: src/components/alerts-history-columns.tsx
 #: src/components/containers-table/containers-table-columns.tsx
@@ -1701,7 +1681,6 @@ msgstr "Token 用於 Agent 的連線和註冊。Fingerprint 則是每個系統�
 msgid "Tokens and fingerprints are used to authenticate WebSocket connections to the hub."
 msgstr "Token 與 Fingerprint 用於驗證連往 Hub 的 WebSocket 連線。"
 
-#: src/components/routes/system/charts/container-disk-io-chart.tsx
 #: src/components/ui/chart.tsx
 #: src/components/ui/chart.tsx
 msgid "Total"
@@ -1928,8 +1907,6 @@ msgid "Windows command"
 msgstr "Windows 指令"
 
 #. Disk write
-#: src/components/routes/system/charts/container-disk-io-chart.tsx
-#: src/components/routes/system/charts/container-disk-io-chart.tsx
 #: src/components/routes/system/charts/disk-charts.tsx
 #: src/components/routes/system/disk-io-sheet.tsx
 #: src/components/routes/system/disk-io-sheet.tsx

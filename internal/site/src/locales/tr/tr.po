@@ -423,11 +423,6 @@ msgstr "Çakışmalar"
 msgid "Connection is down"
 msgstr "Bağlantı kesildi"
 
-#: src/components/routes/system/charts/container-disk-io-chart.tsx
-#: src/components/routes/system/charts/container-disk-io-chart.tsx
-msgid "Container Disk I/O"
-msgstr ""
-
 #: src/components/routes/system.tsx
 msgid "Containers"
 msgstr "Konteynerler"
@@ -612,14 +607,6 @@ msgstr "Depolama alanı"
 msgid "Disk I/O"
 msgstr "Disk G/Ç"
 
-#: src/components/containers-table/containers-table-columns.tsx
-msgid "Disk Read"
-msgstr ""
-
-#: src/components/routes/system/charts/container-disk-io-chart.tsx
-msgid "Disk read and write rates of containers"
-msgstr ""
-
 #: src/components/routes/settings/general.tsx
 msgid "Disk unit"
 msgstr "Disk birimi"
@@ -633,10 +620,6 @@ msgstr "Disk Kullanımı"
 #: src/components/routes/system/charts/disk-charts.tsx
 msgid "Disk usage of {extraFsName}"
 msgstr "{extraFsName} disk kullanımı"
-
-#: src/components/containers-table/containers-table-columns.tsx
-msgid "Disk Write"
-msgstr ""
 
 #: src/components/routes/system/info-bar.tsx
 msgctxt "Layout display options"
@@ -1343,8 +1326,6 @@ msgid "Quiet Hours"
 msgstr "Sessiz Saatler"
 
 #. Disk read
-#: src/components/routes/system/charts/container-disk-io-chart.tsx
-#: src/components/routes/system/charts/container-disk-io-chart.tsx
 #: src/components/routes/system/charts/disk-charts.tsx
 #: src/components/routes/system/disk-io-sheet.tsx
 #: src/components/routes/system/disk-io-sheet.tsx
@@ -1569,7 +1550,6 @@ msgstr "Sistem tarafından kullanılan takas alanı"
 msgid "Swap Usage"
 msgstr "Takas Kullanımı"
 
-
 #: src/components/add-system.tsx
 #: src/components/alerts-history-columns.tsx
 #: src/components/containers-table/containers-table-columns.tsx
@@ -1701,7 +1681,6 @@ msgstr "Token'lar agentların bağlanıp kaydolmasına izin verir. Parmak izleri
 msgid "Tokens and fingerprints are used to authenticate WebSocket connections to the hub."
 msgstr "Token'lar ve parmak izleri hub'a WebSocket bağlantılarını doğrulamak için kullanılır."
 
-#: src/components/routes/system/charts/container-disk-io-chart.tsx
 #: src/components/ui/chart.tsx
 #: src/components/ui/chart.tsx
 msgid "Total"
@@ -1928,8 +1907,6 @@ msgid "Windows command"
 msgstr "Windows komutu"
 
 #. Disk write
-#: src/components/routes/system/charts/container-disk-io-chart.tsx
-#: src/components/routes/system/charts/container-disk-io-chart.tsx
 #: src/components/routes/system/charts/disk-charts.tsx
 #: src/components/routes/system/disk-io-sheet.tsx
 #: src/components/routes/system/disk-io-sheet.tsx

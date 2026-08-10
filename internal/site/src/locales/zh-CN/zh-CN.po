@@ -423,11 +423,6 @@ msgstr "冲突"
 msgid "Connection is down"
 msgstr "连接已断开"
 
-#: src/components/routes/system/charts/container-disk-io-chart.tsx
-#: src/components/routes/system/charts/container-disk-io-chart.tsx
-msgid "Container Disk I/O"
-msgstr ""
-
 #: src/components/routes/system.tsx
 msgid "Containers"
 msgstr "容器"
@@ -612,14 +607,6 @@ msgstr "磁盘"
 msgid "Disk I/O"
 msgstr "磁盘 I/O"
 
-#: src/components/containers-table/containers-table-columns.tsx
-msgid "Disk Read"
-msgstr ""
-
-#: src/components/routes/system/charts/container-disk-io-chart.tsx
-msgid "Disk read and write rates of containers"
-msgstr ""
-
 #: src/components/routes/settings/general.tsx
 msgid "Disk unit"
 msgstr "磁盘单位"
@@ -633,10 +620,6 @@ msgstr "磁盘使用"
 #: src/components/routes/system/charts/disk-charts.tsx
 msgid "Disk usage of {extraFsName}"
 msgstr "{extraFsName}的磁盘使用"
-
-#: src/components/containers-table/containers-table-columns.tsx
-msgid "Disk Write"
-msgstr ""
 
 #: src/components/routes/system/info-bar.tsx
 msgctxt "Layout display options"
@@ -1343,8 +1326,6 @@ msgid "Quiet Hours"
 msgstr "静默时间"
 
 #. Disk read
-#: src/components/routes/system/charts/container-disk-io-chart.tsx
-#: src/components/routes/system/charts/container-disk-io-chart.tsx
 #: src/components/routes/system/charts/disk-charts.tsx
 #: src/components/routes/system/disk-io-sheet.tsx
 #: src/components/routes/system/disk-io-sheet.tsx
@@ -1569,7 +1550,6 @@ msgstr "系统使用的 SWAP 空间"
 msgid "Swap Usage"
 msgstr "SWAP 使用率"
 
-
 #: src/components/add-system.tsx
 #: src/components/alerts-history-columns.tsx
 #: src/components/containers-table/containers-table-columns.tsx
@@ -1701,7 +1681,6 @@ msgstr "令牌允许客户端连接和注册。指纹是每个系统唯一的稳
 msgid "Tokens and fingerprints are used to authenticate WebSocket connections to the hub."
 msgstr "令牌与指纹用于验证到中心的 WebSocket 连接。"
 
-#: src/components/routes/system/charts/container-disk-io-chart.tsx
 #: src/components/ui/chart.tsx
 #: src/components/ui/chart.tsx
 msgid "Total"
@@ -1928,8 +1907,6 @@ msgid "Windows command"
 msgstr "Windows 安装命令"
 
 #. Disk write
-#: src/components/routes/system/charts/container-disk-io-chart.tsx
-#: src/components/routes/system/charts/container-disk-io-chart.tsx
 #: src/components/routes/system/charts/disk-charts.tsx
 #: src/components/routes/system/disk-io-sheet.tsx
 #: src/components/routes/system/disk-io-sheet.tsx
