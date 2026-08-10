@@ -22,6 +22,8 @@ const (
 	GetSmartData
 	// Request detailed systemd service info from agent
 	GetSystemdInfo
+	// Request ZFS detail data from agent
+	GetZfsData
 	// Add new actions here...
 )
 

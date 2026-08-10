@@ -44,6 +44,14 @@ func (am *AlertManager) HandleSystemAlerts(systemRecord *core.Record, data *syst
 					maxUsedPct = usedPct
 				}
 			}
+			for _, pool := range data.Stats.ZfsPools {
+				if pool != nil && pool.Total > 0 {
+					usedPct := pool.Used / pool.Total * 100
+					if usedPct > maxUsedPct {
+						maxUsedPct = usedPct
+					}
+				}
+			}
 			val = maxUsedPct
 		case "Temperature":
 			if data.Info.DashboardTemp < 1 {
@@ -205,6 +213,15 @@ func (am *AlertManager) HandleSystemAlerts(systemRecord *core.Record, data *syst
 							alert.mapSums[key] = 0.0
 						}
 						alert.mapSums[key] += float32(fs.DiskUsed / fs.DiskTotal * 100)
+					}
+				}
+				// add zfs pool usage from historical record
+				for key, pool := range stats.ZfsPools {
+					if pool.Total > 0 {
+						if _, ok := alert.mapSums[key]; !ok {
+							alert.mapSums[key] = 0.0
+						}
+						alert.mapSums[key] += float32(pool.Used / pool.Total * 100)
 					}
 				}
 			case "Temperature":

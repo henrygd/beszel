@@ -50,6 +50,23 @@ type Stats struct {
 	CpuCoresUsage     Uint8Slice           `json:"cpus,omitempty" cbor:"34,keyasint,omitempty"` // per-core busy usage [CPU0..]
 	DiskIoStats       [6]float64           `json:"dios,omitzero" cbor:"35,keyasint,omitzero"`   // [read time %, write time %, io utilization %, r_await ms, w_await ms, weighted io %]
 	MaxDiskIoStats    [6]float64           `json:"diosm,omitzero" cbor:"-"`                     // max values for DiskIoStats
+	ZfsPools          map[string]*ZfsPool  `json:"z,omitempty" cbor:"36,keyasint,omitempty"`    // ZFS pool metrics, keyed by pool name
+	ZfsDatasets       map[string]*ZfsDataset `json:"zd,omitempty" cbor:"37,keyasint,omitempty"` // ZFS dataset usage, keyed by dataset name
+}
+
+// ZfsDataset holds usage for a single ZFS dataset for one collection interval.
+type ZfsDataset struct {
+	Total float64 `json:"d" cbor:"0,keyasint"`   // used + avail in GiB
+	Used  float64 `json:"du" cbor:"1,keyasint"`  // used in GiB (includes child datasets)
+}
+
+// ZfsPool holds per-pool ZFS metrics for a single collection interval.
+type ZfsPool struct {
+	Total      float64 `json:"d" cbor:"0,keyasint"`    // total capacity in GiB
+	Used       float64 `json:"du" cbor:"1,keyasint"`   // allocated in GiB
+	ReadBytes  uint64  `json:"rb,omitzero" cbor:"2,keyasint,omitzero"` // read throughput in bytes/s
+	WriteBytes uint64  `json:"wb,omitzero" cbor:"3,keyasint,omitzero"` // write throughput in bytes/s
+	Health     string  `json:"h,omitempty" cbor:"4,keyasint,omitempty"` // ONLINE, DEGRADED, FAULTED, ...
 }
 
 // Uint8Slice wraps []uint8 to customize JSON encoding while keeping CBOR efficient.
@@ -170,6 +187,7 @@ type Details struct {
 	Podman        bool          `cbor:"8,keyasint,omitempty"`
 	MemoryTotal   uint64        `cbor:"9,keyasint"`
 	SmartInterval time.Duration `cbor:"10,keyasint,omitempty"`
+	ZfsInterval   time.Duration `cbor:"11,keyasint,omitempty"` // interval for ZFS detail refresh
 }
 
 // Final data structure to return to the hub

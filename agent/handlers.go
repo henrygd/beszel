@@ -51,6 +51,7 @@ func NewHandlerRegistry() *HandlerRegistry {
 	registry.Register(common.GetContainerInfo, &GetContainerInfoHandler{})
 	registry.Register(common.GetSmartData, &GetSmartDataHandler{})
 	registry.Register(common.GetSystemdInfo, &GetSystemdInfoHandler{})
+	registry.Register(common.GetZfsData, &GetZfsDataHandler{})
 
 	return registry
 }
@@ -174,6 +175,19 @@ func (h *GetSmartDataHandler) Handle(hctx *HandlerContext) error {
 	}
 	data := hctx.Agent.smartManager.GetCurrentData()
 	return hctx.SendResponse(data, hctx.RequestID)
+}
+
+////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
+
+// GetZfsDataHandler handles ZFS detail data requests
+type GetZfsDataHandler struct{}
+
+func (h *GetZfsDataHandler) Handle(hctx *HandlerContext) error {
+	if hctx.Agent.zfsManager == nil {
+		return hctx.SendResponse(nil, hctx.RequestID)
+	}
+	return hctx.SendResponse(hctx.Agent.zfsManager.GetDetail(), hctx.RequestID)
 }
 
 ////////////////////////////////////////////////////////////////////////////

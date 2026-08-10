@@ -29,6 +29,9 @@ func ARCSize() (uint64, error) {
 			return strconv.ParseUint(fields[2], 10, 64)
 		}
 	}
+	if err := scanner.Err(); err != nil {
+		return 0, err
+	}
 
 	return 0, fmt.Errorf("size field not found in arcstats")
 }
