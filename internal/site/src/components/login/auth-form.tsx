@@ -72,8 +72,6 @@ export function UserAuthForm({
 	const handleSubmit = useCallback(
 		async (e: React.FormEvent<HTMLFormElement>) => {
 			e.preventDefault()
-			setIsLoading(true)
-			// store email for later use if mfa is enabled
 			let email = ""
 			try {
 				const formData = new FormData(e.target as HTMLFormElement)
@@ -81,15 +79,20 @@ export function UserAuthForm({
 				const Schema = isFirstRun ? RegisterSchema : LoginSchema
 				const result = v.safeParse(Schema, data)
 				if (!result.success) {
-					console.log(result)
-					const errors = {}
+					const errors: Record<string, string> = {}
 					for (const issue of result.issues) {
-						// @ts-expect-error
-						errors[issue.path[0].key] = issue.message
-					}
+						 const key = issue.path?.[0]?.key as string | undefined
+                                                if (key && key !== "website") {
+                                                        errors[key] = issue.message
+                                                }
+                                        }
+                                        if (Object.keys(errors).length === 0) {
+                                                errors["email"] = "Please check your details and try again."
+                                        }
 					setErrors(errors)
 					return
 				}
+				setIsLoading(true)
 				const { password, passwordConfirm } = result.output
 				email = result.output.email
 				if (isFirstRun) {
