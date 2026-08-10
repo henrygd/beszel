@@ -387,7 +387,7 @@ function PoolSheet({
 							)}
 							{pool?.vdevs?.length || pool?.datasets?.length ? (
 								<>
-									<VdevTable vdevs={pool.vdevs} />
+									{pool.vdevs?.length ? <VdevTable vdevs={pool.vdevs} /> : null}
 									<DatasetTable datasets={pool.datasets ?? []} />
 								</>
 							) : (

@@ -148,7 +148,7 @@ export interface SystemStats {
 	/** ZFS pool metrics */
 	z?: Record<string, ZfsPool>
 	/** ZFS dataset usage */
-	zd?: Record<string, ZfsDataset>
+	zd?: Record<string, ZfsDatasetUsage>
 	/** GPU data */
 	g?: Record<string, GPUData>
 	/** battery percent and state */
