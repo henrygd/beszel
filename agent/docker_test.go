@@ -1003,6 +1003,44 @@ func TestCpuPercentageCalculationWithRealData(t *testing.T) {
 	assert.InDelta(t, expectedPct, actualPct, 0.01)
 }
 
+func TestCpuPercentageHandlesCounterRollback(t *testing.T) {
+	// If a stats response is processed after a newer one for the same container,
+	// or an accounting counter resets, the current total can be lower than the
+	// stored previous value. Unsigned subtraction wraps to ~2^64 instead of
+	// going negative, so the percentage explodes, validateCpuPercentage rejects
+	// the sample, and the whole collection is discarded - network stats too.
+	stats := &container.ApiStats{
+		CPUStats: container.CPUStats{
+			CPUUsage:    container.CPUUsage{TotalUsage: 1_000_000},
+			SystemUsage: 20_000_000,
+		},
+	}
+
+	// Container counter went backwards.
+	assert.Equal(t, 0.0, stats.CalculateCpuPercentLinux(2_000_000, 10_000_000))
+	// System counter went backwards.
+	assert.Equal(t, 0.0, stats.CalculateCpuPercentLinux(500_000, 30_000_000))
+	// A normal forward sample is unaffected: 500000 / 10000000 * 100 = 5%.
+	assert.InDelta(t, 5.0, stats.CalculateCpuPercentLinux(500_000, 10_000_000), 0.001)
+}
+
+func TestCpuPercentageWindowsHandlesCounterRollback(t *testing.T) {
+	now := time.Now()
+	stats := &container.ApiStats{
+		Read:     now,
+		NumProcs: 4,
+		CPUStats: container.CPUStats{
+			CPUUsage: container.CPUUsage{TotalUsage: 1_000_000},
+		},
+	}
+	prevRead := now.Add(-time.Second)
+
+	// Container counter went backwards.
+	assert.Equal(t, 0.0, stats.CalculateCpuPercentWindows(2_000_000, prevRead))
+	// A normal forward sample is unaffected.
+	assert.Greater(t, stats.CalculateCpuPercentWindows(500_000, prevRead), 0.0)
+}
+
 func TestNetworkStatsCalculationWithRealData(t *testing.T) {
 	// Create synthetic test data to avoid timing issues
 	apiStats1 := &container.ApiStats{
