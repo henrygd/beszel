@@ -16,6 +16,10 @@ is_opnsense() {
   [ -f /usr/local/sbin/opnsense-version ] || [ -f /usr/local/etc/opnsense-version ] || [ -f /etc/opnsense-release ]
 }
 
+is_pfsense() {
+  [ -f /etc/rc.bootup ] && grep -qi "pfSense" /etc/rc.bootup
+}
+
 is_glibc() {
   # Prefer glibc-enabled agent (NVML via purego) on linux/amd64 glibc systems.
   # Check common dynamic loader paths first (fast + reliable).
@@ -180,6 +184,18 @@ beszel_agent_upgrade()
 }
 
 run_rc_command "$1"
+EOF
+}
+
+# Generate the pfSense boot hook. pfSense only executes *.sh files in
+# /usr/local/etc/rc.d and may run them again during network events.
+generate_pfsense_boot_script() {
+  cat <<'EOF'
+#!/bin/sh
+
+if ! /usr/sbin/service beszel-agent status >/dev/null 2>&1; then
+    /usr/sbin/service beszel-agent onestart
+fi
 EOF
 }
 
@@ -437,6 +453,7 @@ if [ "$UNINSTALL" = true ]; then
 
     echo "Removing the FreeBSD service files..."
     rm -f /usr/local/etc/rc.d/beszel-agent
+    rm -f /usr/local/etc/rc.d/beszel-agent-start.sh
 
     # Remove the daily update cron job if it exists
     echo "Removing the daily update cron job..."
@@ -595,8 +612,8 @@ elif is_openwrt; then
   fi
 
 elif is_freebsd; then
-  if is_opnsense; then
-    echo "OPNsense detected: skipping user creation (using daemon user instead)"
+  if is_opnsense || is_pfsense; then
+    echo "Firewall appliance detected: skipping user creation (using daemon user instead)"
     AGENT_USER="daemon"
   else
     if ! id -u beszel >/dev/null 2>&1; then
@@ -908,11 +925,11 @@ KEY="$KEY"
 TOKEN=$TOKEN
 HUB_URL=$HUB_URL
 EOF
-    chmod 640 "$AGENT_DIR/env"
-    chown "root:${AGENT_USER}" "$AGENT_DIR/env"
   else
     echo "FreeBSD environment file already exists. Skipping creation."
   fi
+  chmod 640 "$AGENT_DIR/env"
+  chown "root:${AGENT_USER}" "$AGENT_DIR/env"
   
   # Create the rc service file if it doesn't exist
   if [ ! -f /usr/local/etc/rc.d/beszel-agent ]; then
@@ -922,6 +939,12 @@ EOF
     chmod 755 /usr/local/etc/rc.d/beszel-agent
   else
     echo "FreeBSD rc service file already exists. Skipping creation."
+  fi
+
+  if is_pfsense; then
+    echo "Creating pfSense boot script..."
+    generate_pfsense_boot_script > /usr/local/etc/rc.d/beszel-agent-start.sh
+    chmod 755 /usr/local/etc/rc.d/beszel-agent-start.sh
   fi
 
   # Enable and start the service
