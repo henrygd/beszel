@@ -181,7 +181,7 @@ jobs:
         env:
           password_secret_exists: ${{ secrets[matrix.password_secret] != '' && 'true' || 'false' }}
         if: github.event_name != 'pull_request' && env.password_secret_exists == 'true'
-        uses: docker/login-action@v3
+        uses: docker/login-action@v4
         with:
           username: ${{ matrix.username || secrets[matrix.username_secret] }}
           password: ${{ secrets[matrix.password_secret] }}
