@@ -237,7 +237,7 @@ const AllContainersTable = memo(function AllContainersTable({
 	return (
 		<div
 			className={cn(
-				"h-min max-h-[calc(100dvh-17rem)] max-w-full relative overflow-auto border rounded-md",
+				"h-min max-w-full relative overflow-auto border rounded-md",
 				// don't set min height if there are less than 2 rows, do set if we need to display the empty state
 				(!rows.length || rows.length > 2) && "min-h-50"
 			)}
