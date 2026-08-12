@@ -161,7 +161,7 @@ func getRegistryToken(registry string, repository string) string {
 	var url string
 	if registry == "registry-1.docker.io" {
 		url = "https://auth.docker.io/token?service=registry.docker.io&scope=repository:" + repository + ":pull"
-	} else if registry == "ghcr.io" {
+	} else if registry == "ghcr.io" || registry == "lscr.io" {
 		url = "https://ghcr.io/token?service=ghcr.io&scope=repository:" + repository + ":pull"
 	} else {
 		// no token needed
