@@ -166,10 +166,10 @@ func (dm *dockerManager) getImageDescriptor(ctr *container.ApiInfo) {
 }
 
 // Get access token from dockerhub.io for this specific image
-func getDockerHubToken(name string) (string, error) {
+func (dm *dockerManager) getDockerHubToken(name string) (string, error) {
 	url := "https://auth.docker.io/token?service=registry.docker.io&scope=repository:" + name + ":pull"
 
-	resp, err := http.Get(url)
+	resp, err := dm.client.Get(url)
 	if err != nil {
 
 		return "", err
@@ -195,7 +195,7 @@ func getDockerHubToken(name string) (string, error) {
 }
 
 // Get current image digest from dockerhub.io
-func getDockerHubDigest(name string, tag string) string {
+func (dm *dockerManager) getDockerHubDigest(name string, tag string) string {
 	if !strings.Contains(name, "/") {
 		name = "library/" + name
 	}
@@ -208,12 +208,12 @@ func getDockerHubDigest(name string, tag string) string {
 		return ""
 	}
 
-	token, err := getDockerHubToken(name)
+	token, err := dm.getDockerHubToken(name)
 	if err == nil {
 		req.Header.Add("Authorization", "Bearer "+token)
 	}
 
-	resp, err := http.DefaultClient.Do(req)
+	resp, err := dm.client.Do(req)
 	if err != nil {
 
 		return ""
@@ -239,7 +239,7 @@ func (dm *dockerManager) checkImageUpdate(ctr *container.ApiInfo) bool {
 	repoDigest := ctr.ImageDigest
 	for _, repo := range ctr.ImageRepos {
 		if strings.Contains(repo, "docker.io") {
-			repoDigest = getDockerHubDigest(name, tag)
+			repoDigest = dm.getDockerHubDigest(name, tag)
 			break
 		}
 	}
