@@ -165,7 +165,7 @@ func (dm *dockerManager) getImageDescriptor(ctr *container.ApiInfo) {
 	}
 }
 
-// Get access token from dockerhub.io for this specific image
+// Get access token from https://hub.docker.com for this specific image
 func (dm *dockerManager) getDockerHubToken(name string) (string, error) {
 	url := "https://auth.docker.io/token?service=registry.docker.io&scope=repository:" + name + ":pull"
 
@@ -194,7 +194,7 @@ func (dm *dockerManager) getDockerHubToken(name string) (string, error) {
 	return m.Token, nil
 }
 
-// Get current image digest from dockerhub.io
+// Get current image digest from https://hub.docker.com
 func (dm *dockerManager) getDockerHubDigest(name string, tag string) string {
 	if !strings.Contains(name, "/") {
 		name = "library/" + name
@@ -235,15 +235,17 @@ func (dm *dockerManager) checkImageUpdate(ctr *container.ApiInfo) bool {
 		tag = tmp[1]
 	}
 
+	// reset flag
+	ctr.UpdateAvailable = false
+
 	// check all repos
-	repoDigest := ctr.ImageDigest
 	for _, repo := range ctr.ImageRepos {
 		if strings.Contains(repo, "docker.io") {
-			repoDigest = dm.getDockerHubDigest(name, tag)
-			break
+			repoDigest := dm.getDockerHubDigest(name, tag)
+			ctr.UpdateAvailable = strings.Compare(repoDigest, ctr.ImageDigest) != 0
 		}
 	}
-	ctr.UpdateAvailable = strings.Compare(repoDigest, ctr.ImageDigest) != 0
+
 	return ctr.UpdateAvailable
 }
 
