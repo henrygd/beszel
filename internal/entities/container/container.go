@@ -20,8 +20,6 @@ type ApiInfo struct {
 		IP         string
 		// Type        string
 	}
-	ImageDigest     string
-	ImageRepos      []string
 	UpdateAvailable bool
 	// ImageID string
 	// Command string
