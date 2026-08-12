@@ -512,7 +512,8 @@ func (dm *dockerManager) updateContainerStats(ctr *container.ApiInfo, cacheTimeM
 	stats.Health = health
 
 	// Check if image update is available
-	if dm.checkImageUpdate(ctr) {
+	ctr.UpdateAvailable = dm.checkImageUpdate(ctr.Image)
+	if ctr.UpdateAvailable {
 		stats.Image = "↑" + ctr.Image
 	} else {
 		stats.Image = ctr.Image
@@ -1104,9 +1105,9 @@ func getRegistryDigest(registry string, repository string, tag string) (string, 
 }
 
 // Check docker registry if an update is available
-func (dm *dockerManager) checkImageUpdate(ctr *container.ApiInfo) bool {
+func (dm *dockerManager) checkImageUpdate(image string) bool {
 	// use official Go library to handle references to container images
-	named, err := reference.ParseNormalizedNamed(ctr.Image)
+	named, err := reference.ParseNormalizedNamed(image)
 	if err != nil {
 		return false
 	}
@@ -1133,15 +1134,12 @@ func (dm *dockerManager) checkImageUpdate(ctr *container.ApiInfo) bool {
 		return false
 	}
 
-	// reset flag
-	ctr.UpdateAvailable = false
-
-	for _, d := range dm.getImageDigests(ctr.Image) {
+	for _, d := range dm.getImageDigests(image) {
 		localDigest := strings.SplitN(d, "@", 2)[1]
-		ctr.UpdateAvailable = strings.Compare(repoDigest, localDigest) != 0
-		// fmt.Println(repository, repoDigest, localDigest, ctr.UpdateAvailable)
-		break
+		updateAvailable := strings.Compare(repoDigest, localDigest) != 0
+		// fmt.Println(repository, repoDigest, localDigest, UpdateAvailable)
+		return updateAvailable
 	}
 
-	return ctr.UpdateAvailable
+	return false
 }
