@@ -260,7 +260,7 @@ func (dm *dockerManager) checkImageUpdate(ctr *container.ApiInfo) bool {
 
 	// get registry digest
 	repoDigest, err := getRegistryDigest(registry, repository, tag)
-	if err != nil {
+	if repoDigest == "" || err != nil {
 		return false
 	}
 
