@@ -804,6 +804,24 @@ func TestGetDockerStatsRetriesVersionCheckUntilSuccess(t *testing.T) {
 	assert.Equal(t, 2, requestCounts["/version"])
 }
 
+// A failed decode must not break later decodes. Previously the reused json.Decoder
+// stayed desynced after one truncated response, breaking decode until restart.
+func TestDecodeRecoversFromError(t *testing.T) {
+	dm := &dockerManager{}
+
+	// truncated JSON: body reads fine, decode fails
+	var bad []container.ApiInfo
+	err := dm.decode(&http.Response{Body: io.NopCloser(strings.NewReader(`[{"Id":"abc`))}, &bad)
+	require.Error(t, err)
+
+	// the next decode must still succeed
+	var good []container.ApiInfo
+	err = dm.decode(&http.Response{Body: io.NopCloser(strings.NewReader(`[{"Id":"abcdef012345","Names":["/ok"]}]`))}, &good)
+	require.NoError(t, err)
+	require.Len(t, good, 1)
+	assert.Equal(t, "abcdef012345", good[0].Id)
+}
+
 func TestCycleCpuDeltas(t *testing.T) {
 	dm := &dockerManager{
 		lastCpuContainer: map[uint16]map[string]uint64{
