@@ -28,7 +28,7 @@ import (
 	"github.com/henrygd/beszel/internal/entities/system"
 
 	"github.com/blang/semver"
-	"github.com/distribution/reference"
+	"github.com/distribution/reference" // or "github.com/google/go-containerregistry/cmd/crane" ?
 )
 
 // ansiEscapePattern matches ANSI escape sequences (colors, cursor movement, etc.)
