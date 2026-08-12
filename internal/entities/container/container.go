@@ -20,6 +20,9 @@ type ApiInfo struct {
 		IP         string
 		// Type        string
 	}
+	ImageDigest     string
+	ImageRepos      []string
+	UpdateAvailable bool
 	// ImageID string
 	// Command string
 	// Created int64
@@ -155,4 +158,6 @@ type Stats struct {
 	CpuContainer uint64       `json:"-"`
 	PrevNet      prevNetStats `json:"-"`
 	PrevReadTime time.Time    `json:"-"`
+
+	UpdateAvailable bool `json:"-"`
 }
