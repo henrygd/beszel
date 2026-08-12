@@ -28,7 +28,7 @@ import (
 	"github.com/henrygd/beszel/internal/entities/system"
 
 	"github.com/blang/semver"
-	"github.com/distribution/reference" // or "github.com/google/go-containerregistry/cmd/crane" ?
+	"github.com/distribution/reference"
 )
 
 // ansiEscapePattern matches ANSI escape sequences (colors, cursor movement, etc.)
@@ -130,137 +130,6 @@ func (dm *dockerManager) shouldExcludeContainer(name string) bool {
 		}
 	}
 	return false
-}
-
-// Get container's image local digest and repos from image name
-func (dm *dockerManager) getImageDigests(image string) []string {
-	resp, err := dm.client.Get("http://localhost/images/" + image + "/json")
-	if err != nil {
-		return nil
-	}
-	defer resp.Body.Close()
-
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil
-	}
-
-	var f struct {
-		RepoDigests []string
-	}
-	err = json.Unmarshal(body, &f)
-	if err != nil {
-		return nil
-	}
-
-	return f.RepoDigests
-}
-
-// Get access token from registry for this specific image
-func getRegistryToken(registry string, repository string) string {
-	var url string
-	if registry == "docker.io" {
-		url = fmt.Sprintf("https://auth.docker.io/token?service=registry.docker.io&scope=repository:%s:pull", repository)
-	} else if registry == "ghcr.io" || registry == "lscr.io" {
-		url = fmt.Sprintf("https://ghcr.io/token?service=ghcr.io&scope=repository:%s:pull", repository)
-	} else {
-		// no token needed
-		return ""
-	}
-
-	resp, err := http.Get(url)
-	if err != nil {
-		return ""
-	}
-	defer resp.Body.Close()
-
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return ""
-	}
-
-	var m struct {
-		Token string `json:"token"`
-	}
-	err = json.Unmarshal(body, &m)
-	if err != nil {
-		return ""
-	}
-
-	return m.Token
-}
-
-// Get current image digest from registry
-func getRegistryDigest(registry string, repository string, tag string) (string, error) {
-	host := registry
-	if registry == "docker.io" { // docker.io is special
-		host = "registry-1." + registry
-	}
-	url := fmt.Sprintf("https://%s/v2/%s/manifests/%s", host, repository, tag)
-
-	req, err := http.NewRequest(http.MethodHead, url, nil)
-	if err != nil {
-		return "", err
-	}
-
-	req.Header.Add("Accept", strings.Join([]string{
-		"application/vnd.docker.distribution.manifest.list.v2+json",
-		"application/vnd.docker.distribution.manifest.v2+json",
-		"application/vnd.oci.image.manifest.v1+json",
-		"application/vnd.oci.image.index.v1+json",
-	}, ", "))
-
-	token := getRegistryToken(registry, repository)
-	if token != "" {
-		req.Header.Add("Authorization", "Bearer "+token)
-	}
-
-	resp, err := http.DefaultClient.Do(req)
-	if err != nil {
-		return "", err
-	}
-	defer resp.Body.Close()
-
-	return resp.Header.Get("docker-content-digest"), nil
-}
-
-// Check docker registry if an update is available
-func (dm *dockerManager) checkImageUpdate(ctr *container.ApiInfo) bool {
-	// use official Go library to handle references to container images
-	named, err := reference.ParseNormalizedNamed(ctr.Image)
-	if err != nil {
-		return false
-	}
-
-	registry := reference.Domain(named)
-	repository := reference.Path(named)
-
-	// try converting to Tagged, otherwise use "latest"
-	tag := "latest"
-	tagged, isTagged := named.(reference.Tagged)
-	if isTagged {
-		// use defined tag, otherwise fallback to "latest"
-		tag = tagged.Tag()
-	}
-
-	// get registry digest
-	repoDigest, err := getRegistryDigest(registry, repository, tag)
-	// repoDigest, err := crane.Digest(ctr.Image) // the 3 functions above are implemented by the `crane` library by Google
-	if repoDigest == "" || err != nil {
-		return false
-	}
-
-	// reset flag
-	ctr.UpdateAvailable = false
-
-	for _, d := range dm.getImageDigests(ctr.Image) {
-		localDigest := strings.SplitN(d, "@", 2)[1]
-		ctr.UpdateAvailable = strings.Compare(repoDigest, localDigest) != 0
-		// fmt.Println(repository, repoDigest, localDigest, ctr.UpdateAvailable)
-		break
-	}
-
-	return ctr.UpdateAvailable
 }
 
 // Returns stats for all running containers with cache-time-aware delta tracking
@@ -1140,4 +1009,139 @@ func detectPodmanEngine(serverHeader string, versionInfo *dockerVersionResponse)
 		return true
 	}
 	return detectPodmanFromVersion(versionInfo)
+}
+
+// Get container's image local digest and repos from image name
+func (dm *dockerManager) getImageDigests(image string) []string {
+	resp, err := dm.client.Get("http://localhost/images/" + image + "/json")
+	if err != nil {
+		return nil
+	}
+	defer resp.Body.Close()
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil
+	}
+
+	var f struct {
+		RepoDigests []string
+	}
+	err = json.Unmarshal(body, &f)
+	if err != nil {
+		return nil
+	}
+
+	return f.RepoDigests
+}
+
+// Get access token from registry for this specific image
+func getRegistryToken(registry string, repository string) string {
+	var url string
+	if registry == "docker.io" {
+		url = fmt.Sprintf("https://auth.docker.io/token?service=registry.docker.io&scope=repository:%s:pull", repository)
+	} else if registry == "ghcr.io" || registry == "lscr.io" {
+		url = fmt.Sprintf("https://ghcr.io/token?service=ghcr.io&scope=repository:%s:pull", repository)
+	} else {
+		// no token needed
+		return ""
+	}
+
+	resp, err := http.Get(url)
+	if err != nil {
+		return ""
+	}
+	defer resp.Body.Close()
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return ""
+	}
+
+	var m struct {
+		Token string `json:"token"`
+	}
+	err = json.Unmarshal(body, &m)
+	if err != nil {
+		return ""
+	}
+
+	return m.Token
+}
+
+// Get current image digest from registry
+func getRegistryDigest(registry string, repository string, tag string) (string, error) {
+	host := registry
+	if registry == "docker.io" { // docker.io is special
+		host = "registry-1." + registry
+	}
+	url := fmt.Sprintf("https://%s/v2/%s/manifests/%s", host, repository, tag)
+
+	req, err := http.NewRequest(http.MethodHead, url, nil)
+	if err != nil {
+		return "", err
+	}
+
+	req.Header.Add("Accept", strings.Join([]string{
+		"application/vnd.docker.distribution.manifest.list.v2+json",
+		"application/vnd.docker.distribution.manifest.v2+json",
+		"application/vnd.oci.image.manifest.v1+json",
+		"application/vnd.oci.image.index.v1+json",
+	}, ", "))
+
+	token := getRegistryToken(registry, repository)
+	if token != "" {
+		req.Header.Add("Authorization", "Bearer "+token)
+	}
+
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return "", err
+	}
+	defer resp.Body.Close()
+
+	return resp.Header.Get("docker-content-digest"), nil
+}
+
+// Check docker registry if an update is available
+func (dm *dockerManager) checkImageUpdate(ctr *container.ApiInfo) bool {
+	// use official Go library to handle references to container images
+	named, err := reference.ParseNormalizedNamed(ctr.Image)
+	if err != nil {
+		return false
+	}
+
+	registry := reference.Domain(named)
+	repository := reference.Path(named)
+
+	// try converting to Tagged, otherwise use "latest"
+	tag := "latest"
+	tagged, isTagged := named.(reference.Tagged)
+	if isTagged {
+		// use defined tag, otherwise fallback to "latest"
+		tag = tagged.Tag()
+	}
+
+	// get registry digest
+	repoDigest, err := getRegistryDigest(registry, repository, tag)
+
+	// the above is also implemented by the `crane` library by Google
+	// "github.com/google/go-containerregistry/cmd/crane"
+	// repoDigest, err := crane.Digest(ctr.Image)
+
+	if repoDigest == "" || err != nil {
+		return false
+	}
+
+	// reset flag
+	ctr.UpdateAvailable = false
+
+	for _, d := range dm.getImageDigests(ctr.Image) {
+		localDigest := strings.SplitN(d, "@", 2)[1]
+		ctr.UpdateAvailable = strings.Compare(repoDigest, localDigest) != 0
+		// fmt.Println(repository, repoDigest, localDigest, ctr.UpdateAvailable)
+		break
+	}
+
+	return ctr.UpdateAvailable
 }
