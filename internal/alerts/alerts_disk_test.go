@@ -30,7 +30,6 @@ func TestDiskAlertExtraFsMultiMinute(t *testing.T) {
 	diskAlert, err := beszelTests.CreateRecord(hub, "alerts", map[string]any{
 		"name":   "Disk",
 		"system": systemRecord.Id,
-		"user":   user.Id,
 		"value":  80, // threshold: 80%
 		"min":    2,  // 2 minutes - requires historical averaging
 	})

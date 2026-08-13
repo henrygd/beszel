@@ -27,7 +27,6 @@ func TestAlertsHistory(t *testing.T) {
 		alert, err := beszelTests.CreateRecord(hub, "alerts", map[string]any{
 			"name":   "Status",
 			"system": system.Id,
-			"user":   user.Id,
 			"min":    1,
 		})
 		assert.NoError(t, err)
@@ -104,7 +103,6 @@ func TestAlertsHistory(t *testing.T) {
 		alert2, err := beszelTests.CreateRecord(hub, "alerts", map[string]any{
 			"name":   "Status",
 			"system": system2.Id,
-			"user":   user.Id,
 			"min":    1,
 		})
 		assert.NoError(t, err)
@@ -159,7 +157,6 @@ func TestSetAlertTriggered(t *testing.T) {
 	alertRecord, _ := beszelTests.CreateRecord(hub, "alerts", map[string]any{
 		"name":      "CPU",
 		"system":    system.Id,
-		"user":      user.Id,
 		"value":     80,
 		"triggered": false,
 	})
