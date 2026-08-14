@@ -3,7 +3,7 @@ package records
 
 import (
 	"encoding/json"
-	"log"
+	"log/slog"
 	"math"
 	"time"
 
@@ -68,15 +68,18 @@ func (rm *RecordManager) CreateLongerRecords() {
 		},
 	}
 	// wrap the operations in a transaction
+	// Pocketbase cron does not handle errors, log them here.
 	rm.app.RunInTransaction(func(txApp core.App) error {
 		var err error
 		collections := [2]*core.Collection{}
 		collections[0], err = txApp.FindCachedCollectionByNameOrId("system_stats")
 		if err != nil {
+			slog.Error("Error finding cached collection using system stats:", "err", err)
 			return err
 		}
 		collections[1], err = txApp.FindCachedCollectionByNameOrId("container_stats")
 		if err != nil {
+			slog.Error("Error finding cached collection using container stats:", "err", err)
 			return err
 		}
 		var systems RecordIds
@@ -142,7 +145,7 @@ func (rm *RecordManager) CreateLongerRecords() {
 						longerRecord.Set("stats", rm.AverageContainerStats(db, recordIds))
 					}
 					if err := txApp.SaveNoValidate(longerRecord); err != nil {
-						log.Println("failed to save longer record", "err", err)
+						slog.Error("failed to save longer record", "err", err)
 					}
 				}
 			}
