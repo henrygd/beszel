@@ -197,7 +197,7 @@ const SectionUniversalToken = memo(() => {
 								<span className="text-sm text-muted-foreground whitespace-nowrap">
 									<Trans>Public key</Trans>
 								</span>
-								<div className="min-w-0 flex-1 overflow-auto">
+								<div className="min-w-0 flex-1 truncate">
 									<span className="text-sm text-primary font-mono">{publicKey}</span>
 								</div>
 								<Button
