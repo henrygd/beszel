@@ -34,7 +34,7 @@ func TestVerifyAssetChecksum(t *testing.T) {
 		},
 		{
 			name:    "missing",
-			wantErr: "invalid release asset digest",
+			wantErr: "invalid release digest",
 		},
 		{
 			name:    "unsupported algorithm",
