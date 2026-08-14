@@ -465,9 +465,10 @@ if [ "$UNINSTALL" = true ]; then
     echo "Removing the daily update cron job..."
     rm -f /etc/cron.d/beszel-agent
 
-    # Remove log files
+    # Remove log files. The rc script derives its logfile from $name
+    # (beszel_agent), not from the script filename (beszel-agent).
     echo "Removing log files..."
-    rm -f /var/log/beszel-agent.log
+    rm -f /var/log/beszel_agent.log
 
     # Remove env file and directories
     echo "Removing environment configuration file..."
