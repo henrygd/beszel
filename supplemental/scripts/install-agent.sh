@@ -187,9 +187,12 @@ run_rc_command "$1"
 EOF
 }
 
-# Generate the pfSense boot hook. pfSense only executes *.sh files in
-# /usr/local/etc/rc.d and may run them again during network events.
-generate_pfsense_boot_script() {
+# Generate the boot hook used by the firewall appliances, neither of which
+# starts an enabled rc.d service at boot. The script body is identical for
+# both; only the install path differs (see the boot hook installation below).
+# The running-check guards against a double start, since pfSense may also run
+# the hook again during network events.
+generate_appliance_boot_script() {
   cat <<'EOF'
 #!/bin/sh
 
@@ -454,6 +457,9 @@ if [ "$UNINSTALL" = true ]; then
     echo "Removing the FreeBSD service files..."
     rm -f /usr/local/etc/rc.d/beszel-agent
     rm -f /usr/local/etc/rc.d/beszel-agent-start.sh
+
+    # Remove the OPNsense boot hook if it exists
+    rm -f /usr/local/etc/rc.syshook.d/start/99-beszel-agent
 
     # Remove the daily update cron job if it exists
     echo "Removing the daily update cron job..."
@@ -943,8 +949,15 @@ EOF
 
   if is_pfsense; then
     echo "Creating pfSense boot script..."
-    generate_pfsense_boot_script > /usr/local/etc/rc.d/beszel-agent-start.sh
+    generate_appliance_boot_script > /usr/local/etc/rc.d/beszel-agent-start.sh
     chmod 755 /usr/local/etc/rc.d/beszel-agent-start.sh
+  elif is_opnsense; then
+    # OPNsense does not execute /usr/local/etc/rc.d/*.sh at boot, so the
+    # pfSense hook above would never run. Install the same script as a syshook.
+    echo "Creating OPNsense boot script..."
+    mkdir -p /usr/local/etc/rc.syshook.d/start
+    generate_appliance_boot_script > /usr/local/etc/rc.syshook.d/start/99-beszel-agent
+    chmod 755 /usr/local/etc/rc.syshook.d/start/99-beszel-agent
   fi
 
   # Enable and start the service
