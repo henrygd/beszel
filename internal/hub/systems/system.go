@@ -388,6 +388,7 @@ func (sys *System) setDown(originalError error) error {
 	if originalError != nil {
 		sys.manager.hub.Logger().Error("System down", "system", record.GetString("name"), "err", originalError)
 	}
+	sys.detailsFetched.Store(false)
 	record.Set("status", down)
 	return sys.manager.hub.SaveNoValidate(record)
 }
@@ -632,10 +633,17 @@ func (sys *System) runSSHOperation(timeout time.Duration, retries int, operation
 			continue
 		}
 
-		retry, opErr := func() (bool, error) {
+		// Bound the whole operation. A half-open TCP connection (a dead peer that
+		// never sends RST/FIN) or a wedged agent that accepts the session but
+		// never writes a response would otherwise block the read forever. Because
+		// StartUpdater runs update() synchronously on its ticker, that stalls the
+		// per-system updater indefinitely with no error and no re-dial until the
+		// hub is restarted (issue #2041). On timeout we tear down the connection
+		// so the blocked read unwinds and the system is re-dialed on the next tick.
+		retry, opErr := runWithTimeout(sshOperationTimeout, func() (bool, error) {
 			defer session.Close()
 			return operation(session)
-		}()
+		}, sys.closeSSHConnection)
 
 		if opErr == nil {
 			return nil
@@ -654,6 +662,43 @@ func (sys *System) runSSHOperation(timeout time.Duration, retries int, operation
 	return fmt.Errorf("ssh operation failed")
 }
 
+// sshOperationTimeout bounds a single SSH data exchange (send request, read
+// response, wait for the remote command to exit). It is more generous than the
+// session-creation timeout to tolerate briefly slow agents, but is kept well
+// under the collection interval so a stalled connection is detected and
+// re-dialed within one cycle (see issue #2041).
+const sshOperationTimeout = 20 * time.Second
+
+// runWithTimeout runs op in a goroutine and returns its result, or, if op does
+// not finish within timeout, calls onTimeout (used to tear down the connection
+// so a blocked op can unwind) and returns a retryable timeout error. This
+// guarantees the caller can never block indefinitely on a dead SSH connection.
+func runWithTimeout(timeout time.Duration, op func() (bool, error), onTimeout func()) (retry bool, err error) {
+	type opResult struct {
+		retry bool
+		err   error
+	}
+	// Buffered so the op goroutine never leaks even when we return on timeout.
+	done := make(chan opResult, 1)
+	go func() {
+		r, e := op()
+		done <- opResult{retry: r, err: e}
+	}()
+
+	timer := time.NewTimer(timeout)
+	defer timer.Stop()
+
+	select {
+	case res := <-done:
+		return res.retry, res.err
+	case <-timer.C:
+		if onTimeout != nil {
+			onTimeout()
+		}
+		return true, fmt.Errorf("ssh operation timed out after %s", timeout)
+	}
+}
+
 // createSSHClient creates a new SSH client for the system
 func (s *System) createSSHClient() error {
 	if s.manager.sshConfig == nil {
@@ -669,13 +714,41 @@ func (s *System) createSSHClient() error {
 		host = net.JoinHostPort(host, s.Port)
 	}
 	var err error
-	s.client, err = ssh.Dial(network, host, s.manager.sshConfig)
+	s.client, err = dialSSHWithKeepAlive(network, host, s.manager.sshConfig)
 	if err != nil {
 		return err
 	}
 	s.agentVersion, _ = extractAgentVersion(string(s.client.Conn.ServerVersion()))
 	s.manager.resetFailedSmartFetchState(s.Id)
 	return nil
+}
+
+// sshKeepAliveInterval is the TCP keep-alive idle interval for SSH connections
+// to agents. Enabling OS-level keep-alives lets the hub eventually detect a
+// dead peer on an otherwise idle connection instead of trusting it forever.
+// This is a backstop for genuine network death; an application-level wedge
+// (agent process hung while its kernel keeps ACKing) is caught by the
+// per-operation timeout in runSSHOperation instead (see issue #2041).
+const sshKeepAliveInterval = 30 * time.Second
+
+// dialSSHWithKeepAlive dials an SSH connection like ssh.Dial, but enables TCP
+// keep-alive on the underlying connection so half-open connections are
+// eventually detected by the operating system.
+func dialSSHWithKeepAlive(network, addr string, config *ssh.ClientConfig) (*ssh.Client, error) {
+	dialer := net.Dialer{
+		Timeout:   config.Timeout,
+		KeepAlive: sshKeepAliveInterval,
+	}
+	conn, err := dialer.Dial(network, addr)
+	if err != nil {
+		return nil, err
+	}
+	sshConn, chans, reqs, err := ssh.NewClientConn(conn, addr, config)
+	if err != nil {
+		_ = conn.Close()
+		return nil, err
+	}
+	return ssh.NewClient(sshConn, chans, reqs), nil
 }
 
 // createSessionWithTimeout creates a new SSH session with a timeout to avoid hanging
