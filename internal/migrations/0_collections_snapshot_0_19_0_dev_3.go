@@ -1016,6 +1016,39 @@ func init() {
 					"required": true,
 					"system": false,
 					"type": "number"
+				},
+				{
+					"hidden": false,
+					"id": "number1440247912",
+					"max": null,
+					"min": null,
+					"name": "diskRead",
+					"onlyInt": false,
+					"presentable": false,
+					"required": false,
+					"system": false,
+					"type": "number"
+				},
+				{
+					"hidden": false,
+					"id": "number3977898239",
+					"max": null,
+					"min": null,
+					"name": "diskWrite",
+					"onlyInt": false,
+					"presentable": false,
+					"required": false,
+					"system": false,
+					"type": "number"
+				},
+				{
+					"hidden": false,
+					"id": "bool2000378597",
+					"name": "diskIo",
+					"presentable": false,
+					"required": false,
+					"system": false,
+					"type": "bool"
 				}
 		],
 		"indexes": [
