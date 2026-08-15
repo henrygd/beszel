@@ -210,6 +210,9 @@ func (a *Agent) getSystemStats(cacheTimeMs uint16) system.Stats {
 	// TODO: maybe refactor to methods on systemStats
 	a.updateTemperatures(&systemStats)
 
+	// fan speeds (Linux-only; sysfs hwmon)
+	a.updateFans(&systemStats)
+
 	// GPU data
 	if a.gpuManager != nil {
 		// reset high gpu percent
