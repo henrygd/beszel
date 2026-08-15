@@ -1921,6 +1921,14 @@ func TestConvertContainerPortsToString(t *testing.T) {
 			expected: "80, 443",
 		},
 		{
+			name: "ipv4 and ipv6 wildcard bindings are deduplicated",
+			ports: []port{
+				{PublicPort: 80, IP: "0.0.0.0"},
+				{PublicPort: 80, IP: "::"},
+			},
+			expected: "80",
+		},
+		{
 			name: "multiple ports with different IPs",
 			ports: []port{
 				{PublicPort: 80, IP: "0.0.0.0"},

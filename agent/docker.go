@@ -384,7 +384,11 @@ func convertContainerPortsToString(ctr *container.ApiInfo) string {
 		if p.PublicPort == 0 {
 			continue
 		}
-		key := p.IP + ":" + strconv.Itoa(int(p.PublicPort))
+		keyIP := p.IP
+		if keyIP == "0.0.0.0" || keyIP == "::" {
+			keyIP = ""
+		}
+		key := keyIP + ":" + strconv.Itoa(int(p.PublicPort))
 		if _, ok := seen[key]; ok {
 			continue
 		}
