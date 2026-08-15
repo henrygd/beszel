@@ -52,6 +52,17 @@ type HostInfo struct {
 }
 
 func (s *ApiStats) CalculateCpuPercentLinux(prevCpuContainer uint64, prevCpuSystem uint64) float64 {
+	// A counter can read lower than the stored previous value when a stats
+	// response is processed after a newer one for the same container, or when an
+	// accounting counter resets. Unsigned subtraction wraps to ~2^64 instead of
+	// going negative: on the container counter that surfaces as an absurd
+	// percentage the caller rejects, discarding the whole sample; on the system
+	// counter it inflates the divisor and silently reports near-zero CPU.
+	// Treat either direction as a new baseline.
+	if s.CPUStats.CPUUsage.TotalUsage < prevCpuContainer || s.CPUStats.SystemUsage < prevCpuSystem {
+		return 0.0
+	}
+
 	cpuDelta := s.CPUStats.CPUUsage.TotalUsage - prevCpuContainer
 	systemDelta := s.CPUStats.SystemUsage - prevCpuSystem
 
@@ -70,7 +81,11 @@ func (s *ApiStats) CalculateCpuPercentWindows(prevCpuUsage uint64, prevRead time
 	possIntervals /= 100                // Convert to number of 100ns intervals
 	possIntervals *= uint64(s.NumProcs) // Multiple by the number of processors
 
-	// Intervals used
+	// Intervals used. Same rollback guard as the Linux path: an out-of-order or
+	// reset counter would wrap the subtraction to ~2^64.
+	if s.CPUStats.CPUUsage.TotalUsage < prevCpuUsage {
+		return 0.0
+	}
 	intervalsUsed := s.CPUStats.CPUUsage.TotalUsage - prevCpuUsage
 
 	// Percentage avoiding divide-by-zero
