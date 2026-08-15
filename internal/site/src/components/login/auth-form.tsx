@@ -175,8 +175,8 @@ export function UserAuthForm({
 	 */
 	function redirectToOauthProvider(provider: AuthProviderInfo) {
 		const url = new URL(provider.authURL)
-		// url.searchParams.set("redirect_uri", `${window.location.origin}${basePath}`)
-		sessionStorage.setItem("provider", JSON.stringify(provider))
+		url.searchParams.set("redirect_uri", `${window.location.origin}${basePath}`)
+		localStorage.setItem("provider", JSON.stringify(provider))
 		window.location.href = url.toString()
 	}
 
@@ -186,12 +186,13 @@ export function UserAuthForm({
 		const code = params.get("code")
 		if (code) {
 			const state = params.get("state")
-			const provider: AuthProviderInfo = JSON.parse(sessionStorage.getItem("provider") ?? "{}")
+			const provider: AuthProviderInfo = JSON.parse(localStorage.getItem("provider") ?? "{}")
+		    localStorage.removeItem("provider")
+			window.history.replaceState({}, "", window.location.pathname)
 			if (!state || provider.state !== state) {
 				showLoginFaliedToast()
 			} else {
 				setIsOauthLoading(true)
-				window.history.replaceState({}, "", window.location.pathname)
 				pb.collection("users")
 					.authWithOAuth2Code(provider.name, code, provider.codeVerifier, `${window.location.origin}${basePath}`)
 					.then(() => $authenticated.set(pb.authStore.isValid))
