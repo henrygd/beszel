@@ -188,6 +188,8 @@ func AverageSystemStatsSlice(records []system.Stats) system.Stats {
 	// accumulate cpu breakdown [user, system, iowait, steal, idle]
 	var cpuBreakdownSums []float64
 	tempCount := float64(0)
+	var fanSums map[string]uint64
+	fanCount := uint64(0)
 
 	// Accumulate totals
 	for i := range records {
@@ -276,6 +278,17 @@ func AverageSystemStatsSlice(records []system.Stats) system.Stats {
 			tempCount++
 			for key, value := range stats.Temperatures {
 				sum.Temperatures[key] += value
+			}
+		}
+
+		// Accumulate fan speeds
+		if stats.Fans != nil {
+			if fanSums == nil {
+				fanSums = make(map[string]uint64, len(stats.Fans))
+			}
+			fanCount++
+			for key, value := range stats.Fans {
+				fanSums[key] += uint64(value)
 			}
 		}
 
@@ -381,6 +394,14 @@ func AverageSystemStatsSlice(records []system.Stats) system.Stats {
 	if sum.Temperatures != nil && tempCount > 0 {
 		for key := range sum.Temperatures {
 			sum.Temperatures[key] = twoDecimals(sum.Temperatures[key] / tempCount)
+		}
+	}
+
+	// Average fan speeds
+	if fanSums != nil && fanCount > 0 {
+		sum.Fans = make(map[string]uint16, len(fanSums))
+		for key, value := range fanSums {
+			sum.Fans[key] = uint16(value / fanCount)
 		}
 	}
 
