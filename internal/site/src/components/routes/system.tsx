@@ -8,10 +8,11 @@ import { useSystemData } from "./system/use-system-data"
 import { CpuChart, ContainerCpuChart } from "./system/charts/cpu-charts"
 import { MemoryChart, ContainerMemoryChart, SwapChart } from "./system/charts/memory-charts"
 import { RootDiskCharts, ExtraFsCharts } from "./system/charts/disk-charts"
+import { ZfsCharts } from "./system/charts/zfs-charts"
 import { BandwidthChart, ContainerNetworkChart } from "./system/charts/network-charts"
 import { TemperatureChart, BatteryChart } from "./system/charts/sensor-charts"
 import { GpuPowerChart, GpuDetailCharts } from "./system/charts/gpu-charts"
-import { LazyContainersTable, LazySmartTable, LazySystemdTable } from "./system/lazy-tables"
+import { LazyContainersTable, LazySmartTable, LazySystemdTable, LazyZfsTable } from "./system/lazy-tables"
 import { LoadAverageChart } from "./system/charts/load-average-chart"
 import { ContainerIcon, CpuIcon, HardDriveIcon, TerminalSquareIcon } from "lucide-react"
 import { GpuIcon } from "../ui/icons"
@@ -63,6 +64,9 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 	const hasContainersTable = hasContainers && compareSemVer(chartData.agentVersion, SEMVER_0_14_0) >= 0
 	const hasSystemd = system.info.sv
 	const hasGpu = hasGpuData || hasGpuPowerData
+	const hasZfs =
+		Object.keys(systemStats.at(-1)?.stats?.z ?? {}).length > 0 ||
+		Object.keys(systemStats.at(-1)?.stats?.zd ?? {}).length > 0
 
 	// keep tabsRef in sync for keyboard navigation
 	const tabs = ["core", "disk"]
@@ -140,6 +144,10 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 
 				<ExtraFsCharts systemData={systemData} />
 
+				{hasZfs && <ZfsCharts systemData={systemData} />}
+
+				{hasZfs && <LazyZfsTable systemId={system.id} />}
+
 				{maybeHasSmartData && <LazySmartTable systemId={system.id} />}
 
 				{hasContainersTable && <LazyContainersTable systemId={system.id} />}
@@ -201,6 +209,8 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 								<RootDiskCharts systemData={systemData} />
 							</div>
 							<ExtraFsCharts systemData={systemData} />
+							{hasZfs && <ZfsCharts systemData={systemData} />}
+							{hasZfs && <LazyZfsTable systemId={system.id} />}
 							{maybeHasSmartData && <LazySmartTable systemId={system.id} />}
 						</>
 					)}

@@ -1,0 +1,177 @@
+//go:build testing
+
+package agent
+
+import (
+	"errors"
+	"testing"
+	"time"
+
+	"github.com/henrygd/beszel/agent/zfs"
+	"github.com/henrygd/beszel/internal/entities/system"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+)
+
+type fakePoolIoSource struct {
+	latest map[string]zfs.PoolIoStats
+	ok     bool
+}
+
+func (f *fakePoolIoSource) Latest() (map[string]zfs.PoolIoStats, bool) {
+	return f.latest, f.ok
+}
+
+func TestUpdatePopulatesZfsPools(t *testing.T) {
+	zm := &ZfsManager{}
+	zm.poolStatsFn = func() ([]zfs.PoolStat, error) {
+		return []zfs.PoolStat{{Name: "tank", Size: 23999000000000, Alloc: 12000000000000, Free: 11999000000000, Health: "ONLINE"}}, nil
+	}
+	zm.datasetsFn = func() ([]zfs.Dataset, error) {
+		return []zfs.Dataset{
+			{Name: "tank/apps", Used: 5000000000000, Avail: 11999000000000, Mountpoint: "/tank/apps"},
+			{Name: "tank/backup", Used: 6000000000000, Avail: 11999000000000, Mountpoint: "/tank/backup"},
+			// Small zvol (Proxmox VM EFI disk): must not round to zero.
+			{Name: "rpool/vm-100-disk-2", Used: 4194304, Avail: 0, Mountpoint: "-"},
+		}, nil
+	}
+	zm.watcherFn = func() (poolIoSource, error) {
+		return &fakePoolIoSource{latest: map[string]zfs.PoolIoStats{"tank": {NRead: 1250, NWrite: 5120}}, ok: true}, nil
+	}
+
+	var stats system.Stats
+	zm.Update(&stats)
+	require.NotNil(t, stats.ZfsPools)
+	require.Contains(t, stats.ZfsPools, "tank")
+	assert.InDelta(t, 22350.8105, stats.ZfsPools["tank"].Total, 0.0001) // Size in GiB
+	assert.InDelta(t, 11175.8709, stats.ZfsPools["tank"].Used, 0.0001)  // Alloc in GiB
+	assert.Equal(t, "ONLINE", stats.ZfsPools["tank"].Health)
+	// Watcher rates are available immediately on the first update.
+	assert.Equal(t, uint64(1250), stats.ZfsPools["tank"].ReadBytes)
+	assert.Equal(t, uint64(5120), stats.ZfsPools["tank"].WriteBytes)
+
+	// Per-dataset usage is populated from the dataset inventory with full
+	// precision (no 2-decimal GB rounding).
+	require.NotNil(t, stats.ZfsDatasets)
+	require.Contains(t, stats.ZfsDatasets, "tank/apps")
+	assert.InDelta(t, 4656.6129, stats.ZfsDatasets["tank/apps"].Used, 0.0001) // 5 TiB in GiB
+	require.Contains(t, stats.ZfsDatasets, "tank/backup")
+	assert.InDelta(t, 5587.9354, stats.ZfsDatasets["tank/backup"].Used, 0.0001)
+	// Small datasets survive the conversion: 4 MiB == 0.00390625 GiB.
+	require.Contains(t, stats.ZfsDatasets, "rpool/vm-100-disk-2")
+	assert.Equal(t, 0.00390625, stats.ZfsDatasets["rpool/vm-100-disk-2"].Used)
+}
+
+// TestUpdateWatcherMissing verifies pools without a watcher sample report zero
+// I/O instead of erroring.
+func TestUpdateWatcherMissing(t *testing.T) {
+	zm := &ZfsManager{}
+	zm.poolStatsFn = func() ([]zfs.PoolStat, error) {
+		return []zfs.PoolStat{{Name: "tank", Size: 1, Alloc: 1, Health: "ONLINE"}}, nil
+	}
+	zm.datasetsFn = func() ([]zfs.Dataset, error) { return nil, nil }
+	zm.watcherFn = func() (poolIoSource, error) {
+		return &fakePoolIoSource{latest: map[string]zfs.PoolIoStats{}, ok: false}, nil
+	}
+
+	var stats system.Stats
+	zm.Update(&stats)
+	require.NotNil(t, stats.ZfsPools)
+	assert.Equal(t, uint64(0), stats.ZfsPools["tank"].ReadBytes)
+	assert.Equal(t, uint64(0), stats.ZfsPools["tank"].WriteBytes)
+}
+
+// TestUpdateWatcherRetryBackoff verifies the watcher spawn is not attempted on
+// every poll after a failure.
+func TestUpdateWatcherRetryBackoff(t *testing.T) {
+	zm := &ZfsManager{}
+	zm.poolStatsFn = func() ([]zfs.PoolStat, error) {
+		return []zfs.PoolStat{{Name: "tank", Health: "ONLINE"}}, nil
+	}
+	zm.datasetsFn = func() ([]zfs.Dataset, error) { return nil, nil }
+	var attempts int
+	zm.watcherFn = func() (poolIoSource, error) {
+		attempts++
+		return nil, errors.New("no zpool")
+	}
+
+	var stats system.Stats
+	zm.Update(&stats)
+	zm.Update(&stats)
+	assert.Equal(t, 1, attempts, "failed watcher spawn should back off until the retry interval")
+}
+
+func TestUpdateNoZfs(t *testing.T) {
+	zm := &ZfsManager{}
+	zm.poolStatsFn = func() ([]zfs.PoolStat, error) {
+		return nil, zfs.ErrNoZfs
+	}
+
+	var stats system.Stats
+	zm.Update(&stats)
+	assert.Nil(t, stats.ZfsPools)
+}
+
+func TestUpdateEmptyPools(t *testing.T) {
+	zm := &ZfsManager{}
+	zm.poolStatsFn = func() ([]zfs.PoolStat, error) {
+		return nil, nil
+	}
+
+	var stats system.Stats
+	zm.Update(&stats)
+	assert.Nil(t, stats.ZfsPools)
+}
+
+func TestDatasetUsage(t *testing.T) {
+	zm := &ZfsManager{}
+	calls := 0
+	zm.datasetsFn = func() ([]zfs.Dataset, error) {
+		calls++
+		return []zfs.Dataset{
+			{Name: "tank", Used: 12000000000000, Avail: 11999000000000, Mountpoint: "/tank"},
+			{Name: "tank/apps", Used: 1000000000000, Avail: 11999000000000, Mountpoint: "/tank/apps"},
+			{Name: "rpool", Used: 900000000000, Avail: 300000000000, Mountpoint: "-"}, // zvol/unmounted: excluded
+		}, nil
+	}
+
+	usage := zm.DatasetUsage()
+	require.Len(t, usage, 2)
+	assert.Equal(t, zfsDatasetUsage{used: 12000000000000, avail: 11999000000000}, usage["/tank"])
+	assert.Equal(t, zfsDatasetUsage{used: 1000000000000, avail: 11999000000000}, usage["/tank/apps"])
+	assert.Equal(t, 1, calls)
+
+	// Second call within the refresh window must not re-run the collector.
+	zm.DatasetUsage()
+	assert.Equal(t, 1, calls)
+}
+
+func TestDatasetUsageRefreshOnErrorKeepsPrevious(t *testing.T) {
+	zm := &ZfsManager{}
+	zm.datasetsFn = func() ([]zfs.Dataset, error) {
+		return []zfs.Dataset{{Name: "tank", Used: 1, Avail: 1, Mountpoint: "/tank"}}, nil
+	}
+	assert.Len(t, zm.DatasetUsage(), 1)
+
+	// Force refresh window expiry, then a failing collector.
+	zm.lastUsageRefresh = time.Now().Add(-10 * time.Minute)
+	zm.datasetsFn = func() ([]zfs.Dataset, error) {
+		return nil, zfs.ErrNoZfs
+	}
+	usage := zm.DatasetUsage()
+	assert.Len(t, usage, 1, "previous usage should be retained on error")
+}
+
+func TestZfsMountpoints(t *testing.T) {
+	zm := &ZfsManager{}
+	zm.datasetsFn = func() ([]zfs.Dataset, error) {
+		return []zfs.Dataset{
+			{Name: "tank", Mountpoint: "/tank"},
+			{Name: "rpool/ROOT/pve-1", Mountpoint: "/"},
+		}, nil
+	}
+	mountpoints := zm.ZfsMountpoints()
+	assert.Len(t, mountpoints, 2)
+	assert.True(t, mountpoints["/tank"])
+	assert.True(t, mountpoints["/"])
+}
