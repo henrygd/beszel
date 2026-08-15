@@ -478,3 +478,43 @@ func TestHasUser(t *testing.T) {
 		assert.True(t, sys.HasUser(hub, user2))
 	})
 }
+
+// Shutdown runs on app terminate, ahead of PocketBase closing the database.
+// It must stop every system's goroutines and refuse to start new ones, so that
+// background work can't outlive the database it queries (issue #2154).
+func TestSystemManagerShutdown(t *testing.T) {
+	hub, err := tests.NewTestHub(t.TempDir())
+	require.NoError(t, err)
+	defer hub.Cleanup()
+	sm := hub.GetSystemManager()
+
+	user, err := tests.CreateUser(hub, "test@test.com", "testtesttest")
+	require.NoError(t, err)
+
+	require.NoError(t, sm.Initialize())
+
+	record, err := tests.CreateRecord(hub, "systems", map[string]any{
+		"name":  "steeplechase",
+		"host":  "surf-avenue",
+		"port":  "33914",
+		"users": []string{user.Id},
+	})
+	require.NoError(t, err)
+	require.True(t, sm.HasSystem(record.Id), "system should be in the store")
+
+	ctx, _, err := sm.GetSystemContextFromStore(record.Id)
+	require.NoError(t, err)
+	require.NoError(t, ctx.Err(), "context should be live before shutdown")
+
+	sm.Shutdown()
+
+	assert.Error(t, ctx.Err(), "shutdown should cancel the system context")
+
+	// a second call must be harmless - PocketBase triggers OnTerminate again on restart
+	assert.NotPanics(t, sm.Shutdown)
+
+	// no new systems may be started after shutdown
+	err = sm.AddSystem(&systems.System{Id: "luna-park", Host: "w-8th-st", Port: "33914"})
+	assert.Error(t, err, "AddSystem should be refused after shutdown")
+	assert.False(t, sm.HasSystem("luna-park"), "no system should be added after shutdown")
+}
