@@ -245,6 +245,10 @@ msgstr "백업"
 msgid "Bandwidth"
 msgstr "대역폭"
 
+#: src/components/routes/system/charts/fail2ban-chart.tsx
+msgid "Banned IPs per jail"
+msgstr ""
+
 #. Battery label in systems table header
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Bat"
@@ -773,6 +777,10 @@ msgstr "현재 시스템 구성 내보내기"
 #: src/components/routes/settings/general.tsx
 msgid "Fahrenheit (°F)"
 msgstr "화씨 (°F)"
+
+#: src/components/routes/system/charts/fail2ban-chart.tsx
+msgid "Fail2ban"
+msgstr ""
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Failed"
