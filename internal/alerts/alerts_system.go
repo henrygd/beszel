@@ -51,12 +51,6 @@ func (am *AlertManager) HandleSystemAlerts(systemRecord *core.Record, data *syst
 			}
 			val = data.Info.DashboardTemp
 			unit = "°C"
-		case "FanSpeed":
-			if data.Info.DashboardFan < 1 {
-				continue
-			}
-			val = data.Info.DashboardFan
-			unit = " RPM"
 		case "LoadAvg1":
 			val = data.Info.LoadAvg[0]
 			unit = ""
@@ -223,16 +217,6 @@ func (am *AlertManager) HandleSystemAlerts(systemRecord *core.Record, data *syst
 					}
 					alert.mapSums[key] += temp
 				}
-			case "FanSpeed":
-				if alert.mapSums == nil {
-					alert.mapSums = make(map[string]float32, len(stats.Fans))
-				}
-				for key, rpm := range stats.Fans {
-					if _, ok := alert.mapSums[key]; !ok {
-						alert.mapSums[key] = float32(0)
-					}
-					alert.mapSums[key] += float32(rpm)
-				}
 			case "LoadAvg1":
 				alert.val += stats.LoadAvg[0]
 			case "LoadAvg5":
@@ -281,16 +265,6 @@ func (am *AlertManager) HandleSystemAlerts(systemRecord *core.Record, data *syst
 				}
 			}
 			alert.val = float64(maxTemp)
-		case "FanSpeed":
-			maxRpm := float32(0)
-			for key, value := range alert.mapSums {
-				sumRpm := float32(value) / float32(alert.count)
-				if sumRpm > maxRpm {
-					maxRpm = sumRpm
-					alert.descriptor = fmt.Sprintf("Highest fan %s", key)
-				}
-			}
-			alert.val = float64(maxRpm)
 		default:
 			alert.val = alert.val / float64(alert.count)
 		}

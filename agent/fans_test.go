@@ -21,7 +21,7 @@ func writeFile(t *testing.T, path, contents string) {
 // TestReadHwmonFans verifies the /sys/class/hwmon walker:
 //   - picks up fan*_input from every chip,
 //   - keys entries by chip name + sensor label (or fan idx if no label),
-//   - skips 0 RPM (unpopulated headers),
+//   - retains 0 RPM for stopped fans,
 //   - tolerates chips with no fan files at all.
 func TestReadHwmonFans(t *testing.T) {
 	root := t.TempDir()
@@ -34,8 +34,7 @@ func TestReadHwmonFans(t *testing.T) {
 	writeFile(t, filepath.Join(root, "hwmon1", "name"), "cpu_thermal\n")
 	writeFile(t, filepath.Join(root, "hwmon1", "temp1_input"), "55000\n")
 
-	// hwmon2: two fans — one unpopulated (0 RPM, must be skipped) and one
-	// labeled "chassis".
+	// hwmon2: two fans — one stopped (0 RPM) and one labeled "chassis".
 	writeFile(t, filepath.Join(root, "hwmon2", "name"), "nct6798\n")
 	writeFile(t, filepath.Join(root, "hwmon2", "fan1_input"), "0\n")
 	writeFile(t, filepath.Join(root, "hwmon2", "fan2_input"), "1200\n")
@@ -45,8 +44,9 @@ func TestReadHwmonFans(t *testing.T) {
 	require.NoError(t, err)
 
 	assert.Equal(t, map[string]float64{
-		"pwmfan_fan1":      6500,
-		"nct6798_chassis":  1200,
+		"pwmfan_fan1":     6500,
+		"nct6798_fan1":    0,
+		"nct6798_chassis": 1200,
 	}, fans)
 }
 

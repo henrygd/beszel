@@ -290,7 +290,7 @@ export function FanChart({
 				empty={dataEmpty}
 				grid={grid}
 				title={t`Fans`}
-				description={t`Fan speeds of system sensors`}
+				description={t`System fan speeds (RPM)`}
 				cornerEl={<FilterBar store={$fanFilter} />}
 				legend={legend}
 			>
@@ -299,7 +299,7 @@ export function FanChart({
 					itemSorter={(a, b) => b.value - a.value}
 					domain={["auto", "auto"]}
 					legend={legend}
-					tickFormatter={(val) => `${toFixedFloat(val, 0)} RPM`}
+					tickFormatter={(val) => `${toFixedFloat(val, 0)}`}
 					contentFormatter={(item) => `${decimalString(item.value, 0)} RPM`}
 					dataPoints={dataPoints}
 					filter={filter}

@@ -4,9 +4,9 @@ import (
 	"log/slog"
 	"os"
 	"path/filepath"
-	"strconv"
 	"strings"
 
+	"github.com/henrygd/beszel/agent/utils"
 	"github.com/henrygd/beszel/internal/entities/system"
 )
 
@@ -41,44 +41,34 @@ func (a *Agent) updateFans(systemStats *system.Stats) {
 
 // readHwmonFans walks the given hwmon root (typically /sys/class/hwmon) and
 // returns a map of "<chip>_<label-or-fan-idx>" → RPM for every fan*_input
-// file it finds. Entries reporting 0 RPM are skipped — that's how the kernel
-// reports unpopulated fan headers.
-func readHwmonFans(root string) (map[string]float64, error) {
+// file it finds. Zero RPM is retained because it can represent a real fan that
+// has stopped; negative and malformed readings are ignored.
+func readHwmonFans(root string) (map[string]uint16, error) {
 	entries, err := os.ReadDir(root)
 	if err != nil {
 		return nil, err
 	}
-	fans := make(map[string]float64)
+	fans := make(map[string]uint16)
 	for _, entry := range entries {
 		chipDir := filepath.Join(root, entry.Name())
-		chipName := readSysfsString(filepath.Join(chipDir, "name"))
+		chipName := utils.ReadStringFile(filepath.Join(chipDir, "name"))
 		if chipName == "" {
 			chipName = entry.Name()
 		}
 		inputs, _ := filepath.Glob(filepath.Join(chipDir, "fan*_input"))
 		for _, inputPath := range inputs {
 			base := strings.TrimSuffix(filepath.Base(inputPath), "_input")
-			rpm, err := strconv.ParseFloat(readSysfsString(inputPath), 64)
-			if err != nil || rpm <= 0 {
+			rpm, ok := utils.ReadUintFile(inputPath)
+			if !ok {
 				continue
 			}
-			label := readSysfsString(filepath.Join(chipDir, base+"_label"))
+			label := utils.ReadStringFile(filepath.Join(chipDir, base+"_label"))
 			key := chipName + "_" + base
 			if label != "" {
 				key = chipName + "_" + label
 			}
-			fans[key] = rpm
+			fans[key] = uint16(rpm)
 		}
 	}
 	return fans, nil
-}
-
-// readSysfsString reads a single-line sysfs file and trims trailing newline.
-// Returns "" on any read error.
-func readSysfsString(path string) string {
-	b, err := os.ReadFile(path)
-	if err != nil {
-		return ""
-	}
-	return strings.TrimSpace(string(b))
 }
