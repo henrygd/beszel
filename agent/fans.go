@@ -26,7 +26,6 @@ func newFanSensorCache(root string) func() ([]fanSensor, error) {
 // updateFans populates systemStats.Fans from the host's hwmon sysfs tree.
 // No-op on platforms where hwmon isn't available (see fans_other.go).
 func (a *Agent) updateFans(systemStats *system.Stats) {
-	a.systemInfo.DashboardFan = 0
 	if hwmonRoot == "" {
 		return
 	}
@@ -40,17 +39,17 @@ func (a *Agent) updateFans(systemStats *system.Stats) {
 		return
 	}
 	systemStats.Fans = fans
+	// Note: Commented out because we don't currently use this value in the UI.
 	// Compute the single "dashboard" value used by the FanSpeed alert.
 	// Per-sensor RPMs live in Stats.Fans and drive the multi-line FanChart
 	// in the UI; the alert path only needs one number to compare against
-	// the user's threshold, so we use the highest RPM across all fans —
-	// mirrors DashboardTemp semantics (max temp) so the alert direction
-	// stays consistent across the app.
-	for _, rpm := range fans {
-		if rpm > a.systemInfo.DashboardFan {
-			a.systemInfo.DashboardFan = rpm
-		}
-	}
+	// the user's threshold, so we use the highest RPM across all fans
+	// a.systemInfo.DashboardFan = 0
+	// for _, rpm := range fans {
+	// 	if rpm > a.systemInfo.DashboardFan {
+	// 		a.systemInfo.DashboardFan = rpm
+	// 	}
+	// }
 }
 
 // readHwmonFans walks the given hwmon root (typically /sys/class/hwmon) and
