@@ -43,7 +43,7 @@ func TestReadHwmonFans(t *testing.T) {
 	fans, err := readHwmonFans(root)
 	require.NoError(t, err)
 
-	assert.Equal(t, map[string]float64{
+	assert.Equal(t, map[string]uint16{
 		"pwmfan_fan1":     6500,
 		"nct6798_fan1":    0,
 		"nct6798_chassis": 1200,
@@ -64,4 +64,24 @@ func TestReadHwmonFansEmpty(t *testing.T) {
 	fans, err := readHwmonFans(root)
 	require.NoError(t, err)
 	assert.Empty(t, fans)
+}
+
+func TestFanDiscoveryCache(t *testing.T) {
+	root := t.TempDir()
+	input := filepath.Join(root, "hwmon0", "fan1_input")
+	writeFile(t, filepath.Join(root, "hwmon0", "name"), "chip\n")
+	writeFile(t, input, "1000\n")
+
+	getSensors := newFanSensorCache(root)
+	sensors, err := getSensors()
+	require.NoError(t, err)
+	fans := readFanSensors(sensors)
+	assert.Equal(t, uint16(1000), fans["chip_fan1"])
+
+	writeFile(t, input, "1200\n")
+	writeFile(t, filepath.Join(root, "hwmon0", "fan1_label"), "case\n")
+	sensors, err = getSensors()
+	require.NoError(t, err)
+	fans = readFanSensors(sensors)
+	assert.Equal(t, map[string]uint16{"chip_fan1": 1200}, fans)
 }

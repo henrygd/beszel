@@ -5,10 +5,23 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"sync"
 
 	"github.com/henrygd/beszel/agent/utils"
 	"github.com/henrygd/beszel/internal/entities/system"
 )
+
+type fanSensor struct {
+	key, path string
+}
+
+var getFanSensors = newFanSensorCache(hwmonRoot)
+
+func newFanSensorCache(root string) func() ([]fanSensor, error) {
+	return sync.OnceValues(func() ([]fanSensor, error) {
+		return discoverHwmonFans(root)
+	})
+}
 
 // updateFans populates systemStats.Fans from the host's hwmon sysfs tree.
 // No-op on platforms where hwmon isn't available (see fans_other.go).
@@ -17,11 +30,12 @@ func (a *Agent) updateFans(systemStats *system.Stats) {
 	if hwmonRoot == "" {
 		return
 	}
-	fans, err := readHwmonFans(hwmonRoot)
+	sensors, err := getFanSensors()
 	if err != nil {
 		slog.Debug("Error reading fans", "err", err)
 		return
 	}
+	fans := readFanSensors(sensors)
 	if len(fans) == 0 {
 		return
 	}
@@ -44,11 +58,19 @@ func (a *Agent) updateFans(systemStats *system.Stats) {
 // file it finds. Zero RPM is retained because it can represent a real fan that
 // has stopped; negative and malformed readings are ignored.
 func readHwmonFans(root string) (map[string]uint16, error) {
+	sensors, err := discoverHwmonFans(root)
+	if err != nil {
+		return nil, err
+	}
+	return readFanSensors(sensors), nil
+}
+
+func discoverHwmonFans(root string) ([]fanSensor, error) {
 	entries, err := os.ReadDir(root)
 	if err != nil {
 		return nil, err
 	}
-	fans := make(map[string]uint16)
+	var sensors []fanSensor
 	for _, entry := range entries {
 		chipDir := filepath.Join(root, entry.Name())
 		chipName := utils.ReadStringFile(filepath.Join(chipDir, "name"))
@@ -58,17 +80,23 @@ func readHwmonFans(root string) (map[string]uint16, error) {
 		inputs, _ := filepath.Glob(filepath.Join(chipDir, "fan*_input"))
 		for _, inputPath := range inputs {
 			base := strings.TrimSuffix(filepath.Base(inputPath), "_input")
-			rpm, ok := utils.ReadUintFile(inputPath)
-			if !ok {
-				continue
-			}
 			label := utils.ReadStringFile(filepath.Join(chipDir, base+"_label"))
 			key := chipName + "_" + base
 			if label != "" {
 				key = chipName + "_" + label
 			}
-			fans[key] = uint16(rpm)
+			sensors = append(sensors, fanSensor{key, inputPath})
 		}
 	}
-	return fans, nil
+	return sensors, nil
+}
+
+func readFanSensors(sensors []fanSensor) map[string]uint16 {
+	fans := make(map[string]uint16, len(sensors))
+	for _, sensor := range sensors {
+		if rpm, ok := utils.ReadUintFile(sensor.path); ok {
+			fans[sensor.key] = uint16(rpm)
+		}
+	}
+	return fans
 }
