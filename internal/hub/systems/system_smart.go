@@ -3,7 +3,6 @@ package systems
 import (
 	"database/sql"
 	"errors"
-	"fmt"
 	"strings"
 	"time"
 
@@ -19,13 +18,13 @@ type smartFetchState struct {
 
 // FetchAndSaveSmartDevices fetches SMART data from the agent and saves it to the database
 func (sys *System) FetchAndSaveSmartDevices() error {
-	smartData, err := sys.FetchSmartDataFromAgent()
+	response, err := sys.FetchSmartDataFromAgent()
 	if err != nil {
 		sys.recordSmartFetchResult(err, 0)
 		return err
 	}
-	err = sys.saveSmartDevices(smartData)
-	sys.recordSmartFetchResult(err, len(smartData))
+	err = sys.saveSmartDevices(response.Data, response.Complete)
+	sys.recordSmartFetchResult(err, len(response.Data))
 	return err
 }
 
@@ -63,10 +62,9 @@ func (sys *System) smartFetchInterval() time.Duration {
 	return time.Hour
 }
 
-// saveSmartDevices saves SMART device data to the smart_devices collection and
-// removes any existing rows for this system that are no longer reported (e.g.
-// a drive removed, or renamed to a different /dev/sdX after a reboot).
-func (sys *System) saveSmartDevices(smartData map[string]smart.SmartData) error {
+// saveSmartDevices saves SMART device data and, after a complete refresh,
+// removes rows for devices that are no longer reported.
+func (sys *System) saveSmartDevices(smartData map[string]smart.SmartData, complete bool) error {
 	if len(smartData) == 0 {
 		return nil
 	}
@@ -77,25 +75,32 @@ func (sys *System) saveSmartDevices(smartData map[string]smart.SmartData) error 
 		return err
 	}
 
-	currentIDs := make([]string, 0, len(smartData))
+	currentIDs := make(map[string]struct{}, len(smartData))
 	for deviceKey := range smartData {
-		currentIDs = append(currentIDs, makeStableHashId(sys.Id, deviceKey))
+		currentIDs[makeStableHashId(sys.Id, deviceKey)] = struct{}{}
 	}
 
-	return hub.RunInTransaction(func(txApp core.App) error {
-		placeholders := make([]string, len(currentIDs))
-		params := dbx.Params{"system": sys.Id}
-		for i, id := range currentIDs {
-			key := fmt.Sprintf("id%d", i)
-			placeholders[i] = "{:" + key + "}"
-			params[key] = id
-		}
-		query := fmt.Sprintf(
-			"DELETE FROM smart_devices WHERE system = {:system} AND id NOT IN (%s)",
-			strings.Join(placeholders, ","),
-		)
-		if _, err := txApp.DB().NewQuery(query).Bind(params).Execute(); err != nil {
-			return err
+	err = hub.RunInTransaction(func(txApp core.App) error {
+		if complete {
+			existing, err := txApp.FindRecordsByFilter(
+				collection,
+				"system = {:system}",
+				"",
+				0,
+				0,
+				dbx.Params{"system": sys.Id},
+			)
+			if err != nil {
+				return err
+			}
+			for _, record := range existing {
+				if _, ok := currentIDs[record.Id]; ok {
+					continue
+				}
+				if err := txApp.Delete(record); err != nil {
+					return err
+				}
+			}
 		}
 
 		for deviceKey, device := range smartData {
@@ -106,6 +111,7 @@ func (sys *System) saveSmartDevices(smartData map[string]smart.SmartData) error 
 
 		return nil
 	})
+	return err
 }
 
 func (sys *System) upsertSmartDeviceRecord(app core.App, collection *core.Collection, deviceKey string, device smart.SmartData) error {

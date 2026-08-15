@@ -157,7 +157,7 @@ func TestSaveSmartDevices_RemovesStaleDevices(t *testing.T) {
 	err := sys.saveSmartDevices(map[string]smart.SmartData{
 		"AAA": {SerialNumber: "AAA", DiskName: "sda", ModelName: "Disk A"},
 		"BBB": {SerialNumber: "BBB", DiskName: "sdb", ModelName: "Disk B"},
-	})
+	}, true)
 	require.NoError(t, err)
 
 	records := countSmartDeviceRecords(t, testApp, sys.Id)
@@ -172,11 +172,17 @@ func TestSaveSmartDevices_RemovesStaleDevices(t *testing.T) {
 	require.NotNil(t, recordA, "expected to find device AAA")
 	originalID := recordA.Id
 
-	// second fetch: device BBB is gone (e.g. renamed/removed after reboot),
-	// device AAA is still present with updated data
+	deleteEvents := 0
+	testApp.OnRecordAfterDeleteSuccess("smart_devices").BindFunc(func(e *core.RecordEvent) error {
+		deleteEvents++
+		return e.Next()
+	})
+
+	// A complete refresh confirms that BBB is gone, so remove it through
+	// PocketBase and notify realtime subscribers.
 	err = sys.saveSmartDevices(map[string]smart.SmartData{
 		"AAA": {SerialNumber: "AAA", DiskName: "sda", ModelName: "Disk A", Temperature: 42},
-	})
+	}, true)
 	require.NoError(t, err)
 
 	records = countSmartDeviceRecords(t, testApp, sys.Id)
@@ -184,6 +190,27 @@ func TestSaveSmartDevices_RemovesStaleDevices(t *testing.T) {
 	assert.Equal(t, "AAA", records[0].GetString("serial"))
 	assert.Equal(t, originalID, records[0].Id, "expected existing device to be updated in place, not recreated")
 	assert.EqualValues(t, 42, records[0].GetInt("temp"))
+	assert.Equal(t, 1, deleteEvents, "expected PocketBase delete hooks to run")
+}
+
+func TestSaveSmartDevices_IncompleteDataDoesNotRemoveDevices(t *testing.T) {
+	sys, testApp := newTestSystemWithHub(t)
+
+	require.NoError(t, sys.saveSmartDevices(map[string]smart.SmartData{
+		"AAA": {SerialNumber: "AAA", DiskName: "sda"},
+		"BBB": {SerialNumber: "BBB", DiskName: "sdb"},
+	}, true))
+
+	// AAA was collected but BBB failed. The response is useful for updating AAA,
+	// but it is not authoritative enough to remove BBB.
+	require.NoError(t, sys.saveSmartDevices(map[string]smart.SmartData{
+		"AAA": {SerialNumber: "AAA", DiskName: "sda", Temperature: 42},
+	}, false))
+
+	assert.Len(t, countSmartDeviceRecords(t, testApp, sys.Id), 2)
+	recordA, err := testApp.FindRecordById("smart_devices", makeStableHashId(sys.Id, "AAA"))
+	require.NoError(t, err)
+	assert.EqualValues(t, 42, recordA.GetInt("temp"))
 }
 
 func TestSaveSmartDevices_EmptyDataIsNoop(t *testing.T) {
@@ -191,10 +218,10 @@ func TestSaveSmartDevices_EmptyDataIsNoop(t *testing.T) {
 
 	err := sys.saveSmartDevices(map[string]smart.SmartData{
 		"AAA": {SerialNumber: "AAA", DiskName: "sda"},
-	})
+	}, true)
 	require.NoError(t, err)
 
-	err = sys.saveSmartDevices(map[string]smart.SmartData{})
+	err = sys.saveSmartDevices(map[string]smart.SmartData{}, true)
 	require.NoError(t, err)
 
 	records := countSmartDeviceRecords(t, testApp, sys.Id)
