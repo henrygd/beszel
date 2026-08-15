@@ -215,7 +215,7 @@ interface ContainerStats {
 	n: string
 	/** cpu percent */
 	c: number
-	/** memory used (gb) */
+	/** memory used (mb) */
 	m: number
 	// network sent (mb)
 	ns?: number

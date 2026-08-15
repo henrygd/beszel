@@ -29,8 +29,9 @@ func setStatusAlertEmail(t *testing.T, hub core.App, userID, email string) {
 }
 
 func TestStatusAlerts(t *testing.T) {
+	hub, user := beszelTests.GetHubWithUser(t)
+
 	synctest.Test(t, func(t *testing.T) {
-		hub, user := beszelTests.GetHubWithUser(t)
 		defer hub.Cleanup()
 
 		systems, err := beszelTests.CreateSystems(hub, 4, user.Id, "paused")
@@ -231,8 +232,9 @@ func TestHandleStatusAlertsDoesNotSendRecoveryWhileDownIsOnlyPending(t *testing.
 }
 
 func TestStatusAlertTimerCancellationPreventsBoundaryDelivery(t *testing.T) {
+	hub, user := beszelTests.GetHubWithUser(t)
+
 	synctest.Test(t, func(t *testing.T) {
-		hub, user := beszelTests.GetHubWithUser(t)
 		defer hub.Cleanup()
 
 		userSettings, err := hub.FindFirstRecordByFilter("user_settings", "user={:user}", map[string]any{"user": user.Id})
@@ -331,8 +333,9 @@ func TestStatusAlertDownFiresAfterDelayExpires(t *testing.T) {
 }
 
 func TestStatusAlertMultipleUsersRespectDifferentMinutes(t *testing.T) {
+	hub, user1 := beszelTests.GetHubWithUser(t)
+
 	synctest.Test(t, func(t *testing.T) {
-		hub, user1 := beszelTests.GetHubWithUser(t)
 		defer hub.Cleanup()
 
 		setStatusAlertEmail(t, hub, user1.Id, "user1@example.com")
@@ -417,8 +420,9 @@ func TestStatusAlertMultipleUsersRespectDifferentMinutes(t *testing.T) {
 }
 
 func TestStatusAlertMultipleUsersRecoveryBetweenMinutesOnlyAlertsEarlierUser(t *testing.T) {
+	hub, user1 := beszelTests.GetHubWithUser(t)
+
 	synctest.Test(t, func(t *testing.T) {
-		hub, user1 := beszelTests.GetHubWithUser(t)
 		defer hub.Cleanup()
 
 		setStatusAlertEmail(t, hub, user1.Id, "user1@example.com")
@@ -804,8 +808,9 @@ func TestResolveStatusAlerts(t *testing.T) {
 }
 
 func TestAlertsHistoryStatus(t *testing.T) {
+	hub, user := beszelTests.GetHubWithUser(t)
+
 	synctest.Test(t, func(t *testing.T) {
-		hub, user := beszelTests.GetHubWithUser(t)
 		defer hub.Cleanup()
 
 		// Create a system
@@ -870,8 +875,9 @@ func TestAlertsHistoryStatus(t *testing.T) {
 }
 
 func TestStatusAlertClearedBeforeSend(t *testing.T) {
+	hub, user := beszelTests.GetHubWithUser(t)
+
 	synctest.Test(t, func(t *testing.T) {
-		hub, user := beszelTests.GetHubWithUser(t)
 		defer hub.Cleanup()
 
 		// Create a system
