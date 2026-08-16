@@ -65,7 +65,6 @@ type dockerManager struct {
 	dockerVersionChecked bool                        // Whether a version probe has completed successfully
 	isWindows            bool                        // Whether the Docker Engine API is running on Windows
 	buf                  *bytes.Buffer               // Buffer to store and read response bodies
-	decoder              *json.Decoder               // Reusable JSON decoder that reads from buf
 	apiStats             *container.ApiStats         // Reusable API stats object
 	excludeContainers    []string                    // Patterns to exclude containers by name
 	usingPodman          bool                        // Whether the Docker Engine API is running on Podman
@@ -374,16 +373,26 @@ func convertContainerPortsToString(ctr *container.ApiInfo) string {
 		return ""
 	}
 	sort.Slice(ctr.Ports, func(i, j int) bool {
-		return ctr.Ports[i].PublicPort < ctr.Ports[j].PublicPort
+		if ctr.Ports[i].PublicPort != ctr.Ports[j].PublicPort {
+			return ctr.Ports[i].PublicPort < ctr.Ports[j].PublicPort
+		}
+		return ctr.Ports[i].IP < ctr.Ports[j].IP
 	})
 	var builder strings.Builder
-	seenPorts := make(map[uint16]struct{})
+	seen := make(map[string]struct{})
 	for _, p := range ctr.Ports {
-		_, ok := seenPorts[p.PublicPort]
-		if p.PublicPort == 0 || ok {
+		if p.PublicPort == 0 {
 			continue
 		}
-		seenPorts[p.PublicPort] = struct{}{}
+		keyIP := p.IP
+		if keyIP == "0.0.0.0" || keyIP == "::" {
+			keyIP = ""
+		}
+		key := keyIP + ":" + strconv.Itoa(int(p.PublicPort))
+		if _, ok := seen[key]; ok {
+			continue
+		}
+		seen[key] = struct{}{}
 		if builder.Len() > 0 {
 			builder.WriteString(", ")
 		}
@@ -749,20 +758,18 @@ func (dm *dockerManager) applyDockerVersionInfo(serverHeader string, versionInfo
 	}
 }
 
-// Decodes Docker API JSON response using a reusable buffer and decoder. Not thread safe.
+// Decodes a Docker API JSON response using a reusable buffer. Not thread safe.
 func (dm *dockerManager) decode(resp *http.Response, d any) error {
 	if dm.buf == nil {
 		// initialize buffer with 256kb starting size
 		dm.buf = bytes.NewBuffer(make([]byte, 0, 1024*256))
-		dm.decoder = json.NewDecoder(dm.buf)
 	}
 	defer resp.Body.Close()
 	defer dm.buf.Reset()
-	_, err := dm.buf.ReadFrom(resp.Body)
-	if err != nil {
+	if _, err := dm.buf.ReadFrom(resp.Body); err != nil {
 		return err
 	}
-	return dm.decoder.Decode(d)
+	return json.Unmarshal(dm.buf.Bytes(), d)
 }
 
 // Test docker / podman sockets and return if one exists
