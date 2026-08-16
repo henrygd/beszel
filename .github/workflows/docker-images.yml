@@ -41,7 +41,7 @@ jobs:
           # henrygd/beszel-agent-nvidia
           - image: henrygd/beszel-agent-nvidia
             dockerfile: ./internal/dockerfile_agent_nvidia
-            platforms: linux/amd64
+            platforms: linux/amd64,linux/arm64
             registry: docker.io
             username_secret: DOCKERHUB_USERNAME
             password_secret: DOCKERHUB_TOKEN
@@ -96,7 +96,7 @@ jobs:
           # ghcr.io/henrygd/beszel-agent-nvidia
           - image: ghcr.io/${{ github.repository }}/beszel-agent-nvidia
             dockerfile: ./internal/dockerfile_agent_nvidia
-            platforms: linux/amd64
+            platforms: linux/amd64,linux/arm64
             registry: ghcr.io
             username: ${{ github.actor }}
             password_secret: GITHUB_TOKEN
@@ -152,7 +152,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Set up bun
         uses: oven-sh/setup-bun@v2
@@ -171,7 +171,7 @@ jobs:
 
       - name: Docker metadata
         id: metadata
-        uses: docker/metadata-action@v5
+        uses: docker/metadata-action@v6
         with:
           images: ${{ matrix.image }}
           tags: ${{ matrix.tags }}
@@ -181,7 +181,7 @@ jobs:
         env:
           password_secret_exists: ${{ secrets[matrix.password_secret] != '' && 'true' || 'false' }}
         if: github.event_name != 'pull_request' && env.password_secret_exists == 'true'
-        uses: docker/login-action@v3
+        uses: docker/login-action@v4
         with:
           username: ${{ matrix.username || secrets[matrix.username_secret] }}
           password: ${{ secrets[matrix.password_secret] }}
@@ -196,5 +196,7 @@ jobs:
           file: ${{ matrix.dockerfile }}
           platforms: ${{ matrix.platforms || 'linux/amd64,linux/arm64,linux/arm/v7' }}
           push: ${{ github.ref_type == 'tag' && secrets[matrix.password_secret] != '' }}
+          provenance: mode=max
+          sbom: true
           tags: ${{ steps.metadata.outputs.tags }}
           labels: ${{ steps.metadata.outputs.labels }}
