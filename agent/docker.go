@@ -373,16 +373,26 @@ func convertContainerPortsToString(ctr *container.ApiInfo) string {
 		return ""
 	}
 	sort.Slice(ctr.Ports, func(i, j int) bool {
-		return ctr.Ports[i].PublicPort < ctr.Ports[j].PublicPort
+		if ctr.Ports[i].PublicPort != ctr.Ports[j].PublicPort {
+			return ctr.Ports[i].PublicPort < ctr.Ports[j].PublicPort
+		}
+		return ctr.Ports[i].IP < ctr.Ports[j].IP
 	})
 	var builder strings.Builder
-	seenPorts := make(map[uint16]struct{})
+	seen := make(map[string]struct{})
 	for _, p := range ctr.Ports {
-		_, ok := seenPorts[p.PublicPort]
-		if p.PublicPort == 0 || ok {
+		if p.PublicPort == 0 {
 			continue
 		}
-		seenPorts[p.PublicPort] = struct{}{}
+		keyIP := p.IP
+		if keyIP == "0.0.0.0" || keyIP == "::" {
+			keyIP = ""
+		}
+		key := keyIP + ":" + strconv.Itoa(int(p.PublicPort))
+		if _, ok := seen[key]; ok {
+			continue
+		}
+		seen[key] = struct{}{}
 		if builder.Len() > 0 {
 			builder.WriteString(", ")
 		}
