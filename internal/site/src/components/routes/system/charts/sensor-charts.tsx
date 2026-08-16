@@ -1,7 +1,7 @@
 import { t } from "@lingui/core/macro"
 import AreaChartDefault from "@/components/charts/area-chart"
 import { batteryStateTranslations } from "@/lib/i18n"
-import { $temperatureFilter, $userSettings } from "@/lib/stores"
+import { $fanFilter, $temperatureFilter, $userSettings } from "@/lib/stores"
 import { cn, decimalString, formatTemperature, toFixedFloat } from "@/lib/utils"
 import type { ChartData, SystemStatsRecord } from "@/types"
 import { ChartCard, FilterBar } from "../chart-card"
@@ -202,6 +202,105 @@ export function TemperatureChart({
 						const { value, unit } = formatTemperature(item.value, userSettings.unitTemp)
 						return `${decimalString(value)} ${unit}`
 					}}
+					dataPoints={dataPoints}
+					filter={filter}
+				></LineChartDefault>
+			</ChartCard>
+		</div>
+	)
+}
+
+export function FanChart({
+	chartData,
+	grid,
+	dataEmpty,
+}: {
+	chartData: ChartData
+	grid: boolean
+	dataEmpty: boolean
+}) {
+	const showFanChart = chartData.systemStats.at(-1)?.stats.f
+
+	const filter = useStore($fanFilter)
+
+	const statsRef = useRef(chartData.systemStats)
+	statsRef.current = chartData.systemStats
+
+	// Stable key derived from current sensor names (sorted) so the memo only
+	// recomputes when the set of fans changes — not on every data point.
+	let sensorNamesKey = ""
+	for (let i = chartData.systemStats.length - 1; i >= 0; i--) {
+		const f = chartData.systemStats[i].stats?.f
+		if (f) {
+			sensorNamesKey = Object.keys(f).sort().join("\0")
+			break
+		}
+	}
+
+	const { colorMap, dataKeys, sortedKeys } = useMemo(() => {
+		const stats = statsRef.current
+		const sums = {} as Record<string, number>
+		for (const data of stats) {
+			const f = data.stats?.f
+			if (!f) continue
+			for (const key of Object.keys(f)) {
+				sums[key] = (sums[key] ?? 0) + f[key]
+			}
+		}
+		const sorted = Object.keys(sums).sort((a, b) => sums[b] - sums[a])
+		const colorMap = {} as Record<string, string>
+		const dataKeys = {} as Record<string, (d: SystemStatsRecord) => number | undefined>
+		for (let i = 0; i < sorted.length; i++) {
+			const key = sorted[i]
+			colorMap[key] = `hsl(${((i * 360) / sorted.length) % 360}, 60%, 55%)`
+			dataKeys[key] = (d: SystemStatsRecord) => d.stats?.f?.[key]
+		}
+		return { colorMap, dataKeys, sortedKeys: sorted }
+	}, [sensorNamesKey])
+
+	const dataPoints = useMemo(() => {
+		return sortedKeys.map((key) => {
+			const filterTerms = filter
+				? filter
+						.toLowerCase()
+						.split(" ")
+						.filter((term) => term.length > 0)
+				: []
+			const filtered = filterTerms.length > 0 && !filterTerms.some((term) => key.toLowerCase().includes(term))
+			const strokeOpacity = filtered ? 0.1 : 1
+			return {
+				label: key,
+				dataKey: dataKeys[key],
+				color: colorMap[key],
+				strokeOpacity,
+				activeDot: !filtered,
+			}
+		})
+	}, [sortedKeys, filter, dataKeys, colorMap])
+
+	if (!showFanChart) {
+		return null
+	}
+
+	const legend = dataPoints.length < 12
+
+	return (
+		<div className={cn("odd:last-of-type:col-span-full", { "col-span-full": !grid })}>
+			<ChartCard
+				empty={dataEmpty}
+				grid={grid}
+				title={t`Fans`}
+				description={t`System fan speeds (RPM)`}
+				cornerEl={<FilterBar store={$fanFilter} />}
+				legend={legend}
+			>
+				<LineChartDefault
+					chartData={chartData}
+					itemSorter={(a, b) => b.value - a.value}
+					domain={["auto", "auto"]}
+					legend={legend}
+					tickFormatter={(val) => `${toFixedFloat(val, 0)}`}
+					contentFormatter={(item) => `${decimalString(item.value, 0)} RPM`}
 					dataPoints={dataPoints}
 					filter={filter}
 				></LineChartDefault>
