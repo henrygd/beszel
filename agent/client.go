@@ -53,8 +53,8 @@ func newWebSocketClient(agent *Agent) (client *WebSocketClient, err error) {
 	client = &WebSocketClient{}
 
 	client.hubURL, err = url.Parse(hubURLStr)
-	if err != nil {
-		return nil, errors.New("invalid hub URL")
+	if err != nil || client.hubURL.Host == "" {
+		return nil, fmt.Errorf("invalid HUB_URL %q: must include scheme and host (e.g. http://hub.example.com:8090)", hubURLStr)
 	}
 	// get registration token
 	client.token, err = getToken()
