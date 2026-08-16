@@ -55,7 +55,7 @@ jobs:
           # henrygd/beszel-agent-nvidia:slim
           - image: henrygd/beszel-agent-nvidia
             dockerfile: ./internal/dockerfile_agent_nvidia_slim
-            platforms: linux/amd64,linux/arm64,linux/arm/v7
+            platforms: linux/amd64,linux/arm64
             registry: docker.io
             username_secret: DOCKERHUB_USERNAME
             password_secret: DOCKERHUB_TOKEN
@@ -123,7 +123,7 @@ jobs:
           # ghcr.io/henrygd/beszel-agent-nvidia:slim
           - image: ghcr.io/${{ github.repository }}/beszel-agent-nvidia
             dockerfile: ./internal/dockerfile_agent_nvidia_slim
-            platforms: linux/amd64,linux/arm64,linux/arm/v7
+            platforms: linux/amd64,linux/arm64
             registry: ghcr.io
             username: ${{ github.actor }}
             password_secret: GITHUB_TOKEN
