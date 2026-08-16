@@ -51,11 +51,18 @@ func TestNewWebSocketClient(t *testing.T) {
 			errorMsg:    "HUB_URL environment variable not set",
 		},
 		{
-			name:        "invalid URL",
+			name:        "malformed URL",
 			hubURL:      "ht\ttp://invalid",
 			token:       "test-token",
 			expectError: true,
-			errorMsg:    "invalid hub URL",
+			errorMsg:    "invalid HUB_URL",
+		},
+		{
+			name:        "URL without host",
+			hubURL:      "http:/api",
+			token:       "test-token",
+			expectError: true,
+			errorMsg:    "invalid HUB_URL",
 		},
 		{
 			name:        "missing token",
