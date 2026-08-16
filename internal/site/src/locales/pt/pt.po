@@ -423,6 +423,14 @@ msgstr "Conflitos"
 msgid "Connection is down"
 msgstr "A conexão está inativa"
 
+#: src/lib/alerts.ts
+msgid "Container"
+msgstr "Contentor"
+
+#: src/lib/alerts.ts
+msgid "Container Health"
+msgstr "Saúde do contentor"
+
 #: src/components/routes/system.tsx
 msgid "Containers"
 msgstr "Contentores"
@@ -1725,6 +1733,10 @@ msgid "Triggers when 5 minute load average exceeds a threshold"
 msgstr "Dispara quando a média de carga de 5 minutos excede um limite"
 
 #: src/lib/alerts.ts
+msgid "Triggers when a Docker container's health check reports unhealthy"
+msgstr "Dispara quando a verificação de saúde (health check) de um contentor Docker reporta um estado não saudável"
+
+#: src/lib/alerts.ts
 msgid "Triggers when any sensor exceeds a threshold"
 msgstr "Dispara quando qualquer sensor excede um limite"
 
@@ -1761,6 +1773,10 @@ msgstr "Dispara quando o uso de qualquer disco excede um limite"
 #: src/components/routes/system/smart-table.tsx
 msgid "Type"
 msgstr "Tipo"
+
+#: src/lib/alerts.ts
+msgid "Unhealthy"
+msgstr "Não saudável"
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Unit file"

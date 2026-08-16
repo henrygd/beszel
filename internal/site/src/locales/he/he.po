@@ -423,6 +423,14 @@ msgstr "התנגשויות"
 msgid "Connection is down"
 msgstr "החיבור נפל"
 
+#: src/lib/alerts.ts
+msgid "Container"
+msgstr "קונטיינר"
+
+#: src/lib/alerts.ts
+msgid "Container Health"
+msgstr "בריאות הקונטיינר"
+
 #: src/components/routes/system.tsx
 msgid "Containers"
 msgstr "קונטיינרים"
@@ -1725,6 +1733,10 @@ msgid "Triggers when 5 minute load average exceeds a threshold"
 msgstr "מופעל כאשר ממוצע העומס ל-5 דקות עולה על סף"
 
 #: src/lib/alerts.ts
+msgid "Triggers when a Docker container's health check reports unhealthy"
+msgstr "מופעל כאשר בדיקת התקינות (health check) של קונטיינר Docker מדווחת שהוא לא תקין"
+
+#: src/lib/alerts.ts
 msgid "Triggers when any sensor exceeds a threshold"
 msgstr "מופעל כאשר כל חיישן עולה על סף"
 
@@ -1761,6 +1773,10 @@ msgstr "מופעל כאשר שימוש בכל דיסק עולה על סף"
 #: src/components/routes/system/smart-table.tsx
 msgid "Type"
 msgstr "סוג"
+
+#: src/lib/alerts.ts
+msgid "Unhealthy"
+msgstr "לא תקין"
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Unit file"

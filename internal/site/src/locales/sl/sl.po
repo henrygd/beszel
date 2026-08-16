@@ -423,6 +423,14 @@ msgstr "Konflikti"
 msgid "Connection is down"
 msgstr "Povezava je prekinjena"
 
+#: src/lib/alerts.ts
+msgid "Container"
+msgstr "Vsebnik"
+
+#: src/lib/alerts.ts
+msgid "Container Health"
+msgstr "Zdravje vsebnika"
+
 #: src/components/routes/system.tsx
 msgid "Containers"
 msgstr "Vsebniki"
@@ -1725,6 +1733,10 @@ msgid "Triggers when 5 minute load average exceeds a threshold"
 msgstr "Sproži se, ko 5-minutna povprečna obremenitev preseže prag"
 
 #: src/lib/alerts.ts
+msgid "Triggers when a Docker container's health check reports unhealthy"
+msgstr "Sproži se, ko preverjanje zdravja vsebnika Docker javi stanje nezdravo"
+
+#: src/lib/alerts.ts
 msgid "Triggers when any sensor exceeds a threshold"
 msgstr "Sproži se, ko kateri koli senzor preseže prag"
 
@@ -1761,6 +1773,10 @@ msgstr "Sproži se, ko uporaba katerega koli diska preseže prag"
 #: src/components/routes/system/smart-table.tsx
 msgid "Type"
 msgstr "Vrsta"
+
+#: src/lib/alerts.ts
+msgid "Unhealthy"
+msgstr "Nezdrav"
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Unit file"

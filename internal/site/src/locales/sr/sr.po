@@ -423,6 +423,14 @@ msgstr "Конфликти"
 msgid "Connection is down"
 msgstr "Веза је прекинута"
 
+#: src/lib/alerts.ts
+msgid "Container"
+msgstr "Контејнер"
+
+#: src/lib/alerts.ts
+msgid "Container Health"
+msgstr "Здравље контејнера"
+
 #: src/components/routes/system.tsx
 msgid "Containers"
 msgstr "Контејнери"
@@ -1725,6 +1733,10 @@ msgid "Triggers when 5 minute load average exceeds a threshold"
 msgstr "Окида се када просечно оптерећење од 5 минута премаши праг"
 
 #: src/lib/alerts.ts
+msgid "Triggers when a Docker container's health check reports unhealthy"
+msgstr "Окида се када провера здравља Docker контејнера пријави да је нездрав"
+
+#: src/lib/alerts.ts
 msgid "Triggers when any sensor exceeds a threshold"
 msgstr "Окида се када било који сензор премаши праг"
 
@@ -1761,6 +1773,10 @@ msgstr "Окида се када употреба било ког диска п�
 #: src/components/routes/system/smart-table.tsx
 msgid "Type"
 msgstr "Тип"
+
+#: src/lib/alerts.ts
+msgid "Unhealthy"
+msgstr "Нездрав"
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Unit file"

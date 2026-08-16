@@ -246,7 +246,6 @@ msgid "Bat"
 msgstr "Bat"
 
 #: src/components/routes/system/charts/sensor-charts.tsx
-#: src/components/routes/system/charts/sensor-charts.tsx
 #: src/lib/alerts.ts
 msgid "Battery"
 msgstr "Battery"
@@ -475,10 +474,6 @@ msgstr "Copy Linux command"
 msgid "Copy name"
 msgstr "Copy name"
 
-#: src/components/routes/settings/tokens-fingerprints.tsx
-msgid "Copy public key"
-msgstr "Copy public key"
-
 #: src/components/copy-to-clipboard.tsx
 msgid "Copy text"
 msgstr "Copy text"
@@ -555,8 +550,6 @@ msgid "Cumulative Upload"
 msgstr "Cumulative Upload"
 
 #. Context: Battery state
-#. Context: Battery state
-#: src/components/routes/system/charts/sensor-charts.tsx
 #: src/components/routes/system/charts/sensor-charts.tsx
 msgid "Current state"
 msgstr "Current state"
@@ -727,6 +720,7 @@ msgstr "Enter your one-time password."
 msgid "Ephemeral"
 msgstr "Ephemeral"
 
+#: src/components/login/auth-form.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/settings/config-yaml.tsx
 #: src/components/routes/settings/heartbeat.tsx
@@ -817,10 +811,6 @@ msgstr "Failed to update alert"
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Failed: {0}"
 msgstr "Failed: {0}"
-
-#: src/components/routes/system/charts/sensor-charts.tsx
-msgid "Fans"
-msgstr "Fans"
 
 #: src/components/containers-table/containers-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
@@ -1324,10 +1314,6 @@ msgstr "Preferred Language"
 msgid "Process started"
 msgstr "Process started"
 
-#: src/components/routes/settings/tokens-fingerprints.tsx
-msgid "Public key"
-msgstr "Public key"
-
 #. Use 'Key' if your language requires many more characters
 #: src/components/add-system.tsx
 msgid "Public Key"
@@ -1567,11 +1553,6 @@ msgstr "Swap space used by the system"
 msgid "Swap Usage"
 msgstr "Swap Usage"
 
-#: src/components/mode-toggle.tsx
-#: src/components/mode-toggle.tsx
-msgid "Switch theme"
-msgstr "Switch theme"
-
 #: src/components/add-system.tsx
 #: src/components/alerts-history-columns.tsx
 #: src/components/containers-table/containers-table-columns.tsx
@@ -1586,10 +1567,6 @@ msgstr "Switch theme"
 #: src/lib/alerts.ts
 msgid "System"
 msgstr "System"
-
-#: src/components/routes/system/charts/sensor-charts.tsx
-msgid "System fan speeds (RPM)"
-msgstr "System fan speeds (RPM)"
 
 #: src/components/routes/system/charts/load-average-chart.tsx
 msgid "System load averages over time"
@@ -1685,8 +1662,8 @@ msgstr "To email(s)"
 
 #: src/components/mode-toggle.tsx
 #: src/components/mode-toggle.tsx
-#~ msgid "Toggle theme"
-#~ msgstr "Toggle theme"
+msgid "Toggle theme"
+msgstr "Toggle theme"
 
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx

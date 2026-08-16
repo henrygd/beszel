@@ -423,6 +423,14 @@ msgstr "Conflicten"
 msgid "Connection is down"
 msgstr "Verbinding is niet actief"
 
+#: src/lib/alerts.ts
+msgid "Container"
+msgstr "Container"
+
+#: src/lib/alerts.ts
+msgid "Container Health"
+msgstr "Containergezondheid"
+
 #: src/components/routes/system.tsx
 msgid "Containers"
 msgstr ""
@@ -1725,6 +1733,10 @@ msgid "Triggers when 5 minute load average exceeds a threshold"
 msgstr "Triggert wanneer de 5 minuten gemiddelde belasting een drempelwaarde overschrijdt"
 
 #: src/lib/alerts.ts
+msgid "Triggers when a Docker container's health check reports unhealthy"
+msgstr "Triggert wanneer de health check van een Docker-container ongezond rapporteert"
+
+#: src/lib/alerts.ts
 msgid "Triggers when any sensor exceeds a threshold"
 msgstr "Triggert wanneer een sensor een drempelwaarde overschrijdt"
 
@@ -1761,6 +1773,10 @@ msgstr "Triggert wanneer het gebruik van een schijf een drempelwaarde overschrij
 #: src/components/routes/system/smart-table.tsx
 msgid "Type"
 msgstr ""
+
+#: src/lib/alerts.ts
+msgid "Unhealthy"
+msgstr "Ongezond"
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Unit file"

@@ -423,6 +423,14 @@ msgstr "Конфлікти"
 msgid "Connection is down"
 msgstr "З'єднання розірвано"
 
+#: src/lib/alerts.ts
+msgid "Container"
+msgstr "Контейнер"
+
+#: src/lib/alerts.ts
+msgid "Container Health"
+msgstr "Здоров'я контейнера"
+
 #: src/components/routes/system.tsx
 msgid "Containers"
 msgstr "Контейнери"
@@ -1725,6 +1733,10 @@ msgid "Triggers when 5 minute load average exceeds a threshold"
 msgstr "Спрацьовує, коли середнє навантаження за 5 хвилин перевищує поріг"
 
 #: src/lib/alerts.ts
+msgid "Triggers when a Docker container's health check reports unhealthy"
+msgstr "Спрацьовує, коли перевірка стану (health check) Docker-контейнера повідомляє про нездоровий стан"
+
+#: src/lib/alerts.ts
 msgid "Triggers when any sensor exceeds a threshold"
 msgstr "Спрацьовує, коли будь-який датчик перевищує поріг"
 
@@ -1761,6 +1773,10 @@ msgstr "Спрацьовує, коли використання будь-яко�
 #: src/components/routes/system/smart-table.tsx
 msgid "Type"
 msgstr "Тип"
+
+#: src/lib/alerts.ts
+msgid "Unhealthy"
+msgstr "Нездоровий"
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Unit file"

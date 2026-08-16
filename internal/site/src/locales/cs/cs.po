@@ -423,6 +423,14 @@ msgstr "Konflikty"
 msgid "Connection is down"
 msgstr "Připojení je nedostupné"
 
+#: src/lib/alerts.ts
+msgid "Container"
+msgstr "Kontejner"
+
+#: src/lib/alerts.ts
+msgid "Container Health"
+msgstr "Zdraví kontejneru"
+
 #: src/components/routes/system.tsx
 msgid "Containers"
 msgstr "Kontejnery"
@@ -1725,6 +1733,10 @@ msgid "Triggers when 5 minute load average exceeds a threshold"
 msgstr "Spustí se, když využití paměti během 5 minut překročí prahovou hodnotu"
 
 #: src/lib/alerts.ts
+msgid "Triggers when a Docker container's health check reports unhealthy"
+msgstr "Spouští se, když kontrola stavu (health check) kontejneru Dockeru nahlásí stav nezdravý"
+
+#: src/lib/alerts.ts
 msgid "Triggers when any sensor exceeds a threshold"
 msgstr "Spustí se, když některý senzor překročí prahovou hodnotu"
 
@@ -1761,6 +1773,10 @@ msgstr "Spustí se, když využití disku překročí prahovou hodnotu"
 #: src/components/routes/system/smart-table.tsx
 msgid "Type"
 msgstr "Typ"
+
+#: src/lib/alerts.ts
+msgid "Unhealthy"
+msgstr "Nezdravý"
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Unit file"
