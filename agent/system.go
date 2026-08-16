@@ -132,9 +132,14 @@ func (a *Agent) getSystemStats(cacheTimeMs uint16) system.Stats {
 	var systemStats system.Stats
 
 	// battery
-	if batteryPercent, batteryState, err := battery.GetBatteryStats(); err == nil {
-		systemStats.Battery[0] = batteryPercent
-		systemStats.Battery[1] = batteryState
+	if batteries, err := battery.GetBatteryStats(); err == nil {
+		systemStats.Batteries = make(map[string]uint8, len(batteries))
+		for _, device := range batteries {
+			systemStats.Batteries[device.Name] = device.Percent
+		}
+		if primary, ok := battery.Primary(batteries); ok {
+			systemStats.Battery = [2]uint8{primary.Percent, primary.State}
+		}
 	}
 
 	// cpu metrics
