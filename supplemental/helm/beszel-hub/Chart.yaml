@@ -4,7 +4,7 @@ home: https://github.com/henrygd/beszel/tree/main/supplemental/helm/beszel-hub
 name: beszel-hub
 appVersion: "0.17.0"
 # Do not touch will be updated during release
-version: 0.1.0
+version: 0.1.1
 sources:
   - https://github.com/henrygd/beszel/tree/main/supplemental/helm/beszel-hub
   - https://www.beszel.dev/
