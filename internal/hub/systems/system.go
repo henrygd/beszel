@@ -348,6 +348,9 @@ func (sys *System) getRecord(app core.App) (*core.Record, error) {
 	record, err := app.FindRecordById("systems", sys.Id)
 	if err != nil || record == nil {
 		_ = sys.manager.RemoveSystem(sys.Id)
+		if err == nil {
+			err = fmt.Errorf("system record %s not found", sys.Id)
+		}
 		return nil, err
 	}
 	return record, nil
@@ -377,9 +380,15 @@ func (sys *System) HasUser(app core.App, user *core.Record) bool {
 // setDown marks a system as down in the database.
 // It takes the original error that caused the system to go down and returns any error
 // encountered during the process of updating the system status.
+// It is a no-op if the system's context has been cancelled.
 func (sys *System) setDown(originalError error) error {
 	if sys.Status == down || sys.Status == paused {
 		return nil
+	}
+	// the updater can race shutdown, and the app may already be disposed by the
+	// time we get here, so don't touch the database once the context is cancelled
+	if sys.ctx != nil && sys.ctx.Err() != nil {
+		return sys.ctx.Err()
 	}
 	record, err := sys.getRecord(sys.manager.hub)
 	if err != nil {
