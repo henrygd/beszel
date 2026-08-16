@@ -4,7 +4,7 @@ home: https://github.com/henrygd/beszel/tree/main/supplemental/helm/beszel-agent
 name: beszel-agent
 appVersion: "0.17.0"
 # Do not touch will be updated during release
-version: 0.1.0
+version: 0.1.1
 sources:
   - https://github.com/henrygd/beszel/tree/main/supplemental/helm/beszel-agent
   - https://www.beszel.dev/
