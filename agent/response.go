@@ -21,6 +21,9 @@ func newAgentResponse(data any, requestID *uint32) common.AgentResponse {
 		response.String = &v
 	case map[string]smart.SmartData:
 		response.SmartData = v
+	case smart.SmartDataResponse:
+		response.SmartData = v.Data
+		response.SmartComplete = v.Complete
 	case systemd.ServiceDetails:
 		response.ServiceInfo = v
 	default:

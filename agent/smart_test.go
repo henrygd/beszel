@@ -392,6 +392,81 @@ func TestSmartctlArgs(t *testing.T) {
 	)
 }
 
+// TestSmartctlArgsExplicitType verifies that an explicit SMART_DEVICES type hint
+// is always passed to smartctl via -d, while a scan-detected scsi/ata type is
+// still left off so smartctl can auto-detect it (see issue #1345).
+func TestSmartctlArgsExplicitType(t *testing.T) {
+	sm := &SmartManager{}
+
+	// Scan-detected scsi: -d is intentionally omitted.
+	scanScsi := &DeviceInfo{Name: "/dev/sda", Type: "scsi"}
+	assert.Equal(t,
+		[]string{"-a", "--json=c", "/dev/sda"},
+		sm.smartctlArgs(scanScsi, false),
+	)
+
+	// Explicit scsi from SMART_DEVICES: -d scsi must be passed.
+	explicitScsi := &DeviceInfo{Name: "/dev/sda", Type: "scsi", explicitType: true}
+	assert.Equal(t,
+		[]string{"-d", "scsi", "-a", "--json=c", "/dev/sda"},
+		sm.smartctlArgs(explicitScsi, false),
+	)
+
+	// Explicit ata from SMART_DEVICES: -d ata must be passed (devstat still added).
+	explicitAta := &DeviceInfo{Name: "/dev/sdb", Type: "ata", explicitType: true}
+	assert.Equal(t,
+		[]string{"-d", "ata", "-a", "--json=c", "-l", "devstat", "/dev/sdb"},
+		sm.smartctlArgs(explicitAta, false),
+	)
+}
+
+// TestSmartDevicesExplicitTypeFlowsToSmartctlArgs is a regression test for
+// issue #2072: an explicit SMART_DEVICES type (e.g. /dev/sda:scsi) must win over
+// a wrong scan-detected type (sat) and be handed to smartctl as -d scsi.
+func TestSmartDevicesExplicitTypeFlowsToSmartctlArgs(t *testing.T) {
+	sm := &SmartManager{}
+
+	configured, err := sm.parseConfiguredDevices("/dev/sda:scsi")
+	require.NoError(t, err)
+	require.Len(t, configured, 1)
+	assert.True(t, configured[0].explicitType)
+
+	// smartctl --scan misreports this USB drive as sat, which fails on it.
+	scanned := []*DeviceInfo{
+		{Name: "/dev/sda", Type: "sat", Protocol: "ATA"},
+	}
+
+	merged := mergeDeviceLists(nil, scanned, configured)
+	require.Len(t, merged, 1)
+
+	device := merged[0]
+	assert.Equal(t, "scsi", device.Type, "configured type should win over scan-detected sat")
+	assert.True(t, device.explicitType, "explicit hint must survive the merge")
+
+	assert.Equal(t,
+		[]string{"-d", "scsi", "-a", "--json=c", "/dev/sda"},
+		sm.smartctlArgs(device, false),
+		"explicit scsi type must be passed to smartctl, not dropped",
+	)
+}
+
+// TestMergeDeviceListsPreservesExplicitTypeAcrossRescan ensures a verified,
+// explicitly-typed device keeps its explicit flag when a later scan re-reports
+// it with a different auto-detected type.
+func TestMergeDeviceListsPreservesExplicitTypeAcrossRescan(t *testing.T) {
+	existing := []*DeviceInfo{
+		{Name: "/dev/sda", Type: "scsi", parserType: "scsi", typeVerified: true, explicitType: true},
+	}
+	scanned := []*DeviceInfo{
+		{Name: "/dev/sda", Type: "sat"},
+	}
+
+	merged := mergeDeviceLists(existing, scanned, nil)
+	require.Len(t, merged, 1)
+	assert.Equal(t, "scsi", merged[0].Type)
+	assert.True(t, merged[0].explicitType, "explicit type flag should survive a rescan")
+}
+
 func TestResolveRefreshError(t *testing.T) {
 	scanErr := errors.New("scan failed")
 	collectErr := errors.New("collect failed")

@@ -169,21 +169,11 @@ func (a *Agent) getSystemStats(cacheTimeMs uint16) system.Stats {
 
 	// memory
 	if v, err := mem.VirtualMemory(); err == nil {
+		used, cacheBuff, swapUsed := calculateHostMemoryUsage(v, a.memCalc == "htop")
 		// swap
 		systemStats.Swap = utils.BytesToGigabytes(v.SwapTotal)
-		systemStats.SwapUsed = utils.BytesToGigabytes(v.SwapTotal - v.SwapFree - v.SwapCached)
-		// cache + buffers value for default mem calculation
-		// note: gopsutil automatically adds SReclaimable to v.Cached
-		cacheBuff := v.Cached + v.Buffers - v.Shared
-		if cacheBuff <= 0 {
-			cacheBuff = max(v.Total-v.Free-v.Used, 0)
-		}
-		// htop memory calculation overrides (likely outdated as of mid 2025)
-		if a.memCalc == "htop" {
-			// cacheBuff = v.Cached + v.Buffers - v.Shared
-			v.Used = v.Total - (v.Free + cacheBuff)
-			v.UsedPercent = float64(v.Used) / float64(v.Total) * 100.0
-		}
+		systemStats.SwapUsed = utils.BytesToGigabytes(swapUsed)
+		v.Used = used
 		// if a.memCalc == "legacy" {
 		// 	v.Used = v.Total - v.Free - v.Buffers - v.Cached
 		// 	cacheBuff = v.Total - v.Free - v.Used
@@ -193,9 +183,13 @@ func (a *Agent) getSystemStats(cacheTimeMs uint16) system.Stats {
 		if a.zfs {
 			if arcSize, _ := zfs.ARCSize(); arcSize > 0 && arcSize < v.Used {
 				v.Used = v.Used - arcSize
-				v.UsedPercent = float64(v.Used) / float64(v.Total) * 100.0
 				systemStats.MemZfsArc = utils.BytesToGigabytes(arcSize)
 			}
+		}
+		if v.Total > 0 {
+			v.UsedPercent = float64(v.Used) / float64(v.Total) * 100.0
+		} else {
+			v.UsedPercent = 0
 		}
 		systemStats.Mem = utils.BytesToGigabytes(v.Total)
 		systemStats.MemBuffCache = utils.BytesToGigabytes(cacheBuff)
@@ -215,6 +209,9 @@ func (a *Agent) getSystemStats(cacheTimeMs uint16) system.Stats {
 	// temperatures
 	// TODO: maybe refactor to methods on systemStats
 	a.updateTemperatures(&systemStats)
+
+	// fan speeds (Linux-only; sysfs hwmon)
+	a.updateFans(&systemStats)
 
 	// GPU data
 	if a.gpuManager != nil {
@@ -262,6 +259,38 @@ func (a *Agent) getSystemStats(cacheTimeMs uint16) system.Stats {
 	a.systemInfo.Threads = a.systemDetails.Threads
 
 	return systemStats
+}
+
+// calculateHostMemoryUsage derives counters defensively because /proc/meminfo may
+// change while gopsutil reads it. Invalid unsigned subtractions saturate at zero.
+func calculateHostMemoryUsage(v *mem.VirtualMemoryStat, htop bool) (used, cacheBuff, swapUsed uint64) {
+	used = v.Used
+	if used > v.Total {
+		used = saturatingSub(v.Total, v.Available)
+	}
+
+	// gopsutil automatically adds SReclaimable to Cached.
+	cacheBuff = min(v.Cached, v.Total)
+	cacheBuff += min(v.Buffers, v.Total-cacheBuff)
+	cacheBuff = saturatingSub(cacheBuff, min(v.Shared, v.Total))
+	if v.Cached == 0 && v.Buffers == 0 {
+		cacheBuff = saturatingSub(v.Total, v.Free, used)
+	}
+	if htop {
+		used = saturatingSub(v.Total, v.Free, cacheBuff)
+	}
+	return used, cacheBuff, saturatingSub(v.SwapTotal, v.SwapFree, v.SwapCached)
+}
+
+// saturatingSub subtracts each value, returning zero on underflow.
+func saturatingSub(value uint64, subtrahends ...uint64) uint64 {
+	for _, subtrahend := range subtrahends {
+		if subtrahend > value {
+			return 0
+		}
+		value -= subtrahend
+	}
+	return value
 }
 
 // getOsPrettyName attempts to get the pretty OS name from /etc/os-release on Linux systems

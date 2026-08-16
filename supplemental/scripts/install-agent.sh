@@ -5,7 +5,7 @@ is_alpine() {
 }
 
 is_openwrt() {
-  grep -qi "OpenWrt" /etc/os-release
+  [ -f /etc/os-release ] && grep -qi "OpenWrt" /etc/os-release
 }
 
 is_freebsd() {
@@ -14,6 +14,10 @@ is_freebsd() {
 
 is_opnsense() {
   [ -f /usr/local/sbin/opnsense-version ] || [ -f /usr/local/etc/opnsense-version ] || [ -f /etc/opnsense-release ]
+}
+
+is_pfsense() {
+  [ -f /etc/rc.bootup ] && grep -qi "pfSense" /etc/rc.bootup
 }
 
 is_glibc() {
@@ -180,6 +184,21 @@ beszel_agent_upgrade()
 }
 
 run_rc_command "$1"
+EOF
+}
+
+# Generate the boot hook used by the firewall appliances, neither of which
+# starts an enabled rc.d service at boot. The script body is identical for
+# both; only the install path differs (see the boot hook installation below).
+# The running-check guards against a double start, since pfSense may also run
+# the hook again during network events.
+generate_appliance_boot_script() {
+  cat <<'EOF'
+#!/bin/sh
+
+if ! /usr/sbin/service beszel-agent status >/dev/null 2>&1; then
+    /usr/sbin/service beszel-agent onestart
+fi
 EOF
 }
 
@@ -437,14 +456,19 @@ if [ "$UNINSTALL" = true ]; then
 
     echo "Removing the FreeBSD service files..."
     rm -f /usr/local/etc/rc.d/beszel-agent
+    rm -f /usr/local/etc/rc.d/beszel-agent-start.sh
+
+    # Remove the OPNsense boot hook if it exists
+    rm -f /usr/local/etc/rc.syshook.d/start/99-beszel-agent
 
     # Remove the daily update cron job if it exists
     echo "Removing the daily update cron job..."
     rm -f /etc/cron.d/beszel-agent
 
-    # Remove log files
+    # Remove log files. The rc script derives its logfile from $name
+    # (beszel_agent), not from the script filename (beszel-agent).
     echo "Removing log files..."
-    rm -f /var/log/beszel-agent.log
+    rm -f /var/log/beszel_agent.log
 
     # Remove env file and directories
     echo "Removing environment configuration file..."
@@ -595,8 +619,8 @@ elif is_openwrt; then
   fi
 
 elif is_freebsd; then
-  if is_opnsense; then
-    echo "OPNsense detected: skipping user creation (using daemon user instead)"
+  if is_opnsense || is_pfsense; then
+    echo "Firewall appliance detected: skipping user creation (using daemon user instead)"
     AGENT_USER="daemon"
   else
     if ! id -u beszel >/dev/null 2>&1; then
@@ -716,7 +740,7 @@ if [ -f "$BIN_PATH" ]; then
 fi
 
 mv beszel-agent "$BIN_PATH"
-chown beszel:beszel "$BIN_PATH"
+chown "${AGENT_USER}:${AGENT_USER}" "$BIN_PATH"
 chmod 755 "$BIN_PATH"
 
 # Set SELinux context if needed
@@ -779,7 +803,7 @@ EOF
 
   # Create log files with proper permissions
   touch /var/log/beszel-agent.log /var/log/beszel-agent.err
-  chown beszel:beszel /var/log/beszel-agent.log /var/log/beszel-agent.err
+  chown "${AGENT_USER}:${AGENT_USER}" /var/log/beszel-agent.log /var/log/beszel-agent.err
 
   # Start the service
   rc-service beszel-agent restart
@@ -908,11 +932,11 @@ KEY="$KEY"
 TOKEN=$TOKEN
 HUB_URL=$HUB_URL
 EOF
-    chmod 640 "$AGENT_DIR/env"
-    chown "root:${AGENT_USER}" "$AGENT_DIR/env"
   else
     echo "FreeBSD environment file already exists. Skipping creation."
   fi
+  chmod 640 "$AGENT_DIR/env"
+  chown "root:${AGENT_USER}" "$AGENT_DIR/env"
   
   # Create the rc service file if it doesn't exist
   if [ ! -f /usr/local/etc/rc.d/beszel-agent ]; then
@@ -924,10 +948,43 @@ EOF
     echo "FreeBSD rc service file already exists. Skipping creation."
   fi
 
+  if is_pfsense; then
+    echo "Creating pfSense boot script..."
+    generate_appliance_boot_script > /usr/local/etc/rc.d/beszel-agent-start.sh
+    chmod 755 /usr/local/etc/rc.d/beszel-agent-start.sh
+  elif is_opnsense; then
+    # OPNsense does not execute /usr/local/etc/rc.d/*.sh at boot, so the
+    # pfSense hook above would never run. Install the same script as a syshook.
+    echo "Creating OPNsense boot script..."
+    mkdir -p /usr/local/etc/rc.syshook.d/start
+    generate_appliance_boot_script > /usr/local/etc/rc.syshook.d/start/99-beszel-agent
+    chmod 755 /usr/local/etc/rc.syshook.d/start/99-beszel-agent
+  fi
+
   # Enable and start the service
   echo "Enabling and starting the agent service..."
   sysrc beszel_agent_enable="YES"
   sysrc beszel_agent_user="${AGENT_USER}"
+
+  # sysrc writes to /etc/rc.conf, but rc.subr sources /etc/rc.conf.d/beszel_agent
+  # afterwards, so a stale or third-party file there silently overrides the value
+  # we just set. The service then refuses to start, and rc.subr's own error points
+  # at /etc/rc.conf, which looks correct. Verify the flag actually took effect.
+  # An empty value means this rc.subr does not support "rcvar"; skip the check.
+  rcvar_value=$(service beszel-agent rcvar 2>/dev/null | sed -n 's/^beszel_agent_enable="\(.*\)"$/\1/p')
+  if [ -n "$rcvar_value" ]; then
+    case "$rcvar_value" in
+    [Yy][Ee][Ss] | [Tt][Rr][Uu][Ee] | [Oo][Nn] | 1) ;;
+    *)
+      echo "Error: beszel_agent_enable resolves to \"${rcvar_value}\" even though it was just set to YES in /etc/rc.conf."
+      echo "Another rc configuration file is overriding it. The most likely cause is a leftover:"
+      echo "  /etc/rc.conf.d/beszel_agent"
+      echo "Remove or correct that file, then re-run this installer."
+      exit 1
+      ;;
+    esac
+  fi
+
   service beszel-agent restart
   
   # Check if service started successfully
