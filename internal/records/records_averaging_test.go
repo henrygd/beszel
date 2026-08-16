@@ -291,6 +291,28 @@ func TestAverageSystemStatsSlice_Temperatures(t *testing.T) {
 	assert.Equal(t, 80.0, result.Temperatures["gpu"])
 }
 
+// Tests that fan speeds are averaged and records without fan data are excluded.
+func TestAverageSystemStatsSlice_Fans(t *testing.T) {
+	input := []system.Stats{
+		{
+			Fans: map[string]uint16{"cpu": 60_000, "case": 1_000},
+		},
+		{
+			Fans: map[string]uint16{"cpu": 50_000, "case": 2_000},
+		},
+		{
+			// No fan data - should not affect fan averaging
+			Cpu: 30.0,
+		},
+	}
+
+	result := records.AverageSystemStatsSlice(input)
+
+	require.NotNil(t, result.Fans)
+	assert.Equal(t, uint16(55_000), result.Fans["cpu"])
+	assert.Equal(t, uint16(1_500), result.Fans["case"])
+}
+
 func TestAverageSystemStatsSlice_NetworkInterfaces(t *testing.T) {
 	input := []system.Stats{
 		{
