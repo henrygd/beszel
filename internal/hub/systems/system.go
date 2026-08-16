@@ -541,11 +541,16 @@ func (sys *System) FetchSystemdInfoFromAgent(serviceName string) (systemd.Servic
 	return result, err
 }
 
-// FetchSmartDataFromAgent fetches SMART data from the agent
-func (sys *System) FetchSmartDataFromAgent() (map[string]smart.SmartData, error) {
+// FetchSmartDataFromAgent fetches SMART data from the agent.
+func (sys *System) FetchSmartDataFromAgent() (smart.SmartDataResponse, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
 	defer cancel()
-	var result map[string]smart.SmartData
+	if sys.agentVersion.LT(beszel.MinVersionAgentResponse) {
+		var data map[string]smart.SmartData
+		err := sys.request(ctx, common.GetSmartData, nil, &data)
+		return smart.SmartDataResponse{Data: data}, err
+	}
+	var result smart.SmartDataResponse
 	err := sys.request(ctx, common.GetSmartData, nil, &result)
 	return result, err
 }

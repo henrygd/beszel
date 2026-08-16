@@ -1921,12 +1921,36 @@ func TestConvertContainerPortsToString(t *testing.T) {
 			expected: "80, 443",
 		},
 		{
+			name: "ipv4 and ipv6 wildcard bindings are deduplicated",
+			ports: []port{
+				{PublicPort: 80, IP: "0.0.0.0"},
+				{PublicPort: 80, IP: "::"},
+			},
+			expected: "80",
+		},
+		{
 			name: "multiple ports with different IPs",
 			ports: []port{
 				{PublicPort: 80, IP: "0.0.0.0"},
 				{PublicPort: 443, IP: "1.2.3.4"},
 			},
 			expected: "80, 1.2.3.4:443",
+		},
+		{
+			name: "same port bound to multiple IPs shows all entries",
+			ports: []port{
+				{PublicPort: 65533, IP: "172.16.151.72"},
+				{PublicPort: 65533, IP: "172.16.156.25"},
+			},
+			expected: "172.16.151.72:65533, 172.16.156.25:65533",
+		},
+		{
+			name: "same port bound to IPv4 and IPv6",
+			ports: []port{
+				{PublicPort: 65534, IP: "172.16.151.72"},
+				{PublicPort: 65534, IP: "fd04:38e2:98c6:3fd::72"},
+			},
+			expected: "172.16.151.72:65534, fd04:38e2:98c6:3fd::72:65534",
 		},
 		{
 			name: "ports slice is nilled after call",

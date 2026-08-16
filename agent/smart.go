@@ -70,8 +70,9 @@ type deviceKey struct {
 
 var errNoValidSmartData = fmt.Errorf("no valid SMART data found") // Error for missing data
 
-// Refresh updates SMART data for all known devices
-func (sm *SmartManager) Refresh(forceScan bool) error {
+// Refresh updates SMART data for all known devices and reports whether every
+// discovered device was collected successfully.
+func (sm *SmartManager) Refresh(forceScan bool) (bool, error) {
 	sm.refreshMutex.Lock()
 	defer sm.refreshMutex.Unlock()
 
@@ -92,7 +93,7 @@ func (sm *SmartManager) Refresh(forceScan bool) error {
 		}
 	}
 
-	return sm.resolveRefreshError(scanErr, collectErr)
+	return scanErr == nil && collectErr == nil, sm.resolveRefreshError(scanErr, collectErr)
 }
 
 // devicesSnapshot returns a copy of the current device slice to avoid iterating
