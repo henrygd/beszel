@@ -33,6 +33,7 @@ type Stats struct {
 	MaxNetworkSent float64             `json:"nsm,omitempty" cbor:"-"`
 	MaxNetworkRecv float64             `json:"nrm,omitempty" cbor:"-"`
 	Temperatures   map[string]float64  `json:"t,omitempty" cbor:"20,keyasint,omitempty"`
+	Fans           map[string]uint16   `json:"f,omitempty" cbor:"36,keyasint,omitempty"`
 	ExtraFs        map[string]*FsStats `json:"efs,omitempty" cbor:"21,keyasint,omitempty"`
 	GPUData        map[string]GPUData  `json:"g,omitempty" cbor:"22,keyasint,omitempty"`
 	// LoadAvg1       float64             `json:"l1,omitempty" cbor:"23,keyasint,omitempty"`
