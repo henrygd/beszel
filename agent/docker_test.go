@@ -804,6 +804,24 @@ func TestGetDockerStatsRetriesVersionCheckUntilSuccess(t *testing.T) {
 	assert.Equal(t, 2, requestCounts["/version"])
 }
 
+// A failed decode must not break later decodes. Previously the reused json.Decoder
+// stayed desynced after one truncated response, breaking decode until restart.
+func TestDecodeRecoversFromError(t *testing.T) {
+	dm := &dockerManager{}
+
+	// truncated JSON: body reads fine, decode fails
+	var bad []container.ApiInfo
+	err := dm.decode(&http.Response{Body: io.NopCloser(strings.NewReader(`[{"Id":"abc`))}, &bad)
+	require.Error(t, err)
+
+	// the next decode must still succeed
+	var good []container.ApiInfo
+	err = dm.decode(&http.Response{Body: io.NopCloser(strings.NewReader(`[{"Id":"abcdef012345","Names":["/ok"]}]`))}, &good)
+	require.NoError(t, err)
+	require.Len(t, good, 1)
+	assert.Equal(t, "abcdef012345", good[0].Id)
+}
+
 func TestCycleCpuDeltas(t *testing.T) {
 	dm := &dockerManager{
 		lastCpuContainer: map[uint16]map[string]uint64{
@@ -1001,6 +1019,44 @@ func TestCpuPercentageCalculationWithRealData(t *testing.T) {
 	actualPct := apiStats2.CalculateCpuPercentLinux(apiStats1.CPUStats.CPUUsage.TotalUsage, apiStats1.CPUStats.SystemUsage)
 
 	assert.InDelta(t, expectedPct, actualPct, 0.01)
+}
+
+func TestCpuPercentageHandlesCounterRollback(t *testing.T) {
+	// If a stats response is processed after a newer one for the same container,
+	// or an accounting counter resets, the current total can be lower than the
+	// stored previous value. Unsigned subtraction wraps to ~2^64 instead of
+	// going negative, so the percentage explodes, validateCpuPercentage rejects
+	// the sample, and the whole collection is discarded - network stats too.
+	stats := &container.ApiStats{
+		CPUStats: container.CPUStats{
+			CPUUsage:    container.CPUUsage{TotalUsage: 1_000_000},
+			SystemUsage: 20_000_000,
+		},
+	}
+
+	// Container counter went backwards.
+	assert.Equal(t, 0.0, stats.CalculateCpuPercentLinux(2_000_000, 10_000_000))
+	// System counter went backwards.
+	assert.Equal(t, 0.0, stats.CalculateCpuPercentLinux(500_000, 30_000_000))
+	// A normal forward sample is unaffected: 500000 / 10000000 * 100 = 5%.
+	assert.InDelta(t, 5.0, stats.CalculateCpuPercentLinux(500_000, 10_000_000), 0.001)
+}
+
+func TestCpuPercentageWindowsHandlesCounterRollback(t *testing.T) {
+	now := time.Now()
+	stats := &container.ApiStats{
+		Read:     now,
+		NumProcs: 4,
+		CPUStats: container.CPUStats{
+			CPUUsage: container.CPUUsage{TotalUsage: 1_000_000},
+		},
+	}
+	prevRead := now.Add(-time.Second)
+
+	// Container counter went backwards.
+	assert.Equal(t, 0.0, stats.CalculateCpuPercentWindows(2_000_000, prevRead))
+	// A normal forward sample is unaffected.
+	assert.Greater(t, stats.CalculateCpuPercentWindows(500_000, prevRead), 0.0)
 }
 
 func TestNetworkStatsCalculationWithRealData(t *testing.T) {
@@ -1865,12 +1921,36 @@ func TestConvertContainerPortsToString(t *testing.T) {
 			expected: "80, 443",
 		},
 		{
+			name: "ipv4 and ipv6 wildcard bindings are deduplicated",
+			ports: []port{
+				{PublicPort: 80, IP: "0.0.0.0"},
+				{PublicPort: 80, IP: "::"},
+			},
+			expected: "80",
+		},
+		{
 			name: "multiple ports with different IPs",
 			ports: []port{
 				{PublicPort: 80, IP: "0.0.0.0"},
 				{PublicPort: 443, IP: "1.2.3.4"},
 			},
 			expected: "80, 1.2.3.4:443",
+		},
+		{
+			name: "same port bound to multiple IPs shows all entries",
+			ports: []port{
+				{PublicPort: 65533, IP: "172.16.151.72"},
+				{PublicPort: 65533, IP: "172.16.156.25"},
+			},
+			expected: "172.16.151.72:65533, 172.16.156.25:65533",
+		},
+		{
+			name: "same port bound to IPv4 and IPv6",
+			ports: []port{
+				{PublicPort: 65534, IP: "172.16.151.72"},
+				{PublicPort: 65534, IP: "fd04:38e2:98c6:3fd::72"},
+			},
+			expected: "172.16.151.72:65534, fd04:38e2:98c6:3fd::72:65534",
 		},
 		{
 			name: "ports slice is nilled after call",
