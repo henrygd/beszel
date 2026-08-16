@@ -99,3 +99,17 @@ func (am *AlertManager) SetAlertTriggered(alert CachedAlertData, triggered bool)
 func IsInternalURL(rawURL string) (bool, error) {
 	return isInternalURL(rawURL)
 }
+
+// BuildContainerLogExcerpt exposes buildContainerLogExcerpt for testing.
+func BuildContainerLogExcerpt(raw string) string {
+	return buildContainerLogExcerpt(raw)
+}
+
+func (am *AlertManager) GetPendingContainerAlertsCount() int {
+	count := 0
+	am.pendingContainerAlerts.Range(func(key, value any) bool {
+		count++
+		return true
+	})
+	return count
+}
