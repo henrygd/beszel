@@ -126,6 +126,7 @@ type gpuCapabilities struct {
 	hasAmdSysfs     bool
 	hasTegrastats   bool
 	hasIntelGpuTop  bool
+	hasXe           bool
 	hasIntelSysfs   bool
 	hasNvtop        bool
 	hasMacmon       bool
@@ -449,7 +450,8 @@ func (gm *GPUManager) storeSnapshot(id string, gpu *system.GPUData, cacheKey uin
 // It only reports capability presence and does not apply policy decisions.
 func (gm *GPUManager) discoverGpuCapabilities() gpuCapabilities {
 	caps := gpuCapabilities{
-		hasAmdSysfs:   gm.hasAmdSysfs(),
+		hasAmdSysfs: gm.hasAmdSysfs(),
+		hasXe:       gm.hasXe(),
 		hasIntelSysfs: gm.hasIntelSysfs(),
 	}
 	if _, err := exec.LookPath(nvidiaSmiCmd); err == nil {
@@ -719,7 +721,7 @@ func (gm *GPUManager) resolveLegacyCollectorPriority(caps gpuCapabilities) []col
 		priorities = append(priorities, collectorSourceAmdSysfs)
 	}
 
-	if caps.hasIntelGpuTop {
+	if caps.hasIntelGpuTop && !caps.hasXe {
 		priorities = append(priorities, collectorSourceIntelGpuTop)
 	}
 	if caps.hasIntelSysfs {
