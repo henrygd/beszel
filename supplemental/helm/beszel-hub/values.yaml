@@ -3,7 +3,7 @@
 # Declare variables to be passed into your templates.
 
 # To add the Helm repository:
-# helm repo add beszel https://henrygd.github.io/beszel-kubernetes
+# helm repo add beszel https://henrygd.github.io/beszel
 # helm repo update
 
 # -- The number of replicas

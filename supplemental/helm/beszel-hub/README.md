@@ -17,7 +17,7 @@ This Helm chart simplifies the deployment of Beszel Hub in Kubernetes environmen
 ### 1. Add the Repository
 
 ```bash
-helm repo add beszel https://henrygd.github.io/beszel-kubernetes
+helm repo add beszel https://henrygd.github.io/beszel
 helm repo update
 ```
 

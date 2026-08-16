@@ -5,6 +5,7 @@ on:
 
 permissions:
   contents: write
+  issues: write
   pull-requests: write
 
 env:
@@ -119,5 +120,5 @@ jobs:
           cp .cr-release-packages/*.tgz docs/ || true
 
           # Generate index.yaml for GitHub Pages
-          args=(-o "$owner" -r "$repo" -c "https://cloudwithdan.github.io/beszel" --push -t "${{ secrets.CR_TOKEN }}" --index-path docs/index.yaml)
+          args=(-o "$owner" -r "$repo" -c "https://henrygd.github.io/beszel" --push -t "${{ secrets.CR_TOKEN }}" --index-path docs/index.yaml)
           .tmp/cr index "${args[@]}"

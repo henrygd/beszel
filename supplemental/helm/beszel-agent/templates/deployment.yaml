@@ -36,6 +36,9 @@ spec:
       {{- if .Values.hostNetwork }}
       hostNetwork: {{ .Values.hostNetwork }}
       {{- end }}
+      {{- if .Values.gpuRuntime }}
+      runtimeClassName: {{ .Values.gpuRuntime }}
+      {{- end }}
       containers:
         - name: {{ .Chart.Name }}
           {{- with .Values.securityContext }}
@@ -44,9 +47,6 @@ spec:
           {{- end }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
-          {{- if .Values.gpuRuntime }}
-          runtimeClassName: {{ .Values.gpuRuntime }}
-          {{- end }}
           ports:
             - name: agent
               containerPort: {{ .Values.service.port }}

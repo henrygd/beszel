@@ -44,7 +44,7 @@ In Kubernetes environments, the Beszel agent monitors **node-level metrics**:
 ### 1. Add the Helm Repository
 
 ```bash
-helm repo add beszel https://henrygd.github.io/beszel-kubernetes
+helm repo add beszel https://henrygd.github.io/beszel
 helm repo update
 ```
 
