@@ -135,21 +135,33 @@ func (p *updater) update() (updated bool, err error) {
 		return false, err
 	}
 
-	releaseDir := filepath.Join(p.config.DataDir, ".beszel_update")
+	if err := os.MkdirAll(p.config.DataDir, 0755); err != nil {
+		return false, fmt.Errorf("failed to create update data directory: %w", err)
+	}
+	releaseDir, err := os.MkdirTemp(p.config.DataDir, ".beszel_update-")
+	if err != nil {
+		return false, fmt.Errorf("failed to create update directory: %w", err)
+	}
 	defer os.RemoveAll(releaseDir)
 
 	ColorPrintf(ColorYellow, "Downloading %s...", asset.Name)
 
 	// download the release asset
-	assetPath := filepath.Join(releaseDir, asset.Name)
+	assetPath, err := archivePath(releaseDir, asset.Name)
+	if err != nil {
+		return false, err
+	}
 	if err := downloadFile(p.config.Context, p.config.HttpClient, asset.DownloadUrl, assetPath, p.config.UseMirror); err != nil {
+		return false, err
+	}
+	ColorPrint(ColorYellow, "Verifying checksum...")
+	if err := verifyAssetChecksum(assetPath, asset.Digest); err != nil {
 		return false, err
 	}
 
 	ColorPrintf(ColorYellow, "Extracting %s...", asset.Name)
 
-	extractDir := filepath.Join(releaseDir, "extracted_"+asset.Name)
-	defer os.RemoveAll(extractDir)
+	extractDir := filepath.Join(releaseDir, "extracted")
 
 	// Extract the archive (automatically detects format)
 	if err := extract(assetPath, extractDir); err != nil {
