@@ -2,6 +2,11 @@ on:
   push:
     branches:
       - main
+    paths:
+      - ".github/workflows/release-please.yml"
+      - "release-please-config.json"
+      - ".release-please-manifest.json"
+      - "supplemental/helm/**"
 
 permissions:
   contents: write
@@ -61,6 +66,7 @@ jobs:
     if: ${{ needs.release.outputs.items_to_publish != '' && toJson(fromJson(needs.release.outputs.items_to_publish)) != '[]' }}
     strategy:
       fail-fast: false
+      max-parallel: 1
       matrix:
         path: ${{ fromJSON(needs.release.outputs.items_to_publish) }}
 
@@ -101,14 +107,10 @@ jobs:
           .tmp/cr package ${{ matrix.path }}
           ls -la .cr-release-packages/
 
-      - name: Upload binaries to release
-        uses: svenstaro/upload-release-action@v2
-        with:
-          repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: .cr-release-packages/*.tgz
-          file_glob: true
-          overwrite: true
-          tag: ${{ env.TAG }}
+      - name: Upload chart package to draft release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh release upload "$TAG" .cr-release-packages/*.tgz --clobber
 
       - name: Update index
         run: |
@@ -122,3 +124,15 @@ jobs:
           # Generate index.yaml for GitHub Pages
           args=(-o "$owner" -r "$repo" -c "https://henrygd.github.io/beszel" --push -t "${{ secrets.CR_TOKEN }}" --index-path docs/index.yaml)
           .tmp/cr index "${args[@]}"
+
+      - name: Publish chart release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          CHART_PATH: ${{ matrix.path }}
+        run: |
+          chart_name="${CHART_PATH##*/}"
+          release_id=$(gh api "repos/${GITHUB_REPOSITORY}/releases/tags/${TAG}" --jq .id)
+          gh api --method PATCH "repos/${GITHUB_REPOSITORY}/releases/${release_id}" \
+            -f "name=Helm chart: ${chart_name} v${VERSION}" \
+            -F draft=false \
+            -f make_latest=false

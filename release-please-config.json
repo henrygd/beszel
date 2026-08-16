@@ -8,7 +8,8 @@
       "changelog-path": "CHANGELOG.md",
       "bump-minor-pre-major": true,
       "bump-patch-for-minor-pre-major": true,
-      "draft": false,
+      "draft": true,
+      "force-tag-creation": true,
       "prerelease": false
     },
     "supplemental/helm/beszel-hub": {
@@ -17,7 +18,8 @@
       "changelog-path": "CHANGELOG.md",
       "bump-minor-pre-major": true,
       "bump-patch-for-minor-pre-major": true,
-      "draft": false,
+      "draft": true,
+      "force-tag-creation": true,
       "prerelease": false
     }
   }
