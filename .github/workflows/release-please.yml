@@ -18,6 +18,10 @@ env:
 
 name: helm-release
 
+concurrency:
+  group: helm-release
+  cancel-in-progress: false
+
 jobs:
   release:
     name: Release
@@ -73,6 +77,7 @@ jobs:
     env:
       TAG: ${{ fromJson(needs.release.outputs.releases)[format('{0}--tag_name', matrix.path)] }}
       VERSION: ${{ fromJson(needs.release.outputs.releases)[format('{0}--version', matrix.path)] }}
+      RELEASE_ID: ${{ fromJson(needs.release.outputs.releases)[format('{0}--id', matrix.path)] }}
 
     steps:
       - name: Debug
@@ -112,27 +117,25 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: gh release upload "$TAG" .cr-release-packages/*.tgz --clobber
 
-      - name: Update index
-        run: |
-          owner=$(cut -d '/' -f 1 <<< "$GITHUB_REPOSITORY")
-          repo=$(cut -d '/' -f 2 <<< "$GITHUB_REPOSITORY")
-
-          # Create docs directory and copy chart
-          mkdir -p docs
-          cp .cr-release-packages/*.tgz docs/ || true
-
-          # Generate index.yaml for GitHub Pages
-          args=(-o "$owner" -r "$repo" -c "https://henrygd.github.io/beszel" --push -t "${{ secrets.CR_TOKEN }}" --index-path docs/index.yaml)
-          .tmp/cr index "${args[@]}"
-
       - name: Publish chart release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           CHART_PATH: ${{ matrix.path }}
         run: |
           chart_name="${CHART_PATH##*/}"
-          release_id=$(gh api "repos/${GITHUB_REPOSITORY}/releases/tags/${TAG}" --jq .id)
-          gh api --method PATCH "repos/${GITHUB_REPOSITORY}/releases/${release_id}" \
+          gh api --method PATCH "repos/${GITHUB_REPOSITORY}/releases/${RELEASE_ID}" \
             -f "name=Helm chart: ${chart_name} v${VERSION}" \
             -F draft=false \
             -f make_latest=false
+
+      - name: Update index
+        run: |
+          owner=$(cut -d '/' -f 1 <<< "$GITHUB_REPOSITORY")
+          repo=$(cut -d '/' -f 2 <<< "$GITHUB_REPOSITORY")
+
+          # Create the local output directory for the generated index
+          mkdir -p docs
+
+          # Generate index.yaml for GitHub Pages
+          args=(-o "$owner" -r "$repo" --push -t "${{ secrets.CR_TOKEN }}" --index-path docs/index.yaml --release-name-template '{{ .Name }}-v{{ .Version }}')
+          .tmp/cr index "${args[@]}"
