@@ -4,7 +4,7 @@ home: https://github.com/henrygd/beszel/tree/main/supplemental/helm/beszel-hub
 name: beszel-hub
 appVersion: "0.17.0"
 # Managed automatically by Release Please; do not edit manually.
-version: 0.1.2
+version: 0.1.3
 sources:
   - https://github.com/henrygd/beszel/tree/main/supplemental/helm/beszel-hub
   - https://www.beszel.dev/

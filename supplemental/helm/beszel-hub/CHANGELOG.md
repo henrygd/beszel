@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.3](https://github.com/henrygd/beszel/compare/beszel-hub-v0.1.2...beszel-hub-v0.1.3) (2026-08-17)
+
+
+### Bug Fixes
+
+* **helm:** publish and index chart releases reliably, maybe ([55054a7](https://github.com/henrygd/beszel/commit/55054a75aba20bc2dd4ffd1c92daaa13749d7dd7))
+
 ## [0.1.2](https://github.com/henrygd/beszel/compare/beszel-hub-v0.1.1...beszel-hub-v0.1.2) (2026-08-16)
 
 
