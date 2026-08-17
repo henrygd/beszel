@@ -103,13 +103,13 @@ func TestGetFreeBSDSensorTemps(t *testing.T) {
 
 	require.NoError(t, err)
 	require.Len(t, temps, 4)
-	assert.Equal(t, "dev.cpu.0.temperature", temps[0].SensorKey)
+	assert.Equal(t, "cpu.0", temps[0].SensorKey)
 	assert.InDelta(t, 50.0, temps[0].Temperature, 0.001)
-	assert.Equal(t, "dev.cpu.1.temperature", temps[1].SensorKey)
+	assert.Equal(t, "cpu.1", temps[1].SensorKey)
 	assert.InDelta(t, 51.1, temps[1].Temperature, 0.001)
-	assert.Equal(t, "hw.acpi.thermal.tz0.temperature", temps[2].SensorKey)
+	assert.Equal(t, "acpi.thermal.tz0", temps[2].SensorKey)
 	assert.InDelta(t, 37.0, temps[2].Temperature, 0.001)
-	assert.Equal(t, "hw.acpi.thermal.tz2.temperature", temps[3].SensorKey)
+	assert.Equal(t, "acpi.thermal.tz2", temps[3].SensorKey)
 	assert.InDelta(t, 38.5, temps[3].Temperature, 0.001)
 }
 
@@ -149,7 +149,7 @@ func TestGetFreeBSDSensorTempsAcpiOnly(t *testing.T) {
 
 	require.NoError(t, err)
 	require.Len(t, temps, 1)
-	assert.Equal(t, "hw.acpi.thermal.tz0.temperature", temps[0].SensorKey)
+	assert.Equal(t, "acpi.thermal.tz0", temps[0].SensorKey)
 	assert.InDelta(t, 35.0, temps[0].Temperature, 0.001)
 }
 

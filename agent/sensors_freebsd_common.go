@@ -22,15 +22,15 @@ func getFreeBSDSensorTemps(ctx context.Context, readSysctl freebsdSysctlUintRead
 		return nil, err
 	}
 	temps := make([]sensors.TemperatureStat, 0, int(cpuCount)+freebsdAcpiThermalZoneCount)
-	for cpu := uint32(0); cpu < cpuCount; cpu++ {
+	for cpu := range cpuCount {
 		select {
 		case <-ctx.Done():
 			return temps, ctx.Err()
 		default:
 		}
 
-		sensorName := fmt.Sprintf("dev.cpu.%d.temperature", cpu)
-		value, err := readSysctl(sensorName)
+		sysctlName := fmt.Sprintf("dev.cpu.%d.temperature", cpu)
+		value, err := readSysctl(sysctlName)
 		if err != nil {
 			continue
 		}
@@ -39,7 +39,7 @@ func getFreeBSDSensorTemps(ctx context.Context, readSysctl freebsdSysctlUintRead
 			continue
 		}
 		temps = append(temps, sensors.TemperatureStat{
-			SensorKey:   sensorName,
+			SensorKey:   fmt.Sprintf("cpu.%d", cpu),
 			Temperature: temp,
 		})
 	}
@@ -51,8 +51,8 @@ func getFreeBSDSensorTemps(ctx context.Context, readSysctl freebsdSysctlUintRead
 		default:
 		}
 
-		sensorName := fmt.Sprintf("hw.acpi.thermal.tz%d.temperature", zone)
-		value, err := readSysctl(sensorName)
+		sysctlName := fmt.Sprintf("hw.acpi.thermal.tz%d.temperature", zone)
+		value, err := readSysctl(sysctlName)
 		if err != nil {
 			continue
 		}
@@ -61,7 +61,7 @@ func getFreeBSDSensorTemps(ctx context.Context, readSysctl freebsdSysctlUintRead
 			continue
 		}
 		temps = append(temps, sensors.TemperatureStat{
-			SensorKey:   sensorName,
+			SensorKey:   fmt.Sprintf("acpi.thermal.tz%d", zone),
 			Temperature: temp,
 		})
 	}
