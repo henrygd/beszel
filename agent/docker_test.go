@@ -1072,7 +1072,7 @@ func TestCalculateCpuPercentPodman(t *testing.T) {
 		expectedPct      float64
 	}{
 		{
-			name:             "normal calculation",
+			name: "normal calculation",
 			// container used 2ms of CPU over 1s with 2 CPUs → 0.1%
 			prevCpuContainer: 1_000_000_000,
 			prevRead:         baseTime,
@@ -1109,7 +1109,16 @@ func TestCalculateCpuPercentPodman(t *testing.T) {
 			expectedPct:      0.0,
 		},
 		{
-			name:             "100% single cpu",
+			name:             "counter rollback returns zero",
+			prevCpuContainer: 2_000_000_000,
+			prevRead:         baseTime,
+			currentUsage:     1_000_000_000,
+			currentRead:      baseTime.Add(time.Second),
+			onlineCPUs:       2,
+			expectedPct:      0.0,
+		},
+		{
+			name: "100% single cpu",
 			// container consumed a full CPU-second over 1s on a 1-CPU host → 100%
 			prevCpuContainer: 1_000_000_000,
 			prevRead:         baseTime,
@@ -1119,7 +1128,7 @@ func TestCalculateCpuPercentPodman(t *testing.T) {
 			expectedPct:      100.0, // 1e9 / (1e9 * 1) * 100
 		},
 		{
-			name:             "high utilization on multi-cpu host",
+			name: "high utilization on multi-cpu host",
 			// container used 800ms on a 4-CPU host over 1s → 20%
 			prevCpuContainer: 10_000_000_000,
 			prevRead:         baseTime,

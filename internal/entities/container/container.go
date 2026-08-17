@@ -84,6 +84,11 @@ func (s *ApiStats) CalculateCpuPercentPodman(prevCpuContainer uint64, prevRead t
 	if prevCpuContainer == 0 || s.CPUStats.OnlineCPUs == 0 {
 		return 0.0
 	}
+	// Treat a reset or out-of-order counter as a new baseline instead of
+	// allowing unsigned subtraction to wrap to an enormous percentage.
+	if s.CPUStats.CPUUsage.TotalUsage < prevCpuContainer {
+		return 0.0
+	}
 	cpuDelta := s.CPUStats.CPUUsage.TotalUsage - prevCpuContainer
 	elapsedNs := uint64(s.Read.Sub(prevRead).Nanoseconds())
 	systemCapacity := elapsedNs * uint64(s.CPUStats.OnlineCPUs)
