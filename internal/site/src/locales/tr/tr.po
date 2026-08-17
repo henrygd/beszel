@@ -1550,6 +1550,11 @@ msgstr "Sistem tarafından kullanılan takas alanı"
 msgid "Swap Usage"
 msgstr "Takas Kullanımı"
 
+#: src/components/mode-toggle.tsx
+#: src/components/mode-toggle.tsx
+msgid "Switch theme"
+msgstr ""
+
 #: src/components/add-system.tsx
 #: src/components/alerts-history-columns.tsx
 #: src/components/containers-table/containers-table-columns.tsx
@@ -1659,8 +1664,8 @@ msgstr "E-posta(lar)a"
 
 #: src/components/mode-toggle.tsx
 #: src/components/mode-toggle.tsx
-msgid "Toggle theme"
-msgstr "Temayı değiştir"
+#~ msgid "Toggle theme"
+#~ msgstr "Temayı değiştir"
 
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
