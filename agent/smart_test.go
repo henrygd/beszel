@@ -24,7 +24,7 @@ func TestParseSmartForScsi(t *testing.T) {
 		SmartDataMap: make(map[string]*smart.SmartData),
 	}
 
-	hasData, exitStatus := sm.parseSmartForScsi(data)
+	hasData, exitStatus := sm.parseSmartForScsi(data, "")
 	if !hasData {
 		t.Fatalf("expected SCSI data to parse successfully")
 	}
@@ -69,7 +69,7 @@ func TestParseSmartForSata(t *testing.T) {
 		SmartDataMap: make(map[string]*smart.SmartData),
 	}
 
-	hasData, exitStatus := sm.parseSmartForSata(data)
+	hasData, exitStatus := sm.parseSmartForSata(data, "")
 	require.True(t, hasData)
 	assert.Equal(t, 64, exitStatus)
 
@@ -86,6 +86,26 @@ func TestParseSmartForSata(t *testing.T) {
 	if assert.NotEmpty(t, deviceData.Attributes) {
 		assertAttrValue(t, deviceData.Attributes, "Temperature_Celsius", 31)
 	}
+}
+
+func TestParseSmartForSataWithConfiguredType(t *testing.T) {
+	fixturePath := filepath.Join("test-data", "smart", "sda.json")
+	data, err := os.ReadFile(fixturePath)
+	require.NoError(t, err)
+
+	sm := &SmartManager{
+		SmartDataMap: make(map[string]*smart.SmartData),
+	}
+
+	hasData, exitStatus := sm.parseSmartForSata(data, "sat+megaraid")
+	require.True(t, hasData)
+	assert.Equal(t, 64, exitStatus)
+
+	deviceData, ok := sm.SmartDataMap["9C40918040082"]
+	require.True(t, ok, "expected smart data entry for serial 9C40918040082")
+
+	assert.Equal(t, "sat+megaraid", deviceData.DiskType,
+		"DiskType should be overridden by configuredType")
 }
 
 func TestParseSmartForSataDeviceStatisticsTemperature(t *testing.T) {
@@ -112,7 +132,7 @@ func TestParseSmartForSataDeviceStatisticsTemperature(t *testing.T) {
 	}`)
 
 	sm := &SmartManager{SmartDataMap: make(map[string]*smart.SmartData)}
-	hasData, exitStatus := sm.parseSmartForSata(jsonPayload)
+	hasData, exitStatus := sm.parseSmartForSata(jsonPayload, "")
 	require.True(t, hasData)
 	assert.Equal(t, 0, exitStatus)
 
@@ -147,7 +167,7 @@ func TestParseSmartForSataAtaDeviceStatistics(t *testing.T) {
 	}`)
 
 	sm := &SmartManager{SmartDataMap: make(map[string]*smart.SmartData)}
-	hasData, exitStatus := sm.parseSmartForSata(jsonPayload)
+	hasData, exitStatus := sm.parseSmartForSata(jsonPayload, "")
 	require.True(t, hasData)
 	assert.Equal(t, 0, exitStatus)
 
@@ -184,7 +204,7 @@ func TestParseSmartForSataNegativeDeviceStatistics(t *testing.T) {
 	}`)
 
 	sm := &SmartManager{SmartDataMap: make(map[string]*smart.SmartData)}
-	hasData, exitStatus := sm.parseSmartForSata(jsonPayload)
+	hasData, exitStatus := sm.parseSmartForSata(jsonPayload, "")
 	require.True(t, hasData)
 	assert.Equal(t, 0, exitStatus)
 
@@ -223,7 +243,7 @@ func TestParseSmartForSataParentheticalRawValue(t *testing.T) {
 
 	sm := &SmartManager{SmartDataMap: make(map[string]*smart.SmartData)}
 
-	hasData, exitStatus := sm.parseSmartForSata(jsonPayload)
+	hasData, exitStatus := sm.parseSmartForSata(jsonPayload, "")
 	require.True(t, hasData)
 	assert.Equal(t, 0, exitStatus)
 
@@ -245,7 +265,7 @@ func TestParseSmartForNvme(t *testing.T) {
 		SmartDataMap: make(map[string]*smart.SmartData),
 	}
 
-	hasData, exitStatus := sm.parseSmartForNvme(data)
+	hasData, exitStatus := sm.parseSmartForNvme(data, "")
 	require.True(t, hasData)
 	assert.Equal(t, 0, exitStatus)
 
@@ -1225,7 +1245,7 @@ func TestParseSmartForNvmeAppleSSD(t *testing.T) {
 		darwinNvmeProvider: fakeProvider,
 	}
 
-	hasData, _ := sm.parseSmartForNvme(data)
+	hasData, _ := sm.parseSmartForNvme(data, "")
 	require.True(t, hasData)
 
 	deviceData, ok := sm.SmartDataMap["0ba0147940253c15"]
@@ -1237,7 +1257,7 @@ func TestParseSmartForNvmeAppleSSD(t *testing.T) {
 	assert.Equal(t, 1, providerCalls, "system_profiler should be called once")
 
 	// Second parse: provider should NOT be called again (cache hit)
-	_, _ = sm.parseSmartForNvme(data)
+	_, _ = sm.parseSmartForNvme(data, "")
 	assert.Equal(t, 1, providerCalls, "system_profiler should not be called again after caching")
 }
 
