@@ -3,7 +3,7 @@ description: Installs beszel-agent in kubernetes
 home: https://github.com/henrygd/beszel/tree/main/supplemental/helm/beszel-agent
 name: beszel-agent
 appVersion: "0.18.7"
-# Managed automatically by Release Please; do not edit manually.
+# The release workflow manages this chart version; do not edit manually.
 version: 0.1.3
 sources:
   - https://github.com/henrygd/beszel/tree/main/supplemental/helm/beszel-agent
