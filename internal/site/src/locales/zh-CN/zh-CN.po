@@ -8,7 +8,7 @@ msgstr ""
 "Language: zh\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2026-05-07 01:51\n"
+"PO-Revision-Date: 2026-08-17 19:22\n"
 "Last-Translator: \n"
 "Language-Team: Chinese Simplified\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
@@ -332,7 +332,7 @@ msgstr "容量"
 
 #: src/components/routes/settings/config-yaml.tsx
 msgid "Caution - potential data loss"
-msgstr "注意 - 数据可能已经丢失"
+msgstr "注意 - 潜在数据已经丢失"
 
 #: src/components/routes/settings/general.tsx
 msgid "Celsius (°C)"
@@ -1817,7 +1817,7 @@ msgstr "上传"
 #: src/components/routes/system/info-bar.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Uptime"
-msgstr "正常运行时间"
+msgstr "运行时间"
 
 #: src/components/routes/system/charts/disk-charts.tsx
 #: src/components/routes/system/charts/gpu-charts.tsx
