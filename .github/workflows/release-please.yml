@@ -139,3 +139,14 @@ jobs:
           # Generate index.yaml for GitHub Pages
           args=(-o "$owner" -r "$repo" --push -t "${{ secrets.CR_TOKEN }}" --index-path docs/index.yaml --release-name-template '{{ .Name }}-v{{ .Version }}')
           .tmp/cr index "${args[@]}"
+
+      - name: Restore application release as latest
+        if: ${{ always() }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          release_id=$(gh api "repos/${GITHUB_REPOSITORY}/releases?per_page=100" \
+            --jq 'map(select(.draft == false and .prerelease == false and (.tag_name | test("^v[0-9]"))))[0].id')
+          test -n "$release_id"
+          gh api --method PATCH "repos/${GITHUB_REPOSITORY}/releases/${release_id}" \
+            -f make_latest=true
