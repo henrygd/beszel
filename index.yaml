@@ -39,6 +39,24 @@ entries:
     version: 0.1.3
   beszel-hub:
   - apiVersion: v1
+    appVersion: 0.18.7
+    created: "2026-08-17T00:29:27.646232876Z"
+    description: Installs beszel-hub in kubernetes
+    digest: 8aef655edb7ad231b9c5d0584456282ed150a19dd8a36842487357186d2da035
+    home: https://github.com/henrygd/beszel/tree/main/supplemental/helm/beszel-hub
+    icon: https://repository-images.githubusercontent.com/825470378/2710c6db-f934-4a8b-a2c4-7a0abbcd2ad6
+    maintainers:
+    - email: nikoloskid@pm.me
+      name: cloudwithdan
+    name: beszel-hub
+    sources:
+    - https://github.com/henrygd/beszel/tree/main/supplemental/helm/beszel-hub
+    - https://www.beszel.dev/
+    - https://github.com/henrygd/beszel
+    urls:
+    - https://github.com/henrygd/beszel/releases/download/beszel-hub-v0.1.4/beszel-hub-0.1.4.tgz
+    version: 0.1.4
+  - apiVersion: v1
     appVersion: 0.17.0
     created: "2026-08-17T00:04:50.514022077Z"
     description: Installs beszel-hub in kubernetes
@@ -56,4 +74,4 @@ entries:
     urls:
     - https://github.com/henrygd/beszel/releases/download/beszel-hub-v0.1.3/beszel-hub-0.1.3.tgz
     version: 0.1.3
-generated: "2026-08-17T00:29:14.324628574Z"
+generated: "2026-08-17T00:29:27.646245119Z"
