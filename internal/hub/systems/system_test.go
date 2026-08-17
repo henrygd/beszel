@@ -3,9 +3,11 @@
 package systems
 
 import (
+	"context"
 	"testing"
 
 	"github.com/henrygd/beszel/internal/entities/system"
+	"github.com/pocketbase/pocketbase/tools/store"
 )
 
 func TestCombinedData_MigrateDeprecatedFields(t *testing.T) {
@@ -156,4 +158,21 @@ func TestCombinedData_MigrateDeprecatedFields(t *testing.T) {
 			t.Errorf("expected Info.Hostname to be reset, got '%s'", cd.Info.Hostname)
 		}
 	})
+}
+
+// TestAddSystemRefusedAfterShutdown verifies that AddSystem returns an error
+// once the manager has been shut down, so the staggered Initialize starter
+// cannot spawn updater goroutines against a torn-down hub. See #1950.
+func TestAddSystemRefusedAfterShutdown(t *testing.T) {
+	sm := &SystemManager{systems: store.New(map[string]*System{})}
+	sm.ctx, sm.cancel = context.WithCancel(context.Background())
+	sm.cancel()
+
+	err := sm.AddSystem(&System{Id: "sys", Host: "127.0.0.1"})
+	if err == nil {
+		t.Fatalf("AddSystem returned nil error after shutdown")
+	}
+	if sm.systems.Has("sys") {
+		t.Fatalf("system was added to store after shutdown")
+	}
 }
