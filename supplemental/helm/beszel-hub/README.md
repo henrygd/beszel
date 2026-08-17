@@ -14,26 +14,19 @@ This Helm chart simplifies the deployment of Beszel Hub in Kubernetes environmen
 
 ## Quick Start
 
-### 1. Add the Repository
+### 1. Install the OCI Chart
 
 ```bash
-helm repo add beszel https://henrygd.github.io/beszel
-helm repo update
-```
-
-### 2. Install the Chart
-
-```bash
-helm install beszel-hub ./beszel-hub
+helm install beszel-hub oci://ghcr.io/henrygd/beszel-charts/beszel-hub
 ```
 
 Or with a custom values file:
 
 ```bash
-helm install beszel-hub ./beszel-hub -f custom-values.yaml
+helm install beszel-hub oci://ghcr.io/henrygd/beszel-charts/beszel-hub -f custom-values.yaml
 ```
 
-### 3. Access Beszel Hub
+### 2. Access Beszel Hub
 
 By default, Beszel Hub is accessible at `http://beszel-hub:8090` within the cluster.
 
