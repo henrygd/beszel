@@ -9,6 +9,6 @@ import (
 	"golang.org/x/sys/unix"
 )
 
-func getSensorTemps(ctx context.Context) ([]sensors.TemperatureStat, error) {
+var getSensorTemps = func(ctx context.Context) ([]sensors.TemperatureStat, error) {
 	return getFreeBSDSensorTemps(ctx, unix.SysctlUint32)
 }
