@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
 
@@ -27,12 +27,12 @@ jobs:
         run: bun run --cwd ./internal/site build
 
       - name: Set up Go
-        uses: actions/setup-go@v5
+        uses: actions/setup-go@v7
         with:
           go-version: "^1.22.1"
 
       - name: Set up .NET
-        uses: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet@v6
         with:
           dotnet-version: "9.0.x"
 
@@ -42,7 +42,7 @@ jobs:
         shell: bash
 
       - name: GoReleaser beszel
-        uses: goreleaser/goreleaser-action@v6
+        uses: goreleaser/goreleaser-action@v7
         with:
           workdir: ./
           distribution: goreleaser
@@ -52,3 +52,51 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.TOKEN || secrets.GITHUB_TOKEN }}
           WINGET_TOKEN: ${{ secrets.WINGET_TOKEN }}
           IS_FORK: ${{ github.repository_owner != 'henrygd' }}
+
+  update-helm-app-version:
+    name: Update Helm app version
+    needs: goreleaser
+    if: ${{ github.repository_owner == 'henrygd' }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v7
+        with:
+          ref: main
+          token: ${{ secrets.CR_TOKEN }}
+
+      - name: Update chart app versions
+        env:
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: |
+          version="${RELEASE_TAG#v}"
+          if [[ ! "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+([-.][0-9A-Za-z.-]+)?$ ]]; then
+            echo "Invalid release version: $version" >&2
+            exit 1
+          fi
+
+          for chart in supplemental/helm/beszel-agent supplemental/helm/beszel-hub; do
+            current_version=$(awk -F '"' '/^appVersion:/ { print $2 }' "$chart/Chart.yaml")
+            NEW_VERSION="$version" perl -pi -e 's/^appVersion:.*$/appVersion: "$ENV{NEW_VERSION}"/' "$chart/Chart.yaml"
+            OLD_VERSION="$current_version" NEW_VERSION="$version" \
+              perl -pi -e 's/\Q$ENV{OLD_VERSION}\E/$ENV{NEW_VERSION}/g' "$chart/README.md"
+          done
+
+      - name: Commit app version update
+        env:
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: |
+          if git diff --quiet -- supplemental/helm; then
+            echo "Helm charts already use ${RELEASE_TAG#v}"
+            exit 0
+          fi
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add supplemental/helm/beszel-agent/Chart.yaml \
+            supplemental/helm/beszel-agent/README.md \
+            supplemental/helm/beszel-hub/Chart.yaml \
+            supplemental/helm/beszel-hub/README.md
+          git commit -m "fix(helm): update app version to ${RELEASE_TAG#v}"
+          git push origin HEAD:main

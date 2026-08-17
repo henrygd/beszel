@@ -1,0 +1,152 @@
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/release-please.yml"
+      - "release-please-config.json"
+      - ".release-please-manifest.json"
+      - "supplemental/helm/**"
+
+permissions:
+  contents: write
+  issues: write
+  pull-requests: write
+
+env:
+  PUBLISHABLE_ITEMS: '["supplemental/helm/beszel-agent", "supplemental/helm/beszel-hub"]'
+
+name: helm-release
+
+concurrency:
+  group: helm-release
+  cancel-in-progress: false
+
+jobs:
+  release:
+    name: Release
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - uses: googleapis/release-please-action@v4
+        name: Prepare release
+        id: release-please
+        with:
+          token: ${{ secrets.CR_TOKEN }}
+
+      - name: Dump Release Please Output
+        env:
+          RELEASE_PLEASE_OUTPUT: ${{ toJson(steps.release-please.outputs) }}
+        run: |
+          echo "$RELEASE_PLEASE_OUTPUT"
+
+      - name: Determine what should be published
+        uses: actions/github-script@v8
+        id: items-to-publish
+        env:
+          CHANGED_ITEMS: "${{ steps.release-please.outputs.paths_released }}"
+        with:
+          script: |
+            const changedItems = JSON.parse(process.env.CHANGED_ITEMS || '[]');
+            console.log("changed items", changedItems);
+            const eligibleItems = JSON.parse(process.env.PUBLISHABLE_ITEMS || '[]');
+            console.log("eligible items", eligibleItems);
+            const itemsToPublish = changedItems.filter(i => eligibleItems.includes(i));
+            console.log("items to publish", itemsToPublish);
+            return itemsToPublish;
+    outputs:
+      items_to_publish: ${{ steps.items-to-publish.outputs.result }}
+      releases: ${{ toJson(steps.release-please.outputs) }}
+
+  release-charts:
+    name: Release Charts
+    needs: release
+    runs-on: ubuntu-latest
+    if: ${{ needs.release.outputs.items_to_publish != '' && toJson(fromJson(needs.release.outputs.items_to_publish)) != '[]' }}
+    strategy:
+      fail-fast: false
+      max-parallel: 1
+      matrix:
+        path: ${{ fromJSON(needs.release.outputs.items_to_publish) }}
+
+    env:
+      TAG: ${{ fromJson(needs.release.outputs.releases)[format('{0}--tag_name', matrix.path)] }}
+      VERSION: ${{ fromJson(needs.release.outputs.releases)[format('{0}--version', matrix.path)] }}
+      RELEASE_ID: ${{ fromJson(needs.release.outputs.releases)[format('{0}--id', matrix.path)] }}
+
+    steps:
+      - name: Debug
+        run: |
+          echo ${{ env.TAG }}
+          echo ${{ env.VERSION }}
+          echo ${{ matrix.path }}
+
+      - name: ✨ Checkout repository
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Configure Git
+        run: |
+          echo ${{ needs.release.outputs.items_to_publish }}
+          git config user.name "$GITHUB_ACTOR"
+          git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
+
+      - name: Install Chart Releaser
+        run: |
+          version=v1.6.0
+          mkdir .tmp
+          install_dir=.tmp
+          echo "Installing chart-releaser on $install_dir..."
+          curl -sSLo cr.tar.gz "https://github.com/helm/chart-releaser/releases/download/$version/chart-releaser_${version#v}_linux_amd64.tar.gz"
+          tar -xzf cr.tar.gz -C "$install_dir"
+          rm -f cr.tar.gz
+
+      - name: Package chart
+        run: |
+          .tmp/cr package ${{ matrix.path }}
+          ls -la .cr-release-packages/
+
+      - name: Upload chart package to draft release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh release upload "$TAG" .cr-release-packages/*.tgz --clobber
+
+      - name: Publish chart release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          CHART_PATH: ${{ matrix.path }}
+        run: |
+          chart_name="${CHART_PATH##*/}"
+          gh api --method PATCH "repos/${GITHUB_REPOSITORY}/releases/${RELEASE_ID}" \
+            -f "name=Helm chart: ${chart_name} v${VERSION}" \
+            -F draft=false \
+            -f make_latest=false
+
+      - name: Update index
+        run: |
+          owner=$(cut -d '/' -f 1 <<< "$GITHUB_REPOSITORY")
+          repo=$(cut -d '/' -f 2 <<< "$GITHUB_REPOSITORY")
+
+          # Create the local output directory for the generated index
+          mkdir -p docs
+
+          # Generate index.yaml for GitHub Pages
+          args=(-o "$owner" -r "$repo" --push -t "${{ secrets.CR_TOKEN }}" --index-path docs/index.yaml --release-name-template '{{ .Name }}-v{{ .Version }}')
+          .tmp/cr index "${args[@]}"
+
+      - name: Restore application release as latest
+        if: ${{ always() }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          release_id=$(gh api "repos/${GITHUB_REPOSITORY}/releases?per_page=100" \
+            --jq 'map(select(.draft == false and .prerelease == false and (.tag_name | test("^v[0-9]"))))[0].id')
+          test -n "$release_id"
+          gh api --method PATCH "repos/${GITHUB_REPOSITORY}/releases/${release_id}" \
+            -f make_latest=true
