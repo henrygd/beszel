@@ -215,8 +215,14 @@ detect_architecture() {
     x86_64)
       arch="amd64"
       ;;
-    armv6l|armv7l)
+    armv5*)
+      arch="armv5"
+      ;;
+    armv6l)
       arch="arm"
+      ;;
+    armv7l)
+      arch="armv7"
       ;;
     aarch64)
       arch="arm64"
