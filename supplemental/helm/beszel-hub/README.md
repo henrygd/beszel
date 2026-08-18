@@ -14,26 +14,19 @@ This Helm chart simplifies the deployment of Beszel Hub in Kubernetes environmen
 
 ## Quick Start
 
-### 1. Add the Repository
+### 1. Install the OCI Chart
 
 ```bash
-helm repo add beszel https://henrygd.github.io/beszel
-helm repo update
-```
-
-### 2. Install the Chart
-
-```bash
-helm install beszel-hub ./beszel-hub
+helm install beszel-hub oci://ghcr.io/henrygd/beszel-charts/beszel-hub
 ```
 
 Or with a custom values file:
 
 ```bash
-helm install beszel-hub ./beszel-hub -f custom-values.yaml
+helm install beszel-hub oci://ghcr.io/henrygd/beszel-charts/beszel-hub -f custom-values.yaml
 ```
 
-### 3. Access Beszel Hub
+### 2. Access Beszel Hub
 
 By default, Beszel Hub is accessible at `http://beszel-hub:8090` within the cluster.
 
@@ -54,7 +47,7 @@ Key configuration options in `values.yaml`:
 |-----------|---------|-------------|
 | `replicaCount` | `1` | Number of Beszel Hub replicas |
 | `image.repository` | `henrygd/beszel` | Container image repository |
-| `image.tag` | Chart AppVersion (0.18.7) | Container image tag |
+| `image.tag` | Chart AppVersion (0.18.8) | Container image tag |
 | `image.pullPolicy` | `IfNotPresent` | Image pull policy |
 | `service.port` | `8090` | Service port |
 | `persistentVolumeClaim.enabled` | `true` | Enable persistent volume |
@@ -176,7 +169,7 @@ tolerations:
 ```yaml
 replicaCount: 3
 image:
-  tag: "0.18.7"
+  tag: "0.18.8"
 service:
   type: LoadBalancer
 ingress:
@@ -337,7 +330,7 @@ By default, Beszel Hub uses a PersistentVolumeClaim for data storage. Ensure you
 ## Chart Information
 
 - **Chart Version**: 0.1.0
-- **App Version**: 0.18.7
+- **App Version**: 0.18.8
 - **Kubernetes Version**: 1.19+
 - **Maintainer**: cloudwithdan (nikoloskid@pm.me)
 

@@ -56,7 +56,7 @@ func (sm *SystemManager) NewSystem(systemId string) *System {
 		Id:   systemId,
 		data: &system.CombinedData{},
 	}
-	system.ctx, system.cancel = system.getContext()
+	system.ctx, system.cancel = system.getContext(sm.ctx)
 	return system
 }
 
@@ -79,7 +79,10 @@ func (sys *System) StartUpdater() {
 	} else {
 		// if the system does not have a websocket connection, wait before updating
 		// to allow the agent to connect via websocket (makes sure fingerprint is set).
-		time.Sleep(11 * time.Second)
+		if !waitForContext(sys.ctx, 11*time.Second) {
+			return
+		}
+
 	}
 
 	// update immediately if system is not paused (only for ws connections)
@@ -402,9 +405,9 @@ func (sys *System) setDown(originalError error) error {
 	return sys.manager.hub.SaveNoValidate(record)
 }
 
-func (sys *System) getContext() (context.Context, context.CancelFunc) {
+func (sys *System) getContext(ctx context.Context) (context.Context, context.CancelFunc) {
 	if sys.ctx == nil {
-		sys.ctx, sys.cancel = context.WithCancel(context.Background())
+		sys.ctx, sys.cancel = context.WithCancel(ctx)
 	}
 	return sys.ctx, sys.cancel
 }

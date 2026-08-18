@@ -41,17 +41,10 @@ In Kubernetes environments, the Beszel agent monitors **node-level metrics**:
 
 ## Quick Start
 
-### 1. Add the Helm Repository
+### 1. Install the OCI Chart
 
 ```bash
-helm repo add beszel https://henrygd.github.io/beszel
-helm repo update
-```
-
-### 2. Install the Chart
-
-```bash
-helm install beszel-agent ./beszel-agent \
+helm install beszel-agent oci://ghcr.io/henrygd/beszel-charts/beszel-agent \
   --set env.KEY="ssh-ed25519 AAAA... your-public-key" \
   --set env.TOKEN="your-token-value" \
   --set env.HUB_URL="http://beszel-hub:8090"
@@ -60,10 +53,10 @@ helm install beszel-agent ./beszel-agent \
 Or with custom values:
 
 ```bash
-helm install beszel-agent ./beszel-agent -f custom-values.yaml
+helm install beszel-agent oci://ghcr.io/henrygd/beszel-charts/beszel-agent -f custom-values.yaml
 ```
 
-### 3. Verify the Agent is Running
+### 2. Verify the Agent is Running
 
 ```bash
 kubectl get pods -l app.kubernetes.io/name=beszel-agent
@@ -87,7 +80,7 @@ Essential parameters to configure:
 | `secret.sshKey` | `ssh-key` | Key name in the secret for the SSH public key |
 | `secret.tokenKey` | `token` | Key name in the secret for the authentication token |
 | `image.repository` | `henrygd/beszel-agent` | Container image |
-| `image.tag` | Chart AppVersion (0.18.7) | Image version |
+| `image.tag` | Chart AppVersion (0.18.8) | Image version |
 | `hostNetwork` | `false` | Use host network for network monitoring |
 | `tolerations` | Allows all taints | Tolerations for running on tainted nodes |
 
@@ -392,7 +385,7 @@ helm upgrade beszel-agent ./beszel-agent \
 
 # Change image version
 helm upgrade beszel-agent ./beszel-agent \
-  --set image.tag="0.18.7"
+  --set image.tag="0.18.8"
 ```
 
 ### Restart All Agents
@@ -529,7 +522,7 @@ kubectl get secret beszel-agent -o jsonpath='{.data.ssh-key}' | base64 -d
 ## Chart Information
 
 - **Chart Version**: 0.1.0
-- **App Version**: 0.18.7
+- **App Version**: 0.18.8
 - **Kubernetes Version**: 1.19+
 - **Maintainer**: cloudwithdan (nikoloskid@pm.me)
 
