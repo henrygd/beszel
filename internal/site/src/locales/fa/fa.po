@@ -8,7 +8,7 @@ msgstr ""
 "Language: fa\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2026-08-17 20:46\n"
+"PO-Revision-Date: 2026-08-18 17:53\n"
 "Last-Translator: \n"
 "Language-Team: Persian\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
@@ -1077,8 +1077,8 @@ msgid "Memory Usage"
 msgstr "میزان استفاده از حافظه"
 
 #: src/components/routes/system/charts/memory-charts.tsx
-msgid "Memory usage of docker containers"
-msgstr "میزان استفاده از حافظه کانتینرهای داکر"
+msgid "Memory usage of containers"
+msgstr "میزان استفاده حافظه کانتینرها"
 
 #. Device model
 #: src/components/routes/system/smart-table.tsx
@@ -1099,8 +1099,8 @@ msgid "Net"
 msgstr "شبکه"
 
 #: src/components/routes/system/charts/network-charts.tsx
-msgid "Network traffic of docker containers"
-msgstr "ترافیک شبکه کانتینرهای داکر"
+msgid "Network traffic of containers"
+msgstr "ترافیک شبکه کانتینرها"
 
 #: src/components/routes/system/charts/network-charts.tsx
 #: src/components/routes/system/network-sheet.tsx
