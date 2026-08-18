@@ -8,7 +8,7 @@ msgstr ""
 "Language: zh\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2026-08-18 11:51\n"
+"PO-Revision-Date: 2026-08-18 16:38\n"
 "Last-Translator: \n"
 "Language-Team: Chinese Simplified\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
@@ -854,7 +854,7 @@ msgstr "FreeBSD 命令"
 #: src/components/routes/system/info-bar.tsx
 #: src/lib/i18n.ts
 msgid "Full"
-msgstr "满电"
+msgstr "全宽"
 
 #. Context: General settings
 #: src/components/routes/settings/general.tsx
