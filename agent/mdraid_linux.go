@@ -189,8 +189,13 @@ func mdraidSmartStatus(health mdraidHealth) string {
 	if health.faultyDisks > 0 {
 		return "FAILED"
 	}
+	if health.mismatchCnt > 0 {
+		return "WARNING"
+	}
+	// "check" scans for consistency problems without repairing mismatches.
+	// With no mismatches, keep it green while reporting progress attributes.
 	switch syncAction {
-	case "check", "repair":
+	case "repair":
 		return "WARNING"
 	}
 	switch state {

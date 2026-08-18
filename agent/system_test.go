@@ -5,6 +5,7 @@ import (
 
 	"github.com/henrygd/beszel/internal/common"
 	"github.com/henrygd/beszel/internal/entities/system"
+	"github.com/shirou/gopsutil/v4/mem"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -31,6 +32,59 @@ func TestGatherStatsDoesNotAttachDetailsToCachedRequests(t *testing.T) {
 	secondResponse := agent.gatherStats(common.DataRequestOptions{CacheTimeMs: defaultDataCacheTimeMs})
 	assert.Same(t, cached, secondResponse)
 	assert.Nil(t, secondResponse.Details)
+}
+
+func TestCalculateHostMemoryUsage(t *testing.T) {
+	tests := []struct {
+		name                      string
+		memory                    mem.VirtualMemoryStat
+		htop                      bool
+		used, cacheBuff, swapUsed uint64
+	}{
+		{
+			name:      "normal",
+			memory:    mem.VirtualMemoryStat{Total: 100, Available: 40, Used: 60, Free: 20, Cached: 25, Buffers: 10, Shared: 5, SwapTotal: 20, SwapFree: 8, SwapCached: 2},
+			used:      60,
+			cacheBuff: 30,
+			swapUsed:  10,
+		},
+		{
+			name:      "inconsistent counters saturate",
+			memory:    mem.VirtualMemoryStat{Total: 100, Available: 110, Used: ^uint64(0) - 9, Free: 90, Cached: 5, Buffers: 10, Shared: 20, SwapTotal: 10, SwapFree: 9, SwapCached: 2},
+			used:      0,
+			cacheBuff: 0,
+			swapUsed:  0,
+		},
+		{
+			name:      "htop subtraction saturates",
+			memory:    mem.VirtualMemoryStat{Total: 100, Available: 20, Used: 80, Free: 90, Cached: 20, Buffers: 5, SwapTotal: 30, SwapFree: 10, SwapCached: 5},
+			htop:      true,
+			used:      0,
+			cacheBuff: 25,
+			swapUsed:  15,
+		},
+		{
+			name:      "zero cache from shared cancellation does not fall back",
+			memory:    mem.VirtualMemoryStat{Total: 100, Used: 60, Free: 10, Cached: 20, Buffers: 10, Shared: 30},
+			used:      60,
+			cacheBuff: 0,
+		},
+		{
+			name:      "absent cache counters use fallback",
+			memory:    mem.VirtualMemoryStat{Total: 100, Used: 60, Free: 10},
+			used:      60,
+			cacheBuff: 30,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			used, cacheBuff, swapUsed := calculateHostMemoryUsage(&tt.memory, tt.htop)
+			assert.Equal(t, tt.used, used)
+			assert.Equal(t, tt.cacheBuff, cacheBuff)
+			assert.Equal(t, tt.swapUsed, swapUsed)
+		})
+	}
 }
 
 func TestUpdateSystemDetailsMarksDetailsDirty(t *testing.T) {

@@ -16,7 +16,7 @@ It has a friendly web interface, simple configuration, and is ready to use out o
 - **Lightweight**: Smaller and less resource-intensive than leading solutions.
 - **Simple**: Easy setup with little manual configuration required.
 - **Docker stats**: Tracks CPU, memory, and network usage history for each container.
-- **Alerts**: Configurable alerts for CPU, memory, disk, bandwidth, temperature, load average, and status.
+- **Alerts**: Configurable alerts for CPU, memory, disk, bandwidth, temperature, fan speed, load average, and status.
 - **Multi-user**: Users manage their own systems. Admins can share systems across users.
 - **OAuth / OIDC**: Supports many OAuth2 providers. Password auth can be disabled.
 - **Automatic backups**: Save to and restore from disk or S3-compatible storage.
@@ -48,6 +48,7 @@ The [quick start guide](https://beszel.dev/guide/getting-started) and other docu
 - **Network usage** - Host system and containers.
 - **Load average** - Host system.
 - **Temperature** - Host system sensors.
+- **Fan speed** - Host system sensors (Linux, via `/sys/class/hwmon`).
 - **GPU usage / power draw** - Nvidia, AMD, and Intel.
 - **Battery** - Host system battery charge.
 - **Containers** - Status and metrics of all running Docker / Podman containers.
