@@ -43,6 +43,27 @@ export const tagColorClasses: Record<string, string> = {
 	rose: "bg-rose-100 text-rose-700 dark:bg-rose-950 dark:text-rose-300",
 }
 
+// Swatch-only (background) classes for a tag color, used by the color picker
+export const tagSwatchClasses: Record<string, string> = {
+	red: "bg-red-100 dark:bg-red-950",
+	orange: "bg-orange-100 dark:bg-orange-950",
+	amber: "bg-amber-100 dark:bg-amber-950",
+	yellow: "bg-yellow-100 dark:bg-yellow-950",
+	lime: "bg-lime-100 dark:bg-lime-950",
+	green: "bg-green-100 dark:bg-green-950",
+	emerald: "bg-emerald-100 dark:bg-emerald-950",
+	teal: "bg-teal-100 dark:bg-teal-950",
+	cyan: "bg-cyan-100 dark:bg-cyan-950",
+	sky: "bg-sky-100 dark:bg-sky-950",
+	blue: "bg-blue-100 dark:bg-blue-950",
+	indigo: "bg-indigo-100 dark:bg-indigo-950",
+	violet: "bg-violet-100 dark:bg-violet-950",
+	purple: "bg-purple-100 dark:bg-purple-950",
+	fuchsia: "bg-fuchsia-100 dark:bg-fuchsia-950",
+	pink: "bg-pink-100 dark:bg-pink-950",
+	rose: "bg-rose-100 dark:bg-rose-950",
+}
+
 // Generate a random color name
 export function getRandomColor(): string {
 	return tagColors[Math.floor(Math.random() * tagColors.length)]
@@ -51,6 +72,39 @@ export function getRandomColor(): string {
 // Get classes for a tag color
 export function getTagColorClasses(color?: string): string {
 	return tagColorClasses[color || "blue"] || tagColorClasses.blue
+}
+
+// Get swatch-only (background) classes for a tag color
+export function getSwatchColorClasses(color?: string): string {
+	return tagSwatchClasses[color || "blue"] || tagSwatchClasses.blue
+}
+
+// Systems that have the given tag assigned
+export function getSystemsForTag(systems: SystemRecord[], tagId: string): SystemRecord[] {
+	return systems.filter((s) => s.tags?.includes(tagId))
+}
+
+// Whether a system has any of the given tag ids assigned
+export function systemHasAnyTag(system: SystemRecord, tagIds: string[]): boolean {
+	return !!system.tags?.length && tagIds.some((id) => system.tags?.includes(id))
+}
+
+// Filter systems down to those having any of the given tag ids assigned.
+// Returns the input array unchanged (same reference) when tagIds is empty.
+export function filterSystemsByTags(systems: SystemRecord[], tagIds: string[]): SystemRecord[] {
+	if (tagIds.length === 0) return systems
+	return systems.filter((s) => systemHasAnyTag(s, tagIds))
+}
+
+// Build a map of tag id -> number of systems having that tag assigned
+export function buildTagSystemCounts(systems: SystemRecord[]): Record<string, number> {
+	const counts: Record<string, number> = {}
+	for (const system of systems) {
+		for (const tagId of system.tags ?? []) {
+			counts[tagId] = (counts[tagId] ?? 0) + 1
+		}
+	}
+	return counts
 }
 
 /**
@@ -85,24 +139,4 @@ export async function syncTagAssignments(
 		await Promise.all(updates)
 	}
 	return { toAdd, toRemove }
-}
-
-/**
- * Update local system state after tag assignment changes
- */
-export function updateSystemsStateAfterTagAssignment(
-	systems: SystemRecord[],
-	tagId: string,
-	toAdd: string[],
-	toRemove: string[]
-): SystemRecord[] {
-	return systems.map((s) => {
-		if (toAdd.includes(s.id)) {
-			return { ...s, tags: [...(s.tags || []), tagId] }
-		}
-		if (toRemove.includes(s.id)) {
-			return { ...s, tags: (s.tags || []).filter((t) => t !== tagId) }
-		}
-		return s
-	})
 }

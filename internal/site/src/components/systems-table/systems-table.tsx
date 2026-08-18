@@ -45,13 +45,13 @@ import { TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/compon
 import { SystemStatus } from "@/lib/enums"
 import { $downSystems, $pausedSystems, $systems, $tags, $upSystems } from "@/lib/stores"
 import { cn, runOnce, useBrowserStorage } from "@/lib/utils"
-import { Badge } from "../ui/badge"
 import type { SystemRecord } from "@/types"
 import AlertButton from "../alerts/alert-button"
 import { $router, Link } from "../router"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui/card"
 import { SystemsTableColumns, ActionsButton, IndicatorDot } from "./systems-table-columns"
-import { getTagColorClasses } from "@/lib/tag-utils"
+import { TagBadge } from "@/components/tags/tag-badge"
+import { buildTagSystemCounts, filterSystemsByTags } from "@/lib/tag-utils"
 
 type ViewMode = "table" | "grid"
 type StatusFilter = "all" | SystemRecord["status"]
@@ -97,15 +97,13 @@ export default function SystemsTable() {
 		}
 
 		// Filter by tags
-		if (selectedTagFilter.length > 0) {
-			filtered = filtered.filter((system) => {
-				if (!system.tags || system.tags.length === 0) return false
-				return selectedTagFilter.some((tagId) => system.tags!.includes(tagId))
-			})
-		}
+		filtered = filterSystemsByTags(filtered, selectedTagFilter)
 
 		return filtered
 	}, [data, statusFilter, selectedTagFilter, upSystems, downSystems, pausedSystems])
+
+	// Number of systems per tag, for the tag-filter dropdown
+	const tagSystemCounts = useMemo(() => buildTagSystemCounts(data), [data])
 
 	const [viewMode, setViewMode] = useBrowserStorage<ViewMode>(
 		"viewMode",
@@ -232,7 +230,6 @@ export default function SystemsTable() {
 												<div className="space-y-0.5">
 													{availableTags.map((tag) => {
 														const isSelected = selectedTagFilter.includes(tag.id)
-														const systemsWithTag = data.filter((sys) => sys.tags?.includes(tag.id)).length
 														return (
 															<div
 																key={tag.id}
@@ -247,14 +244,10 @@ export default function SystemsTable() {
 																}}
 															>
 																<div className="flex items-center gap-2 min-w-0 flex-1">
-																	<Badge
-																		className={cn("text-xs px-2 py-0.5 shrink-0 pointer-events-none", getTagColorClasses(tag.color))}
-																	>
-																		{tag.name}
-																	</Badge>
+																	<TagBadge tag={tag} className="px-2 py-0.5 shrink-0" />
 																</div>
 																<span className="text-xs text-muted-foreground shrink-0">
-																	{systemsWithTag}
+																	{tagSystemCounts[tag.id] ?? 0}
 																</span>
 															</div>
 														)

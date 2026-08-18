@@ -7,7 +7,6 @@ import {
 	TagIcon,
 	TrashIcon,
 } from "lucide-react"
-import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
 import {
@@ -17,8 +16,7 @@ import {
 	DropdownMenuSeparator,
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { cn } from "@/lib/utils"
-import { getTagColorClasses } from "@/lib/tag-utils"
+import { TagBadge } from "@/components/tags/tag-badge"
 import type { SystemRecord, TagRecord } from "@/types"
 
 export interface TagWithSystems extends TagRecord {
@@ -61,11 +59,7 @@ export function createTagsColumns(
 					<Trans>Tag</Trans>
 				</span>
 			),
-			cell: ({ row }) => (
-				<Badge className={cn("pointer-events-none", getTagColorClasses(row.original.color))}>
-					{row.original.name}
-				</Badge>
-			),
+			cell: ({ row }) => <TagBadge tag={row.original} />,
 		},
 		{
 			id: "systems",

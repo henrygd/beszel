@@ -20,7 +20,7 @@ import { isReadOnlyUser, pb } from "@/lib/api"
 import { SystemStatus } from "@/lib/enums"
 import { $publicKey } from "@/lib/stores"
 import { cn, generateToken, tokenMap, useBrowserStorage } from "@/lib/utils"
-import type { SystemRecord, TagRecord } from "@/types"
+import type { SystemRecord } from "@/types"
 import {
 	copyDockerCompose,
 	copyDockerRun,
@@ -73,27 +73,11 @@ export const SystemDialog = ({ setOpen, system }: { setOpen: (open: boolean) => 
 	const isUnixSocket = hostValue.startsWith("/")
 	const [tab, setTab] = useBrowserStorage("as-tab", "docker")
 	const [token, setToken] = useState(system?.token ?? "")
-	const [availableTags, setAvailableTags] = useState<TagRecord[]>([])
 	const [selectedTags, setSelectedTags] = useState<string[]>(system?.tags ?? [])
 	const [tagSearchQuery, setTagSearchQuery] = useState("")
 
 	useEffect(() => {
 		;(async () => {
-			// Load available tags
-			try {
-				const tags = await pb.collection("tags").getFullList<TagRecord>({
-					sort: "name",
-				})
-				setAvailableTags(tags)
-			} catch (e) {
-				console.error("Failed to load tags", e)
-				toast({
-					title: t`Failed to load tags`,
-					description: t`Check logs for more details.`,
-					variant: "destructive",
-				})
-			}
-
 			// if no system, generate a new token
 			if (!system) {
 				nextSystemToken ||= generateToken()
@@ -247,10 +231,8 @@ export const SystemDialog = ({ setOpen, system }: { setOpen: (open: boolean) => 
 							<Trans>Tags</Trans>
 						</Label>
 						<TagSelectorDialog
-							availableTags={availableTags}
 							selectedTags={selectedTags}
 							tagSearchQuery={tagSearchQuery}
-							onAvailableTagsChange={setAvailableTags}
 							onSelectedTagsChange={setSelectedTags}
 							onSearchQueryChange={setTagSearchQuery}
 						/>

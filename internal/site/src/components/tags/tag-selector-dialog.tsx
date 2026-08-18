@@ -1,31 +1,30 @@
 import { t } from "@lingui/core/macro"
 import { Trans } from "@lingui/react/macro"
-import { Badge } from "@/components/ui/badge"
+import { useStore } from "@nanostores/react"
 import { toast } from "@/components/ui/use-toast"
 import { SearchableDropdown } from "@/components/ui/searchable-dropdown"
 import { SelectedBadgeList } from "@/components/ui/selected-badge-list"
+import { TagBadge } from "@/components/tags/tag-badge"
 import { pb } from "@/lib/api"
-import { cn } from "@/lib/utils"
+import { $tags, $tagsById } from "@/lib/stores"
 import type { TagRecord } from "@/types"
 import { getRandomColor, getTagColorClasses } from "@/lib/tag-utils"
 
 interface TagSelectorDialogProps {
-	availableTags: TagRecord[]
 	selectedTags: string[]
 	tagSearchQuery: string
-	onAvailableTagsChange: (tags: TagRecord[]) => void
 	onSelectedTagsChange: (tags: string[]) => void
 	onSearchQueryChange: (query: string) => void
 }
 
 export function TagSelectorDialog({
-	availableTags,
 	selectedTags,
 	tagSearchQuery,
-	onAvailableTagsChange,
 	onSelectedTagsChange,
 	onSearchQueryChange,
 }: TagSelectorDialogProps) {
+	const availableTags = useStore($tags)
+
 	async function createTagFromSearch(query: string) {
 		const name = query.trim()
 		if (!name) return
@@ -36,7 +35,7 @@ export function TagSelectorDialog({
 				name,
 				color: getRandomColor(),
 			})
-			onAvailableTagsChange([...availableTags, record].sort((a, b) => a.name.localeCompare(b.name)))
+			$tagsById.setKey(record.id, record)
 			onSelectedTagsChange([...selectedTags, record.id])
 			onSearchQueryChange("")
 		} catch (e: any) {
@@ -68,11 +67,7 @@ export function TagSelectorDialog({
 				onSelectionChange={onSelectedTagsChange}
 				getItemId={(tag) => tag.id}
 				getItemLabel={(tag) => tag.name}
-				renderItem={(tag) => (
-					<Badge className={cn("text-xs pointer-events-none", getTagColorClasses(tag.color))}>
-						{tag.name}
-					</Badge>
-				)}
+				renderItem={(tag) => <TagBadge tag={tag} />}
 				placeholder={t`Search or create tag...`}
 				getDisplayText={(count) => (count === 1 ? availableTags.find((t) => t.id === selectedTags[0])?.name || t`1 tag selected` : displayText(count))}
 				stopPropagation

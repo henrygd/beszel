@@ -21,7 +21,7 @@ import {
 	Trash2Icon,
 } from "lucide-react"
 import { useStore } from "@nanostores/react"
-import { useEffect, useMemo, useState } from "react"
+import { useMemo, useState } from "react"
 import {
 	AlertDialog,
 	AlertDialogAction,
@@ -40,17 +40,16 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { toast } from "@/components/ui/use-toast"
 import { cn, useBrowserStorage } from "@/lib/utils"
 import { pb } from "@/lib/api"
-import { $tags } from "@/lib/stores"
-import type { SystemRecord, TagRecord } from "@/types"
+import { $systems, $tags } from "@/lib/stores"
+import type { TagRecord } from "@/types"
 import { createTagsColumns, type TagWithSystems } from "@/components/tags/tags-columns"
 import { TagEditDialog } from "@/components/tags/tag-edit-dialog"
-import { getRandomColor, syncTagAssignments, updateSystemsStateAfterTagAssignment } from "@/lib/tag-utils"
+import { getRandomColor, getSystemsForTag, syncTagAssignments } from "@/lib/tag-utils"
 
 export default function TagsSettings() {
 	const { t: tFunc } = useLingui()
 	const tags = useStore($tags)
-	const [systems, setSystems] = useState<SystemRecord[]>([])
-	const [loading, setLoading] = useState(true)
+	const systems = useStore($systems)
 	const [dialogOpen, setDialogOpen] = useState(false)
 	const [editingTag, setEditingTag] = useState<TagWithSystems | null>(null)
 	const [selectedSystems, setSelectedSystems] = useState<string[]>([])
@@ -67,23 +66,16 @@ export default function TagsSettings() {
 		pageSize: 10,
 	})
 
-	// Initial data load (tags come from the shared $tags store, kept live by systemsManager)
-	useEffect(() => {
-		pb.collection("systems")
-			.getFullList<SystemRecord>({ sort: "name", fields: "id,name,tags", requestKey: null })
-			.then((systemsRecords) => {
-				setSystems(systemsRecords)
-				setLoading(false)
-			})
-	}, [])
+	// Systems sorted by name, matching the picker order in TagEditDialog
+	const sortedSystems = useMemo(() => [...systems].sort((a, b) => a.name.localeCompare(b.name)), [systems])
 
-	// Combine tags with their systems
+	// Combine tags with their systems (tags and systems both come from shared, realtime-updated stores)
 	const tagsWithSystems = useMemo((): TagWithSystems[] => {
 		return tags.map((tag) => ({
 			...tag,
-			systems: systems.filter((s) => s.tags?.includes(tag.id)),
+			systems: getSystemsForTag(sortedSystems, tag.id),
 		}))
-	}, [tags, systems])
+	}, [tags, sortedSystems])
 
 	function openCreateDialog() {
 		setEditingTag(null)
@@ -124,9 +116,8 @@ export default function TagsSettings() {
 				tagId = editingTag.id
 
 				// Update system assignments
-				const currentSystems = systems.filter((s) => s.tags?.includes(tagId)).map((s) => s.id)
-				const { toAdd, toRemove } = await syncTagAssignments(tagId, currentSystems, selectedSystems, systems)
-				setSystems((prev) => updateSystemsStateAfterTagAssignment(prev, tagId, toAdd, toRemove))
+				const currentSystems = getSystemsForTag(systems, tagId).map((s) => s.id)
+				await syncTagAssignments(tagId, currentSystems, selectedSystems, systems)
 
 				toast({
 					title: tFunc`Tag updated`,
@@ -142,8 +133,7 @@ export default function TagsSettings() {
 
 				// Assign to selected systems
 				if (selectedSystems.length > 0) {
-					const { toAdd, toRemove } = await syncTagAssignments(tagId, [], selectedSystems, systems)
-					setSystems((prev) => updateSystemsStateAfterTagAssignment(prev, tagId, toAdd, toRemove))
+					await syncTagAssignments(tagId, [], selectedSystems, systems)
 				}
 
 				toast({
@@ -237,14 +227,6 @@ export default function TagsSettings() {
 		},
 	})
 
-	if (loading) {
-		return (
-			<div className="py-8 text-center text-muted-foreground">
-				<Trans>Loading...</Trans>
-			</div>
-		)
-	}
-
 	return (
 		<div className="space-y-4">
 			<div className="flex flex-col sm:flex-row sm:items-end gap-4">
@@ -293,7 +275,7 @@ export default function TagsSettings() {
 				tagColor={newTagColor}
 				selectedSystems={selectedSystems}
 				systemSearchQuery={systemSearchQuery}
-				systems={systems}
+				systems={sortedSystems}
 				onTagNameChange={setNewTagName}
 				onTagColorChange={setNewTagColor}
 				onSelectedSystemsChange={setSelectedSystems}

@@ -1,6 +1,5 @@
 import { t } from "@lingui/core/macro"
 import { Trans } from "@lingui/react/macro"
-import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import {
 	Dialog,
@@ -14,10 +13,11 @@ import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import { SearchableDropdown } from "@/components/ui/searchable-dropdown"
 import { SelectedBadgeList } from "@/components/ui/selected-badge-list"
+import { TagBadge } from "@/components/tags/tag-badge"
 import { cn } from "@/lib/utils"
-import type { SystemRecord, TagRecord } from "@/types"
+import type { SystemRecord } from "@/types"
 import type { TagWithSystems } from "./tags-columns"
-import { tagColors, tagColorClasses, getTagColorClasses } from "@/lib/tag-utils"
+import { tagColors, getSwatchColorClasses } from "@/lib/tag-utils"
 
 interface TagEditDialogProps {
 	open: boolean
@@ -90,15 +90,13 @@ export function TagEditDialog({
 									onClick={() => onTagColorChange(color)}
 									className={cn(
 										"w-6 h-6 rounded-full transition-all",
-										tagColorClasses[color].split(" ").filter(c => c.startsWith("bg-") || c.startsWith("dark:bg-")).join(" "),
+										getSwatchColorClasses(color),
 										tagColor === color && "ring-2 ring-offset-2 ring-primary"
 									)}
 								/>
 							))}
 						</div>
-						<Badge className={cn(getTagColorClasses(tagColor), "self-start")}>
-							{tagName || t`Preview`}
-						</Badge>
+						<TagBadge tag={{ name: tagName || t`Preview`, color: tagColor }} interactive className="self-start" />
 					</div>
 					<Label className="xs:text-end self-start pt-2">
 						<Trans>Systems</Trans>

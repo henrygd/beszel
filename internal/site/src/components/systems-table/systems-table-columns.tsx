@@ -38,11 +38,10 @@ import {
 	secondsToUptimeString,
 } from "@/lib/utils"
 import { batteryStateTranslations } from "@/lib/i18n"
-import type { SystemRecord, TagRecord } from "@/types"
-import { getTagColorClasses } from "@/lib/tag-utils"
+import type { SystemRecord } from "@/types"
+import { TagBadgeList } from "@/components/tags/tag-badge-list"
 import { SystemDialog } from "../add-system"
 import AlertButton from "../alerts/alert-button"
-import { Badge } from "../ui/badge"
 import { $router, Link } from "../router"
 import {
 	AlertDialog,
@@ -200,35 +199,7 @@ export function SystemsTableColumns(viewMode: "table" | "grid"): ColumnDef<Syste
 						tabIndex={-1}
 						className="flex flex-wrap gap-1 relative z-10"
 					>
-						{system.expand.tags.slice(0, maxTags).map((tag: TagRecord) => (
-							<Badge
-								key={tag.id}
-								className={cn("text-xs px-1.5 py-0 pointer-events-none", getTagColorClasses(tag.color))}
-							>
-								{tag.name}
-							</Badge>
-						))}
-						{system.expand.tags.length > maxTags && (
-							<Tooltip>
-								<TooltipTrigger asChild>
-									<Badge variant="secondary" className="text-xs px-1.5 py-0 cursor-default">
-										+{system.expand.tags.length - maxTags}
-									</Badge>
-								</TooltipTrigger>
-								<TooltipContent>
-									<div className="flex flex-wrap gap-1">
-										{system.expand.tags.slice(maxTags).map((tag: TagRecord) => (
-											<Badge
-												key={tag.id}
-												className={cn("text-xs px-1.5 py-0 pointer-events-none", getTagColorClasses(tag.color))}
-											>
-												{tag.name}
-											</Badge>
-										))}
-									</div>
-								</TooltipContent>
-							</Tooltip>
-						)}
+						<TagBadgeList tags={system.expand.tags} max={maxTags} badgeClassName="px-1.5 py-0" />
 					</Link>
 				)
 			},
