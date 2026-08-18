@@ -43,8 +43,18 @@ func TestGetUptimeFromProc(t *testing.T) {
 	}
 }
 
-// Malformed or missing input must fall back to host.Uptime() rather than
-// returning a bogus value, so the agent still reports something sane.
+func writeUptime(contents string) func(t *testing.T) string {
+	return func(t *testing.T) string {
+		path := filepath.Join(t.TempDir(), "uptime")
+		if err := os.WriteFile(path, []byte(contents), 0o644); err != nil {
+			t.Fatal(err)
+		}
+		return path
+	}
+}
+
+// Malformed, missing, or out-of-range input must fall back to host.Uptime()
+// rather than returning a bogus value, so the agent still reports something sane.
 func TestGetUptimeFallsBack(t *testing.T) {
 	prev := uptimeFilePath
 	t.Cleanup(func() { uptimeFilePath = prev })
@@ -70,6 +80,11 @@ func TestGetUptimeFallsBack(t *testing.T) {
 			}
 			return path
 		}},
+		{"NaN", writeUptime("NaN 1.0\n")},
+		{"positive infinity", writeUptime("+Inf 1.0\n")},
+		{"negative infinity", writeUptime("-Inf 1.0\n")},
+		{"negative", writeUptime("-42.5 1.0\n")},
+		{"exceeds uint64 range", writeUptime("1e20 1.0\n")},
 	} {
 		t.Run(tt.name, func(t *testing.T) {
 			uptimeFilePath = tt.prepare(t)

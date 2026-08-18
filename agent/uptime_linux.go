@@ -3,6 +3,7 @@
 package agent
 
 import (
+	"math"
 	"os"
 	"strconv"
 	"strings"
@@ -32,7 +33,11 @@ func getUptime() (uint64, error) {
 		return host.Uptime()
 	}
 	seconds, err := strconv.ParseFloat(fields[0], 64)
-	if err != nil || seconds < 0 {
+	if err != nil ||
+		math.IsNaN(seconds) ||
+		math.IsInf(seconds, 0) ||
+		seconds < 0 ||
+		seconds >= 1<<64 {
 		return host.Uptime()
 	}
 	return uint64(seconds), nil
