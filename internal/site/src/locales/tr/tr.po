@@ -8,7 +8,7 @@ msgstr ""
 "Language: tr\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2026-08-17 20:46\n"
+"PO-Revision-Date: 2026-08-18 17:52\n"
 "Last-Translator: \n"
 "Language-Team: Turkish\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
@@ -1077,8 +1077,8 @@ msgid "Memory Usage"
 msgstr "Bellek Kullanımı"
 
 #: src/components/routes/system/charts/memory-charts.tsx
-msgid "Memory usage of docker containers"
-msgstr "Docker konteynerlerinin bellek kullanımı"
+msgid "Memory usage of containers"
+msgstr "Konteynerlerin bellek kullanımı"
 
 #. Device model
 #: src/components/routes/system/smart-table.tsx
@@ -1099,8 +1099,8 @@ msgid "Net"
 msgstr "Ağ"
 
 #: src/components/routes/system/charts/network-charts.tsx
-msgid "Network traffic of docker containers"
-msgstr "Docker konteynerlerinin ağ trafiği"
+msgid "Network traffic of containers"
+msgstr "Konteynerlerin ağ trafiği"
 
 #: src/components/routes/system/charts/network-charts.tsx
 #: src/components/routes/system/network-sheet.tsx
@@ -1714,7 +1714,7 @@ msgstr "Her arayüz için gönderilen toplam veri"
 #: src/components/routes/system/disk-io-sheet.tsx
 msgctxt "Disk I/O"
 msgid "Total time spent on read/write (can exceed 100%)"
-msgstr "Okuma/yazma işlemlerinde harcanan toplam süre (100%’ü aşabilir)"
+msgstr "Okuma/yazma işlemlerinde harcanan toplam süre (%100’ü aşabilir)"
 
 #. placeholder {0}: data.length
 #: src/components/systemd-table/systemd-table.tsx
