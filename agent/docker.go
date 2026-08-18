@@ -373,16 +373,26 @@ func convertContainerPortsToString(ctr *container.ApiInfo) string {
 		return ""
 	}
 	sort.Slice(ctr.Ports, func(i, j int) bool {
-		return ctr.Ports[i].PublicPort < ctr.Ports[j].PublicPort
+		if ctr.Ports[i].PublicPort != ctr.Ports[j].PublicPort {
+			return ctr.Ports[i].PublicPort < ctr.Ports[j].PublicPort
+		}
+		return ctr.Ports[i].IP < ctr.Ports[j].IP
 	})
 	var builder strings.Builder
-	seenPorts := make(map[uint16]struct{})
+	seen := make(map[string]struct{})
 	for _, p := range ctr.Ports {
-		_, ok := seenPorts[p.PublicPort]
-		if p.PublicPort == 0 || ok {
+		if p.PublicPort == 0 {
 			continue
 		}
-		seenPorts[p.PublicPort] = struct{}{}
+		keyIP := p.IP
+		if keyIP == "0.0.0.0" || keyIP == "::" {
+			keyIP = ""
+		}
+		key := keyIP + ":" + strconv.Itoa(int(p.PublicPort))
+		if _, ok := seen[key]; ok {
+			continue
+		}
+		seen[key] = struct{}{}
 		if builder.Len() > 0 {
 			builder.WriteString(", ")
 		}
@@ -534,11 +544,18 @@ func (dm *dockerManager) updateContainerStats(ctr *container.ApiInfo, cacheTimeM
 	// Get previous CPU values
 	prevCpuContainer, prevCpuSystem := dm.getCpuPreviousValues(cacheTimeMs, ctr.IdShort)
 
-	// Calculate CPU percentage based on platform
+	// Calculate CPU percentage based on platform.
+	// Podman reports system_cpu_usage from cgroup cpu.stat (not /proc/stat), so it reflects
+	// only cgroup-tracked activity rather than total host capacity. Use a time-based method
+	// instead so the result is comparable to host CPU utilization. See:
+	// https://github.com/henrygd/beszel/issues/2049
 	var cpuPct float64
 	if dm.isWindows {
 		prevRead := dm.lastCpuReadTime[cacheTimeMs][ctr.IdShort]
 		cpuPct = res.CalculateCpuPercentWindows(prevCpuContainer, prevRead)
+	} else if dm.usingPodman && res.CPUStats.OnlineCPUs > 0 {
+		prevRead := dm.lastCpuReadTime[cacheTimeMs][ctr.IdShort]
+		cpuPct = res.CalculateCpuPercentPodman(prevCpuContainer, prevRead)
 	} else {
 		cpuPct = res.CalculateCpuPercentLinux(prevCpuContainer, prevCpuSystem)
 	}

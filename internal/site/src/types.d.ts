@@ -152,12 +152,16 @@ export interface SystemStats {
 	bm?: [number, number]
 	/** temperatures */
 	t?: Record<string, number>
+	/** fan speeds (RPM) — keyed by `<chip>_<label-or-fan-idx>` */
+	f?: Record<string, number>
 	/** extra filesystems */
 	efs?: Record<string, ExtraFsStats>
 	/** GPU data */
 	g?: Record<string, GPUData>
 	/** battery percent and state */
 	bat?: [number, BatteryState]
+	/** battery percentages by device name */
+	bats?: Record<string, number>
 	/** network interfaces [upload bytes, download bytes, total upload bytes, total download bytes] */
 	ni?: Record<string, [number, number, number, number]>
 }
@@ -217,7 +221,7 @@ interface ContainerStats {
 	n: string
 	/** cpu percent */
 	c: number
-	/** memory used (gb) */
+	/** memory used (mb) */
 	m: number
 	// network sent (mb)
 	ns?: number

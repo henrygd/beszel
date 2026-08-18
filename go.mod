@@ -1,6 +1,6 @@
 module github.com/henrygd/beszel
 
-go 1.26.5
+go 1.26.6
 
 require (
 	github.com/blang/semver v3.5.1+incompatible
@@ -12,15 +12,15 @@ require (
 	github.com/lxzan/gws v1.10.1
 	github.com/nicholas-fedor/shoutrrr v0.17.0
 	github.com/pocketbase/dbx v1.12.0
-	github.com/pocketbase/pocketbase v0.39.10
+	github.com/pocketbase/pocketbase v0.39.11
 	github.com/shirou/gopsutil/v4 v4.26.7
 	github.com/spf13/cast v1.10.0
 	github.com/spf13/cobra v1.10.2
 	github.com/spf13/pflag v1.0.10
-	github.com/stretchr/testify v1.11.1
+	github.com/stretchr/testify v1.12.0
 	golang.org/x/crypto v0.55.0
-	golang.org/x/exp v0.0.0-20260811152304-ee035b5b010f
-	golang.org/x/net v0.57.0
+	golang.org/x/exp v0.0.0-20260813180055-c1d0aacb2297
+	golang.org/x/net v0.58.0
 	golang.org/x/sys v0.47.0
 	gopkg.in/yaml.v3 v3.0.1
 	howett.net/plist v1.0.1
@@ -29,7 +29,6 @@ require (
 require (
 	github.com/anmitsu/go-shlex v0.0.0-20200514113438-38f4b401e2be // indirect
 	github.com/asaskevich/govalidator v0.0.0-20230301143203-a9d515a09cc2 // indirect
-	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
 	github.com/disintegration/imaging v1.6.2 // indirect
 	github.com/domodwyer/mailyak/v3 v3.6.2 // indirect
 	github.com/dustin/go-humanize v1.0.1 // indirect
@@ -49,7 +48,6 @@ require (
 	github.com/mattn/go-colorable v0.1.15 // indirect
 	github.com/mattn/go-isatty v0.0.24 // indirect
 	github.com/ncruces/go-strftime v1.0.0 // indirect
-	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 // indirect
 	github.com/pocketbase/ozzo-validation/v4 v4.3.0 // indirect
 	github.com/power-devops/perfstat v0.0.0-20260805114148-88456608a4f6 // indirect
 	github.com/remyoudompheng/bigfft v0.0.0-20230129092748-24d4a6f8daec // indirect

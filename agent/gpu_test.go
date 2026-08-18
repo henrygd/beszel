@@ -332,11 +332,12 @@ func TestUpdateNvtopSnapshotsKeepsDeviceAssociationWhenOrderChanges(t *testing.T
 }
 
 func TestParseCollectorPriority(t *testing.T) {
-	got := parseCollectorPriority(" nvml, nvidia-smi, intel_gpu_top, amd_sysfs, nvtop, rocm-smi, bad ")
+	got := parseCollectorPriority(" nvml, nvidia-smi, intel_gpu_top, intel_sysfs, amd_sysfs, nvtop, rocm-smi, bad ")
 	want := []collectorSource{
 		collectorSourceNVML,
 		collectorSourceNvidiaSMI,
 		collectorSourceIntelGpuTop,
+		collectorSourceIntelSysfs,
 		collectorSourceAmdSysfs,
 		collectorSourceNVTop,
 		collectorSourceRocmSMI,
