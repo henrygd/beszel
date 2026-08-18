@@ -143,8 +143,13 @@ func TestMdraidSmartStatus(t *testing.T) {
 		t.Fatalf("mdraidSmartStatus(degraded+faulty) = %q, want FAILED", got)
 	}
 	// QNAP-style: raid_disks=32 but only 4 populated; degraded=28 but no faulty devices.
-	if got := mdraidSmartStatus(mdraidHealth{arrayState: "clean", degraded: 28, faultyDisks: 0, raidDisks: 32, populatedDisks: 4}); got != "PASSED" {
-		t.Fatalf("mdraidSmartStatus(qnap sparse) = %q, want PASSED", got)
+	if got := mdraidSmartStatus(mdraidHealth{arrayState: "clean", degraded: 28, faultyDisks: 0, raidDisks: 32, populatedDisks: 4}); got != "WARNING" {
+		t.Fatalf("mdraidSmartStatus(qnap sparse) = %q, want WARNING", got)
+	}
+	// A member disappearing from the same sparse array is indistinguishable
+	// from another reserved slot, so it must not be reported as healthy.
+	if got := mdraidSmartStatus(mdraidHealth{arrayState: "clean", degraded: 29, faultyDisks: 0, raidDisks: 32, populatedDisks: 3}); got != "WARNING" {
+		t.Fatalf("mdraidSmartStatus(qnap sparse missing member) = %q, want WARNING", got)
 	}
 	// A genuinely missing member (removed dev-* entry, not just an unpopulated
 	// QNAP reserve slot) must still fail: raid_disks=4, only 3 populated, all

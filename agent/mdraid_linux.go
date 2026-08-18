@@ -190,7 +190,12 @@ func mdraidSmartStatus(health mdraidHealth) string {
 	if health.faultyDisks > 0 {
 		return "FAILED"
 	}
-	if health.degraded > 0 && !isSparseSlotDegraded(health) {
+	if health.degraded > 0 {
+		if isSparseSlotDegraded(health) {
+			// A sysfs snapshot cannot distinguish reserved slots from a removed
+			// member on sparse arrays, so report the ambiguity as a warning.
+			return "WARNING"
+		}
 		return "FAILED"
 	}
 	if health.mismatchCnt > 0 {
@@ -234,14 +239,10 @@ func countMdraidMemberStates(blockName, root string) (faultyDisks, populatedDisk
 	return faultyDisks, populatedDisks
 }
 
-// isSparseSlotDegraded reports whether a non-zero "degraded" count is
-// explained by RAID slots that were never populated rather than by a member
-// that actually went missing. QNAP configures system arrays with raid_disks
-// set to a large fixed maximum (e.g. 32) far beyond the handful of slots it
-// ever populates, so unpopulated ("sparse") slots vastly outnumber populated
-// ones. A genuinely degraded array (a real member removed or never present)
-// has at most a small gap between raid_disks and populatedDisks relative to
-// how many members are actually populated, so it still reports as failed.
+// isSparseSlotDegraded reports whether a non-zero "degraded" count may be
+// explained by RAID slots that were never populated. QNAP configures system
+// arrays with raid_disks set to a large fixed maximum (e.g. 32) far beyond the
+// handful of slots it ever populates, so sparse slots outnumber populated ones.
 func isSparseSlotDegraded(health mdraidHealth) bool {
 	if health.populatedDisks == 0 || health.raidDisks <= health.populatedDisks {
 		return false
