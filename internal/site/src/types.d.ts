@@ -337,6 +337,8 @@ export interface AlertInfo {
 	/** Single value description (when there's only one value, like status) */
 	singleDesc?: () => string
 	invert?: boolean
+	/** No threshold or duration sliders (pure event alert, like reboot) */
+	noSliders?: boolean
 }
 
 export type AlertMap = Record<string, Map<string, AlertRecord>>

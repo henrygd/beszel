@@ -1,5 +1,5 @@
 import { t } from "@lingui/core/macro"
-import { CpuIcon, HardDriveIcon, MemoryStickIcon, ServerIcon } from "lucide-react"
+import { CpuIcon, HardDriveIcon, MemoryStickIcon, RotateCcwIcon, ServerIcon } from "lucide-react"
 import type { RecordSubscription } from "pocketbase"
 import { EthernetIcon, GpuIcon } from "@/components/ui/icons"
 import { $alerts } from "@/lib/stores"
@@ -91,6 +91,13 @@ export const alertInfo: Record<string, AlertInfo> = {
 		desc: () => t`Triggers when battery charge drops below a threshold`,
 		start: 20,
 		invert: true,
+	},
+	Reboot: {
+		name: () => t`Reboot`,
+		unit: "",
+		icon: RotateCcwIcon,
+		desc: () => t`Triggers when the system restarts unexpectedly`,
+		noSliders: true,
 	},
 } as const
 
