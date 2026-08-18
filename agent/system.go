@@ -259,6 +259,8 @@ func (a *Agent) getSystemStats(cacheTimeMs uint16) system.Stats {
 	a.systemInfo.DiskPct = systemStats.DiskPct
 	a.systemInfo.Battery = systemStats.Battery
 	a.systemInfo.Uptime, _ = host.Uptime()
+	a.systemInfo.BandwidthBytesSent = systemStats.Bandwidth[0]
+	a.systemInfo.BandwidthBytesRecv = systemStats.Bandwidth[1]
 	a.systemInfo.BandwidthBytes = systemStats.Bandwidth[0] + systemStats.Bandwidth[1]
 	a.systemInfo.Threads = a.systemDetails.Threads
 
