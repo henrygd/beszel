@@ -17,16 +17,17 @@ import (
 var mdraidSysfsRoot = "/sys"
 
 type mdraidHealth struct {
-	level         string
-	arrayState    string
-	degraded      uint64
-	faultyDisks   uint64
-	raidDisks     uint64
-	syncAction    string
-	syncCompleted string
-	syncSpeed     string
-	mismatchCnt   uint64
-	capacity      uint64
+	level          string
+	arrayState     string
+	degraded       uint64
+	faultyDisks    uint64
+	populatedDisks uint64
+	raidDisks      uint64
+	syncAction     string
+	syncCompleted  string
+	syncSpeed      string
+	mismatchCnt    uint64
+	capacity       uint64
 }
 
 // scanMdraidDevices discovers Linux md arrays exposed in sysfs.
@@ -156,7 +157,7 @@ func readMdraidHealth(blockName string) (mdraidHealth, bool) {
 	if val, ok := utils.ReadUintFile(filepath.Join(mdDir, "degraded")); ok {
 		out.degraded = val
 	}
-	out.faultyDisks = countFaultyMdraidDisks(blockName, mdraidSysfsRoot)
+	out.faultyDisks, out.populatedDisks = countMdraidMemberStates(blockName, mdraidSysfsRoot)
 	if val, ok := utils.ReadUintFile(filepath.Join(mdDir, "mismatch_cnt")); ok {
 		out.mismatchCnt = val
 	}
@@ -189,6 +190,9 @@ func mdraidSmartStatus(health mdraidHealth) string {
 	if health.faultyDisks > 0 {
 		return "FAILED"
 	}
+	if health.degraded > 0 && !isSparseSlotDegraded(health) {
+		return "FAILED"
+	}
 	if health.mismatchCnt > 0 {
 		return "WARNING"
 	}
@@ -205,28 +209,45 @@ func mdraidSmartStatus(health mdraidHealth) string {
 	return "UNKNOWN"
 }
 
-// countFaultyMdraidDisks reads member device states and returns the number
-// explicitly marked "faulty". This is more reliable than the sysfs "degraded"
-// counter, which counts empty RAID slots (raid_disks - active_disks) and can
-// be non-zero for sparse arrays like those created by QNAP.
-func countFaultyMdraidDisks(blockName, root string) uint64 {
+// countMdraidMemberStates reads member device directories under
+// block/<name>/md and returns how many are explicitly marked "faulty", plus
+// how many are populated at all (regardless of state). populatedDisks lets
+// callers distinguish RAID slots that were never used (QNAP reserves far
+// more raid_disks than it ever populates) from members that went missing.
+func countMdraidMemberStates(blockName, root string) (faultyDisks, populatedDisks uint64) {
 	devDir := filepath.Join(root, "block", blockName, "md")
 	entries, err := os.ReadDir(devDir)
 	if err != nil {
-		return 0
+		return 0, 0
 	}
-	var count uint64
 	for _, ent := range entries {
 		if !strings.HasPrefix(ent.Name(), "dev-") {
 			continue
 		}
+		populatedDisks++
 		statePath := filepath.Join(devDir, ent.Name(), "state")
 		state := utils.ReadStringFile(statePath)
 		if strings.Contains(state, "faulty") {
-			count++
+			faultyDisks++
 		}
 	}
-	return count
+	return faultyDisks, populatedDisks
+}
+
+// isSparseSlotDegraded reports whether a non-zero "degraded" count is
+// explained by RAID slots that were never populated rather than by a member
+// that actually went missing. QNAP configures system arrays with raid_disks
+// set to a large fixed maximum (e.g. 32) far beyond the handful of slots it
+// ever populates, so unpopulated ("sparse") slots vastly outnumber populated
+// ones. A genuinely degraded array (a real member removed or never present)
+// has at most a small gap between raid_disks and populatedDisks relative to
+// how many members are actually populated, so it still reports as failed.
+func isSparseSlotDegraded(health mdraidHealth) bool {
+	if health.populatedDisks == 0 || health.raidDisks <= health.populatedDisks {
+		return false
+	}
+	sparseSlots := health.raidDisks - health.populatedDisks
+	return sparseSlots > health.populatedDisks
 }
 
 // isMdraidBlockName matches /dev/mdN-style block device names.
