@@ -9,6 +9,7 @@ import (
 	"math/rand"
 	"net"
 	"strings"
+	"sync"
 	"sync/atomic"
 	"time"
 
@@ -38,6 +39,7 @@ type System struct {
 	Port           string                  `db:"port"`
 	Status         string                  `db:"status"`
 	manager        *SystemManager          // Manager that this system belongs to
+	clientMu       sync.Mutex              // Guards client against concurrent close/replace
 	client         *ssh.Client             // SSH client for fetching data
 	sshTransport   *transport.SSHTransport // SSH transport for requests
 	data           *system.CombinedData    // system data from agent
@@ -434,7 +436,7 @@ func (sys *System) request(ctx context.Context, action common.WebSocketAction, r
 	err := sys.sshTransport.RequestWithRetry(ctx, action, req, dest, 1)
 	// Keep legacy SSH client/version fields in sync for other code paths.
 	if sys.sshTransport != nil {
-		sys.client = sys.sshTransport.GetClient()
+		sys.setClient(sys.sshTransport.GetClient())
 		sys.agentVersion = sys.sshTransport.GetAgentVersion()
 	}
 	return err
@@ -476,8 +478,8 @@ func (sys *System) ensureSSHTransport() error {
 		})
 	}
 	// Sync client state with transport
-	if sys.client != nil {
-		sys.sshTransport.SetClient(sys.client)
+	if client := sys.getClient(); client != nil {
+		sys.sshTransport.SetClient(client)
 		sys.sshTransport.SetAgentVersion(sys.agentVersion)
 	}
 	return nil
@@ -625,7 +627,7 @@ func (sys *System) fetchDataViaSSH(options common.DataRequestOptions) (*system.C
 // The operation can request a retry by returning true as the first return value.
 func (sys *System) runSSHOperation(timeout time.Duration, retries int, operation func(*ssh.Session) (bool, error)) error {
 	for attempt := 0; attempt <= retries; attempt++ {
-		if sys.client == nil || sys.Status == down {
+		if sys.getClient() == nil || sys.Status == down {
 			if err := sys.createSSHClient(); err != nil {
 				return err
 			}
@@ -721,12 +723,12 @@ func (s *System) createSSHClient() error {
 	} else {
 		host = net.JoinHostPort(host, s.Port)
 	}
-	var err error
-	s.client, err = dialSSHWithKeepAlive(network, host, s.manager.sshConfig)
+	client, err := dialSSHWithKeepAlive(network, host, s.manager.sshConfig)
 	if err != nil {
 		return err
 	}
-	s.agentVersion, _ = extractAgentVersion(string(s.client.Conn.ServerVersion()))
+	s.setClient(client)
+	s.agentVersion, _ = extractAgentVersion(string(client.Conn.ServerVersion()))
 	s.manager.resetFailedSmartFetchState(s.Id)
 	return nil
 }
@@ -762,7 +764,11 @@ func dialSSHWithKeepAlive(network, addr string, config *ssh.ClientConfig) (*ssh.
 // createSessionWithTimeout creates a new SSH session with a timeout to avoid hanging
 // in case of network issues
 func (sys *System) createSessionWithTimeout(timeout time.Duration) (*ssh.Session, error) {
-	if sys.client == nil {
+	// Capture a stable local reference so a concurrent closeSSHConnection
+	// replacing/nil-ing sys.client can't yank it out from under the goroutine
+	// below (see #2157).
+	client := sys.getClient()
+	if client == nil {
 		return nil, fmt.Errorf("client not initialized")
 	}
 
@@ -773,7 +779,7 @@ func (sys *System) createSessionWithTimeout(timeout time.Duration) (*ssh.Session
 	errChan := make(chan error, 1)
 
 	go func() {
-		if session, err := sys.client.NewSession(); err != nil {
+		if session, err := client.NewSession(); err != nil {
 			errChan <- err
 		} else {
 			sessionChan <- session
@@ -790,14 +796,33 @@ func (sys *System) createSessionWithTimeout(timeout time.Duration) (*ssh.Session
 	}
 }
 
+// getClient returns the current SSH client, if any, guarding against
+// concurrent replacement/close.
+func (sys *System) getClient() *ssh.Client {
+	sys.clientMu.Lock()
+	defer sys.clientMu.Unlock()
+	return sys.client
+}
+
+// setClient replaces the current SSH client, guarding against concurrent
+// close.
+func (sys *System) setClient(client *ssh.Client) {
+	sys.clientMu.Lock()
+	defer sys.clientMu.Unlock()
+	sys.client = client
+}
+
 // closeSSHConnection closes the SSH connection but keeps the system in the manager
 func (sys *System) closeSSHConnection() {
 	if sys.sshTransport != nil {
 		sys.sshTransport.Close()
 	}
-	if sys.client != nil {
-		sys.client.Close()
-		sys.client = nil
+	sys.clientMu.Lock()
+	client := sys.client
+	sys.client = nil
+	sys.clientMu.Unlock()
+	if client != nil {
+		client.Close()
 	}
 }
 
