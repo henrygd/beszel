@@ -8,7 +8,7 @@ msgstr ""
 "Language: zh\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2026-08-18 16:38\n"
+"PO-Revision-Date: 2026-08-18 17:52\n"
 "Last-Translator: \n"
 "Language-Team: Chinese Simplified\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
@@ -1077,8 +1077,8 @@ msgid "Memory Usage"
 msgstr "内存使用率"
 
 #: src/components/routes/system/charts/memory-charts.tsx
-msgid "Memory usage of docker containers"
-msgstr "Docker 容器的内存使用率"
+msgid "Memory usage of containers"
+msgstr "容器内存使用量"
 
 #. Device model
 #: src/components/routes/system/smart-table.tsx
@@ -1099,8 +1099,8 @@ msgid "Net"
 msgstr "网络"
 
 #: src/components/routes/system/charts/network-charts.tsx
-msgid "Network traffic of docker containers"
-msgstr "Docker 容器的网络流量"
+msgid "Network traffic of containers"
+msgstr "容器网络流量"
 
 #: src/components/routes/system/charts/network-charts.tsx
 #: src/components/routes/system/network-sheet.tsx
