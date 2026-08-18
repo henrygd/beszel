@@ -8,7 +8,7 @@ msgstr ""
 "Language: ro\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2026-08-17 20:46\n"
+"PO-Revision-Date: 2026-08-18 17:52\n"
 "Last-Translator: \n"
 "Language-Team: Romanian\n"
 "Plural-Forms: nplurals=3; plural=(n==1 ? 0 : (n==0 || (n%100>0 && n%100<20)) ? 1 : 2);\n"
@@ -28,7 +28,7 @@ msgstr ""
 #. placeholder {1}: table.getFilteredRowModel().rows.length
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "{0} of {1} row(s) selected."
-msgstr ""
+msgstr "{0} din {1} rând(uri) selectat(e)."
 
 #: src/components/routes/system/info-bar.tsx
 msgid "{cores, plural, one {# core} other {# cores}}"
@@ -127,7 +127,7 @@ msgstr "Adaugă URL"
 
 #: src/components/routes/settings/general.tsx
 msgid "Adjust display options for charts."
-msgstr ""
+msgstr "Ajustează opțiunile de afișare pentru grafice."
 
 #: src/components/routes/settings/general.tsx
 msgid "Adjust the width of the main layout"
@@ -197,7 +197,7 @@ msgstr "Medie"
 
 #: src/components/routes/system/charts/cpu-charts.tsx
 msgid "Average CPU utilization of containers"
-msgstr ""
+msgstr "Utilizarea medie a CPU-ului containerelor"
 
 #. placeholder {0}: alertData.unit
 #: src/components/alerts/alerts-sheet.tsx
@@ -207,7 +207,7 @@ msgstr ""
 #. placeholder {0}: alertData.unit
 #: src/components/alerts/alerts-sheet.tsx
 msgid "Average exceeds <0>{value}{0}</0>"
-msgstr ""
+msgstr "Media depășește <0>{value}{0}</0>"
 
 #: src/components/routes/system/disk-io-sheet.tsx
 msgid "Average number of I/O operations waiting to be serviced"
@@ -215,7 +215,7 @@ msgstr ""
 
 #: src/components/routes/system/charts/gpu-charts.tsx
 msgid "Average power consumption of GPUs"
-msgstr ""
+msgstr "Consumul mediu de energie al GPU-urilor"
 
 #: src/components/routes/system/disk-io-sheet.tsx
 msgctxt "Disk I/O average operation time (iostat await)"
@@ -224,12 +224,12 @@ msgstr ""
 
 #: src/components/routes/system/charts/cpu-charts.tsx
 msgid "Average system-wide CPU utilization"
-msgstr ""
+msgstr "Utilizarea medie a CPU-ului la nivel de sistem"
 
 #. placeholder {0}: gpu.n
 #: src/components/routes/system/charts/gpu-charts.tsx
 msgid "Average utilization of {0}"
-msgstr ""
+msgstr "Utilizarea medie a {0}"
 
 #: src/components/routes/system/charts/gpu-charts.tsx
 msgid "Average utilization of GPU engines"
@@ -238,7 +238,7 @@ msgstr ""
 #: src/components/command-palette.tsx
 #: src/components/navbar.tsx
 msgid "Backups"
-msgstr ""
+msgstr "Copii de rezervă"
 
 #: src/components/routes/system/charts/network-charts.tsx
 #: src/lib/alerts.ts
@@ -277,11 +277,11 @@ msgstr ""
 
 #: src/components/login/auth-form.tsx
 msgid "Beszel supports OpenID Connect and many OAuth2 authentication providers."
-msgstr ""
+msgstr "Beszel acceptă OpenID Connect și mulți furnizori de autentificare OAuth2."
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Beszel uses <0>Shoutrrr</0> to integrate with popular notification services."
-msgstr ""
+msgstr "Beszel folosește <0>Shoutrrr</0> pentru integrarea cu servicii populare de notificare."
 
 #: src/components/add-system.tsx
 msgid "Binary"
@@ -290,7 +290,7 @@ msgstr "Binar"
 #: src/components/routes/settings/general.tsx
 #: src/components/routes/settings/general.tsx
 msgid "Bits (Kbps, Mbps, Gbps)"
-msgstr ""
+msgstr "Biți (Kbps, Mbps, Gbps)"
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Boot state"
@@ -299,7 +299,7 @@ msgstr ""
 #: src/components/routes/settings/general.tsx
 #: src/components/routes/settings/general.tsx
 msgid "Bytes (KB/s, MB/s, GB/s)"
-msgstr ""
+msgstr "Octeți (KB/s, MB/s, GB/s)"
 
 #: src/components/routes/system/charts/memory-charts.tsx
 msgid "Cache / Buffers"
@@ -333,7 +333,7 @@ msgstr "Capacitate"
 
 #: src/components/routes/settings/config-yaml.tsx
 msgid "Caution - potential data loss"
-msgstr ""
+msgstr "Atenție - posibilă pierdere de date"
 
 #: src/components/routes/settings/general.tsx
 msgid "Celsius (°C)"
@@ -341,24 +341,24 @@ msgstr "Celsius (°C)"
 
 #: src/components/routes/settings/general.tsx
 msgid "Change display units for metrics."
-msgstr ""
+msgstr "Schimbă unitățile de afișare pentru metrici."
 
 #: src/components/routes/settings/general.tsx
 msgid "Change general application options."
-msgstr ""
+msgstr "Schimbă opțiunile generale ale aplicației."
 
 #: src/components/routes/system/charts/sensor-charts.tsx
 msgid "Charge"
-msgstr ""
+msgstr "Încărcare"
 
 #. Context: Battery state
 #: src/lib/i18n.ts
 msgid "Charging"
-msgstr ""
+msgstr "Se încarcă"
 
 #: src/components/routes/settings/general.tsx
 msgid "Chart options"
-msgstr ""
+msgstr "Opțiuni pentru grafice"
 
 #: src/components/routes/system/info-bar.tsx
 msgid "Chart width"
@@ -366,11 +366,11 @@ msgstr ""
 
 #: src/components/login/forgot-pass-form.tsx
 msgid "Check {email} for a reset link."
-msgstr ""
+msgstr "Verifică {email} pentru linkul de resetare."
 
 #: src/components/routes/settings/layout.tsx
 msgid "Check logs for more details."
-msgstr ""
+msgstr "Verifică jurnalele pentru mai multe detalii."
 
 #: src/components/routes/settings/heartbeat.tsx
 msgid "Check your monitoring service"
@@ -1077,8 +1077,8 @@ msgid "Memory Usage"
 msgstr "Memorie Utilizată"
 
 #: src/components/routes/system/charts/memory-charts.tsx
-msgid "Memory usage of docker containers"
-msgstr ""
+msgid "Memory usage of containers"
+msgstr "Utilizarea memoriei de către containere"
 
 #. Device model
 #: src/components/routes/system/smart-table.tsx
@@ -1099,8 +1099,8 @@ msgid "Net"
 msgstr "Rețea"
 
 #: src/components/routes/system/charts/network-charts.tsx
-msgid "Network traffic of docker containers"
-msgstr ""
+msgid "Network traffic of containers"
+msgstr "Traficul de rețea al containerelor"
 
 #: src/components/routes/system/charts/network-charts.tsx
 #: src/components/routes/system/network-sheet.tsx
