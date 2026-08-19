@@ -8,7 +8,7 @@ msgstr ""
 "Language: el\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2026-08-18 19:06\n"
+"PO-Revision-Date: 2026-08-19 18:02\n"
 "Last-Translator: \n"
 "Language-Team: Greek\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
@@ -28,7 +28,7 @@ msgstr "Διαθέσιμη έκδοση {0}"
 #. placeholder {1}: table.getFilteredRowModel().rows.length
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "{0} of {1} row(s) selected."
-msgstr "Επιλέχθηκαν {0} από {1} γραμμές."
+msgstr "{0} από {1} σειρά(ες) επιλέχθηκαν."
 
 #: src/components/routes/system/info-bar.tsx
 msgid "{cores, plural, one {# core} other {# cores}}"
@@ -44,11 +44,11 @@ msgstr "{count, plural, one {{countString} ώρα} other {{countString} ώρες
 
 #: src/lib/utils.ts
 msgid "{count, plural, one {{countString} minute} few {{countString} minutes} many {{countString} minutes} other {{countString} minutes}}"
-msgstr "{count, plural, one {{countString} λεπτό} few {{countString} λεπτά} many {{countString} λεπτά} other {{countString} λεπτά}}"
+msgstr "{count, plural, one {{countString} λεπτό} other {{countString} λεπτά}}"
 
 #: src/components/routes/system/info-bar.tsx
 msgid "{threads, plural, one {# thread} other {# threads}}"
-msgstr "{threads, plural, one {# νήμα} other {# νήματα}}"
+msgstr "{threads, plural, one {# thread} other {# threads}}"
 
 #: src/lib/utils.ts
 msgid "1 hour"
@@ -57,7 +57,7 @@ msgstr "1 ώρα"
 #. Load average
 #: src/components/routes/system/charts/load-average-chart.tsx
 msgid "1 min"
-msgstr "1 λεπτό"
+msgstr "1 λ"
 
 #: src/lib/utils.ts
 msgid "1 minute"
@@ -74,7 +74,7 @@ msgstr "12 ώρες"
 #. Load average
 #: src/components/routes/system/charts/load-average-chart.tsx
 msgid "15 min"
-msgstr "15 λεπτά"
+msgstr "15 λ"
 
 #: src/lib/utils.ts
 msgid "24 hours"
@@ -87,7 +87,7 @@ msgstr "30 ημέρες"
 #. Load average
 #: src/components/routes/system/charts/load-average-chart.tsx
 msgid "5 min"
-msgstr "5 λεπτά"
+msgstr "5 λ"
 
 #. Table column
 #: src/components/routes/settings/quiet-hours.tsx
@@ -482,7 +482,7 @@ msgstr "Αντιγραφή κειμένου"
 
 #: src/components/add-system.tsx
 msgid "Copy the installation command for the agent below, or register agents automatically with a <0>universal token</0>."
-msgstr "Αντιγράψτε την παρακάτω εντολή εγκατάστασης για τον πράκτορα ή καταχωρίστε πράκτορες αυτόματα με ένα <0>καθολικό διακριτικό</0>."
+msgstr "Αντιγράψτε την παρακάτω εντολή εγκατάστασης για τον agent ή καταχωρίστε agents αυτόματα με ένα <0>καθολικό token</0>."
 
 #: src/components/add-system.tsx
 msgid "Copy the<0>docker-compose.yml</0> content for the agent below, or register agents automatically with a <1>universal token</1>."
@@ -746,7 +746,7 @@ msgstr "Παράδειγμα:"
 #. placeholder {2}: alert.min
 #: src/components/active-alerts.tsx
 msgid "Exceeds {0}{1} in last {2, plural, one {# minute} other {# minutes}}"
-msgstr "Υπερβαίνει {0}{1} στα τελευταία {2, plural, one {# λεπτό} other {# λεπτά}}"
+msgstr "Υπερβαίνει {0}{1} {2, plural, one {στο τελευταίο # λεπτό} other {στα τελευταία # λεπτά}}"
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Exec main PID"
@@ -943,7 +943,7 @@ msgstr "Αδράνεια"
 
 #: src/components/login/forgot-pass-form.tsx
 msgid "If you've lost the password to your admin account, you may reset it using the following command."
-msgstr "Αν έχετε χάσει τον κωδικό πρόσβασης του λογαριασμού διαχειριστή, μπορείτε να τον επαναφέρετε χρησιμοποιώντας την ακόλουθη εντολή."
+msgstr "Αν έχετε χάσει τον κωδικό πρόσβασης του λογαριασμού διαχειριστή σας, μπορείτε να τον επαναφέρετε χρησιμοποιώντας την ακόλουθη εντολή."
 
 #: src/components/containers-table/containers-table-columns.tsx
 msgctxt "Docker image"
@@ -1034,7 +1034,7 @@ msgstr "Αρχεία καταγραφής"
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Looking instead for where to create alerts? Click the bell <0/> icons in the systems table."
-msgstr "Ψάχνετε πού μπορείτε να δημιουργήσετε ειδοποιήσεις; Κάντε κλικ στα εικονίδια καμπάνας <0/> στον πίνακα συστημάτων."
+msgstr "Ψάχνετε πού μπορείτε να δημιουργήσετε ειδοποιήσεις; Κάντε κλικ στο καμπανάκι <0/> στον πίνακα συστημάτων."
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Main PID"
@@ -1047,12 +1047,12 @@ msgstr "Διαχειριστείτε τις προτιμήσεις εμφάνι�
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Manual setup instructions"
-msgstr "Οδηγίες χειροκίνητης ρύθμισης"
+msgstr "Οδηγίες χειροκίνητης εγκατάστασης"
 
 #. Chart select field. Please try to keep this short.
 #: src/components/routes/system/chart-card.tsx
 msgid "Max 1 min"
-msgstr "Μέγ. 1 λεπτό"
+msgstr "Μέγ. 1 λ"
 
 #: src/components/containers-table/containers-table-columns.tsx
 #: src/components/routes/system/info-bar.tsx
@@ -1107,7 +1107,7 @@ msgstr "Κίνηση δικτύου των κοντέινερ"
 #: src/components/routes/system/network-sheet.tsx
 #: src/components/routes/system/network-sheet.tsx
 msgid "Network traffic of public interfaces"
-msgstr "Κίνηση δικτύου δημόσιων διεπαφών"
+msgstr "Κίνηση δικτύου δημόσιων interfaces"
 
 #. Context: Bytes or bits
 #: src/components/routes/settings/general.tsx
@@ -1237,7 +1237,7 @@ msgstr "Σε παύση ({pausedSystemsLength})"
 
 #: src/components/routes/settings/heartbeat.tsx
 msgid "Payload format"
-msgstr "Μορφή ωφέλιμου φορτίου"
+msgstr "Μορφή payload"
 
 #: src/components/routes/system/cpu-sheet.tsx
 #: src/components/routes/system/cpu-sheet.tsx
@@ -1271,7 +1271,7 @@ msgstr "Ελέγξτε τα αρχεία καταγραφής για περισ�
 #: src/components/login/auth-form.tsx
 #: src/components/login/forgot-pass-form.tsx
 msgid "Please check your credentials and try again"
-msgstr "Ελέγξτε τα διαπιστευτήριά σας και δοκιμάστε ξανά"
+msgstr "Ελέγξτε τα στοιχεία σας και προσπαθήστε ξανά"
 
 #: src/components/login/login.tsx
 msgid "Please create an admin account"
@@ -1401,7 +1401,7 @@ msgstr "Ρίζα"
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Rotate token"
-msgstr "Ανανέωση διακριτικού"
+msgstr "Ανανέωση token"
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Rows per page"
@@ -1557,7 +1557,7 @@ msgstr "Υποκατάσταση"
 
 #: src/components/routes/system/charts/memory-charts.tsx
 msgid "Swap space used by the system"
-msgstr "Χώρος swap που χρησιμοποιείται από το σύστημα"
+msgstr "Swap που χρησιμοποιείται από το σύστημα"
 
 #: src/components/routes/system/charts/memory-charts.tsx
 msgid "Swap Usage"
@@ -1629,7 +1629,7 @@ msgstr "Θερμοκρασία"
 
 #: src/components/routes/settings/general.tsx
 msgid "Temperature unit"
-msgstr "Μονάδα θερμοκρασίας"
+msgstr "Μονάδα μέτρησης θερμοκρασίας"
 
 #: src/components/routes/system/charts/sensor-charts.tsx
 msgid "Temperatures of system sensors"
@@ -1705,7 +1705,7 @@ msgstr "Σύνολο"
 
 #: src/components/routes/system/network-sheet.tsx
 msgid "Total data received for each interface"
-msgstr "Συνολικά δεδομένα που ελήφθησαν για κάθε διεπαφή"
+msgstr "Συνολικά ληφθέντα δεδομένα για κάθε interface"
 
 #: src/components/routes/system/network-sheet.tsx
 msgid "Total data sent for each interface"
@@ -1786,7 +1786,7 @@ msgstr "Αρχείο μονάδας"
 #. Temperature / network units
 #: src/components/routes/settings/general.tsx
 msgid "Unit preferences"
-msgstr "Προτιμήσεις μονάδων"
+msgstr "Προτιμήσεις μονάδων μέτρησης"
 
 #: src/components/command-palette.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
@@ -1846,7 +1846,7 @@ msgstr "Χρήση"
 
 #: src/components/routes/system/charts/disk-charts.tsx
 msgid "Usage of root partition"
-msgstr "Χρήση ριζικού διαμερίσματος"
+msgstr "Χρήση διαμερίσματος root"
 
 #: src/components/routes/system/charts/memory-charts.tsx
 #: src/components/routes/system/charts/memory-charts.tsx
@@ -1907,7 +1907,7 @@ msgstr "Όρια προειδοποίησης"
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Webhook / Push notifications"
-msgstr "Ειδοποιήσεις Webhook / Push"
+msgstr "Webhook / Ειδοποιήσεις Push"
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "When enabled, this token allows agents to self-register without prior system creation."
@@ -1915,7 +1915,7 @@ msgstr "Όταν είναι ενεργοποιημένο, αυτό το διακ
 
 #: src/components/routes/settings/heartbeat.tsx
 msgid "When using POST, each heartbeat includes a JSON payload with system status summary, list of down systems, and triggered alerts."
-msgstr "Όταν χρησιμοποιείται POST, κάθε heartbeat περιλαμβάνει ωφέλιμο φορτίο JSON με σύνοψη κατάστασης συστημάτων, λίστα συστημάτων εκτός λειτουργίας και ενεργοποιημένες ειδοποιήσεις."
+msgstr "Όταν χρησιμοποιείται το POST, κάθε heartbeat περιλαμβάνει JSON payload με σύνοψη κατάστασης συστημάτων, λίστα συστημάτων εκτός λειτουργίας και ενεργοποιημένες ειδοποιήσεις."
 
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
@@ -1933,7 +1933,7 @@ msgstr "Εγγραφή"
 
 #: src/components/routes/settings/layout.tsx
 msgid "YAML Config"
-msgstr "Διαμόρφωση YAML"
+msgstr "Διαμ. YAML"
 
 #: src/components/routes/settings/config-yaml.tsx
 msgid "YAML Configuration"
