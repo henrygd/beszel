@@ -97,6 +97,13 @@ ensure_trailing_slash() {
   fi
 }
 
+# Escape text for use in the replacement portion of a sed s command whose
+# delimiter is |. This only escapes sed replacement metacharacters; quoting
+# for the destination configuration syntax is handled separately.
+escape_sed_replacement() {
+  printf '%s' "$1" | sed 's/[\\&|]/\\&/g'
+}
+
 # Generate FreeBSD rc service content
 generate_freebsd_rc_service() {
   cat <<'EOF'
@@ -300,10 +307,10 @@ build_sudo_args() {
     if [ -n "$QUOTED_ARGS" ]; then
       QUOTED_ARGS="$QUOTED_ARGS "
     fi
-    QUOTED_ARGS="$QUOTED_ARGS'$(echo "$1" | sed "s/'/'\\\\''/g")'"
+    QUOTED_ARGS="$QUOTED_ARGS'$(printf '%s' "$1" | sed "s/'/'\\\\''/g")'"
     shift
   done
-  echo "$QUOTED_ARGS"
+  printf '%s\n' "$QUOTED_ARGS"
 }
 
 # Check if running as root and re-execute with sudo if needed
@@ -576,7 +583,7 @@ if [ -z "$KEY" ]; then
 fi
 
 # Remove newlines from KEY
-KEY=$(echo "$KEY" | tr -d '\n')
+KEY=$(printf '%s' "$KEY" | tr -d '\n')
 
 # TOKEN and HUB_URL are optional for backwards compatibility - no interactive prompts
 # They will be set as empty environment variables if not provided
@@ -815,10 +822,14 @@ EOF
     rc-update add beszel-agent default
   else
     echo "Alpine OpenRC service file already exists. Updating environment variables..."
-    [ "$PORT_PROVIDED" = "true" ] && sed -i "s|^export PORT=.*|export PORT=\"$PORT\"|" /etc/init.d/beszel-agent
-    [ "$KEY_PROVIDED" = "true" ] && sed -i "s|^export KEY=.*|export KEY=\"$KEY\"|" /etc/init.d/beszel-agent
-    [ "$TOKEN_PROVIDED" = "true" ] && sed -i "s|^export TOKEN=.*|export TOKEN=\"$TOKEN\"|" /etc/init.d/beszel-agent
-    [ "$HUB_URL_PROVIDED" = "true" ] && sed -i "s|^export HUB_URL=.*|export HUB_URL=\"$HUB_URL\"|" /etc/init.d/beszel-agent
+    SED_PORT=$(escape_sed_replacement "$PORT")
+    SED_KEY=$(escape_sed_replacement "$KEY")
+    SED_TOKEN=$(escape_sed_replacement "$TOKEN")
+    SED_HUB_URL=$(escape_sed_replacement "$HUB_URL")
+    [ "$PORT_PROVIDED" = "true" ] && sed -i "s|^export PORT=.*|export PORT=\"$SED_PORT\"|" /etc/init.d/beszel-agent
+    [ "$KEY_PROVIDED" = "true" ] && sed -i "s|^export KEY=.*|export KEY=\"$SED_KEY\"|" /etc/init.d/beszel-agent
+    [ "$TOKEN_PROVIDED" = "true" ] && sed -i "s|^export TOKEN=.*|export TOKEN=\"$SED_TOKEN\"|" /etc/init.d/beszel-agent
+    [ "$HUB_URL_PROVIDED" = "true" ] && sed -i "s|^export HUB_URL=.*|export HUB_URL=\"$SED_HUB_URL\"|" /etc/init.d/beszel-agent
   fi
 
   # Create log files with proper permissions
@@ -903,12 +914,21 @@ EOF
     echo "OpenWRT init script already exists. Updating environment variables..."
     # The env vars live on a single procd_set_param line, so merge any values
     # that weren't explicitly provided in from the existing line before rewriting it.
-    CUR_ENV_LINE=$(grep "procd_set_param env PORT=" /etc/init.d/beszel-agent)
-    [ "$PORT_PROVIDED" = "true" ] || PORT=$(echo "$CUR_ENV_LINE" | sed -n 's/.*PORT="\([^"]*\)".*/\1/p')
-    [ "$KEY_PROVIDED" = "true" ] || KEY=$(echo "$CUR_ENV_LINE" | sed -n 's/.*KEY="\([^"]*\)".*/\1/p')
-    [ "$TOKEN_PROVIDED" = "true" ] || TOKEN=$(echo "$CUR_ENV_LINE" | sed -n 's/.*TOKEN="\([^"]*\)".*/\1/p')
-    [ "$HUB_URL_PROVIDED" = "true" ] || HUB_URL=$(echo "$CUR_ENV_LINE" | sed -n 's/.*HUB_URL="\([^"]*\)".*/\1/p')
-    sed -i "s|procd_set_param env PORT=.*|procd_set_param env PORT=\"$PORT\" KEY=\"$KEY\" TOKEN=\"$TOKEN\" HUB_URL=\"$HUB_URL\"|" /etc/init.d/beszel-agent
+    CUR_ENV_LINE=$(sed -n '/^[[:space:]]*procd_set_param env PORT=/{p;q;}' /etc/init.d/beszel-agent)
+    if [ -z "$CUR_ENV_LINE" ] || ! printf '%s\n' "$CUR_ENV_LINE" | grep -q 'PORT="[^"]*" KEY="[^"]*" TOKEN="[^"]*" HUB_URL="[^"]*"'; then
+      echo "Error: Could not parse the existing environment configuration in /etc/init.d/beszel-agent."
+      echo "Expected a procd_set_param env line containing PORT, KEY, TOKEN, and HUB_URL."
+      exit 1
+    fi
+    [ "$PORT_PROVIDED" = "true" ] || PORT=$(printf '%s\n' "$CUR_ENV_LINE" | sed -n 's/.*PORT="\([^"]*\)".*/\1/p')
+    [ "$KEY_PROVIDED" = "true" ] || KEY=$(printf '%s\n' "$CUR_ENV_LINE" | sed -n 's/.*KEY="\([^"]*\)".*/\1/p')
+    [ "$TOKEN_PROVIDED" = "true" ] || TOKEN=$(printf '%s\n' "$CUR_ENV_LINE" | sed -n 's/.*TOKEN="\([^"]*\)".*/\1/p')
+    [ "$HUB_URL_PROVIDED" = "true" ] || HUB_URL=$(printf '%s\n' "$CUR_ENV_LINE" | sed -n 's/.*HUB_URL="\([^"]*\)".*/\1/p')
+    SED_PORT=$(escape_sed_replacement "$PORT")
+    SED_KEY=$(escape_sed_replacement "$KEY")
+    SED_TOKEN=$(escape_sed_replacement "$TOKEN")
+    SED_HUB_URL=$(escape_sed_replacement "$HUB_URL")
+    sed -i "s|procd_set_param env PORT=.*|procd_set_param env PORT=\"$SED_PORT\" KEY=\"$SED_KEY\" TOKEN=\"$SED_TOKEN\" HUB_URL=\"$SED_HUB_URL\"|" /etc/init.d/beszel-agent
   fi
 
   # Start the service
@@ -954,10 +974,14 @@ elif is_freebsd; then
   # Create or update environment configuration file
   if [ -f "$AGENT_DIR/env" ]; then
     echo "Environment configuration file already exists. Updating environment variables..."
-    [ "$PORT_PROVIDED" = "true" ] && sed -i '' -e "s|^LISTEN=.*|LISTEN=$PORT|" "$AGENT_DIR/env"
-    [ "$KEY_PROVIDED" = "true" ] && sed -i '' -e "s|^KEY=.*|KEY=\"$KEY\"|" "$AGENT_DIR/env"
-    [ "$TOKEN_PROVIDED" = "true" ] && sed -i '' -e "s|^TOKEN=.*|TOKEN=$TOKEN|" "$AGENT_DIR/env"
-    [ "$HUB_URL_PROVIDED" = "true" ] && sed -i '' -e "s|^HUB_URL=.*|HUB_URL=$HUB_URL|" "$AGENT_DIR/env"
+    SED_PORT=$(escape_sed_replacement "$PORT")
+    SED_KEY=$(escape_sed_replacement "$KEY")
+    SED_TOKEN=$(escape_sed_replacement "$TOKEN")
+    SED_HUB_URL=$(escape_sed_replacement "$HUB_URL")
+    [ "$PORT_PROVIDED" = "true" ] && sed -i '' -e "s|^LISTEN=.*|LISTEN=$SED_PORT|" "$AGENT_DIR/env"
+    [ "$KEY_PROVIDED" = "true" ] && sed -i '' -e "s|^KEY=.*|KEY=\"$SED_KEY\"|" "$AGENT_DIR/env"
+    [ "$TOKEN_PROVIDED" = "true" ] && sed -i '' -e "s|^TOKEN=.*|TOKEN=$SED_TOKEN|" "$AGENT_DIR/env"
+    [ "$HUB_URL_PROVIDED" = "true" ] && sed -i '' -e "s|^HUB_URL=.*|HUB_URL=$SED_HUB_URL|" "$AGENT_DIR/env"
   else
     echo "Writing environment configuration file..."
     cat >"$AGENT_DIR/env" <<EOF
@@ -1101,10 +1125,14 @@ WantedBy=multi-user.target
 EOF
   else
     echo "Systemd service file already exists. Updating environment variables..."
-    [ "$PORT_PROVIDED" = "true" ] && sed -i "s|^Environment=\"PORT=.*\"|Environment=\"PORT=$PORT\"|" /etc/systemd/system/beszel-agent.service
-    [ "$KEY_PROVIDED" = "true" ] && sed -i "s|^Environment=\"KEY=.*\"|Environment=\"KEY=$KEY\"|" /etc/systemd/system/beszel-agent.service
-    [ "$TOKEN_PROVIDED" = "true" ] && sed -i "s|^Environment=\"TOKEN=.*\"|Environment=\"TOKEN=$TOKEN\"|" /etc/systemd/system/beszel-agent.service
-    [ "$HUB_URL_PROVIDED" = "true" ] && sed -i "s|^Environment=\"HUB_URL=.*\"|Environment=\"HUB_URL=$HUB_URL\"|" /etc/systemd/system/beszel-agent.service
+    SED_PORT=$(escape_sed_replacement "$PORT")
+    SED_KEY=$(escape_sed_replacement "$KEY")
+    SED_TOKEN=$(escape_sed_replacement "$TOKEN")
+    SED_HUB_URL=$(escape_sed_replacement "$HUB_URL")
+    [ "$PORT_PROVIDED" = "true" ] && sed -i "s|^Environment=\"PORT=.*\"|Environment=\"PORT=$SED_PORT\"|" /etc/systemd/system/beszel-agent.service
+    [ "$KEY_PROVIDED" = "true" ] && sed -i "s|^Environment=\"KEY=.*\"|Environment=\"KEY=$SED_KEY\"|" /etc/systemd/system/beszel-agent.service
+    [ "$TOKEN_PROVIDED" = "true" ] && sed -i "s|^Environment=\"TOKEN=.*\"|Environment=\"TOKEN=$SED_TOKEN\"|" /etc/systemd/system/beszel-agent.service
+    [ "$HUB_URL_PROVIDED" = "true" ] && sed -i "s|^Environment=\"HUB_URL=.*\"|Environment=\"HUB_URL=$SED_HUB_URL\"|" /etc/systemd/system/beszel-agent.service
   fi
 
   # Load and start the service
