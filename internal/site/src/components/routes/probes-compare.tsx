@@ -3,20 +3,12 @@ import { useLingui } from "@lingui/react/macro"
 import { Trans } from "@lingui/react/macro"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import {
-	NetworkIcon,
-	HistoryIcon,
-	GlobeIcon,
-	ServerIcon,
-	GitCompareArrowsIcon,
-	RefreshCwIcon,
-	EthernetPortIcon,
-} from "lucide-react"
+import { NetworkIcon, HistoryIcon, GlobeIcon, ServerIcon, GitCompareArrowsIcon } from "lucide-react"
 import { useNetworkProbes, fetchTargetComparison, type ComparisonResult } from "@/lib/use-network-probes"
-import { ResponseChart, LossChart } from "@/components/routes/system/charts/probes-charts"
+import { ResponseLossChart } from "@/components/routes/system/charts/probes-charts"
 import { $direction, $systems } from "@/lib/stores"
 import { useStore } from "@nanostores/react"
-import { chartTimeData, parseSemVer } from "@/lib/utils"
+import { chartTimeData, cn, parseSemVer } from "@/lib/utils"
 import type { ChartData, ChartTimes, NetworkProbeRecord } from "@/types"
 import { FooterRepoLink } from "@/components/footer-repo-link"
 import { Card } from "@/components/ui/card"
@@ -258,7 +250,7 @@ function ProtocolCompareView({
 	systemIds?: string[]
 }) {
 	return (
-		<>
+		<div className={cn("grid gap-4 items-start", entries.length > 1 && "xl:grid-cols-2")}>
 			{entries.map((entry) => (
 				<TargetCompareCharts
 					key={entry.key}
@@ -269,7 +261,7 @@ function ProtocolCompareView({
 					systemIds={systemIds}
 				/>
 			))}
-		</>
+		</div>
 	)
 }
 
@@ -287,10 +279,10 @@ function TargetCompareCharts({
 	systemIds?: string[]
 }) {
 	const { t } = useLingui()
-	const [result, setResult] = useState<ComparisonResult>({ syntheticProbes: [], stats: [] })
+	const [result, setResult] = useState<ComparisonResult>({ syntheticProbes: [], stats: [], interval: 0, port: 0 })
 
 	useEffect(() => {
-		setResult({ syntheticProbes: [], stats: [] })
+		setResult({ syntheticProbes: [], stats: [], interval: 0, port: 0 })
 		fetchTargetComparison(target, protocol, chartData.chartTime, systemIds)
 			.then(setResult)
 			.catch((e) => console.error("fetchTargetComparison failed", target, protocol, e))
@@ -313,62 +305,20 @@ function TargetCompareCharts({
 	const empty = result.stats.length < 2
 
 	return (
-		<>
-			<Card>
-				<div className="px-4 sm:px-6 pt-3 sm:pt-4 pb-5">
-					<h2 className="text-lg font-semibold mb-1.5">{name}</h2>
-					<div className="flex items-center py-4 xl:p-0 -mt-3 xl:mt-1 gap-3 text-sm text-nowrap opacity-90 overflow-x-auto scrollbar-hide -mx-4 px-4 xl:mx-0">
-						<div className="flex gap-1.5 items-center">
-							<GlobeIcon className="h-4 w-4" />
-							{target}
-						</div>
-						{result.interval > 0 && (
-							<>
-								<Separator orientation="vertical" className="h-4 bg-primary/30" />
-								<div className="flex gap-1.5 items-center">
-									<RefreshCwIcon className="h-4 w-4" />
-									{result.interval}s
-								</div>
-							</>
-						)}
-						{protocol === "tcp" && result.port > 0 && (
-							<>
-								<Separator orientation="vertical" className="h-4 bg-primary/30" />
-								<div className="flex gap-1.5 items-center">
-									<EthernetPortIcon className="h-4 w-4" />
-									{result.port}
-								</div>
-							</>
-						)}
-						<Separator orientation="vertical" className="h-4 bg-primary/30" />
-						<div className="flex gap-1.5 items-center">
-							<ServerIcon className="h-4 w-4" />
-							{result.syntheticProbes.length}
-						</div>
-					</div>
-				</div>
-			</Card>
+		<div className="grid gap-4">
 			{result.syntheticProbes.length === 0 && (
 				<p className="text-sm text-muted-foreground py-4 text-center">{t`No data found for this target.`}</p>
 			)}
 			{syntheticProbes.length > 0 && (
-				<div className="grid xl:grid-cols-2 gap-4">
-					<ResponseChart
-						probeStats={result.stats}
-						probes={syntheticProbes}
-						chartData={chartData}
-						empty={empty}
-						grid={true}
-					/>
-					<LossChart
-						probeStats={result.stats}
-						probes={syntheticProbes}
-						chartData={chartData}
-						empty={empty}
-						grid={true}
-					/>
-				</div>
+				<ResponseLossChart
+					probeStats={result.stats}
+					probes={syntheticProbes}
+					chartData={chartData}
+					empty={empty}
+					grid={false}
+					titlePrefix={name}
+				/>
 			)}
-		</>
+		</div>
 	)
 }

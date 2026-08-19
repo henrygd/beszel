@@ -1,7 +1,7 @@
 import { lazy } from "react"
 import { useIntersectionObserver } from "@/lib/use-intersection-observer"
 import { cn } from "@/lib/utils"
-import { ResponseChart, LossChart } from "./charts/probes-charts"
+import { ResponseLossChart } from "./charts/probes-charts"
 import type { SystemData } from "./use-system-data"
 import { $chartTime } from "@/lib/stores"
 import { useStore } from "@nanostores/react"
@@ -76,22 +76,13 @@ function ProbesCharts({
 	return (
 		<>
 			{!!chartData && !!probes.length && (
-				<div className="grid xl:grid-cols-2 gap-4">
-					<ResponseChart
-						probeStats={probeStats}
-						grid={grid}
-						probes={probes}
-						chartData={chartData}
-						empty={!probeStats.length}
-					/>
-					<LossChart
-						probeStats={probeStats}
-						grid={grid}
-						probes={probes}
-						chartData={chartData}
-						empty={!probeStats.length}
-					/>
-				</div>
+				<ResponseLossChart
+					probeStats={probeStats}
+					grid={grid}
+					probes={probes}
+					chartData={chartData}
+					empty={!probeStats.length}
+				/>
 			)}
 		</>
 	)
