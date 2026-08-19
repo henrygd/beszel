@@ -97,6 +97,31 @@ ensure_trailing_slash() {
   fi
 }
 
+# Read the listen address from the active service configuration. Existing
+# service files are kept as they are, so the configured address can differ from
+# $PORT, which falls back to the default when -p is not passed. LISTEN is
+# checked before PORT to match the agent's own precedence, and the value is read
+# as text so host:port and unix socket paths survive.
+configured_address() {
+  if is_alpine || is_openwrt; then
+    address_file=/etc/init.d/beszel-agent
+  elif is_freebsd; then
+    address_file="$AGENT_DIR/env"
+  else
+    address_file=/etc/systemd/system/beszel-agent.service
+  fi
+
+  [ -f "$address_file" ] || return 0
+
+  # matches Environment="LISTEN=x", export LISTEN="x", LISTEN="x" and LISTEN=x
+  address_value=$(sed -n 's/.*LISTEN="\{0,1\}\([^"]*\)"\{0,1\}.*/\1/p' "$address_file" | head -n 1)
+  if [ -z "$address_value" ]; then
+    address_value=$(sed -n 's/.*PORT="\{0,1\}\([^"]*\)"\{0,1\}.*/\1/p' "$address_file" | head -n 1)
+  fi
+
+  echo "$address_value"
+}
+
 # Generate FreeBSD rc service content
 generate_freebsd_rc_service() {
   cat <<'EOF'
@@ -1140,4 +1165,7 @@ EOF
   fi
 fi
 
-printf "\n\033[32mBeszel Agent has been installed successfully! It is now running on $PORT.\033[0m\n"
+RUNNING_ADDRESS=$(configured_address)
+[ -n "$RUNNING_ADDRESS" ] || RUNNING_ADDRESS=$PORT
+
+printf "\n\033[32mBeszel Agent has been installed successfully! It is now running on $RUNNING_ADDRESS.\033[0m\n"
