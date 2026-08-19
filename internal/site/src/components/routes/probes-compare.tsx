@@ -3,16 +3,31 @@ import { useLingui } from "@lingui/react/macro"
 import { Trans } from "@lingui/react/macro"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { NetworkIcon, HistoryIcon, GlobeIcon, ServerIcon, GitCompareArrowsIcon, RefreshCwIcon, EthernetPortIcon } from "lucide-react"
+import {
+	NetworkIcon,
+	HistoryIcon,
+	GlobeIcon,
+	ServerIcon,
+	GitCompareArrowsIcon,
+	RefreshCwIcon,
+	EthernetPortIcon,
+} from "lucide-react"
 import { useNetworkProbes, fetchTargetComparison, type ComparisonResult } from "@/lib/use-network-probes"
 import { ResponseChart, LossChart } from "@/components/routes/system/charts/probes-charts"
-import { $direction } from "@/lib/stores"
+import { $direction, $systems } from "@/lib/stores"
 import { useStore } from "@nanostores/react"
 import { chartTimeData, parseSemVer } from "@/lib/utils"
 import type { ChartData, ChartTimes, NetworkProbeRecord } from "@/types"
 import { FooterRepoLink } from "@/components/footer-repo-link"
 import { Card } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
+import { Button } from "@/components/ui/button"
+import {
+	DropdownMenu,
+	DropdownMenuCheckboxItem,
+	DropdownMenuContent,
+	DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 
 const CHART_TIMES: ChartTimes[] = ["1h", "12h", "24h", "1w", "30d"]
 const ZERO_VERSION = parseSemVer("0.0.0")
@@ -27,16 +42,47 @@ interface CompareEntry {
 export default memo(function ProbesCompare({ protocol }: { protocol?: string }) {
 	const { t } = useLingui()
 	const probes = useNetworkProbes({})
+	const allSystems = useStore($systems)
 	const direction = useStore($direction)
 	const [chartTime, setChartTime] = useState<ChartTimes>("1h")
+	const [selectedSystemIds, setSelectedSystemIds] = useState<Set<string>>(new Set())
 
 	useEffect(() => {
 		document.title = `${t`Compare`} / Beszel`
 	}, [t])
 
+	const toggleSelectedSystem = (sysId: string) => {
+		setSelectedSystemIds((prev) => {
+			const next = new Set(prev)
+			if (next.has(sysId)) {
+				next.delete(sysId)
+			} else {
+				next.add(sysId)
+			}
+			return next
+		})
+	}
+
+	const selectedSystemIdsList = useMemo(
+		() => (selectedSystemIds.size > 0 ? [...selectedSystemIds].sort() : undefined),
+		[selectedSystemIds]
+	)
+
+	// with 2+ systems selected, restrict comparison strictly to those systems; with a single
+	// system selected there's nothing to compare it against on its own, so use it as a pivot
+	// and keep all probes in scope, then only keep targets that pivot system actually monitors
+	const relevantProbes = useMemo(
+		() => (selectedSystemIdsList && selectedSystemIdsList.length >= 2
+			? probes.filter((p) => selectedSystemIdsList.includes(p.system))
+			: probes),
+		[probes, selectedSystemIdsList]
+	)
+
+	const pivotSystemId = selectedSystemIdsList?.length === 1 ? selectedSystemIdsList[0] : undefined
+
 	const compareEntries = useMemo<CompareEntry[]>(() => {
 		const map = new Map<string, { target: string; protocol: string; name: string; systems: Set<string> }>()
-		for (const p of probes) {
+		for (const p of relevantProbes) {
 			const key = `${p.target}\x00${p.protocol}`
 			const existing = map.get(key)
 			if (existing) {
@@ -47,9 +93,9 @@ export default memo(function ProbesCompare({ protocol }: { protocol?: string }) 
 			}
 		}
 		return [...map.entries()]
-			.filter(([, e]) => e.systems.size >= 2)
+			.filter(([, e]) => e.systems.size >= 2 && (!pivotSystemId || e.systems.has(pivotSystemId)))
 			.map(([key, e]) => ({ key, target: e.target, protocol: e.protocol, name: e.name || e.target }))
-	}, [probes])
+	}, [relevantProbes, pivotSystemId])
 
 	const compareProtocols = useMemo(() => {
 		const set = new Set(compareEntries.map((e) => e.protocol))
@@ -84,10 +130,45 @@ export default memo(function ProbesCompare({ protocol }: { protocol?: string }) 
 		return systems.size
 	}, [probes])
 
+	let systemSelectorLabel = t`All systems`
+	if (selectedSystemIds.size === 1) {
+		const selectedSystem = allSystems.find((s) => selectedSystemIds.has(s.id))
+		systemSelectorLabel = selectedSystem?.name ?? t`1 system selected`
+	} else if (selectedSystemIds.size > 1) {
+		systemSelectorLabel = t`${selectedSystemIds.size} systems selected`
+	}
+
+	const systemSelector = (
+		<DropdownMenu>
+			<DropdownMenuTrigger asChild>
+				<Button variant="outline" className="relative ps-9 justify-start font-normal w-full xl:w-48">
+					<ServerIcon className="size-3.5 absolute start-3 top-1/2 -translate-y-1/2 opacity-85" />
+					{systemSelectorLabel}
+				</Button>
+			</DropdownMenuTrigger>
+			<DropdownMenuContent className="w-56">
+				{allSystems.map((sys) => (
+					<DropdownMenuCheckboxItem
+						key={sys.id}
+						checked={selectedSystemIds.has(sys.id)}
+						onCheckedChange={() => toggleSelectedSystem(sys.id)}
+					>
+						{sys.name}
+					</DropdownMenuCheckboxItem>
+				))}
+			</DropdownMenuContent>
+		</DropdownMenu>
+	)
+
 	if (compareEntries.length === 0 && probes.length > 0) {
 		return (
 			<div className="grid gap-4 py-4">
-				<p className="text-sm text-muted-foreground text-center py-12">{t`No targets are monitored by more than one system.`}</p>
+				<div className="max-w-48">{systemSelector}</div>
+				<p className="text-sm text-muted-foreground text-center py-12">
+					{selectedSystemIds.size > 0
+						? t`No shared targets among the selected systems.`
+						: t`No targets are monitored by more than one system.`}
+				</p>
 				<FooterRepoLink />
 			</div>
 		)
@@ -121,6 +202,7 @@ export default memo(function ProbesCompare({ protocol }: { protocol?: string }) 
 							</div>
 						</div>
 						<div className="xl:ms-auto flex items-center gap-2 max-sm:-mb-1">
+							{systemSelector}
 							<Select value={chartTime} onValueChange={(v) => setChartTime(v as ChartTimes)}>
 								<SelectTrigger className="w-full xl:w-40 ps-9 relative">
 									<HistoryIcon className="h-4 w-4 absolute start-3 top-1/2 -translate-y-1/2 opacity-70" />
@@ -154,6 +236,7 @@ export default memo(function ProbesCompare({ protocol }: { protocol?: string }) 
 								<ProtocolCompareView
 									entries={compareEntries.filter((e) => e.protocol === p)}
 									chartData={chartData}
+									systemIds={selectedSystemIdsList && selectedSystemIdsList.length >= 2 ? selectedSystemIdsList : undefined}
 								/>
 							)}
 						</TabsContent>
@@ -165,11 +248,26 @@ export default memo(function ProbesCompare({ protocol }: { protocol?: string }) 
 	)
 })
 
-function ProtocolCompareView({ entries, chartData }: { entries: CompareEntry[]; chartData: ChartData }) {
+function ProtocolCompareView({
+	entries,
+	chartData,
+	systemIds,
+}: {
+	entries: CompareEntry[]
+	chartData: ChartData
+	systemIds?: string[]
+}) {
 	return (
 		<>
 			{entries.map((entry) => (
-				<TargetCompareCharts key={entry.key} name={entry.name} target={entry.target} protocol={entry.protocol} chartData={chartData} />
+				<TargetCompareCharts
+					key={entry.key}
+					name={entry.name}
+					target={entry.target}
+					protocol={entry.protocol}
+					chartData={chartData}
+					systemIds={systemIds}
+				/>
 			))}
 		</>
 	)
@@ -180,21 +278,23 @@ function TargetCompareCharts({
 	target,
 	protocol,
 	chartData,
+	systemIds,
 }: {
 	name: string
 	target: string
 	protocol: string
 	chartData: ChartData
+	systemIds?: string[]
 }) {
 	const { t } = useLingui()
 	const [result, setResult] = useState<ComparisonResult>({ syntheticProbes: [], stats: [] })
 
 	useEffect(() => {
 		setResult({ syntheticProbes: [], stats: [] })
-		fetchTargetComparison(target, protocol, chartData.chartTime)
+		fetchTargetComparison(target, protocol, chartData.chartTime, systemIds)
 			.then(setResult)
 			.catch((e) => console.error("fetchTargetComparison failed", target, protocol, e))
-	}, [target, protocol, chartData.chartTime])
+	}, [target, protocol, chartData.chartTime, systemIds])
 
 	const syntheticProbes = useMemo(
 		() =>

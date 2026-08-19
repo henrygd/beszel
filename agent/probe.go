@@ -384,6 +384,12 @@ func (pm *ProbeManager) runProbeNow(task *probeTask) *probe.Result {
 // resultLocked returns the aggregated probe result for the requested duration along with a bool indicating whether any data was available.
 func (task *probeTask) resultLocked(duration time.Duration, now time.Time) (probe.Result, bool) {
 	agg := task.aggregateLocked(duration, now)
+	if !agg.hasData() {
+		// short realtime windows (e.g. the 1s window used for 1m/realtime charts) often fall
+		// between probe samples since probes run at longer, user-defined intervals; fall back to
+		// the most recent sample so realtime requests still report current status.
+		agg = task.latestSampleAggregateLocked()
+	}
 	hourAgg := task.aggregateLocked(time.Hour, now)
 	if !agg.hasData() {
 		return probe.Result{}, false
@@ -400,6 +406,16 @@ func (task *probeTask) resultLocked(duration time.Duration, now time.Time) (prob
 		result.MinResponse1h, result.MaxResponse1h = 0, 0
 	}
 	return result, true
+}
+
+// latestSampleAggregateLocked returns an aggregate containing only the most recent sample, if any.
+func (task *probeTask) latestSampleAggregateLocked() probeAggregate {
+	agg := newProbeAggregate()
+	if len(task.samples) == 0 {
+		return agg
+	}
+	agg.addResponse(task.samples[len(task.samples)-1].responseUs)
+	return agg
 }
 
 // aggregateLocked collects probe data for the requested time window.

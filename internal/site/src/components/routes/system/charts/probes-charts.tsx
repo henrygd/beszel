@@ -50,17 +50,19 @@ function ProbeChart({
 		const count = sortedProbes.length
 		const points: DataPoint<NetworkProbeStatsRecord>[] = []
 		const visibleIDs: string[] = []
-		const filterTerms = filter
-			? filter
-					.toLowerCase()
-					.split(" ")
-					.filter((term) => term.length > 0)
-			: []
+		// comma-separated groups are OR'd together; within a group, space-separated terms are AND'd
+		const filterGroups = filter
+			.toLowerCase()
+			.split(",")
+			.map((group) => group.trim().split(" ").filter((term) => term.length > 0))
+			.filter((terms) => terms.length > 0)
 		const dot = chartData.chartTime === "1m"
 		for (let i = 0; i < count; i++) {
 			const p = sortedProbes[i]
 			const label = p.name || p.target
-			const filtered = filterTerms.length > 0 && !filterTerms.some((term) => label.toLowerCase().includes(term))
+			const labelLower = label.toLowerCase()
+			const filtered =
+				filterGroups.length > 0 && !filterGroups.some((terms) => terms.every((term) => labelLower.includes(term)))
 			if (filtered) {
 				continue
 			}

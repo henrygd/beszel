@@ -7,6 +7,8 @@ import (
 	"time"
 
 	"github.com/henrygd/beszel/internal/common"
+	"github.com/henrygd/beszel/internal/entities/probe"
+	"github.com/henrygd/beszel/internal/entities/system"
 	"github.com/pocketbase/pocketbase/core"
 	"github.com/pocketbase/pocketbase/tools/subscriptions"
 )
@@ -151,12 +153,30 @@ func (sm *SystemManager) fetchRealtimeDataAndNotify() {
 			if err != nil {
 				return
 			}
-			bytes, err := json.Marshal(data)
+			bytes, err := marshalRealtimeData(data)
 			if err == nil {
 				notify(sm.hub, info.subscription, bytes)
 			}
 		}()
 	}
+}
+
+// marshalRealtimeData marshals combined agent data for a realtime broadcast, converting
+// the per-probe results into the [avg, min, max, loss] array shape the frontend charts expect
+// (the same conversion used for persisted network_probe_stats records) rather than the raw
+// probe.Result struct used for hub<->agent transport.
+func marshalRealtimeData(data *system.CombinedData) ([]byte, error) {
+	if len(data.Probes) == 0 {
+		return json.Marshal(data)
+	}
+	probeStats := make(map[string]probe.Stats, len(data.Probes))
+	for id, result := range data.Probes {
+		probeStats[id] = probe.Stats{}.FromResult(result)
+	}
+	return json.Marshal(struct {
+		*system.CombinedData
+		Probes map[string]probe.Stats `json:"Probes"`
+	}{data, probeStats})
 }
 
 // notify broadcasts realtime data to all clients subscribed to a specific subscription.

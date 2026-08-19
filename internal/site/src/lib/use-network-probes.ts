@@ -355,16 +355,23 @@ export interface ComparisonResult {
 export async function fetchTargetComparison(
 	target: string,
 	protocol: string,
-	chartTime: ChartTimes
+	chartTime: ChartTimes,
+	systemIds?: string[]
 ): Promise<ComparisonResult> {
 	const empty: ComparisonResult = { syntheticProbes: [], stats: [], interval: 0, port: 0 }
 
-	// Find all probes that match this target + protocol
-	const requestKey = `compare-${target}-${protocol}`
+	// Find all probes that match this target + protocol, optionally restricted to specific systems
+	const requestKey = systemIds?.length
+		? `compare-${target}-${protocol}-${[...systemIds].sort().join(",")}`
+		: `compare-${target}-${protocol}`
+	let filter = pb.filter("target={:target} && protocol={:protocol}", { target, protocol })
+	if (systemIds?.length) {
+		filter = `(${filter}) && (${systemIds.map((id) => pb.filter("system={:id}", { id })).join(" || ")})`
+	}
 	const probeList = await pb
 		.collection<NetworkProbeRecord>("network_probes")
 		.getFullList({
-			filter: pb.filter("target={:target} && protocol={:protocol}", { target, protocol }),
+			filter,
 			fields: "id,system,interval,port",
 			requestKey,
 		})
@@ -372,8 +379,8 @@ export async function fetchTargetComparison(
 		return empty
 	}
 
-	const systemIds = [...new Set(probeList.map((p) => p.system))]
-	const systemFilter = systemIds.map((id) => `id='${id}'`).join(" || ")
+	const matchedSystemIds = [...new Set(probeList.map((p) => p.system))]
+	const systemFilter = matchedSystemIds.map((id) => `id='${id}'`).join(" || ")
 	const systems = await pb
 		.collection<SystemRecord>("systems")
 		.getFullList({ filter: systemFilter, fields: "id,name", requestKey: `${requestKey}-systems` })

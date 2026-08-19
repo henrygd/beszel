@@ -233,13 +233,18 @@ const { toast } = useToast()
 		},
 		onGlobalFilterChange: setGlobalFilter,
 		globalFilterFn: (row, _columnId, filterValue) => {
+			const value = (filterValue as string).trim()
+			if (!value) return true
 			const probe = row.original
 			const systemName = $allSystemsById.get()[probe.system]?.name ?? ""
 			const searchString = `${probe.name}${probe.target}${probe.protocol}${systemName}`.toLocaleLowerCase()
-			return (filterValue as string)
+			// comma-separated groups are OR'd together; within a group, space-separated terms are AND'd
+			return value
 				.toLowerCase()
-				.split(" ")
-				.every((term) => searchString.includes(term))
+				.split(",")
+				.map((group) => group.trim().split(" ").filter((term) => term.length > 0))
+				.filter((terms) => terms.length > 0)
+				.some((terms) => terms.every((term) => searchString.includes(term)))
 		},
 	})
 
@@ -263,6 +268,7 @@ const { toast } = useToast()
 							<div className="relative">
 								<Input
 									placeholder={t`Filter...`}
+									title={t`Use commas to match any of multiple terms, e.g. "system1, system2"`}
 									value={globalFilter}
 									onChange={(e) => setGlobalFilter(e.target.value)}
 									className="ms-auto px-4 w-full max-w-full md:w-50"
