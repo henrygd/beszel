@@ -33,7 +33,10 @@ var errNoBatteries = errors.New("no readable batteries")
 func normalizeBatteries(batteries []Battery) []Battery {
 	nameCounts := make(map[string]int, len(batteries))
 	for i := range batteries {
-		name := strings.TrimSpace(batteries[i].Name)
+		// Names come from firmware (e.g. sysfs model_name) and are not guaranteed to
+		// be valid UTF-8. Invalid bytes are rejected when the hub decodes the CBOR
+		// payload, which drops every metric for the system, so strip them here.
+		name := strings.TrimSpace(strings.ToValidUTF8(batteries[i].Name, ""))
 		if name == "" {
 			name = "Battery " + strconv.Itoa(i+1)
 		}
