@@ -62,15 +62,16 @@ export default memo(function ProbesCompare({ protocol }: { protocol?: string }) 
 
 	// with 2+ systems selected, restrict comparison strictly to those systems; with a single
 	// system selected there's nothing to compare it against on its own, so use it as a pivot
-	// and keep all probes in scope, then only keep targets that pivot system actually monitors
+	// with 1+ systems selected, scope strictly to those systems' own probes (no pulling in others);
+	// with none selected, use every system to auto-detect targets shared across 2+ of them
 	const relevantProbes = useMemo(
-		() => (selectedSystemIdsList && selectedSystemIdsList.length >= 2
-			? probes.filter((p) => selectedSystemIdsList.includes(p.system))
-			: probes),
+		() => (selectedSystemIdsList ? probes.filter((p) => selectedSystemIdsList.includes(p.system)) : probes),
 		[probes, selectedSystemIdsList]
 	)
 
-	const pivotSystemId = selectedSystemIdsList?.length === 1 ? selectedSystemIdsList[0] : undefined
+	// a single selected system has nothing to "compare" against, so just show all of its own
+	// targets rather than requiring a second system to share them
+	const minSystemsPerTarget = selectedSystemIdsList?.length === 1 ? 1 : 2
 
 	const compareEntries = useMemo<CompareEntry[]>(() => {
 		const map = new Map<string, { target: string; protocol: string; name: string; systems: Set<string> }>()
@@ -85,9 +86,9 @@ export default memo(function ProbesCompare({ protocol }: { protocol?: string }) 
 			}
 		}
 		return [...map.entries()]
-			.filter(([, e]) => e.systems.size >= 2 && (!pivotSystemId || e.systems.has(pivotSystemId)))
+			.filter(([, e]) => e.systems.size >= minSystemsPerTarget)
 			.map(([key, e]) => ({ key, target: e.target, protocol: e.protocol, name: e.name || e.target }))
-	}, [relevantProbes, pivotSystemId])
+	}, [relevantProbes, minSystemsPerTarget])
 
 	const compareProtocols = useMemo(() => {
 		const set = new Set(compareEntries.map((e) => e.protocol))
@@ -157,9 +158,11 @@ export default memo(function ProbesCompare({ protocol }: { protocol?: string }) 
 			<div className="grid gap-4 py-4">
 				<div className="max-w-48">{systemSelector}</div>
 				<p className="text-sm text-muted-foreground text-center py-12">
-					{selectedSystemIds.size > 0
-						? t`No shared targets among the selected systems.`
-						: t`No targets are monitored by more than one system.`}
+					{selectedSystemIds.size === 1
+						? t`The selected system has no probes configured.`
+						: selectedSystemIds.size > 1
+							? t`No shared targets among the selected systems.`
+							: t`No targets are monitored by more than one system.`}
 				</p>
 				<FooterRepoLink />
 			</div>
@@ -228,7 +231,7 @@ export default memo(function ProbesCompare({ protocol }: { protocol?: string }) 
 								<ProtocolCompareView
 									entries={compareEntries.filter((e) => e.protocol === p)}
 									chartData={chartData}
-									systemIds={selectedSystemIdsList && selectedSystemIdsList.length >= 2 ? selectedSystemIdsList : undefined}
+									systemIds={selectedSystemIdsList}
 								/>
 							)}
 						</TabsContent>
