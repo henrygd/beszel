@@ -171,9 +171,9 @@ func (a *Agent) getSystemStats(cacheTimeMs uint16) system.Stats {
 
 	// load average
 	if avgstat, err := load.Avg(); err == nil {
-		systemStats.LoadAvg[0] = avgstat.Load1
-		systemStats.LoadAvg[1] = avgstat.Load5
-		systemStats.LoadAvg[2] = avgstat.Load15
+		systemStats.LoadAvg[0] = utils.TwoDecimals(avgstat.Load1)
+		systemStats.LoadAvg[1] = utils.TwoDecimals(avgstat.Load5)
+		systemStats.LoadAvg[2] = utils.TwoDecimals(avgstat.Load15)
 		slog.Debug("Load average", "5m", avgstat.Load5, "15m", avgstat.Load15)
 	} else {
 		slog.Error("Error getting load average", "err", err)
