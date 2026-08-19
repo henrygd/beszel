@@ -97,6 +97,83 @@ ensure_trailing_slash() {
   fi
 }
 
+# Apply values passed on the command line to a service configuration that
+# already exists. Existing service files are never recreated, so -k, -t, -url
+# and -p would otherwise be dropped while the install still reported success,
+# leaving the agent running with a stale token.
+# Usage: update_existing_config <file> <systemd|openrc|procd|env>
+update_existing_config() {
+  config_file=$1
+  config_format=$2
+  config_changed=""
+
+  [ -f "$config_file" ] || return 0
+
+  for config_var in PORT KEY TOKEN HUB_URL; do
+    eval "config_value=\$$config_var"
+    [ -n "$config_value" ] || continue
+
+    # PORT always has a default value, so only apply it when -p was given
+    if [ "$config_var" = "PORT" ] && [ "$PORT_PROVIDED" != true ]; then
+      continue
+    fi
+
+    # the FreeBSD env file calls the port LISTEN
+    config_name=$config_var
+    if [ "$config_format" = "env" ] && [ "$config_var" = "PORT" ]; then
+      config_name="LISTEN"
+    fi
+
+    # escape characters that are special on the replacement side of sed
+    config_escaped=$(printf '%s' "$config_value" | sed 's/[\\&|]/\\&/g')
+
+    case "$config_format" in
+    systemd)
+      config_expr="s|^\(Environment=\"${config_name}=\)[^\"]*|\1${config_escaped}|"
+      ;;
+    openrc)
+      config_expr="s|^\(export ${config_name}=\"\)[^\"]*|\1${config_escaped}|"
+      ;;
+    procd)
+      config_expr="s|\([[:space:]]${config_name}=\"\)[^\"]*|\1${config_escaped}|"
+      ;;
+    env)
+      if grep -q "^${config_name}=\"" "$config_file"; then
+        config_expr="s|^\(${config_name}=\"\)[^\"]*|\1${config_escaped}|"
+      else
+        config_expr="s|^\(${config_name}=\).*|\1${config_escaped}|"
+      fi
+      ;;
+    *)
+      return 0
+      ;;
+    esac
+
+    sed "$config_expr" "$config_file" >"${config_file}.tmp" || {
+      rm -f "${config_file}.tmp"
+      continue
+    }
+
+    if [ ! -s "${config_file}.tmp" ]; then
+      rm -f "${config_file}.tmp"
+      continue
+    fi
+
+    if cmp -s "$config_file" "${config_file}.tmp"; then
+      rm -f "${config_file}.tmp"
+    else
+      # write through the original file to keep its ownership and permissions
+      cat "${config_file}.tmp" >"$config_file"
+      rm -f "${config_file}.tmp"
+      config_changed="${config_changed} ${config_name}"
+    fi
+  done
+
+  if [ -n "$config_changed" ]; then
+    echo "Updated existing service configuration:${config_changed}"
+  fi
+}
+
 # Generate FreeBSD rc service content
 generate_freebsd_rc_service() {
   cat <<'EOF'
@@ -257,6 +334,7 @@ detect_mips_endianness() {
 
 # Default values
 PORT=45876
+PORT_PROVIDED=false
 UNINSTALL=false
 GITHUB_URL="https://github.com"
 GITHUB_PROXY_URL=""
@@ -323,6 +401,7 @@ while [ $# -gt 0 ]; do
   -p)
     shift
     PORT="$1"
+    PORT_PROVIDED=true
     ;;
   -t)
     shift
@@ -805,6 +884,7 @@ EOF
     rc-update add beszel-agent default
   else
     echo "Alpine OpenRC service file already exists. Skipping creation."
+    update_existing_config /etc/init.d/beszel-agent openrc
   fi
 
   # Create log files with proper permissions
@@ -887,6 +967,7 @@ EOF
     /etc/init.d/beszel-agent enable
   else
     echo "OpenWRT init script already exists. Skipping creation."
+    update_existing_config /etc/init.d/beszel-agent procd
   fi
 
   # Start the service
@@ -940,6 +1021,7 @@ HUB_URL=$HUB_URL
 EOF
   else
     echo "FreeBSD environment file already exists. Skipping creation."
+    update_existing_config "$AGENT_DIR/env" env
   fi
   chmod 640 "$AGENT_DIR/env"
   chown "root:${AGENT_USER}" "$AGENT_DIR/env"
@@ -1075,6 +1157,7 @@ WantedBy=multi-user.target
 EOF
   else
     echo "Systemd service file already exists. Skipping creation."
+    update_existing_config /etc/systemd/system/beszel-agent.service systemd
   fi
 
   # Load and start the service
