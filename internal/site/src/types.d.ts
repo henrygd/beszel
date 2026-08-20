@@ -11,6 +11,13 @@ declare global {
 	}
 }
 
+export interface UserRecord extends RecordModel {
+	id: string
+	email: string
+	role: string
+	created: string
+}
+
 export interface FingerprintRecord extends RecordModel {
 	id: string
 	system: string

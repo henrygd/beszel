@@ -68,10 +68,6 @@ func TestConfigSyncWithTokens(t *testing.T) {
 	require.NoError(t, err)
 	defer testHub.Cleanup()
 
-	// Create test user
-	user, err := tests.CreateUser(testHub.App, "admin@example.com", "testtesttest")
-	require.NoError(t, err)
-
 	testCases := []struct {
 		name        string
 		setupFunc   func() (string, *core.Record, *core.Record) // Returns: existing token, system record, fingerprint record
@@ -99,10 +95,9 @@ func TestConfigSyncWithTokens(t *testing.T) {
 			setupFunc: func() (string, *core.Record, *core.Record) {
 				// Create existing system and fingerprint
 				system, err := tests.CreateRecord(testHub.App, "systems", map[string]any{
-					"name":  "preserve-server",
-					"host":  "preserve.example.com",
-					"port":  45876,
-					"users": []string{user.Id},
+					"name": "preserve-server",
+					"host": "preserve.example.com",
+					"port": 45876,
 				})
 				require.NoError(t, err)
 
@@ -193,16 +188,11 @@ func TestConfigMigrationScenario(t *testing.T) {
 	require.NoError(t, err)
 	defer testHub.Cleanup()
 
-	// Create test user
-	user, err := tests.CreateUser(testHub.App, "admin@example.com", "testtesttest")
-	require.NoError(t, err)
-
 	// Simulate migration scenario: system exists with token from migration
 	existingSystem, err := tests.CreateRecord(testHub.App, "systems", map[string]any{
-		"name":  "migrated-server",
-		"host":  "migrated.example.com",
-		"port":  45876,
-		"users": []string{user.Id},
+		"name": "migrated-server",
+		"host": "migrated.example.com",
+		"port": 45876,
 	})
 	require.NoError(t, err)
 

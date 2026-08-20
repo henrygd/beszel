@@ -53,11 +53,10 @@ func TestApiRoutesAuthentication(t *testing.T) {
 	require.NoError(t, err, "Failed to create superuser auth token")
 
 	// Create test system
-	system, err := beszelTests.CreateRecord(hub, "systems", map[string]any{
-		"name":  "test-system",
-		"users": []string{user.Id},
-		"host":  "127.0.0.1",
-	})
+	system, err := beszelTests.CreateSystemWithAccess(hub, map[string]any{
+		"name": "test-system",
+		"host": "127.0.0.1",
+	}, []string{user.Id})
 	require.NoError(t, err, "Failed to create test system")
 
 	testAppFactory := func(t testing.TB) *pbTests.TestApp {
@@ -157,14 +156,25 @@ func TestApiRoutesAuthentication(t *testing.T) {
 			TestAppFactory:  testAppFactory,
 		},
 		{
-			Name:   "GET /universal-token - with auth should succeed",
+			Name:   "GET /universal-token - with admin auth should succeed",
+			Method: http.MethodGet,
+			URL:    "/api/beszel/universal-token",
+			Headers: map[string]string{
+				"Authorization": adminUserToken,
+			},
+			ExpectedStatus:  200,
+			ExpectedContent: []string{"active", "token", "permanent"},
+			TestAppFactory:  testAppFactory,
+		},
+		{
+			Name:   "GET /universal-token - with regular user auth should fail",
 			Method: http.MethodGet,
 			URL:    "/api/beszel/universal-token",
 			Headers: map[string]string{
 				"Authorization": userToken,
 			},
-			ExpectedStatus:  200,
-			ExpectedContent: []string{"active", "token", "permanent"},
+			ExpectedStatus:  403,
+			ExpectedContent: []string{"The authorized record is not allowed to perform this action."},
 			TestAppFactory:  testAppFactory,
 		},
 		{
@@ -172,7 +182,7 @@ func TestApiRoutesAuthentication(t *testing.T) {
 			Method: http.MethodGet,
 			URL:    "/api/beszel/universal-token?enable=1&permanent=1&token=permanent-token-123",
 			Headers: map[string]string{
-				"Authorization": userToken,
+				"Authorization": adminUserToken,
 			},
 			ExpectedStatus:  200,
 			ExpectedContent: []string{"\"permanent\":true", "permanent-token-123"},
@@ -225,14 +235,14 @@ func TestApiRoutesAuthentication(t *testing.T) {
 			TestAppFactory:  testAppFactory,
 		},
 		{
-			Name:   "POST /smart/refresh - non-user system should fail",
+			Name:   "POST /smart/refresh - any authenticated user can refresh any system",
 			Method: http.MethodPost,
 			URL:    fmt.Sprintf("/api/beszel/smart/refresh?system=%s", system.Id),
 			Headers: map[string]string{
 				"Authorization": user2Token,
 			},
-			ExpectedStatus:  404,
-			ExpectedContent: []string{"The requested resource wasn't found."},
+			ExpectedStatus:  500,
+			ExpectedContent: []string{"Something went wrong while processing your request."},
 			TestAppFactory:  testAppFactory,
 		},
 		{
@@ -323,42 +333,26 @@ func TestApiRoutesAuthentication(t *testing.T) {
 			TestAppFactory:  testAppFactory,
 		},
 		{
-			Name:            "GET /containers/logs - request for valid non-user system should fail",
-			Method:          http.MethodGet,
-			URL:             fmt.Sprintf("/api/beszel/containers/logs?system=%s&container=abababababab", system.Id),
-			ExpectedStatus:  404,
-			ExpectedContent: []string{"The requested resource wasn't found."},
-			TestAppFactory:  testAppFactory,
-			Headers: map[string]string{
-				"Authorization": user2Token,
-			},
-		},
-		{
-			Name:            "GET /containers/info - request for valid non-user system should fail",
-			Method:          http.MethodGet,
-			URL:             fmt.Sprintf("/api/beszel/containers/info?system=%s&container=abababababab", system.Id),
-			ExpectedStatus:  404,
-			ExpectedContent: []string{"The requested resource wasn't found."},
-			TestAppFactory:  testAppFactory,
-			Headers: map[string]string{
-				"Authorization": user2Token,
-			},
-		},
-		{
-			Name:            "GET /containers/info - SHARE_ALL_SYSTEMS allows non-member user",
-			Method:          http.MethodGet,
-			URL:             fmt.Sprintf("/api/beszel/containers/info?system=%s&container=abababababab", system.Id),
+			Name:   "GET /containers/logs - any authenticated user can access any system",
+			Method: http.MethodGet,
+			URL:    fmt.Sprintf("/api/beszel/containers/logs?system=%s&container=abababababab", system.Id),
+			// 500 = system found but agent not reachable — confirms access is allowed
 			ExpectedStatus:  500,
 			ExpectedContent: []string{"Something went wrong while processing your request."},
 			TestAppFactory:  testAppFactory,
 			Headers: map[string]string{
 				"Authorization": user2Token,
 			},
-			BeforeTestFunc: func(t testing.TB, app *pbTests.TestApp, e *core.ServeEvent) {
-				t.Setenv("SHARE_ALL_SYSTEMS", "true")
-			},
-			AfterTestFunc: func(t testing.TB, app *pbTests.TestApp, res *http.Response) {
-				t.Setenv("SHARE_ALL_SYSTEMS", "")
+		},
+		{
+			Name:   "GET /containers/info - any authenticated user can access any system",
+			Method: http.MethodGet,
+			URL:    fmt.Sprintf("/api/beszel/containers/info?system=%s&container=abababababab", system.Id),
+			ExpectedStatus:  500,
+			ExpectedContent: []string{"Something went wrong while processing your request."},
+			TestAppFactory:  testAppFactory,
+			Headers: map[string]string{
+				"Authorization": user2Token,
 			},
 		},
 		{
@@ -459,9 +453,10 @@ func TestApiRoutesAuthentication(t *testing.T) {
 			TestAppFactory:  testAppFactory,
 		},
 		{
-			Name:            "GET /systemd/info - request for valid non-user system should fail",
-			Method:          http.MethodGet,
-			URL:             fmt.Sprintf("/api/beszel/systemd/info?system=%s&service=nginx.service", system.Id),
+			Name:   "GET /systemd/info - any authenticated user can access any system",
+			Method: http.MethodGet,
+			URL:    fmt.Sprintf("/api/beszel/systemd/info?system=%s&service=nginx.service", system.Id),
+			// service not in systemd_services collection but system is accessible
 			ExpectedStatus:  404,
 			ExpectedContent: []string{"The requested resource wasn't found."},
 			TestAppFactory:  testAppFactory,

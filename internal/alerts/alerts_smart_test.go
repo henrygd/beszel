@@ -15,11 +15,10 @@ func TestSmartDeviceAlert(t *testing.T) {
 	defer hub.Cleanup()
 
 	// Create a system for the user
-	system, err := beszelTests.CreateRecord(hub, "systems", map[string]any{
-		"name":  "test-system",
-		"users": []string{user.Id},
-		"host":  "127.0.0.1",
-	})
+	system, err := beszelTests.CreateSystemWithAccess(hub, map[string]any{
+		"name": "test-system",
+		"host": "127.0.0.1",
+	}, []string{user.Id})
 	assert.NoError(t, err)
 
 	// Create a smart_device with state PASSED
@@ -61,11 +60,10 @@ func TestSmartDeviceAlertPassedToWarning(t *testing.T) {
 	hub, user := beszelTests.GetHubWithUser(t)
 	defer hub.Cleanup()
 
-	system, err := beszelTests.CreateRecord(hub, "systems", map[string]any{
-		"name":  "test-system",
-		"users": []string{user.Id},
-		"host":  "127.0.0.1",
-	})
+	system, err := beszelTests.CreateSystemWithAccess(hub, map[string]any{
+		"name": "test-system",
+		"host": "127.0.0.1",
+	}, []string{user.Id})
 	assert.NoError(t, err)
 
 	smartDevice, err := beszelTests.CreateRecord(hub, "smart_devices", map[string]any{
@@ -95,11 +93,10 @@ func TestSmartDeviceAlertWarningToFailed(t *testing.T) {
 	hub, user := beszelTests.GetHubWithUser(t)
 	defer hub.Cleanup()
 
-	system, err := beszelTests.CreateRecord(hub, "systems", map[string]any{
-		"name":  "test-system",
-		"users": []string{user.Id},
-		"host":  "127.0.0.1",
-	})
+	system, err := beszelTests.CreateSystemWithAccess(hub, map[string]any{
+		"name": "test-system",
+		"host": "127.0.0.1",
+	}, []string{user.Id})
 	assert.NoError(t, err)
 
 	smartDevice, err := beszelTests.CreateRecord(hub, "smart_devices", map[string]any{
@@ -130,11 +127,10 @@ func TestSmartDeviceAlertNoAlertOnNonPassedToFailed(t *testing.T) {
 	defer hub.Cleanup()
 
 	// Create a system for the user
-	system, err := beszelTests.CreateRecord(hub, "systems", map[string]any{
-		"name":  "test-system",
-		"users": []string{user.Id},
-		"host":  "127.0.0.1",
-	})
+	system, err := beszelTests.CreateSystemWithAccess(hub, map[string]any{
+		"name": "test-system",
+		"host": "127.0.0.1",
+	}, []string{user.Id})
 	assert.NoError(t, err)
 
 	// Create a smart_device with state UNKNOWN
@@ -192,11 +188,10 @@ func TestSmartDeviceAlertMultipleUsers(t *testing.T) {
 	assert.NoError(t, err)
 
 	// Create a system with both users
-	system, err := beszelTests.CreateRecord(hub, "systems", map[string]any{
-		"name":  "shared-system",
-		"users": []string{user1.Id, user2.Id},
-		"host":  "127.0.0.1",
-	})
+	system, err := beszelTests.CreateSystemWithAccess(hub, map[string]any{
+		"name": "shared-system",
+		"host": "127.0.0.1",
+	}, []string{user1.Id, user2.Id})
 	assert.NoError(t, err)
 
 	// Create a smart_device with state PASSED
@@ -228,11 +223,10 @@ func TestSmartDeviceAlertWithoutModel(t *testing.T) {
 	defer hub.Cleanup()
 
 	// Create a system for the user
-	system, err := beszelTests.CreateRecord(hub, "systems", map[string]any{
-		"name":  "test-system",
-		"users": []string{user.Id},
-		"host":  "127.0.0.1",
-	})
+	system, err := beszelTests.CreateSystemWithAccess(hub, map[string]any{
+		"name": "test-system",
+		"host": "127.0.0.1",
+	}, []string{user.Id})
 	assert.NoError(t, err)
 
 	// Create a smart_device with state PASSED but no model

@@ -123,26 +123,30 @@ func (h *TestHub) Cleanup() {
 	h.TestApp.Cleanup()
 }
 
-func CreateSystems(app core.App, count int, userId string, status string) ([]*core.Record, error) {
+func CreateSystems(app core.App, count int, _ string, status string) ([]*core.Record, error) {
 	systems := make([]*core.Record, 0, count)
 	for i := range count {
 		system, err := CreateRecord(app, "systems", map[string]any{
-			"name":  fmt.Sprintf("test-system-%d", i),
-			"host":  fmt.Sprintf("127.0.0.%d", i),
-			"port":  "33914",
-			"users": []string{userId},
+			"name": fmt.Sprintf("test-system-%d", i),
+			"host": fmt.Sprintf("127.0.0.%d", i),
+			"port": "33914",
 		})
 		if err != nil {
 			return nil, err
 		}
 		system.Set("status", status)
-		err = app.SaveNoValidate(system)
-		if err != nil {
+		if err = app.SaveNoValidate(system); err != nil {
 			return nil, err
 		}
 		systems = append(systems, system)
 	}
 	return systems, nil
+}
+
+// CreateSystemWithAccess creates a system record. The userIDs parameter is ignored
+// since systems are now accessible to all authenticated users.
+func CreateSystemWithAccess(app core.App, fields map[string]any, _ []string) (*core.Record, error) {
+	return CreateRecord(app, "systems", fields)
 }
 
 // GetHubWithUser creates a test hub with a test user and user settings

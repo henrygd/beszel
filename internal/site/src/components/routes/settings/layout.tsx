@@ -9,6 +9,7 @@ import {
 	FingerprintIcon,
 	HeartPulseIcon,
 	SettingsIcon,
+	UsersIcon,
 } from "lucide-react"
 import { lazy, useEffect } from "react"
 import { $router } from "@/components/router.tsx"
@@ -26,6 +27,7 @@ const configYamlSettingsImport = () => import("./config-yaml.tsx")
 const fingerprintsSettingsImport = () => import("./tokens-fingerprints.tsx")
 const alertsHistoryDataTableSettingsImport = () => import("./alerts-history-data-table.tsx")
 const heartbeatSettingsImport = () => import("./heartbeat.tsx")
+const userManagementImport = () => import("./user-management.tsx")
 
 const GeneralSettings = lazy(generalSettingsImport)
 const NotificationsSettings = lazy(notificationsSettingsImport)
@@ -33,6 +35,7 @@ const ConfigYamlSettings = lazy(configYamlSettingsImport)
 const FingerprintsSettings = lazy(fingerprintsSettingsImport)
 const AlertsHistoryDataTableSettings = lazy(alertsHistoryDataTableSettingsImport)
 const HeartbeatSettings = lazy(heartbeatSettingsImport)
+const UserManagementSettings = lazy(userManagementImport)
 
 export async function saveSettings(newSettings: Partial<UserSettings>) {
 	try {
@@ -70,31 +73,44 @@ export default function SettingsLayout() {
 			title: t({ message: `General`, comment: "Context: General settings" }),
 			href: getPagePath($router, "settings", { name: "general" }),
 			icon: SettingsIcon,
+			group: t`User`,
 		},
 		{
 			title: t`Notifications`,
 			href: getPagePath($router, "settings", { name: "notifications" }),
 			icon: BellIcon,
+			group: t`User`,
 			preload: notificationsSettingsImport,
-		},
-		{
-			title: t`Tokens & Fingerprints`,
-			href: getPagePath($router, "settings", { name: "tokens" }),
-			icon: FingerprintIcon,
-			noReadOnly: true,
-			preload: fingerprintsSettingsImport,
 		},
 		{
 			title: t`Alert History`,
 			href: getPagePath($router, "settings", { name: "alert-history" }),
 			icon: AlertOctagonIcon,
+			group: t`User`,
 			preload: alertsHistoryDataTableSettingsImport,
+		},
+		{
+			title: t`Tokens & Fingerprints`,
+			href: getPagePath($router, "settings", { name: "tokens" }),
+			icon: FingerprintIcon,
+			admin: true,
+			group: t`System`,
+			preload: fingerprintsSettingsImport,
+		},
+		{
+			title: t`Users`,
+			href: getPagePath($router, "settings", { name: "users" }),
+			icon: UsersIcon,
+			admin: true,
+			group: t`System`,
+			preload: userManagementImport,
 		},
 		{
 			title: t`Heartbeat`,
 			href: getPagePath($router, "settings", { name: "heartbeat" }),
 			icon: HeartPulseIcon,
 			admin: true,
+			group: t`System`,
 			preload: heartbeatSettingsImport,
 		},
 		{
@@ -102,6 +118,7 @@ export default function SettingsLayout() {
 			href: getPagePath($router, "settings", { name: "config" }),
 			icon: FileSlidersIcon,
 			admin: true,
+			group: t`System`,
 			preload: configYamlSettingsImport,
 		},
 	]
@@ -157,6 +174,8 @@ function SettingsContent({ name }: { name: string }) {
 			return <FingerprintsSettings />
 		case "alert-history":
 			return <AlertsHistoryDataTableSettings />
+		case "users":
+			return <UserManagementSettings />
 		case "heartbeat":
 			return <HeartbeatSettings />
 	}

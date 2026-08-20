@@ -36,7 +36,7 @@ import { Input } from "@/components/ui/input"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { isReadOnlyUser, pb } from "@/lib/api"
+import { isAdmin, pb } from "@/lib/api"
 import type { SmartDeviceRecord, SmartAttribute } from "@/types"
 import {
 	formatBytes,
@@ -492,7 +492,7 @@ export default function DisksTable({ systemId }: { systemId?: string }) {
 	const tableColumns = useMemo(() => {
 		const columns = createColumns(longestName, longestModel, longestDevice)
 		const baseColumns = systemId ? columns.filter((col) => col.id !== "system") : columns
-		return isReadOnlyUser() ? baseColumns : [...baseColumns, actionColumn]
+		return isAdmin() ? [...baseColumns, actionColumn] : baseColumns
 	}, [systemId, actionColumn, longestName, longestModel, longestDevice])
 
 	const table = useReactTable({

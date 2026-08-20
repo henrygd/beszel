@@ -126,7 +126,6 @@ func TestStatusAlertRecoveryBeforeDeadline(t *testing.T) {
 	system.Set("name", "test-system")
 	system.Set("status", "up")
 	system.Set("host", "127.0.0.1")
-	system.Set("users", []string{user.Id})
 	hub.Save(system)
 
 	alertCollection, _ := hub.FindCollectionByNameOrId("alerts")
@@ -169,7 +168,6 @@ func TestStatusAlertNormalRecovery(t *testing.T) {
 	system.Set("name", "test-system")
 	system.Set("status", "up")
 	system.Set("host", "127.0.0.1")
-	system.Set("users", []string{user.Id})
 	hub.Save(system)
 
 	alertCollection, _ := hub.FindCollectionByNameOrId("alerts")
@@ -206,7 +204,6 @@ func TestHandleStatusAlertsDoesNotSendRecoveryWhileDownIsOnlyPending(t *testing.
 	system.Set("name", "test-system")
 	system.Set("status", "up")
 	system.Set("host", "127.0.0.1")
-	system.Set("users", []string{user.Id})
 	require.NoError(t, hub.Save(system))
 
 	alertCollection, err := hub.FindCollectionByNameOrId("alerts")
@@ -251,7 +248,6 @@ func TestStatusAlertTimerCancellationPreventsBoundaryDelivery(t *testing.T) {
 		system.Set("name", "test-system")
 		system.Set("status", "up")
 		system.Set("host", "127.0.0.1")
-		system.Set("users", []string{user.Id})
 		require.NoError(t, hub.Save(system))
 
 		alertCollection, err := hub.FindCollectionByNameOrId("alerts")
@@ -302,7 +298,6 @@ func TestStatusAlertDownFiresAfterDelayExpires(t *testing.T) {
 	system.Set("name", "test-system")
 	system.Set("status", "up")
 	system.Set("host", "127.0.0.1")
-	system.Set("users", []string{user.Id})
 	require.NoError(t, hub.Save(system))
 
 	alertCollection, err := hub.FindCollectionByNameOrId("alerts")
@@ -357,9 +352,8 @@ func TestStatusAlertMultipleUsersRespectDifferentMinutes(t *testing.T) {
 		require.NoError(t, err)
 
 		system, err := beszelTests.CreateRecord(hub, "systems", map[string]any{
-			"name":  "shared-system",
-			"users": []string{user1.Id, user2.Id},
-			"host":  "127.0.0.1",
+			"name": "shared-system",
+			"host": "127.0.0.1",
 		})
 		require.NoError(t, err)
 		system.Set("status", "up")
@@ -445,9 +439,8 @@ func TestStatusAlertMultipleUsersRecoveryBetweenMinutesOnlyAlertsEarlierUser(t *
 		require.NoError(t, err)
 
 		system, err := beszelTests.CreateRecord(hub, "systems", map[string]any{
-			"name":  "shared-system",
-			"users": []string{user1.Id, user2.Id},
-			"host":  "127.0.0.1",
+			"name": "shared-system",
+			"host": "127.0.0.1",
 		})
 		require.NoError(t, err)
 		system.Set("status", "up")
@@ -529,7 +522,6 @@ func TestStatusAlertDuplicateDownCallIsIdempotent(t *testing.T) {
 	system.Set("name", "test-system")
 	system.Set("status", "up")
 	system.Set("host", "127.0.0.1")
-	system.Set("users", []string{user.Id})
 	require.NoError(t, hub.Save(system))
 
 	alertCollection, err := hub.FindCollectionByNameOrId("alerts")
@@ -552,7 +544,7 @@ func TestStatusAlertDuplicateDownCallIsIdempotent(t *testing.T) {
 }
 
 func TestStatusAlertNoAlertRecord(t *testing.T) {
-	hub, user := beszelTests.GetHubWithUser(t)
+	hub, _ := beszelTests.GetHubWithUser(t)
 	defer hub.Cleanup()
 
 	systemCollection, err := hub.FindCollectionByNameOrId("systems")
@@ -561,7 +553,6 @@ func TestStatusAlertNoAlertRecord(t *testing.T) {
 	system.Set("name", "test-system")
 	system.Set("status", "up")
 	system.Set("host", "127.0.0.1")
-	system.Set("users", []string{user.Id})
 	require.NoError(t, hub.Save(system))
 
 	// No Status alert record created for this system
@@ -626,7 +617,6 @@ func TestRestorePendingStatusAlertsSkipsNonDownOrAlreadyTriggeredAlerts(t *testi
 
 	systemUp, err := beszelTests.CreateRecord(hub, "systems", map[string]any{
 		"name":   "up-system",
-		"users":  []string{user.Id},
 		"host":   "127.0.0.2",
 		"status": "up",
 	})
@@ -726,7 +716,6 @@ func TestResolveStatusAlerts(t *testing.T) {
 	// Create a systemUp
 	systemUp, err := beszelTests.CreateRecord(hub, "systems", map[string]any{
 		"name":   "test-system",
-		"users":  []string{user.Id},
 		"host":   "127.0.0.1",
 		"status": "up",
 	})
@@ -734,7 +723,6 @@ func TestResolveStatusAlerts(t *testing.T) {
 
 	systemDown, err := beszelTests.CreateRecord(hub, "systems", map[string]any{
 		"name":   "test-system-2",
-		"users":  []string{user.Id},
 		"host":   "127.0.0.2",
 		"status": "up",
 	})
@@ -964,14 +952,12 @@ func TestCancelPendingStatusAlertsClearsAllAlertsForSystem(t *testing.T) {
 	system1.Set("name", "system-1")
 	system1.Set("status", "up")
 	system1.Set("host", "127.0.0.1")
-	system1.Set("users", []string{user.Id})
 	require.NoError(t, hub.Save(system1))
 
 	system2 := core.NewRecord(systemCollection)
 	system2.Set("name", "system-2")
 	system2.Set("status", "up")
 	system2.Set("host", "127.0.0.2")
-	system2.Set("users", []string{user.Id})
 	require.NoError(t, hub.Save(system2))
 
 	alertCollection, err := hub.FindCollectionByNameOrId("alerts")

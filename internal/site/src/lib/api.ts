@@ -10,7 +10,6 @@ import { chartTimeData } from "./utils"
 export const pb = new PocketBase(basePath)
 
 export const isAdmin = () => pb.authStore.record?.role === "admin"
-export const isReadOnlyUser = () => pb.authStore.record?.role === "readonly"
 
 export const verifyAuth = () => {
 	pb.collection("users")
