@@ -11,20 +11,18 @@ import { RootDiskCharts, ExtraFsCharts } from "./system/charts/disk-charts"
 import { BandwidthChart, ContainerNetworkChart } from "./system/charts/network-charts"
 import { TemperatureChart, BatteryChart } from "./system/charts/sensor-charts"
 import { GpuPowerChart, GpuDetailCharts } from "./system/charts/gpu-charts"
-import { LazyContainersTable, LazySmartTable, LazySystemdTable, LazyProbesCharts } from "./system/lazy-tables"
+import { LazyContainersTable, LazySmartTable, LazySystemdTable } from "./system/lazy-tables"
 import { LoadAverageChart } from "./system/charts/load-average-chart"
-import { ActivityIcon, ContainerIcon, CpuIcon, HardDriveIcon, NetworkIcon, TerminalSquareIcon } from "lucide-react"
+import { ContainerIcon, CpuIcon, HardDriveIcon, NetworkIcon, TerminalSquareIcon } from "lucide-react"
 import { GpuIcon } from "../ui/icons"
 import SystemdTable from "../systemd-table/systemd-table"
 import ContainersTable from "../containers-table/containers-table"
-import { useNetworkProbes } from "@/lib/use-network-probes"
 
 const SEMVER_0_14_0 = parseSemVer("0.14.0")
 const SEMVER_0_15_0 = parseSemVer("0.15.0")
 
 export default memo(function SystemDetail({ id }: { id: string }) {
 	const systemData = useSystemData(id)
-	const probes = useNetworkProbes({ systemId: id })
 
 	const {
 		system,
@@ -65,11 +63,9 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 	const hasContainersTable = hasContainers && compareSemVer(chartData.agentVersion, SEMVER_0_14_0) >= 0
 	const hasSystemd = system.info.sv
 	const hasGpu = hasGpuData || hasGpuPowerData
-	const hasProbes = probes.length > 0
 
 	// keep tabsRef in sync for keyboard navigation
 	const tabs = ["core", "network", "disk"]
-	if (hasProbes) tabs.push("probes")
 	if (hasGpu) tabs.push("gpu")
 	if (hasContainers) tabs.push("containers")
 	if (hasSystemd) tabs.push("services")
@@ -149,8 +145,6 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 				{hasContainersTable && <LazyContainersTable systemId={system.id} />}
 
 				{hasSystemd && <LazySystemdTable systemId={system.id} />}
-
-				{hasProbes && <LazyProbesCharts systemId={system.id} probes={probes} systemData={systemData} />}
 			</>
 		)
 	}
@@ -171,12 +165,6 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 						<HardDriveIcon className="size-3.5" />
 						<Trans>Disk</Trans>
 					</TabsTrigger>
-					{hasProbes && (
-						<TabsTrigger value="probes" className="w-full flex items-center gap-1.5">
-							<ActivityIcon className="size-3.5" />
-							<Trans>Probes</Trans>
-						</TabsTrigger>
-					)}
 					{hasGpu && (
 						<TabsTrigger value="gpu" className="w-full flex items-center gap-2">
 							<GpuIcon className="size-3.5" />
@@ -216,14 +204,6 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 						</div>
 					)}
 				</TabsContent>
-
-				{hasProbes && (
-					<TabsContent value="probes" forceMount className={activeTab === "probes" ? "contents" : "hidden"}>
-						{mountedTabs.has("probes") && (
-							<LazyProbesCharts systemId={system.id} probes={probes} systemData={systemData} />
-						)}
-					</TabsContent>
-				)}
 
 				<TabsContent value="disk" forceMount className={activeTab === "disk" ? "contents" : "hidden"}>
 					{mountedTabs.has("disk") && (

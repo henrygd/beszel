@@ -92,7 +92,7 @@ export default memo(function ProbesCompare({ protocol }: { protocol?: string }) 
 
 	const compareProtocols = useMemo(() => {
 		const set = new Set(compareEntries.map((e) => e.protocol))
-		return (["icmp", "tcp", "http"] as const).filter((p) => set.has(p))
+		return (["icmp", "tcp", "http", "dns"] as const).filter((p) => set.has(p))
 	}, [compareEntries])
 
 	const [activeProtocol, setActiveProtocol] = useState(

@@ -44,6 +44,7 @@ const protocolColors: Record<string, string> = {
 	icmp: "bg-blue-500/15! text-blue-600 dark:text-blue-400",
 	tcp: "bg-purple-500/15! text-purple-600 dark:text-purple-400",
 	http: "bg-green-500/15! text-green-700 dark:text-green-400",
+	dns: "bg-amber-500/15! text-amber-600 dark:text-amber-400",
 }
 
 const SYSTEM_STATUS_COLORS = {
@@ -374,6 +375,7 @@ const responseTimeThresholds = {
 	http: { warning: 800_000, critical: 3_000_000 },
 	tcp: { warning: 500_000, critical: 2_000_000 },
 	icmp: { warning: 100_000, critical: 500_000 },
+	dns: { warning: 150_000, critical: 800_000 },
 }
 
 function responseTimeCell(cell: CellContext<NetworkProbeRecord, unknown>) {

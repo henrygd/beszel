@@ -29,7 +29,7 @@ import { $systems } from "@/lib/stores"
 import type { NetworkProbeRecord } from "@/types"
 import * as v from "valibot"
 
-type ProbeProtocol = "icmp" | "tcp" | "http"
+type ProbeProtocol = "icmp" | "tcp" | "http" | "dns"
 
 type ProbeValues = {
 	system: string
@@ -48,7 +48,7 @@ type BulkProbeLineSource = Pick<NetworkProbeRecord, "target" | "protocol" | "por
 
 const defaultInterval = 30
 
-const ProbeProtocolSchema = v.picklist(["icmp", "tcp", "http"])
+const ProbeProtocolSchema = v.picklist(["icmp", "tcp", "http", "dns"])
 
 const ProbeIntervalSchema = v.pipe(v.string(), v.toNumber(), v.minValue(1), v.maxValue(3600))
 
@@ -65,7 +65,7 @@ const NormalizedProbeValuesSchema = v.pipe(
 	v.transform((input): NormalizedProbeValues => {
 		let { protocol, port } = input
 		let httpTarget = input.target
-		if (protocol === "icmp" || protocol === "http") {
+		if (protocol === "icmp" || protocol === "http" || protocol === "dns") {
 			if (protocol === "http") {
 				httpTarget = normalizeHttpTarget(input.target, port)
 			}
@@ -85,7 +85,7 @@ const NormalizedProbeValuesSchema = v.pipe(
 	}),
 	v.forward(
 		v.check((input) => {
-			if (input.protocol === "icmp" || input.protocol === "http") {
+			if (input.protocol === "icmp" || input.protocol === "http" || input.protocol === "dns") {
 				return input.port === 0
 			}
 
@@ -575,6 +575,7 @@ function ProbeDialogContent({
 							<SelectItem value="icmp">ICMP</SelectItem>
 							<SelectItem value="tcp">TCP</SelectItem>
 							<SelectItem value="http">HTTP</SelectItem>
+							<SelectItem value="dns">DNS</SelectItem>
 						</SelectContent>
 					</Select>
 				</div>

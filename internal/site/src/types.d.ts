@@ -550,7 +550,7 @@ export interface NetworkProbeRecord {
 	system: string
 	name: string
 	target: string
-	protocol: "icmp" | "tcp" | "http"
+	protocol: "icmp" | "tcp" | "http" | "dns"
 	port: number
 	res: number
 	resMin1h: number

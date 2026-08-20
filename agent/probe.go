@@ -1,6 +1,7 @@
 package agent
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"math"
@@ -497,6 +498,8 @@ func (pm *ProbeManager) executeProbe(task *probeTask) {
 		responseUs, err = probeTCP(task.config.Target, task.config.Port)
 	case "http":
 		responseUs, err = probeHTTP(pm.httpClient, task.config.Target)
+	case "dns":
+		responseUs, err = probeDNS(task.config.Target)
 	default:
 		slog.Warn("unknown probe protocol", "protocol", task.config.Protocol)
 		return
@@ -533,6 +536,19 @@ func probeTCP(target string, port uint16) (int64, error) {
 		return -1, err
 	}
 	conn.Close()
+	return time.Since(start).Microseconds(), nil
+}
+
+// probeDNS measures DNS resolution response time in microseconds. Returns -1 and an error on failure.
+func probeDNS(target string) (int64, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	start := time.Now()
+	ips, err := (&net.Resolver{}).LookupHost(ctx, target)
+	if err != nil || len(ips) == 0 {
+		return -1, err
+	}
 	return time.Since(start).Microseconds(), nil
 }
 

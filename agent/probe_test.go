@@ -354,3 +354,17 @@ func TestProbeTCP(t *testing.T) {
 		require.Error(t, err)
 	})
 }
+
+func TestProbeDNS(t *testing.T) {
+	t.Run("success", func(t *testing.T) {
+		responseUs, err := probeDNS("localhost")
+		require.NoError(t, err)
+		assert.GreaterOrEqual(t, responseUs, int64(0))
+	})
+
+	t.Run("lookup failure", func(t *testing.T) {
+		responseUs, err := probeDNS("")
+		assert.Equal(t, int64(-1), responseUs)
+		require.Error(t, err)
+	})
+}
