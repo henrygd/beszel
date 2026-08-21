@@ -8,7 +8,7 @@ msgstr ""
 "Language: ru\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2026-08-18 17:52\n"
+"PO-Revision-Date: 2026-08-21 22:34\n"
 "Last-Translator: \n"
 "Language-Team: Russian\n"
 "Plural-Forms: nplurals=4; plural=((n%10==1 && n%100!=11) ? 0 : ((n%10 >= 2 && n%10 <=4 && (n%100 < 12 || n%100 > 14)) ? 1 : ((n%10 == 0 || (n%10 >= 5 && n%10 <=9)) || (n%100 >= 11 && n%100 <= 14)) ? 2 : 3));\n"
@@ -495,7 +495,7 @@ msgstr "Копировать YAML"
 #: src/components/routes/system.tsx
 msgctxt "Core system metrics"
 msgid "Core"
-msgstr "Процессор"
+msgstr "Ядро"
 
 #: src/components/containers-table/containers-table-columns.tsx
 #: src/components/systemd-table/systemd-table-columns.tsx
