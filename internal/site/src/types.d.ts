@@ -129,6 +129,8 @@ export interface SystemStats {
 	dios?: [number, number, number, number, number, number]
 	/** max disk io stats */
 	diosm?: [number, number, number, number, number, number]
+	/** cumulative disk I/O bytes since agent start [total read, total write] */
+	diot?: [number, number]
 	/** network sent (mb) */
 	ns: number
 	/** network received (mb) */
@@ -199,6 +201,10 @@ export interface ExtraFsStats {
 	dios?: [number, number, number, number, number, number]
 	/** max disk io stats */
 	diosm?: [number, number, number, number, number, number]
+	/** cumulative read bytes since agent start */
+	tr?: number
+	/** cumulative write bytes since agent start */
+	tw?: number
 }
 
 export interface ContainerStatsRecord extends RecordModel {

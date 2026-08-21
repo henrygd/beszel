@@ -52,6 +52,7 @@ type Stats struct {
 	CpuCoresUsage     Uint8Slice           `json:"cpus,omitempty" cbor:"34,keyasint,omitempty"` // per-core busy usage [CPU0..]
 	DiskIoStats       [6]float64           `json:"dios,omitzero" cbor:"35,keyasint,omitzero"`   // [read time %, write time %, io utilization %, r_await ms, w_await ms, weighted io %]
 	MaxDiskIoStats    [6]float64           `json:"diosm,omitzero" cbor:"-"`                     // max values for DiskIoStats
+	DiskIOTotal       [2]uint64            `json:"diot,omitzero" cbor:"36,keyasint,omitzero"`   // [total read bytes, total write bytes] cumulative since agent start
 }
 
 // Uint8Slice wraps []uint8 to customize JSON encoding while keeping CBOR efficient.
@@ -90,8 +91,8 @@ type FsStats struct {
 	Name           string    `json:"-"`
 	DiskTotal      float64   `json:"d" cbor:"0,keyasint"`
 	DiskUsed       float64   `json:"du" cbor:"1,keyasint"`
-	TotalRead      uint64    `json:"-"`
-	TotalWrite     uint64    `json:"-"`
+	TotalRead      uint64    `json:"tr,omitzero" cbor:"9,keyasint,omitzero"`  // cumulative read bytes since agent start
+	TotalWrite     uint64    `json:"tw,omitzero" cbor:"10,keyasint,omitzero"` // cumulative write bytes since agent start
 	DiskReadPs     float64   `json:"r" cbor:"2,keyasint"`
 	DiskWritePs    float64   `json:"w" cbor:"3,keyasint"`
 	MaxDiskReadPS  float64   `json:"rm,omitempty" cbor:"-"`
