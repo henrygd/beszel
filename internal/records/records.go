@@ -347,6 +347,7 @@ func AverageSystemStatsSlice(records []system.Stats) system.Stats {
 				gpu.MemoryTotal += value.MemoryTotal
 				gpu.Usage += value.Usage
 				gpu.Power += value.Power
+				gpu.PowerPkg += value.PowerPkg
 				gpu.Count += value.Count
 
 				if value.Engines != nil {
@@ -451,6 +452,7 @@ func AverageSystemStatsSlice(records []system.Stats) system.Stats {
 			gpu.MemoryTotal = twoDecimals(gpu.MemoryTotal / count)
 			gpu.Usage = twoDecimals(gpu.Usage / count)
 			gpu.Power = twoDecimals(gpu.Power / count)
+			gpu.PowerPkg = twoDecimals(gpu.PowerPkg / count)
 			gpu.Count = twoDecimals(gpu.Count / count)
 
 			if gpu.Engines != nil {
