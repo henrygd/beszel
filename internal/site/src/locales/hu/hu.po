@@ -424,6 +424,14 @@ msgstr "Konfliktusok"
 msgid "Connection is down"
 msgstr "Kapcsolat megszakadt"
 
+#: src/lib/alerts.ts
+msgid "Container"
+msgstr "Konténer"
+
+#: src/lib/alerts.ts
+msgid "Container Health"
+msgstr "Konténer állapota"
+
 #: src/components/routes/system.tsx
 msgid "Containers"
 msgstr "Konténerek"
@@ -1742,6 +1750,10 @@ msgid "Triggers when 5 minute load average exceeds a threshold"
 msgstr "Riaszt, ha az 5 perces terhelési átlag túllép egy küszöbértéket"
 
 #: src/lib/alerts.ts
+msgid "Triggers when a Docker container's health check reports unhealthy"
+msgstr "Riaszt, amikor egy Docker konténer health check ellenőrzése nem egészséges állapotot jelez"
+
+#: src/lib/alerts.ts
 msgid "Triggers when any sensor exceeds a threshold"
 msgstr "Riaszt, ha bármelyik hőmérséklet érzékelő túllép egy küszöbértéket"
 
@@ -1778,6 +1790,10 @@ msgstr "Riaszt, ha a lemezhasználat túllép egy küszöbértéket"
 #: src/components/routes/system/smart-table.tsx
 msgid "Type"
 msgstr "Típus"
+
+#: src/lib/alerts.ts
+msgid "Unhealthy"
+msgstr "Nem egészséges"
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Unit file"

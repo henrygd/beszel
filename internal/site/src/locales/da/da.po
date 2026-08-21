@@ -424,6 +424,14 @@ msgstr "Konflikter"
 msgid "Connection is down"
 msgstr "Forbindelsen er nede"
 
+#: src/lib/alerts.ts
+msgid "Container"
+msgstr "Container"
+
+#: src/lib/alerts.ts
+msgid "Container Health"
+msgstr "Container-sundhed"
+
 #: src/components/routes/system.tsx
 msgid "Containers"
 msgstr "Containere"
@@ -1742,6 +1750,10 @@ msgid "Triggers when 5 minute load average exceeds a threshold"
 msgstr "Udløser når 5 minut belastning gennemsnit overstiger en tærskel"
 
 #: src/lib/alerts.ts
+msgid "Triggers when a Docker container's health check reports unhealthy"
+msgstr "Udløser når en Docker-containers helbredstjek rapporterer usund"
+
+#: src/lib/alerts.ts
 msgid "Triggers when any sensor exceeds a threshold"
 msgstr "Udløser når en sensor overstiger en tærskel"
 
@@ -1778,6 +1790,10 @@ msgstr "Udløser når brugen af en disk overstiger en tærskel"
 #: src/components/routes/system/smart-table.tsx
 msgid "Type"
 msgstr "Type"
+
+#: src/lib/alerts.ts
+msgid "Unhealthy"
+msgstr "Usund"
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Unit file"

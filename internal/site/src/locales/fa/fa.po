@@ -424,6 +424,14 @@ msgstr "تعارض‌ها"
 msgid "Connection is down"
 msgstr "اتصال قطع است"
 
+#: src/lib/alerts.ts
+msgid "Container"
+msgstr "کانتینر"
+
+#: src/lib/alerts.ts
+msgid "Container Health"
+msgstr "سلامت کانتینر"
+
 #: src/components/routes/system.tsx
 msgid "Containers"
 msgstr "کانتینرها"
@@ -1742,6 +1750,10 @@ msgid "Triggers when 5 minute load average exceeds a threshold"
 msgstr "هنگامی که میانگین بار ۵ دقیقه‌ای از یک آستانه فراتر رود، فعال می‌شود"
 
 #: src/lib/alerts.ts
+msgid "Triggers when a Docker container's health check reports unhealthy"
+msgstr "هنگامی که بررسی سلامت یک کانتینر Docker وضعیت ناسالم را گزارش می‌کند، فعال می‌شود"
+
+#: src/lib/alerts.ts
 msgid "Triggers when any sensor exceeds a threshold"
 msgstr "هنگامی که هر حسگری از یک آستانه فراتر رود، فعال می‌شود"
 
@@ -1778,6 +1790,10 @@ msgstr "هنگامی که استفاده از هر دیسکی از یک آستا
 #: src/components/routes/system/smart-table.tsx
 msgid "Type"
 msgstr "نوع"
+
+#: src/lib/alerts.ts
+msgid "Unhealthy"
+msgstr "ناسالم"
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Unit file"

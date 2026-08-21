@@ -20,10 +20,11 @@ type hubLike interface {
 }
 
 type AlertManager struct {
-	hub           hubLike
-	stopOnce      sync.Once
-	pendingAlerts sync.Map
-	alertsCache   *AlertsCache
+	hub                    hubLike
+	stopOnce               sync.Once
+	pendingAlerts          sync.Map
+	pendingContainerAlerts sync.Map
+	alertsCache            *AlertsCache
 }
 
 type AlertMessageData struct {
