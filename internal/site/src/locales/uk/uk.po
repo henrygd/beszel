@@ -8,7 +8,7 @@ msgstr ""
 "Language: uk\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2026-05-08 11:22\n"
+"PO-Revision-Date: 2026-08-19 12:00\n"
 "Last-Translator: \n"
 "Language-Team: Ukrainian\n"
 "Plural-Forms: nplurals=4; plural=((n%10==1 && n%100!=11) ? 0 : ((n%10 >= 2 && n%10 <=4 && (n%100 < 12 || n%100 > 14)) ? 1 : ((n%10 == 0 || (n%10 >= 5 && n%10 <=9)) || (n%100 >= 11 && n%100 <= 14)) ? 2 : 3));\n"
@@ -131,7 +131,7 @@ msgstr "Налаштуйте параметри відображення для 
 
 #: src/components/routes/settings/general.tsx
 msgid "Adjust the width of the main layout"
-msgstr "Налаштувати ширину основного макету"
+msgstr "Налаштуйте ширину основного макету"
 
 #: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
@@ -145,7 +145,7 @@ msgstr "Після"
 
 #: src/components/routes/settings/heartbeat.tsx
 msgid "After setting the environment variables, restart your Beszel hub for changes to take effect."
-msgstr "Після встановлення змінних оточення перезапустіть хаб Beszel, щоб зміни набули чинності."
+msgstr "Після встановлення змінних середовища перезапустіть Beszel Hub, щоб зміни набули чинності."
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Agent"
@@ -333,7 +333,7 @@ msgstr "Ємність"
 
 #: src/components/routes/settings/config-yaml.tsx
 msgid "Caution - potential data loss"
-msgstr "Увага - можливе втрата даних"
+msgstr "Увага — можлива втрата даних"
 
 #: src/components/routes/settings/general.tsx
 msgid "Celsius (°C)"
@@ -378,7 +378,7 @@ msgstr "Перевірте ваш сервіс моніторингу"
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Check your notification service"
-msgstr "Перевірте свій сервіс сповіщень"
+msgstr "Перевірте ваш сервіс сповіщень"
 
 #: src/components/containers-table/containers-table.tsx
 #: src/components/routes/system/smart-table.tsx
@@ -414,7 +414,7 @@ msgstr "Налаштуйте, як ви отримуєте сповіщення 
 #: src/components/login/auth-form.tsx
 #: src/components/login/auth-form.tsx
 msgid "Confirm password"
-msgstr "Підтвердьте пароль"
+msgstr "Підтвердіть пароль"
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Conflicts"
@@ -422,7 +422,7 @@ msgstr "Конфлікти"
 
 #: src/components/active-alerts.tsx
 msgid "Connection is down"
-msgstr "З'єднання розірвано"
+msgstr "З’єднання розірвано"
 
 #: src/components/routes/system.tsx
 msgid "Containers"
@@ -470,11 +470,11 @@ msgstr "Копіювати команду Linux"
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Copy name"
-msgstr "Копіювати імʼя"
+msgstr "Копіювати ім’я"
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Copy public key"
-msgstr ""
+msgstr "Копіювати відкритий ключ"
 
 #: src/components/copy-to-clipboard.tsx
 msgid "Copy text"
@@ -482,7 +482,7 @@ msgstr "Копіювати текст"
 
 #: src/components/add-system.tsx
 msgid "Copy the installation command for the agent below, or register agents automatically with a <0>universal token</0>."
-msgstr "Скопіюйте команду встановлення для агента нижче, або зареєструйте агентів автоматично за допомогою <0>універсального токена</0>."
+msgstr "Скопіюйте наведену нижче команду встановлення агента або зареєструйте агентів автоматично за допомогою <0>універсального токена</0>."
 
 #: src/components/add-system.tsx
 msgid "Copy the<0>docker-compose.yml</0> content for the agent below, or register agents automatically with a <1>universal token</1>."
@@ -639,7 +639,7 @@ msgstr "Використання ЦП Docker"
 
 #: src/components/routes/system/charts/memory-charts.tsx
 msgid "Docker Memory Usage"
-msgstr "Використання пам'яті Docker"
+msgstr "Використання пам’яті Docker"
 
 #: src/components/routes/system/charts/network-charts.tsx
 msgid "Docker Network I/O"
@@ -706,7 +706,7 @@ msgstr "URL-адреса кінцевої точки"
 
 #: src/components/routes/settings/heartbeat.tsx
 msgid "Endpoint URL to ping (required)"
-msgstr "URL-адреса кінцевої точки для пінгу (обов'язково)"
+msgstr "URL-адреса кінцевої точки для пінгу (обов’язково)"
 
 #: src/components/login/login.tsx
 msgid "Enter email address to reset password"
@@ -722,7 +722,7 @@ msgstr "Введіть ваш одноразовий пароль."
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Ephemeral"
-msgstr "Ефемерний"
+msgstr "Тимчасовий"
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/settings/config-yaml.tsx
@@ -762,7 +762,7 @@ msgstr "Завершилося активно"
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Expires after one hour or on hub restart."
-msgstr "Закінчується через годину або при перезапуску хаба."
+msgstr "Закінчується через годину або при перезапуску Hub."
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Export"
@@ -817,7 +817,7 @@ msgstr "Невдало: {0}"
 
 #: src/components/routes/system/charts/sensor-charts.tsx
 msgid "Fans"
-msgstr ""
+msgstr "Вентилятори"
 
 #: src/components/containers-table/containers-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
@@ -889,7 +889,7 @@ msgstr "Сітка"
 
 #: src/components/containers-table/containers-table-columns.tsx
 msgid "Health"
-msgstr "Здоров'я"
+msgstr "Здоров’я"
 
 #: src/components/routes/settings/layout.tsx
 msgid "Heartbeat"
@@ -1034,7 +1034,7 @@ msgstr "Журнали"
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Looking instead for where to create alerts? Click the bell <0/> icons in the systems table."
-msgstr "Шукаєте, де створити сповіщення? Натисніть на іконки дзвінка <0/> в таблиці систем."
+msgstr "А може, ви шукаєте, де створити сповіщення? Натисніть на іконку дзвіночка <0/> у таблиці систем."
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Main PID"
@@ -1060,25 +1060,25 @@ msgstr "Макс 1 хв"
 #: src/components/systemd-table/systemd-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Memory"
-msgstr "Пам'ять"
+msgstr "Пам’ять"
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Memory limit"
-msgstr "Обмеження пам'яті"
+msgstr "Обмеження пам’яті"
 
 #: src/components/systemd-table/systemd-table-columns.tsx
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Memory Peak"
-msgstr "Пік пам'яті"
+msgstr "Пік пам’яті"
 
 #: src/components/routes/system/charts/memory-charts.tsx
 #: src/lib/alerts.ts
 msgid "Memory Usage"
-msgstr "Використання пам'яті"
+msgstr "Використання пам’яті"
 
 #: src/components/routes/system/charts/memory-charts.tsx
-msgid "Memory usage of docker containers"
-msgstr "Використання пам'яті контейнерами Docker"
+msgid "Memory usage of containers"
+msgstr "Використання пам’яті контейнерами"
 
 #. Device model
 #: src/components/routes/system/smart-table.tsx
@@ -1091,7 +1091,7 @@ msgstr "Модель"
 #: src/components/systemd-table/systemd-table-columns.tsx
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Name"
-msgstr "Ім'я"
+msgstr "Ім’я"
 
 #: src/components/containers-table/containers-table-columns.tsx
 #: src/components/systems-table/systems-table-columns.tsx
@@ -1099,8 +1099,8 @@ msgid "Net"
 msgstr "Мережа"
 
 #: src/components/routes/system/charts/network-charts.tsx
-msgid "Network traffic of docker containers"
-msgstr "Мережевий трафік контейнерів Docker"
+msgid "Network traffic of containers"
+msgstr "Мережевий трафік контейнерів"
 
 #: src/components/routes/system/charts/network-charts.tsx
 #: src/components/routes/system/network-sheet.tsx
@@ -1155,7 +1155,7 @@ msgstr "Підтримка OAuth 2 / OIDC"
 
 #: src/components/routes/settings/config-yaml.tsx
 msgid "On each restart, systems in the database will be updated to match the systems defined in the file."
-msgstr "При кожному перезапуску системи в базі даних будуть оновлені, щоб відповідати системам, визначеним у файлі."
+msgstr "При кожному перезапуску системи в базі даних оновлюватимуться відповідно до систем, визначених у файлі."
 
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/quiet-hours.tsx
@@ -1322,7 +1322,7 @@ msgstr "Процес запущено"
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Public key"
-msgstr ""
+msgstr "Відкритий ключ"
 
 #. Use 'Key' if your language requires many more characters
 #: src/components/add-system.tsx
@@ -1358,7 +1358,7 @@ msgstr "Оновити"
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Relationships"
-msgstr "Зв'язки"
+msgstr "Зв’язки"
 
 #: src/components/login/login.tsx
 msgid "Request a one-time password"
@@ -1434,7 +1434,7 @@ msgstr "Зберегти налаштування"
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Saved in the database and does not expire until you disable it."
-msgstr "Збережено в базі даних і не закінчується, поки ви його не вимкнете."
+msgstr "Збережено в базі даних і залишається чинним, доки ви його не вимкнете."
 
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Schedule"
@@ -1566,7 +1566,7 @@ msgstr "Використання підкачки"
 #: src/components/mode-toggle.tsx
 #: src/components/mode-toggle.tsx
 msgid "Switch theme"
-msgstr ""
+msgstr "Змінити тему"
 
 #: src/components/add-system.tsx
 #: src/components/alerts-history-columns.tsx
@@ -1585,7 +1585,7 @@ msgstr "Система"
 
 #: src/components/routes/system/charts/sensor-charts.tsx
 msgid "System fan speeds (RPM)"
-msgstr ""
+msgstr "Швидкість обертання вентиляторів (об/хв)"
 
 #: src/components/routes/system/charts/load-average-chart.tsx
 msgid "System load averages over time"
@@ -1692,11 +1692,11 @@ msgstr "Токени та Відбитки"
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Tokens allow agents to connect and register. Fingerprints are stable identifiers unique to each system, set on first connection."
-msgstr "Токени дозволяють агентам підключатися та реєструватися. Відбитки - це стабільні ідентифікатори, унікальні для кожної системи, встановлюються при першому підключенні."
+msgstr "Токени дозволяють агентам підключатися та реєструватися. Відбитки — це стабільні ідентифікатори, унікальні для кожної системи, встановлюються при першому підключенні."
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Tokens and fingerprints are used to authenticate WebSocket connections to the hub."
-msgstr "Токени та відбитки використовуються для автентифікації WebSocket з'єднань до хабу."
+msgstr "Токени та відбитки використовуються для автентифікації WebSocket з’єднань до хабу."
 
 #: src/components/ui/chart.tsx
 #: src/components/ui/chart.tsx
@@ -1763,7 +1763,7 @@ msgstr "Спрацьовує, коли використання GPU переви
 
 #: src/lib/alerts.ts
 msgid "Triggers when memory usage exceeds a threshold"
-msgstr "Спрацьовує, коли використання пам'яті перевищує поріг"
+msgstr "Спрацьовує, коли використання пам’яті перевищує поріг"
 
 #: src/lib/alerts.ts
 msgid "Triggers when status switches between up and down"
@@ -1796,7 +1796,7 @@ msgstr "Універсальний токен"
 #. Context: Battery state
 #: src/lib/i18n.ts
 msgid "Unknown"
-msgstr "Невідома"
+msgstr "Невідомо"
 
 #: src/components/systemd-table/systemd-table.tsx
 #: src/components/systemd-table/systemd-table.tsx
@@ -1948,3 +1948,4 @@ msgstr "Так"
 #: src/components/routes/settings/layout.tsx
 msgid "Your user settings have been updated."
 msgstr "Ваші налаштування користувача були оновлені."
+
