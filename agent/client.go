@@ -13,11 +13,10 @@ import (
 	"strings"
 	"time"
 
+	"github.com/fxamacker/cbor/v2"
 	"github.com/henrygd/beszel"
 	"github.com/henrygd/beszel/agent/utils"
 	"github.com/henrygd/beszel/internal/common"
-
-	"github.com/fxamacker/cbor/v2"
 	"github.com/lxzan/gws"
 	"golang.org/x/crypto/ssh"
 	"golang.org/x/net/proxy"
@@ -105,13 +104,38 @@ func (client *WebSocketClient) getOptions() *gws.ClientOption {
 	}
 	client.hubURL.Path = path.Join(client.hubURL.Path, "api/beszel/agent-connect")
 
+	// Resolve .local (mDNS) hostnames to IP addresses before passing to gws.
+	// Go's native DNS resolver (used when CGO_ENABLED=0) doesn't support mDNS,
+	// so we handle this explicitly here.
+	var wsAddress string
+	switch hostname := client.hubURL.Hostname(); strings.HasSuffix(hostname, ".local") {
+	case true:
+		slog.Debug("Attempting mDNS resolution", "hostname", hostname)
+		resolvedIP, err := mDnsResolve(hostname)
+		if err == nil {
+			// Replace the hostname with the resolved IP in the address string.
+			// The original client.hubURL is kept unchanged for logging purposes.
+			resolvedURL := *client.hubURL
+			resolvedURL.Host = net.JoinHostPort(resolvedIP, client.hubURL.Port())
+			wsAddress = resolvedURL.String()
+			slog.Info("Resolved mDNS hostname", "host", hostname, "ip", resolvedIP)
+			break
+		} else {
+			slog.Warn("Failed to resolve mDNS hostname, will attempt connection anyway", "host", hostname, "err", err)
+		}
+		fallthrough
+	case false:
+		wsAddress = client.hubURL.String()
+	}
+	slog.Info("Effective WebSocket address", "addr", wsAddress)
+
 	// make sure BESZEL_AGENT_ALL_PROXY works (GWS only checks ALL_PROXY)
 	if val := os.Getenv("BESZEL_AGENT_ALL_PROXY"); val != "" {
 		os.Setenv("ALL_PROXY", val)
 	}
 
 	client.options = &gws.ClientOption{
-		Addr:      client.hubURL.String(),
+		Addr:      wsAddress,
 		TlsConfig: &tls.Config{InsecureSkipVerify: true},
 		RequestHeader: http.Header{
 			"User-Agent": []string{getUserAgent()},
