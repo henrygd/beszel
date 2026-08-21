@@ -9,6 +9,7 @@ import {
 	ArrowUpDownIcon,
 	ChevronRightSquareIcon,
 	ClockArrowUp,
+	ContainerIcon,
 	CopyIcon,
 	CpuIcon,
 	HardDriveIcon,
@@ -25,7 +26,15 @@ import {
 import { memo, useMemo, useRef, useState } from "react"
 import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip"
 import { isReadOnlyUser, pb } from "@/lib/api"
-import { BatteryState, ConnectionType, connectionTypeLabels, MeterState, SystemStatus } from "@/lib/enums"
+import {
+	BatteryState,
+	ConnectionType,
+	connectionTypeLabels,
+	ContainerHealth,
+	ContainerHealthLabels,
+	MeterState,
+	SystemStatus,
+} from "@/lib/enums"
 import { $longestSystemNameLen, $userSettings } from "@/lib/stores"
 import {
 	cn,
@@ -325,6 +334,45 @@ export function SystemsTableColumns(viewMode: "table" | "grid"): ColumnDef<Syste
 						<Icon className={cn("size-3.5", iconColor)} />
 						<span className="min-w-10">{pct}%</span>
 					</Link>
+				)
+			},
+		},
+		{
+			accessorFn: ({ info }) => info.cn?.[0],
+			id: "containers",
+			name: () => t`Containers`,
+			size: 50,
+			Icon: ContainerIcon,
+			header: sortableHeader,
+			hideSort: true,
+			sortingFn: (a, b) => {
+				// sort priorities: 1) unhealthy containers, 2) total containers
+				const [totalCountA, numUnhealthyA] = a.original.info.cn ?? [0, 0]
+				const [totalCountB, numUnhealthyB] = b.original.info.cn ?? [0, 0]
+				if (numUnhealthyA !== numUnhealthyB) {
+					return numUnhealthyA - numUnhealthyB
+				}
+				return totalCountA - totalCountB
+			},
+			cell(info) {
+				const sys = info.row.original
+				const [totalCount, numUnhealthy] = sys.info.cn ?? [0, 0]
+				if (sys.status !== SystemStatus.Up || totalCount === 0) {
+					return null
+				}
+				return (
+					<span className="tabular-nums whitespace-nowrap flex gap-1.5 items-center">
+						<span
+							className={cn("block size-2 rounded-full", {
+								[STATUS_COLORS[SystemStatus.Down]]: numUnhealthy > 0,
+								[STATUS_COLORS[SystemStatus.Up]]: numUnhealthy === 0,
+							})}
+						/>
+						{totalCount}{" "}
+						<span className="text-muted-foreground text-sm -ms-0.5">
+							({ContainerHealthLabels[ContainerHealth.Unhealthy].toLowerCase()}: {numUnhealthy})
+						</span>
+					</span>
 				)
 			},
 		},
