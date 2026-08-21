@@ -48,10 +48,11 @@ type Stats struct {
 	NetworkInterfaces map[string][4]uint64 `json:"ni,omitempty" cbor:"31,keyasint,omitempty"`   // [upload bytes, download bytes, total upload, total download]
 	DiskIO            [2]uint64            `json:"dio,omitzero" cbor:"32,keyasint,omitzero"`    // [read bytes, write bytes]
 	MaxDiskIO         [2]uint64            `json:"diom,omitzero" cbor:"-"`                      // [max read bytes, max write bytes]
-	CpuBreakdown      []float64            `json:"cpub,omitempty" cbor:"33,keyasint,omitempty"` // [user, system, iowait, steal, idle]
+	CpuBreakdown      []float64            `json:"cpub,omitempty" cbor:"33,keyasint,omitempty"` // [user, system, iowait, steal, idle, irq, softirq, nice]
 	CpuCoresUsage     Uint8Slice           `json:"cpus,omitempty" cbor:"34,keyasint,omitempty"` // per-core busy usage [CPU0..]
 	DiskIoStats       [6]float64           `json:"dios,omitzero" cbor:"35,keyasint,omitzero"`   // [read time %, write time %, io utilization %, r_await ms, w_await ms, weighted io %]
 	MaxDiskIoStats    [6]float64           `json:"diosm,omitzero" cbor:"-"`                     // max values for DiskIoStats
+	CpuFreqs          []float64            `json:"cf,omitempty"   cbor:"36,keyasint,omitempty"` // per-core CPU frequency (GHz)
 }
 
 // Uint8Slice wraps []uint8 to customize JSON encoding while keeping CBOR efficient.
@@ -172,6 +173,7 @@ type Details struct {
 	Podman        bool          `cbor:"8,keyasint,omitempty"`
 	MemoryTotal   uint64        `cbor:"9,keyasint"`
 	SmartInterval time.Duration `cbor:"10,keyasint,omitempty"`
+	CpuMHz        float64       `cbor:"11,keyasint,omitempty"` // base/advertised clock speed
 }
 
 // Final data structure to return to the hub

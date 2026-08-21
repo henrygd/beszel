@@ -268,6 +268,7 @@ func createSystemDetailsRecord(app core.App, data *system.Details, systemId stri
 		"arch":     data.Arch,
 		"memory":   data.MemoryTotal,
 		"podman":   data.Podman,
+		"cpu_mhz":  data.CpuMHz,
 		"updated":  time.Now().UTC(),
 	}
 	result, err := app.DB().Update(collectionName, params, dbx.HashExp{"id": systemId}).Execute()
