@@ -519,6 +519,7 @@ func (dm *dockerManager) updateContainerStats(ctr *container.ApiInfo, cacheTimeM
 	stats.Id = ctr.IdShort
 	stats.Status = statusText
 	stats.Health = health
+	stats.ComposeProject = ctr.Labels["com.docker.compose.project"]
 
 	if len(ctr.Ports) > 0 {
 		stats.Ports = convertContainerPortsToString(ctr)
@@ -592,6 +593,7 @@ func (dm *dockerManager) updateContainerStats(ctr *container.ApiInfo, cacheTimeM
 		total_recv += v.RxBytes
 	}
 	stats.PrevNet.Sent, stats.PrevNet.Recv = total_sent, total_recv
+	stats.NetTotal = [2]uint64{total_sent, total_recv}
 
 	// Update final stats values
 	updateContainerStatsValues(stats, cpuPct, usedMemory, sent_delta, recv_delta, res.Read)

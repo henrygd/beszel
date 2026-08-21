@@ -1016,6 +1016,44 @@ func init() {
 					"required": true,
 					"system": false,
 					"type": "number"
+				},
+				{
+					"autogeneratePattern": "",
+					"hidden": false,
+					"id": "text_compose_project",
+					"max": 0,
+					"min": 0,
+					"name": "compose",
+					"pattern": "",
+					"presentable": false,
+					"primaryKey": false,
+					"required": false,
+					"system": false,
+					"type": "text"
+				},
+				{
+					"hidden": false,
+					"id": "number_traffic_out",
+					"max": null,
+					"min": null,
+					"name": "traffic_out",
+					"onlyInt": true,
+					"presentable": false,
+					"required": false,
+					"system": false,
+					"type": "number"
+				},
+				{
+					"hidden": false,
+					"id": "number_traffic_in",
+					"max": null,
+					"min": null,
+					"name": "traffic_in",
+					"onlyInt": true,
+					"presentable": false,
+					"required": false,
+					"system": false,
+					"type": "number"
 				}
 		],
 		"indexes": [

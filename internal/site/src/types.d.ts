@@ -274,6 +274,9 @@ export interface ContainerRecord extends RecordModel {
 	health: number
 	status: string
 	updated: number
+	compose?: string
+	traffic_in?: number
+	traffic_out?: number
 }
 
 export type ChartTimes = "1m" | "1h" | "12h" | "24h" | "1w" | "30d"
