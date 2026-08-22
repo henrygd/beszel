@@ -9,6 +9,7 @@ import {
 	ArrowUpDownIcon,
 	ChevronRightSquareIcon,
 	ClockArrowUp,
+	ClockIcon,
 	CopyIcon,
 	CpuIcon,
 	HardDriveIcon,
@@ -32,6 +33,7 @@ import {
 	copyToClipboard,
 	decimalString,
 	formatBytes,
+	formatShortDate,
 	formatTemperature,
 	parseSemVer,
 	secondsToUptimeString,
@@ -422,6 +424,47 @@ export function SystemsTableColumns(viewMode: "table" | "grid"): ColumnDef<Syste
 						{!system.info.ct && <IndicatorDot system={system} className={cn(color, "bg-current mx-0.5")} />}
 						<span className="truncate max-w-14">{info.getValue() as string}</span>
 					</Link>
+				)
+			},
+		},
+		{
+			accessorFn: ({ info }) => info.ls || undefined,
+			id: "lastSeen",
+			name: () => t`Last Seen`,
+			size: 50,
+			Icon: ClockIcon,
+			hideSort: true,
+			header: sortableHeader,
+			cell(info) {
+				const ls = info.getValue() as number
+				if (!ls) {
+					return null
+				}
+				const system = info.row.original
+				if (system.status === SystemStatus.Up) {
+					return <span className="text-muted-foreground whitespace-nowrap">{t`Now`}</span>
+				}
+				const date = new Date(ls * 1000)
+				const diffSec = Math.floor((Date.now() - date.getTime()) / 1000)
+				let relative: string
+				if (diffSec < 60) {
+					relative = t`${diffSec}s ago`
+				} else if (diffSec < 3600) {
+					relative = t`${Math.floor(diffSec / 60)}m ago`
+				} else if (diffSec < 86400) {
+					relative = t`${Math.floor(diffSec / 3600)}h ago`
+				} else {
+					relative = t`${Math.floor(diffSec / 86400)}d ago`
+				}
+				return (
+					<Tooltip>
+						<TooltipTrigger asChild>
+							<span className="tabular-nums whitespace-nowrap cursor-default">{relative}</span>
+						</TooltipTrigger>
+						<TooltipContent>
+							<p>{formatShortDate(date.toISOString())}</p>
+						</TooltipContent>
+					</Tooltip>
 				)
 			},
 		},
