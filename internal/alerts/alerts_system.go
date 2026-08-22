@@ -14,7 +14,17 @@ import (
 )
 
 func (am *AlertManager) HandleSystemAlerts(systemRecord *core.Record, data *system.CombinedData) error {
-	alerts := am.alertsCache.GetAlertsExcludingNames(systemRecord.Id, "Status")
+	// Systemd alerts are binary state, not numeric thresholds, so they're handled
+	// separately. They read their own state from the database and don't use data.
+	if err := am.HandleSystemdAlerts(systemRecord); err != nil {
+		am.hub.Logger().Error("Error handling systemd alerts", "err", err)
+	}
+
+	if data == nil {
+		return nil
+	}
+
+	alerts := am.alertsCache.GetAlertsExcludingNames(systemRecord.Id, "Status", alertNameSystemdFailed)
 	if len(alerts) == 0 {
 		return nil
 	}

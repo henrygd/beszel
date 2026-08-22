@@ -305,7 +305,16 @@ func createSystemdStatsRecords(app core.App, data []*systemd.Service, systemId s
 		"INSERT INTO systemd_services (id, system, name, state, sub, cpu, cpuPeak, memory, memPeak, updated) VALUES %s ON CONFLICT(id) DO UPDATE SET system = excluded.system, name = excluded.name, state = excluded.state, sub = excluded.sub, cpu = excluded.cpu, cpuPeak = excluded.cpuPeak, memory = excluded.memory, memPeak = excluded.memPeak, updated = excluded.updated",
 		strings.Join(valueStrings, ","),
 	)
-	_, err := app.DB().NewQuery(queryString).Bind(params).Execute()
+	if _, err := app.DB().NewQuery(queryString).Bind(params).Execute(); err != nil {
+		return err
+	}
+	// Remove services the agent no longer reports. Every row in this batch shares the
+	// same updated timestamp, so anything older no longer exists on the host. Left in
+	// place these rows survive until the retention sweep and surface inconsistently
+	// across the dashboard, the services table, and alerts.
+	_, err := app.DB().NewQuery(
+		"DELETE FROM systemd_services WHERE system = {:system} AND updated < {:updated}",
+	).Bind(dbx.Params{"system": systemId, "updated": params["updated"]}).Execute()
 	return err
 }
 

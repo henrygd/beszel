@@ -336,6 +336,8 @@ export interface AlertInfo {
 	start?: number
 	/** Single value description (when there's only one value, like status) */
 	singleDesc?: () => string
+	/** Hides the duration slider for alerts that fire on first observation */
+	noDuration?: boolean
 	invert?: boolean
 }
 
