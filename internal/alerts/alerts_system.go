@@ -13,6 +13,29 @@ import (
 	"github.com/pocketbase/pocketbase/tools/types"
 )
 
+var cpuStateAlerts = map[string]struct {
+	index int
+	label string
+}{
+	"CPUIOWait": {2, "CPU I/O Wait"},
+	"CPUSteal":  {3, "CPU Steal Time"},
+}
+
+func cpuStateAlertValue(name string, breakdown []float64) (float64, bool) {
+	state, ok := cpuStateAlerts[name]
+	if !ok || len(breakdown) < 5 {
+		return 0, false
+	}
+	var total float64
+	for _, value := range breakdown {
+		total += value
+	}
+	if total <= 0 {
+		return 0, false
+	}
+	return breakdown[state.index], true
+}
+
 func (am *AlertManager) HandleSystemAlerts(systemRecord *core.Record, data *system.CombinedData) error {
 	alerts := am.alertsCache.GetAlertsExcludingNames(systemRecord.Id, "Status")
 	if len(alerts) == 0 {
@@ -67,6 +90,11 @@ func (am *AlertManager) HandleSystemAlerts(systemRecord *core.Record, data *syst
 				continue
 			}
 			val = float64(data.Stats.Battery[0])
+		default:
+			var ok bool
+			if val, ok = cpuStateAlertValue(name, data.Stats.CpuBreakdown); !ok {
+				continue
+			}
 		}
 
 		triggered := alertData.Triggered
@@ -241,13 +269,20 @@ func (am *AlertManager) HandleSystemAlerts(systemRecord *core.Record, data *syst
 				}
 				alert.val += float64(stats.Battery[0])
 			default:
-				continue
+				value, ok := cpuStateAlertValue(alert.name, stats.CpuBreakdown)
+				if !ok {
+					continue
+				}
+				alert.val += value
 			}
 			alert.count++
 		}
 	}
 	// sum up vals for each alert
 	for _, alert := range validAlerts {
+		if alert.count == 0 {
+			continue
+		}
 		switch alert.name {
 		case "Disk":
 			maxPct := float32(0)
@@ -309,6 +344,9 @@ func (am *AlertManager) sendSystemAlert(alert SystemAlertData) {
 	// log.Printf("Sending alert %s: val %f | count %d | threshold %f\n", alert.name, alert.val, alert.count, alert.threshold)
 	systemName := alert.systemRecord.GetString("name")
 
+	if state, ok := cpuStateAlerts[alert.name]; ok {
+		alert.name = state.label
+	}
 	// change Disk to Disk usage
 	if alert.name == "Disk" {
 		alert.name += " usage"
@@ -320,7 +358,7 @@ func (am *AlertManager) sendSystemAlert(alert SystemAlertData) {
 
 	// make title alert name lowercase if not CPU or GPU
 	titleAlertName := alert.name
-	if titleAlertName != "CPU" && titleAlertName != "GPU" {
+	if titleAlertName != "CPU" && titleAlertName != "GPU" && !strings.HasPrefix(titleAlertName, "CPU") {
 		titleAlertName = strings.ToLower(titleAlertName)
 	}
 

@@ -507,9 +507,17 @@ msgstr "ЦП"
 msgid "CPU Cores"
 msgstr "Ядра ЦП"
 
+#: src/lib/alerts.ts
+msgid "CPU I/O Wait"
+msgstr "Час очікування введення/виведення CPU (IOWait)"
+
 #: src/components/systemd-table/systemd-table-columns.tsx
 msgid "CPU Peak"
 msgstr "Пік ЦП"
+
+#: src/lib/alerts.ts
+msgid "CPU Steal Time"
+msgstr "Час CPU, відібраний гіпервізором (Steal)"
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "CPU time"
@@ -1752,6 +1760,14 @@ msgstr "Спрацьовує, коли заряд батареї опускає�
 #: src/lib/alerts.ts
 msgid "Triggers when combined up/down exceeds a threshold"
 msgstr "Спрацьовує, коли відправлення/отримання сумарно перевищує поріг"
+
+#: src/lib/alerts.ts
+msgid "Triggers when CPU I/O wait exceeds a threshold"
+msgstr "Спрацьовує, коли час очікування введення/виведення CPU перевищує порогове значення"
+
+#: src/lib/alerts.ts
+msgid "Triggers when CPU steal time exceeds a threshold"
+msgstr "Спрацьовує, коли викрадений час CPU перевищує порогове значення"
 
 #: src/lib/alerts.ts
 msgid "Triggers when CPU usage exceeds a threshold"

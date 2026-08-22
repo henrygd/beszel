@@ -23,6 +23,18 @@ export const alertInfo: Record<string, AlertInfo> = {
 		icon: CpuIcon,
 		desc: () => t`Triggers when CPU usage exceeds a threshold`,
 	},
+	CPUIOWait: {
+		name: () => t`CPU I/O Wait`,
+		unit: "%",
+		icon: CpuIcon,
+		desc: () => t`Triggers when CPU I/O wait exceeds a threshold`,
+	},
+	CPUSteal: {
+		name: () => t`CPU Steal Time`,
+		unit: "%",
+		icon: CpuIcon,
+		desc: () => t`Triggers when CPU steal time exceeds a threshold`,
+	},
 	Memory: {
 		name: () => t`Memory Usage`,
 		unit: "%",

@@ -507,9 +507,17 @@ msgstr "CPU"
 msgid "CPU Cores"
 msgstr "CPU-kernen"
 
+#: src/lib/alerts.ts
+msgid "CPU I/O Wait"
+msgstr "CPU-I/O-wachttijd (IOWait)"
+
 #: src/components/systemd-table/systemd-table-columns.tsx
 msgid "CPU Peak"
 msgstr "CPU-piek"
+
+#: src/lib/alerts.ts
+msgid "CPU Steal Time"
+msgstr "Door de hypervisor afgenomen CPU-tijd (Steal)"
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "CPU time"
@@ -1752,6 +1760,14 @@ msgstr "Triggert wanneer de batterijlading onder een drempelwaarde daalt"
 #: src/lib/alerts.ts
 msgid "Triggers when combined up/down exceeds a threshold"
 msgstr "Triggert wanneer de gecombineerde up/down een drempelwaarde overschrijdt"
+
+#: src/lib/alerts.ts
+msgid "Triggers when CPU I/O wait exceeds a threshold"
+msgstr "Wordt geactiveerd wanneer de CPU-I/O-wachttijd een drempelwaarde overschrijdt"
+
+#: src/lib/alerts.ts
+msgid "Triggers when CPU steal time exceeds a threshold"
+msgstr "Wordt geactiveerd wanneer de CPU-steal-tijd een drempelwaarde overschrijdt"
 
 #: src/lib/alerts.ts
 msgid "Triggers when CPU usage exceeds a threshold"

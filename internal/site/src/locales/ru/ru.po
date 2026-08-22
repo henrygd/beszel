@@ -507,9 +507,17 @@ msgstr "ЦП"
 msgid "CPU Cores"
 msgstr "Ядра CPU"
 
+#: src/lib/alerts.ts
+msgid "CPU I/O Wait"
+msgstr "Ожидание ввода-вывода CPU (IOWait)"
+
 #: src/components/systemd-table/systemd-table-columns.tsx
 msgid "CPU Peak"
 msgstr "Пик CPU"
+
+#: src/lib/alerts.ts
+msgid "CPU Steal Time"
+msgstr "Недоступное время CPU (Steal)"
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "CPU time"
@@ -1752,6 +1760,14 @@ msgstr "Срабатывает, когда заряд батареи опуск�
 #: src/lib/alerts.ts
 msgid "Triggers when combined up/down exceeds a threshold"
 msgstr "Срабатывает, когда комбинированный вход/выход превышает порог"
+
+#: src/lib/alerts.ts
+msgid "Triggers when CPU I/O wait exceeds a threshold"
+msgstr "Срабатывает, когда доля времени ожидания CPU операций ввода-вывода превышает порог"
+
+#: src/lib/alerts.ts
+msgid "Triggers when CPU steal time exceeds a threshold"
+msgstr "Срабатывает, когда доля времени CPU, недоступного виртуальной машине из-за гипервизора, превышает порог"
 
 #: src/lib/alerts.ts
 msgid "Triggers when CPU usage exceeds a threshold"
