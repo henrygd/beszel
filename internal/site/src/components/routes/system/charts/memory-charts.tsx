@@ -108,7 +108,7 @@ export function ContainerMemoryChart({
 				dataPoints={dataPoints}
 				tickFormatter={(val) => {
 					const { value, unit } = formatBytes(val, false, Unit.Bytes, true)
-					return `${toFixedFloat(value, val >= 10 ? 0 : 1)} ${unit}`
+					return `${toFixedFloat(value, value >= 10 ? 0 : 1)} ${unit}`
 				}}
 				contentFormatter={(item) => {
 					const { value, unit } = formatBytes(item.value, false, Unit.Bytes, true)

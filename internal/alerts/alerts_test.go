@@ -15,8 +15,9 @@ import (
 )
 
 func TestAlertsHistory(t *testing.T) {
+	hub, user := beszelTests.GetHubWithUser(t)
+
 	synctest.Test(t, func(t *testing.T) {
-		hub, user := beszelTests.GetHubWithUser(t)
 		defer hub.Cleanup()
 
 		// Create systems and alerts
