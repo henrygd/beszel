@@ -16,15 +16,22 @@ const InputTags = React.forwardRef<HTMLInputElement, InputTagsProps>(
 
 		React.useEffect(() => {
 			if (pendingDataPoint.includes(",")) {
-				const newDataPoints = new Set([...value, ...pendingDataPoint.split(",").map((chunk) => chunk.trim())])
+				const newDataPoints = new Set([
+					...value,
+					...pendingDataPoint
+						.split(",")
+						.map((chunk) => chunk.trim())
+						.filter(Boolean),
+				])
 				onChange(Array.from(newDataPoints))
 				setPendingDataPoint("")
 			}
 		}, [pendingDataPoint, onChange, value])
 
 		const addPendingDataPoint = () => {
-			if (pendingDataPoint) {
-				const newDataPoints = new Set([...value, pendingDataPoint])
+			const normalized = pendingDataPoint.trim()
+			if (normalized) {
+				const newDataPoints = new Set([...value, normalized])
 				onChange(Array.from(newDataPoints))
 				setPendingDataPoint("")
 			}
@@ -44,6 +51,7 @@ const InputTags = React.forwardRef<HTMLInputElement, InputTagsProps>(
 							variant="ghost"
 							size="icon"
 							className="ms-2 h-3 w-3"
+							aria-label={`Remove ${item}`}
 							onClick={() => {
 								onChange(value.filter((i) => i !== item))
 							}}
@@ -53,7 +61,7 @@ const InputTags = React.forwardRef<HTMLInputElement, InputTagsProps>(
 					</Badge>
 				))}
 				<input
-					className="flex-1 outline-hidden bg-background placeholder:text-muted-foreground"
+					className="min-w-28 flex-1 bg-transparent outline-hidden placeholder:text-muted-foreground"
 					value={pendingDataPoint}
 					onChange={(e) => setPendingDataPoint(e.target.value)}
 					onKeyDown={(e) => {

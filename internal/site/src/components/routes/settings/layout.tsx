@@ -34,6 +34,8 @@ const FingerprintsSettings = lazy(fingerprintsSettingsImport)
 const AlertsHistoryDataTableSettings = lazy(alertsHistoryDataTableSettingsImport)
 const HeartbeatSettings = lazy(heartbeatSettingsImport)
 
+const validSettingsPages = new Set(["general", "notifications", "config", "tokens", "alert-history", "heartbeat"])
+
 export async function saveSettings(newSettings: Partial<UserSettings>) {
 	try {
 		// get fresh copy of settings
@@ -107,15 +109,15 @@ export default function SettingsLayout() {
 	]
 
 	const page = useStore($router)
+	const pageParams = page?.params as { name?: unknown } | undefined
+	const pageName = typeof pageParams?.name === "string" ? pageParams.name : undefined
 
-	// biome-ignore lint/correctness/useExhaustiveDependencies: no dependencies
 	useEffect(() => {
 		document.title = `${t`Settings`} / Beszel`
-		// @ts-expect-error redirect to account page if no page is specified
-		if (!page?.params?.name) {
+		if (!pageName || !validSettingsPages.has(pageName)) {
 			redirectPage($router, "settings", { name: "general" })
 		}
-	}, [])
+	}, [pageName, t])
 
 	return (
 		<Card className="pt-5 px-4 pb-8 min-h-96 mb-14 sm:pt-6 sm:px-7">
@@ -134,8 +136,7 @@ export default function SettingsLayout() {
 						<SidebarNav items={sidebarNavItems} />
 					</aside>
 					<div className="flex-1 min-w-0">
-						{/* @ts-ignore */}
-						<SettingsContent name={page?.params?.name ?? "general"} />
+						<SettingsContent name={pageName ?? "general"} />
 					</div>
 				</div>
 			</CardContent>
@@ -159,5 +160,7 @@ function SettingsContent({ name }: { name: string }) {
 			return <AlertsHistoryDataTableSettings />
 		case "heartbeat":
 			return <HeartbeatSettings />
+		default:
+			return <GeneralSettings userSettings={userSettings} />
 	}
 }

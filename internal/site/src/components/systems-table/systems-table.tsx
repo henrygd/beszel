@@ -23,10 +23,11 @@ import {
 	FilterIcon,
 	LayoutGridIcon,
 	LayoutListIcon,
+	RotateCcwIcon,
 	Settings2Icon,
 	XIcon,
 } from "lucide-react"
-import { memo, useEffect, useMemo, useRef, useState } from "react"
+import { Fragment, memo, useEffect, useMemo, useRef, useState } from "react"
 import { Button } from "@/components/ui/button"
 import {
 	DropdownMenu,
@@ -55,11 +56,19 @@ type StatusFilter = "all" | SystemRecord["status"]
 
 const preloadSystemDetail = runOnce(() => import("@/components/routes/system.tsx"))
 
+// Keep the default fleet view focused on the metrics every host exposes.
+// GPU and load average are valuable opt-in fields but can be empty or noisy
+// on smaller fleets; users can enable either from View → Visible Fields.
+const DEFAULT_SYSTEM_COLUMN_VISIBILITY: VisibilityState = {
+	gpu: false,
+	loadAverage: false,
+}
+
 export default function SystemsTable() {
 	const data = useStore($systems)
-	const downSystems = $downSystems.get()
-	const upSystems = $upSystems.get()
-	const pausedSystems = $pausedSystems.get()
+	const downSystems = useStore($downSystems)
+	const upSystems = useStore($upSystems)
+	const pausedSystems = useStore($pausedSystems)
 	const { i18n, t } = useLingui()
 	const [filter, setFilter] = useState<string>("")
 	const [statusFilter, setStatusFilter] = useState<StatusFilter>("all")
@@ -69,7 +78,10 @@ export default function SystemsTable() {
 		sessionStorage
 	)
 	const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
-	const [columnVisibility, setColumnVisibility] = useBrowserStorage<VisibilityState>("cols", {})
+	const [columnVisibility, setColumnVisibility] = useBrowserStorage<VisibilityState>(
+		"cols",
+		DEFAULT_SYSTEM_COLUMN_VISIBILITY
+	)
 
 	const locale = i18n.locale
 
@@ -99,7 +111,7 @@ export default function SystemsTable() {
 		}
 	}, [filter])
 
-	const columnDefs = useMemo(() => SystemsTableColumns(viewMode), [viewMode])
+	const columnDefs = useMemo(() => SystemsTableColumns(viewMode), [viewMode, locale])
 
 	const table = useReactTable({
 		data: filteredData,
@@ -140,14 +152,22 @@ export default function SystemsTable() {
 						<CardTitle className="mb-2">
 							<Trans>All Systems</Trans>
 						</CardTitle>
-						<CardDescription className="flex">
-							<Trans>Click on a system to view more information.</Trans>
+						<CardDescription className="flex flex-wrap items-center gap-x-2 gap-y-1">
+							<span>
+								<Trans>Click on a system to view more information.</Trans>
+							</span>
+							<span className="font-mono text-[0.68rem] uppercase tracking-[0.12em] text-primary/80">
+								<Trans>
+									{rows.length} / {filteredData.length} shown
+								</Trans>
+							</span>
 						</CardDescription>
 					</div>
 
 					<div className="flex gap-2 ms-auto w-full md:w-80">
 						<div className="relative flex-1">
 							<Input
+								aria-label={t`Filter systems`}
 								placeholder={t`Filter...`}
 								onChange={(e) => setFilter(e.target.value)}
 								value={filter}
@@ -173,7 +193,7 @@ export default function SystemsTable() {
 									<Trans>View</Trans>
 								</Button>
 							</DropdownMenuTrigger>
-							<DropdownMenuContent align="end" className="h-72 md:h-auto min-w-48 md:min-w-auto overflow-y-auto">
+							<DropdownMenuContent align="end" className="min-w-48 max-h-72 overflow-y-auto md:min-w-auto">
 								<div className="grid grid-cols-1 md:grid-cols-4 divide-y md:divide-s md:divide-y-0">
 									<div className="border-r">
 										<DropdownMenuLabel className="pt-2 px-3.5 flex items-center gap-2">
@@ -186,11 +206,11 @@ export default function SystemsTable() {
 											value={viewMode}
 											onValueChange={(view) => setViewMode(view as ViewMode)}
 										>
-											<DropdownMenuRadioItem value="table" onSelect={(e) => e.preventDefault()} className="gap-2">
+											<DropdownMenuRadioItem value="table" onSelect={() => setViewMode("table")} className="gap-2">
 												<LayoutListIcon className="size-4" />
 												<Trans>Table</Trans>
 											</DropdownMenuRadioItem>
-											<DropdownMenuRadioItem value="grid" onSelect={(e) => e.preventDefault()} className="gap-2">
+											<DropdownMenuRadioItem value="grid" onSelect={() => setViewMode("grid")} className="gap-2">
 												<LayoutGridIcon className="size-4" />
 												<Trans>Grid</Trans>
 											</DropdownMenuRadioItem>
@@ -208,16 +228,16 @@ export default function SystemsTable() {
 											value={statusFilter}
 											onValueChange={(value) => setStatusFilter(value as StatusFilter)}
 										>
-											<DropdownMenuRadioItem value="all" onSelect={(e) => e.preventDefault()}>
+											<DropdownMenuRadioItem value="all" onSelect={() => setStatusFilter("all")}>
 												<Trans>All Systems</Trans>
 											</DropdownMenuRadioItem>
-											<DropdownMenuRadioItem value="up" onSelect={(e) => e.preventDefault()}>
+											<DropdownMenuRadioItem value="up" onSelect={() => setStatusFilter(SystemStatus.Up)}>
 												<Trans>Up ({upSystemsLength})</Trans>
 											</DropdownMenuRadioItem>
-											<DropdownMenuRadioItem value="down" onSelect={(e) => e.preventDefault()}>
+											<DropdownMenuRadioItem value="down" onSelect={() => setStatusFilter(SystemStatus.Down)}>
 												<Trans>Down ({downSystemsLength})</Trans>
 											</DropdownMenuRadioItem>
-											<DropdownMenuRadioItem value="paused" onSelect={(e) => e.preventDefault()}>
+											<DropdownMenuRadioItem value="paused" onSelect={() => setStatusFilter(SystemStatus.Paused)}>
 												<Trans>Paused ({pausedSystemsLength})</Trans>
 											</DropdownMenuRadioItem>
 										</DropdownMenuRadioGroup>
@@ -280,6 +300,14 @@ export default function SystemsTable() {
 														</DropdownMenuCheckboxItem>
 													)
 												})}
+											<DropdownMenuSeparator />
+											<DropdownMenuItem
+												onSelect={() => setColumnVisibility(DEFAULT_SYSTEM_COLUMN_VISIBILITY)}
+												className="gap-2"
+											>
+												<RotateCcwIcon className="size-4" />
+												<Trans>Reset fields</Trans>
+											</DropdownMenuItem>
 										</div>
 									</div>
 								</div>
@@ -290,7 +318,8 @@ export default function SystemsTable() {
 			</CardHeader>
 		)
 	}, [
-		visibleColumns.length,
+		columns,
+		columnVisibility,
 		sorting,
 		viewMode,
 		locale,
@@ -299,7 +328,12 @@ export default function SystemsTable() {
 		downSystemsLength,
 		pausedSystemsLength,
 		filter,
+		t,
+		rows.length,
+		filteredData.length,
 	])
+
+	if (data.length === 0) return null
 
 	return (
 		<Card className="w-full px-3 py-5 sm:py-6 sm:px-6">
@@ -340,7 +374,7 @@ const AllSystemsTable = memo(
 		})
 		const virtualRows = virtualizer.getVirtualItems()
 
-		const paddingTop = Math.max(0, virtualRows[0]?.start ?? 0 - virtualizer.options.scrollMargin)
+		const paddingTop = Math.max(0, (virtualRows[0]?.start ?? 0) - virtualizer.options.scrollMargin)
 		const paddingBottom = Math.max(0, virtualizer.getTotalSize() - (virtualRows[virtualRows.length - 1]?.end ?? 0))
 
 		return (
@@ -386,7 +420,6 @@ const AllSystemsTable = memo(
 )
 
 function SystemsTableHead({ table }: { table: TableType<SystemRecord> }) {
-	const { t } = useLingui()
 	return (
 		<TableHeader className="sticky top-0 z-50 w-full border-b-2">
 			{table.getHeaderGroups().map((headerGroup) => (
@@ -477,7 +510,10 @@ const SystemCard = memo(
 						</div>
 					</CardHeader>
 					<CardContent className="text-sm px-5 pt-3.5 pb-4">
-						<div className="grid gap-2.5" style={{ gridTemplateColumns: "24px minmax(80px, max-content) minmax(0, 1fr)" }}>
+						<div
+							className="grid gap-2.5"
+							style={{ gridTemplateColumns: "24px minmax(80px, max-content) minmax(0, 1fr)" }}
+						>
 							{table.getAllColumns().map((column) => {
 								if (!column.getIsVisible() || column.id === "system" || column.id === "actions") return null
 								const cell = row.getAllCells().find((cell) => cell.column.id === column.id)
@@ -485,21 +521,19 @@ const SystemCard = memo(
 								// @ts-expect-error
 								const { Icon, name } = column.columnDef as ColumnDef<SystemRecord, unknown>
 								return (
-									<>
-										<div key={`${column.id}-icon`} className="flex items-center">
+									<Fragment key={column.id}>
+										<div className="flex items-center">
 											{column.id === "lastSeen" ? (
 												<EyeIcon className="size-4 text-muted-foreground" />
 											) : (
 												Icon && <Icon className="size-4 text-muted-foreground" />
 											)}
 										</div>
-										<div key={`${column.id}-label`} className="flex items-center text-muted-foreground pr-3">
-											{name()}:
-										</div>
-										<div key={`${column.id}-value`} className="flex items-center min-w-0">
+										<div className="flex items-center text-muted-foreground pr-3">{name()}:</div>
+										<div className="flex items-center min-w-0">
 											{flexRender(cell.column.columnDef.cell, cell.getContext())}
 										</div>
-									</>
+									</Fragment>
 								)
 							})}
 						</div>

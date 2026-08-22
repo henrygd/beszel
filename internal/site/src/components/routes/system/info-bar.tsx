@@ -134,11 +134,15 @@ export default function InfoBar({
 	}
 
 	return (
-		<Card>
-			<div className="grid xl:flex xl:gap-4 px-4 sm:px-6 pt-3 sm:pt-4 pb-5">
+		<Card className="overflow-hidden border-primary/15 bg-card/90 shadow-sm">
+			<div className="grid xl:flex xl:gap-4 px-4 sm:px-6 pt-4 sm:pt-5 pb-5">
 				<div className="min-w-0">
+					<div className="mb-1 flex items-center gap-2 font-mono text-[0.65rem] font-semibold uppercase tracking-[0.18em] text-primary/80">
+						<span className="size-1.5 rounded-full bg-primary" />
+						<Trans>Live host snapshot</Trans>
+					</div>
 					<h1 className="text-2xl sm:text-[1.6rem] font-semibold mb-1.5">{system.name}</h1>
-					<div className="flex xl:flex-wrap items-center py-4 xl:p-0 -mt-3 xl:mt-1 gap-3 text-sm text-nowrap opacity-90 overflow-x-auto scrollbar-hide -mx-4 px-4 xl:mx-0">
+					<div className="flex xl:flex-wrap items-center py-3 xl:p-0 -mt-2 xl:mt-1 gap-3 text-sm text-nowrap opacity-90 overflow-x-auto scrollbar-hide -mx-4 px-4 xl:mx-0">
 						<Tooltip>
 							<TooltipTrigger asChild>
 								<div className="capitalize flex gap-2 items-center">
@@ -223,10 +227,10 @@ export default function InfoBar({
 								value={displayMode}
 								onValueChange={(v) => setDisplayMode(v as "default" | "tabs")}
 							>
-								<DropdownMenuRadioItem value="default" onSelect={(e) => e.preventDefault()}>
+								<DropdownMenuRadioItem value="default" onSelect={() => setDisplayMode("default")}>
 									<Trans context="Default system layout option">Default</Trans>
 								</DropdownMenuRadioItem>
-								<DropdownMenuRadioItem value="tabs" onSelect={(e) => e.preventDefault()}>
+								<DropdownMenuRadioItem value="tabs" onSelect={() => setDisplayMode("tabs")}>
 									<Trans context="Tabs system layout option">Tabs</Trans>
 								</DropdownMenuRadioItem>
 							</DropdownMenuRadioGroup>
@@ -240,10 +244,10 @@ export default function InfoBar({
 								value={grid ? "grid" : "full"}
 								onValueChange={(v) => setGrid(v === "grid")}
 							>
-								<DropdownMenuRadioItem value="grid" onSelect={(e) => e.preventDefault()}>
+								<DropdownMenuRadioItem value="grid" onSelect={() => setGrid(true)}>
 									<Trans>Grid</Trans>
 								</DropdownMenuRadioItem>
-								<DropdownMenuRadioItem value="full" onSelect={(e) => e.preventDefault()}>
+								<DropdownMenuRadioItem value="full" onSelect={() => setGrid(false)}>
 									<Trans>Full</Trans>
 								</DropdownMenuRadioItem>
 							</DropdownMenuRadioGroup>

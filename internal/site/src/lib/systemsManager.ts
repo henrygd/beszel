@@ -88,18 +88,18 @@ function onSystemsChanged(_: Record<string, SystemRecord>, changedSystem: System
 }
 
 /** Fetch systems from collection */
-async function fetchSystems(): Promise<SystemRecord[]> {
+async function fetchSystems(): Promise<SystemRecord[] | null> {
 	try {
 		return await COLLECTION.getFullList({ sort: "+name", fields: FIELDS_DEFAULT })
 	} catch (error) {
 		console.error("Failed to fetch systems:", error)
-		return []
+		return null
 	}
 }
 
 /** Makes sure the system has valid info object and throws if not */
 function validateSystemInfo(system: SystemRecord) {
-	if (!("cpu" in system.info)) {
+	if (!system.info || !("cpu" in system.info)) {
 		throw new Error(`${system.name} has no CPU info`)
 	}
 }
@@ -121,7 +121,7 @@ export function update(system: SystemRecord) {
 		validateSystemInfo(system)
 		// if name changed, make sure old name is removed from the name store
 		const oldName = $allSystemsById.get()[system.id]?.name
-		if (oldName !== system.name) {
+		if (oldName && oldName !== system.name) {
 			$allSystemsByName.setKey(oldName, undefined as unknown as SystemRecord)
 		}
 		add(system)
@@ -167,13 +167,21 @@ export async function subscribe() {
 export async function refresh() {
 	try {
 		const records = await fetchSystems()
-		if (!records.length) {
-			// No systems found, verify authentication
+		if (!records) {
+			// A failed request should not replace a good in-memory fleet snapshot.
 			verifyAuth()
 			return
 		}
+		const seenIds = new Set<string>()
 		for (const record of records) {
-			add(record)
+			seenIds.add(record.id)
+			update(record)
+		}
+		// Reconcile deletions that happened while the client was offline.
+		for (const system of Object.values($allSystemsById.get())) {
+			if (!seenIds.has(system.id)) {
+				remove(system)
+			}
 		}
 	} catch (error) {
 		console.error("Failed to refresh systems:", error)

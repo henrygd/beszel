@@ -468,7 +468,7 @@ func TestGetToken(t *testing.T) {
 		token, err := getToken()
 		assert.Error(t, err)
 		assert.Equal(t, "", token)
-		assert.Contains(t, err.Error(), "no such file or directory")
+		assert.True(t, os.IsNotExist(err), "expected a platform-independent not-exist error")
 	})
 
 	t.Run("handles empty token file", func(t *testing.T) {

@@ -50,7 +50,10 @@ export default function Navbar() {
 	const systemTranslation = t`System`
 
 	return (
-		<div className="flex items-center h-14 md:h-16 bg-card px-4 pe-3 sm:px-6 border border-border/60 bt-0 rounded-md my-4">
+		<nav
+			aria-label={t`Primary navigation`}
+			className="flex items-center h-14 md:h-16 bg-card/85 px-4 pe-3 sm:px-6 border border-primary/10 shadow-sm backdrop-blur-xl rounded-xl my-4"
+		>
 			<Suspense>
 				<CommandPalette open={commandPaletteOpen} setOpen={setCommandPaletteOpen} />
 			</Suspense>
@@ -64,6 +67,10 @@ export default function Navbar() {
 			>
 				<Logo className="h-[1.2rem] md:h-5 fill-foreground" />
 			</Link>
+			<div className="hidden lg:flex flex-col border-s border-border/70 ps-3 leading-none">
+				<span className="font-mono text-[0.62rem] font-semibold uppercase tracking-[0.18em] text-primary/80">{t`Operations`}</span>
+				<span className="mt-1 text-[0.68rem] text-muted-foreground">{t`Intranet console`}</span>
+			</div>
 			<Button
 				variant="outline"
 				className="hidden md:block text-sm text-muted-foreground px-4"
@@ -224,7 +231,7 @@ export default function Navbar() {
 					</Button>
 				)}
 			</div>
-		</div>
+		</nav>
 	)
 }
 

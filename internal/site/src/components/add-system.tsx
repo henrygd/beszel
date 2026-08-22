@@ -33,6 +33,7 @@ import { $router, basePath, Link, navigate } from "./router"
 import { DropdownMenu, DropdownMenuTrigger } from "./ui/dropdown-menu"
 import { AppleIcon, DockerIcon, FreeBsdIcon, TuxIcon, WindowsIcon } from "./ui/icons"
 import { InputCopy } from "./ui/input-copy"
+import { toast } from "./ui/use-toast"
 
 // To avoid a refactor of the dialog, we will just keep this function as a "skeleton" for the actual dialog
 export function AddSystemDialog({ open, setOpen }: { open: boolean; setOpen: (open: boolean) => void }) {
@@ -71,6 +72,7 @@ export const SystemDialog = ({ setOpen, system }: { setOpen: (open: boolean) => 
 	const isUnixSocket = hostValue.startsWith("/")
 	const [tab, setTab] = useBrowserStorage("as-tab", "docker")
 	const [token, setToken] = useState(system?.token ?? "")
+	const [isSaving, setIsSaving] = useState(false)
 
 	useEffect(() => {
 		;(async () => {
@@ -80,28 +82,35 @@ export const SystemDialog = ({ setOpen, system }: { setOpen: (open: boolean) => 
 				return setToken(nextSystemToken)
 			}
 			// if system exists,get the token from the fingerprint record
-			if (tokenMap.has(system.id)) {
-				return setToken(tokenMap.get(system.id)!)
-			}
+			const cachedToken = tokenMap.get(system.id)
+			if (cachedToken) return setToken(cachedToken)
 			const { token } = await pb.collection("fingerprints").getFirstListItem(`system = "${system.id}"`, {
 				fields: "token",
 			})
 			tokenMap.set(system.id, token)
 			setToken(token)
-		})()
-	}, [system?.id, nextSystemToken])
+		})().catch(() => {
+			toast({ title: t`Unable to load system token`, variant: "destructive" })
+		})
+	}, [system?.id])
 
-	async function handleSubmit(e: SubmitEvent) {
+	async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
 		e.preventDefault()
-		const formData = new FormData(e.target as HTMLFormElement)
-		const data = Object.fromEntries(formData) as Record<string, any>
-		data.users = pb.authStore.record!.id
+		const formData = new FormData(e.currentTarget)
+		const data = Object.fromEntries(formData) as Record<string, FormDataEntryValue>
+		delete data.pkey
+		delete data.tkn
+		let createdSystemId: string | undefined
 		try {
-			setOpen(false)
+			setIsSaving(true)
 			if (system) {
 				await pb.collection("systems").update(system.id, { ...data, status: SystemStatus.Pending })
 			} else {
+				const userId = pb.authStore.record?.id
+				if (!userId) throw new Error("No authenticated user")
+				data.users = userId
 				const createdSystem = await pb.collection("systems").create(data)
+				createdSystemId = createdSystem.id
 				await pb.collection("fingerprints").create({
 					system: createdSystem.id,
 					token,
@@ -110,9 +119,22 @@ export const SystemDialog = ({ setOpen, system }: { setOpen: (open: boolean) => 
 				// creation so next system gets a new token
 				nextSystemToken = null
 			}
+			setOpen(false)
 			navigate(basePath)
-		} catch (e) {
-			console.error(e)
+		} catch {
+			if (createdSystemId) {
+				await pb
+					.collection("systems")
+					.delete(createdSystemId)
+					.catch(() => undefined)
+			}
+			toast({
+				title: system ? t`Failed to save system` : t`Failed to add system`,
+				description: t`Please check the details and try again`,
+				variant: "destructive",
+			})
+		} finally {
+			setIsSaving(false)
 		}
 	}
 
@@ -175,7 +197,7 @@ export const SystemDialog = ({ setOpen, system }: { setOpen: (open: boolean) => 
 						</Trans>
 					</DialogDescription>
 				</TabsContent>
-				<form onSubmit={handleSubmit as any}>
+				<form onSubmit={handleSubmit}>
 					<div className="grid xs:grid-cols-[auto_1fr] gap-y-3 gap-x-4 items-center mt-1 mb-4">
 						<Label htmlFor="name" className="xs:text-end">
 							<Trans>Name</Trans>
@@ -266,7 +288,7 @@ export const SystemDialog = ({ setOpen, system }: { setOpen: (open: boolean) => 
 							/>
 						</TabsContent>
 						{/* Save */}
-						<Button>
+						<Button type="submit" disabled={isSaving}>
 							{system ? (
 								<Trans>Save {{ foo: systemTranslation }}</Trans>
 							) : (
@@ -284,7 +306,7 @@ interface CopyButtonProps {
 	text: string
 	onClick: () => void
 	dropdownItems: DropdownItem[]
-	icon?: React.ReactElement<any>
+	icon?: React.ReactElement<unknown>
 }
 
 const CopyButton = memo((props: CopyButtonProps) => {

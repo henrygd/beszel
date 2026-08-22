@@ -26,6 +26,7 @@ func (am *AlertManager) Stop() {
 			am.pendingAlerts.Delete(key)
 			return true
 		})
+		am.asyncAlertWork.Wait()
 	})
 }
 

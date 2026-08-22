@@ -26,12 +26,17 @@ func (h *Hub) startServer(se *core.ServeEvent) error {
 	// add route
 	se.Router.GET("/{path...}", func(e *core.RequestEvent) error {
 		// serve static assets if path is in staticPaths
-		for i := range staticPaths {
-			if strings.Contains(e.Request.URL.Path, staticPaths[i]) {
-				e.Response.Header().Set("Cache-Control", "public, max-age=2592000")
+		for i, staticPath := range staticPaths {
+			if strings.Contains(e.Request.URL.Path, staticPath) {
+				if i == 1 {
+					e.Response.Header().Set("Cache-Control", "public, max-age=2592000, immutable")
+				} else {
+					e.Response.Header().Set("Cache-Control", "public, max-age=3600")
+				}
 				return serveStatic(e)
 			}
 		}
+		e.Response.Header().Set("Cache-Control", "no-cache")
 		if cspExists {
 			e.Response.Header().Del("X-Frame-Options")
 			e.Response.Header().Set("Content-Security-Policy", csp)

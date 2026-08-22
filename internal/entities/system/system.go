@@ -161,17 +161,30 @@ type Info struct {
 
 // Data that does not change during process lifetime and is not needed in All Systems table
 type Details struct {
-	Hostname      string        `cbor:"0,keyasint"`
-	Kernel        string        `cbor:"1,keyasint,omitempty"`
-	Cores         int           `cbor:"2,keyasint"`
-	Threads       int           `cbor:"3,keyasint"`
-	CpuModel      string        `cbor:"4,keyasint"`
-	Os            Os            `cbor:"5,keyasint"`
-	OsName        string        `cbor:"6,keyasint"`
-	Arch          string        `cbor:"7,keyasint"`
-	Podman        bool          `cbor:"8,keyasint,omitempty"`
-	MemoryTotal   uint64        `cbor:"9,keyasint"`
-	SmartInterval time.Duration `cbor:"10,keyasint,omitempty"`
+	Hostname          string             `json:"hostname" cbor:"0,keyasint"`
+	Kernel            string             `json:"kernel,omitempty" cbor:"1,keyasint,omitempty"`
+	Cores             int                `json:"cores" cbor:"2,keyasint"`
+	Threads           int                `json:"threads" cbor:"3,keyasint"`
+	CpuModel          string             `json:"cpu" cbor:"4,keyasint"`
+	Os                Os                 `json:"os" cbor:"5,keyasint"`
+	OsName            string             `json:"os_name" cbor:"6,keyasint"`
+	Arch              string             `json:"arch" cbor:"7,keyasint"`
+	Podman            bool               `json:"podman,omitempty" cbor:"8,keyasint,omitempty"`
+	MemoryTotal       uint64             `json:"memory" cbor:"9,keyasint"`
+	SmartInterval     time.Duration      `json:"smart_interval,omitempty" cbor:"10,keyasint,omitempty"`
+	NetworkInterfaces []NetworkInterface `json:"network_interfaces,omitempty" cbor:"11,keyasint,omitempty"`
+}
+
+// NetworkInterface describes the host-side identity and link state of one
+// network interface. Speed is reported in bits per second when the operating
+// system exposes it; a zero value means that the link speed is unavailable.
+type NetworkInterface struct {
+	Name          string   `json:"name" cbor:"0,keyasint"`
+	HardwareAddr  string   `json:"mac,omitempty" cbor:"1,keyasint,omitempty"`
+	MTU           int      `json:"mtu,omitempty" cbor:"2,keyasint,omitempty"`
+	Flags         []string `json:"flags,omitempty" cbor:"3,keyasint,omitempty"`
+	Addresses     []string `json:"addresses,omitempty" cbor:"4,keyasint,omitempty"`
+	SpeedBitsPerS uint64   `json:"speed,omitempty" cbor:"5,keyasint,omitempty"`
 }
 
 // Final data structure to return to the hub

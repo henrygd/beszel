@@ -20,10 +20,11 @@ type hubLike interface {
 }
 
 type AlertManager struct {
-	hub           hubLike
-	stopOnce      sync.Once
-	pendingAlerts sync.Map
-	alertsCache   *AlertsCache
+	hub            hubLike
+	stopOnce       sync.Once
+	pendingAlerts  sync.Map
+	alertsCache    *AlertsCache
+	asyncAlertWork sync.WaitGroup
 }
 
 type AlertMessageData struct {
@@ -104,6 +105,18 @@ func NewAlertManager(app hubLike) *AlertManager {
 	}
 	am.bindEvents()
 	return am
+}
+
+// dispatchSystemAlert keeps asynchronous notification work attached to the
+// manager lifecycle. The hub can be shutting down while the database update
+// or mail delivery is still in flight, so Stop must wait for these goroutines
+// before the PocketBase app is torn down.
+func (am *AlertManager) dispatchSystemAlert(alert SystemAlertData) {
+	am.asyncAlertWork.Add(1)
+	go func() {
+		defer am.asyncAlertWork.Done()
+		am.sendSystemAlert(alert)
+	}()
 }
 
 // Bind events to the alerts collection lifecycle

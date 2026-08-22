@@ -6,32 +6,32 @@
 @custom-variant safari (@supports (hanging-punctuation: first) and (-webkit-appearance: none));
 
 :root {
-	--background: hsl(30 8% 98%);
-	--foreground: hsl(30 0% 10%);
-	--card: hsl(30 0% 100%);
-	--card-foreground: hsl(240 6% 12%);
-	--popover: hsl(30 0% 100%);
-	--popover-foreground: hsl(240 10% 6.2%);
-	--primary: hsl(240 5.88% 10%);
-	--primary-foreground: hsl(30 0% 100%);
-	--secondary: hsl(240 4.76% 95.88%);
-	--secondary-foreground: hsl(240 5.88% 10%);
-	--muted: hsl(26 6% 94%);
-	--muted-foreground: hsl(24 2.79% 35.1%);
-	--accent: hsl(20 23.08% 94%);
-	--accent-foreground: hsl(240 5.88% 10%);
-	--destructive: hsl(0 66% 53%);
+	--background: hsl(180 20% 97%);
+	--foreground: hsl(195 44% 11%);
+	--card: hsl(180 25% 99%);
+	--card-foreground: hsl(195 44% 11%);
+	--popover: hsl(0 0% 100%);
+	--popover-foreground: hsl(195 44% 11%);
+	--primary: hsl(176 88% 27%);
+	--primary-foreground: hsl(0 0% 100%);
+	--secondary: hsl(180 22% 92%);
+	--secondary-foreground: hsl(195 44% 14%);
+	--muted: hsl(184 17% 93%);
+	--muted-foreground: hsl(193 14% 37%);
+	--accent: hsl(172 43% 89%);
+	--accent-foreground: hsl(176 86% 20%);
+	--destructive: hsl(358 58% 55%);
 	--destructive-foreground: hsl(0 0% 97%);
-	--border: hsl(30 8.11% 85.49%);
-	--input: hsl(30 4.29% 72.55%);
-	--ring: hsl(30 3.97% 49.41%);
+	--border: hsl(184 18% 85%);
+	--input: hsl(184 16% 72%);
+	--ring: hsl(176 83% 35%);
 	--radius: 0.8rem;
 	--chart-1: hsl(220 70% 50%);
 	--chart-2: hsl(160 60% 45%);
 	--chart-3: hsl(30 80% 55%);
 	--chart-4: hsl(280 65% 60%);
 	--chart-5: hsl(340 75% 55%);
-	--table-header: hsl(225, 6%, 97%);
+	--table-header: hsl(180 21% 96%);
 	--chart-saturation: 65%;
 	--chart-lightness: 50%;
 	--container: 1500px;
@@ -39,32 +39,33 @@
 
 .dark {
 	color-scheme: dark;
-	--background: hsl(220 5.5% 9%);
-	--foreground: hsl(220 2% 97%);
-	--card: hsl(220 5.5% 10.5%);
-	--card-foreground: hsl(220 2% 97%);
-	--popover: hsl(220 5.5% 9%);
-	--popover-foreground: hsl(220 2% 97%);
-	--primary: hsl(220 2% 96%);
-	--primary-foreground: hsl(220 4% 10%);
-	--secondary: hsl(220 4% 16%);
-	--secondary-foreground: hsl(220 0% 98%);
-	--muted: hsl(220 6% 16%);
-	--muted-foreground: hsl(220 4% 67%);
-	--accent: hsl(220 5% 15.5%);
-	--accent-foreground: hsl(220 2% 98%);
-	--destructive: hsl(0 62% 46%);
-	--border: hsl(220 3% 17%);
-	--input: hsl(220 4% 22%);
-	--ring: hsl(220 4% 80%);
-	--table-header: hsl(220, 6%, 13%);
+	--background: hsl(210 63% 7%);
+	--foreground: hsl(180 18% 94%);
+	--card: hsl(205 51% 11%);
+	--card-foreground: hsl(180 18% 94%);
+	--popover: hsl(205 54% 9%);
+	--popover-foreground: hsl(180 18% 94%);
+	--primary: hsl(173 60% 54%);
+	--primary-foreground: hsl(176 71% 9%);
+	--secondary: hsl(204 45% 15%);
+	--secondary-foreground: hsl(180 18% 94%);
+	--muted: hsl(205 45% 14%);
+	--muted-foreground: hsl(194 12% 66%);
+	--accent: hsl(177 53% 15%);
+	--accent-foreground: hsl(173 67% 70%);
+	--destructive: hsl(358 64% 58%);
+	--border: hsl(202 36% 22%);
+	--input: hsl(199 30% 29%);
+	--ring: hsl(173 60% 54%);
+	--table-header: hsl(205 48% 12%);
 	--radius: 0.8rem;
 	--chart-saturation: 60%;
 	--chart-lightness: 55%;
 }
 
 @theme inline {
-	--font-sans: Inter, InterVariable, sans-serif;
+	--font-sans: InterVariable, Inter, ui-sans-serif, system-ui, sans-serif;
+	--font-mono: ui-monospace, "SFMono-Regular", "Cascadia Code", "Roboto Mono", monospace;
 
 	--breakpoint-xs: 26.6rem;
 	--breakpoint-450: 28rem;
@@ -129,7 +130,7 @@
 		font-style: normal;
 		font-weight: 100 900;
 		font-display: swap;
-		src: url("/static/InterVariable.woff2?v=4.0") format("woff2");
+		src: url("../static/InterVariable.woff2?v=4.0") format("woff2");
 	}
 }
 
@@ -141,23 +142,134 @@
 
 	body {
 		@apply bg-background text-foreground;
+		min-height: 100vh;
+		background-image:
+			linear-gradient(hsl(176 45% 45% / 0.025) 1px, transparent 1px),
+			linear-gradient(90deg, hsl(176 45% 45% / 0.025) 1px, transparent 1px),
+			radial-gradient(circle at 12% -8%, hsl(171 52% 84% / 0.48), transparent 30rem);
+		background-size:
+			32px 32px,
+			32px 32px,
+			auto;
 		font-variant-ligatures: no-contextual;
+		text-rendering: optimizeLegibility;
+	}
+
+	.dark body {
+		background-image:
+			linear-gradient(hsl(173 60% 54% / 0.022) 1px, transparent 1px),
+			linear-gradient(90deg, hsl(173 60% 54% / 0.022) 1px, transparent 1px),
+			radial-gradient(circle at 10% -10%, hsl(173 60% 32% / 0.18), transparent 30rem);
+		background-size:
+			32px 32px,
+			32px 32px,
+			auto;
+	}
+
+	::selection {
+		background: hsl(173 60% 54% / 0.28);
+	}
+
+	.skip-link {
+		position: fixed;
+		left: 1rem;
+		top: 0.75rem;
+		z-index: 100;
+		transform: translateY(-180%);
+		border: 1px solid color-mix(in srgb, var(--ring) 45%, transparent);
+		border-radius: 0.65rem;
+		background: color-mix(in srgb, var(--card) 96%, transparent);
+		padding: 0.65rem 0.85rem;
+		font-size: 0.8rem;
+		font-weight: 700;
+		box-shadow: 0 12px 30px color-mix(in srgb, var(--foreground) 16%, transparent);
+		transition: transform 150ms ease;
+	}
+
+	.skip-link:focus {
+		transform: translateY(0);
+		outline: 2px solid var(--ring);
+		outline-offset: 2px;
 	}
 
 	button {
 		cursor: pointer;
 	}
-	
+
 	/* cosmetic patch for half pixel gap in table headers when scrolling content shows at top  */
 	thead.sticky:before {
 		content: "";
-		@apply absolute -top-2 left-0 w-full h-4 bg-table-header z-50	
+		@apply absolute -top-2 left-0 w-full h-4 bg-table-header z-50;
+	}
+}
+
+.network-inventory {
+	background-image:
+		linear-gradient(hsl(176 88% 27% / 0.035) 1px, transparent 1px),
+		linear-gradient(90deg, hsl(176 88% 27% / 0.035) 1px, transparent 1px);
+	background-position: -1px -1px;
+	background-size: 24px 24px;
+}
+
+.signal-glow {
+	box-shadow: 0 0 32px color-mix(in srgb, var(--primary) 16%, transparent);
+}
+
+.login-card-glow {
+	box-shadow: 0 24px 80px -36px color-mix(in srgb, var(--foreground) 35%, transparent);
+}
+
+.dark .network-inventory {
+	background-image:
+		linear-gradient(hsl(190 88% 58% / 0.045) 1px, transparent 1px),
+		linear-gradient(90deg, hsl(190 88% 58% / 0.045) 1px, transparent 1px);
+}
+
+.network-inventory-icon {
+	box-shadow:
+		inset 0 1px 0 hsl(0 0% 100% / 0.18),
+		0 8px 24px hsl(176 88% 27% / 0.08);
+}
+
+.fleet-pulse-track {
+	background-image: repeating-linear-gradient(90deg, transparent 0 7px, hsl(0 0% 100% / 0.2) 7px 8px);
+}
+
+.signal-scan {
+	background: linear-gradient(90deg, transparent, hsl(173 60% 54% / 0.35), transparent);
+	animation: signal-scan 4.5s ease-in-out infinite;
+}
+
+@keyframes signal-scan {
+	0%,
+	18% {
+		transform: translateX(-110%);
+		opacity: 0;
+	}
+	35% {
+		opacity: 1;
+	}
+	72%,
+	100% {
+		transform: translateX(110%);
+		opacity: 0;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	*,
+	*::before,
+	*::after {
+		animation-duration: 0.01ms !important;
+		animation-iteration-count: 1 !important;
+		scroll-behavior: auto !important;
+		transition-duration: 0.01ms !important;
 	}
 }
 
 @utility container {
 	max-width: var(--container);
-	@apply mx-auto px-4;
+	@apply mx-auto px-3.5 sm:px-5;
 }
 
 @utility link {

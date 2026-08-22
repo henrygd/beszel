@@ -13,6 +13,17 @@ msgstr ""
 "Language-Team: \n"
 "Plural-Forms: \n"
 
+#. placeholder {0}: systems.length
+#: src/components/fleet-overview.tsx
+msgid "{0, plural, one {# monitored system} other {# monitored systems}}"
+msgstr "{0, plural, one {# monitored system} other {# monitored systems}}"
+
+#. placeholder {0}: rows.length
+#. placeholder {1}: filteredData.length
+#: src/components/systems-table/systems-table.tsx
+msgid "{0} / {1} shown"
+msgstr "{0} / {1} shown"
+
 #. placeholder {0}: newVersion.v
 #: src/components/footer-repo-link.tsx
 msgctxt "New version available"
@@ -99,6 +110,10 @@ msgstr "Actions"
 msgid "Active"
 msgstr "Active"
 
+#: src/components/fleet-overview.tsx
+msgid "Active alerts"
+msgstr "Active alerts"
+
 #: src/components/active-alerts.tsx
 msgid "Active Alerts"
 msgstr "Active Alerts"
@@ -116,9 +131,17 @@ msgstr "Active state"
 msgid "Add {foo}"
 msgstr "Add {foo}"
 
+#: src/components/fleet-overview.tsx
+msgid "Add first system"
+msgstr "Add first system"
+
 #: src/components/routes/settings/notifications.tsx
 msgid "Add URL"
 msgstr "Add URL"
+
+#: src/components/routes/system/network-interfaces.tsx
+msgid "Addresses"
+msgstr "Addresses"
 
 #: src/components/routes/settings/general.tsx
 msgid "Adjust display options for charts."
@@ -145,6 +168,10 @@ msgstr "After setting the environment variables, restart your Beszel hub for cha
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Agent"
 msgstr "Agent"
+
+#: src/components/routes/system/network-interfaces.tsx
+msgid "Agent reported"
+msgstr "Agent reported"
 
 #: src/components/command-palette.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
@@ -181,6 +208,10 @@ msgstr "Are you sure you want to delete {name}?"
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Are you sure?"
 msgstr "Are you sure?"
+
+#: src/components/active-alerts.tsx
+msgid "Attention required"
+msgstr "Attention required"
 
 #: src/components/copy-to-clipboard.tsx
 msgid "Automatic copy requires a secure context."
@@ -269,6 +300,10 @@ msgstr "Before"
 #: src/components/active-alerts.tsx
 msgid "Below {0}{1} in last {2, plural, one {# minute} other {# minutes}}"
 msgstr "Below {0}{1} in last {2, plural, one {# minute} other {# minutes}}"
+
+#: src/components/login/login.tsx
+msgid "Beszel control plane"
+msgstr "Beszel control plane"
 
 #: src/components/login/auth-form.tsx
 msgid "Beszel supports OpenID Connect and many OAuth2 authentication providers."
@@ -415,6 +450,10 @@ msgstr "Confirm password"
 msgid "Conflicts"
 msgstr "Conflicts"
 
+#: src/components/fleet-overview.tsx
+msgid "Connect your first system"
+msgstr "Connect your first system"
+
 #: src/components/active-alerts.tsx
 msgid "Connection is down"
 msgstr "Connection is down"
@@ -529,6 +568,10 @@ msgstr "Create"
 msgid "Create account"
 msgstr "Create account"
 
+#: src/components/login/login.tsx
+msgid "Create administrator"
+msgstr "Create administrator"
+
 #. Context: date created
 #: src/components/alerts-history-columns.tsx
 msgid "Created"
@@ -545,6 +588,10 @@ msgstr "Cumulative Download"
 #: src/components/routes/system/network-sheet.tsx
 msgid "Cumulative Upload"
 msgstr "Cumulative Upload"
+
+#: src/components/fleet-overview.tsx
+msgid "Current connection state"
+msgstr "Current connection state"
 
 #. Context: Battery state
 #. Context: Battery state
@@ -590,6 +637,14 @@ msgstr "Description"
 #: src/components/containers-table/containers-table.tsx
 msgid "Detail"
 msgstr "Detail"
+
+#: src/components/routes/system/network-interfaces.tsx
+msgid "Detected"
+msgstr "Detected"
+
+#: src/components/routes/system/network-interfaces.tsx
+msgid "Detected links, addresses, and negotiated speeds reported by the agent"
+msgstr "Detected links, addresses, and negotiated speeds reported by the agent"
 
 #: src/components/routes/system/smart-table.tsx
 msgid "Device"
@@ -645,8 +700,14 @@ msgstr "Docker Network I/O"
 msgid "Documentation"
 msgstr "Documentation"
 
+#: src/components/fleet-overview.tsx
+msgid "down"
+msgstr "down"
+
 #. Context: System is down
 #: src/components/alerts-history-columns.tsx
+#: src/components/fleet-overview.tsx
+#: src/components/fleet-overview.tsx
 #: src/components/routes/system/info-bar.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 #: src/lib/alerts.ts
@@ -689,6 +750,10 @@ msgstr "Email notifications"
 #: src/lib/i18n.ts
 msgid "Empty"
 msgstr "Empty"
+
+#: src/components/login/auth-form.tsx
+msgid "Enable password, one-time password, or OAuth access in the server configuration."
+msgstr "Enable password, one-time password, or OAuth access in the server configuration."
 
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/quiet-hours.tsx
@@ -783,6 +848,10 @@ msgstr "Failed"
 msgid "Failed Attributes:"
 msgstr "Failed Attributes:"
 
+#: src/components/add-system.tsx
+msgid "Failed to add system"
+msgstr "Failed to add system"
+
 #: src/lib/api.ts
 msgid "Failed to authenticate"
 msgstr "Failed to authenticate"
@@ -792,6 +861,10 @@ msgstr "Failed to authenticate"
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Failed to save settings"
 msgstr "Failed to save settings"
+
+#: src/components/add-system.tsx
+msgid "Failed to save system"
+msgstr "Failed to save system"
 
 #: src/components/routes/settings/heartbeat.tsx
 msgid "Failed to send heartbeat"
@@ -805,6 +878,10 @@ msgstr "Failed to send test notification"
 msgid "Failed to update alert"
 msgstr "Failed to update alert"
 
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Failed to update universal token"
+msgstr "Failed to update universal token"
+
 #. placeholder {0}: statusTotals[ServiceStatus.Failed]
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Failed: {0}"
@@ -813,6 +890,14 @@ msgstr "Failed: {0}"
 #: src/components/routes/system/charts/sensor-charts.tsx
 msgid "Fans"
 msgstr "Fans"
+
+#: src/components/routes/system/network-interfaces.tsx
+msgid "Fastest link"
+msgstr "Fastest link"
+
+#: src/components/systems-table/systems-table.tsx
+msgid "Filter systems"
+msgstr "Filter systems"
 
 #: src/components/containers-table/containers-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
@@ -830,6 +915,14 @@ msgstr "Fingerprint"
 #: src/components/routes/system/smart-table.tsx
 msgid "Firmware"
 msgstr "Firmware"
+
+#: src/components/fleet-overview.tsx
+msgid "Fleet awaiting signal"
+msgstr "Fleet awaiting signal"
+
+#: src/components/fleet-overview.tsx
+msgid "Fleet status"
+msgstr "Fleet status"
 
 #: src/components/alerts/alerts-sheet.tsx
 msgid "For <0>{min}</0> {min, plural, one {minute} other {minutes}}"
@@ -908,6 +1001,10 @@ msgstr "Homebrew command"
 msgid "Host / IP"
 msgstr "Host / IP"
 
+#: src/components/routes/system/network-interfaces.tsx
+msgid "Host inventory"
+msgstr "Host inventory"
+
 #: src/components/routes/settings/heartbeat.tsx
 msgid "HTTP Method"
 msgstr "HTTP Method"
@@ -949,9 +1046,17 @@ msgstr "Image"
 msgid "Inactive"
 msgstr "Inactive"
 
+#: src/components/fleet-overview.tsx
+msgid "Install a lightweight Beszel agent to start monitoring health, resources, containers, and alerts."
+msgstr "Install a lightweight Beszel agent to start monitoring health, resources, containers, and alerts."
+
 #: src/components/routes/settings/heartbeat.tsx
 msgid "Interval"
 msgstr "Interval"
+
+#: src/components/navbar.tsx
+msgid "Intranet console"
+msgstr "Intranet console"
 
 #: src/components/login/auth-form.tsx
 msgid "Invalid email address."
@@ -973,10 +1078,30 @@ msgstr "Layout width"
 msgid "Lifecycle"
 msgstr "Lifecycle"
 
+#: src/components/login/login.tsx
+msgid "Lightweight agents"
+msgstr "Lightweight agents"
+
 #: src/components/systemd-table/systemd-table.tsx
 #: src/components/systemd-table/systemd-table.tsx
 msgid "limit"
 msgstr "limit"
+
+#: src/components/routes/system/network-interfaces.tsx
+msgid "Link speed"
+msgstr "Link speed"
+
+#: src/components/fleet-overview.tsx
+msgid "Live fleet pulse"
+msgstr "Live fleet pulse"
+
+#: src/components/routes/system/info-bar.tsx
+msgid "Live host snapshot"
+msgstr "Live host snapshot"
+
+#: src/components/login/login.tsx
+msgid "Live telemetry"
+msgstr "Live telemetry"
 
 #: src/components/routes/system/charts/load-average-chart.tsx
 msgid "Load Average"
@@ -1002,6 +1127,10 @@ msgstr "Load Avg"
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Load state"
 msgstr "Load state"
+
+#: src/components/login/login.tsx
+msgid "Loading"
+msgstr "Loading"
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Loading..."
@@ -1030,6 +1159,10 @@ msgstr "Logs"
 #: src/components/routes/settings/notifications.tsx
 msgid "Looking instead for where to create alerts? Click the bell <0/> icons in the systems table."
 msgstr "Looking instead for where to create alerts? Click the bell <0/> icons in the systems table."
+
+#: src/components/routes/system/network-interfaces.tsx
+msgid "Loopback"
+msgstr "Loopback"
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Main PID"
@@ -1080,6 +1213,10 @@ msgstr "Memory usage of docker containers"
 msgid "Model"
 msgstr "Model"
 
+#: src/components/login/login.tsx
+msgid "Monitor system health, resource pressure, services, containers, and alerts from one private control plane."
+msgstr "Monitor system health, resource pressure, services, containers, and alerts from one private control plane."
+
 #: src/components/add-system.tsx
 #: src/components/alerts-history-columns.tsx
 #: src/components/containers-table/containers-table-columns.tsx
@@ -1092,6 +1229,10 @@ msgstr "Name"
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Net"
 msgstr "Net"
+
+#: src/components/routes/system/network-interfaces.tsx
+msgid "Network interfaces"
+msgstr "Network interfaces"
 
 #: src/components/routes/system/charts/network-charts.tsx
 msgid "Network traffic of docker containers"
@@ -1115,6 +1256,10 @@ msgstr "Network unit"
 msgid "No"
 msgstr "No"
 
+#: src/components/routes/system/network-interfaces.tsx
+msgid "No network interfaces reported"
+msgstr "No network interfaces reported"
+
 #: src/components/command-palette.tsx
 #: src/components/systemd-table/systemd-table.tsx
 msgid "No results found."
@@ -1133,10 +1278,23 @@ msgstr "No results."
 msgid "No S.M.A.R.T. attributes available for this device."
 msgstr "No S.M.A.R.T. attributes available for this device."
 
+#: src/components/login/auth-form.tsx
+msgid "No sign-in methods are configured."
+msgstr "No sign-in methods are configured."
+
 #: src/components/systems-table/systems-table.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "No systems found."
 msgstr "No systems found."
+
+#: src/components/routes/system/network-interfaces.tsx
+#: src/components/routes/system/network-interfaces.tsx
+msgid "Not available"
+msgstr "Not available"
+
+#: src/components/routes/system/network-interfaces.tsx
+msgid "Not reported"
+msgstr "Not reported"
 
 #: src/components/command-palette.tsx
 #: src/components/routes/settings/layout.tsx
@@ -1147,6 +1305,10 @@ msgstr "Notifications"
 #: src/components/login/auth-form.tsx
 msgid "OAuth 2 / OIDC support"
 msgstr "OAuth 2 / OIDC support"
+
+#: src/components/routes/system/network-interfaces.tsx
+msgid "Offline"
+msgstr "Offline"
 
 #: src/components/routes/settings/config-yaml.tsx
 msgid "On each restart, systems in the database will be updated to match the systems defined in the file."
@@ -1161,6 +1323,17 @@ msgstr "One-time"
 msgid "One-time password"
 msgstr "One-time password"
 
+#: src/components/fleet-overview.tsx
+msgid "online"
+msgstr "online"
+
+#: src/components/fleet-overview.tsx
+#: src/components/fleet-overview.tsx
+#: src/components/routes/system/network-interfaces.tsx
+#: src/components/routes/system/network-interfaces.tsx
+msgid "Online"
+msgstr "Online"
+
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
@@ -1168,6 +1341,10 @@ msgstr "One-time password"
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Open menu"
 msgstr "Open menu"
+
+#: src/components/navbar.tsx
+msgid "Operations"
+msgstr "Operations"
 
 #: src/components/login/auth-form.tsx
 msgid "Or continue with"
@@ -1222,6 +1399,12 @@ msgstr "Past"
 msgid "Pause"
 msgstr "Pause"
 
+#: src/components/fleet-overview.tsx
+msgid "paused"
+msgstr "paused"
+
+#: src/components/fleet-overview.tsx
+#: src/components/fleet-overview.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Paused"
 msgstr "Paused"
@@ -1233,6 +1416,15 @@ msgstr "Paused ({pausedSystemsLength})"
 #: src/components/routes/settings/heartbeat.tsx
 msgid "Payload format"
 msgstr "Payload format"
+
+#: src/components/fleet-overview.tsx
+msgid "pending"
+msgstr "pending"
+
+#: src/components/fleet-overview.tsx
+#: src/components/fleet-overview.tsx
+msgid "Pending"
+msgstr "Pending"
 
 #: src/components/routes/system/cpu-sheet.tsx
 #: src/components/routes/system/cpu-sheet.tsx
@@ -1262,6 +1454,10 @@ msgstr "Please <0>configure an SMTP server</0> to ensure alerts are delivered."
 #: src/components/alerts/alerts-sheet.tsx
 msgid "Please check logs for more details."
 msgstr "Please check logs for more details."
+
+#: src/components/add-system.tsx
+msgid "Please check the details and try again"
+msgstr "Please check the details and try again"
 
 #: src/components/login/auth-form.tsx
 #: src/components/login/forgot-pass-form.tsx
@@ -1311,6 +1507,14 @@ msgstr "Precise utilization at the recorded time"
 msgid "Preferred Language"
 msgstr "Preferred Language"
 
+#: src/components/navbar.tsx
+msgid "Primary navigation"
+msgstr "Primary navigation"
+
+#: src/components/login/login.tsx
+msgid "Private by design"
+msgstr "Private by design"
+
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Process started"
 msgstr "Process started"
@@ -1347,9 +1551,14 @@ msgstr "Received"
 
 #: src/components/containers-table/containers-table.tsx
 #: src/components/containers-table/containers-table.tsx
+#: src/components/fleet-overview.tsx
 #: src/components/routes/system/smart-table.tsx
 msgid "Refresh"
 msgstr "Refresh"
+
+#: src/components/fleet-overview.tsx
+msgid "Refresh fleet"
+msgstr "Refresh fleet"
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Relationships"
@@ -1370,6 +1579,10 @@ msgstr "Required by"
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Requires"
 msgstr "Requires"
+
+#: src/components/systems-table/systems-table.tsx
+msgid "Reset fields"
+msgstr "Reset fields"
 
 #: src/components/login/forgot-pass-form.tsx
 msgid "Reset Password"
@@ -1455,6 +1668,10 @@ msgstr "Search for systems or settings..."
 msgid "Seconds between pings (default: 60)"
 msgstr "Seconds between pings (default: 60)"
 
+#: src/components/login/login.tsx
+msgid "Secure access to your infrastructure"
+msgstr "Secure access to your infrastructure"
+
 #: src/components/alerts/alerts-sheet.tsx
 msgid "See <0>notification settings</0> to configure how you receive alerts."
 msgstr "See <0>notification settings</0> to configure how you receive alerts."
@@ -1462,6 +1679,10 @@ msgstr "See <0>notification settings</0> to configure how you receive alerts."
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Select {foo}"
 msgstr "Select {foo}"
+
+#: src/components/login/login.tsx
+msgid "Self-hosted observability"
+msgstr "Self-hosted observability"
 
 #: src/components/routes/settings/heartbeat.tsx
 msgid "Send a single heartbeat ping to verify your endpoint is working."
@@ -1517,6 +1738,10 @@ msgstr "Settings saved"
 #: src/components/login/auth-form.tsx
 msgid "Sign in"
 msgstr "Sign in"
+
+#: src/main.tsx
+msgid "Skip to content"
+msgstr "Skip to content"
 
 #: src/components/command-palette.tsx
 msgid "SMTP settings"
@@ -1641,6 +1866,10 @@ msgstr "Test heartbeat"
 #: src/components/routes/settings/notifications.tsx
 msgid "Test notification sent"
 msgstr "Test notification sent"
+
+#: src/components/routes/system/network-interfaces.tsx
+msgid "The agent did not return an interface inventory for this host."
+msgstr "The agent did not return an interface inventory for this host."
 
 #: src/components/routes/settings/heartbeat.tsx
 msgid "The overall status is <0>ok</0> when all systems are up, <1>warn</1> when alerts are triggered, and <2>error</2> when any system is down."
@@ -1768,11 +1997,23 @@ msgstr "Triggers when status switches between up and down"
 msgid "Triggers when usage of any disk exceeds a threshold"
 msgstr "Triggers when usage of any disk exceeds a threshold"
 
+#: src/components/login/login.tsx
+msgid "Try again"
+msgstr "Try again"
+
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/system/smart-table.tsx
 msgid "Type"
 msgstr "Type"
+
+#: src/components/login/login.tsx
+msgid "Unable to load sign-in options."
+msgstr "Unable to load sign-in options."
+
+#: src/components/add-system.tsx
+msgid "Unable to load system token"
+msgstr "Unable to load system token"
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Unit file"
@@ -1904,6 +2145,10 @@ msgstr "Warning thresholds"
 msgid "Webhook / Push notifications"
 msgstr "Webhook / Push notifications"
 
+#: src/components/login/login.tsx
+msgid "Welcome back"
+msgstr "Welcome back"
+
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "When enabled, this token allows agents to self-register without prior system creation."
 msgstr "When enabled, this token allows agents to self-register without prior system creation."
@@ -1939,6 +2184,10 @@ msgstr "YAML Configuration"
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Yes"
 msgstr "Yes"
+
+#: src/components/login/login.tsx
+msgid "Your fleet, clearly in view."
+msgstr "Your fleet, clearly in view."
 
 #: src/components/routes/settings/layout.tsx
 msgid "Your user settings have been updated."

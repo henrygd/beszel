@@ -216,7 +216,10 @@ func (lhm *lhmProcess) getTemps(ctx context.Context) (temps []sensors.Temperatur
 
 // getSensorTemps attempts to pull sensor temperatures from the embedded LHM process.
 // NB: LibreHardwareMonitorLib requires admin privileges to access all available sensors.
-func getSensorTemps(ctx context.Context) (temps []sensors.TemperatureStat, err error) {
+// It is a variable to match other platforms and allow the timeout path to be tested.
+var getSensorTemps = getSensorTempsWindows
+
+func getSensorTempsWindows(ctx context.Context) (temps []sensors.TemperatureStat, err error) {
 	defer func() {
 		if err != nil {
 			slog.Debug("Error reading sensors", "err", err)

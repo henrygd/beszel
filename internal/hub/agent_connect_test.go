@@ -978,10 +978,17 @@ func TestAgentWebSocketIntegration(t *testing.T) {
 				}
 			}
 
-			// Verify system status
-			updatedSystemRecord, err := testApp.FindRecordById("systems", systemRecord.Id)
-			require.NoError(t, err)
-			status := updatedSystemRecord.GetString("status")
+			// The transport is connected before the hub finishes the first metrics request.
+			// Wait for that asynchronous update instead of racing the system updater.
+			var status string
+			require.Eventually(t, func() bool {
+				updatedSystemRecord, err := testApp.FindRecordById("systems", systemRecord.Id)
+				if err != nil {
+					return false
+				}
+				status = updatedSystemRecord.GetString("status")
+				return status == tc.expectSystemStatus
+			}, 3*time.Second, 20*time.Millisecond)
 			assert.Equal(t, tc.expectSystemStatus, status, "System status should match expected value")
 
 			t.Logf("%s - System status: %s, Fingerprint: %s", tc.description, status, finalFingerprint)
@@ -1174,9 +1181,15 @@ func TestMultipleSystemsWithSameUniversalToken(t *testing.T) {
 
 				// Verify system status
 				systemId := fingerprint.GetString("system")
-				system, err := testApp.FindRecordById("systems", systemId)
-				require.NoError(t, err)
-				status := system.GetString("status")
+				var status string
+				require.Eventually(t, func() bool {
+					system, err := testApp.FindRecordById("systems", systemId)
+					if err != nil {
+						return false
+					}
+					status = system.GetString("status")
+					return status == tc.expectSystemStatus
+				}, 3*time.Second, 20*time.Millisecond)
 				assert.Equal(t, tc.expectSystemStatus, status, "System status should match expected value")
 
 				t.Logf("%s - System ID: %s, Status: %s, New System: %v", tc.description, systemId, status, tc.expectNewSystem)

@@ -22,3 +22,5 @@ agent/lhm/bin
 dockerfile_agent_dev
 .cr-release-packages
 .tmp
+internal/site/node_modules
+internal/site/node_modules/**

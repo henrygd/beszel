@@ -168,9 +168,12 @@ func TestApiRoutesAuthentication(t *testing.T) {
 			TestAppFactory:  testAppFactory,
 		},
 		{
-			Name:   "GET /universal-token - enable permanent should succeed",
-			Method: http.MethodGet,
-			URL:    "/api/beszel/universal-token?enable=1&permanent=1&token=permanent-token-123",
+			Name:   "POST /universal-token - enable permanent should succeed",
+			Method: http.MethodPost,
+			URL:    "/api/beszel/universal-token",
+			Body: jsonReader(map[string]any{
+				"enable": 1, "permanent": 1, "token": "permanent-token-123",
+			}),
 			Headers: map[string]string{
 				"Authorization": userToken,
 			},

@@ -51,9 +51,16 @@ export function useSystemData(id: string) {
 	const persistChartTime = useRef(false)
 	const statsRequestId = useRef(0)
 	const [chartLoading, setChartLoading] = useState(true)
-	const [details, setDetails] = useState<SystemDetailsRecord>({} as SystemDetailsRecord)
+	const [details, setDetails] = useState<SystemDetailsRecord | null>(null)
 
 	useEffect(() => {
+		// Clear the previous host snapshot immediately when the route changes so
+		// a slow subscription or details request cannot flash the old system.
+		setSystem({} as SystemRecord)
+		setSystemStats([])
+		setContainerData([])
+		setDetails(null)
+		setChartLoading(true)
 		return () => {
 			if (!persistChartTime.current) {
 				$chartTime.set($userSettings.get().chartTime)
@@ -61,7 +68,7 @@ export function useSystemData(id: string) {
 			persistChartTime.current = false
 			setSystemStats([])
 			setContainerData([])
-			setDetails({} as SystemDetailsRecord)
+			setDetails(null)
 			$containerFilter.set("")
 		}
 	}, [id])
@@ -91,19 +98,29 @@ export function useSystemData(id: string) {
 
 	// fetch system details
 	useEffect(() => {
+		let active = true
+		setDetails(null)
 		// if system.info.m exists, agent is old version without system details
 		if (!system.id || system.info?.m) {
-			return
+			return () => {
+				active = false
+			}
 		}
 		pb.collection<SystemDetailsRecord>("system_details")
 			.getOne(system.id, {
-				fields: "hostname,kernel,cores,threads,cpu,os,os_name,arch,memory,podman",
+				fields: "hostname,kernel,cores,threads,cpu,os,os_name,arch,memory,podman,network_interfaces",
 				headers: {
-					"Cache-Control": "public, max-age=60",
+					"Cache-Control": "private, max-age=60",
 				},
 			})
-			.then(setDetails)
-	}, [system.id])
+			.then((nextDetails) => {
+				if (active) setDetails(nextDetails)
+			})
+			.catch(() => undefined)
+		return () => {
+			active = false
+		}
+	}, [system.id, system.info?.m])
 
 	// subscribe to realtime metrics if chart time is 1m
 	useEffect(() => {

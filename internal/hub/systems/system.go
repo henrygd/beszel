@@ -29,6 +29,7 @@ import (
 	"github.com/lxzan/gws"
 	"github.com/pocketbase/dbx"
 	"github.com/pocketbase/pocketbase/core"
+	"github.com/pocketbase/pocketbase/tools/types"
 	"golang.org/x/crypto/ssh"
 )
 
@@ -255,20 +256,22 @@ func (sys *System) createRecords(data *system.CombinedData) (*core.Record, error
 
 func createSystemDetailsRecord(app core.App, data *system.Details, systemId string) error {
 	collectionName := "system_details"
+	networkInterfaces, _ := json.Marshal(data.NetworkInterfaces)
 	params := dbx.Params{
-		"id":       systemId,
-		"system":   systemId,
-		"hostname": data.Hostname,
-		"kernel":   data.Kernel,
-		"cores":    data.Cores,
-		"threads":  data.Threads,
-		"cpu":      data.CpuModel,
-		"os":       data.Os,
-		"os_name":  data.OsName,
-		"arch":     data.Arch,
-		"memory":   data.MemoryTotal,
-		"podman":   data.Podman,
-		"updated":  time.Now().UTC(),
+		"id":                 systemId,
+		"system":             systemId,
+		"hostname":           data.Hostname,
+		"kernel":             data.Kernel,
+		"cores":              data.Cores,
+		"threads":            data.Threads,
+		"cpu":                data.CpuModel,
+		"os":                 data.Os,
+		"os_name":            data.OsName,
+		"arch":               data.Arch,
+		"memory":             data.MemoryTotal,
+		"podman":             data.Podman,
+		"network_interfaces": types.JSONRaw(networkInterfaces),
+		"updated":            time.Now().UTC(),
 	}
 	result, err := app.DB().Update(collectionName, params, dbx.HashExp{"id": systemId}).Execute()
 	rowsAffected, _ := result.RowsAffected()

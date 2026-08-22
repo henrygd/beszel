@@ -387,6 +387,7 @@ export interface SystemDetailsRecord extends RecordModel {
 	system: string
 	hostname: string
 	kernel: string
+	arch?: string
 	cores: number
 	threads: number
 	cpu: string
@@ -394,6 +395,16 @@ export interface SystemDetailsRecord extends RecordModel {
 	os_name: string
 	memory: number
 	podman: boolean
+	network_interfaces?: NetworkInterfaceRecord[]
+}
+
+export interface NetworkInterfaceRecord {
+	name: string
+	mac?: string
+	mtu?: number
+	flags?: string[]
+	addresses?: string[]
+	speed?: number
 }
 
 export interface SmartDeviceRecord extends RecordModel {

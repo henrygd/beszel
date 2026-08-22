@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"testing"
 	"time"
@@ -16,6 +17,13 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
+
+func requireUnixCommandFixtures(t *testing.T) {
+	t.Helper()
+	if runtime.GOOS == "windows" {
+		t.Skip("test uses executable POSIX shell command fixtures")
+	}
+}
 
 func TestParseNvidiaData(t *testing.T) {
 	tests := []struct {
@@ -1083,6 +1091,7 @@ func TestCalculateGPUAverage(t *testing.T) {
 }
 
 func TestGPUCapabilitiesAndLegacyPriority(t *testing.T) {
+	requireUnixCommandFixtures(t)
 	// Save original PATH
 	hasAmdSysfs := (&GPUManager{}).hasAmdSysfs()
 
@@ -1233,6 +1242,7 @@ echo "[]"`
 }
 
 func TestCollectorStartHelpers(t *testing.T) {
+	requireUnixCommandFixtures(t)
 	// Set up temp dir with the commands
 	dir := t.TempDir()
 	t.Setenv("PATH", dir)
@@ -1365,6 +1375,7 @@ echo '[{"device_name":"NVIDIA Test GPU","temp":"52C","power_draw":"31W","gpu_uti
 }
 
 func TestNewGPUManagerPriorityNvtopFallback(t *testing.T) {
+	requireUnixCommandFixtures(t)
 	dir := t.TempDir()
 	t.Setenv("PATH", dir)
 	t.Setenv("BESZEL_AGENT_GPU_COLLECTOR", "nvtop,nvidia-smi")
@@ -1391,6 +1402,7 @@ echo "0, NVIDIA Priority GPU, 45, 512, 2048, 12, 25"`
 }
 
 func TestNewGPUManagerPriorityMixedCollectors(t *testing.T) {
+	requireUnixCommandFixtures(t)
 	dir := t.TempDir()
 	t.Setenv("PATH", dir)
 	t.Setenv("BESZEL_AGENT_GPU_COLLECTOR", "intel_gpu_top,rocm-smi")
@@ -1422,6 +1434,7 @@ echo '{"card0": {"Temperature (Sensor edge) (C)": "49.0", "Current Socket Graphi
 }
 
 func TestNewGPUManagerPriorityNvmlFallbackToNvidiaSmi(t *testing.T) {
+	requireUnixCommandFixtures(t)
 	dir := t.TempDir()
 	t.Setenv("PATH", dir)
 	t.Setenv("BESZEL_AGENT_GPU_COLLECTOR", "nvml,nvidia-smi")
@@ -1470,6 +1483,9 @@ func TestCollectorDefinitionsNvmlDoesNotRequireNvidiaSmi(t *testing.T) {
 }
 
 func TestNewGPUManagerConfiguredNvmlBypassesCapabilityGate(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("NVML availability is host-dependent on Windows")
+	}
 	dir := t.TempDir()
 	t.Setenv("PATH", dir)
 	t.Setenv("BESZEL_AGENT_GPU_COLLECTOR", "nvml")
@@ -1482,6 +1498,7 @@ func TestNewGPUManagerConfiguredNvmlBypassesCapabilityGate(t *testing.T) {
 }
 
 func TestNewGPUManagerJetsonIgnoresCollectorConfig(t *testing.T) {
+	requireUnixCommandFixtures(t)
 	dir := t.TempDir()
 	t.Setenv("PATH", dir)
 	t.Setenv("BESZEL_AGENT_GPU_COLLECTOR", "nvidia-smi")
@@ -1718,6 +1735,7 @@ func TestIntelUpdateFromStats(t *testing.T) {
 }
 
 func TestIntelCollectorStreaming(t *testing.T) {
+	requireUnixCommandFixtures(t)
 	dir := t.TempDir()
 	t.Setenv("PATH", dir)
 
@@ -1973,6 +1991,7 @@ func TestParseIntelData(t *testing.T) {
 }
 
 func TestIntelCollectorDeviceEnv(t *testing.T) {
+	requireUnixCommandFixtures(t)
 	dir := t.TempDir()
 	t.Setenv("PATH", dir)
 

@@ -279,6 +279,7 @@ func createFingerprintRecord(app core.App, systemID, token string) error {
 
 // Returns the current config.yml file as a JSON object
 func GetYamlConfig(e *core.RequestEvent) error {
+	e.Response.Header().Set("Cache-Control", "no-store")
 	configContent, err := generateYAML(e.App)
 	if err != nil {
 		return err

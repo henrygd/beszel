@@ -108,7 +108,7 @@ func (am *AlertManager) HandleSystemAlerts(systemRecord *core.Record, data *syst
 			} else {
 				alert.triggered = val > threshold
 			}
-			go am.sendSystemAlert(alert)
+			am.dispatchSystemAlert(alert)
 			continue
 		}
 
@@ -282,18 +282,18 @@ func (am *AlertManager) HandleSystemAlerts(systemRecord *core.Record, data *syst
 			if lowAlert {
 				if !alert.triggered && alert.val < alert.threshold {
 					alert.triggered = true
-					go am.sendSystemAlert(alert)
+					am.dispatchSystemAlert(alert)
 				} else if alert.triggered && alert.val >= alert.threshold {
 					alert.triggered = false
-					go am.sendSystemAlert(alert)
+					am.dispatchSystemAlert(alert)
 				}
 			} else {
 				if !alert.triggered && alert.val > alert.threshold {
 					alert.triggered = true
-					go am.sendSystemAlert(alert)
+					am.dispatchSystemAlert(alert)
 				} else if alert.triggered && alert.val <= alert.threshold {
 					alert.triggered = false
-					go am.sendSystemAlert(alert)
+					am.dispatchSystemAlert(alert)
 				}
 			}
 		}

@@ -4,6 +4,7 @@ import (
 	"context"
 	"log/slog"
 	"os"
+	"path"
 	"path/filepath"
 	"runtime"
 	"strings"
@@ -45,6 +46,23 @@ type prevDisk struct {
 	readCount  uint64 // cumulative read operation count
 	writeCount uint64 // cumulative write operation count
 	at         time.Time
+}
+
+// mountPathDir and mountPathJoin preserve the path convention reported by the
+// monitored operating system. Using filepath directly makes Linux mountpoints
+// adopt Windows separators when the agent tests run on Windows.
+func mountPathDir(pathname string, isWindows bool) string {
+	if isWindows {
+		return filepath.Dir(pathname)
+	}
+	return path.Dir(pathname)
+}
+
+func mountPathJoin(base, name string, isWindows bool) string {
+	if isWindows {
+		return filepath.Join(base, name)
+	}
+	return path.Join(base, name)
 }
 
 // prevDiskFromCounter creates a prevDisk snapshot from a disk.IOCountersStat at time t.
@@ -271,7 +289,7 @@ func (d *diskDiscovery) addConfiguredExtraFilesystems(extraFilesystems string) {
 // avoid registering nested virtual mounts (e.g. /proc, /sys) that are returned by
 // disk.Partitions(true) when the host root is bind-mounted in /extra-filesystems.
 func (d *diskDiscovery) addPartitionExtraFs(p disk.PartitionStat) {
-	if filepath.Dir(p.Mountpoint) != d.ctx.efPath {
+	if mountPathDir(p.Mountpoint, d.ctx.isWindows) != d.ctx.efPath {
 		return
 	}
 	device, customName := extraFilesystemPartitionInfo(p)
@@ -288,7 +306,7 @@ func (d *diskDiscovery) addExtraFilesystemFolders(folderNames []string) {
 	}
 
 	for _, folderName := range folderNames {
-		mountpoint := filepath.Join(d.ctx.efPath, folderName)
+		mountpoint := mountPathJoin(d.ctx.efPath, folderName, d.ctx.isWindows)
 		slog.Debug("/extra-filesystems", "mountpoint", mountpoint)
 		if existingMountpoints[mountpoint] {
 			continue

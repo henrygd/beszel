@@ -61,7 +61,7 @@ export function UserAuthForm({
 }: {
 	className?: string
 	isFirstRun: boolean
-	authMethods: AuthMethodsList
+	authMethods?: AuthMethodsList
 }) {
 	const [isLoading, setIsLoading] = useState<boolean>(false)
 	const [isOauthLoading, setIsOauthLoading] = useState<boolean>(false)
@@ -76,16 +76,15 @@ export function UserAuthForm({
 			// store email for later use if mfa is enabled
 			let email = ""
 			try {
-				const formData = new FormData(e.target as HTMLFormElement)
-				const data = Object.fromEntries(formData) as Record<string, any>
+				const formData = new FormData(e.currentTarget)
+				const data = Object.fromEntries(formData) as Record<string, FormDataEntryValue>
 				const Schema = isFirstRun ? RegisterSchema : LoginSchema
 				const result = v.safeParse(Schema, data)
 				if (!result.success) {
-					console.log(result)
-					const errors = {}
+					const errors: Record<string, string> = {}
 					for (const issue of result.issues) {
-						// @ts-expect-error
-						errors[issue.path[0].key] = issue.message
+						const key = issue.path?.[0]?.key
+						if (typeof key === "string") errors[key] = issue.message
 					}
 					setErrors(errors)
 					return
@@ -108,18 +107,17 @@ export function UserAuthForm({
 					await pb.collection("users").authWithPassword(email, password)
 				}
 				$authenticated.set(true)
-			} catch (err: any) {
-				const mfaId = err?.response?.mfaId
+			} catch (err: unknown) {
+				const mfaId = (err as { response?: { mfaId?: string } })?.response?.mfaId
 				if (!mfaId) {
 					showLoginFaliedToast()
-					throw err
+					return
 				}
 				setMfaId(mfaId)
 				try {
 					const { otpId } = await pb.collection("users").requestOTP(email)
 					setOtpId(otpId)
-				} catch (err) {
-					console.log({ err })
+				} catch {
 					showLoginFaliedToast()
 				}
 			} finally {
@@ -129,16 +127,23 @@ export function UserAuthForm({
 		[isFirstRun]
 	)
 
-	const authProviders = authMethods.oauth2.providers ?? []
-	const oauthEnabled = authMethods.oauth2.enabled && authProviders.length > 0
-	const passwordEnabled = authMethods.password.enabled
-	const otpEnabled = authMethods.otp.enabled
-	const mfaEnabled = authMethods.mfa.enabled
+	if (!authMethods) {
+		return null
+	}
+
+	// PocketBase can omit optional auth method groups when a method is not
+	// configured. Treat those responses as disabled instead of allowing the
+	// login page to crash while it is rendering.
+	const authProviders = authMethods.oauth2?.providers ?? []
+	const oauthEnabled = authMethods.oauth2?.enabled === true && authProviders.length > 0
+	const passwordEnabled = authMethods.password?.enabled === true
+	const otpEnabled = authMethods.otp?.enabled === true
+	const mfaEnabled = authMethods.mfa?.enabled === true
 
 	function loginWithOauth(provider: AuthProviderInfo, forcePopup = false) {
 		setIsOauthLoading(true)
 
-		if (globalThis.BESZEL.OAUTH_DISABLE_POPUP) {
+		if (globalThis.BESZEL?.OAUTH_DISABLE_POPUP) {
 			redirectToOauthProvider(provider)
 			return
 		}
@@ -186,10 +191,15 @@ export function UserAuthForm({
 		const code = params.get("code")
 		if (code) {
 			const state = params.get("state")
-			const provider: AuthProviderInfo = JSON.parse(localStorage.getItem("provider") ?? "{}")
-		    localStorage.removeItem("provider")
+			let provider: AuthProviderInfo | undefined
+			try {
+				provider = JSON.parse(localStorage.getItem("provider") ?? "null") ?? undefined
+			} catch {
+				provider = undefined
+			}
+			localStorage.removeItem("provider")
 			window.history.replaceState({}, "", window.location.pathname)
-			if (!state || provider.state !== state) {
+			if (!state || !provider || provider.state !== state) {
 				showLoginFaliedToast()
 			} else {
 				setIsOauthLoading(true)
@@ -215,14 +225,26 @@ export function UserAuthForm({
 				pb.authStore.save(res.token, res.record)
 				$authenticated.set(!!pb.authStore.isValid)
 			})
+			.catch(() => {
+				$authenticated.set(false)
+			})
 	}, [])
-
-	if (!authMethods) {
-		return null
-	}
 
 	if (otpId && mfaId) {
 		return <OtpInputForm otpId={otpId} mfaId={mfaId} />
+	}
+
+	if (!passwordEnabled && !otpEnabled && !oauthEnabled) {
+		return (
+			<div className={cn("rounded-xl border border-destructive/30 bg-destructive/5 p-4 text-sm", className)} role="alert">
+				<p className="font-medium">
+					<Trans>No sign-in methods are configured.</Trans>
+				</p>
+				<p className="mt-1 text-muted-foreground">
+					<Trans>Enable password, one-time password, or OAuth access in the server configuration.</Trans>
+				</p>
+			</div>
+		)
 	}
 
 	return (
@@ -261,7 +283,7 @@ export function UserAuthForm({
 									placeholder={t`Password`}
 									required
 									type="password"
-									autoComplete="current-password"
+									autoComplete={isFirstRun ? "new-password" : "current-password"}
 									disabled={isLoading || isOauthLoading}
 									className={cn("ps-9", errors?.password && "border-red-500")}
 								/>
@@ -279,9 +301,9 @@ export function UserAuthForm({
 										placeholder={t`Confirm password`}
 										required
 										type="password"
-										autoComplete="current-password"
+										autoComplete="new-password"
 										disabled={isLoading || isOauthLoading}
-										className={cn("ps-9", errors?.password && "border-red-500")}
+										className={cn("ps-9", errors?.passwordConfirm && "border-red-500")}
 									/>
 									{errors?.passwordConfirm && <p className="px-1 text-xs text-red-600">{errors.passwordConfirm}</p>}
 								</div>
@@ -303,7 +325,7 @@ export function UserAuthForm({
 									data-protonpass-ignore
 								/>
 							</div>
-							<button className={cn(buttonVariants())} disabled={isLoading}>
+							<button type="submit" className={cn(buttonVariants())} disabled={isLoading || isOauthLoading}>
 								{isLoading ? (
 									<LoaderCircle className="me-2 h-4 w-4 animate-spin" />
 								) : (
@@ -320,7 +342,7 @@ export function UserAuthForm({
 								<span className="w-full border-t" />
 							</div>
 							<div className="relative flex justify-center text-xs uppercase">
-								<span className="bg-background px-2 text-muted-foreground">
+								<span className="bg-card px-2 text-muted-foreground">
 									<Trans>Or continue with</Trans>
 								</span>
 							</div>
@@ -331,7 +353,10 @@ export function UserAuthForm({
 			{/* hide OTP button if MFA is enabled (it will be used as MFA) */}
 			{otpEnabled && !mfaEnabled && (
 				<div className="grid gap-2 -mt-1">
-					<Link href="/request-otp" type="button" className={cn(buttonVariants({ variant: "outline" }), "flex gap-2")}>
+					<Link
+						href={getPagePath($router, "request_otp")}
+						className={cn(buttonVariants({ variant: "outline" }), "flex gap-2")}
+					>
 						<KeyIcon className="size-4" />
 						<Trans>One-time password</Trans>
 					</Link>
@@ -339,7 +364,7 @@ export function UserAuthForm({
 			)}
 			{oauthEnabled && (
 				<div className="grid gap-2 -mt-1">
-					{authMethods.oauth2.providers.map((provider) => (
+					{authProviders.map((provider) => (
 						<button
 							key={provider.name}
 							type="button"

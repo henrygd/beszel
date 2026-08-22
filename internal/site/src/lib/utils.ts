@@ -97,6 +97,7 @@ export const formatDay = (timestamp: string) => {
 
 export const updateFavicon = (() => {
 	let prevDownCount = 0
+	let activeUrl: string | undefined
 	return (downCount = 0) => {
 		if (downCount === prevDownCount) {
 			return
@@ -111,17 +112,21 @@ export const updateFavicon = (() => {
     </linearGradient>
   </defs>
   <path fill="url(#gradient)" d="M35 70H0V0h35q4.4 0 8.2 1.7a21.4 21.4 0 0 1 6.6 4.5q2.9 2.8 4.5 6.6Q56 16.7 56 21a15.4 15.4 0 0 1-.3 3.2 17.6 17.6 0 0 1-.2.8 19.4 19.4 0 0 1-1.5 4 17 17 0 0 1-2.4 3.4 13.5 13.5 0 0 1-2.6 2.3 12.5 12.5 0 0 1-.4.3q1.7 1 3 2.5Q53 39.1 54 41a18.3 18.3 0 0 1 1.5 4 17.4 17.4 0 0 1 .5 3 15.3 15.3 0 0 1 0 1q0 4.4-1.7 8.2a21.4 21.4 0 0 1-4.5 6.6q-2.8 2.9-6.6 4.6Q39.4 70 35 70ZM14 14v14h21a7 7 0 0 0 2.3-.3 6.6 6.6 0 0 0 .4-.2Q39 27 40 26a6.9 6.9 0 0 0 1.5-2.2q.5-1.3.5-2.8a7 7 0 0 0-.4-2.3 6.6 6.6 0 0 0-.1-.4Q40.9 17 40 16a7 7 0 0 0-2.3-1.4 6.9 6.9 0 0 0-2.5-.6 7.9 7.9 0 0 0-.2 0H14Zm0 28v14h21a7 7 0 0 0 2.3-.4 6.6 6.6 0 0 0 .4-.1Q39 54.9 40 54a7 7 0 0 0 1.5-2.2 6.9 6.9 0 0 0 .5-2.6 7.9 7.9 0 0 0 0-.2 7 7 0 0 0-.4-2.3 6.6 6.6 0 0 0-.1-.4Q40.9 45 40 44a7 7 0 0 0-2.3-1.5 6.9 6.9 0 0 0-2.5-.6 7.9 7.9 0 0 0-.2 0H14Z"/>
-  ${downCount > 0 &&
-			`
+  ${
+		downCount > 0 &&
+		`
 		<circle cx="40" cy="50" r="22" fill="#f00"/>
   	<text x="40" y="60" font-size="34" text-anchor="middle" fill="#fff" font-family="Arial" font-weight="bold">${downCount}</text>
 	`
-			}
+	}
 </svg>
 	`
+		const favicon = document.querySelector<HTMLLinkElement>("link[rel='icon']")
+		if (!favicon) return
+		if (activeUrl) URL.revokeObjectURL(activeUrl)
 		const blob = new Blob([svg], { type: "image/svg+xml" })
-		const url = URL.createObjectURL(blob)
-			; (document.querySelector("link[rel='icon']") as HTMLLinkElement).href = url
+		activeUrl = URL.createObjectURL(blob)
+		favicon.href = activeUrl
 	}
 })()
 
@@ -200,8 +205,35 @@ export function decimalString(num: number, digits = 2) {
 
 /** Get value from local or session storage */
 function getStorageValue(key: string, defaultValue: unknown, storageInterface: Storage = localStorage) {
-	const saved = storageInterface?.getItem(key)
-	return saved ? JSON.parse(saved) : defaultValue
+	try {
+		const saved = storageInterface?.getItem(key)
+		if (!saved) return defaultValue
+		const parsed = JSON.parse(saved)
+		// Older table preferences stored an empty object, which means "use
+		// every column" rather than an intentional user choice. Let the new
+		// defaults migrate those records without overwriting non-empty choices.
+		if (
+			parsed &&
+			typeof parsed === "object" &&
+			!Array.isArray(parsed) &&
+			defaultValue &&
+			typeof defaultValue === "object" &&
+			!Array.isArray(defaultValue) &&
+			Object.keys(parsed).length === 0
+		) {
+			return defaultValue
+		}
+		return parsed
+	} catch {
+		// Corrupt or unavailable browser storage should never prevent the
+		// console from rendering. Start from a clean value instead.
+		try {
+			storageInterface?.removeItem(key)
+		} catch {
+			// Some privacy modes disallow storage access altogether.
+		}
+		return defaultValue
+	}
 }
 
 /** Hook to sync value in local or session storage */
@@ -211,7 +243,11 @@ export function useBrowserStorage<T>(key: string, defaultValue: T, storageInterf
 		return getStorageValue(key, defaultValue, storageInterface)
 	})
 	useEffect(() => {
-		storageInterface?.setItem(key, JSON.stringify(value))
+		try {
+			storageInterface?.setItem(key, JSON.stringify(value))
+		} catch {
+			// Storage is a preference, not a requirement for using the console.
+		}
 	}, [key, value])
 
 	return [value, setValue]
@@ -334,7 +370,7 @@ export function formatDuration(
 	const created = createdDate ? new Date(createdDate) : null
 	const resolved = resolvedDate ? new Date(resolvedDate) : null
 
-	if (!created || !resolved) return ""
+	if (!created || !resolved || Number.isNaN(created.getTime()) || Number.isNaN(resolved.getTime())) return ""
 
 	const diffMs = resolved.getTime() - created.getTime()
 	if (diffMs < 0) return ""
@@ -365,12 +401,12 @@ export function formatDuration(
 		.join(" ")
 }
 
-/** Parse semver string into major, minor, and patch numbers 
+/** Parse semver string into major, minor, and patch numbers
  * @example
  * const semVer = "1.2.3"
  * const { major, minor, patch } = parseSemVer(semVer)
  * console.log(major, minor, patch) // 1, 2, 3
-*/
+ */
 export const parseSemVer = (semVer = ""): SemVer => {
 	// if (semVer.startsWith("v")) {
 	// 	semVer = semVer.slice(1)
@@ -379,7 +415,8 @@ export const parseSemVer = (semVer = ""): SemVer => {
 		semVer = semVer.slice(0, semVer.indexOf("-"))
 	}
 	const parts = semVer.split(".").map(Number)
-	return { major: parts?.[0] ?? 0, minor: parts?.[1] ?? 0, patch: parts?.[2] ?? 0 }
+	const safePart = (value: number | undefined) => (value !== undefined && Number.isFinite(value) ? value : 0)
+	return { major: safePart(parts[0]), minor: safePart(parts[1]), patch: safePart(parts[2]) }
 }
 
 /** Compare two semver strings. Returns -1 if a is less than b, 0 if a is equal to b, and 1 if a is greater than b. */
@@ -452,7 +489,12 @@ export function secondsToString(seconds: number, unit: "hour" | "minute" | "day"
 	const countString = count.toLocaleString()
 	switch (unit) {
 		case "minute":
-			return plural(count, { one: `${countString} minute`, few: `${countString} minutes`, many: `${countString} minutes`, other: `${countString} minutes` })
+			return plural(count, {
+				one: `${countString} minute`,
+				few: `${countString} minutes`,
+				many: `${countString} minutes`,
+				other: `${countString} minutes`,
+			})
 		case "hour":
 			return plural(count, { one: `${countString} hour`, other: `${countString} hours` })
 		case "day":
@@ -464,7 +506,7 @@ export function secondsToString(seconds: number, unit: "hour" | "minute" | "day"
 export function secondsToUptimeString(seconds: number): string {
 	if (seconds < 3600) {
 		return secondsToString(seconds, "minute")
-	} else if (seconds < 360000) {
+	} else if (seconds < 86400) {
 		return secondsToString(seconds, "hour")
 	} else {
 		return secondsToString(seconds, "day")

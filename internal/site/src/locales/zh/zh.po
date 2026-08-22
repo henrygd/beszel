@@ -18,6 +18,17 @@ msgstr ""
 "X-Crowdin-File: /main/internal/site/src/locales/en/en.po\n"
 "X-Crowdin-File-ID: 32\n"
 
+#. placeholder {0}: systems.length
+#: src/components/fleet-overview.tsx
+msgid "{0, plural, one {# monitored system} other {# monitored systems}}"
+msgstr ""
+
+#. placeholder {0}: rows.length
+#. placeholder {1}: filteredData.length
+#: src/components/systems-table/systems-table.tsx
+msgid "{0} / {1} shown"
+msgstr ""
+
 #. placeholder {0}: newVersion.v
 #: src/components/footer-repo-link.tsx
 msgctxt "New version available"
@@ -104,6 +115,10 @@ msgstr "操作"
 msgid "Active"
 msgstr "啟用中"
 
+#: src/components/fleet-overview.tsx
+msgid "Active alerts"
+msgstr ""
+
 #: src/components/active-alerts.tsx
 msgid "Active Alerts"
 msgstr "活動警報"
@@ -121,9 +136,17 @@ msgstr "活動狀態"
 msgid "Add {foo}"
 msgstr "新增{foo}"
 
+#: src/components/fleet-overview.tsx
+msgid "Add first system"
+msgstr ""
+
 #: src/components/routes/settings/notifications.tsx
 msgid "Add URL"
 msgstr "新增 URL"
+
+#: src/components/routes/system/network-interfaces.tsx
+msgid "Addresses"
+msgstr ""
 
 #: src/components/routes/settings/general.tsx
 msgid "Adjust display options for charts."
@@ -150,6 +173,10 @@ msgstr "設定環境變數後，請重新啟動 Beszel Hub 以使變更生效。
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Agent"
 msgstr "Agent"
+
+#: src/components/routes/system/network-interfaces.tsx
+msgid "Agent reported"
+msgstr ""
 
 #: src/components/command-palette.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
@@ -186,6 +213,10 @@ msgstr "您確定要刪除 {name} 嗎？"
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Are you sure?"
 msgstr "您確定嗎？"
+
+#: src/components/active-alerts.tsx
+msgid "Attention required"
+msgstr ""
 
 #: src/components/copy-to-clipboard.tsx
 msgid "Automatic copy requires a secure context."
@@ -274,6 +305,10 @@ msgstr "之前"
 #: src/components/active-alerts.tsx
 msgid "Below {0}{1} in last {2, plural, one {# minute} other {# minutes}}"
 msgstr "在過去的{2, plural, one {# 分鐘} other {# 分鐘}}中低於{0}{1}"
+
+#: src/components/login/login.tsx
+msgid "Beszel control plane"
+msgstr ""
 
 #: src/components/login/auth-form.tsx
 msgid "Beszel supports OpenID Connect and many OAuth2 authentication providers."
@@ -420,6 +455,10 @@ msgstr "確認密碼"
 msgid "Conflicts"
 msgstr "衝突"
 
+#: src/components/fleet-overview.tsx
+msgid "Connect your first system"
+msgstr ""
+
 #: src/components/active-alerts.tsx
 msgid "Connection is down"
 msgstr "連線中斷"
@@ -534,6 +573,10 @@ msgstr "建立"
 msgid "Create account"
 msgstr "建立帳號"
 
+#: src/components/login/login.tsx
+msgid "Create administrator"
+msgstr ""
+
 #. Context: date created
 #: src/components/alerts-history-columns.tsx
 msgid "Created"
@@ -550,6 +593,10 @@ msgstr "累計下載"
 #: src/components/routes/system/network-sheet.tsx
 msgid "Cumulative Upload"
 msgstr "累計上傳"
+
+#: src/components/fleet-overview.tsx
+msgid "Current connection state"
+msgstr ""
 
 #. Context: Battery state
 #. Context: Battery state
@@ -595,6 +642,14 @@ msgstr "描述"
 #: src/components/containers-table/containers-table.tsx
 msgid "Detail"
 msgstr "詳細資訊"
+
+#: src/components/routes/system/network-interfaces.tsx
+msgid "Detected"
+msgstr ""
+
+#: src/components/routes/system/network-interfaces.tsx
+msgid "Detected links, addresses, and negotiated speeds reported by the agent"
+msgstr ""
 
 #: src/components/routes/system/smart-table.tsx
 msgid "Device"
@@ -650,8 +705,14 @@ msgstr "Docker 網路 I/O"
 msgid "Documentation"
 msgstr "文件"
 
+#: src/components/fleet-overview.tsx
+msgid "down"
+msgstr ""
+
 #. Context: System is down
 #: src/components/alerts-history-columns.tsx
+#: src/components/fleet-overview.tsx
+#: src/components/fleet-overview.tsx
 #: src/components/routes/system/info-bar.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 #: src/lib/alerts.ts
@@ -694,6 +755,10 @@ msgstr "電子郵件通知"
 #: src/lib/i18n.ts
 msgid "Empty"
 msgstr "空電"
+
+#: src/components/login/auth-form.tsx
+msgid "Enable password, one-time password, or OAuth access in the server configuration."
+msgstr ""
 
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/quiet-hours.tsx
@@ -788,6 +853,10 @@ msgstr "失敗"
 msgid "Failed Attributes:"
 msgstr "失敗屬性："
 
+#: src/components/add-system.tsx
+msgid "Failed to add system"
+msgstr ""
+
 #: src/lib/api.ts
 msgid "Failed to authenticate"
 msgstr "認證失敗"
@@ -797,6 +866,10 @@ msgstr "認證失敗"
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Failed to save settings"
 msgstr "儲存設定失敗"
+
+#: src/components/add-system.tsx
+msgid "Failed to save system"
+msgstr ""
 
 #: src/components/routes/settings/heartbeat.tsx
 msgid "Failed to send heartbeat"
@@ -810,6 +883,10 @@ msgstr "發送測試通知失敗"
 msgid "Failed to update alert"
 msgstr "更新警報失敗"
 
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Failed to update universal token"
+msgstr ""
+
 #. placeholder {0}: statusTotals[ServiceStatus.Failed]
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Failed: {0}"
@@ -817,6 +894,14 @@ msgstr "失敗：{0}"
 
 #: src/components/routes/system/charts/sensor-charts.tsx
 msgid "Fans"
+msgstr ""
+
+#: src/components/routes/system/network-interfaces.tsx
+msgid "Fastest link"
+msgstr ""
+
+#: src/components/systems-table/systems-table.tsx
+msgid "Filter systems"
 msgstr ""
 
 #: src/components/containers-table/containers-table.tsx
@@ -835,6 +920,14 @@ msgstr "Fingerprint"
 #: src/components/routes/system/smart-table.tsx
 msgid "Firmware"
 msgstr "韌體"
+
+#: src/components/fleet-overview.tsx
+msgid "Fleet awaiting signal"
+msgstr ""
+
+#: src/components/fleet-overview.tsx
+msgid "Fleet status"
+msgstr ""
 
 #: src/components/alerts/alerts-sheet.tsx
 msgid "For <0>{min}</0> {min, plural, one {minute} other {minutes}}"
@@ -913,6 +1006,10 @@ msgstr "Homebrew 指令"
 msgid "Host / IP"
 msgstr "Host / IP"
 
+#: src/components/routes/system/network-interfaces.tsx
+msgid "Host inventory"
+msgstr ""
+
 #: src/components/routes/settings/heartbeat.tsx
 msgid "HTTP Method"
 msgstr "HTTP 方法"
@@ -954,9 +1051,17 @@ msgstr "映像檔"
 msgid "Inactive"
 msgstr "未啟用"
 
+#: src/components/fleet-overview.tsx
+msgid "Install a lightweight Beszel agent to start monitoring health, resources, containers, and alerts."
+msgstr ""
+
 #: src/components/routes/settings/heartbeat.tsx
 msgid "Interval"
 msgstr "間隔"
+
+#: src/components/navbar.tsx
+msgid "Intranet console"
+msgstr ""
 
 #: src/components/login/auth-form.tsx
 msgid "Invalid email address."
@@ -978,10 +1083,30 @@ msgstr "版面寬度"
 msgid "Lifecycle"
 msgstr "生命週期"
 
+#: src/components/login/login.tsx
+msgid "Lightweight agents"
+msgstr ""
+
 #: src/components/systemd-table/systemd-table.tsx
 #: src/components/systemd-table/systemd-table.tsx
 msgid "limit"
 msgstr "限制"
+
+#: src/components/routes/system/network-interfaces.tsx
+msgid "Link speed"
+msgstr ""
+
+#: src/components/fleet-overview.tsx
+msgid "Live fleet pulse"
+msgstr ""
+
+#: src/components/routes/system/info-bar.tsx
+msgid "Live host snapshot"
+msgstr ""
+
+#: src/components/login/login.tsx
+msgid "Live telemetry"
+msgstr ""
 
 #: src/components/routes/system/charts/load-average-chart.tsx
 msgid "Load Average"
@@ -1007,6 +1132,10 @@ msgstr "平均負載"
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Load state"
 msgstr "載入狀態"
+
+#: src/components/login/login.tsx
+msgid "Loading"
+msgstr ""
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Loading..."
@@ -1035,6 +1164,10 @@ msgstr "系統記錄"
 #: src/components/routes/settings/notifications.tsx
 msgid "Looking instead for where to create alerts? Click the bell <0/> icons in the systems table."
 msgstr "在尋找從哪裡建立警報嗎？點擊系統列表中的小鈴鐺<0/>。"
+
+#: src/components/routes/system/network-interfaces.tsx
+msgid "Loopback"
+msgstr ""
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Main PID"
@@ -1085,6 +1218,10 @@ msgstr "Docker 容器的記憶體使用量"
 msgid "Model"
 msgstr "型號"
 
+#: src/components/login/login.tsx
+msgid "Monitor system health, resource pressure, services, containers, and alerts from one private control plane."
+msgstr ""
+
 #: src/components/add-system.tsx
 #: src/components/alerts-history-columns.tsx
 #: src/components/containers-table/containers-table-columns.tsx
@@ -1097,6 +1234,10 @@ msgstr "名稱"
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Net"
 msgstr "網路"
+
+#: src/components/routes/system/network-interfaces.tsx
+msgid "Network interfaces"
+msgstr ""
 
 #: src/components/routes/system/charts/network-charts.tsx
 msgid "Network traffic of docker containers"
@@ -1120,6 +1261,10 @@ msgstr "網路單位"
 msgid "No"
 msgstr "否"
 
+#: src/components/routes/system/network-interfaces.tsx
+msgid "No network interfaces reported"
+msgstr ""
+
 #: src/components/command-palette.tsx
 #: src/components/systemd-table/systemd-table.tsx
 msgid "No results found."
@@ -1138,10 +1283,23 @@ msgstr "沒有結果。"
 msgid "No S.M.A.R.T. attributes available for this device."
 msgstr "此裝置沒有可用的 S.M.A.R.T. 屬性。"
 
+#: src/components/login/auth-form.tsx
+msgid "No sign-in methods are configured."
+msgstr ""
+
 #: src/components/systems-table/systems-table.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "No systems found."
 msgstr "找不到任何系統。"
+
+#: src/components/routes/system/network-interfaces.tsx
+#: src/components/routes/system/network-interfaces.tsx
+msgid "Not available"
+msgstr ""
+
+#: src/components/routes/system/network-interfaces.tsx
+msgid "Not reported"
+msgstr ""
 
 #: src/components/command-palette.tsx
 #: src/components/routes/settings/layout.tsx
@@ -1152,6 +1310,10 @@ msgstr "通知"
 #: src/components/login/auth-form.tsx
 msgid "OAuth 2 / OIDC support"
 msgstr "支援 OAuth 2 / OIDC"
+
+#: src/components/routes/system/network-interfaces.tsx
+msgid "Offline"
+msgstr ""
 
 #: src/components/routes/settings/config-yaml.tsx
 msgid "On each restart, systems in the database will be updated to match the systems defined in the file."
@@ -1166,6 +1328,17 @@ msgstr "一次性"
 msgid "One-time password"
 msgstr "一次性密碼"
 
+#: src/components/fleet-overview.tsx
+msgid "online"
+msgstr ""
+
+#: src/components/fleet-overview.tsx
+#: src/components/fleet-overview.tsx
+#: src/components/routes/system/network-interfaces.tsx
+#: src/components/routes/system/network-interfaces.tsx
+msgid "Online"
+msgstr ""
+
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
@@ -1173,6 +1346,10 @@ msgstr "一次性密碼"
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Open menu"
 msgstr "開啟選單"
+
+#: src/components/navbar.tsx
+msgid "Operations"
+msgstr ""
 
 #: src/components/login/auth-form.tsx
 msgid "Or continue with"
@@ -1227,6 +1404,12 @@ msgstr "已過期"
 msgid "Pause"
 msgstr "暫停"
 
+#: src/components/fleet-overview.tsx
+msgid "paused"
+msgstr ""
+
+#: src/components/fleet-overview.tsx
+#: src/components/fleet-overview.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Paused"
 msgstr "已暫停"
@@ -1238,6 +1421,15 @@ msgstr "已暫停 ({pausedSystemsLength})"
 #: src/components/routes/settings/heartbeat.tsx
 msgid "Payload format"
 msgstr "Payload 格式"
+
+#: src/components/fleet-overview.tsx
+msgid "pending"
+msgstr ""
+
+#: src/components/fleet-overview.tsx
+#: src/components/fleet-overview.tsx
+msgid "Pending"
+msgstr ""
 
 #: src/components/routes/system/cpu-sheet.tsx
 #: src/components/routes/system/cpu-sheet.tsx
@@ -1267,6 +1459,10 @@ msgstr "請<0>設定一個 SMTP 伺服器</0>以確保能傳送警報。"
 #: src/components/alerts/alerts-sheet.tsx
 msgid "Please check logs for more details."
 msgstr "請檢查系統記錄以取得更多資訊。"
+
+#: src/components/add-system.tsx
+msgid "Please check the details and try again"
+msgstr ""
 
 #: src/components/login/auth-form.tsx
 #: src/components/login/forgot-pass-form.tsx
@@ -1316,6 +1512,14 @@ msgstr "紀錄時間內的精確使用量"
 msgid "Preferred Language"
 msgstr "首選語言"
 
+#: src/components/navbar.tsx
+msgid "Primary navigation"
+msgstr ""
+
+#: src/components/login/login.tsx
+msgid "Private by design"
+msgstr ""
+
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Process started"
 msgstr "進程啟動"
@@ -1352,9 +1556,14 @@ msgstr "接收"
 
 #: src/components/containers-table/containers-table.tsx
 #: src/components/containers-table/containers-table.tsx
+#: src/components/fleet-overview.tsx
 #: src/components/routes/system/smart-table.tsx
 msgid "Refresh"
 msgstr "重新整理"
+
+#: src/components/fleet-overview.tsx
+msgid "Refresh fleet"
+msgstr ""
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Relationships"
@@ -1375,6 +1584,10 @@ msgstr "被依賴"
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Requires"
 msgstr "依賴"
+
+#: src/components/systems-table/systems-table.tsx
+msgid "Reset fields"
+msgstr ""
 
 #: src/components/login/forgot-pass-form.tsx
 msgid "Reset Password"
@@ -1460,6 +1673,10 @@ msgstr "在設定或系統中搜尋..."
 msgid "Seconds between pings (default: 60)"
 msgstr "Ping 之間的秒數 (預設：60)"
 
+#: src/components/login/login.tsx
+msgid "Secure access to your infrastructure"
+msgstr ""
+
 #: src/components/alerts/alerts-sheet.tsx
 msgid "See <0>notification settings</0> to configure how you receive alerts."
 msgstr "查看<0>通知設定</0>以設定您如何接收警報。"
@@ -1467,6 +1684,10 @@ msgstr "查看<0>通知設定</0>以設定您如何接收警報。"
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Select {foo}"
 msgstr "選取{foo}"
+
+#: src/components/login/login.tsx
+msgid "Self-hosted observability"
+msgstr ""
 
 #: src/components/routes/settings/heartbeat.tsx
 msgid "Send a single heartbeat ping to verify your endpoint is working."
@@ -1522,6 +1743,10 @@ msgstr "已儲存設定"
 #: src/components/login/auth-form.tsx
 msgid "Sign in"
 msgstr "登入"
+
+#: src/main.tsx
+msgid "Skip to content"
+msgstr ""
 
 #: src/components/command-palette.tsx
 msgid "SMTP settings"
@@ -1646,6 +1871,10 @@ msgstr "測試 Heartbeat"
 #: src/components/routes/settings/notifications.tsx
 msgid "Test notification sent"
 msgstr "已發送測試通知"
+
+#: src/components/routes/system/network-interfaces.tsx
+msgid "The agent did not return an interface inventory for this host."
+msgstr ""
 
 #: src/components/routes/settings/heartbeat.tsx
 msgid "The overall status is <0>ok</0> when all systems are up, <1>warn</1> when alerts are triggered, and <2>error</2> when any system is down."
@@ -1773,11 +2002,23 @@ msgstr "當連線和離線時觸發"
 msgid "Triggers when usage of any disk exceeds a threshold"
 msgstr "當任何磁碟使用率超過閾值時觸發"
 
+#: src/components/login/login.tsx
+msgid "Try again"
+msgstr ""
+
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/system/smart-table.tsx
 msgid "Type"
 msgstr "類型"
+
+#: src/components/login/login.tsx
+msgid "Unable to load sign-in options."
+msgstr ""
+
+#: src/components/add-system.tsx
+msgid "Unable to load system token"
+msgstr ""
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Unit file"
@@ -1909,6 +2150,10 @@ msgstr "警告閾值"
 msgid "Webhook / Push notifications"
 msgstr "Webhook / 推送通知"
 
+#: src/components/login/login.tsx
+msgid "Welcome back"
+msgstr ""
+
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "When enabled, this token allows agents to self-register without prior system creation."
 msgstr "啟用後，此 Token 可讓 Agent 自行註冊，無需預先在系統中建立項目。"
@@ -1944,6 +2189,10 @@ msgstr "YAML 設定檔"
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Yes"
 msgstr "是"
+
+#: src/components/login/login.tsx
+msgid "Your fleet, clearly in view."
+msgstr ""
 
 #: src/components/routes/settings/layout.tsx
 msgid "Your user settings have been updated."

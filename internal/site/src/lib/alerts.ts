@@ -122,9 +122,14 @@ export const alertManager = (() => {
 		for (const alert of alerts) {
 			const systemId = alert.system
 			const systemAlerts = $alerts.get()[systemId]
+			if (!systemAlerts) continue
 			const newAlerts = new Map(systemAlerts)
 			newAlerts.delete(alert.name)
-			$alerts.setKey(systemId, newAlerts)
+			if (newAlerts.size > 0) {
+				$alerts.setKey(systemId, newAlerts)
+			} else {
+				$alerts.setKey(systemId, undefined as unknown as Map<string, AlertRecord>)
+			}
 		}
 	}
 
@@ -167,8 +172,15 @@ export const alertManager = (() => {
 	}
 
 	async function refresh() {
-		const records = await fetchAlerts()
-		add(records)
+		try {
+			const records = await fetchAlerts()
+			// A successful refresh is authoritative; remove alerts for systems that
+			// were deleted or are no longer visible to the current user.
+			$alerts.set({})
+			add(records)
+		} catch (error) {
+			console.error("Failed to fetch alerts:", error)
+		}
 	}
 
 	return {

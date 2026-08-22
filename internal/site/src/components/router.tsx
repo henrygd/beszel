@@ -1,3 +1,4 @@
+/** biome-ignore-all lint/a11y: anchors retain native behavior and use the client router only for unmodified primary clicks */
 import { createRouter } from "@nanostores/router"
 
 const routes = {
@@ -14,7 +15,7 @@ const routes = {
  * The base path of the application.
  * This is used to prepend the base path to all routes.
  */
-export const basePath = BESZEL?.BASE_PATH || ""
+export const basePath = globalThis.BESZEL?.BASE_PATH || ""
 
 /**
  * Prepends the base path to the given path.
@@ -43,14 +44,22 @@ export function Link(props: React.AnchorHTMLAttributes<HTMLAnchorElement>) {
 		<a
 			{...props}
 			onClick={(e) => {
-				e.preventDefault()
-				const href = props.href || ""
-				if (e.ctrlKey || e.metaKey) {
-					window.open(href, "_blank")
-				} else {
-					navigate(href)
-					props.onClick?.(e)
+				props.onClick?.(e)
+				if (
+					e.defaultPrevented ||
+					e.button !== 0 ||
+					e.ctrlKey ||
+					e.metaKey ||
+					e.shiftKey ||
+					e.altKey ||
+					props.target === "_blank" ||
+					props.download ||
+					!props.href
+				) {
+					return
 				}
+				e.preventDefault()
+				navigate(props.href)
 			}}
 		></a>
 	)

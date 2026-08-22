@@ -14,7 +14,7 @@ interface SidebarNavProps extends React.HTMLAttributes<HTMLElement> {
 		icon?: React.FC<React.SVGProps<SVGSVGElement>>
 		admin?: boolean
 		noReadOnly?: boolean
-		preload?: () => Promise<{ default: React.ComponentType<any> }>
+		preload?: () => Promise<unknown>
 	}[]
 }
 
@@ -31,7 +31,7 @@ export function SidebarNav({ className, items, ...props }: SidebarNavProps) {
 					</SelectTrigger>
 					<SelectContent>
 						{items.map((item) => {
-							if (item.admin && !isAdmin()) return null
+							if ((item.admin && !isAdmin()) || (item.noReadOnly && isReadOnlyUser())) return null
 							return (
 								<SelectItem key={item.href} value={item.href}>
 									<span className="flex items-center gap-2 truncate">
@@ -62,6 +62,7 @@ export function SidebarNav({ className, items, ...props }: SidebarNavProps) {
 								"flex items-center gap-3 justify-start truncate duration-50",
 								page?.path === item.href ? "bg-muted hover:bg-accent/70" : "hover:bg-accent/50"
 							)}
+							aria-current={page?.path === item.href ? "page" : undefined}
 						>
 							{item.icon && <item.icon className="size-4 shrink-0" />}
 							<span className="truncate">{item.title}</span>

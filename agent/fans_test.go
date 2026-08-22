@@ -61,7 +61,9 @@ func TestReadHwmonFansLegacyParent(t *testing.T) {
 
 	chipDir := filepath.Join(root, "hwmon1")
 	require.NoError(t, os.MkdirAll(chipDir, 0o755))
-	require.NoError(t, os.Symlink(deviceDir, filepath.Join(chipDir, "device")))
+	if err := os.Symlink(deviceDir, filepath.Join(chipDir, "device")); err != nil {
+		t.Skipf("symbolic links are unavailable in this test environment: %v", err)
+	}
 
 	fans, err := readHwmonFans(root)
 	require.NoError(t, err)

@@ -1,4 +1,4 @@
-import { ChevronDownIcon, HourglassIcon } from "lucide-react"
+import { ChevronDownIcon } from "lucide-react"
 import * as React from "react"
 import { cn } from "@/lib/utils"
 import { Button } from "./button"
@@ -14,10 +14,17 @@ interface CollapsibleProps {
 
 export function Collapsible({ title, children, description, defaultOpen = false, className, icon }: CollapsibleProps) {
 	const [isOpen, setIsOpen] = React.useState(defaultOpen)
+	const contentId = React.useId()
 
 	return (
 		<div className={cn("border rounded-lg", className)}>
-			<Button variant="ghost" className="w-full justify-between p-4 font-semibold" onClick={() => setIsOpen(!isOpen)}>
+			<Button
+				variant="ghost"
+				className="w-full justify-between p-4 font-semibold"
+				onClick={() => setIsOpen(!isOpen)}
+				aria-expanded={isOpen}
+				aria-controls={contentId}
+			>
 				<div className="flex items-center gap-2">
 					{icon}
 					{title}
@@ -30,7 +37,7 @@ export function Collapsible({ title, children, description, defaultOpen = false,
 			</Button>
 			{description && <div className="px-4 pb-2 text-sm text-muted-foreground">{description}</div>}
 			{isOpen && (
-				<div className="px-4 pb-4">
+				<div id={contentId} className="px-4 pb-4">
 					<div className="grid gap-3">{children}</div>
 				</div>
 			)}

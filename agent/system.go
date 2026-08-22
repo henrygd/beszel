@@ -106,6 +106,9 @@ func (a *Agent) refreshSystemDetails() {
 		}
 	}
 
+	// network interface inventory (identity, addresses, and negotiated speed)
+	a.systemDetails.NetworkInterfaces = getNetworkInterfaceDetails()
+
 	// zfs
 	if _, err := zfs.ARCSize(); err != nil {
 		slog.Debug("Not monitoring ZFS ARC", "err", err)

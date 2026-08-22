@@ -142,18 +142,25 @@ const SectionUniversalToken = memo(() => {
 	const publicKey = $publicKey.get()
 
 	async function updateToken(enable: number = -1, permanent: number = -1) {
-		// enable: 0 for disable, 1 for enable, -1 (unset) for get current state
-		const data = await pb.send(`/api/beszel/universal-token`, {
-			query: {
-				token,
-				enable,
-				permanent,
-			},
-		})
-		setToken(data.token)
-		setChecked(data.active)
-		setIsPermanent(!!data.permanent)
-		setIsLoading(false)
+		try {
+			// Read state with GET; send token mutations in the body so secrets do not enter URLs or logs.
+			const data = await pb.send(
+				`/api/beszel/universal-token`,
+				enable < 0
+					? {}
+					: {
+							method: "POST",
+							body: JSON.stringify({ token, enable, permanent }),
+						}
+			)
+			setToken(data.token)
+			setChecked(data.active)
+			setIsPermanent(!!data.permanent)
+		} catch {
+			toast({ title: t`Failed to update universal token`, variant: "destructive" })
+		} finally {
+			setIsLoading(false)
+		}
 	}
 
 	useEffect(() => {

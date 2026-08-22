@@ -48,7 +48,7 @@ func TestGetDataDir(t *testing.T) {
 
 	// Test with invalid explicit dataDir
 	t.Run("invalid explicit data dir", func(t *testing.T) {
-		invalidPath := "/invalid/path/that/cannot/be/created"
+		invalidPath := createInvalidDataDir(t)
 		_, err := GetDataDir(invalidPath)
 		assert.Error(t, err)
 	})
@@ -78,7 +78,7 @@ func TestTestDataDirs(t *testing.T) {
 	// Test with multiple directories, first one valid
 	t.Run("multiple dirs - first valid", func(t *testing.T) {
 		tempDir := t.TempDir()
-		invalidDir := "/invalid/path"
+		invalidDir := createInvalidDataDir(t)
 		result, err := testDataDirs([]string{tempDir, invalidDir})
 		require.NoError(t, err)
 		assert.Equal(t, tempDir, result)
@@ -87,7 +87,7 @@ func TestTestDataDirs(t *testing.T) {
 	// Test with multiple directories, second one valid
 	t.Run("multiple dirs - second valid", func(t *testing.T) {
 		tempDir := t.TempDir()
-		invalidDir := "/invalid/path"
+		invalidDir := createInvalidDataDir(t)
 		result, err := testDataDirs([]string{invalidDir, tempDir})
 		require.NoError(t, err)
 		assert.Equal(t, tempDir, result)
@@ -109,11 +109,20 @@ func TestTestDataDirs(t *testing.T) {
 
 	// Test with no valid directories
 	t.Run("no valid directories", func(t *testing.T) {
-		invalidPaths := []string{"/invalid/path1", "/invalid/path2"}
+		invalidPaths := []string{createInvalidDataDir(t), createInvalidDataDir(t)}
 		_, err := testDataDirs(invalidPaths)
 		assert.Error(t, err)
 		assert.Contains(t, err.Error(), "data directory not found")
 	})
+}
+
+// createInvalidDataDir returns an existing regular file, which is an invalid
+// directory on every supported operating system regardless of permissions.
+func createInvalidDataDir(t *testing.T) string {
+	t.Helper()
+	path := filepath.Join(t.TempDir(), "not-a-directory")
+	require.NoError(t, os.WriteFile(path, []byte("test"), 0644))
+	return path
 }
 
 func TestIsValidDataDir(t *testing.T) {

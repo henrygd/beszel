@@ -3,7 +3,15 @@ import PocketBase from "pocketbase"
 import { basePath } from "@/components/router"
 import { toast } from "@/components/ui/use-toast"
 import type { ChartTimes, UserSettings } from "@/types"
-import { $alerts, $allSystemsById, $allSystemsByName, $userSettings } from "./stores"
+import {
+	$alerts,
+	$allSystemsById,
+	$allSystemsByName,
+	$downSystems,
+	$pausedSystems,
+	$upSystems,
+	$userSettings,
+} from "./stores"
 import { chartTimeData } from "./utils"
 
 /** PocketBase JS Client */
@@ -29,6 +37,9 @@ export const verifyAuth = () => {
 export function logOut() {
 	$allSystemsByName.set({})
 	$allSystemsById.set({})
+	$upSystems.set({})
+	$downSystems.set({})
+	$pausedSystems.set({})
 	$alerts.set({})
 	$userSettings.set({} as UserSettings)
 	sessionStorage.setItem("lo", "t") // prevent auto login on logout
@@ -44,6 +55,10 @@ export async function updateUserSettings() {
 		return
 	} catch (e) {
 		console.error("get settings", e)
+		// Only create a settings record when the collection explicitly says it
+		// is missing. A transient network/auth error must not create duplicates.
+		const status = typeof e === "object" && e !== null && "status" in e ? Number((e as { status?: unknown }).status) : 0
+		if (status !== 404) return
 	}
 	// create user settings if error fetching existing
 	try {

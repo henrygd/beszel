@@ -118,6 +118,9 @@ func (h *Hub) StartHub() error {
 
 // initialize sets up initial configuration (collections, settings, etc.)
 func (h *Hub) initialize(app core.App) error {
+	if err := ensureSystemDetailsNetworkInterfacesField(app); err != nil {
+		return err
+	}
 	// set general settings
 	settings := app.Settings()
 	// batch requests (for alerts)
@@ -132,6 +135,24 @@ func (h *Hub) initialize(app core.App) error {
 	}
 	// set auth settings
 	return setCollectionAuthSettings(app)
+}
+
+// ensureSystemDetailsNetworkInterfacesField keeps the JSON field available for
+// both new installs and hubs upgrading from a schema created before interface
+// inventory was introduced.
+func ensureSystemDetailsNetworkInterfacesField(app core.App) error {
+	collection, err := app.FindCollectionByNameOrId("system_details")
+	if err != nil {
+		return err
+	}
+	if collection.Fields.GetByName("network_interfaces") != nil {
+		return nil
+	}
+	collection.Fields.Add(&core.JSONField{
+		Name:    "network_interfaces",
+		MaxSize: 2 << 20,
+	})
+	return app.Save(collection)
 }
 
 // registerCronJobs sets up scheduled tasks

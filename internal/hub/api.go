@@ -1,10 +1,11 @@
 package hub
 
 import (
-	"context"
 	"net/http"
 	"regexp"
+	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/blang/semver"
@@ -23,6 +24,7 @@ import (
 // UpdateInfo holds information about the latest update check
 type UpdateInfo struct {
 	lastCheck time.Time
+	mu        sync.Mutex
 	Version   string `json:"v"`
 	Url       string `json:"url"`
 }
@@ -55,6 +57,13 @@ func customAuthMiddleware(fn func(*core.RequestEvent) bool) func(*core.RequestEv
 
 // registerMiddlewares registers custom middlewares
 func (h *Hub) registerMiddlewares(se *core.ServeEvent) {
+	se.Router.BindFunc(func(e *core.RequestEvent) error {
+		e.Response.Header().Set("X-Content-Type-Options", "nosniff")
+		e.Response.Header().Set("Referrer-Policy", "same-origin")
+		e.Response.Header().Set("Permissions-Policy", "camera=(), microphone=(), geolocation=()")
+		return e.Next()
+	})
+
 	// authorizes request with user matching the provided email
 	authorizeRequestWithEmail := func(e *core.RequestEvent, email string) (err error) {
 		if e.Auth != nil || email == "" {
@@ -120,6 +129,7 @@ func (h *Hub) registerApiRoutes(se *core.ServeEvent) error {
 	apiNoAuth.GET("/agent-connect", h.handleAgentConnect)
 	// get or create universal tokens
 	apiAuth.GET("/universal-token", h.getUniversalToken).BindFunc(excludeReadOnlyRole)
+	apiAuth.POST("/universal-token", h.getUniversalToken).BindFunc(excludeReadOnlyRole)
 	// update / delete user alerts
 	apiAuth.POST("/user-alerts", alerts.UpsertUserAlerts)
 	apiAuth.DELETE("/user-alerts", alerts.DeleteUserAlerts)
@@ -156,11 +166,13 @@ func (h *Hub) getInfo(e *core.RequestEvent) error {
 
 // getUpdate checks for the latest release on GitHub and returns update info if a newer version is available
 func (info *UpdateInfo) getUpdate(e *core.RequestEvent) error {
+	info.mu.Lock()
+	defer info.mu.Unlock()
 	if time.Since(info.lastCheck) < 6*time.Hour {
 		return e.JSON(http.StatusOK, info)
 	}
-	info.lastCheck = time.Now()
-	latestRelease, err := ghupdate.FetchLatestRelease(context.Background(), http.DefaultClient, "")
+	client := &http.Client{Timeout: 10 * time.Second}
+	latestRelease, err := ghupdate.FetchLatestRelease(e.Request.Context(), client, "")
 	if err != nil {
 		return err
 	}
@@ -176,21 +188,39 @@ func (info *UpdateInfo) getUpdate(e *core.RequestEvent) error {
 		info.Version = strings.TrimPrefix(latestRelease.Tag, "v")
 		info.Url = latestRelease.Url
 	}
+	info.lastCheck = time.Now()
 	return e.JSON(http.StatusOK, info)
 }
 
 // GetUniversalToken handles the universal token API endpoint (create, read, delete)
 func (h *Hub) getUniversalToken(e *core.RequestEvent) error {
+	e.Response.Header().Set("Cache-Control", "no-store")
 	if e.Auth.IsSuperuser() {
 		return e.ForbiddenError("Superusers cannot use universal tokens", nil)
 	}
 
 	tokenMap := universalTokenMap.GetMap()
 	userID := e.Auth.Id
-	query := e.Request.URL.Query()
-	token := query.Get("token")
-	enable := query.Get("enable")
-	permanent := query.Get("permanent")
+	var token, enable, permanent string
+	if e.Request.Method == http.MethodPost {
+		data := struct {
+			Token     string `json:"token"`
+			Enable    int    `json:"enable"`
+			Permanent int    `json:"permanent"`
+		}{}
+		if err := e.BindBody(&data); err != nil || (data.Enable != 0 && data.Enable != 1) {
+			return e.BadRequestError("Invalid universal token request", err)
+		}
+		token = data.Token
+		enable = strconv.Itoa(data.Enable)
+		permanent = strconv.Itoa(data.Permanent)
+	} else {
+		// Query parameters remain supported for backwards compatibility.
+		query := e.Request.URL.Query()
+		token = query.Get("token")
+		enable = query.Get("enable")
+		permanent = query.Get("permanent")
+	}
 
 	// helper for deleting any existing permanent token record for this user
 	deletePermanent := func() error {
@@ -278,6 +308,7 @@ func (h *Hub) getUniversalToken(e *core.RequestEvent) error {
 
 // getHeartbeatStatus returns current heartbeat configuration and whether it's enabled
 func (h *Hub) getHeartbeatStatus(e *core.RequestEvent) error {
+	e.Response.Header().Set("Cache-Control", "no-store")
 	if h.hb == nil {
 		return e.JSON(http.StatusOK, map[string]any{
 			"enabled": false,
@@ -308,6 +339,7 @@ func (h *Hub) testHeartbeat(e *core.RequestEvent) error {
 
 // containerRequestHandler handles both container logs and info requests
 func (h *Hub) containerRequestHandler(e *core.RequestEvent, fetchFunc func(*systems.System, string) (string, error), responseKey string) error {
+	e.Response.Header().Set("Cache-Control", "no-store")
 	systemID := e.Request.URL.Query().Get("system")
 	containerID := e.Request.URL.Query().Get("container")
 
@@ -366,7 +398,7 @@ func (h *Hub) getSystemdInfo(e *core.RequestEvent) error {
 	if err != nil {
 		return e.InternalServerError("", err)
 	}
-	e.Response.Header().Set("Cache-Control", "public, max-age=60")
+	e.Response.Header().Set("Cache-Control", "private, max-age=60")
 	return e.JSON(http.StatusOK, map[string]any{"details": details})
 }
 

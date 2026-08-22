@@ -113,7 +113,11 @@ func directoryIsWritable(path string) (bool, error) {
 	if err != nil {
 		return false, err
 	}
-	defer file.Close()
-	defer os.Remove(testFile)
+	if err := file.Close(); err != nil {
+		return false, err
+	}
+	if err := os.Remove(testFile); err != nil {
+		return false, err
+	}
 	return true, nil
 }

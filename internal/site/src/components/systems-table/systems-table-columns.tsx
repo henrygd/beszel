@@ -111,12 +111,12 @@ export function SystemsTableColumns(viewMode: "table" | "grid"): ColumnDef<Syste
 				// match filter value against name or translated status
 				return (row, _, newFilterInput) => {
 					const sys = row.original
-					if (sys.host.includes(newFilterInput) || sys.info.v?.includes(newFilterInput)) {
-						return true
-					}
 					if (newFilterInput !== filterInput) {
 						filterInput = newFilterInput
 						filterInputLower = newFilterInput.toLowerCase()
+					}
+					if (sys.host?.toLowerCase().includes(filterInputLower) || sys.info?.v?.toLowerCase().includes(filterInputLower)) {
+						return true
 					}
 					let nameLower = nameCache.get(sys.name)
 					if (nameLower === undefined) {
