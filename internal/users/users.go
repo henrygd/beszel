@@ -4,6 +4,7 @@ package users
 import (
 	"log"
 	"net/http"
+	"strings"
 
 	"github.com/henrygd/beszel/internal/migrations"
 
@@ -25,6 +26,39 @@ func NewUserManager(app core.App) *UserManager {
 func (um *UserManager) InitializeUserRole(e *core.RecordEvent) error {
 	if e.Record.GetString("role") == "" {
 		e.Record.Set("role", "user")
+	}
+	return e.Next()
+}
+
+// NormalizeEmail lowercases the email on the record so stored values are
+// always in a canonical form. Prevents creating accounts that differ only
+// in email case (e.g. "Foo@bar.com" vs "foo@bar.com").
+func (um *UserManager) NormalizeEmail(e *core.RecordEvent) error {
+	if email := e.Record.Email(); email != "" {
+		lower := strings.ToLower(email)
+		if lower != email {
+			e.Record.SetEmail(lower)
+		}
+	}
+	return e.Next()
+}
+
+// ResolveAuthIdentity handles case-insensitive email lookup for password auth.
+// PocketBase's default lookup is exact-match (unless the email unique index
+// uses COLLATE NOCASE), so accounts registered with a different case
+// (e.g. "Foo@bar.com") could not be used to log in as "foo@bar.com".
+// If the default lookup did not find a record, fall back to a case-insensitive
+// search on the email field.
+func (um *UserManager) ResolveAuthIdentity(e *core.RecordAuthWithPasswordRequestEvent) error {
+	if e.Record == nil && e.Identity != "" && (e.IdentityField == "" || e.IdentityField == core.FieldNameEmail) {
+		record := &core.Record{}
+		err := e.App.RecordQuery(e.Collection).
+			AndWhere(dbx.NewExp("[[email]] = {:email} COLLATE NOCASE", dbx.Params{"email": e.Identity})).
+			Limit(1).
+			One(record)
+		if err == nil {
+			e.Record = record
+		}
 	}
 	return e.Next()
 }
