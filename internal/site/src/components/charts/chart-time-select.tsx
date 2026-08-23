@@ -37,7 +37,7 @@ export default memo(function ChartTimeSelect({
 	agentVersion: SemVer
 }) {
 	const chartTime = useStore($chartTime)
-	const [maxRetentionDays, setMaxRetentionDays] = useState<number>(Number.POSITIVE_INFINITY)
+	const [maxRetentionDays, setMaxRetentionDays] = useState(Number.POSITIVE_INFINITY)
 
 	useEffect(() => {
 		let mounted = true

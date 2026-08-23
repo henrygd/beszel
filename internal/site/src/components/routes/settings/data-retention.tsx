@@ -37,8 +37,8 @@ export default function DataRetentionSettings() {
 		return null
 	}
 
-	const [retention, setRetention] = useState<string>("30d")
-	const [hubSettingsId, setHubSettingsId] = useState<string>("hubsettings0001")
+	const [retention, setRetention] = useState("30d")
+	const [hubSettingsId, setHubSettingsId] = useState("hubsettings0001")
 	const [loading, setLoading] = useState(true)
 	const [saving, setSaving] = useState(false)
 
