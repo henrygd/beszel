@@ -98,10 +98,17 @@ export default memo(function ChartTimeSelect({
 
 	function applyCustom() {
 		if (!customFrom || !customTo) return
-		const from = new Date(customFrom)
+		let from = new Date(customFrom)
 		const to = new Date(customTo)
 		if (Number.isNaN(from.getTime()) || Number.isNaN(to.getTime()) || from >= to) return
 		if (to.getTime() > Date.now()) to.setTime(Date.now())
+		// clamp from to retention window (#3)
+		if (Number.isFinite(maxRetentionDays)) {
+			const retentionMs = maxRetentionDays * 24 * 60 * 60 * 1000
+			const earliest = Date.now() - retentionMs
+			if (from.getTime() < earliest) from = new Date(earliest)
+			if (from >= to) return
+		}
 		$customRange.set({ from: from.toISOString(), to: to.toISOString() })
 		$chartTime.set("custom")
 	}

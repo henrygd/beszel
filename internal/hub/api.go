@@ -375,20 +375,9 @@ func (h *Hub) getSystemdInfo(e *core.RequestEvent) error {
 
 // getRetention returns effective retention, DB value, and env override flag
 func (h *Hub) getRetention(e *core.RequestEvent) error {
-	effective := records.GetRetentionString(e.App)
-	dbVal := "30d"
-	if rec, err := e.App.FindRecordById("hub_settings", "hubsettings0001"); err == nil {
-		if v := rec.GetString("retention"); v != "" {
-			dbVal = v
-		}
-	} else if recs, err := e.App.FindRecordsByFilter("hub_settings", "", "created", 1, 0, nil); err == nil && len(recs) > 0 {
-		if v := recs[0].GetString("retention"); v != "" {
-			dbVal = v
-		}
-	}
 	return e.JSON(http.StatusOK, map[string]any{
-		"retention":   effective,
-		"dbRetention": dbVal,
+		"retention":   records.GetRetentionString(e.App),
+		"dbRetention": records.GetDbRetention(e.App),
 		"envOverride": records.IsEnvOverride(),
 	})
 }

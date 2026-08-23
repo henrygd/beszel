@@ -83,14 +83,15 @@ func init() {
 			if err != nil {
 				return err
 			}
-			// honor env var on fresh install (#1)
+			// honor env var on fresh install (#1) - single source, deduped valid set
 			defaultRetention := "30d"
+			validRetentions := map[string]bool{"30d": true, "60d": true, "90d": true, "180d": true, "365d": true, "730d": true, "1095d": true, "1825d": true, "never": true}
 			if v, ok := os.LookupEnv("BESZEL_HUB_RETENTION"); ok && v != "" {
-				if _, valid := map[string]bool{"30d": true, "60d": true, "90d": true, "180d": true, "365d": true, "730d": true, "1095d": true, "1825d": true, "never": true}[v]; valid {
+				if validRetentions[v] {
 					defaultRetention = v
 				}
 			} else if v, ok := os.LookupEnv("RETENTION"); ok && v != "" {
-				if _, valid := map[string]bool{"30d": true, "60d": true, "90d": true, "180d": true, "365d": true, "730d": true, "1095d": true, "1825d": true, "never": true}[v]; valid {
+				if validRetentions[v] {
 					defaultRetention = v
 				}
 			}

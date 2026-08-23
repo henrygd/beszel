@@ -22,6 +22,9 @@ var retentionDurations = map[string]time.Duration{
 	"never": 0,
 }
 
+// ValidRetentions is the canonical list of allowed retention values (single source of truth)
+var ValidRetentions = []string{"30d", "60d", "90d", "180d", "365d", "730d", "1095d", "1825d", "never"}
+
 // GetRetentionDuration returns the retention duration for 480m records
 // Priority: env var BESZEL_HUB_RETENTION > hub_settings DB > default 30d
 func GetRetentionDuration(app core.App) time.Duration {
@@ -79,6 +82,11 @@ func getRetentionFromDB(app core.App) string {
 	return val
 }
 
+// GetDbRetention returns the raw DB value without env override (for /api/beszel/retention)
+func GetDbRetention(app core.App) string {
+	return getRetentionFromDB(app)
+}
+
 // IsEnvOverride reports whether RETENTION env var is active
 func IsEnvOverride() bool {
 	val, ok := utils.GetEnv("RETENTION")
@@ -103,8 +111,8 @@ func EnsureHubSettingsExists(app core.App) error {
 		return err
 	}
 	if count > 1 {
-		// enforce singleton: keep first, delete extras (#4)
-		records, err := app.FindAllRecords("hub_settings")
+		// enforce singleton: keep oldest (created ASC), delete extras (#1)
+		records, err := app.FindRecordsByFilter("hub_settings", "", "created", 0, 0, nil)
 		if err == nil && len(records) > 1 {
 			for _, r := range records[1:] {
 				_ = app.Delete(r)
