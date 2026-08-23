@@ -131,6 +131,122 @@ func (dm *dockerManager) shouldExcludeContainer(name string) bool {
 	return false
 }
 
+// Get container's image local digest and repos from image name
+func (dm *dockerManager) getImageDescriptor(ctr *container.ApiInfo) {
+	resp, err := dm.client.Get("http://localhost/images/" + ctr.Image + "/json")
+	if err != nil {
+		return
+	}
+	defer resp.Body.Close()
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return
+	}
+
+	var f struct {
+		Descriptor struct {
+			Digest string `json:"digest"`
+		}
+		Identity struct {
+			Pull []struct {
+				Repository string
+			}
+		}
+	}
+	err = json.Unmarshal(body, &f)
+	if err != nil {
+		return
+	}
+
+	ctr.ImageDigest = f.Descriptor.Digest
+	for _, repo := range f.Identity.Pull {
+		ctr.ImageRepos = append(ctr.ImageRepos, repo.Repository)
+	}
+}
+
+// Get access token from dockerhub.io for this specific image
+func getDockerHubToken(name string) (string, error) {
+	url := "https://auth.docker.io/token?service=registry.docker.io&scope=repository:" + name + ":pull"
+
+	resp, err := http.Get(url)
+	if err != nil {
+
+		return "", err
+	}
+	defer resp.Body.Close()
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+
+		return "", err
+	}
+
+	var m struct {
+		Token string `json:"token"`
+	}
+	err = json.Unmarshal(body, &m)
+	if err != nil {
+
+		return "", err
+	}
+
+	return m.Token, nil
+}
+
+// Get current image digest from dockerhub.io
+func getDockerHubDigest(name string, tag string) string {
+	if !strings.Contains(name, "/") {
+		name = "library/" + name
+	}
+
+	url := "https://registry-1.docker.io/v2/" + name + "/manifests/" + tag
+
+	req, err := http.NewRequest(http.MethodHead, url, nil)
+	if err != nil {
+
+		return ""
+	}
+
+	token, err := getDockerHubToken(name)
+	if err == nil {
+		req.Header.Add("Authorization", "Bearer "+token)
+	}
+
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+
+		return ""
+	}
+	defer resp.Body.Close()
+
+	return resp.Header.Get("docker-content-digest")
+}
+
+// Check docker registry if an update is available
+func (dm *dockerManager) checkImageUpdate(ctr *container.ApiInfo) bool {
+	dm.getImageDescriptor(ctr)
+
+	// split image <name>:<tag>
+	tmp := strings.SplitN(ctr.Image, ":", 2)
+	name := tmp[0]
+	tag := "latest" // default to latest if not specified
+	if len(tmp) > 1 {
+		tag = tmp[1]
+	}
+
+	// check all repos
+	repoDigest := ctr.ImageDigest
+	for _, repo := range ctr.ImageRepos {
+		if strings.Contains(repo, "docker.io") {
+			repoDigest = getDockerHubDigest(name, tag)
+			break
+		}
+	}
+	ctr.UpdateAvailable = strings.Compare(repoDigest, ctr.ImageDigest) != 0
+	return ctr.UpdateAvailable
+}
+
 // Returns stats for all running containers with cache-time-aware delta tracking
 func (dm *dockerManager) getDockerStats(cacheTimeMs uint16) ([]*container.Stats, error) {
 	resp, err := dm.client.Get("http://localhost/containers/json")
@@ -537,6 +653,9 @@ func (dm *dockerManager) updateContainerStats(ctr *container.ApiInfo, cacheTimeM
 	if err := dm.decode(resp, res); err != nil {
 		return err
 	}
+
+	// Check if image update is available
+	stats.UpdateAvailable = dm.checkImageUpdate(ctr)
 
 	// Initialize CPU tracking for this cache time interval
 	dm.initializeCpuTracking(cacheTimeMs)
