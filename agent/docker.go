@@ -245,6 +245,7 @@ func (dm *dockerManager) checkImageUpdate(ctr *container.ApiInfo) bool {
 
 	// get registry digest
 	repoDigest, err := getRegistryDigest(registry, repository, tag)
+	// repoDigest, err := crane.Digest(ctr.Image) // the 3 functions above are implemented by the `crane` library by Google
 	if repoDigest == "" || err != nil {
 		return false
 	}
