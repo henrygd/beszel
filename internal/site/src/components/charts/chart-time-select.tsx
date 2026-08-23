@@ -47,16 +47,15 @@ export default memo(function ChartTimeSelect({
 
 	useEffect(() => {
 		let mounted = true
-		pb.collection("hub_settings")
-			.getFirstListItem("", { fields: "retention" })
-			.then((rec) => {
+		pb.send<{ retention: string }>("/api/beszel/retention", {})
+			.then((res) => {
 				if (!mounted) return
-				const r = (rec as unknown as { retention: string }).retention
-				setMaxRetentionDays(retentionDaysMap[r] ?? 30)
+				setMaxRetentionDays(retentionDaysMap[res.retention] ?? 30)
 			})
 			.catch(() => {
+				// fallback for older hub without endpoint: read collection directly
 				pb.collection("hub_settings")
-					.getOne("hubsettings0001", { fields: "retention" })
+					.getFirstListItem("", { fields: "retention" })
 					.then((rec) => {
 						if (!mounted) return
 						const r = (rec as unknown as { retention: string }).retention
@@ -67,8 +66,8 @@ export default memo(function ChartTimeSelect({
 					})
 			})
 		return () => {
-			mounted = false
-		}
+				mounted = false
+			}
 	}, [])
 
 	// remove chart times that are not supported by the system agent version or beyond retention
@@ -133,20 +132,33 @@ export default memo(function ChartTimeSelect({
 						<Label htmlFor="custom-from" className="text-xs">
 							From
 						</Label>
-						<Input id="custom-from" type="datetime-local" value={customFrom} onChange={(e) => setCustomFrom(e.target.value)} className="h-8 w-44" />
+						<Input
+							id="custom-from"
+							type="datetime-local"
+							value={customFrom}
+							onChange={(e) => setCustomFrom(e.target.value)}
+							className="h-8 w-44"
+						/>
 					</div>
 					<div className="grid gap-1">
 						<Label htmlFor="custom-to" className="text-xs">
 							To
 						</Label>
-						<Input id="custom-to" type="datetime-local" value={customTo} onChange={(e) => setCustomTo(e.target.value)} className="h-8 w-44" />
+						<Input
+							id="custom-to"
+							type="datetime-local"
+							value={customTo}
+							onChange={(e) => setCustomTo(e.target.value)}
+							className="h-8 w-44"
+						/>
 					</div>
 					<Button type="button" size="sm" onClick={applyCustom} className="h-8">
 						Apply
 					</Button>
 					{customRange && chartTime === "custom" && (
 						<span className="text-xs text-muted-foreground">
-							{getChartTypeForDuration(new Date(customRange.to).getTime() - new Date(customRange.from).getTime())} • {customRange.from.slice(0, 10)} → {customRange.to.slice(0, 10)}
+							{getChartTypeForDuration(new Date(customRange.to).getTime() - new Date(customRange.from).getTime())} •{" "}
+							{customRange.from.slice(0, 10)} → {customRange.to.slice(0, 10)}
 						</span>
 					)}
 				</div>

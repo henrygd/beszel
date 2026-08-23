@@ -20,6 +20,7 @@ import (
 	"github.com/henrygd/beszel/internal/users"
 
 	"github.com/pocketbase/pocketbase"
+	"github.com/pocketbase/pocketbase/apis"
 	"github.com/pocketbase/pocketbase/core"
 	"golang.org/x/crypto/ssh"
 )
@@ -108,6 +109,19 @@ func (h *Hub) StartHub() error {
 	// handle default values for user / user_settings creation
 	h.App.OnRecordCreate("users").BindFunc(h.um.InitializeUserRole)
 	h.App.OnRecordCreate("user_settings").BindFunc(h.um.InitializeUserSettings)
+	// reject hub_settings writes when env override is active (#5)
+	h.App.OnRecordUpdate("hub_settings").BindFunc(func(e *core.RecordEvent) error {
+		if records.IsEnvOverride() {
+			return apis.NewBadRequestError("retention is overridden by BESZEL_HUB_RETENTION env var", nil)
+		}
+		return e.Next()
+	})
+	h.App.OnRecordCreate("hub_settings").BindFunc(func(e *core.RecordEvent) error {
+		if records.IsEnvOverride() {
+			return apis.NewBadRequestError("retention is overridden by BESZEL_HUB_RETENTION env var", nil)
+		}
+		return e.Next()
+	})
 
 	pb, ok := h.App.(*pocketbase.PocketBase)
 	if !ok {

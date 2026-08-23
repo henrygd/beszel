@@ -12,13 +12,15 @@ import (
 
 // Delete old records
 func (rm *RecordManager) DeleteOldRecords() {
+	// system_stats/container_stats use batched deletes outside the main transaction
+	// to avoid holding the SQLite writer lock for minutes when retention is reduced (#1).
+	// Each batch is autocommit and releases the lock between batches.
+	if err := deleteOldSystemStats(rm.app); err != nil {
+		slog.Error("Error deleting old system stats", "err", err)
+	}
 	// Pocketbase cron does not handle errors, log them here.
 	rm.app.RunInTransaction(func(txApp core.App) error {
-		err := deleteOldSystemStats(txApp)
-		if err != nil {
-			slog.Error("Error deleting old system stats", "err", err)
-		}
-		err = deleteOldContainerRecords(txApp)
+		err := deleteOldContainerRecords(txApp)
 		if err != nil {
 			slog.Error("Error deleting old container records", "err", err)
 		}

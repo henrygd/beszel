@@ -17,8 +17,8 @@ func TestHubSettingsRules(t *testing.T) {
 
 	col, err := hub.FindCollectionByNameOrId("hub_settings")
 	require.NoError(t, err)
-	assert.Equal(t, "@request.auth.id != \"\"", *col.ListRule)
-	assert.Equal(t, "@request.auth.id != \"\"", *col.ViewRule)
+	assert.Equal(t, "@request.auth.role = 'admin'", *col.ListRule)
+	assert.Equal(t, "@request.auth.role = 'admin'", *col.ViewRule)
 	assert.Equal(t, "@request.auth.role = 'admin'", *col.CreateRule)
 	assert.Equal(t, "@request.auth.role = 'admin'", *col.UpdateRule)
 	assert.Equal(t, "@request.auth.role = 'admin'", *col.DeleteRule)
