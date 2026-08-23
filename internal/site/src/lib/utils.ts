@@ -214,22 +214,6 @@ export const chartTimeData: ChartTimeData = {
 		format: (timestamp: string) => formatDay(timestamp),
 		getOffset: (endTime: Date) => timeDay.offset(endTime, -730),
 	},
-	"1095d": {
-		type: "480m",
-		expectedInterval: 60_000 * 480,
-		label: () => t`3 years`,
-		ticks: 12,
-		format: (timestamp: string) => formatDay(timestamp),
-		getOffset: (endTime: Date) => timeDay.offset(endTime, -1095),
-	},
-	"1825d": {
-		type: "480m",
-		expectedInterval: 60_000 * 480,
-		label: () => t`5 years`,
-		ticks: 10,
-		format: (timestamp: string) => formatDay(timestamp),
-		getOffset: (endTime: Date) => timeDay.offset(endTime, -1825),
-	},
 }
 
 /** Format number to x decimal places, without trailing zeros */
@@ -257,7 +241,12 @@ export function decimalString(num: number, digits = 2) {
 /** Get value from local or session storage */
 function getStorageValue(key: string, defaultValue: unknown, storageInterface: Storage = localStorage) {
 	const saved = storageInterface?.getItem(key)
-	return saved ? JSON.parse(saved) : defaultValue
+	if (!saved) return defaultValue
+	try {
+		return JSON.parse(saved)
+	} catch {
+		return defaultValue
+	}
 }
 
 /** Hook to sync value in local or session storage */

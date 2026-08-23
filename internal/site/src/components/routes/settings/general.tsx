@@ -26,8 +26,6 @@ const retentionOptions = [
 	{ value: "180d", label: "180 days (6 months)" },
 	{ value: "365d", label: "365 days (1 year)" },
 	{ value: "730d", label: "730 days (2 years)" },
-	{ value: "1095d", label: "1095 days (3 years)" },
-	{ value: "1825d", label: "1825 days (5 years)" },
 	{ value: "never", label: "Never delete" },
 ] as const
 
@@ -50,16 +48,16 @@ export default function SettingsProfilePage({ userSettings }: { userSettings: Us
 		}
 		pb.collection("hub_settings")
 			.getFirstListItem("", { fields: "id,retention" })
-			.then((rec: { id: string; retention: string }) => {
-				setRetention(rec.retention)
+			.then((rec) => {
+				setRetention((rec as unknown as { retention: string }).retention)
 				setHubSettingsId(rec.id)
 			})
 			.catch(() => {
 				// fallback try direct id
 				pb.collection("hub_settings")
 					.getOne("hubsettings00001", { fields: "id,retention" })
-					.then((rec: { id: string; retention: string }) => {
-						setRetention(rec.retention)
+					.then((rec) => {
+						setRetention((rec as unknown as { retention: string }).retention)
 						setHubSettingsId(rec.id)
 					})
 					.catch(() => {})

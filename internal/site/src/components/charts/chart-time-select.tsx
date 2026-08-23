@@ -3,8 +3,27 @@ import { HistoryIcon } from "lucide-react"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { $chartTime } from "@/lib/stores"
 import { chartTimeData, cn, compareSemVer, parseSemVer } from "@/lib/utils"
+import { pb } from "@/lib/api"
 import type { ChartTimes, SemVer } from "@/types"
-import { memo } from "react"
+import { memo, useEffect, useState } from "react"
+
+const retentionDaysMap: Record<string, number> = {
+	"30d": 30,
+	"60d": 60,
+	"90d": 90,
+	"180d": 180,
+	"365d": 365,
+	"730d": 730,
+	never: Number.POSITIVE_INFINITY,
+}
+const chartDaysMap: Record<string, number> = {
+	"30d": 30,
+	"60d": 60,
+	"90d": 90,
+	"180d": 180,
+	"365d": 365,
+	"730d": 730,
+}
 
 export default memo(function ChartTimeSelect({
 	className,
@@ -14,13 +33,42 @@ export default memo(function ChartTimeSelect({
 	agentVersion: SemVer
 }) {
 	const chartTime = useStore($chartTime)
+	const [maxRetentionDays, setMaxRetentionDays] = useState<number>(Number.POSITIVE_INFINITY)
 
-	// remove chart times that are not supported by the system agent version
-	const availableChartTimes = Object.entries(chartTimeData).filter(([_, { minVersion }]) => {
-		if (!minVersion) {
-			return true
+	useEffect(() => {
+		let mounted = true
+		pb.collection("hub_settings")
+			.getFirstListItem("", { fields: "retention" })
+			.then((rec) => {
+				if (!mounted) return
+				const r = (rec as unknown as { retention: string }).retention
+				setMaxRetentionDays(retentionDaysMap[r] ?? 30)
+			})
+			.catch(() => {
+				pb.collection("hub_settings")
+					.getOne("hubsettings0001", { fields: "retention" })
+					.then((rec) => {
+						if (!mounted) return
+						const r = (rec as unknown as { retention: string }).retention
+						setMaxRetentionDays(retentionDaysMap[r] ?? 30)
+					})
+					.catch(() => {
+						if (mounted) setMaxRetentionDays(30)
+					})
+			})
+		return () => {
+				mounted = false
+			}
+	}, [])
+
+	// remove chart times that are not supported by the system agent version or beyond retention
+	const availableChartTimes = Object.entries(chartTimeData).filter(([key, { minVersion }]) => {
+		if (minVersion) {
+			if (compareSemVer(agentVersion, parseSemVer(minVersion)) < 0) return false
 		}
-		return compareSemVer(agentVersion, parseSemVer(minVersion)) >= 0
+		const days = chartDaysMap[key]
+		if (days !== undefined && days > maxRetentionDays) return false
+		return true
 	})
 
 	return (
