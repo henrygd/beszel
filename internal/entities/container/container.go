@@ -199,6 +199,4 @@ type Stats struct {
 	CpuContainer uint64       `json:"-"`
 	PrevNet      prevNetStats `json:"-"`
 	PrevReadTime time.Time    `json:"-"`
-
-	UpdateAvailable bool `json:"-"`
 }
