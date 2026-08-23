@@ -1,6 +1,6 @@
 import { atom, computed, listenKeys, map, type ReadableAtom } from "nanostores"
 import type { AlertMap, ChartTimes, SystemRecord, UpdateInfo, UserSettings } from "@/types"
-import { pb } from "./api"
+import { pb } from "./pb"
 import { Unit } from "./enums"
 
 /** Default layout width. Used as fallback when user setting is unset. */

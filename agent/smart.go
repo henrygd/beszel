@@ -348,6 +348,20 @@ func hasJSONValue(raw json.RawMessage) bool {
 	return trimmed != "" && trimmed != "null"
 }
 
+// smartStatusReported reports whether the smartctl output contains a usable
+// smart_status section. Its absence means only IDENTIFY data was returned —
+// for example when NVMe log page reads fail — so the health-derived values
+// parsed from this output are not trustworthy.
+func smartStatusReported(output []byte) bool {
+	var probe struct {
+		SmartStatus json.RawMessage `json:"smart_status"`
+	}
+	if err := json.Unmarshal(output, &probe); err != nil {
+		return false
+	}
+	return hasJSONValue(probe.SmartStatus)
+}
+
 func normalizeParserType(value string) string {
 	switch strings.ToLower(strings.TrimSpace(value)) {
 	case "nvme", "sntasmedia", "sntrealtek":
@@ -891,6 +905,8 @@ func (sm *SmartManager) parseSmartForSata(output []byte, deviceType string) (boo
 		return false, data.Smartctl.ExitStatus
 	}
 
+	healthKnown := smartStatusReported(output)
+
 	sm.Lock()
 	defer sm.Unlock()
 
@@ -908,40 +924,48 @@ func (sm *SmartManager) parseSmartForSata(output []byte, deviceType string) (boo
 	smartData.SerialNumber = data.SerialNumber
 	smartData.FirmwareVersion = data.FirmwareVersion
 	smartData.Capacity = data.UserCapacity.Bytes
-	smartData.Temperature = data.Temperature.Current
-	smartData.SmartStatus = getSmartStatus(smartData.Temperature, data.SmartStatus.Passed)
 	smartData.DiskName = data.Device.Name
 	smartData.DiskType = data.Device.Type
 	if deviceType != "" {
 		smartData.DiskType = deviceType
 	}
 
-	// get values from ata_device_statistics if necessary
-	var ataDeviceStats smart.AtaDeviceStatistics
-	if smartData.Temperature == 0 {
-		if temp := findAtaDeviceStatisticsValue(&data, &ataDeviceStats, 5, "Current Temperature", 0, 255); temp != nil {
-			smartData.Temperature = uint8(*temp)
+	// Identify-only output (log page reads failed) must not degrade previously
+	// collected health data to UNKNOWN values. Fresh entries are still stored
+	// so the device remains visible. Attributes are only replaced when the
+	// health sections were actually read.
+	if healthKnown || smartData.SmartStatus == "" {
+		smartData.Temperature = data.Temperature.Current
+		smartData.SmartStatus = getSmartStatus(smartData.Temperature, data.SmartStatus.Passed)
+
+		// get values from ata_device_statistics if necessary
+		var ataDeviceStats smart.AtaDeviceStatistics
+		if smartData.Temperature == 0 {
+			if temp := findAtaDeviceStatisticsValue(&data, &ataDeviceStats, 5, "Current Temperature", 0, 255); temp != nil {
+				smartData.Temperature = uint8(*temp)
+			}
 		}
 	}
-
-	// update SmartAttributes
-	smartData.Attributes = make([]*smart.SmartAttribute, 0, len(data.AtaSmartAttributes.Table))
-	for _, attr := range data.AtaSmartAttributes.Table {
-		rawValue := uint64(attr.Raw.Value)
-		if parsed, ok := smart.ParseSmartRawValueString(attr.Raw.String); ok {
-			rawValue = parsed
+	if healthKnown {
+		// update SmartAttributes
+		smartData.Attributes = make([]*smart.SmartAttribute, 0, len(data.AtaSmartAttributes.Table))
+		for _, attr := range data.AtaSmartAttributes.Table {
+			rawValue := uint64(attr.Raw.Value)
+			if parsed, ok := smart.ParseSmartRawValueString(attr.Raw.String); ok {
+				rawValue = parsed
+			}
+			smartAttr := &smart.SmartAttribute{
+				ID:         attr.ID,
+				Name:       attr.Name,
+				Value:      attr.Value,
+				Worst:      attr.Worst,
+				Threshold:  attr.Thresh,
+				RawValue:   rawValue,
+				RawString:  attr.Raw.String,
+				WhenFailed: attr.WhenFailed,
+			}
+			smartData.Attributes = append(smartData.Attributes, smartAttr)
 		}
-		smartAttr := &smart.SmartAttribute{
-			ID:         attr.ID,
-			Name:       attr.Name,
-			Value:      attr.Value,
-			Worst:      attr.Worst,
-			Threshold:  attr.Thresh,
-			RawValue:   rawValue,
-			RawString:  attr.Raw.String,
-			WhenFailed: attr.WhenFailed,
-		}
-		smartData.Attributes = append(smartData.Attributes, smartAttr)
 	}
 	sm.SmartDataMap[keyName] = smartData
 
@@ -1006,6 +1030,8 @@ func (sm *SmartManager) parseSmartForScsi(output []byte, deviceType string) (boo
 		return false, data.Smartctl.ExitStatus
 	}
 
+	healthKnown := smartStatusReported(output)
+
 	sm.Lock()
 	defer sm.Unlock()
 
@@ -1019,47 +1045,55 @@ func (sm *SmartManager) parseSmartForScsi(output []byte, deviceType string) (boo
 	smartData.SerialNumber = data.SerialNumber
 	smartData.FirmwareVersion = data.ScsiRevision
 	smartData.Capacity = data.UserCapacity.Bytes
-	smartData.Temperature = data.Temperature.Current
-	smartData.SmartStatus = getSmartStatus(smartData.Temperature, data.SmartStatus.Passed)
 	smartData.DiskName = data.Device.Name
 	smartData.DiskType = data.Device.Type
 	if deviceType != "" {
 		smartData.DiskType = deviceType
 	}
 
-	attributes := make([]*smart.SmartAttribute, 0, 10)
-	attributes = append(attributes, &smart.SmartAttribute{Name: "PowerOnHours", RawValue: data.PowerOnTime.Hours})
-	attributes = append(attributes, &smart.SmartAttribute{Name: "PowerOnMinutes", RawValue: data.PowerOnTime.Minutes})
-	attributes = append(attributes, &smart.SmartAttribute{Name: "GrownDefectList", RawValue: data.ScsiGrownDefectList})
-	attributes = append(attributes, &smart.SmartAttribute{Name: "StartStopCycles", RawValue: data.ScsiStartStopCycleCounter.AccumulatedStartStopCycles})
-	attributes = append(attributes, &smart.SmartAttribute{Name: "LoadUnloadCycles", RawValue: data.ScsiStartStopCycleCounter.AccumulatedLoadUnloadCycles})
-	attributes = append(attributes, &smart.SmartAttribute{Name: "StartStopSpecified", RawValue: data.ScsiStartStopCycleCounter.SpecifiedCycleCountOverDeviceLifetime})
-	attributes = append(attributes, &smart.SmartAttribute{Name: "LoadUnloadSpecified", RawValue: data.ScsiStartStopCycleCounter.SpecifiedLoadUnloadCountOverDeviceLifetime})
-
-	readStats := data.ScsiErrorCounterLog.Read
-	writeStats := data.ScsiErrorCounterLog.Write
-	verifyStats := data.ScsiErrorCounterLog.Verify
-
-	attributes = append(attributes, &smart.SmartAttribute{Name: "ReadTotalErrorsCorrected", RawValue: readStats.TotalErrorsCorrected})
-	attributes = append(attributes, &smart.SmartAttribute{Name: "ReadTotalUncorrectedErrors", RawValue: readStats.TotalUncorrectedErrors})
-	attributes = append(attributes, &smart.SmartAttribute{Name: "ReadCorrectionAlgorithmInvocations", RawValue: readStats.CorrectionAlgorithmInvocations})
-	if val := parseScsiGigabytesProcessed(readStats.GigabytesProcessed); val >= 0 {
-		attributes = append(attributes, &smart.SmartAttribute{Name: "ReadGigabytesProcessed", RawValue: uint64(val)})
+	// Identify-only output (log page reads failed) must not degrade previously
+	// collected health data to UNKNOWN values. Fresh entries are still stored
+	// so the device remains visible. Attributes are only replaced when the
+	// health sections were actually read.
+	if healthKnown || smartData.SmartStatus == "" {
+		smartData.Temperature = data.Temperature.Current
+		smartData.SmartStatus = getSmartStatus(smartData.Temperature, data.SmartStatus.Passed)
 	}
-	attributes = append(attributes, &smart.SmartAttribute{Name: "WriteTotalErrorsCorrected", RawValue: writeStats.TotalErrorsCorrected})
-	attributes = append(attributes, &smart.SmartAttribute{Name: "WriteTotalUncorrectedErrors", RawValue: writeStats.TotalUncorrectedErrors})
-	attributes = append(attributes, &smart.SmartAttribute{Name: "WriteCorrectionAlgorithmInvocations", RawValue: writeStats.CorrectionAlgorithmInvocations})
-	if val := parseScsiGigabytesProcessed(writeStats.GigabytesProcessed); val >= 0 {
-		attributes = append(attributes, &smart.SmartAttribute{Name: "WriteGigabytesProcessed", RawValue: uint64(val)})
-	}
-	attributes = append(attributes, &smart.SmartAttribute{Name: "VerifyTotalErrorsCorrected", RawValue: verifyStats.TotalErrorsCorrected})
-	attributes = append(attributes, &smart.SmartAttribute{Name: "VerifyTotalUncorrectedErrors", RawValue: verifyStats.TotalUncorrectedErrors})
-	attributes = append(attributes, &smart.SmartAttribute{Name: "VerifyCorrectionAlgorithmInvocations", RawValue: verifyStats.CorrectionAlgorithmInvocations})
-	if val := parseScsiGigabytesProcessed(verifyStats.GigabytesProcessed); val >= 0 {
-		attributes = append(attributes, &smart.SmartAttribute{Name: "VerifyGigabytesProcessed", RawValue: uint64(val)})
-	}
+	if healthKnown {
+		attributes := make([]*smart.SmartAttribute, 0, 10)
+		attributes = append(attributes, &smart.SmartAttribute{Name: "PowerOnHours", RawValue: data.PowerOnTime.Hours})
+		attributes = append(attributes, &smart.SmartAttribute{Name: "PowerOnMinutes", RawValue: data.PowerOnTime.Minutes})
+		attributes = append(attributes, &smart.SmartAttribute{Name: "GrownDefectList", RawValue: data.ScsiGrownDefectList})
+		attributes = append(attributes, &smart.SmartAttribute{Name: "StartStopCycles", RawValue: data.ScsiStartStopCycleCounter.AccumulatedStartStopCycles})
+		attributes = append(attributes, &smart.SmartAttribute{Name: "LoadUnloadCycles", RawValue: data.ScsiStartStopCycleCounter.AccumulatedLoadUnloadCycles})
+		attributes = append(attributes, &smart.SmartAttribute{Name: "StartStopSpecified", RawValue: data.ScsiStartStopCycleCounter.SpecifiedCycleCountOverDeviceLifetime})
+		attributes = append(attributes, &smart.SmartAttribute{Name: "LoadUnloadSpecified", RawValue: data.ScsiStartStopCycleCounter.SpecifiedLoadUnloadCountOverDeviceLifetime})
 
-	smartData.Attributes = attributes
+		readStats := data.ScsiErrorCounterLog.Read
+		writeStats := data.ScsiErrorCounterLog.Write
+		verifyStats := data.ScsiErrorCounterLog.Verify
+
+		attributes = append(attributes, &smart.SmartAttribute{Name: "ReadTotalErrorsCorrected", RawValue: readStats.TotalErrorsCorrected})
+		attributes = append(attributes, &smart.SmartAttribute{Name: "ReadTotalUncorrectedErrors", RawValue: readStats.TotalUncorrectedErrors})
+		attributes = append(attributes, &smart.SmartAttribute{Name: "ReadCorrectionAlgorithmInvocations", RawValue: readStats.CorrectionAlgorithmInvocations})
+		if val := parseScsiGigabytesProcessed(readStats.GigabytesProcessed); val >= 0 {
+			attributes = append(attributes, &smart.SmartAttribute{Name: "ReadGigabytesProcessed", RawValue: uint64(val)})
+		}
+		attributes = append(attributes, &smart.SmartAttribute{Name: "WriteTotalErrorsCorrected", RawValue: writeStats.TotalErrorsCorrected})
+		attributes = append(attributes, &smart.SmartAttribute{Name: "WriteTotalUncorrectedErrors", RawValue: writeStats.TotalUncorrectedErrors})
+		attributes = append(attributes, &smart.SmartAttribute{Name: "WriteCorrectionAlgorithmInvocations", RawValue: writeStats.CorrectionAlgorithmInvocations})
+		if val := parseScsiGigabytesProcessed(writeStats.GigabytesProcessed); val >= 0 {
+			attributes = append(attributes, &smart.SmartAttribute{Name: "WriteGigabytesProcessed", RawValue: uint64(val)})
+		}
+		attributes = append(attributes, &smart.SmartAttribute{Name: "VerifyTotalErrorsCorrected", RawValue: verifyStats.TotalErrorsCorrected})
+		attributes = append(attributes, &smart.SmartAttribute{Name: "VerifyTotalUncorrectedErrors", RawValue: verifyStats.TotalUncorrectedErrors})
+		attributes = append(attributes, &smart.SmartAttribute{Name: "VerifyCorrectionAlgorithmInvocations", RawValue: verifyStats.CorrectionAlgorithmInvocations})
+		if val := parseScsiGigabytesProcessed(verifyStats.GigabytesProcessed); val >= 0 {
+			attributes = append(attributes, &smart.SmartAttribute{Name: "VerifyGigabytesProcessed", RawValue: uint64(val)})
+		}
+
+		smartData.Attributes = attributes
+	}
 	sm.SmartDataMap[keyName] = smartData
 
 	return true, data.Smartctl.ExitStatus
@@ -1145,6 +1179,8 @@ func (sm *SmartManager) parseSmartForNvme(output []byte, deviceType string) (boo
 		return false, data.Smartctl.ExitStatus
 	}
 
+	healthKnown := smartStatusReported(output)
+
 	sm.Lock()
 	defer sm.Unlock()
 
@@ -1167,35 +1203,43 @@ func (sm *SmartManager) parseSmartForNvme(output []byte, deviceType string) (boo
 	if smartData.Capacity == 0 && (runtime.GOOS == "darwin" || sm.darwinNvmeProvider != nil) {
 		smartData.Capacity = sm.lookupDarwinNvmeCapacity(data.SerialNumber)
 	}
-	smartData.Temperature = data.NVMeSmartHealthInformationLog.Temperature
-	smartData.SmartStatus = getSmartStatus(smartData.Temperature, data.SmartStatus.Passed)
 	smartData.DiskName = data.Device.Name
 	smartData.DiskType = data.Device.Type
 	if deviceType != "" {
 		smartData.DiskType = deviceType
 	}
 
-	// nvme attributes does not follow the same format as ata attributes,
-	// so we manually map each field to SmartAttributes
-	log := data.NVMeSmartHealthInformationLog
-	smartData.Attributes = []*smart.SmartAttribute{
-		{Name: "CriticalWarning", RawValue: uint64(log.CriticalWarning)},
-		{Name: "Temperature", RawValue: uint64(log.Temperature)},
-		{Name: "AvailableSpare", RawValue: uint64(log.AvailableSpare)},
-		{Name: "AvailableSpareThreshold", RawValue: uint64(log.AvailableSpareThreshold)},
-		{Name: "PercentageUsed", RawValue: uint64(log.PercentageUsed)},
-		{Name: "DataUnitsRead", RawValue: log.DataUnitsRead},
-		{Name: "DataUnitsWritten", RawValue: log.DataUnitsWritten},
-		{Name: "HostReads", RawValue: uint64(log.HostReads)},
-		{Name: "HostWrites", RawValue: uint64(log.HostWrites)},
-		{Name: "ControllerBusyTime", RawValue: uint64(log.ControllerBusyTime)},
-		{Name: "PowerCycles", RawValue: uint64(log.PowerCycles)},
-		{Name: "PowerOnHours", RawValue: uint64(log.PowerOnHours)},
-		{Name: "UnsafeShutdowns", RawValue: uint64(log.UnsafeShutdowns)},
-		{Name: "MediaErrors", RawValue: uint64(log.MediaErrors)},
-		{Name: "NumErrLogEntries", RawValue: uint64(log.NumErrLogEntries)},
-		{Name: "WarningTempTime", RawValue: uint64(log.WarningTempTime)},
-		{Name: "CriticalCompTime", RawValue: uint64(log.CriticalCompTime)},
+	// Identify-only output (log page reads failed) must not degrade previously
+	// collected health data to UNKNOWN values. Fresh entries are still stored
+	// so the device remains visible. Attributes are only replaced when the
+	// health sections were actually read.
+	if healthKnown || smartData.SmartStatus == "" {
+		smartData.Temperature = data.NVMeSmartHealthInformationLog.Temperature
+		smartData.SmartStatus = getSmartStatus(smartData.Temperature, data.SmartStatus.Passed)
+	}
+	if healthKnown {
+		// nvme attributes does not follow the same format as ata attributes,
+		// so we manually map each field to SmartAttributes
+		log := data.NVMeSmartHealthInformationLog
+		smartData.Attributes = []*smart.SmartAttribute{
+			{Name: "CriticalWarning", RawValue: uint64(log.CriticalWarning)},
+			{Name: "Temperature", RawValue: uint64(log.Temperature)},
+			{Name: "AvailableSpare", RawValue: uint64(log.AvailableSpare)},
+			{Name: "AvailableSpareThreshold", RawValue: uint64(log.AvailableSpareThreshold)},
+			{Name: "PercentageUsed", RawValue: uint64(log.PercentageUsed)},
+			{Name: "DataUnitsRead", RawValue: log.DataUnitsRead},
+			{Name: "DataUnitsWritten", RawValue: log.DataUnitsWritten},
+			{Name: "HostReads", RawValue: uint64(log.HostReads)},
+			{Name: "HostWrites", RawValue: uint64(log.HostWrites)},
+			{Name: "ControllerBusyTime", RawValue: uint64(log.ControllerBusyTime)},
+			{Name: "PowerCycles", RawValue: uint64(log.PowerCycles)},
+			{Name: "PowerOnHours", RawValue: uint64(log.PowerOnHours)},
+			{Name: "UnsafeShutdowns", RawValue: uint64(log.UnsafeShutdowns)},
+			{Name: "MediaErrors", RawValue: uint64(log.MediaErrors)},
+			{Name: "NumErrLogEntries", RawValue: uint64(log.NumErrLogEntries)},
+			{Name: "WarningTempTime", RawValue: uint64(log.WarningTempTime)},
+			{Name: "CriticalCompTime", RawValue: uint64(log.CriticalCompTime)},
+		}
 	}
 
 	sm.SmartDataMap[keyName] = smartData

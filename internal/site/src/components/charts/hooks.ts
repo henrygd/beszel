@@ -99,7 +99,7 @@ export function useYAxisWidth() {
 			clearTimeout(timeout)
 			timeout = setTimeout(() => {
 				document.body.appendChild(div)
-				const width = div.offsetWidth + 20 
+				const width = div.offsetWidth + 20
 				if (width > yAxisWidth) {
 					setYAxisWidth(width)
 				}

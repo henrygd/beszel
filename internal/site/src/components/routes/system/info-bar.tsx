@@ -24,7 +24,6 @@ import {
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { FreeBsdIcon, TuxIcon, WebSocketIcon, WindowsIcon } from "@/components/ui/icons"
-import { Separator } from "@/components/ui/separator"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 import { ConnectionType, connectionTypeLabels, Os, SystemStatus } from "@/lib/enums"
 import { cn, formatBytes, getHostDisplayValue, secondsToUptimeString, toFixedFloat } from "@/lib/utils"
@@ -133,35 +132,31 @@ export default function InfoBar({
 		translatedStatus = t({ message: "Down", comment: "Context: System is down" })
 	}
 
+	const statusLedClass = {
+		[SystemStatus.Up]: "led-up led-live",
+		[SystemStatus.Down]: "led-down led-live",
+		[SystemStatus.Pending]: "led-pending",
+		[SystemStatus.Paused]: "led-paused",
+	}[system.status]
+
+	const statusAccentClass = {
+		[SystemStatus.Up]: "bg-success",
+		[SystemStatus.Down]: "bg-destructive",
+		[SystemStatus.Pending]: "bg-warning",
+		[SystemStatus.Paused]: "bg-muted-foreground/40",
+	}[system.status]
+
 	return (
-		<Card className="overflow-hidden border-primary/15 bg-card/90 shadow-sm">
-			<div className="grid xl:flex xl:gap-4 px-4 sm:px-6 pt-4 sm:pt-5 pb-5">
+		<Card className="relative overflow-hidden">
+			<div aria-hidden="true" className={cn("absolute inset-x-0 top-0 h-[3px]", statusAccentClass)} />
+			<div className="grid px-4 pt-5 pb-5 sm:px-6 xl:flex xl:gap-4">
 				<div className="min-w-0">
-					<div className="mb-1 flex items-center gap-2 font-mono text-[0.65rem] font-semibold uppercase tracking-[0.18em] text-primary/80">
-						<span className="size-1.5 rounded-full bg-primary" />
-						<Trans>Live host snapshot</Trans>
-					</div>
-					<h1 className="text-2xl sm:text-[1.6rem] font-semibold mb-1.5">{system.name}</h1>
-					<div className="flex xl:flex-wrap items-center py-3 xl:p-0 -mt-2 xl:mt-1 gap-3 text-sm text-nowrap opacity-90 overflow-x-auto scrollbar-hide -mx-4 px-4 xl:mx-0">
+					<h1 className="truncate text-2xl font-semibold tracking-tight sm:text-[1.65rem]">{system.name}</h1>
+					<div className="mt-3 flex flex-wrap items-center gap-2">
 						<Tooltip>
 							<TooltipTrigger asChild>
-								<div className="capitalize flex gap-2 items-center">
-									<span className={cn("relative flex h-3 w-3")}>
-										{system.status === SystemStatus.Up && (
-											<span
-												className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"
-												style={{ animationDuration: "1.5s" }}
-											></span>
-										)}
-										<span
-											className={cn("relative inline-flex rounded-full h-3 w-3", {
-												"bg-green-500": system.status === SystemStatus.Up,
-												"bg-red-500": system.status === SystemStatus.Down,
-												"bg-primary/40": system.status === SystemStatus.Paused,
-												"bg-yellow-500": system.status === SystemStatus.Pending,
-											})}
-										></span>
-									</span>
+								<div className="flex items-center gap-2 rounded-md border bg-muted/40 px-2.5 py-1.5 text-xs font-medium capitalize">
+									<span className={cn("led size-2", statusLedClass)} aria-hidden="true" />
 									{translatedStatus}
 								</div>
 							</TooltipTrigger>
@@ -184,27 +179,24 @@ export default function InfoBar({
 								return null
 							}
 							const content = (
-								<div className="flex gap-1.5 items-center">
-									<Icon className="h-4 w-4" /> {value}
-								</div>
+								<span className="flex gap-1.5 items-center max-w-64 truncate">
+									<Icon className="size-3.5 shrink-0 opacity-70" aria-hidden="true" /> {value}
+								</span>
 							)
 							return (
-								<div key={value} className="contents">
-									<Separator orientation="vertical" className="h-4 bg-primary/30" />
-									{label ? (
-										<Tooltip delayDuration={100}>
-											<TooltipTrigger asChild>{content}</TooltipTrigger>
-											<TooltipContent>{label}</TooltipContent>
-										</Tooltip>
-									) : (
-										content
-									)}
-								</div>
+								<Tooltip key={value} delayDuration={100}>
+									<TooltipTrigger asChild>
+										<span className="flex items-center rounded-md border bg-card px-2.5 py-1.5 text-xs text-muted-foreground">
+											{content}
+										</span>
+									</TooltipTrigger>
+									{label && <TooltipContent>{label}</TooltipContent>}
+								</Tooltip>
 							)
 						})}
 					</div>
 				</div>
-				<div className="xl:ms-auto flex items-center gap-2 max-sm:-mb-1">
+				<div className="mt-4 flex items-center gap-2 xl:mt-1 xl:ms-auto max-sm:-mb-1">
 					<ChartTimeSelect className="w-full xl:w-40" agentVersion={chartData.agentVersion} />
 					<DropdownMenu>
 						<DropdownMenuTrigger asChild>
@@ -212,9 +204,9 @@ export default function InfoBar({
 								aria-label={t`Settings`}
 								variant="outline"
 								size="icon"
-								className="hidden xl:flex p-0 text-primary"
+								className="hidden xl:flex p-0 text-muted-foreground"
 							>
-								<Settings2Icon className="size-4 opacity-90" />
+								<Settings2Icon className="size-4" />
 							</Button>
 						</DropdownMenuTrigger>
 						<DropdownMenuContent align="end" className="min-w-44">

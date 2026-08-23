@@ -265,6 +265,59 @@ func TestParseSmartForNvme(t *testing.T) {
 	}
 }
 
+// Identify-only output covers the case where smartctl can read the device
+// identity but not the log pages (e.g. NVMe health log read failures), so
+// neither smart_status nor nvme_smart_health_information_log is present.
+const nvmePartialOutput = `{
+	"json_format_version": [1, 0],
+	"smartctl": {"version": [7, 5], "svn_revision": "5714", "platform_info": "aarch64-linux", "build_info": "(local build)", "argv": ["smartctl", "-a", "--json=c", "/dev/nvme0"], "exit_status": 4},
+	"device": {"name": "/dev/nvme0", "info_name": "/dev/nvme0", "type": "nvme", "protocol": "NVMe"},
+	"model_name": "PELADN 512GB",
+	"serial_number": "2024031600129",
+	"firmware_version": "VC2S038E",
+	"user_capacity": {"blocks": 1000215216, "bytes": 512110190592}
+}`
+
+func TestParseSmartForNvmePartialPreservesHealth(t *testing.T) {
+	fixturePath := filepath.Join("test-data", "smart", "nvme0.json")
+	data, err := os.ReadFile(fixturePath)
+	require.NoError(t, err)
+
+	sm := &SmartManager{
+		SmartDataMap: make(map[string]*smart.SmartData),
+	}
+
+	hasData, _ := sm.parseSmartForNvme(data, "")
+	require.True(t, hasData)
+
+	hasData, _ = sm.parseSmartForNvme([]byte(nvmePartialOutput), "")
+	require.True(t, hasData)
+
+	deviceData, ok := sm.SmartDataMap["2024031600129"]
+	require.True(t, ok)
+
+	assert.Equal(t, "PASSED", deviceData.SmartStatus)
+	assert.Equal(t, uint8(61), deviceData.Temperature)
+	assert.NotEmpty(t, deviceData.Attributes)
+	assertAttrValue(t, deviceData.Attributes, "DataUnitsWritten", 16040567)
+}
+
+func TestParseSmartForNvmePartialFreshEntryStoresUnknown(t *testing.T) {
+	sm := &SmartManager{
+		SmartDataMap: make(map[string]*smart.SmartData),
+	}
+
+	hasData, _ := sm.parseSmartForNvme([]byte(nvmePartialOutput), "")
+	require.True(t, hasData)
+
+	deviceData, ok := sm.SmartDataMap["2024031600129"]
+	require.True(t, ok)
+
+	assert.Equal(t, "UNKNOWN", deviceData.SmartStatus)
+	assert.Equal(t, uint8(0), deviceData.Temperature)
+	assert.Empty(t, deviceData.Attributes)
+}
+
 func TestHasDataForDevice(t *testing.T) {
 	sm := &SmartManager{
 		SmartDataMap: map[string]*smart.SmartData{

@@ -129,8 +129,6 @@ msgstr "Aktiv tilstand"
 
 #: src/components/add-system.tsx
 #: src/components/add-system.tsx
-#: src/components/navbar.tsx
-#: src/components/navbar.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Add {foo}"
@@ -138,6 +136,14 @@ msgstr "Tilføj {foo}"
 
 #: src/components/fleet-overview.tsx
 msgid "Add first system"
+msgstr ""
+
+#: src/components/app-shell.tsx
+#: src/components/app-shell.tsx
+#: src/components/app-shell.tsx
+#: src/components/app-shell.tsx
+#: src/components/app-shell.tsx
+msgid "Add System"
 msgstr ""
 
 #: src/components/routes/settings/notifications.tsx
@@ -158,7 +164,6 @@ msgstr "Juster bredden af hovedlayoutet"
 
 #: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
-#: src/components/navbar.tsx
 msgid "Admin"
 msgstr "Administrator"
 
@@ -189,10 +194,10 @@ msgstr "Advarselshistorik"
 msgid "Alerts"
 msgstr "Alarmer"
 
+#: src/components/app-shell.tsx
 #: src/components/command-palette.tsx
 #: src/components/containers-table/containers-table.tsx
-#: src/components/navbar.tsx
-#: src/components/navbar.tsx
+#: src/components/routes/containers.tsx
 #: src/components/routes/containers.tsx
 msgid "All Containers"
 msgstr "Alle containere"
@@ -266,8 +271,8 @@ msgstr "Gennemsnitlig udnyttelse af {0}"
 msgid "Average utilization of GPU engines"
 msgstr "Gennemsnitlig udnyttelse af GPU-enheder"
 
+#: src/components/app-shell.tsx
 #: src/components/command-palette.tsx
-#: src/components/navbar.tsx
 msgid "Backups"
 msgstr "Sikkerhedskopier"
 
@@ -307,8 +312,8 @@ msgid "Below {0}{1} in last {2, plural, one {# minute} other {# minutes}}"
 msgstr "Under {0}{1} i sidste {2, plural, one {# minut} other {# minutter}}"
 
 #: src/components/login/login.tsx
-msgid "Beszel control plane"
-msgstr ""
+#~ msgid "Beszel control plane"
+#~ msgstr ""
 
 #: src/components/login/auth-form.tsx
 msgid "Beszel supports OpenID Connect and many OAuth2 authentication providers."
@@ -416,6 +421,7 @@ msgid "Check your notification service"
 msgstr "Tjek din notifikationstjeneste"
 
 #: src/components/containers-table/containers-table.tsx
+#: src/components/routes/system/chart-card.tsx
 #: src/components/routes/system/smart-table.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "Clear"
@@ -430,12 +436,17 @@ msgid "Click on a device to view more information."
 msgstr "Klik på en enhed for at se flere oplysninger."
 
 #: src/components/systems-table/systems-table.tsx
-msgid "Click on a system to view more information."
-msgstr "Klik på et system for at se mere information."
+#~ msgid "Click on a system to view more information."
+#~ msgstr "Klik på et system for at se mere information."
 
 #: src/components/ui/input-copy.tsx
 msgid "Click to copy"
 msgstr "Klik for at kopiere"
+
+#: src/components/app-shell.tsx
+#: src/components/app-shell.tsx
+msgid "Collapse sidebar"
+msgstr ""
 
 #: src/components/login/forgot-pass-form.tsx
 #: src/components/login/forgot-pass-form.tsx
@@ -595,8 +606,8 @@ msgid "Cumulative Upload"
 msgstr "Kumulativ upload"
 
 #: src/components/fleet-overview.tsx
-msgid "Current connection state"
-msgstr ""
+#~ msgid "Current connection state"
+#~ msgstr ""
 
 #. Context: Battery state
 #. Context: Battery state
@@ -712,7 +723,6 @@ msgstr ""
 #. Context: System is down
 #: src/components/alerts-history-columns.tsx
 #: src/components/fleet-overview.tsx
-#: src/components/fleet-overview.tsx
 #: src/components/routes/system/info-bar.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 #: src/lib/alerts.ts
@@ -825,6 +835,11 @@ msgstr "Eksisterende systemer ikke defineret i <0>config.yml</0> vil blive slett
 msgid "Exited active"
 msgstr "Afsluttet aktiv"
 
+#: src/components/app-shell.tsx
+#: src/components/app-shell.tsx
+msgid "Expand sidebar"
+msgstr ""
+
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Expires after one hour or on hub restart."
 msgstr "Udløber efter en time eller ved hub-genstart."
@@ -921,10 +936,18 @@ msgstr "Fingeraftryk"
 msgid "Firmware"
 msgstr "Firmware"
 
+#: src/components/app-shell.tsx
 #: src/components/fleet-overview.tsx
-msgid "Fleet awaiting signal"
+#: src/components/routes/containers.tsx
+#: src/components/routes/smart.tsx
+msgid "Fleet"
 msgstr ""
 
+#: src/components/fleet-overview.tsx
+#~ msgid "Fleet awaiting signal"
+#~ msgstr ""
+
+#: src/components/fleet-overview.tsx
 #: src/components/fleet-overview.tsx
 msgid "Fleet status"
 msgstr ""
@@ -996,6 +1019,11 @@ msgstr "Heartbeat-overvågning"
 msgid "Heartbeat sent successfully"
 msgstr "Heartbeat sendt succesfuldt"
 
+#: src/components/app-shell.tsx
+#: src/components/app-shell.tsx
+msgid "Home"
+msgstr ""
+
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgctxt "Button to copy install command"
@@ -1007,8 +1035,8 @@ msgid "Host / IP"
 msgstr "Vært / IP"
 
 #: src/components/routes/system/network-interfaces.tsx
-msgid "Host inventory"
-msgstr ""
+#~ msgid "Host inventory"
+#~ msgstr ""
 
 #: src/components/routes/settings/heartbeat.tsx
 msgid "HTTP Method"
@@ -1060,8 +1088,8 @@ msgid "Interval"
 msgstr ""
 
 #: src/components/navbar.tsx
-msgid "Intranet console"
-msgstr ""
+#~ msgid "Intranet console"
+#~ msgstr ""
 
 #: src/components/login/auth-form.tsx
 msgid "Invalid email address."
@@ -1097,12 +1125,12 @@ msgid "Link speed"
 msgstr ""
 
 #: src/components/fleet-overview.tsx
-msgid "Live fleet pulse"
-msgstr ""
+#~ msgid "Live fleet pulse"
+#~ msgstr ""
 
 #: src/components/routes/system/info-bar.tsx
-msgid "Live host snapshot"
-msgstr ""
+#~ msgid "Live host snapshot"
+#~ msgstr ""
 
 #: src/components/login/login.tsx
 msgid "Live telemetry"
@@ -1134,6 +1162,8 @@ msgid "Load state"
 msgstr "Indlæsningstilstand"
 
 #: src/components/login/login.tsx
+#: src/main.tsx
+#: src/main.tsx
 msgid "Loading"
 msgstr ""
 
@@ -1141,8 +1171,7 @@ msgstr ""
 msgid "Loading..."
 msgstr "Indlæser..."
 
-#: src/components/navbar.tsx
-#: src/components/navbar.tsx
+#: src/components/app-shell.tsx
 msgid "Log Out"
 msgstr "Log ud"
 
@@ -1155,9 +1184,9 @@ msgstr "Log ind"
 msgid "Login attempt failed"
 msgstr "Loginforsøg mislykkedes"
 
+#: src/components/app-shell.tsx
 #: src/components/command-palette.tsx
 #: src/components/containers-table/containers-table.tsx
-#: src/components/navbar.tsx
 msgid "Logs"
 msgstr "Logs"
 
@@ -1172,6 +1201,10 @@ msgstr ""
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Main PID"
 msgstr "Primær PID"
+
+#: src/components/app-shell.tsx
+msgid "Manage"
+msgstr ""
 
 #: src/components/routes/settings/layout.tsx
 msgid "Manage display and notification preferences."
@@ -1217,6 +1250,10 @@ msgstr "Hukommelsesforbrug af dockercontainere"
 #: src/components/routes/system/smart-table.tsx
 msgid "Model"
 msgstr "Model"
+
+#: src/components/app-shell.tsx
+msgid "Monitor"
+msgstr ""
 
 #: src/components/login/login.tsx
 msgid "Monitor system health, resource pressure, services, containers, and alerts from one private control plane."
@@ -1333,12 +1370,12 @@ msgid "online"
 msgstr ""
 
 #: src/components/fleet-overview.tsx
-#: src/components/fleet-overview.tsx
 #: src/components/routes/system/network-interfaces.tsx
 #: src/components/routes/system/network-interfaces.tsx
 msgid "Online"
 msgstr ""
 
+#: src/components/app-shell.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
@@ -1348,8 +1385,8 @@ msgid "Open menu"
 msgstr "Åbn menu"
 
 #: src/components/navbar.tsx
-msgid "Operations"
-msgstr ""
+#~ msgid "Operations"
+#~ msgstr ""
 
 #: src/components/login/auth-form.tsx
 msgid "Or continue with"
@@ -1409,7 +1446,6 @@ msgid "paused"
 msgstr ""
 
 #: src/components/fleet-overview.tsx
-#: src/components/fleet-overview.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Paused"
 msgstr "Sat på pause"
@@ -1426,7 +1462,6 @@ msgstr "Payload-format"
 msgid "pending"
 msgstr ""
 
-#: src/components/fleet-overview.tsx
 #: src/components/fleet-overview.tsx
 msgid "Pending"
 msgstr ""
@@ -1462,6 +1497,10 @@ msgstr "Tjek logfiler for flere detaljer."
 
 #: src/components/add-system.tsx
 msgid "Please check the details and try again"
+msgstr ""
+
+#: src/components/routes/system/smart-table.tsx
+msgid "Please check the hub logs for this system."
 msgstr ""
 
 #: src/components/login/auth-form.tsx
@@ -1513,8 +1552,8 @@ msgid "Preferred Language"
 msgstr "Foretrukket sprog"
 
 #: src/components/navbar.tsx
-msgid "Primary navigation"
-msgstr ""
+#~ msgid "Primary navigation"
+#~ msgstr ""
 
 #: src/components/login/login.tsx
 msgid "Private by design"
@@ -1607,6 +1646,10 @@ msgstr "Genstarter"
 msgid "Resume"
 msgstr "Genoptag"
 
+#: src/main.tsx
+msgid "Return to fleet"
+msgstr ""
+
 #: src/components/systems-table/systems-table-columns.tsx
 msgctxt "Root disk label"
 msgid "Root"
@@ -1624,13 +1667,21 @@ msgstr "Rækker per side"
 msgid "Runtime Metrics"
 msgstr "Køretidsmålinger"
 
+#: src/components/routes/smart.tsx
+msgid "S.M.A.R.T."
+msgstr ""
+
 #: src/components/routes/system/smart-table.tsx
 msgid "S.M.A.R.T. Details"
 msgstr "S.M.A.R.T.-detaljer"
 
 #: src/components/routes/system/smart-table.tsx
-msgid "S.M.A.R.T. Self-Test"
-msgstr "S.M.A.R.T. selvtest"
+msgid "S.M.A.R.T. Health"
+msgstr ""
+
+#: src/components/routes/system/smart-table.tsx
+#~ msgid "S.M.A.R.T. Self-Test"
+#~ msgstr "S.M.A.R.T. selvtest"
 
 #: src/components/add-system.tsx
 msgid "Save {foo}"
@@ -1661,7 +1712,10 @@ msgstr "Planlæg stille timer hvor meddelelser ikke vil blive sendt, såsom unde
 msgid "Schedule quiet hours where notifications will not be sent."
 msgstr "Planlæg stille timer hvor meddelelser ikke vil blive sendt."
 
-#: src/components/navbar.tsx
+#: src/components/app-shell.tsx
+#: src/components/app-shell.tsx
+#: src/components/app-shell.tsx
+#: src/components/app-shell.tsx
 msgid "Search"
 msgstr "Søg"
 
@@ -1726,10 +1780,9 @@ msgstr "Indstil procentvise tærskler for målerfarver."
 msgid "Set the following environment variables on your Beszel hub to enable heartbeat monitoring:"
 msgstr "Indstil følgende miljøvariabler på din Beszel-hub for at aktivere heartbeat-overvågning:"
 
+#: src/components/app-shell.tsx
 #: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
-#: src/components/navbar.tsx
-#: src/components/navbar.tsx
 #: src/components/routes/settings/layout.tsx
 #: src/components/routes/settings/layout.tsx
 #: src/components/routes/system/info-bar.tsx
@@ -1796,7 +1849,6 @@ msgstr ""
 #: src/components/add-system.tsx
 #: src/components/alerts-history-columns.tsx
 #: src/components/containers-table/containers-table-columns.tsx
-#: src/components/navbar.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/quiet-hours.tsx
@@ -1820,7 +1872,7 @@ msgstr "Gennemsnitlig system belastning over tid"
 msgid "Systemd Services"
 msgstr "Systemd Services"
 
-#: src/components/navbar.tsx
+#: src/components/app-shell.tsx
 msgid "Systems"
 msgstr "Systemer"
 
@@ -1887,6 +1939,10 @@ msgstr "Log derefter ind på backend og nulstil adgangskoden til din brugerkonto
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "This action cannot be undone. This will permanently delete all current records for {name} from the database."
 msgstr "Denne handling kan ikke fortrydes. Dette vil permanent slette alle aktuelle elementer for {name} fra databasen."
+
+#: src/main.tsx
+msgid "This view does not exist."
+msgstr ""
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "This will permanently delete all selected records from the database."
@@ -2012,12 +2068,20 @@ msgstr ""
 msgid "Type"
 msgstr "Type"
 
+#: src/components/routes/system/smart-table.tsx
+msgid "Unable to delete S.M.A.R.T. device"
+msgstr ""
+
 #: src/components/login/login.tsx
 msgid "Unable to load sign-in options."
 msgstr ""
 
 #: src/components/add-system.tsx
 msgid "Unable to load system token"
+msgstr ""
+
+#: src/components/routes/system/smart-table.tsx
+msgid "Unable to refresh S.M.A.R.T. data"
 msgstr ""
 
 #: src/components/systemd-table/systemd-table.tsx
@@ -2038,6 +2102,10 @@ msgstr "Universalnøgle"
 #: src/lib/i18n.ts
 msgid "Unknown"
 msgstr "Ukendt"
+
+#: src/main.tsx
+msgid "Unknown route"
+msgstr ""
 
 #: src/components/systemd-table/systemd-table.tsx
 #: src/components/systemd-table/systemd-table.tsx
@@ -2094,8 +2162,12 @@ msgstr "Brug af rodpartition"
 msgid "Used"
 msgstr "Brugt"
 
+#: src/components/app-shell.tsx
+msgid "User actions"
+msgstr ""
+
+#: src/components/app-shell.tsx
 #: src/components/command-palette.tsx
-#: src/components/navbar.tsx
 msgid "Users"
 msgstr "Brugere"
 

@@ -1,4 +1,4 @@
-import { type ReactNode, useEffect, useMemo, useState } from "react"
+import { type ReactNode, useEffect, useId, useMemo, useState } from "react"
 import { Area, AreaChart, CartesianGrid, YAxis } from "recharts"
 import {
 	ChartContainer,
@@ -66,6 +66,8 @@ export default function AreaChartDefault({
 }) {
 	const { yAxisWidth, updateYAxisWidth } = useYAxisWidth()
 	const { isIntersecting, ref } = useIntersectionObserver({ freeze: false })
+	// unique per chart instance, so identical series labels in different charts don't collide
+	const uid = useId().replace(/[^a-zA-Z0-9]/g, "")
 	const sourceData = customData ?? chartData.systemStats
 	const [displayData, setDisplayData] = useState(sourceData)
 	const [displayMaxToggled, setDisplayMaxToggled] = useState(maxToggled)
@@ -92,24 +94,50 @@ export default function AreaChartDefault({
 			if (typeof color === "number") {
 				color = `var(--chart-${color})`
 			}
+			// unique gradient id per series
+			const gradientId = `grad-${uid}-${dataPoint.label.replace(/[^a-zA-Z0-9]/g, "")}-${i}`
 			return (
 				<Area
 					key={dataPoint.label}
 					dataKey={dataPoint.dataKey}
 					name={dataPoint.label}
 					type="monotoneX"
-					fill={color}
-					fillOpacity={dataPoint.opacity}
+					fill={`url(#${gradientId})`}
 					stroke={color}
+					strokeWidth={1.75}
 					strokeOpacity={dataPoint.strokeOpacity}
 					isAnimationActive={false}
 					stackId={dataPoint.stackId}
 					order={dataPoint.order || i}
-					activeDot={dataPoint.activeDot ?? true}
+					activeDot={
+						dataPoint.activeDot ?? {
+							r: 4,
+							strokeWidth: 2,
+							stroke: "var(--card)",
+							fill: color,
+						}
+					}
 				/>
 			)
 		})
 	}, [areasKey, displayMaxToggled])
+
+	// vertical gradient definitions fading each series fill to transparent
+	const gradients = useMemo(() => {
+		return dataPoints?.map((dataPoint, i) => {
+			let { color } = dataPoint
+			if (typeof color === "number") {
+				color = `var(--chart-${color})`
+			}
+			const gradientId = `grad-${uid}-${dataPoint.label.replace(/[^a-zA-Z0-9]/g, "")}-${i}`
+			return (
+				<linearGradient key={gradientId} id={gradientId} x1="0" y1="0" x2="0" y2="1">
+					<stop offset="0%" stopColor={color} stopOpacity={dataPoint.opacity} />
+					<stop offset="100%" stopColor={color} stopOpacity={dataPoint.opacity * 0.08} />
+				</linearGradient>
+			)
+		})
+	}, [areasKey])
 
 	return useMemo(() => {
 		if (displayData.length === 0) {
@@ -133,7 +161,8 @@ export default function AreaChartDefault({
 					margin={hideYAxis ? { ...chartMargin, left: 5 } : chartMargin}
 					{...chartProps}
 				>
-					<CartesianGrid vertical={false} />
+					<defs>{gradients}</defs>
+					<CartesianGrid vertical={false} stroke="var(--border)" strokeOpacity={0.55} strokeDasharray="3 4" />
 					{!hideYAxis && (
 						<YAxis
 							direction="ltr"

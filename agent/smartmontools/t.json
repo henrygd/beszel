@@ -1,0 +1,44 @@
+{
+  "json_format_version": [
+    1,
+    0
+  ],
+  "smartctl": {
+    "version": [
+      7,
+      5
+    ],
+    "pre_release": false,
+    "svn_revision": "5714",
+    "platform_info": "x86_64-w64-mingw32-w11-b26200",
+    "build_info": "(AppVeyor)",
+    "argv": [
+      "smartctl",
+      "-a",
+      "-j",
+      "pd0"
+    ],
+    "exit_status": 0
+  },
+  "local_time": {
+    "time_t": 1787460733,
+    "asctime": "Sun Aug 23 10:22:13 2026 IST"
+  },
+  "device": {
+    "name": "pd0",
+    "info_name": "pd0",
+    "type": "ata",
+    "protocol": "ATA"
+  },
+  "model_name": "EVMM2/256GB",
+  "serial_number": "EM2RH112323843",
+  "firmware_version": "W0220A0",
+  "trim": {
+    "supported": false
+  },
+  "in_smartctl_database": false,
+  "smart_support": {
+    "available": true,
+    "enabled": false
+  }
+}

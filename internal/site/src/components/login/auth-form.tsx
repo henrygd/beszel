@@ -236,7 +236,10 @@ export function UserAuthForm({
 
 	if (!passwordEnabled && !otpEnabled && !oauthEnabled) {
 		return (
-			<div className={cn("rounded-xl border border-destructive/30 bg-destructive/5 p-4 text-sm", className)} role="alert">
+			<div
+				className={cn("rounded-xl border border-destructive/30 bg-destructive/5 p-4 text-sm", className)}
+				role="alert"
+			>
 				<p className="font-medium">
 					<Trans>No sign-in methods are configured.</Trans>
 				</p>
@@ -268,7 +271,7 @@ export function UserAuthForm({
 									autoComplete="email"
 									autoCorrect="off"
 									disabled={isLoading || isOauthLoading}
-									className={cn("ps-9", errors?.email && "border-red-500")}
+									className={cn("ps-9", errors?.email && "border-destructive")}
 								/>
 								{errors?.email && <p className="px-1 text-xs text-red-600">{errors.email}</p>}
 							</div>
@@ -285,7 +288,7 @@ export function UserAuthForm({
 									type="password"
 									autoComplete={isFirstRun ? "new-password" : "current-password"}
 									disabled={isLoading || isOauthLoading}
-									className={cn("ps-9", errors?.password && "border-red-500")}
+									className={cn("ps-9", errors?.password && "border-destructive")}
 								/>
 								{errors?.password && <p className="px-1 text-xs text-red-600">{errors.password}</p>}
 							</div>
@@ -303,7 +306,7 @@ export function UserAuthForm({
 										type="password"
 										autoComplete="new-password"
 										disabled={isLoading || isOauthLoading}
-										className={cn("ps-9", errors?.passwordConfirm && "border-red-500")}
+										className={cn("ps-9", errors?.passwordConfirm && "border-destructive")}
 									/>
 									{errors?.passwordConfirm && <p className="px-1 text-xs text-red-600">{errors.passwordConfirm}</p>}
 								</div>
@@ -430,7 +433,7 @@ export function UserAuthForm({
 			{passwordEnabled && !isFirstRun && (
 				<Link
 					href={getPagePath($router, "forgot_password")}
-					className="text-sm mx-auto hover:text-brand underline underline-offset-4 opacity-70 hover:opacity-100 transition-opacity"
+					className="text-sm mx-auto hover:text-primary underline underline-offset-4 opacity-70 hover:opacity-100 transition-opacity"
 				>
 					<Trans>Forgot password?</Trans>
 				</Link>

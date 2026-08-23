@@ -146,32 +146,27 @@ export default function SystemsTable() {
 
 	const CardHead = useMemo(() => {
 		return (
-			<CardHeader className="p-0 mb-3 sm:mb-4">
-				<div className="grid md:flex gap-x-5 gap-y-3 w-full items-end">
-					<div className="px-2 sm:px-1">
-						<CardTitle className="mb-2">
+			<CardHeader className="p-0 mb-4">
+				<div className="flex flex-wrap items-center gap-x-4 gap-y-3">
+					<div className="min-w-0 flex-1">
+						<CardTitle className="text-base sm:text-lg">
 							<Trans>All Systems</Trans>
 						</CardTitle>
-						<CardDescription className="flex flex-wrap items-center gap-x-2 gap-y-1">
-							<span>
-								<Trans>Click on a system to view more information.</Trans>
-							</span>
-							<span className="font-mono text-[0.68rem] uppercase tracking-[0.12em] text-primary/80">
-								<Trans>
-									{rows.length} / {filteredData.length} shown
-								</Trans>
-							</span>
+						<CardDescription className="mt-0.5 font-mono text-[0.68rem] uppercase tracking-[0.1em]">
+							<Trans>
+								{rows.length} / {filteredData.length} shown
+							</Trans>
 						</CardDescription>
 					</div>
 
-					<div className="flex gap-2 ms-auto w-full md:w-80">
-						<div className="relative flex-1">
+					<div className="flex gap-2 ms-auto w-full sm:w-auto">
+						<div className="relative flex-1 sm:flex-none">
 							<Input
 								aria-label={t`Filter systems`}
 								placeholder={t`Filter...`}
 								onChange={(e) => setFilter(e.target.value)}
 								value={filter}
-								className="ps-4 pe-10 w-full"
+								className="ps-4 pe-10 w-full sm:w-52"
 							/>
 							{filter && (
 								<Button
@@ -179,7 +174,7 @@ export default function SystemsTable() {
 									variant="ghost"
 									size="icon"
 									aria-label={t`Clear`}
-									className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 text-muted-foreground"
+									className="absolute end-1 top-1/2 -translate-y-1/2 h-7 w-7 text-muted-foreground"
 									onClick={() => setFilter("")}
 								>
 									<XIcon className="h-4 w-4" />
@@ -188,12 +183,15 @@ export default function SystemsTable() {
 						</div>
 						<DropdownMenu>
 							<DropdownMenuTrigger asChild>
-								<Button variant="outline">
-									<Settings2Icon className="me-1.5 size-4 opacity-80" />
+								<Button variant="outline" className="gap-2.5 px-5">
+									<Settings2Icon className="size-[1.05rem] opacity-80" />
 									<Trans>View</Trans>
 								</Button>
 							</DropdownMenuTrigger>
-							<DropdownMenuContent align="end" className="min-w-48 max-h-72 overflow-y-auto md:min-w-auto">
+							<DropdownMenuContent
+								align="end"
+								className="min-w-48 max-h-(--radix-dropdown-menu-content-available-height) overflow-y-auto md:min-w-auto"
+							>
 								<div className="grid grid-cols-1 md:grid-cols-4 divide-y md:divide-s md:divide-y-0">
 									<div className="border-r">
 										<DropdownMenuLabel className="pt-2 px-3.5 flex items-center gap-2">
@@ -336,7 +334,7 @@ export default function SystemsTable() {
 	if (data.length === 0) return null
 
 	return (
-		<Card className="w-full px-3 py-5 sm:py-6 sm:px-6">
+		<Card className="w-full px-4 py-5 sm:px-5">
 			{CardHead}
 			{viewMode === "table" ? (
 				// table layout
@@ -487,18 +485,21 @@ const SystemCard = memo(
 					onMouseEnter={preloadSystemDetail}
 					key={system.id}
 					className={cn(
-						"cursor-pointer hover:shadow-md transition-all bg-transparent w-full dark:border-border duration-200 relative",
+						"cursor-pointer relative group/card transition-[box-shadow,transform,border-color] duration-200",
+						"hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-md",
 						{
-							"opacity-50": system.status === SystemStatus.Paused,
+							"opacity-55": system.status === SystemStatus.Paused,
 						}
 					)}
 				>
-					<CardHeader className="py-1 ps-4 pe-2 bg-muted/30 border-b border-border/60">
+					<CardHeader className="py-2 ps-4 pe-2 bg-muted/40 border-b">
 						<div className="flex items-center gap-1 w-full overflow-hidden">
 							<h3 className="text-primary/90 min-w-0 flex-1 gap-2.5 font-semibold">
 								<div className="flex items-center gap-2.5 min-w-0 flex-1">
 									<IndicatorDot system={system} />
-									<span className="text-[.95em]/normal tracking-normal text-primary/90 truncate">{system.name}</span>
+									<span className="text-[.95em]/normal tracking-normal text-primary/90 truncate group-hover/card:text-primary transition-colors">
+										{system.name}
+									</span>
 								</div>
 							</h3>
 							{table.getColumn("actions")?.getIsVisible() && (

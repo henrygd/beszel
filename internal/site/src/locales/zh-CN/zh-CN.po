@@ -129,8 +129,6 @@ msgstr "活动状态"
 
 #: src/components/add-system.tsx
 #: src/components/add-system.tsx
-#: src/components/navbar.tsx
-#: src/components/navbar.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Add {foo}"
@@ -138,6 +136,14 @@ msgstr "添加 {foo}"
 
 #: src/components/fleet-overview.tsx
 msgid "Add first system"
+msgstr ""
+
+#: src/components/app-shell.tsx
+#: src/components/app-shell.tsx
+#: src/components/app-shell.tsx
+#: src/components/app-shell.tsx
+#: src/components/app-shell.tsx
+msgid "Add System"
 msgstr ""
 
 #: src/components/routes/settings/notifications.tsx
@@ -158,7 +164,6 @@ msgstr "调整主布局宽度"
 
 #: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
-#: src/components/navbar.tsx
 msgid "Admin"
 msgstr "管理员"
 
@@ -189,10 +194,10 @@ msgstr "警报历史"
 msgid "Alerts"
 msgstr "警报"
 
+#: src/components/app-shell.tsx
 #: src/components/command-palette.tsx
 #: src/components/containers-table/containers-table.tsx
-#: src/components/navbar.tsx
-#: src/components/navbar.tsx
+#: src/components/routes/containers.tsx
 #: src/components/routes/containers.tsx
 msgid "All Containers"
 msgstr "所有容器"
@@ -266,8 +271,8 @@ msgstr "{0} 平均利用率"
 msgid "Average utilization of GPU engines"
 msgstr "GPU 引擎的平均利用率"
 
+#: src/components/app-shell.tsx
 #: src/components/command-palette.tsx
-#: src/components/navbar.tsx
 msgid "Backups"
 msgstr "备份"
 
@@ -307,8 +312,8 @@ msgid "Below {0}{1} in last {2, plural, one {# minute} other {# minutes}}"
 msgstr "在过去{2, plural, one {# 分钟} other {# 分钟}}中低于{0}{1}"
 
 #: src/components/login/login.tsx
-msgid "Beszel control plane"
-msgstr ""
+#~ msgid "Beszel control plane"
+#~ msgstr ""
 
 #: src/components/login/auth-form.tsx
 msgid "Beszel supports OpenID Connect and many OAuth2 authentication providers."
@@ -416,6 +421,7 @@ msgid "Check your notification service"
 msgstr "检查您的通知服务"
 
 #: src/components/containers-table/containers-table.tsx
+#: src/components/routes/system/chart-card.tsx
 #: src/components/routes/system/smart-table.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "Clear"
@@ -430,12 +436,17 @@ msgid "Click on a device to view more information."
 msgstr "点击设备查看更多信息。"
 
 #: src/components/systems-table/systems-table.tsx
-msgid "Click on a system to view more information."
-msgstr "点击系统查看更多信息。"
+#~ msgid "Click on a system to view more information."
+#~ msgstr "点击系统查看更多信息。"
 
 #: src/components/ui/input-copy.tsx
 msgid "Click to copy"
 msgstr "点击复制"
+
+#: src/components/app-shell.tsx
+#: src/components/app-shell.tsx
+msgid "Collapse sidebar"
+msgstr ""
 
 #: src/components/login/forgot-pass-form.tsx
 #: src/components/login/forgot-pass-form.tsx
@@ -595,8 +606,8 @@ msgid "Cumulative Upload"
 msgstr "累计上传"
 
 #: src/components/fleet-overview.tsx
-msgid "Current connection state"
-msgstr ""
+#~ msgid "Current connection state"
+#~ msgstr ""
 
 #. Context: Battery state
 #. Context: Battery state
@@ -712,7 +723,6 @@ msgstr ""
 #. Context: System is down
 #: src/components/alerts-history-columns.tsx
 #: src/components/fleet-overview.tsx
-#: src/components/fleet-overview.tsx
 #: src/components/routes/system/info-bar.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 #: src/lib/alerts.ts
@@ -825,6 +835,11 @@ msgstr "未在<0>config.yml</0>中定义的客户端将被删除。请定期备�
 msgid "Exited active"
 msgstr "退出活动状态"
 
+#: src/components/app-shell.tsx
+#: src/components/app-shell.tsx
+msgid "Expand sidebar"
+msgstr ""
+
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Expires after one hour or on hub restart."
 msgstr "将在一小时后，或Hub重启时失效。"
@@ -921,10 +936,18 @@ msgstr "指纹"
 msgid "Firmware"
 msgstr "固件"
 
+#: src/components/app-shell.tsx
 #: src/components/fleet-overview.tsx
-msgid "Fleet awaiting signal"
+#: src/components/routes/containers.tsx
+#: src/components/routes/smart.tsx
+msgid "Fleet"
 msgstr ""
 
+#: src/components/fleet-overview.tsx
+#~ msgid "Fleet awaiting signal"
+#~ msgstr ""
+
+#: src/components/fleet-overview.tsx
 #: src/components/fleet-overview.tsx
 msgid "Fleet status"
 msgstr ""
@@ -996,6 +1019,11 @@ msgstr "心跳监控"
 msgid "Heartbeat sent successfully"
 msgstr "心跳发送成功"
 
+#: src/components/app-shell.tsx
+#: src/components/app-shell.tsx
+msgid "Home"
+msgstr ""
+
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgctxt "Button to copy install command"
@@ -1007,8 +1035,8 @@ msgid "Host / IP"
 msgstr "主机/IP"
 
 #: src/components/routes/system/network-interfaces.tsx
-msgid "Host inventory"
-msgstr ""
+#~ msgid "Host inventory"
+#~ msgstr ""
 
 #: src/components/routes/settings/heartbeat.tsx
 msgid "HTTP Method"
@@ -1060,8 +1088,8 @@ msgid "Interval"
 msgstr "间隔"
 
 #: src/components/navbar.tsx
-msgid "Intranet console"
-msgstr ""
+#~ msgid "Intranet console"
+#~ msgstr ""
 
 #: src/components/login/auth-form.tsx
 msgid "Invalid email address."
@@ -1097,12 +1125,12 @@ msgid "Link speed"
 msgstr ""
 
 #: src/components/fleet-overview.tsx
-msgid "Live fleet pulse"
-msgstr ""
+#~ msgid "Live fleet pulse"
+#~ msgstr ""
 
 #: src/components/routes/system/info-bar.tsx
-msgid "Live host snapshot"
-msgstr ""
+#~ msgid "Live host snapshot"
+#~ msgstr ""
 
 #: src/components/login/login.tsx
 msgid "Live telemetry"
@@ -1134,6 +1162,8 @@ msgid "Load state"
 msgstr "加载状态"
 
 #: src/components/login/login.tsx
+#: src/main.tsx
+#: src/main.tsx
 msgid "Loading"
 msgstr ""
 
@@ -1141,8 +1171,7 @@ msgstr ""
 msgid "Loading..."
 msgstr "加载中..."
 
-#: src/components/navbar.tsx
-#: src/components/navbar.tsx
+#: src/components/app-shell.tsx
 msgid "Log Out"
 msgstr "登出"
 
@@ -1155,9 +1184,9 @@ msgstr "登录"
 msgid "Login attempt failed"
 msgstr "登录尝试失败"
 
+#: src/components/app-shell.tsx
 #: src/components/command-palette.tsx
 #: src/components/containers-table/containers-table.tsx
-#: src/components/navbar.tsx
 msgid "Logs"
 msgstr "日志"
 
@@ -1172,6 +1201,10 @@ msgstr ""
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Main PID"
 msgstr "主进程 ID"
+
+#: src/components/app-shell.tsx
+msgid "Manage"
+msgstr ""
 
 #: src/components/routes/settings/layout.tsx
 msgid "Manage display and notification preferences."
@@ -1217,6 +1250,10 @@ msgstr "Docker 容器的内存使用率"
 #: src/components/routes/system/smart-table.tsx
 msgid "Model"
 msgstr "型号"
+
+#: src/components/app-shell.tsx
+msgid "Monitor"
+msgstr ""
 
 #: src/components/login/login.tsx
 msgid "Monitor system health, resource pressure, services, containers, and alerts from one private control plane."
@@ -1333,12 +1370,12 @@ msgid "online"
 msgstr ""
 
 #: src/components/fleet-overview.tsx
-#: src/components/fleet-overview.tsx
 #: src/components/routes/system/network-interfaces.tsx
 #: src/components/routes/system/network-interfaces.tsx
 msgid "Online"
 msgstr ""
 
+#: src/components/app-shell.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
@@ -1348,8 +1385,8 @@ msgid "Open menu"
 msgstr "打开菜单"
 
 #: src/components/navbar.tsx
-msgid "Operations"
-msgstr ""
+#~ msgid "Operations"
+#~ msgstr ""
 
 #: src/components/login/auth-form.tsx
 msgid "Or continue with"
@@ -1409,7 +1446,6 @@ msgid "paused"
 msgstr ""
 
 #: src/components/fleet-overview.tsx
-#: src/components/fleet-overview.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Paused"
 msgstr "已暂停"
@@ -1426,7 +1462,6 @@ msgstr "有效载荷 (Payload) 格式"
 msgid "pending"
 msgstr ""
 
-#: src/components/fleet-overview.tsx
 #: src/components/fleet-overview.tsx
 msgid "Pending"
 msgstr ""
@@ -1462,6 +1497,10 @@ msgstr "请检查日志以获取更多详细信息。"
 
 #: src/components/add-system.tsx
 msgid "Please check the details and try again"
+msgstr ""
+
+#: src/components/routes/system/smart-table.tsx
+msgid "Please check the hub logs for this system."
 msgstr ""
 
 #: src/components/login/auth-form.tsx
@@ -1513,8 +1552,8 @@ msgid "Preferred Language"
 msgstr "首选语言"
 
 #: src/components/navbar.tsx
-msgid "Primary navigation"
-msgstr ""
+#~ msgid "Primary navigation"
+#~ msgstr ""
 
 #: src/components/login/login.tsx
 msgid "Private by design"
@@ -1607,6 +1646,10 @@ msgstr "重启次数"
 msgid "Resume"
 msgstr "恢复"
 
+#: src/main.tsx
+msgid "Return to fleet"
+msgstr ""
+
 #: src/components/systems-table/systems-table-columns.tsx
 msgctxt "Root disk label"
 msgid "Root"
@@ -1624,13 +1667,21 @@ msgstr "每页行数"
 msgid "Runtime Metrics"
 msgstr "运行时指标"
 
+#: src/components/routes/smart.tsx
+msgid "S.M.A.R.T."
+msgstr ""
+
 #: src/components/routes/system/smart-table.tsx
 msgid "S.M.A.R.T. Details"
 msgstr "S.M.A.R.T. 详情"
 
 #: src/components/routes/system/smart-table.tsx
-msgid "S.M.A.R.T. Self-Test"
-msgstr "S.M.A.R.T. 自检"
+msgid "S.M.A.R.T. Health"
+msgstr ""
+
+#: src/components/routes/system/smart-table.tsx
+#~ msgid "S.M.A.R.T. Self-Test"
+#~ msgstr "S.M.A.R.T. 自检"
 
 #: src/components/add-system.tsx
 msgid "Save {foo}"
@@ -1661,7 +1712,10 @@ msgstr "安排静默时间，在此期间不会发送通知，例如在维护期
 msgid "Schedule quiet hours where notifications will not be sent."
 msgstr "安排静默时间，在此期间不会发送通知。"
 
-#: src/components/navbar.tsx
+#: src/components/app-shell.tsx
+#: src/components/app-shell.tsx
+#: src/components/app-shell.tsx
+#: src/components/app-shell.tsx
 msgid "Search"
 msgstr "搜索"
 
@@ -1726,10 +1780,9 @@ msgstr "设置仪表颜色的百分比阈值。"
 msgid "Set the following environment variables on your Beszel hub to enable heartbeat monitoring:"
 msgstr "在您的 Beszel hub 上设置以下环境变量以启用 heartbeat 监控："
 
+#: src/components/app-shell.tsx
 #: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
-#: src/components/navbar.tsx
-#: src/components/navbar.tsx
 #: src/components/routes/settings/layout.tsx
 #: src/components/routes/settings/layout.tsx
 #: src/components/routes/system/info-bar.tsx
@@ -1796,7 +1849,6 @@ msgstr ""
 #: src/components/add-system.tsx
 #: src/components/alerts-history-columns.tsx
 #: src/components/containers-table/containers-table-columns.tsx
-#: src/components/navbar.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/quiet-hours.tsx
@@ -1820,7 +1872,7 @@ msgstr "系统负载平均值随时间变化"
 msgid "Systemd Services"
 msgstr "Systemd 服务"
 
-#: src/components/navbar.tsx
+#: src/components/app-shell.tsx
 msgid "Systems"
 msgstr "系统"
 
@@ -1887,6 +1939,10 @@ msgstr "然后登录到后台并在用户表中重置您的用户账户密码。
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "This action cannot be undone. This will permanently delete all current records for {name} from the database."
 msgstr "此操作无法撤销。这将永久删除数据库中{name}的所有当前记录。"
+
+#: src/main.tsx
+msgid "This view does not exist."
+msgstr ""
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "This will permanently delete all selected records from the database."
@@ -2012,12 +2068,20 @@ msgstr ""
 msgid "Type"
 msgstr "类型"
 
+#: src/components/routes/system/smart-table.tsx
+msgid "Unable to delete S.M.A.R.T. device"
+msgstr ""
+
 #: src/components/login/login.tsx
 msgid "Unable to load sign-in options."
 msgstr ""
 
 #: src/components/add-system.tsx
 msgid "Unable to load system token"
+msgstr ""
+
+#: src/components/routes/system/smart-table.tsx
+msgid "Unable to refresh S.M.A.R.T. data"
 msgstr ""
 
 #: src/components/systemd-table/systemd-table.tsx
@@ -2038,6 +2102,10 @@ msgstr "通用令牌"
 #: src/lib/i18n.ts
 msgid "Unknown"
 msgstr "未知"
+
+#: src/main.tsx
+msgid "Unknown route"
+msgstr ""
 
 #: src/components/systemd-table/systemd-table.tsx
 #: src/components/systemd-table/systemd-table.tsx
@@ -2094,8 +2162,12 @@ msgstr "根分区的使用"
 msgid "Used"
 msgstr "已用"
 
+#: src/components/app-shell.tsx
+msgid "User actions"
+msgstr ""
+
+#: src/components/app-shell.tsx
 #: src/components/command-palette.tsx
-#: src/components/navbar.tsx
 msgid "Users"
 msgstr "用户"
 

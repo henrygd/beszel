@@ -31,7 +31,7 @@ export function FooterRepoLink() {
 					<a
 						href={newVersion.url}
 						target="_blank"
-						className="text-yellow-500 hover:text-yellow-400 duration-75"
+						className="text-warning hover:text-warning/80 duration-75"
 						rel="noopener"
 					>
 						<Trans context="New version available">{newVersion.v} available</Trans>

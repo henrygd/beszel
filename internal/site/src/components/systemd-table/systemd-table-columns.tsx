@@ -3,14 +3,7 @@ import { Button } from "@/components/ui/button"
 import { cn, decimalString, formatBytes, hourWithSeconds } from "@/lib/utils"
 import type { SystemdRecord } from "@/types"
 import { ServiceStatus, ServiceStatusLabels, ServiceSubState, ServiceSubStateLabels } from "@/lib/enums"
-import {
-	ActivityIcon,
-	ArrowUpDownIcon,
-	ClockIcon,
-	CpuIcon,
-	MemoryStickIcon,
-	TerminalSquareIcon,
-} from "lucide-react"
+import { ActivityIcon, ArrowUpDownIcon, ClockIcon, CpuIcon, MemoryStickIcon, TerminalSquareIcon } from "lucide-react"
 import { Badge } from "../ui/badge"
 import { t } from "@lingui/core/macro"
 // import { $allSystemsById } from "@/lib/stores"
@@ -19,16 +12,15 @@ import { t } from "@lingui/core/macro"
 function getSubStateColor(subState: ServiceSubState) {
 	switch (subState) {
 		case ServiceSubState.Running:
-			return "bg-green-500"
+			return "bg-success"
 		case ServiceSubState.Failed:
-			return "bg-red-500"
+			return "bg-destructive"
 		case ServiceSubState.Dead:
-			return "bg-yellow-500"
+			return "bg-warning"
 		default:
 			return "bg-zinc-500"
 	}
 }
-
 
 export const systemdTableCols: ColumnDef<SystemdRecord>[] = [
 	{
@@ -160,20 +152,27 @@ export const systemdTableCols: ColumnDef<SystemdRecord>[] = [
 		header: ({ column }) => <HeaderButton column={column} name={t`Updated`} Icon={ClockIcon} />,
 		cell: ({ getValue }) => {
 			const timestamp = getValue() as number
-			return (
-				<span className="ms-1.5 tabular-nums">
-					{hourWithSeconds(new Date(timestamp).toISOString())}
-				</span>
-			)
+			return <span className="ms-1.5 tabular-nums">{hourWithSeconds(new Date(timestamp).toISOString())}</span>
 		},
 	},
 ]
 
-function HeaderButton({ column, name, Icon }: { column: Column<SystemdRecord>; name: string; Icon: React.ElementType }) {
+function HeaderButton({
+	column,
+	name,
+	Icon,
+}: {
+	column: Column<SystemdRecord>
+	name: string
+	Icon: React.ElementType
+}) {
 	const isSorted = column.getIsSorted()
 	return (
 		<Button
-			className={cn("h-9 px-3 flex items-center gap-2 duration-50", isSorted && "bg-accent/70 light:bg-accent text-accent-foreground/90")}
+			className={cn(
+				"h-9 px-3 flex items-center gap-2 duration-50",
+				isSorted && "bg-accent/70 light:bg-accent text-accent-foreground/90"
+			)}
 			variant="ghost"
 			onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
 		>
@@ -187,13 +186,13 @@ function HeaderButton({ column, name, Icon }: { column: Column<SystemdRecord>; n
 export function getStatusColor(status: ServiceStatus) {
 	switch (status) {
 		case ServiceStatus.Active:
-			return "bg-green-500"
+			return "bg-success"
 		case ServiceStatus.Failed:
-			return "bg-red-500"
+			return "bg-destructive"
 		case ServiceStatus.Reloading:
 		case ServiceStatus.Activating:
 		case ServiceStatus.Deactivating:
-			return "bg-yellow-500"
+			return "bg-warning"
 		default:
 			return "bg-zinc-500"
 	}

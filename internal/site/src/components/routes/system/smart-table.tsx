@@ -36,6 +36,7 @@ import { Input } from "@/components/ui/input"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import { toast } from "@/components/ui/use-toast"
 import { isReadOnlyUser, pb } from "@/lib/api"
 import type { SmartDeviceRecord, SmartAttribute } from "@/types"
 import {
@@ -409,6 +410,11 @@ export default function DisksTable({ systemId }: { systemId?: string }) {
 			})
 		} catch (error) {
 			console.error("Failed to refresh SMART device:", error)
+			toast({
+				title: t`Unable to refresh S.M.A.R.T. data`,
+				description: t`Please check the hub logs for this system.`,
+				variant: "destructive",
+			})
 		} finally {
 			setRowActionState((state) => (state?.id === disk.id ? null : state))
 		}
@@ -421,6 +427,10 @@ export default function DisksTable({ systemId }: { systemId?: string }) {
 			// setSmartDevices((current) => current?.filter((device) => device.id !== disk.id))
 		} catch (error) {
 			console.error("Failed to delete SMART device:", error)
+			toast({
+				title: t`Unable to delete S.M.A.R.T. device`,
+				variant: "destructive",
+			})
 		} finally {
 			setRowActionState((state) => (state?.id === disk.id ? null : state))
 		}
@@ -793,7 +803,7 @@ function DiskSheet({
 							<Alert className="pb-3 shrink-0">
 								{status === "PASSED" ? <CheckCircle2Icon className="size-4" /> : <XCircleIcon className="size-4" />}
 								<AlertTitle>
-									<Trans>S.M.A.R.T. Self-Test</Trans>: {status}
+									<Trans>S.M.A.R.T. Health</Trans>: {status}
 								</AlertTitle>
 								{failedAttributes.length > 0 && (
 									<AlertDescription>

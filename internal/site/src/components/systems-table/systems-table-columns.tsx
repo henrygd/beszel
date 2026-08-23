@@ -74,10 +74,10 @@ import {
 } from "../ui/icons"
 
 const STATUS_COLORS = {
-	[SystemStatus.Up]: "bg-green-500",
-	[SystemStatus.Down]: "bg-red-500",
-	[SystemStatus.Paused]: "bg-primary/40",
-	[SystemStatus.Pending]: "bg-yellow-500",
+	[SystemStatus.Up]: "bg-success",
+	[SystemStatus.Down]: "bg-destructive",
+	[SystemStatus.Paused]: "bg-muted-foreground/50",
+	[SystemStatus.Pending]: "bg-warning",
 } as const
 
 function getMeterStateByThresholds(value: number, warn = 65, crit = 90): MeterState {
@@ -115,7 +115,10 @@ export function SystemsTableColumns(viewMode: "table" | "grid"): ColumnDef<Syste
 						filterInput = newFilterInput
 						filterInputLower = newFilterInput.toLowerCase()
 					}
-					if (sys.host?.toLowerCase().includes(filterInputLower) || sys.info?.v?.toLowerCase().includes(filterInputLower)) {
+					if (
+						sys.host?.toLowerCase().includes(filterInputLower) ||
+						sys.info?.v?.toLowerCase().includes(filterInputLower)
+					) {
 						return true
 					}
 					let nameLower = nameCache.get(sys.name)
@@ -301,7 +304,7 @@ export function SystemsTableColumns(viewMode: "table" | "grid"): ColumnDef<Syste
 
 				if (state !== BatteryState.Charging) {
 					if (pct < 25) {
-						iconColor = pct < 11 ? "text-red-500" : "text-yellow-500"
+						iconColor = pct < 11 ? "text-destructive" : "text-warning"
 						Icon = BatteryLowIcon
 					} else if (pct < 75) {
 						Icon = BatteryMediumIcon
@@ -398,9 +401,9 @@ export function SystemsTableColumns(viewMode: "table" | "grid"): ColumnDef<Syste
 				}
 				const system = info.row.original
 				const color = {
-					"text-green-500": version === globalThis.BESZEL.HUB_VERSION,
-					"text-yellow-500": version !== globalThis.BESZEL.HUB_VERSION,
-					"text-red-500": system.status !== SystemStatus.Up,
+					"text-success": version === globalThis.BESZEL.HUB_VERSION,
+					"text-warning": version !== globalThis.BESZEL.HUB_VERSION,
+					"text-destructive": system.status !== SystemStatus.Up,
 				}
 				return (
 					<Link

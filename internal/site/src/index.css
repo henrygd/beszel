@@ -5,67 +5,83 @@
 @custom-variant dark (&:is(.dark *));
 @custom-variant safari (@supports (hanging-punctuation: first) and (-webkit-appearance: none));
 
+/* ---------------------------------------------------------------------------
+ * Beszel design system — "Instrument Rack"
+ *
+ * A calm, engineering-grade surface system for a monitoring instrument.
+ * - Neutrals are cool graphite, layered by elevation (never pure black)
+ * - Teal is the brand + primary-action color, used sparingly
+ * - Saturated color is reserved for status + data (charts, LEDs, alerts)
+ * - Numerals are always tabular; data is set in JetBrains Mono
+ * ------------------------------------------------------------------------- */
+
 :root {
-	--background: hsl(180 20% 97%);
-	--foreground: hsl(195 44% 11%);
-	--card: hsl(180 25% 99%);
-	--card-foreground: hsl(195 44% 11%);
+	--background: hsl(210 25% 97%);
+	--foreground: hsl(216 32% 12%);
+	--card: hsl(0 0% 100%);
+	--card-foreground: hsl(216 32% 12%);
 	--popover: hsl(0 0% 100%);
-	--popover-foreground: hsl(195 44% 11%);
-	--primary: hsl(176 88% 27%);
-	--primary-foreground: hsl(0 0% 100%);
-	--secondary: hsl(180 22% 92%);
-	--secondary-foreground: hsl(195 44% 14%);
-	--muted: hsl(184 17% 93%);
-	--muted-foreground: hsl(193 14% 37%);
-	--accent: hsl(172 43% 89%);
-	--accent-foreground: hsl(176 86% 20%);
-	--destructive: hsl(358 58% 55%);
-	--destructive-foreground: hsl(0 0% 97%);
-	--border: hsl(184 18% 85%);
-	--input: hsl(184 16% 72%);
-	--ring: hsl(176 83% 35%);
-	--radius: 0.8rem;
-	--chart-1: hsl(220 70% 50%);
-	--chart-2: hsl(160 60% 45%);
-	--chart-3: hsl(30 80% 55%);
-	--chart-4: hsl(280 65% 60%);
-	--chart-5: hsl(340 75% 55%);
-	--table-header: hsl(180 21% 96%);
-	--chart-saturation: 65%;
-	--chart-lightness: 50%;
+	--popover-foreground: hsl(216 32% 12%);
+	--primary: hsl(172 72% 26%);
+	--primary-foreground: hsl(180 30% 98%);
+	--secondary: hsl(213 18% 93%);
+	--secondary-foreground: hsl(216 30% 16%);
+	--muted: hsl(213 18% 94%);
+	--muted-foreground: hsl(217 11% 42%);
+	--accent: hsl(196 28% 93%);
+	--accent-foreground: hsl(206 34% 15%);
+	--destructive: hsl(0 62% 44%);
+	--destructive-foreground: hsl(0 0% 98%);
+	--success: hsl(155 58% 34%);
+	--warning: hsl(36 85% 42%);
+	--border: hsl(213 16% 88%);
+	--input: hsl(213 14% 78%);
+	--ring: hsl(172 65% 34%);
+	--radius: 0.625rem;
+	--chart-1: hsl(172 66% 38%);
+	--chart-2: hsl(213 72% 52%);
+	--chart-3: hsl(262 58% 58%);
+	--chart-4: hsl(35 88% 48%);
+	--chart-5: hsl(345 66% 54%);
+	--table-header: hsl(211 20% 95%);
+	--chart-saturation: 64%;
+	--chart-lightness: 44%;
 	--container: 1500px;
 }
 
 .dark {
 	color-scheme: dark;
-	--background: hsl(210 63% 7%);
-	--foreground: hsl(180 18% 94%);
-	--card: hsl(205 51% 11%);
-	--card-foreground: hsl(180 18% 94%);
-	--popover: hsl(205 54% 9%);
-	--popover-foreground: hsl(180 18% 94%);
-	--primary: hsl(173 60% 54%);
-	--primary-foreground: hsl(176 71% 9%);
-	--secondary: hsl(204 45% 15%);
-	--secondary-foreground: hsl(180 18% 94%);
-	--muted: hsl(205 45% 14%);
-	--muted-foreground: hsl(194 12% 66%);
-	--accent: hsl(177 53% 15%);
-	--accent-foreground: hsl(173 67% 70%);
-	--destructive: hsl(358 64% 58%);
-	--border: hsl(202 36% 22%);
-	--input: hsl(199 30% 29%);
-	--ring: hsl(173 60% 54%);
-	--table-header: hsl(205 48% 12%);
-	--radius: 0.8rem;
-	--chart-saturation: 60%;
-	--chart-lightness: 55%;
+	--background: hsl(222 30% 7%);
+	--foreground: hsl(210 24% 94%);
+	--card: hsl(219 26% 10%);
+	--card-foreground: hsl(210 24% 94%);
+	--popover: hsl(220 27% 11%);
+	--popover-foreground: hsl(210 24% 94%);
+	--primary: hsl(170 60% 45%);
+	--primary-foreground: hsl(222 35% 8%);
+	--secondary: hsl(218 20% 15%);
+	--secondary-foreground: hsl(210 24% 94%);
+	--muted: hsl(218 20% 14%);
+	--muted-foreground: hsl(215 13% 62%);
+	--accent: hsl(202 26% 15%);
+	--accent-foreground: hsl(196 30% 92%);
+	--destructive: hsl(0 68% 58%);
+	--destructive-foreground: hsl(0 0% 98%);
+	--success: hsl(155 52% 46%);
+	--warning: hsl(38 88% 54%);
+	--border: hsl(218 19% 18%);
+	--input: hsl(218 18% 24%);
+	--ring: hsl(170 55% 45%);
+	--table-header: hsl(219 24% 12%);
+	--chart-saturation: 58%;
+	--chart-lightness: 54%;
 }
 
 @theme inline {
 	--font-sans: InterVariable, Inter, ui-sans-serif, system-ui, sans-serif;
-	--font-mono: ui-monospace, "SFMono-Regular", "Cascadia Code", "Roboto Mono", monospace;
+	--font-display: SpaceGroteskVariable, "Space Grotesk", InterVariable, ui-sans-serif, system-ui, sans-serif;
+	--font-mono:
+		JetBrainsMonoVariable, "JetBrains Mono", ui-monospace, "SFMono-Regular", "Cascadia Code", "Roboto Mono", monospace;
 
 	--breakpoint-xs: 26.6rem;
 	--breakpoint-450: 28rem;
@@ -75,6 +91,7 @@
 	--radius-md: calc(var(--radius) - 2px);
 	--radius-lg: var(--radius);
 	--radius-xl: calc(var(--radius) + 4px);
+	--radius-2xl: calc(var(--radius) + 8px);
 
 	--color-green-50: hsl(140 60% 95%);
 	--color-green-100: hsl(140 50% 90%);
@@ -106,6 +123,8 @@
 	--color-accent-foreground: var(--accent-foreground);
 	--color-destructive: var(--destructive);
 	--color-destructive-foreground: var(--destructive-foreground);
+	--color-success: var(--success);
+	--color-warning: var(--warning);
 	--color-border: var(--border);
 	--color-input: var(--input);
 	--color-ring: var(--ring);
@@ -132,6 +151,22 @@
 		font-display: swap;
 		src: url("../static/InterVariable.woff2?v=4.0") format("woff2");
 	}
+
+	@font-face {
+		font-family: SpaceGroteskVariable;
+		font-style: normal;
+		font-weight: 300 700;
+		font-display: swap;
+		src: url("../static/SpaceGroteskVariable.woff2?v=1.0") format("woff2");
+	}
+
+	@font-face {
+		font-family: JetBrainsMonoVariable;
+		font-style: normal;
+		font-weight: 100 800;
+		font-display: swap;
+		src: url("../static/JetBrainsMonoVariable.woff2?v=1.0") format("woff2");
+	}
 }
 
 @layer base {
@@ -143,31 +178,25 @@
 	body {
 		@apply bg-background text-foreground;
 		min-height: 100vh;
-		background-image:
-			linear-gradient(hsl(176 45% 45% / 0.025) 1px, transparent 1px),
-			linear-gradient(90deg, hsl(176 45% 45% / 0.025) 1px, transparent 1px),
-			radial-gradient(circle at 12% -8%, hsl(171 52% 84% / 0.48), transparent 30rem);
-		background-size:
-			32px 32px,
-			32px 32px,
-			auto;
 		font-variant-ligatures: no-contextual;
 		text-rendering: optimizeLegibility;
 	}
 
-	.dark body {
-		background-image:
-			linear-gradient(hsl(173 60% 54% / 0.022) 1px, transparent 1px),
-			linear-gradient(90deg, hsl(173 60% 54% / 0.022) 1px, transparent 1px),
-			radial-gradient(circle at 10% -10%, hsl(173 60% 32% / 0.18), transparent 30rem);
-		background-size:
-			32px 32px,
-			32px 32px,
-			auto;
+	h1,
+	h2,
+	h3 {
+		font-family: var(--font-display);
+		letter-spacing: -0.015em;
 	}
 
 	::selection {
-		background: hsl(173 60% 54% / 0.28);
+		background: color-mix(in srgb, var(--primary) 26%, transparent);
+	}
+
+	/* Slim scrollbars that match the surface */
+	* {
+		scrollbar-width: thin;
+		scrollbar-color: color-mix(in srgb, var(--muted-foreground) 32%, transparent) transparent;
 	}
 
 	.skip-link {
@@ -177,8 +206,8 @@
 		z-index: 100;
 		transform: translateY(-180%);
 		border: 1px solid color-mix(in srgb, var(--ring) 45%, transparent);
-		border-radius: 0.65rem;
-		background: color-mix(in srgb, var(--card) 96%, transparent);
+		border-radius: var(--radius-md);
+		background: var(--popover);
 		padding: 0.65rem 0.85rem;
 		font-size: 0.8rem;
 		font-weight: 700;
@@ -203,69 +232,83 @@
 	}
 }
 
-.network-inventory {
+/* --- Signature texture: fine engineering grid, used sparingly ----------- */
+
+.bg-blueprint {
 	background-image:
-		linear-gradient(hsl(176 88% 27% / 0.035) 1px, transparent 1px),
-		linear-gradient(90deg, hsl(176 88% 27% / 0.035) 1px, transparent 1px);
+		linear-gradient(color-mix(in srgb, var(--primary) 4.5%, transparent) 1px, transparent 1px),
+		linear-gradient(90deg, color-mix(in srgb, var(--primary) 4.5%, transparent) 1px, transparent 1px);
+	background-size: 28px 28px;
 	background-position: -1px -1px;
-	background-size: 24px 24px;
 }
 
-.signal-glow {
-	box-shadow: 0 0 32px color-mix(in srgb, var(--primary) 16%, transparent);
+/* --- LEDs: the app's status vocabulary ----------------------------------- */
+
+.led {
+	position: relative;
+	display: inline-block;
+	border-radius: 9999px;
+	background: var(--muted-foreground);
 }
 
-.login-card-glow {
-	box-shadow: 0 24px 80px -36px color-mix(in srgb, var(--foreground) 35%, transparent);
+.led::after {
+	content: "";
+	position: absolute;
+	inset: -3px;
+	border-radius: 9999px;
+	background: inherit;
+	opacity: 0.25;
+	filter: blur(3px);
 }
 
-.dark .network-inventory {
-	background-image:
-		linear-gradient(hsl(190 88% 58% / 0.045) 1px, transparent 1px),
-		linear-gradient(90deg, hsl(190 88% 58% / 0.045) 1px, transparent 1px);
+.led-up {
+	background: var(--success);
 }
 
-.network-inventory-icon {
-	box-shadow:
-		inset 0 1px 0 hsl(0 0% 100% / 0.18),
-		0 8px 24px hsl(176 88% 27% / 0.08);
+.led-down {
+	background: var(--destructive);
 }
 
-.fleet-pulse-track {
-	background-image: repeating-linear-gradient(90deg, transparent 0 7px, hsl(0 0% 100% / 0.2) 7px 8px);
+.led-pending {
+	background: var(--warning);
 }
 
-.signal-scan {
-	background: linear-gradient(90deg, transparent, hsl(173 60% 54% / 0.35), transparent);
-	animation: signal-scan 4.5s ease-in-out infinite;
+.led-paused {
+	background: color-mix(in srgb, var(--muted-foreground) 55%, transparent);
 }
 
-@keyframes signal-scan {
+.led-up.led-live,
+.led-down.led-live {
+	animation: led-breathe 2.4s ease-in-out infinite;
+}
+
+.led-down.led-live {
+	animation-duration: 1.4s;
+}
+
+@keyframes led-breathe {
 	0%,
-	18% {
-		transform: translateX(-110%);
-		opacity: 0;
-	}
-	35% {
+	100% {
+		box-shadow: 0 0 0 0 color-mix(in srgb, currentColor 0%, transparent);
 		opacity: 1;
 	}
-	72%,
-	100% {
-		transform: translateX(110%);
-		opacity: 0;
+	50% {
+		opacity: 0.62;
 	}
 }
 
-@media (prefers-reduced-motion: reduce) {
-	*,
-	*::before,
-	*::after {
-		animation-duration: 0.01ms !important;
-		animation-iteration-count: 1 !important;
-		scroll-behavior: auto !important;
-		transition-duration: 0.01ms !important;
-	}
+/* Rack ticks — per-system status bars on the fleet dashboard */
+.rack-tick {
+	transition:
+		transform 120ms ease,
+		opacity 120ms ease;
 }
+
+.rack-tick:hover {
+	transform: scaleY(1.28);
+}
+
+/* --- Utilities ------------------------------------------------------------ */
 
 @utility container {
 	max-width: var(--container);
@@ -293,6 +336,16 @@
 	@apply text-[1.4rem] sm:text-2xl;
 }
 
+/* Mono eyebrow label — section marker used across screens */
+@utility eyebrow {
+	font-family: var(--font-mono);
+	font-size: 0.65rem;
+	font-weight: 600;
+	letter-spacing: 0.18em;
+	text-transform: uppercase;
+	color: var(--muted-foreground);
+}
+
 .recharts-tooltip-wrapper {
 	z-index: 51;
 	@apply tabular-nums;
@@ -300,4 +353,40 @@
 
 .recharts-yAxis {
 	@apply tabular-nums;
+}
+
+/* Skeleton shimmer placeholder */
+.skeleton {
+	background:
+		linear-gradient(90deg, transparent, color-mix(in srgb, var(--foreground) 5%, transparent), transparent) no-repeat,
+		var(--muted);
+	background-size:
+		200% 100%,
+		auto;
+	border-radius: var(--radius-md);
+	animation: shimmer 1.8s ease-in-out infinite;
+}
+
+@keyframes shimmer {
+	0% {
+		background-position:
+			200% 0,
+			0 0;
+	}
+	100% {
+		background-position:
+			-200% 0,
+			0 0;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	*,
+	*::before,
+	*::after {
+		animation-duration: 0.01ms !important;
+		animation-iteration-count: 1 !important;
+		scroll-behavior: auto !important;
+		transition-duration: 0.01ms !important;
+	}
 }

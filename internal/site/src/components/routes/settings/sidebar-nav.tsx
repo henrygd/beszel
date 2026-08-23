@@ -5,7 +5,6 @@ import { Separator } from "@/components/ui/separator"
 import { isAdmin, isReadOnlyUser } from "@/lib/api"
 import { cn } from "@/lib/utils"
 import { $router, Link, navigate } from "../../router"
-import { buttonVariants } from "../../ui/button"
 
 interface SidebarNavProps extends React.HTMLAttributes<HTMLElement> {
 	items: {
@@ -47,24 +46,32 @@ export function SidebarNav({ className, items, ...props }: SidebarNavProps) {
 			</div>
 
 			{/* Desktop View */}
-			<nav className={cn("hidden md:grid gap-1 sticky top-6", className)} {...props}>
+			<nav className={cn("hidden md:grid gap-0.5 sticky top-6", className)} {...props}>
 				{items.map((item) => {
 					if ((item.admin && !isAdmin()) || (item.noReadOnly && isReadOnlyUser())) {
 						return null
 					}
+					const active = page?.path === item.href
 					return (
 						<Link
 							onMouseEnter={() => item.preload?.()}
 							key={item.href}
 							href={item.href}
 							className={cn(
-								buttonVariants({ variant: "ghost" }),
-								"flex items-center gap-3 justify-start truncate duration-50",
-								page?.path === item.href ? "bg-muted hover:bg-accent/70" : "hover:bg-accent/50"
+								"relative flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors",
+								active
+									? "bg-accent text-accent-foreground"
+									: "text-muted-foreground hover:bg-accent/60 hover:text-accent-foreground"
 							)}
-							aria-current={page?.path === item.href ? "page" : undefined}
+							aria-current={active ? "page" : undefined}
 						>
-							{item.icon && <item.icon className="size-4 shrink-0" />}
+							{active && (
+								<span
+									aria-hidden="true"
+									className="absolute start-0 top-1/2 h-4 w-[3px] -translate-y-1/2 rounded-full bg-primary"
+								/>
+							)}
+							{item.icon && <item.icon className="size-4 shrink-0" strokeWidth={1.75} />}
 							<span className="truncate">{item.title}</span>
 						</Link>
 					)

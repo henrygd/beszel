@@ -124,8 +124,6 @@ msgstr "Active state"
 
 #: src/components/add-system.tsx
 #: src/components/add-system.tsx
-#: src/components/navbar.tsx
-#: src/components/navbar.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Add {foo}"
@@ -134,6 +132,14 @@ msgstr "Add {foo}"
 #: src/components/fleet-overview.tsx
 msgid "Add first system"
 msgstr "Add first system"
+
+#: src/components/app-shell.tsx
+#: src/components/app-shell.tsx
+#: src/components/app-shell.tsx
+#: src/components/app-shell.tsx
+#: src/components/app-shell.tsx
+msgid "Add System"
+msgstr "Add System"
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Add URL"
@@ -153,7 +159,6 @@ msgstr "Adjust the width of the main layout"
 
 #: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
-#: src/components/navbar.tsx
 msgid "Admin"
 msgstr "Admin"
 
@@ -184,10 +189,10 @@ msgstr "Alert History"
 msgid "Alerts"
 msgstr "Alerts"
 
+#: src/components/app-shell.tsx
 #: src/components/command-palette.tsx
 #: src/components/containers-table/containers-table.tsx
-#: src/components/navbar.tsx
-#: src/components/navbar.tsx
+#: src/components/routes/containers.tsx
 #: src/components/routes/containers.tsx
 msgid "All Containers"
 msgstr "All Containers"
@@ -261,8 +266,8 @@ msgstr "Average utilization of {0}"
 msgid "Average utilization of GPU engines"
 msgstr "Average utilization of GPU engines"
 
+#: src/components/app-shell.tsx
 #: src/components/command-palette.tsx
-#: src/components/navbar.tsx
 msgid "Backups"
 msgstr "Backups"
 
@@ -302,8 +307,8 @@ msgid "Below {0}{1} in last {2, plural, one {# minute} other {# minutes}}"
 msgstr "Below {0}{1} in last {2, plural, one {# minute} other {# minutes}}"
 
 #: src/components/login/login.tsx
-msgid "Beszel control plane"
-msgstr "Beszel control plane"
+#~ msgid "Beszel control plane"
+#~ msgstr "Beszel control plane"
 
 #: src/components/login/auth-form.tsx
 msgid "Beszel supports OpenID Connect and many OAuth2 authentication providers."
@@ -411,6 +416,7 @@ msgid "Check your notification service"
 msgstr "Check your notification service"
 
 #: src/components/containers-table/containers-table.tsx
+#: src/components/routes/system/chart-card.tsx
 #: src/components/routes/system/smart-table.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "Clear"
@@ -425,12 +431,17 @@ msgid "Click on a device to view more information."
 msgstr "Click on a device to view more information."
 
 #: src/components/systems-table/systems-table.tsx
-msgid "Click on a system to view more information."
-msgstr "Click on a system to view more information."
+#~ msgid "Click on a system to view more information."
+#~ msgstr "Click on a system to view more information."
 
 #: src/components/ui/input-copy.tsx
 msgid "Click to copy"
 msgstr "Click to copy"
+
+#: src/components/app-shell.tsx
+#: src/components/app-shell.tsx
+msgid "Collapse sidebar"
+msgstr "Collapse sidebar"
 
 #: src/components/login/forgot-pass-form.tsx
 #: src/components/login/forgot-pass-form.tsx
@@ -590,8 +601,8 @@ msgid "Cumulative Upload"
 msgstr "Cumulative Upload"
 
 #: src/components/fleet-overview.tsx
-msgid "Current connection state"
-msgstr "Current connection state"
+#~ msgid "Current connection state"
+#~ msgstr "Current connection state"
 
 #. Context: Battery state
 #. Context: Battery state
@@ -707,7 +718,6 @@ msgstr "down"
 #. Context: System is down
 #: src/components/alerts-history-columns.tsx
 #: src/components/fleet-overview.tsx
-#: src/components/fleet-overview.tsx
 #: src/components/routes/system/info-bar.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 #: src/lib/alerts.ts
@@ -820,6 +830,11 @@ msgstr "Existing systems not defined in <0>config.yml</0> will be deleted. Pleas
 msgid "Exited active"
 msgstr "Exited active"
 
+#: src/components/app-shell.tsx
+#: src/components/app-shell.tsx
+msgid "Expand sidebar"
+msgstr "Expand sidebar"
+
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Expires after one hour or on hub restart."
 msgstr "Expires after one hour or on hub restart."
@@ -916,10 +931,18 @@ msgstr "Fingerprint"
 msgid "Firmware"
 msgstr "Firmware"
 
+#: src/components/app-shell.tsx
 #: src/components/fleet-overview.tsx
-msgid "Fleet awaiting signal"
-msgstr "Fleet awaiting signal"
+#: src/components/routes/containers.tsx
+#: src/components/routes/smart.tsx
+msgid "Fleet"
+msgstr "Fleet"
 
+#: src/components/fleet-overview.tsx
+#~ msgid "Fleet awaiting signal"
+#~ msgstr "Fleet awaiting signal"
+
+#: src/components/fleet-overview.tsx
 #: src/components/fleet-overview.tsx
 msgid "Fleet status"
 msgstr "Fleet status"
@@ -991,6 +1014,11 @@ msgstr "Heartbeat Monitoring"
 msgid "Heartbeat sent successfully"
 msgstr "Heartbeat sent successfully"
 
+#: src/components/app-shell.tsx
+#: src/components/app-shell.tsx
+msgid "Home"
+msgstr "Home"
+
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgctxt "Button to copy install command"
@@ -1002,8 +1030,8 @@ msgid "Host / IP"
 msgstr "Host / IP"
 
 #: src/components/routes/system/network-interfaces.tsx
-msgid "Host inventory"
-msgstr "Host inventory"
+#~ msgid "Host inventory"
+#~ msgstr "Host inventory"
 
 #: src/components/routes/settings/heartbeat.tsx
 msgid "HTTP Method"
@@ -1055,8 +1083,8 @@ msgid "Interval"
 msgstr "Interval"
 
 #: src/components/navbar.tsx
-msgid "Intranet console"
-msgstr "Intranet console"
+#~ msgid "Intranet console"
+#~ msgstr "Intranet console"
 
 #: src/components/login/auth-form.tsx
 msgid "Invalid email address."
@@ -1092,12 +1120,12 @@ msgid "Link speed"
 msgstr "Link speed"
 
 #: src/components/fleet-overview.tsx
-msgid "Live fleet pulse"
-msgstr "Live fleet pulse"
+#~ msgid "Live fleet pulse"
+#~ msgstr "Live fleet pulse"
 
 #: src/components/routes/system/info-bar.tsx
-msgid "Live host snapshot"
-msgstr "Live host snapshot"
+#~ msgid "Live host snapshot"
+#~ msgstr "Live host snapshot"
 
 #: src/components/login/login.tsx
 msgid "Live telemetry"
@@ -1129,6 +1157,8 @@ msgid "Load state"
 msgstr "Load state"
 
 #: src/components/login/login.tsx
+#: src/main.tsx
+#: src/main.tsx
 msgid "Loading"
 msgstr "Loading"
 
@@ -1136,8 +1166,7 @@ msgstr "Loading"
 msgid "Loading..."
 msgstr "Loading..."
 
-#: src/components/navbar.tsx
-#: src/components/navbar.tsx
+#: src/components/app-shell.tsx
 msgid "Log Out"
 msgstr "Log Out"
 
@@ -1150,9 +1179,9 @@ msgstr "Login"
 msgid "Login attempt failed"
 msgstr "Login attempt failed"
 
+#: src/components/app-shell.tsx
 #: src/components/command-palette.tsx
 #: src/components/containers-table/containers-table.tsx
-#: src/components/navbar.tsx
 msgid "Logs"
 msgstr "Logs"
 
@@ -1167,6 +1196,10 @@ msgstr "Loopback"
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Main PID"
 msgstr "Main PID"
+
+#: src/components/app-shell.tsx
+msgid "Manage"
+msgstr "Manage"
 
 #: src/components/routes/settings/layout.tsx
 msgid "Manage display and notification preferences."
@@ -1212,6 +1245,10 @@ msgstr "Memory usage of docker containers"
 #: src/components/routes/system/smart-table.tsx
 msgid "Model"
 msgstr "Model"
+
+#: src/components/app-shell.tsx
+msgid "Monitor"
+msgstr "Monitor"
 
 #: src/components/login/login.tsx
 msgid "Monitor system health, resource pressure, services, containers, and alerts from one private control plane."
@@ -1328,12 +1365,12 @@ msgid "online"
 msgstr "online"
 
 #: src/components/fleet-overview.tsx
-#: src/components/fleet-overview.tsx
 #: src/components/routes/system/network-interfaces.tsx
 #: src/components/routes/system/network-interfaces.tsx
 msgid "Online"
 msgstr "Online"
 
+#: src/components/app-shell.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
@@ -1343,8 +1380,8 @@ msgid "Open menu"
 msgstr "Open menu"
 
 #: src/components/navbar.tsx
-msgid "Operations"
-msgstr "Operations"
+#~ msgid "Operations"
+#~ msgstr "Operations"
 
 #: src/components/login/auth-form.tsx
 msgid "Or continue with"
@@ -1404,7 +1441,6 @@ msgid "paused"
 msgstr "paused"
 
 #: src/components/fleet-overview.tsx
-#: src/components/fleet-overview.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Paused"
 msgstr "Paused"
@@ -1421,7 +1457,6 @@ msgstr "Payload format"
 msgid "pending"
 msgstr "pending"
 
-#: src/components/fleet-overview.tsx
 #: src/components/fleet-overview.tsx
 msgid "Pending"
 msgstr "Pending"
@@ -1458,6 +1493,10 @@ msgstr "Please check logs for more details."
 #: src/components/add-system.tsx
 msgid "Please check the details and try again"
 msgstr "Please check the details and try again"
+
+#: src/components/routes/system/smart-table.tsx
+msgid "Please check the hub logs for this system."
+msgstr "Please check the hub logs for this system."
 
 #: src/components/login/auth-form.tsx
 #: src/components/login/forgot-pass-form.tsx
@@ -1508,8 +1547,8 @@ msgid "Preferred Language"
 msgstr "Preferred Language"
 
 #: src/components/navbar.tsx
-msgid "Primary navigation"
-msgstr "Primary navigation"
+#~ msgid "Primary navigation"
+#~ msgstr "Primary navigation"
 
 #: src/components/login/login.tsx
 msgid "Private by design"
@@ -1602,6 +1641,10 @@ msgstr "Restarts"
 msgid "Resume"
 msgstr "Resume"
 
+#: src/main.tsx
+msgid "Return to fleet"
+msgstr "Return to fleet"
+
 #: src/components/systems-table/systems-table-columns.tsx
 msgctxt "Root disk label"
 msgid "Root"
@@ -1619,13 +1662,21 @@ msgstr "Rows per page"
 msgid "Runtime Metrics"
 msgstr "Runtime Metrics"
 
+#: src/components/routes/smart.tsx
+msgid "S.M.A.R.T."
+msgstr "S.M.A.R.T."
+
 #: src/components/routes/system/smart-table.tsx
 msgid "S.M.A.R.T. Details"
 msgstr "S.M.A.R.T. Details"
 
 #: src/components/routes/system/smart-table.tsx
-msgid "S.M.A.R.T. Self-Test"
-msgstr "S.M.A.R.T. Self-Test"
+msgid "S.M.A.R.T. Health"
+msgstr "S.M.A.R.T. Health"
+
+#: src/components/routes/system/smart-table.tsx
+#~ msgid "S.M.A.R.T. Self-Test"
+#~ msgstr "S.M.A.R.T. Self-Test"
 
 #: src/components/add-system.tsx
 msgid "Save {foo}"
@@ -1656,7 +1707,10 @@ msgstr "Schedule quiet hours where notifications will not be sent, such as durin
 msgid "Schedule quiet hours where notifications will not be sent."
 msgstr "Schedule quiet hours where notifications will not be sent."
 
-#: src/components/navbar.tsx
+#: src/components/app-shell.tsx
+#: src/components/app-shell.tsx
+#: src/components/app-shell.tsx
+#: src/components/app-shell.tsx
 msgid "Search"
 msgstr "Search"
 
@@ -1721,10 +1775,9 @@ msgstr "Set percentage thresholds for meter colors."
 msgid "Set the following environment variables on your Beszel hub to enable heartbeat monitoring:"
 msgstr "Set the following environment variables on your Beszel hub to enable heartbeat monitoring:"
 
+#: src/components/app-shell.tsx
 #: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
-#: src/components/navbar.tsx
-#: src/components/navbar.tsx
 #: src/components/routes/settings/layout.tsx
 #: src/components/routes/settings/layout.tsx
 #: src/components/routes/system/info-bar.tsx
@@ -1791,7 +1844,6 @@ msgstr "Switch theme"
 #: src/components/add-system.tsx
 #: src/components/alerts-history-columns.tsx
 #: src/components/containers-table/containers-table-columns.tsx
-#: src/components/navbar.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/quiet-hours.tsx
@@ -1815,7 +1867,7 @@ msgstr "System load averages over time"
 msgid "Systemd Services"
 msgstr "Systemd Services"
 
-#: src/components/navbar.tsx
+#: src/components/app-shell.tsx
 msgid "Systems"
 msgstr "Systems"
 
@@ -1882,6 +1934,10 @@ msgstr "Then log into the backend and reset your user account password in the us
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "This action cannot be undone. This will permanently delete all current records for {name} from the database."
 msgstr "This action cannot be undone. This will permanently delete all current records for {name} from the database."
+
+#: src/main.tsx
+msgid "This view does not exist."
+msgstr "This view does not exist."
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "This will permanently delete all selected records from the database."
@@ -2007,6 +2063,10 @@ msgstr "Try again"
 msgid "Type"
 msgstr "Type"
 
+#: src/components/routes/system/smart-table.tsx
+msgid "Unable to delete S.M.A.R.T. device"
+msgstr "Unable to delete S.M.A.R.T. device"
+
 #: src/components/login/login.tsx
 msgid "Unable to load sign-in options."
 msgstr "Unable to load sign-in options."
@@ -2014,6 +2074,10 @@ msgstr "Unable to load sign-in options."
 #: src/components/add-system.tsx
 msgid "Unable to load system token"
 msgstr "Unable to load system token"
+
+#: src/components/routes/system/smart-table.tsx
+msgid "Unable to refresh S.M.A.R.T. data"
+msgstr "Unable to refresh S.M.A.R.T. data"
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Unit file"
@@ -2033,6 +2097,10 @@ msgstr "Universal token"
 #: src/lib/i18n.ts
 msgid "Unknown"
 msgstr "Unknown"
+
+#: src/main.tsx
+msgid "Unknown route"
+msgstr "Unknown route"
 
 #: src/components/systemd-table/systemd-table.tsx
 #: src/components/systemd-table/systemd-table.tsx
@@ -2089,8 +2157,12 @@ msgstr "Usage of root partition"
 msgid "Used"
 msgstr "Used"
 
+#: src/components/app-shell.tsx
+msgid "User actions"
+msgstr "User actions"
+
+#: src/components/app-shell.tsx
 #: src/components/command-palette.tsx
-#: src/components/navbar.tsx
 msgid "Users"
 msgstr "Users"
 

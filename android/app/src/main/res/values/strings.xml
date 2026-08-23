@@ -1,4 +1,104 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Beszel</string>
+
+    <!-- Shared actions -->
+    <string name="action_refresh">Refresh</string>
+    <string name="action_search">Search</string>
+    <string name="action_sort">Sort</string>
+    <string name="action_close">Close</string>
+    <string name="action_back">Back</string>
+    <string name="action_cancel">Cancel</string>
+    <string name="action_try_again">Try again</string>
+
+    <!-- Login -->
+    <string name="login_welcome_title">Welcome to Beszel</string>
+    <string name="login_welcome_subtitle">Your fleet, comfortably in reach.</string>
+    <string name="login_hub_url">Hub URL</string>
+    <string name="login_hub_url_hint">https://beszel.example.com</string>
+    <string name="login_email">Email</string>
+    <string name="login_password">Password</string>
+    <string name="login_show_password">Show password</string>
+    <string name="login_hide_password">Hide password</string>
+    <string name="login_error_url">Enter your hub URL</string>
+    <string name="login_error_email">Enter your email</string>
+    <string name="login_error_password">Enter your password</string>
+    <string name="login_http_warning">HTTP sends credentials without encryption. Use it only on a trusted private network.</string>
+    <string name="login_connect">Connect to hub</string>
+    <string name="login_footer_secure">Credentials are sent securely to your hub</string>
+    <string name="login_footer_insecure">Connected without transport encryption</string>
+
+    <!-- Fleet -->
+    <string name="fleet_search_hint">Search by name or host</string>
+    <string name="fleet_systems_title">Systems</string>
+    <plurals name="fleet_systems_count">
+        <item quantity="one">%1$d of %2$d shown</item>
+        <item quantity="other">%1$d of %2$d shown</item>
+    </plurals>
+    <string name="fleet_filter_all">All</string>
+    <string name="fleet_filter_alerting">Alerting</string>
+    <string name="fleet_filter_down">Down</string>
+    <string name="fleet_empty_title">No systems yet</string>
+    <string name="fleet_empty_message">Add systems from your Beszel hub dashboard, then refresh to see them here.</string>
+    <string name="fleet_no_matches_title">No matching systems</string>
+    <string name="fleet_no_matches_message">Try a different search or switch the filter back to All.</string>
+    <string name="sort_name">Name</string>
+    <string name="sort_status">Status</string>
+    <string name="sort_cpu">CPU usage</string>
+
+    <!-- System detail -->
+    <string name="metric_cpu">CPU</string>
+    <string name="metric_memory">Memory</string>
+    <string name="metric_disk">Disk</string>
+    <string name="metric_network">Network</string>
+    <string name="metric_current_usage">Current usage</string>
+    <string name="metric_root_filesystem">Root filesystem</string>
+    <string name="network_in">In</string>
+    <string name="network_out">Out</string>
+    <string name="detail_monitored_system">Monitored system</string>
+    <string name="detail_load_format">load %1$.2f</string>
+    <string name="detail_history_title">History</string>
+    <string name="detail_chart_description">%1$s history chart. Drag to inspect values.</string>
+    <string name="detail_chart_empty">Not enough historical data yet</string>
+    <string name="detail_host_info">Host information</string>
+    <string name="detail_host">Host</string>
+    <string name="detail_agent">Agent</string>
+    <string name="detail_agent_unknown">Unknown</string>
+    <string name="detail_status">Status</string>
+
+    <!-- Alerts -->
+    <string name="alerts_none_title">No alerts yet</string>
+    <string name="alerts_none_message">Configure alert rules in your Beszel hub and trigger summaries will appear here.</string>
+    <string name="alerts_all_clear_title">All clear</string>
+    <string name="alerts_all_clear_message">No thresholds are currently breached.</string>
+    <string name="alerts_active_title">Active now</string>
+    <plurals name="alerts_active_count">
+        <item quantity="one">%1$d alert needs attention</item>
+        <item quantity="other">%1$d alerts need attention</item>
+    </plurals>
+    <string name="alerts_unknown_system">System</string>
+    <string name="alerts_history_title">Recent history</string>
+    <string name="alerts_history_value">Triggered at %1$s</string>
+    <string name="alerts_resolved">Resolved</string>
+    <string name="alerts_active">Active</string>
+
+    <!-- Settings -->
+    <string name="settings_title">Settings</string>
+    <string name="settings_connection">CONNECTION</string>
+    <string name="settings_hub">Beszel hub</string>
+    <string name="settings_signed_in_as">Signed in as</string>
+    <string name="settings_open_hub">Open hub in browser</string>
+    <string name="settings_appearance">APPEARANCE</string>
+    <string name="settings_dynamic_color">Dynamic color</string>
+    <string name="settings_dynamic_color_hint">Tint the interface with your wallpaper colors</string>
+    <string name="settings_about">ABOUT</string>
+    <string name="settings_private_title">Private by design</string>
+    <string name="settings_private_message">This app talks directly to your Beszel hub. Your session stays in this app\'s private storage. Use HTTPS outside a trusted LAN.</string>
+    <string name="settings_sign_out">Sign out</string>
+    <string name="settings_version">Beszel for Android · %1$s</string>
+    <string name="settings_sign_out_confirm_title">Sign out?</string>
+    <string name="settings_sign_out_confirm_message">You will need your hub URL and password to sign in again.</string>
+    <string name="theme_system">System</string>
+    <string name="theme_light">Light</string>
+    <string name="theme_dark">Dark</string>
 </resources>

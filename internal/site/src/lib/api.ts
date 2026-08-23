@@ -1,6 +1,4 @@
 import { t } from "@lingui/core/macro"
-import PocketBase from "pocketbase"
-import { basePath } from "@/components/router"
 import { toast } from "@/components/ui/use-toast"
 import type { ChartTimes, UserSettings } from "@/types"
 import {
@@ -13,9 +11,10 @@ import {
 	$userSettings,
 } from "./stores"
 import { chartTimeData } from "./utils"
+import { pb } from "./pb"
 
 /** PocketBase JS Client */
-export const pb = new PocketBase(basePath)
+export { pb }
 
 export const isAdmin = () => pb.authStore.record?.role === "admin"
 export const isReadOnlyUser = () => pb.authStore.record?.role === "readonly"

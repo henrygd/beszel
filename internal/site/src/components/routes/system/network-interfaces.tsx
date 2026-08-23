@@ -75,38 +75,30 @@ export default function NetworkInterfaces({ interfaces }: { interfaces?: Network
 	const sortedInterfaces = [...interfaces].sort((a, b) => (b.speed ?? 0) - (a.speed ?? 0) || a.name.localeCompare(b.name))
 
 	return (
-		<Card className="network-inventory overflow-hidden border-primary/15 bg-card/80 shadow-sm">
-			<CardHeader className="relative z-10 border-b border-border/60 px-4 py-5 sm:px-6">
-				<div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-					<div className="flex min-w-0 items-start gap-3.5">
-						<div className="network-inventory-icon grid size-10 shrink-0 place-items-center rounded-xl border border-primary/20 bg-primary/10 text-primary shadow-inner">
-							<NetworkIcon className="size-5" strokeWidth={1.7} />
-						</div>
-						<div className="min-w-0">
-							<div className="mb-1 font-mono text-[0.65rem] font-semibold uppercase tracking-[0.18em] text-primary/80">
-								{t`Host inventory`}
-							</div>
-							<CardTitle className="text-xl sm:text-2xl">{t`Network interfaces`}</CardTitle>
-							<CardDescription className="mt-1 max-w-2xl leading-relaxed">
-								{t`Detected links, addresses, and negotiated speeds reported by the agent`}
-							</CardDescription>
-						</div>
+		<Card className="overflow-hidden">
+			<CardHeader className="border-b px-4 py-5 sm:px-6">
+				<div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+					<div className="min-w-0">
+						<CardTitle className="text-lg sm:text-xl">{t`Network interfaces`}</CardTitle>
+						<CardDescription className="mt-1 max-w-2xl">
+							{t`Detected links, addresses, and negotiated speeds reported by the agent`}
+						</CardDescription>
 					</div>
-					<Badge variant="outline" className="w-fit gap-1.5 border-primary/25 bg-primary/5 px-2.5 py-1 font-mono text-[0.68rem] uppercase tracking-[0.1em]">
+					<Badge variant="outline" className="w-fit gap-1.5 px-2.5 py-1 font-mono text-[0.68rem] uppercase tracking-[0.1em] text-muted-foreground">
 						<span className="size-1.5 rounded-full bg-primary" />
 						{t`Agent reported`}
 					</Badge>
 				</div>
 			</CardHeader>
 
-			<div className="relative z-10 grid grid-cols-2 divide-x divide-y border-b border-border/60 sm:grid-cols-4 sm:divide-y-0 rtl:divide-x-reverse">
+			<div className="grid grid-cols-2 divide-x divide-y border-b sm:grid-cols-4 sm:divide-y-0 rtl:divide-x-reverse">
 				<SummaryStat label={t`Detected`} value={interfaces.length} icon={RouterIcon} />
 				<SummaryStat label={t`Online`} value={onlineCount} icon={onlineCount ? CheckCircle2Icon : CircleOffIcon} />
 				<SummaryStat label={t`Addresses`} value={addressCount} icon={Globe2Icon} />
 				<SummaryStat label={t`Fastest link`} value={formatLinkSpeed(fastest)} icon={GaugeIcon} />
 			</div>
 
-			<CardContent className="relative z-10 p-4 sm:p-6">
+			<CardContent className="p-4 sm:p-5">
 				{sortedInterfaces.length ? (
 					<div className="grid gap-3 lg:grid-cols-2">
 						{sortedInterfaces.map((iface) => {
@@ -117,20 +109,20 @@ export default function NetworkInterfaces({ interfaces }: { interfaces?: Network
 								<div
 									key={iface.name}
 									className={cn(
-										"group rounded-xl border border-border/70 bg-background/45 p-4 transition-colors hover:border-primary/35 hover:bg-primary/[0.03]",
+										"group rounded-lg border bg-background/40 p-4 transition-colors hover:border-primary/35",
 										!online && "opacity-75"
 									)}
 								>
 									<div className="flex items-start justify-between gap-3">
 										<div className="flex min-w-0 items-center gap-3">
-											<div className={cn("grid size-9 shrink-0 place-items-center rounded-lg border", online ? "border-emerald-500/25 bg-emerald-500/10 text-emerald-500" : "border-border bg-muted text-muted-foreground")}>
+											<div className={cn("grid size-9 shrink-0 place-items-center rounded-md border", online ? "border-success/25 bg-success/10 text-success" : "border-border bg-muted text-muted-foreground")}>
 												<CableIcon className="size-4" strokeWidth={1.8} />
 											</div>
 											<div className="min-w-0">
 												<div className="truncate font-mono text-sm font-semibold tracking-tight">{iface.name}</div>
 												<div className="mt-1 flex flex-wrap items-center gap-2 text-[0.68rem] font-medium uppercase tracking-[0.1em] text-muted-foreground">
 													<span className="inline-flex items-center gap-1.5">
-														<span className={cn("size-1.5 rounded-full", online ? "bg-emerald-500" : "bg-muted-foreground/50")} />
+														<span className={cn("size-1.5 rounded-full", online ? "bg-success" : "bg-muted-foreground/50")} />
 														{online ? t`Online` : t`Offline`}
 													</span>
 													{loopback && <Badge variant="secondary" className="px-1.5 py-0 text-[0.6rem]">{t`Loopback`}</Badge>}
@@ -143,7 +135,7 @@ export default function NetworkInterfaces({ interfaces }: { interfaces?: Network
 										</div>
 									</div>
 
-									<div className="mt-4 grid grid-cols-2 gap-x-4 gap-y-3 border-t border-border/60 pt-3">
+									<div className="mt-4 grid grid-cols-2 gap-x-4 gap-y-3 border-t pt-3">
 										<InterfaceMeta label="MAC" value={iface.mac || t`Not available`} />
 										<InterfaceMeta label="MTU" value={iface.mtu ? `${iface.mtu} bytes` : t`Not available`} />
 									</div>
@@ -151,7 +143,7 @@ export default function NetworkInterfaces({ interfaces }: { interfaces?: Network
 									{addresses.length > 0 && (
 										<div className="mt-3 flex flex-wrap gap-1.5">
 											{addresses.map((address) => (
-												<span key={address} className="rounded-md border border-border/60 bg-muted/45 px-2 py-1 font-mono text-[0.68rem] text-muted-foreground">
+												<span key={address} className="rounded-md border bg-muted/45 px-2 py-1 font-mono text-[0.68rem] text-muted-foreground">
 													{address}
 												</span>
 											))}

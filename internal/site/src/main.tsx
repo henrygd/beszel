@@ -1,19 +1,21 @@
 import "./index.css"
 import { i18n } from "@lingui/core"
+import { t } from "@lingui/core/macro"
 import { I18nProvider } from "@lingui/react"
 import { useStore } from "@nanostores/react"
 import { DirectionProvider } from "@radix-ui/react-direction"
-import { AlertTriangleIcon, LoaderCircleIcon } from "lucide-react"
+import { AlertTriangleIcon } from "lucide-react"
 import { Trans } from "@lingui/react/macro"
 // import { Suspense, lazy, useEffect, StrictMode } from "react"
 import { lazy, memo, Suspense, useEffect } from "react"
 import ReactDOM from "react-dom/client"
-import Navbar from "@/components/navbar.tsx"
+import { AppShell } from "@/components/app-shell.tsx"
 import { $router } from "@/components/router.tsx"
 import Settings from "@/components/routes/settings/layout.tsx"
 import { ThemeProvider } from "@/components/theme-provider.tsx"
 import { Toaster } from "@/components/ui/toaster.tsx"
 import { Button } from "@/components/ui/button.tsx"
+import { Skeleton } from "@/components/ui/skeleton"
 import { alertManager } from "@/lib/alerts"
 import { isAdmin, pb, updateUserSettings } from "@/lib/api.ts"
 import { dynamicActivate, getLocale } from "@/lib/i18n"
@@ -82,10 +84,12 @@ const App = memo(() => {
 			<div className="grid min-h-[55vh] place-items-center text-center">
 				<div className="max-w-md">
 					<AlertTriangleIcon className="mx-auto size-9 text-amber-500" />
-					<p className="mt-4 font-mono text-xs uppercase tracking-[0.2em] text-muted-foreground">404 · Unknown route</p>
-					<h1 className="mt-2 text-2xl font-semibold tracking-tight">This console view does not exist.</h1>
+					<p className="mt-4 font-mono text-xs uppercase tracking-[0.2em] text-muted-foreground">
+						404 · {t`Unknown route`}
+					</p>
+					<h1 className="mt-2 text-2xl font-semibold tracking-tight">{t`This view does not exist.`}</h1>
 					<Button className="mt-6" onClick={() => $router.open(globalThis.BESZEL?.BASE_PATH || "/")}>
-						Return to fleet
+						{t`Return to fleet`}
 					</Button>
 				</div>
 			</div>
@@ -124,19 +128,18 @@ const Layout = () => {
 					<a className="skip-link" href="#main-content">
 						<Trans>Skip to content</Trans>
 					</a>
-					<div className="container">
-						<Navbar />
-					</div>
-					<main id="main-content" className="container relative">
-						<Suspense fallback={<AppLoading />}>
-							<App />
-						</Suspense>
-						{copyContent && (
-							<Suspense>
-								<CopyToClipboardDialog content={copyContent} />
+					<AppShell>
+						<main id="main-content" className="container relative flex-1 pt-5 pb-14 sm:pt-7">
+							<Suspense fallback={<AppLoading />}>
+								<App />
 							</Suspense>
-						)}
-					</main>
+							{copyContent && (
+								<Suspense>
+									<CopyToClipboardDialog content={copyContent} />
+								</Suspense>
+							)}
+						</main>
+					</AppShell>
 				</div>
 			)}
 		</DirectionProvider>
@@ -144,9 +147,16 @@ const Layout = () => {
 }
 
 const AppLoading = () => (
-	<output className="grid min-h-52 place-items-center">
-		<LoaderCircleIcon className="size-6 animate-spin text-primary" />
-		<span className="sr-only">Loading</span>
+	<output aria-label={t`Loading`} className="grid gap-4">
+		<Skeleton className="h-9 w-64" />
+		<div className="grid gap-4 grid-cols-1 sm:grid-cols-2 xl:grid-cols-4">
+			<Skeleton className="h-22" />
+			<Skeleton className="h-22" />
+			<Skeleton className="h-22" />
+			<Skeleton className="h-22" />
+		</div>
+		<Skeleton className="h-96" />
+		<span className="sr-only">{t`Loading`}</span>
 	</output>
 )
 

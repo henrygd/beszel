@@ -130,9 +130,9 @@ export const containerChartCols: ColumnDef<ContainerRecord>[] = [
 				<Badge variant="outline" className="dark:border-white/12">
 					<span
 						className={cn("size-2 me-1.5 rounded-full", {
-							"bg-green-500": healthValue === ContainerHealth.Healthy,
-							"bg-red-500": healthValue === ContainerHealth.Unhealthy,
-							"bg-yellow-500": healthValue === ContainerHealth.Starting,
+							"bg-success": healthValue === ContainerHealth.Healthy,
+							"bg-destructive": healthValue === ContainerHealth.Unhealthy,
+							"bg-warning": healthValue === ContainerHealth.Starting,
 							"bg-zinc-500": healthValue === ContainerHealth.None,
 						})}
 					></span>

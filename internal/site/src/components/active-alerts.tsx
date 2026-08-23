@@ -22,26 +22,24 @@ export const ActiveAlerts = () => {
 	if (activeAlerts.length === 0) return null
 
 	return (
-		<Card className="border-amber-500/25">
-			<CardHeader className="px-4 pb-3 pt-5 sm:px-6">
-				<p className="font-mono text-[0.68rem] font-semibold uppercase tracking-[0.2em] text-amber-500">
+		<Card className="border-warning/30">
+			<CardHeader className="px-4 pb-3 pt-5 sm:px-5">
+				<p className="flex items-center gap-2 font-mono text-[0.65rem] font-semibold uppercase tracking-[0.18em] text-warning">
+					<span className="led led-pending size-1.5" aria-hidden="true" />
 					<Trans>Attention required</Trans>
 				</p>
 				<CardTitle className="mt-1">
 					<Trans>Active Alerts</Trans>
 				</CardTitle>
 			</CardHeader>
-			<CardContent className="px-3 pb-3 sm:px-6 sm:pb-6">
+			<CardContent className="px-3 pb-4 sm:px-5 sm:pb-5">
 				<div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
 					{activeAlerts.map((alert) => {
 						const info = alertInfo[alert.name as keyof typeof alertInfo]
 						const system = systems[alert.system]
 						return (
-							<Alert
-								key={alert.id}
-								className="border-amber-500/25 bg-amber-500/[0.055] transition hover:border-amber-500/45"
-							>
-								<info.icon className="h-4 w-4 text-amber-500" />
+							<Alert key={alert.id} className="border-warning/25 bg-warning/[0.055] transition hover:border-warning/45">
+								<info.icon className="h-4 w-4 text-warning" />
 								<AlertTitle>
 									{system.name} · {info.name()}
 								</AlertTitle>

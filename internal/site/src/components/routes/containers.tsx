@@ -15,12 +15,16 @@ export default memo(() => {
 		() => (
 			<>
 				<div className="grid gap-4">
+					<div>
+						<p className="eyebrow">{t`Fleet`}</p>
+						<h1 className="mt-1.5 text-2xl font-semibold tracking-tight sm:text-[1.75rem]">{t`All Containers`}</h1>
+					</div>
 					<ActiveAlerts />
 					<ContainersTable />
 				</div>
 				<FooterRepoLink />
 			</>
 		),
-		[]
+		[t]
 	)
 })

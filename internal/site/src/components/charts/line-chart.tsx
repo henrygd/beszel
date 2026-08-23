@@ -98,13 +98,20 @@ export default function LineChartDefault({
 					name={dataPoint.label}
 					type="monotoneX"
 					dot={false}
-					strokeWidth={1.5}
+					strokeWidth={2}
 					stroke={color}
 					strokeOpacity={dataPoint.strokeOpacity}
 					isAnimationActive={false}
 					// stackId={dataPoint.stackId}
 					order={dataPoint.order || i}
-					activeDot={dataPoint.activeDot ?? true}
+					activeDot={
+						dataPoint.activeDot ?? {
+							r: 4,
+							strokeWidth: 2,
+							stroke: "var(--card)",
+							fill: color,
+						}
+					}
 				/>
 			)
 		})
@@ -132,7 +139,7 @@ export default function LineChartDefault({
 					margin={hideYAxis ? { ...chartMargin, left: 5 } : chartMargin}
 					{...chartProps}
 				>
-					<CartesianGrid vertical={false} />
+					<CartesianGrid vertical={false} stroke="var(--border)" strokeOpacity={0.55} strokeDasharray="3 4" />
 					{!hideYAxis && (
 						<YAxis
 							direction="ltr"

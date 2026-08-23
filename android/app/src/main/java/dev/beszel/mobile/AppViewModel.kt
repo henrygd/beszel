@@ -6,13 +6,12 @@ import androidx.lifecycle.viewModelScope
 import dev.beszel.mobile.data.AlertHistoryRecord
 import dev.beszel.mobile.data.AlertRecord
 import dev.beszel.mobile.data.ApiException
-import dev.beszel.mobile.data.BeszelApi
-import dev.beszel.mobile.data.ChartRange
+import dev.beszel.mobile.data.HubRepository
 import dev.beszel.mobile.data.Session
 import dev.beszel.mobile.data.SessionStore
-import dev.beszel.mobile.data.StatPoint
 import dev.beszel.mobile.data.SystemRecord
 import dev.beszel.mobile.data.ThemeMode
+import dev.beszel.mobile.data.computeFleetPulse
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -34,26 +33,27 @@ data class AppUiState(
     val lastUpdated: Long? = null,
     val message: String? = null,
     val themeMode: ThemeMode = ThemeMode.SYSTEM,
-    val dynamicColor: Boolean = true,
-    val detailSystemId: String? = null,
-    val chartRange: ChartRange = ChartRange.HOUR,
-    val stats: List<StatPoint> = emptyList(),
-    val statsLoading: Boolean = false,
-    val statsError: String? = null,
+    val dynamicColor: Boolean = false,
+    /** Fleet-wide CPU samples, one per poll, oldest first. Feeds the pulse header. */
+    val pulse: List<Float> = emptyList(),
 ) {
     val activeAlerts get() = alerts.filter(AlertRecord::triggered)
+    val isLoadingFleet get() = session != null && systems.isEmpty() && isStarting
 }
+
+private const val PULSE_WINDOW = 48
 
 class AppViewModel(application: Application) : AndroidViewModel(application) {
     private val store = SessionStore(application)
+    val repository = HubRepository()
+
     private val mutableState = MutableStateFlow(
         AppUiState(themeMode = store.themeMode, dynamicColor = store.dynamicColor),
     )
     val state: StateFlow<AppUiState> = mutableState.asStateFlow()
 
-    private var api: BeszelApi? = null
     private var pollingJob: Job? = null
-    private var statsJob: Job? = null
+    private val pulseBuffer = ArrayDeque<Float>()
 
     init {
         restoreSession()
@@ -65,14 +65,14 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
             mutableState.update { it.copy(isStarting = false) }
             return
         }
+        repository.attach(session)
         mutableState.update { it.copy(session = session) }
-        api = BeszelApi(session.hubUrl, session.token)
         viewModelScope.launch {
             try {
-                val refreshedToken = api!!.refreshAuth()
-                val refreshedSession = session.copy(token = refreshedToken)
-                store.saveSession(refreshedSession)
-                mutableState.update { it.copy(session = refreshedSession) }
+                val refreshedToken = repository.refreshAuth()
+                val refreshed = repository.updateToken(refreshedToken)
+                store.saveSession(refreshed)
+                mutableState.update { it.copy(session = refreshed) }
                 loadDashboard(showSpinner = false)
                 startPolling()
             } catch (error: ApiException) {
@@ -90,9 +90,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         mutableState.update { it.copy(isLoggingIn = true, message = null) }
         viewModelScope.launch {
             try {
-                val client = BeszelApi(hubUrl)
-                val session = client.login(email, password)
-                api = client
+                val session = repository.login(hubUrl, email, password)
                 store.saveSession(session)
                 mutableState.update { it.copy(session = session, isLoggingIn = false, isStarting = false) }
                 loadDashboard(showSpinner = true)
@@ -110,11 +108,16 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     private suspend fun loadDashboard(showSpinner: Boolean) {
-        val client = api ?: return
+        if (!repository.hasSession) return
         if (mutableState.value.isRefreshing) return
         mutableState.update { it.copy(isRefreshing = showSpinner, message = null) }
         try {
-            val dashboard = client.dashboard()
+            val dashboard = repository.dashboard()
+            val pulse = computeFleetPulse(dashboard.systems)
+            if (pulse != null) {
+                pulseBuffer.addLast(pulse)
+                while (pulseBuffer.size > PULSE_WINDOW) pulseBuffer.removeFirst()
+            }
             mutableState.update {
                 it.copy(
                     isStarting = false,
@@ -123,6 +126,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
                     alerts = dashboard.alerts,
                     alertHistory = dashboard.history,
                     lastUpdated = System.currentTimeMillis(),
+                    pulse = pulseBuffer.toList(),
                 )
             }
         } catch (error: ApiException) {
@@ -134,45 +138,6 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         } catch (error: Exception) {
             if (error is CancellationException) throw error
             mutableState.update { it.copy(isStarting = false, isRefreshing = false, message = friendlyMessage(error)) }
-        }
-    }
-
-    fun openSystem(systemId: String) {
-        mutableState.update {
-            it.copy(
-                detailSystemId = systemId,
-                chartRange = ChartRange.HOUR,
-                stats = emptyList(),
-                statsError = null,
-            )
-        }
-        loadStats(systemId, ChartRange.HOUR)
-    }
-
-    fun closeSystem() {
-        statsJob?.cancel()
-        mutableState.update { it.copy(detailSystemId = null, stats = emptyList(), statsLoading = false) }
-    }
-
-    fun selectChartRange(range: ChartRange) {
-        val id = mutableState.value.detailSystemId ?: return
-        mutableState.update { it.copy(chartRange = range) }
-        loadStats(id, range)
-    }
-
-    private fun loadStats(systemId: String, range: ChartRange) {
-        statsJob?.cancel()
-        statsJob = viewModelScope.launch {
-            mutableState.update { it.copy(statsLoading = true, statsError = null) }
-            try {
-                val result = api?.stats(systemId, range).orEmpty()
-                if (mutableState.value.detailSystemId == systemId && mutableState.value.chartRange == range) {
-                    mutableState.update { it.copy(stats = result, statsLoading = false) }
-                }
-            } catch (error: Exception) {
-                if (error is CancellationException) throw error
-                mutableState.update { it.copy(statsLoading = false, statsError = friendlyMessage(error)) }
-            }
         }
     }
 
@@ -192,8 +157,8 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
 
     private fun clearSession(message: String? = null) {
         pollingJob?.cancel()
-        statsJob?.cancel()
-        api = null
+        repository.detach()
+        pulseBuffer.clear()
         store.clearSession()
         mutableState.update {
             AppUiState(

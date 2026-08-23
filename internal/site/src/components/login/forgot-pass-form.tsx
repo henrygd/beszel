@@ -79,7 +79,7 @@ export default function ForgotPassword() {
 			</form>
 			<Dialog>
 				<DialogTrigger asChild>
-					<button className="text-sm mx-auto hover:text-brand underline underline-offset-4 opacity-70 hover:opacity-100 transition-opacity">
+					<button className="text-sm mx-auto hover:text-primary underline underline-offset-4 opacity-70 hover:opacity-100 transition-opacity">
 						<Trans>Command line instructions</Trans>
 					</button>
 				</DialogTrigger>
