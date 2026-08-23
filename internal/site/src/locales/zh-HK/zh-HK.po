@@ -89,6 +89,10 @@ msgstr "30天"
 msgid "5 min"
 msgstr "5 分鐘"
 
+#: src/components/routes/monitor.tsx
+msgid "Across the {totalChecks} most recent checks"
+msgstr ""
+
 #. Table column
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
@@ -120,6 +124,13 @@ msgstr "活動狀態"
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Add {foo}"
 msgstr "新增 {foo}"
+
+#: src/components/add-monitor.tsx
+#: src/components/add-monitor.tsx
+#: src/components/navbar.tsx
+#: src/components/routes/monitors.tsx
+msgid "Add Monitor"
+msgstr ""
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Add URL"
@@ -162,6 +173,10 @@ msgstr "警報歷史"
 msgid "Alerts"
 msgstr "警報"
 
+#: src/components/monitors-table/monitors-table.tsx
+msgid "All"
+msgstr ""
+
 #: src/components/command-palette.tsx
 #: src/components/containers-table/containers-table.tsx
 #: src/components/navbar.tsx
@@ -179,6 +194,11 @@ msgstr "所有容器"
 msgid "All Systems"
 msgstr "所有系統"
 
+#: src/components/add-monitor.tsx
+msgid "Allow self-signed or invalid certificates"
+msgstr ""
+
+#: src/components/monitors-table/monitors-table-columns.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Are you sure you want to delete {name}?"
 msgstr "您確定要刪除 {name} 嗎？"
@@ -317,6 +337,7 @@ msgstr "可啟動"
 msgid "Can stop"
 msgstr "可停止"
 
+#: src/components/monitors-table/monitors-table-columns.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/systems-table/systems-table-columns.tsx
@@ -368,9 +389,18 @@ msgstr "圖表寬度"
 msgid "Check {email} for a reset link."
 msgstr "檢查 {email} 以獲取重置鏈接。"
 
+#: src/components/routes/monitor.tsx
+msgid "Check frequency"
+msgstr ""
+
 #: src/components/routes/settings/layout.tsx
 msgid "Check logs for more details."
 msgstr "檢查日誌以取得更多資訊。"
+
+#: src/components/monitors-table/monitors-table-columns.tsx
+#: src/components/routes/monitor.tsx
+msgid "Check now"
+msgstr ""
 
 #: src/components/routes/settings/heartbeat.tsx
 msgid "Check your monitoring service"
@@ -381,6 +411,7 @@ msgid "Check your notification service"
 msgstr "檢查您的通知服務"
 
 #: src/components/containers-table/containers-table.tsx
+#: src/components/monitors-table/monitors-table.tsx
 #: src/components/routes/system/smart-table.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "Clear"
@@ -394,6 +425,10 @@ msgstr "點擊容器以查看更多資訊。"
 msgid "Click on a device to view more information."
 msgstr "點擊裝置以查看更多資訊。"
 
+#: src/components/monitors-table/monitors-table.tsx
+msgid "Click on a monitor to view more information."
+msgstr ""
+
 #: src/components/systems-table/systems-table.tsx
 msgid "Click on a system to view more information."
 msgstr "點擊系統以查看更多資訊。"
@@ -402,10 +437,18 @@ msgstr "點擊系統以查看更多資訊。"
 msgid "Click to copy"
 msgstr "點擊以複製"
 
+#: src/components/monitors-table/monitors-table.tsx
+msgid "Columns"
+msgstr ""
+
 #: src/components/login/forgot-pass-form.tsx
 #: src/components/login/forgot-pass-form.tsx
 msgid "Command line instructions"
 msgstr "命令行指令"
+
+#: src/components/add-monitor.tsx
+msgid "Configure an uptime monitor. The type determines which fields are required."
+msgstr ""
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Configure how you receive alert notifications."
@@ -428,6 +471,7 @@ msgstr "連線中斷"
 msgid "Containers"
 msgstr "容器"
 
+#: src/components/monitors-table/monitors-table-columns.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Continue"
@@ -577,6 +621,7 @@ msgstr "預設"
 msgid "Default time period"
 msgstr "預設時間段"
 
+#: src/components/monitors-table/monitors-table-columns.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/system/smart-table.tsx
@@ -652,6 +697,13 @@ msgstr "文件"
 
 #. Context: System is down
 #: src/components/alerts-history-columns.tsx
+#: src/components/monitors-table/monitors-table-columns.tsx
+#: src/components/monitors-table/monitors-table-columns.tsx
+#: src/components/monitors-table/monitors-table.tsx
+#: src/components/monitors-table/monitors-table.tsx
+#: src/components/monitors-table/monitors-table.tsx
+#: src/components/routes/monitor.tsx
+#: src/components/routes/monitor.tsx
 #: src/components/routes/system/info-bar.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 #: src/lib/alerts.ts
@@ -670,6 +722,8 @@ msgstr "下載"
 msgid "Duration"
 msgstr "持續時間"
 
+#: src/components/monitors-table/monitors-table-columns.tsx
+#: src/components/routes/monitor.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Edit"
@@ -679,6 +733,10 @@ msgstr "編輯"
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Edit {foo}"
 msgstr "編輯 {foo}"
+
+#: src/components/add-monitor.tsx
+msgid "Edit Monitor"
+msgstr ""
 
 #: src/components/login/auth-form.tsx
 #: src/components/login/forgot-pass-form.tsx
@@ -760,6 +818,14 @@ msgstr "未在<0>config.yml</0>中定義的現有系統將被刪除。請定期�
 msgid "Exited active"
 msgstr "退出活動狀態"
 
+#: src/components/add-monitor.tsx
+msgid "Expected Body"
+msgstr ""
+
+#: src/components/add-monitor.tsx
+msgid "Expected Status"
+msgstr ""
+
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Expires after one hour or on hub restart."
 msgstr "一小時後或重新啟動集線器時過期。"
@@ -820,6 +886,7 @@ msgid "Fans"
 msgstr ""
 
 #: src/components/containers-table/containers-table.tsx
+#: src/components/monitors-table/monitors-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/system/chart-card.tsx
 #: src/components/routes/system/smart-table.tsx
@@ -882,6 +949,7 @@ msgstr "GPU 功耗"
 msgid "GPU Usage"
 msgstr "GPU 使用率"
 
+#: src/components/monitors-table/monitors-table.tsx
 #: src/components/routes/system/info-bar.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "Grid"
@@ -909,9 +977,18 @@ msgctxt "Button to copy install command"
 msgid "Homebrew command"
 msgstr "Homebrew 指令"
 
+#: src/components/add-monitor.tsx
+msgid "Host"
+msgstr ""
+
+#: src/components/add-monitor.tsx
 #: src/components/add-system.tsx
 msgid "Host / IP"
 msgstr "主機 / IP"
+
+#: src/components/monitors-table/monitors-table-columns.tsx
+msgid "HTTP"
+msgstr ""
 
 #: src/components/routes/settings/heartbeat.tsx
 msgid "HTTP Method"
@@ -920,6 +997,10 @@ msgstr "HTTP 方法"
 #: src/components/routes/settings/heartbeat.tsx
 msgid "HTTP method: POST, GET, or HEAD (default: POST)"
 msgstr "HTTP 方法：POST、GET 或 HEAD (預設：POST)"
+
+#: src/components/add-monitor.tsx
+msgid "HTTP(S)"
+msgstr ""
 
 #: src/components/routes/system/disk-io-sheet.tsx
 msgctxt "Disk I/O average operation time (iostat await)"
@@ -954,9 +1035,15 @@ msgstr "鏡像"
 msgid "Inactive"
 msgstr "未啟用"
 
+#: src/components/monitors-table/monitors-table-columns.tsx
+#: src/components/routes/monitor.tsx
 #: src/components/routes/settings/heartbeat.tsx
 msgid "Interval"
 msgstr "間隔"
+
+#: src/components/add-monitor.tsx
+msgid "Interval (sec)"
+msgstr ""
 
 #: src/components/login/auth-form.tsx
 msgid "Invalid email address."
@@ -966,6 +1053,11 @@ msgstr "無效的電子郵件地址。"
 msgid "Language"
 msgstr "語言"
 
+#: src/components/routes/monitor.tsx
+msgid "Latency of each check over time"
+msgstr ""
+
+#: src/components/monitors-table/monitors-table.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "Layout"
 msgstr "版面配置"
@@ -1080,11 +1172,34 @@ msgstr "記憶體使用"
 msgid "Memory usage of docker containers"
 msgstr "Docker 容器的記憶體使用量"
 
+#: src/components/add-monitor.tsx
+msgid "Method"
+msgstr ""
+
 #. Device model
 #: src/components/routes/system/smart-table.tsx
 msgid "Model"
 msgstr "型號"
 
+#: src/components/monitors-table/monitors-table-columns.tsx
+msgid "Monitor"
+msgstr ""
+
+#: src/components/routes/monitor.tsx
+msgid "Monitor type"
+msgstr ""
+
+#: src/components/monitors-table/monitors-table.tsx
+#: src/components/navbar.tsx
+#: src/components/routes/monitors.tsx
+msgid "Monitors"
+msgstr ""
+
+#: src/components/routes/monitor.tsx
+msgid "Most recent first"
+msgstr ""
+
+#: src/components/add-monitor.tsx
 #: src/components/add-system.tsx
 #: src/components/alerts-history-columns.tsx
 #: src/components/containers-table/containers-table-columns.tsx
@@ -1119,6 +1234,18 @@ msgstr "網路單位"
 #: src/components/systemd-table/systemd-table.tsx
 msgid "No"
 msgstr "否"
+
+#: src/components/routes/monitor.tsx
+msgid "No check data available yet"
+msgstr ""
+
+#: src/components/routes/monitor.tsx
+msgid "No checks yet"
+msgstr ""
+
+#: src/components/monitors-table/monitors-table.tsx
+msgid "No monitors configured yet."
+msgstr ""
 
 #: src/components/command-palette.tsx
 #: src/components/systemd-table/systemd-table.tsx
@@ -1223,10 +1350,17 @@ msgstr "已收到密碼重設請求"
 msgid "Past"
 msgstr "過去"
 
+#: src/components/monitors-table/monitors-table-columns.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Pause"
 msgstr "暫停"
 
+#: src/components/monitors-table/monitors-table-columns.tsx
+#: src/components/monitors-table/monitors-table-columns.tsx
+#: src/components/monitors-table/monitors-table.tsx
+#: src/components/monitors-table/monitors-table.tsx
+#: src/components/monitors-table/monitors-table.tsx
+#: src/components/routes/monitor.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Paused"
 msgstr "已暫停"
@@ -1238,6 +1372,12 @@ msgstr "已暫停 ({pausedSystemsLength})"
 #: src/components/routes/settings/heartbeat.tsx
 msgid "Payload format"
 msgstr "負載 (Payload) 格式"
+
+#: src/components/monitors-table/monitors-table-columns.tsx
+#: src/components/monitors-table/monitors-table.tsx
+#: src/components/routes/monitor.tsx
+msgid "Pending"
+msgstr ""
 
 #: src/components/routes/system/cpu-sheet.tsx
 #: src/components/routes/system/cpu-sheet.tsx
@@ -1259,6 +1399,11 @@ msgstr "永久"
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Persistence"
 msgstr "持久性"
+
+#: src/components/add-monitor.tsx
+#: src/components/monitors-table/monitors-table-columns.tsx
+msgid "Ping"
+msgstr ""
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Please <0>configure an SMTP server</0> to ensure alerts are delivered."
@@ -1293,6 +1438,7 @@ msgstr "請參閱<0>文件</0>以取得說明。"
 msgid "Please sign in to your account"
 msgstr "請登入您的帳號"
 
+#: src/components/add-monitor.tsx
 #: src/components/add-system.tsx
 msgid "Port"
 msgstr "端口"
@@ -1350,6 +1496,10 @@ msgstr "讀取"
 msgid "Received"
 msgstr "接收"
 
+#: src/components/routes/monitor.tsx
+msgid "Recent checks"
+msgstr ""
+
 #: src/components/containers-table/containers-table.tsx
 #: src/components/containers-table/containers-table.tsx
 #: src/components/routes/system/smart-table.tsx
@@ -1386,13 +1536,26 @@ msgstr "重設密碼"
 msgid "Resolved"
 msgstr "已解決"
 
+#: src/components/routes/monitor.tsx
+msgid "Response time"
+msgstr ""
+
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Restarts"
 msgstr "重啟次數"
 
+#: src/components/monitors-table/monitors-table-columns.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Resume"
 msgstr "恢復"
+
+#: src/components/add-monitor.tsx
+msgid "Retry on failure"
+msgstr ""
+
+#: src/components/add-monitor.tsx
+msgid "Retry the check a few times before marking as down"
+msgstr ""
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgctxt "Root disk label"
@@ -1427,6 +1590,10 @@ msgstr "儲存 {foo}"
 msgid "Save address using enter key or comma. Leave blank to disable email notifications."
 msgstr "使用回車鍵或逗號保存地址。留空以禁用電子郵件通知。"
 
+#: src/components/add-monitor.tsx
+msgid "Save Monitor"
+msgstr ""
+
 #: src/components/routes/settings/general.tsx
 #: src/components/routes/settings/notifications.tsx
 msgid "Save Settings"
@@ -1435,6 +1602,10 @@ msgstr "儲存設定"
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Saved in the database and does not expire until you disable it."
 msgstr "儲存在資料庫中，在您停用之前不會過期。"
+
+#: src/components/add-monitor.tsx
+msgid "Saving..."
+msgstr ""
 
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Schedule"
@@ -1459,6 +1630,10 @@ msgstr "搜索系統或設置..."
 #: src/components/routes/settings/heartbeat.tsx
 msgid "Seconds between pings (default: 60)"
 msgstr "Ping 之間的秒數 (預設：60)"
+
+#: src/components/add-monitor.tsx
+msgid "Secure (skip TLS verify)"
+msgstr ""
 
 #: src/components/alerts/alerts-sheet.tsx
 msgid "See <0>notification settings</0> to configure how you receive alerts."
@@ -1544,6 +1719,7 @@ msgid "State"
 msgstr "狀態"
 
 #: src/components/containers-table/containers-table-columns.tsx
+#: src/components/monitors-table/monitors-table-columns.tsx
 #: src/components/routes/system/smart-table.tsx
 #: src/components/systemd-table/systemd-table.tsx
 #: src/components/systems-table/systems-table.tsx
@@ -1603,6 +1779,7 @@ msgstr "系統"
 msgid "Systems may be managed in a <0>config.yml</0> file inside your data directory."
 msgstr "系統可以在您的數據目錄中的<0>config.yml</0>文件中管理。"
 
+#: src/components/monitors-table/monitors-table.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "Table"
 msgstr "表格"
@@ -1615,6 +1792,11 @@ msgstr "分頁"
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Tasks"
 msgstr "任務數"
+
+#: src/components/add-monitor.tsx
+#: src/components/monitors-table/monitors-table-columns.tsx
+msgid "TCP"
+msgstr ""
 
 #. Temperature label in systems table
 #: src/components/routes/system/smart-table.tsx
@@ -1655,6 +1837,7 @@ msgstr "當所有系統都正常運行時，整體狀態為 <0>正常</0>；當�
 msgid "Then log into the backend and reset your user account password in the users table."
 msgstr "然後登錄到後端並在用戶表中重置您的用戶帳戶密碼。"
 
+#: src/components/monitors-table/monitors-table-columns.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "This action cannot be undone. This will permanently delete all current records for {name} from the database."
 msgstr "此操作無法撤銷。這將永久刪除數據庫中{name}的所有當前記錄。"
@@ -1674,6 +1857,10 @@ msgstr "根文件系統的吞吐量"
 #: src/components/routes/settings/general.tsx
 msgid "Time format"
 msgstr "時間格式"
+
+#: src/components/add-monitor.tsx
+msgid "Timeout (sec)"
+msgstr ""
 
 #: src/components/routes/settings/notifications.tsx
 msgid "To email(s)"
@@ -1773,6 +1960,9 @@ msgstr "當狀態在上和下之間切換時觸發"
 msgid "Triggers when usage of any disk exceeds a threshold"
 msgstr "當任何磁碟的使用超過閾值時觸發"
 
+#: src/components/add-monitor.tsx
+#: src/components/monitors-table/monitors-table-columns.tsx
+#: src/components/routes/monitor.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/system/smart-table.tsx
@@ -1804,6 +1994,13 @@ msgid "Unlimited"
 msgstr "無限制"
 
 #. Context: System is up
+#: src/components/monitors-table/monitors-table-columns.tsx
+#: src/components/monitors-table/monitors-table-columns.tsx
+#: src/components/monitors-table/monitors-table.tsx
+#: src/components/monitors-table/monitors-table.tsx
+#: src/components/monitors-table/monitors-table.tsx
+#: src/components/routes/monitor.tsx
+#: src/components/routes/monitor.tsx
 #: src/components/routes/system/info-bar.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Up"
@@ -1831,10 +2028,15 @@ msgstr "每 10 分鐘更新一次。"
 msgid "Upload"
 msgstr "上傳"
 
+#: src/components/routes/monitor.tsx
 #: src/components/routes/system/info-bar.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Uptime"
 msgstr "運行時間"
+
+#: src/components/add-monitor.tsx
+msgid "URL"
+msgstr ""
 
 #: src/components/routes/system/charts/disk-charts.tsx
 #: src/components/routes/system/charts/gpu-charts.tsx
@@ -1847,6 +2049,10 @@ msgstr "使用"
 #: src/components/routes/system/charts/disk-charts.tsx
 msgid "Usage of root partition"
 msgstr "根分區的使用"
+
+#: src/components/monitors-table/monitors-table.tsx
+msgid "Use the Add Monitor button to get started."
+msgstr ""
 
 #: src/components/routes/system/charts/memory-charts.tsx
 #: src/components/routes/system/charts/memory-charts.tsx
@@ -1867,6 +2073,7 @@ msgstr "利用率"
 msgid "Value"
 msgstr "值"
 
+#: src/components/monitors-table/monitors-table.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "View"
 msgstr "檢視"

@@ -238,14 +238,50 @@ export interface AlertRecord extends RecordModel {
 	// user: string
 }
 
-export interface AlertsHistoryRecord extends RecordModel {
-	alert: string
+export interface MonitorRecord extends RecordModel {
 	user: string
-	system: string
 	name: string
-	val: number
+	/** Monitor type: "http" | "tcp" | "ping" */
+	type: string
+	/** URL to monitor for http type */
+	url?: string
+	/** Host to monitor for tcp/ping types */
+	host?: string
+	/** Port to monitor for tcp type */
+	port?: number
+	/** Interval in seconds */
+	interval?: number
+	/** Timeout in seconds */
+	timeout?: number
+	/** Enable retry on failure */
+	retry?: boolean
+	/** Allow insecure TLS */
+	secure?: boolean
+	/** HTTP method */
+	method?: string
+	/** Expected HTTP status code */
+	expected_status?: string
+	/** Expected substring in response body */
+	expected_body?: string
+	/** Custom headers as JSON */
+	headers?: Record<string, string> | null
+	/** Current status: "up" | "down" | "paused" | "pending" */
+	status: string
+	/** Number of consecutive retries */
+	num_retries?: number
 	created: string
-	resolved?: string | null
+	updated: string
+}
+
+export interface MonitorCheckRecord extends RecordModel {
+	monitor: string
+	/** Was the check successful */
+	up: boolean
+	/** Response time in ms */
+	ms: number
+	/** Error message if any */
+	msg?: string
+	created: string
 }
 
 export interface QuietHoursRecord extends RecordModel {

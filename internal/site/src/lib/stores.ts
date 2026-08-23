@@ -1,5 +1,5 @@
 import { atom, computed, listenKeys, map, type ReadableAtom } from "nanostores"
-import type { AlertMap, ChartTimes, SystemRecord, UpdateInfo, UserSettings } from "@/types"
+import type { AlertMap, ChartTimes, MonitorRecord, SystemRecord, UpdateInfo, UserSettings } from "@/types"
 import { pb } from "./api"
 import { Unit } from "./enums"
 
@@ -21,6 +21,17 @@ export const $downSystems = map<Record<string, SystemRecord>>({})
 export const $pausedSystems = map<Record<string, SystemRecord>>({})
 /** List of all system records */
 export const $systems: ReadableAtom<SystemRecord[]> = computed($allSystemsById, Object.values)
+
+/** Map of monitor records by id */
+export const $allMonitorsById = map<Record<string, MonitorRecord>>({})
+/** Map of up monitors by id */
+export const $upMonitors = map<Record<string, MonitorRecord>>({})
+/** Map of down monitors by id */
+export const $downMonitors = map<Record<string, MonitorRecord>>({})
+/** Map of paused monitors by id */
+export const $pausedMonitors = map<Record<string, MonitorRecord>>({})
+/** List of all monitor records */
+export const $monitors: ReadableAtom<MonitorRecord[]> = computed($allMonitorsById, Object.values)
 
 /** Map of alert records by system id and alert name */
 export const $alerts = map<AlertMap>({})

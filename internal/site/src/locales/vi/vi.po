@@ -89,6 +89,10 @@ msgstr "30 ngày"
 msgid "5 min"
 msgstr "5 phút"
 
+#: src/components/routes/monitor.tsx
+msgid "Across the {totalChecks} most recent checks"
+msgstr ""
+
 #. Table column
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
@@ -120,6 +124,13 @@ msgstr "Trạng thái hoạt động"
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Add {foo}"
 msgstr "Thêm {foo}"
+
+#: src/components/add-monitor.tsx
+#: src/components/add-monitor.tsx
+#: src/components/navbar.tsx
+#: src/components/routes/monitors.tsx
+msgid "Add Monitor"
+msgstr ""
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Add URL"
@@ -162,6 +173,10 @@ msgstr "Lịch sử Cảnh báo"
 msgid "Alerts"
 msgstr "Cảnh báo"
 
+#: src/components/monitors-table/monitors-table.tsx
+msgid "All"
+msgstr ""
+
 #: src/components/command-palette.tsx
 #: src/components/containers-table/containers-table.tsx
 #: src/components/navbar.tsx
@@ -179,6 +194,11 @@ msgstr "Tất cả container"
 msgid "All Systems"
 msgstr "Tất cả Hệ thống"
 
+#: src/components/add-monitor.tsx
+msgid "Allow self-signed or invalid certificates"
+msgstr ""
+
+#: src/components/monitors-table/monitors-table-columns.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Are you sure you want to delete {name}?"
 msgstr "Bạn có chắc chắn muốn xóa {name} không?"
@@ -317,6 +337,7 @@ msgstr "Có thể khởi động"
 msgid "Can stop"
 msgstr "Có thể dừng"
 
+#: src/components/monitors-table/monitors-table-columns.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/systems-table/systems-table-columns.tsx
@@ -368,9 +389,18 @@ msgstr "Chiều rộng biểu đồ"
 msgid "Check {email} for a reset link."
 msgstr "Kiểm tra {email} để lấy liên kết đặt lại."
 
+#: src/components/routes/monitor.tsx
+msgid "Check frequency"
+msgstr ""
+
 #: src/components/routes/settings/layout.tsx
 msgid "Check logs for more details."
 msgstr "Kiểm tra nhật ký để biết thêm chi tiết."
+
+#: src/components/monitors-table/monitors-table-columns.tsx
+#: src/components/routes/monitor.tsx
+msgid "Check now"
+msgstr ""
 
 #: src/components/routes/settings/heartbeat.tsx
 msgid "Check your monitoring service"
@@ -381,6 +411,7 @@ msgid "Check your notification service"
 msgstr "Kiểm tra dịch vụ thông báo của bạn"
 
 #: src/components/containers-table/containers-table.tsx
+#: src/components/monitors-table/monitors-table.tsx
 #: src/components/routes/system/smart-table.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "Clear"
@@ -394,6 +425,10 @@ msgstr "Nhấp vào container để xem thêm thông tin."
 msgid "Click on a device to view more information."
 msgstr "Nhấp vào thiết bị để xem thêm thông tin."
 
+#: src/components/monitors-table/monitors-table.tsx
+msgid "Click on a monitor to view more information."
+msgstr ""
+
 #: src/components/systems-table/systems-table.tsx
 msgid "Click on a system to view more information."
 msgstr "Nhấp vào hệ thống để xem thêm thông tin."
@@ -402,10 +437,18 @@ msgstr "Nhấp vào hệ thống để xem thêm thông tin."
 msgid "Click to copy"
 msgstr "Nhấp để sao chép"
 
+#: src/components/monitors-table/monitors-table.tsx
+msgid "Columns"
+msgstr ""
+
 #: src/components/login/forgot-pass-form.tsx
 #: src/components/login/forgot-pass-form.tsx
 msgid "Command line instructions"
 msgstr "Hướng dẫn dòng lệnh"
+
+#: src/components/add-monitor.tsx
+msgid "Configure an uptime monitor. The type determines which fields are required."
+msgstr ""
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Configure how you receive alert notifications."
@@ -428,6 +471,7 @@ msgstr "Mất kết nối"
 msgid "Containers"
 msgstr "Container"
 
+#: src/components/monitors-table/monitors-table-columns.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Continue"
@@ -577,6 +621,7 @@ msgstr "Mặc định"
 msgid "Default time period"
 msgstr "Thời gian mặc định"
 
+#: src/components/monitors-table/monitors-table-columns.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/system/smart-table.tsx
@@ -652,6 +697,13 @@ msgstr "Tài liệu"
 
 #. Context: System is down
 #: src/components/alerts-history-columns.tsx
+#: src/components/monitors-table/monitors-table-columns.tsx
+#: src/components/monitors-table/monitors-table-columns.tsx
+#: src/components/monitors-table/monitors-table.tsx
+#: src/components/monitors-table/monitors-table.tsx
+#: src/components/monitors-table/monitors-table.tsx
+#: src/components/routes/monitor.tsx
+#: src/components/routes/monitor.tsx
 #: src/components/routes/system/info-bar.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 #: src/lib/alerts.ts
@@ -670,6 +722,8 @@ msgstr "Tải xuống"
 msgid "Duration"
 msgstr "Thời lượng"
 
+#: src/components/monitors-table/monitors-table-columns.tsx
+#: src/components/routes/monitor.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Edit"
@@ -679,6 +733,10 @@ msgstr "Chỉnh sửa"
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Edit {foo}"
 msgstr "Chỉnh sửa {foo}"
+
+#: src/components/add-monitor.tsx
+msgid "Edit Monitor"
+msgstr ""
 
 #: src/components/login/auth-form.tsx
 #: src/components/login/forgot-pass-form.tsx
@@ -760,6 +818,14 @@ msgstr "Các hệ thống hiện có không được định nghĩa trong <0>con
 msgid "Exited active"
 msgstr "Đã thoát khi hoạt động"
 
+#: src/components/add-monitor.tsx
+msgid "Expected Body"
+msgstr ""
+
+#: src/components/add-monitor.tsx
+msgid "Expected Status"
+msgstr ""
+
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Expires after one hour or on hub restart."
 msgstr "Hết hạn sau một giờ hoặc khi khởi động lại hub."
@@ -820,6 +886,7 @@ msgid "Fans"
 msgstr ""
 
 #: src/components/containers-table/containers-table.tsx
+#: src/components/monitors-table/monitors-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/system/chart-card.tsx
 #: src/components/routes/system/smart-table.tsx
@@ -882,6 +949,7 @@ msgstr "Mức tiêu thụ điện của GPU"
 msgid "GPU Usage"
 msgstr "Sử dụng GPU"
 
+#: src/components/monitors-table/monitors-table.tsx
 #: src/components/routes/system/info-bar.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "Grid"
@@ -909,9 +977,18 @@ msgctxt "Button to copy install command"
 msgid "Homebrew command"
 msgstr "Lệnh Homebrew"
 
+#: src/components/add-monitor.tsx
+msgid "Host"
+msgstr ""
+
+#: src/components/add-monitor.tsx
 #: src/components/add-system.tsx
 msgid "Host / IP"
 msgstr "Máy chủ / IP"
+
+#: src/components/monitors-table/monitors-table-columns.tsx
+msgid "HTTP"
+msgstr ""
 
 #: src/components/routes/settings/heartbeat.tsx
 msgid "HTTP Method"
@@ -920,6 +997,10 @@ msgstr "Phương thức HTTP"
 #: src/components/routes/settings/heartbeat.tsx
 msgid "HTTP method: POST, GET, or HEAD (default: POST)"
 msgstr "Phương thức HTTP: POST, GET hoặc HEAD (mặc định: POST)"
+
+#: src/components/add-monitor.tsx
+msgid "HTTP(S)"
+msgstr ""
 
 #: src/components/routes/system/disk-io-sheet.tsx
 msgctxt "Disk I/O average operation time (iostat await)"
@@ -954,9 +1035,15 @@ msgstr "Hình ảnh"
 msgid "Inactive"
 msgstr "Không hoạt động"
 
+#: src/components/monitors-table/monitors-table-columns.tsx
+#: src/components/routes/monitor.tsx
 #: src/components/routes/settings/heartbeat.tsx
 msgid "Interval"
 msgstr "Khoảng thời gian"
+
+#: src/components/add-monitor.tsx
+msgid "Interval (sec)"
+msgstr ""
 
 #: src/components/login/auth-form.tsx
 msgid "Invalid email address."
@@ -966,6 +1053,11 @@ msgstr "Địa chỉ email không hợp lệ."
 msgid "Language"
 msgstr "Ngôn ngữ"
 
+#: src/components/routes/monitor.tsx
+msgid "Latency of each check over time"
+msgstr ""
+
+#: src/components/monitors-table/monitors-table.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "Layout"
 msgstr "Bố cục"
@@ -1080,11 +1172,34 @@ msgstr "Sử dụng Bộ nhớ"
 msgid "Memory usage of docker containers"
 msgstr "Sử dụng bộ nhớ của các container Docker"
 
+#: src/components/add-monitor.tsx
+msgid "Method"
+msgstr ""
+
 #. Device model
 #: src/components/routes/system/smart-table.tsx
 msgid "Model"
 msgstr "Mô hình"
 
+#: src/components/monitors-table/monitors-table-columns.tsx
+msgid "Monitor"
+msgstr ""
+
+#: src/components/routes/monitor.tsx
+msgid "Monitor type"
+msgstr ""
+
+#: src/components/monitors-table/monitors-table.tsx
+#: src/components/navbar.tsx
+#: src/components/routes/monitors.tsx
+msgid "Monitors"
+msgstr ""
+
+#: src/components/routes/monitor.tsx
+msgid "Most recent first"
+msgstr ""
+
+#: src/components/add-monitor.tsx
 #: src/components/add-system.tsx
 #: src/components/alerts-history-columns.tsx
 #: src/components/containers-table/containers-table-columns.tsx
@@ -1119,6 +1234,18 @@ msgstr "Đơn vị mạng"
 #: src/components/systemd-table/systemd-table.tsx
 msgid "No"
 msgstr "Không"
+
+#: src/components/routes/monitor.tsx
+msgid "No check data available yet"
+msgstr ""
+
+#: src/components/routes/monitor.tsx
+msgid "No checks yet"
+msgstr ""
+
+#: src/components/monitors-table/monitors-table.tsx
+msgid "No monitors configured yet."
+msgstr ""
 
 #: src/components/command-palette.tsx
 #: src/components/systemd-table/systemd-table.tsx
@@ -1223,10 +1350,17 @@ msgstr "Yêu cầu đặt lại mật khẩu đã được nhận"
 msgid "Past"
 msgstr "Quá khứ"
 
+#: src/components/monitors-table/monitors-table-columns.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Pause"
 msgstr "Tạm dừng"
 
+#: src/components/monitors-table/monitors-table-columns.tsx
+#: src/components/monitors-table/monitors-table-columns.tsx
+#: src/components/monitors-table/monitors-table.tsx
+#: src/components/monitors-table/monitors-table.tsx
+#: src/components/monitors-table/monitors-table.tsx
+#: src/components/routes/monitor.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Paused"
 msgstr "Đã tạm dừng"
@@ -1238,6 +1372,12 @@ msgstr "Đã tạm dừng ({pausedSystemsLength})"
 #: src/components/routes/settings/heartbeat.tsx
 msgid "Payload format"
 msgstr "Định dạng tải trọng (payload)"
+
+#: src/components/monitors-table/monitors-table-columns.tsx
+#: src/components/monitors-table/monitors-table.tsx
+#: src/components/routes/monitor.tsx
+msgid "Pending"
+msgstr ""
 
 #: src/components/routes/system/cpu-sheet.tsx
 #: src/components/routes/system/cpu-sheet.tsx
@@ -1259,6 +1399,11 @@ msgstr "Vĩnh viễn"
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Persistence"
 msgstr "Tính bền vững"
+
+#: src/components/add-monitor.tsx
+#: src/components/monitors-table/monitors-table-columns.tsx
+msgid "Ping"
+msgstr ""
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Please <0>configure an SMTP server</0> to ensure alerts are delivered."
@@ -1293,6 +1438,7 @@ msgstr "Vui lòng xem <0>tài liệu</0> để biết hướng dẫn."
 msgid "Please sign in to your account"
 msgstr "Vui lòng đăng nhập vào tài khoản của bạn"
 
+#: src/components/add-monitor.tsx
 #: src/components/add-system.tsx
 msgid "Port"
 msgstr "Cổng"
@@ -1350,6 +1496,10 @@ msgstr "Đọc"
 msgid "Received"
 msgstr "Đã nhận"
 
+#: src/components/routes/monitor.tsx
+msgid "Recent checks"
+msgstr ""
+
 #: src/components/containers-table/containers-table.tsx
 #: src/components/containers-table/containers-table.tsx
 #: src/components/routes/system/smart-table.tsx
@@ -1386,13 +1536,26 @@ msgstr "Đặt lại Mật khẩu"
 msgid "Resolved"
 msgstr "Đã giải quyết"
 
+#: src/components/routes/monitor.tsx
+msgid "Response time"
+msgstr ""
+
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Restarts"
 msgstr "Khởi động lại"
 
+#: src/components/monitors-table/monitors-table-columns.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Resume"
 msgstr "Tiếp tục"
+
+#: src/components/add-monitor.tsx
+msgid "Retry on failure"
+msgstr ""
+
+#: src/components/add-monitor.tsx
+msgid "Retry the check a few times before marking as down"
+msgstr ""
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgctxt "Root disk label"
@@ -1427,6 +1590,10 @@ msgstr "Lưu {foo}"
 msgid "Save address using enter key or comma. Leave blank to disable email notifications."
 msgstr "Lưu địa chỉ bằng cách sử dụng phím enter hoặc dấu phẩy. Để trống để vô hiệu hóa thông báo email."
 
+#: src/components/add-monitor.tsx
+msgid "Save Monitor"
+msgstr ""
+
 #: src/components/routes/settings/general.tsx
 #: src/components/routes/settings/notifications.tsx
 msgid "Save Settings"
@@ -1435,6 +1602,10 @@ msgstr "Lưu Cài đặt"
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Saved in the database and does not expire until you disable it."
 msgstr "Được lưu trong cơ sở dữ liệu và không hết hạn cho đến khi bạn tắt nó."
+
+#: src/components/add-monitor.tsx
+msgid "Saving..."
+msgstr ""
 
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Schedule"
@@ -1459,6 +1630,10 @@ msgstr "Tìm kiếm hệ thống hoặc cài đặt..."
 #: src/components/routes/settings/heartbeat.tsx
 msgid "Seconds between pings (default: 60)"
 msgstr "Số giây giữa các lần ping (mặc định: 60)"
+
+#: src/components/add-monitor.tsx
+msgid "Secure (skip TLS verify)"
+msgstr ""
 
 #: src/components/alerts/alerts-sheet.tsx
 msgid "See <0>notification settings</0> to configure how you receive alerts."
@@ -1544,6 +1719,7 @@ msgid "State"
 msgstr "Trạng thái"
 
 #: src/components/containers-table/containers-table-columns.tsx
+#: src/components/monitors-table/monitors-table-columns.tsx
 #: src/components/routes/system/smart-table.tsx
 #: src/components/systemd-table/systemd-table.tsx
 #: src/components/systems-table/systems-table.tsx
@@ -1603,6 +1779,7 @@ msgstr "Các hệ thống"
 msgid "Systems may be managed in a <0>config.yml</0> file inside your data directory."
 msgstr "Các hệ thống có thể được quản lý trong tệp <0>config.yml</0> bên trong thư mục dữ liệu của bạn."
 
+#: src/components/monitors-table/monitors-table.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "Table"
 msgstr "Bảng"
@@ -1615,6 +1792,11 @@ msgstr "Tab"
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Tasks"
 msgstr "Tác vụ"
+
+#: src/components/add-monitor.tsx
+#: src/components/monitors-table/monitors-table-columns.tsx
+msgid "TCP"
+msgstr ""
 
 #. Temperature label in systems table
 #: src/components/routes/system/smart-table.tsx
@@ -1655,6 +1837,7 @@ msgstr "Trạng thái tổng thể là <0>ok</0> khi tất cả các hệ thốn
 msgid "Then log into the backend and reset your user account password in the users table."
 msgstr "Sau đó đăng nhập vào backend và đặt lại mật khẩu tài khoản người dùng của bạn trong bảng người dùng."
 
+#: src/components/monitors-table/monitors-table-columns.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "This action cannot be undone. This will permanently delete all current records for {name} from the database."
 msgstr "Hành động này không thể hoàn tác. Điều này sẽ xóa vĩnh viễn tất cả các bản ghi hiện tại cho {name} khỏi cơ sở dữ liệu."
@@ -1674,6 +1857,10 @@ msgstr "Thông lượng của hệ thống tệp gốc"
 #: src/components/routes/settings/general.tsx
 msgid "Time format"
 msgstr "Định dạng thời gian"
+
+#: src/components/add-monitor.tsx
+msgid "Timeout (sec)"
+msgstr ""
 
 #: src/components/routes/settings/notifications.tsx
 msgid "To email(s)"
@@ -1773,6 +1960,9 @@ msgstr "Kích hoạt khi trạng thái chuyển đổi giữa lên và xuống"
 msgid "Triggers when usage of any disk exceeds a threshold"
 msgstr "Kích hoạt khi sử dụng bất kỳ đĩa nào vượt quá ngưỡng"
 
+#: src/components/add-monitor.tsx
+#: src/components/monitors-table/monitors-table-columns.tsx
+#: src/components/routes/monitor.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/system/smart-table.tsx
@@ -1804,6 +1994,13 @@ msgid "Unlimited"
 msgstr "Không giới hạn"
 
 #. Context: System is up
+#: src/components/monitors-table/monitors-table-columns.tsx
+#: src/components/monitors-table/monitors-table-columns.tsx
+#: src/components/monitors-table/monitors-table.tsx
+#: src/components/monitors-table/monitors-table.tsx
+#: src/components/monitors-table/monitors-table.tsx
+#: src/components/routes/monitor.tsx
+#: src/components/routes/monitor.tsx
 #: src/components/routes/system/info-bar.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Up"
@@ -1831,10 +2028,15 @@ msgstr "Cập nhật mỗi 10 phút."
 msgid "Upload"
 msgstr "Tải lên"
 
+#: src/components/routes/monitor.tsx
 #: src/components/routes/system/info-bar.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Uptime"
 msgstr "Thời gian hoạt động"
+
+#: src/components/add-monitor.tsx
+msgid "URL"
+msgstr ""
 
 #: src/components/routes/system/charts/disk-charts.tsx
 #: src/components/routes/system/charts/gpu-charts.tsx
@@ -1847,6 +2049,10 @@ msgstr "Sử dụng"
 #: src/components/routes/system/charts/disk-charts.tsx
 msgid "Usage of root partition"
 msgstr "Sử dụng phân vùng gốc"
+
+#: src/components/monitors-table/monitors-table.tsx
+msgid "Use the Add Monitor button to get started."
+msgstr ""
 
 #: src/components/routes/system/charts/memory-charts.tsx
 #: src/components/routes/system/charts/memory-charts.tsx
@@ -1867,6 +2073,7 @@ msgstr "Sử dụng"
 msgid "Value"
 msgstr "Giá trị"
 
+#: src/components/monitors-table/monitors-table.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "View"
 msgstr "Xem"

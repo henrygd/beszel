@@ -73,5 +73,11 @@
 	},
 	"optionalDependencies": {
 		"@esbuild/linux-arm64": "^0.21.5"
+	},
+	"allowScripts": {
+		"@swc/core@1.13.5": true,
+		"@tailwindcss/oxide@4.1.12": true,
+		"esbuild@0.25.6": true,
+		"fsevents@2.3.3": true
 	}
 }

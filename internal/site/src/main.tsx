@@ -24,6 +24,7 @@ import {
 	defaultLayoutWidth,
 } from "@/lib/stores.ts"
 import * as systemsManager from "@/lib/systemsManager.ts"
+import * as monitorsManager from "@/lib/monitorsManager.ts"
 import type { BeszelInfo, UpdateInfo } from "./types"
 
 const LoginPage = lazy(() => import("@/components/login/login.tsx"))
@@ -31,6 +32,8 @@ const Home = lazy(() => import("@/components/routes/home.tsx"))
 const Containers = lazy(() => import("@/components/routes/containers.tsx"))
 const Smart = lazy(() => import("@/components/routes/smart.tsx"))
 const SystemDetail = lazy(() => import("@/components/routes/system.tsx"))
+const Monitors = lazy(() => import("@/components/routes/monitors.tsx"))
+const MonitorDetail = lazy(() => import("@/components/routes/monitor.tsx"))
 const CopyToClipboardDialog = lazy(() => import("@/components/copy-to-clipboard.tsx"))
 
 const App = memo(() => {
@@ -62,10 +65,17 @@ const App = memo(() => {
 			.then(alertManager.refresh)
 			// subscribe to new alert updates
 			.then(alertManager.subscribe)
+
+		// initialize uptime monitors
+		monitorsManager.init()
+		monitorsManager
+			.refresh()
+			.then(monitorsManager.subscribe)
 		return () => {
 			unsubscribeAuth()
 			alertManager.unsubscribe()
 			systemsManager.unsubscribe()
+			monitorsManager.unsubscribe()
 		}
 	}, [])
 
@@ -75,6 +85,10 @@ const App = memo(() => {
 		return <Home />
 	} else if (page.route === "system") {
 		return <SystemDetail id={page.params.id} />
+	} else if (page.route === "monitors") {
+		return <Monitors />
+	} else if (page.route === "monitor") {
+		return <MonitorDetail id={page.params.id} />
 	} else if (page.route === "containers") {
 		return <Containers />
 	} else if (page.route === "smart") {

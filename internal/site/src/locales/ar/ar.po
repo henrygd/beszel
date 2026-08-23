@@ -89,6 +89,10 @@ msgstr "30 يومًا"
 msgid "5 min"
 msgstr "5 دقائق"
 
+#: src/components/routes/monitor.tsx
+msgid "Across the {totalChecks} most recent checks"
+msgstr ""
+
 #. Table column
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
@@ -120,6 +124,13 @@ msgstr "الحالة النشطة"
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Add {foo}"
 msgstr "إضافة {foo}"
+
+#: src/components/add-monitor.tsx
+#: src/components/add-monitor.tsx
+#: src/components/navbar.tsx
+#: src/components/routes/monitors.tsx
+msgid "Add Monitor"
+msgstr ""
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Add URL"
@@ -162,6 +173,10 @@ msgstr "سجل التنبيهات"
 msgid "Alerts"
 msgstr "التنبيهات"
 
+#: src/components/monitors-table/monitors-table.tsx
+msgid "All"
+msgstr ""
+
 #: src/components/command-palette.tsx
 #: src/components/containers-table/containers-table.tsx
 #: src/components/navbar.tsx
@@ -179,6 +194,11 @@ msgstr "جميع الحاويات"
 msgid "All Systems"
 msgstr "جميع الأنظمة"
 
+#: src/components/add-monitor.tsx
+msgid "Allow self-signed or invalid certificates"
+msgstr ""
+
+#: src/components/monitors-table/monitors-table-columns.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Are you sure you want to delete {name}?"
 msgstr "هل أنت متأكد أنك تريد حذف {name}؟"
@@ -317,6 +337,7 @@ msgstr "يمكن البدء"
 msgid "Can stop"
 msgstr "يمكن الإيقاف"
 
+#: src/components/monitors-table/monitors-table-columns.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/systems-table/systems-table-columns.tsx
@@ -368,9 +389,18 @@ msgstr "عرض الرسم البياني"
 msgid "Check {email} for a reset link."
 msgstr "تحقق من {email} للحصول على رابط إعادة التعيين."
 
+#: src/components/routes/monitor.tsx
+msgid "Check frequency"
+msgstr ""
+
 #: src/components/routes/settings/layout.tsx
 msgid "Check logs for more details."
 msgstr "تحقق من السجلات لمزيد من التفاصيل."
+
+#: src/components/monitors-table/monitors-table-columns.tsx
+#: src/components/routes/monitor.tsx
+msgid "Check now"
+msgstr ""
 
 #: src/components/routes/settings/heartbeat.tsx
 msgid "Check your monitoring service"
@@ -381,6 +411,7 @@ msgid "Check your notification service"
 msgstr "تحقق من خدمة الإشعارات الخاصة بك"
 
 #: src/components/containers-table/containers-table.tsx
+#: src/components/monitors-table/monitors-table.tsx
 #: src/components/routes/system/smart-table.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "Clear"
@@ -394,6 +425,10 @@ msgstr "انقر على حاوية لعرض مزيد من المعلومات."
 msgid "Click on a device to view more information."
 msgstr "انقر على جهاز لعرض مزيد من المعلومات."
 
+#: src/components/monitors-table/monitors-table.tsx
+msgid "Click on a monitor to view more information."
+msgstr ""
+
 #: src/components/systems-table/systems-table.tsx
 msgid "Click on a system to view more information."
 msgstr "انقر على نظام لعرض مزيد من المعلومات."
@@ -402,10 +437,18 @@ msgstr "انقر على نظام لعرض مزيد من المعلومات."
 msgid "Click to copy"
 msgstr "انقر للنسخ"
 
+#: src/components/monitors-table/monitors-table.tsx
+msgid "Columns"
+msgstr ""
+
 #: src/components/login/forgot-pass-form.tsx
 #: src/components/login/forgot-pass-form.tsx
 msgid "Command line instructions"
 msgstr "تعليمات سطر الأوامر"
+
+#: src/components/add-monitor.tsx
+msgid "Configure an uptime monitor. The type determines which fields are required."
+msgstr ""
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Configure how you receive alert notifications."
@@ -428,6 +471,7 @@ msgstr "الاتصال مقطوع"
 msgid "Containers"
 msgstr "حاويات"
 
+#: src/components/monitors-table/monitors-table-columns.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Continue"
@@ -577,6 +621,7 @@ msgstr "افتراضي"
 msgid "Default time period"
 msgstr "الفترة الزمنية الافتراضية"
 
+#: src/components/monitors-table/monitors-table-columns.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/system/smart-table.tsx
@@ -652,6 +697,13 @@ msgstr "التوثيق"
 
 #. Context: System is down
 #: src/components/alerts-history-columns.tsx
+#: src/components/monitors-table/monitors-table-columns.tsx
+#: src/components/monitors-table/monitors-table-columns.tsx
+#: src/components/monitors-table/monitors-table.tsx
+#: src/components/monitors-table/monitors-table.tsx
+#: src/components/monitors-table/monitors-table.tsx
+#: src/components/routes/monitor.tsx
+#: src/components/routes/monitor.tsx
 #: src/components/routes/system/info-bar.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 #: src/lib/alerts.ts
@@ -670,6 +722,8 @@ msgstr "تنزيل"
 msgid "Duration"
 msgstr "المدة"
 
+#: src/components/monitors-table/monitors-table-columns.tsx
+#: src/components/routes/monitor.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Edit"
@@ -679,6 +733,10 @@ msgstr "تعديل"
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Edit {foo}"
 msgstr "إضافة {foo}"
+
+#: src/components/add-monitor.tsx
+msgid "Edit Monitor"
+msgstr ""
 
 #: src/components/login/auth-form.tsx
 #: src/components/login/forgot-pass-form.tsx
@@ -760,6 +818,14 @@ msgstr "سيتم حذف الأنظمة الحالية غير المعرفة في
 msgid "Exited active"
 msgstr "خرج نشطًا"
 
+#: src/components/add-monitor.tsx
+msgid "Expected Body"
+msgstr ""
+
+#: src/components/add-monitor.tsx
+msgid "Expected Status"
+msgstr ""
+
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Expires after one hour or on hub restart."
 msgstr "ينتهي بعد ساعة واحدة أو عند إعادة تشغيل المحور."
@@ -820,6 +886,7 @@ msgid "Fans"
 msgstr ""
 
 #: src/components/containers-table/containers-table.tsx
+#: src/components/monitors-table/monitors-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/system/chart-card.tsx
 #: src/components/routes/system/smart-table.tsx
@@ -882,6 +949,7 @@ msgstr "استهلاك طاقة وحدة معالجة الرسوميات"
 msgid "GPU Usage"
 msgstr "استخدام وحدة معالجة الرسوميات"
 
+#: src/components/monitors-table/monitors-table.tsx
 #: src/components/routes/system/info-bar.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "Grid"
@@ -909,9 +977,18 @@ msgctxt "Button to copy install command"
 msgid "Homebrew command"
 msgstr "أمر Homebrew"
 
+#: src/components/add-monitor.tsx
+msgid "Host"
+msgstr ""
+
+#: src/components/add-monitor.tsx
 #: src/components/add-system.tsx
 msgid "Host / IP"
 msgstr "مضيف / IP"
+
+#: src/components/monitors-table/monitors-table-columns.tsx
+msgid "HTTP"
+msgstr ""
 
 #: src/components/routes/settings/heartbeat.tsx
 msgid "HTTP Method"
@@ -920,6 +997,10 @@ msgstr "طريقة HTTP"
 #: src/components/routes/settings/heartbeat.tsx
 msgid "HTTP method: POST, GET, or HEAD (default: POST)"
 msgstr "طريقة HTTP: POST، GET، أو HEAD (الافتراضي: POST)"
+
+#: src/components/add-monitor.tsx
+msgid "HTTP(S)"
+msgstr ""
 
 #: src/components/routes/system/disk-io-sheet.tsx
 msgctxt "Disk I/O average operation time (iostat await)"
@@ -954,9 +1035,15 @@ msgstr "صورة"
 msgid "Inactive"
 msgstr "غير نشط"
 
+#: src/components/monitors-table/monitors-table-columns.tsx
+#: src/components/routes/monitor.tsx
 #: src/components/routes/settings/heartbeat.tsx
 msgid "Interval"
 msgstr "الفاصل الزمني"
+
+#: src/components/add-monitor.tsx
+msgid "Interval (sec)"
+msgstr ""
 
 #: src/components/login/auth-form.tsx
 msgid "Invalid email address."
@@ -966,6 +1053,11 @@ msgstr "عنوان البريد الإشباكي غير صالح."
 msgid "Language"
 msgstr "اللغة"
 
+#: src/components/routes/monitor.tsx
+msgid "Latency of each check over time"
+msgstr ""
+
+#: src/components/monitors-table/monitors-table.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "Layout"
 msgstr "التخطيط"
@@ -1080,11 +1172,34 @@ msgstr "استخدام الذاكرة"
 msgid "Memory usage of docker containers"
 msgstr "استخدام الذاكرة لحاويات دوكر"
 
+#: src/components/add-monitor.tsx
+msgid "Method"
+msgstr ""
+
 #. Device model
 #: src/components/routes/system/smart-table.tsx
 msgid "Model"
 msgstr "الموديل"
 
+#: src/components/monitors-table/monitors-table-columns.tsx
+msgid "Monitor"
+msgstr ""
+
+#: src/components/routes/monitor.tsx
+msgid "Monitor type"
+msgstr ""
+
+#: src/components/monitors-table/monitors-table.tsx
+#: src/components/navbar.tsx
+#: src/components/routes/monitors.tsx
+msgid "Monitors"
+msgstr ""
+
+#: src/components/routes/monitor.tsx
+msgid "Most recent first"
+msgstr ""
+
+#: src/components/add-monitor.tsx
 #: src/components/add-system.tsx
 #: src/components/alerts-history-columns.tsx
 #: src/components/containers-table/containers-table-columns.tsx
@@ -1119,6 +1234,18 @@ msgstr "وحدة الشبكة"
 #: src/components/systemd-table/systemd-table.tsx
 msgid "No"
 msgstr "لا"
+
+#: src/components/routes/monitor.tsx
+msgid "No check data available yet"
+msgstr ""
+
+#: src/components/routes/monitor.tsx
+msgid "No checks yet"
+msgstr ""
+
+#: src/components/monitors-table/monitors-table.tsx
+msgid "No monitors configured yet."
+msgstr ""
 
 #: src/components/command-palette.tsx
 #: src/components/systemd-table/systemd-table.tsx
@@ -1223,10 +1350,17 @@ msgstr "تم استلام طلب إعادة تعيين كلمة المرور"
 msgid "Past"
 msgstr "الماضي"
 
+#: src/components/monitors-table/monitors-table-columns.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Pause"
 msgstr "إيقاف مؤقت"
 
+#: src/components/monitors-table/monitors-table-columns.tsx
+#: src/components/monitors-table/monitors-table-columns.tsx
+#: src/components/monitors-table/monitors-table.tsx
+#: src/components/monitors-table/monitors-table.tsx
+#: src/components/monitors-table/monitors-table.tsx
+#: src/components/routes/monitor.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Paused"
 msgstr "متوقف مؤقتا"
@@ -1238,6 +1372,12 @@ msgstr "متوقف مؤقتا ({pausedSystemsLength})"
 #: src/components/routes/settings/heartbeat.tsx
 msgid "Payload format"
 msgstr "تنسيق الحمولة"
+
+#: src/components/monitors-table/monitors-table-columns.tsx
+#: src/components/monitors-table/monitors-table.tsx
+#: src/components/routes/monitor.tsx
+msgid "Pending"
+msgstr ""
 
 #: src/components/routes/system/cpu-sheet.tsx
 #: src/components/routes/system/cpu-sheet.tsx
@@ -1259,6 +1399,11 @@ msgstr "دائم"
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Persistence"
 msgstr "الاستمرارية"
+
+#: src/components/add-monitor.tsx
+#: src/components/monitors-table/monitors-table-columns.tsx
+msgid "Ping"
+msgstr ""
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Please <0>configure an SMTP server</0> to ensure alerts are delivered."
@@ -1293,6 +1438,7 @@ msgstr "يرجى الاطلاع على <0>التوثيق</0> للحصول على
 msgid "Please sign in to your account"
 msgstr "يرجى تسجيل الدخول إلى حسابك"
 
+#: src/components/add-monitor.tsx
 #: src/components/add-system.tsx
 msgid "Port"
 msgstr "المنفذ"
@@ -1350,6 +1496,10 @@ msgstr "قراءة"
 msgid "Received"
 msgstr "تم الاستلام"
 
+#: src/components/routes/monitor.tsx
+msgid "Recent checks"
+msgstr ""
+
 #: src/components/containers-table/containers-table.tsx
 #: src/components/containers-table/containers-table.tsx
 #: src/components/routes/system/smart-table.tsx
@@ -1386,13 +1536,26 @@ msgstr "إعادة تعيين كلمة المرور"
 msgid "Resolved"
 msgstr "تم حلها"
 
+#: src/components/routes/monitor.tsx
+msgid "Response time"
+msgstr ""
+
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Restarts"
 msgstr "إعادة التشغيل"
 
+#: src/components/monitors-table/monitors-table-columns.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Resume"
 msgstr "استئناف"
+
+#: src/components/add-monitor.tsx
+msgid "Retry on failure"
+msgstr ""
+
+#: src/components/add-monitor.tsx
+msgid "Retry the check a few times before marking as down"
+msgstr ""
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgctxt "Root disk label"
@@ -1427,6 +1590,10 @@ msgstr "حفظ {foo}"
 msgid "Save address using enter key or comma. Leave blank to disable email notifications."
 msgstr "احفظ العنوان باستخدام مفتاح الإدخال أو الفاصلة. اتركه فارغًا لتعطيل إشعارات البريد الإشباكي."
 
+#: src/components/add-monitor.tsx
+msgid "Save Monitor"
+msgstr ""
+
 #: src/components/routes/settings/general.tsx
 #: src/components/routes/settings/notifications.tsx
 msgid "Save Settings"
@@ -1435,6 +1602,10 @@ msgstr "حفظ الإعدادات"
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Saved in the database and does not expire until you disable it."
 msgstr "محفوظ في قاعدة البيانات ولا ينتهي حتى تقوم بتعطيله."
+
+#: src/components/add-monitor.tsx
+msgid "Saving..."
+msgstr ""
 
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Schedule"
@@ -1459,6 +1630,10 @@ msgstr "البحث عن الأنظمة أو الإعدادات..."
 #: src/components/routes/settings/heartbeat.tsx
 msgid "Seconds between pings (default: 60)"
 msgstr "ثواني بين ال pings (الافتراضي: 60)"
+
+#: src/components/add-monitor.tsx
+msgid "Secure (skip TLS verify)"
+msgstr ""
 
 #: src/components/alerts/alerts-sheet.tsx
 msgid "See <0>notification settings</0> to configure how you receive alerts."
@@ -1544,6 +1719,7 @@ msgid "State"
 msgstr "الحالة"
 
 #: src/components/containers-table/containers-table-columns.tsx
+#: src/components/monitors-table/monitors-table-columns.tsx
 #: src/components/routes/system/smart-table.tsx
 #: src/components/systemd-table/systemd-table.tsx
 #: src/components/systems-table/systems-table.tsx
@@ -1603,6 +1779,7 @@ msgstr "الأنظمة"
 msgid "Systems may be managed in a <0>config.yml</0> file inside your data directory."
 msgstr "يمكن إدارة الأنظمة في ملف <0>config.yml</0> داخل دليل البيانات الخاص بك."
 
+#: src/components/monitors-table/monitors-table.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "Table"
 msgstr "جدول"
@@ -1615,6 +1792,11 @@ msgstr "تبويبات"
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Tasks"
 msgstr "المهام"
+
+#: src/components/add-monitor.tsx
+#: src/components/monitors-table/monitors-table-columns.tsx
+msgid "TCP"
+msgstr ""
 
 #. Temperature label in systems table
 #: src/components/routes/system/smart-table.tsx
@@ -1655,6 +1837,7 @@ msgstr "الحالة العامة هي <0>موافق</0> عندما تكون ج�
 msgid "Then log into the backend and reset your user account password in the users table."
 msgstr "ثم قم بتسجيل الدخول إلى الواجهة الخلفية وأعد تعيين كلمة مرور حساب المستخدم الخاص بك في جدول المستخدمين."
 
+#: src/components/monitors-table/monitors-table-columns.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "This action cannot be undone. This will permanently delete all current records for {name} from the database."
 msgstr "لا يمكن التراجع عن هذا الإجراء. سيؤدي ذلك إلى حذف جميع السجلات الحالية لـ {name} من قاعدة البيانات بشكل دائم."
@@ -1674,6 +1857,10 @@ msgstr "معدل نقل نظام الملفات الجذر"
 #: src/components/routes/settings/general.tsx
 msgid "Time format"
 msgstr "تنسيق الوقت"
+
+#: src/components/add-monitor.tsx
+msgid "Timeout (sec)"
+msgstr ""
 
 #: src/components/routes/settings/notifications.tsx
 msgid "To email(s)"
@@ -1773,6 +1960,9 @@ msgstr "يتم التفعيل عندما يتغير الحالة بين التش
 msgid "Triggers when usage of any disk exceeds a threshold"
 msgstr "يتم التفعيل عندما يتجاوز استخدام أي قرص عتبة معينة"
 
+#: src/components/add-monitor.tsx
+#: src/components/monitors-table/monitors-table-columns.tsx
+#: src/components/routes/monitor.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/system/smart-table.tsx
@@ -1804,6 +1994,13 @@ msgid "Unlimited"
 msgstr "غير محدود"
 
 #. Context: System is up
+#: src/components/monitors-table/monitors-table-columns.tsx
+#: src/components/monitors-table/monitors-table-columns.tsx
+#: src/components/monitors-table/monitors-table.tsx
+#: src/components/monitors-table/monitors-table.tsx
+#: src/components/monitors-table/monitors-table.tsx
+#: src/components/routes/monitor.tsx
+#: src/components/routes/monitor.tsx
 #: src/components/routes/system/info-bar.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Up"
@@ -1831,10 +2028,15 @@ msgstr "يتم التحديث كل 10 دقائق."
 msgid "Upload"
 msgstr "رفع"
 
+#: src/components/routes/monitor.tsx
 #: src/components/routes/system/info-bar.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Uptime"
 msgstr "مدة التشغيل"
+
+#: src/components/add-monitor.tsx
+msgid "URL"
+msgstr ""
 
 #: src/components/routes/system/charts/disk-charts.tsx
 #: src/components/routes/system/charts/gpu-charts.tsx
@@ -1847,6 +2049,10 @@ msgstr "الاستخدام"
 #: src/components/routes/system/charts/disk-charts.tsx
 msgid "Usage of root partition"
 msgstr "استخدام القسم الجذر"
+
+#: src/components/monitors-table/monitors-table.tsx
+msgid "Use the Add Monitor button to get started."
+msgstr ""
 
 #: src/components/routes/system/charts/memory-charts.tsx
 #: src/components/routes/system/charts/memory-charts.tsx
@@ -1867,6 +2073,7 @@ msgstr "الاستخدام"
 msgid "Value"
 msgstr "القيمة"
 
+#: src/components/monitors-table/monitors-table.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "View"
 msgstr "عرض"

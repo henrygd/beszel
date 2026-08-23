@@ -89,6 +89,10 @@ msgstr "30 gün"
 msgid "5 min"
 msgstr "5 dk"
 
+#: src/components/routes/monitor.tsx
+msgid "Across the {totalChecks} most recent checks"
+msgstr ""
+
 #. Table column
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
@@ -120,6 +124,13 @@ msgstr "Aktif durum"
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Add {foo}"
 msgstr "{foo} ekle"
+
+#: src/components/add-monitor.tsx
+#: src/components/add-monitor.tsx
+#: src/components/navbar.tsx
+#: src/components/routes/monitors.tsx
+msgid "Add Monitor"
+msgstr ""
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Add URL"
@@ -162,6 +173,10 @@ msgstr "Uyarı Geçmişi"
 msgid "Alerts"
 msgstr "Uyarılar"
 
+#: src/components/monitors-table/monitors-table.tsx
+msgid "All"
+msgstr ""
+
 #: src/components/command-palette.tsx
 #: src/components/containers-table/containers-table.tsx
 #: src/components/navbar.tsx
@@ -179,6 +194,11 @@ msgstr "Tüm Konteynerler"
 msgid "All Systems"
 msgstr "Tüm Sistemler"
 
+#: src/components/add-monitor.tsx
+msgid "Allow self-signed or invalid certificates"
+msgstr ""
+
+#: src/components/monitors-table/monitors-table-columns.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Are you sure you want to delete {name}?"
 msgstr "{name} silmek istediğinizden emin misiniz?"
@@ -317,6 +337,7 @@ msgstr "Başlatılabilir"
 msgid "Can stop"
 msgstr "Durdurulabilir"
 
+#: src/components/monitors-table/monitors-table-columns.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/systems-table/systems-table-columns.tsx
@@ -368,9 +389,18 @@ msgstr "Grafik genişliği"
 msgid "Check {email} for a reset link."
 msgstr "Sıfırlama bağlantısı için {email} kontrol edin."
 
+#: src/components/routes/monitor.tsx
+msgid "Check frequency"
+msgstr ""
+
 #: src/components/routes/settings/layout.tsx
 msgid "Check logs for more details."
 msgstr "Daha fazla ayrıntı için günlükleri kontrol edin."
+
+#: src/components/monitors-table/monitors-table-columns.tsx
+#: src/components/routes/monitor.tsx
+msgid "Check now"
+msgstr ""
 
 #: src/components/routes/settings/heartbeat.tsx
 msgid "Check your monitoring service"
@@ -381,6 +411,7 @@ msgid "Check your notification service"
 msgstr "Bildirim hizmetinizi kontrol edin"
 
 #: src/components/containers-table/containers-table.tsx
+#: src/components/monitors-table/monitors-table.tsx
 #: src/components/routes/system/smart-table.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "Clear"
@@ -394,6 +425,10 @@ msgstr "Daha fazla bilgi görüntülemek için bir konteynere tıklayın."
 msgid "Click on a device to view more information."
 msgstr "Daha fazla bilgi görüntülemek için bir cihaza tıklayın."
 
+#: src/components/monitors-table/monitors-table.tsx
+msgid "Click on a monitor to view more information."
+msgstr ""
+
 #: src/components/systems-table/systems-table.tsx
 msgid "Click on a system to view more information."
 msgstr "Daha fazla bilgi görmek için bir sisteme tıklayın."
@@ -402,10 +437,18 @@ msgstr "Daha fazla bilgi görmek için bir sisteme tıklayın."
 msgid "Click to copy"
 msgstr "Kopyalamak için tıklayın"
 
+#: src/components/monitors-table/monitors-table.tsx
+msgid "Columns"
+msgstr ""
+
 #: src/components/login/forgot-pass-form.tsx
 #: src/components/login/forgot-pass-form.tsx
 msgid "Command line instructions"
 msgstr "Komut satırı talimatları"
+
+#: src/components/add-monitor.tsx
+msgid "Configure an uptime monitor. The type determines which fields are required."
+msgstr ""
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Configure how you receive alert notifications."
@@ -428,6 +471,7 @@ msgstr "Bağlantı kesildi"
 msgid "Containers"
 msgstr "Konteynerler"
 
+#: src/components/monitors-table/monitors-table-columns.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Continue"
@@ -577,6 +621,7 @@ msgstr "Varsayılan"
 msgid "Default time period"
 msgstr "Varsayılan zaman dilimi"
 
+#: src/components/monitors-table/monitors-table-columns.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/system/smart-table.tsx
@@ -652,6 +697,13 @@ msgstr "Dokümantasyon"
 
 #. Context: System is down
 #: src/components/alerts-history-columns.tsx
+#: src/components/monitors-table/monitors-table-columns.tsx
+#: src/components/monitors-table/monitors-table-columns.tsx
+#: src/components/monitors-table/monitors-table.tsx
+#: src/components/monitors-table/monitors-table.tsx
+#: src/components/monitors-table/monitors-table.tsx
+#: src/components/routes/monitor.tsx
+#: src/components/routes/monitor.tsx
 #: src/components/routes/system/info-bar.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 #: src/lib/alerts.ts
@@ -670,6 +722,8 @@ msgstr "İndir"
 msgid "Duration"
 msgstr "Süre"
 
+#: src/components/monitors-table/monitors-table-columns.tsx
+#: src/components/routes/monitor.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Edit"
@@ -679,6 +733,10 @@ msgstr "Düzenle"
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Edit {foo}"
 msgstr "{foo} düzenle"
+
+#: src/components/add-monitor.tsx
+msgid "Edit Monitor"
+msgstr ""
 
 #: src/components/login/auth-form.tsx
 #: src/components/login/forgot-pass-form.tsx
@@ -760,6 +818,14 @@ msgstr "<0>config.yml</0> içinde tanımlanmayan mevcut sistemler silinecektir. 
 msgid "Exited active"
 msgstr "Aktif olarak çıktı"
 
+#: src/components/add-monitor.tsx
+msgid "Expected Body"
+msgstr ""
+
+#: src/components/add-monitor.tsx
+msgid "Expected Status"
+msgstr ""
+
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Expires after one hour or on hub restart."
 msgstr "Bir saat sonra veya hub yeniden başlatıldığında sona erer."
@@ -820,6 +886,7 @@ msgid "Fans"
 msgstr ""
 
 #: src/components/containers-table/containers-table.tsx
+#: src/components/monitors-table/monitors-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/system/chart-card.tsx
 #: src/components/routes/system/smart-table.tsx
@@ -882,6 +949,7 @@ msgstr "GPU Güç Çekimi"
 msgid "GPU Usage"
 msgstr "GPU Kullanımı"
 
+#: src/components/monitors-table/monitors-table.tsx
 #: src/components/routes/system/info-bar.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "Grid"
@@ -909,9 +977,18 @@ msgctxt "Button to copy install command"
 msgid "Homebrew command"
 msgstr "Homebrew komutu"
 
+#: src/components/add-monitor.tsx
+msgid "Host"
+msgstr ""
+
+#: src/components/add-monitor.tsx
 #: src/components/add-system.tsx
 msgid "Host / IP"
 msgstr "Ana Bilgisayar / IP"
+
+#: src/components/monitors-table/monitors-table-columns.tsx
+msgid "HTTP"
+msgstr ""
 
 #: src/components/routes/settings/heartbeat.tsx
 msgid "HTTP Method"
@@ -920,6 +997,10 @@ msgstr "HTTP Yöntemi"
 #: src/components/routes/settings/heartbeat.tsx
 msgid "HTTP method: POST, GET, or HEAD (default: POST)"
 msgstr "HTTP yöntemi: POST, GET veya HEAD (varsayılan: POST)"
+
+#: src/components/add-monitor.tsx
+msgid "HTTP(S)"
+msgstr ""
 
 #: src/components/routes/system/disk-io-sheet.tsx
 msgctxt "Disk I/O average operation time (iostat await)"
@@ -954,9 +1035,15 @@ msgstr "İmaj"
 msgid "Inactive"
 msgstr "Pasif"
 
+#: src/components/monitors-table/monitors-table-columns.tsx
+#: src/components/routes/monitor.tsx
 #: src/components/routes/settings/heartbeat.tsx
 msgid "Interval"
 msgstr "Aralık"
+
+#: src/components/add-monitor.tsx
+msgid "Interval (sec)"
+msgstr ""
 
 #: src/components/login/auth-form.tsx
 msgid "Invalid email address."
@@ -966,6 +1053,11 @@ msgstr "Geçersiz e-posta adresi."
 msgid "Language"
 msgstr "Dil"
 
+#: src/components/routes/monitor.tsx
+msgid "Latency of each check over time"
+msgstr ""
+
+#: src/components/monitors-table/monitors-table.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "Layout"
 msgstr "Düzen"
@@ -1080,11 +1172,34 @@ msgstr "Bellek Kullanımı"
 msgid "Memory usage of docker containers"
 msgstr "Docker konteynerlerinin bellek kullanımı"
 
+#: src/components/add-monitor.tsx
+msgid "Method"
+msgstr ""
+
 #. Device model
 #: src/components/routes/system/smart-table.tsx
 msgid "Model"
 msgstr "Model"
 
+#: src/components/monitors-table/monitors-table-columns.tsx
+msgid "Monitor"
+msgstr ""
+
+#: src/components/routes/monitor.tsx
+msgid "Monitor type"
+msgstr ""
+
+#: src/components/monitors-table/monitors-table.tsx
+#: src/components/navbar.tsx
+#: src/components/routes/monitors.tsx
+msgid "Monitors"
+msgstr ""
+
+#: src/components/routes/monitor.tsx
+msgid "Most recent first"
+msgstr ""
+
+#: src/components/add-monitor.tsx
 #: src/components/add-system.tsx
 #: src/components/alerts-history-columns.tsx
 #: src/components/containers-table/containers-table-columns.tsx
@@ -1119,6 +1234,18 @@ msgstr "Ağ birimi"
 #: src/components/systemd-table/systemd-table.tsx
 msgid "No"
 msgstr "Hayır"
+
+#: src/components/routes/monitor.tsx
+msgid "No check data available yet"
+msgstr ""
+
+#: src/components/routes/monitor.tsx
+msgid "No checks yet"
+msgstr ""
+
+#: src/components/monitors-table/monitors-table.tsx
+msgid "No monitors configured yet."
+msgstr ""
 
 #: src/components/command-palette.tsx
 #: src/components/systemd-table/systemd-table.tsx
@@ -1223,10 +1350,17 @@ msgstr "Şifre sıfırlama isteği alındı"
 msgid "Past"
 msgstr "Geçmiş"
 
+#: src/components/monitors-table/monitors-table-columns.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Pause"
 msgstr "Duraklat"
 
+#: src/components/monitors-table/monitors-table-columns.tsx
+#: src/components/monitors-table/monitors-table-columns.tsx
+#: src/components/monitors-table/monitors-table.tsx
+#: src/components/monitors-table/monitors-table.tsx
+#: src/components/monitors-table/monitors-table.tsx
+#: src/components/routes/monitor.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Paused"
 msgstr "Duraklatıldı"
@@ -1238,6 +1372,12 @@ msgstr "Duraklatıldı ({pausedSystemsLength})"
 #: src/components/routes/settings/heartbeat.tsx
 msgid "Payload format"
 msgstr "Yük (Payload) formatı"
+
+#: src/components/monitors-table/monitors-table-columns.tsx
+#: src/components/monitors-table/monitors-table.tsx
+#: src/components/routes/monitor.tsx
+msgid "Pending"
+msgstr ""
 
 #: src/components/routes/system/cpu-sheet.tsx
 #: src/components/routes/system/cpu-sheet.tsx
@@ -1259,6 +1399,11 @@ msgstr "Kalıcı"
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Persistence"
 msgstr "Kalıcılık"
+
+#: src/components/add-monitor.tsx
+#: src/components/monitors-table/monitors-table-columns.tsx
+msgid "Ping"
+msgstr ""
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Please <0>configure an SMTP server</0> to ensure alerts are delivered."
@@ -1293,6 +1438,7 @@ msgstr "Talimatlar için lütfen <0>dokümantasyonu</0> inceleyin."
 msgid "Please sign in to your account"
 msgstr "Lütfen hesabınıza giriş yapın"
 
+#: src/components/add-monitor.tsx
 #: src/components/add-system.tsx
 msgid "Port"
 msgstr "Port"
@@ -1350,6 +1496,10 @@ msgstr "Oku"
 msgid "Received"
 msgstr "Alındı"
 
+#: src/components/routes/monitor.tsx
+msgid "Recent checks"
+msgstr ""
+
 #: src/components/containers-table/containers-table.tsx
 #: src/components/containers-table/containers-table.tsx
 #: src/components/routes/system/smart-table.tsx
@@ -1386,13 +1536,26 @@ msgstr "Şifreyi Sıfırla"
 msgid "Resolved"
 msgstr "Çözüldü"
 
+#: src/components/routes/monitor.tsx
+msgid "Response time"
+msgstr ""
+
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Restarts"
 msgstr "Yeniden başlatmalar"
 
+#: src/components/monitors-table/monitors-table-columns.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Resume"
 msgstr "Devam et"
+
+#: src/components/add-monitor.tsx
+msgid "Retry on failure"
+msgstr ""
+
+#: src/components/add-monitor.tsx
+msgid "Retry the check a few times before marking as down"
+msgstr ""
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgctxt "Root disk label"
@@ -1427,6 +1590,10 @@ msgstr "{foo} Kaydet"
 msgid "Save address using enter key or comma. Leave blank to disable email notifications."
 msgstr "Adresleri enter tuşu veya virgül ile kaydedin. E-posta bildirimlerini devre dışı bırakmak için boş bırakın."
 
+#: src/components/add-monitor.tsx
+msgid "Save Monitor"
+msgstr ""
+
 #: src/components/routes/settings/general.tsx
 #: src/components/routes/settings/notifications.tsx
 msgid "Save Settings"
@@ -1435,6 +1602,10 @@ msgstr "Ayarları Kaydet"
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Saved in the database and does not expire until you disable it."
 msgstr "Veritabanında kaydedilir ve siz devre dışı bırakana kadar süresi dolmaz."
+
+#: src/components/add-monitor.tsx
+msgid "Saving..."
+msgstr ""
 
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Schedule"
@@ -1459,6 +1630,10 @@ msgstr "Sistemler veya ayarlar için ara..."
 #: src/components/routes/settings/heartbeat.tsx
 msgid "Seconds between pings (default: 60)"
 msgstr "Pingler arasındaki saniye (varsayılan: 60)"
+
+#: src/components/add-monitor.tsx
+msgid "Secure (skip TLS verify)"
+msgstr ""
 
 #: src/components/alerts/alerts-sheet.tsx
 msgid "See <0>notification settings</0> to configure how you receive alerts."
@@ -1544,6 +1719,7 @@ msgid "State"
 msgstr "Durum"
 
 #: src/components/containers-table/containers-table-columns.tsx
+#: src/components/monitors-table/monitors-table-columns.tsx
 #: src/components/routes/system/smart-table.tsx
 #: src/components/systemd-table/systemd-table.tsx
 #: src/components/systems-table/systems-table.tsx
@@ -1603,6 +1779,7 @@ msgstr "Sistemler"
 msgid "Systems may be managed in a <0>config.yml</0> file inside your data directory."
 msgstr "Sistemler, veri dizininizdeki bir <0>config.yml</0> dosyasında yönetilebilir."
 
+#: src/components/monitors-table/monitors-table.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "Table"
 msgstr "Tablo"
@@ -1615,6 +1792,11 @@ msgstr "Sekmeler"
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Tasks"
 msgstr "Görevler"
+
+#: src/components/add-monitor.tsx
+#: src/components/monitors-table/monitors-table-columns.tsx
+msgid "TCP"
+msgstr ""
 
 #. Temperature label in systems table
 #: src/components/routes/system/smart-table.tsx
@@ -1655,6 +1837,7 @@ msgstr "Tüm sistemler çalışırken genel durum <0>ok</0>, uyarılar tetiklend
 msgid "Then log into the backend and reset your user account password in the users table."
 msgstr "Ardından arka uca giriş yapın ve kullanıcılar tablosunda kullanıcı hesabı şifrenizi sıfırlayın."
 
+#: src/components/monitors-table/monitors-table-columns.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "This action cannot be undone. This will permanently delete all current records for {name} from the database."
 msgstr "Bu işlem geri alınamaz. Bu, veritabanından {name} için tüm mevcut kayıtları kalıcı olarak silecektir."
@@ -1674,6 +1857,10 @@ msgstr "Kök dosya sisteminin verimliliği"
 #: src/components/routes/settings/general.tsx
 msgid "Time format"
 msgstr "Zaman formatı"
+
+#: src/components/add-monitor.tsx
+msgid "Timeout (sec)"
+msgstr ""
 
 #: src/components/routes/settings/notifications.tsx
 msgid "To email(s)"
@@ -1773,6 +1960,9 @@ msgstr "Durum yukarı ve aşağı arasında değiştiğinde tetiklenir"
 msgid "Triggers when usage of any disk exceeds a threshold"
 msgstr "Herhangi bir diskin kullanımı bir eşiği aştığında tetiklenir"
 
+#: src/components/add-monitor.tsx
+#: src/components/monitors-table/monitors-table-columns.tsx
+#: src/components/routes/monitor.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/system/smart-table.tsx
@@ -1804,6 +1994,13 @@ msgid "Unlimited"
 msgstr "Sınırsız"
 
 #. Context: System is up
+#: src/components/monitors-table/monitors-table-columns.tsx
+#: src/components/monitors-table/monitors-table-columns.tsx
+#: src/components/monitors-table/monitors-table.tsx
+#: src/components/monitors-table/monitors-table.tsx
+#: src/components/monitors-table/monitors-table.tsx
+#: src/components/routes/monitor.tsx
+#: src/components/routes/monitor.tsx
 #: src/components/routes/system/info-bar.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Up"
@@ -1831,10 +2028,15 @@ msgstr "Her 10 dakikada bir güncellenir."
 msgid "Upload"
 msgstr "Yükle"
 
+#: src/components/routes/monitor.tsx
 #: src/components/routes/system/info-bar.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Uptime"
 msgstr "Çalışma Süresi"
+
+#: src/components/add-monitor.tsx
+msgid "URL"
+msgstr ""
 
 #: src/components/routes/system/charts/disk-charts.tsx
 #: src/components/routes/system/charts/gpu-charts.tsx
@@ -1847,6 +2049,10 @@ msgstr "Kullanım"
 #: src/components/routes/system/charts/disk-charts.tsx
 msgid "Usage of root partition"
 msgstr "Kök bölümün kullanımı"
+
+#: src/components/monitors-table/monitors-table.tsx
+msgid "Use the Add Monitor button to get started."
+msgstr ""
 
 #: src/components/routes/system/charts/memory-charts.tsx
 #: src/components/routes/system/charts/memory-charts.tsx
@@ -1867,6 +2073,7 @@ msgstr "Kullanım"
 msgid "Value"
 msgstr "Değer"
 
+#: src/components/monitors-table/monitors-table.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "View"
 msgstr "Görüntüle"
