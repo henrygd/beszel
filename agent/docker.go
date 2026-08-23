@@ -9,6 +9,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log"
 	"log/slog"
 	"net"
 	"net/http"
@@ -132,54 +133,50 @@ func (dm *dockerManager) shouldExcludeContainer(name string) bool {
 }
 
 // Get container's image local digest and repos from image name
-func (dm *dockerManager) getImageDescriptor(ctr *container.ApiInfo) {
-	resp, err := dm.client.Get("http://localhost/images/" + ctr.Image + "/json")
+func (dm *dockerManager) getImageDigests(image string) []string {
+	resp, err := dm.client.Get("http://localhost/images/" + image + "/json")
 	if err != nil {
-		return
+		return nil
 	}
 	defer resp.Body.Close()
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return
+		return nil
 	}
 
 	var f struct {
-		// Descriptor added in API v1.48
-		Descriptor struct {
-			Digest string `json:"digest"`
-		}
-		// Identity added in API v1.53
-		Identity struct {
-			Pull []struct {
-				Repository string
-			}
-		}
+		RepoDigests []string
 	}
 	err = json.Unmarshal(body, &f)
 	if err != nil {
-		return
+		return nil
 	}
 
-	ctr.ImageDigest = f.Descriptor.Digest
-	for _, repo := range f.Identity.Pull {
-		ctr.ImageRepos = append(ctr.ImageRepos, repo.Repository)
-	}
+	return f.RepoDigests
 }
 
 // Get access token from https://hub.docker.com for this specific image
-func (dm *dockerManager) getDockerHubToken(name string) (string, error) {
-	url := "https://auth.docker.io/token?service=registry.docker.io&scope=repository:" + name + ":pull"
+func getRegistryToken(registry string, repository string) string {
+	var url string
+	if registry == "registry-1.docker.io" {
+		url = "https://auth.docker.io/token?service=registry.docker.io&scope=repository:" + repository + ":pull"
+	} else if registry == "ghcr.io" {
+		url = "https://ghcr.io/token?service=ghcr.io&scope=repository:" + repository + ":pull"
+	} else {
+		// no token needed
+		return ""
+	}
 
 	resp, err := http.Get(url)
 	if err != nil {
-		return "", err
+		return ""
 	}
 	defer resp.Body.Close()
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return "", err
+		return ""
 	}
 
 	var m struct {
@@ -187,61 +184,93 @@ func (dm *dockerManager) getDockerHubToken(name string) (string, error) {
 	}
 	err = json.Unmarshal(body, &m)
 	if err != nil {
-		return "", err
-	}
-
-	return m.Token, nil
-}
-
-// Get current image digest from https://hub.docker.com
-func (dm *dockerManager) getDockerHubDigest(name string, tag string) string {
-	if !strings.Contains(name, "/") {
-		name = "library/" + name
-	}
-
-	url := "https://registry-1.docker.io/v2/" + name + "/manifests/" + tag
-
-	req, err := http.NewRequest(http.MethodHead, url, nil)
-	if err != nil {
 		return ""
 	}
 
-	token, err := dm.getDockerHubToken(name)
-	if err == nil {
+	return m.Token
+}
+
+// Get current image digest from https://hub.docker.com
+func getRegistryDigest(registry string, repository string, tag string) (string, error) {
+
+	url := "https://" + registry + "/v2/" + repository + "/manifests/" + tag
+
+	req, err := http.NewRequest(http.MethodHead, url, nil)
+	if err != nil {
+		return "", err
+	}
+
+	req.Header.Add("Accept", strings.Join([]string{
+		"application/vnd.docker.distribution.manifest.list.v2+json",
+		"application/vnd.docker.distribution.manifest.v2+json",
+		"application/vnd.oci.image.manifest.v1+json",
+		"application/vnd.oci.image.index.v1+json",
+	}, ", "))
+
+	token := getRegistryToken(registry, repository)
+	if token != "" {
 		req.Header.Add("Authorization", "Bearer "+token)
 	}
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return ""
+		return "", err
 	}
 	defer resp.Body.Close()
 
-	return resp.Header.Get("docker-content-digest")
+	return resp.Header.Get("docker-content-digest"), nil
 }
 
 // Check docker registry if an update is available
 func (dm *dockerManager) checkImageUpdate(ctr *container.ApiInfo) bool {
-	dm.getImageDescriptor(ctr)
+	digests := dm.getImageDigests(ctr.Image)
 
-	// split image <name>:<tag>
-	tmp := strings.SplitN(ctr.Image, ":", 2)
-	name := tmp[0]
-	tag := "latest" // default to "latest" if not specified
-	if len(tmp) > 1 {
-		tag = tmp[1]
+	// regex magic
+	// ((localhost|[\w\-]+[\.\:][\w\.\-\:]+)\/)? registry, contains either . or :, optional
+	// (([\w\.\-]+\/)?[\w\.\-]+)                 repository (with or without namespace)
+	// (:([\w\.\-]+))?                           tag, optional
+	r, err := regexp.Compile(`((localhost|[\w\-]+[\.\:][\w\.\-\:]+)\/)?(([\w\.\-]+\/)?[\w\.\-]+)(:([\w\.\-]+))?`)
+	if err != nil {
+		// bug in regex, should never happen unless the developer made a mistake
+		log.Fatal("Error compiling regex", err)
+	}
+	m := r.FindStringSubmatch(ctr.Image)
+
+	if m[0] == "" {
+		// no match, invalid image name
+		return false
+	}
+
+	registry := m[2]   // registry (server) url
+	repository := m[3] // image name
+	tag := m[6]        // image tag
+
+	// default registry is docker hub
+	if registry == "" {
+		registry = "registry-1.docker.io"
+		// default namespace is library/
+		if !strings.Contains(repository, "/") {
+			repository = "library/" + repository
+		}
+	}
+	// default tag is latest
+	if tag == "" {
+		tag = "latest"
+	}
+
+	// get registry digest
+	repoDigest, err := getRegistryDigest(registry, repository, tag)
+	if err != nil {
+		return false
 	}
 
 	// reset flag
 	ctr.UpdateAvailable = false
 
-	// check all repos
-	for _, repo := range ctr.ImageRepos {
-		if strings.Contains(repo, "docker.io") {
-			repoDigest := dm.getDockerHubDigest(name, tag)
-			ctr.UpdateAvailable = strings.Compare(repoDigest, ctr.ImageDigest) != 0
-			break
-		}
+	for _, d := range digests {
+		localDigest := strings.SplitN(d, "@", 2)[1]
+		ctr.UpdateAvailable = strings.Compare(repoDigest, localDigest) != 0
+		break
 	}
 
 	return ctr.UpdateAvailable
