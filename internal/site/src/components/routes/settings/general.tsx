@@ -1,7 +1,7 @@
 /** biome-ignore-all lint/correctness/useUniqueElementIds: component is only rendered once */
 import { Trans, useLingui } from "@lingui/react/macro"
-import { DatabaseIcon, LanguagesIcon, LoaderCircleIcon, SaveIcon } from "lucide-react"
-import { useEffect, useState } from "react"
+import { LanguagesIcon, LoaderCircleIcon, SaveIcon } from "lucide-react"
+import { useState } from "react"
 import { useStore } from "@nanostores/react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -9,72 +9,19 @@ import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Separator } from "@/components/ui/separator"
 import Slider from "@/components/ui/slider"
-import { toast } from "@/components/ui/use-toast"
 import { HourFormat, Unit } from "@/lib/enums"
 import { dynamicActivate } from "@/lib/i18n"
 import languages from "@/lib/languages"
 import { $userSettings, defaultLayoutWidth } from "@/lib/stores"
 import { chartTimeData, currentHour12 } from "@/lib/utils"
-import { isAdmin, pb } from "@/lib/api"
 import type { UserSettings } from "@/types"
 import { saveSettings } from "./layout"
-
-const retentionOptions = [
-	{ value: "30d", label: "30 days (default)" },
-	{ value: "60d", label: "60 days" },
-	{ value: "90d", label: "90 days (3 months)" },
-	{ value: "180d", label: "180 days (6 months)" },
-	{ value: "365d", label: "365 days (1 year)" },
-	{ value: "730d", label: "730 days (2 years)" },
-	{ value: "never", label: "Never delete" },
-] as const
 
 export default function SettingsProfilePage({ userSettings }: { userSettings: UserSettings }) {
 	const [isLoading, setIsLoading] = useState(false)
 	const { i18n } = useLingui()
-	const { t } = useLingui()
 	const currentUserSettings = useStore($userSettings)
 	const layoutWidth = currentUserSettings.layoutWidth ?? defaultLayoutWidth
-	const [retention, setRetention] = useState<string>("30d")
-	const [hubSettingsId, setHubSettingsId] = useState<string>("hubsettings00001")
-	const [retentionLoading, setRetentionLoading] = useState(true)
-	const [retentionSaving, setRetentionSaving] = useState(false)
-	const admin = isAdmin()
-
-	useEffect(() => {
-		if (!admin) {
-			setRetentionLoading(false)
-			return
-		}
-		pb.collection("hub_settings")
-			.getFirstListItem("", { fields: "id,retention" })
-			.then((rec) => {
-				setRetention((rec as unknown as { retention: string }).retention)
-				setHubSettingsId(rec.id)
-			})
-			.catch(() => {
-				// fallback try direct id
-				pb.collection("hub_settings")
-					.getOne("hubsettings00001", { fields: "id,retention" })
-					.then((rec) => {
-						setRetention((rec as unknown as { retention: string }).retention)
-						setHubSettingsId(rec.id)
-					})
-					.catch(() => {})
-			})
-			.finally(() => setRetentionLoading(false))
-	}, [admin])
-
-	async function handleRetentionSave() {
-		setRetentionSaving(true)
-		try {
-			await pb.collection("hub_settings").update(hubSettingsId, { retention })
-			toast({ title: t`Retention saved`, description: t`Data retention updated to ${retention}. New setting applies on next hourly cleanup.` })
-		} catch (_e) {
-			toast({ title: t`Failed to save retention`, variant: "destructive" })
-		}
-		setRetentionSaving(false)
-	}
 
 	async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
 		e.preventDefault()
@@ -211,53 +158,6 @@ export default function SettingsProfilePage({ userSettings }: { userSettings: Us
 						</div>
 					</div>
 				</div>
-				{admin && (
-					<>
-						<Separator />
-						<div className="grid gap-2">
-							<div className="mb-2">
-								<h3 className="mb-1 text-lg font-medium flex items-center gap-2">
-									<DatabaseIcon className="h-4 w-4" />
-									<Trans>Data retention</Trans>
-								</h3>
-								<p className="text-sm text-muted-foreground leading-relaxed">
-									<Trans>
-										How long to keep 8-hour (480m) aggregated stats. Shorter tiers are fixed: 1m for 1 hour, 10m for 12 hours, 20m for 1
-										day, 120m for 7 days. Longer retention uses more disk (about 5-10 MB per system per year).
-									</Trans>
-								</p>
-								<p className="text-xs text-muted-foreground mt-1">
-									<Trans>Overridden by BESZEL_HUB_RETENTION env var if set. Requires hub restart to apply env change.</Trans>
-								</p>
-							</div>
-							<div className="grid sm:grid-cols-3 gap-4 items-end">
-								<div className="grid gap-2">
-									<Label className="block" htmlFor="retention">
-										<Trans>Long-term retention</Trans>
-									</Label>
-									<Select value={retention} onValueChange={setRetention} disabled={retentionLoading}>
-										<SelectTrigger id="retention">
-											<SelectValue />
-										</SelectTrigger>
-										<SelectContent>
-											{retentionOptions.map((opt) => (
-												<SelectItem key={opt.value} value={opt.value}>
-													{opt.label}
-												</SelectItem>
-											))}
-										</SelectContent>
-									</Select>
-								</div>
-								<div className="flex items-end">
-									<Button type="button" onClick={handleRetentionSave} disabled={retentionSaving || retentionLoading} className="flex items-center gap-1.5">
-										{retentionSaving ? <LoaderCircleIcon className="h-4 w-4 animate-spin" /> : <SaveIcon className="h-4 w-4" />}
-										<Trans>Save Retention</Trans>
-									</Button>
-								</div>
-							</div>
-						</div>
-					</>
-				)}
 				<Separator />
 				<div className="grid gap-2">
 					<div className="mb-2">

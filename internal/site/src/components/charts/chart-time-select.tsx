@@ -14,6 +14,8 @@ const retentionDaysMap: Record<string, number> = {
 	"180d": 180,
 	"365d": 365,
 	"730d": 730,
+	"1095d": 1095,
+	"1825d": 1825,
 	never: Number.POSITIVE_INFINITY,
 }
 const chartDaysMap: Record<string, number> = {
@@ -23,6 +25,8 @@ const chartDaysMap: Record<string, number> = {
 	"180d": 180,
 	"365d": 365,
 	"730d": 730,
+	"1095d": 1095,
+	"1825d": 1825,
 }
 
 export default memo(function ChartTimeSelect({
@@ -57,8 +61,8 @@ export default memo(function ChartTimeSelect({
 					})
 			})
 		return () => {
-				mounted = false
-			}
+			mounted = false
+		}
 	}, [])
 
 	// remove chart times that are not supported by the system agent version or beyond retention

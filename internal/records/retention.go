@@ -11,12 +11,14 @@ import (
 // retentionOptions maps retention string values to durations
 // "never" is represented as 0 which means no deletion
 var retentionDurations = map[string]time.Duration{
-	"30d":  30 * 24 * time.Hour,
-	"60d":  60 * 24 * time.Hour,
-	"90d":  90 * 24 * time.Hour,
-	"180d": 180 * 24 * time.Hour,
-	"365d": 365 * 24 * time.Hour,
-	"730d": 730 * 24 * time.Hour,
+	"30d":   30 * 24 * time.Hour,
+	"60d":   60 * 24 * time.Hour,
+	"90d":   90 * 24 * time.Hour,
+	"180d":  180 * 24 * time.Hour,
+	"365d":  365 * 24 * time.Hour,
+	"730d":  730 * 24 * time.Hour,
+	"1095d": 1095 * 24 * time.Hour,
+	"1825d": 1825 * 24 * time.Hour,
 	"never": 0,
 }
 

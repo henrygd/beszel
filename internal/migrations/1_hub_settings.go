@@ -41,7 +41,7 @@ func init() {
 						"required": true,
 						"system": false,
 						"type": "select",
-						"values": ["30d","60d","90d","180d","365d","730d","never"]
+						"values": ["30d","60d","90d","180d","365d","730d","1095d","1825d","never"]
 					},
 					{
 						"hidden": false,
