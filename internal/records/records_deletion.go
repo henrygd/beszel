@@ -67,12 +67,25 @@ func deleteOldSystemStats(app core.App) error {
 		recordType string
 		retention  time.Duration
 	}
+	// 480m retention is configurable via hub_settings / BESZEL_HUB_RETENTION env
+	retention480m := GetRetentionDuration(app)
 	recordData := []RecordDeletionData{
-		{recordType: "1m", retention: time.Hour},             // 1 hour
-		{recordType: "10m", retention: 12 * time.Hour},       // 12 hours
-		{recordType: "20m", retention: 24 * time.Hour},       // 1 day
-		{recordType: "120m", retention: 7 * 24 * time.Hour},  // 7 days
-		{recordType: "480m", retention: 30 * 24 * time.Hour}, // 30 days
+		{recordType: "1m", retention: time.Hour},            // 1 hour
+		{recordType: "10m", retention: 12 * time.Hour},      // 12 hours
+		{recordType: "20m", retention: 24 * time.Hour},      // 1 day
+		{recordType: "120m", retention: 7 * 24 * time.Hour}, // 7 days
+		{recordType: "480m", retention: retention480m},      // configurable (default 30 days)
+	}
+	// if retention is 0 ("never"), skip 480m deletion
+	if retention480m == 0 {
+		// filter out 480m from deletion
+		filtered := make([]RecordDeletionData, 0, len(recordData)-1)
+		for _, rd := range recordData {
+			if rd.recordType != "480m" {
+				filtered = append(filtered, rd)
+			}
+		}
+		recordData = filtered
 	}
 
 	now := time.Now().UTC()
