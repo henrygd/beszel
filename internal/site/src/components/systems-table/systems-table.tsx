@@ -386,7 +386,6 @@ const AllSystemsTable = memo(
 )
 
 function SystemsTableHead({ table }: { table: TableType<SystemRecord> }) {
-	const { t } = useLingui()
 	return (
 		<TableHeader className="sticky top-0 z-50 w-full border-b-2">
 			{table.getHeaderGroups().map((headerGroup) => (
@@ -416,7 +415,6 @@ const SystemTableRow = memo(
 		colLength: number
 	}) => {
 		const system = row.original
-		const { t } = useLingui()
 		return useMemo(() => {
 			return (
 				<TableRow
@@ -439,14 +437,13 @@ const SystemTableRow = memo(
 					))}
 				</TableRow>
 			)
-		}, [system, system.status, colLength, t])
+		}, [system, system.status, colLength])
 	}
 )
 
 const SystemCard = memo(
 	({ row, table, colLength }: { row: Row<SystemRecord>; table: TableType<SystemRecord>; colLength: number }) => {
 		const system = row.original
-		const { t } = useLingui()
 
 		return useMemo(() => {
 			return (
@@ -512,6 +509,6 @@ const SystemCard = memo(
 					</Link>
 				</Card>
 			)
-		}, [system, colLength, t])
+		}, [system, colLength])
 	}
 )

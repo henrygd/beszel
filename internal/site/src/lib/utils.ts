@@ -136,6 +136,22 @@ export const chartTimeData: ChartTimeData = {
 		getOffset: (endTime: Date) => timeMinute.offset(endTime, -1),
 		minVersion: "0.13.0",
 	},
+	"5m": {
+		type: "1m",
+		expectedInterval: 60_000,
+		label: () => t`5 minutes`,
+		ticks: 5,
+		format: (timestamp: string) => hourWithMinutes(timestamp),
+		getOffset: (endTime: Date) => timeMinute.offset(endTime, -5),
+	},
+	"30m": {
+		type: "1m",
+		expectedInterval: 60_000,
+		label: () => t`30 minutes`,
+		ticks: 6,
+		format: (timestamp: string) => hourWithMinutes(timestamp),
+		getOffset: (endTime: Date) => timeMinute.offset(endTime, -30),
+	},
 	"1h": {
 		type: "1m",
 		expectedInterval: 60_000,
@@ -143,6 +159,22 @@ export const chartTimeData: ChartTimeData = {
 		// ticks: 12,
 		format: (timestamp: string) => hourWithMinutes(timestamp),
 		getOffset: (endTime: Date) => timeHour.offset(endTime, -1),
+	},
+	"3h": {
+		type: "10m",
+		expectedInterval: 60_000 * 10,
+		label: () => t`3 hours`,
+		ticks: 6,
+		format: (timestamp: string) => hourWithMinutes(timestamp),
+		getOffset: (endTime: Date) => timeHour.offset(endTime, -3),
+	},
+	"6h": {
+		type: "10m",
+		expectedInterval: 60_000 * 10,
+		label: () => t`6 hours`,
+		ticks: 6,
+		format: (timestamp: string) => hourWithMinutes(timestamp),
+		getOffset: (endTime: Date) => timeHour.offset(endTime, -6),
 	},
 	"12h": {
 		type: "10m",
@@ -231,6 +263,33 @@ export const chartTimeData: ChartTimeData = {
 		format: (timestamp: string) => formatDay(timestamp),
 		getOffset: (endTime: Date) => timeDay.offset(endTime, -1825),
 	},
+}
+
+/** Helpers for custom range — pick best aggregation for arbitrary duration */
+export function getChartTypeForDuration(durationMs: number): "1m" | "10m" | "20m" | "120m" | "480m" {
+	const hour = 60 * 60 * 1000
+	const day = 24 * hour
+	if (durationMs <= 2 * hour) return "1m"
+	if (durationMs <= 12 * hour) return "10m"
+	if (durationMs <= 24 * hour) return "20m"
+	if (durationMs <= 7 * day) return "120m"
+	return "480m"
+}
+export function getExpectedIntervalForType(type: string): number {
+	switch (type) {
+		case "1m":
+			return 60_000
+		case "10m":
+			return 60_000 * 10
+		case "20m":
+			return 60_000 * 20
+		case "120m":
+			return 60_000 * 120
+		case "480m":
+			return 60_000 * 480
+		default:
+			return 60_000
+	}
 }
 
 /** Format number to x decimal places, without trailing zeros */

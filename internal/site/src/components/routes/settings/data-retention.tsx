@@ -157,9 +157,10 @@ export default function DataRetentionSettings() {
 						</p>
 						<p className="text-xs text-muted-foreground mt-1">
 							<Trans>
-								BESZEL_HUB_RETENTION is set to <code className="font-mono bg-muted px-1 rounded">{effectiveRetention}</code> — DB
-								value (<code className="font-mono bg-muted px-1 rounded">{retention}</code>) is ignored until the env var is removed
-								and the hub is restarted.
+								BESZEL_HUB_RETENTION is set to{" "}
+								<code className="font-mono bg-muted px-1 rounded">{effectiveRetention}</code> — DB value (
+								<code className="font-mono bg-muted px-1 rounded">{retention}</code>) is ignored until the env var is
+								removed and the hub is restarted.
 							</Trans>
 						</p>
 					</div>
@@ -209,7 +210,9 @@ export default function DataRetentionSettings() {
 				</div>
 				<p className="text-xs text-muted-foreground mt-2">
 					{envOverride ? (
-						<Trans>Editing disabled while env override is active. Remove BESZEL_HUB_RETENTION and restart to edit.</Trans>
+						<Trans>
+							Editing disabled while env override is active. Remove BESZEL_HUB_RETENTION and restart to edit.
+						</Trans>
 					) : (
 						<Trans>Requires hub restart to apply env change if BESZEL_HUB_RETENTION is used.</Trans>
 					)}
