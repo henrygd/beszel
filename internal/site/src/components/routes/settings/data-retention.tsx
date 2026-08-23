@@ -32,15 +32,15 @@ const tierInfo = [
 ] as const
 
 export default function DataRetentionSettings() {
-	if (!isAdmin()) {
-		redirectPage($router, "settings", { name: "general" })
-		return null
-	}
-
 	const [retention, setRetention] = useState("30d")
 	const [hubSettingsId, setHubSettingsId] = useState("hubsettings0001")
 	const [loading, setLoading] = useState(true)
 	const [saving, setSaving] = useState(false)
+
+	if (!isAdmin()) {
+		redirectPage($router, "settings", { name: "general" })
+		return null
+	}
 
 	useEffect(() => {
 		pb.collection("hub_settings")
@@ -130,8 +130,8 @@ export default function DataRetentionSettings() {
 				</Label>
 				<p className="text-sm text-muted-foreground leading-relaxed">
 					<Trans>
-						How long to keep 8-hour aggregated stats. Available chart periods (60d, 90d, 180d, 365d, 730d, 3y, 5y)
-						are filtered to ≤ retention. Lowering retention deletes excess data on next hourly cleanup.
+						How long to keep 8-hour aggregated stats. Available chart periods (60d, 90d, 180d, 365d, 730d, 3y, 5y) are
+						filtered to ≤ retention. Lowering retention deletes excess data on next hourly cleanup.
 					</Trans>
 				</p>
 				<div className="grid sm:grid-cols-3 gap-4 items-end max-w-xl mt-2">
@@ -153,7 +153,12 @@ export default function DataRetentionSettings() {
 						</Select>
 					</div>
 					<div className="flex items-end">
-						<Button type="button" onClick={handleSave} disabled={saving || loading} className="flex items-center gap-1.5">
+						<Button
+							type="button"
+							onClick={handleSave}
+							disabled={saving || loading}
+							className="flex items-center gap-1.5"
+						>
 							{saving ? <LoaderCircleIcon className="h-4 w-4 animate-spin" /> : <SaveIcon className="h-4 w-4" />}
 							<Trans>Save Retention</Trans>
 						</Button>

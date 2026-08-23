@@ -9,7 +9,7 @@ func init() {
 	m.Register(func(app core.App) error {
 		jsonData := `[
 			{
-				"id": "hubsettings12345",
+				"id": "hubsettings1234",
 				"listRule": "@request.auth.id != \"\"",
 				"viewRule": "@request.auth.id != \"\"",
 				"createRule": "@request.auth.role = 'admin'",
