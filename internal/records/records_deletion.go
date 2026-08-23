@@ -108,7 +108,7 @@ func deleteOldSystemStats(app core.App) error {
 		// Batched delete to avoid long single-transaction lock when retention is reduced from large window (#3)
 		const batchSize = 1000
 		for {
-			rawQuery := fmt.Sprintf("DELETE FROM %s WHERE id IN (SELECT id FROM %s WHERE %s LIMIT %d)", collection, collection, conditionStr, batchSize)
+			rawQuery := fmt.Sprintf("DELETE FROM %s WHERE id IN (SELECT id FROM %s WHERE %s ORDER BY created LIMIT %d)", collection, collection, conditionStr, batchSize)
 			res, err := app.DB().NewQuery(rawQuery).Bind(params).Execute()
 			if err != nil {
 				return fmt.Errorf("failed to delete from %s: %v", collection, err)

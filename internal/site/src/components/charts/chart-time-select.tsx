@@ -66,8 +66,8 @@ export default memo(function ChartTimeSelect({
 					})
 			})
 		return () => {
-				mounted = false
-			}
+			mounted = false
+		}
 	}, [])
 
 	// remove chart times that are not supported by the system agent version or beyond retention
