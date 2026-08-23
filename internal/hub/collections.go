@@ -109,6 +109,33 @@ func setCollectionAuthSettings(app core.App) error {
 		return err
 	}
 
+	// uptime monitoring collections are scoped to the monitor owner
+	monitorReadRule := authenticatedRule + " && user = @request.auth.id"
+	monitorWriteRule := monitorReadRule + " && @request.auth.role != \"readonly\""
+	monitorChecksReadRule := authenticatedRule + " && monitor.user.id ?= @request.auth.id"
+	if shareAllSystems == "true" {
+		monitorReadRule = authenticatedRule
+		monitorChecksReadRule = authenticatedRule
+	}
+	monitorWriteRule = monitorReadRule + " && @request.auth.role != \"readonly\""
+
+	if err := applyCollectionRules(app, []string{"monitors"}, collectionRules{
+		list:   &monitorReadRule,
+		view:   &monitorReadRule,
+		create: &monitorWriteRule,
+		update: &monitorWriteRule,
+		delete: &monitorWriteRule,
+	}); err != nil {
+		return err
+	}
+
+	if err := applyCollectionRules(app, []string{"monitor_checks"}, collectionRules{
+		list: &monitorChecksReadRule,
+		view: &monitorChecksReadRule,
+	}); err != nil {
+		return err
+	}
+
 	return nil
 }
 

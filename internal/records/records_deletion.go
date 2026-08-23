@@ -34,6 +34,10 @@ func (rm *RecordManager) DeleteOldRecords() {
 		if err != nil {
 			slog.Error("Error deleting old quiet hours", "err", err)
 		}
+		err = deleteOldMonitorChecks(txApp)
+		if err != nil {
+			slog.Error("Error deleting old monitor checks", "err", err)
+		}
 		return nil
 	})
 }
@@ -136,4 +140,15 @@ func deleteOldQuietHours(app core.App) error {
 	}
 
 	return nil
+}
+
+// Deletes monitor_checks records older than 90 days
+func deleteOldMonitorChecks(app core.App) error {
+	// check the collection exists (migration may not have run)
+	if _, err := app.FindCollectionByNameOrId("monitor_checks"); err != nil {
+		return nil
+	}
+	cutoff := time.Now().UTC().Add(-90 * 24 * time.Hour)
+	_, err := app.DB().NewQuery("DELETE FROM monitor_checks WHERE created < {:cutoff}").Bind(dbx.Params{"cutoff": cutoff}).Execute()
+	return err
 }

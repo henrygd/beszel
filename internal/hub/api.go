@@ -127,6 +127,8 @@ func (h *Hub) registerApiRoutes(se *core.ServeEvent) error {
 	apiAuth.POST("/smart/refresh", h.refreshSmartData).BindFunc(excludeReadOnlyRole)
 	// get systemd service details
 	apiAuth.GET("/systemd/info", h.getSystemdInfo)
+	// run an uptime monitor check now
+	apiAuth.GET("/uptime/check-now", h.runMonitorCheckNow).BindFunc(excludeReadOnlyRole)
 	// /containers routes
 	if enabled, _ := utils.GetEnv("CONTAINER_DETAILS"); enabled != "false" {
 		// get container logs
@@ -387,5 +389,20 @@ func (h *Hub) refreshSmartData(e *core.RequestEvent) error {
 		return e.InternalServerError("", err)
 	}
 
+	return e.JSON(http.StatusOK, map[string]string{"status": "ok"})
+}
+
+// runMonitorCheckNow handles GET /api/beszel/uptime/check-now?monitor=<id>
+func (h *Hub) runMonitorCheckNow(e *core.RequestEvent) error {
+	monitorID := e.Request.URL.Query().Get("monitor")
+	if monitorID == "" {
+		return e.BadRequestError("Missing monitor parameter", nil)
+	}
+	// verify ownership
+	monitor, err := h.FindFirstRecordByFilter("monitors", "id = {:id} && user = {:user}", dbx.Params{"id": monitorID, "user": e.Auth.Id})
+	if err != nil {
+		return e.NotFoundError("", nil)
+	}
+	h.mm.RunCheckNow(monitor.Id)
 	return e.JSON(http.StatusOK, map[string]string{"status": "ok"})
 }

@@ -15,6 +15,7 @@ import (
 	"github.com/henrygd/beszel/internal/hub/config"
 	"github.com/henrygd/beszel/internal/hub/heartbeat"
 	"github.com/henrygd/beszel/internal/hub/systems"
+	"github.com/henrygd/beszel/internal/hub/uptime"
 	"github.com/henrygd/beszel/internal/hub/utils"
 	"github.com/henrygd/beszel/internal/records"
 	"github.com/henrygd/beszel/internal/users"
@@ -31,6 +32,7 @@ type Hub struct {
 	um     *users.UserManager
 	rm     *records.RecordManager
 	sm     *systems.SystemManager
+	mm     *uptime.MonitorManager
 	hb     *heartbeat.Heartbeat
 	hbStop chan struct{}
 	pubKey string
@@ -44,6 +46,7 @@ func NewHub(app core.App) *Hub {
 	hub.AlertManager = alerts.NewAlertManager(hub)
 	hub.um = users.NewUserManager(hub)
 	hub.rm = records.NewRecordManager(hub)
+	hub.mm = uptime.NewMonitorManager(hub)
 	hub.sm = systems.NewSystemManager(hub)
 	hub.hb = heartbeat.New(app, utils.GetEnv)
 	if hub.hb != nil {
@@ -95,6 +98,10 @@ func (h *Hub) StartHub() error {
 		}
 		// start system updates
 		if err := h.sm.Initialize(); err != nil {
+			return err
+		}
+		// start uptime monitor checks
+		if err := h.mm.Initialize(); err != nil {
 			return err
 		}
 		// start heartbeat if configured
