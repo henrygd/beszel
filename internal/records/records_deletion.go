@@ -103,10 +103,24 @@ func deleteOldSystemStats(app core.App) error {
 		}
 		// Combine conditions with OR
 		conditionStr := strings.Join(conditionParts, " OR ")
-		// Construct and execute the full raw query
-		rawQuery := fmt.Sprintf("DELETE FROM %s WHERE %s", collection, conditionStr)
-		if _, err := app.DB().NewQuery(rawQuery).Bind(params).Execute(); err != nil {
-			return fmt.Errorf("failed to delete from %s: %v", collection, err)
+		// Batched delete to avoid long single-transaction lock when retention is reduced from large window (#3)
+		const batchSize = 1000
+		for {
+			rawQuery := fmt.Sprintf("DELETE FROM %s WHERE id IN (SELECT id FROM %s WHERE %s LIMIT %d)", collection, collection, conditionStr, batchSize)
+			res, err := app.DB().NewQuery(rawQuery).Bind(params).Execute()
+			if err != nil {
+				return fmt.Errorf("failed to delete from %s: %v", collection, err)
+			}
+			rows, err := res.RowsAffected()
+			if err != nil {
+				return fmt.Errorf("failed to get rows affected for %s: %v", collection, err)
+			}
+			if rows == 0 {
+				break
+			}
+			if rows < int64(batchSize) {
+				break
+			}
 		}
 	}
 	return nil

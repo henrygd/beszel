@@ -36,6 +36,8 @@ export default function DataRetentionSettings() {
 	const [hubSettingsId, setHubSettingsId] = useState("hubsettings0001")
 	const [loading, setLoading] = useState(true)
 	const [saving, setSaving] = useState(false)
+	const [envOverride, setEnvOverride] = useState(false)
+	const [effectiveRetention, setEffectiveRetention] = useState<string | null>(null)
 
 	if (!isAdmin()) {
 		redirectPage($router, "settings", { name: "general" })
@@ -43,20 +45,34 @@ export default function DataRetentionSettings() {
 	}
 
 	useEffect(() => {
-		pb.collection("hub_settings")
-			.getFirstListItem("", { fields: "id,retention" })
+		// Prefer effective endpoint for env-aware value (#1, #11), fallback to direct collection for old hubs
+		pb.send<{ retention: string; dbRetention: string; envOverride: boolean }>("/api/beszel/retention", {})
+			.then((res) => {
+				setRetention(res.dbRetention)
+				setEffectiveRetention(res.retention)
+				setEnvOverride(res.envOverride)
+				return pb.collection("hub_settings").getFirstListItem("", { fields: "id" })
+			})
 			.then((rec) => {
-				setRetention((rec as unknown as { retention: string }).retention)
-				setHubSettingsId(rec.id)
+				if (rec?.id) setHubSettingsId(rec.id)
 			})
 			.catch(() => {
+				// fallback: old hub without endpoint or hub_settings not yet migrated
 				pb.collection("hub_settings")
-					.getOne("hubsettings0001", { fields: "id,retention" })
+					.getFirstListItem("", { fields: "id,retention" })
 					.then((rec) => {
 						setRetention((rec as unknown as { retention: string }).retention)
 						setHubSettingsId(rec.id)
 					})
-					.catch(() => {})
+					.catch(() => {
+						pb.collection("hub_settings")
+							.getOne("hubsettings0001", { fields: "id,retention" })
+							.then((rec) => {
+								setRetention((rec as unknown as { retention: string }).retention)
+								setHubSettingsId(rec.id)
+							})
+							.catch(() => {})
+					})
 			})
 			.finally(() => setLoading(false))
 	}, [])
@@ -134,12 +150,39 @@ export default function DataRetentionSettings() {
 						filtered to ≤ retention. Lowering retention deletes excess data on next hourly cleanup.
 					</Trans>
 				</p>
+				{envOverride && effectiveRetention && (
+					<div className="rounded-md border border-amber-500/50 bg-amber-500/10 px-3 py-2.5 mb-2">
+						<p className="text-sm font-medium text-amber-900 dark:text-amber-100">
+							<Trans>Env override active</Trans>
+						</p>
+						<p className="text-xs text-muted-foreground mt-1">
+							<Trans>
+								BESZEL_HUB_RETENTION is set to <code className="font-mono bg-muted px-1 rounded">{effectiveRetention}</code> — DB
+								value (<code className="font-mono bg-muted px-1 rounded">{retention}</code>) is ignored until the env var is removed
+								and the hub is restarted.
+							</Trans>
+						</p>
+					</div>
+				)}
+				{retention === "never" && !envOverride && (
+					<div className="rounded-md border border-amber-500/50 bg-amber-500/10 px-3 py-2.5 mb-2">
+						<p className="text-sm font-medium text-amber-900 dark:text-amber-100">
+							<Trans>Unbounded growth</Trans>
+						</p>
+						<p className="text-xs text-muted-foreground mt-1">
+							<Trans>
+								“Never delete” keeps 480m data forever. Ensure disk monitoring is in place — about 5-10 MB per system
+								per year, growing without bound.
+							</Trans>
+						</p>
+					</div>
+				)}
 				<div className="grid sm:grid-cols-3 gap-4 items-end max-w-xl mt-2">
 					<div className="grid gap-2">
 						<Label className="block" htmlFor="retention">
 							<Trans>Retention</Trans>
 						</Label>
-						<Select value={retention} onValueChange={setRetention} disabled={loading}>
+						<Select value={retention} onValueChange={setRetention} disabled={loading || envOverride}>
 							<SelectTrigger id="retention">
 								<SelectValue />
 							</SelectTrigger>
@@ -156,7 +199,7 @@ export default function DataRetentionSettings() {
 						<Button
 							type="button"
 							onClick={handleSave}
-							disabled={saving || loading}
+							disabled={saving || loading || envOverride}
 							className="flex items-center gap-1.5"
 						>
 							{saving ? <LoaderCircleIcon className="h-4 w-4 animate-spin" /> : <SaveIcon className="h-4 w-4" />}
@@ -165,7 +208,11 @@ export default function DataRetentionSettings() {
 					</div>
 				</div>
 				<p className="text-xs text-muted-foreground mt-2">
-					<Trans>Overridden by BESZEL_HUB_RETENTION env var if set. Requires hub restart to apply env change.</Trans>
+					{envOverride ? (
+						<Trans>Editing disabled while env override is active. Remove BESZEL_HUB_RETENTION and restart to edit.</Trans>
+					) : (
+						<Trans>Requires hub restart to apply env change if BESZEL_HUB_RETENTION is used.</Trans>
+					)}
 				</p>
 			</div>
 		</div>

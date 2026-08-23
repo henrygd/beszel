@@ -1,6 +1,8 @@
 package migrations
 
 import (
+	"os"
+
 	"github.com/pocketbase/pocketbase/core"
 	m "github.com/pocketbase/pocketbase/migrations"
 )
@@ -81,9 +83,20 @@ func init() {
 			if err != nil {
 				return err
 			}
+			// honor env var on fresh install (#1)
+			defaultRetention := "30d"
+			if v, ok := os.LookupEnv("BESZEL_HUB_RETENTION"); ok && v != "" {
+				if _, valid := map[string]bool{"30d": true, "60d": true, "90d": true, "180d": true, "365d": true, "730d": true, "1095d": true, "1825d": true, "never": true}[v]; valid {
+					defaultRetention = v
+				}
+			} else if v, ok := os.LookupEnv("RETENTION"); ok && v != "" {
+				if _, valid := map[string]bool{"30d": true, "60d": true, "90d": true, "180d": true, "365d": true, "730d": true, "1095d": true, "1825d": true, "never": true}[v]; valid {
+					defaultRetention = v
+				}
+			}
 			record := core.NewRecord(collection)
 			record.Set("id", "hubsettings0001")
-			record.Set("retention", "30d")
+			record.Set("retention", defaultRetention)
 			if err := app.Save(record); err != nil {
 				return err
 			}

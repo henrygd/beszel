@@ -15,6 +15,7 @@ import (
 	"github.com/henrygd/beszel/internal/hub/config"
 	"github.com/henrygd/beszel/internal/hub/systems"
 	"github.com/henrygd/beszel/internal/hub/utils"
+	"github.com/henrygd/beszel/internal/records"
 	"github.com/pocketbase/dbx"
 	"github.com/pocketbase/pocketbase/apis"
 	"github.com/pocketbase/pocketbase/core"
@@ -127,6 +128,8 @@ func (h *Hub) registerApiRoutes(se *core.ServeEvent) error {
 	apiAuth.POST("/smart/refresh", h.refreshSmartData).BindFunc(excludeReadOnlyRole)
 	// get systemd service details
 	apiAuth.GET("/systemd/info", h.getSystemdInfo)
+	// get effective retention (any authenticated user, for chart filtering)
+	apiAuth.GET("/retention", h.getRetention)
 	// /containers routes
 	if enabled, _ := utils.GetEnv("CONTAINER_DETAILS"); enabled != "false" {
 		// get container logs
@@ -368,6 +371,26 @@ func (h *Hub) getSystemdInfo(e *core.RequestEvent) error {
 	}
 	e.Response.Header().Set("Cache-Control", "public, max-age=60")
 	return e.JSON(http.StatusOK, map[string]any{"details": details})
+}
+
+// getRetention returns effective retention, DB value, and env override flag
+func (h *Hub) getRetention(e *core.RequestEvent) error {
+	effective := records.GetRetentionString(e.App)
+	dbVal := "30d"
+	if rec, err := e.App.FindRecordById("hub_settings", "hubsettings0001"); err == nil {
+		if v := rec.GetString("retention"); v != "" {
+			dbVal = v
+		}
+	} else if recs, err := e.App.FindRecordsByFilter("hub_settings", "", "created", 1, 0, nil); err == nil && len(recs) > 0 {
+		if v := recs[0].GetString("retention"); v != "" {
+			dbVal = v
+		}
+	}
+	return e.JSON(http.StatusOK, map[string]any{
+		"retention":   effective,
+		"dbRetention": dbVal,
+		"envOverride": records.IsEnvOverride(),
+	})
 }
 
 // refreshSmartData handles POST /api/beszel/smart/refresh requests
