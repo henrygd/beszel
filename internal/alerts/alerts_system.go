@@ -63,7 +63,7 @@ func (am *AlertManager) HandleSystemAlerts(systemRecord *core.Record, data *syst
 		case "GPU":
 			val = data.Info.GpuPct
 		case "Battery":
-			if data.Stats.Battery[0] == 0 {
+			if !hasRepresentativeBattery(data.Stats.Battery, data.Stats.Batteries) {
 				continue
 			}
 			val = float64(data.Stats.Battery[0])
@@ -167,6 +167,7 @@ func (am *AlertManager) HandleSystemAlerts(systemRecord *core.Record, data *syst
 		stat := systemStats[i]
 		// subtract 10 seconds to give a small time buffer
 		systemStatsCreation := stat.Created.Time().Add(-time.Second * 10)
+		stats = SystemAlertStats{}
 		if err := json.Unmarshal(stat.Stats, &stats); err != nil {
 			return err
 		}
@@ -235,6 +236,9 @@ func (am *AlertManager) HandleSystemAlerts(systemRecord *core.Record, data *syst
 				}
 				alert.val += maxUsage
 			case "Battery":
+				if !hasRepresentativeBattery(stats.Battery, stats.Batteries) {
+					continue
+				}
 				alert.val += float64(stats.Battery[0])
 			default:
 				continue
@@ -295,6 +299,10 @@ func (am *AlertManager) HandleSystemAlerts(systemRecord *core.Record, data *syst
 		}
 	}
 	return nil
+}
+
+func hasRepresentativeBattery(legacy [2]uint8, batteries map[string]uint8) bool {
+	return legacy != [2]uint8{} || len(batteries) > 0
 }
 
 func (am *AlertManager) sendSystemAlert(alert SystemAlertData) {

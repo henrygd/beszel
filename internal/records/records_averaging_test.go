@@ -602,6 +602,28 @@ func TestAverageSystemStatsSlice_BatteryLastChargeState(t *testing.T) {
 	assert.Equal(t, uint8(0), result.Battery[1]) // last record's charge state
 }
 
+func TestAverageSystemStatsSlice_BatteriesIndependentSamples(t *testing.T) {
+	input := []system.Stats{
+		{Battery: [2]uint8{80, 4}, Batteries: map[string]uint8{"Primary": 80, "Mouse": 0}},
+		{Battery: [2]uint8{60, 3}, Batteries: map[string]uint8{"Primary": 60}},
+		{Battery: [2]uint8{30, 4}, Batteries: map[string]uint8{"Mouse": 40}},
+		{},
+	}
+	result := records.AverageSystemStatsSlice(input)
+	assert.Equal(t, map[string]uint8{"Primary": 70, "Mouse": 20}, result.Batteries)
+	assert.Equal(t, uint8(56), result.Battery[0], "representative battery excludes absent samples")
+	assert.Equal(t, uint8(4), result.Battery[1], "representative state comes from its latest sample")
+}
+
+func TestAverageSystemStatsSlice_ZeroRepresentativeBattery(t *testing.T) {
+	result := records.AverageSystemStatsSlice([]system.Stats{
+		{Battery: [2]uint8{0, 1}, Batteries: map[string]uint8{"Primary": 0}},
+		{},
+	})
+	assert.Equal(t, [2]uint8{0, 1}, result.Battery)
+	assert.Equal(t, map[string]uint8{"Primary": 0}, result.Batteries)
+}
+
 func TestAverageSystemStatsSlice_ThreeRecordsRounding(t *testing.T) {
 	input := []system.Stats{
 		{Cpu: 10.0, Mem: 8.0},

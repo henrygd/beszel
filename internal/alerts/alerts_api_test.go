@@ -191,6 +191,30 @@ func TestUserAlertsApi(t *testing.T) {
 			},
 		},
 		{
+			Name:   "POST ignores systems the user cannot access",
+			Method: http.MethodPost,
+			URL:    "/api/beszel/user-alerts",
+			Headers: map[string]string{
+				"Authorization": user2Token,
+			},
+			ExpectedStatus:  200,
+			ExpectedContent: []string{"\"success\":true"},
+			TestAppFactory:  testAppFactory,
+			Body: jsonReader(map[string]any{
+				"name":    "CPU",
+				"systems": []string{system1.Id},
+				"value":   90,
+				"min":     10,
+			}),
+			BeforeTestFunc: func(t testing.TB, app *pbTests.TestApp, e *core.ServeEvent) {
+				beszelTests.ClearCollection(t, app, "alerts")
+			},
+			AfterTestFunc: func(t testing.TB, app *pbTests.TestApp, res *http.Response) {
+				alerts, _ := app.CountRecords("alerts")
+				assert.Zero(t, alerts)
+			},
+		},
+		{
 			Name:   "Overwrite: false, should not overwrite existing alert",
 			Method: http.MethodPost,
 			URL:    "/api/beszel/user-alerts",
@@ -345,6 +369,31 @@ func TestUserAlertsApi(t *testing.T) {
 			AfterTestFunc: func(t testing.TB, app *pbTests.TestApp, res *http.Response) {
 				alerts, _ := app.CountRecords("alerts")
 				assert.Zero(t, alerts, "should have 0 alerts")
+			},
+		},
+		{
+			Name:   "DELETE ignores systems the user cannot access",
+			Method: http.MethodDelete,
+			URL:    "/api/beszel/user-alerts",
+			Headers: map[string]string{
+				"Authorization": user2Token,
+			},
+			ExpectedStatus:  200,
+			ExpectedContent: []string{"\"count\":0", "\"success\":true"},
+			TestAppFactory:  testAppFactory,
+			Body: jsonReader(map[string]any{
+				"name":    "CPU",
+				"systems": []string{system1.Id},
+			}),
+			BeforeTestFunc: func(t testing.TB, app *pbTests.TestApp, e *core.ServeEvent) {
+				beszelTests.ClearCollection(t, app, "alerts")
+				beszelTests.CreateRecord(app, "alerts", map[string]any{
+					"name": "CPU", "system": system1.Id, "user": user2.Id, "value": 80,
+				})
+			},
+			AfterTestFunc: func(t testing.TB, app *pbTests.TestApp, res *http.Response) {
+				alerts, _ := app.CountRecords("alerts")
+				assert.EqualValues(t, 1, alerts)
 			},
 		},
 		{
