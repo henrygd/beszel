@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strings"
 	"time"
 
 	v2 "github.com/containerd/cgroups/v3/cgroup2/stats"
@@ -25,6 +26,10 @@ type ContainerdK8SManager struct {
 type CpuReading struct {
 	UsageUsec uint64
 	Timestamp time.Time
+}
+
+var ignoredImages = []string{
+	"docker.io/rancher/mirrored-pause",
 }
 
 func NewContainerdCollector() (*ContainerdK8SManager, error) {
@@ -69,6 +74,9 @@ func (c *ContainerdK8SManager) PollContainers() []*cntr.Stats {
 	skippedNonK8s := 0
 
 	for _, container := range containers {
+		if c.shouldIgnoreImage(k8sCtx, container) {
+			continue
+		}
 		cLabels, err := container.Labels(k8sCtx)
 		if err != nil {
 			continue
@@ -83,7 +91,7 @@ func (c *ContainerdK8SManager) PollContainers() []*cntr.Stats {
 			continue
 		}
 
-		stat, err := c.collectContainerStats(k8sCtx, container, podName, containerName, now)
+		stat, err := c.collectContainerStats(k8sCtx, container, podName, containerName, cLabels, now)
 		if err != nil {
 			log.Printf("[Collector Debug] Skipping stats collection for container %s: %v", container.ID()[:12], err)
 			continue
@@ -99,7 +107,7 @@ func (c *ContainerdK8SManager) PollContainers() []*cntr.Stats {
 }
 
 // collectContainerStats handles metrics extraction, CPU calculation, and metadata gathering for a single container.
-func (c *ContainerdK8SManager) collectContainerStats(ctx context.Context, container containerd.Container, podName, containerName string, now time.Time) (*cntr.Stats, error) {
+func (c *ContainerdK8SManager) collectContainerStats(ctx context.Context, container containerd.Container, podName, containerName string, cLabels map[string]string, now time.Time) (*cntr.Stats, error) {
 	task, err := container.Task(ctx, nil)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get container task: %w", err)
@@ -107,9 +115,14 @@ func (c *ContainerdK8SManager) collectContainerStats(ctx context.Context, contai
 
 	// Fetch task status (running, paused, etc.)
 	statusStr := ""
-	if taskStatus, err := task.Status(ctx); err == nil {
+	var taskStatus containerd.Status
+	if ts, err := task.Status(ctx); err == nil {
+		taskStatus = ts
 		statusStr = string(taskStatus.Status)
 	}
+
+	// Determine container health
+	health := c.getContainerHealth(container, cLabels, taskStatus)
 
 	// Fetch cgroup metrics
 	taskMetrics, err := task.Metrics(ctx)
@@ -150,8 +163,10 @@ func (c *ContainerdK8SManager) collectContainerStats(ctx context.Context, contai
 		imageName = img.Name()
 	}
 
-	// Construct structured display name (Pod / Container format)
-	displayName := fmt.Sprintf("%s/%s", podName, containerName)
+	namespace := cLabels["io.kubernetes.pod.namespace"]
+
+	// Construct structured display name (Namespace / Pod / Container format)
+	displayName := fmt.Sprintf("%s/%s/%s", namespace, podName, containerName)
 
 	return &cntr.Stats{
 		Name:         displayName,
@@ -159,6 +174,7 @@ func (c *ContainerdK8SManager) collectContainerStats(ctx context.Context, contai
 		Cpu:          cpuPercent,
 		Mem:          float64(stats.Memory.Usage) / 1024 / 1024, // Convert bytes to MB for Beszel
 		Status:       statusStr,
+		Health:       health,
 		Image:        imageName,
 		CpuSystem:    stats.CPU.SystemUsec,
 		CpuContainer: currentCpuUsec,
@@ -166,9 +182,41 @@ func (c *ContainerdK8SManager) collectContainerStats(ctx context.Context, contai
 	}, nil
 }
 
+// getContainerHealth maps container status or custom labels to Beszel DockerHealth states.
+func (c *ContainerdK8SManager) getContainerHealth(container containerd.Container, cLabels map[string]string, taskStatus containerd.Status) cntr.DockerHealth {
+	switch taskStatus.Status {
+	case containerd.Running:
+		return cntr.DockerHealthHealthy
+	case containerd.Paused:
+		return cntr.DockerHealthStarting
+	case containerd.Stopped, containerd.Created:
+		if taskStatus.ExitStatus != 0 {
+			return cntr.DockerHealthUnhealthy
+		}
+		return cntr.DockerHealthNone
+	default:
+		return cntr.DockerHealthNone
+	}
+}
+
 func getEnv(key, fallback string) string {
 	if value, exists := os.LookupEnv(key); exists && value != "" {
 		return value
 	}
 	return fallback
+}
+
+// shouldIgnoreImage checks if a container's image matches the filter list.
+func (c *ContainerdK8SManager) shouldIgnoreImage(ctx context.Context, container containerd.Container) bool {
+	img, err := container.Image(ctx)
+	if err != nil {
+		return false
+	}
+	imageName := img.Name()
+	for _, ignored := range ignoredImages {
+		if strings.HasPrefix(imageName, ignored) {
+			return true
+		}
+	}
+	return false
 }
