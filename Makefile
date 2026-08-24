@@ -9,6 +9,14 @@ SKIP_WEB ?= false
 # - false: always disable
 NVML ?= auto
 
+NODES ?= k3s-01.local.private k3s-02.local.private k3s-03.local.private
+SSH_USER ?= echelon
+
+AGENT_IMAGE := agent-k8s
+AGENT_TAR := $(AGENT_IMAGE).tar
+
+TAG ?= latest
+
 # Detect glibc host for local linux/amd64 builds.
 HOST_GLIBC := $(shell \
 	if [ "$(OS)" = "linux" ] && [ "$(ARCH)" = "amd64" ]; then \
@@ -139,3 +147,21 @@ build-dotnet:
 
 # KEY="..." make -j dev
 dev: dev-server dev-hub dev-agent
+
+
+build-agent-image:
+	docker build -t $(AGENT_IMAGE):$(TAG) -f internal/dockerfile_agent .
+
+save-agent-image:
+	docker save -o $(AGENT_TAR) $(AGENT_IMAGE):$(TAG)
+
+# --- Push Target ---
+push: build-agent-image save-agent-image
+	@for node in $(NODES); do \
+		echo "----------------------------------------"; \
+		echo "Processing node: $$node"; \
+		echo "----------------------------------------"; \
+		scp $(AGENT_TAR) $(SSH_USER)@$$node:/tmp/ && \
+		ssh $(SSH_USER)@$$node "sudo k3s ctr -n k8s.io images import /tmp/$(AGENT_TAR) && \
+		                        rm -f /tmp/$(AGENT_TAR)"; \
+	done
