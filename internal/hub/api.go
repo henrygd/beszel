@@ -373,13 +373,17 @@ func (h *Hub) getSystemdInfo(e *core.RequestEvent) error {
 	return e.JSON(http.StatusOK, map[string]any{"details": details})
 }
 
-// getRetention returns effective retention, DB value, and env override flag
+// getRetention returns effective retention for any authenticated user;
+// dbRetention/envOverride are admin-only to avoid leaking admin config
 func (h *Hub) getRetention(e *core.RequestEvent) error {
-	return e.JSON(http.StatusOK, map[string]any{
-		"retention":   records.GetRetentionString(e.App),
-		"dbRetention": records.GetDbRetention(e.App),
-		"envOverride": records.IsEnvOverride(),
-	})
+	resp := map[string]any{
+		"retention": records.GetRetentionString(e.App),
+	}
+	if e.Auth != nil && e.Auth.GetString("role") == "admin" {
+		resp["dbRetention"] = records.GetDbRetention(e.App)
+		resp["envOverride"] = records.IsEnvOverride()
+	}
+	return e.JSON(http.StatusOK, resp)
 }
 
 // refreshSmartData handles POST /api/beszel/smart/refresh requests
