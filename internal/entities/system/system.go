@@ -34,6 +34,8 @@ type Stats struct {
 	MaxNetworkSent float64             `json:"nsm,omitempty" cbor:"-"`
 	MaxNetworkRecv float64             `json:"nrm,omitempty" cbor:"-"`
 	Temperatures   map[string]float64  `json:"t,omitempty" cbor:"20,keyasint,omitempty"`
+	Fans           map[string]uint16   `json:"f,omitempty" cbor:"36,keyasint,omitempty"`
+	Batteries      map[string]uint8    `json:"bats,omitempty" cbor:"37,keyasint,omitempty"`
 	ExtraFs        map[string]*FsStats `json:"efs,omitempty" cbor:"21,keyasint,omitempty"`
 	GPUData        map[string]GPUData  `json:"g,omitempty" cbor:"22,keyasint,omitempty"`
 	// LoadAvg1       float64             `json:"l1,omitempty" cbor:"23,keyasint,omitempty"`
@@ -43,7 +45,7 @@ type Stats struct {
 	MaxBandwidth [2]uint64 `json:"bm,omitzero" cbor:"-"`                   // [sent bytes, recv bytes]
 	// TODO: remove other load fields in future release in favor of load avg array
 	LoadAvg           [3]float64           `json:"la,omitempty" cbor:"28,keyasint"`
-	Battery           [2]uint8             `json:"bat,omitzero" cbor:"29,keyasint,omitzero"`    // [percent, charge state, current]
+	Battery           [2]uint8             `json:"bat,omitzero" cbor:"29,keyasint,omitzero"`    // [percent, charge state]
 	NetworkInterfaces map[string][4]uint64 `json:"ni,omitempty" cbor:"31,keyasint,omitempty"`   // [upload bytes, download bytes, total upload, total download]
 	DiskIO            [2]uint64            `json:"dio,omitzero" cbor:"32,keyasint,omitzero"`    // [read bytes, write bytes]
 	MaxDiskIO         [2]uint64            `json:"diom,omitzero" cbor:"-"`                      // [max read bytes, max write bytes]

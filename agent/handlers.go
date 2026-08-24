@@ -168,14 +168,16 @@ type GetSmartDataHandler struct{}
 
 func (h *GetSmartDataHandler) Handle(hctx *HandlerContext) error {
 	if hctx.Agent.smartManager == nil {
-		// return empty map to indicate no data
-		return hctx.SendResponse(map[string]smart.SmartData{}, hctx.RequestID)
+		return hctx.SendResponse(smart.SmartDataResponse{Data: map[string]smart.SmartData{}}, hctx.RequestID)
 	}
-	if err := hctx.Agent.smartManager.Refresh(false); err != nil {
+	complete, err := hctx.Agent.smartManager.Refresh(false)
+	if err != nil {
 		slog.Debug("smart refresh failed", "err", err)
 	}
-	data := hctx.Agent.smartManager.GetCurrentData()
-	return hctx.SendResponse(data, hctx.RequestID)
+	return hctx.SendResponse(smart.SmartDataResponse{
+		Data:     hctx.Agent.smartManager.GetCurrentData(),
+		Complete: complete,
+	}, hctx.RequestID)
 }
 
 ////////////////////////////////////////////////////////////////////////////

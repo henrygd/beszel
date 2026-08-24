@@ -67,6 +67,9 @@ export const $temperatureFilter = atom("")
 /** Filter for network probe charts (compare page and per-system probe charts) */
 export const $probeFilter = atom("")
 
+/** Fan-speed chart filter */
+export const $fanFilter = atom("")
+
 /** Fallback copy to clipboard dialog content */
 export const $copyContent = atom("")
 

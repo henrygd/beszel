@@ -24,7 +24,7 @@ func TestParseSmartForScsi(t *testing.T) {
 		SmartDataMap: make(map[string]*smart.SmartData),
 	}
 
-	hasData, exitStatus := sm.parseSmartForScsi(data)
+	hasData, exitStatus := sm.parseSmartForScsi(data, "")
 	if !hasData {
 		t.Fatalf("expected SCSI data to parse successfully")
 	}
@@ -69,7 +69,7 @@ func TestParseSmartForSata(t *testing.T) {
 		SmartDataMap: make(map[string]*smart.SmartData),
 	}
 
-	hasData, exitStatus := sm.parseSmartForSata(data)
+	hasData, exitStatus := sm.parseSmartForSata(data, "")
 	require.True(t, hasData)
 	assert.Equal(t, 64, exitStatus)
 
@@ -112,7 +112,7 @@ func TestParseSmartForSataDeviceStatisticsTemperature(t *testing.T) {
 	}`)
 
 	sm := &SmartManager{SmartDataMap: make(map[string]*smart.SmartData)}
-	hasData, exitStatus := sm.parseSmartForSata(jsonPayload)
+	hasData, exitStatus := sm.parseSmartForSata(jsonPayload, "")
 	require.True(t, hasData)
 	assert.Equal(t, 0, exitStatus)
 
@@ -147,7 +147,7 @@ func TestParseSmartForSataAtaDeviceStatistics(t *testing.T) {
 	}`)
 
 	sm := &SmartManager{SmartDataMap: make(map[string]*smart.SmartData)}
-	hasData, exitStatus := sm.parseSmartForSata(jsonPayload)
+	hasData, exitStatus := sm.parseSmartForSata(jsonPayload, "")
 	require.True(t, hasData)
 	assert.Equal(t, 0, exitStatus)
 
@@ -184,7 +184,7 @@ func TestParseSmartForSataNegativeDeviceStatistics(t *testing.T) {
 	}`)
 
 	sm := &SmartManager{SmartDataMap: make(map[string]*smart.SmartData)}
-	hasData, exitStatus := sm.parseSmartForSata(jsonPayload)
+	hasData, exitStatus := sm.parseSmartForSata(jsonPayload, "")
 	require.True(t, hasData)
 	assert.Equal(t, 0, exitStatus)
 
@@ -223,7 +223,7 @@ func TestParseSmartForSataParentheticalRawValue(t *testing.T) {
 
 	sm := &SmartManager{SmartDataMap: make(map[string]*smart.SmartData)}
 
-	hasData, exitStatus := sm.parseSmartForSata(jsonPayload)
+	hasData, exitStatus := sm.parseSmartForSata(jsonPayload, "")
 	require.True(t, hasData)
 	assert.Equal(t, 0, exitStatus)
 
@@ -245,7 +245,7 @@ func TestParseSmartForNvme(t *testing.T) {
 		SmartDataMap: make(map[string]*smart.SmartData),
 	}
 
-	hasData, exitStatus := sm.parseSmartForNvme(data)
+	hasData, exitStatus := sm.parseSmartForNvme(data, "")
 	require.True(t, hasData)
 	assert.Equal(t, 0, exitStatus)
 
@@ -268,13 +268,15 @@ func TestParseSmartForNvme(t *testing.T) {
 func TestHasDataForDevice(t *testing.T) {
 	sm := &SmartManager{
 		SmartDataMap: map[string]*smart.SmartData{
-			"serial-1": {DiskName: "/dev/sda"},
+			"serial-1": {DiskName: "/dev/sda", DiskType: "jms56x,0"},
 			"serial-2": nil,
 		},
 	}
 
-	assert.True(t, sm.hasDataForDevice("/dev/sda"))
-	assert.False(t, sm.hasDataForDevice("/dev/sdb"))
+	assert.True(t, sm.hasDataForDevice(&DeviceInfo{Name: "/dev/sda", Type: "jms56x,0"}))
+	assert.False(t, sm.hasDataForDevice(&DeviceInfo{Name: "/dev/sda", Type: "jms56x,1"}))
+	assert.False(t, sm.hasDataForDevice(&DeviceInfo{Name: "/dev/sdb", Type: "jms56x,0"}))
+	assert.False(t, sm.hasDataForDevice(nil))
 }
 
 func TestDevicesSnapshotReturnsCopy(t *testing.T) {
@@ -390,6 +392,81 @@ func TestSmartctlArgs(t *testing.T) {
 		[]string{"-a", "--json=c", "-n", "standby"},
 		sm.smartctlArgs(nil, true),
 	)
+}
+
+// TestSmartctlArgsExplicitType verifies that an explicit SMART_DEVICES type hint
+// is always passed to smartctl via -d, while a scan-detected scsi/ata type is
+// still left off so smartctl can auto-detect it (see issue #1345).
+func TestSmartctlArgsExplicitType(t *testing.T) {
+	sm := &SmartManager{}
+
+	// Scan-detected scsi: -d is intentionally omitted.
+	scanScsi := &DeviceInfo{Name: "/dev/sda", Type: "scsi"}
+	assert.Equal(t,
+		[]string{"-a", "--json=c", "/dev/sda"},
+		sm.smartctlArgs(scanScsi, false),
+	)
+
+	// Explicit scsi from SMART_DEVICES: -d scsi must be passed.
+	explicitScsi := &DeviceInfo{Name: "/dev/sda", Type: "scsi", explicitType: true}
+	assert.Equal(t,
+		[]string{"-d", "scsi", "-a", "--json=c", "/dev/sda"},
+		sm.smartctlArgs(explicitScsi, false),
+	)
+
+	// Explicit ata from SMART_DEVICES: -d ata must be passed (devstat still added).
+	explicitAta := &DeviceInfo{Name: "/dev/sdb", Type: "ata", explicitType: true}
+	assert.Equal(t,
+		[]string{"-d", "ata", "-a", "--json=c", "-l", "devstat", "/dev/sdb"},
+		sm.smartctlArgs(explicitAta, false),
+	)
+}
+
+// TestSmartDevicesExplicitTypeFlowsToSmartctlArgs is a regression test for
+// issue #2072: an explicit SMART_DEVICES type (e.g. /dev/sda:scsi) must win over
+// a wrong scan-detected type (sat) and be handed to smartctl as -d scsi.
+func TestSmartDevicesExplicitTypeFlowsToSmartctlArgs(t *testing.T) {
+	sm := &SmartManager{}
+
+	configured, err := sm.parseConfiguredDevices("/dev/sda:scsi")
+	require.NoError(t, err)
+	require.Len(t, configured, 1)
+	assert.True(t, configured[0].explicitType)
+
+	// smartctl --scan misreports this USB drive as sat, which fails on it.
+	scanned := []*DeviceInfo{
+		{Name: "/dev/sda", Type: "sat", Protocol: "ATA"},
+	}
+
+	merged := mergeDeviceLists(nil, scanned, configured)
+	require.Len(t, merged, 1)
+
+	device := merged[0]
+	assert.Equal(t, "scsi", device.Type, "configured type should win over scan-detected sat")
+	assert.True(t, device.explicitType, "explicit hint must survive the merge")
+
+	assert.Equal(t,
+		[]string{"-d", "scsi", "-a", "--json=c", "/dev/sda"},
+		sm.smartctlArgs(device, false),
+		"explicit scsi type must be passed to smartctl, not dropped",
+	)
+}
+
+// TestMergeDeviceListsPreservesExplicitTypeAcrossRescan ensures a verified,
+// explicitly-typed device keeps its explicit flag when a later scan re-reports
+// it with a different auto-detected type.
+func TestMergeDeviceListsPreservesExplicitTypeAcrossRescan(t *testing.T) {
+	existing := []*DeviceInfo{
+		{Name: "/dev/sda", Type: "scsi", parserType: "scsi", typeVerified: true, explicitType: true},
+	}
+	scanned := []*DeviceInfo{
+		{Name: "/dev/sda", Type: "sat"},
+	}
+
+	merged := mergeDeviceLists(existing, scanned, nil)
+	require.Len(t, merged, 1)
+	assert.Equal(t, "scsi", merged[0].Type)
+	assert.True(t, merged[0].explicitType, "explicit type flag should survive a rescan")
 }
 
 func TestResolveRefreshError(t *testing.T) {
@@ -532,6 +609,74 @@ func TestMergeDeviceListsPrefersConfigured(t *testing.T) {
 
 	require.Contains(t, byName, "/dev/sdb")
 	assert.Equal(t, "sat", byName["/dev/sdb"].Type)
+}
+
+func TestMergeDeviceListsExpandsConfiguredDevicesWithSamePath(t *testing.T) {
+	scanned := []*DeviceInfo{
+		{Name: "/dev/sdb", Type: "sat", InfoName: "scan-info", Protocol: "ATA"},
+	}
+	configured := []*DeviceInfo{
+		{Name: "/dev/sdb", Type: "jms56x,0", explicitType: true},
+		{Name: "/dev/sdb", Type: "jms56x,1", explicitType: true},
+	}
+
+	merged := mergeDeviceLists(nil, scanned, configured)
+	require.Len(t, merged, 2)
+
+	byKey := make(map[deviceKey]*DeviceInfo, len(merged))
+	for _, device := range merged {
+		byKey[makeDeviceKey(device.Name, device.Type)] = device
+	}
+
+	first := byKey[makeDeviceKey("/dev/sdb", "jms56x,0")]
+	require.NotNil(t, first)
+	assert.Equal(t, "scan-info", first.InfoName)
+	assert.Equal(t, "ATA", first.Protocol)
+	assert.True(t, first.explicitType)
+
+	second := byKey[makeDeviceKey("/dev/sdb", "jms56x,1")]
+	require.NotNil(t, second)
+	assert.True(t, second.explicitType)
+	assert.NotContains(t, byKey, makeDeviceKey("/dev/sdb", "sat"))
+}
+
+func TestMergeDeviceListsPreservesSamePathVerificationAcrossRescan(t *testing.T) {
+	existing := []*DeviceInfo{
+		{Name: "/dev/sdb", Type: "jms56x,0", parserType: "sat", typeVerified: true, explicitType: true},
+		{Name: "/dev/sdb", Type: "jms56x,1", parserType: "sat", typeVerified: true, explicitType: true},
+	}
+	scanned := []*DeviceInfo{
+		{Name: "/dev/sdb", Type: "sat", Protocol: "ATA"},
+	}
+	configured := []*DeviceInfo{
+		{Name: "/dev/sdb", Type: "jms56x,0", explicitType: true},
+		{Name: "/dev/sdb", Type: "jms56x,1", explicitType: true},
+	}
+
+	merged := mergeDeviceLists(existing, scanned, configured)
+	require.Len(t, merged, 2)
+	byKey := make(map[deviceKey]*DeviceInfo, len(merged))
+	for _, device := range merged {
+		byKey[makeDeviceKey(device.Name, device.Type)] = device
+		assert.True(t, device.typeVerified, device.Type)
+		assert.Equal(t, "sat", device.parserType, device.Type)
+		assert.True(t, device.explicitType, device.Type)
+	}
+	assert.Contains(t, byKey, makeDeviceKey("/dev/sdb", "jms56x,0"))
+	assert.Contains(t, byKey, makeDeviceKey("/dev/sdb", "jms56x,1"))
+}
+
+func TestMergeDeviceListsDeduplicatesConfiguredIdentityAfterRekey(t *testing.T) {
+	scanned := []*DeviceInfo{{Name: "/dev/sdb", Type: "sat"}}
+	configured := []*DeviceInfo{
+		{Name: "/dev/sdb", Type: "jms56x,0", explicitType: true},
+		{Name: "/dev/sdb", Type: "jms56x,0", explicitType: true},
+	}
+
+	merged := mergeDeviceLists(nil, scanned, configured)
+	require.Len(t, merged, 1)
+	assert.Equal(t, "/dev/sdb", merged[0].Name)
+	assert.Equal(t, "jms56x,0", merged[0].Type)
 }
 
 func TestMergeDeviceListsPreservesVerification(t *testing.T) {
@@ -678,6 +823,20 @@ func TestParseSmartOutputKeepsCustomType(t *testing.T) {
 	assert.Equal(t, "sat+megaraid", device.Type)
 	assert.Equal(t, "sat", device.parserType)
 	assert.True(t, device.typeVerified)
+	assert.Equal(t, "sat+megaraid", sm.SmartDataMap["9C40918040082"].DiskType)
+}
+
+func TestParseSmartOutputDoesNotNormalizeDeviceIdentity(t *testing.T) {
+	fixturePath := filepath.Join("test-data", "smart", "sda.json")
+	data, err := os.ReadFile(fixturePath)
+	require.NoError(t, err)
+
+	sm := &SmartManager{SmartDataMap: make(map[string]*smart.SmartData)}
+	device := &DeviceInfo{Name: "/dev/sda", Type: "ata", explicitType: true}
+
+	require.True(t, sm.parseSmartOutput(device, data))
+	assert.Equal(t, "sat", device.parserType)
+	assert.Equal(t, "ata", sm.SmartDataMap["9C40918040082"].DiskType)
 }
 
 func TestParseSmartOutputResetsVerificationOnFailure(t *testing.T) {
@@ -1225,7 +1384,7 @@ func TestParseSmartForNvmeAppleSSD(t *testing.T) {
 		darwinNvmeProvider: fakeProvider,
 	}
 
-	hasData, _ := sm.parseSmartForNvme(data)
+	hasData, _ := sm.parseSmartForNvme(data, "")
 	require.True(t, hasData)
 
 	deviceData, ok := sm.SmartDataMap["0ba0147940253c15"]
@@ -1237,7 +1396,7 @@ func TestParseSmartForNvmeAppleSSD(t *testing.T) {
 	assert.Equal(t, 1, providerCalls, "system_profiler should be called once")
 
 	// Second parse: provider should NOT be called again (cache hit)
-	_, _ = sm.parseSmartForNvme(data)
+	_, _ = sm.parseSmartForNvme(data, "")
 	assert.Equal(t, 1, providerCalls, "system_profiler should not be called again after caching")
 }
 

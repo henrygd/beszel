@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/henrygd/beszel/internal/entities/smart"
+	"github.com/pocketbase/dbx"
 	"github.com/pocketbase/pocketbase/core"
 )
 
@@ -17,13 +18,13 @@ type smartFetchState struct {
 
 // FetchAndSaveSmartDevices fetches SMART data from the agent and saves it to the database
 func (sys *System) FetchAndSaveSmartDevices() error {
-	smartData, err := sys.FetchSmartDataFromAgent()
+	response, err := sys.FetchSmartDataFromAgent()
 	if err != nil {
 		sys.recordSmartFetchResult(err, 0)
 		return err
 	}
-	err = sys.saveSmartDevices(smartData)
-	sys.recordSmartFetchResult(err, len(smartData))
+	err = sys.saveSmartDevices(response.Data, response.Complete)
+	sys.recordSmartFetchResult(err, len(response.Data))
 	return err
 }
 
@@ -61,8 +62,9 @@ func (sys *System) smartFetchInterval() time.Duration {
 	return time.Hour
 }
 
-// saveSmartDevices saves SMART device data to the smart_devices collection
-func (sys *System) saveSmartDevices(smartData map[string]smart.SmartData) error {
+// saveSmartDevices saves SMART device data and, after a complete refresh,
+// removes rows for devices that are no longer reported.
+func (sys *System) saveSmartDevices(smartData map[string]smart.SmartData, complete bool) error {
 	if len(smartData) == 0 {
 		return nil
 	}
@@ -73,20 +75,49 @@ func (sys *System) saveSmartDevices(smartData map[string]smart.SmartData) error 
 		return err
 	}
 
-	for deviceKey, device := range smartData {
-		if err := sys.upsertSmartDeviceRecord(collection, deviceKey, device); err != nil {
-			return err
-		}
+	currentIDs := make(map[string]struct{}, len(smartData))
+	for deviceKey := range smartData {
+		currentIDs[makeStableHashId(sys.Id, deviceKey)] = struct{}{}
 	}
 
-	return nil
+	err = hub.RunInTransaction(func(txApp core.App) error {
+		if complete {
+			existing, err := txApp.FindRecordsByFilter(
+				collection,
+				"system = {:system}",
+				"",
+				0,
+				0,
+				dbx.Params{"system": sys.Id},
+			)
+			if err != nil {
+				return err
+			}
+			for _, record := range existing {
+				if _, ok := currentIDs[record.Id]; ok {
+					continue
+				}
+				if err := txApp.Delete(record); err != nil {
+					return err
+				}
+			}
+		}
+
+		for deviceKey, device := range smartData {
+			if err := sys.upsertSmartDeviceRecord(txApp, collection, deviceKey, device); err != nil {
+				return err
+			}
+		}
+
+		return nil
+	})
+	return err
 }
 
-func (sys *System) upsertSmartDeviceRecord(collection *core.Collection, deviceKey string, device smart.SmartData) error {
-	hub := sys.manager.hub
-	recordID := MakeStableHashId(sys.Id, deviceKey)
+func (sys *System) upsertSmartDeviceRecord(app core.App, collection *core.Collection, deviceKey string, device smart.SmartData) error {
+	recordID := makeStableHashId(sys.Id, deviceKey)
 
-	record, err := hub.FindRecordById(collection, recordID)
+	record, err := app.FindRecordById(collection, recordID)
 	if err != nil {
 		if !errors.Is(err, sql.ErrNoRows) {
 			return err
@@ -114,7 +145,7 @@ func (sys *System) upsertSmartDeviceRecord(collection *core.Collection, deviceKe
 	record.Set("cycles", powerCycles)
 	record.Set("attributes", device.Attributes)
 
-	return hub.SaveNoValidate(record)
+	return app.SaveNoValidate(record)
 }
 
 // extractPowerMetrics extracts power on hours and power cycles from SMART attributes

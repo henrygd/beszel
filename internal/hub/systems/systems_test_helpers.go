@@ -117,6 +117,11 @@ func (sm *SystemManager) RemoveAllSystems() {
 	sm.smartFetchMap.StopCleaner()
 }
 
+// ResetContextForTesting replaces the manager context for a new synctest bubble.
+func (sm *SystemManager) ResetContextForTesting() {
+	sm.ctx, sm.cancel = context.WithCancel(context.Background())
+}
+
 func (s *System) StopUpdater() {
 	s.cancel()
 }
