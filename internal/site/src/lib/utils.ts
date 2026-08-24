@@ -485,6 +485,20 @@ export function isVisuallyLonger(str1: string, str2: string): boolean {
 	return getVisualStringWidth(str1) > getVisualStringWidth(str2)
 }
 
+/** Parses a filter string into OR'd groups of AND'd terms: "a b, c" -> [["a","b"], ["c"]] */
+export function parseFilterGroups(value: string): string[][] {
+	return value
+		.toLowerCase()
+		.split(",")
+		.map((group) => group.trim().split(" ").filter((term) => term.length > 0))
+		.filter((terms) => terms.length > 0)
+}
+
+/** True if every term in at least one OR'd group is found in searchString. */
+export function matchesFilterGroups(searchString: string, groups: string[][]): boolean {
+	return groups.some((terms) => terms.every((term) => searchString.includes(term)))
+}
+
 /** Format seconds to hours, minutes, or seconds */
 export function secondsToString(seconds: number, unit: "hour" | "minute" | "day"): string {
 	const count = Math.floor(seconds / (unit === "hour" ? 3600 : unit === "minute" ? 60 : 86400))

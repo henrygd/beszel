@@ -1,6 +1,6 @@
 import LineChartDefault from "@/components/charts/line-chart"
 import type { DataPoint } from "@/components/charts/line-chart"
-import { decimalString, formatMicroseconds, toFixedFloat } from "@/lib/utils"
+import { decimalString, formatMicroseconds, matchesFilterGroups, parseFilterGroups, toFixedFloat } from "@/lib/utils"
 import { useLingui } from "@lingui/react/macro"
 import { ChartCard, FilterBar } from "../chart-card"
 import type { ChartData, NetworkProbeRecord, NetworkProbeStatsRecord } from "@/types"
@@ -52,19 +52,13 @@ function ProbeChart({
 		const count = sortedProbes.length
 		const points: DataPoint<NetworkProbeStatsRecord>[] = []
 		const visibleIDs: string[] = []
-		// comma-separated groups are OR'd together; within a group, space-separated terms are AND'd
-		const filterGroups = filter
-			.toLowerCase()
-			.split(",")
-			.map((group) => group.trim().split(" ").filter((term) => term.length > 0))
-			.filter((terms) => terms.length > 0)
+		const filterGroups = parseFilterGroups(filter)
 		const dot = chartData.chartTime === "1m"
 		for (let i = 0; i < count; i++) {
 			const p = sortedProbes[i]
 			const label = p.name || p.target
 			const labelLower = label.toLowerCase()
-			const filtered =
-				filterGroups.length > 0 && !filterGroups.some((terms) => terms.every((term) => labelLower.includes(term)))
+			const filtered = filterGroups.length > 0 && !matchesFilterGroups(labelLower, filterGroups)
 			if (filtered) {
 				continue
 			}
@@ -203,19 +197,13 @@ export function ResponseLossChart({ probeStats, grid, probes, chartData, empty, 
 		const count = sortedProbes.length
 		const points: DataPoint<NetworkProbeStatsRecord>[] = []
 		const visibleIDs: string[] = []
-		// comma-separated groups are OR'd together; within a group, space-separated terms are AND'd
-		const filterGroups = filter
-			.toLowerCase()
-			.split(",")
-			.map((group) => group.trim().split(" ").filter((term) => term.length > 0))
-			.filter((terms) => terms.length > 0)
+		const filterGroups = parseFilterGroups(filter)
 		const dot = chartData.chartTime === "1m"
 		for (let i = 0; i < count; i++) {
 			const p = sortedProbes[i]
 			const label = p.name || p.target
 			const labelLower = label.toLowerCase()
-			const filtered =
-				filterGroups.length > 0 && !filterGroups.some((terms) => terms.every((term) => labelLower.includes(term)))
+			const filtered = filterGroups.length > 0 && !matchesFilterGroups(labelLower, filterGroups)
 			if (filtered) {
 				continue
 			}

@@ -37,6 +37,27 @@ function appendCacheValue(
 	}
 }
 
+/** Groups probes sharing the same (target, protocol) pair, keeping only groups monitored by at least `minSystems` distinct systems. */
+export function groupProbesByTarget<T extends { target: string; protocol: string; system: string; name?: string }>(
+	probes: T[],
+	minSystems: number
+): Array<{ key: string; target: string; protocol: string; name: string; systems: Set<string> }> {
+	const map = new Map<string, { target: string; protocol: string; name: string; systems: Set<string> }>()
+	for (const p of probes) {
+		const key = `${p.target}\x00${p.protocol}`
+		const existing = map.get(key)
+		if (existing) {
+			existing.systems.add(p.system)
+			if (!existing.name && p.name) existing.name = p.name
+		} else {
+			map.set(key, { target: p.target, protocol: p.protocol, name: p.name || "", systems: new Set([p.system]) })
+		}
+	}
+	return [...map.entries()]
+		.filter(([, e]) => e.systems.size >= minSystems)
+		.map(([key, e]) => ({ key, ...e }))
+}
+
 /** Merge an array of per-probe raw records into the map-keyed format expected by chart components. */
 export function mergeProbeStats(rawRecords: RawProbeStatsRecord[]): NetworkProbeStatsRecord[] {
 	const byTimestamp = new Map<number, Record<string, number[]>>()
@@ -257,17 +278,13 @@ export function useNetworkProbeStats(props: UseNetworkProbeStatsProps) {
 			return
 		}
 		let unsubscribe: (() => void) | undefined
-		const cache_key = `${systemId}rt`
 		pb.realtime
 			.subscribe(
 				`rt_metrics`,
 				(data: { Probes: NetworkProbeStatsRecord["stats"] }) => {
-					const prev = getCacheValue(systemId, "rt")
-					const now = Date.now()
-					const stats = { created: now, stats: data.Probes } as NetworkProbeStatsRecord
-					const newStats = appendData(prev, [stats], 1000, 120)
-					setProbeStats(() => newStats)
-					cache.set(cache_key, newStats)
+					const stats = { created: Date.now(), stats: data.Probes } as NetworkProbeStatsRecord
+					const newStats = appendCacheValue(systemId, "rt", [stats], 120)
+					setProbeStats(newStats)
 				},
 				{ query: { system: systemId } }
 			)
@@ -396,8 +413,11 @@ export async function fetchTargetComparison(
 		requestKey: `${requestKey}-stats`,
 	})
 
-	// mergeProbeStats groups by timestamp and keys by probe ID — exactly what the chart needs
-	const stats = mergeProbeStats(rawRecords)
+	// mergeProbeStats groups by timestamp and keys by probe ID — exactly what the chart needs.
+	// appendData then inserts { created: null } markers across gaps so the chart breaks the
+	// line instead of drawing a continuous connection through missing data (same as system charts).
+	const { expectedInterval } = chartTimeData[chartTime]
+	const stats = appendData<NetworkProbeStatsRecord>(undefined, mergeProbeStats(rawRecords), expectedInterval)
 
 	// Build synthetic probe list (one entry per system that monitors this target)
 	const probeToSystem = new Map(probeList.map((p) => [p.id, p.system]))

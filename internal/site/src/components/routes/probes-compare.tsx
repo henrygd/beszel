@@ -4,7 +4,12 @@ import { Trans } from "@lingui/react/macro"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { NetworkIcon, HistoryIcon, GlobeIcon, ServerIcon, GitCompareArrowsIcon } from "lucide-react"
-import { useNetworkProbes, fetchTargetComparison, type ComparisonResult } from "@/lib/use-network-probes"
+import {
+	useNetworkProbes,
+	fetchTargetComparison,
+	groupProbesByTarget,
+	type ComparisonResult,
+} from "@/lib/use-network-probes"
 import { ResponseLossChart } from "@/components/routes/system/charts/probes-charts"
 import { $direction, $systems } from "@/lib/stores"
 import { useStore } from "@nanostores/react"
@@ -73,22 +78,16 @@ export default memo(function ProbesCompare({ protocol }: { protocol?: string }) 
 	// targets rather than requiring a second system to share them
 	const minSystemsPerTarget = selectedSystemIdsList?.length === 1 ? 1 : 2
 
-	const compareEntries = useMemo<CompareEntry[]>(() => {
-		const map = new Map<string, { target: string; protocol: string; name: string; systems: Set<string> }>()
-		for (const p of relevantProbes) {
-			const key = `${p.target}\x00${p.protocol}`
-			const existing = map.get(key)
-			if (existing) {
-				existing.systems.add(p.system)
-				if (!existing.name && p.name) existing.name = p.name
-			} else {
-				map.set(key, { target: p.target, protocol: p.protocol, name: p.name || "", systems: new Set([p.system]) })
-			}
-		}
-		return [...map.entries()]
-			.filter(([, e]) => e.systems.size >= minSystemsPerTarget)
-			.map(([key, e]) => ({ key, target: e.target, protocol: e.protocol, name: e.name || e.target }))
-	}, [relevantProbes, minSystemsPerTarget])
+	const compareEntries = useMemo<CompareEntry[]>(
+		() =>
+			groupProbesByTarget(relevantProbes, minSystemsPerTarget).map(({ key, target, protocol, name }) => ({
+				key,
+				target,
+				protocol,
+				name: name || target,
+			})),
+		[relevantProbes, minSystemsPerTarget]
+	)
 
 	const compareProtocols = useMemo(() => {
 		const set = new Set(compareEntries.map((e) => e.protocol))

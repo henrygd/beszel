@@ -34,14 +34,14 @@ import { useToast } from "@/components/ui/use-toast"
 import { isReadOnlyUser } from "@/lib/api"
 import { pb } from "@/lib/api"
 import { $allSystemsById, $chartTime, $direction } from "@/lib/stores"
-import { cn, isVisuallyLonger, parseSemVer, useBrowserStorage } from "@/lib/utils"
+import { cn, isVisuallyLonger, matchesFilterGroups, parseFilterGroups, parseSemVer, useBrowserStorage } from "@/lib/utils"
 import type { ChartData, NetworkProbeRecord } from "@/types"
 import { AddProbeDialog, EditProbeDialog } from "./probe-dialog"
 import { ArrowLeftRightIcon, EthernetPortIcon, GitCompareArrowsIcon, GlobeIcon, ServerIcon, XIcon } from "lucide-react"
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet"
 import ChartTimeSelect from "@/components/charts/chart-time-select"
 import { LossChart, AvgMinMaxResponseChart } from "@/components/routes/system/charts/probes-charts"
-import { useNetworkProbeStats } from "@/lib/use-network-probes"
+import { useNetworkProbeStats, groupProbesByTarget } from "@/lib/use-network-probes"
 import { useStore } from "@nanostores/react"
 import { Separator } from "../ui/separator"
 import { $router, Link, navigate } from "../router"
@@ -68,18 +68,15 @@ export default function NetworkProbesTableNew({
 	const [editingProbe, setEditingProbe] = useState<NetworkProbeRecord>()
 
 	// (target, protocol) pairs monitored by 2+ different systems
-	const compareEntries = useMemo(() => {
-		const map = new Map<string, { target: string; protocol: string; systems: Set<string> }>()
-		for (const p of probes) {
-			const key = `${p.target}\x00${p.protocol}`
-			const entry = map.get(key) ?? { target: p.target, protocol: p.protocol, systems: new Set() }
-			entry.systems.add(p.system)
-			map.set(key, entry)
-		}
-		return [...map.entries()]
-			.filter(([, e]) => e.systems.size >= 2)
-			.map(([key, e]) => ({ key, target: e.target, protocol: e.protocol }))
-	}, [probes])
+	const compareEntries = useMemo(
+		() =>
+			groupProbesByTarget(probes, 2).map(({ key, target, protocol }) => ({
+				key,
+				target,
+				protocol,
+			})),
+		[probes]
+	)
 
 const { toast } = useToast()
 	const canManageProbes = !isReadOnlyUser()
@@ -238,13 +235,7 @@ const { toast } = useToast()
 			const probe = row.original
 			const systemName = $allSystemsById.get()[probe.system]?.name ?? ""
 			const searchString = `${probe.name}${probe.target}${probe.protocol}${systemName}`.toLocaleLowerCase()
-			// comma-separated groups are OR'd together; within a group, space-separated terms are AND'd
-			return value
-				.toLowerCase()
-				.split(",")
-				.map((group) => group.trim().split(" ").filter((term) => term.length > 0))
-				.filter((terms) => terms.length > 0)
-				.some((terms) => terms.every((term) => searchString.includes(term)))
+			return matchesFilterGroups(searchString, parseFilterGroups(value))
 		},
 	})
 
@@ -515,7 +506,7 @@ function NetworkProbeSheetContent({
 			orientation: direction === "rtl" ? "right" : "left",
 			chartTime,
 		}),
-		[probeStats]
+		[system?.info?.v, direction, chartTime]
 	)
 	const hasProbeStats = probeStats.some((record) => record.stats?.[probe.id] != null)
 	const probeLabel = probe.name || probe.target
