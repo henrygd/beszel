@@ -64,6 +64,9 @@ export const $containerFilter = atom("")
 /** Temperature chart filter */
 export const $temperatureFilter = atom("")
 
+/** Filter for network probe charts (compare page and per-system probe charts) */
+export const $probeFilter = atom("")
+
 /** Fallback copy to clipboard dialog content */
 export const $copyContent = atom("")
 

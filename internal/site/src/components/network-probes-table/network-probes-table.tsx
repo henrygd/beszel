@@ -37,14 +37,14 @@ import { $allSystemsById, $chartTime, $direction } from "@/lib/stores"
 import { cn, isVisuallyLonger, matchesFilterGroups, parseFilterGroups, parseSemVer, useBrowserStorage } from "@/lib/utils"
 import type { ChartData, NetworkProbeRecord } from "@/types"
 import { AddProbeDialog, EditProbeDialog } from "./probe-dialog"
-import { ArrowLeftRightIcon, EthernetPortIcon, GitCompareArrowsIcon, GlobeIcon, ServerIcon, XIcon } from "lucide-react"
+import { ArrowLeftRightIcon, EthernetPortIcon, GlobeIcon, ServerIcon, XIcon } from "lucide-react"
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet"
 import ChartTimeSelect from "@/components/charts/chart-time-select"
 import { LossChart, AvgMinMaxResponseChart } from "@/components/routes/system/charts/probes-charts"
-import { useNetworkProbeStats, groupProbesByTarget } from "@/lib/use-network-probes"
+import { useNetworkProbeStats } from "@/lib/use-network-probes"
 import { useStore } from "@nanostores/react"
 import { Separator } from "../ui/separator"
-import { $router, Link, navigate } from "../router"
+import { $router, Link } from "../router"
 import { getPagePath } from "@nanostores/router"
 
 export default function NetworkProbesTableNew({
@@ -66,17 +66,6 @@ export default function NetworkProbesTableNew({
 	const [deleteOpen, setDeleteOpen] = useState(false)
 	const [pendingDeleteIds, setPendingDeleteIds] = useState<string[]>([])
 	const [editingProbe, setEditingProbe] = useState<NetworkProbeRecord>()
-
-	// (target, protocol) pairs monitored by 2+ different systems
-	const compareEntries = useMemo(
-		() =>
-			groupProbesByTarget(probes, 2).map(({ key, target, protocol }) => ({
-				key,
-				target,
-				protocol,
-			})),
-		[probes]
-	)
 
 const { toast } = useToast()
 	const canManageProbes = !isReadOnlyUser()
@@ -277,15 +266,6 @@ const { toast } = useToast()
 									</Button>
 								)}
 							</div>
-						)}
-						{compareEntries.length > 0 && (
-							<Button
-								variant="outline"
-								onClick={() => navigate(getPagePath($router, "probes_compare"))}
-							>
-								<GitCompareArrowsIcon className="size-4 me-1" />
-								<Trans>Compare</Trans>
-							</Button>
 						)}
 						{canManageProbes ? <AddProbeDialog systemId={systemId} probes={probes} /> : null}
 						{canManageProbes ? (

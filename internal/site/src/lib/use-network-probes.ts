@@ -1,11 +1,5 @@
 import { chartTimeData } from "@/lib/utils"
-import type {
-	ChartTimes,
-	NetworkProbeRecord,
-	NetworkProbeStatsRecord,
-	RawProbeStatsRecord,
-	SystemRecord,
-} from "@/types"
+import type { ChartTimes, NetworkProbeRecord, NetworkProbeStatsRecord, RawProbeStatsRecord } from "@/types"
 import { useEffect, useRef, useState } from "react"
 import { appendData } from "@/components/routes/system/chart-data"
 import { pb, getPbTimestamp } from "@/lib/api"
@@ -35,27 +29,6 @@ function appendCacheValue(
 		cache.set(cache_key, newStats)
 		return newStats
 	}
-}
-
-/** Groups probes sharing the same (target, protocol) pair, keeping only groups monitored by at least `minSystems` distinct systems. */
-export function groupProbesByTarget<T extends { target: string; protocol: string; system: string; name?: string }>(
-	probes: T[],
-	minSystems: number
-): Array<{ key: string; target: string; protocol: string; name: string; systems: Set<string> }> {
-	const map = new Map<string, { target: string; protocol: string; name: string; systems: Set<string> }>()
-	for (const p of probes) {
-		const key = `${p.target}\x00${p.protocol}`
-		const existing = map.get(key)
-		if (existing) {
-			existing.systems.add(p.system)
-			if (!existing.name && p.name) existing.name = p.name
-		} else {
-			map.set(key, { target: p.target, protocol: p.protocol, name: p.name || "", systems: new Set([p.system]) })
-		}
-	}
-	return [...map.entries()]
-		.filter(([, e]) => e.systems.size >= minSystems)
-		.map(([key, e]) => ({ key, ...e }))
 }
 
 /** Merge an array of per-probe raw records into the map-keyed format expected by chart components. */
@@ -354,82 +327,3 @@ function applyProbeEvents(
 	return nextProbes
 }
 
-export interface ComparisonResult {
-	/** Synthetic probe-like objects: id is the probe ID, name is the system name. */
-	syntheticProbes: Array<{ id: string; name: string }>
-	/** Merged stats keyed by probe ID (same format as NetworkProbeStatsRecord). */
-	stats: NetworkProbeStatsRecord[]
-	/** Probe interval in seconds (from the first matching probe). */
-	interval: number
-	/** TCP port, if applicable. */
-	port: number
-}
-
-/**
- * Fetches stats for all probes sharing the same target+protocol across all systems.
- * Returns merged data suitable for the comparison chart.
- */
-export async function fetchTargetComparison(
-	target: string,
-	protocol: string,
-	chartTime: ChartTimes,
-	systemIds?: string[]
-): Promise<ComparisonResult> {
-	const empty: ComparisonResult = { syntheticProbes: [], stats: [], interval: 0, port: 0 }
-
-	// Find all probes that match this target + protocol, optionally restricted to specific systems
-	const requestKey = systemIds?.length
-		? `compare-${target}-${protocol}-${[...systemIds].sort().join(",")}`
-		: `compare-${target}-${protocol}`
-	let filter = pb.filter("target={:target} && protocol={:protocol}", { target, protocol })
-	if (systemIds?.length) {
-		filter = `(${filter}) && (${systemIds.map((id) => pb.filter("system={:id}", { id })).join(" || ")})`
-	}
-	const probeList = await pb
-		.collection<NetworkProbeRecord>("network_probes")
-		.getFullList({
-			filter,
-			fields: "id,system,interval,port",
-			requestKey,
-		})
-	if (probeList.length === 0) {
-		return empty
-	}
-
-	const matchedSystemIds = [...new Set(probeList.map((p) => p.system))]
-	const systemFilter = matchedSystemIds.map((id) => `id='${id}'`).join(" || ")
-	const systems = await pb
-		.collection<SystemRecord>("systems")
-		.getFullList({ filter: systemFilter, fields: "id,name", requestKey: `${requestKey}-systems` })
-	const systemById = new Map(systems.map((s) => [s.id, s]))
-
-	// Fetch raw per-probe stats for all matching probes in one query
-	const probeIdFilter = probeList.map((p) => `probe='${p.id}'`).join(" || ")
-	const statsType = chartTimeData[chartTime].type
-	const rawRecords = await pb.collection<RawProbeStatsRecord>("network_probe_stats").getFullList({
-		filter: `(${probeIdFilter}) && type='${statsType}'`,
-		fields: "probe,stats,created",
-		sort: "created",
-		requestKey: `${requestKey}-stats`,
-	})
-
-	// mergeProbeStats groups by timestamp and keys by probe ID — exactly what the chart needs.
-	// appendData then inserts { created: null } markers across gaps so the chart breaks the
-	// line instead of drawing a continuous connection through missing data (same as system charts).
-	const { expectedInterval } = chartTimeData[chartTime]
-	const stats = appendData<NetworkProbeStatsRecord>(undefined, mergeProbeStats(rawRecords), expectedInterval)
-
-	// Build synthetic probe list (one entry per system that monitors this target)
-	const probeToSystem = new Map(probeList.map((p) => [p.id, p.system]))
-	const seen = new Set<string>()
-	const syntheticProbes: ComparisonResult["syntheticProbes"] = []
-	for (const p of probeList) {
-		const sId = probeToSystem.get(p.id)!
-		if (seen.has(sId)) continue
-		seen.add(sId)
-		const sys = systemById.get(sId)
-		syntheticProbes.push({ id: p.id, name: sys?.name ?? sId })
-	}
-
-	return { syntheticProbes, stats, interval: probeList[0].interval, port: probeList[0].port }
-}
