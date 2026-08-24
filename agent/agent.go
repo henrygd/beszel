@@ -34,20 +34,21 @@ type Agent struct {
 	netInterfaces             map[string]struct{}                                   // Stores all valid network interfaces
 	netIoStats                map[uint16]system.NetIoStats                          // Keeps track of bandwidth usage per cache interval
 	netInterfaceDeltaTrackers map[uint16]*deltatracker.DeltaTracker[string, uint64] // Per-cache-time NIC delta trackers
-	dockerManager             *dockerManager                                        // Manages Docker API requests
-	sensorConfig              *SensorConfig                                         // Sensors config
-	systemInfo                system.Info                                           // Host system info (dynamic)
-	systemDetails             system.Details                                        // Host system details (static, once-per-connection)
-	detailsDirty              bool                                                  // Whether system details have changed and need to be resent
-	gpuManager                *GPUManager                                           // Manages GPU data
-	cache                     *systemDataCache                                      // Cache for system stats based on cache time
-	connectionManager         *ConnectionManager                                    // Channel to signal connection events
-	handlerRegistry           *HandlerRegistry                                      // Registry for routing incoming messages
-	server                    *ssh.Server                                           // SSH server
-	dataDir                   string                                                // Directory for persisting data
-	keys                      []gossh.PublicKey                                     // SSH public keys
-	smartManager              *SmartManager                                         // Manages SMART data
-	systemdManager            *systemdManager                                       // Manages systemd services
+	dockerManager             *dockerManager
+	containerdK8sManager      *ContainerdK8SManager // Manages containerd API requests
+	sensorConfig              *SensorConfig         // Sensors config
+	systemInfo                system.Info           // Host system info (dynamic)
+	systemDetails             system.Details        // Host system details (static, once-per-connection)
+	detailsDirty              bool                  // Whether system details have changed and need to be resent
+	gpuManager                *GPUManager           // Manages GPU data
+	cache                     *systemDataCache      // Cache for system stats based on cache time
+	connectionManager         *ConnectionManager    // Channel to signal connection events
+	handlerRegistry           *HandlerRegistry      // Registry for routing incoming messages
+	server                    *ssh.Server           // SSH server
+	dataDir                   string                // Directory for persisting data
+	keys                      []gossh.PublicKey     // SSH public keys
+	smartManager              *SmartManager         // Manages SMART data
+	systemdManager            *systemdManager       // Manages systemd services
 }
 
 // NewAgent creates a new agent with the given data directory for persisting data.
@@ -101,6 +102,12 @@ func NewAgent(dataDir ...string) (agent *Agent, err error) {
 
 	// initialize docker manager
 	agent.dockerManager = newDockerManager(agent)
+
+	// initialize containerd k8s manager
+	agent.containerdK8sManager, err = NewContainerdCollector()
+	if err != nil {
+		slog.Warn("Containerd", "err", err)
+	}
 
 	// initialize system info
 	agent.refreshSystemDetails()
@@ -175,6 +182,13 @@ func (a *Agent) gatherStats(options common.DataRequestOptions) *system.CombinedD
 			slog.Debug("Containers", "data", data.Containers)
 		} else {
 			slog.Debug("Containers", "err", err)
+		}
+	}
+
+	if a.containerdK8sManager != nil {
+		if containerStats := a.containerdK8sManager.PollContainers(); len(containerStats) > 0 {
+			data.Containers = append(data.Containers, containerStats...)
+			slog.Debug("Containerd K8s", "data", containerStats)
 		}
 	}
 
