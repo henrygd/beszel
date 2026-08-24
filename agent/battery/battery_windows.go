@@ -7,9 +7,6 @@ package battery
 
 import (
 	"errors"
-	"log/slog"
-	"math"
-	"sync"
 	"syscall"
 	"unsafe"
 
@@ -79,7 +76,7 @@ var (
 	setupDiDestroyDeviceInfoList     = setupapi.NewProc("SetupDiDestroyDeviceInfoList")
 )
 
-// winBatteryGet reads one battery by index. Returns (fullCapacity, currentCapacity, state, error).
+// winBatteryGet reads one battery by index.
 // Returns error == errNotFound when there are no more batteries.
 var errNotFound = errors.New("no more batteries")
 
@@ -122,7 +119,7 @@ func readWinBatteryState(powerState uint32) uint8 {
 	}
 }
 
-func winBatteryGet(idx int) (full, current uint32, state uint8, err error) {
+func winBatteryGet(idx int) (Battery, error) {
 	hdev, err := setupDiSetup(
 		setupDiGetClassDevsW,
 		4,
@@ -132,7 +129,7 @@ func winBatteryGet(idx int) (full, current uint32, state uint8, err error) {
 		0, 0,
 	)
 	if err != nil {
-		return 0, 0, stateUnknown, err
+		return Battery{}, err
 	}
 	defer syscall.SyscallN(setupDiDestroyDeviceInfoList.Addr(), hdev)
 
@@ -148,10 +145,10 @@ func winBatteryGet(idx int) (full, current uint32, state uint8, err error) {
 		0,
 	)
 	if errno == 259 { // ERROR_NO_MORE_ITEMS
-		return 0, 0, stateUnknown, errNotFound
+		return Battery{}, errNotFound
 	}
 	if errno != 0 {
-		return 0, 0, stateUnknown, errno
+		return Battery{}, errno
 	}
 
 	var cbRequired uint32
@@ -165,7 +162,7 @@ func winBatteryGet(idx int) (full, current uint32, state uint8, err error) {
 		0,
 	)
 	if errno != 0 && errno != 122 { // ERROR_INSUFFICIENT_BUFFER
-		return 0, 0, stateUnknown, errno
+		return Battery{}, errno
 	}
 	didd := make([]uint16, cbRequired/2)
 	cbSize := (*uint32)(unsafe.Pointer(&didd[0]))
@@ -185,7 +182,7 @@ func winBatteryGet(idx int) (full, current uint32, state uint8, err error) {
 		0,
 	)
 	if errno != 0 {
-		return 0, 0, stateUnknown, errno
+		return Battery{}, errno
 	}
 	devicePath := &didd[2:][0]
 
@@ -199,7 +196,7 @@ func winBatteryGet(idx int) (full, current uint32, state uint8, err error) {
 		0,
 	)
 	if err != nil {
-		return 0, 0, stateUnknown, err
+		return Battery{}, err
 	}
 	defer windows.CloseHandle(handle)
 
@@ -216,7 +213,7 @@ func winBatteryGet(idx int) (full, current uint32, state uint8, err error) {
 		&dwOut, nil,
 	)
 	if err != nil || bqi.BatteryTag == 0 {
-		return 0, 0, stateUnknown, errors.New("battery tag not returned")
+		return Battery{}, errors.New("battery tag not returned")
 	}
 
 	var bi batteryInformation
@@ -229,7 +226,21 @@ func winBatteryGet(idx int) (full, current uint32, state uint8, err error) {
 		uint32(unsafe.Sizeof(bi)),
 		&dwOut, nil,
 	); err != nil {
-		return 0, 0, stateUnknown, err
+		return Battery{}, err
+	}
+
+	// BatteryDeviceName is optional, so retain the deterministic fallback on error.
+	name := ""
+	nameQuery := bqi
+	nameQuery.InformationLevel = 4 // BatteryDeviceName
+	nameBuffer := make([]uint16, 128)
+	if err := windows.DeviceIoControl(
+		handle, 2703428,
+		(*byte)(unsafe.Pointer(&nameQuery)), uint32(unsafe.Sizeof(nameQuery)),
+		(*byte)(unsafe.Pointer(&nameBuffer[0])), uint32(len(nameBuffer)*2),
+		&dwOut, nil,
+	); err == nil {
+		name = windows.UTF16ToString(nameBuffer)
 	}
 
 	bws := batteryWaitStatus{BatteryTag: bqi.BatteryTag}
@@ -243,56 +254,38 @@ func winBatteryGet(idx int) (full, current uint32, state uint8, err error) {
 		uint32(unsafe.Sizeof(bs)),
 		&dwOut, nil,
 	); err != nil {
-		return 0, 0, stateUnknown, err
+		return Battery{}, err
 	}
 
-	if bs.Capacity == 0xffffffff { // BATTERY_UNKNOWN_CAPACITY
-		return 0, 0, stateUnknown, errors.New("battery capacity unknown")
+	if bs.Capacity == 0xffffffff || bi.FullChargedCapacity == 0 || bi.FullChargedCapacity == 0xffffffff {
+		return Battery{}, errors.New("battery capacity unknown")
 	}
-
-	return bi.FullChargedCapacity, bs.Capacity, readWinBatteryState(bs.PowerState), nil
+	percent := min(float64(bs.Capacity)/float64(bi.FullChargedCapacity)*100, 100)
+	return Battery{Name: name, Percent: uint8(percent), State: readWinBatteryState(bs.PowerState),
+		FullChargeCapacity: uint64(bi.FullChargedCapacity), HasFullChargeCapacity: true, System: true}, nil
 }
 
 // HasReadableBattery checks if the system has a battery and returns true if it does.
-var HasReadableBattery = sync.OnceValue(func() bool {
-	systemHasBattery := false
-	full, _, _, err := winBatteryGet(0)
-	if err == nil && full > 0 {
-		systemHasBattery = true
-	}
-	if !systemHasBattery {
-		slog.Debug("No battery found", "err", err)
-	}
-	return systemHasBattery
-})
+func HasReadableBattery() bool {
+	batteries, _ := GetBatteryStats()
+	return len(batteries) > 0
+}
 
-// GetBatteryStats returns the current battery percent and charge state.
-func GetBatteryStats() (batteryPercent uint8, batteryState uint8, err error) {
-	if !HasReadableBattery() {
-		return batteryPercent, batteryState, errors.ErrUnsupported
-	}
-
-	totalFull := uint32(0)
-	totalCurrent := uint32(0)
-	batteryState = math.MaxUint8
-
+// GetBatteryStats returns every readable battery reported by Windows.
+func GetBatteryStats() ([]Battery, error) {
+	batteries := make([]Battery, 0, 2)
 	for i := 0; ; i++ {
-		full, current, state, bErr := winBatteryGet(i)
+		battery, bErr := winBatteryGet(i)
 		if errors.Is(bErr, errNotFound) {
 			break
 		}
-		if bErr != nil || full == 0 {
+		if bErr != nil {
 			continue
 		}
-		totalFull += full
-		totalCurrent += min(current, full)
-		batteryState = state
+		batteries = append(batteries, battery)
 	}
-
-	if totalFull == 0 || batteryState == math.MaxUint8 {
-		return batteryPercent, batteryState, errors.New("no battery capacity")
+	if len(batteries) == 0 {
+		return nil, errNoBatteries
 	}
-
-	batteryPercent = uint8(float64(totalCurrent) / float64(totalFull) * 100)
-	return batteryPercent, batteryState, nil
+	return normalizeBatteries(batteries), nil
 }
