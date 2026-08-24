@@ -332,11 +332,12 @@ func TestUpdateNvtopSnapshotsKeepsDeviceAssociationWhenOrderChanges(t *testing.T
 }
 
 func TestParseCollectorPriority(t *testing.T) {
-	got := parseCollectorPriority(" nvml, nvidia-smi, intel_gpu_top, amd_sysfs, nvtop, rocm-smi, bad ")
+	got := parseCollectorPriority(" nvml, nvidia-smi, intel_gpu_top, intel_sysfs, amd_sysfs, nvtop, rocm-smi, bad ")
 	want := []collectorSource{
 		collectorSourceNVML,
 		collectorSourceNvidiaSMI,
 		collectorSourceIntelGpuTop,
+		collectorSourceIntelSysfs,
 		collectorSourceAmdSysfs,
 		collectorSourceNVTop,
 		collectorSourceRocmSMI,
@@ -563,6 +564,42 @@ func TestGetCurrentData(t *testing.T) {
 		assert.InDelta(t, 60.0, result2["0"].Temperature, 0.01, "Should use current temperature")
 		assert.InDelta(t, 1600.0, result2["0"].MemoryUsed, 0.01, "Should use current memory")
 		assert.EqualValues(t, 2, gm.GpuDataMap["0"].Count, "Count should still be 2")
+	})
+
+	t.Run("carries Intel GPU average forward between samples", func(t *testing.T) {
+		// Intel GPUs report no temp/memory, so between-sample gaps (delta 0) must
+		// reuse the last average instead of returning zeros and blanking the chart.
+		gm := &GPUManager{
+			GpuDataMap: map[string]*system.GPUData{
+				"0": {
+					Name:     "GPU",
+					Usage:    0,   // derived from engines for Intel
+					Power:    200, // averages to 100 over 2 counts
+					PowerPkg: 60,  // averages to 30 over 2 counts
+					Count:    2,
+					Engines: map[string]float64{
+						"Render/3D": 80, // averages to 40
+						"Video":     20, // averages to 10
+					},
+				},
+			},
+		}
+
+		cacheKey := uint16(1000) // realtime cache key
+
+		// First collection - computes and stores averages
+		result1 := gm.GetCurrentData(cacheKey)
+		assert.InDelta(t, 100.0, result1["0"].Power, 0.01)
+		assert.InDelta(t, 30.0, result1["0"].PowerPkg, 0.01)
+		assert.InDelta(t, 40.0, result1["0"].Engines["Render/3D"], 0.01)
+
+		// Second collection with no new sample (count unchanged, temp/mem still 0).
+		// Must carry the last average forward rather than blanking to zero.
+		result2 := gm.GetCurrentData(cacheKey)
+		assert.Equal(t, "GPU", result2["0"].Name, "Name should be preserved")
+		assert.InDelta(t, 100.0, result2["0"].Power, 0.01, "Should reuse last average power, not 0")
+		assert.InDelta(t, 30.0, result2["0"].PowerPkg, 0.01, "Should reuse last average package power, not 0")
+		assert.InDelta(t, 40.0, result2["0"].Engines["Render/3D"], 0.01, "Should reuse last average engine usage")
 	})
 
 	t.Run("tracks separate averages per cache key", func(t *testing.T) {
