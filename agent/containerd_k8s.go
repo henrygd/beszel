@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strconv"
 	"strings"
 	"time"
 
@@ -22,10 +23,17 @@ type ContainerdK8SManager struct {
 	nodeName  string
 	namespace string
 	prevCpu   map[string]CpuReading
+	prevNet   map[string]NetReading
 }
 
 type CpuReading struct {
 	UsageUsec uint64
+	Timestamp time.Time
+}
+
+type NetReading struct {
+	Sent      uint64
+	Recv      uint64
 	Timestamp time.Time
 }
 
@@ -52,6 +60,7 @@ func NewContainerdCollector() (*ContainerdK8SManager, error) {
 		nodeName:  nodeName,
 		namespace: namespace,
 		prevCpu:   make(map[string]CpuReading),
+		prevNet:   make(map[string]NetReading),
 	}, nil
 }
 
@@ -94,7 +103,6 @@ func (c *ContainerdK8SManager) PollContainers() []*cntr.Stats {
 
 		stat, err := c.collectContainerStats(k8sCtx, container, podName, containerName, cLabels, now)
 		if err != nil {
-			log.Printf("[Collector Debug] Skipping stats collection for container %s: %v", container.ID()[:12], err)
 			continue
 		}
 
@@ -107,11 +115,12 @@ func (c *ContainerdK8SManager) PollContainers() []*cntr.Stats {
 	return statsList
 }
 
-// collectContainerStats handles metrics extraction, CPU calculation, and metadata gathering for a single container.
+// collectContainerStats handles metrics extraction, CPU calculation, network bandwidth delta, and metadata gathering for a single container.
 func (c *ContainerdK8SManager) collectContainerStats(ctx context.Context, container containerd.Container, podName, containerName string, cLabels map[string]string, now time.Time) (*cntr.Stats, error) {
 	task, err := container.Task(ctx, nil)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get container task: %w", err)
+		// Return nil, nil so we skip stopped/completed containers silently without logging errors
+		return nil, fmt.Errorf("container not running: %w", err)
 	}
 
 	statusStr := c.getContainerUptimeStatus(ctx, container)
@@ -123,7 +132,10 @@ func (c *ContainerdK8SManager) collectContainerStats(ctx context.Context, contai
 	}
 
 	// Determine container health
-	health := c.getContainerHealth(container, cLabels, taskStatus)
+	health := c.getContainerHealth(taskStatus)
+
+	// Calculate network bandwidth delta
+	sentDelta, recvDelta := c.getNetworkBandwidthDelta(container.ID(), task, now)
 
 	// Fetch cgroup metrics
 	taskMetrics, err := task.Metrics(ctx)
@@ -174,6 +186,7 @@ func (c *ContainerdK8SManager) collectContainerStats(ctx context.Context, contai
 		Id:           container.ID(),
 		Cpu:          cpuPercent,
 		Mem:          float64(stats.Memory.Usage) / 1024 / 1024, // Convert bytes to MB for Beszel
+		Bandwidth:    [2]uint64{sentDelta, recvDelta},          // [sent bytes, recv bytes] delta
 		Status:       statusStr,
 		Health:       health,
 		Image:        imageName,
@@ -183,8 +196,40 @@ func (c *ContainerdK8SManager) collectContainerStats(ctx context.Context, contai
 	}, nil
 }
 
+// getNetworkBandwidthDelta computes network traffic delta from /proc/<pid>/net/dev. Returns 0 on the first poll.
+func (c *ContainerdK8SManager) getNetworkBandwidthDelta(containerID string, task containerd.Task, now time.Time) (uint64, uint64) {
+	pid := task.Pid()
+	if pid == 0 {
+		return 0, 0
+	}
+
+	txBytes, rxBytes := readNetworkStats(pid)
+	var sentDelta, recvDelta uint64
+
+	if prevN, exists := c.prevNet[containerID]; exists {
+		if txBytes >= prevN.Sent {
+			sentDelta = txBytes - prevN.Sent
+		} else {
+			sentDelta = txBytes // Handle counter reset / container restart
+		}
+		if rxBytes >= prevN.Recv {
+			recvDelta = rxBytes - prevN.Recv
+		} else {
+			recvDelta = rxBytes // Handle counter reset / container restart
+		}
+	}
+
+	c.prevNet[containerID] = NetReading{
+		Sent:      txBytes,
+		Recv:      rxBytes,
+		Timestamp: now,
+	}
+
+	return sentDelta, recvDelta
+}
+
 // getContainerHealth maps container status or custom labels to Beszel DockerHealth states.
-func (c *ContainerdK8SManager) getContainerHealth(container containerd.Container, cLabels map[string]string, taskStatus containerd.Status) cntr.DockerHealth {
+func (c *ContainerdK8SManager) getContainerHealth(taskStatus containerd.Status) cntr.DockerHealth {
 	switch taskStatus.Status {
 	case containerd.Running:
 		return cntr.DockerHealthHealthy
@@ -286,11 +331,12 @@ func formatUptime(t time.Time) string {
 	return fmt.Sprintf("%d seconds", secs)
 }
 
-// readNetworkStats reads /proc/<pid>/net/dev to bypass heavy network metric libraries
+// readNetworkStats reads /proc/<pid>/net/dev using strings.Fields to avoid format string incompatibilities
 func readNetworkStats(pid uint32) (uint64, uint64) {
 	path := fmt.Sprintf("/proc/%d/net/dev", pid)
 	file, err := os.Open(path)
 	if err != nil {
+		log.Printf("[Collector Debug] Failed to open network stats file %s: %v", path, err)
 		return 0, 0
 	}
 	defer file.Close()
@@ -300,9 +346,11 @@ func readNetworkStats(pid uint32) (uint64, uint64) {
 
 	// Skip the first two header lines of /proc/net/dev
 	if !scanner.Scan() {
+		log.Printf("[Collector Debug] Failed to read header line 1 from %s", path)
 		return 0, 0
 	}
 	if !scanner.Scan() {
+		log.Printf("[Collector Debug] Failed to read header line 2 from %s", path)
 		return 0, 0
 	}
 
@@ -318,13 +366,26 @@ func readNetworkStats(pid uint32) (uint64, uint64) {
 			continue // Skip loopback interface
 		}
 
-		var rxBytes, txBytes uint64
-		// Format layout: rxBytes, [7 skipped fields], txBytes
-		_, err := fmt.Sscanf(parts[1], "%d %*d %*d %*d %*d %*d %*d %*d %d", &rxBytes, &txBytes)
-		if err == nil {
+		// Split space-separated values
+		fields := strings.Fields(parts[1])
+		if len(fields) < 9 {
+			continue
+		}
+
+		// Index 0 = Receive bytes, Index 8 = Transmit bytes
+		rxBytes, errRx := strconv.ParseUint(fields[0], 10, 64)
+		txBytes, errTx := strconv.ParseUint(fields[8], 10, 64)
+
+		if errRx == nil && errTx == nil {
 			totalRx += rxBytes
 			totalTx += txBytes
+		} else {
+			log.Printf("[Collector Debug] Failed to parse network fields for %s (iface: %s): rxErr=%v, txErr=%v", path, ifName, errRx, errTx)
 		}
+	}
+
+	if err := scanner.Err(); err != nil {
+		log.Printf("[Collector Debug] Error scanning %s: %v", path, err)
 	}
 
 	return totalTx, totalRx
