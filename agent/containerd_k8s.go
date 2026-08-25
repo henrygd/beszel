@@ -1,6 +1,7 @@
 package agent
 
 import (
+	"bufio"
 	"context"
 	"fmt"
 	"log"
@@ -113,12 +114,12 @@ func (c *ContainerdK8SManager) collectContainerStats(ctx context.Context, contai
 		return nil, fmt.Errorf("failed to get container task: %w", err)
 	}
 
+	statusStr := c.getContainerUptimeStatus(ctx, container)
+
 	// Fetch task status (running, paused, etc.)
-	statusStr := ""
 	var taskStatus containerd.Status
 	if ts, err := task.Status(ctx); err == nil {
 		taskStatus = ts
-		statusStr = string(taskStatus.Status)
 	}
 
 	// Determine container health
@@ -219,4 +220,112 @@ func (c *ContainerdK8SManager) shouldIgnoreImage(ctx context.Context, container 
 		}
 	}
 	return false
+}
+
+// getContainerUptimeStatus extracts CreatedAt or UpdatedAt from container info and formats it into an uptime string.
+func (c *ContainerdK8SManager) getContainerUptimeStatus(ctx context.Context, container containerd.Container) string {
+	info, err := container.Info(ctx)
+	if err != nil {
+		return "Up unknown"
+	}
+
+	t := info.CreatedAt
+	if t.IsZero() {
+		t = info.UpdatedAt
+	}
+	if t.IsZero() {
+		return "Up unknown"
+	}
+
+	return fmt.Sprintf("Up %s", formatUptime(t))
+}
+
+// formatUptime converts a time duration into minutes, hours, days, or years.
+func formatUptime(t time.Time) string {
+	d := time.Since(t)
+	if d < 0 {
+		d = 0
+	}
+
+	years := int(d.Hours() / 24 / 365)
+	if years > 0 {
+		if years == 1 {
+			return "1 year"
+		}
+		return fmt.Sprintf("%d years", years)
+	}
+
+	days := int(d.Hours() / 24)
+	if days > 0 {
+		if days == 1 {
+			return "1 day"
+		}
+		return fmt.Sprintf("%d days", days)
+	}
+
+	hours := int(d.Hours())
+	if hours > 0 {
+		if hours == 1 {
+			return "1 hour"
+		}
+		return fmt.Sprintf("%d hours", hours)
+	}
+
+	mins := int(d.Minutes())
+	if mins > 0 {
+		if mins == 1 {
+			return "1 minute"
+		}
+		return fmt.Sprintf("%d minutes", mins)
+	}
+
+	secs := int(d.Seconds())
+	if secs <= 1 {
+		return "1 second"
+	}
+	return fmt.Sprintf("%d seconds", secs)
+}
+
+// readNetworkStats reads /proc/<pid>/net/dev to bypass heavy network metric libraries
+func readNetworkStats(pid uint32) (uint64, uint64) {
+	path := fmt.Sprintf("/proc/%d/net/dev", pid)
+	file, err := os.Open(path)
+	if err != nil {
+		return 0, 0
+	}
+	defer file.Close()
+
+	var totalTx, totalRx uint64
+	scanner := bufio.NewScanner(file)
+
+	// Skip the first two header lines of /proc/net/dev
+	if !scanner.Scan() {
+		return 0, 0
+	}
+	if !scanner.Scan() {
+		return 0, 0
+	}
+
+	for scanner.Scan() {
+		line := scanner.Text()
+		parts := strings.SplitN(line, ":", 2)
+		if len(parts) != 2 {
+			continue
+		}
+
+		ifName := strings.TrimSpace(parts[0])
+		if ifName == "lo" {
+			continue // Skip loopback interface
+		}
+
+		var rxBytes, txBytes uint64
+		// Format layout: rxBytes, [7 skipped fields], txBytes
+		_, err := fmt.Sscanf(parts[1], "%d %*d %*d %*d %*d %*d %*d %*d %d", &rxBytes, &txBytes)
+		if err == nil {
+			totalRx += rxBytes
+			totalTx += txBytes
+		}
+	}
+
+	return totalTx, totalRx
 }
