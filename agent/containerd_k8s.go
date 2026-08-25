@@ -22,7 +22,6 @@ import (
 
 type ContainerdK8SManager struct {
     client    *containerd.Client
-    nodeName  string
     namespace string
     prevCpu   map[string]CpuReading
     prevNet   map[string]NetReading
@@ -61,13 +60,12 @@ var ignoredImages = []string{
 }
 
 func NewContainerdCollector() (*ContainerdK8SManager, error) {
-    nodeName := getEnv("NODE_NAME", "unknown-node")
     socketPath := getEnv("CONTAINERD_ADDR", "")
     namespace := getEnv("CONTAINERD_NAMESPACE", "k8s.io")
     if socketPath == "" {
         return nil, nil
     }
-    slog.Debug("Initializing containerd client", "socket", socketPath, "namespace", namespace, "node", nodeName)
+    slog.Debug("Initializing containerd client", "socket", socketPath, "namespace", namespace)
 
     client, err := containerd.New(socketPath)
     if err != nil {
@@ -76,7 +74,6 @@ func NewContainerdCollector() (*ContainerdK8SManager, error) {
 
     return &ContainerdK8SManager{
         client:    client,
-        nodeName:  nodeName,
         namespace: namespace,
         prevCpu:   make(map[string]CpuReading),
         prevNet:   make(map[string]NetReading),
