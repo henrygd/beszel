@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"path/filepath"
 	"strconv"
 	"strings"
 	"time"
@@ -194,6 +195,108 @@ func (c *ContainerdK8SManager) collectContainerStats(ctx context.Context, contai
 		CpuContainer: currentCpuUsec,
 		PrevReadTime: now,
 	}, nil
+}
+
+// getLogs fetches the logs for a container by reading /var/log/containers/<pod>_<namespace>_<container>-*.log
+func (c *ContainerdK8SManager) getLogs(ctx context.Context, containerID string) (string, error) {
+	log.Printf("[Collector Debug] Fetching logs for container ID: %s", containerID[:12])
+	k8sCtx := namespaces.WithNamespace(ctx, c.namespace)
+	container, err := c.client.LoadContainer(k8sCtx, containerID)
+	if err != nil {
+		log.Printf("[Collector Debug] Failed to load container %s: %v", containerID[:12], err)
+		return "", fmt.Errorf("failed to load container %s: %w", containerID[:12], err)
+	}
+
+	labels, err := container.Labels(k8sCtx)
+	if err != nil {
+		log.Printf("[Collector Debug] Failed to get labels for container %s: %v", containerID[:12], err)
+		return "", fmt.Errorf("failed to get container labels: %w", err)
+	}
+
+	podName := labels["io.kubernetes.pod.name"]
+	namespace := labels["io.kubernetes.pod.namespace"]
+	containerName := labels["io.kubernetes.container.name"]
+
+	if podName == "" || containerName == "" {
+		log.Printf("[Collector Debug] Missing labels for container %s (podName: %s, containerName: %s)", containerID[:12], podName, containerName)
+		return "", fmt.Errorf("missing kubernetes pod or container name labels for container %s", containerID[:12])
+	}
+
+	// Kubernetes standard log path pattern under /var/log/containers/
+	pattern := fmt.Sprintf("/var/log/containers/%s_%s_%s-*.log", podName, namespace, containerName)
+	log.Printf("[Collector Debug] Searching for log files matching primary pattern: %s", pattern)
+	matches, err := filepath.Glob(pattern)
+	if err != nil || len(matches) == 0 {
+		log.Printf("[Collector Debug] Primary pattern match failed or empty (err: %v). Trying fallback pattern...", err)
+		// Fallback to searching by container name if exact pod match fails
+		fallbackPattern := fmt.Sprintf("/var/log/containers/*_%s_*_%s-*.log", namespace, containerName)
+		log.Printf("[Collector Debug] Searching for log files matching fallback pattern: %s", fallbackPattern)
+		matches, err = filepath.Glob(fallbackPattern)
+		if err != nil || len(matches) == 0 {
+			log.Printf("[Collector Debug] Fallback pattern also returned no matches for pod %s, container %s", podName, containerName)
+			return "", fmt.Errorf("log file not found for pod %s, container %s", podName, containerName)
+		}
+	}
+
+	log.Printf("[Collector Debug] Found %d matching log file(s): %v", len(matches), matches)
+
+	// Pick the most recently modified log file if multiple exist (e.g. restarts)
+	logFile := matches[0]
+	var newestTime time.Time
+	for _, m := range matches {
+		if info, err := os.Stat(m); err == nil {
+			if info.ModTime().After(newestTime) {
+				newestTime = info.ModTime()
+				logFile = m
+			}
+		} else {
+			log.Printf("[Collector Debug] Failed to stat log file candidate %s: %v", m, err)
+		}
+	}
+
+	log.Printf("[Collector Debug] Selected newest log file: %s (mod time: %v)", logFile, newestTime)
+
+	// Tail the log file efficiently
+	logs, err := tailFile(logFile, dockerLogsTail)
+	if err != nil {
+		log.Printf("[Collector Debug] Failed to tail log file %s: %v", logFile, err)
+		return "", fmt.Errorf("failed to read log file %s: %w", logFile, err)
+	}
+
+	// Strip ANSI escape sequences from logs for clean display in web UI
+	if strings.Contains(logs, "\x1b") {
+		logs = ansiEscapePattern.ReplaceAllString(logs, "")
+	}
+
+	log.Printf("[Collector Debug] Successfully read %d characters of logs from %s", len(logs), logFile)
+	return logs, nil
+}
+
+// tailFile reads the last N lines of a file without loading the entire file into memory.
+func tailFile(path string, maxLines int) (string, error) {
+	file, err := os.Open(path)
+	if err != nil {
+		return "", err
+	}
+	defer file.Close()
+
+	var lines []string
+	scanner := bufio.NewScanner(file)
+	buf := make([]byte, 0, 64*1024)
+	scanner.Buffer(buf, 1024*1024)
+
+	for scanner.Scan() {
+		lines = append(lines, scanner.Text())
+		if len(lines) > maxLines {
+			lines = lines[1:] // keep sliding window of last maxLines
+		}
+	}
+
+	if err := scanner.Err(); err != nil {
+		return "", err
+	}
+
+	return strings.Join(lines, "\n"), nil
 }
 
 // getNetworkBandwidthDelta computes network traffic delta from /proc/<pid>/net/dev. Returns 0 on the first poll.
