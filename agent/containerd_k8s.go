@@ -216,19 +216,26 @@ func (c *ContainerdK8SManager) collectContainerStats(ctx context.Context, contai
 }
 
 // getContainerInfo retrieves meaningful containerd and Kubernetes container metadata, returning a JSON byte array.
-func (c *ContainerdK8SManager) getContainerInfo(ctx context.Context, containerID string) ([]byte, error) {
+func (c *ContainerdK8SManager) getContainerInfo(ctx context.Context, containerID string) ([]byte, bool, error) {
 	log.Printf("[Collector Debug] Fetching container info for ID: %s", containerID[:12])
+	
+	// Check if container ID exists in the tracked map
+	if _, exists := c.prevCpu[containerID]; !exists {
+		log.Printf("[Collector Debug] Container ID %s not found in tracked map, returning immediately", containerID[:12])
+		return nil, false, nil
+	}
+	
 	k8sCtx := namespaces.WithNamespace(ctx, c.namespace)
 	container, err := c.client.LoadContainer(k8sCtx, containerID)
 	if err != nil {
 		log.Printf("[Collector Debug] Failed to load container %s: %v", containerID[:12], err)
-		return nil, fmt.Errorf("failed to load container %s: %w", containerID[:12], err)
+		return nil, true, fmt.Errorf("failed to load container %s: %w", containerID[:12], err)
 	}
 
 	info, err := container.Info(k8sCtx)
 	if err != nil {
 		log.Printf("[Collector Debug] Failed to get container info for %s: %v", containerID[:12], err)
-		return nil, fmt.Errorf("failed to get container info for %s: %w", containerID[:12], err)
+		return nil, true, fmt.Errorf("failed to get container info for %s: %w", containerID[:12], err)
 	}
 
 	labels, _ := container.Labels(k8sCtx)
@@ -280,28 +287,35 @@ func (c *ContainerdK8SManager) getContainerInfo(ctx context.Context, containerID
 	jsonData, err := json.MarshalIndent(containerInfo, "", "  ")
 	if err != nil {
 		log.Printf("[Collector Debug] Failed to marshal container info for %s: %v", containerID[:12], err)
-		return nil, fmt.Errorf("failed to marshal container info: %w", err)
+		return nil, true, fmt.Errorf("failed to marshal container info: %w", err)
 	}
 
 	log.Printf("[Collector Debug] Successfully generated container info JSON for %s", containerID[:12])
-	return jsonData, nil
+	return jsonData, true, nil
 }
 
 
 // getLogs fetches the logs for a container by reading /var/log/containers/<pod>_<namespace>_<container>-*.log
-func (c *ContainerdK8SManager) getLogs(ctx context.Context, containerID string) (string, error) {
+func (c *ContainerdK8SManager) getLogs(ctx context.Context, containerID string) (string, bool, error) {
 	log.Printf("[Collector Debug] Fetching logs for container ID: %s", containerID[:12])
+	
+	// Check if container ID exists in the tracked map
+	if _, exists := c.prevCpu[containerID]; !exists {
+		log.Printf("[Collector Debug] Container ID %s not found in tracked map, returning immediately", containerID[:12])
+		return "", false, nil
+	}
+	
 	k8sCtx := namespaces.WithNamespace(ctx, c.namespace)
 	container, err := c.client.LoadContainer(k8sCtx, containerID)
 	if err != nil {
 		log.Printf("[Collector Debug] Failed to load container %s: %v", containerID[:12], err)
-		return "", fmt.Errorf("failed to load container %s: %w", containerID[:12], err)
+		return "", true, fmt.Errorf("failed to load container %s: %w", containerID[:12], err)
 	}
 
 	labels, err := container.Labels(k8sCtx)
 	if err != nil {
 		log.Printf("[Collector Debug] Failed to get labels for container %s: %v", containerID[:12], err)
-		return "", fmt.Errorf("failed to get container labels: %w", err)
+		return "", true, fmt.Errorf("failed to get container labels: %w", err)
 	}
 
 	podName := labels["io.kubernetes.pod.name"]
@@ -310,7 +324,7 @@ func (c *ContainerdK8SManager) getLogs(ctx context.Context, containerID string) 
 
 	if podName == "" || containerName == "" {
 		log.Printf("[Collector Debug] Missing labels for container %s (podName: %s, containerName: %s)", containerID[:12], podName, containerName)
-		return "", fmt.Errorf("missing kubernetes pod or container name labels for container %s", containerID[:12])
+		return "", true, fmt.Errorf("missing kubernetes pod or container name labels for container %s", containerID[:12])
 	}
 
 	// Kubernetes standard log path pattern under /var/log/containers/
@@ -325,7 +339,7 @@ func (c *ContainerdK8SManager) getLogs(ctx context.Context, containerID string) 
 		matches, err = filepath.Glob(fallbackPattern)
 		if err != nil || len(matches) == 0 {
 			log.Printf("[Collector Debug] Fallback pattern also returned no matches for pod %s, container %s", podName, containerName)
-			return "", fmt.Errorf("log file not found for pod %s, container %s", podName, containerName)
+			return "", true, fmt.Errorf("log file not found for pod %s, container %s", podName, containerName)
 		}
 	}
 
@@ -351,7 +365,7 @@ func (c *ContainerdK8SManager) getLogs(ctx context.Context, containerID string) 
 	logs, err := tailFile(logFile, dockerLogsTail)
 	if err != nil {
 		log.Printf("[Collector Debug] Failed to tail log file %s: %v", logFile, err)
-		return "", fmt.Errorf("failed to read log file %s: %w", logFile, err)
+		return "", true, fmt.Errorf("failed to read log file %s: %w", logFile, err)
 	}
 
 	// Strip ANSI escape sequences from logs for clean display in web UI
@@ -360,7 +374,7 @@ func (c *ContainerdK8SManager) getLogs(ctx context.Context, containerID string) 
 	}
 
 	log.Printf("[Collector Debug] Successfully read %d characters of logs from %s", len(logs), logFile)
-	return logs, nil
+	return logs, true, nil
 }
 
 // tailFile reads the last N lines of a file without loading the entire file into memory.

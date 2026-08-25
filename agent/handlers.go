@@ -127,12 +127,21 @@ func (h *GetContainerLogsHandler) Handle(hctx *HandlerContext) error {
 	ctx := context.Background()
 	var logContent string
 	var err error
+	if hctx.Agent.containerdK8sManager != nil {
+		var found bool
+		logContent, found, err = hctx.Agent.containerdK8sManager.getLogs(ctx, req.ContainerID)
+		if err != nil {
+			return err
+		}
+		if found {
+			return hctx.SendResponse(logContent, hctx.RequestID)
+		}
+	}
+
 	if hctx.Agent.dockerManager != nil {
 		logContent, err = hctx.Agent.dockerManager.getLogs(ctx, req.ContainerID)
-	} 
-	if hctx.Agent.containerdK8sManager != nil && err != nil {
-		logContent, err = hctx.Agent.containerdK8sManager.getLogs(ctx, req.ContainerID)
 	}
+	
 	if err != nil {
 		return err
 	}
@@ -159,12 +168,21 @@ func (h *GetContainerInfoHandler) Handle(hctx *HandlerContext) error {
 	ctx := context.Background()
 	var info []byte
 	var err error
+	if hctx.Agent.containerdK8sManager != nil {
+		var found bool
+		info, found, err = hctx.Agent.containerdK8sManager.getContainerInfo(ctx, req.ContainerID)
+		if err != nil {
+			return err
+		}
+		if found {
+			return hctx.SendResponse(string(info), hctx.RequestID)
+		}
+	}
+
 	if hctx.Agent.dockerManager != nil {
 		info, err = hctx.Agent.dockerManager.getContainerInfo(ctx, req.ContainerID)
 	}
-	if hctx.Agent.containerdK8sManager != nil && err != nil {
-		info, err = hctx.Agent.containerdK8sManager.getContainerInfo(ctx, req.ContainerID)
-	}
+
 	if err != nil {
 		return err
 	}
