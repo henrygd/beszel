@@ -152,7 +152,7 @@ func (h *GetContainerLogsHandler) Handle(hctx *HandlerContext) error {
 type GetContainerInfoHandler struct{}
 
 func (h *GetContainerInfoHandler) Handle(hctx *HandlerContext) error {
-	if hctx.Agent.dockerManager == nil {
+	if hctx.Agent.dockerManager == nil && hctx.Agent.containerdK8sManager == nil {
 		return hctx.SendResponse("", hctx.RequestID)
 	}
 
@@ -162,7 +162,14 @@ func (h *GetContainerInfoHandler) Handle(hctx *HandlerContext) error {
 	}
 
 	ctx := context.Background()
-	info, err := hctx.Agent.dockerManager.getContainerInfo(ctx, req.ContainerID)
+	var info []byte
+	var err error
+	if hctx.Agent.dockerManager != nil {
+		info, err = hctx.Agent.dockerManager.getContainerInfo(ctx, req.ContainerID)
+	}
+	if hctx.Agent.containerdK8sManager != nil && err != nil {
+		info, err = hctx.Agent.containerdK8sManager.getContainerInfo(ctx, req.ContainerID)
+	}
 	if err != nil {
 		return err
 	}
