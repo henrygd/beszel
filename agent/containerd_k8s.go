@@ -3,6 +3,7 @@ package agent
 import (
 	"bufio"
 	"context"
+	"encoding/json"
 	"fmt"
 	"log"
 	"os"
@@ -36,6 +37,23 @@ type NetReading struct {
 	Sent      uint64
 	Recv      uint64
 	Timestamp time.Time
+}
+
+// ContainerInfo represents detailed inspect metadata for a containerd/Kubernetes container.
+type ContainerInfo struct {
+	ID            string            `json:"id"`
+	Namespace     string            `json:"namespace"`
+	PodName       string            `json:"pod_name,omitempty"`
+	ContainerName string            `json:"container_name,omitempty"`
+	Image         string            `json:"image"`
+	CreatedAt     time.Time         `json:"created_at"`
+	UpdatedAt     time.Time         `json:"updated_at"`
+	Labels        map[string]string `json:"labels,omitempty"`
+	Status        string            `json:"status"`
+	Pid           uint32            `json:"pid,omitempty"`
+	ExitStatus    uint32            `json:"exit_status,omitempty"`
+	Snapshotter   string            `json:"snapshotter,omitempty"`
+	SnapshotKey   string            `json:"snapshot_key,omitempty"`
 }
 
 var ignoredImages = []string{
@@ -196,6 +214,79 @@ func (c *ContainerdK8SManager) collectContainerStats(ctx context.Context, contai
 		PrevReadTime: now,
 	}, nil
 }
+
+// getContainerInfo retrieves meaningful containerd and Kubernetes container metadata, returning a JSON byte array.
+func (c *ContainerdK8SManager) getContainerInfo(ctx context.Context, containerID string) ([]byte, error) {
+	log.Printf("[Collector Debug] Fetching container info for ID: %s", containerID[:12])
+	k8sCtx := namespaces.WithNamespace(ctx, c.namespace)
+	container, err := c.client.LoadContainer(k8sCtx, containerID)
+	if err != nil {
+		log.Printf("[Collector Debug] Failed to load container %s: %v", containerID[:12], err)
+		return nil, fmt.Errorf("failed to load container %s: %w", containerID[:12], err)
+	}
+
+	info, err := container.Info(k8sCtx)
+	if err != nil {
+		log.Printf("[Collector Debug] Failed to get container info for %s: %v", containerID[:12], err)
+		return nil, fmt.Errorf("failed to get container info for %s: %w", containerID[:12], err)
+	}
+
+	labels, _ := container.Labels(k8sCtx)
+	if labels == nil {
+		labels = info.Labels
+	}
+
+	imageName := info.Image
+	if img, err := container.Image(k8sCtx); err == nil {
+		imageName = img.Name()
+	}
+
+	statusStr := "Stopped"
+	var pid uint32
+	var exitStatus uint32
+	if task, err := container.Task(k8sCtx, nil); err == nil {
+		pid = task.Pid()
+		if ts, err := task.Status(k8sCtx); err == nil {
+			statusStr = string(ts.Status)
+			exitStatus = ts.ExitStatus
+		} else {
+			statusStr = "Running"
+		}
+	}
+
+	podName := labels["io.kubernetes.pod.name"]
+	containerName := labels["io.kubernetes.container.name"]
+	namespace := labels["io.kubernetes.pod.namespace"]
+	if namespace == "" {
+		namespace = c.namespace
+	}
+
+	containerInfo := ContainerInfo{
+		ID:            container.ID(),
+		Namespace:     namespace,
+		PodName:       podName,
+		ContainerName: containerName,
+		Image:         imageName,
+		CreatedAt:     info.CreatedAt,
+		UpdatedAt:     info.UpdatedAt,
+		Labels:        labels,
+		Status:        statusStr,
+		Pid:           pid,
+		ExitStatus:    exitStatus,
+		Snapshotter:   info.Snapshotter,
+		SnapshotKey:   info.SnapshotKey,
+	}
+
+	jsonData, err := json.MarshalIndent(containerInfo, "", "  ")
+	if err != nil {
+		log.Printf("[Collector Debug] Failed to marshal container info for %s: %v", containerID[:12], err)
+		return nil, fmt.Errorf("failed to marshal container info: %w", err)
+	}
+
+	log.Printf("[Collector Debug] Successfully generated container info JSON for %s", containerID[:12])
+	return jsonData, nil
+}
+
 
 // getLogs fetches the logs for a container by reading /var/log/containers/<pod>_<namespace>_<container>-*.log
 func (c *ContainerdK8SManager) getLogs(ctx context.Context, containerID string) (string, error) {
