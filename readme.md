@@ -18,13 +18,14 @@ Standard Beszel agents collect container metrics via Docker or Podman sockets. T
 - **K8s Label Representation:** Extracts `io.kubernetes.*` container labels to format display names as `namespace / pod name / container name` instead of raw container IDs.
 - **Full Container Metrics:** Calculates real-time CPU usage, memory consumption, and network I/O delta (`/proc/<pid>/net/dev`) for containerd containers.
 - **Detailed Container View:** Provides full JSON metadata inspection (ID, image, status, pid, exit status, labels, snapshotter info).
-- **Log Viewer:** Tails and streams logs directly from host paths (`/var/log/containers/`) with ANSI striping for clean UI rendering.
-- **Sandbox & Pause Filtering:** Automatically ignores non-Kubernetes background processes and pause containers (e.g. `rancher/mirrored-pause` or `POD` containers).
+- **Log Viewer:** Tails and streams logs directly from host paths (`/var/log/containers/`) with ANSI stripping for clean UI rendering.
+- **Sandbox & Pause Filtering:** Automatically ignores non-Kubernetes background processes and pause containers (e.g., `rancher/mirrored-pause` or `POD` containers).
 
 ### Environment Variables
 To configure the containerd collector on the agent:
 - `CONTAINERD_ADDR`: Path to the containerd socket (e.g., `/run/containerd/containerd.sock`).
 - `CONTAINERD_NAMESPACE`: The containerd namespace to target (defaults to `k8s.io`).
+- `NODE_NAME`: Node identifier (defaults to `unknown-node`).
 
 ## Features
 
@@ -47,28 +48,71 @@ Beszel consists of two main components: the **hub** and the **agent**.
 
 For general Hub setup, refer to the [official Beszel documentation](https://beszel.dev/guide/getting-started).
 
-To collect containerd metrics using this fork, mount the containerd socket (e.g., `/run/containerd/containerd.sock`) and log path (`/var/log/containers/`) into the agent container and set `CONTAINERD_ADDR`.
+### Kubernetes DaemonSet Example
 
-## Supported Metrics
+To deploy the Beszel Agent across your Kubernetes cluster nodes using `containerd`, apply the following `DaemonSet` configuration:
 
-- **CPU usage** - Host system and containers.
-- **Memory usage** - Host system and containers. Includes swap and ZFS ARC.
-- **Disk usage** - Host system. Supports multiple partitions and devices.
-- **Disk I/O** - Host system. Supports multiple partitions and devices.
-- **Network usage** - Host system and containers.
-- **Load average** - Host system.
-- **Temperature** - Host system sensors.
-- **Fan speed** - Host system sensors (Linux, via `/sys/class/hwmon`).
-- **GPU usage / power draw** - Nvidia, AMD, and Intel.
-- **Battery** - Host system battery charge.
-- **Containers** - Status, metrics, details, and logs for Docker, Podman, and **Containerd** containers.
-- **S.M.A.R.T.** - Host system disk health.
-
-## Help and Discussion
-
-- For general Beszel features, hub support, or core issues, visit the [upstream repository](https://github.com/henrygd/beszel).
-- For containerd collector or label formatting issues, open an issue in *this* repository.
-
-## License
-
-Beszel is licensed under the MIT License. See the [LICENSE](LICENSE) file for more details.
+```yaml
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: beszel-agent
+  namespace: default
+spec:
+  selector:
+    matchLabels:
+      app: beszel-agent
+  template:
+    metadata:
+      labels:
+        app: beszel-agent
+    spec:
+      hostNetwork: true
+      hostPID: true  # Required so the agent can see host/container PIDs
+      containers:
+        - name: beszel-agent
+          image: yairyotam/beszel-containerd-k8s:0.1.0
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: PORT
+              value: '45876'
+            - name: KEY
+              value: YOUR-KEY-HERE
+            - name: CONTAINERD_ADDR
+              value: /run/containerd/containerd.sock
+          ports:
+            - containerPort: 45876
+              hostPort: 45876
+          volumeMounts:
+            - name: dbus
+              mountPath: /var/run/dbus
+              readOnly: true
+            - name: var-log
+              mountPath: /var/log
+              readOnly: true
+            - name: containerd-sock
+              mountPath: /run/containerd/containerd.sock
+      volumes:
+        - name: dbus
+          hostPath:
+            path: /var/run/dbus
+            type: Directory
+        - name: var-log
+          hostPath:
+            path: /var/log
+            type: Directory
+        - name: containerd-sock
+          hostPath:
+            path: /run/containerd/containerd.sock
+            type: Socket
+      restartPolicy: Always
+      tolerations:
+        - effect: NoSchedule
+          key: node-role.kubernetes.io/master
+          operator: Exists
+        - effect: NoSchedule
+          key: node-role.kubernetes.io/control-plane
+          operator: Exists
+  updateStrategy:
+    rollingUpdate:
+      maxSurge: 0
