@@ -116,3 +116,4 @@ spec:
   updateStrategy:
     rollingUpdate:
       maxSurge: 0
+```
