@@ -78,6 +78,8 @@ export interface SystemInfo {
 	efs?: Record<string, number>
 	/** services [totalServices, numFailedServices] */
 	sv?: [number, number]
+	/** unix timestamp of last agent data delivery */
+	ls?: number
 }
 
 export interface SystemStats {
