@@ -343,7 +343,8 @@ func calculateHostMemoryUsage(v *mem.VirtualMemoryStat, htop bool) (used, cacheB
 	if htop {
 		used = saturatingSub(v.Total, v.Free, cacheBuff)
 	}
-	return used, cacheBuff, saturatingSub(v.SwapTotal, v.SwapFree, v.SwapCached)
+	// Cached swap pages still occupy swap slots and are included in `free`'s used value.
+	return used, cacheBuff, saturatingSub(v.SwapTotal, v.SwapFree)
 }
 
 // saturatingSub subtracts each value, returning zero on underflow.
