@@ -1,3 +1,41 @@
+## 0.18.8
+
+- Add multi-battery monitoring
+
+- Add Linux fan RPM monitoring (#2032)
+
+- Add Intel GPU power monitoring through sysfs and Intel Arc GPU monitoring through `nvtop` (#2020, #2223)
+
+- Add CPU and ACPI thermal zone monitoring on FreeBSD (#2227)
+
+- Add popup-free OAuth login when `OAUTH_DISABLE_POPUP=true` (#2171)
+
+- Add a `:slim` NVIDIA agent container image (#2002, #2003)
+
+- Add ARMv5 and ARMv6 builds, and ARM64 support for the NVIDIA agent image (#1884, #2207)
+
+- Improve SMART device detection for shared paths and explicit device type hints (#2102)
+
+- Improve agent startup after OPNsense and pfSense reboots (#2089, #2214)
+
+- Improve SSH-pull agent reconnection when connections silently fail (#2126)
+
+- Improve update security with checksum verification and archive path containment
+
+- Add public key display to universal token settings (#2028)
+
+- Add support for showing all IP and port mappings for containers bound to multiple IPs (#1993)
+
+- Fix stale SMART records when drives are no longer reported (#2178)
+
+- Fix Docker memory charts and container statistics after malformed or backwards Docker counters (#2027, #2066, #2205)
+
+- Fix memory calculation underflow and Linux battery percentages (#1978, #1957)
+
+- Improve connection source IP detection behind proxies (#1973)
+
+- Update Go and JavaScript dependencies
+
 ## 0.18.7
 
 - Add more disk I/O metrics (utilization, read/write time, await, queue depth) (#1866)

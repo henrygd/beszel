@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"errors"
 	"fmt"
+	"io"
 	"log/slog"
 	"os"
 	"runtime"
@@ -78,6 +79,12 @@ func (a *Agent) refreshSystemDetails() {
 	if info, err := cpu.Info(); err == nil && len(info) > 0 {
 		a.systemDetails.CpuModel = info[0].ModelName
 	}
+	// gopsutil doesn't parse the "cpu model" field from /proc/cpuinfo, which
+	// is the only source of the CPU model name on MIPS. Fall back to reading
+	// it directly when ModelName is empty.
+	if a.systemDetails.CpuModel == "" {
+		a.systemDetails.CpuModel = getCpuModelFromCpuinfo()
+	}
 	// cores / threads
 	cores, _ := cpu.Counts(false)
 	threads := hostInfo.NCPU
@@ -132,9 +139,14 @@ func (a *Agent) getSystemStats(cacheTimeMs uint16) system.Stats {
 	var systemStats system.Stats
 
 	// battery
-	if batteryPercent, batteryState, err := battery.GetBatteryStats(); err == nil {
-		systemStats.Battery[0] = batteryPercent
-		systemStats.Battery[1] = batteryState
+	if batteries, err := battery.GetBatteryStats(); err == nil {
+		systemStats.Batteries = make(map[string]uint8, len(batteries))
+		for _, device := range batteries {
+			systemStats.Batteries[device.Name] = device.Percent
+		}
+		if primary, ok := battery.Primary(batteries); ok {
+			systemStats.Battery = [2]uint8{primary.Percent, primary.State}
+		}
 	}
 
 	// cpu metrics
@@ -159,9 +171,9 @@ func (a *Agent) getSystemStats(cacheTimeMs uint16) system.Stats {
 
 	// load average
 	if avgstat, err := load.Avg(); err == nil {
-		systemStats.LoadAvg[0] = avgstat.Load1
-		systemStats.LoadAvg[1] = avgstat.Load5
-		systemStats.LoadAvg[2] = avgstat.Load15
+		systemStats.LoadAvg[0] = utils.TwoDecimals(avgstat.Load1)
+		systemStats.LoadAvg[1] = utils.TwoDecimals(avgstat.Load5)
+		systemStats.LoadAvg[2] = utils.TwoDecimals(avgstat.Load15)
 		slog.Debug("Load average", "5m", avgstat.Load5, "15m", avgstat.Load15)
 	} else {
 		slog.Error("Error getting load average", "err", err)
@@ -169,21 +181,11 @@ func (a *Agent) getSystemStats(cacheTimeMs uint16) system.Stats {
 
 	// memory
 	if v, err := mem.VirtualMemory(); err == nil {
+		used, cacheBuff, swapUsed := calculateHostMemoryUsage(v, a.memCalc == "htop")
 		// swap
 		systemStats.Swap = utils.BytesToGigabytes(v.SwapTotal)
-		systemStats.SwapUsed = utils.BytesToGigabytes(v.SwapTotal - v.SwapFree - v.SwapCached)
-		// cache + buffers value for default mem calculation
-		// note: gopsutil automatically adds SReclaimable to v.Cached
-		cacheBuff := v.Cached + v.Buffers - v.Shared
-		if cacheBuff <= 0 {
-			cacheBuff = max(v.Total-v.Free-v.Used, 0)
-		}
-		// htop memory calculation overrides (likely outdated as of mid 2025)
-		if a.memCalc == "htop" {
-			// cacheBuff = v.Cached + v.Buffers - v.Shared
-			v.Used = v.Total - (v.Free + cacheBuff)
-			v.UsedPercent = float64(v.Used) / float64(v.Total) * 100.0
-		}
+		systemStats.SwapUsed = utils.BytesToGigabytes(swapUsed)
+		v.Used = used
 		// if a.memCalc == "legacy" {
 		// 	v.Used = v.Total - v.Free - v.Buffers - v.Cached
 		// 	cacheBuff = v.Total - v.Free - v.Used
@@ -193,9 +195,13 @@ func (a *Agent) getSystemStats(cacheTimeMs uint16) system.Stats {
 		if a.zfs {
 			if arcSize, _ := zfs.ARCSize(); arcSize > 0 && arcSize < v.Used {
 				v.Used = v.Used - arcSize
-				v.UsedPercent = float64(v.Used) / float64(v.Total) * 100.0
 				systemStats.MemZfsArc = utils.BytesToGigabytes(arcSize)
 			}
+		}
+		if v.Total > 0 {
+			v.UsedPercent = float64(v.Used) / float64(v.Total) * 100.0
+		} else {
+			v.UsedPercent = 0
 		}
 		systemStats.Mem = utils.BytesToGigabytes(v.Total)
 		systemStats.MemBuffCache = utils.BytesToGigabytes(cacheBuff)
@@ -215,6 +221,9 @@ func (a *Agent) getSystemStats(cacheTimeMs uint16) system.Stats {
 	// temperatures
 	// TODO: maybe refactor to methods on systemStats
 	a.updateTemperatures(&systemStats)
+
+	// fan speeds (Linux-only; sysfs hwmon)
+	a.updateFans(&systemStats)
 
 	// GPU data
 	if a.gpuManager != nil {
@@ -256,11 +265,97 @@ func (a *Agent) getSystemStats(cacheTimeMs uint16) system.Stats {
 	a.systemInfo.MemPct = systemStats.MemPct
 	a.systemInfo.DiskPct = systemStats.DiskPct
 	a.systemInfo.Battery = systemStats.Battery
-	a.systemInfo.Uptime, _ = host.Uptime()
+	a.systemInfo.Uptime, _ = getUptime()
 	a.systemInfo.BandwidthBytes = systemStats.Bandwidth[0] + systemStats.Bandwidth[1]
 	a.systemInfo.Threads = a.systemDetails.Threads
 
 	return systemStats
+}
+
+// cpuModelFallbackKeys are the field names to look for in /proc/cpuinfo when
+// gopsutil fails to return a ModelName. The "cpu model" key is used on MIPS
+// (e.g. "MIPS 1004Kc V2.15"), while "system type" provides SoC information
+// on various embedded architectures.
+var cpuModelFallbackKeys = []string{"cpu model", "system type"}
+
+// getCpuModelFromCpuinfo reads /proc/cpuinfo and returns a CPU model string.
+// This is a fallback for architectures where gopsutil's cpu.Info() does not
+// populate ModelName, most notably MIPS.
+func getCpuModelFromCpuinfo() string {
+	file, err := os.Open("/proc/cpuinfo")
+	if err != nil {
+		return ""
+	}
+	defer file.Close()
+	return parseCpuModel(file)
+}
+
+// parseCpuModel scans r (expected to be /proc/cpuinfo content) and returns
+// a combined CPU model string. It collects values from all matching keys
+// and joins them with " / " when multiple are found.
+func parseCpuModel(r io.Reader) string {
+	lines := readLines(r)
+	var parts []string
+	for _, key := range cpuModelFallbackKeys {
+		for _, line := range lines {
+			after, found := strings.CutPrefix(line, key)
+			if !found {
+				continue
+			}
+			after = strings.TrimSpace(after)
+			if len(after) < 2 || after[0] != ':' {
+				continue
+			}
+			if value := strings.TrimSpace(after[1:]); value != "" {
+				parts = append(parts, value)
+				break
+			}
+		}
+	}
+	return strings.Join(parts, " / ")
+}
+
+// readLines reads all lines from r into a slice.
+func readLines(r io.Reader) []string {
+	scanner := bufio.NewScanner(r)
+	var lines []string
+	for scanner.Scan() {
+		lines = append(lines, scanner.Text())
+	}
+	return lines
+}
+
+// calculateHostMemoryUsage derives counters defensively because /proc/meminfo may
+// change while gopsutil reads it. Invalid unsigned subtractions saturate at zero.
+func calculateHostMemoryUsage(v *mem.VirtualMemoryStat, htop bool) (used, cacheBuff, swapUsed uint64) {
+	used = v.Used
+	if used > v.Total {
+		used = saturatingSub(v.Total, v.Available)
+	}
+
+	// gopsutil automatically adds SReclaimable to Cached.
+	cacheBuff = min(v.Cached, v.Total)
+	cacheBuff += min(v.Buffers, v.Total-cacheBuff)
+	cacheBuff = saturatingSub(cacheBuff, min(v.Shared, v.Total))
+	if v.Cached == 0 && v.Buffers == 0 {
+		cacheBuff = saturatingSub(v.Total, v.Free, used)
+	}
+	if htop {
+		used = saturatingSub(v.Total, v.Free, cacheBuff)
+	}
+	// Cached swap pages still occupy swap slots and are included in `free`'s used value.
+	return used, cacheBuff, saturatingSub(v.SwapTotal, v.SwapFree)
+}
+
+// saturatingSub subtracts each value, returning zero on underflow.
+func saturatingSub(value uint64, subtrahends ...uint64) uint64 {
+	for _, subtrahend := range subtrahends {
+		if subtrahend > value {
+			return 0
+		}
+		value -= subtrahend
+	}
+	return value
 }
 
 // getOsPrettyName attempts to get the pretty OS name from /etc/os-release on Linux systems

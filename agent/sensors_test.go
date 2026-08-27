@@ -602,8 +602,9 @@ func TestUpdateTemperaturesSkipsOnTimeout(t *testing.T) {
 		},
 	}
 
+	originalGetSensorTemps := getSensorTemps
 	t.Cleanup(func() {
-		getSensorTemps = sensors.TemperaturesWithContext
+		getSensorTemps = originalGetSensorTemps
 	})
 	getSensorTemps = func(ctx context.Context) ([]sensors.TemperatureStat, error) {
 		time.Sleep(50 * time.Millisecond)

@@ -64,6 +64,17 @@ type HostInfo struct {
 }
 
 func (s *ApiStats) CalculateCpuPercentLinux(prevCpuContainer uint64, prevCpuSystem uint64) float64 {
+	// A counter can read lower than the stored previous value when a stats
+	// response is processed after a newer one for the same container, or when an
+	// accounting counter resets. Unsigned subtraction wraps to ~2^64 instead of
+	// going negative: on the container counter that surfaces as an absurd
+	// percentage the caller rejects, discarding the whole sample; on the system
+	// counter it inflates the divisor and silently reports near-zero CPU.
+	// Treat either direction as a new baseline.
+	if s.CPUStats.CPUUsage.TotalUsage < prevCpuContainer || s.CPUStats.SystemUsage < prevCpuSystem {
+		return 0.0
+	}
+
 	cpuDelta := s.CPUStats.CPUUsage.TotalUsage - prevCpuContainer
 	systemDelta := s.CPUStats.SystemUsage - prevCpuSystem
 
@@ -75,6 +86,30 @@ func (s *ApiStats) CalculateCpuPercentLinux(prevCpuContainer uint64, prevCpuSyst
 	return float64(cpuDelta) / float64(systemDelta) * 100.0
 }
 
+// CalculateCpuPercentPodman calculates CPU percentage for Podman containers.
+// Podman populates system_cpu_usage from cgroup cpu.stat rather than /proc/stat, so it
+// represents only cgroup-accounted activity, not total host CPU capacity. Using it as
+// a denominator inflates the result. Instead we use elapsed wall-clock time × online_cpus,
+// matching the approach used for Windows and recommended in:
+// https://github.com/henrygd/beszel/issues/2049
+func (s *ApiStats) CalculateCpuPercentPodman(prevCpuContainer uint64, prevRead time.Time) float64 {
+	if prevCpuContainer == 0 || s.CPUStats.OnlineCPUs == 0 {
+		return 0.0
+	}
+	// Treat a reset or out-of-order counter as a new baseline instead of
+	// allowing unsigned subtraction to wrap to an enormous percentage.
+	if s.CPUStats.CPUUsage.TotalUsage < prevCpuContainer {
+		return 0.0
+	}
+	cpuDelta := s.CPUStats.CPUUsage.TotalUsage - prevCpuContainer
+	elapsedNs := uint64(s.Read.Sub(prevRead).Nanoseconds())
+	systemCapacity := elapsedNs * uint64(s.CPUStats.OnlineCPUs)
+	if systemCapacity == 0 {
+		return 0.0
+	}
+	return float64(cpuDelta) / float64(systemCapacity) * 100.0
+}
+
 // from: https://github.com/docker/cli/blob/master/cli/command/container/stats_helpers.go#L185
 func (s *ApiStats) CalculateCpuPercentWindows(prevCpuUsage uint64, prevRead time.Time) float64 {
 	// Max number of 100ns intervals between the previous time read and now
@@ -82,7 +117,11 @@ func (s *ApiStats) CalculateCpuPercentWindows(prevCpuUsage uint64, prevRead time
 	possIntervals /= 100                // Convert to number of 100ns intervals
 	possIntervals *= uint64(s.NumProcs) // Multiple by the number of processors
 
-	// Intervals used
+	// Intervals used. Same rollback guard as the Linux path: an out-of-order or
+	// reset counter would wrap the subtraction to ~2^64.
+	if s.CPUStats.CPUUsage.TotalUsage < prevCpuUsage {
+		return 0.0
+	}
 	intervalsUsed := s.CPUStats.CPUUsage.TotalUsage - prevCpuUsage
 
 	// Percentage avoiding divide-by-zero
@@ -95,8 +134,10 @@ func (s *ApiStats) CalculateCpuPercentWindows(prevCpuUsage uint64, prevRead time
 type CPUStats struct {
 	// CPU Usage. Linux and Windows.
 	CPUUsage CPUUsage `json:"cpu_usage"`
-	// System Usage. Linux only.
+	// System Usage. Linux only. Populated from /proc/stat on Docker; from cgroup cpu.stat on Podman.
 	SystemUsage uint64 `json:"system_cpu_usage,omitempty"`
+	// Number of online CPUs. Linux only. Used by Podman for time-based CPU calculation.
+	OnlineCPUs uint32 `json:"online_cpus,omitempty"`
 }
 
 type CPUUsage struct {
