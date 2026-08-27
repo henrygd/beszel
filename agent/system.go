@@ -75,9 +75,10 @@ func (a *Agent) refreshSystemDetails() {
 		}
 	}
 
-	// cpu model
+	// cpu model and base clock
 	if info, err := cpu.Info(); err == nil && len(info) > 0 {
 		a.systemDetails.CpuModel = info[0].ModelName
+		a.systemDetails.CpuMHz = getCpuBaseClockMHz()
 	}
 	// gopsutil doesn't parse the "cpu model" field from /proc/cpuinfo, which
 	// is the only source of the CPU model name on MIPS. Fall back to reading
@@ -159,6 +160,9 @@ func (a *Agent) getSystemStats(cacheTimeMs uint16) system.Stats {
 			utils.TwoDecimals(cpuMetrics.Iowait),
 			utils.TwoDecimals(cpuMetrics.Steal),
 			utils.TwoDecimals(cpuMetrics.Idle),
+			utils.TwoDecimals(cpuMetrics.Irq),
+			utils.TwoDecimals(cpuMetrics.Softirq),
+			utils.TwoDecimals(cpuMetrics.Nice),
 		}
 	} else {
 		slog.Error("Error getting cpu metrics", "err", err)
@@ -168,6 +172,9 @@ func (a *Agent) getSystemStats(cacheTimeMs uint16) system.Stats {
 	if perCoreUsage, err := getPerCoreCpuUsage(cacheTimeMs); err == nil {
 		systemStats.CpuCoresUsage = perCoreUsage
 	}
+
+	// per-core cpu frequencies (Linux sysfs, nil on other platforms)
+	systemStats.CpuFreqs = getCpuFrequencies()
 
 	// load average
 	if avgstat, err := load.Avg(); err == nil {
