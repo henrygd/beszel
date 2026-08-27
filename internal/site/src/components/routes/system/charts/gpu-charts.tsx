@@ -79,6 +79,7 @@ export function GpuPowerChart({
 
 	return (
 		<ChartCard
+			className={cn(grid && "!col-span-1")}
 			empty={dataEmpty}
 			grid={grid}
 			title={t`GPU Power Draw`}
