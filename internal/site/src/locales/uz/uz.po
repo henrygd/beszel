@@ -8,10 +8,15 @@ msgstr ""
 "Language: uz\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2026-05-22 00:00\n"
+"PO-Revision-Date: 2026-08-27 20:04\n"
 "Last-Translator: \n"
 "Language-Team: Uzbek\n"
-"Plural-Forms: nplurals=1; plural=0;\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+"X-Crowdin-Project: beszel\n"
+"X-Crowdin-Project-ID: 733311\n"
+"X-Crowdin-Language: uz\n"
+"X-Crowdin-File: /main/internal/site/src/locales/en/en.po\n"
+"X-Crowdin-File-ID: 32\n"
 
 #. placeholder {0}: newVersion.v
 #: src/components/footer-repo-link.tsx
@@ -1943,3 +1948,4 @@ msgstr "Ha"
 #: src/components/routes/settings/layout.tsx
 msgid "Your user settings have been updated."
 msgstr "Foydalanuvchi sozlamalaringiz yangilandi."
+
