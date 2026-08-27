@@ -246,6 +246,7 @@ msgid "Bat"
 msgstr "Bat"
 
 #: src/components/routes/system/charts/sensor-charts.tsx
+#: src/components/routes/system/charts/sensor-charts.tsx
 #: src/lib/alerts.ts
 msgid "Battery"
 msgstr "Batareya"
@@ -466,6 +467,10 @@ msgstr "Linux buyrug'ini nusxalash"
 msgid "Copy name"
 msgstr "Nomni nusxalash"
 
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Copy public key"
+msgstr ""
+
 #: src/components/copy-to-clipboard.tsx
 msgid "Copy text"
 msgstr "Matnni nusxalash"
@@ -542,6 +547,8 @@ msgid "Cumulative Upload"
 msgstr "Jami yuklash"
 
 #. Context: Battery state
+#. Context: Battery state
+#: src/components/routes/system/charts/sensor-charts.tsx
 #: src/components/routes/system/charts/sensor-charts.tsx
 msgid "Current state"
 msgstr "Joriy holat"
@@ -803,6 +810,10 @@ msgstr "Ogohlantirishni yangilash muvaffaqiyatsiz tugadi"
 msgid "Failed: {0}"
 msgstr "Muvaffaqiyatsiz: {0}"
 
+#: src/components/routes/system/charts/sensor-charts.tsx
+msgid "Fans"
+msgstr ""
+
 #: src/components/containers-table/containers-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/system/chart-card.tsx
@@ -946,7 +957,6 @@ msgstr "Interval"
 msgid "Invalid email address."
 msgstr "Noto'g'ri elektron pochta manzili."
 
-#: src/components/lang-toggle.tsx
 #: src/components/routes/settings/general.tsx
 msgid "Language"
 msgstr "Til"
@@ -1062,8 +1072,8 @@ msgid "Memory Usage"
 msgstr "Xotira ishlatilishi"
 
 #: src/components/routes/system/charts/memory-charts.tsx
-msgid "Memory usage of docker containers"
-msgstr "Docker konteynerlarining xotira ishlatilishi"
+msgid "Memory usage of containers"
+msgstr ""
 
 #. Device model
 #: src/components/routes/system/smart-table.tsx
@@ -1084,8 +1094,8 @@ msgid "Net"
 msgstr "Tarmoq"
 
 #: src/components/routes/system/charts/network-charts.tsx
-msgid "Network traffic of docker containers"
-msgstr "Docker konteynerlarining tarmoq trafigi"
+msgid "Network traffic of containers"
+msgstr ""
 
 #: src/components/routes/system/charts/network-charts.tsx
 #: src/components/routes/system/network-sheet.tsx
@@ -1304,6 +1314,10 @@ msgstr "Afzal til"
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Process started"
 msgstr "Jarayon boshlandi"
+
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Public key"
+msgstr ""
 
 #. Use 'Key' if your language requires many more characters
 #: src/components/add-system.tsx
@@ -1564,6 +1578,10 @@ msgstr "Mavzuni almashtirish"
 msgid "System"
 msgstr "Tizim"
 
+#: src/components/routes/system/charts/sensor-charts.tsx
+msgid "System fan speeds (RPM)"
+msgstr ""
+
 #: src/components/routes/system/charts/load-average-chart.tsx
 msgid "System load averages over time"
 msgstr "Tizim yuklanishi o'rtachalari vaqt bo'yicha"
@@ -1655,11 +1673,6 @@ msgstr "Vaqt formati"
 #: src/components/routes/settings/notifications.tsx
 msgid "To email(s)"
 msgstr "Kimga (elektron pochta)"
-
-#: src/components/mode-toggle.tsx
-#: src/components/mode-toggle.tsx
-#~ msgid "Toggle theme"
-#~ msgstr "Mavzuni o'zgartirish"
 
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx

@@ -8,6 +8,7 @@ export default defineConfig({
 		"cs",
 		"da",
 		"de",
+		"el",
 		"es",
 		"fa",
 		"fr",

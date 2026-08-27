@@ -4,6 +4,7 @@ export default [
 	["cs", "Čeština", "🇨🇿"],
 	["da", "Dansk", "🇩🇰"],
 	["de", "Deutsch", "🇩🇪"],
+	["el", "Ελληνικά", "🇬🇷"],
 	["en", "English", "🇬🇧"],
 	["es", "Español", "🇪🇸"],
 	["fa", "فارسی", "🇮🇷"],
