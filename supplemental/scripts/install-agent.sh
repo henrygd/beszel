@@ -798,7 +798,14 @@ rm -rf "$TEMP_DIR"
 
 # Make sure /etc/machine-id exists for persistent fingerprint
 if [ ! -f /etc/machine-id ]; then
-  cat /proc/sys/kernel/random/uuid | tr -d '-' > /etc/machine-id
+  if [ -r /proc/sys/kernel/random/uuid ]; then
+    tr -d '-' < /proc/sys/kernel/random/uuid > /etc/machine-id
+  elif command -v uuidgen >/dev/null; then
+    # FreeBSD has no /proc/sys/kernel/random/uuid
+    uuidgen | tr -d '-' > /etc/machine-id
+  else
+    echo "No UUID source found, skipping /etc/machine-id creation"
+  fi
 fi
 
 # Check for NVIDIA GPUs and grant device permissions for systemd service
