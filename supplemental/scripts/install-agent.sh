@@ -796,8 +796,8 @@ set_selinux_context
 # Cleanup
 rm -rf "$TEMP_DIR"
 
-# Make sure /etc/machine-id exists for persistent fingerprint
-if [ ! -f /etc/machine-id ]; then
+# Make sure /etc/machine-id exists and is non-empty for persistent fingerprint
+if [ ! -s /etc/machine-id ]; then
   if [ -r /proc/sys/kernel/random/uuid ]; then
     tr -d '-' < /proc/sys/kernel/random/uuid > /etc/machine-id
   elif command -v uuidgen >/dev/null; then
