@@ -87,7 +87,32 @@ func getToken() (string, error) {
 	if err != nil {
 		return "", err
 	}
-	return strings.TrimSpace(string(tokenBytes)), nil
+	return parseTokenFile(string(tokenBytes), tokenFile)
+}
+
+// parseTokenFile extracts the single token from the contents of TOKEN_FILE.
+// Blank lines and # comments are skipped, mirroring how ParseKeys reads KEY_FILE.
+//
+// KEY_FILE holds one key per line, so it is natural to assume TOKEN_FILE takes a
+// list too. It does not: the agent connects to one hub. Previously the whole file
+// was sent as a single token, and the hub rejected the joined value with a bare
+// 400 that named no cause, leaving "WebSocket connection failed err=unexpected
+// status code: 400" as the only clue.
+func parseTokenFile(contents, path string) (string, error) {
+	var token string
+	for line := range strings.Lines(contents) {
+		line = strings.TrimSpace(line)
+		if len(line) == 0 || strings.HasPrefix(line, "#") {
+			continue
+		}
+		if token != "" {
+			return "", fmt.Errorf("%s must contain a single token: the agent connects to one hub, so a token per hub is not supported", path)
+		}
+		token = line
+	}
+	// An empty file keeps returning an empty token, as before: the caller decides
+	// what to do about it.
+	return token, nil
 }
 
 // getOptions returns the WebSocket client options, creating them if necessary.

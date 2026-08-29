@@ -6,6 +6,7 @@ import (
 	"crypto/ed25519"
 	"net/url"
 	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 	"time"
@@ -407,6 +408,41 @@ func TestGetToken(t *testing.T) {
 		token, err := getToken()
 		assert.NoError(t, err)
 		assert.Equal(t, expectedToken, token)
+	})
+
+	t.Run("TOKEN_FILE with surrounding blank lines and comments", func(t *testing.T) {
+		expectedToken := "test-token-with-noise"
+		tokenFile := filepath.Join(t.TempDir(), "token")
+		require.NoError(t, os.WriteFile(tokenFile, []byte("# hub token\n\n"+expectedToken+"\n\n"), 0o600))
+
+		t.Setenv("TOKEN_FILE", tokenFile)
+
+		token, err := getToken()
+		assert.NoError(t, err)
+		assert.Equal(t, expectedToken, token)
+	})
+
+	t.Run("TOKEN_FILE with multiple tokens is rejected", func(t *testing.T) {
+		tokenFile := filepath.Join(t.TempDir(), "token")
+		require.NoError(t, os.WriteFile(tokenFile, []byte("11111111-1111-1111-1111-111111111111\n22222222-2222-2222-2222-222222222222\n"), 0o600))
+
+		t.Setenv("TOKEN_FILE", tokenFile)
+
+		token, err := getToken()
+		require.Error(t, err)
+		assert.Empty(t, token)
+		assert.Contains(t, err.Error(), "must contain a single token")
+	})
+
+	t.Run("TOKEN_FILE holding only comments behaves like an empty file", func(t *testing.T) {
+		tokenFile := filepath.Join(t.TempDir(), "token")
+		require.NoError(t, os.WriteFile(tokenFile, []byte("\n# only a comment\n"), 0o600))
+
+		t.Setenv("TOKEN_FILE", tokenFile)
+
+		token, err := getToken()
+		assert.NoError(t, err)
+		assert.Equal(t, "", token)
 	})
 
 	t.Run("token from BESZEL_AGENT_TOKEN_FILE", func(t *testing.T) {
