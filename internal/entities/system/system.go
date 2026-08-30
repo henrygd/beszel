@@ -44,7 +44,7 @@ type Stats struct {
 	MaxBandwidth [2]uint64 `json:"bm,omitzero" cbor:"-"`                   // [sent bytes, recv bytes]
 	// TODO: remove other load fields in future release in favor of load avg array
 	LoadAvg           [3]float64           `json:"la,omitempty" cbor:"28,keyasint"`
-	Battery           [2]uint8             `json:"bat,omitzero" cbor:"29,keyasint,omitzero"`    // [percent, charge state]
+	Battery           Battery              `json:"bat,omitzero" cbor:"29,keyasint,omitzero"`    // [percent, charge state]
 	NetworkInterfaces map[string][4]uint64 `json:"ni,omitempty" cbor:"31,keyasint,omitempty"`   // [upload bytes, download bytes, total upload, total download]
 	DiskIO            [2]uint64            `json:"dio,omitzero" cbor:"32,keyasint,omitzero"`    // [read bytes, write bytes]
 	MaxDiskIO         [2]uint64            `json:"diom,omitzero" cbor:"-"`                      // [max read bytes, max write bytes]
@@ -69,6 +69,15 @@ func (s Uint8Slice) MarshalJSON() ([]byte, error) {
 		arr[i] = uint16(v)
 	}
 	return json.Marshal(arr)
+}
+
+// Battery stores the representative battery's percent and charge state.
+// Its custom JSON encoding keeps the public and persisted representation as a
+// numeric tuple under both encoding/json v1 and v2.
+type Battery [2]uint8
+
+func (b Battery) MarshalJSON() ([]byte, error) {
+	return json.Marshal([2]uint16{uint16(b[0]), uint16(b[1])})
 }
 
 type GPUData struct {
@@ -155,8 +164,8 @@ type Info struct {
 	LoadAvg        [3]float64         `json:"la,omitempty" cbor:"19,keyasint"`
 	ConnectionType ConnectionType     `json:"ct,omitempty" cbor:"20,keyasint,omitempty,omitzero"`
 	ExtraFsPct     map[string]float64 `json:"efs,omitempty" cbor:"21,keyasint,omitempty"`
-	Services       []uint16           `json:"sv,omitempty" cbor:"22,keyasint,omitempty"` // [totalServices, numFailedServices]
-	Battery        [2]uint8           `json:"bat,omitzero" cbor:"23,keyasint,omitzero"`  // [percent, charge state]
+	Services       []uint16           `json:"sv,omitempty" cbor:"22,keyasint,omitempty"`  // [totalServices, numFailedServices]
+	Battery        Battery            `json:"bat,omitzero" cbor:"23,keyasint,omitzero"`   // [percent, charge state]
 	RootDiskName   string             `json:"rdn,omitempty" cbor:"24,keyasint,omitempty"` // custom name for root disk (set via FILESYSTEM=device__name)
 }
 
