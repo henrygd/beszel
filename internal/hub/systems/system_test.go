@@ -6,8 +6,47 @@ import (
 	"context"
 	"testing"
 
+	"github.com/henrygd/beszel/internal/entities/container"
 	"github.com/henrygd/beszel/internal/entities/system"
 )
+
+func TestGetContainerCounts(t *testing.T) {
+	tests := []struct {
+		name     string
+		stats    []*container.Stats
+		expected []uint16
+	}{
+		{
+			name:     "no containers",
+			stats:    nil,
+			expected: nil,
+		},
+		{
+			name: "counts total and unhealthy containers",
+			stats: []*container.Stats{
+				{Health: container.DockerHealthHealthy},
+				{Health: container.DockerHealthUnhealthy},
+				{Health: container.DockerHealthNone},
+				{Health: container.DockerHealthUnhealthy},
+			},
+			expected: []uint16{4, 2},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := getContainerCounts(tt.stats)
+			if len(got) != len(tt.expected) {
+				t.Fatalf("expected %v, got %v", tt.expected, got)
+			}
+			for i := range got {
+				if got[i] != tt.expected[i] {
+					t.Fatalf("expected %v, got %v", tt.expected, got)
+				}
+			}
+		})
+	}
+}
 
 func TestCombinedData_MigrateDeprecatedFields(t *testing.T) {
 	t.Run("Migrate NetworkSent and NetworkRecv to Bandwidth", func(t *testing.T) {
