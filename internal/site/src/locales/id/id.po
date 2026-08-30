@@ -8,7 +8,7 @@ msgstr ""
 "Language: id\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2026-08-17 19:22\n"
+"PO-Revision-Date: 2026-08-18 17:52\n"
 "Last-Translator: \n"
 "Language-Team: Indonesian\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
@@ -1077,8 +1077,8 @@ msgid "Memory Usage"
 msgstr "Penggunaan Memori"
 
 #: src/components/routes/system/charts/memory-charts.tsx
-msgid "Memory usage of docker containers"
-msgstr "Penggunaan memori kontainer docker"
+msgid "Memory usage of containers"
+msgstr "Penggunaan memori container"
 
 #. Device model
 #: src/components/routes/system/smart-table.tsx
@@ -1099,8 +1099,8 @@ msgid "Net"
 msgstr "Jaringan"
 
 #: src/components/routes/system/charts/network-charts.tsx
-msgid "Network traffic of docker containers"
-msgstr "Trafik jaringan kontainer docker"
+msgid "Network traffic of containers"
+msgstr "Lalu lintas jaringan container"
 
 #: src/components/routes/system/charts/network-charts.tsx
 #: src/components/routes/system/network-sheet.tsx

@@ -203,6 +203,16 @@ func isInternalURL(rawURL string) (bool, error) {
 	return false, nil
 }
 
+var cgnatNetwork = &net.IPNet{
+	IP:   net.IPv4(100, 64, 0, 0),
+	Mask: net.CIDRMask(10, 32),
+}
+
 func isInternalIP(ip net.IP) bool {
-	return ip.IsPrivate() || ip.IsLoopback() || ip.IsUnspecified()
+	return ip.IsPrivate() ||
+		ip.IsLoopback() ||
+		ip.IsUnspecified() ||
+		ip.IsLinkLocalUnicast() ||
+		ip.IsMulticast() ||
+		cgnatNetwork.Contains(ip)
 }
