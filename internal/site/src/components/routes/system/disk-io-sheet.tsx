@@ -166,7 +166,7 @@ export default memo(function DiskIOSheet({
 							empty={dataEmpty}
 							grid={grid}
 							title={t`Cumulative Read`}
-							description={t`Total data read since agent start`}
+							description={t`Cumulative data read`}
 							className="min-h-auto"
 						>
 							<AreaChartDefault
@@ -196,7 +196,7 @@ export default memo(function DiskIOSheet({
 							empty={dataEmpty}
 							grid={grid}
 							title={t`Cumulative Write`}
-							description={t`Total data written since agent start`}
+							description={t`Cumulative data written`}
 							className="min-h-auto"
 						>
 							<AreaChartDefault
