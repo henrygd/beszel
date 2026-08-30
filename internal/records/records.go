@@ -8,10 +8,12 @@ import (
 	"time"
 
 	"github.com/henrygd/beszel/internal/entities/container"
+	"github.com/henrygd/beszel/internal/entities/probe"
 	"github.com/henrygd/beszel/internal/entities/system"
 
 	"github.com/pocketbase/dbx"
 	"github.com/pocketbase/pocketbase/core"
+	"github.com/pocketbase/pocketbase/tools/types"
 )
 
 type RecordManager struct {
@@ -39,7 +41,7 @@ type StatsRecord struct {
 
 // Create longer records by averaging shorter records
 func (rm *RecordManager) CreateLongerRecords() {
-	// start := time.Now()
+	now := time.Now().UTC()
 	longerRecordData := []LongerRecordData{
 		{
 			shorterType: "1m",
@@ -71,6 +73,7 @@ func (rm *RecordManager) CreateLongerRecords() {
 	// Pocketbase cron does not handle errors, log them here.
 	rm.app.RunInTransaction(func(txApp core.App) error {
 		var err error
+
 		collections := [2]*core.Collection{}
 		collections[0], err = txApp.FindCachedCollectionByNameOrId("system_stats")
 		if err != nil {
@@ -80,6 +83,10 @@ func (rm *RecordManager) CreateLongerRecords() {
 		collections[1], err = txApp.FindCachedCollectionByNameOrId("container_stats")
 		if err != nil {
 			slog.Error("Error finding cached collection using container stats:", "err", err)
+			return err
+		}
+		probeStatsColl, err := txApp.FindCachedCollectionByNameOrId("network_probe_stats")
+		if err != nil {
 			return err
 		}
 		var systems RecordIds
@@ -94,43 +101,53 @@ func (rm *RecordManager) CreateLongerRecords() {
 				recordData := longerRecordData[i]
 				// log.Println("processing longer record type", recordData.longerType)
 				// add one minute padding for longer records because they are created slightly later than the job start time
-				longerRecordPeriod := time.Now().UTC().Add(recordData.longerTimeDuration + time.Minute)
+				longerRecordPeriod := now.Add(recordData.longerTimeDuration + time.Minute)
 				// shorter records are created independently of longer records, so we shouldn't need to add padding
-				shorterRecordPeriod := time.Now().UTC().Add(recordData.longerTimeDuration)
-				// loop through both collections
+				shorterRecordPeriod := now.Add(recordData.longerTimeDuration)
 				for _, collection := range collections {
 					// check creation time of last longer record if not 10m, since 10m is created every run
 					if recordData.longerType != "10m" {
-						count, err := txApp.CountRecords(
-							collection.Id,
-							dbx.NewExp(
-								"system = {:system} AND type = {:type} AND created > {:created}",
-								dbx.Params{"type": recordData.longerType, "system": system.Id, "created": longerRecordPeriod},
-							),
-						)
+						var existingRecord struct {
+							Id string
+						}
+
+						params := dbx.Params{
+							"type":    recordData.longerType,
+							"system":  system.Id,
+							"created": getCreatedTimeField(collection.Name, longerRecordPeriod),
+						}
+
+						_ = db.Select("id").
+							From(collection.Name).
+							Where(dbx.NewExp("system = {:system} AND type = {:type} AND created > {:created}", params)).
+							Limit(1).
+							One(&existingRecord)
+
 						// continue if longer record exists
-						if err != nil || count > 0 {
+						if existingRecord.Id != "" {
 							continue
 						}
 					}
 					// get shorter records from the past x minutes
 					var recordIds RecordIds
 
-					err := txApp.DB().
+					params := dbx.Params{
+						"type":    recordData.shorterType,
+						"system":  system.Id,
+						"created": getCreatedTimeField(collection.Name, shorterRecordPeriod),
+					}
+
+					_ = txApp.DB().
 						Select("id").
 						From(collection.Name).
-						AndWhere(dbx.NewExp(
+						Where(dbx.NewExp(
 							"system={:system} AND type={:type} AND created > {:created}",
-							dbx.Params{
-								"type":    recordData.shorterType,
-								"system":  system.Id,
-								"created": shorterRecordPeriod,
-							},
+							params,
 						)).
 						All(&recordIds)
 
 					// continue if not enough shorter records
-					if err != nil || len(recordIds) < recordData.minShorterRecords {
+					if len(recordIds) < recordData.minShorterRecords {
 						continue
 					}
 					// average the shorter records and create longer record
@@ -141,7 +158,6 @@ func (rm *RecordManager) CreateLongerRecords() {
 					case "system_stats":
 						longerRecord.Set("stats", rm.AverageSystemStats(db, recordIds))
 					case "container_stats":
-
 						longerRecord.Set("stats", rm.AverageContainerStats(db, recordIds))
 					}
 					if err := txApp.SaveNoValidate(longerRecord); err != nil {
@@ -151,10 +167,79 @@ func (rm *RecordManager) CreateLongerRecords() {
 			}
 		}
 
+		// network_probe_stats is aggregated per probe (not per system)
+		var probes []struct {
+			Id     string `db:"id"`
+			System string `db:"system"`
+		}
+		_ = db.NewQuery("SELECT id, system FROM network_probes WHERE enabled=TRUE").All(&probes)
+
+		for _, probeRec := range probes {
+			for i := range longerRecordData {
+				recordData := longerRecordData[i]
+				longerRecordPeriod := now.Add(recordData.longerTimeDuration + time.Minute)
+				shorterRecordPeriod := now.Add(recordData.longerTimeDuration)
+
+				if recordData.longerType != "10m" {
+					var existingRecord struct{ Id string }
+					_ = db.Select("id").
+						From("network_probe_stats").
+						Where(dbx.NewExp(
+							"probe={:probe} AND type={:type} AND created>{:created}",
+							dbx.Params{
+								"probe":   probeRec.Id,
+								"type":    recordData.longerType,
+								"created": longerRecordPeriod.UnixMilli(),
+							},
+						)).
+						Limit(1).
+						One(&existingRecord)
+					if existingRecord.Id != "" {
+						continue
+					}
+				}
+
+				var recordIds RecordIds
+				_ = db.Select("id").
+					From("network_probe_stats").
+					Where(dbx.NewExp(
+						"probe={:probe} AND type={:type} AND created>{:created}",
+						dbx.Params{
+							"probe":   probeRec.Id,
+							"type":    recordData.shorterType,
+							"created": shorterRecordPeriod.UnixMilli(),
+						},
+					)).
+					All(&recordIds)
+
+				if len(recordIds) < recordData.minShorterRecords {
+					continue
+				}
+
+				longerRecord := core.NewRecord(probeStatsColl)
+				longerRecord.Set("system", probeRec.System)
+				longerRecord.Set("probe", probeRec.Id)
+				longerRecord.Set("type", recordData.longerType)
+				longerRecord.Set("created", now.UnixMilli())
+				longerRecord.Set("stats", rm.AverageProbeStats(db, recordIds))
+				if err := txApp.SaveNoValidate(longerRecord); err != nil {
+					log.Println("failed to save probe longer record", "err", err)
+				}
+			}
+		}
+
 		return nil
 	})
 
-	// log.Println("finished creating longer records", "time (ms)", time.Since(start).Milliseconds())
+	// slog.Info("finished creating longer records", "time (ms)", time.Since(now).Milliseconds())
+}
+
+func getCreatedTimeField(collectionName string, period time.Time) any {
+	// network_probe_stats stores created as unix timestamp in ms, not as a date string
+	if collectionName == "network_probe_stats" {
+		return period.UnixMilli()
+	}
+	return period.Format(types.DefaultDateLayout)
 }
 
 // Calculate the average stats of a list of system_stats records without reflect
@@ -542,6 +627,64 @@ func AverageContainerStatsSlice(records [][]container.Stats) []container.Stats {
 			Mem:       twoDecimals(value.Mem / count),
 			Bandwidth: [2]uint64{uint64(float64(value.Bandwidth[0]) / count), uint64(float64(value.Bandwidth[1]) / count)},
 		})
+	}
+	return result
+}
+
+// AverageProbeStats averages probe stats across multiple per-probe records.
+// Each record holds a flat Stats array: [avg, min, max, loss].
+// avg and loss are averaged; min takes the minimum; max takes the maximum.
+func (rm *RecordManager) AverageProbeStats(db dbx.Builder, records RecordIds) probe.Stats {
+	var sums probe.Stats
+	counts := make([]int, 4)
+
+	query := db.NewQuery("SELECT stats FROM network_probe_stats WHERE id = {:id}")
+	var row StatsRecord
+	for _, rec := range records {
+		row.Stats = row.Stats[:0]
+		if err := query.Bind(dbx.Params{"id": rec.Id}).One(&row); err != nil {
+			continue
+		}
+		var vals probe.Stats
+		if err := json.Unmarshal(row.Stats, &vals); err != nil {
+			continue
+		}
+		if len(sums) == 0 {
+			sums = make(probe.Stats, len(vals))
+		}
+		for i := range vals {
+			if i >= len(sums) {
+				break
+			}
+			switch i {
+			case 1: // min
+				if counts[i] == 0 || vals[i] < sums[i] {
+					sums[i] = vals[i]
+				}
+			case 2: // max
+				if counts[i] == 0 || vals[i] > sums[i] {
+					sums[i] = vals[i]
+				}
+			default: // avg (0) and loss (3)
+				sums[i] += vals[i]
+			}
+			counts[i]++
+		}
+	}
+
+	if len(sums) == 0 {
+		return probe.Stats{}
+	}
+	result := make(probe.Stats, len(sums))
+	copy(result, sums)
+	for i := range result {
+		switch i {
+		case 1, 2: // min and max are already correct
+		default:
+			if counts[i] > 0 {
+				result[i] = twoDecimals(result[i] / float64(counts[i]))
+			}
+		}
 	}
 	return result
 }

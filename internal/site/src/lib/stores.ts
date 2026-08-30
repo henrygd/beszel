@@ -64,6 +64,9 @@ export const $containerFilter = atom("")
 /** Temperature chart filter */
 export const $temperatureFilter = atom("")
 
+/** Filter for network probe charts (compare page and per-system probe charts) */
+export const $probeFilter = atom("")
+
 /** Fan-speed chart filter */
 export const $fanFilter = atom("")
 
@@ -73,7 +76,5 @@ export const $copyContent = atom("")
 /** Direction for localization */
 export const $direction = atom<"ltr" | "rtl">("ltr")
 
-/** Longest system name length. Used to set table column width. I know this
- *  is stupid but the table is virtualized and I know this will work.
- */
-export const $longestSystemNameLen = atom(8)
+/** Longest system name string. Used to reserve width in virtualized tables. */
+export const $longestSystemName = atom("")

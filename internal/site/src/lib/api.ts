@@ -54,8 +54,11 @@ export async function updateUserSettings() {
 	}
 }
 
-export function getPbTimestamp(timeString: ChartTimes, d?: Date) {
+export function getPbTimestamp(timeString: ChartTimes, d?: Date, createdIsNumber?: boolean) {
 	d ||= chartTimeData[timeString].getOffset(new Date())
+	if (createdIsNumber) {
+		return d.getTime()
+	}
 	const year = d.getUTCFullYear()
 	const month = String(d.getUTCMonth() + 1).padStart(2, "0")
 	const day = String(d.getUTCDate()).padStart(2, "0")

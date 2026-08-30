@@ -8,6 +8,7 @@ import (
 
 	"github.com/henrygd/beszel/internal/hub/ws"
 
+	"github.com/henrygd/beszel/internal/entities/probe"
 	"github.com/henrygd/beszel/internal/entities/system"
 	"github.com/henrygd/beszel/internal/hub/expirymap"
 
@@ -16,6 +17,7 @@ import (
 	"github.com/henrygd/beszel"
 
 	"github.com/blang/semver"
+	"github.com/pocketbase/dbx"
 	"github.com/pocketbase/pocketbase/core"
 	"github.com/pocketbase/pocketbase/tools/store"
 	"golang.org/x/crypto/ssh"
@@ -331,6 +333,17 @@ func (sm *SystemManager) AddWebSocketSystem(systemId string, agentVersion semver
 	if err := sm.AddRecord(systemRecord, system); err != nil {
 		return err
 	}
+
+	// Sync network probes to the newly connected agent
+	go func() {
+		configs := sm.GetProbeConfigsForSystem(systemId)
+		if len(configs) > 0 {
+			if err := system.SyncNetworkProbes(configs); err != nil {
+				sm.hub.Logger().Warn("failed to sync probes to agent", "system", systemId, "err", err)
+			}
+		}
+	}()
+
 	return nil
 }
 
@@ -341,6 +354,16 @@ func (sm *SystemManager) resetFailedSmartFetchState(systemID string) {
 	if ok && !state.Successful {
 		sm.smartFetchMap.Remove(systemID)
 	}
+}
+
+// GetProbeConfigsForSystem returns all enabled probe configs for a system.
+func (sm *SystemManager) GetProbeConfigsForSystem(systemID string) []probe.Config {
+	var configs []probe.Config
+	_ = sm.hub.DB().
+		NewQuery("SELECT id, target, protocol, port, interval FROM network_probes WHERE system = {:system} AND enabled = true").
+		Bind(dbx.Params{"system": systemID}).
+		All(&configs)
+	return configs
 }
 
 // createSSHClientConfig initializes the SSH client configuration for connecting to an agent's server

@@ -7,6 +7,7 @@ import (
 
 	"github.com/fxamacker/cbor/v2"
 	"github.com/henrygd/beszel/internal/common"
+	"github.com/henrygd/beszel/internal/entities/probe"
 	"github.com/henrygd/beszel/internal/entities/smart"
 
 	"log/slog"
@@ -51,6 +52,7 @@ func NewHandlerRegistry() *HandlerRegistry {
 	registry.Register(common.GetContainerInfo, &GetContainerInfoHandler{})
 	registry.Register(common.GetSmartData, &GetSmartDataHandler{})
 	registry.Register(common.GetSystemdInfo, &GetSystemdInfoHandler{})
+	registry.Register(common.SyncNetworkProbes, &SyncNetworkProbesHandler{})
 
 	return registry
 }
@@ -204,4 +206,22 @@ func (h *GetSystemdInfoHandler) Handle(hctx *HandlerContext) error {
 	}
 
 	return hctx.SendResponse(details, hctx.RequestID)
+}
+
+////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
+
+// SyncNetworkProbesHandler handles probe configuration sync from hub
+type SyncNetworkProbesHandler struct{}
+
+func (h *SyncNetworkProbesHandler) Handle(hctx *HandlerContext) error {
+	var req probe.SyncRequest
+	if err := cbor.Unmarshal(hctx.Request.Data, &req); err != nil {
+		return err
+	}
+	resp, err := hctx.Agent.probeManager.HandleSyncRequest(req)
+	if err != nil {
+		return err
+	}
+	return hctx.SendResponse(resp, hctx.RequestID)
 }

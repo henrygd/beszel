@@ -26,7 +26,7 @@ import type {
 	SystemStatsRecord,
 } from "@/types"
 import { $router, navigate } from "../../router"
-import { appendData, cache, getStats, getTimeData, makeContainerData, makeContainerPoint } from "./chart-data"
+import { appendData, cache, getStats, makeContainerData, makeContainerPoint } from "./chart-data"
 
 export type SystemData = ReturnType<typeof useSystemData>
 
@@ -151,16 +151,11 @@ export function useSystemData(id: string) {
 	const agentVersion = useMemo(() => parseSemVer(system?.info?.v), [system?.info?.v])
 
 	const chartData: ChartData = useMemo(() => {
-		const lastCreated = Math.max(
-			(systemStats.at(-1)?.created as number) ?? 0,
-			(containerData.at(-1)?.created as number) ?? 0
-		)
 		return {
 			systemStats,
 			containerData,
 			chartTime,
 			orientation: direction === "rtl" ? "right" : "left",
-			...getTimeData(chartTime, lastCreated),
 			agentVersion,
 		}
 	}, [systemStats, containerData, direction])
@@ -200,8 +195,8 @@ export function useSystemData(id: string) {
 		}
 
 		Promise.allSettled([
-			getStats<SystemStatsRecord>("system_stats", systemId, chartTime),
-			getStats<ContainerStatsRecord>("container_stats", systemId, chartTime),
+			getStats<SystemStatsRecord>("system_stats", systemId, chartTime, cachedSystemStats),
+			getStats<ContainerStatsRecord>("container_stats", systemId, chartTime, cachedContainerData),
 		]).then(([systemStats, containerStats]) => {
 			// If another request has been made since this one, ignore the results
 			if (requestId !== statsRequestId.current) {
@@ -293,7 +288,7 @@ export function useSystemData(id: string) {
 	// derived values
 	const isLongerChart = !["1m", "1h"].includes(chartTime)
 	const showMax = maxValues && isLongerChart
-	const dataEmpty = !chartLoading && chartData.systemStats.length === 0
+	const dataEmpty = !chartLoading && chartData.systemStats?.length === 0
 	const lastGpus = systemStats.at(-1)?.stats?.g
 	const isPodman = details?.podman ?? system.info?.p ?? false
 

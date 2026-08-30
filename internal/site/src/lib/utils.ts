@@ -72,7 +72,7 @@ export const formatShortDate = (timestamp: string) => {
 	return shortDateFormatter.format(new Date(timestamp))
 }
 
-export const hourWithSeconds = (timestamp: string) => {
+export const hourWithSeconds = (timestamp: string | number) => {
 	return hourWithSecondsFormatter.format(new Date(timestamp))
 }
 
@@ -111,17 +111,18 @@ export const updateFavicon = (() => {
     </linearGradient>
   </defs>
   <path fill="url(#gradient)" d="M35 70H0V0h35q4.4 0 8.2 1.7a21.4 21.4 0 0 1 6.6 4.5q2.9 2.8 4.5 6.6Q56 16.7 56 21a15.4 15.4 0 0 1-.3 3.2 17.6 17.6 0 0 1-.2.8 19.4 19.4 0 0 1-1.5 4 17 17 0 0 1-2.4 3.4 13.5 13.5 0 0 1-2.6 2.3 12.5 12.5 0 0 1-.4.3q1.7 1 3 2.5Q53 39.1 54 41a18.3 18.3 0 0 1 1.5 4 17.4 17.4 0 0 1 .5 3 15.3 15.3 0 0 1 0 1q0 4.4-1.7 8.2a21.4 21.4 0 0 1-4.5 6.6q-2.8 2.9-6.6 4.6Q39.4 70 35 70ZM14 14v14h21a7 7 0 0 0 2.3-.3 6.6 6.6 0 0 0 .4-.2Q39 27 40 26a6.9 6.9 0 0 0 1.5-2.2q.5-1.3.5-2.8a7 7 0 0 0-.4-2.3 6.6 6.6 0 0 0-.1-.4Q40.9 17 40 16a7 7 0 0 0-2.3-1.4 6.9 6.9 0 0 0-2.5-.6 7.9 7.9 0 0 0-.2 0H14Zm0 28v14h21a7 7 0 0 0 2.3-.4 6.6 6.6 0 0 0 .4-.1Q39 54.9 40 54a7 7 0 0 0 1.5-2.2 6.9 6.9 0 0 0 .5-2.6 7.9 7.9 0 0 0 0-.2 7 7 0 0 0-.4-2.3 6.6 6.6 0 0 0-.1-.4Q40.9 45 40 44a7 7 0 0 0-2.3-1.5 6.9 6.9 0 0 0-2.5-.6 7.9 7.9 0 0 0-.2 0H14Z"/>
-  ${downCount > 0 &&
-			`
+  ${
+		downCount > 0 &&
+		`
 		<circle cx="40" cy="50" r="22" fill="#f00"/>
   	<text x="40" y="60" font-size="34" text-anchor="middle" fill="#fff" font-family="Arial" font-weight="bold">${downCount}</text>
 	`
-			}
+	}
 </svg>
 	`
 		const blob = new Blob([svg], { type: "image/svg+xml" })
 		const url = URL.createObjectURL(blob)
-			; (document.querySelector("link[rel='icon']") as HTMLLinkElement).href = url
+		;(document.querySelector("link[rel='icon']") as HTMLLinkElement).href = url
 	}
 })()
 
@@ -196,6 +197,26 @@ export function decimalString(num: number, digits = 2) {
 		decimalFormatters.set(digits, formatter)
 	}
 	return formatter.format(num)
+}
+
+export function formatMicroseconds(microseconds: number, showDigits = true): string {
+	if (!Number.isFinite(microseconds)) {
+		return "-"
+	}
+
+	if (microseconds < 1000) {
+		return `${microseconds}μs`
+	}
+
+	if (microseconds < 1_000_000) {
+		const milliseconds = microseconds / 1000
+		const digits = milliseconds >= 10 ? 1 : 2
+		return `${decimalString(milliseconds, showDigits ? digits : 0)}ms`
+	}
+
+	const seconds = microseconds / 1_000_000
+	const digits = seconds >= 10 ? 1 : 2
+	return `${decimalString(seconds, showDigits ? digits : 0)}s`
 }
 
 /** Get value from local or session storage */
@@ -365,12 +386,12 @@ export function formatDuration(
 		.join(" ")
 }
 
-/** Parse semver string into major, minor, and patch numbers 
+/** Parse semver string into major, minor, and patch numbers
  * @example
  * const semVer = "1.2.3"
  * const { major, minor, patch } = parseSemVer(semVer)
  * console.log(major, minor, patch) // 1, 2, 3
-*/
+ */
 export const parseSemVer = (semVer = ""): SemVer => {
 	// if (semVer.startsWith("v")) {
 	// 	semVer = semVer.slice(1)
@@ -422,10 +443,22 @@ export function runOnce<T extends (...args: any[]) => any>(fn: T): T {
 	}) as T
 }
 
-/** Get the visual width of a string, accounting for full-width characters */
-export function getVisualStringWidth(str: string): number {
+const visualWidthCache = new Map<string, number>()
+
+/** Get the visual width of a string, accounting for full-width and narrow punctuation characters.
+ *  Don't use for monospaced fonts, use .length instead
+ */
+function getVisualStringWidth(str: string): number {
+	const cached = visualWidthCache.get(str)
+	if (cached !== undefined) {
+		return cached
+	}
 	let width = 0
 	for (const char of str) {
+		if (char === ".") {
+			width += 0.7
+			continue
+		}
 		const code = char.codePointAt(0) || 0
 		// Hangul Jamo and Syllables are often slightly thinner than Hanzi/Kanji
 		if ((code >= 0x1100 && code <= 0x115f) || (code >= 0xac00 && code <= 0xd7af)) {
@@ -443,7 +476,27 @@ export function getVisualStringWidth(str: string): number {
 			code > 0xffff // Emojis and other supplementary plane characters
 		width += isFullWidth ? 2 : 1
 	}
+	visualWidthCache.set(str, width)
 	return width
+}
+
+/** Compare the visual width of two strings imprecisely */
+export function isVisuallyLonger(str1: string, str2: string): boolean {
+	return getVisualStringWidth(str1) > getVisualStringWidth(str2)
+}
+
+/** Parses a filter string into OR'd groups of AND'd terms: "a b, c" -> [["a","b"], ["c"]] */
+export function parseFilterGroups(value: string): string[][] {
+	return value
+		.toLowerCase()
+		.split(",")
+		.map((group) => group.trim().split(" ").filter((term) => term.length > 0))
+		.filter((terms) => terms.length > 0)
+}
+
+/** True if every term in at least one OR'd group is found in searchString. */
+export function matchesFilterGroups(searchString: string, groups: string[][]): boolean {
+	return groups.some((terms) => terms.every((term) => searchString.includes(term)))
 }
 
 /** Format seconds to hours, minutes, or seconds */
@@ -452,7 +505,12 @@ export function secondsToString(seconds: number, unit: "hour" | "minute" | "day"
 	const countString = count.toLocaleString()
 	switch (unit) {
 		case "minute":
-			return plural(count, { one: `${countString} minute`, few: `${countString} minutes`, many: `${countString} minutes`, other: `${countString} minutes` })
+			return plural(count, {
+				one: `${countString} minute`,
+				few: `${countString} minutes`,
+				many: `${countString} minutes`,
+				other: `${countString} minutes`,
+			})
 		case "hour":
 			return plural(count, { one: `${countString} hour`, other: `${countString} hours` })
 		case "day":

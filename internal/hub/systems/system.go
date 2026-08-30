@@ -18,6 +18,7 @@ import (
 	"github.com/henrygd/beszel/internal/hub/ws"
 
 	"github.com/henrygd/beszel/internal/entities/container"
+	"github.com/henrygd/beszel/internal/entities/probe"
 	"github.com/henrygd/beszel/internal/entities/smart"
 	"github.com/henrygd/beszel/internal/entities/system"
 	"github.com/henrygd/beszel/internal/entities/systemd"
@@ -29,6 +30,8 @@ import (
 	"github.com/lxzan/gws"
 	"github.com/pocketbase/dbx"
 	"github.com/pocketbase/pocketbase/core"
+	"github.com/pocketbase/pocketbase/tools/security"
+	"github.com/pocketbase/pocketbase/tools/types"
 	"golang.org/x/crypto/ssh"
 )
 
@@ -241,6 +244,12 @@ func (sys *System) createRecords(data *system.CombinedData) (*core.Record, error
 			}
 		}
 
+		if data.Probes != nil {
+			if err := updateNetworkProbesRecords(txApp, data.Probes, sys.Id); err != nil {
+				return err
+			}
+		}
+
 		// update system record (do this last because it triggers alerts and we need above records to be inserted first)
 		systemRecord.Set("status", up)
 		systemRecord.Set("info", data.Info)
@@ -292,7 +301,7 @@ func createSystemdStatsRecords(app core.App, data []*systemd.Service, systemId s
 	for i, service := range data {
 		suffix := fmt.Sprintf("%d", i)
 		valueStrings = append(valueStrings, fmt.Sprintf("({:id%[1]s}, {:system}, {:name%[1]s}, {:state%[1]s}, {:sub%[1]s}, {:cpu%[1]s}, {:cpuPeak%[1]s}, {:memory%[1]s}, {:memPeak%[1]s}, {:updated})", suffix))
-		params["id"+suffix] = makeStableHashId(systemId, service.Name)
+		params["id"+suffix] = MakeStableHashId(systemId, service.Name)
 		params["name"+suffix] = service.Name
 		params["state"+suffix] = service.State
 		params["sub"+suffix] = service.Sub
@@ -307,6 +316,100 @@ func createSystemdStatsRecords(app core.App, data []*systemd.Service, systemId s
 	)
 	_, err := app.DB().NewQuery(queryString).Bind(params).Execute()
 	return err
+}
+
+func updateNetworkProbesRecords(app core.App, probeResults map[string]probe.Result, systemId string) error {
+	if len(probeResults) == 0 {
+		return nil
+	}
+	var err error
+	const probeCollectionName = "network_probes"
+
+	// If realtime updates are active, we save via PocketBase records to trigger realtime events.
+	// Otherwise we can do a more efficient direct update via SQL
+	realtimeActive := utils.RealtimeActiveForCollection(app, probeCollectionName, func(filterQuery string) bool {
+		return !strings.Contains(filterQuery, "system") || strings.Contains(filterQuery, systemId)
+	})
+
+	now := time.Now().UTC()
+	nowMilli := now.UnixMilli()
+	nowString := now.Format(types.DefaultDateLayout)
+	var db dbx.Builder
+	var updateQuery *dbx.Query
+	if !realtimeActive {
+		db = app.DB()
+		probeFields := []string{"res", "resMin1h", "resMax1h", "resAvg1h", "loss1h", "updated"}
+		setClauses := make([]string, len(probeFields))
+		for i, f := range probeFields {
+			setClauses[i] = fmt.Sprintf("%s={:%s}", f, f)
+		}
+		queryString := fmt.Sprintf("UPDATE %s SET %s WHERE id={:id}", probeCollectionName, strings.Join(setClauses, ", "))
+		updateQuery = db.NewQuery(queryString)
+	}
+
+	// update network_probes records
+	for id, result := range probeResults {
+		probeData := map[string]any{
+			"id":       id,
+			"res":      result.AvgResponse,
+			"resAvg1h": result.AvgResponse1h,
+			"resMin1h": result.MinResponse1h,
+			"resMax1h": result.MaxResponse1h,
+			"loss1h":   result.PacketLoss1h,
+			"updated":  nowString,
+		}
+		switch realtimeActive {
+		case true:
+			var record *core.Record
+			record, err = app.FindRecordById(probeCollectionName, id)
+			if err == nil {
+				record.Load(probeData)
+				err = app.SaveNoValidate(record)
+			}
+		default:
+			_, err = updateQuery.Bind(dbx.Params(probeData)).Execute()
+		}
+		if err != nil {
+			app.Logger().Warn("Failed to update probe", "system", systemId, "probe", id, "err", err)
+		}
+	}
+
+	// handle stats collection — one record per probe
+	const statsCollectionName = "network_probe_stats"
+
+	var statsCollection *core.Collection
+	if realtimeActive {
+		statsCollection, _ = app.FindCachedCollectionByNameOrId(statsCollectionName)
+	}
+
+	for probeId, result := range probeResults {
+		probeStats := probe.Stats{}.FromResult(result)
+		var statsJson types.JSONRaw
+		if err = statsJson.Scan(probeStats); err != nil {
+			continue
+		}
+		statsRecordData := map[string]any{
+			"system":  systemId,
+			"probe":   probeId,
+			"type":    "1m",
+			"created": nowMilli,
+			"stats":   statsJson,
+		}
+		switch realtimeActive {
+		case true:
+			record := core.NewRecord(statsCollection)
+			record.Load(statsRecordData)
+			err = app.SaveNoValidate(record)
+		default:
+			statsRecordData["id"] = security.PseudorandomStringWithAlphabet(10, core.DefaultIdAlphabet)
+			_, err = db.Insert(statsCollectionName, dbx.Params(statsRecordData)).Execute()
+		}
+		if err != nil {
+			app.Logger().Error("Failed to update probe stats", "system", systemId, "probe", probeId, "err", err)
+		}
+	}
+
+	return nil
 }
 
 // createContainerRecords creates container records
@@ -558,7 +661,7 @@ func (sys *System) FetchSmartDataFromAgent() (smart.SmartDataResponse, error) {
 	return result, err
 }
 
-func makeStableHashId(strings ...string) string {
+func MakeStableHashId(strings ...string) string {
 	hash := fnv.New32a()
 	for _, str := range strings {
 		hash.Write([]byte(str))

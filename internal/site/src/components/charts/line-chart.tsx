@@ -22,6 +22,10 @@ export type DataPoint<T = SystemStatsRecord> = {
 	order?: number
 	strokeOpacity?: number
 	activeDot?: boolean
+	dot?: boolean
+	/** Which Y axis this series plots against. Defaults to "left". */
+	yAxisId?: "left" | "right"
+	strokeDasharray?: string
 }
 
 export default function LineChartDefault({
@@ -30,9 +34,12 @@ export default function LineChartDefault({
 	max,
 	maxToggled,
 	tickFormatter,
+	tickFormatter2,
 	contentFormatter,
 	dataPoints,
 	domain,
+	domain2,
+	max2,
 	legend,
 	itemSorter,
 	showTotal = false,
@@ -41,18 +48,24 @@ export default function LineChartDefault({
 	filter,
 	truncate = false,
 	chartProps,
+	connectNulls,
 }: {
 	chartData: ChartData
 	// biome-ignore lint/suspicious/noExplicitAny: accepts different data source types (systemStats or containerData)
 	customData?: any[]
 	max?: number
+	max2?: number
 	maxToggled?: boolean
 	tickFormatter: (value: number, index: number) => string
+	/** Tick formatter for the right ("right"-yAxisId) axis, when any dataPoint uses it. */
+	tickFormatter2?: (value: number, index: number) => string
 	// biome-ignore lint/suspicious/noExplicitAny: recharts tooltip item interop
 	contentFormatter: (item: any, key: string) => ReactNode
 	// biome-ignore lint/suspicious/noExplicitAny: accepts DataPoint with different generic types
 	dataPoints?: DataPoint<any>[]
 	domain?: AxisDomain
+	/** Domain for the right axis, when any dataPoint uses it. */
+	domain2?: AxisDomain
 	legend?: boolean
 	showTotal?: boolean
 	// biome-ignore lint/suspicious/noExplicitAny: recharts tooltip item interop
@@ -62,10 +75,15 @@ export default function LineChartDefault({
 	filter?: string
 	truncate?: boolean
 	chartProps?: Omit<React.ComponentProps<typeof LineChart>, "data" | "margin">
+	connectNulls?: boolean
 }) {
 	const { yAxisWidth, updateYAxisWidth } = useYAxisWidth()
+	const hasRightAxis = !!dataPoints?.some((dp) => dp.yAxisId === "right")
+	// fixed width for the secondary axis rather than measured, since its labels (e.g. loss %) are short
+	// and predictable, and this avoids depending on a second async width-measurement pass to settle
+	const rightAxisWidth = 38
 	const { isIntersecting, ref } = useIntersectionObserver({ freeze: false })
-	const sourceData = customData ?? chartData.systemStats
+	const sourceData = customData ?? chartData.systemStats ?? []
 	const [displayData, setDisplayData] = useState(sourceData)
 	const [displayMaxToggled, setDisplayMaxToggled] = useState(maxToggled)
 
@@ -83,7 +101,9 @@ export default function LineChartDefault({
 	}, [displayData, displayMaxToggled, isIntersecting, maxToggled, sourceData])
 
 	// Use a stable key derived from data point identities and visual properties
-	const linesKey = dataPoints?.map((d) => `${d.label}:${d.strokeOpacity ?? ""}`).join("\0")
+	const linesKey = dataPoints?.map((d) => `${d.label}:${d.strokeOpacity}${d.dot}${d.yAxisId}${d.strokeDasharray}`).join("\0")
+
+	const XAxis = xAxis(chartData.chartTime, displayData.at(-1)?.created)
 
 	const Lines = useMemo(() => {
 		return dataPoints?.map((dataPoint, i) => {
@@ -94,17 +114,20 @@ export default function LineChartDefault({
 			return (
 				<Line
 					key={dataPoint.label}
+					yAxisId={dataPoint.yAxisId ?? "left"}
 					dataKey={dataPoint.dataKey}
 					name={dataPoint.label}
 					type="monotoneX"
-					dot={false}
+					dot={dataPoint.dot || false}
 					strokeWidth={1.5}
 					stroke={color}
 					strokeOpacity={dataPoint.strokeOpacity}
+					strokeDasharray={dataPoint.strokeDasharray}
 					isAnimationActive={false}
 					// stackId={dataPoint.stackId}
 					order={dataPoint.order || i}
 					activeDot={dataPoint.activeDot ?? true}
+					connectNulls={connectNulls}
 				/>
 			)
 		})
@@ -135,6 +158,7 @@ export default function LineChartDefault({
 					<CartesianGrid vertical={false} />
 					{!hideYAxis && (
 						<YAxis
+							yAxisId="left"
 							direction="ltr"
 							orientation={chartData.orientation}
 							className="tracking-tighter"
@@ -145,7 +169,20 @@ export default function LineChartDefault({
 							axisLine={false}
 						/>
 					)}
-					{xAxis(chartData)}
+					{!hideYAxis && hasRightAxis && (
+						<YAxis
+							yAxisId="right"
+							direction="ltr"
+							orientation={chartData.orientation === "left" ? "right" : "left"}
+							className="tracking-tighter"
+							width={rightAxisWidth}
+							domain={domain2 ?? [0, max2 ?? "auto"]}
+							tickFormatter={tickFormatter2 ?? tickFormatter}
+							tickLine={false}
+							axisLine={false}
+						/>
+					)}
+					{XAxis}
 					<ChartTooltip
 						animationEasing="ease-out"
 						animationDuration={150}
@@ -166,5 +203,5 @@ export default function LineChartDefault({
 				</LineChart>
 			</ChartContainer>
 		)
-	}, [displayData, yAxisWidth, filter, Lines])
+	}, [displayData, yAxisWidth, hasRightAxis, filter, Lines, XAxis])
 }

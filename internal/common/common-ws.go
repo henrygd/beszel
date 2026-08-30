@@ -22,6 +22,8 @@ const (
 	GetSmartData
 	// Request detailed systemd service info from agent
 	GetSystemdInfo
+	// Sync network probe configuration to agent
+	SyncNetworkProbes
 	// Add new actions here...
 )
 

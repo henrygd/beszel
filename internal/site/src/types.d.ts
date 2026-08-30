@@ -317,11 +317,9 @@ export interface SemVer {
 
 export interface ChartData {
 	agentVersion: SemVer
-	systemStats: SystemStatsRecord[]
-	containerData: ChartDataContainer[]
+	systemStats?: SystemStatsRecord[]
+	containerData?: ChartDataContainer[]
 	orientation: "right" | "left"
-	ticks: number[]
-	domain: number[]
 	chartTime: ChartTimes
 }
 
@@ -549,4 +547,55 @@ export interface BeszelInfo {
 export interface UpdateInfo {
 	v: string // new version
 	url: string // url to new version
+}
+
+export interface NetworkProbeRecord {
+	id: string
+	system: string
+	name: string
+	target: string
+	protocol: "icmp" | "tcp" | "http" | "dns"
+	port: number
+	res: number
+	resMin1h: number
+	resMax1h: number
+	resAvg1h: number
+	loss: number
+	loss1h: number
+	interval: number
+	enabled: boolean
+	updated: string
+}
+
+/**
+ * Stats holds only 1m values for a single target, which are used for charts.
+ *
+ * 0: avg response in microseconds
+ *
+ * 1: min response in microseconds
+ *
+ * 2: max response in microseconds
+ *
+ * 3: packet loss percentage (0-100)
+ */
+type ProbeStats = number[]
+
+/** Raw per-probe record stored in the DB. stats is a flat ProbeStats array. */
+export interface RawProbeStatsRecord {
+	id?: string
+	type?: string
+	probe: string
+	stats: ProbeStats
+	created: number // unix timestamp (ms)
+}
+
+/**
+ * Merged stats record keyed by probe ID, used by chart components.
+ * Constructed from multiple RawProbeStatsRecord entries sharing the same timestamp.
+ */
+export interface NetworkProbeStatsRecord {
+	id?: string
+	type?: string
+	stats: Record<string, ProbeStats>
+	created: number // unix timestamp (ms) for Recharts xAxis
 }
