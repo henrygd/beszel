@@ -35,6 +35,20 @@ func TestStatsBatteryTransport(t *testing.T) {
 	assert.Equal(t, stats.Batteries, decoded.Batteries)
 }
 
+func TestStatsDiskIOTotalAndFansTransport(t *testing.T) {
+	stats := Stats{
+		DiskIOTotal: [2]uint64{437348527104, 331522465792},
+		Fans:        map[string]uint16{"cpu": 1200},
+	}
+
+	cborData, err := cbor.Marshal(stats)
+	require.NoError(t, err)
+	var decoded Stats
+	require.NoError(t, cbor.Unmarshal(cborData, &decoded))
+	assert.Equal(t, stats.DiskIOTotal, decoded.DiskIOTotal)
+	assert.Equal(t, stats.Fans, decoded.Fans)
+}
+
 func TestStatsBatteryNumericArrayUnmarshal(t *testing.T) {
 	var stats Stats
 	require.NoError(t, json.Unmarshal([]byte(`{"bat":[50,4]}`), &stats))
