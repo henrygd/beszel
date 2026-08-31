@@ -8,7 +8,7 @@ msgstr ""
 "Language: uk\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2026-04-05 18:27\n"
+"PO-Revision-Date: 2026-05-08 11:22\n"
 "Last-Translator: \n"
 "Language-Team: Ukrainian\n"
 "Plural-Forms: nplurals=4; plural=((n%10==1 && n%100!=11) ? 0 : ((n%10 >= 2 && n%10 <=4 && (n%100 < 12 || n%100 > 14)) ? 1 : ((n%10 == 0 || (n%10 >= 5 && n%10 <=9)) || (n%100 >= 11 && n%100 <= 14)) ? 2 : 3));\n"
@@ -22,7 +22,7 @@ msgstr ""
 #: src/components/footer-repo-link.tsx
 msgctxt "New version available"
 msgid "{0} available"
-msgstr "{0} доступно"
+msgstr "{0} Доступно"
 
 #. placeholder {0}: table.getFilteredSelectedRowModel().rows.length
 #. placeholder {1}: table.getFilteredRowModel().rows.length
@@ -251,6 +251,7 @@ msgid "Bat"
 msgstr "Батарея"
 
 #: src/components/routes/system/charts/sensor-charts.tsx
+#: src/components/routes/system/charts/sensor-charts.tsx
 #: src/lib/alerts.ts
 msgid "Battery"
 msgstr "Батарея"
@@ -471,6 +472,10 @@ msgstr "Копіювати команду Linux"
 msgid "Copy name"
 msgstr "Копіювати імʼя"
 
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Copy public key"
+msgstr ""
+
 #: src/components/copy-to-clipboard.tsx
 msgid "Copy text"
 msgstr "Копіювати текст"
@@ -547,6 +552,8 @@ msgid "Cumulative Upload"
 msgstr "Кумулятивне відвантаження"
 
 #. Context: Battery state
+#. Context: Battery state
+#: src/components/routes/system/charts/sensor-charts.tsx
 #: src/components/routes/system/charts/sensor-charts.tsx
 msgid "Current state"
 msgstr "Поточний стан"
@@ -717,7 +724,6 @@ msgstr "Введіть ваш одноразовий пароль."
 msgid "Ephemeral"
 msgstr "Ефемерний"
 
-#: src/components/login/auth-form.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/settings/config-yaml.tsx
 #: src/components/routes/settings/heartbeat.tsx
@@ -809,6 +815,10 @@ msgstr "Не вдалося оновити сповіщення"
 msgid "Failed: {0}"
 msgstr "Невдало: {0}"
 
+#: src/components/routes/system/charts/sensor-charts.tsx
+msgid "Fans"
+msgstr ""
+
 #: src/components/containers-table/containers-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/system/chart-card.tsx
@@ -858,7 +868,7 @@ msgstr "Глобально"
 
 #: src/components/routes/system.tsx
 msgid "GPU"
-msgstr ""
+msgstr "Графічний процесор"
 
 #: src/components/routes/system/charts/gpu-charts.tsx
 msgid "GPU Engines"
@@ -883,7 +893,7 @@ msgstr "Здоров'я"
 
 #: src/components/routes/settings/layout.tsx
 msgid "Heartbeat"
-msgstr ""
+msgstr "Heartbeat"
 
 #: src/components/routes/settings/heartbeat.tsx
 msgid "Heartbeat Monitoring"
@@ -952,7 +962,6 @@ msgstr "Інтервал"
 msgid "Invalid email address."
 msgstr "Неправильна адреса електронної пошти."
 
-#: src/components/lang-toggle.tsx
 #: src/components/routes/settings/general.tsx
 msgid "Language"
 msgstr "Мова"
@@ -1311,6 +1320,10 @@ msgstr "Бажана мова"
 msgid "Process started"
 msgstr "Процес запущено"
 
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Public key"
+msgstr ""
+
 #. Use 'Key' if your language requires many more characters
 #: src/components/add-system.tsx
 msgid "Public Key"
@@ -1550,6 +1563,11 @@ msgstr "Область підкачки, використана системою
 msgid "Swap Usage"
 msgstr "Використання підкачки"
 
+#: src/components/mode-toggle.tsx
+#: src/components/mode-toggle.tsx
+msgid "Switch theme"
+msgstr ""
+
 #: src/components/add-system.tsx
 #: src/components/alerts-history-columns.tsx
 #: src/components/containers-table/containers-table-columns.tsx
@@ -1564,6 +1582,10 @@ msgstr "Використання підкачки"
 #: src/lib/alerts.ts
 msgid "System"
 msgstr "Система"
+
+#: src/components/routes/system/charts/sensor-charts.tsx
+msgid "System fan speeds (RPM)"
+msgstr ""
 
 #: src/components/routes/system/charts/load-average-chart.tsx
 msgid "System load averages over time"
@@ -1657,11 +1679,6 @@ msgstr "Формат часу"
 msgid "To email(s)"
 msgstr "На електронну пошту"
 
-#: src/components/mode-toggle.tsx
-#: src/components/mode-toggle.tsx
-msgid "Toggle theme"
-msgstr "Перемкнути тему"
-
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Token"
@@ -1697,7 +1714,7 @@ msgstr "Загальний обсяг відправлених даних для
 #: src/components/routes/system/disk-io-sheet.tsx
 msgctxt "Disk I/O"
 msgid "Total time spent on read/write (can exceed 100%)"
-msgstr ""
+msgstr "Загальний час, витрачений на читання/запис (може перевищувати 100%)"
 
 #. placeholder {0}: data.length
 #: src/components/systemd-table/systemd-table.tsx
