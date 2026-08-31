@@ -1,6 +1,9 @@
 package migrations
 
 import (
+	"encoding/json"
+
+	"github.com/pocketbase/dbx"
 	"github.com/pocketbase/pocketbase/core"
 	m "github.com/pocketbase/pocketbase/migrations"
 )
@@ -8,6 +11,47 @@ import (
 func init() {
 	m.Register(func(app core.App) error {
 		db := app.DB()
+
+		// Backfill per-user notification preferences before the user column is
+		// dropped. Every user who had alerts is opted in to notifications and
+		// subscribed to exactly the systems they had alerts on, so notification
+		// behavior is preserved across the upgrade. Runs before the dedup delete
+		// below so a user's subscription isn't lost when another user's alert
+		// wins the (system, name) tie-break.
+		type alertUserSystem struct {
+			User   string `db:"user"`
+			System string `db:"system"`
+		}
+		var pairs []alertUserSystem
+		if err := db.NewQuery(
+			"SELECT DISTINCT user, system FROM alerts WHERE user != '' AND system != ''",
+		).All(&pairs); err != nil {
+			return err
+		}
+		systemsByUser := make(map[string][]string)
+		for _, p := range pairs {
+			systemsByUser[p.User] = append(systemsByUser[p.User], p.System)
+		}
+		for userID, systemIDs := range systemsByUser {
+			settingsRec, err := app.FindFirstRecordByFilter(
+				"user_settings", "user={:user}", dbx.Params{"user": userID},
+			)
+			if err != nil {
+				continue // user has no settings record; nothing to migrate
+			}
+			settings := map[string]any{}
+			if raw := settingsRec.GetString("settings"); raw != "" {
+				if err := json.Unmarshal([]byte(raw), &settings); err != nil {
+					return err
+				}
+			}
+			settings["notificationsEnabled"] = true
+			settings["systems"] = systemIDs
+			settingsRec.Set("settings", settings)
+			if err := app.SaveNoValidate(settingsRec); err != nil {
+				return err
+			}
+		}
 
 		// Deduplicate alerts before dropping the user column:
 		// for each (system, name) pair, keep the most recently updated record.
