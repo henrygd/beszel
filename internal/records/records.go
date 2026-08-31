@@ -3,7 +3,7 @@ package records
 
 import (
 	"encoding/json"
-	"log"
+	"log/slog"
 	"math"
 	"time"
 
@@ -68,15 +68,18 @@ func (rm *RecordManager) CreateLongerRecords() {
 		},
 	}
 	// wrap the operations in a transaction
+	// Pocketbase cron does not handle errors, log them here.
 	rm.app.RunInTransaction(func(txApp core.App) error {
 		var err error
 		collections := [2]*core.Collection{}
 		collections[0], err = txApp.FindCachedCollectionByNameOrId("system_stats")
 		if err != nil {
+			slog.Error("Error finding cached collection using system stats:", "err", err)
 			return err
 		}
 		collections[1], err = txApp.FindCachedCollectionByNameOrId("container_stats")
 		if err != nil {
+			slog.Error("Error finding cached collection using container stats:", "err", err)
 			return err
 		}
 		var systems RecordIds
@@ -142,7 +145,7 @@ func (rm *RecordManager) CreateLongerRecords() {
 						longerRecord.Set("stats", rm.AverageContainerStats(db, recordIds))
 					}
 					if err := txApp.SaveNoValidate(longerRecord); err != nil {
-						log.Println("failed to save longer record", "err", err)
+						slog.Error("failed to save longer record", "err", err)
 					}
 				}
 			}
@@ -183,11 +186,16 @@ func AverageSystemStatsSlice(records []system.Stats) system.Stats {
 
 	// necessary because uint8 is not big enough for the sum
 	batterySum := 0
+	batteryCount := 0
+	batterySums := make(map[string]uint64)
+	batteryCounts := make(map[string]uint64)
 	// accumulate per-core usage across records
 	var cpuCoresSums []uint64
 	// accumulate cpu breakdown [user, system, iowait, steal, idle]
 	var cpuBreakdownSums []float64
 	tempCount := float64(0)
+	var fanSums map[string]uint64
+	fanCount := uint64(0)
 
 	// Accumulate totals
 	for i := range records {
@@ -227,8 +235,15 @@ func AverageSystemStatsSlice(records []system.Stats) system.Stats {
 		for i := range stats.DiskIoStats {
 			sum.DiskIoStats[i] += stats.DiskIoStats[i]
 		}
-		batterySum += int(stats.Battery[0])
-		sum.Battery[1] = stats.Battery[1]
+		if hasBattery(stats.Battery, stats.Batteries) {
+			batterySum += int(stats.Battery[0])
+			batteryCount++
+			sum.Battery[1] = stats.Battery[1]
+		}
+		for name, percent := range stats.Batteries {
+			batterySums[name] += uint64(percent)
+			batteryCounts[name]++
+		}
 
 		// accumulate per-core usage if present
 		if stats.CpuCoresUsage != nil {
@@ -251,6 +266,8 @@ func AverageSystemStatsSlice(records []system.Stats) system.Stats {
 		sum.MaxBandwidth[1] = max(sum.MaxBandwidth[1], stats.MaxBandwidth[1], stats.Bandwidth[1])
 		sum.MaxDiskIO[0] = max(sum.MaxDiskIO[0], stats.MaxDiskIO[0], stats.DiskIO[0])
 		sum.MaxDiskIO[1] = max(sum.MaxDiskIO[1], stats.MaxDiskIO[1], stats.DiskIO[1])
+		sum.DiskIOTotal[0] = max(sum.DiskIOTotal[0], stats.DiskIOTotal[0])
+		sum.DiskIOTotal[1] = max(sum.DiskIOTotal[1], stats.DiskIOTotal[1])
 		for i := range stats.DiskIoStats {
 			sum.MaxDiskIoStats[i] = max(sum.MaxDiskIoStats[i], stats.MaxDiskIoStats[i], stats.DiskIoStats[i])
 		}
@@ -279,6 +296,17 @@ func AverageSystemStatsSlice(records []system.Stats) system.Stats {
 			}
 		}
 
+		// Accumulate fan speeds
+		if stats.Fans != nil {
+			if fanSums == nil {
+				fanSums = make(map[string]uint64, len(stats.Fans))
+			}
+			fanCount++
+			for key, value := range stats.Fans {
+				fanSums[key] += uint64(value)
+			}
+		}
+
 		// Accumulate extra filesystem stats
 		if stats.ExtraFs != nil {
 			if sum.ExtraFs == nil {
@@ -299,6 +327,8 @@ func AverageSystemStatsSlice(records []system.Stats) system.Stats {
 				fs.DiskWriteBytes += value.DiskWriteBytes
 				fs.MaxDiskReadBytes = max(fs.MaxDiskReadBytes, value.MaxDiskReadBytes, value.DiskReadBytes)
 				fs.MaxDiskWriteBytes = max(fs.MaxDiskWriteBytes, value.MaxDiskWriteBytes, value.DiskWriteBytes)
+				fs.TotalRead = max(fs.TotalRead, value.TotalRead)
+				fs.TotalWrite = max(fs.TotalWrite, value.TotalWrite)
 				for i := range value.DiskIoStats {
 					fs.DiskIoStats[i] += value.DiskIoStats[i]
 					fs.MaxDiskIoStats[i] = max(fs.MaxDiskIoStats[i], value.MaxDiskIoStats[i], value.DiskIoStats[i])
@@ -363,7 +393,15 @@ func AverageSystemStatsSlice(records []system.Stats) system.Stats {
 	sum.LoadAvg[2] = twoDecimals(sum.LoadAvg[2] / count)
 	sum.Bandwidth[0] = sum.Bandwidth[0] / uint64(count)
 	sum.Bandwidth[1] = sum.Bandwidth[1] / uint64(count)
-	sum.Battery[0] = uint8(batterySum / int(count))
+	if batteryCount > 0 {
+		sum.Battery[0] = uint8(batterySum / batteryCount)
+	}
+	if len(batterySums) > 0 {
+		sum.Batteries = make(map[string]uint8, len(batterySums))
+		for name, total := range batterySums {
+			sum.Batteries[name] = uint8(total / batteryCounts[name])
+		}
+	}
 
 	// Average network interfaces
 	if sum.NetworkInterfaces != nil {
@@ -381,6 +419,14 @@ func AverageSystemStatsSlice(records []system.Stats) system.Stats {
 	if sum.Temperatures != nil && tempCount > 0 {
 		for key := range sum.Temperatures {
 			sum.Temperatures[key] = twoDecimals(sum.Temperatures[key] / tempCount)
+		}
+	}
+
+	// Average fan speeds
+	if fanSums != nil && fanCount > 0 {
+		sum.Fans = make(map[string]uint16, len(fanSums))
+		for key, value := range fanSums {
+			sum.Fans[key] = uint16(value / fanCount)
 		}
 	}
 
@@ -441,6 +487,10 @@ func AverageSystemStatsSlice(records []system.Stats) system.Stats {
 	}
 
 	return sum
+}
+
+func hasBattery(legacy [2]uint8, batteries map[string]uint8) bool {
+	return legacy != [2]uint8{} || len(batteries) > 0
 }
 
 // Calculate the average stats of a list of container_stats records

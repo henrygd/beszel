@@ -8,7 +8,7 @@ msgstr ""
 "Language: th\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2026-04-05 18:28\n"
+"PO-Revision-Date: 2026-08-18 17:53\n"
 "Last-Translator: \n"
 "Language-Team: Thai\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
@@ -209,8 +209,17 @@ msgstr ""
 msgid "Average exceeds <0>{value}{0}</0>"
 msgstr ""
 
+#: src/components/routes/system/disk-io-sheet.tsx
+msgid "Average number of I/O operations waiting to be serviced"
+msgstr ""
+
 #: src/components/routes/system/charts/gpu-charts.tsx
 msgid "Average power consumption of GPUs"
+msgstr ""
+
+#: src/components/routes/system/disk-io-sheet.tsx
+msgctxt "Disk I/O average operation time (iostat await)"
+msgid "Average queue to completion time per operation"
 msgstr ""
 
 #: src/components/routes/system/charts/cpu-charts.tsx
@@ -241,6 +250,7 @@ msgstr ""
 msgid "Bat"
 msgstr ""
 
+#: src/components/routes/system/charts/sensor-charts.tsx
 #: src/components/routes/system/charts/sensor-charts.tsx
 #: src/lib/alerts.ts
 msgid "Battery"
@@ -444,6 +454,11 @@ msgctxt "Environment variables"
 msgid "Copy env"
 msgstr ""
 
+#: src/components/alerts/alerts-sheet.tsx
+msgctxt "Copy alerts from another system"
+msgid "Copy from"
+msgstr ""
+
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Copy host"
 msgstr ""
@@ -455,6 +470,10 @@ msgstr ""
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Copy name"
+msgstr ""
+
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Copy public key"
 msgstr ""
 
 #: src/components/copy-to-clipboard.tsx
@@ -533,6 +552,8 @@ msgid "Cumulative Upload"
 msgstr ""
 
 #. Context: Battery state
+#. Context: Battery state
+#: src/components/routes/system/charts/sensor-charts.tsx
 #: src/components/routes/system/charts/sensor-charts.tsx
 msgid "Current state"
 msgstr ""
@@ -599,12 +620,11 @@ msgstr ""
 
 #: src/components/routes/system/charts/disk-charts.tsx
 #: src/components/routes/system/charts/disk-charts.tsx
-#: src/components/routes/system/charts/extra-fs-charts.tsx
 #: src/lib/alerts.ts
 msgid "Disk Usage"
 msgstr ""
 
-#: src/components/routes/system/charts/extra-fs-charts.tsx
+#: src/components/routes/system/charts/disk-charts.tsx
 msgid "Disk usage of {extraFsName}"
 msgstr ""
 
@@ -704,7 +724,6 @@ msgstr ""
 msgid "Ephemeral"
 msgstr ""
 
-#: src/components/login/auth-form.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/settings/config-yaml.tsx
 #: src/components/routes/settings/heartbeat.tsx
@@ -794,6 +813,10 @@ msgstr ""
 #. placeholder {0}: statusTotals[ServiceStatus.Failed]
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Failed: {0}"
+msgstr ""
+
+#: src/components/routes/system/charts/sensor-charts.tsx
+msgid "Fans"
 msgstr ""
 
 #: src/components/containers-table/containers-table.tsx
@@ -898,6 +921,21 @@ msgstr ""
 msgid "HTTP method: POST, GET, or HEAD (default: POST)"
 msgstr ""
 
+#: src/components/routes/system/disk-io-sheet.tsx
+msgctxt "Disk I/O average operation time (iostat await)"
+msgid "I/O Await"
+msgstr ""
+
+#: src/components/routes/system/disk-io-sheet.tsx
+msgctxt "Disk I/O total time spent on read/write"
+msgid "I/O Time"
+msgstr ""
+
+#: src/components/routes/system/charts/disk-charts.tsx
+msgctxt "Percent of time the disk is busy with I/O"
+msgid "I/O Utilization"
+msgstr ""
+
 #. Context: Battery state
 #: src/lib/i18n.ts
 msgid "Idle"
@@ -924,7 +962,6 @@ msgstr ""
 msgid "Invalid email address."
 msgstr ""
 
-#: src/components/lang-toggle.tsx
 #: src/components/routes/settings/general.tsx
 msgid "Language"
 msgstr ""
@@ -1040,8 +1077,8 @@ msgid "Memory Usage"
 msgstr ""
 
 #: src/components/routes/system/charts/memory-charts.tsx
-msgid "Memory usage of docker containers"
-msgstr ""
+msgid "Memory usage of containers"
+msgstr "การใช้หน่วยความจำของคอนเทนเนอร์"
 
 #. Device model
 #: src/components/routes/system/smart-table.tsx
@@ -1062,8 +1099,8 @@ msgid "Net"
 msgstr ""
 
 #: src/components/routes/system/charts/network-charts.tsx
-msgid "Network traffic of docker containers"
-msgstr ""
+msgid "Network traffic of containers"
+msgstr "การรับส่งข้อมูลเครือข่ายของคอนเทนเนอร์"
 
 #: src/components/routes/system/charts/network-charts.tsx
 #: src/components/routes/system/network-sheet.tsx
@@ -1207,6 +1244,10 @@ msgstr ""
 msgid "Per-core average utilization"
 msgstr ""
 
+#: src/components/routes/system/charts/disk-charts.tsx
+msgid "Percent of time the disk is busy with I/O"
+msgstr ""
+
 #: src/components/routes/system/cpu-sheet.tsx
 msgid "Percentage of time spent in each state"
 msgstr ""
@@ -1279,9 +1320,18 @@ msgstr ""
 msgid "Process started"
 msgstr ""
 
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Public key"
+msgstr ""
+
 #. Use 'Key' if your language requires many more characters
 #: src/components/add-system.tsx
 msgid "Public Key"
+msgstr ""
+
+#: src/components/routes/system/disk-io-sheet.tsx
+msgctxt "Disk I/O average queue depth"
+msgid "Queue Depth"
 msgstr ""
 
 #: src/components/routes/settings/quiet-hours.tsx
@@ -1290,7 +1340,9 @@ msgstr ""
 
 #. Disk read
 #: src/components/routes/system/charts/disk-charts.tsx
-#: src/components/routes/system/charts/extra-fs-charts.tsx
+#: src/components/routes/system/disk-io-sheet.tsx
+#: src/components/routes/system/disk-io-sheet.tsx
+#: src/components/routes/system/disk-io-sheet.tsx
 msgid "Read"
 msgstr ""
 
@@ -1511,6 +1563,11 @@ msgstr ""
 msgid "Swap Usage"
 msgstr ""
 
+#: src/components/mode-toggle.tsx
+#: src/components/mode-toggle.tsx
+msgid "Switch theme"
+msgstr ""
+
 #: src/components/add-system.tsx
 #: src/components/alerts-history-columns.tsx
 #: src/components/containers-table/containers-table-columns.tsx
@@ -1524,6 +1581,10 @@ msgstr ""
 #: src/components/systems-table/systems-table-columns.tsx
 #: src/lib/alerts.ts
 msgid "System"
+msgstr ""
+
+#: src/components/routes/system/charts/sensor-charts.tsx
+msgid "System fan speeds (RPM)"
 msgstr ""
 
 #: src/components/routes/system/charts/load-average-chart.tsx
@@ -1602,7 +1663,7 @@ msgstr ""
 msgid "This will permanently delete all selected records from the database."
 msgstr ""
 
-#: src/components/routes/system/charts/extra-fs-charts.tsx
+#: src/components/routes/system/charts/disk-charts.tsx
 msgid "Throughput of {extraFsName}"
 msgstr ""
 
@@ -1616,11 +1677,6 @@ msgstr ""
 
 #: src/components/routes/settings/notifications.tsx
 msgid "To email(s)"
-msgstr ""
-
-#: src/components/mode-toggle.tsx
-#: src/components/mode-toggle.tsx
-msgid "Toggle theme"
 msgstr ""
 
 #: src/components/add-system.tsx
@@ -1653,6 +1709,11 @@ msgstr ""
 
 #: src/components/routes/system/network-sheet.tsx
 msgid "Total data sent for each interface"
+msgstr ""
+
+#: src/components/routes/system/disk-io-sheet.tsx
+msgctxt "Disk I/O"
+msgid "Total time spent on read/write (can exceed 100%)"
 msgstr ""
 
 #. placeholder {0}: data.length
@@ -1775,7 +1836,7 @@ msgstr ""
 msgid "Uptime"
 msgstr ""
 
-#: src/components/routes/system/charts/extra-fs-charts.tsx
+#: src/components/routes/system/charts/disk-charts.tsx
 #: src/components/routes/system/charts/gpu-charts.tsx
 #: src/components/routes/system/charts/gpu-charts.tsx
 #: src/components/routes/system/charts/gpu-charts.tsx
@@ -1797,6 +1858,11 @@ msgstr ""
 msgid "Users"
 msgstr ""
 
+#: src/components/routes/system/charts/disk-charts.tsx
+msgctxt "Disk I/O utilization"
+msgid "Utilization"
+msgstr ""
+
 #: src/components/alerts-history-columns.tsx
 msgid "Value"
 msgstr ""
@@ -1806,6 +1872,7 @@ msgid "View"
 msgstr ""
 
 #: src/components/routes/system/cpu-sheet.tsx
+#: src/components/routes/system/disk-io-sheet.tsx
 #: src/components/routes/system/network-sheet.tsx
 msgid "View more"
 msgstr ""
@@ -1858,7 +1925,9 @@ msgstr ""
 
 #. Disk write
 #: src/components/routes/system/charts/disk-charts.tsx
-#: src/components/routes/system/charts/extra-fs-charts.tsx
+#: src/components/routes/system/disk-io-sheet.tsx
+#: src/components/routes/system/disk-io-sheet.tsx
+#: src/components/routes/system/disk-io-sheet.tsx
 msgid "Write"
 msgstr ""
 

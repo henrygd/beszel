@@ -8,7 +8,7 @@ msgstr ""
 "Language: fa\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2026-04-05 18:28\n"
+"PO-Revision-Date: 2026-08-18 17:53\n"
 "Last-Translator: \n"
 "Language-Team: Persian\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
@@ -251,6 +251,7 @@ msgid "Bat"
 msgstr "باتری"
 
 #: src/components/routes/system/charts/sensor-charts.tsx
+#: src/components/routes/system/charts/sensor-charts.tsx
 #: src/lib/alerts.ts
 msgid "Battery"
 msgstr "باتری"
@@ -471,6 +472,10 @@ msgstr "کپی دستور لینوکس"
 msgid "Copy name"
 msgstr "کپی نام"
 
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Copy public key"
+msgstr ""
+
 #: src/components/copy-to-clipboard.tsx
 msgid "Copy text"
 msgstr "کپی متن"
@@ -547,6 +552,8 @@ msgid "Cumulative Upload"
 msgstr "آپلود تجمعی"
 
 #. Context: Battery state
+#. Context: Battery state
+#: src/components/routes/system/charts/sensor-charts.tsx
 #: src/components/routes/system/charts/sensor-charts.tsx
 msgid "Current state"
 msgstr "وضعیت فعلی"
@@ -717,7 +724,6 @@ msgstr "رمز عبور یک‌بار مصرف خود را وارد کنید."
 msgid "Ephemeral"
 msgstr "گذرا"
 
-#: src/components/login/auth-form.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/settings/config-yaml.tsx
 #: src/components/routes/settings/heartbeat.tsx
@@ -808,6 +814,10 @@ msgstr "به‌روزرسانی هشدار ناموفق بود"
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Failed: {0}"
 msgstr "ناموفق: {0}"
+
+#: src/components/routes/system/charts/sensor-charts.tsx
+msgid "Fans"
+msgstr ""
 
 #: src/components/containers-table/containers-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
@@ -952,7 +962,6 @@ msgstr "بازه زمانی"
 msgid "Invalid email address."
 msgstr "آدرس ایمیل نامعتبر است."
 
-#: src/components/lang-toggle.tsx
 #: src/components/routes/settings/general.tsx
 msgid "Language"
 msgstr "زبان"
@@ -1068,8 +1077,8 @@ msgid "Memory Usage"
 msgstr "میزان استفاده از حافظه"
 
 #: src/components/routes/system/charts/memory-charts.tsx
-msgid "Memory usage of docker containers"
-msgstr "میزان استفاده از حافظه کانتینرهای داکر"
+msgid "Memory usage of containers"
+msgstr "میزان استفاده حافظه کانتینرها"
 
 #. Device model
 #: src/components/routes/system/smart-table.tsx
@@ -1090,8 +1099,8 @@ msgid "Net"
 msgstr "شبکه"
 
 #: src/components/routes/system/charts/network-charts.tsx
-msgid "Network traffic of docker containers"
-msgstr "ترافیک شبکه کانتینرهای داکر"
+msgid "Network traffic of containers"
+msgstr "ترافیک شبکه کانتینرها"
 
 #: src/components/routes/system/charts/network-charts.tsx
 #: src/components/routes/system/network-sheet.tsx
@@ -1310,6 +1319,10 @@ msgstr "زبان ترجیحی"
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Process started"
 msgstr "فرآیند شروع شد"
+
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Public key"
+msgstr ""
 
 #. Use 'Key' if your language requires many more characters
 #: src/components/add-system.tsx
@@ -1550,6 +1563,11 @@ msgstr "فضای Swap استفاده شده توسط سیستم"
 msgid "Swap Usage"
 msgstr "میزان استفاده از Swap"
 
+#: src/components/mode-toggle.tsx
+#: src/components/mode-toggle.tsx
+msgid "Switch theme"
+msgstr ""
+
 #: src/components/add-system.tsx
 #: src/components/alerts-history-columns.tsx
 #: src/components/containers-table/containers-table-columns.tsx
@@ -1564,6 +1582,10 @@ msgstr "میزان استفاده از Swap"
 #: src/lib/alerts.ts
 msgid "System"
 msgstr "سیستم"
+
+#: src/components/routes/system/charts/sensor-charts.tsx
+msgid "System fan speeds (RPM)"
+msgstr ""
 
 #: src/components/routes/system/charts/load-average-chart.tsx
 msgid "System load averages over time"
@@ -1656,11 +1678,6 @@ msgstr "فرمت زمان"
 #: src/components/routes/settings/notifications.tsx
 msgid "To email(s)"
 msgstr "به ایمیل(ها)"
-
-#: src/components/mode-toggle.tsx
-#: src/components/mode-toggle.tsx
-msgid "Toggle theme"
-msgstr "تغییر تم"
 
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx

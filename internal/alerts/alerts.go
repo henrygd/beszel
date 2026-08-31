@@ -55,6 +55,7 @@ type SystemAlertStats struct {
 	Temperatures map[string]float32            `json:"t"`
 	LoadAvg      [3]float64                    `json:"la"`
 	Battery      [2]uint8                      `json:"bat"`
+	Batteries    map[string]uint8              `json:"bats"`
 	ExtraFs      map[string]SystemAlertFsStats `json:"efs"`
 	ZfsPools     map[string]SystemAlertZfsPool `json:"z"`
 }

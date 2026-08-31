@@ -53,8 +53,8 @@ func newWebSocketClient(agent *Agent) (client *WebSocketClient, err error) {
 	client = &WebSocketClient{}
 
 	client.hubURL, err = url.Parse(hubURLStr)
-	if err != nil {
-		return nil, errors.New("invalid hub URL")
+	if err != nil || client.hubURL.Host == "" {
+		return nil, fmt.Errorf("invalid HUB_URL %q: must include scheme and host (e.g. http://hub.example.com:8090)", hubURLStr)
 	}
 	// get registration token
 	client.token, err = getToken()
@@ -87,7 +87,27 @@ func getToken() (string, error) {
 	if err != nil {
 		return "", err
 	}
-	return strings.TrimSpace(string(tokenBytes)), nil
+	return parseTokenFile(string(tokenBytes), tokenFile)
+}
+
+// parseTokenFile reads a single token from TOKEN_FILE.
+// Blank lines and comments are ignored. Multiple tokens are rejected because
+// the agent supports only one outbound hub connection.
+func parseTokenFile(contents, path string) (string, error) {
+	var token string
+	for line := range strings.Lines(contents) {
+		line = strings.TrimSpace(line)
+		if len(line) == 0 || strings.HasPrefix(line, "#") {
+			continue
+		}
+		if token != "" {
+			return "", fmt.Errorf("%s must contain a single token", path)
+		}
+		token = line
+	}
+	// An empty file keeps returning an empty token, as before: the caller decides
+	// what to do about it.
+	return token, nil
 }
 
 // getOptions returns the WebSocket client options, creating them if necessary.
