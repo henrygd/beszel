@@ -120,9 +120,9 @@ func (h *Hub) registerApiRoutes(se *core.ServeEvent) error {
 	apiNoAuth.GET("/agent-connect", h.handleAgentConnect)
 	// get or create universal tokens
 	apiAuth.GET("/universal-token", h.getUniversalToken).BindFunc(excludeReadOnlyRole)
-	// update / delete user alerts
-	apiAuth.POST("/user-alerts", alerts.UpsertUserAlerts)
-	apiAuth.DELETE("/user-alerts", alerts.DeleteUserAlerts)
+	// update / delete alerts (admin only)
+	apiAuth.POST("/alerts", alerts.UpsertAlerts)
+	apiAuth.DELETE("/alerts", alerts.DeleteAlerts)
 	// refresh SMART devices for a system
 	apiAuth.POST("/smart/refresh", h.refreshSmartData).BindFunc(excludeReadOnlyRole)
 	// get systemd service details

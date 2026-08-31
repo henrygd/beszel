@@ -22,7 +22,7 @@ func (am *AlertManager) handleSmartDeviceAlert(e *core.RecordEvent) error {
 		return e.Next()
 	}
 
-	// Fetch the system record to get the name and users
+	// Fetch the system record to get the name
 	systemRecord, err := e.App.FindRecordById("systems", systemID)
 	if err != nil {
 		e.App.Logger().Error("Failed to find system for SMART alert", "err", err, "systemID", systemID)
@@ -43,24 +43,14 @@ func (am *AlertManager) handleSmartDeviceAlert(e *core.RecordEvent) error {
 		message = fmt.Sprintf("Disk %s SMART status changed to %s", deviceName, newState)
 	}
 
-	// Get users associated with the system
-	userIDs := systemRecord.GetStringSlice("users")
-	if len(userIDs) == 0 {
-		return e.Next()
-	}
-
-	// Send alert to each user
-	for _, userID := range userIDs {
-		if err := am.SendAlert(AlertMessageData{
-			UserID:   userID,
-			SystemID: systemID,
-			Title:    title,
-			Message:  message,
-			Link:     am.hub.MakeLink("system", systemID),
-			LinkText: "View " + systemName,
-		}); err != nil {
-			e.App.Logger().Error("Failed to send SMART alert", "err", err, "userID", userID)
-		}
+	if err := am.SendAlert(AlertMessageData{
+		SystemID: systemID,
+		Title:    title,
+		Message:  message,
+		Link:     am.hub.MakeLink("system", systemID),
+		LinkText: "View " + systemName,
+	}); err != nil {
+		e.App.Logger().Error("Failed to send SMART alert", "err", err)
 	}
 
 	return e.Next()

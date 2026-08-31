@@ -248,7 +248,6 @@ export interface AlertRecord extends RecordModel {
 
 export interface AlertsHistoryRecord extends RecordModel {
 	alert: string
-	user: string
 	system: string
 	name: string
 	val: number
@@ -300,6 +299,8 @@ export interface ChartTimeData {
 
 export interface UserSettings {
 	chartTime: ChartTimes
+	notificationsEnabled?: boolean
+	systems?: string[]
 	emails?: string[]
 	webhooks?: string[]
 	unitTemp?: Unit
@@ -348,6 +349,14 @@ export interface AlertInfo {
 }
 
 export type AlertMap = Record<string, Map<string, AlertRecord>>
+
+export interface GlobalAlertRecord extends RecordModel {
+	id: string
+	name: string
+	value: number
+	min: number
+	excluded_systems: string[]
+}
 
 export interface SmartData {
 	/** model family */

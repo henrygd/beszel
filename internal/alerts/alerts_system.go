@@ -353,7 +353,6 @@ func (am *AlertManager) sendSystemAlert(alert SystemAlertData) {
 		return
 	}
 	am.SendAlert(AlertMessageData{
-		UserID:   alert.alertData.UserID,
 		SystemID: alert.systemRecord.Id,
 		Title:    subject,
 		Message:  body,

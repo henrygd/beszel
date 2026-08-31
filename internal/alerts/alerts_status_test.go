@@ -42,7 +42,6 @@ func TestStatusAlerts(t *testing.T) {
 			alert, err := beszelTests.CreateRecord(hub, "alerts", map[string]any{
 				"name":   "Status",
 				"system": system.Id,
-				"user":   user.Id,
 				"min":    i + 1,
 			})
 			assert.NoError(t, err)
@@ -131,7 +130,6 @@ func TestStatusAlertRecoveryBeforeDeadline(t *testing.T) {
 
 	alertCollection, _ := hub.FindCollectionByNameOrId("alerts")
 	alert := core.NewRecord(alertCollection)
-	alert.Set("user", user.Id)
 	alert.Set("system", system.Id)
 	alert.Set("name", "Status")
 	alert.Set("triggered", false)
@@ -174,7 +172,6 @@ func TestStatusAlertNormalRecovery(t *testing.T) {
 
 	alertCollection, _ := hub.FindCollectionByNameOrId("alerts")
 	alert := core.NewRecord(alertCollection)
-	alert.Set("user", user.Id)
 	alert.Set("system", system.Id)
 	alert.Set("name", "Status")
 	alert.Set("triggered", true) // System was confirmed DOWN
@@ -212,7 +209,6 @@ func TestHandleStatusAlertsDoesNotSendRecoveryWhileDownIsOnlyPending(t *testing.
 	alertCollection, err := hub.FindCollectionByNameOrId("alerts")
 	require.NoError(t, err)
 	alert := core.NewRecord(alertCollection)
-	alert.Set("user", user.Id)
 	alert.Set("system", system.Id)
 	alert.Set("name", "Status")
 	alert.Set("triggered", false)
@@ -257,7 +253,6 @@ func TestStatusAlertTimerCancellationPreventsBoundaryDelivery(t *testing.T) {
 		alertCollection, err := hub.FindCollectionByNameOrId("alerts")
 		require.NoError(t, err)
 		alert := core.NewRecord(alertCollection)
-		alert.Set("user", user.Id)
 		alert.Set("system", system.Id)
 		alert.Set("name", "Status")
 		alert.Set("triggered", false)
@@ -308,7 +303,6 @@ func TestStatusAlertDownFiresAfterDelayExpires(t *testing.T) {
 	alertCollection, err := hub.FindCollectionByNameOrId("alerts")
 	require.NoError(t, err)
 	alert := core.NewRecord(alertCollection)
-	alert.Set("user", user.Id)
 	alert.Set("system", system.Id)
 	alert.Set("name", "Status")
 	alert.Set("triggered", false)
@@ -337,7 +331,9 @@ func TestStatusAlertDownFiresAfterDelayExpires(t *testing.T) {
 	assert.True(t, alertRecord.GetBool("triggered"), "alert should be marked triggered after downtime matures")
 }
 
-func TestStatusAlertMultipleUsersRespectDifferentMinutes(t *testing.T) {
+// TestStatusAlertNotifiesAllUsers verifies that a single system-level alert notifies
+// all users who have notification settings configured.
+func TestStatusAlertNotifiesAllUsers(t *testing.T) {
 	hub, user1 := beszelTests.GetHubWithUser(t)
 
 	synctest.Test(t, func(t *testing.T) {
@@ -365,18 +361,11 @@ func TestStatusAlertMultipleUsersRespectDifferentMinutes(t *testing.T) {
 		system.Set("status", "up")
 		require.NoError(t, hub.SaveNoValidate(system))
 
-		alertUser1, err := beszelTests.CreateRecord(hub, "alerts", map[string]any{
+		// One alert for the system (not per-user)
+		alert, err := beszelTests.CreateRecord(hub, "alerts", map[string]any{
 			"name":   "Status",
 			"system": system.Id,
-			"user":   user1.Id,
 			"min":    1,
-		})
-		require.NoError(t, err)
-		alertUser2, err := beszelTests.CreateRecord(hub, "alerts", map[string]any{
-			"name":   "Status",
-			"system": system.Id,
-			"user":   user2.Id,
-			"min":    2,
 		})
 		require.NoError(t, err)
 
@@ -385,104 +374,33 @@ func TestStatusAlertMultipleUsersRespectDifferentMinutes(t *testing.T) {
 		system.Set("status", "down")
 		require.NoError(t, hub.SaveNoValidate(system))
 
-		assert.Equal(t, 2, hub.GetPendingAlertsCount(), "both user alerts should be pending after the system goes down")
+		assert.Equal(t, 1, hub.GetPendingAlertsCount(), "one alert should be pending after the system goes down")
 
 		time.Sleep(59 * time.Second)
 		synctest.Wait()
-		assert.Zero(t, hub.TestMailer.TotalSend(), "no messages should be sent before the earliest alert minute elapses")
+		assert.Zero(t, hub.TestMailer.TotalSend(), "no messages should be sent before the alert minute elapses")
 
 		time.Sleep(2 * time.Second)
 		synctest.Wait()
 
+		// Both users should be notified via separate emails
 		messages := hub.TestMailer.Messages()
-		require.Len(t, messages, 1, "only the first user's alert should send after one minute")
-		require.Len(t, messages[0].To, 1)
-		assert.Equal(t, "user1@example.com", messages[0].To[0].Address)
-		assert.Contains(t, messages[0].Subject, "Connection to shared-system is down")
-		assert.Equal(t, 1, hub.GetPendingAlertsCount(), "the later user alert should still be pending")
+		require.Len(t, messages, 2, "both users should receive down notification")
+		recipients := map[string]bool{}
+		for _, msg := range messages {
+			require.Len(t, msg.To, 1)
+			recipients[msg.To[0].Address] = true
+			assert.Contains(t, msg.Subject, "Connection to shared-system is down")
+		}
+		assert.True(t, recipients["user1@example.com"], "user1 should be notified")
+		assert.True(t, recipients["user2@example.com"], "user2 should be notified")
+		assert.Zero(t, hub.GetPendingAlertsCount(), "pending alert should be consumed after timer fires")
 
-		time.Sleep(58 * time.Second)
-		synctest.Wait()
-		assert.Equal(t, 1, hub.TestMailer.TotalSend(), "the second user's alert should still be waiting before two minutes")
-
-		time.Sleep(2 * time.Second)
-		synctest.Wait()
-
-		messages = hub.TestMailer.Messages()
-		require.Len(t, messages, 2, "both users should eventually receive their own status alert")
-		require.Len(t, messages[1].To, 1)
-		assert.Equal(t, "user2@example.com", messages[1].To[0].Address)
-		assert.Contains(t, messages[1].Subject, "Connection to shared-system is down")
-		assert.Zero(t, hub.GetPendingAlertsCount(), "all pending alerts should be consumed after both timers fire")
-
-		alertUser1, err = hub.FindRecordById("alerts", alertUser1.Id)
+		alert, err = hub.FindRecordById("alerts", alert.Id)
 		require.NoError(t, err)
-		assert.True(t, alertUser1.GetBool("triggered"), "user1 alert should be marked triggered after delivery")
+		assert.True(t, alert.GetBool("triggered"), "alert should be marked triggered after delivery")
 
-		alertUser2, err = hub.FindRecordById("alerts", alertUser2.Id)
-		require.NoError(t, err)
-		assert.True(t, alertUser2.GetBool("triggered"), "user2 alert should be marked triggered after delivery")
-	})
-}
-
-func TestStatusAlertMultipleUsersRecoveryBetweenMinutesOnlyAlertsEarlierUser(t *testing.T) {
-	hub, user1 := beszelTests.GetHubWithUser(t)
-
-	synctest.Test(t, func(t *testing.T) {
-		defer hub.Cleanup()
-
-		setStatusAlertEmail(t, hub, user1.Id, "user1@example.com")
-
-		user2, err := beszelTests.CreateUser(hub, "user2@example.com", "password")
-		require.NoError(t, err)
-		_, err = beszelTests.CreateRecord(hub, "user_settings", map[string]any{
-			"user": user2.Id,
-			"settings": map[string]any{
-				"emails":   []string{"user2@example.com"},
-				"webhooks": []string{},
-			},
-		})
-		require.NoError(t, err)
-
-		system, err := beszelTests.CreateRecord(hub, "systems", map[string]any{
-			"name":  "shared-system",
-			"users": []string{user1.Id, user2.Id},
-			"host":  "127.0.0.1",
-		})
-		require.NoError(t, err)
-		system.Set("status", "up")
-		require.NoError(t, hub.SaveNoValidate(system))
-
-		alertUser1, err := beszelTests.CreateRecord(hub, "alerts", map[string]any{
-			"name":   "Status",
-			"system": system.Id,
-			"user":   user1.Id,
-			"min":    1,
-		})
-		require.NoError(t, err)
-		alertUser2, err := beszelTests.CreateRecord(hub, "alerts", map[string]any{
-			"name":   "Status",
-			"system": system.Id,
-			"user":   user2.Id,
-			"min":    2,
-		})
-		require.NoError(t, err)
-
-		time.Sleep(10 * time.Millisecond)
-
-		system.Set("status", "down")
-		require.NoError(t, hub.SaveNoValidate(system))
-
-		time.Sleep(61 * time.Second)
-		synctest.Wait()
-
-		messages := hub.TestMailer.Messages()
-		require.Len(t, messages, 1, "the first user's down alert should send before recovery")
-		require.Len(t, messages[0].To, 1)
-		assert.Equal(t, "user1@example.com", messages[0].To[0].Address)
-		assert.Contains(t, messages[0].Subject, "Connection to shared-system is down")
-		assert.Equal(t, 1, hub.GetPendingAlertsCount(), "the second user's alert should still be pending")
-
+		// Recovery should also notify all users
 		system.Set("status", "up")
 		require.NoError(t, hub.SaveNoValidate(system))
 
@@ -490,27 +408,10 @@ func TestStatusAlertMultipleUsersRecoveryBetweenMinutesOnlyAlertsEarlierUser(t *
 		synctest.Wait()
 
 		messages = hub.TestMailer.Messages()
-		require.Len(t, messages, 2, "recovery should notify only the user whose down alert had already triggered")
-		for _, message := range messages {
-			require.Len(t, message.To, 1)
-			assert.Equal(t, "user1@example.com", message.To[0].Address)
+		require.Len(t, messages, 4, "both users should receive up notification on recovery")
+		for _, msg := range messages[2:] {
+			assert.Contains(t, msg.Subject, "Connection to shared-system is up")
 		}
-		assert.Contains(t, messages[1].Subject, "Connection to shared-system is up")
-		assert.Zero(t, hub.GetPendingAlertsCount(), "recovery should cancel the later user's pending alert")
-
-		time.Sleep(61 * time.Second)
-		synctest.Wait()
-
-		messages = hub.TestMailer.Messages()
-		require.Len(t, messages, 2, "user2 should never receive a down alert once recovery cancels the pending timer")
-
-		alertUser1, err = hub.FindRecordById("alerts", alertUser1.Id)
-		require.NoError(t, err)
-		assert.False(t, alertUser1.GetBool("triggered"), "user1 alert should be cleared after recovery")
-
-		alertUser2, err = hub.FindRecordById("alerts", alertUser2.Id)
-		require.NoError(t, err)
-		assert.False(t, alertUser2.GetBool("triggered"), "user2 alert should remain untriggered because it never fired")
 	})
 }
 
@@ -535,7 +436,6 @@ func TestStatusAlertDuplicateDownCallIsIdempotent(t *testing.T) {
 	alertCollection, err := hub.FindCollectionByNameOrId("alerts")
 	require.NoError(t, err)
 	alert := core.NewRecord(alertCollection)
-	alert.Set("user", user.Id)
 	alert.Set("system", system.Id)
 	alert.Set("name", "Status")
 	alert.Set("triggered", false)
@@ -591,7 +491,6 @@ func TestRestorePendingStatusAlertsRequeuesDownSystemsAfterRestart(t *testing.T)
 	alertCollection, err := hub.FindCollectionByNameOrId("alerts")
 	require.NoError(t, err)
 	alert := core.NewRecord(alertCollection)
-	alert.Set("user", user.Id)
 	alert.Set("system", system.Id)
 	alert.Set("name", "Status")
 	alert.Set("triggered", false)
@@ -635,7 +534,6 @@ func TestRestorePendingStatusAlertsSkipsNonDownOrAlreadyTriggeredAlerts(t *testi
 	_, err = beszelTests.CreateRecord(hub, "alerts", map[string]any{
 		"name":      "Status",
 		"system":    systemDownPending.Id,
-		"user":      user.Id,
 		"min":       1,
 		"triggered": false,
 	})
@@ -644,7 +542,6 @@ func TestRestorePendingStatusAlertsSkipsNonDownOrAlreadyTriggeredAlerts(t *testi
 	_, err = beszelTests.CreateRecord(hub, "alerts", map[string]any{
 		"name":      "Status",
 		"system":    systemUp.Id,
-		"user":      user.Id,
 		"min":       1,
 		"triggered": false,
 	})
@@ -653,7 +550,6 @@ func TestRestorePendingStatusAlertsSkipsNonDownOrAlreadyTriggeredAlerts(t *testi
 	_, err = beszelTests.CreateRecord(hub, "alerts", map[string]any{
 		"name":      "Status",
 		"system":    systemDownTriggered.Id,
-		"user":      user.Id,
 		"min":       1,
 		"triggered": true,
 	})
@@ -675,7 +571,6 @@ func TestRestorePendingStatusAlertsIsIdempotent(t *testing.T) {
 	_, err = beszelTests.CreateRecord(hub, "alerts", map[string]any{
 		"name":      "Status",
 		"system":    system.Id,
-		"user":      user.Id,
 		"min":       1,
 		"triggered": false,
 	})
@@ -706,7 +601,6 @@ func TestResolveStatusAlertsFixesStaleTriggered(t *testing.T) {
 	alertCollection, err := hub.FindCollectionByNameOrId("alerts")
 	require.NoError(t, err)
 	alert := core.NewRecord(alertCollection)
-	alert.Set("user", user.Id)
 	alert.Set("system", system.Id)
 	alert.Set("name", "Status")
 	alert.Set("triggered", true) // Stale: system is up but alert still says triggered
@@ -744,7 +638,6 @@ func TestResolveStatusAlerts(t *testing.T) {
 	alertUp, err := beszelTests.CreateRecord(hub, "alerts", map[string]any{
 		"name":   "Status",
 		"system": systemUp.Id,
-		"user":   user.Id,
 		"min":    1,
 	})
 	assert.NoError(t, err)
@@ -752,7 +645,6 @@ func TestResolveStatusAlerts(t *testing.T) {
 	alertDown, err := beszelTests.CreateRecord(hub, "alerts", map[string]any{
 		"name":   "Status",
 		"system": systemDown.Id,
-		"user":   user.Id,
 		"min":    1,
 	})
 	assert.NoError(t, err)
@@ -834,7 +726,6 @@ func TestAlertsHistoryStatus(t *testing.T) {
 		alertRecord, err := beszelTests.CreateRecord(hub, "alerts", map[string]any{
 			"name":   "Status",
 			"system": system.Id,
-			"user":   user.Id,
 			"min":    1,
 		})
 		assert.NoError(t, err)
@@ -909,7 +800,6 @@ func TestStatusAlertClearedBeforeSend(t *testing.T) {
 		alertRecord, err := beszelTests.CreateRecord(hub, "alerts", map[string]any{
 			"name":   "Status",
 			"system": system.Id,
-			"user":   user.Id,
 			"min":    1,
 		})
 		assert.NoError(t, err)
@@ -978,7 +868,6 @@ func TestCancelPendingStatusAlertsClearsAllAlertsForSystem(t *testing.T) {
 	require.NoError(t, err)
 
 	alert1 := core.NewRecord(alertCollection)
-	alert1.Set("user", user.Id)
 	alert1.Set("system", system1.Id)
 	alert1.Set("name", "Status")
 	alert1.Set("triggered", false)
@@ -986,7 +875,6 @@ func TestCancelPendingStatusAlertsClearsAllAlertsForSystem(t *testing.T) {
 	require.NoError(t, hub.Save(alert1))
 
 	alert2 := core.NewRecord(alertCollection)
-	alert2.Set("user", user.Id)
 	alert2.Set("system", system2.Id)
 	alert2.Set("name", "Status")
 	alert2.Set("triggered", false)

@@ -1,5 +1,5 @@
 import { atom, computed, listenKeys, map, type ReadableAtom } from "nanostores"
-import type { AlertMap, ChartTimes, SystemRecord, UpdateInfo, UserSettings } from "@/types"
+import type { AlertMap, ChartTimes, GlobalAlertRecord, SystemRecord, UpdateInfo, UserSettings } from "@/types"
 import { pb } from "./api"
 import { Unit } from "./enums"
 
@@ -24,6 +24,9 @@ export const $systems: ReadableAtom<SystemRecord[]> = computed($allSystemsById, 
 
 /** Map of alert records by system id and alert name */
 export const $alerts = map<AlertMap>({})
+
+/** Map of global alert records by alert name */
+export const $globalAlerts = map<Map<string, GlobalAlertRecord>>(new Map())
 
 /** SSH public key */
 export const $publicKey = atom("")
