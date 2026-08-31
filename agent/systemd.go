@@ -5,10 +5,12 @@ package agent
 import (
 	"context"
 	"errors"
+	"fmt"
 	"log/slog"
 	"maps"
 	"math"
 	"os"
+	"os/exec"
 	"strconv"
 	"strings"
 	"sync"
@@ -311,4 +313,27 @@ func getServicePatterns() []string {
 		patterns = []string{"*.service"}
 	}
 	return patterns
+}
+
+const systemLogsTail = 200
+
+func getSystemLogs(ctx context.Context, serviceName string) (string, error) {
+	args := []string{
+		"--no-pager",
+		"--output=short-iso",
+		fmt.Sprintf("-n%d", systemLogsTail),
+	}
+	if serviceName != "" {
+		args = append(args, "-u", serviceName)
+	}
+	cmd := exec.CommandContext(ctx, "journalctl", args...)
+	out, err := cmd.Output()
+	if err != nil {
+		return "", fmt.Errorf("journalctl failed: %w", err)
+	}
+	logs := string(out)
+	if strings.Contains(logs, "\x1b") {
+		logs = ansiEscapePattern.ReplaceAllString(logs, "")
+	}
+	return logs, nil
 }

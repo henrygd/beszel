@@ -13,12 +13,13 @@ import {
 	type VisibilityState,
 } from "@tanstack/react-table"
 import { useVirtualizer, type VirtualItem } from "@tanstack/react-virtual"
-import { LoaderCircleIcon } from "lucide-react"
+import { LoaderCircleIcon, ScrollTextIcon } from "lucide-react"
 import { listenKeys } from "nanostores"
 import { memo, type ReactNode, useEffect, useMemo, useRef, useState } from "react"
 import { getStatusColor, systemdTableCols } from "@/components/systemd-table/systemd-table-columns"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Card, CardHeader, CardTitle } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet"
 import { TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
@@ -29,7 +30,10 @@ import { cn, decimalString, formatBytes, useBrowserStorage } from "@/lib/utils"
 import type { SystemdRecord, SystemdServiceDetails } from "@/types"
 import { Separator } from "../ui/separator"
 
-export default function SystemdTable({ systemId }: { systemId?: string }) {
+export default function SystemdTable({
+	systemId,
+	onViewLogs,
+}: { systemId?: string; onViewLogs?: (serviceName: string) => void }) {
 	const loadTime = Date.now()
 	const [data, setData] = useState<SystemdRecord[]>([])
 	const [sorting, setSorting] = useBrowserStorage<SortingState>(
@@ -178,7 +182,7 @@ export default function SystemdTable({ systemId }: { systemId?: string }) {
 				</div>
 			</CardHeader>
 			<div className="rounded-md">
-				<AllSystemdTable table={table} rows={rows} colLength={visibleColumns.length} systemId={systemId} />
+				<AllSystemdTable table={table} rows={rows} colLength={visibleColumns.length} systemId={systemId} onViewLogs={onViewLogs} />
 			</div>
 		</Card>
 	)
@@ -189,11 +193,13 @@ const AllSystemdTable = memo(function AllSystemdTable({
 	rows,
 	colLength,
 	systemId,
+	onViewLogs,
 }: {
 	table: TableType<SystemdRecord>
 	rows: Row<SystemdRecord>[]
 	colLength: number
 	systemId?: string
+	onViewLogs?: (serviceName: string) => void
 }) {
 	// The virtualizer will need a reference to the scrollable container element
 	const scrollRef = useRef<HTMLDivElement>(null)
@@ -249,6 +255,7 @@ const AllSystemdTable = memo(function AllSystemdTable({
 				setSheetOpen={setSheetOpen}
 				activeService={activeService}
 				systemId={systemId}
+				onViewLogs={onViewLogs}
 			/>
 		</div>
 	)
@@ -259,11 +266,13 @@ function SystemdSheet({
 	setSheetOpen,
 	activeService,
 	systemId,
+	onViewLogs,
 }: {
 	sheetOpen: boolean
 	setSheetOpen: (open: boolean) => void
 	activeService: React.RefObject<SystemdRecord | null>
 	systemId?: string
+	onViewLogs?: (serviceName: string) => void
 }) {
 	const service = activeService.current
 	const [details, setDetails] = useState<SystemdServiceDetails | null>(null)
@@ -434,10 +443,23 @@ function SystemdSheet({
 	return (
 		<Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
 			<SheetContent className="w-full sm:max-w-220 p-6 overflow-y-auto">
-				<SheetHeader className="p-0">
+				<SheetHeader className="p-0 flex-row items-center justify-between">
 					<SheetTitle>
 						<Trans>Service Details</Trans>
 					</SheetTitle>
+					{onViewLogs && (
+						<Button
+							variant="outline"
+							size="sm"
+							onClick={() => {
+								onViewLogs(service.name)
+								setSheetOpen(false)
+							}}
+						>
+							<ScrollTextIcon className="size-3.5" />
+							<Trans>View Logs</Trans>
+						</Button>
+					)}
 				</SheetHeader>
 				<div className="grid gap-6">
 					{isLoading && (

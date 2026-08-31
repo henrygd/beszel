@@ -51,6 +51,7 @@ func NewHandlerRegistry() *HandlerRegistry {
 	registry.Register(common.GetContainerInfo, &GetContainerInfoHandler{})
 	registry.Register(common.GetSmartData, &GetSmartDataHandler{})
 	registry.Register(common.GetSystemdInfo, &GetSystemdInfoHandler{})
+	registry.Register(common.GetSystemLogs, &GetSystemLogsHandler{})
 
 	return registry
 }
@@ -176,6 +177,26 @@ func (h *GetSmartDataHandler) Handle(hctx *HandlerContext) error {
 		Data:     hctx.Agent.smartManager.GetCurrentData(),
 		Complete: complete,
 	}, hctx.RequestID)
+}
+
+////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
+
+// GetSystemLogsHandler handles system journal log requests
+type GetSystemLogsHandler struct{}
+
+func (h *GetSystemLogsHandler) Handle(hctx *HandlerContext) error {
+	var req common.SystemLogsRequest
+	if err := cbor.Unmarshal(hctx.Request.Data, &req); err != nil {
+		return err
+	}
+	ctx := context.Background()
+	logs, err := getSystemLogs(ctx, req.ServiceName)
+	if err != nil {
+		return err
+	}
+	return hctx.SendResponse(logs, hctx.RequestID)
 }
 
 ////////////////////////////////////////////////////////////////////////////

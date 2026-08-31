@@ -3,6 +3,7 @@
 package agent
 
 import (
+	"context"
 	"errors"
 
 	"github.com/henrygd/beszel/internal/entities/systemd"
@@ -35,4 +36,8 @@ func (sm *systemdManager) getFailedServiceCount() uint16 {
 
 func (sm *systemdManager) getServiceDetails(string) (systemd.ServiceDetails, error) {
 	return nil, errors.New("systemd manager unavailable")
+}
+
+func getSystemLogs(_ context.Context, _ string) (string, error) {
+	return "", errors.ErrUnsupported
 }
