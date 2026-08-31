@@ -78,6 +78,8 @@ export interface SystemInfo {
 	efs?: Record<string, number>
 	/** services [totalServices, numFailedServices] */
 	sv?: [number, number]
+	/** custom root disk name */
+	rdn?: string
 }
 
 export interface SystemStats {
@@ -129,6 +131,8 @@ export interface SystemStats {
 	dios?: [number, number, number, number, number, number]
 	/** max disk io stats */
 	diosm?: [number, number, number, number, number, number]
+	/** cumulative device I/O bytes [total read, total write] */
+	diot?: [number, number]
 	/** network sent (mb) */
 	ns: number
 	/** network received (mb) */
@@ -143,12 +147,16 @@ export interface SystemStats {
 	bm?: [number, number]
 	/** temperatures */
 	t?: Record<string, number>
+	/** fan speeds (RPM) — keyed by `<chip>_<label-or-fan-idx>` */
+	f?: Record<string, number>
 	/** extra filesystems */
 	efs?: Record<string, ExtraFsStats>
 	/** GPU data */
 	g?: Record<string, GPUData>
 	/** battery percent and state */
 	bat?: [number, BatteryState]
+	/** battery percentages by device name */
+	bats?: Record<string, number>
 	/** network interfaces [upload bytes, download bytes, total upload bytes, total download bytes] */
 	ni?: Record<string, [number, number, number, number]>
 }
@@ -195,6 +203,10 @@ export interface ExtraFsStats {
 	dios?: [number, number, number, number, number, number]
 	/** max disk io stats */
 	diosm?: [number, number, number, number, number, number]
+	/** cumulative device read bytes */
+	tr?: number
+	/** cumulative device write bytes */
+	tw?: number
 }
 
 export interface ContainerStatsRecord extends RecordModel {
@@ -208,7 +220,7 @@ interface ContainerStats {
 	n: string
 	/** cpu percent */
 	c: number
-	/** memory used (gb) */
+	/** memory used (mb) */
 	m: number
 	// network sent (mb)
 	ns?: number

@@ -8,7 +8,7 @@ msgstr ""
 "Language: zh\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2026-03-28 02:52\n"
+"PO-Revision-Date: 2026-08-18 17:52\n"
 "Last-Translator: \n"
 "Language-Team: Chinese Traditional\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
@@ -149,7 +149,7 @@ msgstr "設定環境變數後，請重新啟動 Beszel Hub 以使變更生效。
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Agent"
-msgstr ""
+msgstr "Agent"
 
 #: src/components/command-palette.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
@@ -250,6 +250,7 @@ msgstr "網路流量"
 msgid "Bat"
 msgstr "電池"
 
+#: src/components/routes/system/charts/sensor-charts.tsx
 #: src/components/routes/system/charts/sensor-charts.tsx
 #: src/lib/alerts.ts
 msgid "Battery"
@@ -471,6 +472,10 @@ msgstr "複製 Linux 指令"
 msgid "Copy name"
 msgstr "複製名稱"
 
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Copy public key"
+msgstr "複製公鑰"
+
 #: src/components/copy-to-clipboard.tsx
 msgid "Copy text"
 msgstr "複製文字"
@@ -496,7 +501,7 @@ msgstr "核心指標"
 #: src/components/systemd-table/systemd-table-columns.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "CPU"
-msgstr ""
+msgstr "CPU"
 
 #: src/components/routes/system/cpu-sheet.tsx
 msgid "CPU Cores"
@@ -547,6 +552,8 @@ msgid "Cumulative Upload"
 msgstr "累計上傳"
 
 #. Context: Battery state
+#. Context: Battery state
+#: src/components/routes/system/charts/sensor-charts.tsx
 #: src/components/routes/system/charts/sensor-charts.tsx
 msgid "Current state"
 msgstr "目前狀態"
@@ -695,7 +702,7 @@ msgstr "結束時間"
 
 #: src/components/routes/settings/heartbeat.tsx
 msgid "Endpoint URL"
-msgstr ""
+msgstr "Endpoint URL"
 
 #: src/components/routes/settings/heartbeat.tsx
 msgid "Endpoint URL to ping (required)"
@@ -717,7 +724,6 @@ msgstr "輸入您的一次性密碼。"
 msgid "Ephemeral"
 msgstr "臨時"
 
-#: src/components/login/auth-form.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/settings/config-yaml.tsx
 #: src/components/routes/settings/heartbeat.tsx
@@ -809,6 +815,10 @@ msgstr "更新警報失敗"
 msgid "Failed: {0}"
 msgstr "失敗：{0}"
 
+#: src/components/routes/system/charts/sensor-charts.tsx
+msgid "Fans"
+msgstr "風扇"
+
 #: src/components/containers-table/containers-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/system/chart-card.tsx
@@ -820,7 +830,7 @@ msgstr "篩選..."
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Fingerprint"
-msgstr ""
+msgstr "Fingerprint"
 
 #: src/components/routes/system/smart-table.tsx
 msgid "Firmware"
@@ -858,7 +868,7 @@ msgstr "全域"
 
 #: src/components/routes/system.tsx
 msgid "GPU"
-msgstr ""
+msgstr "GPU"
 
 #: src/components/routes/system/charts/gpu-charts.tsx
 msgid "GPU Engines"
@@ -883,7 +893,7 @@ msgstr "健康狀態"
 
 #: src/components/routes/settings/layout.tsx
 msgid "Heartbeat"
-msgstr ""
+msgstr "Heartbeat"
 
 #: src/components/routes/settings/heartbeat.tsx
 msgid "Heartbeat Monitoring"
@@ -901,7 +911,7 @@ msgstr "Homebrew 指令"
 
 #: src/components/add-system.tsx
 msgid "Host / IP"
-msgstr ""
+msgstr "Host / IP"
 
 #: src/components/routes/settings/heartbeat.tsx
 msgid "HTTP Method"
@@ -952,7 +962,6 @@ msgstr "間隔"
 msgid "Invalid email address."
 msgstr "無效的電子郵件地址。"
 
-#: src/components/lang-toggle.tsx
 #: src/components/routes/settings/general.tsx
 msgid "Language"
 msgstr "語言"
@@ -1068,8 +1077,8 @@ msgid "Memory Usage"
 msgstr "記憶體使用量"
 
 #: src/components/routes/system/charts/memory-charts.tsx
-msgid "Memory usage of docker containers"
-msgstr "Docker 容器的記憶體使用量"
+msgid "Memory usage of containers"
+msgstr "容器的記憶體使用量"
 
 #. Device model
 #: src/components/routes/system/smart-table.tsx
@@ -1090,8 +1099,8 @@ msgid "Net"
 msgstr "網路"
 
 #: src/components/routes/system/charts/network-charts.tsx
-msgid "Network traffic of docker containers"
-msgstr "Docker 容器的網路流量"
+msgid "Network traffic of containers"
+msgstr "容器的網路流量"
 
 #: src/components/routes/system/charts/network-charts.tsx
 #: src/components/routes/system/network-sheet.tsx
@@ -1286,7 +1295,7 @@ msgstr "請登入您的帳號"
 
 #: src/components/add-system.tsx
 msgid "Port"
-msgstr ""
+msgstr "Port"
 
 #: src/components/containers-table/containers-table-columns.tsx
 msgctxt "Container ports"
@@ -1310,6 +1319,10 @@ msgstr "首選語言"
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Process started"
 msgstr "進程啟動"
+
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Public key"
+msgstr "公鑰"
 
 #. Use 'Key' if your language requires many more characters
 #: src/components/add-system.tsx
@@ -1384,7 +1397,7 @@ msgstr "繼續"
 #: src/components/systems-table/systems-table-columns.tsx
 msgctxt "Root disk label"
 msgid "Root"
-msgstr ""
+msgstr "Root"
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Rotate token"
@@ -1550,6 +1563,11 @@ msgstr "系統的虛擬記憶體使用量"
 msgid "Swap Usage"
 msgstr "交換空間使用量"
 
+#: src/components/mode-toggle.tsx
+#: src/components/mode-toggle.tsx
+msgid "Switch theme"
+msgstr "切換主題"
+
 #: src/components/add-system.tsx
 #: src/components/alerts-history-columns.tsx
 #: src/components/containers-table/containers-table-columns.tsx
@@ -1564,6 +1582,10 @@ msgstr "交換空間使用量"
 #: src/lib/alerts.ts
 msgid "System"
 msgstr "系統"
+
+#: src/components/routes/system/charts/sensor-charts.tsx
+msgid "System fan speeds (RPM)"
+msgstr "系統風扇速度（RPM）"
 
 #: src/components/routes/system/charts/load-average-chart.tsx
 msgid "System load averages over time"
@@ -1657,15 +1679,10 @@ msgstr "時間格式"
 msgid "To email(s)"
 msgstr "發送到電子郵件"
 
-#: src/components/mode-toggle.tsx
-#: src/components/mode-toggle.tsx
-msgid "Toggle theme"
-msgstr "切換主題"
-
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Token"
-msgstr ""
+msgstr "Token"
 
 #: src/components/command-palette.tsx
 #: src/components/routes/settings/layout.tsx
@@ -1697,7 +1714,7 @@ msgstr "每個介面的總傳送資料量"
 #: src/components/routes/system/disk-io-sheet.tsx
 msgctxt "Disk I/O"
 msgid "Total time spent on read/write (can exceed 100%)"
-msgstr ""
+msgstr "讀寫總耗時（可能超過 100%）"
 
 #. placeholder {0}: data.length
 #: src/components/systemd-table/systemd-table.tsx

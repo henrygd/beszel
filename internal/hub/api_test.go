@@ -55,7 +55,7 @@ func TestApiRoutesAuthentication(t *testing.T) {
 	// Create test system
 	system, err := beszelTests.CreateRecord(hub, "systems", map[string]any{
 		"name":  "test-system",
-		"users": []string{user.Id},
+		"users": []string{user.Id, readOnlyUser.Id},
 		"host":  "127.0.0.1",
 	})
 	require.NoError(t, err, "Failed to create test system")

@@ -12,50 +12,58 @@ func init() {
 	m.Register(func(app core.App) error {
 		db := app.DB()
 
+		alertsCollection, err := app.FindCollectionByNameOrId("alerts")
+		if err != nil {
+			return err
+		}
+
 		// Backfill per-user notification preferences before the user column is
 		// dropped. Every user who had alerts is opted in to notifications and
 		// subscribed to exactly the systems they had alerts on, so notification
 		// behavior is preserved across the upgrade. Runs before the dedup delete
 		// below so a user's subscription isn't lost when another user's alert
-		// wins the (system, name) tie-break.
-		type alertUserSystem struct {
-			User   string `db:"user"`
-			System string `db:"system"`
-		}
-		var pairs []alertUserSystem
-		if err := db.NewQuery(
-			"SELECT DISTINCT user, system FROM alerts WHERE user != '' AND system != ''",
-		).All(&pairs); err != nil {
-			return err
-		}
-		systemsByUser := make(map[string][]string)
-		for _, p := range pairs {
-			systemsByUser[p.User] = append(systemsByUser[p.User], p.System)
-		}
-		for userID, systemIDs := range systemsByUser {
-			settingsRec, err := app.FindFirstRecordByFilter(
-				"user_settings", "user={:user}", dbx.Params{"user": userID},
-			)
-			if err != nil {
-				continue // user has no settings record; nothing to migrate
+		// wins the (system, name) tie-break. Skipped on fresh installs, where the
+		// collections snapshot already creates alerts without a user column.
+		if alertsCollection.Fields.GetByName("user") != nil {
+			type alertUserSystem struct {
+				User   string `db:"user"`
+				System string `db:"system"`
 			}
-			settings := map[string]any{}
-			if raw := settingsRec.GetString("settings"); raw != "" {
-				if err := json.Unmarshal([]byte(raw), &settings); err != nil {
+			var pairs []alertUserSystem
+			if err := db.NewQuery(
+				"SELECT DISTINCT user, system FROM alerts WHERE user != '' AND system != ''",
+			).All(&pairs); err != nil {
+				return err
+			}
+			systemsByUser := make(map[string][]string)
+			for _, p := range pairs {
+				systemsByUser[p.User] = append(systemsByUser[p.User], p.System)
+			}
+			for userID, systemIDs := range systemsByUser {
+				settingsRec, err := app.FindFirstRecordByFilter(
+					"user_settings", "user={:user}", dbx.Params{"user": userID},
+				)
+				if err != nil {
+					continue // user has no settings record; nothing to migrate
+				}
+				settings := map[string]any{}
+				if raw := settingsRec.GetString("settings"); raw != "" {
+					if err := json.Unmarshal([]byte(raw), &settings); err != nil {
+						return err
+					}
+				}
+				settings["notificationsEnabled"] = true
+				settings["systems"] = systemIDs
+				settingsRec.Set("settings", settings)
+				if err := app.SaveNoValidate(settingsRec); err != nil {
 					return err
 				}
-			}
-			settings["notificationsEnabled"] = true
-			settings["systems"] = systemIDs
-			settingsRec.Set("settings", settings)
-			if err := app.SaveNoValidate(settingsRec); err != nil {
-				return err
 			}
 		}
 
 		// Deduplicate alerts before dropping the user column:
 		// for each (system, name) pair, keep the most recently updated record.
-		_, err := db.NewQuery(`
+		_, err = db.NewQuery(`
 			DELETE FROM alerts
 			WHERE id NOT IN (
 				SELECT id FROM (
@@ -82,10 +90,6 @@ func init() {
 		}
 
 		// Update alerts collection: remove user field, update index and rules
-		alertsCollection, err := app.FindCollectionByNameOrId("alerts")
-		if err != nil {
-			return err
-		}
 		alertsCollection.Fields.RemoveById("hn5ly3vi") // user field
 		alertsCollection.Indexes = []string{
 			"CREATE UNIQUE INDEX `idx_MnhEt21L5r` ON `alerts` (`system`, `name`)",
