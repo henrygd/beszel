@@ -620,7 +620,7 @@ func TestAverageSystemStatsSlice_ZeroRepresentativeBattery(t *testing.T) {
 		{Battery: [2]uint8{0, 1}, Batteries: map[string]uint8{"Primary": 0}},
 		{},
 	})
-	assert.Equal(t, [2]uint8{0, 1}, result.Battery)
+	assert.Equal(t, system.Battery{0, 1}, result.Battery)
 	assert.Equal(t, map[string]uint8{"Primary": 0}, result.Batteries)
 }
 
