@@ -44,7 +44,7 @@ type Stats struct {
 	MaxBandwidth [2]uint64 `json:"bm,omitzero" cbor:"-"`                   // [sent bytes, recv bytes]
 	// TODO: remove other load fields in future release in favor of load avg array
 	LoadAvg           [3]float64           `json:"la,omitempty" cbor:"28,keyasint"`
-	Battery           [2]uint8             `json:"bat,omitzero" cbor:"29,keyasint,omitzero"`    // [percent, charge state]
+	Battery           Battery              `json:"bat,omitzero" cbor:"29,keyasint,omitzero"`    // [percent, charge state]
 	NetworkInterfaces map[string][4]uint64 `json:"ni,omitempty" cbor:"31,keyasint,omitempty"`   // [upload bytes, download bytes, total upload, total download]
 	DiskIO            [2]uint64            `json:"dio,omitzero" cbor:"32,keyasint,omitzero"`    // [read bytes, write bytes]
 	MaxDiskIO         [2]uint64            `json:"diom,omitzero" cbor:"-"`                      // [max read bytes, max write bytes]
@@ -52,6 +52,7 @@ type Stats struct {
 	CpuCoresUsage     Uint8Slice           `json:"cpus,omitempty" cbor:"34,keyasint,omitempty"` // per-core busy usage [CPU0..]
 	DiskIoStats       [6]float64           `json:"dios,omitzero" cbor:"35,keyasint,omitzero"`   // [read time %, write time %, io utilization %, r_await ms, w_await ms, weighted io %]
 	MaxDiskIoStats    [6]float64           `json:"diosm,omitzero" cbor:"-"`                     // max values for DiskIoStats
+	DiskIOTotal       [2]uint64            `json:"diot,omitzero" cbor:"38,keyasint,omitzero"`   // [total read bytes, total write bytes] cumulative device counters
 }
 
 // Uint8Slice wraps []uint8 to customize JSON encoding while keeping CBOR efficient.
@@ -69,6 +70,15 @@ func (s Uint8Slice) MarshalJSON() ([]byte, error) {
 		arr[i] = uint16(v)
 	}
 	return json.Marshal(arr)
+}
+
+// Battery stores the representative battery's percent and charge state.
+// Its custom JSON encoding keeps the public and persisted representation as a
+// numeric tuple under both encoding/json v1 and v2.
+type Battery [2]uint8
+
+func (b Battery) MarshalJSON() ([]byte, error) {
+	return json.Marshal([2]uint16{uint16(b[0]), uint16(b[1])})
 }
 
 type GPUData struct {
@@ -90,8 +100,8 @@ type FsStats struct {
 	Name           string    `json:"-"`
 	DiskTotal      float64   `json:"d" cbor:"0,keyasint"`
 	DiskUsed       float64   `json:"du" cbor:"1,keyasint"`
-	TotalRead      uint64    `json:"-"`
-	TotalWrite     uint64    `json:"-"`
+	TotalRead      uint64    `json:"tr,omitzero" cbor:"9,keyasint,omitzero"`  // cumulative device read bytes
+	TotalWrite     uint64    `json:"tw,omitzero" cbor:"10,keyasint,omitzero"` // cumulative device write bytes
 	DiskReadPs     float64   `json:"r" cbor:"2,keyasint"`
 	DiskWritePs    float64   `json:"w" cbor:"3,keyasint"`
 	MaxDiskReadPS  float64   `json:"rm,omitempty" cbor:"-"`
@@ -155,8 +165,9 @@ type Info struct {
 	LoadAvg        [3]float64         `json:"la,omitempty" cbor:"19,keyasint"`
 	ConnectionType ConnectionType     `json:"ct,omitempty" cbor:"20,keyasint,omitempty,omitzero"`
 	ExtraFsPct     map[string]float64 `json:"efs,omitempty" cbor:"21,keyasint,omitempty"`
-	Services       []uint16           `json:"sv,omitempty" cbor:"22,keyasint,omitempty"` // [totalServices, numFailedServices]
-	Battery        [2]uint8           `json:"bat,omitzero" cbor:"23,keyasint,omitzero"`  // [percent, charge state]
+	Services       []uint16           `json:"sv,omitempty" cbor:"22,keyasint,omitempty"`  // [totalServices, numFailedServices]
+	Battery        Battery            `json:"bat,omitzero" cbor:"23,keyasint,omitzero"`   // [percent, charge state]
+	RootDiskName   string             `json:"rdn,omitempty" cbor:"24,keyasint,omitempty"` // custom name for root disk (set via FILESYSTEM=device__name)
 }
 
 // Data that does not change during process lifetime and is not needed in All Systems table
