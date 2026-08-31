@@ -4,6 +4,7 @@ import { cn, decimalString, formatBytes, hourWithSeconds } from "@/lib/utils"
 import type { ContainerRecord } from "@/types"
 import { ContainerHealth, ContainerHealthLabels } from "@/lib/enums"
 import {
+	ArrowDownUpIcon,
 	ClockIcon,
 	ContainerIcon,
 	CpuIcon,
@@ -114,6 +115,31 @@ export const containerChartCols: ColumnDef<ContainerRecord>[] = [
 			const formatted = formatBytes(val, true, undefined, false)
 			return (
 				<div className="ms-1 tabular-nums">{`${decimalString(formatted.value, formatted.value >= 10 ? 1 : 2)} ${formatted.unit}`}</div>
+			)
+		},
+	},
+	{
+		id: "traffic",
+		accessorFn: (record) => (record.traffic_in ?? 0) + (record.traffic_out ?? 0),
+		invertSorting: true,
+		header: ({ column }) => <HeaderButton column={column} name={t`Traffic`} Icon={ArrowDownUpIcon} />,
+		cell: ({ row }) => {
+			const inn = row.original.traffic_in ?? 0
+			const out = row.original.traffic_out ?? 0
+			if (!inn && !out) return <div className="ms-1 text-muted-foreground tabular-nums">-</div>
+			const fIn = formatBytes(inn)
+			const fOut = formatBytes(out)
+			return (
+				<div className="ms-1 tabular-nums text-xs leading-tight">
+					<div className="flex items-center gap-1">
+						<span className="text-muted-foreground">↓</span>
+						{`${decimalString(fIn.value, fIn.value >= 10 ? 1 : 2)} ${fIn.unit}`}
+					</div>
+					<div className="flex items-center gap-1">
+						<span className="text-muted-foreground">↑</span>
+						{`${decimalString(fOut.value, fOut.value >= 10 ? 1 : 2)} ${fOut.unit}`}
+					</div>
+				</div>
 			)
 		},
 	},
