@@ -66,6 +66,10 @@ type DataRequestOptions struct {
 	IncludeDetails bool   `cbor:"1,keyasint"`
 }
 
+type ZfsDataRequest struct {
+	Force bool `cbor:"0,keyasint,omitempty"`
+}
+
 type ContainerLogsRequest struct {
 	ContainerID string `cbor:"0,keyasint"`
 }

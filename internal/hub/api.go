@@ -405,7 +405,7 @@ func (h *Hub) refreshZfsData(e *core.RequestEvent) error {
 		return e.NotFoundError("", nil)
 	}
 
-	if err := system.FetchAndSaveZfsPools(); err != nil {
+	if err := system.FetchAndSaveZfsPools(true); err != nil {
 		return e.InternalServerError("", err)
 	}
 

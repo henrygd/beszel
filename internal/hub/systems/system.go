@@ -50,8 +50,8 @@ type System struct {
 	detailsFetched atomic.Bool                // True if static system details have been fetched and saved
 	smartFetching  atomic.Bool                // True if SMART devices are currently being fetched
 	smartInterval  time.Duration              // Interval for periodic SMART data updates
-  zfsFetching    atomic.Bool             // True if ZFS pools are currently being fetched
-	zfsInterval    time.Duration           // Interval for periodic ZFS detail data updates
+	zfsFetching    atomic.Bool                // True if ZFS pools are currently being fetched
+	zfsInterval    time.Duration              // Interval for periodic ZFS detail data updates
 }
 
 func (sm *SystemManager) NewSystem(systemId string) *System {
@@ -188,7 +188,7 @@ func (sys *System) update() error {
 			sys.manager.hub.Logger().Info("ZFS fetch", "system", sys.Id, "interval", sys.zfsInterval.String())
 			go func() {
 				defer sys.zfsFetching.Store(false)
-				_ = sys.FetchAndSaveZfsPools()
+				_ = sys.FetchAndSaveZfsPools(false)
 			}()
 		}
 	}
@@ -581,12 +581,12 @@ func (sys *System) FetchSmartDataFromAgent() (smart.SmartDataResponse, error) {
 	return result, err
 }
 
-// FetchZfsDataFromAgent fetches ZFS detail data from the agent
-func (sys *System) FetchZfsDataFromAgent() (*zfs.ZfsData, error) {
+// FetchZfsDataFromAgent fetches ZFS detail data from the agent.
+func (sys *System) FetchZfsDataFromAgent(force bool) (*zfs.ZfsData, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
 	defer cancel()
 	var result zfs.ZfsData
-	err := sys.request(ctx, common.GetZfsData, nil, &result)
+	err := sys.request(ctx, common.GetZfsData, common.ZfsDataRequest{Force: force}, &result)
 	return &result, err
 }
 

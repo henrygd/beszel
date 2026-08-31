@@ -22,17 +22,14 @@ type zfsDatasetUsage struct {
 const datasetUsageRefreshInterval = 5 * time.Minute
 
 // poolStatsRefreshInterval controls how often `zpool list` is re-run for pool
-// capacity and health. The values change slowly, so a short TTL avoids an exec
-// on every realtime poll.
-const poolStatsRefreshInterval = 10 * time.Second
+// capacity. Health and I/O are read from procfs on Linux, so the utility only
+// needs to refresh slow-moving space accounting.
+const poolStatsRefreshInterval = time.Minute
 
-// watcherRetryInterval is the backoff between attempts to (re)start the
-// streaming `zpool iostat` watcher after a failure.
-const watcherRetryInterval = 30 * time.Second
-
-// poolIoSource is the streaming I/O rate source (see zfs.PoolIoWatcher).
-type poolIoSource interface {
-	Latest() (map[string]zfs.PoolIoStats, bool)
+type poolKernelSample struct {
+	nread  uint64
+	nwrite uint64
+	at     time.Time
 }
 
 // ZfsManager collects ZFS pool and dataset statistics. Collection functions
@@ -40,14 +37,14 @@ type poolIoSource interface {
 // diskDiscovery.usageFn). It is safe for concurrent use by a single goroutine
 // only; callers must hold the agent lock like updateDiskUsage does.
 type ZfsManager struct {
-	poolStatsFn func() ([]zfs.PoolStat, error) // capacity/health source
-	datasetsFn  func() ([]zfs.Dataset, error)  // dataset inventory source
-	watcherFn   func() (poolIoSource, error)   // streaming I/O rate source
+	poolStatsFn    func() ([]zfs.PoolStat, error)       // capacity/health source
+	datasetsFn     func() ([]zfs.Dataset, error)        // dataset inventory source
+	kernelStatsFn  func() ([]zfs.PoolKernelStat, error) // procfs pool state/I/O source
+	poolStatusesFn func() ([]zfs.PoolStatus, error)     // scrub/vdev detail source
 
 	poolData      []zfs.PoolStat // cached pool inventory (TTL below)
 	lastPoolStats time.Time
-	ioWatcher     poolIoSource // streaming I/O rate source
-	watcherSince  time.Time    // last watcher (re)start attempt
+	kernelSamples map[string]poolKernelSample
 
 	datasetUsage     map[string]zfsDatasetUsage // mountpoint -> usage
 	datasetStats     map[string]zfsDatasetUsage // dataset name -> usage
@@ -66,23 +63,23 @@ func newZfsManager() *ZfsManager {
 	return &ZfsManager{
 		poolStatsFn:    zfs.PoolStats,
 		datasetsFn:     zfs.Datasets,
-		watcherFn:      func() (poolIoSource, error) { return zfs.NewPoolIoWatcher() },
+		kernelStatsFn:  zfs.PoolKernelStats,
+		poolStatusesFn: zfs.PoolStatuses,
 		detailInterval: time.Hour,
 	}
 }
 
 // Update refreshes systemStats.ZfsPools with the latest pool data. I/O
-// throughput comes from the streaming `zpool iostat` watcher (per-second
-// rates, works on every OpenZFS version), so the request path never blocks on
-// ZFS collection (the realtime worker polls every second). It is a no-op when
-// ZFS is absent.
+// throughput and health come from inexpensive kernel kstats on Linux. Pool
+// capacity and dataset usage come from separately cached utility calls. It is
+// a no-op when ZFS is absent.
 func (zm *ZfsManager) Update(systemStats *system.Stats) {
 	pools := zm.poolStats()
 	if len(pools) == 0 {
 		return
 	}
 
-	ioCounters := zm.watcherIo()
+	kernelStats, ioRates := zm.kernelStats()
 
 	if systemStats.ZfsPools == nil {
 		systemStats.ZfsPools = make(map[string]*system.ZfsPool, len(pools))
@@ -96,7 +93,10 @@ func (zm *ZfsManager) Update(systemStats *system.Stats) {
 			Used:   float64(pool.Alloc) / (1024 * 1024 * 1024),
 			Health: pool.Health,
 		}
-		if io, exists := ioCounters[pool.Name]; exists {
+		if kernel, exists := kernelStats[pool.Name]; exists && kernel.Health != "" {
+			stats.Health = kernel.Health
+		}
+		if io, exists := ioRates[pool.Name]; exists {
 			stats.ReadBytes = io.NRead
 			stats.WriteBytes = io.NWrite
 		}
@@ -136,26 +136,36 @@ func (zm *ZfsManager) poolStats() []zfs.PoolStat {
 	return zm.poolData
 }
 
-// watcherIo returns the latest rates from the streaming `zpool iostat`
-// watcher, starting it on first use with a retry backoff.
-func (zm *ZfsManager) watcherIo() map[string]zfs.PoolIoStats {
-	if zm.ioWatcher == nil {
-		if time.Since(zm.watcherSince) < watcherRetryInterval || zm.watcherFn == nil {
-			return nil
-		}
-		zm.watcherSince = time.Now()
-		watcher, err := zm.watcherFn()
-		if err != nil {
-			slog.Debug("ZFS pool I/O watcher unavailable", "err", err)
-			return nil
-		}
-		zm.ioWatcher = watcher
+// kernelStats reads cumulative pool counters and converts them to per-second
+// rates. Counter decreases indicate a pool export/import and reset the
+// baseline instead of producing an underflow spike.
+func (zm *ZfsManager) kernelStats() (map[string]zfs.PoolKernelStat, map[string]zfs.PoolIoStats) {
+	if zm.kernelStatsFn == nil {
+		return nil, nil
 	}
-	latest, ok := zm.ioWatcher.Latest()
-	if !ok {
-		return nil
+	stats, err := zm.kernelStatsFn()
+	if err != nil {
+		slog.Debug("ZFS kernel stats unavailable", "err", err)
+		return nil, nil
 	}
-	return latest
+	now := time.Now()
+	byName := make(map[string]zfs.PoolKernelStat, len(stats))
+	rates := make(map[string]zfs.PoolIoStats, len(stats))
+	nextSamples := make(map[string]poolKernelSample, len(stats))
+	for _, stat := range stats {
+		byName[stat.Name] = stat
+		if previous, ok := zm.kernelSamples[stat.Name]; ok && now.After(previous.at) &&
+			stat.NRead >= previous.nread && stat.NWrite >= previous.nwrite {
+			seconds := now.Sub(previous.at).Seconds()
+			rates[stat.Name] = zfs.PoolIoStats{
+				NRead:  uint64(float64(stat.NRead-previous.nread) / seconds),
+				NWrite: uint64(float64(stat.NWrite-previous.nwrite) / seconds),
+			}
+		}
+		nextSamples[stat.Name] = poolKernelSample{nread: stat.NRead, nwrite: stat.NWrite, at: now}
+	}
+	zm.kernelSamples = nextSamples
+	return byName, rates
 }
 
 // refreshDatasetUsage re-runs `zfs list` when the refresh window has elapsed
@@ -197,14 +207,14 @@ func (zm *ZfsManager) DatasetStats() map[string]zfsDatasetUsage {
 	return zm.datasetStats
 }
 
-// GetDetail returns cached ZFS detail data (pool health, scrub, vdevs,
-// datasets), refreshing it when stale. On failure the previous snapshot is
-// retained; an empty payload is returned when nothing has been collected.
-func (zm *ZfsManager) GetDetail() *zfsentity.ZfsData {
+// GetDetail returns ZFS detail data (pool health, scrub, vdevs, datasets).
+// Scheduled requests use the cached snapshot until stale; manual requests can
+// force collection. On failure the previous snapshot is retained.
+func (zm *ZfsManager) GetDetail(force bool) *zfsentity.ZfsData {
 	zm.detailMu.Lock()
 	defer zm.detailMu.Unlock()
 
-	if zm.detail == nil || time.Since(zm.lastDetailRefresh) >= zm.detailInterval {
+	if force || zm.detail == nil || time.Since(zm.lastDetailRefresh) >= zm.detailInterval {
 		if data, err := zm.collectDetail(); err != nil {
 			slog.Debug("ZFS detail collection failed", "err", err)
 		} else {
@@ -228,7 +238,7 @@ func (zm *ZfsManager) collectDetail() (*zfsentity.ZfsData, error) {
 		return nil, zfs.ErrNoZfs
 	}
 
-	statuses, err := zfs.PoolStatuses()
+	statuses, err := zm.poolStatusesFn()
 	if err != nil {
 		slog.Debug("ZFS pool status unavailable", "err", err)
 	}

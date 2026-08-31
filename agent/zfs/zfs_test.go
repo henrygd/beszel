@@ -5,7 +5,6 @@ package zfs
 import (
 	"os"
 	"path/filepath"
-	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -57,33 +56,6 @@ func TestParseZfsListOutput(t *testing.T) {
 	assert.Equal(t, "-", datasets[4].Mountpoint)
 	assert.Equal(t, uint64(12000000000000), datasets[0].Used)
 	assert.Equal(t, uint64(11999000000000), datasets[0].Avail)
-}
-
-func TestPoolIoWatcherHandleLine(t *testing.T) {
-	data, err := os.ReadFile(fixturePath("zpool_iostat.txt"))
-	require.NoError(t, err)
-
-	w := &PoolIoWatcher{latest: make(map[string]PoolIoStats)}
-	for _, line := range strings.Split(string(data), "\n") {
-		w.handleLine(line)
-	}
-
-	latest, ok := w.Latest()
-	require.True(t, ok)
-	require.Len(t, latest, 2)
-	// The last sample block wins over the since-boot averages.
-	assert.Equal(t, uint64(0), latest["rpool"].NRead)
-	assert.Equal(t, uint64(0), latest["rpool"].NWrite)
-	assert.Equal(t, uint64(1250), latest["tank"].NRead)
-	assert.Equal(t, uint64(5120), latest["tank"].NWrite)
-}
-
-func TestPoolIoWatcherIgnoresHeaders(t *testing.T) {
-	w := &PoolIoWatcher{latest: make(map[string]PoolIoStats)}
-	w.handleLine("pool                  alloc             free             read            write             read            write")
-	w.handleLine("----------  ---------------  ---------------  ---------------  ---------------  ---------------  ---------------")
-	_, ok := w.Latest()
-	assert.False(t, ok, "no pool rows should yield no sample")
 }
 
 func TestParseZpoolStatusOutput(t *testing.T) {

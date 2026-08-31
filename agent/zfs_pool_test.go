@@ -3,7 +3,6 @@
 package agent
 
 import (
-	"errors"
 	"testing"
 	"time"
 
@@ -13,19 +12,10 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-type fakePoolIoSource struct {
-	latest map[string]zfs.PoolIoStats
-	ok     bool
-}
-
-func (f *fakePoolIoSource) Latest() (map[string]zfs.PoolIoStats, bool) {
-	return f.latest, f.ok
-}
-
 func TestUpdatePopulatesZfsPools(t *testing.T) {
 	zm := &ZfsManager{}
 	zm.poolStatsFn = func() ([]zfs.PoolStat, error) {
-		return []zfs.PoolStat{{Name: "tank", Size: 23999000000000, Alloc: 12000000000000, Free: 11999000000000, Health: "ONLINE"}}, nil
+		return []zfs.PoolStat{{Name: "tank", Size: 23999000000000, Alloc: 12000000000000, Free: 11999000000000, Health: "DEGRADED"}}, nil
 	}
 	zm.datasetsFn = func() ([]zfs.Dataset, error) {
 		return []zfs.Dataset{
@@ -35,20 +25,27 @@ func TestUpdatePopulatesZfsPools(t *testing.T) {
 			{Name: "rpool/vm-100-disk-2", Used: 4194304, Avail: 0, Mountpoint: "-"},
 		}, nil
 	}
-	zm.watcherFn = func() (poolIoSource, error) {
-		return &fakePoolIoSource{latest: map[string]zfs.PoolIoStats{"tank": {NRead: 1250, NWrite: 5120}}, ok: true}, nil
+	var kernelCalls int
+	zm.kernelStatsFn = func() ([]zfs.PoolKernelStat, error) {
+		kernelCalls++
+		return []zfs.PoolKernelStat{{
+			Name: "tank", Health: "ONLINE",
+			NRead: uint64(kernelCalls-1) * 1250, NWrite: uint64(kernelCalls-1) * 5120,
+		}}, nil
 	}
 
 	var stats system.Stats
+	// The first kernel sample establishes the cumulative-counter baseline.
+	zm.Update(&stats)
+	zm.kernelSamples["tank"] = poolKernelSample{at: time.Now().Add(-time.Second)}
 	zm.Update(&stats)
 	require.NotNil(t, stats.ZfsPools)
 	require.Contains(t, stats.ZfsPools, "tank")
 	assert.InDelta(t, 22350.8105, stats.ZfsPools["tank"].Total, 0.0001) // Size in GiB
 	assert.InDelta(t, 11175.8709, stats.ZfsPools["tank"].Used, 0.0001)  // Alloc in GiB
 	assert.Equal(t, "ONLINE", stats.ZfsPools["tank"].Health)
-	// Watcher rates are available immediately on the first update.
-	assert.Equal(t, uint64(1250), stats.ZfsPools["tank"].ReadBytes)
-	assert.Equal(t, uint64(5120), stats.ZfsPools["tank"].WriteBytes)
+	assert.InDelta(t, 1250, stats.ZfsPools["tank"].ReadBytes, 5)
+	assert.InDelta(t, 5120, stats.ZfsPools["tank"].WriteBytes, 5)
 
 	// Per-dataset usage is populated from the dataset inventory with full
 	// precision (no 2-decimal GB rounding).
@@ -62,16 +59,16 @@ func TestUpdatePopulatesZfsPools(t *testing.T) {
 	assert.Equal(t, 0.00390625, stats.ZfsDatasets["rpool/vm-100-disk-2"].Used)
 }
 
-// TestUpdateWatcherMissing verifies pools without a watcher sample report zero
+// TestUpdateKernelStatsMissing verifies pools without a kernel sample report zero
 // I/O instead of erroring.
-func TestUpdateWatcherMissing(t *testing.T) {
+func TestUpdateKernelStatsMissing(t *testing.T) {
 	zm := &ZfsManager{}
 	zm.poolStatsFn = func() ([]zfs.PoolStat, error) {
 		return []zfs.PoolStat{{Name: "tank", Size: 1, Alloc: 1, Health: "ONLINE"}}, nil
 	}
 	zm.datasetsFn = func() ([]zfs.Dataset, error) { return nil, nil }
-	zm.watcherFn = func() (poolIoSource, error) {
-		return &fakePoolIoSource{latest: map[string]zfs.PoolIoStats{}, ok: false}, nil
+	zm.kernelStatsFn = func() ([]zfs.PoolKernelStat, error) {
+		return nil, zfs.ErrNoZfs
 	}
 
 	var stats system.Stats
@@ -81,24 +78,23 @@ func TestUpdateWatcherMissing(t *testing.T) {
 	assert.Equal(t, uint64(0), stats.ZfsPools["tank"].WriteBytes)
 }
 
-// TestUpdateWatcherRetryBackoff verifies the watcher spawn is not attempted on
-// every poll after a failure.
-func TestUpdateWatcherRetryBackoff(t *testing.T) {
+func TestUpdateKernelCounterReset(t *testing.T) {
 	zm := &ZfsManager{}
 	zm.poolStatsFn = func() ([]zfs.PoolStat, error) {
 		return []zfs.PoolStat{{Name: "tank", Health: "ONLINE"}}, nil
 	}
 	zm.datasetsFn = func() ([]zfs.Dataset, error) { return nil, nil }
-	var attempts int
-	zm.watcherFn = func() (poolIoSource, error) {
-		attempts++
-		return nil, errors.New("no zpool")
+	zm.kernelSamples = map[string]poolKernelSample{
+		"tank": {nread: 100, nwrite: 200, at: time.Now().Add(-time.Second)},
+	}
+	zm.kernelStatsFn = func() ([]zfs.PoolKernelStat, error) {
+		return []zfs.PoolKernelStat{{Name: "tank", Health: "ONLINE", NRead: 10, NWrite: 20}}, nil
 	}
 
 	var stats system.Stats
 	zm.Update(&stats)
-	zm.Update(&stats)
-	assert.Equal(t, 1, attempts, "failed watcher spawn should back off until the retry interval")
+	assert.Equal(t, uint64(0), stats.ZfsPools["tank"].ReadBytes)
+	assert.Equal(t, uint64(0), stats.ZfsPools["tank"].WriteBytes)
 }
 
 func TestUpdateNoZfs(t *testing.T) {
@@ -160,6 +156,31 @@ func TestDatasetUsageRefreshOnErrorKeepsPrevious(t *testing.T) {
 	}
 	usage := zm.DatasetUsage()
 	assert.Len(t, usage, 1, "previous usage should be retained on error")
+}
+
+func TestGetDetailForceRefresh(t *testing.T) {
+	zm := &ZfsManager{detailInterval: time.Hour}
+	poolCalls := 0
+	zm.poolStatsFn = func() ([]zfs.PoolStat, error) {
+		poolCalls++
+		return []zfs.PoolStat{{Name: "tank", Alloc: uint64(poolCalls)}}, nil
+	}
+	zm.poolStatusesFn = func() ([]zfs.PoolStatus, error) { return nil, nil }
+	zm.datasetsFn = func() ([]zfs.Dataset, error) { return nil, nil }
+
+	first := zm.GetDetail(false)
+	require.Len(t, first.Pools, 1)
+	assert.Equal(t, uint64(1), first.Pools[0].Alloc)
+
+	cached := zm.GetDetail(false)
+	require.Len(t, cached.Pools, 1)
+	assert.Equal(t, uint64(1), cached.Pools[0].Alloc)
+	assert.Equal(t, 1, poolCalls)
+
+	refreshed := zm.GetDetail(true)
+	require.Len(t, refreshed.Pools, 1)
+	assert.Equal(t, uint64(2), refreshed.Pools[0].Alloc)
+	assert.Equal(t, 2, poolCalls)
 }
 
 func TestZfsMountpoints(t *testing.T) {

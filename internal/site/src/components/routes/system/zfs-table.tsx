@@ -410,7 +410,6 @@ export default function ZfsTable({ systemId }: { systemId?: string }) {
 	const [globalFilter, setGlobalFilter] = useState("")
 	const [activePoolId, setActivePoolId] = useState<string | null>(null)
 	const [sheetOpen, setSheetOpen] = useState(false)
-	const [refreshing, setRefreshing] = useState(false)
 	const [rowActionState, setRowActionState] = useState<{ type: "refresh" | "delete"; id: string } | null>(null)
 
 	useEffect(() => {
@@ -602,41 +601,25 @@ export default function ZfsTable({ systemId }: { systemId?: string }) {
 								<Trans>Click on a pool to view vdev and dataset details.</Trans>
 							</CardDescription>
 						</div>
-						<div className="ms-auto flex flex-wrap items-center gap-2">
-							{systemId && !isReadOnlyUser() && (
+						<div className="relative ms-auto w-full max-w-full md:w-64">
+							<Input
+								placeholder={t`Filter...`}
+								value={globalFilter}
+								onChange={(event) => setGlobalFilter(event.target.value)}
+								className="px-4 w-full max-w-full md:w-64"
+							/>
+							{globalFilter && (
 								<Button
-									variant="outline"
-									size="sm"
-									onClick={() => {
-										setRefreshing(true)
-										refreshSystem(systemId).finally(() => setRefreshing(false))
-									}}
-									disabled={refreshing}
+									type="button"
+									variant="ghost"
+									size="icon"
+									aria-label={t`Clear`}
+									className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 text-muted-foreground"
+									onClick={() => setGlobalFilter("")}
 								>
-									<RefreshCwIcon className={cn("me-1.5 size-3.5", refreshing && "animate-spin")} />
-									<Trans>Refresh</Trans>
+									<XIcon className="h-4 w-4" />
 								</Button>
 							)}
-							<div className="relative w-full max-w-full md:w-64">
-								<Input
-									placeholder={t`Filter...`}
-									value={globalFilter}
-									onChange={(event) => setGlobalFilter(event.target.value)}
-									className="px-4 w-full max-w-full md:w-64"
-								/>
-								{globalFilter && (
-									<Button
-										type="button"
-										variant="ghost"
-										size="icon"
-										aria-label={t`Clear`}
-										className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 text-muted-foreground"
-										onClick={() => setGlobalFilter("")}
-									>
-										<XIcon className="h-4 w-4" />
-									</Button>
-								)}
-							</div>
 						</div>
 					</div>
 				</CardHeader>
