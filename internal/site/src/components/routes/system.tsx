@@ -125,7 +125,7 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 
 					<FanChart {...coreProps} />
 
-					<BatteryChart {...coreProps} />
+					<BatteryChart system={system} {...coreProps} />
 
 					{hasGpuPowerData && <GpuPowerChart chartData={chartData} grid={grid} dataEmpty={dataEmpty} />}
 				</div>
@@ -191,8 +191,8 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 						<BandwidthChart {...coreProps} systemStats={systemStats} />
 						<TemperatureChart {...coreProps} setPageBottomExtraMargin={setPageBottomExtraMargin} />
 						<FanChart {...coreProps} />
-						<BatteryChart {...coreProps} />
-						<SwapChart chartData={chartData} grid={grid} dataEmpty={dataEmpty} systemData={systemData} />
+						<BatteryChart system={system} {...coreProps} />
+						<SwapChart chartData={chartData} grid={grid} dataEmpty={dataEmpty} systemStats={systemStats} />
 						{pageBottomExtraMargin > 0 && <div style={{ marginBottom: pageBottomExtraMargin }}></div>}
 					</div>
 				</TabsContent>

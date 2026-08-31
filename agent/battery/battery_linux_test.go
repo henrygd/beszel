@@ -8,204 +8,102 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
-// setupFakeSysfs creates a temporary sysfs-like tree under t.TempDir(),
-// swaps sysfsPowerSupply, resets the sync.Once caches, and restores
-// everything on cleanup. Returns a helper to create battery directories.
-func setupFakeSysfs(t *testing.T) (tmpDir string, addBattery func(name, capacity, status string)) {
+type fakeBattery struct{ id, name, capacity, status, full, scope string }
+
+func setupFakeSysfs(t *testing.T) (string, func(fakeBattery)) {
 	t.Helper()
-
-	tmp := t.TempDir()
-	resetBatteryState(tmp)
-
-	write := func(path, content string) {
+	root := t.TempDir()
+	previousRoot := batteryRoot
+	batteryRoot = root
+	t.Cleanup(func() { batteryRoot = previousRoot })
+	write := func(path, value string) {
 		t.Helper()
-		dir := filepath.Dir(path)
-		if err := os.MkdirAll(dir, 0o755); err != nil {
-			t.Fatal(err)
+		require.NoError(t, os.MkdirAll(filepath.Dir(path), 0o755))
+		require.NoError(t, os.WriteFile(path, []byte(value), 0o644))
+	}
+	add := func(b fakeBattery) {
+		t.Helper()
+		dir := filepath.Join(root, b.id)
+		write(filepath.Join(dir, "type"), "Battery")
+		if b.capacity != "" {
+			write(filepath.Join(dir, "capacity"), b.capacity)
 		}
-		if err := os.WriteFile(path, []byte(content), 0o644); err != nil {
-			t.Fatal(err)
+		write(filepath.Join(dir, "status"), b.status)
+		if b.name != "" {
+			write(filepath.Join(dir, "model_name"), b.name)
+		}
+		if b.full != "" {
+			write(filepath.Join(dir, "energy_full"), b.full)
+		}
+		if b.scope != "" {
+			write(filepath.Join(dir, "scope"), b.scope)
 		}
 	}
-
-	addBattery = func(name, capacity, status string) {
-		t.Helper()
-		batDir := filepath.Join(tmp, name)
-		write(filepath.Join(batDir, "type"), "Battery")
-		write(filepath.Join(batDir, "capacity"), capacity)
-		write(filepath.Join(batDir, "status"), status)
-	}
-
-	return tmp, addBattery
+	return root, add
 }
 
 func TestParseSysfsState(t *testing.T) {
-	tests := []struct {
-		input string
-		want  uint8
-	}{
-		{"Empty", stateEmpty},
-		{"Full", stateFull},
-		{"Charging", stateCharging},
-		{"Discharging", stateDischarging},
-		{"Not charging", stateIdle},
-		{"", stateUnknown},
-		{"SomethingElse", stateUnknown},
-	}
-	for _, tt := range tests {
-		assert.Equal(t, tt.want, parseSysfsState(tt.input), "parseSysfsState(%q)", tt.input)
-	}
+	assert.Equal(t, stateEmpty, parseSysfsState("Empty"))
+	assert.Equal(t, stateFull, parseSysfsState("Full"))
+	assert.Equal(t, stateCharging, parseSysfsState("Charging"))
+	assert.Equal(t, stateDischarging, parseSysfsState("Discharging"))
+	assert.Equal(t, stateIdle, parseSysfsState("Not charging"))
+	assert.Equal(t, stateUnknown, parseSysfsState("SomethingElse"))
 }
 
-func TestGetBatteryStats_SingleBattery(t *testing.T) {
-	_, addBattery := setupFakeSysfs(t)
-	addBattery("BAT0", "72", "Discharging")
-
-	pct, state, err := GetBatteryStats()
-	assert.NoError(t, err)
-	assert.Equal(t, uint8(72), pct)
-	assert.Equal(t, stateDischarging, state)
+func TestGetBatteryStatsMultipleNamedAndPrimary(t *testing.T) {
+	_, add := setupFakeSysfs(t)
+	add(fakeBattery{id: "BAT0", name: "Primary", capacity: "105", status: "Charging", full: "5000", scope: "System"})
+	add(fakeBattery{id: "hidpp_battery_0", name: "MX Keys S", capacity: "55", status: "Unknown", full: "900", scope: "Device"})
+	batteries, err := GetBatteryStats()
+	require.NoError(t, err)
+	require.Len(t, batteries, 2)
+	assert.Equal(t, "Primary", batteries[0].Name)
+	assert.Equal(t, uint8(100), batteries[0].Percent)
+	assert.Equal(t, stateUnknown, batteries[1].State)
+	primary, ok := Primary(batteries)
+	require.True(t, ok)
+	assert.Equal(t, "Primary", primary.Name)
 }
 
-func TestGetBatteryStats_MultipleBatteries(t *testing.T) {
-	_, addBattery := setupFakeSysfs(t)
-	addBattery("BAT0", "80", "Charging")
-	addBattery("BAT1", "40", "Charging")
-
-	pct, state, err := GetBatteryStats()
-	assert.NoError(t, err)
-	// average of 80 and 40 = 60
-	assert.EqualValues(t, 60, pct)
-	assert.Equal(t, stateCharging, state)
+func TestGetBatteryStatsFallbackDuplicatesAndUnreadable(t *testing.T) {
+	root, add := setupFakeSysfs(t)
+	add(fakeBattery{id: "BAT0", name: "Keyboard", capacity: "80", status: "Discharging"})
+	add(fakeBattery{id: "BAT1", name: "Keyboard", capacity: "-4", status: "SomethingWeird"})
+	add(fakeBattery{id: "BAT2", capacity: "not-a-number", status: "Charging"})
+	add(fakeBattery{id: "BAT3", capacity: "42", status: "Full"})
+	ac := filepath.Join(root, "AC0")
+	require.NoError(t, os.MkdirAll(ac, 0o755))
+	require.NoError(t, os.WriteFile(filepath.Join(ac, "type"), []byte("Mains"), 0o644))
+	batteries, err := GetBatteryStats()
+	require.NoError(t, err)
+	require.Len(t, batteries, 3)
+	assert.Equal(t, "Keyboard", batteries[0].Name)
+	assert.Equal(t, "Keyboard (2)", batteries[1].Name)
+	assert.Equal(t, uint8(0), batteries[1].Percent)
+	assert.Equal(t, "BAT3", batteries[2].Name)
 }
 
-func TestGetBatteryStats_FullBattery(t *testing.T) {
-	_, addBattery := setupFakeSysfs(t)
-	addBattery("BAT0", "100", "Full")
-
-	pct, state, err := GetBatteryStats()
-	assert.NoError(t, err)
-	assert.Equal(t, uint8(100), pct)
-	assert.Equal(t, stateFull, state)
-}
-
-func TestGetBatteryStats_CapacityClamped(t *testing.T) {
-	_, addBattery := setupFakeSysfs(t)
-	addBattery("BAT0", "105", "Charging")
-
-	pct, state, err := GetBatteryStats()
-	assert.NoError(t, err)
-	assert.Equal(t, uint8(100), pct)
-	assert.Equal(t, stateCharging, state)
-}
-
-func TestGetBatteryStats_EmptyBattery(t *testing.T) {
-	_, addBattery := setupFakeSysfs(t)
-	addBattery("BAT0", "0", "Empty")
-
-	pct, state, err := GetBatteryStats()
-	assert.NoError(t, err)
-	assert.Equal(t, uint8(0), pct)
-	assert.Equal(t, stateEmpty, state)
-}
-
-func TestGetBatteryStats_NotCharging(t *testing.T) {
-	_, addBattery := setupFakeSysfs(t)
-	addBattery("BAT0", "80", "Not charging")
-
-	pct, state, err := GetBatteryStats()
-	assert.NoError(t, err)
-	assert.Equal(t, uint8(80), pct)
-	assert.Equal(t, stateIdle, state)
-}
-
-func TestGetBatteryStats_NoBatteries(t *testing.T) {
-	setupFakeSysfs(t) // empty directory, no batteries
-
-	_, _, err := GetBatteryStats()
+func TestGetBatteryStatsHotPlugReenumerates(t *testing.T) {
+	_, add := setupFakeSysfs(t)
+	_, err := GetBatteryStats()
 	assert.Error(t, err)
-}
-
-func TestGetBatteryStats_NonBatterySupplyIgnored(t *testing.T) {
-	tmp, addBattery := setupFakeSysfs(t)
-
-	// Add a real battery
-	addBattery("BAT0", "55", "Charging")
-
-	// Add an AC adapter (type != Battery) - should be ignored
-	acDir := filepath.Join(tmp, "AC0")
-	if err := os.MkdirAll(acDir, 0o755); err != nil {
-		t.Fatal(err)
-	}
-	if err := os.WriteFile(filepath.Join(acDir, "type"), []byte("Mains"), 0o644); err != nil {
-		t.Fatal(err)
-	}
-
-	pct, state, err := GetBatteryStats()
-	assert.NoError(t, err)
-	assert.Equal(t, uint8(55), pct)
-	assert.Equal(t, stateCharging, state)
-}
-
-func TestGetBatteryStats_InvalidCapacitySkipped(t *testing.T) {
-	tmp, addBattery := setupFakeSysfs(t)
-
-	// One battery with valid capacity
-	addBattery("BAT0", "90", "Discharging")
-
-	// Another with invalid capacity text
-	badDir := filepath.Join(tmp, "BAT1")
-	if err := os.MkdirAll(badDir, 0o755); err != nil {
-		t.Fatal(err)
-	}
-	if err := os.WriteFile(filepath.Join(badDir, "type"), []byte("Battery"), 0o644); err != nil {
-		t.Fatal(err)
-	}
-	if err := os.WriteFile(filepath.Join(badDir, "capacity"), []byte("not-a-number"), 0o644); err != nil {
-		t.Fatal(err)
-	}
-	if err := os.WriteFile(filepath.Join(badDir, "status"), []byte("Discharging"), 0o644); err != nil {
-		t.Fatal(err)
-	}
-
-	pct, _, err := GetBatteryStats()
-	assert.NoError(t, err)
-	// Only BAT0 counted
-	assert.Equal(t, uint8(90), pct)
-}
-
-func TestGetBatteryStats_UnknownStatusOnly(t *testing.T) {
-	_, addBattery := setupFakeSysfs(t)
-	addBattery("BAT0", "50", "SomethingWeird")
-
-	_, _, err := GetBatteryStats()
-	assert.Error(t, err)
-}
-
-func TestHasReadableBattery_True(t *testing.T) {
-	_, addBattery := setupFakeSysfs(t)
-	addBattery("BAT0", "50", "Charging")
-
-	assert.True(t, HasReadableBattery())
-}
-
-func TestHasReadableBattery_False(t *testing.T) {
-	setupFakeSysfs(t) // no batteries
-
 	assert.False(t, HasReadableBattery())
+	add(fakeBattery{id: "BAT0", capacity: "64", status: "Discharging"})
+	batteries, err := GetBatteryStats()
+	require.NoError(t, err)
+	assert.True(t, HasReadableBattery())
+	require.Len(t, batteries, 1)
+	assert.Equal(t, uint8(64), batteries[0].Percent)
 }
 
-func TestHasReadableBattery_NoCapacityFile(t *testing.T) {
-	tmp, _ := setupFakeSysfs(t)
-
-	// Battery dir with type file but no capacity file
-	batDir := filepath.Join(tmp, "BAT0")
-	err := os.MkdirAll(batDir, 0o755)
-	assert.NoError(t, err)
-	err = os.WriteFile(filepath.Join(batDir, "type"), []byte("Battery"), 0o644)
-	assert.NoError(t, err)
-
+func TestGetBatteryStatsNoReadableCapacity(t *testing.T) {
+	_, add := setupFakeSysfs(t)
+	add(fakeBattery{id: "BAT0", status: "Charging"})
+	_, err := GetBatteryStats()
+	assert.Error(t, err)
 	assert.False(t, HasReadableBattery())
 }

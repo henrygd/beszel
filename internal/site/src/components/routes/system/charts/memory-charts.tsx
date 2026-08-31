@@ -114,7 +114,7 @@ export function ContainerMemoryChart({
 			empty={dataEmpty}
 			grid={grid}
 			title={dockerOrPodman(t`Docker Memory Usage`, isPodman)}
-			description={dockerOrPodman(t`Memory usage of docker containers`, isPodman)}
+			description={t`Memory usage of containers`}
 			cornerEl={<FilterBar />}
 		>
 			<AreaChartDefault

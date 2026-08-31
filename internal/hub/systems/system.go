@@ -33,22 +33,22 @@ import (
 )
 
 type System struct {
-	Id             string                  `db:"id"`
-	Host           string                  `db:"host"`
-	Port           string                  `db:"port"`
-	Status         string                  `db:"status"`
-	manager        *SystemManager          // Manager that this system belongs to
-	client         *ssh.Client             // SSH client for fetching data
-	sshTransport   *transport.SSHTransport // SSH transport for requests
-	data           *system.CombinedData    // system data from agent
-	ctx            context.Context         // Context for stopping the updater
-	cancel         context.CancelFunc      // Stops and removes system from updater
-	WsConn         *ws.WsConn              // Handler for agent WebSocket connection
-	agentVersion   semver.Version          // Agent version
-	updateTicker   *time.Ticker            // Ticker for updating the system
-	detailsFetched atomic.Bool             // True if static system details have been fetched and saved
-	smartFetching  atomic.Bool             // True if SMART devices are currently being fetched
-	smartInterval  time.Duration           // Interval for periodic SMART data updates
+	Id             string                     `db:"id"`
+	Host           string                     `db:"host"`
+	Port           string                     `db:"port"`
+	Status         string                     `db:"status"`
+	manager        *SystemManager             // Manager that this system belongs to
+	client         atomic.Pointer[ssh.Client] // SSH client for fetching data
+	sshTransport   *transport.SSHTransport    // SSH transport for requests
+	data           *system.CombinedData       // system data from agent
+	ctx            context.Context            // Context for stopping the updater
+	cancel         context.CancelFunc         // Stops and removes system from updater
+	WsConn         *ws.WsConn                 // Handler for agent WebSocket connection
+	agentVersion   semver.Version             // Agent version
+	updateTicker   *time.Ticker               // Ticker for updating the system
+	detailsFetched atomic.Bool                // True if static system details have been fetched and saved
+	smartFetching  atomic.Bool                // True if SMART devices are currently being fetched
+	smartInterval  time.Duration              // Interval for periodic SMART data updates
 }
 
 func (sm *SystemManager) NewSystem(systemId string) *System {
@@ -56,7 +56,7 @@ func (sm *SystemManager) NewSystem(systemId string) *System {
 		Id:   systemId,
 		data: &system.CombinedData{},
 	}
-	system.ctx, system.cancel = system.getContext()
+	system.ctx, system.cancel = system.getContext(sm.ctx)
 	return system
 }
 
@@ -79,7 +79,10 @@ func (sys *System) StartUpdater() {
 	} else {
 		// if the system does not have a websocket connection, wait before updating
 		// to allow the agent to connect via websocket (makes sure fingerprint is set).
-		time.Sleep(11 * time.Second)
+		if !waitForContext(sys.ctx, 11*time.Second) {
+			return
+		}
+
 	}
 
 	// update immediately if system is not paused (only for ws connections)
@@ -348,6 +351,9 @@ func (sys *System) getRecord(app core.App) (*core.Record, error) {
 	record, err := app.FindRecordById("systems", sys.Id)
 	if err != nil || record == nil {
 		_ = sys.manager.RemoveSystem(sys.Id)
+		if err == nil {
+			err = fmt.Errorf("system record %s not found", sys.Id)
+		}
 		return nil, err
 	}
 	return record, nil
@@ -377,9 +383,15 @@ func (sys *System) HasUser(app core.App, user *core.Record) bool {
 // setDown marks a system as down in the database.
 // It takes the original error that caused the system to go down and returns any error
 // encountered during the process of updating the system status.
+// It is a no-op if the system's context has been cancelled.
 func (sys *System) setDown(originalError error) error {
 	if sys.Status == down || sys.Status == paused {
 		return nil
+	}
+	// the updater can race shutdown, and the app may already be disposed by the
+	// time we get here, so don't touch the database once the context is cancelled
+	if sys.ctx != nil && sys.ctx.Err() != nil {
+		return sys.ctx.Err()
 	}
 	record, err := sys.getRecord(sys.manager.hub)
 	if err != nil {
@@ -393,9 +405,9 @@ func (sys *System) setDown(originalError error) error {
 	return sys.manager.hub.SaveNoValidate(record)
 }
 
-func (sys *System) getContext() (context.Context, context.CancelFunc) {
+func (sys *System) getContext(ctx context.Context) (context.Context, context.CancelFunc) {
 	if sys.ctx == nil {
-		sys.ctx, sys.cancel = context.WithCancel(context.Background())
+		sys.ctx, sys.cancel = context.WithCancel(ctx)
 	}
 	return sys.ctx, sys.cancel
 }
@@ -422,7 +434,7 @@ func (sys *System) request(ctx context.Context, action common.WebSocketAction, r
 	err := sys.sshTransport.RequestWithRetry(ctx, action, req, dest, 1)
 	// Keep legacy SSH client/version fields in sync for other code paths.
 	if sys.sshTransport != nil {
-		sys.client = sys.sshTransport.GetClient()
+		sys.client.Store(sys.sshTransport.GetClient())
 		sys.agentVersion = sys.sshTransport.GetAgentVersion()
 	}
 	return err
@@ -464,8 +476,8 @@ func (sys *System) ensureSSHTransport() error {
 		})
 	}
 	// Sync client state with transport
-	if sys.client != nil {
-		sys.sshTransport.SetClient(sys.client)
+	if client := sys.client.Load(); client != nil {
+		sys.sshTransport.SetClient(client)
 		sys.sshTransport.SetAgentVersion(sys.agentVersion)
 	}
 	return nil
@@ -613,7 +625,7 @@ func (sys *System) fetchDataViaSSH(options common.DataRequestOptions) (*system.C
 // The operation can request a retry by returning true as the first return value.
 func (sys *System) runSSHOperation(timeout time.Duration, retries int, operation func(*ssh.Session) (bool, error)) error {
 	for attempt := 0; attempt <= retries; attempt++ {
-		if sys.client == nil || sys.Status == down {
+		if sys.client.Load() == nil || sys.Status == down {
 			if err := sys.createSSHClient(); err != nil {
 				return err
 			}
@@ -709,12 +721,12 @@ func (s *System) createSSHClient() error {
 	} else {
 		host = net.JoinHostPort(host, s.Port)
 	}
-	var err error
-	s.client, err = dialSSHWithKeepAlive(network, host, s.manager.sshConfig)
+	client, err := dialSSHWithKeepAlive(network, host, s.manager.sshConfig)
+	s.client.Store(client)
 	if err != nil {
 		return err
 	}
-	s.agentVersion, _ = extractAgentVersion(string(s.client.Conn.ServerVersion()))
+	s.agentVersion, _ = extractAgentVersion(string(client.Conn.ServerVersion()))
 	s.manager.resetFailedSmartFetchState(s.Id)
 	return nil
 }
@@ -750,7 +762,8 @@ func dialSSHWithKeepAlive(network, addr string, config *ssh.ClientConfig) (*ssh.
 // createSessionWithTimeout creates a new SSH session with a timeout to avoid hanging
 // in case of network issues
 func (sys *System) createSessionWithTimeout(timeout time.Duration) (*ssh.Session, error) {
-	if sys.client == nil {
+	client := sys.client.Load()
+	if client == nil {
 		return nil, fmt.Errorf("client not initialized")
 	}
 
@@ -761,7 +774,7 @@ func (sys *System) createSessionWithTimeout(timeout time.Duration) (*ssh.Session
 	errChan := make(chan error, 1)
 
 	go func() {
-		if session, err := sys.client.NewSession(); err != nil {
+		if session, err := client.NewSession(); err != nil {
 			errChan <- err
 		} else {
 			sessionChan <- session
@@ -783,9 +796,8 @@ func (sys *System) closeSSHConnection() {
 	if sys.sshTransport != nil {
 		sys.sshTransport.Close()
 	}
-	if sys.client != nil {
-		sys.client.Close()
-		sys.client = nil
+	if client := sys.client.Swap(nil); client != nil {
+		client.Close()
 	}
 }
 
