@@ -8,7 +8,7 @@ msgstr ""
 "Language: bg\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2026-03-28 09:32\n"
+"PO-Revision-Date: 2026-08-18 17:52\n"
 "Last-Translator: \n"
 "Language-Team: Bulgarian\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
@@ -251,6 +251,7 @@ msgid "Bat"
 msgstr "Бат"
 
 #: src/components/routes/system/charts/sensor-charts.tsx
+#: src/components/routes/system/charts/sensor-charts.tsx
 #: src/lib/alerts.ts
 msgid "Battery"
 msgstr "Батерия"
@@ -471,6 +472,10 @@ msgstr "Копирай linux командата"
 msgid "Copy name"
 msgstr "Копирай име"
 
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Copy public key"
+msgstr ""
+
 #: src/components/copy-to-clipboard.tsx
 msgid "Copy text"
 msgstr "Копирай текста"
@@ -547,6 +552,8 @@ msgid "Cumulative Upload"
 msgstr "Кумулативно качване"
 
 #. Context: Battery state
+#. Context: Battery state
+#: src/components/routes/system/charts/sensor-charts.tsx
 #: src/components/routes/system/charts/sensor-charts.tsx
 msgid "Current state"
 msgstr "Текущо състояние"
@@ -717,7 +724,6 @@ msgstr "Въведете Вашата еднократна парола."
 msgid "Ephemeral"
 msgstr "Ефимерен"
 
-#: src/components/login/auth-form.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/settings/config-yaml.tsx
 #: src/components/routes/settings/heartbeat.tsx
@@ -809,6 +815,10 @@ msgstr "Неуспешно обнови тревога"
 msgid "Failed: {0}"
 msgstr "Неуспешни: {0}"
 
+#: src/components/routes/system/charts/sensor-charts.tsx
+msgid "Fans"
+msgstr ""
+
 #: src/components/containers-table/containers-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/system/chart-card.tsx
@@ -858,7 +868,7 @@ msgstr "Глобален"
 
 #: src/components/routes/system.tsx
 msgid "GPU"
-msgstr ""
+msgstr "GPU"
 
 #: src/components/routes/system/charts/gpu-charts.tsx
 msgid "GPU Engines"
@@ -883,7 +893,7 @@ msgstr "Здраве"
 
 #: src/components/routes/settings/layout.tsx
 msgid "Heartbeat"
-msgstr ""
+msgstr "Heartbeat"
 
 #: src/components/routes/settings/heartbeat.tsx
 msgid "Heartbeat Monitoring"
@@ -952,7 +962,6 @@ msgstr "Интервал"
 msgid "Invalid email address."
 msgstr "Невалиден имейл адрес."
 
-#: src/components/lang-toggle.tsx
 #: src/components/routes/settings/general.tsx
 msgid "Language"
 msgstr "Език"
@@ -1068,8 +1077,8 @@ msgid "Memory Usage"
 msgstr "Употреба на паметта"
 
 #: src/components/routes/system/charts/memory-charts.tsx
-msgid "Memory usage of docker containers"
-msgstr "Използването на памет от docker контейнерите"
+msgid "Memory usage of containers"
+msgstr "Използване на паметта от контейнерите"
 
 #. Device model
 #: src/components/routes/system/smart-table.tsx
@@ -1090,8 +1099,8 @@ msgid "Net"
 msgstr "Мрежа"
 
 #: src/components/routes/system/charts/network-charts.tsx
-msgid "Network traffic of docker containers"
-msgstr "Мрежов трафик на docker контейнери"
+msgid "Network traffic of containers"
+msgstr "Мрежов трафик на контейнерите"
 
 #: src/components/routes/system/charts/network-charts.tsx
 #: src/components/routes/system/network-sheet.tsx
@@ -1310,6 +1319,10 @@ msgstr "Предпочитан език"
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Process started"
 msgstr "Процесът стартира"
+
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Public key"
+msgstr ""
 
 #. Use 'Key' if your language requires many more characters
 #: src/components/add-system.tsx
@@ -1550,6 +1563,11 @@ msgstr "Изполван swap от системата"
 msgid "Swap Usage"
 msgstr "Използване на swap"
 
+#: src/components/mode-toggle.tsx
+#: src/components/mode-toggle.tsx
+msgid "Switch theme"
+msgstr ""
+
 #: src/components/add-system.tsx
 #: src/components/alerts-history-columns.tsx
 #: src/components/containers-table/containers-table-columns.tsx
@@ -1564,6 +1582,10 @@ msgstr "Използване на swap"
 #: src/lib/alerts.ts
 msgid "System"
 msgstr "Система"
+
+#: src/components/routes/system/charts/sensor-charts.tsx
+msgid "System fan speeds (RPM)"
+msgstr ""
 
 #: src/components/routes/system/charts/load-average-chart.tsx
 msgid "System load averages over time"
@@ -1656,11 +1678,6 @@ msgstr "Формат на времето"
 #: src/components/routes/settings/notifications.tsx
 msgid "To email(s)"
 msgstr "До имейл(ите)"
-
-#: src/components/mode-toggle.tsx
-#: src/components/mode-toggle.tsx
-msgid "Toggle theme"
-msgstr "Включи тема"
 
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
