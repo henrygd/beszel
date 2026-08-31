@@ -45,7 +45,7 @@ func ARCSize() (uint64, error) {
 // ZFS collector and avoid keeping a `zpool iostat` subprocess alive.
 func PoolKernelStats() ([]PoolKernelStat, error) {
 	poolDirs := make(map[string]struct{})
-	for _, filename := range []string{"state", "io", "iostats"} {
+	for _, filename := range []string{"state", "io", "objset-*"} {
 		paths, err := filepath.Glob(filepath.Join(procZfsPath, "*", filename))
 		if err != nil {
 			return nil, err
@@ -82,14 +82,14 @@ func PoolKernelStats() ([]PoolKernelStat, error) {
 }
 
 // readPoolCounters supports both ZFS kernel interfaces. OpenZFS through 2.3
-// exposes aggregate vdev counters in "io". OpenZFS 2.4 replaces that file with
-// logical ARC/direct counters in "iostats".
+// exposes aggregate vdev counters in "io". When that file is unavailable, sum
+// the logical I/O counters exposed for each dataset in the pool.
 func readPoolCounters(poolDir string) (uint64, uint64, error) {
 	nread, nwrite, err := readPoolIO(filepath.Join(poolDir, "io"))
 	if err == nil || !errors.Is(err, os.ErrNotExist) {
 		return nread, nwrite, err
 	}
-	return readPoolIOStats(filepath.Join(poolDir, "iostats"))
+	return readPoolObjsets(poolDir)
 }
 
 func readPoolIO(path string) (uint64, uint64, error) {
@@ -128,15 +128,44 @@ func readPoolIO(path string) (uint64, uint64, error) {
 	return 0, 0, fmt.Errorf("I/O counters not found in %s", path)
 }
 
-func readPoolIOStats(path string) (uint64, uint64, error) {
+func readPoolObjsets(poolDir string) (uint64, uint64, error) {
+	paths, err := filepath.Glob(filepath.Join(poolDir, "objset-*"))
+	if err != nil {
+		return 0, 0, err
+	}
+	if len(paths) == 0 {
+		return 0, 0, fmt.Errorf("dataset I/O counters not found in %s", poolDir)
+	}
+
+	var totalRead, totalWrite uint64
+	objsetsRead := 0
+	for _, path := range paths {
+		nread, nwrite, err := readObjsetIO(path)
+		if errors.Is(err, os.ErrNotExist) {
+			continue // dataset may have been destroyed after the glob
+		}
+		if err != nil {
+			return 0, 0, err
+		}
+		totalRead += nread
+		totalWrite += nwrite
+		objsetsRead++
+	}
+	if objsetsRead == 0 {
+		return 0, 0, fmt.Errorf("dataset I/O counters not found in %s", poolDir)
+	}
+	return totalRead, totalWrite, nil
+}
+
+func readObjsetIO(path string) (uint64, uint64, error) {
 	file, err := os.Open(path)
 	if err != nil {
 		return 0, 0, err
 	}
 	defer file.Close()
 
-	var arcRead, directRead, arcWrite, directWrite uint64
-	found := 0
+	var nread, nwrite uint64
+	var foundRead, foundWrite bool
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
 		fields := strings.Fields(scanner.Text())
@@ -145,14 +174,12 @@ func readPoolIOStats(path string) (uint64, uint64, error) {
 		}
 		var target *uint64
 		switch fields[0] {
-		case "arc_read_bytes":
-			target = &arcRead
-		case "direct_read_bytes":
-			target = &directRead
-		case "arc_write_bytes":
-			target = &arcWrite
-		case "direct_write_bytes":
-			target = &directWrite
+		case "nread":
+			target = &nread
+			foundRead = true
+		case "nwritten":
+			target = &nwrite
+			foundWrite = true
 		default:
 			continue
 		}
@@ -161,13 +188,12 @@ func readPoolIOStats(path string) (uint64, uint64, error) {
 			return 0, 0, fmt.Errorf("parsing %s in %s: %w", fields[0], path, err)
 		}
 		*target = value
-		found++
 	}
 	if err := scanner.Err(); err != nil {
 		return 0, 0, err
 	}
-	if found != 4 {
+	if !foundRead || !foundWrite {
 		return 0, 0, fmt.Errorf("incomplete I/O counters in %s", path)
 	}
-	return arcRead + directRead, arcWrite + directWrite, nil
+	return nread, nwrite, nil
 }

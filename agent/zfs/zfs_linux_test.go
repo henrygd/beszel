@@ -43,13 +43,19 @@ func TestPoolKernelStatsOpenZfs24(t *testing.T) {
 	poolDir := filepath.Join(root, "tank")
 	require.NoError(t, os.MkdirAll(poolDir, 0o755))
 	require.NoError(t, os.WriteFile(filepath.Join(poolDir, "state"), []byte("ONLINE\n"), 0o644))
-	require.NoError(t, os.WriteFile(filepath.Join(poolDir, "iostats"), []byte(
-		"34 1 0x01 26 7072 0 0\n"+
+	require.NoError(t, os.WriteFile(filepath.Join(poolDir, "objset-0x1"), []byte(
+		"34 1 0x01 28 7872 0 0\n"+
 			"name type data\n"+
-			"arc_read_bytes 4 1000\n"+
-			"arc_write_bytes 4 2000\n"+
-			"direct_read_bytes 4 300\n"+
-			"direct_write_bytes 4 400\n",
+			"dataset_name 7 tank\n"+
+			"nwritten 4 2000\n"+
+			"nread 4 1000\n",
+	), 0o644))
+	require.NoError(t, os.WriteFile(filepath.Join(poolDir, "objset-0x2"), []byte(
+		"34 1 0x01 28 7872 0 0\n"+
+			"name type data\n"+
+			"dataset_name 7 tank/videos\n"+
+			"nwritten 4 400\n"+
+			"nread 4 300\n",
 	), 0o644))
 
 	stats, err := PoolKernelStats()
@@ -76,9 +82,9 @@ func TestReadPoolIORejectsMalformedCounters(t *testing.T) {
 	require.Error(t, err)
 }
 
-func TestReadPoolIOStatsRequiresAllCounters(t *testing.T) {
-	path := filepath.Join(t.TempDir(), "iostats")
-	require.NoError(t, os.WriteFile(path, []byte("arc_read_bytes 4 10\n"), 0o644))
-	_, _, err := readPoolIOStats(path)
+func TestReadObjsetIORequiresAllCounters(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "objset-0x1")
+	require.NoError(t, os.WriteFile(path, []byte("nread 4 10\n"), 0o644))
+	_, _, err := readObjsetIO(path)
 	require.Error(t, err)
 }
