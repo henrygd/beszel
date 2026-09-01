@@ -8,7 +8,7 @@ msgstr ""
 "Language: no\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2026-04-26 23:25\n"
+"PO-Revision-Date: 2026-08-18 17:52\n"
 "Last-Translator: \n"
 "Language-Team: Norwegian\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
@@ -1077,8 +1077,8 @@ msgid "Memory Usage"
 msgstr "Minnebruk"
 
 #: src/components/routes/system/charts/memory-charts.tsx
-msgid "Memory usage of docker containers"
-msgstr "Minnebruk av docker-konteinere"
+msgid "Memory usage of containers"
+msgstr "Minnebruk for containere"
 
 #. Device model
 #: src/components/routes/system/smart-table.tsx
@@ -1099,8 +1099,8 @@ msgid "Net"
 msgstr "Nett"
 
 #: src/components/routes/system/charts/network-charts.tsx
-msgid "Network traffic of docker containers"
-msgstr "Nettverkstrafikk av docker-konteinere"
+msgid "Network traffic of containers"
+msgstr "Nettverkstrafikk for containere"
 
 #: src/components/routes/system/charts/network-charts.tsx
 #: src/components/routes/system/network-sheet.tsx

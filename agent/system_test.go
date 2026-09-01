@@ -47,14 +47,14 @@ func TestCalculateHostMemoryUsage(t *testing.T) {
 			memory:    mem.VirtualMemoryStat{Total: 100, Available: 40, Used: 60, Free: 20, Cached: 25, Buffers: 10, Shared: 5, SwapTotal: 20, SwapFree: 8, SwapCached: 2},
 			used:      60,
 			cacheBuff: 30,
-			swapUsed:  10,
+			swapUsed:  12,
 		},
 		{
 			name:      "inconsistent counters saturate",
 			memory:    mem.VirtualMemoryStat{Total: 100, Available: 110, Used: ^uint64(0) - 9, Free: 90, Cached: 5, Buffers: 10, Shared: 20, SwapTotal: 10, SwapFree: 9, SwapCached: 2},
 			used:      0,
 			cacheBuff: 0,
-			swapUsed:  0,
+			swapUsed:  1,
 		},
 		{
 			name:      "htop subtraction saturates",
@@ -62,7 +62,7 @@ func TestCalculateHostMemoryUsage(t *testing.T) {
 			htop:      true,
 			used:      0,
 			cacheBuff: 25,
-			swapUsed:  15,
+			swapUsed:  20,
 		},
 		{
 			name:      "zero cache from shared cancellation does not fall back",

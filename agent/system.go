@@ -32,7 +32,11 @@ func (a *Agent) refreshSystemDetails() {
 
 	if a.dockerManager != nil {
 		a.systemDetails.Podman = a.dockerManager.IsPodman()
-		hostInfo, _ = a.dockerManager.GetHostInfo()
+		// Docker's host info describes the machine its daemon runs on. On macOS and
+		// Windows that is a Linux VM, so its CPU and memory totals are not this host's.
+		if runtime.GOOS != "darwin" && runtime.GOOS != "windows" {
+			hostInfo, _ = a.dockerManager.GetHostInfo()
+		}
 	}
 
 	a.systemDetails.Hostname, _ = os.Hostname()
@@ -171,9 +175,9 @@ func (a *Agent) getSystemStats(cacheTimeMs uint16) system.Stats {
 
 	// load average
 	if avgstat, err := load.Avg(); err == nil {
-		systemStats.LoadAvg[0] = avgstat.Load1
-		systemStats.LoadAvg[1] = avgstat.Load5
-		systemStats.LoadAvg[2] = avgstat.Load15
+		systemStats.LoadAvg[0] = utils.TwoDecimals(avgstat.Load1)
+		systemStats.LoadAvg[1] = utils.TwoDecimals(avgstat.Load5)
+		systemStats.LoadAvg[2] = utils.TwoDecimals(avgstat.Load15)
 		slog.Debug("Load average", "5m", avgstat.Load5, "15m", avgstat.Load15)
 	} else {
 		slog.Error("Error getting load average", "err", err)
@@ -347,7 +351,8 @@ func calculateHostMemoryUsage(v *mem.VirtualMemoryStat, htop bool) (used, cacheB
 	if htop {
 		used = saturatingSub(v.Total, v.Free, cacheBuff)
 	}
-	return used, cacheBuff, saturatingSub(v.SwapTotal, v.SwapFree, v.SwapCached)
+	// Cached swap pages still occupy swap slots and are included in `free`'s used value.
+	return used, cacheBuff, saturatingSub(v.SwapTotal, v.SwapFree)
 }
 
 // saturatingSub subtracts each value, returning zero on underflow.

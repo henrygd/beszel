@@ -193,7 +193,13 @@ func (a *Agent) gatherStats(options common.DataRequestOptions) *system.CombinedD
 	data.Stats.ExtraFs = make(map[string]*system.FsStats)
 	data.Info.ExtraFsPct = make(map[string]float64)
 	for name, stats := range a.fsStats {
-		if !stats.Root && stats.DiskTotal > 0 {
+		if stats.Root {
+			if stats.Name != "" {
+				data.Info.RootDiskName = stats.Name
+			}
+			continue
+		}
+		if stats.DiskTotal > 0 {
 			// Use custom name if available, otherwise use device name
 			key := name
 			if stats.Name != "" {
