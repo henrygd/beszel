@@ -502,9 +502,17 @@ msgstr "CPU"
 msgid "CPU Cores"
 msgstr "CPU Cores"
 
+#: src/lib/alerts.ts
+msgid "CPU I/O Wait"
+msgstr "CPU I/O Wait"
+
 #: src/components/systemd-table/systemd-table-columns.tsx
 msgid "CPU Peak"
 msgstr "CPU Peak"
+
+#: src/lib/alerts.ts
+msgid "CPU Steal Time"
+msgstr "CPU Steal Time"
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "CPU time"
@@ -1747,6 +1755,14 @@ msgstr "Triggers when battery charge drops below a threshold"
 #: src/lib/alerts.ts
 msgid "Triggers when combined up/down exceeds a threshold"
 msgstr "Triggers when combined up/down exceeds a threshold"
+
+#: src/lib/alerts.ts
+msgid "Triggers when CPU I/O wait exceeds a threshold"
+msgstr "Triggers when CPU I/O wait exceeds a threshold"
+
+#: src/lib/alerts.ts
+msgid "Triggers when CPU steal time exceeds a threshold"
+msgstr "Triggers when CPU steal time exceeds a threshold"
 
 #: src/lib/alerts.ts
 msgid "Triggers when CPU usage exceeds a threshold"

@@ -507,9 +507,17 @@ msgstr "Процесор"
 msgid "CPU Cores"
 msgstr "CPU ядра"
 
+#: src/lib/alerts.ts
+msgid "CPU I/O Wait"
+msgstr "Изчакване на CPU за вход/изход (IOWait)"
+
 #: src/components/systemd-table/systemd-table-columns.tsx
 msgid "CPU Peak"
 msgstr "Пик на CPU"
+
+#: src/lib/alerts.ts
+msgid "CPU Steal Time"
+msgstr "Отнето време на CPU (Steal)"
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "CPU time"
@@ -1752,6 +1760,14 @@ msgstr "Задейства се, когато зарядът на батерия
 #: src/lib/alerts.ts
 msgid "Triggers when combined up/down exceeds a threshold"
 msgstr "Задейства се, когато комбинираното качване/сваляне надвиши зададен праг"
+
+#: src/lib/alerts.ts
+msgid "Triggers when CPU I/O wait exceeds a threshold"
+msgstr "Задейства се, когато изчакването на CPU за вход/изход надвиши прага"
+
+#: src/lib/alerts.ts
+msgid "Triggers when CPU steal time exceeds a threshold"
+msgstr "Задейства се, когато отнетото време на CPU надвиши прага"
 
 #: src/lib/alerts.ts
 msgid "Triggers when CPU usage exceeds a threshold"

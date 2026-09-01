@@ -507,9 +507,17 @@ msgstr "Procesor"
 msgid "CPU Cores"
 msgstr "CPU jádra"
 
+#: src/lib/alerts.ts
+msgid "CPU I/O Wait"
+msgstr "Čekání CPU na I/O (IOWait)"
+
 #: src/components/systemd-table/systemd-table-columns.tsx
 msgid "CPU Peak"
 msgstr "Špička CPU"
+
+#: src/lib/alerts.ts
+msgid "CPU Steal Time"
+msgstr "Ukradený čas CPU (Steal)"
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "CPU time"
@@ -1752,6 +1760,14 @@ msgstr "Spustí se, když úroveň nabití baterie klesne pod prahovou hodnotu"
 #: src/lib/alerts.ts
 msgid "Triggers when combined up/down exceeds a threshold"
 msgstr "Spustí se, když kombinace up/down překročí prahovou hodnotu"
+
+#: src/lib/alerts.ts
+msgid "Triggers when CPU I/O wait exceeds a threshold"
+msgstr "Spustí se, když čekání CPU na I/O překročí prahovou hodnotu"
+
+#: src/lib/alerts.ts
+msgid "Triggers when CPU steal time exceeds a threshold"
+msgstr "Spustí se, když ukradený čas CPU překročí prahovou hodnotu"
 
 #: src/lib/alerts.ts
 msgid "Triggers when CPU usage exceeds a threshold"
