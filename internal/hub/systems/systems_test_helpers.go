@@ -17,6 +17,9 @@ import (
 // the automatic background fetch during tests.
 func backgroundSmartFetchEnabled() bool { return false }
 
+// Background ZFS fetching follows the same policy as SMART fetching.
+func backgroundZfsFetchEnabled() bool { return false }
+
 // TESTING ONLY: GetSystemCount returns the number of systems in the store
 func (sm *SystemManager) GetSystemCount() int {
 	return sm.systems.Length()
@@ -115,6 +118,7 @@ func (sm *SystemManager) RemoveAllSystems() {
 		sm.RemoveSystem(system.Id)
 	}
 	sm.smartFetchMap.StopCleaner()
+	sm.zfsFetchMap.StopCleaner()
 }
 
 // ResetContextForTesting replaces the manager context for a new synctest bubble.

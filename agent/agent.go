@@ -48,6 +48,7 @@ type Agent struct {
 	keys                      []gossh.PublicKey                                     // SSH public keys
 	smartManager              *SmartManager                                         // Manages SMART data
 	systemdManager            *systemdManager                                       // Manages systemd services
+	zfsManager                *ZfsManager                                           // Manages ZFS pool and dataset data
 }
 
 // NewAgent creates a new agent with the given data directory for persisting data.
@@ -120,6 +121,19 @@ func NewAgent(dataDir ...string) (agent *Agent, err error) {
 
 	// initialize handler registry
 	agent.handlerRegistry = NewHandlerRegistry()
+
+	agent.zfsManager = newZfsManager()
+
+	// ZFS_INTERVAL env var to update ZFS detail data at this interval
+	if zfsIntervalEnv, exists := utils.GetEnv("ZFS_INTERVAL"); exists {
+		if duration, err := time.ParseDuration(zfsIntervalEnv); err == nil && duration > 0 {
+			agent.zfsManager.detailInterval = duration
+			agent.systemDetails.ZfsInterval = duration
+			slog.Info("ZFS_INTERVAL", "duration", duration)
+		} else {
+			slog.Warn("Invalid ZFS_INTERVAL", "err", err)
+		}
+	}
 
 	// initialize disk info
 	agent.initializeDiskInfo()

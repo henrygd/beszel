@@ -21,6 +21,7 @@ import (
 	"github.com/henrygd/beszel/internal/entities/smart"
 	"github.com/henrygd/beszel/internal/entities/system"
 	"github.com/henrygd/beszel/internal/entities/systemd"
+	"github.com/henrygd/beszel/internal/entities/zfs"
 
 	"github.com/henrygd/beszel"
 
@@ -49,6 +50,8 @@ type System struct {
 	detailsFetched atomic.Bool                // True if static system details have been fetched and saved
 	smartFetching  atomic.Bool                // True if SMART devices are currently being fetched
 	smartInterval  time.Duration              // Interval for periodic SMART data updates
+	zfsFetching    atomic.Bool                // True if ZFS pools are currently being fetched
+	zfsInterval    time.Duration              // Interval for periodic ZFS detail data updates
 }
 
 func (sm *SystemManager) NewSystem(systemId string) *System {
@@ -154,6 +157,12 @@ func (sys *System) update() error {
 			// to prevent premature expiration leading to new fetch if interval is different.
 			sys.manager.smartFetchMap.UpdateExpiration(sys.Id, sys.smartInterval+time.Minute)
 		}
+		// update zfs interval if it's set on the agent side
+		if data.Details.ZfsInterval > 0 {
+			sys.zfsInterval = data.Details.ZfsInterval
+			sys.manager.hub.Logger().Info("ZFS interval updated from agent details", "system", sys.Id, "interval", sys.zfsInterval.String())
+			sys.manager.zfsFetchMap.UpdateExpiration(sys.Id, sys.zfsInterval+time.Minute)
+		}
 	}
 
 	// Fetch and save SMART devices when system first comes online or at intervals
@@ -166,6 +175,20 @@ func (sys *System) update() error {
 			go func() {
 				defer sys.smartFetching.Store(false)
 				_ = sys.FetchAndSaveSmartDevices()
+			}()
+		}
+	}
+
+	// Fetch and save ZFS pool details when system first comes online or at intervals
+	if backgroundZfsFetchEnabled() && sys.detailsFetched.Load() && sys.supportsZfsData() {
+		if sys.zfsInterval <= 0 {
+			sys.zfsInterval = time.Hour
+		}
+		if sys.shouldFetchZfs() && sys.zfsFetching.CompareAndSwap(false, true) {
+			sys.manager.hub.Logger().Info("ZFS fetch", "system", sys.Id, "interval", sys.zfsInterval.String())
+			go func() {
+				defer sys.zfsFetching.Store(false)
+				_ = sys.FetchAndSaveZfsPools(false)
 			}()
 		}
 	}
@@ -239,6 +262,10 @@ func (sys *System) createRecords(data *system.CombinedData) (*core.Record, error
 			if err := createSystemDetailsRecord(txApp, data.Details, sys.Id); err != nil {
 				return err
 			}
+		}
+
+		if err := sys.syncZfsPoolHealth(txApp, data.Stats.ZfsPools); err != nil {
+			return err
 		}
 
 		// update system record (do this last because it triggers alerts and we need above records to be inserted first)
@@ -558,6 +585,15 @@ func (sys *System) FetchSmartDataFromAgent() (smart.SmartDataResponse, error) {
 	return result, err
 }
 
+// FetchZfsDataFromAgent fetches ZFS detail data from the agent.
+func (sys *System) FetchZfsDataFromAgent(force bool) (*zfs.ZfsData, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
+	defer cancel()
+	var result zfs.ZfsData
+	err := sys.request(ctx, common.GetZfsData, common.ZfsDataRequest{Force: force}, &result)
+	return &result, err
+}
+
 func makeStableHashId(strings ...string) string {
 	hash := fnv.New32a()
 	for _, str := range strings {
@@ -728,6 +764,7 @@ func (s *System) createSSHClient() error {
 	}
 	s.agentVersion, _ = extractAgentVersion(string(client.Conn.ServerVersion()))
 	s.manager.resetFailedSmartFetchState(s.Id)
+	s.manager.resetFailedZfsFetchState(s.Id)
 	return nil
 }
 

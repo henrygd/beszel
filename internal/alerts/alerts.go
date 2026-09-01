@@ -57,10 +57,16 @@ type SystemAlertStats struct {
 	Battery      [2]uint8                      `json:"bat"`
 	Batteries    map[string]uint8              `json:"bats"`
 	ExtraFs      map[string]SystemAlertFsStats `json:"efs"`
+	ZfsPools     map[string]SystemAlertZfsPool `json:"z"`
 }
 
 type SystemAlertGPUData struct {
 	Usage float64 `json:"u"`
+}
+
+type SystemAlertZfsPool struct {
+	Total float64 `json:"d"`
+	Used  float64 `json:"du"`
 }
 
 type SystemAlertData struct {
@@ -111,6 +117,9 @@ func (am *AlertManager) bindEvents() {
 	am.hub.OnRecordAfterUpdateSuccess("alerts").BindFunc(updateHistoryOnAlertUpdate)
 	am.hub.OnRecordAfterDeleteSuccess("alerts").BindFunc(resolveHistoryOnAlertDelete)
 	am.hub.OnRecordAfterUpdateSuccess("smart_devices").BindFunc(am.handleSmartDeviceAlert)
+	am.hub.OnRecordAfterCreateSuccess("zfs_pools").BindFunc(am.handleZfsPoolCreateAlert)
+	am.hub.OnRecordAfterUpdateSuccess("zfs_pools").BindFunc(am.handleZfsPoolAlert)
+	am.hub.OnRecordAfterDeleteSuccess("zfs_pools").BindFunc(resolveZfsPoolHistoryOnDelete)
 
 	am.hub.OnServe().BindFunc(func(e *core.ServeEvent) error {
 		// Populate all alerts into cache on startup
