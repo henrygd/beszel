@@ -122,6 +122,19 @@ func NewAgent(dataDir ...string) (agent *Agent, err error) {
 	// initialize handler registry
 	agent.handlerRegistry = NewHandlerRegistry()
 
+	agent.zfsManager = newZfsManager()
+
+	// ZFS_INTERVAL env var to update ZFS detail data at this interval
+	if zfsIntervalEnv, exists := utils.GetEnv("ZFS_INTERVAL"); exists {
+		if duration, err := time.ParseDuration(zfsIntervalEnv); err == nil && duration > 0 {
+			agent.zfsManager.detailInterval = duration
+			agent.systemDetails.ZfsInterval = duration
+			slog.Info("ZFS_INTERVAL", "duration", duration)
+		} else {
+			slog.Warn("Invalid ZFS_INTERVAL", "err", err)
+		}
+	}
+
 	// initialize disk info
 	agent.initializeDiskInfo()
 
@@ -136,19 +149,6 @@ func NewAgent(dataDir ...string) (agent *Agent, err error) {
 	agent.smartManager, err = NewSmartManager()
 	if err != nil {
 		slog.Debug("SMART", "err", err)
-	}
-
-	agent.zfsManager = newZfsManager()
-
-	// ZFS_INTERVAL env var to update ZFS detail data at this interval
-	if zfsIntervalEnv, exists := utils.GetEnv("ZFS_INTERVAL"); exists {
-		if duration, err := time.ParseDuration(zfsIntervalEnv); err == nil && duration > 0 {
-			agent.zfsManager.detailInterval = duration
-			agent.systemDetails.ZfsInterval = duration
-			slog.Info("ZFS_INTERVAL", "duration", duration)
-		} else {
-			slog.Warn("Invalid ZFS_INTERVAL", "err", err)
-		}
 	}
 
 	// initialize GPU manager

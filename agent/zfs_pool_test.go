@@ -89,24 +89,32 @@ func TestUpdateKernelCounterReset(t *testing.T) {
 
 func TestUpdateNoZfs(t *testing.T) {
 	zm := &ZfsManager{}
+	calls := 0
 	zm.poolStatsFn = func() ([]zfs.PoolStat, error) {
+		calls++
 		return nil, zfs.ErrNoZfs
 	}
 
 	var stats system.Stats
 	zm.Update(&stats)
+	zm.Update(&stats)
 	assert.Nil(t, stats.ZfsPools)
+	assert.Equal(t, 1, calls, "failed pool discovery should be cached until the next refresh interval")
 }
 
 func TestUpdateEmptyPools(t *testing.T) {
 	zm := &ZfsManager{}
+	calls := 0
 	zm.poolStatsFn = func() ([]zfs.PoolStat, error) {
+		calls++
 		return nil, nil
 	}
 
 	var stats system.Stats
 	zm.Update(&stats)
+	zm.Update(&stats)
 	assert.Nil(t, stats.ZfsPools)
+	assert.Equal(t, 1, calls, "an empty pool inventory should be cached until the next refresh interval")
 }
 
 func TestDatasetUsage(t *testing.T) {

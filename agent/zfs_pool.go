@@ -109,7 +109,7 @@ func (zm *ZfsManager) Update(systemStats *system.Stats) {
 // every poolStatsRefreshInterval. On failure the previous inventory is
 // retained and the refresh is retried on the next cadence.
 func (zm *ZfsManager) poolStats() []zfs.PoolStat {
-	if zm.poolData == nil || time.Since(zm.lastPoolStats) >= poolStatsRefreshInterval {
+	if zm.lastPoolStats.IsZero() || time.Since(zm.lastPoolStats) >= poolStatsRefreshInterval {
 		pools, err := zm.poolStatsFn()
 		if err != nil {
 			slog.Debug("ZFS pool stats unavailable", "err", err)
