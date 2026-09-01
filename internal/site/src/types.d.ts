@@ -153,8 +153,6 @@ export interface SystemStats {
 	efs?: Record<string, ExtraFsStats>
 	/** ZFS pool metrics */
 	z?: Record<string, ZfsPool>
-	/** ZFS dataset usage */
-	zd?: Record<string, ZfsDatasetUsage>
 	/** GPU data */
 	g?: Record<string, GPUData>
 	/** battery percent and state */
@@ -195,11 +193,6 @@ export interface ZfsPool {
 	h?: string
 }
 
-export interface ZfsDatasetUsage {
-	/** used (GiB) */
-	du: number
-}
-
 export interface ZfsScrub {
 	/** NONE, SCANNING, FINISHED, CANCELED */
 	state?: string
@@ -220,7 +213,7 @@ export interface ZfsDataset {
 	name: string
 	used?: number
 	avail?: number
-	mountpoint?: string
+	mount?: string
 }
 
 export interface ZfsPoolRecord extends RecordModel {
@@ -233,6 +226,7 @@ export interface ZfsPoolRecord extends RecordModel {
 	scrub: ZfsScrub | null
 	vdevs: ZfsVdev[] | null
 	datasets: ZfsDataset[] | null
+	details_updated: string
 	updated: string
 }
 

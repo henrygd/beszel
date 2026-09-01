@@ -3,9 +3,12 @@
 package zfs
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -32,6 +35,12 @@ func TestParseZpoolListOutputIgnoresEmptyLines(t *testing.T) {
 	require.NoError(t, err)
 	require.Len(t, pools, 1)
 	assert.Equal(t, "tank", pools[0].Name)
+}
+
+func TestParseZpoolListOutputNoPools(t *testing.T) {
+	pools, err := parseZpoolListOutput([]byte("no pools available\n"))
+	require.NoError(t, err)
+	assert.Empty(t, pools)
 }
 
 func TestParseZpoolListOutputRejectsMalformedLine(t *testing.T) {
@@ -97,4 +106,38 @@ func TestParseScanLine(t *testing.T) {
 	assert.Equal(t, "CANCELED", parseScanLine("scan: scrub canceled on Sun Jun  1 02:00:12 2025").State)
 	assert.Equal(t, "FINISHED", parseScanLine("scan: resilvered 1.23G in 00:01:00 with 0 errors on Sun Jun  1 02:00:12 2025").State)
 	assert.Equal(t, "NONE", parseScanLine("scan: none requested").State)
+}
+
+func TestCommandOutputForcesLocaleAndTimesOut(t *testing.T) {
+	t.Setenv("BESZEL_ZFS_COMMAND_HELPER", "1")
+	out, err := commandOutput(os.Args[0], "-test.run=TestZfsCommandHelperProcess", "--", "locale")
+	require.NoError(t, err)
+	assert.Equal(t, "C/C", string(out))
+
+	oldTimeout := commandTimeout
+	commandTimeout = 20 * time.Millisecond
+	t.Cleanup(func() { commandTimeout = oldTimeout })
+	_, err = commandOutput(os.Args[0], "-test.run=TestZfsCommandHelperProcess", "--", "sleep")
+	require.Error(t, err)
+	assert.Contains(t, err.Error(), "timed out")
+}
+
+func TestZfsCommandHelperProcess(t *testing.T) {
+	if os.Getenv("BESZEL_ZFS_COMMAND_HELPER") != "1" {
+		return
+	}
+	mode := ""
+	for i, arg := range os.Args {
+		if arg == "--" && i+1 < len(os.Args) {
+			mode = os.Args[i+1]
+			break
+		}
+	}
+	switch strings.TrimSpace(mode) {
+	case "locale":
+		_, _ = fmt.Printf("%s/%s", os.Getenv("LC_ALL"), os.Getenv("LANG"))
+	case "sleep":
+		time.Sleep(time.Second)
+	}
+	os.Exit(0)
 }

@@ -7,8 +7,11 @@ import (
 	"testing"
 	"time"
 
+	"github.com/henrygd/beszel/internal/entities/system"
+	"github.com/henrygd/beszel/internal/entities/zfs"
 	"github.com/henrygd/beszel/internal/hub/expirymap"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestRecordZfsFetchResult(t *testing.T) {
@@ -82,4 +85,60 @@ func TestResetFailedZfsFetchState(t *testing.T) {
 	assert.True(t, ok, "expected successful zfs fetch state to be preserved")
 }
 
+func TestSaveZfsPoolsCompleteEmptyPrunesFinalPool(t *testing.T) {
+	sys, app := newTestSystemWithHub(t)
+	require.NoError(t, sys.saveZfsPools(&zfs.ZfsData{
+		Complete: true,
+		Pools:    []*zfs.PoolDetail{{Name: "tank", Health: "ONLINE"}},
+	}))
+	records, err := app.FindRecordsByFilter("zfs_pools", "system={:system}", "", 0, 0, map[string]any{"system": sys.Id})
+	require.NoError(t, err)
+	require.Len(t, records, 1)
+	assert.False(t, records[0].GetDateTime("details_updated").Time().IsZero())
 
+	require.NoError(t, sys.saveZfsPools(&zfs.ZfsData{Complete: true}))
+	records, err = app.FindRecordsByFilter("zfs_pools", "system={:system}", "", 0, 0, map[string]any{"system": sys.Id})
+	require.NoError(t, err)
+	assert.Empty(t, records)
+}
+
+func TestSaveZfsPoolsIncompletePreservesRecords(t *testing.T) {
+	sys, app := newTestSystemWithHub(t)
+	require.NoError(t, sys.saveZfsPools(&zfs.ZfsData{
+		Complete: true,
+		Pools:    []*zfs.PoolDetail{{Name: "tank", Health: "ONLINE"}},
+	}))
+	assert.ErrorIs(t, sys.saveZfsPools(&zfs.ZfsData{}), errIncompleteZfsData)
+	records, err := app.FindRecordsByFilter("zfs_pools", "system={:system}", "", 0, 0, map[string]any{"system": sys.Id})
+	require.NoError(t, err)
+	assert.Len(t, records, 1)
+}
+
+func TestSyncZfsPoolHealthWritesOnlyTransitions(t *testing.T) {
+	sys, app := newTestSystemWithHub(t)
+	collection, err := app.FindCachedCollectionByNameOrId("zfs_pools")
+	require.NoError(t, err)
+
+	require.NoError(t, sys.syncZfsPoolHealth(app, map[string]*system.ZfsPool{
+		"tank": {Total: 100, Used: 25, Health: "ONLINE"},
+	}))
+	record, err := app.FindRecordById(collection, makeStableHashId(sys.Id, "tank"))
+	require.NoError(t, err)
+	firstUpdated := record.GetDateTime("updated")
+	assert.Equal(t, "ONLINE", record.GetString("health"))
+	assert.EqualValues(t, 100*1024*1024*1024, record.GetInt("size"))
+
+	require.NoError(t, sys.syncZfsPoolHealth(app, map[string]*system.ZfsPool{
+		"tank": {Total: 100, Used: 30, Health: "ONLINE"},
+	}))
+	record, err = app.FindRecordById(collection, record.Id)
+	require.NoError(t, err)
+	assert.Equal(t, firstUpdated, record.GetDateTime("updated"))
+
+	require.NoError(t, sys.syncZfsPoolHealth(app, map[string]*system.ZfsPool{
+		"tank": {Total: 100, Used: 30, Health: "DEGRADED"},
+	}))
+	record, err = app.FindRecordById(collection, record.Id)
+	require.NoError(t, err)
+	assert.Equal(t, "DEGRADED", record.GetString("health"))
+}

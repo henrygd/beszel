@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"bytes"
 	"fmt"
-	"os/exec"
 	"regexp"
 	"strconv"
 	"strings"
@@ -43,7 +42,7 @@ var (
 // information. The human-readable format has been stable across OpenZFS
 // releases; rows are matched by their tabular shape rather than position.
 func PoolStatuses() ([]PoolStatus, error) {
-	out, err := exec.Command("zpool", "status").Output()
+	out, err := commandOutput("zpool", "status")
 	if err != nil {
 		return nil, fmt.Errorf("zpool status: %w", err)
 	}

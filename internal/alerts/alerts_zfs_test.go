@@ -74,7 +74,7 @@ func TestZfsPoolAlertDegradedToFaulted(t *testing.T) {
 
 	time.Sleep(50 * time.Millisecond)
 
-	assert.EqualValues(t, 1, hub.TestMailer.TotalSend(), "should have 1 email sent after pool became FAULTED")
+	assert.EqualValues(t, 2, hub.TestMailer.TotalSend(), "should alert on initial DEGRADED state and later FAULTED transition")
 	lastMessage := hub.TestMailer.LastMessage()
 	assert.Contains(t, lastMessage.Subject, "ZFS pool FAULTED on test-system")
 }
@@ -104,7 +104,7 @@ func TestZfsPoolAlertNoAlertOnRecovery(t *testing.T) {
 	err = hub.Save(pool)
 	assert.NoError(t, err)
 	time.Sleep(50 * time.Millisecond)
-	assert.EqualValues(t, 1, hub.TestMailer.TotalSend(), "expected one alert for DEGRADED -> FAULTED")
+	assert.EqualValues(t, 2, hub.TestMailer.TotalSend(), "expected alerts for initial DEGRADED state and DEGRADED -> FAULTED")
 
 	// Recovery back to ONLINE must not send a new alert
 	pool, err = hub.FindRecordById("zfs_pools", pool.Id)
@@ -113,7 +113,7 @@ func TestZfsPoolAlertNoAlertOnRecovery(t *testing.T) {
 	err = hub.Save(pool)
 	assert.NoError(t, err)
 	time.Sleep(50 * time.Millisecond)
-	assert.EqualValues(t, 1, hub.TestMailer.TotalSend(), "recovery should not send a new alert")
+	assert.EqualValues(t, 2, hub.TestMailer.TotalSend(), "recovery should not send a new alert")
 
 	// And the open history entry should have been resolved
 	history, err := hub.FindRecordsByFilter("alerts_history", "alert_id={:alert_id}", "", 0, 0, map[string]any{"alert_id": pool.Id})
@@ -121,7 +121,7 @@ func TestZfsPoolAlertNoAlertOnRecovery(t *testing.T) {
 	requireHistoryResolved(t, history)
 }
 
-func TestZfsPoolAlertNoAlertOnUnknownState(t *testing.T) {
+func TestZfsPoolAlertUnknownToFaulted(t *testing.T) {
 	hub, user := beszelTests.GetHubWithUser(t)
 	defer hub.Cleanup()
 
@@ -148,7 +148,36 @@ func TestZfsPoolAlertNoAlertOnUnknownState(t *testing.T) {
 
 	time.Sleep(50 * time.Millisecond)
 
-	assert.Zero(t, hub.TestMailer.TotalSend(), "should have 0 emails when changing from unknown state to FAULTED")
+	assert.EqualValues(t, 1, hub.TestMailer.TotalSend(), "should alert when a previously unknown pool becomes FAULTED")
+}
+
+func TestZfsPoolAlertOnInitialUnhealthyState(t *testing.T) {
+	hub, user := beszelTests.GetHubWithUser(t)
+	defer hub.Cleanup()
+
+	system, err := beszelTests.CreateRecord(hub, "systems", map[string]any{
+		"name":  "test-system",
+		"users": []string{user.Id},
+		"host":  "127.0.0.1",
+	})
+	require.NoError(t, err)
+
+	pool, err := beszelTests.CreateRecord(hub, "zfs_pools", map[string]any{
+		"system": system.Id,
+		"name":   "tank",
+		"health": "DEGRADED",
+	})
+	require.NoError(t, err)
+	time.Sleep(50 * time.Millisecond)
+
+	require.EqualValues(t, 1, hub.TestMailer.TotalSend())
+	assert.Contains(t, hub.TestMailer.LastMessage().Text, "first observed as DEGRADED")
+
+	pool, err = hub.FindRecordById("zfs_pools", pool.Id)
+	require.NoError(t, err)
+	require.NoError(t, hub.Save(pool))
+	time.Sleep(50 * time.Millisecond)
+	assert.EqualValues(t, 1, hub.TestMailer.TotalSend(), "unchanged unhealthy health must not duplicate alerts")
 }
 
 func TestZfsPoolAlertWritesHistory(t *testing.T) {

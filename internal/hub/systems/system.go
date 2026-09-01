@@ -264,6 +264,10 @@ func (sys *System) createRecords(data *system.CombinedData) (*core.Record, error
 			}
 		}
 
+		if err := sys.syncZfsPoolHealth(txApp, data.Stats.ZfsPools); err != nil {
+			return err
+		}
+
 		// update system record (do this last because it triggers alerts and we need above records to be inserted first)
 		systemRecord.Set("status", up)
 		systemRecord.Set("info", data.Info)

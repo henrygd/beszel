@@ -675,19 +675,12 @@ func TestAverageSystemStatsSlice_Zfs(t *testing.T) {
 			ZfsPools: map[string]*system.ZfsPool{
 				"tank": {Total: 100, Used: 40, ReadBytes: 100, WriteBytes: 200, Health: "ONLINE"},
 			},
-			ZfsDatasets: map[string]*system.ZfsDataset{
-				"tank/videos": {Total: 80, Used: 20},
-			},
 		},
 		{},
 		{
 			ZfsPools: map[string]*system.ZfsPool{
 				"tank":   {Total: 120, Used: 60, ReadBytes: 300, WriteBytes: 400, Health: "DEGRADED"},
 				"backup": {Total: 50, Used: 10, ReadBytes: 25, WriteBytes: 50, Health: "ONLINE"},
-			},
-			ZfsDatasets: map[string]*system.ZfsDataset{
-				"tank/videos": {Total: 100, Used: 40},
-				"backup":      {Total: 50, Used: 10},
 			},
 		},
 	}
@@ -701,9 +694,6 @@ func TestAverageSystemStatsSlice_Zfs(t *testing.T) {
 	assert.Equal(t, &system.ZfsPool{
 		Total: 50, Used: 10, ReadBytes: 25, WriteBytes: 50, Health: "ONLINE",
 	}, result.ZfsPools["backup"])
-	require.Len(t, result.ZfsDatasets, 2)
-	assert.Equal(t, &system.ZfsDataset{Total: 90, Used: 30}, result.ZfsDatasets["tank/videos"])
-	assert.Equal(t, &system.ZfsDataset{Total: 50, Used: 10}, result.ZfsDatasets["backup"])
 }
 
 // Tests with 10 records matching the common real-world case (10 x 1m -> 1 x 10m).

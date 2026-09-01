@@ -139,6 +139,17 @@ func init() {
 			},
 			{
 				"hidden": false,
+				"id": "date9274163058",
+				"max": "",
+				"min": "",
+				"name": "details_updated",
+				"presentable": false,
+				"required": false,
+				"system": false,
+				"type": "date"
+			},
+			{
+				"hidden": false,
 				"id": "autodate3332085495",
 				"name": "updated",
 				"onCreate": true,

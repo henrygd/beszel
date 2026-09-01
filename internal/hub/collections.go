@@ -84,10 +84,16 @@ func setCollectionAuthSettings(app core.App) error {
 		return err
 	}
 
-	if err := applyCollectionRules(app, []string{"smart_devices", "zfs_pools"}, collectionRules{
+	if err := applyCollectionRules(app, []string{"smart_devices"}, collectionRules{
 		list:   &systemScopedReadRule,
 		view:   &systemScopedReadRule,
 		delete: &systemScopedWriteRule,
+	}); err != nil {
+		return err
+	}
+	if err := applyCollectionRules(app, []string{"zfs_pools"}, collectionRules{
+		list: &systemScopedReadRule,
+		view: &systemScopedReadRule,
 	}); err != nil {
 		return err
 	}

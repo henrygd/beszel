@@ -4,12 +4,29 @@ package zfs
 import (
 	"bufio"
 	"bytes"
+	"context"
 	"errors"
 	"fmt"
+	"os"
 	"os/exec"
 	"strconv"
 	"strings"
+	"time"
 )
+
+var commandTimeout = 10 * time.Second
+
+var commandOutput = func(name string, args ...string) ([]byte, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), commandTimeout)
+	defer cancel()
+	cmd := exec.CommandContext(ctx, name, args...)
+	cmd.Env = append(os.Environ(), "LC_ALL=C", "LANG=C")
+	out, err := cmd.Output()
+	if ctx.Err() != nil {
+		return nil, fmt.Errorf("%s timed out after %s: %w", name, commandTimeout, ctx.Err())
+	}
+	return out, err
+}
 
 // ErrNoZfs is returned when the ZFS utilities or kernel interfaces are unavailable.
 var ErrNoZfs = errors.New("zfs utilities unavailable")
@@ -49,8 +66,12 @@ type Dataset struct {
 // PoolStats returns capacity and health for all pools on the system using
 // `zpool list`. Frequent health and I/O sampling uses PoolKernelStats instead.
 func PoolStats() ([]PoolStat, error) {
-	out, err := exec.Command("zpool", "list", "-Hp", "-o", "name,size,alloc,free,health").Output()
+	out, err := commandOutput("zpool", "list", "-Hp", "-o", "name,size,alloc,free,health")
 	if err != nil {
+		var exitErr *exec.ExitError
+		if errors.As(err, &exitErr) && strings.Contains(string(exitErr.Stderr), "no pools available") {
+			return nil, nil
+		}
 		return nil, fmt.Errorf("zpool list: %w", err)
 	}
 	return parseZpoolListOutput(out)
@@ -59,7 +80,7 @@ func PoolStats() ([]PoolStat, error) {
 // Datasets returns all datasets on the system with usage and mountpoint
 // information using `zfs list` (recursive by default).
 func Datasets() ([]Dataset, error) {
-	out, err := exec.Command("zfs", "list", "-Hp", "-o", "name,used,avail,mountpoint").Output()
+	out, err := commandOutput("zfs", "list", "-Hp", "-o", "name,used,avail,mountpoint")
 	if err != nil {
 		return nil, fmt.Errorf("zfs list: %w", err)
 	}
@@ -75,6 +96,9 @@ func parseZpoolListOutput(out []byte) ([]PoolStat, error) {
 		line := strings.TrimSpace(scanner.Text())
 		if line == "" {
 			continue
+		}
+		if line == "no pools available" && len(pools) == 0 {
+			return nil, nil
 		}
 		fields := strings.Split(line, "\t")
 		if len(fields) < 5 {

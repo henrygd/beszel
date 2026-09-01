@@ -12,7 +12,14 @@ import (
 // resolves the alert history entry when the pool recovers. Like the SMART
 // hook, this is automatic and does not require user opt-in.
 func (am *AlertManager) handleZfsPoolAlert(e *core.RecordEvent) error {
-	oldHealth := e.Record.Original().GetString("health")
+	return am.handleZfsPoolHealthAlert(e, e.Record.Original().GetString("health"))
+}
+
+func (am *AlertManager) handleZfsPoolCreateAlert(e *core.RecordEvent) error {
+	return am.handleZfsPoolHealthAlert(e, "")
+}
+
+func (am *AlertManager) handleZfsPoolHealthAlert(e *core.RecordEvent, oldHealth string) error {
 	newHealth := e.Record.GetString("health")
 	oldSeverity := zfsPoolSeverity(oldHealth)
 	newSeverity := zfsPoolSeverity(newHealth)
@@ -42,7 +49,10 @@ func (am *AlertManager) handleZfsPoolAlert(e *core.RecordEvent) error {
 	poolName := e.Record.GetString("name")
 
 	title := fmt.Sprintf("ZFS pool %s on %s: %s", newHealth, systemName, poolName)
-	message := fmt.Sprintf("ZFS pool %s (%s) health changed from %s to %s", poolName, systemName, oldHealth, newHealth)
+	message := fmt.Sprintf("ZFS pool %s (%s) was first observed as %s", poolName, systemName, newHealth)
+	if oldSeverity > 0 {
+		message = fmt.Sprintf("ZFS pool %s (%s) health changed from %s to %s", poolName, systemName, oldHealth, newHealth)
+	}
 
 	userIDs := systemRecord.GetStringSlice("users")
 	if len(userIDs) == 0 {
@@ -75,10 +85,9 @@ func resolveZfsPoolHistoryOnDelete(e *core.RecordEvent) error {
 }
 
 // shouldSendZfsPoolAlert reports whether a health transition warrants an alert.
-// Only worsening transitions from known states are reported; recoveries and
-// unknown states are ignored.
+// First observations of unhealthy pools and worsening transitions are reported.
 func shouldSendZfsPoolAlert(oldSeverity, newSeverity int) bool {
-	return oldSeverity >= 1 && newSeverity > oldSeverity
+	return newSeverity > 1 && (oldSeverity == 0 || newSeverity > oldSeverity)
 }
 
 // zfsPoolSeverity ranks pool health states: healthy (1), degraded (2),

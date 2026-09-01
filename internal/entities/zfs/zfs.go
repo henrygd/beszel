@@ -3,7 +3,8 @@ package zfs
 
 // ZfsData is the detail payload returned by the agent for the GetZfsData action.
 type ZfsData struct {
-	Pools []*PoolDetail `json:"pools,omitempty"`
+	Pools    []*PoolDetail `json:"pools,omitempty"`
+	Complete bool          `json:"complete,omitempty"`
 }
 
 // PoolDetail holds the verbose state of a single pool: capacity, health,
@@ -40,5 +41,5 @@ type Dataset struct {
 	Name       string `json:"name"`
 	Used       uint64 `json:"used,omitempty"`
 	Avail      uint64 `json:"avail,omitempty"`
-	Mountpoint string `json:"mountpoint,omitempty"`
+	Mountpoint string `json:"mount,omitempty"`
 }

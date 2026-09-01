@@ -219,10 +219,11 @@ func (am *AlertManager) HandleSystemAlerts(systemRecord *core.Record, data *syst
 				// add zfs pool usage from historical record
 				for key, pool := range stats.ZfsPools {
 					if pool.Total > 0 {
-						if _, ok := alert.mapSums[key]; !ok {
-							alert.mapSums[key] = 0.0
+						zfsKey := zfsDiskAlertKey(key)
+						if _, ok := alert.mapSums[zfsKey]; !ok {
+							alert.mapSums[zfsKey] = 0.0
 						}
-						alert.mapSums[key] += float32(pool.Used / pool.Total * 100)
+						alert.mapSums[zfsKey] += float32(pool.Used / pool.Total * 100)
 					}
 				}
 			case "Temperature":
@@ -272,7 +273,7 @@ func (am *AlertManager) HandleSystemAlerts(systemRecord *core.Record, data *syst
 				sumPct := float32(value)
 				if sumPct > maxPct {
 					maxPct = sumPct
-					alert.descriptor = fmt.Sprintf("Usage of %s", key)
+					alert.descriptor = diskAlertDescriptor(key)
 				}
 			}
 			alert.val = float64(maxPct / float32(alert.count))
@@ -316,6 +317,17 @@ func (am *AlertManager) HandleSystemAlerts(systemRecord *core.Record, data *syst
 		}
 	}
 	return nil
+}
+
+func zfsDiskAlertKey(poolName string) string {
+	return "zfs:" + poolName
+}
+
+func diskAlertDescriptor(key string) string {
+	if poolName, ok := strings.CutPrefix(key, "zfs:"); ok {
+		return fmt.Sprintf("Usage of ZFS pool %s", poolName)
+	}
+	return fmt.Sprintf("Usage of %s", key)
 }
 
 func hasRepresentativeBattery(legacy [2]uint8, batteries map[string]uint8) bool {

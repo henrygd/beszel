@@ -47,7 +47,6 @@ type ZfsManager struct {
 	kernelSamples map[string]poolKernelSample
 
 	datasetUsage     map[string]zfsDatasetUsage // mountpoint -> usage
-	datasetStats     map[string]zfsDatasetUsage // dataset name -> usage
 	lastUsageRefresh time.Time
 
 	// Detail data (pools, vdevs, scrub, datasets) is cached and refreshed on
@@ -104,20 +103,6 @@ func (zm *ZfsManager) Update(systemStats *system.Stats) {
 		systemStats.ZfsPools[pool.Name] = stats
 	}
 
-	// Per-dataset usage (refreshed at most every datasetUsageRefreshInterval).
-	// Values are not rounded to 2 decimal GB so small datasets (EFI disks,
-	// small volumes) stay visible; the frontend formats any magnitude.
-	datasetStats := zm.DatasetStats()
-	if len(datasetStats) > 0 {
-		if systemStats.ZfsDatasets == nil {
-			systemStats.ZfsDatasets = make(map[string]*system.ZfsDataset, len(datasetStats))
-		}
-		for name, ds := range datasetStats {
-			systemStats.ZfsDatasets[name] = &system.ZfsDataset{
-				Used: float64(ds.used) / (1024 * 1024 * 1024),
-			}
-		}
-	}
 }
 
 // poolStats returns the cached pool inventory, re-running `zpool list` at most
@@ -169,7 +154,7 @@ func (zm *ZfsManager) kernelStats() (map[string]zfs.PoolKernelStat, map[string]z
 }
 
 // refreshDatasetUsage re-runs `zfs list` when the refresh window has elapsed
-// and rebuilds both the mountpoint-keyed and name-keyed usage maps.
+// and rebuilds the mountpoint-keyed usage map.
 func (zm *ZfsManager) refreshDatasetUsage() {
 	if !zm.lastUsageRefresh.IsZero() && time.Since(zm.lastUsageRefresh) < datasetUsageRefreshInterval {
 		return
@@ -179,15 +164,12 @@ func (zm *ZfsManager) refreshDatasetUsage() {
 		slog.Debug("ZFS dataset usage unavailable", "err", err)
 	} else {
 		usage := make(map[string]zfsDatasetUsage, len(datasets))
-		stats := make(map[string]zfsDatasetUsage, len(datasets))
 		for _, ds := range datasets {
 			if ds.Mountpoint != "" && ds.Mountpoint != "-" {
 				usage[ds.Mountpoint] = zfsDatasetUsage{used: ds.Used, avail: ds.Avail}
 			}
-			stats[ds.Name] = zfsDatasetUsage{used: ds.Used, avail: ds.Avail}
 		}
 		zm.datasetUsage = usage
-		zm.datasetStats = stats
 	}
 	zm.lastUsageRefresh = time.Now()
 }
@@ -200,13 +182,6 @@ func (zm *ZfsManager) DatasetUsage() map[string]zfsDatasetUsage {
 	return zm.datasetUsage
 }
 
-// DatasetStats returns ZFS dataset usage keyed by dataset name (for per-dataset
-// charts), refreshed on the same cadence as DatasetUsage.
-func (zm *ZfsManager) DatasetStats() map[string]zfsDatasetUsage {
-	zm.refreshDatasetUsage()
-	return zm.datasetStats
-}
-
 // GetDetail returns ZFS detail data (pool health, scrub, vdevs, datasets).
 // Scheduled requests use the cached snapshot until stale; manual requests can
 // force collection. On failure the previous snapshot is retained.
@@ -215,12 +190,16 @@ func (zm *ZfsManager) GetDetail(force bool) *zfsentity.ZfsData {
 	defer zm.detailMu.Unlock()
 
 	if force || zm.detail == nil || time.Since(zm.lastDetailRefresh) >= zm.detailInterval {
-		if data, err := zm.collectDetail(); err != nil {
+		if data, err := zm.collectDetail(zm.detail); err != nil {
 			slog.Debug("ZFS detail collection failed", "err", err)
+			if zm.detail == nil {
+				return &zfsentity.ZfsData{}
+			}
+			return &zfsentity.ZfsData{Pools: zm.detail.Pools}
 		} else {
 			zm.detail = data
+			zm.lastDetailRefresh = time.Now()
 		}
-		zm.lastDetailRefresh = time.Now()
 	}
 	if zm.detail == nil {
 		return &zfsentity.ZfsData{}
@@ -229,22 +208,22 @@ func (zm *ZfsManager) GetDetail(force bool) *zfsentity.ZfsData {
 }
 
 // collectDetail builds a ZfsData payload from the current system state.
-func (zm *ZfsManager) collectDetail() (*zfsentity.ZfsData, error) {
+func (zm *ZfsManager) collectDetail(previous *zfsentity.ZfsData) (*zfsentity.ZfsData, error) {
 	pools, err := zm.poolStatsFn()
 	if err != nil {
 		return nil, err
 	}
 	if len(pools) == 0 {
-		return nil, zfs.ErrNoZfs
+		return &zfsentity.ZfsData{Pools: []*zfsentity.PoolDetail{}, Complete: true}, nil
 	}
 
-	statuses, err := zm.poolStatusesFn()
-	if err != nil {
-		slog.Debug("ZFS pool status unavailable", "err", err)
+	statuses, statusErr := zm.poolStatusesFn()
+	if statusErr != nil {
+		slog.Debug("ZFS pool status unavailable", "err", statusErr)
 	}
-	datasets, err := zm.datasetsFn()
-	if err != nil {
-		slog.Debug("ZFS datasets unavailable", "err", err)
+	datasets, datasetsErr := zm.datasetsFn()
+	if datasetsErr != nil {
+		slog.Debug("ZFS datasets unavailable", "err", datasetsErr)
 	}
 
 	statusByPool := make(map[string]zfs.PoolStatus, len(statuses))
@@ -252,7 +231,16 @@ func (zm *ZfsManager) collectDetail() (*zfsentity.ZfsData, error) {
 		statusByPool[st.Name] = st
 	}
 
-	data := &zfsentity.ZfsData{Pools: make([]*zfsentity.PoolDetail, 0, len(pools))}
+	previousByPool := make(map[string]*zfsentity.PoolDetail)
+	if previous != nil {
+		for _, pool := range previous.Pools {
+			if pool != nil {
+				previousByPool[pool.Name] = pool
+			}
+		}
+	}
+
+	data := &zfsentity.ZfsData{Pools: make([]*zfsentity.PoolDetail, 0, len(pools)), Complete: true}
 	for i := range pools {
 		p := &pools[i]
 		detail := &zfsentity.PoolDetail{
@@ -262,7 +250,7 @@ func (zm *ZfsManager) collectDetail() (*zfsentity.ZfsData, error) {
 			Alloc:  p.Alloc,
 			Free:   p.Free,
 		}
-		if st, ok := statusByPool[p.Name]; ok {
+		if st, ok := statusByPool[p.Name]; statusErr == nil && ok {
 			if st.Scrub.State != "" && st.Scrub.State != "NONE" {
 				detail.Scrub = &zfsentity.Scrub{
 					State:    st.Scrub.State,
@@ -279,16 +267,32 @@ func (zm *ZfsManager) collectDetail() (*zfsentity.ZfsData, error) {
 					ChecksumErrs: v.ChecksumErrs,
 				})
 			}
-		}
-		for _, ds := range datasets {
-			if poolOfDataset(ds.Name) == p.Name {
-				detail.Datasets = append(detail.Datasets, &zfsentity.Dataset{
-					Name:       ds.Name,
-					Used:       ds.Used,
-					Avail:      ds.Avail,
-					Mountpoint: ds.Mountpoint,
-				})
+		} else {
+			if cached := previousByPool[p.Name]; cached != nil {
+				detail.Scrub = cached.Scrub
+				detail.Vdevs = cached.Vdevs
 			}
+		}
+		if datasetsErr == nil {
+			foundDataset := false
+			for _, ds := range datasets {
+				if poolOfDataset(ds.Name) == p.Name {
+					foundDataset = true
+					detail.Datasets = append(detail.Datasets, &zfsentity.Dataset{
+						Name:       ds.Name,
+						Used:       ds.Used,
+						Avail:      ds.Avail,
+						Mountpoint: ds.Mountpoint,
+					})
+				}
+			}
+			if !foundDataset {
+				if cached := previousByPool[p.Name]; cached != nil {
+					detail.Datasets = cached.Datasets
+				}
+			}
+		} else if cached := previousByPool[p.Name]; cached != nil {
+			detail.Datasets = cached.Datasets
 		}
 		data.Pools = append(data.Pools, detail)
 	}

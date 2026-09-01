@@ -47,16 +47,6 @@ func TestUpdatePopulatesZfsPools(t *testing.T) {
 	assert.InDelta(t, 1250, stats.ZfsPools["tank"].ReadBytes, 5)
 	assert.InDelta(t, 5120, stats.ZfsPools["tank"].WriteBytes, 5)
 
-	// Per-dataset usage is populated from the dataset inventory with full
-	// precision (no 2-decimal GB rounding).
-	require.NotNil(t, stats.ZfsDatasets)
-	require.Contains(t, stats.ZfsDatasets, "tank/apps")
-	assert.InDelta(t, 4656.6129, stats.ZfsDatasets["tank/apps"].Used, 0.0001) // 5 TiB in GiB
-	require.Contains(t, stats.ZfsDatasets, "tank/backup")
-	assert.InDelta(t, 5587.9354, stats.ZfsDatasets["tank/backup"].Used, 0.0001)
-	// Small datasets survive the conversion: 4 MiB == 0.00390625 GiB.
-	require.Contains(t, stats.ZfsDatasets, "rpool/vm-100-disk-2")
-	assert.Equal(t, 0.00390625, stats.ZfsDatasets["rpool/vm-100-disk-2"].Used)
 }
 
 // TestUpdateKernelStatsMissing verifies pools without a kernel sample report zero
@@ -169,6 +159,7 @@ func TestGetDetailForceRefresh(t *testing.T) {
 	zm.datasetsFn = func() ([]zfs.Dataset, error) { return nil, nil }
 
 	first := zm.GetDetail(false)
+	assert.True(t, first.Complete)
 	require.Len(t, first.Pools, 1)
 	assert.Equal(t, uint64(1), first.Pools[0].Alloc)
 
@@ -178,9 +169,57 @@ func TestGetDetailForceRefresh(t *testing.T) {
 	assert.Equal(t, 1, poolCalls)
 
 	refreshed := zm.GetDetail(true)
+	assert.True(t, refreshed.Complete)
 	require.Len(t, refreshed.Pools, 1)
 	assert.Equal(t, uint64(2), refreshed.Pools[0].Alloc)
 	assert.Equal(t, 2, poolCalls)
+}
+
+func TestGetDetailSuccessfulEmptyInventoryClearsCache(t *testing.T) {
+	zm := &ZfsManager{detailInterval: time.Hour}
+	zm.poolStatsFn = func() ([]zfs.PoolStat, error) {
+		return []zfs.PoolStat{{Name: "tank"}}, nil
+	}
+	zm.poolStatusesFn = func() ([]zfs.PoolStatus, error) { return nil, nil }
+	zm.datasetsFn = func() ([]zfs.Dataset, error) { return nil, nil }
+
+	require.Len(t, zm.GetDetail(false).Pools, 1)
+	zm.poolStatsFn = func() ([]zfs.PoolStat, error) { return nil, nil }
+	empty := zm.GetDetail(true)
+	assert.True(t, empty.Complete)
+	assert.Empty(t, empty.Pools)
+}
+
+func TestGetDetailFailureReturnsIncompleteCachedInventory(t *testing.T) {
+	zm := &ZfsManager{detailInterval: time.Hour}
+	zm.poolStatsFn = func() ([]zfs.PoolStat, error) {
+		return []zfs.PoolStat{{Name: "tank"}}, nil
+	}
+	zm.poolStatusesFn = func() ([]zfs.PoolStatus, error) {
+		return []zfs.PoolStatus{{Name: "tank", Vdevs: []zfs.VdevStatus{{Name: "mirror-0"}}}}, nil
+	}
+	zm.datasetsFn = func() ([]zfs.Dataset, error) {
+		return []zfs.Dataset{{Name: "tank/data"}}, nil
+	}
+	first := zm.GetDetail(false)
+	require.True(t, first.Complete)
+	require.Len(t, first.Pools[0].Vdevs, 1)
+	require.Len(t, first.Pools[0].Datasets, 1)
+
+	zm.poolStatusesFn = func() ([]zfs.PoolStatus, error) { return nil, zfs.ErrNoZfs }
+	zm.datasetsFn = func() ([]zfs.Dataset, error) { return nil, zfs.ErrNoZfs }
+	partial := zm.GetDetail(true)
+	require.True(t, partial.Complete)
+	require.Len(t, partial.Pools[0].Vdevs, 1)
+	require.Len(t, partial.Pools[0].Datasets, 1)
+
+	zm.poolStatsFn = func() ([]zfs.PoolStat, error) { return nil, zfs.ErrNoZfs }
+	lastSuccessfulRefresh := zm.lastDetailRefresh
+	failed := zm.GetDetail(true)
+	assert.False(t, failed.Complete)
+	require.Len(t, failed.Pools, 1)
+	assert.Equal(t, "tank", failed.Pools[0].Name)
+	assert.Equal(t, lastSuccessfulRefresh, zm.lastDetailRefresh)
 }
 
 func TestZfsMountpoints(t *testing.T) {

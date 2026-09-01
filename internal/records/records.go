@@ -198,7 +198,6 @@ func AverageSystemStatsSlice(records []system.Stats) system.Stats {
 	var fanSums map[string]uint64
 	fanCount := uint64(0)
 	zfsPoolCounts := make(map[string]uint64)
-	zfsDatasetCounts := make(map[string]uint64)
 
 	// Accumulate totals
 	for i := range records {
@@ -339,8 +338,8 @@ func AverageSystemStatsSlice(records []system.Stats) system.Stats {
 			}
 		}
 
-		// Accumulate ZFS pool and dataset stats. Counts are tracked per entry so
-		// a pool or dataset missing from some samples is not averaged as zero.
+		// Accumulate ZFS pool stats. Counts are tracked per entry so a pool
+		// missing from some samples is not averaged as zero.
 		if stats.ZfsPools != nil {
 			if sum.ZfsPools == nil {
 				sum.ZfsPools = make(map[string]*system.ZfsPool, len(stats.ZfsPools))
@@ -364,25 +363,6 @@ func AverageSystemStatsSlice(records []system.Stats) system.Stats {
 				zfsPoolCounts[name]++
 			}
 		}
-		if stats.ZfsDatasets != nil {
-			if sum.ZfsDatasets == nil {
-				sum.ZfsDatasets = make(map[string]*system.ZfsDataset, len(stats.ZfsDatasets))
-			}
-			for name, value := range stats.ZfsDatasets {
-				if value == nil {
-					continue
-				}
-				dataset := sum.ZfsDatasets[name]
-				if dataset == nil {
-					dataset = &system.ZfsDataset{}
-					sum.ZfsDatasets[name] = dataset
-				}
-				dataset.Total += value.Total
-				dataset.Used += value.Used
-				zfsDatasetCounts[name]++
-			}
-		}
-
 		// Accumulate GPU data
 		if stats.GPUData != nil {
 			if sum.GPUData == nil {
@@ -493,7 +473,7 @@ func AverageSystemStatsSlice(records []system.Stats) system.Stats {
 		}
 	}
 
-	// Average ZFS pool and dataset stats.
+	// Average ZFS pool stats.
 	for name, pool := range sum.ZfsPools {
 		entryCount := zfsPoolCounts[name]
 		pool.Total = twoDecimals(pool.Total / float64(entryCount))
@@ -501,12 +481,6 @@ func AverageSystemStatsSlice(records []system.Stats) system.Stats {
 		pool.ReadBytes /= entryCount
 		pool.WriteBytes /= entryCount
 	}
-	for name, dataset := range sum.ZfsDatasets {
-		entryCount := float64(zfsDatasetCounts[name])
-		dataset.Total = twoDecimals(dataset.Total / entryCount)
-		dataset.Used = twoDecimals(dataset.Used / entryCount)
-	}
-
 	// Average GPU data
 	if sum.GPUData != nil {
 		for id := range sum.GPUData {

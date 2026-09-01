@@ -2,13 +2,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import {
-	DropdownMenu,
-	DropdownMenuContent,
-	DropdownMenuItem,
-	DropdownMenuSeparator,
-	DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Input } from "@/components/ui/input"
 import { Separator } from "@/components/ui/separator"
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet"
@@ -39,13 +33,12 @@ import {
 	MoreHorizontalIcon,
 	RefreshCwIcon,
 	RotateCwIcon,
-	Trash2Icon,
 	XCircleIcon,
 	XIcon,
 } from "lucide-react"
 import { useCallback, useEffect, useMemo, useState } from "react"
 
-const ZFS_POOL_FIELDS = "id,system,name,health,size,alloc,free,scrub,updated"
+const ZFS_POOL_FIELDS = "id,system,name,health,size,alloc,free,scrub,details_updated,updated"
 
 /** Maps a zpool health string to a Badge variant. */
 function healthVariant(health: string): "success" | "warning" | "danger" | "outline" {
@@ -71,15 +64,7 @@ function formatCapacity(bytes: number): string {
 	return `${toFixedFloat(value, value >= 10 ? 1 : 2)} ${unit}`
 }
 
-function HeaderButton<T>({
-	column,
-	name,
-	Icon,
-}: {
-	column: Column<T>
-	name: string
-	Icon: React.ElementType
-}) {
+function HeaderButton<T>({ column, name, Icon }: { column: Column<T>; name: string; Icon: React.ElementType }) {
 	const isSorted = column.getIsSorted()
 	return (
 		<Button
@@ -151,7 +136,7 @@ const columns: ColumnDef<ZfsPoolRecord>[] = [
 	{
 		id: "updated",
 		invertSorting: true,
-		accessorFn: (record) => record.updated,
+		accessorFn: (record) => record.details_updated || record.updated,
 		header: ({ column }) => <HeaderButton column={column} name={t`Updated`} Icon={ClockIcon} />,
 		cell: ({ getValue }) => {
 			const timestamp = getValue() as string
@@ -186,13 +171,22 @@ function VdevTable({ vdevs }: { vdevs: ZfsVdev[] }) {
 									{vdev.state ?? "-"}
 								</Badge>
 							</TableCell>
-							<TableCell className={cn("text-right tabular-nums", (vdev.readErrs ?? 0) > 0 && "text-red-600 dark:text-red-400")}>
+							<TableCell
+								className={cn("text-right tabular-nums", (vdev.readErrs ?? 0) > 0 && "text-red-600 dark:text-red-400")}
+							>
 								{vdev.readErrs ?? 0}
 							</TableCell>
-							<TableCell className={cn("text-right tabular-nums", (vdev.writeErrs ?? 0) > 0 && "text-red-600 dark:text-red-400")}>
+							<TableCell
+								className={cn("text-right tabular-nums", (vdev.writeErrs ?? 0) > 0 && "text-red-600 dark:text-red-400")}
+							>
 								{vdev.writeErrs ?? 0}
 							</TableCell>
-							<TableCell className={cn("text-right tabular-nums", (vdev.checksumErrs ?? 0) > 0 && "text-red-600 dark:text-red-400")}>
+							<TableCell
+								className={cn(
+									"text-right tabular-nums",
+									(vdev.checksumErrs ?? 0) > 0 && "text-red-600 dark:text-red-400"
+								)}
+							>
 								{vdev.checksumErrs ?? 0}
 							</TableCell>
 						</TableRow>
@@ -225,10 +219,12 @@ const datasetColumns: ColumnDef<ZfsDataset>[] = [
 		cell: ({ getValue }) => <span className="text-right tabular-nums">{formatCapacity(getValue() as number)}</span>,
 	},
 	{
-		accessorKey: "mountpoint",
-		sortingFn: (a, b) => (a.original.mountpoint ?? "").localeCompare(b.original.mountpoint ?? ""),
+		accessorKey: "mount",
+		sortingFn: (a, b) => (a.original.mount ?? "").localeCompare(b.original.mount ?? ""),
 		header: ({ column }) => <HeaderButton column={column} name={t`Mountpoint`} Icon={HardDriveIcon} />,
-		cell: ({ getValue }) => <span className="font-mono text-xs text-muted-foreground">{(getValue() as string) || "-"}</span>,
+		cell: ({ getValue }) => (
+			<span className="font-mono text-xs text-muted-foreground">{(getValue() as string) || "-"}</span>
+		),
 	},
 ]
 
@@ -251,25 +247,30 @@ function DatasetTable({ datasets }: { datasets: ZfsDataset[] }) {
 	if (!datasets?.length) return null
 	return (
 		<div>
-			<div className="relative mb-2 w-full sm:w-64">
-				<Input
-					placeholder={t`Filter datasets...`}
-					value={filter}
-					onChange={(e) => setFilter(e.target.value)}
-					className="px-4 w-full"
-				/>
-				{filter && (
-					<Button
-						type="button"
-						variant="ghost"
-						size="icon"
-						aria-label={t`Clear`}
-						className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 text-muted-foreground"
-						onClick={() => setFilter("")}
-					>
-						<XIcon className="h-4 w-4" />
-					</Button>
-				)}
+			<div className="mb-2 flex items-center justify-between gap-4">
+				<h3 className="text-base font-semibold">
+					<Trans>Datasets</Trans>
+				</h3>
+				<div className="relative w-64 max-w-full">
+					<Input
+						placeholder={t`Filter datasets...`}
+						value={filter}
+						onChange={(e) => setFilter(e.target.value)}
+						className="px-4 w-full"
+					/>
+					{filter && (
+						<Button
+							type="button"
+							variant="ghost"
+							size="icon"
+							aria-label={t`Clear`}
+							className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 text-muted-foreground"
+							onClick={() => setFilter("")}
+						>
+							<XIcon className="h-4 w-4" />
+						</Button>
+					)}
+				</div>
 			</div>
 			<div className="max-h-80 overflow-auto rounded-md border">
 				<Table>
@@ -278,9 +279,7 @@ function DatasetTable({ datasets }: { datasets: ZfsDataset[] }) {
 							<TableRow key={headerGroup.id}>
 								{headerGroup.headers.map((header) => (
 									<TableHead key={header.id}>
-										{header.isPlaceholder
-											? null
-											: flexRender(header.column.columnDef.header, header.getContext())}
+										{header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
 									</TableHead>
 								))}
 							</TableRow>
@@ -290,9 +289,7 @@ function DatasetTable({ datasets }: { datasets: ZfsDataset[] }) {
 						{table.getRowModel().rows.map((row) => (
 							<TableRow key={row.id}>
 								{row.getVisibleCells().map((cell) => (
-									<TableCell key={cell.id}>
-										{flexRender(cell.column.columnDef.cell, cell.getContext())}
-									</TableCell>
+									<TableCell key={cell.id}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</TableCell>
 								))}
 							</TableRow>
 						))}
@@ -316,6 +313,7 @@ function PoolSheet({
 	const [isLoading, setIsLoading] = useState(false)
 
 	useEffect(() => {
+		let active = true
 		if (!poolId) {
 			setPool(null)
 			return
@@ -325,15 +323,22 @@ function PoolSheet({
 		setIsLoading(true)
 		pb.collection("zfs_pools")
 			.getOne(poolId)
-			.then(p => setPool(p as ZfsPoolRecord))
-			.catch(() => setPool(null))
-			.finally(() => setIsLoading(false))
+			.then((record) => active && setPool(record as ZfsPoolRecord))
+			.catch(() => active && setPool(null))
+			.finally(() => active && setIsLoading(false))
+		return () => {
+			active = false
+		}
 	}, [open, poolId])
 
 	const health = pool?.health || ""
 	const healthVariantValue = healthVariant(health)
 	const HealthIcon =
-		healthVariantValue === "success" ? CheckCircleIcon : healthVariantValue === "warning" ? CircleAlertIcon : XCircleIcon
+		healthVariantValue === "success"
+			? CheckCircleIcon
+			: healthVariantValue === "warning"
+				? CircleAlertIcon
+				: XCircleIcon
 
 	return (
 		<Sheet open={open} onOpenChange={onOpenChange}>
@@ -410,9 +415,10 @@ export default function ZfsTable({ systemId }: { systemId?: string }) {
 	const [globalFilter, setGlobalFilter] = useState("")
 	const [activePoolId, setActivePoolId] = useState<string | null>(null)
 	const [sheetOpen, setSheetOpen] = useState(false)
-	const [rowActionState, setRowActionState] = useState<{ type: "refresh" | "delete"; id: string } | null>(null)
+	const [refreshingId, setRefreshingId] = useState<string | null>(null)
 
 	useEffect(() => {
+		let disposed = false
 		let unsubscribe: () => void = () => {}
 		// fetch initial records
 		pb.collection<ZfsPoolRecord>("zfs_pools")
@@ -421,14 +427,14 @@ export default function ZfsTable({ systemId }: { systemId?: string }) {
 				sort: "name",
 				fields: ZFS_POOL_FIELDS,
 			})
-			.then(setZfsPools)
+			.then((records) => !disposed && setZfsPools(records))
 			.catch((error) => console.error("Failed to fetch ZFS pools:", error))
 
 		// subscribe to realtime updates
 		const pbOptions = systemId ? { filter: `system="${systemId}"` } : undefined
 		;(async () => {
 			try {
-				unsubscribe = await pb.collection<ZfsPoolRecord>("zfs_pools").subscribe(
+				const unsubscribeNow = await pb.collection<ZfsPoolRecord>("zfs_pools").subscribe(
 					"*",
 					(event) => {
 						const record = event.record as ZfsPoolRecord
@@ -452,12 +458,20 @@ export default function ZfsTable({ systemId }: { systemId?: string }) {
 					},
 					pbOptions
 				)
+				if (disposed) {
+					unsubscribeNow()
+				} else {
+					unsubscribe = unsubscribeNow
+				}
 			} catch (error) {
 				console.error("Failed to subscribe to ZFS pool updates:", error)
 			}
 		})()
 
-		return () => unsubscribe?.()
+		return () => {
+			disposed = true
+			unsubscribe?.()
+		}
 	}, [systemId])
 
 	const refreshSystem = useCallback(async (systemId: string) => {
@@ -474,26 +488,15 @@ export default function ZfsTable({ systemId }: { systemId?: string }) {
 	const handleRowRefresh = useCallback(
 		async (pool: ZfsPoolRecord) => {
 			if (!pool.system) return
-			setRowActionState({ type: "refresh", id: pool.id })
+			setRefreshingId(pool.id)
 			try {
 				await refreshSystem(pool.system)
 			} finally {
-				setRowActionState((state) => (state?.id === pool.id ? null : state))
+				setRefreshingId((id) => (id === pool.id ? null : id))
 			}
 		},
 		[refreshSystem]
 	)
-
-	const handleDelete = useCallback(async (pool: ZfsPoolRecord) => {
-		setRowActionState({ type: "delete", id: pool.id })
-		try {
-			await pb.collection("zfs_pools").delete(pool.id)
-		} catch (error) {
-			console.error("Failed to delete ZFS pool:", error)
-		} finally {
-			setRowActionState((state) => (state?.id === pool.id ? null : state))
-		}
-	}, [])
 
 	const actionColumn = useMemo<ColumnDef<ZfsPoolRecord>>(
 		() => ({
@@ -506,8 +509,7 @@ export default function ZfsTable({ systemId }: { systemId?: string }) {
 			),
 			cell: ({ row }) => {
 				const pool = row.original
-				const isRowRefreshing = rowActionState?.id === pool.id && rowActionState.type === "refresh"
-				const isRowDeleting = rowActionState?.id === pool.id && rowActionState.type === "delete"
+				const isRowRefreshing = refreshingId === pool.id
 
 				return (
 					<div className="flex justify-end">
@@ -532,21 +534,10 @@ export default function ZfsTable({ systemId }: { systemId?: string }) {
 										event.stopPropagation()
 										handleRowRefresh(pool)
 									}}
-									disabled={isRowRefreshing || isRowDeleting}
+									disabled={isRowRefreshing}
 								>
 									<RefreshCwIcon className={cn("me-2.5 size-4", isRowRefreshing && "animate-spin")} />
 									<Trans>Refresh</Trans>
-								</DropdownMenuItem>
-								<DropdownMenuSeparator />
-								<DropdownMenuItem
-									onClick={(event) => {
-										event.stopPropagation()
-										handleDelete(pool)
-									}}
-									disabled={isRowDeleting || isRowRefreshing}
-								>
-									<Trash2Icon className="me-2.5 size-4" />
-									<Trans>Delete</Trans>
 								</DropdownMenuItem>
 							</DropdownMenuContent>
 						</DropdownMenu>
@@ -554,7 +545,7 @@ export default function ZfsTable({ systemId }: { systemId?: string }) {
 				)
 			},
 		}),
-		[rowActionState, handleRowRefresh, handleDelete]
+		[refreshingId, handleRowRefresh]
 	)
 
 	const tableColumns = useMemo(() => {
@@ -645,9 +636,7 @@ export default function ZfsTable({ systemId }: { systemId?: string }) {
 									onClick={() => openSheet(row.original)}
 								>
 									{row.getVisibleCells().map((cell) => (
-										<TableCell key={cell.id}>
-											{flexRender(cell.column.columnDef.cell, cell.getContext())}
-										</TableCell>
+										<TableCell key={cell.id}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</TableCell>
 									))}
 								</TableRow>
 							))}
