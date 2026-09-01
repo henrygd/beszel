@@ -55,7 +55,7 @@ func TestCreateSystemdStatsRecordsRemovesUnreportedServices(t *testing.T) {
 	}, system.Id))
 	assert.Equal(t, []string{"a.service"}, serviceNames())
 
-	// An empty payload is a no-op and must not clear the table.
+	// A fresh empty snapshot means the agent no longer reports any services.
 	require.NoError(t, systems.CreateSystemdStatsRecords(hub, nil, system.Id))
-	assert.Equal(t, []string{"a.service"}, serviceNames())
+	assert.Empty(t, serviceNames())
 }

@@ -338,6 +338,8 @@ export interface AlertInfo {
 	singleDesc?: () => string
 	/** Hides the duration slider for alerts that fire on first observation */
 	noDuration?: boolean
+	/** Description shown instead of numeric threshold and duration values */
+	triggeredDesc?: () => string
 	invert?: boolean
 }
 

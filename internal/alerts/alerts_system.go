@@ -16,7 +16,14 @@ import (
 func (am *AlertManager) HandleSystemAlerts(systemRecord *core.Record, data *system.CombinedData) error {
 	// Systemd alerts are binary state, not numeric thresholds, so they're handled
 	// separately. They read their own state from the database and don't use data.
-	if err := am.HandleSystemdAlerts(systemRecord); err != nil {
+	// Read the confirmed empty state from the record being saved instead of data:
+	// dashboard polling can replace the system's in-memory payload concurrently.
+	var currentInfo system.Info
+	confirmedEmptySnapshot := false
+	if err := systemRecord.UnmarshalJSONField("info", &currentInfo); err == nil {
+		confirmedEmptySnapshot = len(currentInfo.Services) > 0 && currentInfo.Services[0] == 0
+	}
+	if err := am.HandleSystemdAlerts(systemRecord, confirmedEmptySnapshot); err != nil {
 		am.hub.Logger().Error("Error handling systemd alerts", "err", err)
 	}
 

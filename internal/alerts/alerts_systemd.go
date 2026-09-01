@@ -22,7 +22,7 @@ const maxListedServices = 10
 // service rather than using a delay. The agent only refreshes systemd state every
 // 10 minutes, so a shorter delay could never observe new data before expiring, and
 // that poll interval already hides services that fail and restart quickly.
-func (am *AlertManager) HandleSystemdAlerts(systemRecord *core.Record) error {
+func (am *AlertManager) HandleSystemdAlerts(systemRecord *core.Record, confirmedEmptySnapshot bool) error {
 	alerts := am.alertsCache.GetAlertsByName(systemRecord.Id, alertNameSystemdFailed)
 	if len(alerts) == 0 {
 		return nil
@@ -37,9 +37,10 @@ func (am *AlertManager) HandleSystemdAlerts(systemRecord *core.Record) error {
 	if err != nil {
 		return err
 	}
-	// No rows means no systemd data for this system (agent without systemd, or not yet
-	// reported), which must not be treated as a recovery.
-	if total == 0 {
+	// No rows normally means no systemd data for this system (agent without systemd,
+	// or not yet reported), which must not be treated as a recovery. A fresh snapshot
+	// marker disambiguates that case from an agent explicitly reporting zero services.
+	if total == 0 && !confirmedEmptySnapshot {
 		return nil
 	}
 

@@ -227,8 +227,10 @@ func (sys *System) createRecords(data *system.CombinedData) (*core.Record, error
 			}
 		}
 
-		// add new systemd_stats record
-		if len(data.SystemdServices) > 0 {
+		// Update systemd service records when the agent reports a fresh snapshot.
+		// The length check keeps snapshots from older agents working, while the
+		// explicit marker lets newer agents report that a fresh snapshot is empty.
+		if data.SystemdServicesUpdated || len(data.SystemdServices) > 0 {
 			if err := createSystemdStatsRecords(txApp, data.SystemdServices, sys.Id); err != nil {
 				return err
 			}
@@ -280,7 +282,10 @@ func createSystemDetailsRecord(app core.App, data *system.Details, systemId stri
 
 func createSystemdStatsRecords(app core.App, data []*systemd.Service, systemId string) error {
 	if len(data) == 0 {
-		return nil
+		_, err := app.DB().NewQuery(
+			"DELETE FROM systemd_services WHERE system = {:system}",
+		).Bind(dbx.Params{"system": systemId}).Execute()
+		return err
 	}
 	// shared params for all records
 	params := dbx.Params{

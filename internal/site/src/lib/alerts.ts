@@ -97,6 +97,7 @@ export const alertInfo: Record<string, AlertInfo> = {
 		unit: "",
 		icon: ServerCrashIcon,
 		desc: () => t`Triggers when any systemd service enters the failed state`,
+		triggeredDesc: () => t`One or more services are in the failed state`,
 		/** Fires on first observation - the agent only polls systemd every 10 minutes */
 		noDuration: true,
 	},
