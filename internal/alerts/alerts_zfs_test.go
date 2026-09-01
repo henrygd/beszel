@@ -121,6 +121,36 @@ func TestZfsPoolAlertNoAlertOnRecovery(t *testing.T) {
 	requireHistoryResolved(t, history)
 }
 
+func TestZfsPoolAlertUnknownHealthDoesNotResolve(t *testing.T) {
+	hub, user := beszelTests.GetHubWithUser(t)
+	defer hub.Cleanup()
+
+	system, err := beszelTests.CreateRecord(hub, "systems", map[string]any{
+		"name":  "test-system",
+		"users": []string{user.Id},
+		"host":  "127.0.0.1",
+	})
+	require.NoError(t, err)
+
+	pool, err := beszelTests.CreateRecord(hub, "zfs_pools", map[string]any{
+		"system": system.Id,
+		"name":   "tank",
+		"health": "DEGRADED",
+	})
+	require.NoError(t, err)
+	time.Sleep(50 * time.Millisecond)
+
+	pool, err = hub.FindRecordById("zfs_pools", pool.Id)
+	require.NoError(t, err)
+	pool.Set("health", "")
+	require.NoError(t, hub.Save(pool))
+	time.Sleep(50 * time.Millisecond)
+
+	history, err := hub.FindRecordsByFilter("alerts_history", "alert_id={:alert_id} && resolved=null", "", 0, 0, map[string]any{"alert_id": pool.Id})
+	require.NoError(t, err)
+	require.Len(t, history, 1, "unknown health must not resolve an active alert")
+}
+
 func TestZfsPoolAlertUnknownToFaulted(t *testing.T) {
 	hub, user := beszelTests.GetHubWithUser(t)
 	defer hub.Cleanup()

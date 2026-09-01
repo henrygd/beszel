@@ -36,7 +36,7 @@ func (am *AlertManager) handleZfsPoolHealthAlert(e *core.RecordEvent, oldHealth 
 	}
 
 	// Pool recovered to a healthy state: resolve any open history entries.
-	if newSeverity <= 1 && oldSeverity > 1 {
+	if newSeverity == 1 && oldSeverity > 1 {
 		resolveAllAlertHistoryRecords(e.App, e.Record.Id)
 		return e.Next()
 	}

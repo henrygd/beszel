@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/henrygd/beszel"
 	"github.com/henrygd/beszel/internal/entities/system"
 	"github.com/henrygd/beszel/internal/entities/zfs"
 	"github.com/pocketbase/dbx"
@@ -17,6 +18,10 @@ var errIncompleteZfsData = errors.New("incomplete ZFS pool inventory")
 type zfsFetchState struct {
 	LastAttempt int64
 	Successful  bool
+}
+
+func (sys *System) supportsZfsData() bool {
+	return sys.agentVersion.GTE(beszel.MinVersionZfsData)
 }
 
 // FetchAndSaveZfsPools fetches ZFS detail data from the agent and saves it to

@@ -180,7 +180,7 @@ func (sys *System) update() error {
 	}
 
 	// Fetch and save ZFS pool details when system first comes online or at intervals
-	if backgroundZfsFetchEnabled() && sys.detailsFetched.Load() {
+	if backgroundZfsFetchEnabled() && sys.detailsFetched.Load() && sys.supportsZfsData() {
 		if sys.zfsInterval <= 0 {
 			sys.zfsInterval = time.Hour
 		}

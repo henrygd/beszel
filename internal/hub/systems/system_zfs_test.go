@@ -7,12 +7,21 @@ import (
 	"testing"
 	"time"
 
+	"github.com/blang/semver"
 	"github.com/henrygd/beszel/internal/entities/system"
 	"github.com/henrygd/beszel/internal/entities/zfs"
 	"github.com/henrygd/beszel/internal/hub/expirymap"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
+
+func TestSupportsZfsData(t *testing.T) {
+	sys := &System{agentVersion: semver.MustParse("0.18.8")}
+	assert.False(t, sys.supportsZfsData())
+
+	sys.agentVersion = semver.MustParse("0.18.9")
+	assert.True(t, sys.supportsZfsData())
+}
 
 func TestRecordZfsFetchResult(t *testing.T) {
 	sm := &SystemManager{zfsFetchMap: expirymap.New[zfsFetchState](time.Hour)}
