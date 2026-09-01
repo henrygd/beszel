@@ -86,7 +86,7 @@ const columns: ColumnDef<ZfsPoolRecord>[] = [
 		accessorKey: "name",
 		sortingFn: (a, b) => a.original.name.localeCompare(b.original.name),
 		header: ({ column }) => <HeaderButton column={column} name={t`Pool`} Icon={HardDriveIcon} />,
-		cell: ({ getValue }) => <span className="font-medium ms-1">{getValue() as string}</span>,
+		cell: ({ getValue }) => <span className="font-medium ms-1.5">{getValue() as string}</span>,
 	},
 	{
 		accessorKey: "health",
@@ -102,21 +102,21 @@ const columns: ColumnDef<ZfsPoolRecord>[] = [
 		accessorFn: (record) => record.size,
 		invertSorting: true,
 		header: ({ column }) => <HeaderButton column={column} name={t`Size`} Icon={BinaryIcon} />,
-		cell: ({ getValue }) => <span className="ms-1 tabular-nums">{formatCapacity(getValue() as number)}</span>,
+		cell: ({ getValue }) => <span className="ms-1.5 tabular-nums">{formatCapacity(getValue() as number)}</span>,
 	},
 	{
 		id: "used",
 		accessorFn: (record) => record.alloc,
 		invertSorting: true,
 		header: ({ column }) => <HeaderButton column={column} name={t`Used`} Icon={HardDriveDownloadIcon} />,
-		cell: ({ getValue }) => <span className="ms-1 tabular-nums">{formatCapacity(getValue() as number)}</span>,
+		cell: ({ getValue }) => <span className="ms-1.5 tabular-nums">{formatCapacity(getValue() as number)}</span>,
 	},
 	{
 		id: "free",
 		accessorFn: (record) => record.free,
 		invertSorting: true,
 		header: ({ column }) => <HeaderButton column={column} name={t`Free`} Icon={HardDriveUploadIcon} />,
-		cell: ({ getValue }) => <span className="ms-1 tabular-nums">{formatCapacity(getValue() as number)}</span>,
+		cell: ({ getValue }) => <span className="ms-1.5 tabular-nums">{formatCapacity(getValue() as number)}</span>,
 	},
 	{
 		id: "scrub",
@@ -124,9 +124,9 @@ const columns: ColumnDef<ZfsPoolRecord>[] = [
 		header: ({ column }) => <HeaderButton column={column} name={t`Scrub`} Icon={RotateCwIcon} />,
 		cell: ({ row }) => {
 			const scrub = row.original.scrub
-			if (!scrub?.state) return <span className="ms-1 text-muted-foreground">{t`None`}</span>
+			if (!scrub?.state) return <span className="ms-1.5 text-muted-foreground">{t`None`}</span>
 			return (
-				<span className="ms-1 tabular-nums">
+				<span className="ms-1.5 tabular-nums">
 					{scrub.state}
 					{scrub.progress ? ` (${scrub.progress})` : ""}
 				</span>
@@ -157,9 +157,9 @@ function VdevTable({ vdevs }: { vdevs: ZfsVdev[] }) {
 					<TableRow>
 						<TableHead>{t`Vdev`}</TableHead>
 						<TableHead>{t`State`}</TableHead>
-						<TableHead className="text-right">{t`Read`}</TableHead>
-						<TableHead className="text-right">{t`Write`}</TableHead>
-						<TableHead className="text-right">{t`Checksum`}</TableHead>
+						<TableHead className="text-right">{t`Read errors`}</TableHead>
+						<TableHead className="text-right">{t`Write errors`}</TableHead>
+						<TableHead className="text-right">{t`Checksum errors`}</TableHead>
 					</TableRow>
 				</TableHeader>
 				<TableBody>
@@ -278,7 +278,7 @@ function DatasetTable({ datasets }: { datasets: ZfsDataset[] }) {
 						{table.getHeaderGroups().map((headerGroup) => (
 							<TableRow key={headerGroup.id}>
 								{headerGroup.headers.map((header) => (
-									<TableHead key={header.id}>
+									<TableHead key={header.id} className="px-2">
 										{header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
 									</TableHead>
 								))}
@@ -289,7 +289,9 @@ function DatasetTable({ datasets }: { datasets: ZfsDataset[] }) {
 						{table.getRowModel().rows.map((row) => (
 							<TableRow key={row.id}>
 								{row.getVisibleCells().map((cell) => (
-									<TableCell key={cell.id}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</TableCell>
+									<TableCell key={cell.id} className="ps-5 whitespace-pre">
+										{flexRender(cell.column.columnDef.cell, cell.getContext())}
+									</TableCell>
 								))}
 							</TableRow>
 						))}
@@ -620,7 +622,7 @@ export default function ZfsTable({ systemId }: { systemId?: string }) {
 							{table.getHeaderGroups().map((headerGroup) => (
 								<TableRow key={headerGroup.id}>
 									{headerGroup.headers.map((header) => (
-										<TableHead key={header.id}>
+										<TableHead key={header.id} className="px-2">
 											{header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
 										</TableHead>
 									))}
