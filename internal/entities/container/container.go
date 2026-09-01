@@ -20,6 +20,7 @@ type ApiInfo struct {
 		IP         string
 		// Type        string
 	}
+	UpdateAvailable bool
 	// ImageID string
 	// Command string
 	// Created int64
