@@ -146,8 +146,17 @@ func resolveSystemdAlerts(app core.App) error {
 	err := db.NewQuery(`
 		SELECT a.id
 		FROM alerts a
+		JOIN systems sys ON sys.id = a.system
 		WHERE a.name = {:name}
 		AND a.triggered = true
+		AND (
+			EXISTS (
+				SELECT 1 FROM systemd_services cur
+				WHERE cur.system = a.system
+				AND cur.updated = (SELECT MAX(updated) FROM systemd_services WHERE system = a.system)
+			)
+			OR json_extract(sys.info, '$.sv[0]') = 0
+		)
 		AND NOT EXISTS (
 			SELECT 1 FROM systemd_services s
 			WHERE s.system = a.system AND s.state = {:state}

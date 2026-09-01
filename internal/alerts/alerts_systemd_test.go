@@ -298,6 +298,36 @@ func TestResolveSystemdAlertsClearsStaleTriggered(t *testing.T) {
 	assert.False(t, alertRecord.GetBool("triggered"), "stale triggered flag should be cleared")
 }
 
+func TestResolveSystemdAlertsKeepsTriggeredWithoutSystemdData(t *testing.T) {
+	hub, _, alert := systemdTestSetup(t, true)
+	defer hub.Cleanup()
+
+	// Missing rows do not prove recovery. This can happen when a system is offline
+	// and its last service snapshot has been removed by retention.
+	require.NoError(t, alerts.ResolveSystemdAlerts(hub))
+
+	alertRecord, err := hub.FindRecordById("alerts", alert.Id)
+	require.NoError(t, err)
+	assert.True(t, alertRecord.GetBool("triggered"), "missing systemd data should preserve triggered state")
+}
+
+func TestResolveSystemdAlertsClearsConfirmedEmptySnapshot(t *testing.T) {
+	hub, system, alert := systemdTestSetup(t, true)
+	defer hub.Cleanup()
+
+	// Update the persisted snapshot directly so record hooks don't alter alert state
+	// before the startup resolver is exercised.
+	_, err := hub.DB().NewQuery(
+		"UPDATE systems SET info = {:info} WHERE id = {:id}",
+	).Bind(dbx.Params{"info": `{"sv":[0,0]}`, "id": system.Id}).Execute()
+	require.NoError(t, err)
+	require.NoError(t, alerts.ResolveSystemdAlerts(hub))
+
+	alertRecord, err := hub.FindRecordById("alerts", alert.Id)
+	require.NoError(t, err)
+	assert.False(t, alertRecord.GetBool("triggered"), "confirmed empty snapshot should clear triggered state")
+}
+
 func TestResolveSystemdAlertsKeepsStillFailing(t *testing.T) {
 	hub, system, alert := systemdTestSetup(t, true)
 	defer hub.Cleanup()
