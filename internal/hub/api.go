@@ -125,6 +125,8 @@ func (h *Hub) registerApiRoutes(se *core.ServeEvent) error {
 	apiAuth.DELETE("/user-alerts", alerts.DeleteUserAlerts)
 	// refresh SMART devices for a system
 	apiAuth.POST("/smart/refresh", h.refreshSmartData).BindFunc(excludeReadOnlyRole)
+	// refresh ZFS pool details for a system
+	apiAuth.POST("/zfs/refresh", h.refreshZfsData).BindFunc(excludeReadOnlyRole)
 	// get systemd service details
 	apiAuth.GET("/systemd/info", h.getSystemdInfo)
 	// /containers routes
@@ -384,6 +386,26 @@ func (h *Hub) refreshSmartData(e *core.RequestEvent) error {
 	}
 
 	if err := system.FetchAndSaveSmartDevices(); err != nil {
+		return e.InternalServerError("", err)
+	}
+
+	return e.JSON(http.StatusOK, map[string]string{"status": "ok"})
+}
+
+// refreshZfsData handles POST /api/beszel/zfs/refresh requests
+// Fetches fresh ZFS detail data from the agent and updates the collection
+func (h *Hub) refreshZfsData(e *core.RequestEvent) error {
+	systemID := e.Request.URL.Query().Get("system")
+	if systemID == "" {
+		return e.BadRequestError("Invalid system parameter", nil)
+	}
+
+	system, err := h.sm.GetSystem(systemID)
+	if err != nil || !system.HasUser(e.App, e.Auth) {
+		return e.NotFoundError("", nil)
+	}
+
+	if err := system.FetchAndSaveZfsPools(true); err != nil {
 		return e.InternalServerError("", err)
 	}
 

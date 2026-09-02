@@ -8,7 +8,7 @@ msgstr ""
 "Language: ar\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2026-04-05 18:27\n"
+"PO-Revision-Date: 2026-08-18 17:52\n"
 "Last-Translator: \n"
 "Language-Team: Arabic\n"
 "Plural-Forms: nplurals=6; plural=(n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 && n%100<=10 ? 3 : n%100>=11 && n%100<=99 ? 4 : 5);\n"
@@ -251,6 +251,7 @@ msgid "Bat"
 msgstr "بطارية"
 
 #: src/components/routes/system/charts/sensor-charts.tsx
+#: src/components/routes/system/charts/sensor-charts.tsx
 #: src/lib/alerts.ts
 msgid "Battery"
 msgstr "البطارية"
@@ -433,7 +434,7 @@ msgstr "صحة الحاوية"
 
 #: src/components/routes/system.tsx
 msgid "Containers"
-msgstr "الحاويات"
+msgstr "حاويات"
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
@@ -479,6 +480,10 @@ msgstr "نسخ أمر لينكس"
 msgid "Copy name"
 msgstr "نسخ الاسم"
 
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Copy public key"
+msgstr ""
+
 #: src/components/copy-to-clipboard.tsx
 msgid "Copy text"
 msgstr "نسخ النص"
@@ -510,9 +515,17 @@ msgstr "المعالج"
 msgid "CPU Cores"
 msgstr "نوى المعالج"
 
+#: src/lib/alerts.ts
+msgid "CPU I/O Wait"
+msgstr "انتظار الإدخال/الإخراج للمعالج (IOWait)"
+
 #: src/components/systemd-table/systemd-table-columns.tsx
 msgid "CPU Peak"
 msgstr "ذروة المعالج"
+
+#: src/lib/alerts.ts
+msgid "CPU Steal Time"
+msgstr "وقت المعالج المسروق (Steal)"
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "CPU time"
@@ -555,6 +568,8 @@ msgid "Cumulative Upload"
 msgstr "الرفع التراكمي"
 
 #. Context: Battery state
+#. Context: Battery state
+#: src/components/routes/system/charts/sensor-charts.tsx
 #: src/components/routes/system/charts/sensor-charts.tsx
 msgid "Current state"
 msgstr "الحالة الحالية"
@@ -707,7 +722,7 @@ msgstr "عنوان URL للنقطة النهائية"
 
 #: src/components/routes/settings/heartbeat.tsx
 msgid "Endpoint URL to ping (required)"
-msgstr "عنوان URL للنقطة النهائية لل ping (مطلوب)"
+msgstr "رابط نقطة النهاية إلى ping (مطلوب)"
 
 #: src/components/login/login.tsx
 msgid "Enter email address to reset password"
@@ -725,7 +740,6 @@ msgstr "أدخل كلمة المرور لمرة واحدة الخاصة بك."
 msgid "Ephemeral"
 msgstr "مؤقت"
 
-#: src/components/login/auth-form.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/settings/config-yaml.tsx
 #: src/components/routes/settings/heartbeat.tsx
@@ -816,6 +830,10 @@ msgstr "فشل في تحديث التنبيه"
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Failed: {0}"
 msgstr "فشل: {0}"
+
+#: src/components/routes/system/charts/sensor-charts.tsx
+msgid "Fans"
+msgstr ""
 
 #: src/components/containers-table/containers-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
@@ -960,7 +978,6 @@ msgstr "الفاصل الزمني"
 msgid "Invalid email address."
 msgstr "عنوان البريد الإشباكي غير صالح."
 
-#: src/components/lang-toggle.tsx
 #: src/components/routes/settings/general.tsx
 msgid "Language"
 msgstr "اللغة"
@@ -1076,8 +1093,8 @@ msgid "Memory Usage"
 msgstr "استخدام الذاكرة"
 
 #: src/components/routes/system/charts/memory-charts.tsx
-msgid "Memory usage of docker containers"
-msgstr "استخدام الذاكرة لحاويات دوكر"
+msgid "Memory usage of containers"
+msgstr "استخدام الذاكرة للحاويات"
 
 #. Device model
 #: src/components/routes/system/smart-table.tsx
@@ -1098,8 +1115,8 @@ msgid "Net"
 msgstr "الشبكة"
 
 #: src/components/routes/system/charts/network-charts.tsx
-msgid "Network traffic of docker containers"
-msgstr "حركة مرور الشبكة لحاويات الدوكر"
+msgid "Network traffic of containers"
+msgstr "حركة مرور الشبكة للحاويات"
 
 #: src/components/routes/system/charts/network-charts.tsx
 #: src/components/routes/system/network-sheet.tsx
@@ -1318,6 +1335,10 @@ msgstr "اللغة المفضلة"
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Process started"
 msgstr "تم بدء العملية"
+
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Public key"
+msgstr ""
 
 #. Use 'Key' if your language requires many more characters
 #: src/components/add-system.tsx
@@ -1558,6 +1579,11 @@ msgstr "مساحة التبديل المستخدمة من قبل النظام"
 msgid "Swap Usage"
 msgstr "استخدام التبديل"
 
+#: src/components/mode-toggle.tsx
+#: src/components/mode-toggle.tsx
+msgid "Switch theme"
+msgstr ""
+
 #: src/components/add-system.tsx
 #: src/components/alerts-history-columns.tsx
 #: src/components/containers-table/containers-table-columns.tsx
@@ -1572,6 +1598,10 @@ msgstr "استخدام التبديل"
 #: src/lib/alerts.ts
 msgid "System"
 msgstr "النظام"
+
+#: src/components/routes/system/charts/sensor-charts.tsx
+msgid "System fan speeds (RPM)"
+msgstr ""
 
 #: src/components/routes/system/charts/load-average-chart.tsx
 msgid "System load averages over time"
@@ -1665,11 +1695,6 @@ msgstr "تنسيق الوقت"
 msgid "To email(s)"
 msgstr "إلى البريد الإشباكي"
 
-#: src/components/mode-toggle.tsx
-#: src/components/mode-toggle.tsx
-msgid "Toggle theme"
-msgstr "تبديل السمة"
-
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Token"
@@ -1705,7 +1730,7 @@ msgstr "إجمالي البيانات المرسلة لكل واجهة"
 #: src/components/routes/system/disk-io-sheet.tsx
 msgctxt "Disk I/O"
 msgid "Total time spent on read/write (can exceed 100%)"
-msgstr ""
+msgstr "إجمالي الوقت المستغرق في القراءة/الكتابة (يمكن أن يتجاوز 100٪)"
 
 #. placeholder {0}: data.length
 #: src/components/systemd-table/systemd-table.tsx
@@ -1747,6 +1772,14 @@ msgstr "يتم التفعيل عندما تنخفض شحنة البطارية أ
 #: src/lib/alerts.ts
 msgid "Triggers when combined up/down exceeds a threshold"
 msgstr "يتم التفعيل عندما يتجاوز الجمع بين الصعود/الهبوط عتبة معينة"
+
+#: src/lib/alerts.ts
+msgid "Triggers when CPU I/O wait exceeds a threshold"
+msgstr "يُفعّل عندما يتجاوز وقت انتظار الإدخال/الإخراج للمعالج الحد"
+
+#: src/lib/alerts.ts
+msgid "Triggers when CPU steal time exceeds a threshold"
+msgstr "يُفعّل عندما يتجاوز الوقت المسروق من المعالج الحد"
 
 #: src/lib/alerts.ts
 msgid "Triggers when CPU usage exceeds a threshold"

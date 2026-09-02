@@ -7,6 +7,7 @@ import (
 	"fmt"
 
 	entities "github.com/henrygd/beszel/internal/entities/system"
+	"github.com/henrygd/beszel/internal/entities/systemd"
 	"github.com/pocketbase/pocketbase/core"
 )
 
@@ -16,6 +17,9 @@ import (
 // We keep the explicit SMART refresh endpoint / method available, but disable
 // the automatic background fetch during tests.
 func backgroundSmartFetchEnabled() bool { return false }
+
+// Background ZFS fetching follows the same policy as SMART fetching.
+func backgroundZfsFetchEnabled() bool { return false }
 
 // TESTING ONLY: GetSystemCount returns the number of systems in the store
 func (sm *SystemManager) GetSystemCount() int {
@@ -115,6 +119,12 @@ func (sm *SystemManager) RemoveAllSystems() {
 		sm.RemoveSystem(system.Id)
 	}
 	sm.smartFetchMap.StopCleaner()
+	sm.zfsFetchMap.StopCleaner()
+}
+
+// ResetContextForTesting replaces the manager context for a new synctest bubble.
+func (sm *SystemManager) ResetContextForTesting() {
+	sm.ctx, sm.cancel = context.WithCancel(context.Background())
 }
 
 func (s *System) StopUpdater() {
@@ -124,4 +134,8 @@ func (s *System) StopUpdater() {
 func (s *System) CreateRecords(data *entities.CombinedData) (*core.Record, error) {
 	s.data = data
 	return s.createRecords(data)
+}
+
+func CreateSystemdStatsRecords(app core.App, data []*systemd.Service, systemId string) error {
+	return createSystemdStatsRecords(app, data, systemId)
 }

@@ -8,7 +8,7 @@ msgstr ""
 "Language: hu\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2026-04-05 18:27\n"
+"PO-Revision-Date: 2026-08-18 17:52\n"
 "Last-Translator: \n"
 "Language-Team: Hungarian\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
@@ -251,6 +251,7 @@ msgid "Bat"
 msgstr "Akku"
 
 #: src/components/routes/system/charts/sensor-charts.tsx
+#: src/components/routes/system/charts/sensor-charts.tsx
 #: src/lib/alerts.ts
 msgid "Battery"
 msgstr "Akkumulátor"
@@ -336,7 +337,7 @@ msgstr "Figyelem - potenciális adatvesztés"
 
 #: src/components/routes/settings/general.tsx
 msgid "Celsius (°C)"
-msgstr ""
+msgstr "Celsius (°C)"
 
 #: src/components/routes/settings/general.tsx
 msgid "Change display units for metrics."
@@ -479,6 +480,10 @@ msgstr "Linux parancs másolása"
 msgid "Copy name"
 msgstr "Név másolása"
 
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Copy public key"
+msgstr ""
+
 #: src/components/copy-to-clipboard.tsx
 msgid "Copy text"
 msgstr "Szöveg másolása"
@@ -504,15 +509,23 @@ msgstr "Mag"
 #: src/components/systemd-table/systemd-table-columns.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "CPU"
-msgstr ""
+msgstr "CPU"
 
 #: src/components/routes/system/cpu-sheet.tsx
 msgid "CPU Cores"
 msgstr "CPU magok"
 
+#: src/lib/alerts.ts
+msgid "CPU I/O Wait"
+msgstr "CPU I/O-várakozási idő (IOWait)"
+
 #: src/components/systemd-table/systemd-table-columns.tsx
 msgid "CPU Peak"
 msgstr "CPU csúcs"
+
+#: src/lib/alerts.ts
+msgid "CPU Steal Time"
+msgstr "A hipervizor által elvett CPU-idő (Steal)"
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "CPU time"
@@ -555,6 +568,8 @@ msgid "Cumulative Upload"
 msgstr "Kumulatív feltöltés"
 
 #. Context: Battery state
+#. Context: Battery state
+#: src/components/routes/system/charts/sensor-charts.tsx
 #: src/components/routes/system/charts/sensor-charts.tsx
 msgid "Current state"
 msgstr "Jelenlegi állapot"
@@ -685,7 +700,7 @@ msgstr "Szerkesztés {foo}"
 #: src/components/login/forgot-pass-form.tsx
 #: src/components/login/otp-forms.tsx
 msgid "Email"
-msgstr ""
+msgstr "Email"
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Email notifications"
@@ -725,7 +740,6 @@ msgstr "Adja meg az egyszeri jelszavát."
 msgid "Ephemeral"
 msgstr "Ideiglenes"
 
-#: src/components/login/auth-form.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/settings/config-yaml.tsx
 #: src/components/routes/settings/heartbeat.tsx
@@ -780,7 +794,7 @@ msgstr "Exportálja a jelenlegi rendszerkonfigurációt."
 
 #: src/components/routes/settings/general.tsx
 msgid "Fahrenheit (°F)"
-msgstr ""
+msgstr "Fahrenheit (°F)"
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Failed"
@@ -817,6 +831,10 @@ msgstr "Nem sikerült frissíteni a riasztást"
 msgid "Failed: {0}"
 msgstr "Sikertelen: {0}"
 
+#: src/components/routes/system/charts/sensor-charts.tsx
+msgid "Fans"
+msgstr ""
+
 #: src/components/containers-table/containers-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/system/chart-card.tsx
@@ -832,7 +850,7 @@ msgstr "Ujjlenyomat"
 
 #: src/components/routes/system/smart-table.tsx
 msgid "Firmware"
-msgstr ""
+msgstr "Firmware"
 
 #: src/components/alerts/alerts-sheet.tsx
 msgid "For <0>{min}</0> {min, plural, one {minute} other {minutes}}"
@@ -960,7 +978,6 @@ msgstr "Intervallum"
 msgid "Invalid email address."
 msgstr "Érvénytelen e-mail cím."
 
-#: src/components/lang-toggle.tsx
 #: src/components/routes/settings/general.tsx
 msgid "Language"
 msgstr "Nyelv"
@@ -1076,8 +1093,8 @@ msgid "Memory Usage"
 msgstr "Memóriahasználat"
 
 #: src/components/routes/system/charts/memory-charts.tsx
-msgid "Memory usage of docker containers"
-msgstr "Docker konténerek memória használata"
+msgid "Memory usage of containers"
+msgstr "Konténerek memóriahasználata"
 
 #. Device model
 #: src/components/routes/system/smart-table.tsx
@@ -1098,8 +1115,8 @@ msgid "Net"
 msgstr "Hálózat"
 
 #: src/components/routes/system/charts/network-charts.tsx
-msgid "Network traffic of docker containers"
-msgstr "Docker konténerek hálózati forgalma"
+msgid "Network traffic of containers"
+msgstr "Konténerek hálózati forgalma"
 
 #: src/components/routes/system/charts/network-charts.tsx
 #: src/components/routes/system/network-sheet.tsx
@@ -1294,7 +1311,7 @@ msgstr "Kérjük, jelentkezzen be a fiókjába"
 
 #: src/components/add-system.tsx
 msgid "Port"
-msgstr ""
+msgstr "Port"
 
 #: src/components/containers-table/containers-table-columns.tsx
 msgctxt "Container ports"
@@ -1318,6 +1335,10 @@ msgstr "Preferált nyelv"
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Process started"
 msgstr "Folyamat elindítva"
+
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Public key"
+msgstr ""
 
 #. Use 'Key' if your language requires many more characters
 #: src/components/add-system.tsx
@@ -1558,6 +1579,11 @@ msgstr "Rendszer által használt swap terület"
 msgid "Swap Usage"
 msgstr "Swap használat"
 
+#: src/components/mode-toggle.tsx
+#: src/components/mode-toggle.tsx
+msgid "Switch theme"
+msgstr ""
+
 #: src/components/add-system.tsx
 #: src/components/alerts-history-columns.tsx
 #: src/components/containers-table/containers-table-columns.tsx
@@ -1572,6 +1598,10 @@ msgstr "Swap használat"
 #: src/lib/alerts.ts
 msgid "System"
 msgstr "Rendszer"
+
+#: src/components/routes/system/charts/sensor-charts.tsx
+msgid "System fan speeds (RPM)"
+msgstr ""
 
 #: src/components/routes/system/charts/load-average-chart.tsx
 msgid "System load averages over time"
@@ -1665,15 +1695,10 @@ msgstr "Időformátum"
 msgid "To email(s)"
 msgstr "E-mailben"
 
-#: src/components/mode-toggle.tsx
-#: src/components/mode-toggle.tsx
-msgid "Toggle theme"
-msgstr "Téma váltása"
-
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Token"
-msgstr ""
+msgstr "Token"
 
 #: src/components/command-palette.tsx
 #: src/components/routes/settings/layout.tsx
@@ -1747,6 +1772,14 @@ msgstr "Riaszt, ha az akkumulátor töltöttségi szintje egy küszöbérték al
 #: src/lib/alerts.ts
 msgid "Triggers when combined up/down exceeds a threshold"
 msgstr "Riaszt, ha a sávszélesség-használat túllép egy küszöbértéket"
+
+#: src/lib/alerts.ts
+msgid "Triggers when CPU I/O wait exceeds a threshold"
+msgstr "Akkor aktiválódik, ha a CPU I/O-várakozási ideje meghaladja a küszöbértéket"
+
+#: src/lib/alerts.ts
+msgid "Triggers when CPU steal time exceeds a threshold"
+msgstr "Akkor aktiválódik, ha a CPU steal ideje meghaladja a küszöbértéket"
 
 #: src/lib/alerts.ts
 msgid "Triggers when CPU usage exceeds a threshold"

@@ -8,7 +8,7 @@ msgstr ""
 "Language: tr\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2026-04-05 18:27\n"
+"PO-Revision-Date: 2026-08-18 17:52\n"
 "Last-Translator: \n"
 "Language-Team: Turkish\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
@@ -251,6 +251,7 @@ msgid "Bat"
 msgstr "Pil"
 
 #: src/components/routes/system/charts/sensor-charts.tsx
+#: src/components/routes/system/charts/sensor-charts.tsx
 #: src/lib/alerts.ts
 msgid "Battery"
 msgstr "Pil"
@@ -479,6 +480,10 @@ msgstr "Linux komutunu kopyala"
 msgid "Copy name"
 msgstr "Adı kopyala"
 
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Copy public key"
+msgstr ""
+
 #: src/components/copy-to-clipboard.tsx
 msgid "Copy text"
 msgstr "Metni kopyala"
@@ -510,9 +515,17 @@ msgstr "İşlemci"
 msgid "CPU Cores"
 msgstr "CPU Çekirdekleri"
 
+#: src/lib/alerts.ts
+msgid "CPU I/O Wait"
+msgstr "CPU G/Ç Bekleme Süresi (IOWait)"
+
 #: src/components/systemd-table/systemd-table-columns.tsx
 msgid "CPU Peak"
 msgstr "CPU Tepe Değeri"
+
+#: src/lib/alerts.ts
+msgid "CPU Steal Time"
+msgstr "Hipervizörün Aldığı CPU Süresi (Steal)"
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "CPU time"
@@ -555,6 +568,8 @@ msgid "Cumulative Upload"
 msgstr "Kümülatif Yükleme"
 
 #. Context: Battery state
+#. Context: Battery state
+#: src/components/routes/system/charts/sensor-charts.tsx
 #: src/components/routes/system/charts/sensor-charts.tsx
 msgid "Current state"
 msgstr "Mevcut durum"
@@ -725,7 +740,6 @@ msgstr "Tek kullanımlık şifrenizi girin."
 msgid "Ephemeral"
 msgstr "Geçici"
 
-#: src/components/login/auth-form.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/settings/config-yaml.tsx
 #: src/components/routes/settings/heartbeat.tsx
@@ -817,6 +831,10 @@ msgstr "Uyarı güncellenemedi"
 msgid "Failed: {0}"
 msgstr "Başarısız: {0}"
 
+#: src/components/routes/system/charts/sensor-charts.tsx
+msgid "Fans"
+msgstr ""
+
 #: src/components/containers-table/containers-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/system/chart-card.tsx
@@ -866,7 +884,7 @@ msgstr "Genel"
 
 #: src/components/routes/system.tsx
 msgid "GPU"
-msgstr ""
+msgstr "Ekran Kartı"
 
 #: src/components/routes/system/charts/gpu-charts.tsx
 msgid "GPU Engines"
@@ -891,7 +909,7 @@ msgstr "Sağlık"
 
 #: src/components/routes/settings/layout.tsx
 msgid "Heartbeat"
-msgstr ""
+msgstr "Sağlık Sinyali"
 
 #: src/components/routes/settings/heartbeat.tsx
 msgid "Heartbeat Monitoring"
@@ -960,7 +978,6 @@ msgstr "Aralık"
 msgid "Invalid email address."
 msgstr "Geçersiz e-posta adresi."
 
-#: src/components/lang-toggle.tsx
 #: src/components/routes/settings/general.tsx
 msgid "Language"
 msgstr "Dil"
@@ -1076,13 +1093,13 @@ msgid "Memory Usage"
 msgstr "Bellek Kullanımı"
 
 #: src/components/routes/system/charts/memory-charts.tsx
-msgid "Memory usage of docker containers"
-msgstr "Docker konteynerlerinin bellek kullanımı"
+msgid "Memory usage of containers"
+msgstr "Konteynerlerin bellek kullanımı"
 
 #. Device model
 #: src/components/routes/system/smart-table.tsx
 msgid "Model"
-msgstr ""
+msgstr "Model"
 
 #: src/components/add-system.tsx
 #: src/components/alerts-history-columns.tsx
@@ -1098,8 +1115,8 @@ msgid "Net"
 msgstr "Ağ"
 
 #: src/components/routes/system/charts/network-charts.tsx
-msgid "Network traffic of docker containers"
-msgstr "Docker konteynerlerinin ağ trafiği"
+msgid "Network traffic of containers"
+msgstr "Konteynerlerin ağ trafiği"
 
 #: src/components/routes/system/charts/network-charts.tsx
 #: src/components/routes/system/network-sheet.tsx
@@ -1294,7 +1311,7 @@ msgstr "Lütfen hesabınıza giriş yapın"
 
 #: src/components/add-system.tsx
 msgid "Port"
-msgstr ""
+msgstr "Port"
 
 #: src/components/containers-table/containers-table-columns.tsx
 msgctxt "Container ports"
@@ -1318,6 +1335,10 @@ msgstr "Tercih Edilen Dil"
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Process started"
 msgstr "Süreç başlatıldı"
+
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Public key"
+msgstr ""
 
 #. Use 'Key' if your language requires many more characters
 #: src/components/add-system.tsx
@@ -1558,6 +1579,11 @@ msgstr "Sistem tarafından kullanılan takas alanı"
 msgid "Swap Usage"
 msgstr "Takas Kullanımı"
 
+#: src/components/mode-toggle.tsx
+#: src/components/mode-toggle.tsx
+msgid "Switch theme"
+msgstr ""
+
 #: src/components/add-system.tsx
 #: src/components/alerts-history-columns.tsx
 #: src/components/containers-table/containers-table-columns.tsx
@@ -1572,6 +1598,10 @@ msgstr "Takas Kullanımı"
 #: src/lib/alerts.ts
 msgid "System"
 msgstr "Sistem"
+
+#: src/components/routes/system/charts/sensor-charts.tsx
+msgid "System fan speeds (RPM)"
+msgstr ""
 
 #: src/components/routes/system/charts/load-average-chart.tsx
 msgid "System load averages over time"
@@ -1665,11 +1695,6 @@ msgstr "Zaman formatı"
 msgid "To email(s)"
 msgstr "E-posta(lar)a"
 
-#: src/components/mode-toggle.tsx
-#: src/components/mode-toggle.tsx
-msgid "Toggle theme"
-msgstr "Temayı değiştir"
-
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Token"
@@ -1705,7 +1730,7 @@ msgstr "Her arayüz için gönderilen toplam veri"
 #: src/components/routes/system/disk-io-sheet.tsx
 msgctxt "Disk I/O"
 msgid "Total time spent on read/write (can exceed 100%)"
-msgstr ""
+msgstr "Okuma/yazma işlemlerinde harcanan toplam süre (%100’ü aşabilir)"
 
 #. placeholder {0}: data.length
 #: src/components/systemd-table/systemd-table.tsx
@@ -1747,6 +1772,14 @@ msgstr "Pil şarjı bir eşiğin altına düştüğünde tetiklenir"
 #: src/lib/alerts.ts
 msgid "Triggers when combined up/down exceeds a threshold"
 msgstr "Birleştirilmiş yukarı/aşağı bir eşiği aştığında tetiklenir"
+
+#: src/lib/alerts.ts
+msgid "Triggers when CPU I/O wait exceeds a threshold"
+msgstr "CPU G/Ç bekleme süresi eşik değerini aştığında tetiklenir"
+
+#: src/lib/alerts.ts
+msgid "Triggers when CPU steal time exceeds a threshold"
+msgstr "CPU steal süresi eşik değerini aştığında tetiklenir"
 
 #: src/lib/alerts.ts
 msgid "Triggers when CPU usage exceeds a threshold"

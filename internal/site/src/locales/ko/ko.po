@@ -8,7 +8,7 @@ msgstr ""
 "Language: ko\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2026-04-05 18:27\n"
+"PO-Revision-Date: 2026-08-18 17:52\n"
 "Last-Translator: \n"
 "Language-Team: Korean\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
@@ -251,6 +251,7 @@ msgid "Bat"
 msgstr "배터리"
 
 #: src/components/routes/system/charts/sensor-charts.tsx
+#: src/components/routes/system/charts/sensor-charts.tsx
 #: src/lib/alerts.ts
 msgid "Battery"
 msgstr "배터리"
@@ -479,6 +480,10 @@ msgstr "리눅스 명령어 복사"
 msgid "Copy name"
 msgstr "이름 복사"
 
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Copy public key"
+msgstr ""
+
 #: src/components/copy-to-clipboard.tsx
 msgid "Copy text"
 msgstr "텍스트 복사"
@@ -504,15 +509,23 @@ msgstr "코어"
 #: src/components/systemd-table/systemd-table-columns.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "CPU"
-msgstr ""
+msgstr "CPU"
 
 #: src/components/routes/system/cpu-sheet.tsx
 msgid "CPU Cores"
 msgstr "CPU 코어"
 
+#: src/lib/alerts.ts
+msgid "CPU I/O Wait"
+msgstr "CPU I/O 대기 시간 (IOWait)"
+
 #: src/components/systemd-table/systemd-table-columns.tsx
 msgid "CPU Peak"
 msgstr "CPU 최대값"
+
+#: src/lib/alerts.ts
+msgid "CPU Steal Time"
+msgstr "CPU 스틸 시간 (Steal)"
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "CPU time"
@@ -555,6 +568,8 @@ msgid "Cumulative Upload"
 msgstr "누적 업로드"
 
 #. Context: Battery state
+#. Context: Battery state
+#: src/components/routes/system/charts/sensor-charts.tsx
 #: src/components/routes/system/charts/sensor-charts.tsx
 msgid "Current state"
 msgstr "현재 상태"
@@ -725,7 +740,6 @@ msgstr "OTP를 입력하세요."
 msgid "Ephemeral"
 msgstr "일시적"
 
-#: src/components/login/auth-form.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/settings/config-yaml.tsx
 #: src/components/routes/settings/heartbeat.tsx
@@ -816,6 +830,10 @@ msgstr "알림 수정 실패"
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Failed: {0}"
 msgstr "실패: {0}"
+
+#: src/components/routes/system/charts/sensor-charts.tsx
+msgid "Fans"
+msgstr ""
 
 #: src/components/containers-table/containers-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
@@ -960,7 +978,6 @@ msgstr "간격"
 msgid "Invalid email address."
 msgstr "잘못된 이메일 주소입니다."
 
-#: src/components/lang-toggle.tsx
 #: src/components/routes/settings/general.tsx
 msgid "Language"
 msgstr "언어"
@@ -1076,8 +1093,8 @@ msgid "Memory Usage"
 msgstr "메모리 사용량"
 
 #: src/components/routes/system/charts/memory-charts.tsx
-msgid "Memory usage of docker containers"
-msgstr "Docker 컨테이너의 메모리 사용량"
+msgid "Memory usage of containers"
+msgstr "컨테이너 메모리 사용량"
 
 #. Device model
 #: src/components/routes/system/smart-table.tsx
@@ -1098,8 +1115,8 @@ msgid "Net"
 msgstr "네트워크"
 
 #: src/components/routes/system/charts/network-charts.tsx
-msgid "Network traffic of docker containers"
-msgstr "Docker 컨테이너의 네트워크 트래픽"
+msgid "Network traffic of containers"
+msgstr "컨테이너 네트워크 트래픽"
 
 #: src/components/routes/system/charts/network-charts.tsx
 #: src/components/routes/system/network-sheet.tsx
@@ -1318,6 +1335,10 @@ msgstr "선호 언어"
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Process started"
 msgstr "프로세스 시작됨"
+
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Public key"
+msgstr ""
 
 #. Use 'Key' if your language requires many more characters
 #: src/components/add-system.tsx
@@ -1558,6 +1579,11 @@ msgstr "시스템에서 사용된 스왑 공간"
 msgid "Swap Usage"
 msgstr "스왑 사용량"
 
+#: src/components/mode-toggle.tsx
+#: src/components/mode-toggle.tsx
+msgid "Switch theme"
+msgstr ""
+
 #: src/components/add-system.tsx
 #: src/components/alerts-history-columns.tsx
 #: src/components/containers-table/containers-table-columns.tsx
@@ -1572,6 +1598,10 @@ msgstr "스왑 사용량"
 #: src/lib/alerts.ts
 msgid "System"
 msgstr "시스템"
+
+#: src/components/routes/system/charts/sensor-charts.tsx
+msgid "System fan speeds (RPM)"
+msgstr ""
 
 #: src/components/routes/system/charts/load-average-chart.tsx
 msgid "System load averages over time"
@@ -1665,11 +1695,6 @@ msgstr "시간 형식"
 msgid "To email(s)"
 msgstr "받는사람(들)"
 
-#: src/components/mode-toggle.tsx
-#: src/components/mode-toggle.tsx
-msgid "Toggle theme"
-msgstr "테마 전환"
-
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Token"
@@ -1747,6 +1772,14 @@ msgstr "배터리 충전량이 임계값 아래로 떨어질 때 트리거됩니
 #: src/lib/alerts.ts
 msgid "Triggers when combined up/down exceeds a threshold"
 msgstr "업로드와 다운로드 대역폭의 합이 임계값을 초과할 때 트리거됩니다."
+
+#: src/lib/alerts.ts
+msgid "Triggers when CPU I/O wait exceeds a threshold"
+msgstr "CPU I/O 대기 시간이 임계값을 초과하면 트리거됩니다"
+
+#: src/lib/alerts.ts
+msgid "Triggers when CPU steal time exceeds a threshold"
+msgstr "CPU 스틸 시간이 임계값을 초과하면 트리거됩니다"
 
 #: src/lib/alerts.ts
 msgid "Triggers when CPU usage exceeds a threshold"
@@ -1833,7 +1866,7 @@ msgstr "업로드"
 #: src/components/routes/system/info-bar.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Uptime"
-msgstr "가동 시간"
+msgstr "가동시간"
 
 #: src/components/routes/system/charts/disk-charts.tsx
 #: src/components/routes/system/charts/gpu-charts.tsx

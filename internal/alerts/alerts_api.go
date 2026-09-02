@@ -9,6 +9,7 @@ import (
 	"slices"
 	"strings"
 
+	"github.com/henrygd/beszel/internal/hub/utils"
 	"github.com/pocketbase/dbx"
 	"github.com/pocketbase/pocketbase/core"
 )
@@ -37,6 +38,9 @@ func UpsertUserAlerts(e *core.RequestEvent) error {
 
 	err = e.App.RunInTransaction(func(txApp core.App) error {
 		for _, systemId := range reqData.Systems {
+			if !userHasSystem(txApp, userID, systemId) {
+				continue
+			}
 			// find existing matching alert
 			alertRecord, err := txApp.FindFirstRecordByFilter(alertsCollection,
 				"system={:system} && name={:name} && user={:user}",
@@ -94,6 +98,9 @@ func DeleteUserAlerts(e *core.RequestEvent) error {
 
 	err = e.App.RunInTransaction(func(txApp core.App) error {
 		for _, systemId := range reqData.Systems {
+			if !userHasSystem(txApp, userID, systemId) {
+				continue
+			}
 			// Find existing alert to delete
 			alertRecord, err := txApp.FindFirstRecordByFilter("alerts",
 				"system={:system} && name={:name} && user={:user}",
@@ -120,6 +127,15 @@ func DeleteUserAlerts(e *core.RequestEvent) error {
 	}
 
 	return e.JSON(http.StatusOK, map[string]any{"success": true, "count": numDeleted})
+}
+
+func userHasSystem(app core.App, userID, systemID string) bool {
+	system, err := app.FindRecordById("systems", systemID)
+	if err != nil {
+		return false
+	}
+	shareAll, _ := utils.GetEnv("SHARE_ALL_SYSTEMS")
+	return shareAll == "true" || slices.Contains(system.GetStringSlice("users"), userID)
 }
 
 // SendTestNotification handles API request to send a test notification to a specified Shoutrrr URL
@@ -187,6 +203,16 @@ func isInternalURL(rawURL string) (bool, error) {
 	return false, nil
 }
 
+var cgnatNetwork = &net.IPNet{
+	IP:   net.IPv4(100, 64, 0, 0),
+	Mask: net.CIDRMask(10, 32),
+}
+
 func isInternalIP(ip net.IP) bool {
-	return ip.IsPrivate() || ip.IsLoopback() || ip.IsUnspecified()
+	return ip.IsPrivate() ||
+		ip.IsLoopback() ||
+		ip.IsUnspecified() ||
+		ip.IsLinkLocalUnicast() ||
+		ip.IsMulticast() ||
+		cgnatNetwork.Contains(ip)
 }

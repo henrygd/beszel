@@ -22,9 +22,6 @@ builds:
       - amd64
       - arm64
       - arm
-    goarm:
-      - "6"
-      - "7"
     ignore:
       - goos: windows
         goarch: arm64
@@ -42,6 +39,8 @@ builds:
     main: internal/cmd/agent/agent.go
     env:
       - CGO_ENABLED=0
+    ldflags:
+      - -s -w -X github.com/henrygd/beszel/internal/ghupdate.buildGOARM={{ .Arm }}
     goos:
       - linux
       - darwin
@@ -108,6 +107,7 @@ archives:
       {{ .Binary }}_
       {{- .Os }}_
       {{- .Arch }}
+      {{- if ne .Arm "6" }}{{ with .Arm }}v{{ . }}{{ end }}{{ end }}
     format_overrides:
       - goos: windows
         formats: [zip]

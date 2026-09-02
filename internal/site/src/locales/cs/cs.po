@@ -8,7 +8,7 @@ msgstr ""
 "Language: cs\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2026-04-05 18:27\n"
+"PO-Revision-Date: 2026-08-18 17:52\n"
 "Last-Translator: \n"
 "Language-Team: Czech\n"
 "Plural-Forms: nplurals=4; plural=(n==1) ? 0 : (n>=2 && n<=4) ? 1 : 3;\n"
@@ -57,7 +57,7 @@ msgstr "1 hodina"
 #. Load average
 #: src/components/routes/system/charts/load-average-chart.tsx
 msgid "1 min"
-msgstr ""
+msgstr "1 min"
 
 #: src/lib/utils.ts
 msgid "1 minute"
@@ -74,7 +74,7 @@ msgstr "12 hodin"
 #. Load average
 #: src/components/routes/system/charts/load-average-chart.tsx
 msgid "15 min"
-msgstr ""
+msgstr "15 min"
 
 #: src/lib/utils.ts
 msgid "24 hours"
@@ -87,7 +87,7 @@ msgstr "30 dní"
 #. Load average
 #: src/components/routes/system/charts/load-average-chart.tsx
 msgid "5 min"
-msgstr ""
+msgstr "5 min"
 
 #. Table column
 #: src/components/routes/settings/quiet-hours.tsx
@@ -149,7 +149,7 @@ msgstr "Po nastavení proměnných prostředí restartujte hub Beszel, aby se zm
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Agent"
-msgstr ""
+msgstr "Agent"
 
 #: src/components/command-palette.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
@@ -250,6 +250,7 @@ msgstr "Přenos"
 msgid "Bat"
 msgstr ""
 
+#: src/components/routes/system/charts/sensor-charts.tsx
 #: src/components/routes/system/charts/sensor-charts.tsx
 #: src/lib/alerts.ts
 msgid "Battery"
@@ -479,6 +480,10 @@ msgstr "Kopírovat příkaz Linux"
 msgid "Copy name"
 msgstr "Kopírovat název"
 
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Copy public key"
+msgstr ""
+
 #: src/components/copy-to-clipboard.tsx
 msgid "Copy text"
 msgstr "Kopírovat text"
@@ -510,9 +515,17 @@ msgstr "Procesor"
 msgid "CPU Cores"
 msgstr "CPU jádra"
 
+#: src/lib/alerts.ts
+msgid "CPU I/O Wait"
+msgstr "Čekání CPU na I/O (IOWait)"
+
 #: src/components/systemd-table/systemd-table-columns.tsx
 msgid "CPU Peak"
 msgstr "Špička CPU"
+
+#: src/lib/alerts.ts
+msgid "CPU Steal Time"
+msgstr "Ukradený čas CPU (Steal)"
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "CPU time"
@@ -555,6 +568,8 @@ msgid "Cumulative Upload"
 msgstr "Kumulativní odeslání"
 
 #. Context: Battery state
+#. Context: Battery state
+#: src/components/routes/system/charts/sensor-charts.tsx
 #: src/components/routes/system/charts/sensor-charts.tsx
 msgid "Current state"
 msgstr "Aktuální stav"
@@ -595,7 +610,7 @@ msgstr "Popis"
 
 #: src/components/containers-table/containers-table.tsx
 msgid "Detail"
-msgstr ""
+msgstr "Detail"
 
 #: src/components/routes/system/smart-table.tsx
 msgid "Device"
@@ -725,7 +740,6 @@ msgstr "Zadejte Vaše jednorázové heslo."
 msgid "Ephemeral"
 msgstr "Efemérní"
 
-#: src/components/login/auth-form.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/settings/config-yaml.tsx
 #: src/components/routes/settings/heartbeat.tsx
@@ -816,6 +830,10 @@ msgstr "Nepodařilo se aktualizovat upozornění"
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Failed: {0}"
 msgstr "Neúspěšné: {0}"
+
+#: src/components/routes/system/charts/sensor-charts.tsx
+msgid "Fans"
+msgstr ""
 
 #: src/components/containers-table/containers-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
@@ -960,7 +978,6 @@ msgstr ""
 msgid "Invalid email address."
 msgstr "Neplatná e-mailová adresa."
 
-#: src/components/lang-toggle.tsx
 #: src/components/routes/settings/general.tsx
 msgid "Language"
 msgstr "Jazyk"
@@ -1076,8 +1093,8 @@ msgid "Memory Usage"
 msgstr "Využití paměti"
 
 #: src/components/routes/system/charts/memory-charts.tsx
-msgid "Memory usage of docker containers"
-msgstr "Využití paměti docker kontejnerů"
+msgid "Memory usage of containers"
+msgstr "Využití paměti kontejnery"
 
 #. Device model
 #: src/components/routes/system/smart-table.tsx
@@ -1098,8 +1115,8 @@ msgid "Net"
 msgstr "Síť"
 
 #: src/components/routes/system/charts/network-charts.tsx
-msgid "Network traffic of docker containers"
-msgstr "Síťový provoz kontejnerů docker"
+msgid "Network traffic of containers"
+msgstr "Síťový provoz kontejnerů"
 
 #: src/components/routes/system/charts/network-charts.tsx
 #: src/components/routes/system/network-sheet.tsx
@@ -1318,6 +1335,10 @@ msgstr "Upřednostňovaný jazyk"
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Process started"
 msgstr "Proces spuštěn"
+
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Public key"
+msgstr ""
 
 #. Use 'Key' if your language requires many more characters
 #: src/components/add-system.tsx
@@ -1558,6 +1579,11 @@ msgstr "Swap prostor využívaný systémem"
 msgid "Swap Usage"
 msgstr "Swap využití"
 
+#: src/components/mode-toggle.tsx
+#: src/components/mode-toggle.tsx
+msgid "Switch theme"
+msgstr ""
+
 #: src/components/add-system.tsx
 #: src/components/alerts-history-columns.tsx
 #: src/components/containers-table/containers-table-columns.tsx
@@ -1572,6 +1598,10 @@ msgstr "Swap využití"
 #: src/lib/alerts.ts
 msgid "System"
 msgstr "Systém"
+
+#: src/components/routes/system/charts/sensor-charts.tsx
+msgid "System fan speeds (RPM)"
+msgstr ""
 
 #: src/components/routes/system/charts/load-average-chart.tsx
 msgid "System load averages over time"
@@ -1665,11 +1695,6 @@ msgstr "Formát času"
 msgid "To email(s)"
 msgstr "Na email(y)"
 
-#: src/components/mode-toggle.tsx
-#: src/components/mode-toggle.tsx
-msgid "Toggle theme"
-msgstr "Přepnout motiv"
-
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Token"
@@ -1747,6 +1772,14 @@ msgstr "Spustí se, když úroveň nabití baterie klesne pod prahovou hodnotu"
 #: src/lib/alerts.ts
 msgid "Triggers when combined up/down exceeds a threshold"
 msgstr "Spustí se, když kombinace up/down překročí prahovou hodnotu"
+
+#: src/lib/alerts.ts
+msgid "Triggers when CPU I/O wait exceeds a threshold"
+msgstr "Spustí se, když čekání CPU na I/O překročí prahovou hodnotu"
+
+#: src/lib/alerts.ts
+msgid "Triggers when CPU steal time exceeds a threshold"
+msgstr "Spustí se, když ukradený čas CPU překročí prahovou hodnotu"
 
 #: src/lib/alerts.ts
 msgid "Triggers when CPU usage exceeds a threshold"

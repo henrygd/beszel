@@ -361,12 +361,16 @@ func (gm *GPUManager) calculateGPUAverage(id string, gpu *system.GPUData, cacheK
 
 	// If no new data arrived
 	if deltaCount == 0 {
-		// If GPU appears suspended (instantaneous values are 0), return zero values
-		// Otherwise return last known average for temporary collection gaps
-		if gpu.Temperature == 0 && gpu.MemoryUsed == 0 {
+		// Only discrete GPUs report temp/memory, so treat all-zero as suspended (return zeros).
+		// Engine-based (Intel) GPUs don't, so carry the last average forward across sample gaps.
+		if gpu.Engines == nil && gpu.Temperature == 0 && gpu.MemoryUsed == 0 {
 			return system.GPUData{Name: gpu.Name}
 		}
-		return gm.lastAvgData[id] // zero value if not found
+		lastAvg := gm.lastAvgData[id] // zero value if not found
+		if lastAvg.Name == "" {
+			lastAvg.Name = gpu.Name
+		}
+		return lastAvg
 	}
 
 	// Calculate new average
