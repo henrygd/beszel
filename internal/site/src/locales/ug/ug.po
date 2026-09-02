@@ -8,7 +8,7 @@ msgstr ""
 "Language: ug\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2026-08-18 17:53\n"
+"PO-Revision-Date: 2026-09-02 00:08\n"
 "Last-Translator: \n"
 "Language-Team: Uyghur\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
@@ -507,8 +507,16 @@ msgstr ""
 msgid "CPU Cores"
 msgstr ""
 
+#: src/lib/alerts.ts
+msgid "CPU I/O Wait"
+msgstr ""
+
 #: src/components/systemd-table/systemd-table-columns.tsx
 msgid "CPU Peak"
+msgstr ""
+
+#: src/lib/alerts.ts
+msgid "CPU Steal Time"
 msgstr ""
 
 #: src/components/systemd-table/systemd-table.tsx
@@ -1751,6 +1759,14 @@ msgstr ""
 
 #: src/lib/alerts.ts
 msgid "Triggers when combined up/down exceeds a threshold"
+msgstr ""
+
+#: src/lib/alerts.ts
+msgid "Triggers when CPU I/O wait exceeds a threshold"
+msgstr ""
+
+#: src/lib/alerts.ts
+msgid "Triggers when CPU steal time exceeds a threshold"
 msgstr ""
 
 #: src/lib/alerts.ts
