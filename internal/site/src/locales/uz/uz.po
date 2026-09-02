@@ -8,10 +8,15 @@ msgstr ""
 "Language: uz\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2026-05-22 00:00\n"
+"PO-Revision-Date: 2026-09-02 19:06\n"
 "Last-Translator: \n"
 "Language-Team: Uzbek\n"
-"Plural-Forms: nplurals=1; plural=0;\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+"X-Crowdin-Project: beszel\n"
+"X-Crowdin-Project-ID: 733311\n"
+"X-Crowdin-Language: uz\n"
+"X-Crowdin-File: /main/internal/site/src/locales/en/en.po\n"
+"X-Crowdin-File-ID: 32\n"
 
 #. placeholder {0}: newVersion.v
 #: src/components/footer-repo-link.tsx
@@ -533,7 +538,7 @@ msgstr "CPU yadrolar"
 
 #: src/lib/alerts.ts
 msgid "CPU I/O Wait"
-msgstr ""
+msgstr "CPU I/O kutish vaqti"
 
 #: src/components/systemd-table/systemd-table-columns.tsx
 msgid "CPU Peak"
@@ -541,7 +546,7 @@ msgstr "CPU yuqori ko'rsatkichi"
 
 #: src/lib/alerts.ts
 msgid "CPU Steal Time"
-msgstr ""
+msgstr "CPU steal vaqti"
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "CPU time"
@@ -1863,11 +1868,11 @@ msgstr "Birlashtirilgan yuklash/yuklab olish chegaradan oshganda ishga tushadi"
 
 #: src/lib/alerts.ts
 msgid "Triggers when CPU I/O wait exceeds a threshold"
-msgstr ""
+msgstr "CPU I/O kutish vaqti belgilangan chegaradan oshganda ishga tushadi"
 
 #: src/lib/alerts.ts
 msgid "Triggers when CPU steal time exceeds a threshold"
-msgstr ""
+msgstr "CPU steal vaqti belgilangan chegaradan oshganda ishga tushadi"
 
 #: src/lib/alerts.ts
 msgid "Triggers when CPU usage exceeds a threshold"
@@ -2082,3 +2087,4 @@ msgstr "Ha"
 #: src/components/routes/settings/layout.tsx
 msgid "Your user settings have been updated."
 msgstr "Foydalanuvchi sozlamalaringiz yangilandi."
+
