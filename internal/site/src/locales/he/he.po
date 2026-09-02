@@ -8,10 +8,10 @@ msgstr ""
 "Language: he\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2026-08-18 17:52\n"
+"PO-Revision-Date: 2026-09-02 00:08\n"
 "Last-Translator: \n"
 "Language-Team: Hebrew\n"
-"Plural-Forms: nplurals=4; plural=n%100==1 ? 0 : n%100==2 ? 1 : n%100==3 || n%100==4 ? 2 : 3;\n"
+"Plural-Forms: nplurals=3; plural=(n==1 ? 0 : n==2 ? 1 : 2);\n"
 "X-Crowdin-Project: beszel\n"
 "X-Crowdin-Project-ID: 733311\n"
 "X-Crowdin-Language: he\n"
@@ -507,9 +507,17 @@ msgstr "CPU"
 msgid "CPU Cores"
 msgstr "ליבות CPU"
 
+#: src/lib/alerts.ts
+msgid "CPU I/O Wait"
+msgstr "זמן המתנת קלט/פלט של המעבד (IOWait)"
+
 #: src/components/systemd-table/systemd-table-columns.tsx
 msgid "CPU Peak"
 msgstr "שיא CPU"
+
+#: src/lib/alerts.ts
+msgid "CPU Steal Time"
+msgstr "זמן מעבד גנוב (Steal)"
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "CPU time"
@@ -1754,6 +1762,14 @@ msgid "Triggers when combined up/down exceeds a threshold"
 msgstr "מופעל כאשר השילוב של למעלה/למטה עולה על סף"
 
 #: src/lib/alerts.ts
+msgid "Triggers when CPU I/O wait exceeds a threshold"
+msgstr "מופעל כאשר זמן המתנת הקלט/פלט של המעבד חורג מהסף"
+
+#: src/lib/alerts.ts
+msgid "Triggers when CPU steal time exceeds a threshold"
+msgstr "מופעל כאשר זמן המעבד הגנוב חורג מהסף"
+
+#: src/lib/alerts.ts
 msgid "Triggers when CPU usage exceeds a threshold"
 msgstr "מופעל כאשר שימוש CPU עולה על סף"
 
@@ -1948,3 +1964,4 @@ msgstr "כן"
 #: src/components/routes/settings/layout.tsx
 msgid "Your user settings have been updated."
 msgstr "הגדרות המשתמש שלך עודכנו."
+
