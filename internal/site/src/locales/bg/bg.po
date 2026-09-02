@@ -8,7 +8,7 @@ msgstr ""
 "Language: bg\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2026-08-17 19:22\n"
+"PO-Revision-Date: 2026-08-18 17:52\n"
 "Last-Translator: \n"
 "Language-Team: Bulgarian\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
@@ -507,9 +507,17 @@ msgstr "Процесор"
 msgid "CPU Cores"
 msgstr "CPU ядра"
 
+#: src/lib/alerts.ts
+msgid "CPU I/O Wait"
+msgstr "Изчакване на CPU за вход/изход (IOWait)"
+
 #: src/components/systemd-table/systemd-table-columns.tsx
 msgid "CPU Peak"
 msgstr "Пик на CPU"
+
+#: src/lib/alerts.ts
+msgid "CPU Steal Time"
+msgstr "Отнето време на CPU (Steal)"
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "CPU time"
@@ -1077,8 +1085,8 @@ msgid "Memory Usage"
 msgstr "Употреба на паметта"
 
 #: src/components/routes/system/charts/memory-charts.tsx
-msgid "Memory usage of docker containers"
-msgstr "Използването на памет от docker контейнерите"
+msgid "Memory usage of containers"
+msgstr "Използване на паметта от контейнерите"
 
 #. Device model
 #: src/components/routes/system/smart-table.tsx
@@ -1099,8 +1107,8 @@ msgid "Net"
 msgstr "Мрежа"
 
 #: src/components/routes/system/charts/network-charts.tsx
-msgid "Network traffic of docker containers"
-msgstr "Мрежов трафик на docker контейнери"
+msgid "Network traffic of containers"
+msgstr "Мрежов трафик на контейнерите"
 
 #: src/components/routes/system/charts/network-charts.tsx
 #: src/components/routes/system/network-sheet.tsx
@@ -1752,6 +1760,14 @@ msgstr "Задейства се, когато зарядът на батерия
 #: src/lib/alerts.ts
 msgid "Triggers when combined up/down exceeds a threshold"
 msgstr "Задейства се, когато комбинираното качване/сваляне надвиши зададен праг"
+
+#: src/lib/alerts.ts
+msgid "Triggers when CPU I/O wait exceeds a threshold"
+msgstr "Задейства се, когато изчакването на CPU за вход/изход надвиши прага"
+
+#: src/lib/alerts.ts
+msgid "Triggers when CPU steal time exceeds a threshold"
+msgstr "Задейства се, когато отнетото време на CPU надвиши прага"
 
 #: src/lib/alerts.ts
 msgid "Triggers when CPU usage exceeds a threshold"

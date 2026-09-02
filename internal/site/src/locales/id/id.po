@@ -8,7 +8,7 @@ msgstr ""
 "Language: id\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2026-08-17 19:22\n"
+"PO-Revision-Date: 2026-08-18 17:52\n"
 "Last-Translator: \n"
 "Language-Team: Indonesian\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
@@ -507,9 +507,17 @@ msgstr ""
 msgid "CPU Cores"
 msgstr "Inti CPU"
 
+#: src/lib/alerts.ts
+msgid "CPU I/O Wait"
+msgstr "Waktu tunggu I/O CPU (IOWait)"
+
 #: src/components/systemd-table/systemd-table-columns.tsx
 msgid "CPU Peak"
 msgstr "Puncak CPU"
+
+#: src/lib/alerts.ts
+msgid "CPU Steal Time"
+msgstr "Waktu CPU yang diambil hypervisor (Steal)"
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "CPU time"
@@ -1077,8 +1085,8 @@ msgid "Memory Usage"
 msgstr "Penggunaan Memori"
 
 #: src/components/routes/system/charts/memory-charts.tsx
-msgid "Memory usage of docker containers"
-msgstr "Penggunaan memori kontainer docker"
+msgid "Memory usage of containers"
+msgstr "Penggunaan memori container"
 
 #. Device model
 #: src/components/routes/system/smart-table.tsx
@@ -1099,8 +1107,8 @@ msgid "Net"
 msgstr "Jaringan"
 
 #: src/components/routes/system/charts/network-charts.tsx
-msgid "Network traffic of docker containers"
-msgstr "Trafik jaringan kontainer docker"
+msgid "Network traffic of containers"
+msgstr "Lalu lintas jaringan container"
 
 #: src/components/routes/system/charts/network-charts.tsx
 #: src/components/routes/system/network-sheet.tsx
@@ -1752,6 +1760,14 @@ msgstr "Dipicu ketika baterai turun di bawah ambang batas"
 #: src/lib/alerts.ts
 msgid "Triggers when combined up/down exceeds a threshold"
 msgstr "Dipicu ketika up atau down melebihi ambang batas"
+
+#: src/lib/alerts.ts
+msgid "Triggers when CPU I/O wait exceeds a threshold"
+msgstr "Terpicu saat waktu tunggu I/O CPU melebihi ambang batas"
+
+#: src/lib/alerts.ts
+msgid "Triggers when CPU steal time exceeds a threshold"
+msgstr "Terpicu saat waktu steal CPU melebihi ambang batas"
 
 #: src/lib/alerts.ts
 msgid "Triggers when CPU usage exceeds a threshold"

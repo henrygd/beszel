@@ -8,7 +8,7 @@ msgstr ""
 "Language: fa\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2026-08-17 19:22\n"
+"PO-Revision-Date: 2026-08-18 17:53\n"
 "Last-Translator: \n"
 "Language-Team: Persian\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
@@ -507,9 +507,17 @@ msgstr "پردازنده"
 msgid "CPU Cores"
 msgstr "هسته‌های CPU"
 
+#: src/lib/alerts.ts
+msgid "CPU I/O Wait"
+msgstr "زمان انتظار ورودی/خروجی CPU (IOWait)"
+
 #: src/components/systemd-table/systemd-table-columns.tsx
 msgid "CPU Peak"
 msgstr "حداکثر CPU"
+
+#: src/lib/alerts.ts
+msgid "CPU Steal Time"
+msgstr "زمان ربوده‌شده CPU (Steal)"
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "CPU time"
@@ -1077,8 +1085,8 @@ msgid "Memory Usage"
 msgstr "میزان استفاده از حافظه"
 
 #: src/components/routes/system/charts/memory-charts.tsx
-msgid "Memory usage of docker containers"
-msgstr "میزان استفاده از حافظه کانتینرهای داکر"
+msgid "Memory usage of containers"
+msgstr "میزان استفاده حافظه کانتینرها"
 
 #. Device model
 #: src/components/routes/system/smart-table.tsx
@@ -1099,8 +1107,8 @@ msgid "Net"
 msgstr "شبکه"
 
 #: src/components/routes/system/charts/network-charts.tsx
-msgid "Network traffic of docker containers"
-msgstr "ترافیک شبکه کانتینرهای داکر"
+msgid "Network traffic of containers"
+msgstr "ترافیک شبکه کانتینرها"
 
 #: src/components/routes/system/charts/network-charts.tsx
 #: src/components/routes/system/network-sheet.tsx
@@ -1752,6 +1760,14 @@ msgstr "زمانی که شارژ باتری زیر آستانه قرار می‌
 #: src/lib/alerts.ts
 msgid "Triggers when combined up/down exceeds a threshold"
 msgstr "هنگامی که مجموع بالا/پایین از یک آستانه فراتر رود، فعال می‌شود"
+
+#: src/lib/alerts.ts
+msgid "Triggers when CPU I/O wait exceeds a threshold"
+msgstr "زمانی فعال می‌شود که انتظار ورودی/خروجی CPU از آستانه عبور کند"
+
+#: src/lib/alerts.ts
+msgid "Triggers when CPU steal time exceeds a threshold"
+msgstr "زمانی فعال می‌شود که زمان ربوده‌شده CPU از آستانه عبور کند"
 
 #: src/lib/alerts.ts
 msgid "Triggers when CPU usage exceeds a threshold"

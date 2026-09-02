@@ -46,6 +46,7 @@ type SystemManager struct {
 	systems       *store.Store[string, *System]         // Thread-safe store of active systems
 	sshConfig     *ssh.ClientConfig                     // SSH client configuration for system connections
 	smartFetchMap *expirymap.ExpiryMap[smartFetchState] // Stores last SMART fetch time/result; TTL is only for cleanup
+	zfsFetchMap   *expirymap.ExpiryMap[zfsFetchState]   // Stores last ZFS fetch time/result; TTL is only for cleanup
 	ctx           context.Context                       // Cancelled when the app terminates
 	cancel        context.CancelFunc                    // Cancels ctx and all child system contexts
 }
@@ -67,6 +68,7 @@ func NewSystemManager(hub hubLike) *SystemManager {
 		systems:       store.New(map[string]*System{}),
 		hub:           hub,
 		smartFetchMap: expirymap.New[smartFetchState](time.Hour),
+		zfsFetchMap:   expirymap.New[zfsFetchState](time.Hour),
 	}
 	sm.ctx, sm.cancel = context.WithCancel(context.Background())
 	return sm
@@ -340,6 +342,15 @@ func (sm *SystemManager) resetFailedSmartFetchState(systemID string) {
 	state, ok := sm.smartFetchMap.GetOk(systemID)
 	if ok && !state.Successful {
 		sm.smartFetchMap.Remove(systemID)
+	}
+}
+
+// resetFailedZfsFetchState clears only failed ZFS cooldown entries so a fresh
+// agent reconnect retries ZFS discovery immediately after configuration changes.
+func (sm *SystemManager) resetFailedZfsFetchState(systemID string) {
+	state, ok := sm.zfsFetchMap.GetOk(systemID)
+	if ok && !state.Successful {
+		sm.zfsFetchMap.Remove(systemID)
 	}
 }
 

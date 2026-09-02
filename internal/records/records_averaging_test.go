@@ -620,7 +620,7 @@ func TestAverageSystemStatsSlice_ZeroRepresentativeBattery(t *testing.T) {
 		{Battery: [2]uint8{0, 1}, Batteries: map[string]uint8{"Primary": 0}},
 		{},
 	})
-	assert.Equal(t, [2]uint8{0, 1}, result.Battery)
+	assert.Equal(t, system.Battery{0, 1}, result.Battery)
 	assert.Equal(t, map[string]uint8{"Primary": 0}, result.Batteries)
 }
 
@@ -667,6 +667,33 @@ func TestAverageSystemStatsSlice_MixedOptionalFields(t *testing.T) {
 	// GPUData: only 1 record had it, so sum/2
 	require.NotNil(t, result.GPUData)
 	assert.Equal(t, 20.0, result.GPUData["gpu0"].Usage)
+}
+
+func TestAverageSystemStatsSlice_Zfs(t *testing.T) {
+	input := []system.Stats{
+		{
+			ZfsPools: map[string]*system.ZfsPool{
+				"tank": {Total: 100, Used: 40, ReadBytes: 100, WriteBytes: 200, Health: "ONLINE"},
+			},
+		},
+		{},
+		{
+			ZfsPools: map[string]*system.ZfsPool{
+				"tank":   {Total: 120, Used: 60, ReadBytes: 300, WriteBytes: 400, Health: "DEGRADED"},
+				"backup": {Total: 50, Used: 10, ReadBytes: 25, WriteBytes: 50, Health: "ONLINE"},
+			},
+		},
+	}
+
+	result := records.AverageSystemStatsSlice(input)
+
+	require.Len(t, result.ZfsPools, 2)
+	assert.Equal(t, &system.ZfsPool{
+		Total: 110, Used: 50, ReadBytes: 200, WriteBytes: 300, Health: "DEGRADED",
+	}, result.ZfsPools["tank"])
+	assert.Equal(t, &system.ZfsPool{
+		Total: 50, Used: 10, ReadBytes: 25, WriteBytes: 50, Health: "ONLINE",
+	}, result.ZfsPools["backup"])
 }
 
 // Tests with 10 records matching the common real-world case (10 x 1m -> 1 x 10m).
