@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/henrygd/beszel/internal/entities/system"
 	"github.com/henrygd/beszel/internal/entities/systemd"
 
 	"github.com/pocketbase/dbx"
@@ -22,7 +23,7 @@ const maxListedServices = 10
 // service rather than using a delay. The agent only refreshes systemd state every
 // 10 minutes, so a shorter delay could never observe new data before expiring, and
 // that poll interval already hides services that fail and restart quickly.
-func (am *AlertManager) HandleSystemdAlerts(systemRecord *core.Record, confirmedEmptySnapshot bool) error {
+func (am *AlertManager) HandleSystemdAlerts(systemRecord *core.Record) error {
 	alerts := am.alertsCache.GetAlertsByName(systemRecord.Id, alertNameSystemdFailed)
 	if len(alerts) == 0 {
 		return nil
@@ -37,11 +38,17 @@ func (am *AlertManager) HandleSystemdAlerts(systemRecord *core.Record, confirmed
 	if err != nil {
 		return err
 	}
-	// No rows normally means no systemd data for this system (agent without systemd,
-	// or not yet reported), which must not be treated as a recovery. A fresh snapshot
-	// marker disambiguates that case from an agent explicitly reporting zero services.
-	if total == 0 && !confirmedEmptySnapshot {
-		return nil
+	if total == 0 {
+		// No rows normally means no systemd data for this system (agent without
+		// systemd, or not yet reported), which must not be treated as a recovery.
+		// Read info only in this ambiguous case. The record being saved is used
+		// instead of data because dashboard polling can replace the system's
+		// in-memory payload concurrently.
+		var currentInfo system.Info
+		if err := systemRecord.UnmarshalJSONField("info", &currentInfo); err != nil ||
+			len(currentInfo.Services) == 0 || currentInfo.Services[0] != 0 {
+			return nil
+		}
 	}
 
 	systemName := systemRecord.GetString("name")

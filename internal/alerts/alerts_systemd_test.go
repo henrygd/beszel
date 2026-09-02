@@ -91,7 +91,7 @@ func TestSystemdAlertFiresImmediately(t *testing.T) {
 	am := alerts.NewTestAlertManagerWithoutWorker(hub)
 
 	seedServices(t, hub, system.Id, systemd.StatusFailed, systemd.StatusActive)
-	require.NoError(t, am.HandleSystemdAlerts(system, false))
+	require.NoError(t, am.HandleSystemdAlerts(system))
 
 	assert.Equal(t, initialEmailCount+1, hub.TestMailer.TotalSend(), "failed service should notify on first observation")
 
@@ -120,9 +120,9 @@ func TestSystemdAlertFullCycle(t *testing.T) {
 
 	// Fail, then recover.
 	seedServices(t, hub, system.Id, systemd.StatusFailed)
-	require.NoError(t, am.HandleSystemdAlerts(system, false))
+	require.NoError(t, am.HandleSystemdAlerts(system))
 	seedServices(t, hub, system.Id, systemd.StatusActive)
-	require.NoError(t, am.HandleSystemdAlerts(system, false))
+	require.NoError(t, am.HandleSystemdAlerts(system))
 
 	assert.Equal(t, initialEmailCount+2, hub.TestMailer.TotalSend(), "should send a failure and a recovery notification")
 
@@ -149,7 +149,7 @@ func TestSystemdAlertSendsRecoveryWhenTriggered(t *testing.T) {
 	am := alerts.NewTestAlertManagerWithoutWorker(hub)
 
 	seedServices(t, hub, system.Id, systemd.StatusActive, systemd.StatusInactive)
-	require.NoError(t, am.HandleSystemdAlerts(system, false))
+	require.NoError(t, am.HandleSystemdAlerts(system))
 
 	assert.Equal(t, initialEmailCount+1, hub.TestMailer.TotalSend(), "recovery notification should be sent")
 	messages := hub.TestMailer.Messages()
@@ -171,7 +171,7 @@ func TestSystemdAlertDoesNotResendWhileTriggered(t *testing.T) {
 	// Still failing across several cycles — should not re-notify.
 	for range 3 {
 		seedServices(t, hub, system.Id, systemd.StatusFailed)
-		require.NoError(t, am.HandleSystemdAlerts(system, false))
+		require.NoError(t, am.HandleSystemdAlerts(system))
 	}
 
 	assert.Equal(t, initialEmailCount, hub.TestMailer.TotalSend(), "should not re-notify while still triggered")
@@ -186,7 +186,7 @@ func TestSystemdAlertRepeatedFailureNotifiesOnce(t *testing.T) {
 
 	for range 3 {
 		seedServices(t, hub, system.Id, systemd.StatusFailed)
-		require.NoError(t, am.HandleSystemdAlerts(system, false))
+		require.NoError(t, am.HandleSystemdAlerts(system))
 	}
 
 	assert.Equal(t, initialEmailCount+1, hub.TestMailer.TotalSend(), "repeated failures should only notify once")
@@ -208,7 +208,7 @@ func TestSystemdAlertIgnoresServicesNoLongerReported(t *testing.T) {
 	// Current batch reports only healthy services.
 	seedServicesAt(t, hub, system.Id, now, systemd.StatusActive, systemd.StatusActive)
 
-	require.NoError(t, am.HandleSystemdAlerts(system, false))
+	require.NoError(t, am.HandleSystemdAlerts(system))
 
 	assert.Equal(t, initialEmailCount+1, hub.TestMailer.TotalSend(), "stale failed row should not block recovery")
 	alertRecord, err := hub.FindRecordById("alerts", alert.Id)
@@ -240,8 +240,8 @@ func TestSystemdAlertNoSystemdDataIsIgnored(t *testing.T) {
 
 	// A system with no systemd_services rows (agent without systemd, or nothing
 	// reported yet) must not be treated as a recovery.
-	require.NoError(t, am.HandleSystemdAlerts(system, false))
-	require.NoError(t, am.HandleSystemdAlerts(system, false))
+	require.NoError(t, am.HandleSystemdAlerts(system))
+	require.NoError(t, am.HandleSystemdAlerts(system))
 
 	assert.Equal(t, initialEmailCount, hub.TestMailer.TotalSend(), "missing systemd data should not send a recovery")
 	alertRecord, err := hub.FindRecordById("alerts", alert.Id)
@@ -279,7 +279,7 @@ func TestSystemdAlertNoAlertRecord(t *testing.T) {
 	am := alerts.NewTestAlertManagerWithoutWorker(hub)
 
 	seedServices(t, hub, system.Id, systemd.StatusFailed)
-	require.NoError(t, am.HandleSystemdAlerts(system, false))
+	require.NoError(t, am.HandleSystemdAlerts(system))
 	assert.Equal(t, initialEmailCount, hub.TestMailer.TotalSend(), "no email when no alert record exists")
 }
 
@@ -376,7 +376,7 @@ func TestSystemdAlertMultipleUsersRespectOwnAlerts(t *testing.T) {
 
 	am := alerts.NewTestAlertManagerWithoutWorker(hub)
 	seedServices(t, hub, system.Id, systemd.StatusFailed)
-	require.NoError(t, am.HandleSystemdAlerts(system, false))
+	require.NoError(t, am.HandleSystemdAlerts(system))
 
 	messages := hub.TestMailer.Messages()
 	require.Len(t, messages, 2, "each user should receive their own alert")
