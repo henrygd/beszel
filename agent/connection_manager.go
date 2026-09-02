@@ -87,6 +87,10 @@ func (c *ConnectionManager) Start(serverOptions ServerOptions) error {
 
 	wsClient, err := newWebSocketClient(c.agent)
 	if err != nil {
+		var caCertErr *caCertFileError
+		if errors.As(err, &caCertErr) {
+			return err
+		}
 		slog.Warn("Error creating WebSocket client", "err", err)
 	}
 	c.wsClient = wsClient
