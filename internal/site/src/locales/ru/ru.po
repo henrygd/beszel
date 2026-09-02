@@ -8,7 +8,7 @@ msgstr ""
 "Language: ru\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2026-08-21 22:34\n"
+"PO-Revision-Date: 2026-09-02 00:07\n"
 "Last-Translator: \n"
 "Language-Team: Russian\n"
 "Plural-Forms: nplurals=4; plural=((n%10==1 && n%100!=11) ? 0 : ((n%10 >= 2 && n%10 <=4 && (n%100 < 12 || n%100 > 14)) ? 1 : ((n%10 == 0 || (n%10 >= 5 && n%10 <=9)) || (n%100 >= 11 && n%100 <= 14)) ? 2 : 3));\n"
@@ -507,9 +507,17 @@ msgstr "ЦП"
 msgid "CPU Cores"
 msgstr "Ядра CPU"
 
+#: src/lib/alerts.ts
+msgid "CPU I/O Wait"
+msgstr "Ожидание ввода-вывода CPU (IOWait)"
+
 #: src/components/systemd-table/systemd-table-columns.tsx
 msgid "CPU Peak"
 msgstr "Пик CPU"
+
+#: src/lib/alerts.ts
+msgid "CPU Steal Time"
+msgstr "Недоступное время CPU (Steal)"
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "CPU time"
@@ -1754,6 +1762,14 @@ msgid "Triggers when combined up/down exceeds a threshold"
 msgstr "Срабатывает, когда комбинированный вход/выход превышает порог"
 
 #: src/lib/alerts.ts
+msgid "Triggers when CPU I/O wait exceeds a threshold"
+msgstr "Срабатывает, когда доля времени ожидания CPU операций ввода-вывода превышает порог"
+
+#: src/lib/alerts.ts
+msgid "Triggers when CPU steal time exceeds a threshold"
+msgstr "Срабатывает, когда доля времени CPU, недоступного виртуальной машине из-за гипервизора, превышает порог"
+
+#: src/lib/alerts.ts
 msgid "Triggers when CPU usage exceeds a threshold"
 msgstr "Срабатывает, когда нагрузка на CPU превышает порог"
 
@@ -1948,3 +1964,4 @@ msgstr "Да"
 #: src/components/routes/settings/layout.tsx
 msgid "Your user settings have been updated."
 msgstr "Ваши настройки пользователя были обновлены."
+
