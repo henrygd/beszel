@@ -66,6 +66,11 @@ func (f *containerAlertTestFixture) submit(t *testing.T, containers []*container
 	require.NoError(t, f.am.HandleContainerAlerts(f.systemRecord, data, fetchLogs))
 }
 
+func (f *containerAlertTestFixture) submitInvalid(t *testing.T) {
+	t.Helper()
+	require.NoError(t, f.am.HandleContainerAlerts(f.systemRecord, &system.CombinedData{}, nil))
+}
+
 func (f *containerAlertTestFixture) assertTriggered(t *testing.T, triggered bool, message string) {
 	t.Helper()
 	alertRecord, err := f.hub.FindRecordById("alerts", f.alertID)
@@ -101,12 +106,35 @@ func TestContainerHealthAlertTriggersAndResolves(t *testing.T) {
 		assert.Contains(t, msg.Subject, "web", "Subject should name the unhealthy container")
 		assert.Contains(t, msg.Subject, "unhealthy")
 
-		fixture.submit(t, []*container.Stats{healthyContainer("web")}, nil)
+		fixture.submit(t, []*container.Stats{unhealthyContainer("web")}, nil)
+		assert.Equal(t, 0, fixture.am.GetPendingContainerAlertsCount(), "A triggered alert should not schedule another timer")
+
+		fixture.submitInvalid(t)
+		fixture.assertTriggered(t, true, "An invalid container snapshot should not resolve the alert")
+		assert.Equal(t, 1, fixture.hub.TestMailer.TotalSend(), "An invalid snapshot should not send a recovery")
+
+		fixture.submit(t, []*container.Stats{}, nil)
 		waitForContainerAlert(time.Second)
 
 		fixture.assertTriggered(t, false, "Alert should resolve once the container is healthy again")
 		assert.Equal(t, 2, fixture.hub.TestMailer.TotalSend(), "A second email should have been sent for the recovery")
 		assert.Contains(t, fixture.hub.TestMailer.LastMessage().Subject, "healthy again")
+	})
+}
+
+func TestContainerHealthAlertInvalidSnapshotCancelsPending(t *testing.T) {
+	fixture := newContainerAlertTestFixture(t, 5)
+	defer fixture.cleanup()
+
+	synctest.Test(t, func(t *testing.T) {
+		fixture.submit(t, []*container.Stats{unhealthyContainer("db")}, nil)
+		waitForContainerAlert(time.Minute)
+		fixture.submitInvalid(t)
+		waitForContainerAlert(10 * time.Minute)
+
+		fixture.assertTriggered(t, false, "Stale unhealthy data should not trigger an alert")
+		assert.Equal(t, 0, fixture.am.GetPendingContainerAlertsCount())
+		assert.Equal(t, 0, fixture.hub.TestMailer.TotalSend())
 	})
 }
 
@@ -173,6 +201,34 @@ func TestContainerHealthAlertSkipsLogsOnFetchError(t *testing.T) {
 		waitForContainerAlert(time.Minute + time.Second)
 
 		fixture.assertTriggered(t, true, "Alert should still be triggered even if logs can't be fetched")
+		require.Equal(t, 1, fixture.hub.TestMailer.TotalSend())
+	})
+}
+
+func TestContainerHealthAlertCapsLogFetchAttempts(t *testing.T) {
+	fixture := newContainerAlertTestFixture(t, 1)
+	defer fixture.cleanup()
+
+	containers := make([]*container.Stats, 100)
+	for i := range containers {
+		containers[i] = &container.Stats{
+			Name:   fmt.Sprintf("container-%d", i),
+			Id:     fmt.Sprintf("id-%d", i),
+			Health: container.DockerHealthUnhealthy,
+		}
+	}
+	attempts := 0
+	fetchLogs := func(containerID string) (string, error) {
+		attempts++
+		return "", fmt.Errorf("agent unreachable")
+	}
+
+	synctest.Test(t, func(t *testing.T) {
+		fixture.submit(t, containers, fetchLogs)
+		waitForContainerAlert(time.Minute + time.Second)
+
+		fixture.assertTriggered(t, true, "Alert should still fire when log retrieval fails")
+		assert.Equal(t, 2, attempts, "Log retrieval should attempt at most two containers")
 		require.Equal(t, 1, fixture.hub.TestMailer.TotalSend())
 	})
 }

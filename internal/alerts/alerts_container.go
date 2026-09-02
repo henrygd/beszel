@@ -3,6 +3,7 @@ package alerts
 import (
 	"fmt"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/henrygd/beszel/internal/entities/container"
@@ -43,9 +44,18 @@ type FetchContainerLogsFunc = func(containerID string) (string, error)
 type pendingContainerAlert struct {
 	systemName string
 	alertData  CachedAlertData
-	containers []*container.Stats
+	mu         sync.Mutex
+	containers []containerAlertTarget
 	expireTime time.Time
 	timer      *time.Timer
+}
+
+// containerAlertTarget is an immutable snapshot of the fields needed after the
+// alert delay expires. Keeping agent-owned container records out of the pending
+// state avoids retaining and concurrently reading data that is refreshed in place.
+type containerAlertTarget struct {
+	id   string
+	name string
 }
 
 // HandleContainerAlerts checks configured "ContainerHealth" alerts for a system
@@ -59,6 +69,14 @@ func (am *AlertManager) HandleContainerAlerts(systemRecord *core.Record, data *s
 	if len(alerts) == 0 {
 		return nil
 	}
+	if data.Containers == nil {
+		// An unknown Docker state must not resolve a triggered alert or allow a
+		// pending timer to fire from the last valid unhealthy observation.
+		for _, alertData := range alerts {
+			am.cancelPendingContainerAlert(alertData.Id)
+		}
+		return nil
+	}
 
 	var unhealthy []*container.Stats
 	for _, c := range data.Containers {
@@ -70,6 +88,12 @@ func (am *AlertManager) HandleContainerAlerts(systemRecord *core.Record, data *s
 	systemName := systemRecord.GetString("name")
 	for _, alertData := range alerts {
 		if len(unhealthy) > 0 {
+			if alertData.Triggered {
+				// This alert represents whether any container is unhealthy, so once it
+				// has fired there is nothing to schedule until it is resolved.
+				am.cancelPendingContainerAlert(alertData.Id)
+				continue
+			}
 			am.schedulePendingContainerAlert(systemName, alertData, unhealthy, fetchLogs)
 			continue
 		}
@@ -97,20 +121,35 @@ func (am *AlertManager) schedulePendingContainerAlert(systemName string, alertDa
 	pending := &pendingContainerAlert{
 		systemName: systemName,
 		alertData:  alertData,
-		containers: unhealthy,
+		containers: snapshotContainerAlertTargets(unhealthy),
 		expireTime: time.Now().Add(time.Duration(min) * time.Minute),
 	}
 
+	// Keep the candidate locked while publishing it so cancellation cannot
+	// observe a newly stored pending alert before its timer is initialized.
+	pending.mu.Lock()
 	stored, loaded := am.pendingContainerAlerts.LoadOrStore(alertData.Id, pending)
-	p := stored.(*pendingContainerAlert)
 	if loaded {
+		pending.mu.Unlock()
+		p := stored.(*pendingContainerAlert)
 		// timer already running; just keep the unhealthy-container list current
-		p.containers = unhealthy
+		p.mu.Lock()
+		p.containers = pending.containers
+		p.mu.Unlock()
 		return
 	}
-	p.timer = time.AfterFunc(time.Until(p.expireTime), func() {
+	pending.timer = time.AfterFunc(time.Until(pending.expireTime), func() {
 		am.processPendingContainerAlert(alertData.Id, fetchLogs)
 	})
+	pending.mu.Unlock()
+}
+
+func snapshotContainerAlertTargets(containers []*container.Stats) []containerAlertTarget {
+	targets := make([]containerAlertTarget, len(containers))
+	for i, c := range containers {
+		targets[i] = containerAlertTarget{id: c.Id, name: c.Name}
+	}
+	return targets
 }
 
 // cancelPendingContainerAlert stops and removes a pending container alert timer.
@@ -120,8 +159,13 @@ func (am *AlertManager) cancelPendingContainerAlert(alertID string) bool {
 	if !loaded {
 		return false
 	}
-	if p, ok := value.(*pendingContainerAlert); ok && p.timer != nil {
-		p.timer.Stop()
+	if p, ok := value.(*pendingContainerAlert); ok {
+		p.mu.Lock()
+		timer := p.timer
+		p.mu.Unlock()
+		if timer != nil {
+			timer.Stop()
+		}
 	}
 	return true
 }
@@ -146,12 +190,15 @@ func (am *AlertManager) processPendingContainerAlert(alertID string, fetchLogs F
 		return
 	}
 	pending := value.(*pendingContainerAlert)
+	pending.mu.Lock()
+	containers := append([]containerAlertTarget(nil), pending.containers...)
+	pending.mu.Unlock()
 
 	refreshedAlertData, ok := am.alertsCache.Refresh(pending.alertData)
 	if !ok || refreshedAlertData.Triggered {
 		return
 	}
-	if err := am.sendContainerHealthAlert(true, pending.systemName, refreshedAlertData, pending.containers, fetchLogs); err != nil {
+	if err := am.sendContainerHealthAlert(true, pending.systemName, refreshedAlertData, containers, fetchLogs); err != nil {
 		am.hub.Logger().Error("Failed to send container health alert", "err", err)
 	}
 }
@@ -159,7 +206,7 @@ func (am *AlertManager) processPendingContainerAlert(alertID string, fetchLogs F
 // sendContainerHealthAlert updates the alert's triggered state and sends the
 // notification. When unhealthy is true, it embeds a log excerpt (prioritizing
 // error/fatal lines) for up to containerAlertMaxLogged of the affected containers.
-func (am *AlertManager) sendContainerHealthAlert(unhealthy bool, systemName string, alertData CachedAlertData, containers []*container.Stats, fetchLogs FetchContainerLogsFunc) error {
+func (am *AlertManager) sendContainerHealthAlert(unhealthy bool, systemName string, alertData CachedAlertData, containers []containerAlertTarget, fetchLogs FetchContainerLogsFunc) error {
 	if err := am.setAlertTriggered(alertData, unhealthy); err != nil {
 		return err
 	}
@@ -181,7 +228,7 @@ func (am *AlertManager) sendContainerHealthAlert(unhealthy bool, systemName stri
 
 	names := make([]string, len(containers))
 	for i, c := range containers {
-		names[i] = c.Name
+		names[i] = c.name
 	}
 
 	var title string
@@ -210,30 +257,26 @@ func (am *AlertManager) sendContainerHealthAlert(unhealthy bool, systemName stri
 	})
 }
 
-// buildContainerLogsSection fetches and formats log excerpts for up to
+// buildContainerLogsSection attempts to fetch and format log excerpts for up to
 // containerAlertMaxLogged unhealthy containers, to append to an alert message.
-func (am *AlertManager) buildContainerLogsSection(containers []*container.Stats, fetchLogs FetchContainerLogsFunc) string {
+func (am *AlertManager) buildContainerLogsSection(containers []containerAlertTarget, fetchLogs FetchContainerLogsFunc) string {
 	if fetchLogs == nil {
 		return ""
 	}
 
 	var section strings.Builder
-	logged := 0
-	for _, c := range containers {
-		if logged >= containerAlertMaxLogged {
-			break
-		}
-		rawLogs, err := fetchLogs(c.Id)
+	attempts := min(len(containers), containerAlertMaxLogged)
+	for _, c := range containers[:attempts] {
+		rawLogs, err := fetchLogs(c.id)
 		if err != nil {
-			am.hub.Logger().Warn("Failed to fetch container logs for alert", "container", c.Name, "err", err)
+			am.hub.Logger().Warn("Failed to fetch container logs for alert", "container", c.name, "err", err)
 			continue
 		}
 		excerpt := buildContainerLogExcerpt(rawLogs)
 		if excerpt == "" {
 			continue
 		}
-		fmt.Fprintf(&section, "\n\n%s logs:\n```\n%s\n```", c.Name, excerpt)
-		logged++
+		fmt.Fprintf(&section, "\n\n%s logs:\n```\n%s\n```", c.name, excerpt)
 	}
 
 	if len(containers) > containerAlertMaxLogged {

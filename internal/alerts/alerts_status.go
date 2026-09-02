@@ -27,8 +27,13 @@ func (am *AlertManager) Stop() {
 			return true
 		})
 		am.pendingContainerAlerts.Range(func(key, value any) bool {
-			if p, ok := value.(*pendingContainerAlert); ok && p.timer != nil {
-				p.timer.Stop()
+			if p, ok := value.(*pendingContainerAlert); ok {
+				p.mu.Lock()
+				timer := p.timer
+				p.mu.Unlock()
+				if timer != nil {
+					timer.Stop()
+				}
 			}
 			am.pendingContainerAlerts.Delete(key)
 			return true
