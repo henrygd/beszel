@@ -8,7 +8,7 @@ msgstr ""
 "Language: uk\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2026-09-02 00:07\n"
+"PO-Revision-Date: 2026-09-02 17:42\n"
 "Last-Translator: \n"
 "Language-Team: Ukrainian\n"
 "Plural-Forms: nplurals=4; plural=((n%10==1 && n%100!=11) ? 0 : ((n%10 >= 2 && n%10 <=4 && (n%100 < 12 || n%100 > 14)) ? 1 : ((n%10 == 0 || (n%10 >= 5 && n%10 <=9)) || (n%100 >= 11 && n%100 <= 14)) ? 2 : 3));\n"
@@ -423,6 +423,14 @@ msgstr "Конфлікти"
 #: src/components/active-alerts.tsx
 msgid "Connection is down"
 msgstr "З’єднання розірвано"
+
+#: src/lib/alerts.ts
+msgid "Container"
+msgstr "Контейнер"
+
+#: src/lib/alerts.ts
+msgid "Container Health"
+msgstr "Здоров'я контейнера"
 
 #: src/components/routes/system.tsx
 msgid "Containers"
@@ -1750,6 +1758,10 @@ msgid "Triggers when 5 minute load average exceeds a threshold"
 msgstr "Спрацьовує, коли середнє навантаження за 5 хвилин перевищує поріг"
 
 #: src/lib/alerts.ts
+msgid "Triggers when a Docker container's health check reports unhealthy"
+msgstr "Спрацьовує, коли перевірка стану (health check) Docker-контейнера повідомляє про нездоровий стан"
+
+#: src/lib/alerts.ts
 msgid "Triggers when any sensor exceeds a threshold"
 msgstr "Спрацьовує, коли будь-який датчик перевищує поріг"
 
@@ -1794,6 +1806,10 @@ msgstr "Спрацьовує, коли використання будь-яко�
 #: src/components/routes/system/smart-table.tsx
 msgid "Type"
 msgstr "Тип"
+
+#: src/lib/alerts.ts
+msgid "Unhealthy"
+msgstr "Нездоровий"
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Unit file"
