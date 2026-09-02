@@ -8,7 +8,7 @@ msgstr ""
 "Language: zh\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2026-09-02 19:07\n"
+"PO-Revision-Date: 2026-09-02 21:43\n"
 "Last-Translator: \n"
 "Language-Team: Chinese Traditional, Hong Kong\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
@@ -48,7 +48,7 @@ msgstr "{count, plural, one {{countString} 分鐘} few {{countString} 分鐘} ma
 
 #: src/components/routes/system/charts/disk-charts.tsx
 msgid "{diskName} I/O"
-msgstr ""
+msgstr "{diskName} 的 I/O"
 
 #: src/components/routes/system/info-bar.tsx
 msgid "{threads, plural, one {# thread} other {# threads}}"
@@ -199,7 +199,7 @@ msgstr "自動複製需要安全的上下文。"
 #: src/components/routes/system/zfs-table.tsx
 msgctxt "Disk space available"
 msgid "Available"
-msgstr ""
+msgstr "可用"
 
 #: src/components/routes/system/chart-card.tsx
 msgid "Average"
@@ -393,7 +393,7 @@ msgstr "檢查您的通知服務"
 
 #: src/components/routes/system/zfs-table.tsx
 msgid "Checksum errors"
-msgstr ""
+msgstr "校驗和錯誤"
 
 #: src/components/containers-table/containers-table.tsx
 #: src/components/routes/system/smart-table.tsx
@@ -413,7 +413,7 @@ msgstr "點擊裝置以查看更多資訊。"
 
 #: src/components/routes/system/zfs-table.tsx
 msgid "Click on a pool to view vdev and dataset details."
-msgstr ""
+msgstr "按一下 pool 以查看 vdev 和 dataset 的詳細資料。"
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Click on a system to view more information."
@@ -582,11 +582,11 @@ msgstr "嚴重 (%)"
 
 #: src/components/routes/system/disk-io-sheet.tsx
 msgid "Cumulative data read since boot"
-msgstr ""
+msgstr "自啟動以來累計讀取的資料"
 
 #: src/components/routes/system/disk-io-sheet.tsx
 msgid "Cumulative data written since boot"
-msgstr ""
+msgstr "自啟動以來累計寫入的資料"
 
 #: src/components/routes/system/network-sheet.tsx
 msgid "Cumulative Download"
@@ -594,7 +594,7 @@ msgstr "累計下載"
 
 #: src/components/routes/system/disk-io-sheet.tsx
 msgid "Cumulative Read"
-msgstr ""
+msgstr "累計讀取"
 
 #: src/components/routes/system/network-sheet.tsx
 msgid "Cumulative Upload"
@@ -602,7 +602,7 @@ msgstr "累計上傳"
 
 #: src/components/routes/system/disk-io-sheet.tsx
 msgid "Cumulative Write"
-msgstr ""
+msgstr "累計寫入"
 
 #. Context: Battery state
 #. Context: Battery state
@@ -838,7 +838,7 @@ msgstr "失敗屬性："
 
 #: src/lib/alerts.ts
 msgid "Failed Services"
-msgstr ""
+msgstr "失敗的服務"
 
 #: src/lib/api.ts
 msgid "Failed to authenticate"
@@ -902,7 +902,7 @@ msgstr "忘記密碼？"
 #: src/components/routes/system/zfs-table.tsx
 msgctxt "Free space"
 msgid "Free"
-msgstr ""
+msgstr "可用空間"
 
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
@@ -1148,7 +1148,7 @@ msgstr "型號"
 
 #: src/components/routes/system/zfs-table.tsx
 msgid "Mountpoint"
-msgstr ""
+msgstr "掛載點"
 
 #: src/components/add-system.tsx
 #: src/components/alerts-history-columns.tsx
@@ -1187,7 +1187,7 @@ msgstr "否"
 
 #: src/components/routes/system/zfs-table.tsx
 msgid "No detail data for this pool."
-msgstr ""
+msgstr "此 pool 沒有可用的詳細資料。"
 
 #: src/components/command-palette.tsx
 #: src/components/systemd-table/systemd-table.tsx
@@ -1214,7 +1214,7 @@ msgstr "未找到系統。"
 
 #: src/components/routes/system/zfs-table.tsx
 msgid "None"
-msgstr ""
+msgstr "無"
 
 #: src/components/command-palette.tsx
 #: src/components/routes/settings/layout.tsx
@@ -1224,7 +1224,7 @@ msgstr "通知"
 
 #: src/lib/alerts.ts
 msgid "Notifications may include recent container log excerpts."
-msgstr ""
+msgstr "通知可能包含最近的容器日誌片段。"
 
 #: src/components/login/auth-form.tsx
 msgid "OAuth 2 / OIDC support"
@@ -1236,11 +1236,11 @@ msgstr "每次重新啟動時，將會以檔案中的系統定義更新資料庫
 
 #: src/lib/alerts.ts
 msgid "One or more containers are unhealthy"
-msgstr ""
+msgstr "一個或多個容器處於不健康狀態"
 
 #: src/lib/alerts.ts
 msgid "One or more services are in a failed state"
-msgstr ""
+msgstr "一個或多個服務處於失敗狀態"
 
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/quiet-hours.tsx
@@ -1381,11 +1381,11 @@ msgstr "請登入您的帳號"
 
 #: src/components/routes/system/zfs-table.tsx
 msgid "Pool Health"
-msgstr ""
+msgstr "Pool 健康狀態"
 
 #: src/components/routes/system/charts/zfs-charts.tsx
 msgid "Pool Usage"
-msgstr ""
+msgstr "Pool 使用量"
 
 #: src/components/add-system.tsx
 msgid "Port"
@@ -1445,7 +1445,7 @@ msgstr "讀取"
 
 #: src/components/routes/system/zfs-table.tsx
 msgid "Read errors"
-msgstr ""
+msgstr "讀取錯誤"
 
 #: src/components/routes/system/charts/network-charts.tsx
 msgid "Received"
@@ -1774,7 +1774,7 @@ msgstr "{extraFsName}的吞吐量"
 
 #: src/components/routes/system/charts/zfs-charts.tsx
 msgid "Throughput of ZFS pool {poolName}"
-msgstr ""
+msgstr "ZFS pool {poolName} 輸送量"
 
 #: src/components/routes/settings/general.tsx
 msgid "Time format"
@@ -1848,7 +1848,7 @@ msgstr "當 5 分鐘平均負載超過閾值時觸發"
 
 #: src/lib/alerts.ts
 msgid "Triggers when a container's health check reports unhealthy"
-msgstr ""
+msgstr "當容器健康檢查報告不健康狀態時觸發"
 
 #: src/lib/alerts.ts
 msgid "Triggers when any sensor exceeds a threshold"
@@ -1856,7 +1856,7 @@ msgstr "當任何傳感器超過閾值時觸發"
 
 #: src/lib/alerts.ts
 msgid "Triggers when any systemd service enters the failed state"
-msgstr ""
+msgstr "當任何 systemd 服務進入失敗狀態時觸發"
 
 #: src/lib/alerts.ts
 msgid "Triggers when battery charge drops below a threshold"
@@ -1975,7 +1975,7 @@ msgstr "使用"
 
 #: src/components/routes/system/charts/zfs-charts.tsx
 msgid "Usage of ZFS pool {poolName}"
-msgstr ""
+msgstr "ZFS pool {poolName} 使用量"
 
 #: src/components/routes/system/charts/memory-charts.tsx
 #: src/components/routes/system/charts/memory-charts.tsx
@@ -2068,7 +2068,7 @@ msgstr "寫入"
 
 #: src/components/routes/system/zfs-table.tsx
 msgid "Write errors"
-msgstr ""
+msgstr "寫入錯誤"
 
 #: src/components/routes/settings/layout.tsx
 msgid "YAML Config"

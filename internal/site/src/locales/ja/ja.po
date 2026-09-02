@@ -8,7 +8,7 @@ msgstr ""
 "Language: ja\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2026-09-02 19:06\n"
+"PO-Revision-Date: 2026-09-02 21:43\n"
 "Last-Translator: \n"
 "Language-Team: Japanese\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
@@ -48,7 +48,7 @@ msgstr "{count, plural, one {{countString} 分} few {{countString} 分} many {{c
 
 #: src/components/routes/system/charts/disk-charts.tsx
 msgid "{diskName} I/O"
-msgstr ""
+msgstr "{diskName} の I/O"
 
 #: src/components/routes/system/info-bar.tsx
 msgid "{threads, plural, one {# thread} other {# threads}}"
@@ -199,7 +199,7 @@ msgstr "自動コピーには安全なコンテキストが必要です。"
 #: src/components/routes/system/zfs-table.tsx
 msgctxt "Disk space available"
 msgid "Available"
-msgstr ""
+msgstr "利用可能"
 
 #: src/components/routes/system/chart-card.tsx
 msgid "Average"
@@ -393,7 +393,7 @@ msgstr "通知サービスを確認してください"
 
 #: src/components/routes/system/zfs-table.tsx
 msgid "Checksum errors"
-msgstr ""
+msgstr "チェックサムエラー"
 
 #: src/components/containers-table/containers-table.tsx
 #: src/components/routes/system/smart-table.tsx
@@ -413,7 +413,7 @@ msgstr "詳細情報を表示するにはデバイスをクリックしてくだ
 
 #: src/components/routes/system/zfs-table.tsx
 msgid "Click on a pool to view vdev and dataset details."
-msgstr ""
+msgstr "プールをクリックして、vdev とデータセットの詳細を表示します。"
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Click on a system to view more information."
@@ -582,11 +582,11 @@ msgstr "致命的 (%)"
 
 #: src/components/routes/system/disk-io-sheet.tsx
 msgid "Cumulative data read since boot"
-msgstr ""
+msgstr "起動後の累積読み取りデータ"
 
 #: src/components/routes/system/disk-io-sheet.tsx
 msgid "Cumulative data written since boot"
-msgstr ""
+msgstr "起動後の累積書き込みデータ"
 
 #: src/components/routes/system/network-sheet.tsx
 msgid "Cumulative Download"
@@ -594,7 +594,7 @@ msgstr "累積ダウンロード"
 
 #: src/components/routes/system/disk-io-sheet.tsx
 msgid "Cumulative Read"
-msgstr ""
+msgstr "累積読み取り"
 
 #: src/components/routes/system/network-sheet.tsx
 msgid "Cumulative Upload"
@@ -602,7 +602,7 @@ msgstr "累積アップロード"
 
 #: src/components/routes/system/disk-io-sheet.tsx
 msgid "Cumulative Write"
-msgstr ""
+msgstr "累積書き込み"
 
 #. Context: Battery state
 #. Context: Battery state
@@ -838,7 +838,7 @@ msgstr "失敗した属性:"
 
 #: src/lib/alerts.ts
 msgid "Failed Services"
-msgstr ""
+msgstr "失敗したサービス"
 
 #: src/lib/api.ts
 msgid "Failed to authenticate"
@@ -902,7 +902,7 @@ msgstr "パスワードをお忘れですか？"
 #: src/components/routes/system/zfs-table.tsx
 msgctxt "Free space"
 msgid "Free"
-msgstr ""
+msgstr "空き"
 
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
@@ -1148,7 +1148,7 @@ msgstr "モデル"
 
 #: src/components/routes/system/zfs-table.tsx
 msgid "Mountpoint"
-msgstr ""
+msgstr "マウントポイント"
 
 #: src/components/add-system.tsx
 #: src/components/alerts-history-columns.tsx
@@ -1187,7 +1187,7 @@ msgstr "いいえ"
 
 #: src/components/routes/system/zfs-table.tsx
 msgid "No detail data for this pool."
-msgstr ""
+msgstr "このプールの詳細データはありません。"
 
 #: src/components/command-palette.tsx
 #: src/components/systemd-table/systemd-table.tsx
@@ -1214,7 +1214,7 @@ msgstr "システムが見つかりませんでした。"
 
 #: src/components/routes/system/zfs-table.tsx
 msgid "None"
-msgstr ""
+msgstr "なし"
 
 #: src/components/command-palette.tsx
 #: src/components/routes/settings/layout.tsx
@@ -1224,7 +1224,7 @@ msgstr "通知"
 
 #: src/lib/alerts.ts
 msgid "Notifications may include recent container log excerpts."
-msgstr ""
+msgstr "通知には、最近のコンテナログの抜粋が含まれる場合があります。"
 
 #: src/components/login/auth-form.tsx
 msgid "OAuth 2 / OIDC support"
@@ -1236,11 +1236,11 @@ msgstr "再起動のたびに、データベース内のシステムはファイ
 
 #: src/lib/alerts.ts
 msgid "One or more containers are unhealthy"
-msgstr ""
+msgstr "いずれかのコンテナが異常な状態です"
 
 #: src/lib/alerts.ts
 msgid "One or more services are in a failed state"
-msgstr ""
+msgstr "いずれかのサービスが失敗状態です"
 
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/quiet-hours.tsx
@@ -1381,11 +1381,11 @@ msgstr "アカウントにサインインしてください"
 
 #: src/components/routes/system/zfs-table.tsx
 msgid "Pool Health"
-msgstr ""
+msgstr "プールの健全性"
 
 #: src/components/routes/system/charts/zfs-charts.tsx
 msgid "Pool Usage"
-msgstr ""
+msgstr "プール使用量"
 
 #: src/components/add-system.tsx
 msgid "Port"
@@ -1445,7 +1445,7 @@ msgstr "読み取り"
 
 #: src/components/routes/system/zfs-table.tsx
 msgid "Read errors"
-msgstr ""
+msgstr "読み取りエラー"
 
 #: src/components/routes/system/charts/network-charts.tsx
 msgid "Received"
@@ -1774,7 +1774,7 @@ msgstr "{extraFsName}のスループット"
 
 #: src/components/routes/system/charts/zfs-charts.tsx
 msgid "Throughput of ZFS pool {poolName}"
-msgstr ""
+msgstr "ZFS プール {poolName} のスループット"
 
 #: src/components/routes/settings/general.tsx
 msgid "Time format"
@@ -1848,7 +1848,7 @@ msgstr "5分間の負荷平均がしきい値を超えたときにトリガー�
 
 #: src/lib/alerts.ts
 msgid "Triggers when a container's health check reports unhealthy"
-msgstr ""
+msgstr "コンテナのヘルスチェックで異常な状態が報告されたときにトリガーされます"
 
 #: src/lib/alerts.ts
 msgid "Triggers when any sensor exceeds a threshold"
@@ -1856,7 +1856,7 @@ msgstr "センサーがしきい値を超えたときにトリガーされます
 
 #: src/lib/alerts.ts
 msgid "Triggers when any systemd service enters the failed state"
-msgstr ""
+msgstr "いずれかの systemd サービスが失敗状態になったときにトリガーされます"
 
 #: src/lib/alerts.ts
 msgid "Triggers when battery charge drops below a threshold"
@@ -1975,7 +1975,7 @@ msgstr "使用量"
 
 #: src/components/routes/system/charts/zfs-charts.tsx
 msgid "Usage of ZFS pool {poolName}"
-msgstr ""
+msgstr "ZFS プール {poolName} の使用量"
 
 #: src/components/routes/system/charts/memory-charts.tsx
 #: src/components/routes/system/charts/memory-charts.tsx
@@ -2068,7 +2068,7 @@ msgstr "書き込み"
 
 #: src/components/routes/system/zfs-table.tsx
 msgid "Write errors"
-msgstr ""
+msgstr "書き込みエラー"
 
 #: src/components/routes/settings/layout.tsx
 msgid "YAML Config"

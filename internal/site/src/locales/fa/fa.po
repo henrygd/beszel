@@ -8,7 +8,7 @@ msgstr ""
 "Language: fa\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2026-09-02 19:06\n"
+"PO-Revision-Date: 2026-09-02 21:43\n"
 "Last-Translator: \n"
 "Language-Team: Persian\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
@@ -48,7 +48,7 @@ msgstr "{count, plural, one {{countString} دقیقه} few {{countString} دقی
 
 #: src/components/routes/system/charts/disk-charts.tsx
 msgid "{diskName} I/O"
-msgstr ""
+msgstr "ورودی/خروجی {diskName}"
 
 #: src/components/routes/system/info-bar.tsx
 msgid "{threads, plural, one {# thread} other {# threads}}"
@@ -199,7 +199,7 @@ msgstr "کپی خودکار نیاز به یک زمینه امن دارد."
 #: src/components/routes/system/zfs-table.tsx
 msgctxt "Disk space available"
 msgid "Available"
-msgstr ""
+msgstr "در دسترس"
 
 #: src/components/routes/system/chart-card.tsx
 msgid "Average"
@@ -393,7 +393,7 @@ msgstr "سرویس اطلاع‌رسانی خود را بررسی کنید"
 
 #: src/components/routes/system/zfs-table.tsx
 msgid "Checksum errors"
-msgstr ""
+msgstr "خطاهای مجموع بررسی"
 
 #: src/components/containers-table/containers-table.tsx
 #: src/components/routes/system/smart-table.tsx
@@ -413,7 +413,7 @@ msgstr "برای مشاهده اطلاعات بیشتر روی دستگاه کل
 
 #: src/components/routes/system/zfs-table.tsx
 msgid "Click on a pool to view vdev and dataset details."
-msgstr ""
+msgstr "برای مشاهده جزئیات vdev و مجموعه‌داده‌ها روی یک استخر کلیک کنید."
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Click on a system to view more information."
@@ -582,11 +582,11 @@ msgstr "بحرانی (%)"
 
 #: src/components/routes/system/disk-io-sheet.tsx
 msgid "Cumulative data read since boot"
-msgstr ""
+msgstr "مجموع داده‌های خوانده‌شده از زمان راه‌اندازی"
 
 #: src/components/routes/system/disk-io-sheet.tsx
 msgid "Cumulative data written since boot"
-msgstr ""
+msgstr "مجموع داده‌های نوشته‌شده از زمان راه‌اندازی"
 
 #: src/components/routes/system/network-sheet.tsx
 msgid "Cumulative Download"
@@ -594,7 +594,7 @@ msgstr "دانلود تجمعی"
 
 #: src/components/routes/system/disk-io-sheet.tsx
 msgid "Cumulative Read"
-msgstr ""
+msgstr "خواندن تجمعی"
 
 #: src/components/routes/system/network-sheet.tsx
 msgid "Cumulative Upload"
@@ -602,7 +602,7 @@ msgstr "آپلود تجمعی"
 
 #: src/components/routes/system/disk-io-sheet.tsx
 msgid "Cumulative Write"
-msgstr ""
+msgstr "نوشتن تجمعی"
 
 #. Context: Battery state
 #. Context: Battery state
@@ -838,7 +838,7 @@ msgstr "ویژگی‌های ناموفق:"
 
 #: src/lib/alerts.ts
 msgid "Failed Services"
-msgstr ""
+msgstr "سرویس‌های ناموفق"
 
 #: src/lib/api.ts
 msgid "Failed to authenticate"
@@ -902,7 +902,7 @@ msgstr "رمز عبور را فراموش کرده‌اید؟"
 #: src/components/routes/system/zfs-table.tsx
 msgctxt "Free space"
 msgid "Free"
-msgstr ""
+msgstr "آزاد"
 
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
@@ -1148,7 +1148,7 @@ msgstr "مدل"
 
 #: src/components/routes/system/zfs-table.tsx
 msgid "Mountpoint"
-msgstr ""
+msgstr "نقطه اتصال"
 
 #: src/components/add-system.tsx
 #: src/components/alerts-history-columns.tsx
@@ -1187,7 +1187,7 @@ msgstr "خیر"
 
 #: src/components/routes/system/zfs-table.tsx
 msgid "No detail data for this pool."
-msgstr ""
+msgstr "دادهٔ جزئی برای این استخر موجود نیست."
 
 #: src/components/command-palette.tsx
 #: src/components/systemd-table/systemd-table.tsx
@@ -1214,7 +1214,7 @@ msgstr "هیچ سیستمی یافت نشد."
 
 #: src/components/routes/system/zfs-table.tsx
 msgid "None"
-msgstr ""
+msgstr "هیچ‌کدام"
 
 #: src/components/command-palette.tsx
 #: src/components/routes/settings/layout.tsx
@@ -1224,7 +1224,7 @@ msgstr "اعلان‌ها"
 
 #: src/lib/alerts.ts
 msgid "Notifications may include recent container log excerpts."
-msgstr ""
+msgstr "اعلان‌ها ممکن است شامل بخش‌هایی از گزارش‌های اخیر کانتینر باشند."
 
 #: src/components/login/auth-form.tsx
 msgid "OAuth 2 / OIDC support"
@@ -1236,11 +1236,11 @@ msgstr "در هر بار راه‌اندازی مجدد، سیستم‌های م
 
 #: src/lib/alerts.ts
 msgid "One or more containers are unhealthy"
-msgstr ""
+msgstr "یک یا چند کانتینر در وضعیت ناسالم هستند"
 
 #: src/lib/alerts.ts
 msgid "One or more services are in a failed state"
-msgstr ""
+msgstr "یک یا چند سرویس در وضعیت ناموفق هستند"
 
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/quiet-hours.tsx
@@ -1381,11 +1381,11 @@ msgstr "لطفاً به حساب کاربری خود وارد شوید"
 
 #: src/components/routes/system/zfs-table.tsx
 msgid "Pool Health"
-msgstr ""
+msgstr "سلامت استخر"
 
 #: src/components/routes/system/charts/zfs-charts.tsx
 msgid "Pool Usage"
-msgstr ""
+msgstr "استفاده از استخر"
 
 #: src/components/add-system.tsx
 msgid "Port"
@@ -1445,7 +1445,7 @@ msgstr "خواندن"
 
 #: src/components/routes/system/zfs-table.tsx
 msgid "Read errors"
-msgstr ""
+msgstr "خطاهای خواندن"
 
 #: src/components/routes/system/charts/network-charts.tsx
 msgid "Received"
@@ -1774,7 +1774,7 @@ msgstr "توان عملیاتی {extraFsName}"
 
 #: src/components/routes/system/charts/zfs-charts.tsx
 msgid "Throughput of ZFS pool {poolName}"
-msgstr ""
+msgstr "توان عملیاتی استخر ZFS ‏{poolName}"
 
 #: src/components/routes/settings/general.tsx
 msgid "Time format"
@@ -1848,7 +1848,7 @@ msgstr "هنگامی که میانگین بار ۵ دقیقه‌ای از یک �
 
 #: src/lib/alerts.ts
 msgid "Triggers when a container's health check reports unhealthy"
-msgstr ""
+msgstr "هنگامی فعال می‌شود که بررسی سلامت کانتینر وضعیت ناسالم را گزارش کند"
 
 #: src/lib/alerts.ts
 msgid "Triggers when any sensor exceeds a threshold"
@@ -1856,7 +1856,7 @@ msgstr "هنگامی که هر حسگری از یک آستانه فراتر رو
 
 #: src/lib/alerts.ts
 msgid "Triggers when any systemd service enters the failed state"
-msgstr ""
+msgstr "هنگامی فعال می‌شود که هر سرویس systemd وارد وضعیت ناموفق شود"
 
 #: src/lib/alerts.ts
 msgid "Triggers when battery charge drops below a threshold"
@@ -1975,7 +1975,7 @@ msgstr "میزان استفاده"
 
 #: src/components/routes/system/charts/zfs-charts.tsx
 msgid "Usage of ZFS pool {poolName}"
-msgstr ""
+msgstr "استفاده از استخر ZFS ‏{poolName}"
 
 #: src/components/routes/system/charts/memory-charts.tsx
 #: src/components/routes/system/charts/memory-charts.tsx
@@ -2068,7 +2068,7 @@ msgstr "نوشتن"
 
 #: src/components/routes/system/zfs-table.tsx
 msgid "Write errors"
-msgstr ""
+msgstr "خطاهای نوشتن"
 
 #: src/components/routes/settings/layout.tsx
 msgid "YAML Config"

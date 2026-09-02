@@ -8,7 +8,7 @@ msgstr ""
 "Language: cs\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2026-09-02 19:06\n"
+"PO-Revision-Date: 2026-09-02 21:43\n"
 "Last-Translator: \n"
 "Language-Team: Czech\n"
 "Plural-Forms: nplurals=4; plural=(n==1) ? 0 : (n>=2 && n<=4) ? 1 : 3;\n"
@@ -48,7 +48,7 @@ msgstr "{count, plural, one {{countString} minuta} few {{countString} minuty} ma
 
 #: src/components/routes/system/charts/disk-charts.tsx
 msgid "{diskName} I/O"
-msgstr ""
+msgstr "I/O {diskName}"
 
 #: src/components/routes/system/info-bar.tsx
 msgid "{threads, plural, one {# thread} other {# threads}}"
@@ -199,7 +199,7 @@ msgstr "Automatická kopie vyžaduje zabezpečený kontext."
 #: src/components/routes/system/zfs-table.tsx
 msgctxt "Disk space available"
 msgid "Available"
-msgstr ""
+msgstr "Dostupné"
 
 #: src/components/routes/system/chart-card.tsx
 msgid "Average"
@@ -393,7 +393,7 @@ msgstr "Zkontrolujte službu upozornění"
 
 #: src/components/routes/system/zfs-table.tsx
 msgid "Checksum errors"
-msgstr ""
+msgstr "Chyby kontrolního součtu"
 
 #: src/components/containers-table/containers-table.tsx
 #: src/components/routes/system/smart-table.tsx
@@ -413,7 +413,7 @@ msgstr "Klikněte na zařízení pro zobrazení dalších informací."
 
 #: src/components/routes/system/zfs-table.tsx
 msgid "Click on a pool to view vdev and dataset details."
-msgstr ""
+msgstr "Kliknutím na fond zobrazíte podrobnosti o vdev a datových sadách."
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Click on a system to view more information."
@@ -582,11 +582,11 @@ msgstr "Kritické (%)"
 
 #: src/components/routes/system/disk-io-sheet.tsx
 msgid "Cumulative data read since boot"
-msgstr ""
+msgstr "Kumulativní data přečtená od spuštění"
 
 #: src/components/routes/system/disk-io-sheet.tsx
 msgid "Cumulative data written since boot"
-msgstr ""
+msgstr "Kumulativní data zapsaná od spuštění"
 
 #: src/components/routes/system/network-sheet.tsx
 msgid "Cumulative Download"
@@ -594,7 +594,7 @@ msgstr "Kumulativní stažení"
 
 #: src/components/routes/system/disk-io-sheet.tsx
 msgid "Cumulative Read"
-msgstr ""
+msgstr "Kumulativní čtení"
 
 #: src/components/routes/system/network-sheet.tsx
 msgid "Cumulative Upload"
@@ -602,7 +602,7 @@ msgstr "Kumulativní odeslání"
 
 #: src/components/routes/system/disk-io-sheet.tsx
 msgid "Cumulative Write"
-msgstr ""
+msgstr "Kumulativní zápis"
 
 #. Context: Battery state
 #. Context: Battery state
@@ -838,7 +838,7 @@ msgstr "Neúspěšné atributy:"
 
 #: src/lib/alerts.ts
 msgid "Failed Services"
-msgstr ""
+msgstr "Selhané služby"
 
 #: src/lib/api.ts
 msgid "Failed to authenticate"
@@ -902,7 +902,7 @@ msgstr "Zapomněli jste heslo?"
 #: src/components/routes/system/zfs-table.tsx
 msgctxt "Free space"
 msgid "Free"
-msgstr ""
+msgstr "Volné"
 
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
@@ -1148,7 +1148,7 @@ msgstr ""
 
 #: src/components/routes/system/zfs-table.tsx
 msgid "Mountpoint"
-msgstr ""
+msgstr "Bod připojení"
 
 #: src/components/add-system.tsx
 #: src/components/alerts-history-columns.tsx
@@ -1187,7 +1187,7 @@ msgstr "Ne"
 
 #: src/components/routes/system/zfs-table.tsx
 msgid "No detail data for this pool."
-msgstr ""
+msgstr "Pro tento fond nejsou k dispozici podrobné údaje."
 
 #: src/components/command-palette.tsx
 #: src/components/systemd-table/systemd-table.tsx
@@ -1214,7 +1214,7 @@ msgstr "Nenalezeny žádné systémy."
 
 #: src/components/routes/system/zfs-table.tsx
 msgid "None"
-msgstr ""
+msgstr "Žádné"
 
 #: src/components/command-palette.tsx
 #: src/components/routes/settings/layout.tsx
@@ -1224,7 +1224,7 @@ msgstr "Upozornění"
 
 #: src/lib/alerts.ts
 msgid "Notifications may include recent container log excerpts."
-msgstr ""
+msgstr "Oznámení mohou obsahovat nedávné výňatky z protokolů kontejnerů."
 
 #: src/components/login/auth-form.tsx
 msgid "OAuth 2 / OIDC support"
@@ -1236,11 +1236,11 @@ msgstr "Při každém restartu budou systémy v databázi aktualizovány tak, ab
 
 #: src/lib/alerts.ts
 msgid "One or more containers are unhealthy"
-msgstr ""
+msgstr "Jeden nebo více kontejnerů není v pořádku"
 
 #: src/lib/alerts.ts
 msgid "One or more services are in a failed state"
-msgstr ""
+msgstr "Jedna nebo více služeb je ve stavu selhání"
 
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/quiet-hours.tsx
@@ -1381,11 +1381,11 @@ msgstr "Přihlaste se prosím k vašemu účtu"
 
 #: src/components/routes/system/zfs-table.tsx
 msgid "Pool Health"
-msgstr ""
+msgstr "Stav fondu"
 
 #: src/components/routes/system/charts/zfs-charts.tsx
 msgid "Pool Usage"
-msgstr ""
+msgstr "Využití fondu"
 
 #: src/components/add-system.tsx
 msgid "Port"
@@ -1445,7 +1445,7 @@ msgstr "Číst"
 
 #: src/components/routes/system/zfs-table.tsx
 msgid "Read errors"
-msgstr ""
+msgstr "Chyby čtení"
 
 #: src/components/routes/system/charts/network-charts.tsx
 msgid "Received"
@@ -1774,7 +1774,7 @@ msgstr "Propustnost {extraFsName}"
 
 #: src/components/routes/system/charts/zfs-charts.tsx
 msgid "Throughput of ZFS pool {poolName}"
-msgstr ""
+msgstr "Propustnost fondu ZFS {poolName}"
 
 #: src/components/routes/settings/general.tsx
 msgid "Time format"
@@ -1848,7 +1848,7 @@ msgstr "Spustí se, když využití paměti během 5 minut překročí prahovou 
 
 #: src/lib/alerts.ts
 msgid "Triggers when a container's health check reports unhealthy"
-msgstr ""
+msgstr "Spustí se, když kontrola stavu kontejneru oznámí nezdravý stav"
 
 #: src/lib/alerts.ts
 msgid "Triggers when any sensor exceeds a threshold"
@@ -1856,7 +1856,7 @@ msgstr "Spustí se, když některý senzor překročí prahovou hodnotu"
 
 #: src/lib/alerts.ts
 msgid "Triggers when any systemd service enters the failed state"
-msgstr ""
+msgstr "Spustí se, když některá služba systemd přejde do stavu selhání"
 
 #: src/lib/alerts.ts
 msgid "Triggers when battery charge drops below a threshold"
@@ -1975,7 +1975,7 @@ msgstr "Využití"
 
 #: src/components/routes/system/charts/zfs-charts.tsx
 msgid "Usage of ZFS pool {poolName}"
-msgstr ""
+msgstr "Využití fondu ZFS {poolName}"
 
 #: src/components/routes/system/charts/memory-charts.tsx
 #: src/components/routes/system/charts/memory-charts.tsx
@@ -2068,7 +2068,7 @@ msgstr "Psát"
 
 #: src/components/routes/system/zfs-table.tsx
 msgid "Write errors"
-msgstr ""
+msgstr "Chyby zápisu"
 
 #: src/components/routes/settings/layout.tsx
 msgid "YAML Config"
