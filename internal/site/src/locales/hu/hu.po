@@ -8,7 +8,7 @@ msgstr ""
 "Language: hu\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2026-08-18 17:52\n"
+"PO-Revision-Date: 2026-09-02 00:08\n"
 "Last-Translator: \n"
 "Language-Team: Hungarian\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
@@ -507,9 +507,17 @@ msgstr "CPU"
 msgid "CPU Cores"
 msgstr "CPU magok"
 
+#: src/lib/alerts.ts
+msgid "CPU I/O Wait"
+msgstr "CPU I/O-várakozási idő (IOWait)"
+
 #: src/components/systemd-table/systemd-table-columns.tsx
 msgid "CPU Peak"
 msgstr "CPU csúcs"
+
+#: src/lib/alerts.ts
+msgid "CPU Steal Time"
+msgstr "A hipervizor által elvett CPU-idő (Steal)"
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "CPU time"
@@ -1754,6 +1762,14 @@ msgid "Triggers when combined up/down exceeds a threshold"
 msgstr "Riaszt, ha a sávszélesség-használat túllép egy küszöbértéket"
 
 #: src/lib/alerts.ts
+msgid "Triggers when CPU I/O wait exceeds a threshold"
+msgstr "Akkor aktiválódik, ha a CPU I/O-várakozási ideje meghaladja a küszöbértéket"
+
+#: src/lib/alerts.ts
+msgid "Triggers when CPU steal time exceeds a threshold"
+msgstr "Akkor aktiválódik, ha a CPU steal ideje meghaladja a küszöbértéket"
+
+#: src/lib/alerts.ts
 msgid "Triggers when CPU usage exceeds a threshold"
 msgstr "Riaszt, ha a CPU használat túllép egy küszöbértéket"
 
@@ -1948,3 +1964,4 @@ msgstr "Igen"
 #: src/components/routes/settings/layout.tsx
 msgid "Your user settings have been updated."
 msgstr "A felhasználói beállítások frissítésre kerültek."
+
