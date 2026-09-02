@@ -8,7 +8,7 @@ msgstr ""
 "Language: id\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2026-09-02 00:08\n"
+"PO-Revision-Date: 2026-09-02 17:42\n"
 "Last-Translator: \n"
 "Language-Team: Indonesian\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
@@ -423,6 +423,14 @@ msgstr "Konflik"
 #: src/components/active-alerts.tsx
 msgid "Connection is down"
 msgstr "Koneksi terputus"
+
+#: src/lib/alerts.ts
+msgid "Container"
+msgstr "Kontainer"
+
+#: src/lib/alerts.ts
+msgid "Container Health"
+msgstr "Kesehatan Kontainer"
 
 #: src/components/routes/system.tsx
 msgid "Containers"
@@ -1750,6 +1758,10 @@ msgid "Triggers when 5 minute load average exceeds a threshold"
 msgstr "Dipicu ketika rata-rata beban 5 menit melebihi ambang batas"
 
 #: src/lib/alerts.ts
+msgid "Triggers when a Docker container's health check reports unhealthy"
+msgstr "Dipicu ketika pemeriksaan kesehatan (health check) kontainer Docker melaporkan kondisi tidak sehat"
+
+#: src/lib/alerts.ts
 msgid "Triggers when any sensor exceeds a threshold"
 msgstr "Dipicu ketika sensor apa pun melebihi ambang batas"
 
@@ -1794,6 +1806,10 @@ msgstr "Dipicu ketika penggunaan disk apa pun melebihi ambang batas"
 #: src/components/routes/system/smart-table.tsx
 msgid "Type"
 msgstr "Tipe"
+
+#: src/lib/alerts.ts
+msgid "Unhealthy"
+msgstr "Tidak sehat"
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Unit file"
