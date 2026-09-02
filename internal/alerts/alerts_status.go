@@ -15,7 +15,7 @@ type alertInfo struct {
 	timer      *time.Timer
 }
 
-// Stop cancels all pending status and container alert timers.
+// Stop cancels all pending status alert timers.
 func (am *AlertManager) Stop() {
 	am.stopOnce.Do(func() {
 		am.pendingAlerts.Range(func(key, value any) bool {
@@ -24,18 +24,6 @@ func (am *AlertManager) Stop() {
 				info.timer.Stop()
 			}
 			am.pendingAlerts.Delete(key)
-			return true
-		})
-		am.pendingContainerAlerts.Range(func(key, value any) bool {
-			if p, ok := value.(*pendingContainerAlert); ok {
-				p.mu.Lock()
-				timer := p.timer
-				p.mu.Unlock()
-				if timer != nil {
-					timer.Stop()
-				}
-			}
-			am.pendingContainerAlerts.Delete(key)
 			return true
 		})
 	})

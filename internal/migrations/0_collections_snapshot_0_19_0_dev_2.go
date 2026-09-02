@@ -117,6 +117,17 @@ func init() {
 				"type": "bool"
 			},
 			{
+				"hidden": true,
+				"id": "date1302749137",
+				"max": "",
+				"min": "",
+				"name": "pending_since",
+				"presentable": false,
+				"required": false,
+				"system": false,
+				"type": "date"
+			},
+			{
 				"hidden": false,
 				"id": "autodate2990389176",
 				"name": "created",

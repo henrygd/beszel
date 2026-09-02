@@ -23,7 +23,6 @@ type AlertManager struct {
 	hub                    hubLike
 	stopOnce               sync.Once
 	pendingAlerts          sync.Map
-	pendingContainerAlerts sync.Map
 	alertsCache            *AlertsCache
 }
 

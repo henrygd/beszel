@@ -78,6 +78,13 @@ func (f *containerAlertTestFixture) assertTriggered(t *testing.T, triggered bool
 	assert.Equal(t, triggered, alertRecord.GetBool("triggered"), message)
 }
 
+func (f *containerAlertTestFixture) assertPending(t *testing.T, pending bool) {
+	t.Helper()
+	alertRecord, err := f.hub.FindRecordById("alerts", f.alertID)
+	require.NoError(t, err)
+	assert.Equal(t, pending, !alertRecord.GetDateTime("pending_since").Time().IsZero())
+}
+
 func waitForContainerAlert(d time.Duration) {
 	time.Sleep(d)
 	synctest.Wait()
@@ -97,17 +104,16 @@ func TestContainerHealthAlertTriggersAndResolves(t *testing.T) {
 
 	synctest.Test(t, func(t *testing.T) {
 		fixture.submit(t, []*container.Stats{unhealthyContainer("web")}, nil)
-		waitForContainerAlert(time.Minute + time.Second)
 
-		fixture.assertTriggered(t, true, "Alert should be triggered once a container is unhealthy past the min delay")
+		fixture.assertTriggered(t, true, "A one-minute alert should trigger on the first unhealthy update")
 		require.Equal(t, 1, fixture.hub.TestMailer.TotalSend(), "An email should have been sent")
 
 		msg := fixture.hub.TestMailer.LastMessage()
 		assert.Contains(t, msg.Subject, "web", "Subject should name the unhealthy container")
-		assert.Contains(t, msg.Subject, "unhealthy")
+		assert.Contains(t, strings.ToLower(msg.Subject), "unhealthy")
 
 		fixture.submit(t, []*container.Stats{unhealthyContainer("web")}, nil)
-		assert.Equal(t, 0, fixture.am.GetPendingContainerAlertsCount(), "A triggered alert should not schedule another timer")
+		fixture.assertPending(t, false)
 
 		fixture.submitInvalid(t)
 		fixture.assertTriggered(t, true, "An invalid container snapshot should not resolve the alert")
@@ -118,7 +124,7 @@ func TestContainerHealthAlertTriggersAndResolves(t *testing.T) {
 
 		fixture.assertTriggered(t, false, "Alert should resolve once the container is healthy again")
 		assert.Equal(t, 2, fixture.hub.TestMailer.TotalSend(), "A second email should have been sent for the recovery")
-		assert.Contains(t, fixture.hub.TestMailer.LastMessage().Subject, "healthy again")
+		assert.Contains(t, fixture.hub.TestMailer.LastMessage().Subject, " healthy")
 	})
 }
 
@@ -128,12 +134,15 @@ func TestContainerHealthAlertInvalidSnapshotCancelsPending(t *testing.T) {
 
 	synctest.Test(t, func(t *testing.T) {
 		fixture.submit(t, []*container.Stats{unhealthyContainer("db")}, nil)
+		fixture.assertPending(t, true)
 		waitForContainerAlert(time.Minute)
 		fixture.submitInvalid(t)
+		fixture.assertPending(t, false)
 		waitForContainerAlert(10 * time.Minute)
+		fixture.submit(t, []*container.Stats{unhealthyContainer("db")}, nil)
 
 		fixture.assertTriggered(t, false, "Stale unhealthy data should not trigger an alert")
-		assert.Equal(t, 0, fixture.am.GetPendingContainerAlertsCount())
+		fixture.assertPending(t, true)
 		assert.Equal(t, 0, fixture.hub.TestMailer.TotalSend())
 	})
 }
@@ -150,12 +159,12 @@ func TestContainerHealthAlertSystemDownCancelsPending(t *testing.T) {
 		&system.CombinedData{Containers: []*container.Stats{unhealthyContainer("db")}},
 		nil,
 	))
-	require.Equal(t, 1, am.GetPendingContainerAlertsCount(), "alert should be pending")
+	fixture.assertPending(t, true)
 
 	fixture.systemRecord.Set("status", "down")
 	require.NoError(t, fixture.hub.Save(fixture.systemRecord))
 
-	assert.Zero(t, am.GetPendingContainerAlertsCount(), "system going down should cancel pending container alerts")
+	fixture.assertPending(t, false)
 }
 
 func TestContainerHealthAlertResolvesBeforeMinDelayCancelsPending(t *testing.T) {
@@ -167,16 +176,74 @@ func TestContainerHealthAlertResolvesBeforeMinDelayCancelsPending(t *testing.T) 
 		waitForContainerAlert(time.Minute)
 
 		fixture.assertTriggered(t, false, "Alert should not fire until the min delay elapses")
-		assert.Equal(t, 1, fixture.am.GetPendingContainerAlertsCount(), "Alert should be pending")
+		fixture.assertPending(t, true)
 		assert.Equal(t, 0, fixture.hub.TestMailer.TotalSend())
 
 		// container recovers before the 5 minute delay elapses
 		fixture.submit(t, []*container.Stats{healthyContainer("db")}, nil)
 		waitForContainerAlert(10 * time.Minute)
+		fixture.submit(t, []*container.Stats{healthyContainer("db")}, nil)
 
 		fixture.assertTriggered(t, false, "Alert should remain untriggered")
-		assert.Equal(t, 0, fixture.am.GetPendingContainerAlertsCount(), "Pending alert should have been cancelled")
+		fixture.assertPending(t, false)
 		assert.Equal(t, 0, fixture.hub.TestMailer.TotalSend(), "No email should be sent for a container that recovered before the delay")
+	})
+}
+
+func TestContainerHealthAlertPreservesPendingDurationAcrossManagerRestart(t *testing.T) {
+	fixture := newContainerAlertTestFixture(t, 2)
+	defer fixture.cleanup()
+
+	synctest.Test(t, func(t *testing.T) {
+		fixture.submit(t, []*container.Stats{unhealthyContainer("db")}, nil)
+		waitForContainerAlert(30 * time.Second)
+
+		restarted := alerts.NewTestAlertManagerWithoutWorker(fixture.hub)
+		waitForContainerAlert(91 * time.Second)
+		require.NoError(t, restarted.HandleContainerAlerts(
+			fixture.systemRecord,
+			&system.CombinedData{Containers: []*container.Stats{unhealthyContainer("db")}},
+			nil,
+		))
+
+		fixture.assertTriggered(t, true, "Restart should preserve the original unhealthy start time")
+		fixture.assertPending(t, false)
+		assert.Equal(t, 1, fixture.hub.TestMailer.TotalSend())
+	})
+}
+
+func TestContainerHealthAlertClaimsPendingTimestampAtDatabasePrecision(t *testing.T) {
+	fixture := newContainerAlertTestFixture(t, 1)
+	defer fixture.cleanup()
+
+	alertRecord, err := fixture.hub.FindRecordById("alerts", fixture.alertID)
+	require.NoError(t, err)
+	// PocketBase persists dates to milliseconds, while record update hooks can
+	// retain the original sub-millisecond value in the in-memory alert cache.
+	alertRecord.Set("pending_since", time.Now().UTC().Add(-2*time.Minute).Truncate(time.Millisecond).Add(123*time.Nanosecond))
+	require.NoError(t, fixture.hub.Save(alertRecord))
+
+	fixture.submit(t, []*container.Stats{unhealthyContainer("db")}, nil)
+
+	fixture.assertTriggered(t, true, "Equivalent persisted and cached timestamps should claim the alert")
+	fixture.assertPending(t, false)
+	assert.Equal(t, 1, fixture.hub.TestMailer.TotalSend())
+}
+
+func TestContainerHealthAlertRecoveryWhileFetchingLogsCancelsDelivery(t *testing.T) {
+	fixture := newContainerAlertTestFixture(t, 1)
+	defer fixture.cleanup()
+
+	synctest.Test(t, func(t *testing.T) {
+		fetchLogs := func(containerID string) (string, error) {
+			fixture.submit(t, []*container.Stats{healthyContainer("api")}, nil)
+			return "FATAL stale failure", nil
+		}
+		fixture.submit(t, []*container.Stats{unhealthyContainer("api")}, fetchLogs)
+
+		fixture.assertTriggered(t, false, "Recovery should cancel delivery while logs are fetched")
+		fixture.assertPending(t, false)
+		assert.Equal(t, 0, fixture.hub.TestMailer.TotalSend())
 	})
 }
 
@@ -196,7 +263,6 @@ func TestContainerHealthAlertIncludesLogExcerpt(t *testing.T) {
 
 	synctest.Test(t, func(t *testing.T) {
 		fixture.submit(t, []*container.Stats{unhealthyContainer("api")}, fetchLogs)
-		waitForContainerAlert(time.Minute + time.Second)
 
 		fixture.assertTriggered(t, true, "Alert should be triggered")
 		require.Equal(t, 1, fixture.hub.TestMailer.TotalSend())
@@ -218,7 +284,6 @@ func TestContainerHealthAlertSkipsLogsOnFetchError(t *testing.T) {
 
 	synctest.Test(t, func(t *testing.T) {
 		fixture.submit(t, []*container.Stats{unhealthyContainer("api")}, fetchLogs)
-		waitForContainerAlert(time.Minute + time.Second)
 
 		fixture.assertTriggered(t, true, "Alert should still be triggered even if logs can't be fetched")
 		require.Equal(t, 1, fixture.hub.TestMailer.TotalSend())
@@ -245,7 +310,6 @@ func TestContainerHealthAlertCapsLogFetchAttempts(t *testing.T) {
 
 	synctest.Test(t, func(t *testing.T) {
 		fixture.submit(t, containers, fetchLogs)
-		waitForContainerAlert(time.Minute + time.Second)
 
 		fixture.assertTriggered(t, true, "Alert should still fire when log retrieval fails")
 		assert.Equal(t, 2, attempts, "Log retrieval should attempt at most two containers")

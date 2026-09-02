@@ -108,12 +108,3 @@ func IsInternalURL(rawURL string) (bool, error) {
 func BuildContainerLogExcerpt(raw string) string {
 	return buildContainerLogExcerpt(raw)
 }
-
-func (am *AlertManager) GetPendingContainerAlertsCount() int {
-	count := 0
-	am.pendingContainerAlerts.Range(func(key, value any) bool {
-		count++
-		return true
-	})
-	return count
-}
