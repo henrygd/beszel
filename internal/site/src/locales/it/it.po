@@ -8,7 +8,7 @@ msgstr ""
 "Language: it\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2026-09-02 19:06\n"
+"PO-Revision-Date: 2026-09-02 21:43\n"
 "Last-Translator: \n"
 "Language-Team: Italian\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
@@ -48,7 +48,7 @@ msgstr "{count, plural, one {{countString} minuto} other {{countString} minuti}}
 
 #: src/components/routes/system/charts/disk-charts.tsx
 msgid "{diskName} I/O"
-msgstr ""
+msgstr "I/O di {diskName}"
 
 #: src/components/routes/system/info-bar.tsx
 msgid "{threads, plural, one {# thread} other {# threads}}"
@@ -199,7 +199,7 @@ msgstr "La copia automatica richiede un contesto sicuro."
 #: src/components/routes/system/zfs-table.tsx
 msgctxt "Disk space available"
 msgid "Available"
-msgstr ""
+msgstr "Disponibile"
 
 #: src/components/routes/system/chart-card.tsx
 msgid "Average"
@@ -393,7 +393,7 @@ msgstr "Controlla il tuo servizio di notifica"
 
 #: src/components/routes/system/zfs-table.tsx
 msgid "Checksum errors"
-msgstr ""
+msgstr "Errori di checksum"
 
 #: src/components/containers-table/containers-table.tsx
 #: src/components/routes/system/smart-table.tsx
@@ -413,7 +413,7 @@ msgstr "Fare clic su un dispositivo per visualizzare più informazioni."
 
 #: src/components/routes/system/zfs-table.tsx
 msgid "Click on a pool to view vdev and dataset details."
-msgstr ""
+msgstr "Fai clic su un pool per visualizzare i dettagli di vdev e dataset."
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Click on a system to view more information."
@@ -582,11 +582,11 @@ msgstr "Critico (%)"
 
 #: src/components/routes/system/disk-io-sheet.tsx
 msgid "Cumulative data read since boot"
-msgstr ""
+msgstr "Dati totali letti dall'avvio"
 
 #: src/components/routes/system/disk-io-sheet.tsx
 msgid "Cumulative data written since boot"
-msgstr ""
+msgstr "Dati totali scritti dall'avvio"
 
 #: src/components/routes/system/network-sheet.tsx
 msgid "Cumulative Download"
@@ -594,7 +594,7 @@ msgstr "Download cumulativo"
 
 #: src/components/routes/system/disk-io-sheet.tsx
 msgid "Cumulative Read"
-msgstr ""
+msgstr "Lettura totale"
 
 #: src/components/routes/system/network-sheet.tsx
 msgid "Cumulative Upload"
@@ -602,7 +602,7 @@ msgstr "Upload cumulativo"
 
 #: src/components/routes/system/disk-io-sheet.tsx
 msgid "Cumulative Write"
-msgstr ""
+msgstr "Scrittura totale"
 
 #. Context: Battery state
 #. Context: Battery state
@@ -838,7 +838,7 @@ msgstr "Attributi falliti:"
 
 #: src/lib/alerts.ts
 msgid "Failed Services"
-msgstr ""
+msgstr "Servizi non riusciti"
 
 #: src/lib/api.ts
 msgid "Failed to authenticate"
@@ -902,7 +902,7 @@ msgstr "Password dimenticata?"
 #: src/components/routes/system/zfs-table.tsx
 msgctxt "Free space"
 msgid "Free"
-msgstr ""
+msgstr "Libero"
 
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
@@ -1148,7 +1148,7 @@ msgstr "Modello"
 
 #: src/components/routes/system/zfs-table.tsx
 msgid "Mountpoint"
-msgstr ""
+msgstr "Punto di montaggio"
 
 #: src/components/add-system.tsx
 #: src/components/alerts-history-columns.tsx
@@ -1187,7 +1187,7 @@ msgstr "No"
 
 #: src/components/routes/system/zfs-table.tsx
 msgid "No detail data for this pool."
-msgstr ""
+msgstr "Nessun dato dettagliato disponibile per questo pool."
 
 #: src/components/command-palette.tsx
 #: src/components/systemd-table/systemd-table.tsx
@@ -1214,7 +1214,7 @@ msgstr "Nessun sistema trovato."
 
 #: src/components/routes/system/zfs-table.tsx
 msgid "None"
-msgstr ""
+msgstr "Nessuno"
 
 #: src/components/command-palette.tsx
 #: src/components/routes/settings/layout.tsx
@@ -1224,7 +1224,7 @@ msgstr "Notifiche"
 
 #: src/lib/alerts.ts
 msgid "Notifications may include recent container log excerpts."
-msgstr ""
+msgstr "Le notifiche possono includere estratti recenti dai log dei container."
 
 #: src/components/login/auth-form.tsx
 msgid "OAuth 2 / OIDC support"
@@ -1236,11 +1236,11 @@ msgstr "Ad ogni riavvio, i sistemi nel database verranno aggiornati per corrispo
 
 #: src/lib/alerts.ts
 msgid "One or more containers are unhealthy"
-msgstr ""
+msgstr "Uno o più container non sono integri"
 
 #: src/lib/alerts.ts
 msgid "One or more services are in a failed state"
-msgstr ""
+msgstr "Uno o più servizi sono in stato di errore"
 
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/quiet-hours.tsx
@@ -1381,11 +1381,11 @@ msgstr "Si prega di accedere al proprio account"
 
 #: src/components/routes/system/zfs-table.tsx
 msgid "Pool Health"
-msgstr ""
+msgstr "Stato del pool"
 
 #: src/components/routes/system/charts/zfs-charts.tsx
 msgid "Pool Usage"
-msgstr ""
+msgstr "Utilizzo del pool"
 
 #: src/components/add-system.tsx
 msgid "Port"
@@ -1445,7 +1445,7 @@ msgstr "Lettura"
 
 #: src/components/routes/system/zfs-table.tsx
 msgid "Read errors"
-msgstr ""
+msgstr "Errori di lettura"
 
 #: src/components/routes/system/charts/network-charts.tsx
 msgid "Received"
@@ -1774,7 +1774,7 @@ msgstr "Throughput di {extraFsName}"
 
 #: src/components/routes/system/charts/zfs-charts.tsx
 msgid "Throughput of ZFS pool {poolName}"
-msgstr ""
+msgstr "Throughput del pool ZFS {poolName}"
 
 #: src/components/routes/settings/general.tsx
 msgid "Time format"
@@ -1848,7 +1848,7 @@ msgstr "Si attiva quando la media di carico di 5 minuti supera una soglia"
 
 #: src/lib/alerts.ts
 msgid "Triggers when a container's health check reports unhealthy"
-msgstr ""
+msgstr "Si attiva quando il controllo di integrità di un container segnala uno stato non integro"
 
 #: src/lib/alerts.ts
 msgid "Triggers when any sensor exceeds a threshold"
@@ -1856,7 +1856,7 @@ msgstr "Attiva quando un sensore supera una soglia"
 
 #: src/lib/alerts.ts
 msgid "Triggers when any systemd service enters the failed state"
-msgstr ""
+msgstr "Si attiva quando un servizio systemd entra in stato di errore"
 
 #: src/lib/alerts.ts
 msgid "Triggers when battery charge drops below a threshold"
@@ -1975,7 +1975,7 @@ msgstr "Utilizzo"
 
 #: src/components/routes/system/charts/zfs-charts.tsx
 msgid "Usage of ZFS pool {poolName}"
-msgstr ""
+msgstr "Utilizzo del pool ZFS {poolName}"
 
 #: src/components/routes/system/charts/memory-charts.tsx
 #: src/components/routes/system/charts/memory-charts.tsx
@@ -2068,7 +2068,7 @@ msgstr "Scrittura"
 
 #: src/components/routes/system/zfs-table.tsx
 msgid "Write errors"
-msgstr ""
+msgstr "Errori di scrittura"
 
 #: src/components/routes/settings/layout.tsx
 msgid "YAML Config"
