@@ -59,7 +59,9 @@ export const ActiveAlerts = () => {
 											{systems[alert.system]?.name} {info.name()}
 										</AlertTitle>
 										<AlertDescription>
-											{alert.name === "Status" ? (
+											{info.triggeredDesc ? (
+												info.triggeredDesc()
+											) : alert.name === "Status" ? (
 												<Trans>Connection is down</Trans>
 											) : info.invert ? (
 												<Trans>

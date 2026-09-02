@@ -129,6 +129,9 @@ func (am *AlertManager) bindEvents() {
 		if err := resolveStatusAlerts(e.App); err != nil {
 			e.App.Logger().Error("Failed to resolve stale status alerts", "err", err)
 		}
+		if err := resolveSystemdAlerts(e.App); err != nil {
+			e.App.Logger().Error("Failed to resolve stale systemd alerts", "err", err)
+		}
 		if err := am.restorePendingStatusAlerts(); err != nil {
 			e.App.Logger().Error("Failed to restore pending status alerts", "err", err)
 		}

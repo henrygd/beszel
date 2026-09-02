@@ -204,4 +204,7 @@ type CombinedData struct {
 	Containers      []*container.Stats `json:"container" cbor:"2,keyasint"`
 	SystemdServices []*systemd.Service `json:"systemd,omitempty" cbor:"3,keyasint,omitempty"`
 	Details         *Details           `cbor:"4,keyasint,omitempty"`
+	// SystemdServicesUpdated distinguishes a fresh empty snapshot from a response
+	// that omitted systemd data (for example, a short-cache dashboard request).
+	SystemdServicesUpdated bool `json:"systemdUpdated,omitempty" cbor:"5,keyasint,omitempty"`
 }

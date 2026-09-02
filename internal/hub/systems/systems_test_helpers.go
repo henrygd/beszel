@@ -7,6 +7,7 @@ import (
 	"fmt"
 
 	entities "github.com/henrygd/beszel/internal/entities/system"
+	"github.com/henrygd/beszel/internal/entities/systemd"
 	"github.com/pocketbase/pocketbase/core"
 )
 
@@ -133,4 +134,8 @@ func (s *System) StopUpdater() {
 func (s *System) CreateRecords(data *entities.CombinedData) (*core.Record, error) {
 	s.data = data
 	return s.createRecords(data)
+}
+
+func CreateSystemdStatsRecords(app core.App, data []*systemd.Service, systemId string) error {
+	return createSystemdStatsRecords(app, data, systemId)
 }

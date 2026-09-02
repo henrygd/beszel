@@ -63,3 +63,25 @@ func TestStatsLegacyBatteryPayload(t *testing.T) {
 	assert.Contains(t, payload, "bat")
 	assert.NotContains(t, payload, "bats")
 }
+
+func TestCombinedDataSystemdUpdateMarkerTransport(t *testing.T) {
+	data := CombinedData{SystemdServicesUpdated: true}
+
+	jsonData, err := json.Marshal(data)
+	require.NoError(t, err)
+	var decodedJSON CombinedData
+	require.NoError(t, json.Unmarshal(jsonData, &decodedJSON))
+	assert.True(t, decodedJSON.SystemdServicesUpdated)
+	assert.Empty(t, decodedJSON.SystemdServices)
+
+	cborData, err := cbor.Marshal(data)
+	require.NoError(t, err)
+	var decodedCBOR CombinedData
+	require.NoError(t, cbor.Unmarshal(cborData, &decodedCBOR))
+	assert.True(t, decodedCBOR.SystemdServicesUpdated)
+	assert.Empty(t, decodedCBOR.SystemdServices)
+
+	var legacy CombinedData
+	require.NoError(t, json.Unmarshal([]byte(`{"stats":{},"info":{},"container":[]}`), &legacy))
+	assert.False(t, legacy.SystemdServicesUpdated)
+}

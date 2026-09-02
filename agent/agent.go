@@ -201,6 +201,12 @@ func (a *Agent) gatherStats(options common.DataRequestOptions) *system.CombinedD
 		}
 		if a.systemdManager.hasFreshStats {
 			data.SystemdServices = a.systemdManager.getServiceStats(nil, false)
+			data.SystemdServicesUpdated = true
+			// Preserve an explicit zero count so the hub can distinguish a fresh
+			// empty snapshot from a response that omitted systemd data.
+			if totalCount == 0 {
+				data.Info.Services = []uint16{0, 0}
+			}
 		}
 	}
 
