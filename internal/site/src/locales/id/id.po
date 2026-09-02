@@ -8,7 +8,7 @@ msgstr ""
 "Language: id\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2026-08-18 17:52\n"
+"PO-Revision-Date: 2026-09-02 00:08\n"
 "Last-Translator: \n"
 "Language-Team: Indonesian\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
@@ -507,9 +507,17 @@ msgstr ""
 msgid "CPU Cores"
 msgstr "Inti CPU"
 
+#: src/lib/alerts.ts
+msgid "CPU I/O Wait"
+msgstr "Waktu tunggu I/O CPU (IOWait)"
+
 #: src/components/systemd-table/systemd-table-columns.tsx
 msgid "CPU Peak"
 msgstr "Puncak CPU"
+
+#: src/lib/alerts.ts
+msgid "CPU Steal Time"
+msgstr "Waktu CPU yang diambil hypervisor (Steal)"
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "CPU time"
@@ -1754,6 +1762,14 @@ msgid "Triggers when combined up/down exceeds a threshold"
 msgstr "Dipicu ketika up atau down melebihi ambang batas"
 
 #: src/lib/alerts.ts
+msgid "Triggers when CPU I/O wait exceeds a threshold"
+msgstr "Terpicu saat waktu tunggu I/O CPU melebihi ambang batas"
+
+#: src/lib/alerts.ts
+msgid "Triggers when CPU steal time exceeds a threshold"
+msgstr "Terpicu saat waktu steal CPU melebihi ambang batas"
+
+#: src/lib/alerts.ts
 msgid "Triggers when CPU usage exceeds a threshold"
 msgstr "Dipicu ketika penggunaan CPU melebihi ambang batas"
 
@@ -1948,3 +1964,4 @@ msgstr "Ya"
 #: src/components/routes/settings/layout.tsx
 msgid "Your user settings have been updated."
 msgstr "Pengaturan pengguna anda telah diperbarui."
+
