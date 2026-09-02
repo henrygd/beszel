@@ -8,7 +8,7 @@ msgstr ""
 "Language: da\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2026-09-02 00:08\n"
+"PO-Revision-Date: 2026-09-02 17:42\n"
 "Last-Translator: \n"
 "Language-Team: Danish\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
@@ -423,6 +423,14 @@ msgstr "Konflikter"
 #: src/components/active-alerts.tsx
 msgid "Connection is down"
 msgstr "Forbindelsen er nede"
+
+#: src/lib/alerts.ts
+msgid "Container"
+msgstr ""
+
+#: src/lib/alerts.ts
+msgid "Container Health"
+msgstr "Container-sundhed"
 
 #: src/components/routes/system.tsx
 msgid "Containers"
@@ -1750,6 +1758,10 @@ msgid "Triggers when 5 minute load average exceeds a threshold"
 msgstr "Udløser når 5 minut belastning gennemsnit overstiger en tærskel"
 
 #: src/lib/alerts.ts
+msgid "Triggers when a Docker container's health check reports unhealthy"
+msgstr "Udløser når en Docker-containers helbredstjek rapporterer usund"
+
+#: src/lib/alerts.ts
 msgid "Triggers when any sensor exceeds a threshold"
 msgstr "Udløser når en sensor overstiger en tærskel"
 
@@ -1794,6 +1806,10 @@ msgstr "Udløser når brugen af en disk overstiger en tærskel"
 #: src/components/routes/system/smart-table.tsx
 msgid "Type"
 msgstr "Type"
+
+#: src/lib/alerts.ts
+msgid "Unhealthy"
+msgstr "Usund"
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Unit file"
