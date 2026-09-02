@@ -138,6 +138,26 @@ func TestContainerHealthAlertInvalidSnapshotCancelsPending(t *testing.T) {
 	})
 }
 
+func TestContainerHealthAlertSystemDownCancelsPending(t *testing.T) {
+	fixture := newContainerAlertTestFixture(t, 5)
+	defer fixture.cleanup()
+
+	// Use the hub's alert manager because the system-manager status hook invokes
+	// cancellation on that instance.
+	am := fixture.hub.GetAlertManager()
+	require.NoError(t, am.HandleContainerAlerts(
+		fixture.systemRecord,
+		&system.CombinedData{Containers: []*container.Stats{unhealthyContainer("db")}},
+		nil,
+	))
+	require.Equal(t, 1, am.GetPendingContainerAlertsCount(), "alert should be pending")
+
+	fixture.systemRecord.Set("status", "down")
+	require.NoError(t, fixture.hub.Save(fixture.systemRecord))
+
+	assert.Zero(t, am.GetPendingContainerAlertsCount(), "system going down should cancel pending container alerts")
+}
+
 func TestContainerHealthAlertResolvesBeforeMinDelayCancelsPending(t *testing.T) {
 	fixture := newContainerAlertTestFixture(t, 5)
 	defer fixture.cleanup()

@@ -191,7 +191,7 @@ func (sm *SystemManager) onRecordUpdate(e *core.RecordEvent) error {
 // - paused: Closes SSH connection and deactivates alerts
 // - pending: Starts monitoring (reuses WebSocket if available)
 // - up: Triggers system alerts
-// - down: Triggers status change alerts
+// - down: Cancels pending container alerts and triggers status change alerts
 func (sm *SystemManager) onRecordAfterUpdateSuccess(e *core.RecordEvent) error {
 	newStatus := e.Record.GetString("status")
 	prevStatus := pending
@@ -223,6 +223,10 @@ func (sm *SystemManager) onRecordAfterUpdateSuccess(e *core.RecordEvent) error {
 		}
 		_ = deactivateAlerts(e.App, e.Record.Id)
 		return e.Next()
+	case down:
+		// Docker state is unknown while the system is unreachable. Do not let a
+		// delayed container-health alert fire from the last received snapshot.
+		sm.hub.CancelPendingContainerAlerts(e.Record.Id)
 	}
 
 	// Handle systems not in manager
