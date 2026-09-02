@@ -112,6 +112,8 @@ export const alertInfo: Record<string, AlertInfo> = {
 		note: () =>
 			t`Notifications may include recent container log excerpts.`,
 		triggeredDesc: () => t`One or more containers are unhealthy`,
+		singleDesc: () => `${t`Container`} ${t`Unhealthy`}`,
+
 	},
 	SystemdFailed: {
 		name: () => t`Failed Services`,
