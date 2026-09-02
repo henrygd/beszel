@@ -8,7 +8,7 @@ msgstr ""
 "Language: nl\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2026-09-02 00:08\n"
+"PO-Revision-Date: 2026-09-02 08:01\n"
 "Last-Translator: \n"
 "Language-Team: Dutch\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
@@ -426,7 +426,7 @@ msgstr "Verbinding is niet actief"
 
 #: src/components/routes/system.tsx
 msgid "Containers"
-msgstr ""
+msgstr "Containers"
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
@@ -474,7 +474,7 @@ msgstr "Kopieer naam"
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Copy public key"
-msgstr ""
+msgstr "Kopieer publieke sleutel"
 
 #: src/components/copy-to-clipboard.tsx
 msgid "Copy text"
@@ -825,7 +825,7 @@ msgstr "Mislukt: {0}"
 
 #: src/components/routes/system/charts/sensor-charts.tsx
 msgid "Fans"
-msgstr ""
+msgstr "Ventilatoren"
 
 #: src/components/containers-table/containers-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
@@ -876,7 +876,7 @@ msgstr "Globaal"
 
 #: src/components/routes/system.tsx
 msgid "GPU"
-msgstr ""
+msgstr "GPU"
 
 #: src/components/routes/system/charts/gpu-charts.tsx
 msgid "GPU Engines"
@@ -901,7 +901,7 @@ msgstr "Gezondheid"
 
 #: src/components/routes/settings/layout.tsx
 msgid "Heartbeat"
-msgstr ""
+msgstr "Heartbeat"
 
 #: src/components/routes/settings/heartbeat.tsx
 msgid "Heartbeat Monitoring"
@@ -964,7 +964,7 @@ msgstr "Inactief"
 
 #: src/components/routes/settings/heartbeat.tsx
 msgid "Interval"
-msgstr ""
+msgstr "Interval"
 
 #: src/components/login/auth-form.tsx
 msgid "Invalid email address."
@@ -1330,7 +1330,7 @@ msgstr "Proces gestart"
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Public key"
-msgstr ""
+msgstr "Publieke sleutel"
 
 #. Use 'Key' if your language requires many more characters
 #: src/components/add-system.tsx
@@ -1574,7 +1574,7 @@ msgstr "Swap gebruik"
 #: src/components/mode-toggle.tsx
 #: src/components/mode-toggle.tsx
 msgid "Switch theme"
-msgstr ""
+msgstr "Wissel thema"
 
 #: src/components/add-system.tsx
 #: src/components/alerts-history-columns.tsx
@@ -1593,7 +1593,7 @@ msgstr "Systeem"
 
 #: src/components/routes/system/charts/sensor-charts.tsx
 msgid "System fan speeds (RPM)"
-msgstr ""
+msgstr "Ventilatorsnelheden van het systeem (RPM)"
 
 #: src/components/routes/system/charts/load-average-chart.tsx
 msgid "System load averages over time"
@@ -1722,7 +1722,7 @@ msgstr "Totaal verzonden gegevens per interface"
 #: src/components/routes/system/disk-io-sheet.tsx
 msgctxt "Disk I/O"
 msgid "Total time spent on read/write (can exceed 100%)"
-msgstr ""
+msgstr "Totale tijd besteed aan lezen/schrijven (kan 100% overschrijden)"
 
 #. placeholder {0}: data.length
 #: src/components/systemd-table/systemd-table.tsx
