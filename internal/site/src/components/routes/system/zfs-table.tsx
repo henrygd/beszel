@@ -85,7 +85,7 @@ const columns: ColumnDef<ZfsPoolRecord>[] = [
 	{
 		accessorKey: "name",
 		sortingFn: (a, b) => a.original.name.localeCompare(b.original.name),
-		header: ({ column }) => <HeaderButton column={column} name={t`Pool`} Icon={HardDriveIcon} />,
+		header: ({ column }) => <HeaderButton column={column} name={`Pool`} Icon={HardDriveIcon} />,
 		cell: ({ getValue }) => <span className="font-medium ms-1.5">{getValue() as string}</span>,
 	},
 	{
@@ -101,7 +101,7 @@ const columns: ColumnDef<ZfsPoolRecord>[] = [
 		id: "size",
 		accessorFn: (record) => record.size,
 		invertSorting: true,
-		header: ({ column }) => <HeaderButton column={column} name={t`Size`} Icon={BinaryIcon} />,
+		header: ({ column }) => <HeaderButton column={column} name={t`Capacity`} Icon={BinaryIcon} />,
 		cell: ({ getValue }) => <span className="ms-1.5 tabular-nums">{formatCapacity(getValue() as number)}</span>,
 	},
 	{
@@ -115,13 +115,13 @@ const columns: ColumnDef<ZfsPoolRecord>[] = [
 		id: "free",
 		accessorFn: (record) => record.free,
 		invertSorting: true,
-		header: ({ column }) => <HeaderButton column={column} name={t`Free`} Icon={HardDriveUploadIcon} />,
+		header: ({ column }) => <HeaderButton column={column} name={t({ message: `Free`, context: "Free space" })} Icon={HardDriveUploadIcon} />,
 		cell: ({ getValue }) => <span className="ms-1.5 tabular-nums">{formatCapacity(getValue() as number)}</span>,
 	},
 	{
 		id: "scrub",
 		accessorFn: (record) => record.scrub?.state ?? "",
-		header: ({ column }) => <HeaderButton column={column} name={t`Scrub`} Icon={RotateCwIcon} />,
+		header: ({ column }) => <HeaderButton column={column} name={`Scrub`} Icon={RotateCwIcon} />,
 		cell: ({ row }) => {
 			const scrub = row.original.scrub
 			if (!scrub?.state) return <span className="ms-1.5 text-muted-foreground">{t`None`}</span>
@@ -155,7 +155,7 @@ function VdevTable({ vdevs }: { vdevs: ZfsVdev[] }) {
 			<Table>
 				<TableHeader>
 					<TableRow>
-						<TableHead>{t`Vdev`}</TableHead>
+						<TableHead>Vdev</TableHead>
 						<TableHead>{t`State`}</TableHead>
 						<TableHead className="text-right">{t`Read errors`}</TableHead>
 						<TableHead className="text-right">{t`Write errors`}</TableHead>
@@ -201,7 +201,7 @@ const datasetColumns: ColumnDef<ZfsDataset>[] = [
 	{
 		accessorKey: "name",
 		sortingFn: (a, b) => a.original.name.localeCompare(b.original.name),
-		header: ({ column }) => <HeaderButton column={column} name={t`Dataset`} Icon={HardDriveIcon} />,
+		header: ({ column }) => <HeaderButton column={column} name={`Dataset`} Icon={HardDriveIcon} />,
 		cell: ({ getValue }) => <span className="font-mono text-xs">{getValue() as string}</span>,
 	},
 	{
@@ -215,7 +215,7 @@ const datasetColumns: ColumnDef<ZfsDataset>[] = [
 		id: "avail",
 		accessorFn: (ds) => ds.avail ?? 0,
 		invertSorting: true,
-		header: ({ column }) => <HeaderButton column={column} name={t`Available`} Icon={HardDriveUploadIcon} />,
+		header: ({ column }) => <HeaderButton column={column} name={t({message:`Available`, context: "Disk space available"})} Icon={HardDriveUploadIcon} />,
 		cell: ({ getValue }) => <span className="text-right tabular-nums">{formatCapacity(getValue() as number)}</span>,
 	},
 	{
@@ -248,12 +248,10 @@ function DatasetTable({ datasets }: { datasets: ZfsDataset[] }) {
 	return (
 		<div>
 			<div className="mb-2 flex items-center justify-between gap-4">
-				<h3 className="text-base font-semibold">
-					<Trans>Datasets</Trans>
-				</h3>
+				<h3 className="text-base font-semibold">Datasets</h3>
 				<div className="relative w-64 max-w-full">
 					<Input
-						placeholder={t`Filter datasets...`}
+						placeholder={t`Filter...`}
 						value={filter}
 						onChange={(e) => setFilter(e.target.value)}
 						className="px-4 w-full"
@@ -347,7 +345,7 @@ function PoolSheet({
 			<SheetContent className="w-full sm:max-w-220 gap-0 overflow-y-auto">
 				<SheetHeader className="mb-0 border-b">
 					<SheetTitle className="flex items-center gap-2">
-						{pool ? pool.name : t`ZFS Pool`}
+						{pool ? pool.name : `ZFS Pool`}
 						{pool && <Badge variant={healthVariantValue}>{health}</Badge>}
 					</SheetTitle>
 					<SheetDescription className="flex flex-wrap items-center gap-x-2 gap-y-1">
@@ -364,7 +362,7 @@ function PoolSheet({
 							<>
 								<Separator orientation="vertical" className="h-2.5 bg-muted-foreground opacity-70" />
 								<span>
-									<Trans>Free</Trans>: {formatCapacity(pool.free)}
+									<Trans context="Free space">Free</Trans>: {formatCapacity(pool.free)}
 								</span>
 							</>
 						) : null}
@@ -385,7 +383,7 @@ function PoolSheet({
 									</AlertTitle>
 									{pool.scrub?.state && (
 										<AlertDescription>
-											<Trans>Scrub</Trans>: {pool.scrub.state}
+											Scrub: {pool.scrub.state}
 											{pool.scrub.progress ? ` (${pool.scrub.progress})` : ""}
 											{pool.scrub.errors ? `, ${pool.scrub.errors} errors` : ""}
 										</AlertDescription>

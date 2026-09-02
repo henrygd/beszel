@@ -46,6 +46,10 @@ msgstr "{count, plural, one {{countString} óra} other {{countString} óra}}"
 msgid "{count, plural, one {{countString} minute} few {{countString} minutes} many {{countString} minutes} other {{countString} minutes}}"
 msgstr "{count, plural, one {{countString} perc} few {{countString} perc} many {{countString} perc} other {{countString} perc}}"
 
+#: src/components/routes/system/charts/disk-charts.tsx
+msgid "{diskName} I/O"
+msgstr ""
+
 #: src/components/routes/system/info-bar.tsx
 msgid "{threads, plural, one {# thread} other {# threads}}"
 msgstr "{threads, plural, one {# szál} other {# szál}}"
@@ -93,6 +97,7 @@ msgstr "5 perc"
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 #: src/components/routes/system/smart-table.tsx
+#: src/components/routes/system/zfs-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Actions"
 msgstr "Műveletek"
@@ -190,6 +195,11 @@ msgstr "Biztos vagy benne?"
 #: src/components/copy-to-clipboard.tsx
 msgid "Automatic copy requires a secure context."
 msgstr "Az automatikus másolás biztonságos környezetet igényel."
+
+#: src/components/routes/system/zfs-table.tsx
+msgctxt "Disk space available"
+msgid "Available"
+msgstr ""
 
 #: src/components/routes/system/chart-card.tsx
 msgid "Average"
@@ -328,6 +338,7 @@ msgid "Capabilities"
 msgstr "Képességek"
 
 #: src/components/routes/system/smart-table.tsx
+#: src/components/routes/system/zfs-table.tsx
 msgid "Capacity"
 msgstr "Kapacitás"
 
@@ -380,8 +391,14 @@ msgstr "Ellenőrizze a megfigyelő szolgáltatást"
 msgid "Check your notification service"
 msgstr "Ellenőrizd az értesítési szolgáltatásodat"
 
+#: src/components/routes/system/zfs-table.tsx
+msgid "Checksum errors"
+msgstr ""
+
 #: src/components/containers-table/containers-table.tsx
 #: src/components/routes/system/smart-table.tsx
+#: src/components/routes/system/zfs-table.tsx
+#: src/components/routes/system/zfs-table.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "Clear"
 msgstr "Törlés"
@@ -393,6 +410,10 @@ msgstr "Kattintson egy konténerre a további információk megtekintéséhez."
 #: src/components/routes/system/smart-table.tsx
 msgid "Click on a device to view more information."
 msgstr "Kattintson egy eszközre további információk megtekintéséhez."
+
+#: src/components/routes/system/zfs-table.tsx
+msgid "Click on a pool to view vdev and dataset details."
+msgstr ""
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Click on a system to view more information."
@@ -559,13 +580,29 @@ msgstr "Létrehozva"
 msgid "Critical (%)"
 msgstr "Kritikus (%)"
 
+#: src/components/routes/system/disk-io-sheet.tsx
+msgid "Cumulative data read since boot"
+msgstr ""
+
+#: src/components/routes/system/disk-io-sheet.tsx
+msgid "Cumulative data written since boot"
+msgstr ""
+
 #: src/components/routes/system/network-sheet.tsx
 msgid "Cumulative Download"
 msgstr "Kumulatív letöltés"
 
+#: src/components/routes/system/disk-io-sheet.tsx
+msgid "Cumulative Read"
+msgstr ""
+
 #: src/components/routes/system/network-sheet.tsx
 msgid "Cumulative Upload"
 msgstr "Kumulatív feltöltés"
+
+#: src/components/routes/system/disk-io-sheet.tsx
+msgid "Cumulative Write"
+msgstr ""
 
 #. Context: Battery state
 #. Context: Battery state
@@ -626,15 +663,10 @@ msgstr "Kisül"
 msgid "Disk"
 msgstr "Lemez"
 
-#: src/components/routes/system/charts/disk-charts.tsx
-msgid "Disk I/O"
-msgstr "Lemez I/O"
-
 #: src/components/routes/settings/general.tsx
 msgid "Disk unit"
 msgstr "Lemez mértékegysége"
 
-#: src/components/routes/system/charts/disk-charts.tsx
 #: src/components/routes/system/charts/disk-charts.tsx
 #: src/lib/alerts.ts
 msgid "Disk Usage"
@@ -804,6 +836,10 @@ msgstr "Sikertelen"
 msgid "Failed Attributes:"
 msgstr "Sikertelen attribútumok:"
 
+#: src/lib/alerts.ts
+msgid "Failed Services"
+msgstr ""
+
 #: src/lib/api.ts
 msgid "Failed to authenticate"
 msgstr "Hitelesítés sikertelen"
@@ -839,6 +875,8 @@ msgstr ""
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/system/chart-card.tsx
 #: src/components/routes/system/smart-table.tsx
+#: src/components/routes/system/zfs-table.tsx
+#: src/components/routes/system/zfs-table.tsx
 #: src/components/systemd-table/systemd-table.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "Filter..."
@@ -859,6 +897,12 @@ msgstr "<0>{min}</0> {min, plural, one {percig} other {percig}}"
 #: src/components/login/auth-form.tsx
 msgid "Forgot password?"
 msgstr "Elfelejtette a jelszavát?"
+
+#: src/components/routes/system/zfs-table.tsx
+#: src/components/routes/system/zfs-table.tsx
+msgctxt "Free space"
+msgid "Free"
+msgstr ""
 
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
@@ -904,6 +948,7 @@ msgid "Grid"
 msgstr "Rács"
 
 #: src/components/containers-table/containers-table-columns.tsx
+#: src/components/routes/system/zfs-table.tsx
 msgid "Health"
 msgstr "Egészség"
 
@@ -1101,6 +1146,10 @@ msgstr "Konténerek memóriahasználata"
 msgid "Model"
 msgstr "Modell"
 
+#: src/components/routes/system/zfs-table.tsx
+msgid "Mountpoint"
+msgstr ""
+
 #: src/components/add-system.tsx
 #: src/components/alerts-history-columns.tsx
 #: src/components/containers-table/containers-table-columns.tsx
@@ -1136,6 +1185,10 @@ msgstr "Sávszélesség mértékegysége"
 msgid "No"
 msgstr "Nem"
 
+#: src/components/routes/system/zfs-table.tsx
+msgid "No detail data for this pool."
+msgstr ""
+
 #: src/components/command-palette.tsx
 #: src/components/systemd-table/systemd-table.tsx
 msgid "No results found."
@@ -1159,11 +1212,19 @@ msgstr "Ehhez az eszközhöz nem állnak rendelkezésre S.M.A.R.T. attribútumok
 msgid "No systems found."
 msgstr "Nem található rendszer."
 
+#: src/components/routes/system/zfs-table.tsx
+msgid "None"
+msgstr ""
+
 #: src/components/command-palette.tsx
 #: src/components/routes/settings/layout.tsx
 #: src/components/routes/settings/notifications.tsx
 msgid "Notifications"
 msgstr "Értesítések"
+
+#: src/lib/alerts.ts
+msgid "Notifications may include recent container log excerpts."
+msgstr ""
 
 #: src/components/login/auth-form.tsx
 msgid "OAuth 2 / OIDC support"
@@ -1172,6 +1233,14 @@ msgstr "OAuth 2 / OIDC támogatás"
 #: src/components/routes/settings/config-yaml.tsx
 msgid "On each restart, systems in the database will be updated to match the systems defined in the file."
 msgstr "Minden újraindításkor az adatbázisban lévő rendszerek frissítésre kerülnek, hogy megfeleljenek a fájlban meghatározott rendszereknek."
+
+#: src/lib/alerts.ts
+msgid "One or more containers are unhealthy"
+msgstr ""
+
+#: src/lib/alerts.ts
+msgid "One or more services are in a failed state"
+msgstr ""
 
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/quiet-hours.tsx
@@ -1186,6 +1255,7 @@ msgstr "Egyszeri jelszó"
 #: src/components/routes/settings/tokens-fingerprints.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 #: src/components/routes/system/smart-table.tsx
+#: src/components/routes/system/zfs-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Open menu"
 msgstr "Menü megnyitása"
@@ -1309,6 +1379,14 @@ msgstr "Kérjük, nézze meg <0>a dokumentációt</0> az utasításokért."
 msgid "Please sign in to your account"
 msgstr "Kérjük, jelentkezzen be a fiókjába"
 
+#: src/components/routes/system/zfs-table.tsx
+msgid "Pool Health"
+msgstr ""
+
+#: src/components/routes/system/charts/zfs-charts.tsx
+msgid "Pool Usage"
+msgstr ""
+
 #: src/components/add-system.tsx
 msgid "Port"
 msgstr "Port"
@@ -1355,12 +1433,19 @@ msgid "Quiet Hours"
 msgstr "Csendes órák"
 
 #. Disk read
+#. Disk read
 #: src/components/routes/system/charts/disk-charts.tsx
+#: src/components/routes/system/charts/zfs-charts.tsx
+#: src/components/routes/system/disk-io-sheet.tsx
 #: src/components/routes/system/disk-io-sheet.tsx
 #: src/components/routes/system/disk-io-sheet.tsx
 #: src/components/routes/system/disk-io-sheet.tsx
 msgid "Read"
 msgstr "Olvasás"
+
+#: src/components/routes/system/zfs-table.tsx
+msgid "Read errors"
+msgstr ""
 
 #: src/components/routes/system/charts/network-charts.tsx
 msgid "Received"
@@ -1369,6 +1454,7 @@ msgstr "Fogadott"
 #: src/components/containers-table/containers-table.tsx
 #: src/components/containers-table/containers-table.tsx
 #: src/components/routes/system/smart-table.tsx
+#: src/components/routes/system/zfs-table.tsx
 msgid "Refresh"
 msgstr "Frissítés"
 
@@ -1410,6 +1496,8 @@ msgstr "Újraindítások"
 msgid "Resume"
 msgstr "Folytatás"
 
+#: src/components/routes/system/charts/disk-charts.tsx
+#: src/components/routes/system/charts/disk-charts.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgctxt "Root disk label"
 msgid "Root"
@@ -1555,6 +1643,7 @@ msgstr "Kezdési idő"
 #. Context: alert state (active or resolved)
 #: src/components/alerts-history-columns.tsx
 #: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/system/zfs-table.tsx
 #: src/components/systemd-table/systemd-table-columns.tsx
 msgid "State"
 msgstr "Állapot"
@@ -1683,9 +1772,9 @@ msgstr "Ez véglegesen törli az összes kijelölt bejegyzést az adatbázisból
 msgid "Throughput of {extraFsName}"
 msgstr "A {extraFsName} átviteli teljesítménye"
 
-#: src/components/routes/system/charts/disk-charts.tsx
-msgid "Throughput of root filesystem"
-msgstr "A gyökér fájlrendszer átviteli teljesítménye"
+#: src/components/routes/system/charts/zfs-charts.tsx
+msgid "Throughput of ZFS pool {poolName}"
+msgstr ""
 
 #: src/components/routes/settings/general.tsx
 msgid "Time format"
@@ -1758,12 +1847,16 @@ msgid "Triggers when 5 minute load average exceeds a threshold"
 msgstr "Riaszt, ha az 5 perces terhelési átlag túllép egy küszöbértéket"
 
 #: src/lib/alerts.ts
-msgid "Triggers when a Docker container's health check reports unhealthy"
-msgstr "Riaszt, amikor egy Docker konténer health check ellenőrzése nem egészséges állapotot jelez"
+msgid "Triggers when a container's health check reports unhealthy"
+msgstr ""
 
 #: src/lib/alerts.ts
 msgid "Triggers when any sensor exceeds a threshold"
 msgstr "Riaszt, ha bármelyik hőmérséklet érzékelő túllép egy küszöbértéket"
+
+#: src/lib/alerts.ts
+msgid "Triggers when any systemd service enters the failed state"
+msgstr ""
 
 #: src/lib/alerts.ts
 msgid "Triggers when battery charge drops below a threshold"
@@ -1826,6 +1919,7 @@ msgid "Universal token"
 msgstr "Univerzális token"
 
 #. Context: Battery state
+#: src/components/routes/system/zfs-table.tsx
 #: src/lib/i18n.ts
 msgid "Unknown"
 msgstr "Ismeretlen"
@@ -1851,6 +1945,7 @@ msgstr "Frissítés"
 
 #: src/components/containers-table/containers-table-columns.tsx
 #: src/components/routes/system/smart-table.tsx
+#: src/components/routes/system/zfs-table.tsx
 #: src/components/systemd-table/systemd-table-columns.tsx
 msgid "Updated"
 msgstr "Frissítve"
@@ -1869,19 +1964,24 @@ msgid "Uptime"
 msgstr "Üzemidő"
 
 #: src/components/routes/system/charts/disk-charts.tsx
+#: src/components/routes/system/charts/disk-charts.tsx
 #: src/components/routes/system/charts/gpu-charts.tsx
 #: src/components/routes/system/charts/gpu-charts.tsx
 #: src/components/routes/system/charts/gpu-charts.tsx
+#: src/components/routes/system/charts/zfs-charts.tsx
 #: src/components/routes/system/cpu-sheet.tsx
 msgid "Usage"
 msgstr "Használat"
 
-#: src/components/routes/system/charts/disk-charts.tsx
-msgid "Usage of root partition"
-msgstr "Root partíció kihasználtsága"
+#: src/components/routes/system/charts/zfs-charts.tsx
+msgid "Usage of ZFS pool {poolName}"
+msgstr ""
 
 #: src/components/routes/system/charts/memory-charts.tsx
 #: src/components/routes/system/charts/memory-charts.tsx
+#: src/components/routes/system/zfs-table.tsx
+#: src/components/routes/system/zfs-table.tsx
+#: src/components/routes/system/zfs-table.tsx
 msgid "Used"
 msgstr "Felhasznált"
 
@@ -1956,12 +2056,19 @@ msgid "Windows command"
 msgstr "Windows parancs"
 
 #. Disk write
+#. Disk write
 #: src/components/routes/system/charts/disk-charts.tsx
+#: src/components/routes/system/charts/zfs-charts.tsx
+#: src/components/routes/system/disk-io-sheet.tsx
 #: src/components/routes/system/disk-io-sheet.tsx
 #: src/components/routes/system/disk-io-sheet.tsx
 #: src/components/routes/system/disk-io-sheet.tsx
 msgid "Write"
 msgstr "Írás"
+
+#: src/components/routes/system/zfs-table.tsx
+msgid "Write errors"
+msgstr ""
 
 #: src/components/routes/settings/layout.tsx
 msgid "YAML Config"

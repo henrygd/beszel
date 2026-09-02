@@ -46,6 +46,10 @@ msgstr "{count, plural, one {{countString} saat} other {{countString} saat}}"
 msgid "{count, plural, one {{countString} minute} few {{countString} minutes} many {{countString} minutes} other {{countString} minutes}}"
 msgstr "{count, plural, one {{countString} dakika} few {{countString} dakika} many {{countString} dakika} other {{countString} dakika}}"
 
+#: src/components/routes/system/charts/disk-charts.tsx
+msgid "{diskName} I/O"
+msgstr ""
+
 #: src/components/routes/system/info-bar.tsx
 msgid "{threads, plural, one {# thread} other {# threads}}"
 msgstr "{threads, plural, one {# iş parçacığı} other {# iş parçacığı}}"
@@ -93,6 +97,7 @@ msgstr "5 dk"
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 #: src/components/routes/system/smart-table.tsx
+#: src/components/routes/system/zfs-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Actions"
 msgstr "Eylemler"
@@ -190,6 +195,11 @@ msgstr "Emin misiniz?"
 #: src/components/copy-to-clipboard.tsx
 msgid "Automatic copy requires a secure context."
 msgstr "Otomatik kopyalama güvenli bir bağlam gerektirir."
+
+#: src/components/routes/system/zfs-table.tsx
+msgctxt "Disk space available"
+msgid "Available"
+msgstr ""
 
 #: src/components/routes/system/chart-card.tsx
 msgid "Average"
@@ -328,6 +338,7 @@ msgid "Capabilities"
 msgstr "Yetenekler"
 
 #: src/components/routes/system/smart-table.tsx
+#: src/components/routes/system/zfs-table.tsx
 msgid "Capacity"
 msgstr "Kapasite"
 
@@ -380,8 +391,14 @@ msgstr "İzleme servisinizi kontrol edin"
 msgid "Check your notification service"
 msgstr "Bildirim hizmetinizi kontrol edin"
 
+#: src/components/routes/system/zfs-table.tsx
+msgid "Checksum errors"
+msgstr ""
+
 #: src/components/containers-table/containers-table.tsx
 #: src/components/routes/system/smart-table.tsx
+#: src/components/routes/system/zfs-table.tsx
+#: src/components/routes/system/zfs-table.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "Clear"
 msgstr "Temizle"
@@ -393,6 +410,10 @@ msgstr "Daha fazla bilgi görüntülemek için bir konteynere tıklayın."
 #: src/components/routes/system/smart-table.tsx
 msgid "Click on a device to view more information."
 msgstr "Daha fazla bilgi görüntülemek için bir cihaza tıklayın."
+
+#: src/components/routes/system/zfs-table.tsx
+msgid "Click on a pool to view vdev and dataset details."
+msgstr ""
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Click on a system to view more information."
@@ -559,13 +580,29 @@ msgstr "Oluşturuldu"
 msgid "Critical (%)"
 msgstr "Kritik (%)"
 
+#: src/components/routes/system/disk-io-sheet.tsx
+msgid "Cumulative data read since boot"
+msgstr ""
+
+#: src/components/routes/system/disk-io-sheet.tsx
+msgid "Cumulative data written since boot"
+msgstr ""
+
 #: src/components/routes/system/network-sheet.tsx
 msgid "Cumulative Download"
 msgstr "Kümülatif İndirme"
 
+#: src/components/routes/system/disk-io-sheet.tsx
+msgid "Cumulative Read"
+msgstr ""
+
 #: src/components/routes/system/network-sheet.tsx
 msgid "Cumulative Upload"
 msgstr "Kümülatif Yükleme"
+
+#: src/components/routes/system/disk-io-sheet.tsx
+msgid "Cumulative Write"
+msgstr ""
 
 #. Context: Battery state
 #. Context: Battery state
@@ -626,15 +663,10 @@ msgstr "Boşalıyor"
 msgid "Disk"
 msgstr "Depolama alanı"
 
-#: src/components/routes/system/charts/disk-charts.tsx
-msgid "Disk I/O"
-msgstr "Disk G/Ç"
-
 #: src/components/routes/settings/general.tsx
 msgid "Disk unit"
 msgstr "Disk birimi"
 
-#: src/components/routes/system/charts/disk-charts.tsx
 #: src/components/routes/system/charts/disk-charts.tsx
 #: src/lib/alerts.ts
 msgid "Disk Usage"
@@ -804,6 +836,10 @@ msgstr "Başarısız"
 msgid "Failed Attributes:"
 msgstr "Başarısız Özellikler:"
 
+#: src/lib/alerts.ts
+msgid "Failed Services"
+msgstr ""
+
 #: src/lib/api.ts
 msgid "Failed to authenticate"
 msgstr "Kimlik doğrulama başarısız"
@@ -839,6 +875,8 @@ msgstr ""
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/system/chart-card.tsx
 #: src/components/routes/system/smart-table.tsx
+#: src/components/routes/system/zfs-table.tsx
+#: src/components/routes/system/zfs-table.tsx
 #: src/components/systemd-table/systemd-table.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "Filter..."
@@ -859,6 +897,12 @@ msgstr "<0>{min}</0> {min, plural, one {dakika} other {dakika}} için"
 #: src/components/login/auth-form.tsx
 msgid "Forgot password?"
 msgstr "Şifrenizi mi unuttunuz?"
+
+#: src/components/routes/system/zfs-table.tsx
+#: src/components/routes/system/zfs-table.tsx
+msgctxt "Free space"
+msgid "Free"
+msgstr ""
 
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
@@ -904,6 +948,7 @@ msgid "Grid"
 msgstr "Izgara"
 
 #: src/components/containers-table/containers-table-columns.tsx
+#: src/components/routes/system/zfs-table.tsx
 msgid "Health"
 msgstr "Sağlık"
 
@@ -1101,6 +1146,10 @@ msgstr "Konteynerlerin bellek kullanımı"
 msgid "Model"
 msgstr "Model"
 
+#: src/components/routes/system/zfs-table.tsx
+msgid "Mountpoint"
+msgstr ""
+
 #: src/components/add-system.tsx
 #: src/components/alerts-history-columns.tsx
 #: src/components/containers-table/containers-table-columns.tsx
@@ -1136,6 +1185,10 @@ msgstr "Ağ birimi"
 msgid "No"
 msgstr "Hayır"
 
+#: src/components/routes/system/zfs-table.tsx
+msgid "No detail data for this pool."
+msgstr ""
+
 #: src/components/command-palette.tsx
 #: src/components/systemd-table/systemd-table.tsx
 msgid "No results found."
@@ -1159,11 +1212,19 @@ msgstr "Bu cihaz için kullanılabilir S.M.A.R.T. özelliği yok."
 msgid "No systems found."
 msgstr "Sistem bulunamadı."
 
+#: src/components/routes/system/zfs-table.tsx
+msgid "None"
+msgstr ""
+
 #: src/components/command-palette.tsx
 #: src/components/routes/settings/layout.tsx
 #: src/components/routes/settings/notifications.tsx
 msgid "Notifications"
 msgstr "Bildirimler"
+
+#: src/lib/alerts.ts
+msgid "Notifications may include recent container log excerpts."
+msgstr ""
 
 #: src/components/login/auth-form.tsx
 msgid "OAuth 2 / OIDC support"
@@ -1172,6 +1233,14 @@ msgstr "OAuth 2 / OIDC desteği"
 #: src/components/routes/settings/config-yaml.tsx
 msgid "On each restart, systems in the database will be updated to match the systems defined in the file."
 msgstr "Her yeniden başlatmada, veritabanındaki sistemler dosyada tanımlanan sistemlerle eşleşecek şekilde güncellenecektir."
+
+#: src/lib/alerts.ts
+msgid "One or more containers are unhealthy"
+msgstr ""
+
+#: src/lib/alerts.ts
+msgid "One or more services are in a failed state"
+msgstr ""
 
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/quiet-hours.tsx
@@ -1186,6 +1255,7 @@ msgstr "Tek kullanımlık şifre"
 #: src/components/routes/settings/tokens-fingerprints.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 #: src/components/routes/system/smart-table.tsx
+#: src/components/routes/system/zfs-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Open menu"
 msgstr "Menüyü aç"
@@ -1309,6 +1379,14 @@ msgstr "Talimatlar için lütfen <0>dokümantasyonu</0> inceleyin."
 msgid "Please sign in to your account"
 msgstr "Lütfen hesabınıza giriş yapın"
 
+#: src/components/routes/system/zfs-table.tsx
+msgid "Pool Health"
+msgstr ""
+
+#: src/components/routes/system/charts/zfs-charts.tsx
+msgid "Pool Usage"
+msgstr ""
+
 #: src/components/add-system.tsx
 msgid "Port"
 msgstr "Port"
@@ -1355,12 +1433,19 @@ msgid "Quiet Hours"
 msgstr "Sessiz Saatler"
 
 #. Disk read
+#. Disk read
 #: src/components/routes/system/charts/disk-charts.tsx
+#: src/components/routes/system/charts/zfs-charts.tsx
+#: src/components/routes/system/disk-io-sheet.tsx
 #: src/components/routes/system/disk-io-sheet.tsx
 #: src/components/routes/system/disk-io-sheet.tsx
 #: src/components/routes/system/disk-io-sheet.tsx
 msgid "Read"
 msgstr "Oku"
+
+#: src/components/routes/system/zfs-table.tsx
+msgid "Read errors"
+msgstr ""
 
 #: src/components/routes/system/charts/network-charts.tsx
 msgid "Received"
@@ -1369,6 +1454,7 @@ msgstr "Alındı"
 #: src/components/containers-table/containers-table.tsx
 #: src/components/containers-table/containers-table.tsx
 #: src/components/routes/system/smart-table.tsx
+#: src/components/routes/system/zfs-table.tsx
 msgid "Refresh"
 msgstr "Yenile"
 
@@ -1410,6 +1496,8 @@ msgstr "Yeniden başlatmalar"
 msgid "Resume"
 msgstr "Devam et"
 
+#: src/components/routes/system/charts/disk-charts.tsx
+#: src/components/routes/system/charts/disk-charts.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgctxt "Root disk label"
 msgid "Root"
@@ -1555,6 +1643,7 @@ msgstr "Başlangıç Saati"
 #. Context: alert state (active or resolved)
 #: src/components/alerts-history-columns.tsx
 #: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/system/zfs-table.tsx
 #: src/components/systemd-table/systemd-table-columns.tsx
 msgid "State"
 msgstr "Durum"
@@ -1683,9 +1772,9 @@ msgstr "Bu, seçilen tüm kayıtları veritabanından kalıcı olarak silecektir
 msgid "Throughput of {extraFsName}"
 msgstr "{extraFsName} verimliliği"
 
-#: src/components/routes/system/charts/disk-charts.tsx
-msgid "Throughput of root filesystem"
-msgstr "Kök dosya sisteminin verimliliği"
+#: src/components/routes/system/charts/zfs-charts.tsx
+msgid "Throughput of ZFS pool {poolName}"
+msgstr ""
 
 #: src/components/routes/settings/general.tsx
 msgid "Time format"
@@ -1758,12 +1847,16 @@ msgid "Triggers when 5 minute load average exceeds a threshold"
 msgstr "5 dakikalık yük ortalaması bir eşiği aştığında tetiklenir"
 
 #: src/lib/alerts.ts
-msgid "Triggers when a Docker container's health check reports unhealthy"
-msgstr "Bir Docker konteynerinin sağlık kontrolü sağlıksız durumunu bildirdiğinde tetiklenir"
+msgid "Triggers when a container's health check reports unhealthy"
+msgstr ""
 
 #: src/lib/alerts.ts
 msgid "Triggers when any sensor exceeds a threshold"
 msgstr "Herhangi bir sensör bir eşiği aştığında tetiklenir"
+
+#: src/lib/alerts.ts
+msgid "Triggers when any systemd service enters the failed state"
+msgstr ""
 
 #: src/lib/alerts.ts
 msgid "Triggers when battery charge drops below a threshold"
@@ -1826,6 +1919,7 @@ msgid "Universal token"
 msgstr "Evrensel token"
 
 #. Context: Battery state
+#: src/components/routes/system/zfs-table.tsx
 #: src/lib/i18n.ts
 msgid "Unknown"
 msgstr "Bilinmiyor"
@@ -1851,6 +1945,7 @@ msgstr "Güncelle"
 
 #: src/components/containers-table/containers-table-columns.tsx
 #: src/components/routes/system/smart-table.tsx
+#: src/components/routes/system/zfs-table.tsx
 #: src/components/systemd-table/systemd-table-columns.tsx
 msgid "Updated"
 msgstr "Güncellendi"
@@ -1869,19 +1964,24 @@ msgid "Uptime"
 msgstr "Çalışma Süresi"
 
 #: src/components/routes/system/charts/disk-charts.tsx
+#: src/components/routes/system/charts/disk-charts.tsx
 #: src/components/routes/system/charts/gpu-charts.tsx
 #: src/components/routes/system/charts/gpu-charts.tsx
 #: src/components/routes/system/charts/gpu-charts.tsx
+#: src/components/routes/system/charts/zfs-charts.tsx
 #: src/components/routes/system/cpu-sheet.tsx
 msgid "Usage"
 msgstr "Kullanım"
 
-#: src/components/routes/system/charts/disk-charts.tsx
-msgid "Usage of root partition"
-msgstr "Kök bölümün kullanımı"
+#: src/components/routes/system/charts/zfs-charts.tsx
+msgid "Usage of ZFS pool {poolName}"
+msgstr ""
 
 #: src/components/routes/system/charts/memory-charts.tsx
 #: src/components/routes/system/charts/memory-charts.tsx
+#: src/components/routes/system/zfs-table.tsx
+#: src/components/routes/system/zfs-table.tsx
+#: src/components/routes/system/zfs-table.tsx
 msgid "Used"
 msgstr "Kullanıldı"
 
@@ -1956,12 +2056,19 @@ msgid "Windows command"
 msgstr "Windows komutu"
 
 #. Disk write
+#. Disk write
 #: src/components/routes/system/charts/disk-charts.tsx
+#: src/components/routes/system/charts/zfs-charts.tsx
+#: src/components/routes/system/disk-io-sheet.tsx
 #: src/components/routes/system/disk-io-sheet.tsx
 #: src/components/routes/system/disk-io-sheet.tsx
 #: src/components/routes/system/disk-io-sheet.tsx
 msgid "Write"
 msgstr "Yaz"
+
+#: src/components/routes/system/zfs-table.tsx
+msgid "Write errors"
+msgstr ""
 
 #: src/components/routes/settings/layout.tsx
 msgid "YAML Config"
