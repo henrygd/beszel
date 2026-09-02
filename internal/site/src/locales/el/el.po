@@ -8,7 +8,7 @@ msgstr ""
 "Language: el\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2026-08-19 18:02\n"
+"PO-Revision-Date: 2026-09-02 19:06\n"
 "Last-Translator: \n"
 "Language-Team: Greek\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
@@ -538,7 +538,7 @@ msgstr "Πυρήνες CPU"
 
 #: src/lib/alerts.ts
 msgid "CPU I/O Wait"
-msgstr ""
+msgstr "Χρόνος αναμονής I/O CPU"
 
 #: src/components/systemd-table/systemd-table-columns.tsx
 msgid "CPU Peak"
@@ -546,7 +546,7 @@ msgstr "Μέγιστη CPU"
 
 #: src/lib/alerts.ts
 msgid "CPU Steal Time"
-msgstr ""
+msgstr "Χρόνος κλοπής CPU"
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "CPU time"
@@ -1868,11 +1868,11 @@ msgstr "Ενεργοποιείται όταν η συνδυασμένη κίνη
 
 #: src/lib/alerts.ts
 msgid "Triggers when CPU I/O wait exceeds a threshold"
-msgstr ""
+msgstr "Ενεργοποιείται όταν ο χρόνος αναμονής I/O της CPU υπερβαίνει ένα όριο"
 
 #: src/lib/alerts.ts
 msgid "Triggers when CPU steal time exceeds a threshold"
-msgstr ""
+msgstr "Ενεργοποιείται όταν ο χρόνος κλοπής CPU υπερβαίνει ένα όριο"
 
 #: src/lib/alerts.ts
 msgid "Triggers when CPU usage exceeds a threshold"
@@ -2087,3 +2087,4 @@ msgstr "Ναι"
 #: src/components/routes/settings/layout.tsx
 msgid "Your user settings have been updated."
 msgstr "Οι ρυθμίσεις χρήστη σας ενημερώθηκαν."
+
