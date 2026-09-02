@@ -11,7 +11,7 @@ import { RootDiskCharts, ExtraFsCharts } from "./system/charts/disk-charts"
 import { ZfsCharts } from "./system/charts/zfs-charts"
 import { BandwidthChart, ContainerNetworkChart } from "./system/charts/network-charts"
 import { TemperatureChart, FanChart, BatteryChart } from "./system/charts/sensor-charts"
-import { GpuPowerChart, GpuDetailCharts } from "./system/charts/gpu-charts"
+import { GpuPowerChart, GpuCharts } from "./system/charts/gpu-charts"
 import { LazyContainersTable, LazySmartTable, LazySystemdTable, LazyZfsTable } from "./system/lazy-tables"
 import { LoadAverageChart } from "./system/charts/load-average-chart"
 import { ContainerIcon, CpuIcon, HardDriveIcon, TerminalSquareIcon } from "lucide-react"
@@ -133,7 +133,7 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 				</div>
 
 				{hasGpuData && lastGpus && (
-					<GpuDetailCharts
+					<GpuCharts
 						chartData={chartData}
 						grid={grid}
 						dataEmpty={dataEmpty}
@@ -219,18 +219,15 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 
 				{hasGpu && (
 					<TabsContent value="gpu" forceMount className={activeTab === "gpu" ? "contents" : "hidden"}>
-						<div className="grid xl:grid-cols-2 gap-4">
+						<GpuCharts
+							chartData={chartData}
+							grid={grid}
+							dataEmpty={dataEmpty}
+							lastGpus={(lastGpus ?? {}) as Record<string, GPUData>}
+							hasGpuEnginesData={hasGpuEnginesData}
+						>
 							{hasGpuPowerData && <GpuPowerChart chartData={chartData} grid={grid} dataEmpty={dataEmpty} />}
-						</div>
-						{hasGpuData && lastGpus && (
-							<GpuDetailCharts
-								chartData={chartData}
-								grid={grid}
-								dataEmpty={dataEmpty}
-								lastGpus={lastGpus as Record<string, GPUData>}
-								hasGpuEnginesData={hasGpuEnginesData}
-							/>
-						)}
+						</GpuCharts>
 					</TabsContent>
 				)}
 
