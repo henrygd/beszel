@@ -108,11 +108,10 @@ export const alertInfo: Record<string, AlertInfo> = {
 		name: () => t`Container Health`,
 		unit: "",
 		icon: ContainerIcon,
-		desc: () => t`Triggers when a Docker container's health check reports unhealthy`,
+		desc: () => t`Triggers when a container's health check reports unhealthy`,
 		note: () =>
 			t`Notifications may include recent container log excerpts.`,
-		/** "for x minutes" is appended to desc when only one value */
-		singleDesc: () => `${t`Container`} ${t`Unhealthy`}`,
+		triggeredDesc: () => t`One or more containers are unhealthy`,
 	},
 	SystemdFailed: {
 		name: () => t`Failed Services`,
