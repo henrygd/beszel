@@ -8,7 +8,7 @@ msgstr ""
 "Language: fr\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2026-09-02 00:07\n"
+"PO-Revision-Date: 2026-09-02 17:42\n"
 "Last-Translator: \n"
 "Language-Team: French\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
@@ -423,6 +423,14 @@ msgstr "Conflits"
 #: src/components/active-alerts.tsx
 msgid "Connection is down"
 msgstr "Connexion interrompue"
+
+#: src/lib/alerts.ts
+msgid "Container"
+msgstr "Conteneur"
+
+#: src/lib/alerts.ts
+msgid "Container Health"
+msgstr "Santé du conteneur"
 
 #: src/components/routes/system.tsx
 msgid "Containers"
@@ -1750,6 +1758,10 @@ msgid "Triggers when 5 minute load average exceeds a threshold"
 msgstr "Se déclenche lorsque la charge moyenne sur 5 minutes dépasse un seuil"
 
 #: src/lib/alerts.ts
+msgid "Triggers when a Docker container's health check reports unhealthy"
+msgstr "Se déclenche lorsque le contrôle de santé (healthcheck) d'un conteneur Docker le signale comme non sain"
+
+#: src/lib/alerts.ts
 msgid "Triggers when any sensor exceeds a threshold"
 msgstr "Déclenchement lorsque tout capteur dépasse un seuil"
 
@@ -1794,6 +1806,10 @@ msgstr "Déclenchement lorsque l'utilisation de tout disque dépasse un seuil"
 #: src/components/routes/system/smart-table.tsx
 msgid "Type"
 msgstr "Type"
+
+#: src/lib/alerts.ts
+msgid "Unhealthy"
+msgstr "Non sain"
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Unit file"
