@@ -8,7 +8,7 @@ msgstr ""
 "Language: hr\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2026-08-18 17:53\n"
+"PO-Revision-Date: 2026-09-02 00:08\n"
 "Last-Translator: \n"
 "Language-Team: Croatian\n"
 "Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
@@ -507,9 +507,17 @@ msgstr "Procesor"
 msgid "CPU Cores"
 msgstr "CPU jezgre"
 
+#: src/lib/alerts.ts
+msgid "CPU I/O Wait"
+msgstr "CPU čekanje na U/I (IOWait)"
+
 #: src/components/systemd-table/systemd-table-columns.tsx
 msgid "CPU Peak"
 msgstr "CPU vrhunac"
+
+#: src/lib/alerts.ts
+msgid "CPU Steal Time"
+msgstr "Ukradeno CPU vrijeme (Steal)"
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "CPU time"
@@ -1754,6 +1762,14 @@ msgid "Triggers when combined up/down exceeds a threshold"
 msgstr "Pokreće se kada kumulativna propusnost gore/dolje premaši prag"
 
 #: src/lib/alerts.ts
+msgid "Triggers when CPU I/O wait exceeds a threshold"
+msgstr "Aktivira se kada CPU čekanje na U/I prijeđe prag"
+
+#: src/lib/alerts.ts
+msgid "Triggers when CPU steal time exceeds a threshold"
+msgstr "Aktivira se kada ukradeno CPU vrijeme prijeđe prag"
+
+#: src/lib/alerts.ts
 msgid "Triggers when CPU usage exceeds a threshold"
 msgstr "Pokreće se kada iskorištenost procesora premaši prag"
 
@@ -1948,3 +1964,4 @@ msgstr "Da"
 #: src/components/routes/settings/layout.tsx
 msgid "Your user settings have been updated."
 msgstr "Vaše korisničke postavke su ažurirane."
+
