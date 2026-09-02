@@ -8,7 +8,7 @@ msgstr ""
 "Language: zh\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2026-08-18 17:53\n"
+"PO-Revision-Date: 2026-09-02 00:08\n"
 "Last-Translator: \n"
 "Language-Team: Chinese Traditional, Hong Kong\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
@@ -507,9 +507,17 @@ msgstr "處理器"
 msgid "CPU Cores"
 msgstr "CPU 核心"
 
+#: src/lib/alerts.ts
+msgid "CPU I/O Wait"
+msgstr "CPU I/O 等待時間 (IOWait)"
+
 #: src/components/systemd-table/systemd-table-columns.tsx
 msgid "CPU Peak"
 msgstr "CPU 峰值"
+
+#: src/lib/alerts.ts
+msgid "CPU Steal Time"
+msgstr "CPU 被虛擬機監控程式佔用的時間 (Steal)"
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "CPU time"
@@ -1754,6 +1762,14 @@ msgid "Triggers when combined up/down exceeds a threshold"
 msgstr "當組合的上/下超過閾值時觸發"
 
 #: src/lib/alerts.ts
+msgid "Triggers when CPU I/O wait exceeds a threshold"
+msgstr "當 CPU I/O 等待時間超過閾值時觸發"
+
+#: src/lib/alerts.ts
+msgid "Triggers when CPU steal time exceeds a threshold"
+msgstr "當 CPU 竊取時間超過閾值時觸發"
+
+#: src/lib/alerts.ts
 msgid "Triggers when CPU usage exceeds a threshold"
 msgstr "當CPU使用率超過閾值時觸發"
 
@@ -1948,3 +1964,4 @@ msgstr "是"
 #: src/components/routes/settings/layout.tsx
 msgid "Your user settings have been updated."
 msgstr "您的用戶設置已更新。"
+
