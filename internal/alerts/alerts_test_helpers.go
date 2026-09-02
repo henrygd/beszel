@@ -103,3 +103,8 @@ func (am *AlertManager) SetAlertTriggered(alert CachedAlertData, triggered bool)
 func IsInternalURL(rawURL string) (bool, error) {
 	return isInternalURL(rawURL)
 }
+
+// BuildContainerLogExcerpt exposes buildContainerLogExcerpt for testing.
+func BuildContainerLogExcerpt(raw string) string {
+	return buildContainerLogExcerpt(raw)
+}

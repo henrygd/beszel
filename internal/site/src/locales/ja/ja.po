@@ -424,6 +424,14 @@ msgstr "競合"
 msgid "Connection is down"
 msgstr "接続が切断されました"
 
+#: src/lib/alerts.ts
+msgid "Container"
+msgstr "コンテナ"
+
+#: src/lib/alerts.ts
+msgid "Container Health"
+msgstr "コンテナのヘルス"
+
 #: src/components/routes/system.tsx
 msgid "Containers"
 msgstr "コンテナ"
@@ -1750,6 +1758,10 @@ msgid "Triggers when 5 minute load average exceeds a threshold"
 msgstr "5分間の負荷平均がしきい値を超えたときにトリガーされます"
 
 #: src/lib/alerts.ts
+msgid "Triggers when a Docker container's health check reports unhealthy"
+msgstr "Dockerコンテナのヘルスチェックが異常を報告したときにトリガーされます"
+
+#: src/lib/alerts.ts
 msgid "Triggers when any sensor exceeds a threshold"
 msgstr "センサーがしきい値を超えたときにトリガーされます"
 
@@ -1794,6 +1806,10 @@ msgstr "ディスクの使用量がしきい値を超えたときにトリガー
 #: src/components/routes/system/smart-table.tsx
 msgid "Type"
 msgstr "タイプ"
+
+#: src/lib/alerts.ts
+msgid "Unhealthy"
+msgstr "異常"
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Unit file"

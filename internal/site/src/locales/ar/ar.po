@@ -424,6 +424,14 @@ msgstr "التعارضات"
 msgid "Connection is down"
 msgstr "الاتصال مقطوع"
 
+#: src/lib/alerts.ts
+msgid "Container"
+msgstr "حاوية"
+
+#: src/lib/alerts.ts
+msgid "Container Health"
+msgstr "صحة الحاوية"
+
 #: src/components/routes/system.tsx
 msgid "Containers"
 msgstr "حاويات"
@@ -1750,6 +1758,10 @@ msgid "Triggers when 5 minute load average exceeds a threshold"
 msgstr "يتم التفعيل عندما يتجاوز متوسط التحميل لمدة 5 دقائق عتبة معينة"
 
 #: src/lib/alerts.ts
+msgid "Triggers when a Docker container's health check reports unhealthy"
+msgstr "يتم التفعيل عندما يُبلّغ فحص سلامة حاوية Docker بأنها غير سليمة"
+
+#: src/lib/alerts.ts
 msgid "Triggers when any sensor exceeds a threshold"
 msgstr "يتم التفعيل عندما يتجاوز أي مستشعر عتبة معينة"
 
@@ -1794,6 +1806,10 @@ msgstr "يتم التفعيل عندما يتجاوز استخدام أي قرص
 #: src/components/routes/system/smart-table.tsx
 msgid "Type"
 msgstr "النوع"
+
+#: src/lib/alerts.ts
+msgid "Unhealthy"
+msgstr "غير سليمة"
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Unit file"

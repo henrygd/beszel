@@ -424,6 +424,14 @@ msgstr "Çakışmalar"
 msgid "Connection is down"
 msgstr "Bağlantı kesildi"
 
+#: src/lib/alerts.ts
+msgid "Container"
+msgstr "Konteyner"
+
+#: src/lib/alerts.ts
+msgid "Container Health"
+msgstr "Konteyner Sağlığı"
+
 #: src/components/routes/system.tsx
 msgid "Containers"
 msgstr "Konteynerler"
@@ -1750,6 +1758,10 @@ msgid "Triggers when 5 minute load average exceeds a threshold"
 msgstr "5 dakikalık yük ortalaması bir eşiği aştığında tetiklenir"
 
 #: src/lib/alerts.ts
+msgid "Triggers when a Docker container's health check reports unhealthy"
+msgstr "Bir Docker konteynerinin sağlık kontrolü sağlıksız durumunu bildirdiğinde tetiklenir"
+
+#: src/lib/alerts.ts
 msgid "Triggers when any sensor exceeds a threshold"
 msgstr "Herhangi bir sensör bir eşiği aştığında tetiklenir"
 
@@ -1794,6 +1806,10 @@ msgstr "Herhangi bir diskin kullanımı bir eşiği aştığında tetiklenir"
 #: src/components/routes/system/smart-table.tsx
 msgid "Type"
 msgstr "Tür"
+
+#: src/lib/alerts.ts
+msgid "Unhealthy"
+msgstr "Sağlıksız"
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Unit file"

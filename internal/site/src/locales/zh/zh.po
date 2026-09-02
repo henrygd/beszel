@@ -424,6 +424,14 @@ msgstr "衝突"
 msgid "Connection is down"
 msgstr "連線中斷"
 
+#: src/lib/alerts.ts
+msgid "Container"
+msgstr "容器"
+
+#: src/lib/alerts.ts
+msgid "Container Health"
+msgstr "容器健康狀態"
+
 #: src/components/routes/system.tsx
 msgid "Containers"
 msgstr "容器"
@@ -1750,6 +1758,10 @@ msgid "Triggers when 5 minute load average exceeds a threshold"
 msgstr "當 5 分鐘平均負載超過閾值時觸發"
 
 #: src/lib/alerts.ts
+msgid "Triggers when a Docker container's health check reports unhealthy"
+msgstr "當 Docker 容器的健康檢查回報不健康狀態時觸發"
+
+#: src/lib/alerts.ts
 msgid "Triggers when any sensor exceeds a threshold"
 msgstr "當任何感應器超過閾值時觸發"
 
@@ -1794,6 +1806,10 @@ msgstr "當任何磁碟使用率超過閾值時觸發"
 #: src/components/routes/system/smart-table.tsx
 msgid "Type"
 msgstr "類型"
+
+#: src/lib/alerts.ts
+msgid "Unhealthy"
+msgstr "不健康"
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Unit file"

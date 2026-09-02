@@ -1,5 +1,5 @@
 import { t } from "@lingui/core/macro"
-import { CpuIcon, HardDriveIcon, MemoryStickIcon, ServerCrashIcon, ServerIcon } from "lucide-react"
+import { ContainerIcon, CpuIcon, HardDriveIcon, MemoryStickIcon, ServerCrashIcon, ServerIcon } from "lucide-react"
 import type { RecordSubscription } from "pocketbase"
 import { EthernetIcon, GpuIcon } from "@/components/ui/icons"
 import { $alerts } from "@/lib/stores"
@@ -103,6 +103,16 @@ export const alertInfo: Record<string, AlertInfo> = {
 		desc: () => t`Triggers when battery charge drops below a threshold`,
 		start: 20,
 		invert: true,
+	},
+	ContainerHealth: {
+		name: () => t`Container Health`,
+		unit: "",
+		icon: ContainerIcon,
+		desc: () => t`Triggers when a Docker container's health check reports unhealthy`,
+		note: () =>
+			t`Notifications may include recent container log excerpts.`,
+		/** "for x minutes" is appended to desc when only one value */
+		singleDesc: () => `${t`Container`} ${t`Unhealthy`}`,
 	},
 	SystemdFailed: {
 		name: () => t`Failed Services`,

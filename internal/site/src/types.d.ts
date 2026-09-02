@@ -400,6 +400,8 @@ export interface AlertInfo {
 	noDuration?: boolean
 	/** Description shown instead of numeric threshold and duration values */
 	triggeredDesc?: () => string
+	/** Additional information that remains visible while the alert is enabled */
+	note?: () => string
 	invert?: boolean
 }
 

@@ -79,7 +79,8 @@ func init() {
 					"LoadAvg1",
 					"LoadAvg5",
 					"LoadAvg15",
-					"Battery"
+					"Battery",
+					"ContainerHealth"
 				]
 			},
 			{
@@ -114,6 +115,17 @@ func init() {
 				"required": false,
 				"system": false,
 				"type": "bool"
+			},
+			{
+				"hidden": true,
+				"id": "date1302749137",
+				"max": "",
+				"min": "",
+				"name": "pending_since",
+				"presentable": false,
+				"required": false,
+				"system": false,
+				"type": "date"
 			},
 			{
 				"hidden": false,

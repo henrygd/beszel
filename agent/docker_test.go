@@ -729,6 +729,7 @@ func TestGetDockerStatsChecksDockerVersionAfterContainerList(t *testing.T) {
 
 			stats, err := dm.getDockerStats(defaultCacheTimeMs)
 			require.NoError(t, err)
+			require.NotNil(t, stats, "A successful empty snapshot must remain distinguishable from a collection failure")
 			assert.Empty(t, stats)
 			assert.True(t, dm.dockerVersionChecked)
 			assert.Equal(t, tt.expectedGood, dm.goodDockerVersion)
@@ -742,6 +743,7 @@ func TestGetDockerStatsChecksDockerVersionAfterContainerList(t *testing.T) {
 
 			stats, err = dm.getDockerStats(defaultCacheTimeMs)
 			require.NoError(t, err)
+			require.NotNil(t, stats, "A successful empty snapshot must remain distinguishable from a collection failure")
 			assert.Empty(t, stats)
 			assert.Equal(t, tt.expectedGood, dm.goodDockerVersion)
 			assert.Equal(t, tt.expectedPodman, dm.usingPodman)

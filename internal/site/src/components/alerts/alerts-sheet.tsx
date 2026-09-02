@@ -411,6 +411,7 @@ export function AlertContent({
 							</div>
 						)}
 					</Suspense>
+          {checked && alertData.note && <span className="block col-span-full text-sm text-muted-foreground -mt-3">{alertData.note()}</span>}
 				</div>
 			)}
 		</div>
