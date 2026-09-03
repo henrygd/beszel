@@ -198,6 +198,9 @@ export function decimalString(num: number, digits = 2) {
 	return formatter.format(num)
 }
 
+/** Must match the inline theme script in index.html, which runs before React mounts. */
+export const THEME_STORAGE_KEY = "ui-theme"
+
 /** Get value from local or session storage */
 function getStorageValue(key: string, defaultValue: unknown, storageInterface: Storage = localStorage) {
 	const saved = storageInterface?.getItem(key)
