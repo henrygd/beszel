@@ -2087,4 +2087,3 @@ msgstr "כן"
 #: src/components/routes/settings/layout.tsx
 msgid "Your user settings have been updated."
 msgstr "הגדרות המשתמש שלך עודכנו."
-

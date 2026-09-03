@@ -2087,4 +2087,3 @@ msgstr "Ha"
 #: src/components/routes/settings/layout.tsx
 msgid "Your user settings have been updated."
 msgstr "Foydalanuvchi sozlamalaringiz yangilandi."
-

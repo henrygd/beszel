@@ -2087,4 +2087,3 @@ msgstr "Sì"
 #: src/components/routes/settings/layout.tsx
 msgid "Your user settings have been updated."
 msgstr "Le impostazioni utente sono state aggiornate."
-

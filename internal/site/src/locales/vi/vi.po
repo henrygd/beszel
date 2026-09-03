@@ -2087,4 +2087,3 @@ msgstr "Có"
 #: src/components/routes/settings/layout.tsx
 msgid "Your user settings have been updated."
 msgstr "Cài đặt người dùng của bạn đã được cập nhật."
-
