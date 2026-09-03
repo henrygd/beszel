@@ -34,6 +34,10 @@ export const $newVersion = atom<UpdateInfo | undefined>()
 /** Chart time period */
 export const $chartTime = atom<ChartTimes>("1h")
 
+/** Custom range for chart when chartTime === "custom" — ISO strings */
+export type CustomRange = { from: string; to: string } | null
+export const $customRange = atom<CustomRange>(null)
+
 /** Whether to display average or max chart values */
 export const $maxValues = atom(false)
 

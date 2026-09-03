@@ -12,13 +12,15 @@ import (
 
 // Delete old records
 func (rm *RecordManager) DeleteOldRecords() {
+	// system_stats/container_stats use batched deletes outside the main transaction
+	// to avoid holding the SQLite writer lock for minutes when retention is reduced (#1).
+	// Each batch is autocommit and releases the lock between batches.
+	if err := deleteOldSystemStats(rm.app); err != nil {
+		slog.Error("Error deleting old system stats", "err", err)
+	}
 	// Pocketbase cron does not handle errors, log them here.
 	rm.app.RunInTransaction(func(txApp core.App) error {
-		err := deleteOldSystemStats(txApp)
-		if err != nil {
-			slog.Error("Error deleting old system stats", "err", err)
-		}
-		err = deleteOldContainerRecords(txApp)
+		err := deleteOldContainerRecords(txApp)
 		if err != nil {
 			slog.Error("Error deleting old container records", "err", err)
 		}
@@ -67,12 +69,25 @@ func deleteOldSystemStats(app core.App) error {
 		recordType string
 		retention  time.Duration
 	}
+	// 480m retention is configurable via hub_settings / BESZEL_HUB_RETENTION env
+	retention480m := GetRetentionDuration(app)
 	recordData := []RecordDeletionData{
-		{recordType: "1m", retention: time.Hour},             // 1 hour
-		{recordType: "10m", retention: 12 * time.Hour},       // 12 hours
-		{recordType: "20m", retention: 24 * time.Hour},       // 1 day
-		{recordType: "120m", retention: 7 * 24 * time.Hour},  // 7 days
-		{recordType: "480m", retention: 30 * 24 * time.Hour}, // 30 days
+		{recordType: "1m", retention: time.Hour},            // 1 hour
+		{recordType: "10m", retention: 12 * time.Hour},      // 12 hours
+		{recordType: "20m", retention: 24 * time.Hour},      // 1 day
+		{recordType: "120m", retention: 7 * 24 * time.Hour}, // 7 days
+		{recordType: "480m", retention: retention480m},      // configurable (default 30 days)
+	}
+	// if retention is 0 ("never"), skip 480m deletion
+	if retention480m == 0 {
+		// filter out 480m from deletion
+		filtered := make([]RecordDeletionData, 0, len(recordData)-1)
+		for _, rd := range recordData {
+			if rd.recordType != "480m" {
+				filtered = append(filtered, rd)
+			}
+		}
+		recordData = filtered
 	}
 
 	now := time.Now().UTC()
@@ -90,10 +105,24 @@ func deleteOldSystemStats(app core.App) error {
 		}
 		// Combine conditions with OR
 		conditionStr := strings.Join(conditionParts, " OR ")
-		// Construct and execute the full raw query
-		rawQuery := fmt.Sprintf("DELETE FROM %s WHERE %s", collection, conditionStr)
-		if _, err := app.DB().NewQuery(rawQuery).Bind(params).Execute(); err != nil {
-			return fmt.Errorf("failed to delete from %s: %v", collection, err)
+		// Batched delete to avoid long single-transaction lock when retention is reduced from large window (#3)
+		const batchSize = 1000
+		for {
+			rawQuery := fmt.Sprintf("DELETE FROM %s WHERE id IN (SELECT id FROM %s WHERE %s ORDER BY created LIMIT %d)", collection, collection, conditionStr, batchSize)
+			res, err := app.DB().NewQuery(rawQuery).Bind(params).Execute()
+			if err != nil {
+				return fmt.Errorf("failed to delete from %s: %v", collection, err)
+			}
+			rows, err := res.RowsAffected()
+			if err != nil {
+				return fmt.Errorf("failed to get rows affected for %s: %v", collection, err)
+			}
+			if rows == 0 {
+				break
+			}
+			if rows < int64(batchSize) {
+				break
+			}
 		}
 	}
 	return nil

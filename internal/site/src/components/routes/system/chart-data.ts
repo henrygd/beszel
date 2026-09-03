@@ -38,6 +38,22 @@ export function getTimeData(chartTime: ChartTimes, lastCreated: number) {
 	return data
 }
 
+// custom range: arbitrary from/to (no cache to avoid type complexity)
+export function getCustomTimeData(from: string, to: string) {
+	const start = new Date(from)
+	const end = new Date(to)
+	const duration = end.getTime() - start.getTime()
+	let ticks: number[]
+	if (duration <= 60 * 60 * 1000) {
+		ticks = timeTicks(start, end, 6).map((d) => d.getTime())
+	} else if (duration <= 24 * 60 * 60 * 1000) {
+		ticks = timeTicks(start, end, 12).map((d) => d.getTime())
+	} else {
+		ticks = timeTicks(start, end, 10).map((d) => d.getTime())
+	}
+	return { ticks, domain: [start.getTime(), end.getTime()] }
+}
+
 /** Append new records onto prev with gap detection. Converts string `created` values to ms timestamps in place.
  * Pass `maxLen` to cap the result length in one copy instead of slicing again after the call. */
 export function appendData<T extends { created: string | number | null }>(
@@ -71,6 +87,7 @@ export async function getStats<T extends SystemStatsRecord | ContainerStatsRecor
 	systemId: string,
 	chartTime: ChartTimes
 ): Promise<T[]> {
+	if (chartTime === "custom") return []
 	const cachedStats = cache.get(`${systemId}_${chartTime}_${collection}`) as T[] | undefined
 	const lastCached = cachedStats?.at(-1)?.created as number
 	return await pb.collection<T>(collection).getFullList({
@@ -82,6 +99,33 @@ export async function getStats<T extends SystemStatsRecord | ContainerStatsRecor
 		fields: "created,stats",
 		sort: "created",
 	})
+}
+
+export async function getCustomStats<T extends SystemStatsRecord | ContainerStatsRecord>(
+	collection: string,
+	systemId: string,
+	from: string,
+	to: string,
+	type: string
+): Promise<T[]> {
+	const cacheKey = `${systemId}_custom_${from}_${to}_${collection}`
+	const cached = cache.get(cacheKey) as T[] | undefined
+	if (cached?.length) return cached
+	const fromPb = from.replace("T", " ").slice(0, 19)
+	const toPb = to.replace("T", " ").slice(0, 19)
+	const result = await pb.collection<T>(collection).getFullList({
+		filter: pb.filter("system={:id} && created >= {:from} && created <= {:to} && type={:type}", {
+			id: systemId,
+			from: fromPb,
+			to: toPb,
+			type,
+		}),
+		fields: "created,stats",
+		sort: "created",
+	})
+	// SAFETY: cache stores T[] where T is SystemStatsRecord or ContainerStatsRecord; SystemStatsRecord[] is safe supertype for cache union
+	cache.set(cacheKey, result as unknown as SystemStatsRecord[])
+	return result
 }
 
 export function makeContainerData(containers: ContainerStatsRecord[]): ChartData["containerData"] {

@@ -5,6 +5,7 @@ import { getPagePath, redirectPage } from "@nanostores/router"
 import {
 	AlertOctagonIcon,
 	BellIcon,
+	DatabaseIcon,
 	FileSlidersIcon,
 	FingerprintIcon,
 	HeartPulseIcon,
@@ -26,6 +27,7 @@ const configYamlSettingsImport = () => import("./config-yaml.tsx")
 const fingerprintsSettingsImport = () => import("./tokens-fingerprints.tsx")
 const alertsHistoryDataTableSettingsImport = () => import("./alerts-history-data-table.tsx")
 const heartbeatSettingsImport = () => import("./heartbeat.tsx")
+const dataRetentionSettingsImport = () => import("./data-retention.tsx")
 
 const GeneralSettings = lazy(generalSettingsImport)
 const NotificationsSettings = lazy(notificationsSettingsImport)
@@ -33,6 +35,7 @@ const ConfigYamlSettings = lazy(configYamlSettingsImport)
 const FingerprintsSettings = lazy(fingerprintsSettingsImport)
 const AlertsHistoryDataTableSettings = lazy(alertsHistoryDataTableSettingsImport)
 const HeartbeatSettings = lazy(heartbeatSettingsImport)
+const DataRetentionSettings = lazy(dataRetentionSettingsImport)
 
 export async function saveSettings(newSettings: Partial<UserSettings>) {
 	try {
@@ -98,6 +101,13 @@ export default function SettingsLayout() {
 			preload: heartbeatSettingsImport,
 		},
 		{
+			title: t`Data Retention`,
+			href: getPagePath($router, "settings", { name: "retention" }),
+			icon: DatabaseIcon,
+			admin: true,
+			preload: dataRetentionSettingsImport,
+		},
+		{
 			title: t`YAML Config`,
 			href: getPagePath($router, "settings", { name: "config" }),
 			icon: FileSlidersIcon,
@@ -159,5 +169,7 @@ function SettingsContent({ name }: { name: string }) {
 			return <AlertsHistoryDataTableSettings />
 		case "heartbeat":
 			return <HeartbeatSettings />
+		case "retention":
+			return <DataRetentionSettings />
 	}
 }
