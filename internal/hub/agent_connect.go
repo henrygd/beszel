@@ -3,6 +3,7 @@ package hub
 import (
 	"context"
 	"errors"
+    "log/slog"
 	"net"
 	"net/http"
 	"strings"
@@ -133,7 +134,36 @@ func (acr *agentConnectRequest) verifyWsConn(conn *gws.Conn, fpRecords []ws.Fing
 		return err
 	}
 
+	// Auto-update system host if the agent's IP has changed
+	acr.updateSystemHost(fpRecord.SystemId)
+
 	return acr.hub.sm.AddWebSocketSystem(fpRecord.SystemId, acr.agentSemVer, wsConn)
+}
+
+// updateSystemHost checks if the current connection's IP matches the system's recorded host
+// and updates it if they differ.
+func (acr *agentConnectRequest) updateSystemHost(systemId string) {
+	if systemId == "" {
+		return
+	}
+
+	systemRecord, err := acr.hub.FindRecordById("systems", systemId)
+	if err != nil {
+		return
+	}
+
+	currentIP := getRealIP(acr.req)
+	recordedHost := systemRecord.GetString("host")
+
+	// Only update if the IP is valid and different
+	if currentIP != "" && recordedHost != currentIP {
+		systemRecord.Set("host", currentIP)
+		if err := acr.hub.SaveNoValidate(systemRecord); err != nil {
+			slog.Error("Failed to auto-update agent host", "systemId", systemId, "err", err)
+		} else {
+			slog.Info("Auto-updated agent host", "name", systemRecord.GetString("name"), "new_ip", currentIP)
+		}
+	}
 }
 
 // validateAgentHeaders extracts and validates the token and agent version from HTTP headers.
