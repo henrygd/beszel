@@ -155,7 +155,9 @@ func (c *ConnectionManager) handleEvent(event ConnectionEvent) {
 	case WebSocketConnect:
 		c.handleStateChange(WebSocketConnected)
 	case SSHConnect:
-		c.handleStateChange(SSHConnected)
+		if c.State == Disconnected {
+			c.handleStateChange(SSHConnected)
+		}
 	case WebSocketDisconnect:
 		if c.State == WebSocketConnected {
 			c.handleStateChange(Disconnected)
