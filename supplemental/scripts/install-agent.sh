@@ -678,6 +678,11 @@ elif is_freebsd; then
       echo "Adding beszel to wheel group for self-updates"
       pw group mod wheel -m beszel
     fi
+    # Add the user to the operator group for device access (SMART, /dev/xpt0, /dev/nvme*)
+    if pw group show operator >/dev/null 2>&1; then
+      echo "Adding beszel to operator group for device access"
+      pw group mod operator -m beszel
+    fi
   fi
 
 else
