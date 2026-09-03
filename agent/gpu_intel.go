@@ -13,7 +13,7 @@ import (
 
 const (
 	intelGpuStatsCmd      string = "intel_gpu_top"
-	intelGpuStatsInterval string = "3300" // in milliseconds
+	intelGpuStatsInterval string = "1000" // in milliseconds
 )
 
 type intelGpuStats struct {
@@ -86,6 +86,7 @@ func (gm *GPUManager) collectIntelStats() (err error) {
 	var friendlyNames []string
 	var preEngineCols int
 	var powerIndex int
+	var powerIsPkg bool
 	var hadDataRow bool
 	// skip first data row because it sometimes has erroneous data
 	var skippedFirstDataRow bool
@@ -104,7 +105,7 @@ func (gm *GPUManager) collectIntelStats() (err error) {
 
 		// second header line
 		if strings.HasPrefix(line, "req") {
-			engineNames, friendlyNames, powerIndex, preEngineCols = gm.parseIntelHeaders(header1, line)
+			engineNames, friendlyNames, powerIndex, powerIsPkg, preEngineCols = gm.parseIntelHeaders(header1, line)
 			continue
 		}
 
@@ -113,7 +114,7 @@ func (gm *GPUManager) collectIntelStats() (err error) {
 			skippedFirstDataRow = true
 			continue
 		}
-		sample, err := gm.parseIntelData(line, engineNames, friendlyNames, powerIndex, preEngineCols)
+		sample, err := gm.parseIntelData(line, engineNames, friendlyNames, powerIndex, powerIsPkg, preEngineCols)
 		if err != nil {
 			return err
 		}
@@ -129,11 +130,12 @@ func (gm *GPUManager) collectIntelStats() (err error) {
 	return nil
 }
 
-func (gm *GPUManager) parseIntelHeaders(header1 string, header2 string) (engineNames []string, friendlyNames []string, powerIndex int, preEngineCols int) {
+func (gm *GPUManager) parseIntelHeaders(header1 string, header2 string) (engineNames []string, friendlyNames []string, powerIndex int, powerIsPkg bool, preEngineCols int) {
 	// Build indexes
 	h1 := strings.Fields(header1)
 	h2 := strings.Fields(header2)
 	powerIndex = -1 // Initialize to -1, will be set to actual index if found
+	powerIsPkg = false
 	// Collect engine names from header1
 	for _, col := range h1 {
 		key := strings.TrimRightFunc(col, func(r rune) bool {
@@ -157,21 +159,26 @@ func (gm *GPUManager) parseIntelHeaders(header1 string, header2 string) (engineN
 		engineNames = append(engineNames, key)
 		friendlyNames = append(friendlyNames, friendly)
 	}
-	// find power gpu index among pre-engine columns
+	// Find power columns among pre-engine fields. Prefer GPU, fallback to pkg-only format.
 	if n := len(engineNames); n > 0 {
 		preEngineCols = max(len(h2)-3*n, 0)
 		limit := min(len(h2), preEngineCols)
 		for i := range limit {
 			if strings.EqualFold(h2[i], "gpu") {
 				powerIndex = i
+				powerIsPkg = false
 				break
+			}
+			if strings.EqualFold(h2[i], "pkg") && powerIndex == -1 {
+				powerIndex = i
+				powerIsPkg = true
 			}
 		}
 	}
-	return engineNames, friendlyNames, powerIndex, preEngineCols
+	return engineNames, friendlyNames, powerIndex, powerIsPkg, preEngineCols
 }
 
-func (gm *GPUManager) parseIntelData(line string, engineNames []string, friendlyNames []string, powerIndex int, preEngineCols int) (sample intelGpuStats, err error) {
+func (gm *GPUManager) parseIntelData(line string, engineNames []string, friendlyNames []string, powerIndex int, powerIsPkg bool, preEngineCols int) (sample intelGpuStats, err error) {
 	fields := strings.Fields(line)
 	if len(fields) == 0 {
 		return sample, errNoValidData
@@ -182,10 +189,17 @@ func (gm *GPUManager) parseIntelData(line string, engineNames []string, friendly
 	}
 	if powerIndex >= 0 && powerIndex < len(fields) {
 		if v, perr := strconv.ParseFloat(fields[powerIndex], 64); perr == nil {
-			sample.PowerGPU = v
-		}
-		if v, perr := strconv.ParseFloat(fields[powerIndex+1], 64); perr == nil {
-			sample.PowerPkg = v
+			if powerIsPkg {
+				sample.PowerPkg = v
+			} else {
+				sample.PowerGPU = v
+				// In gpu+pkg layouts, package power is the next column.
+				if powerIndex+1 < len(fields) {
+					if v2, perr2 := strconv.ParseFloat(fields[powerIndex+1], 64); perr2 == nil {
+						sample.PowerPkg = v2
+					}
+				}
+			}
 		}
 	}
 	if len(engineNames) > 0 {
