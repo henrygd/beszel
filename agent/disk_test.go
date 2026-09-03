@@ -608,6 +608,154 @@ func TestAddPartitionExtraFs(t *testing.T) {
 	})
 }
 
+func TestPartitionQualifiesForAutoExtra(t *testing.T) {
+	root := "/"
+	t.Run("linux block mount", func(t *testing.T) {
+		p := disk.PartitionStat{Device: "/dev/sdb1", Mountpoint: "/mnt/backup", Fstype: "ext4"}
+		assert.True(t, partitionQualifiesForAutoExtra(p, root, false))
+	})
+	t.Run("skips root mount", func(t *testing.T) {
+		p := disk.PartitionStat{Device: "/dev/sda2", Mountpoint: "/", Fstype: "ext4"}
+		assert.False(t, partitionQualifiesForAutoExtra(p, root, false))
+	})
+	t.Run("skips tmpfs", func(t *testing.T) {
+		p := disk.PartitionStat{Device: "tmpfs", Mountpoint: "/run", Fstype: "tmpfs"}
+		assert.False(t, partitionQualifiesForAutoExtra(p, root, false))
+	})
+	t.Run("skips nfs", func(t *testing.T) {
+		p := disk.PartitionStat{Device: "192.168.1.1:/export", Mountpoint: "/mnt/nfs", Fstype: "nfs4"}
+		assert.False(t, partitionQualifiesForAutoExtra(p, root, false))
+	})
+	t.Run("skips loop device", func(t *testing.T) {
+		p := disk.PartitionStat{Device: "/dev/loop0", Mountpoint: "/snap/core/123", Fstype: "squashfs"}
+		assert.False(t, partitionQualifiesForAutoExtra(p, root, false))
+	})
+	t.Run("skips pseudo mount path", func(t *testing.T) {
+		p := disk.PartitionStat{Device: "/dev/sda1", Mountpoint: "/snap/foo/123", Fstype: "squashfs"}
+		assert.False(t, partitionQualifiesForAutoExtra(p, root, false))
+	})
+	t.Run("skips extra-filesystems tree", func(t *testing.T) {
+		p := disk.PartitionStat{Device: "/dev/sdc1", Mountpoint: "/extra-filesystems/data", Fstype: "ext4"}
+		assert.False(t, partitionQualifiesForAutoExtra(p, root, false))
+	})
+	t.Run("zfs dataset without dev path", func(t *testing.T) {
+		p := disk.PartitionStat{Device: "tank/data", Mountpoint: "/tank", Fstype: "zfs"}
+		assert.True(t, partitionQualifiesForAutoExtra(p, root, false))
+	})
+	t.Run("windows non-root drive", func(t *testing.T) {
+		p := disk.PartitionStat{Device: `\\.\HarddiskVolume2`, Mountpoint: `D:\`, Fstype: "ntfs"}
+		assert.True(t, partitionQualifiesForAutoExtra(p, `C:`, true))
+	})
+	t.Run("windows root drive", func(t *testing.T) {
+		p := disk.PartitionStat{Device: `\\.\HarddiskVolume1`, Mountpoint: `C:\`, Fstype: "ntfs"}
+		assert.False(t, partitionQualifiesForAutoExtra(p, `C:`, true))
+	})
+	t.Run("usb mount at /run/media is allowed", func(t *testing.T) {
+		p := disk.PartitionStat{Device: "/dev/sdc1", Mountpoint: "/run/media/user/usb", Fstype: "exfat"}
+		assert.True(t, partitionQualifiesForAutoExtra(p, root, false))
+	})
+	t.Run("rejects empty device", func(t *testing.T) {
+		p := disk.PartitionStat{Device: "", Mountpoint: "/mnt/data", Fstype: "ext4"}
+		assert.False(t, partitionQualifiesForAutoExtra(p, root, false))
+	})
+}
+
+func TestAddAutoDiscoveredExtraMount(t *testing.T) {
+	t.Run("registers conventional linux mount", func(t *testing.T) {
+		t.Setenv("DISABLE_AUTO_EXTRA_DISK", "")
+		agent := &Agent{fsStats: make(map[string]*system.FsStats)}
+		d := diskDiscovery{
+			agent:          agent,
+			rootMountPoint: "/",
+			ctx: fsRegistrationContext{
+				isWindows: false,
+				efPath:    "/extra-filesystems",
+				diskIoCounters: map[string]disk.IOCountersStat{
+					"sdb1": {Name: "sdb1"},
+				},
+			},
+		}
+		d.addAutoDiscoveredExtraMount(disk.PartitionStat{
+			Device: "/dev/sdb1", Mountpoint: "/mnt/backup", Fstype: "ext4",
+		})
+		stats, ok := agent.fsStats["sdb1"]
+		assert.True(t, ok)
+		assert.Equal(t, "/mnt/backup", stats.Mountpoint)
+		assert.False(t, stats.Root)
+	})
+
+	t.Run("respects DISABLE_AUTO_EXTRA_DISK", func(t *testing.T) {
+		t.Setenv("DISABLE_AUTO_EXTRA_DISK", "true")
+		agent := &Agent{fsStats: make(map[string]*system.FsStats)}
+		d := diskDiscovery{
+			agent:          agent,
+			rootMountPoint: "/",
+			ctx: fsRegistrationContext{
+				isWindows: false,
+				efPath:    "/extra-filesystems",
+				diskIoCounters: map[string]disk.IOCountersStat{
+					"sdb1": {Name: "sdb1"},
+				},
+			},
+		}
+		d.addAutoDiscoveredExtraMount(disk.PartitionStat{
+			Device: "/dev/sdb1", Mountpoint: "/mnt/backup", Fstype: "ext4",
+		})
+		assert.Empty(t, agent.fsStats)
+	})
+
+	t.Run("boot partition does not duplicate root I/O key", func(t *testing.T) {
+		t.Setenv("DISABLE_AUTO_EXTRA_DISK", "")
+		agent := &Agent{fsStats: map[string]*system.FsStats{
+			"sda": {Root: true, Mountpoint: "/"},
+		}}
+		d := diskDiscovery{
+			agent:          agent,
+			rootMountPoint: "/",
+			ctx: fsRegistrationContext{
+				isWindows: false,
+				efPath:    "/extra-filesystems",
+				diskIoCounters: map[string]disk.IOCountersStat{
+					"sda": {Name: "sda"},
+				},
+			},
+		}
+		d.addAutoDiscoveredExtraMount(disk.PartitionStat{
+			Device: "/dev/sda1", Mountpoint: "/boot", Fstype: "vfat",
+		})
+		assert.Len(t, agent.fsStats, 1)
+		_, hasBoot := agent.fsStats["sda1"]
+		assert.False(t, hasBoot)
+	})
+
+	t.Run("registers second physical disk independently", func(t *testing.T) {
+		t.Setenv("DISABLE_AUTO_EXTRA_DISK", "")
+		agent := &Agent{fsStats: map[string]*system.FsStats{
+			"sda": {Root: true, Mountpoint: "/"},
+		}}
+		d := diskDiscovery{
+			agent:          agent,
+			rootMountPoint: "/",
+			ctx: fsRegistrationContext{
+				isWindows: false,
+				efPath:    "/extra-filesystems",
+				diskIoCounters: map[string]disk.IOCountersStat{
+					"sda":  {Name: "sda"},
+					"sdb1": {Name: "sdb1"},
+				},
+			},
+		}
+		d.addAutoDiscoveredExtraMount(disk.PartitionStat{
+			Device: "/dev/sdb1", Mountpoint: "/mnt/data", Fstype: "ext4",
+		})
+		assert.Len(t, agent.fsStats, 2)
+		stats, ok := agent.fsStats["sdb1"]
+		assert.True(t, ok)
+		assert.False(t, stats.Root)
+		assert.Equal(t, "/mnt/data", stats.Mountpoint)
+	})
+}
+
 func TestFindIoDevice(t *testing.T) {
 	t.Run("matches by device name", func(t *testing.T) {
 		ioCounters := map[string]disk.IOCountersStat{
