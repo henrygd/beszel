@@ -205,7 +205,13 @@ export function SystemsTableColumns(viewMode: "table" | "grid"): ColumnDef<Syste
 			accessorFn: ({ info }) => info.g || undefined,
 			id: "gpu",
 			name: () => "GPU",
-			cell: TableCellWithMeter,
+			cell: (info) => {
+				const val = info.getValue() as number | undefined
+				if (val === undefined) {
+					return null
+				}
+				return TableCellWithMeter(info)
+			},
 			Icon: GpuIcon,
 			header: sortableHeader,
 		},

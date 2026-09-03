@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/fxamacker/cbor/v2"
+	"github.com/henrygd/beszel/internal/entities/container"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -62,4 +63,57 @@ func TestStatsLegacyBatteryPayload(t *testing.T) {
 	require.NoError(t, json.Unmarshal(data, &payload))
 	assert.Contains(t, payload, "bat")
 	assert.NotContains(t, payload, "bats")
+}
+
+func TestCombinedDataSystemdUpdateMarkerTransport(t *testing.T) {
+	data := CombinedData{SystemdServicesUpdated: true}
+
+	jsonData, err := json.Marshal(data)
+	require.NoError(t, err)
+	var decodedJSON CombinedData
+	require.NoError(t, json.Unmarshal(jsonData, &decodedJSON))
+	assert.True(t, decodedJSON.SystemdServicesUpdated)
+	assert.Empty(t, decodedJSON.SystemdServices)
+
+	cborData, err := cbor.Marshal(data)
+	require.NoError(t, err)
+	var decodedCBOR CombinedData
+	require.NoError(t, cbor.Unmarshal(cborData, &decodedCBOR))
+	assert.True(t, decodedCBOR.SystemdServicesUpdated)
+	assert.Empty(t, decodedCBOR.SystemdServices)
+
+	var legacy CombinedData
+	require.NoError(t, json.Unmarshal([]byte(`{"stats":{},"info":{},"container":[]}`), &legacy))
+	assert.False(t, legacy.SystemdServicesUpdated)
+}
+
+func TestCombinedDataContainerValidityTransport(t *testing.T) {
+	validEmpty := CombinedData{Containers: []*container.Stats{}}
+
+	jsonData, err := json.Marshal(validEmpty)
+	require.NoError(t, err)
+	var decodedJSON CombinedData
+	require.NoError(t, json.Unmarshal(jsonData, &decodedJSON))
+	assert.NotNil(t, decodedJSON.Containers)
+	assert.Empty(t, decodedJSON.Containers)
+
+	jsonV2Data, err := jsonv2.Marshal(validEmpty)
+	require.NoError(t, err)
+	var decodedJSONV2 CombinedData
+	require.NoError(t, jsonv2.Unmarshal(jsonV2Data, &decodedJSONV2))
+	assert.NotNil(t, decodedJSONV2.Containers)
+	assert.Empty(t, decodedJSONV2.Containers)
+
+	cborData, err := cbor.Marshal(validEmpty)
+	require.NoError(t, err)
+	var decodedCBOR CombinedData
+	require.NoError(t, cbor.Unmarshal(cborData, &decodedCBOR))
+	assert.NotNil(t, decodedCBOR.Containers)
+	assert.Empty(t, decodedCBOR.Containers)
+
+	invalidData, err := cbor.Marshal(CombinedData{})
+	require.NoError(t, err)
+	var decodedInvalid CombinedData
+	require.NoError(t, cbor.Unmarshal(invalidData, &decodedInvalid))
+	assert.Nil(t, decodedInvalid.Containers)
 }

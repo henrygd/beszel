@@ -674,6 +674,33 @@ func TestAverageSystemStatsSlice_MixedOptionalFields(t *testing.T) {
 	assert.Equal(t, 20.0, result.GPUData["gpu0"].Usage)
 }
 
+func TestAverageSystemStatsSlice_Zfs(t *testing.T) {
+	input := []system.Stats{
+		{
+			ZfsPools: map[string]*system.ZfsPool{
+				"tank": {Total: 100, Used: 40, ReadBytes: 100, WriteBytes: 200, Health: "ONLINE"},
+			},
+		},
+		{},
+		{
+			ZfsPools: map[string]*system.ZfsPool{
+				"tank":   {Total: 120, Used: 60, ReadBytes: 300, WriteBytes: 400, Health: "DEGRADED"},
+				"backup": {Total: 50, Used: 10, ReadBytes: 25, WriteBytes: 50, Health: "ONLINE"},
+			},
+		},
+	}
+
+	result := records.AverageSystemStatsSlice(input)
+
+	require.Len(t, result.ZfsPools, 2)
+	assert.Equal(t, &system.ZfsPool{
+		Total: 110, Used: 50, ReadBytes: 200, WriteBytes: 300, Health: "DEGRADED",
+	}, result.ZfsPools["tank"])
+	assert.Equal(t, &system.ZfsPool{
+		Total: 50, Used: 10, ReadBytes: 25, WriteBytes: 50, Health: "ONLINE",
+	}, result.ZfsPools["backup"])
+}
+
 // Tests with 10 records matching the common real-world case (10 x 1m -> 1 x 10m).
 func TestAverageSystemStatsSlice_TenRecords(t *testing.T) {
 	input := make([]system.Stats, 10)

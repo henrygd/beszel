@@ -8,7 +8,7 @@ msgstr ""
 "Language: uk\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2026-08-19 12:00\n"
+"PO-Revision-Date: 2026-09-02 21:43\n"
 "Last-Translator: \n"
 "Language-Team: Ukrainian\n"
 "Plural-Forms: nplurals=4; plural=((n%10==1 && n%100!=11) ? 0 : ((n%10 >= 2 && n%10 <=4 && (n%100 < 12 || n%100 > 14)) ? 1 : ((n%10 == 0 || (n%10 >= 5 && n%10 <=9)) || (n%100 >= 11 && n%100 <= 14)) ? 2 : 3));\n"
@@ -45,6 +45,10 @@ msgstr "{count, plural, one {{countString} година} few {{countString} го
 #: src/lib/utils.ts
 msgid "{count, plural, one {{countString} minute} few {{countString} minutes} many {{countString} minutes} other {{countString} minutes}}"
 msgstr "{count, plural, one {{countString} хвилина} few {{countString} хвилини} many {{countString} хвилин} other {{countString} хвилини}}"
+
+#: src/components/routes/system/charts/disk-charts.tsx
+msgid "{diskName} I/O"
+msgstr "Ввід/вивід {diskName}"
 
 #: src/components/routes/system/info-bar.tsx
 msgid "{threads, plural, one {# thread} other {# threads}}"
@@ -93,6 +97,7 @@ msgstr "5 хв"
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 #: src/components/routes/system/smart-table.tsx
+#: src/components/routes/system/zfs-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Actions"
 msgstr "Дії"
@@ -190,6 +195,11 @@ msgstr "Ви впевнені?"
 #: src/components/copy-to-clipboard.tsx
 msgid "Automatic copy requires a secure context."
 msgstr "Автоматичне копіювання вимагає безпечного контексту."
+
+#: src/components/routes/system/zfs-table.tsx
+msgctxt "Disk space available"
+msgid "Available"
+msgstr "Доступно"
 
 #: src/components/routes/system/chart-card.tsx
 msgid "Average"
@@ -328,6 +338,7 @@ msgid "Capabilities"
 msgstr "Можливості"
 
 #: src/components/routes/system/smart-table.tsx
+#: src/components/routes/system/zfs-table.tsx
 msgid "Capacity"
 msgstr "Ємність"
 
@@ -380,8 +391,14 @@ msgstr "Перевірте ваш сервіс моніторингу"
 msgid "Check your notification service"
 msgstr "Перевірте ваш сервіс сповіщень"
 
+#: src/components/routes/system/zfs-table.tsx
+msgid "Checksum errors"
+msgstr "Помилки контрольної суми"
+
 #: src/components/containers-table/containers-table.tsx
 #: src/components/routes/system/smart-table.tsx
+#: src/components/routes/system/zfs-table.tsx
+#: src/components/routes/system/zfs-table.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "Clear"
 msgstr "Очистити"
@@ -393,6 +410,10 @@ msgstr "Натисніть на контейнер, щоб переглянут�
 #: src/components/routes/system/smart-table.tsx
 msgid "Click on a device to view more information."
 msgstr "Натисніть на пристрій, щоб переглянути більше інформації."
+
+#: src/components/routes/system/zfs-table.tsx
+msgid "Click on a pool to view vdev and dataset details."
+msgstr "Натисніть на pool, щоб переглянути відомості про vdev і dataset."
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Click on a system to view more information."
@@ -423,6 +444,14 @@ msgstr "Конфлікти"
 #: src/components/active-alerts.tsx
 msgid "Connection is down"
 msgstr "З’єднання розірвано"
+
+#: src/lib/alerts.ts
+msgid "Container"
+msgstr "Контейнер"
+
+#: src/lib/alerts.ts
+msgid "Container Health"
+msgstr "Здоров'я контейнера"
 
 #: src/components/routes/system.tsx
 msgid "Containers"
@@ -507,9 +536,17 @@ msgstr "ЦП"
 msgid "CPU Cores"
 msgstr "Ядра ЦП"
 
+#: src/lib/alerts.ts
+msgid "CPU I/O Wait"
+msgstr "Час очікування введення/виведення CPU (IOWait)"
+
 #: src/components/systemd-table/systemd-table-columns.tsx
 msgid "CPU Peak"
 msgstr "Пік ЦП"
+
+#: src/lib/alerts.ts
+msgid "CPU Steal Time"
+msgstr "Час CPU, відібраний гіпервізором (Steal)"
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "CPU time"
@@ -543,13 +580,29 @@ msgstr "Створено"
 msgid "Critical (%)"
 msgstr "Критично (%)"
 
+#: src/components/routes/system/disk-io-sheet.tsx
+msgid "Cumulative data read since boot"
+msgstr "Загалом даних прочитано з моменту завантаження"
+
+#: src/components/routes/system/disk-io-sheet.tsx
+msgid "Cumulative data written since boot"
+msgstr "Загалом даних записано з моменту завантаження"
+
 #: src/components/routes/system/network-sheet.tsx
 msgid "Cumulative Download"
 msgstr "Кумулятивне завантаження"
 
+#: src/components/routes/system/disk-io-sheet.tsx
+msgid "Cumulative Read"
+msgstr "Сумарне читання"
+
 #: src/components/routes/system/network-sheet.tsx
 msgid "Cumulative Upload"
 msgstr "Кумулятивне відвантаження"
+
+#: src/components/routes/system/disk-io-sheet.tsx
+msgid "Cumulative Write"
+msgstr "Сумарний запис"
 
 #. Context: Battery state
 #. Context: Battery state
@@ -610,15 +663,10 @@ msgstr "Розряджається"
 msgid "Disk"
 msgstr "Диск"
 
-#: src/components/routes/system/charts/disk-charts.tsx
-msgid "Disk I/O"
-msgstr "Дисковий ввід/вивід"
-
 #: src/components/routes/settings/general.tsx
 msgid "Disk unit"
 msgstr "Одиниця виміру диска"
 
-#: src/components/routes/system/charts/disk-charts.tsx
 #: src/components/routes/system/charts/disk-charts.tsx
 #: src/lib/alerts.ts
 msgid "Disk Usage"
@@ -788,6 +836,10 @@ msgstr "Не вдалося"
 msgid "Failed Attributes:"
 msgstr "Невдалі атрибути:"
 
+#: src/lib/alerts.ts
+msgid "Failed Services"
+msgstr "Несправні служби"
+
 #: src/lib/api.ts
 msgid "Failed to authenticate"
 msgstr "Не вдалося автентифікувати"
@@ -823,6 +875,8 @@ msgstr "Вентилятори"
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/system/chart-card.tsx
 #: src/components/routes/system/smart-table.tsx
+#: src/components/routes/system/zfs-table.tsx
+#: src/components/routes/system/zfs-table.tsx
 #: src/components/systemd-table/systemd-table.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "Filter..."
@@ -843,6 +897,12 @@ msgstr "Протягом <0>{min}</0> {min, plural, one {хвилини} other {
 #: src/components/login/auth-form.tsx
 msgid "Forgot password?"
 msgstr "Забули пароль?"
+
+#: src/components/routes/system/zfs-table.tsx
+#: src/components/routes/system/zfs-table.tsx
+msgctxt "Free space"
+msgid "Free"
+msgstr "Вільно"
 
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
@@ -888,6 +948,7 @@ msgid "Grid"
 msgstr "Сітка"
 
 #: src/components/containers-table/containers-table-columns.tsx
+#: src/components/routes/system/zfs-table.tsx
 msgid "Health"
 msgstr "Здоров’я"
 
@@ -1085,6 +1146,10 @@ msgstr "Використання пам’яті контейнерами"
 msgid "Model"
 msgstr "Модель"
 
+#: src/components/routes/system/zfs-table.tsx
+msgid "Mountpoint"
+msgstr "Точка монтування"
+
 #: src/components/add-system.tsx
 #: src/components/alerts-history-columns.tsx
 #: src/components/containers-table/containers-table-columns.tsx
@@ -1120,6 +1185,10 @@ msgstr "Одиниця виміру мережі"
 msgid "No"
 msgstr "Ні"
 
+#: src/components/routes/system/zfs-table.tsx
+msgid "No detail data for this pool."
+msgstr "Докладні дані для цього pool недоступні."
+
 #: src/components/command-palette.tsx
 #: src/components/systemd-table/systemd-table.tsx
 msgid "No results found."
@@ -1143,11 +1212,19 @@ msgstr "Для цього пристрою немає доступних атр�
 msgid "No systems found."
 msgstr "Систем не знайдено."
 
+#: src/components/routes/system/zfs-table.tsx
+msgid "None"
+msgstr "Немає"
+
 #: src/components/command-palette.tsx
 #: src/components/routes/settings/layout.tsx
 #: src/components/routes/settings/notifications.tsx
 msgid "Notifications"
 msgstr "Сповіщення"
+
+#: src/lib/alerts.ts
+msgid "Notifications may include recent container log excerpts."
+msgstr "Сповіщення можуть містити фрагменти останніх журналів контейнерів."
 
 #: src/components/login/auth-form.tsx
 msgid "OAuth 2 / OIDC support"
@@ -1156,6 +1233,14 @@ msgstr "Підтримка OAuth 2 / OIDC"
 #: src/components/routes/settings/config-yaml.tsx
 msgid "On each restart, systems in the database will be updated to match the systems defined in the file."
 msgstr "При кожному перезапуску системи в базі даних оновлюватимуться відповідно до систем, визначених у файлі."
+
+#: src/lib/alerts.ts
+msgid "One or more containers are unhealthy"
+msgstr "Один або кілька контейнерів мають нездоровий стан"
+
+#: src/lib/alerts.ts
+msgid "One or more services are in a failed state"
+msgstr "Одна або кілька служб перебувають у стані помилки"
 
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/quiet-hours.tsx
@@ -1170,6 +1255,7 @@ msgstr "Одноразовий пароль"
 #: src/components/routes/settings/tokens-fingerprints.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 #: src/components/routes/system/smart-table.tsx
+#: src/components/routes/system/zfs-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Open menu"
 msgstr "Відкрити меню"
@@ -1293,6 +1379,14 @@ msgstr "Будь ласка, перегляньте <0>документацію<
 msgid "Please sign in to your account"
 msgstr "Будь ласка, увійдіть у свій обліковий запис"
 
+#: src/components/routes/system/zfs-table.tsx
+msgid "Pool Health"
+msgstr "Стан pool"
+
+#: src/components/routes/system/charts/zfs-charts.tsx
+msgid "Pool Usage"
+msgstr "Використання pool"
+
 #: src/components/add-system.tsx
 msgid "Port"
 msgstr "Порт"
@@ -1339,12 +1433,19 @@ msgid "Quiet Hours"
 msgstr "Тихі години"
 
 #. Disk read
+#. Disk read
 #: src/components/routes/system/charts/disk-charts.tsx
+#: src/components/routes/system/charts/zfs-charts.tsx
+#: src/components/routes/system/disk-io-sheet.tsx
 #: src/components/routes/system/disk-io-sheet.tsx
 #: src/components/routes/system/disk-io-sheet.tsx
 #: src/components/routes/system/disk-io-sheet.tsx
 msgid "Read"
 msgstr "Читання"
+
+#: src/components/routes/system/zfs-table.tsx
+msgid "Read errors"
+msgstr "Помилки читання"
 
 #: src/components/routes/system/charts/network-charts.tsx
 msgid "Received"
@@ -1353,6 +1454,7 @@ msgstr "Отримано"
 #: src/components/containers-table/containers-table.tsx
 #: src/components/containers-table/containers-table.tsx
 #: src/components/routes/system/smart-table.tsx
+#: src/components/routes/system/zfs-table.tsx
 msgid "Refresh"
 msgstr "Оновити"
 
@@ -1394,6 +1496,8 @@ msgstr "Перезапуски"
 msgid "Resume"
 msgstr "Відновити"
 
+#: src/components/routes/system/charts/disk-charts.tsx
+#: src/components/routes/system/charts/disk-charts.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgctxt "Root disk label"
 msgid "Root"
@@ -1539,6 +1643,7 @@ msgstr "Час початку"
 #. Context: alert state (active or resolved)
 #: src/components/alerts-history-columns.tsx
 #: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/system/zfs-table.tsx
 #: src/components/systemd-table/systemd-table-columns.tsx
 msgid "State"
 msgstr "Стан"
@@ -1667,9 +1772,9 @@ msgstr "Це назавжди видалить усі вибрані запис�
 msgid "Throughput of {extraFsName}"
 msgstr "Пропускна здатність {extraFsName}"
 
-#: src/components/routes/system/charts/disk-charts.tsx
-msgid "Throughput of root filesystem"
-msgstr "Пропускна здатність кореневої файлової системи"
+#: src/components/routes/system/charts/zfs-charts.tsx
+msgid "Throughput of ZFS pool {poolName}"
+msgstr "Пропускна здатність ZFS pool {poolName}"
 
 #: src/components/routes/settings/general.tsx
 msgid "Time format"
@@ -1742,8 +1847,16 @@ msgid "Triggers when 5 minute load average exceeds a threshold"
 msgstr "Спрацьовує, коли середнє навантаження за 5 хвилин перевищує поріг"
 
 #: src/lib/alerts.ts
+msgid "Triggers when a container's health check reports unhealthy"
+msgstr "Спрацьовує, коли перевірка стану контейнера повідомляє про нездоровий стан"
+
+#: src/lib/alerts.ts
 msgid "Triggers when any sensor exceeds a threshold"
 msgstr "Спрацьовує, коли будь-який датчик перевищує поріг"
+
+#: src/lib/alerts.ts
+msgid "Triggers when any systemd service enters the failed state"
+msgstr "Спрацьовує, коли будь-яка служба systemd переходить у стан помилки"
 
 #: src/lib/alerts.ts
 msgid "Triggers when battery charge drops below a threshold"
@@ -1752,6 +1865,14 @@ msgstr "Спрацьовує, коли заряд батареї опускає�
 #: src/lib/alerts.ts
 msgid "Triggers when combined up/down exceeds a threshold"
 msgstr "Спрацьовує, коли відправлення/отримання сумарно перевищує поріг"
+
+#: src/lib/alerts.ts
+msgid "Triggers when CPU I/O wait exceeds a threshold"
+msgstr "Спрацьовує, коли час очікування введення/виведення CPU перевищує порогове значення"
+
+#: src/lib/alerts.ts
+msgid "Triggers when CPU steal time exceeds a threshold"
+msgstr "Спрацьовує, коли викрадений час CPU перевищує порогове значення"
 
 #: src/lib/alerts.ts
 msgid "Triggers when CPU usage exceeds a threshold"
@@ -1779,6 +1900,10 @@ msgstr "Спрацьовує, коли використання будь-яко�
 msgid "Type"
 msgstr "Тип"
 
+#: src/lib/alerts.ts
+msgid "Unhealthy"
+msgstr "Нездоровий"
+
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Unit file"
 msgstr "Файл юніта"
@@ -1794,6 +1919,7 @@ msgid "Universal token"
 msgstr "Універсальний токен"
 
 #. Context: Battery state
+#: src/components/routes/system/zfs-table.tsx
 #: src/lib/i18n.ts
 msgid "Unknown"
 msgstr "Невідомо"
@@ -1819,6 +1945,7 @@ msgstr "Оновити"
 
 #: src/components/containers-table/containers-table-columns.tsx
 #: src/components/routes/system/smart-table.tsx
+#: src/components/routes/system/zfs-table.tsx
 #: src/components/systemd-table/systemd-table-columns.tsx
 msgid "Updated"
 msgstr "Оновлено"
@@ -1837,19 +1964,24 @@ msgid "Uptime"
 msgstr "Час роботи"
 
 #: src/components/routes/system/charts/disk-charts.tsx
+#: src/components/routes/system/charts/disk-charts.tsx
 #: src/components/routes/system/charts/gpu-charts.tsx
 #: src/components/routes/system/charts/gpu-charts.tsx
 #: src/components/routes/system/charts/gpu-charts.tsx
+#: src/components/routes/system/charts/zfs-charts.tsx
 #: src/components/routes/system/cpu-sheet.tsx
 msgid "Usage"
 msgstr "Використання"
 
-#: src/components/routes/system/charts/disk-charts.tsx
-msgid "Usage of root partition"
-msgstr "Використання кореневого розділу"
+#: src/components/routes/system/charts/zfs-charts.tsx
+msgid "Usage of ZFS pool {poolName}"
+msgstr "Використання ZFS pool {poolName}"
 
 #: src/components/routes/system/charts/memory-charts.tsx
 #: src/components/routes/system/charts/memory-charts.tsx
+#: src/components/routes/system/zfs-table.tsx
+#: src/components/routes/system/zfs-table.tsx
+#: src/components/routes/system/zfs-table.tsx
 msgid "Used"
 msgstr "Використано"
 
@@ -1924,12 +2056,19 @@ msgid "Windows command"
 msgstr "Команда Windows"
 
 #. Disk write
+#. Disk write
 #: src/components/routes/system/charts/disk-charts.tsx
+#: src/components/routes/system/charts/zfs-charts.tsx
+#: src/components/routes/system/disk-io-sheet.tsx
 #: src/components/routes/system/disk-io-sheet.tsx
 #: src/components/routes/system/disk-io-sheet.tsx
 #: src/components/routes/system/disk-io-sheet.tsx
 msgid "Write"
 msgstr "Запис"
+
+#: src/components/routes/system/zfs-table.tsx
+msgid "Write errors"
+msgstr "Помилки запису"
 
 #: src/components/routes/settings/layout.tsx
 msgid "YAML Config"

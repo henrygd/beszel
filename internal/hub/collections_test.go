@@ -50,6 +50,13 @@ func TestCollectionRulesDefault(t *testing.T) {
 	assert.Equal(t, isUserMatchesUser, *alertsCollection.CreateRule)
 	assert.Equal(t, isUserMatchesUser, *alertsCollection.UpdateRule)
 	assert.Equal(t, isUserMatchesUser, *alertsCollection.DeleteRule)
+	alertNames := alertsCollection.Fields.GetByName("name").(*core.SelectField).Values
+	for _, name := range []string{"CPUIOWait", "CPUSteal"} {
+		assert.Contains(t, alertNames, name)
+	}
+	for _, name := range []string{"CPUSystem", "CPUUser", "CPUIdle", "CPUOther"} {
+		assert.NotContains(t, alertNames, name)
+	}
 
 	// alerts_history collection
 	alertsHistoryCollection, err := hub.FindCollectionByNameOrId("alerts_history")

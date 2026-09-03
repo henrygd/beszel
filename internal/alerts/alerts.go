@@ -20,10 +20,10 @@ type hubLike interface {
 }
 
 type AlertManager struct {
-	hub           hubLike
-	stopOnce      sync.Once
-	pendingAlerts sync.Map
-	alertsCache   *AlertsCache
+	hub                    hubLike
+	stopOnce               sync.Once
+	pendingAlerts          sync.Map
+	alertsCache            *AlertsCache
 }
 
 type AlertMessageData struct {
@@ -48,6 +48,7 @@ type SystemAlertFsStats struct {
 // Values pulled from system_stats.stats that are relevant to alerts.
 type SystemAlertStats struct {
 	Cpu          float64                       `json:"cpu"`
+	CpuBreakdown []float64                     `json:"cpub"`
 	Mem          float64                       `json:"mp"`
 	Disk         float64                       `json:"dp"`
 	Bandwidth    [2]uint64                     `json:"b"`
@@ -57,10 +58,16 @@ type SystemAlertStats struct {
 	Battery      [2]uint8                      `json:"bat"`
 	Batteries    map[string]uint8              `json:"bats"`
 	ExtraFs      map[string]SystemAlertFsStats `json:"efs"`
+	ZfsPools     map[string]SystemAlertZfsPool `json:"z"`
 }
 
 type SystemAlertGPUData struct {
 	Usage float64 `json:"u"`
+}
+
+type SystemAlertZfsPool struct {
+	Total float64 `json:"d"`
+	Used  float64 `json:"du"`
 }
 
 type SystemAlertData struct {
@@ -111,6 +118,9 @@ func (am *AlertManager) bindEvents() {
 	am.hub.OnRecordAfterUpdateSuccess("alerts").BindFunc(updateHistoryOnAlertUpdate)
 	am.hub.OnRecordAfterDeleteSuccess("alerts").BindFunc(resolveHistoryOnAlertDelete)
 	am.hub.OnRecordAfterUpdateSuccess("smart_devices").BindFunc(am.handleSmartDeviceAlert)
+	am.hub.OnRecordAfterCreateSuccess("zfs_pools").BindFunc(am.handleZfsPoolCreateAlert)
+	am.hub.OnRecordAfterUpdateSuccess("zfs_pools").BindFunc(am.handleZfsPoolAlert)
+	am.hub.OnRecordAfterDeleteSuccess("zfs_pools").BindFunc(resolveZfsPoolHistoryOnDelete)
 
 	am.hub.OnServe().BindFunc(func(e *core.ServeEvent) error {
 		// Populate all alerts into cache on startup
@@ -118,6 +128,9 @@ func (am *AlertManager) bindEvents() {
 
 		if err := resolveStatusAlerts(e.App); err != nil {
 			e.App.Logger().Error("Failed to resolve stale status alerts", "err", err)
+		}
+		if err := resolveSystemdAlerts(e.App); err != nil {
+			e.App.Logger().Error("Failed to resolve stale systemd alerts", "err", err)
 		}
 		if err := am.restorePendingStatusAlerts(); err != nil {
 			e.App.Logger().Error("Failed to restore pending status alerts", "err", err)

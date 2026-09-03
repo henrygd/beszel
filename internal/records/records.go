@@ -127,6 +127,7 @@ func (rm *RecordManager) CreateLongerRecords() {
 								"created": shorterRecordPeriod,
 							},
 						)).
+						OrderBy("created").
 						All(&recordIds)
 
 					// continue if not enough shorter records
@@ -196,6 +197,7 @@ func AverageSystemStatsSlice(records []system.Stats) system.Stats {
 	tempCount := float64(0)
 	var fanSums map[string]uint64
 	fanCount := uint64(0)
+	zfsPoolCounts := make(map[string]uint64)
 
 	// Accumulate totals
 	for i := range records {
@@ -337,6 +339,31 @@ func AverageSystemStatsSlice(records []system.Stats) system.Stats {
 			}
 		}
 
+		// Accumulate ZFS pool stats. Counts are tracked per entry so a pool
+		// missing from some samples is not averaged as zero.
+		if stats.ZfsPools != nil {
+			if sum.ZfsPools == nil {
+				sum.ZfsPools = make(map[string]*system.ZfsPool, len(stats.ZfsPools))
+			}
+			for name, value := range stats.ZfsPools {
+				if value == nil {
+					continue
+				}
+				pool := sum.ZfsPools[name]
+				if pool == nil {
+					pool = &system.ZfsPool{}
+					sum.ZfsPools[name] = pool
+				}
+				pool.Total += value.Total
+				pool.Used += value.Used
+				pool.ReadBytes += value.ReadBytes
+				pool.WriteBytes += value.WriteBytes
+				if value.Health != "" {
+					pool.Health = value.Health
+				}
+				zfsPoolCounts[name]++
+			}
+		}
 		// Accumulate GPU data
 		if stats.GPUData != nil {
 			if sum.GPUData == nil {
@@ -448,6 +475,14 @@ func AverageSystemStatsSlice(records []system.Stats) system.Stats {
 		}
 	}
 
+	// Average ZFS pool stats.
+	for name, pool := range sum.ZfsPools {
+		entryCount := zfsPoolCounts[name]
+		pool.Total = twoDecimals(pool.Total / float64(entryCount))
+		pool.Used = twoDecimals(pool.Used / float64(entryCount))
+		pool.ReadBytes /= entryCount
+		pool.WriteBytes /= entryCount
+	}
 	// Average GPU data
 	if sum.GPUData != nil {
 		for id := range sum.GPUData {

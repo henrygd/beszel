@@ -222,6 +222,9 @@ func (a *Agent) getSystemStats(cacheTimeMs uint16) system.Stats {
 	// disk i/o (cache-aware per interval)
 	a.updateDiskIo(cacheTimeMs, &systemStats)
 
+	// zfs pool stats
+	a.zfsManager.Update(&systemStats)
+
 	// network stats (per cache interval)
 	a.updateNetworkStats(cacheTimeMs, &systemStats)
 
