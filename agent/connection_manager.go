@@ -269,7 +269,8 @@ func (c *ConnectionManager) closeWebSocket() {
 // EXIT_ON_DNS_ERROR env var is set. https://github.com/henrygd/beszel/issues/1924.
 func shouldExitOnErr(err error) bool {
 	if val, _ := utils.GetEnv("EXIT_ON_DNS_ERROR"); val == "true" {
-		if opErr, ok := errors.AsType[*net.OpError](err); ok {
+		var opErr *net.OpError
+		if errors.As(err, &opErr) {
 			return strings.Contains(opErr.Err.Error(), "lookup")
 		}
 	}

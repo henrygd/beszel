@@ -30,7 +30,7 @@ import {
 import { isAdmin } from "@/lib/api"
 import { $systems } from "@/lib/stores"
 import { getHostDisplayValue, listen } from "@/lib/utils"
-import { $router, basePath, navigate, prependBasePath } from "./router"
+import { $router, adminPath, basePath, navigate, prependBasePath } from "./router"
 
 export default memo(function CommandPalette({ open, setOpen }: { open: boolean; setOpen: (open: boolean) => void }) {
 	useEffect(() => {
@@ -193,7 +193,7 @@ export default memo(function CommandPalette({ open, setOpen }: { open: boolean; 
 									keywords={["pocketbase"]}
 									onSelect={() => {
 										setOpen(false)
-										window.open(prependBasePath("/_/"), "_blank")
+										window.open(`${adminPath}#/collections?collection=_pb_users_auth_`, "_blank")
 									}}
 								>
 									<UsersIcon className="me-2 size-4" />
@@ -205,7 +205,7 @@ export default memo(function CommandPalette({ open, setOpen }: { open: boolean; 
 								<CommandItem
 									onSelect={() => {
 										setOpen(false)
-										window.open(prependBasePath("/_/#/logs"), "_blank")
+										window.open(`${adminPath}#/logs`, "_blank")
 									}}
 								>
 									<LogsIcon className="me-2 size-4" />
@@ -217,7 +217,7 @@ export default memo(function CommandPalette({ open, setOpen }: { open: boolean; 
 								<CommandItem
 									onSelect={() => {
 										setOpen(false)
-										window.open(prependBasePath("/_/#/settings/backups"), "_blank")
+										window.open(`${adminPath}#/settings/backups`, "_blank")
 									}}
 								>
 									<DatabaseBackupIcon className="me-2 size-4" />
@@ -230,7 +230,7 @@ export default memo(function CommandPalette({ open, setOpen }: { open: boolean; 
 									keywords={["email"]}
 									onSelect={() => {
 										setOpen(false)
-										window.open(prependBasePath("/_/#/settings/mail"), "_blank")
+										window.open(`${adminPath}#/settings/mail`, "_blank")
 									}}
 								>
 									<MailIcon className="me-2 size-4" />
