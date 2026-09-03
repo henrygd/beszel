@@ -1,5 +1,7 @@
 ## 0.19.0
 
+- **Potential breaking change:** Agents now verify HTTPS certificates. If an agent connects to a hub using a self-signed or otherwise untrusted certificate, configure `CA_CERT_FILE` with the appropriate CA certificate or the connection will be rejected.
+
 - Add ZFS pool and dataset monitoring (#2209)
 
 - Add container health alerts with log excerpts in notifications (#2225)
