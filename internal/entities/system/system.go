@@ -54,7 +54,7 @@ type Stats struct {
 	Batteries         map[string]uint8     `json:"bats,omitempty" cbor:"37,keyasint,omitempty"`
 	ZfsPools          map[string]*ZfsPool  `json:"z,omitempty" cbor:"39,keyasint,omitempty"`  // ZFS pool metrics, keyed by pool name
 	DiskIOTotal       [2]uint64            `json:"diot,omitzero" cbor:"38,keyasint,omitzero"` // [total read bytes, total write bytes] cumulative device counters
-
+	SwapPct           float64              `json:"sp" cbor:"40,keyasint"`
 }
 
 // ZfsPool holds per-pool ZFS metrics for a single collection interval.
@@ -179,6 +179,7 @@ type Info struct {
 	Services       []uint16           `json:"sv,omitempty" cbor:"22,keyasint,omitempty"`  // [totalServices, numFailedServices]
 	Battery        Battery            `json:"bat,omitzero" cbor:"23,keyasint,omitzero"`   // [percent, charge state]
 	RootDiskName   string             `json:"rdn,omitempty" cbor:"24,keyasint,omitempty"` // custom name for root disk (set via FILESYSTEM=device__name)
+	SwapPct        float64            `json:"sp" cbor:"25,keyasint"`
 }
 
 // Data that does not change during process lifetime and is not needed in All Systems table

@@ -189,6 +189,9 @@ func (a *Agent) getSystemStats(cacheTimeMs uint16) system.Stats {
 		// swap
 		systemStats.Swap = utils.BytesToGigabytes(v.SwapTotal)
 		systemStats.SwapUsed = utils.BytesToGigabytes(swapUsed)
+		if systemStats.Swap > 0 {
+			systemStats.SwapPct = utils.TwoDecimals(systemStats.SwapUsed / systemStats.Swap * 100)
+		}
 		v.Used = used
 		// if a.memCalc == "legacy" {
 		// 	v.Used = v.Total - v.Free - v.Buffers - v.Cached
@@ -270,6 +273,7 @@ func (a *Agent) getSystemStats(cacheTimeMs uint16) system.Stats {
 	a.systemInfo.Cpu = systemStats.Cpu
 	a.systemInfo.LoadAvg = systemStats.LoadAvg
 	a.systemInfo.MemPct = systemStats.MemPct
+	a.systemInfo.SwapPct = systemStats.SwapPct
 	a.systemInfo.DiskPct = systemStats.DiskPct
 	a.systemInfo.Battery = systemStats.Battery
 	a.systemInfo.Uptime, _ = getUptime()

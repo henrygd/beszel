@@ -548,6 +548,8 @@ func TestWriteToSessionEncoding(t *testing.T) {
 
 				assert.Equal(t, testData.Details.Hostname, decodedCbor.Details.Hostname)
 				assert.Equal(t, testData.Stats.Cpu, decodedCbor.Stats.Cpu)
+				assert.Equal(t, testData.Info.SwapPct, decodedCbor.Info.SwapPct)
+				assert.Equal(t, testData.Stats.SwapPct, decodedCbor.Stats.SwapPct)
 			} else {
 				// Should be JSON - try to decode as JSON
 				var decodedJson system.CombinedData
@@ -561,6 +563,8 @@ func TestWriteToSessionEncoding(t *testing.T) {
 				// Verify the decoded JSON data matches our test data
 				assert.Equal(t, testData.Details.Hostname, decodedJson.Details.Hostname)
 				assert.Equal(t, testData.Stats.Cpu, decodedJson.Stats.Cpu)
+				assert.Equal(t, testData.Info.SwapPct, decodedJson.Info.SwapPct)
+				assert.Equal(t, testData.Stats.SwapPct, decodedJson.Stats.SwapPct)
 
 				// Verify it looks like JSON (starts with '{' and contains readable field names)
 				assert.True(t, strings.HasPrefix(encodedData, "{"), "JSON should start with '{'")
@@ -579,6 +583,7 @@ func createTestCombinedData() *system.CombinedData {
 			Mem:       8589934592, // 8GB
 			MemUsed:   4294967296, // 4GB
 			MemPct:    50.0,
+			SwapPct:   25.0,
 			DiskTotal: 1099511627776, // 1TB
 			DiskUsed:  549755813888,  // 512GB
 			DiskPct:   50.0,
@@ -589,6 +594,7 @@ func createTestCombinedData() *system.CombinedData {
 		Info: system.Info{
 			Uptime:       3600,
 			AgentVersion: "0.12.0",
+			SwapPct:      25.0,
 		},
 		Containers: []*container.Stats{
 			{
