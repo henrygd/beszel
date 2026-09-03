@@ -88,6 +88,106 @@ func TestCalculateHostMemoryUsage(t *testing.T) {
 	}
 }
 
+func TestApplyContainerMemoryLimit(t *testing.T) {
+	const hostTotal = uint64(128) << 30 // 128 GiB, as /proc/meminfo reports it from inside an LXC
+
+	t.Run("cgroup usage overrides host figures when runtime total corroborates", func(t *testing.T) {
+		withCgroupRoots(t, map[string]string{
+			"memory.max":     "268435456", // 256 MiB
+			"memory.current": "200000000",
+			"memory.stat":    "file 80000000\n",
+		}, nil)
+		a := &Agent{systemDetails: system.Details{MemoryTotal: 268435456}}
+		v := &mem.VirtualMemoryStat{Total: hostTotal}
+		used, cacheBuff := uint64(40)<<30, uint64(70)<<30
+
+		a.applyContainerMemoryLimit(v, &used, &cacheBuff)
+
+		assert.Equal(t, uint64(268435456), v.Total)
+		assert.Equal(t, uint64(120000000), used) // memory.current - memory.stat:file
+		assert.Equal(t, uint64(80000000), cacheBuff)
+		assert.Equal(t, uint64(268435456-120000000), v.Available)
+	})
+
+	t.Run("tighter cgroup limit wins over runtime total", func(t *testing.T) {
+		withCgroupRoots(t, map[string]string{
+			"memory.max":     "268435456", // 256 MiB cgroup cap
+			"memory.current": "100000000",
+			"memory.stat":    "file 10000000\n",
+		}, nil)
+		a := &Agent{systemDetails: system.Details{MemoryTotal: 536870912}} // runtime says 512 MiB
+		v := &mem.VirtualMemoryStat{Total: hostTotal}
+		used, cacheBuff := uint64(40)<<30, uint64(70)<<30
+
+		a.applyContainerMemoryLimit(v, &used, &cacheBuff)
+
+		assert.Equal(t, uint64(268435456), v.Total)
+		assert.Equal(t, uint64(90000000), used)
+	})
+
+	t.Run("falls back to runtime total and scales usage without cgroup accounting", func(t *testing.T) {
+		withCgroupRoots(t, nil, nil) // Docker in an unprivileged LXC: no cgroup memory controller
+		a := &Agent{systemDetails: system.Details{MemoryTotal: 268435456}}
+		v := &mem.VirtualMemoryStat{Total: hostTotal}
+		used, cacheBuff := hostTotal/2, hostTotal/4
+
+		a.applyContainerMemoryLimit(v, &used, &cacheBuff)
+
+		assert.Equal(t, uint64(268435456), v.Total)
+		// scaled by limit/hostTotal, so still ~50% used / ~25% cache of the new total
+		assert.InEpsilon(t, float64(v.Total)/2, float64(used), 0.01)
+		assert.InEpsilon(t, float64(v.Total)/4, float64(cacheBuff), 0.01)
+		assert.LessOrEqual(t, used, v.Total)
+	})
+
+	t.Run("no runtime total: host figures left untouched", func(t *testing.T) {
+		withCgroupRoots(t, map[string]string{
+			"memory.max":     "268435456",
+			"memory.current": "100000000",
+			"memory.stat":    "file 0\n",
+		}, nil)
+		a := &Agent{} // no Docker/Podman -> systemDetails.MemoryTotal == 0
+		v := &mem.VirtualMemoryStat{Total: hostTotal}
+		used, cacheBuff := uint64(1000), uint64(2000)
+
+		a.applyContainerMemoryLimit(v, &used, &cacheBuff)
+
+		assert.Equal(t, hostTotal, v.Total)
+		assert.Equal(t, uint64(1000), used)
+		assert.Equal(t, uint64(2000), cacheBuff)
+	})
+
+	t.Run("memory-limited agent on a normal host is left untouched", func(t *testing.T) {
+		// /proc/meminfo is the real host total, so the runtime reports the same;
+		// the cgroup cap is the agent's own --memory limit and must be ignored.
+		withCgroupRoots(t, map[string]string{
+			"memory.max":     "268435456",
+			"memory.current": "100000000",
+			"memory.stat":    "file 0\n",
+		}, nil)
+		a := &Agent{systemDetails: system.Details{MemoryTotal: hostTotal}}
+		v := &mem.VirtualMemoryStat{Total: hostTotal}
+		used, cacheBuff := uint64(1000), uint64(2000)
+
+		a.applyContainerMemoryLimit(v, &used, &cacheBuff)
+
+		assert.Equal(t, hostTotal, v.Total)
+		assert.Equal(t, uint64(1000), used)
+	})
+
+	t.Run("runtime total within 1% of host total is ignored", func(t *testing.T) {
+		withCgroupRoots(t, nil, nil)
+		a := &Agent{systemDetails: system.Details{MemoryTotal: 137000000000}} // ~99.7% of 128 GiB
+		v := &mem.VirtualMemoryStat{Total: hostTotal}
+		used, cacheBuff := uint64(1000), uint64(2000)
+
+		a.applyContainerMemoryLimit(v, &used, &cacheBuff)
+
+		assert.Equal(t, hostTotal, v.Total)
+		assert.Equal(t, uint64(1000), used)
+	})
+}
+
 func TestUpdateSystemDetailsMarksDetailsDirty(t *testing.T) {
 	agent := &Agent{}
 

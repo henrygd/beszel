@@ -186,6 +186,10 @@ func (a *Agent) getSystemStats(cacheTimeMs uint16) system.Stats {
 	// memory
 	if v, err := mem.VirtualMemory(); err == nil {
 		used, cacheBuff, swapUsed := calculateHostMemoryUsage(v, a.memCalc == "htop")
+		// when the agent is confined to less memory than /proc/meminfo reports
+		// (LXC / Proxmox, docker --memory, k8s), rewrite the totals from the cgroup
+		// or the container runtime so the hub shows the container, not the host.
+		a.applyContainerMemoryLimit(v, &used, &cacheBuff)
 		// swap
 		systemStats.Swap = utils.BytesToGigabytes(v.SwapTotal)
 		systemStats.SwapUsed = utils.BytesToGigabytes(swapUsed)
@@ -363,6 +367,55 @@ func saturatingSub(value uint64, subtrahends ...uint64) uint64 {
 		value -= subtrahend
 	}
 	return value
+}
+
+// containerMemoryLimitMargin ignores a reported total within this fraction
+// (numerator/denominator) of the /proc/meminfo total, so an unconstrained agent
+// is left untouched.
+const containerMemoryLimitMarginNum, containerMemoryLimitMarginDen = 99, 100
+
+// applyContainerMemoryLimit rewrites v.Total, and where possible used/cacheBuff,
+// when the agent runs inside an LXC / Proxmox container. There /proc/meminfo
+// (what gopsutil reads) still describes the physical host, so mem.VirtualMemory
+// reports the host's RAM instead of the container's. See issue #176.
+//
+// The signal that this is happening is the container runtime's own memory total
+// (Docker/Podman /info): the daemon reads it from the namespaced /proc/meminfo
+// the agent cannot see, so when it is meaningfully smaller than gopsutil's total
+// the agent is in such a container. Without that corroboration nothing is
+// changed, so a memory-limited agent on a normal host still reports the host.
+func (a *Agent) applyContainerMemoryLimit(v *mem.VirtualMemoryStat, used, cacheBuff *uint64) {
+	runtimeTotal := a.systemDetails.MemoryTotal
+	if v.Total == 0 || runtimeTotal == 0 ||
+		runtimeTotal*containerMemoryLimitMarginDen >= v.Total*containerMemoryLimitMarginNum {
+		return
+	}
+
+	// The cgroup, when its memory controller is delegated, gives a precise limit
+	// and real usage. Otherwise fall back to the runtime total and scale.
+	limit := runtimeTotal
+	cg := readCgroupMemory()
+	if cg.limitOK && cg.limit < v.Total {
+		limit = min(limit, cg.limit)
+	}
+
+	if cg.usageOK {
+		newUsed := min(cg.used, limit)
+		*used = newUsed
+		*cacheBuff = min(cg.cache, limit-newUsed)
+	} else {
+		// No per-cgroup accounting (e.g. Docker in an unprivileged LXC without
+		// cgroup delegation). Only the total is trustworthy; scale the host
+		// figures so the ratio stays believable. Exact usage there needs cgroup
+		// memory delegation or the non-Docker agent.
+		ratio := float64(limit) / float64(v.Total)
+		*used = uint64(float64(*used) * ratio)
+		*cacheBuff = uint64(float64(*cacheBuff) * ratio)
+	}
+
+	v.Total = limit
+	v.Available = saturatingSub(limit, *used)
+	slog.Debug("Applied container memory limit", "limit", limit, "used", *used, "cgroupUsage", cg.usageOK)
 }
 
 // getOsPrettyName attempts to get the pretty OS name from /etc/os-release on Linux systems

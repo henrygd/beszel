@@ -262,13 +262,24 @@ func calculateMemoryUsage(apiStats *container.ApiStats, isWindows bool) (uint64,
 		return apiStats.MemoryStats.PrivateWorkingSet, nil
 	}
 
+	// Docker reports no memory accounting (usage absent) when the cgroup memory
+	// controller is not delegated to containers - common for Docker running
+	// inside an unprivileged LXC / Proxmox container. Report 0 instead of
+	// failing so the container's CPU and network stats are still collected.
+	if apiStats.MemoryStats.Usage == 0 {
+		return 0, nil
+	}
+
 	memCache := apiStats.MemoryStats.Stats.InactiveFile
 	if memCache == 0 {
 		memCache = apiStats.MemoryStats.Stats.Cache
 	}
 
+	if memCache > apiStats.MemoryStats.Usage {
+		return 0, fmt.Errorf("bad memory stats")
+	}
 	usedDelta := apiStats.MemoryStats.Usage - memCache
-	if usedDelta <= 0 || usedDelta > maxMemoryUsage {
+	if usedDelta == 0 || usedDelta > maxMemoryUsage {
 		return 0, fmt.Errorf("bad memory stats")
 	}
 
