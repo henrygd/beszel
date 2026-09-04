@@ -13,6 +13,7 @@ import (
 	"github.com/henrygd/beszel/internal/alerts"
 	"github.com/henrygd/beszel/internal/ghupdate"
 	"github.com/henrygd/beszel/internal/hub/config"
+	"github.com/henrygd/beszel/internal/hub/monitors"
 	"github.com/henrygd/beszel/internal/hub/systems"
 	"github.com/henrygd/beszel/internal/hub/utils"
 	"github.com/pocketbase/dbx"
@@ -123,6 +124,8 @@ func (h *Hub) registerApiRoutes(se *core.ServeEvent) error {
 	// update / delete user alerts
 	apiAuth.POST("/user-alerts", alerts.UpsertUserAlerts)
 	apiAuth.DELETE("/user-alerts", alerts.DeleteUserAlerts)
+	// uptime monitors (routes mounted by the monitors package via OnServe)
+	monitors.RegisterRoutes(se.App)
 	// refresh SMART devices for a system
 	apiAuth.POST("/smart/refresh", h.refreshSmartData).BindFunc(excludeReadOnlyRole)
 	// refresh ZFS pool details for a system
