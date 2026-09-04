@@ -168,6 +168,7 @@ func DeleteOldMonitorChecks(app core.App) error {
 		return err
 	}
 	if total > monitorChecksSafetyCap {
+		slog.Warn("Monitor checks table exceeded safety cap, purging oldest", "total", total, "cap", monitorChecksSafetyCap, "keep", monitorChecksSafetyKeep)
 		if _, err := app.DB().NewQuery("DELETE FROM monitor_checks WHERE id NOT IN (SELECT id FROM monitor_checks ORDER BY created DESC LIMIT {:keep})").Bind(dbx.Params{"keep": monitorChecksSafetyKeep}).Execute(); err != nil {
 			return fmt.Errorf("failed to enforce monitor checks cap: %v", err)
 		}

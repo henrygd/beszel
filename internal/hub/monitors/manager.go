@@ -19,6 +19,9 @@ type MonitorRecord struct {
 	MaxRetries         int
 	UpsideDown         bool
 	Paused             bool
+	Notify             bool
+	ResendAfter        int
+	Status             string
 	Config             map[string]any
 	ConsecutiveFailure int
 }
@@ -60,8 +63,10 @@ func recordToMonitor(rec *core.Record) MonitorRecord {
 		ID: rec.Id, Name: rec.GetString("name"),
 		Type: MonitorType(rec.GetString("type")), Target: rec.GetString("target"),
 		UpsideDown: rec.GetBool("upside_down"), Paused: rec.GetBool("paused"),
+		Notify: rec.GetBool("notify"), Status: rec.GetString("status"),
 		ConsecutiveFailure: int(rec.GetFloat("consecutive_failures")),
 	}
+	m.ResendAfter = int(rec.GetFloat("resend_after"))
 	m.IntervalSeconds = int(rec.GetFloat("interval"))
 	if m.IntervalSeconds <= 0 {
 		m.IntervalSeconds = 60
@@ -79,7 +84,12 @@ func recordToMonitor(rec *core.Record) MonitorRecord {
 // SaveCheckResult writes one check cycle in a single transaction: the
 // monitor_checks history row plus the monitors status update. One
 // transaction per cycle bounds SQLite single-writer pressure.
-func SaveCheckResult(app core.App, rec MonitorRecord, res CheckResult, transition bool) error {
+//
+// Ownership: the scheduler (Task 7) owns debouncing and the failure count.
+// res.Status must already be the debounced status and failures the exact
+// consecutive-failure count (state.failures()); this function persists them
+// verbatim and never recounts, so overlapping cycles cannot lose updates.
+func SaveCheckResult(app core.App, rec MonitorRecord, res CheckResult, failures int, transition bool) error {
 	_ = transition
 	return app.RunInTransaction(func(txApp core.App) error {
 		checksCol, err := txApp.FindCachedCollectionByNameOrId("monitor_checks")
@@ -114,18 +124,14 @@ func SaveCheckResult(app core.App, rec MonitorRecord, res CheckResult, transitio
 		if res.CertDays != nil {
 			mon.Set("cert_days", *res.CertDays)
 		}
-		failures := rec.ConsecutiveFailure
-		if res.Status == StatusUp {
-			failures = 0
-		} else if res.Status == StatusDown {
-			failures++
-		}
 		mon.Set("consecutive_failures", failures)
 		return txApp.SaveNoValidate(mon)
 	})
 }
 
 // Uptime24h computes the success ratio over the last 24h from history.
+// Warn counts as success: the endpoint answers (e.g. a TLS cert nearing
+// expiry is not an outage).
 func Uptime24h(app core.App, monitorID string) (float64, error) {
 	var rows []struct {
 		Status string `db:"status"`
@@ -140,7 +146,7 @@ func Uptime24h(app core.App, monitorID string) (float64, error) {
 	var up, total int
 	for _, r := range rows {
 		total += r.Count
-		if r.Status == StatusUp {
+		if r.Status == StatusUp || r.Status == StatusWarn {
 			up += r.Count
 		}
 	}

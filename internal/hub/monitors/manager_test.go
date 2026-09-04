@@ -57,7 +57,7 @@ func TestSaveCheckResult_WritesHistoryAndStatusAtomically(t *testing.T) {
 
 	code := 200
 	res := monitors.CheckResult{Status: "up", LatencyMs: 12.5, Code: &code, Message: "ok", Details: map[string]any{"final_url": "https://example.com"}}
-	require.NoError(t, monitors.SaveCheckResult(app, recs[0], res, false))
+	require.NoError(t, monitors.SaveCheckResult(app, recs[0], res, 0, false))
 
 	updated, err := app.FindRecordById("monitors", mon.Id)
 	require.NoError(t, err)
@@ -79,14 +79,14 @@ func TestSaveCheckResult_TracksConsecutiveFailures(t *testing.T) {
 	rec := recs[0]
 
 	down := monitors.CheckResult{Status: "down", Message: "boom"}
-	require.NoError(t, monitors.SaveCheckResult(app, rec, down, false))
+	require.NoError(t, monitors.SaveCheckResult(app, rec, down, 1, false))
 	updated, err := app.FindRecordById("monitors", rec.ID)
 	require.NoError(t, err)
 	assert.EqualValues(t, 1, updated.GetFloat("consecutive_failures"))
 
 	recs, err = monitors.LoadMonitors(app)
 	require.NoError(t, err)
-	require.NoError(t, monitors.SaveCheckResult(app, recs[0], monitors.CheckResult{Status: "up"}, false))
+	require.NoError(t, monitors.SaveCheckResult(app, recs[0], monitors.CheckResult{Status: "up"}, 0, false))
 	updated, err = app.FindRecordById("monitors", rec.ID)
 	require.NoError(t, err)
 	assert.EqualValues(t, 0, updated.GetFloat("consecutive_failures"))
@@ -120,6 +120,12 @@ func TestUptime24h_ComputesRatio(t *testing.T) {
 	require.NoError(t, err)
 	assert.InDelta(t, 75.0, ratio, 0.001)
 
+	// Warn counts as success: the endpoint answers.
+	insert("warn", 1)
+	ratio, err = monitors.Uptime24h(app, mon.Id)
+	require.NoError(t, err)
+	assert.InDelta(t, 80.0, ratio, 0.001)
+
 	empty, err := monitors.Uptime24h(app, "nonexistent")
 	require.NoError(t, err)
 	assert.Equal(t, 0.0, empty)
@@ -128,7 +134,7 @@ func TestUptime24h_ComputesRatio(t *testing.T) {
 func TestSaveCheckResult_RejectsUnknownMonitor(t *testing.T) {
 	app := newMonitorTestApp(t)
 	rec := monitors.MonitorRecord{ID: "does-not-exist", Name: "x"}
-	err := monitors.SaveCheckResult(app, rec, monitors.CheckResult{Status: "up"}, false)
+	err := monitors.SaveCheckResult(app, rec, monitors.CheckResult{Status: "up"}, 0, false)
 	require.Error(t, err, "saving for unknown monitor must fail the transaction")
 
 	total, err := app.CountRecords("monitor_checks")

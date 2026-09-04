@@ -54,7 +54,7 @@ func init() {
 		// Write: set by API layer; base rules require auth.
 		monitors.ListRule = types.Pointer("@request.auth.id != \"\" && users.id ?= @request.auth.id")
 		monitors.ViewRule = types.Pointer("@request.auth.id != \"\" && users.id ?= @request.auth.id")
-		monitors.CreateRule = types.Pointer("@request.auth.id != \"\" && @request.auth.role != \"readonly\"")
+		monitors.CreateRule = types.Pointer("@request.auth.id != \"\" && users.id ?= @request.auth.id && @request.auth.role != \"readonly\"")
 		monitors.UpdateRule = types.Pointer("@request.auth.id != \"\" && users.id ?= @request.auth.id && @request.auth.role != \"readonly\"")
 		monitors.DeleteRule = types.Pointer("@request.auth.id != \"\" && users.id ?= @request.auth.id && @request.auth.role != \"readonly\"")
 		if err := app.Save(monitors); err != nil {
@@ -80,6 +80,7 @@ func init() {
 		checks.ListRule = types.Pointer("@request.auth.id != \"\" && monitor.users.id ?= @request.auth.id")
 		checks.ViewRule = types.Pointer("@request.auth.id != \"\" && monitor.users.id ?= @request.auth.id")
 		checks.AddIndex("idx_monitor_checks_monitor_created", false, "monitor", "created")
+		// AddIndex(name, unique, columns, where): "" where = no condition.
 		checks.AddIndex("idx_monitor_checks_created", false, "created", "")
 		return app.Save(checks)
 	}, func(app core.App) error {

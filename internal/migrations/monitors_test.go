@@ -85,14 +85,16 @@ func TestMonitorChecksRetention(t *testing.T) {
 	require.NoError(t, app.Save(user))
 	mon := createMonitorRecord(t, app, user.Id)
 
-	// 40 days old (beyond 30d retention) + 1h old (kept).
+	// 40 days old (beyond 30d retention) + one fresh row (must survive).
 	old := "2020-01-01 00:00:00.000Z"
 	_, err = app.DB().NewQuery("INSERT INTO monitor_checks (monitor, status, created, updated) VALUES ({:mon}, 'up', {:old}, {:old})").Bind(dbx.Params{"mon": mon.Id, "old": old}).Execute()
+	require.NoError(t, err)
+	_, err = app.DB().NewQuery("INSERT INTO monitor_checks (monitor, status, created, updated) VALUES ({:mon}, 'down', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)").Bind(dbx.Params{"mon": mon.Id}).Execute()
 	require.NoError(t, err)
 
 	require.NoError(t, records.DeleteOldMonitorChecks(app))
 
 	total, err := app.CountRecords("monitor_checks")
 	require.NoError(t, err)
-	assert.EqualValues(t, 0, total, "old checks must be purged")
+	assert.EqualValues(t, 1, total, "old checks purged, recent kept")
 }
