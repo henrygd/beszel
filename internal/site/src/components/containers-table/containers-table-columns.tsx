@@ -47,8 +47,21 @@ export const containerChartCols: ColumnDef<ContainerRecord>[] = [
 		sortingFn: (a, b) => a.original.name.localeCompare(b.original.name),
 		accessorFn: (record) => record.name,
 		header: ({ column }) => <HeaderButton column={column} name={t`Name`} Icon={ContainerIcon} />,
-		cell: ({ getValue }) => {
-			return <span className="ms-1.5 xl:w-48 block truncate">{getValue() as string}</span>
+		cell: ({ getValue, row }) => {
+			const status = row.original.status
+			const dotClass = status.startsWith("Up")
+				? "bg-green-500"
+				: status.startsWith("Restarting")
+					? "bg-yellow-500"
+					: status.startsWith("Paused") || status.startsWith("Created")
+						? "bg-primary/40"
+						: "bg-red-500"
+			return (
+				<span className="ms-1 flex gap-2 items-center">
+					<span className={cn("shrink-0 size-2 rounded-full", dotClass)} />
+					<span className="xl:w-48 block truncate">{getValue() as string}</span>
+				</span>
+			)
 		},
 	},
 	{
