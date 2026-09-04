@@ -18,6 +18,7 @@ It has a friendly web interface, simple configuration, and is ready to use out o
 - **Docker stats**: Tracks CPU, memory, and network usage history for each container.
 - **ZFS**: Tracks pool capacity, health, and I/O, plus per-dataset usage.
 - **Alerts**: Configurable alerts for CPU, memory, disk, bandwidth, temperature, fan speed, load average, and status.
+- **Uptime monitors**: HTTP(S)/keyword, TLS certificate expiry, DNS and ping checks from the hub, with notifications on state changes. See [supplemental/guides/monitors.md](supplemental/guides/monitors.md).
 - **Multi-user**: Users manage their own systems. Admins can share systems across users.
 - **OAuth / OIDC**: Supports many OAuth2 providers. Password auth can be disabled.
 - **Automatic backups**: Save to and restore from disk or S3-compatible storage.

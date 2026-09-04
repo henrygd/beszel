@@ -1,3 +1,7 @@
+## Unreleased
+
+- Add external uptime monitors (HTTP/keyword, TLS certificate, DNS, ping) executed from the hub, with state-change notifications, history, and declarative `monitors:` config.yml support
+
 ## 0.19.0
 
 - **Potential breaking change:** Agents now verify HTTPS certificates. If an agent connects to a hub using a self-signed or otherwise untrusted certificate, configure `CA_CERT_FILE` with the appropriate CA certificate or the connection will be rejected.
