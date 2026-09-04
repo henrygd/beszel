@@ -26,7 +26,6 @@ const (
 	maxRequestBodyBytes        = 1 << 20
 	maxResponseBodyBytes       = 2 << 20
 	defaultUserAgent           = "Beszel-Monitor"
-	certSkippedNote            = "tls checker pending (task 4)"
 	defaultCheckTimeout        = 10 * time.Second
 	tlsHandshakeTimeout        = 5 * time.Second
 )
@@ -100,11 +99,9 @@ func CheckHTTP(ctx context.Context, m Monitor) CheckResult {
 	if ignoreTLS {
 		details["tls_insecure"] = true
 	}
-	if configBool(m.Config["check_cert_expiry"], false) {
-		// check_cert_expiry is wired by Task 4 (CheckTLS). Note it without
-		// failing the check.
-		details["cert_skipped"] = certSkippedNote
-	}
+	// Certificate expiry follows spec §6.1: checked by default for https
+	// targets, using the same TLS evaluation as the tls checker.
+	checkCert := configBool(m.Config["check_cert_expiry"], target.Scheme == "https")
 
 	keyword := configString(m.Config["keyword"], "")
 	invertKeyword := configBool(m.Config["invert_keyword"], false)
@@ -210,17 +207,44 @@ func CheckHTTP(ctx context.Context, m Monitor) CheckResult {
 		details["keyword_found"] = found
 		switch {
 		case found && invertKeyword:
-			return CheckResult{Status: StatusDown, LatencyMs: latencyMs, Code: intPtr(resp.StatusCode), Message: "keyword found (inverted)", Details: details}
+			return httpResult(ctx, m, target, checkCert, details, StatusDown, latencyMs, resp.StatusCode, "keyword found (inverted)")
 		case !found && invertKeyword:
-			return CheckResult{Status: StatusUp, LatencyMs: latencyMs, Code: intPtr(resp.StatusCode), Message: "keyword not found (inverted)", Details: details}
+			return httpResult(ctx, m, target, checkCert, details, StatusUp, latencyMs, resp.StatusCode, "keyword not found (inverted)")
 		case found:
-			return CheckResult{Status: StatusUp, LatencyMs: latencyMs, Code: intPtr(resp.StatusCode), Message: "keyword found", Details: details}
+			return httpResult(ctx, m, target, checkCert, details, StatusUp, latencyMs, resp.StatusCode, "keyword found")
 		default:
-			return CheckResult{Status: StatusDown, LatencyMs: latencyMs, Code: intPtr(resp.StatusCode), Message: "keyword not found", Details: details}
+			return httpResult(ctx, m, target, checkCert, details, StatusDown, latencyMs, resp.StatusCode, "keyword not found")
 		}
 	}
 
-	return CheckResult{Status: StatusUp, LatencyMs: latencyMs, Code: intPtr(resp.StatusCode), Message: fmt.Sprintf("status %d accepted", resp.StatusCode), Details: details}
+	return httpResult(ctx, m, target, checkCert, details, StatusUp, latencyMs, resp.StatusCode, fmt.Sprintf("status %d accepted", resp.StatusCode))
+}
+
+// httpResult merges TLS expiry into an HTTP outcome. A critical or expired
+// cert fails the check even when HTTP succeeded; a warning is recorded in
+// details without failing it (the tls monitor type owns warn states).
+func httpResult(ctx context.Context, m Monitor, target *url.URL, checkCert bool, details map[string]any, status string, latencyMs float64, code int, msg string) CheckResult {
+	res := CheckResult{Status: status, LatencyMs: latencyMs, Code: intPtr(code), Message: msg, Details: details}
+	if checkCert && target.Scheme == "https" {
+		host := target.Hostname()
+		port := target.Port()
+		if port == "" {
+			port = "443"
+		}
+		tlsRes := CheckTLS(ctx, Monitor{
+			Name: m.Name, Type: TypeTLS, Target: net.JoinHostPort(stripBrackets(host), port),
+			TimeoutSeconds: m.TimeoutSeconds, Config: m.Config,
+		})
+		if tlsRes.CertDays != nil {
+			details["cert_days"] = *tlsRes.CertDays
+			res.CertDays = tlsRes.CertDays
+		}
+		if tlsRes.Status == StatusDown {
+			res.Status = StatusDown
+			res.Message = fmt.Sprintf("certificate: %s", tlsRes.Message)
+		}
+	}
+	return res
 }
 
 // parseMonitorURL validates that target is an http(s) URL with a host.

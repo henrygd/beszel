@@ -597,21 +597,43 @@ func TestHTTPIgnoreTLSErrors(t *testing.T) {
 	}
 }
 
-func TestHTTPCertExpirySkipped(t *testing.T) {
+func TestHTTPCertExpiryEvaluated(t *testing.T) {
 	allowPrivateNet(t)
-	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	srv := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
 	}))
 	defer srv.Close()
 
+	// Self-signed test cert with default (strict) verification fails at the
+	// HTTP layer first; with ignore + expiry check, the TLS evaluation runs
+	// and reports (expiry of the test cert is what it is — we assert the
+	// plumbing, not a fixed verdict).
 	m := httpTestMonitor(srv.URL)
 	m.Config["check_cert_expiry"] = true
+	m.Config["ignore_tls_errors"] = true
 	res := CheckHTTP(context.Background(), m)
-	if res.Status != StatusUp {
-		t.Fatalf("expected up, got %q (%s)", res.Status, res.Message)
+	if res.Status != StatusUp && res.Status != StatusDown {
+		t.Fatalf("unexpected status %q (%s)", res.Status, res.Message)
 	}
-	if res.Details["cert_skipped"] != "tls checker pending (task 4)" {
-		t.Fatalf("expected cert_skipped note, got %v", res.Details)
+	if _, ok := res.Details["cert_days"]; !ok {
+		t.Fatalf("expected cert_days in details, got %v", res.Details)
+	}
+	if res.CertDays == nil {
+		t.Fatal("expected CertDays pointer on https result")
+	}
+
+	// Plain http: no cert evaluation at all.
+	plain := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+	}))
+	defer plain.Close()
+	m2 := httpTestMonitor(plain.URL)
+	res2 := CheckHTTP(context.Background(), m2)
+	if res2.Status != StatusUp {
+		t.Fatalf("expected up, got %q (%s)", res2.Status, res2.Message)
+	}
+	if _, ok := res2.Details["cert_days"]; ok {
+		t.Fatalf("plain http must not evaluate certs, got %v", res2.Details)
 	}
 }
 

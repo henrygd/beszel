@@ -92,7 +92,7 @@ function MonitorCard({ monitor, onEdit }: { monitor: MonitorRecord; onEdit: (m: 
 				<div className="mt-2 flex flex-wrap gap-x-4 gap-y-1">
 					<span>{t`Uptime 24h: ${monitor.uptime_24h > 0 ? monitor.uptime_24h.toFixed(1) : "—"}%`}</span>
 					{monitor.last_latency_ms > 0 && <span>{t`${monitor.last_latency_ms.toFixed(0)} ms`}</span>}
-					{monitor.cert_days >= 0 && monitor.cert_days < 60 && (
+					{monitor.cert_days > 0 && monitor.cert_days < 60 && (
 						<span>{t`Cert expires in ${monitor.cert_days.toFixed(0)} days`}</span>
 					)}
 				</div>
