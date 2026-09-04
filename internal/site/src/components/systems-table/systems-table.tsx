@@ -1,5 +1,6 @@
 import { Trans, useLingui } from "@lingui/react/macro"
 import { useStore } from "@nanostores/react"
+import { subscribeKeys } from "nanostores"
 import { getPagePath } from "@nanostores/router"
 import {
 	type ColumnDef,
@@ -19,6 +20,7 @@ import {
 	ArrowDownIcon,
 	ArrowUpDownIcon,
 	ArrowUpIcon,
+	CheckIcon,
 	EyeIcon,
 	FilterIcon,
 	LayoutGridIcon,
@@ -26,7 +28,7 @@ import {
 	Settings2Icon,
 	XIcon,
 } from "lucide-react"
-import { memo, useEffect, useMemo, useRef, useState } from "react"
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { Button } from "@/components/ui/button"
 import {
 	DropdownMenu,
@@ -42,8 +44,9 @@ import {
 import { Input } from "@/components/ui/input"
 import { TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { SystemStatus } from "@/lib/enums"
-import { $downSystems, $pausedSystems, $systems, $upSystems } from "@/lib/stores"
-import { cn, runOnce, useBrowserStorage } from "@/lib/utils"
+import { queueUserSettings } from "@/lib/api"
+import { $downSystems, $pausedSystems, $systems, $upSystems, $userSettings } from "@/lib/stores"
+import { cn, runOnce } from "@/lib/utils"
 import type { SystemRecord } from "@/types"
 import AlertButton from "../alerts/alert-button"
 import { $router, Link } from "../router"
@@ -62,14 +65,104 @@ export default function SystemsTable() {
 	const pausedSystems = $pausedSystems.get()
 	const { i18n, t } = useLingui()
 	const [filter, setFilter] = useState<string>("")
-	const [statusFilter, setStatusFilter] = useState<StatusFilter>("all")
-	const [sorting, setSorting] = useBrowserStorage<SortingState>(
-		"sortMode",
-		[{ id: "system", desc: false }],
-		sessionStorage
+	const [statusFilter, setStatusFilter] = useState<StatusFilter>(
+		() =>
+			$userSettings.get().statusFilter ??
+			(JSON.parse(localStorage.getItem("besz-statusFilter") || "null") as StatusFilter | null) ??
+			"all"
+	)
+	const [sorting, setSorting] = useState<SortingState>(
+		() =>
+			$userSettings.get().sortMode ??
+			JSON.parse(sessionStorage.getItem("besz-sortMode") || "null") ?? [{ id: "system", desc: false }]
 	)
 	const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
-	const [columnVisibility, setColumnVisibility] = useBrowserStorage<VisibilityState>("cols", {})
+	const [columnVisibility, setColumnVisibility] = useState<VisibilityState>(
+		() => $userSettings.get().cols ?? JSON.parse(localStorage.getItem("besz-cols") || "{}")
+	)
+
+	// Apply settings from server once they load (handles incognito / new devices)
+	const applied = useRef(new Set<string>())
+	useEffect(() => {
+		return subscribeKeys($userSettings, ["cols", "statusFilter", "viewMode", "sortMode"], (vals) => {
+			if (!applied.current.has("cols") && vals.cols !== undefined) {
+				applied.current.add("cols")
+				setColumnVisibility(vals.cols)
+			}
+			if (!applied.current.has("statusFilter") && vals.statusFilter !== undefined) {
+				applied.current.add("statusFilter")
+				setStatusFilter(vals.statusFilter)
+			}
+			if (!applied.current.has("viewMode") && vals.viewMode !== undefined) {
+				applied.current.add("viewMode")
+				setViewMode(vals.viewMode)
+			}
+			if (!applied.current.has("sortMode") && vals.sortMode !== undefined) {
+				applied.current.add("sortMode")
+				setSorting(vals.sortMode)
+			}
+		})
+	}, [])
+
+	const [saved, setSaved] = useState(false)
+	const savedTimeout = useRef<ReturnType<typeof setTimeout> | null>(null)
+	const showSaved = useCallback(() => {
+		setSaved(true)
+		if (savedTimeout.current) clearTimeout(savedTimeout.current)
+		savedTimeout.current = setTimeout(() => setSaved(false), 1500)
+	}, [])
+
+	const handleColumnVisibilityChange = useCallback(
+		(updater: VisibilityState | ((prev: VisibilityState) => VisibilityState)) => {
+			setColumnVisibility((prev) => {
+				const next = typeof updater === "function" ? updater(prev) : updater
+				localStorage.setItem("besz-cols", JSON.stringify(next))
+				$userSettings.setKey("cols", next)
+				queueUserSettings({ cols: next })
+				return next
+			})
+			showSaved()
+		},
+		[showSaved]
+	)
+
+	const handleStatusFilterChange = useCallback(
+		(value: string) => {
+			const next = value as StatusFilter
+			setStatusFilter(next)
+			localStorage.setItem("besz-statusFilter", JSON.stringify(next))
+			$userSettings.setKey("statusFilter", next)
+			queueUserSettings({ statusFilter: next })
+			showSaved()
+		},
+		[showSaved]
+	)
+
+	const handleViewModeChange = useCallback(
+		(view: string) => {
+			const next = view as ViewMode
+			setViewMode(next)
+			localStorage.setItem("besz-viewMode", JSON.stringify(next))
+			$userSettings.setKey("viewMode", next)
+			queueUserSettings({ viewMode: next })
+			showSaved()
+		},
+		[showSaved]
+	)
+
+	const handleSortingChange = useCallback(
+		(updater: SortingState | ((prev: SortingState) => SortingState)) => {
+			setSorting((prev) => {
+				const next = typeof updater === "function" ? updater(prev) : updater
+				sessionStorage.setItem("besz-sortMode", JSON.stringify(next))
+				$userSettings.setKey("sortMode", next)
+				queueUserSettings({ sortMode: next })
+				return next
+			})
+			showSaved()
+		},
+		[showSaved]
+	)
 
 	const locale = i18n.locale
 
@@ -87,10 +180,12 @@ export default function SystemsTable() {
 		return Object.values(pausedSystems) ?? []
 	}, [data, statusFilter])
 
-	const [viewMode, setViewMode] = useBrowserStorage<ViewMode>(
-		"viewMode",
-		// show grid view on mobile if there are less than 200 systems (looks better but table is more efficient)
-		window.innerWidth < 1024 && filteredData.length < 200 ? "grid" : "table"
+	const [viewMode, setViewMode] = useState<ViewMode>(
+		() =>
+			$userSettings.get().viewMode ??
+			(JSON.parse(localStorage.getItem("besz-viewMode") || "null") as ViewMode | null) ??
+			// show grid view on mobile if there are less than 200 systems (looks better but table is more efficient)
+			(window.innerWidth < 1024 && filteredData.length < 200 ? "grid" : "table")
 	)
 
 	useEffect(() => {
@@ -105,11 +200,11 @@ export default function SystemsTable() {
 		data: filteredData,
 		columns: columnDefs,
 		getCoreRowModel: getCoreRowModel(),
-		onSortingChange: setSorting,
+		onSortingChange: handleSortingChange,
 		getSortedRowModel: getSortedRowModel(),
 		onColumnFiltersChange: setColumnFilters,
 		getFilteredRowModel: getFilteredRowModel(),
-		onColumnVisibilityChange: setColumnVisibility,
+		onColumnVisibilityChange: handleColumnVisibilityChange,
 		state: {
 			sorting,
 			columnFilters,
@@ -169,7 +264,11 @@ export default function SystemsTable() {
 						<DropdownMenu>
 							<DropdownMenuTrigger asChild>
 								<Button variant="outline">
-									<Settings2Icon className="me-1.5 size-4 opacity-80" />
+									{saved ? (
+										<CheckIcon className="me-1.5 size-4 text-green-500" />
+									) : (
+										<Settings2Icon className="me-1.5 size-4 opacity-80" />
+									)}
 									<Trans>View</Trans>
 								</Button>
 							</DropdownMenuTrigger>
@@ -181,11 +280,7 @@ export default function SystemsTable() {
 											<Trans>Layout</Trans>
 										</DropdownMenuLabel>
 										<DropdownMenuSeparator />
-										<DropdownMenuRadioGroup
-											className="px-1 pb-1"
-											value={viewMode}
-											onValueChange={(view) => setViewMode(view as ViewMode)}
-										>
+										<DropdownMenuRadioGroup className="px-1 pb-1" value={viewMode} onValueChange={handleViewModeChange}>
 											<DropdownMenuRadioItem value="table" onSelect={(e) => e.preventDefault()} className="gap-2">
 												<LayoutListIcon className="size-4" />
 												<Trans>Table</Trans>
@@ -206,7 +301,7 @@ export default function SystemsTable() {
 										<DropdownMenuRadioGroup
 											className="px-1 pb-1"
 											value={statusFilter}
-											onValueChange={(value) => setStatusFilter(value as StatusFilter)}
+											onValueChange={handleStatusFilterChange}
 										>
 											<DropdownMenuRadioItem value="all" onSelect={(e) => e.preventDefault()}>
 												<Trans>All Systems</Trans>
@@ -245,7 +340,9 @@ export default function SystemsTable() {
 													<DropdownMenuItem
 														onSelect={(e) => {
 															e.preventDefault()
-															setSorting([{ id: column.id, desc: sorting[0]?.id === column.id && !sorting[0]?.desc }])
+															handleSortingChange([
+																{ id: column.id, desc: sorting[0]?.id === column.id && !sorting[0]?.desc },
+															])
 														}}
 														key={column.id}
 													>
@@ -299,6 +396,7 @@ export default function SystemsTable() {
 		downSystemsLength,
 		pausedSystemsLength,
 		filter,
+		saved,
 	])
 
 	return (

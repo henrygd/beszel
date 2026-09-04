@@ -2,9 +2,10 @@ import { t } from "@lingui/core/macro"
 import PocketBase from "pocketbase"
 import { basePath } from "@/components/router"
 import { toast } from "@/components/ui/use-toast"
+import { dynamicActivate, getLocale } from "@/lib/i18n"
 import type { ChartTimes, UserSettings } from "@/types"
 import { $alerts, $allSystemsById, $allSystemsByName, $userSettings } from "./stores"
-import { chartTimeData } from "./utils"
+import { chartTimeData, debounce } from "./utils"
 
 /** PocketBase JS Client */
 export const pb = new PocketBase(basePath)
@@ -36,11 +37,45 @@ export function logOut() {
 	pb.realtime.unsubscribe()
 }
 
+/** Save a partial update to user settings in database immediately */
+export async function saveUserSettings(newSettings: Partial<UserSettings>) {
+	// get fresh copy of settings so concurrent changes aren't overwritten
+	const req = await pb.collection("user_settings").getFirstListItem("", { fields: "id,settings" })
+	const updatedSettings = await pb.collection("user_settings").update(req.id, {
+		settings: {
+			...req.settings,
+			...newSettings,
+		},
+	})
+	$userSettings.set(updatedSettings.settings)
+}
+
+// keys queued by queueUserSettings, flushed together in a single request so that
+// two debounced saves for different keys can't race each other's read-modify-write
+// and silently drop one of the changes
+let queuedSettings: Partial<UserSettings> = {}
+
+const flushQueuedSettings = debounce(() => {
+	const toSave = queuedSettings
+	queuedSettings = {}
+	if (Object.keys(toSave).length === 0) {
+		return
+	}
+	saveUserSettings(toSave).catch(console.error)
+}, 1000)
+
+/** Queue a partial user settings update, merging with any other pending keys and saving them together after a debounce window */
+export function queueUserSettings(newSettings: Partial<UserSettings>) {
+	queuedSettings = { ...queuedSettings, ...newSettings }
+	flushQueuedSettings()
+}
+
 /** Fetch or create user settings in database */
 export async function updateUserSettings() {
 	try {
 		const req = await pb.collection("user_settings").getFirstListItem("", { fields: "settings" })
 		$userSettings.set(req.settings)
+		dynamicActivate(req.settings.lang || getLocale())
 		return
 	} catch (e) {
 		console.error("get settings", e)
@@ -49,6 +84,7 @@ export async function updateUserSettings() {
 	try {
 		const createdSettings = await pb.collection("user_settings").create({ user: pb.authStore.record?.id })
 		$userSettings.set(createdSettings.settings)
+		dynamicActivate(createdSettings.settings.lang || getLocale())
 	} catch (e) {
 		console.error("create settings", e)
 	}
