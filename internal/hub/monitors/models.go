@@ -34,8 +34,10 @@ const (
 	MaxRetries         = 10
 )
 
-// Monitor describes a single uptime check configuration.
+// Monitor describes a single uptime check configuration. ID carries the
+// monitors record id when loaded from the database; checkers ignore it.
 type Monitor struct {
+	ID              string
 	Name            string
 	Type            MonitorType
 	Target          string

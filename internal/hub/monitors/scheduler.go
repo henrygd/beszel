@@ -111,7 +111,7 @@ type Manager struct {
 	sem       chan struct{}
 	maxConc   int
 	check     CheckFunc
-	onResult  func(m Monitor, res CheckResult, transition bool)
+	onResult  func(m Monitor, res CheckResult, transition bool, failures int)
 	jitterMax time.Duration
 }
 
@@ -137,6 +137,8 @@ type managedMonitor struct {
 	ctx     context.Context
 	cancel  context.CancelFunc
 	wg      sync.WaitGroup
+	// key is the manager map key (record id via AddID, else monitor name).
+	key     string
 	running atomic.Bool
 	skipped atomic.Uint64
 	// saturated counts ticks dropped because the global semaphore was full
@@ -147,7 +149,7 @@ type managedMonitor struct {
 // NewManager creates a Manager. maxConcurrent <= 0 selects
 // DefaultMaxConcurrent; the MONITORS_MAX_CONCURRENT env var overrides,
 // clamped to [1, MaxConcurrentCap].
-func NewManager(maxConcurrent int, check CheckFunc, onResult func(m Monitor, res CheckResult, transition bool)) *Manager {
+func NewManager(maxConcurrent int, check CheckFunc, onResult func(m Monitor, res CheckResult, transition bool, failures int)) *Manager {
 	maxConcurrent = resolveMaxConcurrent(maxConcurrent)
 	if check == nil {
 		check = RunCheck
@@ -165,15 +167,58 @@ func NewManager(maxConcurrent int, check CheckFunc, onResult func(m Monitor, res
 // Add starts scheduling checks for m, keyed by name. Re-adding cancels the
 // previous entry and waits for its loop before replacing it, so no orphaned
 // goroutine survives. Callers loading many monitors at boot should stagger
-// Add calls (see StaggerDelay); Task 8 keys by monitor ID instead to avoid
-// same-name collisions across users.
+// Add calls (see StaggerDelay). Prefer AddID (stable across renames and
+// users) when a record id is available.
 func (mgr *Manager) Add(m Monitor) {
+	mgr.add(m.Name, m)
+}
+
+// AddID is Add keyed by an external id (the monitors record id). Same-name
+// monitors from different users no longer collide.
+func (mgr *Manager) AddID(id string, m Monitor) {
+	mgr.add(id, m)
+}
+
+// AddRecord schedules a monitor seeded from its stored state, so a restart
+// neither renotifies a known DOWN nor loses the failure count.
+func (mgr *Manager) AddRecord(mr MonitorRecordLike) {
+	m := mr.ToMonitor()
+	mm := &managedMonitor{monitor: m, state: newMonitorState(m)}
+	mm.state.consec = mr.GetFailures()
+	switch mr.GetStatus() {
+	case StatusUp, StatusDown, StatusWarn:
+		mm.state.current = mr.GetStatus()
+	}
+	mm.ctx, mm.cancel = context.WithCancel(context.Background())
+	mm.wg.Add(1)
+	mm.key = mr.GetID()
+	mgr.mu.Lock()
+	old, dup := mgr.monitors[mr.GetID()]
+	mgr.monitors[mr.GetID()] = mm
+	mgr.mu.Unlock()
+	if dup {
+		old.cancel()
+		old.wg.Wait()
+	}
+	go mgr.loop(mm)
+}
+
+// MonitorRecordLike is the stored-state subset needed to seed scheduling.
+type MonitorRecordLike interface {
+	GetID() string
+	GetStatus() string
+	GetFailures() int
+	ToMonitor() Monitor
+}
+
+func (mgr *Manager) add(key string, m Monitor) {
 	mm := &managedMonitor{monitor: m, state: newMonitorState(m)}
 	mm.ctx, mm.cancel = context.WithCancel(context.Background())
 	mm.wg.Add(1)
+	mm.key = key
 	mgr.mu.Lock()
-	old, dup := mgr.monitors[m.Name]
-	mgr.monitors[m.Name] = mm
+	old, dup := mgr.monitors[key]
+	mgr.monitors[key] = mm
 	mgr.mu.Unlock()
 	if dup {
 		old.cancel()
@@ -322,14 +367,14 @@ func (mgr *Manager) runOnce(mm *managedMonitor) {
 		// Skip delivery if the monitor was removed mid-run: the loop may
 		// still be inside runOnce when Remove/Stop cancels.
 		mgr.mu.Lock()
-		current, ok := mgr.monitors[mm.monitor.Name]
+		current, ok := mgr.monitors[mm.key]
 		stale := !ok || current != mm
 		mgr.mu.Unlock()
 		if stale {
 			return
 		}
 		if mgr.onResult != nil {
-			mgr.onResult(mm.monitor, res, transition)
+			mgr.onResult(mm.monitor, res, transition, mm.state.failures())
 		}
 	}()
 }

@@ -22,6 +22,7 @@ type MonitorRecord struct {
 	Notify             bool
 	ResendAfter        int
 	Status             string
+	UserIDs            []string
 	Config             map[string]any
 	ConsecutiveFailure int
 }
@@ -29,11 +30,18 @@ type MonitorRecord struct {
 // ToMonitor converts a record to a scheduler Monitor.
 func (r MonitorRecord) ToMonitor() Monitor {
 	return Monitor{
+		ID:   r.ID,
 		Name: r.Name, Type: r.Type, Target: r.Target,
 		IntervalSeconds: r.IntervalSeconds, TimeoutSeconds: r.TimeoutSeconds,
 		MaxRetries: r.MaxRetries, UpsideDown: r.UpsideDown, Config: r.Config,
 	}
 }
+
+// GetID, GetStatus, GetFailures satisfy scheduler.MonitorRecordLike for
+// boot seeding without renotifying known states.
+func (r MonitorRecord) GetID() string     { return r.ID }
+func (r MonitorRecord) GetStatus() string { return r.Status }
+func (r MonitorRecord) GetFailures() int  { return r.ConsecutiveFailure }
 
 // RecordStore persists check results. It mirrors the LoadMonitors and
 // SaveCheckResult free functions (failures = exact scheduler-owned count,
@@ -65,6 +73,7 @@ func recordToMonitor(rec *core.Record) MonitorRecord {
 		Type: MonitorType(rec.GetString("type")), Target: rec.GetString("target"),
 		UpsideDown: rec.GetBool("upside_down"), Paused: rec.GetBool("paused"),
 		Notify: rec.GetBool("notify"), Status: rec.GetString("status"),
+		UserIDs:            rec.GetStringSlice("users"),
 		ConsecutiveFailure: int(rec.GetFloat("consecutive_failures")),
 	}
 	m.ResendAfter = int(rec.GetFloat("resend_after"))

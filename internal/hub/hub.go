@@ -14,6 +14,7 @@ import (
 	"github.com/henrygd/beszel/internal/alerts"
 	"github.com/henrygd/beszel/internal/hub/config"
 	"github.com/henrygd/beszel/internal/hub/heartbeat"
+	"github.com/henrygd/beszel/internal/hub/monitors"
 	"github.com/henrygd/beszel/internal/hub/systems"
 	"github.com/henrygd/beszel/internal/hub/utils"
 	"github.com/henrygd/beszel/internal/records"
@@ -33,6 +34,7 @@ type Hub struct {
 	sm     *systems.SystemManager
 	hb     *heartbeat.Heartbeat
 	hbStop chan struct{}
+	me     *monitors.Engine
 	pubKey string
 	signer ssh.Signer
 	appURL string
@@ -49,8 +51,17 @@ func NewHub(app core.App) *Hub {
 	if hub.hb != nil {
 		hub.hbStop = make(chan struct{})
 	}
+	hub.me = monitors.NewEngine(app, hub.sendMonitorAlert)
 	_ = onAfterBootstrapAndMigrations(app, hub.initialize)
 	return hub
+}
+
+// sendMonitorAlert adapts Engine notifications to the alerts pipeline
+// (emails + shoutrrr webhooks + quiet hours via SendAlert).
+func (h *Hub) sendMonitorAlert(userID, title, message, link string) {
+	_ = h.SendAlert(alerts.AlertMessageData{
+		UserID: userID, Title: title, Message: message, Link: link, LinkText: "View monitor",
+	})
 }
 
 // onAfterBootstrapAndMigrations ensures the provided function runs after the database is set up and migrations are applied.
@@ -95,6 +106,10 @@ func (h *Hub) StartHub() error {
 		}
 		// start system updates
 		if err := h.sm.Initialize(); err != nil {
+			return err
+		}
+		// start uptime monitors (hub-only checks, PR1)
+		if err := h.me.Start(); err != nil {
 			return err
 		}
 		// start heartbeat if configured
