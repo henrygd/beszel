@@ -306,11 +306,12 @@ func (a *Agent) initializeDiskInfo() {
 	hasRoot := false
 	isWindows := runtime.GOOS == "windows"
 
-	partitions, err := disk.PartitionsWithContext(context.Background(), true)
-	if err != nil {
-		slog.Error("Error getting disk partitions", "err", err)
-	}
-	slog.Debug("Disk", "partitions", partitions)
+    partitions, err := disk.PartitionsWithContext(context.Background(), true)
+    if err != nil {
+            slog.Error("Error getting disk partitions", "err", err)
+    }
+    a.partitions = partitions  // <-- NEU: Speichere partitions im Agent
+    slog.Debug("Disk", "partitions", partitions)
 
 	// trim trailing backslash for Windows devices (#1361)
 	if isWindows {
@@ -380,29 +381,88 @@ func (a *Agent) initializeDiskInfo() {
 // Removes extra filesystems that mirror root usage (https://github.com/henrygd/beszel/issues/1428).
 func (a *Agent) pruneDuplicateRootExtraFilesystems() {
 	var rootMountpoint string
+	var rootDevice string
 	for _, stats := range a.fsStats {
 		if stats != nil && stats.Root {
 			rootMountpoint = stats.Mountpoint
+			for _, p := range a.partitions {
+				if p.Mountpoint == rootMountpoint {
+					rootDevice = p.Device
+					break
+				}
+			}
 			break
 		}
 	}
 	if rootMountpoint == "" {
 		return
 	}
-	rootUsage, err := disk.Usage(rootMountpoint)
-	if err != nil {
-		return
+
+	// Build map of extra-filesystem names to their real mountpoints
+	extraFsMountpoints := make(map[string]string)
+	for _, p := range a.partitions {
+		if strings.HasPrefix(p.Mountpoint, "/mnt/") || strings.HasPrefix(p.Mountpoint, "/home") || strings.HasPrefix(p.Mountpoint, "/boot") {
+			for name, stats := range a.fsStats {
+				if stats == nil || stats.Root {
+					continue
+				}
+				if p.Device == stats.Mountpoint || p.Mountpoint == stats.Mountpoint {
+					extraFsMountpoints[name] = p.Mountpoint
+				}
+			}
+		}
 	}
+
 	for name, stats := range a.fsStats {
 		if stats == nil || stats.Root {
 			continue
 		}
-		extraUsage, err := disk.Usage(stats.Mountpoint)
-		if err != nil {
+		for _, p := range a.partitions {
+			if p.Mountpoint == stats.Mountpoint {
+				extraFsMountpoints[name] = p.Mountpoint
+				break
+			}
+			if strings.HasSuffix(p.Mountpoint, "/"+name) {
+				extraFsMountpoints[name] = p.Mountpoint
+				break
+			}
+		}
+	}
+
+	for name, stats := range a.fsStats {
+		if stats == nil || stats.Root {
 			continue
 		}
-		if hasSameDiskUsage(rootUsage, extraUsage) {
-			slog.Info("Ignoring duplicate FS", "name", name, "mount", stats.Mountpoint)
+
+		realMountpoint, ok := extraFsMountpoints[name]
+		if !ok {
+			lowerName := strings.ToLower(name)
+			for _, p := range a.partitions {
+				if strings.HasSuffix(p.Mountpoint, "/"+lowerName) ||
+					strings.Contains(p.Mountpoint, lowerName) {
+					realMountpoint = p.Mountpoint
+					break
+				}
+			}
+		}
+
+		var extraDevice string
+		if realMountpoint != "" {
+			for _, p := range a.partitions {
+				if p.Mountpoint == realMountpoint {
+					extraDevice = p.Device
+					break
+				}
+			}
+		}
+
+		if rootDevice != "" && extraDevice != "" && rootDevice != extraDevice {
+			continue
+		}
+
+		rootUsage := a.diskUsage(rootMountpoint)
+		candidateUsage := a.diskUsage(stats.Mountpoint)
+		if rootUsage == candidateUsage && rootUsage > 0 {
 			delete(a.fsStats, name)
 		}
 	}
@@ -775,4 +835,14 @@ func (a *Agent) getRootMountPoint() string {
 	}
 
 	return "/"
+}
+
+// diskUsage returns the disk usage for a given path
+func (a *Agent) diskUsage(path string) uint64 {
+        usage, err := disk.Usage(path)
+        if err != nil {
+                slog.Error("Error getting disk usage", "path", path, "error", err)
+                return 0
+        }
+        return usage.Used
 }
