@@ -20,7 +20,7 @@ FROM alpine:3.23
 
 COPY --from=builder /agent /agent
 
-RUN apk add --no-cache -X https://dl-cdn.alpinelinux.org/alpine/edge/testing igt-gpu-tools smartmontools
+RUN apk add --no-cache -X https://dl-cdn.alpinelinux.org/alpine/edge/testing igt-gpu-tools nvtop smartmontools zfs
 
 # Ensure data persistence across container recreations
 VOLUME ["/var/lib/beszel-agent"]

@@ -1,0 +1,2089 @@
+msgid ""
+msgstr ""
+"POT-Creation-Date: 2024-11-01 11:30-0400\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: @lingui/cli\n"
+"Language: el\n"
+"Project-Id-Version: beszel\n"
+"Report-Msgid-Bugs-To: \n"
+"PO-Revision-Date: 2026-09-02 21:43\n"
+"Last-Translator: \n"
+"Language-Team: Greek\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Crowdin-Project: beszel\n"
+"X-Crowdin-Project-ID: 733311\n"
+"X-Crowdin-Language: el\n"
+"X-Crowdin-File: /main/internal/site/src/locales/en/en.po\n"
+"X-Crowdin-File-ID: 32\n"
+
+#. placeholder {0}: newVersion.v
+#: src/components/footer-repo-link.tsx
+msgctxt "New version available"
+msgid "{0} available"
+msgstr "Διαθέσιμη έκδοση {0}"
+
+#. placeholder {0}: table.getFilteredSelectedRowModel().rows.length
+#. placeholder {1}: table.getFilteredRowModel().rows.length
+#: src/components/routes/settings/alerts-history-data-table.tsx
+msgid "{0} of {1} row(s) selected."
+msgstr "{0} από {1} σειρά(ες) επιλέχθηκαν."
+
+#: src/components/routes/system/info-bar.tsx
+msgid "{cores, plural, one {# core} other {# cores}}"
+msgstr "{cores, plural, one {# πυρήνας} other {# πυρήνες}}"
+
+#: src/lib/utils.ts
+msgid "{count, plural, one {{countString} day} other {{countString} days}}"
+msgstr "{count, plural, one {{countString} ημέρα} other {{countString} ημέρες}}"
+
+#: src/lib/utils.ts
+msgid "{count, plural, one {{countString} hour} other {{countString} hours}}"
+msgstr "{count, plural, one {{countString} ώρα} other {{countString} ώρες}}"
+
+#: src/lib/utils.ts
+msgid "{count, plural, one {{countString} minute} few {{countString} minutes} many {{countString} minutes} other {{countString} minutes}}"
+msgstr "{count, plural, one {{countString} λεπτό} other {{countString} λεπτά}}"
+
+#: src/components/routes/system/charts/disk-charts.tsx
+msgid "{diskName} I/O"
+msgstr "I/O {diskName}"
+
+#: src/components/routes/system/info-bar.tsx
+msgid "{threads, plural, one {# thread} other {# threads}}"
+msgstr "{threads, plural, one {# thread} other {# threads}}"
+
+#: src/lib/utils.ts
+msgid "1 hour"
+msgstr "1 ώρα"
+
+#. Load average
+#: src/components/routes/system/charts/load-average-chart.tsx
+msgid "1 min"
+msgstr "1 λ"
+
+#: src/lib/utils.ts
+msgid "1 minute"
+msgstr "1 λεπτό"
+
+#: src/lib/utils.ts
+msgid "1 week"
+msgstr "1 εβδομάδα"
+
+#: src/lib/utils.ts
+msgid "12 hours"
+msgstr "12 ώρες"
+
+#. Load average
+#: src/components/routes/system/charts/load-average-chart.tsx
+msgid "15 min"
+msgstr "15 λ"
+
+#: src/lib/utils.ts
+msgid "24 hours"
+msgstr "24 ώρες"
+
+#: src/lib/utils.ts
+msgid "30 days"
+msgstr "30 ημέρες"
+
+#. Load average
+#: src/components/routes/system/charts/load-average-chart.tsx
+msgid "5 min"
+msgstr "5 λ"
+
+#. Table column
+#: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
+#: src/components/routes/system/smart-table.tsx
+#: src/components/routes/system/zfs-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
+msgid "Actions"
+msgstr "Ενέργειες"
+
+#: src/components/alerts-history-columns.tsx
+#: src/components/routes/settings/alerts-history-data-table.tsx
+#: src/components/routes/settings/heartbeat.tsx
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Active"
+msgstr "Ενεργό"
+
+#: src/components/active-alerts.tsx
+msgid "Active Alerts"
+msgstr "Ενεργές ειδοποιήσεις"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Active state"
+msgstr "Ενεργή κατάσταση"
+
+#: src/components/add-system.tsx
+#: src/components/add-system.tsx
+#: src/components/navbar.tsx
+#: src/components/navbar.tsx
+#: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Add {foo}"
+msgstr "Προσθήκη {foo}"
+
+#: src/components/routes/settings/notifications.tsx
+msgid "Add URL"
+msgstr "Προσθήκη URL"
+
+#: src/components/routes/settings/general.tsx
+msgid "Adjust display options for charts."
+msgstr "Προσαρμόστε τις επιλογές εμφάνισης για τα γραφήματα."
+
+#: src/components/routes/settings/general.tsx
+msgid "Adjust the width of the main layout"
+msgstr "Προσαρμόστε το πλάτος της κύριας διάταξης"
+
+#: src/components/command-palette.tsx
+#: src/components/command-palette.tsx
+#: src/components/navbar.tsx
+msgid "Admin"
+msgstr "Διαχειριστής"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "After"
+msgstr "Μετά"
+
+#: src/components/routes/settings/heartbeat.tsx
+msgid "After setting the environment variables, restart your Beszel hub for changes to take effect."
+msgstr "Αφού ορίσετε τις μεταβλητές περιβάλλοντος, επανεκκινήστε τον κόμβο Beszel για να εφαρμοστούν οι αλλαγές."
+
+#: src/components/systems-table/systems-table-columns.tsx
+msgid "Agent"
+msgstr "Πράκτορας"
+
+#: src/components/command-palette.tsx
+#: src/components/routes/settings/alerts-history-data-table.tsx
+#: src/components/routes/settings/layout.tsx
+msgid "Alert History"
+msgstr "Ιστορικό ειδοποιήσεων"
+
+#: src/components/alerts/alert-button.tsx
+#: src/components/alerts/alerts-sheet.tsx
+msgid "Alerts"
+msgstr "Ειδοποιήσεις"
+
+#: src/components/command-palette.tsx
+#: src/components/containers-table/containers-table.tsx
+#: src/components/navbar.tsx
+#: src/components/navbar.tsx
+#: src/components/routes/containers.tsx
+msgid "All Containers"
+msgstr "Όλα τα κοντέινερ"
+
+#: src/components/alerts/alerts-sheet.tsx
+#: src/components/command-palette.tsx
+#: src/components/routes/home.tsx
+#: src/components/routes/settings/quiet-hours.tsx
+#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table.tsx
+msgid "All Systems"
+msgstr "Όλα τα συστήματα"
+
+#: src/components/systems-table/systems-table-columns.tsx
+msgid "Are you sure you want to delete {name}?"
+msgstr "Είστε βέβαιοι ότι θέλετε να διαγράψετε το {name};"
+
+#: src/components/routes/settings/alerts-history-data-table.tsx
+msgid "Are you sure?"
+msgstr "Είστε βέβαιοι;"
+
+#: src/components/copy-to-clipboard.tsx
+msgid "Automatic copy requires a secure context."
+msgstr "Η αυτόματη αντιγραφή απαιτεί ασφαλές περιβάλλον."
+
+#: src/components/routes/system/zfs-table.tsx
+msgctxt "Disk space available"
+msgid "Available"
+msgstr "Διαθέσιμο"
+
+#: src/components/routes/system/chart-card.tsx
+msgid "Average"
+msgstr "Μέσος όρος"
+
+#: src/components/routes/system/charts/cpu-charts.tsx
+msgid "Average CPU utilization of containers"
+msgstr "Μέση χρήση CPU των κοντέινερ"
+
+#. placeholder {0}: alertData.unit
+#: src/components/alerts/alerts-sheet.tsx
+msgid "Average drops below <0>{value}{0}</0>"
+msgstr "Ο μέσος όρος πέφτει κάτω από <0>{value}{0}</0>"
+
+#. placeholder {0}: alertData.unit
+#: src/components/alerts/alerts-sheet.tsx
+msgid "Average exceeds <0>{value}{0}</0>"
+msgstr "Ο μέσος όρος υπερβαίνει <0>{value}{0}</0>"
+
+#: src/components/routes/system/disk-io-sheet.tsx
+msgid "Average number of I/O operations waiting to be serviced"
+msgstr "Μέσος αριθμός λειτουργιών I/O που αναμένουν εξυπηρέτηση"
+
+#: src/components/routes/system/charts/gpu-charts.tsx
+msgid "Average power consumption of GPUs"
+msgstr "Μέση κατανάλωση ισχύος των GPU"
+
+#: src/components/routes/system/disk-io-sheet.tsx
+msgctxt "Disk I/O average operation time (iostat await)"
+msgid "Average queue to completion time per operation"
+msgstr "Μέσος χρόνος από την ουρά έως την ολοκλήρωση ανά λειτουργία"
+
+#: src/components/routes/system/charts/cpu-charts.tsx
+msgid "Average system-wide CPU utilization"
+msgstr "Μέση συνολική χρήση CPU του συστήματος"
+
+#. placeholder {0}: gpu.n
+#: src/components/routes/system/charts/gpu-charts.tsx
+msgid "Average utilization of {0}"
+msgstr "Μέση χρήση του {0}"
+
+#: src/components/routes/system/charts/gpu-charts.tsx
+msgid "Average utilization of GPU engines"
+msgstr "Μέση χρήση των μηχανών GPU"
+
+#: src/components/command-palette.tsx
+#: src/components/navbar.tsx
+msgid "Backups"
+msgstr "Αντίγραφα ασφαλείας"
+
+#: src/components/routes/system/charts/network-charts.tsx
+#: src/lib/alerts.ts
+msgid "Bandwidth"
+msgstr "Εύρος ζώνης"
+
+#. Battery label in systems table header
+#: src/components/systems-table/systems-table-columns.tsx
+msgid "Bat"
+msgstr "Μπατ."
+
+#: src/components/routes/system/charts/sensor-charts.tsx
+#: src/components/routes/system/charts/sensor-charts.tsx
+#: src/lib/alerts.ts
+msgid "Battery"
+msgstr "Μπαταρία"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Became active"
+msgstr "Έγινε ενεργό"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Became inactive"
+msgstr "Έγινε ανενεργό"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Before"
+msgstr "Πριν"
+
+#. placeholder {0}: alert.value
+#. placeholder {1}: info.unit
+#. placeholder {2}: alert.min
+#: src/components/active-alerts.tsx
+msgid "Below {0}{1} in last {2, plural, one {# minute} other {# minutes}}"
+msgstr "Κάτω από {0}{1} στα τελευταία {2, plural, one {# λεπτό} other {# λεπτά}}"
+
+#: src/components/login/auth-form.tsx
+msgid "Beszel supports OpenID Connect and many OAuth2 authentication providers."
+msgstr "Το Beszel υποστηρίζει OpenID Connect και πολλούς παρόχους ταυτοποίησης OAuth2."
+
+#: src/components/routes/settings/notifications.tsx
+msgid "Beszel uses <0>Shoutrrr</0> to integrate with popular notification services."
+msgstr "Το Beszel χρησιμοποιεί το <0>Shoutrrr</0> για ενσωμάτωση με δημοφιλείς υπηρεσίες ειδοποιήσεων."
+
+#: src/components/add-system.tsx
+msgid "Binary"
+msgstr "Δυαδικό"
+
+#: src/components/routes/settings/general.tsx
+#: src/components/routes/settings/general.tsx
+msgid "Bits (Kbps, Mbps, Gbps)"
+msgstr "Bit (Kbps, Mbps, Gbps)"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Boot state"
+msgstr "Κατάσταση εκκίνησης"
+
+#: src/components/routes/settings/general.tsx
+#: src/components/routes/settings/general.tsx
+msgid "Bytes (KB/s, MB/s, GB/s)"
+msgstr "Byte (KB/s, MB/s, GB/s)"
+
+#: src/components/routes/system/charts/memory-charts.tsx
+msgid "Cache / Buffers"
+msgstr "Cache / Buffer"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Can reload"
+msgstr "Δυνατότητα επαναφόρτωσης"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Can start"
+msgstr "Δυνατότητα εκκίνησης"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Can stop"
+msgstr "Δυνατότητα διακοπής"
+
+#: src/components/routes/settings/alerts-history-data-table.tsx
+#: src/components/routes/settings/quiet-hours.tsx
+#: src/components/systems-table/systems-table-columns.tsx
+msgid "Cancel"
+msgstr "Ακύρωση"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Capabilities"
+msgstr "Δυνατότητες"
+
+#: src/components/routes/system/smart-table.tsx
+#: src/components/routes/system/zfs-table.tsx
+msgid "Capacity"
+msgstr "Χωρητικότητα"
+
+#: src/components/routes/settings/config-yaml.tsx
+msgid "Caution - potential data loss"
+msgstr "Προσοχή - πιθανή απώλεια δεδομένων"
+
+#: src/components/routes/settings/general.tsx
+msgid "Celsius (°C)"
+msgstr "Κελσίου (°C)"
+
+#: src/components/routes/settings/general.tsx
+msgid "Change display units for metrics."
+msgstr "Αλλάξτε τις μονάδες εμφάνισης των μετρήσεων."
+
+#: src/components/routes/settings/general.tsx
+msgid "Change general application options."
+msgstr "Αλλάξτε τις γενικές επιλογές της εφαρμογής."
+
+#: src/components/routes/system/charts/sensor-charts.tsx
+msgid "Charge"
+msgstr "Φόρτιση"
+
+#. Context: Battery state
+#: src/lib/i18n.ts
+msgid "Charging"
+msgstr "Φορτίζεται"
+
+#: src/components/routes/settings/general.tsx
+msgid "Chart options"
+msgstr "Επιλογές γραφήματος"
+
+#: src/components/routes/system/info-bar.tsx
+msgid "Chart width"
+msgstr "Πλάτος γραφήματος"
+
+#: src/components/login/forgot-pass-form.tsx
+msgid "Check {email} for a reset link."
+msgstr "Ελέγξτε το {email} για έναν σύνδεσμο επαναφοράς."
+
+#: src/components/routes/settings/layout.tsx
+msgid "Check logs for more details."
+msgstr "Ελέγξτε τα αρχεία καταγραφής για περισσότερες λεπτομέρειες."
+
+#: src/components/routes/settings/heartbeat.tsx
+msgid "Check your monitoring service"
+msgstr "Ελέγξτε την υπηρεσία παρακολούθησής σας"
+
+#: src/components/routes/settings/notifications.tsx
+msgid "Check your notification service"
+msgstr "Ελέγξτε την υπηρεσία ειδοποιήσεών σας"
+
+#: src/components/routes/system/zfs-table.tsx
+msgid "Checksum errors"
+msgstr "Σφάλματα αθροίσματος ελέγχου"
+
+#: src/components/containers-table/containers-table.tsx
+#: src/components/routes/system/smart-table.tsx
+#: src/components/routes/system/zfs-table.tsx
+#: src/components/routes/system/zfs-table.tsx
+#: src/components/systems-table/systems-table.tsx
+msgid "Clear"
+msgstr "Εκκαθάριση"
+
+#: src/components/containers-table/containers-table.tsx
+msgid "Click on a container to view more information."
+msgstr "Κάντε κλικ σε ένα κοντέινερ για να δείτε περισσότερες πληροφορίες."
+
+#: src/components/routes/system/smart-table.tsx
+msgid "Click on a device to view more information."
+msgstr "Κάντε κλικ σε μια συσκευή για να δείτε περισσότερες πληροφορίες."
+
+#: src/components/routes/system/zfs-table.tsx
+msgid "Click on a pool to view vdev and dataset details."
+msgstr "Κάντε κλικ σε ένα pool για να δείτε λεπτομέρειες για τα vdev και τα σύνολα δεδομένων."
+
+#: src/components/systems-table/systems-table.tsx
+msgid "Click on a system to view more information."
+msgstr "Κάντε κλικ σε ένα σύστημα για να δείτε περισσότερες πληροφορίες."
+
+#: src/components/ui/input-copy.tsx
+msgid "Click to copy"
+msgstr "Κάντε κλικ για αντιγραφή"
+
+#: src/components/login/forgot-pass-form.tsx
+#: src/components/login/forgot-pass-form.tsx
+msgid "Command line instructions"
+msgstr "Οδηγίες γραμμής εντολών"
+
+#: src/components/routes/settings/notifications.tsx
+msgid "Configure how you receive alert notifications."
+msgstr "Ρυθμίστε τον τρόπο λήψης ειδοποιήσεων συναγερμού."
+
+#: src/components/login/auth-form.tsx
+#: src/components/login/auth-form.tsx
+msgid "Confirm password"
+msgstr "Επιβεβαίωση κωδικού πρόσβασης"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Conflicts"
+msgstr "Διενέξεις"
+
+#: src/components/active-alerts.tsx
+msgid "Connection is down"
+msgstr "Η σύνδεση είναι εκτός λειτουργίας"
+
+#: src/lib/alerts.ts
+msgid "Container"
+msgstr ""
+
+#: src/lib/alerts.ts
+msgid "Container Health"
+msgstr ""
+
+#: src/components/routes/system.tsx
+msgid "Containers"
+msgstr "Κοντέινερ"
+
+#: src/components/routes/settings/alerts-history-data-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
+msgid "Continue"
+msgstr "Συνέχεια"
+
+#: src/lib/utils.ts
+msgid "Copied to clipboard"
+msgstr "Αντιγράφηκε στο πρόχειρο"
+
+#: src/components/add-system.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgctxt "Button to copy docker compose file content"
+msgid "Copy docker compose"
+msgstr "Αντιγραφή docker compose"
+
+#: src/components/add-system.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgctxt "Button to copy docker run command"
+msgid "Copy docker run"
+msgstr "Αντιγραφή docker run"
+
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgctxt "Environment variables"
+msgid "Copy env"
+msgstr "Αντιγραφή env"
+
+#: src/components/alerts/alerts-sheet.tsx
+msgctxt "Copy alerts from another system"
+msgid "Copy from"
+msgstr "Αντιγραφή από"
+
+#: src/components/systems-table/systems-table-columns.tsx
+msgid "Copy host"
+msgstr "Αντιγραφή κεντρικού υπολογιστή"
+
+#: src/components/add-system.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Copy Linux command"
+msgstr "Αντιγραφή εντολής Linux"
+
+#: src/components/systems-table/systems-table-columns.tsx
+msgid "Copy name"
+msgstr "Αντιγραφή ονόματος"
+
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Copy public key"
+msgstr "Αντιγραφή δημόσιου κλειδιού"
+
+#: src/components/copy-to-clipboard.tsx
+msgid "Copy text"
+msgstr "Αντιγραφή κειμένου"
+
+#: src/components/add-system.tsx
+msgid "Copy the installation command for the agent below, or register agents automatically with a <0>universal token</0>."
+msgstr "Αντιγράψτε την παρακάτω εντολή εγκατάστασης για τον agent ή καταχωρίστε agents αυτόματα με ένα <0>καθολικό token</0>."
+
+#: src/components/add-system.tsx
+msgid "Copy the<0>docker-compose.yml</0> content for the agent below, or register agents automatically with a <1>universal token</1>."
+msgstr "Αντιγράψτε το περιεχόμενο του <0>docker-compose.yml</0> για τον παρακάτω πράκτορα ή καταχωρίστε πράκτορες αυτόματα με ένα <1>καθολικό διακριτικό</1>."
+
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Copy YAML"
+msgstr "Αντιγραφή YAML"
+
+#: src/components/routes/system.tsx
+msgctxt "Core system metrics"
+msgid "Core"
+msgstr "Βασικά"
+
+#: src/components/containers-table/containers-table-columns.tsx
+#: src/components/systemd-table/systemd-table-columns.tsx
+#: src/components/systems-table/systems-table-columns.tsx
+msgid "CPU"
+msgstr "CPU"
+
+#: src/components/routes/system/cpu-sheet.tsx
+msgid "CPU Cores"
+msgstr "Πυρήνες CPU"
+
+#: src/lib/alerts.ts
+msgid "CPU I/O Wait"
+msgstr "Χρόνος αναμονής I/O CPU"
+
+#: src/components/systemd-table/systemd-table-columns.tsx
+msgid "CPU Peak"
+msgstr "Μέγιστη CPU"
+
+#: src/lib/alerts.ts
+msgid "CPU Steal Time"
+msgstr "Χρόνος κλοπής CPU"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "CPU time"
+msgstr "Χρόνος CPU"
+
+#: src/components/routes/system/cpu-sheet.tsx
+msgid "CPU Time Breakdown"
+msgstr "Ανάλυση χρόνου CPU"
+
+#: src/components/routes/system/charts/cpu-charts.tsx
+#: src/components/routes/system/charts/cpu-charts.tsx
+#: src/components/routes/system/cpu-sheet.tsx
+#: src/lib/alerts.ts
+msgid "CPU Usage"
+msgstr "Χρήση CPU"
+
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Create"
+msgstr "Δημιουργία"
+
+#: src/components/login/auth-form.tsx
+msgid "Create account"
+msgstr "Δημιουργία λογαριασμού"
+
+#. Context: date created
+#: src/components/alerts-history-columns.tsx
+msgid "Created"
+msgstr "Δημιουργήθηκε"
+
+#: src/components/routes/settings/general.tsx
+msgid "Critical (%)"
+msgstr "Κρίσιμο (%)"
+
+#: src/components/routes/system/disk-io-sheet.tsx
+msgid "Cumulative data read since boot"
+msgstr "Συνολικά δεδομένα που διαβάστηκαν από την εκκίνηση"
+
+#: src/components/routes/system/disk-io-sheet.tsx
+msgid "Cumulative data written since boot"
+msgstr "Συνολικά δεδομένα που γράφτηκαν από την εκκίνηση"
+
+#: src/components/routes/system/network-sheet.tsx
+msgid "Cumulative Download"
+msgstr "Συνολική λήψη"
+
+#: src/components/routes/system/disk-io-sheet.tsx
+msgid "Cumulative Read"
+msgstr "Συνολική ανάγνωση"
+
+#: src/components/routes/system/network-sheet.tsx
+msgid "Cumulative Upload"
+msgstr "Συνολική αποστολή"
+
+#: src/components/routes/system/disk-io-sheet.tsx
+msgid "Cumulative Write"
+msgstr "Συνολική εγγραφή"
+
+#. Context: Battery state
+#. Context: Battery state
+#: src/components/routes/system/charts/sensor-charts.tsx
+#: src/components/routes/system/charts/sensor-charts.tsx
+msgid "Current state"
+msgstr "Τρέχουσα κατάσταση"
+
+#. Power Cycles
+#: src/components/routes/system/smart-table.tsx
+msgid "Cycles"
+msgstr "Κύκλοι"
+
+#: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Daily"
+msgstr "Καθημερινά"
+
+#: src/components/routes/system/info-bar.tsx
+msgctxt "Default system layout option"
+msgid "Default"
+msgstr "Προεπιλογή"
+
+#: src/components/routes/settings/general.tsx
+msgid "Default time period"
+msgstr "Προεπιλεγμένη χρονική περίοδος"
+
+#: src/components/routes/settings/alerts-history-data-table.tsx
+#: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/system/smart-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
+msgid "Delete"
+msgstr "Διαγραφή"
+
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Delete fingerprint"
+msgstr "Διαγραφή αποτυπώματος"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Description"
+msgstr "Περιγραφή"
+
+#: src/components/containers-table/containers-table.tsx
+msgid "Detail"
+msgstr "Λεπτομέρεια"
+
+#: src/components/routes/system/smart-table.tsx
+msgid "Device"
+msgstr "Συσκευή"
+
+#. Context: Battery state
+#: src/lib/i18n.ts
+msgid "Discharging"
+msgstr "Αποφορτίζεται"
+
+#: src/components/routes/system.tsx
+#: src/components/systems-table/systems-table-columns.tsx
+msgid "Disk"
+msgstr "Δίσκος"
+
+#: src/components/routes/settings/general.tsx
+msgid "Disk unit"
+msgstr "Μονάδα δίσκου"
+
+#: src/components/routes/system/charts/disk-charts.tsx
+#: src/lib/alerts.ts
+msgid "Disk Usage"
+msgstr "Χρήση δίσκου"
+
+#: src/components/routes/system/charts/disk-charts.tsx
+msgid "Disk usage of {extraFsName}"
+msgstr "Χρήση δίσκου του {extraFsName}"
+
+#: src/components/routes/system/info-bar.tsx
+msgctxt "Layout display options"
+msgid "Display"
+msgstr "Εμφάνιση"
+
+#: src/components/routes/system/charts/cpu-charts.tsx
+msgid "Docker CPU Usage"
+msgstr "Χρήση CPU Docker"
+
+#: src/components/routes/system/charts/memory-charts.tsx
+msgid "Docker Memory Usage"
+msgstr "Χρήση μνήμης Docker"
+
+#: src/components/routes/system/charts/network-charts.tsx
+msgid "Docker Network I/O"
+msgstr "I/O δικτύου Docker"
+
+#: src/components/command-palette.tsx
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Documentation"
+msgstr "Τεκμηρίωση"
+
+#. Context: System is down
+#: src/components/alerts-history-columns.tsx
+#: src/components/routes/system/info-bar.tsx
+#: src/components/systems-table/systems-table-columns.tsx
+#: src/lib/alerts.ts
+msgid "Down"
+msgstr "Εκτός λειτουργίας"
+
+#: src/components/systems-table/systems-table.tsx
+msgid "Down ({downSystemsLength})"
+msgstr "Εκτός λειτουργίας ({downSystemsLength})"
+
+#: src/components/routes/system/network-sheet.tsx
+msgid "Download"
+msgstr "Λήψη"
+
+#: src/components/alerts-history-columns.tsx
+msgid "Duration"
+msgstr "Διάρκεια"
+
+#: src/components/routes/settings/quiet-hours.tsx
+#: src/components/systems-table/systems-table-columns.tsx
+msgid "Edit"
+msgstr "Επεξεργασία"
+
+#: src/components/add-system.tsx
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Edit {foo}"
+msgstr "Επεξεργασία {foo}"
+
+#: src/components/login/auth-form.tsx
+#: src/components/login/forgot-pass-form.tsx
+#: src/components/login/otp-forms.tsx
+msgid "Email"
+msgstr "Email"
+
+#: src/components/routes/settings/notifications.tsx
+msgid "Email notifications"
+msgstr "Ειδοποιήσεις μέσω email"
+
+#. Context: Battery state
+#: src/lib/i18n.ts
+msgid "Empty"
+msgstr "Άδειο"
+
+#: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "End Time"
+msgstr "Ώρα λήξης"
+
+#: src/components/routes/settings/heartbeat.tsx
+msgid "Endpoint URL"
+msgstr "URL τελικού σημείου"
+
+#: src/components/routes/settings/heartbeat.tsx
+msgid "Endpoint URL to ping (required)"
+msgstr "URL τελικού σημείου για ping (απαιτείται)"
+
+#: src/components/login/login.tsx
+msgid "Enter email address to reset password"
+msgstr "Εισαγάγετε διεύθυνση email για επαναφορά κωδικού πρόσβασης"
+
+#: src/components/routes/settings/notifications.tsx
+msgid "Enter email address..."
+msgstr "Εισαγάγετε διεύθυνση email..."
+
+#: src/components/login/otp-forms.tsx
+msgid "Enter your one-time password."
+msgstr "Εισαγάγετε τον κωδικό μίας χρήσης."
+
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Ephemeral"
+msgstr "Προσωρινό"
+
+#: src/components/routes/settings/alerts-history-data-table.tsx
+#: src/components/routes/settings/config-yaml.tsx
+#: src/components/routes/settings/heartbeat.tsx
+#: src/components/routes/settings/heartbeat.tsx
+#: src/components/routes/settings/heartbeat.tsx
+#: src/components/routes/settings/notifications.tsx
+#: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Error"
+msgstr "Σφάλμα"
+
+#: src/components/routes/settings/heartbeat.tsx
+msgid "Example:"
+msgstr "Παράδειγμα:"
+
+#. placeholder {0}: alert.value
+#. placeholder {1}: info.unit
+#. placeholder {2}: alert.min
+#: src/components/active-alerts.tsx
+msgid "Exceeds {0}{1} in last {2, plural, one {# minute} other {# minutes}}"
+msgstr "Υπερβαίνει {0}{1} {2, plural, one {στο τελευταίο # λεπτό} other {στα τελευταία # λεπτά}}"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Exec main PID"
+msgstr "Κύριο PID εκτέλεσης"
+
+#: src/components/routes/settings/config-yaml.tsx
+msgid "Existing systems not defined in <0>config.yml</0> will be deleted. Please make regular backups."
+msgstr "Τα υπάρχοντα συστήματα που δεν ορίζονται στο <0>config.yml</0> θα διαγραφούν. Δημιουργείτε τακτικά αντίγραφα ασφαλείας."
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Exited active"
+msgstr "Ενεργό μετά την έξοδο"
+
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Expires after one hour or on hub restart."
+msgstr "Λήγει μετά από μία ώρα ή με επανεκκίνηση του κόμβου."
+
+#: src/components/routes/settings/alerts-history-data-table.tsx
+msgid "Export"
+msgstr "Εξαγωγή"
+
+#: src/components/routes/settings/config-yaml.tsx
+msgid "Export configuration"
+msgstr "Εξαγωγή διαμόρφωσης"
+
+#: src/components/routes/settings/config-yaml.tsx
+msgid "Export your current systems configuration."
+msgstr "Εξαγάγετε την τρέχουσα διαμόρφωση των συστημάτων σας."
+
+#: src/components/routes/settings/general.tsx
+msgid "Fahrenheit (°F)"
+msgstr "Φαρενάιτ (°F)"
+
+#: src/components/systems-table/systems-table-columns.tsx
+msgid "Failed"
+msgstr "Απέτυχε"
+
+#: src/components/routes/system/smart-table.tsx
+msgid "Failed Attributes:"
+msgstr "Αποτυχημένα χαρακτηριστικά:"
+
+#: src/lib/alerts.ts
+msgid "Failed Services"
+msgstr "Αποτυχημένες υπηρεσίες"
+
+#: src/lib/api.ts
+msgid "Failed to authenticate"
+msgstr "Η ταυτοποίηση απέτυχε"
+
+#: src/components/routes/settings/layout.tsx
+#: src/components/routes/settings/notifications.tsx
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Failed to save settings"
+msgstr "Αποτυχία αποθήκευσης ρυθμίσεων"
+
+#: src/components/routes/settings/heartbeat.tsx
+msgid "Failed to send heartbeat"
+msgstr "Αποτυχία αποστολής heartbeat"
+
+#: src/components/routes/settings/notifications.tsx
+msgid "Failed to send test notification"
+msgstr "Αποτυχία αποστολής δοκιμαστικής ειδοποίησης"
+
+#: src/components/alerts/alerts-sheet.tsx
+msgid "Failed to update alert"
+msgstr "Αποτυχία ενημέρωσης ειδοποίησης"
+
+#. placeholder {0}: statusTotals[ServiceStatus.Failed]
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Failed: {0}"
+msgstr "Απέτυχαν: {0}"
+
+#: src/components/routes/system/charts/sensor-charts.tsx
+msgid "Fans"
+msgstr "Ανεμιστήρες"
+
+#: src/components/containers-table/containers-table.tsx
+#: src/components/routes/settings/alerts-history-data-table.tsx
+#: src/components/routes/system/chart-card.tsx
+#: src/components/routes/system/smart-table.tsx
+#: src/components/routes/system/zfs-table.tsx
+#: src/components/routes/system/zfs-table.tsx
+#: src/components/systemd-table/systemd-table.tsx
+#: src/components/systems-table/systems-table.tsx
+msgid "Filter..."
+msgstr "Φίλτρο..."
+
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Fingerprint"
+msgstr "Αποτύπωμα"
+
+#: src/components/routes/system/smart-table.tsx
+msgid "Firmware"
+msgstr "Υλικολογισμικό"
+
+#: src/components/alerts/alerts-sheet.tsx
+msgid "For <0>{min}</0> {min, plural, one {minute} other {minutes}}"
+msgstr "Για <0>{min}</0> {min, plural, one {λεπτό} other {λεπτά}}"
+
+#: src/components/login/auth-form.tsx
+msgid "Forgot password?"
+msgstr "Ξεχάσατε τον κωδικό πρόσβασης;"
+
+#: src/components/routes/system/zfs-table.tsx
+#: src/components/routes/system/zfs-table.tsx
+msgctxt "Free space"
+msgid "Free"
+msgstr "Ελεύθερο"
+
+#: src/components/add-system.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgctxt "Button to copy install command"
+msgid "FreeBSD command"
+msgstr "Εντολή FreeBSD"
+
+#. Context: Battery state
+#: src/components/routes/system/info-bar.tsx
+#: src/lib/i18n.ts
+msgid "Full"
+msgstr "Πλήρες"
+
+#. Context: General settings
+#: src/components/routes/settings/general.tsx
+#: src/components/routes/settings/layout.tsx
+msgid "General"
+msgstr "Γενικά"
+
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Global"
+msgstr "Καθολικό"
+
+#: src/components/routes/system.tsx
+msgid "GPU"
+msgstr "GPU"
+
+#: src/components/routes/system/charts/gpu-charts.tsx
+msgid "GPU Engines"
+msgstr "Μηχανές GPU"
+
+#: src/components/routes/system/charts/gpu-charts.tsx
+msgid "GPU Power Draw"
+msgstr "Κατανάλωση ισχύος GPU"
+
+#: src/lib/alerts.ts
+msgid "GPU Usage"
+msgstr "Χρήση GPU"
+
+#: src/components/routes/system/info-bar.tsx
+#: src/components/systems-table/systems-table.tsx
+msgid "Grid"
+msgstr "Πλέγμα"
+
+#: src/components/containers-table/containers-table-columns.tsx
+#: src/components/routes/system/zfs-table.tsx
+msgid "Health"
+msgstr "Υγεία"
+
+#: src/components/routes/settings/layout.tsx
+msgid "Heartbeat"
+msgstr "Heartbeat"
+
+#: src/components/routes/settings/heartbeat.tsx
+msgid "Heartbeat Monitoring"
+msgstr "Παρακολούθηση heartbeat"
+
+#: src/components/routes/settings/heartbeat.tsx
+msgid "Heartbeat sent successfully"
+msgstr "Το heartbeat στάλθηκε με επιτυχία"
+
+#: src/components/add-system.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgctxt "Button to copy install command"
+msgid "Homebrew command"
+msgstr "Εντολή Homebrew"
+
+#: src/components/add-system.tsx
+msgid "Host / IP"
+msgstr "Κεντρικός υπολογιστής / IP"
+
+#: src/components/routes/settings/heartbeat.tsx
+msgid "HTTP Method"
+msgstr "Μέθοδος HTTP"
+
+#: src/components/routes/settings/heartbeat.tsx
+msgid "HTTP method: POST, GET, or HEAD (default: POST)"
+msgstr "Μέθοδος HTTP: POST, GET ή HEAD (προεπιλογή: POST)"
+
+#: src/components/routes/system/disk-io-sheet.tsx
+msgctxt "Disk I/O average operation time (iostat await)"
+msgid "I/O Await"
+msgstr "Αναμονή I/O"
+
+#: src/components/routes/system/disk-io-sheet.tsx
+msgctxt "Disk I/O total time spent on read/write"
+msgid "I/O Time"
+msgstr "Χρόνος I/O"
+
+#: src/components/routes/system/charts/disk-charts.tsx
+msgctxt "Percent of time the disk is busy with I/O"
+msgid "I/O Utilization"
+msgstr "Χρήση I/O"
+
+#. Context: Battery state
+#: src/lib/i18n.ts
+msgid "Idle"
+msgstr "Αδράνεια"
+
+#: src/components/login/forgot-pass-form.tsx
+msgid "If you've lost the password to your admin account, you may reset it using the following command."
+msgstr "Αν έχετε χάσει τον κωδικό πρόσβασης του λογαριασμού διαχειριστή σας, μπορείτε να τον επαναφέρετε χρησιμοποιώντας την ακόλουθη εντολή."
+
+#: src/components/containers-table/containers-table-columns.tsx
+msgctxt "Docker image"
+msgid "Image"
+msgstr "Εικόνα"
+
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Inactive"
+msgstr "Ανενεργό"
+
+#: src/components/routes/settings/heartbeat.tsx
+msgid "Interval"
+msgstr "Διάστημα"
+
+#: src/components/login/auth-form.tsx
+msgid "Invalid email address."
+msgstr "Μη έγκυρη διεύθυνση email."
+
+#: src/components/routes/settings/general.tsx
+msgid "Language"
+msgstr "Γλώσσα"
+
+#: src/components/systems-table/systems-table.tsx
+msgid "Layout"
+msgstr "Διάταξη"
+
+#: src/components/routes/settings/general.tsx
+msgid "Layout width"
+msgstr "Πλάτος διάταξης"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Lifecycle"
+msgstr "Κύκλος ζωής"
+
+#: src/components/systemd-table/systemd-table.tsx
+#: src/components/systemd-table/systemd-table.tsx
+msgid "limit"
+msgstr "όριο"
+
+#: src/components/routes/system/charts/load-average-chart.tsx
+msgid "Load Average"
+msgstr "Μέσο φορτίο"
+
+#: src/lib/alerts.ts
+msgid "Load Average 15m"
+msgstr "Μέσο φορτίο 15λ"
+
+#: src/lib/alerts.ts
+msgid "Load Average 1m"
+msgstr "Μέσο φορτίο 1λ"
+
+#: src/lib/alerts.ts
+msgid "Load Average 5m"
+msgstr "Μέσο φορτίο 5λ"
+
+#. Short label for load average
+#: src/components/systems-table/systems-table-columns.tsx
+msgid "Load Avg"
+msgstr "Μέσ. φορτίο"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Load state"
+msgstr "Κατάσταση φόρτωσης"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Loading..."
+msgstr "Φόρτωση..."
+
+#: src/components/navbar.tsx
+#: src/components/navbar.tsx
+msgid "Log Out"
+msgstr "Αποσύνδεση"
+
+#: src/components/login/login.tsx
+msgid "Login"
+msgstr "Σύνδεση"
+
+#: src/components/login/auth-form.tsx
+#: src/components/login/forgot-pass-form.tsx
+msgid "Login attempt failed"
+msgstr "Η προσπάθεια σύνδεσης απέτυχε"
+
+#: src/components/command-palette.tsx
+#: src/components/containers-table/containers-table.tsx
+#: src/components/navbar.tsx
+msgid "Logs"
+msgstr "Αρχεία καταγραφής"
+
+#: src/components/routes/settings/notifications.tsx
+msgid "Looking instead for where to create alerts? Click the bell <0/> icons in the systems table."
+msgstr "Ψάχνετε πού μπορείτε να δημιουργήσετε ειδοποιήσεις; Κάντε κλικ στο καμπανάκι <0/> στον πίνακα συστημάτων."
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Main PID"
+msgstr "Κύριο PID"
+
+#: src/components/routes/settings/layout.tsx
+msgid "Manage display and notification preferences."
+msgstr "Διαχειριστείτε τις προτιμήσεις εμφάνισης και ειδοποιήσεων."
+
+#: src/components/add-system.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Manual setup instructions"
+msgstr "Οδηγίες χειροκίνητης εγκατάστασης"
+
+#. Chart select field. Please try to keep this short.
+#: src/components/routes/system/chart-card.tsx
+msgid "Max 1 min"
+msgstr "Μέγ. 1 λ"
+
+#: src/components/containers-table/containers-table-columns.tsx
+#: src/components/routes/system/info-bar.tsx
+#: src/components/systemd-table/systemd-table-columns.tsx
+#: src/components/systemd-table/systemd-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
+msgid "Memory"
+msgstr "Μνήμη"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Memory limit"
+msgstr "Όριο μνήμης"
+
+#: src/components/systemd-table/systemd-table-columns.tsx
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Memory Peak"
+msgstr "Μέγιστη μνήμη"
+
+#: src/components/routes/system/charts/memory-charts.tsx
+#: src/lib/alerts.ts
+msgid "Memory Usage"
+msgstr "Χρήση μνήμης"
+
+#: src/components/routes/system/charts/memory-charts.tsx
+msgid "Memory usage of containers"
+msgstr "Χρήση μνήμης των κοντέινερ"
+
+#. Device model
+#: src/components/routes/system/smart-table.tsx
+msgid "Model"
+msgstr "Μοντέλο"
+
+#: src/components/routes/system/zfs-table.tsx
+msgid "Mountpoint"
+msgstr "Σημείο προσάρτησης"
+
+#: src/components/add-system.tsx
+#: src/components/alerts-history-columns.tsx
+#: src/components/containers-table/containers-table-columns.tsx
+#: src/components/systemd-table/systemd-table-columns.tsx
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Name"
+msgstr "Όνομα"
+
+#: src/components/containers-table/containers-table-columns.tsx
+#: src/components/systems-table/systems-table-columns.tsx
+msgid "Net"
+msgstr "Δίκτυο"
+
+#: src/components/routes/system/charts/network-charts.tsx
+msgid "Network traffic of containers"
+msgstr "Κίνηση δικτύου των κοντέινερ"
+
+#: src/components/routes/system/charts/network-charts.tsx
+#: src/components/routes/system/network-sheet.tsx
+#: src/components/routes/system/network-sheet.tsx
+#: src/components/routes/system/network-sheet.tsx
+msgid "Network traffic of public interfaces"
+msgstr "Κίνηση δικτύου δημόσιων interfaces"
+
+#. Context: Bytes or bits
+#: src/components/routes/settings/general.tsx
+msgid "Network unit"
+msgstr "Μονάδα δικτύου"
+
+#: src/components/systemd-table/systemd-table.tsx
+#: src/components/systemd-table/systemd-table.tsx
+#: src/components/systemd-table/systemd-table.tsx
+msgid "No"
+msgstr "Όχι"
+
+#: src/components/routes/system/zfs-table.tsx
+msgid "No detail data for this pool."
+msgstr "Δεν υπάρχουν λεπτομερή δεδομένα για αυτό το pool."
+
+#: src/components/command-palette.tsx
+#: src/components/systemd-table/systemd-table.tsx
+msgid "No results found."
+msgstr "Δεν βρέθηκαν αποτελέσματα."
+
+#: src/components/containers-table/containers-table.tsx
+#: src/components/containers-table/containers-table.tsx
+#: src/components/containers-table/containers-table.tsx
+#: src/components/routes/settings/alerts-history-data-table.tsx
+#: src/components/routes/system/smart-table.tsx
+#: src/components/systemd-table/systemd-table.tsx
+msgid "No results."
+msgstr "Κανένα αποτέλεσμα."
+
+#: src/components/routes/system/smart-table.tsx
+msgid "No S.M.A.R.T. attributes available for this device."
+msgstr "Δεν υπάρχουν διαθέσιμα χαρακτηριστικά S.M.A.R.T. για αυτήν τη συσκευή."
+
+#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table.tsx
+msgid "No systems found."
+msgstr "Δεν βρέθηκαν συστήματα."
+
+#: src/components/routes/system/zfs-table.tsx
+msgid "None"
+msgstr "Κανένα"
+
+#: src/components/command-palette.tsx
+#: src/components/routes/settings/layout.tsx
+#: src/components/routes/settings/notifications.tsx
+msgid "Notifications"
+msgstr "Ειδοποιήσεις"
+
+#: src/lib/alerts.ts
+msgid "Notifications may include recent container log excerpts."
+msgstr "Οι ειδοποιήσεις μπορεί να περιλαμβάνουν πρόσφατα αποσπάσματα από αρχεία καταγραφής κοντέινερ."
+
+#: src/components/login/auth-form.tsx
+msgid "OAuth 2 / OIDC support"
+msgstr "Υποστήριξη OAuth 2 / OIDC"
+
+#: src/components/routes/settings/config-yaml.tsx
+msgid "On each restart, systems in the database will be updated to match the systems defined in the file."
+msgstr "Σε κάθε επανεκκίνηση, τα συστήματα στη βάση δεδομένων θα ενημερώνονται ώστε να αντιστοιχούν στα συστήματα που ορίζονται στο αρχείο."
+
+#: src/lib/alerts.ts
+msgid "One or more containers are unhealthy"
+msgstr "Ένα ή περισσότερα κοντέινερ δεν είναι υγιή"
+
+#: src/lib/alerts.ts
+msgid "One or more services are in a failed state"
+msgstr "Μία ή περισσότερες υπηρεσίες βρίσκονται σε κατάσταση αποτυχίας"
+
+#: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "One-time"
+msgstr "Μία φορά"
+
+#: src/components/login/auth-form.tsx
+msgid "One-time password"
+msgstr "Κωδικός μίας χρήσης"
+
+#: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
+#: src/components/routes/system/smart-table.tsx
+#: src/components/routes/system/zfs-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
+msgid "Open menu"
+msgstr "Άνοιγμα μενού"
+
+#: src/components/login/auth-form.tsx
+msgid "Or continue with"
+msgstr "Ή συνεχίστε με"
+
+#: src/components/routes/system/cpu-sheet.tsx
+msgid "Other"
+msgstr "Άλλο"
+
+#: src/components/alerts/alerts-sheet.tsx
+msgid "Overwrite existing alerts"
+msgstr "Αντικατάσταση υπαρχουσών ειδοποιήσεων"
+
+#: src/components/command-palette.tsx
+#: src/components/command-palette.tsx
+#: src/components/command-palette.tsx
+msgid "Page"
+msgstr "Σελίδα"
+
+#. placeholder {0}: table.getState().pagination.pageIndex + 1
+#. placeholder {1}: table.getPageCount()
+#: src/components/routes/settings/alerts-history-data-table.tsx
+msgid "Page {0} of {1}"
+msgstr "Σελίδα {0} από {1}"
+
+#: src/components/command-palette.tsx
+msgid "Pages / Settings"
+msgstr "Σελίδες / Ρυθμίσεις"
+
+#: src/components/login/auth-form.tsx
+#: src/components/login/auth-form.tsx
+msgid "Password"
+msgstr "Κωδικός πρόσβασης"
+
+#: src/components/login/auth-form.tsx
+msgid "Password must be at least 8 characters."
+msgstr "Ο κωδικός πρόσβασης πρέπει να έχει τουλάχιστον 8 χαρακτήρες."
+
+#: src/components/login/auth-form.tsx
+msgid "Password must be less than 72 bytes."
+msgstr "Ο κωδικός πρόσβασης πρέπει να είναι μικρότερος από 72 byte."
+
+#: src/components/login/forgot-pass-form.tsx
+msgid "Password reset request received"
+msgstr "Το αίτημα επαναφοράς κωδικού πρόσβασης ελήφθη"
+
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Past"
+msgstr "Παρελθόν"
+
+#: src/components/systems-table/systems-table-columns.tsx
+msgid "Pause"
+msgstr "Παύση"
+
+#: src/components/systems-table/systems-table-columns.tsx
+msgid "Paused"
+msgstr "Σε παύση"
+
+#: src/components/systems-table/systems-table.tsx
+msgid "Paused ({pausedSystemsLength})"
+msgstr "Σε παύση ({pausedSystemsLength})"
+
+#: src/components/routes/settings/heartbeat.tsx
+msgid "Payload format"
+msgstr "Μορφή payload"
+
+#: src/components/routes/system/cpu-sheet.tsx
+#: src/components/routes/system/cpu-sheet.tsx
+msgid "Per-core average utilization"
+msgstr "Μέση χρήση ανά πυρήνα"
+
+#: src/components/routes/system/charts/disk-charts.tsx
+msgid "Percent of time the disk is busy with I/O"
+msgstr "Ποσοστό χρόνου που ο δίσκος είναι απασχολημένος με I/O"
+
+#: src/components/routes/system/cpu-sheet.tsx
+msgid "Percentage of time spent in each state"
+msgstr "Ποσοστό χρόνου σε κάθε κατάσταση"
+
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Permanent"
+msgstr "Μόνιμο"
+
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Persistence"
+msgstr "Διατήρηση"
+
+#: src/components/routes/settings/notifications.tsx
+msgid "Please <0>configure an SMTP server</0> to ensure alerts are delivered."
+msgstr "Παρακαλώ <0>ρυθμίστε έναν διακομιστή SMTP</0> για να διασφαλίσετε την παράδοση των ειδοποιήσεων."
+
+#: src/components/alerts/alerts-sheet.tsx
+msgid "Please check logs for more details."
+msgstr "Ελέγξτε τα αρχεία καταγραφής για περισσότερες λεπτομέρειες."
+
+#: src/components/login/auth-form.tsx
+#: src/components/login/forgot-pass-form.tsx
+msgid "Please check your credentials and try again"
+msgstr "Ελέγξτε τα στοιχεία σας και προσπαθήστε ξανά"
+
+#: src/components/login/login.tsx
+msgid "Please create an admin account"
+msgstr "Δημιουργήστε έναν λογαριασμό διαχειριστή"
+
+#: src/components/login/auth-form.tsx
+msgid "Please enable pop-ups for this site"
+msgstr "Ενεργοποιήστε τα αναδυόμενα παράθυρα για αυτόν τον ιστότοπο"
+
+#: src/lib/api.ts
+msgid "Please log in again"
+msgstr "Συνδεθείτε ξανά"
+
+#: src/components/login/auth-form.tsx
+msgid "Please see <0>the documentation</0> for instructions."
+msgstr "Ανατρέξτε στην <0>τεκμηρίωση</0> για οδηγίες."
+
+#: src/components/login/login.tsx
+msgid "Please sign in to your account"
+msgstr "Συνδεθείτε στον λογαριασμό σας"
+
+#: src/components/routes/system/zfs-table.tsx
+msgid "Pool Health"
+msgstr "Κατάσταση pool"
+
+#: src/components/routes/system/charts/zfs-charts.tsx
+msgid "Pool Usage"
+msgstr "Χρήση pool"
+
+#: src/components/add-system.tsx
+msgid "Port"
+msgstr "Θύρα"
+
+#: src/components/containers-table/containers-table-columns.tsx
+msgctxt "Container ports"
+msgid "Ports"
+msgstr "Θύρες"
+
+#. Power On Time
+#: src/components/routes/system/smart-table.tsx
+msgid "Power On"
+msgstr "Χρόνος λειτουργίας"
+
+#: src/components/routes/system/charts/gpu-charts.tsx
+#: src/components/routes/system/charts/memory-charts.tsx
+msgid "Precise utilization at the recorded time"
+msgstr "Ακριβής χρήση κατά τον καταγεγραμμένο χρόνο"
+
+#: src/components/routes/settings/general.tsx
+msgid "Preferred Language"
+msgstr "Προτιμώμενη γλώσσα"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Process started"
+msgstr "Η διεργασία ξεκίνησε"
+
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Public key"
+msgstr "Δημόσιο κλειδί"
+
+#. Use 'Key' if your language requires many more characters
+#: src/components/add-system.tsx
+msgid "Public Key"
+msgstr "Δημόσιο κλειδί"
+
+#: src/components/routes/system/disk-io-sheet.tsx
+msgctxt "Disk I/O average queue depth"
+msgid "Queue Depth"
+msgstr "Βάθος ουράς"
+
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Quiet Hours"
+msgstr "Ώρες σίγασης"
+
+#. Disk read
+#. Disk read
+#: src/components/routes/system/charts/disk-charts.tsx
+#: src/components/routes/system/charts/zfs-charts.tsx
+#: src/components/routes/system/disk-io-sheet.tsx
+#: src/components/routes/system/disk-io-sheet.tsx
+#: src/components/routes/system/disk-io-sheet.tsx
+#: src/components/routes/system/disk-io-sheet.tsx
+msgid "Read"
+msgstr "Ανάγνωση"
+
+#: src/components/routes/system/zfs-table.tsx
+msgid "Read errors"
+msgstr "Σφάλματα ανάγνωσης"
+
+#: src/components/routes/system/charts/network-charts.tsx
+msgid "Received"
+msgstr "Λήφθηκαν"
+
+#: src/components/containers-table/containers-table.tsx
+#: src/components/containers-table/containers-table.tsx
+#: src/components/routes/system/smart-table.tsx
+#: src/components/routes/system/zfs-table.tsx
+msgid "Refresh"
+msgstr "Ανανέωση"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Relationships"
+msgstr "Σχέσεις"
+
+#: src/components/login/login.tsx
+msgid "Request a one-time password"
+msgstr "Αίτημα κωδικού μίας χρήσης"
+
+#: src/components/login/otp-forms.tsx
+msgid "Request OTP"
+msgstr "Αίτημα OTP"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Required by"
+msgstr "Απαιτείται από"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Requires"
+msgstr "Απαιτεί"
+
+#: src/components/login/forgot-pass-form.tsx
+msgid "Reset Password"
+msgstr "Επαναφορά κωδικού πρόσβασης"
+
+#: src/components/alerts-history-columns.tsx
+#: src/components/alerts-history-columns.tsx
+#: src/components/routes/settings/alerts-history-data-table.tsx
+msgid "Resolved"
+msgstr "Επιλύθηκε"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Restarts"
+msgstr "Επανεκκινήσεις"
+
+#: src/components/systems-table/systems-table-columns.tsx
+msgid "Resume"
+msgstr "Συνέχιση"
+
+#: src/components/routes/system/charts/disk-charts.tsx
+#: src/components/routes/system/charts/disk-charts.tsx
+#: src/components/systems-table/systems-table-columns.tsx
+msgctxt "Root disk label"
+msgid "Root"
+msgstr "Ρίζα"
+
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Rotate token"
+msgstr "Ανανέωση token"
+
+#: src/components/routes/settings/alerts-history-data-table.tsx
+msgid "Rows per page"
+msgstr "Γραμμές ανά σελίδα"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Runtime Metrics"
+msgstr "Μετρήσεις χρόνου εκτέλεσης"
+
+#: src/components/routes/system/smart-table.tsx
+msgid "S.M.A.R.T. Details"
+msgstr "Λεπτομέρειες S.M.A.R.T."
+
+#: src/components/routes/system/smart-table.tsx
+msgid "S.M.A.R.T. Self-Test"
+msgstr "Αυτοέλεγχος S.M.A.R.T."
+
+#: src/components/add-system.tsx
+msgid "Save {foo}"
+msgstr "Αποθήκευση {foo}"
+
+#: src/components/routes/settings/notifications.tsx
+msgid "Save address using enter key or comma. Leave blank to disable email notifications."
+msgstr "Αποθηκεύστε τη διεύθυνση με Enter ή κόμμα. Αφήστε κενό για να απενεργοποιήσετε τις ειδοποιήσεις email."
+
+#: src/components/routes/settings/general.tsx
+#: src/components/routes/settings/notifications.tsx
+msgid "Save Settings"
+msgstr "Αποθήκευση ρυθμίσεων"
+
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Saved in the database and does not expire until you disable it."
+msgstr "Αποθηκεύεται στη βάση δεδομένων και δεν λήγει μέχρι να το απενεργοποιήσετε."
+
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Schedule"
+msgstr "Πρόγραμμα"
+
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Schedule quiet hours where notifications will not be sent, such as during maintenance periods."
+msgstr "Προγραμματίστε ώρες σίγασης κατά τις οποίες δεν θα αποστέλλονται ειδοποιήσεις, όπως κατά τη διάρκεια εργασιών συντήρησης."
+
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Schedule quiet hours where notifications will not be sent."
+msgstr "Προγραμματίστε ώρες σίγασης κατά τις οποίες δεν θα αποστέλλονται ειδοποιήσεις."
+
+#: src/components/navbar.tsx
+msgid "Search"
+msgstr "Αναζήτηση"
+
+#: src/components/command-palette.tsx
+msgid "Search for systems or settings..."
+msgstr "Αναζήτηση συστημάτων ή ρυθμίσεων..."
+
+#: src/components/routes/settings/heartbeat.tsx
+msgid "Seconds between pings (default: 60)"
+msgstr "Δευτερόλεπτα μεταξύ ping (προεπιλογή: 60)"
+
+#: src/components/alerts/alerts-sheet.tsx
+msgid "See <0>notification settings</0> to configure how you receive alerts."
+msgstr "Δείτε τις <0>ρυθμίσεις ειδοποιήσεων</0> για να ρυθμίσετε τον τρόπο λήψης ειδοποιήσεων."
+
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Select {foo}"
+msgstr "Επιλογή {foo}"
+
+#: src/components/routes/settings/heartbeat.tsx
+msgid "Send a single heartbeat ping to verify your endpoint is working."
+msgstr "Στείλτε ένα μεμονωμένο heartbeat για να επαληθεύσετε ότι το τελικό σημείο λειτουργεί."
+
+#: src/components/routes/settings/heartbeat.tsx
+msgid "Send periodic outbound pings to an external monitoring service so you can monitor Beszel without exposing it to the internet."
+msgstr "Στείλτε περιοδικά εξερχόμενα ping σε μια εξωτερική υπηρεσία παρακολούθησης, ώστε να μπορείτε να παρακολουθείτε το Beszel χωρίς να το εκθέτετε στο διαδίκτυο."
+
+#: src/components/routes/settings/heartbeat.tsx
+msgid "Send test heartbeat"
+msgstr "Αποστολή δοκιμαστικού heartbeat"
+
+#: src/components/routes/system/charts/network-charts.tsx
+msgid "Sent"
+msgstr "Απεστάλησαν"
+
+#: src/components/routes/system/smart-table.tsx
+msgid "Serial Number"
+msgstr "Σειριακός αριθμός"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Service Details"
+msgstr "Λεπτομέρειες υπηρεσίας"
+
+#: src/components/routes/system.tsx
+#: src/components/systems-table/systems-table-columns.tsx
+msgid "Services"
+msgstr "Υπηρεσίες"
+
+#: src/components/routes/settings/general.tsx
+msgid "Set percentage thresholds for meter colors."
+msgstr "Ορίστε ποσοστιαία όρια για τα χρώματα των μετρητών."
+
+#: src/components/routes/settings/heartbeat.tsx
+msgid "Set the following environment variables on your Beszel hub to enable heartbeat monitoring:"
+msgstr "Ορίστε τις ακόλουθες μεταβλητές περιβάλλοντος στον κόμβο Beszel για να ενεργοποιήσετε την παρακολούθηση heartbeat:"
+
+#: src/components/command-palette.tsx
+#: src/components/command-palette.tsx
+#: src/components/navbar.tsx
+#: src/components/navbar.tsx
+#: src/components/routes/settings/layout.tsx
+#: src/components/routes/settings/layout.tsx
+#: src/components/routes/system/info-bar.tsx
+msgid "Settings"
+msgstr "Ρυθμίσεις"
+
+#: src/components/routes/settings/layout.tsx
+msgid "Settings saved"
+msgstr "Οι ρυθμίσεις αποθηκεύτηκαν"
+
+#: src/components/login/auth-form.tsx
+msgid "Sign in"
+msgstr "Σύνδεση"
+
+#: src/components/command-palette.tsx
+msgid "SMTP settings"
+msgstr "Ρυθμίσεις SMTP"
+
+#: src/components/systems-table/systems-table.tsx
+msgid "Sort By"
+msgstr "Ταξινόμηση κατά"
+
+#: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Start Time"
+msgstr "Ώρα έναρξης"
+
+#. Context: alert state (active or resolved)
+#: src/components/alerts-history-columns.tsx
+#: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/system/zfs-table.tsx
+#: src/components/systemd-table/systemd-table-columns.tsx
+msgid "State"
+msgstr "Κατάσταση"
+
+#: src/components/containers-table/containers-table-columns.tsx
+#: src/components/routes/system/smart-table.tsx
+#: src/components/systemd-table/systemd-table.tsx
+#: src/components/systems-table/systems-table.tsx
+#: src/lib/alerts.ts
+msgid "Status"
+msgstr "Κατάσταση"
+
+#: src/components/systemd-table/systemd-table-columns.tsx
+msgid "Sub State"
+msgstr "Υποκατάσταση"
+
+#: src/components/routes/system/charts/memory-charts.tsx
+msgid "Swap space used by the system"
+msgstr "Swap που χρησιμοποιείται από το σύστημα"
+
+#: src/components/routes/system/charts/memory-charts.tsx
+msgid "Swap Usage"
+msgstr "Χρήση swap"
+
+#: src/components/mode-toggle.tsx
+#: src/components/mode-toggle.tsx
+msgid "Switch theme"
+msgstr "Αλλαγή θέματος"
+
+#: src/components/add-system.tsx
+#: src/components/alerts-history-columns.tsx
+#: src/components/containers-table/containers-table-columns.tsx
+#: src/components/navbar.tsx
+#: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
+#: src/components/routes/system/smart-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
+#: src/lib/alerts.ts
+msgid "System"
+msgstr "Σύστημα"
+
+#: src/components/routes/system/charts/sensor-charts.tsx
+msgid "System fan speeds (RPM)"
+msgstr "Ταχύτητες ανεμιστήρων συστήματος (RPM)"
+
+#: src/components/routes/system/charts/load-average-chart.tsx
+msgid "System load averages over time"
+msgstr "Μέσοι όροι φορτίου συστήματος με την πάροδο του χρόνου"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Systemd Services"
+msgstr "Υπηρεσίες systemd"
+
+#: src/components/navbar.tsx
+msgid "Systems"
+msgstr "Συστήματα"
+
+#: src/components/routes/settings/config-yaml.tsx
+msgid "Systems may be managed in a <0>config.yml</0> file inside your data directory."
+msgstr "Η διαχείριση των συστημάτων μπορεί να γίνεται σε ένα αρχείο <0>config.yml</0> μέσα στον κατάλογο δεδομένων σας."
+
+#: src/components/systems-table/systems-table.tsx
+msgid "Table"
+msgstr "Πίνακας"
+
+#: src/components/routes/system/info-bar.tsx
+msgctxt "Tabs system layout option"
+msgid "Tabs"
+msgstr "Καρτέλες"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Tasks"
+msgstr "Εργασίες"
+
+#. Temperature label in systems table
+#: src/components/routes/system/smart-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
+msgid "Temp"
+msgstr "Θερμ."
+
+#: src/components/routes/system/charts/sensor-charts.tsx
+#: src/lib/alerts.ts
+msgid "Temperature"
+msgstr "Θερμοκρασία"
+
+#: src/components/routes/settings/general.tsx
+msgid "Temperature unit"
+msgstr "Μονάδα μέτρησης θερμοκρασίας"
+
+#: src/components/routes/system/charts/sensor-charts.tsx
+msgid "Temperatures of system sensors"
+msgstr "Θερμοκρασίες αισθητήρων συστήματος"
+
+#: src/components/routes/settings/notifications.tsx
+msgid "Test <0>URL</0>"
+msgstr "Δοκιμή <0>URL</0>"
+
+#: src/components/routes/settings/heartbeat.tsx
+msgid "Test heartbeat"
+msgstr "Δοκιμή heartbeat"
+
+#: src/components/routes/settings/notifications.tsx
+msgid "Test notification sent"
+msgstr "Η δοκιμαστική ειδοποίηση στάλθηκε"
+
+#: src/components/routes/settings/heartbeat.tsx
+msgid "The overall status is <0>ok</0> when all systems are up, <1>warn</1> when alerts are triggered, and <2>error</2> when any system is down."
+msgstr "Η συνολική κατάσταση είναι <0>ok</0> όταν όλα τα συστήματα λειτουργούν, <1>warn</1> όταν ενεργοποιούνται ειδοποιήσεις και <2>error</2> όταν οποιοδήποτε σύστημα είναι εκτός λειτουργίας."
+
+#: src/components/login/forgot-pass-form.tsx
+msgid "Then log into the backend and reset your user account password in the users table."
+msgstr "Στη συνέχεια, συνδεθείτε στο backend και επαναφέρετε τον κωδικό πρόσβασης του λογαριασμού χρήστη στον πίνακα χρηστών."
+
+#: src/components/systems-table/systems-table-columns.tsx
+msgid "This action cannot be undone. This will permanently delete all current records for {name} from the database."
+msgstr "Αυτή η ενέργεια δεν μπορεί να αναιρεθεί. Θα διαγράψει οριστικά όλες τις τρέχουσες εγγραφές για το {name} από τη βάση δεδομένων."
+
+#: src/components/routes/settings/alerts-history-data-table.tsx
+msgid "This will permanently delete all selected records from the database."
+msgstr "Αυτό θα διαγράψει οριστικά όλες τις επιλεγμένες εγγραφές από τη βάση δεδομένων."
+
+#: src/components/routes/system/charts/disk-charts.tsx
+msgid "Throughput of {extraFsName}"
+msgstr "Ρυθμός μεταφοράς του {extraFsName}"
+
+#: src/components/routes/system/charts/zfs-charts.tsx
+msgid "Throughput of ZFS pool {poolName}"
+msgstr "Ρυθμός διαμεταγωγής του ZFS pool {poolName}"
+
+#: src/components/routes/settings/general.tsx
+msgid "Time format"
+msgstr "Μορφή ώρας"
+
+#: src/components/routes/settings/notifications.tsx
+msgid "To email(s)"
+msgstr "Προς email"
+
+#: src/components/add-system.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Token"
+msgstr "Διακριτικό"
+
+#: src/components/command-palette.tsx
+#: src/components/routes/settings/layout.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Tokens & Fingerprints"
+msgstr "Διακριτικά & Αποτυπώματα"
+
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Tokens allow agents to connect and register. Fingerprints are stable identifiers unique to each system, set on first connection."
+msgstr "Τα διακριτικά επιτρέπουν στους πράκτορες να συνδέονται και να καταχωρίζονται. Τα αποτυπώματα είναι σταθερά αναγνωριστικά, μοναδικά για κάθε σύστημα, και ορίζονται κατά την πρώτη σύνδεση."
+
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Tokens and fingerprints are used to authenticate WebSocket connections to the hub."
+msgstr "Τα διακριτικά και τα αποτυπώματα χρησιμοποιούνται για την ταυτοποίηση συνδέσεων WebSocket προς τον κόμβο."
+
+#: src/components/ui/chart.tsx
+#: src/components/ui/chart.tsx
+msgid "Total"
+msgstr "Σύνολο"
+
+#: src/components/routes/system/network-sheet.tsx
+msgid "Total data received for each interface"
+msgstr "Συνολικά ληφθέντα δεδομένα για κάθε interface"
+
+#: src/components/routes/system/network-sheet.tsx
+msgid "Total data sent for each interface"
+msgstr "Συνολικά δεδομένα που στάλθηκαν για κάθε διεπαφή"
+
+#: src/components/routes/system/disk-io-sheet.tsx
+msgctxt "Disk I/O"
+msgid "Total time spent on read/write (can exceed 100%)"
+msgstr "Συνολικός χρόνος ανάγνωσης/εγγραφής (μπορεί να υπερβαίνει το 100%)"
+
+#. placeholder {0}: data.length
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Total: {0}"
+msgstr "Σύνολο: {0}"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Triggered by"
+msgstr "Ενεργοποιήθηκε από"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Triggers"
+msgstr "Ενεργοποιεί"
+
+#: src/lib/alerts.ts
+msgid "Triggers when 1 minute load average exceeds a threshold"
+msgstr "Ενεργοποιείται όταν ο μέσος φόρτος 1 λεπτού υπερβαίνει ένα όριο"
+
+#: src/lib/alerts.ts
+msgid "Triggers when 15 minute load average exceeds a threshold"
+msgstr "Ενεργοποιείται όταν ο μέσος φόρτος 15 λεπτών υπερβαίνει ένα όριο"
+
+#: src/lib/alerts.ts
+msgid "Triggers when 5 minute load average exceeds a threshold"
+msgstr "Ενεργοποιείται όταν ο μέσος φόρτος 5 λεπτών υπερβαίνει ένα όριο"
+
+#: src/lib/alerts.ts
+msgid "Triggers when a container's health check reports unhealthy"
+msgstr "Ενεργοποιείται όταν ο έλεγχος υγείας ενός κοντέινερ αναφέρει μη υγιή κατάσταση"
+
+#: src/lib/alerts.ts
+msgid "Triggers when any sensor exceeds a threshold"
+msgstr "Ενεργοποιείται όταν οποιοσδήποτε αισθητήρας υπερβαίνει ένα όριο"
+
+#: src/lib/alerts.ts
+msgid "Triggers when any systemd service enters the failed state"
+msgstr "Ενεργοποιείται όταν οποιαδήποτε υπηρεσία systemd εισέλθει σε κατάσταση αποτυχίας"
+
+#: src/lib/alerts.ts
+msgid "Triggers when battery charge drops below a threshold"
+msgstr "Ενεργοποιείται όταν η φόρτιση της μπαταρίας πέσει κάτω από ένα όριο"
+
+#: src/lib/alerts.ts
+msgid "Triggers when combined up/down exceeds a threshold"
+msgstr "Ενεργοποιείται όταν η συνδυασμένη κίνηση αποστολής/λήψης υπερβαίνει ένα όριο"
+
+#: src/lib/alerts.ts
+msgid "Triggers when CPU I/O wait exceeds a threshold"
+msgstr "Ενεργοποιείται όταν ο χρόνος αναμονής I/O της CPU υπερβαίνει ένα όριο"
+
+#: src/lib/alerts.ts
+msgid "Triggers when CPU steal time exceeds a threshold"
+msgstr "Ενεργοποιείται όταν ο χρόνος κλοπής CPU υπερβαίνει ένα όριο"
+
+#: src/lib/alerts.ts
+msgid "Triggers when CPU usage exceeds a threshold"
+msgstr "Ενεργοποιείται όταν η χρήση CPU υπερβαίνει ένα όριο"
+
+#: src/lib/alerts.ts
+msgid "Triggers when GPU usage exceeds a threshold"
+msgstr "Ενεργοποιείται όταν η χρήση GPU υπερβαίνει ένα όριο"
+
+#: src/lib/alerts.ts
+msgid "Triggers when memory usage exceeds a threshold"
+msgstr "Ενεργοποιείται όταν η χρήση μνήμης υπερβαίνει ένα όριο"
+
+#: src/lib/alerts.ts
+msgid "Triggers when status switches between up and down"
+msgstr "Ενεργοποιείται όταν η κατάσταση εναλλάσσεται μεταξύ λειτουργίας και εκτός λειτουργίας"
+
+#: src/lib/alerts.ts
+msgid "Triggers when usage of any disk exceeds a threshold"
+msgstr "Ενεργοποιείται όταν η χρήση οποιουδήποτε δίσκου υπερβαίνει ένα όριο"
+
+#: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/system/smart-table.tsx
+msgid "Type"
+msgstr "Τύπος"
+
+#: src/lib/alerts.ts
+msgid "Unhealthy"
+msgstr ""
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Unit file"
+msgstr "Αρχείο μονάδας"
+
+#. Temperature / network units
+#: src/components/routes/settings/general.tsx
+msgid "Unit preferences"
+msgstr "Προτιμήσεις μονάδων μέτρησης"
+
+#: src/components/command-palette.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Universal token"
+msgstr "Καθολικό διακριτικό"
+
+#. Context: Battery state
+#: src/components/routes/system/zfs-table.tsx
+#: src/lib/i18n.ts
+msgid "Unknown"
+msgstr "Άγνωστο"
+
+#: src/components/systemd-table/systemd-table.tsx
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Unlimited"
+msgstr "Απεριόριστο"
+
+#. Context: System is up
+#: src/components/routes/system/info-bar.tsx
+#: src/components/systems-table/systems-table-columns.tsx
+msgid "Up"
+msgstr "Σε λειτουργία"
+
+#: src/components/systems-table/systems-table.tsx
+msgid "Up ({upSystemsLength})"
+msgstr "Σε λειτουργία ({upSystemsLength})"
+
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Update"
+msgstr "Ενημέρωση"
+
+#: src/components/containers-table/containers-table-columns.tsx
+#: src/components/routes/system/smart-table.tsx
+#: src/components/routes/system/zfs-table.tsx
+#: src/components/systemd-table/systemd-table-columns.tsx
+msgid "Updated"
+msgstr "Ενημερώθηκε"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Updated every 10 minutes."
+msgstr "Ενημερώνεται κάθε 10 λεπτά."
+
+#: src/components/routes/system/network-sheet.tsx
+msgid "Upload"
+msgstr "Αποστολή"
+
+#: src/components/routes/system/info-bar.tsx
+#: src/components/systems-table/systems-table-columns.tsx
+msgid "Uptime"
+msgstr "Χρόνος λειτουργίας"
+
+#: src/components/routes/system/charts/disk-charts.tsx
+#: src/components/routes/system/charts/disk-charts.tsx
+#: src/components/routes/system/charts/gpu-charts.tsx
+#: src/components/routes/system/charts/gpu-charts.tsx
+#: src/components/routes/system/charts/gpu-charts.tsx
+#: src/components/routes/system/charts/zfs-charts.tsx
+#: src/components/routes/system/cpu-sheet.tsx
+msgid "Usage"
+msgstr "Χρήση"
+
+#: src/components/routes/system/charts/zfs-charts.tsx
+msgid "Usage of ZFS pool {poolName}"
+msgstr "Χρήση του ZFS pool {poolName}"
+
+#: src/components/routes/system/charts/memory-charts.tsx
+#: src/components/routes/system/charts/memory-charts.tsx
+#: src/components/routes/system/zfs-table.tsx
+#: src/components/routes/system/zfs-table.tsx
+#: src/components/routes/system/zfs-table.tsx
+msgid "Used"
+msgstr "Χρησιμοποιείται"
+
+#: src/components/command-palette.tsx
+#: src/components/navbar.tsx
+msgid "Users"
+msgstr "Χρήστες"
+
+#: src/components/routes/system/charts/disk-charts.tsx
+msgctxt "Disk I/O utilization"
+msgid "Utilization"
+msgstr "Χρήση"
+
+#: src/components/alerts-history-columns.tsx
+msgid "Value"
+msgstr "Τιμή"
+
+#: src/components/systems-table/systems-table.tsx
+msgid "View"
+msgstr "Προβολή"
+
+#: src/components/routes/system/cpu-sheet.tsx
+#: src/components/routes/system/disk-io-sheet.tsx
+#: src/components/routes/system/network-sheet.tsx
+msgid "View more"
+msgstr "Προβολή περισσότερων"
+
+#: src/components/routes/settings/alerts-history-data-table.tsx
+msgid "View your 200 most recent alerts."
+msgstr "Προβάλετε τις 200 πιο πρόσφατες ειδοποιήσεις σας."
+
+#: src/components/systems-table/systems-table.tsx
+msgid "Visible Fields"
+msgstr "Ορατά πεδία"
+
+#: src/components/routes/system/chart-card.tsx
+msgid "Waiting for enough records to display"
+msgstr "Αναμονή για αρκετές εγγραφές ώστε να εμφανιστούν"
+
+#: src/components/routes/settings/general.tsx
+msgid "Want to help improve our translations? Check <0>Crowdin</0> for details."
+msgstr "Θέλετε να βοηθήσετε στη βελτίωση των μεταφράσεών μας; Δείτε το <0>Crowdin</0> για λεπτομέρειες."
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Wants"
+msgstr "Επιθυμεί"
+
+#: src/components/routes/settings/general.tsx
+msgid "Warning (%)"
+msgstr "Προειδοποίηση (%)"
+
+#: src/components/routes/settings/general.tsx
+msgid "Warning thresholds"
+msgstr "Όρια προειδοποίησης"
+
+#: src/components/routes/settings/notifications.tsx
+msgid "Webhook / Push notifications"
+msgstr "Webhook / Ειδοποιήσεις Push"
+
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "When enabled, this token allows agents to self-register without prior system creation."
+msgstr "Όταν είναι ενεργοποιημένο, αυτό το διακριτικό επιτρέπει στους πράκτορες να αυτοκαταχωρίζονται χωρίς προηγούμενη δημιουργία συστήματος."
+
+#: src/components/routes/settings/heartbeat.tsx
+msgid "When using POST, each heartbeat includes a JSON payload with system status summary, list of down systems, and triggered alerts."
+msgstr "Όταν χρησιμοποιείται το POST, κάθε heartbeat περιλαμβάνει JSON payload με σύνοψη κατάστασης συστημάτων, λίστα συστημάτων εκτός λειτουργίας και ενεργοποιημένες ειδοποιήσεις."
+
+#: src/components/add-system.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgctxt "Button to copy install command"
+msgid "Windows command"
+msgstr "Εντολή Windows"
+
+#. Disk write
+#. Disk write
+#: src/components/routes/system/charts/disk-charts.tsx
+#: src/components/routes/system/charts/zfs-charts.tsx
+#: src/components/routes/system/disk-io-sheet.tsx
+#: src/components/routes/system/disk-io-sheet.tsx
+#: src/components/routes/system/disk-io-sheet.tsx
+#: src/components/routes/system/disk-io-sheet.tsx
+msgid "Write"
+msgstr "Εγγραφή"
+
+#: src/components/routes/system/zfs-table.tsx
+msgid "Write errors"
+msgstr "Σφάλματα εγγραφής"
+
+#: src/components/routes/settings/layout.tsx
+msgid "YAML Config"
+msgstr "Διαμ. YAML"
+
+#: src/components/routes/settings/config-yaml.tsx
+msgid "YAML Configuration"
+msgstr "Διαμόρφωση YAML"
+
+#: src/components/systemd-table/systemd-table.tsx
+#: src/components/systemd-table/systemd-table.tsx
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Yes"
+msgstr "Ναι"
+
+#: src/components/routes/settings/layout.tsx
+msgid "Your user settings have been updated."
+msgstr "Οι ρυθμίσεις χρήστη σας ενημερώθηκαν."

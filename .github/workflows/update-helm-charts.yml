@@ -1,0 +1,101 @@
+name: Update Helm charts
+
+on:
+  release:
+    types:
+      - published
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: update-helm-charts
+  cancel-in-progress: false
+
+jobs:
+  update:
+    name: Propose chart update
+    if: ${{ github.repository_owner == 'henrygd' && startsWith(github.event.release.tag_name, 'v') && !github.event.release.prerelease }}
+    runs-on: ubuntu-latest
+    env:
+      BRANCH: automation/update-helm-app-version
+      RELEASE_TAG: ${{ github.event.release.tag_name }}
+      AUTOMATION_TOKEN: ${{ secrets.CR_TOKEN || github.token }}
+
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v7
+        with:
+          ref: main
+          token: ${{ env.AUTOMATION_TOKEN }}
+
+      - name: Update chart versions
+        id: update
+        run: |
+          version="${RELEASE_TAG#v}"
+          if [[ ! "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "Unsupported software release version: $version" >&2
+            exit 1
+          fi
+
+          changed=false
+          for chart in supplemental/helm/beszel-agent supplemental/helm/beszel-hub; do
+            current_app_version=$(awk -F '"' '/^appVersion:/ { print $2 }' "$chart/Chart.yaml")
+            if [[ "$current_app_version" == "$version" ]]; then
+              echo "$chart already uses appVersion $version"
+              continue
+            fi
+
+            newest_version=$(printf '%s\n' "$current_app_version" "$version" | sort -V | tail -n 1)
+            if [[ "$newest_version" != "$version" ]]; then
+              echo "Skipping stale update of $chart from $current_app_version to $version"
+              continue
+            fi
+
+            chart_version=$(awk '/^version:/ { print $2 }' "$chart/Chart.yaml")
+            if [[ ! "$chart_version" =~ ^([0-9]+)\.([0-9]+)\.([0-9]+)$ ]]; then
+              echo "Unsupported chart version in $chart/Chart.yaml: $chart_version" >&2
+              exit 1
+            fi
+            next_chart_version="${BASH_REMATCH[1]}.${BASH_REMATCH[2]}.$((BASH_REMATCH[3] + 1))"
+
+            NEW_APP_VERSION="$version" NEW_CHART_VERSION="$next_chart_version" \
+              perl -pi -e 's/^appVersion:.*$/appVersion: "$ENV{NEW_APP_VERSION}"/; s/^version:.*$/version: $ENV{NEW_CHART_VERSION}/' \
+              "$chart/Chart.yaml"
+            OLD_APP_VERSION="$current_app_version" NEW_APP_VERSION="$version" \
+              perl -pi -e 's/\Q$ENV{OLD_APP_VERSION}\E/$ENV{NEW_APP_VERSION}/g' "$chart/README.md"
+
+            echo "$chart: appVersion $current_app_version -> $version, chart $chart_version -> $next_chart_version"
+            changed=true
+          done
+
+          echo "changed=$changed" >> "$GITHUB_OUTPUT"
+
+      - name: Open or update pull request
+        if: steps.update.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ env.AUTOMATION_TOKEN }}
+        run: |
+          version="${RELEASE_TAG#v}"
+          title="chore(helm): update app version to ${version}"
+          body="Updates the Helm charts for [Beszel ${version}](${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/releases/tag/${RELEASE_TAG}) and bumps their chart patch versions. Merging this pull request publishes the updated charts to GHCR."
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout -B "$BRANCH"
+          git add supplemental/helm/beszel-agent/Chart.yaml \
+            supplemental/helm/beszel-agent/README.md \
+            supplemental/helm/beszel-hub/Chart.yaml \
+            supplemental/helm/beszel-hub/README.md
+          git commit -m "$title"
+
+          git fetch origin "$BRANCH" || true
+          git push --force-with-lease origin "HEAD:refs/heads/${BRANCH}"
+
+          pr_number=$(gh pr list --head "$BRANCH" --base main --state open --json number --jq '.[0].number')
+          if [[ -n "$pr_number" ]]; then
+            gh pr edit "$pr_number" --title "$title" --body "$body"
+          else
+            gh pr create --base main --head "$BRANCH" --title "$title" --body "$body"
+          fi

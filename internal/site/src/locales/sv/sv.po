@@ -8,7 +8,7 @@ msgstr ""
 "Language: sv\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2026-04-05 18:27\n"
+"PO-Revision-Date: 2026-09-02 21:43\n"
 "Last-Translator: \n"
 "Language-Team: Swedish\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
@@ -46,6 +46,10 @@ msgstr "{count, plural, one {{countString} timme} other {{countString} timmar}}"
 msgid "{count, plural, one {{countString} minute} few {{countString} minutes} many {{countString} minutes} other {{countString} minutes}}"
 msgstr "{count, plural, one {{countString} minut} few {{countString} minuter} many {{countString} minuter} other {{countString} minuter}}"
 
+#: src/components/routes/system/charts/disk-charts.tsx
+msgid "{diskName} I/O"
+msgstr "I/O för {diskName}"
+
 #: src/components/routes/system/info-bar.tsx
 msgid "{threads, plural, one {# thread} other {# threads}}"
 msgstr "{threads, plural, one {# tråd} other {# trådar}}"
@@ -57,7 +61,7 @@ msgstr "1 timme"
 #. Load average
 #: src/components/routes/system/charts/load-average-chart.tsx
 msgid "1 min"
-msgstr ""
+msgstr "1 min"
 
 #: src/lib/utils.ts
 msgid "1 minute"
@@ -74,7 +78,7 @@ msgstr "12 timmar"
 #. Load average
 #: src/components/routes/system/charts/load-average-chart.tsx
 msgid "15 min"
-msgstr ""
+msgstr "15 min"
 
 #: src/lib/utils.ts
 msgid "24 hours"
@@ -87,12 +91,13 @@ msgstr "30 dagar"
 #. Load average
 #: src/components/routes/system/charts/load-average-chart.tsx
 msgid "5 min"
-msgstr ""
+msgstr "5 min"
 
 #. Table column
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 #: src/components/routes/system/smart-table.tsx
+#: src/components/routes/system/zfs-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Actions"
 msgstr "Åtgärder"
@@ -137,7 +142,7 @@ msgstr "Justera bredden på huvudlayouten"
 #: src/components/command-palette.tsx
 #: src/components/navbar.tsx
 msgid "Admin"
-msgstr ""
+msgstr "Admin"
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "After"
@@ -149,7 +154,7 @@ msgstr "Efter att du har ställt in miljövariablerna, starta om din Beszel-hubb
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Agent"
-msgstr ""
+msgstr "Agent"
 
 #: src/components/command-palette.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
@@ -190,6 +195,11 @@ msgstr "Är du säker?"
 #: src/components/copy-to-clipboard.tsx
 msgid "Automatic copy requires a secure context."
 msgstr "Automatisk kopiering kräver en säker kontext."
+
+#: src/components/routes/system/zfs-table.tsx
+msgctxt "Disk space available"
+msgid "Available"
+msgstr "Tillgängligt"
 
 #: src/components/routes/system/chart-card.tsx
 msgid "Average"
@@ -250,6 +260,7 @@ msgstr "Bandbredd"
 msgid "Bat"
 msgstr ""
 
+#: src/components/routes/system/charts/sensor-charts.tsx
 #: src/components/routes/system/charts/sensor-charts.tsx
 #: src/lib/alerts.ts
 msgid "Battery"
@@ -327,6 +338,7 @@ msgid "Capabilities"
 msgstr "Förmågor"
 
 #: src/components/routes/system/smart-table.tsx
+#: src/components/routes/system/zfs-table.tsx
 msgid "Capacity"
 msgstr "Kapacitet"
 
@@ -336,7 +348,7 @@ msgstr "Varning - potentiell dataförlust"
 
 #: src/components/routes/settings/general.tsx
 msgid "Celsius (°C)"
-msgstr ""
+msgstr "Celsius (°C)"
 
 #: src/components/routes/settings/general.tsx
 msgid "Change display units for metrics."
@@ -379,8 +391,14 @@ msgstr "Kontrollera din övervakningstjänst"
 msgid "Check your notification service"
 msgstr "Kontrollera din aviseringstjänst"
 
+#: src/components/routes/system/zfs-table.tsx
+msgid "Checksum errors"
+msgstr "Kontrollsummefel"
+
 #: src/components/containers-table/containers-table.tsx
 #: src/components/routes/system/smart-table.tsx
+#: src/components/routes/system/zfs-table.tsx
+#: src/components/routes/system/zfs-table.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "Clear"
 msgstr "Rensa"
@@ -392,6 +410,10 @@ msgstr "Klicka på en behållare för att visa mer information."
 #: src/components/routes/system/smart-table.tsx
 msgid "Click on a device to view more information."
 msgstr "Klicka på en enhet för att visa mer information."
+
+#: src/components/routes/system/zfs-table.tsx
+msgid "Click on a pool to view vdev and dataset details."
+msgstr "Klicka på en pool för att visa detaljer om vdev och dataset."
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Click on a system to view more information."
@@ -422,6 +444,14 @@ msgstr "Konflikter"
 #: src/components/active-alerts.tsx
 msgid "Connection is down"
 msgstr "Ej ansluten"
+
+#: src/lib/alerts.ts
+msgid "Container"
+msgstr "Container"
+
+#: src/lib/alerts.ts
+msgid "Container Health"
+msgstr "Containerhälsa"
 
 #: src/components/routes/system.tsx
 msgid "Containers"
@@ -471,6 +501,10 @@ msgstr "Kopiera Linux-kommando"
 msgid "Copy name"
 msgstr "Kopiera namn"
 
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Copy public key"
+msgstr ""
+
 #: src/components/copy-to-clipboard.tsx
 msgid "Copy text"
 msgstr "Kopiera text"
@@ -496,15 +530,23 @@ msgstr "Kärna"
 #: src/components/systemd-table/systemd-table-columns.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "CPU"
-msgstr ""
+msgstr "CPU"
 
 #: src/components/routes/system/cpu-sheet.tsx
 msgid "CPU Cores"
 msgstr "CPU-kärnor"
 
+#: src/lib/alerts.ts
+msgid "CPU I/O Wait"
+msgstr "CPU I/O-väntetid (IOWait)"
+
 #: src/components/systemd-table/systemd-table-columns.tsx
 msgid "CPU Peak"
 msgstr "CPU-topp"
+
+#: src/lib/alerts.ts
+msgid "CPU Steal Time"
+msgstr "CPU-tid tagen av hypervisorn (Steal)"
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "CPU time"
@@ -538,15 +580,33 @@ msgstr "Skapad"
 msgid "Critical (%)"
 msgstr "Kritisk (%)"
 
+#: src/components/routes/system/disk-io-sheet.tsx
+msgid "Cumulative data read since boot"
+msgstr "Kumulativt lästa data sedan start"
+
+#: src/components/routes/system/disk-io-sheet.tsx
+msgid "Cumulative data written since boot"
+msgstr "Kumulativt skrivna data sedan start"
+
 #: src/components/routes/system/network-sheet.tsx
 msgid "Cumulative Download"
 msgstr "Kumulativ nedladdning"
+
+#: src/components/routes/system/disk-io-sheet.tsx
+msgid "Cumulative Read"
+msgstr "Kumulativ läsning"
 
 #: src/components/routes/system/network-sheet.tsx
 msgid "Cumulative Upload"
 msgstr "Kumulativ uppladdning"
 
+#: src/components/routes/system/disk-io-sheet.tsx
+msgid "Cumulative Write"
+msgstr "Kumulativ skrivning"
+
 #. Context: Battery state
+#. Context: Battery state
+#: src/components/routes/system/charts/sensor-charts.tsx
 #: src/components/routes/system/charts/sensor-charts.tsx
 msgid "Current state"
 msgstr "Aktuellt tillstånd"
@@ -601,17 +661,12 @@ msgstr "Urladdar"
 #: src/components/routes/system.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Disk"
-msgstr ""
-
-#: src/components/routes/system/charts/disk-charts.tsx
-msgid "Disk I/O"
-msgstr "Disk-I/O"
+msgstr "Disk"
 
 #: src/components/routes/settings/general.tsx
 msgid "Disk unit"
 msgstr "Diskenhet"
 
-#: src/components/routes/system/charts/disk-charts.tsx
 #: src/components/routes/system/charts/disk-charts.tsx
 #: src/lib/alerts.ts
 msgid "Disk Usage"
@@ -717,7 +772,6 @@ msgstr "Ange ditt engångslösenord."
 msgid "Ephemeral"
 msgstr "Flyktig"
 
-#: src/components/login/auth-form.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/settings/config-yaml.tsx
 #: src/components/routes/settings/heartbeat.tsx
@@ -772,7 +826,7 @@ msgstr "Exportera din nuvarande systemkonfiguration."
 
 #: src/components/routes/settings/general.tsx
 msgid "Fahrenheit (°F)"
-msgstr ""
+msgstr "Fahrenheit (°F)"
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Failed"
@@ -781,6 +835,10 @@ msgstr "Misslyckades"
 #: src/components/routes/system/smart-table.tsx
 msgid "Failed Attributes:"
 msgstr "Misslyckade attribut:"
+
+#: src/lib/alerts.ts
+msgid "Failed Services"
+msgstr "Misslyckade tjänster"
 
 #: src/lib/api.ts
 msgid "Failed to authenticate"
@@ -809,10 +867,16 @@ msgstr "Kunde inte uppdatera larm"
 msgid "Failed: {0}"
 msgstr "Misslyckades: {0}"
 
+#: src/components/routes/system/charts/sensor-charts.tsx
+msgid "Fans"
+msgstr ""
+
 #: src/components/containers-table/containers-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/system/chart-card.tsx
 #: src/components/routes/system/smart-table.tsx
+#: src/components/routes/system/zfs-table.tsx
+#: src/components/routes/system/zfs-table.tsx
 #: src/components/systemd-table/systemd-table.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "Filter..."
@@ -834,6 +898,12 @@ msgstr "Under <0>{min}</0> {min, plural, one {minut} other {minuter}}"
 msgid "Forgot password?"
 msgstr "Glömt lösenordet?"
 
+#: src/components/routes/system/zfs-table.tsx
+#: src/components/routes/system/zfs-table.tsx
+msgctxt "Free space"
+msgid "Free"
+msgstr "Ledigt"
+
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgctxt "Button to copy install command"
@@ -844,7 +914,7 @@ msgstr "FreeBSD kommando"
 #: src/components/routes/system/info-bar.tsx
 #: src/lib/i18n.ts
 msgid "Full"
-msgstr ""
+msgstr "Full"
 
 #. Context: General settings
 #: src/components/routes/settings/general.tsx
@@ -854,7 +924,7 @@ msgstr "Allmänt"
 
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Global"
-msgstr ""
+msgstr "Global"
 
 #: src/components/routes/system.tsx
 msgid "GPU"
@@ -878,6 +948,7 @@ msgid "Grid"
 msgstr "Rutnät"
 
 #: src/components/containers-table/containers-table-columns.tsx
+#: src/components/routes/system/zfs-table.tsx
 msgid "Health"
 msgstr "Hälsa"
 
@@ -952,14 +1023,13 @@ msgstr "Intervall"
 msgid "Invalid email address."
 msgstr "Ogiltig e-postadress."
 
-#: src/components/lang-toggle.tsx
 #: src/components/routes/settings/general.tsx
 msgid "Language"
 msgstr "Språk"
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Layout"
-msgstr ""
+msgstr "Layout"
 
 #: src/components/routes/settings/general.tsx
 msgid "Layout width"
@@ -1043,7 +1113,7 @@ msgstr "Manuella installationsinstruktioner"
 #. Chart select field. Please try to keep this short.
 #: src/components/routes/system/chart-card.tsx
 msgid "Max 1 min"
-msgstr ""
+msgstr "Max 1 min"
 
 #: src/components/containers-table/containers-table-columns.tsx
 #: src/components/routes/system/info-bar.tsx
@@ -1068,13 +1138,17 @@ msgid "Memory Usage"
 msgstr "Minnesanvändning"
 
 #: src/components/routes/system/charts/memory-charts.tsx
-msgid "Memory usage of docker containers"
-msgstr "Minnesanvändning för dockercontainrar"
+msgid "Memory usage of containers"
+msgstr "Minnesanvändning för containrar"
 
 #. Device model
 #: src/components/routes/system/smart-table.tsx
 msgid "Model"
 msgstr "Modell"
+
+#: src/components/routes/system/zfs-table.tsx
+msgid "Mountpoint"
+msgstr "Monteringspunkt"
 
 #: src/components/add-system.tsx
 #: src/components/alerts-history-columns.tsx
@@ -1090,8 +1164,8 @@ msgid "Net"
 msgstr "Nät"
 
 #: src/components/routes/system/charts/network-charts.tsx
-msgid "Network traffic of docker containers"
-msgstr "Nätverkstrafik för dockercontainrar"
+msgid "Network traffic of containers"
+msgstr "Nätverkstrafik för containrar"
 
 #: src/components/routes/system/charts/network-charts.tsx
 #: src/components/routes/system/network-sheet.tsx
@@ -1110,6 +1184,10 @@ msgstr "Nätverksenhet"
 #: src/components/systemd-table/systemd-table.tsx
 msgid "No"
 msgstr "Nej"
+
+#: src/components/routes/system/zfs-table.tsx
+msgid "No detail data for this pool."
+msgstr "Det finns inga detaljerade data för denna pool."
 
 #: src/components/command-palette.tsx
 #: src/components/systemd-table/systemd-table.tsx
@@ -1134,11 +1212,19 @@ msgstr "Inga S.M.A.R.T.-attribut tillgängliga för den här enheten."
 msgid "No systems found."
 msgstr "Inga system hittades."
 
+#: src/components/routes/system/zfs-table.tsx
+msgid "None"
+msgstr "Ingen"
+
 #: src/components/command-palette.tsx
 #: src/components/routes/settings/layout.tsx
 #: src/components/routes/settings/notifications.tsx
 msgid "Notifications"
 msgstr "Aviseringar"
+
+#: src/lib/alerts.ts
+msgid "Notifications may include recent container log excerpts."
+msgstr "Aviseringar kan innehålla utdrag från de senaste containerloggarna."
 
 #: src/components/login/auth-form.tsx
 msgid "OAuth 2 / OIDC support"
@@ -1147,6 +1233,14 @@ msgstr "Stöd för OAuth 2 / OIDC"
 #: src/components/routes/settings/config-yaml.tsx
 msgid "On each restart, systems in the database will be updated to match the systems defined in the file."
 msgstr "Vid varje omstart kommer systemen i databasen att uppdateras för att matcha systemen som definieras i filen."
+
+#: src/lib/alerts.ts
+msgid "One or more containers are unhealthy"
+msgstr "En eller flera containrar är i ett ohälsosamt tillstånd"
+
+#: src/lib/alerts.ts
+msgid "One or more services are in a failed state"
+msgstr "En eller flera tjänster är i ett misslyckat tillstånd"
 
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/quiet-hours.tsx
@@ -1161,6 +1255,7 @@ msgstr "Engångslösenord"
 #: src/components/routes/settings/tokens-fingerprints.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 #: src/components/routes/system/smart-table.tsx
+#: src/components/routes/system/zfs-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Open menu"
 msgstr "Öppna menyn"
@@ -1284,9 +1379,17 @@ msgstr "Vänligen se <0>dokumentationen</0> för instruktioner."
 msgid "Please sign in to your account"
 msgstr "Vänligen logga in på ditt konto"
 
+#: src/components/routes/system/zfs-table.tsx
+msgid "Pool Health"
+msgstr "Poolstatus"
+
+#: src/components/routes/system/charts/zfs-charts.tsx
+msgid "Pool Usage"
+msgstr "Poolanvändning"
+
 #: src/components/add-system.tsx
 msgid "Port"
-msgstr ""
+msgstr "Port"
 
 #: src/components/containers-table/containers-table-columns.tsx
 msgctxt "Container ports"
@@ -1311,6 +1414,10 @@ msgstr "Föredraget språk"
 msgid "Process started"
 msgstr "Process startad"
 
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Public key"
+msgstr ""
+
 #. Use 'Key' if your language requires many more characters
 #: src/components/add-system.tsx
 msgid "Public Key"
@@ -1326,12 +1433,19 @@ msgid "Quiet Hours"
 msgstr "Tysta timmar"
 
 #. Disk read
+#. Disk read
 #: src/components/routes/system/charts/disk-charts.tsx
+#: src/components/routes/system/charts/zfs-charts.tsx
+#: src/components/routes/system/disk-io-sheet.tsx
 #: src/components/routes/system/disk-io-sheet.tsx
 #: src/components/routes/system/disk-io-sheet.tsx
 #: src/components/routes/system/disk-io-sheet.tsx
 msgid "Read"
 msgstr "Läs"
+
+#: src/components/routes/system/zfs-table.tsx
+msgid "Read errors"
+msgstr "Läsfel"
 
 #: src/components/routes/system/charts/network-charts.tsx
 msgid "Received"
@@ -1340,6 +1454,7 @@ msgstr "Mottaget"
 #: src/components/containers-table/containers-table.tsx
 #: src/components/containers-table/containers-table.tsx
 #: src/components/routes/system/smart-table.tsx
+#: src/components/routes/system/zfs-table.tsx
 msgid "Refresh"
 msgstr "Uppdatera"
 
@@ -1381,6 +1496,8 @@ msgstr "Omstarter"
 msgid "Resume"
 msgstr "Återuppta"
 
+#: src/components/routes/system/charts/disk-charts.tsx
+#: src/components/routes/system/charts/disk-charts.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgctxt "Root disk label"
 msgid "Root"
@@ -1526,6 +1643,7 @@ msgstr "Starttid"
 #. Context: alert state (active or resolved)
 #: src/components/alerts-history-columns.tsx
 #: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/system/zfs-table.tsx
 #: src/components/systemd-table/systemd-table-columns.tsx
 msgid "State"
 msgstr "Tillstånd"
@@ -1536,7 +1654,7 @@ msgstr "Tillstånd"
 #: src/components/systems-table/systems-table.tsx
 #: src/lib/alerts.ts
 msgid "Status"
-msgstr ""
+msgstr "Status"
 
 #: src/components/systemd-table/systemd-table-columns.tsx
 msgid "Sub State"
@@ -1549,6 +1667,11 @@ msgstr "Swap-utrymme som används av systemet"
 #: src/components/routes/system/charts/memory-charts.tsx
 msgid "Swap Usage"
 msgstr "Swap-användning"
+
+#: src/components/mode-toggle.tsx
+#: src/components/mode-toggle.tsx
+msgid "Switch theme"
+msgstr ""
 
 #: src/components/add-system.tsx
 #: src/components/alerts-history-columns.tsx
@@ -1563,6 +1686,10 @@ msgstr "Swap-användning"
 #: src/components/systems-table/systems-table-columns.tsx
 #: src/lib/alerts.ts
 msgid "System"
+msgstr "System"
+
+#: src/components/routes/system/charts/sensor-charts.tsx
+msgid "System fan speeds (RPM)"
 msgstr ""
 
 #: src/components/routes/system/charts/load-average-chart.tsx
@@ -1598,7 +1725,7 @@ msgstr "Uppgifter"
 #: src/components/routes/system/smart-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Temp"
-msgstr ""
+msgstr "Temp"
 
 #: src/components/routes/system/charts/sensor-charts.tsx
 #: src/lib/alerts.ts
@@ -1645,9 +1772,9 @@ msgstr "Detta kommer permanent att ta bort alla valda poster från databasen."
 msgid "Throughput of {extraFsName}"
 msgstr "Genomströmning av {extraFsName}"
 
-#: src/components/routes/system/charts/disk-charts.tsx
-msgid "Throughput of root filesystem"
-msgstr "Genomströmning av rotfilsystemet"
+#: src/components/routes/system/charts/zfs-charts.tsx
+msgid "Throughput of ZFS pool {poolName}"
+msgstr "Genomströmning för ZFS-pool {poolName}"
 
 #: src/components/routes/settings/general.tsx
 msgid "Time format"
@@ -1656,11 +1783,6 @@ msgstr "Tidsformat"
 #: src/components/routes/settings/notifications.tsx
 msgid "To email(s)"
 msgstr "Till e-postadress(er)"
-
-#: src/components/mode-toggle.tsx
-#: src/components/mode-toggle.tsx
-msgid "Toggle theme"
-msgstr "Växla tema"
 
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
@@ -1684,7 +1806,7 @@ msgstr "Tokens och fingeravtryck används för att autentisera WebSocket-anslutn
 #: src/components/ui/chart.tsx
 #: src/components/ui/chart.tsx
 msgid "Total"
-msgstr ""
+msgstr "Total"
 
 #: src/components/routes/system/network-sheet.tsx
 msgid "Total data received for each interface"
@@ -1725,8 +1847,16 @@ msgid "Triggers when 5 minute load average exceeds a threshold"
 msgstr "Utlöses när 5-minuters genomsnittlig belastning överskrider ett tröskelvärde"
 
 #: src/lib/alerts.ts
+msgid "Triggers when a container's health check reports unhealthy"
+msgstr "Utlöses när en containers hälsokontroll rapporterar ett ohälsosamt tillstånd"
+
+#: src/lib/alerts.ts
 msgid "Triggers when any sensor exceeds a threshold"
 msgstr "Utlöses när någon sensor överskrider ett tröskelvärde"
+
+#: src/lib/alerts.ts
+msgid "Triggers when any systemd service enters the failed state"
+msgstr "Utlöses när någon systemd-tjänst går över till ett misslyckat tillstånd"
 
 #: src/lib/alerts.ts
 msgid "Triggers when battery charge drops below a threshold"
@@ -1735,6 +1865,14 @@ msgstr "Utlöses när batteriladdningen sjunker under ett tröskelvärde"
 #: src/lib/alerts.ts
 msgid "Triggers when combined up/down exceeds a threshold"
 msgstr "Utlöses när kombinerad upp/ner överskrider ett tröskelvärde"
+
+#: src/lib/alerts.ts
+msgid "Triggers when CPU I/O wait exceeds a threshold"
+msgstr "Utlöses när CPU I/O-väntetiden överskrider ett tröskelvärde"
+
+#: src/lib/alerts.ts
+msgid "Triggers when CPU steal time exceeds a threshold"
+msgstr "Utlöses när CPU steal-tiden överskrider ett tröskelvärde"
 
 #: src/lib/alerts.ts
 msgid "Triggers when CPU usage exceeds a threshold"
@@ -1762,6 +1900,10 @@ msgstr "Utlöses när användningen av någon disk överskrider ett tröskelvär
 msgid "Type"
 msgstr "Typ"
 
+#: src/lib/alerts.ts
+msgid "Unhealthy"
+msgstr "Osund"
+
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Unit file"
 msgstr "Unit-fil"
@@ -1777,6 +1919,7 @@ msgid "Universal token"
 msgstr "Universell nyckel"
 
 #. Context: Battery state
+#: src/components/routes/system/zfs-table.tsx
 #: src/lib/i18n.ts
 msgid "Unknown"
 msgstr "Okänd"
@@ -1802,6 +1945,7 @@ msgstr "Uppdatera"
 
 #: src/components/containers-table/containers-table-columns.tsx
 #: src/components/routes/system/smart-table.tsx
+#: src/components/routes/system/zfs-table.tsx
 #: src/components/systemd-table/systemd-table-columns.tsx
 msgid "Updated"
 msgstr "Uppdaterad"
@@ -1820,19 +1964,24 @@ msgid "Uptime"
 msgstr "Drifttid"
 
 #: src/components/routes/system/charts/disk-charts.tsx
+#: src/components/routes/system/charts/disk-charts.tsx
 #: src/components/routes/system/charts/gpu-charts.tsx
 #: src/components/routes/system/charts/gpu-charts.tsx
 #: src/components/routes/system/charts/gpu-charts.tsx
+#: src/components/routes/system/charts/zfs-charts.tsx
 #: src/components/routes/system/cpu-sheet.tsx
 msgid "Usage"
 msgstr "Användning"
 
-#: src/components/routes/system/charts/disk-charts.tsx
-msgid "Usage of root partition"
-msgstr "Användning av rotpartitionen"
+#: src/components/routes/system/charts/zfs-charts.tsx
+msgid "Usage of ZFS pool {poolName}"
+msgstr "Användning av ZFS-pool {poolName}"
 
 #: src/components/routes/system/charts/memory-charts.tsx
 #: src/components/routes/system/charts/memory-charts.tsx
+#: src/components/routes/system/zfs-table.tsx
+#: src/components/routes/system/zfs-table.tsx
+#: src/components/routes/system/zfs-table.tsx
 msgid "Used"
 msgstr "Använt"
 
@@ -1907,12 +2056,19 @@ msgid "Windows command"
 msgstr "Windows-kommando"
 
 #. Disk write
+#. Disk write
 #: src/components/routes/system/charts/disk-charts.tsx
+#: src/components/routes/system/charts/zfs-charts.tsx
+#: src/components/routes/system/disk-io-sheet.tsx
 #: src/components/routes/system/disk-io-sheet.tsx
 #: src/components/routes/system/disk-io-sheet.tsx
 #: src/components/routes/system/disk-io-sheet.tsx
 msgid "Write"
 msgstr "Skriv"
+
+#: src/components/routes/system/zfs-table.tsx
+msgid "Write errors"
+msgstr "Skrivfel"
 
 #: src/components/routes/settings/layout.tsx
 msgid "YAML Config"

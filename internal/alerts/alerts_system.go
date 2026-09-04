@@ -13,8 +13,41 @@ import (
 	"github.com/pocketbase/pocketbase/tools/types"
 )
 
+var cpuStateAlerts = map[string]struct {
+	index int
+	label string
+}{
+	"CPUIOWait": {2, "CPU I/O Wait"},
+	"CPUSteal":  {3, "CPU Steal Time"},
+}
+
+func cpuStateAlertValue(name string, breakdown []float64) (float64, bool) {
+	state, ok := cpuStateAlerts[name]
+	if !ok || len(breakdown) < 5 {
+		return 0, false
+	}
+	var total float64
+	for _, value := range breakdown {
+		total += value
+	}
+	if total <= 0 {
+		return 0, false
+	}
+	return breakdown[state.index], true
+}
+
 func (am *AlertManager) HandleSystemAlerts(systemRecord *core.Record, data *system.CombinedData) error {
-	alerts := am.alertsCache.GetAlertsExcludingNames(systemRecord.Id, "Status")
+	// Systemd alerts are binary state, not numeric thresholds, so they're handled
+	// separately. They read their own state from the database and don't use data.
+	if err := am.HandleSystemdAlerts(systemRecord); err != nil {
+		am.hub.Logger().Error("Error handling systemd alerts", "err", err)
+	}
+
+	if data == nil {
+		return nil
+	}
+
+	alerts := am.alertsCache.GetAlertsExcludingNames(systemRecord.Id, "Status", alertNameSystemdFailed, containerAlertName)
 	if len(alerts) == 0 {
 		return nil
 	}
@@ -44,6 +77,14 @@ func (am *AlertManager) HandleSystemAlerts(systemRecord *core.Record, data *syst
 					maxUsedPct = usedPct
 				}
 			}
+			for _, pool := range data.Stats.ZfsPools {
+				if pool != nil && pool.Total > 0 {
+					usedPct := pool.Used / pool.Total * 100
+					if usedPct > maxUsedPct {
+						maxUsedPct = usedPct
+					}
+				}
+			}
 			val = maxUsedPct
 		case "Temperature":
 			if data.Info.DashboardTemp < 1 {
@@ -63,10 +104,15 @@ func (am *AlertManager) HandleSystemAlerts(systemRecord *core.Record, data *syst
 		case "GPU":
 			val = data.Info.GpuPct
 		case "Battery":
-			if data.Stats.Battery[0] == 0 {
+			if !hasRepresentativeBattery(data.Stats.Battery, data.Stats.Batteries) {
 				continue
 			}
 			val = float64(data.Stats.Battery[0])
+		default:
+			var ok bool
+			if val, ok = cpuStateAlertValue(name, data.Stats.CpuBreakdown); !ok {
+				continue
+			}
 		}
 
 		triggered := alertData.Triggered
@@ -167,6 +213,7 @@ func (am *AlertManager) HandleSystemAlerts(systemRecord *core.Record, data *syst
 		stat := systemStats[i]
 		// subtract 10 seconds to give a small time buffer
 		systemStatsCreation := stat.Created.Time().Add(-time.Second * 10)
+		stats = SystemAlertStats{}
 		if err := json.Unmarshal(stat.Stats, &stats); err != nil {
 			return err
 		}
@@ -207,6 +254,16 @@ func (am *AlertManager) HandleSystemAlerts(systemRecord *core.Record, data *syst
 						alert.mapSums[key] += float32(fs.DiskUsed / fs.DiskTotal * 100)
 					}
 				}
+				// add zfs pool usage from historical record
+				for key, pool := range stats.ZfsPools {
+					if pool.Total > 0 {
+						zfsKey := zfsDiskAlertKey(key)
+						if _, ok := alert.mapSums[zfsKey]; !ok {
+							alert.mapSums[zfsKey] = 0.0
+						}
+						alert.mapSums[zfsKey] += float32(pool.Used / pool.Total * 100)
+					}
+				}
 			case "Temperature":
 				if alert.mapSums == nil {
 					alert.mapSums = make(map[string]float32, len(stats.Temperatures))
@@ -235,15 +292,25 @@ func (am *AlertManager) HandleSystemAlerts(systemRecord *core.Record, data *syst
 				}
 				alert.val += maxUsage
 			case "Battery":
+				if !hasRepresentativeBattery(stats.Battery, stats.Batteries) {
+					continue
+				}
 				alert.val += float64(stats.Battery[0])
 			default:
-				continue
+				value, ok := cpuStateAlertValue(alert.name, stats.CpuBreakdown)
+				if !ok {
+					continue
+				}
+				alert.val += value
 			}
 			alert.count++
 		}
 	}
 	// sum up vals for each alert
 	for _, alert := range validAlerts {
+		if alert.count == 0 {
+			continue
+		}
 		switch alert.name {
 		case "Disk":
 			maxPct := float32(0)
@@ -251,7 +318,7 @@ func (am *AlertManager) HandleSystemAlerts(systemRecord *core.Record, data *syst
 				sumPct := float32(value)
 				if sumPct > maxPct {
 					maxPct = sumPct
-					alert.descriptor = fmt.Sprintf("Usage of %s", key)
+					alert.descriptor = diskAlertDescriptor(key)
 				}
 			}
 			alert.val = float64(maxPct / float32(alert.count))
@@ -297,10 +364,28 @@ func (am *AlertManager) HandleSystemAlerts(systemRecord *core.Record, data *syst
 	return nil
 }
 
+func zfsDiskAlertKey(poolName string) string {
+	return "zfs:" + poolName
+}
+
+func diskAlertDescriptor(key string) string {
+	if poolName, ok := strings.CutPrefix(key, "zfs:"); ok {
+		return fmt.Sprintf("Usage of ZFS pool %s", poolName)
+	}
+	return fmt.Sprintf("Usage of %s", key)
+}
+
+func hasRepresentativeBattery(legacy [2]uint8, batteries map[string]uint8) bool {
+	return legacy != [2]uint8{} || len(batteries) > 0
+}
+
 func (am *AlertManager) sendSystemAlert(alert SystemAlertData) {
 	// log.Printf("Sending alert %s: val %f | count %d | threshold %f\n", alert.name, alert.val, alert.count, alert.threshold)
 	systemName := alert.systemRecord.GetString("name")
 
+	if state, ok := cpuStateAlerts[alert.name]; ok {
+		alert.name = state.label
+	}
 	// change Disk to Disk usage
 	if alert.name == "Disk" {
 		alert.name += " usage"
@@ -312,7 +397,7 @@ func (am *AlertManager) sendSystemAlert(alert SystemAlertData) {
 
 	// make title alert name lowercase if not CPU or GPU
 	titleAlertName := alert.name
-	if titleAlertName != "CPU" && titleAlertName != "GPU" {
+	if titleAlertName != "CPU" && titleAlertName != "GPU" && !strings.HasPrefix(titleAlertName, "CPU") {
 		titleAlertName = strings.ToLower(titleAlertName)
 	}
 

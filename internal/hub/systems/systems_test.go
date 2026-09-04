@@ -30,6 +30,7 @@ func TestSystemManagerNew(t *testing.T) {
 	require.NoError(t, err)
 
 	synctest.Test(t, func(t *testing.T) {
+		sm.ResetContextForTesting()
 		sm.Initialize()
 
 		record, err := tests.CreateRecord(hub, "systems", map[string]any{
@@ -112,6 +113,8 @@ func TestSystemManagerNew(t *testing.T) {
 		assert.False(t, sm.HasSystem(record.Id), "System should not exist in the store after deletion")
 	})
 
+	// The following subtests run outside the synctest bubble.
+	sm.ResetContextForTesting()
 	testOld(t, hub)
 
 	synctest.Test(t, func(t *testing.T) {

@@ -31,12 +31,16 @@ builds:
         goarch: arm64
       - goos: freebsd
         goarch: arm
+      - goos: darwin
+        goarch: arm
 
   - id: beszel-agent
     binary: beszel-agent
     main: internal/cmd/agent/agent.go
     env:
       - CGO_ENABLED=0
+    ldflags:
+      - -s -w -X github.com/henrygd/beszel/internal/ghupdate.buildGOARM={{ .Arm }}
     goos:
       - linux
       - darwin
@@ -52,6 +56,10 @@ builds:
       - mipsle
       - mips
       - ppc64le
+    goarm:
+      - "5"
+      - "6"
+      - "7"
     gomips:
       - hardfloat
       - softfloat
@@ -70,6 +78,8 @@ builds:
         goarch: mips
         gomips: hardfloat
       - goos: windows
+        goarch: arm
+      - goos: darwin
         goarch: arm
       - goos: darwin
         goarch: riscv64
@@ -97,6 +107,7 @@ archives:
       {{ .Binary }}_
       {{- .Os }}_
       {{- .Arch }}
+      {{- if ne .Arm "6" }}{{ with .Arm }}v{{ . }}{{ end }}{{ end }}
     format_overrides:
       - goos: windows
         formats: [zip]

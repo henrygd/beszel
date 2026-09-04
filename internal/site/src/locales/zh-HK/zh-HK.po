@@ -8,7 +8,7 @@ msgstr ""
 "Language: zh\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2026-04-05 18:28\n"
+"PO-Revision-Date: 2026-09-02 21:43\n"
 "Last-Translator: \n"
 "Language-Team: Chinese Traditional, Hong Kong\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
@@ -45,6 +45,10 @@ msgstr "{count, plural, one {{countString} 小時} other {{countString} 小時}}
 #: src/lib/utils.ts
 msgid "{count, plural, one {{countString} minute} few {{countString} minutes} many {{countString} minutes} other {{countString} minutes}}"
 msgstr "{count, plural, one {{countString} 分鐘} few {{countString} 分鐘} many {{countString} 分鐘} other {{countString} 分鐘}}"
+
+#: src/components/routes/system/charts/disk-charts.tsx
+msgid "{diskName} I/O"
+msgstr "{diskName} 的 I/O"
 
 #: src/components/routes/system/info-bar.tsx
 msgid "{threads, plural, one {# thread} other {# threads}}"
@@ -93,6 +97,7 @@ msgstr "5 分鐘"
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 #: src/components/routes/system/smart-table.tsx
+#: src/components/routes/system/zfs-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Actions"
 msgstr "操作"
@@ -191,6 +196,11 @@ msgstr "您確定嗎？"
 msgid "Automatic copy requires a secure context."
 msgstr "自動複製需要安全的上下文。"
 
+#: src/components/routes/system/zfs-table.tsx
+msgctxt "Disk space available"
+msgid "Available"
+msgstr "可用"
+
 #: src/components/routes/system/chart-card.tsx
 msgid "Average"
 msgstr "平均"
@@ -250,6 +260,7 @@ msgstr "帶寬"
 msgid "Bat"
 msgstr "電池"
 
+#: src/components/routes/system/charts/sensor-charts.tsx
 #: src/components/routes/system/charts/sensor-charts.tsx
 #: src/lib/alerts.ts
 msgid "Battery"
@@ -327,6 +338,7 @@ msgid "Capabilities"
 msgstr "能力"
 
 #: src/components/routes/system/smart-table.tsx
+#: src/components/routes/system/zfs-table.tsx
 msgid "Capacity"
 msgstr "容量"
 
@@ -379,8 +391,14 @@ msgstr "檢查您的監控服務"
 msgid "Check your notification service"
 msgstr "檢查您的通知服務"
 
+#: src/components/routes/system/zfs-table.tsx
+msgid "Checksum errors"
+msgstr "校驗和錯誤"
+
 #: src/components/containers-table/containers-table.tsx
 #: src/components/routes/system/smart-table.tsx
+#: src/components/routes/system/zfs-table.tsx
+#: src/components/routes/system/zfs-table.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "Clear"
 msgstr "清除"
@@ -392,6 +410,10 @@ msgstr "點擊容器以查看更多資訊。"
 #: src/components/routes/system/smart-table.tsx
 msgid "Click on a device to view more information."
 msgstr "點擊裝置以查看更多資訊。"
+
+#: src/components/routes/system/zfs-table.tsx
+msgid "Click on a pool to view vdev and dataset details."
+msgstr "按一下 pool 以查看 vdev 和 dataset 的詳細資料。"
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Click on a system to view more information."
@@ -422,6 +444,14 @@ msgstr "衝突"
 #: src/components/active-alerts.tsx
 msgid "Connection is down"
 msgstr "連線中斷"
+
+#: src/lib/alerts.ts
+msgid "Container"
+msgstr "容器"
+
+#: src/lib/alerts.ts
+msgid "Container Health"
+msgstr "容器健康狀態"
 
 #: src/components/routes/system.tsx
 msgid "Containers"
@@ -471,6 +501,10 @@ msgstr "複製 Linux 指令"
 msgid "Copy name"
 msgstr "複製名稱"
 
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Copy public key"
+msgstr ""
+
 #: src/components/copy-to-clipboard.tsx
 msgid "Copy text"
 msgstr "複製文本"
@@ -502,9 +536,17 @@ msgstr "處理器"
 msgid "CPU Cores"
 msgstr "CPU 核心"
 
+#: src/lib/alerts.ts
+msgid "CPU I/O Wait"
+msgstr "CPU I/O 等待時間 (IOWait)"
+
 #: src/components/systemd-table/systemd-table-columns.tsx
 msgid "CPU Peak"
 msgstr "CPU 峰值"
+
+#: src/lib/alerts.ts
+msgid "CPU Steal Time"
+msgstr "CPU 被虛擬機監控程式佔用的時間 (Steal)"
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "CPU time"
@@ -538,15 +580,33 @@ msgstr "已建立"
 msgid "Critical (%)"
 msgstr "嚴重 (%)"
 
+#: src/components/routes/system/disk-io-sheet.tsx
+msgid "Cumulative data read since boot"
+msgstr "自啟動以來累計讀取的資料"
+
+#: src/components/routes/system/disk-io-sheet.tsx
+msgid "Cumulative data written since boot"
+msgstr "自啟動以來累計寫入的資料"
+
 #: src/components/routes/system/network-sheet.tsx
 msgid "Cumulative Download"
 msgstr "累計下載"
+
+#: src/components/routes/system/disk-io-sheet.tsx
+msgid "Cumulative Read"
+msgstr "累計讀取"
 
 #: src/components/routes/system/network-sheet.tsx
 msgid "Cumulative Upload"
 msgstr "累計上傳"
 
+#: src/components/routes/system/disk-io-sheet.tsx
+msgid "Cumulative Write"
+msgstr "累計寫入"
+
 #. Context: Battery state
+#. Context: Battery state
+#: src/components/routes/system/charts/sensor-charts.tsx
 #: src/components/routes/system/charts/sensor-charts.tsx
 msgid "Current state"
 msgstr "目前狀態"
@@ -603,15 +663,10 @@ msgstr "放電中"
 msgid "Disk"
 msgstr "磁碟"
 
-#: src/components/routes/system/charts/disk-charts.tsx
-msgid "Disk I/O"
-msgstr "磁碟 I/O"
-
 #: src/components/routes/settings/general.tsx
 msgid "Disk unit"
 msgstr "磁碟單位"
 
-#: src/components/routes/system/charts/disk-charts.tsx
 #: src/components/routes/system/charts/disk-charts.tsx
 #: src/lib/alerts.ts
 msgid "Disk Usage"
@@ -717,7 +772,6 @@ msgstr "輸入您的一次性密碼。"
 msgid "Ephemeral"
 msgstr "臨時"
 
-#: src/components/login/auth-form.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/settings/config-yaml.tsx
 #: src/components/routes/settings/heartbeat.tsx
@@ -782,6 +836,10 @@ msgstr "失敗"
 msgid "Failed Attributes:"
 msgstr "失敗屬性："
 
+#: src/lib/alerts.ts
+msgid "Failed Services"
+msgstr "失敗的服務"
+
 #: src/lib/api.ts
 msgid "Failed to authenticate"
 msgstr "認證失敗"
@@ -809,10 +867,16 @@ msgstr "更新警報失敗"
 msgid "Failed: {0}"
 msgstr "失敗: {0}"
 
+#: src/components/routes/system/charts/sensor-charts.tsx
+msgid "Fans"
+msgstr ""
+
 #: src/components/containers-table/containers-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/system/chart-card.tsx
 #: src/components/routes/system/smart-table.tsx
+#: src/components/routes/system/zfs-table.tsx
+#: src/components/routes/system/zfs-table.tsx
 #: src/components/systemd-table/systemd-table.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "Filter..."
@@ -833,6 +897,12 @@ msgstr "持續<0>{min}</0> {min, plural, one {分鐘} other {分鐘}}"
 #: src/components/login/auth-form.tsx
 msgid "Forgot password?"
 msgstr "忘記密碼？"
+
+#: src/components/routes/system/zfs-table.tsx
+#: src/components/routes/system/zfs-table.tsx
+msgctxt "Free space"
+msgid "Free"
+msgstr "可用空間"
 
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
@@ -878,6 +948,7 @@ msgid "Grid"
 msgstr "網格"
 
 #: src/components/containers-table/containers-table-columns.tsx
+#: src/components/routes/system/zfs-table.tsx
 msgid "Health"
 msgstr "健康狀態"
 
@@ -952,7 +1023,6 @@ msgstr "間隔"
 msgid "Invalid email address."
 msgstr "無效的電子郵件地址。"
 
-#: src/components/lang-toggle.tsx
 #: src/components/routes/settings/general.tsx
 msgid "Language"
 msgstr "語言"
@@ -1068,13 +1138,17 @@ msgid "Memory Usage"
 msgstr "記憶體使用"
 
 #: src/components/routes/system/charts/memory-charts.tsx
-msgid "Memory usage of docker containers"
-msgstr "Docker 容器的記憶體使用量"
+msgid "Memory usage of containers"
+msgstr "容器記憶體使用量"
 
 #. Device model
 #: src/components/routes/system/smart-table.tsx
 msgid "Model"
 msgstr "型號"
+
+#: src/components/routes/system/zfs-table.tsx
+msgid "Mountpoint"
+msgstr "掛載點"
 
 #: src/components/add-system.tsx
 #: src/components/alerts-history-columns.tsx
@@ -1090,8 +1164,8 @@ msgid "Net"
 msgstr "網絡"
 
 #: src/components/routes/system/charts/network-charts.tsx
-msgid "Network traffic of docker containers"
-msgstr "Docker 容器的網絡流量"
+msgid "Network traffic of containers"
+msgstr "容器網絡流量"
 
 #: src/components/routes/system/charts/network-charts.tsx
 #: src/components/routes/system/network-sheet.tsx
@@ -1110,6 +1184,10 @@ msgstr "網路單位"
 #: src/components/systemd-table/systemd-table.tsx
 msgid "No"
 msgstr "否"
+
+#: src/components/routes/system/zfs-table.tsx
+msgid "No detail data for this pool."
+msgstr "此 pool 沒有可用的詳細資料。"
 
 #: src/components/command-palette.tsx
 #: src/components/systemd-table/systemd-table.tsx
@@ -1134,11 +1212,19 @@ msgstr "此裝置沒有可用的 S.M.A.R.T. 屬性。"
 msgid "No systems found."
 msgstr "未找到系統。"
 
+#: src/components/routes/system/zfs-table.tsx
+msgid "None"
+msgstr "無"
+
 #: src/components/command-palette.tsx
 #: src/components/routes/settings/layout.tsx
 #: src/components/routes/settings/notifications.tsx
 msgid "Notifications"
 msgstr "通知"
+
+#: src/lib/alerts.ts
+msgid "Notifications may include recent container log excerpts."
+msgstr "通知可能包含最近的容器日誌片段。"
 
 #: src/components/login/auth-form.tsx
 msgid "OAuth 2 / OIDC support"
@@ -1147,6 +1233,14 @@ msgstr "支援 OAuth 2 / OIDC"
 #: src/components/routes/settings/config-yaml.tsx
 msgid "On each restart, systems in the database will be updated to match the systems defined in the file."
 msgstr "每次重新啟動時，將會以檔案中的系統定義更新資料庫。"
+
+#: src/lib/alerts.ts
+msgid "One or more containers are unhealthy"
+msgstr "一個或多個容器處於不健康狀態"
+
+#: src/lib/alerts.ts
+msgid "One or more services are in a failed state"
+msgstr "一個或多個服務處於失敗狀態"
 
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/quiet-hours.tsx
@@ -1161,6 +1255,7 @@ msgstr "一次性密碼"
 #: src/components/routes/settings/tokens-fingerprints.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 #: src/components/routes/system/smart-table.tsx
+#: src/components/routes/system/zfs-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Open menu"
 msgstr "開啟選單"
@@ -1284,6 +1379,14 @@ msgstr "請參閱<0>文件</0>以取得說明。"
 msgid "Please sign in to your account"
 msgstr "請登入您的帳號"
 
+#: src/components/routes/system/zfs-table.tsx
+msgid "Pool Health"
+msgstr "Pool 健康狀態"
+
+#: src/components/routes/system/charts/zfs-charts.tsx
+msgid "Pool Usage"
+msgstr "Pool 使用量"
+
 #: src/components/add-system.tsx
 msgid "Port"
 msgstr "端口"
@@ -1311,6 +1414,10 @@ msgstr "首選語言"
 msgid "Process started"
 msgstr "進程啟動"
 
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Public key"
+msgstr ""
+
 #. Use 'Key' if your language requires many more characters
 #: src/components/add-system.tsx
 msgid "Public Key"
@@ -1326,12 +1433,19 @@ msgid "Quiet Hours"
 msgstr "靜音時段"
 
 #. Disk read
+#. Disk read
 #: src/components/routes/system/charts/disk-charts.tsx
+#: src/components/routes/system/charts/zfs-charts.tsx
+#: src/components/routes/system/disk-io-sheet.tsx
 #: src/components/routes/system/disk-io-sheet.tsx
 #: src/components/routes/system/disk-io-sheet.tsx
 #: src/components/routes/system/disk-io-sheet.tsx
 msgid "Read"
 msgstr "讀取"
+
+#: src/components/routes/system/zfs-table.tsx
+msgid "Read errors"
+msgstr "讀取錯誤"
 
 #: src/components/routes/system/charts/network-charts.tsx
 msgid "Received"
@@ -1340,6 +1454,7 @@ msgstr "接收"
 #: src/components/containers-table/containers-table.tsx
 #: src/components/containers-table/containers-table.tsx
 #: src/components/routes/system/smart-table.tsx
+#: src/components/routes/system/zfs-table.tsx
 msgid "Refresh"
 msgstr "重新整理"
 
@@ -1381,6 +1496,8 @@ msgstr "重啟次數"
 msgid "Resume"
 msgstr "恢復"
 
+#: src/components/routes/system/charts/disk-charts.tsx
+#: src/components/routes/system/charts/disk-charts.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgctxt "Root disk label"
 msgid "Root"
@@ -1526,6 +1643,7 @@ msgstr "開始時間"
 #. Context: alert state (active or resolved)
 #: src/components/alerts-history-columns.tsx
 #: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/system/zfs-table.tsx
 #: src/components/systemd-table/systemd-table-columns.tsx
 msgid "State"
 msgstr "狀態"
@@ -1550,6 +1668,11 @@ msgstr "系統使用的交換空間"
 msgid "Swap Usage"
 msgstr "交換使用"
 
+#: src/components/mode-toggle.tsx
+#: src/components/mode-toggle.tsx
+msgid "Switch theme"
+msgstr ""
+
 #: src/components/add-system.tsx
 #: src/components/alerts-history-columns.tsx
 #: src/components/containers-table/containers-table-columns.tsx
@@ -1564,6 +1687,10 @@ msgstr "交換使用"
 #: src/lib/alerts.ts
 msgid "System"
 msgstr "系統"
+
+#: src/components/routes/system/charts/sensor-charts.tsx
+msgid "System fan speeds (RPM)"
+msgstr ""
 
 #: src/components/routes/system/charts/load-average-chart.tsx
 msgid "System load averages over time"
@@ -1645,9 +1772,9 @@ msgstr "這將從資料庫中永久刪除所有選定的記錄。"
 msgid "Throughput of {extraFsName}"
 msgstr "{extraFsName}的吞吐量"
 
-#: src/components/routes/system/charts/disk-charts.tsx
-msgid "Throughput of root filesystem"
-msgstr "根文件系統的吞吐量"
+#: src/components/routes/system/charts/zfs-charts.tsx
+msgid "Throughput of ZFS pool {poolName}"
+msgstr "ZFS pool {poolName} 輸送量"
 
 #: src/components/routes/settings/general.tsx
 msgid "Time format"
@@ -1656,11 +1783,6 @@ msgstr "時間格式"
 #: src/components/routes/settings/notifications.tsx
 msgid "To email(s)"
 msgstr "發送到電子郵件"
-
-#: src/components/mode-toggle.tsx
-#: src/components/mode-toggle.tsx
-msgid "Toggle theme"
-msgstr "切換主題"
 
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
@@ -1725,8 +1847,16 @@ msgid "Triggers when 5 minute load average exceeds a threshold"
 msgstr "當 5 分鐘平均負載超過閾值時觸發"
 
 #: src/lib/alerts.ts
+msgid "Triggers when a container's health check reports unhealthy"
+msgstr "當容器健康檢查報告不健康狀態時觸發"
+
+#: src/lib/alerts.ts
 msgid "Triggers when any sensor exceeds a threshold"
 msgstr "當任何傳感器超過閾值時觸發"
+
+#: src/lib/alerts.ts
+msgid "Triggers when any systemd service enters the failed state"
+msgstr "當任何 systemd 服務進入失敗狀態時觸發"
 
 #: src/lib/alerts.ts
 msgid "Triggers when battery charge drops below a threshold"
@@ -1735,6 +1865,14 @@ msgstr "當電池電量降至閾值以下時觸發"
 #: src/lib/alerts.ts
 msgid "Triggers when combined up/down exceeds a threshold"
 msgstr "當組合的上/下超過閾值時觸發"
+
+#: src/lib/alerts.ts
+msgid "Triggers when CPU I/O wait exceeds a threshold"
+msgstr "當 CPU I/O 等待時間超過閾值時觸發"
+
+#: src/lib/alerts.ts
+msgid "Triggers when CPU steal time exceeds a threshold"
+msgstr "當 CPU 竊取時間超過閾值時觸發"
 
 #: src/lib/alerts.ts
 msgid "Triggers when CPU usage exceeds a threshold"
@@ -1762,6 +1900,10 @@ msgstr "當任何磁碟的使用超過閾值時觸發"
 msgid "Type"
 msgstr "類型"
 
+#: src/lib/alerts.ts
+msgid "Unhealthy"
+msgstr "不健康"
+
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Unit file"
 msgstr "單元檔案"
@@ -1777,6 +1919,7 @@ msgid "Universal token"
 msgstr "通用令牌"
 
 #. Context: Battery state
+#: src/components/routes/system/zfs-table.tsx
 #: src/lib/i18n.ts
 msgid "Unknown"
 msgstr "未知"
@@ -1802,6 +1945,7 @@ msgstr "更新"
 
 #: src/components/containers-table/containers-table-columns.tsx
 #: src/components/routes/system/smart-table.tsx
+#: src/components/routes/system/zfs-table.tsx
 #: src/components/systemd-table/systemd-table-columns.tsx
 msgid "Updated"
 msgstr "已更新"
@@ -1817,22 +1961,27 @@ msgstr "上傳"
 #: src/components/routes/system/info-bar.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Uptime"
-msgstr "正常運行時間"
+msgstr "運行時間"
 
+#: src/components/routes/system/charts/disk-charts.tsx
 #: src/components/routes/system/charts/disk-charts.tsx
 #: src/components/routes/system/charts/gpu-charts.tsx
 #: src/components/routes/system/charts/gpu-charts.tsx
 #: src/components/routes/system/charts/gpu-charts.tsx
+#: src/components/routes/system/charts/zfs-charts.tsx
 #: src/components/routes/system/cpu-sheet.tsx
 msgid "Usage"
 msgstr "使用"
 
-#: src/components/routes/system/charts/disk-charts.tsx
-msgid "Usage of root partition"
-msgstr "根分區的使用"
+#: src/components/routes/system/charts/zfs-charts.tsx
+msgid "Usage of ZFS pool {poolName}"
+msgstr "ZFS pool {poolName} 使用量"
 
 #: src/components/routes/system/charts/memory-charts.tsx
 #: src/components/routes/system/charts/memory-charts.tsx
+#: src/components/routes/system/zfs-table.tsx
+#: src/components/routes/system/zfs-table.tsx
+#: src/components/routes/system/zfs-table.tsx
 msgid "Used"
 msgstr "已用"
 
@@ -1907,12 +2056,19 @@ msgid "Windows command"
 msgstr "Windows 指令"
 
 #. Disk write
+#. Disk write
 #: src/components/routes/system/charts/disk-charts.tsx
+#: src/components/routes/system/charts/zfs-charts.tsx
+#: src/components/routes/system/disk-io-sheet.tsx
 #: src/components/routes/system/disk-io-sheet.tsx
 #: src/components/routes/system/disk-io-sheet.tsx
 #: src/components/routes/system/disk-io-sheet.tsx
 msgid "Write"
 msgstr "寫入"
+
+#: src/components/routes/system/zfs-table.tsx
+msgid "Write errors"
+msgstr "寫入錯誤"
 
 #: src/components/routes/settings/layout.tsx
 msgid "YAML Config"

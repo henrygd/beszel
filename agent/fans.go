@@ -72,14 +72,30 @@ func discoverHwmonFans(root string) ([]fanSensor, error) {
 	var sensors []fanSensor
 	for _, entry := range entries {
 		chipDir := filepath.Join(root, entry.Name())
-		chipName := utils.ReadStringFile(filepath.Join(chipDir, "name"))
+		sensorDir := chipDir
+		inputs, _ := filepath.Glob(filepath.Join(sensorDir, "fan*_input"))
+
+		// Some legacy hwmon drivers (notably applesmc) register a hwmon class
+		// device but create fan attributes on the parent platform device. In
+		// sysfs that parent is exposed through hwmonN/device.
+		if len(inputs) == 0 {
+			deviceDir := filepath.Join(chipDir, "device")
+			if deviceInputs, _ := filepath.Glob(filepath.Join(deviceDir, "fan*_input")); len(deviceInputs) > 0 {
+				sensorDir = deviceDir
+				inputs = deviceInputs
+			}
+		}
+
+		chipName := utils.ReadStringFile(filepath.Join(sensorDir, "name"))
+		if chipName == "" {
+			chipName = utils.ReadStringFile(filepath.Join(chipDir, "name"))
+		}
 		if chipName == "" {
 			chipName = entry.Name()
 		}
-		inputs, _ := filepath.Glob(filepath.Join(chipDir, "fan*_input"))
 		for _, inputPath := range inputs {
 			base := strings.TrimSuffix(filepath.Base(inputPath), "_input")
-			label := utils.ReadStringFile(filepath.Join(chipDir, base+"_label"))
+			label := utils.ReadStringFile(filepath.Join(sensorDir, base+"_label"))
 			key := chipName + "_" + base
 			if label != "" {
 				key = chipName + "_" + label

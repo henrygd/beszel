@@ -8,7 +8,7 @@ msgstr ""
 "Language: th\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2026-04-05 18:28\n"
+"PO-Revision-Date: 2026-09-02 19:06\n"
 "Last-Translator: \n"
 "Language-Team: Thai\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
@@ -44,6 +44,10 @@ msgstr ""
 
 #: src/lib/utils.ts
 msgid "{count, plural, one {{countString} minute} few {{countString} minutes} many {{countString} minutes} other {{countString} minutes}}"
+msgstr ""
+
+#: src/components/routes/system/charts/disk-charts.tsx
+msgid "{diskName} I/O"
 msgstr ""
 
 #: src/components/routes/system/info-bar.tsx
@@ -93,6 +97,7 @@ msgstr ""
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 #: src/components/routes/system/smart-table.tsx
+#: src/components/routes/system/zfs-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Actions"
 msgstr ""
@@ -191,6 +196,11 @@ msgstr ""
 msgid "Automatic copy requires a secure context."
 msgstr ""
 
+#: src/components/routes/system/zfs-table.tsx
+msgctxt "Disk space available"
+msgid "Available"
+msgstr ""
+
 #: src/components/routes/system/chart-card.tsx
 msgid "Average"
 msgstr ""
@@ -209,8 +219,17 @@ msgstr ""
 msgid "Average exceeds <0>{value}{0}</0>"
 msgstr ""
 
+#: src/components/routes/system/disk-io-sheet.tsx
+msgid "Average number of I/O operations waiting to be serviced"
+msgstr ""
+
 #: src/components/routes/system/charts/gpu-charts.tsx
 msgid "Average power consumption of GPUs"
+msgstr ""
+
+#: src/components/routes/system/disk-io-sheet.tsx
+msgctxt "Disk I/O average operation time (iostat await)"
+msgid "Average queue to completion time per operation"
 msgstr ""
 
 #: src/components/routes/system/charts/cpu-charts.tsx
@@ -241,6 +260,7 @@ msgstr ""
 msgid "Bat"
 msgstr ""
 
+#: src/components/routes/system/charts/sensor-charts.tsx
 #: src/components/routes/system/charts/sensor-charts.tsx
 #: src/lib/alerts.ts
 msgid "Battery"
@@ -318,6 +338,7 @@ msgid "Capabilities"
 msgstr ""
 
 #: src/components/routes/system/smart-table.tsx
+#: src/components/routes/system/zfs-table.tsx
 msgid "Capacity"
 msgstr ""
 
@@ -370,8 +391,14 @@ msgstr ""
 msgid "Check your notification service"
 msgstr ""
 
+#: src/components/routes/system/zfs-table.tsx
+msgid "Checksum errors"
+msgstr ""
+
 #: src/components/containers-table/containers-table.tsx
 #: src/components/routes/system/smart-table.tsx
+#: src/components/routes/system/zfs-table.tsx
+#: src/components/routes/system/zfs-table.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "Clear"
 msgstr ""
@@ -382,6 +409,10 @@ msgstr ""
 
 #: src/components/routes/system/smart-table.tsx
 msgid "Click on a device to view more information."
+msgstr ""
+
+#: src/components/routes/system/zfs-table.tsx
+msgid "Click on a pool to view vdev and dataset details."
 msgstr ""
 
 #: src/components/systems-table/systems-table.tsx
@@ -414,6 +445,14 @@ msgstr ""
 msgid "Connection is down"
 msgstr ""
 
+#: src/lib/alerts.ts
+msgid "Container"
+msgstr ""
+
+#: src/lib/alerts.ts
+msgid "Container Health"
+msgstr ""
+
 #: src/components/routes/system.tsx
 msgid "Containers"
 msgstr ""
@@ -444,6 +483,11 @@ msgctxt "Environment variables"
 msgid "Copy env"
 msgstr ""
 
+#: src/components/alerts/alerts-sheet.tsx
+msgctxt "Copy alerts from another system"
+msgid "Copy from"
+msgstr ""
+
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Copy host"
 msgstr ""
@@ -455,6 +499,10 @@ msgstr ""
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Copy name"
+msgstr ""
+
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Copy public key"
 msgstr ""
 
 #: src/components/copy-to-clipboard.tsx
@@ -488,8 +536,16 @@ msgstr ""
 msgid "CPU Cores"
 msgstr ""
 
+#: src/lib/alerts.ts
+msgid "CPU I/O Wait"
+msgstr ""
+
 #: src/components/systemd-table/systemd-table-columns.tsx
 msgid "CPU Peak"
+msgstr ""
+
+#: src/lib/alerts.ts
+msgid "CPU Steal Time"
 msgstr ""
 
 #: src/components/systemd-table/systemd-table.tsx
@@ -524,15 +580,33 @@ msgstr ""
 msgid "Critical (%)"
 msgstr ""
 
+#: src/components/routes/system/disk-io-sheet.tsx
+msgid "Cumulative data read since boot"
+msgstr ""
+
+#: src/components/routes/system/disk-io-sheet.tsx
+msgid "Cumulative data written since boot"
+msgstr ""
+
 #: src/components/routes/system/network-sheet.tsx
 msgid "Cumulative Download"
+msgstr ""
+
+#: src/components/routes/system/disk-io-sheet.tsx
+msgid "Cumulative Read"
 msgstr ""
 
 #: src/components/routes/system/network-sheet.tsx
 msgid "Cumulative Upload"
 msgstr ""
 
+#: src/components/routes/system/disk-io-sheet.tsx
+msgid "Cumulative Write"
+msgstr ""
+
 #. Context: Battery state
+#. Context: Battery state
+#: src/components/routes/system/charts/sensor-charts.tsx
 #: src/components/routes/system/charts/sensor-charts.tsx
 msgid "Current state"
 msgstr ""
@@ -589,22 +663,16 @@ msgstr ""
 msgid "Disk"
 msgstr ""
 
-#: src/components/routes/system/charts/disk-charts.tsx
-msgid "Disk I/O"
-msgstr ""
-
 #: src/components/routes/settings/general.tsx
 msgid "Disk unit"
 msgstr ""
 
 #: src/components/routes/system/charts/disk-charts.tsx
-#: src/components/routes/system/charts/disk-charts.tsx
-#: src/components/routes/system/charts/extra-fs-charts.tsx
 #: src/lib/alerts.ts
 msgid "Disk Usage"
 msgstr ""
 
-#: src/components/routes/system/charts/extra-fs-charts.tsx
+#: src/components/routes/system/charts/disk-charts.tsx
 msgid "Disk usage of {extraFsName}"
 msgstr ""
 
@@ -704,7 +772,6 @@ msgstr ""
 msgid "Ephemeral"
 msgstr ""
 
-#: src/components/login/auth-form.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/settings/config-yaml.tsx
 #: src/components/routes/settings/heartbeat.tsx
@@ -769,6 +836,10 @@ msgstr ""
 msgid "Failed Attributes:"
 msgstr ""
 
+#: src/lib/alerts.ts
+msgid "Failed Services"
+msgstr ""
+
 #: src/lib/api.ts
 msgid "Failed to authenticate"
 msgstr ""
@@ -796,10 +867,16 @@ msgstr ""
 msgid "Failed: {0}"
 msgstr ""
 
+#: src/components/routes/system/charts/sensor-charts.tsx
+msgid "Fans"
+msgstr ""
+
 #: src/components/containers-table/containers-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/system/chart-card.tsx
 #: src/components/routes/system/smart-table.tsx
+#: src/components/routes/system/zfs-table.tsx
+#: src/components/routes/system/zfs-table.tsx
 #: src/components/systemd-table/systemd-table.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "Filter..."
@@ -819,6 +896,12 @@ msgstr ""
 
 #: src/components/login/auth-form.tsx
 msgid "Forgot password?"
+msgstr ""
+
+#: src/components/routes/system/zfs-table.tsx
+#: src/components/routes/system/zfs-table.tsx
+msgctxt "Free space"
+msgid "Free"
 msgstr ""
 
 #: src/components/add-system.tsx
@@ -865,6 +948,7 @@ msgid "Grid"
 msgstr ""
 
 #: src/components/containers-table/containers-table-columns.tsx
+#: src/components/routes/system/zfs-table.tsx
 msgid "Health"
 msgstr ""
 
@@ -898,6 +982,21 @@ msgstr ""
 msgid "HTTP method: POST, GET, or HEAD (default: POST)"
 msgstr ""
 
+#: src/components/routes/system/disk-io-sheet.tsx
+msgctxt "Disk I/O average operation time (iostat await)"
+msgid "I/O Await"
+msgstr ""
+
+#: src/components/routes/system/disk-io-sheet.tsx
+msgctxt "Disk I/O total time spent on read/write"
+msgid "I/O Time"
+msgstr ""
+
+#: src/components/routes/system/charts/disk-charts.tsx
+msgctxt "Percent of time the disk is busy with I/O"
+msgid "I/O Utilization"
+msgstr ""
+
 #. Context: Battery state
 #: src/lib/i18n.ts
 msgid "Idle"
@@ -924,7 +1023,6 @@ msgstr ""
 msgid "Invalid email address."
 msgstr ""
 
-#: src/components/lang-toggle.tsx
 #: src/components/routes/settings/general.tsx
 msgid "Language"
 msgstr ""
@@ -1040,12 +1138,16 @@ msgid "Memory Usage"
 msgstr ""
 
 #: src/components/routes/system/charts/memory-charts.tsx
-msgid "Memory usage of docker containers"
-msgstr ""
+msgid "Memory usage of containers"
+msgstr "การใช้หน่วยความจำของคอนเทนเนอร์"
 
 #. Device model
 #: src/components/routes/system/smart-table.tsx
 msgid "Model"
+msgstr ""
+
+#: src/components/routes/system/zfs-table.tsx
+msgid "Mountpoint"
 msgstr ""
 
 #: src/components/add-system.tsx
@@ -1062,8 +1164,8 @@ msgid "Net"
 msgstr ""
 
 #: src/components/routes/system/charts/network-charts.tsx
-msgid "Network traffic of docker containers"
-msgstr ""
+msgid "Network traffic of containers"
+msgstr "การรับส่งข้อมูลเครือข่ายของคอนเทนเนอร์"
 
 #: src/components/routes/system/charts/network-charts.tsx
 #: src/components/routes/system/network-sheet.tsx
@@ -1081,6 +1183,10 @@ msgstr ""
 #: src/components/systemd-table/systemd-table.tsx
 #: src/components/systemd-table/systemd-table.tsx
 msgid "No"
+msgstr ""
+
+#: src/components/routes/system/zfs-table.tsx
+msgid "No detail data for this pool."
 msgstr ""
 
 #: src/components/command-palette.tsx
@@ -1106,10 +1212,18 @@ msgstr ""
 msgid "No systems found."
 msgstr ""
 
+#: src/components/routes/system/zfs-table.tsx
+msgid "None"
+msgstr ""
+
 #: src/components/command-palette.tsx
 #: src/components/routes/settings/layout.tsx
 #: src/components/routes/settings/notifications.tsx
 msgid "Notifications"
+msgstr ""
+
+#: src/lib/alerts.ts
+msgid "Notifications may include recent container log excerpts."
 msgstr ""
 
 #: src/components/login/auth-form.tsx
@@ -1118,6 +1232,14 @@ msgstr ""
 
 #: src/components/routes/settings/config-yaml.tsx
 msgid "On each restart, systems in the database will be updated to match the systems defined in the file."
+msgstr ""
+
+#: src/lib/alerts.ts
+msgid "One or more containers are unhealthy"
+msgstr ""
+
+#: src/lib/alerts.ts
+msgid "One or more services are in a failed state"
 msgstr ""
 
 #: src/components/routes/settings/quiet-hours.tsx
@@ -1133,6 +1255,7 @@ msgstr ""
 #: src/components/routes/settings/tokens-fingerprints.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 #: src/components/routes/system/smart-table.tsx
+#: src/components/routes/system/zfs-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Open menu"
 msgstr ""
@@ -1207,6 +1330,10 @@ msgstr ""
 msgid "Per-core average utilization"
 msgstr ""
 
+#: src/components/routes/system/charts/disk-charts.tsx
+msgid "Percent of time the disk is busy with I/O"
+msgstr ""
+
 #: src/components/routes/system/cpu-sheet.tsx
 msgid "Percentage of time spent in each state"
 msgstr ""
@@ -1252,6 +1379,14 @@ msgstr ""
 msgid "Please sign in to your account"
 msgstr ""
 
+#: src/components/routes/system/zfs-table.tsx
+msgid "Pool Health"
+msgstr ""
+
+#: src/components/routes/system/charts/zfs-charts.tsx
+msgid "Pool Usage"
+msgstr ""
+
 #: src/components/add-system.tsx
 msgid "Port"
 msgstr ""
@@ -1279,9 +1414,18 @@ msgstr ""
 msgid "Process started"
 msgstr ""
 
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Public key"
+msgstr ""
+
 #. Use 'Key' if your language requires many more characters
 #: src/components/add-system.tsx
 msgid "Public Key"
+msgstr ""
+
+#: src/components/routes/system/disk-io-sheet.tsx
+msgctxt "Disk I/O average queue depth"
+msgid "Queue Depth"
 msgstr ""
 
 #: src/components/routes/settings/quiet-hours.tsx
@@ -1289,9 +1433,18 @@ msgid "Quiet Hours"
 msgstr ""
 
 #. Disk read
+#. Disk read
 #: src/components/routes/system/charts/disk-charts.tsx
-#: src/components/routes/system/charts/extra-fs-charts.tsx
+#: src/components/routes/system/charts/zfs-charts.tsx
+#: src/components/routes/system/disk-io-sheet.tsx
+#: src/components/routes/system/disk-io-sheet.tsx
+#: src/components/routes/system/disk-io-sheet.tsx
+#: src/components/routes/system/disk-io-sheet.tsx
 msgid "Read"
+msgstr ""
+
+#: src/components/routes/system/zfs-table.tsx
+msgid "Read errors"
 msgstr ""
 
 #: src/components/routes/system/charts/network-charts.tsx
@@ -1301,6 +1454,7 @@ msgstr ""
 #: src/components/containers-table/containers-table.tsx
 #: src/components/containers-table/containers-table.tsx
 #: src/components/routes/system/smart-table.tsx
+#: src/components/routes/system/zfs-table.tsx
 msgid "Refresh"
 msgstr ""
 
@@ -1342,6 +1496,8 @@ msgstr ""
 msgid "Resume"
 msgstr ""
 
+#: src/components/routes/system/charts/disk-charts.tsx
+#: src/components/routes/system/charts/disk-charts.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgctxt "Root disk label"
 msgid "Root"
@@ -1487,6 +1643,7 @@ msgstr ""
 #. Context: alert state (active or resolved)
 #: src/components/alerts-history-columns.tsx
 #: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/system/zfs-table.tsx
 #: src/components/systemd-table/systemd-table-columns.tsx
 msgid "State"
 msgstr ""
@@ -1511,6 +1668,11 @@ msgstr ""
 msgid "Swap Usage"
 msgstr ""
 
+#: src/components/mode-toggle.tsx
+#: src/components/mode-toggle.tsx
+msgid "Switch theme"
+msgstr ""
+
 #: src/components/add-system.tsx
 #: src/components/alerts-history-columns.tsx
 #: src/components/containers-table/containers-table-columns.tsx
@@ -1524,6 +1686,10 @@ msgstr ""
 #: src/components/systems-table/systems-table-columns.tsx
 #: src/lib/alerts.ts
 msgid "System"
+msgstr ""
+
+#: src/components/routes/system/charts/sensor-charts.tsx
+msgid "System fan speeds (RPM)"
 msgstr ""
 
 #: src/components/routes/system/charts/load-average-chart.tsx
@@ -1602,12 +1768,12 @@ msgstr ""
 msgid "This will permanently delete all selected records from the database."
 msgstr ""
 
-#: src/components/routes/system/charts/extra-fs-charts.tsx
+#: src/components/routes/system/charts/disk-charts.tsx
 msgid "Throughput of {extraFsName}"
 msgstr ""
 
-#: src/components/routes/system/charts/disk-charts.tsx
-msgid "Throughput of root filesystem"
+#: src/components/routes/system/charts/zfs-charts.tsx
+msgid "Throughput of ZFS pool {poolName}"
 msgstr ""
 
 #: src/components/routes/settings/general.tsx
@@ -1616,11 +1782,6 @@ msgstr ""
 
 #: src/components/routes/settings/notifications.tsx
 msgid "To email(s)"
-msgstr ""
-
-#: src/components/mode-toggle.tsx
-#: src/components/mode-toggle.tsx
-msgid "Toggle theme"
 msgstr ""
 
 #: src/components/add-system.tsx
@@ -1655,6 +1816,11 @@ msgstr ""
 msgid "Total data sent for each interface"
 msgstr ""
 
+#: src/components/routes/system/disk-io-sheet.tsx
+msgctxt "Disk I/O"
+msgid "Total time spent on read/write (can exceed 100%)"
+msgstr ""
+
 #. placeholder {0}: data.length
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Total: {0}"
@@ -1681,7 +1847,15 @@ msgid "Triggers when 5 minute load average exceeds a threshold"
 msgstr ""
 
 #: src/lib/alerts.ts
+msgid "Triggers when a container's health check reports unhealthy"
+msgstr ""
+
+#: src/lib/alerts.ts
 msgid "Triggers when any sensor exceeds a threshold"
+msgstr ""
+
+#: src/lib/alerts.ts
+msgid "Triggers when any systemd service enters the failed state"
 msgstr ""
 
 #: src/lib/alerts.ts
@@ -1690,6 +1864,14 @@ msgstr ""
 
 #: src/lib/alerts.ts
 msgid "Triggers when combined up/down exceeds a threshold"
+msgstr ""
+
+#: src/lib/alerts.ts
+msgid "Triggers when CPU I/O wait exceeds a threshold"
+msgstr ""
+
+#: src/lib/alerts.ts
+msgid "Triggers when CPU steal time exceeds a threshold"
 msgstr ""
 
 #: src/lib/alerts.ts
@@ -1718,6 +1900,10 @@ msgstr ""
 msgid "Type"
 msgstr ""
 
+#: src/lib/alerts.ts
+msgid "Unhealthy"
+msgstr ""
+
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Unit file"
 msgstr ""
@@ -1733,6 +1919,7 @@ msgid "Universal token"
 msgstr ""
 
 #. Context: Battery state
+#: src/components/routes/system/zfs-table.tsx
 #: src/lib/i18n.ts
 msgid "Unknown"
 msgstr ""
@@ -1758,6 +1945,7 @@ msgstr ""
 
 #: src/components/containers-table/containers-table-columns.tsx
 #: src/components/routes/system/smart-table.tsx
+#: src/components/routes/system/zfs-table.tsx
 #: src/components/systemd-table/systemd-table-columns.tsx
 msgid "Updated"
 msgstr ""
@@ -1775,26 +1963,36 @@ msgstr ""
 msgid "Uptime"
 msgstr ""
 
-#: src/components/routes/system/charts/extra-fs-charts.tsx
+#: src/components/routes/system/charts/disk-charts.tsx
+#: src/components/routes/system/charts/disk-charts.tsx
 #: src/components/routes/system/charts/gpu-charts.tsx
 #: src/components/routes/system/charts/gpu-charts.tsx
 #: src/components/routes/system/charts/gpu-charts.tsx
+#: src/components/routes/system/charts/zfs-charts.tsx
 #: src/components/routes/system/cpu-sheet.tsx
 msgid "Usage"
 msgstr ""
 
-#: src/components/routes/system/charts/disk-charts.tsx
-msgid "Usage of root partition"
+#: src/components/routes/system/charts/zfs-charts.tsx
+msgid "Usage of ZFS pool {poolName}"
 msgstr ""
 
 #: src/components/routes/system/charts/memory-charts.tsx
 #: src/components/routes/system/charts/memory-charts.tsx
+#: src/components/routes/system/zfs-table.tsx
+#: src/components/routes/system/zfs-table.tsx
+#: src/components/routes/system/zfs-table.tsx
 msgid "Used"
 msgstr ""
 
 #: src/components/command-palette.tsx
 #: src/components/navbar.tsx
 msgid "Users"
+msgstr ""
+
+#: src/components/routes/system/charts/disk-charts.tsx
+msgctxt "Disk I/O utilization"
+msgid "Utilization"
 msgstr ""
 
 #: src/components/alerts-history-columns.tsx
@@ -1806,6 +2004,7 @@ msgid "View"
 msgstr ""
 
 #: src/components/routes/system/cpu-sheet.tsx
+#: src/components/routes/system/disk-io-sheet.tsx
 #: src/components/routes/system/network-sheet.tsx
 msgid "View more"
 msgstr ""
@@ -1857,9 +2056,18 @@ msgid "Windows command"
 msgstr ""
 
 #. Disk write
+#. Disk write
 #: src/components/routes/system/charts/disk-charts.tsx
-#: src/components/routes/system/charts/extra-fs-charts.tsx
+#: src/components/routes/system/charts/zfs-charts.tsx
+#: src/components/routes/system/disk-io-sheet.tsx
+#: src/components/routes/system/disk-io-sheet.tsx
+#: src/components/routes/system/disk-io-sheet.tsx
+#: src/components/routes/system/disk-io-sheet.tsx
 msgid "Write"
+msgstr ""
+
+#: src/components/routes/system/zfs-table.tsx
+msgid "Write errors"
 msgstr ""
 
 #: src/components/routes/settings/layout.tsx
