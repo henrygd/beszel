@@ -33,8 +33,6 @@ type Stats struct {
 	MaxNetworkSent float64             `json:"nsm,omitempty" cbor:"-"`
 	MaxNetworkRecv float64             `json:"nrm,omitempty" cbor:"-"`
 	Temperatures   map[string]float64  `json:"t,omitempty" cbor:"20,keyasint,omitempty"`
-	Fans           map[string]uint16   `json:"f,omitempty" cbor:"36,keyasint,omitempty"`
-	Batteries      map[string]uint8    `json:"bats,omitempty" cbor:"37,keyasint,omitempty"`
 	ExtraFs        map[string]*FsStats `json:"efs,omitempty" cbor:"21,keyasint,omitempty"`
 	GPUData        map[string]GPUData  `json:"g,omitempty" cbor:"22,keyasint,omitempty"`
 	// LoadAvg1       float64             `json:"l1,omitempty" cbor:"23,keyasint,omitempty"`
@@ -58,6 +56,20 @@ type Stats struct {
 	MemPsi            []float64            `json:"mpsi,omitempty" cbor:"41,keyasint,omitempty"` // PSI [some_avg10, some_avg60, full_avg10, full_avg60]
 	MemOomKills       uint32               `json:"moom,omitzero" cbor:"42,keyasint,omitzero"`   // OOM kill event count delta
 	MemSlab           float64              `json:"msl,omitzero" cbor:"43,keyasint,omitzero"`    // total slab memory (GB)
+	Fans              map[string]uint16    `json:"f,omitempty" cbor:"36,keyasint,omitempty"`
+	Batteries         map[string]uint8     `json:"bats,omitempty" cbor:"37,keyasint,omitempty"`
+	ZfsPools          map[string]*ZfsPool  `json:"z,omitempty" cbor:"44,keyasint,omitempty"`  // ZFS pool metrics, keyed by pool name
+	DiskIOTotal       [2]uint64            `json:"diot,omitzero" cbor:"45,keyasint,omitzero"` // [total read bytes, total write bytes] cumulative device counters
+
+}
+
+// ZfsPool holds per-pool ZFS metrics for a single collection interval.
+type ZfsPool struct {
+	Total      float64 `json:"d" cbor:"0,keyasint"`                     // total capacity in GiB
+	Used       float64 `json:"du" cbor:"1,keyasint"`                    // allocated in GiB
+	ReadBytes  uint64  `json:"rb,omitzero" cbor:"2,keyasint,omitzero"`  // read throughput in bytes/s
+	WriteBytes uint64  `json:"wb,omitzero" cbor:"3,keyasint,omitzero"`  // write throughput in bytes/s
+	Health     string  `json:"h,omitempty" cbor:"4,keyasint,omitempty"` // ONLINE, DEGRADED, FAULTED, ...
 }
 
 // Uint8Slice wraps []uint8 to customize JSON encoding while keeping CBOR efficient.
@@ -188,6 +200,7 @@ type Details struct {
 	Podman        bool          `cbor:"8,keyasint,omitempty"`
 	MemoryTotal   uint64        `cbor:"9,keyasint"`
 	SmartInterval time.Duration `cbor:"10,keyasint,omitempty"`
+	ZfsInterval   time.Duration `cbor:"11,keyasint,omitempty"` // interval for ZFS detail refresh
 }
 
 // Final data structure to return to the hub
@@ -197,4 +210,7 @@ type CombinedData struct {
 	Containers      []*container.Stats `json:"container" cbor:"2,keyasint"`
 	SystemdServices []*systemd.Service `json:"systemd,omitempty" cbor:"3,keyasint,omitempty"`
 	Details         *Details           `cbor:"4,keyasint,omitempty"`
+	// SystemdServicesUpdated distinguishes a fresh empty snapshot from a response
+	// that omitted systemd data (for example, a short-cache dashboard request).
+	SystemdServicesUpdated bool `json:"systemdUpdated,omitempty" cbor:"5,keyasint,omitempty"`
 }

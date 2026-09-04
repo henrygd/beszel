@@ -161,6 +161,8 @@ export interface SystemStats {
 	f?: Record<string, number>
 	/** extra filesystems */
 	efs?: Record<string, ExtraFsStats>
+	/** ZFS pool metrics */
+	z?: Record<string, ZfsPool>
 	/** GPU data */
 	g?: Record<string, GPUData>
 	/** battery percent and state */
@@ -186,6 +188,56 @@ export interface GPUData {
 	pp?: number
 	/** engines */
 	e?: Record<string, number>
+}
+
+export interface ZfsPool {
+	/** total capacity (GiB) */
+	d: number
+	/** allocated (GiB) */
+	du: number
+	/** read throughput (bytes/s) */
+	rb?: number
+	/** write throughput (bytes/s) */
+	wb?: number
+	/** health: ONLINE, DEGRADED, FAULTED, ... */
+	h?: string
+}
+
+export interface ZfsScrub {
+	/** NONE, SCANNING, FINISHED, CANCELED */
+	state?: string
+	/** progress while scanning, e.g. "10.00%" */
+	progress?: string
+	errors?: number
+}
+
+export interface ZfsVdev {
+	name: string
+	state?: string
+	readErrs?: number
+	writeErrs?: number
+	checksumErrs?: number
+}
+
+export interface ZfsDataset {
+	name: string
+	used?: number
+	avail?: number
+	mount?: string
+}
+
+export interface ZfsPoolRecord extends RecordModel {
+	system: string
+	name: string
+	health: string
+	size: number
+	alloc: number
+	free: number
+	scrub: ZfsScrub | null
+	vdevs: ZfsVdev[] | null
+	datasets: ZfsDataset[] | null
+	details_updated: string
+	updated: string
 }
 
 export interface ExtraFsStats {
@@ -354,6 +406,12 @@ export interface AlertInfo {
 	start?: number
 	/** Single value description (when there's only one value, like status) */
 	singleDesc?: () => string
+	/** Hides the duration slider for alerts that fire on first observation */
+	noDuration?: boolean
+	/** Description shown instead of numeric threshold and duration values */
+	triggeredDesc?: () => string
+	/** Additional information that remains visible while the alert is enabled */
+	note?: () => string
 	invert?: boolean
 }
 

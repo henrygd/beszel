@@ -8,10 +8,15 @@ msgstr ""
 "Language: uz\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2026-05-22 00:00\n"
+"PO-Revision-Date: 2026-09-02 21:43\n"
 "Last-Translator: \n"
 "Language-Team: Uzbek\n"
-"Plural-Forms: nplurals=1; plural=0;\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+"X-Crowdin-Project: beszel\n"
+"X-Crowdin-Project-ID: 733311\n"
+"X-Crowdin-Language: uz\n"
+"X-Crowdin-File: /main/internal/site/src/locales/en/en.po\n"
+"X-Crowdin-File-ID: 32\n"
 
 #. placeholder {0}: newVersion.v
 #: src/components/footer-repo-link.tsx
@@ -40,6 +45,10 @@ msgstr "{count, plural, other {{countString} soat}}"
 #: src/lib/utils.ts
 msgid "{count, plural, one {{countString} minute} few {{countString} minutes} many {{countString} minutes} other {{countString} minutes}}"
 msgstr "{count, plural, other {{countString} daqiqa}}"
+
+#: src/components/routes/system/charts/disk-charts.tsx
+msgid "{diskName} I/O"
+msgstr "{diskName} I/O"
 
 #: src/components/routes/system/info-bar.tsx
 msgid "{threads, plural, one {# thread} other {# threads}}"
@@ -88,6 +97,7 @@ msgstr "5 daq"
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 #: src/components/routes/system/smart-table.tsx
+#: src/components/routes/system/zfs-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Actions"
 msgstr "Amallar"
@@ -185,6 +195,11 @@ msgstr "Ishonchingiz komilmi?"
 #: src/components/copy-to-clipboard.tsx
 msgid "Automatic copy requires a secure context."
 msgstr "Avtomatik nusxalash xavfsiz kontekstni talab qiladi."
+
+#: src/components/routes/system/zfs-table.tsx
+msgctxt "Disk space available"
+msgid "Available"
+msgstr "Mavjud"
 
 #: src/components/routes/system/chart-card.tsx
 msgid "Average"
@@ -323,6 +338,7 @@ msgid "Capabilities"
 msgstr "Imkoniyatlar"
 
 #: src/components/routes/system/smart-table.tsx
+#: src/components/routes/system/zfs-table.tsx
 msgid "Capacity"
 msgstr "Sig'im"
 
@@ -375,8 +391,14 @@ msgstr "Monitoring xizmatingizni tekshiring"
 msgid "Check your notification service"
 msgstr "Bildirishnoma xizmatingizni tekshiring"
 
+#: src/components/routes/system/zfs-table.tsx
+msgid "Checksum errors"
+msgstr "Nazorat summasi xatolari"
+
 #: src/components/containers-table/containers-table.tsx
 #: src/components/routes/system/smart-table.tsx
+#: src/components/routes/system/zfs-table.tsx
+#: src/components/routes/system/zfs-table.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "Clear"
 msgstr "Tozalash"
@@ -388,6 +410,10 @@ msgstr "Batafsil ma'lumot uchun konteynerni bosing."
 #: src/components/routes/system/smart-table.tsx
 msgid "Click on a device to view more information."
 msgstr "Batafsil ma'lumot uchun qurilmani bosing."
+
+#: src/components/routes/system/zfs-table.tsx
+msgid "Click on a pool to view vdev and dataset details."
+msgstr "Pool ustiga bosib, vdev va dataset tafsilotlarini ko‘ring."
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Click on a system to view more information."
@@ -418,6 +444,14 @@ msgstr "Ziddiyatlar"
 #: src/components/active-alerts.tsx
 msgid "Connection is down"
 msgstr "Ulanish uzildi"
+
+#: src/lib/alerts.ts
+msgid "Container"
+msgstr ""
+
+#: src/lib/alerts.ts
+msgid "Container Health"
+msgstr ""
 
 #: src/components/routes/system.tsx
 msgid "Containers"
@@ -502,9 +536,17 @@ msgstr "CPU"
 msgid "CPU Cores"
 msgstr "CPU yadrolar"
 
+#: src/lib/alerts.ts
+msgid "CPU I/O Wait"
+msgstr "CPU I/O kutish vaqti"
+
 #: src/components/systemd-table/systemd-table-columns.tsx
 msgid "CPU Peak"
 msgstr "CPU yuqori ko'rsatkichi"
+
+#: src/lib/alerts.ts
+msgid "CPU Steal Time"
+msgstr "CPU steal vaqti"
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "CPU time"
@@ -538,13 +580,29 @@ msgstr "Yaratilgan"
 msgid "Critical (%)"
 msgstr "Kritik (%)"
 
+#: src/components/routes/system/disk-io-sheet.tsx
+msgid "Cumulative data read since boot"
+msgstr "Yuklangandan beri jami o‘qilgan ma’lumotlar"
+
+#: src/components/routes/system/disk-io-sheet.tsx
+msgid "Cumulative data written since boot"
+msgstr "Yuklangandan beri jami yozilgan ma’lumotlar"
+
 #: src/components/routes/system/network-sheet.tsx
 msgid "Cumulative Download"
 msgstr "Jami yuklab olish"
 
+#: src/components/routes/system/disk-io-sheet.tsx
+msgid "Cumulative Read"
+msgstr "Jami o‘qish"
+
 #: src/components/routes/system/network-sheet.tsx
 msgid "Cumulative Upload"
 msgstr "Jami yuklash"
+
+#: src/components/routes/system/disk-io-sheet.tsx
+msgid "Cumulative Write"
+msgstr "Jami yozish"
 
 #. Context: Battery state
 #. Context: Battery state
@@ -605,15 +663,10 @@ msgstr "Razryadlanmoqda"
 msgid "Disk"
 msgstr "Disk"
 
-#: src/components/routes/system/charts/disk-charts.tsx
-msgid "Disk I/O"
-msgstr "Disk I/O"
-
 #: src/components/routes/settings/general.tsx
 msgid "Disk unit"
 msgstr "Disk birligi"
 
-#: src/components/routes/system/charts/disk-charts.tsx
 #: src/components/routes/system/charts/disk-charts.tsx
 #: src/lib/alerts.ts
 msgid "Disk Usage"
@@ -783,6 +836,10 @@ msgstr "Muvaffaqiyatsiz"
 msgid "Failed Attributes:"
 msgstr "Muvaffaqiyatsiz atributlar:"
 
+#: src/lib/alerts.ts
+msgid "Failed Services"
+msgstr "Ishlamay qolgan xizmatlar"
+
 #: src/lib/api.ts
 msgid "Failed to authenticate"
 msgstr "Autentifikatsiya muvaffaqiyatsiz tugadi"
@@ -818,6 +875,8 @@ msgstr ""
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/system/chart-card.tsx
 #: src/components/routes/system/smart-table.tsx
+#: src/components/routes/system/zfs-table.tsx
+#: src/components/routes/system/zfs-table.tsx
 #: src/components/systemd-table/systemd-table.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "Filter..."
@@ -838,6 +897,12 @@ msgstr "<0>{min}</0> {min, plural, other {daqiqa}} uchun"
 #: src/components/login/auth-form.tsx
 msgid "Forgot password?"
 msgstr "Parolni unutdingizmi?"
+
+#: src/components/routes/system/zfs-table.tsx
+#: src/components/routes/system/zfs-table.tsx
+msgctxt "Free space"
+msgid "Free"
+msgstr "Bo‘sh"
 
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
@@ -883,6 +948,7 @@ msgid "Grid"
 msgstr "Grid"
 
 #: src/components/containers-table/containers-table-columns.tsx
+#: src/components/routes/system/zfs-table.tsx
 msgid "Health"
 msgstr "Sog'lik"
 
@@ -1080,6 +1146,10 @@ msgstr ""
 msgid "Model"
 msgstr "Model"
 
+#: src/components/routes/system/zfs-table.tsx
+msgid "Mountpoint"
+msgstr "Ulash nuqtasi"
+
 #: src/components/add-system.tsx
 #: src/components/alerts-history-columns.tsx
 #: src/components/containers-table/containers-table-columns.tsx
@@ -1115,6 +1185,10 @@ msgstr "Tarmoq birligi"
 msgid "No"
 msgstr "Yo'q"
 
+#: src/components/routes/system/zfs-table.tsx
+msgid "No detail data for this pool."
+msgstr "Bu pool uchun batafsil ma’lumot mavjud emas."
+
 #: src/components/command-palette.tsx
 #: src/components/systemd-table/systemd-table.tsx
 msgid "No results found."
@@ -1138,11 +1212,19 @@ msgstr "Ushbu qurilma uchun S.M.A.R.T. atributlari mavjud emas."
 msgid "No systems found."
 msgstr "Tizimlar topilmadi."
 
+#: src/components/routes/system/zfs-table.tsx
+msgid "None"
+msgstr "Yo‘q"
+
 #: src/components/command-palette.tsx
 #: src/components/routes/settings/layout.tsx
 #: src/components/routes/settings/notifications.tsx
 msgid "Notifications"
 msgstr "Bildirishnomalar"
+
+#: src/lib/alerts.ts
+msgid "Notifications may include recent container log excerpts."
+msgstr "Bildirishnomalarda konteyner jurnallarining so‘nggi parchalari bo‘lishi mumkin."
 
 #: src/components/login/auth-form.tsx
 msgid "OAuth 2 / OIDC support"
@@ -1151,6 +1233,14 @@ msgstr "OAuth 2 / OIDC qo'llab-quvvatlash"
 #: src/components/routes/settings/config-yaml.tsx
 msgid "On each restart, systems in the database will be updated to match the systems defined in the file."
 msgstr "Har qayta ishga tushirilganda, ma'lumotlar bazasidagi tizimlar fayldagi tizimlarga mos yangilanadi."
+
+#: src/lib/alerts.ts
+msgid "One or more containers are unhealthy"
+msgstr "Bir yoki bir nechta konteyner nosog‘lom holatda"
+
+#: src/lib/alerts.ts
+msgid "One or more services are in a failed state"
+msgstr "Bir yoki bir nechta xizmat ishlamay qolgan holatda"
 
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/quiet-hours.tsx
@@ -1165,6 +1255,7 @@ msgstr "Bir martalik parol"
 #: src/components/routes/settings/tokens-fingerprints.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 #: src/components/routes/system/smart-table.tsx
+#: src/components/routes/system/zfs-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Open menu"
 msgstr "Menyuni ochish"
@@ -1288,6 +1379,14 @@ msgstr "Ko'rsatmalar uchun <0>hujjatlarni</0> ko'ring."
 msgid "Please sign in to your account"
 msgstr "Hisobingizga kiring"
 
+#: src/components/routes/system/zfs-table.tsx
+msgid "Pool Health"
+msgstr "Pool holati"
+
+#: src/components/routes/system/charts/zfs-charts.tsx
+msgid "Pool Usage"
+msgstr "Pool ishlatilishi"
+
 #: src/components/add-system.tsx
 msgid "Port"
 msgstr "Port"
@@ -1334,12 +1433,19 @@ msgid "Quiet Hours"
 msgstr "Tinch soatlar"
 
 #. Disk read
+#. Disk read
 #: src/components/routes/system/charts/disk-charts.tsx
+#: src/components/routes/system/charts/zfs-charts.tsx
+#: src/components/routes/system/disk-io-sheet.tsx
 #: src/components/routes/system/disk-io-sheet.tsx
 #: src/components/routes/system/disk-io-sheet.tsx
 #: src/components/routes/system/disk-io-sheet.tsx
 msgid "Read"
 msgstr "O'qish"
+
+#: src/components/routes/system/zfs-table.tsx
+msgid "Read errors"
+msgstr "O‘qish xatolari"
 
 #: src/components/routes/system/charts/network-charts.tsx
 msgid "Received"
@@ -1348,6 +1454,7 @@ msgstr "Qabul qilindi"
 #: src/components/containers-table/containers-table.tsx
 #: src/components/containers-table/containers-table.tsx
 #: src/components/routes/system/smart-table.tsx
+#: src/components/routes/system/zfs-table.tsx
 msgid "Refresh"
 msgstr "Yangilash"
 
@@ -1389,6 +1496,8 @@ msgstr "Qayta ishga tushirishlar"
 msgid "Resume"
 msgstr "Davom ettirish"
 
+#: src/components/routes/system/charts/disk-charts.tsx
+#: src/components/routes/system/charts/disk-charts.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgctxt "Root disk label"
 msgid "Root"
@@ -1534,6 +1643,7 @@ msgstr "Boshlanish vaqti"
 #. Context: alert state (active or resolved)
 #: src/components/alerts-history-columns.tsx
 #: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/system/zfs-table.tsx
 #: src/components/systemd-table/systemd-table-columns.tsx
 msgid "State"
 msgstr "Holat"
@@ -1662,9 +1772,9 @@ msgstr "Bu barcha tanlangan yozuvlarni ma'lumotlar bazasidan butunlay o'chiradi.
 msgid "Throughput of {extraFsName}"
 msgstr "{extraFsName} ning o'tkazish qobiliyati"
 
-#: src/components/routes/system/charts/disk-charts.tsx
-msgid "Throughput of root filesystem"
-msgstr "Ildiz fayl tizimining o'tkazish qobiliyati"
+#: src/components/routes/system/charts/zfs-charts.tsx
+msgid "Throughput of ZFS pool {poolName}"
+msgstr "ZFS pool {poolName} o‘tkazuvchanligi"
 
 #: src/components/routes/settings/general.tsx
 msgid "Time format"
@@ -1737,8 +1847,16 @@ msgid "Triggers when 5 minute load average exceeds a threshold"
 msgstr "5 daqiqalik o'rtacha yuklanish chegaradan oshganda ishga tushadi"
 
 #: src/lib/alerts.ts
+msgid "Triggers when a container's health check reports unhealthy"
+msgstr "Konteyner sog‘liq tekshiruvi nosog‘lom holat haqida xabar berganda ishga tushadi"
+
+#: src/lib/alerts.ts
 msgid "Triggers when any sensor exceeds a threshold"
 msgstr "Biron-bir sensor chegaradan oshganda ishga tushadi"
+
+#: src/lib/alerts.ts
+msgid "Triggers when any systemd service enters the failed state"
+msgstr "Har qanday systemd xizmati ishlamay qolgan holatga o‘tganda ishga tushadi"
 
 #: src/lib/alerts.ts
 msgid "Triggers when battery charge drops below a threshold"
@@ -1747,6 +1865,14 @@ msgstr "Batareya zaryadi chegaradan pastga tushganda ishga tushadi"
 #: src/lib/alerts.ts
 msgid "Triggers when combined up/down exceeds a threshold"
 msgstr "Birlashtirilgan yuklash/yuklab olish chegaradan oshganda ishga tushadi"
+
+#: src/lib/alerts.ts
+msgid "Triggers when CPU I/O wait exceeds a threshold"
+msgstr "CPU I/O kutish vaqti belgilangan chegaradan oshganda ishga tushadi"
+
+#: src/lib/alerts.ts
+msgid "Triggers when CPU steal time exceeds a threshold"
+msgstr "CPU steal vaqti belgilangan chegaradan oshganda ishga tushadi"
 
 #: src/lib/alerts.ts
 msgid "Triggers when CPU usage exceeds a threshold"
@@ -1774,6 +1900,10 @@ msgstr "Biron-bir disk ishlatilishi chegaradan oshganda ishga tushadi"
 msgid "Type"
 msgstr "Tur"
 
+#: src/lib/alerts.ts
+msgid "Unhealthy"
+msgstr ""
+
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Unit file"
 msgstr "Birlik fayl"
@@ -1789,6 +1919,7 @@ msgid "Universal token"
 msgstr "Universal token"
 
 #. Context: Battery state
+#: src/components/routes/system/zfs-table.tsx
 #: src/lib/i18n.ts
 msgid "Unknown"
 msgstr "Noma'lum"
@@ -1814,6 +1945,7 @@ msgstr "Yangilash"
 
 #: src/components/containers-table/containers-table-columns.tsx
 #: src/components/routes/system/smart-table.tsx
+#: src/components/routes/system/zfs-table.tsx
 #: src/components/systemd-table/systemd-table-columns.tsx
 msgid "Updated"
 msgstr "Yangilandi"
@@ -1832,19 +1964,24 @@ msgid "Uptime"
 msgstr "Ishlash vaqti"
 
 #: src/components/routes/system/charts/disk-charts.tsx
+#: src/components/routes/system/charts/disk-charts.tsx
 #: src/components/routes/system/charts/gpu-charts.tsx
 #: src/components/routes/system/charts/gpu-charts.tsx
 #: src/components/routes/system/charts/gpu-charts.tsx
+#: src/components/routes/system/charts/zfs-charts.tsx
 #: src/components/routes/system/cpu-sheet.tsx
 msgid "Usage"
 msgstr "Ishlatilishi"
 
-#: src/components/routes/system/charts/disk-charts.tsx
-msgid "Usage of root partition"
-msgstr "Ildiz bo'limi ishlatilishi"
+#: src/components/routes/system/charts/zfs-charts.tsx
+msgid "Usage of ZFS pool {poolName}"
+msgstr "ZFS pool {poolName} ishlatilishi"
 
 #: src/components/routes/system/charts/memory-charts.tsx
 #: src/components/routes/system/charts/memory-charts.tsx
+#: src/components/routes/system/zfs-table.tsx
+#: src/components/routes/system/zfs-table.tsx
+#: src/components/routes/system/zfs-table.tsx
 msgid "Used"
 msgstr "Ishlatilgan"
 
@@ -1919,12 +2056,19 @@ msgid "Windows command"
 msgstr "Windows buyrug'i"
 
 #. Disk write
+#. Disk write
 #: src/components/routes/system/charts/disk-charts.tsx
+#: src/components/routes/system/charts/zfs-charts.tsx
+#: src/components/routes/system/disk-io-sheet.tsx
 #: src/components/routes/system/disk-io-sheet.tsx
 #: src/components/routes/system/disk-io-sheet.tsx
 #: src/components/routes/system/disk-io-sheet.tsx
 msgid "Write"
 msgstr "Yozish"
+
+#: src/components/routes/system/zfs-table.tsx
+msgid "Write errors"
+msgstr "Yozish xatolari"
 
 #: src/components/routes/settings/layout.tsx
 msgid "YAML Config"

@@ -8,7 +8,7 @@ msgstr ""
 "Language: el\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2026-08-19 18:02\n"
+"PO-Revision-Date: 2026-09-02 21:43\n"
 "Last-Translator: \n"
 "Language-Team: Greek\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
@@ -45,6 +45,10 @@ msgstr "{count, plural, one {{countString} ώρα} other {{countString} ώρες
 #: src/lib/utils.ts
 msgid "{count, plural, one {{countString} minute} few {{countString} minutes} many {{countString} minutes} other {{countString} minutes}}"
 msgstr "{count, plural, one {{countString} λεπτό} other {{countString} λεπτά}}"
+
+#: src/components/routes/system/charts/disk-charts.tsx
+msgid "{diskName} I/O"
+msgstr "I/O {diskName}"
 
 #: src/components/routes/system/info-bar.tsx
 msgid "{threads, plural, one {# thread} other {# threads}}"
@@ -93,6 +97,7 @@ msgstr "5 λ"
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 #: src/components/routes/system/smart-table.tsx
+#: src/components/routes/system/zfs-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Actions"
 msgstr "Ενέργειες"
@@ -190,6 +195,11 @@ msgstr "Είστε βέβαιοι;"
 #: src/components/copy-to-clipboard.tsx
 msgid "Automatic copy requires a secure context."
 msgstr "Η αυτόματη αντιγραφή απαιτεί ασφαλές περιβάλλον."
+
+#: src/components/routes/system/zfs-table.tsx
+msgctxt "Disk space available"
+msgid "Available"
+msgstr "Διαθέσιμο"
 
 #: src/components/routes/system/chart-card.tsx
 msgid "Average"
@@ -328,6 +338,7 @@ msgid "Capabilities"
 msgstr "Δυνατότητες"
 
 #: src/components/routes/system/smart-table.tsx
+#: src/components/routes/system/zfs-table.tsx
 msgid "Capacity"
 msgstr "Χωρητικότητα"
 
@@ -380,8 +391,14 @@ msgstr "Ελέγξτε την υπηρεσία παρακολούθησής σα
 msgid "Check your notification service"
 msgstr "Ελέγξτε την υπηρεσία ειδοποιήσεών σας"
 
+#: src/components/routes/system/zfs-table.tsx
+msgid "Checksum errors"
+msgstr "Σφάλματα αθροίσματος ελέγχου"
+
 #: src/components/containers-table/containers-table.tsx
 #: src/components/routes/system/smart-table.tsx
+#: src/components/routes/system/zfs-table.tsx
+#: src/components/routes/system/zfs-table.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "Clear"
 msgstr "Εκκαθάριση"
@@ -393,6 +410,10 @@ msgstr "Κάντε κλικ σε ένα κοντέινερ για να δείτ�
 #: src/components/routes/system/smart-table.tsx
 msgid "Click on a device to view more information."
 msgstr "Κάντε κλικ σε μια συσκευή για να δείτε περισσότερες πληροφορίες."
+
+#: src/components/routes/system/zfs-table.tsx
+msgid "Click on a pool to view vdev and dataset details."
+msgstr "Κάντε κλικ σε ένα pool για να δείτε λεπτομέρειες για τα vdev και τα σύνολα δεδομένων."
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Click on a system to view more information."
@@ -423,6 +444,14 @@ msgstr "Διενέξεις"
 #: src/components/active-alerts.tsx
 msgid "Connection is down"
 msgstr "Η σύνδεση είναι εκτός λειτουργίας"
+
+#: src/lib/alerts.ts
+msgid "Container"
+msgstr ""
+
+#: src/lib/alerts.ts
+msgid "Container Health"
+msgstr ""
 
 #: src/components/routes/system.tsx
 msgid "Containers"
@@ -507,9 +536,17 @@ msgstr "CPU"
 msgid "CPU Cores"
 msgstr "Πυρήνες CPU"
 
+#: src/lib/alerts.ts
+msgid "CPU I/O Wait"
+msgstr "Χρόνος αναμονής I/O CPU"
+
 #: src/components/systemd-table/systemd-table-columns.tsx
 msgid "CPU Peak"
 msgstr "Μέγιστη CPU"
+
+#: src/lib/alerts.ts
+msgid "CPU Steal Time"
+msgstr "Χρόνος κλοπής CPU"
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "CPU time"
@@ -543,13 +580,29 @@ msgstr "Δημιουργήθηκε"
 msgid "Critical (%)"
 msgstr "Κρίσιμο (%)"
 
+#: src/components/routes/system/disk-io-sheet.tsx
+msgid "Cumulative data read since boot"
+msgstr "Συνολικά δεδομένα που διαβάστηκαν από την εκκίνηση"
+
+#: src/components/routes/system/disk-io-sheet.tsx
+msgid "Cumulative data written since boot"
+msgstr "Συνολικά δεδομένα που γράφτηκαν από την εκκίνηση"
+
 #: src/components/routes/system/network-sheet.tsx
 msgid "Cumulative Download"
 msgstr "Συνολική λήψη"
 
+#: src/components/routes/system/disk-io-sheet.tsx
+msgid "Cumulative Read"
+msgstr "Συνολική ανάγνωση"
+
 #: src/components/routes/system/network-sheet.tsx
 msgid "Cumulative Upload"
 msgstr "Συνολική αποστολή"
+
+#: src/components/routes/system/disk-io-sheet.tsx
+msgid "Cumulative Write"
+msgstr "Συνολική εγγραφή"
 
 #. Context: Battery state
 #. Context: Battery state
@@ -610,15 +663,10 @@ msgstr "Αποφορτίζεται"
 msgid "Disk"
 msgstr "Δίσκος"
 
-#: src/components/routes/system/charts/disk-charts.tsx
-msgid "Disk I/O"
-msgstr "I/O δίσκου"
-
 #: src/components/routes/settings/general.tsx
 msgid "Disk unit"
 msgstr "Μονάδα δίσκου"
 
-#: src/components/routes/system/charts/disk-charts.tsx
 #: src/components/routes/system/charts/disk-charts.tsx
 #: src/lib/alerts.ts
 msgid "Disk Usage"
@@ -788,6 +836,10 @@ msgstr "Απέτυχε"
 msgid "Failed Attributes:"
 msgstr "Αποτυχημένα χαρακτηριστικά:"
 
+#: src/lib/alerts.ts
+msgid "Failed Services"
+msgstr "Αποτυχημένες υπηρεσίες"
+
 #: src/lib/api.ts
 msgid "Failed to authenticate"
 msgstr "Η ταυτοποίηση απέτυχε"
@@ -823,6 +875,8 @@ msgstr "Ανεμιστήρες"
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/system/chart-card.tsx
 #: src/components/routes/system/smart-table.tsx
+#: src/components/routes/system/zfs-table.tsx
+#: src/components/routes/system/zfs-table.tsx
 #: src/components/systemd-table/systemd-table.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "Filter..."
@@ -843,6 +897,12 @@ msgstr "Για <0>{min}</0> {min, plural, one {λεπτό} other {λεπτά}}"
 #: src/components/login/auth-form.tsx
 msgid "Forgot password?"
 msgstr "Ξεχάσατε τον κωδικό πρόσβασης;"
+
+#: src/components/routes/system/zfs-table.tsx
+#: src/components/routes/system/zfs-table.tsx
+msgctxt "Free space"
+msgid "Free"
+msgstr "Ελεύθερο"
 
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
@@ -888,6 +948,7 @@ msgid "Grid"
 msgstr "Πλέγμα"
 
 #: src/components/containers-table/containers-table-columns.tsx
+#: src/components/routes/system/zfs-table.tsx
 msgid "Health"
 msgstr "Υγεία"
 
@@ -1085,6 +1146,10 @@ msgstr "Χρήση μνήμης των κοντέινερ"
 msgid "Model"
 msgstr "Μοντέλο"
 
+#: src/components/routes/system/zfs-table.tsx
+msgid "Mountpoint"
+msgstr "Σημείο προσάρτησης"
+
 #: src/components/add-system.tsx
 #: src/components/alerts-history-columns.tsx
 #: src/components/containers-table/containers-table-columns.tsx
@@ -1120,6 +1185,10 @@ msgstr "Μονάδα δικτύου"
 msgid "No"
 msgstr "Όχι"
 
+#: src/components/routes/system/zfs-table.tsx
+msgid "No detail data for this pool."
+msgstr "Δεν υπάρχουν λεπτομερή δεδομένα για αυτό το pool."
+
 #: src/components/command-palette.tsx
 #: src/components/systemd-table/systemd-table.tsx
 msgid "No results found."
@@ -1143,11 +1212,19 @@ msgstr "Δεν υπάρχουν διαθέσιμα χαρακτηριστικά 
 msgid "No systems found."
 msgstr "Δεν βρέθηκαν συστήματα."
 
+#: src/components/routes/system/zfs-table.tsx
+msgid "None"
+msgstr "Κανένα"
+
 #: src/components/command-palette.tsx
 #: src/components/routes/settings/layout.tsx
 #: src/components/routes/settings/notifications.tsx
 msgid "Notifications"
 msgstr "Ειδοποιήσεις"
+
+#: src/lib/alerts.ts
+msgid "Notifications may include recent container log excerpts."
+msgstr "Οι ειδοποιήσεις μπορεί να περιλαμβάνουν πρόσφατα αποσπάσματα από αρχεία καταγραφής κοντέινερ."
 
 #: src/components/login/auth-form.tsx
 msgid "OAuth 2 / OIDC support"
@@ -1156,6 +1233,14 @@ msgstr "Υποστήριξη OAuth 2 / OIDC"
 #: src/components/routes/settings/config-yaml.tsx
 msgid "On each restart, systems in the database will be updated to match the systems defined in the file."
 msgstr "Σε κάθε επανεκκίνηση, τα συστήματα στη βάση δεδομένων θα ενημερώνονται ώστε να αντιστοιχούν στα συστήματα που ορίζονται στο αρχείο."
+
+#: src/lib/alerts.ts
+msgid "One or more containers are unhealthy"
+msgstr "Ένα ή περισσότερα κοντέινερ δεν είναι υγιή"
+
+#: src/lib/alerts.ts
+msgid "One or more services are in a failed state"
+msgstr "Μία ή περισσότερες υπηρεσίες βρίσκονται σε κατάσταση αποτυχίας"
 
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/quiet-hours.tsx
@@ -1170,6 +1255,7 @@ msgstr "Κωδικός μίας χρήσης"
 #: src/components/routes/settings/tokens-fingerprints.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 #: src/components/routes/system/smart-table.tsx
+#: src/components/routes/system/zfs-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Open menu"
 msgstr "Άνοιγμα μενού"
@@ -1293,6 +1379,14 @@ msgstr "Ανατρέξτε στην <0>τεκμηρίωση</0> για οδηγ�
 msgid "Please sign in to your account"
 msgstr "Συνδεθείτε στον λογαριασμό σας"
 
+#: src/components/routes/system/zfs-table.tsx
+msgid "Pool Health"
+msgstr "Κατάσταση pool"
+
+#: src/components/routes/system/charts/zfs-charts.tsx
+msgid "Pool Usage"
+msgstr "Χρήση pool"
+
 #: src/components/add-system.tsx
 msgid "Port"
 msgstr "Θύρα"
@@ -1339,12 +1433,19 @@ msgid "Quiet Hours"
 msgstr "Ώρες σίγασης"
 
 #. Disk read
+#. Disk read
 #: src/components/routes/system/charts/disk-charts.tsx
+#: src/components/routes/system/charts/zfs-charts.tsx
+#: src/components/routes/system/disk-io-sheet.tsx
 #: src/components/routes/system/disk-io-sheet.tsx
 #: src/components/routes/system/disk-io-sheet.tsx
 #: src/components/routes/system/disk-io-sheet.tsx
 msgid "Read"
 msgstr "Ανάγνωση"
+
+#: src/components/routes/system/zfs-table.tsx
+msgid "Read errors"
+msgstr "Σφάλματα ανάγνωσης"
 
 #: src/components/routes/system/charts/network-charts.tsx
 msgid "Received"
@@ -1353,6 +1454,7 @@ msgstr "Λήφθηκαν"
 #: src/components/containers-table/containers-table.tsx
 #: src/components/containers-table/containers-table.tsx
 #: src/components/routes/system/smart-table.tsx
+#: src/components/routes/system/zfs-table.tsx
 msgid "Refresh"
 msgstr "Ανανέωση"
 
@@ -1394,6 +1496,8 @@ msgstr "Επανεκκινήσεις"
 msgid "Resume"
 msgstr "Συνέχιση"
 
+#: src/components/routes/system/charts/disk-charts.tsx
+#: src/components/routes/system/charts/disk-charts.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgctxt "Root disk label"
 msgid "Root"
@@ -1539,6 +1643,7 @@ msgstr "Ώρα έναρξης"
 #. Context: alert state (active or resolved)
 #: src/components/alerts-history-columns.tsx
 #: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/system/zfs-table.tsx
 #: src/components/systemd-table/systemd-table-columns.tsx
 msgid "State"
 msgstr "Κατάσταση"
@@ -1667,9 +1772,9 @@ msgstr "Αυτό θα διαγράψει οριστικά όλες τις επι
 msgid "Throughput of {extraFsName}"
 msgstr "Ρυθμός μεταφοράς του {extraFsName}"
 
-#: src/components/routes/system/charts/disk-charts.tsx
-msgid "Throughput of root filesystem"
-msgstr "Ρυθμός μεταφοράς του ριζικού συστήματος αρχείων"
+#: src/components/routes/system/charts/zfs-charts.tsx
+msgid "Throughput of ZFS pool {poolName}"
+msgstr "Ρυθμός διαμεταγωγής του ZFS pool {poolName}"
 
 #: src/components/routes/settings/general.tsx
 msgid "Time format"
@@ -1742,8 +1847,16 @@ msgid "Triggers when 5 minute load average exceeds a threshold"
 msgstr "Ενεργοποιείται όταν ο μέσος φόρτος 5 λεπτών υπερβαίνει ένα όριο"
 
 #: src/lib/alerts.ts
+msgid "Triggers when a container's health check reports unhealthy"
+msgstr "Ενεργοποιείται όταν ο έλεγχος υγείας ενός κοντέινερ αναφέρει μη υγιή κατάσταση"
+
+#: src/lib/alerts.ts
 msgid "Triggers when any sensor exceeds a threshold"
 msgstr "Ενεργοποιείται όταν οποιοσδήποτε αισθητήρας υπερβαίνει ένα όριο"
+
+#: src/lib/alerts.ts
+msgid "Triggers when any systemd service enters the failed state"
+msgstr "Ενεργοποιείται όταν οποιαδήποτε υπηρεσία systemd εισέλθει σε κατάσταση αποτυχίας"
 
 #: src/lib/alerts.ts
 msgid "Triggers when battery charge drops below a threshold"
@@ -1752,6 +1865,14 @@ msgstr "Ενεργοποιείται όταν η φόρτιση της μπατ�
 #: src/lib/alerts.ts
 msgid "Triggers when combined up/down exceeds a threshold"
 msgstr "Ενεργοποιείται όταν η συνδυασμένη κίνηση αποστολής/λήψης υπερβαίνει ένα όριο"
+
+#: src/lib/alerts.ts
+msgid "Triggers when CPU I/O wait exceeds a threshold"
+msgstr "Ενεργοποιείται όταν ο χρόνος αναμονής I/O της CPU υπερβαίνει ένα όριο"
+
+#: src/lib/alerts.ts
+msgid "Triggers when CPU steal time exceeds a threshold"
+msgstr "Ενεργοποιείται όταν ο χρόνος κλοπής CPU υπερβαίνει ένα όριο"
 
 #: src/lib/alerts.ts
 msgid "Triggers when CPU usage exceeds a threshold"
@@ -1779,6 +1900,10 @@ msgstr "Ενεργοποιείται όταν η χρήση οποιουδήπο
 msgid "Type"
 msgstr "Τύπος"
 
+#: src/lib/alerts.ts
+msgid "Unhealthy"
+msgstr ""
+
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Unit file"
 msgstr "Αρχείο μονάδας"
@@ -1794,6 +1919,7 @@ msgid "Universal token"
 msgstr "Καθολικό διακριτικό"
 
 #. Context: Battery state
+#: src/components/routes/system/zfs-table.tsx
 #: src/lib/i18n.ts
 msgid "Unknown"
 msgstr "Άγνωστο"
@@ -1819,6 +1945,7 @@ msgstr "Ενημέρωση"
 
 #: src/components/containers-table/containers-table-columns.tsx
 #: src/components/routes/system/smart-table.tsx
+#: src/components/routes/system/zfs-table.tsx
 #: src/components/systemd-table/systemd-table-columns.tsx
 msgid "Updated"
 msgstr "Ενημερώθηκε"
@@ -1837,19 +1964,24 @@ msgid "Uptime"
 msgstr "Χρόνος λειτουργίας"
 
 #: src/components/routes/system/charts/disk-charts.tsx
+#: src/components/routes/system/charts/disk-charts.tsx
 #: src/components/routes/system/charts/gpu-charts.tsx
 #: src/components/routes/system/charts/gpu-charts.tsx
 #: src/components/routes/system/charts/gpu-charts.tsx
+#: src/components/routes/system/charts/zfs-charts.tsx
 #: src/components/routes/system/cpu-sheet.tsx
 msgid "Usage"
 msgstr "Χρήση"
 
-#: src/components/routes/system/charts/disk-charts.tsx
-msgid "Usage of root partition"
-msgstr "Χρήση διαμερίσματος root"
+#: src/components/routes/system/charts/zfs-charts.tsx
+msgid "Usage of ZFS pool {poolName}"
+msgstr "Χρήση του ZFS pool {poolName}"
 
 #: src/components/routes/system/charts/memory-charts.tsx
 #: src/components/routes/system/charts/memory-charts.tsx
+#: src/components/routes/system/zfs-table.tsx
+#: src/components/routes/system/zfs-table.tsx
+#: src/components/routes/system/zfs-table.tsx
 msgid "Used"
 msgstr "Χρησιμοποιείται"
 
@@ -1924,12 +2056,19 @@ msgid "Windows command"
 msgstr "Εντολή Windows"
 
 #. Disk write
+#. Disk write
 #: src/components/routes/system/charts/disk-charts.tsx
+#: src/components/routes/system/charts/zfs-charts.tsx
+#: src/components/routes/system/disk-io-sheet.tsx
 #: src/components/routes/system/disk-io-sheet.tsx
 #: src/components/routes/system/disk-io-sheet.tsx
 #: src/components/routes/system/disk-io-sheet.tsx
 msgid "Write"
 msgstr "Εγγραφή"
+
+#: src/components/routes/system/zfs-table.tsx
+msgid "Write errors"
+msgstr "Σφάλματα εγγραφής"
 
 #: src/components/routes/settings/layout.tsx
 msgid "YAML Config"
