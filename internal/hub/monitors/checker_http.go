@@ -22,6 +22,7 @@ const (
 	minMaxRedirects            = 1
 	maxMaxRedirects            = 20
 	maxHeaderEntries           = 20
+	maxHeaderKeyLen            = 100
 	maxRequestBodyBytes        = 1 << 20
 	maxResponseBodyBytes       = 2 << 20
 	defaultUserAgent           = "Beszel-Monitor"
@@ -144,6 +145,7 @@ func CheckHTTP(ctx context.Context, m Monitor) CheckResult {
 		ResponseHeaderTimeout: timeout,
 		MaxIdleConns:          0,
 	}
+	defer transport.CloseIdleConnections()
 	if ignoreTLS {
 		transport.TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
 	}
@@ -154,6 +156,8 @@ func CheckHTTP(ctx context.Context, m Monitor) CheckResult {
 			if !followRedirects {
 				return http.ErrUseLastResponse
 			}
+			// via holds previous requests: len(via)==maxRedirects means
+			// maxRedirects follows already happened, so stop here.
 			if len(via) >= maxRedirects {
 				return fmt.Errorf("stopped after %d redirects: redirect limit exceeded", maxRedirects)
 			}
@@ -355,6 +359,9 @@ func parseHTTPHeaders(v any) (map[string]string, bool, error) {
 		}
 		if strings.TrimSpace(k) == "" {
 			return nil, false, fmt.Errorf("invalid headers: empty header name")
+		}
+		if len(k) > maxHeaderKeyLen {
+			return nil, false, fmt.Errorf("header name too long: max %d characters", maxHeaderKeyLen)
 		}
 		s, ok := val.(string)
 		if !ok {
