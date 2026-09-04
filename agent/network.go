@@ -83,6 +83,7 @@ func (a *Agent) updateNetworkStats(cacheTimeMs uint16, systemStats *system.Stats
 	a.ensureNetworkInterfacesMap(systemStats)
 
 	if netIO, err := psutilNet.IOCounters(true); err == nil {
+		netIO = correctNetworkCounterStats(netIO)
 		nis, msElapsed := a.loadAndTickNetBaseline(cacheTimeMs)
 		totalBytesSent, totalBytesRecv := a.sumAndTrackPerNicDeltas(cacheTimeMs, msElapsed, netIO, systemStats)
 		bytesSentPerSecond, bytesRecvPerSecond := a.computeBytesPerSecond(msElapsed, totalBytesSent, totalBytesRecv, nis)
@@ -103,6 +104,7 @@ func (a *Agent) initializeNetIoStats() {
 
 	// get current network I/O stats and record valid interfaces
 	if netIO, err := psutilNet.IOCounters(true); err == nil {
+		netIO = correctNetworkCounterStats(netIO)
 		for _, v := range netIO {
 			if skipNetworkInterface(v, nicCfg) {
 				continue
@@ -198,10 +200,17 @@ func (a *Agent) sumAndTrackPerNicDeltas(cacheTimeMs uint16, msElapsed uint64, ne
 // computeBytesPerSecond calculates per-second totals from elapsed time and totals
 func (a *Agent) computeBytesPerSecond(msElapsed, totalBytesSent, totalBytesRecv uint64, nis system.NetIoStats) (bytesSentPerSecond, bytesRecvPerSecond uint64) {
 	if msElapsed > 0 {
-		bytesSentPerSecond = (totalBytesSent - nis.BytesSent) * 1000 / msElapsed
-		bytesRecvPerSecond = (totalBytesRecv - nis.BytesRecv) * 1000 / msElapsed
+		bytesSentPerSecond = counterDelta(totalBytesSent, nis.BytesSent) * 1000 / msElapsed
+		bytesRecvPerSecond = counterDelta(totalBytesRecv, nis.BytesRecv) * 1000 / msElapsed
 	}
 	return bytesSentPerSecond, bytesRecvPerSecond
+}
+
+func counterDelta(current, previous uint64) uint64 {
+	if current >= previous {
+		return current - previous
+	}
+	return current
 }
 
 // applyNetworkTotals validates and writes computed network stats, or resets on anomaly
