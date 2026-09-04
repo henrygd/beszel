@@ -91,6 +91,10 @@ func (h *Hub) StartHub() error {
 		if err := config.SyncSystems(e); err != nil {
 			return err
 		}
+		// sync uptime monitors with config (never deletes UI-created monitors)
+		if err := config.SyncMonitors(e); err != nil {
+			return err
+		}
 		// register middlewares
 		h.registerMiddlewares(e)
 		// register api routes

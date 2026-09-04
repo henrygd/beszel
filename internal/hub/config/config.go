@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/google/uuid"
 	"github.com/henrygd/beszel/internal/entities/system"
@@ -17,7 +18,8 @@ import (
 )
 
 type config struct {
-	Systems []systemConfig `yaml:"systems"`
+	Systems  []systemConfig  `yaml:"systems"`
+	Monitors []monitorConfig `yaml:"monitors,omitempty"`
 }
 
 type systemConfig struct {
@@ -219,6 +221,33 @@ func generateYAML(h core.App) (string, error) {
 			Token: systemTokenMap[system.Id],
 		}
 		config.Systems = append(config.Systems, sysConfig)
+	}
+
+	// Populate the Config struct with monitor data (without secrets).
+	monitors, err := h.FindRecordsByFilter("monitors", "id != ''", "name", -1, 0)
+	if err != nil {
+		return "", err
+	}
+	config.Monitors = make([]monitorConfig, 0, len(monitors))
+	for _, mon := range monitors {
+		userIDs := mon.GetStringSlice("users")
+		userEmails := make([]string, 0, len(userIDs))
+		for _, userID := range userIDs {
+			if email, ok := userEmailMap[userID]; ok {
+				userEmails = append(userEmails, email)
+			}
+		}
+		cfg := map[string]any{}
+		_ = mon.UnmarshalJSONField("config", &cfg)
+		for k := range cfg {
+			if yamlSecretKeys[strings.ToLower(k)] {
+				delete(cfg, k)
+			}
+		}
+		config.Monitors = append(config.Monitors, monitorConfig{
+			Name: mon.GetString("name"), Type: mon.GetString("type"), Target: mon.GetString("target"),
+			Users: userEmails, Config: cfg,
+		})
 	}
 
 	// Marshal the Config struct to YAML
