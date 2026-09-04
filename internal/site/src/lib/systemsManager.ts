@@ -7,14 +7,16 @@ import {
 	$downSystems,
 	$longestSystemNameLen,
 	$pausedSystems,
+	$tagsById,
 	$upSystems,
 } from "@/lib/stores"
 import { getVisualStringWidth, updateFavicon } from "@/lib/utils"
-import type { SystemRecord } from "@/types"
+import type { SystemRecord, TagRecord } from "@/types"
 import { SystemStatus } from "./enums"
 
 const COLLECTION = pb.collection<SystemRecord>("systems")
-const FIELDS_DEFAULT = "id,name,host,port,info,status"
+const FIELDS_DEFAULT = "id,name,host,port,info,status,tags"
+const EXPAND_DEFAULT = "tags"
 
 /** Maximum system name length for display purposes */
 const MAX_SYSTEM_NAME_LENGTH = 22
@@ -22,6 +24,34 @@ const MAX_SYSTEM_NAME_LENGTH = 22
 let initialized = false
 // biome-ignore lint/suspicious/noConfusingVoidType: typescript rocks
 let unsub: (() => void) | undefined | void
+
+/** Load tags into the shared tags store */
+async function loadTags() {
+	try {
+		const tags = await pb.collection("tags").getFullList<TagRecord>()
+		const tagsMap: Record<string, TagRecord> = {}
+		for (const tag of tags) {
+			tagsMap[tag.id] = tag
+		}
+		$tagsById.set(tagsMap)
+	} catch (error: any) {
+		// Ignore auto-cancellation errors
+		if (error.isAbort || error.name === 'AbortError') {
+			return
+		}
+		console.error("Failed to load tags:", error)
+	}
+}
+
+/** Expand tags for a system record */
+function expandTags(system: SystemRecord): SystemRecord {
+	if (system.tags && system.tags.length > 0) {
+		const tagsById = $tagsById.get()
+		system.expand = system.expand || {}
+		system.expand.tags = system.tags.map(tagId => tagsById[tagId]).filter(Boolean)
+	}
+	return system
+}
 
 /** Initialize the systems manager and set up listeners */
 export function init() {
@@ -90,7 +120,7 @@ function onSystemsChanged(_: Record<string, SystemRecord>, changedSystem: System
 /** Fetch systems from collection */
 async function fetchSystems(): Promise<SystemRecord[]> {
 	try {
-		return await COLLECTION.getFullList({ sort: "+name", fields: FIELDS_DEFAULT })
+		return await COLLECTION.getFullList({ sort: "+name", fields: FIELDS_DEFAULT, expand: EXPAND_DEFAULT })
 	} catch (error) {
 		console.error("Failed to fetch systems:", error)
 		return []
@@ -108,6 +138,8 @@ function validateSystemInfo(system: SystemRecord) {
 export function add(system: SystemRecord) {
 	try {
 		validateSystemInfo(system)
+		// Expand tags before adding
+		system = expandTags(system)
 		$allSystemsByName.setKey(system.name, system)
 		$allSystemsById.setKey(system.id, system)
 	} catch (error) {
@@ -152,20 +184,43 @@ const actionFns: Record<string, (system: SystemRecord) => void> = {
 	delete: remove,
 }
 
-/** Subscribe to real-time system updates from the collection */
+let unsubTags: (() => void) | undefined | void
+
+/** Subscribe to real-time system and tag updates */
 export async function subscribe() {
 	try {
 		unsub = await COLLECTION.subscribe("*", ({ action, record }) => actionFns[action]?.(record), {
 			fields: FIELDS_DEFAULT,
+			expand: EXPAND_DEFAULT,
 		})
 	} catch (error) {
 		console.error("Failed to subscribe to systems collection:", error)
+	}
+	try {
+		unsubTags = await pb.collection("tags").subscribe<TagRecord>("*", ({ action, record }) => {
+			if (action === "delete") {
+				$tagsById.setKey(record.id, undefined as unknown as TagRecord)
+			} else {
+				$tagsById.setKey(record.id, record)
+			}
+			// Re-expand tags on all systems that reference this tag
+			const systems = $allSystemsById.get()
+			for (const system of Object.values(systems)) {
+				if (system.tags?.includes(record.id)) {
+					update({ ...system })
+				}
+			}
+		})
+	} catch (error) {
+		console.error("Failed to subscribe to tags collection:", error)
 	}
 }
 
 /** Refresh all systems with latest data from the hub */
 export async function refresh() {
 	try {
+		// Reload tags cache
+		await loadTags()
 		const records = await fetchSystems()
 		if (!records.length) {
 			// No systems found, verify authentication
@@ -180,5 +235,8 @@ export async function refresh() {
 	}
 }
 
-/** Unsubscribe from real-time system updates */
-export const unsubscribe = () => (unsub = unsub?.())
+/** Unsubscribe from real-time system and tag updates */
+export const unsubscribe = () => {
+	unsub = unsub?.()
+	unsubTags = unsubTags?.()
+}

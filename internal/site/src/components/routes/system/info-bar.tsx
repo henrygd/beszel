@@ -26,6 +26,7 @@ import {
 import { FreeBsdIcon, TuxIcon, WebSocketIcon, WindowsIcon } from "@/components/ui/icons"
 import { Separator } from "@/components/ui/separator"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
+import { TagBadgeList } from "@/components/tags/tag-badge-list"
 import { ConnectionType, connectionTypeLabels, Os, SystemStatus } from "@/lib/enums"
 import { cn, formatBytes, getHostDisplayValue, secondsToUptimeString, toFixedFloat } from "@/lib/utils"
 import type { ChartData, SystemDetailsRecord, SystemRecord } from "@/types"
@@ -198,6 +199,15 @@ export default function InfoBar({
 								</div>
 							)
 						})}
+						{/* Tags — rendered independently so they show even if hostname is hidden */}
+						{!!system.expand?.tags?.length && (
+							<>
+								<Separator orientation="vertical" className="h-4 bg-primary/30" />
+								<div className="flex gap-1 items-center flex-wrap">
+									<TagBadgeList tags={system.expand.tags} max={3} overflow="collapse" />
+								</div>
+							</>
+						)}
 					</div>
 				</div>
 				<div className="xl:ms-auto flex items-center gap-2 max-sm:-mb-1">
