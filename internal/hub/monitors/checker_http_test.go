@@ -482,8 +482,20 @@ func TestHTTPTooManyHeaders(t *testing.T) {
 	}
 }
 
-func TestHTTPBodyTooLarge(t *testing.T) {
+func TestHTTPHeaderKeyTooLong(t *testing.T) {
 	allowPrivateNet(t)
+	m := httpTestMonitor("http://example.com")
+	m.Config["headers"] = map[string]any{strings.Repeat("X", 101): "v"}
+	res := CheckHTTP(context.Background(), m)
+	if res.Status != StatusDown {
+		t.Fatalf("expected down for oversized header name, got %q", res.Status)
+	}
+	if !strings.Contains(res.Message, "too long") {
+		t.Fatalf("unexpected message %q", res.Message)
+	}
+}
+
+func TestHTTPBodyTooLarge(t *testing.T) {	allowPrivateNet(t)
 	m := httpTestMonitor("http://example.com")
 	m.Config["body"] = strings.Repeat("x", (1<<20)+1)
 	if res := CheckHTTP(context.Background(), m); res.Status != StatusDown {
