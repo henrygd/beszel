@@ -48,6 +48,7 @@ type Agent struct {
 	keys                      []gossh.PublicKey                                     // SSH public keys
 	smartManager              *SmartManager                                         // Manages SMART data
 	systemdManager            *systemdManager                                       // Manages systemd services
+	prevSwap                  map[uint16]prevSwapData                               // Previous swap I/O counters per cache interval
 	zfsManager                *ZfsManager                                           // Manages ZFS pool and dataset data
 }
 
@@ -64,6 +65,8 @@ func NewAgent(dataDir ...string) (agent *Agent, err error) {
 	// Initialize per-cache-time network tracking structures
 	agent.netIoStats = make(map[uint16]system.NetIoStats)
 	agent.netInterfaceDeltaTrackers = make(map[uint16]*deltatracker.DeltaTracker[string, uint64])
+	// Initialize per-cache-time swap I/O tracking
+	agent.prevSwap = make(map[uint16]prevSwapData)
 
 	agent.dataDir, err = GetDataDir(dataDir...)
 	if err != nil {

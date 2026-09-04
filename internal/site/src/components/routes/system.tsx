@@ -93,7 +93,7 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 						/>
 					)}
 
-					<MemoryChart {...coreProps} />
+					<MemoryChart {...coreProps} systemData={systemData} />
 
 					{hasContainers && (
 						<ContainerMemoryChart
@@ -119,7 +119,7 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 						/>
 					)}
 
-					<SwapChart chartData={chartData} grid={grid} dataEmpty={dataEmpty} systemStats={systemStats} />
+					<SwapChart chartData={chartData} grid={grid} dataEmpty={dataEmpty} systemData={systemData} />
 
 					<LoadAverageChart chartData={chartData} grid={grid} dataEmpty={dataEmpty} />
 
@@ -192,7 +192,7 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 				<TabsContent value="core" forceMount className={activeTab === "core" ? "contents" : "hidden"}>
 					<div className="grid xl:grid-cols-2 gap-4">
 						<CpuChart {...coreProps} />
-						<MemoryChart {...coreProps} />
+						<MemoryChart {...coreProps} systemData={systemData} />
 						<LoadAverageChart chartData={chartData} grid={grid} dataEmpty={dataEmpty} />
 						<BandwidthChart {...coreProps} systemStats={systemStats} />
 						<TemperatureChart {...coreProps} setPageBottomExtraMargin={setPageBottomExtraMargin} />
