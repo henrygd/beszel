@@ -126,6 +126,11 @@ msgstr "活動狀態"
 msgid "Add {foo}"
 msgstr "新增 {foo}"
 
+#: src/components/routes/monitor-dialog.tsx
+#: src/components/routes/monitors.tsx
+msgid "Add monitor"
+msgstr ""
+
 #: src/components/routes/settings/notifications.tsx
 msgid "Add URL"
 msgstr "添加 URL"
@@ -327,6 +332,7 @@ msgstr "可啟動"
 msgid "Can stop"
 msgstr "可停止"
 
+#: src/components/routes/monitor-dialog.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/systems-table/systems-table-columns.tsx
@@ -349,6 +355,10 @@ msgstr "注意 - 可能遺失資料"
 #: src/components/routes/settings/general.tsx
 msgid "Celsius (°C)"
 msgstr "攝氏 (°C)"
+
+#: src/components/routes/monitors.tsx
+msgid "Cert"
+msgstr ""
 
 #: src/components/routes/settings/general.tsx
 msgid "Change display units for metrics."
@@ -390,6 +400,10 @@ msgstr "檢查您的監控服務"
 #: src/components/routes/settings/notifications.tsx
 msgid "Check your notification service"
 msgstr "檢查您的通知服務"
+
+#: src/components/routes/monitor-dialog.tsx
+msgid "Checks certificate expiry without an HTTP request."
+msgstr ""
 
 #: src/components/routes/system/zfs-table.tsx
 msgid "Checksum errors"
@@ -621,6 +635,10 @@ msgstr "週期"
 msgid "Daily"
 msgstr "每日"
 
+#: src/components/routes/monitors.tsx
+msgid "days"
+msgstr ""
+
 #: src/components/routes/system/info-bar.tsx
 msgctxt "Default system layout option"
 msgid "Default"
@@ -630,6 +648,7 @@ msgstr "預設"
 msgid "Default time period"
 msgstr "預設時間段"
 
+#: src/components/routes/monitors.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/system/smart-table.tsx
@@ -728,6 +747,10 @@ msgstr "編輯"
 msgid "Edit {foo}"
 msgstr "編輯 {foo}"
 
+#: src/components/routes/monitor-dialog.tsx
+msgid "Edit monitor"
+msgstr ""
+
 #: src/components/login/auth-form.tsx
 #: src/components/login/forgot-pass-form.tsx
 #: src/components/login/otp-forms.tsx
@@ -824,6 +847,10 @@ msgstr "匯出設定"
 msgid "Export your current systems configuration."
 msgstr "匯出您現在的系統設定。"
 
+#: src/components/routes/monitor-dialog.tsx
+msgid "External uptime check executed from the hub."
+msgstr ""
+
 #: src/components/routes/settings/general.tsx
 msgid "Fahrenheit (°F)"
 msgstr "華氏 (°F)"
@@ -916,6 +943,10 @@ msgstr "FreeBSD 指令"
 msgid "Full"
 msgstr "滿電"
 
+#: src/components/routes/monitor-dialog.tsx
+msgid "Full URL. Accepts 2xx by default."
+msgstr ""
+
 #. Context: General settings
 #: src/components/routes/settings/general.tsx
 #: src/components/routes/settings/layout.tsx
@@ -974,6 +1005,10 @@ msgstr "Homebrew 指令"
 msgid "Host / IP"
 msgstr "主機 / IP"
 
+#: src/components/routes/monitor-dialog.tsx
+msgid "HTTP check that also looks for text in the response."
+msgstr ""
+
 #: src/components/routes/settings/heartbeat.tsx
 msgid "HTTP Method"
 msgstr "HTTP 方法"
@@ -997,6 +1032,10 @@ msgctxt "Percent of time the disk is busy with I/O"
 msgid "I/O Utilization"
 msgstr "I/O 利用率"
 
+#: src/components/routes/monitor-dialog.tsx
+msgid "ICMP echo. The hub may need NET_RAW capability in Docker."
+msgstr ""
+
 #. Context: Battery state
 #: src/lib/i18n.ts
 msgid "Idle"
@@ -1019,9 +1058,25 @@ msgstr "未啟用"
 msgid "Interval"
 msgstr "間隔"
 
+#: src/components/routes/monitor-dialog.tsx
+msgid "Interval (seconds)"
+msgstr ""
+
+#: src/components/routes/monitor-dialog.tsx
+msgid "Interval must be at least 20 seconds."
+msgstr ""
+
 #: src/components/login/auth-form.tsx
 msgid "Invalid email address."
 msgstr "無效的電子郵件地址。"
+
+#: src/components/routes/monitor-dialog.tsx
+msgid "Keyword"
+msgstr ""
+
+#: src/components/routes/monitor-dialog.tsx
+msgid "Keyword is required for keyword monitors."
+msgstr ""
 
 #: src/components/routes/settings/general.tsx
 msgid "Language"
@@ -1146,17 +1201,33 @@ msgstr "容器記憶體使用量"
 msgid "Model"
 msgstr "型號"
 
+#: src/components/navbar.tsx
+#: src/components/navbar.tsx
+#: src/components/routes/monitors.tsx
+#: src/components/routes/monitors.tsx
+msgid "Monitors"
+msgstr ""
+
 #: src/components/routes/system/zfs-table.tsx
 msgid "Mountpoint"
 msgstr "掛載點"
 
+#: src/components/routes/monitors.tsx
+msgid "Mute notifications"
+msgstr ""
+
 #: src/components/add-system.tsx
 #: src/components/alerts-history-columns.tsx
 #: src/components/containers-table/containers-table-columns.tsx
+#: src/components/routes/monitor-dialog.tsx
 #: src/components/systemd-table/systemd-table-columns.tsx
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Name"
 msgstr "名稱"
+
+#: src/components/routes/monitor-dialog.tsx
+msgid "Name is required."
+msgstr ""
 
 #: src/components/containers-table/containers-table-columns.tsx
 #: src/components/systems-table/systems-table-columns.tsx
@@ -1188,6 +1259,10 @@ msgstr "否"
 #: src/components/routes/system/zfs-table.tsx
 msgid "No detail data for this pool."
 msgstr "此 pool 沒有可用的詳細資料。"
+
+#: src/components/routes/monitors.tsx
+msgid "No monitors yet. Add your first HTTP, DNS, ping or TLS check."
+msgstr ""
 
 #: src/components/command-palette.tsx
 #: src/components/systemd-table/systemd-table.tsx
@@ -1309,6 +1384,7 @@ msgstr "已收到密碼重設請求"
 msgid "Past"
 msgstr "過去"
 
+#: src/components/routes/monitors.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Pause"
 msgstr "暫停"
@@ -1391,6 +1467,14 @@ msgstr "Pool 使用量"
 msgid "Port"
 msgstr "端口"
 
+#: src/components/routes/monitor-dialog.tsx
+msgid "Port (default 443)"
+msgstr ""
+
+#: src/components/routes/monitor-dialog.tsx
+msgid "Port must be between 1 and 65535."
+msgstr ""
+
 #: src/components/containers-table/containers-table-columns.tsx
 msgctxt "Container ports"
 msgid "Ports"
@@ -1451,6 +1535,10 @@ msgstr "讀取錯誤"
 msgid "Received"
 msgstr "接收"
 
+#: src/components/routes/monitor-dialog.tsx
+msgid "Record type"
+msgstr ""
+
 #: src/components/containers-table/containers-table.tsx
 #: src/components/containers-table/containers-table.tsx
 #: src/components/routes/system/smart-table.tsx
@@ -1488,10 +1576,19 @@ msgstr "重設密碼"
 msgid "Resolved"
 msgstr "已解決"
 
+#: src/components/routes/monitor-dialog.tsx
+msgid "Resolver (optional)"
+msgstr ""
+
+#: src/components/routes/monitor-dialog.tsx
+msgid "Resolves a record type, optionally against a custom resolver."
+msgstr ""
+
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Restarts"
 msgstr "重啟次數"
 
+#: src/components/routes/monitors.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Resume"
 msgstr "恢復"
@@ -1511,6 +1608,10 @@ msgstr "輪換令牌"
 msgid "Rows per page"
 msgstr "每頁行數"
 
+#: src/components/routes/monitors.tsx
+msgid "Run check now"
+msgstr ""
+
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Runtime Metrics"
 msgstr "運行時指標"
@@ -1522,6 +1623,10 @@ msgstr "S.M.A.R.T. 詳情"
 #: src/components/routes/system/smart-table.tsx
 msgid "S.M.A.R.T. Self-Test"
 msgstr "S.M.A.R.T. 自檢"
+
+#: src/components/routes/monitor-dialog.tsx
+msgid "Save"
+msgstr ""
 
 #: src/components/add-system.tsx
 msgid "Save {foo}"
@@ -1575,6 +1680,10 @@ msgstr "選擇 {foo}"
 #: src/components/routes/settings/heartbeat.tsx
 msgid "Send a single heartbeat ping to verify your endpoint is working."
 msgstr "發送單次 heartbeat ping 以驗證您的端點是否正常運作。"
+
+#: src/components/routes/monitor-dialog.tsx
+msgid "Send notifications"
+msgstr ""
 
 #: src/components/routes/settings/heartbeat.tsx
 msgid "Send periodic outbound pings to an external monitoring service so you can monitor Beszel without exposing it to the internet."
@@ -1717,6 +1826,14 @@ msgctxt "Tabs system layout option"
 msgid "Tabs"
 msgstr "分頁"
 
+#: src/components/routes/monitor-dialog.tsx
+msgid "Target"
+msgstr ""
+
+#: src/components/routes/monitor-dialog.tsx
+msgid "Target is required."
+msgstr ""
+
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Tasks"
 msgstr "任務數"
@@ -1779,6 +1896,14 @@ msgstr "ZFS pool {poolName} 輸送量"
 #: src/components/routes/settings/general.tsx
 msgid "Time format"
 msgstr "時間格式"
+
+#: src/components/routes/monitor-dialog.tsx
+msgid "Timeout (seconds)"
+msgstr ""
+
+#: src/components/routes/monitor-dialog.tsx
+msgid "Timeout must be positive and less than the interval."
+msgstr ""
 
 #: src/components/routes/settings/notifications.tsx
 msgid "To email(s)"
@@ -1894,6 +2019,7 @@ msgstr "當狀態在上和下之間切換時觸發"
 msgid "Triggers when usage of any disk exceeds a threshold"
 msgstr "當任何磁碟的使用超過閾值時觸發"
 
+#: src/components/routes/monitor-dialog.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/system/smart-table.tsx
@@ -1929,6 +2055,10 @@ msgstr "未知"
 msgid "Unlimited"
 msgstr "無限制"
 
+#: src/components/routes/monitors.tsx
+msgid "Unmute notifications"
+msgstr ""
+
 #. Context: System is up
 #: src/components/routes/system/info-bar.tsx
 #: src/components/systems-table/systems-table-columns.tsx
@@ -1962,6 +2092,10 @@ msgstr "上傳"
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Uptime"
 msgstr "運行時間"
+
+#: src/components/routes/monitors.tsx
+msgid "Uptime 24h"
+msgstr ""
 
 #: src/components/routes/system/charts/disk-charts.tsx
 #: src/components/routes/system/charts/disk-charts.tsx

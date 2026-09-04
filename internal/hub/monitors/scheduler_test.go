@@ -113,7 +113,7 @@ func TestManager_RunOnceDeliversDown(t *testing.T) {
 	m.MaxRetries = 0
 	m.IntervalSeconds = 3600
 	gotCh := make(chan CheckResult, 1)
-	mgr := NewManager(2, func(ctx context.Context, mon Monitor) CheckResult { return downResult() }, func(mon Monitor, res CheckResult, _ bool) { gotCh <- res })
+	mgr := NewManager(2, func(ctx context.Context, mon Monitor) CheckResult { return downResult() }, func(mon Monitor, res CheckResult, _ bool, _ int) { gotCh <- res })
 	mgr.jitterMax = 0
 	defer mgr.Stop()
 	mgr.Add(m)
@@ -233,7 +233,7 @@ func TestManager_SurvivesOnResultPanic(t *testing.T) {
 	m.MaxRetries = 0
 	m.IntervalSeconds = 3600
 	calls := make(chan struct{}, 4)
-	mgr := NewManager(2, func(ctx context.Context, mon Monitor) CheckResult { return upResult() }, func(mon Monitor, res CheckResult, _ bool) {
+	mgr := NewManager(2, func(ctx context.Context, mon Monitor) CheckResult { return upResult() }, func(mon Monitor, res CheckResult, _ bool, _ int) {
 		calls <- struct{}{}
 		panic("db write failed")
 	})

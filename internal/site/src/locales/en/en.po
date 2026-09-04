@@ -121,6 +121,11 @@ msgstr "Active state"
 msgid "Add {foo}"
 msgstr "Add {foo}"
 
+#: src/components/routes/monitor-dialog.tsx
+#: src/components/routes/monitors.tsx
+msgid "Add monitor"
+msgstr "Add monitor"
+
 #: src/components/routes/settings/notifications.tsx
 msgid "Add URL"
 msgstr "Add URL"
@@ -322,6 +327,7 @@ msgstr "Can start"
 msgid "Can stop"
 msgstr "Can stop"
 
+#: src/components/routes/monitor-dialog.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/systems-table/systems-table-columns.tsx
@@ -344,6 +350,10 @@ msgstr "Caution - potential data loss"
 #: src/components/routes/settings/general.tsx
 msgid "Celsius (°C)"
 msgstr "Celsius (°C)"
+
+#: src/components/routes/monitors.tsx
+msgid "Cert"
+msgstr "Cert"
 
 #: src/components/routes/settings/general.tsx
 msgid "Change display units for metrics."
@@ -385,6 +395,10 @@ msgstr "Check your monitoring service"
 #: src/components/routes/settings/notifications.tsx
 msgid "Check your notification service"
 msgstr "Check your notification service"
+
+#: src/components/routes/monitor-dialog.tsx
+msgid "Checks certificate expiry without an HTTP request."
+msgstr "Checks certificate expiry without an HTTP request."
 
 #: src/components/routes/system/zfs-table.tsx
 msgid "Checksum errors"
@@ -616,6 +630,10 @@ msgstr "Cycles"
 msgid "Daily"
 msgstr "Daily"
 
+#: src/components/routes/monitors.tsx
+msgid "days"
+msgstr "days"
+
 #: src/components/routes/system/info-bar.tsx
 msgctxt "Default system layout option"
 msgid "Default"
@@ -625,6 +643,7 @@ msgstr "Default"
 msgid "Default time period"
 msgstr "Default time period"
 
+#: src/components/routes/monitors.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/system/smart-table.tsx
@@ -723,6 +742,10 @@ msgstr "Edit"
 msgid "Edit {foo}"
 msgstr "Edit {foo}"
 
+#: src/components/routes/monitor-dialog.tsx
+msgid "Edit monitor"
+msgstr "Edit monitor"
+
 #: src/components/login/auth-form.tsx
 #: src/components/login/forgot-pass-form.tsx
 #: src/components/login/otp-forms.tsx
@@ -819,6 +842,10 @@ msgstr "Export configuration"
 msgid "Export your current systems configuration."
 msgstr "Export your current systems configuration."
 
+#: src/components/routes/monitor-dialog.tsx
+msgid "External uptime check executed from the hub."
+msgstr "External uptime check executed from the hub."
+
 #: src/components/routes/settings/general.tsx
 msgid "Fahrenheit (°F)"
 msgstr "Fahrenheit (°F)"
@@ -911,6 +938,10 @@ msgstr "FreeBSD command"
 msgid "Full"
 msgstr "Full"
 
+#: src/components/routes/monitor-dialog.tsx
+msgid "Full URL. Accepts 2xx by default."
+msgstr "Full URL. Accepts 2xx by default."
+
 #. Context: General settings
 #: src/components/routes/settings/general.tsx
 #: src/components/routes/settings/layout.tsx
@@ -969,6 +1000,10 @@ msgstr "Homebrew command"
 msgid "Host / IP"
 msgstr "Host / IP"
 
+#: src/components/routes/monitor-dialog.tsx
+msgid "HTTP check that also looks for text in the response."
+msgstr "HTTP check that also looks for text in the response."
+
 #: src/components/routes/settings/heartbeat.tsx
 msgid "HTTP Method"
 msgstr "HTTP Method"
@@ -992,6 +1027,10 @@ msgctxt "Percent of time the disk is busy with I/O"
 msgid "I/O Utilization"
 msgstr "I/O Utilization"
 
+#: src/components/routes/monitor-dialog.tsx
+msgid "ICMP echo. The hub may need NET_RAW capability in Docker."
+msgstr "ICMP echo. The hub may need NET_RAW capability in Docker."
+
 #. Context: Battery state
 #: src/lib/i18n.ts
 msgid "Idle"
@@ -1014,9 +1053,25 @@ msgstr "Inactive"
 msgid "Interval"
 msgstr "Interval"
 
+#: src/components/routes/monitor-dialog.tsx
+msgid "Interval (seconds)"
+msgstr "Interval (seconds)"
+
+#: src/components/routes/monitor-dialog.tsx
+msgid "Interval must be at least 20 seconds."
+msgstr "Interval must be at least 20 seconds."
+
 #: src/components/login/auth-form.tsx
 msgid "Invalid email address."
 msgstr "Invalid email address."
+
+#: src/components/routes/monitor-dialog.tsx
+msgid "Keyword"
+msgstr "Keyword"
+
+#: src/components/routes/monitor-dialog.tsx
+msgid "Keyword is required for keyword monitors."
+msgstr "Keyword is required for keyword monitors."
 
 #: src/components/routes/settings/general.tsx
 msgid "Language"
@@ -1141,17 +1196,33 @@ msgstr "Memory usage of containers"
 msgid "Model"
 msgstr "Model"
 
+#: src/components/navbar.tsx
+#: src/components/navbar.tsx
+#: src/components/routes/monitors.tsx
+#: src/components/routes/monitors.tsx
+msgid "Monitors"
+msgstr "Monitors"
+
 #: src/components/routes/system/zfs-table.tsx
 msgid "Mountpoint"
 msgstr "Mountpoint"
 
+#: src/components/routes/monitors.tsx
+msgid "Mute notifications"
+msgstr "Mute notifications"
+
 #: src/components/add-system.tsx
 #: src/components/alerts-history-columns.tsx
 #: src/components/containers-table/containers-table-columns.tsx
+#: src/components/routes/monitor-dialog.tsx
 #: src/components/systemd-table/systemd-table-columns.tsx
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Name"
 msgstr "Name"
+
+#: src/components/routes/monitor-dialog.tsx
+msgid "Name is required."
+msgstr "Name is required."
 
 #: src/components/containers-table/containers-table-columns.tsx
 #: src/components/systems-table/systems-table-columns.tsx
@@ -1183,6 +1254,10 @@ msgstr "No"
 #: src/components/routes/system/zfs-table.tsx
 msgid "No detail data for this pool."
 msgstr "No detail data for this pool."
+
+#: src/components/routes/monitors.tsx
+msgid "No monitors yet. Add your first HTTP, DNS, ping or TLS check."
+msgstr "No monitors yet. Add your first HTTP, DNS, ping or TLS check."
 
 #: src/components/command-palette.tsx
 #: src/components/systemd-table/systemd-table.tsx
@@ -1304,6 +1379,7 @@ msgstr "Password reset request received"
 msgid "Past"
 msgstr "Past"
 
+#: src/components/routes/monitors.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Pause"
 msgstr "Pause"
@@ -1386,6 +1462,14 @@ msgstr "Pool Usage"
 msgid "Port"
 msgstr "Port"
 
+#: src/components/routes/monitor-dialog.tsx
+msgid "Port (default 443)"
+msgstr "Port (default 443)"
+
+#: src/components/routes/monitor-dialog.tsx
+msgid "Port must be between 1 and 65535."
+msgstr "Port must be between 1 and 65535."
+
 #: src/components/containers-table/containers-table-columns.tsx
 msgctxt "Container ports"
 msgid "Ports"
@@ -1446,6 +1530,10 @@ msgstr "Read errors"
 msgid "Received"
 msgstr "Received"
 
+#: src/components/routes/monitor-dialog.tsx
+msgid "Record type"
+msgstr "Record type"
+
 #: src/components/containers-table/containers-table.tsx
 #: src/components/containers-table/containers-table.tsx
 #: src/components/routes/system/smart-table.tsx
@@ -1483,10 +1571,19 @@ msgstr "Reset Password"
 msgid "Resolved"
 msgstr "Resolved"
 
+#: src/components/routes/monitor-dialog.tsx
+msgid "Resolver (optional)"
+msgstr "Resolver (optional)"
+
+#: src/components/routes/monitor-dialog.tsx
+msgid "Resolves a record type, optionally against a custom resolver."
+msgstr "Resolves a record type, optionally against a custom resolver."
+
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Restarts"
 msgstr "Restarts"
 
+#: src/components/routes/monitors.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Resume"
 msgstr "Resume"
@@ -1506,6 +1603,10 @@ msgstr "Rotate token"
 msgid "Rows per page"
 msgstr "Rows per page"
 
+#: src/components/routes/monitors.tsx
+msgid "Run check now"
+msgstr "Run check now"
+
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Runtime Metrics"
 msgstr "Runtime Metrics"
@@ -1517,6 +1618,10 @@ msgstr "S.M.A.R.T. Details"
 #: src/components/routes/system/smart-table.tsx
 msgid "S.M.A.R.T. Self-Test"
 msgstr "S.M.A.R.T. Self-Test"
+
+#: src/components/routes/monitor-dialog.tsx
+msgid "Save"
+msgstr "Save"
 
 #: src/components/add-system.tsx
 msgid "Save {foo}"
@@ -1570,6 +1675,10 @@ msgstr "Select {foo}"
 #: src/components/routes/settings/heartbeat.tsx
 msgid "Send a single heartbeat ping to verify your endpoint is working."
 msgstr "Send a single heartbeat ping to verify your endpoint is working."
+
+#: src/components/routes/monitor-dialog.tsx
+msgid "Send notifications"
+msgstr "Send notifications"
 
 #: src/components/routes/settings/heartbeat.tsx
 msgid "Send periodic outbound pings to an external monitoring service so you can monitor Beszel without exposing it to the internet."
@@ -1712,6 +1821,14 @@ msgctxt "Tabs system layout option"
 msgid "Tabs"
 msgstr "Tabs"
 
+#: src/components/routes/monitor-dialog.tsx
+msgid "Target"
+msgstr "Target"
+
+#: src/components/routes/monitor-dialog.tsx
+msgid "Target is required."
+msgstr "Target is required."
+
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Tasks"
 msgstr "Tasks"
@@ -1774,6 +1891,14 @@ msgstr "Throughput of ZFS pool {poolName}"
 #: src/components/routes/settings/general.tsx
 msgid "Time format"
 msgstr "Time format"
+
+#: src/components/routes/monitor-dialog.tsx
+msgid "Timeout (seconds)"
+msgstr "Timeout (seconds)"
+
+#: src/components/routes/monitor-dialog.tsx
+msgid "Timeout must be positive and less than the interval."
+msgstr "Timeout must be positive and less than the interval."
 
 #: src/components/routes/settings/notifications.tsx
 msgid "To email(s)"
@@ -1889,6 +2014,7 @@ msgstr "Triggers when status switches between up and down"
 msgid "Triggers when usage of any disk exceeds a threshold"
 msgstr "Triggers when usage of any disk exceeds a threshold"
 
+#: src/components/routes/monitor-dialog.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/system/smart-table.tsx
@@ -1924,6 +2050,10 @@ msgstr "Unknown"
 msgid "Unlimited"
 msgstr "Unlimited"
 
+#: src/components/routes/monitors.tsx
+msgid "Unmute notifications"
+msgstr "Unmute notifications"
+
 #. Context: System is up
 #: src/components/routes/system/info-bar.tsx
 #: src/components/systems-table/systems-table-columns.tsx
@@ -1957,6 +2087,10 @@ msgstr "Upload"
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Uptime"
 msgstr "Uptime"
+
+#: src/components/routes/monitors.tsx
+msgid "Uptime 24h"
+msgstr "Uptime 24h"
 
 #: src/components/routes/system/charts/disk-charts.tsx
 #: src/components/routes/system/charts/disk-charts.tsx

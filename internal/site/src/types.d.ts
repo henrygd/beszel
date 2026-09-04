@@ -616,3 +616,42 @@ export interface UpdateInfo {
 	v: string // new version
 	url: string // url to new version
 }
+
+export type MonitorType = "http" | "keyword" | "ping" | "dns" | "tls"
+export type MonitorStatus = "up" | "down" | "warn" | "paused" | "pending"
+
+export interface MonitorRecord extends RecordModel {
+	name: string
+	type: MonitorType
+	target: string
+	interval: number
+	timeout: number
+	max_retries: number
+	upside_down: boolean
+	paused: boolean
+	notify: boolean
+	resend_after: number
+	users: string[]
+	config: Record<string, any>
+	status: MonitorStatus
+	last_check: string
+	last_latency_ms: number
+	uptime_24h: number
+	cert_days: number
+}
+
+export interface MonitorCheckRecord extends RecordModel {
+	monitor: string
+	status: "up" | "down" | "warn"
+	latency_ms: number
+	code?: number
+	message: string
+	details: Record<string, any>
+	cert_days?: number
+	created: string
+}
+
+export interface MonitorsSummary {
+	counts: Record<MonitorStatus, number>
+	down: { id: string; name: string }[]
+}

@@ -126,6 +126,11 @@ msgstr "활성 상태"
 msgid "Add {foo}"
 msgstr "{foo} 추가"
 
+#: src/components/routes/monitor-dialog.tsx
+#: src/components/routes/monitors.tsx
+msgid "Add monitor"
+msgstr ""
+
 #: src/components/routes/settings/notifications.tsx
 msgid "Add URL"
 msgstr "URL 추가"
@@ -327,6 +332,7 @@ msgstr "시작 가능"
 msgid "Can stop"
 msgstr "중지 가능"
 
+#: src/components/routes/monitor-dialog.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/systems-table/systems-table-columns.tsx
@@ -349,6 +355,10 @@ msgstr "주의 - 데이터 손실 가능성"
 #: src/components/routes/settings/general.tsx
 msgid "Celsius (°C)"
 msgstr "섭씨 (°C)"
+
+#: src/components/routes/monitors.tsx
+msgid "Cert"
+msgstr ""
 
 #: src/components/routes/settings/general.tsx
 msgid "Change display units for metrics."
@@ -390,6 +400,10 @@ msgstr "모니터링 서비스 확인"
 #: src/components/routes/settings/notifications.tsx
 msgid "Check your notification service"
 msgstr "알림 서비스를 확인하세요."
+
+#: src/components/routes/monitor-dialog.tsx
+msgid "Checks certificate expiry without an HTTP request."
+msgstr ""
 
 #: src/components/routes/system/zfs-table.tsx
 msgid "Checksum errors"
@@ -621,6 +635,10 @@ msgstr "사이클"
 msgid "Daily"
 msgstr "매일"
 
+#: src/components/routes/monitors.tsx
+msgid "days"
+msgstr ""
+
 #: src/components/routes/system/info-bar.tsx
 msgctxt "Default system layout option"
 msgid "Default"
@@ -630,6 +648,7 @@ msgstr "기본값"
 msgid "Default time period"
 msgstr "기본 기간"
 
+#: src/components/routes/monitors.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/system/smart-table.tsx
@@ -728,6 +747,10 @@ msgstr "수정"
 msgid "Edit {foo}"
 msgstr "{foo} 수정"
 
+#: src/components/routes/monitor-dialog.tsx
+msgid "Edit monitor"
+msgstr ""
+
 #: src/components/login/auth-form.tsx
 #: src/components/login/forgot-pass-form.tsx
 #: src/components/login/otp-forms.tsx
@@ -824,6 +847,10 @@ msgstr "구성 내보내기"
 msgid "Export your current systems configuration."
 msgstr "현재 시스템 구성 내보내기"
 
+#: src/components/routes/monitor-dialog.tsx
+msgid "External uptime check executed from the hub."
+msgstr ""
+
 #: src/components/routes/settings/general.tsx
 msgid "Fahrenheit (°F)"
 msgstr "화씨 (°F)"
@@ -916,6 +943,10 @@ msgstr "FreeBSD 명령어"
 msgid "Full"
 msgstr "가득"
 
+#: src/components/routes/monitor-dialog.tsx
+msgid "Full URL. Accepts 2xx by default."
+msgstr ""
+
 #. Context: General settings
 #: src/components/routes/settings/general.tsx
 #: src/components/routes/settings/layout.tsx
@@ -974,6 +1005,10 @@ msgstr "Homebrew 명령어"
 msgid "Host / IP"
 msgstr "호스트 / IP"
 
+#: src/components/routes/monitor-dialog.tsx
+msgid "HTTP check that also looks for text in the response."
+msgstr ""
+
 #: src/components/routes/settings/heartbeat.tsx
 msgid "HTTP Method"
 msgstr "HTTP 메서드"
@@ -997,6 +1032,10 @@ msgctxt "Percent of time the disk is busy with I/O"
 msgid "I/O Utilization"
 msgstr "I/O 사용률"
 
+#: src/components/routes/monitor-dialog.tsx
+msgid "ICMP echo. The hub may need NET_RAW capability in Docker."
+msgstr ""
+
 #. Context: Battery state
 #: src/lib/i18n.ts
 msgid "Idle"
@@ -1019,9 +1058,25 @@ msgstr "비활성"
 msgid "Interval"
 msgstr "간격"
 
+#: src/components/routes/monitor-dialog.tsx
+msgid "Interval (seconds)"
+msgstr ""
+
+#: src/components/routes/monitor-dialog.tsx
+msgid "Interval must be at least 20 seconds."
+msgstr ""
+
 #: src/components/login/auth-form.tsx
 msgid "Invalid email address."
 msgstr "잘못된 이메일 주소입니다."
+
+#: src/components/routes/monitor-dialog.tsx
+msgid "Keyword"
+msgstr ""
+
+#: src/components/routes/monitor-dialog.tsx
+msgid "Keyword is required for keyword monitors."
+msgstr ""
 
 #: src/components/routes/settings/general.tsx
 msgid "Language"
@@ -1146,17 +1201,33 @@ msgstr "컨테이너 메모리 사용량"
 msgid "Model"
 msgstr "모델"
 
+#: src/components/navbar.tsx
+#: src/components/navbar.tsx
+#: src/components/routes/monitors.tsx
+#: src/components/routes/monitors.tsx
+msgid "Monitors"
+msgstr ""
+
 #: src/components/routes/system/zfs-table.tsx
 msgid "Mountpoint"
 msgstr "마운트 지점"
 
+#: src/components/routes/monitors.tsx
+msgid "Mute notifications"
+msgstr ""
+
 #: src/components/add-system.tsx
 #: src/components/alerts-history-columns.tsx
 #: src/components/containers-table/containers-table-columns.tsx
+#: src/components/routes/monitor-dialog.tsx
 #: src/components/systemd-table/systemd-table-columns.tsx
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Name"
 msgstr "이름"
+
+#: src/components/routes/monitor-dialog.tsx
+msgid "Name is required."
+msgstr ""
 
 #: src/components/containers-table/containers-table-columns.tsx
 #: src/components/systems-table/systems-table-columns.tsx
@@ -1188,6 +1259,10 @@ msgstr "아니오"
 #: src/components/routes/system/zfs-table.tsx
 msgid "No detail data for this pool."
 msgstr "이 풀에 대한 상세 데이터가 없습니다."
+
+#: src/components/routes/monitors.tsx
+msgid "No monitors yet. Add your first HTTP, DNS, ping or TLS check."
+msgstr ""
 
 #: src/components/command-palette.tsx
 #: src/components/systemd-table/systemd-table.tsx
@@ -1309,6 +1384,7 @@ msgstr "비밀번호 재설정 요청이 접수되었습니다"
 msgid "Past"
 msgstr "과거"
 
+#: src/components/routes/monitors.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Pause"
 msgstr "일시 중지"
@@ -1391,6 +1467,14 @@ msgstr "풀 사용량"
 msgid "Port"
 msgstr "포트"
 
+#: src/components/routes/monitor-dialog.tsx
+msgid "Port (default 443)"
+msgstr ""
+
+#: src/components/routes/monitor-dialog.tsx
+msgid "Port must be between 1 and 65535."
+msgstr ""
+
 #: src/components/containers-table/containers-table-columns.tsx
 msgctxt "Container ports"
 msgid "Ports"
@@ -1451,6 +1535,10 @@ msgstr "읽기 오류"
 msgid "Received"
 msgstr "수신됨"
 
+#: src/components/routes/monitor-dialog.tsx
+msgid "Record type"
+msgstr ""
+
 #: src/components/containers-table/containers-table.tsx
 #: src/components/containers-table/containers-table.tsx
 #: src/components/routes/system/smart-table.tsx
@@ -1488,10 +1576,19 @@ msgstr "비밀번호 재설정"
 msgid "Resolved"
 msgstr "해결됨"
 
+#: src/components/routes/monitor-dialog.tsx
+msgid "Resolver (optional)"
+msgstr ""
+
+#: src/components/routes/monitor-dialog.tsx
+msgid "Resolves a record type, optionally against a custom resolver."
+msgstr ""
+
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Restarts"
 msgstr "재시작 횟수"
 
+#: src/components/routes/monitors.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Resume"
 msgstr "재개"
@@ -1511,6 +1608,10 @@ msgstr "토큰 회전"
 msgid "Rows per page"
 msgstr "페이지당 행 수"
 
+#: src/components/routes/monitors.tsx
+msgid "Run check now"
+msgstr ""
+
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Runtime Metrics"
 msgstr "런타임 메트릭"
@@ -1522,6 +1623,10 @@ msgstr "S.M.A.R.T. 세부 정보"
 #: src/components/routes/system/smart-table.tsx
 msgid "S.M.A.R.T. Self-Test"
 msgstr "S.M.A.R.T. 자체 테스트"
+
+#: src/components/routes/monitor-dialog.tsx
+msgid "Save"
+msgstr ""
 
 #: src/components/add-system.tsx
 msgid "Save {foo}"
@@ -1575,6 +1680,10 @@ msgstr "{foo} 선택"
 #: src/components/routes/settings/heartbeat.tsx
 msgid "Send a single heartbeat ping to verify your endpoint is working."
 msgstr "엔드포인트가 작동하는지 확인하기 위해 단일 하트비트 핑을 보냅니다."
+
+#: src/components/routes/monitor-dialog.tsx
+msgid "Send notifications"
+msgstr ""
 
 #: src/components/routes/settings/heartbeat.tsx
 msgid "Send periodic outbound pings to an external monitoring service so you can monitor Beszel without exposing it to the internet."
@@ -1717,6 +1826,14 @@ msgctxt "Tabs system layout option"
 msgid "Tabs"
 msgstr "탭"
 
+#: src/components/routes/monitor-dialog.tsx
+msgid "Target"
+msgstr ""
+
+#: src/components/routes/monitor-dialog.tsx
+msgid "Target is required."
+msgstr ""
+
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Tasks"
 msgstr "작업"
@@ -1779,6 +1896,14 @@ msgstr "ZFS 풀 {poolName} 처리량"
 #: src/components/routes/settings/general.tsx
 msgid "Time format"
 msgstr "시간 형식"
+
+#: src/components/routes/monitor-dialog.tsx
+msgid "Timeout (seconds)"
+msgstr ""
+
+#: src/components/routes/monitor-dialog.tsx
+msgid "Timeout must be positive and less than the interval."
+msgstr ""
 
 #: src/components/routes/settings/notifications.tsx
 msgid "To email(s)"
@@ -1894,6 +2019,7 @@ msgstr "시스템의 전원이 켜지거나 꺼질때 트리거됩니다."
 msgid "Triggers when usage of any disk exceeds a threshold"
 msgstr "디스크 사용량이 임계값을 초과할 때 트리거됩니다."
 
+#: src/components/routes/monitor-dialog.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/system/smart-table.tsx
@@ -1929,6 +2055,10 @@ msgstr "알 수 없음"
 msgid "Unlimited"
 msgstr "무제한"
 
+#: src/components/routes/monitors.tsx
+msgid "Unmute notifications"
+msgstr ""
+
 #. Context: System is up
 #: src/components/routes/system/info-bar.tsx
 #: src/components/systems-table/systems-table-columns.tsx
@@ -1962,6 +2092,10 @@ msgstr "업로드"
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Uptime"
 msgstr "가동시간"
+
+#: src/components/routes/monitors.tsx
+msgid "Uptime 24h"
+msgstr ""
 
 #: src/components/routes/system/charts/disk-charts.tsx
 #: src/components/routes/system/charts/disk-charts.tsx

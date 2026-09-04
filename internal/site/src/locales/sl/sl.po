@@ -126,6 +126,11 @@ msgstr "Aktivno stanje"
 msgid "Add {foo}"
 msgstr "Dodaj {foo}"
 
+#: src/components/routes/monitor-dialog.tsx
+#: src/components/routes/monitors.tsx
+msgid "Add monitor"
+msgstr ""
+
 #: src/components/routes/settings/notifications.tsx
 msgid "Add URL"
 msgstr "Dodaj URL"
@@ -327,6 +332,7 @@ msgstr "Lahko zažene"
 msgid "Can stop"
 msgstr "Lahko ustavi"
 
+#: src/components/routes/monitor-dialog.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/systems-table/systems-table-columns.tsx
@@ -349,6 +355,10 @@ msgstr "Pozor - možna izguba podatkov"
 #: src/components/routes/settings/general.tsx
 msgid "Celsius (°C)"
 msgstr "Celzija (°C)"
+
+#: src/components/routes/monitors.tsx
+msgid "Cert"
+msgstr ""
 
 #: src/components/routes/settings/general.tsx
 msgid "Change display units for metrics."
@@ -390,6 +400,10 @@ msgstr "Preverite svojo storitev za spremljanje"
 #: src/components/routes/settings/notifications.tsx
 msgid "Check your notification service"
 msgstr "Preverite storitev obveščanja"
+
+#: src/components/routes/monitor-dialog.tsx
+msgid "Checks certificate expiry without an HTTP request."
+msgstr ""
 
 #: src/components/routes/system/zfs-table.tsx
 msgid "Checksum errors"
@@ -621,6 +635,10 @@ msgstr "Cikli"
 msgid "Daily"
 msgstr "Dnevno"
 
+#: src/components/routes/monitors.tsx
+msgid "days"
+msgstr ""
+
 #: src/components/routes/system/info-bar.tsx
 msgctxt "Default system layout option"
 msgid "Default"
@@ -630,6 +648,7 @@ msgstr "Privzeto"
 msgid "Default time period"
 msgstr "Privzeto časovno obdobje"
 
+#: src/components/routes/monitors.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/system/smart-table.tsx
@@ -728,6 +747,10 @@ msgstr "Uredi"
 msgid "Edit {foo}"
 msgstr "Uredi {foo}"
 
+#: src/components/routes/monitor-dialog.tsx
+msgid "Edit monitor"
+msgstr ""
+
 #: src/components/login/auth-form.tsx
 #: src/components/login/forgot-pass-form.tsx
 #: src/components/login/otp-forms.tsx
@@ -824,6 +847,10 @@ msgstr "Izvozi nastavitve"
 msgid "Export your current systems configuration."
 msgstr "Izvozi trenutne nastavitve sistema."
 
+#: src/components/routes/monitor-dialog.tsx
+msgid "External uptime check executed from the hub."
+msgstr ""
+
 #: src/components/routes/settings/general.tsx
 msgid "Fahrenheit (°F)"
 msgstr ""
@@ -916,6 +943,10 @@ msgstr "Ukaz FreeBSD"
 msgid "Full"
 msgstr "Polna"
 
+#: src/components/routes/monitor-dialog.tsx
+msgid "Full URL. Accepts 2xx by default."
+msgstr ""
+
 #. Context: General settings
 #: src/components/routes/settings/general.tsx
 #: src/components/routes/settings/layout.tsx
@@ -974,6 +1005,10 @@ msgstr "Ukaz Homebrew"
 msgid "Host / IP"
 msgstr "Gostitelj / IP"
 
+#: src/components/routes/monitor-dialog.tsx
+msgid "HTTP check that also looks for text in the response."
+msgstr ""
+
 #: src/components/routes/settings/heartbeat.tsx
 msgid "HTTP Method"
 msgstr "Metoda HTTP"
@@ -997,6 +1032,10 @@ msgctxt "Percent of time the disk is busy with I/O"
 msgid "I/O Utilization"
 msgstr "I/O izkoriščenost"
 
+#: src/components/routes/monitor-dialog.tsx
+msgid "ICMP echo. The hub may need NET_RAW capability in Docker."
+msgstr ""
+
 #. Context: Battery state
 #: src/lib/i18n.ts
 msgid "Idle"
@@ -1019,9 +1058,25 @@ msgstr "Neaktivno"
 msgid "Interval"
 msgstr ""
 
+#: src/components/routes/monitor-dialog.tsx
+msgid "Interval (seconds)"
+msgstr ""
+
+#: src/components/routes/monitor-dialog.tsx
+msgid "Interval must be at least 20 seconds."
+msgstr ""
+
 #: src/components/login/auth-form.tsx
 msgid "Invalid email address."
 msgstr "Napačen e-poštni naslov."
+
+#: src/components/routes/monitor-dialog.tsx
+msgid "Keyword"
+msgstr ""
+
+#: src/components/routes/monitor-dialog.tsx
+msgid "Keyword is required for keyword monitors."
+msgstr ""
 
 #: src/components/routes/settings/general.tsx
 msgid "Language"
@@ -1146,17 +1201,33 @@ msgstr "Poraba pomnilnika vsebnikov"
 msgid "Model"
 msgstr ""
 
+#: src/components/navbar.tsx
+#: src/components/navbar.tsx
+#: src/components/routes/monitors.tsx
+#: src/components/routes/monitors.tsx
+msgid "Monitors"
+msgstr ""
+
 #: src/components/routes/system/zfs-table.tsx
 msgid "Mountpoint"
 msgstr "Točka priklopa"
 
+#: src/components/routes/monitors.tsx
+msgid "Mute notifications"
+msgstr ""
+
 #: src/components/add-system.tsx
 #: src/components/alerts-history-columns.tsx
 #: src/components/containers-table/containers-table-columns.tsx
+#: src/components/routes/monitor-dialog.tsx
 #: src/components/systemd-table/systemd-table-columns.tsx
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Name"
 msgstr "Naziv"
+
+#: src/components/routes/monitor-dialog.tsx
+msgid "Name is required."
+msgstr ""
 
 #: src/components/containers-table/containers-table-columns.tsx
 #: src/components/systems-table/systems-table-columns.tsx
@@ -1188,6 +1259,10 @@ msgstr "Ne"
 #: src/components/routes/system/zfs-table.tsx
 msgid "No detail data for this pool."
 msgstr "Za ta pool ni podrobnih podatkov."
+
+#: src/components/routes/monitors.tsx
+msgid "No monitors yet. Add your first HTTP, DNS, ping or TLS check."
+msgstr ""
 
 #: src/components/command-palette.tsx
 #: src/components/systemd-table/systemd-table.tsx
@@ -1309,6 +1384,7 @@ msgstr "Prejeta zahteva za ponastavitev gesla"
 msgid "Past"
 msgstr "Preteklo"
 
+#: src/components/routes/monitors.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Pause"
 msgstr "Premor"
@@ -1391,6 +1467,14 @@ msgstr "Uporaba poola"
 msgid "Port"
 msgstr "Vrata"
 
+#: src/components/routes/monitor-dialog.tsx
+msgid "Port (default 443)"
+msgstr ""
+
+#: src/components/routes/monitor-dialog.tsx
+msgid "Port must be between 1 and 65535."
+msgstr ""
+
 #: src/components/containers-table/containers-table-columns.tsx
 msgctxt "Container ports"
 msgid "Ports"
@@ -1451,6 +1535,10 @@ msgstr "Napake pri branju"
 msgid "Received"
 msgstr "Prejeto"
 
+#: src/components/routes/monitor-dialog.tsx
+msgid "Record type"
+msgstr ""
+
 #: src/components/containers-table/containers-table.tsx
 #: src/components/containers-table/containers-table.tsx
 #: src/components/routes/system/smart-table.tsx
@@ -1488,10 +1576,19 @@ msgstr "Ponastavi geslo"
 msgid "Resolved"
 msgstr "Rešeno"
 
+#: src/components/routes/monitor-dialog.tsx
+msgid "Resolver (optional)"
+msgstr ""
+
+#: src/components/routes/monitor-dialog.tsx
+msgid "Resolves a record type, optionally against a custom resolver."
+msgstr ""
+
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Restarts"
 msgstr "Ponovni zagoni"
 
+#: src/components/routes/monitors.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Resume"
 msgstr "Nadaljuj"
@@ -1511,6 +1608,10 @@ msgstr "Zavrti žeton"
 msgid "Rows per page"
 msgstr "Vrstic na stran"
 
+#: src/components/routes/monitors.tsx
+msgid "Run check now"
+msgstr ""
+
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Runtime Metrics"
 msgstr "Metrike izvajanja"
@@ -1522,6 +1623,10 @@ msgstr "S.M.A.R.T. podrobnosti"
 #: src/components/routes/system/smart-table.tsx
 msgid "S.M.A.R.T. Self-Test"
 msgstr "S.M.A.R.T. samotestiranje"
+
+#: src/components/routes/monitor-dialog.tsx
+msgid "Save"
+msgstr ""
 
 #: src/components/add-system.tsx
 msgid "Save {foo}"
@@ -1575,6 +1680,10 @@ msgstr "Izberi {foo}"
 #: src/components/routes/settings/heartbeat.tsx
 msgid "Send a single heartbeat ping to verify your endpoint is working."
 msgstr "Pošljite en srčni utrip (ping), da preverite, ali vaša končna točka deluje."
+
+#: src/components/routes/monitor-dialog.tsx
+msgid "Send notifications"
+msgstr ""
 
 #: src/components/routes/settings/heartbeat.tsx
 msgid "Send periodic outbound pings to an external monitoring service so you can monitor Beszel without exposing it to the internet."
@@ -1717,6 +1826,14 @@ msgctxt "Tabs system layout option"
 msgid "Tabs"
 msgstr "Zavihki"
 
+#: src/components/routes/monitor-dialog.tsx
+msgid "Target"
+msgstr ""
+
+#: src/components/routes/monitor-dialog.tsx
+msgid "Target is required."
+msgstr ""
+
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Tasks"
 msgstr "Naloge"
@@ -1779,6 +1896,14 @@ msgstr "Prepustnost ZFS poola {poolName}"
 #: src/components/routes/settings/general.tsx
 msgid "Time format"
 msgstr "Oblika časa"
+
+#: src/components/routes/monitor-dialog.tsx
+msgid "Timeout (seconds)"
+msgstr ""
+
+#: src/components/routes/monitor-dialog.tsx
+msgid "Timeout must be positive and less than the interval."
+msgstr ""
 
 #: src/components/routes/settings/notifications.tsx
 msgid "To email(s)"
@@ -1894,6 +2019,7 @@ msgstr "Sproži se, ko se stanje preklaplja med gor in dol"
 msgid "Triggers when usage of any disk exceeds a threshold"
 msgstr "Sproži se, ko uporaba katerega koli diska preseže prag"
 
+#: src/components/routes/monitor-dialog.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/system/smart-table.tsx
@@ -1929,6 +2055,10 @@ msgstr "Neznana"
 msgid "Unlimited"
 msgstr "Neomejeno"
 
+#: src/components/routes/monitors.tsx
+msgid "Unmute notifications"
+msgstr ""
+
 #. Context: System is up
 #: src/components/routes/system/info-bar.tsx
 #: src/components/systems-table/systems-table-columns.tsx
@@ -1962,6 +2092,10 @@ msgstr "Naloži"
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Uptime"
 msgstr "Čas delovanja"
+
+#: src/components/routes/monitors.tsx
+msgid "Uptime 24h"
+msgstr ""
 
 #: src/components/routes/system/charts/disk-charts.tsx
 #: src/components/routes/system/charts/disk-charts.tsx
