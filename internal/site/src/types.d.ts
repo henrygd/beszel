@@ -361,6 +361,7 @@ export interface UserSettings {
 	colorCrit?: number
 	hourFormat?: HourFormat
 	layoutWidth?: number
+	cpuFixed?: boolean
 }
 
 type ChartDataContainer = {
