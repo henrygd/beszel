@@ -52,6 +52,7 @@ func NewHub(app core.App) *Hub {
 		hub.hbStop = make(chan struct{})
 	}
 	hub.me = monitors.NewEngine(app, hub.sendMonitorAlert)
+	hub.me.SetLink(func(id string) string { return hub.MakeLink("monitors", id) })
 	_ = onAfterBootstrapAndMigrations(app, hub.initialize)
 	return hub
 }

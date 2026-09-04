@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log/slog"
 	"sync"
+	"sync/atomic"
 	"time"
 
 	"github.com/pocketbase/pocketbase/core"
@@ -24,15 +25,20 @@ type Engine struct {
 	link   func(monitorID string) string
 	mu     sync.Mutex
 	sentAt map[string]time.Time
+	// downSince tracks when the current DOWN stretch started (for recovery
+	// duration and resend decisions).
+	downSince map[string]time.Time
+	started   atomic.Bool
 }
 
 // NewEngine creates an Engine. send may be nil (persist only, no notify).
 func NewEngine(app core.App, send AlertSender) *Engine {
 	e := &Engine{
-		app:    app,
-		sentAt: make(map[string]time.Time),
-		send:   send,
-		link:   func(id string) string { return "/monitors/" + id },
+		app:       app,
+		sentAt:    make(map[string]time.Time),
+		downSince: make(map[string]time.Time),
+		send:      send,
+		link:      func(id string) string { return "/monitors/" + id },
 	}
 	e.mgr = NewManager(0, nil, e.handleResult)
 	return e
@@ -50,7 +56,11 @@ func (e *Engine) SetLink(link func(string) string) {
 
 // Start loads non-paused monitors with stagger and begins scheduling. It
 // also binds record hooks so UI/API changes reschedule without restart.
+// Calling Start twice is a no-op for hooks (loops are replace-safe).
 func (e *Engine) Start() error {
+	if !e.started.CompareAndSwap(false, true) {
+		return nil
+	}
 	recs, err := LoadMonitors(e.app)
 	if err != nil {
 		return err
@@ -93,6 +103,14 @@ func (e *Engine) onUpdate(ev *core.RecordEvent) error {
 	mr := recordToMonitor(ev.Record)
 	e.mgr.Remove(mr.ID)
 	if mr.Paused {
+		// Pause stops the loop; drop resend/down bookkeeping. The
+		// consecutive_failures reset is written by the API PATCH handler,
+		// the only writer of the paused flag (writing here would recurse
+		// into this hook).
+		e.mu.Lock()
+		delete(e.sentAt, mr.ID)
+		delete(e.downSince, mr.ID)
+		e.mu.Unlock()
 		return ev.Next()
 	}
 	if err := mr.ToMonitor().Validate(); err != nil {
@@ -162,42 +180,63 @@ func (e *Engine) handleResult(m Monitor, res CheckResult, transition bool, failu
 	e.persistAndNotify(mr, res, failures, transition)
 }
 
-// persistAndNotify persists one cycle then notifies on transitions.
+// persistAndNotify persists one cycle then notifies.
 // mr identifies the monitor row; res is debounced; failures is exact.
+// Notification rules: transitions (up→down, down→up, warn in/out) always
+// notify when mr.Notify; a steady DOWN renotifies only after ResendAfter
+// minutes since the last DOWN notice (0 = never).
 func (e *Engine) persistAndNotify(mr MonitorRecord, res CheckResult, failures int, transition bool) {
 	if err := SaveCheckResult(e.app, mr, res, failures, transition); err != nil {
 		slog.Error("monitors: failed to save check result", "monitor", mr.Name, "err", err)
 		return
 	}
-	if !transition || !mr.Notify || e.send == nil {
+	if !mr.Notify || e.send == nil {
 		return
 	}
 	now := time.Now()
 	e.mu.Lock()
+	if _, ok := e.downSince[mr.ID]; !ok && res.Status == StatusDown {
+		e.downSince[mr.ID] = now
+	}
+	notify := transition
 	if res.Status == StatusDown && mr.ResendAfter > 0 {
-		if last, ok := e.sentAt[mr.ID]; ok && now.Sub(last) < time.Duration(mr.ResendAfter)*time.Minute {
-			e.mu.Unlock()
-			return
+		if last, ok := e.sentAt[mr.ID]; !ok || now.Sub(last) >= time.Duration(mr.ResendAfter)*time.Minute {
+			notify = true
 		}
 	}
-	if res.Status == StatusDown {
+	if notify {
 		e.sentAt[mr.ID] = now
-	} else {
+	}
+	downStart, wasDown := e.downSince[mr.ID]
+	if res.Status != StatusDown {
+		delete(e.downSince, mr.ID)
 		delete(e.sentAt, mr.ID)
 	}
 	e.mu.Unlock()
+	if !notify {
+		return
+	}
 
 	var title, message string
 	switch res.Status {
 	case StatusDown:
 		title = fmt.Sprintf("Monitor down: %s", mr.Name)
-		message = fmt.Sprintf("%s is down: %s", mr.Target, res.Message)
+		message = fmt.Sprintf("%s is down: %s (latency %.1f ms)", mr.Target, res.Message, res.LatencyMs)
 	case StatusWarn:
 		title = fmt.Sprintf("Monitor warning: %s", mr.Name)
 		message = fmt.Sprintf("%s: %s", mr.Target, res.Message)
+		if res.CertDays != nil {
+			message += fmt.Sprintf(" (%.0f days left)", *res.CertDays)
+		}
 	default:
 		title = fmt.Sprintf("Monitor recovered: %s", mr.Name)
 		message = fmt.Sprintf("%s is back up", mr.Target)
+		if wasDown {
+			message += fmt.Sprintf(" after %s", now.Sub(downStart).Round(time.Second))
+		}
+		if uptime, err := Uptime24h(e.app, mr.ID); err == nil && uptime > 0 {
+			message += fmt.Sprintf(" (24h uptime %.1f%%)", uptime)
+		}
 	}
 	for _, userID := range mr.UserIDs {
 		e.send(userID, title, message, e.link(mr.ID))

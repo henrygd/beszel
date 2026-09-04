@@ -172,3 +172,55 @@ func TestEngine_WarnTransitionNotifies(t *testing.T) {
 
 	assert.Equal(t, 1, sender.count(), "warn entry must notify once")
 }
+
+func TestEngine_WarnExitNotifiesRecovery(t *testing.T) {
+	app := newEngineTestApp(t)
+	mon, _ := seedEngineMonitor(t, app, "warnexit", true, 0)
+	sender := &fakeSender{}
+
+	eng := monitors.NewEngine(app, sender.Send)
+	warn := true
+	eng.SetCheck(func(ctx context.Context, m monitors.Monitor) monitors.CheckResult {
+		if warn {
+			return monitors.CheckResult{Status: monitors.StatusWarn, Message: "expiring soon"}
+		}
+		return monitors.CheckResult{Status: monitors.StatusUp, LatencyMs: 2}
+	})
+	require.NoError(t, eng.SyncOne(mon.Id))
+	warn = false
+	require.NoError(t, eng.SyncOne(mon.Id))
+	eng.Stop()
+
+	assert.Equal(t, 2, sender.count(), "warn entry then recovery must notify twice")
+}
+
+func TestEngine_RecoveryMessageHasDurationAndUptime(t *testing.T) {
+	app := newEngineTestApp(t)
+	mon, _ := seedEngineMonitor(t, app, "rich", true, 0)
+	var messages []string
+	var mu sync.Mutex
+	eng := monitors.NewEngine(app, func(userID, title, message, link string) {
+		mu.Lock()
+		messages = append(messages, title+"|"+message+"|"+link)
+		mu.Unlock()
+	})
+	down := true
+	eng.SetCheck(func(ctx context.Context, m monitors.Monitor) monitors.CheckResult {
+		if down {
+			return monitors.CheckResult{Status: monitors.StatusDown, Message: "boom", LatencyMs: 42}
+		}
+		return monitors.CheckResult{Status: monitors.StatusUp, LatencyMs: 1}
+	})
+	require.NoError(t, eng.SyncOne(mon.Id))
+	down = false
+	require.NoError(t, eng.SyncOne(mon.Id))
+	eng.Stop()
+
+	mu.Lock()
+	defer mu.Unlock()
+	require.Len(t, messages, 2)
+	assert.Contains(t, messages[0], "latency 42.0 ms", "down notice must carry latency")
+	assert.Contains(t, messages[0], "/monitors/"+mon.Id, "link must carry monitor id")
+	assert.Contains(t, messages[1], "after ", "recovery must carry down duration")
+	assert.Contains(t, messages[1], "uptime", "recovery must carry 24h uptime")
+}

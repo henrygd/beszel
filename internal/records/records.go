@@ -155,6 +155,14 @@ func (rm *RecordManager) CreateLongerRecords() {
 		return nil
 	})
 
+	// Refresh monitor uptime ratios in the same 10-minute cron (no new cron).
+	rm.app.RunInTransaction(func(txApp core.App) error {
+		if err := refreshMonitorUptime(txApp); err != nil {
+			slog.Error("Error refreshing monitor uptime", "err", err)
+		}
+		return nil
+	})
+
 	// log.Println("finished creating longer records", "time (ms)", time.Since(start).Milliseconds())
 }
 
