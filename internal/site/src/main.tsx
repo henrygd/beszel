@@ -24,6 +24,7 @@ import {
 	defaultLayoutWidth,
 } from "@/lib/stores.ts"
 import * as systemsManager from "@/lib/systemsManager.ts"
+import * as monitorsManager from "@/lib/monitors.ts"
 import type { BeszelInfo, UpdateInfo } from "./types"
 
 const LoginPage = lazy(() => import("@/components/login/login.tsx"))
@@ -31,6 +32,7 @@ const Home = lazy(() => import("@/components/routes/home.tsx"))
 const Containers = lazy(() => import("@/components/routes/containers.tsx"))
 const Smart = lazy(() => import("@/components/routes/smart.tsx"))
 const Monitors = lazy(() => import("@/components/routes/monitors.tsx"))
+const MonitorDetail = lazy(() => import("@/components/routes/monitor.tsx"))
 const SystemDetail = lazy(() => import("@/components/routes/system.tsx"))
 const CopyToClipboardDialog = lazy(() => import("@/components/copy-to-clipboard.tsx"))
 
@@ -54,6 +56,7 @@ const App = memo(() => {
 		updateUserSettings()
 		// need to get system list before alerts
 		systemsManager.init()
+		monitorsManager.init()
 		systemsManager
 			// get current systems list
 			.refresh()
@@ -67,6 +70,7 @@ const App = memo(() => {
 			unsubscribeAuth()
 			alertManager.unsubscribe()
 			systemsManager.unsubscribe()
+			monitorsManager.cleanup()
 		}
 	}, [])
 
@@ -82,6 +86,8 @@ const App = memo(() => {
 		return <Smart />
 	} else if (page.route === "monitors") {
 		return <Monitors />
+	} else if (page.route === "monitor") {
+		return <MonitorDetail id={page.params.id} />
 	} else if (page.route === "settings") {
 		return <Settings />
 	}
