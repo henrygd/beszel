@@ -10,9 +10,11 @@ require (
 	github.com/gliderlabs/ssh v0.3.8
 	github.com/google/uuid v1.6.0
 	github.com/lxzan/gws v1.10.1
+	github.com/miekg/dns v1.1.73
 	github.com/nicholas-fedor/shoutrrr v0.19.0
 	github.com/pocketbase/dbx v1.12.0
 	github.com/pocketbase/pocketbase v0.40.2
+	github.com/prometheus-community/pro-bing v0.9.1
 	github.com/shirou/gopsutil/v4 v4.26.8
 	github.com/spf13/cast v1.10.0
 	github.com/spf13/cobra v1.10.2
@@ -47,11 +49,9 @@ require (
 	github.com/lufia/plan9stats v0.0.0-20260802145828-341c2f0c90b5 // indirect
 	github.com/mattn/go-colorable v0.1.15 // indirect
 	github.com/mattn/go-isatty v0.0.24 // indirect
-	github.com/miekg/dns v1.1.73 // indirect
 	github.com/ncruces/go-strftime v1.0.0 // indirect
 	github.com/pocketbase/ozzo-validation/v4 v4.3.0 // indirect
 	github.com/power-devops/perfstat v0.0.0-20260805114148-88456608a4f6 // indirect
-	github.com/prometheus-community/pro-bing v0.9.1 // indirect
 	github.com/remyoudompheng/bigfft v0.0.0-20230129092748-24d4a6f8daec // indirect
 	github.com/tklauser/go-sysconf v0.4.0 // indirect
 	github.com/tklauser/numcpus v0.12.0 // indirect

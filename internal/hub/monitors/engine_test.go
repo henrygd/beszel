@@ -6,6 +6,7 @@ import (
 	"context"
 	"sync"
 	"testing"
+	"time"
 
 	"github.com/henrygd/beszel/internal/hub/monitors"
 	_ "github.com/henrygd/beszel/internal/migrations"
@@ -223,4 +224,36 @@ func TestEngine_RecoveryMessageHasDurationAndUptime(t *testing.T) {
 	assert.Contains(t, messages[0], "/monitors/"+mon.Id, "link must carry monitor id")
 	assert.Contains(t, messages[1], "after ", "recovery must carry down duration")
 	assert.Contains(t, messages[1], "uptime", "recovery must carry 24h uptime")
+}
+
+func TestEngine_LiveLoopSurvivesOwnWrites(t *testing.T) {
+	app := newEngineTestApp(t)
+	mon, _ := seedEngineMonitor(t, app, "live", true, 0)
+	sender := &fakeSender{}
+
+	eng := monitors.NewEngine(app, sender.Send)
+	require.NoError(t, eng.Start())
+	t.Cleanup(eng.Stop)
+
+	// Drive the scheduler loop directly with a 1s interval: each tick
+	// persists via SaveCheckResult, which fires the monitors update hook.
+	// Before the scheduleRelevantChange guard this deadlocked (Remove waits
+	// for the loop running runOnce) and wedged the semaphore.
+	m := monitors.Monitor{ID: mon.Id, Name: "live", Type: monitors.TypePing, Target: "example.com", IntervalSeconds: 1, TimeoutSeconds: 5}
+	eng.TestAdd(m, func(ctx context.Context, mm monitors.Monitor) monitors.CheckResult {
+		return monitors.CheckResult{Status: monitors.StatusUp, LatencyMs: 1}
+	})
+
+	deadline := time.Now().Add(12 * time.Second)
+	for {
+		total, err := app.CountRecords("monitor_checks")
+		require.NoError(t, err)
+		if total >= 3 {
+			return
+		}
+		if time.Now().After(deadline) {
+			t.Fatalf("live loop stalled: only %d cycles in 12s (hook deadlock?)", total)
+		}
+		time.Sleep(200 * time.Millisecond)
+	}
 }

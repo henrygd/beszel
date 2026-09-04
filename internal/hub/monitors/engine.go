@@ -54,6 +54,14 @@ func (e *Engine) SetLink(link func(string) string) {
 	e.link = link
 }
 
+// TestAdd schedules m with check (testing only: bypasses validation and
+// stagger for fast loop-driven tests).
+func (e *Engine) TestAdd(m Monitor, check CheckFunc) {
+	e.mgr.check = check
+	e.mgr.jitterMax = 0
+	e.mgr.AddID(m.ID, m)
+}
+
 // Start loads non-paused monitors with stagger and begins scheduling. It
 // also binds record hooks so UI/API changes reschedule without restart.
 // Calling Start twice is a no-op for hooks (loops are replace-safe).
@@ -67,6 +75,11 @@ func (e *Engine) Start() error {
 	}
 	interval := 60 * time.Second
 	delay := StaggerDelay(interval, len(recs))
+	// Cap total boot stagger: per-monitor loops already jitter 0-5s, so a
+	// few seconds here only avoid a thundering herd without delaying serve.
+	if d := delay * time.Duration(max(1, len(recs))); d > 5*time.Second && len(recs) > 0 {
+		delay = 5 * time.Second / time.Duration(len(recs))
+	}
 	for i, mr := range recs {
 		if i > 0 && delay > 0 {
 			time.Sleep(delay)
@@ -101,6 +114,20 @@ func (e *Engine) onCreate(ev *core.RecordEvent) error {
 
 func (e *Engine) onUpdate(ev *core.RecordEvent) error {
 	mr := recordToMonitor(ev.Record)
+	// Scheduler writes (status, last_check, latency, uptime, failures) on
+	// every cycle via SaveNoValidate: rescheduling on those would churn
+	// Remove+Add per cycle AND deadlock (Remove waits for the loop that is
+	// currently inside runOnce). Only reschedule when schedule-relevant
+	// fields changed.
+	if !scheduleRelevantChange(ev.Record) {
+		if mr.Paused {
+			e.mu.Lock()
+			delete(e.sentAt, mr.ID)
+			delete(e.downSince, mr.ID)
+			e.mu.Unlock()
+		}
+		return ev.Next()
+	}
 	e.mgr.Remove(mr.ID)
 	if mr.Paused {
 		// Pause stops the loop; drop resend/down bookkeeping. The
@@ -127,6 +154,26 @@ func (e *Engine) onDelete(ev *core.RecordEvent) error {
 	delete(e.downSince, ev.Record.Id)
 	e.mu.Unlock()
 	return ev.Next()
+}
+
+// scheduleRelevantChange reports whether schedule-driving fields changed.
+// Status/latency/uptime/failure writes from the scheduler itself must not
+// reschedule (churn + self-join deadlock via Remove's wg.Wait).
+func scheduleRelevantChange(rec *core.Record) bool {
+	orig := rec.Original()
+	if orig == nil {
+		return true
+	}
+	for _, f := range []string{"name", "type", "target", "interval", "timeout", "max_retries", "upside_down", "paused", "config"} {
+		if !recordFieldEqual(orig.Get(f), rec.Get(f)) {
+			return true
+		}
+	}
+	return false
+}
+
+func recordFieldEqual(a, b any) bool {
+	return fmt.Sprintf("%v", a) == fmt.Sprintf("%v", b)
 }
 
 // SyncOne runs one persisted check cycle for a monitor id. It loads the
