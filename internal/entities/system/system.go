@@ -166,6 +166,8 @@ type Info struct {
 	AgentVersion  string  `json:"v" cbor:"10,keyasint"`
 	Podman        bool    `json:"p,omitempty" cbor:"11,keyasint,omitempty"` // deprecated - moved to Details struct
 	GpuPct        float64 `json:"g,omitempty" cbor:"12,keyasint,omitempty"`
+	GpuMemUsed    float64 `json:"gm,omitempty" cbor:'24,keyasint,omitempty"`
+	GpuMemTotal   float64 `json:"gmt,omitempty" cbor:'25,keyasint,omitempty"`
 	DashboardTemp float64 `json:"dt,omitempty" cbor:"13,keyasint,omitempty"`
 	Os            Os      `json:"os,omitempty" cbor:"14,keyasint,omitempty"` // deprecated - moved to Details struct
 	// LoadAvg1       float64 `json:"l1,omitempty" cbor:"15,keyasint,omitempty"`  // deprecated - use `la` array instead
