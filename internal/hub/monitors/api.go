@@ -6,11 +6,13 @@ import (
 	"net"
 	"net/http"
 	"os"
+	"sort"
 	"strconv"
 	"strings"
 	"sync"
 	"time"
 
+	"github.com/pocketbase/dbx"
 	"github.com/pocketbase/pocketbase/apis"
 	"github.com/pocketbase/pocketbase/core"
 )
@@ -135,7 +137,9 @@ func validateInput(in *monitorInput) error {
 			}
 		}
 	case TypeTLS:
-		host, port, err := ParsePortOrDefault(m.Target, 443)
+		// Same parser as the checker: URL (https://host[:port]/...) or
+		// host[:port], default 443. Sharing it guarantees API/checker parity.
+		host, port, err := parseTLSTarget(m.Target)
 		if err != nil {
 			return fmt.Errorf("invalid tls target: %v", err)
 		}
@@ -234,7 +238,9 @@ func shareAllSystems(_ core.App) bool {
 // which FindAllRecords with raw dbx expressions cannot express. Monitor
 // counts per hub stay small (Task 13 load test), so this is safe.
 func filterMonitorRecords(recs []*core.Record, userID, paused string) []*core.Record {
-	out := recs[:0]
+	// Fresh slice (never recs[:0]): aliasing the input would corrupt
+	// callers that reuse the slice across calls.
+	out := make([]*core.Record, 0, len(recs))
 	for _, rec := range recs {
 		member := shareAllSystems(nil)
 		if !member {
@@ -259,6 +265,11 @@ func filterMonitorRecords(recs []*core.Record, userID, paused string) []*core.Re
 	return out
 }
 
+// sortMonitorsByName orders monitors for the list endpoint (spec §7).
+func sortMonitorsByName(recs []*core.Record) {
+	sort.Slice(recs, func(i, j int) bool { return recs[i].GetString("name") < recs[j].GetString("name") })
+}
+
 func (a *MonitorAPI) findMonitor(e *core.RequestEvent, id string) (*core.Record, error) {
 	rec, err := a.app.FindRecordById("monitors", id)
 	if err != nil {
@@ -276,6 +287,7 @@ func (a *MonitorAPI) list(e *core.RequestEvent) error {
 		return e.InternalServerError("", err)
 	}
 	recs = filterMonitorRecords(recs, e.Auth.Id, e.Request.URL.Query().Get("paused"))
+	sortMonitorsByName(recs)
 	out := make([]map[string]any, 0, len(recs))
 	for _, rec := range recs {
 		out = append(out, monitorToResponse(rec))
@@ -402,7 +414,10 @@ func (a *MonitorAPI) update(e *core.RequestEvent) error {
 		rec.Set("users", in.Users)
 	}
 	if in.Config != nil {
-		// PATCH without secrets keeps existing secrets.
+		// Shallow top-level merge: nested objects (e.g. headers) are
+		// replaced wholesale and keys cannot be deleted individually —
+		// send the full config to rewrite it. Secrets sent back redacted
+		// keep their stored values.
 		existing := map[string]any{}
 		_ = rec.UnmarshalJSONField("config", &existing)
 		configChanged := false
@@ -459,9 +474,8 @@ func (a *MonitorAPI) checks(e *core.RequestEvent) error {
 		}
 	}
 	// Order + limit are pushed to SQL (newest first); the range cutoff is
-	// applied in Go below. rec.Id is a server-generated [a-z0-9] id, safe to
-	// interpolate (FindRecordsByFilter takes no bound params).
-	rows, err := a.app.FindRecordsByFilter("monitor_checks", "monitor = '"+rec.Id+"'", "-created", limit, 0)
+	// applied in Go below.
+	rows, err := a.app.FindRecordsByFilter("monitor_checks", "monitor = {:mon}", "-created", limit, 0, dbx.Params{"mon": rec.Id})
 	if err != nil {
 		return e.InternalServerError("failed to load check history", err)
 	}

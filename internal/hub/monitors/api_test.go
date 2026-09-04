@@ -595,3 +595,46 @@ func TestMonitorAPI_HistoryLimitAndOrder(t *testing.T) {
 	_ = limited
 	limited.Test(t)
 }
+
+func TestMonitorAPI_ListSortedAndBounds(t *testing.T) {
+	app, token := sharedAPIApp(t)
+	factory := func(testing.TB) *pbtests.TestApp { return app }
+	auth := map[string]string{"Authorization": token, "Content-Type": "application/json"}
+	hook := withMonitorRoutes()
+
+	for _, name := range []string{"zeta", "alpha", "mid"} {
+		sc := pbtests.ApiScenario{
+			Name: "create " + name, Method: http.MethodPost, URL: "/api/beszel/monitors",
+			Body:    strings.NewReader(`{"name":"` + name + `","type":"ping","target":"example.com"}`),
+			Headers: auth, ExpectedStatus: 201, ExpectedContent: []string{`"name":"` + name + `"`},
+			TestAppFactory: factory, BeforeTestFunc: hook, DisableTestAppCleanup: true,
+		}
+		sc.Test(t)
+	}
+
+	// Task-1 bounds enforced at API level.
+	for _, tc := range []struct {
+		name string
+		body string
+		want string
+	}{
+		{"empty target", `{"name":"e","type":"ping","target":""}`, "Target is required"},
+		{"interval too small", `{"name":"e","type":"ping","target":"example.com","interval":5}`, "Interval must be"},
+		{"interval too big", `{"name":"e","type":"ping","target":"example.com","interval":99999}`, "Interval must be"},
+		{"bad retries", `{"name":"e","type":"ping","target":"example.com","max_retries":11}`, "Max_retries must be"},
+		{"tls url accepted", `{"name":"t","type":"tls","target":"https://example.com:8443/x"}`, `"name":"t"`},
+	} {
+		sc := pbtests.ApiScenario{
+			Name: tc.name, Method: http.MethodPost, URL: "/api/beszel/monitors",
+			Body:    strings.NewReader(tc.body),
+			Headers: auth, ExpectedStatus: 200, ExpectedContent: []string{tc.want},
+			TestAppFactory: factory, BeforeTestFunc: hook, DisableTestAppCleanup: true,
+		}
+		if tc.name == "tls url accepted" {
+			sc.ExpectedStatus = 201
+		} else {
+			sc.ExpectedStatus = 400
+		}
+		sc.Test(t)
+	}
+}
