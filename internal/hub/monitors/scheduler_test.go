@@ -227,3 +227,34 @@ func TestManager_SemaphoreBoundsConcurrency(t *testing.T) {
 		t.Fatalf("expected peak concurrency <= 2, got %d", p)
 	}
 }
+
+func TestManager_SurvivesOnResultPanic(t *testing.T) {
+	m := testMonitor()
+	m.MaxRetries = 0
+	m.IntervalSeconds = 3600
+	calls := make(chan struct{}, 4)
+	mgr := NewManager(2, func(ctx context.Context, mon Monitor) CheckResult { return upResult() }, func(mon Monitor, res CheckResult, _ bool) {
+		calls <- struct{}{}
+		panic("db write failed")
+	})
+	mgr.jitterMax = 0
+	defer mgr.Stop()
+	mgr.Add(m)
+	mgr.mu.Lock()
+	mm := mgr.monitors[m.Name]
+	mgr.mu.Unlock()
+	// A panicking onResult must degrade to a failed attempt, and the monitor
+	// must still accept subsequent runs (loop alive).
+	mgr.runOnce(mm)
+	select {
+	case <-calls:
+	case <-time.After(5 * time.Second):
+		t.Fatal("expected first onResult call")
+	}
+	mgr.runOnce(mm)
+	select {
+	case <-calls:
+	case <-time.After(5 * time.Second):
+		t.Fatal("loop died after onResult panic: second run never delivered")
+	}
+}

@@ -304,29 +304,32 @@ func (mgr *Manager) runOnce(mm *managedMonitor) {
 	}
 	ctx, cancel := context.WithTimeout(mm.ctx, timeout)
 	defer cancel()
-	// The recover covers check, state fold and delivery so a panicking
-	// onResult (e.g. a failing DB write in Task 8) degrades to a failed
+	// The recover covers check, state fold and delivery so a panicking check
+	// or onResult (e.g. a failing DB write in Task 8) degrades to a failed
 	// attempt instead of killing the monitor's loop silently.
-	res, transition := func() (res CheckResult, transition bool) {
+	func() {
+		var res CheckResult
+		var transition bool
 		defer func() {
 			if r := recover(); r != nil {
+				slog.Error("monitors: check panic recovered", "monitor", mm.monitor.Name, "panic", r)
 				res = CheckResult{Status: StatusDown, Message: fmt.Sprintf("checker panic: %v", r)}
 				res, transition = mm.state.applyResult(res)
 			}
 		}()
 		res = mgr.check(ctx, mm.monitor)
-		return mm.state.applyResult(res)
+		res, transition = mm.state.applyResult(res)
+		// Skip delivery if the monitor was removed mid-run: the loop may
+		// still be inside runOnce when Remove/Stop cancels.
+		mgr.mu.Lock()
+		current, ok := mgr.monitors[mm.monitor.Name]
+		stale := !ok || current != mm
+		mgr.mu.Unlock()
+		if stale {
+			return
+		}
+		if mgr.onResult != nil {
+			mgr.onResult(mm.monitor, res, transition)
+		}
 	}()
-	// Skip delivery if the monitor was removed mid-run: the loop may still
-	// be inside runOnce when Remove/Stop cancels.
-	mgr.mu.Lock()
-	current, ok := mgr.monitors[mm.monitor.Name]
-	stale := !ok || current != mm
-	mgr.mu.Unlock()
-	if stale {
-		return
-	}
-	if mgr.onResult != nil {
-		mgr.onResult(mm.monitor, res, transition)
-	}
 }
