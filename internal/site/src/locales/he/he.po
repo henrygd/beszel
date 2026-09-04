@@ -8,10 +8,10 @@ msgstr ""
 "Language: he\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2026-08-17 19:22\n"
+"PO-Revision-Date: 2026-09-02 21:43\n"
 "Last-Translator: \n"
 "Language-Team: Hebrew\n"
-"Plural-Forms: nplurals=4; plural=n%100==1 ? 0 : n%100==2 ? 1 : n%100==3 || n%100==4 ? 2 : 3;\n"
+"Plural-Forms: nplurals=3; plural=(n==1 ? 0 : n==2 ? 1 : 2);\n"
 "X-Crowdin-Project: beszel\n"
 "X-Crowdin-Project-ID: 733311\n"
 "X-Crowdin-Language: he\n"
@@ -45,6 +45,10 @@ msgstr "{count, plural, one {{countString} שעה} two {{countString} שעות} 
 #: src/lib/utils.ts
 msgid "{count, plural, one {{countString} minute} few {{countString} minutes} many {{countString} minutes} other {{countString} minutes}}"
 msgstr "{count, plural, one {{countString} דקה} two {{countString} דקות} other {{countString} דקות}}"
+
+#: src/components/routes/system/charts/disk-charts.tsx
+msgid "{diskName} I/O"
+msgstr "קלט/פלט של {diskName}"
 
 #: src/components/routes/system/info-bar.tsx
 msgid "{threads, plural, one {# thread} other {# threads}}"
@@ -93,6 +97,7 @@ msgstr "5 דק'"
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 #: src/components/routes/system/smart-table.tsx
+#: src/components/routes/system/zfs-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Actions"
 msgstr "פעולות"
@@ -190,6 +195,11 @@ msgstr "האם אתה בטוח?"
 #: src/components/copy-to-clipboard.tsx
 msgid "Automatic copy requires a secure context."
 msgstr "העתקה אוטומטית דורשת הקשר מאובטח."
+
+#: src/components/routes/system/zfs-table.tsx
+msgctxt "Disk space available"
+msgid "Available"
+msgstr "זמין"
 
 #: src/components/routes/system/chart-card.tsx
 msgid "Average"
@@ -328,6 +338,7 @@ msgid "Capabilities"
 msgstr "יכולות"
 
 #: src/components/routes/system/smart-table.tsx
+#: src/components/routes/system/zfs-table.tsx
 msgid "Capacity"
 msgstr "קיבולת"
 
@@ -380,8 +391,14 @@ msgstr "בדוק את שירות הניטור שלך"
 msgid "Check your notification service"
 msgstr "בדוק את שירות ההתראות שלך"
 
+#: src/components/routes/system/zfs-table.tsx
+msgid "Checksum errors"
+msgstr "שגיאות סכום ביקורת"
+
 #: src/components/containers-table/containers-table.tsx
 #: src/components/routes/system/smart-table.tsx
+#: src/components/routes/system/zfs-table.tsx
+#: src/components/routes/system/zfs-table.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "Clear"
 msgstr "נקה"
@@ -393,6 +410,10 @@ msgstr "לחץ על קונטיינר כדי לצפות במידע נוסף."
 #: src/components/routes/system/smart-table.tsx
 msgid "Click on a device to view more information."
 msgstr "לחץ על התקן כדי לצפות במידע נוסף."
+
+#: src/components/routes/system/zfs-table.tsx
+msgid "Click on a pool to view vdev and dataset details."
+msgstr "לחצו על מאגר כדי להציג פרטי vdev ומערכי נתונים."
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Click on a system to view more information."
@@ -423,6 +444,14 @@ msgstr "התנגשויות"
 #: src/components/active-alerts.tsx
 msgid "Connection is down"
 msgstr "החיבור נפל"
+
+#: src/lib/alerts.ts
+msgid "Container"
+msgstr "קונטיינר"
+
+#: src/lib/alerts.ts
+msgid "Container Health"
+msgstr "בריאות הקונטיינר"
 
 #: src/components/routes/system.tsx
 msgid "Containers"
@@ -507,9 +536,17 @@ msgstr "CPU"
 msgid "CPU Cores"
 msgstr "ליבות CPU"
 
+#: src/lib/alerts.ts
+msgid "CPU I/O Wait"
+msgstr "זמן המתנת קלט/פלט של המעבד (IOWait)"
+
 #: src/components/systemd-table/systemd-table-columns.tsx
 msgid "CPU Peak"
 msgstr "שיא CPU"
+
+#: src/lib/alerts.ts
+msgid "CPU Steal Time"
+msgstr "זמן מעבד גנוב (Steal)"
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "CPU time"
@@ -543,13 +580,29 @@ msgstr "נוצר"
 msgid "Critical (%)"
 msgstr "קריטי (%)"
 
+#: src/components/routes/system/disk-io-sheet.tsx
+msgid "Cumulative data read since boot"
+msgstr "סך הנתונים שנקראו מאז האתחול"
+
+#: src/components/routes/system/disk-io-sheet.tsx
+msgid "Cumulative data written since boot"
+msgstr "סך הנתונים שנכתבו מאז האתחול"
+
 #: src/components/routes/system/network-sheet.tsx
 msgid "Cumulative Download"
 msgstr "הורדה מצטברת"
 
+#: src/components/routes/system/disk-io-sheet.tsx
+msgid "Cumulative Read"
+msgstr "קריאה מצטברת"
+
 #: src/components/routes/system/network-sheet.tsx
 msgid "Cumulative Upload"
 msgstr "העלאה מצטברת"
+
+#: src/components/routes/system/disk-io-sheet.tsx
+msgid "Cumulative Write"
+msgstr "כתיבה מצטברת"
 
 #. Context: Battery state
 #. Context: Battery state
@@ -610,15 +663,10 @@ msgstr "בפריקה"
 msgid "Disk"
 msgstr "דיסק"
 
-#: src/components/routes/system/charts/disk-charts.tsx
-msgid "Disk I/O"
-msgstr "דיסק I/O"
-
 #: src/components/routes/settings/general.tsx
 msgid "Disk unit"
 msgstr "יחידת דיסק"
 
-#: src/components/routes/system/charts/disk-charts.tsx
 #: src/components/routes/system/charts/disk-charts.tsx
 #: src/lib/alerts.ts
 msgid "Disk Usage"
@@ -788,6 +836,10 @@ msgstr "נכשל"
 msgid "Failed Attributes:"
 msgstr "מאפיינים שנכשלו:"
 
+#: src/lib/alerts.ts
+msgid "Failed Services"
+msgstr "שירותים שנכשלו"
+
 #: src/lib/api.ts
 msgid "Failed to authenticate"
 msgstr "אימות נכשל"
@@ -823,6 +875,8 @@ msgstr ""
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/system/chart-card.tsx
 #: src/components/routes/system/smart-table.tsx
+#: src/components/routes/system/zfs-table.tsx
+#: src/components/routes/system/zfs-table.tsx
 #: src/components/systemd-table/systemd-table.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "Filter..."
@@ -843,6 +897,12 @@ msgstr "למשך <0>{min}</0> {min, plural, one {דקה} other {דקות}}"
 #: src/components/login/auth-form.tsx
 msgid "Forgot password?"
 msgstr "שכחת סיסמה?"
+
+#: src/components/routes/system/zfs-table.tsx
+#: src/components/routes/system/zfs-table.tsx
+msgctxt "Free space"
+msgid "Free"
+msgstr "פנוי"
 
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
@@ -888,6 +948,7 @@ msgid "Grid"
 msgstr "רשת"
 
 #: src/components/containers-table/containers-table-columns.tsx
+#: src/components/routes/system/zfs-table.tsx
 msgid "Health"
 msgstr "בריאות"
 
@@ -1077,13 +1138,17 @@ msgid "Memory Usage"
 msgstr "שימוש בזיכרון"
 
 #: src/components/routes/system/charts/memory-charts.tsx
-msgid "Memory usage of docker containers"
-msgstr "שימוש בזיכרון של קונטיינרים של Docker"
+msgid "Memory usage of containers"
+msgstr "שימוש בזיכרון של קונטיינרים"
 
 #. Device model
 #: src/components/routes/system/smart-table.tsx
 msgid "Model"
 msgstr "דגם"
+
+#: src/components/routes/system/zfs-table.tsx
+msgid "Mountpoint"
+msgstr "נקודת עגינה"
 
 #: src/components/add-system.tsx
 #: src/components/alerts-history-columns.tsx
@@ -1099,8 +1164,8 @@ msgid "Net"
 msgstr "רשת"
 
 #: src/components/routes/system/charts/network-charts.tsx
-msgid "Network traffic of docker containers"
-msgstr "תעבורת רשת של קונטיינרים של Docker"
+msgid "Network traffic of containers"
+msgstr "תעבורת רשת של קונטיינרים"
 
 #: src/components/routes/system/charts/network-charts.tsx
 #: src/components/routes/system/network-sheet.tsx
@@ -1119,6 +1184,10 @@ msgstr "יחידת רשת"
 #: src/components/systemd-table/systemd-table.tsx
 msgid "No"
 msgstr "לא"
+
+#: src/components/routes/system/zfs-table.tsx
+msgid "No detail data for this pool."
+msgstr "אין נתונים מפורטים עבור מאגר זה."
 
 #: src/components/command-palette.tsx
 #: src/components/systemd-table/systemd-table.tsx
@@ -1143,11 +1212,19 @@ msgstr "אין מאפייני S.M.A.R.T. זמינים עבור התקן זה."
 msgid "No systems found."
 msgstr "לא נמצאו מערכות."
 
+#: src/components/routes/system/zfs-table.tsx
+msgid "None"
+msgstr "ללא"
+
 #: src/components/command-palette.tsx
 #: src/components/routes/settings/layout.tsx
 #: src/components/routes/settings/notifications.tsx
 msgid "Notifications"
 msgstr "התראות"
+
+#: src/lib/alerts.ts
+msgid "Notifications may include recent container log excerpts."
+msgstr "ההתראות עשויות לכלול קטעים מיומני קונטיינרים אחרונים."
 
 #: src/components/login/auth-form.tsx
 msgid "OAuth 2 / OIDC support"
@@ -1156,6 +1233,14 @@ msgstr "תמיכה ב-OAuth 2 / OIDC"
 #: src/components/routes/settings/config-yaml.tsx
 msgid "On each restart, systems in the database will be updated to match the systems defined in the file."
 msgstr "בכל הפעלה מחדש, המערכות במסד הנתונים יעודכנו כדי להתאים למערכות המוגדרות בקובץ."
+
+#: src/lib/alerts.ts
+msgid "One or more containers are unhealthy"
+msgstr "קונטיינר אחד או יותר אינם תקינים"
+
+#: src/lib/alerts.ts
+msgid "One or more services are in a failed state"
+msgstr "שירות אחד או יותר נמצאים במצב כשל"
 
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/quiet-hours.tsx
@@ -1170,6 +1255,7 @@ msgstr "סיסמה חד-פעמית"
 #: src/components/routes/settings/tokens-fingerprints.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 #: src/components/routes/system/smart-table.tsx
+#: src/components/routes/system/zfs-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Open menu"
 msgstr "פתח תפריט"
@@ -1293,6 +1379,14 @@ msgstr "אנא ראה <0>את התיעוד</0> להוראות."
 msgid "Please sign in to your account"
 msgstr "אנא התחבר לחשבון שלך"
 
+#: src/components/routes/system/zfs-table.tsx
+msgid "Pool Health"
+msgstr "מצב המאגר"
+
+#: src/components/routes/system/charts/zfs-charts.tsx
+msgid "Pool Usage"
+msgstr "שימוש במאגר"
+
 #: src/components/add-system.tsx
 msgid "Port"
 msgstr "פורט"
@@ -1339,12 +1433,19 @@ msgid "Quiet Hours"
 msgstr "שעות שקט"
 
 #. Disk read
+#. Disk read
 #: src/components/routes/system/charts/disk-charts.tsx
+#: src/components/routes/system/charts/zfs-charts.tsx
+#: src/components/routes/system/disk-io-sheet.tsx
 #: src/components/routes/system/disk-io-sheet.tsx
 #: src/components/routes/system/disk-io-sheet.tsx
 #: src/components/routes/system/disk-io-sheet.tsx
 msgid "Read"
 msgstr "קריאה"
+
+#: src/components/routes/system/zfs-table.tsx
+msgid "Read errors"
+msgstr "שגיאות קריאה"
 
 #: src/components/routes/system/charts/network-charts.tsx
 msgid "Received"
@@ -1353,6 +1454,7 @@ msgstr "התקבל"
 #: src/components/containers-table/containers-table.tsx
 #: src/components/containers-table/containers-table.tsx
 #: src/components/routes/system/smart-table.tsx
+#: src/components/routes/system/zfs-table.tsx
 msgid "Refresh"
 msgstr "רענן"
 
@@ -1394,6 +1496,8 @@ msgstr "הפעלות מחדש"
 msgid "Resume"
 msgstr "המשך"
 
+#: src/components/routes/system/charts/disk-charts.tsx
+#: src/components/routes/system/charts/disk-charts.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgctxt "Root disk label"
 msgid "Root"
@@ -1539,6 +1643,7 @@ msgstr "זמן התחלה"
 #. Context: alert state (active or resolved)
 #: src/components/alerts-history-columns.tsx
 #: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/system/zfs-table.tsx
 #: src/components/systemd-table/systemd-table-columns.tsx
 msgid "State"
 msgstr "מצב"
@@ -1667,9 +1772,9 @@ msgstr "פעולה זו תמחק לצמיתות את כל הרשומות שנב�
 msgid "Throughput of {extraFsName}"
 msgstr "תפוקה של {extraFsName}"
 
-#: src/components/routes/system/charts/disk-charts.tsx
-msgid "Throughput of root filesystem"
-msgstr "תפוקה של מערכת הקבצים הראשית"
+#: src/components/routes/system/charts/zfs-charts.tsx
+msgid "Throughput of ZFS pool {poolName}"
+msgstr "תפוקת מאגר ZFS ‏{poolName}"
 
 #: src/components/routes/settings/general.tsx
 msgid "Time format"
@@ -1742,8 +1847,16 @@ msgid "Triggers when 5 minute load average exceeds a threshold"
 msgstr "מופעל כאשר ממוצע העומס ל-5 דקות עולה על סף"
 
 #: src/lib/alerts.ts
+msgid "Triggers when a container's health check reports unhealthy"
+msgstr "מופעל כאשר בדיקת התקינות של קונטיינר מדווחת על מצב לא תקין"
+
+#: src/lib/alerts.ts
 msgid "Triggers when any sensor exceeds a threshold"
 msgstr "מופעל כאשר כל חיישן עולה על סף"
+
+#: src/lib/alerts.ts
+msgid "Triggers when any systemd service enters the failed state"
+msgstr "מופעל כאשר שירות systemd כלשהו נכנס למצב כשל"
 
 #: src/lib/alerts.ts
 msgid "Triggers when battery charge drops below a threshold"
@@ -1752,6 +1865,14 @@ msgstr "מופעל כאשר טעינת הסוללה יורדת מתחת לסף"
 #: src/lib/alerts.ts
 msgid "Triggers when combined up/down exceeds a threshold"
 msgstr "מופעל כאשר השילוב של למעלה/למטה עולה על סף"
+
+#: src/lib/alerts.ts
+msgid "Triggers when CPU I/O wait exceeds a threshold"
+msgstr "מופעל כאשר זמן המתנת הקלט/פלט של המעבד חורג מהסף"
+
+#: src/lib/alerts.ts
+msgid "Triggers when CPU steal time exceeds a threshold"
+msgstr "מופעל כאשר זמן המעבד הגנוב חורג מהסף"
 
 #: src/lib/alerts.ts
 msgid "Triggers when CPU usage exceeds a threshold"
@@ -1779,6 +1900,10 @@ msgstr "מופעל כאשר שימוש בכל דיסק עולה על סף"
 msgid "Type"
 msgstr "סוג"
 
+#: src/lib/alerts.ts
+msgid "Unhealthy"
+msgstr "לא תקין"
+
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Unit file"
 msgstr "קובץ יחידה"
@@ -1794,6 +1919,7 @@ msgid "Universal token"
 msgstr "token אוניברסלי"
 
 #. Context: Battery state
+#: src/components/routes/system/zfs-table.tsx
 #: src/lib/i18n.ts
 msgid "Unknown"
 msgstr "לא ידוע"
@@ -1819,6 +1945,7 @@ msgstr "עדכן"
 
 #: src/components/containers-table/containers-table-columns.tsx
 #: src/components/routes/system/smart-table.tsx
+#: src/components/routes/system/zfs-table.tsx
 #: src/components/systemd-table/systemd-table-columns.tsx
 msgid "Updated"
 msgstr "עודכן"
@@ -1837,19 +1964,24 @@ msgid "Uptime"
 msgstr "זמן פעילות"
 
 #: src/components/routes/system/charts/disk-charts.tsx
+#: src/components/routes/system/charts/disk-charts.tsx
 #: src/components/routes/system/charts/gpu-charts.tsx
 #: src/components/routes/system/charts/gpu-charts.tsx
 #: src/components/routes/system/charts/gpu-charts.tsx
+#: src/components/routes/system/charts/zfs-charts.tsx
 #: src/components/routes/system/cpu-sheet.tsx
 msgid "Usage"
 msgstr "שימוש"
 
-#: src/components/routes/system/charts/disk-charts.tsx
-msgid "Usage of root partition"
-msgstr "שימוש במחיצה הראשית"
+#: src/components/routes/system/charts/zfs-charts.tsx
+msgid "Usage of ZFS pool {poolName}"
+msgstr "שימוש במאגר ZFS ‏{poolName}"
 
 #: src/components/routes/system/charts/memory-charts.tsx
 #: src/components/routes/system/charts/memory-charts.tsx
+#: src/components/routes/system/zfs-table.tsx
+#: src/components/routes/system/zfs-table.tsx
+#: src/components/routes/system/zfs-table.tsx
 msgid "Used"
 msgstr "בשימוש"
 
@@ -1924,12 +2056,19 @@ msgid "Windows command"
 msgstr "פקודת Windows"
 
 #. Disk write
+#. Disk write
 #: src/components/routes/system/charts/disk-charts.tsx
+#: src/components/routes/system/charts/zfs-charts.tsx
+#: src/components/routes/system/disk-io-sheet.tsx
 #: src/components/routes/system/disk-io-sheet.tsx
 #: src/components/routes/system/disk-io-sheet.tsx
 #: src/components/routes/system/disk-io-sheet.tsx
 msgid "Write"
 msgstr "כתיבה"
+
+#: src/components/routes/system/zfs-table.tsx
+msgid "Write errors"
+msgstr "שגיאות כתיבה"
 
 #: src/components/routes/settings/layout.tsx
 msgid "YAML Config"

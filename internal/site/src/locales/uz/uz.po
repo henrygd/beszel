@@ -1,0 +1,2089 @@
+msgid ""
+msgstr ""
+"POT-Creation-Date: 2024-11-01 11:30-0400\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: @lingui/cli\n"
+"Language: uz\n"
+"Project-Id-Version: beszel\n"
+"Report-Msgid-Bugs-To: \n"
+"PO-Revision-Date: 2026-09-02 21:43\n"
+"Last-Translator: \n"
+"Language-Team: Uzbek\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+"X-Crowdin-Project: beszel\n"
+"X-Crowdin-Project-ID: 733311\n"
+"X-Crowdin-Language: uz\n"
+"X-Crowdin-File: /main/internal/site/src/locales/en/en.po\n"
+"X-Crowdin-File-ID: 32\n"
+
+#. placeholder {0}: newVersion.v
+#: src/components/footer-repo-link.tsx
+msgctxt "New version available"
+msgid "{0} available"
+msgstr "{0} mavjud"
+
+#. placeholder {0}: table.getFilteredSelectedRowModel().rows.length
+#. placeholder {1}: table.getFilteredRowModel().rows.length
+#: src/components/routes/settings/alerts-history-data-table.tsx
+msgid "{0} of {1} row(s) selected."
+msgstr "{1} dan {0} qator tanlandi."
+
+#: src/components/routes/system/info-bar.tsx
+msgid "{cores, plural, one {# core} other {# cores}}"
+msgstr "{cores, plural, other {# yadro}}"
+
+#: src/lib/utils.ts
+msgid "{count, plural, one {{countString} day} other {{countString} days}}"
+msgstr "{count, plural, other {{countString} kun}}"
+
+#: src/lib/utils.ts
+msgid "{count, plural, one {{countString} hour} other {{countString} hours}}"
+msgstr "{count, plural, other {{countString} soat}}"
+
+#: src/lib/utils.ts
+msgid "{count, plural, one {{countString} minute} few {{countString} minutes} many {{countString} minutes} other {{countString} minutes}}"
+msgstr "{count, plural, other {{countString} daqiqa}}"
+
+#: src/components/routes/system/charts/disk-charts.tsx
+msgid "{diskName} I/O"
+msgstr "{diskName} I/O"
+
+#: src/components/routes/system/info-bar.tsx
+msgid "{threads, plural, one {# thread} other {# threads}}"
+msgstr "{threads, plural, other {# ip}}"
+
+#: src/lib/utils.ts
+msgid "1 hour"
+msgstr "1 soat"
+
+#. Load average
+#: src/components/routes/system/charts/load-average-chart.tsx
+msgid "1 min"
+msgstr "1 daq"
+
+#: src/lib/utils.ts
+msgid "1 minute"
+msgstr "1 daqiqa"
+
+#: src/lib/utils.ts
+msgid "1 week"
+msgstr "1 hafta"
+
+#: src/lib/utils.ts
+msgid "12 hours"
+msgstr "12 soat"
+
+#. Load average
+#: src/components/routes/system/charts/load-average-chart.tsx
+msgid "15 min"
+msgstr "15 daq"
+
+#: src/lib/utils.ts
+msgid "24 hours"
+msgstr "24 soat"
+
+#: src/lib/utils.ts
+msgid "30 days"
+msgstr "30 kun"
+
+#. Load average
+#: src/components/routes/system/charts/load-average-chart.tsx
+msgid "5 min"
+msgstr "5 daq"
+
+#. Table column
+#: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
+#: src/components/routes/system/smart-table.tsx
+#: src/components/routes/system/zfs-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
+msgid "Actions"
+msgstr "Amallar"
+
+#: src/components/alerts-history-columns.tsx
+#: src/components/routes/settings/alerts-history-data-table.tsx
+#: src/components/routes/settings/heartbeat.tsx
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Active"
+msgstr "Faol"
+
+#: src/components/active-alerts.tsx
+msgid "Active Alerts"
+msgstr "Faol ogohlantirishlar"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Active state"
+msgstr "Faol holat"
+
+#: src/components/add-system.tsx
+#: src/components/add-system.tsx
+#: src/components/navbar.tsx
+#: src/components/navbar.tsx
+#: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Add {foo}"
+msgstr "{foo} qo'shish"
+
+#: src/components/routes/settings/notifications.tsx
+msgid "Add URL"
+msgstr "URL qo'shish"
+
+#: src/components/routes/settings/general.tsx
+msgid "Adjust display options for charts."
+msgstr "Grafiklar uchun ko'rsatish parametrlarini sozlang."
+
+#: src/components/routes/settings/general.tsx
+msgid "Adjust the width of the main layout"
+msgstr "Asosiy tartib kengligini sozlang"
+
+#: src/components/command-palette.tsx
+#: src/components/command-palette.tsx
+#: src/components/navbar.tsx
+msgid "Admin"
+msgstr "Admin"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "After"
+msgstr "Keyin"
+
+#: src/components/routes/settings/heartbeat.tsx
+msgid "After setting the environment variables, restart your Beszel hub for changes to take effect."
+msgstr "Muhit o'zgaruvchilarini sozlagandan so'ng, o'zgarishlar kuchga kirishi uchun Beszel hub'ini qayta ishga tushiring."
+
+#: src/components/systems-table/systems-table-columns.tsx
+msgid "Agent"
+msgstr "Agent"
+
+#: src/components/command-palette.tsx
+#: src/components/routes/settings/alerts-history-data-table.tsx
+#: src/components/routes/settings/layout.tsx
+msgid "Alert History"
+msgstr "Ogohlantirish tarixi"
+
+#: src/components/alerts/alert-button.tsx
+#: src/components/alerts/alerts-sheet.tsx
+msgid "Alerts"
+msgstr "Ogohlantirishlar"
+
+#: src/components/command-palette.tsx
+#: src/components/containers-table/containers-table.tsx
+#: src/components/navbar.tsx
+#: src/components/navbar.tsx
+#: src/components/routes/containers.tsx
+msgid "All Containers"
+msgstr "Barcha konteynerlar"
+
+#: src/components/alerts/alerts-sheet.tsx
+#: src/components/command-palette.tsx
+#: src/components/routes/home.tsx
+#: src/components/routes/settings/quiet-hours.tsx
+#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table.tsx
+msgid "All Systems"
+msgstr "Barcha tizimlar"
+
+#: src/components/systems-table/systems-table-columns.tsx
+msgid "Are you sure you want to delete {name}?"
+msgstr "{name} ni o'chirishni xohlaysizmi?"
+
+#: src/components/routes/settings/alerts-history-data-table.tsx
+msgid "Are you sure?"
+msgstr "Ishonchingiz komilmi?"
+
+#: src/components/copy-to-clipboard.tsx
+msgid "Automatic copy requires a secure context."
+msgstr "Avtomatik nusxalash xavfsiz kontekstni talab qiladi."
+
+#: src/components/routes/system/zfs-table.tsx
+msgctxt "Disk space available"
+msgid "Available"
+msgstr "Mavjud"
+
+#: src/components/routes/system/chart-card.tsx
+msgid "Average"
+msgstr "O'rtacha"
+
+#: src/components/routes/system/charts/cpu-charts.tsx
+msgid "Average CPU utilization of containers"
+msgstr "Konteynerlarning o'rtacha CPU yuklanishi"
+
+#. placeholder {0}: alertData.unit
+#: src/components/alerts/alerts-sheet.tsx
+msgid "Average drops below <0>{value}{0}</0>"
+msgstr "O'rtacha <0>{value}{0}</0> dan pastga tushadi"
+
+#. placeholder {0}: alertData.unit
+#: src/components/alerts/alerts-sheet.tsx
+msgid "Average exceeds <0>{value}{0}</0>"
+msgstr "O'rtacha <0>{value}{0}</0> dan oshadi"
+
+#: src/components/routes/system/disk-io-sheet.tsx
+msgid "Average number of I/O operations waiting to be serviced"
+msgstr "Xizmat ko'rsatishni kutayotgan I/O operatsiyalarining o'rtacha soni"
+
+#: src/components/routes/system/charts/gpu-charts.tsx
+msgid "Average power consumption of GPUs"
+msgstr "GPU'larning o'rtacha quvvat sarfi"
+
+#: src/components/routes/system/disk-io-sheet.tsx
+msgctxt "Disk I/O average operation time (iostat await)"
+msgid "Average queue to completion time per operation"
+msgstr "Operatsiya boshlanishidan yakunlanishigacha o'rtacha vaqt"
+
+#: src/components/routes/system/charts/cpu-charts.tsx
+msgid "Average system-wide CPU utilization"
+msgstr "Tizim bo'yicha o'rtacha CPU yuklanishi"
+
+#. placeholder {0}: gpu.n
+#: src/components/routes/system/charts/gpu-charts.tsx
+msgid "Average utilization of {0}"
+msgstr "{0} ning o'rtacha yuklanishi"
+
+#: src/components/routes/system/charts/gpu-charts.tsx
+msgid "Average utilization of GPU engines"
+msgstr "GPU dvigatellarining o'rtacha yuklanishi"
+
+#: src/components/command-palette.tsx
+#: src/components/navbar.tsx
+msgid "Backups"
+msgstr "Zaxira nusxalar"
+
+#: src/components/routes/system/charts/network-charts.tsx
+#: src/lib/alerts.ts
+msgid "Bandwidth"
+msgstr "O'tkazish qobiliyati"
+
+#. Battery label in systems table header
+#: src/components/systems-table/systems-table-columns.tsx
+msgid "Bat"
+msgstr "Bat"
+
+#: src/components/routes/system/charts/sensor-charts.tsx
+#: src/components/routes/system/charts/sensor-charts.tsx
+#: src/lib/alerts.ts
+msgid "Battery"
+msgstr "Batareya"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Became active"
+msgstr "Faollashdi"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Became inactive"
+msgstr "Faolsizlashdi"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Before"
+msgstr "Oldin"
+
+#. placeholder {0}: alert.value
+#. placeholder {1}: info.unit
+#. placeholder {2}: alert.min
+#: src/components/active-alerts.tsx
+msgid "Below {0}{1} in last {2, plural, one {# minute} other {# minutes}}"
+msgstr "So'nggi {2, plural, other {# daqiqa}} da {0}{1} dan past"
+
+#: src/components/login/auth-form.tsx
+msgid "Beszel supports OpenID Connect and many OAuth2 authentication providers."
+msgstr "Beszel OpenID Connect va ko'plab OAuth2 autentifikatsiya provayderlarini qo'llab-quvvatlaydi."
+
+#: src/components/routes/settings/notifications.tsx
+msgid "Beszel uses <0>Shoutrrr</0> to integrate with popular notification services."
+msgstr "Beszel mashhur bildirishnoma xizmatlarini birlashtirish uchun <0>Shoutrrr</0> dan foydalanadi."
+
+#: src/components/add-system.tsx
+msgid "Binary"
+msgstr "Ikkilik"
+
+#: src/components/routes/settings/general.tsx
+#: src/components/routes/settings/general.tsx
+msgid "Bits (Kbps, Mbps, Gbps)"
+msgstr "Bitlar (Kbps, Mbps, Gbps)"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Boot state"
+msgstr "Yuklash holati"
+
+#: src/components/routes/settings/general.tsx
+#: src/components/routes/settings/general.tsx
+msgid "Bytes (KB/s, MB/s, GB/s)"
+msgstr "Baytlar (KB/s, MB/s, GB/s)"
+
+#: src/components/routes/system/charts/memory-charts.tsx
+msgid "Cache / Buffers"
+msgstr "Kesh / Buferlar"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Can reload"
+msgstr "Qayta yuklay oladi"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Can start"
+msgstr "Ishga tushira oladi"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Can stop"
+msgstr "To'xtata oladi"
+
+#: src/components/routes/settings/alerts-history-data-table.tsx
+#: src/components/routes/settings/quiet-hours.tsx
+#: src/components/systems-table/systems-table-columns.tsx
+msgid "Cancel"
+msgstr "Bekor qilish"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Capabilities"
+msgstr "Imkoniyatlar"
+
+#: src/components/routes/system/smart-table.tsx
+#: src/components/routes/system/zfs-table.tsx
+msgid "Capacity"
+msgstr "Sig'im"
+
+#: src/components/routes/settings/config-yaml.tsx
+msgid "Caution - potential data loss"
+msgstr "Ehtiyot bo'ling - ma'lumotlar yo'qolishi mumkin"
+
+#: src/components/routes/settings/general.tsx
+msgid "Celsius (°C)"
+msgstr "Selsiy (°C)"
+
+#: src/components/routes/settings/general.tsx
+msgid "Change display units for metrics."
+msgstr "Metrikalar uchun ko'rsatish birliklarini o'zgartiring."
+
+#: src/components/routes/settings/general.tsx
+msgid "Change general application options."
+msgstr "Umumiy dastur parametrlarini o'zgartiring."
+
+#: src/components/routes/system/charts/sensor-charts.tsx
+msgid "Charge"
+msgstr "Zaryad"
+
+#. Context: Battery state
+#: src/lib/i18n.ts
+msgid "Charging"
+msgstr "Zaryadlanmoqda"
+
+#: src/components/routes/settings/general.tsx
+msgid "Chart options"
+msgstr "Grafik parametrlari"
+
+#: src/components/routes/system/info-bar.tsx
+msgid "Chart width"
+msgstr "Grafik kengligi"
+
+#: src/components/login/forgot-pass-form.tsx
+msgid "Check {email} for a reset link."
+msgstr "Tiklash havolasi uchun {email} ni tekshiring."
+
+#: src/components/routes/settings/layout.tsx
+msgid "Check logs for more details."
+msgstr "Batafsil ma'lumot uchun jurnallarni tekshiring."
+
+#: src/components/routes/settings/heartbeat.tsx
+msgid "Check your monitoring service"
+msgstr "Monitoring xizmatingizni tekshiring"
+
+#: src/components/routes/settings/notifications.tsx
+msgid "Check your notification service"
+msgstr "Bildirishnoma xizmatingizni tekshiring"
+
+#: src/components/routes/system/zfs-table.tsx
+msgid "Checksum errors"
+msgstr "Nazorat summasi xatolari"
+
+#: src/components/containers-table/containers-table.tsx
+#: src/components/routes/system/smart-table.tsx
+#: src/components/routes/system/zfs-table.tsx
+#: src/components/routes/system/zfs-table.tsx
+#: src/components/systems-table/systems-table.tsx
+msgid "Clear"
+msgstr "Tozalash"
+
+#: src/components/containers-table/containers-table.tsx
+msgid "Click on a container to view more information."
+msgstr "Batafsil ma'lumot uchun konteynerni bosing."
+
+#: src/components/routes/system/smart-table.tsx
+msgid "Click on a device to view more information."
+msgstr "Batafsil ma'lumot uchun qurilmani bosing."
+
+#: src/components/routes/system/zfs-table.tsx
+msgid "Click on a pool to view vdev and dataset details."
+msgstr "Pool ustiga bosib, vdev va dataset tafsilotlarini ko‘ring."
+
+#: src/components/systems-table/systems-table.tsx
+msgid "Click on a system to view more information."
+msgstr "Batafsil ma'lumot uchun tizimni bosing."
+
+#: src/components/ui/input-copy.tsx
+msgid "Click to copy"
+msgstr "Nusxalash uchun bosing"
+
+#: src/components/login/forgot-pass-form.tsx
+#: src/components/login/forgot-pass-form.tsx
+msgid "Command line instructions"
+msgstr "Buyruq qatori ko'rsatmalari"
+
+#: src/components/routes/settings/notifications.tsx
+msgid "Configure how you receive alert notifications."
+msgstr "Ogohlantirish bildirishnomalarini qanday olishingizni sozlang."
+
+#: src/components/login/auth-form.tsx
+#: src/components/login/auth-form.tsx
+msgid "Confirm password"
+msgstr "Parolni tasdiqlang"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Conflicts"
+msgstr "Ziddiyatlar"
+
+#: src/components/active-alerts.tsx
+msgid "Connection is down"
+msgstr "Ulanish uzildi"
+
+#: src/lib/alerts.ts
+msgid "Container"
+msgstr ""
+
+#: src/lib/alerts.ts
+msgid "Container Health"
+msgstr ""
+
+#: src/components/routes/system.tsx
+msgid "Containers"
+msgstr "Konteynerlar"
+
+#: src/components/routes/settings/alerts-history-data-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
+msgid "Continue"
+msgstr "Davom etish"
+
+#: src/lib/utils.ts
+msgid "Copied to clipboard"
+msgstr "Buferga nusxalandi"
+
+#: src/components/add-system.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgctxt "Button to copy docker compose file content"
+msgid "Copy docker compose"
+msgstr "Docker compose nusxalash"
+
+#: src/components/add-system.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgctxt "Button to copy docker run command"
+msgid "Copy docker run"
+msgstr "Docker run nusxalash"
+
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgctxt "Environment variables"
+msgid "Copy env"
+msgstr "Muhit o'zgaruvchilarini nusxalash"
+
+#: src/components/alerts/alerts-sheet.tsx
+msgctxt "Copy alerts from another system"
+msgid "Copy from"
+msgstr "Nusxalash manba"
+
+#: src/components/systems-table/systems-table-columns.tsx
+msgid "Copy host"
+msgstr "Xostni nusxalash"
+
+#: src/components/add-system.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Copy Linux command"
+msgstr "Linux buyrug'ini nusxalash"
+
+#: src/components/systems-table/systems-table-columns.tsx
+msgid "Copy name"
+msgstr "Nomni nusxalash"
+
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Copy public key"
+msgstr ""
+
+#: src/components/copy-to-clipboard.tsx
+msgid "Copy text"
+msgstr "Matnni nusxalash"
+
+#: src/components/add-system.tsx
+msgid "Copy the installation command for the agent below, or register agents automatically with a <0>universal token</0>."
+msgstr "Agentni o'rnatish buyrug'ini pastdan nusxalang yoki agentlarni <0>universal token</0> bilan avtomatik ro'yxatdan o'tkazing."
+
+#: src/components/add-system.tsx
+msgid "Copy the<0>docker-compose.yml</0> content for the agent below, or register agents automatically with a <1>universal token</1>."
+msgstr "Agent uchun<0>docker-compose.yml</0> mazmunini pastdan nusxalang yoki agentlarni <1>universal token</1> bilan avtomatik ro'yxatdan o'tkazing."
+
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Copy YAML"
+msgstr "YAML nusxalash"
+
+#: src/components/routes/system.tsx
+msgctxt "Core system metrics"
+msgid "Core"
+msgstr "Asosiy"
+
+#: src/components/containers-table/containers-table-columns.tsx
+#: src/components/systemd-table/systemd-table-columns.tsx
+#: src/components/systems-table/systems-table-columns.tsx
+msgid "CPU"
+msgstr "CPU"
+
+#: src/components/routes/system/cpu-sheet.tsx
+msgid "CPU Cores"
+msgstr "CPU yadrolar"
+
+#: src/lib/alerts.ts
+msgid "CPU I/O Wait"
+msgstr "CPU I/O kutish vaqti"
+
+#: src/components/systemd-table/systemd-table-columns.tsx
+msgid "CPU Peak"
+msgstr "CPU yuqori ko'rsatkichi"
+
+#: src/lib/alerts.ts
+msgid "CPU Steal Time"
+msgstr "CPU steal vaqti"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "CPU time"
+msgstr "CPU vaqti"
+
+#: src/components/routes/system/cpu-sheet.tsx
+msgid "CPU Time Breakdown"
+msgstr "CPU vaqti taqsimoti"
+
+#: src/components/routes/system/charts/cpu-charts.tsx
+#: src/components/routes/system/charts/cpu-charts.tsx
+#: src/components/routes/system/cpu-sheet.tsx
+#: src/lib/alerts.ts
+msgid "CPU Usage"
+msgstr "CPU yuklanishi"
+
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Create"
+msgstr "Yaratish"
+
+#: src/components/login/auth-form.tsx
+msgid "Create account"
+msgstr "Hisob yaratish"
+
+#. Context: date created
+#: src/components/alerts-history-columns.tsx
+msgid "Created"
+msgstr "Yaratilgan"
+
+#: src/components/routes/settings/general.tsx
+msgid "Critical (%)"
+msgstr "Kritik (%)"
+
+#: src/components/routes/system/disk-io-sheet.tsx
+msgid "Cumulative data read since boot"
+msgstr "Yuklangandan beri jami o‘qilgan ma’lumotlar"
+
+#: src/components/routes/system/disk-io-sheet.tsx
+msgid "Cumulative data written since boot"
+msgstr "Yuklangandan beri jami yozilgan ma’lumotlar"
+
+#: src/components/routes/system/network-sheet.tsx
+msgid "Cumulative Download"
+msgstr "Jami yuklab olish"
+
+#: src/components/routes/system/disk-io-sheet.tsx
+msgid "Cumulative Read"
+msgstr "Jami o‘qish"
+
+#: src/components/routes/system/network-sheet.tsx
+msgid "Cumulative Upload"
+msgstr "Jami yuklash"
+
+#: src/components/routes/system/disk-io-sheet.tsx
+msgid "Cumulative Write"
+msgstr "Jami yozish"
+
+#. Context: Battery state
+#. Context: Battery state
+#: src/components/routes/system/charts/sensor-charts.tsx
+#: src/components/routes/system/charts/sensor-charts.tsx
+msgid "Current state"
+msgstr "Joriy holat"
+
+#. Power Cycles
+#: src/components/routes/system/smart-table.tsx
+msgid "Cycles"
+msgstr "Sikllar"
+
+#: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Daily"
+msgstr "Kunlik"
+
+#: src/components/routes/system/info-bar.tsx
+msgctxt "Default system layout option"
+msgid "Default"
+msgstr "Standart"
+
+#: src/components/routes/settings/general.tsx
+msgid "Default time period"
+msgstr "Standart vaqt oralig'i"
+
+#: src/components/routes/settings/alerts-history-data-table.tsx
+#: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/system/smart-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
+msgid "Delete"
+msgstr "O'chirish"
+
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Delete fingerprint"
+msgstr "Barmoq izini o'chirish"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Description"
+msgstr "Tavsif"
+
+#: src/components/containers-table/containers-table.tsx
+msgid "Detail"
+msgstr "Batafsil"
+
+#: src/components/routes/system/smart-table.tsx
+msgid "Device"
+msgstr "Qurilma"
+
+#. Context: Battery state
+#: src/lib/i18n.ts
+msgid "Discharging"
+msgstr "Razryadlanmoqda"
+
+#: src/components/routes/system.tsx
+#: src/components/systems-table/systems-table-columns.tsx
+msgid "Disk"
+msgstr "Disk"
+
+#: src/components/routes/settings/general.tsx
+msgid "Disk unit"
+msgstr "Disk birligi"
+
+#: src/components/routes/system/charts/disk-charts.tsx
+#: src/lib/alerts.ts
+msgid "Disk Usage"
+msgstr "Disk ishlatilishi"
+
+#: src/components/routes/system/charts/disk-charts.tsx
+msgid "Disk usage of {extraFsName}"
+msgstr "{extraFsName} ning disk ishlatilishi"
+
+#: src/components/routes/system/info-bar.tsx
+msgctxt "Layout display options"
+msgid "Display"
+msgstr "Ko'rsatish"
+
+#: src/components/routes/system/charts/cpu-charts.tsx
+msgid "Docker CPU Usage"
+msgstr "Docker CPU yuklanishi"
+
+#: src/components/routes/system/charts/memory-charts.tsx
+msgid "Docker Memory Usage"
+msgstr "Docker xotira ishlatilishi"
+
+#: src/components/routes/system/charts/network-charts.tsx
+msgid "Docker Network I/O"
+msgstr "Docker tarmoq I/O"
+
+#: src/components/command-palette.tsx
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Documentation"
+msgstr "Hujjatlar"
+
+#. Context: System is down
+#: src/components/alerts-history-columns.tsx
+#: src/components/routes/system/info-bar.tsx
+#: src/components/systems-table/systems-table-columns.tsx
+#: src/lib/alerts.ts
+msgid "Down"
+msgstr "Ishlamayapti"
+
+#: src/components/systems-table/systems-table.tsx
+msgid "Down ({downSystemsLength})"
+msgstr "Ishlamayapti ({downSystemsLength})"
+
+#: src/components/routes/system/network-sheet.tsx
+msgid "Download"
+msgstr "Yuklab olish"
+
+#: src/components/alerts-history-columns.tsx
+msgid "Duration"
+msgstr "Davomiylik"
+
+#: src/components/routes/settings/quiet-hours.tsx
+#: src/components/systems-table/systems-table-columns.tsx
+msgid "Edit"
+msgstr "Tahrirlash"
+
+#: src/components/add-system.tsx
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Edit {foo}"
+msgstr "{foo} tahrirlash"
+
+#: src/components/login/auth-form.tsx
+#: src/components/login/forgot-pass-form.tsx
+#: src/components/login/otp-forms.tsx
+msgid "Email"
+msgstr "Elektron pochta"
+
+#: src/components/routes/settings/notifications.tsx
+msgid "Email notifications"
+msgstr "Elektron pochta bildirishnomalari"
+
+#. Context: Battery state
+#: src/lib/i18n.ts
+msgid "Empty"
+msgstr "Bo'sh"
+
+#: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "End Time"
+msgstr "Tugash vaqti"
+
+#: src/components/routes/settings/heartbeat.tsx
+msgid "Endpoint URL"
+msgstr "Endpoint URL"
+
+#: src/components/routes/settings/heartbeat.tsx
+msgid "Endpoint URL to ping (required)"
+msgstr "Ping uchun endpoint URL (majburiy)"
+
+#: src/components/login/login.tsx
+msgid "Enter email address to reset password"
+msgstr "Parolni tiklash uchun elektron pochta manzilini kiriting"
+
+#: src/components/routes/settings/notifications.tsx
+msgid "Enter email address..."
+msgstr "Elektron pochta manzilini kiriting..."
+
+#: src/components/login/otp-forms.tsx
+msgid "Enter your one-time password."
+msgstr "Bir martalik parolingizni kiriting."
+
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Ephemeral"
+msgstr "Vaqtinchalik"
+
+#: src/components/routes/settings/alerts-history-data-table.tsx
+#: src/components/routes/settings/config-yaml.tsx
+#: src/components/routes/settings/heartbeat.tsx
+#: src/components/routes/settings/heartbeat.tsx
+#: src/components/routes/settings/heartbeat.tsx
+#: src/components/routes/settings/notifications.tsx
+#: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Error"
+msgstr "Xato"
+
+#: src/components/routes/settings/heartbeat.tsx
+msgid "Example:"
+msgstr "Misol:"
+
+#. placeholder {0}: alert.value
+#. placeholder {1}: info.unit
+#. placeholder {2}: alert.min
+#: src/components/active-alerts.tsx
+msgid "Exceeds {0}{1} in last {2, plural, one {# minute} other {# minutes}}"
+msgstr "So'nggi {2, plural, other {# daqiqa}} da {0}{1} dan oshadi"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Exec main PID"
+msgstr "Asosiy PID"
+
+#: src/components/routes/settings/config-yaml.tsx
+msgid "Existing systems not defined in <0>config.yml</0> will be deleted. Please make regular backups."
+msgstr "<0>config.yml</0> da aniqlanmagan mavjud tizimlar o'chiriladi. Iltimos, muntazam zaxira nusxalarni saqlang."
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Exited active"
+msgstr "Faollikdan chiqdi"
+
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Expires after one hour or on hub restart."
+msgstr "Bir soatdan keyin yoki hub qayta ishga tushganda muddati tugaydi."
+
+#: src/components/routes/settings/alerts-history-data-table.tsx
+msgid "Export"
+msgstr "Eksport"
+
+#: src/components/routes/settings/config-yaml.tsx
+msgid "Export configuration"
+msgstr "Konfiguratsiyani eksport qilish"
+
+#: src/components/routes/settings/config-yaml.tsx
+msgid "Export your current systems configuration."
+msgstr "Joriy tizimlar konfiguratsiyasini eksport qiling."
+
+#: src/components/routes/settings/general.tsx
+msgid "Fahrenheit (°F)"
+msgstr "Farengeyt (°F)"
+
+#: src/components/systems-table/systems-table-columns.tsx
+msgid "Failed"
+msgstr "Muvaffaqiyatsiz"
+
+#: src/components/routes/system/smart-table.tsx
+msgid "Failed Attributes:"
+msgstr "Muvaffaqiyatsiz atributlar:"
+
+#: src/lib/alerts.ts
+msgid "Failed Services"
+msgstr "Ishlamay qolgan xizmatlar"
+
+#: src/lib/api.ts
+msgid "Failed to authenticate"
+msgstr "Autentifikatsiya muvaffaqiyatsiz tugadi"
+
+#: src/components/routes/settings/layout.tsx
+#: src/components/routes/settings/notifications.tsx
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Failed to save settings"
+msgstr "Sozlamalarni saqlash muvaffaqiyatsiz tugadi"
+
+#: src/components/routes/settings/heartbeat.tsx
+msgid "Failed to send heartbeat"
+msgstr "Heartbeat yuborish muvaffaqiyatsiz tugadi"
+
+#: src/components/routes/settings/notifications.tsx
+msgid "Failed to send test notification"
+msgstr "Test bildirishnoma yuborish muvaffaqiyatsiz tugadi"
+
+#: src/components/alerts/alerts-sheet.tsx
+msgid "Failed to update alert"
+msgstr "Ogohlantirishni yangilash muvaffaqiyatsiz tugadi"
+
+#. placeholder {0}: statusTotals[ServiceStatus.Failed]
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Failed: {0}"
+msgstr "Muvaffaqiyatsiz: {0}"
+
+#: src/components/routes/system/charts/sensor-charts.tsx
+msgid "Fans"
+msgstr ""
+
+#: src/components/containers-table/containers-table.tsx
+#: src/components/routes/settings/alerts-history-data-table.tsx
+#: src/components/routes/system/chart-card.tsx
+#: src/components/routes/system/smart-table.tsx
+#: src/components/routes/system/zfs-table.tsx
+#: src/components/routes/system/zfs-table.tsx
+#: src/components/systemd-table/systemd-table.tsx
+#: src/components/systems-table/systems-table.tsx
+msgid "Filter..."
+msgstr "Filtrlash..."
+
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Fingerprint"
+msgstr "Barmoq izi"
+
+#: src/components/routes/system/smart-table.tsx
+msgid "Firmware"
+msgstr "Proshivka"
+
+#: src/components/alerts/alerts-sheet.tsx
+msgid "For <0>{min}</0> {min, plural, one {minute} other {minutes}}"
+msgstr "<0>{min}</0> {min, plural, other {daqiqa}} uchun"
+
+#: src/components/login/auth-form.tsx
+msgid "Forgot password?"
+msgstr "Parolni unutdingizmi?"
+
+#: src/components/routes/system/zfs-table.tsx
+#: src/components/routes/system/zfs-table.tsx
+msgctxt "Free space"
+msgid "Free"
+msgstr "Bo‘sh"
+
+#: src/components/add-system.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgctxt "Button to copy install command"
+msgid "FreeBSD command"
+msgstr "FreeBSD buyrug'i"
+
+#. Context: Battery state
+#: src/components/routes/system/info-bar.tsx
+#: src/lib/i18n.ts
+msgid "Full"
+msgstr "To'liq"
+
+#. Context: General settings
+#: src/components/routes/settings/general.tsx
+#: src/components/routes/settings/layout.tsx
+msgid "General"
+msgstr "Umumiy"
+
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Global"
+msgstr "Global"
+
+#: src/components/routes/system.tsx
+msgid "GPU"
+msgstr "GPU"
+
+#: src/components/routes/system/charts/gpu-charts.tsx
+msgid "GPU Engines"
+msgstr "GPU dvigatellari"
+
+#: src/components/routes/system/charts/gpu-charts.tsx
+msgid "GPU Power Draw"
+msgstr "GPU quvvat sarfi"
+
+#: src/lib/alerts.ts
+msgid "GPU Usage"
+msgstr "GPU yuklanishi"
+
+#: src/components/routes/system/info-bar.tsx
+#: src/components/systems-table/systems-table.tsx
+msgid "Grid"
+msgstr "Grid"
+
+#: src/components/containers-table/containers-table-columns.tsx
+#: src/components/routes/system/zfs-table.tsx
+msgid "Health"
+msgstr "Sog'lik"
+
+#: src/components/routes/settings/layout.tsx
+msgid "Heartbeat"
+msgstr "Heartbeat"
+
+#: src/components/routes/settings/heartbeat.tsx
+msgid "Heartbeat Monitoring"
+msgstr "Heartbeat monitoring"
+
+#: src/components/routes/settings/heartbeat.tsx
+msgid "Heartbeat sent successfully"
+msgstr "Heartbeat muvaffaqiyatli yuborildi"
+
+#: src/components/add-system.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgctxt "Button to copy install command"
+msgid "Homebrew command"
+msgstr "Homebrew buyrug'i"
+
+#: src/components/add-system.tsx
+msgid "Host / IP"
+msgstr "Xost / IP"
+
+#: src/components/routes/settings/heartbeat.tsx
+msgid "HTTP Method"
+msgstr "HTTP usul"
+
+#: src/components/routes/settings/heartbeat.tsx
+msgid "HTTP method: POST, GET, or HEAD (default: POST)"
+msgstr "HTTP usul: POST, GET yoki HEAD (standart: POST)"
+
+#: src/components/routes/system/disk-io-sheet.tsx
+msgctxt "Disk I/O average operation time (iostat await)"
+msgid "I/O Await"
+msgstr "I/O kutish"
+
+#: src/components/routes/system/disk-io-sheet.tsx
+msgctxt "Disk I/O total time spent on read/write"
+msgid "I/O Time"
+msgstr "I/O vaqti"
+
+#: src/components/routes/system/charts/disk-charts.tsx
+msgctxt "Percent of time the disk is busy with I/O"
+msgid "I/O Utilization"
+msgstr "I/O yuklanishi"
+
+#. Context: Battery state
+#: src/lib/i18n.ts
+msgid "Idle"
+msgstr "Faolsiz"
+
+#: src/components/login/forgot-pass-form.tsx
+msgid "If you've lost the password to your admin account, you may reset it using the following command."
+msgstr "Agar admin hisobingiz parolini yo'qotgan bo'lsangiz, quyidagi buyruq yordamida uni tiklashingiz mumkin."
+
+#: src/components/containers-table/containers-table-columns.tsx
+msgctxt "Docker image"
+msgid "Image"
+msgstr "Obraz"
+
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Inactive"
+msgstr "Nofaol"
+
+#: src/components/routes/settings/heartbeat.tsx
+msgid "Interval"
+msgstr "Interval"
+
+#: src/components/login/auth-form.tsx
+msgid "Invalid email address."
+msgstr "Noto'g'ri elektron pochta manzili."
+
+#: src/components/routes/settings/general.tsx
+msgid "Language"
+msgstr "Til"
+
+#: src/components/systems-table/systems-table.tsx
+msgid "Layout"
+msgstr "Tartib"
+
+#: src/components/routes/settings/general.tsx
+msgid "Layout width"
+msgstr "Tartib kengligi"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Lifecycle"
+msgstr "Hayot sikli"
+
+#: src/components/systemd-table/systemd-table.tsx
+#: src/components/systemd-table/systemd-table.tsx
+msgid "limit"
+msgstr "chegara"
+
+#: src/components/routes/system/charts/load-average-chart.tsx
+msgid "Load Average"
+msgstr "O'rtacha yuklanish"
+
+#: src/lib/alerts.ts
+msgid "Load Average 15m"
+msgstr "O'rtacha yuklanish 15m"
+
+#: src/lib/alerts.ts
+msgid "Load Average 1m"
+msgstr "O'rtacha yuklanish 1m"
+
+#: src/lib/alerts.ts
+msgid "Load Average 5m"
+msgstr "O'rtacha yuklanish 5m"
+
+#. Short label for load average
+#: src/components/systems-table/systems-table-columns.tsx
+msgid "Load Avg"
+msgstr "O'rt. yuklanish"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Load state"
+msgstr "Yuklash holati"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Loading..."
+msgstr "Yuklanmoqda..."
+
+#: src/components/navbar.tsx
+#: src/components/navbar.tsx
+msgid "Log Out"
+msgstr "Chiqish"
+
+#: src/components/login/login.tsx
+msgid "Login"
+msgstr "Kirish"
+
+#: src/components/login/auth-form.tsx
+#: src/components/login/forgot-pass-form.tsx
+msgid "Login attempt failed"
+msgstr "Kirish urinishi muvaffaqiyatsiz tugadi"
+
+#: src/components/command-palette.tsx
+#: src/components/containers-table/containers-table.tsx
+#: src/components/navbar.tsx
+msgid "Logs"
+msgstr "Jurnallar"
+
+#: src/components/routes/settings/notifications.tsx
+msgid "Looking instead for where to create alerts? Click the bell <0/> icons in the systems table."
+msgstr "Ogohlantirishlarni qayerda yaratishni izlayapsizmi? Tizimlar jadvalidagi qo'ng'iroq <0/> ikonkalarini bosing."
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Main PID"
+msgstr "Asosiy PID"
+
+#: src/components/routes/settings/layout.tsx
+msgid "Manage display and notification preferences."
+msgstr "Ko'rsatish va bildirishnoma parametrlarini boshqaring."
+
+#: src/components/add-system.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Manual setup instructions"
+msgstr "Qo'lda o'rnatish ko'rsatmalari"
+
+#. Chart select field. Please try to keep this short.
+#: src/components/routes/system/chart-card.tsx
+msgid "Max 1 min"
+msgstr "Maks 1 daq"
+
+#: src/components/containers-table/containers-table-columns.tsx
+#: src/components/routes/system/info-bar.tsx
+#: src/components/systemd-table/systemd-table-columns.tsx
+#: src/components/systemd-table/systemd-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
+msgid "Memory"
+msgstr "Xotira"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Memory limit"
+msgstr "Xotira chegarasi"
+
+#: src/components/systemd-table/systemd-table-columns.tsx
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Memory Peak"
+msgstr "Xotira yuqori ko'rsatkichi"
+
+#: src/components/routes/system/charts/memory-charts.tsx
+#: src/lib/alerts.ts
+msgid "Memory Usage"
+msgstr "Xotira ishlatilishi"
+
+#: src/components/routes/system/charts/memory-charts.tsx
+msgid "Memory usage of containers"
+msgstr ""
+
+#. Device model
+#: src/components/routes/system/smart-table.tsx
+msgid "Model"
+msgstr "Model"
+
+#: src/components/routes/system/zfs-table.tsx
+msgid "Mountpoint"
+msgstr "Ulash nuqtasi"
+
+#: src/components/add-system.tsx
+#: src/components/alerts-history-columns.tsx
+#: src/components/containers-table/containers-table-columns.tsx
+#: src/components/systemd-table/systemd-table-columns.tsx
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Name"
+msgstr "Nom"
+
+#: src/components/containers-table/containers-table-columns.tsx
+#: src/components/systems-table/systems-table-columns.tsx
+msgid "Net"
+msgstr "Tarmoq"
+
+#: src/components/routes/system/charts/network-charts.tsx
+msgid "Network traffic of containers"
+msgstr ""
+
+#: src/components/routes/system/charts/network-charts.tsx
+#: src/components/routes/system/network-sheet.tsx
+#: src/components/routes/system/network-sheet.tsx
+#: src/components/routes/system/network-sheet.tsx
+msgid "Network traffic of public interfaces"
+msgstr "Ommaviy interfeyslarning tarmoq trafigi"
+
+#. Context: Bytes or bits
+#: src/components/routes/settings/general.tsx
+msgid "Network unit"
+msgstr "Tarmoq birligi"
+
+#: src/components/systemd-table/systemd-table.tsx
+#: src/components/systemd-table/systemd-table.tsx
+#: src/components/systemd-table/systemd-table.tsx
+msgid "No"
+msgstr "Yo'q"
+
+#: src/components/routes/system/zfs-table.tsx
+msgid "No detail data for this pool."
+msgstr "Bu pool uchun batafsil ma’lumot mavjud emas."
+
+#: src/components/command-palette.tsx
+#: src/components/systemd-table/systemd-table.tsx
+msgid "No results found."
+msgstr "Natijalar topilmadi."
+
+#: src/components/containers-table/containers-table.tsx
+#: src/components/containers-table/containers-table.tsx
+#: src/components/containers-table/containers-table.tsx
+#: src/components/routes/settings/alerts-history-data-table.tsx
+#: src/components/routes/system/smart-table.tsx
+#: src/components/systemd-table/systemd-table.tsx
+msgid "No results."
+msgstr "Natijalar yo'q."
+
+#: src/components/routes/system/smart-table.tsx
+msgid "No S.M.A.R.T. attributes available for this device."
+msgstr "Ushbu qurilma uchun S.M.A.R.T. atributlari mavjud emas."
+
+#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table.tsx
+msgid "No systems found."
+msgstr "Tizimlar topilmadi."
+
+#: src/components/routes/system/zfs-table.tsx
+msgid "None"
+msgstr "Yo‘q"
+
+#: src/components/command-palette.tsx
+#: src/components/routes/settings/layout.tsx
+#: src/components/routes/settings/notifications.tsx
+msgid "Notifications"
+msgstr "Bildirishnomalar"
+
+#: src/lib/alerts.ts
+msgid "Notifications may include recent container log excerpts."
+msgstr "Bildirishnomalarda konteyner jurnallarining so‘nggi parchalari bo‘lishi mumkin."
+
+#: src/components/login/auth-form.tsx
+msgid "OAuth 2 / OIDC support"
+msgstr "OAuth 2 / OIDC qo'llab-quvvatlash"
+
+#: src/components/routes/settings/config-yaml.tsx
+msgid "On each restart, systems in the database will be updated to match the systems defined in the file."
+msgstr "Har qayta ishga tushirilganda, ma'lumotlar bazasidagi tizimlar fayldagi tizimlarga mos yangilanadi."
+
+#: src/lib/alerts.ts
+msgid "One or more containers are unhealthy"
+msgstr "Bir yoki bir nechta konteyner nosog‘lom holatda"
+
+#: src/lib/alerts.ts
+msgid "One or more services are in a failed state"
+msgstr "Bir yoki bir nechta xizmat ishlamay qolgan holatda"
+
+#: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "One-time"
+msgstr "Bir martalik"
+
+#: src/components/login/auth-form.tsx
+msgid "One-time password"
+msgstr "Bir martalik parol"
+
+#: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
+#: src/components/routes/system/smart-table.tsx
+#: src/components/routes/system/zfs-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
+msgid "Open menu"
+msgstr "Menyuni ochish"
+
+#: src/components/login/auth-form.tsx
+msgid "Or continue with"
+msgstr "Yoki bilan davom eting"
+
+#: src/components/routes/system/cpu-sheet.tsx
+msgid "Other"
+msgstr "Boshqa"
+
+#: src/components/alerts/alerts-sheet.tsx
+msgid "Overwrite existing alerts"
+msgstr "Mavjud ogohlantirishlarni qayta yozish"
+
+#: src/components/command-palette.tsx
+#: src/components/command-palette.tsx
+#: src/components/command-palette.tsx
+msgid "Page"
+msgstr "Sahifa"
+
+#. placeholder {0}: table.getState().pagination.pageIndex + 1
+#. placeholder {1}: table.getPageCount()
+#: src/components/routes/settings/alerts-history-data-table.tsx
+msgid "Page {0} of {1}"
+msgstr "{0} / {1} sahifa"
+
+#: src/components/command-palette.tsx
+msgid "Pages / Settings"
+msgstr "Sahifalar / Sozlamalar"
+
+#: src/components/login/auth-form.tsx
+#: src/components/login/auth-form.tsx
+msgid "Password"
+msgstr "Parol"
+
+#: src/components/login/auth-form.tsx
+msgid "Password must be at least 8 characters."
+msgstr "Parol kamida 8 ta belgidan iborat bo'lishi kerak."
+
+#: src/components/login/auth-form.tsx
+msgid "Password must be less than 72 bytes."
+msgstr "Parol 72 baytdan kam bo'lishi kerak."
+
+#: src/components/login/forgot-pass-form.tsx
+msgid "Password reset request received"
+msgstr "Parolni tiklash so'rovi qabul qilindi"
+
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Past"
+msgstr "O'tgan"
+
+#: src/components/systems-table/systems-table-columns.tsx
+msgid "Pause"
+msgstr "Pauza"
+
+#: src/components/systems-table/systems-table-columns.tsx
+msgid "Paused"
+msgstr "To'xtatilgan"
+
+#: src/components/systems-table/systems-table.tsx
+msgid "Paused ({pausedSystemsLength})"
+msgstr "To'xtatilgan ({pausedSystemsLength})"
+
+#: src/components/routes/settings/heartbeat.tsx
+msgid "Payload format"
+msgstr "Yuklanma formati"
+
+#: src/components/routes/system/cpu-sheet.tsx
+#: src/components/routes/system/cpu-sheet.tsx
+msgid "Per-core average utilization"
+msgstr "Har yadro uchun o'rtacha yuklanish"
+
+#: src/components/routes/system/charts/disk-charts.tsx
+msgid "Percent of time the disk is busy with I/O"
+msgstr "Diskni I/O bilan band bo'lish vaqti foizi"
+
+#: src/components/routes/system/cpu-sheet.tsx
+msgid "Percentage of time spent in each state"
+msgstr "Har bir holatda sarflangan vaqt foizi"
+
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Permanent"
+msgstr "Doimiy"
+
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Persistence"
+msgstr "Saqlash"
+
+#: src/components/routes/settings/notifications.tsx
+msgid "Please <0>configure an SMTP server</0> to ensure alerts are delivered."
+msgstr "Ogohlantirishlar yetkazilishini ta'minlash uchun <0>SMTP serverni sozlang</0>."
+
+#: src/components/alerts/alerts-sheet.tsx
+msgid "Please check logs for more details."
+msgstr "Batafsil ma'lumot uchun jurnallarni tekshiring."
+
+#: src/components/login/auth-form.tsx
+#: src/components/login/forgot-pass-form.tsx
+msgid "Please check your credentials and try again"
+msgstr "Hisobingizni tekshirib, qayta urinib ko'ring"
+
+#: src/components/login/login.tsx
+msgid "Please create an admin account"
+msgstr "Admin hisob yarating"
+
+#: src/components/login/auth-form.tsx
+msgid "Please enable pop-ups for this site"
+msgstr "Ushbu sayt uchun qalqib chiquvchi oynalarni yoqing"
+
+#: src/lib/api.ts
+msgid "Please log in again"
+msgstr "Iltimos, qayta kiring"
+
+#: src/components/login/auth-form.tsx
+msgid "Please see <0>the documentation</0> for instructions."
+msgstr "Ko'rsatmalar uchun <0>hujjatlarni</0> ko'ring."
+
+#: src/components/login/login.tsx
+msgid "Please sign in to your account"
+msgstr "Hisobingizga kiring"
+
+#: src/components/routes/system/zfs-table.tsx
+msgid "Pool Health"
+msgstr "Pool holati"
+
+#: src/components/routes/system/charts/zfs-charts.tsx
+msgid "Pool Usage"
+msgstr "Pool ishlatilishi"
+
+#: src/components/add-system.tsx
+msgid "Port"
+msgstr "Port"
+
+#: src/components/containers-table/containers-table-columns.tsx
+msgctxt "Container ports"
+msgid "Ports"
+msgstr "Portlar"
+
+#. Power On Time
+#: src/components/routes/system/smart-table.tsx
+msgid "Power On"
+msgstr "Yoqish"
+
+#: src/components/routes/system/charts/gpu-charts.tsx
+#: src/components/routes/system/charts/memory-charts.tsx
+msgid "Precise utilization at the recorded time"
+msgstr "Qayd etilgan vaqtdagi aniq yuklanish"
+
+#: src/components/routes/settings/general.tsx
+msgid "Preferred Language"
+msgstr "Afzal til"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Process started"
+msgstr "Jarayon boshlandi"
+
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Public key"
+msgstr ""
+
+#. Use 'Key' if your language requires many more characters
+#: src/components/add-system.tsx
+msgid "Public Key"
+msgstr "Ochiq kalit"
+
+#: src/components/routes/system/disk-io-sheet.tsx
+msgctxt "Disk I/O average queue depth"
+msgid "Queue Depth"
+msgstr "Navbat chuqurligi"
+
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Quiet Hours"
+msgstr "Tinch soatlar"
+
+#. Disk read
+#. Disk read
+#: src/components/routes/system/charts/disk-charts.tsx
+#: src/components/routes/system/charts/zfs-charts.tsx
+#: src/components/routes/system/disk-io-sheet.tsx
+#: src/components/routes/system/disk-io-sheet.tsx
+#: src/components/routes/system/disk-io-sheet.tsx
+#: src/components/routes/system/disk-io-sheet.tsx
+msgid "Read"
+msgstr "O'qish"
+
+#: src/components/routes/system/zfs-table.tsx
+msgid "Read errors"
+msgstr "O‘qish xatolari"
+
+#: src/components/routes/system/charts/network-charts.tsx
+msgid "Received"
+msgstr "Qabul qilindi"
+
+#: src/components/containers-table/containers-table.tsx
+#: src/components/containers-table/containers-table.tsx
+#: src/components/routes/system/smart-table.tsx
+#: src/components/routes/system/zfs-table.tsx
+msgid "Refresh"
+msgstr "Yangilash"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Relationships"
+msgstr "Munosabatlar"
+
+#: src/components/login/login.tsx
+msgid "Request a one-time password"
+msgstr "Bir martalik parol so'rash"
+
+#: src/components/login/otp-forms.tsx
+msgid "Request OTP"
+msgstr "OTP so'rash"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Required by"
+msgstr "Talab qilinadi"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Requires"
+msgstr "Talab qiladi"
+
+#: src/components/login/forgot-pass-form.tsx
+msgid "Reset Password"
+msgstr "Parolni tiklash"
+
+#: src/components/alerts-history-columns.tsx
+#: src/components/alerts-history-columns.tsx
+#: src/components/routes/settings/alerts-history-data-table.tsx
+msgid "Resolved"
+msgstr "Hal qilindi"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Restarts"
+msgstr "Qayta ishga tushirishlar"
+
+#: src/components/systems-table/systems-table-columns.tsx
+msgid "Resume"
+msgstr "Davom ettirish"
+
+#: src/components/routes/system/charts/disk-charts.tsx
+#: src/components/routes/system/charts/disk-charts.tsx
+#: src/components/systems-table/systems-table-columns.tsx
+msgctxt "Root disk label"
+msgid "Root"
+msgstr "Ildiz"
+
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Rotate token"
+msgstr "Tokenni yangilash"
+
+#: src/components/routes/settings/alerts-history-data-table.tsx
+msgid "Rows per page"
+msgstr "Sahifadagi qatorlar"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Runtime Metrics"
+msgstr "Ishlash vaqti metrikasi"
+
+#: src/components/routes/system/smart-table.tsx
+msgid "S.M.A.R.T. Details"
+msgstr "S.M.A.R.T. tafsilotlar"
+
+#: src/components/routes/system/smart-table.tsx
+msgid "S.M.A.R.T. Self-Test"
+msgstr "S.M.A.R.T. o'z-o'zini test"
+
+#: src/components/add-system.tsx
+msgid "Save {foo}"
+msgstr "{foo} saqlash"
+
+#: src/components/routes/settings/notifications.tsx
+msgid "Save address using enter key or comma. Leave blank to disable email notifications."
+msgstr "Manzilni enter tugmasi yoki vergul yordamida saqlang. Elektron pochta bildirishnomalarini o'chirish uchun bo'sh qoldiring."
+
+#: src/components/routes/settings/general.tsx
+#: src/components/routes/settings/notifications.tsx
+msgid "Save Settings"
+msgstr "Sozlamalarni saqlash"
+
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Saved in the database and does not expire until you disable it."
+msgstr "Ma'lumotlar bazasida saqlanadi va siz o'chirishingizcha muddati tugamaydi."
+
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Schedule"
+msgstr "Jadval"
+
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Schedule quiet hours where notifications will not be sent, such as during maintenance periods."
+msgstr "Texnik xizmat vaqtida bo'lgani kabi bildirishnomalar yuborilmaydigan tinch soatlarni belgilang."
+
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Schedule quiet hours where notifications will not be sent."
+msgstr "Bildirishnomalar yuborilmaydigan tinch soatlarni belgilang."
+
+#: src/components/navbar.tsx
+msgid "Search"
+msgstr "Qidirish"
+
+#: src/components/command-palette.tsx
+msgid "Search for systems or settings..."
+msgstr "Tizimlar yoki sozlamalarni qidiring..."
+
+#: src/components/routes/settings/heartbeat.tsx
+msgid "Seconds between pings (default: 60)"
+msgstr "Pinglar orasidagi soniyalar (standart: 60)"
+
+#: src/components/alerts/alerts-sheet.tsx
+msgid "See <0>notification settings</0> to configure how you receive alerts."
+msgstr "Ogohlantirishlarni qanday olishingizni sozlash uchun <0>bildirishnoma sozlamalarini</0> ko'ring."
+
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Select {foo}"
+msgstr "{foo} tanlash"
+
+#: src/components/routes/settings/heartbeat.tsx
+msgid "Send a single heartbeat ping to verify your endpoint is working."
+msgstr "Endpoint'ingiz ishlayotganligini tekshirish uchun bitta heartbeat ping yuboring."
+
+#: src/components/routes/settings/heartbeat.tsx
+msgid "Send periodic outbound pings to an external monitoring service so you can monitor Beszel without exposing it to the internet."
+msgstr "Beszel'ni internetga ochmasdan monitoring qilish uchun tashqi monitoring xizmatiga davriy ping'lar yuboring."
+
+#: src/components/routes/settings/heartbeat.tsx
+msgid "Send test heartbeat"
+msgstr "Test heartbeat yuborish"
+
+#: src/components/routes/system/charts/network-charts.tsx
+msgid "Sent"
+msgstr "Yuborildi"
+
+#: src/components/routes/system/smart-table.tsx
+msgid "Serial Number"
+msgstr "Seriya raqami"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Service Details"
+msgstr "Xizmat tafsilotlari"
+
+#: src/components/routes/system.tsx
+#: src/components/systems-table/systems-table-columns.tsx
+msgid "Services"
+msgstr "Xizmatlar"
+
+#: src/components/routes/settings/general.tsx
+msgid "Set percentage thresholds for meter colors."
+msgstr "O'lchagich ranglari uchun foiz chegaralarini belgilang."
+
+#: src/components/routes/settings/heartbeat.tsx
+msgid "Set the following environment variables on your Beszel hub to enable heartbeat monitoring:"
+msgstr "Heartbeat monitoringni yoqish uchun Beszel hub'ingizda quyidagi muhit o'zgaruvchilarini belgilang:"
+
+#: src/components/command-palette.tsx
+#: src/components/command-palette.tsx
+#: src/components/navbar.tsx
+#: src/components/navbar.tsx
+#: src/components/routes/settings/layout.tsx
+#: src/components/routes/settings/layout.tsx
+#: src/components/routes/system/info-bar.tsx
+msgid "Settings"
+msgstr "Sozlamalar"
+
+#: src/components/routes/settings/layout.tsx
+msgid "Settings saved"
+msgstr "Sozlamalar saqlandi"
+
+#: src/components/login/auth-form.tsx
+msgid "Sign in"
+msgstr "Kirish"
+
+#: src/components/command-palette.tsx
+msgid "SMTP settings"
+msgstr "SMTP sozlamalari"
+
+#: src/components/systems-table/systems-table.tsx
+msgid "Sort By"
+msgstr "Saralash"
+
+#: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Start Time"
+msgstr "Boshlanish vaqti"
+
+#. Context: alert state (active or resolved)
+#: src/components/alerts-history-columns.tsx
+#: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/system/zfs-table.tsx
+#: src/components/systemd-table/systemd-table-columns.tsx
+msgid "State"
+msgstr "Holat"
+
+#: src/components/containers-table/containers-table-columns.tsx
+#: src/components/routes/system/smart-table.tsx
+#: src/components/systemd-table/systemd-table.tsx
+#: src/components/systems-table/systems-table.tsx
+#: src/lib/alerts.ts
+msgid "Status"
+msgstr "Holat"
+
+#: src/components/systemd-table/systemd-table-columns.tsx
+msgid "Sub State"
+msgstr "Kichik holat"
+
+#: src/components/routes/system/charts/memory-charts.tsx
+msgid "Swap space used by the system"
+msgstr "Tizim tomonidan ishlatiladigan swap maydoni"
+
+#: src/components/routes/system/charts/memory-charts.tsx
+msgid "Swap Usage"
+msgstr "Swap ishlatilishi"
+
+#: src/components/mode-toggle.tsx
+#: src/components/mode-toggle.tsx
+msgid "Switch theme"
+msgstr "Mavzuni almashtirish"
+
+#: src/components/add-system.tsx
+#: src/components/alerts-history-columns.tsx
+#: src/components/containers-table/containers-table-columns.tsx
+#: src/components/navbar.tsx
+#: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
+#: src/components/routes/system/smart-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
+#: src/lib/alerts.ts
+msgid "System"
+msgstr "Tizim"
+
+#: src/components/routes/system/charts/sensor-charts.tsx
+msgid "System fan speeds (RPM)"
+msgstr ""
+
+#: src/components/routes/system/charts/load-average-chart.tsx
+msgid "System load averages over time"
+msgstr "Tizim yuklanishi o'rtachalari vaqt bo'yicha"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Systemd Services"
+msgstr "Systemd xizmatlari"
+
+#: src/components/navbar.tsx
+msgid "Systems"
+msgstr "Tizimlar"
+
+#: src/components/routes/settings/config-yaml.tsx
+msgid "Systems may be managed in a <0>config.yml</0> file inside your data directory."
+msgstr "Tizimlar ma'lumotlar katalogingiz ichidagi <0>config.yml</0> faylida boshqarilishi mumkin."
+
+#: src/components/systems-table/systems-table.tsx
+msgid "Table"
+msgstr "Jadval"
+
+#: src/components/routes/system/info-bar.tsx
+msgctxt "Tabs system layout option"
+msgid "Tabs"
+msgstr "Yorliqlar"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Tasks"
+msgstr "Vazifalar"
+
+#. Temperature label in systems table
+#: src/components/routes/system/smart-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
+msgid "Temp"
+msgstr "Harorat"
+
+#: src/components/routes/system/charts/sensor-charts.tsx
+#: src/lib/alerts.ts
+msgid "Temperature"
+msgstr "Harorat"
+
+#: src/components/routes/settings/general.tsx
+msgid "Temperature unit"
+msgstr "Harorat birligi"
+
+#: src/components/routes/system/charts/sensor-charts.tsx
+msgid "Temperatures of system sensors"
+msgstr "Tizim sensorlarining haroratlari"
+
+#: src/components/routes/settings/notifications.tsx
+msgid "Test <0>URL</0>"
+msgstr "Test <0>URL</0>"
+
+#: src/components/routes/settings/heartbeat.tsx
+msgid "Test heartbeat"
+msgstr "Test heartbeat"
+
+#: src/components/routes/settings/notifications.tsx
+msgid "Test notification sent"
+msgstr "Test bildirishnoma yuborildi"
+
+#: src/components/routes/settings/heartbeat.tsx
+msgid "The overall status is <0>ok</0> when all systems are up, <1>warn</1> when alerts are triggered, and <2>error</2> when any system is down."
+msgstr "Barcha tizimlar ishlayotganida umumiy holat <0>yaxshi</0>, ogohlantirishlar ishga tushganda <1>ogohlantirish</1> va biron-bir tizim ishlamayotganida <2>xato</2>."
+
+#: src/components/login/forgot-pass-form.tsx
+msgid "Then log into the backend and reset your user account password in the users table."
+msgstr "Keyin backend'ga kiring va foydalanuvchilar jadvalidagi foydalanuvchi hisob parolingizni tiklang."
+
+#: src/components/systems-table/systems-table-columns.tsx
+msgid "This action cannot be undone. This will permanently delete all current records for {name} from the database."
+msgstr "Bu amalni bekor qilib bo'lmaydi. Bu {name} uchun barcha joriy yozuvlarni ma'lumotlar bazasidan butunlay o'chiradi."
+
+#: src/components/routes/settings/alerts-history-data-table.tsx
+msgid "This will permanently delete all selected records from the database."
+msgstr "Bu barcha tanlangan yozuvlarni ma'lumotlar bazasidan butunlay o'chiradi."
+
+#: src/components/routes/system/charts/disk-charts.tsx
+msgid "Throughput of {extraFsName}"
+msgstr "{extraFsName} ning o'tkazish qobiliyati"
+
+#: src/components/routes/system/charts/zfs-charts.tsx
+msgid "Throughput of ZFS pool {poolName}"
+msgstr "ZFS pool {poolName} o‘tkazuvchanligi"
+
+#: src/components/routes/settings/general.tsx
+msgid "Time format"
+msgstr "Vaqt formati"
+
+#: src/components/routes/settings/notifications.tsx
+msgid "To email(s)"
+msgstr "Kimga (elektron pochta)"
+
+#: src/components/add-system.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Token"
+msgstr "Token"
+
+#: src/components/command-palette.tsx
+#: src/components/routes/settings/layout.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Tokens & Fingerprints"
+msgstr "Tokenlar va barmoq izlari"
+
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Tokens allow agents to connect and register. Fingerprints are stable identifiers unique to each system, set on first connection."
+msgstr "Tokenlar agentlarga ulanish va ro'yxatdan o'tish imkonini beradi. Barmoq izlari - birinchi ulanishda o'rnatiladigan, har bir tizimga xos barqaror identifikatorlar."
+
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Tokens and fingerprints are used to authenticate WebSocket connections to the hub."
+msgstr "Tokenlar va barmoq izlari hub'ga WebSocket ulanishlarini autentifikatsiya qilish uchun ishlatiladi."
+
+#: src/components/ui/chart.tsx
+#: src/components/ui/chart.tsx
+msgid "Total"
+msgstr "Jami"
+
+#: src/components/routes/system/network-sheet.tsx
+msgid "Total data received for each interface"
+msgstr "Har bir interfeys uchun qabul qilingan jami ma'lumotlar"
+
+#: src/components/routes/system/network-sheet.tsx
+msgid "Total data sent for each interface"
+msgstr "Har bir interfeys uchun yuborilgan jami ma'lumotlar"
+
+#: src/components/routes/system/disk-io-sheet.tsx
+msgctxt "Disk I/O"
+msgid "Total time spent on read/write (can exceed 100%)"
+msgstr "O'qish/yozishga sarflangan jami vaqt (100% dan oshishi mumkin)"
+
+#. placeholder {0}: data.length
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Total: {0}"
+msgstr "Jami: {0}"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Triggered by"
+msgstr "Ishga tushirdi"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Triggers"
+msgstr "Ishga tushiruvchilar"
+
+#: src/lib/alerts.ts
+msgid "Triggers when 1 minute load average exceeds a threshold"
+msgstr "1 daqiqalik o'rtacha yuklanish chegaradan oshganda ishga tushadi"
+
+#: src/lib/alerts.ts
+msgid "Triggers when 15 minute load average exceeds a threshold"
+msgstr "15 daqiqalik o'rtacha yuklanish chegaradan oshganda ishga tushadi"
+
+#: src/lib/alerts.ts
+msgid "Triggers when 5 minute load average exceeds a threshold"
+msgstr "5 daqiqalik o'rtacha yuklanish chegaradan oshganda ishga tushadi"
+
+#: src/lib/alerts.ts
+msgid "Triggers when a container's health check reports unhealthy"
+msgstr "Konteyner sog‘liq tekshiruvi nosog‘lom holat haqida xabar berganda ishga tushadi"
+
+#: src/lib/alerts.ts
+msgid "Triggers when any sensor exceeds a threshold"
+msgstr "Biron-bir sensor chegaradan oshganda ishga tushadi"
+
+#: src/lib/alerts.ts
+msgid "Triggers when any systemd service enters the failed state"
+msgstr "Har qanday systemd xizmati ishlamay qolgan holatga o‘tganda ishga tushadi"
+
+#: src/lib/alerts.ts
+msgid "Triggers when battery charge drops below a threshold"
+msgstr "Batareya zaryadi chegaradan pastga tushganda ishga tushadi"
+
+#: src/lib/alerts.ts
+msgid "Triggers when combined up/down exceeds a threshold"
+msgstr "Birlashtirilgan yuklash/yuklab olish chegaradan oshganda ishga tushadi"
+
+#: src/lib/alerts.ts
+msgid "Triggers when CPU I/O wait exceeds a threshold"
+msgstr "CPU I/O kutish vaqti belgilangan chegaradan oshganda ishga tushadi"
+
+#: src/lib/alerts.ts
+msgid "Triggers when CPU steal time exceeds a threshold"
+msgstr "CPU steal vaqti belgilangan chegaradan oshganda ishga tushadi"
+
+#: src/lib/alerts.ts
+msgid "Triggers when CPU usage exceeds a threshold"
+msgstr "CPU yuklanishi chegaradan oshganda ishga tushadi"
+
+#: src/lib/alerts.ts
+msgid "Triggers when GPU usage exceeds a threshold"
+msgstr "GPU yuklanishi chegaradan oshganda ishga tushadi"
+
+#: src/lib/alerts.ts
+msgid "Triggers when memory usage exceeds a threshold"
+msgstr "Xotira yuklanishi chegaradan oshganda ishga tushadi"
+
+#: src/lib/alerts.ts
+msgid "Triggers when status switches between up and down"
+msgstr "Holat ishlayapti/ishlamayapti o'rtasida o'zgarganda ishga tushadi"
+
+#: src/lib/alerts.ts
+msgid "Triggers when usage of any disk exceeds a threshold"
+msgstr "Biron-bir disk ishlatilishi chegaradan oshganda ishga tushadi"
+
+#: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/system/smart-table.tsx
+msgid "Type"
+msgstr "Tur"
+
+#: src/lib/alerts.ts
+msgid "Unhealthy"
+msgstr ""
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Unit file"
+msgstr "Birlik fayl"
+
+#. Temperature / network units
+#: src/components/routes/settings/general.tsx
+msgid "Unit preferences"
+msgstr "Birlik parametrlari"
+
+#: src/components/command-palette.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Universal token"
+msgstr "Universal token"
+
+#. Context: Battery state
+#: src/components/routes/system/zfs-table.tsx
+#: src/lib/i18n.ts
+msgid "Unknown"
+msgstr "Noma'lum"
+
+#: src/components/systemd-table/systemd-table.tsx
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Unlimited"
+msgstr "Cheksiz"
+
+#. Context: System is up
+#: src/components/routes/system/info-bar.tsx
+#: src/components/systems-table/systems-table-columns.tsx
+msgid "Up"
+msgstr "Ishlayapti"
+
+#: src/components/systems-table/systems-table.tsx
+msgid "Up ({upSystemsLength})"
+msgstr "Ishlayapti ({upSystemsLength})"
+
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Update"
+msgstr "Yangilash"
+
+#: src/components/containers-table/containers-table-columns.tsx
+#: src/components/routes/system/smart-table.tsx
+#: src/components/routes/system/zfs-table.tsx
+#: src/components/systemd-table/systemd-table-columns.tsx
+msgid "Updated"
+msgstr "Yangilandi"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Updated every 10 minutes."
+msgstr "Har 10 daqiqada yangilanadi."
+
+#: src/components/routes/system/network-sheet.tsx
+msgid "Upload"
+msgstr "Yuklash"
+
+#: src/components/routes/system/info-bar.tsx
+#: src/components/systems-table/systems-table-columns.tsx
+msgid "Uptime"
+msgstr "Ishlash vaqti"
+
+#: src/components/routes/system/charts/disk-charts.tsx
+#: src/components/routes/system/charts/disk-charts.tsx
+#: src/components/routes/system/charts/gpu-charts.tsx
+#: src/components/routes/system/charts/gpu-charts.tsx
+#: src/components/routes/system/charts/gpu-charts.tsx
+#: src/components/routes/system/charts/zfs-charts.tsx
+#: src/components/routes/system/cpu-sheet.tsx
+msgid "Usage"
+msgstr "Ishlatilishi"
+
+#: src/components/routes/system/charts/zfs-charts.tsx
+msgid "Usage of ZFS pool {poolName}"
+msgstr "ZFS pool {poolName} ishlatilishi"
+
+#: src/components/routes/system/charts/memory-charts.tsx
+#: src/components/routes/system/charts/memory-charts.tsx
+#: src/components/routes/system/zfs-table.tsx
+#: src/components/routes/system/zfs-table.tsx
+#: src/components/routes/system/zfs-table.tsx
+msgid "Used"
+msgstr "Ishlatilgan"
+
+#: src/components/command-palette.tsx
+#: src/components/navbar.tsx
+msgid "Users"
+msgstr "Foydalanuvchilar"
+
+#: src/components/routes/system/charts/disk-charts.tsx
+msgctxt "Disk I/O utilization"
+msgid "Utilization"
+msgstr "Yuklanish"
+
+#: src/components/alerts-history-columns.tsx
+msgid "Value"
+msgstr "Qiymat"
+
+#: src/components/systems-table/systems-table.tsx
+msgid "View"
+msgstr "Ko'rish"
+
+#: src/components/routes/system/cpu-sheet.tsx
+#: src/components/routes/system/disk-io-sheet.tsx
+#: src/components/routes/system/network-sheet.tsx
+msgid "View more"
+msgstr "Ko'proq ko'rish"
+
+#: src/components/routes/settings/alerts-history-data-table.tsx
+msgid "View your 200 most recent alerts."
+msgstr "So'nggi 200 ta ogohlantirishingizni ko'ring."
+
+#: src/components/systems-table/systems-table.tsx
+msgid "Visible Fields"
+msgstr "Ko'rinadigan maydonlar"
+
+#: src/components/routes/system/chart-card.tsx
+msgid "Waiting for enough records to display"
+msgstr "Ko'rsatish uchun yetarli yozuvlar kutilmoqda"
+
+#: src/components/routes/settings/general.tsx
+msgid "Want to help improve our translations? Check <0>Crowdin</0> for details."
+msgstr "Tarjimalarimizni yaxshilashga yordam bermoqchimisiz? Batafsil ma'lumot uchun <0>Crowdin</0> ni tekshiring."
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Wants"
+msgstr "Kerak qiladi"
+
+#: src/components/routes/settings/general.tsx
+msgid "Warning (%)"
+msgstr "Ogohlantirish (%)"
+
+#: src/components/routes/settings/general.tsx
+msgid "Warning thresholds"
+msgstr "Ogohlantirish chegaralari"
+
+#: src/components/routes/settings/notifications.tsx
+msgid "Webhook / Push notifications"
+msgstr "Webhook / Push bildirishnomalar"
+
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "When enabled, this token allows agents to self-register without prior system creation."
+msgstr "Yoqilganda, ushbu token agentlarga oldindan tizim yaratmasdan o'z-o'zini ro'yxatdan o'tkazish imkonini beradi."
+
+#: src/components/routes/settings/heartbeat.tsx
+msgid "When using POST, each heartbeat includes a JSON payload with system status summary, list of down systems, and triggered alerts."
+msgstr "POST ishlatilganda, har bir heartbeat tizim holati xulosasi, ishlamayotgan tizimlar ro'yxati va ishga tushirilgan ogohlantirishlarni o'z ichiga olgan JSON yuklamani o'z ichiga oladi."
+
+#: src/components/add-system.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgctxt "Button to copy install command"
+msgid "Windows command"
+msgstr "Windows buyrug'i"
+
+#. Disk write
+#. Disk write
+#: src/components/routes/system/charts/disk-charts.tsx
+#: src/components/routes/system/charts/zfs-charts.tsx
+#: src/components/routes/system/disk-io-sheet.tsx
+#: src/components/routes/system/disk-io-sheet.tsx
+#: src/components/routes/system/disk-io-sheet.tsx
+#: src/components/routes/system/disk-io-sheet.tsx
+msgid "Write"
+msgstr "Yozish"
+
+#: src/components/routes/system/zfs-table.tsx
+msgid "Write errors"
+msgstr "Yozish xatolari"
+
+#: src/components/routes/settings/layout.tsx
+msgid "YAML Config"
+msgstr "YAML konfiguratsiya"
+
+#: src/components/routes/settings/config-yaml.tsx
+msgid "YAML Configuration"
+msgstr "YAML konfiguratsiyasi"
+
+#: src/components/systemd-table/systemd-table.tsx
+#: src/components/systemd-table/systemd-table.tsx
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Yes"
+msgstr "Ha"
+
+#: src/components/routes/settings/layout.tsx
+msgid "Your user settings have been updated."
+msgstr "Foydalanuvchi sozlamalaringiz yangilandi."

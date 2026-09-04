@@ -8,7 +8,7 @@ msgstr ""
 "Language: ar\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2026-06-03 00:49\n"
+"PO-Revision-Date: 2026-09-02 19:32\n"
 "Last-Translator: \n"
 "Language-Team: Arabic\n"
 "Plural-Forms: nplurals=6; plural=(n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 && n%100<=10 ? 3 : n%100>=11 && n%100<=99 ? 4 : 5);\n"
@@ -45,6 +45,10 @@ msgstr "{count, plural, one {{countString} ساعة} other {{countString} ساع
 #: src/lib/utils.ts
 msgid "{count, plural, one {{countString} minute} few {{countString} minutes} many {{countString} minutes} other {{countString} minutes}}"
 msgstr "{count, plural, one {{countString} دقيقة} few {{countString} دقائق} many {{countString} دقيقة} other {{countString} دقيقة}}"
+
+#: src/components/routes/system/charts/disk-charts.tsx
+msgid "{diskName} I/O"
+msgstr "{diskName} إدخال/إخراج"
 
 #: src/components/routes/system/info-bar.tsx
 msgid "{threads, plural, one {# thread} other {# threads}}"
@@ -93,6 +97,7 @@ msgstr "5 دقائق"
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 #: src/components/routes/system/smart-table.tsx
+#: src/components/routes/system/zfs-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Actions"
 msgstr "إجراءات"
@@ -190,6 +195,11 @@ msgstr "هل أنت متأكد؟"
 #: src/components/copy-to-clipboard.tsx
 msgid "Automatic copy requires a secure context."
 msgstr "النسخ التلقائي يتطلب سياقًا آمنًا."
+
+#: src/components/routes/system/zfs-table.tsx
+msgctxt "Disk space available"
+msgid "Available"
+msgstr "المتاح"
 
 #: src/components/routes/system/chart-card.tsx
 msgid "Average"
@@ -328,6 +338,7 @@ msgid "Capabilities"
 msgstr "القدرات"
 
 #: src/components/routes/system/smart-table.tsx
+#: src/components/routes/system/zfs-table.tsx
 msgid "Capacity"
 msgstr "السعة"
 
@@ -380,8 +391,14 @@ msgstr "تحقق من خدمة المراقبة الخاصة بك"
 msgid "Check your notification service"
 msgstr "تحقق من خدمة الإشعارات الخاصة بك"
 
+#: src/components/routes/system/zfs-table.tsx
+msgid "Checksum errors"
+msgstr "أخطاء المجموع الاختباري"
+
 #: src/components/containers-table/containers-table.tsx
 #: src/components/routes/system/smart-table.tsx
+#: src/components/routes/system/zfs-table.tsx
+#: src/components/routes/system/zfs-table.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "Clear"
 msgstr "مسح"
@@ -393,6 +410,10 @@ msgstr "انقر على حاوية لعرض مزيد من المعلومات."
 #: src/components/routes/system/smart-table.tsx
 msgid "Click on a device to view more information."
 msgstr "انقر على جهاز لعرض مزيد من المعلومات."
+
+#: src/components/routes/system/zfs-table.tsx
+msgid "Click on a pool to view vdev and dataset details."
+msgstr "انقر على مجموعة تخزين لعرض تفاصيل vdev ومجموعة البيانات."
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Click on a system to view more information."
@@ -423,6 +444,14 @@ msgstr "التعارضات"
 #: src/components/active-alerts.tsx
 msgid "Connection is down"
 msgstr "الاتصال مقطوع"
+
+#: src/lib/alerts.ts
+msgid "Container"
+msgstr "حاوية"
+
+#: src/lib/alerts.ts
+msgid "Container Health"
+msgstr "صحة الحاوية"
 
 #: src/components/routes/system.tsx
 msgid "Containers"
@@ -507,9 +536,17 @@ msgstr "المعالج"
 msgid "CPU Cores"
 msgstr "نوى المعالج"
 
+#: src/lib/alerts.ts
+msgid "CPU I/O Wait"
+msgstr "انتظار الإدخال/الإخراج للمعالج (IOWait)"
+
 #: src/components/systemd-table/systemd-table-columns.tsx
 msgid "CPU Peak"
 msgstr "ذروة المعالج"
+
+#: src/lib/alerts.ts
+msgid "CPU Steal Time"
+msgstr "وقت المعالج المسروق (Steal)"
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "CPU time"
@@ -543,13 +580,29 @@ msgstr "أنشئت"
 msgid "Critical (%)"
 msgstr "حرج (%)"
 
+#: src/components/routes/system/disk-io-sheet.tsx
+msgid "Cumulative data read since boot"
+msgstr "إجمالي البيانات المقروءة منذ الإقلاع"
+
+#: src/components/routes/system/disk-io-sheet.tsx
+msgid "Cumulative data written since boot"
+msgstr "إجمالي البيانات المكتوبة منذ الإقلاع"
+
 #: src/components/routes/system/network-sheet.tsx
 msgid "Cumulative Download"
 msgstr "التنزيل التراكمي"
 
+#: src/components/routes/system/disk-io-sheet.tsx
+msgid "Cumulative Read"
+msgstr "إجمالي القراءة"
+
 #: src/components/routes/system/network-sheet.tsx
 msgid "Cumulative Upload"
 msgstr "الرفع التراكمي"
+
+#: src/components/routes/system/disk-io-sheet.tsx
+msgid "Cumulative Write"
+msgstr "إجمالي الكتابة"
 
 #. Context: Battery state
 #. Context: Battery state
@@ -610,15 +663,10 @@ msgstr "قيد التفريغ"
 msgid "Disk"
 msgstr "القرص"
 
-#: src/components/routes/system/charts/disk-charts.tsx
-msgid "Disk I/O"
-msgstr "إدخال/إخراج القرص"
-
 #: src/components/routes/settings/general.tsx
 msgid "Disk unit"
 msgstr "وحدة القرص"
 
-#: src/components/routes/system/charts/disk-charts.tsx
 #: src/components/routes/system/charts/disk-charts.tsx
 #: src/lib/alerts.ts
 msgid "Disk Usage"
@@ -788,6 +836,10 @@ msgstr "فشل"
 msgid "Failed Attributes:"
 msgstr "السمات الفاشلة:"
 
+#: src/lib/alerts.ts
+msgid "Failed Services"
+msgstr "الخدمات الفاشلة"
+
 #: src/lib/api.ts
 msgid "Failed to authenticate"
 msgstr "فشل في المصادقة"
@@ -823,6 +875,8 @@ msgstr ""
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/system/chart-card.tsx
 #: src/components/routes/system/smart-table.tsx
+#: src/components/routes/system/zfs-table.tsx
+#: src/components/routes/system/zfs-table.tsx
 #: src/components/systemd-table/systemd-table.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "Filter..."
@@ -843,6 +897,12 @@ msgstr "لمدة <0>{min}</0> {min, plural, one {دقيقة} other {دقائق}}
 #: src/components/login/auth-form.tsx
 msgid "Forgot password?"
 msgstr "هل نسيت كلمة المرور؟"
+
+#: src/components/routes/system/zfs-table.tsx
+#: src/components/routes/system/zfs-table.tsx
+msgctxt "Free space"
+msgid "Free"
+msgstr "المساحة الحرة"
 
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
@@ -888,6 +948,7 @@ msgid "Grid"
 msgstr "شبكة"
 
 #: src/components/containers-table/containers-table-columns.tsx
+#: src/components/routes/system/zfs-table.tsx
 msgid "Health"
 msgstr "الصحة"
 
@@ -1077,13 +1138,17 @@ msgid "Memory Usage"
 msgstr "استخدام الذاكرة"
 
 #: src/components/routes/system/charts/memory-charts.tsx
-msgid "Memory usage of docker containers"
-msgstr "استخدام الذاكرة لحاويات دوكر"
+msgid "Memory usage of containers"
+msgstr "استخدام الذاكرة للحاويات"
 
 #. Device model
 #: src/components/routes/system/smart-table.tsx
 msgid "Model"
 msgstr "الموديل"
+
+#: src/components/routes/system/zfs-table.tsx
+msgid "Mountpoint"
+msgstr "نقطة الربط"
 
 #: src/components/add-system.tsx
 #: src/components/alerts-history-columns.tsx
@@ -1099,8 +1164,8 @@ msgid "Net"
 msgstr "الشبكة"
 
 #: src/components/routes/system/charts/network-charts.tsx
-msgid "Network traffic of docker containers"
-msgstr "حركة مرور الشبكة لحاويات الدوكر"
+msgid "Network traffic of containers"
+msgstr "حركة مرور الشبكة للحاويات"
 
 #: src/components/routes/system/charts/network-charts.tsx
 #: src/components/routes/system/network-sheet.tsx
@@ -1119,6 +1184,10 @@ msgstr "وحدة الشبكة"
 #: src/components/systemd-table/systemd-table.tsx
 msgid "No"
 msgstr "لا"
+
+#: src/components/routes/system/zfs-table.tsx
+msgid "No detail data for this pool."
+msgstr "لا تتوفر بيانات تفصيلية لمجموعة التخزين هذه."
 
 #: src/components/command-palette.tsx
 #: src/components/systemd-table/systemd-table.tsx
@@ -1143,11 +1212,19 @@ msgstr "لا توجد سمات S.M.A.R.T. متاحة لهذا الجهاز."
 msgid "No systems found."
 msgstr "لم يتم العثور على أنظمة."
 
+#: src/components/routes/system/zfs-table.tsx
+msgid "None"
+msgstr "لا شيء"
+
 #: src/components/command-palette.tsx
 #: src/components/routes/settings/layout.tsx
 #: src/components/routes/settings/notifications.tsx
 msgid "Notifications"
 msgstr "الإشعارات"
+
+#: src/lib/alerts.ts
+msgid "Notifications may include recent container log excerpts."
+msgstr "قد تتضمن الإشعارات مقتطفات حديثة من سجلات الحاويات."
 
 #: src/components/login/auth-form.tsx
 msgid "OAuth 2 / OIDC support"
@@ -1156,6 +1233,14 @@ msgstr "دعم OAuth 2 / OIDC"
 #: src/components/routes/settings/config-yaml.tsx
 msgid "On each restart, systems in the database will be updated to match the systems defined in the file."
 msgstr "في كل إعادة تشغيل، سيتم تحديث الأنظمة في قاعدة البيانات لتتطابق مع الأنظمة المعرفة في الملف."
+
+#: src/lib/alerts.ts
+msgid "One or more containers are unhealthy"
+msgstr "حاوية واحدة أو أكثر غير سليمة"
+
+#: src/lib/alerts.ts
+msgid "One or more services are in a failed state"
+msgstr "خدمة واحدة أو أكثر في حالة فشل"
 
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/quiet-hours.tsx
@@ -1170,6 +1255,7 @@ msgstr "كلمة مرور لمرة واحدة"
 #: src/components/routes/settings/tokens-fingerprints.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 #: src/components/routes/system/smart-table.tsx
+#: src/components/routes/system/zfs-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Open menu"
 msgstr "فتح القائمة"
@@ -1293,6 +1379,14 @@ msgstr "يرجى الاطلاع على <0>التوثيق</0> للحصول على
 msgid "Please sign in to your account"
 msgstr "يرجى تسجيل الدخول إلى حسابك"
 
+#: src/components/routes/system/zfs-table.tsx
+msgid "Pool Health"
+msgstr "صحة مجموعة التخزين"
+
+#: src/components/routes/system/charts/zfs-charts.tsx
+msgid "Pool Usage"
+msgstr "استخدام مجموعة التخزين"
+
 #: src/components/add-system.tsx
 msgid "Port"
 msgstr "المنفذ"
@@ -1339,12 +1433,19 @@ msgid "Quiet Hours"
 msgstr "ساعات الهدوء"
 
 #. Disk read
+#. Disk read
 #: src/components/routes/system/charts/disk-charts.tsx
+#: src/components/routes/system/charts/zfs-charts.tsx
+#: src/components/routes/system/disk-io-sheet.tsx
 #: src/components/routes/system/disk-io-sheet.tsx
 #: src/components/routes/system/disk-io-sheet.tsx
 #: src/components/routes/system/disk-io-sheet.tsx
 msgid "Read"
 msgstr "قراءة"
+
+#: src/components/routes/system/zfs-table.tsx
+msgid "Read errors"
+msgstr "أخطاء القراءة"
 
 #: src/components/routes/system/charts/network-charts.tsx
 msgid "Received"
@@ -1353,6 +1454,7 @@ msgstr "تم الاستلام"
 #: src/components/containers-table/containers-table.tsx
 #: src/components/containers-table/containers-table.tsx
 #: src/components/routes/system/smart-table.tsx
+#: src/components/routes/system/zfs-table.tsx
 msgid "Refresh"
 msgstr "تحديث"
 
@@ -1394,6 +1496,8 @@ msgstr "إعادة التشغيل"
 msgid "Resume"
 msgstr "استئناف"
 
+#: src/components/routes/system/charts/disk-charts.tsx
+#: src/components/routes/system/charts/disk-charts.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgctxt "Root disk label"
 msgid "Root"
@@ -1539,6 +1643,7 @@ msgstr "وقت البدء"
 #. Context: alert state (active or resolved)
 #: src/components/alerts-history-columns.tsx
 #: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/system/zfs-table.tsx
 #: src/components/systemd-table/systemd-table-columns.tsx
 msgid "State"
 msgstr "الحالة"
@@ -1667,9 +1772,9 @@ msgstr "سيؤدي هذا إلى حذف جميع السجلات المحددة �
 msgid "Throughput of {extraFsName}"
 msgstr "معدل نقل {extraFsName}"
 
-#: src/components/routes/system/charts/disk-charts.tsx
-msgid "Throughput of root filesystem"
-msgstr "معدل نقل نظام الملفات الجذر"
+#: src/components/routes/system/charts/zfs-charts.tsx
+msgid "Throughput of ZFS pool {poolName}"
+msgstr "معدل نقل البيانات لمجموعة ZFS {poolName}"
 
 #: src/components/routes/settings/general.tsx
 msgid "Time format"
@@ -1742,8 +1847,16 @@ msgid "Triggers when 5 minute load average exceeds a threshold"
 msgstr "يتم التفعيل عندما يتجاوز متوسط التحميل لمدة 5 دقائق عتبة معينة"
 
 #: src/lib/alerts.ts
+msgid "Triggers when a container's health check reports unhealthy"
+msgstr "يتم تشغيله عندما يفيد فحص صحة الحاوية بأنها غير سليمة"
+
+#: src/lib/alerts.ts
 msgid "Triggers when any sensor exceeds a threshold"
 msgstr "يتم التفعيل عندما يتجاوز أي مستشعر عتبة معينة"
+
+#: src/lib/alerts.ts
+msgid "Triggers when any systemd service enters the failed state"
+msgstr "يتم تشغيله عندما تدخل أي خدمة systemd في حالة فشل"
 
 #: src/lib/alerts.ts
 msgid "Triggers when battery charge drops below a threshold"
@@ -1752,6 +1865,14 @@ msgstr "يتم التفعيل عندما تنخفض شحنة البطارية أ
 #: src/lib/alerts.ts
 msgid "Triggers when combined up/down exceeds a threshold"
 msgstr "يتم التفعيل عندما يتجاوز الجمع بين الصعود/الهبوط عتبة معينة"
+
+#: src/lib/alerts.ts
+msgid "Triggers when CPU I/O wait exceeds a threshold"
+msgstr "يُفعّل عندما يتجاوز وقت انتظار الإدخال/الإخراج للمعالج الحد"
+
+#: src/lib/alerts.ts
+msgid "Triggers when CPU steal time exceeds a threshold"
+msgstr "يُفعّل عندما يتجاوز الوقت المسروق من المعالج الحد"
 
 #: src/lib/alerts.ts
 msgid "Triggers when CPU usage exceeds a threshold"
@@ -1779,6 +1900,10 @@ msgstr "يتم التفعيل عندما يتجاوز استخدام أي قرص
 msgid "Type"
 msgstr "النوع"
 
+#: src/lib/alerts.ts
+msgid "Unhealthy"
+msgstr "غير سليمة"
+
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Unit file"
 msgstr "ملف الوحدة"
@@ -1794,6 +1919,7 @@ msgid "Universal token"
 msgstr "رمز مميز عالمي"
 
 #. Context: Battery state
+#: src/components/routes/system/zfs-table.tsx
 #: src/lib/i18n.ts
 msgid "Unknown"
 msgstr "غير معروفة"
@@ -1819,6 +1945,7 @@ msgstr "تحديث"
 
 #: src/components/containers-table/containers-table-columns.tsx
 #: src/components/routes/system/smart-table.tsx
+#: src/components/routes/system/zfs-table.tsx
 #: src/components/systemd-table/systemd-table-columns.tsx
 msgid "Updated"
 msgstr "تم التحديث"
@@ -1837,19 +1964,24 @@ msgid "Uptime"
 msgstr "مدة التشغيل"
 
 #: src/components/routes/system/charts/disk-charts.tsx
+#: src/components/routes/system/charts/disk-charts.tsx
 #: src/components/routes/system/charts/gpu-charts.tsx
 #: src/components/routes/system/charts/gpu-charts.tsx
 #: src/components/routes/system/charts/gpu-charts.tsx
+#: src/components/routes/system/charts/zfs-charts.tsx
 #: src/components/routes/system/cpu-sheet.tsx
 msgid "Usage"
 msgstr "الاستخدام"
 
-#: src/components/routes/system/charts/disk-charts.tsx
-msgid "Usage of root partition"
-msgstr "استخدام القسم الجذر"
+#: src/components/routes/system/charts/zfs-charts.tsx
+msgid "Usage of ZFS pool {poolName}"
+msgstr "استخدام مجموعة ZFS {poolName}"
 
 #: src/components/routes/system/charts/memory-charts.tsx
 #: src/components/routes/system/charts/memory-charts.tsx
+#: src/components/routes/system/zfs-table.tsx
+#: src/components/routes/system/zfs-table.tsx
+#: src/components/routes/system/zfs-table.tsx
 msgid "Used"
 msgstr "مستخدم"
 
@@ -1924,12 +2056,19 @@ msgid "Windows command"
 msgstr "أمر ويندوز"
 
 #. Disk write
+#. Disk write
 #: src/components/routes/system/charts/disk-charts.tsx
+#: src/components/routes/system/charts/zfs-charts.tsx
+#: src/components/routes/system/disk-io-sheet.tsx
 #: src/components/routes/system/disk-io-sheet.tsx
 #: src/components/routes/system/disk-io-sheet.tsx
 #: src/components/routes/system/disk-io-sheet.tsx
 msgid "Write"
 msgstr "كتابة"
+
+#: src/components/routes/system/zfs-table.tsx
+msgid "Write errors"
+msgstr "أخطاء الكتابة"
 
 #: src/components/routes/settings/layout.tsx
 msgid "YAML Config"

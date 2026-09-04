@@ -234,7 +234,13 @@ export function SystemsTableColumns(viewMode: "table" | "grid"): ColumnDef<Syste
 			accessorFn: ({ info }) => info.g || undefined,
 			id: "gpu",
 			name: () => "GPU",
-			cell: TableCellWithMeter,
+			cell: (info) => {
+				const val = info.getValue() as number | undefined
+				if (val === undefined) {
+					return null
+				}
+				return TableCellWithMeter(info)
+			},
 			Icon: GpuIcon,
 			header: sortableHeader,
 		},
@@ -522,9 +528,9 @@ function DiskCellWithMultiple(info: CellContext<SystemRecord, unknown>) {
 	const { info: sysInfo, status, id } = info.row.original
 	const extraFs = Object.entries(sysInfo.efs ?? {})
 	const rootDiskPct = sysInfo.dp
+	const rootDiskName = sysInfo.rdn
 
-	// sort extra disks by percentage descending
-	extraFs.sort((a, b) => b[1] - a[1])
+	extraFs.sort((a, b) => a[0].localeCompare(b[0]))
 
 	function getIndicatorColor(pct: number) {
 		const threshold = getMeterStateByThresholds(pct, colorWarn, colorCrit)
@@ -579,8 +585,8 @@ function DiskCellWithMultiple(info: CellContext<SystemRecord, unknown>) {
 			<TooltipContent side="right" className="max-w-xs pb-2">
 				<div className="grid gap-1">
 					<div className="grid gap-0.5">
-						<div className="text-[0.65rem] text-muted-foreground uppercase tracking-wide tabular-nums">
-							<Trans context="Root disk label">Root</Trans>
+						<div className="text-[0.65rem] max-w-40 text-muted-foreground uppercase tracking-wide truncate tabular-nums">
+							{rootDiskName ?? <Trans context="Root disk label">Root</Trans>}
 						</div>
 						<div className="flex gap-2 items-center tabular-nums text-xs">
 							<span className="min-w-7">{decimalString(rootDiskPct, rootDiskPct >= 10 ? 1 : 2)}%</span>

@@ -931,6 +931,9 @@ func (sm *SmartManager) parseSmartForSata(output []byte, deviceType string) (boo
 		if parsed, ok := smart.ParseSmartRawValueString(attr.Raw.String); ok {
 			rawValue = parsed
 		}
+		if smartData.SmartStatus == "PASSED" && rawValue > 0 && (attr.ID == 5 || attr.ID == 197 || attr.ID == 198) {
+			smartData.SmartStatus = "WARNING"
+		}
 		smartAttr := &smart.SmartAttribute{
 			ID:         attr.ID,
 			Name:       attr.Name,

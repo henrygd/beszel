@@ -8,7 +8,7 @@ msgstr ""
 "Language: ko\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2026-08-17 19:22\n"
+"PO-Revision-Date: 2026-09-02 21:43\n"
 "Last-Translator: \n"
 "Language-Team: Korean\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
@@ -45,6 +45,10 @@ msgstr "{count, plural, one {{countString} 시간} other {{countString} 시간}}
 #: src/lib/utils.ts
 msgid "{count, plural, one {{countString} minute} few {{countString} minutes} many {{countString} minutes} other {{countString} minutes}}"
 msgstr "{count, plural, one {{countString} 분} few {{countString} 분} many {{countString} 분} other {{countString} 분}}"
+
+#: src/components/routes/system/charts/disk-charts.tsx
+msgid "{diskName} I/O"
+msgstr "{diskName} I/O"
 
 #: src/components/routes/system/info-bar.tsx
 msgid "{threads, plural, one {# thread} other {# threads}}"
@@ -93,6 +97,7 @@ msgstr "5분"
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 #: src/components/routes/system/smart-table.tsx
+#: src/components/routes/system/zfs-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Actions"
 msgstr "작업"
@@ -190,6 +195,11 @@ msgstr "확실합니까?"
 #: src/components/copy-to-clipboard.tsx
 msgid "Automatic copy requires a secure context."
 msgstr "자동 복사는 안전한 컨텍스트가 필요합니다."
+
+#: src/components/routes/system/zfs-table.tsx
+msgctxt "Disk space available"
+msgid "Available"
+msgstr "사용 가능"
 
 #: src/components/routes/system/chart-card.tsx
 msgid "Average"
@@ -328,6 +338,7 @@ msgid "Capabilities"
 msgstr "권한"
 
 #: src/components/routes/system/smart-table.tsx
+#: src/components/routes/system/zfs-table.tsx
 msgid "Capacity"
 msgstr "용량"
 
@@ -380,8 +391,14 @@ msgstr "모니터링 서비스 확인"
 msgid "Check your notification service"
 msgstr "알림 서비스를 확인하세요."
 
+#: src/components/routes/system/zfs-table.tsx
+msgid "Checksum errors"
+msgstr "체크섬 오류"
+
 #: src/components/containers-table/containers-table.tsx
 #: src/components/routes/system/smart-table.tsx
+#: src/components/routes/system/zfs-table.tsx
+#: src/components/routes/system/zfs-table.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "Clear"
 msgstr "지우기"
@@ -393,6 +410,10 @@ msgstr "더 많은 정보를 보려면 컨테이너를 클릭하세요."
 #: src/components/routes/system/smart-table.tsx
 msgid "Click on a device to view more information."
 msgstr "더 많은 정보를 보려면 장치를 클릭하세요."
+
+#: src/components/routes/system/zfs-table.tsx
+msgid "Click on a pool to view vdev and dataset details."
+msgstr "풀을 클릭하여 vdev 및 데이터 세트 세부 정보를 확인하세요."
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Click on a system to view more information."
@@ -423,6 +444,14 @@ msgstr "충돌"
 #: src/components/active-alerts.tsx
 msgid "Connection is down"
 msgstr "연결이 끊겼습니다"
+
+#: src/lib/alerts.ts
+msgid "Container"
+msgstr "컨테이너"
+
+#: src/lib/alerts.ts
+msgid "Container Health"
+msgstr "컨테이너 상태"
 
 #: src/components/routes/system.tsx
 msgid "Containers"
@@ -507,9 +536,17 @@ msgstr "CPU"
 msgid "CPU Cores"
 msgstr "CPU 코어"
 
+#: src/lib/alerts.ts
+msgid "CPU I/O Wait"
+msgstr "CPU I/O 대기 시간 (IOWait)"
+
 #: src/components/systemd-table/systemd-table-columns.tsx
 msgid "CPU Peak"
 msgstr "CPU 최대값"
+
+#: src/lib/alerts.ts
+msgid "CPU Steal Time"
+msgstr "CPU 스틸 시간 (Steal)"
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "CPU time"
@@ -543,13 +580,29 @@ msgstr "생성됨"
 msgid "Critical (%)"
 msgstr "위험 (%)"
 
+#: src/components/routes/system/disk-io-sheet.tsx
+msgid "Cumulative data read since boot"
+msgstr "부팅 이후 누적 읽기 데이터"
+
+#: src/components/routes/system/disk-io-sheet.tsx
+msgid "Cumulative data written since boot"
+msgstr "부팅 이후 누적 쓰기 데이터"
+
 #: src/components/routes/system/network-sheet.tsx
 msgid "Cumulative Download"
 msgstr "누적 다운로드"
 
+#: src/components/routes/system/disk-io-sheet.tsx
+msgid "Cumulative Read"
+msgstr "누적 읽기"
+
 #: src/components/routes/system/network-sheet.tsx
 msgid "Cumulative Upload"
 msgstr "누적 업로드"
+
+#: src/components/routes/system/disk-io-sheet.tsx
+msgid "Cumulative Write"
+msgstr "누적 쓰기"
 
 #. Context: Battery state
 #. Context: Battery state
@@ -610,15 +663,10 @@ msgstr "방전 중"
 msgid "Disk"
 msgstr "디스크"
 
-#: src/components/routes/system/charts/disk-charts.tsx
-msgid "Disk I/O"
-msgstr "디스크 I/O"
-
 #: src/components/routes/settings/general.tsx
 msgid "Disk unit"
 msgstr "디스크 단위"
 
-#: src/components/routes/system/charts/disk-charts.tsx
 #: src/components/routes/system/charts/disk-charts.tsx
 #: src/lib/alerts.ts
 msgid "Disk Usage"
@@ -788,6 +836,10 @@ msgstr "실패"
 msgid "Failed Attributes:"
 msgstr "실패한 속성:"
 
+#: src/lib/alerts.ts
+msgid "Failed Services"
+msgstr "실패한 서비스"
+
 #: src/lib/api.ts
 msgid "Failed to authenticate"
 msgstr "인증 실패"
@@ -823,6 +875,8 @@ msgstr ""
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/system/chart-card.tsx
 #: src/components/routes/system/smart-table.tsx
+#: src/components/routes/system/zfs-table.tsx
+#: src/components/routes/system/zfs-table.tsx
 #: src/components/systemd-table/systemd-table.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "Filter..."
@@ -843,6 +897,12 @@ msgstr "<0>{min}</0> {min, plural, one {분} other {분}} 동안"
 #: src/components/login/auth-form.tsx
 msgid "Forgot password?"
 msgstr "비밀번호를 잊으셨나요?"
+
+#: src/components/routes/system/zfs-table.tsx
+#: src/components/routes/system/zfs-table.tsx
+msgctxt "Free space"
+msgid "Free"
+msgstr "여유 공간"
 
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
@@ -888,6 +948,7 @@ msgid "Grid"
 msgstr "그리드"
 
 #: src/components/containers-table/containers-table-columns.tsx
+#: src/components/routes/system/zfs-table.tsx
 msgid "Health"
 msgstr "상태"
 
@@ -1077,13 +1138,17 @@ msgid "Memory Usage"
 msgstr "메모리 사용량"
 
 #: src/components/routes/system/charts/memory-charts.tsx
-msgid "Memory usage of docker containers"
-msgstr "Docker 컨테이너의 메모리 사용량"
+msgid "Memory usage of containers"
+msgstr "컨테이너 메모리 사용량"
 
 #. Device model
 #: src/components/routes/system/smart-table.tsx
 msgid "Model"
 msgstr "모델"
+
+#: src/components/routes/system/zfs-table.tsx
+msgid "Mountpoint"
+msgstr "마운트 지점"
 
 #: src/components/add-system.tsx
 #: src/components/alerts-history-columns.tsx
@@ -1099,8 +1164,8 @@ msgid "Net"
 msgstr "네트워크"
 
 #: src/components/routes/system/charts/network-charts.tsx
-msgid "Network traffic of docker containers"
-msgstr "Docker 컨테이너의 네트워크 트래픽"
+msgid "Network traffic of containers"
+msgstr "컨테이너 네트워크 트래픽"
 
 #: src/components/routes/system/charts/network-charts.tsx
 #: src/components/routes/system/network-sheet.tsx
@@ -1119,6 +1184,10 @@ msgstr "네트워크 단위"
 #: src/components/systemd-table/systemd-table.tsx
 msgid "No"
 msgstr "아니오"
+
+#: src/components/routes/system/zfs-table.tsx
+msgid "No detail data for this pool."
+msgstr "이 풀에 대한 상세 데이터가 없습니다."
 
 #: src/components/command-palette.tsx
 #: src/components/systemd-table/systemd-table.tsx
@@ -1143,11 +1212,19 @@ msgstr "이 장치에 사용할 수 있는 S.M.A.R.T. 속성이 없습니다."
 msgid "No systems found."
 msgstr "시스템을 찾을 수 없습니다."
 
+#: src/components/routes/system/zfs-table.tsx
+msgid "None"
+msgstr "없음"
+
 #: src/components/command-palette.tsx
 #: src/components/routes/settings/layout.tsx
 #: src/components/routes/settings/notifications.tsx
 msgid "Notifications"
 msgstr "알림"
+
+#: src/lib/alerts.ts
+msgid "Notifications may include recent container log excerpts."
+msgstr "알림에는 최근 컨테이너 로그의 일부가 포함될 수 있습니다."
 
 #: src/components/login/auth-form.tsx
 msgid "OAuth 2 / OIDC support"
@@ -1156,6 +1233,14 @@ msgstr "OAuth 2 / OIDC 지원"
 #: src/components/routes/settings/config-yaml.tsx
 msgid "On each restart, systems in the database will be updated to match the systems defined in the file."
 msgstr "매 시작 시, 데이터베이스가 파일에 정의된 시스템과 일치하도록 업데이트됩니다."
+
+#: src/lib/alerts.ts
+msgid "One or more containers are unhealthy"
+msgstr "하나 이상의 컨테이너가 비정상 상태입니다"
+
+#: src/lib/alerts.ts
+msgid "One or more services are in a failed state"
+msgstr "하나 이상의 서비스가 실패 상태입니다"
 
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/quiet-hours.tsx
@@ -1170,6 +1255,7 @@ msgstr "OTP"
 #: src/components/routes/settings/tokens-fingerprints.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 #: src/components/routes/system/smart-table.tsx
+#: src/components/routes/system/zfs-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Open menu"
 msgstr "메뉴 열기"
@@ -1293,6 +1379,14 @@ msgstr "사용법은 <0>문서</0>를 참조하세요."
 msgid "Please sign in to your account"
 msgstr "계정에 로그인하세요."
 
+#: src/components/routes/system/zfs-table.tsx
+msgid "Pool Health"
+msgstr "풀 상태"
+
+#: src/components/routes/system/charts/zfs-charts.tsx
+msgid "Pool Usage"
+msgstr "풀 사용량"
+
 #: src/components/add-system.tsx
 msgid "Port"
 msgstr "포트"
@@ -1339,12 +1433,19 @@ msgid "Quiet Hours"
 msgstr "조용한 시간"
 
 #. Disk read
+#. Disk read
 #: src/components/routes/system/charts/disk-charts.tsx
+#: src/components/routes/system/charts/zfs-charts.tsx
+#: src/components/routes/system/disk-io-sheet.tsx
 #: src/components/routes/system/disk-io-sheet.tsx
 #: src/components/routes/system/disk-io-sheet.tsx
 #: src/components/routes/system/disk-io-sheet.tsx
 msgid "Read"
 msgstr "읽기"
+
+#: src/components/routes/system/zfs-table.tsx
+msgid "Read errors"
+msgstr "읽기 오류"
 
 #: src/components/routes/system/charts/network-charts.tsx
 msgid "Received"
@@ -1353,6 +1454,7 @@ msgstr "수신됨"
 #: src/components/containers-table/containers-table.tsx
 #: src/components/containers-table/containers-table.tsx
 #: src/components/routes/system/smart-table.tsx
+#: src/components/routes/system/zfs-table.tsx
 msgid "Refresh"
 msgstr "새로고침"
 
@@ -1394,6 +1496,8 @@ msgstr "재시작 횟수"
 msgid "Resume"
 msgstr "재개"
 
+#: src/components/routes/system/charts/disk-charts.tsx
+#: src/components/routes/system/charts/disk-charts.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgctxt "Root disk label"
 msgid "Root"
@@ -1539,6 +1643,7 @@ msgstr "시작 시간"
 #. Context: alert state (active or resolved)
 #: src/components/alerts-history-columns.tsx
 #: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/system/zfs-table.tsx
 #: src/components/systemd-table/systemd-table-columns.tsx
 msgid "State"
 msgstr "상태"
@@ -1667,9 +1772,9 @@ msgstr "선택한 모든 레코드를 데이터베이스에서 영구적으로 �
 msgid "Throughput of {extraFsName}"
 msgstr "{extraFsName}의 처리량"
 
-#: src/components/routes/system/charts/disk-charts.tsx
-msgid "Throughput of root filesystem"
-msgstr "루트 파일 시스템의 처리량"
+#: src/components/routes/system/charts/zfs-charts.tsx
+msgid "Throughput of ZFS pool {poolName}"
+msgstr "ZFS 풀 {poolName} 처리량"
 
 #: src/components/routes/settings/general.tsx
 msgid "Time format"
@@ -1742,8 +1847,16 @@ msgid "Triggers when 5 minute load average exceeds a threshold"
 msgstr "5분 부하 평균이 임계값을 초과하면 트리거됩니다."
 
 #: src/lib/alerts.ts
+msgid "Triggers when a container's health check reports unhealthy"
+msgstr "컨테이너 상태 검사가 비정상 상태를 보고하면 트리거됩니다"
+
+#: src/lib/alerts.ts
 msgid "Triggers when any sensor exceeds a threshold"
 msgstr "센서가 임계값을 초과할 때 트리거됩니다."
+
+#: src/lib/alerts.ts
+msgid "Triggers when any systemd service enters the failed state"
+msgstr "어떤 systemd 서비스든 실패 상태로 전환되면 트리거됩니다"
 
 #: src/lib/alerts.ts
 msgid "Triggers when battery charge drops below a threshold"
@@ -1752,6 +1865,14 @@ msgstr "배터리 충전량이 임계값 아래로 떨어질 때 트리거됩니
 #: src/lib/alerts.ts
 msgid "Triggers when combined up/down exceeds a threshold"
 msgstr "업로드와 다운로드 대역폭의 합이 임계값을 초과할 때 트리거됩니다."
+
+#: src/lib/alerts.ts
+msgid "Triggers when CPU I/O wait exceeds a threshold"
+msgstr "CPU I/O 대기 시간이 임계값을 초과하면 트리거됩니다"
+
+#: src/lib/alerts.ts
+msgid "Triggers when CPU steal time exceeds a threshold"
+msgstr "CPU 스틸 시간이 임계값을 초과하면 트리거됩니다"
 
 #: src/lib/alerts.ts
 msgid "Triggers when CPU usage exceeds a threshold"
@@ -1779,6 +1900,10 @@ msgstr "디스크 사용량이 임계값을 초과할 때 트리거됩니다."
 msgid "Type"
 msgstr "유형"
 
+#: src/lib/alerts.ts
+msgid "Unhealthy"
+msgstr "비정상"
+
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Unit file"
 msgstr "Unit 파일"
@@ -1794,6 +1919,7 @@ msgid "Universal token"
 msgstr "범용 토큰"
 
 #. Context: Battery state
+#: src/components/routes/system/zfs-table.tsx
 #: src/lib/i18n.ts
 msgid "Unknown"
 msgstr "알 수 없음"
@@ -1819,6 +1945,7 @@ msgstr "업데이트"
 
 #: src/components/containers-table/containers-table-columns.tsx
 #: src/components/routes/system/smart-table.tsx
+#: src/components/routes/system/zfs-table.tsx
 #: src/components/systemd-table/systemd-table-columns.tsx
 msgid "Updated"
 msgstr "업데이트됨"
@@ -1837,19 +1964,24 @@ msgid "Uptime"
 msgstr "가동시간"
 
 #: src/components/routes/system/charts/disk-charts.tsx
+#: src/components/routes/system/charts/disk-charts.tsx
 #: src/components/routes/system/charts/gpu-charts.tsx
 #: src/components/routes/system/charts/gpu-charts.tsx
 #: src/components/routes/system/charts/gpu-charts.tsx
+#: src/components/routes/system/charts/zfs-charts.tsx
 #: src/components/routes/system/cpu-sheet.tsx
 msgid "Usage"
 msgstr "사용량"
 
-#: src/components/routes/system/charts/disk-charts.tsx
-msgid "Usage of root partition"
-msgstr "루트 파티션의 사용량"
+#: src/components/routes/system/charts/zfs-charts.tsx
+msgid "Usage of ZFS pool {poolName}"
+msgstr "ZFS 풀 {poolName} 사용량"
 
 #: src/components/routes/system/charts/memory-charts.tsx
 #: src/components/routes/system/charts/memory-charts.tsx
+#: src/components/routes/system/zfs-table.tsx
+#: src/components/routes/system/zfs-table.tsx
+#: src/components/routes/system/zfs-table.tsx
 msgid "Used"
 msgstr "사용됨"
 
@@ -1924,12 +2056,19 @@ msgid "Windows command"
 msgstr "Windows 명령어"
 
 #. Disk write
+#. Disk write
 #: src/components/routes/system/charts/disk-charts.tsx
+#: src/components/routes/system/charts/zfs-charts.tsx
+#: src/components/routes/system/disk-io-sheet.tsx
 #: src/components/routes/system/disk-io-sheet.tsx
 #: src/components/routes/system/disk-io-sheet.tsx
 #: src/components/routes/system/disk-io-sheet.tsx
 msgid "Write"
 msgstr "쓰기"
+
+#: src/components/routes/system/zfs-table.tsx
+msgid "Write errors"
+msgstr "쓰기 오류"
 
 #: src/components/routes/settings/layout.tsx
 msgid "YAML Config"
