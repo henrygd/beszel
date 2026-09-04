@@ -495,7 +495,8 @@ func TestHTTPHeaderKeyTooLong(t *testing.T) {
 	}
 }
 
-func TestHTTPBodyTooLarge(t *testing.T) {	allowPrivateNet(t)
+func TestHTTPBodyTooLarge(t *testing.T) {
+	allowPrivateNet(t)
 	m := httpTestMonitor("http://example.com")
 	m.Config["body"] = strings.Repeat("x", (1<<20)+1)
 	if res := CheckHTTP(context.Background(), m); res.Status != StatusDown {
