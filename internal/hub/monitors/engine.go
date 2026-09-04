@@ -124,6 +124,7 @@ func (e *Engine) onDelete(ev *core.RecordEvent) error {
 	e.mgr.Remove(ev.Record.Id)
 	e.mu.Lock()
 	delete(e.sentAt, ev.Record.Id)
+	delete(e.downSince, ev.Record.Id)
 	e.mu.Unlock()
 	return ev.Next()
 }
@@ -170,10 +171,12 @@ func (e *Engine) SyncOne(id string) error {
 // carry their record id, so the row is resolved without name lookups.
 func (e *Engine) handleResult(m Monitor, res CheckResult, transition bool, failures int) {
 	if m.ID == "" {
+		slog.Debug("monitors: dropping result without record id", "monitor", m.Name)
 		return
 	}
 	rec, err := e.app.FindRecordById("monitors", m.ID)
 	if err != nil {
+		slog.Debug("monitors: dropping result for deleted monitor", "id", m.ID, "err", err)
 		return
 	}
 	mr := recordToMonitor(rec)
