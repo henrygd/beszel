@@ -175,7 +175,8 @@ func generateYAML(h core.App) (string, error) {
 		Systems: make([]systemConfig, 0, len(systems)),
 	}
 
-	// Fetch all users at once
+	// Fetch all users at once (systems + monitors, so monitor-only users
+	// are included in the export).
 	allUserIDs := make([]string, 0)
 	for _, system := range systems {
 		allUserIDs = append(allUserIDs, system.GetStringSlice("users")...)
@@ -224,7 +225,17 @@ func generateYAML(h core.App) (string, error) {
 	}
 
 	// Populate the Config struct with monitor data (without secrets).
+	// Monitors absent from a later config.yml are never deleted (unlike
+	// systems); the header below documents this.
 	monitors, err := h.FindRecordsByFilter("monitors", "id != ''", "name", -1, 0)
+	if err != nil {
+		return "", err
+	}
+	for _, mon := range monitors {
+		allUserIDs = append(allUserIDs, mon.GetStringSlice("users")...)
+	}
+	// Rebuild the map now that monitor users are included.
+	userEmailMap, err = getUserEmailMap(h, allUserIDs)
 	if err != nil {
 		return "", err
 	}
@@ -240,12 +251,21 @@ func generateYAML(h core.App) (string, error) {
 		cfg := map[string]any{}
 		_ = mon.UnmarshalJSONField("config", &cfg)
 		for k := range cfg {
-			if yamlSecretKeys[strings.ToLower(k)] {
+			lk := strings.ToLower(k)
+			if yamlSecretKeys[lk] || lk == "headers" {
 				delete(cfg, k)
 			}
 		}
+		interval := int(mon.GetFloat("interval"))
+		timeout := int(mon.GetFloat("timeout"))
+		maxRetries := int(mon.GetFloat("max_retries"))
+		resendAfter := int(mon.GetFloat("resend_after"))
+		notify := mon.GetBool("notify")
 		config.Monitors = append(config.Monitors, monitorConfig{
 			Name: mon.GetString("name"), Type: mon.GetString("type"), Target: mon.GetString("target"),
+			Interval: &interval, Timeout: &timeout, MaxRetries: &maxRetries,
+			UpsideDown: mon.GetBool("upside_down"), Paused: mon.GetBool("paused"),
+			Notify: &notify, ResendAfter: &resendAfter,
 			Users: userEmails, Config: cfg,
 		})
 	}
@@ -257,7 +277,7 @@ func generateYAML(h core.App) (string, error) {
 	}
 
 	// Add a header to the YAML
-	yamlData = append([]byte("# Values for port, users, and token are optional.\n# Defaults are port 45876, the first created user, and a generated UUID token.\n\n"), yamlData...)
+	yamlData = append([]byte("# Values for port, users, and token are optional.\n# Defaults are port 45876, the first created user, and a generated UUID token.\n# Monitors sync from the 'monitors' key below. Unlike systems, monitors absent\n# from config.yml are never deleted, and secrets (password, token, headers)\n# are never exported - re-adding them requires editing the file manually.\n\n"), yamlData...)
 
 	return string(yamlData), nil
 }

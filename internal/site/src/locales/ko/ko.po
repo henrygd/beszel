@@ -18,17 +18,46 @@ msgstr ""
 "X-Crowdin-File: /main/internal/site/src/locales/en/en.po\n"
 "X-Crowdin-File-ID: 32\n"
 
+#: src/components/routes/monitor-dialog.tsx
+msgid "(leave empty to keep)"
+msgstr ""
+
 #. placeholder {0}: newVersion.v
 #: src/components/footer-repo-link.tsx
 msgctxt "New version available"
 msgid "{0} available"
 msgstr "{0} 사용 가능"
 
+#. placeholder {0}: summary.counts.down
+#: src/components/monitors-summary.tsx
+msgid "{0} down"
+msgstr ""
+
+#. placeholder {0}: monitor.last_latency_ms.toFixed(0)
+#: src/components/routes/monitors.tsx
+msgid "{0} ms"
+msgstr ""
+
 #. placeholder {0}: table.getFilteredSelectedRowModel().rows.length
 #. placeholder {1}: table.getFilteredRowModel().rows.length
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "{0} of {1} row(s) selected."
 msgstr "{1}개의 행 중 {0}개가 선택되었습니다."
+
+#. placeholder {0}: summary.counts.paused
+#: src/components/monitors-summary.tsx
+msgid "{0} paused"
+msgstr ""
+
+#. placeholder {0}: summary.counts.up
+#: src/components/monitors-summary.tsx
+msgid "{0} up"
+msgstr ""
+
+#. placeholder {0}: summary.counts.warn
+#: src/components/monitors-summary.tsx
+msgid "{0} warning"
+msgstr ""
 
 #: src/components/routes/system/info-bar.tsx
 msgid "{cores, plural, one {# core} other {# cores}}"
@@ -92,6 +121,10 @@ msgstr "30일"
 #: src/components/routes/system/charts/load-average-chart.tsx
 msgid "5 min"
 msgstr "5분"
+
+#: src/components/routes/monitor-dialog.tsx
+msgid "Accepted codes"
+msgstr ""
 
 #. Table column
 #: src/components/routes/settings/quiet-hours.tsx
@@ -167,6 +200,10 @@ msgstr "에이전트"
 msgid "Alert History"
 msgstr "알림 기록"
 
+#: src/components/routes/monitor-dialog.tsx
+msgid "Alert when keyword is missing"
+msgstr ""
+
 #: src/components/alerts/alert-button.tsx
 #: src/components/alerts/alerts-sheet.tsx
 msgid "Alerts"
@@ -189,6 +226,11 @@ msgstr "모든 컨테이너"
 msgid "All Systems"
 msgstr "모든 시스템"
 
+#. placeholder {0}: monitor.name
+#: src/components/routes/monitors.tsx
+msgid "Are you sure you want to delete {0}?"
+msgstr ""
+
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Are you sure you want to delete {name}?"
 msgstr "{name}을(를) 삭제하시겠습니까?"
@@ -196,6 +238,10 @@ msgstr "{name}을(를) 삭제하시겠습니까?"
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Are you sure?"
 msgstr "확실합니까?"
+
+#: src/components/routes/monitor-dialog.tsx
+msgid "Auth"
+msgstr ""
 
 #: src/components/copy-to-clipboard.tsx
 msgid "Automatic copy requires a secure context."
@@ -260,6 +306,10 @@ msgstr "백업"
 msgid "Bandwidth"
 msgstr "대역폭"
 
+#: src/components/routes/monitor-dialog.tsx
+msgid "Basic"
+msgstr ""
+
 #. Battery label in systems table header
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Bat"
@@ -270,6 +320,10 @@ msgstr "배터리"
 #: src/lib/alerts.ts
 msgid "Battery"
 msgstr "배터리"
+
+#: src/components/routes/monitor-dialog.tsx
+msgid "Bearer token"
+msgstr ""
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Became active"
@@ -333,6 +387,7 @@ msgid "Can stop"
 msgstr "중지 가능"
 
 #: src/components/routes/monitor-dialog.tsx
+#: src/components/routes/monitors.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/systems-table/systems-table-columns.tsx
@@ -357,7 +412,20 @@ msgid "Celsius (°C)"
 msgstr "섭씨 (°C)"
 
 #: src/components/routes/monitors.tsx
-msgid "Cert"
+#~ msgid "Cert"
+#~ msgstr ""
+
+#. placeholder {0}: monitor.cert_days.toFixed(0)
+#: src/components/routes/monitors.tsx
+msgid "Cert expires in {0} days"
+msgstr ""
+
+#: src/components/routes/monitor-dialog.tsx
+msgid "Cert thresholds must be positive with critical below warning."
+msgstr ""
+
+#: src/components/routes/monitor.tsx
+msgid "Certificate"
 msgstr ""
 
 #: src/components/routes/settings/general.tsx
@@ -388,6 +456,14 @@ msgstr "차트 너비"
 #: src/components/login/forgot-pass-form.tsx
 msgid "Check {email} for a reset link."
 msgstr "{email}에서 재설정 링크를 확인하세요."
+
+#: src/components/routes/monitors.tsx
+msgid "Check completed"
+msgstr ""
+
+#: src/components/routes/monitors.tsx
+msgid "Check failed"
+msgstr ""
 
 #: src/components/routes/settings/layout.tsx
 msgid "Check logs for more details."
@@ -471,6 +547,7 @@ msgstr "컨테이너 상태"
 msgid "Containers"
 msgstr "컨테이너"
 
+#: src/components/routes/monitors.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Continue"
@@ -594,6 +671,10 @@ msgstr "생성됨"
 msgid "Critical (%)"
 msgstr "위험 (%)"
 
+#: src/components/routes/monitor-dialog.tsx
+msgid "Critical below (days)"
+msgstr ""
+
 #: src/components/routes/system/disk-io-sheet.tsx
 msgid "Cumulative data read since boot"
 msgstr "부팅 이후 누적 읽기 데이터"
@@ -636,8 +717,8 @@ msgid "Daily"
 msgstr "매일"
 
 #: src/components/routes/monitors.tsx
-msgid "days"
-msgstr ""
+#~ msgid "days"
+#~ msgstr ""
 
 #: src/components/routes/system/info-bar.tsx
 msgctxt "Default system layout option"
@@ -655,6 +736,10 @@ msgstr "기본 기간"
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Delete"
 msgstr "삭제"
+
+#: src/components/routes/monitors.tsx
+msgid "Delete failed"
+msgstr ""
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Delete fingerprint"
@@ -737,6 +822,7 @@ msgstr "다운로드"
 msgid "Duration"
 msgstr "기간"
 
+#: src/components/routes/monitors.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Edit"
@@ -831,9 +917,18 @@ msgstr "<0>config.yml</0>에 정의되지 않은 기존 시스템은 삭제됩�
 msgid "Exited active"
 msgstr "활성 종료됨"
 
+#: src/components/routes/monitor-dialog.tsx
+msgid "Expected answer (optional)"
+msgstr ""
+
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Expires after one hour or on hub restart."
 msgstr "한 시간 후 또는 허브 재시작 시 만료됩니다."
+
+#. placeholder {0}: monitor.cert_days.toFixed(0)
+#: src/components/routes/monitor.tsx
+msgid "Expires in {0} days"
+msgstr ""
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Export"
@@ -844,8 +939,12 @@ msgid "Export configuration"
 msgstr "구성 내보내기"
 
 #: src/components/routes/settings/config-yaml.tsx
-msgid "Export your current systems configuration."
-msgstr "현재 시스템 구성 내보내기"
+msgid "Export your current systems and monitors configuration."
+msgstr ""
+
+#: src/components/routes/settings/config-yaml.tsx
+#~ msgid "Export your current systems configuration."
+#~ msgstr "현재 시스템 구성 내보내기"
 
 #: src/components/routes/monitor-dialog.tsx
 msgid "External uptime check executed from the hub."
@@ -1006,8 +1105,12 @@ msgid "Host / IP"
 msgstr "호스트 / IP"
 
 #: src/components/routes/monitor-dialog.tsx
-msgid "HTTP check that also looks for text in the response."
+msgid "HTTP check that also looks for text in the first 2 MB of the response."
 msgstr ""
+
+#: src/components/routes/monitor-dialog.tsx
+#~ msgid "HTTP check that also looks for text in the response."
+#~ msgstr ""
 
 #: src/components/routes/settings/heartbeat.tsx
 msgid "HTTP Method"
@@ -1045,6 +1148,10 @@ msgstr "대기"
 msgid "If you've lost the password to your admin account, you may reset it using the following command."
 msgstr "관리자 계정의 비밀번호를 잃어버린 경우, 다음 명령어를 사용하여 재설정할 수 있습니다."
 
+#: src/components/routes/monitor-dialog.tsx
+msgid "Ignore TLS errors (insecure)"
+msgstr ""
+
 #: src/components/containers-table/containers-table-columns.tsx
 msgctxt "Docker image"
 msgid "Image"
@@ -1071,6 +1178,10 @@ msgid "Invalid email address."
 msgstr "잘못된 이메일 주소입니다."
 
 #: src/components/routes/monitor-dialog.tsx
+msgid "Invert status (upside down)"
+msgstr ""
+
+#: src/components/routes/monitor-dialog.tsx
 msgid "Keyword"
 msgstr ""
 
@@ -1081,6 +1192,18 @@ msgstr ""
 #: src/components/routes/settings/general.tsx
 msgid "Language"
 msgstr "언어"
+
+#: src/components/routes/monitor.tsx
+msgid "Last latency"
+msgstr ""
+
+#: src/components/routes/monitor.tsx
+msgid "Latency"
+msgstr ""
+
+#: src/components/routes/monitor.tsx
+msgid "Latency (ms)"
+msgstr ""
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Layout"
@@ -1196,13 +1319,23 @@ msgstr "메모리 사용량"
 msgid "Memory usage of containers"
 msgstr "컨테이너 메모리 사용량"
 
+#: src/components/routes/monitor.tsx
+msgid "Message"
+msgstr ""
+
+#: src/components/routes/monitor-dialog.tsx
+msgid "Method"
+msgstr ""
+
 #. Device model
 #: src/components/routes/system/smart-table.tsx
 msgid "Model"
 msgstr "모델"
 
+#: src/components/monitors-summary.tsx
 #: src/components/navbar.tsx
 #: src/components/navbar.tsx
+#: src/components/routes/monitor.tsx
 #: src/components/routes/monitors.tsx
 #: src/components/routes/monitors.tsx
 msgid "Monitors"
@@ -1256,6 +1389,10 @@ msgstr "네트워크 단위"
 msgid "No"
 msgstr "아니오"
 
+#: src/components/routes/monitor.tsx
+msgid "No checks recorded yet."
+msgstr ""
+
 #: src/components/routes/system/zfs-table.tsx
 msgid "No detail data for this pool."
 msgstr "이 풀에 대한 상세 데이터가 없습니다."
@@ -1287,6 +1424,7 @@ msgstr "이 장치에 사용할 수 있는 S.M.A.R.T. 속성이 없습니다."
 msgid "No systems found."
 msgstr "시스템을 찾을 수 없습니다."
 
+#: src/components/routes/monitor-dialog.tsx
 #: src/components/routes/system/zfs-table.tsx
 msgid "None"
 msgstr "없음"
@@ -1301,13 +1439,21 @@ msgstr "알림"
 msgid "Notifications may include recent container log excerpts."
 msgstr "알림에는 최근 컨테이너 로그의 일부가 포함될 수 있습니다."
 
+#: src/components/routes/monitors.tsx
+msgid "Notifications toggled"
+msgstr ""
+
 #: src/components/login/auth-form.tsx
 msgid "OAuth 2 / OIDC support"
 msgstr "OAuth 2 / OIDC 지원"
 
 #: src/components/routes/settings/config-yaml.tsx
-msgid "On each restart, systems in the database will be updated to match the systems defined in the file."
-msgstr "매 시작 시, 데이터베이스가 파일에 정의된 시스템과 일치하도록 업데이트됩니다."
+#~ msgid "On each restart, systems in the database will be updated to match the systems defined in the file."
+#~ msgstr "매 시작 시, 데이터베이스가 파일에 정의된 시스템과 일치하도록 업데이트됩니다."
+
+#: src/components/routes/settings/config-yaml.tsx
+msgid "On each restart, systems in the database will be updated to match the systems defined in the file. Monitors defined under the <0>monitors</0> key are created or updated the same way, but monitors missing from the file are never deleted."
+msgstr ""
 
 #: src/lib/alerts.ts
 msgid "One or more containers are unhealthy"
@@ -1347,6 +1493,18 @@ msgstr "기타"
 msgid "Overwrite existing alerts"
 msgstr "기존 알림 덮어쓰기"
 
+#: src/components/routes/monitor-dialog.tsx
+msgid "Packet size"
+msgstr ""
+
+#: src/components/routes/monitor-dialog.tsx
+msgid "Packet size must be between 0 and 65400."
+msgstr ""
+
+#: src/components/routes/monitor-dialog.tsx
+msgid "Packets"
+msgstr ""
+
 #: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
@@ -1365,6 +1523,7 @@ msgstr "페이지 / 설정"
 
 #: src/components/login/auth-form.tsx
 #: src/components/login/auth-form.tsx
+#: src/components/routes/monitor-dialog.tsx
 msgid "Password"
 msgstr "비밀번호"
 
@@ -1388,6 +1547,10 @@ msgstr "과거"
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Pause"
 msgstr "일시 중지"
+
+#: src/components/routes/monitors.tsx
+msgid "Pause toggled"
+msgstr ""
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Paused"
@@ -1421,6 +1584,10 @@ msgstr "영구적"
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Persistence"
 msgstr "지속성"
+
+#: src/components/routes/monitor-dialog.tsx
+msgid "Ping count must be between 1 and 10."
+msgstr ""
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Please <0>configure an SMTP server</0> to ensure alerts are delivered."
@@ -1498,6 +1665,10 @@ msgstr "선호 언어"
 msgid "Process started"
 msgstr "프로세스 시작됨"
 
+#: src/components/routes/monitor-dialog.tsx
+msgid "Protocol"
+msgstr ""
+
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Public key"
 msgstr ""
@@ -1535,6 +1706,10 @@ msgstr "읽기 오류"
 msgid "Received"
 msgstr "수신됨"
 
+#: src/components/routes/monitor.tsx
+msgid "Recent checks"
+msgstr ""
+
 #: src/components/routes/monitor-dialog.tsx
 msgid "Record type"
 msgstr ""
@@ -1566,6 +1741,14 @@ msgstr "필요한 대상"
 msgid "Requires"
 msgstr "필요 항목"
 
+#: src/components/routes/monitor-dialog.tsx
+msgid "Resend delay must be between 0 and 1440 minutes."
+msgstr ""
+
+#: src/components/routes/monitor-dialog.tsx
+msgid "Resend every (minutes, 0 = never)"
+msgstr ""
+
 #: src/components/login/forgot-pass-form.tsx
 msgid "Reset Password"
 msgstr "비밀번호 재설정"
@@ -1592,6 +1775,14 @@ msgstr "재시작 횟수"
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Resume"
 msgstr "재개"
+
+#: src/components/routes/monitor-dialog.tsx
+msgid "Retries before down"
+msgstr ""
+
+#: src/components/routes/monitor-dialog.tsx
+msgid "Retries must be between 0 and 10."
+msgstr ""
 
 #: src/components/routes/system/charts/disk-charts.tsx
 #: src/components/routes/system/charts/disk-charts.tsx
@@ -1758,6 +1949,7 @@ msgid "State"
 msgstr "상태"
 
 #: src/components/containers-table/containers-table-columns.tsx
+#: src/components/routes/monitor.tsx
 #: src/components/routes/system/smart-table.tsx
 #: src/components/systemd-table/systemd-table.tsx
 #: src/components/systems-table/systems-table.tsx
@@ -1827,6 +2019,7 @@ msgid "Tabs"
 msgstr "탭"
 
 #: src/components/routes/monitor-dialog.tsx
+#: src/components/routes/monitor.tsx
 msgid "Target"
 msgstr ""
 
@@ -1881,6 +2074,10 @@ msgstr "그런 다음 백엔드에 로그인하여 사용자 테이블에서 사
 msgid "This action cannot be undone. This will permanently delete all current records for {name} from the database."
 msgstr "이 작업은 되돌릴 수 없습니다. 데이터베이스에서 {name}에 대한 모든 현재 기록이 영구적으로 삭제됩니다."
 
+#: src/components/routes/monitors.tsx
+msgid "This action cannot be undone. This will permanently delete the monitor and its check history."
+msgstr ""
+
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "This will permanently delete all selected records from the database."
 msgstr "선택한 모든 레코드를 데이터베이스에서 영구적으로 삭제합니다."
@@ -1892,6 +2089,10 @@ msgstr "{extraFsName}의 처리량"
 #: src/components/routes/system/charts/zfs-charts.tsx
 msgid "Throughput of ZFS pool {poolName}"
 msgstr "ZFS 풀 {poolName} 처리량"
+
+#: src/components/routes/monitor.tsx
+msgid "Time"
+msgstr ""
 
 #: src/components/routes/settings/general.tsx
 msgid "Time format"
@@ -1910,6 +2111,7 @@ msgid "To email(s)"
 msgstr "받는사람(들)"
 
 #: src/components/add-system.tsx
+#: src/components/routes/monitor-dialog.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Token"
 msgstr "토큰"
@@ -2093,8 +2295,13 @@ msgstr "업로드"
 msgid "Uptime"
 msgstr "가동시간"
 
-#: src/components/routes/monitors.tsx
+#: src/components/routes/monitor.tsx
 msgid "Uptime 24h"
+msgstr ""
+
+#. placeholder {0}: monitor.uptime_24h > 0 ? monitor.uptime_24h.toFixed(1) : "—"
+#: src/components/routes/monitors.tsx
+msgid "Uptime 24h: {0}%"
 msgstr ""
 
 #: src/components/routes/system/charts/disk-charts.tsx
@@ -2118,6 +2325,10 @@ msgstr "ZFS 풀 {poolName} 사용량"
 #: src/components/routes/system/zfs-table.tsx
 msgid "Used"
 msgstr "사용됨"
+
+#: src/components/routes/monitor-dialog.tsx
+msgid "Username"
+msgstr ""
 
 #: src/components/command-palette.tsx
 #: src/components/navbar.tsx
@@ -2163,6 +2374,10 @@ msgstr "번역을 개선하는데 도움을 주시겠습니까? 자세한 내용
 msgid "Wants"
 msgstr "요구 항목"
 
+#: src/components/routes/monitor-dialog.tsx
+msgid "Warn below (days)"
+msgstr ""
+
 #: src/components/routes/settings/general.tsx
 msgid "Warning (%)"
 msgstr "경고 (%)"
@@ -2170,6 +2385,10 @@ msgstr "경고 (%)"
 #: src/components/routes/settings/general.tsx
 msgid "Warning thresholds"
 msgstr "경고 임계값"
+
+#: src/components/routes/monitor-dialog.tsx
+msgid "Watch certificate expiry"
+msgstr ""
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Webhook / Push notifications"

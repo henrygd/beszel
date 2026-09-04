@@ -45,8 +45,8 @@ export default function ConfigYaml() {
 					<Trans>YAML Configuration</Trans>
 				</h3>
 				<p className="text-sm text-muted-foreground leading-relaxed">
-					<Trans>Export your current systems configuration.</Trans>
-				</p>
+						<Trans>Export your current systems and monitors configuration.</Trans>
+					</p>
 			</div>
 			<Separator className="my-4" />
 			<div className="space-y-2">
@@ -57,11 +57,13 @@ export default function ConfigYaml() {
 							inside your data directory.
 						</Trans>
 					</p>
-					<p className="text-sm text-muted-foreground leading-relaxed">
-						<Trans>
-							On each restart, systems in the database will be updated to match the systems defined in the file.
-						</Trans>
-					</p>
+						<p className="text-sm text-muted-foreground leading-relaxed">
+							<Trans>
+								On each restart, systems in the database will be updated to match the systems defined in the file.
+								Monitors defined under the <code className="bg-muted rounded-sm px-1 text-primary">monitors</code> key
+								are created or updated the same way, but monitors missing from the file are never deleted.
+							</Trans>
+						</p>
 					<Alert className="my-4 border-destructive text-destructive w-auto table md:pe-6">
 						<AlertCircleIcon className="size-4.5 stroke-destructive" />
 						<AlertTitle>

@@ -13,17 +13,46 @@ msgstr ""
 "Language-Team: \n"
 "Plural-Forms: \n"
 
+#: src/components/routes/monitor-dialog.tsx
+msgid "(leave empty to keep)"
+msgstr "(leave empty to keep)"
+
 #. placeholder {0}: newVersion.v
 #: src/components/footer-repo-link.tsx
 msgctxt "New version available"
 msgid "{0} available"
 msgstr "{0} available"
 
+#. placeholder {0}: summary.counts.down
+#: src/components/monitors-summary.tsx
+msgid "{0} down"
+msgstr "{0} down"
+
+#. placeholder {0}: monitor.last_latency_ms.toFixed(0)
+#: src/components/routes/monitors.tsx
+msgid "{0} ms"
+msgstr "{0} ms"
+
 #. placeholder {0}: table.getFilteredSelectedRowModel().rows.length
 #. placeholder {1}: table.getFilteredRowModel().rows.length
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "{0} of {1} row(s) selected."
 msgstr "{0} of {1} row(s) selected."
+
+#. placeholder {0}: summary.counts.paused
+#: src/components/monitors-summary.tsx
+msgid "{0} paused"
+msgstr "{0} paused"
+
+#. placeholder {0}: summary.counts.up
+#: src/components/monitors-summary.tsx
+msgid "{0} up"
+msgstr "{0} up"
+
+#. placeholder {0}: summary.counts.warn
+#: src/components/monitors-summary.tsx
+msgid "{0} warning"
+msgstr "{0} warning"
 
 #: src/components/routes/system/info-bar.tsx
 msgid "{cores, plural, one {# core} other {# cores}}"
@@ -87,6 +116,10 @@ msgstr "30 days"
 #: src/components/routes/system/charts/load-average-chart.tsx
 msgid "5 min"
 msgstr "5 min"
+
+#: src/components/routes/monitor-dialog.tsx
+msgid "Accepted codes"
+msgstr "Accepted codes"
 
 #. Table column
 #: src/components/routes/settings/quiet-hours.tsx
@@ -162,6 +195,10 @@ msgstr "Agent"
 msgid "Alert History"
 msgstr "Alert History"
 
+#: src/components/routes/monitor-dialog.tsx
+msgid "Alert when keyword is missing"
+msgstr "Alert when keyword is missing"
+
 #: src/components/alerts/alert-button.tsx
 #: src/components/alerts/alerts-sheet.tsx
 msgid "Alerts"
@@ -184,6 +221,11 @@ msgstr "All Containers"
 msgid "All Systems"
 msgstr "All Systems"
 
+#. placeholder {0}: monitor.name
+#: src/components/routes/monitors.tsx
+msgid "Are you sure you want to delete {0}?"
+msgstr "Are you sure you want to delete {0}?"
+
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Are you sure you want to delete {name}?"
 msgstr "Are you sure you want to delete {name}?"
@@ -191,6 +233,10 @@ msgstr "Are you sure you want to delete {name}?"
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Are you sure?"
 msgstr "Are you sure?"
+
+#: src/components/routes/monitor-dialog.tsx
+msgid "Auth"
+msgstr "Auth"
 
 #: src/components/copy-to-clipboard.tsx
 msgid "Automatic copy requires a secure context."
@@ -255,6 +301,10 @@ msgstr "Backups"
 msgid "Bandwidth"
 msgstr "Bandwidth"
 
+#: src/components/routes/monitor-dialog.tsx
+msgid "Basic"
+msgstr "Basic"
+
 #. Battery label in systems table header
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Bat"
@@ -265,6 +315,10 @@ msgstr "Bat"
 #: src/lib/alerts.ts
 msgid "Battery"
 msgstr "Battery"
+
+#: src/components/routes/monitor-dialog.tsx
+msgid "Bearer token"
+msgstr "Bearer token"
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Became active"
@@ -328,6 +382,7 @@ msgid "Can stop"
 msgstr "Can stop"
 
 #: src/components/routes/monitor-dialog.tsx
+#: src/components/routes/monitors.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/systems-table/systems-table-columns.tsx
@@ -352,8 +407,21 @@ msgid "Celsius (°C)"
 msgstr "Celsius (°C)"
 
 #: src/components/routes/monitors.tsx
-msgid "Cert"
-msgstr "Cert"
+#~ msgid "Cert"
+#~ msgstr "Cert"
+
+#. placeholder {0}: monitor.cert_days.toFixed(0)
+#: src/components/routes/monitors.tsx
+msgid "Cert expires in {0} days"
+msgstr "Cert expires in {0} days"
+
+#: src/components/routes/monitor-dialog.tsx
+msgid "Cert thresholds must be positive with critical below warning."
+msgstr "Cert thresholds must be positive with critical below warning."
+
+#: src/components/routes/monitor.tsx
+msgid "Certificate"
+msgstr "Certificate"
 
 #: src/components/routes/settings/general.tsx
 msgid "Change display units for metrics."
@@ -383,6 +451,14 @@ msgstr "Chart width"
 #: src/components/login/forgot-pass-form.tsx
 msgid "Check {email} for a reset link."
 msgstr "Check {email} for a reset link."
+
+#: src/components/routes/monitors.tsx
+msgid "Check completed"
+msgstr "Check completed"
+
+#: src/components/routes/monitors.tsx
+msgid "Check failed"
+msgstr "Check failed"
 
 #: src/components/routes/settings/layout.tsx
 msgid "Check logs for more details."
@@ -466,6 +542,7 @@ msgstr "Container Health"
 msgid "Containers"
 msgstr "Containers"
 
+#: src/components/routes/monitors.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Continue"
@@ -589,6 +666,10 @@ msgstr "Created"
 msgid "Critical (%)"
 msgstr "Critical (%)"
 
+#: src/components/routes/monitor-dialog.tsx
+msgid "Critical below (days)"
+msgstr "Critical below (days)"
+
 #: src/components/routes/system/disk-io-sheet.tsx
 msgid "Cumulative data read since boot"
 msgstr "Cumulative data read since boot"
@@ -631,8 +712,8 @@ msgid "Daily"
 msgstr "Daily"
 
 #: src/components/routes/monitors.tsx
-msgid "days"
-msgstr "days"
+#~ msgid "days"
+#~ msgstr "days"
 
 #: src/components/routes/system/info-bar.tsx
 msgctxt "Default system layout option"
@@ -650,6 +731,10 @@ msgstr "Default time period"
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Delete"
 msgstr "Delete"
+
+#: src/components/routes/monitors.tsx
+msgid "Delete failed"
+msgstr "Delete failed"
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Delete fingerprint"
@@ -732,6 +817,7 @@ msgstr "Download"
 msgid "Duration"
 msgstr "Duration"
 
+#: src/components/routes/monitors.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Edit"
@@ -826,9 +912,18 @@ msgstr "Existing systems not defined in <0>config.yml</0> will be deleted. Pleas
 msgid "Exited active"
 msgstr "Exited active"
 
+#: src/components/routes/monitor-dialog.tsx
+msgid "Expected answer (optional)"
+msgstr "Expected answer (optional)"
+
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Expires after one hour or on hub restart."
 msgstr "Expires after one hour or on hub restart."
+
+#. placeholder {0}: monitor.cert_days.toFixed(0)
+#: src/components/routes/monitor.tsx
+msgid "Expires in {0} days"
+msgstr "Expires in {0} days"
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Export"
@@ -839,8 +934,12 @@ msgid "Export configuration"
 msgstr "Export configuration"
 
 #: src/components/routes/settings/config-yaml.tsx
-msgid "Export your current systems configuration."
-msgstr "Export your current systems configuration."
+msgid "Export your current systems and monitors configuration."
+msgstr "Export your current systems and monitors configuration."
+
+#: src/components/routes/settings/config-yaml.tsx
+#~ msgid "Export your current systems configuration."
+#~ msgstr "Export your current systems configuration."
 
 #: src/components/routes/monitor-dialog.tsx
 msgid "External uptime check executed from the hub."
@@ -1001,8 +1100,12 @@ msgid "Host / IP"
 msgstr "Host / IP"
 
 #: src/components/routes/monitor-dialog.tsx
-msgid "HTTP check that also looks for text in the response."
-msgstr "HTTP check that also looks for text in the response."
+msgid "HTTP check that also looks for text in the first 2 MB of the response."
+msgstr "HTTP check that also looks for text in the first 2 MB of the response."
+
+#: src/components/routes/monitor-dialog.tsx
+#~ msgid "HTTP check that also looks for text in the response."
+#~ msgstr "HTTP check that also looks for text in the response."
 
 #: src/components/routes/settings/heartbeat.tsx
 msgid "HTTP Method"
@@ -1040,6 +1143,10 @@ msgstr "Idle"
 msgid "If you've lost the password to your admin account, you may reset it using the following command."
 msgstr "If you've lost the password to your admin account, you may reset it using the following command."
 
+#: src/components/routes/monitor-dialog.tsx
+msgid "Ignore TLS errors (insecure)"
+msgstr "Ignore TLS errors (insecure)"
+
 #: src/components/containers-table/containers-table-columns.tsx
 msgctxt "Docker image"
 msgid "Image"
@@ -1066,6 +1173,10 @@ msgid "Invalid email address."
 msgstr "Invalid email address."
 
 #: src/components/routes/monitor-dialog.tsx
+msgid "Invert status (upside down)"
+msgstr "Invert status (upside down)"
+
+#: src/components/routes/monitor-dialog.tsx
 msgid "Keyword"
 msgstr "Keyword"
 
@@ -1076,6 +1187,18 @@ msgstr "Keyword is required for keyword monitors."
 #: src/components/routes/settings/general.tsx
 msgid "Language"
 msgstr "Language"
+
+#: src/components/routes/monitor.tsx
+msgid "Last latency"
+msgstr "Last latency"
+
+#: src/components/routes/monitor.tsx
+msgid "Latency"
+msgstr "Latency"
+
+#: src/components/routes/monitor.tsx
+msgid "Latency (ms)"
+msgstr "Latency (ms)"
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Layout"
@@ -1191,13 +1314,23 @@ msgstr "Memory Usage"
 msgid "Memory usage of containers"
 msgstr "Memory usage of containers"
 
+#: src/components/routes/monitor.tsx
+msgid "Message"
+msgstr "Message"
+
+#: src/components/routes/monitor-dialog.tsx
+msgid "Method"
+msgstr "Method"
+
 #. Device model
 #: src/components/routes/system/smart-table.tsx
 msgid "Model"
 msgstr "Model"
 
+#: src/components/monitors-summary.tsx
 #: src/components/navbar.tsx
 #: src/components/navbar.tsx
+#: src/components/routes/monitor.tsx
 #: src/components/routes/monitors.tsx
 #: src/components/routes/monitors.tsx
 msgid "Monitors"
@@ -1251,6 +1384,10 @@ msgstr "Network unit"
 msgid "No"
 msgstr "No"
 
+#: src/components/routes/monitor.tsx
+msgid "No checks recorded yet."
+msgstr "No checks recorded yet."
+
 #: src/components/routes/system/zfs-table.tsx
 msgid "No detail data for this pool."
 msgstr "No detail data for this pool."
@@ -1282,6 +1419,7 @@ msgstr "No S.M.A.R.T. attributes available for this device."
 msgid "No systems found."
 msgstr "No systems found."
 
+#: src/components/routes/monitor-dialog.tsx
 #: src/components/routes/system/zfs-table.tsx
 msgid "None"
 msgstr "None"
@@ -1296,13 +1434,21 @@ msgstr "Notifications"
 msgid "Notifications may include recent container log excerpts."
 msgstr "Notifications may include recent container log excerpts."
 
+#: src/components/routes/monitors.tsx
+msgid "Notifications toggled"
+msgstr "Notifications toggled"
+
 #: src/components/login/auth-form.tsx
 msgid "OAuth 2 / OIDC support"
 msgstr "OAuth 2 / OIDC support"
 
 #: src/components/routes/settings/config-yaml.tsx
-msgid "On each restart, systems in the database will be updated to match the systems defined in the file."
-msgstr "On each restart, systems in the database will be updated to match the systems defined in the file."
+#~ msgid "On each restart, systems in the database will be updated to match the systems defined in the file."
+#~ msgstr "On each restart, systems in the database will be updated to match the systems defined in the file."
+
+#: src/components/routes/settings/config-yaml.tsx
+msgid "On each restart, systems in the database will be updated to match the systems defined in the file. Monitors defined under the <0>monitors</0> key are created or updated the same way, but monitors missing from the file are never deleted."
+msgstr "On each restart, systems in the database will be updated to match the systems defined in the file. Monitors defined under the <0>monitors</0> key are created or updated the same way, but monitors missing from the file are never deleted."
 
 #: src/lib/alerts.ts
 msgid "One or more containers are unhealthy"
@@ -1342,6 +1488,18 @@ msgstr "Other"
 msgid "Overwrite existing alerts"
 msgstr "Overwrite existing alerts"
 
+#: src/components/routes/monitor-dialog.tsx
+msgid "Packet size"
+msgstr "Packet size"
+
+#: src/components/routes/monitor-dialog.tsx
+msgid "Packet size must be between 0 and 65400."
+msgstr "Packet size must be between 0 and 65400."
+
+#: src/components/routes/monitor-dialog.tsx
+msgid "Packets"
+msgstr "Packets"
+
 #: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
@@ -1360,6 +1518,7 @@ msgstr "Pages / Settings"
 
 #: src/components/login/auth-form.tsx
 #: src/components/login/auth-form.tsx
+#: src/components/routes/monitor-dialog.tsx
 msgid "Password"
 msgstr "Password"
 
@@ -1383,6 +1542,10 @@ msgstr "Past"
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Pause"
 msgstr "Pause"
+
+#: src/components/routes/monitors.tsx
+msgid "Pause toggled"
+msgstr "Pause toggled"
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Paused"
@@ -1416,6 +1579,10 @@ msgstr "Permanent"
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Persistence"
 msgstr "Persistence"
+
+#: src/components/routes/monitor-dialog.tsx
+msgid "Ping count must be between 1 and 10."
+msgstr "Ping count must be between 1 and 10."
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Please <0>configure an SMTP server</0> to ensure alerts are delivered."
@@ -1493,6 +1660,10 @@ msgstr "Preferred Language"
 msgid "Process started"
 msgstr "Process started"
 
+#: src/components/routes/monitor-dialog.tsx
+msgid "Protocol"
+msgstr "Protocol"
+
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Public key"
 msgstr "Public key"
@@ -1530,6 +1701,10 @@ msgstr "Read errors"
 msgid "Received"
 msgstr "Received"
 
+#: src/components/routes/monitor.tsx
+msgid "Recent checks"
+msgstr "Recent checks"
+
 #: src/components/routes/monitor-dialog.tsx
 msgid "Record type"
 msgstr "Record type"
@@ -1561,6 +1736,14 @@ msgstr "Required by"
 msgid "Requires"
 msgstr "Requires"
 
+#: src/components/routes/monitor-dialog.tsx
+msgid "Resend delay must be between 0 and 1440 minutes."
+msgstr "Resend delay must be between 0 and 1440 minutes."
+
+#: src/components/routes/monitor-dialog.tsx
+msgid "Resend every (minutes, 0 = never)"
+msgstr "Resend every (minutes, 0 = never)"
+
 #: src/components/login/forgot-pass-form.tsx
 msgid "Reset Password"
 msgstr "Reset Password"
@@ -1587,6 +1770,14 @@ msgstr "Restarts"
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Resume"
 msgstr "Resume"
+
+#: src/components/routes/monitor-dialog.tsx
+msgid "Retries before down"
+msgstr "Retries before down"
+
+#: src/components/routes/monitor-dialog.tsx
+msgid "Retries must be between 0 and 10."
+msgstr "Retries must be between 0 and 10."
 
 #: src/components/routes/system/charts/disk-charts.tsx
 #: src/components/routes/system/charts/disk-charts.tsx
@@ -1753,6 +1944,7 @@ msgid "State"
 msgstr "State"
 
 #: src/components/containers-table/containers-table-columns.tsx
+#: src/components/routes/monitor.tsx
 #: src/components/routes/system/smart-table.tsx
 #: src/components/systemd-table/systemd-table.tsx
 #: src/components/systems-table/systems-table.tsx
@@ -1822,6 +2014,7 @@ msgid "Tabs"
 msgstr "Tabs"
 
 #: src/components/routes/monitor-dialog.tsx
+#: src/components/routes/monitor.tsx
 msgid "Target"
 msgstr "Target"
 
@@ -1876,6 +2069,10 @@ msgstr "Then log into the backend and reset your user account password in the us
 msgid "This action cannot be undone. This will permanently delete all current records for {name} from the database."
 msgstr "This action cannot be undone. This will permanently delete all current records for {name} from the database."
 
+#: src/components/routes/monitors.tsx
+msgid "This action cannot be undone. This will permanently delete the monitor and its check history."
+msgstr "This action cannot be undone. This will permanently delete the monitor and its check history."
+
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "This will permanently delete all selected records from the database."
 msgstr "This will permanently delete all selected records from the database."
@@ -1887,6 +2084,10 @@ msgstr "Throughput of {extraFsName}"
 #: src/components/routes/system/charts/zfs-charts.tsx
 msgid "Throughput of ZFS pool {poolName}"
 msgstr "Throughput of ZFS pool {poolName}"
+
+#: src/components/routes/monitor.tsx
+msgid "Time"
+msgstr "Time"
 
 #: src/components/routes/settings/general.tsx
 msgid "Time format"
@@ -1905,6 +2106,7 @@ msgid "To email(s)"
 msgstr "To email(s)"
 
 #: src/components/add-system.tsx
+#: src/components/routes/monitor-dialog.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Token"
 msgstr "Token"
@@ -2088,9 +2290,14 @@ msgstr "Upload"
 msgid "Uptime"
 msgstr "Uptime"
 
-#: src/components/routes/monitors.tsx
+#: src/components/routes/monitor.tsx
 msgid "Uptime 24h"
 msgstr "Uptime 24h"
+
+#. placeholder {0}: monitor.uptime_24h > 0 ? monitor.uptime_24h.toFixed(1) : "—"
+#: src/components/routes/monitors.tsx
+msgid "Uptime 24h: {0}%"
+msgstr "Uptime 24h: {0}%"
 
 #: src/components/routes/system/charts/disk-charts.tsx
 #: src/components/routes/system/charts/disk-charts.tsx
@@ -2113,6 +2320,10 @@ msgstr "Usage of ZFS pool {poolName}"
 #: src/components/routes/system/zfs-table.tsx
 msgid "Used"
 msgstr "Used"
+
+#: src/components/routes/monitor-dialog.tsx
+msgid "Username"
+msgstr "Username"
 
 #: src/components/command-palette.tsx
 #: src/components/navbar.tsx
@@ -2158,6 +2369,10 @@ msgstr "Want to help improve our translations? Check <0>Crowdin</0> for details.
 msgid "Wants"
 msgstr "Wants"
 
+#: src/components/routes/monitor-dialog.tsx
+msgid "Warn below (days)"
+msgstr "Warn below (days)"
+
 #: src/components/routes/settings/general.tsx
 msgid "Warning (%)"
 msgstr "Warning (%)"
@@ -2165,6 +2380,10 @@ msgstr "Warning (%)"
 #: src/components/routes/settings/general.tsx
 msgid "Warning thresholds"
 msgstr "Warning thresholds"
+
+#: src/components/routes/monitor-dialog.tsx
+msgid "Watch certificate expiry"
+msgstr "Watch certificate expiry"
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Webhook / Push notifications"

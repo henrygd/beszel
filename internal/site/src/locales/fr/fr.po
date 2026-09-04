@@ -939,8 +939,12 @@ msgid "Export configuration"
 msgstr "Exporter la configuration"
 
 #: src/components/routes/settings/config-yaml.tsx
-msgid "Export your current systems configuration."
-msgstr "Exportez la configuration actuelle de vos systèmes."
+msgid "Export your current systems and monitors configuration."
+msgstr ""
+
+#: src/components/routes/settings/config-yaml.tsx
+#~ msgid "Export your current systems configuration."
+#~ msgstr "Exportez la configuration actuelle de vos systèmes."
 
 #: src/components/routes/monitor-dialog.tsx
 msgid "External uptime check executed from the hub."
@@ -1444,8 +1448,12 @@ msgid "OAuth 2 / OIDC support"
 msgstr "Support OAuth 2 / OIDC"
 
 #: src/components/routes/settings/config-yaml.tsx
-msgid "On each restart, systems in the database will be updated to match the systems defined in the file."
-msgstr "À chaque redémarrage, les systèmes dans la base de données seront mis à jour pour correspondre aux systèmes définis dans le fichier."
+#~ msgid "On each restart, systems in the database will be updated to match the systems defined in the file."
+#~ msgstr "À chaque redémarrage, les systèmes dans la base de données seront mis à jour pour correspondre aux systèmes définis dans le fichier."
+
+#: src/components/routes/settings/config-yaml.tsx
+msgid "On each restart, systems in the database will be updated to match the systems defined in the file. Monitors defined under the <0>monitors</0> key are created or updated the same way, but monitors missing from the file are never deleted."
+msgstr ""
 
 #: src/lib/alerts.ts
 msgid "One or more containers are unhealthy"

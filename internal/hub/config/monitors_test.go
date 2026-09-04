@@ -124,3 +124,78 @@ monitors:
 	require.Len(t, recs, 1)
 	require.EqualValues(t, 120, recs[0].GetFloat("interval"))
 }
+
+func TestSyncMonitors_SkipsInvalidEntries(t *testing.T) {
+	app, dir := newConfigTestApp(t)
+	writeConfigYAML(t, dir, `
+monitors:
+  - name: bad-type
+    type: gopher
+    target: example.com
+    users: [yaml@example.com]
+  - name: bad-interval
+    type: ping
+    target: example.com
+    interval: 5
+    users: [yaml@example.com]
+  - name: unknown-user
+    type: ping
+    target: example.com
+    users: [ghost@example.com]
+  - name: good
+    type: ping
+    target: example.com
+    users: [yaml@example.com]
+`)
+	require.NoError(t, config.SyncMonitors(serveEventFor(app)))
+
+	total, err := app.CountRecords("monitors")
+	require.NoError(t, err)
+	require.EqualValues(t, 1, total, "only the valid entry must sync, boot must not fail")
+	recs, err := app.FindAllRecords("monitors")
+	require.NoError(t, err)
+	require.Equal(t, "good", recs[0].GetString("name"))
+}
+
+func TestSyncMonitors_PausedAndSecrets(t *testing.T) {
+	app, dir := newConfigTestApp(t)
+	writeConfigYAML(t, dir, `
+monitors:
+  - name: quiet
+    type: http
+    target: https://example.com
+    paused: true
+    users: [yaml@example.com]
+    config:
+      auth_type: bearer
+      token: live-secret
+`)
+	require.NoError(t, config.SyncMonitors(serveEventFor(app)))
+
+	recs, err := app.FindAllRecords("monitors")
+	require.NoError(t, err)
+	require.Len(t, recs, 1)
+	require.True(t, recs[0].GetBool("paused"))
+	cfg := map[string]any{}
+	require.NoError(t, recs[0].UnmarshalJSONField("config", &cfg))
+	require.Equal(t, "live-secret", cfg["token"], "YAML-provided secrets must persist")
+
+	// Re-sync without the secret: stored secret must survive.
+	writeConfigYAML(t, dir, `
+monitors:
+  - name: quiet
+    type: http
+    target: https://example.com
+    paused: true
+    users: [yaml@example.com]
+    config:
+      auth_type: bearer
+`)
+	require.NoError(t, config.SyncMonitors(serveEventFor(app)))
+	recs, err = app.FindAllRecords("monitors")
+	require.NoError(t, err)
+	require.Len(t, recs, 1)
+	cfg = map[string]any{}
+	require.NoError(t, recs[0].UnmarshalJSONField("config", &cfg))
+	require.Equal(t, "live-secret", cfg["token"], "stored secret must survive YAML without it")
+}

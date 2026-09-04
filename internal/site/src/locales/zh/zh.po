@@ -18,17 +18,46 @@ msgstr ""
 "X-Crowdin-File: /main/internal/site/src/locales/en/en.po\n"
 "X-Crowdin-File-ID: 32\n"
 
+#: src/components/routes/monitor-dialog.tsx
+msgid "(leave empty to keep)"
+msgstr ""
+
 #. placeholder {0}: newVersion.v
 #: src/components/footer-repo-link.tsx
 msgctxt "New version available"
 msgid "{0} available"
 msgstr "{0} 現已推出"
 
+#. placeholder {0}: summary.counts.down
+#: src/components/monitors-summary.tsx
+msgid "{0} down"
+msgstr ""
+
+#. placeholder {0}: monitor.last_latency_ms.toFixed(0)
+#: src/components/routes/monitors.tsx
+msgid "{0} ms"
+msgstr ""
+
 #. placeholder {0}: table.getFilteredSelectedRowModel().rows.length
 #. placeholder {1}: table.getFilteredRowModel().rows.length
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "{0} of {1} row(s) selected."
 msgstr "已選取 {1} 個項目中的 {0} 個"
+
+#. placeholder {0}: summary.counts.paused
+#: src/components/monitors-summary.tsx
+msgid "{0} paused"
+msgstr ""
+
+#. placeholder {0}: summary.counts.up
+#: src/components/monitors-summary.tsx
+msgid "{0} up"
+msgstr ""
+
+#. placeholder {0}: summary.counts.warn
+#: src/components/monitors-summary.tsx
+msgid "{0} warning"
+msgstr ""
 
 #: src/components/routes/system/info-bar.tsx
 msgid "{cores, plural, one {# core} other {# cores}}"
@@ -92,6 +121,10 @@ msgstr "30天"
 #: src/components/routes/system/charts/load-average-chart.tsx
 msgid "5 min"
 msgstr "5 分鐘"
+
+#: src/components/routes/monitor-dialog.tsx
+msgid "Accepted codes"
+msgstr ""
 
 #. Table column
 #: src/components/routes/settings/quiet-hours.tsx
@@ -167,6 +200,10 @@ msgstr "Agent"
 msgid "Alert History"
 msgstr "警報歷史"
 
+#: src/components/routes/monitor-dialog.tsx
+msgid "Alert when keyword is missing"
+msgstr ""
+
 #: src/components/alerts/alert-button.tsx
 #: src/components/alerts/alerts-sheet.tsx
 msgid "Alerts"
@@ -189,6 +226,11 @@ msgstr "所有容器"
 msgid "All Systems"
 msgstr "所有系統"
 
+#. placeholder {0}: monitor.name
+#: src/components/routes/monitors.tsx
+msgid "Are you sure you want to delete {0}?"
+msgstr ""
+
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Are you sure you want to delete {name}?"
 msgstr "您確定要刪除 {name} 嗎？"
@@ -196,6 +238,10 @@ msgstr "您確定要刪除 {name} 嗎？"
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Are you sure?"
 msgstr "您確定嗎？"
+
+#: src/components/routes/monitor-dialog.tsx
+msgid "Auth"
+msgstr ""
 
 #: src/components/copy-to-clipboard.tsx
 msgid "Automatic copy requires a secure context."
@@ -260,6 +306,10 @@ msgstr "備份"
 msgid "Bandwidth"
 msgstr "網路流量"
 
+#: src/components/routes/monitor-dialog.tsx
+msgid "Basic"
+msgstr ""
+
 #. Battery label in systems table header
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Bat"
@@ -270,6 +320,10 @@ msgstr "電池"
 #: src/lib/alerts.ts
 msgid "Battery"
 msgstr "電池"
+
+#: src/components/routes/monitor-dialog.tsx
+msgid "Bearer token"
+msgstr ""
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Became active"
@@ -333,6 +387,7 @@ msgid "Can stop"
 msgstr "可停止"
 
 #: src/components/routes/monitor-dialog.tsx
+#: src/components/routes/monitors.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/systems-table/systems-table-columns.tsx
@@ -357,7 +412,20 @@ msgid "Celsius (°C)"
 msgstr "攝氏 (°C)"
 
 #: src/components/routes/monitors.tsx
-msgid "Cert"
+#~ msgid "Cert"
+#~ msgstr ""
+
+#. placeholder {0}: monitor.cert_days.toFixed(0)
+#: src/components/routes/monitors.tsx
+msgid "Cert expires in {0} days"
+msgstr ""
+
+#: src/components/routes/monitor-dialog.tsx
+msgid "Cert thresholds must be positive with critical below warning."
+msgstr ""
+
+#: src/components/routes/monitor.tsx
+msgid "Certificate"
 msgstr ""
 
 #: src/components/routes/settings/general.tsx
@@ -388,6 +456,14 @@ msgstr "圖表寬度"
 #: src/components/login/forgot-pass-form.tsx
 msgid "Check {email} for a reset link."
 msgstr "檢查 {email} 以取得重設連結。"
+
+#: src/components/routes/monitors.tsx
+msgid "Check completed"
+msgstr ""
+
+#: src/components/routes/monitors.tsx
+msgid "Check failed"
+msgstr ""
 
 #: src/components/routes/settings/layout.tsx
 msgid "Check logs for more details."
@@ -471,6 +547,7 @@ msgstr "容器健康狀態"
 msgid "Containers"
 msgstr "容器"
 
+#: src/components/routes/monitors.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Continue"
@@ -594,6 +671,10 @@ msgstr "已建立"
 msgid "Critical (%)"
 msgstr "嚴重 (%)"
 
+#: src/components/routes/monitor-dialog.tsx
+msgid "Critical below (days)"
+msgstr ""
+
 #: src/components/routes/system/disk-io-sheet.tsx
 msgid "Cumulative data read since boot"
 msgstr "開機以來讀取的資料量"
@@ -636,8 +717,8 @@ msgid "Daily"
 msgstr "每日"
 
 #: src/components/routes/monitors.tsx
-msgid "days"
-msgstr ""
+#~ msgid "days"
+#~ msgstr ""
 
 #: src/components/routes/system/info-bar.tsx
 msgctxt "Default system layout option"
@@ -655,6 +736,10 @@ msgstr "預設時間段"
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Delete"
 msgstr "刪除"
+
+#: src/components/routes/monitors.tsx
+msgid "Delete failed"
+msgstr ""
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Delete fingerprint"
@@ -737,6 +822,7 @@ msgstr "下載"
 msgid "Duration"
 msgstr "持續時間"
 
+#: src/components/routes/monitors.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Edit"
@@ -831,9 +917,18 @@ msgstr "未在 <0>config.yml</0> 中定義的現有系統將會被刪除。請�
 msgid "Exited active"
 msgstr "結束"
 
+#: src/components/routes/monitor-dialog.tsx
+msgid "Expected answer (optional)"
+msgstr ""
+
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Expires after one hour or on hub restart."
 msgstr "在一個小時後或者重新啟動 Hub 時過期。"
+
+#. placeholder {0}: monitor.cert_days.toFixed(0)
+#: src/components/routes/monitor.tsx
+msgid "Expires in {0} days"
+msgstr ""
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Export"
@@ -844,8 +939,12 @@ msgid "Export configuration"
 msgstr "匯出設定"
 
 #: src/components/routes/settings/config-yaml.tsx
-msgid "Export your current systems configuration."
-msgstr "匯出您現在的系統設定。"
+msgid "Export your current systems and monitors configuration."
+msgstr ""
+
+#: src/components/routes/settings/config-yaml.tsx
+#~ msgid "Export your current systems configuration."
+#~ msgstr "匯出您現在的系統設定。"
 
 #: src/components/routes/monitor-dialog.tsx
 msgid "External uptime check executed from the hub."
@@ -1006,8 +1105,12 @@ msgid "Host / IP"
 msgstr "Host / IP"
 
 #: src/components/routes/monitor-dialog.tsx
-msgid "HTTP check that also looks for text in the response."
+msgid "HTTP check that also looks for text in the first 2 MB of the response."
 msgstr ""
+
+#: src/components/routes/monitor-dialog.tsx
+#~ msgid "HTTP check that also looks for text in the response."
+#~ msgstr ""
 
 #: src/components/routes/settings/heartbeat.tsx
 msgid "HTTP Method"
@@ -1045,6 +1148,10 @@ msgstr "閒置"
 msgid "If you've lost the password to your admin account, you may reset it using the following command."
 msgstr "如果您遺失管理員帳號密碼，可以使用以下指令重設。"
 
+#: src/components/routes/monitor-dialog.tsx
+msgid "Ignore TLS errors (insecure)"
+msgstr ""
+
 #: src/components/containers-table/containers-table-columns.tsx
 msgctxt "Docker image"
 msgid "Image"
@@ -1071,6 +1178,10 @@ msgid "Invalid email address."
 msgstr "無效的電子郵件地址。"
 
 #: src/components/routes/monitor-dialog.tsx
+msgid "Invert status (upside down)"
+msgstr ""
+
+#: src/components/routes/monitor-dialog.tsx
 msgid "Keyword"
 msgstr ""
 
@@ -1081,6 +1192,18 @@ msgstr ""
 #: src/components/routes/settings/general.tsx
 msgid "Language"
 msgstr "語言"
+
+#: src/components/routes/monitor.tsx
+msgid "Last latency"
+msgstr ""
+
+#: src/components/routes/monitor.tsx
+msgid "Latency"
+msgstr ""
+
+#: src/components/routes/monitor.tsx
+msgid "Latency (ms)"
+msgstr ""
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Layout"
@@ -1196,13 +1319,23 @@ msgstr "記憶體使用量"
 msgid "Memory usage of containers"
 msgstr "容器的記憶體使用量"
 
+#: src/components/routes/monitor.tsx
+msgid "Message"
+msgstr ""
+
+#: src/components/routes/monitor-dialog.tsx
+msgid "Method"
+msgstr ""
+
 #. Device model
 #: src/components/routes/system/smart-table.tsx
 msgid "Model"
 msgstr "型號"
 
+#: src/components/monitors-summary.tsx
 #: src/components/navbar.tsx
 #: src/components/navbar.tsx
+#: src/components/routes/monitor.tsx
 #: src/components/routes/monitors.tsx
 #: src/components/routes/monitors.tsx
 msgid "Monitors"
@@ -1256,6 +1389,10 @@ msgstr "網路單位"
 msgid "No"
 msgstr "否"
 
+#: src/components/routes/monitor.tsx
+msgid "No checks recorded yet."
+msgstr ""
+
 #: src/components/routes/system/zfs-table.tsx
 msgid "No detail data for this pool."
 msgstr "此儲存池沒有可用的詳細資料。"
@@ -1287,6 +1424,7 @@ msgstr "此裝置沒有可用的 S.M.A.R.T. 屬性。"
 msgid "No systems found."
 msgstr "找不到任何系統。"
 
+#: src/components/routes/monitor-dialog.tsx
 #: src/components/routes/system/zfs-table.tsx
 msgid "None"
 msgstr "無"
@@ -1301,13 +1439,21 @@ msgstr "通知"
 msgid "Notifications may include recent container log excerpts."
 msgstr "通知可能包含近期的容器日誌片段。"
 
+#: src/components/routes/monitors.tsx
+msgid "Notifications toggled"
+msgstr ""
+
 #: src/components/login/auth-form.tsx
 msgid "OAuth 2 / OIDC support"
 msgstr "支援 OAuth 2 / OIDC"
 
 #: src/components/routes/settings/config-yaml.tsx
-msgid "On each restart, systems in the database will be updated to match the systems defined in the file."
-msgstr "每次重新啟動時，將會以檔案中的系統定義更新資料庫。"
+#~ msgid "On each restart, systems in the database will be updated to match the systems defined in the file."
+#~ msgstr "每次重新啟動時，將會以檔案中的系統定義更新資料庫。"
+
+#: src/components/routes/settings/config-yaml.tsx
+msgid "On each restart, systems in the database will be updated to match the systems defined in the file. Monitors defined under the <0>monitors</0> key are created or updated the same way, but monitors missing from the file are never deleted."
+msgstr ""
 
 #: src/lib/alerts.ts
 msgid "One or more containers are unhealthy"
@@ -1347,6 +1493,18 @@ msgstr "其他"
 msgid "Overwrite existing alerts"
 msgstr "覆蓋現有警報"
 
+#: src/components/routes/monitor-dialog.tsx
+msgid "Packet size"
+msgstr ""
+
+#: src/components/routes/monitor-dialog.tsx
+msgid "Packet size must be between 0 and 65400."
+msgstr ""
+
+#: src/components/routes/monitor-dialog.tsx
+msgid "Packets"
+msgstr ""
+
 #: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
@@ -1365,6 +1523,7 @@ msgstr "頁面 / 設定"
 
 #: src/components/login/auth-form.tsx
 #: src/components/login/auth-form.tsx
+#: src/components/routes/monitor-dialog.tsx
 msgid "Password"
 msgstr "密碼"
 
@@ -1388,6 +1547,10 @@ msgstr "已過期"
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Pause"
 msgstr "暫停"
+
+#: src/components/routes/monitors.tsx
+msgid "Pause toggled"
+msgstr ""
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Paused"
@@ -1421,6 +1584,10 @@ msgstr "永久"
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Persistence"
 msgstr "持久性"
+
+#: src/components/routes/monitor-dialog.tsx
+msgid "Ping count must be between 1 and 10."
+msgstr ""
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Please <0>configure an SMTP server</0> to ensure alerts are delivered."
@@ -1498,6 +1665,10 @@ msgstr "首選語言"
 msgid "Process started"
 msgstr "進程啟動"
 
+#: src/components/routes/monitor-dialog.tsx
+msgid "Protocol"
+msgstr ""
+
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Public key"
 msgstr "公鑰"
@@ -1535,6 +1706,10 @@ msgstr "讀取錯誤"
 msgid "Received"
 msgstr "接收"
 
+#: src/components/routes/monitor.tsx
+msgid "Recent checks"
+msgstr ""
+
 #: src/components/routes/monitor-dialog.tsx
 msgid "Record type"
 msgstr ""
@@ -1566,6 +1741,14 @@ msgstr "被依賴"
 msgid "Requires"
 msgstr "依賴"
 
+#: src/components/routes/monitor-dialog.tsx
+msgid "Resend delay must be between 0 and 1440 minutes."
+msgstr ""
+
+#: src/components/routes/monitor-dialog.tsx
+msgid "Resend every (minutes, 0 = never)"
+msgstr ""
+
 #: src/components/login/forgot-pass-form.tsx
 msgid "Reset Password"
 msgstr "重設密碼"
@@ -1592,6 +1775,14 @@ msgstr "重啟次數"
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Resume"
 msgstr "繼續"
+
+#: src/components/routes/monitor-dialog.tsx
+msgid "Retries before down"
+msgstr ""
+
+#: src/components/routes/monitor-dialog.tsx
+msgid "Retries must be between 0 and 10."
+msgstr ""
 
 #: src/components/routes/system/charts/disk-charts.tsx
 #: src/components/routes/system/charts/disk-charts.tsx
@@ -1758,6 +1949,7 @@ msgid "State"
 msgstr "狀態"
 
 #: src/components/containers-table/containers-table-columns.tsx
+#: src/components/routes/monitor.tsx
 #: src/components/routes/system/smart-table.tsx
 #: src/components/systemd-table/systemd-table.tsx
 #: src/components/systems-table/systems-table.tsx
@@ -1827,6 +2019,7 @@ msgid "Tabs"
 msgstr "分頁"
 
 #: src/components/routes/monitor-dialog.tsx
+#: src/components/routes/monitor.tsx
 msgid "Target"
 msgstr ""
 
@@ -1881,6 +2074,10 @@ msgstr "然後登入後台並在使用者列表中重設您的帳號密碼。"
 msgid "This action cannot be undone. This will permanently delete all current records for {name} from the database."
 msgstr "此操作無法復原。這將永久刪除資料庫中{name}的所有當前記錄。"
 
+#: src/components/routes/monitors.tsx
+msgid "This action cannot be undone. This will permanently delete the monitor and its check history."
+msgstr ""
+
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "This will permanently delete all selected records from the database."
 msgstr "這將從資料庫中永久刪除所有選定的記錄。"
@@ -1892,6 +2089,10 @@ msgstr "{extraFsName}的傳輸速率"
 #: src/components/routes/system/charts/zfs-charts.tsx
 msgid "Throughput of ZFS pool {poolName}"
 msgstr "ZFS 儲存池 {poolName} 吞吐量"
+
+#: src/components/routes/monitor.tsx
+msgid "Time"
+msgstr ""
 
 #: src/components/routes/settings/general.tsx
 msgid "Time format"
@@ -1910,6 +2111,7 @@ msgid "To email(s)"
 msgstr "發送到電子郵件"
 
 #: src/components/add-system.tsx
+#: src/components/routes/monitor-dialog.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Token"
 msgstr "Token"
@@ -2093,8 +2295,13 @@ msgstr "上傳"
 msgid "Uptime"
 msgstr "運行時間"
 
-#: src/components/routes/monitors.tsx
+#: src/components/routes/monitor.tsx
 msgid "Uptime 24h"
+msgstr ""
+
+#. placeholder {0}: monitor.uptime_24h > 0 ? monitor.uptime_24h.toFixed(1) : "—"
+#: src/components/routes/monitors.tsx
+msgid "Uptime 24h: {0}%"
 msgstr ""
 
 #: src/components/routes/system/charts/disk-charts.tsx
@@ -2118,6 +2325,10 @@ msgstr "ZFS 儲存池 {poolName} 使用率"
 #: src/components/routes/system/zfs-table.tsx
 msgid "Used"
 msgstr "已使用"
+
+#: src/components/routes/monitor-dialog.tsx
+msgid "Username"
+msgstr ""
 
 #: src/components/command-palette.tsx
 #: src/components/navbar.tsx
@@ -2163,6 +2374,10 @@ msgstr "想幫助我們改善翻譯嗎？查看<0>Crowdin</0>以取得更多詳�
 msgid "Wants"
 msgstr "可選依賴"
 
+#: src/components/routes/monitor-dialog.tsx
+msgid "Warn below (days)"
+msgstr ""
+
 #: src/components/routes/settings/general.tsx
 msgid "Warning (%)"
 msgstr "警告 (%)"
@@ -2170,6 +2385,10 @@ msgstr "警告 (%)"
 #: src/components/routes/settings/general.tsx
 msgid "Warning thresholds"
 msgstr "警告閾值"
+
+#: src/components/routes/monitor-dialog.tsx
+msgid "Watch certificate expiry"
+msgstr ""
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Webhook / Push notifications"

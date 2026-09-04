@@ -1,6 +1,8 @@
 package config
 
 import (
+	"database/sql"
+	"errors"
 	"fmt"
 	"log"
 	"os"
@@ -72,59 +74,47 @@ func SyncMonitors(e *core.ServeEvent) error {
 	}
 
 	for _, mc := range file.Monitors {
-		if mc.Name == "" || mc.Type == "" || mc.Target == "" {
+		name := strings.TrimSpace(mc.Name)
+		typ := strings.ToLower(strings.TrimSpace(mc.Type))
+		if name == "" || typ == "" || strings.TrimSpace(mc.Target) == "" {
 			log.Printf("Skipping monitor with missing name/type/target")
+			continue
+		}
+		if !validMonitorType(typ) {
+			log.Printf("Skipping monitor %q: unknown type %q", name, mc.Type)
 			continue
 		}
 		in := monitorInputFromConfig(mc)
 		if err := validateMonitorInput(in); err != nil {
-			log.Printf("Skipping monitor %q: %v", mc.Name, err)
+			log.Printf("Skipping monitor %q: %v", name, err)
 			continue
 		}
 		userIDs := resolveMonitorUsers(mc.Users, userEmailToID, firstUser)
+		if len(userIDs) == 0 {
+			log.Printf("Skipping monitor %q: no known users", name)
+			continue
+		}
 
 		existing, err := h.FindFirstRecordByFilter("monitors",
 			"name = {:name} && target = {:target}",
-			dbx.Params{"name": mc.Name, "target": strings.TrimSpace(mc.Target)})
+			dbx.Params{"name": name, "target": strings.TrimSpace(mc.Target)})
+		if err != nil && !errors.Is(err, sql.ErrNoRows) {
+			return fmt.Errorf("failed to look up monitor %q: %v", name, err)
+		}
 		if err == nil {
-			existing.Set("type", mc.Type)
-			existing.Set("target", strings.TrimSpace(mc.Target))
-			existing.Set("interval", in.IntervalSeconds)
-			existing.Set("timeout", in.TimeoutSeconds)
-			existing.Set("max_retries", in.MaxRetries)
-			existing.Set("upside_down", in.UpsideDown)
-			existing.Set("paused", mc.Paused)
-			existing.Set("notify", in.Notify)
-			existing.Set("resend_after", in.ResendAfter)
-			existing.Set("users", userIDs)
-			if len(mc.Config) > 0 {
-				existing.Set("config", mc.Config)
-			}
+			applyMonitorConfig(existing, name, typ, strings.TrimSpace(mc.Target), in, mc, userIDs, true)
 			if err := h.Save(existing); err != nil {
-				return err
+				log.Printf("Skipping monitor %q: %v", name, err)
+				continue
 			}
 			continue
 		}
 		rec := core.NewRecord(monitorsCollection)
-		rec.Set("name", mc.Name)
-		rec.Set("type", mc.Type)
-		rec.Set("target", strings.TrimSpace(mc.Target))
-		rec.Set("interval", in.IntervalSeconds)
-		rec.Set("timeout", in.TimeoutSeconds)
-		rec.Set("max_retries", in.MaxRetries)
-		rec.Set("upside_down", in.UpsideDown)
-		rec.Set("paused", mc.Paused)
-		rec.Set("notify", in.Notify)
-		rec.Set("resend_after", in.ResendAfter)
-		rec.Set("users", userIDs)
-		if len(mc.Config) > 0 {
-			rec.Set("config", mc.Config)
-		} else {
-			rec.Set("config", map[string]any{})
-		}
+		applyMonitorConfig(rec, name, typ, strings.TrimSpace(mc.Target), in, mc, userIDs, false)
 		rec.Set("status", "pending")
 		if err := h.Save(rec); err != nil {
-			return fmt.Errorf("failed to create monitor %q: %v", mc.Name, err)
+			log.Printf("Skipping monitor %q: %v", name, err)
+			continue
 		}
 	}
 
@@ -179,7 +169,69 @@ func validateMonitorInput(in validatedMonitorInput) error {
 		IntervalSeconds: in.IntervalSeconds, TimeoutSeconds: in.TimeoutSeconds,
 		MaxRetries: in.MaxRetries,
 	}
-	return m.Validate()
+	if err := m.Validate(); err != nil {
+		return err
+	}
+	if in.ResendAfter < 0 || in.ResendAfter > 1440 {
+		return fmt.Errorf("resend_after must be 0..1440 minutes")
+	}
+	return nil
+}
+
+func validMonitorType(t string) bool {
+	switch monitors.MonitorType(t) {
+	case monitors.TypeHTTP, monitors.TypeKeyword, monitors.TypePing, monitors.TypeDNS, monitors.TypeTLS:
+		return true
+	}
+	return false
+}
+
+// applyMonitorConfig writes validated YAML values onto a record. On update,
+// stored secrets absent from the YAML are preserved; headers are never
+// written from YAML exports (see generateYAML).
+func applyMonitorConfig(rec *core.Record, name, typ, target string, in validatedMonitorInput, mc monitorConfig, userIDs []string, isUpdate bool) {
+	rec.Set("name", name)
+	rec.Set("type", typ)
+	rec.Set("target", target)
+	rec.Set("interval", in.IntervalSeconds)
+	rec.Set("timeout", in.TimeoutSeconds)
+	rec.Set("max_retries", in.MaxRetries)
+	rec.Set("upside_down", in.UpsideDown)
+	rec.Set("paused", mc.Paused)
+	rec.Set("notify", in.Notify)
+	rec.Set("resend_after", in.ResendAfter)
+	rec.Set("users", userIDs)
+	if len(mc.Config) == 0 {
+		if !isUpdate {
+			rec.Set("config", map[string]any{})
+		}
+		return
+	}
+	merged := make(map[string]any, len(mc.Config))
+	stored := map[string]any{}
+	if isUpdate {
+		_ = rec.UnmarshalJSONField("config", &stored)
+		for k, v := range stored {
+			merged[k] = v
+		}
+	}
+	for k, v := range mc.Config {
+		merged[k] = v
+	}
+	// Never wipe stored secrets via YAML: a secret absent from the YAML
+	// keeps its stored value (the merge above already preserves it; the
+	// explicit pass documents the guarantee).
+	if isUpdate {
+		for k := range yamlSecretKeys {
+			if _, ok := mc.Config[k]; !ok {
+				delete(merged, k)
+				if sv, ok := stored[k]; ok {
+					merged[k] = sv
+				}
+			}
+		}
+	}
+	rec.Set("config", merged)
 }
 
 func resolveMonitorUsers(emails []string, emailToID map[string]string, firstUser *core.Record) []string {

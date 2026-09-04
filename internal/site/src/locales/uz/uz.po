@@ -18,17 +18,46 @@ msgstr ""
 "X-Crowdin-File: /main/internal/site/src/locales/en/en.po\n"
 "X-Crowdin-File-ID: 32\n"
 
+#: src/components/routes/monitor-dialog.tsx
+msgid "(leave empty to keep)"
+msgstr ""
+
 #. placeholder {0}: newVersion.v
 #: src/components/footer-repo-link.tsx
 msgctxt "New version available"
 msgid "{0} available"
 msgstr "{0} mavjud"
 
+#. placeholder {0}: summary.counts.down
+#: src/components/monitors-summary.tsx
+msgid "{0} down"
+msgstr ""
+
+#. placeholder {0}: monitor.last_latency_ms.toFixed(0)
+#: src/components/routes/monitors.tsx
+msgid "{0} ms"
+msgstr ""
+
 #. placeholder {0}: table.getFilteredSelectedRowModel().rows.length
 #. placeholder {1}: table.getFilteredRowModel().rows.length
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "{0} of {1} row(s) selected."
 msgstr "{1} dan {0} qator tanlandi."
+
+#. placeholder {0}: summary.counts.paused
+#: src/components/monitors-summary.tsx
+msgid "{0} paused"
+msgstr ""
+
+#. placeholder {0}: summary.counts.up
+#: src/components/monitors-summary.tsx
+msgid "{0} up"
+msgstr ""
+
+#. placeholder {0}: summary.counts.warn
+#: src/components/monitors-summary.tsx
+msgid "{0} warning"
+msgstr ""
 
 #: src/components/routes/system/info-bar.tsx
 msgid "{cores, plural, one {# core} other {# cores}}"
@@ -92,6 +121,10 @@ msgstr "30 kun"
 #: src/components/routes/system/charts/load-average-chart.tsx
 msgid "5 min"
 msgstr "5 daq"
+
+#: src/components/routes/monitor-dialog.tsx
+msgid "Accepted codes"
+msgstr ""
 
 #. Table column
 #: src/components/routes/settings/quiet-hours.tsx
@@ -167,6 +200,10 @@ msgstr "Agent"
 msgid "Alert History"
 msgstr "Ogohlantirish tarixi"
 
+#: src/components/routes/monitor-dialog.tsx
+msgid "Alert when keyword is missing"
+msgstr ""
+
 #: src/components/alerts/alert-button.tsx
 #: src/components/alerts/alerts-sheet.tsx
 msgid "Alerts"
@@ -189,6 +226,11 @@ msgstr "Barcha konteynerlar"
 msgid "All Systems"
 msgstr "Barcha tizimlar"
 
+#. placeholder {0}: monitor.name
+#: src/components/routes/monitors.tsx
+msgid "Are you sure you want to delete {0}?"
+msgstr ""
+
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Are you sure you want to delete {name}?"
 msgstr "{name} ni o'chirishni xohlaysizmi?"
@@ -196,6 +238,10 @@ msgstr "{name} ni o'chirishni xohlaysizmi?"
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Are you sure?"
 msgstr "Ishonchingiz komilmi?"
+
+#: src/components/routes/monitor-dialog.tsx
+msgid "Auth"
+msgstr ""
 
 #: src/components/copy-to-clipboard.tsx
 msgid "Automatic copy requires a secure context."
@@ -260,6 +306,10 @@ msgstr "Zaxira nusxalar"
 msgid "Bandwidth"
 msgstr "O'tkazish qobiliyati"
 
+#: src/components/routes/monitor-dialog.tsx
+msgid "Basic"
+msgstr ""
+
 #. Battery label in systems table header
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Bat"
@@ -270,6 +320,10 @@ msgstr "Bat"
 #: src/lib/alerts.ts
 msgid "Battery"
 msgstr "Batareya"
+
+#: src/components/routes/monitor-dialog.tsx
+msgid "Bearer token"
+msgstr ""
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Became active"
@@ -333,6 +387,7 @@ msgid "Can stop"
 msgstr "To'xtata oladi"
 
 #: src/components/routes/monitor-dialog.tsx
+#: src/components/routes/monitors.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/systems-table/systems-table-columns.tsx
@@ -357,7 +412,20 @@ msgid "Celsius (°C)"
 msgstr "Selsiy (°C)"
 
 #: src/components/routes/monitors.tsx
-msgid "Cert"
+#~ msgid "Cert"
+#~ msgstr ""
+
+#. placeholder {0}: monitor.cert_days.toFixed(0)
+#: src/components/routes/monitors.tsx
+msgid "Cert expires in {0} days"
+msgstr ""
+
+#: src/components/routes/monitor-dialog.tsx
+msgid "Cert thresholds must be positive with critical below warning."
+msgstr ""
+
+#: src/components/routes/monitor.tsx
+msgid "Certificate"
 msgstr ""
 
 #: src/components/routes/settings/general.tsx
@@ -388,6 +456,14 @@ msgstr "Grafik kengligi"
 #: src/components/login/forgot-pass-form.tsx
 msgid "Check {email} for a reset link."
 msgstr "Tiklash havolasi uchun {email} ni tekshiring."
+
+#: src/components/routes/monitors.tsx
+msgid "Check completed"
+msgstr ""
+
+#: src/components/routes/monitors.tsx
+msgid "Check failed"
+msgstr ""
 
 #: src/components/routes/settings/layout.tsx
 msgid "Check logs for more details."
@@ -471,6 +547,7 @@ msgstr ""
 msgid "Containers"
 msgstr "Konteynerlar"
 
+#: src/components/routes/monitors.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Continue"
@@ -594,6 +671,10 @@ msgstr "Yaratilgan"
 msgid "Critical (%)"
 msgstr "Kritik (%)"
 
+#: src/components/routes/monitor-dialog.tsx
+msgid "Critical below (days)"
+msgstr ""
+
 #: src/components/routes/system/disk-io-sheet.tsx
 msgid "Cumulative data read since boot"
 msgstr "Yuklangandan beri jami o‘qilgan ma’lumotlar"
@@ -636,8 +717,8 @@ msgid "Daily"
 msgstr "Kunlik"
 
 #: src/components/routes/monitors.tsx
-msgid "days"
-msgstr ""
+#~ msgid "days"
+#~ msgstr ""
 
 #: src/components/routes/system/info-bar.tsx
 msgctxt "Default system layout option"
@@ -655,6 +736,10 @@ msgstr "Standart vaqt oralig'i"
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Delete"
 msgstr "O'chirish"
+
+#: src/components/routes/monitors.tsx
+msgid "Delete failed"
+msgstr ""
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Delete fingerprint"
@@ -737,6 +822,7 @@ msgstr "Yuklab olish"
 msgid "Duration"
 msgstr "Davomiylik"
 
+#: src/components/routes/monitors.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Edit"
@@ -831,9 +917,18 @@ msgstr "<0>config.yml</0> da aniqlanmagan mavjud tizimlar o'chiriladi. Iltimos, 
 msgid "Exited active"
 msgstr "Faollikdan chiqdi"
 
+#: src/components/routes/monitor-dialog.tsx
+msgid "Expected answer (optional)"
+msgstr ""
+
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Expires after one hour or on hub restart."
 msgstr "Bir soatdan keyin yoki hub qayta ishga tushganda muddati tugaydi."
+
+#. placeholder {0}: monitor.cert_days.toFixed(0)
+#: src/components/routes/monitor.tsx
+msgid "Expires in {0} days"
+msgstr ""
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Export"
@@ -844,8 +939,12 @@ msgid "Export configuration"
 msgstr "Konfiguratsiyani eksport qilish"
 
 #: src/components/routes/settings/config-yaml.tsx
-msgid "Export your current systems configuration."
-msgstr "Joriy tizimlar konfiguratsiyasini eksport qiling."
+msgid "Export your current systems and monitors configuration."
+msgstr ""
+
+#: src/components/routes/settings/config-yaml.tsx
+#~ msgid "Export your current systems configuration."
+#~ msgstr "Joriy tizimlar konfiguratsiyasini eksport qiling."
 
 #: src/components/routes/monitor-dialog.tsx
 msgid "External uptime check executed from the hub."
@@ -1006,8 +1105,12 @@ msgid "Host / IP"
 msgstr "Xost / IP"
 
 #: src/components/routes/monitor-dialog.tsx
-msgid "HTTP check that also looks for text in the response."
+msgid "HTTP check that also looks for text in the first 2 MB of the response."
 msgstr ""
+
+#: src/components/routes/monitor-dialog.tsx
+#~ msgid "HTTP check that also looks for text in the response."
+#~ msgstr ""
 
 #: src/components/routes/settings/heartbeat.tsx
 msgid "HTTP Method"
@@ -1045,6 +1148,10 @@ msgstr "Faolsiz"
 msgid "If you've lost the password to your admin account, you may reset it using the following command."
 msgstr "Agar admin hisobingiz parolini yo'qotgan bo'lsangiz, quyidagi buyruq yordamida uni tiklashingiz mumkin."
 
+#: src/components/routes/monitor-dialog.tsx
+msgid "Ignore TLS errors (insecure)"
+msgstr ""
+
 #: src/components/containers-table/containers-table-columns.tsx
 msgctxt "Docker image"
 msgid "Image"
@@ -1071,6 +1178,10 @@ msgid "Invalid email address."
 msgstr "Noto'g'ri elektron pochta manzili."
 
 #: src/components/routes/monitor-dialog.tsx
+msgid "Invert status (upside down)"
+msgstr ""
+
+#: src/components/routes/monitor-dialog.tsx
 msgid "Keyword"
 msgstr ""
 
@@ -1081,6 +1192,18 @@ msgstr ""
 #: src/components/routes/settings/general.tsx
 msgid "Language"
 msgstr "Til"
+
+#: src/components/routes/monitor.tsx
+msgid "Last latency"
+msgstr ""
+
+#: src/components/routes/monitor.tsx
+msgid "Latency"
+msgstr ""
+
+#: src/components/routes/monitor.tsx
+msgid "Latency (ms)"
+msgstr ""
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Layout"
@@ -1196,13 +1319,23 @@ msgstr "Xotira ishlatilishi"
 msgid "Memory usage of containers"
 msgstr ""
 
+#: src/components/routes/monitor.tsx
+msgid "Message"
+msgstr ""
+
+#: src/components/routes/monitor-dialog.tsx
+msgid "Method"
+msgstr ""
+
 #. Device model
 #: src/components/routes/system/smart-table.tsx
 msgid "Model"
 msgstr "Model"
 
+#: src/components/monitors-summary.tsx
 #: src/components/navbar.tsx
 #: src/components/navbar.tsx
+#: src/components/routes/monitor.tsx
 #: src/components/routes/monitors.tsx
 #: src/components/routes/monitors.tsx
 msgid "Monitors"
@@ -1256,6 +1389,10 @@ msgstr "Tarmoq birligi"
 msgid "No"
 msgstr "Yo'q"
 
+#: src/components/routes/monitor.tsx
+msgid "No checks recorded yet."
+msgstr ""
+
 #: src/components/routes/system/zfs-table.tsx
 msgid "No detail data for this pool."
 msgstr "Bu pool uchun batafsil ma’lumot mavjud emas."
@@ -1287,6 +1424,7 @@ msgstr "Ushbu qurilma uchun S.M.A.R.T. atributlari mavjud emas."
 msgid "No systems found."
 msgstr "Tizimlar topilmadi."
 
+#: src/components/routes/monitor-dialog.tsx
 #: src/components/routes/system/zfs-table.tsx
 msgid "None"
 msgstr "Yo‘q"
@@ -1301,13 +1439,21 @@ msgstr "Bildirishnomalar"
 msgid "Notifications may include recent container log excerpts."
 msgstr "Bildirishnomalarda konteyner jurnallarining so‘nggi parchalari bo‘lishi mumkin."
 
+#: src/components/routes/monitors.tsx
+msgid "Notifications toggled"
+msgstr ""
+
 #: src/components/login/auth-form.tsx
 msgid "OAuth 2 / OIDC support"
 msgstr "OAuth 2 / OIDC qo'llab-quvvatlash"
 
 #: src/components/routes/settings/config-yaml.tsx
-msgid "On each restart, systems in the database will be updated to match the systems defined in the file."
-msgstr "Har qayta ishga tushirilganda, ma'lumotlar bazasidagi tizimlar fayldagi tizimlarga mos yangilanadi."
+#~ msgid "On each restart, systems in the database will be updated to match the systems defined in the file."
+#~ msgstr "Har qayta ishga tushirilganda, ma'lumotlar bazasidagi tizimlar fayldagi tizimlarga mos yangilanadi."
+
+#: src/components/routes/settings/config-yaml.tsx
+msgid "On each restart, systems in the database will be updated to match the systems defined in the file. Monitors defined under the <0>monitors</0> key are created or updated the same way, but monitors missing from the file are never deleted."
+msgstr ""
 
 #: src/lib/alerts.ts
 msgid "One or more containers are unhealthy"
@@ -1347,6 +1493,18 @@ msgstr "Boshqa"
 msgid "Overwrite existing alerts"
 msgstr "Mavjud ogohlantirishlarni qayta yozish"
 
+#: src/components/routes/monitor-dialog.tsx
+msgid "Packet size"
+msgstr ""
+
+#: src/components/routes/monitor-dialog.tsx
+msgid "Packet size must be between 0 and 65400."
+msgstr ""
+
+#: src/components/routes/monitor-dialog.tsx
+msgid "Packets"
+msgstr ""
+
 #: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
@@ -1365,6 +1523,7 @@ msgstr "Sahifalar / Sozlamalar"
 
 #: src/components/login/auth-form.tsx
 #: src/components/login/auth-form.tsx
+#: src/components/routes/monitor-dialog.tsx
 msgid "Password"
 msgstr "Parol"
 
@@ -1388,6 +1547,10 @@ msgstr "O'tgan"
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Pause"
 msgstr "Pauza"
+
+#: src/components/routes/monitors.tsx
+msgid "Pause toggled"
+msgstr ""
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Paused"
@@ -1421,6 +1584,10 @@ msgstr "Doimiy"
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Persistence"
 msgstr "Saqlash"
+
+#: src/components/routes/monitor-dialog.tsx
+msgid "Ping count must be between 1 and 10."
+msgstr ""
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Please <0>configure an SMTP server</0> to ensure alerts are delivered."
@@ -1498,6 +1665,10 @@ msgstr "Afzal til"
 msgid "Process started"
 msgstr "Jarayon boshlandi"
 
+#: src/components/routes/monitor-dialog.tsx
+msgid "Protocol"
+msgstr ""
+
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Public key"
 msgstr ""
@@ -1535,6 +1706,10 @@ msgstr "O‘qish xatolari"
 msgid "Received"
 msgstr "Qabul qilindi"
 
+#: src/components/routes/monitor.tsx
+msgid "Recent checks"
+msgstr ""
+
 #: src/components/routes/monitor-dialog.tsx
 msgid "Record type"
 msgstr ""
@@ -1566,6 +1741,14 @@ msgstr "Talab qilinadi"
 msgid "Requires"
 msgstr "Talab qiladi"
 
+#: src/components/routes/monitor-dialog.tsx
+msgid "Resend delay must be between 0 and 1440 minutes."
+msgstr ""
+
+#: src/components/routes/monitor-dialog.tsx
+msgid "Resend every (minutes, 0 = never)"
+msgstr ""
+
 #: src/components/login/forgot-pass-form.tsx
 msgid "Reset Password"
 msgstr "Parolni tiklash"
@@ -1592,6 +1775,14 @@ msgstr "Qayta ishga tushirishlar"
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Resume"
 msgstr "Davom ettirish"
+
+#: src/components/routes/monitor-dialog.tsx
+msgid "Retries before down"
+msgstr ""
+
+#: src/components/routes/monitor-dialog.tsx
+msgid "Retries must be between 0 and 10."
+msgstr ""
 
 #: src/components/routes/system/charts/disk-charts.tsx
 #: src/components/routes/system/charts/disk-charts.tsx
@@ -1758,6 +1949,7 @@ msgid "State"
 msgstr "Holat"
 
 #: src/components/containers-table/containers-table-columns.tsx
+#: src/components/routes/monitor.tsx
 #: src/components/routes/system/smart-table.tsx
 #: src/components/systemd-table/systemd-table.tsx
 #: src/components/systems-table/systems-table.tsx
@@ -1827,6 +2019,7 @@ msgid "Tabs"
 msgstr "Yorliqlar"
 
 #: src/components/routes/monitor-dialog.tsx
+#: src/components/routes/monitor.tsx
 msgid "Target"
 msgstr ""
 
@@ -1881,6 +2074,10 @@ msgstr "Keyin backend'ga kiring va foydalanuvchilar jadvalidagi foydalanuvchi hi
 msgid "This action cannot be undone. This will permanently delete all current records for {name} from the database."
 msgstr "Bu amalni bekor qilib bo'lmaydi. Bu {name} uchun barcha joriy yozuvlarni ma'lumotlar bazasidan butunlay o'chiradi."
 
+#: src/components/routes/monitors.tsx
+msgid "This action cannot be undone. This will permanently delete the monitor and its check history."
+msgstr ""
+
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "This will permanently delete all selected records from the database."
 msgstr "Bu barcha tanlangan yozuvlarni ma'lumotlar bazasidan butunlay o'chiradi."
@@ -1892,6 +2089,10 @@ msgstr "{extraFsName} ning o'tkazish qobiliyati"
 #: src/components/routes/system/charts/zfs-charts.tsx
 msgid "Throughput of ZFS pool {poolName}"
 msgstr "ZFS pool {poolName} o‘tkazuvchanligi"
+
+#: src/components/routes/monitor.tsx
+msgid "Time"
+msgstr ""
 
 #: src/components/routes/settings/general.tsx
 msgid "Time format"
@@ -1910,6 +2111,7 @@ msgid "To email(s)"
 msgstr "Kimga (elektron pochta)"
 
 #: src/components/add-system.tsx
+#: src/components/routes/monitor-dialog.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Token"
 msgstr "Token"
@@ -2093,8 +2295,13 @@ msgstr "Yuklash"
 msgid "Uptime"
 msgstr "Ishlash vaqti"
 
-#: src/components/routes/monitors.tsx
+#: src/components/routes/monitor.tsx
 msgid "Uptime 24h"
+msgstr ""
+
+#. placeholder {0}: monitor.uptime_24h > 0 ? monitor.uptime_24h.toFixed(1) : "—"
+#: src/components/routes/monitors.tsx
+msgid "Uptime 24h: {0}%"
 msgstr ""
 
 #: src/components/routes/system/charts/disk-charts.tsx
@@ -2118,6 +2325,10 @@ msgstr "ZFS pool {poolName} ishlatilishi"
 #: src/components/routes/system/zfs-table.tsx
 msgid "Used"
 msgstr "Ishlatilgan"
+
+#: src/components/routes/monitor-dialog.tsx
+msgid "Username"
+msgstr ""
 
 #: src/components/command-palette.tsx
 #: src/components/navbar.tsx
@@ -2163,6 +2374,10 @@ msgstr "Tarjimalarimizni yaxshilashga yordam bermoqchimisiz? Batafsil ma'lumot u
 msgid "Wants"
 msgstr "Kerak qiladi"
 
+#: src/components/routes/monitor-dialog.tsx
+msgid "Warn below (days)"
+msgstr ""
+
 #: src/components/routes/settings/general.tsx
 msgid "Warning (%)"
 msgstr "Ogohlantirish (%)"
@@ -2170,6 +2385,10 @@ msgstr "Ogohlantirish (%)"
 #: src/components/routes/settings/general.tsx
 msgid "Warning thresholds"
 msgstr "Ogohlantirish chegaralari"
+
+#: src/components/routes/monitor-dialog.tsx
+msgid "Watch certificate expiry"
+msgstr ""
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Webhook / Push notifications"
