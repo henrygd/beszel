@@ -17,16 +17,16 @@ const allowPrivateNetworkEnv = "MONITORS_ALLOW_PRIVATE_NETWORK"
 
 // privateCIDRs lists the address ranges blocked by default.
 var privateCIDRs = []string{
-	"127.0.0.0/8",  // loopback
-	"10.0.0.0/8",   // RFC 1918
-	"172.16.0.0/12", // RFC 1918
+	"127.0.0.0/8",    // loopback
+	"10.0.0.0/8",     // RFC 1918
+	"172.16.0.0/12",  // RFC 1918
 	"192.168.0.0/16", // RFC 1918
 	"169.254.0.0/16", // link-local / cloud metadata
-	"::1/128",      // loopback
-	"fe80::/10",    // link-local
-	"fc00::/7",     // unique-local
-	"0.0.0.0/32",   // unspecified
-	"::/128",       // unspecified
+	"::1/128",        // loopback
+	"fe80::/10",      // link-local
+	"fc00::/7",       // unique-local
+	"0.0.0.0/32",     // unspecified
+	"::/128",         // unspecified
 }
 
 var privateNets []*net.IPNet
