@@ -34,6 +34,10 @@ func (rm *RecordManager) DeleteOldRecords() {
 		if err != nil {
 			slog.Error("Error deleting old quiet hours", "err", err)
 		}
+		err = deleteOldMonitorChecks(txApp)
+		if err != nil {
+			slog.Error("Error deleting old monitor checks", "err", err)
+		}
 		return nil
 	})
 }
@@ -135,5 +139,38 @@ func deleteOldQuietHours(app core.App) error {
 		return err
 	}
 
+	return nil
+}
+
+// Monitor checks retention bounds (spec section 9).
+const (
+	monitorChecksRetention  = 30 * 24 * time.Hour
+	monitorChecksSafetyCap  = 500_000
+	monitorChecksSafetyKeep = 400_000
+)
+
+// Deletes monitor_checks records older than the retention window and
+// enforces a safety cap so an interval misconfiguration cannot grow the
+// table (and SQLite write pressure) without bound.
+func deleteOldMonitorChecks(app core.App) error {
+	return DeleteOldMonitorChecks(app)
+}
+
+// DeleteOldMonitorChecks purges expired monitor check history. Exported for
+// use by tests outside the records package.
+func DeleteOldMonitorChecks(app core.App) error {
+	cutoff := time.Now().UTC().Add(-monitorChecksRetention)
+	if _, err := app.DB().NewQuery("DELETE FROM monitor_checks WHERE created < {:cutoff}").Bind(dbx.Params{"cutoff": cutoff}).Execute(); err != nil {
+		return fmt.Errorf("failed to delete old monitor checks: %v", err)
+	}
+	var total int
+	if err := app.DB().NewQuery("SELECT COUNT(*) FROM monitor_checks").Row(&total); err != nil {
+		return err
+	}
+	if total > monitorChecksSafetyCap {
+		if _, err := app.DB().NewQuery("DELETE FROM monitor_checks WHERE id NOT IN (SELECT id FROM monitor_checks ORDER BY created DESC LIMIT {:keep})").Bind(dbx.Params{"keep": monitorChecksSafetyKeep}).Execute(); err != nil {
+			return fmt.Errorf("failed to enforce monitor checks cap: %v", err)
+		}
+	}
 	return nil
 }

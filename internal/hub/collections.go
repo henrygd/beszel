@@ -115,6 +115,35 @@ func setCollectionAuthSettings(app core.App) error {
 		return err
 	}
 
+	// Uptime monitors: members of the monitor (or any authenticated user when
+	// SHARE_ALL_SYSTEMS is set) can read; writes block readonly users.
+	// monitor_checks rows are server-written, never via the public API.
+	monitorsMemberRule := authenticatedRule + " && users.id ?= @request.auth.id"
+	monitorsReadRule := monitorsMemberRule
+	checksReadRule := authenticatedRule + " && monitor.users.id ?= @request.auth.id"
+	if shareAllSystems == "true" {
+		monitorsReadRule = authenticatedRule
+		checksReadRule = authenticatedRule
+	}
+	monitorsWriteRule := monitorsReadRule + " && @request.auth.role != \"readonly\""
+
+	if err := applyCollectionRules(app, []string{"monitors"}, collectionRules{
+		list:   &monitorsReadRule,
+		view:   &monitorsReadRule,
+		create: &monitorsWriteRule,
+		update: &monitorsWriteRule,
+		delete: &monitorsWriteRule,
+	}); err != nil {
+		return err
+	}
+
+	if err := applyCollectionRules(app, []string{"monitor_checks"}, collectionRules{
+		list: &checksReadRule,
+		view: &checksReadRule,
+	}); err != nil {
+		return err
+	}
+
 	return nil
 }
 
