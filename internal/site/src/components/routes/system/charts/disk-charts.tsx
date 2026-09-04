@@ -330,11 +330,12 @@ export function DockerVolumeChart({ systemData }: { systemData: SystemData }) {
 		}
 		const sorted = Object.keys(sizeSums).sort((a, b) => sizeSums[b] - sizeSums[a])
 		const colorMap = {} as Record<string, string>
-		const dataKeys = {} as Record<string, (d: SystemStatsRecord) => number>
+		const dataKeys = {} as Record<string, (d: SystemStatsRecord) => number | null>
 		for (let i = 0; i < sorted.length; i++) {
 			const key = sorted[i]
 			colorMap[key] = `hsl(${((i * 360) / sorted.length) % 360}, var(--chart-saturation), var(--chart-lightness))`
-			dataKeys[key] = (d: SystemStatsRecord) => d.stats?.dv?.[key] ?? 0
+			// we set null instead of 0 so records from before collection was enabled leave a gap
+			dataKeys[key] = (d: SystemStatsRecord) => d.stats?.dv?.[key] ?? null
 		}
 		return { colorMap, dataKeys, sortedKeys: sorted }
 	}, [volumeNamesKey])
