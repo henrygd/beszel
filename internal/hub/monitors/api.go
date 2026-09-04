@@ -3,15 +3,14 @@ package monitors
 import (
 	"context"
 	"fmt"
+	"net"
 	"net/http"
 	"os"
-	"sort"
 	"strconv"
 	"strings"
 	"sync"
 	"time"
 
-	"github.com/pocketbase/dbx"
 	"github.com/pocketbase/pocketbase/apis"
 	"github.com/pocketbase/pocketbase/core"
 )
@@ -25,28 +24,46 @@ var secretConfigKeys = map[string]bool{"password": true, "token": true}
 // MonitorAPI exposes monitor CRUD, history, testing and summary endpoints.
 // The scheduler is wired in Task 10; check runs inline here for test/manual runs.
 type MonitorAPI struct {
-	app      core.App
-	mu       sync.Mutex
-	testHits map[string][]time.Time
+	app core.App
 }
 
-// RegisterRoutes mounts the monitors API under /api/beszel/monitors via an
-// OnServe hook, so it works both in production and in ApiScenario tests.
-func RegisterRoutes(app core.App) {
-	api := &MonitorAPI{app: app, testHits: make(map[string][]time.Time)}
-	app.OnServe().BindFunc(func(e *core.ServeEvent) error {
-		g := e.Router.Group("/api/beszel/monitors")
-		g.Bind(apis.RequireAuth())
-		g.GET("", api.list)
-		g.POST("", api.create)
-		g.GET("/summary", api.summary)
-		g.GET("/{id}", api.get)
-		g.PATCH("/{id}", api.update)
-		g.DELETE("/{id}", api.delete)
-		g.GET("/{id}/checks", api.checks)
-		g.POST("/{id}/test", api.test)
-		return e.Next()
-	})
+// testLimiter holds sliding-window timestamps for the manual-test endpoint.
+// It is shared per app (not per MonitorAPI instance): production mounts one
+// instance, but tests mount one per scenario on the same app, and the
+// rate limit must apply across them.
+type testLimiter struct {
+	mu   sync.Mutex
+	hits map[string][]time.Time
+}
+
+var testLimiters sync.Map // core.App -> *testLimiter
+
+func limiterFor(app core.App) *testLimiter {
+	if v, ok := testLimiters.Load(app); ok {
+		return v.(*testLimiter)
+	}
+	l := &testLimiter{hits: make(map[string][]time.Time)}
+	actual, _ := testLimiters.LoadOrStore(app, l)
+	return actual.(*testLimiter)
+}
+
+// RegisterRoutes mounts the monitors API under /api/beszel/monitors on the
+// given serve event's router. It must be called synchronously from the
+// parent OnServe handler (registerApiRoutes): PocketBase snapshots OnServe
+// handlers when the event triggers, so binding a nested OnServe hook here
+// would never fire in production.
+func RegisterRoutes(se *core.ServeEvent) {
+	api := &MonitorAPI{app: se.App}
+	g := se.Router.Group("/api/beszel/monitors")
+	g.Bind(apis.RequireAuth())
+	g.GET("", api.list)
+	g.POST("", api.create)
+	g.GET("/summary", api.summary)
+	g.GET("/{id}", api.get)
+	g.PATCH("/{id}", api.update)
+	g.DELETE("/{id}", api.delete)
+	g.GET("/{id}/checks", api.checks)
+	g.POST("/{id}/test", api.test)
 }
 
 type monitorInput struct {
@@ -56,8 +73,8 @@ type monitorInput struct {
 	Interval    *int           `json:"interval"`
 	Timeout     *int           `json:"timeout"`
 	MaxRetries  *int           `json:"max_retries"`
-	UpsideDown  bool           `json:"upside_down"`
-	Paused      bool           `json:"paused"`
+	UpsideDown  *bool          `json:"upside_down"`
+	Paused      *bool          `json:"paused"`
 	Notify      *bool          `json:"notify"`
 	ResendAfter *int           `json:"resend_after"`
 	Users       []string       `json:"users"`
@@ -78,17 +95,85 @@ func boolOr(v *bool, def bool) bool {
 	return *v
 }
 
-// validateInput applies defaults and returns field-typed errors.
+// validateInput applies defaults and returns field-typed errors. It
+// validates the API-level surface (types, schemes, ports, enums, bounds);
+// fine-grained config semantics stay with the checkers, which report typed
+// Down results at check time.
 func validateInput(in *monitorInput) error {
 	m := Monitor{
 		Name: in.Name, Type: MonitorType(in.Type), Target: strings.TrimSpace(in.Target),
 		IntervalSeconds: intOr(in.Interval, 60), TimeoutSeconds: intOr(in.Timeout, 10),
-		MaxRetries: intOr(in.MaxRetries, 2), UpsideDown: in.UpsideDown,
+		MaxRetries: intOr(in.MaxRetries, 2), UpsideDown: boolOr(in.UpsideDown, false),
 	}
 	if in.Name == "" {
 		return fmt.Errorf("name is required")
 	}
-	return m.Validate()
+	if err := m.Validate(); err != nil {
+		return err
+	}
+	if ra := intOr(in.ResendAfter, 0); ra < 0 || ra > 1440 {
+		return fmt.Errorf("resend_after must be 0..1440 minutes")
+	}
+	switch m.Type {
+	case TypeHTTP, TypeKeyword:
+		u, err := parseMonitorURL(m.Target)
+		if err != nil {
+			return fmt.Errorf("invalid http target: %v", err)
+		}
+		if u.Scheme != "http" && u.Scheme != "https" {
+			return fmt.Errorf("http target must use http(s) scheme")
+		}
+		if u.Hostname() == "" {
+			return fmt.Errorf("http target must have a host")
+		}
+		if in.Config != nil {
+			if method, ok := in.Config["method"]; ok {
+				s, _ := method.(string)
+				if !allowedHTTPMethods[strings.ToUpper(s)] {
+					return fmt.Errorf("invalid method %q", s)
+				}
+			}
+		}
+	case TypeTLS:
+		host, port, err := ParsePortOrDefault(m.Target, 443)
+		if err != nil {
+			return fmt.Errorf("invalid tls target: %v", err)
+		}
+		if host == "" || port <= 0 || port > 65535 {
+			return fmt.Errorf("tls target must be host[:port]")
+		}
+	case TypeDNS:
+		if in.Config != nil {
+			if qtype, ok := in.Config["qtype"]; ok {
+				s, _ := qtype.(string)
+				if _, ok := allowedDNSQTypes[strings.ToUpper(s)]; !ok {
+					return fmt.Errorf("invalid qtype %q", s)
+				}
+			}
+			if proto, ok := in.Config["protocol"]; ok {
+				s, _ := proto.(string)
+				if s != "udp" && s != "tcp" {
+					return fmt.Errorf("invalid protocol %q: must be udp or tcp", s)
+				}
+			}
+			if resolver, ok := in.Config["resolver"]; ok {
+				if s, _ := resolver.(string); s != "" {
+					host, _, err := ParsePortOrDefault(s, 53)
+					if err != nil {
+						return fmt.Errorf("invalid resolver: %v", err)
+					}
+					if net.ParseIP(stripBrackets(host)) == nil {
+						return fmt.Errorf("resolver must be an IP address")
+					}
+				}
+			}
+		}
+	case TypePing:
+		if strings.TrimSpace(m.Target) == "" {
+			return fmt.Errorf("ping target must not be empty")
+		}
+	}
+	return nil
 }
 
 func redactConfig(cfg map[string]any) map[string]any {
@@ -234,9 +319,9 @@ func (a *MonitorAPI) create(e *core.RequestEvent) error {
 	rec.Set("config", in.Config)
 	rec.Set("status", "pending")
 	if err := a.app.Save(rec); err != nil {
-		return e.BadRequestError("", err)
+		return e.BadRequestError("failed to save monitor", err)
 	}
-	return e.JSON(http.StatusOK, monitorToResponse(rec))
+	return e.JSON(http.StatusCreated, monitorToResponse(rec))
 }
 
 func (a *MonitorAPI) get(e *core.RequestEvent) error {
@@ -270,8 +355,9 @@ func (a *MonitorAPI) update(e *core.RequestEvent) error {
 	mr := int(rec.GetFloat("max_retries"))
 	ra := int(rec.GetFloat("resend_after"))
 	nv := rec.GetBool("notify")
+	ud := rec.GetBool("upside_down")
 	merged.Interval, merged.Timeout, merged.MaxRetries = &iv, &tv, &mr
-	merged.ResendAfter, merged.Notify = &ra, &nv
+	merged.ResendAfter, merged.Notify, merged.UpsideDown = &ra, &nv, &ud
 	if in.Interval != nil {
 		merged.Interval = in.Interval
 	}
@@ -287,9 +373,8 @@ func (a *MonitorAPI) update(e *core.RequestEvent) error {
 	if in.ResendAfter != nil {
 		merged.ResendAfter = in.ResendAfter
 	}
-	merged.UpsideDown = rec.GetBool("upside_down")
-	if in.UpsideDown {
-		merged.UpsideDown = true
+	if in.UpsideDown != nil {
+		merged.UpsideDown = in.UpsideDown
 	}
 	if err := validateInput(&merged); err != nil {
 		return e.BadRequestError(err.Error(), nil)
@@ -303,9 +388,14 @@ func (a *MonitorAPI) update(e *core.RequestEvent) error {
 	rec.Set("max_retries", *merged.MaxRetries)
 	rec.Set("notify", *merged.Notify)
 	rec.Set("resend_after", *merged.ResendAfter)
-	if in.Paused != rec.GetBool("paused") {
-		rec.Set("paused", in.Paused)
-		rec.Set("status", "paused")
+	rec.Set("upside_down", *merged.UpsideDown)
+	if in.Paused != nil && *in.Paused != rec.GetBool("paused") {
+		rec.Set("paused", *in.Paused)
+		if *in.Paused {
+			rec.Set("status", "paused")
+		} else {
+			rec.Set("status", "pending")
+		}
 		rec.Set("consecutive_failures", 0)
 	}
 	if in.Users != nil {
@@ -331,7 +421,7 @@ func (a *MonitorAPI) update(e *core.RequestEvent) error {
 		rec.Set("consecutive_failures", 0)
 	}
 	if err := a.app.Save(rec); err != nil {
-		return e.BadRequestError("", err)
+		return e.BadRequestError("failed to save monitor", err)
 	}
 	return e.JSON(http.StatusOK, monitorToResponse(rec))
 }
@@ -368,25 +458,26 @@ func (a *MonitorAPI) checks(e *core.RequestEvent) error {
 			limit = min(n, 1000)
 		}
 	}
-	filter := "monitor = {:mon}"
-	params := dbx.Params{"mon": rec.Id}
+	// Order + limit are pushed to SQL (newest first); the range cutoff is
+	// applied in Go below. rec.Id is a server-generated [a-z0-9] id, safe to
+	// interpolate (FindRecordsByFilter takes no bound params).
+	rows, err := a.app.FindRecordsByFilter("monitor_checks", "monitor = '"+rec.Id+"'", "-created", limit, 0)
+	if err != nil {
+		return e.InternalServerError("failed to load check history", err)
+	}
 	if rng := e.Request.URL.Query().Get("range"); rng == "24h" || rng == "30d" {
 		hours := 24
 		if rng == "30d" {
 			hours = 30 * 24
 		}
-		filter += " && created >= {:cutoff}"
-		params["cutoff"] = time.Now().UTC().Add(-time.Duration(hours) * time.Hour)
-	}
-	rows, err := a.app.FindAllRecords("monitor_checks", dbx.NewExp(filter, params))
-	if err != nil {
-		return e.InternalServerError("", err)
-	}
-	sort.Slice(rows, func(i, j int) bool {
-		return rows[i].GetDateTime("created").After(rows[j].GetDateTime("created"))
-	})
-	if len(rows) > limit {
-		rows = rows[:limit]
+		cutoff := time.Now().UTC().Add(-time.Duration(hours) * time.Hour)
+		kept := rows[:0]
+		for _, r := range rows {
+			if !r.GetDateTime("created").Time().Before(cutoff) {
+				kept = append(kept, r)
+			}
+		}
+		rows = kept
 	}
 	out := make([]map[string]any, 0, len(rows))
 	for _, r := range rows {
@@ -403,8 +494,9 @@ func (a *MonitorAPI) checks(e *core.RequestEvent) error {
 
 // allowTest enforces 1 run per 10s per monitor and 10/min per user.
 func (a *MonitorAPI) allowTest(userID, monitorID string) bool {
-	a.mu.Lock()
-	defer a.mu.Unlock()
+	l := limiterFor(a.app)
+	l.mu.Lock()
+	defer l.mu.Unlock()
 	now := time.Now()
 	keep := func(ts []time.Time, window time.Duration) []time.Time {
 		out := ts[:0]
@@ -415,17 +507,17 @@ func (a *MonitorAPI) allowTest(userID, monitorID string) bool {
 		}
 		return out
 	}
-	user := a.testHits["u:"+userID]
-	mon := a.testHits["m:"+monitorID]
+	user := l.hits["u:"+userID]
+	mon := l.hits["m:"+monitorID]
 	user = keep(user, time.Minute)
 	mon = keep(mon, 10*time.Second)
 	if len(user) >= 10 || len(mon) >= 1 {
-		a.testHits["u:"+userID] = user
-		a.testHits["m:"+monitorID] = mon
+		l.hits["u:"+userID] = user
+		l.hits["m:"+monitorID] = mon
 		return false
 	}
-	a.testHits["u:"+userID] = append(user, now)
-	a.testHits["m:"+monitorID] = append(mon, now)
+	l.hits["u:"+userID] = append(user, now)
+	l.hits["m:"+monitorID] = append(mon, now)
 	return true
 }
 
@@ -461,12 +553,9 @@ func (a *MonitorAPI) test(e *core.RequestEvent) error {
 func (a *MonitorAPI) summary(e *core.RequestEvent) error {
 	recs, err := a.app.FindAllRecords("monitors")
 	if err != nil {
-		return e.InternalServerError("", err)
+		return e.InternalServerError("failed to load monitors", err)
 	}
 	recs = filterMonitorRecords(recs, e.Auth.Id, "")
-	if err != nil {
-		return e.InternalServerError("", err)
-	}
 	counts := map[string]int{"up": 0, "down": 0, "warn": 0, "paused": 0, "pending": 0}
 	var down []map[string]any
 	for _, rec := range recs {

@@ -124,8 +124,9 @@ func (h *Hub) registerApiRoutes(se *core.ServeEvent) error {
 	// update / delete user alerts
 	apiAuth.POST("/user-alerts", alerts.UpsertUserAlerts)
 	apiAuth.DELETE("/user-alerts", alerts.DeleteUserAlerts)
-	// uptime monitors (routes mounted by the monitors package via OnServe)
-	monitors.RegisterRoutes(se.App)
+	// uptime monitors (mounted synchronously: nested OnServe hooks would
+	// never fire because PocketBase snapshots handlers at trigger time)
+	monitors.RegisterRoutes(se)
 	// refresh SMART devices for a system
 	apiAuth.POST("/smart/refresh", h.refreshSmartData).BindFunc(excludeReadOnlyRole)
 	// refresh ZFS pool details for a system
