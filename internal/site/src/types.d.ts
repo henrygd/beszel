@@ -153,6 +153,8 @@ export interface SystemStats {
 	efs?: Record<string, ExtraFsStats>
 	/** ZFS pool metrics */
 	z?: Record<string, ZfsPool>
+	/** Docker volume sizes (GB), keyed by volume name */
+	dv?: Record<string, number>
 	/** GPU data */
 	g?: Record<string, GPUData>
 	/** battery percent and state */

@@ -54,6 +54,7 @@ type Stats struct {
 	Batteries         map[string]uint8     `json:"bats,omitempty" cbor:"37,keyasint,omitempty"`
 	ZfsPools          map[string]*ZfsPool  `json:"z,omitempty" cbor:"39,keyasint,omitempty"`  // ZFS pool metrics, keyed by pool name
 	DiskIOTotal       [2]uint64            `json:"diot,omitzero" cbor:"38,keyasint,omitzero"` // [total read bytes, total write bytes] cumulative device counters
+	DockerVolumes     map[string]float64   `json:"dv,omitempty" cbor:"40,keyasint,omitempty"` // Docker volume sizes in GB, keyed by volume name
 
 }
 

@@ -696,6 +696,26 @@ func TestAverageSystemStatsSlice_Zfs(t *testing.T) {
 	}, result.ZfsPools["backup"])
 }
 
+func TestAverageSystemStatsSlice_DockerVolumes(t *testing.T) {
+	input := []system.Stats{
+		{
+			DockerVolumes: map[string]float64{"pg_data": 10},
+		},
+		{},
+		{
+			// backup only exists in this record, so it must be averaged over the
+			// records that actually reported it rather than the whole window.
+			DockerVolumes: map[string]float64{"pg_data": 20, "backup": 5},
+		},
+	}
+
+	result := records.AverageSystemStatsSlice(input)
+
+	require.Len(t, result.DockerVolumes, 2)
+	assert.Equal(t, 15.0, result.DockerVolumes["pg_data"])
+	assert.Equal(t, 5.0, result.DockerVolumes["backup"])
+}
+
 // Tests with 10 records matching the common real-world case (10 x 1m -> 1 x 10m).
 func TestAverageSystemStatsSlice_TenRecords(t *testing.T) {
 	input := make([]system.Stats, 10)
