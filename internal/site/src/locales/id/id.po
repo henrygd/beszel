@@ -8,7 +8,7 @@ msgstr ""
 "Language: id\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2026-08-18 17:52\n"
+"PO-Revision-Date: 2026-09-02 21:43\n"
 "Last-Translator: \n"
 "Language-Team: Indonesian\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
@@ -45,6 +45,10 @@ msgstr "{count, plural, one {{countString} jam} other {{countString} jam}}"
 #: src/lib/utils.ts
 msgid "{count, plural, one {{countString} minute} few {{countString} minutes} many {{countString} minutes} other {{countString} minutes}}"
 msgstr "{count, plural, one {{countString} menit} few {{countString} menit} many {{countString} menit} other {{countString} menit}}"
+
+#: src/components/routes/system/charts/disk-charts.tsx
+msgid "{diskName} I/O"
+msgstr "I/O {diskName}"
 
 #: src/components/routes/system/info-bar.tsx
 msgid "{threads, plural, one {# thread} other {# threads}}"
@@ -93,6 +97,7 @@ msgstr "5 mnt"
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 #: src/components/routes/system/smart-table.tsx
+#: src/components/routes/system/zfs-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Actions"
 msgstr "Aksi"
@@ -190,6 +195,11 @@ msgstr "Apakah anda yakin?"
 #: src/components/copy-to-clipboard.tsx
 msgid "Automatic copy requires a secure context."
 msgstr "Copy memerlukan https."
+
+#: src/components/routes/system/zfs-table.tsx
+msgctxt "Disk space available"
+msgid "Available"
+msgstr "Tersedia"
 
 #: src/components/routes/system/chart-card.tsx
 msgid "Average"
@@ -328,6 +338,7 @@ msgid "Capabilities"
 msgstr "Kapabilitas"
 
 #: src/components/routes/system/smart-table.tsx
+#: src/components/routes/system/zfs-table.tsx
 msgid "Capacity"
 msgstr "Kapasitas"
 
@@ -380,8 +391,14 @@ msgstr "Periksa layanan pemantauan Anda"
 msgid "Check your notification service"
 msgstr "Periksa jasa penyedia notifikasi anda"
 
+#: src/components/routes/system/zfs-table.tsx
+msgid "Checksum errors"
+msgstr "Kesalahan checksum"
+
 #: src/components/containers-table/containers-table.tsx
 #: src/components/routes/system/smart-table.tsx
+#: src/components/routes/system/zfs-table.tsx
+#: src/components/routes/system/zfs-table.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "Clear"
 msgstr "Bersihkan"
@@ -393,6 +410,10 @@ msgstr "Klik pada kontainer untuk melihat informasi lebih banyak."
 #: src/components/routes/system/smart-table.tsx
 msgid "Click on a device to view more information."
 msgstr "Klik pada perangkat untuk melihat informasi lebih banyak."
+
+#: src/components/routes/system/zfs-table.tsx
+msgid "Click on a pool to view vdev and dataset details."
+msgstr "Klik pool untuk melihat detail vdev dan dataset."
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Click on a system to view more information."
@@ -423,6 +444,14 @@ msgstr "Konflik"
 #: src/components/active-alerts.tsx
 msgid "Connection is down"
 msgstr "Koneksi terputus"
+
+#: src/lib/alerts.ts
+msgid "Container"
+msgstr "Kontainer"
+
+#: src/lib/alerts.ts
+msgid "Container Health"
+msgstr "Kesehatan Kontainer"
 
 #: src/components/routes/system.tsx
 msgid "Containers"
@@ -507,9 +536,17 @@ msgstr ""
 msgid "CPU Cores"
 msgstr "Inti CPU"
 
+#: src/lib/alerts.ts
+msgid "CPU I/O Wait"
+msgstr "Waktu tunggu I/O CPU (IOWait)"
+
 #: src/components/systemd-table/systemd-table-columns.tsx
 msgid "CPU Peak"
 msgstr "Puncak CPU"
+
+#: src/lib/alerts.ts
+msgid "CPU Steal Time"
+msgstr "Waktu CPU yang diambil hypervisor (Steal)"
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "CPU time"
@@ -543,13 +580,29 @@ msgstr "Dibuat"
 msgid "Critical (%)"
 msgstr "Kritis (%)"
 
+#: src/components/routes/system/disk-io-sheet.tsx
+msgid "Cumulative data read since boot"
+msgstr "Total data yang dibaca sejak boot"
+
+#: src/components/routes/system/disk-io-sheet.tsx
+msgid "Cumulative data written since boot"
+msgstr "Total data yang ditulis sejak boot"
+
 #: src/components/routes/system/network-sheet.tsx
 msgid "Cumulative Download"
 msgstr "Akumulasi Download"
 
+#: src/components/routes/system/disk-io-sheet.tsx
+msgid "Cumulative Read"
+msgstr "Total pembacaan"
+
 #: src/components/routes/system/network-sheet.tsx
 msgid "Cumulative Upload"
 msgstr "Akumulasi Upload"
+
+#: src/components/routes/system/disk-io-sheet.tsx
+msgid "Cumulative Write"
+msgstr "Total penulisan"
 
 #. Context: Battery state
 #. Context: Battery state
@@ -610,15 +663,10 @@ msgstr "Sedang tidak di charge"
 msgid "Disk"
 msgstr ""
 
-#: src/components/routes/system/charts/disk-charts.tsx
-msgid "Disk I/O"
-msgstr "I/O Disk"
-
 #: src/components/routes/settings/general.tsx
 msgid "Disk unit"
 msgstr "Unit disk"
 
-#: src/components/routes/system/charts/disk-charts.tsx
 #: src/components/routes/system/charts/disk-charts.tsx
 #: src/lib/alerts.ts
 msgid "Disk Usage"
@@ -788,6 +836,10 @@ msgstr "Gagal"
 msgid "Failed Attributes:"
 msgstr "Atribut yang Gagal:"
 
+#: src/lib/alerts.ts
+msgid "Failed Services"
+msgstr "Layanan gagal"
+
 #: src/lib/api.ts
 msgid "Failed to authenticate"
 msgstr "Gagal mengautentikasi"
@@ -823,6 +875,8 @@ msgstr ""
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/system/chart-card.tsx
 #: src/components/routes/system/smart-table.tsx
+#: src/components/routes/system/zfs-table.tsx
+#: src/components/routes/system/zfs-table.tsx
 #: src/components/systemd-table/systemd-table.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "Filter..."
@@ -843,6 +897,12 @@ msgstr "Untuk <0>{min}</0> {min, plural, one {menit} other {menit}}"
 #: src/components/login/auth-form.tsx
 msgid "Forgot password?"
 msgstr "Lupa kata sandi?"
+
+#: src/components/routes/system/zfs-table.tsx
+#: src/components/routes/system/zfs-table.tsx
+msgctxt "Free space"
+msgid "Free"
+msgstr "Kosong"
 
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
@@ -888,6 +948,7 @@ msgid "Grid"
 msgstr "Kartu"
 
 #: src/components/containers-table/containers-table-columns.tsx
+#: src/components/routes/system/zfs-table.tsx
 msgid "Health"
 msgstr "Kesehatan"
 
@@ -1085,6 +1146,10 @@ msgstr "Penggunaan memori container"
 msgid "Model"
 msgstr ""
 
+#: src/components/routes/system/zfs-table.tsx
+msgid "Mountpoint"
+msgstr "Titik kait"
+
 #: src/components/add-system.tsx
 #: src/components/alerts-history-columns.tsx
 #: src/components/containers-table/containers-table-columns.tsx
@@ -1120,6 +1185,10 @@ msgstr "Unit jaringan"
 msgid "No"
 msgstr "Tidak"
 
+#: src/components/routes/system/zfs-table.tsx
+msgid "No detail data for this pool."
+msgstr "Tidak ada data terperinci yang tersedia untuk pool ini."
+
 #: src/components/command-palette.tsx
 #: src/components/systemd-table/systemd-table.tsx
 msgid "No results found."
@@ -1143,11 +1212,19 @@ msgstr "Tidak ada atribut S.M.A.R.T. yang tersedia untuk perangkat ini."
 msgid "No systems found."
 msgstr "Sistem tidak ditemukan."
 
+#: src/components/routes/system/zfs-table.tsx
+msgid "None"
+msgstr "Tidak ada"
+
 #: src/components/command-palette.tsx
 #: src/components/routes/settings/layout.tsx
 #: src/components/routes/settings/notifications.tsx
 msgid "Notifications"
 msgstr "Notifikasi"
+
+#: src/lib/alerts.ts
+msgid "Notifications may include recent container log excerpts."
+msgstr "Notifikasi dapat menyertakan cuplikan terbaru dari log kontainer."
 
 #: src/components/login/auth-form.tsx
 msgid "OAuth 2 / OIDC support"
@@ -1156,6 +1233,14 @@ msgstr "Dukungan OAuth 2 / OIDC"
 #: src/components/routes/settings/config-yaml.tsx
 msgid "On each restart, systems in the database will be updated to match the systems defined in the file."
 msgstr "Pada setiap restart, sistem dalam database akan diperbarui untuk mencocokkan sistem yang didefinisikan dalam file."
+
+#: src/lib/alerts.ts
+msgid "One or more containers are unhealthy"
+msgstr "Satu atau beberapa kontainer tidak sehat"
+
+#: src/lib/alerts.ts
+msgid "One or more services are in a failed state"
+msgstr "Satu atau beberapa layanan berada dalam status gagal"
 
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/quiet-hours.tsx
@@ -1170,6 +1255,7 @@ msgstr "Kata sandi sekali pakai (OTP)"
 #: src/components/routes/settings/tokens-fingerprints.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 #: src/components/routes/system/smart-table.tsx
+#: src/components/routes/system/zfs-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Open menu"
 msgstr "Buka menu"
@@ -1293,6 +1379,14 @@ msgstr "Silakan lihat <0>dokumentasi</0> untuk instruksi."
 msgid "Please sign in to your account"
 msgstr "Silakan masuk ke akun anda"
 
+#: src/components/routes/system/zfs-table.tsx
+msgid "Pool Health"
+msgstr "Kesehatan pool"
+
+#: src/components/routes/system/charts/zfs-charts.tsx
+msgid "Pool Usage"
+msgstr "Penggunaan pool"
+
 #: src/components/add-system.tsx
 msgid "Port"
 msgstr ""
@@ -1339,12 +1433,19 @@ msgid "Quiet Hours"
 msgstr "Jam Tenang"
 
 #. Disk read
+#. Disk read
 #: src/components/routes/system/charts/disk-charts.tsx
+#: src/components/routes/system/charts/zfs-charts.tsx
+#: src/components/routes/system/disk-io-sheet.tsx
 #: src/components/routes/system/disk-io-sheet.tsx
 #: src/components/routes/system/disk-io-sheet.tsx
 #: src/components/routes/system/disk-io-sheet.tsx
 msgid "Read"
 msgstr "Baca"
+
+#: src/components/routes/system/zfs-table.tsx
+msgid "Read errors"
+msgstr "Kesalahan baca"
 
 #: src/components/routes/system/charts/network-charts.tsx
 msgid "Received"
@@ -1353,6 +1454,7 @@ msgstr "Diterima"
 #: src/components/containers-table/containers-table.tsx
 #: src/components/containers-table/containers-table.tsx
 #: src/components/routes/system/smart-table.tsx
+#: src/components/routes/system/zfs-table.tsx
 msgid "Refresh"
 msgstr "Muat ulang"
 
@@ -1394,6 +1496,8 @@ msgstr "Restart"
 msgid "Resume"
 msgstr "Lanjutkan"
 
+#: src/components/routes/system/charts/disk-charts.tsx
+#: src/components/routes/system/charts/disk-charts.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgctxt "Root disk label"
 msgid "Root"
@@ -1539,6 +1643,7 @@ msgstr "Waktu Mulai"
 #. Context: alert state (active or resolved)
 #: src/components/alerts-history-columns.tsx
 #: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/system/zfs-table.tsx
 #: src/components/systemd-table/systemd-table-columns.tsx
 msgid "State"
 msgstr "Status"
@@ -1667,9 +1772,9 @@ msgstr "Ini akan menghapus secara permanen semua record yang dipilih dari databa
 msgid "Throughput of {extraFsName}"
 msgstr "Throughput dari {extraFsName}"
 
-#: src/components/routes/system/charts/disk-charts.tsx
-msgid "Throughput of root filesystem"
-msgstr "Throughput dari filesystem root"
+#: src/components/routes/system/charts/zfs-charts.tsx
+msgid "Throughput of ZFS pool {poolName}"
+msgstr "Throughput pool ZFS {poolName}"
 
 #: src/components/routes/settings/general.tsx
 msgid "Time format"
@@ -1742,8 +1847,16 @@ msgid "Triggers when 5 minute load average exceeds a threshold"
 msgstr "Dipicu ketika rata-rata beban 5 menit melebihi ambang batas"
 
 #: src/lib/alerts.ts
+msgid "Triggers when a container's health check reports unhealthy"
+msgstr "Dipicu saat pemeriksaan kesehatan kontainer melaporkan status tidak sehat"
+
+#: src/lib/alerts.ts
 msgid "Triggers when any sensor exceeds a threshold"
 msgstr "Dipicu ketika sensor apa pun melebihi ambang batas"
+
+#: src/lib/alerts.ts
+msgid "Triggers when any systemd service enters the failed state"
+msgstr "Dipicu saat layanan systemd memasuki status gagal"
 
 #: src/lib/alerts.ts
 msgid "Triggers when battery charge drops below a threshold"
@@ -1752,6 +1865,14 @@ msgstr "Dipicu ketika baterai turun di bawah ambang batas"
 #: src/lib/alerts.ts
 msgid "Triggers when combined up/down exceeds a threshold"
 msgstr "Dipicu ketika up atau down melebihi ambang batas"
+
+#: src/lib/alerts.ts
+msgid "Triggers when CPU I/O wait exceeds a threshold"
+msgstr "Terpicu saat waktu tunggu I/O CPU melebihi ambang batas"
+
+#: src/lib/alerts.ts
+msgid "Triggers when CPU steal time exceeds a threshold"
+msgstr "Terpicu saat waktu steal CPU melebihi ambang batas"
 
 #: src/lib/alerts.ts
 msgid "Triggers when CPU usage exceeds a threshold"
@@ -1779,6 +1900,10 @@ msgstr "Dipicu ketika penggunaan disk apa pun melebihi ambang batas"
 msgid "Type"
 msgstr "Tipe"
 
+#: src/lib/alerts.ts
+msgid "Unhealthy"
+msgstr "Tidak sehat"
+
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Unit file"
 msgstr "File unit"
@@ -1794,6 +1919,7 @@ msgid "Universal token"
 msgstr "Token universal"
 
 #. Context: Battery state
+#: src/components/routes/system/zfs-table.tsx
 #: src/lib/i18n.ts
 msgid "Unknown"
 msgstr "Tidak diketahui"
@@ -1819,6 +1945,7 @@ msgstr "Perbarui"
 
 #: src/components/containers-table/containers-table-columns.tsx
 #: src/components/routes/system/smart-table.tsx
+#: src/components/routes/system/zfs-table.tsx
 #: src/components/systemd-table/systemd-table-columns.tsx
 msgid "Updated"
 msgstr "Diperbarui"
@@ -1837,19 +1964,24 @@ msgid "Uptime"
 msgstr "Waktu aktif"
 
 #: src/components/routes/system/charts/disk-charts.tsx
+#: src/components/routes/system/charts/disk-charts.tsx
 #: src/components/routes/system/charts/gpu-charts.tsx
 #: src/components/routes/system/charts/gpu-charts.tsx
 #: src/components/routes/system/charts/gpu-charts.tsx
+#: src/components/routes/system/charts/zfs-charts.tsx
 #: src/components/routes/system/cpu-sheet.tsx
 msgid "Usage"
 msgstr "Penggunaan"
 
-#: src/components/routes/system/charts/disk-charts.tsx
-msgid "Usage of root partition"
-msgstr "Penggunaan partisi root"
+#: src/components/routes/system/charts/zfs-charts.tsx
+msgid "Usage of ZFS pool {poolName}"
+msgstr "Penggunaan pool ZFS {poolName}"
 
 #: src/components/routes/system/charts/memory-charts.tsx
 #: src/components/routes/system/charts/memory-charts.tsx
+#: src/components/routes/system/zfs-table.tsx
+#: src/components/routes/system/zfs-table.tsx
+#: src/components/routes/system/zfs-table.tsx
 msgid "Used"
 msgstr "Digunakan"
 
@@ -1924,12 +2056,19 @@ msgid "Windows command"
 msgstr "Perintah Windows"
 
 #. Disk write
+#. Disk write
 #: src/components/routes/system/charts/disk-charts.tsx
+#: src/components/routes/system/charts/zfs-charts.tsx
+#: src/components/routes/system/disk-io-sheet.tsx
 #: src/components/routes/system/disk-io-sheet.tsx
 #: src/components/routes/system/disk-io-sheet.tsx
 #: src/components/routes/system/disk-io-sheet.tsx
 msgid "Write"
 msgstr "Tulis"
+
+#: src/components/routes/system/zfs-table.tsx
+msgid "Write errors"
+msgstr "Kesalahan tulis"
 
 #: src/components/routes/settings/layout.tsx
 msgid "YAML Config"
