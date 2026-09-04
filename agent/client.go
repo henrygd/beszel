@@ -25,7 +25,9 @@ import (
 )
 
 const (
-	wsDeadline = 70 * time.Second
+	// Keep the connection alive long enough for a slow collection cycle to
+	// finish before the hub considers the agent disconnected.
+	wsDeadline = 120 * time.Second
 )
 
 type caCertFileError struct {
