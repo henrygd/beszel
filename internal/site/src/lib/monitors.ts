@@ -7,6 +7,7 @@ export const $monitorsSummary = map<MonitorsSummary | null>(null)
 
 let initialized = false
 let unsub: (() => void) | null = null
+let loadedOnce: Promise<void> | null = null
 
 async function refresh() {
 	try {
@@ -27,13 +28,15 @@ async function refreshSummary() {
 	}
 }
 
-/** Initialize the monitors store and realtime subscription (call once). */
-export function init() {
+/** Initialize the monitors store and realtime subscription (call once).
+ * Returns a promise that resolves after the first load. Pages must NOT
+ * call cleanup() (app-lifetime subscription owned by main.tsx). */
+export function init(): Promise<void> {
 	if (initialized) {
-		return
+		return loadedOnce ?? Promise.resolve()
 	}
 	initialized = true
-	refresh()
+	loadedOnce = refresh()
 	pb.collection("monitors")
 		.subscribe("*", (e) => {
 			const record = e.record as unknown as MonitorRecord
@@ -53,6 +56,7 @@ export function init() {
 		.catch(() => {
 			unsub = null
 		})
+	return loadedOnce
 }
 
 export function cleanup() {

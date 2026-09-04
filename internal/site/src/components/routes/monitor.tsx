@@ -81,7 +81,7 @@ export default memo(({ id }: { id: string }) => {
 
 	const latencies = (checks ?? [])
 		.filter((c) => c.latency_ms > 0)
-		.slice(-120)
+		.slice(0, 120)
 		.reverse()
 		.map((c) => ({ time: formatTime(c.created), ms: c.latency_ms }))
 

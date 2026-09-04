@@ -24,7 +24,7 @@ import { BellIcon, BellOffIcon, PauseIcon, PencilIcon, PlayIcon, PlusIcon, Rotat
 import { getPagePath } from "@nanostores/router"
 import { $router, Link } from "@/components/router"
 import { isReadOnlyUser, pb } from "@/lib/api"
-import { $monitors, cleanup, init } from "@/lib/monitors"
+import { $monitors, init } from "@/lib/monitors"
 import type { MonitorRecord, MonitorStatus } from "@/types"
 import { MonitorDialog } from "./monitor-dialog"
 
@@ -178,10 +178,8 @@ export default memo(() => {
 	}, [])
 
 	useEffect(() => {
-		init()
 		let cancelled = false
-		pb.collection<MonitorRecord>("monitors")
-			.getFullList()
+		init()
 			.then(() => {
 				if (!cancelled) {
 					setLoaded(true)
@@ -195,7 +193,6 @@ export default memo(() => {
 			})
 		return () => {
 			cancelled = true
-			cleanup()
 		}
 	}, [])
 

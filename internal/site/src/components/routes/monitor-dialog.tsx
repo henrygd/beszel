@@ -151,6 +151,32 @@ export function MonitorDialog({
 		// stored secrets when they are absent from the patch.
 		const config: Record<string, unknown> = { ...(monitor?.config ?? {}) }
 		const num = (v: string) => Number.parseInt(v, 10)
+		// Drop keys that belong to other monitor types so switching type
+		// cannot leave behind invisible behavior (e.g. a keyword check on
+		// an http monitor, or a qtype on a ping monitor).
+		for (const key of [
+			"keyword",
+			"invert_keyword",
+			"method",
+			"accepted_status_codes",
+			"auth_type",
+			"username",
+			"password",
+			"token",
+			"ignore_tls_errors",
+			"check_cert_expiry",
+			"warn_days",
+			"crit_days",
+			"qtype",
+			"protocol",
+			"resolver",
+			"expected_answer",
+			"count",
+			"packet_size",
+			"port",
+		]) {
+			delete config[key]
+		}
 		if (form.type === "keyword" || (form.type === "http" && form.keyword.trim())) {
 			if (form.type === "keyword" && !form.keyword) {
 				setError(t`Keyword is required for keyword monitors.`)
