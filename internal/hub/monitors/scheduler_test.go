@@ -18,12 +18,12 @@ func downResult() CheckResult { return CheckResult{Status: StatusDown, Message: 
 func TestStateMachine_DownAfterMaxRetriesPlusOne(t *testing.T) {
 	st := newMonitorState(testMonitor())
 	for i := 0; i < 2; i++ {
-		st.applyResult(downResult())
+		_, _ = st.applyResult(downResult())
 		if st.status() != StatusUp {
 			t.Fatalf("run %d: expected still up, got %q", i+1, st.status())
 		}
 	}
-	st.applyResult(downResult())
+	_, _ = st.applyResult(downResult())
 	if st.status() != StatusDown {
 		t.Fatalf("expected down after 3rd failure, got %q", st.status())
 	}
@@ -31,8 +31,8 @@ func TestStateMachine_DownAfterMaxRetriesPlusOne(t *testing.T) {
 
 func TestStateMachine_SuccessResetsFailures(t *testing.T) {
 	st := newMonitorState(testMonitor())
-	st.applyResult(downResult())
-	st.applyResult(upResult())
+	_, _ = st.applyResult(downResult())
+	_, _ = st.applyResult(upResult())
 	if st.failures() != 0 {
 		t.Fatalf("expected failures reset, got %d", st.failures())
 	}
@@ -45,7 +45,7 @@ func TestStateMachine_ZeroRetriesDownImmediately(t *testing.T) {
 	m := testMonitor()
 	m.MaxRetries = 0
 	st := newMonitorState(m)
-	st.applyResult(downResult())
+	_, _ = st.applyResult(downResult())
 	if st.status() != StatusDown {
 		t.Fatalf("expected immediate down, got %q", st.status())
 	}
@@ -55,26 +55,47 @@ func TestStateMachine_UpsideDownInverts(t *testing.T) {
 	m := testMonitor()
 	m.UpsideDown = true
 	st := newMonitorState(m)
-	st.applyResult(upResult())
+	// Raw successes invert to failures: debounced status stays up for the
+	// first max_retries inverted failures, then flips to down.
 	for i := 0; i < 2; i++ {
-		if st.status() != StatusUp {
-			t.Fatalf("expected still up, got %q", st.status())
+		res, _ := st.applyResult(upResult())
+		if res.Status != StatusUp {
+			t.Fatalf("run %d: expected still up, got %q", i+1, res.Status)
 		}
 	}
-	if got := st.applyResult(upResult()); got.Status != StatusDown {
+	if got, _ := st.applyResult(upResult()); got.Status != StatusDown {
 		t.Fatalf("expected inverted down, got %q", got.Status)
 	}
 }
 
 func TestStateMachine_WarnDoesNotFlipUpDown(t *testing.T) {
 	st := newMonitorState(testMonitor())
-	st.applyResult(CheckResult{Status: StatusWarn, Message: "expiring"})
+	_, _ = st.applyResult(CheckResult{Status: StatusWarn, Message: "expiring"})
 	if st.status() != StatusWarn {
 		t.Fatalf("expected warn, got %q", st.status())
 	}
-	st.applyResult(upResult())
+	_, _ = st.applyResult(upResult())
 	if st.status() != StatusUp {
 		t.Fatalf("expected up after warn, got %q", st.status())
+	}
+}
+
+func TestStateMachine_DeliversDebouncedStatus(t *testing.T) {
+	st := newMonitorState(testMonitor())
+	res, changed := st.applyResult(downResult())
+	if res.Status != StatusUp {
+		t.Fatalf("single failure must still deliver up, got %q", res.Status)
+	}
+	if changed {
+		t.Fatal("no transition expected on first failure")
+	}
+	_, _ = st.applyResult(downResult())
+	res, changed = st.applyResult(downResult())
+	if res.Status != StatusDown {
+		t.Fatalf("expected debounced down, got %q", res.Status)
+	}
+	if !changed {
+		t.Fatal("transition expected on flip to down")
 	}
 }
 
@@ -92,7 +113,7 @@ func TestManager_RunOnceDeliversDown(t *testing.T) {
 	m.MaxRetries = 0
 	m.IntervalSeconds = 3600
 	gotCh := make(chan CheckResult, 1)
-	mgr := NewManager(2, func(ctx context.Context, mon Monitor) CheckResult { return downResult() }, func(mon Monitor, res CheckResult) { gotCh <- res })
+	mgr := NewManager(2, func(ctx context.Context, mon Monitor) CheckResult { return downResult() }, func(mon Monitor, res CheckResult, _ bool) { gotCh <- res })
 	mgr.jitterMax = 0
 	defer mgr.Stop()
 	mgr.Add(m)
