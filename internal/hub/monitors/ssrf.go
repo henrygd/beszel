@@ -95,22 +95,17 @@ func ParsePortOrDefault(hostport string, def int) (string, int, error) {
 // against the private-network blocklist. It pins the first allowed IP for
 // the attempt, mitigating DNS-rebinding races within a single check.
 func GuardDialContext(ctx context.Context, network, address string) (net.Conn, error) {
-	host, port, err := ParsePortOrDefault(address, 0)
-	if err != nil || port == 0 {
-		// ParsePortOrDefault needs a default; re-split strictly requiring a port.
-		h, pStr, splitErr := net.SplitHostPort(address)
-		if splitErr != nil || h == "" {
-			return nil, fmt.Errorf("invalid address %q", address)
-		}
-		p, convErr := strconv.Atoi(pStr)
-		if convErr != nil || p <= 0 || p > 65535 {
-			return nil, fmt.Errorf("invalid port in %q", address)
-		}
-		host, port = h, p
+	host, portStr, err := net.SplitHostPort(address)
+	if err != nil || host == "" {
+		return nil, fmt.Errorf("invalid address %q", address)
 	}
-	_ = host
+	port, err := strconv.Atoi(portStr)
+	if err != nil || port <= 0 || port > 65535 {
+		return nil, fmt.Errorf("invalid port in %q", address)
+	}
+	host = stripBrackets(host)
 
-	ips, err := net.DefaultResolver.LookupIP(ctx, "ip", stripBrackets(host))
+	ips, err := net.DefaultResolver.LookupIP(ctx, "ip", host)
 	if err != nil || len(ips) == 0 {
 		return nil, fmt.Errorf("cannot resolve %q: %v", host, err)
 	}
@@ -132,5 +127,6 @@ func GuardDialContext(ctx context.Context, network, address string) (net.Conn, e
 }
 
 func stripBrackets(h string) string {
-	return strings.Trim(h, "[]")
+	h = strings.TrimPrefix(h, "[")
+	return strings.TrimSuffix(h, "]")
 }
