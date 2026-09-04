@@ -79,8 +79,8 @@ func init() {
 		// History is server-written; no public create/update/delete.
 		checks.ListRule = types.Pointer("@request.auth.id != \"\" && monitor.users.id ?= @request.auth.id")
 		checks.ViewRule = types.Pointer("@request.auth.id != \"\" && monitor.users.id ?= @request.auth.id")
-		checks.AddIndex("idx_monitor_checks_monitor_created", false, "monitor", "created")
 		// AddIndex(name, unique, columns, where): "" where = no condition.
+		checks.AddIndex("idx_monitor_checks_monitor_created", false, "monitor, created", "")
 		checks.AddIndex("idx_monitor_checks_created", false, "created", "")
 		return app.Save(checks)
 	}, func(app core.App) error {

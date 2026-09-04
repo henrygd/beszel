@@ -35,11 +35,12 @@ func (r MonitorRecord) ToMonitor() Monitor {
 	}
 }
 
-// RecordStore persists check results. It is implemented by the PocketBase
-// hub (see LoadMonitors/SaveCheckResult) and faked in tests.
+// RecordStore persists check results. It mirrors the LoadMonitors and
+// SaveCheckResult free functions (failures = exact scheduler-owned count,
+// transition reserved for Task 10 notifications) and is faked in tests.
 type RecordStore interface {
 	LoadMonitors(ctx context.Context) ([]MonitorRecord, error)
-	SaveCheckResult(ctx context.Context, rec MonitorRecord, res CheckResult, transition bool) error
+	SaveCheckResult(ctx context.Context, rec MonitorRecord, res CheckResult, failures int, transition bool) error
 }
 
 // LoadMonitors reads all non-paused monitors from the monitors collection.
