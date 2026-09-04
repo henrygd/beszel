@@ -537,7 +537,16 @@ func normalizeDeviceName(value string) string {
 func (a *Agent) initializeDiskIoStats(diskIoCounters map[string]disk.IOCountersStat) {
 	a.fsNames = a.fsNames[:0]
 	now := time.Now()
+	// ZFS datasets have no /proc/diskstats entry, so they are excluded from
+	// I/O tracking instead of warning about a missing device (#1541).
+	var zfsMountpoints map[string]bool
+	if a.zfsManager != nil {
+		zfsMountpoints = a.zfsManager.ZfsMountpoints()
+	}
 	for device, stats := range a.fsStats {
+		if zfsMountpoints[stats.Mountpoint] {
+			continue
+		}
 		// skip if not in diskIoCounters
 		d, exists := diskIoCounters[device]
 		if !exists {
@@ -562,20 +571,31 @@ func (a *Agent) updateDiskUsage(systemStats *system.Stats) {
 		!a.lastDiskUsageUpdate.IsZero() &&
 		time.Since(a.lastDiskUsageUpdate) < a.diskUsageCacheDuration
 
+	// ZFS dataset mountpoints use `zfs list` values because statfs(2) reports
+	// dataset-level usage that excludes child datasets (#1541).
+	var zfsUsage map[string]zfsDatasetUsage
+	if a.zfsManager != nil {
+		zfsUsage = a.zfsManager.DatasetUsage()
+	}
+
 	// disk usage
 	for _, stats := range a.fsStats {
 		// Skip non-root filesystems if caching is active
 		if cacheExtraFs && !stats.Root {
 			continue
 		}
-		if d, err := disk.Usage(stats.Mountpoint); err == nil {
-			stats.DiskTotal = utils.BytesToGigabytes(d.Total)
-			stats.DiskUsed = utils.BytesToGigabytes(d.Used)
-			if stats.Root {
-				systemStats.DiskTotal = utils.BytesToGigabytes(d.Total)
-				systemStats.DiskUsed = utils.BytesToGigabytes(d.Used)
-				systemStats.DiskPct = utils.TwoDecimals(d.UsedPercent)
+		var total, used uint64
+		var usedPct float64
+		if u, ok := zfsUsage[stats.Mountpoint]; ok {
+			total = u.used + u.avail
+			used = u.used
+			if total > 0 {
+				usedPct = float64(used) / float64(total) * 100
 			}
+		} else if d, err := disk.Usage(stats.Mountpoint); err == nil {
+			total = d.Total
+			used = d.Used
+			usedPct = d.UsedPercent
 		} else {
 			// reset stats if error (likely unmounted)
 			slog.Error("Error getting disk stats", "name", stats.Mountpoint, "err", err)
@@ -583,6 +603,14 @@ func (a *Agent) updateDiskUsage(systemStats *system.Stats) {
 			stats.DiskUsed = 0
 			stats.TotalRead = 0
 			stats.TotalWrite = 0
+			continue
+		}
+		stats.DiskTotal = utils.BytesToGigabytes(total)
+		stats.DiskUsed = utils.BytesToGigabytes(used)
+		if stats.Root {
+			systemStats.DiskTotal = stats.DiskTotal
+			systemStats.DiskUsed = stats.DiskUsed
+			systemStats.DiskPct = utils.TwoDecimals(usedPct)
 		}
 	}
 

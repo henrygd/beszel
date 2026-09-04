@@ -2,6 +2,7 @@ package agent
 
 import (
 	"crypto/tls"
+	"crypto/x509"
 	"errors"
 	"fmt"
 	"log/slog"
@@ -27,6 +28,18 @@ const (
 	wsDeadline = 70 * time.Second
 )
 
+type caCertFileError struct {
+	err error
+}
+
+func (e *caCertFileError) Error() string {
+	return e.err.Error()
+}
+
+func (e *caCertFileError) Unwrap() error {
+	return e.err
+}
+
 // WebSocketClient manages the WebSocket connection between the agent and hub.
 // It handles authentication, message routing, and connection lifecycle management.
 type WebSocketClient struct {
@@ -40,6 +53,7 @@ type WebSocketClient struct {
 	hubRequest         *common.HubRequest[cbor.RawMessage] // Reusable request structure for message parsing
 	lastConnectAttempt time.Time                           // Timestamp of last connection attempt
 	hubVerified        bool                                // Whether the hub has been cryptographically verified
+	tlsConfig          *tls.Config                         // Optional TLS configuration with custom CA certificates
 }
 
 // newWebSocketClient creates a new WebSocket client for the given agent.
@@ -58,6 +72,10 @@ func newWebSocketClient(agent *Agent) (client *WebSocketClient, err error) {
 	}
 	// get registration token
 	client.token, err = getToken()
+	if err != nil {
+		return nil, err
+	}
+	client.tlsConfig, err = getTLSConfig()
 	if err != nil {
 		return nil, err
 	}
@@ -110,6 +128,31 @@ func parseTokenFile(contents, path string) (string, error) {
 	return token, nil
 }
 
+// getTLSConfig returns a TLS configuration containing the system certificate
+// pool plus any certificates configured through CA_CERT_FILE. A nil config lets
+// gws use Go's default TLS configuration and system roots.
+func getTLSConfig() (*tls.Config, error) {
+	caCertFile, _ := utils.GetEnv("CA_CERT_FILE")
+	if caCertFile == "" {
+		return nil, nil
+	}
+
+	caCertPEM, err := os.ReadFile(caCertFile)
+	if err != nil {
+		return nil, &caCertFileError{fmt.Errorf("read CA_CERT_FILE %q: %w", caCertFile, err)}
+	}
+
+	rootCAs, err := x509.SystemCertPool()
+	if err != nil {
+		return nil, &caCertFileError{fmt.Errorf("load system CA certificate pool: %w", err)}
+	}
+	if !rootCAs.AppendCertsFromPEM(caCertPEM) {
+		return nil, &caCertFileError{fmt.Errorf("CA_CERT_FILE %q does not contain any valid PEM certificates", caCertFile)}
+	}
+
+	return &tls.Config{RootCAs: rootCAs}, nil
+}
+
 // getOptions returns the WebSocket client options, creating them if necessary.
 // It configures the connection URL, TLS settings, and authentication headers.
 func (client *WebSocketClient) getOptions() *gws.ClientOption {
@@ -132,7 +175,7 @@ func (client *WebSocketClient) getOptions() *gws.ClientOption {
 
 	client.options = &gws.ClientOption{
 		Addr:      client.hubURL.String(),
-		TlsConfig: &tls.Config{InsecureSkipVerify: true},
+		TlsConfig: client.tlsConfig,
 		RequestHeader: http.Header{
 			"User-Agent": []string{getUserAgent()},
 			"X-Token":    []string{client.token},

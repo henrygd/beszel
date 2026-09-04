@@ -8,10 +8,11 @@ import { useSystemData } from "./system/use-system-data"
 import { CpuChart, ContainerCpuChart } from "./system/charts/cpu-charts"
 import { MemoryChart, ContainerMemoryChart, SwapChart } from "./system/charts/memory-charts"
 import { RootDiskCharts, ExtraFsCharts } from "./system/charts/disk-charts"
+import { ZfsCharts } from "./system/charts/zfs-charts"
 import { BandwidthChart, ContainerNetworkChart } from "./system/charts/network-charts"
 import { TemperatureChart, FanChart, BatteryChart } from "./system/charts/sensor-charts"
-import { GpuPowerChart, GpuDetailCharts } from "./system/charts/gpu-charts"
-import { LazyContainersTable, LazySmartTable, LazySystemdTable } from "./system/lazy-tables"
+import { GpuPowerChart, GpuCharts } from "./system/charts/gpu-charts"
+import { LazyContainersTable, LazySmartTable, LazySystemdTable, LazyZfsTable } from "./system/lazy-tables"
 import { LoadAverageChart } from "./system/charts/load-average-chart"
 import { ProcessesChart } from "./system/charts/processes-chart"
 import { ContainerIcon, CpuIcon, HardDriveIcon, TerminalSquareIcon } from "lucide-react"
@@ -64,6 +65,7 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 	const hasContainersTable = hasContainers && compareSemVer(chartData.agentVersion, SEMVER_0_14_0) >= 0
 	const hasSystemd = system.info.sv
 	const hasGpu = hasGpuData || hasGpuPowerData
+	const hasZfs = Object.keys(systemStats.at(-1)?.stats?.z ?? {}).length > 0
 
 	// keep tabsRef in sync for keyboard navigation
 	const tabs = ["core", "disk"]
@@ -134,7 +136,7 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 				</div>
 
 				{hasGpuData && lastGpus && (
-					<GpuDetailCharts
+					<GpuCharts
 						chartData={chartData}
 						grid={grid}
 						dataEmpty={dataEmpty}
@@ -144,6 +146,10 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 				)}
 
 				<ExtraFsCharts systemData={systemData} />
+
+				{hasZfs && <ZfsCharts systemData={systemData} />}
+
+				{hasZfs && <LazyZfsTable systemId={system.id} />}
 
 				{maybeHasSmartData && <LazySmartTable systemId={system.id} />}
 
@@ -208,6 +214,8 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 								<RootDiskCharts systemData={systemData} />
 							</div>
 							<ExtraFsCharts systemData={systemData} />
+							{hasZfs && <ZfsCharts systemData={systemData} />}
+							{hasZfs && <LazyZfsTable systemId={system.id} />}
 							{maybeHasSmartData && <LazySmartTable systemId={system.id} />}
 						</>
 					)}
@@ -215,18 +223,15 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 
 				{hasGpu && (
 					<TabsContent value="gpu" forceMount className={activeTab === "gpu" ? "contents" : "hidden"}>
-						<div className="grid xl:grid-cols-2 gap-4">
+						<GpuCharts
+							chartData={chartData}
+							grid={grid}
+							dataEmpty={dataEmpty}
+							lastGpus={(lastGpus ?? {}) as Record<string, GPUData>}
+							hasGpuEnginesData={hasGpuEnginesData}
+						>
 							{hasGpuPowerData && <GpuPowerChart chartData={chartData} grid={grid} dataEmpty={dataEmpty} />}
-						</div>
-						{hasGpuData && lastGpus && (
-							<GpuDetailCharts
-								chartData={chartData}
-								grid={grid}
-								dataEmpty={dataEmpty}
-								lastGpus={lastGpus as Record<string, GPUData>}
-								hasGpuEnginesData={hasGpuEnginesData}
-							/>
-						)}
+						</GpuCharts>
 					</TabsContent>
 				)}
 

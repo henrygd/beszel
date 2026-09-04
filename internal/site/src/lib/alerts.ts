@@ -1,5 +1,5 @@
 import { t } from "@lingui/core/macro"
-import { CpuIcon, HardDriveIcon, MemoryStickIcon, ServerIcon } from "lucide-react"
+import { ContainerIcon, CpuIcon, HardDriveIcon, MemoryStickIcon, ServerCrashIcon, ServerIcon } from "lucide-react"
 import type { RecordSubscription } from "pocketbase"
 import { EthernetIcon, GpuIcon } from "@/components/ui/icons"
 import { $alerts } from "@/lib/stores"
@@ -22,6 +22,18 @@ export const alertInfo: Record<string, AlertInfo> = {
 		unit: "%",
 		icon: CpuIcon,
 		desc: () => t`Triggers when CPU usage exceeds a threshold`,
+	},
+	CPUIOWait: {
+		name: () => t`CPU I/O Wait`,
+		unit: "%",
+		icon: CpuIcon,
+		desc: () => t`Triggers when CPU I/O wait exceeds a threshold`,
+	},
+	CPUSteal: {
+		name: () => t`CPU Steal Time`,
+		unit: "%",
+		icon: CpuIcon,
+		desc: () => t`Triggers when CPU steal time exceeds a threshold`,
 	},
 	Memory: {
 		name: () => t`Memory Usage`,
@@ -91,6 +103,26 @@ export const alertInfo: Record<string, AlertInfo> = {
 		desc: () => t`Triggers when battery charge drops below a threshold`,
 		start: 20,
 		invert: true,
+	},
+	ContainerHealth: {
+		name: () => t`Container Health`,
+		unit: "",
+		icon: ContainerIcon,
+		desc: () => t`Triggers when a container's health check reports unhealthy`,
+		note: () =>
+			t`Notifications may include recent container log excerpts.`,
+		triggeredDesc: () => t`One or more containers are unhealthy`,
+		singleDesc: () => `${t`Container`} ${t`Unhealthy`}`,
+
+	},
+	SystemdFailed: {
+		name: () => t`Failed Services`,
+		unit: "",
+		icon: ServerCrashIcon,
+		desc: () => t`Triggers when any systemd service enters the failed state`,
+		triggeredDesc: () => t`One or more services are in a failed state`,
+		/** Fires on first observation - the agent only polls systemd every 10 minutes */
+		noDuration: true,
 	},
 } as const
 

@@ -265,6 +265,5 @@ func (a *Agent) StopServer() error {
 	slog.Info("Stopping SSH server")
 	_ = a.server.Close()
 	a.server = nil
-	a.connectionManager.eventChan <- SSHDisconnect
 	return nil
 }
