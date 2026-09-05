@@ -7,6 +7,8 @@ import {
 	ClockIcon,
 	ContainerIcon,
 	CpuIcon,
+	HardDriveDownloadIcon,
+	HardDriveUploadIcon,
 	LayersIcon,
 	MemoryStickIcon,
 	ServerIcon,
@@ -15,7 +17,7 @@ import {
 import { EthernetIcon, HourglassIcon, SquareArrowRightEnterIcon } from "../ui/icons"
 import { Badge } from "../ui/badge"
 import { t } from "@lingui/core/macro"
-import { $allSystemsById, $longestSystemNameLen } from "@/lib/stores"
+import { $allSystemsById, $longestSystemNameLen, $userSettings } from "@/lib/stores"
 import { useStore } from "@nanostores/react"
 import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip"
 
@@ -112,6 +114,44 @@ export const containerChartCols: ColumnDef<ContainerRecord>[] = [
 		cell: ({ getValue }) => {
 			const val = getValue() as number
 			const formatted = formatBytes(val, true, undefined, false)
+			return (
+				<div className="ms-1 tabular-nums">{`${decimalString(formatted.value, formatted.value >= 10 ? 1 : 2)} ${formatted.unit}`}</div>
+			)
+		},
+	},
+	{
+		id: "diskRead",
+		accessorFn: (record) => (record.diskIo === true ? (record.diskRead ?? 0) : undefined),
+		invertSorting: true,
+		sortUndefined: "last",
+		header: ({ column }) => <HeaderButton column={column} name={t`Disk Read`} Icon={HardDriveDownloadIcon} />,
+		minSize: 124,
+		cell: ({ getValue }) => {
+			const val = getValue() as number | undefined
+			const userSettings = useStore($userSettings, { keys: ["unitDisk"] })
+			if (val === undefined) {
+				return <div className="ms-1.5 text-muted-foreground">—</div>
+			}
+			const formatted = formatBytes(val, true, userSettings.unitDisk, false)
+			return (
+				<div className="ms-1 tabular-nums">{`${decimalString(formatted.value, formatted.value >= 10 ? 1 : 2)} ${formatted.unit}`}</div>
+			)
+		},
+	},
+	{
+		id: "diskWrite",
+		accessorFn: (record) => (record.diskIo === true ? (record.diskWrite ?? 0) : undefined),
+		invertSorting: true,
+		sortUndefined: "last",
+		header: ({ column }) => <HeaderButton column={column} name={t`Disk Write`} Icon={HardDriveUploadIcon} />,
+		minSize: 128,
+		cell: ({ getValue }) => {
+			const val = getValue() as number | undefined
+			const userSettings = useStore($userSettings, { keys: ["unitDisk"] })
+			if (val === undefined) {
+				return <div className="ms-1.5 text-muted-foreground">—</div>
+			}
+			const formatted = formatBytes(val, true, userSettings.unitDisk, false)
 			return (
 				<div className="ms-1 tabular-nums">{`${decimalString(formatted.value, formatted.value >= 10 ? 1 : 2)} ${formatted.unit}`}</div>
 			)

@@ -41,6 +41,18 @@ type ApiStats struct {
 	Networks    map[string]NetworkStats
 	CPUStats    CPUStats    `json:"cpu_stats"`
 	MemoryStats MemoryStats `json:"memory_stats"`
+	BlkioStats  *BlkioStats `json:"blkio_stats"`
+}
+
+type BlkioStats struct {
+	IoServiceBytesRecursive []BlkioStatEntry `json:"io_service_bytes_recursive"`
+}
+
+type BlkioStatEntry struct {
+	Major uint64 `json:"major"`
+	Minor uint64 `json:"minor"`
+	Op    string `json:"op"`
+	Value uint64 `json:"value"`
 }
 
 // Docker system info from /info API endpoint
@@ -179,12 +191,15 @@ var DockerHealthStrings = map[string]DockerHealth{
 
 // Docker container stats
 type Stats struct {
-	Name        string    `json:"n" cbor:"0,keyasint"`
-	Cpu         float64   `json:"c" cbor:"1,keyasint"`
-	Mem         float64   `json:"m" cbor:"2,keyasint"`
-	NetworkSent float64   `json:"ns,omitzero" cbor:"3,keyasint,omitzero"` // deprecated 0.18.3 (MB) - keep field for old agents/records
-	NetworkRecv float64   `json:"nr,omitzero" cbor:"4,keyasint,omitzero"` // deprecated 0.18.3 (MB) - keep field for old agents/records
-	Bandwidth   [2]uint64 `json:"b,omitzero" cbor:"9,keyasint,omitzero"`  // [sent bytes, recv bytes]
+	Name        string     `json:"n" cbor:"0,keyasint"`
+	Cpu         float64    `json:"c" cbor:"1,keyasint"`
+	Mem         float64    `json:"m" cbor:"2,keyasint"`
+	NetworkSent float64    `json:"ns,omitzero" cbor:"3,keyasint,omitzero"`   // deprecated 0.18.3 (MB) - keep field for old agents/records
+	NetworkRecv float64    `json:"nr,omitzero" cbor:"4,keyasint,omitzero"`   // deprecated 0.18.3 (MB) - keep field for old agents/records
+	Bandwidth   [2]uint64  `json:"b,omitzero" cbor:"9,keyasint,omitzero"`    // [sent bytes, recv bytes]
+	DiskIO      *[2]uint64 `json:"d,omitempty" cbor:"11,keyasint,omitempty"` // [read bytes/second, write bytes/second]
+	// DiskIOAggregation is historical JSON metadata only: [read low, read high, write low, write high, sample count].
+	DiskIOAggregation *[5]uint64 `json:"a,omitempty" cbor:"-"`
 
 	Health DockerHealth `json:"-" cbor:"5,keyasint"`
 	Status string       `json:"-" cbor:"6,keyasint"`

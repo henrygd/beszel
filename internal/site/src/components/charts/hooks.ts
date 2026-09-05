@@ -5,17 +5,18 @@ import type { ChartData, SystemStats, SystemStatsRecord } from "@/types"
 import type { DataPoint } from "./area-chart"
 import { $containerFilter } from "@/lib/stores"
 
-/** Chart configurations for CPU, memory, and network usage charts */
+/** Chart configurations for CPU, memory, network, and disk usage charts */
 export interface ContainerChartConfigs {
 	cpu: ChartConfig
 	memory: ChartConfig
 	network: ChartConfig
+	disk: ChartConfig
 }
 
 /**
  * Generates chart configurations for container metrics visualization
  * @param containerData - Array of container statistics data points
- * @returns Chart configurations for CPU, memory, and network metrics
+ * @returns Chart configurations for CPU, memory, network, and disk metrics
  */
 export function useContainerChartConfigs(containerData: ChartData["containerData"]): ContainerChartConfigs {
 	return useMemo(() => {
@@ -23,6 +24,7 @@ export function useContainerChartConfigs(containerData: ChartData["containerData
 			cpu: {} as ChartConfig,
 			memory: {} as ChartConfig,
 			network: {} as ChartConfig,
+			disk: {} as ChartConfig,
 		}
 
 		// Aggregate usage metrics for each container
@@ -30,6 +32,7 @@ export function useContainerChartConfigs(containerData: ChartData["containerData
 			cpu: new Map<string, number>(),
 			memory: new Map<string, number>(),
 			network: new Map<string, number>(),
+			disk: new Map<string, number>(),
 		}
 
 		// Process each data point to calculate totals
@@ -49,7 +52,7 @@ export function useContainerChartConfigs(containerData: ChartData["containerData
 					continue
 				}
 
-				// Accumulate metrics for CPU, memory, and network
+				// Accumulate metrics for CPU, memory, network, and disk
 				const currentCpu = totalUsage.cpu.get(containerName) ?? 0
 				const currentMemory = totalUsage.memory.get(containerName) ?? 0
 				const currentNetwork = totalUsage.network.get(containerName) ?? 0
@@ -59,6 +62,10 @@ export function useContainerChartConfigs(containerData: ChartData["containerData
 				totalUsage.cpu.set(containerName, currentCpu + (containerStats.c ?? 0))
 				totalUsage.memory.set(containerName, currentMemory + (containerStats.m ?? 0))
 				totalUsage.network.set(containerName, currentNetwork + sentBytes + recvBytes)
+				if (containerStats.d !== undefined) {
+					const currentDisk = totalUsage.disk.get(containerName) ?? 0
+					totalUsage.disk.set(containerName, currentDisk + containerStats.d[0] + containerStats.d[1])
+				}
 			}
 		}
 
@@ -115,7 +122,7 @@ export function useYAxisWidth() {
 export function useContainerDataPoints(
 	chartConfig: ChartConfig,
 	// biome-ignore lint/suspicious/noExplicitAny: container data records have dynamic keys
-	dataFn: (key: string, data: Record<string, any>) => number | null
+	dataFn: (key: string, data: Record<string, any>) => number | null | undefined
 ) {
 	const filter = useStore($containerFilter)
 	const { dataPoints, filteredKeys } = useMemo(() => {
