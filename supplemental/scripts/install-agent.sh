@@ -43,7 +43,7 @@ is_glibc() {
 set_selinux_context() {
   # Check if SELinux is enabled and in enforcing or permissive mode
   if command -v getenforce >/dev/null 2>&1; then
-    SELINUX_MODE=$(getenforce)
+    SELINUX_MODE=$(getenforce) || { warn "Could not query SELinux mode."; return 0; }
     if [ "$SELINUX_MODE" != "Disabled" ]; then
       echo "SELinux is enabled (${SELINUX_MODE} mode). Setting appropriate context..."
 
@@ -51,7 +51,7 @@ set_selinux_context() {
       if command -v semanage >/dev/null 2>&1; then
         echo "Attempting to set persistent SELinux context..."
         if semanage fcontext -a -t bin_t "$BIN_PATH" >/dev/null 2>&1; then
-          restorecon -v "$BIN_PATH" >/dev/null 2>&1
+          restorecon -v "$BIN_PATH" >/dev/null 2>&1 || warn "Failed to restore persistent SELinux context; trying chcon."
         else
           echo "Warning: Failed to set persistent context, falling back to temporary context."
         fi
@@ -271,7 +271,7 @@ detect_mips_endianness() {
   for bin_to_check in $bins; do
     if [ -f "$bin_to_check" ]; then
       # The 6th byte in ELF header: 01 = little, 02 = big
-      endian=$(hexdump -n 1 -s 5 -e '1/1 "%02x"' "$bin_to_check" 2>/dev/null)
+      endian=$(hexdump -n 1 -s 5 -e '1/1 "%02x"' "$bin_to_check" 2>/dev/null) || continue
       if [ "$endian" = "01" ]; then
         echo "mipsle"
         return
@@ -286,8 +286,135 @@ detect_mips_endianness() {
   echo "mips"
 }
 
-# Ensure script exits immediately on errors
+# Expected failures must be handled explicitly; unexpected failures abort installation.
 set -eu
+
+fail() {
+  echo "Error: $*" >&2
+  exit 1
+}
+
+warn() {
+  echo "Warning: $*" >&2
+}
+
+require_value() {
+  [ "$#" -ge 2 ] && [ -n "$2" ] || fail "Option $1 requires a value."
+}
+
+validate_platform() {
+  case "$(uname -s)" in
+    Linux)
+      if is_alpine; then
+        command -v rc-service >/dev/null && command -v rc-update >/dev/null || fail "OpenRC is required."
+      elif is_openwrt; then
+        [ -f /etc/rc.common ] || fail "OpenWrt procd is required."
+      else
+        command -v systemctl >/dev/null && [ -d /run/systemd/system ] || fail "This Linux installer requires a running systemd, OpenRC (Alpine), or procd (OpenWrt)."
+      fi
+      ;;
+    FreeBSD)
+      command -v service >/dev/null && command -v sysrc >/dev/null || fail "FreeBSD service and sysrc commands are required."
+      ;;
+    Darwin) fail "For macOS, use the Homebrew installer: https://github.com/henrygd/beszel/blob/main/supplemental/scripts/install-agent-brew.sh" ;;
+    *) fail "Unsupported operating system: $(uname -s)" ;;
+  esac
+}
+
+agent_service() {
+  if is_alpine; then
+    rc-service beszel-agent "$1"
+  elif is_openwrt; then
+    /etc/init.d/beszel-agent "$1"
+  elif is_freebsd; then
+    service beszel-agent "$1"
+  else
+    systemctl "$1" beszel-agent.service
+  fi
+}
+
+# Match the files preserved by the service setup below. A binary or rc script
+# alone is not reusable configuration (FreeBSD stores its environment separately).
+agent_configuration_exists() {
+  if is_alpine || is_openwrt; then
+    [ -f /etc/init.d/beszel-agent ]
+  elif is_freebsd; then
+    [ -f "$AGENT_DIR/env" ]
+  else
+    [ -f /etc/systemd/system/beszel-agent.service ]
+  fi
+}
+
+# An orphaned binary can remain after a failed install. It does not imply
+# that the service manager knows about the agent yet.
+agent_service_registered() {
+  if is_alpine || is_openwrt; then
+    [ -f /etc/init.d/beszel-agent ]
+  elif is_freebsd; then
+    [ -f /usr/local/etc/rc.d/beszel-agent ]
+  else
+    service_load_state=$(systemctl show --property=LoadState --value beszel-agent.service) || return 2
+    case "$service_load_state" in
+      not-found) return 1 ;;
+      "") return 2 ;;
+      *) return 0 ;;
+    esac
+  fi
+}
+
+TEMP_DIR=""
+STAGED_BINARY=""
+INSTALL_STEP="validating installation options"
+UPGRADE_PENDING=false
+cleanup() {
+  cleanup_status=$?
+  trap - 0 HUP INT TERM
+  if [ "$cleanup_status" -ne 0 ]; then
+    warn "Installer failed while $INSTALL_STEP (exit $cleanup_status)."
+    if [ "$UPGRADE_PENDING" = true ]; then
+      warn "Restoring the previous binary and restarting its service if registered."
+      if [ -n "$STAGED_BINARY" ]; then
+        rm -f "$STAGED_BINARY" || warn "Could not remove staged binary."
+      fi
+      if STAGED_BINARY=$(mktemp "$BIN_PATH.XXXXXX") && cp -p "$BIN_PATH.bak" "$STAGED_BINARY" && mv -f "$STAGED_BINARY" "$BIN_PATH"; then
+        # The temporary inode does not inherit the installed binary's SELinux label.
+        set_selinux_context || warn "Could not restore SELinux context on the previous agent."
+        if agent_service_registered; then
+          agent_service restart || warn "Could not restart the previous agent; check the service configuration and logs."
+        else
+          service_check_status=$?
+          [ "$service_check_status" -eq 1 ] || warn "Could not determine whether the previous agent service is registered; check it manually."
+        fi
+      else
+        warn "Could not restore $BIN_PATH.bak. Restore it manually before restarting the service."
+      fi
+    fi
+  fi
+  if [ -n "$STAGED_BINARY" ]; then
+    rm -f "$STAGED_BINARY" || warn "Could not remove staged binary."
+  fi
+  if [ -n "$TEMP_DIR" ]; then
+    rm -rf "$TEMP_DIR" || warn "Could not remove temporary directory $TEMP_DIR."
+  fi
+  exit "$cleanup_status"
+}
+trap cleanup 0
+trap 'exit 129' HUP
+trap 'exit 130' INT
+trap 'exit 143' TERM
+
+# A missing crontab is normal. Keep the producer alive so the new job is written.
+read_root_crontab() {
+  crontab -u root -l 2>/dev/null || true
+}
+
+prompt_auto_update() {
+  printf "\nEnable automatic daily updates for beszel-agent? (y/n): "
+  if ! read -r AUTO_UPDATE; then
+    AUTO_UPDATE=n
+    echo "Skipping automatic updates (no input)."
+  fi
+}
 
 # Default values
 PORT=45876
@@ -307,7 +434,7 @@ HUB_URL_PROVIDED=false
 VERSION="latest"
 
 # Check for help flag
-case "$1" in
+case "${1-}" in
 -h | --help)
   printf "Beszel Agent installation script\n\n"
   printf "Usage: ./install-agent.sh [options]\n\n"
@@ -326,6 +453,9 @@ case "$1" in
   exit 0
   ;;
 esac
+
+# Reject unsupported hosts before sudo or any system changes.
+validate_platform
 
 # Build sudo args by properly quoting everything
 build_sudo_args() {
@@ -357,26 +487,31 @@ fi
 while [ $# -gt 0 ]; do
   case "$1" in
   -k)
+    require_value "$@"
     shift
     KEY="$1"
     KEY_PROVIDED=true
     ;;
   -p)
+    require_value "$@"
     shift
     PORT="$1"
     PORT_PROVIDED=true
     ;;
   -t)
+    require_value "$@"
     shift
     TOKEN="$1"
     TOKEN_PROVIDED=true
     ;;
   -url)
+    require_value "$@"
     shift
     HUB_URL="$1"
     HUB_URL_PROVIDED=true
     ;;
   -v | --version)
+    require_value "$@"
     shift
     VERSION="$1"
     ;;
@@ -395,7 +530,7 @@ while [ $# -gt 0 ]; do
         GITHUB_PROXY_URL="https://gh.beszel.dev"
         GITHUB_URL="$GITHUB_PROXY_URL"
       fi
-    elif [ "$2" != "" ] && ! echo "$2" | grep -q '^-'; then
+    elif [ "${2-}" != "" ] && ! echo "$2" | grep -q '^-'; then
       # use custom proxy URL provided as next argument
       GITHUB_PROXY_URL="$2"
       GITHUB_URL="$(ensure_trailing_slash "$2")https://github.com"
@@ -418,7 +553,7 @@ while [ $# -gt 0 ]; do
       else
         echo "Invalid value for --auto-update flag: $AUTO_UPDATE_VALUE. Using default (prompt)."
       fi
-    elif [ "$2" = "true" ] || [ "$2" = "false" ]; then
+    elif [ "${2-}" = "true" ] || [ "${2-}" = "false" ]; then
       # Value provided as next argument
       AUTO_UPDATE_FLAG="$2"
       shift
@@ -446,20 +581,7 @@ else
   BIN_PATH="/opt/beszel-agent/beszel-agent"
 fi
 
-# Stop existing service if it exists (for upgrades)
-if [ "$UNINSTALL" != true ] && [ -f "$BIN_PATH" ]; then
-  echo "Existing installation detected. Stopping service for upgrade..."
-  if is_alpine; then
-    rc-service beszel-agent stop 2>/dev/null || true
-  elif is_openwrt; then
-    /etc/init.d/beszel-agent stop 2>/dev/null || true
-  elif is_freebsd; then
-    service beszel-agent stop 2>/dev/null || true
-  else
-    systemctl stop beszel-agent.service 2>/dev/null || true
-  fi
-fi
-
+INSTALL_STEP="uninstalling the agent"
 # Uninstall process
 if [ "$UNINSTALL" = true ]; then
   # Clean up SELinux contexts before removing files
@@ -467,8 +589,8 @@ if [ "$UNINSTALL" = true ]; then
 
   if is_alpine; then
     echo "Stopping and disabling the agent service..."
-    rc-service beszel-agent stop
-    rc-update del beszel-agent default
+    rc-service beszel-agent stop || warn "Cleanup command failed: rc-service beszel-agent stop"
+    rc-update del beszel-agent default || warn "Cleanup command failed: rc-update del beszel-agent default"
 
     echo "Removing the OpenRC service files..."
     rm -f /etc/init.d/beszel-agent
@@ -484,8 +606,8 @@ if [ "$UNINSTALL" = true ]; then
     rm -f /var/log/beszel-agent.log /var/log/beszel-agent.err
   elif is_openwrt; then
     echo "Stopping and disabling the agent service..."
-    /etc/init.d/beszel-agent stop
-    /etc/init.d/beszel-agent disable
+    /etc/init.d/beszel-agent stop || warn "Cleanup command failed: /etc/init.d/beszel-agent stop"
+    /etc/init.d/beszel-agent disable || warn "Cleanup command failed: /etc/init.d/beszel-agent disable"
 
     echo "Removing the OpenWRT service files..."
     rm -f /etc/init.d/beszel-agent
@@ -501,7 +623,7 @@ if [ "$UNINSTALL" = true ]; then
 
   elif is_freebsd; then
     echo "Stopping and disabling the agent service..."
-    service beszel-agent stop
+    service beszel-agent stop || warn "Cleanup command failed: service beszel-agent stop"
     sysrc beszel_agent_enable="NO"
 
     echo "Removing the FreeBSD service files..."
@@ -528,16 +650,16 @@ if [ "$UNINSTALL" = true ]; then
 
   else
     echo "Stopping and disabling the agent service..."
-    systemctl stop beszel-agent.service
-    systemctl disable beszel-agent.service >/dev/null 2>&1
+    systemctl stop beszel-agent.service || warn "Cleanup command failed: systemctl stop beszel-agent.service"
+    systemctl disable beszel-agent.service >/dev/null 2>&1 || warn "Cleanup command failed: systemctl disable beszel-agent.service"
 
     echo "Removing the systemd service file..."
-    rm /etc/systemd/system/beszel-agent.service
+    rm -f /etc/systemd/system/beszel-agent.service
 
     # Remove the update timer and service if they exist
     echo "Removing the daily update service and timer..."
-    systemctl stop beszel-agent-update.timer 2>/dev/null
-    systemctl disable beszel-agent-update.timer >/dev/null 2>&1
+    systemctl stop beszel-agent-update.timer 2>/dev/null || warn "Cleanup command failed: systemctl stop beszel-agent-update.timer"
+    systemctl disable beszel-agent-update.timer >/dev/null 2>&1 || warn "Cleanup command failed: systemctl disable beszel-agent-update.timer"
     rm -f /etc/systemd/system/beszel-agent-update.service
     rm -f /etc/systemd/system/beszel-agent-update.timer
 
@@ -548,13 +670,15 @@ if [ "$UNINSTALL" = true ]; then
   rm -rf "$AGENT_DIR"
 
   echo "Removing the dedicated user for the agent service..."
-  killall beszel-agent 2>/dev/null
-  if is_alpine || is_openwrt; then
-    deluser beszel 2>/dev/null
-  elif is_freebsd; then
-    pw user del beszel 2>/dev/null
-  else
-    userdel beszel 2>/dev/null
+  killall beszel-agent 2>/dev/null || true # Usually already stopped by the service manager.
+  if id -u beszel >/dev/null 2>&1; then
+    if is_alpine || is_openwrt; then
+      deluser beszel || fail "Could not remove the beszel user."
+    elif is_freebsd; then
+      pw user del beszel || fail "Could not remove the beszel user."
+    else
+      userdel beszel || fail "Could not remove the beszel user."
+    fi
   fi
 
   echo "Beszel Agent has been uninstalled successfully!"
@@ -566,6 +690,7 @@ package_installed() {
   command -v "$1" >/dev/null 2>&1
 }
 
+INSTALL_STEP="installing required packages"
 # Check for package manager and install necessary packages if not installed
 if package_installed apk; then
   if ! package_installed tar || ! package_installed curl || ! package_installed sha256sum; then
@@ -599,13 +724,18 @@ else
   echo "Warning: Please ensure 'tar' and 'curl' and 'sha256sum (coreutils)' are installed."
 fi
 
-# If no SSH key is provided, ask for the SSH key interactively (skip if upgrading)
+for required_command in tar curl; do
+  command -v "$required_command" >/dev/null || fail "Required command is missing: $required_command"
+done
+
+# If no SSH key is provided, prompt unless service setup will reuse configuration.
 if [ -z "$KEY" ]; then
-  if [ -f "$BIN_PATH" ]; then
-    echo "Upgrading existing installation. Using existing service configuration."
+  if agent_configuration_exists; then
+    echo "Using existing service configuration."
   else
     printf "Enter your SSH key: "
-    read KEY
+    read -r KEY || fail "No SSH key received. Supply -k for noninteractive installation."
+    [ -n "$KEY" ] || fail "SSH key must not be empty."
   fi
 fi
 
@@ -626,6 +756,7 @@ else
   exit 1
 fi
 
+INSTALL_STEP="configuring the service user"
 # Create a dedicated user for the service if it doesn't exist
 AGENT_USER="beszel"
 echo "Configuring the dedicated user for the Beszel Agent service..."
@@ -699,6 +830,7 @@ else
   fi
 fi
 
+INSTALL_STEP="creating installation directories"
 # Create the directory for the Beszel Agent
 
 if [ ! -d "$AGENT_DIR" ]; then
@@ -712,6 +844,7 @@ if [ ! -d "$BIN_DIR" ]; then
   mkdir -p "$BIN_DIR"
 fi
 
+INSTALL_STEP="downloading and verifying the agent"
 # Download and install the Beszel Agent
 
 OS=$(uname -s | sed -e 'y/ABCDEFGHIJKLMNOPQRSTUVWXYZ/abcdefghijklmnopqrstuvwxyz/')
@@ -723,11 +856,12 @@ fi
 
 # Determine version to install
 if [ "$VERSION" = "latest" ]; then
-  INSTALL_VERSION=$(curl -s "https://get.beszel.dev/latest-version")
+  INSTALL_VERSION=$(curl -fsS --connect-timeout 10 --max-time 30 "https://get.beszel.dev/latest-version") || INSTALL_VERSION=""
   if [ -z "$INSTALL_VERSION" ]; then
     # Fallback to GitHub API
     API_RELEASE_URL="https://api.github.com/repos/henrygd/beszel/releases/latest"
-    INSTALL_VERSION=$(curl -s "$API_RELEASE_URL" | grep -o '"tag_name": "v[^"]*"' | cut -d'"' -f4 | tr -d 'v')
+    RELEASE_JSON=$(curl -fsS --connect-timeout 10 --max-time 30 "$API_RELEASE_URL") || fail "Could not fetch the latest release from GitHub."
+    INSTALL_VERSION=$(printf '%s\n' "$RELEASE_JSON" | grep -o '"tag_name": "v[^"]*"' | cut -d'"' -f4 | tr -d 'v')
   fi
   if [ -z "$INSTALL_VERSION" ]; then
     echo "Failed to get latest version"
@@ -744,7 +878,8 @@ echo "Downloading beszel-agent v${INSTALL_VERSION}..."
 # Download checksums file
 TEMP_DIR=$(mktemp -d)
 cd "$TEMP_DIR" || exit 1
-CHECKSUM=$(curl -fsSL "$GITHUB_URL/henrygd/beszel/releases/download/v${INSTALL_VERSION}/beszel_${INSTALL_VERSION}_checksums.txt" | grep "$FILE_NAME" | cut -d' ' -f1)
+curl -fsSL --connect-timeout 10 --max-time 60 "$GITHUB_URL/henrygd/beszel/releases/download/v${INSTALL_VERSION}/beszel_${INSTALL_VERSION}_checksums.txt" -o checksums.txt || fail "Could not download checksums. Try --mirror if GitHub is unreachable."
+CHECKSUM=$(awk -v name="$FILE_NAME" '$2 == name { print $1 }' checksums.txt)
 if [ -z "$CHECKSUM" ] || ! echo "$CHECKSUM" | grep -qE "^[a-fA-F0-9]{64}$"; then
   echo "Failed to get checksum or invalid checksum format"
   echo "Try again with --mirror (or --mirror <url>) if GitHub is not reachable."
@@ -766,10 +901,10 @@ if ! tar -tzf "$FILE_NAME" >/dev/null 2>&1; then
   exit 1
 fi
 
-if [ "$($CHECK_CMD "$FILE_NAME" | cut -d' ' -f1)" != "$CHECKSUM" ]; then
-  echo "Checksum verification failed: $($CHECK_CMD "$FILE_NAME" | cut -d' ' -f1) & $CHECKSUM"
-  rm -rf "$TEMP_DIR"
-  exit 1
+ACTUAL_CHECKSUM=$($CHECK_CMD "$FILE_NAME") || fail "Could not calculate archive checksum."
+ACTUAL_CHECKSUM=${ACTUAL_CHECKSUM%% *}
+if [ "$ACTUAL_CHECKSUM" != "$CHECKSUM" ]; then
+  fail "Checksum verification failed: $ACTUAL_CHECKSUM != $CHECKSUM"
 fi
 
 if ! tar -xzf "$FILE_NAME" beszel-agent; then
@@ -784,20 +919,34 @@ if [ ! -s "$TEMP_DIR/beszel-agent" ]; then
   exit 1
 fi
 
+INSTALL_STEP="replacing the agent binary"
+# Stage on the destination filesystem so replacement and rollback use atomic renames.
+STAGED_BINARY=$(mktemp "$BIN_PATH.XXXXXX") || fail "Could not create a staged binary."
+cp beszel-agent "$STAGED_BINARY" || fail "Could not stage the agent binary."
+chown "${AGENT_USER}:${AGENT_USER}" "$STAGED_BINARY" || fail "Could not set binary ownership."
+chmod 755 "$STAGED_BINARY" || fail "Could not set binary permissions."
+
 if [ -f "$BIN_PATH" ]; then
   echo "Backing up existing binary..."
-  cp "$BIN_PATH" "$BIN_PATH.bak"
+  cp -p "$BIN_PATH" "$BIN_PATH.bak" || fail "Could not back up the existing binary."
+  UPGRADE_PENDING=true
+  if agent_service_registered; then
+    agent_service stop || fail "Could not stop the existing agent."
+  else
+    service_check_status=$?
+    [ "$service_check_status" -eq 1 ] || fail "Could not determine whether the existing agent service is registered."
+  fi
 fi
 
-mv beszel-agent "$BIN_PATH"
-chown "${AGENT_USER}:${AGENT_USER}" "$BIN_PATH"
-chmod 755 "$BIN_PATH"
+mv -f "$STAGED_BINARY" "$BIN_PATH" || fail "Could not install the agent binary."
+STAGED_BINARY=""
 
 # Set SELinux context if needed
 set_selinux_context
 
 # Cleanup
 rm -rf "$TEMP_DIR"
+TEMP_DIR=""
 
 # Make sure /etc/machine-id exists and is non-empty for persistent fingerprint
 if [ ! -s /etc/machine-id ]; then
@@ -822,6 +971,7 @@ detect_nvidia_devices() {
   echo "$devices"
 }
 
+INSTALL_STEP="configuring and starting the service"
 # Modify service installation part, add Alpine check before systemd service creation
 if is_alpine; then
   if [ ! -f /etc/init.d/beszel-agent ]; then
@@ -871,7 +1021,7 @@ EOF
   chown "${AGENT_USER}:${AGENT_USER}" /var/log/beszel-agent.log /var/log/beszel-agent.err
 
   # Start the service
-  rc-service beszel-agent restart
+  rc-service beszel-agent restart || fail "Could not start the agent; check service logs."
 
   # Check if service started successfully
   sleep 2
@@ -887,8 +1037,7 @@ EOF
   elif [ "$AUTO_UPDATE_FLAG" = "false" ]; then
     AUTO_UPDATE="n"
   else
-    printf "\nEnable automatic daily updates for beszel-agent? (y/n): "
-    read AUTO_UPDATE
+    prompt_auto_update
   fi
   case "$AUTO_UPDATE" in
   [Yy]*)
@@ -896,7 +1045,7 @@ EOF
 
     # Create cron job to run beszel-agent update command daily at midnight
     if ! crontab -u root -l 2>/dev/null | grep -q "beszel-agent.*update"; then
-      (crontab -u root -l 2>/dev/null; echo "12 0 * * * $BIN_PATH update >/dev/null 2>&1") | crontab -u root -
+      (read_root_crontab; echo "12 0 * * * $BIN_PATH update >/dev/null 2>&1") | crontab -u root -
     fi
 
     printf "\nDaily updates have been enabled via cron job.\n"
@@ -966,7 +1115,7 @@ EOF
   fi
 
   # Start the service
-  /etc/init.d/beszel-agent restart
+  /etc/init.d/beszel-agent restart || fail "Could not start the agent; check service logs."
 
   # Auto-update service for OpenWRT using a crontab job
   if [ "$AUTO_UPDATE_FLAG" = "true" ]; then
@@ -976,15 +1125,14 @@ EOF
     AUTO_UPDATE="n"
     sleep 1 # give time for the service to start
   else
-    printf "\nEnable automatic daily updates for beszel-agent? (y/n): "
-    read AUTO_UPDATE
+    prompt_auto_update
   fi
   case "$AUTO_UPDATE" in
   [Yy]*)
     echo "Setting up daily automatic updates for beszel-agent..."
 
     if ! crontab -u root -l 2>/dev/null | grep -q "beszel-agent.*update"; then
-      (crontab -u root -l 2>/dev/null; echo "12 0 * * * /etc/init.d/beszel-agent update") | crontab -u root -
+      (read_root_crontab; echo "12 0 * * * /etc/init.d/beszel-agent update") | crontab -u root -
     fi
 
     /etc/init.d/cron restart
@@ -1075,7 +1223,7 @@ EOF
     esac
   fi
 
-  service beszel-agent restart
+  service beszel-agent restart || fail "Could not start the agent; check service logs."
   
   # Check if service started successfully
   sleep 2
@@ -1091,8 +1239,7 @@ EOF
   elif [ "$AUTO_UPDATE_FLAG" = "false" ]; then
     AUTO_UPDATE="n"
   else
-    printf "\nEnable automatic daily updates for beszel-agent? (y/n): "
-    read AUTO_UPDATE
+    prompt_auto_update
   fi
   case "$AUTO_UPDATE" in
   [Yy]*)
@@ -1173,7 +1320,7 @@ EOF
   printf "\nLoading and starting the agent service...\n"
   systemctl daemon-reload
   systemctl enable beszel-agent.service >/dev/null 2>&1
-  systemctl restart beszel-agent.service
+  systemctl restart beszel-agent.service || fail "Could not start the agent; check service logs."
 
 
 
@@ -1185,8 +1332,7 @@ EOF
     AUTO_UPDATE="n"
     sleep 1 # give time for the service to start
   else
-    printf "\nEnable automatic daily updates for beszel-agent? (y/n): "
-    read AUTO_UPDATE
+    prompt_auto_update
   fi
   case "$AUTO_UPDATE" in
   [Yy]*)
@@ -1232,6 +1378,7 @@ EOF
   fi
 fi
 
+UPGRADE_PENDING=false
 RUNNING_ADDRESS=$(configured_address)
 [ -n "$RUNNING_ADDRESS" ] || RUNNING_ADDRESS=$PORT
 
