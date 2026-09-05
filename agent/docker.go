@@ -68,6 +68,7 @@ type dockerManager struct {
 	apiStats             *container.ApiStats         // Reusable API stats object
 	excludeContainers    []string                    // Patterns to exclude containers by name
 	usingPodman          bool                        // Whether the Docker Engine API is running on Podman
+	volumeManager        *volumeManager              // Collects volume sizes in the background; nil unless enabled
 
 	// Cache-time-aware tracking for CPU stats (similar to cpu.go)
 	// Maps cache time intervals to container-specific CPU usage tracking
@@ -710,6 +711,10 @@ func newDockerManager(agent *Agent) *dockerManager {
 	// Best-effort startup probe. If the engine is not ready yet, getDockerStats will
 	// retry after the first successful /containers/json request.
 	_, _ = manager.checkDockerVersion()
+
+	if manager.volumeManager = newVolumeManager(userAgentTransport); manager.volumeManager != nil {
+		manager.volumeManager.startWorker()
+	}
 
 	return manager
 }

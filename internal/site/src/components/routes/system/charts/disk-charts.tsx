@@ -1,14 +1,16 @@
 import { t } from "@lingui/core/macro"
+import { useMemo, useRef } from "react"
 import AreaChartDefault from "@/components/charts/area-chart"
 import { decimalString, formatBytes, toFixedFloat } from "@/lib/utils"
 import type { SystemStatsRecord } from "@/types"
-import { ChartCard, SelectAvgMax } from "../chart-card"
+import { ChartCard, FilterBar, SelectAvgMax } from "../chart-card"
 import { Unit } from "@/lib/enums"
 import { pinnedAxisDomain } from "@/components/ui/chart"
 import DiskIoSheet from "../disk-io-sheet"
+import { dockerOrPodman } from "../chart-data"
 import type { SystemData } from "../use-system-data"
 import { useStore } from "@nanostores/react"
-import { $userSettings } from "@/lib/stores"
+import { $dockerVolumeFilter, $userSettings } from "@/lib/stores"
 
 // Helpers for indexed dios/diosm access
 const dios =
@@ -294,5 +296,105 @@ export function ExtraFsCharts({ systemData }: { systemData: SystemData }) {
 				)
 			})}
 		</div>
+	)
+}
+
+export function DockerVolumeChart({ systemData }: { systemData: SystemData }) {
+	const { chartData, grid, dataEmpty, isPodman } = systemData
+	const { systemStats } = chartData
+
+	const filter = useStore($dockerVolumeFilter)
+
+	const statsRef = useRef(systemStats)
+	statsRef.current = systemStats
+
+	// Derive volume names from the most recent record that has them
+	let volumeNamesKey = ""
+	for (let i = systemStats.length - 1; i >= 0; i--) {
+		const dv = systemStats[i].stats?.dv
+		if (dv) {
+			volumeNamesKey = Object.keys(dv).sort().join("\0")
+			break
+		}
+	}
+
+	// Only recompute colors and dataKey functions when the volume names change
+	const { colorMap, dataKeys, sortedKeys } = useMemo(() => {
+		const sizeSums = {} as Record<string, number>
+		for (const data of statsRef.current) {
+			const dv = data.stats?.dv
+			if (!dv) continue
+			for (const key of Object.keys(dv)) {
+				sizeSums[key] = (sizeSums[key] ?? 0) + dv[key]
+			}
+		}
+		const sorted = Object.keys(sizeSums).sort((a, b) => sizeSums[b] - sizeSums[a])
+		const colorMap = {} as Record<string, string>
+		const dataKeys = {} as Record<string, (d: SystemStatsRecord) => number | null>
+		for (let i = 0; i < sorted.length; i++) {
+			const key = sorted[i]
+			colorMap[key] = `hsl(${((i * 360) / sorted.length) % 360}, var(--chart-saturation), var(--chart-lightness))`
+			// we set null instead of 0 so records from before collection was enabled leave a gap
+			dataKeys[key] = (d: SystemStatsRecord) => d.stats?.dv?.[key] ?? null
+		}
+		return { colorMap, dataKeys, sortedKeys: sorted }
+	}, [volumeNamesKey])
+
+	const dataPoints = useMemo(() => {
+		const filterTerms = filter
+			? filter
+					.toLowerCase()
+					.split(" ")
+					.filter((term) => term.length > 0)
+			: []
+		return sortedKeys.map((key) => {
+			const filtered = filterTerms.length > 0 && !filterTerms.some((term) => key.toLowerCase().includes(term))
+			return {
+				label: key,
+				dataKey: dataKeys[key],
+				color: colorMap[key],
+				opacity: filtered ? 0.05 : 0.4,
+				strokeOpacity: filtered ? 0.1 : 1,
+				activeDot: !filtered,
+				stackId: "a",
+			}
+		})
+	}, [sortedKeys, filter, dataKeys, colorMap])
+
+	if (dataPoints.length === 0) {
+		return null
+	}
+
+	const legend = dataPoints.length < 12
+
+	return (
+		<ChartCard
+			empty={dataEmpty}
+			grid={grid}
+			title={dockerOrPodman(t`Docker Volume Usage`, isPodman)}
+			description={t`Disk usage of volumes`}
+			cornerEl={<FilterBar store={$dockerVolumeFilter} />}
+			legend={legend}
+		>
+			<AreaChartDefault
+				chartData={chartData}
+				dataPoints={dataPoints}
+				domain={pinnedAxisDomain()}
+				legend={legend}
+				showTotal={true}
+				reverseStackOrder={true}
+				filter={filter}
+				truncate={true}
+				itemSorter={(a, b) => b.value - a.value}
+				tickFormatter={(val) => {
+					const { value, unit } = formatBytes(val * 1024, false, Unit.Bytes, true)
+					return `${toFixedFloat(value, value >= 10 ? 0 : 1)} ${unit}`
+				}}
+				contentFormatter={({ value }) => {
+					const { value: convertedValue, unit } = formatBytes(value * 1024, false, Unit.Bytes, true)
+					return `${decimalString(convertedValue)} ${unit}`
+				}}
+			/>
+		</ChartCard>
 	)
 }
