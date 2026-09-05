@@ -75,7 +75,12 @@ export const smartColumns: ColumnDef<SmartAttribute>[] = [
 		header: "Name",
 	},
 	{
-		accessorFn: (row) => row.rs || row.rv?.toString(),
+		accessorFn: (row) => {
+			if (row.n === "DataUnitsWritten" || row.n === "DataUnitsRead") {
+				return formatDataUnits(Number(row.rv ?? 0))
+			}
+			return row.rs || row.rv?.toString()
+		},
 		header: "Value",
 	},
 	{
@@ -101,6 +106,11 @@ export const smartColumns: ColumnDef<SmartAttribute>[] = [
 function formatCapacity(bytes: number): string {
 	const { value, unit } = formatBytes(bytes)
 	return `${toFixedFloat(value, value >= 10 ? 1 : 2)} ${unit}`
+}
+
+// Function to format NVMe data units as a human-readable size
+function formatDataUnits(units: number): string {
+	return formatCapacity(units * 1024 * 512)
 }
 
 const SMART_DEVICE_FIELDS = "id,system,name,model,state,capacity,temp,type,hours,cycles,updated"
