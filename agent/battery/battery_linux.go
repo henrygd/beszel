@@ -3,35 +3,42 @@
 package battery
 
 import (
-	"errors"
 	"log/slog"
-	"math"
 	"os"
 	"path/filepath"
 	"strconv"
 	"strings"
-	"sync"
 
 	"github.com/henrygd/beszel/agent/utils"
 )
 
-// getBatteryPaths returns the paths of all batteries in /sys/class/power_supply
-var getBatteryPaths func() ([]string, error)
+var batteryRoot = "/sys/class/power_supply"
 
-// batteryFilter filters battery devices by name using the BATTERY_DEVICES env var.
-// When unset or empty, all batteries are included; otherwise only listed names pass.
-var batteryFilter func(name string) bool
+var batteryFilter = getBatteryFilter()
 
-// HasReadableBattery checks if the system has a battery and returns true if it does.
-var HasReadableBattery func() bool
-
-func init() {
-	resetBatteryState("/sys/class/power_supply")
+// HasReadableBattery reports whether collection currently finds a readable battery.
+func HasReadableBattery() bool {
+	batteries, _ := GetBatteryStats()
+	return len(batteries) > 0
 }
 
-// getBatteryFilter returns a filter function based on the BATTERY_DEVICES env var.
-// Format: comma-separated device names (e.g., "BAT0,BAT1").
-// If unset or empty, returns a filter that accepts all devices.
+func parseSysfsState(status string) uint8 {
+	switch status {
+	case "Empty":
+		return stateEmpty
+	case "Full":
+		return stateFull
+	case "Charging":
+		return stateCharging
+	case "Discharging":
+		return stateDischarging
+	case "Not charging":
+		return stateIdle
+	default:
+		return stateUnknown
+	}
+}
+
 func getBatteryFilter() func(name string) bool {
 	devicesRaw, ok := utils.GetEnv("BATTERY_DEVICES")
 	if !ok || devicesRaw == "" {
@@ -54,78 +61,21 @@ func getBatteryFilter() func(name string) bool {
 	}
 }
 
-// resetBatteryState resets the sync.Once functions to a fresh state.
-// Tests call this after swapping sysfsPowerSupply so the new path is picked up.
-func resetBatteryState(sysfsPowerSupplyPath string) {
-	batteryFilter = getBatteryFilter()
-	getBatteryPaths = sync.OnceValues(func() ([]string, error) {
-		entries, err := os.ReadDir(sysfsPowerSupplyPath)
-		if err != nil {
-			return nil, err
-		}
-		var paths []string
-		for _, e := range entries {
-			name := e.Name()
-			path := filepath.Join(sysfsPowerSupplyPath, name)
-			if utils.ReadStringFile(filepath.Join(path, "type")) == "Battery" && (batteryFilter == nil || batteryFilter(name)) {
-				paths = append(paths, path)
-			}
-		}
-		return paths, nil
-	})
-	HasReadableBattery = sync.OnceValue(func() bool {
-		systemHasBattery := false
-		paths, err := getBatteryPaths()
-		for _, path := range paths {
-			if _, ok := utils.ReadStringFileOK(filepath.Join(path, "capacity")); ok {
-				systemHasBattery = true
-				break
-			}
-		}
-		if !systemHasBattery {
-			slog.Debug("No battery found", "err", err)
-		}
-		return systemHasBattery
-	})
-}
-
-func parseSysfsState(status string) uint8 {
-	switch status {
-	case "Empty":
-		return stateEmpty
-	case "Full":
-		return stateFull
-	case "Charging":
-		return stateCharging
-	case "Discharging":
-		return stateDischarging
-	case "Not charging":
-		return stateIdle
-	default:
-		return stateUnknown
-	}
-}
-
-// GetBatteryStats returns the current battery percent and charge state.
-// Reads /sys/class/power_supply/*/capacity directly so the kernel-reported
-// value is used, which is always 0-100 and matches what the OS displays.
-func GetBatteryStats() (batteryPercent uint8, batteryState uint8, err error) {
-	if !HasReadableBattery() {
-		return batteryPercent, batteryState, errors.ErrUnsupported
-	}
-	paths, err := getBatteryPaths()
+// GetBatteryStats re-enumerates power supplies and returns every readable battery.
+func GetBatteryStats() ([]Battery, error) {
+	entries, err := os.ReadDir(batteryRoot)
 	if err != nil {
-		return batteryPercent, batteryState, err
+		return nil, err
 	}
-	if len(paths) == 0 {
-		return batteryPercent, batteryState, errors.New("no batteries")
-	}
-
-	batteryState = math.MaxUint8
-	totalPercent := 0
-	count := 0
-
-	for _, path := range paths {
+	batteries := make([]Battery, 0, len(entries))
+	for _, entry := range entries {
+		if batteryFilter != nil && !batteryFilter(entry.Name()) {
+			continue
+		}
+		path := filepath.Join(batteryRoot, entry.Name())
+		if utils.ReadStringFile(filepath.Join(path, "type")) != "Battery" {
+			continue
+		}
 		capStr, ok := utils.ReadStringFileOK(filepath.Join(path, "capacity"))
 		if !ok {
 			continue
@@ -134,19 +84,31 @@ func GetBatteryStats() (batteryPercent uint8, batteryState uint8, err error) {
 		if parseErr != nil {
 			continue
 		}
-		totalPercent += cap
-		count++
-
-		state := parseSysfsState(utils.ReadStringFile(filepath.Join(path, "status")))
-		if state != stateUnknown {
-			batteryState = state
+		cap = min(max(cap, 0), 100)
+		name := utils.ReadStringFile(filepath.Join(path, "model_name"))
+		if name == "" {
+			name = utils.ReadStringFile(filepath.Join(path, "model"))
 		}
+		if name == "" {
+			name = entry.Name()
+		}
+		battery := Battery{
+			Name:    name,
+			Percent: uint8(cap),
+			State:   parseSysfsState(utils.ReadStringFile(filepath.Join(path, "status"))),
+			System:  utils.ReadStringFile(filepath.Join(path, "scope")) != "Device",
+		}
+		for _, fullName := range []string{"charge_full", "energy_full"} {
+			if parsed, ok := utils.ReadUintFile(filepath.Join(path, fullName)); ok && parsed > 0 {
+				battery.FullChargeCapacity = parsed
+				battery.HasFullChargeCapacity = true
+				break
+			}
+		}
+		batteries = append(batteries, battery)
 	}
-
-	if count == 0 || batteryState == math.MaxUint8 {
-		return batteryPercent, batteryState, errors.New("no battery capacity")
+	if len(batteries) == 0 {
+		return nil, errNoBatteries
 	}
-
-	batteryPercent = uint8(totalPercent / count)
-	return batteryPercent, batteryState, nil
+	return normalizeBatteries(batteries), nil
 }

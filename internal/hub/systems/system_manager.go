@@ -1,6 +1,7 @@
 package systems
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"time"
@@ -45,6 +46,9 @@ type SystemManager struct {
 	systems       *store.Store[string, *System]         // Thread-safe store of active systems
 	sshConfig     *ssh.ClientConfig                     // SSH client configuration for system connections
 	smartFetchMap *expirymap.ExpiryMap[smartFetchState] // Stores last SMART fetch time/result; TTL is only for cleanup
+	zfsFetchMap   *expirymap.ExpiryMap[zfsFetchState]   // Stores last ZFS fetch time/result; TTL is only for cleanup
+	ctx           context.Context                       // Cancelled when the app terminates
+	cancel        context.CancelFunc                    // Cancels ctx and all child system contexts
 }
 
 // hubLike defines the interface requirements for the hub dependency.
@@ -54,17 +58,22 @@ type hubLike interface {
 	GetSSHKey(dataDir string) (ssh.Signer, error)
 	HandleSystemAlerts(systemRecord *core.Record, data *system.CombinedData) error
 	HandleStatusAlerts(status string, systemRecord *core.Record) error
+	HandleContainerAlerts(systemRecord *core.Record, data *system.CombinedData, fetchLogs func(containerID string) (string, error)) error
 	CancelPendingStatusAlerts(systemID string)
+	CancelPendingContainerAlerts(systemID string)
 }
 
 // NewSystemManager creates a new SystemManager instance with the provided hub.
 // The hub must implement the hubLike interface to provide database and alert functionality.
 func NewSystemManager(hub hubLike) *SystemManager {
-	return &SystemManager{
+	sm := &SystemManager{
 		systems:       store.New(map[string]*System{}),
 		hub:           hub,
 		smartFetchMap: expirymap.New[smartFetchState](time.Hour),
+		zfsFetchMap:   expirymap.New[zfsFetchState](time.Hour),
 	}
+	sm.ctx, sm.cancel = context.WithCancel(context.Background())
+	return sm
 }
 
 // GetSystem returns a system by ID from the store
@@ -103,7 +112,9 @@ func (sm *SystemManager) Initialize() error {
 		sleepTime := time.Duration(delta) * time.Millisecond
 
 		for _, system := range systems {
-			time.Sleep(sleepTime)
+			if !waitForContext(sm.ctx, sleepTime) {
+				return
+			}
 			_ = sm.AddSystem(system)
 		}
 	}()
@@ -121,6 +132,13 @@ func (sm *SystemManager) bindEventHooks() {
 	sm.hub.OnRecordAfterUpdateSuccess("fingerprints").BindFunc(sm.onTokenRotated)
 	sm.hub.OnRealtimeSubscribeRequest().BindFunc(sm.onRealtimeSubscribeRequest)
 	sm.hub.OnRealtimeConnectRequest().BindFunc(sm.onRealtimeConnectRequest)
+	sm.hub.OnTerminate().BindFunc(sm.onTerminate)
+}
+
+// onTerminate cancels SystemManager context on app shutdown
+func (sm *SystemManager) onTerminate(e *core.TerminateEvent) error {
+	sm.cancel()
+	return e.Next()
 }
 
 // onTokenRotated handles fingerprint token rotation events.
@@ -173,7 +191,7 @@ func (sm *SystemManager) onRecordUpdate(e *core.RecordEvent) error {
 // - paused: Closes SSH connection and deactivates alerts
 // - pending: Starts monitoring (reuses WebSocket if available)
 // - up: Triggers system alerts
-// - down: Triggers status change alerts
+// - down: Cancels pending container alerts and triggers status change alerts
 func (sm *SystemManager) onRecordAfterUpdateSuccess(e *core.RecordEvent) error {
 	newStatus := e.Record.GetString("status")
 	prevStatus := pending
@@ -191,6 +209,7 @@ func (sm *SystemManager) onRecordAfterUpdateSuccess(e *core.RecordEvent) error {
 		}
 		_ = deactivateAlerts(e.App, e.Record.Id)
 		sm.hub.CancelPendingStatusAlerts(e.Record.Id)
+		sm.hub.CancelPendingContainerAlerts(e.Record.Id)
 		return e.Next()
 	case pending:
 		// Resume monitoring, preferring existing WebSocket connection
@@ -204,6 +223,10 @@ func (sm *SystemManager) onRecordAfterUpdateSuccess(e *core.RecordEvent) error {
 		}
 		_ = deactivateAlerts(e.App, e.Record.Id)
 		return e.Next()
+	case down:
+		// Docker state is unknown while the system is unreachable. Do not let a
+		// delayed container-health alert fire from the last received snapshot.
+		sm.hub.CancelPendingContainerAlerts(e.Record.Id)
 	}
 
 	// Handle systems not in manager
@@ -215,6 +238,9 @@ func (sm *SystemManager) onRecordAfterUpdateSuccess(e *core.RecordEvent) error {
 	if newStatus == up {
 		if err := sm.hub.HandleSystemAlerts(e.Record, system.data); err != nil {
 			e.App.Logger().Error("Error handling system alerts", "err", err)
+		}
+		if err := sm.hub.HandleContainerAlerts(e.Record, system.data, system.FetchContainerLogsFromAgent); err != nil {
+			e.App.Logger().Error("Error handling container alerts", "err", err)
 		}
 	}
 
@@ -247,7 +273,7 @@ func (sm *SystemManager) AddSystem(sys *System) error {
 
 	// Initialize system for monitoring
 	sys.manager = sm
-	sys.ctx, sys.cancel = sys.getContext()
+	sys.ctx, sys.cancel = sys.getContext(sm.ctx)
 	sys.data = &system.CombinedData{}
 	sm.systems.Set(sys.Id, sys)
 
@@ -329,6 +355,15 @@ func (sm *SystemManager) resetFailedSmartFetchState(systemID string) {
 	}
 }
 
+// resetFailedZfsFetchState clears only failed ZFS cooldown entries so a fresh
+// agent reconnect retries ZFS discovery immediately after configuration changes.
+func (sm *SystemManager) resetFailedZfsFetchState(systemID string) {
+	state, ok := sm.zfsFetchMap.GetOk(systemID)
+	if ok && !state.Successful {
+		sm.zfsFetchMap.Remove(systemID)
+	}
+}
+
 // createSSHClientConfig initializes the SSH client configuration for connecting to an agent's server
 func (sm *SystemManager) createSSHClientConfig() error {
 	privateKey, err := sm.hub.GetSSHKey("")
@@ -371,4 +406,16 @@ func deactivateAlerts(app core.App, systemID string) error {
 		}
 	}
 	return nil
+}
+
+// waitForContext waits for delay or returns early when ctx is cancelled.
+func waitForContext(ctx context.Context, delay time.Duration) bool {
+	timer := time.NewTimer(delay)
+	defer timer.Stop()
+	select {
+	case <-ctx.Done():
+		return false
+	case <-timer.C:
+		return true
+	}
 }

@@ -8,6 +8,7 @@ import (
 type releaseAsset struct {
 	Name        string `json:"name"`
 	DownloadUrl string `json:"browser_download_url"`
+	Digest      string `json:"digest"`
 	Id          int    `json:"id"`
 	Size        int    `json:"size"`
 }
