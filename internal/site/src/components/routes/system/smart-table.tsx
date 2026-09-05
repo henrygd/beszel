@@ -108,9 +108,10 @@ function formatCapacity(bytes: number): string {
 	return `${toFixedFloat(value, value >= 10 ? 1 : 2)} ${unit}`
 }
 
-// Function to format NVMe data units as a human-readable size
+// Function to format NVMe data units
+// (1 unit = 1000 * 512 bytes) as a human-readable size
 function formatDataUnits(units: number): string {
-	return formatCapacity(units * 1024 * 512)
+	return formatCapacity(units * 1000 * 512)
 }
 
 const SMART_DEVICE_FIELDS = "id,system,name,model,state,capacity,temp,type,hours,cycles,updated"
