@@ -7,10 +7,11 @@ import (
 	"encoding/json"
 	"io"
 	"net/http"
+	"net/http/httptest"
 	"strings"
+	"sync/atomic"
 	"testing"
 
-	"github.com/henrygd/beszel/internal/alerts"
 	beszelTests "github.com/henrygd/beszel/internal/tests"
 	pbTests "github.com/pocketbase/pocketbase/tests"
 
@@ -27,43 +28,6 @@ func jsonReader(v any) io.Reader {
 		panic(err)
 	}
 	return bytes.NewReader(data)
-}
-
-func TestIsInternalURL(t *testing.T) {
-	testCases := []struct {
-		name     string
-		url      string
-		internal bool
-	}{
-		{name: "loopback ipv4", url: "generic://127.0.0.1", internal: true},
-		{name: "private ipv4", url: "generic://10.0.0.1", internal: true},
-		{name: "localhost hostname", url: "generic://localhost", internal: true},
-		{name: "localhost with path", url: "generic+http://localhost/api/v1/postStuff", internal: true},
-		{name: "loopback with port and path", url: "generic+http://127.0.0.1:8080/api/v1/postStuff", internal: true},
-		{name: "public hostname", url: "generic+https://beszel.dev/api/v1/postStuff", internal: false},
-		{name: "cloud metadata ipv4", url: "generic://169.254.169.254", internal: true},
-		{name: "link-local ipv4", url: "generic://169.254.1.1", internal: true},
-		{name: "link-local ipv6", url: "generic://[fe80::1]", internal: true},
-		{name: "mapped link-local ipv4", url: "generic://[::ffff:169.254.169.254]", internal: true},
-		{name: "cgnat lower boundary", url: "generic://100.64.0.0", internal: true},
-		{name: "cgnat upper boundary", url: "generic://100.127.255.255", internal: true},
-		{name: "below cgnat", url: "generic://100.63.255.255", internal: false},
-		{name: "above cgnat", url: "generic://100.128.0.0", internal: false},
-		{name: "multicast ipv4", url: "generic://224.0.0.1", internal: true},
-		{name: "multicast ipv6", url: "generic://[ff02::1]", internal: true},
-		{name: "public ipv4", url: "generic://8.8.8.8", internal: false},
-		{name: "public ipv6", url: "generic://[2001:4860:4860::8888]", internal: false},
-		{name: "token style service url", url: "discord://abc123@123456789", internal: false},
-		{name: "single label service url", url: "slack://token@team/channel", internal: false},
-	}
-
-	for _, testCase := range testCases {
-		t.Run(testCase.name, func(t *testing.T) {
-			internal, err := alerts.IsInternalURL(testCase.url)
-			assert.NoError(t, err)
-			assert.Equal(t, testCase.internal, internal)
-		})
-	}
 }
 
 func TestUserAlertsApi(t *testing.T) {
@@ -457,6 +421,17 @@ func TestSendTestNotification(t *testing.T) {
 	hub, user := beszelTests.GetHubWithUser(t)
 	defer hub.Cleanup()
 
+	var delivered atomic.Int32
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		delivered.Add(1)
+	}))
+	defer server.Close()
+	localURL := "generic+" + server.URL
+
+	readonlyUser, err := beszelTests.CreateUserWithRole(hub, "readonly@example.com", "password123", "readonly")
+	assert.NoError(t, err)
+	readonlyToken, err := readonlyUser.NewAuthToken()
+	assert.NoError(t, err)
 	userToken, err := user.NewAuthToken()
 
 	adminUser, err := beszelTests.CreateUserWithRole(hub, "admin@example.com", "password123", "admin")
@@ -481,11 +456,11 @@ func TestSendTestNotification(t *testing.T) {
 			ExpectedContent: []string{"requires valid"},
 			TestAppFactory:  testAppFactory,
 			Body: jsonReader(map[string]any{
-				"url": "generic://127.0.0.1",
+				"url": localURL,
 			}),
 		},
 		{
-			Name:           "POST /test-notification - with external auth should succeed",
+			Name:           "POST /test-notification - invalid service reports error",
 			Method:         http.MethodPost,
 			URL:            "/api/beszel/test-notification",
 			TestAppFactory: testAppFactory,
@@ -493,7 +468,7 @@ func TestSendTestNotification(t *testing.T) {
 				"Authorization": userToken,
 			},
 			Body: jsonReader(map[string]any{
-				"url": "generic://8.8.8.8",
+				"url": "unknown://example.com",
 			}),
 			ExpectedStatus:  200,
 			ExpectedContent: []string{"\"err\":"},
@@ -535,10 +510,10 @@ func TestSendTestNotification(t *testing.T) {
 				"Authorization": adminUserToken,
 			},
 			Body: jsonReader(map[string]any{
-				"url": "generic://127.0.0.1",
+				"url": localURL,
 			}),
 			ExpectedStatus:  200,
-			ExpectedContent: []string{"\"err\":"},
+			ExpectedContent: []string{"\"err\":false"},
 		},
 		{
 			Name:           "POST /test-notification - internal url with superuser auth should succeed",
@@ -549,14 +524,28 @@ func TestSendTestNotification(t *testing.T) {
 				"Authorization": superuserToken,
 			},
 			Body: jsonReader(map[string]any{
-				"url": "generic://127.0.0.1",
+				"url": localURL,
 			}),
 			ExpectedStatus:  200,
 			ExpectedContent: []string{"\"err\":"},
 		},
 	}
 
+	for _, url := range []string{localURL, "smtp://user:pass@consul", "mqtt://consul/topic"} {
+		scenarios = append(scenarios, beszelTests.ApiScenario{
+			Name:            "readonly cannot send to " + url,
+			Method:          http.MethodPost,
+			URL:             "/api/beszel/test-notification",
+			TestAppFactory:  testAppFactory,
+			Headers:         map[string]string{"Authorization": readonlyToken},
+			Body:            jsonReader(map[string]any{"url": url}),
+			ExpectedStatus:  403,
+			ExpectedContent: []string{"Only admins"},
+		})
+	}
+
 	for _, scenario := range scenarios {
 		scenario.Test(t)
 	}
+	assert.EqualValues(t, 2, delivered.Load(), "only admin and superuser requests should reach the server")
 }
