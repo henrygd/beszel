@@ -522,6 +522,26 @@ func (sm *SmartManager) CollectSmart(deviceInfo *DeviceInfo) error {
 
 	hasValidData := sm.parseSmartOutput(deviceInfo, output)
 
+	// If the query without an explicit type (scan-detected scsi/ata types are
+	// left off; see issue #1345) returned identity-only data, the drive is
+	// likely ATA behind a SCSI (SAT) layer. Re-query with -d sat before
+	// recording no data. See github.com/henrygd/beszel/issues/2295.
+	if !hasValidData && !deviceInfo.explicitType &&
+		(strings.EqualFold(deviceInfo.Type, "scsi") || strings.EqualFold(deviceInfo.Type, "ata")) {
+		satInfo := *deviceInfo
+		satInfo.Type = "sat"
+		satInfo.parserType = ""
+		satInfo.typeVerified = false
+
+		ctx4, cancel4 := context.WithTimeout(context.Background(), 15*time.Second)
+		defer cancel4()
+		output, err = exec.CommandContext(ctx4, sm.smartctlPath, sm.smartctlArgs(&satInfo, false)...).CombinedOutput()
+		hasValidData = sm.parseSmartOutput(&satInfo, output)
+		if hasValidData {
+			*deviceInfo = satInfo
+		}
+	}
+
 	// If NVMe controller path failed, try namespace path as fallback.
 	// NVMe controllers (/dev/nvme0) don't always support SMART queries. See github.com/henrygd/beszel/issues/1504
 	if !hasValidData && err != nil && isNvmeControllerPath(deviceInfo.Name) {
@@ -891,6 +911,15 @@ func (sm *SmartManager) parseSmartForSata(output []byte, deviceType string) (boo
 		return false, data.Smartctl.ExitStatus
 	}
 
+	// Identity-only output (serial, model, capacity but no ATA health data)
+	// means smartctl could not read SMART through this device type. Accepting
+	// it stores silent zeros; see github.com/henrygd/beszel/issues/2295.
+	if len(data.AtaSmartAttributes.Table) == 0 && data.Temperature.Current == 0 &&
+		!hasJSONValue(data.AtaDeviceStatistics) {
+		slog.Debug("no ATA SMART data", "device", data.Device.Name)
+		return false, data.Smartctl.ExitStatus
+	}
+
 	sm.Lock()
 	defer sm.Unlock()
 
@@ -1006,6 +1035,14 @@ func (sm *SmartManager) parseSmartForScsi(output []byte, deviceType string) (boo
 	// Skip virtual devices (e.g., Kubernetes PVCs, QEMU, VirtualBox, etc.)
 	if sm.isVirtualDeviceScsi(&data) {
 		slog.Debug("skipping smart", "device", data.Device.Name, "model", data.ScsiModelName)
+		return false, data.Smartctl.ExitStatus
+	}
+
+	// Identity-only output means smartctl could not read health data through
+	// this device type. Accepting it stores silent zeros; see
+	// github.com/henrygd/beszel/issues/2295.
+	if data.Temperature.Current == 0 && data.PowerOnTime.Hours == 0 && !data.SmartStatus.Passed {
+		slog.Debug("no SCSI health data", "device", data.Device.Name)
 		return false, data.Smartctl.ExitStatus
 	}
 
@@ -1145,6 +1182,14 @@ func (sm *SmartManager) parseSmartForNvme(output []byte, deviceType string) (boo
 	// Skip virtual devices (e.g., Kubernetes PVCs, QEMU, VirtualBox, etc.)
 	if sm.isVirtualDeviceNvme(data) {
 		slog.Debug("skipping smart", "device", data.Device.Name, "model", data.ModelName)
+		return false, data.Smartctl.ExitStatus
+	}
+
+	// Identity-only output means smartctl could not read health data through
+	// this device type. Accepting it stores silent zeros; see
+	// github.com/henrygd/beszel/issues/2295.
+	if data.NVMeSmartHealthInformationLog.PowerOnHours == 0 && data.NVMeSmartHealthInformationLog.Temperature == 0 {
+		slog.Debug("no NVMe health data", "device", data.Device.Name)
 		return false, data.Smartctl.ExitStatus
 	}
 
