@@ -30,6 +30,10 @@ const (
 	colorGray   = "\033[90m"
 )
 
+// buildGOARM is set by GoReleaser for agent builds. An empty value identifies
+// legacy builds, which used GoReleaser's default GOARM value (ARMv6).
+var buildGOARM string
+
 func ColorPrint(color, text string) {
 	fmt.Println(color + text + colorReset)
 }
@@ -129,7 +133,7 @@ func (p *updater) update() (updated bool, err error) {
 		return false, nil
 	}
 
-	suffix := archiveSuffix(p.config.ArchiveExecutable, runtime.GOOS, runtime.GOARCH)
+	suffix := archiveSuffix(p.config.ArchiveExecutable, runtime.GOOS, runtime.GOARCH, buildGOARM)
 	asset, err := latest.findAssetBySuffix(suffix)
 	if err != nil {
 		return false, err
@@ -346,7 +350,7 @@ func copyFile(src, dst string) error {
 	return destFile.Chmod(sourceInfo.Mode())
 }
 
-func archiveSuffix(binaryName, goos, goarch string) string {
+func archiveSuffix(binaryName, goos, goarch, goarm string) string {
 	if goos == "windows" {
 		return fmt.Sprintf("%s_%s_%s.zip", binaryName, goos, goarch)
 	}
@@ -354,7 +358,11 @@ func archiveSuffix(binaryName, goos, goarch string) string {
 	if binaryName == "beszel-agent" && goos == "linux" && goarch == "amd64" && isGlibc() {
 		return fmt.Sprintf("%s_%s_%s_glibc.tar.gz", binaryName, goos, goarch)
 	}
-	return fmt.Sprintf("%s_%s_%s.tar.gz", binaryName, goos, goarch)
+	armSuffix := ""
+	if binaryName == "beszel-agent" && goarch == "arm" && (goarm == "5" || goarm == "7") {
+		armSuffix = "v" + goarm
+	}
+	return fmt.Sprintf("%s_%s_%s%s.tar.gz", binaryName, goos, goarch, armSuffix)
 }
 
 func isGlibc() bool {

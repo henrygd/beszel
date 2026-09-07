@@ -16,6 +16,7 @@ It has a friendly web interface, simple configuration, and is ready to use out o
 - **Lightweight**: Smaller and less resource-intensive than leading solutions.
 - **Simple**: Easy setup with little manual configuration required.
 - **Docker stats**: Tracks CPU, memory, and network usage history for each container.
+- **ZFS**: Tracks pool capacity, health, and I/O, plus per-dataset usage.
 - **Alerts**: Configurable alerts for CPU, memory, disk, bandwidth, temperature, fan speed, load average, and status.
 - **Multi-user**: Users manage their own systems. Admins can share systems across users.
 - **OAuth / OIDC**: Supports many OAuth2 providers. Password auth can be disabled.
@@ -53,6 +54,7 @@ The [quick start guide](https://beszel.dev/guide/getting-started) and other docu
 - **Battery** - Host system battery charge.
 - **Containers** - Status and metrics of all running Docker / Podman containers.
 - **S.M.A.R.T.** - Host system disk health (includes eMMC wear/EOL and Linux mdraid array health via sysfs when available).
+- **ZFS** - Pool capacity, usage, health, I/O throughput, scrub status, and per-dataset usage.
 
 ## Help and discussion
 

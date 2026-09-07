@@ -78,14 +78,7 @@ func TestParseFilesystemEntry(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			fsEntry := strings.TrimSpace(tt.input)
-			var fs, customName string
-			if parts := strings.SplitN(fsEntry, "__", 2); len(parts) == 2 {
-				fs = strings.TrimSpace(parts[0])
-				customName = strings.TrimSpace(parts[1])
-			} else {
-				fs = fsEntry
-			}
+			fs, customName := parseFilesystemEntry(tt.input)
 
 			assert.Equal(t, tt.expectedFs, fs)
 			assert.Equal(t, tt.expectedName, customName)
@@ -287,8 +280,9 @@ func TestAddConfiguredRootFs(t *testing.T) {
 			rootMountPoint: "/",
 			partitions:     []disk.PartitionStat{{Device: "/dev/ada0p2", Mountpoint: "/"}},
 			ctx: fsRegistrationContext{
-				filesystem: "/dev/ada0p2",
-				isWindows:  false,
+				filesystem:     "/dev/ada0p2",
+				filesystemName: "root disk",
+				isWindows:      false,
 				diskIoCounters: map[string]disk.IOCountersStat{
 					"ada0": {Name: "ada0", ReadBytes: 1000, WriteBytes: 1000},
 				},
@@ -302,6 +296,7 @@ func TestAddConfiguredRootFs(t *testing.T) {
 		assert.True(t, exists)
 		assert.True(t, stats.Root)
 		assert.Equal(t, "/", stats.Mountpoint)
+		assert.Equal(t, "root disk", stats.Name)
 	})
 
 	t.Run("adds root from io device when partition is missing", func(t *testing.T) {
@@ -310,8 +305,9 @@ func TestAddConfiguredRootFs(t *testing.T) {
 			agent:          agent,
 			rootMountPoint: "/sysroot",
 			ctx: fsRegistrationContext{
-				filesystem: "zroot",
-				isWindows:  false,
+				filesystem:     "zroot",
+				filesystemName: "root pool",
+				isWindows:      false,
 				diskIoCounters: map[string]disk.IOCountersStat{
 					"nda0": {Name: "nda0", Label: "zroot", ReadBytes: 1000, WriteBytes: 1000},
 				},
@@ -325,6 +321,7 @@ func TestAddConfiguredRootFs(t *testing.T) {
 		assert.True(t, exists)
 		assert.True(t, stats.Root)
 		assert.Equal(t, "/sysroot", stats.Mountpoint)
+		assert.Equal(t, "root pool", stats.Name)
 	})
 
 	t.Run("returns false when filesystem cannot be resolved", func(t *testing.T) {

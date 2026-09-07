@@ -236,10 +236,16 @@ export function AlertContent({
 	const { name } = alertData
 
 	const singleDescription = alertData.singleDesc?.()
+	/** Alerts that fire on first observation have no duration to configure */
+	const noDuration = alertData.noDuration === true
+	/** Binary alerts have no threshold to configure */
+	const noThreshold = !!singleDescription || noDuration
+	/** Whether enabling the alert reveals anything to configure */
+	const hasControls = !(noThreshold && noDuration)
 
 	const [checked, setChecked] = useState(global ? false : !!alert)
-	const [min, setMin] = useState(alert?.min || 10)
-	const [value, setValue] = useState(alert?.value || (singleDescription ? 0 : (alertData.start ?? 80)))
+	const [min, setMin] = useState(alert?.min || (noDuration ? 0 : 10))
+	const [value, setValue] = useState(alert?.value || (noThreshold ? 0 : (alertData.start ?? 80)))
 
 	const Icon = alertData.icon
 
@@ -277,14 +283,16 @@ export function AlertContent({
 			<label
 				htmlFor={`s${name}`}
 				className={cn("flex flex-row items-center justify-between gap-4 cursor-pointer p-4", {
-					"pb-0": checked,
+					"pb-0": checked && hasControls,
 				})}
 			>
 				<div className="grid gap-1 select-none">
 					<p className="font-semibold flex gap-3 items-center">
 						<Icon className="h-4 w-4 opacity-85" /> {alertData.name()}
 					</p>
-					{!checked && <span className="block text-sm text-muted-foreground">{alertData.desc()}</span>}
+					{(!checked || !hasControls) && (
+						<span className="block text-sm text-muted-foreground">{alertData.desc()}</span>
+					)}
 				</div>
 				<Switch
 					id={`s${name}`}
@@ -307,10 +315,10 @@ export function AlertContent({
 					}}
 				/>
 			</label>
-			{checked && (
+			{checked && hasControls && (
 				<div className="grid sm:grid-cols-2 mt-1.5 gap-5 px-4 pb-5 tabular-nums text-muted-foreground">
 					<Suspense fallback={<div className="h-10" />}>
-						{!singleDescription && (
+						{!noThreshold && (
 							<div>
 								<p id={`v${name}`} className="text-sm block h-6">
 									{alertData.invert ? (
@@ -361,46 +369,49 @@ export function AlertContent({
 								</div>
 							</div>
 						)}
-						<div className={cn(singleDescription && "col-span-full lowercase")}>
-							<p id={`t${name}`} className="text-sm block h-6 first-letter:uppercase">
-								{singleDescription && (
-									<>
-										{singleDescription}
-										{` `}
-									</>
-								)}
-								<Trans>
-									For <strong className="text-foreground">{min}</strong>{" "}
-									<Plural value={min} one="minute" other="minutes" />
-								</Trans>
-							</p>
-							<div className="flex gap-3 items-center">
-								<Slider
-									aria-labelledby={`t${name}`}
-									value={[min]}
-									onValueCommit={(val) => sendUpsert(val[0], value)}
-									onValueChange={(val) => setMin(val[0])}
-									min={1}
-									max={60}
-								/>
-								<Input
-									type="number"
-									value={min}
-									onChange={(e) => {
-										let val = parseInt(e.target.value, 10)
-										if (!Number.isNaN(val)) {
-											val = Math.max(1, Math.min(val, 60))
-											setMin(val)
-											sendUpsert(val, value)
-										}
-									}}
-									min={1}
-									max={60}
-									className="w-16 h-8 text-center px-1"
-								/>
+						{!noDuration && (
+							<div className={cn(singleDescription && "col-span-full lowercase")}>
+								<p id={`t${name}`} className="text-sm block h-6 first-letter:uppercase">
+									{singleDescription && (
+										<>
+											{singleDescription}
+											{` `}
+										</>
+									)}
+									<Trans>
+										For <strong className="text-foreground">{min}</strong>{" "}
+										<Plural value={min} one="minute" other="minutes" />
+									</Trans>
+								</p>
+								<div className="flex gap-3 items-center">
+									<Slider
+										aria-labelledby={`t${name}`}
+										value={[min]}
+										onValueCommit={(val) => sendUpsert(val[0], value)}
+										onValueChange={(val) => setMin(val[0])}
+										min={1}
+										max={60}
+									/>
+									<Input
+										type="number"
+										value={min}
+										onChange={(e) => {
+											let val = parseInt(e.target.value, 10)
+											if (!Number.isNaN(val)) {
+												val = Math.max(1, Math.min(val, 60))
+												setMin(val)
+												sendUpsert(val, value)
+											}
+										}}
+										min={1}
+										max={60}
+										className="w-16 h-8 text-center px-1"
+									/>
+								</div>
 							</div>
-						</div>
+						)}
 					</Suspense>
+          {checked && alertData.note && <span className="block col-span-full text-sm text-muted-foreground -mt-3">{alertData.note()}</span>}
 				</div>
 			)}
 		</div>
