@@ -700,3 +700,11 @@ func TestGetToken(t *testing.T) {
 		assert.Equal(t, expectedToken, token, "Whitespace should be stripped from token file content")
 	})
 }
+
+func TestWebSocketDeadlineCoversSlowCollection(t *testing.T) {
+	const minimumDeadline = 120 * time.Second
+
+	if wsDeadline < minimumDeadline {
+		t.Fatalf("WebSocket deadline %s is shorter than the slow-collection window of %s", wsDeadline, minimumDeadline)
+	}
+}
