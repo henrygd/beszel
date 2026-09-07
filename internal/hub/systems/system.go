@@ -272,7 +272,15 @@ func (sys *System) createRecords(data *system.CombinedData) (*core.Record, error
 
 		// update system record (do this last because it triggers alerts and we need above records to be inserted first)
 		systemRecord.Set("status", up)
-		systemRecord.Set("info", data.Info)
+		// Distinguish an idle GPU from a system without GPU data (#2312)
+		info := struct {
+			system.Info
+			GpuPct *float64 `json:"g,omitempty"`
+		}{Info: data.Info}
+		if len(data.Stats.GPUData) > 0 {
+			info.GpuPct = &data.Info.GpuPct
+		}
+		systemRecord.Set("info", info)
 		if err := txApp.SaveNoValidate(systemRecord); err != nil {
 			return err
 		}
