@@ -14,6 +14,7 @@ import { Toaster } from "@/components/ui/toaster.tsx"
 import { alertManager } from "@/lib/alerts"
 import { isAdmin, pb, updateUserSettings, verifyAuth } from "@/lib/api.ts"
 import { dynamicActivate, getLocale } from "@/lib/i18n"
+import { debounce } from "@/lib/utils"
 import {
 	$authenticated,
 	$copyContent,
@@ -26,6 +27,18 @@ import {
 import * as systemsManager from "@/lib/systemsManager.ts"
 import type { BeszelInfo, UpdateInfo } from "./types"
 
+// verify the session whenever any API request returns a 4xx response (e.g. an
+// expired JWT). The auth-refresh endpoint is excluded to avoid a loop, since
+// it returns 401 itself when the token is no longer valid.
+const verifyAuthDebounced = debounce(verifyAuth, 100)
+
+pb.afterSend = (response, data) => {
+	if (response.status >= 400 && pb.authStore.token && !response.url.includes("auth-refresh")) {
+		verifyAuthDebounced()
+	}
+	return data
+}
+
 const LoginPage = lazy(() => import("@/components/login/login.tsx"))
 const Home = lazy(() => import("@/components/routes/home.tsx"))
 const Containers = lazy(() => import("@/components/routes/containers.tsx"))
@@ -37,47 +50,11 @@ const App = memo(() => {
 	const page = useStore($router)
 
 	useEffect(() => {
-		let authTimeout: number | undefined
-
-		const scheduleAuthRefresh = () => {
-			if (authTimeout) {
-				clearTimeout(authTimeout)
-				authTimeout = undefined
-			}
-
-			const token = pb.authStore.token
-			if (!token) return
-
-			try {
-				const base64 = token.split(".")[1].replace(/-/g, "+").replace(/_/g, "/")
-				const padded = base64.padEnd(base64.length + ((4 - (base64.length % 4)) % 4), "=")
-				const payload = JSON.parse(atob(padded))
-				const exp = payload?.exp
-				if (typeof exp === "number") {
-					const delay = exp * 1000 - Date.now()
-					if (delay > 0) {
-						authTimeout = setTimeout(() => verifyAuth(), delay)
-					} else if (pb.authStore.isValid) {
-						verifyAuth()
-					}
-				}
-			} catch {
-				// not a JWT or malformed token; fall back to the periodic check
-			}
-		}
-
 		const onAuthChange = () => {
 			$authenticated.set(pb.authStore.isValid)
-			scheduleAuthRefresh()
 		}
 
 		const unsubscribeAuth = pb.authStore.onChange(onAuthChange)
-		// schedule a refresh for the token already in the store
-		scheduleAuthRefresh()
-
-		// periodic safety net for tokens that cannot be decoded or when the
-		// scheduled refresh is missed
-		const authInterval = setInterval(() => verifyAuth(), 5 * 60 * 1000)
 
 		// get general info for authenticated users, such as public key and version
 		pb.send<BeszelInfo>("/api/beszel/info", {}).then((data) => {
@@ -101,8 +78,6 @@ const App = memo(() => {
 			// subscribe to new alert updates
 			.then(alertManager.subscribe)
 		return () => {
-			clearInterval(authInterval)
-			if (authTimeout) clearTimeout(authTimeout)
 			unsubscribeAuth()
 			alertManager.unsubscribe()
 			systemsManager.unsubscribe()
