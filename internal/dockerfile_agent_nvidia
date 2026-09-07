@@ -43,6 +43,11 @@ COPY --from=builder /app/agent/test-data/amdgpu.ids /usr/share/libdrm/amdgpu.ids
 # Copy smartmontools binaries and config files
 COPY --from=smartmontools-builder /usr/sbin/smartctl /usr/sbin/smartctl
 
+# Install ZFS userspace utilities (zpool, zfs) for pool/dataset monitoring
+RUN apt-get update && apt-get install -y --no-install-recommends \
+  zfsutils-linux \
+  && apt-get clean && rm -rf /var/lib/apt/lists/*
+
 # Ensure data persistence across container recreations
 VOLUME ["/var/lib/beszel-agent"]
 
