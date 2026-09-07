@@ -4,9 +4,12 @@ package agent
 
 import (
 	"testing"
+	"time"
 
 	"github.com/fxamacker/cbor/v2"
+	"github.com/henrygd/beszel/agent/zfs"
 	"github.com/henrygd/beszel/internal/common"
+	"github.com/henrygd/beszel/internal/entities/smart"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -15,6 +18,44 @@ type MockHandler struct {
 	requiresVerification bool
 	description          string
 	handleFunc           func(ctx *HandlerContext) error
+}
+
+func TestNewAgentResponseSmartData(t *testing.T) {
+	response := newAgentResponse(smart.SmartDataResponse{
+		Data: map[string]smart.SmartData{
+			"AAA": {SerialNumber: "AAA"},
+		},
+		Complete: true,
+	}, nil)
+
+	assert.Equal(t, "AAA", response.SmartData["AAA"].SerialNumber)
+	assert.True(t, response.SmartComplete)
+}
+
+func TestGetZfsDataHandlerForceRefresh(t *testing.T) {
+	poolCalls := 0
+	zm := &ZfsManager{detailInterval: time.Hour}
+	zm.poolStatsFn = func() ([]zfs.PoolStat, error) {
+		poolCalls++
+		return []zfs.PoolStat{{Name: "tank", Alloc: uint64(poolCalls)}}, nil
+	}
+	zm.poolStatusesFn = func() ([]zfs.PoolStatus, error) { return nil, nil }
+	zm.datasetsFn = func() ([]zfs.Dataset, error) { return nil, nil }
+	zm.GetDetail(false)
+
+	requestData, err := cbor.Marshal(common.ZfsDataRequest{Force: true})
+	assert.NoError(t, err)
+	ctx := &HandlerContext{
+		Agent: &Agent{zfsManager: zm},
+		Request: &common.HubRequest[cbor.RawMessage]{
+			Action: common.GetZfsData,
+			Data:   requestData,
+		},
+		SendResponse: func(any, *uint32) error { return nil },
+	}
+
+	assert.NoError(t, (&GetZfsDataHandler{}).Handle(ctx))
+	assert.Equal(t, 2, poolCalls)
 }
 
 func (m *MockHandler) Handle(ctx *HandlerContext) error {

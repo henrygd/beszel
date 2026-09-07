@@ -87,6 +87,10 @@ func (c *ConnectionManager) Start(serverOptions ServerOptions) error {
 
 	wsClient, err := newWebSocketClient(c.agent)
 	if err != nil {
+		var caCertErr *caCertFileError
+		if errors.As(err, &caCertErr) {
+			return err
+		}
 		slog.Warn("Error creating WebSocket client", "err", err)
 	}
 	c.wsClient = wsClient
@@ -151,7 +155,9 @@ func (c *ConnectionManager) handleEvent(event ConnectionEvent) {
 	case WebSocketConnect:
 		c.handleStateChange(WebSocketConnected)
 	case SSHConnect:
-		c.handleStateChange(SSHConnected)
+		if c.State == Disconnected {
+			c.handleStateChange(SSHConnected)
+		}
 	case WebSocketDisconnect:
 		if c.State == WebSocketConnected {
 			c.handleStateChange(Disconnected)

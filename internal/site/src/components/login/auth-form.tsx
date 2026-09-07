@@ -286,7 +286,7 @@ export function UserAuthForm({
 									{errors?.passwordConfirm && <p className="px-1 text-xs text-red-600">{errors.passwordConfirm}</p>}
 								</div>
 							)}
-							<div className="sr-only">
+							<div className="sr-only" aria-hidden="true">
 								{/* honeypot */}
 								<label htmlFor="website">Website</label>
 								<input
@@ -294,6 +294,7 @@ export function UserAuthForm({
 									type="text"
 									name="website"
 									tabIndex={-1}
+									readOnly
 									autoComplete="off"
 									data-1p-ignore
 									data-lpignore="true"

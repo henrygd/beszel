@@ -1,0 +1,21 @@
+1. Get Beszel Agent Status
+   kubectl get daemonset -n {{ .Release.Namespace }} {{ include "beszel-agent.fullname" . }}
+   kubectl get pods -n {{ .Release.Namespace }} -l app.kubernetes.io/name={{ include "beszel-agent.name" . }}
+2. View Agent Logs
+   kubectl logs -n {{ .Release.Namespace }} -l app.kubernetes.io/name={{ include "beszel-agent.name" . }} -f
+3. Verify SSH Key Configuration
+   kubectl get secret -n {{ .Release.Namespace }} {{ include "beszel-agent.fullname" . }} -o jsonpath='{.data.ssh-key}' | base64 -d
+4. Agent Configuration
+   - Port: {{ .Values.env.PORT }}
+   - Image: {{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}
+   {{- if .Values.hostNetwork }}
+   - Host Network: Enabled
+   {{- end }}
+   {{- if .Values.gpuRuntime }}
+   - GPU Runtime: {{ .Values.gpuRuntime }}
+   {{- end }}
+5. Next Steps
+   - Ensure the Beszel Hub is accessible from the cluster
+   - Check that the SSH key is registered with the Hub
+   - Verify agent connectivity: kubectl logs -n {{ .Release.Namespace }} -l app.kubernetes.io/name={{ include "beszel-agent.name" . }}
+For more information, visit: https://www.beszel.dev/

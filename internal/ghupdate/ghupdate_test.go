@@ -8,6 +8,31 @@ import (
 	"testing"
 )
 
+func TestArchiveSuffix(t *testing.T) {
+	tests := []struct {
+		name                 string
+		binary, goos, goarch string
+		goarm, want          string
+	}{
+		{"armv5 agent", "beszel-agent", "linux", "arm", "5", "beszel-agent_linux_armv5.tar.gz"},
+		{"armv6 keeps legacy name", "beszel-agent", "linux", "arm", "6", "beszel-agent_linux_arm.tar.gz"},
+		{"hub keeps legacy arm name", "beszel", "linux", "arm", "6", "beszel_linux_arm.tar.gz"},
+		{"armv7 agent", "beszel-agent", "linux", "arm", "7", "beszel-agent_linux_armv7.tar.gz"},
+		{"newer arm keeps legacy name", "beszel-agent", "linux", "arm", "8", "beszel-agent_linux_arm.tar.gz"},
+		{"unknown arm keeps legacy name", "beszel-agent", "linux", "arm", "", "beszel-agent_linux_arm.tar.gz"},
+		{"amd64 hub", "beszel", "linux", "amd64", "", "beszel_linux_amd64.tar.gz"},
+		{"windows", "beszel-agent", "windows", "amd64", "", "beszel-agent_windows_amd64.zip"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := archiveSuffix(tt.binary, tt.goos, tt.goarch, tt.goarm); got != tt.want {
+				t.Errorf("archiveSuffix() = %q, want %q", got, tt.want)
+			}
+		})
+	}
+}
+
 func TestReleaseFindAssetBySuffix(t *testing.T) {
 	r := release{
 		Assets: []*releaseAsset{

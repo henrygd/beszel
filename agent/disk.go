@@ -18,10 +18,11 @@ import (
 // fsRegistrationContext holds the shared lookup state needed to resolve a
 // filesystem into the tracked fsStats key and metadata.
 type fsRegistrationContext struct {
-	filesystem     string // value of optional FILESYSTEM env var
-	isWindows      bool
-	efPath         string // path to extra filesystems (default "/extra-filesystems")
-	diskIoCounters map[string]disk.IOCountersStat
+	filesystem         string // device part of optional FILESYSTEM env var
+	filesystemName     string // optional custom name from FILESYSTEM=device__name
+	isWindows          bool
+	efPath             string // path to extra filesystems (default "/extra-filesystems")
+	diskIoCounters     map[string]disk.IOCountersStat
 }
 
 // diskDiscovery groups the transient state for a single initializeDiskInfo run so
@@ -177,7 +178,7 @@ func (d *diskDiscovery) addConfiguredRootFs() bool {
 
 	for _, p := range d.partitions {
 		if filesystemMatchesPartitionSetting(d.ctx.filesystem, p) {
-			d.addFsStat(p.Device, p.Mountpoint, true, "")
+			d.addFsStat(p.Device, p.Mountpoint, true, d.ctx.filesystemName)
 			return true
 		}
 	}
@@ -185,7 +186,7 @@ func (d *diskDiscovery) addConfiguredRootFs() bool {
 	// FILESYSTEM may name a physical disk absent from partitions (e.g. ZFS lists
 	// dataset paths like zroot/ROOT/default, not block devices).
 	if ioKey, match := findIoDevice(d.ctx.filesystem, d.ctx.diskIoCounters); match {
-		d.agent.fsStats[ioKey] = &system.FsStats{Root: true, Mountpoint: d.rootMountPoint}
+		d.agent.fsStats[ioKey] = &system.FsStats{Root: true, Mountpoint: d.rootMountPoint, Name: d.ctx.filesystemName}
 		return true
 	}
 
@@ -300,7 +301,8 @@ func (d *diskDiscovery) addExtraFilesystemFolders(folderNames []string) {
 
 // Sets up the filesystems to monitor for disk usage and I/O.
 func (a *Agent) initializeDiskInfo() {
-	filesystem, _ := utils.GetEnv("FILESYSTEM")
+	filesystemRaw, _ := utils.GetEnv("FILESYSTEM")
+	filesystem, filesystemName := parseFilesystemEntry(filesystemRaw)
 	hasRoot := false
 	isWindows := runtime.GOOS == "windows"
 
@@ -323,10 +325,11 @@ func (a *Agent) initializeDiskInfo() {
 	}
 	slog.Debug("Disk I/O", "diskstats", diskIoCounters)
 	ctx := fsRegistrationContext{
-		filesystem:     filesystem,
-		isWindows:      isWindows,
-		diskIoCounters: diskIoCounters,
-		efPath:         "/extra-filesystems",
+		filesystem:         filesystem,
+		filesystemName:     filesystemName,
+		isWindows:          isWindows,
+		diskIoCounters:     diskIoCounters,
+		efPath:             "/extra-filesystems",
 	}
 
 	// Get the appropriate root mount point for this system
@@ -534,7 +537,16 @@ func normalizeDeviceName(value string) string {
 func (a *Agent) initializeDiskIoStats(diskIoCounters map[string]disk.IOCountersStat) {
 	a.fsNames = a.fsNames[:0]
 	now := time.Now()
+	// ZFS datasets have no /proc/diskstats entry, so they are excluded from
+	// I/O tracking instead of warning about a missing device (#1541).
+	var zfsMountpoints map[string]bool
+	if a.zfsManager != nil {
+		zfsMountpoints = a.zfsManager.ZfsMountpoints()
+	}
 	for device, stats := range a.fsStats {
+		if zfsMountpoints[stats.Mountpoint] {
+			continue
+		}
 		// skip if not in diskIoCounters
 		d, exists := diskIoCounters[device]
 		if !exists {
@@ -559,20 +571,31 @@ func (a *Agent) updateDiskUsage(systemStats *system.Stats) {
 		!a.lastDiskUsageUpdate.IsZero() &&
 		time.Since(a.lastDiskUsageUpdate) < a.diskUsageCacheDuration
 
+	// ZFS dataset mountpoints use `zfs list` values because statfs(2) reports
+	// dataset-level usage that excludes child datasets (#1541).
+	var zfsUsage map[string]zfsDatasetUsage
+	if a.zfsManager != nil {
+		zfsUsage = a.zfsManager.DatasetUsage()
+	}
+
 	// disk usage
 	for _, stats := range a.fsStats {
 		// Skip non-root filesystems if caching is active
 		if cacheExtraFs && !stats.Root {
 			continue
 		}
-		if d, err := disk.Usage(stats.Mountpoint); err == nil {
-			stats.DiskTotal = utils.BytesToGigabytes(d.Total)
-			stats.DiskUsed = utils.BytesToGigabytes(d.Used)
-			if stats.Root {
-				systemStats.DiskTotal = utils.BytesToGigabytes(d.Total)
-				systemStats.DiskUsed = utils.BytesToGigabytes(d.Used)
-				systemStats.DiskPct = utils.TwoDecimals(d.UsedPercent)
+		var total, used uint64
+		var usedPct float64
+		if u, ok := zfsUsage[stats.Mountpoint]; ok {
+			total = u.used + u.avail
+			used = u.used
+			if total > 0 {
+				usedPct = float64(used) / float64(total) * 100
 			}
+		} else if d, err := disk.Usage(stats.Mountpoint); err == nil {
+			total = d.Total
+			used = d.Used
+			usedPct = d.UsedPercent
 		} else {
 			// reset stats if error (likely unmounted)
 			slog.Error("Error getting disk stats", "name", stats.Mountpoint, "err", err)
@@ -580,6 +603,14 @@ func (a *Agent) updateDiskUsage(systemStats *system.Stats) {
 			stats.DiskUsed = 0
 			stats.TotalRead = 0
 			stats.TotalWrite = 0
+			continue
+		}
+		stats.DiskTotal = utils.BytesToGigabytes(total)
+		stats.DiskUsed = utils.BytesToGigabytes(used)
+		if stats.Root {
+			systemStats.DiskTotal = stats.DiskTotal
+			systemStats.DiskUsed = stats.DiskUsed
+			systemStats.DiskPct = utils.TwoDecimals(usedPct)
 		}
 	}
 
@@ -696,6 +727,8 @@ func (a *Agent) updateDiskIo(cacheTimeMs uint16, systemStats *system.Stats) {
 				systemStats.DiskWritePs = stats.DiskWritePs
 				systemStats.DiskIO[0] = diskIORead
 				systemStats.DiskIO[1] = diskIOWrite
+				systemStats.DiskIOTotal[0] = d.ReadBytes
+				systemStats.DiskIOTotal[1] = d.WriteBytes
 				systemStats.DiskIoStats[0] = diskReadTime
 				systemStats.DiskIoStats[1] = diskWriteTime
 				systemStats.DiskIoStats[2] = diskIoUtilPct
