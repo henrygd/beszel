@@ -50,6 +50,24 @@ func TestReadHwmonFans(t *testing.T) {
 	}, fans)
 }
 
+// TestReadHwmonFansLegacyParent verifies legacy hwmon layouts such as applesmc,
+// where the hwmon class node exists but fan attributes live on hwmonN/device.
+func TestReadHwmonFansLegacyParent(t *testing.T) {
+	root := t.TempDir()
+	deviceDir := filepath.Join(root, "devices", "applesmc.768")
+	writeFile(t, filepath.Join(deviceDir, "name"), "applesmc\n")
+	writeFile(t, filepath.Join(deviceDir, "fan1_input"), "1202\n")
+	writeFile(t, filepath.Join(deviceDir, "fan1_label"), "Exhaust\n")
+
+	chipDir := filepath.Join(root, "hwmon1")
+	require.NoError(t, os.MkdirAll(chipDir, 0o755))
+	require.NoError(t, os.Symlink(deviceDir, filepath.Join(chipDir, "device")))
+
+	fans, err := readHwmonFans(root)
+	require.NoError(t, err)
+	assert.Equal(t, map[string]uint16{"applesmc_Exhaust": 1202}, fans)
+}
+
 // TestReadHwmonFansMissingRoot returns an error rather than panicking when the
 // hwmon root doesn't exist (e.g. running on a kernel without hwmon support).
 func TestReadHwmonFansMissingRoot(t *testing.T) {

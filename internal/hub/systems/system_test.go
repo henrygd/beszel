@@ -3,6 +3,7 @@
 package systems
 
 import (
+	"context"
 	"testing"
 
 	"github.com/henrygd/beszel/internal/entities/system"
@@ -156,4 +157,18 @@ func TestCombinedData_MigrateDeprecatedFields(t *testing.T) {
 			t.Errorf("expected Info.Hostname to be reset, got '%s'", cd.Info.Hostname)
 		}
 	})
+}
+
+func TestSetDownAfterContextCancelled(t *testing.T) {
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel()
+	// manager is nil on purpose: setDown must bail out before touching the app
+	sys := &System{Status: up, ctx: ctx}
+
+	if err := sys.setDown(nil); err != context.Canceled {
+		t.Fatalf("expected context.Canceled, got %v", err)
+	}
+	if sys.Status != up {
+		t.Fatalf("status should be untouched, got %q", sys.Status)
+	}
 }
