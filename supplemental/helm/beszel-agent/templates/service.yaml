@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "beszel-agent.fullname" . }}
+  labels:
+    {{- include "beszel-agent.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.service.type }}
+  ports:
+    - port: {{ .Values.service.port }}
+      targetPort: agent
+      protocol: TCP
+      name: agent
+  selector:
+    {{- include "beszel-agent.selectorLabels" . | nindent 4 }}
