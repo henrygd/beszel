@@ -931,7 +931,7 @@ func (sm *SmartManager) parseSmartForSata(output []byte, deviceType string) (boo
 		if parsed, ok := smart.ParseSmartRawValueString(attr.Raw.String); ok {
 			rawValue = parsed
 		}
-		if smartData.SmartStatus == "PASSED" && rawValue > 0 && (attr.ID == 5 || attr.ID == 197 || attr.ID == 198) {
+		if smartData.SmartStatus == "PASSED" && rawValue > 0 && shouldWarnForAtaAttribute(data, attr) {
 			smartData.SmartStatus = "WARNING"
 		}
 		smartAttr := &smart.SmartAttribute{
@@ -949,6 +949,42 @@ func (sm *SmartManager) parseSmartForSata(output []byte, deviceType string) (boo
 	sm.SmartDataMap[keyName] = smartData
 
 	return true, data.Smartctl.ExitStatus
+}
+
+// shouldWarnForAtaAttribute determines whether a non-zero ATA attribute warrants a warning based on its ID, name, and drive-database metadata.
+func shouldWarnForAtaAttribute(data smart.SmartInfoForSata, attr smart.AtaSmartAttribute) bool {
+	if attr.ID == 5 {
+		return true
+	}
+
+	name := strings.ToLower(attr.Name)
+	if name == "" {
+		return false
+	}
+
+	switch attr.ID {
+	case 197:
+		return strings.Contains(name, "pending") && strings.Contains(name, "sector")
+	case 198:
+		return data.InSmartctlDatabase && isOfflineUncorrectableAttribute(name)
+	default:
+		return false
+	}
+}
+
+func isOfflineUncorrectableAttribute(name string) bool {
+	name = strings.NewReplacer("_", "", "-", "", " ", "").Replace(name)
+	if strings.Contains(name, "offline") && strings.Contains(name, "uncorrect") {
+		return true
+	}
+
+	// These are smartmontools drive-database names for the same class of uncorrectable-sector counter
+	switch name {
+	case "offlinescanuncsectorct", "offlineuerrmediascan", "uncorreaderrorct":
+		return true
+	default:
+		return strings.Contains(name, "uncorrect") && strings.Contains(name, "sector")
+	}
 }
 
 func getSmartStatus(temperature uint8, passed bool) string {

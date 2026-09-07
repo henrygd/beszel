@@ -348,7 +348,7 @@ type SmartInfoForSata struct {
 	// RotationRate      int                `json:"rotation_rate"`
 	// FormFactor        FormFactorInfo     `json:"form_factor"`
 	// Trim                         TrimInfo                     `json:"trim"`
-	// InSmartctlDatabase           bool                         `json:"in_smartctl_database"`
+	InSmartctlDatabase bool `json:"in_smartctl_database"`
 	// AtaVersion                   AtaVersionInfo               `json:"ata_version"`
 	// SataVersion                  VersionStringInfo            `json:"sata_version"`
 	// InterfaceSpeed               InterfaceSpeedInfo           `json:"interface_speed"`
