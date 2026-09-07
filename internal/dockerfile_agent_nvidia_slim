@@ -1,0 +1,90 @@
+FROM --platform=$BUILDPLATFORM golang:bookworm AS builder
+
+WORKDIR /app
+
+COPY ../go.mod ../go.sum ./
+RUN go mod download
+
+# Copy source files
+COPY . ./
+
+# Build
+ARG TARGETOS=linux
+ARG TARGETARCH
+ARG TARGETVARIANT
+
+RUN set -eux; \
+  if [ "$TARGETARCH" = "arm" ] && [ -n "$TARGETVARIANT" ]; then \
+    export GOARM="${TARGETVARIANT#v}"; \
+  fi; \
+  CGO_ENABLED=0 GOGC=75 GOOS=$TARGETOS GOARCH=$TARGETARCH \
+    go build -tags glibc -ldflags "-w -s" -o /agent ./internal/cmd/agent
+
+# --------------------------
+# Smartmontools builder stage
+# --------------------------
+FROM --platform=$TARGETPLATFORM debian:bookworm-slim AS smartmontools-builder
+
+# Keep smartmontools 7.5 built from source to match the current NVIDIA agent image behavior.
+# A simpler Debian package based approach is also possible:
+#
+#   RUN apt-get update && apt-get install -y --no-install-recommends \
+#       smartmontools \
+#     && rm -rf /var/lib/apt/lists/*
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+  wget \
+  ca-certificates \
+  build-essential \
+  make \
+  g++ \
+  && wget https://downloads.sourceforge.net/project/smartmontools/smartmontools/7.5/smartmontools-7.5.tar.gz \
+  && tar zxvf smartmontools-7.5.tar.gz \
+  && cd smartmontools-7.5 \
+  && ./configure --prefix=/usr --sysconfdir=/etc \
+  && make \
+  && make install \
+  && rm -rf /smartmontools-7.5* \
+  && apt-get remove -y wget build-essential \
+  && apt-get autoremove -y \
+  && rm -rf /var/lib/apt/lists/*
+
+# Copy smartmontools binary, data files, and required runtime libraries
+RUN set -eux; \
+  mkdir -p /out/rootfs/usr/share /out/rootfs/lib /out/rootfs/lib64 /out/rootfs/usr/lib; \
+  if [ -d /usr/share/smartmontools ]; then \
+    cp -a /usr/share/smartmontools /out/rootfs/usr/share/; \
+  fi; \
+  ldd /usr/sbin/smartctl \
+    | awk '{print $3}' \
+    | grep '^/' \
+    | xargs -r -I '{}' sh -c 'mkdir -p "/out/rootfs$(dirname "{}")"; cp -v "{}" "/out/rootfs{}"'; \
+  interp="$(ldd /usr/sbin/smartctl | awk "/ld-linux/ {print \$1}")"; \
+  if [ -n "$interp" ] && [ -e "$interp" ]; then \
+    mkdir -p "/out/rootfs$(dirname "$interp")"; \
+    cp -v "$interp" "/out/rootfs$interp"; \
+  fi
+
+# --------------------------
+# Final image: lightweight multi-arch NVIDIA agent (slim)
+# --------------------------
+FROM --platform=$TARGETPLATFORM gcr.io/distroless/base-debian12
+COPY --from=builder /agent /agent
+
+# AMD GPU name lookup (used by agent on hybrid laptops when /usr/share/libdrm/amdgpu.ids is read)
+COPY --from=builder /app/agent/test-data/amdgpu.ids /usr/share/libdrm/amdgpu.ids
+
+# Copy smartmontools binaries and config files
+COPY --from=smartmontools-builder /usr/sbin/smartctl /usr/sbin/smartctl
+COPY --from=smartmontools-builder /out/rootfs/ /
+
+# nvidia-smi is intentionally not bundled.
+# Mount the host binary instead, for example:
+# - /usr/bin/nvidia-smi:/usr/bin/nvidia-smi:ro
+
+# Ensure data persistence across container recreations
+VOLUME ["/var/lib/beszel-agent"]
+
+WORKDIR /var/lib/beszel-agent
+
+ENTRYPOINT ["/agent"]

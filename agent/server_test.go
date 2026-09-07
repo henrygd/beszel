@@ -198,6 +198,28 @@ func TestStartServerDisableSSH(t *testing.T) {
 	assert.Contains(t, err.Error(), "SSH disabled")
 }
 
+func TestStopServerDoesNotBlockWhenEventQueueFull(t *testing.T) {
+	agent := createTestAgent(t)
+	agent.server = &ssh.Server{}
+	agent.connectionManager.eventChan = make(chan ConnectionEvent, 1)
+	agent.connectionManager.eventChan <- WebSocketConnect
+
+	done := make(chan error, 1)
+	go func() {
+		done <- agent.StopServer()
+	}()
+
+	select {
+	case err := <-done:
+		require.NoError(t, err)
+	case <-time.After(time.Second):
+		t.Fatal("StopServer blocked on the connection event queue")
+	}
+
+	assert.Nil(t, agent.server)
+	assert.Equal(t, WebSocketConnect, <-agent.connectionManager.eventChan)
+}
+
 /////////////////////////////////////////////////////////////////
 //////////////////// ParseKeys Tests ////////////////////////////
 /////////////////////////////////////////////////////////////////
