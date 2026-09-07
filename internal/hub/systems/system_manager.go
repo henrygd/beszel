@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"sync"
 	"time"
 
 	"github.com/henrygd/beszel/internal/hub/ws"
@@ -42,13 +43,17 @@ var errSystemExists = errors.New("system exists")
 // SystemManager manages a collection of monitored systems and their connections.
 // It handles system lifecycle, status updates, and maintains both SSH and WebSocket connections.
 type SystemManager struct {
-	hub           hubLike                               // Hub interface for database and alert operations
-	systems       *store.Store[string, *System]         // Thread-safe store of active systems
-	sshConfig     *ssh.ClientConfig                     // SSH client configuration for system connections
-	smartFetchMap *expirymap.ExpiryMap[smartFetchState] // Stores last SMART fetch time/result; TTL is only for cleanup
-	zfsFetchMap   *expirymap.ExpiryMap[zfsFetchState]   // Stores last ZFS fetch time/result; TTL is only for cleanup
-	ctx           context.Context                       // Cancelled when the app terminates
-	cancel        context.CancelFunc                    // Cancels ctx and all child system contexts
+	hub                 hubLike                               // Hub interface for database and alert operations
+	systems             *store.Store[string, *System]         // Thread-safe store of active systems
+	sshConfig           *ssh.ClientConfig                     // SSH client configuration for system connections
+	smartFetchMap       *expirymap.ExpiryMap[smartFetchState] // Stores last SMART fetch time/result; TTL is only for cleanup
+	zfsFetchMap         *expirymap.ExpiryMap[zfsFetchState]   // Stores last ZFS fetch time/result; TTL is only for cleanup
+	realtimeMutex       sync.Mutex                            // Protects all realtime worker and subscription state
+	activeSubscriptions map[string]*subscriptionInfo          // Realtime subscriptions keyed by system ID
+	realtimeWorkerStop  chan struct{}                         // Stops the current realtime worker generation
+	realtimeWorkerRun   bool                                  // Whether a realtime worker has been started
+	ctx                 context.Context                       // Cancelled when the app terminates
+	cancel              context.CancelFunc                    // Cancels ctx and all child system contexts
 }
 
 // hubLike defines the interface requirements for the hub dependency.
@@ -67,10 +72,11 @@ type hubLike interface {
 // The hub must implement the hubLike interface to provide database and alert functionality.
 func NewSystemManager(hub hubLike) *SystemManager {
 	sm := &SystemManager{
-		systems:       store.New(map[string]*System{}),
-		hub:           hub,
-		smartFetchMap: expirymap.New[smartFetchState](time.Hour),
-		zfsFetchMap:   expirymap.New[zfsFetchState](time.Hour),
+		systems:             store.New(map[string]*System{}),
+		hub:                 hub,
+		smartFetchMap:       expirymap.New[smartFetchState](time.Hour),
+		zfsFetchMap:         expirymap.New[zfsFetchState](time.Hour),
+		activeSubscriptions: make(map[string]*subscriptionInfo),
 	}
 	sm.ctx, sm.cancel = context.WithCancel(context.Background())
 	return sm
@@ -138,6 +144,7 @@ func (sm *SystemManager) bindEventHooks() {
 // onTerminate cancels SystemManager context on app shutdown
 func (sm *SystemManager) onTerminate(e *core.TerminateEvent) error {
 	sm.cancel()
+	sm.stopRealtimeWorker()
 	return e.Next()
 }
 
