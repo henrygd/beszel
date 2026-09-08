@@ -5,7 +5,9 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
+	"os"
 	"path"
+	"path/filepath"
 	"runtime"
 	"strconv"
 	"strings"
@@ -32,6 +34,8 @@ type SensorConfig struct {
 	isBlacklist    bool
 	hasWildcards   bool
 	skipCollection bool
+	skipGPU        bool
+	sensorShadow   string
 	firstRun       bool
 }
 
@@ -41,13 +45,14 @@ func (a *Agent) newSensorConfig() *SensorConfig {
 	sensorsEnvVal, sensorsSet := utils.GetEnv("SENSORS")
 	skipCollection := sensorsSet && sensorsEnvVal == ""
 	sensorsTimeout, _ := utils.GetEnv("SENSORS_TIMEOUT")
+	skipGPU, _ := utils.GetEnv("SKIP_GPU")
 
-	return a.newSensorConfigWithEnv(primarySensor, sysSensors, sensorsEnvVal, sensorsTimeout, skipCollection)
+	return a.newSensorConfigWithEnv(primarySensor, sysSensors, sensorsEnvVal, sensorsTimeout, skipCollection, skipGPU == "true")
 }
 
 // newSensorConfigWithEnv creates a SensorConfig with the provided environment variables
 // sensorsSet indicates if the SENSORS environment variable was explicitly set (even to empty string)
-func (a *Agent) newSensorConfigWithEnv(primarySensor, sysSensors, sensorsEnvVal, sensorsTimeout string, skipCollection bool) *SensorConfig {
+func (a *Agent) newSensorConfigWithEnv(primarySensor, sysSensors, sensorsEnvVal, sensorsTimeout string, skipCollection, skipGPU bool) *SensorConfig {
 	timeout := 2 * time.Second
 	if sensorsTimeout != "" {
 		if d, err := time.ParseDuration(sensorsTimeout); err == nil {
@@ -62,6 +67,7 @@ func (a *Agent) newSensorConfigWithEnv(primarySensor, sysSensors, sensorsEnvVal,
 		primarySensor:  primarySensor,
 		timeout:        timeout,
 		skipCollection: skipCollection,
+		skipGPU:        skipGPU,
 		firstRun:       true,
 		sensors:        make(map[string]struct{}),
 	}
@@ -72,6 +78,19 @@ func (a *Agent) newSensorConfigWithEnv(primarySensor, sysSensors, sensorsEnvVal,
 		config.context = context.WithValue(config.context,
 			common.EnvKey, common.EnvMap{common.HostSysEnvKey: sysSensors},
 		)
+	}
+	if skipGPU && runtime.GOOS == "linux" {
+		// gopsutil reads every temp*_input before results can be filtered, so
+		// point it at a shadow tree built from the effective sysfs root instead.
+		if shadow, err := buildNonGpuSysShadow(effectiveSysRoot(config.context)); err == nil {
+			slog.Info("SKIP_GPU enabled, using non-GPU sensor sysfs shadow", "path", shadow)
+			config.sensorShadow = shadow
+			config.context = context.WithValue(config.context,
+				common.EnvKey, common.EnvMap{common.HostSysEnvKey: shadow},
+			)
+		} else {
+			slog.Warn("SKIP_GPU sensor shadow unavailable, falling back to post-read filtering", "err", err)
+		}
 	}
 
 	// handle blacklist
@@ -147,6 +166,9 @@ func (a *Agent) updateTemperatures(systemStats *system.Stats) {
 		}
 		// skip if not in whitelist or blacklist
 		if !isValidSensor(sensorName, a.sensorConfig) {
+			continue
+		}
+		if a.sensorConfig.skipGPU && isGpuSensorKey(sensorName) {
 			continue
 		}
 		// set dashboard temperature
@@ -244,4 +266,98 @@ func scaleTemperature(temp float64) float64 {
 		return scaled1000
 	}
 	return scaled100
+}
+
+// effectiveSysRoot mirrors gopsutil's HostSys lookup, which lives in its
+// internal package: context override, then HOST_SYS env, then /sys.
+func effectiveSysRoot(ctx context.Context) string {
+	if envMap, ok := ctx.Value(common.EnvKey).(common.EnvMap); ok {
+		if v := envMap[common.HostSysEnvKey]; v != "" {
+			return v
+		}
+	}
+	if v := os.Getenv("HOST_SYS"); v != "" {
+		return v
+	}
+	return "/sys"
+}
+
+func (config *SensorConfig) cleanupSensorShadow() {
+	if config.sensorShadow == "" {
+		return
+	}
+	if err := os.RemoveAll(config.sensorShadow); err != nil {
+		slog.Warn("Error removing sensor sysfs shadow", "path", config.sensorShadow, "err", err)
+		return
+	}
+	config.sensorShadow = ""
+}
+
+func (a *Agent) cleanupSensorShadow() {
+	if a.sensorConfig != nil {
+		a.sensorConfig.cleanupSensorShadow()
+	}
+}
+
+func isGpuThermalZone(zoneType string) bool {
+	zoneType = strings.ToLower(strings.TrimSpace(zoneType))
+	return isGpuChipName(zoneType) || strings.Contains(zoneType, "gpu")
+}
+
+// buildNonGpuSysShadow links non-GPU sensor directories into a temp dir. Only
+// static chip names and thermal-zone types are read; no sensor values are touched.
+func buildNonGpuSysShadow(sysRoot string) (string, error) {
+	shadow, err := os.MkdirTemp("", "beszel-sensors-*")
+	if err != nil {
+		return "", err
+	}
+	shadowHwmon := filepath.Join(shadow, "class", "hwmon")
+	if err := os.MkdirAll(shadowHwmon, 0o755); err != nil {
+		os.RemoveAll(shadow)
+		return "", err
+	}
+	entries, err := os.ReadDir(filepath.Join(sysRoot, "class", "hwmon"))
+	if err != nil && !os.IsNotExist(err) {
+		os.RemoveAll(shadow)
+		return "", err
+	}
+	for _, entry := range entries {
+		chipDir := filepath.Join(sysRoot, "class", "hwmon", entry.Name())
+		if name, ok := utils.ReadStringFileOK(filepath.Join(chipDir, "name")); !ok || isGpuChipName(name) {
+			continue
+		}
+		if err := os.Symlink(chipDir, filepath.Join(shadowHwmon, entry.Name())); err != nil {
+			os.RemoveAll(shadow)
+			return "", err
+		}
+	}
+
+	thermalEntries, err := os.ReadDir(filepath.Join(sysRoot, "class", "thermal"))
+	if err != nil {
+		if os.IsNotExist(err) {
+			return shadow, nil
+		}
+		os.RemoveAll(shadow)
+		return "", err
+	}
+	shadowThermal := filepath.Join(shadow, "class", "thermal")
+	if err := os.MkdirAll(shadowThermal, 0o755); err != nil {
+		os.RemoveAll(shadow)
+		return "", err
+	}
+	for _, entry := range thermalEntries {
+		if !strings.HasPrefix(entry.Name(), "thermal_zone") {
+			continue
+		}
+		zoneDir := filepath.Join(sysRoot, "class", "thermal", entry.Name())
+		zoneType, ok := utils.ReadStringFileOK(filepath.Join(zoneDir, "type"))
+		if !ok || isGpuThermalZone(zoneType) {
+			continue
+		}
+		if err := os.Symlink(zoneDir, filepath.Join(shadowThermal, entry.Name())); err != nil {
+			os.RemoveAll(shadow)
+			return "", err
+		}
+	}
+	return shadow, nil
 }
