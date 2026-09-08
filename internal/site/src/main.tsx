@@ -12,9 +12,8 @@ import Settings from "@/components/routes/settings/layout.tsx"
 import { ThemeProvider } from "@/components/theme-provider.tsx"
 import { Toaster } from "@/components/ui/toaster.tsx"
 import { alertManager } from "@/lib/alerts"
-import { isAdmin, pb, updateUserSettings, verifyAuth } from "@/lib/api.ts"
+import { isAdmin, pb, updateUserSettings } from "@/lib/api.ts"
 import { dynamicActivate, getLocale } from "@/lib/i18n"
-import { debounce } from "@/lib/utils"
 import {
 	$authenticated,
 	$copyContent,
@@ -27,18 +26,6 @@ import {
 import * as systemsManager from "@/lib/systemsManager.ts"
 import type { BeszelInfo, UpdateInfo } from "./types"
 
-// verify the session whenever any API request returns a 4xx response (e.g. an
-// expired JWT). The auth-refresh endpoint is excluded to avoid a loop, since
-// it returns 401 itself when the token is no longer valid.
-const verifyAuthDebounced = debounce(verifyAuth, 100)
-
-pb.afterSend = (response, data) => {
-	if (response.status >= 400 && pb.authStore.token && !response.url.includes("auth-refresh")) {
-		verifyAuthDebounced()
-	}
-	return data
-}
-
 const LoginPage = lazy(() => import("@/components/login/login.tsx"))
 const Home = lazy(() => import("@/components/routes/home.tsx"))
 const Containers = lazy(() => import("@/components/routes/containers.tsx"))
@@ -50,12 +37,10 @@ const App = memo(() => {
 	const page = useStore($router)
 
 	useEffect(() => {
-		const onAuthChange = () => {
+		// change auth store on auth change
+		const unsubscribeAuth = pb.authStore.onChange(() => {
 			$authenticated.set(pb.authStore.isValid)
-		}
-
-		const unsubscribeAuth = pb.authStore.onChange(onAuthChange)
-
+		})
 		// get general info for authenticated users, such as public key and version
 		pb.send<BeszelInfo>("/api/beszel/info", {}).then((data) => {
 			$publicKey.set(data.key)
