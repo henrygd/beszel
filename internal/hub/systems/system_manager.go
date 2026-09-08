@@ -7,6 +7,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/henrygd/beszel/internal/hub/utils"
 	"github.com/henrygd/beszel/internal/hub/ws"
 
 	"github.com/henrygd/beszel/internal/entities/system"
@@ -111,7 +112,7 @@ func (sm *SystemManager) Initialize() error {
 	}
 
 	// Start systems in background with staggered timing
-	go func() {
+	utils.SafeGo("system manager startup", func() {
 		// Calculate staggered delay between system starts (max 2 seconds per system)
 		delta := interval / max(1, len(systems))
 		delta = min(delta, 2_000)
@@ -123,7 +124,7 @@ func (sm *SystemManager) Initialize() error {
 			}
 			_ = sm.AddSystem(system)
 		}
-	}()
+	})
 	return nil
 }
 
@@ -221,7 +222,7 @@ func (sm *SystemManager) onRecordAfterUpdateSuccess(e *core.RecordEvent) error {
 	case pending:
 		// Resume monitoring, preferring existing WebSocket connection
 		if ok && system.WsConn != nil {
-			go system.update()
+			utils.SafeGo("system update", func() { _ = system.update() })
 			return e.Next()
 		}
 		// Start new monitoring session
@@ -285,7 +286,7 @@ func (sm *SystemManager) AddSystem(sys *System) error {
 	sm.systems.Set(sys.Id, sys)
 
 	// Start monitoring in background
-	go sys.StartUpdater()
+	utils.SafeGo("system updater", sys.StartUpdater)
 	return nil
 }
 

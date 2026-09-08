@@ -172,10 +172,7 @@ func (sys *System) update() error {
 		}
 		if sys.shouldFetchSmart() && sys.smartFetching.CompareAndSwap(false, true) {
 			sys.manager.hub.Logger().Info("SMART fetch", "system", sys.Id, "interval", sys.smartInterval.String())
-			go func() {
-				defer sys.smartFetching.Store(false)
-				_ = sys.FetchAndSaveSmartDevices()
-			}()
+			sys.startBackgroundSmartFetch()
 		}
 	}
 
@@ -186,10 +183,7 @@ func (sys *System) update() error {
 		}
 		if sys.shouldFetchZfs() && sys.zfsFetching.CompareAndSwap(false, true) {
 			sys.manager.hub.Logger().Info("ZFS fetch", "system", sys.Id, "interval", sys.zfsInterval.String())
-			go func() {
-				defer sys.zfsFetching.Store(false)
-				_ = sys.FetchAndSaveZfsPools(false)
-			}()
+			sys.startBackgroundZfsFetch()
 		}
 	}
 

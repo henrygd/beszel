@@ -3,6 +3,7 @@
 package systems
 
 import (
+	"context"
 	"errors"
 	"testing"
 	"time"
@@ -150,4 +151,38 @@ func TestSyncZfsPoolHealthWritesOnlyTransitions(t *testing.T) {
 	record, err = app.FindRecordById(collection, record.Id)
 	require.NoError(t, err)
 	assert.Equal(t, "DEGRADED", record.GetString("health"))
+}
+
+// Same contract as the SMART fetch: no hub means an error, not a nil pointer
+// dereference in a detached goroutine (issue #2154).
+func TestSaveZfsPoolsWithoutHub(t *testing.T) {
+	sm := &SystemManager{zfsFetchMap: expirymap.New[zfsFetchState](time.Hour)}
+	t.Cleanup(sm.zfsFetchMap.StopCleaner)
+
+	sys := &System{Id: "system-1", manager: sm, zfsInterval: time.Hour}
+
+	require.NotPanics(t, func() {
+		err := sys.saveZfsPools(&zfs.ZfsData{Complete: true, Pools: []*zfs.PoolDetail{{Name: "tank"}}})
+		assert.ErrorIs(t, err, errNoHub, "expected a missing hub to be reported as an error")
+	})
+}
+
+func TestStartBackgroundZfsFetchSkipsCancelledSystem(t *testing.T) {
+	sm := &SystemManager{zfsFetchMap: expirymap.New[zfsFetchState](time.Hour)}
+	t.Cleanup(sm.zfsFetchMap.StopCleaner)
+
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel()
+
+	sys := &System{Id: "system-1", manager: sm, zfsInterval: time.Hour, ctx: ctx}
+	sys.zfsFetching.Store(true)
+
+	require.NotPanics(t, sys.startBackgroundZfsFetch)
+
+	require.Eventually(t, func() bool {
+		return !sys.zfsFetching.Load()
+	}, time.Second, 5*time.Millisecond, "expected the fetch flag to be released")
+
+	_, ok := sm.zfsFetchMap.GetOk(sys.Id)
+	assert.False(t, ok, "expected no fetch to be attempted for a cancelled system")
 }
