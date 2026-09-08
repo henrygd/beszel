@@ -3,12 +3,11 @@ package alerts
 import (
 	"database/sql"
 	"errors"
-	"net"
 	"net/http"
-	"net/url"
 	"slices"
-	"strings"
 
+	"github.com/henrygd/beszel/internal/hub/utils"
+	"github.com/nicholas-fedor/shoutrrr"
 	"github.com/pocketbase/dbx"
 	"github.com/pocketbase/pocketbase/core"
 )
@@ -37,6 +36,9 @@ func UpsertUserAlerts(e *core.RequestEvent) error {
 
 	err = e.App.RunInTransaction(func(txApp core.App) error {
 		for _, systemId := range reqData.Systems {
+			if !userHasSystem(txApp, userID, systemId) {
+				continue
+			}
 			// find existing matching alert
 			alertRecord, err := txApp.FindFirstRecordByFilter(alertsCollection,
 				"system={:system} && name={:name} && user={:user}",
@@ -94,6 +96,9 @@ func DeleteUserAlerts(e *core.RequestEvent) error {
 
 	err = e.App.RunInTransaction(func(txApp core.App) error {
 		for _, systemId := range reqData.Systems {
+			if !userHasSystem(txApp, userID, systemId) {
+				continue
+			}
 			// Find existing alert to delete
 			alertRecord, err := txApp.FindFirstRecordByFilter("alerts",
 				"system={:system} && name={:name} && user={:user}",
@@ -122,6 +127,15 @@ func DeleteUserAlerts(e *core.RequestEvent) error {
 	return e.JSON(http.StatusOK, map[string]any{"success": true, "count": numDeleted})
 }
 
+func userHasSystem(app core.App, userID, systemID string) bool {
+	system, err := app.FindRecordById("systems", systemID)
+	if err != nil {
+		return false
+	}
+	shareAll, _ := utils.GetEnv("SHARE_ALL_SYSTEMS")
+	return shareAll == "true" || slices.Contains(system.GetStringSlice("users"), userID)
+}
+
 // SendTestNotification handles API request to send a test notification to a specified Shoutrrr URL
 func (am *AlertManager) SendTestNotification(e *core.RequestEvent) error {
 	var data struct {
@@ -131,62 +145,16 @@ func (am *AlertManager) SendTestNotification(e *core.RequestEvent) error {
 	if err != nil || data.URL == "" {
 		return e.BadRequestError("URL is required", err)
 	}
-	// Only allow admins to send test notifications to internal URLs
+	send := shoutrrr.Send
 	if !e.Auth.IsSuperuser() && e.Auth.GetString("role") != "admin" {
-		internalURL, err := isInternalURL(data.URL)
-		if err != nil {
-			return e.BadRequestError(err.Error(), nil)
-		}
-		if internalURL {
-			return e.ForbiddenError("Only admins can send to internal destinations", nil)
-		}
+		send = sendPublicNotification
 	}
-	err = am.SendShoutrrrAlert(data.URL, "Test Alert", "This is a notification from Beszel.", am.hub.Settings().Meta.AppURL, "View Beszel")
+	err = am.sendShoutrrrAlert(data.URL, "Test Alert", "This is a notification from Beszel.", am.hub.Settings().Meta.AppURL, "View Beszel", send)
+	if errors.Is(err, errInternalDestination) || errors.Is(err, errUnrestrictedService) {
+		return e.ForbiddenError(err.Error(), nil)
+	}
 	if err != nil {
 		return e.JSON(200, map[string]string{"err": err.Error()})
 	}
 	return e.JSON(200, map[string]bool{"err": false})
-}
-
-// isInternalURL checks if the given shoutrrr URL points to an internal destination (localhost or private IP)
-func isInternalURL(rawURL string) (bool, error) {
-	parsedURL, err := url.Parse(rawURL)
-	if err != nil {
-		return false, err
-	}
-
-	host := parsedURL.Hostname()
-	if host == "" {
-		return false, nil
-	}
-
-	if strings.EqualFold(host, "localhost") {
-		return true, nil
-	}
-
-	if ip := net.ParseIP(host); ip != nil {
-		return isInternalIP(ip), nil
-	}
-
-	// Some Shoutrrr URLs use the host position for service identifiers rather than a
-	// network hostname (for example, discord://token@webhookid). Restrict DNS lookups
-	// to names that look like actual hostnames so valid service URLs keep working.
-	if !strings.Contains(host, ".") {
-		return false, nil
-	}
-
-	ips, err := net.LookupIP(host)
-	if err != nil {
-		return false, nil
-	}
-
-	if slices.ContainsFunc(ips, isInternalIP) {
-		return true, nil
-	}
-
-	return false, nil
-}
-
-func isInternalIP(ip net.IP) bool {
-	return ip.IsPrivate() || ip.IsLoopback() || ip.IsUnspecified()
 }

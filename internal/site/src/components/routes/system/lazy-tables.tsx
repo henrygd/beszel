@@ -24,6 +24,17 @@ export function LazySmartTable({ systemId }: { systemId: string }) {
 	)
 }
 
+const ZfsTable = lazy(() => import("./zfs-table"))
+
+export function LazyZfsTable({ systemId }: { systemId: string }) {
+	const { isIntersecting, ref } = useIntersectionObserver({ rootMargin: "90px" })
+	return (
+		<div ref={ref} className={cn(isIntersecting && "contents")}>
+			{isIntersecting && <ZfsTable systemId={systemId} />}
+		</div>
+	)
+}
+
 const SystemdTable = lazy(() => import("../../systemd-table/systemd-table"))
 
 export function LazySystemdTable({ systemId }: { systemId: string }) {

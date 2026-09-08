@@ -52,7 +52,7 @@ lint:
 	golangci-lint run
 
 test:
-	go test -tags=testing ./...
+	go test -tags='testing no_ui' ./...
 
 tidy:
 	go mod tidy

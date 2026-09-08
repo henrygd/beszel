@@ -322,8 +322,9 @@ func TestAlertSilencedMultiUser(t *testing.T) {
 }
 
 func TestAlertSilencedWithActualAlert(t *testing.T) {
+	hub, user := beszelTests.GetHubWithUser(t)
+
 	synctest.Test(t, func(t *testing.T) {
-		hub, user := beszelTests.GetHubWithUser(t)
 		defer hub.Cleanup()
 
 		// Create a system

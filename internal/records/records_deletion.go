@@ -12,6 +12,7 @@ import (
 
 // Delete old records
 func (rm *RecordManager) DeleteOldRecords() {
+	// Pocketbase cron does not handle errors, log them here.
 	rm.app.RunInTransaction(func(txApp core.App) error {
 		err := deleteOldSystemStats(txApp)
 		if err != nil {
