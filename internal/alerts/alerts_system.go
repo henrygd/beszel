@@ -370,7 +370,7 @@ func zfsDiskAlertKey(poolName string) string {
 
 func diskAlertDescriptor(key string) string {
 	if poolName, ok := strings.CutPrefix(key, "zfs:"); ok {
-		return fmt.Sprintf("Usage of ZFS pool %s", poolName)
+		return fmt.Sprintf("Usage of storage pool %s", poolName)
 	}
 	return fmt.Sprintf("Usage of %s", key)
 }

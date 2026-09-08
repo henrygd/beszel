@@ -345,7 +345,7 @@ function PoolSheet({
 			<SheetContent className="w-full sm:max-w-220 gap-0 overflow-y-auto">
 				<SheetHeader className="mb-0 border-b">
 					<SheetTitle className="flex items-center gap-2">
-						{pool ? pool.name : `ZFS Pool`}
+						{pool ? pool.name : `Storage Pool`}
 						{pool && <Badge variant={healthVariantValue}>{health}</Badge>}
 					</SheetTitle>
 					<SheetDescription className="flex flex-wrap items-center gap-x-2 gap-y-1">
@@ -587,7 +587,7 @@ export default function ZfsTable({ systemId }: { systemId?: string }) {
 				<CardHeader className="p-0 mb-3 sm:mb-4">
 					<div className="grid md:flex gap-x-5 gap-y-3 w-full items-end">
 						<div className="px-2 sm:px-1">
-							<CardTitle className="mb-2">ZFS / Btrfs</CardTitle>
+							<CardTitle className="mb-2">Storage Pools</CardTitle>
 							<CardDescription className="flex">
 								<Trans>Click on a pool to view vdev and dataset details.</Trans>
 							</CardDescription>

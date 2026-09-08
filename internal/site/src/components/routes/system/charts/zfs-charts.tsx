@@ -40,7 +40,7 @@ export function ZfsPoolUsageChart({ systemData, poolName }: { systemData: System
 			empty={dataEmpty}
 			grid={grid}
 			title={`${poolName} ${t`Usage`}`}
-			description={t`Usage of ZFS pool ${poolName}`}
+			description={t`Usage of storage pool ${poolName}`}
 		>
 			<AreaChartDefault
 				chartData={chartData}
@@ -78,7 +78,7 @@ export function ZfsPoolIOChart({ systemData, poolName }: { systemData: SystemDat
 			empty={dataEmpty}
 			grid={grid}
 			title={`${poolName} I/O`}
-			description={t`Throughput of ZFS pool ${poolName}`}
+			description={t`Throughput of storage pool ${poolName}`}
 		>
 			<AreaChartDefault
 				chartData={chartData}
