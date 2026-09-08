@@ -54,11 +54,7 @@ func TestPublicNotificationBlocksInternalRequests(t *testing.T) {
 	if hits.Load() != 0 {
 		t.Fatal("internal server received a request")
 	}
-	for _, rawURL := range []string{"smtp://user:pass@consul", "mqtt://consul/topic", "mqtts://consul/topic"} {
-		if err := sendPublicNotification(rawURL, "test"); !errors.Is(err, errUnrestrictedService) {
-			t.Errorf("expected unsupported transport rejection for %s, got %v", rawURL, err)
-		}
-	}
+
 }
 
 type notificationRoundTripper func(*http.Request) (*http.Response, error)
@@ -93,7 +89,7 @@ func TestPublicNotificationServiceClient(t *testing.T) {
 				}
 				return &http.Response{StatusCode: 200, Header: make(http.Header), Body: io.NopCloser(strings.NewReader(body)), Request: r}, nil
 			})}
-			service, err := newPublicNotificationService(rawURL, client)
+			service, err := newPublicNotificationService(rawURL, types.SenderOptions{HTTPClient: client})
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -158,9 +154,64 @@ func TestPublicNotificationDNS(t *testing.T) {
 	client := newPublicNotificationClient()
 	defer client.CloseIdleConnections()
 	for _, host := range []string{"rebind.example", "consul"} {
+		guarded := &notificationClient{Client: client}
+		conn, dialErr := guarded.dialContext(context.Background(), "tcp", net.JoinHostPort(host, "25"))
+		if conn != nil {
+			conn.Close()
+		}
+		if !errors.Is(dialErr, errInternalDestination) || !guarded.blocked.Load() {
+			t.Errorf("expected TCP dial-time rejection for %s, got %v", host, dialErr)
+		}
 		_, err := client.Get("http://" + host + "/")
 		if !errors.Is(err, errInternalDestination) {
 			t.Errorf("expected dial-time rejection for %s, got %v", host, err)
 		}
+	}
+}
+
+func TestPublicNotificationTCP(t *testing.T) {
+	for _, rawURL := range []string{
+		"smtp://user:pass@HOST:25/?fromAddress=sender@example.com&toAddresses=recipient@example.com",
+		"smtp://user:pass@HOST:465/?fromAddress=sender@example.com&toAddresses=recipient@example.com",
+		"mqtt://HOST:1883/topic",
+		"mqtts://HOST:8883/topic",
+	} {
+		t.Run(rawURL, func(t *testing.T) {
+			t.Parallel()
+			t.Run("internal destination", func(t *testing.T) {
+				err := sendPublicNotification(strings.ReplaceAll(rawURL, "HOST", "127.0.0.1"), "test")
+				if !errors.Is(err, errInternalDestination) {
+					t.Fatalf("expected blocked destination, got %v", err)
+				}
+			})
+			t.Run("public destination uses injected dialer", func(t *testing.T) {
+				var calls atomic.Int32
+				stopped := errors.New("test dial stopped")
+				service, err := newPublicNotificationService(strings.ReplaceAll(rawURL, "HOST", "8.8.8.8"), types.SenderOptions{
+					DialContext: func(ctx context.Context, network, address string) (net.Conn, error) {
+						calls.Add(1)
+						if network != "tcp" || !strings.HasPrefix(address, "8.8.8.8:") {
+							t.Errorf("unexpected dial: %s %s", network, address)
+						}
+						if err := checkNotificationAddress(address); err != nil {
+							t.Error(err)
+						}
+						return nil, stopped
+					},
+				})
+				if err != nil {
+					t.Fatal(err)
+				}
+				if closer, ok := service.(io.Closer); ok {
+					defer closer.Close()
+				}
+				if err := service.Send("test", &types.Params{}); err == nil {
+					t.Fatal("expected dial failure")
+				}
+				if calls.Load() == 0 {
+					t.Fatal("custom dialer was not used")
+				}
+			})
+		})
 	}
 }

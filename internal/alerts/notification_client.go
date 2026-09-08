@@ -1,8 +1,10 @@
 package alerts
 
 import (
+	"context"
 	"errors"
 	"fmt"
+	"io"
 	"net"
 	"net/http"
 	"net/netip"
@@ -16,25 +18,22 @@ import (
 
 var (
 	errInternalDestination   = errors.New("Only admins can send to internal destinations")
-	errUnrestrictedService   = errors.New("Only admins can use notification services without HTTP client support")
+	errUnrestrictedService   = errors.New("Only admins can use this notification service") // Restrict services w/o custom connection support
+	publicNotificationDialer = &net.Dialer{
+		Timeout: 10 * time.Second,
+		// Control checks each resolved address immediately before connecting.
+		Control: func(_, address string, _ syscall.RawConn) error { return checkNotificationAddress(address) },
+	}
 	publicNotificationClient = newPublicNotificationClient()
 )
 
 func newPublicNotificationClient() *http.Client {
-	dialer := &net.Dialer{
-		Timeout: 10 * time.Second,
-		// Control receives the resolved IP, immediately before connect. Every
-		// address attempted (including DNS retries and redirects) is checked.
-		Control: func(_, address string, _ syscall.RawConn) error {
-			return checkNotificationAddress(address)
-		},
-	}
 	return &http.Client{
 		Timeout: 15 * time.Second,
 		Transport: &http.Transport{
 			// Do not use proxies: they can resolve the target themselves and
 			// bypass the destination check on our socket.
-			DialContext:         dialer.DialContext,
+			DialContext:         publicNotificationDialer.DialContext,
 			TLSHandshakeTimeout: 10 * time.Second,
 			IdleConnTimeout:     90 * time.Second,
 		},
@@ -55,8 +54,11 @@ func checkNotificationAddress(address string) error {
 
 func sendPublicNotification(rawURL, message string) error {
 	client := &notificationClient{Client: publicNotificationClient}
-	service, err := newPublicNotificationService(rawURL, client)
+	service, err := newPublicNotificationService(rawURL, types.SenderOptions{HTTPClient: client, DialContext: client.dialContext})
 	if err == nil {
+		if closer, ok := service.(io.Closer); ok {
+			defer closer.Close()
+		}
 		err = service.Send(message, &types.Params{})
 	}
 	// Some services format errors without preserving their error chain.
@@ -79,7 +81,15 @@ func (c *notificationClient) Do(req *http.Request) (*http.Response, error) {
 	return response, err
 }
 
-func newPublicNotificationService(rawURL string, client types.HTTPClient) (types.Service, error) {
+func (c *notificationClient) dialContext(ctx context.Context, network, address string) (net.Conn, error) {
+	conn, err := publicNotificationDialer.DialContext(ctx, network, address)
+	if errors.Is(err, errInternalDestination) {
+		c.blocked.Store(true)
+	}
+	return conn, err
+}
+
+func newPublicNotificationService(rawURL string, opts types.SenderOptions) (types.Service, error) {
 	r := &router.ServiceRouter{}
 	scheme, serviceURL, err := r.ExtractServiceName(rawURL)
 	if err != nil {
@@ -89,8 +99,9 @@ func newPublicNotificationService(rawURL string, client types.HTTPClient) (types
 	if err != nil {
 		return nil, err
 	}
-	setter, ok := service.(types.HTTPClientSetter)
-	if !ok {
+	httpSetter, httpOK := service.(types.HTTPClientSetter)
+	dialSetter, dialOK := service.(types.DialContextSetter)
+	if (!httpOK || opts.HTTPClient == nil) && (!dialOK || opts.DialContext == nil) {
 		return nil, errUnrestrictedService
 	}
 	if serviceURL.Scheme != scheme {
@@ -103,14 +114,24 @@ func newPublicNotificationService(rawURL string, client types.HTTPClient) (types
 			return nil, err
 		}
 	}
-	// Shoutrrr v0.19.0 CreateSenderWithOptions injects only AFTER Initialize.
+	// Shoutrrr v0.20.0 CreateSenderWithOptions injects only AFTER Initialize.
 	// Matrix can log in during Initialize, so inject before it as well.
-	setter.SetHTTPClient(client)
+	if httpOK {
+		httpSetter.SetHTTPClient(opts.HTTPClient)
+	}
+	if dialOK {
+		dialSetter.SetDialContext(opts.DialContext)
+	}
 	if err := service.Initialize(serviceURL, nil); err != nil {
 		return nil, err
 	}
 	// Some initializers replace their HTTP client with a default client.
-	setter.SetHTTPClient(client)
+	if httpOK {
+		httpSetter.SetHTTPClient(opts.HTTPClient)
+	}
+	if dialOK {
+		dialSetter.SetDialContext(opts.DialContext)
+	}
 	return service, nil
 }
 

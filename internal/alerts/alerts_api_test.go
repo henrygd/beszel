@@ -531,7 +531,7 @@ func TestSendTestNotification(t *testing.T) {
 		},
 	}
 
-	for _, url := range []string{localURL, "smtp://user:pass@consul", "mqtt://consul/topic"} {
+	for _, url := range []string{localURL, "smtp://user:pass@127.0.0.1/?fromAddress=sender@example.com&toAddresses=recipient@example.com", "mqtt://127.0.0.1/topic"} {
 		scenarios = append(scenarios, beszelTests.ApiScenario{
 			Name:            "readonly cannot send to " + url,
 			Method:          http.MethodPost,
