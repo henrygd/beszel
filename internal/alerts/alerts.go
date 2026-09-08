@@ -20,10 +20,10 @@ type hubLike interface {
 }
 
 type AlertManager struct {
-	hub                    hubLike
-	stopOnce               sync.Once
-	pendingAlerts          sync.Map
-	alertsCache            *AlertsCache
+	hub           hubLike
+	stopOnce      sync.Once
+	pendingAlerts sync.Map
+	alertsCache   *AlertsCache
 }
 
 type AlertMessageData struct {
@@ -231,8 +231,20 @@ func (am *AlertManager) SendAlert(data AlertMessageData) error {
 		am.hub.Logger().Error("Failed to unmarshal user settings", "err", err)
 	}
 	// send alerts via webhooks
+	send := sendPublicNotification
+	if len(userAlertSettings.Webhooks) > 0 {
+		// Read the owner's current role at delivery time, including for URLs
+		// saved before an admin was demoted. Never fall back on lookup failure.
+		owner, err := am.hub.FindRecordById("users", data.UserID)
+		if err != nil {
+			return fmt.Errorf("load notification owner: %w", err)
+		}
+		if owner.GetString("role") == "admin" {
+			send = shoutrrr.Send
+		}
+	}
 	for _, webhook := range userAlertSettings.Webhooks {
-		if err := am.SendShoutrrrAlert(webhook, data.Title, data.Message, data.Link, data.LinkText); err != nil {
+		if err := am.sendShoutrrrAlert(webhook, data.Title, data.Message, data.Link, data.LinkText, send); err != nil {
 			am.hub.Logger().Error("Failed to send shoutrrr alert", "err", err)
 		}
 	}
@@ -263,6 +275,10 @@ func (am *AlertManager) SendAlert(data AlertMessageData) error {
 
 // SendShoutrrrAlert sends an alert via a Shoutrrr URL
 func (am *AlertManager) SendShoutrrrAlert(notificationUrl, title, message, link, linkText string) error {
+	return am.sendShoutrrrAlert(notificationUrl, title, message, link, linkText, shoutrrr.Send)
+}
+
+func (am *AlertManager) sendShoutrrrAlert(notificationUrl, title, message, link, linkText string, send func(string, string) error) error {
 	// Parse the URL
 	parsedURL, err := url.Parse(notificationUrl)
 	if err != nil {
@@ -305,7 +321,7 @@ func (am *AlertManager) SendShoutrrrAlert(notificationUrl, title, message, link,
 	parsedURL.RawQuery = queryParams.Encode()
 	// log.Println("URL after modification:", parsedURL.String())
 
-	err = shoutrrr.Send(parsedURL.String(), message)
+	err = send(parsedURL.String(), message)
 
 	if err == nil {
 		am.hub.Logger().Info("Sent shoutrrr alert", "title", title)
