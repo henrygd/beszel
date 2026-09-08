@@ -91,7 +91,12 @@ func (c *ConnectionManager) Start(serverOptions ServerOptions) error {
 		if errors.As(err, &caCertErr) {
 			return err
 		}
-		slog.Warn("Error creating WebSocket client", "err", err)
+		if errors.Is(err, errNoHubURL) {
+			// SSH-only mode: the hub dials the agent, so there is nothing to warn about.
+			slog.Debug("WebSocket client not configured", "err", err)
+		} else {
+			slog.Warn("Error creating WebSocket client", "err", err)
+		}
 	}
 	c.wsClient = wsClient
 
