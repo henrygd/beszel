@@ -4,7 +4,7 @@ import { cn } from "@/lib/utils"
 import { Button } from "./button"
 
 interface CollapsibleProps {
-	title: string
+	title: React.ReactNode
 	children: React.ReactNode
 	description?: React.ReactNode
 	defaultOpen?: boolean

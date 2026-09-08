@@ -389,6 +389,12 @@ export interface ChartTimeData {
 	}
 }
 
+/** Custom notification template for one alert kind (empty field = fall through) */
+export interface NotificationTemplate {
+	title?: string
+	body?: string
+}
+
 export interface UserSettings {
 	/** may be missing in settings stored by older versions -- use getUserChartTime() */
 	chartTime?: ChartTimes
@@ -411,6 +417,10 @@ export interface UserSettings {
 	monitorSortModeSystem?: Array<{ id: string; desc: boolean }>
 	grid?: boolean
 	displayMode?: "default" | "tabs"
+	/** keys: "status" | "system" | "container" | "smart" | "systemd" | "zfs" | "monitor" */
+	notificationTemplates?: Record<string, NotificationTemplate>
+	/** IANA time zone used for {time} / {date} / {clock} in templates (empty = hub time) */
+	notificationTimezone?: string
 }
 
 type ChartDataContainer = {

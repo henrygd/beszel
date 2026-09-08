@@ -14,6 +14,7 @@ import { toast } from "@/components/ui/use-toast"
 import { isAdmin, pb } from "@/lib/api"
 import type { UserSettings } from "@/types"
 import { saveSettings } from "./layout"
+import { NotificationTemplates, templateSettingsFromUser, templateSettingsToUser } from "./notification-templates"
 import { QuietHours } from "./quiet-hours"
 import type { ClientResponseError } from "pocketbase"
 
@@ -31,12 +32,14 @@ const NotificationSchema = v.object({
 const SettingsNotificationsPage = ({ userSettings }: { userSettings: UserSettings }) => {
 	const [webhooks, setWebhooks] = useState(userSettings.webhooks ?? [])
 	const [emails, setEmails] = useState<string[]>(userSettings.emails ?? [])
+	const [templateSettings, setTemplateSettings] = useState(templateSettingsFromUser(userSettings))
 	const [isLoading, setIsLoading] = useState(false)
 
 	// update values when userSettings changes
 	useEffect(() => {
 		setWebhooks(userSettings.webhooks ?? [])
 		setEmails(userSettings.emails ?? [])
+		setTemplateSettings(templateSettingsFromUser(userSettings))
 	}, [userSettings])
 
 	function addWebhook() {
@@ -59,7 +62,7 @@ const SettingsNotificationsPage = ({ userSettings }: { userSettings: UserSetting
 		setIsLoading(true)
 		try {
 			const parsedData = v.parse(NotificationSchema, { emails, webhooks })
-			await saveSettings(parsedData)
+			await saveSettings({ ...parsedData, ...templateSettingsToUser(templateSettings) })
 		} catch (e: unknown) {
 			toast({
 				title: t`Failed to save settings`,
@@ -157,6 +160,8 @@ const SettingsNotificationsPage = ({ userSettings }: { userSettings: UserSetting
 						</div>
 					)}
 				</div>
+				<Separator />
+				<NotificationTemplates {...templateSettings} onChange={setTemplateSettings} />
 				<Separator />
 				<div className="space-y-3">
 					<QuietHours />
