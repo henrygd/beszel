@@ -41,7 +41,6 @@ pb.afterSend = (response, data) => {
 	return data
 }
 
-
 /** Logs the user out by clearing the auth store and unsubscribing from realtime updates. */
 export function logOut() {
 	$allSystemsByName.set({})
