@@ -10,7 +10,10 @@ import (
 	"strings"
 )
 
-var sysfsPath = "/sys/fs/btrfs"
+var (
+	sysfsPath  = "/sys/fs/btrfs"
+	mountsPath = "/proc/self/mounts"
+)
 
 // Filesystems returns all mounted btrfs filesystems, or nil when there are none.
 func Filesystems() ([]Filesystem, error) {
@@ -21,27 +24,28 @@ func Filesystems() ([]Filesystem, error) {
 	if err != nil {
 		return nil, err
 	}
+	mounts := mountpointsByDevice()
 	var filesystems []Filesystem
 	for _, entry := range entries {
 		if !entry.IsDir() || entry.Name() == "features" {
 			continue
 		}
-		filesystems = append(filesystems, readFilesystem(filepath.Join(sysfsPath, entry.Name())))
+		filesystems = append(filesystems, readFilesystem(filepath.Join(sysfsPath, entry.Name()), mounts))
 	}
 	return filesystems, nil
 }
 
-func readFilesystem(dir string) Filesystem {
-	fs := Filesystem{Name: filepath.Base(dir), Health: "ONLINE"}
-	if label := readString(filepath.Join(dir, "label")); label != "" {
-		fs.Name = label
-	}
+func readFilesystem(dir string, mounts map[string]string) Filesystem {
+	fs := Filesystem{Name: readString(filepath.Join(dir, "label")), Health: "ONLINE"}
 	for _, kind := range []string{"data", "metadata", "system"} {
 		fs.Alloc += readUint(filepath.Join(dir, "allocation", kind, "disk_used"))
 	}
 	// devices/<name> links to the block device's sysfs directory.
 	devices, _ := os.ReadDir(filepath.Join(dir, "devices"))
 	for _, dev := range devices {
+		if fs.Name == "" {
+			fs.Name = mounts[dev.Name()]
+		}
 		devDir := filepath.Join(dir, "devices", dev.Name())
 		fs.Size += readUint(filepath.Join(devDir, "size")) * 512
 		if stat := strings.Fields(readString(filepath.Join(devDir, "stat"))); len(stat) >= 7 {
@@ -71,7 +75,30 @@ func readFilesystem(dir string) Filesystem {
 		}
 		fs.Devices = append(fs.Devices, dev)
 	}
+	if fs.Name == "" {
+		fs.Name = filepath.Base(dir)
+	}
 	return fs
+}
+
+// mountpointsByDevice maps each btrfs mount's source device name (as it
+// appears under sysfs devices/, e.g. sda1 or dm-0) to its first mountpoint.
+func mountpointsByDevice() map[string]string {
+	mounts := make(map[string]string)
+	for line := range strings.Lines(readString(mountsPath)) {
+		fields := strings.Fields(line)
+		if len(fields) < 3 || fields[2] != "btrfs" {
+			continue
+		}
+		device := fields[0]
+		if resolved, err := filepath.EvalSymlinks(device); err == nil {
+			device = resolved
+		}
+		if _, seen := mounts[filepath.Base(device)]; !seen {
+			mounts[filepath.Base(device)] = fields[1]
+		}
+	}
+	return mounts
 }
 
 // Missing or unreadable sysfs attributes (older kernels) are treated as empty.

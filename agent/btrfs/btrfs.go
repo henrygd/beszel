@@ -3,7 +3,7 @@ package btrfs
 
 // Filesystem is a mounted btrfs filesystem read from /sys/fs/btrfs/<uuid>.
 type Filesystem struct {
-	Name    string // label, or UUID when unlabeled
+	Name    string // label, else first mountpoint, else UUID
 	Size    uint64 // total capacity of member devices in bytes
 	Alloc   uint64 // raw bytes allocated to data, metadata and system chunks
 	Health  string // ONLINE, or DEGRADED when a device is missing
