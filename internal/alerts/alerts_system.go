@@ -3,6 +3,7 @@ package alerts
 import (
 	"encoding/json"
 	"fmt"
+	"strconv"
 	"strings"
 	"time"
 
@@ -434,6 +435,10 @@ func (am *AlertManager) sendSystemAlert(alert SystemAlertData) {
 		// app.Logger().Error("failed to save alert record", "err", err)
 		return
 	}
+	state := "below"
+	if alert.triggered != lowAlert {
+		state = "above"
+	}
 	am.SendAlert(AlertMessageData{
 		UserID:   alert.alertData.UserID,
 		SystemID: alert.systemRecord.Id,
@@ -441,6 +446,16 @@ func (am *AlertManager) sendSystemAlert(alert SystemAlertData) {
 		Message:  body,
 		Link:     am.hub.MakeLink("system", alert.systemRecord.Id),
 		LinkText: "View " + systemName,
+		Kind:     NotificationKindSystem,
+		State:    state,
+		Vars: map[string]string{
+			"metric":     alert.name,
+			"descriptor": alert.descriptor,
+			"value":      fmt.Sprintf("%.2f", alert.val),
+			"unit":       alert.unit,
+			"threshold":  strconv.FormatFloat(alert.threshold, 'f', -1, 64),
+			"minutes":    strconv.Itoa(int(alert.min)),
+		},
 	})
 }
 

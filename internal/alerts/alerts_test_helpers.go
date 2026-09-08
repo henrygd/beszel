@@ -104,3 +104,18 @@ func (am *AlertManager) SetAlertTriggered(alert CachedAlertData, triggered bool)
 func BuildContainerLogExcerpt(raw string) string {
 	return buildContainerLogExcerpt(raw)
 }
+
+// RenderTemplate exposes renderTemplate for testing.
+func RenderTemplate(tpl string, vars map[string]string) string {
+	return renderTemplate(tpl, vars)
+}
+
+// FormatUptime exposes formatUptime for testing.
+func FormatUptime(seconds uint64) string {
+	return formatUptime(seconds)
+}
+
+// ValidateNotificationSettings exposes validateNotificationSettings for testing.
+func ValidateNotificationSettings(settings UserNotificationSettings) error {
+	return validateNotificationSettings(settings)
+}

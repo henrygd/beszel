@@ -111,6 +111,8 @@ func (h *Hub) registerApiRoutes(se *core.ServeEvent) error {
 	}
 	// send test notification
 	apiAuth.POST("/test-notification", h.SendTestNotification)
+	// render / email a notification template preview
+	apiAuth.POST("/notification-templates/preview", h.PreviewNotificationTemplate)
 	// heartbeat status and test
 	apiAuth.GET("/heartbeat-status", h.getHeartbeatStatus).BindFunc(requireAdminRole)
 	apiAuth.POST("/test-heartbeat", h.testHeartbeat).BindFunc(requireAdminRole)

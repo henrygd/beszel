@@ -17,7 +17,9 @@ RUN update-ca-certificates
 
 # Build
 ARG TARGETOS TARGETARCH
-RUN CGO_ENABLED=0 GOGC=75 GOOS=$TARGETOS GOARCH=$TARGETARCH go build -ldflags "-w -s" -o /beszel ./internal/cmd/hub
+# timetzdata embeds the tz database: the scratch image has no zoneinfo and user
+# notification timezones need it.
+RUN CGO_ENABLED=0 GOGC=75 GOOS=$TARGETOS GOARCH=$TARGETARCH go build -tags timetzdata -ldflags "-w -s" -o /beszel ./internal/cmd/hub
 
 # ? -------------------------
 FROM scratch
