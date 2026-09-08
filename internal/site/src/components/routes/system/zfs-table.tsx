@@ -587,7 +587,7 @@ export default function ZfsTable({ systemId }: { systemId?: string }) {
 				<CardHeader className="p-0 mb-3 sm:mb-4">
 					<div className="grid md:flex gap-x-5 gap-y-3 w-full items-end">
 						<div className="px-2 sm:px-1">
-							<CardTitle className="mb-2">ZFS</CardTitle>
+							<CardTitle className="mb-2">ZFS / Btrfs</CardTitle>
 							<CardDescription className="flex">
 								<Trans>Click on a pool to view vdev and dataset details.</Trans>
 							</CardDescription>

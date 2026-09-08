@@ -6,6 +6,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/henrygd/beszel/agent/btrfs"
 	"github.com/henrygd/beszel/agent/zfs"
 	"github.com/henrygd/beszel/internal/entities/system"
 	zfsentity "github.com/henrygd/beszel/internal/entities/zfs"
@@ -25,6 +26,9 @@ const datasetUsageRefreshInterval = 5 * time.Minute
 // capacity. Health and I/O are read from procfs on Linux, so the utility only
 // needs to refresh slow-moving space accounting.
 const poolStatsRefreshInterval = time.Minute
+
+// btrfsFilesystems is the btrfs source; overridable in tests.
+var btrfsFilesystems = btrfs.Filesystems
 
 type poolKernelSample struct {
 	nread  uint64
@@ -58,12 +62,14 @@ type ZfsManager struct {
 }
 
 // newZfsManager creates a ZfsManager wired to the system's ZFS utilities.
+// Btrfs filesystems are reported through the same pool types so the hub and
+// UI need no changes.
 func newZfsManager() *ZfsManager {
 	return &ZfsManager{
-		poolStatsFn:    zfs.PoolStats,
+		poolStatsFn:    withBtrfs(zfs.PoolStats, btrfsPoolStats),
 		datasetsFn:     zfs.Datasets,
-		kernelStatsFn:  zfs.PoolKernelStats,
-		poolStatusesFn: zfs.PoolStatuses,
+		kernelStatsFn:  withBtrfs(zfs.PoolKernelStats, btrfsKernelStats),
+		poolStatusesFn: withBtrfs(zfs.PoolStatuses, btrfsPoolStatuses),
 		detailInterval: time.Hour,
 	}
 }
@@ -317,4 +323,43 @@ func (zm *ZfsManager) ZfsMountpoints() map[string]bool {
 		mountpoints[mountpoint] = true
 	}
 	return mountpoints
+}
+
+// withBtrfs appends btrfs filesystems to a ZFS source. When btrfs data is
+// present a ZFS error is only logged, so hosts without the ZFS utilities
+// still report their btrfs filesystems.
+func withBtrfs[T any](zfsFn func() ([]T, error), convert func(btrfs.Filesystem) T) func() ([]T, error) {
+	return func() ([]T, error) {
+		items, err := zfsFn()
+		filesystems, btrfsErr := btrfsFilesystems()
+		if btrfsErr != nil || len(filesystems) == 0 {
+			return items, err
+		}
+		if err != nil {
+			slog.Debug("ZFS unavailable, reporting btrfs only", "err", err)
+		}
+		for _, fs := range filesystems {
+			items = append(items, convert(fs))
+		}
+		return items, nil
+	}
+}
+
+func btrfsPoolStats(fs btrfs.Filesystem) zfs.PoolStat {
+	return zfs.PoolStat{Name: fs.Name, Size: fs.Size, Alloc: fs.Alloc, Free: fs.Size - min(fs.Alloc, fs.Size), Health: fs.Health}
+}
+
+func btrfsKernelStats(fs btrfs.Filesystem) zfs.PoolKernelStat {
+	return zfs.PoolKernelStat{Name: fs.Name, Health: fs.Health, NRead: fs.NRead, NWrite: fs.NWrite}
+}
+
+func btrfsPoolStatuses(fs btrfs.Filesystem) zfs.PoolStatus {
+	status := zfs.PoolStatus{Name: fs.Name, State: fs.Health, Scrub: zfs.ScrubStatus{State: "NONE"}}
+	for _, dev := range fs.Devices {
+		status.Vdevs = append(status.Vdevs, zfs.VdevStatus{
+			Name: dev.Name, State: dev.State,
+			ReadErrs: dev.ReadErrs, WriteErrs: dev.WriteErrs, ChecksumErrs: dev.CorruptionErrs,
+		})
+	}
+	return status
 }

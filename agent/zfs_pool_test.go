@@ -6,6 +6,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/henrygd/beszel/agent/btrfs"
 	"github.com/henrygd/beszel/agent/zfs"
 	"github.com/henrygd/beszel/internal/entities/system"
 	"github.com/stretchr/testify/assert"
@@ -228,6 +229,28 @@ func TestGetDetailFailureReturnsIncompleteCachedInventory(t *testing.T) {
 	require.Len(t, failed.Pools, 1)
 	assert.Equal(t, "tank", failed.Pools[0].Name)
 	assert.Equal(t, lastSuccessfulRefresh, zm.lastDetailRefresh)
+}
+
+func TestWithBtrfs(t *testing.T) {
+	oldFn := btrfsFilesystems
+	btrfsFilesystems = func() ([]btrfs.Filesystem, error) {
+		return []btrfs.Filesystem{{Name: "data", Size: 2000, Alloc: 500, Health: "DEGRADED", Devices: []btrfs.Device{{Name: "devid 1", State: "MISSING"}}}}, nil
+	}
+	t.Cleanup(func() { btrfsFilesystems = oldFn })
+
+	// Btrfs-only host: the ZFS utilities are missing but btrfs is still reported.
+	pools, err := withBtrfs(func() ([]zfs.PoolStat, error) { return nil, zfs.ErrNoZfs }, btrfsPoolStats)()
+	require.NoError(t, err)
+	assert.Equal(t, []zfs.PoolStat{{Name: "data", Size: 2000, Alloc: 500, Free: 1500, Health: "DEGRADED"}}, pools)
+
+	statuses, err := withBtrfs(func() ([]zfs.PoolStatus, error) { return []zfs.PoolStatus{{Name: "tank"}}, nil }, btrfsPoolStatuses)()
+	require.NoError(t, err)
+	require.Len(t, statuses, 2)
+	assert.Equal(t, zfs.VdevStatus{Name: "devid 1", State: "MISSING"}, statuses[1].Vdevs[0])
+
+	btrfsFilesystems = func() ([]btrfs.Filesystem, error) { return nil, nil }
+	_, err = withBtrfs(func() ([]zfs.PoolStat, error) { return nil, zfs.ErrNoZfs }, btrfsPoolStats)()
+	assert.ErrorIs(t, err, zfs.ErrNoZfs)
 }
 
 func TestZfsMountpoints(t *testing.T) {
