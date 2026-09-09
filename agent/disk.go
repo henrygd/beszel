@@ -15,14 +15,22 @@ import (
 	"github.com/shirou/gopsutil/v4/disk"
 )
 
+// getDiskPartitions is a test seam for disk.PartitionsWithContext.
+var getDiskPartitions = disk.PartitionsWithContext
+
+// skipDiskPartitionsOnWindows avoids calling gopsutil's disk.PartitionsWithContext
+// on Windows, where it can hang or panic on unresponsive volumes. See
+// https://github.com/henrygd/beszel/issues/2289 and PR #2047.
+var skipDiskPartitionsOnWindows = runtime.GOOS == "windows"
+
 // fsRegistrationContext holds the shared lookup state needed to resolve a
 // filesystem into the tracked fsStats key and metadata.
 type fsRegistrationContext struct {
-	filesystem         string // device part of optional FILESYSTEM env var
-	filesystemName     string // optional custom name from FILESYSTEM=device__name
-	isWindows          bool
-	efPath             string // path to extra filesystems (default "/extra-filesystems")
-	diskIoCounters     map[string]disk.IOCountersStat
+	filesystem     string // device part of optional FILESYSTEM env var
+	filesystemName string // optional custom name from FILESYSTEM=device__name
+	isWindows      bool
+	efPath         string // path to extra filesystems (default "/extra-filesystems")
+	diskIoCounters map[string]disk.IOCountersStat
 }
 
 // diskDiscovery groups the transient state for a single initializeDiskInfo run so
@@ -306,9 +314,13 @@ func (a *Agent) initializeDiskInfo() {
 	hasRoot := false
 	isWindows := runtime.GOOS == "windows"
 
-	partitions, err := disk.PartitionsWithContext(context.Background(), true)
-	if err != nil {
-		slog.Error("Error getting disk partitions", "err", err)
+	var partitions []disk.PartitionStat
+	var err error
+	if !skipDiskPartitionsOnWindows {
+		partitions, err = getDiskPartitions(context.Background(), true)
+		if err != nil {
+			slog.Error("Error getting disk partitions", "err", err)
+		}
 	}
 	slog.Debug("Disk", "partitions", partitions)
 
@@ -325,11 +337,11 @@ func (a *Agent) initializeDiskInfo() {
 	}
 	slog.Debug("Disk I/O", "diskstats", diskIoCounters)
 	ctx := fsRegistrationContext{
-		filesystem:         filesystem,
-		filesystemName:     filesystemName,
-		isWindows:          isWindows,
-		diskIoCounters:     diskIoCounters,
-		efPath:             "/extra-filesystems",
+		filesystem:     filesystem,
+		filesystemName: filesystemName,
+		isWindows:      isWindows,
+		diskIoCounters: diskIoCounters,
+		efPath:         "/extra-filesystems",
 	}
 
 	// Get the appropriate root mount point for this system

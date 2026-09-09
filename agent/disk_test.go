@@ -3,6 +3,8 @@
 package agent
 
 import (
+	"context"
+	"errors"
 	"os"
 	"strings"
 	"testing"
@@ -1040,4 +1042,53 @@ func TestInitializeDiskIoStatsResetsTrackedDevices(t *testing.T) {
 	assert.Equal(t, []string{"sdb"}, agent.fsNames)
 	assert.Equal(t, uint64(50), agent.fsStats["sdb"].TotalRead)
 	assert.Equal(t, uint64(60), agent.fsStats["sdb"].TotalWrite)
+}
+
+func TestInitializeDiskInfoSkipsPartitionsOnWindows(t *testing.T) {
+	oldSkip := skipDiskPartitionsOnWindows
+	oldFn := getDiskPartitions
+	defer func() {
+		skipDiskPartitionsOnWindows = oldSkip
+		getDiskPartitions = oldFn
+	}()
+
+	skipDiskPartitionsOnWindows = true
+
+	called := false
+	getDiskPartitions = func(ctx context.Context, all bool) ([]disk.PartitionStat, error) {
+		called = true
+		// If the guard is accidentally removed, this function returning quickly
+		// lets the test fail on the `called` assertion instead of timing out.
+		return nil, errors.New("disk.PartitionsWithContext should not be called on Windows")
+	}
+
+	extraDir := t.TempDir()
+	t.Setenv("EXTRA_FILESYSTEMS", extraDir)
+
+	agent := &Agent{
+		fsStats: make(map[string]*system.FsStats),
+	}
+
+	done := make(chan struct{})
+	go func() {
+		agent.initializeDiskInfo()
+		close(done)
+	}()
+
+	select {
+	case <-done:
+	case <-time.After(2 * time.Second):
+		t.Fatal("initializeDiskInfo blocked when disk partition discovery should have been skipped")
+	}
+
+	assert.False(t, called, "getDiskPartitions should not be called when skipDiskPartitionsOnWindows is true")
+
+	var root *system.FsStats
+	for _, fs := range agent.fsStats {
+		if fs != nil && fs.Root {
+			root = fs
+			break
+		}
+	}
+	assert.NotNil(t, root, "root filesystem should still be registered without partition discovery")
 }
