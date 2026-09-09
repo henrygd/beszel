@@ -23,6 +23,8 @@ export const basePath = BESZEL?.BASE_PATH || ""
  */
 export const prependBasePath = (path: string) => (basePath + path).replaceAll("//", "/")
 
+export const adminPath = prependBasePath(globalThis.BESZEL?.ADMIN_PATH || "/_/")
+
 // prepend base path to routes
 for (const route in routes) {
 	// @ts-expect-error need as const above to get nanostores to parse types properly
