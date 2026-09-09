@@ -190,6 +190,7 @@ func (a *Agent) gatherStats(options common.DataRequestOptions) *system.CombinedD
 		} else {
 			slog.Debug("Containers", "err", err)
 		}
+		data.Stats.DockerVolumes = a.dockerManager.volumeSizes()
 	}
 
 	// skip updating systemd services if cache time is not the default 60sec interval

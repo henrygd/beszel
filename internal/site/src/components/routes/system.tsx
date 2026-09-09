@@ -7,7 +7,7 @@ import InfoBar from "./system/info-bar"
 import { useSystemData } from "./system/use-system-data"
 import { CpuChart, ContainerCpuChart } from "./system/charts/cpu-charts"
 import { MemoryChart, ContainerMemoryChart, SwapChart } from "./system/charts/memory-charts"
-import { RootDiskCharts, ExtraFsCharts } from "./system/charts/disk-charts"
+import { RootDiskCharts, ExtraFsCharts, DockerVolumeChart } from "./system/charts/disk-charts"
 import { ZfsCharts } from "./system/charts/zfs-charts"
 import { BandwidthChart, ContainerNetworkChart } from "./system/charts/network-charts"
 import { TemperatureChart, FanChart, BatteryChart } from "./system/charts/sensor-charts"
@@ -65,11 +65,12 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 	const hasSystemd = system.info.sv
 	const hasGpu = hasGpuData || hasGpuPowerData
 	const hasZfs = Object.keys(systemStats.at(-1)?.stats?.z ?? {}).length > 0
+	const hasDockerVolumes = Object.keys(systemStats.at(-1)?.stats?.dv ?? {}).length > 0
 
 	// keep tabsRef in sync for keyboard navigation
 	const tabs = ["core", "disk"]
 	if (hasGpu) tabs.push("gpu")
-	if (hasContainers) tabs.push("containers")
+	if (hasContainers || hasDockerVolumes) tabs.push("containers")
 	if (hasSystemd) tabs.push("services")
 	tabsRef.current = tabs
 
@@ -118,6 +119,8 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 							networkConfig={containerChartConfigs.network}
 						/>
 					)}
+
+					<DockerVolumeChart systemData={systemData} />
 
 					<SwapChart chartData={chartData} grid={grid} dataEmpty={dataEmpty} systemStats={systemStats} />
 
@@ -231,32 +234,37 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 					</TabsContent>
 				)}
 
-				{hasContainers && (
+				{(hasContainers || hasDockerVolumes) && (
 					<TabsContent value="containers" forceMount className={activeTab === "containers" ? "contents" : "hidden"}>
 						{mountedTabs.has("containers") && (
 							<>
 								<div className="grid xl:grid-cols-2 gap-4">
-									<ContainerCpuChart
-										chartData={chartData}
-										grid={grid}
-										dataEmpty={dataEmpty}
-										isPodman={isPodman}
-										cpuConfig={containerChartConfigs.cpu}
-									/>
-									<ContainerMemoryChart
-										chartData={chartData}
-										grid={grid}
-										dataEmpty={dataEmpty}
-										isPodman={isPodman}
-										memoryConfig={containerChartConfigs.memory}
-									/>
-									<ContainerNetworkChart
-										chartData={chartData}
-										grid={grid}
-										dataEmpty={dataEmpty}
-										isPodman={isPodman}
-										networkConfig={containerChartConfigs.network}
-									/>
+									{hasContainers && (
+										<>
+											<ContainerCpuChart
+												chartData={chartData}
+												grid={grid}
+												dataEmpty={dataEmpty}
+												isPodman={isPodman}
+												cpuConfig={containerChartConfigs.cpu}
+											/>
+											<ContainerMemoryChart
+												chartData={chartData}
+												grid={grid}
+												dataEmpty={dataEmpty}
+												isPodman={isPodman}
+												memoryConfig={containerChartConfigs.memory}
+											/>
+											<ContainerNetworkChart
+												chartData={chartData}
+												grid={grid}
+												dataEmpty={dataEmpty}
+												isPodman={isPodman}
+												networkConfig={containerChartConfigs.network}
+											/>
+										</>
+									)}
+									<DockerVolumeChart systemData={systemData} />
 								</div>
 								{hasContainersTable && <ContainersTable systemId={system.id} />}
 							</>

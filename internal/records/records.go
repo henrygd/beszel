@@ -197,6 +197,9 @@ func AverageSystemStatsSlice(records []system.Stats) system.Stats {
 	tempCount := float64(0)
 	var fanSums map[string]uint64
 	fanCount := uint64(0)
+	// Counted per volume rather than per record, since a volume created or
+	// removed mid-window is only present in some of the records.
+	var volumeCounts map[string]float64
 	zfsPoolCounts := make(map[string]uint64)
 
 	// Accumulate totals
@@ -295,6 +298,18 @@ func AverageSystemStatsSlice(records []system.Stats) system.Stats {
 			tempCount++
 			for key, value := range stats.Temperatures {
 				sum.Temperatures[key] += value
+			}
+		}
+
+		// Accumulate Docker volume sizes
+		if stats.DockerVolumes != nil {
+			if sum.DockerVolumes == nil {
+				sum.DockerVolumes = make(map[string]float64, len(stats.DockerVolumes))
+				volumeCounts = make(map[string]float64, len(stats.DockerVolumes))
+			}
+			for key, value := range stats.DockerVolumes {
+				sum.DockerVolumes[key] += value
+				volumeCounts[key]++
 			}
 		}
 
@@ -446,6 +461,13 @@ func AverageSystemStatsSlice(records []system.Stats) system.Stats {
 	if sum.Temperatures != nil && tempCount > 0 {
 		for key := range sum.Temperatures {
 			sum.Temperatures[key] = twoDecimals(sum.Temperatures[key] / tempCount)
+		}
+	}
+
+	// Average Docker volume sizes
+	for key, count := range volumeCounts {
+		if count > 0 {
+			sum.DockerVolumes[key] = twoDecimals(sum.DockerVolumes[key] / count)
 		}
 	}
 
