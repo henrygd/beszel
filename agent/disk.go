@@ -18,11 +18,11 @@ import (
 // fsRegistrationContext holds the shared lookup state needed to resolve a
 // filesystem into the tracked fsStats key and metadata.
 type fsRegistrationContext struct {
-	filesystem         string // device part of optional FILESYSTEM env var
-	filesystemName     string // optional custom name from FILESYSTEM=device__name
-	isWindows          bool
-	efPath             string // path to extra filesystems (default "/extra-filesystems")
-	diskIoCounters     map[string]disk.IOCountersStat
+	filesystem     string // device part of optional FILESYSTEM env var
+	filesystemName string // optional custom name from FILESYSTEM=device__name
+	isWindows      bool
+	efPath         string // path to extra filesystems (default "/extra-filesystems")
+	diskIoCounters map[string]disk.IOCountersStat
 }
 
 // diskDiscovery groups the transient state for a single initializeDiskInfo run so
@@ -325,11 +325,11 @@ func (a *Agent) initializeDiskInfo() {
 	}
 	slog.Debug("Disk I/O", "diskstats", diskIoCounters)
 	ctx := fsRegistrationContext{
-		filesystem:         filesystem,
-		filesystemName:     filesystemName,
-		isWindows:          isWindows,
-		diskIoCounters:     diskIoCounters,
-		efPath:             "/extra-filesystems",
+		filesystem:     filesystem,
+		filesystemName: filesystemName,
+		isWindows:      isWindows,
+		diskIoCounters: diskIoCounters,
+		efPath:         "/extra-filesystems",
 	}
 
 	// Get the appropriate root mount point for this system
@@ -540,8 +540,8 @@ func (a *Agent) initializeDiskIoStats(diskIoCounters map[string]disk.IOCountersS
 	// ZFS datasets have no /proc/diskstats entry, so they are excluded from
 	// I/O tracking instead of warning about a missing device (#1541).
 	var zfsMountpoints map[string]bool
-	if a.zfsManager != nil {
-		zfsMountpoints = a.zfsManager.ZfsMountpoints()
+	if a.storagePoolManager != nil {
+		zfsMountpoints = a.storagePoolManager.ZfsMountpoints()
 	}
 	for device, stats := range a.fsStats {
 		if zfsMountpoints[stats.Mountpoint] {
@@ -574,8 +574,8 @@ func (a *Agent) updateDiskUsage(systemStats *system.Stats) {
 	// ZFS dataset mountpoints use `zfs list` values because statfs(2) reports
 	// dataset-level usage that excludes child datasets (#1541).
 	var zfsUsage map[string]zfsDatasetUsage
-	if a.zfsManager != nil {
-		zfsUsage = a.zfsManager.DatasetUsage()
+	if a.storagePoolManager != nil {
+		zfsUsage = a.storagePoolManager.DatasetUsage()
 	}
 
 	// disk usage

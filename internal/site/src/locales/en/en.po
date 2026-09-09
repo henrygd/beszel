@@ -1768,8 +1768,8 @@ msgid "Throughput of {extraFsName}"
 msgstr "Throughput of {extraFsName}"
 
 #: src/components/routes/system/charts/zfs-charts.tsx
-msgid "Throughput of ZFS pool {poolName}"
-msgstr "Throughput of ZFS pool {poolName}"
+msgid "Throughput of storage pool {poolName}"
+msgstr "Throughput of storage pool {poolName}"
 
 #: src/components/routes/settings/general.tsx
 msgid "Time format"
@@ -1969,8 +1969,8 @@ msgid "Usage"
 msgstr "Usage"
 
 #: src/components/routes/system/charts/zfs-charts.tsx
-msgid "Usage of ZFS pool {poolName}"
-msgstr "Usage of ZFS pool {poolName}"
+msgid "Usage of storage pool {poolName}"
+msgstr "Usage of storage pool {poolName}"
 
 #: src/components/routes/system/charts/memory-charts.tsx
 #: src/components/routes/system/charts/memory-charts.tsx
