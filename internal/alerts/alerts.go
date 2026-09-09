@@ -20,10 +20,10 @@ type hubLike interface {
 }
 
 type AlertManager struct {
-	hub                    hubLike
-	stopOnce               sync.Once
-	pendingAlerts          sync.Map
-	alertsCache            *AlertsCache
+	hub           hubLike
+	stopOnce      sync.Once
+	pendingAlerts sync.Map
+	alertsCache   *AlertsCache
 }
 
 type AlertMessageData struct {
@@ -66,6 +66,7 @@ type SystemAlertGPUData struct {
 }
 
 type SystemAlertZfsPool struct {
+	Raw   bool    `json:"raw,omitempty"`
 	Total float64 `json:"d"`
 	Used  float64 `json:"du"`
 }

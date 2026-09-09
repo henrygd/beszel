@@ -46,7 +46,10 @@ func (am *AlertManager) handleZfsPoolHealthAlert(e *core.RecordEvent, oldHealth 
 	}
 
 	systemName := systemRecord.GetString("name")
-	poolName := e.Record.GetString("name")
+	poolName := e.Record.GetString("display_name")
+	if poolName == "" {
+		poolName = e.Record.GetString("name")
+	}
 
 	title := fmt.Sprintf("Storage pool %s on %s: %s", newHealth, systemName, poolName)
 	message := fmt.Sprintf("Storage pool %s (%s) was first observed as %s", poolName, systemName, newHealth)

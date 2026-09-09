@@ -26,6 +26,7 @@ import {
 	CheckCircleIcon,
 	CircleAlertIcon,
 	ClockIcon,
+	DatabaseIcon,
 	HardDriveDownloadIcon,
 	HardDriveIcon,
 	HardDriveUploadIcon,
@@ -35,10 +36,13 @@ import {
 	RotateCwIcon,
 	XCircleIcon,
 	XIcon,
+	FolderTreeIcon,
 } from "lucide-react"
-import { useCallback, useEffect, useMemo, useState } from "react"
+import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 
-const ZFS_POOL_FIELDS = "id,system,name,health,size,alloc,free,scrub,details_updated,updated"
+import { RawCapacityLabel } from "./raw-capacity-label"
+
+const ZFS_POOL_FIELDS = "id,system,name,display_name,health,size,alloc,free,raw,scrub,details_updated,updated"
 
 /** Maps a zpool health string to a Badge variant. */
 function healthVariant(health: string): "success" | "warning" | "danger" | "outline" {
@@ -81,12 +85,29 @@ function HeaderButton<T>({ column, name, Icon }: { column: Column<T>; name: stri
 	)
 }
 
+function poolType(pool: ZfsPoolRecord): string {
+	return pool.name.startsWith("b:") ? "Btrfs" : "ZFS"
+}
+
 const columns: ColumnDef<ZfsPoolRecord>[] = [
 	{
-		accessorKey: "name",
-		sortingFn: (a, b) => a.original.name.localeCompare(b.original.name),
-		header: ({ column }) => <HeaderButton column={column} name={`Pool`} Icon={HardDriveIcon} />,
+		id: "name",
+		accessorFn: (pool) => pool.display_name || pool.name,
+		header: ({ column }) => <HeaderButton column={column} name={`Pool`} Icon={DatabaseIcon} />,
 		cell: ({ getValue }) => <span className="font-medium ms-1.5">{getValue() as string}</span>,
+	},
+	{
+		id: "type",
+		accessorFn: poolType,
+		header: ({ column }) => <HeaderButton column={column} name={t`Type`} Icon={FolderTreeIcon} />,
+		cell: ({ getValue }) => {
+			const type = getValue() as string
+			return (
+				<Badge variant="outline" className={cn("border-transparent", type === "ZFS" ? "bg-blue-200 text-blue-800" : "bg-yellow-200 text-yellow-800")}>
+					{type}
+				</Badge>
+			)
+		},
 	},
 	{
 		accessorKey: "health",
@@ -102,21 +123,21 @@ const columns: ColumnDef<ZfsPoolRecord>[] = [
 		accessorFn: (record) => record.size,
 		invertSorting: true,
 		header: ({ column }) => <HeaderButton column={column} name={t`Capacity`} Icon={BinaryIcon} />,
-		cell: ({ getValue }) => <span className="ms-1.5 tabular-nums">{formatCapacity(getValue() as number)}</span>,
+		cell: ({ getValue, row }) => <span className="ms-1.5 tabular-nums">{formatCapacity(getValue() as number)}{row.original.raw ? ` (${t`Raw`})` : ""}</span>,
 	},
 	{
 		id: "used",
 		accessorFn: (record) => record.alloc,
 		invertSorting: true,
 		header: ({ column }) => <HeaderButton column={column} name={t`Used`} Icon={HardDriveDownloadIcon} />,
-		cell: ({ getValue }) => <span className="ms-1.5 tabular-nums">{formatCapacity(getValue() as number)}</span>,
+		cell: ({ getValue, row }) => <span className="ms-1.5 tabular-nums">{formatCapacity(getValue() as number)}{row.original.raw ? ` (${t`Raw`})` : ""}</span>,
 	},
 	{
 		id: "free",
 		accessorFn: (record) => record.free,
 		invertSorting: true,
 		header: ({ column }) => <HeaderButton column={column} name={t({ message: `Free`, context: "Free space" })} Icon={HardDriveUploadIcon} />,
-		cell: ({ getValue }) => <span className="ms-1.5 tabular-nums">{formatCapacity(getValue() as number)}</span>,
+		cell: ({ getValue, row }) => <span className="ms-1.5 tabular-nums">{row.original.raw ? "-" : formatCapacity(getValue() as number)}</span>,
 	},
 	{
 		id: "scrub",
@@ -201,7 +222,7 @@ const datasetColumns: ColumnDef<ZfsDataset>[] = [
 	{
 		accessorKey: "name",
 		sortingFn: (a, b) => a.original.name.localeCompare(b.original.name),
-		header: ({ column }) => <HeaderButton column={column} name={`Dataset`} Icon={HardDriveIcon} />,
+		header: ({ column }) => <HeaderButton column={column} name={`Dataset`} Icon={DatabaseIcon} />,
 		cell: ({ getValue }) => <span className="font-mono text-xs">{getValue() as string}</span>,
 	},
 	{
@@ -310,6 +331,7 @@ function PoolSheet({
 	onOpenChange: (open: boolean) => void
 }) {
 	const [pool, setPool] = useState<ZfsPoolRecord | null>(null)
+	const titleRef = useRef<HTMLHeadingElement>(null)
 	const [isLoading, setIsLoading] = useState(false)
 
 	useEffect(() => {
@@ -342,23 +364,30 @@ function PoolSheet({
 
 	return (
 		<Sheet open={open} onOpenChange={onOpenChange}>
-			<SheetContent className="w-full sm:max-w-220 gap-0 overflow-y-auto">
+			<SheetContent
+				className="w-full sm:max-w-220 gap-0 overflow-y-auto"
+				onOpenAutoFocus={(event) => {
+					event.preventDefault()
+					titleRef.current?.focus()
+				}}
+			>
 				<SheetHeader className="mb-0 border-b">
-					<SheetTitle className="flex items-center gap-2">
-						{pool ? pool.name : `Storage Pool`}
+					<SheetTitle ref={titleRef} tabIndex={-1} className="flex items-center gap-2 outline-none">
+						{pool ? (pool.display_name || pool.name) : `Storage Pool`}
 						{pool && <Badge variant={healthVariantValue}>{health}</Badge>}
 					</SheetTitle>
 					<SheetDescription className="flex flex-wrap items-center gap-x-2 gap-y-1">
 						{pool?.size ? formatCapacity(pool.size) : null}
+						{pool?.raw && <RawCapacityLabel />}
 						{pool?.alloc ? (
 							<>
 								<Separator orientation="vertical" className="h-2.5 bg-muted-foreground opacity-70" />
 								<span>
-									<Trans>Used</Trans>: {formatCapacity(pool.alloc)}
+									<Trans>Used</Trans>: {formatCapacity(pool.alloc)}{pool.raw ? ` (${t`Raw`})` : ""}
 								</span>
 							</>
 						) : null}
-						{pool?.free ? (
+						{pool?.free && !pool.raw ? (
 							<>
 								<Separator orientation="vertical" className="h-2.5 bg-muted-foreground opacity-70" />
 								<span>
@@ -555,6 +584,7 @@ export default function ZfsTable({ systemId }: { systemId?: string }) {
 	const table = useReactTable({
 		data: zfsPools || ([] as ZfsPoolRecord[]),
 		columns: tableColumns,
+		initialState: { sorting: [{ id: "name", desc: false }] },
 		getCoreRowModel: getCoreRowModel(),
 		getSortedRowModel: getSortedRowModel(),
 		getFilteredRowModel: getFilteredRowModel(),
@@ -562,7 +592,7 @@ export default function ZfsTable({ systemId }: { systemId?: string }) {
 		onGlobalFilterChange: setGlobalFilter,
 		globalFilterFn: (row, _columnId, filterValue) => {
 			const pool = row.original
-			const searchString = `${pool.name} ${pool.health ?? ""}`.toLowerCase()
+			const searchString = `${pool.display_name ?? ""} ${pool.name} ${poolType(pool)} ${pool.health ?? ""}`.toLowerCase()
 			return (filterValue as string)
 				.toLowerCase()
 				.split(" ")

@@ -7,3 +7,5 @@ import "errors"
 func Filesystems() ([]Filesystem, error) {
 	return nil, errors.ErrUnsupported
 }
+
+func MountID(string) string { return "" }
