@@ -3,6 +3,7 @@
 package systems
 
 import (
+	"context"
 	"errors"
 	"testing"
 	"time"
@@ -230,4 +231,44 @@ func TestSaveSmartDevices_EmptyDataIsNoop(t *testing.T) {
 
 	records := countSmartDeviceRecords(t, testApp, sys.Id)
 	assert.Len(t, records, 1, "empty fetch result should not delete existing devices")
+}
+
+// Regression test for issue #2154: the hub panicked with a nil pointer
+// dereference inside upsertSmartDeviceRecord when the background fetch was
+// still in flight while the app was being torn down. Without a hub to persist
+// through, saving must report an error rather than dereference nil.
+func TestSaveSmartDevicesWithoutHub(t *testing.T) {
+	sm := &SystemManager{smartFetchMap: expirymap.New[smartFetchState](time.Hour)}
+	t.Cleanup(sm.smartFetchMap.StopCleaner)
+
+	sys := &System{Id: "system-1", manager: sm, smartInterval: time.Hour}
+
+	require.NotPanics(t, func() {
+		err := sys.saveSmartDevices(map[string]smart.SmartData{
+			"/dev/nvme0n1": {DiskName: "nvme0n1"},
+		}, true)
+		assert.ErrorIs(t, err, errNoHub, "expected a missing hub to be reported as an error")
+	})
+}
+
+// A cancelled system must not start new database work, which is what keeps the
+// fetch from racing PocketBase's teardown in the first place.
+func TestStartBackgroundSmartFetchSkipsCancelledSystem(t *testing.T) {
+	sm := &SystemManager{smartFetchMap: expirymap.New[smartFetchState](time.Hour)}
+	t.Cleanup(sm.smartFetchMap.StopCleaner)
+
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel()
+
+	sys := &System{Id: "system-1", manager: sm, smartInterval: time.Hour, ctx: ctx}
+	sys.smartFetching.Store(true)
+
+	require.NotPanics(t, sys.startBackgroundSmartFetch)
+
+	require.Eventually(t, func() bool {
+		return !sys.smartFetching.Load()
+	}, time.Second, 5*time.Millisecond, "expected the fetch flag to be released")
+
+	_, ok := sm.smartFetchMap.GetOk(sys.Id)
+	assert.False(t, ok, "expected no fetch to be attempted for a cancelled system")
 }

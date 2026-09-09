@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/henrygd/beszel/internal/entities/system"
+	"github.com/henrygd/beszel/internal/hub/utils"
 
 	"github.com/pocketbase/dbx"
 	"github.com/pocketbase/pocketbase/core"
@@ -34,6 +35,15 @@ func cpuStateAlertValue(name string, breakdown []float64) (float64, bool) {
 		return 0, false
 	}
 	return breakdown[state.index], true
+}
+
+// sendSystemAlertAsync delivers an alert in the background without letting a
+// panic in delivery take down the hub. Taking the alert by value keeps the
+// copy-at-call-time semantics of the `go am.sendSystemAlert(alert)` it replaced.
+func (am *AlertManager) sendSystemAlertAsync(alert SystemAlertData) {
+	utils.SafeGo("system alert", func() {
+		am.sendSystemAlert(alert)
+	})
 }
 
 func (am *AlertManager) HandleSystemAlerts(systemRecord *core.Record, data *system.CombinedData) error {
@@ -154,7 +164,7 @@ func (am *AlertManager) HandleSystemAlerts(systemRecord *core.Record, data *syst
 			} else {
 				alert.triggered = val > threshold
 			}
-			go am.sendSystemAlert(alert)
+			am.sendSystemAlertAsync(alert)
 			continue
 		}
 
@@ -345,18 +355,18 @@ func (am *AlertManager) HandleSystemAlerts(systemRecord *core.Record, data *syst
 			if lowAlert {
 				if !alert.triggered && alert.val < alert.threshold {
 					alert.triggered = true
-					go am.sendSystemAlert(alert)
+					am.sendSystemAlertAsync(alert)
 				} else if alert.triggered && alert.val >= alert.threshold {
 					alert.triggered = false
-					go am.sendSystemAlert(alert)
+					am.sendSystemAlertAsync(alert)
 				}
 			} else {
 				if !alert.triggered && alert.val > alert.threshold {
 					alert.triggered = true
-					go am.sendSystemAlert(alert)
+					am.sendSystemAlertAsync(alert)
 				} else if alert.triggered && alert.val <= alert.threshold {
 					alert.triggered = false
-					go am.sendSystemAlert(alert)
+					am.sendSystemAlertAsync(alert)
 				}
 			}
 		}

@@ -95,7 +95,7 @@ func (sm *SystemManager) addRealtimeSubscription(systemID, subscription string) 
 		sm.realtimeWorkerRun = true
 		stop := make(chan struct{})
 		sm.realtimeWorkerStop = stop
-		go sm.startRealtimeWorker(stop)
+		utils.SafeGo("realtime worker", func() { sm.startRealtimeWorker(stop) })
 	}
 }
 
@@ -159,7 +159,9 @@ func (sm *SystemManager) fetchRealtimeDataAndNotify() {
 			sm.finishRealtimeFetch(fetch)
 			continue
 		}
-		go func(fetch realtimeFetch) {
+		utils.SafeGo("realtime notify", func() {
+			// Runs before SafeGo's recover, so an in-flight claim is released
+			// even when the fetch panics and the worker keeps ticking.
 			defer sm.finishRealtimeFetch(fetch)
 			data, err := system.fetchDataFromAgent(common.DataRequestOptions{CacheTimeMs: 1000})
 			if err != nil {
@@ -169,7 +171,7 @@ func (sm *SystemManager) fetchRealtimeDataAndNotify() {
 			if err == nil {
 				notify(sm.hub, system, fetch.subscription, bytes)
 			}
-		}(fetch)
+		})
 	}
 }
 

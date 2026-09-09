@@ -9,6 +9,7 @@ import (
 	"github.com/henrygd/beszel"
 	"github.com/henrygd/beszel/internal/entities/system"
 	"github.com/henrygd/beszel/internal/entities/zfs"
+	"github.com/henrygd/beszel/internal/hub/utils"
 	"github.com/pocketbase/dbx"
 	"github.com/pocketbase/pocketbase/core"
 )
@@ -76,11 +77,28 @@ func (sys *System) zfsFetchInterval() time.Duration {
 	return time.Hour
 }
 
+// startBackgroundZfsFetch fetches and stores ZFS pool data without blocking the
+// update loop. Same reasoning as startBackgroundSmartFetch: a panic in a
+// detached goroutine takes the hub with it, and a cancelled system must not
+// start new database work.
+func (sys *System) startBackgroundZfsFetch() {
+	utils.SafeGo("zfs fetch", func() {
+		defer sys.zfsFetching.Store(false)
+		if sys.ctx != nil && sys.ctx.Err() != nil {
+			return
+		}
+		_ = sys.FetchAndSaveZfsPools(false)
+	})
+}
+
 // saveZfsPools saves ZFS pool detail data to the zfs_pools collection and
 // removes records for pools no longer reported by a complete agent inventory.
 func (sys *System) saveZfsPools(zfsData *zfs.ZfsData) error {
 	if zfsData == nil || !zfsData.Complete {
 		return errIncompleteZfsData
+	}
+	if sys.manager == nil || sys.manager.hub == nil {
+		return errNoHub
 	}
 
 	hub := sys.manager.hub
