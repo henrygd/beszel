@@ -10,12 +10,20 @@ import {
 	$allSystemsByName,
 	$chartTime,
 	$containerFilter,
+	$customRange,
 	$direction,
 	$maxValues,
 	$systems,
 	$userSettings,
 } from "@/lib/stores"
-import { chartTimeData, listen, parseSemVer, useBrowserStorage } from "@/lib/utils"
+import {
+	chartTimeData,
+	getChartTypeForDuration,
+	getExpectedIntervalForType,
+	listen,
+	parseSemVer,
+	useBrowserStorage,
+} from "@/lib/utils"
 import type {
 	ChartData,
 	ContainerStatsRecord,
@@ -26,7 +34,16 @@ import type {
 	SystemStatsRecord,
 } from "@/types"
 import { $router, navigate } from "../../router"
-import { appendData, cache, getStats, getTimeData, makeContainerData, makeContainerPoint } from "./chart-data"
+import {
+	appendData,
+	cache,
+	getCustomStats,
+	getCustomTimeData,
+	getStats,
+	getTimeData,
+	makeContainerData,
+	makeContainerPoint,
+} from "./chart-data"
 
 export type SystemData = ReturnType<typeof useSystemData>
 
@@ -34,6 +51,7 @@ export function useSystemData(id: string) {
 	const direction = useStore($direction)
 	const systems = useStore($systems)
 	const chartTime = useStore($chartTime)
+	const customRange = useStore($customRange)
 	const maxValues = useStore($maxValues)
 	const [grid, setGrid] = useBrowserStorage("grid", true)
 	const [displayMode, setDisplayMode] = useBrowserStorage<"default" | "tabs">("displayMode", "default")
@@ -122,6 +140,7 @@ export function useSystemData(id: string) {
 				(data: { container: ContainerStatsRecord[]; info: SystemInfo; stats: SystemStats }) => {
 					const now = Date.now()
 					const statsPoint = { created: now, stats: data.stats } as SystemStatsRecord
+					// SAFETY: PB realtime payload container is untyped JSON array, cast to typed stats after validation via makeContainerPoint
 					const containerPoint =
 						data.container?.length > 0
 							? makeContainerPoint(now, data.container as unknown as ContainerStatsRecord["stats"])
@@ -155,6 +174,27 @@ export function useSystemData(id: string) {
 			(systemStats.at(-1)?.created as number) ?? 0,
 			(containerData.at(-1)?.created as number) ?? 0
 		)
+		if (chartTime === "custom" && customRange?.from && customRange?.to) {
+			return {
+				systemStats,
+				containerData,
+				chartTime,
+				orientation: direction === "rtl" ? "right" : "left",
+				...getCustomTimeData(customRange.from, customRange.to),
+				agentVersion,
+			}
+		}
+		// fallback for custom without range yet
+		if (chartTime === "custom") {
+			return {
+				systemStats,
+				containerData,
+				chartTime,
+				orientation: direction === "rtl" ? "right" : "left",
+				...getTimeData("1h", lastCreated),
+				agentVersion,
+			}
+		}
 		return {
 			systemStats,
 			containerData,
@@ -163,7 +203,7 @@ export function useSystemData(id: string) {
 			...getTimeData(chartTime, lastCreated),
 			agentVersion,
 		}
-	}, [systemStats, containerData, direction])
+	}, [systemStats, containerData, direction, chartTime, customRange])
 
 	// Share chart config computation for all container charts
 	const containerChartConfigs = useContainerChartConfigs(containerData)
@@ -172,6 +212,33 @@ export function useSystemData(id: string) {
 	// also when new info comes in via systemManager realtime connection, indicating an update)
 	useEffect(() => {
 		if (!system.id || !chartTime || chartTime === "1m") {
+			return
+		}
+		if (chartTime === "custom") {
+			if (!customRange?.from || !customRange?.to) return
+			const systemId = system.id
+			const duration = new Date(customRange.to).getTime() - new Date(customRange.from).getTime()
+			const customType = getChartTypeForDuration(duration)
+			const expectedInterval = getExpectedIntervalForType(customType)
+			const requestId = ++statsRequestId.current
+			setChartLoading(true)
+			Promise.allSettled([
+				getCustomStats<SystemStatsRecord>("system_stats", systemId, customRange.from, customRange.to, customType),
+				getCustomStats<ContainerStatsRecord>("container_stats", systemId, customRange.from, customRange.to, customType),
+			]).then(([systemStats, containerStats]) => {
+				if (requestId !== statsRequestId.current) return
+				setChartLoading(false)
+				let systemData: SystemStatsRecord[] = []
+				if (systemStats.status === "fulfilled" && systemStats.value.length) {
+					systemData = appendData(systemData, systemStats.value, expectedInterval, 200)
+				}
+				setSystemStats(systemData)
+				let contData: ChartData["containerData"] = []
+				if (containerStats.status === "fulfilled" && containerStats.value.length) {
+					contData = makeContainerData(containerStats.value)
+				}
+				setContainerData(contData)
+			})
 			return
 		}
 
@@ -225,7 +292,7 @@ export function useSystemData(id: string) {
 			}
 			setContainerData(containerData)
 		})
-	}, [system, chartTime])
+	}, [system, chartTime, customRange])
 
 	// keyboard navigation between systems
 	// in tabs mode: arrow keys switch tabs, shift+arrow switches systems

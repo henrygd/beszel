@@ -130,6 +130,10 @@ func (h *Hub) initialize(app core.App) error {
 	if err := app.Save(settings); err != nil {
 		return err
 	}
+	// ensure hub_settings exists
+	if err := records.EnsureHubSettingsExists(app); err != nil {
+		app.Logger().Warn("failed to ensure hub_settings", "err", err)
+	}
 	// set auth settings
 	return setCollectionAuthSettings(app)
 }
