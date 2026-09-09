@@ -1,7 +1,7 @@
 import { plural, t } from "@lingui/core/macro"
 import { type ClassValue, clsx } from "clsx"
 import { listenKeys } from "nanostores"
-import { timeDay, timeHour, timeMinute } from "d3-time"
+import { timeDay, timeHour, timeMinute, timeMonth, timeYear } from "d3-time"
 import { useEffect, useState } from "react"
 import { twMerge } from "tailwind-merge"
 import { toast } from "@/components/ui/use-toast"
@@ -173,6 +173,38 @@ export const chartTimeData: ChartTimeData = {
 		ticks: 30,
 		format: (timestamp: string) => formatDay(timestamp),
 		getOffset: (endTime: Date) => timeDay.offset(endTime, -30),
+	},
+	"6m": {
+		type: "480m",
+		expectedInterval: 60_000 * 480,
+		label: () => t`6 months`,
+		ticks: 6,
+		format: (timestamp: string) => formatDay(timestamp),
+		getOffset: (endTime: Date) => timeMonth.offset(endTime, -6),
+	},
+	"1y": {
+		type: "480m",
+		expectedInterval: 60_000 * 480,
+		label: () => t`1 year`,
+		ticks: 12,
+		format: (timestamp: string) => formatDay(timestamp),
+		getOffset: (endTime: Date) => timeYear.offset(endTime, -1),
+	},
+	"2y": {
+		type: "480m",
+		expectedInterval: 60_000 * 480,
+		label: () => t`2 years`,
+		ticks: 12,
+		format: (timestamp: string) => formatDay(timestamp),
+		getOffset: (endTime: Date) => timeYear.offset(endTime, -2),
+	},
+	"5y": {
+		type: "480m",
+		expectedInterval: 60_000 * 480,
+		label: () => t`5 years`,
+		ticks: 12,
+		format: (timestamp: string) => formatDay(timestamp),
+		getOffset: (endTime: Date) => timeYear.offset(endTime, -5),
 	},
 }
 

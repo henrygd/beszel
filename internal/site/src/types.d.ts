@@ -336,7 +336,7 @@ export interface ContainerRecord extends RecordModel {
 	updated: number
 }
 
-export type ChartTimes = "1m" | "1h" | "12h" | "24h" | "1w" | "30d"
+export type ChartTimes = "1m" | "1h" | "12h" | "24h" | "1w" | "30d" | "6m" | "1y" | "2y" | "5y"
 
 export interface ChartTimeData {
 	[key: string]: {
