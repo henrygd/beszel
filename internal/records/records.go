@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"log/slog"
 	"math"
+	"math/bits"
 	"time"
 
 	"github.com/henrygd/beszel/internal/entities/container"
@@ -552,6 +553,7 @@ func AverageContainerStatsSlice(records [][]container.Stats) []container.Stats {
 		return []container.Stats{}
 	}
 	sums := make(map[string]*container.Stats)
+	diskIOAverages := make(map[string]*diskIOAverage)
 	count := float64(len(records))
 
 	for _, containerStats := range records {
@@ -570,19 +572,80 @@ func AverageContainerStatsSlice(records [][]container.Stats) []container.Stats {
 			}
 			sums[stat.Name].Bandwidth[0] += sentBytes
 			sums[stat.Name].Bandwidth[1] += recvBytes
+			if stat.DiskIO != nil {
+				averages := diskIOAverages[stat.Name]
+				if averages == nil {
+					averages = &diskIOAverage{}
+					diskIOAverages[stat.Name] = averages
+				}
+				averages.Add(*stat)
+			}
 		}
 	}
 
 	result := make([]container.Stats, 0, len(sums))
 	for _, value := range sums {
+		var diskIO *[2]uint64
+		var diskIOAggregation *[5]uint64
+		if averages := diskIOAverages[value.Name]; averages != nil {
+			diskIO = &[2]uint64{averages.Value(0), averages.Value(1)}
+			diskIOAggregation = &[5]uint64{averages.read[0], averages.read[1], averages.write[0], averages.write[1], averages.count}
+		}
 		result = append(result, container.Stats{
-			Name:      value.Name,
-			Cpu:       twoDecimals(value.Cpu / count),
-			Mem:       twoDecimals(value.Mem / count),
-			Bandwidth: [2]uint64{uint64(float64(value.Bandwidth[0]) / count), uint64(float64(value.Bandwidth[1]) / count)},
+			Name:              value.Name,
+			Cpu:               twoDecimals(value.Cpu / count),
+			Mem:               twoDecimals(value.Mem / count),
+			Bandwidth:         [2]uint64{uint64(float64(value.Bandwidth[0]) / count), uint64(float64(value.Bandwidth[1]) / count)},
+			DiskIO:            diskIO,
+			DiskIOAggregation: diskIOAggregation,
 		})
 	}
 	return result
+}
+
+type diskIOAverage struct {
+	read  [2]uint64
+	write [2]uint64
+	count uint64
+}
+
+func (average *diskIOAverage) Add(stat container.Stats) {
+	if aggregation := stat.DiskIOAggregation; aggregation != nil && aggregation[4] > 0 {
+		addUint128(&average.read, aggregation[0], aggregation[1])
+		addUint128(&average.write, aggregation[2], aggregation[3])
+		if math.MaxUint64-average.count < aggregation[4] {
+			average.count = math.MaxUint64
+		} else {
+			average.count += aggregation[4]
+		}
+		return
+	}
+	addUint128(&average.read, stat.DiskIO[0], 0)
+	addUint128(&average.write, stat.DiskIO[1], 0)
+	if average.count < math.MaxUint64 {
+		average.count++
+	}
+}
+
+func addUint128(sum *[2]uint64, low, high uint64) {
+	var carry uint64
+	sum[0], carry = bits.Add64(sum[0], low, 0)
+	sum[1], carry = bits.Add64(sum[1], high, carry)
+	if carry != 0 {
+		sum[0], sum[1] = math.MaxUint64, math.MaxUint64
+	}
+}
+
+func (average *diskIOAverage) Value(index int) uint64 {
+	sum := average.read
+	if index == 1 {
+		sum = average.write
+	}
+	if sum[1] >= average.count {
+		return math.MaxUint64
+	}
+	value, _ := bits.Div64(sum[1], sum[0], average.count)
+	return value
 }
 
 /* Round float to two decimals */
