@@ -513,8 +513,7 @@ func (dm *dockerManager) updateContainerStats(ctr *container.ApiInfo, cacheTimeM
 		}
 	}
 
-	// Read and decode the response before locking shared stats. A slow Docker
-	// response body must not block other containers' metrics.
+	// Read and decode the response before locking shared stats to avoid blocking
 	defer resp.Body.Close()
 	if resp.StatusCode != http.StatusOK {
 		return fmt.Errorf("container stats request failed: %s", resp.Status)
