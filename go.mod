@@ -10,9 +10,9 @@ require (
 	github.com/fxamacker/cbor/v2 v2.9.3
 	github.com/gliderlabs/ssh v0.3.8
 	github.com/google/uuid v1.6.0
-	github.com/opencontainers/go-digest v1.0.0
 	github.com/lxzan/gws v1.10.1
 	github.com/nicholas-fedor/shoutrrr v0.20.0
+	github.com/opencontainers/go-digest v1.0.0
 	github.com/pocketbase/dbx v1.12.0
 	github.com/pocketbase/pocketbase v0.40.2
 	github.com/shirou/gopsutil/v4 v4.26.8
