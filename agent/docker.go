@@ -156,13 +156,13 @@ func (dm *dockerManager) getImageDigests(image string) []string {
 	return f.RepoDigests
 }
 
-// Get access token from https://hub.docker.com for this specific image
+// Get access token from registry for this specific image
 func getRegistryToken(registry string, repository string) string {
 	var url string
 	if registry == "docker.io" {
-		url = "https://auth.docker.io/token?service=registry.docker.io&scope=repository:" + repository + ":pull"
+		url = fmt.Sprintf("https://auth.docker.io/token?service=registry.docker.io&scope=repository:%s:pull", repository)
 	} else if registry == "ghcr.io" || registry == "lscr.io" {
-		url = "https://ghcr.io/token?service=ghcr.io&scope=repository:" + repository + ":pull"
+		url = fmt.Sprintf("https://ghcr.io/token?service=ghcr.io&scope=repository:%s:pull", repository)
 	} else {
 		// no token needed
 		return ""
@@ -190,15 +190,13 @@ func getRegistryToken(registry string, repository string) string {
 	return m.Token
 }
 
-// Get current image digest from https://hub.docker.com
+// Get current image digest from registry
 func getRegistryDigest(registry string, repository string, tag string) (string, error) {
-	var url string
-	if registry == "docker.io" {
-		// docker.io is special
-		url = "https://registry-1." + registry + "/v2/" + repository + "/manifests/" + tag
-	} else {
-		url = "https://" + registry + "/v2/" + repository + "/manifests/" + tag
+	host := registry
+	if registry == "docker.io" { // docker.io is special
+		host = "registry-1." + registry
 	}
+	url := fmt.Sprintf("https://%s/v2/%s/manifests/%s", host, repository, tag)
 
 	req, err := http.NewRequest(http.MethodHead, url, nil)
 	if err != nil {
@@ -257,6 +255,7 @@ func (dm *dockerManager) checkImageUpdate(ctr *container.ApiInfo) bool {
 	for _, d := range dm.getImageDigests(ctr.Image) {
 		localDigest := strings.SplitN(d, "@", 2)[1]
 		ctr.UpdateAvailable = strings.Compare(repoDigest, localDigest) != 0
+		// fmt.Println(repository, repoDigest, localDigest, ctr.UpdateAvailable)
 		break
 	}
 
