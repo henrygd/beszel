@@ -8,7 +8,7 @@ msgstr ""
 "Language: hu\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2026-09-02 21:43\n"
+"PO-Revision-Date: 2026-09-10 00:14\n"
 "Last-Translator: \n"
 "Language-Team: Hungarian\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
@@ -1773,8 +1773,8 @@ msgid "Throughput of {extraFsName}"
 msgstr "A {extraFsName} átviteli teljesítménye"
 
 #: src/components/routes/system/charts/zfs-charts.tsx
-msgid "Throughput of ZFS pool {poolName}"
-msgstr "{poolName} ZFS-tárkészlet átviteli sebessége"
+msgid "Throughput of storage pool {poolName}"
+msgstr ""
 
 #: src/components/routes/settings/general.tsx
 msgid "Time format"
@@ -1974,8 +1974,8 @@ msgid "Usage"
 msgstr "Használat"
 
 #: src/components/routes/system/charts/zfs-charts.tsx
-msgid "Usage of ZFS pool {poolName}"
-msgstr "{poolName} ZFS-tárkészlet kihasználtsága"
+msgid "Usage of storage pool {poolName}"
+msgstr ""
 
 #: src/components/routes/system/charts/memory-charts.tsx
 #: src/components/routes/system/charts/memory-charts.tsx
