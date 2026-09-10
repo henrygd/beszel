@@ -3,6 +3,7 @@ package alerts
 import (
 	"errors"
 	"fmt"
+	"strconv"
 	"strings"
 	"time"
 
@@ -211,6 +212,9 @@ func (am *AlertManager) sendContainerHealthAlert(unhealthy bool, systemName stri
 			Message:  strings.TrimSuffix(title, " ✅"),
 			Link:     link,
 			LinkText: linkText,
+			Kind:     NotificationKindContainer,
+			State:    "healthy",
+			Vars:     map[string]string{"containers": "", "count": "0", "logs": ""},
 		})
 	}
 
@@ -226,9 +230,11 @@ func (am *AlertManager) sendContainerHealthAlert(unhealthy bool, systemName stri
 		title = fmt.Sprintf("%d unhealthy containers on %s \U0001F534", len(names), systemName)
 	}
 
+	logsSection := am.buildContainerLogsSection(containers, fetchLogs)
+
 	var body strings.Builder
 	fmt.Fprintf(&body, "Unhealthy: %s", strings.Join(names, ", "))
-	body.WriteString(am.buildContainerLogsSection(containers, fetchLogs))
+	body.WriteString(logsSection)
 
 	message := body.String()
 	if len(message) > containerAlertMessageMaxChars {
@@ -247,6 +253,13 @@ func (am *AlertManager) sendContainerHealthAlert(unhealthy bool, systemName stri
 		Message:  message,
 		Link:     link,
 		LinkText: linkText,
+		Kind:     NotificationKindContainer,
+		State:    "unhealthy",
+		Vars: map[string]string{
+			"containers": strings.Join(names, ", "),
+			"count":      strconv.Itoa(len(names)),
+			"logs":       strings.TrimSpace(logsSection),
+		},
 	})
 }
 

@@ -358,6 +358,12 @@ export interface ChartTimeData {
 	}
 }
 
+/** Custom notification template for one alert kind (empty field = fall through) */
+export interface NotificationTemplate {
+	title?: string
+	body?: string
+}
+
 export interface UserSettings {
 	chartTime: ChartTimes
 	emails?: string[]
@@ -369,6 +375,10 @@ export interface UserSettings {
 	colorCrit?: number
 	hourFormat?: HourFormat
 	layoutWidth?: number
+	/** keys: "status" | "system" | "container" | "smart" | "systemd" | "zfs" */
+	notificationTemplates?: Record<string, NotificationTemplate>
+	/** IANA time zone used for {time} / {date} / {clock} in templates (empty = hub time) */
+	notificationTimezone?: string
 }
 
 type ChartDataContainer = {

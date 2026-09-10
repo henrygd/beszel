@@ -58,6 +58,14 @@ func (am *AlertManager) handleSmartDeviceAlert(e *core.RecordEvent) error {
 			Message:  message,
 			Link:     am.hub.MakeLink("system", systemID),
 			LinkText: "View " + systemName,
+			Kind:     NotificationKindSmart,
+			State:    newState,
+			Vars: map[string]string{
+				"device":    deviceName,
+				"model":     model,
+				"old_state": oldState,
+				"new_state": newState,
+			},
 		}); err != nil {
 			e.App.Logger().Error("Failed to send SMART alert", "err", err, "userID", userID)
 		}
