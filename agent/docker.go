@@ -169,16 +169,14 @@ func (dm *dockerManager) getImageDescriptor(ctr *container.ApiInfo) {
 func (dm *dockerManager) getDockerHubToken(name string) (string, error) {
 	url := "https://auth.docker.io/token?service=registry.docker.io&scope=repository:" + name + ":pull"
 
-	resp, err := dm.client.Get(url)
+	resp, err := http.Get(url)
 	if err != nil {
-
 		return "", err
 	}
 	defer resp.Body.Close()
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-
 		return "", err
 	}
 
@@ -187,7 +185,6 @@ func (dm *dockerManager) getDockerHubToken(name string) (string, error) {
 	}
 	err = json.Unmarshal(body, &m)
 	if err != nil {
-
 		return "", err
 	}
 
@@ -204,7 +201,6 @@ func (dm *dockerManager) getDockerHubDigest(name string, tag string) string {
 
 	req, err := http.NewRequest(http.MethodHead, url, nil)
 	if err != nil {
-
 		return ""
 	}
 
@@ -213,9 +209,8 @@ func (dm *dockerManager) getDockerHubDigest(name string, tag string) string {
 		req.Header.Add("Authorization", "Bearer "+token)
 	}
 
-	resp, err := dm.client.Do(req)
+	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
-
 		return ""
 	}
 	defer resp.Body.Close()
@@ -243,6 +238,7 @@ func (dm *dockerManager) checkImageUpdate(ctr *container.ApiInfo) bool {
 		if strings.Contains(repo, "docker.io") {
 			repoDigest := dm.getDockerHubDigest(name, tag)
 			ctr.UpdateAvailable = strings.Compare(repoDigest, ctr.ImageDigest) != 0
+			break
 		}
 	}
 
