@@ -335,6 +335,7 @@ export interface ContainerRecord extends RecordModel {
 	system: string
 	name: string
 	image: string
+	updatable?: boolean
 	ports: string
 	cpu: number
 	memory: number

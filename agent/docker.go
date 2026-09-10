@@ -28,7 +28,6 @@ import (
 	"github.com/henrygd/beszel/internal/entities/system"
 
 	"github.com/blang/semver"
-	"github.com/distribution/reference"
 )
 
 // ansiEscapePattern matches ANSI escape sequences (colors, cursor movement, etc.)
@@ -54,6 +53,10 @@ const (
 )
 
 type dockerManager struct {
+	registryClient       *http.Client
+	imageUpdatesMutex    sync.RWMutex
+	imageUpdates         map[string]*imageUpdateStatus
+	imageUpdatesRunning  bool
 	agent                *Agent                      // Used to propagate system detail changes back to the agent
 	client               *http.Client                // Client to query Docker API
 	wg                   sync.WaitGroup              // WaitGroup to wait for all goroutines to finish
@@ -66,7 +69,6 @@ type dockerManager struct {
 	dockerVersionChecked bool                        // Whether a version probe has completed successfully
 	isWindows            bool                        // Whether the Docker Engine API is running on Windows
 	buf                  *bytes.Buffer               // Buffer to store and read response bodies
-	apiStats             *container.ApiStats         // Reusable API stats object
 	excludeContainers    []string                    // Patterns to exclude containers by name
 	usingPodman          bool                        // Whether the Docker Engine API is running on Podman
 
@@ -161,6 +163,9 @@ func (dm *dockerManager) getDockerStats(cacheTimeMs uint16) ([]*container.Stats,
 	} else {
 		clear(dm.validIds)
 	}
+
+	// Only schedule auxiliary work here; metrics never wait for image discovery.
+	dm.refreshImageUpdates(dm.apiContainerList, time.Now())
 
 	var failedContainers []*container.ApiInfo
 
@@ -507,6 +512,18 @@ func (dm *dockerManager) updateContainerStats(ctr *container.ApiInfo, cacheTimeM
 		}
 	}
 
+	// Read and decode the response before locking shared stats. A slow Docker
+	// response body must not block other containers' metrics.
+	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		return fmt.Errorf("container stats request failed: %s", resp.Status)
+	}
+	res := &container.ApiStats{}
+	if err := json.NewDecoder(resp.Body).Decode(res); err != nil {
+		return err
+	}
+	updateAvailable := dm.cachedImageUpdate(ctr.Image)
+
 	dm.containerStatsMutex.Lock()
 	defer dm.containerStatsMutex.Unlock()
 
@@ -521,12 +538,8 @@ func (dm *dockerManager) updateContainerStats(ctr *container.ApiInfo, cacheTimeM
 	stats.Status = statusText
 	stats.Health = health
 
-	// Check if image update is available
-	if dm.checkImageUpdate(ctr) {
-		stats.Image = "↑" + ctr.Image
-	} else {
-		stats.Image = ctr.Image
-	}
+	stats.Image = ctr.Image
+	stats.UpdateAvailable = updateAvailable
 
 	if len(ctr.Ports) > 0 {
 		stats.Ports = convertContainerPortsToString(ctr)
@@ -539,12 +552,6 @@ func (dm *dockerManager) updateContainerStats(ctr *container.ApiInfo, cacheTimeM
 	// TODO(0.19+): stop populating NetworkSent/NetworkRecv (deprecated in 0.18.3)
 	stats.NetworkSent = 0
 	stats.NetworkRecv = 0
-
-	res := dm.apiStats
-	res.Networks = nil
-	if err := dm.decode(resp, res); err != nil {
-		return err
-	}
 
 	// Initialize CPU tracking for this cache time interval
 	dm.initializeCpuTracking(cacheTimeMs)
@@ -703,7 +710,6 @@ func newDockerManager(agent *Agent) *dockerManager {
 		containerStatsMap: make(map[string]*container.Stats),
 		sem:               make(chan struct{}, 5),
 		apiContainerList:  []*container.ApiInfo{},
-		apiStats:          &container.ApiStats{},
 		excludeContainers: excludeContainers,
 
 		// Initialize cache-time-aware tracking structures
@@ -1026,139 +1032,4 @@ func detectPodmanEngine(serverHeader string, versionInfo *dockerVersionResponse)
 		return true
 	}
 	return detectPodmanFromVersion(versionInfo)
-}
-
-// Get container's image local digest and repos from image name
-func (dm *dockerManager) getImageDigests(image string) []string {
-	resp, err := dm.client.Get("http://localhost/images/" + image + "/json")
-	if err != nil {
-		return nil
-	}
-	defer resp.Body.Close()
-
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil
-	}
-
-	var f struct {
-		RepoDigests []string
-	}
-	err = json.Unmarshal(body, &f)
-	if err != nil {
-		return nil
-	}
-
-	return f.RepoDigests
-}
-
-// Get access token from registry for this specific image
-func getRegistryToken(registry string, repository string) string {
-	var url string
-	if registry == "docker.io" {
-		url = fmt.Sprintf("https://auth.docker.io/token?service=registry.docker.io&scope=repository:%s:pull", repository)
-	} else if registry == "ghcr.io" || registry == "lscr.io" {
-		url = fmt.Sprintf("https://ghcr.io/token?service=ghcr.io&scope=repository:%s:pull", repository)
-	} else {
-		// no token needed
-		return ""
-	}
-
-	resp, err := http.Get(url)
-	if err != nil {
-		return ""
-	}
-	defer resp.Body.Close()
-
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return ""
-	}
-
-	var m struct {
-		Token string `json:"token"`
-	}
-	err = json.Unmarshal(body, &m)
-	if err != nil {
-		return ""
-	}
-
-	return m.Token
-}
-
-// Get current image digest from registry
-func getRegistryDigest(registry string, repository string, tag string) (string, error) {
-	host := registry
-	if registry == "docker.io" { // docker.io is special
-		host = "registry-1." + registry
-	}
-	url := fmt.Sprintf("https://%s/v2/%s/manifests/%s", host, repository, tag)
-
-	req, err := http.NewRequest(http.MethodHead, url, nil)
-	if err != nil {
-		return "", err
-	}
-
-	req.Header.Add("Accept", strings.Join([]string{
-		"application/vnd.docker.distribution.manifest.list.v2+json",
-		"application/vnd.docker.distribution.manifest.v2+json",
-		"application/vnd.oci.image.manifest.v1+json",
-		"application/vnd.oci.image.index.v1+json",
-	}, ", "))
-
-	token := getRegistryToken(registry, repository)
-	if token != "" {
-		req.Header.Add("Authorization", "Bearer "+token)
-	}
-
-	resp, err := http.DefaultClient.Do(req)
-	if err != nil {
-		return "", err
-	}
-	defer resp.Body.Close()
-
-	return resp.Header.Get("docker-content-digest"), nil
-}
-
-// Check docker registry if an update is available
-func (dm *dockerManager) checkImageUpdate(ctr *container.ApiInfo) bool {
-	// use official Go library to handle references to container images
-	named, err := reference.ParseNormalizedNamed(ctr.Image)
-	if err != nil {
-		return false
-	}
-
-	registry := reference.Domain(named)
-	repository := reference.Path(named)
-
-	// try converting to Tagged, otherwise use "latest"
-	tag := "latest"
-	tagged, isTagged := named.(reference.Tagged)
-	if isTagged {
-		// use defined tag, otherwise fallback to "latest"
-		tag = tagged.Tag()
-	}
-
-	// get registry digest
-	repoDigest, err := getRegistryDigest(registry, repository, tag)
-
-	// the above is also implemented by the `crane` library by Google
-	// "github.com/google/go-containerregistry/cmd/crane"
-	// repoDigest, err := crane.Digest(ctr.Image)
-
-	if repoDigest == "" || err != nil {
-		return false
-	}
-
-	// reset flag
-	ctr.UpdateAvailable = false
-
-	for _, d := range dm.getImageDigests(ctr.Image) {
-		localDigest := strings.SplitN(d, "@", 2)[1]
-		ctr.UpdateAvailable = strings.Compare(repoDigest, localDigest) != 0
-		// fmt.Println(repository, repoDigest, localDigest, ctr.UpdateAvailable)
-		break
-	}
-
-	return ctr.UpdateAvailable
 }
