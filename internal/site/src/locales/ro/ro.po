@@ -8,7 +8,7 @@ msgstr ""
 "Language: ro\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2026-09-02 19:06\n"
+"PO-Revision-Date: 2026-09-10 00:14\n"
 "Last-Translator: \n"
 "Language-Team: Romanian\n"
 "Plural-Forms: nplurals=3; plural=(n==1 ? 0 : (n==0 || (n%100>0 && n%100<20)) ? 1 : 2);\n"
@@ -1773,7 +1773,7 @@ msgid "Throughput of {extraFsName}"
 msgstr ""
 
 #: src/components/routes/system/charts/zfs-charts.tsx
-msgid "Throughput of ZFS pool {poolName}"
+msgid "Throughput of storage pool {poolName}"
 msgstr ""
 
 #: src/components/routes/settings/general.tsx
@@ -1974,7 +1974,7 @@ msgid "Usage"
 msgstr "Utilizare"
 
 #: src/components/routes/system/charts/zfs-charts.tsx
-msgid "Usage of ZFS pool {poolName}"
+msgid "Usage of storage pool {poolName}"
 msgstr ""
 
 #: src/components/routes/system/charts/memory-charts.tsx
