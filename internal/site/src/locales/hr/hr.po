@@ -97,7 +97,7 @@ msgstr "5 minuta"
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 #: src/components/routes/system/smart-table.tsx
-#: src/components/routes/system/zfs-table.tsx
+#: src/components/routes/system/storage-pools-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Actions"
 msgstr "Akcije"
@@ -196,7 +196,7 @@ msgstr "Jeste li sigurni?"
 msgid "Automatic copy requires a secure context."
 msgstr "Automatsko kopiranje zahtijeva siguran kontekst."
 
-#: src/components/routes/system/zfs-table.tsx
+#: src/components/routes/system/storage-pools-table.tsx
 msgctxt "Disk space available"
 msgid "Available"
 msgstr "Dostupno"
@@ -338,7 +338,7 @@ msgid "Capabilities"
 msgstr "Mogućnosti"
 
 #: src/components/routes/system/smart-table.tsx
-#: src/components/routes/system/zfs-table.tsx
+#: src/components/routes/system/storage-pools-table.tsx
 msgid "Capacity"
 msgstr "Kapacitet"
 
@@ -391,14 +391,14 @@ msgstr "Provjerite svoju uslugu nadzora"
 msgid "Check your notification service"
 msgstr "Provjerite svoju obavještajnu uslugu"
 
-#: src/components/routes/system/zfs-table.tsx
+#: src/components/routes/system/storage-pools-table.tsx
 msgid "Checksum errors"
 msgstr "Pogreške kontrolnog zbroja"
 
 #: src/components/containers-table/containers-table.tsx
 #: src/components/routes/system/smart-table.tsx
-#: src/components/routes/system/zfs-table.tsx
-#: src/components/routes/system/zfs-table.tsx
+#: src/components/routes/system/storage-pools-table.tsx
+#: src/components/routes/system/storage-pools-table.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "Clear"
 msgstr "Očisti"
@@ -411,7 +411,7 @@ msgstr "Kliknite na spremnik za prikaz više informacija."
 msgid "Click on a device to view more information."
 msgstr "Kliknite na uređaj da biste vidjeli više informacija."
 
-#: src/components/routes/system/zfs-table.tsx
+#: src/components/routes/system/storage-pools-table.tsx
 msgid "Click on a pool to view vdev and dataset details."
 msgstr "Kliknite na spremište za prikaz pojedinosti o vdevovima i skupovima podataka."
 
@@ -875,8 +875,8 @@ msgstr ""
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/system/chart-card.tsx
 #: src/components/routes/system/smart-table.tsx
-#: src/components/routes/system/zfs-table.tsx
-#: src/components/routes/system/zfs-table.tsx
+#: src/components/routes/system/storage-pools-table.tsx
+#: src/components/routes/system/storage-pools-table.tsx
 #: src/components/systemd-table/systemd-table.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "Filter..."
@@ -898,8 +898,8 @@ msgstr "Za <0>{min}</0> {min, plural, one {minutu} other {minute}}"
 msgid "Forgot password?"
 msgstr "Zaboravljena lozinka?"
 
-#: src/components/routes/system/zfs-table.tsx
-#: src/components/routes/system/zfs-table.tsx
+#: src/components/routes/system/storage-pools-table.tsx
+#: src/components/routes/system/storage-pools-table.tsx
 msgctxt "Free space"
 msgid "Free"
 msgstr "Slobodno"
@@ -948,7 +948,7 @@ msgid "Grid"
 msgstr "Rešetka"
 
 #: src/components/containers-table/containers-table-columns.tsx
-#: src/components/routes/system/zfs-table.tsx
+#: src/components/routes/system/storage-pools-table.tsx
 msgid "Health"
 msgstr "Zdravlje"
 
@@ -1146,7 +1146,7 @@ msgstr "Upotreba memorije spremnika"
 msgid "Model"
 msgstr ""
 
-#: src/components/routes/system/zfs-table.tsx
+#: src/components/routes/system/storage-pools-table.tsx
 msgid "Mountpoint"
 msgstr "Točka montiranja"
 
@@ -1185,7 +1185,7 @@ msgstr "Mjerna jedinica za mrežu"
 msgid "No"
 msgstr "Ne"
 
-#: src/components/routes/system/zfs-table.tsx
+#: src/components/routes/system/storage-pools-table.tsx
 msgid "No detail data for this pool."
 msgstr "Nema detaljnih podataka za ovo spremište."
 
@@ -1212,7 +1212,7 @@ msgstr "Nema dostupnih S.M.A.R.T. atributa za ovaj uređaj."
 msgid "No systems found."
 msgstr "Nije pronađen nijedan sustav."
 
-#: src/components/routes/system/zfs-table.tsx
+#: src/components/routes/system/storage-pools-table.tsx
 msgid "None"
 msgstr "Nema"
 
@@ -1255,7 +1255,7 @@ msgstr "Jednokratna lozinka"
 #: src/components/routes/settings/tokens-fingerprints.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 #: src/components/routes/system/smart-table.tsx
-#: src/components/routes/system/zfs-table.tsx
+#: src/components/routes/system/storage-pools-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Open menu"
 msgstr "Otvori meni"
@@ -1346,6 +1346,10 @@ msgstr "Trajan"
 msgid "Persistence"
 msgstr "Postojanost"
 
+#: src/components/routes/system/raw-capacity-label.tsx
+msgid "Physical device space. True usable capacity is unknown. Pool disk usage alerts are disabled."
+msgstr ""
+
 #: src/components/routes/settings/notifications.tsx
 msgid "Please <0>configure an SMTP server</0> to ensure alerts are delivered."
 msgstr "Molimo <0>konfigurirajte SMTP server</0> kako biste osigurali isporuku upozorenja."
@@ -1379,11 +1383,11 @@ msgstr "Molimo provjerite <0>dokumentaciju</0> za upute."
 msgid "Please sign in to your account"
 msgstr "Molimo prijavite se u svoj račun"
 
-#: src/components/routes/system/zfs-table.tsx
+#: src/components/routes/system/storage-pools-table.tsx
 msgid "Pool Health"
 msgstr "Stanje spremišta"
 
-#: src/components/routes/system/charts/zfs-charts.tsx
+#: src/components/routes/system/charts/storage-pool-charts.tsx
 msgid "Pool Usage"
 msgstr "Iskorištenost spremišta"
 
@@ -1432,10 +1436,21 @@ msgstr "Dubina reda"
 msgid "Quiet Hours"
 msgstr "Tihi sati"
 
+#: src/components/routes/system/raw-capacity-label.tsx
+#: src/components/routes/system/storage-pools-table.tsx
+#: src/components/routes/system/storage-pools-table.tsx
+#: src/components/routes/system/storage-pools-table.tsx
+msgid "Raw"
+msgstr ""
+
+#: src/components/routes/system/charts/storage-pool-charts.tsx
+msgid "Raw usage of storage pool {displayName}"
+msgstr ""
+
 #. Disk read
 #. Disk read
 #: src/components/routes/system/charts/disk-charts.tsx
-#: src/components/routes/system/charts/zfs-charts.tsx
+#: src/components/routes/system/charts/storage-pool-charts.tsx
 #: src/components/routes/system/disk-io-sheet.tsx
 #: src/components/routes/system/disk-io-sheet.tsx
 #: src/components/routes/system/disk-io-sheet.tsx
@@ -1443,7 +1458,7 @@ msgstr "Tihi sati"
 msgid "Read"
 msgstr "Pročitaj"
 
-#: src/components/routes/system/zfs-table.tsx
+#: src/components/routes/system/storage-pools-table.tsx
 msgid "Read errors"
 msgstr "Pogreške čitanja"
 
@@ -1454,7 +1469,7 @@ msgstr "Primljeno"
 #: src/components/containers-table/containers-table.tsx
 #: src/components/containers-table/containers-table.tsx
 #: src/components/routes/system/smart-table.tsx
-#: src/components/routes/system/zfs-table.tsx
+#: src/components/routes/system/storage-pools-table.tsx
 msgid "Refresh"
 msgstr "Osvježi"
 
@@ -1643,7 +1658,7 @@ msgstr "Vrijeme početka"
 #. Context: alert state (active or resolved)
 #: src/components/alerts-history-columns.tsx
 #: src/components/routes/settings/quiet-hours.tsx
-#: src/components/routes/system/zfs-table.tsx
+#: src/components/routes/system/storage-pools-table.tsx
 #: src/components/systemd-table/systemd-table-columns.tsx
 msgid "State"
 msgstr "Stanje"
@@ -1772,9 +1787,9 @@ msgstr "Ovom radnjom će se trajno izbrisati svi odabrani zapisi iz baze podatak
 msgid "Throughput of {extraFsName}"
 msgstr "Protok {extraFsName}"
 
-#: src/components/routes/system/charts/zfs-charts.tsx
-msgid "Throughput of ZFS pool {poolName}"
-msgstr "Propusnost ZFS spremišta {poolName}"
+#: src/components/routes/system/charts/storage-pool-charts.tsx
+msgid "Throughput of storage pool {displayName}"
+msgstr ""
 
 #: src/components/routes/settings/general.tsx
 msgid "Time format"
@@ -1897,6 +1912,7 @@ msgstr "Pokreće se kada iskorištenost bilo kojeg diska premaši prag"
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/system/smart-table.tsx
+#: src/components/routes/system/storage-pools-table.tsx
 msgid "Type"
 msgstr "Vrsta"
 
@@ -1919,7 +1935,7 @@ msgid "Universal token"
 msgstr "Sveopći token"
 
 #. Context: Battery state
-#: src/components/routes/system/zfs-table.tsx
+#: src/components/routes/system/storage-pools-table.tsx
 #: src/lib/i18n.ts
 msgid "Unknown"
 msgstr "Nepoznato"
@@ -1945,7 +1961,7 @@ msgstr "Ažuriraj"
 
 #: src/components/containers-table/containers-table-columns.tsx
 #: src/components/routes/system/smart-table.tsx
-#: src/components/routes/system/zfs-table.tsx
+#: src/components/routes/system/storage-pools-table.tsx
 #: src/components/systemd-table/systemd-table-columns.tsx
 msgid "Updated"
 msgstr "Ažurirano"
@@ -1968,20 +1984,20 @@ msgstr "Vrijeme rada"
 #: src/components/routes/system/charts/gpu-charts.tsx
 #: src/components/routes/system/charts/gpu-charts.tsx
 #: src/components/routes/system/charts/gpu-charts.tsx
-#: src/components/routes/system/charts/zfs-charts.tsx
+#: src/components/routes/system/charts/storage-pool-charts.tsx
 #: src/components/routes/system/cpu-sheet.tsx
 msgid "Usage"
 msgstr "Iskorištenost"
 
-#: src/components/routes/system/charts/zfs-charts.tsx
-msgid "Usage of ZFS pool {poolName}"
-msgstr "Iskorištenost ZFS spremišta {poolName}"
+#: src/components/routes/system/charts/storage-pool-charts.tsx
+msgid "Usage of storage pool {displayName}"
+msgstr ""
 
 #: src/components/routes/system/charts/memory-charts.tsx
 #: src/components/routes/system/charts/memory-charts.tsx
-#: src/components/routes/system/zfs-table.tsx
-#: src/components/routes/system/zfs-table.tsx
-#: src/components/routes/system/zfs-table.tsx
+#: src/components/routes/system/storage-pools-table.tsx
+#: src/components/routes/system/storage-pools-table.tsx
+#: src/components/routes/system/storage-pools-table.tsx
 msgid "Used"
 msgstr "Iskorišteno"
 
@@ -2058,7 +2074,7 @@ msgstr "Windows naredba"
 #. Disk write
 #. Disk write
 #: src/components/routes/system/charts/disk-charts.tsx
-#: src/components/routes/system/charts/zfs-charts.tsx
+#: src/components/routes/system/charts/storage-pool-charts.tsx
 #: src/components/routes/system/disk-io-sheet.tsx
 #: src/components/routes/system/disk-io-sheet.tsx
 #: src/components/routes/system/disk-io-sheet.tsx
@@ -2066,7 +2082,7 @@ msgstr "Windows naredba"
 msgid "Write"
 msgstr "Piši"
 
-#: src/components/routes/system/zfs-table.tsx
+#: src/components/routes/system/storage-pools-table.tsx
 msgid "Write errors"
 msgstr "Pogreške zapisivanja"
 

@@ -97,7 +97,7 @@ msgstr "5 daq"
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 #: src/components/routes/system/smart-table.tsx
-#: src/components/routes/system/zfs-table.tsx
+#: src/components/routes/system/storage-pools-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Actions"
 msgstr "Amallar"
@@ -196,7 +196,7 @@ msgstr "Ishonchingiz komilmi?"
 msgid "Automatic copy requires a secure context."
 msgstr "Avtomatik nusxalash xavfsiz kontekstni talab qiladi."
 
-#: src/components/routes/system/zfs-table.tsx
+#: src/components/routes/system/storage-pools-table.tsx
 msgctxt "Disk space available"
 msgid "Available"
 msgstr "Mavjud"
@@ -338,7 +338,7 @@ msgid "Capabilities"
 msgstr "Imkoniyatlar"
 
 #: src/components/routes/system/smart-table.tsx
-#: src/components/routes/system/zfs-table.tsx
+#: src/components/routes/system/storage-pools-table.tsx
 msgid "Capacity"
 msgstr "Sig'im"
 
@@ -391,14 +391,14 @@ msgstr "Monitoring xizmatingizni tekshiring"
 msgid "Check your notification service"
 msgstr "Bildirishnoma xizmatingizni tekshiring"
 
-#: src/components/routes/system/zfs-table.tsx
+#: src/components/routes/system/storage-pools-table.tsx
 msgid "Checksum errors"
 msgstr "Nazorat summasi xatolari"
 
 #: src/components/containers-table/containers-table.tsx
 #: src/components/routes/system/smart-table.tsx
-#: src/components/routes/system/zfs-table.tsx
-#: src/components/routes/system/zfs-table.tsx
+#: src/components/routes/system/storage-pools-table.tsx
+#: src/components/routes/system/storage-pools-table.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "Clear"
 msgstr "Tozalash"
@@ -411,7 +411,7 @@ msgstr "Batafsil ma'lumot uchun konteynerni bosing."
 msgid "Click on a device to view more information."
 msgstr "Batafsil ma'lumot uchun qurilmani bosing."
 
-#: src/components/routes/system/zfs-table.tsx
+#: src/components/routes/system/storage-pools-table.tsx
 msgid "Click on a pool to view vdev and dataset details."
 msgstr "Pool ustiga bosib, vdev va dataset tafsilotlarini ko‘ring."
 
@@ -875,8 +875,8 @@ msgstr ""
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/system/chart-card.tsx
 #: src/components/routes/system/smart-table.tsx
-#: src/components/routes/system/zfs-table.tsx
-#: src/components/routes/system/zfs-table.tsx
+#: src/components/routes/system/storage-pools-table.tsx
+#: src/components/routes/system/storage-pools-table.tsx
 #: src/components/systemd-table/systemd-table.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "Filter..."
@@ -898,8 +898,8 @@ msgstr "<0>{min}</0> {min, plural, other {daqiqa}} uchun"
 msgid "Forgot password?"
 msgstr "Parolni unutdingizmi?"
 
-#: src/components/routes/system/zfs-table.tsx
-#: src/components/routes/system/zfs-table.tsx
+#: src/components/routes/system/storage-pools-table.tsx
+#: src/components/routes/system/storage-pools-table.tsx
 msgctxt "Free space"
 msgid "Free"
 msgstr "Bo‘sh"
@@ -948,7 +948,7 @@ msgid "Grid"
 msgstr "Grid"
 
 #: src/components/containers-table/containers-table-columns.tsx
-#: src/components/routes/system/zfs-table.tsx
+#: src/components/routes/system/storage-pools-table.tsx
 msgid "Health"
 msgstr "Sog'lik"
 
@@ -1146,7 +1146,7 @@ msgstr ""
 msgid "Model"
 msgstr "Model"
 
-#: src/components/routes/system/zfs-table.tsx
+#: src/components/routes/system/storage-pools-table.tsx
 msgid "Mountpoint"
 msgstr "Ulash nuqtasi"
 
@@ -1185,7 +1185,7 @@ msgstr "Tarmoq birligi"
 msgid "No"
 msgstr "Yo'q"
 
-#: src/components/routes/system/zfs-table.tsx
+#: src/components/routes/system/storage-pools-table.tsx
 msgid "No detail data for this pool."
 msgstr "Bu pool uchun batafsil ma’lumot mavjud emas."
 
@@ -1212,7 +1212,7 @@ msgstr "Ushbu qurilma uchun S.M.A.R.T. atributlari mavjud emas."
 msgid "No systems found."
 msgstr "Tizimlar topilmadi."
 
-#: src/components/routes/system/zfs-table.tsx
+#: src/components/routes/system/storage-pools-table.tsx
 msgid "None"
 msgstr "Yo‘q"
 
@@ -1255,7 +1255,7 @@ msgstr "Bir martalik parol"
 #: src/components/routes/settings/tokens-fingerprints.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 #: src/components/routes/system/smart-table.tsx
-#: src/components/routes/system/zfs-table.tsx
+#: src/components/routes/system/storage-pools-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Open menu"
 msgstr "Menyuni ochish"
@@ -1346,6 +1346,10 @@ msgstr "Doimiy"
 msgid "Persistence"
 msgstr "Saqlash"
 
+#: src/components/routes/system/raw-capacity-label.tsx
+msgid "Physical device space. True usable capacity is unknown. Pool disk usage alerts are disabled."
+msgstr ""
+
 #: src/components/routes/settings/notifications.tsx
 msgid "Please <0>configure an SMTP server</0> to ensure alerts are delivered."
 msgstr "Ogohlantirishlar yetkazilishini ta'minlash uchun <0>SMTP serverni sozlang</0>."
@@ -1379,11 +1383,11 @@ msgstr "Ko'rsatmalar uchun <0>hujjatlarni</0> ko'ring."
 msgid "Please sign in to your account"
 msgstr "Hisobingizga kiring"
 
-#: src/components/routes/system/zfs-table.tsx
+#: src/components/routes/system/storage-pools-table.tsx
 msgid "Pool Health"
 msgstr "Pool holati"
 
-#: src/components/routes/system/charts/zfs-charts.tsx
+#: src/components/routes/system/charts/storage-pool-charts.tsx
 msgid "Pool Usage"
 msgstr "Pool ishlatilishi"
 
@@ -1432,10 +1436,21 @@ msgstr "Navbat chuqurligi"
 msgid "Quiet Hours"
 msgstr "Tinch soatlar"
 
+#: src/components/routes/system/raw-capacity-label.tsx
+#: src/components/routes/system/storage-pools-table.tsx
+#: src/components/routes/system/storage-pools-table.tsx
+#: src/components/routes/system/storage-pools-table.tsx
+msgid "Raw"
+msgstr ""
+
+#: src/components/routes/system/charts/storage-pool-charts.tsx
+msgid "Raw usage of storage pool {displayName}"
+msgstr ""
+
 #. Disk read
 #. Disk read
 #: src/components/routes/system/charts/disk-charts.tsx
-#: src/components/routes/system/charts/zfs-charts.tsx
+#: src/components/routes/system/charts/storage-pool-charts.tsx
 #: src/components/routes/system/disk-io-sheet.tsx
 #: src/components/routes/system/disk-io-sheet.tsx
 #: src/components/routes/system/disk-io-sheet.tsx
@@ -1443,7 +1458,7 @@ msgstr "Tinch soatlar"
 msgid "Read"
 msgstr "O'qish"
 
-#: src/components/routes/system/zfs-table.tsx
+#: src/components/routes/system/storage-pools-table.tsx
 msgid "Read errors"
 msgstr "O‘qish xatolari"
 
@@ -1454,7 +1469,7 @@ msgstr "Qabul qilindi"
 #: src/components/containers-table/containers-table.tsx
 #: src/components/containers-table/containers-table.tsx
 #: src/components/routes/system/smart-table.tsx
-#: src/components/routes/system/zfs-table.tsx
+#: src/components/routes/system/storage-pools-table.tsx
 msgid "Refresh"
 msgstr "Yangilash"
 
@@ -1643,7 +1658,7 @@ msgstr "Boshlanish vaqti"
 #. Context: alert state (active or resolved)
 #: src/components/alerts-history-columns.tsx
 #: src/components/routes/settings/quiet-hours.tsx
-#: src/components/routes/system/zfs-table.tsx
+#: src/components/routes/system/storage-pools-table.tsx
 #: src/components/systemd-table/systemd-table-columns.tsx
 msgid "State"
 msgstr "Holat"
@@ -1772,9 +1787,9 @@ msgstr "Bu barcha tanlangan yozuvlarni ma'lumotlar bazasidan butunlay o'chiradi.
 msgid "Throughput of {extraFsName}"
 msgstr "{extraFsName} ning o'tkazish qobiliyati"
 
-#: src/components/routes/system/charts/zfs-charts.tsx
-msgid "Throughput of ZFS pool {poolName}"
-msgstr "ZFS pool {poolName} o‘tkazuvchanligi"
+#: src/components/routes/system/charts/storage-pool-charts.tsx
+msgid "Throughput of storage pool {displayName}"
+msgstr ""
 
 #: src/components/routes/settings/general.tsx
 msgid "Time format"
@@ -1897,6 +1912,7 @@ msgstr "Biron-bir disk ishlatilishi chegaradan oshganda ishga tushadi"
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/system/smart-table.tsx
+#: src/components/routes/system/storage-pools-table.tsx
 msgid "Type"
 msgstr "Tur"
 
@@ -1919,7 +1935,7 @@ msgid "Universal token"
 msgstr "Universal token"
 
 #. Context: Battery state
-#: src/components/routes/system/zfs-table.tsx
+#: src/components/routes/system/storage-pools-table.tsx
 #: src/lib/i18n.ts
 msgid "Unknown"
 msgstr "Noma'lum"
@@ -1945,7 +1961,7 @@ msgstr "Yangilash"
 
 #: src/components/containers-table/containers-table-columns.tsx
 #: src/components/routes/system/smart-table.tsx
-#: src/components/routes/system/zfs-table.tsx
+#: src/components/routes/system/storage-pools-table.tsx
 #: src/components/systemd-table/systemd-table-columns.tsx
 msgid "Updated"
 msgstr "Yangilandi"
@@ -1968,20 +1984,20 @@ msgstr "Ishlash vaqti"
 #: src/components/routes/system/charts/gpu-charts.tsx
 #: src/components/routes/system/charts/gpu-charts.tsx
 #: src/components/routes/system/charts/gpu-charts.tsx
-#: src/components/routes/system/charts/zfs-charts.tsx
+#: src/components/routes/system/charts/storage-pool-charts.tsx
 #: src/components/routes/system/cpu-sheet.tsx
 msgid "Usage"
 msgstr "Ishlatilishi"
 
-#: src/components/routes/system/charts/zfs-charts.tsx
-msgid "Usage of ZFS pool {poolName}"
-msgstr "ZFS pool {poolName} ishlatilishi"
+#: src/components/routes/system/charts/storage-pool-charts.tsx
+msgid "Usage of storage pool {displayName}"
+msgstr ""
 
 #: src/components/routes/system/charts/memory-charts.tsx
 #: src/components/routes/system/charts/memory-charts.tsx
-#: src/components/routes/system/zfs-table.tsx
-#: src/components/routes/system/zfs-table.tsx
-#: src/components/routes/system/zfs-table.tsx
+#: src/components/routes/system/storage-pools-table.tsx
+#: src/components/routes/system/storage-pools-table.tsx
+#: src/components/routes/system/storage-pools-table.tsx
 msgid "Used"
 msgstr "Ishlatilgan"
 
@@ -2058,7 +2074,7 @@ msgstr "Windows buyrug'i"
 #. Disk write
 #. Disk write
 #: src/components/routes/system/charts/disk-charts.tsx
-#: src/components/routes/system/charts/zfs-charts.tsx
+#: src/components/routes/system/charts/storage-pool-charts.tsx
 #: src/components/routes/system/disk-io-sheet.tsx
 #: src/components/routes/system/disk-io-sheet.tsx
 #: src/components/routes/system/disk-io-sheet.tsx
@@ -2066,7 +2082,7 @@ msgstr "Windows buyrug'i"
 msgid "Write"
 msgstr "Yozish"
 
-#: src/components/routes/system/zfs-table.tsx
+#: src/components/routes/system/storage-pools-table.tsx
 msgid "Write errors"
 msgstr "Yozish xatolari"
 

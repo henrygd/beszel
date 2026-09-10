@@ -92,7 +92,7 @@ msgstr "5 min"
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 #: src/components/routes/system/smart-table.tsx
-#: src/components/routes/system/zfs-table.tsx
+#: src/components/routes/system/storage-pools-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Actions"
 msgstr "Actions"
@@ -191,7 +191,7 @@ msgstr "Are you sure?"
 msgid "Automatic copy requires a secure context."
 msgstr "Automatic copy requires a secure context."
 
-#: src/components/routes/system/zfs-table.tsx
+#: src/components/routes/system/storage-pools-table.tsx
 msgctxt "Disk space available"
 msgid "Available"
 msgstr "Available"
@@ -333,7 +333,7 @@ msgid "Capabilities"
 msgstr "Capabilities"
 
 #: src/components/routes/system/smart-table.tsx
-#: src/components/routes/system/zfs-table.tsx
+#: src/components/routes/system/storage-pools-table.tsx
 msgid "Capacity"
 msgstr "Capacity"
 
@@ -386,14 +386,14 @@ msgstr "Check your monitoring service"
 msgid "Check your notification service"
 msgstr "Check your notification service"
 
-#: src/components/routes/system/zfs-table.tsx
+#: src/components/routes/system/storage-pools-table.tsx
 msgid "Checksum errors"
 msgstr "Checksum errors"
 
 #: src/components/containers-table/containers-table.tsx
 #: src/components/routes/system/smart-table.tsx
-#: src/components/routes/system/zfs-table.tsx
-#: src/components/routes/system/zfs-table.tsx
+#: src/components/routes/system/storage-pools-table.tsx
+#: src/components/routes/system/storage-pools-table.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "Clear"
 msgstr "Clear"
@@ -406,7 +406,7 @@ msgstr "Click on a container to view more information."
 msgid "Click on a device to view more information."
 msgstr "Click on a device to view more information."
 
-#: src/components/routes/system/zfs-table.tsx
+#: src/components/routes/system/storage-pools-table.tsx
 msgid "Click on a pool to view vdev and dataset details."
 msgstr "Click on a pool to view vdev and dataset details."
 
@@ -870,8 +870,8 @@ msgstr "Fans"
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/system/chart-card.tsx
 #: src/components/routes/system/smart-table.tsx
-#: src/components/routes/system/zfs-table.tsx
-#: src/components/routes/system/zfs-table.tsx
+#: src/components/routes/system/storage-pools-table.tsx
+#: src/components/routes/system/storage-pools-table.tsx
 #: src/components/systemd-table/systemd-table.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "Filter..."
@@ -893,8 +893,8 @@ msgstr "For <0>{min}</0> {min, plural, one {minute} other {minutes}}"
 msgid "Forgot password?"
 msgstr "Forgot password?"
 
-#: src/components/routes/system/zfs-table.tsx
-#: src/components/routes/system/zfs-table.tsx
+#: src/components/routes/system/storage-pools-table.tsx
+#: src/components/routes/system/storage-pools-table.tsx
 msgctxt "Free space"
 msgid "Free"
 msgstr "Free"
@@ -943,7 +943,7 @@ msgid "Grid"
 msgstr "Grid"
 
 #: src/components/containers-table/containers-table-columns.tsx
-#: src/components/routes/system/zfs-table.tsx
+#: src/components/routes/system/storage-pools-table.tsx
 msgid "Health"
 msgstr "Health"
 
@@ -1141,7 +1141,7 @@ msgstr "Memory usage of containers"
 msgid "Model"
 msgstr "Model"
 
-#: src/components/routes/system/zfs-table.tsx
+#: src/components/routes/system/storage-pools-table.tsx
 msgid "Mountpoint"
 msgstr "Mountpoint"
 
@@ -1180,7 +1180,7 @@ msgstr "Network unit"
 msgid "No"
 msgstr "No"
 
-#: src/components/routes/system/zfs-table.tsx
+#: src/components/routes/system/storage-pools-table.tsx
 msgid "No detail data for this pool."
 msgstr "No detail data for this pool."
 
@@ -1207,7 +1207,7 @@ msgstr "No S.M.A.R.T. attributes available for this device."
 msgid "No systems found."
 msgstr "No systems found."
 
-#: src/components/routes/system/zfs-table.tsx
+#: src/components/routes/system/storage-pools-table.tsx
 msgid "None"
 msgstr "None"
 
@@ -1250,7 +1250,7 @@ msgstr "One-time password"
 #: src/components/routes/settings/tokens-fingerprints.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 #: src/components/routes/system/smart-table.tsx
-#: src/components/routes/system/zfs-table.tsx
+#: src/components/routes/system/storage-pools-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Open menu"
 msgstr "Open menu"
@@ -1341,6 +1341,10 @@ msgstr "Permanent"
 msgid "Persistence"
 msgstr "Persistence"
 
+#: src/components/routes/system/raw-capacity-label.tsx
+msgid "Physical device space. True usable capacity is unknown. Pool disk usage alerts are disabled."
+msgstr "Physical device space. True usable capacity is unknown. Pool disk usage alerts are disabled."
+
 #: src/components/routes/settings/notifications.tsx
 msgid "Please <0>configure an SMTP server</0> to ensure alerts are delivered."
 msgstr "Please <0>configure an SMTP server</0> to ensure alerts are delivered."
@@ -1374,11 +1378,11 @@ msgstr "Please see <0>the documentation</0> for instructions."
 msgid "Please sign in to your account"
 msgstr "Please sign in to your account"
 
-#: src/components/routes/system/zfs-table.tsx
+#: src/components/routes/system/storage-pools-table.tsx
 msgid "Pool Health"
 msgstr "Pool Health"
 
-#: src/components/routes/system/charts/zfs-charts.tsx
+#: src/components/routes/system/charts/storage-pool-charts.tsx
 msgid "Pool Usage"
 msgstr "Pool Usage"
 
@@ -1427,10 +1431,21 @@ msgstr "Queue Depth"
 msgid "Quiet Hours"
 msgstr "Quiet Hours"
 
+#: src/components/routes/system/raw-capacity-label.tsx
+#: src/components/routes/system/storage-pools-table.tsx
+#: src/components/routes/system/storage-pools-table.tsx
+#: src/components/routes/system/storage-pools-table.tsx
+msgid "Raw"
+msgstr "Raw"
+
+#: src/components/routes/system/charts/storage-pool-charts.tsx
+msgid "Raw usage of storage pool {displayName}"
+msgstr "Raw usage of storage pool {displayName}"
+
 #. Disk read
 #. Disk read
 #: src/components/routes/system/charts/disk-charts.tsx
-#: src/components/routes/system/charts/zfs-charts.tsx
+#: src/components/routes/system/charts/storage-pool-charts.tsx
 #: src/components/routes/system/disk-io-sheet.tsx
 #: src/components/routes/system/disk-io-sheet.tsx
 #: src/components/routes/system/disk-io-sheet.tsx
@@ -1438,7 +1453,7 @@ msgstr "Quiet Hours"
 msgid "Read"
 msgstr "Read"
 
-#: src/components/routes/system/zfs-table.tsx
+#: src/components/routes/system/storage-pools-table.tsx
 msgid "Read errors"
 msgstr "Read errors"
 
@@ -1449,7 +1464,7 @@ msgstr "Received"
 #: src/components/containers-table/containers-table.tsx
 #: src/components/containers-table/containers-table.tsx
 #: src/components/routes/system/smart-table.tsx
-#: src/components/routes/system/zfs-table.tsx
+#: src/components/routes/system/storage-pools-table.tsx
 msgid "Refresh"
 msgstr "Refresh"
 
@@ -1638,7 +1653,7 @@ msgstr "Start Time"
 #. Context: alert state (active or resolved)
 #: src/components/alerts-history-columns.tsx
 #: src/components/routes/settings/quiet-hours.tsx
-#: src/components/routes/system/zfs-table.tsx
+#: src/components/routes/system/storage-pools-table.tsx
 #: src/components/systemd-table/systemd-table-columns.tsx
 msgid "State"
 msgstr "State"
@@ -1767,9 +1782,9 @@ msgstr "This will permanently delete all selected records from the database."
 msgid "Throughput of {extraFsName}"
 msgstr "Throughput of {extraFsName}"
 
-#: src/components/routes/system/charts/zfs-charts.tsx
-msgid "Throughput of storage pool {poolName}"
-msgstr "Throughput of storage pool {poolName}"
+#: src/components/routes/system/charts/storage-pool-charts.tsx
+msgid "Throughput of storage pool {displayName}"
+msgstr "Throughput of storage pool {displayName}"
 
 #: src/components/routes/settings/general.tsx
 msgid "Time format"
@@ -1892,6 +1907,7 @@ msgstr "Triggers when usage of any disk exceeds a threshold"
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/system/smart-table.tsx
+#: src/components/routes/system/storage-pools-table.tsx
 msgid "Type"
 msgstr "Type"
 
@@ -1914,7 +1930,7 @@ msgid "Universal token"
 msgstr "Universal token"
 
 #. Context: Battery state
-#: src/components/routes/system/zfs-table.tsx
+#: src/components/routes/system/storage-pools-table.tsx
 #: src/lib/i18n.ts
 msgid "Unknown"
 msgstr "Unknown"
@@ -1940,7 +1956,7 @@ msgstr "Update"
 
 #: src/components/containers-table/containers-table-columns.tsx
 #: src/components/routes/system/smart-table.tsx
-#: src/components/routes/system/zfs-table.tsx
+#: src/components/routes/system/storage-pools-table.tsx
 #: src/components/systemd-table/systemd-table-columns.tsx
 msgid "Updated"
 msgstr "Updated"
@@ -1963,20 +1979,20 @@ msgstr "Uptime"
 #: src/components/routes/system/charts/gpu-charts.tsx
 #: src/components/routes/system/charts/gpu-charts.tsx
 #: src/components/routes/system/charts/gpu-charts.tsx
-#: src/components/routes/system/charts/zfs-charts.tsx
+#: src/components/routes/system/charts/storage-pool-charts.tsx
 #: src/components/routes/system/cpu-sheet.tsx
 msgid "Usage"
 msgstr "Usage"
 
-#: src/components/routes/system/charts/zfs-charts.tsx
-msgid "Usage of storage pool {poolName}"
-msgstr "Usage of storage pool {poolName}"
+#: src/components/routes/system/charts/storage-pool-charts.tsx
+msgid "Usage of storage pool {displayName}"
+msgstr "Usage of storage pool {displayName}"
 
 #: src/components/routes/system/charts/memory-charts.tsx
 #: src/components/routes/system/charts/memory-charts.tsx
-#: src/components/routes/system/zfs-table.tsx
-#: src/components/routes/system/zfs-table.tsx
-#: src/components/routes/system/zfs-table.tsx
+#: src/components/routes/system/storage-pools-table.tsx
+#: src/components/routes/system/storage-pools-table.tsx
+#: src/components/routes/system/storage-pools-table.tsx
 msgid "Used"
 msgstr "Used"
 
@@ -2053,7 +2069,7 @@ msgstr "Windows command"
 #. Disk write
 #. Disk write
 #: src/components/routes/system/charts/disk-charts.tsx
-#: src/components/routes/system/charts/zfs-charts.tsx
+#: src/components/routes/system/charts/storage-pool-charts.tsx
 #: src/components/routes/system/disk-io-sheet.tsx
 #: src/components/routes/system/disk-io-sheet.tsx
 #: src/components/routes/system/disk-io-sheet.tsx
@@ -2061,7 +2077,7 @@ msgstr "Windows command"
 msgid "Write"
 msgstr "Write"
 
-#: src/components/routes/system/zfs-table.tsx
+#: src/components/routes/system/storage-pools-table.tsx
 msgid "Write errors"
 msgstr "Write errors"
 

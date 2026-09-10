@@ -2,7 +2,7 @@ import { t } from "@lingui/core/macro"
 import { InfoIcon } from "lucide-react"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 
-export function RawCapacityLabel({ label = t`Raw capacity` }: { label?: string }) {
+export function RawCapacityLabel({ label = t`Raw` }: { label?: string }) {
 	return (
 		<span className="inline-flex items-center gap-1">
 			{label}
@@ -10,7 +10,7 @@ export function RawCapacityLabel({ label = t`Raw capacity` }: { label?: string }
 				<TooltipTrigger asChild>
 					<button
 						type="button"
-						aria-label={t`About raw capacity`}
+						aria-label="About raw capacity"
 						className="inline-flex rounded-sm text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
 					>
 						<InfoIcon className="size-3.5" aria-hidden="true" />
