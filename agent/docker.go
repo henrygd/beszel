@@ -225,7 +225,7 @@ func (dm *dockerManager) checkImageUpdate(ctr *container.ApiInfo) bool {
 	// split image <name>:<tag>
 	tmp := strings.SplitN(ctr.Image, ":", 2)
 	name := tmp[0]
-	tag := "latest" // default to latest if not specified
+	tag := "latest" // default to "latest" if not specified
 	if len(tmp) > 1 {
 		tag = tmp[1]
 	}
