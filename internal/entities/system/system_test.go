@@ -117,3 +117,33 @@ func TestCombinedDataContainerValidityTransport(t *testing.T) {
 	require.NoError(t, cbor.Unmarshal(invalidData, &decodedInvalid))
 	assert.Nil(t, decodedInvalid.Containers)
 }
+
+// Assert wire IDs directly: a round trip alone cannot detect renumbered fields.
+func TestStatsStableCBORKeys(t *testing.T) {
+	stats := Stats{
+		Fans:        map[string]uint16{"cpu": 1200},
+		Batteries:   map[string]uint8{"mouse": 80},
+		DiskIOTotal: [2]uint64{123, 456},
+		ZfsPools:    map[string]*ZfsPool{"tank": {}},
+		Processes:   [5]uint32{1, 70000, 1, 1, 1},
+	}
+	data, err := cbor.Marshal(stats)
+	require.NoError(t, err)
+	var payload map[int]cbor.RawMessage
+	require.NoError(t, cbor.Unmarshal(data, &payload))
+	for key, value := range map[int]any{36: stats.Fans, 37: stats.Batteries, 38: stats.DiskIOTotal, 39: stats.ZfsPools, 40: stats.Processes} {
+		expected, err := cbor.Marshal(value)
+		require.NoError(t, err)
+		assert.Equal(t, cbor.RawMessage(expected), payload[key], "CBOR key %d", key)
+	}
+	// Main's disk and ZFS fields must still decode under their original keys.
+	legacy, err := cbor.Marshal(map[int]any{38: stats.DiskIOTotal, 39: stats.ZfsPools})
+	require.NoError(t, err)
+	var decoded Stats
+	require.NoError(t, cbor.Unmarshal(legacy, &decoded))
+	assert.Equal(t, stats.DiskIOTotal, decoded.DiskIOTotal)
+	assert.Equal(t, stats.ZfsPools, decoded.ZfsPools)
+	assert.Zero(t, decoded.Processes)
+	require.NoError(t, cbor.Unmarshal(data, &decoded))
+	assert.Equal(t, stats.Processes, decoded.Processes)
+}

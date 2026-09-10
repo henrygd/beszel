@@ -40,6 +40,7 @@ type Agent struct {
 	systemDetails             system.Details                                        // Host system details (static, once-per-connection)
 	detailsDirty              bool                                                  // Whether system details have changed and need to be resent
 	gpuManager                *GPUManager                                           // Manages GPU data
+	processCounts             processCountsCache                                    // Process counts shared across stats intervals
 	cache                     *systemDataCache                                      // Cache for system stats based on cache time
 	connectionManager         *ConnectionManager                                    // Channel to signal connection events
 	handlerRegistry           *HandlerRegistry                                      // Registry for routing incoming messages

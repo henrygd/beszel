@@ -9,6 +9,7 @@ import (
 	"os"
 	"runtime"
 	"strings"
+	"time"
 
 	"github.com/henrygd/beszel"
 	"github.com/henrygd/beszel/agent/battery"
@@ -22,7 +23,6 @@ import (
 	"github.com/shirou/gopsutil/v4/host"
 	"github.com/shirou/gopsutil/v4/load"
 	"github.com/shirou/gopsutil/v4/mem"
-	"github.com/shirou/gopsutil/v4/process"
 )
 
 // Sets initial / non-changing values about the host system
@@ -269,7 +269,7 @@ func (a *Agent) getSystemStats(cacheTimeMs uint16) system.Stats {
 	}
 
 	// process state counts
-	if counts, err := getProcessCounts(); err == nil {
+	if counts, err := a.processCounts.get(time.Now(), getProcessCounts); err == nil {
 		systemStats.Processes = counts
 	} else {
 		slog.Debug("Error getting process counts", "err", err)
@@ -287,35 +287,6 @@ func (a *Agent) getSystemStats(cacheTimeMs uint16) system.Stats {
 	a.systemInfo.Threads = a.systemDetails.Threads
 
 	return systemStats
-}
-
-// getProcessCounts returns process state counts as [total, running, sleeping, idle, stopped, zombie].
-func getProcessCounts() ([6]uint16, error) {
-	var counts [6]uint16
-	procs, err := process.Processes()
-	if err != nil {
-		return counts, err
-	}
-	counts[0] = uint16(len(procs))
-	for _, p := range procs {
-		statuses, err := p.Status()
-		if err != nil || len(statuses) == 0 {
-			continue
-		}
-		switch statuses[0] {
-		case "running":
-			counts[1]++
-		case "sleep":
-			counts[2]++
-		case "idle":
-			counts[3]++
-		case "stop":
-			counts[4]++
-		case "zombie":
-			counts[5]++
-		}
-	}
-	return counts, nil
 }
 
 // cpuModelFallbackKeys are the field names to look for in /proc/cpuinfo when
