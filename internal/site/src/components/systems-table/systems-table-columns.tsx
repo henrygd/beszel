@@ -231,7 +231,7 @@ export function SystemsTableColumns(viewMode: "table" | "grid"): ColumnDef<Syste
 			header: sortableHeader,
 		},
 		{
-			accessorFn: ({ info }) => info.g || undefined,
+			accessorFn: ({ info }) => info.g,
 			id: "gpu",
 			name: () => "GPU",
 			cell: (info) => {
