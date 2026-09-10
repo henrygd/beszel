@@ -8,7 +8,7 @@ msgstr ""
 "Language: ru\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2026-09-02 21:43\n"
+"PO-Revision-Date: 2026-09-10 00:33\n"
 "Last-Translator: \n"
 "Language-Team: Russian\n"
 "Plural-Forms: nplurals=4; plural=((n%10==1 && n%100!=11) ? 0 : ((n%10 >= 2 && n%10 <=4 && (n%100 < 12 || n%100 > 14)) ? 1 : ((n%10 == 0 || (n%10 >= 5 && n%10 <=9)) || (n%100 >= 11 && n%100 <= 14)) ? 2 : 3));\n"
@@ -234,7 +234,7 @@ msgstr "Среднее время от очереди до завершения 
 
 #: src/components/routes/system/charts/cpu-charts.tsx
 msgid "Average system-wide CPU utilization"
-msgstr "Среднее использование CPU по всей системе"
+msgstr "Среднее использование CPU в системе"
 
 #. placeholder {0}: gpu.n
 #: src/components/routes/system/charts/gpu-charts.tsx
@@ -932,7 +932,7 @@ msgstr "GPU"
 
 #: src/components/routes/system/charts/gpu-charts.tsx
 msgid "GPU Engines"
-msgstr "GPU движки"
+msgstr "Ядра GPU"
 
 #: src/components/routes/system/charts/gpu-charts.tsx
 msgid "GPU Power Draw"
@@ -1408,7 +1408,7 @@ msgstr "Включение питания"
 #: src/components/routes/system/charts/gpu-charts.tsx
 #: src/components/routes/system/charts/memory-charts.tsx
 msgid "Precise utilization at the recorded time"
-msgstr "Точное использование в записанное время"
+msgstr "Использование по времени"
 
 #: src/components/routes/settings/general.tsx
 msgid "Preferred Language"
@@ -1516,7 +1516,7 @@ msgstr "Возобновить"
 #: src/components/systems-table/systems-table-columns.tsx
 msgctxt "Root disk label"
 msgid "Root"
-msgstr "Корневой"
+msgstr "Системный"
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Rotate token"
@@ -1677,7 +1677,7 @@ msgstr "Подсостояние"
 
 #: src/components/routes/system/charts/memory-charts.tsx
 msgid "Swap space used by the system"
-msgstr "Используемое системой пространство подкачки"
+msgstr "Размер файла подкачки системы"
 
 #: src/components/routes/system/charts/memory-charts.tsx
 msgid "Swap Usage"
@@ -1709,7 +1709,7 @@ msgstr "Скорость вращения системных вентилято�
 
 #: src/components/routes/system/charts/load-average-chart.tsx
 msgid "System load averages over time"
-msgstr "Средняя загрузка системы за время"
+msgstr "Средняя загрузка системы по времени"
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Systemd Services"
@@ -1753,7 +1753,7 @@ msgstr "Единицы измерения температуры"
 
 #: src/components/routes/system/charts/sensor-charts.tsx
 msgid "Temperatures of system sensors"
-msgstr "Температуры датчиков системы"
+msgstr "Температура датчиков системы"
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Test <0>URL</0>"
@@ -2103,3 +2103,4 @@ msgstr "Да"
 #: src/components/routes/settings/layout.tsx
 msgid "Your user settings have been updated."
 msgstr "Ваши настройки пользователя были обновлены."
+
