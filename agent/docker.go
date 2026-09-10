@@ -634,6 +634,14 @@ func (dm *dockerManager) updateContainerStats(ctr *container.ApiInfo, cacheTimeM
 	stats.Status = statusText
 	stats.Health = health
 
+	// Check if image update is available
+	stats.UpdateAvailable = dm.checkImageUpdate(ctr)
+	if stats.UpdateAvailable {
+		stats.Image = "↑" + ctr.Image
+	} else {
+		stats.Image = ctr.Image
+	}
+
 	if len(ctr.Ports) > 0 {
 		stats.Ports = convertContainerPortsToString(ctr)
 	}
@@ -651,9 +659,6 @@ func (dm *dockerManager) updateContainerStats(ctr *container.ApiInfo, cacheTimeM
 	if err := dm.decode(resp, res); err != nil {
 		return err
 	}
-
-	// Check if image update is available
-	stats.UpdateAvailable = dm.checkImageUpdate(ctr)
 
 	// Initialize CPU tracking for this cache time interval
 	dm.initializeCpuTracking(cacheTimeMs)
