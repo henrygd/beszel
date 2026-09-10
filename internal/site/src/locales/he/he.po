@@ -503,7 +503,7 @@ msgstr "העתק שם"
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Copy public key"
-msgstr ""
+msgstr "העתק מפתח ציבורי"
 
 #: src/components/copy-to-clipboard.tsx
 msgid "Copy text"
@@ -530,7 +530,7 @@ msgstr "ליבה"
 #: src/components/systemd-table/systemd-table-columns.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "CPU"
-msgstr "CPU"
+msgstr ""
 
 #: src/components/routes/system/cpu-sheet.tsx
 msgid "CPU Cores"
@@ -869,7 +869,7 @@ msgstr "נכשל: {0}"
 
 #: src/components/routes/system/charts/sensor-charts.tsx
 msgid "Fans"
-msgstr ""
+msgstr "מאווררים"
 
 #: src/components/containers-table/containers-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
@@ -1348,7 +1348,7 @@ msgstr "עקביות"
 
 #: src/components/routes/system/raw-capacity-label.tsx
 msgid "Physical device space. True usable capacity is unknown. Pool disk usage alerts are disabled."
-msgstr ""
+msgstr "שטח פיזי של ההתקן. הקיבולת האמיתית הניתנת לשימוש אינה ידועה. התראות השימוש בדיסקים של המאגר מושבתות."
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Please <0>configure an SMTP server</0> to ensure alerts are delivered."
@@ -1420,7 +1420,7 @@ msgstr "תהליך התחיל"
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Public key"
-msgstr ""
+msgstr "מפתח ציבורי"
 
 #. Use 'Key' if your language requires many more characters
 #: src/components/add-system.tsx
@@ -1441,11 +1441,11 @@ msgstr "שעות שקט"
 #: src/components/routes/system/storage-pools-table.tsx
 #: src/components/routes/system/storage-pools-table.tsx
 msgid "Raw"
-msgstr ""
+msgstr "גולמי"
 
 #: src/components/routes/system/charts/storage-pool-charts.tsx
 msgid "Raw usage of storage pool {displayName}"
-msgstr ""
+msgstr "שימוש גולמי במאגר האחסון {displayName}"
 
 #. Disk read
 #. Disk read
@@ -1686,7 +1686,7 @@ msgstr "שימוש ב-Swap"
 #: src/components/mode-toggle.tsx
 #: src/components/mode-toggle.tsx
 msgid "Switch theme"
-msgstr ""
+msgstr "החלף ערכת נושא"
 
 #: src/components/add-system.tsx
 #: src/components/alerts-history-columns.tsx
@@ -1705,7 +1705,7 @@ msgstr "מערכת"
 
 #: src/components/routes/system/charts/sensor-charts.tsx
 msgid "System fan speeds (RPM)"
-msgstr ""
+msgstr "מהירויות מאווררי המערכת (RPM)"
 
 #: src/components/routes/system/charts/load-average-chart.tsx
 msgid "System load averages over time"
@@ -1789,7 +1789,7 @@ msgstr "תפוקה של {extraFsName}"
 
 #: src/components/routes/system/charts/storage-pool-charts.tsx
 msgid "Throughput of storage pool {displayName}"
-msgstr ""
+msgstr "תפוקה של מאגר האחסון {displayName}"
 
 #: src/components/routes/settings/general.tsx
 msgid "Time format"
@@ -1802,7 +1802,7 @@ msgstr "לאימייל(ים)"
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Token"
-msgstr "Token"
+msgstr ""
 
 #: src/components/command-palette.tsx
 #: src/components/routes/settings/layout.tsx
@@ -1991,7 +1991,7 @@ msgstr "שימוש"
 
 #: src/components/routes/system/charts/storage-pool-charts.tsx
 msgid "Usage of storage pool {displayName}"
-msgstr ""
+msgstr "שימוש במאגר האחסון {displayName}"
 
 #: src/components/routes/system/charts/memory-charts.tsx
 #: src/components/routes/system/charts/memory-charts.tsx
@@ -2103,4 +2103,3 @@ msgstr "כן"
 #: src/components/routes/settings/layout.tsx
 msgid "Your user settings have been updated."
 msgstr "הגדרות המשתמש שלך עודכנו."
-

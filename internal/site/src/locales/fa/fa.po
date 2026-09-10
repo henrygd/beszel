@@ -503,7 +503,7 @@ msgstr "کپی نام"
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Copy public key"
-msgstr ""
+msgstr "کپی کردن کلید عمومی"
 
 #: src/components/copy-to-clipboard.tsx
 msgid "Copy text"
@@ -869,7 +869,7 @@ msgstr "ناموفق: {0}"
 
 #: src/components/routes/system/charts/sensor-charts.tsx
 msgid "Fans"
-msgstr ""
+msgstr "فن‌ها"
 
 #: src/components/containers-table/containers-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
@@ -1348,7 +1348,7 @@ msgstr "ماندگاری"
 
 #: src/components/routes/system/raw-capacity-label.tsx
 msgid "Physical device space. True usable capacity is unknown. Pool disk usage alerts are disabled."
-msgstr ""
+msgstr "فضای فیزیکی دستگاه. ظرفیت واقعی قابل استفاده نامشخص است. هشدارهای استفاده از دیسک استخر غیرفعال هستند."
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Please <0>configure an SMTP server</0> to ensure alerts are delivered."
@@ -1420,7 +1420,7 @@ msgstr "فرآیند شروع شد"
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Public key"
-msgstr ""
+msgstr "کلید عمومی"
 
 #. Use 'Key' if your language requires many more characters
 #: src/components/add-system.tsx
@@ -1441,11 +1441,11 @@ msgstr "ساعات آرام"
 #: src/components/routes/system/storage-pools-table.tsx
 #: src/components/routes/system/storage-pools-table.tsx
 msgid "Raw"
-msgstr ""
+msgstr "خام"
 
 #: src/components/routes/system/charts/storage-pool-charts.tsx
 msgid "Raw usage of storage pool {displayName}"
-msgstr ""
+msgstr "استفاده خام از استخر ذخیره‌سازی {displayName}"
 
 #. Disk read
 #. Disk read
@@ -1686,7 +1686,7 @@ msgstr "میزان استفاده از Swap"
 #: src/components/mode-toggle.tsx
 #: src/components/mode-toggle.tsx
 msgid "Switch theme"
-msgstr ""
+msgstr "تغییر تم"
 
 #: src/components/add-system.tsx
 #: src/components/alerts-history-columns.tsx
@@ -1705,7 +1705,7 @@ msgstr "سیستم"
 
 #: src/components/routes/system/charts/sensor-charts.tsx
 msgid "System fan speeds (RPM)"
-msgstr ""
+msgstr "سرعت فن‌های سیستم (RPM)"
 
 #: src/components/routes/system/charts/load-average-chart.tsx
 msgid "System load averages over time"
@@ -1789,7 +1789,7 @@ msgstr "توان عملیاتی {extraFsName}"
 
 #: src/components/routes/system/charts/storage-pool-charts.tsx
 msgid "Throughput of storage pool {displayName}"
-msgstr ""
+msgstr "توان عملیاتی استخر ذخیره‌سازی {displayName}"
 
 #: src/components/routes/settings/general.tsx
 msgid "Time format"
@@ -1834,7 +1834,7 @@ msgstr "داده‌های کل ارسال شده برای هر رابط"
 #: src/components/routes/system/disk-io-sheet.tsx
 msgctxt "Disk I/O"
 msgid "Total time spent on read/write (can exceed 100%)"
-msgstr ""
+msgstr "کل زمان صرف‌شده برای خواندن/نوشتن (ممکن است از ۱۰۰٪ بیشتر شود)"
 
 #. placeholder {0}: data.length
 #: src/components/systemd-table/systemd-table.tsx
@@ -1991,7 +1991,7 @@ msgstr "میزان استفاده"
 
 #: src/components/routes/system/charts/storage-pool-charts.tsx
 msgid "Usage of storage pool {displayName}"
-msgstr ""
+msgstr "استفاده از استخر ذخیره‌سازی {displayName}"
 
 #: src/components/routes/system/charts/memory-charts.tsx
 #: src/components/routes/system/charts/memory-charts.tsx
@@ -2103,4 +2103,3 @@ msgstr "بله"
 #: src/components/routes/settings/layout.tsx
 msgid "Your user settings have been updated."
 msgstr "تنظیمات کاربری شما به‌روزرسانی شد."
-

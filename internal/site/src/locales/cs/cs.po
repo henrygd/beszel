@@ -61,7 +61,7 @@ msgstr "1 hodina"
 #. Load average
 #: src/components/routes/system/charts/load-average-chart.tsx
 msgid "1 min"
-msgstr "1 min"
+msgstr ""
 
 #: src/lib/utils.ts
 msgid "1 minute"
@@ -78,7 +78,7 @@ msgstr "12 hodin"
 #. Load average
 #: src/components/routes/system/charts/load-average-chart.tsx
 msgid "15 min"
-msgstr "15 min"
+msgstr ""
 
 #: src/lib/utils.ts
 msgid "24 hours"
@@ -91,7 +91,7 @@ msgstr "30 dní"
 #. Load average
 #: src/components/routes/system/charts/load-average-chart.tsx
 msgid "5 min"
-msgstr "5 min"
+msgstr ""
 
 #. Table column
 #: src/components/routes/settings/quiet-hours.tsx
@@ -154,7 +154,7 @@ msgstr "Po nastavení proměnných prostředí restartujte hub Beszel, aby se zm
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Agent"
-msgstr "Agent"
+msgstr ""
 
 #: src/components/command-palette.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
@@ -503,7 +503,7 @@ msgstr "Kopírovat název"
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Copy public key"
-msgstr ""
+msgstr "Zkopírovat veřejný klíč"
 
 #: src/components/copy-to-clipboard.tsx
 msgid "Copy text"
@@ -647,7 +647,7 @@ msgstr "Popis"
 
 #: src/components/containers-table/containers-table.tsx
 msgid "Detail"
-msgstr "Detail"
+msgstr ""
 
 #: src/components/routes/system/smart-table.tsx
 msgid "Device"
@@ -869,7 +869,7 @@ msgstr "Neúspěšné: {0}"
 
 #: src/components/routes/system/charts/sensor-charts.tsx
 msgid "Fans"
-msgstr ""
+msgstr "Ventilátory"
 
 #: src/components/containers-table/containers-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
@@ -1348,7 +1348,7 @@ msgstr "Trvalost"
 
 #: src/components/routes/system/raw-capacity-label.tsx
 msgid "Physical device space. True usable capacity is unknown. Pool disk usage alerts are disabled."
-msgstr ""
+msgstr "Fyzické místo na zařízení. Skutečná využitelná kapacita není známa. Upozornění na využití disků fondu jsou vypnutá."
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Please <0>configure an SMTP server</0> to ensure alerts are delivered."
@@ -1420,7 +1420,7 @@ msgstr "Proces spuštěn"
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Public key"
-msgstr ""
+msgstr "Veřejný klíč"
 
 #. Use 'Key' if your language requires many more characters
 #: src/components/add-system.tsx
@@ -1441,11 +1441,11 @@ msgstr "Tiché hodiny"
 #: src/components/routes/system/storage-pools-table.tsx
 #: src/components/routes/system/storage-pools-table.tsx
 msgid "Raw"
-msgstr ""
+msgstr "Hrubé"
 
 #: src/components/routes/system/charts/storage-pool-charts.tsx
 msgid "Raw usage of storage pool {displayName}"
-msgstr ""
+msgstr "Hrubé využití fondu {displayName}"
 
 #. Disk read
 #. Disk read
@@ -1686,7 +1686,7 @@ msgstr "Swap využití"
 #: src/components/mode-toggle.tsx
 #: src/components/mode-toggle.tsx
 msgid "Switch theme"
-msgstr ""
+msgstr "Přepnout motiv"
 
 #: src/components/add-system.tsx
 #: src/components/alerts-history-columns.tsx
@@ -1705,7 +1705,7 @@ msgstr "Systém"
 
 #: src/components/routes/system/charts/sensor-charts.tsx
 msgid "System fan speeds (RPM)"
-msgstr ""
+msgstr "Rychlosti ventilátorů systému (RPM)"
 
 #: src/components/routes/system/charts/load-average-chart.tsx
 msgid "System load averages over time"
@@ -1789,7 +1789,7 @@ msgstr "Propustnost {extraFsName}"
 
 #: src/components/routes/system/charts/storage-pool-charts.tsx
 msgid "Throughput of storage pool {displayName}"
-msgstr ""
+msgstr "Propustnost fondu {displayName}"
 
 #: src/components/routes/settings/general.tsx
 msgid "Time format"
@@ -1834,7 +1834,7 @@ msgstr "Celkový odeslaný objem dat pro každé rozhraní"
 #: src/components/routes/system/disk-io-sheet.tsx
 msgctxt "Disk I/O"
 msgid "Total time spent on read/write (can exceed 100%)"
-msgstr ""
+msgstr "Celkový čas strávený čtením/zápisem (může přesáhnout 100 %)"
 
 #. placeholder {0}: data.length
 #: src/components/systemd-table/systemd-table.tsx
@@ -1991,7 +1991,7 @@ msgstr "Využití"
 
 #: src/components/routes/system/charts/storage-pool-charts.tsx
 msgid "Usage of storage pool {displayName}"
-msgstr ""
+msgstr "Využití fondu {displayName}"
 
 #: src/components/routes/system/charts/memory-charts.tsx
 #: src/components/routes/system/charts/memory-charts.tsx
@@ -2103,4 +2103,3 @@ msgstr "Ano"
 #: src/components/routes/settings/layout.tsx
 msgid "Your user settings have been updated."
 msgstr "Vaše uživatelská nastavení byla aktualizována."
-

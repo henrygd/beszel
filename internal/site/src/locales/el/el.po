@@ -52,7 +52,7 @@ msgstr "I/O {diskName}"
 
 #: src/components/routes/system/info-bar.tsx
 msgid "{threads, plural, one {# thread} other {# threads}}"
-msgstr "{threads, plural, one {# thread} other {# threads}}"
+msgstr ""
 
 #: src/lib/utils.ts
 msgid "1 hour"
@@ -447,11 +447,11 @@ msgstr "Η σύνδεση είναι εκτός λειτουργίας"
 
 #: src/lib/alerts.ts
 msgid "Container"
-msgstr ""
+msgstr "Κοντέινερ"
 
 #: src/lib/alerts.ts
 msgid "Container Health"
-msgstr ""
+msgstr "Υγεία κοντέινερ"
 
 #: src/components/routes/system.tsx
 msgid "Containers"
@@ -530,7 +530,7 @@ msgstr "Βασικά"
 #: src/components/systemd-table/systemd-table-columns.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "CPU"
-msgstr "CPU"
+msgstr ""
 
 #: src/components/routes/system/cpu-sheet.tsx
 msgid "CPU Cores"
@@ -732,7 +732,7 @@ msgstr "Επεξεργασία {foo}"
 #: src/components/login/forgot-pass-form.tsx
 #: src/components/login/otp-forms.tsx
 msgid "Email"
-msgstr "Email"
+msgstr ""
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Email notifications"
@@ -928,7 +928,7 @@ msgstr "Καθολικό"
 
 #: src/components/routes/system.tsx
 msgid "GPU"
-msgstr "GPU"
+msgstr ""
 
 #: src/components/routes/system/charts/gpu-charts.tsx
 msgid "GPU Engines"
@@ -954,7 +954,7 @@ msgstr "Υγεία"
 
 #: src/components/routes/settings/layout.tsx
 msgid "Heartbeat"
-msgstr "Heartbeat"
+msgstr ""
 
 #: src/components/routes/settings/heartbeat.tsx
 msgid "Heartbeat Monitoring"
@@ -1348,7 +1348,7 @@ msgstr "Διατήρηση"
 
 #: src/components/routes/system/raw-capacity-label.tsx
 msgid "Physical device space. True usable capacity is unknown. Pool disk usage alerts are disabled."
-msgstr ""
+msgstr "Φυσικός χώρος συσκευής. Η πραγματική ωφέλιμη χωρητικότητα είναι άγνωστη. Οι ειδοποιήσεις χρήσης δίσκων του pool είναι απενεργοποιημένες."
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Please <0>configure an SMTP server</0> to ensure alerts are delivered."
@@ -1441,11 +1441,11 @@ msgstr "Ώρες σίγασης"
 #: src/components/routes/system/storage-pools-table.tsx
 #: src/components/routes/system/storage-pools-table.tsx
 msgid "Raw"
-msgstr ""
+msgstr "Ακατέργαστο"
 
 #: src/components/routes/system/charts/storage-pool-charts.tsx
 msgid "Raw usage of storage pool {displayName}"
-msgstr ""
+msgstr "Ακατέργαστη χρήση του pool αποθήκευσης {displayName}"
 
 #. Disk read
 #. Disk read
@@ -1789,7 +1789,7 @@ msgstr "Ρυθμός μεταφοράς του {extraFsName}"
 
 #: src/components/routes/system/charts/storage-pool-charts.tsx
 msgid "Throughput of storage pool {displayName}"
-msgstr ""
+msgstr "Ρυθμός μεταφοράς του pool αποθήκευσης {displayName}"
 
 #: src/components/routes/settings/general.tsx
 msgid "Time format"
@@ -1918,7 +1918,7 @@ msgstr "Τύπος"
 
 #: src/lib/alerts.ts
 msgid "Unhealthy"
-msgstr ""
+msgstr "Μη υγιές"
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Unit file"
@@ -1991,7 +1991,7 @@ msgstr "Χρήση"
 
 #: src/components/routes/system/charts/storage-pool-charts.tsx
 msgid "Usage of storage pool {displayName}"
-msgstr ""
+msgstr "Χρήση του pool αποθήκευσης {displayName}"
 
 #: src/components/routes/system/charts/memory-charts.tsx
 #: src/components/routes/system/charts/memory-charts.tsx
@@ -2103,4 +2103,3 @@ msgstr "Ναι"
 #: src/components/routes/settings/layout.tsx
 msgid "Your user settings have been updated."
 msgstr "Οι ρυθμίσεις χρήστη σας ενημερώθηκαν."
-

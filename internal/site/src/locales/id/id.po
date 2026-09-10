@@ -142,7 +142,7 @@ msgstr "Sesuaikan lebar layar utama"
 #: src/components/command-palette.tsx
 #: src/components/navbar.tsx
 msgid "Admin"
-msgstr "Admin"
+msgstr ""
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "After"
@@ -313,7 +313,7 @@ msgstr "Byte (KB/s, MB/s, GB/s)"
 
 #: src/components/routes/system/charts/memory-charts.tsx
 msgid "Cache / Buffers"
-msgstr "Cache / Buffers"
+msgstr ""
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Can reload"
@@ -348,7 +348,7 @@ msgstr "Perhatian - potensi kehilangan data"
 
 #: src/components/routes/settings/general.tsx
 msgid "Celsius (°C)"
-msgstr "Celsius (°C)"
+msgstr ""
 
 #: src/components/routes/settings/general.tsx
 msgid "Change display units for metrics."
@@ -503,7 +503,7 @@ msgstr "Salin nama"
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Copy public key"
-msgstr ""
+msgstr "Salin kunci publik"
 
 #: src/components/copy-to-clipboard.tsx
 msgid "Copy text"
@@ -869,7 +869,7 @@ msgstr "Gagal: {0}"
 
 #: src/components/routes/system/charts/sensor-charts.tsx
 msgid "Fans"
-msgstr ""
+msgstr "Kipas"
 
 #: src/components/containers-table/containers-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
@@ -1348,7 +1348,7 @@ msgstr "Tetap berlaku"
 
 #: src/components/routes/system/raw-capacity-label.tsx
 msgid "Physical device space. True usable capacity is unknown. Pool disk usage alerts are disabled."
-msgstr ""
+msgstr "Ruang perangkat fisik. Kapasitas sebenarnya yang dapat digunakan tidak diketahui. Peringatan penggunaan disk pool dinonaktifkan."
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Please <0>configure an SMTP server</0> to ensure alerts are delivered."
@@ -1420,7 +1420,7 @@ msgstr "Proses dimulai"
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Public key"
-msgstr ""
+msgstr "Kunci publik"
 
 #. Use 'Key' if your language requires many more characters
 #: src/components/add-system.tsx
@@ -1441,11 +1441,11 @@ msgstr "Jam Tenang"
 #: src/components/routes/system/storage-pools-table.tsx
 #: src/components/routes/system/storage-pools-table.tsx
 msgid "Raw"
-msgstr ""
+msgstr "Mentah"
 
 #: src/components/routes/system/charts/storage-pool-charts.tsx
 msgid "Raw usage of storage pool {displayName}"
-msgstr ""
+msgstr "Penggunaan mentah pool penyimpanan {displayName}"
 
 #. Disk read
 #. Disk read
@@ -1686,7 +1686,7 @@ msgstr "Penggunaan Swap"
 #: src/components/mode-toggle.tsx
 #: src/components/mode-toggle.tsx
 msgid "Switch theme"
-msgstr ""
+msgstr "Ganti tema"
 
 #: src/components/add-system.tsx
 #: src/components/alerts-history-columns.tsx
@@ -1705,7 +1705,7 @@ msgstr "Sistem"
 
 #: src/components/routes/system/charts/sensor-charts.tsx
 msgid "System fan speeds (RPM)"
-msgstr ""
+msgstr "Kecepatan kipas sistem (RPM)"
 
 #: src/components/routes/system/charts/load-average-chart.tsx
 msgid "System load averages over time"
@@ -1789,7 +1789,7 @@ msgstr "Throughput dari {extraFsName}"
 
 #: src/components/routes/system/charts/storage-pool-charts.tsx
 msgid "Throughput of storage pool {displayName}"
-msgstr ""
+msgstr "Laju transfer pool penyimpanan {displayName}"
 
 #: src/components/routes/settings/general.tsx
 msgid "Time format"
@@ -1834,7 +1834,7 @@ msgstr "Total data yang dikirim untuk setiap antarmuka"
 #: src/components/routes/system/disk-io-sheet.tsx
 msgctxt "Disk I/O"
 msgid "Total time spent on read/write (can exceed 100%)"
-msgstr ""
+msgstr "Total waktu yang dihabiskan untuk baca/tulis (dapat melebihi 100%)"
 
 #. placeholder {0}: data.length
 #: src/components/systemd-table/systemd-table.tsx
@@ -1991,7 +1991,7 @@ msgstr "Penggunaan"
 
 #: src/components/routes/system/charts/storage-pool-charts.tsx
 msgid "Usage of storage pool {displayName}"
-msgstr ""
+msgstr "Penggunaan pool penyimpanan {displayName}"
 
 #: src/components/routes/system/charts/memory-charts.tsx
 #: src/components/routes/system/charts/memory-charts.tsx
@@ -2103,4 +2103,3 @@ msgstr "Ya"
 #: src/components/routes/settings/layout.tsx
 msgid "Your user settings have been updated."
 msgstr "Pengaturan pengguna anda telah diperbarui."
-

@@ -142,7 +142,7 @@ msgstr "Prilagodite širinu glavnog rasporeda"
 #: src/components/command-palette.tsx
 #: src/components/navbar.tsx
 msgid "Admin"
-msgstr "Admin"
+msgstr ""
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "After"
@@ -154,7 +154,7 @@ msgstr "Nakon postavljanja varijabli okruženja, ponovno pokrenite svoj Beszel h
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Agent"
-msgstr "Agent"
+msgstr ""
 
 #: src/components/command-palette.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
@@ -348,7 +348,7 @@ msgstr "Oprez - mogući gubitak podataka"
 
 #: src/components/routes/settings/general.tsx
 msgid "Celsius (°C)"
-msgstr "Celsius (°C)"
+msgstr ""
 
 #: src/components/routes/settings/general.tsx
 msgid "Change display units for metrics."
@@ -503,7 +503,7 @@ msgstr "Kopiraj naziv"
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Copy public key"
-msgstr ""
+msgstr "Kopiraj javni ključ"
 
 #: src/components/copy-to-clipboard.tsx
 msgid "Copy text"
@@ -661,7 +661,7 @@ msgstr "Prazni se"
 #: src/components/routes/system.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Disk"
-msgstr "Disk"
+msgstr ""
 
 #: src/components/routes/settings/general.tsx
 msgid "Disk unit"
@@ -732,7 +732,7 @@ msgstr "Uredi {foo}"
 #: src/components/login/forgot-pass-form.tsx
 #: src/components/login/otp-forms.tsx
 msgid "Email"
-msgstr "Email"
+msgstr ""
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Email notifications"
@@ -869,7 +869,7 @@ msgstr "Neuspjelo: {0}"
 
 #: src/components/routes/system/charts/sensor-charts.tsx
 msgid "Fans"
-msgstr ""
+msgstr "Ventilatori"
 
 #: src/components/containers-table/containers-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
@@ -972,7 +972,7 @@ msgstr "Homebrew naredba"
 
 #: src/components/add-system.tsx
 msgid "Host / IP"
-msgstr "Host / IP"
+msgstr ""
 
 #: src/components/routes/settings/heartbeat.tsx
 msgid "HTTP Method"
@@ -1348,7 +1348,7 @@ msgstr "Postojanost"
 
 #: src/components/routes/system/raw-capacity-label.tsx
 msgid "Physical device space. True usable capacity is unknown. Pool disk usage alerts are disabled."
-msgstr ""
+msgstr "Fizički prostor uređaja. Stvarni iskoristivi kapacitet nije poznat. Upozorenja o iskorištenosti diskova spremišta su onemogućena."
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Please <0>configure an SMTP server</0> to ensure alerts are delivered."
@@ -1393,7 +1393,7 @@ msgstr "Iskorištenost spremišta"
 
 #: src/components/add-system.tsx
 msgid "Port"
-msgstr "Port"
+msgstr ""
 
 #: src/components/containers-table/containers-table-columns.tsx
 msgctxt "Container ports"
@@ -1420,7 +1420,7 @@ msgstr "Proces pokrenut"
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Public key"
-msgstr ""
+msgstr "Javni ključ"
 
 #. Use 'Key' if your language requires many more characters
 #: src/components/add-system.tsx
@@ -1441,11 +1441,11 @@ msgstr "Tihi sati"
 #: src/components/routes/system/storage-pools-table.tsx
 #: src/components/routes/system/storage-pools-table.tsx
 msgid "Raw"
-msgstr ""
+msgstr "Sirovo"
 
 #: src/components/routes/system/charts/storage-pool-charts.tsx
 msgid "Raw usage of storage pool {displayName}"
-msgstr ""
+msgstr "Sirova iskorištenost spremišta {displayName}"
 
 #. Disk read
 #. Disk read
@@ -1669,7 +1669,7 @@ msgstr "Stanje"
 #: src/components/systems-table/systems-table.tsx
 #: src/lib/alerts.ts
 msgid "Status"
-msgstr "Status"
+msgstr ""
 
 #: src/components/systemd-table/systemd-table-columns.tsx
 msgid "Sub State"
@@ -1686,7 +1686,7 @@ msgstr "Swap Iskorištenost"
 #: src/components/mode-toggle.tsx
 #: src/components/mode-toggle.tsx
 msgid "Switch theme"
-msgstr ""
+msgstr "Promijeni temu"
 
 #: src/components/add-system.tsx
 #: src/components/alerts-history-columns.tsx
@@ -1705,7 +1705,7 @@ msgstr "Sustav"
 
 #: src/components/routes/system/charts/sensor-charts.tsx
 msgid "System fan speeds (RPM)"
-msgstr ""
+msgstr "Brzine ventilatora sustava (RPM)"
 
 #: src/components/routes/system/charts/load-average-chart.tsx
 msgid "System load averages over time"
@@ -1740,7 +1740,7 @@ msgstr "Zadaci"
 #: src/components/routes/system/smart-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Temp"
-msgstr "Temp"
+msgstr ""
 
 #: src/components/routes/system/charts/sensor-charts.tsx
 #: src/lib/alerts.ts
@@ -1789,7 +1789,7 @@ msgstr "Protok {extraFsName}"
 
 #: src/components/routes/system/charts/storage-pool-charts.tsx
 msgid "Throughput of storage pool {displayName}"
-msgstr ""
+msgstr "Protok spremišta {displayName}"
 
 #: src/components/routes/settings/general.tsx
 msgid "Time format"
@@ -1802,7 +1802,7 @@ msgstr "Primaoci emaila"
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Token"
-msgstr "Token"
+msgstr ""
 
 #: src/components/command-palette.tsx
 #: src/components/routes/settings/layout.tsx
@@ -1834,7 +1834,7 @@ msgstr "Ukupni podaci poslani za svako sučelje"
 #: src/components/routes/system/disk-io-sheet.tsx
 msgctxt "Disk I/O"
 msgid "Total time spent on read/write (can exceed 100%)"
-msgstr ""
+msgstr "Ukupno vrijeme utrošeno na čitanje/pisanje (može prelaziti 100 %)"
 
 #. placeholder {0}: data.length
 #: src/components/systemd-table/systemd-table.tsx
@@ -1991,7 +1991,7 @@ msgstr "Iskorištenost"
 
 #: src/components/routes/system/charts/storage-pool-charts.tsx
 msgid "Usage of storage pool {displayName}"
-msgstr ""
+msgstr "Iskorištenost spremišta {displayName}"
 
 #: src/components/routes/system/charts/memory-charts.tsx
 #: src/components/routes/system/charts/memory-charts.tsx
@@ -2103,4 +2103,3 @@ msgstr "Da"
 #: src/components/routes/settings/layout.tsx
 msgid "Your user settings have been updated."
 msgstr "Vaše korisničke postavke su ažurirane."
-

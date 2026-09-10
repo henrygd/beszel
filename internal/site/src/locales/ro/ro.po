@@ -61,7 +61,7 @@ msgstr "1 oră"
 #. Load average
 #: src/components/routes/system/charts/load-average-chart.tsx
 msgid "1 min"
-msgstr "1 min"
+msgstr ""
 
 #: src/lib/utils.ts
 msgid "1 minute"
@@ -78,7 +78,7 @@ msgstr "12 ore"
 #. Load average
 #: src/components/routes/system/charts/load-average-chart.tsx
 msgid "15 min"
-msgstr "15 min"
+msgstr ""
 
 #: src/lib/utils.ts
 msgid "24 hours"
@@ -91,7 +91,7 @@ msgstr "30 zile"
 #. Load average
 #: src/components/routes/system/charts/load-average-chart.tsx
 msgid "5 min"
-msgstr "5 min"
+msgstr ""
 
 #. Table column
 #: src/components/routes/settings/quiet-hours.tsx
@@ -142,7 +142,7 @@ msgstr "Reglaţi lăţimea aspectului principal"
 #: src/components/command-palette.tsx
 #: src/components/navbar.tsx
 msgid "Admin"
-msgstr "Admin"
+msgstr ""
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "After"
@@ -154,7 +154,7 @@ msgstr "După setarea variabilelor de mediu, reporniţi centrul Beszel pentru ca
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Agent"
-msgstr "Agent"
+msgstr ""
 
 #: src/components/command-palette.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
@@ -348,7 +348,7 @@ msgstr "Atenție - posibilă pierdere de date"
 
 #: src/components/routes/settings/general.tsx
 msgid "Celsius (°C)"
-msgstr "Celsius (°C)"
+msgstr ""
 
 #: src/components/routes/settings/general.tsx
 msgid "Change display units for metrics."
@@ -530,7 +530,7 @@ msgstr ""
 #: src/components/systemd-table/systemd-table-columns.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "CPU"
-msgstr "CPU"
+msgstr ""
 
 #: src/components/routes/system/cpu-sheet.tsx
 msgid "CPU Cores"
@@ -732,7 +732,7 @@ msgstr "Editează {foo}"
 #: src/components/login/forgot-pass-form.tsx
 #: src/components/login/otp-forms.tsx
 msgid "Email"
-msgstr "Email"
+msgstr ""
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Email notifications"
@@ -924,7 +924,7 @@ msgstr ""
 
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Global"
-msgstr "Global"
+msgstr ""
 
 #: src/components/routes/system.tsx
 msgid "GPU"
@@ -1144,7 +1144,7 @@ msgstr "Utilizarea memoriei de către containere"
 #. Device model
 #: src/components/routes/system/smart-table.tsx
 msgid "Model"
-msgstr "Model"
+msgstr ""
 
 #: src/components/routes/system/storage-pools-table.tsx
 msgid "Mountpoint"
@@ -1393,7 +1393,7 @@ msgstr ""
 
 #: src/components/add-system.tsx
 msgid "Port"
-msgstr "Port"
+msgstr ""
 
 #: src/components/containers-table/containers-table-columns.tsx
 msgctxt "Container ports"
@@ -1821,7 +1821,7 @@ msgstr ""
 #: src/components/ui/chart.tsx
 #: src/components/ui/chart.tsx
 msgid "Total"
-msgstr "Total"
+msgstr ""
 
 #: src/components/routes/system/network-sheet.tsx
 msgid "Total data received for each interface"
@@ -1839,7 +1839,7 @@ msgstr ""
 #. placeholder {0}: data.length
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Total: {0}"
-msgstr "Total: {0}"
+msgstr ""
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Triggered by"

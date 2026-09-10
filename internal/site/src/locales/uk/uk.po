@@ -954,7 +954,7 @@ msgstr "Здоров’я"
 
 #: src/components/routes/settings/layout.tsx
 msgid "Heartbeat"
-msgstr "Heartbeat"
+msgstr ""
 
 #: src/components/routes/settings/heartbeat.tsx
 msgid "Heartbeat Monitoring"
@@ -1348,7 +1348,7 @@ msgstr "Стійкість"
 
 #: src/components/routes/system/raw-capacity-label.tsx
 msgid "Physical device space. True usable capacity is unknown. Pool disk usage alerts are disabled."
-msgstr ""
+msgstr "Фізичний простір пристрою. Справжня корисна ємність невідома. Сповіщення про використання дисків пулу вимкнено."
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Please <0>configure an SMTP server</0> to ensure alerts are delivered."
@@ -1441,11 +1441,11 @@ msgstr "Тихі години"
 #: src/components/routes/system/storage-pools-table.tsx
 #: src/components/routes/system/storage-pools-table.tsx
 msgid "Raw"
-msgstr ""
+msgstr "Необроблене"
 
 #: src/components/routes/system/charts/storage-pool-charts.tsx
 msgid "Raw usage of storage pool {displayName}"
-msgstr ""
+msgstr "Необроблене використання пулу сховища {displayName}"
 
 #. Disk read
 #. Disk read
@@ -1789,7 +1789,7 @@ msgstr "Пропускна здатність {extraFsName}"
 
 #: src/components/routes/system/charts/storage-pool-charts.tsx
 msgid "Throughput of storage pool {displayName}"
-msgstr ""
+msgstr "Пропускна здатність пулу сховища {displayName}"
 
 #: src/components/routes/settings/general.tsx
 msgid "Time format"
@@ -1991,7 +1991,7 @@ msgstr "Використання"
 
 #: src/components/routes/system/charts/storage-pool-charts.tsx
 msgid "Usage of storage pool {displayName}"
-msgstr ""
+msgstr "Використання пулу сховища {displayName}"
 
 #: src/components/routes/system/charts/memory-charts.tsx
 #: src/components/routes/system/charts/memory-charts.tsx
@@ -2103,4 +2103,3 @@ msgstr "Так"
 #: src/components/routes/settings/layout.tsx
 msgid "Your user settings have been updated."
 msgstr "Ваші налаштування користувача були оновлені."
-

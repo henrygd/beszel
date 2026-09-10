@@ -48,7 +48,7 @@ msgstr "{count, plural, one {{countString} 분} few {{countString} 분} many {{c
 
 #: src/components/routes/system/charts/disk-charts.tsx
 msgid "{diskName} I/O"
-msgstr "{diskName} I/O"
+msgstr ""
 
 #: src/components/routes/system/info-bar.tsx
 msgid "{threads, plural, one {# thread} other {# threads}}"
@@ -503,7 +503,7 @@ msgstr "이름 복사"
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Copy public key"
-msgstr ""
+msgstr "공개 키 복사"
 
 #: src/components/copy-to-clipboard.tsx
 msgid "Copy text"
@@ -530,7 +530,7 @@ msgstr "코어"
 #: src/components/systemd-table/systemd-table-columns.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "CPU"
-msgstr "CPU"
+msgstr ""
 
 #: src/components/routes/system/cpu-sheet.tsx
 msgid "CPU Cores"
@@ -869,7 +869,7 @@ msgstr "실패: {0}"
 
 #: src/components/routes/system/charts/sensor-charts.tsx
 msgid "Fans"
-msgstr ""
+msgstr "팬"
 
 #: src/components/containers-table/containers-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
@@ -1348,7 +1348,7 @@ msgstr "지속성"
 
 #: src/components/routes/system/raw-capacity-label.tsx
 msgid "Physical device space. True usable capacity is unknown. Pool disk usage alerts are disabled."
-msgstr ""
+msgstr "물리적 장치 공간. 실제 사용 가능한 용량을 알 수 없습니다. 풀 디스크 사용량 알림이 비활성화되어 있습니다."
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Please <0>configure an SMTP server</0> to ensure alerts are delivered."
@@ -1420,7 +1420,7 @@ msgstr "프로세스 시작됨"
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Public key"
-msgstr ""
+msgstr "공개 키"
 
 #. Use 'Key' if your language requires many more characters
 #: src/components/add-system.tsx
@@ -1441,11 +1441,11 @@ msgstr "조용한 시간"
 #: src/components/routes/system/storage-pools-table.tsx
 #: src/components/routes/system/storage-pools-table.tsx
 msgid "Raw"
-msgstr ""
+msgstr "원시"
 
 #: src/components/routes/system/charts/storage-pool-charts.tsx
 msgid "Raw usage of storage pool {displayName}"
-msgstr ""
+msgstr "스토리지 풀 {displayName}의 원시 사용량"
 
 #. Disk read
 #. Disk read
@@ -1686,7 +1686,7 @@ msgstr "스왑 사용량"
 #: src/components/mode-toggle.tsx
 #: src/components/mode-toggle.tsx
 msgid "Switch theme"
-msgstr ""
+msgstr "테마 전환"
 
 #: src/components/add-system.tsx
 #: src/components/alerts-history-columns.tsx
@@ -1705,7 +1705,7 @@ msgstr "시스템"
 
 #: src/components/routes/system/charts/sensor-charts.tsx
 msgid "System fan speeds (RPM)"
-msgstr ""
+msgstr "시스템 팬 속도 (RPM)"
 
 #: src/components/routes/system/charts/load-average-chart.tsx
 msgid "System load averages over time"
@@ -1789,7 +1789,7 @@ msgstr "{extraFsName}의 처리량"
 
 #: src/components/routes/system/charts/storage-pool-charts.tsx
 msgid "Throughput of storage pool {displayName}"
-msgstr ""
+msgstr "스토리지 풀 {displayName}의 처리량"
 
 #: src/components/routes/settings/general.tsx
 msgid "Time format"
@@ -1834,7 +1834,7 @@ msgstr "각 인터페이스별 총합 업로드 데이터량"
 #: src/components/routes/system/disk-io-sheet.tsx
 msgctxt "Disk I/O"
 msgid "Total time spent on read/write (can exceed 100%)"
-msgstr ""
+msgstr "읽기/쓰기에 소요된 총 시간 (100%를 초과할 수 있음)"
 
 #. placeholder {0}: data.length
 #: src/components/systemd-table/systemd-table.tsx
@@ -1991,7 +1991,7 @@ msgstr "사용량"
 
 #: src/components/routes/system/charts/storage-pool-charts.tsx
 msgid "Usage of storage pool {displayName}"
-msgstr ""
+msgstr "스토리지 풀 {displayName}의 사용량"
 
 #: src/components/routes/system/charts/memory-charts.tsx
 #: src/components/routes/system/charts/memory-charts.tsx
@@ -2103,4 +2103,3 @@ msgstr "예"
 #: src/components/routes/settings/layout.tsx
 msgid "Your user settings have been updated."
 msgstr "사용자 설정이 업데이트되었습니다."
-

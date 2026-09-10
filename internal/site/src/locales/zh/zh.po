@@ -48,7 +48,7 @@ msgstr "{count, plural, one {{countString} 分鐘} few {{countString} 分鐘} ma
 
 #: src/components/routes/system/charts/disk-charts.tsx
 msgid "{diskName} I/O"
-msgstr "{diskName} I/O"
+msgstr ""
 
 #: src/components/routes/system/info-bar.tsx
 msgid "{threads, plural, one {# thread} other {# threads}}"
@@ -154,7 +154,7 @@ msgstr "設定環境變數後，請重新啟動 Beszel Hub 以使變更生效。
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Agent"
-msgstr "Agent"
+msgstr ""
 
 #: src/components/command-palette.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
@@ -530,7 +530,7 @@ msgstr "核心指標"
 #: src/components/systemd-table/systemd-table-columns.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "CPU"
-msgstr "CPU"
+msgstr ""
 
 #: src/components/routes/system/cpu-sheet.tsx
 msgid "CPU Cores"
@@ -750,7 +750,7 @@ msgstr "結束時間"
 
 #: src/components/routes/settings/heartbeat.tsx
 msgid "Endpoint URL"
-msgstr "Endpoint URL"
+msgstr ""
 
 #: src/components/routes/settings/heartbeat.tsx
 msgid "Endpoint URL to ping (required)"
@@ -884,7 +884,7 @@ msgstr "篩選..."
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Fingerprint"
-msgstr "Fingerprint"
+msgstr ""
 
 #: src/components/routes/system/smart-table.tsx
 msgid "Firmware"
@@ -928,7 +928,7 @@ msgstr "全域"
 
 #: src/components/routes/system.tsx
 msgid "GPU"
-msgstr "GPU"
+msgstr ""
 
 #: src/components/routes/system/charts/gpu-charts.tsx
 msgid "GPU Engines"
@@ -954,7 +954,7 @@ msgstr "健康狀態"
 
 #: src/components/routes/settings/layout.tsx
 msgid "Heartbeat"
-msgstr "Heartbeat"
+msgstr ""
 
 #: src/components/routes/settings/heartbeat.tsx
 msgid "Heartbeat Monitoring"
@@ -972,7 +972,7 @@ msgstr "Homebrew 指令"
 
 #: src/components/add-system.tsx
 msgid "Host / IP"
-msgstr "Host / IP"
+msgstr ""
 
 #: src/components/routes/settings/heartbeat.tsx
 msgid "HTTP Method"
@@ -1348,7 +1348,7 @@ msgstr "持久性"
 
 #: src/components/routes/system/raw-capacity-label.tsx
 msgid "Physical device space. True usable capacity is unknown. Pool disk usage alerts are disabled."
-msgstr ""
+msgstr "實體裝置空間。真實可用容量未知。儲存池磁碟使用率警報已停用。"
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Please <0>configure an SMTP server</0> to ensure alerts are delivered."
@@ -1393,7 +1393,7 @@ msgstr "儲存池使用率"
 
 #: src/components/add-system.tsx
 msgid "Port"
-msgstr "Port"
+msgstr ""
 
 #: src/components/containers-table/containers-table-columns.tsx
 msgctxt "Container ports"
@@ -1441,11 +1441,11 @@ msgstr "靜音時段"
 #: src/components/routes/system/storage-pools-table.tsx
 #: src/components/routes/system/storage-pools-table.tsx
 msgid "Raw"
-msgstr ""
+msgstr "原始"
 
 #: src/components/routes/system/charts/storage-pool-charts.tsx
 msgid "Raw usage of storage pool {displayName}"
-msgstr ""
+msgstr "儲存池 {displayName} 的原始使用量"
 
 #. Disk read
 #. Disk read
@@ -1516,7 +1516,7 @@ msgstr "繼續"
 #: src/components/systems-table/systems-table-columns.tsx
 msgctxt "Root disk label"
 msgid "Root"
-msgstr "Root"
+msgstr ""
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Rotate token"
@@ -1789,7 +1789,7 @@ msgstr "{extraFsName}的傳輸速率"
 
 #: src/components/routes/system/charts/storage-pool-charts.tsx
 msgid "Throughput of storage pool {displayName}"
-msgstr ""
+msgstr "儲存池 {displayName} 的傳輸速率"
 
 #: src/components/routes/settings/general.tsx
 msgid "Time format"
@@ -1802,7 +1802,7 @@ msgstr "發送到電子郵件"
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Token"
-msgstr "Token"
+msgstr ""
 
 #: src/components/command-palette.tsx
 #: src/components/routes/settings/layout.tsx
@@ -1991,7 +1991,7 @@ msgstr "使用量"
 
 #: src/components/routes/system/charts/storage-pool-charts.tsx
 msgid "Usage of storage pool {displayName}"
-msgstr ""
+msgstr "儲存池 {displayName} 的使用量"
 
 #: src/components/routes/system/charts/memory-charts.tsx
 #: src/components/routes/system/charts/memory-charts.tsx
@@ -2103,4 +2103,3 @@ msgstr "是"
 #: src/components/routes/settings/layout.tsx
 msgid "Your user settings have been updated."
 msgstr "已更新您的使用者設定"
-

@@ -61,7 +61,7 @@ msgstr "1 ura"
 #. Load average
 #: src/components/routes/system/charts/load-average-chart.tsx
 msgid "1 min"
-msgstr "1 min"
+msgstr ""
 
 #: src/lib/utils.ts
 msgid "1 minute"
@@ -78,7 +78,7 @@ msgstr "12 ur"
 #. Load average
 #: src/components/routes/system/charts/load-average-chart.tsx
 msgid "15 min"
-msgstr "15 min"
+msgstr ""
 
 #: src/lib/utils.ts
 msgid "24 hours"
@@ -91,7 +91,7 @@ msgstr "30 dni"
 #. Load average
 #: src/components/routes/system/charts/load-average-chart.tsx
 msgid "5 min"
-msgstr "5 min"
+msgstr ""
 
 #. Table column
 #: src/components/routes/settings/quiet-hours.tsx
@@ -503,7 +503,7 @@ msgstr "Kopiraj ime"
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Copy public key"
-msgstr ""
+msgstr "Kopiraj javni ključ"
 
 #: src/components/copy-to-clipboard.tsx
 msgid "Copy text"
@@ -869,7 +869,7 @@ msgstr "Neuspešno: {0}"
 
 #: src/components/routes/system/charts/sensor-charts.tsx
 msgid "Fans"
-msgstr ""
+msgstr "Ventilatorji"
 
 #: src/components/containers-table/containers-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
@@ -1348,7 +1348,7 @@ msgstr "Vztrajnost"
 
 #: src/components/routes/system/raw-capacity-label.tsx
 msgid "Physical device space. True usable capacity is unknown. Pool disk usage alerts are disabled."
-msgstr ""
+msgstr "Fizični prostor naprave. Dejanska uporabna zmogljivost ni znana. Opozorila o uporabi diskov poola so onemogočena."
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Please <0>configure an SMTP server</0> to ensure alerts are delivered."
@@ -1420,7 +1420,7 @@ msgstr "Proces začet"
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Public key"
-msgstr ""
+msgstr "Javni ključ"
 
 #. Use 'Key' if your language requires many more characters
 #: src/components/add-system.tsx
@@ -1441,11 +1441,11 @@ msgstr "Tihi čas"
 #: src/components/routes/system/storage-pools-table.tsx
 #: src/components/routes/system/storage-pools-table.tsx
 msgid "Raw"
-msgstr ""
+msgstr "Surovo"
 
 #: src/components/routes/system/charts/storage-pool-charts.tsx
 msgid "Raw usage of storage pool {displayName}"
-msgstr ""
+msgstr "Surova uporaba shranjevalnega poola {displayName}"
 
 #. Disk read
 #. Disk read
@@ -1686,7 +1686,7 @@ msgstr "Swap uporaba"
 #: src/components/mode-toggle.tsx
 #: src/components/mode-toggle.tsx
 msgid "Switch theme"
-msgstr ""
+msgstr "Zamenjaj temo"
 
 #: src/components/add-system.tsx
 #: src/components/alerts-history-columns.tsx
@@ -1705,7 +1705,7 @@ msgstr "Sistemsko"
 
 #: src/components/routes/system/charts/sensor-charts.tsx
 msgid "System fan speeds (RPM)"
-msgstr ""
+msgstr "Hitrosti ventilatorjev sistema (RPM)"
 
 #: src/components/routes/system/charts/load-average-chart.tsx
 msgid "System load averages over time"
@@ -1740,7 +1740,7 @@ msgstr "Naloge"
 #: src/components/routes/system/smart-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Temp"
-msgstr "Temp"
+msgstr ""
 
 #: src/components/routes/system/charts/sensor-charts.tsx
 #: src/lib/alerts.ts
@@ -1789,7 +1789,7 @@ msgstr "Prepustnost {extraFsName}"
 
 #: src/components/routes/system/charts/storage-pool-charts.tsx
 msgid "Throughput of storage pool {displayName}"
-msgstr ""
+msgstr "Prepustnost shranjevalnega poola {displayName}"
 
 #: src/components/routes/settings/general.tsx
 msgid "Time format"
@@ -1834,7 +1834,7 @@ msgstr "Skupni poslani podatki za vsak vmesnik"
 #: src/components/routes/system/disk-io-sheet.tsx
 msgctxt "Disk I/O"
 msgid "Total time spent on read/write (can exceed 100%)"
-msgstr ""
+msgstr "Skupni čas, porabljen za branje/pisanje (lahko preseže 100 %)"
 
 #. placeholder {0}: data.length
 #: src/components/systemd-table/systemd-table.tsx
@@ -1991,7 +1991,7 @@ msgstr "Uporaba"
 
 #: src/components/routes/system/charts/storage-pool-charts.tsx
 msgid "Usage of storage pool {displayName}"
-msgstr ""
+msgstr "Uporaba shranjevalnega poola {displayName}"
 
 #: src/components/routes/system/charts/memory-charts.tsx
 #: src/components/routes/system/charts/memory-charts.tsx
@@ -2103,4 +2103,3 @@ msgstr "Da"
 #: src/components/routes/settings/layout.tsx
 msgid "Your user settings have been updated."
 msgstr "Vaše uporabniške nastavitve so posodobljene."
-

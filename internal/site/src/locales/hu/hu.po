@@ -48,7 +48,7 @@ msgstr "{count, plural, one {{countString} perc} few {{countString} perc} many {
 
 #: src/components/routes/system/charts/disk-charts.tsx
 msgid "{diskName} I/O"
-msgstr "{diskName} I/O"
+msgstr ""
 
 #: src/components/routes/system/info-bar.tsx
 msgid "{threads, plural, one {# thread} other {# threads}}"
@@ -348,7 +348,7 @@ msgstr "Figyelem - potenciális adatvesztés"
 
 #: src/components/routes/settings/general.tsx
 msgid "Celsius (°C)"
-msgstr "Celsius (°C)"
+msgstr ""
 
 #: src/components/routes/settings/general.tsx
 msgid "Change display units for metrics."
@@ -503,7 +503,7 @@ msgstr "Név másolása"
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Copy public key"
-msgstr ""
+msgstr "Nyilvános kulcs másolása"
 
 #: src/components/copy-to-clipboard.tsx
 msgid "Copy text"
@@ -530,7 +530,7 @@ msgstr "Mag"
 #: src/components/systemd-table/systemd-table-columns.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "CPU"
-msgstr "CPU"
+msgstr ""
 
 #: src/components/routes/system/cpu-sheet.tsx
 msgid "CPU Cores"
@@ -732,7 +732,7 @@ msgstr "Szerkesztés {foo}"
 #: src/components/login/forgot-pass-form.tsx
 #: src/components/login/otp-forms.tsx
 msgid "Email"
-msgstr "Email"
+msgstr ""
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Email notifications"
@@ -826,7 +826,7 @@ msgstr "Exportálja a jelenlegi rendszerkonfigurációt."
 
 #: src/components/routes/settings/general.tsx
 msgid "Fahrenheit (°F)"
-msgstr "Fahrenheit (°F)"
+msgstr ""
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Failed"
@@ -869,7 +869,7 @@ msgstr "Sikertelen: {0}"
 
 #: src/components/routes/system/charts/sensor-charts.tsx
 msgid "Fans"
-msgstr ""
+msgstr "Ventilátorok"
 
 #: src/components/containers-table/containers-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
@@ -888,7 +888,7 @@ msgstr "Ujjlenyomat"
 
 #: src/components/routes/system/smart-table.tsx
 msgid "Firmware"
-msgstr "Firmware"
+msgstr ""
 
 #: src/components/alerts/alerts-sheet.tsx
 msgid "For <0>{min}</0> {min, plural, one {minute} other {minutes}}"
@@ -1348,7 +1348,7 @@ msgstr "Tartósság"
 
 #: src/components/routes/system/raw-capacity-label.tsx
 msgid "Physical device space. True usable capacity is unknown. Pool disk usage alerts are disabled."
-msgstr ""
+msgstr "Fizikai eszközterület. A valódi használható kapacitás ismeretlen. A készlet lemezhasználati riasztásai le vannak tiltva."
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Please <0>configure an SMTP server</0> to ensure alerts are delivered."
@@ -1393,7 +1393,7 @@ msgstr "Tárkészlet kihasználtsága"
 
 #: src/components/add-system.tsx
 msgid "Port"
-msgstr "Port"
+msgstr ""
 
 #: src/components/containers-table/containers-table-columns.tsx
 msgctxt "Container ports"
@@ -1420,7 +1420,7 @@ msgstr "Folyamat elindítva"
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Public key"
-msgstr ""
+msgstr "Nyilvános kulcs"
 
 #. Use 'Key' if your language requires many more characters
 #: src/components/add-system.tsx
@@ -1441,11 +1441,11 @@ msgstr "Csendes órák"
 #: src/components/routes/system/storage-pools-table.tsx
 #: src/components/routes/system/storage-pools-table.tsx
 msgid "Raw"
-msgstr ""
+msgstr "Nyers"
 
 #: src/components/routes/system/charts/storage-pool-charts.tsx
 msgid "Raw usage of storage pool {displayName}"
-msgstr ""
+msgstr "A(z) {displayName} tárolókészlet nyers kihasználtsága"
 
 #. Disk read
 #. Disk read
@@ -1686,7 +1686,7 @@ msgstr "Swap használat"
 #: src/components/mode-toggle.tsx
 #: src/components/mode-toggle.tsx
 msgid "Switch theme"
-msgstr ""
+msgstr "Téma váltása"
 
 #: src/components/add-system.tsx
 #: src/components/alerts-history-columns.tsx
@@ -1705,7 +1705,7 @@ msgstr "Rendszer"
 
 #: src/components/routes/system/charts/sensor-charts.tsx
 msgid "System fan speeds (RPM)"
-msgstr ""
+msgstr "Rendszerventilátorok sebessége (RPM)"
 
 #: src/components/routes/system/charts/load-average-chart.tsx
 msgid "System load averages over time"
@@ -1789,7 +1789,7 @@ msgstr "A {extraFsName} átviteli teljesítménye"
 
 #: src/components/routes/system/charts/storage-pool-charts.tsx
 msgid "Throughput of storage pool {displayName}"
-msgstr ""
+msgstr "A(z) {displayName} tárolókészlet átviteli teljesítménye"
 
 #: src/components/routes/settings/general.tsx
 msgid "Time format"
@@ -1802,7 +1802,7 @@ msgstr "E-mailben"
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Token"
-msgstr "Token"
+msgstr ""
 
 #: src/components/command-palette.tsx
 #: src/components/routes/settings/layout.tsx
@@ -1834,7 +1834,7 @@ msgstr "Összes elküldött adat minden interfészenként"
 #: src/components/routes/system/disk-io-sheet.tsx
 msgctxt "Disk I/O"
 msgid "Total time spent on read/write (can exceed 100%)"
-msgstr ""
+msgstr "Olvasással/írással töltött teljes idő (meghaladhatja a 100%-ot)"
 
 #. placeholder {0}: data.length
 #: src/components/systemd-table/systemd-table.tsx
@@ -1991,7 +1991,7 @@ msgstr "Használat"
 
 #: src/components/routes/system/charts/storage-pool-charts.tsx
 msgid "Usage of storage pool {displayName}"
-msgstr ""
+msgstr "A(z) {displayName} tárolókészlet kihasználtsága"
 
 #: src/components/routes/system/charts/memory-charts.tsx
 #: src/components/routes/system/charts/memory-charts.tsx
@@ -2103,4 +2103,3 @@ msgstr "Igen"
 #: src/components/routes/settings/layout.tsx
 msgid "Your user settings have been updated."
 msgstr "A felhasználói beállítások frissítésre kerültek."
-
