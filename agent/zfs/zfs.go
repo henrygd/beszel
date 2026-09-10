@@ -33,11 +33,15 @@ var ErrNoZfs = errors.New("zfs utilities unavailable")
 
 // PoolStat is a snapshot of a ZFS pool's capacity and health.
 type PoolStat struct {
-	Name   string
-	Size   uint64 // total capacity in bytes
-	Alloc  uint64 // allocated bytes
-	Free   uint64 // free bytes
-	Health string // ONLINE, DEGRADED, FAULTED, ...
+	DisplayName string // optional friendly name; Name remains the stable key
+	MountID     string // Btrfs filesystem identity, empty for other backends
+	IODevice    string // sole Btrfs member device, if known
+	Raw         bool   // physical accounting rather than usable filesystem space
+	Name        string
+	Size        uint64 // total capacity in bytes
+	Alloc       uint64 // allocated bytes
+	Free        uint64 // free bytes
+	Health      string // ONLINE, DEGRADED, FAULTED, ...
 }
 
 // PoolKernelStat is the inexpensive pool telemetry exposed by the ZFS kernel.
