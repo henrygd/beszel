@@ -9,7 +9,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"log"
 	"log/slog"
 	"net"
 	"net/http"
@@ -29,6 +28,7 @@ import (
 	"github.com/henrygd/beszel/internal/entities/system"
 
 	"github.com/blang/semver"
+	"github.com/distribution/reference"
 )
 
 // ansiEscapePattern matches ANSI escape sequences (colors, cursor movement, etc.)
@@ -159,7 +159,7 @@ func (dm *dockerManager) getImageDigests(image string) []string {
 // Get access token from https://hub.docker.com for this specific image
 func getRegistryToken(registry string, repository string) string {
 	var url string
-	if registry == "registry-1.docker.io" {
+	if registry == "docker.io" {
 		url = "https://auth.docker.io/token?service=registry.docker.io&scope=repository:" + repository + ":pull"
 	} else if registry == "ghcr.io" || registry == "lscr.io" {
 		url = "https://ghcr.io/token?service=ghcr.io&scope=repository:" + repository + ":pull"
@@ -192,8 +192,13 @@ func getRegistryToken(registry string, repository string) string {
 
 // Get current image digest from https://hub.docker.com
 func getRegistryDigest(registry string, repository string, tag string) (string, error) {
-
-	url := "https://" + registry + "/v2/" + repository + "/manifests/" + tag
+	var url string
+	if registry == "docker.io" {
+		// docker.io is special
+		url = "https://registry-1." + registry + "/v2/" + repository + "/manifests/" + tag
+	} else {
+		url = "https://" + registry + "/v2/" + repository + "/manifests/" + tag
+	}
 
 	req, err := http.NewRequest(http.MethodHead, url, nil)
 	if err != nil {
@@ -223,39 +228,21 @@ func getRegistryDigest(registry string, repository string, tag string) (string, 
 
 // Check docker registry if an update is available
 func (dm *dockerManager) checkImageUpdate(ctr *container.ApiInfo) bool {
-	digests := dm.getImageDigests(ctr.Image)
-
-	// regex magic
-	// ((localhost|[\w\-]+[\.\:][\w\.\-\:]+)\/)? registry, contains either . or :, optional
-	// (([\w\.\-]+\/)?[\w\.\-]+)                 repository (with or without namespace)
-	// (:([\w\.\-]+))?                           tag, optional
-	r, err := regexp.Compile(`((localhost|[\w\-]+[\.\:][\w\.\-\:]+)\/)?(([\w\.\-]+\/)?[\w\.\-]+)(:([\w\.\-]+))?`)
+	// use official Go library to handle references to container images
+	named, err := reference.ParseNormalizedNamed(ctr.Image)
 	if err != nil {
-		// bug in regex, should never happen unless the developer made a mistake
-		log.Fatal("Error compiling regex", err)
-	}
-	m := r.FindStringSubmatch(ctr.Image)
-
-	if m[0] == "" {
-		// no match, invalid image name
 		return false
 	}
 
-	registry := m[2]   // registry (server) url
-	repository := m[3] // image name
-	tag := m[6]        // image tag
+	registry := reference.Domain(named)
+	repository := reference.Path(named)
 
-	// default registry is docker hub
-	if registry == "" {
-		registry = "registry-1.docker.io"
-		// default namespace is library/
-		if !strings.Contains(repository, "/") {
-			repository = "library/" + repository
-		}
-	}
-	// default tag is latest
-	if tag == "" {
-		tag = "latest"
+	// try converting to Tagged, otherwise use "latest"
+	tag := "latest"
+	tagged, isTagged := named.(reference.Tagged)
+	if isTagged {
+		// use defined tag, otherwise fallback to "latest"
+		tag = tagged.Tag()
 	}
 
 	// get registry digest
@@ -267,7 +254,7 @@ func (dm *dockerManager) checkImageUpdate(ctr *container.ApiInfo) bool {
 	// reset flag
 	ctr.UpdateAvailable = false
 
-	for _, d := range digests {
+	for _, d := range dm.getImageDigests(ctr.Image) {
 		localDigest := strings.SplitN(d, "@", 2)[1]
 		ctr.UpdateAvailable = strings.Compare(repoDigest, localDigest) != 0
 		break
