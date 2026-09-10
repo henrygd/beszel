@@ -635,8 +635,7 @@ func (dm *dockerManager) updateContainerStats(ctr *container.ApiInfo, cacheTimeM
 	stats.Health = health
 
 	// Check if image update is available
-	stats.UpdateAvailable = dm.checkImageUpdate(ctr)
-	if stats.UpdateAvailable {
+	if dm.checkImageUpdate(ctr) {
 		stats.Image = "↑" + ctr.Image
 	} else {
 		stats.Image = ctr.Image
