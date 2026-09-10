@@ -53,24 +53,25 @@ const (
 )
 
 type dockerManager struct {
-	agent                *Agent                        // Used to propagate system detail changes back to the agent
-	client               *http.Client                  // Client to query Docker API
-	wg                   sync.WaitGroup                // WaitGroup to wait for all goroutines to finish
-	sem                  chan struct{}                 // Semaphore to limit concurrent container requests
-	containerStatsMutex  sync.RWMutex                  // Mutex to prevent concurrent access to containerStatsMap
-	apiContainerList     []*container.ApiInfo          // List of containers from Docker API
-	containerStatsMap    map[string]*container.Stats   // Keeps track of container stats
-	validIds             map[string]struct{}           // Map of valid container ids, used to prune invalid containers from containerStatsMap
-	goodDockerVersion    bool                          // Whether docker version is at least 25.0.0 (one-shot works correctly)
-	dockerVersionChecked bool                          // Whether a version probe has completed successfully
-	isWindows            bool                          // Whether the Docker Engine API is running on Windows
-	buf                  *bytes.Buffer                 // Buffer to store and read response bodies
-	excludeContainers    []string                      // Patterns to exclude containers by name
-	usingPodman          bool                          // Whether the Docker Engine API is running on Podman
-	registryClient       *http.Client                  // Client for registry requests; nil uses a client with a 10-second timeout
-	imageUpdatesMutex    sync.RWMutex                  // Protects imageUpdates, its entries, and imageUpdatesRunning
-	imageUpdates         map[string]*imageUpdateStatus // Shared update status keyed by normalized image reference
-	imageUpdatesRunning  bool                          // Whether a background image-update batch is in progress
+	agent                *Agent                      // Used to propagate system detail changes back to the agent
+	client               *http.Client                // Client to query Docker API
+	wg                   sync.WaitGroup              // WaitGroup to wait for all goroutines to finish
+	sem                  chan struct{}               // Semaphore to limit concurrent container requests
+	containerStatsMutex  sync.RWMutex                // Mutex to prevent concurrent access to containerStatsMap
+	apiContainerList     []*container.ApiInfo        // List of containers from Docker API
+	containerStatsMap    map[string]*container.Stats // Keeps track of container stats
+	validIds             map[string]struct{}         // Map of valid container ids, used to prune invalid containers from containerStatsMap
+	goodDockerVersion    bool                        // Whether docker version is at least 25.0.0 (one-shot works correctly)
+	dockerVersionChecked bool                        // Whether a version probe has completed successfully
+	isWindows            bool                        // Whether the Docker Engine API is running on Windows
+	buf                  *bytes.Buffer               // Buffer to store and read response bodies
+	excludeContainers    []string                    // Patterns to exclude containers by name
+	usingPodman          bool                        // Whether the Docker Engine API is running on Podman
+
+	registryClient      *http.Client                  // Client for registry requests; nil uses a client with a 10-second timeout
+	imageUpdatesMutex   sync.RWMutex                  // Protects imageUpdates, its entries, and imageUpdatesRunning
+	imageUpdates        map[string]*imageUpdateStatus // Shared update status keyed by normalized image reference
+	imageUpdatesRunning bool                          // Whether a background image-update batch is in progress
 
 	// Cache-time-aware tracking for CPU stats (similar to cpu.go)
 	// Maps cache time intervals to container-specific CPU usage tracking
