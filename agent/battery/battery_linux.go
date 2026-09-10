@@ -3,14 +3,18 @@
 package battery
 
 import (
+	"log/slog"
 	"os"
 	"path/filepath"
 	"strconv"
+	"strings"
 
 	"github.com/henrygd/beszel/agent/utils"
 )
 
 var batteryRoot = "/sys/class/power_supply"
+
+var batteryFilter = getBatteryFilter()
 
 // HasReadableBattery reports whether collection currently finds a readable battery.
 func HasReadableBattery() bool {
@@ -35,6 +39,28 @@ func parseSysfsState(status string) uint8 {
 	}
 }
 
+func getBatteryFilter() func(name string) bool {
+	devicesRaw, ok := utils.GetEnv("BATTERY_DEVICES")
+	if !ok || devicesRaw == "" {
+		return nil
+	}
+	slog.Info("BATTERY_DEVICES", "value", devicesRaw)
+	devices := make(map[string]struct{})
+	for device := range strings.SplitSeq(devicesRaw, ",") {
+		device = strings.TrimSpace(device)
+		if device != "" {
+			devices[device] = struct{}{}
+		}
+	}
+	if len(devices) == 0 {
+		return nil
+	}
+	return func(name string) bool {
+		_, exists := devices[name]
+		return exists
+	}
+}
+
 // GetBatteryStats re-enumerates power supplies and returns every readable battery.
 func GetBatteryStats() ([]Battery, error) {
 	entries, err := os.ReadDir(batteryRoot)
@@ -43,6 +69,9 @@ func GetBatteryStats() ([]Battery, error) {
 	}
 	batteries := make([]Battery, 0, len(entries))
 	for _, entry := range entries {
+		if batteryFilter != nil && !batteryFilter(entry.Name()) {
+			continue
+		}
 		path := filepath.Join(batteryRoot, entry.Name())
 		if utils.ReadStringFile(filepath.Join(path, "type")) != "Battery" {
 			continue
