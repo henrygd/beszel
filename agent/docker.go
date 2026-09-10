@@ -145,9 +145,11 @@ func (dm *dockerManager) getImageDescriptor(ctr *container.ApiInfo) {
 	}
 
 	var f struct {
+		// Descriptor added in API v1.48
 		Descriptor struct {
 			Digest string `json:"digest"`
 		}
+		// Identity added in API v1.53
 		Identity struct {
 			Pull []struct {
 				Repository string
