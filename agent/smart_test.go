@@ -907,6 +907,135 @@ func assertAttrValue(t *testing.T, attributes []*smart.SmartAttribute, name stri
 	}
 }
 
+// TestParseSmartOutputRejectsIdentityOnlyData verifies that smartctl output
+// carrying identity fields but no health sections is treated as a failed
+// collection rather than a valid record of zeros (issue #2295).
+func TestParseSmartOutputRejectsIdentityOnlyData(t *testing.T) {
+	fixturePath := filepath.Join("test-data", "smart", "scsi_identity.json")
+	data, err := os.ReadFile(fixturePath)
+	require.NoError(t, err)
+
+	sm := &SmartManager{SmartDataMap: make(map[string]*smart.SmartData)}
+	device := &DeviceInfo{Name: "/dev/sda", Type: "scsi"}
+
+	assert.False(t, sm.parseSmartOutput(device, data))
+	assert.Empty(t, sm.SmartDataMap, "identity-only output must not be stored as zeroed SMART data")
+	assert.False(t, device.typeVerified)
+}
+
+// fakeSmartctl writes a fake smartctl binary that selects a fixture by
+// argument: "-d sat" / "-d scsi" arms match on the argument list, "" is the
+// default (typeless) response. Fixtures are copied from test-data into the
+// script's directory; argsFile, when set, records the arguments of each call.
+func fakeSmartctl(t *testing.T, responses map[string]string, argsFile string) string {
+	t.Helper()
+	dir := t.TempDir()
+	script := "#!/bin/sh\n"
+	for _, arg := range []string{"-d sat", "-d scsi"} {
+		if fixture, ok := responses[arg]; ok {
+			script += "case \" $* \" in *\"" + arg + "\"*) cat '" + filepath.Join(dir, fixture) + "'; exit ;; esac\n"
+		}
+	}
+	if argsFile != "" {
+		script += "printf '%s' \"$*\" > '" + filepath.Join(dir, argsFile) + "'\n"
+	}
+	if fixture, ok := responses[""]; ok {
+		script += "cat '" + filepath.Join(dir, fixture) + "'\n"
+	}
+	require.NoError(t, os.WriteFile(filepath.Join(dir, "smartctl"), []byte(script), 0o755))
+
+	for _, fixture := range responses {
+		data, err := os.ReadFile(filepath.Join("test-data", "smart", fixture))
+		require.NoError(t, err)
+		require.NoError(t, os.WriteFile(filepath.Join(dir, fixture), data, 0o644))
+	}
+	return filepath.Join(dir, "smartctl")
+}
+
+// TestCollectSmartSatRetry is a table test over the issue #2295 scenarios.
+// Each case drives the real CollectSmart entry point against a fake smartctl
+// that returns identity-only data for the typeless query (scan reports the
+// SATA drive as -d scsi), and varies only what the -d sat query returns.
+func TestCollectSmartSatRetry(t *testing.T) {
+	tests := []struct {
+		name      string
+		responses map[string]string // smartctl arg suffix -> fixture name
+		argsFile  string
+		explicit  bool
+		wantErr   bool
+		validate  func(t *testing.T, sm *SmartManager, device *DeviceInfo, args string)
+	}{
+		{
+			// The reporter's case: -d sat answers with full SMART data, so the
+			// disk must be stored with real values instead of UNKNOWN / 0 °C / 0 h.
+			name:      "sat query recovers health data",
+			responses: map[string]string{"": "scsi_identity.json", "-d sat": "sat.json"},
+			validate: func(t *testing.T, sm *SmartManager, device *DeviceInfo, args string) {
+				smartData, ok := sm.SmartDataMap["Z4K2A01FS"]
+				require.True(t, ok, "sat query data should be stored")
+				assert.Equal(t, "TOSHIBA MG03ACA200", smartData.ModelName)
+				assert.Equal(t, "sat", smartData.DiskType)
+				assert.Equal(t, uint8(38), smartData.Temperature)
+				assert.Equal(t, "PASSED", smartData.SmartStatus)
+				assertAttrValue(t, smartData.Attributes, "Power_On_Hours", 43953)
+				assert.Equal(t, "sat", device.Type)
+				assert.Equal(t, "sat", device.parserType)
+				assert.True(t, device.typeVerified, "successful sat query should mark the device verified")
+			},
+		},
+		{
+			// A drive where even -d sat yields nothing usable must surface an
+			// explicit failure, never a silently stored zeroed record.
+			name:      "sat query also empty",
+			responses: map[string]string{"": "scsi_identity.json", "-d sat": "scsi_identity.json"},
+			wantErr:   true,
+			validate: func(t *testing.T, sm *SmartManager, device *DeviceInfo, args string) {
+				assert.Empty(t, sm.SmartDataMap, "no zeroed record may be stored when both queries fail")
+			},
+		},
+		{
+			// The #2102 contract: an explicit SMART_DEVICES ":type" hint is a
+			// deliberate override and must not be second-guessed by the retry.
+			name:      "explicit type skips sat retry",
+			responses: map[string]string{"": "scsi_identity.json"},
+			argsFile:  "args.txt",
+			explicit:  true,
+			wantErr:   true,
+			validate: func(t *testing.T, sm *SmartManager, device *DeviceInfo, args string) {
+				assert.Equal(t, "-d scsi -a --json=c /dev/sda", args,
+					"explicit type must be passed and not retried with sat")
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			sm := &SmartManager{
+				SmartDataMap: make(map[string]*smart.SmartData),
+				smartctlPath: fakeSmartctl(t, tt.responses, tt.argsFile),
+			}
+			device := &DeviceInfo{Name: "/dev/sda", Type: "scsi", explicitType: tt.explicit}
+
+			err := sm.CollectSmart(device)
+			if tt.wantErr {
+				assert.ErrorIs(t, err, errNoValidSmartData)
+			} else {
+				assert.NoError(t, err)
+			}
+
+			args := ""
+			if tt.argsFile != "" {
+				content, readErr := os.ReadFile(filepath.Join(filepath.Dir(sm.smartctlPath), tt.argsFile))
+				require.NoError(t, readErr)
+				args = string(content)
+			}
+			if tt.validate != nil {
+				tt.validate(t, sm, device, args)
+			}
+		})
+	}
+}
+
 func findAttr(attributes []*smart.SmartAttribute, name string) *smart.SmartAttribute {
 	for _, attr := range attributes {
 		if attr != nil && attr.Name == name {
