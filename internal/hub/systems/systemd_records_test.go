@@ -3,9 +3,11 @@
 package systems_test
 
 import (
+	"encoding/json"
 	"testing"
 	"time"
 
+	"github.com/fxamacker/cbor/v2"
 	"github.com/henrygd/beszel/internal/entities/system"
 	"github.com/henrygd/beszel/internal/entities/systemd"
 	"github.com/henrygd/beszel/internal/hub/systems"
@@ -14,6 +16,42 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
+
+func TestCreateRecordsRejectsNullSystemdService(t *testing.T) {
+	hub, user := tests.GetHubWithUser(t)
+	defer hub.Cleanup()
+	records, err := tests.CreateSystems(hub, 1, user.Id, "paused")
+	require.NoError(t, err)
+	sys, err := hub.GetSystemManager().GetSystem(records[0].Id)
+	require.NoError(t, err)
+	require.NoError(t, systems.CreateSystemdStatsRecords(hub, []*systemd.Service{
+		{Name: "existing.service", State: systemd.StatusFailed},
+	}, records[0].Id))
+
+	for _, services := range []string{`[null]`, `[{"name":"new.service"},null]`, `[null,{"name":"new.service"}]`} {
+		for _, encoding := range []string{"json", "cbor"} {
+			t.Run(encoding+"/"+services, func(t *testing.T) {
+				var data system.CombinedData
+				require.NoError(t, json.Unmarshal([]byte(`{"systemd":`+services+`}`), &data))
+				if encoding == "cbor" {
+					encoded, err := cbor.Marshal(data)
+					require.NoError(t, err)
+					data = system.CombinedData{}
+					require.NoError(t, cbor.Unmarshal(encoded, &data))
+				}
+				_, err := sys.CreateRecords(&data)
+				require.ErrorContains(t, err, "null systemd service")
+				var names []string
+				require.NoError(t, hub.DB().Select("name").From("systemd_services").
+					Where(dbx.HashExp{"system": records[0].Id}).Column(&names))
+				assert.Equal(t, []string{"existing.service"}, names)
+				count, err := hub.CountRecords("system_stats", dbx.HashExp{"system": records[0].Id})
+				require.NoError(t, err)
+				assert.Zero(t, count, "invalid snapshot must roll back system stats")
+			})
+		}
+	}
+}
 
 func TestCreateRecordsHandlesSystemdAlertLifecycle(t *testing.T) {
 	hub, user := tests.GetHubWithUser(t)

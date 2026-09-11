@@ -8,7 +8,7 @@ msgstr ""
 "Language: cs\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2026-09-02 21:43\n"
+"PO-Revision-Date: 2026-09-10 00:33\n"
 "Last-Translator: \n"
 "Language-Team: Czech\n"
 "Plural-Forms: nplurals=4; plural=(n==1) ? 0 : (n>=2 && n<=4) ? 1 : 3;\n"
@@ -61,7 +61,7 @@ msgstr "1 hodina"
 #. Load average
 #: src/components/routes/system/charts/load-average-chart.tsx
 msgid "1 min"
-msgstr "1 min"
+msgstr ""
 
 #: src/lib/utils.ts
 msgid "1 minute"
@@ -78,7 +78,7 @@ msgstr "12 hodin"
 #. Load average
 #: src/components/routes/system/charts/load-average-chart.tsx
 msgid "15 min"
-msgstr "15 min"
+msgstr ""
 
 #: src/lib/utils.ts
 msgid "24 hours"
@@ -91,13 +91,13 @@ msgstr "30 dní"
 #. Load average
 #: src/components/routes/system/charts/load-average-chart.tsx
 msgid "5 min"
-msgstr "5 min"
+msgstr ""
 
 #. Table column
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 #: src/components/routes/system/smart-table.tsx
-#: src/components/routes/system/zfs-table.tsx
+#: src/components/routes/system/storage-pools-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Actions"
 msgstr "Akce"
@@ -154,7 +154,7 @@ msgstr "Po nastavení proměnných prostředí restartujte hub Beszel, aby se zm
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Agent"
-msgstr "Agent"
+msgstr ""
 
 #: src/components/command-palette.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
@@ -196,7 +196,7 @@ msgstr "Jste si jistý?"
 msgid "Automatic copy requires a secure context."
 msgstr "Automatická kopie vyžaduje zabezpečený kontext."
 
-#: src/components/routes/system/zfs-table.tsx
+#: src/components/routes/system/storage-pools-table.tsx
 msgctxt "Disk space available"
 msgid "Available"
 msgstr "Dostupné"
@@ -338,7 +338,7 @@ msgid "Capabilities"
 msgstr "Schopnosti"
 
 #: src/components/routes/system/smart-table.tsx
-#: src/components/routes/system/zfs-table.tsx
+#: src/components/routes/system/storage-pools-table.tsx
 msgid "Capacity"
 msgstr "Kapacita"
 
@@ -391,14 +391,14 @@ msgstr "Zkontrolujte svou monitorovací službu"
 msgid "Check your notification service"
 msgstr "Zkontrolujte službu upozornění"
 
-#: src/components/routes/system/zfs-table.tsx
+#: src/components/routes/system/storage-pools-table.tsx
 msgid "Checksum errors"
 msgstr "Chyby kontrolního součtu"
 
 #: src/components/containers-table/containers-table.tsx
 #: src/components/routes/system/smart-table.tsx
-#: src/components/routes/system/zfs-table.tsx
-#: src/components/routes/system/zfs-table.tsx
+#: src/components/routes/system/storage-pools-table.tsx
+#: src/components/routes/system/storage-pools-table.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "Clear"
 msgstr "Vymazat"
@@ -411,7 +411,7 @@ msgstr "Klikněte na kontejner pro zobrazení dalších informací."
 msgid "Click on a device to view more information."
 msgstr "Klikněte na zařízení pro zobrazení dalších informací."
 
-#: src/components/routes/system/zfs-table.tsx
+#: src/components/routes/system/storage-pools-table.tsx
 msgid "Click on a pool to view vdev and dataset details."
 msgstr "Kliknutím na fond zobrazíte podrobnosti o vdev a datových sadách."
 
@@ -503,7 +503,7 @@ msgstr "Kopírovat název"
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Copy public key"
-msgstr ""
+msgstr "Zkopírovat veřejný klíč"
 
 #: src/components/copy-to-clipboard.tsx
 msgid "Copy text"
@@ -647,7 +647,7 @@ msgstr "Popis"
 
 #: src/components/containers-table/containers-table.tsx
 msgid "Detail"
-msgstr "Detail"
+msgstr ""
 
 #: src/components/routes/system/smart-table.tsx
 msgid "Device"
@@ -869,14 +869,14 @@ msgstr "Neúspěšné: {0}"
 
 #: src/components/routes/system/charts/sensor-charts.tsx
 msgid "Fans"
-msgstr ""
+msgstr "Ventilátory"
 
 #: src/components/containers-table/containers-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/system/chart-card.tsx
 #: src/components/routes/system/smart-table.tsx
-#: src/components/routes/system/zfs-table.tsx
-#: src/components/routes/system/zfs-table.tsx
+#: src/components/routes/system/storage-pools-table.tsx
+#: src/components/routes/system/storage-pools-table.tsx
 #: src/components/systemd-table/systemd-table.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "Filter..."
@@ -898,8 +898,8 @@ msgstr "Za <0>{min}</0> {min, plural, one {minutu} few {minuty} other {minut}}"
 msgid "Forgot password?"
 msgstr "Zapomněli jste heslo?"
 
-#: src/components/routes/system/zfs-table.tsx
-#: src/components/routes/system/zfs-table.tsx
+#: src/components/routes/system/storage-pools-table.tsx
+#: src/components/routes/system/storage-pools-table.tsx
 msgctxt "Free space"
 msgid "Free"
 msgstr "Volné"
@@ -948,7 +948,7 @@ msgid "Grid"
 msgstr "Mřížka"
 
 #: src/components/containers-table/containers-table-columns.tsx
-#: src/components/routes/system/zfs-table.tsx
+#: src/components/routes/system/storage-pools-table.tsx
 msgid "Health"
 msgstr "Zdraví"
 
@@ -1146,7 +1146,7 @@ msgstr "Využití paměti kontejnery"
 msgid "Model"
 msgstr ""
 
-#: src/components/routes/system/zfs-table.tsx
+#: src/components/routes/system/storage-pools-table.tsx
 msgid "Mountpoint"
 msgstr "Bod připojení"
 
@@ -1185,7 +1185,7 @@ msgstr "Síťová jednotka"
 msgid "No"
 msgstr "Ne"
 
-#: src/components/routes/system/zfs-table.tsx
+#: src/components/routes/system/storage-pools-table.tsx
 msgid "No detail data for this pool."
 msgstr "Pro tento fond nejsou k dispozici podrobné údaje."
 
@@ -1212,7 +1212,7 @@ msgstr "Pro toto zařízení nejsou k dispozici žádné atributy S.M.A.R.T."
 msgid "No systems found."
 msgstr "Nenalezeny žádné systémy."
 
-#: src/components/routes/system/zfs-table.tsx
+#: src/components/routes/system/storage-pools-table.tsx
 msgid "None"
 msgstr "Žádné"
 
@@ -1255,7 +1255,7 @@ msgstr "Jednorázové heslo"
 #: src/components/routes/settings/tokens-fingerprints.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 #: src/components/routes/system/smart-table.tsx
-#: src/components/routes/system/zfs-table.tsx
+#: src/components/routes/system/storage-pools-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Open menu"
 msgstr "Otevřít menu"
@@ -1346,6 +1346,10 @@ msgstr "Trvalý"
 msgid "Persistence"
 msgstr "Trvalost"
 
+#: src/components/routes/system/raw-capacity-label.tsx
+msgid "Physical device space. True usable capacity is unknown. Pool disk usage alerts are disabled."
+msgstr "Fyzické místo na zařízení. Skutečná využitelná kapacita není známa. Upozornění na využití disků fondu jsou vypnutá."
+
 #: src/components/routes/settings/notifications.tsx
 msgid "Please <0>configure an SMTP server</0> to ensure alerts are delivered."
 msgstr "<0>nakonfigurujte SMTP server</0> pro zajištění toho, aby byla upozornění doručena."
@@ -1379,11 +1383,11 @@ msgstr "Instrukce naleznete v <0>dokumentaci</0>."
 msgid "Please sign in to your account"
 msgstr "Přihlaste se prosím k vašemu účtu"
 
-#: src/components/routes/system/zfs-table.tsx
+#: src/components/routes/system/storage-pools-table.tsx
 msgid "Pool Health"
 msgstr "Stav fondu"
 
-#: src/components/routes/system/charts/zfs-charts.tsx
+#: src/components/routes/system/charts/storage-pool-charts.tsx
 msgid "Pool Usage"
 msgstr "Využití fondu"
 
@@ -1416,7 +1420,7 @@ msgstr "Proces spuštěn"
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Public key"
-msgstr ""
+msgstr "Veřejný klíč"
 
 #. Use 'Key' if your language requires many more characters
 #: src/components/add-system.tsx
@@ -1432,10 +1436,21 @@ msgstr "Hloubka fronty"
 msgid "Quiet Hours"
 msgstr "Tiché hodiny"
 
+#: src/components/routes/system/raw-capacity-label.tsx
+#: src/components/routes/system/storage-pools-table.tsx
+#: src/components/routes/system/storage-pools-table.tsx
+#: src/components/routes/system/storage-pools-table.tsx
+msgid "Raw"
+msgstr "Hrubé"
+
+#: src/components/routes/system/charts/storage-pool-charts.tsx
+msgid "Raw usage of storage pool {displayName}"
+msgstr "Hrubé využití fondu {displayName}"
+
 #. Disk read
 #. Disk read
 #: src/components/routes/system/charts/disk-charts.tsx
-#: src/components/routes/system/charts/zfs-charts.tsx
+#: src/components/routes/system/charts/storage-pool-charts.tsx
 #: src/components/routes/system/disk-io-sheet.tsx
 #: src/components/routes/system/disk-io-sheet.tsx
 #: src/components/routes/system/disk-io-sheet.tsx
@@ -1443,7 +1458,7 @@ msgstr "Tiché hodiny"
 msgid "Read"
 msgstr "Číst"
 
-#: src/components/routes/system/zfs-table.tsx
+#: src/components/routes/system/storage-pools-table.tsx
 msgid "Read errors"
 msgstr "Chyby čtení"
 
@@ -1454,7 +1469,7 @@ msgstr "Přijato"
 #: src/components/containers-table/containers-table.tsx
 #: src/components/containers-table/containers-table.tsx
 #: src/components/routes/system/smart-table.tsx
-#: src/components/routes/system/zfs-table.tsx
+#: src/components/routes/system/storage-pools-table.tsx
 msgid "Refresh"
 msgstr "Aktualizovat"
 
@@ -1643,7 +1658,7 @@ msgstr "Čas začátku"
 #. Context: alert state (active or resolved)
 #: src/components/alerts-history-columns.tsx
 #: src/components/routes/settings/quiet-hours.tsx
-#: src/components/routes/system/zfs-table.tsx
+#: src/components/routes/system/storage-pools-table.tsx
 #: src/components/systemd-table/systemd-table-columns.tsx
 msgid "State"
 msgstr "Stav"
@@ -1671,7 +1686,7 @@ msgstr "Swap využití"
 #: src/components/mode-toggle.tsx
 #: src/components/mode-toggle.tsx
 msgid "Switch theme"
-msgstr ""
+msgstr "Přepnout motiv"
 
 #: src/components/add-system.tsx
 #: src/components/alerts-history-columns.tsx
@@ -1690,7 +1705,7 @@ msgstr "Systém"
 
 #: src/components/routes/system/charts/sensor-charts.tsx
 msgid "System fan speeds (RPM)"
-msgstr ""
+msgstr "Rychlosti ventilátorů systému (RPM)"
 
 #: src/components/routes/system/charts/load-average-chart.tsx
 msgid "System load averages over time"
@@ -1772,9 +1787,9 @@ msgstr "Tímto trvale odstraníte všechny vybrané záznamy z databáze."
 msgid "Throughput of {extraFsName}"
 msgstr "Propustnost {extraFsName}"
 
-#: src/components/routes/system/charts/zfs-charts.tsx
-msgid "Throughput of ZFS pool {poolName}"
-msgstr "Propustnost fondu ZFS {poolName}"
+#: src/components/routes/system/charts/storage-pool-charts.tsx
+msgid "Throughput of storage pool {displayName}"
+msgstr "Propustnost fondu {displayName}"
 
 #: src/components/routes/settings/general.tsx
 msgid "Time format"
@@ -1819,7 +1834,7 @@ msgstr "Celkový odeslaný objem dat pro každé rozhraní"
 #: src/components/routes/system/disk-io-sheet.tsx
 msgctxt "Disk I/O"
 msgid "Total time spent on read/write (can exceed 100%)"
-msgstr ""
+msgstr "Celkový čas strávený čtením/zápisem (může přesáhnout 100 %)"
 
 #. placeholder {0}: data.length
 #: src/components/systemd-table/systemd-table.tsx
@@ -1897,6 +1912,7 @@ msgstr "Spustí se, když využití disku překročí prahovou hodnotu"
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/system/smart-table.tsx
+#: src/components/routes/system/storage-pools-table.tsx
 msgid "Type"
 msgstr "Typ"
 
@@ -1919,7 +1935,7 @@ msgid "Universal token"
 msgstr "Univerzální token"
 
 #. Context: Battery state
-#: src/components/routes/system/zfs-table.tsx
+#: src/components/routes/system/storage-pools-table.tsx
 #: src/lib/i18n.ts
 msgid "Unknown"
 msgstr "Neznámá"
@@ -1945,7 +1961,7 @@ msgstr "Aktualizovat"
 
 #: src/components/containers-table/containers-table-columns.tsx
 #: src/components/routes/system/smart-table.tsx
-#: src/components/routes/system/zfs-table.tsx
+#: src/components/routes/system/storage-pools-table.tsx
 #: src/components/systemd-table/systemd-table-columns.tsx
 msgid "Updated"
 msgstr "Aktualizováno"
@@ -1968,20 +1984,20 @@ msgstr "Doba provozu"
 #: src/components/routes/system/charts/gpu-charts.tsx
 #: src/components/routes/system/charts/gpu-charts.tsx
 #: src/components/routes/system/charts/gpu-charts.tsx
-#: src/components/routes/system/charts/zfs-charts.tsx
+#: src/components/routes/system/charts/storage-pool-charts.tsx
 #: src/components/routes/system/cpu-sheet.tsx
 msgid "Usage"
 msgstr "Využití"
 
-#: src/components/routes/system/charts/zfs-charts.tsx
-msgid "Usage of ZFS pool {poolName}"
-msgstr "Využití fondu ZFS {poolName}"
+#: src/components/routes/system/charts/storage-pool-charts.tsx
+msgid "Usage of storage pool {displayName}"
+msgstr "Využití fondu {displayName}"
 
 #: src/components/routes/system/charts/memory-charts.tsx
 #: src/components/routes/system/charts/memory-charts.tsx
-#: src/components/routes/system/zfs-table.tsx
-#: src/components/routes/system/zfs-table.tsx
-#: src/components/routes/system/zfs-table.tsx
+#: src/components/routes/system/storage-pools-table.tsx
+#: src/components/routes/system/storage-pools-table.tsx
+#: src/components/routes/system/storage-pools-table.tsx
 msgid "Used"
 msgstr "Využito"
 
@@ -2058,7 +2074,7 @@ msgstr "Windows příkaz"
 #. Disk write
 #. Disk write
 #: src/components/routes/system/charts/disk-charts.tsx
-#: src/components/routes/system/charts/zfs-charts.tsx
+#: src/components/routes/system/charts/storage-pool-charts.tsx
 #: src/components/routes/system/disk-io-sheet.tsx
 #: src/components/routes/system/disk-io-sheet.tsx
 #: src/components/routes/system/disk-io-sheet.tsx
@@ -2066,7 +2082,7 @@ msgstr "Windows příkaz"
 msgid "Write"
 msgstr "Psát"
 
-#: src/components/routes/system/zfs-table.tsx
+#: src/components/routes/system/storage-pools-table.tsx
 msgid "Write errors"
 msgstr "Chyby zápisu"
 

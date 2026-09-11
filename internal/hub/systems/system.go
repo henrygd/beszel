@@ -277,7 +277,15 @@ func (sys *System) createRecords(data *system.CombinedData) (*core.Record, error
 
 		// update system record (do this last because it triggers alerts and we need above records to be inserted first)
 		systemRecord.Set("status", up)
-		systemRecord.Set("info", data.Info)
+		// Distinguish an idle GPU from a system without GPU data (#2312)
+		info := struct {
+			system.Info
+			GpuPct *float64 `json:"g,omitempty"`
+		}{Info: data.Info}
+		if len(data.Stats.GPUData) > 0 {
+			info.GpuPct = &data.Info.GpuPct
+		}
+		systemRecord.Set("info", info)
 		if err := txApp.SaveNoValidate(systemRecord); err != nil {
 			return err
 		}
@@ -327,6 +335,11 @@ func createSystemdStatsRecords(app core.App, data []*systemd.Service, systemId s
 
 	valueStrings := make([]string, 0, len(data))
 	for i, service := range data {
+		// Agent payloads can contain null entries. Reject the snapshot before
+		// executing any queries so existing service records remain intact.
+		if service == nil {
+			return fmt.Errorf("null systemd service at index %d", i)
+		}
 		suffix := fmt.Sprintf("%d", i)
 		valueStrings = append(valueStrings, fmt.Sprintf("({:id%[1]s}, {:system}, {:name%[1]s}, {:state%[1]s}, {:sub%[1]s}, {:cpu%[1]s}, {:cpuPeak%[1]s}, {:memory%[1]s}, {:memPeak%[1]s}, {:updated})", suffix))
 		params["id"+suffix] = makeStableHashId(systemId, service.Name)
@@ -368,7 +381,7 @@ func createContainerRecords(app core.App, data []*container.Stats, systemId stri
 	valueStrings := make([]string, 0, len(data))
 	for i, container := range data {
 		suffix := fmt.Sprintf("%d", i)
-		valueStrings = append(valueStrings, fmt.Sprintf("({:id%[1]s}, {:system}, {:name%[1]s}, {:image%[1]s}, {:ports%[1]s}, {:status%[1]s}, {:health%[1]s}, {:cpu%[1]s}, {:memory%[1]s}, {:net%[1]s}, {:updated})", suffix))
+		valueStrings = append(valueStrings, fmt.Sprintf("({:id%[1]s}, {:system}, {:name%[1]s}, {:image%[1]s}, {:ports%[1]s}, {:status%[1]s}, {:health%[1]s}, {:cpu%[1]s}, {:memory%[1]s}, {:net%[1]s}, {:updateAvailable%[1]s}, {:updated})", suffix))
 		params["id"+suffix] = container.Id
 		params["name"+suffix] = container.Name
 		params["image"+suffix] = container.Image
@@ -382,9 +395,10 @@ func createContainerRecords(app core.App, data []*container.Stats, systemId stri
 			netBytes = uint64((container.NetworkSent + container.NetworkRecv) * 1024 * 1024)
 		}
 		params["net"+suffix] = netBytes
+		params["updateAvailable"+suffix] = container.UpdateAvailable
 	}
 	queryString := fmt.Sprintf(
-		"INSERT INTO containers (id, system, name, image, ports, status, health, cpu, memory, net, updated) VALUES %s ON CONFLICT(id) DO UPDATE SET system = excluded.system, name = excluded.name, image = excluded.image, ports = excluded.ports, status = excluded.status, health = excluded.health, cpu = excluded.cpu, memory = excluded.memory, net = excluded.net, updated = excluded.updated",
+		"INSERT INTO containers (id, system, name, image, ports, status, health, cpu, memory, net, updatable, updated) VALUES %s ON CONFLICT(id) DO UPDATE SET system = excluded.system, name = excluded.name, image = excluded.image, ports = excluded.ports, status = excluded.status, health = excluded.health, cpu = excluded.cpu, memory = excluded.memory, net = excluded.net, updatable = excluded.updatable, updated = excluded.updated",
 		strings.Join(valueStrings, ","),
 	)
 	_, err := app.DB().NewQuery(queryString).Bind(params).Execute()

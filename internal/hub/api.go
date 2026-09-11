@@ -6,9 +6,9 @@ import (
 	"regexp"
 	"strings"
 	"time"
+	"uuid"
 
 	"github.com/blang/semver"
-	"github.com/google/uuid"
 	"github.com/henrygd/beszel"
 	"github.com/henrygd/beszel/internal/alerts"
 	"github.com/henrygd/beszel/internal/ghupdate"

@@ -32,6 +32,28 @@ import (
 	"golang.org/x/crypto/ssh"
 )
 
+// TestNewWebSocketClientNoHubURL verifies that an unset HUB_URL returns the
+// errNoHubURL sentinel rather than an opaque error. Callers rely on this to
+// distinguish SSH-only mode -- a supported configuration in which the hub dials
+// the agent -- from an actual misconfiguration.
+func TestNewWebSocketClientNoHubURL(t *testing.T) {
+	agent := createTestAgent(t)
+
+	// t.Setenv registers restoration of the original value; unset afterwards so
+	// GetEnv's LookupEnv reports the variable as absent rather than empty.
+	t.Setenv("BESZEL_AGENT_HUB_URL", "")
+	os.Unsetenv("BESZEL_AGENT_HUB_URL")
+	t.Setenv("HUB_URL", "")
+	os.Unsetenv("HUB_URL")
+	t.Setenv("BESZEL_AGENT_TOKEN", "test-token")
+
+	client, err := newWebSocketClient(agent)
+
+	require.Error(t, err)
+	assert.Nil(t, client)
+	assert.ErrorIs(t, err, errNoHubURL)
+}
+
 // TestNewWebSocketClient tests WebSocket client creation
 func TestNewWebSocketClient(t *testing.T) {
 	agent := createTestAgent(t)
