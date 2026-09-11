@@ -66,6 +66,7 @@ type SystemAlertGPUData struct {
 }
 
 type SystemAlertZfsPool struct {
+	Raw   bool    `json:"raw,omitempty"`
 	Total float64 `json:"d"`
 	Used  float64 `json:"du"`
 }

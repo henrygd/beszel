@@ -186,14 +186,14 @@ func (h *GetSmartDataHandler) Handle(hctx *HandlerContext) error {
 type GetZfsDataHandler struct{}
 
 func (h *GetZfsDataHandler) Handle(hctx *HandlerContext) error {
-	if hctx.Agent.zfsManager == nil {
+	if hctx.Agent.storagePoolManager == nil {
 		return hctx.SendResponse(nil, hctx.RequestID)
 	}
 	var req common.ZfsDataRequest
 	if err := cbor.Unmarshal(hctx.Request.Data, &req); err != nil {
 		return err
 	}
-	return hctx.SendResponse(hctx.Agent.zfsManager.GetDetail(req.Force), hctx.RequestID)
+	return hctx.SendResponse(hctx.Agent.storagePoolManager.GetDetail(req.Force), hctx.RequestID)
 }
 
 ////////////////////////////////////////////////////////////////////////////
