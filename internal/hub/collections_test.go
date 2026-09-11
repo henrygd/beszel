@@ -88,8 +88,8 @@ func TestCollectionRulesDefault(t *testing.T) {
 	// fingerprints collection
 	fingerprintsCollection, err := hub.FindCollectionByNameOrId("fingerprints")
 	require.NoError(t, err, "Failed to find fingerprints collection")
-	assert.Equal(t, isUserInSystemUsers, *fingerprintsCollection.ListRule)
-	assert.Equal(t, isUserInSystemUsers, *fingerprintsCollection.ViewRule)
+	assert.Equal(t, isUserInSystemUsersNotReadonly, *fingerprintsCollection.ListRule)
+	assert.Equal(t, isUserInSystemUsersNotReadonly, *fingerprintsCollection.ViewRule)
 	assert.Equal(t, isUserInSystemUsersNotReadonly, *fingerprintsCollection.CreateRule)
 	assert.Equal(t, isUserInSystemUsersNotReadonly, *fingerprintsCollection.UpdateRule)
 	assert.Equal(t, isUserInSystemUsersNotReadonly, *fingerprintsCollection.DeleteRule)
@@ -216,8 +216,8 @@ func TestCollectionRulesShareAllSystems(t *testing.T) {
 	// fingerprints collection
 	fingerprintsCollection, err := hub.FindCollectionByNameOrId("fingerprints")
 	require.NoError(t, err, "Failed to find fingerprints collection")
-	assert.Equal(t, isUser, *fingerprintsCollection.ListRule)
-	assert.Equal(t, isUser, *fingerprintsCollection.ViewRule)
+	assert.Equal(t, isUserNotReadonly, *fingerprintsCollection.ListRule)
+	assert.Equal(t, isUserNotReadonly, *fingerprintsCollection.ViewRule)
 	assert.Equal(t, isUserNotReadonly, *fingerprintsCollection.CreateRule)
 	assert.Equal(t, isUserNotReadonly, *fingerprintsCollection.UpdateRule)
 	assert.Equal(t, isUserNotReadonly, *fingerprintsCollection.DeleteRule)

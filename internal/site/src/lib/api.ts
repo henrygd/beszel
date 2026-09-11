@@ -4,7 +4,7 @@ import { basePath } from "@/components/router"
 import { toast } from "@/components/ui/use-toast"
 import type { ChartTimes, UserSettings } from "@/types"
 import { $alerts, $allSystemsById, $allSystemsByName, $userSettings } from "./stores"
-import { chartTimeData } from "./utils"
+import { chartTimeData, debounce } from "./utils"
 
 /** PocketBase JS Client */
 export const pb = new PocketBase(basePath)
@@ -12,7 +12,7 @@ export const pb = new PocketBase(basePath)
 export const isAdmin = () => pb.authStore.record?.role === "admin"
 export const isReadOnlyUser = () => pb.authStore.record?.role === "readonly"
 
-export const verifyAuth = () => {
+const verifyAuth = () => {
 	pb.collection("users")
 		.authRefresh()
 		.catch(() => {
@@ -23,6 +23,22 @@ export const verifyAuth = () => {
 				variant: "destructive",
 			})
 		})
+}
+
+const verifyAuthDebounced = debounce(verifyAuth, 100)
+
+// verify the session whenever any API request returns a 4xx response (e.g. an
+// expired JWT). The auth-refresh endpoint is excluded to avoid a loop, since
+// it returns 401 itself when the token is no longer valid.
+pb.afterSend = (response, data) => {
+	if (
+		(response.status === 401 || response.status === 403) &&
+		pb.authStore.token &&
+		!response.url.includes("auth-refresh")
+	) {
+		verifyAuthDebounced()
+	}
+	return data
 }
 
 /** Logs the user out by clearing the auth store and unsubscribing from realtime updates. */

@@ -50,6 +50,7 @@ type Agent struct {
 	systemdManager            *systemdManager                                       // Manages systemd services
 	prevSwap                  map[uint16]prevSwapData                               // Previous swap I/O counters per cache interval
 	zfsManager                *ZfsManager                                           // Manages ZFS pool and dataset data
+	storagePoolManager        *StoragePoolManager                                   // Manages storage pool and dataset data
 }
 
 // NewAgent creates a new agent with the given data directory for persisting data.
@@ -125,12 +126,12 @@ func NewAgent(dataDir ...string) (agent *Agent, err error) {
 	// initialize handler registry
 	agent.handlerRegistry = NewHandlerRegistry()
 
-	agent.zfsManager = newZfsManager()
+	agent.storagePoolManager = newStoragePoolManager()
 
-	// ZFS_INTERVAL env var to update ZFS detail data at this interval
+	// Retain ZFS_INTERVAL for the shared storage pool detail refresh interval.
 	if zfsIntervalEnv, exists := utils.GetEnv("ZFS_INTERVAL"); exists {
 		if duration, err := time.ParseDuration(zfsIntervalEnv); err == nil && duration > 0 {
-			agent.zfsManager.detailInterval = duration
+			agent.storagePoolManager.detailInterval = duration
 			agent.systemDetails.ZfsInterval = duration
 			slog.Info("ZFS_INTERVAL", "duration", duration)
 		} else {
