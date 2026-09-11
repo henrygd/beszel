@@ -28,6 +28,8 @@ export default function SettingsProfilePage({ userSettings }: { userSettings: Us
 		setIsLoading(true)
 		const formData = new FormData(e.target as HTMLFormElement)
 		const data = Object.fromEntries(formData) as Partial<UserSettings>
+		// convert boolean form fields from string to boolean
+		;(data as any).cpuFixed = formData.get("cpuFixed") === "true"
 		await saveSettings(data)
 		setIsLoading(false)
 	}
@@ -153,6 +155,28 @@ export default function SettingsProfilePage({ userSettings }: { userSettings: Us
 											{value}
 										</SelectItem>
 									))}
+								</SelectContent>
+							</Select>
+						</div>
+						<div className="grid gap-2">
+							<Label className="block" htmlFor="cpuFixed">
+								<Trans>CPU Y-axis scale</Trans>
+							</Label>
+							<Select
+								name="cpuFixed"
+								key={String(userSettings.cpuFixed)}
+								defaultValue={userSettings.cpuFixed ? "true" : "false"}
+							>
+								<SelectTrigger id="cpuFixed">
+									<SelectValue />
+								</SelectTrigger>
+								<SelectContent>
+									<SelectItem value="false">
+										<Trans>Dynamic</Trans>
+									</SelectItem>
+									<SelectItem value="true">
+										<Trans comment="CPU chart Y-axis scale option">0 – 100 %</Trans>
+									</SelectItem>
 								</SelectContent>
 							</Select>
 						</div>
