@@ -67,9 +67,9 @@ type Dataset struct {
 	Mountpoint string
 }
 
-// PoolStats returns capacity and health for all pools on the system using
+// poolStats returns capacity and health for all pools on the system using
 // `zpool list`. Frequent health and I/O sampling uses PoolKernelStats instead.
-func PoolStats() ([]PoolStat, error) {
+func poolStats() ([]PoolStat, error) {
 	out, err := commandOutput("zpool", "list", "-Hp", "-o", "name,size,alloc,free,health")
 	if err != nil {
 		var exitErr *exec.ExitError
