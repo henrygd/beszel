@@ -1,12 +1,19 @@
 package agent
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/shirou/gopsutil/v4/process"
 )
 
 const processCountsCacheDuration = 5 * time.Second
+
+// maxProcessesForStateCounts bounds how many processes we'll scan for state counts.
+// Getting a process's state requires reading /proc (or equivalent) per PID, so on
+// systems with very large process counts this scan gets expensive. Above this
+// limit we skip it entirely rather than pay that cost every cache interval.
+const maxProcessesForStateCounts = 2000
 
 // processCountsCache is shared across stats intervals and protected by Agent.Mutex.
 // Cache failures too, so frequent live requests cannot repeatedly trigger a failed scan.
@@ -30,6 +37,9 @@ func getProcessCounts() ([5]uint32, error) {
 	pids, err := process.Pids()
 	if err != nil {
 		return counts, err
+	}
+	if len(pids) > maxProcessesForStateCounts {
+		return counts, fmt.Errorf("process count %d exceeds limit %d, skipping process state scan", len(pids), maxProcessesForStateCounts)
 	}
 	// Construct by PID to avoid NewProcess reading creation times we never use.
 	for _, pid := range pids {

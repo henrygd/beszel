@@ -40,6 +40,20 @@ func TestGetProcessCountsEnumerationFailure(t *testing.T) {
 	require.Error(t, err)
 }
 
+func TestGetProcessCountsOverLimit(t *testing.T) {
+	processFixture(t, maxProcessesForStateCounts+1)
+	counts, err := getProcessCounts()
+	require.Error(t, err)
+	require.Equal(t, [5]uint32{}, counts)
+}
+
+func TestGetProcessCountsAtLimit(t *testing.T) {
+	processFixture(t, maxProcessesForStateCounts)
+	counts, err := getProcessCounts()
+	require.NoError(t, err)
+	require.NotEqual(t, [5]uint32{}, counts)
+}
+
 // Synthetic proc trees measure scan scaling; real-host cost is measured separately.
 func BenchmarkProcessCountsScaling(b *testing.B) {
 	for _, n := range []int{100, 1000} {
