@@ -5,11 +5,13 @@ go 1.27.1
 require (
 	github.com/blang/semver v3.5.1+incompatible
 	github.com/coreos/go-systemd/v22 v22.7.0
+	github.com/distribution/reference v0.6.0
 	github.com/ebitengine/purego v0.11.0
 	github.com/fxamacker/cbor/v2 v2.9.3
 	github.com/gliderlabs/ssh v0.3.8
 	github.com/lxzan/gws v1.10.1
 	github.com/nicholas-fedor/shoutrrr v0.20.0
+	github.com/opencontainers/go-digest v1.0.0
 	github.com/pocketbase/dbx v1.12.0
 	github.com/pocketbase/pocketbase v0.40.2
 	github.com/shirou/gopsutil/v4 v4.26.8
