@@ -199,6 +199,13 @@ func (c *ConnectionManager) handleStateChange(newState ConnectionState) {
 		c.isConnecting = false
 	case Disconnected:
 		c.ConnectionType = system.ConnectionTypeNone
+		// Always keep the ticker running while disconnected. A pending WebSocket
+		// handshake started by connect() can fail asynchronously (e.g. the hub
+		// closes the socket, or the deadline set in OnOpen expires) after
+		// connect() has already returned with a nil error, in which case the
+		// ticker would otherwise never get re-armed and the agent would stop
+		// retrying entirely (#2326).
+		c.startWsTicker()
 		if c.isConnecting {
 			// Already handling reconnection, avoid duplicate attempts
 			return

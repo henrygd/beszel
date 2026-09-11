@@ -229,6 +229,47 @@ func TestConnectionManager_ReconnectionLogic(t *testing.T) {
 	assert.True(t, cm.isConnecting, "Should set isConnecting flag")
 }
 
+// TestConnectionManager_TickerSurvivesStaleDisconnect reproduces the freeze from
+// https://github.com/henrygd/beszel/issues/2326: a reconnect attempt's handshake
+// can fail asynchronously (after connect() already returned with a nil error)
+// while the manager is still in the Disconnected state. Previously the ticker
+// was only re-armed from connect()'s synchronous error branch, so once that
+// window was missed, the agent stopped retrying forever. The ticker must keep
+// running any time the manager transitions into Disconnected, regardless of
+// what happens to the in-flight handshake afterwards.
+func TestConnectionManager_TickerSurvivesStaleDisconnect(t *testing.T) {
+	agent := createTestAgent(t)
+	cm := agent.connectionManager
+	cm.eventChan = make(chan ConnectionEvent, 1)
+
+	// Simulate a healthy WebSocket connection, then a disconnect - mirroring
+	// handleStateChange's own Disconnected branch, but without launching the
+	// real async connect() goroutine so the ticker state can be asserted
+	// deterministically.
+	cm.State = WebSocketConnected
+	cm.stopWsTicker()
+	cm.handleStateChange(Disconnected)
+	require.NotNil(t, cm.wsTicker, "ticker must be armed as soon as the manager becomes Disconnected")
+
+	// Now simulate connect()'s in-flight handshake dying asynchronously with the
+	// manager still Disconnected (e.g. a late OnClose on an unauthenticated
+	// connection). This event is dropped by handleEvent since State is not
+	// WebSocketConnected, but the ticker armed above must still be running so
+	// the manager keeps retrying.
+	cm.isConnecting = false
+	cm.handleEvent(WebSocketDisconnect)
+	assert.Equal(t, Disconnected, cm.State)
+	assert.NotNil(t, cm.wsTicker, "ticker must still exist after a stale disconnect event")
+
+	select {
+	case <-cm.wsTicker.C:
+	case <-time.After(wsTickerInterval + 2*time.Second):
+		t.Fatal("ticker did not fire after a stale disconnect event - agent would freeze forever")
+	}
+
+	cm.stopWsTicker()
+}
+
 // TestConnectionManager_ConnectWithRateLimit tests connection rate limiting
 func TestConnectionManager_ConnectWithRateLimit(t *testing.T) {
 	agent := createTestAgent(t)
