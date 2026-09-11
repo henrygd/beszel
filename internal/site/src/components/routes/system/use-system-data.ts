@@ -97,7 +97,7 @@ export function useSystemData(id: string) {
 		}
 		pb.collection<SystemDetailsRecord>("system_details")
 			.getOne(system.id, {
-				fields: "hostname,kernel,cores,threads,cpu,os,os_name,arch,memory,podman",
+				fields: "hostname,kernel,cores,threads,cpu,os,os_name,arch,memory,podman,cpu_mhz",
 				headers: {
 					"Cache-Control": "public, max-age=60",
 				},

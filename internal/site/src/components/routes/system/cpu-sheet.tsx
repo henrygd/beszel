@@ -41,6 +41,7 @@ export default memo(function CpuCoresSheet({
 	const cpus = latest?.cpus ?? []
 	const numCores = cpus.length
 	const hasBreakdown = (latest?.cpub?.length ?? 0) > 0
+	const hasFrequency = (latest?.cf?.length ?? 0) > 0
 
 	// make sure all individual core data points have the same y axis domain to make relative comparison easier
 	let highestCpuCorePct = 1
@@ -92,6 +93,27 @@ export default memo(function CpuCoresSheet({
 			stackId: "a",
 		},
 		{
+			label: "IRQ",
+			dataKey: ({ stats }: SystemStatsRecord) => stats?.cpub?.[5],
+			color: "hsl(195, 70%, 50%)",
+			opacity: 0.35,
+			stackId: "a",
+		},
+		{
+			label: t`SoftIRQ`,
+			dataKey: ({ stats }: SystemStatsRecord) => stats?.cpub?.[6],
+			color: "hsl(50, 80%, 52%)",
+			opacity: 0.35,
+			stackId: "a",
+		},
+		{
+			label: t`Nice`,
+			dataKey: ({ stats }: SystemStatsRecord) => stats?.cpub?.[7],
+			color: "hsl(300, 60%, 55%)",
+			opacity: 0.35,
+			stackId: "a",
+		},
+		{
 			label: t`Other`,
 			dataKey: ({ stats }: SystemStatsRecord) => {
 				const total = stats?.cpub?.reduce((acc, curr) => acc + curr, 0) ?? 0
@@ -139,6 +161,35 @@ export default memo(function CpuCoresSheet({
 								reverseStackOrder={true}
 								itemSorter={() => 1}
 								domain={[0, 100]}
+							/>
+						</ChartCard>
+					)}
+
+					{hasFrequency && (
+						<ChartCard
+							key="cpu-frequency"
+							empty={dataEmpty}
+							grid={grid}
+							title={t`CPU Frequency`}
+							description={t`Per-core frequency`}
+							legend={numCores < 10}
+							className="min-h-auto"
+						>
+							<AreaChartDefault
+								chartData={chartData}
+								maxToggled={maxValues}
+								legend={numCores < 10}
+								domain={[0, (dataMax: number) => Math.max(dataMax, 0.1)]}
+								dataPoints={Array.from({ length: latest?.cf?.length ?? 0 }).map((_, i) => ({
+									label: `CPU ${i}`,
+									dataKey: ({ stats }: SystemStatsRecord) => stats?.cf?.[i],
+									color: `hsl(${226 + (((i * 360) / Math.max(1, latest?.cf?.length ?? 1)) % 360)}, var(--chart-saturation), var(--chart-lightness))`,
+									opacity: 0.35,
+									stackId: undefined,
+								}))}
+								tickFormatter={(val) => `${decimalString(val, 2)} GHz`}
+								contentFormatter={({ value }) => `${decimalString(value, 2)} GHz`}
+								itemSorter={() => 1}
 							/>
 						</ChartCard>
 					)}
@@ -200,6 +251,7 @@ export default memo(function CpuCoresSheet({
 							/>
 						</ChartCard>
 					))}
+
 				</SheetContent>
 			)}
 		</Sheet>
