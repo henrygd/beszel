@@ -96,7 +96,7 @@ export function ChartCard({
 	className,
 }: {
 	title: string
-	description: string
+	description: React.ReactNode
 	children: React.ReactNode
 	grid?: boolean
 	empty?: boolean
