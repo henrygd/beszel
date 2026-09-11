@@ -291,7 +291,7 @@ export function useSystemData(id: string) {
 	}, [id, systems, displayMode, activeTab])
 
 	// derived values
-	const isLongerChart = !["1m", "1h"].includes(chartTime)
+	const isLongerChart = chartTimeData[chartTime].type !== "1m"
 	const showMax = maxValues && isLongerChart
 	const dataEmpty = !chartLoading && chartData.systemStats.length === 0
 	const lastGpus = systemStats.at(-1)?.stats?.g
