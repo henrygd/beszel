@@ -969,6 +969,79 @@ func TestTrustedHeaderMiddleware(t *testing.T) {
 	}
 }
 
+func TestTrustedHeaderProxyAllowlist(t *testing.T) {
+	var hubs []*beszelTests.TestHub
+
+	defer func() {
+		for _, hub := range hubs {
+			hub.Cleanup()
+		}
+	}()
+
+	testAppFactory := func(t testing.TB) *pbTests.TestApp {
+		hub, _ := beszelTests.NewTestHub(t.TempDir())
+		hubs = append(hubs, hub)
+		hub.StartHub()
+		return hub.TestApp
+	}
+
+	// httptest requests arrive from 192.0.2.1:1234
+	testCases := []struct {
+		name            string
+		proxies         string
+		expectedStatus  int
+		expectedContent []string
+	}{
+		{
+			name:            "peer inside an allowed range",
+			proxies:         "10.0.0.0/8, 192.0.2.0/24",
+			expectedStatus:  200,
+			expectedContent: []string{"\"key\":", "\"v\":"},
+		},
+		{
+			name:            "peer is the listed address",
+			proxies:         "192.0.2.1",
+			expectedStatus:  200,
+			expectedContent: []string{"\"key\":", "\"v\":"},
+		},
+		{
+			name:            "peer outside the allowlist",
+			proxies:         "10.0.0.0/8",
+			expectedStatus:  401,
+			expectedContent: []string{"requires valid"},
+		},
+		{
+			name:            "allowlist with no valid entry",
+			proxies:         "proxy.internal",
+			expectedStatus:  401,
+			expectedContent: []string{"requires valid"},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			t.Setenv("TRUSTED_AUTH_HEADER", "X-Beszel-Trusted")
+			t.Setenv("TRUSTED_PROXY_IPS", tc.proxies)
+
+			scenario := beszelTests.ApiScenario{
+				Name:   "GET /getkey - with trusted header",
+				Method: http.MethodGet,
+				URL:    "/api/beszel/getkey",
+				Headers: map[string]string{
+					"X-Beszel-Trusted": "user@test.com",
+				},
+				ExpectedStatus:  tc.expectedStatus,
+				ExpectedContent: tc.expectedContent,
+				TestAppFactory:  testAppFactory,
+				BeforeTestFunc: func(t testing.TB, app *pbTests.TestApp, e *core.ServeEvent) {
+					beszelTests.CreateUser(app, "user@test.com", "password123")
+				},
+			}
+			scenario.Test(t)
+		})
+	}
+}
+
 func TestUpdateEndpoint(t *testing.T) {
 	t.Setenv("CHECK_UPDATES", "true")
 
