@@ -18,6 +18,7 @@ import {
 	PenBoxIcon,
 	PlayCircleIcon,
 	ServerIcon,
+	TagIcon,
 	TerminalSquareIcon,
 	Trash2Icon,
 	WifiIcon,
@@ -38,6 +39,7 @@ import {
 } from "@/lib/utils"
 import { batteryStateTranslations } from "@/lib/i18n"
 import type { SystemRecord } from "@/types"
+import { TagBadgeList } from "@/components/tags/tag-badge-list"
 import { SystemDialog } from "../add-system"
 import AlertButton from "../alerts/alert-button"
 import { $router, Link } from "../router"
@@ -127,7 +129,18 @@ export function SystemsTableColumns(viewMode: "table" | "grid"): ColumnDef<Syste
 						return true
 					}
 					const statusLower = statusTranslations[sys.status as keyof typeof statusTranslations]
-					return statusLower?.includes(filterInputLower) || false
+					if (statusLower?.includes(filterInputLower)) {
+						return true
+					}
+					// Search in tags
+					if (sys.expand?.tags) {
+						for (const tag of sys.expand.tags) {
+							if (tag.name.toLowerCase().includes(filterInputLower)) {
+								return true
+							}
+						}
+					}
+					return false
 				}
 			})(),
 			enableHiding: false,
@@ -165,6 +178,31 @@ export function SystemsTableColumns(viewMode: "table" | "grid"): ColumnDef<Syste
 				)
 			},
 			header: sortableHeader,
+		},
+		{
+			accessorKey: "tags",
+			id: "tags",
+			name: () => t`Tags`,
+			size: 120,
+			hideSort: true,
+			Icon: TagIcon,
+			header: sortableHeader,
+			cell: ({ row }) => {
+				const system = row.original
+				if (!system.expand?.tags || system.expand.tags.length === 0) {
+					return null
+				}
+				const maxTags = viewMode === "table" ? 1 : 3
+				return (
+					<Link
+						href={getPagePath($router, "system", { id: system.id })}
+						tabIndex={-1}
+						className="flex flex-wrap gap-1 relative z-10"
+					>
+						<TagBadgeList tags={system.expand.tags} max={maxTags} badgeClassName="px-1.5 py-0" />
+					</Link>
+				)
+			},
 		},
 		{
 			accessorFn: ({ info }) => info.cpu || undefined,
