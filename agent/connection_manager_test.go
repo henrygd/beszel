@@ -77,6 +77,10 @@ func TestConnectionManager_StateTransitions(t *testing.T) {
 	cm.handleStateChange(SSHConnected)
 	assert.Equal(t, SSHConnected, cm.State, "State should change to SSHConnected")
 
+	// Prevent handleStateChange from spawning its async reconnect goroutine:
+	// this test only checks the synchronous state machine, and the goroutine
+	// would otherwise race with the direct field writes below.
+	cm.setConnecting(true)
 	cm.handleStateChange(Disconnected)
 	assert.Equal(t, Disconnected, cm.State, "State should change to Disconnected")
 
@@ -95,7 +99,6 @@ func TestConnectionManager_EventHandling(t *testing.T) {
 			Host: "localhost:8080",
 		},
 	}
-
 	testCases := []struct {
 		name          string
 		initialState  ConnectionState
@@ -148,6 +151,11 @@ func TestConnectionManager_EventHandling(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
+			// Prevent handleStateChange from spawning its async reconnect
+			// goroutine: this test only checks the synchronous state machine,
+			// and the goroutine would otherwise race with the direct field
+			// writes here and in later subtests.
+			cm.setConnecting(true)
 			cm.State = tc.initialState
 			cm.handleEvent(tc.event)
 			assert.Equal(t, tc.expectedState, cm.State, "State should match expected after event")
@@ -221,12 +229,12 @@ func TestConnectionManager_ReconnectionLogic(t *testing.T) {
 	// Test that isConnecting flag prevents duplicate reconnection attempts
 	// Start from connected state, then simulate disconnect
 	cm.State = WebSocketConnected
-	cm.isConnecting = false
+	cm.setConnecting(false)
 
 	// First disconnect should trigger reconnection logic
 	cm.handleStateChange(Disconnected)
 	assert.Equal(t, Disconnected, cm.State, "Should change to disconnected")
-	assert.True(t, cm.isConnecting, "Should set isConnecting flag")
+	assert.True(t, cm.isConnectingNow(), "Should set isConnecting flag")
 }
 
 // TestConnectionManager_TickerSurvivesStaleDisconnect reproduces the freeze from
@@ -248,6 +256,7 @@ func TestConnectionManager_TickerSurvivesStaleDisconnect(t *testing.T) {
 	// deterministically.
 	cm.State = WebSocketConnected
 	cm.stopWsTicker()
+	cm.setConnecting(true)
 	cm.handleStateChange(Disconnected)
 	require.NotNil(t, cm.wsTicker, "ticker must be armed as soon as the manager becomes Disconnected")
 
