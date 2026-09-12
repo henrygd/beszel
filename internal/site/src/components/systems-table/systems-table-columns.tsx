@@ -207,6 +207,17 @@ export function SystemsTableColumns(viewMode: "table" | "grid"): ColumnDef<Syste
 			header: sortableHeader,
 		},
 		{
+			accessorFn: ({ info }) => {
+				if (!info.gm || !info.gmt) return undefined
+				return (info.gm / info.gmt) * 100
+			},
+			id: "gpuMem",
+			name: () => "VRAM",
+			cell: TableCellWithMeter,
+			Icon: GpuIcon,
+			header: sortableHeader,
+		},
+		{
 			id: "loadAverage",
 			accessorFn: ({ info }) => info.la?.reduce((acc, curr) => acc + curr, 0),
 			name: () => t({ message: "Load Avg", comment: "Short label for load average" }),
