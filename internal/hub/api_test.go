@@ -626,6 +626,14 @@ func TestApiRoutesAuthentication(t *testing.T) {
 			TestAppFactory:  testAppFactory,
 		},
 		{
+			Name:            "GET /version - no auth should succeed",
+			Method:          http.MethodGet,
+			URL:             "/api/beszel/version",
+			ExpectedStatus:  200,
+			ExpectedContent: []string{"\"v\":"},
+			TestAppFactory:  testAppFactory,
+		},
+		{
 			Name:            "GET /agent-connect - no auth should succeed (websocket upgrade fails but route is accessible)",
 			Method:          http.MethodGet,
 			URL:             "/api/beszel/agent-connect",
