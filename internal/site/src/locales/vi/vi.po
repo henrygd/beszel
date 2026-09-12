@@ -8,7 +8,7 @@ msgstr ""
 "Language: vi\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2026-09-10 00:33\n"
+"PO-Revision-Date: 2026-09-10 01:46\n"
 "Last-Translator: \n"
 "Language-Team: Vietnamese\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
@@ -447,7 +447,7 @@ msgstr "Mất kết nối"
 
 #: src/lib/alerts.ts
 msgid "Container"
-msgstr ""
+msgstr "Container"
 
 #: src/lib/alerts.ts
 msgid "Container Health"
@@ -2103,3 +2103,4 @@ msgstr "Có"
 #: src/components/routes/settings/layout.tsx
 msgid "Your user settings have been updated."
 msgstr "Cài đặt người dùng của bạn đã được cập nhật."
+
