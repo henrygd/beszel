@@ -1,11 +1,21 @@
 package agent
 
 import (
+	"encoding/json"
+	"errors"
+	"io"
 	"log"
+	"net/http"
+	"net/url"
 	"os"
 	"os/exec"
+	"path"
 	"runtime"
+	"strings"
+	"time"
 
+	"github.com/blang/semver"
+	"github.com/henrygd/beszel/agent/utils"
 	"github.com/henrygd/beszel/internal/ghupdate"
 )
 
@@ -74,8 +84,48 @@ func detectRestarter() restarter {
 	return nil
 }
 
+// fetchHubVersion queries the connected hub for its version. It returns a zero
+// version and an error if the hub is unreachable or does not expose its version
+// (e.g. an older hub without the /api/beszel/version endpoint).
+func fetchHubVersion() (semver.Version, error) {
+	hubURL, exists := utils.GetEnv("HUB_URL")
+	if !exists {
+		return semver.Version{}, errors.New("HUB_URL not set")
+	}
+	u, err := url.Parse(hubURL)
+	if err != nil || u.Host == "" {
+		return semver.Version{}, errors.New("invalid HUB_URL")
+	}
+	u.Path = path.Join(u.Path, "api/beszel/version")
+
+	client := &http.Client{Timeout: 10 * time.Second}
+	resp, err := client.Get(u.String())
+	if err != nil {
+		return semver.Version{}, err
+	}
+	defer resp.Body.Close()
+
+	body, err := io.ReadAll(io.LimitReader(resp.Body, 1024))
+	if err != nil {
+		return semver.Version{}, err
+	}
+	if resp.StatusCode != http.StatusOK {
+		return semver.Version{}, errors.New("hub returned " + resp.Status)
+	}
+
+	var data struct {
+		Version string `json:"v"`
+	}
+	if err := json.Unmarshal(body, &data); err != nil {
+		return semver.Version{}, err
+	}
+	return semver.Parse(strings.TrimPrefix(data.Version, "v"))
+}
+
 // Update checks GitHub for a newer release of beszel-agent, applies it,
-// fixes SELinux context if needed, and restarts the service.
+// fixes SELinux context if needed, and restarts the service. When the agent
+// knows its hub's version, the update is capped at the hub's release so the
+// agent never runs ahead of the hub.
 func Update(useMirror bool) error {
 	exePath, _ := os.Executable()
 
@@ -83,10 +133,18 @@ func Update(useMirror bool) error {
 	if err != nil {
 		dataDir = os.TempDir()
 	}
+
+	var maxVersion string
+	if hubVersion, err := fetchHubVersion(); err == nil && hubVersion.GT(semver.Version{}) {
+		maxVersion = hubVersion.String()
+		ghupdate.ColorPrintf(ghupdate.ColorYellow, "Capping update at hub version %s.", maxVersion)
+	}
+
 	updated, err := ghupdate.Update(ghupdate.Config{
 		ArchiveExecutable: "beszel-agent",
 		DataDir:           dataDir,
 		UseMirror:         useMirror,
+		MaxVersion:        maxVersion,
 	})
 	if err != nil {
 		log.Fatal(err)

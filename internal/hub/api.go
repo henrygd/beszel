@@ -104,6 +104,10 @@ func (h *Hub) registerApiRoutes(se *core.ServeEvent) error {
 	// get public key and version
 	apiAuth.GET("/info", h.getInfo)
 	apiAuth.GET("/getkey", h.getInfo) // deprecated - keep for compatibility w/ integrations
+	// get the hub's current version (used by agents to cap their update to the hub's release)
+	apiNoAuth.GET("/version", func(e *core.RequestEvent) error {
+		return e.JSON(http.StatusOK, map[string]string{"v": beszel.Version})
+	})
 	// check for updates
 	if optIn, _ := utils.GetEnv("CHECK_UPDATES"); optIn == "true" {
 		var updateInfo UpdateInfo
