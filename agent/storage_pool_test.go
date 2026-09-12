@@ -5,7 +5,9 @@ package agent
 import (
 	"errors"
 	"fmt"
+	"os"
 	"os/exec"
+	"path/filepath"
 	"strings"
 	"sync"
 	"testing"
@@ -502,4 +504,48 @@ func TestBtrfsPoolIdentities(t *testing.T) {
 	assert.Equal(t, "renamed", stats.ZfsPools[first].DisplayName)
 	assert.Equal(t, first, zm.GetDetail(true).Pools[1].Name)
 	assert.Equal(t, "renamed", zm.GetDetail(true).Pools[1].DisplayName)
+}
+
+// TestUpdateSkipsZfsWhenDevZfsMissing verifies that all ZFS collection is
+// skipped when the /dev/zfs device node is not mapped, avoiding the 10s
+// command timeout. See beszel#2324.
+func TestUpdateSkipsZfsWhenDevZfsMissing(t *testing.T) {
+	missing := filepath.Join(t.TempDir(), "dev", "zfs")
+	state := &poolTestBackend{name: "tank"}
+	backend := state.backend()
+	backend.devZfsPath = missing
+
+	zm := &StoragePoolManager{detailInterval: time.Hour, backends: []*poolBackend{backend}}
+
+	var stats system.Stats
+	zm.Update(&stats)
+	zm.Update(&stats)
+	assert.Nil(t, stats.ZfsPools)
+	assert.Empty(t, backend.poolData, "Update should not call zpool list when /dev/zfs is missing")
+
+	usage := zm.DatasetUsage()
+	assert.Nil(t, usage)
+	assert.Empty(t, backend.datasetUsage, "DatasetUsage should not call zfs list when /dev/zfs is missing")
+
+	detail := zm.GetDetail(true)
+	assert.Empty(t, detail.Pools)
+	assert.True(t, detail.Complete)
+	assert.Empty(t, backend.detail, "GetDetail should not call zpool status when /dev/zfs is missing")
+}
+
+// TestUpdateCollectsWhenDevZfsPresent verifies that collection still happens
+// when the device node exists, so mapped /dev/zfs behaves as before.
+func TestUpdateCollectsWhenDevZfsPresent(t *testing.T) {
+	device := filepath.Join(t.TempDir(), "zfs")
+	require.NoError(t, os.WriteFile(device, []byte(""), 0o644))
+
+	state := &poolTestBackend{name: "tank"}
+	backend := state.backend()
+	backend.devZfsPath = device
+
+	zm := &StoragePoolManager{detailInterval: time.Hour, backends: []*poolBackend{backend}}
+	var stats system.Stats
+	zm.Update(&stats)
+	require.NotNil(t, stats.ZfsPools)
+	assert.Contains(t, stats.ZfsPools, "tank")
 }

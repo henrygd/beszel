@@ -3,9 +3,11 @@ package agent
 import (
 	"errors"
 	"log/slog"
+	"os"
 	"os/exec"
 	"strings"
 	"sync"
+	"sync/atomic"
 	"time"
 
 	"github.com/henrygd/beszel/agent/btrfs"
@@ -28,6 +30,12 @@ const datasetUsageRefreshInterval = 5 * time.Minute
 // capacity. Health and I/O are read from procfs on Linux, so the utility only
 // needs to refresh slow-moving space accounting.
 const poolStatsRefreshInterval = time.Minute
+
+// zfsDevicePath is the character device node the OpenZFS utilities need.
+// When it is not mapped into the container, commands like `zpool list` hang
+// until the command timeout expires. Probing it lets the agent skip the
+// long-blocking calls entirely. See beszel#2324.
+const zfsDevicePath = "/dev/zfs"
 
 // btrfsFilesystems is the btrfs source; overridable in tests.
 var btrfsFilesystems = btrfs.Filesystems
@@ -67,6 +75,14 @@ type poolBackend struct {
 	detail            *zfsentity.ZfsData
 	lastDetailRefresh time.Time
 	detailFailed      bool
+
+	// devZfsPath is the path to the ZFS character device node. It is set to
+	// zfsDevicePath by newZfsBackend. Tests can override it to simulate a
+	// missing or present device; an empty path disables the probe.
+	devZfsPath string
+	// available is set to true the first time devZfsPath is seen and never
+	// reset for the lifetime of the backend.
+	available atomic.Bool
 }
 
 func newStoragePoolManager() *StoragePoolManager {
@@ -83,7 +99,27 @@ func newZfsBackend() *poolBackend {
 		datasetsFn:     zfs.Datasets,
 		kernelStatsFn:  optionalPoolSource(zfs.PoolKernelStats),
 		poolStatusesFn: optionalPoolSource(zfs.PoolStatuses),
+		devZfsPath:     zfsDevicePath,
 	}
+}
+
+// backendAvailable probes devZfsPath once and caches the result. When /dev/zfs
+// is absent (common on the alpine agent when the user did not mount it), the
+// backend skips the 10s-blocking `zpool list` calls instead of paying the
+// timeout every minute. See beszel#2324.
+func (b *poolBackend) backendAvailable() bool {
+	if !b.available.Load() {
+		if b.devZfsPath == "" {
+			// Tests and callers that bypass newZfsBackend do not require the
+			// device probe; treat the backend as available and let the
+			// injected fns simulate absence.
+			return true
+		}
+		if _, err := os.Stat(b.devZfsPath); err == nil {
+			b.available.Store(true)
+		}
+	}
+	return b.available.Load()
 }
 
 func newBtrfsBackend() *poolBackend {
@@ -141,6 +177,9 @@ func (m *StoragePoolManager) Update(systemStats *system.Stats) {
 }
 
 func (b *poolBackend) updateBackendStats(systemStats *system.Stats) {
+	if !b.backendAvailable() {
+		return
+	}
 	pools := b.poolStats()
 	if len(pools) == 0 {
 		b.kernelSamples = nil
@@ -227,6 +266,9 @@ func (b *poolBackend) kernelStats() (map[string]zfs.PoolKernelStat, map[string]z
 // refreshDatasetUsage re-runs `zfs list` when the refresh window has elapsed
 // and rebuilds the mountpoint-keyed usage map.
 func (b *poolBackend) refreshDatasetUsage() {
+	if !b.backendAvailable() {
+		return
+	}
 	if !b.lastUsageRefresh.IsZero() && time.Since(b.lastUsageRefresh) < datasetUsageRefreshInterval {
 		return
 	}
@@ -277,6 +319,10 @@ func (m *StoragePoolManager) GetDetail(force bool) *zfsentity.ZfsData {
 func (b *poolBackend) getBackendDetail(force bool, interval time.Duration) *zfsentity.ZfsData {
 	b.detailMu.Lock()
 	defer b.detailMu.Unlock()
+
+	if !b.backendAvailable() {
+		return &zfsentity.ZfsData{Pools: []*zfsentity.PoolDetail{}, Complete: true}
+	}
 
 	if force || b.detailFailed || b.detail == nil || time.Since(b.lastDetailRefresh) >= interval {
 		if data, err := b.collectDetail(b.detail); err != nil {
