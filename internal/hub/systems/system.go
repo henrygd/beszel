@@ -273,8 +273,8 @@ func (sys *System) createRecords(data *system.CombinedData) (*core.Record, error
 			if err := updateNetworkProbesRecords(txApp, data.Probes, sys.Id); err != nil {
 				return err
 			}
-    }
-    
+		}
+
 		if err := sys.syncZfsPoolHealth(txApp, data.Stats.ZfsPools); err != nil {
 			return err
 		}
@@ -725,7 +725,7 @@ func (sys *System) FetchZfsDataFromAgent(force bool) (*zfs.ZfsData, error) {
 	return &result, err
 }
 
-func makeStableHashId(strings ...string) string {
+func MakeStableHashId(strings ...string) string {
 	hash := fnv.New32a()
 	for _, str := range strings {
 		hash.Write([]byte(str))

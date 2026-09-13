@@ -212,7 +212,7 @@ func TestSaveSmartDevices_IncompleteDataDoesNotRemoveDevices(t *testing.T) {
 	}, false))
 
 	assert.Len(t, countSmartDeviceRecords(t, testApp, sys.Id), 2)
-	recordA, err := testApp.FindRecordById("smart_devices", makeStableHashId(sys.Id, "AAA"))
+	recordA, err := testApp.FindRecordById("smart_devices", MakeStableHashId(sys.Id, "AAA"))
 	require.NoError(t, err)
 	assert.EqualValues(t, 42, recordA.GetInt("temp"))
 }

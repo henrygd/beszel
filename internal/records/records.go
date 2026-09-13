@@ -224,7 +224,7 @@ func (rm *RecordManager) CreateLongerRecords() {
 				longerRecord.Set("created", now.UnixMilli())
 				longerRecord.Set("stats", rm.AverageProbeStats(db, recordIds))
 				if err := txApp.SaveNoValidate(longerRecord); err != nil {
-					log.Println("failed to save probe longer record", "err", err)
+					slog.Error("failed to save probe longer record", "err", err)
 				}
 			}
 		}

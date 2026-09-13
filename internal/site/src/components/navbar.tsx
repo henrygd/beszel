@@ -199,7 +199,6 @@ export default function Navbar() {
 						<Trans>Network Probes</Trans>
 					</TooltipContent>
 				</Tooltip>
-				<LangToggle />
 				<ModeToggle />
 				<Tooltip>
 					<TooltipTrigger asChild>
