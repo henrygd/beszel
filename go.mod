@@ -13,7 +13,7 @@ require (
 	github.com/nicholas-fedor/shoutrrr v0.20.0
 	github.com/opencontainers/go-digest v1.0.0
 	github.com/pocketbase/dbx v1.12.0
-	github.com/pocketbase/pocketbase v0.40.2
+	github.com/pocketbase/pocketbase v0.40.3
 	github.com/shirou/gopsutil/v4 v4.26.8
 	github.com/spf13/cast v1.10.0
 	github.com/spf13/cobra v1.10.2
