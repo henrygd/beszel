@@ -12,7 +12,13 @@ import { ZfsCharts } from "./system/charts/storage-pool-charts"
 import { BandwidthChart, ContainerNetworkChart } from "./system/charts/network-charts"
 import { TemperatureChart, FanChart, BatteryChart } from "./system/charts/sensor-charts"
 import { GpuPowerChart, GpuCharts } from "./system/charts/gpu-charts"
-import { LazyContainersTable, LazySmartTable, LazySystemdTable, LazyZfsTable } from "./system/lazy-tables"
+import {
+	LazyContainersTable,
+	LazyNetworkProbesTable,
+	LazySmartTable,
+	LazySystemdTable,
+	LazyZfsTable,
+} from "./system/lazy-tables"
 import { LoadAverageChart } from "./system/charts/load-average-chart"
 import { ContainerIcon, CpuIcon, HardDriveIcon, NetworkIcon, TerminalSquareIcon } from "lucide-react"
 import { GpuIcon } from "../ui/icons"
@@ -153,6 +159,8 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 				{hasContainersTable && <LazyContainersTable systemId={system.id} />}
 
 				{hasSystemd && <LazySystemdTable systemId={system.id} />}
+
+				<LazyNetworkProbesTable systemId={system.id} />
 			</>
 		)
 	}
@@ -209,9 +217,12 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 
 				<TabsContent value="network" forceMount className={activeTab === "network" ? "contents" : "hidden"}>
 					{mountedTabs.has("network") && (
-						<div className="grid xl:grid-cols-2 gap-4">
-							<BandwidthChart {...coreProps} systemStats={systemStats} />
-						</div>
+						<>
+							<div className="grid xl:grid-cols-2 gap-4">
+								<BandwidthChart {...coreProps} systemStats={systemStats} />
+							</div>
+							<LazyNetworkProbesTable systemId={system.id} />
+						</>
 					)}
 				</TabsContent>
 
