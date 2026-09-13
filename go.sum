@@ -98,8 +98,8 @@ github.com/pocketbase/dbx v1.12.0 h1:/oLErM+A0b4xI0PWTGPqSDVjzix48PqI/bng2l0PzoA
 github.com/pocketbase/dbx v1.12.0/go.mod h1:xXRCIAKTHMgUCyCKZm55pUOdvFziJjQfXaWKhu2vhMs=
 github.com/pocketbase/ozzo-validation/v4 v4.3.0 h1:uKBDVma7bZqgR2a6AwE+k9hkuDFfiZMpBHQdZ1z3iQs=
 github.com/pocketbase/ozzo-validation/v4 v4.3.0/go.mod h1:6XNjSTw/Jb2F8LOkKO3oyzIWExbrGiYoS4uVxVwz90g=
-github.com/pocketbase/pocketbase v0.40.2 h1:7gTqvt3bmilkphyZZ1QNhX19g3BXHqT7ynDyU81RVT4=
-github.com/pocketbase/pocketbase v0.40.2/go.mod h1:jc3YuyToy+ZXM4CeO7uSCN/htgR8yv+tjSE3eJZ8eh8=
+github.com/pocketbase/pocketbase v0.40.3 h1:iLq2DPQjcBRDJ2sjM5ssc7eLV7LmPtCKx4Xs8Rkgud8=
+github.com/pocketbase/pocketbase v0.40.3/go.mod h1:T5rHKBqPqzEOesla8gqBnwqnceXfeHVuGt/MekG00TU=
 github.com/power-devops/perfstat v0.0.0-20260805114148-88456608a4f6 h1:jL3a8soXdzuTCcRnKhOmtcsVOObdDTFf4O2B403HPRU=
 github.com/power-devops/perfstat v0.0.0-20260805114148-88456608a4f6/go.mod h1:OmDBASR4679mdNQnz2pUhc2G8CO2JrUAVFDRBDP/hJE=
 github.com/remyoudompheng/bigfft v0.0.0-20230129092748-24d4a6f8daec h1:W09IVJc94icq4NjY3clb7Lk8O1qJ8BdBEF8z0ibU0rE=
