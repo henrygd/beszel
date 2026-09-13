@@ -109,6 +109,14 @@ func (h *Hub) StartHub() error {
 	h.App.OnRecordCreate("users").BindFunc(h.um.InitializeUserRole)
 	h.App.OnRecordCreate("user_settings").BindFunc(h.um.InitializeUserSettings)
 
+	// normalize email to lowercase on user / superuser create so duplicate
+	// accounts that differ only in email case cannot be registered
+	h.App.OnRecordCreate("users", core.CollectionNameSuperusers).BindFunc(h.um.NormalizeEmail)
+
+	// fall back to case-insensitive email lookup on password auth so users
+	// registered with a different case (e.g. "Foo@bar.com") can still log in
+	h.App.OnRecordAuthWithPasswordRequest("users", core.CollectionNameSuperusers).BindFunc(h.um.ResolveAuthIdentity)
+
 	pb, ok := h.App.(*pocketbase.PocketBase)
 	if !ok {
 		return errors.New("not a pocketbase app")
