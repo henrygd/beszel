@@ -1148,6 +1148,16 @@ func (sm *SmartManager) parseSmartForNvme(output []byte, deviceType string) (boo
 		return false, data.Smartctl.ExitStatus
 	}
 
+	// smartctl may return device identity fields before failing to read the NVMe
+	// health log (for example, on an unsupported controller path or with insufficient
+	// permissions). Do not accept that partial response as valid SMART data: doing
+	// so stores incorrect zero values and prevents the namespace-path fallback.
+	log := data.NVMeSmartHealthInformationLog
+	if log == nil {
+		slog.Debug("no NVMe SMART health information", "device", data.Device.Name)
+		return false, data.Smartctl.ExitStatus
+	}
+
 	sm.Lock()
 	defer sm.Unlock()
 
@@ -1170,7 +1180,7 @@ func (sm *SmartManager) parseSmartForNvme(output []byte, deviceType string) (boo
 	if smartData.Capacity == 0 && (runtime.GOOS == "darwin" || sm.darwinNvmeProvider != nil) {
 		smartData.Capacity = sm.lookupDarwinNvmeCapacity(data.SerialNumber)
 	}
-	smartData.Temperature = data.NVMeSmartHealthInformationLog.Temperature
+	smartData.Temperature = log.Temperature
 	smartData.SmartStatus = getSmartStatus(smartData.Temperature, data.SmartStatus.Passed)
 	smartData.DiskName = data.Device.Name
 	smartData.DiskType = data.Device.Type
@@ -1180,7 +1190,6 @@ func (sm *SmartManager) parseSmartForNvme(output []byte, deviceType string) (boo
 
 	// nvme attributes does not follow the same format as ata attributes,
 	// so we manually map each field to SmartAttributes
-	log := data.NVMeSmartHealthInformationLog
 	smartData.Attributes = []*smart.SmartAttribute{
 		{Name: "CriticalWarning", RawValue: uint64(log.CriticalWarning)},
 		{Name: "Temperature", RawValue: uint64(log.Temperature)},
