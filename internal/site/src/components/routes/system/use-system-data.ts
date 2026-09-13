@@ -171,6 +171,7 @@ export function useSystemData(id: string) {
 	// get stats when system "changes." (Not just system to system,
 	// also when new info comes in via systemManager realtime connection, indicating an update)
 	useEffect(() => {
+		const requestId = ++statsRequestId.current
 		if (!system.id || !chartTime || chartTime === "1m") {
 			return
 		}
@@ -179,7 +180,6 @@ export function useSystemData(id: string) {
 		const { expectedInterval } = chartTimeData[chartTime]
 		const ss_cache_key = `${systemId}_${chartTime}_system_stats`
 		const cs_cache_key = `${systemId}_${chartTime}_container_stats`
-		const requestId = ++statsRequestId.current
 
 		const cachedSystemStats = cache.get(ss_cache_key) as SystemStatsRecord[] | undefined
 		const cachedContainerData = cache.get(cs_cache_key) as ChartData["containerData"] | undefined
@@ -203,7 +203,7 @@ export function useSystemData(id: string) {
 			getStats<SystemStatsRecord>("system_stats", systemId, chartTime),
 			getStats<ContainerStatsRecord>("container_stats", systemId, chartTime),
 		]).then(([systemStats, containerStats]) => {
-			// If another request has been made since this one, ignore the results
+			// Ignore responses for a previous system or chart time
 			if (requestId !== statsRequestId.current) {
 				return
 			}
