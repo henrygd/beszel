@@ -63,7 +63,7 @@ export default function SettingsProfilePage({ userSettings }: { userSettings: Us
 					<Label className="block" htmlFor="lang">
 						<Trans>Preferred Language</Trans>
 					</Label>
-					<Select value={i18n.locale} onValueChange={(lang: string) => dynamicActivate(lang)}>
+					<Select name="lang" value={i18n.locale} onValueChange={(lang: string) => dynamicActivate(lang)}>
 						<SelectTrigger id="lang">
 							<SelectValue />
 						</SelectTrigger>

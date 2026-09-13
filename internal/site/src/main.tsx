@@ -121,6 +121,7 @@ const Layout = () => {
 
 const I18nApp = () => {
 	useEffect(() => {
+		// Activate a locale so I18nProvider can mount App and load the account settings.
 		dynamicActivate(getLocale())
 	}, [])
 
