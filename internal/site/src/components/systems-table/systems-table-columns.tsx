@@ -588,7 +588,7 @@ export function IndicatorDot({ system, className }: { system: SystemRecord; clas
 	)
 }
 
-export const ActionsButton = memo(({ system }: { system: SystemRecord }) => {
+export const ActionsButton = memo(({ system, variant = "ghost" }: { system: SystemRecord; variant?: "ghost" | "outline" }) => {
 	const [deleteOpen, setDeleteOpen] = useState(false)
 	const [editOpen, setEditOpen] = useState(false)
 	const editOpened = useRef(false)
@@ -600,7 +600,7 @@ export const ActionsButton = memo(({ system }: { system: SystemRecord }) => {
 			<>
 				<DropdownMenu>
 					<DropdownMenuTrigger asChild>
-						<Button variant="ghost" size={"icon"}>
+						<Button variant={variant} size={"icon"}>
 							<span className="sr-only">
 								<Trans>Open menu</Trans>
 							</span>
@@ -687,5 +687,5 @@ export const ActionsButton = memo(({ system }: { system: SystemRecord }) => {
 				</AlertDialog>
 			</>
 		)
-	}, [id, status, host, name, system, t, deleteOpen, editOpen])
+	}, [id, status, host, name, system, t, deleteOpen, editOpen, variant])
 })

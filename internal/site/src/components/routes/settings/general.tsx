@@ -4,6 +4,7 @@ import { LanguagesIcon, LoaderCircleIcon, SaveIcon } from "lucide-react"
 import { useState } from "react"
 import { useStore } from "@nanostores/react"
 import { Button } from "@/components/ui/button"
+import { Switch } from "@/components/ui/switch"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
@@ -12,22 +13,26 @@ import Slider from "@/components/ui/slider"
 import { HourFormat, Unit } from "@/lib/enums"
 import { dynamicActivate } from "@/lib/i18n"
 import languages from "@/lib/languages"
-import { $userSettings, defaultLayoutWidth } from "@/lib/stores"
+import { $systems, $userSettings, defaultLayoutWidth } from "@/lib/stores"
 import { chartTimeData, currentHour12 } from "@/lib/utils"
 import type { UserSettings } from "@/types"
 import { saveSettings } from "./layout"
 
 export default function SettingsProfilePage({ userSettings }: { userSettings: UserSettings }) {
 	const [isLoading, setIsLoading] = useState(false)
+	const [singleNodeMode, setSingleNodeMode] = useState(!!userSettings.singleNodeMode)
 	const { i18n } = useLingui()
 	const currentUserSettings = useStore($userSettings)
 	const layoutWidth = currentUserSettings.layoutWidth ?? defaultLayoutWidth
+	const systems = useStore($systems)
+	const multiSystem = systems.length > 1
 
 	async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
 		e.preventDefault()
 		setIsLoading(true)
 		const formData = new FormData(e.target as HTMLFormElement)
 		const data = Object.fromEntries(formData) as Partial<UserSettings>
+		data.singleNodeMode = singleNodeMode
 		await saveSettings(data)
 		setIsLoading(false)
 	}
@@ -106,6 +111,28 @@ export default function SettingsProfilePage({ userSettings }: { userSettings: Us
 						step={10}
 						className="w-full mb-1"
 					/>
+				</div>
+				<Separator />
+				<div className="grid gap-2">
+					<div className="mb-2">
+						<h3 className="mb-1 text-lg font-medium">
+							<Trans>Single node mode</Trans>
+						</h3>
+						<p className="text-sm text-muted-foreground leading-relaxed">
+							<Trans>Redirect to the system dashboard automatically when only one system is configured.</Trans>
+						</p>
+					</div>
+					<div className="flex items-center gap-2">
+						<Switch
+							id="singleNodeMode"
+							checked={singleNodeMode}
+							onCheckedChange={setSingleNodeMode}
+							disabled={multiSystem}
+						/>
+						<Label htmlFor="singleNodeMode" className={multiSystem ? "opacity-50" : ""}>
+							<Trans>Enable single node mode</Trans>
+						</Label>
+					</div>
 				</div>
 				<Separator />
 				<div className="grid gap-2">
