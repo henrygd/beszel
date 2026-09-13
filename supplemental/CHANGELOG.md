@@ -1,3 +1,55 @@
+## 0.19.0
+
+- **Potential breaking change:** Agents now verify HTTPS certificates. If an agent connects to a hub using a self-signed or otherwise untrusted certificate, configure `CA_CERT_FILE` with the appropriate CA certificate or the connection will be rejected.
+
+- Add ZFS pool and dataset monitoring (#2209)
+
+- Add container health alerts with log excerpts in notifications (#2225)
+
+- Add alerts for failed systemd services (#2173)
+
+- Add alerts for CPU I/O wait and steal time (#2249)
+
+- Add cumulative disk read and write totals to the Disk I/O sheet (#2179)
+
+- Add Greek and Uzbek translations (#2034)
+
+- Add custom root disk names and sort disks alphabetically (#2006)
+
+- Improve alert security by enforcing system ownership and blocking additional internal notification URL ranges
+
+- Improve ATA SMART warnings for critical attributes (#2275)
+
+- Fix a hub crash caused by concurrent SSH client shutdown (#2277)
+
+- Fix host CPU and memory totals when Docker runs in a VM on macOS or Windows (#2272)
+
+- Fix multi-line `TOKEN_FILE` loading (#2276)
+
+- Fix QNAP MD RAID arrays being incorrectly reported as failed (#2065)
+
+- Fix Intel GPU power data disappearing between samples (#2256)
+
+- Fix swap usage calculations to include cached swap (#2267)
+
+- Fix agent payload failures caused by invalid UTF-8 in battery names (#2241)
+
+- Fix uptime reporting inside Linux containers (#2180)
+
+- Fix fan discovery on legacy hwmon devices (#2238)
+
+- Fix CPU model detection on MIPS systems (#2138)
+
+- Fix machine ID generation on FreeBSD and pfSense installations (#2274)
+
+- Fix agent environment variable updates during reinstall (#2107)
+
+- Fix the install script reporting the wrong listen address after upgrades (#2243)
+
+- Fix load average precision on macOS, BSD, and Windows (#2245)
+
+- Update the Go version and Go dependencies
+
 ## 0.18.8
 
 - Add multi-battery monitoring

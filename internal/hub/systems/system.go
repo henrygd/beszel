@@ -22,6 +22,7 @@ import (
 	"github.com/henrygd/beszel/internal/entities/smart"
 	"github.com/henrygd/beszel/internal/entities/system"
 	"github.com/henrygd/beszel/internal/entities/systemd"
+	"github.com/henrygd/beszel/internal/entities/zfs"
 
 	"github.com/henrygd/beszel"
 
@@ -36,22 +37,24 @@ import (
 )
 
 type System struct {
-	Id             string                  `db:"id"`
-	Host           string                  `db:"host"`
-	Port           string                  `db:"port"`
-	Status         string                  `db:"status"`
-	manager        *SystemManager          // Manager that this system belongs to
-	client         *ssh.Client             // SSH client for fetching data
-	sshTransport   *transport.SSHTransport // SSH transport for requests
-	data           *system.CombinedData    // system data from agent
-	ctx            context.Context         // Context for stopping the updater
-	cancel         context.CancelFunc      // Stops and removes system from updater
-	WsConn         *ws.WsConn              // Handler for agent WebSocket connection
-	agentVersion   semver.Version          // Agent version
-	updateTicker   *time.Ticker            // Ticker for updating the system
-	detailsFetched atomic.Bool             // True if static system details have been fetched and saved
-	smartFetching  atomic.Bool             // True if SMART devices are currently being fetched
-	smartInterval  time.Duration           // Interval for periodic SMART data updates
+	Id             string                     `db:"id"`
+	Host           string                     `db:"host"`
+	Port           string                     `db:"port"`
+	Status         string                     `db:"status"`
+	manager        *SystemManager             // Manager that this system belongs to
+	client         atomic.Pointer[ssh.Client] // SSH client for fetching data
+	sshTransport   *transport.SSHTransport    // SSH transport for requests
+	data           *system.CombinedData       // system data from agent
+	ctx            context.Context            // Context for stopping the updater
+	cancel         context.CancelFunc         // Stops and removes system from updater
+	WsConn         *ws.WsConn                 // Handler for agent WebSocket connection
+	agentVersion   semver.Version             // Agent version
+	updateTicker   *time.Ticker               // Ticker for updating the system
+	detailsFetched atomic.Bool                // True if static system details have been fetched and saved
+	smartFetching  atomic.Bool                // True if SMART devices are currently being fetched
+	smartInterval  time.Duration              // Interval for periodic SMART data updates
+	zfsFetching    atomic.Bool                // True if ZFS pools are currently being fetched
+	zfsInterval    time.Duration              // Interval for periodic ZFS detail data updates
 }
 
 func (sm *SystemManager) NewSystem(systemId string) *System {
@@ -157,6 +160,12 @@ func (sys *System) update() error {
 			// to prevent premature expiration leading to new fetch if interval is different.
 			sys.manager.smartFetchMap.UpdateExpiration(sys.Id, sys.smartInterval+time.Minute)
 		}
+		// update zfs interval if it's set on the agent side
+		if data.Details.ZfsInterval > 0 {
+			sys.zfsInterval = data.Details.ZfsInterval
+			sys.manager.hub.Logger().Info("ZFS interval updated from agent details", "system", sys.Id, "interval", sys.zfsInterval.String())
+			sys.manager.zfsFetchMap.UpdateExpiration(sys.Id, sys.zfsInterval+time.Minute)
+		}
 	}
 
 	// Fetch and save SMART devices when system first comes online or at intervals
@@ -169,6 +178,20 @@ func (sys *System) update() error {
 			go func() {
 				defer sys.smartFetching.Store(false)
 				_ = sys.FetchAndSaveSmartDevices()
+			}()
+		}
+	}
+
+	// Fetch and save ZFS pool details when system first comes online or at intervals
+	if backgroundZfsFetchEnabled() && sys.detailsFetched.Load() && sys.supportsZfsData() {
+		if sys.zfsInterval <= 0 {
+			sys.zfsInterval = time.Hour
+		}
+		if sys.shouldFetchZfs() && sys.zfsFetching.CompareAndSwap(false, true) {
+			sys.manager.hub.Logger().Info("ZFS fetch", "system", sys.Id, "interval", sys.zfsInterval.String())
+			go func() {
+				defer sys.zfsFetching.Store(false)
+				_ = sys.FetchAndSaveZfsPools(false)
 			}()
 		}
 	}
@@ -230,8 +253,10 @@ func (sys *System) createRecords(data *system.CombinedData) (*core.Record, error
 			}
 		}
 
-		// add new systemd_stats record
-		if len(data.SystemdServices) > 0 {
+		// Update systemd service records when the agent reports a fresh snapshot.
+		// The length check keeps snapshots from older agents working, while the
+		// explicit marker lets newer agents report that a fresh snapshot is empty.
+		if data.SystemdServicesUpdated || len(data.SystemdServices) > 0 {
 			if err := createSystemdStatsRecords(txApp, data.SystemdServices, sys.Id); err != nil {
 				return err
 			}
@@ -248,11 +273,23 @@ func (sys *System) createRecords(data *system.CombinedData) (*core.Record, error
 			if err := updateNetworkProbesRecords(txApp, data.Probes, sys.Id); err != nil {
 				return err
 			}
+    }
+    
+		if err := sys.syncZfsPoolHealth(txApp, data.Stats.ZfsPools); err != nil {
+			return err
 		}
 
 		// update system record (do this last because it triggers alerts and we need above records to be inserted first)
 		systemRecord.Set("status", up)
-		systemRecord.Set("info", data.Info)
+		// Distinguish an idle GPU from a system without GPU data (#2312)
+		info := struct {
+			system.Info
+			GpuPct *float64 `json:"g,omitempty"`
+		}{Info: data.Info}
+		if len(data.Stats.GPUData) > 0 {
+			info.GpuPct = &data.Info.GpuPct
+		}
+		systemRecord.Set("info", info)
 		if err := txApp.SaveNoValidate(systemRecord); err != nil {
 			return err
 		}
@@ -289,7 +326,10 @@ func createSystemDetailsRecord(app core.App, data *system.Details, systemId stri
 
 func createSystemdStatsRecords(app core.App, data []*systemd.Service, systemId string) error {
 	if len(data) == 0 {
-		return nil
+		_, err := app.DB().NewQuery(
+			"DELETE FROM systemd_services WHERE system = {:system}",
+		).Bind(dbx.Params{"system": systemId}).Execute()
+		return err
 	}
 	// shared params for all records
 	params := dbx.Params{
@@ -299,6 +339,11 @@ func createSystemdStatsRecords(app core.App, data []*systemd.Service, systemId s
 
 	valueStrings := make([]string, 0, len(data))
 	for i, service := range data {
+		// Agent payloads can contain null entries. Reject the snapshot before
+		// executing any queries so existing service records remain intact.
+		if service == nil {
+			return fmt.Errorf("null systemd service at index %d", i)
+		}
 		suffix := fmt.Sprintf("%d", i)
 		valueStrings = append(valueStrings, fmt.Sprintf("({:id%[1]s}, {:system}, {:name%[1]s}, {:state%[1]s}, {:sub%[1]s}, {:cpu%[1]s}, {:cpuPeak%[1]s}, {:memory%[1]s}, {:memPeak%[1]s}, {:updated})", suffix))
 		params["id"+suffix] = MakeStableHashId(systemId, service.Name)
@@ -314,7 +359,16 @@ func createSystemdStatsRecords(app core.App, data []*systemd.Service, systemId s
 		"INSERT INTO systemd_services (id, system, name, state, sub, cpu, cpuPeak, memory, memPeak, updated) VALUES %s ON CONFLICT(id) DO UPDATE SET system = excluded.system, name = excluded.name, state = excluded.state, sub = excluded.sub, cpu = excluded.cpu, cpuPeak = excluded.cpuPeak, memory = excluded.memory, memPeak = excluded.memPeak, updated = excluded.updated",
 		strings.Join(valueStrings, ","),
 	)
-	_, err := app.DB().NewQuery(queryString).Bind(params).Execute()
+	if _, err := app.DB().NewQuery(queryString).Bind(params).Execute(); err != nil {
+		return err
+	}
+	// Remove services the agent no longer reports. Every row in this batch shares the
+	// same updated timestamp, so anything older no longer exists on the host. Left in
+	// place these rows survive until the retention sweep and surface inconsistently
+	// across the dashboard, the services table, and alerts.
+	_, err := app.DB().NewQuery(
+		"DELETE FROM systemd_services WHERE system = {:system} AND updated < {:updated}",
+	).Bind(dbx.Params{"system": systemId, "updated": params["updated"]}).Execute()
 	return err
 }
 
@@ -425,7 +479,7 @@ func createContainerRecords(app core.App, data []*container.Stats, systemId stri
 	valueStrings := make([]string, 0, len(data))
 	for i, container := range data {
 		suffix := fmt.Sprintf("%d", i)
-		valueStrings = append(valueStrings, fmt.Sprintf("({:id%[1]s}, {:system}, {:name%[1]s}, {:image%[1]s}, {:ports%[1]s}, {:status%[1]s}, {:health%[1]s}, {:cpu%[1]s}, {:memory%[1]s}, {:net%[1]s}, {:updated})", suffix))
+		valueStrings = append(valueStrings, fmt.Sprintf("({:id%[1]s}, {:system}, {:name%[1]s}, {:image%[1]s}, {:ports%[1]s}, {:status%[1]s}, {:health%[1]s}, {:cpu%[1]s}, {:memory%[1]s}, {:net%[1]s}, {:updateAvailable%[1]s}, {:updated})", suffix))
 		params["id"+suffix] = container.Id
 		params["name"+suffix] = container.Name
 		params["image"+suffix] = container.Image
@@ -439,9 +493,10 @@ func createContainerRecords(app core.App, data []*container.Stats, systemId stri
 			netBytes = uint64((container.NetworkSent + container.NetworkRecv) * 1024 * 1024)
 		}
 		params["net"+suffix] = netBytes
+		params["updateAvailable"+suffix] = container.UpdateAvailable
 	}
 	queryString := fmt.Sprintf(
-		"INSERT INTO containers (id, system, name, image, ports, status, health, cpu, memory, net, updated) VALUES %s ON CONFLICT(id) DO UPDATE SET system = excluded.system, name = excluded.name, image = excluded.image, ports = excluded.ports, status = excluded.status, health = excluded.health, cpu = excluded.cpu, memory = excluded.memory, net = excluded.net, updated = excluded.updated",
+		"INSERT INTO containers (id, system, name, image, ports, status, health, cpu, memory, net, updatable, updated) VALUES %s ON CONFLICT(id) DO UPDATE SET system = excluded.system, name = excluded.name, image = excluded.image, ports = excluded.ports, status = excluded.status, health = excluded.health, cpu = excluded.cpu, memory = excluded.memory, net = excluded.net, updatable = excluded.updatable, updated = excluded.updated",
 		strings.Join(valueStrings, ","),
 	)
 	_, err := app.DB().NewQuery(queryString).Bind(params).Execute()
@@ -537,7 +592,7 @@ func (sys *System) request(ctx context.Context, action common.WebSocketAction, r
 	err := sys.sshTransport.RequestWithRetry(ctx, action, req, dest, 1)
 	// Keep legacy SSH client/version fields in sync for other code paths.
 	if sys.sshTransport != nil {
-		sys.client = sys.sshTransport.GetClient()
+		sys.client.Store(sys.sshTransport.GetClient())
 		sys.agentVersion = sys.sshTransport.GetAgentVersion()
 	}
 	return err
@@ -579,8 +634,8 @@ func (sys *System) ensureSSHTransport() error {
 		})
 	}
 	// Sync client state with transport
-	if sys.client != nil {
-		sys.sshTransport.SetClient(sys.client)
+	if client := sys.client.Load(); client != nil {
+		sys.sshTransport.SetClient(client)
 		sys.sshTransport.SetAgentVersion(sys.agentVersion)
 	}
 	return nil
@@ -661,7 +716,16 @@ func (sys *System) FetchSmartDataFromAgent() (smart.SmartDataResponse, error) {
 	return result, err
 }
 
-func MakeStableHashId(strings ...string) string {
+// FetchZfsDataFromAgent fetches ZFS detail data from the agent.
+func (sys *System) FetchZfsDataFromAgent(force bool) (*zfs.ZfsData, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
+	defer cancel()
+	var result zfs.ZfsData
+	err := sys.request(ctx, common.GetZfsData, common.ZfsDataRequest{Force: force}, &result)
+	return &result, err
+}
+
+func makeStableHashId(strings ...string) string {
 	hash := fnv.New32a()
 	for _, str := range strings {
 		hash.Write([]byte(str))
@@ -728,7 +792,7 @@ func (sys *System) fetchDataViaSSH(options common.DataRequestOptions) (*system.C
 // The operation can request a retry by returning true as the first return value.
 func (sys *System) runSSHOperation(timeout time.Duration, retries int, operation func(*ssh.Session) (bool, error)) error {
 	for attempt := 0; attempt <= retries; attempt++ {
-		if sys.client == nil || sys.Status == down {
+		if sys.client.Load() == nil || sys.Status == down {
 			if err := sys.createSSHClient(); err != nil {
 				return err
 			}
@@ -824,13 +888,14 @@ func (s *System) createSSHClient() error {
 	} else {
 		host = net.JoinHostPort(host, s.Port)
 	}
-	var err error
-	s.client, err = dialSSHWithKeepAlive(network, host, s.manager.sshConfig)
+	client, err := dialSSHWithKeepAlive(network, host, s.manager.sshConfig)
+	s.client.Store(client)
 	if err != nil {
 		return err
 	}
-	s.agentVersion, _ = extractAgentVersion(string(s.client.Conn.ServerVersion()))
+	s.agentVersion, _ = extractAgentVersion(string(client.Conn.ServerVersion()))
 	s.manager.resetFailedSmartFetchState(s.Id)
+	s.manager.resetFailedZfsFetchState(s.Id)
 	return nil
 }
 
@@ -865,7 +930,8 @@ func dialSSHWithKeepAlive(network, addr string, config *ssh.ClientConfig) (*ssh.
 // createSessionWithTimeout creates a new SSH session with a timeout to avoid hanging
 // in case of network issues
 func (sys *System) createSessionWithTimeout(timeout time.Duration) (*ssh.Session, error) {
-	if sys.client == nil {
+	client := sys.client.Load()
+	if client == nil {
 		return nil, fmt.Errorf("client not initialized")
 	}
 
@@ -876,7 +942,7 @@ func (sys *System) createSessionWithTimeout(timeout time.Duration) (*ssh.Session
 	errChan := make(chan error, 1)
 
 	go func() {
-		if session, err := sys.client.NewSession(); err != nil {
+		if session, err := client.NewSession(); err != nil {
 			errChan <- err
 		} else {
 			sessionChan <- session
@@ -898,9 +964,8 @@ func (sys *System) closeSSHConnection() {
 	if sys.sshTransport != nil {
 		sys.sshTransport.Close()
 	}
-	if sys.client != nil {
-		sys.client.Close()
-		sys.client = nil
+	if client := sys.client.Swap(nil); client != nil {
+		client.Close()
 	}
 }
 

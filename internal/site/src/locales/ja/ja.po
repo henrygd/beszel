@@ -8,7 +8,7 @@ msgstr ""
 "Language: ja\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2026-08-17 19:22\n"
+"PO-Revision-Date: 2026-09-10 00:33\n"
 "Last-Translator: \n"
 "Language-Team: Japanese\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
@@ -45,6 +45,10 @@ msgstr "{count, plural, one {{countString} 時間} other {{countString} 時間}}
 #: src/lib/utils.ts
 msgid "{count, plural, one {{countString} minute} few {{countString} minutes} many {{countString} minutes} other {{countString} minutes}}"
 msgstr "{count, plural, one {{countString} 分} few {{countString} 分} many {{countString} 分} other {{countString} 分}}"
+
+#: src/components/routes/system/charts/disk-charts.tsx
+msgid "{diskName} I/O"
+msgstr "{diskName} の I/O"
 
 #: src/components/routes/system/info-bar.tsx
 msgid "{threads, plural, one {# thread} other {# threads}}"
@@ -93,6 +97,7 @@ msgstr "5分"
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 #: src/components/routes/system/smart-table.tsx
+#: src/components/routes/system/storage-pools-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Actions"
 msgstr "アクション"
@@ -190,6 +195,11 @@ msgstr "よろしいですか？"
 #: src/components/copy-to-clipboard.tsx
 msgid "Automatic copy requires a secure context."
 msgstr "自動コピーには安全なコンテキストが必要です。"
+
+#: src/components/routes/system/storage-pools-table.tsx
+msgctxt "Disk space available"
+msgid "Available"
+msgstr "利用可能"
 
 #: src/components/routes/system/chart-card.tsx
 msgid "Average"
@@ -328,6 +338,7 @@ msgid "Capabilities"
 msgstr "機能"
 
 #: src/components/routes/system/smart-table.tsx
+#: src/components/routes/system/storage-pools-table.tsx
 msgid "Capacity"
 msgstr "容量"
 
@@ -380,8 +391,14 @@ msgstr "監視サービスを確認する"
 msgid "Check your notification service"
 msgstr "通知サービスを確認してください"
 
+#: src/components/routes/system/storage-pools-table.tsx
+msgid "Checksum errors"
+msgstr "チェックサムエラー"
+
 #: src/components/containers-table/containers-table.tsx
 #: src/components/routes/system/smart-table.tsx
+#: src/components/routes/system/storage-pools-table.tsx
+#: src/components/routes/system/storage-pools-table.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "Clear"
 msgstr "クリア"
@@ -393,6 +410,10 @@ msgstr "詳細情報を表示するにはコンテナをクリックしてくだ
 #: src/components/routes/system/smart-table.tsx
 msgid "Click on a device to view more information."
 msgstr "詳細情報を表示するにはデバイスをクリックしてください。"
+
+#: src/components/routes/system/storage-pools-table.tsx
+msgid "Click on a pool to view vdev and dataset details."
+msgstr "プールをクリックして、vdev とデータセットの詳細を表示します。"
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Click on a system to view more information."
@@ -423,6 +444,14 @@ msgstr "競合"
 #: src/components/active-alerts.tsx
 msgid "Connection is down"
 msgstr "接続が切断されました"
+
+#: src/lib/alerts.ts
+msgid "Container"
+msgstr "コンテナ"
+
+#: src/lib/alerts.ts
+msgid "Container Health"
+msgstr "コンテナのヘルス"
 
 #: src/components/routes/system.tsx
 msgid "Containers"
@@ -474,7 +503,7 @@ msgstr "名前をコピーする"
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Copy public key"
-msgstr ""
+msgstr "公開鍵をコピー"
 
 #: src/components/copy-to-clipboard.tsx
 msgid "Copy text"
@@ -507,9 +536,17 @@ msgstr ""
 msgid "CPU Cores"
 msgstr "CPU コア"
 
+#: src/lib/alerts.ts
+msgid "CPU I/O Wait"
+msgstr "CPU I/O 待機時間 (IOWait)"
+
 #: src/components/systemd-table/systemd-table-columns.tsx
 msgid "CPU Peak"
 msgstr "CPUピーク"
+
+#: src/lib/alerts.ts
+msgid "CPU Steal Time"
+msgstr "CPU スティール時間 (Steal)"
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "CPU time"
@@ -543,13 +580,29 @@ msgstr "作成日"
 msgid "Critical (%)"
 msgstr "致命的 (%)"
 
+#: src/components/routes/system/disk-io-sheet.tsx
+msgid "Cumulative data read since boot"
+msgstr "起動後の累積読み取りデータ"
+
+#: src/components/routes/system/disk-io-sheet.tsx
+msgid "Cumulative data written since boot"
+msgstr "起動後の累積書き込みデータ"
+
 #: src/components/routes/system/network-sheet.tsx
 msgid "Cumulative Download"
 msgstr "累積ダウンロード"
 
+#: src/components/routes/system/disk-io-sheet.tsx
+msgid "Cumulative Read"
+msgstr "累積読み取り"
+
 #: src/components/routes/system/network-sheet.tsx
 msgid "Cumulative Upload"
 msgstr "累積アップロード"
+
+#: src/components/routes/system/disk-io-sheet.tsx
+msgid "Cumulative Write"
+msgstr "累積書き込み"
 
 #. Context: Battery state
 #. Context: Battery state
@@ -610,15 +663,10 @@ msgstr "放電中"
 msgid "Disk"
 msgstr "ディスク"
 
-#: src/components/routes/system/charts/disk-charts.tsx
-msgid "Disk I/O"
-msgstr "ディスクI/O"
-
 #: src/components/routes/settings/general.tsx
 msgid "Disk unit"
 msgstr "ディスク単位"
 
-#: src/components/routes/system/charts/disk-charts.tsx
 #: src/components/routes/system/charts/disk-charts.tsx
 #: src/lib/alerts.ts
 msgid "Disk Usage"
@@ -788,6 +836,10 @@ msgstr "失敗"
 msgid "Failed Attributes:"
 msgstr "失敗した属性:"
 
+#: src/lib/alerts.ts
+msgid "Failed Services"
+msgstr "失敗したサービス"
+
 #: src/lib/api.ts
 msgid "Failed to authenticate"
 msgstr "認証に失敗しました"
@@ -817,12 +869,14 @@ msgstr "失敗: {0}"
 
 #: src/components/routes/system/charts/sensor-charts.tsx
 msgid "Fans"
-msgstr ""
+msgstr "ファン"
 
 #: src/components/containers-table/containers-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/system/chart-card.tsx
 #: src/components/routes/system/smart-table.tsx
+#: src/components/routes/system/storage-pools-table.tsx
+#: src/components/routes/system/storage-pools-table.tsx
 #: src/components/systemd-table/systemd-table.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "Filter..."
@@ -843,6 +897,12 @@ msgstr "<0>{min}</0> {min, plural, one {分} other {分}}の間"
 #: src/components/login/auth-form.tsx
 msgid "Forgot password?"
 msgstr "パスワードをお忘れですか？"
+
+#: src/components/routes/system/storage-pools-table.tsx
+#: src/components/routes/system/storage-pools-table.tsx
+msgctxt "Free space"
+msgid "Free"
+msgstr "空き"
 
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
@@ -888,6 +948,7 @@ msgid "Grid"
 msgstr "グリッド"
 
 #: src/components/containers-table/containers-table-columns.tsx
+#: src/components/routes/system/storage-pools-table.tsx
 msgid "Health"
 msgstr "ヘルス"
 
@@ -1077,13 +1138,17 @@ msgid "Memory Usage"
 msgstr "メモリ使用率"
 
 #: src/components/routes/system/charts/memory-charts.tsx
-msgid "Memory usage of docker containers"
-msgstr "Dockerコンテナのメモリ使用率"
+msgid "Memory usage of containers"
+msgstr "コンテナのメモリ使用量"
 
 #. Device model
 #: src/components/routes/system/smart-table.tsx
 msgid "Model"
 msgstr "モデル"
+
+#: src/components/routes/system/storage-pools-table.tsx
+msgid "Mountpoint"
+msgstr "マウントポイント"
 
 #: src/components/add-system.tsx
 #: src/components/alerts-history-columns.tsx
@@ -1099,8 +1164,8 @@ msgid "Net"
 msgstr "帯域"
 
 #: src/components/routes/system/charts/network-charts.tsx
-msgid "Network traffic of docker containers"
-msgstr "Dockerコンテナのネットワークトラフィック"
+msgid "Network traffic of containers"
+msgstr "コンテナのネットワークトラフィック"
 
 #: src/components/routes/system/charts/network-charts.tsx
 #: src/components/routes/system/network-sheet.tsx
@@ -1119,6 +1184,10 @@ msgstr "ネットワーク単位"
 #: src/components/systemd-table/systemd-table.tsx
 msgid "No"
 msgstr "いいえ"
+
+#: src/components/routes/system/storage-pools-table.tsx
+msgid "No detail data for this pool."
+msgstr "このプールの詳細データはありません。"
 
 #: src/components/command-palette.tsx
 #: src/components/systemd-table/systemd-table.tsx
@@ -1143,11 +1212,19 @@ msgstr "このデバイスのS.M.A.R.T.属性は利用できません。"
 msgid "No systems found."
 msgstr "システムが見つかりませんでした。"
 
+#: src/components/routes/system/storage-pools-table.tsx
+msgid "None"
+msgstr "なし"
+
 #: src/components/command-palette.tsx
 #: src/components/routes/settings/layout.tsx
 #: src/components/routes/settings/notifications.tsx
 msgid "Notifications"
 msgstr "通知"
+
+#: src/lib/alerts.ts
+msgid "Notifications may include recent container log excerpts."
+msgstr "通知には、最近のコンテナログの抜粋が含まれる場合があります。"
 
 #: src/components/login/auth-form.tsx
 msgid "OAuth 2 / OIDC support"
@@ -1156,6 +1233,14 @@ msgstr "OAuth 2 / OIDCサポート"
 #: src/components/routes/settings/config-yaml.tsx
 msgid "On each restart, systems in the database will be updated to match the systems defined in the file."
 msgstr "再起動のたびに、データベース内のシステムはファイルに定義されたシステムに一致するように更新されます。"
+
+#: src/lib/alerts.ts
+msgid "One or more containers are unhealthy"
+msgstr "いずれかのコンテナが異常な状態です"
+
+#: src/lib/alerts.ts
+msgid "One or more services are in a failed state"
+msgstr "いずれかのサービスが失敗状態です"
 
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/quiet-hours.tsx
@@ -1170,6 +1255,7 @@ msgstr "ワンタイムパスワード"
 #: src/components/routes/settings/tokens-fingerprints.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 #: src/components/routes/system/smart-table.tsx
+#: src/components/routes/system/storage-pools-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Open menu"
 msgstr "メニューを開く"
@@ -1260,6 +1346,10 @@ msgstr "永久"
 msgid "Persistence"
 msgstr "永続性"
 
+#: src/components/routes/system/raw-capacity-label.tsx
+msgid "Physical device space. True usable capacity is unknown. Pool disk usage alerts are disabled."
+msgstr "物理デバイス容量。実際に使用可能な容量は不明です。プールのディスク使用量アラートは無効になっています。"
+
 #: src/components/routes/settings/notifications.tsx
 msgid "Please <0>configure an SMTP server</0> to ensure alerts are delivered."
 msgstr "アラートが配信されるように<0>SMTPサーバーを設定</0>してください。"
@@ -1293,6 +1383,14 @@ msgstr "手順については<0>ドキュメント</0>を参照してくださ�
 msgid "Please sign in to your account"
 msgstr "アカウントにサインインしてください"
 
+#: src/components/routes/system/storage-pools-table.tsx
+msgid "Pool Health"
+msgstr "プールの健全性"
+
+#: src/components/routes/system/charts/storage-pool-charts.tsx
+msgid "Pool Usage"
+msgstr "プール使用量"
+
 #: src/components/add-system.tsx
 msgid "Port"
 msgstr "ポート"
@@ -1322,7 +1420,7 @@ msgstr "プロセス開始"
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Public key"
-msgstr ""
+msgstr "公開鍵"
 
 #. Use 'Key' if your language requires many more characters
 #: src/components/add-system.tsx
@@ -1338,13 +1436,31 @@ msgstr "キューの深さ"
 msgid "Quiet Hours"
 msgstr "サイレント時間"
 
+#: src/components/routes/system/raw-capacity-label.tsx
+#: src/components/routes/system/storage-pools-table.tsx
+#: src/components/routes/system/storage-pools-table.tsx
+#: src/components/routes/system/storage-pools-table.tsx
+msgid "Raw"
+msgstr "生"
+
+#: src/components/routes/system/charts/storage-pool-charts.tsx
+msgid "Raw usage of storage pool {displayName}"
+msgstr "ストレージプール {displayName} の生使用量"
+
+#. Disk read
 #. Disk read
 #: src/components/routes/system/charts/disk-charts.tsx
+#: src/components/routes/system/charts/storage-pool-charts.tsx
+#: src/components/routes/system/disk-io-sheet.tsx
 #: src/components/routes/system/disk-io-sheet.tsx
 #: src/components/routes/system/disk-io-sheet.tsx
 #: src/components/routes/system/disk-io-sheet.tsx
 msgid "Read"
 msgstr "読み取り"
+
+#: src/components/routes/system/storage-pools-table.tsx
+msgid "Read errors"
+msgstr "読み取りエラー"
 
 #: src/components/routes/system/charts/network-charts.tsx
 msgid "Received"
@@ -1353,6 +1469,7 @@ msgstr "受信"
 #: src/components/containers-table/containers-table.tsx
 #: src/components/containers-table/containers-table.tsx
 #: src/components/routes/system/smart-table.tsx
+#: src/components/routes/system/storage-pools-table.tsx
 msgid "Refresh"
 msgstr "更新"
 
@@ -1394,6 +1511,8 @@ msgstr "再起動"
 msgid "Resume"
 msgstr "再開"
 
+#: src/components/routes/system/charts/disk-charts.tsx
+#: src/components/routes/system/charts/disk-charts.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgctxt "Root disk label"
 msgid "Root"
@@ -1539,6 +1658,7 @@ msgstr "開始時間"
 #. Context: alert state (active or resolved)
 #: src/components/alerts-history-columns.tsx
 #: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/system/storage-pools-table.tsx
 #: src/components/systemd-table/systemd-table-columns.tsx
 msgid "State"
 msgstr "状態"
@@ -1566,7 +1686,7 @@ msgstr "スワップ使用量"
 #: src/components/mode-toggle.tsx
 #: src/components/mode-toggle.tsx
 msgid "Switch theme"
-msgstr ""
+msgstr "テーマを切り替え"
 
 #: src/components/add-system.tsx
 #: src/components/alerts-history-columns.tsx
@@ -1585,7 +1705,7 @@ msgstr "システム"
 
 #: src/components/routes/system/charts/sensor-charts.tsx
 msgid "System fan speeds (RPM)"
-msgstr ""
+msgstr "システムファン速度 (RPM)"
 
 #: src/components/routes/system/charts/load-average-chart.tsx
 msgid "System load averages over time"
@@ -1667,9 +1787,9 @@ msgstr "これにより、選択したすべてのレコードがデータベー
 msgid "Throughput of {extraFsName}"
 msgstr "{extraFsName}のスループット"
 
-#: src/components/routes/system/charts/disk-charts.tsx
-msgid "Throughput of root filesystem"
-msgstr "ルートファイルシステムのスループット"
+#: src/components/routes/system/charts/storage-pool-charts.tsx
+msgid "Throughput of storage pool {displayName}"
+msgstr "ストレージプール {displayName} のスループット"
 
 #: src/components/routes/settings/general.tsx
 msgid "Time format"
@@ -1714,7 +1834,7 @@ msgstr "各インターフェースの総送信データ量"
 #: src/components/routes/system/disk-io-sheet.tsx
 msgctxt "Disk I/O"
 msgid "Total time spent on read/write (can exceed 100%)"
-msgstr ""
+msgstr "読み取り/書き込みに費やした合計時間 (100% を超える場合があります)"
 
 #. placeholder {0}: data.length
 #: src/components/systemd-table/systemd-table.tsx
@@ -1742,8 +1862,16 @@ msgid "Triggers when 5 minute load average exceeds a threshold"
 msgstr "5分間の負荷平均がしきい値を超えたときにトリガーされます"
 
 #: src/lib/alerts.ts
+msgid "Triggers when a container's health check reports unhealthy"
+msgstr "コンテナのヘルスチェックで異常な状態が報告されたときにトリガーされます"
+
+#: src/lib/alerts.ts
 msgid "Triggers when any sensor exceeds a threshold"
 msgstr "センサーがしきい値を超えたときにトリガーされます"
+
+#: src/lib/alerts.ts
+msgid "Triggers when any systemd service enters the failed state"
+msgstr "いずれかの systemd サービスが失敗状態になったときにトリガーされます"
 
 #: src/lib/alerts.ts
 msgid "Triggers when battery charge drops below a threshold"
@@ -1752,6 +1880,14 @@ msgstr "バッテリーの充電量がしきい値を下回ったときにトリ
 #: src/lib/alerts.ts
 msgid "Triggers when combined up/down exceeds a threshold"
 msgstr "上り/下りの合計がしきい値を超えたときにトリガーされます"
+
+#: src/lib/alerts.ts
+msgid "Triggers when CPU I/O wait exceeds a threshold"
+msgstr "CPU の I/O 待機時間がしきい値を超えたときに発生します"
+
+#: src/lib/alerts.ts
+msgid "Triggers when CPU steal time exceeds a threshold"
+msgstr "CPU のスティール時間がしきい値を超えたときに発生します"
 
 #: src/lib/alerts.ts
 msgid "Triggers when CPU usage exceeds a threshold"
@@ -1776,8 +1912,13 @@ msgstr "ディスクの使用量がしきい値を超えたときにトリガー
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/system/smart-table.tsx
+#: src/components/routes/system/storage-pools-table.tsx
 msgid "Type"
 msgstr "タイプ"
+
+#: src/lib/alerts.ts
+msgid "Unhealthy"
+msgstr "異常"
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Unit file"
@@ -1794,6 +1935,7 @@ msgid "Universal token"
 msgstr "ユニバーサルトークン"
 
 #. Context: Battery state
+#: src/components/routes/system/storage-pools-table.tsx
 #: src/lib/i18n.ts
 msgid "Unknown"
 msgstr "不明"
@@ -1819,6 +1961,7 @@ msgstr "更新"
 
 #: src/components/containers-table/containers-table-columns.tsx
 #: src/components/routes/system/smart-table.tsx
+#: src/components/routes/system/storage-pools-table.tsx
 #: src/components/systemd-table/systemd-table-columns.tsx
 msgid "Updated"
 msgstr "更新済み"
@@ -1837,19 +1980,24 @@ msgid "Uptime"
 msgstr "稼働時間"
 
 #: src/components/routes/system/charts/disk-charts.tsx
+#: src/components/routes/system/charts/disk-charts.tsx
 #: src/components/routes/system/charts/gpu-charts.tsx
 #: src/components/routes/system/charts/gpu-charts.tsx
 #: src/components/routes/system/charts/gpu-charts.tsx
+#: src/components/routes/system/charts/storage-pool-charts.tsx
 #: src/components/routes/system/cpu-sheet.tsx
 msgid "Usage"
 msgstr "使用量"
 
-#: src/components/routes/system/charts/disk-charts.tsx
-msgid "Usage of root partition"
-msgstr "ルートパーティションの使用量"
+#: src/components/routes/system/charts/storage-pool-charts.tsx
+msgid "Usage of storage pool {displayName}"
+msgstr "ストレージプール {displayName} の使用量"
 
 #: src/components/routes/system/charts/memory-charts.tsx
 #: src/components/routes/system/charts/memory-charts.tsx
+#: src/components/routes/system/storage-pools-table.tsx
+#: src/components/routes/system/storage-pools-table.tsx
+#: src/components/routes/system/storage-pools-table.tsx
 msgid "Used"
 msgstr "使用中"
 
@@ -1924,12 +2072,19 @@ msgid "Windows command"
 msgstr "Windows コマンド"
 
 #. Disk write
+#. Disk write
 #: src/components/routes/system/charts/disk-charts.tsx
+#: src/components/routes/system/charts/storage-pool-charts.tsx
+#: src/components/routes/system/disk-io-sheet.tsx
 #: src/components/routes/system/disk-io-sheet.tsx
 #: src/components/routes/system/disk-io-sheet.tsx
 #: src/components/routes/system/disk-io-sheet.tsx
 msgid "Write"
 msgstr "書き込み"
+
+#: src/components/routes/system/storage-pools-table.tsx
+msgid "Write errors"
+msgstr "書き込みエラー"
 
 #: src/components/routes/settings/layout.tsx
 msgid "YAML Config"

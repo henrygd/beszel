@@ -60,11 +60,15 @@ export const alertsHistoryColumns: ColumnDef<AlertsHistoryRecord>[] = [
 		),
 		cell({ row, getValue }) {
 			const name = row.original.name
+			const info = alertInfo[name]
+			if (info?.triggeredDesc) {
+				return <span className="ps-2">{info.triggeredDesc()}</span>
+			}
 			if (name === "Status") {
 				return <span className="ps-2">{t`Down`}</span>
 			}
 			const value = getValue() as number
-			const unit = alertInfo[name]?.unit
+			const unit = info?.unit
 			return (
 				<span className="tabular-nums ps-2.5">
 					{toFixedFloat(value, value < 10 ? 2 : 1)}

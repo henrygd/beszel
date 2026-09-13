@@ -49,6 +49,7 @@ type Agent struct {
 	smartManager              *SmartManager                                         // Manages SMART data
 	systemdManager            *systemdManager                                       // Manages systemd services
 	probeManager              *ProbeManager                                         // Manages network probes
+	storagePoolManager        *StoragePoolManager                                   // Manages storage pool and dataset data
 }
 
 // NewAgent creates a new agent with the given data directory for persisting data.
@@ -124,6 +125,19 @@ func NewAgent(dataDir ...string) (agent *Agent, err error) {
 
 	// initialize probe manager
 	agent.probeManager = newProbeManager()
+  
+	agent.storagePoolManager = newStoragePoolManager()
+
+	// Retain ZFS_INTERVAL for the shared storage pool detail refresh interval.
+	if zfsIntervalEnv, exists := utils.GetEnv("ZFS_INTERVAL"); exists {
+		if duration, err := time.ParseDuration(zfsIntervalEnv); err == nil && duration > 0 {
+			agent.storagePoolManager.detailInterval = duration
+			agent.systemDetails.ZfsInterval = duration
+			slog.Info("ZFS_INTERVAL", "duration", duration)
+		} else {
+			slog.Warn("Invalid ZFS_INTERVAL", "err", err)
+		}
+	}
 
 	// initialize disk info
 	agent.initializeDiskInfo()
@@ -196,13 +210,25 @@ func (a *Agent) gatherStats(options common.DataRequestOptions) *system.CombinedD
 		}
 		if a.systemdManager.hasFreshStats {
 			data.SystemdServices = a.systemdManager.getServiceStats(nil, false)
+			data.SystemdServicesUpdated = true
+			// Preserve an explicit zero count so the hub can distinguish a fresh
+			// empty snapshot from a response that omitted systemd data.
+			if totalCount == 0 {
+				data.Info.Services = []uint16{0, 0}
+			}
 		}
 	}
 
 	data.Stats.ExtraFs = make(map[string]*system.FsStats)
 	data.Info.ExtraFsPct = make(map[string]float64)
 	for name, stats := range a.fsStats {
-		if !stats.Root && stats.DiskTotal > 0 {
+		if stats.Root {
+			if stats.Name != "" {
+				data.Info.RootDiskName = stats.Name
+			}
+			continue
+		}
+		if stats.DiskTotal > 0 {
 			// Use custom name if available, otherwise use device name
 			key := name
 			if stats.Name != "" {

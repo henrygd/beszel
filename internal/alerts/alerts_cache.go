@@ -1,6 +1,8 @@
 package alerts
 
 import (
+	"time"
+
 	"github.com/pocketbase/dbx"
 	"github.com/pocketbase/pocketbase/core"
 	"github.com/pocketbase/pocketbase/tools/store"
@@ -8,13 +10,14 @@ import (
 
 // CachedAlertData represents the relevant fields of an alert record for status checking and updates.
 type CachedAlertData struct {
-	Id        string
-	SystemID  string
-	UserID    string
-	Name      string
-	Value     float64
-	Triggered bool
-	Min       uint8
+	Id           string
+	SystemID     string
+	UserID       string
+	Name         string
+	Value        float64
+	Triggered    bool
+	Min          uint8
+	PendingSince time.Time
 	// Created   types.DateTime
 }
 
@@ -26,6 +29,7 @@ func (a *CachedAlertData) PopulateFromRecord(record *core.Record) {
 	a.Value = record.GetFloat("value")
 	a.Triggered = record.GetBool("triggered")
 	a.Min = uint8(record.GetInt("min"))
+	a.PendingSince = record.GetDateTime("pending_since").Time()
 	// a.Created = record.GetDateTime("created")
 }
 

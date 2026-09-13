@@ -53,6 +53,7 @@ func NewHandlerRegistry() *HandlerRegistry {
 	registry.Register(common.GetSmartData, &GetSmartDataHandler{})
 	registry.Register(common.GetSystemdInfo, &GetSystemdInfoHandler{})
 	registry.Register(common.SyncNetworkProbes, &SyncNetworkProbesHandler{})
+	registry.Register(common.GetZfsData, &GetZfsDataHandler{})
 
 	return registry
 }
@@ -178,6 +179,23 @@ func (h *GetSmartDataHandler) Handle(hctx *HandlerContext) error {
 		Data:     hctx.Agent.smartManager.GetCurrentData(),
 		Complete: complete,
 	}, hctx.RequestID)
+}
+
+////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
+
+// GetZfsDataHandler handles ZFS detail data requests
+type GetZfsDataHandler struct{}
+
+func (h *GetZfsDataHandler) Handle(hctx *HandlerContext) error {
+	if hctx.Agent.storagePoolManager == nil {
+		return hctx.SendResponse(nil, hctx.RequestID)
+	}
+	var req common.ZfsDataRequest
+	if err := cbor.Unmarshal(hctx.Request.Data, &req); err != nil {
+		return err
+	}
+	return hctx.SendResponse(hctx.Agent.storagePoolManager.GetDetail(req.Force), hctx.RequestID)
 }
 
 ////////////////////////////////////////////////////////////////////////////

@@ -88,6 +88,10 @@ func ResolveStatusAlerts(app core.App) error {
 	return resolveStatusAlerts(app)
 }
 
+func ResolveSystemdAlerts(app core.App) error {
+	return resolveSystemdAlerts(app)
+}
+
 func (am *AlertManager) RestorePendingStatusAlerts() error {
 	return am.restorePendingStatusAlerts()
 }
@@ -96,6 +100,7 @@ func (am *AlertManager) SetAlertTriggered(alert CachedAlertData, triggered bool)
 	return am.setAlertTriggered(alert, triggered)
 }
 
-func IsInternalURL(rawURL string) (bool, error) {
-	return isInternalURL(rawURL)
+// BuildContainerLogExcerpt exposes buildContainerLogExcerpt for testing.
+func BuildContainerLogExcerpt(raw string) string {
+	return buildContainerLogExcerpt(raw)
 }

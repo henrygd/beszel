@@ -66,6 +66,32 @@ RUN set -eux; \
   fi
 
 # --------------------------
+# ZFS utilities builder stage
+# --------------------------
+FROM --platform=$TARGETPLATFORM debian:bookworm-slim AS zfsutils-builder
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+  zfsutils-linux \
+  && rm -rf /var/lib/apt/lists/*
+
+# Copy the zpool/zfs binaries and their required runtime libraries
+RUN set -eux; \
+  mkdir -p /out/rootfs/lib /out/rootfs/lib64 /out/rootfs/usr/lib; \
+  for bin in /usr/sbin/zpool /usr/sbin/zfs; do \
+    mkdir -p "/out/rootfs$(dirname "$bin")"; \
+    cp -v "$bin" "/out/rootfs$bin"; \
+    ldd "$bin" \
+      | awk '{print $3}' \
+      | grep '^/' \
+      | xargs -r -I '{}' sh -c 'mkdir -p "/out/rootfs$(dirname "{}")"; cp -v "{}" "/out/rootfs{}"'; \
+    interp="$(ldd "$bin" | awk "/ld-linux/ {print \$1}")"; \
+    if [ -n "$interp" ] && [ -e "$interp" ]; then \
+      mkdir -p "/out/rootfs$(dirname "$interp")"; \
+      cp -v "$interp" "/out/rootfs$interp"; \
+    fi; \
+  done
+
+# --------------------------
 # Final image: lightweight multi-arch NVIDIA agent (slim)
 # --------------------------
 FROM --platform=$TARGETPLATFORM gcr.io/distroless/base-debian12
@@ -77,6 +103,9 @@ COPY --from=builder /app/agent/test-data/amdgpu.ids /usr/share/libdrm/amdgpu.ids
 # Copy smartmontools binaries and config files
 COPY --from=smartmontools-builder /usr/sbin/smartctl /usr/sbin/smartctl
 COPY --from=smartmontools-builder /out/rootfs/ /
+
+# Copy ZFS utilities (zpool, zfs) binaries and required runtime libraries
+COPY --from=zfsutils-builder /out/rootfs/ /
 
 # nvidia-smi is intentionally not bundled.
 # Mount the host binary instead, for example:

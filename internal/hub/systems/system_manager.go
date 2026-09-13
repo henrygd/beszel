@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"sync"
 	"time"
 
 	"github.com/henrygd/beszel/internal/hub/ws"
@@ -44,12 +45,17 @@ var errSystemExists = errors.New("system exists")
 // SystemManager manages a collection of monitored systems and their connections.
 // It handles system lifecycle, status updates, and maintains both SSH and WebSocket connections.
 type SystemManager struct {
-	hub           hubLike                               // Hub interface for database and alert operations
-	systems       *store.Store[string, *System]         // Thread-safe store of active systems
-	sshConfig     *ssh.ClientConfig                     // SSH client configuration for system connections
-	smartFetchMap *expirymap.ExpiryMap[smartFetchState] // Stores last SMART fetch time/result; TTL is only for cleanup
-	ctx           context.Context                       // Cancelled when the app terminates
-	cancel        context.CancelFunc                    // Cancels ctx and all child system contexts
+	hub                 hubLike                               // Hub interface for database and alert operations
+	systems             *store.Store[string, *System]         // Thread-safe store of active systems
+	sshConfig           *ssh.ClientConfig                     // SSH client configuration for system connections
+	smartFetchMap       *expirymap.ExpiryMap[smartFetchState] // Stores last SMART fetch time/result; TTL is only for cleanup
+	zfsFetchMap         *expirymap.ExpiryMap[zfsFetchState]   // Stores last ZFS fetch time/result; TTL is only for cleanup
+	realtimeMutex       sync.Mutex                            // Protects all realtime worker and subscription state
+	activeSubscriptions map[string]*subscriptionInfo          // Realtime subscriptions keyed by system ID
+	realtimeWorkerStop  chan struct{}                         // Stops the current realtime worker generation
+	realtimeWorkerRun   bool                                  // Whether a realtime worker has been started
+	ctx                 context.Context                       // Cancelled when the app terminates
+	cancel              context.CancelFunc                    // Cancels ctx and all child system contexts
 }
 
 // hubLike defines the interface requirements for the hub dependency.
@@ -59,16 +65,20 @@ type hubLike interface {
 	GetSSHKey(dataDir string) (ssh.Signer, error)
 	HandleSystemAlerts(systemRecord *core.Record, data *system.CombinedData) error
 	HandleStatusAlerts(status string, systemRecord *core.Record) error
+	HandleContainerAlerts(systemRecord *core.Record, data *system.CombinedData, fetchLogs func(containerID string) (string, error)) error
 	CancelPendingStatusAlerts(systemID string)
+	CancelPendingContainerAlerts(systemID string)
 }
 
 // NewSystemManager creates a new SystemManager instance with the provided hub.
 // The hub must implement the hubLike interface to provide database and alert functionality.
 func NewSystemManager(hub hubLike) *SystemManager {
 	sm := &SystemManager{
-		systems:       store.New(map[string]*System{}),
-		hub:           hub,
-		smartFetchMap: expirymap.New[smartFetchState](time.Hour),
+		systems:             store.New(map[string]*System{}),
+		hub:                 hub,
+		smartFetchMap:       expirymap.New[smartFetchState](time.Hour),
+		zfsFetchMap:         expirymap.New[zfsFetchState](time.Hour),
+		activeSubscriptions: make(map[string]*subscriptionInfo),
 	}
 	sm.ctx, sm.cancel = context.WithCancel(context.Background())
 	return sm
@@ -136,6 +146,7 @@ func (sm *SystemManager) bindEventHooks() {
 // onTerminate cancels SystemManager context on app shutdown
 func (sm *SystemManager) onTerminate(e *core.TerminateEvent) error {
 	sm.cancel()
+	sm.stopRealtimeWorker()
 	return e.Next()
 }
 
@@ -189,7 +200,7 @@ func (sm *SystemManager) onRecordUpdate(e *core.RecordEvent) error {
 // - paused: Closes SSH connection and deactivates alerts
 // - pending: Starts monitoring (reuses WebSocket if available)
 // - up: Triggers system alerts
-// - down: Triggers status change alerts
+// - down: Cancels pending container alerts and triggers status change alerts
 func (sm *SystemManager) onRecordAfterUpdateSuccess(e *core.RecordEvent) error {
 	newStatus := e.Record.GetString("status")
 	prevStatus := pending
@@ -207,6 +218,7 @@ func (sm *SystemManager) onRecordAfterUpdateSuccess(e *core.RecordEvent) error {
 		}
 		_ = deactivateAlerts(e.App, e.Record.Id)
 		sm.hub.CancelPendingStatusAlerts(e.Record.Id)
+		sm.hub.CancelPendingContainerAlerts(e.Record.Id)
 		return e.Next()
 	case pending:
 		// Resume monitoring, preferring existing WebSocket connection
@@ -220,6 +232,10 @@ func (sm *SystemManager) onRecordAfterUpdateSuccess(e *core.RecordEvent) error {
 		}
 		_ = deactivateAlerts(e.App, e.Record.Id)
 		return e.Next()
+	case down:
+		// Docker state is unknown while the system is unreachable. Do not let a
+		// delayed container-health alert fire from the last received snapshot.
+		sm.hub.CancelPendingContainerAlerts(e.Record.Id)
 	}
 
 	// Handle systems not in manager
@@ -231,6 +247,9 @@ func (sm *SystemManager) onRecordAfterUpdateSuccess(e *core.RecordEvent) error {
 	if newStatus == up {
 		if err := sm.hub.HandleSystemAlerts(e.Record, system.data); err != nil {
 			e.App.Logger().Error("Error handling system alerts", "err", err)
+		}
+		if err := sm.hub.HandleContainerAlerts(e.Record, system.data, system.FetchContainerLogsFromAgent); err != nil {
+			e.App.Logger().Error("Error handling container alerts", "err", err)
 		}
 	}
 
@@ -364,6 +383,15 @@ func (sm *SystemManager) GetProbeConfigsForSystem(systemID string) []probe.Confi
 		Bind(dbx.Params{"system": systemID}).
 		All(&configs)
 	return configs
+}
+
+// resetFailedZfsFetchState clears only failed ZFS cooldown entries so a fresh
+// agent reconnect retries ZFS discovery immediately after configuration changes.
+func (sm *SystemManager) resetFailedZfsFetchState(systemID string) {
+	state, ok := sm.zfsFetchMap.GetOk(systemID)
+	if ok && !state.Successful {
+		sm.zfsFetchMap.Remove(systemID)
+	}
 }
 
 // createSSHClientConfig initializes the SSH client configuration for connecting to an agent's server
