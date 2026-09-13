@@ -20,7 +20,6 @@ import {
 	ArrowDownIcon,
 	ArrowUpDownIcon,
 	ArrowUpIcon,
-	CheckIcon,
 	EyeIcon,
 	FilterIcon,
 	LayoutGridIcon,
@@ -104,14 +103,6 @@ export default function SystemsTable() {
 		})
 	}, [])
 
-	const [saved, setSaved] = useState(false)
-	const savedTimeout = useRef<ReturnType<typeof setTimeout> | null>(null)
-	const showSaved = useCallback(() => {
-		setSaved(true)
-		if (savedTimeout.current) clearTimeout(savedTimeout.current)
-		savedTimeout.current = setTimeout(() => setSaved(false), 1500)
-	}, [])
-
 	const handleColumnVisibilityChange = useCallback(
 		(updater: VisibilityState | ((prev: VisibilityState) => VisibilityState)) => {
 			setColumnVisibility((prev) => {
@@ -121,48 +112,35 @@ export default function SystemsTable() {
 				queueUserSettings({ cols: next })
 				return next
 			})
-			showSaved()
 		},
-		[showSaved]
+		[]
 	)
 
-	const handleStatusFilterChange = useCallback(
-		(value: string) => {
-			const next = value as StatusFilter
-			setStatusFilter(next)
-			localStorage.setItem("besz-statusFilter", JSON.stringify(next))
-			$userSettings.setKey("statusFilter", next)
-			queueUserSettings({ statusFilter: next })
-			showSaved()
-		},
-		[showSaved]
-	)
+	const handleStatusFilterChange = useCallback((value: string) => {
+		const next = value as StatusFilter
+		setStatusFilter(next)
+		localStorage.setItem("besz-statusFilter", JSON.stringify(next))
+		$userSettings.setKey("statusFilter", next)
+		queueUserSettings({ statusFilter: next })
+	}, [])
 
-	const handleViewModeChange = useCallback(
-		(view: string) => {
-			const next = view as ViewMode
-			setViewMode(next)
-			localStorage.setItem("besz-viewMode", JSON.stringify(next))
-			$userSettings.setKey("viewMode", next)
-			queueUserSettings({ viewMode: next })
-			showSaved()
-		},
-		[showSaved]
-	)
+	const handleViewModeChange = useCallback((view: string) => {
+		const next = view as ViewMode
+		setViewMode(next)
+		localStorage.setItem("besz-viewMode", JSON.stringify(next))
+		$userSettings.setKey("viewMode", next)
+		queueUserSettings({ viewMode: next })
+	}, [])
 
-	const handleSortingChange = useCallback(
-		(updater: SortingState | ((prev: SortingState) => SortingState)) => {
-			setSorting((prev) => {
-				const next = typeof updater === "function" ? updater(prev) : updater
-				sessionStorage.setItem("besz-sortMode", JSON.stringify(next))
-				$userSettings.setKey("sortMode", next)
-				queueUserSettings({ sortMode: next })
-				return next
-			})
-			showSaved()
-		},
-		[showSaved]
-	)
+	const handleSortingChange = useCallback((updater: SortingState | ((prev: SortingState) => SortingState)) => {
+		setSorting((prev) => {
+			const next = typeof updater === "function" ? updater(prev) : updater
+			sessionStorage.setItem("besz-sortMode", JSON.stringify(next))
+			$userSettings.setKey("sortMode", next)
+			queueUserSettings({ sortMode: next })
+			return next
+		})
+	}, [])
 
 	const locale = i18n.locale
 
@@ -264,11 +242,7 @@ export default function SystemsTable() {
 						<DropdownMenu>
 							<DropdownMenuTrigger asChild>
 								<Button variant="outline">
-									{saved ? (
-										<CheckIcon className="me-1.5 size-4 text-green-500" />
-									) : (
-										<Settings2Icon className="me-1.5 size-4 opacity-80" />
-									)}
+									<Settings2Icon className="me-1.5 size-4 opacity-80" />
 									<Trans>View</Trans>
 								</Button>
 							</DropdownMenuTrigger>
@@ -396,7 +370,6 @@ export default function SystemsTable() {
 		downSystemsLength,
 		pausedSystemsLength,
 		filter,
-		saved,
 	])
 
 	return (
