@@ -205,10 +205,16 @@ function getStorageValue(key: string, defaultValue: unknown, storageInterface: S
 }
 
 /** Hook to sync value in local or session storage */
-export function useBrowserStorage<T>(key: string, defaultValue: T, storageInterface: Storage = localStorage) {
+export function useBrowserStorage<T>(
+	key: string,
+	defaultValue: T,
+	storageInterface: Storage = localStorage,
+	/** Takes precedence over the stored value when set (e.g. a value from the URL) */
+	initialValue?: T
+) {
 	key = `besz-${key}`
 	const [value, setValue] = useState(() => {
-		return getStorageValue(key, defaultValue, storageInterface)
+		return initialValue ?? getStorageValue(key, defaultValue, storageInterface)
 	})
 	useEffect(() => {
 		storageInterface?.setItem(key, JSON.stringify(value))

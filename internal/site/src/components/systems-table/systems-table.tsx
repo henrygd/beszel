@@ -55,18 +55,39 @@ type StatusFilter = "all" | SystemRecord["status"]
 
 const preloadSystemDetail = runOnce(() => import("@/components/routes/system.tsx"))
 
+const defaultSortColumn = "system"
+
+/**
+ * Read table state from the URL query string, e.g. `?filter=web&status=down&sort=-cpu&view=grid`.
+ * A leading `-` in `sort` reverses the column's default sort direction.
+ */
+function getUrlState() {
+	const params = new URLSearchParams(window.location.search)
+	const status = params.get("status")
+	const sort = params.get("sort")
+	const view = params.get("view")
+	return {
+		filter: params.get("filter") ?? "",
+		status: (status === "up" || status === "down" || status === "paused" ? status : "all") as StatusFilter,
+		sorting: sort ? [{ id: sort.replace(/^-/, ""), desc: sort.startsWith("-") }] : undefined,
+		view: view === "table" || view === "grid" ? (view as ViewMode) : undefined,
+	}
+}
+
 export default function SystemsTable() {
 	const data = useStore($systems)
 	const downSystems = $downSystems.get()
 	const upSystems = $upSystems.get()
 	const pausedSystems = $pausedSystems.get()
 	const { i18n, t } = useLingui()
-	const [filter, setFilter] = useState<string>("")
-	const [statusFilter, setStatusFilter] = useState<StatusFilter>("all")
+	const [urlState] = useState(getUrlState)
+	const [filter, setFilter] = useState<string>(urlState.filter)
+	const [statusFilter, setStatusFilter] = useState<StatusFilter>(urlState.status)
 	const [sorting, setSorting] = useBrowserStorage<SortingState>(
 		"sortMode",
-		[{ id: "system", desc: false }],
-		sessionStorage
+		[{ id: defaultSortColumn, desc: false }],
+		sessionStorage,
+		urlState.sorting
 	)
 	const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
 	const [columnVisibility, setColumnVisibility] = useBrowserStorage<VisibilityState>("cols", {})
@@ -90,7 +111,9 @@ export default function SystemsTable() {
 	const [viewMode, setViewMode] = useBrowserStorage<ViewMode>(
 		"viewMode",
 		// show grid view on mobile if there are less than 200 systems (looks better but table is more efficient)
-		window.innerWidth < 1024 && filteredData.length < 200 ? "grid" : "table"
+		window.innerWidth < 1024 && filteredData.length < 200 ? "grid" : "table",
+		localStorage,
+		urlState.view
 	)
 
 	useEffect(() => {
@@ -98,6 +121,23 @@ export default function SystemsTable() {
 			table.getColumn("system")?.setFilterValue(filter)
 		}
 	}, [filter])
+
+	// keep the URL query string in sync with table state so the current view can be shared
+	useEffect(() => {
+		const params = new URLSearchParams()
+		if (filter) params.set("filter", filter)
+		if (statusFilter !== "all") params.set("status", statusFilter)
+		const sort = sorting[0]
+		if (sort && (sort.id !== defaultSortColumn || sort.desc)) {
+			params.set("sort", `${sort.desc ? "-" : ""}${sort.id}`)
+		}
+		if (viewMode !== "table") params.set("view", viewMode)
+		const query = params.toString()
+		const search = query ? `?${query}` : ""
+		if (search !== window.location.search) {
+			window.history.replaceState(window.history.state, "", window.location.pathname + search + window.location.hash)
+		}
+	}, [filter, statusFilter, sorting, viewMode])
 
 	const columnDefs = useMemo(() => SystemsTableColumns(viewMode), [viewMode])
 
