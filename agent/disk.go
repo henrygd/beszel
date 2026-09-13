@@ -96,6 +96,121 @@ func isDockerSpecialMountpoint(mountpoint string) bool {
 	return false
 }
 
+// autoDiscoverExtraMountsDisabled returns true when DISABLE_AUTO_EXTRA_DISK is set
+// to opt out of scanning for additional mounted block volumes (default is enabled).
+func autoDiscoverExtraMountsDisabled() bool {
+	v, ok := utils.GetEnv("DISABLE_AUTO_EXTRA_DISK")
+	if !ok {
+		return false
+	}
+	v = strings.TrimSpace(strings.ToLower(v))
+	return v == "1" || v == "true" || v == "yes"
+}
+
+// excludedAutoDiscoverFstypes are pseudo and remote filesystem types we never
+// auto-register as extra disks.
+var excludedAutoDiscoverFstypes = map[string]struct{}{
+	"tmpfs": {}, "devtmpfs": {}, "devpts": {}, "proc": {}, "sysfs": {},
+	"cgroup": {}, "cgroup2": {}, "overlay": {}, "autofs": {}, "fusectl": {},
+	"mqueue": {}, "bpf": {}, "tracefs": {}, "configfs": {}, "securityfs": {},
+	"hugetlbfs": {}, "debugfs": {}, "pstore": {}, "ramfs": {}, "fuse": {},
+	"rpc_pipefs": {}, "binfmt_misc": {}, "nsfs": {}, "squashfs": {}, "erofs": {},
+	"zfs_snapshot": {}, "none": {},
+	"nfs": {}, "nfs4": {}, "cifs": {}, "smb3": {}, "9p": {}, "ceph": {}, "glusterfs": {},
+}
+
+func isExcludedAutoDiscoverFstype(fstype string) bool {
+	fstype = strings.ToLower(strings.TrimSpace(fstype))
+	if fstype == "" {
+		return false
+	}
+	_, excluded := excludedAutoDiscoverFstypes[fstype]
+	return excluded
+}
+
+// isAutoDiscoverPseudoMountPath skips kernel and package-manager mount namespaces
+// that are not separate physical drives. /run intentionally is not skipped so that
+// USB volumes auto-mounted at /run/media/<user>/<label> still surface; non-disk
+// entries under /run are excluded by fstype.
+func isAutoDiscoverPseudoMountPath(mountpoint string) bool {
+	mountpoint = filepath.Clean(mountpoint)
+	if mountpoint == "/" {
+		return false
+	}
+	prefixes := []string{"/proc", "/sys", "/dev", "/snap"}
+	for _, p := range prefixes {
+		if mountpoint == p || strings.HasPrefix(mountpoint, p+"/") {
+			return true
+		}
+	}
+	return false
+}
+
+// partitionQualifiesForAutoExtra reports whether a discovered partition should be
+// tracked as an extra filesystem without EXTRA_FILESYSTEMS configuration.
+func partitionQualifiesForAutoExtra(p disk.PartitionStat, rootMountPoint string, isWindows bool) bool {
+	if p.Mountpoint == "" {
+		return false
+	}
+	if p.Mountpoint == rootMountPoint {
+		return false
+	}
+	if isDockerSpecialMountpoint(p.Mountpoint) {
+		return false
+	}
+	if strings.HasPrefix(p.Mountpoint, "/extra-filesystems") {
+		// Handled by addPartitionExtraFs / addExtraFilesystemFolders.
+		return false
+	}
+	if isAutoDiscoverPseudoMountPath(p.Mountpoint) {
+		return false
+	}
+	if isExcludedAutoDiscoverFstype(p.Fstype) {
+		return false
+	}
+	if isWindows {
+		return windowsMountLooksLikeDataVolume(p.Mountpoint, rootMountPoint)
+	}
+	fs := strings.ToLower(strings.TrimSpace(p.Fstype))
+	if fs == "zfs" {
+		return true
+	}
+	dev := strings.TrimSpace(p.Device)
+	if dev == "" {
+		return false
+	}
+	if strings.HasPrefix(dev, "/dev/loop") {
+		return false
+	}
+	return strings.HasPrefix(dev, "/dev/")
+}
+
+func windowsMountLooksLikeDataVolume(mountpoint, rootMountPoint string) bool {
+	// Root is typically "C:"; include other fixed drives (D:, E:, ...).
+	mp := strings.TrimSuffix(strings.TrimSpace(mountpoint), `\`)
+	root := strings.TrimSuffix(strings.TrimSpace(rootMountPoint), `\`)
+	if mp == "" || len(mp) < 2 || mp[1] != ':' {
+		return false
+	}
+	rootLetter := byte('C')
+	if len(root) >= 2 && root[1] == ':' {
+		rootLetter = root[0]
+	}
+	return mp[0] != rootLetter
+}
+
+// addAutoDiscoveredExtraMount registers conventional mounts (e.g. /mnt/data on
+// /dev/sdb1) so multiple physical volumes appear without EXTRA_FILESYSTEMS.
+func (d *diskDiscovery) addAutoDiscoveredExtraMount(p disk.PartitionStat) {
+	if autoDiscoverExtraMountsDisabled() {
+		return
+	}
+	if !partitionQualifiesForAutoExtra(p, d.rootMountPoint, d.ctx.isWindows) {
+		return
+	}
+	d.addFsStat(p.Device, p.Mountpoint, false, "")
+}
+
 // registerFilesystemStats resolves the tracked key and stats payload for a
 // filesystem before it is inserted into fsStats.
 func registerFilesystemStats(existing map[string]*system.FsStats, device, mountpoint string, root bool, customName string, ctx fsRegistrationContext) (string, *system.FsStats, bool) {
@@ -354,6 +469,7 @@ func (a *Agent) initializeDiskInfo() {
 			hasRoot = discovery.addPartitionRootFs(p.Device, p.Mountpoint)
 		}
 		discovery.addPartitionExtraFs(p)
+		discovery.addAutoDiscoveredExtraMount(p)
 	}
 
 	// Check all folders in /extra-filesystems and add them if not already present
