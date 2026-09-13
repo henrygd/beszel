@@ -121,11 +121,8 @@ const Layout = () => {
 
 const I18nApp = () => {
 	useEffect(() => {
-		// authenticated sessions get their locale from updateUserSettings (server setting,
-		// falling back to detection) — activating it here too would race that call
-		if (!pb.authStore.isValid) {
-			dynamicActivate(getLocale())
-		}
+		// Activate a locale so I18nProvider can mount App and load the account settings.
+		dynamicActivate(getLocale())
 	}, [])
 
 	return (
