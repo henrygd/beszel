@@ -79,7 +79,11 @@ func init() {
 					"LoadAvg1",
 					"LoadAvg5",
 					"LoadAvg15",
-					"Battery"
+					"Battery",
+					"ContainerHealth",
+					"SystemdFailed",
+					"CPUIOWait",
+					"CPUSteal"
 				]
 			},
 			{
@@ -114,6 +118,17 @@ func init() {
 				"required": false,
 				"system": false,
 				"type": "bool"
+			},
+			{
+				"hidden": true,
+				"id": "date1302749137",
+				"max": "",
+				"min": "",
+				"name": "pending_since",
+				"presentable": false,
+				"required": false,
+				"system": false,
+				"type": "date"
 			},
 			{
 				"hidden": false,
@@ -1705,7 +1720,166 @@ func init() {
 		"deleteRule": null,
 		"fields": [
 			{
+				"autogeneratePattern": "[a-z0-9]{15}",
+				"hidden": false,
+				"id": "text3208210256",
+				"max": 15,
+				"min": 15,
+				"name": "id",
+				"pattern": "^[a-z0-9]+$",
+				"presentable": false,
+				"primaryKey": true,
+				"required": true,
+				"system": true,
+				"type": "text"
+			},
+			{
+				"cascadeDelete": true,
+				"collectionId": "2hz5ncl8tizk5nx",
+				"hidden": false,
+				"id": "relation1204987316",
+				"maxSelect": 1,
+				"minSelect": 0,
+				"name": "system",
+				"presentable": false,
+				"required": true,
+				"system": false,
+				"type": "relation"
+			},
+			{
+				"autogeneratePattern": "",
+				"hidden": false,
+				"id": "text7739291048",
+				"max": 0,
+				"min": 0,
+				"name": "name",
+				"pattern": "",
+				"presentable": false,
+				"primaryKey": false,
+				"required": false,
+				"system": false,
+				"type": "text"
+			},
+			{
+				"autogeneratePattern": "",
+				"hidden": false,
+				"id": "text5528164482",
+				"max": 0,
+				"min": 0,
+				"name": "health",
+				"pattern": "",
+				"presentable": false,
+				"primaryKey": false,
+				"required": false,
+				"system": false,
+				"type": "text"
+			},
+			{
+				"hidden": false,
+				"id": "number8862034195",
+				"max": null,
+				"min": null,
+				"name": "size",
+				"onlyInt": true,
+				"presentable": false,
+				"required": false,
+				"system": false,
+				"type": "number"
+			},
+			{
+				"hidden": false,
+				"id": "number4418907321",
+				"max": null,
+				"min": null,
+				"name": "alloc",
+				"onlyInt": true,
+				"presentable": false,
+				"required": false,
+				"system": false,
+				"type": "number"
+			},
+			{
+				"hidden": false,
+				"id": "number2904183765",
+				"max": null,
+				"min": null,
+				"name": "free",
+				"onlyInt": true,
+				"presentable": false,
+				"required": false,
+				"system": false,
+				"type": "number"
+			},
+			{
+				"hidden": false,
+				"id": "json4466109723",
+				"maxSize": 0,
+				"name": "scrub",
+				"presentable": false,
+				"required": false,
+				"system": false,
+				"type": "json"
+			},
+			{
+				"hidden": false,
+				"id": "json9012873456",
+				"maxSize": 0,
+				"name": "vdevs",
+				"presentable": false,
+				"required": false,
+				"system": false,
+				"type": "json"
+			},
+			{
+				"hidden": false,
+				"id": "json7182045639",
+				"maxSize": 0,
+				"name": "datasets",
+				"presentable": false,
+				"required": false,
+				"system": false,
+				"type": "json"
+			},
+			{
+				"hidden": false,
+				"id": "date9274163058",
+				"max": "",
+				"min": "",
+				"name": "details_updated",
+				"presentable": false,
+				"required": false,
+				"system": false,
+				"type": "date"
+			},
+			{
+				"hidden": false,
+				"id": "autodate3332085495",
+				"name": "updated",
+				"onCreate": true,
+				"onUpdate": true,
+				"presentable": false,
+				"system": false,
+				"type": "autodate"
+			}
+		],
+		"id": "pbc_8441057391",
+		"indexes": [
+			"CREATE INDEX ` + "`" + `idx_zfsPoolsSystem` + "`" + ` ON ` + "`" + `zfs_pools` + "`" + ` (` + "`" + `system` + "`" + `)"
+		],
+		"listRule": null,
+		"name": "zfs_pools",
+		"system": false,
+		"type": "base",
+		"updateRule": null,
+		"viewRule": null
+	},
+	{
+		"createRule": null,
+		"deleteRule": null,
+		"fields": [
+			{
 				"autogeneratePattern": "[a-z0-9]{10}",
+				"help": "",
 				"hidden": false,
 				"id": "text3208210256",
 				"max": 10,
@@ -1721,8 +1895,9 @@ func init() {
 			{
 				"cascadeDelete": true,
 				"collectionId": "2hz5ncl8tizk5nx",
+				"help": "",
 				"hidden": false,
-				"id": "np_system",
+				"id": "nm_system",
 				"maxSelect": 1,
 				"minSelect": 0,
 				"name": "system",
@@ -1733,8 +1908,9 @@ func init() {
 			},
 			{
 				"autogeneratePattern": "",
+				"help": "",
 				"hidden": false,
-				"id": "np_name",
+				"id": "nm_name",
 				"max": 200,
 				"min": 0,
 				"name": "name",
@@ -1747,8 +1923,9 @@ func init() {
 			},
 			{
 				"autogeneratePattern": "",
+				"help": "",
 				"hidden": false,
-				"id": "np_target",
+				"id": "nm_target",
 				"max": 500,
 				"min": 1,
 				"name": "target",
@@ -1760,8 +1937,9 @@ func init() {
 				"type": "text"
 			},
 			{
+				"help": "",
 				"hidden": false,
-				"id": "np_protocol",
+				"id": "nm_protocol",
 				"maxSelect": 1,
 				"name": "protocol",
 				"presentable": false,
@@ -1771,12 +1949,14 @@ func init() {
 				"values": [
 					"icmp",
 					"tcp",
-					"http"
+					"http",
+					"dns"
 				]
 			},
 			{
+				"help": "",
 				"hidden": false,
-				"id": "np_port",
+				"id": "nm_port",
 				"max": 65535,
 				"min": 0,
 				"name": "port",
@@ -1787,8 +1967,9 @@ func init() {
 				"type": "number"
 			},
 			{
+				"help": "",
 				"hidden": false,
-				"id": "np_interval",
+				"id": "nm_interval",
 				"max": 3600,
 				"min": 1,
 				"name": "interval",
@@ -1799,6 +1980,7 @@ func init() {
 				"type": "number"
 			},
 			{
+				"help": "",
 				"hidden": false,
 				"id": "number926446584",
 				"max": null,
@@ -1811,6 +1993,7 @@ func init() {
 				"type": "number"
 			},
 			{
+				"help": "",
 				"hidden": false,
 				"id": "number1006954605",
 				"max": null,
@@ -1823,6 +2006,7 @@ func init() {
 				"type": "number"
 			},
 			{
+				"help": "",
 				"hidden": false,
 				"id": "number4267669802",
 				"max": null,
@@ -1835,6 +2019,7 @@ func init() {
 				"type": "number"
 			},
 			{
+				"help": "",
 				"hidden": false,
 				"id": "number591433223",
 				"max": null,
@@ -1847,6 +2032,7 @@ func init() {
 				"type": "number"
 			},
 			{
+				"help": "",
 				"hidden": false,
 				"id": "number3726709001",
 				"max": null,
@@ -1859,8 +2045,9 @@ func init() {
 				"type": "number"
 			},
 			{
+				"help": "",
 				"hidden": false,
-				"id": "np_enabled",
+				"id": "nm_enabled",
 				"name": "enabled",
 				"presentable": false,
 				"required": false,
@@ -1878,6 +2065,7 @@ func init() {
 				"type": "autodate"
 			},
 			{
+				"help": "",
 				"hidden": false,
 				"id": "date3332085495",
 				"max": "",
@@ -1889,12 +2077,12 @@ func init() {
 				"type": "date"
 			}
 		],
-		"id": "np_probes_001",
+		"id": "nm_probes_001",
 		"indexes": [
-			"CREATE INDEX ` + "`" + `idx_np_system_enabled` + "`" + ` ON ` + "`" + `network_probes` + "`" + ` (` + "`" + `system` + "`" + `)"
+			"CREATE INDEX ` + "`" + `idx_nm_system_enabled` + "`" + ` ON ` + "`" + `network_monitors` + "`" + ` (` + "`" + `system` + "`" + `)"
 		],
 		"listRule": null,
-		"name": "network_probes",
+		"name": "network_monitors",
 		"system": false,
 		"type": "base",
 		"updateRule": null,
@@ -1906,6 +2094,7 @@ func init() {
 		"fields": [
 			{
 				"autogeneratePattern": "[a-z0-9]{10}",
+				"help": "",
 				"hidden": false,
 				"id": "text3208210256",
 				"max": 10,
@@ -1921,6 +2110,7 @@ func init() {
 			{
 				"cascadeDelete": true,
 				"collectionId": "2hz5ncl8tizk5nx",
+				"help": "",
 				"hidden": false,
 				"id": "nps_system",
 				"maxSelect": 1,
@@ -1932,6 +2122,21 @@ func init() {
 				"type": "relation"
 			},
 			{
+				"cascadeDelete": true,
+				"collectionId": "nm_probes_001",
+				"help": "",
+				"hidden": false,
+				"id": "nps_probe",
+				"maxSelect": 1,
+				"minSelect": 0,
+				"name": "probe",
+				"presentable": false,
+				"required": false,
+				"system": false,
+				"type": "relation"
+			},
+			{
+				"help": "",
 				"hidden": false,
 				"id": "nps_stats",
 				"maxSize": 2000000,
@@ -1942,6 +2147,7 @@ func init() {
 				"type": "json"
 			},
 			{
+				"help": "",
 				"hidden": false,
 				"id": "nps_type",
 				"maxSelect": 1,
@@ -1959,6 +2165,7 @@ func init() {
 				]
 			},
 			{
+				"help": "",
 				"hidden": false,
 				"id": "number2990389176",
 				"max": null,
@@ -1971,12 +2178,13 @@ func init() {
 				"type": "number"
 			}
 		],
-		"id": "np_stats_001",
+		"id": "nm_stats_001",
 		"indexes": [
-			"CREATE INDEX ` + "`" + `idx_nps_system_type_created` + "`" + ` ON ` + "`" + `network_probe_stats` + "`" + ` (\n  ` + "`" + `system` + "`" + `,\n  ` + "`" + `type` + "`" + `,\n  ` + "`" + `created` + "`" + `\n)"
+			"CREATE INDEX IF NOT EXISTS ` + "`" + `idx_nps_system_type_created` + "`" + ` ON ` + "`" + `network_monitor_stats` + "`" + ` (` + "`" + `system` + "`" + `, ` + "`" + `type` + "`" + `, ` + "`" + `created` + "`" + `)",
+			"CREATE INDEX IF NOT EXISTS ` + "`" + `idx_nps_probe_type_created` + "`" + ` ON ` + "`" + `network_monitor_stats` + "`" + ` (` + "`" + `probe` + "`" + `, ` + "`" + `type` + "`" + `, ` + "`" + `created` + "`" + `)"
 		],
 		"listRule": null,
-		"name": "network_probe_stats",
+		"name": "network_monitor_stats",
 		"system": false,
 		"type": "base",
 		"updateRule": null,
