@@ -33,7 +33,7 @@ import { TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/compon
 import { useToast } from "@/components/ui/use-toast"
 import { isReadOnlyUser } from "@/lib/api"
 import { pb } from "@/lib/api"
-import { $allSystemsById, $chartTime, $direction } from "@/lib/stores"
+import { $allSystemsById, $direction, $userSettings } from "@/lib/stores"
 import {
 	cn,
 	isVisuallyLonger,
@@ -50,6 +50,7 @@ import ChartTimeSelect from "@/components/charts/chart-time-select"
 import { LossChart, AvgMinMaxResponseChart } from "@/components/routes/system/charts/monitors-charts"
 import { useNetworkMonitorStats } from "@/lib/use-network-monitors"
 import { useStore } from "@nanostores/react"
+import { atom } from "nanostores"
 import { Separator } from "../ui/separator"
 import { $router, Link } from "../router"
 import { getPagePath } from "@nanostores/router"
@@ -483,7 +484,12 @@ function NetworkMonitorSheetContent({
 	onOpenChange: (open: boolean) => void
 	monitor: NetworkMonitorRecord
 }) {
-	const chartTime = useStore($chartTime)
+	// Keep monitor exploration independent of the system charts' time range.
+	const [chartTimeStore] = useState(() => {
+		const defaultTime = $userSettings.get().chartTime
+		return atom(defaultTime === "1m" ? "1h" : defaultTime)
+	})
+	const chartTime = useStore(chartTimeStore)
 	const direction = useStore($direction)
 	const system = useStore($allSystemsById)[monitor.system]
 
@@ -526,7 +532,12 @@ function NetworkMonitorSheetContent({
 					</SheetDescription>
 				</SheetHeader>
 				<div className="grid gap-4">
-					<ChartTimeSelect className="bg-card" agentVersion={chartData.agentVersion} />
+					<ChartTimeSelect
+						className="bg-card"
+						agentVersion={chartData.agentVersion}
+						chartTimeStore={chartTimeStore}
+						allowRealtime={false}
+					/>
 					<AvgMinMaxResponseChart
 						monitorStats={monitorStats}
 						monitor={monitor}
