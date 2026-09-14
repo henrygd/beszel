@@ -2,6 +2,7 @@ package agent
 
 import (
 	"bytes"
+	"context"
 	"crypto/rand"
 	"errors"
 	"math"
@@ -83,8 +84,11 @@ var (
 // unprivileged datagram, or exec fallback) is detected once per address
 // family and cached for subsequent monitors.
 // Returns response in microseconds, or -1 and an error on failure.
-func monitorICMP(target string) (int64, error) {
-	family, ip, err := resolveICMPTarget(target)
+func monitorICMP(ctx context.Context, target string) (int64, error) {
+	ctx, cancel := context.WithTimeout(ctx, 3*time.Second)
+	defer cancel()
+
+	family, ip, err := resolveICMPTarget(ctx, target)
 	if err != nil {
 		return -1, err
 	}
@@ -98,11 +102,11 @@ func monitorICMP(target string) (int64, error) {
 
 	switch mode {
 	case icmpRaw:
-		return monitorICMPNative(family.rawNetwork, family, &net.IPAddr{IP: ip})
+		return monitorICMPNative(ctx, family.rawNetwork, family, &net.IPAddr{IP: ip})
 	case icmpDatagram:
-		return monitorICMPNative(family.dgramNetwork, family, &net.UDPAddr{IP: ip})
+		return monitorICMPNative(ctx, family.dgramNetwork, family, &net.UDPAddr{IP: ip})
 	case icmpExecFallback:
-		return monitorICMPExec(target, family.isIPv6)
+		return monitorICMPExec(ctx, target, family.isIPv6)
 	default:
 		return -1, errors.New("unsupported ICMP mode")
 	}
@@ -110,7 +114,7 @@ func monitorICMP(target string) (int64, error) {
 
 // resolveICMPTarget resolves a target hostname or IP to determine the address
 // family and concrete IP address. Prefers IPv4 for dual-stack hostnames.
-func resolveICMPTarget(target string) (*icmpFamily, net.IP, error) {
+func resolveICMPTarget(ctx context.Context, target string) (*icmpFamily, net.IP, error) {
 	if ip := net.ParseIP(target); ip != nil {
 		if ip.To4() != nil {
 			return &icmpV4, ip.To4(), nil
@@ -118,7 +122,7 @@ func resolveICMPTarget(target string) (*icmpFamily, net.IP, error) {
 		return &icmpV6, ip, nil
 	}
 
-	ips, err := net.LookupIP(target)
+	ips, err := net.DefaultResolver.LookupIP(ctx, "ip", target)
 	if err != nil || len(ips) == 0 {
 		return nil, nil, err
 	}
@@ -154,17 +158,24 @@ func detectICMPMode(family *icmpFamily, listen func(network, listenAddr string) 
 }
 
 // monitorICMPNative sends an ICMP echo request using Go's x/net/icmp package.
-func monitorICMPNative(network string, family *icmpFamily, dst net.Addr) (int64, error) {
+func monitorICMPNative(ctx context.Context, network string, family *icmpFamily, dst net.Addr) (int64, error) {
 	conn, err := icmp.ListenPacket(network, family.listenAddr)
 	if err != nil {
 		return -1, err
 	}
 	defer conn.Close()
 
-	return monitorICMPPacket(conn, family, dst)
+	return monitorICMPPacket(ctx, conn, family, dst)
 }
 
-func monitorICMPPacket(conn net.PacketConn, family *icmpFamily, dst net.Addr) (int64, error) {
+func monitorICMPPacket(ctx context.Context, conn net.PacketConn, family *icmpFamily, dst net.Addr) (int64, error) {
+	if err := ctx.Err(); err != nil {
+		return -1, err
+	}
+	// Closing the socket interrupts both reads and writes on cancellation.
+	stop := context.AfterFunc(ctx, func() { _ = conn.Close() })
+	defer stop()
+
 	// Prepare correlation data before starting the round-trip timer. The token
 	// also distinguishes delayed replies after the 16-bit sequence wraps.
 	token := make([]byte, 16)
@@ -239,25 +250,28 @@ func icmpAddrIP(addr net.Addr) net.IP {
 }
 
 // monitorICMPExec falls back to the system ping command. Returns -1 and an error on failure.
-func monitorICMPExec(target string, isIPv6 bool) (int64, error) {
+func monitorICMPExec(ctx context.Context, target string, isIPv6 bool) (int64, error) {
 	var cmd *exec.Cmd
 	switch runtime.GOOS {
 	case "windows":
 		if isIPv6 {
-			cmd = exec.Command("ping", "-6", "-n", "1", "-w", "3000", target)
+			cmd = exec.CommandContext(ctx, "ping", "-6", "-n", "1", "-w", "3000", target)
 		} else {
-			cmd = exec.Command("ping", "-n", "1", "-w", "3000", target)
+			cmd = exec.CommandContext(ctx, "ping", "-n", "1", "-w", "3000", target)
 		}
 	default:
 		if isIPv6 {
-			cmd = exec.Command("ping", "-6", "-c", "1", "-W", "3", target)
+			cmd = exec.CommandContext(ctx, "ping", "-6", "-c", "1", "-W", "3", target)
 		} else {
-			cmd = exec.Command("ping", "-c", "1", "-W", "3", target)
+			cmd = exec.CommandContext(ctx, "ping", "-c", "1", "-W", "3", target)
 		}
 	}
 
 	start := time.Now()
 	output, err := cmd.Output()
+	if ctx.Err() != nil {
+		return -1, ctx.Err()
+	}
 	if err != nil {
 		// If ping fails but we got output, still try to parse
 		if len(output) == 0 {

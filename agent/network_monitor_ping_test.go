@@ -3,9 +3,11 @@
 package agent
 
 import (
+	"context"
 	"errors"
 	"net"
 	"os"
+	"path/filepath"
 	"runtime"
 	"testing"
 	"time"
@@ -18,6 +20,68 @@ import (
 type testICMPPacketConn struct{}
 
 func (testICMPPacketConn) Close() error { return nil }
+
+type blockingICMPConn struct {
+	net.PacketConn
+	reading chan struct{}
+}
+
+func (c *blockingICMPConn) WriteTo(p []byte, addr net.Addr) (int, error) {
+	return len(p), nil
+}
+
+func (c *blockingICMPConn) ReadFrom(p []byte) (int, net.Addr, error) {
+	close(c.reading)
+	return c.PacketConn.ReadFrom(p)
+}
+
+func TestMonitorICMPPacketCancellation(t *testing.T) {
+	conn, err := net.ListenPacket("udp4", "127.0.0.1:0")
+	require.NoError(t, err)
+	defer conn.Close()
+	blocking := &blockingICMPConn{PacketConn: conn, reading: make(chan struct{})}
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	done := make(chan error, 1)
+	go func() {
+		_, err := monitorICMPPacket(ctx, blocking, &icmpV4, conn.LocalAddr())
+		done <- err
+	}()
+	select {
+	case <-blocking.reading:
+	case <-time.After(time.Second):
+		t.Fatal("probe did not begin reading")
+	}
+	cancel()
+	select {
+	case err := <-done:
+		require.Error(t, err)
+	case <-time.After(time.Second):
+		t.Fatal("cancellation did not interrupt the socket read")
+	}
+}
+
+func TestMonitorICMPExecCancellation(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("test uses a POSIX shell stub for ping")
+	}
+	dir := t.TempDir()
+	require.NoError(t, os.WriteFile(filepath.Join(dir, "ping"), []byte("#!/bin/sh\nexec sleep 30\n"), 0o755))
+	t.Setenv("PATH", dir+string(os.PathListSeparator)+os.Getenv("PATH"))
+	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
+	defer cancel()
+	done := make(chan error, 1)
+	go func() {
+		_, err := monitorICMPExec(ctx, "127.0.0.1", false)
+		done <- err
+	}()
+	select {
+	case err := <-done:
+		require.ErrorIs(t, err, context.DeadlineExceeded)
+	case <-time.After(time.Second):
+		t.Fatal("cancellation did not terminate ping")
+	}
+}
 
 type icmpTestReply struct {
 	data []byte
@@ -123,7 +187,7 @@ func TestMonitorICMPReplyCorrelation(t *testing.T) {
 								conn.replies = append(conn.replies, icmpTestReply{valid, dst})
 							}
 						}
-						elapsed, err := monitorICMPPacket(conn, family, dst)
+						elapsed, err := monitorICMPPacket(context.Background(), conn, family, dst)
 						if eventuallyMatches {
 							require.NoError(t, err)
 							assert.GreaterOrEqual(t, elapsed, int64(0))
@@ -157,7 +221,7 @@ func TestMonitorICMPLoopback(t *testing.T) {
 				if network == family.dgramNetwork {
 					dst = &net.UDPAddr{IP: ip}
 				}
-				elapsed, err := monitorICMPPacket(conn, family, dst)
+				elapsed, err := monitorICMPPacket(context.Background(), conn, family, dst)
 				require.NoError(t, err)
 				assert.GreaterOrEqual(t, elapsed, int64(0))
 			})
@@ -247,7 +311,7 @@ func TestDetectICMPMode(t *testing.T) {
 
 func TestResolveICMPTarget(t *testing.T) {
 	t.Run("IPv4 literal", func(t *testing.T) {
-		family, ip, err := resolveICMPTarget("127.0.0.1")
+		family, ip, err := resolveICMPTarget(context.Background(), "127.0.0.1")
 		require.NoError(t, err)
 		require.NotNil(t, family)
 		assert.False(t, family.isIPv6)
@@ -255,7 +319,7 @@ func TestResolveICMPTarget(t *testing.T) {
 	})
 
 	t.Run("IPv6 literal", func(t *testing.T) {
-		family, ip, err := resolveICMPTarget("::1")
+		family, ip, err := resolveICMPTarget(context.Background(), "::1")
 		require.NoError(t, err)
 		require.NotNil(t, family)
 		assert.True(t, family.isIPv6)
@@ -263,7 +327,7 @@ func TestResolveICMPTarget(t *testing.T) {
 	})
 
 	t.Run("IPv4-mapped IPv6 resolves as IPv4", func(t *testing.T) {
-		family, ip, err := resolveICMPTarget("::ffff:127.0.0.1")
+		family, ip, err := resolveICMPTarget(context.Background(), "::ffff:127.0.0.1")
 		require.NoError(t, err)
 		require.NotNil(t, family)
 		assert.False(t, family.isIPv6)

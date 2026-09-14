@@ -1,6 +1,7 @@
 package agent
 
 import (
+	"context"
 	"net"
 	"net/http"
 	"net/http/httptest"
@@ -141,8 +142,8 @@ func TestMonitorManagerSyncMonitorsStopsRemovedTasksButKeepsExisting(t *testing.
 	keepCfg := monitor.Config{ID: "monitor-1", Target: "ignored", Protocol: "noop", Interval: 10}
 	removeCfg := monitor.Config{ID: "monitor-2", Target: "ignored", Protocol: "noop", Interval: 10}
 
-	keptTask := &monitorTask{config: keepCfg, cancel: make(chan struct{})}
-	removedTask := &monitorTask{config: removeCfg, cancel: make(chan struct{})}
+	keptTask := newMonitorTask(keepCfg)
+	removedTask := newMonitorTask(removeCfg)
 	pm := &MonitorManager{
 		monitors: map[string]*monitorTask{
 			keepCfg.ID:   keptTask,
@@ -157,13 +158,13 @@ func TestMonitorManagerSyncMonitorsStopsRemovedTasksButKeepsExisting(t *testing.
 	assert.False(t, exists)
 
 	select {
-	case <-removedTask.cancel:
+	case <-removedTask.ctx.Done():
 	default:
 		t.Fatal("expected removed monitor task to be cancelled")
 	}
 
 	select {
-	case <-keptTask.cancel:
+	case <-keptTask.ctx.Done():
 		t.Fatal("expected existing monitor task to remain active")
 	default:
 	}
@@ -172,7 +173,7 @@ func TestMonitorManagerSyncMonitorsStopsRemovedTasksButKeepsExisting(t *testing.
 func TestMonitorManagerSyncMonitorsRestartsChangedConfig(t *testing.T) {
 	originalCfg := monitor.Config{ID: "monitor-1", Target: "ignored-a", Protocol: "noop", Interval: 10}
 	updatedCfg := monitor.Config{ID: "monitor-1", Target: "ignored-b", Protocol: "noop", Interval: 10}
-	originalTask := &monitorTask{config: originalCfg, cancel: make(chan struct{})}
+	originalTask := newMonitorTask(originalCfg)
 	pm := &MonitorManager{
 		monitors: map[string]*monitorTask{
 			originalCfg.ID: originalTask,
@@ -187,7 +188,7 @@ func TestMonitorManagerSyncMonitorsRestartsChangedConfig(t *testing.T) {
 	assert.Equal(t, updatedCfg, restartedTask.config)
 
 	select {
-	case <-originalTask.cancel:
+	case <-originalTask.ctx.Done():
 	default:
 		t.Fatal("expected changed monitor task to be cancelled")
 	}
@@ -228,7 +229,7 @@ func TestMonitorManagerUpsertMonitorKeepsHistoryWhenOnlyIntervalChanges(t *testi
 	updatedCfg := monitor.Config{ID: "monitor-1", Target: "1.1.1.1", Protocol: "icmp", Interval: 30}
 	now := time.Now().UTC()
 
-	existingTask := &monitorTask{config: originalCfg, cancel: make(chan struct{})}
+	existingTask := newMonitorTask(originalCfg)
 	existingTask.addSampleLocked(monitorSample{responseUs: 12, timestamp: now.Add(-50 * time.Minute)})
 	existingTask.addSampleLocked(monitorSample{responseUs: 24, timestamp: now.Add(-30 * time.Second)})
 
@@ -259,7 +260,7 @@ func TestMonitorManagerUpsertMonitorKeepsHistoryWhenOnlyIntervalChanges(t *testi
 	assert.Equal(t, int64(18), agg.avgResponse())
 
 	select {
-	case <-existingTask.cancel:
+	case <-existingTask.ctx.Done():
 	default:
 		t.Fatal("expected original monitor task to be cancelled")
 	}
@@ -267,7 +268,7 @@ func TestMonitorManagerUpsertMonitorKeepsHistoryWhenOnlyIntervalChanges(t *testi
 
 func TestMonitorManagerApplySyncDeleteRemovesTask(t *testing.T) {
 	config := monitor.Config{ID: "monitor-1", Target: "1.1.1.1", Protocol: "icmp", Interval: 10}
-	task := &monitorTask{config: config, cancel: make(chan struct{})}
+	task := newMonitorTask(config)
 	pm := &MonitorManager{
 		monitors: map[string]*monitorTask{config.ID: task},
 	}
@@ -282,7 +283,7 @@ func TestMonitorManagerApplySyncDeleteRemovesTask(t *testing.T) {
 	assert.False(t, exists)
 
 	select {
-	case <-task.cancel:
+	case <-task.ctx.Done():
 	default:
 		t.Fatal("expected deleted monitor task to be cancelled")
 	}
@@ -303,7 +304,7 @@ func TestMonitorHTTP(t *testing.T) {
 		}))
 		defer server.Close()
 
-		responseUs, err := monitorHTTP(server.Client(), server.URL)
+		responseUs, err := monitorHTTP(context.Background(), server.Client(), server.URL)
 		require.NoError(t, err)
 		assert.GreaterOrEqual(t, responseUs, int64(0))
 	})
@@ -314,7 +315,7 @@ func TestMonitorHTTP(t *testing.T) {
 		}))
 		defer server.Close()
 
-		responseUs, err := monitorHTTP(server.Client(), server.URL)
+		responseUs, err := monitorHTTP(context.Background(), server.Client(), server.URL)
 		assert.Equal(t, int64(-1), responseUs)
 		require.Error(t, err)
 	})
@@ -336,7 +337,7 @@ func TestMonitorTCP(t *testing.T) {
 		}()
 
 		port := uint16(listener.Addr().(*net.TCPAddr).Port)
-		responseUs, err := monitorTCP("127.0.0.1", port)
+		responseUs, err := monitorTCP(context.Background(), "127.0.0.1", port)
 		require.NoError(t, err)
 		assert.GreaterOrEqual(t, responseUs, int64(0))
 		<-accepted
@@ -349,7 +350,7 @@ func TestMonitorTCP(t *testing.T) {
 		port := uint16(listener.Addr().(*net.TCPAddr).Port)
 		require.NoError(t, listener.Close())
 
-		responseUs, err := monitorTCP("127.0.0.1", port)
+		responseUs, err := monitorTCP(context.Background(), "127.0.0.1", port)
 		assert.Equal(t, int64(-1), responseUs)
 		require.Error(t, err)
 	})
@@ -357,14 +358,149 @@ func TestMonitorTCP(t *testing.T) {
 
 func TestMonitorDNS(t *testing.T) {
 	t.Run("success", func(t *testing.T) {
-		responseUs, err := monitorDNS("localhost")
+		responseUs, err := monitorDNS(context.Background(), "localhost")
 		require.NoError(t, err)
 		assert.GreaterOrEqual(t, responseUs, int64(0))
 	})
 
 	t.Run("lookup failure", func(t *testing.T) {
-		responseUs, err := monitorDNS("")
+		responseUs, err := monitorDNS(context.Background(), "")
 		assert.Equal(t, int64(-1), responseUs)
 		require.Error(t, err)
 	})
+}
+
+func TestMonitorManagerCancelsActiveProbe(t *testing.T) {
+	for _, action := range []string{"stop", "delete", "upsert", "sync replace", "sync remove"} {
+		t.Run(action, func(t *testing.T) {
+			started := make(chan struct{})
+			canceled := make(chan struct{})
+			release := make(chan struct{})
+			server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				close(started)
+				select {
+				case <-r.Context().Done():
+					close(canceled)
+				case <-release:
+				}
+			}))
+			defer server.Close()
+			defer close(release)
+			pm := newMonitorManager()
+			defer pm.Stop()
+			cfg := monitor.Config{ID: "test", Protocol: "http", Target: server.URL, Interval: 3600}
+			task := newMonitorTask(cfg)
+			// Seed history to ensure a canceled RunNow does not return an old result.
+			task.addSampleLocked(monitorSample{responseUs: 123, timestamp: time.Now()})
+			pm.monitors[cfg.ID] = task
+			done := make(chan *monitor.Result, 1)
+			go func() {
+				result, _ := pm.UpsertMonitor(cfg, true)
+				done <- result
+			}()
+			select {
+			case <-started:
+			case <-time.After(time.Second):
+				t.Fatal("probe did not start")
+			}
+			updated := cfg
+			updated.Interval--
+			switch action {
+			case "stop":
+				pm.Stop()
+			case "delete":
+				pm.DeleteMonitor(cfg.ID)
+			case "upsert":
+				_, err := pm.UpsertMonitor(updated, false)
+				require.NoError(t, err)
+			case "sync replace":
+				pm.SyncMonitors([]monitor.Config{updated})
+			case "sync remove":
+				pm.SyncMonitors(nil)
+			}
+			select {
+			case <-canceled:
+			case <-time.After(time.Second):
+				t.Fatal("active HTTP request was not canceled")
+			}
+			select {
+			case result := <-done:
+				assert.Nil(t, result)
+			case <-time.After(time.Second):
+				t.Fatal("RunNow did not return after cancellation")
+			}
+			task.mu.Lock()
+			assert.Len(t, task.samples, 1, "cancellation must not record packet loss")
+			task.mu.Unlock()
+		})
+	}
+}
+
+func TestMonitorResolutionCancellation(t *testing.T) {
+	for _, protocol := range []string{"tcp", "dns", "icmp"} {
+		t.Run(protocol, func(t *testing.T) {
+			started := make(chan struct{}, 1)
+			original := net.DefaultResolver
+			net.DefaultResolver = &net.Resolver{PreferGo: true, Dial: func(ctx context.Context, network, address string) (net.Conn, error) {
+				select {
+				case started <- struct{}{}:
+				default:
+				}
+				<-ctx.Done()
+				return nil, ctx.Err()
+			}}
+			defer func() { net.DefaultResolver = original }()
+			ctx, cancel := context.WithCancel(context.Background())
+			defer cancel()
+			done := make(chan error, 1)
+			go func() {
+				var err error
+				switch protocol {
+				case "tcp":
+					_, err = monitorTCP(ctx, "monitor-cancellation.invalid.", 80)
+				case "dns":
+					_, err = monitorDNS(ctx, "monitor-cancellation.invalid.")
+				case "icmp":
+					_, err = monitorICMP(ctx, "monitor-cancellation.invalid.")
+				}
+				done <- err
+			}()
+			select {
+			case <-started:
+			case <-time.After(time.Second):
+				t.Fatal("lookup did not start")
+			}
+			cancel()
+			select {
+			case err := <-done:
+				require.Error(t, err)
+			case <-time.After(time.Second):
+				t.Fatal("lookup did not cancel")
+			}
+		})
+	}
+}
+
+func TestMonitorProbeTimeoutRecordsLoss(t *testing.T) {
+	release := make(chan struct{})
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		select {
+		case <-r.Context().Done():
+		case <-release:
+		}
+	}))
+	defer server.Close()
+	defer close(release)
+	pm := newMonitorManager()
+	pm.httpClient.Timeout = 20 * time.Millisecond
+	task := newMonitorTask(monitor.Config{ID: "timeout", Protocol: "http", Target: server.URL})
+	defer task.cancel()
+
+	result := pm.runMonitorNow(task)
+	require.NotNil(t, result)
+	assert.Equal(t, 100.0, result.PacketLoss)
+	assert.Equal(t, 100.0, result.PacketLoss1h)
+	require.Len(t, task.samples, 1)
+	assert.Equal(t, int64(-1), task.samples[0].responseUs)
+	assert.NoError(t, task.ctx.Err(), "a probe timeout must not cancel the task")
 }

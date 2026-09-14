@@ -46,7 +46,8 @@ type MonitorManager struct {
 // monitorTask owns retention buffers and cancellation for a single monitor config.
 type monitorTask struct {
 	config  monitor.Config
-	cancel  chan struct{}
+	ctx     context.Context
+	cancel  context.CancelFunc
 	mu      sync.Mutex
 	samples []monitorSample
 	buckets [monitorMinuteBucketLen]monitorBucket
@@ -82,9 +83,11 @@ func newMonitorManager() *MonitorManager {
 }
 
 func newMonitorTask(config monitor.Config) *monitorTask {
+	ctx, cancel := context.WithCancel(context.Background())
 	return &monitorTask{
 		config:  config,
-		cancel:  make(chan struct{}),
+		ctx:     ctx,
+		cancel:  cancel,
 		samples: make([]monitorSample, 0, 64),
 	}
 }
@@ -196,7 +199,7 @@ func (pm *MonitorManager) SyncMonitors(configs []monitor.Config) {
 	// Stop removed monitors
 	for key, task := range pm.monitors {
 		if _, exists := newKeys[key]; !exists {
-			close(task.cancel)
+			task.cancel()
 			delete(pm.monitors, key)
 		}
 	}
@@ -208,7 +211,7 @@ func (pm *MonitorManager) SyncMonitors(configs []monitor.Config) {
 			continue
 		}
 		if exists {
-			close(task.cancel)
+			task.cancel()
 		}
 		task = newMonitorTaskFromExisting(cfg, task)
 		pm.monitors[key] = task
@@ -259,7 +262,7 @@ func (pm *MonitorManager) UpsertMonitor(config monitor.Config, runNow bool) (*mo
 		return pm.runMonitorNow(task), nil
 	}
 	if exists {
-		close(task.cancel)
+		task.cancel()
 	}
 	task = newMonitorTaskFromExisting(config, task)
 	pm.monitors[config.ID] = task
@@ -287,7 +290,7 @@ func (pm *MonitorManager) DeleteMonitor(id string) {
 	pm.mu.Lock()
 	defer pm.mu.Unlock()
 	if task, exists := pm.monitors[id]; exists {
-		close(task.cancel)
+		task.cancel()
 		delete(pm.monitors, id)
 	}
 }
@@ -320,7 +323,7 @@ func (pm *MonitorManager) Stop() {
 	pm.mu.Lock()
 	defer pm.mu.Unlock()
 	for key, task := range pm.monitors {
-		close(task.cancel)
+		task.cancel()
 		delete(pm.monitors, key)
 	}
 }
@@ -341,7 +344,7 @@ func (pm *MonitorManager) runMonitor(task *monitorTask, runNow bool) {
 	}
 
 	select {
-	case <-task.cancel:
+	case <-task.ctx.Done():
 		// slog.Info("removed monitor", "target", task.config.Target)
 		return
 	case <-time.After(stagger):
@@ -352,7 +355,7 @@ func (pm *MonitorManager) runMonitor(task *monitorTask, runNow bool) {
 
 	for {
 		select {
-		case <-task.cancel:
+		case <-task.ctx.Done():
 			// slog.Info("removed monitor", "target", task.config.Target)
 			return
 		case <-ticker:
@@ -375,6 +378,9 @@ func (pm *MonitorManager) runMonitorNow(task *monitorTask) *monitor.Result {
 	pm.executeMonitor(task)
 	task.mu.Lock()
 	defer task.mu.Unlock()
+	if task.ctx.Err() != nil {
+		return nil
+	}
 	result, ok := task.resultLocked(time.Minute, time.Now())
 	if !ok {
 		return nil
@@ -487,24 +493,30 @@ func (task *monitorTask) addSampleLocked(sample monitorSample) {
 
 // executeMonitor runs the configured monitor and records the sample.
 func (pm *MonitorManager) executeMonitor(task *monitorTask) {
-	// slog.Info("running monitor", "id", task.config.ID, "interval", task.config.Interval)
+	if task.ctx.Err() != nil {
+		return
+	}
 	var responseUs int64
 	var err error
 
 	switch task.config.Protocol {
 	case "icmp":
-		responseUs, err = monitorICMP(task.config.Target)
+		responseUs, err = monitorICMP(task.ctx, task.config.Target)
 	case "tcp":
-		responseUs, err = monitorTCP(task.config.Target, task.config.Port)
+		responseUs, err = monitorTCP(task.ctx, task.config.Target, task.config.Port)
 	case "http":
-		responseUs, err = monitorHTTP(pm.httpClient, task.config.Target)
+		responseUs, err = monitorHTTP(task.ctx, pm.httpClient, task.config.Target)
 	case "dns":
-		responseUs, err = monitorDNS(task.config.Target)
+		responseUs, err = monitorDNS(task.ctx, task.config.Target)
 	default:
 		slog.Warn("unknown monitor protocol", "protocol", task.config.Protocol)
 		return
 	}
 
+	// Task cancellation is not a failed network check.
+	if task.ctx.Err() != nil {
+		return
+	}
 	if err != nil {
 		slog.Warn("monitor failed", "err", err, "target", task.config.Target, "protocol", task.config.Protocol)
 	}
@@ -515,15 +527,20 @@ func (pm *MonitorManager) executeMonitor(task *monitorTask) {
 	}
 
 	task.mu.Lock()
-	task.addSampleLocked(sample)
+	if task.ctx.Err() == nil {
+		task.addSampleLocked(sample)
+	}
 	task.mu.Unlock()
 }
 
 // monitorTCP measures pure TCP handshake response (excluding DNS resolution).
 // Returns -1 and an error on failure.
-func monitorTCP(target string, port uint16) (int64, error) {
-	// Resolve DNS first, outside the timing window
-	ips, err := net.LookupHost(target)
+func monitorTCP(ctx context.Context, target string, port uint16) (int64, error) {
+	ctx, cancel := context.WithTimeout(ctx, 3*time.Second)
+	defer cancel()
+
+	// Resolve DNS first, outside the timing window but within the probe deadline.
+	ips, err := net.DefaultResolver.LookupHost(ctx, target)
 	if err != nil || len(ips) == 0 {
 		return -1, err
 	}
@@ -531,7 +548,7 @@ func monitorTCP(target string, port uint16) (int64, error) {
 
 	// Measure only the TCP handshake
 	start := time.Now()
-	conn, err := net.DialTimeout("tcp", addr, 3*time.Second)
+	conn, err := (&net.Dialer{}).DialContext(ctx, "tcp", addr)
 	if err != nil {
 		return -1, err
 	}
@@ -540,12 +557,12 @@ func monitorTCP(target string, port uint16) (int64, error) {
 }
 
 // monitorDNS measures DNS resolution response time in microseconds. Returns -1 and an error on failure.
-func monitorDNS(target string) (int64, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+func monitorDNS(ctx context.Context, target string) (int64, error) {
+	ctx, cancel := context.WithTimeout(ctx, 3*time.Second)
 	defer cancel()
 
 	start := time.Now()
-	ips, err := (&net.Resolver{}).LookupHost(ctx, target)
+	ips, err := net.DefaultResolver.LookupHost(ctx, target)
 	if err != nil || len(ips) == 0 {
 		return -1, err
 	}
@@ -553,12 +570,16 @@ func monitorDNS(target string) (int64, error) {
 }
 
 // monitorHTTP measures HTTP GET request response in microseconds. Returns -1 and an error on failure.
-func monitorHTTP(client *http.Client, url string) (int64, error) {
+func monitorHTTP(ctx context.Context, client *http.Client, url string) (int64, error) {
 	if client == nil {
 		client = http.DefaultClient
 	}
 	start := time.Now()
-	resp, err := client.Get(url)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
+	if err != nil {
+		return -1, err
+	}
+	resp, err := client.Do(req)
 	if err != nil {
 		return -1, err
 	}
