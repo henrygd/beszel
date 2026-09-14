@@ -118,7 +118,7 @@ func TestCopyProbeToNewRecordDropsResultFields(t *testing.T) {
 	require.NoError(t, err)
 	defer cleanupTestHub(hub, testApp)
 
-	collection, err := hub.FindCachedCollectionByNameOrId("network_probes")
+	collection, err := hub.FindCachedCollectionByNameOrId("network_monitors")
 	require.NoError(t, err)
 
 	oldRecord := core.NewRecord(collection)

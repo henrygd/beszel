@@ -379,7 +379,7 @@ func (sm *SystemManager) resetFailedSmartFetchState(systemID string) {
 func (sm *SystemManager) GetProbeConfigsForSystem(systemID string) []probe.Config {
 	var configs []probe.Config
 	_ = sm.hub.DB().
-		NewQuery("SELECT id, target, protocol, port, interval FROM network_probes WHERE system = {:system} AND enabled = true").
+		NewQuery("SELECT id, target, protocol, port, interval FROM network_monitors WHERE system = {:system} AND enabled = true").
 		Bind(dbx.Params{"system": systemID}).
 		All(&configs)
 	return configs

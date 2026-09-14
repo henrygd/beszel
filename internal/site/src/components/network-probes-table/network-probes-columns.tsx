@@ -343,7 +343,7 @@ export function getProbeColumns(
 												key={sys.id}
 												onClick={() => {
 													const { id: _id, system: _system, ...rest } = row.original
-													pb.collection("network_probes")
+													pb.collection("network_monitors")
 														.create({ ...rest, system: sys.id })
 														.catch(() => {})
 												}}

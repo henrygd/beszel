@@ -10,7 +10,7 @@ export default memo(() => {
 	const probes = useNetworkProbes({})
 
 	useEffect(() => {
-		document.title = `${t`Network Probes`} / Beszel`
+		document.title = `${t`Network Monitors`} / Beszel`
 	}, [t])
 
 	return (

@@ -54,7 +54,7 @@ async function fetchProbeStats(
 	cached?: NetworkProbeStatsRecord[]
 ): Promise<NetworkProbeStatsRecord[]> {
 	const lastCached = cached?.at(-1)?.created as number | undefined
-	const rawRecords = await pb.collection<RawProbeStatsRecord>("network_probe_stats").getFullList({
+	const rawRecords = await pb.collection<RawProbeStatsRecord>("network_monitor_stats").getFullList({
 		filter: pb.filter("system={:id} && created>{:created} && type={:type}", {
 			id: systemId,
 			created: getPbTimestamp(chartTime, lastCached ? new Date(lastCached + 1000) : undefined, true),
@@ -108,7 +108,7 @@ export function useNetworkProbes(props: UseNetworkProbesProps) {
 
 		;(async () => {
 			try {
-				unsubscribe = await pb.collection<NetworkProbeRecord>("network_probes").subscribe(
+				unsubscribe = await pb.collection<NetworkProbeRecord>("network_monitors").subscribe(
 					"*",
 					(event) => {
 						pendingProbeEvents.current.set(event.record.id, event)
@@ -216,7 +216,7 @@ export function useNetworkProbeStats(props: UseNetworkProbeStatsProps) {
 
 		;(async () => {
 			try {
-				unsubscribe = await pb.collection<RawProbeStatsRecord>("network_probe_stats").subscribe(
+				unsubscribe = await pb.collection<RawProbeStatsRecord>("network_monitor_stats").subscribe(
 					"*",
 					(event) => {
 						if (event.action !== "create") {
@@ -272,7 +272,7 @@ export function useNetworkProbeStats(props: UseNetworkProbeStatsProps) {
 
 async function fetchProbes(system?: string) {
 	try {
-		const res = await pb.collection<NetworkProbeRecord>("network_probes").getList(0, 2000, {
+		const res = await pb.collection<NetworkProbeRecord>("network_monitors").getList(0, 2000, {
 			fields: NETWORK_PROBE_FIELDS,
 			filter: system ? pb.filter("system={:system}", { system }) : undefined,
 		})

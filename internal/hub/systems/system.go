@@ -377,7 +377,7 @@ func updateNetworkProbesRecords(app core.App, probeResults map[string]probe.Resu
 		return nil
 	}
 	var err error
-	const probeCollectionName = "network_probes"
+	const probeCollectionName = "network_monitors"
 
 	// If realtime updates are active, we save via PocketBase records to trigger realtime events.
 	// Otherwise we can do a more efficient direct update via SQL
@@ -401,7 +401,7 @@ func updateNetworkProbesRecords(app core.App, probeResults map[string]probe.Resu
 		updateQuery = db.NewQuery(queryString)
 	}
 
-	// update network_probes records
+	// update network_monitors records
 	for id, result := range probeResults {
 		probeData := map[string]any{
 			"id":       id,
@@ -429,7 +429,7 @@ func updateNetworkProbesRecords(app core.App, probeResults map[string]probe.Resu
 	}
 
 	// handle stats collection — one record per probe
-	const statsCollectionName = "network_probe_stats"
+	const statsCollectionName = "network_monitor_stats"
 
 	var statsCollection *core.Collection
 	if realtimeActive {

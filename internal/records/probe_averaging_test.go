@@ -28,7 +28,7 @@ func TestAverageProbeStats(t *testing.T) {
 		"users":  []string{user.Id},
 	})
 	require.NoError(t, err)
-	probe, err := tests.CreateRecord(hub, "network_probes", map[string]any{
+	probe, err := tests.CreateRecord(hub, "network_monitors", map[string]any{
 		"system":   sys.Id,
 		"name":     "cloudflare",
 		"target":   "1.1.1.1",
@@ -39,14 +39,14 @@ func TestAverageProbeStats(t *testing.T) {
 	require.NoError(t, err)
 
 	// Per-probe records: flat stats array [avg, min, max, loss]
-	recordA, err := tests.CreateRecord(hub, "network_probe_stats", map[string]any{
+	recordA, err := tests.CreateRecord(hub, "network_monitor_stats", map[string]any{
 		"system": sys.Id,
 		"probe":  probe.Id,
 		"type":   "1m",
 		"stats":  `[10,5,20,1.5]`,
 	})
 	require.NoError(t, err)
-	recordB, err := tests.CreateRecord(hub, "network_probe_stats", map[string]any{
+	recordB, err := tests.CreateRecord(hub, "network_monitor_stats", map[string]any{
 		"system": sys.Id,
 		"probe":  probe.Id,
 		"type":   "1m",

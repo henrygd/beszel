@@ -208,7 +208,7 @@ func (sm *SystemManager) finishRealtimeFetch(fetch realtimeFetch) {
 
 // marshalRealtimeData marshals combined agent data for a realtime broadcast, converting
 // the per-probe results into the [avg, min, max, loss] array shape the frontend charts expect
-// (the same conversion used for persisted network_probe_stats records) rather than the raw
+// (the same conversion used for persisted network_monitor_stats records) rather than the raw
 // probe.Result struct used for hub<->agent transport.
 func marshalRealtimeData(data *system.CombinedData) ([]byte, error) {
 	if len(data.Probes) == 0 {

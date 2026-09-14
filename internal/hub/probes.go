@@ -23,7 +23,7 @@ func generateProbeID(systemId string, config probe.Config) string {
 // bindNetworkProbesEvents keeps probe records and agent probe state in sync.
 func bindNetworkProbesEvents(hub *Hub) {
 	// on create, make sure the id is set to a stable hash
-	hub.OnRecordCreate("network_probes").BindFunc(func(e *core.RecordEvent) error {
+	hub.OnRecordCreate("network_monitors").BindFunc(func(e *core.RecordEvent) error {
 		systemID := e.Record.GetString("system")
 		config := probeConfigFromRecord(e.Record)
 		id := generateProbeID(systemID, *config)
@@ -32,7 +32,7 @@ func bindNetworkProbesEvents(hub *Hub) {
 	})
 
 	// sync probe to agent on creation and persist the first result immediately when available
-	hub.OnRecordAfterCreateSuccess("network_probes").BindFunc(func(e *core.RecordEvent) error {
+	hub.OnRecordAfterCreateSuccess("network_monitors").BindFunc(func(e *core.RecordEvent) error {
 		err := e.Next()
 		if err != nil {
 			return err
@@ -51,7 +51,7 @@ func bindNetworkProbesEvents(hub *Hub) {
 
 	// On API update requests, if the probe config changed in a way that requires a new ID, create a new
 	// record with the new ID and delete the old one. Otherwise, just update the existing probe on the agent.
-	hub.OnRecordUpdateRequest("network_probes").BindFunc(func(e *core.RecordRequestEvent) error {
+	hub.OnRecordUpdateRequest("network_monitors").BindFunc(func(e *core.RecordRequestEvent) error {
 		systemID := e.Record.GetString("system")
 		// only tcp uses port - set other protocols port to zero
 		if e.Record.GetString("protocol") != "tcp" {
@@ -84,7 +84,7 @@ func bindNetworkProbesEvents(hub *Hub) {
 	})
 
 	// sync probe to agent on delete
-	hub.OnRecordAfterDeleteSuccess("network_probes").BindFunc(func(e *core.RecordEvent) error {
+	hub.OnRecordAfterDeleteSuccess("network_monitors").BindFunc(func(e *core.RecordEvent) error {
 		if err := hub.deleteNetworkProbe(e.Record); err != nil {
 			hub.Logger().Warn("failed to delete probe on agent", "system", e.Record.GetString("system"), "probe", e.Record.Id, "err", err)
 		}
@@ -92,7 +92,7 @@ func bindNetworkProbesEvents(hub *Hub) {
 	})
 }
 
-// probeConfigFromRecord builds a probe config from a network_probes record.
+// probeConfigFromRecord builds a probe config from a network_monitors record.
 func probeConfigFromRecord(record *core.Record) *probe.Config {
 	return &probe.Config{
 		ID:       record.Id,

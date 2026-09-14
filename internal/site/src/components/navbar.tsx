@@ -111,7 +111,7 @@ export default function Navbar() {
 							</DropdownMenuItem>
 							<DropdownMenuItem onClick={() => navigate(getPagePath($router, "probes"))} className="flex items-center">
 								<NetworkIcon className="h-4 w-4 me-2.5" strokeWidth={1.5} />
-								<Trans>Network Probes</Trans>
+								<Trans>Network Monitors</Trans>
 							</DropdownMenuItem>
 							<DropdownMenuItem
 								onClick={() => navigate(getPagePath($router, "settings", { name: "general" }))}
@@ -189,14 +189,14 @@ export default function Navbar() {
 						<Link
 							href={getPagePath($router, "probes")}
 							className={cn("hidden md:grid", buttonVariants({ variant: "ghost", size: "icon" }))}
-							aria-label="Network Probes"
+							aria-label="Network Monitors"
 							onMouseEnter={() => import("@/components/routes/probes")}
 						>
 							<NetworkIcon className="h-[1.2rem] w-[1.2rem]" strokeWidth={1.5} />
 						</Link>
 					</TooltipTrigger>
 					<TooltipContent>
-						<Trans>Network Probes</Trans>
+						<Trans>Network Monitors</Trans>
 					</TooltipContent>
 				</Tooltip>
 				<ModeToggle />

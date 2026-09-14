@@ -85,7 +85,7 @@ func (rm *RecordManager) CreateLongerRecords() {
 			slog.Error("Error finding cached collection using container stats:", "err", err)
 			return err
 		}
-		probeStatsColl, err := txApp.FindCachedCollectionByNameOrId("network_probe_stats")
+		probeStatsColl, err := txApp.FindCachedCollectionByNameOrId("network_monitor_stats")
 		if err != nil {
 			return err
 		}
@@ -168,12 +168,12 @@ func (rm *RecordManager) CreateLongerRecords() {
 			}
 		}
 
-		// network_probe_stats is aggregated per probe (not per system)
+		// network_monitor_stats is aggregated per probe (not per system)
 		var probes []struct {
 			Id     string `db:"id"`
 			System string `db:"system"`
 		}
-		_ = db.NewQuery("SELECT id, system FROM network_probes WHERE enabled=TRUE").All(&probes)
+		_ = db.NewQuery("SELECT id, system FROM network_monitors WHERE enabled=TRUE").All(&probes)
 
 		for _, probeRec := range probes {
 			for i := range longerRecordData {
@@ -184,7 +184,7 @@ func (rm *RecordManager) CreateLongerRecords() {
 				if recordData.longerType != "10m" {
 					var existingRecord struct{ Id string }
 					_ = db.Select("id").
-						From("network_probe_stats").
+						From("network_monitor_stats").
 						Where(dbx.NewExp(
 							"probe={:probe} AND type={:type} AND created>{:created}",
 							dbx.Params{
@@ -202,7 +202,7 @@ func (rm *RecordManager) CreateLongerRecords() {
 
 				var recordIds RecordIds
 				_ = db.Select("id").
-					From("network_probe_stats").
+					From("network_monitor_stats").
 					Where(dbx.NewExp(
 						"probe={:probe} AND type={:type} AND created>{:created}",
 						dbx.Params{
@@ -236,8 +236,8 @@ func (rm *RecordManager) CreateLongerRecords() {
 }
 
 func getCreatedTimeField(collectionName string, period time.Time) any {
-	// network_probe_stats stores created as unix timestamp in ms, not as a date string
-	if collectionName == "network_probe_stats" {
+	// network_monitor_stats stores created as unix timestamp in ms, not as a date string
+	if collectionName == "network_monitor_stats" {
 		return period.UnixMilli()
 	}
 	return period.Format(types.DefaultDateLayout)
@@ -688,7 +688,7 @@ func (rm *RecordManager) AverageProbeStats(db dbx.Builder, records RecordIds) pr
 	var sums probe.Stats
 	counts := make([]int, 4)
 
-	query := db.NewQuery("SELECT stats FROM network_probe_stats WHERE id = {:id}")
+	query := db.NewQuery("SELECT stats FROM network_monitor_stats WHERE id = {:id}")
 	var row StatsRecord
 	for _, rec := range records {
 		row.Stats = row.Stats[:0]

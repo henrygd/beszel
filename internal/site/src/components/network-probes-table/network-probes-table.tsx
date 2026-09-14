@@ -34,7 +34,14 @@ import { useToast } from "@/components/ui/use-toast"
 import { isReadOnlyUser } from "@/lib/api"
 import { pb } from "@/lib/api"
 import { $allSystemsById, $chartTime, $direction } from "@/lib/stores"
-import { cn, isVisuallyLonger, matchesFilterGroups, parseFilterGroups, parseSemVer, useBrowserStorage } from "@/lib/utils"
+import {
+	cn,
+	isVisuallyLonger,
+	matchesFilterGroups,
+	parseFilterGroups,
+	parseSemVer,
+	useBrowserStorage,
+} from "@/lib/utils"
 import type { ChartData, NetworkProbeRecord } from "@/types"
 import { AddProbeDialog, EditProbeDialog } from "./probe-dialog"
 import { ArrowLeftRightIcon, EthernetPortIcon, GlobeIcon, ServerIcon, XIcon } from "lucide-react"
@@ -67,7 +74,7 @@ export default function NetworkProbesTableNew({
 	const [pendingDeleteIds, setPendingDeleteIds] = useState<string[]>([])
 	const [editingProbe, setEditingProbe] = useState<NetworkProbeRecord>()
 
-const { toast } = useToast()
+	const { toast } = useToast()
 	const canManageProbes = !isReadOnlyUser()
 
 	const [longestName, longestTarget] = useMemo(() => {
@@ -113,7 +120,7 @@ const { toast } = useToast()
 			const ids = probesToDelete.map((probe) => probe.id)
 			if (ids.length === 1) {
 				try {
-					await pb.collection("network_probes").delete(ids[0])
+					await pb.collection("network_monitors").delete(ids[0])
 				} catch (err: unknown) {
 					toast({
 						variant: "destructive",
@@ -137,7 +144,7 @@ const { toast } = useToast()
 		}
 
 		try {
-			await runProbeBatch(pendingDeleteIds, (batch, id) => batch.collection("network_probes").delete(id))
+			await runProbeBatch(pendingDeleteIds, (batch, id) => batch.collection("network_monitors").delete(id))
 			setPendingDeleteIds([])
 			setRowSelection({})
 		} catch (err: unknown) {
@@ -162,12 +169,12 @@ const { toast } = useToast()
 
 			try {
 				if (pendingUpdates.length === 1) {
-					await pb.collection("network_probes").update(pendingUpdates[0].id, { enabled })
+					await pb.collection("network_monitors").update(pendingUpdates[0].id, { enabled })
 					return
 				}
 				await runProbeBatch(
 					pendingUpdates.map((probe) => probe.id),
-					(batch, id) => batch.collection("network_probes").update(id, { enabled })
+					(batch, id) => batch.collection("network_monitors").update(id, { enabled })
 				)
 				if (probesToUpdate.length > 1) {
 					setRowSelection({})
@@ -237,7 +244,7 @@ const { toast } = useToast()
 				<div className="grid md:flex gap-x-5 gap-y-3 w-full items-end">
 					<div className="px-2 sm:px-1">
 						<CardTitle className="mb-2">
-							<Trans>Network Probes</Trans>
+							<Trans>Network Monitors</Trans>
 						</CardTitle>
 						<div className="text-sm text-muted-foreground flex items-center flex-wrap">
 							<Trans>Response time monitoring from agents.</Trans>

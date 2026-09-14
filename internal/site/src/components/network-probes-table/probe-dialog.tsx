@@ -279,7 +279,7 @@ export function AddProbeDialog({ systemId, probes }: { systemId?: string; probes
 				let batch = pb.createBatch()
 				let inBatch = 0
 				for (const payload of newPayloads) {
-					batch.collection("network_probes").create(payload)
+					batch.collection("network_monitors").create(payload)
 					inBatch++
 					if (inBatch > 20) {
 						await batch.send()
@@ -352,7 +352,7 @@ export function AddProbeDialog({ systemId, probes }: { systemId?: string; probes
 				<SheetContent className="w-full sm:max-w-xl gap-0">
 					<SheetHeader className="border-b">
 						<SheetTitle>
-							<Trans>Bulk Add {{ foo: t`Network Probes` }}</Trans>
+							<Trans>Bulk Add {{ foo: t`Network Monitors` }}</Trans>
 						</SheetTitle>
 						<SheetDescription>target[,protocol[,port[,interval[,name]]]]</SheetDescription>
 					</SheetHeader>
@@ -414,7 +414,7 @@ export function AddProbeDialog({ systemId, probes }: { systemId?: string; probes
 						</div>
 						<SheetFooter className="border-t">
 							<Button type="submit" disabled={bulkLoading || (!systemId && !bulkSelectedSystemIds.size)}>
-								<Trans>Add {{ foo: t`Network Probes` }}</Trans>
+								<Trans>Add {{ foo: t`Network Monitors` }}</Trans>
 							</Button>
 						</SheetFooter>
 					</form>
@@ -509,9 +509,9 @@ function ProbeDialogContent({
 				probe ? probe.enabled : true
 			)
 			if (probe) {
-				await pb.collection("network_probes").update(probe.id, payload)
+				await pb.collection("network_monitors").update(probe.id, payload)
 			} else {
-				await pb.collection("network_probes").create(payload)
+				await pb.collection("network_monitors").create(payload)
 			}
 			setOpen(false)
 		} catch (err: unknown) {
@@ -525,7 +525,11 @@ function ProbeDialogContent({
 		<DialogContent className="max-w-md">
 			<DialogHeader>
 				<DialogTitle>
-					{isEditing ? <Trans>Edit {{ foo: t`Network Probe` }}</Trans> : <Trans>Add {{ foo: t`Network Probe` }}</Trans>}
+					{isEditing ? (
+						<Trans>Edit {{ foo: t`Network Monitor` }}</Trans>
+					) : (
+						<Trans>Add {{ foo: t`Network Monitor` }}</Trans>
+					)}
 				</DialogTitle>
 				<DialogDescription>
 					<Trans>Configure response monitoring from this agent.</Trans>
