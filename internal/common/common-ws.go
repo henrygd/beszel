@@ -22,10 +22,10 @@ const (
 	GetSmartData
 	// Request detailed systemd service info from agent
 	GetSystemdInfo
-	// Sync network monitor configuration to agent
-	SyncNetworkMonitors
 	// Request ZFS detail data from agent
 	GetZfsData
+	// Sync network monitor configuration to agent
+	SyncNetworkMonitors
 	// Add new actions here...
 )
 
