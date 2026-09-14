@@ -41,7 +41,13 @@ func (sys *System) DeleteNetworkMonitor(id string) error {
 }
 
 func (sys *System) syncNetworkMonitors(req monitor.SyncRequest) (monitor.SyncResponse, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	timeout := 5 * time.Second
+	if req.Action == monitor.SyncActionUpsert && req.RunNow {
+		// Allow the probe to finish, including a timeout result, while preserving
+		// the normal request budget for transport and response handling.
+		timeout += monitor.MaxProbeTimeout
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), timeout)
 	defer cancel()
 	var result monitor.SyncResponse
 	return result, sys.request(ctx, common.SyncNetworkMonitors, req, &result)

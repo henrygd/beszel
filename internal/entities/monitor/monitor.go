@@ -1,5 +1,11 @@
 package monitor
 
+import "time"
+
+// MaxProbeTimeout is the longest agent probe timeout (currently HTTP).
+// Hub requests that run a probe must allow this time in addition to transport overhead.
+const MaxProbeTimeout = 10 * time.Second
+
 type SyncAction uint8
 
 const (

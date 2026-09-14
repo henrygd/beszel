@@ -78,7 +78,7 @@ type monitorAggregate struct {
 func newMonitorManager() *MonitorManager {
 	return &MonitorManager{
 		monitors:   make(map[string]*monitorTask),
-		httpClient: &http.Client{Timeout: 10 * time.Second},
+		httpClient: &http.Client{Timeout: monitor.MaxProbeTimeout},
 	}
 }
 
