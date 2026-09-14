@@ -69,6 +69,9 @@ func bindNetworkMonitorsEvents(hub *Hub) {
 			return nil
 		}
 		err := e.Next()
+		if err != nil {
+			return err
+		}
 		if e.Record.GetBool("enabled") {
 			// if the monitor is enabled, sync the updated config to the agent now
 			runNow := !e.Record.Original().GetBool("enabled")
