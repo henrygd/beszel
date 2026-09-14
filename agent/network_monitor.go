@@ -533,7 +533,8 @@ func (pm *MonitorManager) executeMonitor(task *monitorTask) {
 	task.mu.Unlock()
 }
 
-// monitorTCP measures pure TCP handshake response (excluding DNS resolution).
+// monitorTCP measures connection establishment time, including address fallback
+// but excluding DNS resolution.
 // Returns -1 and an error on failure.
 func monitorTCP(ctx context.Context, target string, port uint16) (int64, error) {
 	ctx, cancel := context.WithTimeout(ctx, 3*time.Second)
@@ -541,19 +542,33 @@ func monitorTCP(ctx context.Context, target string, port uint16) (int64, error) 
 
 	// Resolve DNS first, outside the timing window but within the probe deadline.
 	ips, err := net.DefaultResolver.LookupHost(ctx, target)
-	if err != nil || len(ips) == 0 {
-		return -1, err
-	}
-	addr := net.JoinHostPort(ips[0], fmt.Sprintf("%d", port))
-
-	// Measure only the TCP handshake
-	start := time.Now()
-	conn, err := (&net.Dialer{}).DialContext(ctx, "tcp", addr)
 	if err != nil {
 		return -1, err
 	}
-	conn.Close()
-	return time.Since(start).Microseconds(), nil
+	if len(ips) == 0 {
+		return -1, errors.New("no addresses resolved for TCP monitor")
+	}
+	portString := fmt.Sprintf("%d", port)
+	deadline, _ := ctx.Deadline()
+
+	// Share the remaining probe budget across addresses so an unresponsive
+	// first address cannot consume all the time available for alternatives.
+	start := time.Now()
+	for i, ip := range ips {
+		if err := ctx.Err(); err != nil {
+			return -1, err
+		}
+		dialer := net.Dialer{Timeout: time.Until(deadline) / time.Duration(len(ips)-i)}
+		var conn net.Conn
+		conn, err = dialer.DialContext(ctx, "tcp", net.JoinHostPort(ip, portString))
+		if err != nil {
+			continue
+		}
+		responseUs := time.Since(start).Microseconds()
+		conn.Close()
+		return responseUs, nil
+	}
+	return -1, err
 }
 
 // monitorDNS measures DNS resolution response time in microseconds. Returns -1 and an error on failure.

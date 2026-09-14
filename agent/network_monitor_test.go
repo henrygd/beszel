@@ -2,6 +2,8 @@ package agent
 
 import (
 	"context"
+	"encoding/binary"
+	"io"
 	"net"
 	"net/http"
 	"net/http/httptest"
@@ -11,6 +13,7 @@ import (
 	"github.com/henrygd/beszel/internal/entities/monitor"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"golang.org/x/net/dns/dnsmessage"
 )
 
 func TestMonitorTaskAggregateLockedUsesRawSamplesForShortWindows(t *testing.T) {
@@ -354,6 +357,84 @@ func TestMonitorTCP(t *testing.T) {
 		assert.Equal(t, int64(-1), responseUs)
 		require.Error(t, err)
 	})
+}
+
+func TestMonitorTCPAddressFallback(t *testing.T) {
+	for _, tc := range []struct {
+		name string
+		ips  []string
+		loss bool
+	}{
+		{"first address fails", []string{"127.0.0.2", "127.0.0.1"}, false},
+		{"first address succeeds", []string{"127.0.0.1", "127.0.0.2"}, false},
+		{"all addresses fail", []string{"127.0.0.2", "127.0.0.3"}, true},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			listener, err := net.Listen("tcp4", "127.0.0.1:0")
+			require.NoError(t, err)
+			defer listener.Close()
+			original := net.DefaultResolver
+			net.DefaultResolver = tcpMonitorTestResolver(tc.ips)
+			defer func() { net.DefaultResolver = original }()
+
+			// Verify the resolver preserves the intended order, so success cannot
+			// accidentally bypass the failed first address in the regression case.
+			ips, err := net.DefaultResolver.LookupHost(t.Context(), "tcp-monitor.invalid.")
+			require.NoError(t, err)
+			require.Equal(t, tc.ips, ips)
+			responseUs, err := monitorTCP(t.Context(), "tcp-monitor.invalid.", uint16(listener.Addr().(*net.TCPAddr).Port))
+			if tc.loss {
+				require.Error(t, err)
+				assert.Equal(t, int64(-1), responseUs)
+			} else {
+				require.NoError(t, err)
+				assert.GreaterOrEqual(t, responseUs, int64(0))
+			}
+		})
+	}
+}
+
+// tcpMonitorTestResolver supplies multiple A records without external DNS.
+func tcpMonitorTestResolver(ips []string) *net.Resolver {
+	return &net.Resolver{PreferGo: true, Dial: func(ctx context.Context, network, address string) (net.Conn, error) {
+		client, server := net.Pipe()
+		go func() {
+			defer server.Close()
+			// net.Resolver uses TCP framing when its connection is not a PacketConn.
+			var size uint16
+			if err := binary.Read(server, binary.BigEndian, &size); err != nil {
+				return
+			}
+			packet := make([]byte, size)
+			if _, err := io.ReadFull(server, packet); err != nil {
+				return
+			}
+			var msg dnsmessage.Message
+			if err := msg.Unpack(packet); err != nil {
+				return
+			}
+			msg.Header.Response = true
+			msg.Header.RecursionAvailable = true
+			for _, question := range msg.Questions {
+				if question.Type != dnsmessage.TypeA {
+					continue
+				}
+				for _, ip := range ips {
+					msg.Answers = append(msg.Answers, dnsmessage.Resource{
+						Header: dnsmessage.ResourceHeader{Name: question.Name, Type: dnsmessage.TypeA, Class: dnsmessage.ClassINET},
+						Body:   &dnsmessage.AResource{A: [4]byte(net.ParseIP(ip).To4())},
+					})
+				}
+			}
+			packet, err := msg.Pack()
+			if err != nil {
+				return
+			}
+			response := binary.BigEndian.AppendUint16(nil, uint16(len(packet)))
+			_, _ = server.Write(append(response, packet...))
+		}()
+		return client, nil
+	}}
 }
 
 func TestMonitorDNS(t *testing.T) {
