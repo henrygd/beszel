@@ -333,7 +333,7 @@ const NetworkMonitorsTable = memo(function NetworkMonitorTable({
 	table,
 	rows,
 	colLength,
-	rowSelection: _rowSelection,
+	rowSelection,
 }: {
 	table: TableType<NetworkMonitorRecord>
 	rows: Row<NetworkMonitorRecord>[]
@@ -383,6 +383,7 @@ const NetworkMonitorsTable = memo(function NetworkMonitorTable({
 										row={row}
 										virtualRow={virtualRow}
 										isSelected={row.getIsSelected()}
+										rowSelection={rowSelection}
 										openSheet={openSheet}
 									/>
 								)
@@ -430,11 +431,14 @@ const NetworkMonitorTableRow = memo(function NetworkMonitorTableRow({
 	row,
 	virtualRow,
 	isSelected,
+	rowSelection: _rowSelection,
 	openSheet,
 }: {
 	row: Row<NetworkMonitorRecord>
 	virtualRow: VirtualItem
 	isSelected: boolean
+	// Menus depend on the entire selection, including changes to other rows.
+	rowSelection: RowSelectionState
 	openSheet: (monitor: NetworkMonitorRecord) => void
 }) {
 	return (
