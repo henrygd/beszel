@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/henrygd/beszel/internal/common"
-	"github.com/henrygd/beszel/internal/entities/probe"
+	"github.com/henrygd/beszel/internal/entities/monitor"
 	"github.com/henrygd/beszel/internal/entities/system"
 	"github.com/henrygd/beszel/internal/hub/utils"
 	"github.com/pocketbase/dbx"
@@ -207,21 +207,21 @@ func (sm *SystemManager) finishRealtimeFetch(fetch realtimeFetch) {
 }
 
 // marshalRealtimeData marshals combined agent data for a realtime broadcast, converting
-// the per-probe results into the [avg, min, max, loss] array shape the frontend charts expect
+// the per-monitor results into the [avg, min, max, loss] array shape the frontend charts expect
 // (the same conversion used for persisted network_monitor_stats records) rather than the raw
-// probe.Result struct used for hub<->agent transport.
+// monitor.Result struct used for hub<->agent transport.
 func marshalRealtimeData(data *system.CombinedData) ([]byte, error) {
-	if len(data.Probes) == 0 {
+	if len(data.Monitors) == 0 {
 		return json.Marshal(data)
 	}
-	probeStats := make(map[string]probe.Stats, len(data.Probes))
-	for id, result := range data.Probes {
-		probeStats[id] = probe.Stats{}.FromResult(result)
+	monitorStats := make(map[string]monitor.Stats, len(data.Monitors))
+	for id, result := range data.Monitors {
+		monitorStats[id] = monitor.Stats{}.FromResult(result)
 	}
 	return json.Marshal(struct {
 		*system.CombinedData
-		Probes map[string]probe.Stats `json:"Probes"`
-	}{data, probeStats})
+		Monitors map[string]monitor.Stats `json:"Monitors"`
+	}{data, monitorStats})
 }
 
 // notify broadcasts realtime data to all clients subscribed to a specific subscription.

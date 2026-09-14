@@ -1,12 +1,12 @@
 import { chartTimeData } from "@/lib/utils"
-import type { ChartTimes, NetworkProbeRecord, NetworkProbeStatsRecord, RawProbeStatsRecord } from "@/types"
+import type { ChartTimes, NetworkMonitorRecord, NetworkMonitorStatsRecord, RawMonitorStatsRecord } from "@/types"
 import { useEffect, useRef, useState } from "react"
 import { appendData } from "@/components/routes/system/chart-data"
 import { pb, getPbTimestamp } from "@/lib/api"
 import { toast } from "@/components/ui/use-toast"
 import type { RecordListOptions, RecordSubscription } from "pocketbase"
 
-const cache = new Map<string, NetworkProbeStatsRecord[]>()
+const cache = new Map<string, NetworkMonitorStatsRecord[]>()
 
 function getCacheValue(systemId: string, chartTime: ChartTimes | "rt") {
 	return cache.get(`${systemId}${chartTime}`) || []
@@ -15,7 +15,7 @@ function getCacheValue(systemId: string, chartTime: ChartTimes | "rt") {
 function appendCacheValue(
 	systemId: string,
 	chartTime: ChartTimes | "rt",
-	newStats: NetworkProbeStatsRecord[],
+	newStats: NetworkMonitorStatsRecord[],
 	maxPoints = 100
 ) {
 	const cache_key = `${systemId}${chartTime}`
@@ -31,8 +31,8 @@ function appendCacheValue(
 	}
 }
 
-/** Merge an array of per-probe raw records into the map-keyed format expected by chart components. */
-export function mergeProbeStats(rawRecords: RawProbeStatsRecord[]): NetworkProbeStatsRecord[] {
+/** Merge an array of per-monitor raw records into the map-keyed format expected by chart components. */
+export function mergeMonitorStats(rawRecords: RawMonitorStatsRecord[]): NetworkMonitorStatsRecord[] {
 	const byTimestamp = new Map<number, Record<string, number[]>>()
 	for (const rec of rawRecords) {
 		let statsMap = byTimestamp.get(rec.created)
@@ -40,128 +40,128 @@ export function mergeProbeStats(rawRecords: RawProbeStatsRecord[]): NetworkProbe
 			statsMap = {}
 			byTimestamp.set(rec.created, statsMap)
 		}
-		statsMap[rec.probe] = rec.stats
+		statsMap[rec.monitor] = rec.stats
 	}
 	return Array.from(byTimestamp.entries())
 		.sort(([a], [b]) => a - b)
 		.map(([created, stats]) => ({ created, stats }))
 }
 
-/** Fetch raw per-probe stats records for a system and time range, returning merged chart records. */
-async function fetchProbeStats(
+/** Fetch raw per-monitor stats records for a system and time range, returning merged chart records. */
+async function fetchMonitorStats(
 	systemId: string,
 	chartTime: ChartTimes,
-	cached?: NetworkProbeStatsRecord[]
-): Promise<NetworkProbeStatsRecord[]> {
+	cached?: NetworkMonitorStatsRecord[]
+): Promise<NetworkMonitorStatsRecord[]> {
 	const lastCached = cached?.at(-1)?.created as number | undefined
-	const rawRecords = await pb.collection<RawProbeStatsRecord>("network_monitor_stats").getFullList({
+	const rawRecords = await pb.collection<RawMonitorStatsRecord>("network_monitor_stats").getFullList({
 		filter: pb.filter("system={:id} && created>{:created} && type={:type}", {
 			id: systemId,
 			created: getPbTimestamp(chartTime, lastCached ? new Date(lastCached + 1000) : undefined, true),
 			type: chartTimeData[chartTime].type,
 		}),
-		fields: "probe,stats,created",
+		fields: "monitor,stats,created",
 		sort: "created",
 	})
-	return mergeProbeStats(rawRecords)
+	return mergeMonitorStats(rawRecords)
 }
 
-const NETWORK_PROBE_FIELDS =
+const NETWORK_MONITOR_FIELDS =
 	"id,name,system,target,protocol,port,interval,res,resMin1h,resMax1h,resAvg1h,loss1h,enabled,updated"
 
-interface UseNetworkProbesProps {
+interface UseNetworkMonitorsProps {
 	systemId?: string
 }
 
-export function useNetworkProbes(props: UseNetworkProbesProps) {
+export function useNetworkMonitors(props: UseNetworkMonitorsProps) {
 	const { systemId } = props
 
-	const [probes, setProbes] = useState<NetworkProbeRecord[]>([])
-	const pendingProbeEvents = useRef(new Map<string, RecordSubscription<NetworkProbeRecord>>())
-	const probeBatchTimeout = useRef<ReturnType<typeof setTimeout> | null>(null)
+	const [monitors, setMonitors] = useState<NetworkMonitorRecord[]>([])
+	const pendingMonitorEvents = useRef(new Map<string, RecordSubscription<NetworkMonitorRecord>>())
+	const monitorBatchTimeout = useRef<ReturnType<typeof setTimeout> | null>(null)
 
 	// initial load
 	useEffect(() => {
-		fetchProbes(systemId).then((probes) => setProbes(probes))
+		fetchMonitors(systemId).then((monitors) => setMonitors(monitors))
 	}, [systemId])
 
 	// subscribe to updates
 	useEffect(() => {
 		let unsubscribe: (() => void) | undefined
 
-		function flushPendingProbeEvents() {
-			probeBatchTimeout.current = null
-			if (!pendingProbeEvents.current.size) {
+		function flushPendingMonitorEvents() {
+			monitorBatchTimeout.current = null
+			if (!pendingMonitorEvents.current.size) {
 				return
 			}
-			const events = pendingProbeEvents.current
-			pendingProbeEvents.current = new Map()
-			setProbes((currentProbes) => {
-				return applyProbeEvents(currentProbes ?? [], events.values(), systemId)
+			const events = pendingMonitorEvents.current
+			pendingMonitorEvents.current = new Map()
+			setMonitors((currentMonitors) => {
+				return applyMonitorEvents(currentMonitors ?? [], events.values(), systemId)
 			})
 		}
 
-		const pbOptions: RecordListOptions = { fields: NETWORK_PROBE_FIELDS }
+		const pbOptions: RecordListOptions = { fields: NETWORK_MONITOR_FIELDS }
 		if (systemId) {
 			pbOptions.filter = pb.filter("system = {:system}", { system: systemId })
 		}
 
 		;(async () => {
 			try {
-				unsubscribe = await pb.collection<NetworkProbeRecord>("network_monitors").subscribe(
+				unsubscribe = await pb.collection<NetworkMonitorRecord>("network_monitors").subscribe(
 					"*",
 					(event) => {
-						pendingProbeEvents.current.set(event.record.id, event)
-						if (!probeBatchTimeout.current) {
-							probeBatchTimeout.current = setTimeout(flushPendingProbeEvents, 50)
+						pendingMonitorEvents.current.set(event.record.id, event)
+						if (!monitorBatchTimeout.current) {
+							monitorBatchTimeout.current = setTimeout(flushPendingMonitorEvents, 50)
 						}
 					},
 					pbOptions
 				)
 			} catch (error) {
-				console.error("Failed to subscribe to probes", error)
+				console.error("Failed to subscribe to monitors", error)
 			}
 		})()
 
 		return () => {
-			if (probeBatchTimeout.current !== null) {
-				clearTimeout(probeBatchTimeout.current)
-				probeBatchTimeout.current = null
+			if (monitorBatchTimeout.current !== null) {
+				clearTimeout(monitorBatchTimeout.current)
+				monitorBatchTimeout.current = null
 			}
-			pendingProbeEvents.current.clear()
+			pendingMonitorEvents.current.clear()
 			unsubscribe?.()
 		}
 	}, [systemId])
 
-	return probes
+	return monitors
 }
 
-interface UseNetworkProbeStatsProps {
+interface UseNetworkMonitorStatsProps {
 	systemId?: string
 	chartTime: ChartTimes
 }
 
-export function useNetworkProbeStats(props: UseNetworkProbeStatsProps) {
+export function useNetworkMonitorStats(props: UseNetworkMonitorStatsProps) {
 	const { systemId, chartTime } = props
-	const [probeStats, setProbeStats] = useState<NetworkProbeStatsRecord[]>([])
+	const [monitorStats, setMonitorStats] = useState<NetworkMonitorStatsRecord[]>([])
 	const requestID = useRef(0)
-	// pending raw events to be merged (keyed by probe+created)
-	const pendingRaw = useRef(new Map<string, RawProbeStatsRecord>())
+	// pending raw events to be merged (keyed by monitor+created)
+	const pendingRaw = useRef(new Map<string, RawMonitorStatsRecord>())
 	const mergeBatchTimeout = useRef<ReturnType<typeof setTimeout> | null>(null)
 
 	useEffect(() => {
 		if (!systemId) {
-			setProbeStats([])
+			setMonitorStats([])
 			return
 		}
 		if (chartTime === "1m") {
-			setProbeStats(getCacheValue(systemId, "rt"))
+			setMonitorStats(getCacheValue(systemId, "rt"))
 			return
 		}
-		setProbeStats(getCacheValue(systemId, chartTime))
+		setMonitorStats(getCacheValue(systemId, chartTime))
 	}, [systemId, chartTime])
 
-	// fetch missing probe stats on load and when chart time changes
+	// fetch missing monitor stats on load and when chart time changes
 	useEffect(() => {
 		if (!systemId || !chartTime || chartTime === "1m") {
 			return
@@ -170,33 +170,33 @@ export function useNetworkProbeStats(props: UseNetworkProbeStatsProps) {
 		const { expectedInterval } = chartTimeData[chartTime]
 		const requestId = ++requestID.current
 
-		const cachedProbeStats = getCacheValue(systemId, chartTime)
+		const cachedMonitorStats = getCacheValue(systemId, chartTime)
 
-		if (cachedProbeStats.length) {
-			setProbeStats(cachedProbeStats)
-			const lastCreated = cachedProbeStats.at(-1)?.created
+		if (cachedMonitorStats.length) {
+			setMonitorStats(cachedMonitorStats)
+			const lastCreated = cachedMonitorStats.at(-1)?.created
 			if (lastCreated && Date.now() - lastCreated < expectedInterval * 0.9) {
 				return
 			}
 		}
 
-		fetchProbeStats(systemId, chartTime, cachedProbeStats).then((newProbeStats) => {
+		fetchMonitorStats(systemId, chartTime, cachedMonitorStats).then((newMonitorStats) => {
 			if (requestId !== requestID.current) {
 				return
 			}
-			const merged = appendCacheValue(systemId, chartTime, newProbeStats)
-			setProbeStats(merged)
+			const merged = appendCacheValue(systemId, chartTime, newMonitorStats)
+			setMonitorStats(merged)
 		})
 	}, [systemId, chartTime])
 
-	// subscribe to new per-probe stats records; batch them into merged chart records
+	// subscribe to new per-monitor stats records; batch them into merged chart records
 	useEffect(() => {
 		if (!systemId || !chartTime || chartTime === "1m") {
 			return
 		}
 		let unsubscribe: (() => void) | undefined
 		const pbOptions = {
-			fields: "probe,stats,created,type",
+			fields: "monitor,stats,created,type",
 			filter: pb.filter("system={:system} && type={:type}", {
 				system: systemId,
 				type: chartTimeData[chartTime].type,
@@ -207,23 +207,23 @@ export function useNetworkProbeStats(props: UseNetworkProbeStatsProps) {
 			mergeBatchTimeout.current = null
 			const pending = pendingRaw.current
 			pendingRaw.current = new Map()
-			const merged = mergeProbeStats(Array.from(pending.values()))
+			const merged = mergeMonitorStats(Array.from(pending.values()))
 			if (merged.length > 0) {
 				const newStats = appendCacheValue(systemId!, chartTime, merged)
-				setProbeStats(newStats)
+				setMonitorStats(newStats)
 			}
 		}
 
 		;(async () => {
 			try {
-				unsubscribe = await pb.collection<RawProbeStatsRecord>("network_monitor_stats").subscribe(
+				unsubscribe = await pb.collection<RawMonitorStatsRecord>("network_monitor_stats").subscribe(
 					"*",
 					(event) => {
 						if (event.action !== "create") {
 							return
 						}
 						const rec = event.record
-						pendingRaw.current.set(`${rec.probe}:${rec.created}`, rec)
+						pendingRaw.current.set(`${rec.monitor}:${rec.created}`, rec)
 						if (!mergeBatchTimeout.current) {
 							mergeBatchTimeout.current = setTimeout(flushPending, 200)
 						}
@@ -231,7 +231,7 @@ export function useNetworkProbeStats(props: UseNetworkProbeStatsProps) {
 					pbOptions
 				)
 			} catch (error) {
-				console.error("Failed to subscribe to probe stats:", error)
+				console.error("Failed to subscribe to monitor stats:", error)
 			}
 		})()
 
@@ -254,10 +254,10 @@ export function useNetworkProbeStats(props: UseNetworkProbeStatsProps) {
 		pb.realtime
 			.subscribe(
 				`rt_metrics`,
-				(data: { Probes: NetworkProbeStatsRecord["stats"] }) => {
-					const stats = { created: Date.now(), stats: data.Probes } as NetworkProbeStatsRecord
+				(data: { Monitors: NetworkMonitorStatsRecord["stats"] }) => {
+					const stats = { created: Date.now(), stats: data.Monitors } as NetworkMonitorStatsRecord
 					const newStats = appendCacheValue(systemId, "rt", [stats], 120)
-					setProbeStats(newStats)
+					setMonitorStats(newStats)
 				},
 				{ query: { system: systemId } }
 			)
@@ -267,13 +267,13 @@ export function useNetworkProbeStats(props: UseNetworkProbeStatsProps) {
 		return () => unsubscribe?.()
 	}, [chartTime, systemId])
 
-	return probeStats
+	return monitorStats
 }
 
-async function fetchProbes(system?: string) {
+async function fetchMonitors(system?: string) {
 	try {
-		const res = await pb.collection<NetworkProbeRecord>("network_monitors").getList(0, 2000, {
-			fields: NETWORK_PROBE_FIELDS,
+		const res = await pb.collection<NetworkMonitorRecord>("network_monitors").getList(0, 2000, {
+			fields: NETWORK_MONITOR_FIELDS,
 			filter: system ? pb.filter("system={:system}", { system }) : undefined,
 		})
 		return res.items
@@ -287,43 +287,42 @@ async function fetchProbes(system?: string) {
 	}
 }
 
-function applyProbeEvents(
-	probes: NetworkProbeRecord[],
-	events: Iterable<RecordSubscription<NetworkProbeRecord>>,
+function applyMonitorEvents(
+	monitors: NetworkMonitorRecord[],
+	events: Iterable<RecordSubscription<NetworkMonitorRecord>>,
 	systemId?: string
 ) {
-	const probeById = new Map(probes.map((probe) => [probe.id, probe]))
-	const createdProbes: NetworkProbeRecord[] = []
+	const monitorById = new Map(monitors.map((monitor) => [monitor.id, monitor]))
+	const createdMonitors: NetworkMonitorRecord[] = []
 
 	for (const { action, record } of events) {
 		const matchesSystemScope = !systemId || record.system === systemId
 
 		if (action === "delete" || !matchesSystemScope) {
-			probeById.delete(record.id)
+			monitorById.delete(record.id)
 			continue
 		}
 
-		if (!probeById.has(record.id)) {
-			createdProbes.push(record)
+		if (!monitorById.has(record.id)) {
+			createdMonitors.push(record)
 		}
 
-		probeById.set(record.id, record)
+		monitorById.set(record.id, record)
 	}
 
-	const nextProbes: NetworkProbeRecord[] = []
-	for (let index = createdProbes.length - 1; index >= 0; index -= 1) {
-		nextProbes.push(createdProbes[index])
+	const nextMonitors: NetworkMonitorRecord[] = []
+	for (let index = createdMonitors.length - 1; index >= 0; index -= 1) {
+		nextMonitors.push(createdMonitors[index])
 	}
 
-	for (const probe of probes) {
-		const nextProbe = probeById.get(probe.id)
-		if (!nextProbe) {
+	for (const monitor of monitors) {
+		const nextMonitor = monitorById.get(monitor.id)
+		if (!nextMonitor) {
 			continue
 		}
-		nextProbes.push(nextProbe)
-		probeById.delete(probe.id)
+		nextMonitors.push(nextMonitor)
+		monitorById.delete(monitor.id)
 	}
 
-	return nextProbes
+	return nextMonitors
 }
-

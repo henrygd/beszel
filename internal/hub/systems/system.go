@@ -18,7 +18,7 @@ import (
 	"github.com/henrygd/beszel/internal/hub/ws"
 
 	"github.com/henrygd/beszel/internal/entities/container"
-	"github.com/henrygd/beszel/internal/entities/probe"
+	"github.com/henrygd/beszel/internal/entities/monitor"
 	"github.com/henrygd/beszel/internal/entities/smart"
 	"github.com/henrygd/beszel/internal/entities/system"
 	"github.com/henrygd/beszel/internal/entities/systemd"
@@ -269,8 +269,8 @@ func (sys *System) createRecords(data *system.CombinedData) (*core.Record, error
 			}
 		}
 
-		if data.Probes != nil {
-			if err := updateNetworkProbesRecords(txApp, data.Probes, sys.Id); err != nil {
+		if data.Monitors != nil {
+			if err := updateNetworkMonitorsRecords(txApp, data.Monitors, sys.Id); err != nil {
 				return err
 			}
 		}
@@ -372,16 +372,16 @@ func createSystemdStatsRecords(app core.App, data []*systemd.Service, systemId s
 	return err
 }
 
-func updateNetworkProbesRecords(app core.App, probeResults map[string]probe.Result, systemId string) error {
-	if len(probeResults) == 0 {
+func updateNetworkMonitorsRecords(app core.App, monitorResults map[string]monitor.Result, systemId string) error {
+	if len(monitorResults) == 0 {
 		return nil
 	}
 	var err error
-	const probeCollectionName = "network_monitors"
+	const monitorCollectionName = "network_monitors"
 
 	// If realtime updates are active, we save via PocketBase records to trigger realtime events.
 	// Otherwise we can do a more efficient direct update via SQL
-	realtimeActive := utils.RealtimeActiveForCollection(app, probeCollectionName, func(filterQuery string) bool {
+	realtimeActive := utils.RealtimeActiveForCollection(app, monitorCollectionName, func(filterQuery string) bool {
 		return !strings.Contains(filterQuery, "system") || strings.Contains(filterQuery, systemId)
 	})
 
@@ -392,18 +392,18 @@ func updateNetworkProbesRecords(app core.App, probeResults map[string]probe.Resu
 	var updateQuery *dbx.Query
 	if !realtimeActive {
 		db = app.DB()
-		probeFields := []string{"res", "resMin1h", "resMax1h", "resAvg1h", "loss1h", "updated"}
-		setClauses := make([]string, len(probeFields))
-		for i, f := range probeFields {
+		monitorFields := []string{"res", "resMin1h", "resMax1h", "resAvg1h", "loss1h", "updated"}
+		setClauses := make([]string, len(monitorFields))
+		for i, f := range monitorFields {
 			setClauses[i] = fmt.Sprintf("%s={:%s}", f, f)
 		}
-		queryString := fmt.Sprintf("UPDATE %s SET %s WHERE id={:id}", probeCollectionName, strings.Join(setClauses, ", "))
+		queryString := fmt.Sprintf("UPDATE %s SET %s WHERE id={:id}", monitorCollectionName, strings.Join(setClauses, ", "))
 		updateQuery = db.NewQuery(queryString)
 	}
 
 	// update network_monitors records
-	for id, result := range probeResults {
-		probeData := map[string]any{
+	for id, result := range monitorResults {
+		monitorData := map[string]any{
 			"id":       id,
 			"res":      result.AvgResponse,
 			"resAvg1h": result.AvgResponse1h,
@@ -415,20 +415,20 @@ func updateNetworkProbesRecords(app core.App, probeResults map[string]probe.Resu
 		switch realtimeActive {
 		case true:
 			var record *core.Record
-			record, err = app.FindRecordById(probeCollectionName, id)
+			record, err = app.FindRecordById(monitorCollectionName, id)
 			if err == nil {
-				record.Load(probeData)
+				record.Load(monitorData)
 				err = app.SaveNoValidate(record)
 			}
 		default:
-			_, err = updateQuery.Bind(dbx.Params(probeData)).Execute()
+			_, err = updateQuery.Bind(dbx.Params(monitorData)).Execute()
 		}
 		if err != nil {
-			app.Logger().Warn("Failed to update probe", "system", systemId, "probe", id, "err", err)
+			app.Logger().Warn("Failed to update monitor", "system", systemId, "monitor", id, "err", err)
 		}
 	}
 
-	// handle stats collection — one record per probe
+	// handle stats collection — one record per monitor
 	const statsCollectionName = "network_monitor_stats"
 
 	var statsCollection *core.Collection
@@ -436,15 +436,15 @@ func updateNetworkProbesRecords(app core.App, probeResults map[string]probe.Resu
 		statsCollection, _ = app.FindCachedCollectionByNameOrId(statsCollectionName)
 	}
 
-	for probeId, result := range probeResults {
-		probeStats := probe.Stats{}.FromResult(result)
+	for monitorId, result := range monitorResults {
+		monitorStats := monitor.Stats{}.FromResult(result)
 		var statsJson types.JSONRaw
-		if err = statsJson.Scan(probeStats); err != nil {
+		if err = statsJson.Scan(monitorStats); err != nil {
 			continue
 		}
 		statsRecordData := map[string]any{
 			"system":  systemId,
-			"probe":   probeId,
+			"monitor": monitorId,
 			"type":    "1m",
 			"created": nowMilli,
 			"stats":   statsJson,
@@ -459,7 +459,7 @@ func updateNetworkProbesRecords(app core.App, probeResults map[string]probe.Resu
 			_, err = db.Insert(statsCollectionName, dbx.Params(statsRecordData)).Execute()
 		}
 		if err != nil {
-			app.Logger().Error("Failed to update probe stats", "system", systemId, "probe", probeId, "err", err)
+			app.Logger().Error("Failed to update monitor stats", "system", systemId, "monitor", monitorId, "err", err)
 		}
 	}
 

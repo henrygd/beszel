@@ -26,7 +26,7 @@ type icmpPacketConn interface {
 }
 
 // icmpMethod tracks which ICMP approach to use. Once a method succeeds or
-// all native methods fail, the choice is cached so subsequent probes skip
+// all native methods fail, the choice is cached so subsequent monitors skip
 // the trial-and-error overhead.
 type icmpMethod uint8
 
@@ -73,12 +73,12 @@ var (
 	}
 )
 
-// probeICMP sends an ICMP echo request and measures round-trip response.
+// monitorICMP sends an ICMP echo request and measures round-trip response.
 // Supports both IPv4 and IPv6 targets. The ICMP method (raw socket,
 // unprivileged datagram, or exec fallback) is detected once per address
-// family and cached for subsequent probes.
+// family and cached for subsequent monitors.
 // Returns response in microseconds, or -1 and an error on failure.
-func probeICMP(target string) (int64, error) {
+func monitorICMP(target string) (int64, error) {
 	family, ip, err := resolveICMPTarget(target)
 	if err != nil {
 		return -1, err
@@ -93,11 +93,11 @@ func probeICMP(target string) (int64, error) {
 
 	switch mode {
 	case icmpRaw:
-		return probeICMPNative(family.rawNetwork, family, &net.IPAddr{IP: ip})
+		return monitorICMPNative(family.rawNetwork, family, &net.IPAddr{IP: ip})
 	case icmpDatagram:
-		return probeICMPNative(family.dgramNetwork, family, &net.UDPAddr{IP: ip})
+		return monitorICMPNative(family.dgramNetwork, family, &net.UDPAddr{IP: ip})
 	case icmpExecFallback:
-		return probeICMPExec(target, family.isIPv6)
+		return monitorICMPExec(target, family.isIPv6)
 	default:
 		return -1, errors.New("unsupported ICMP mode")
 	}
@@ -148,8 +148,8 @@ func detectICMPMode(family *icmpFamily, listen func(network, listenAddr string) 
 	return icmpExecFallback
 }
 
-// probeICMPNative sends an ICMP echo request using Go's x/net/icmp package.
-func probeICMPNative(network string, family *icmpFamily, dst net.Addr) (int64, error) {
+// monitorICMPNative sends an ICMP echo request using Go's x/net/icmp package.
+func monitorICMPNative(network string, family *icmpFamily, dst net.Addr) (int64, error) {
 	conn, err := icmp.ListenPacket(network, family.listenAddr)
 	if err != nil {
 		return -1, err
@@ -163,7 +163,7 @@ func probeICMPNative(network string, family *icmpFamily, dst net.Addr) (int64, e
 		Body: &icmp.Echo{
 			ID:   os.Getpid() & 0xffff,
 			Seq:  1,
-			Data: []byte("beszel-probe"),
+			Data: []byte("beszel-monitor"),
 		},
 	}
 	msgBytes, err := msg.Marshal(nil)
@@ -199,8 +199,8 @@ func probeICMPNative(network string, family *icmpFamily, dst net.Addr) (int64, e
 	}
 }
 
-// probeICMPExec falls back to the system ping command. Returns -1 and an error on failure.
-func probeICMPExec(target string, isIPv6 bool) (int64, error) {
+// monitorICMPExec falls back to the system ping command. Returns -1 and an error on failure.
+func monitorICMPExec(target string, isIPv6 bool) (int64, error) {
 	var cmd *exec.Cmd
 	switch runtime.GOOS {
 	case "windows":

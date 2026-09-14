@@ -19,7 +19,7 @@ import {
 	CopyPlusIcon,
 } from "lucide-react"
 import { t } from "@lingui/core/macro"
-import type { NetworkProbeRecord, SystemRecord } from "@/types"
+import type { NetworkMonitorRecord, SystemRecord } from "@/types"
 import {
 	DropdownMenu,
 	DropdownMenuContent,
@@ -36,7 +36,7 @@ import { useStore } from "@nanostores/react"
 import { SystemStatus } from "@/lib/enums"
 import { Checkbox } from "@/components/ui/checkbox"
 import { useMemo } from "react"
-import { formatBulkProbeLine } from "@/components/network-probes-table/probe-dialog"
+import { formatBulkMonitorLine } from "@/components/network-monitors-table/monitor-dialog"
 import { Badge } from "../ui/badge"
 import { pb } from "@/lib/api"
 
@@ -55,12 +55,12 @@ const SYSTEM_STATUS_COLORS = {
 } as const
 
 /**
- * A probe is considered muted if it's disabled or if its associated system is not up.
+ * A monitor is considered muted if it's disabled or if its associated system is not up.
  */
-const isMuted = (record: NetworkProbeRecord, systemRecord: SystemRecord | undefined) =>
+const isMuted = (record: NetworkMonitorRecord, systemRecord: SystemRecord | undefined) =>
 	!record.enabled || systemRecord?.status !== SystemStatus.Up
 
-export function getProbeColumns(
+export function getMonitorColumns(
 	longestName = "",
 	longestTarget = "",
 	{
@@ -68,11 +68,11 @@ export function getProbeColumns(
 		onDelete,
 		onSetEnabled,
 	}: {
-		onEdit?: (probe: NetworkProbeRecord) => void
-		onDelete?: (probes: NetworkProbeRecord[]) => void | Promise<void>
-		onSetEnabled?: (probes: NetworkProbeRecord[], enabled: boolean) => void | Promise<void>
+		onEdit?: (monitor: NetworkMonitorRecord) => void
+		onDelete?: (monitors: NetworkMonitorRecord[]) => void | Promise<void>
+		onSetEnabled?: (monitors: NetworkMonitorRecord[], enabled: boolean) => void | Promise<void>
 	} = {}
-): ColumnDef<NetworkProbeRecord>[] {
+): ColumnDef<NetworkMonitorRecord>[] {
 	return [
 		{
 			id: "select",
@@ -103,11 +103,11 @@ export function getProbeColumns(
 			accessorFn: (record) => record.name || record.target,
 			header: ({ column }) => <HeaderButton column={column} name={t`Name`} Icon={NetworkIcon} />,
 			cell: ({ row, getValue }) => {
-				const probe = row.original
-				const { status } = useStore($allSystemsById)[probe.system] || {}
+				const monitor = row.original
+				const { status } = useStore($allSystemsById)[monitor.system] || {}
 
 				let color = "bg-green-500"
-				if (!probe.enabled || status === SystemStatus.Paused) {
+				if (!monitor.enabled || status === SystemStatus.Paused) {
 					color = "bg-primary/40"
 				} else if (status === SystemStatus.Down || status === SystemStatus.Pending) {
 					color = "bg-yellow-500"
@@ -278,8 +278,8 @@ export function getProbeColumns(
 						? selectedRows.map((selectedRow) => selectedRow.original)
 						: [row.original]
 				const isBulkAction = actionRows.length > 1
-				const shouldPause = actionRows.some((probe) => probe.enabled)
-				const bulkCopyContent = actionRows.map((probe) => formatBulkProbeLine(probe)).join("\n")
+				const shouldPause = actionRows.some((monitor) => monitor.enabled)
+				const bulkCopyContent = actionRows.map((monitor) => formatBulkMonitorLine(monitor)).join("\n")
 				const allSystems = useStore($allSystemsById)
 				const otherSystems = useMemo(
 					() => Object.values(allSystems).filter((s) => !isBulkAction && s.id !== row.original.system),
@@ -378,23 +378,23 @@ const responseTimeThresholds = {
 	dns: { warning: 150_000, critical: 800_000 },
 }
 
-function responseTimeCell(cell: CellContext<NetworkProbeRecord, unknown>) {
-	const probe = cell.row.original
-	const systemRecord = useStore($allSystemsById)[probe.system]
+function responseTimeCell(cell: CellContext<NetworkMonitorRecord, unknown>) {
+	const monitor = cell.row.original
+	const systemRecord = useStore($allSystemsById)[monitor.system]
 	const responseTime = cell.getValue() as number | undefined
 
 	if (!responseTime) {
 		return <span className="ms-1.5 text-muted-foreground">-</span>
 	}
 
-	const muted = isMuted(probe, systemRecord)
+	const muted = isMuted(monitor, systemRecord)
 	let color = "bg-green-500"
 	if (muted) {
 		color = "bg-muted-foreground/50"
-	} else if (responseTime > responseTimeThresholds[probe.protocol].warning) {
+	} else if (responseTime > responseTimeThresholds[monitor.protocol].warning) {
 		color = "bg-yellow-500"
 	}
-	if (!muted && responseTime > responseTimeThresholds[probe.protocol].critical) {
+	if (!muted && responseTime > responseTimeThresholds[monitor.protocol].critical) {
 		color = "bg-red-500"
 	}
 	return (
@@ -410,7 +410,7 @@ function HeaderButton({
 	name,
 	Icon,
 }: {
-	column: Column<NetworkProbeRecord>
+	column: Column<NetworkMonitorRecord>
 	name: string
 	Icon: React.ElementType
 }) {

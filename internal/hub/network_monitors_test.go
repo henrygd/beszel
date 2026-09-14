@@ -3,23 +3,23 @@ package hub
 import (
 	"testing"
 
-	"github.com/henrygd/beszel/internal/entities/probe"
+	"github.com/henrygd/beszel/internal/entities/monitor"
 	"github.com/pocketbase/pocketbase/core"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-func TestGenerateProbeID(t *testing.T) {
+func TestGenerateMonitorID(t *testing.T) {
 	tests := []struct {
 		name     string
 		systemID string
-		config   probe.Config
+		config   monitor.Config
 		expected string
 	}{
 		{
-			name:     "HTTP probe on example.com",
+			name:     "HTTP monitor on example.com",
 			systemID: "sys123",
-			config: probe.Config{
+			config: monitor.Config{
 				Protocol: "http",
 				Target:   "example.com",
 				Port:     0,
@@ -28,9 +28,9 @@ func TestGenerateProbeID(t *testing.T) {
 			expected: "a20a5827",
 		},
 		{
-			name:     "HTTP probe on example.com with different port",
+			name:     "HTTP monitor on example.com with different port",
 			systemID: "sys123",
-			config: probe.Config{
+			config: monitor.Config{
 				Protocol: "http",
 				Target:   "example.com",
 				Port:     8080,
@@ -39,9 +39,9 @@ func TestGenerateProbeID(t *testing.T) {
 			expected: "a20a5827",
 		},
 		{
-			name:     "HTTP probe on example.com with different system ID",
+			name:     "HTTP monitor on example.com with different system ID",
 			systemID: "sys1234",
-			config: probe.Config{
+			config: monitor.Config{
 				Protocol: "http",
 				Target:   "example.com",
 				Port:     80,
@@ -50,9 +50,9 @@ func TestGenerateProbeID(t *testing.T) {
 			expected: "ab602ae7",
 		},
 		{
-			name:     "Same probe, different interval",
+			name:     "Same monitor, different interval",
 			systemID: "sys1234",
-			config: probe.Config{
+			config: monitor.Config{
 				Protocol: "http",
 				Target:   "example.com",
 				Port:     80,
@@ -61,9 +61,9 @@ func TestGenerateProbeID(t *testing.T) {
 			expected: "ab602ae7",
 		},
 		{
-			name:     "ICMP probe on 1.1.1.1",
+			name:     "ICMP monitor on 1.1.1.1",
 			systemID: "sys456",
-			config: probe.Config{
+			config: monitor.Config{
 				Protocol: "icmp",
 				Target:   "1.1.1.1",
 				Port:     0,
@@ -71,9 +71,9 @@ func TestGenerateProbeID(t *testing.T) {
 			},
 			expected: "6d13a4a4",
 		}, {
-			name:     "ICMP probe on 1.1.1.1 with different system ID",
+			name:     "ICMP monitor on 1.1.1.1 with different system ID",
 			systemID: "sys4567",
-			config: probe.Config{
+			config: monitor.Config{
 				Protocol: "icmp",
 				Target:   "1.1.1.1",
 				Port:     0,
@@ -82,9 +82,9 @@ func TestGenerateProbeID(t *testing.T) {
 			expected: "ddd6c81",
 		},
 		{
-			name:     "TCP probe on example.com with port 443",
+			name:     "TCP monitor on example.com with port 443",
 			systemID: "sys789",
-			config: probe.Config{
+			config: monitor.Config{
 				Protocol: "tcp",
 				Target:   "example.com",
 				Port:     443,
@@ -93,9 +93,9 @@ func TestGenerateProbeID(t *testing.T) {
 			expected: "677b991",
 		},
 		{
-			name:     "TCP probe on example.com with port 8443",
+			name:     "TCP monitor on example.com with port 8443",
 			systemID: "sys789",
-			config: probe.Config{
+			config: monitor.Config{
 				Protocol: "tcp",
 				Target:   "example.com",
 				Port:     8443,
@@ -107,13 +107,13 @@ func TestGenerateProbeID(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := generateProbeID(tt.systemID, tt.config)
-			assert.Equal(t, tt.expected, got, "generateProbeID() = %v, want %v", got, tt.expected)
+			got := generateMonitorID(tt.systemID, tt.config)
+			assert.Equal(t, tt.expected, got, "generateMonitorID() = %v, want %v", got, tt.expected)
 		})
 	}
 }
 
-func TestCopyProbeToNewRecordDropsResultFields(t *testing.T) {
+func TestCopyMonitorToNewRecordDropsResultFields(t *testing.T) {
 	hub, testApp, err := createTestHub(t)
 	require.NoError(t, err)
 	defer cleanupTestHub(hub, testApp)
@@ -138,7 +138,7 @@ func TestCopyProbeToNewRecordDropsResultFields(t *testing.T) {
 		"updated":  "2026-04-29 12:00:00.000Z",
 	})
 
-	newRecord := copyProbeToNewRecord(oldRecord, "next12345")
+	newRecord := copyMonitorToNewRecord(oldRecord, "next12345")
 
 	assert.Equal(t, "next12345", newRecord.Id)
 	assert.Equal(t, "Example", newRecord.GetString("name"))

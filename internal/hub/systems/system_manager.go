@@ -9,7 +9,7 @@ import (
 
 	"github.com/henrygd/beszel/internal/hub/ws"
 
-	"github.com/henrygd/beszel/internal/entities/probe"
+	"github.com/henrygd/beszel/internal/entities/monitor"
 	"github.com/henrygd/beszel/internal/entities/system"
 	"github.com/henrygd/beszel/internal/hub/expirymap"
 
@@ -353,12 +353,12 @@ func (sm *SystemManager) AddWebSocketSystem(systemId string, agentVersion semver
 		return err
 	}
 
-	// Sync network probes to the newly connected agent
+	// Sync network monitors to the newly connected agent
 	go func() {
-		configs := sm.GetProbeConfigsForSystem(systemId)
+		configs := sm.GetMonitorConfigsForSystem(systemId)
 		if len(configs) > 0 {
-			if err := system.SyncNetworkProbes(configs); err != nil {
-				sm.hub.Logger().Warn("failed to sync probes to agent", "system", systemId, "err", err)
+			if err := system.SyncNetworkMonitors(configs); err != nil {
+				sm.hub.Logger().Warn("failed to sync monitors to agent", "system", systemId, "err", err)
 			}
 		}
 	}()
@@ -375,9 +375,9 @@ func (sm *SystemManager) resetFailedSmartFetchState(systemID string) {
 	}
 }
 
-// GetProbeConfigsForSystem returns all enabled probe configs for a system.
-func (sm *SystemManager) GetProbeConfigsForSystem(systemID string) []probe.Config {
-	var configs []probe.Config
+// GetMonitorConfigsForSystem returns all enabled monitor configs for a system.
+func (sm *SystemManager) GetMonitorConfigsForSystem(systemID string) []monitor.Config {
+	var configs []monitor.Config
 	_ = sm.hub.DB().
 		NewQuery("SELECT id, target, protocol, port, interval FROM network_monitors WHERE system = {:system} AND enabled = true").
 		Bind(dbx.Params{"system": systemID}).

@@ -48,7 +48,7 @@ type Agent struct {
 	keys                      []gossh.PublicKey                                     // SSH public keys
 	smartManager              *SmartManager                                         // Manages SMART data
 	systemdManager            *systemdManager                                       // Manages systemd services
-	probeManager              *ProbeManager                                         // Manages network probes
+	monitorManager            *MonitorManager                                       // Manages network monitors
 	storagePoolManager        *StoragePoolManager                                   // Manages storage pool and dataset data
 }
 
@@ -123,9 +123,9 @@ func NewAgent(dataDir ...string) (agent *Agent, err error) {
 	// initialize handler registry
 	agent.handlerRegistry = NewHandlerRegistry()
 
-	// initialize probe manager
-	agent.probeManager = newProbeManager()
-  
+	// initialize monitor manager
+	agent.monitorManager = newMonitorManager()
+
 	agent.storagePoolManager = newStoragePoolManager()
 
 	// Retain ZFS_INTERVAL for the shared storage pool detail refresh interval.
@@ -196,9 +196,9 @@ func (a *Agent) gatherStats(options common.DataRequestOptions) *system.CombinedD
 		}
 	}
 
-	if a.probeManager != nil {
-		data.Probes = a.probeManager.GetResults(cacheTimeMs)
-		slog.Debug("Probes", "data", data.Probes)
+	if a.monitorManager != nil {
+		data.Monitors = a.monitorManager.GetResults(cacheTimeMs)
+		slog.Debug("Monitors", "data", data.Monitors)
 	}
 
 	// skip updating systemd services if cache time is not the default 60sec interval

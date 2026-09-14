@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/henrygd/beszel/internal/entities/container"
-	"github.com/henrygd/beszel/internal/entities/probe"
+	"github.com/henrygd/beszel/internal/entities/monitor"
 	"github.com/henrygd/beszel/internal/entities/system"
 
 	"github.com/pocketbase/dbx"
@@ -85,7 +85,7 @@ func (rm *RecordManager) CreateLongerRecords() {
 			slog.Error("Error finding cached collection using container stats:", "err", err)
 			return err
 		}
-		probeStatsColl, err := txApp.FindCachedCollectionByNameOrId("network_monitor_stats")
+		monitorStatsColl, err := txApp.FindCachedCollectionByNameOrId("network_monitor_stats")
 		if err != nil {
 			return err
 		}
@@ -168,14 +168,14 @@ func (rm *RecordManager) CreateLongerRecords() {
 			}
 		}
 
-		// network_monitor_stats is aggregated per probe (not per system)
-		var probes []struct {
+		// network_monitor_stats is aggregated per monitor (not per system)
+		var monitors []struct {
 			Id     string `db:"id"`
 			System string `db:"system"`
 		}
-		_ = db.NewQuery("SELECT id, system FROM network_monitors WHERE enabled=TRUE").All(&probes)
+		_ = db.NewQuery("SELECT id, system FROM network_monitors WHERE enabled=TRUE").All(&monitors)
 
-		for _, probeRec := range probes {
+		for _, monitorRec := range monitors {
 			for i := range longerRecordData {
 				recordData := longerRecordData[i]
 				longerRecordPeriod := now.Add(recordData.longerTimeDuration + time.Minute)
@@ -186,9 +186,9 @@ func (rm *RecordManager) CreateLongerRecords() {
 					_ = db.Select("id").
 						From("network_monitor_stats").
 						Where(dbx.NewExp(
-							"probe={:probe} AND type={:type} AND created>{:created}",
+							"monitor={:monitor} AND type={:type} AND created>{:created}",
 							dbx.Params{
-								"probe":   probeRec.Id,
+								"monitor": monitorRec.Id,
 								"type":    recordData.longerType,
 								"created": longerRecordPeriod.UnixMilli(),
 							},
@@ -204,9 +204,9 @@ func (rm *RecordManager) CreateLongerRecords() {
 				_ = db.Select("id").
 					From("network_monitor_stats").
 					Where(dbx.NewExp(
-						"probe={:probe} AND type={:type} AND created>{:created}",
+						"monitor={:monitor} AND type={:type} AND created>{:created}",
 						dbx.Params{
-							"probe":   probeRec.Id,
+							"monitor": monitorRec.Id,
 							"type":    recordData.shorterType,
 							"created": shorterRecordPeriod.UnixMilli(),
 						},
@@ -217,14 +217,14 @@ func (rm *RecordManager) CreateLongerRecords() {
 					continue
 				}
 
-				longerRecord := core.NewRecord(probeStatsColl)
-				longerRecord.Set("system", probeRec.System)
-				longerRecord.Set("probe", probeRec.Id)
+				longerRecord := core.NewRecord(monitorStatsColl)
+				longerRecord.Set("system", monitorRec.System)
+				longerRecord.Set("monitor", monitorRec.Id)
 				longerRecord.Set("type", recordData.longerType)
 				longerRecord.Set("created", now.UnixMilli())
-				longerRecord.Set("stats", rm.AverageProbeStats(db, recordIds))
+				longerRecord.Set("stats", rm.AverageMonitorStats(db, recordIds))
 				if err := txApp.SaveNoValidate(longerRecord); err != nil {
-					slog.Error("failed to save probe longer record", "err", err)
+					slog.Error("failed to save monitor longer record", "err", err)
 				}
 			}
 		}
@@ -681,11 +681,11 @@ func AverageContainerStatsSlice(records [][]container.Stats) []container.Stats {
 	return result
 }
 
-// AverageProbeStats averages probe stats across multiple per-probe records.
+// AverageMonitorStats averages monitor stats across multiple per-monitor records.
 // Each record holds a flat Stats array: [avg, min, max, loss].
 // avg and loss are averaged; min takes the minimum; max takes the maximum.
-func (rm *RecordManager) AverageProbeStats(db dbx.Builder, records RecordIds) probe.Stats {
-	var sums probe.Stats
+func (rm *RecordManager) AverageMonitorStats(db dbx.Builder, records RecordIds) monitor.Stats {
+	var sums monitor.Stats
 	counts := make([]int, 4)
 
 	query := db.NewQuery("SELECT stats FROM network_monitor_stats WHERE id = {:id}")
@@ -695,12 +695,12 @@ func (rm *RecordManager) AverageProbeStats(db dbx.Builder, records RecordIds) pr
 		if err := query.Bind(dbx.Params{"id": rec.Id}).One(&row); err != nil {
 			continue
 		}
-		var vals probe.Stats
+		var vals monitor.Stats
 		if err := json.Unmarshal(row.Stats, &vals); err != nil {
 			continue
 		}
 		if len(sums) == 0 {
-			sums = make(probe.Stats, len(vals))
+			sums = make(monitor.Stats, len(vals))
 		}
 		for i := range vals {
 			if i >= len(sums) {
@@ -723,9 +723,9 @@ func (rm *RecordManager) AverageProbeStats(db dbx.Builder, records RecordIds) pr
 	}
 
 	if len(sums) == 0 {
-		return probe.Stats{}
+		return monitor.Stats{}
 	}
-	result := make(probe.Stats, len(sums))
+	result := make(monitor.Stats, len(sums))
 	copy(result, sums)
 	for i := range result {
 		switch i {

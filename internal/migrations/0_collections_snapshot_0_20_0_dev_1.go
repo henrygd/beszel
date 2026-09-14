@@ -2129,7 +2129,7 @@ func init() {
 				"id": "nms_monitor",
 				"maxSelect": 1,
 				"minSelect": 0,
-				"name": "probe",
+				"name": "monitor",
 				"presentable": false,
 				"required": false,
 				"system": false,
@@ -2181,7 +2181,7 @@ func init() {
 		"id": "nm_stats_001",
 		"indexes": [
 			"CREATE INDEX IF NOT EXISTS ` + "`" + `idx_nms_system_type_created` + "`" + ` ON ` + "`" + `network_monitor_stats` + "`" + ` (` + "`" + `system` + "`" + `, ` + "`" + `type` + "`" + `, ` + "`" + `created` + "`" + `)",
-			"CREATE INDEX IF NOT EXISTS ` + "`" + `idx_nms_monitor_type_created` + "`" + ` ON ` + "`" + `network_monitor_stats` + "`" + ` (` + "`" + `probe` + "`" + `, ` + "`" + `type` + "`" + `, ` + "`" + `created` + "`" + `)"
+			"CREATE INDEX IF NOT EXISTS ` + "`" + `idx_nms_monitor_type_created` + "`" + ` ON ` + "`" + `network_monitor_stats` + "`" + ` (` + "`" + `monitor` + "`" + `, ` + "`" + `type` + "`" + `, ` + "`" + `created` + "`" + `)"
 		],
 		"listRule": null,
 		"name": "network_monitor_stats",

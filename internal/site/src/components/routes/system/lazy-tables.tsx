@@ -1,7 +1,7 @@
 import { lazy } from "react"
 import { useIntersectionObserver } from "@/lib/use-intersection-observer"
 import { cn } from "@/lib/utils"
-import { useNetworkProbes } from "@/lib/use-network-probes"
+import { useNetworkMonitors } from "@/lib/use-network-monitors"
 
 const ContainersTable = lazy(() => import("../../containers-table/containers-table"))
 
@@ -47,18 +47,18 @@ export function LazySystemdTable({ systemId }: { systemId: string }) {
 	)
 }
 
-const NetworkProbesTable = lazy(() => import("../../network-probes-table/network-probes-table"))
+const NetworkMonitorsTable = lazy(() => import("../../network-monitors-table/network-monitors-table"))
 
-export function LazyNetworkProbesTable({ systemId }: { systemId: string }) {
+export function LazyNetworkMonitorsTable({ systemId }: { systemId: string }) {
 	const { isIntersecting, ref } = useIntersectionObserver({ rootMargin: "90px" })
 	return (
 		<div ref={ref} className={cn(isIntersecting && "contents")}>
-			{isIntersecting && <SystemNetworkProbesTable systemId={systemId} />}
+			{isIntersecting && <SystemNetworkMonitorsTable systemId={systemId} />}
 		</div>
 	)
 }
 
-function SystemNetworkProbesTable({ systemId }: { systemId: string }) {
-	const probes = useNetworkProbes({ systemId })
-	return <NetworkProbesTable systemId={systemId} probes={probes} />
+function SystemNetworkMonitorsTable({ systemId }: { systemId: string }) {
+	const monitors = useNetworkMonitors({ systemId })
+	return <NetworkMonitorsTable systemId={systemId} monitors={monitors} />
 }

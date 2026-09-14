@@ -26,43 +26,43 @@ import { Textarea } from "@/components/ui/textarea"
 import { ChevronDownIcon, ListIcon, ServerIcon } from "lucide-react"
 import { useToast } from "@/components/ui/use-toast"
 import { $systems } from "@/lib/stores"
-import type { NetworkProbeRecord } from "@/types"
+import type { NetworkMonitorRecord } from "@/types"
 import * as v from "valibot"
 
-type ProbeProtocol = "icmp" | "tcp" | "http" | "dns"
+type MonitorProtocol = "icmp" | "tcp" | "http" | "dns"
 
-type ProbeValues = {
+type MonitorValues = {
 	system: string
 	target: string
-	protocol: ProbeProtocol
+	protocol: MonitorProtocol
 	port: number
 	interval: string
 	name?: string
 }
 
-type NormalizedProbeValues = Omit<ProbeValues, "system" | "interval"> & {
+type NormalizedMonitorValues = Omit<MonitorValues, "system" | "interval"> & {
 	interval: number
 }
 
-type BulkProbeLineSource = Pick<NetworkProbeRecord, "target" | "protocol" | "port" | "interval" | "name">
+type BulkMonitorLineSource = Pick<NetworkMonitorRecord, "target" | "protocol" | "port" | "interval" | "name">
 
 const defaultInterval = 30
 
-const ProbeProtocolSchema = v.picklist(["icmp", "tcp", "http", "dns"])
+const MonitorProtocolSchema = v.picklist(["icmp", "tcp", "http", "dns"])
 
-const ProbeIntervalSchema = v.pipe(v.string(), v.toNumber(), v.minValue(1), v.maxValue(3600))
+const MonitorIntervalSchema = v.pipe(v.string(), v.toNumber(), v.minValue(1), v.maxValue(3600))
 
-// Both the single-probe form and the bulk importer flow through this schema so
+// Both the single-monitor form and the bulk importer flow through this schema so
 // defaults and HTTP target normalization stay in one place.
-const NormalizedProbeValuesSchema = v.pipe(
+const NormalizedMonitorValuesSchema = v.pipe(
 	v.object({
 		target: v.pipe(v.string(), v.trim(), v.nonEmpty("target is required")),
-		protocol: ProbeProtocolSchema,
+		protocol: MonitorProtocolSchema,
 		port: v.number(),
-		interval: ProbeIntervalSchema,
+		interval: MonitorIntervalSchema,
 		name: v.optional(v.pipe(v.string(), v.trim())),
 	}),
-	v.transform((input): NormalizedProbeValues => {
+	v.transform((input): NormalizedMonitorValues => {
 		let { protocol, port } = input
 		let httpTarget = input.target
 		if (protocol === "icmp" || protocol === "http" || protocol === "dns") {
@@ -74,7 +74,7 @@ const NormalizedProbeValuesSchema = v.pipe(
 			port = 443
 		}
 		return {
-			// HTTP probes may be entered as bare hostnames, so normalize them to a
+			// HTTP monitors may be entered as bare hostnames, so normalize them to a
 			// scheme-bearing URL before the payload is sent to PocketBase.
 			target: protocol === "http" ? httpTarget : input.target,
 			protocol,
@@ -97,7 +97,7 @@ const NormalizedProbeValuesSchema = v.pipe(
 
 // Bulk parsing only trims raw CSV fields. Inference, defaults, and protocol-
 // specific validation still go through the shared normalization schema above.
-const BulkProbeSchema = v.object({
+const BulkMonitorSchema = v.object({
 	target: v.pipe(v.string(), v.trim(), v.nonEmpty("target is required")),
 	protocol: v.optional(v.pipe(v.string(), v.trim())),
 	port: v.optional(v.pipe(v.string(), v.trim())),
@@ -140,10 +140,10 @@ function trimTrailingEmptyFields(fields: string[]) {
 	return fields.slice(0, lastValueIndex + 1)
 }
 
-function buildProbePayload(values: ProbeValues, enabled = true) {
-	const normalizedValues = v.safeParse(NormalizedProbeValuesSchema, values)
+function buildMonitorPayload(values: MonitorValues, enabled = true) {
+	const normalizedValues = v.safeParse(NormalizedMonitorValuesSchema, values)
 	if (!normalizedValues.success) {
-		throw new Error(normalizedValues.issues[0]?.message || "Invalid probe")
+		throw new Error(normalizedValues.issues[0]?.message || "Invalid monitor")
 	}
 
 	const payload = {
@@ -164,14 +164,14 @@ function buildProbePayload(values: ProbeValues, enabled = true) {
 	return payload
 }
 
-type ProbeIdentity = Pick<ProbeValues, "system" | "target" | "protocol" | "port">
-function getProbeIdentityKey({ system, target, protocol, port }: ProbeIdentity) {
+type MonitorIdentity = Pick<MonitorValues, "system" | "target" | "protocol" | "port">
+function getMonitorIdentityKey({ system, target, protocol, port }: MonitorIdentity) {
 	return `${system}${target}${protocol}${port}`
 }
 
-function parseBulkProbeLine(line: string, lineNumber: number, system: string) {
+function parseBulkMonitorLine(line: string, lineNumber: number, system: string) {
 	const [rawTarget = "", rawProtocol = "", rawPort = "", rawInterval = "", ...rawName] = line.split(",")
-	const parsed = v.safeParse(BulkProbeSchema, {
+	const parsed = v.safeParse(BulkMonitorSchema, {
 		target: rawTarget,
 		protocol: rawProtocol,
 		port: rawPort,
@@ -179,12 +179,12 @@ function parseBulkProbeLine(line: string, lineNumber: number, system: string) {
 		name: rawName.join(","),
 	})
 	if (!parsed.success) {
-		throw new Error(`Line ${lineNumber}: ${parsed.issues[0]?.message || "invalid probe entry"}`)
+		throw new Error(`Line ${lineNumber}: ${parsed.issues[0]?.message || "invalid monitor entry"}`)
 	}
 	const protocol = (parsed.output.protocol?.toLowerCase() ||
-		(/^https?:\/\//i.test(parsed.output.target) ? "http" : "icmp")) as ProbeProtocol
+		(/^https?:\/\//i.test(parsed.output.target) ? "http" : "icmp")) as MonitorProtocol
 
-	return buildProbePayload({
+	return buildMonitorPayload({
 		system,
 		target: parsed.output.target,
 		protocol,
@@ -194,13 +194,15 @@ function parseBulkProbeLine(line: string, lineNumber: number, system: string) {
 	})
 }
 
-export function formatBulkProbeLine(probe: BulkProbeLineSource) {
-	const port = probe.protocol !== "tcp" || probe.port === 443 ? "" : `${probe.port}`
-	const interval = probe.interval === defaultInterval ? "" : `${probe.interval}`
-	return trimTrailingEmptyFields([probe.target, probe.protocol, port, interval, probe.name?.trim() || ""]).join(",")
+export function formatBulkMonitorLine(monitor: BulkMonitorLineSource) {
+	const port = monitor.protocol !== "tcp" || monitor.port === 443 ? "" : `${monitor.port}`
+	const interval = monitor.interval === defaultInterval ? "" : `${monitor.interval}`
+	return trimTrailingEmptyFields([monitor.target, monitor.protocol, port, interval, monitor.name?.trim() || ""]).join(
+		","
+	)
 }
 
-export function AddProbeDialog({ systemId, probes }: { systemId?: string; probes: NetworkProbeRecord[] }) {
+export function AddMonitorDialog({ systemId, monitors }: { systemId?: string; monitors: NetworkMonitorRecord[] }) {
 	const [open, setOpen] = useState(false)
 	const [bulkOpen, setBulkOpen] = useState(false)
 	const [bulkInput, setBulkInput] = useState("")
@@ -252,25 +254,25 @@ export function AddProbeDialog({ systemId, probes }: { systemId?: string; probes
 			}
 			const rawLines = bulkInput.split(/\r?\n/).filter((line) => line.trim())
 			if (!rawLines.length) {
-				throw new Error("Enter at least one probe.")
+				throw new Error("Enter at least one monitor.")
 			}
 
 			let totalCreated = 0
 			closedForSubmit = true
 
 			for (const system of targetSystems) {
-				const payloads = rawLines.map((line, index) => parseBulkProbeLine(line, index + 1, system))
-				const existingProbeKeys = new Set(
-					probes.filter((probe) => probe.system === system).map((probe) => getProbeIdentityKey(probe))
+				const payloads = rawLines.map((line, index) => parseBulkMonitorLine(line, index + 1, system))
+				const existingMonitorKeys = new Set(
+					monitors.filter((monitor) => monitor.system === system).map((monitor) => getMonitorIdentityKey(monitor))
 				)
 				const newPayloads: typeof payloads = []
 
 				for (const payload of payloads) {
-					const probeKey = getProbeIdentityKey(payload)
-					if (existingProbeKeys.has(probeKey)) {
+					const monitorKey = getMonitorIdentityKey(payload)
+					if (existingMonitorKeys.has(monitorKey)) {
 						continue
 					}
-					existingProbeKeys.add(probeKey)
+					existingMonitorKeys.add(monitorKey)
 					newPayloads.push(payload)
 				}
 
@@ -294,11 +296,11 @@ export function AddProbeDialog({ systemId, probes }: { systemId?: string; probes
 			}
 
 			if (!totalCreated) {
-				throw new Error("No new probes. All entries already exist.")
+				throw new Error("No new monitors. All entries already exist.")
 			}
 
 			resetBulkForm()
-			toast({ title: t`Probes created`, description: `${totalCreated} probe(s) added.` })
+			toast({ title: t`Monitors created`, description: `${totalCreated} monitor(s) added.` })
 		} catch (err: unknown) {
 			if (closedForSubmit) {
 				setBulkOpen(true)
@@ -314,12 +316,12 @@ export function AddProbeDialog({ systemId, probes }: { systemId?: string; probes
 			<div className="flex gap-0 rounded-lg">
 				<Button variant="outline" onClick={openAdd} className="rounded-e-none grow">
 					{/* <PlusIcon className="size-4 me-1" /> */}
-					<Trans>Add {{ foo: t`Probe` }}</Trans>
+					<Trans>Add {{ foo: t`Monitor` }}</Trans>
 				</Button>
 				<div className="w-px h-full bg-muted"></div>
 				<DropdownMenu>
 					<DropdownMenuTrigger asChild>
-						<Button variant="outline" className="px-2 rounded-s-none border-s-0" aria-label={t`More probe actions`}>
+						<Button variant="outline" className="px-2 rounded-s-none border-s-0" aria-label={t`More monitor actions`}>
 							<ChevronDownIcon className="size-4" />
 						</Button>
 					</DropdownMenuTrigger>
@@ -337,7 +339,7 @@ export function AddProbeDialog({ systemId, probes }: { systemId?: string; probes
 					setOpen(nextOpen)
 				}}
 			>
-				<ProbeDialogContent open={open} setOpen={setOpen} systemId={systemId} onOpenBulkAdd={openBulkAdd} />
+				<MonitorDialogContent open={open} setOpen={setOpen} systemId={systemId} onOpenBulkAdd={openBulkAdd} />
 			</Dialog>
 
 			<Sheet
@@ -392,11 +394,11 @@ export function AddProbeDialog({ systemId, probes }: { systemId?: string; probes
 								</div>
 							)}
 							<div className="grow flex flex-col gap-2">
-								<Label htmlFor="bulk-probes" className="sr-only">
+								<Label htmlFor="bulk-monitors" className="sr-only">
 									Entries
 								</Label>
 								<Textarea
-									id="bulk-probes"
+									id="bulk-monitors"
 									value={bulkInput}
 									onChange={(e) => setBulkInput(e.target.value)}
 									onKeyDown={(e) => {
@@ -424,69 +426,69 @@ export function AddProbeDialog({ systemId, probes }: { systemId?: string; probes
 	)
 }
 
-export function EditProbeDialog({
+export function EditMonitorDialog({
 	open,
 	setOpen,
 	systemId,
-	probe,
+	monitor,
 }: {
 	open: boolean
 	setOpen: (open: boolean) => void
 	systemId?: string
-	probe?: NetworkProbeRecord
+	monitor?: NetworkMonitorRecord
 }) {
 	const hasOpened = useRef(false)
-	if (!probe && !hasOpened.current) {
+	if (!monitor && !hasOpened.current) {
 		return null
 	}
 	hasOpened.current = true
 	return (
 		<Dialog open={open} onOpenChange={setOpen}>
-			<ProbeDialogContent open={open} setOpen={setOpen} systemId={systemId} probe={probe} />
+			<MonitorDialogContent open={open} setOpen={setOpen} systemId={systemId} monitor={monitor} />
 		</Dialog>
 	)
 }
 
-function ProbeDialogContent({
+function MonitorDialogContent({
 	open,
 	setOpen,
 	systemId,
-	probe,
+	monitor,
 	onOpenBulkAdd,
 }: {
 	open: boolean
 	setOpen: (open: boolean) => void
 	systemId?: string
-	probe?: NetworkProbeRecord
+	monitor?: NetworkMonitorRecord
 	onOpenBulkAdd?: (selectedSystemId?: string) => void
 }) {
-	const [protocol, setProtocol] = useState<ProbeProtocol>(probe?.protocol ?? "icmp")
-	const [target, setTarget] = useState(probe?.target ?? "")
-	const [port, setPort] = useState(probe?.protocol === "tcp" && probe.port ? String(probe.port) : "")
-	const [probeInterval, setProbeInterval] = useState(String(probe?.interval ?? defaultInterval))
-	const [name, setName] = useState(probe?.name ?? "")
+	const [protocol, setProtocol] = useState<MonitorProtocol>(monitor?.protocol ?? "icmp")
+	const [target, setTarget] = useState(monitor?.target ?? "")
+	const [port, setPort] = useState(monitor?.protocol === "tcp" && monitor.port ? String(monitor.port) : "")
+	const [monitorInterval, setMonitorInterval] = useState(String(monitor?.interval ?? defaultInterval))
+	const [name, setName] = useState(monitor?.name ?? "")
 	const [loading, setLoading] = useState(false)
-	const [selectedSystemId, setSelectedSystemId] = useState(probe?.system ?? "")
+	const [selectedSystemId, setSelectedSystemId] = useState(monitor?.system ?? "")
 	const systems = useStore($systems)
 	const { toast } = useToast()
 	const { t } = useLingui()
-	const isEditing = !!probe
+	const isEditing = !!monitor
 	const targetName = target.replace(/^https?:\/\//, "")
 
-	// When the dialog is opened, initialize form fields with probe values (if editing) or defaults (if adding).
+	// When the dialog is opened, initialize form fields with monitor values (if editing) or defaults (if adding).
 	useEffect(() => {
 		if (!open) {
 			return
 		}
 
-		setProtocol(probe?.protocol ?? "icmp")
-		setTarget(probe?.target ?? "")
-		setPort(probe?.protocol === "tcp" && probe.port ? String(probe.port) : "")
-		setProbeInterval(String(probe?.interval ?? defaultInterval))
-		setName(probe?.name ?? "")
-		setSelectedSystemId(probe?.system ?? "")
+		setProtocol(monitor?.protocol ?? "icmp")
+		setTarget(monitor?.target ?? "")
+		setPort(monitor?.protocol === "tcp" && monitor.port ? String(monitor.port) : "")
+		setMonitorInterval(String(monitor?.interval ?? defaultInterval))
+		setName(monitor?.name ?? "")
+		setSelectedSystemId(monitor?.system ?? "")
 		setLoading(false)
-	}, [open, probe])
+	}, [open, monitor])
 
 	async function handleSubmit(e: React.FormEvent) {
 		e.preventDefault()
@@ -497,19 +499,19 @@ function ProbeDialogContent({
 			if (!selectedSystem) {
 				throw new Error("Select a system.")
 			}
-			const payload = buildProbePayload(
+			const payload = buildMonitorPayload(
 				{
 					system: selectedSystem,
 					target,
 					protocol,
 					port: protocol === "tcp" ? Number(port) : 0,
-					interval: probeInterval,
+					interval: monitorInterval,
 					name,
 				},
-				probe ? probe.enabled : true
+				monitor ? monitor.enabled : true
 			)
-			if (probe) {
-				await pb.collection("network_monitors").update(probe.id, payload)
+			if (monitor) {
+				await pb.collection("network_monitors").update(monitor.id, payload)
 			} else {
 				await pb.collection("network_monitors").create(payload)
 			}
@@ -571,7 +573,7 @@ function ProbeDialogContent({
 						<Trans>Protocol</Trans>
 					</Label>
 
-					<Select value={protocol} onValueChange={(value) => setProtocol(value as ProbeProtocol)}>
+					<Select value={protocol} onValueChange={(value) => setProtocol(value as MonitorProtocol)}>
 						<SelectTrigger>
 							<SelectValue />
 						</SelectTrigger>
@@ -604,8 +606,8 @@ function ProbeDialogContent({
 					</Label>
 					<Input
 						type="number"
-						value={probeInterval}
-						onChange={(e) => setProbeInterval(e.target.value)}
+						value={monitorInterval}
+						onChange={(e) => setMonitorInterval(e.target.value)}
 						min={1}
 						max={3600}
 						required
@@ -642,9 +644,9 @@ function ProbeDialogContent({
 								<Trans>Creating...</Trans>
 							)
 						) : isEditing ? (
-							<Trans>Save {{ foo: t`Probe` }}</Trans>
+							<Trans>Save {{ foo: t`Monitor` }}</Trans>
 						) : (
-							<Trans>Add {{ foo: t`Probe` }}</Trans>
+							<Trans>Add {{ foo: t`Monitor` }}</Trans>
 						)}
 					</Button>
 				</DialogFooter>

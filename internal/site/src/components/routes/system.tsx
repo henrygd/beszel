@@ -14,7 +14,7 @@ import { TemperatureChart, FanChart, BatteryChart } from "./system/charts/sensor
 import { GpuPowerChart, GpuCharts } from "./system/charts/gpu-charts"
 import {
 	LazyContainersTable,
-	LazyNetworkProbesTable,
+	LazyNetworkMonitorsTable,
 	LazySmartTable,
 	LazySystemdTable,
 	LazyZfsTable,
@@ -160,7 +160,7 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 
 				{hasSystemd && <LazySystemdTable systemId={system.id} />}
 
-				<LazyNetworkProbesTable systemId={system.id} />
+				<LazyNetworkMonitorsTable systemId={system.id} />
 			</>
 		)
 	}
@@ -221,7 +221,7 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 							<div className="grid xl:grid-cols-2 gap-4">
 								<BandwidthChart {...coreProps} systemStats={systemStats} />
 							</div>
-							<LazyNetworkProbesTable systemId={system.id} />
+							<LazyNetworkMonitorsTable systemId={system.id} />
 						</>
 					)}
 				</TabsContent>

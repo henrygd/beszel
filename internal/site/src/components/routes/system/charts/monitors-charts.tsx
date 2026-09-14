@@ -1,17 +1,17 @@
 import LineChartDefault from "@/components/charts/line-chart"
 import type { DataPoint } from "@/components/charts/line-chart"
 import { decimalString, formatMicroseconds, matchesFilterGroups, parseFilterGroups, toFixedFloat } from "@/lib/utils"
-import { $probeFilter } from "@/lib/stores"
+import { $monitorFilter } from "@/lib/stores"
 import { useLingui } from "@lingui/react/macro"
 import { ChartCard, FilterBar } from "../chart-card"
-import type { ChartData, NetworkProbeRecord, NetworkProbeStatsRecord } from "@/types"
+import type { ChartData, NetworkMonitorRecord, NetworkMonitorStatsRecord } from "@/types"
 import { useMemo } from "react"
 import { useStore } from "@nanostores/react"
 
-type ProbeChartProps = {
-	probeStats: NetworkProbeStatsRecord[]
+type MonitorChartProps = {
+	monitorStats: NetworkMonitorStatsRecord[]
 	grid?: boolean
-	probes: NetworkProbeRecord[]
+	monitors: NetworkMonitorRecord[]
 	chartData: ChartData
 	empty: boolean
 	showFilter?: boolean
@@ -19,7 +19,7 @@ type ProbeChartProps = {
 	titlePrefix?: string
 }
 
-type ProbeChartBaseProps = ProbeChartProps & {
+type MonitorChartBaseProps = MonitorChartProps & {
 	valueIndex: number
 	title: string
 	description: string
@@ -28,10 +28,10 @@ type ProbeChartBaseProps = ProbeChartProps & {
 	domain?: [number | "auto", number | "auto"]
 }
 
-function ProbeChart({
-	probeStats,
+function MonitorChart({
+	monitorStats,
 	grid,
-	probes,
+	monitors,
 	chartData,
 	empty,
 	valueIndex,
@@ -40,20 +40,20 @@ function ProbeChart({
 	tickFormatter,
 	contentFormatter,
 	domain,
-	showFilter = probes.length > 1,
-}: ProbeChartBaseProps) {
-	const storedFilter = useStore($probeFilter)
+	showFilter = monitors.length > 1,
+}: MonitorChartBaseProps) {
+	const storedFilter = useStore($monitorFilter)
 	const filter = showFilter ? storedFilter : ""
 
 	const { dataPoints, visibleKeys } = useMemo(() => {
-		const sortedProbes = [...probes].sort((a, b) => b.resAvg1h - a.resAvg1h)
-		const count = sortedProbes.length
-		const points: DataPoint<NetworkProbeStatsRecord>[] = []
+		const sortedMonitors = [...monitors].sort((a, b) => b.resAvg1h - a.resAvg1h)
+		const count = sortedMonitors.length
+		const points: DataPoint<NetworkMonitorStatsRecord>[] = []
 		const visibleIDs: string[] = []
 		const filterGroups = parseFilterGroups(filter)
 		const dot = chartData.chartTime === "1m"
 		for (let i = 0; i < count; i++) {
-			const p = sortedProbes[i]
+			const p = sortedMonitors[i]
 			const label = p.name || p.target
 			const labelLower = label.toLowerCase()
 			const filtered = filterGroups.length > 0 && !matchesFilterGroups(labelLower, filterGroups)
@@ -64,25 +64,25 @@ function ProbeChart({
 			points.push({
 				order: i,
 				label,
-				dataKey: (record: NetworkProbeStatsRecord) => record.stats?.[p.id]?.[valueIndex] ?? null,
+				dataKey: (record: NetworkMonitorStatsRecord) => record.stats?.[p.id]?.[valueIndex] ?? null,
 				dot,
 				color: count <= 5 ? i + 1 : `hsl(${(i * 360) / count}, var(--chart-saturation), var(--chart-lightness))`,
 			})
 		}
 		return { dataPoints: points, visibleKeys: visibleIDs }
-	}, [probes, filter, valueIndex, chartData.chartTime])
+	}, [monitors, filter, valueIndex, chartData.chartTime])
 
-	const filteredProbeStats = useMemo(() => {
-		if (!visibleKeys.length) return probeStats
-		return probeStats.filter((record) => visibleKeys.some((id) => record.stats?.[id] != null))
-	}, [probeStats, visibleKeys])
+	const filteredMonitorStats = useMemo(() => {
+		if (!visibleKeys.length) return monitorStats
+		return monitorStats.filter((record) => visibleKeys.some((id) => record.stats?.[id] != null))
+	}, [monitorStats, visibleKeys])
 
 	const legend = dataPoints.length < 10 && showFilter
 
 	return (
 		<ChartCard
 			legend={legend || !showFilter}
-			cornerEl={showFilter ? <FilterBar store={$probeFilter} /> : undefined}
+			cornerEl={showFilter ? <FilterBar store={$monitorFilter} /> : undefined}
 			empty={empty}
 			title={title}
 			description={description}
@@ -91,7 +91,7 @@ function ProbeChart({
 			<LineChartDefault
 				truncate
 				chartData={chartData}
-				customData={filteredProbeStats}
+				customData={filteredMonitorStats}
 				dataPoints={dataPoints}
 				domain={domain ?? ["auto", "auto"]}
 				connectNulls
@@ -105,22 +105,22 @@ function ProbeChart({
 }
 
 interface AvgMinMaxResponseChartProps {
-	probeStats: NetworkProbeStatsRecord[]
-	probe: NetworkProbeRecord | null
+	monitorStats: NetworkMonitorStatsRecord[]
+	monitor: NetworkMonitorRecord | null
 	chartData: ChartData
 	empty: boolean
 }
 
-export function AvgMinMaxResponseChart({ probeStats, probe, chartData, empty }: AvgMinMaxResponseChartProps) {
+export function AvgMinMaxResponseChart({ monitorStats, monitor, chartData, empty }: AvgMinMaxResponseChartProps) {
 	const { t } = useLingui()
 
 	const { chartTime } = chartData
-	const hasLongInterval = (probe?.interval ?? 61) > 60
+	const hasLongInterval = (monitor?.interval ?? 61) > 60
 
-	// only one probe is relevant for this chart
-	const dataPoints: DataPoint<NetworkProbeStatsRecord>[] = useMemo(() => {
-		const dataFn = (index: number) => (record: NetworkProbeStatsRecord) =>
-			record.stats?.[probe?.id ?? ""]?.[index] ?? "-"
+	// only one monitor is relevant for this chart
+	const dataPoints: DataPoint<NetworkMonitorStatsRecord>[] = useMemo(() => {
+		const dataFn = (index: number) => (record: NetworkMonitorStatsRecord) =>
+			record.stats?.[monitor?.id ?? ""]?.[index] ?? "-"
 		const avgPoint = {
 			label: "Avg",
 			dataKey: dataFn(0),
@@ -149,9 +149,9 @@ export function AvgMinMaxResponseChart({ probeStats, probe, chartData, empty }: 
 	}, [chartTime, hasLongInterval])
 
 	const data = useMemo(() => {
-		if (!probe) return []
-		return probeStats.filter((record) => record.stats && probe.id in record.stats)
-	}, [probe, probeStats])
+		if (!monitor) return []
+		return monitorStats.filter((record) => record.stats && monitor.id in record.stats)
+	}, [monitor, monitorStats])
 
 	const legend = dataPoints.length > 1
 
@@ -183,16 +183,16 @@ export function AvgMinMaxResponseChart({ probeStats, probe, chartData, empty }: 
 	)
 }
 
-export function LossChart({ probeStats, grid, probes, chartData, empty, titlePrefix }: ProbeChartProps) {
+export function LossChart({ monitorStats, grid, monitors, chartData, empty, titlePrefix }: MonitorChartProps) {
 	const { t } = useLingui()
 	const lossTitle = t`Loss`
 	const title = titlePrefix ? `${titlePrefix} — ${lossTitle}` : lossTitle
 
 	return (
-		<ProbeChart
-			probeStats={probeStats}
+		<MonitorChart
+			monitorStats={monitorStats}
 			grid={grid}
-			probes={probes}
+			monitors={monitors}
 			chartData={chartData}
 			empty={empty}
 			valueIndex={3}

@@ -26,7 +26,7 @@ import {
 } from "@/components/ui/alert-dialog"
 import { Button, buttonVariants } from "@/components/ui/button"
 import { memo, useCallback, useMemo, useRef, useState } from "react"
-import { getProbeColumns } from "@/components/network-probes-table/network-probes-columns"
+import { getMonitorColumns } from "@/components/network-monitors-table/network-monitors-columns"
 import { Card, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
@@ -42,24 +42,24 @@ import {
 	parseSemVer,
 	useBrowserStorage,
 } from "@/lib/utils"
-import type { ChartData, NetworkProbeRecord } from "@/types"
-import { AddProbeDialog, EditProbeDialog } from "./probe-dialog"
+import type { ChartData, NetworkMonitorRecord } from "@/types"
+import { AddMonitorDialog, EditMonitorDialog } from "./monitor-dialog"
 import { ArrowLeftRightIcon, EthernetPortIcon, GlobeIcon, ServerIcon, XIcon } from "lucide-react"
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet"
 import ChartTimeSelect from "@/components/charts/chart-time-select"
-import { LossChart, AvgMinMaxResponseChart } from "@/components/routes/system/charts/probes-charts"
-import { useNetworkProbeStats } from "@/lib/use-network-probes"
+import { LossChart, AvgMinMaxResponseChart } from "@/components/routes/system/charts/monitors-charts"
+import { useNetworkMonitorStats } from "@/lib/use-network-monitors"
 import { useStore } from "@nanostores/react"
 import { Separator } from "../ui/separator"
 import { $router, Link } from "../router"
 import { getPagePath } from "@nanostores/router"
 
-export default function NetworkProbesTableNew({
+export default function NetworkMonitorsTableNew({
 	systemId,
-	probes,
+	monitors,
 }: {
 	systemId?: string
-	probes: NetworkProbeRecord[]
+	monitors: NetworkMonitorRecord[]
 }) {
 	const [sorting, setSorting] = useBrowserStorage<SortingState>(
 		`sort-np-${systemId ? 1 : 0}`,
@@ -72,15 +72,15 @@ export default function NetworkProbesTableNew({
 	const [globalFilter, setGlobalFilter] = useState("")
 	const [deleteOpen, setDeleteOpen] = useState(false)
 	const [pendingDeleteIds, setPendingDeleteIds] = useState<string[]>([])
-	const [editingProbe, setEditingProbe] = useState<NetworkProbeRecord>()
+	const [editingMonitor, setEditingMonitor] = useState<NetworkMonitorRecord>()
 
 	const { toast } = useToast()
-	const canManageProbes = !isReadOnlyUser()
+	const canManageMonitors = !isReadOnlyUser()
 
 	const [longestName, longestTarget] = useMemo(() => {
 		let longestName = ""
 		let longestTarget = ""
-		for (const p of probes) {
+		for (const p of monitors) {
 			const name = p.name || p.target
 			if (isVisuallyLonger(name, longestName)) {
 				longestName = name
@@ -90,9 +90,9 @@ export default function NetworkProbesTableNew({
 			}
 		}
 		return [longestName, longestTarget]
-	}, [probes])
+	}, [monitors])
 
-	const runProbeBatch = useCallback(
+	const runMonitorBatch = useCallback(
 		async (ids: string[], enqueue: (batch: ReturnType<typeof pb.createBatch>, id: string) => void) => {
 			let batch = pb.createBatch()
 			let inBatch = 0
@@ -112,12 +112,12 @@ export default function NetworkProbesTableNew({
 	)
 
 	const handleDeleteRequest = useCallback(
-		async (probesToDelete: NetworkProbeRecord[]) => {
-			if (!probesToDelete.length) {
+		async (monitorsToDelete: NetworkMonitorRecord[]) => {
+			if (!monitorsToDelete.length) {
 				return
 			}
 
-			const ids = probesToDelete.map((probe) => probe.id)
+			const ids = monitorsToDelete.map((monitor) => monitor.id)
 			if (ids.length === 1) {
 				try {
 					await pb.collection("network_monitors").delete(ids[0])
@@ -125,7 +125,7 @@ export default function NetworkProbesTableNew({
 					toast({
 						variant: "destructive",
 						title: t`Error`,
-						description: (err as Error)?.message || t`Failed to delete probes.`,
+						description: (err as Error)?.message || t`Failed to delete monitors.`,
 					})
 				}
 				return
@@ -144,25 +144,25 @@ export default function NetworkProbesTableNew({
 		}
 
 		try {
-			await runProbeBatch(pendingDeleteIds, (batch, id) => batch.collection("network_monitors").delete(id))
+			await runMonitorBatch(pendingDeleteIds, (batch, id) => batch.collection("network_monitors").delete(id))
 			setPendingDeleteIds([])
 			setRowSelection({})
 		} catch (err: unknown) {
 			toast({
 				variant: "destructive",
 				title: t`Error`,
-				description: (err as Error)?.message || t`Failed to delete probes.`,
+				description: (err as Error)?.message || t`Failed to delete monitors.`,
 			})
 		}
 	}
 
 	const handleSetEnabled = useCallback(
-		async (probesToUpdate: NetworkProbeRecord[], enabled: boolean) => {
-			if (!probesToUpdate.length) {
+		async (monitorsToUpdate: NetworkMonitorRecord[], enabled: boolean) => {
+			if (!monitorsToUpdate.length) {
 				return
 			}
 
-			const pendingUpdates = probesToUpdate.filter((probe) => probe.enabled !== enabled)
+			const pendingUpdates = monitorsToUpdate.filter((monitor) => monitor.enabled !== enabled)
 			if (!pendingUpdates.length) {
 				return
 			}
@@ -172,37 +172,37 @@ export default function NetworkProbesTableNew({
 					await pb.collection("network_monitors").update(pendingUpdates[0].id, { enabled })
 					return
 				}
-				await runProbeBatch(
-					pendingUpdates.map((probe) => probe.id),
+				await runMonitorBatch(
+					pendingUpdates.map((monitor) => monitor.id),
 					(batch, id) => batch.collection("network_monitors").update(id, { enabled })
 				)
-				if (probesToUpdate.length > 1) {
+				if (monitorsToUpdate.length > 1) {
 					setRowSelection({})
 				}
 			} catch (err: unknown) {
 				toast({
 					variant: "destructive",
 					title: t`Error`,
-					description: (err as Error)?.message || t`Failed to update probes.`,
+					description: (err as Error)?.message || t`Failed to update monitors.`,
 				})
 			}
 		},
-		[runProbeBatch, toast]
+		[runMonitorBatch, toast]
 	)
 
 	const columns = useMemo(() => {
-		let columns = getProbeColumns(longestName, longestTarget, {
-			onEdit: setEditingProbe,
+		let columns = getMonitorColumns(longestName, longestTarget, {
+			onEdit: setEditingMonitor,
 			onDelete: handleDeleteRequest,
 			onSetEnabled: handleSetEnabled,
 		})
 		columns = systemId ? columns.filter((col) => col.id !== "system") : columns
-		columns = canManageProbes ? columns : columns.filter((col) => col.id !== "actions")
+		columns = canManageMonitors ? columns : columns.filter((col) => col.id !== "actions")
 		return columns
-	}, [canManageProbes, handleDeleteRequest, handleSetEnabled, longestName, systemId, longestTarget])
+	}, [canManageMonitors, handleDeleteRequest, handleSetEnabled, longestName, systemId, longestTarget])
 
 	const table = useReactTable({
-		data: probes,
+		data: monitors,
 		columns,
 		getRowId: (row) => row.id,
 		getCoreRowModel: getCoreRowModel(),
@@ -228,9 +228,9 @@ export default function NetworkProbesTableNew({
 		globalFilterFn: (row, _columnId, filterValue) => {
 			const value = (filterValue as string).trim()
 			if (!value) return true
-			const probe = row.original
-			const systemName = $allSystemsById.get()[probe.system]?.name ?? ""
-			const searchString = `${probe.name}${probe.target}${probe.protocol}${systemName}`.toLocaleLowerCase()
+			const monitor = row.original
+			const systemName = $allSystemsById.get()[monitor.system]?.name ?? ""
+			const searchString = `${monitor.name}${monitor.target}${monitor.protocol}${systemName}`.toLocaleLowerCase()
 			return matchesFilterGroups(searchString, parseFilterGroups(value))
 		},
 	})
@@ -251,7 +251,7 @@ export default function NetworkProbesTableNew({
 						</div>
 					</div>
 					<div className="md:ms-auto flex items-center gap-2">
-						{probes.length > 0 && (
+						{monitors.length > 0 && (
 							<div className="relative">
 								<Input
 									placeholder={t`Filter...`}
@@ -274,15 +274,15 @@ export default function NetworkProbesTableNew({
 								)}
 							</div>
 						)}
-						{canManageProbes ? <AddProbeDialog systemId={systemId} probes={probes} /> : null}
-						{canManageProbes ? (
-							<EditProbeDialog
+						{canManageMonitors ? <AddMonitorDialog systemId={systemId} monitors={monitors} /> : null}
+						{canManageMonitors ? (
+							<EditMonitorDialog
 								systemId={systemId}
-								probe={editingProbe}
-								open={!!editingProbe}
+								monitor={editingMonitor}
+								open={!!editingMonitor}
 								setOpen={(open) => {
 									if (!open) {
-										setEditingProbe(undefined)
+										setEditingMonitor(undefined)
 									}
 								}}
 							/>
@@ -322,29 +322,31 @@ export default function NetworkProbesTableNew({
 				</div>
 			</CardHeader>
 			<div className="rounded-md">
-				<NetworkProbesTable table={table} rows={rows} colLength={visibleColumns.length} rowSelection={rowSelection} />
+				<NetworkMonitorsTable table={table} rows={rows} colLength={visibleColumns.length} rowSelection={rowSelection} />
 			</div>
 		</Card>
 	)
 }
 
-const NetworkProbesTable = memo(function NetworkProbeTable({
+const NetworkMonitorsTable = memo(function NetworkMonitorTable({
 	table,
 	rows,
 	colLength,
 	rowSelection: _rowSelection,
 }: {
-	table: TableType<NetworkProbeRecord>
-	rows: Row<NetworkProbeRecord>[]
+	table: TableType<NetworkMonitorRecord>
+	rows: Row<NetworkMonitorRecord>[]
 	colLength: number
 	rowSelection: RowSelectionState
 }) {
 	const scrollRef = useRef<HTMLDivElement>(null)
 	const [sheetOpen, setSheetOpen] = useState(false)
-	const [activeProbeId, setActiveProbeId] = useState<string | null>(null)
-	const activeProbe = activeProbeId ? table.options.data.find((probe) => probe.id === activeProbeId) : undefined
-	const openSheet = useCallback((probe: NetworkProbeRecord) => {
-		setActiveProbeId(probe.id)
+	const [activeMonitorId, setActiveMonitorId] = useState<string | null>(null)
+	const activeMonitor = activeMonitorId
+		? table.options.data.find((monitor) => monitor.id === activeMonitorId)
+		: undefined
+	const openSheet = useCallback((monitor: NetworkMonitorRecord) => {
+		setActiveMonitorId(monitor.id)
 		setSheetOpen(true)
 	}, [])
 
@@ -369,13 +371,13 @@ const NetworkProbesTable = memo(function NetworkProbeTable({
 		>
 			<div style={{ height: `${virtualizer.getTotalSize() + 48}px`, paddingTop, paddingBottom }}>
 				<table className="text-sm w-full h-full text-nowrap">
-					<NetworkProbeTableHead table={table} />
+					<NetworkMonitorTableHead table={table} />
 					<TableBody>
 						{rows.length ? (
 							virtualRows.map((virtualRow) => {
 								const row = rows[virtualRow.index]
 								return (
-									<NetworkProbeTableRow
+									<NetworkMonitorTableRow
 										key={row.id}
 										row={row}
 										virtualRow={virtualRow}
@@ -394,18 +396,18 @@ const NetworkProbesTable = memo(function NetworkProbeTable({
 					</TableBody>
 				</table>
 			</div>
-			<NetworkProbeSheet
+			<NetworkMonitorSheet
 				open={sheetOpen}
 				onOpenChange={(nextOpen) => {
 					setSheetOpen(nextOpen)
 				}}
-				probe={activeProbe}
+				monitor={activeMonitor}
 			/>
 		</div>
 	)
 })
 
-function NetworkProbeTableHead({ table }: { table: TableType<NetworkProbeRecord> }) {
+function NetworkMonitorTableHead({ table }: { table: TableType<NetworkMonitorRecord> }) {
 	return (
 		<TableHeader className="sticky top-0 z-50 w-full border-b-2">
 			{table.getHeaderGroups().map((headerGroup) => (
@@ -423,16 +425,16 @@ function NetworkProbeTableHead({ table }: { table: TableType<NetworkProbeRecord>
 	)
 }
 
-const NetworkProbeTableRow = memo(function NetworkProbeTableRow({
+const NetworkMonitorTableRow = memo(function NetworkMonitorTableRow({
 	row,
 	virtualRow,
 	isSelected,
 	openSheet,
 }: {
-	row: Row<NetworkProbeRecord>
+	row: Row<NetworkMonitorRecord>
 	virtualRow: VirtualItem
 	isSelected: boolean
-	openSheet: (probe: NetworkProbeRecord) => void
+	openSheet: (monitor: NetworkMonitorRecord) => void
 }) {
 	return (
 		<TableRow
@@ -456,36 +458,36 @@ const NetworkProbeTableRow = memo(function NetworkProbeTableRow({
 	)
 })
 
-function NetworkProbeSheet({
+function NetworkMonitorSheet({
 	open,
 	onOpenChange,
-	probe,
+	monitor,
 }: {
 	open: boolean
 	onOpenChange: (open: boolean) => void
-	probe?: NetworkProbeRecord
+	monitor?: NetworkMonitorRecord
 }) {
-	if (!probe) {
+	if (!monitor) {
 		return null
 	}
 
-	return <NetworkProbeSheetContent key={probe.system} open={open} onOpenChange={onOpenChange} probe={probe} />
+	return <NetworkMonitorSheetContent key={monitor.system} open={open} onOpenChange={onOpenChange} monitor={monitor} />
 }
 
-function NetworkProbeSheetContent({
+function NetworkMonitorSheetContent({
 	open,
 	onOpenChange,
-	probe,
+	monitor,
 }: {
 	open: boolean
 	onOpenChange: (open: boolean) => void
-	probe: NetworkProbeRecord
+	monitor: NetworkMonitorRecord
 }) {
 	const chartTime = useStore($chartTime)
 	const direction = useStore($direction)
-	const system = useStore($allSystemsById)[probe.system]
+	const system = useStore($allSystemsById)[monitor.system]
 
-	const probeStats = useNetworkProbeStats({ systemId: probe.system, chartTime })
+	const monitorStats = useNetworkMonitorStats({ systemId: monitor.system, chartTime })
 
 	const chartData = useMemo<ChartData>(
 		() => ({
@@ -495,14 +497,14 @@ function NetworkProbeSheetContent({
 		}),
 		[system?.info?.v, direction, chartTime]
 	)
-	const hasProbeStats = probeStats.some((record) => record.stats?.[probe.id] != null)
-	const probeLabel = probe.name || probe.target
+	const hasMonitorStats = monitorStats.some((record) => record.stats?.[monitor.id] != null)
+	const monitorLabel = monitor.name || monitor.target
 
 	return (
 		<Sheet open={open} onOpenChange={onOpenChange}>
 			<SheetContent className="w-full sm:max-w-220 overflow-auto p-4 sm:p-6">
 				<SheetHeader className="mb-0 border-b p-0 pb-4">
-					<SheetTitle>{probeLabel}</SheetTitle>
+					<SheetTitle>{monitorLabel}</SheetTitle>
 					<SheetDescription className="flex flex-wrap items-center gap-x-2 gap-y-1">
 						<ServerIcon className="size-3.5 text-muted-foreground" />
 						<Link className="hover:underline" href={getPagePath($router, "system", { id: system?.id ?? "" })}>
@@ -510,28 +512,33 @@ function NetworkProbeSheetContent({
 						</Link>
 						<Separator orientation="vertical" className="h-2.5 bg-muted-foreground opacity-70" />
 						<ArrowLeftRightIcon className="size-3.5 text-muted-foreground" />
-						{probe.protocol.toUpperCase()}
+						{monitor.protocol.toUpperCase()}
 						<Separator orientation="vertical" className="h-2.5 bg-muted-foreground opacity-70" />
 						<GlobeIcon className="size-3.5 text-muted-foreground" />
-						{probe.target}
-						{probe.protocol === "tcp" && probe.port > 0 && (
+						{monitor.target}
+						{monitor.protocol === "tcp" && monitor.port > 0 && (
 							<>
 								<Separator orientation="vertical" className="h-2.5 bg-muted-foreground opacity-70" />
 								<EthernetPortIcon className="size-3.5 text-muted-foreground" />
-								<span>{probe.port}</span>
+								<span>{monitor.port}</span>
 							</>
 						)}
 					</SheetDescription>
 				</SheetHeader>
 				<div className="grid gap-4">
 					<ChartTimeSelect className="bg-card" agentVersion={chartData.agentVersion} />
-					<AvgMinMaxResponseChart probeStats={probeStats} probe={probe} chartData={chartData} empty={!hasProbeStats} />
-					<LossChart
-						probeStats={probeStats}
-						grid={false}
-						probes={[probe]}
+					<AvgMinMaxResponseChart
+						monitorStats={monitorStats}
+						monitor={monitor}
 						chartData={chartData}
-						empty={!hasProbeStats}
+						empty={!hasMonitorStats}
+					/>
+					<LossChart
+						monitorStats={monitorStats}
+						grid={false}
+						monitors={[monitor]}
+						chartData={chartData}
+						empty={!hasMonitorStats}
 						showFilter={false}
 					/>
 				</div>

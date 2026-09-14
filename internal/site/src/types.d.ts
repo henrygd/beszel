@@ -624,7 +624,7 @@ export interface UpdateInfo {
 	url: string // url to new version
 }
 
-export interface NetworkProbeRecord {
+export interface NetworkMonitorRecord {
 	id: string
 	system: string
 	name: string
@@ -653,24 +653,24 @@ export interface NetworkProbeRecord {
  *
  * 3: packet loss percentage (0-100)
  */
-type ProbeStats = number[]
+type MonitorStats = number[]
 
-/** Raw per-probe record stored in the DB. stats is a flat ProbeStats array. */
-export interface RawProbeStatsRecord {
+/** Raw per-monitor record stored in the DB. stats is a flat MonitorStats array. */
+export interface RawMonitorStatsRecord {
 	id?: string
 	type?: string
-	probe: string
-	stats: ProbeStats
+	monitor: string
+	stats: MonitorStats
 	created: number // unix timestamp (ms)
 }
 
 /**
- * Merged stats record keyed by probe ID, used by chart components.
- * Constructed from multiple RawProbeStatsRecord entries sharing the same timestamp.
+ * Merged stats record keyed by monitor ID, used by chart components.
+ * Constructed from multiple RawMonitorStatsRecord entries sharing the same timestamp.
  */
-export interface NetworkProbeStatsRecord {
+export interface NetworkMonitorStatsRecord {
 	id?: string
 	type?: string
-	stats: Record<string, ProbeStats>
+	stats: Record<string, MonitorStats>
 	created: number // unix timestamp (ms) for Recharts xAxis
 }

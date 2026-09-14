@@ -109,7 +109,10 @@ export default function Navbar() {
 								<HardDriveIcon className="h-4 w-4 me-2.5" strokeWidth={1.5} />
 								<span>S.M.A.R.T.</span>
 							</DropdownMenuItem>
-							<DropdownMenuItem onClick={() => navigate(getPagePath($router, "probes"))} className="flex items-center">
+							<DropdownMenuItem
+								onClick={() => navigate(getPagePath($router, "monitors"))}
+								className="flex items-center"
+							>
 								<NetworkIcon className="h-4 w-4 me-2.5" strokeWidth={1.5} />
 								<Trans>Network Monitors</Trans>
 							</DropdownMenuItem>
@@ -187,10 +190,10 @@ export default function Navbar() {
 				<Tooltip>
 					<TooltipTrigger asChild>
 						<Link
-							href={getPagePath($router, "probes")}
+							href={getPagePath($router, "monitors")}
 							className={cn("hidden md:grid", buttonVariants({ variant: "ghost", size: "icon" }))}
 							aria-label="Network Monitors"
-							onMouseEnter={() => import("@/components/routes/probes")}
+							onMouseEnter={() => import("@/components/routes/monitors")}
 						>
 							<NetworkIcon className="h-[1.2rem] w-[1.2rem]" strokeWidth={1.5} />
 						</Link>
