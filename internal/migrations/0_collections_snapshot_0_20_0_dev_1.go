@@ -2077,7 +2077,7 @@ func init() {
 				"type": "date"
 			}
 		],
-		"id": "nm_probes_001",
+		"id": "nm_monitors_001",
 		"indexes": [
 			"CREATE INDEX ` + "`" + `idx_nm_system_enabled` + "`" + ` ON ` + "`" + `network_monitors` + "`" + ` (` + "`" + `system` + "`" + `)"
 		],
@@ -2112,7 +2112,7 @@ func init() {
 				"collectionId": "2hz5ncl8tizk5nx",
 				"help": "",
 				"hidden": false,
-				"id": "nps_system",
+				"id": "nms_system",
 				"maxSelect": 1,
 				"minSelect": 0,
 				"name": "system",
@@ -2123,10 +2123,10 @@ func init() {
 			},
 			{
 				"cascadeDelete": true,
-				"collectionId": "nm_probes_001",
+				"collectionId": "nm_monitors_001",
 				"help": "",
 				"hidden": false,
-				"id": "nps_probe",
+				"id": "nms_monitor",
 				"maxSelect": 1,
 				"minSelect": 0,
 				"name": "probe",
@@ -2138,7 +2138,7 @@ func init() {
 			{
 				"help": "",
 				"hidden": false,
-				"id": "nps_stats",
+				"id": "nms_stats",
 				"maxSize": 2000000,
 				"name": "stats",
 				"presentable": false,
@@ -2149,7 +2149,7 @@ func init() {
 			{
 				"help": "",
 				"hidden": false,
-				"id": "nps_type",
+				"id": "nms_type",
 				"maxSelect": 1,
 				"name": "type",
 				"presentable": false,
@@ -2180,8 +2180,8 @@ func init() {
 		],
 		"id": "nm_stats_001",
 		"indexes": [
-			"CREATE INDEX IF NOT EXISTS ` + "`" + `idx_nps_system_type_created` + "`" + ` ON ` + "`" + `network_monitor_stats` + "`" + ` (` + "`" + `system` + "`" + `, ` + "`" + `type` + "`" + `, ` + "`" + `created` + "`" + `)",
-			"CREATE INDEX IF NOT EXISTS ` + "`" + `idx_nps_probe_type_created` + "`" + ` ON ` + "`" + `network_monitor_stats` + "`" + ` (` + "`" + `probe` + "`" + `, ` + "`" + `type` + "`" + `, ` + "`" + `created` + "`" + `)"
+			"CREATE INDEX IF NOT EXISTS ` + "`" + `idx_nms_system_type_created` + "`" + ` ON ` + "`" + `network_monitor_stats` + "`" + ` (` + "`" + `system` + "`" + `, ` + "`" + `type` + "`" + `, ` + "`" + `created` + "`" + `)",
+			"CREATE INDEX IF NOT EXISTS ` + "`" + `idx_nms_monitor_type_created` + "`" + ` ON ` + "`" + `network_monitor_stats` + "`" + ` (` + "`" + `probe` + "`" + `, ` + "`" + `type` + "`" + `, ` + "`" + `created` + "`" + `)"
 		],
 		"listRule": null,
 		"name": "network_monitor_stats",
