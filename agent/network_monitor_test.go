@@ -16,77 +16,17 @@ import (
 	"golang.org/x/net/dns/dnsmessage"
 )
 
-func TestMonitorTaskAggregateLockedUsesRawSamplesForShortWindows(t *testing.T) {
-	now := time.Date(2026, time.April, 21, 12, 0, 0, 0, time.UTC)
-	task := &monitorTask{}
-
-	task.addSampleLocked(monitorSample{responseUs: 10, timestamp: now.Add(-90 * time.Second)})
-	task.addSampleLocked(monitorSample{responseUs: 20, timestamp: now.Add(-30 * time.Second)})
-	task.addSampleLocked(monitorSample{responseUs: -1, timestamp: now.Add(-10 * time.Second)})
-
-	agg := task.aggregateLocked(time.Minute, now)
-	require.True(t, agg.hasData())
-	assert.Equal(t, int64(2), agg.totalCount)
-	assert.Equal(t, int64(1), agg.successCount)
-	result := agg.result()
-	assert.Equal(t, int64(20), result.AvgResponse)
-	assert.Equal(t, int64(20), result.MinResponse)
-	assert.Equal(t, int64(20), result.MaxResponse)
-	assert.Equal(t, 50.0, result.PacketLoss)
-}
-
-func TestMonitorTaskAggregateLockedUsesMinuteBucketsForLongWindows(t *testing.T) {
-	now := time.Date(2026, time.April, 21, 12, 0, 30, 0, time.UTC)
-	task := &monitorTask{}
-
-	task.addSampleLocked(monitorSample{responseUs: 10, timestamp: now.Add(-11 * time.Minute)})
-	task.addSampleLocked(monitorSample{responseUs: 20, timestamp: now.Add(-9 * time.Minute)})
-	task.addSampleLocked(monitorSample{responseUs: 40, timestamp: now.Add(-5 * time.Minute)})
-	task.addSampleLocked(monitorSample{responseUs: -1, timestamp: now.Add(-90 * time.Second)})
-	task.addSampleLocked(monitorSample{responseUs: 30, timestamp: now.Add(-30 * time.Second)})
-
-	agg := task.aggregateLocked(10*time.Minute, now)
-	require.True(t, agg.hasData())
-	assert.Equal(t, int64(4), agg.totalCount)
-	assert.Equal(t, int64(3), agg.successCount)
-	result := agg.result()
-	assert.Equal(t, int64(30), result.AvgResponse)
-	assert.Equal(t, int64(20), result.MinResponse)
-	assert.Equal(t, int64(40), result.MaxResponse)
-	assert.Equal(t, 25.0, result.PacketLoss)
-}
-
-func TestMonitorTaskAddSampleLockedTrimsRawSamplesButKeepsBucketHistory(t *testing.T) {
-	now := time.Date(2026, time.April, 21, 12, 0, 0, 0, time.UTC)
-	task := &monitorTask{}
-
-	task.addSampleLocked(monitorSample{responseUs: 10, timestamp: now.Add(-10 * time.Minute)})
-	task.addSampleLocked(monitorSample{responseUs: 20, timestamp: now})
-
-	require.Len(t, task.samples, 1)
-	assert.Equal(t, int64(20), task.samples[0].responseUs)
-
-	agg := task.aggregateLocked(10*time.Minute, now)
-	require.True(t, agg.hasData())
-	assert.Equal(t, int64(2), agg.totalCount)
-	assert.Equal(t, int64(2), agg.successCount)
-	result := agg.result()
-	assert.Equal(t, int64(15), result.AvgResponse)
-	assert.Equal(t, int64(10), result.MinResponse)
-	assert.Equal(t, int64(20), result.MaxResponse)
-	assert.Equal(t, 0.0, result.PacketLoss)
-}
-
 func TestMonitorManagerGetResultsIncludesHourResponseRange(t *testing.T) {
 	now := time.Now().UTC()
-	task := &monitorTask{config: monitor.Config{ID: "monitor-1"}}
-	task.addSampleLocked(monitorSample{responseUs: 10, timestamp: now.Add(-30 * time.Minute)})
-	task.addSampleLocked(monitorSample{responseUs: 20, timestamp: now.Add(-9 * time.Minute)})
-	task.addSampleLocked(monitorSample{responseUs: 40, timestamp: now.Add(-5 * time.Minute)})
-	task.addSampleLocked(monitorSample{responseUs: 30, timestamp: now.Add(-50 * time.Second)})
-	task.addSampleLocked(monitorSample{responseUs: -1, timestamp: now.Add(-30 * time.Second)})
+	task := newMonitorTask(monitor.Config{ID: "monitor-1"})
+	task.history.addSampleLocked(monitorSample{responseUs: 10, timestamp: now.Add(-30 * time.Minute)})
+	task.history.addSampleLocked(monitorSample{responseUs: 20, timestamp: now.Add(-9 * time.Minute)})
+	task.history.addSampleLocked(monitorSample{responseUs: 40, timestamp: now.Add(-5 * time.Minute)})
+	task.history.addSampleLocked(monitorSample{responseUs: 30, timestamp: now.Add(-50 * time.Second)})
+	task.history.addSampleLocked(monitorSample{responseUs: -1, timestamp: now.Add(-30 * time.Second)})
 
-	pm := &MonitorManager{monitors: map[string]*monitorTask{"icmp:example.com": task}}
+	pm := newMonitorManager()
+	pm.monitors = map[string]*monitorTask{"icmp:example.com": task}
 
 	results := pm.GetResults(uint16(time.Minute / time.Millisecond))
 	result, ok := results["monitor-1"]
@@ -103,11 +43,12 @@ func TestMonitorManagerGetResultsIncludesHourResponseRange(t *testing.T) {
 
 func TestMonitorManagerGetResultsIncludesLossOnlyHourData(t *testing.T) {
 	now := time.Now().UTC()
-	task := &monitorTask{config: monitor.Config{ID: "monitor-1"}}
-	task.addSampleLocked(monitorSample{responseUs: -1, timestamp: now.Add(-30 * time.Second)})
-	task.addSampleLocked(monitorSample{responseUs: -1, timestamp: now.Add(-10 * time.Second)})
+	task := newMonitorTask(monitor.Config{ID: "monitor-1"})
+	task.history.addSampleLocked(monitorSample{responseUs: -1, timestamp: now.Add(-30 * time.Second)})
+	task.history.addSampleLocked(monitorSample{responseUs: -1, timestamp: now.Add(-10 * time.Second)})
 
-	pm := &MonitorManager{monitors: map[string]*monitorTask{"icmp:example.com": task}}
+	pm := newMonitorManager()
+	pm.monitors = map[string]*monitorTask{"icmp:example.com": task}
 
 	results := pm.GetResults(uint16(time.Minute / time.Millisecond))
 	result, ok := results["monitor-1"]
@@ -147,11 +88,10 @@ func TestMonitorManagerSyncMonitorsStopsRemovedTasksButKeepsExisting(t *testing.
 
 	keptTask := newMonitorTask(keepCfg)
 	removedTask := newMonitorTask(removeCfg)
-	pm := &MonitorManager{
-		monitors: map[string]*monitorTask{
-			keepCfg.ID:   keptTask,
-			removeCfg.ID: removedTask,
-		},
+	pm := newMonitorManager()
+	pm.monitors = map[string]*monitorTask{
+		keepCfg.ID:   keptTask,
+		removeCfg.ID: removedTask,
 	}
 
 	pm.SyncMonitors([]monitor.Config{keepCfg})
@@ -177,10 +117,9 @@ func TestMonitorManagerSyncMonitorsRestartsChangedConfig(t *testing.T) {
 	originalCfg := monitor.Config{ID: "monitor-1", Target: "ignored-a", Protocol: "noop", Interval: 10}
 	updatedCfg := monitor.Config{ID: "monitor-1", Target: "ignored-b", Protocol: "noop", Interval: 10}
 	originalTask := newMonitorTask(originalCfg)
-	pm := &MonitorManager{
-		monitors: map[string]*monitorTask{
-			originalCfg.ID: originalTask,
-		},
+	pm := newMonitorManager()
+	pm.monitors = map[string]*monitorTask{
+		originalCfg.ID: originalTask,
 	}
 
 	pm.SyncMonitors([]monitor.Config{updatedCfg})
@@ -204,8 +143,8 @@ func TestMonitorManagerApplySyncUpsertRunsImmediatelyAndReturnsResult(t *testing
 	defer server.Close()
 
 	pm := &MonitorManager{
-		monitors:   make(map[string]*monitorTask),
-		httpClient: server.Client(),
+		monitors: make(map[string]*monitorTask),
+		probe:    networkMonitorProbe(server.Client()),
 	}
 
 	resp, err := pm.HandleSyncRequest(monitor.SyncRequest{
@@ -222,9 +161,9 @@ func TestMonitorManagerApplySyncUpsertRunsImmediatelyAndReturnsResult(t *testing
 
 	task := pm.monitors["monitor-1"]
 	require.NotNil(t, task)
-	task.mu.Lock()
-	defer task.mu.Unlock()
-	require.Len(t, task.samples, 1)
+	task.history.mu.Lock()
+	defer task.history.mu.Unlock()
+	require.Len(t, task.history.samples, 1)
 }
 
 func TestMonitorManagerUpsertMonitorKeepsHistoryWhenOnlyIntervalChanges(t *testing.T) {
@@ -233,12 +172,11 @@ func TestMonitorManagerUpsertMonitorKeepsHistoryWhenOnlyIntervalChanges(t *testi
 	now := time.Now().UTC()
 
 	existingTask := newMonitorTask(originalCfg)
-	existingTask.addSampleLocked(monitorSample{responseUs: 12, timestamp: now.Add(-50 * time.Minute)})
-	existingTask.addSampleLocked(monitorSample{responseUs: 24, timestamp: now.Add(-30 * time.Second)})
+	existingTask.history.addSampleLocked(monitorSample{responseUs: 12, timestamp: now.Add(-50 * time.Minute)})
+	existingTask.history.addSampleLocked(monitorSample{responseUs: 24, timestamp: now.Add(-30 * time.Second)})
 
-	pm := &MonitorManager{
-		monitors: map[string]*monitorTask{originalCfg.ID: existingTask},
-	}
+	pm := newMonitorManager()
+	pm.monitors = map[string]*monitorTask{originalCfg.ID: existingTask}
 
 	result, err := pm.UpsertMonitor(updatedCfg, false)
 	defer pm.Stop()
@@ -251,12 +189,12 @@ func TestMonitorManagerUpsertMonitorKeepsHistoryWhenOnlyIntervalChanges(t *testi
 	assert.NotSame(t, existingTask, updatedTask)
 	assert.Equal(t, updatedCfg, updatedTask.config)
 
-	updatedTask.mu.Lock()
-	defer updatedTask.mu.Unlock()
-	require.Len(t, updatedTask.samples, 1)
-	assert.Equal(t, int64(24), updatedTask.samples[0].responseUs)
+	updatedTask.history.mu.Lock()
+	defer updatedTask.history.mu.Unlock()
+	require.Len(t, updatedTask.history.samples, 1)
+	assert.Equal(t, int64(24), updatedTask.history.samples[0].responseUs)
 
-	agg := updatedTask.aggregateLocked(time.Hour, now)
+	agg := updatedTask.history.aggregateLocked(time.Hour, now)
 	require.True(t, agg.hasData())
 	assert.Equal(t, int64(2), agg.totalCount)
 	assert.Equal(t, int64(2), agg.successCount)
@@ -272,9 +210,8 @@ func TestMonitorManagerUpsertMonitorKeepsHistoryWhenOnlyIntervalChanges(t *testi
 func TestMonitorManagerApplySyncDeleteRemovesTask(t *testing.T) {
 	config := monitor.Config{ID: "monitor-1", Target: "1.1.1.1", Protocol: "icmp", Interval: 10}
 	task := newMonitorTask(config)
-	pm := &MonitorManager{
-		monitors: map[string]*monitorTask{config.ID: task},
-	}
+	pm := newMonitorManager()
+	pm.monitors = map[string]*monitorTask{config.ID: task}
 
 	_, err := pm.HandleSyncRequest(monitor.SyncRequest{
 		Action: monitor.SyncActionDelete,
@@ -472,7 +409,7 @@ func TestMonitorManagerCancelsActiveProbe(t *testing.T) {
 			cfg := monitor.Config{ID: "test", Protocol: "http", Target: server.URL, Interval: 3600}
 			task := newMonitorTask(cfg)
 			// Seed history to ensure a canceled RunNow does not return an old result.
-			task.addSampleLocked(monitorSample{responseUs: 123, timestamp: time.Now()})
+			task.history.addSampleLocked(monitorSample{responseUs: 123, timestamp: time.Now()})
 			pm.monitors[cfg.ID] = task
 			done := make(chan *monitor.Result, 1)
 			go func() {
@@ -510,9 +447,9 @@ func TestMonitorManagerCancelsActiveProbe(t *testing.T) {
 			case <-time.After(time.Second):
 				t.Fatal("RunNow did not return after cancellation")
 			}
-			task.mu.Lock()
-			assert.Len(t, task.samples, 1, "cancellation must not record packet loss")
-			task.mu.Unlock()
+			task.history.mu.Lock()
+			assert.Len(t, task.history.samples, 1, "cancellation must not record packet loss")
+			task.history.mu.Unlock()
 		})
 	}
 }
@@ -573,15 +510,15 @@ func TestMonitorProbeTimeoutRecordsLoss(t *testing.T) {
 	defer server.Close()
 	defer close(release)
 	pm := newMonitorManager()
-	pm.httpClient.Timeout = 20 * time.Millisecond
+	pm.probe = networkMonitorProbe(&http.Client{Timeout: 20 * time.Millisecond})
 	task := newMonitorTask(monitor.Config{ID: "timeout", Protocol: "http", Target: server.URL})
 	defer task.cancel()
 
-	result := pm.runMonitorNow(task)
+	result := task.runProbe(pm.probe)
 	require.NotNil(t, result)
 	assert.Equal(t, 100.0, result.PacketLoss)
 	assert.Equal(t, 100.0, result.PacketLoss1h)
-	require.Len(t, task.samples, 1)
-	assert.Equal(t, int64(-1), task.samples[0].responseUs)
+	require.Len(t, task.history.samples, 1)
+	assert.Equal(t, int64(-1), task.history.samples[0].responseUs)
 	assert.NoError(t, task.ctx.Err(), "a probe timeout must not cancel the task")
 }
