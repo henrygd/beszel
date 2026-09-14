@@ -35,6 +35,12 @@ type CpuMetrics struct {
 // getCpuMetrics calculates detailed CPU usage metrics using cached previous measurements.
 // It returns percentages for total, user, system, iowait, and steal time.
 func getCpuMetrics(cacheTimeMs uint16) (CpuMetrics, error) {
+	// Inside a container, /proc/stat reports the host cores' counters (via
+	// lxcfs on LXC, or the host's procfs elsewhere), not the container's own
+	// usage. Prefer the cgroup's own CPU accounting when available. (#2332)
+	if metrics, ok := containerCpuMetrics(cacheTimeMs); ok {
+		return metrics, nil
+	}
 	times, err := cpu.Times(false)
 	if err != nil || len(times) == 0 {
 		return CpuMetrics{}, err
