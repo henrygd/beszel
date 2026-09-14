@@ -5,6 +5,7 @@ import (
 	"context"
 	"crypto/rand"
 	"errors"
+	"fmt"
 	"math"
 	"net"
 	"os"
@@ -12,6 +13,7 @@ import (
 	"regexp"
 	"runtime"
 	"strconv"
+	"strings"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -23,7 +25,8 @@ import (
 	"log/slog"
 )
 
-var pingTimeRegex = regexp.MustCompile(`time[=<]([\d.]+)\s*ms`)
+// Match the numeric RTT independently of the localized label used by Windows.
+var pingTimeRegex = regexp.MustCompile(`(?i)[=<]\s*([0-9]+(?:[.,][0-9]+)?)\s*ms\b`)
 
 var icmpSequence atomic.Uint32
 
@@ -106,7 +109,7 @@ func monitorICMP(ctx context.Context, target string) (int64, error) {
 	case icmpDatagram:
 		return monitorICMPNative(ctx, family.dgramNetwork, family, &net.UDPAddr{IP: ip})
 	case icmpExecFallback:
-		return monitorICMPExec(ctx, target, family.isIPv6)
+		return monitorICMPExec(ctx, ip.String(), family.isIPv6)
 	default:
 		return -1, errors.New("unsupported ICMP mode")
 	}
@@ -249,46 +252,61 @@ func icmpAddrIP(addr net.Addr) net.IP {
 	}
 }
 
+// pingCommand selects the executable and arguments for the supported agent platforms.
+// The context deadline enforces the timeout: -W has incompatible meanings across
+// Linux, BSD IPv4 ping, and macOS ping6.
+func pingCommand(goos, target string, isIPv6 bool) (string, []string, error) {
+	family := "-4"
+	if isIPv6 {
+		family = "-6"
+	}
+	switch goos {
+	case "windows":
+		return "ping", []string{family, "-n", "1", "-w", "3000", target}, nil
+	case "linux":
+		return "ping", []string{family, "-n", "-c", "1", target}, nil
+	case "darwin", "freebsd", "openbsd":
+		command := "ping"
+		if isIPv6 {
+			command = "ping6"
+		}
+		return command, []string{"-n", "-c", "1", target}, nil
+	default:
+		return "", nil, fmt.Errorf("ping fallback is unsupported on %s", goos)
+	}
+}
+
 // monitorICMPExec falls back to the system ping command. Returns -1 and an error on failure.
 func monitorICMPExec(ctx context.Context, target string, isIPv6 bool) (int64, error) {
-	var cmd *exec.Cmd
-	switch runtime.GOOS {
-	case "windows":
-		if isIPv6 {
-			cmd = exec.CommandContext(ctx, "ping", "-6", "-n", "1", "-w", "3000", target)
-		} else {
-			cmd = exec.CommandContext(ctx, "ping", "-n", "1", "-w", "3000", target)
-		}
-	default:
-		if isIPv6 {
-			cmd = exec.CommandContext(ctx, "ping", "-6", "-c", "1", "-W", "3", target)
-		} else {
-			cmd = exec.CommandContext(ctx, "ping", "-c", "1", "-W", "3", target)
-		}
+	ctx, cancel := context.WithTimeout(ctx, 3*time.Second)
+	defer cancel()
+	name, args, err := pingCommand(runtime.GOOS, target, isIPv6)
+	if err != nil {
+		return -1, err
 	}
-
-	start := time.Now()
+	cmd := exec.CommandContext(ctx, name, args...)
+	// Keep Unix output and decimal formatting stable. Windows ignores LC_ALL.
+	cmd.Env = append(os.Environ(), "LC_ALL=C")
 	output, err := cmd.Output()
 	if ctx.Err() != nil {
 		return -1, ctx.Err()
 	}
 	if err != nil {
-		// If ping fails but we got output, still try to parse
-		if len(output) == 0 {
-			return -1, err
-		}
+		return -1, fmt.Errorf("%s failed: %w", name, err)
 	}
+	return parsePingResponse(output)
+}
 
+// parsePingResponse returns the reported RTT, never subprocess execution time.
+// For a bounded value such as Windows' time<1ms, retain the reported upper bound.
+func parsePingResponse(output []byte) (int64, error) {
 	matches := pingTimeRegex.FindSubmatch(output)
-	if len(matches) >= 2 {
-		if ms, err := strconv.ParseFloat(string(matches[1]), 64); err == nil {
-			return int64(math.Round(ms * 1000)), nil
-		}
+	if len(matches) < 2 {
+		return -1, errors.New("ping output contains no round-trip time")
 	}
-
-	// Fallback: use wall clock time if ping succeeded but parsing failed
-	if err == nil {
-		return time.Since(start).Microseconds(), nil
+	ms, err := strconv.ParseFloat(strings.ReplaceAll(string(matches[1]), ",", "."), 64)
+	if err != nil || math.IsInf(ms, 0) || ms >= float64(math.MaxInt64)/1000 {
+		return -1, errors.New("invalid round-trip time in ping output")
 	}
-	return -1, err
+	return int64(math.Round(ms * 1000)), nil
 }

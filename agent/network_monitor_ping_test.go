@@ -5,6 +5,7 @@ package agent
 import (
 	"context"
 	"errors"
+	"fmt"
 	"net"
 	"os"
 	"path/filepath"
@@ -80,6 +81,102 @@ func TestMonitorICMPExecCancellation(t *testing.T) {
 		require.ErrorIs(t, err, context.DeadlineExceeded)
 	case <-time.After(time.Second):
 		t.Fatal("cancellation did not terminate ping")
+	}
+}
+
+func TestPingCommand(t *testing.T) {
+	for _, goos := range []string{"linux", "windows", "darwin", "freebsd", "openbsd"} {
+		for _, ipv6 := range []bool{false, true} {
+			t.Run(fmt.Sprintf("%s/ipv6=%t", goos, ipv6), func(t *testing.T) {
+				target, family := "192.0.2.1", "-4"
+				if ipv6 {
+					target, family = "2001:db8::1", "-6"
+				}
+				name, args, err := pingCommand(goos, target, ipv6)
+				require.NoError(t, err)
+				wantName := "ping"
+				wantArgs := []string{"-n", "-c", "1", target}
+				switch goos {
+				case "windows":
+					wantArgs = []string{family, "-n", "1", "-w", "3000", target}
+				case "linux":
+					wantArgs = append([]string{family}, wantArgs...)
+				default:
+					if ipv6 {
+						wantName = "ping6"
+					}
+				}
+				assert.Equal(t, wantName, name)
+				assert.Equal(t, wantArgs, args)
+			})
+		}
+	}
+	_, _, err := pingCommand("unsupported", "192.0.2.1", false)
+	require.Error(t, err)
+}
+
+func TestParsePingResponse(t *testing.T) {
+	for _, tc := range []struct {
+		name   string
+		output string
+		wantUs int64
+	}{
+		{"linux", "64 bytes from 192.0.2.1: icmp_seq=1 ttl=64 time=12.345 ms", 12345},
+		{"bsd", "64 bytes from 192.0.2.1: icmp_seq=0 ttl=64 time=0.023 ms", 23},
+		{"ipv6", "64 bytes from 2001:db8::1: icmp_seq=0 hlim=64 time=1.234 ms", 1234},
+		{"windows", "Reply from 192.0.2.1: bytes=32 time=12ms TTL=128", 12000},
+		{"windows submillisecond", "Reply from ::1: time<1ms", 1000},
+		{"localized windows", "Antwort von 192.0.2.1: Bytes=32 Zeit=12ms TTL=128", 12000},
+		{"decimal comma", "64 bytes from 192.0.2.1: time=1,234 ms", 1234},
+		{"rounding", "time=0.1236 ms", 124},
+		{"empty", "", -1},
+		{"timeout", "Request timed out.", -1},
+		{"unreachable", "Reply from 192.0.2.1: Destination host unreachable.", -1},
+		{"malformed", "time=oops ms", -1},
+		{"negative", "time=-1 ms", -1},
+		{"overflow", "time=999999999999999999999 ms", -1},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			responseUs, err := parsePingResponse([]byte(tc.output))
+			if tc.wantUs < 0 {
+				require.Error(t, err)
+			} else {
+				require.NoError(t, err)
+			}
+			assert.Equal(t, tc.wantUs, responseUs)
+		})
+	}
+}
+
+func TestMonitorICMPExecOutput(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("test uses a POSIX shell stub for ping")
+	}
+	for _, tc := range []struct {
+		name   string
+		output string
+		exit   int
+		wantUs int64
+	}{
+		{"success", "time=1.234 ms", 0, 1234},
+		{"missing RTT", "unrecognized output", 0, -1},
+		{"failed command with RTT", "time=1.234 ms", 1, -1},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			dir := t.TempDir()
+			// Also verify an inherited locale cannot override the C locale.
+			script := fmt.Sprintf("#!/bin/sh\n[ \"$LC_ALL\" = C ] || exit 2\nprintf '%%s\\n' '%s'\nexit %d\n", tc.output, tc.exit)
+			require.NoError(t, os.WriteFile(filepath.Join(dir, "ping"), []byte(script), 0o755))
+			t.Setenv("PATH", dir+string(os.PathListSeparator)+os.Getenv("PATH"))
+			t.Setenv("LC_ALL", "de_DE.UTF-8")
+			responseUs, err := monitorICMPExec(t.Context(), "127.0.0.1", false)
+			if tc.wantUs < 0 {
+				require.Error(t, err)
+			} else {
+				require.NoError(t, err)
+			}
+			assert.Equal(t, tc.wantUs, responseUs)
+		})
 	}
 }
 
