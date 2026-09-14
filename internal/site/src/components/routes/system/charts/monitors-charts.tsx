@@ -4,7 +4,7 @@ import { decimalString, formatMicroseconds, matchesFilterGroups, parseFilterGrou
 import { $monitorFilter } from "@/lib/stores"
 import { useLingui } from "@lingui/react/macro"
 import { ChartCard, FilterBar } from "../chart-card"
-import type { ChartData, NetworkMonitorRecord, NetworkMonitorStatsRecord } from "@/types"
+import type { ChartData, MonitorStats, NetworkMonitorRecord, NetworkMonitorStatsRecord } from "@/types"
 import { useMemo } from "react"
 import { useStore } from "@nanostores/react"
 
@@ -20,7 +20,7 @@ type MonitorChartProps = {
 }
 
 type MonitorChartBaseProps = MonitorChartProps & {
-	valueIndex: number
+	metric: keyof MonitorStats
 	title: string
 	description: string
 	tickFormatter: (value: number) => string
@@ -34,7 +34,7 @@ function MonitorChart({
 	monitors,
 	chartData,
 	empty,
-	valueIndex,
+	metric,
 	title,
 	description,
 	tickFormatter,
@@ -64,13 +64,13 @@ function MonitorChart({
 			points.push({
 				order: i,
 				label,
-				dataKey: (record: NetworkMonitorStatsRecord) => record.stats?.[p.id]?.[valueIndex] ?? null,
+				dataKey: (record: NetworkMonitorStatsRecord) => record.stats?.[p.id]?.[metric] ?? null,
 				dot,
 				color: count <= 5 ? i + 1 : `hsl(${(i * 360) / count}, var(--chart-saturation), var(--chart-lightness))`,
 			})
 		}
 		return { dataPoints: points, visibleKeys: visibleIDs }
-	}, [monitors, filter, valueIndex, chartData.chartTime])
+	}, [monitors, filter, metric, chartData.chartTime])
 
 	const filteredMonitorStats = useMemo(() => {
 		if (!visibleKeys.length) return monitorStats
@@ -119,11 +119,11 @@ export function AvgMinMaxResponseChart({ monitorStats, monitor, chartData, empty
 
 	// only one monitor is relevant for this chart
 	const dataPoints: DataPoint<NetworkMonitorStatsRecord>[] = useMemo(() => {
-		const dataFn = (index: number) => (record: NetworkMonitorStatsRecord) =>
-			record.stats?.[monitor?.id ?? ""]?.[index] ?? "-"
+		const dataFn = (metric: keyof MonitorStats) => (record: NetworkMonitorStatsRecord) =>
+			record.stats?.[monitor?.id ?? ""]?.[metric] ?? "-"
 		const avgPoint = {
 			label: "Avg",
-			dataKey: dataFn(0),
+			dataKey: dataFn("res_avg"),
 			color: 1,
 			order: 0,
 		}
@@ -134,19 +134,19 @@ export function AvgMinMaxResponseChart({ monitorStats, monitor, chartData, empty
 		return [
 			{
 				label: "Max",
-				dataKey: dataFn(2),
+				dataKey: dataFn("res_max"),
 				color: 3,
 				order: 0,
 			},
 			avgPoint,
 			{
 				label: "Min",
-				dataKey: dataFn(1),
+				dataKey: dataFn("res_min"),
 				color: 2,
 				order: 2,
 			},
 		]
-	}, [chartTime, hasLongInterval])
+	}, [chartTime, hasLongInterval, monitor?.id])
 
 	const data = useMemo(() => {
 		if (!monitor) return []
@@ -195,7 +195,7 @@ export function LossChart({ monitorStats, grid, monitors, chartData, empty, titl
 			monitors={monitors}
 			chartData={chartData}
 			empty={empty}
-			valueIndex={3}
+			metric="loss"
 			title={title}
 			description={t`Packet loss (%)`}
 			domain={[0, 100]}

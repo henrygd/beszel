@@ -5,6 +5,7 @@ package records_test
 import (
 	"testing"
 
+	monitorEntity "github.com/henrygd/beszel/internal/entities/monitor"
 	"github.com/henrygd/beszel/internal/records"
 	"github.com/henrygd/beszel/internal/tests"
 
@@ -38,19 +39,25 @@ func TestAverageMonitorStats(t *testing.T) {
 	})
 	require.NoError(t, err)
 
-	// Per-monitor records: flat stats array [avg, min, max, loss]
+	// Each record stores named response metrics and packet loss.
 	recordA, err := tests.CreateRecord(hub, "network_monitor_stats", map[string]any{
 		"system":  sys.Id,
 		"monitor": monitor.Id,
 		"type":    "1m",
-		"stats":   `[10,5,20,1.5]`,
+		"res_avg": 10,
+		"res_min": 5,
+		"res_max": 20,
+		"loss":    1.5,
 	})
 	require.NoError(t, err)
 	recordB, err := tests.CreateRecord(hub, "network_monitor_stats", map[string]any{
 		"system":  sys.Id,
 		"monitor": monitor.Id,
 		"type":    "1m",
-		"stats":   `[22.5,10,60,0]`,
+		"res_avg": 22.5,
+		"res_min": 10,
+		"res_max": 60,
+		"loss":    0,
 	})
 	require.NoError(t, err)
 
@@ -59,9 +66,16 @@ func TestAverageMonitorStats(t *testing.T) {
 		{Id: recordB.Id},
 	})
 
-	require.Len(t, result, 4)
-	assert.InDelta(t, 16.25, result[0], 0.001) // avg of avg
-	assert.InDelta(t, 5, result[1], 0.001)     // min of mins
-	assert.InDelta(t, 60, result[2], 0.001)    // max of maxes
-	assert.InDelta(t, 0.75, result[3], 0.001)  // avg of packet loss
+	assert.Equal(t, monitorEntity.Stats{ResAvg: 16.25, ResMin: 5, ResMax: 60, Loss: 0.75}, result)
+	assert.Equal(t, monitorEntity.Stats{}, rm.AverageMonitorStats(hub.DB(), nil))
+	assert.Equal(t, monitorEntity.Stats{}, rm.AverageMonitorStats(hub.DB(), records.RecordIds{{Id: "missing"}}))
+
+	// Zero response times and complete packet loss remain valid metrics.
+	recordB.Set("res_avg", 0)
+	recordB.Set("res_min", 0)
+	recordB.Set("res_max", 0)
+	recordB.Set("loss", 100)
+	require.NoError(t, hub.Save(recordB))
+	result = rm.AverageMonitorStats(hub.DB(), records.RecordIds{{Id: recordA.Id}, {Id: recordB.Id}})
+	assert.Equal(t, monitorEntity.Stats{ResAvg: 5, ResMin: 0, ResMax: 20, Loss: 50.75}, result)
 }

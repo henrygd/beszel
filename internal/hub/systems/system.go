@@ -437,17 +437,15 @@ func updateNetworkMonitorsRecords(app core.App, monitorResults map[string]monito
 	}
 
 	for monitorId, result := range monitorResults {
-		monitorStats := monitor.Stats{}.FromResult(result)
-		var statsJson types.JSONRaw
-		if err = statsJson.Scan(monitorStats); err != nil {
-			continue
-		}
 		statsRecordData := map[string]any{
 			"system":  systemId,
 			"monitor": monitorId,
 			"type":    "1m",
 			"created": nowMilli,
-			"stats":   statsJson,
+			"res_avg": result.AvgResponse,
+			"res_min": result.MinResponse,
+			"res_max": result.MaxResponse,
+			"loss":    result.PacketLoss,
 		}
 		switch realtimeActive {
 		case true:

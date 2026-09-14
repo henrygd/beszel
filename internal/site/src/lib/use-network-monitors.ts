@@ -1,5 +1,5 @@
 import { chartTimeData } from "@/lib/utils"
-import type { ChartTimes, NetworkMonitorRecord, NetworkMonitorStatsRecord, RawMonitorStatsRecord } from "@/types"
+import type { ChartTimes, MonitorStats, NetworkMonitorRecord, NetworkMonitorStatsRecord, RawMonitorStatsRecord } from "@/types"
 import { useEffect, useRef, useState } from "react"
 import { appendData } from "@/components/routes/system/chart-data"
 import { pb, getPbTimestamp } from "@/lib/api"
@@ -33,14 +33,19 @@ function appendCacheValue(
 
 /** Merge an array of per-monitor raw records into the map-keyed format expected by chart components. */
 export function mergeMonitorStats(rawRecords: RawMonitorStatsRecord[]): NetworkMonitorStatsRecord[] {
-	const byTimestamp = new Map<number, Record<string, number[]>>()
+	const byTimestamp = new Map<number, Record<string, MonitorStats>>()
 	for (const rec of rawRecords) {
 		let statsMap = byTimestamp.get(rec.created)
 		if (!statsMap) {
 			statsMap = {}
 			byTimestamp.set(rec.created, statsMap)
 		}
-		statsMap[rec.monitor] = rec.stats
+		statsMap[rec.monitor] = {
+			res_avg: rec.res_avg,
+			res_min: rec.res_min,
+			res_max: rec.res_max,
+			loss: rec.loss,
+		}
 	}
 	return Array.from(byTimestamp.entries())
 		.sort(([a], [b]) => a - b)
@@ -60,7 +65,7 @@ async function fetchMonitorStats(
 			created: getPbTimestamp(chartTime, lastCached ? new Date(lastCached + 1000) : undefined, true),
 			type: chartTimeData[chartTime].type,
 		}),
-		fields: "monitor,stats,created",
+		fields: "monitor,res_avg,res_min,res_max,loss,created",
 		sort: "created",
 	})
 	return mergeMonitorStats(rawRecords)
@@ -196,7 +201,7 @@ export function useNetworkMonitorStats(props: UseNetworkMonitorStatsProps) {
 		}
 		let unsubscribe: (() => void) | undefined
 		const pbOptions = {
-			fields: "monitor,stats,created,type",
+			fields: "monitor,res_avg,res_min,res_max,loss,created,type",
 			filter: pb.filter("system={:system} && type={:type}", {
 				system: systemId,
 				type: chartTimeData[chartTime].type,

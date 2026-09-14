@@ -62,22 +62,19 @@ type Result struct {
 	PacketLoss1h  float64 `cbor:"7,keyasint,omitempty"`
 }
 
-// Stats holds only 1m values for a single target, which are used for charts.
-//
-// 0: avg response in microseconds
-//
-// 1: min response in microseconds
-//
-// 2: max response in microseconds
-//
-// 3: packet loss percentage (0-100)
-type Stats []float64
+// Stats holds response times in microseconds and packet loss percentage (0-100).
+type Stats struct {
+	ResAvg float64 `json:"res_avg" db:"res_avg"`
+	ResMin float64 `json:"res_min" db:"res_min"`
+	ResMax float64 `json:"res_max" db:"res_max"`
+	Loss   float64 `json:"loss" db:"loss"`
+}
 
 func (s Stats) FromResult(result Result) Stats {
 	return Stats{
-		float64(result.AvgResponse),
-		float64(result.MinResponse),
-		float64(result.MaxResponse),
-		result.PacketLoss,
+		ResAvg: float64(result.AvgResponse),
+		ResMin: float64(result.MinResponse),
+		ResMax: float64(result.MaxResponse),
+		Loss:   result.PacketLoss,
 	}
 }

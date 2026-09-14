@@ -1721,6 +1721,7 @@ func init() {
 		"fields": [
 			{
 				"autogeneratePattern": "[a-z0-9]{15}",
+				"help": "",
 				"hidden": false,
 				"id": "text3208210256",
 				"max": 15,
@@ -1736,6 +1737,7 @@ func init() {
 			{
 				"cascadeDelete": true,
 				"collectionId": "2hz5ncl8tizk5nx",
+				"help": "",
 				"hidden": false,
 				"id": "relation1204987316",
 				"maxSelect": 1,
@@ -1748,6 +1750,7 @@ func init() {
 			},
 			{
 				"autogeneratePattern": "",
+				"help": "",
 				"hidden": false,
 				"id": "text7739291048",
 				"max": 0,
@@ -1762,6 +1765,7 @@ func init() {
 			},
 			{
 				"autogeneratePattern": "",
+				"help": "",
 				"hidden": false,
 				"id": "text5528164482",
 				"max": 0,
@@ -1775,6 +1779,7 @@ func init() {
 				"type": "text"
 			},
 			{
+				"help": "",
 				"hidden": false,
 				"id": "number8862034195",
 				"max": null,
@@ -1787,6 +1792,7 @@ func init() {
 				"type": "number"
 			},
 			{
+				"help": "",
 				"hidden": false,
 				"id": "number4418907321",
 				"max": null,
@@ -1799,6 +1805,7 @@ func init() {
 				"type": "number"
 			},
 			{
+				"help": "",
 				"hidden": false,
 				"id": "number2904183765",
 				"max": null,
@@ -1811,6 +1818,7 @@ func init() {
 				"type": "number"
 			},
 			{
+				"help": "",
 				"hidden": false,
 				"id": "json4466109723",
 				"maxSize": 0,
@@ -1821,6 +1829,7 @@ func init() {
 				"type": "json"
 			},
 			{
+				"help": "",
 				"hidden": false,
 				"id": "json9012873456",
 				"maxSize": 0,
@@ -1831,6 +1840,7 @@ func init() {
 				"type": "json"
 			},
 			{
+				"help": "",
 				"hidden": false,
 				"id": "json7182045639",
 				"maxSize": 0,
@@ -1841,6 +1851,7 @@ func init() {
 				"type": "json"
 			},
 			{
+				"help": "",
 				"hidden": false,
 				"id": "date9274163058",
 				"max": "",
@@ -1860,18 +1871,43 @@ func init() {
 				"presentable": false,
 				"system": false,
 				"type": "autodate"
+			},
+			{
+				"autogeneratePattern": "",
+				"help": "",
+				"hidden": false,
+				"id": "text3578368839",
+				"max": 0,
+				"min": 0,
+				"name": "display_name",
+				"pattern": "",
+				"presentable": false,
+				"primaryKey": false,
+				"required": false,
+				"system": false,
+				"type": "text"
+			},
+			{
+				"help": "",
+				"hidden": false,
+				"id": "bool447994709",
+				"name": "raw",
+				"presentable": false,
+				"required": false,
+				"system": false,
+				"type": "bool"
 			}
 		],
 		"id": "pbc_8441057391",
 		"indexes": [
 			"CREATE INDEX ` + "`" + `idx_zfsPoolsSystem` + "`" + ` ON ` + "`" + `zfs_pools` + "`" + ` (` + "`" + `system` + "`" + `)"
 		],
-		"listRule": null,
+		"listRule": "@request.auth.id != \"\" && system.users.id ?= @request.auth.id",
 		"name": "zfs_pools",
 		"system": false,
 		"type": "base",
 		"updateRule": null,
-		"viewRule": null
+		"viewRule": "@request.auth.id != \"\" && system.users.id ?= @request.auth.id"
 	},
 	{
 		"createRule": null,
@@ -2136,15 +2172,56 @@ func init() {
 				"type": "relation"
 			},
 			{
-				"help": "",
+				"help": "Response time in microseconds",
 				"hidden": false,
-				"id": "nms_stats",
-				"maxSize": 2000000,
-				"name": "stats",
+				"id": "nms_res_avg",
+				"max": null,
+				"min": 0,
+				"name": "res_avg",
+				"onlyInt": false,
 				"presentable": false,
-				"required": true,
+				"required": false,
 				"system": false,
-				"type": "json"
+				"type": "number"
+			},
+			{
+				"help": "Response time in microseconds",
+				"hidden": false,
+				"id": "nms_res_min",
+				"max": null,
+				"min": 0,
+				"name": "res_min",
+				"onlyInt": false,
+				"presentable": false,
+				"required": false,
+				"system": false,
+				"type": "number"
+			},
+			{
+				"help": "Response time in microseconds",
+				"hidden": false,
+				"id": "nms_res_max",
+				"max": null,
+				"min": 0,
+				"name": "res_max",
+				"onlyInt": false,
+				"presentable": false,
+				"required": false,
+				"system": false,
+				"type": "number"
+			},
+			{
+				"help": "Packet loss percentage",
+				"hidden": false,
+				"id": "nms_loss",
+				"max": 100,
+				"min": 0,
+				"name": "loss",
+				"onlyInt": false,
+				"presentable": false,
+				"required": false,
+				"system": false,
+				"type": "number"
 			},
 			{
 				"help": "",

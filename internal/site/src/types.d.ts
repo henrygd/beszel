@@ -642,25 +642,19 @@ export interface NetworkMonitorRecord {
 	updated: string
 }
 
-/**
- * Stats holds only 1m values for a single target, which are used for charts.
- *
- * 0: avg response in microseconds
- *
- * 1: min response in microseconds
- *
- * 2: max response in microseconds
- *
- * 3: packet loss percentage (0-100)
- */
-type MonitorStats = number[]
+/** Response times in microseconds and packet loss percentage (0-100). */
+export interface MonitorStats {
+	res_avg: number
+	res_min: number
+	res_max: number
+	loss: number
+}
 
-/** Raw per-monitor record stored in the DB. stats is a flat MonitorStats array. */
-export interface RawMonitorStatsRecord {
+/** Raw per-monitor record stored in the DB. */
+export interface RawMonitorStatsRecord extends MonitorStats {
 	id?: string
 	type?: string
 	monitor: string
-	stats: MonitorStats
 	created: number // unix timestamp (ms)
 }
 

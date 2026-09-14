@@ -222,7 +222,11 @@ func (rm *RecordManager) CreateLongerRecords() {
 				longerRecord.Set("monitor", monitorRec.Id)
 				longerRecord.Set("type", recordData.longerType)
 				longerRecord.Set("created", now.UnixMilli())
-				longerRecord.Set("stats", rm.AverageMonitorStats(db, recordIds))
+				stats := rm.AverageMonitorStats(db, recordIds)
+				longerRecord.Set("res_avg", stats.ResAvg)
+				longerRecord.Set("res_min", stats.ResMin)
+				longerRecord.Set("res_max", stats.ResMax)
+				longerRecord.Set("loss", stats.Loss)
 				if err := txApp.SaveNoValidate(longerRecord); err != nil {
 					slog.Error("failed to save monitor longer record", "err", err)
 				}
@@ -681,61 +685,29 @@ func AverageContainerStatsSlice(records [][]container.Stats) []container.Stats {
 	return result
 }
 
-// AverageMonitorStats averages monitor stats across multiple per-monitor records.
-// Each record holds a flat Stats array: [avg, min, max, loss].
-// avg and loss are averaged; min takes the minimum; max takes the maximum.
+// AverageMonitorStats averages response times and loss across per-monitor records.
+// Min and max retain the extremes; averages keep the average-of-averages behavior.
 func (rm *RecordManager) AverageMonitorStats(db dbx.Builder, records RecordIds) monitor.Stats {
-	var sums monitor.Stats
-	counts := make([]int, 4)
-
-	query := db.NewQuery("SELECT stats FROM network_monitor_stats WHERE id = {:id}")
-	var row StatsRecord
-	for _, rec := range records {
-		row.Stats = row.Stats[:0]
-		if err := query.Bind(dbx.Params{"id": rec.Id}).One(&row); err != nil {
-			continue
-		}
-		var vals monitor.Stats
-		if err := json.Unmarshal(row.Stats, &vals); err != nil {
-			continue
-		}
-		if len(sums) == 0 {
-			sums = make(monitor.Stats, len(vals))
-		}
-		for i := range vals {
-			if i >= len(sums) {
-				break
-			}
-			switch i {
-			case 1: // min
-				if counts[i] == 0 || vals[i] < sums[i] {
-					sums[i] = vals[i]
-				}
-			case 2: // max
-				if counts[i] == 0 || vals[i] > sums[i] {
-					sums[i] = vals[i]
-				}
-			default: // avg (0) and loss (3)
-				sums[i] += vals[i]
-			}
-			counts[i]++
-		}
+	var result monitor.Stats
+	if len(records) == 0 {
+		return result
 	}
-
-	if len(sums) == 0 {
+	ids := make([]any, len(records))
+	for i, record := range records {
+		ids[i] = record.Id
+	}
+	err := db.Select(
+		"COALESCE(AVG(res_avg), 0) AS res_avg",
+		"COALESCE(MIN(res_min), 0) AS res_min",
+		"COALESCE(MAX(res_max), 0) AS res_max",
+		"COALESCE(AVG(loss), 0) AS loss",
+	).From("network_monitor_stats").Where(dbx.In("id", ids...)).One(&result)
+	if err != nil {
+		slog.Error("failed to average monitor stats", "err", err)
 		return monitor.Stats{}
 	}
-	result := make(monitor.Stats, len(sums))
-	copy(result, sums)
-	for i := range result {
-		switch i {
-		case 1, 2: // min and max are already correct
-		default:
-			if counts[i] > 0 {
-				result[i] = twoDecimals(result[i] / float64(counts[i]))
-			}
-		}
-	}
+	result.ResAvg = twoDecimals(result.ResAvg)
+	result.Loss = twoDecimals(result.Loss)
 	return result
 }
 
