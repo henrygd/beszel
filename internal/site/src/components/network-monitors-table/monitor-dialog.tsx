@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react"
+import { useCallback, useEffect, useRef, useState } from "react"
 import { Trans, useLingui } from "@lingui/react/macro"
 import { useStore } from "@nanostores/react"
 import { pb } from "@/lib/api"
@@ -23,7 +23,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Textarea } from "@/components/ui/textarea"
-import { ChevronDownIcon, ListIcon, ServerIcon } from "lucide-react"
+import { ChevronDownIcon, ListIcon, SearchIcon, ServerIcon } from "lucide-react"
 import { useToast } from "@/components/ui/use-toast"
 import { $systems } from "@/lib/stores"
 import type { NetworkMonitorRecord } from "@/types"
@@ -202,6 +202,160 @@ export function formatBulkMonitorLine(monitor: BulkMonitorLineSource) {
 	)
 }
 
+function SystemMultiSelect({
+	id,
+	selectedSystemIds,
+	onChange,
+	disabled,
+}: {
+	id: string
+	selectedSystemIds: Set<string>
+	onChange: (ids: Set<string>) => void
+	disabled?: boolean
+}) {
+	const systems = useStore($systems)
+	const { t } = useLingui()
+	const [search, setSearch] = useState("")
+	const searchRef = useRef<HTMLInputElement>(null)
+	const focusSearchOnMount = useCallback((node: HTMLInputElement | null) => {
+		searchRef.current = node
+		if (!node) return
+		// Focus after the menu has completed its own initial focus handling.
+		const frame = requestAnimationFrame(() => node.focus())
+		return () => cancelAnimationFrame(frame)
+	}, [])
+	const contentRef = useRef<HTMLDivElement>(null)
+	const query = search.trim().toLocaleLowerCase()
+	const filteredSystems = systems.filter((system) => system.name.toLocaleLowerCase().includes(query))
+	const allSelected = filteredSystems.every((system) => selectedSystemIds.has(system.id))
+	const anySelected = filteredSystems.some((system) => selectedSystemIds.has(system.id))
+
+	const selectFiltered = (selected: boolean) => {
+		const next = new Set(selectedSystemIds)
+		for (const system of filteredSystems) {
+			if (selected) next.add(system.id)
+			else next.delete(system.id)
+		}
+		onChange(next)
+	}
+	return (
+		<DropdownMenu onOpenChange={() => setSearch("")}>
+			<DropdownMenuTrigger asChild>
+				<Button
+					id={id}
+					disabled={disabled}
+					type="button"
+					variant="outline"
+					className="relative w-full min-w-0 ps-10 pe-10 justify-start font-normal bg-card text-start"
+				>
+					<ServerIcon className="size-3.5 absolute start-4 top-1/2 -translate-y-1/2 opacity-85" />
+					<span className="truncate">
+						{selectedSystemIds.size === 0
+							? t`Select systems`
+							: selectedSystemIds.size === 1
+								? systems.find((s) => selectedSystemIds.has(s.id))?.name
+								: t`${selectedSystemIds.size} systems selected`}
+					</span>
+					<ChevronDownIcon className="size-4 absolute end-4 top-1/2 -translate-y-1/2 opacity-50" />
+				</Button>
+			</DropdownMenuTrigger>
+			<DropdownMenuContent
+				ref={contentRef}
+				onKeyDown={(event) => {
+					if (event.key === "Tab") {
+						event.preventDefault()
+						searchRef.current?.focus()
+					}
+				}}
+				align="start"
+				className="w-[var(--radix-dropdown-menu-trigger-width)] max-h-[min(20rem,var(--radix-dropdown-menu-content-available-height))] flex flex-col overflow-hidden"
+			>
+				<div className="shrink-0 border-b mb-1">
+					<div className="flex items-center gap-2 px-2.5">
+						<SearchIcon aria-hidden="true" className="size-4 shrink-0 text-muted-foreground" />
+						<Input
+							ref={focusSearchOnMount}
+							value={search}
+							onChange={(event) => setSearch(event.target.value)}
+							placeholder={t`Search systems`}
+							aria-label={t`Search systems`}
+							className="h-10 min-w-0 rounded-none border-0 bg-transparent px-0 shadow-none focus-visible:ring-0 focus-visible:ring-offset-0"
+							onKeyDown={(event) => {
+								if (event.key === "Escape") return
+								// Keep menu typeahead and form submission from consuming search input.
+								event.stopPropagation()
+								if (event.key === "Enter") event.preventDefault()
+								if (event.key === "ArrowDown" || event.key === "ArrowUp" || event.key === "Tab") {
+									event.preventDefault()
+									const items = contentRef.current?.querySelectorAll<HTMLElement>(
+										'[role^="menuitem"]:not([data-disabled])'
+									)
+									const index = event.key === "ArrowUp" || event.shiftKey ? (items?.length ?? 1) - 1 : 0
+									items?.[index]?.focus()
+								}
+							}}
+						/>
+					</div>
+					<div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 px-1 pb-1">
+						<div className="flex items-center">
+							<DropdownMenuItem
+								className="px-1.5 py-1 text-xs text-muted-foreground"
+								disabled={!filteredSystems.length || allSelected}
+								onSelect={(event) => {
+									event.preventDefault()
+									selectFiltered(true)
+								}}
+							>
+								{query ? <Trans>Select matches</Trans> : <Trans>Select all</Trans>}
+							</DropdownMenuItem>
+							<span aria-hidden="true" className="text-xs text-muted-foreground/50">
+								·
+							</span>
+							<DropdownMenuItem
+								className="px-1.5 py-1 text-xs text-muted-foreground"
+								disabled={!anySelected}
+								onSelect={(event) => {
+									event.preventDefault()
+									selectFiltered(false)
+								}}
+							>
+								{query ? <Trans>Clear matches</Trans> : <Trans>Clear all</Trans>}
+							</DropdownMenuItem>
+						</div>
+						<span className="px-1.5 text-xs tabular-nums text-muted-foreground">
+							{t`${selectedSystemIds.size} selected`}
+						</span>
+					</div>
+				</div>
+				<div className="min-h-0 overflow-y-auto">
+					{filteredSystems.length === 0 && (
+						<output className="block px-2.5 py-3 text-sm text-muted-foreground">
+							<Trans>No systems found.</Trans>
+						</output>
+					)}
+					{filteredSystems.map((sys) => (
+						<DropdownMenuCheckboxItem
+							key={sys.id}
+							checked={selectedSystemIds.has(sys.id)}
+							onSelect={(event) => event.preventDefault()}
+							onCheckedChange={(checked) => {
+								const next = new Set(selectedSystemIds)
+								if (checked) next.add(sys.id)
+								else next.delete(sys.id)
+								onChange(next)
+							}}
+							className="group min-w-0 gap-2.5 py-2 ps-2.5"
+							indicatorClassName="static size-4 shrink-0 rounded border border-input group-data-[state=checked]:border-primary group-data-[state=checked]:bg-primary group-data-[state=checked]:text-primary-foreground [&_svg]:size-3"
+						>
+							<span className="truncate">{sys.name}</span>
+						</DropdownMenuCheckboxItem>
+					))}
+				</div>
+			</DropdownMenuContent>
+		</DropdownMenu>
+	)
+}
+
 export function AddMonitorDialog({ systemId, monitors }: { systemId?: string; monitors: NetworkMonitorRecord[] }) {
 	const [open, setOpen] = useState(false)
 	const [bulkOpen, setBulkOpen] = useState(false)
@@ -211,30 +365,17 @@ export function AddMonitorDialog({ systemId, monitors }: { systemId?: string; mo
 	const bulkFormRef = useRef<HTMLFormElement>(null)
 	const { toast } = useToast()
 	const { t } = useLingui()
-	const systems = useStore($systems)
 
 	const resetBulkForm = () => {
 		setBulkInput("")
 	}
 
-	const openBulkAdd = (selectedSystemId?: string) => {
-		if (!systemId && selectedSystemId) {
-			setBulkSelectedSystemIds(new Set([selectedSystemId]))
+	const openBulkAdd = (selectedSystemIds?: Set<string>) => {
+		if (!systemId && selectedSystemIds) {
+			setBulkSelectedSystemIds(new Set(selectedSystemIds))
 		}
 		setOpen(false)
 		setBulkOpen(true)
-	}
-
-	const toggleBulkSystem = (sysId: string) => {
-		setBulkSelectedSystemIds((prev) => {
-			const next = new Set(prev)
-			if (next.has(sysId)) {
-				next.delete(sysId)
-			} else {
-				next.add(sysId)
-			}
-			return next
-		})
 	}
 
 	const openAdd = () => {
@@ -326,7 +467,7 @@ export function AddMonitorDialog({ systemId, monitors }: { systemId?: string; mo
 						</Button>
 					</DropdownMenuTrigger>
 					<DropdownMenuContent align="end">
-						<DropdownMenuItem onClick={() => openBulkAdd(systemId)}>
+						<DropdownMenuItem onClick={() => openBulkAdd()}>
 							<ListIcon className="size-4 me-2" />
 							<Trans>Bulk Add</Trans>
 						</DropdownMenuItem>
@@ -362,35 +503,15 @@ export function AddMonitorDialog({ systemId, monitors }: { systemId?: string; mo
 						<div className="flex-1 flex flex-col space-y-4 overflow-auto p-4">
 							{!systemId && (
 								<div className="grid gap-2">
-									<Label className="sr-only">
+									<Label htmlFor="bulk-monitor-systems" className="sr-only">
 										<Trans>Systems</Trans>
 									</Label>
-									<DropdownMenu>
-										<DropdownMenuTrigger asChild>
-											<Button
-												variant="outline"
-												className="relative ps-10 pe-5 justify-start font-normal bg-card text-start"
-											>
-												<ServerIcon className="size-3.5 absolute start-4 top-1/2 -translate-y-1/2 opacity-85" />
-												{bulkSelectedSystemIds.size === 0
-													? t`Select systems`
-													: bulkSelectedSystemIds.size === 1
-														? systems.find((s) => bulkSelectedSystemIds.has(s.id))?.name
-														: t`${bulkSelectedSystemIds.size} systems selected`}
-											</Button>
-										</DropdownMenuTrigger>
-										<DropdownMenuContent className="w-56">
-											{systems.map((sys) => (
-												<DropdownMenuCheckboxItem
-													key={sys.id}
-													checked={bulkSelectedSystemIds.has(sys.id)}
-													onCheckedChange={() => toggleBulkSystem(sys.id)}
-												>
-													{sys.name}
-												</DropdownMenuCheckboxItem>
-											))}
-										</DropdownMenuContent>
-									</DropdownMenu>
+									<SystemMultiSelect
+										id="bulk-monitor-systems"
+										selectedSystemIds={bulkSelectedSystemIds}
+										onChange={setBulkSelectedSystemIds}
+										disabled={bulkLoading}
+									/>
 								</div>
 							)}
 							<div className="grow flex flex-col gap-2">
@@ -460,7 +581,7 @@ function MonitorDialogContent({
 	setOpen: (open: boolean) => void
 	systemId?: string
 	monitor?: NetworkMonitorRecord
-	onOpenBulkAdd?: (selectedSystemId?: string) => void
+	onOpenBulkAdd?: (selectedSystemIds: Set<string>) => void
 }) {
 	const [protocol, setProtocol] = useState<MonitorProtocol>(monitor?.protocol ?? "icmp")
 	const [target, setTarget] = useState(monitor?.target ?? "")
@@ -469,6 +590,7 @@ function MonitorDialogContent({
 	const [name, setName] = useState(monitor?.name ?? "")
 	const [loading, setLoading] = useState(false)
 	const [selectedSystemId, setSelectedSystemId] = useState(monitor?.system ?? "")
+	const [selectedSystemIds, setSelectedSystemIds] = useState<Set<string>>(new Set())
 	const systems = useStore($systems)
 	const { toast } = useToast()
 	const { t } = useLingui()
@@ -487,6 +609,7 @@ function MonitorDialogContent({
 		setMonitorInterval(String(monitor?.interval ?? defaultInterval))
 		setName(monitor?.name ?? "")
 		setSelectedSystemId(monitor?.system ?? "")
+		setSelectedSystemIds(new Set())
 		setLoading(false)
 	}, [open, monitor])
 
@@ -494,14 +617,13 @@ function MonitorDialogContent({
 		e.preventDefault()
 		setLoading(true)
 
+		const targetSystems = systemId ? [systemId] : monitor ? [selectedSystemId] : Array.from(selectedSystemIds)
+		const remainingSystemIds = new Set(targetSystems)
 		try {
-			const selectedSystem = systemId ?? selectedSystemId
-			if (!selectedSystem) {
-				throw new Error("Select a system.")
-			}
+			if (!targetSystems.length || !targetSystems[0]) throw new Error("Select at least one system.")
 			const payload = buildMonitorPayload(
 				{
-					system: selectedSystem,
+					system: targetSystems[0],
 					target,
 					protocol,
 					port: protocol === "tcp" ? Number(port) : 0,
@@ -513,10 +635,17 @@ function MonitorDialogContent({
 			if (monitor) {
 				await pb.collection("network_monitors").update(monitor.id, payload)
 			} else {
-				await pb.collection("network_monitors").create(payload)
+				for (const system of targetSystems) {
+					await pb.collection("network_monitors").create({ ...payload, system })
+					remainingSystemIds.delete(system)
+				}
 			}
 			setOpen(false)
 		} catch (err: unknown) {
+			if (!monitor && !systemId) {
+				// Retain only unfinished systems so retrying cannot duplicate successful creates.
+				setSelectedSystemIds(remainingSystemIds)
+			}
 			toast({ variant: "destructive", title: t`Error`, description: (err as Error)?.message })
 		} finally {
 			setLoading(false)
@@ -538,7 +667,20 @@ function MonitorDialogContent({
 				</DialogDescription>
 			</DialogHeader>
 			<form onSubmit={handleSubmit} className="grid gap-4 tabular-nums">
-				{!systemId && (
+				{!systemId && !isEditing && (
+					<div className="grid gap-2">
+						<Label htmlFor="monitor-systems">
+							<Trans>Systems</Trans>
+						</Label>
+						<SystemMultiSelect
+							id="monitor-systems"
+							selectedSystemIds={selectedSystemIds}
+							onChange={setSelectedSystemIds}
+							disabled={loading}
+						/>
+					</div>
+				)}
+				{!systemId && isEditing && (
 					<div className="grid gap-2">
 						<Label>
 							<Trans>System</Trans>
@@ -628,7 +770,7 @@ function MonitorDialogContent({
 						<Button
 							type="button"
 							variant="outline"
-							onClick={() => onOpenBulkAdd(selectedSystemId)}
+							onClick={() => onOpenBulkAdd(selectedSystemIds)}
 							disabled={loading}
 							className="me-auto"
 						>
@@ -636,7 +778,10 @@ function MonitorDialogContent({
 							<Trans>Bulk Add</Trans>
 						</Button>
 					)}
-					<Button type="submit" disabled={loading || (!systemId && !selectedSystemId)}>
+					<Button
+						type="submit"
+						disabled={loading || (!systemId && (isEditing ? !selectedSystemId : !selectedSystemIds.size))}
+					>
 						{loading ? (
 							isEditing ? (
 								<Trans>Saving...</Trans>
