@@ -4,15 +4,166 @@ package agent
 
 import (
 	"errors"
+	"net"
+	"os"
+	"runtime"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"golang.org/x/net/icmp"
 )
 
 type testICMPPacketConn struct{}
 
 func (testICMPPacketConn) Close() error { return nil }
+
+type icmpTestReply struct {
+	data []byte
+	peer net.Addr
+}
+
+type scriptedICMPConn struct {
+	net.PacketConn
+	local        net.Addr
+	onWrite      func([]byte, net.Addr)
+	replies      []icmpTestReply
+	reads        int
+	deadlineSets int
+}
+
+func (c *scriptedICMPConn) LocalAddr() net.Addr { return c.local }
+
+func (c *scriptedICMPConn) SetDeadline(deadline time.Time) error {
+	c.deadlineSets++
+	return nil
+}
+
+func (c *scriptedICMPConn) WriteTo(data []byte, dst net.Addr) (int, error) {
+	c.onWrite(data, dst)
+	return len(data), nil
+}
+
+func (c *scriptedICMPConn) ReadFrom(buf []byte) (int, net.Addr, error) {
+	c.reads++
+	if len(c.replies) == 0 {
+		return 0, nil, os.ErrDeadlineExceeded
+	}
+	reply := c.replies[0]
+	c.replies = c.replies[1:]
+	return copy(buf, reply.data), reply.peer, nil
+}
+
+func TestMonitorICMPReplyCorrelation(t *testing.T) {
+	for _, family := range []*icmpFamily{&icmpV4, &icmpV6} {
+		for _, datagram := range []bool{false, true} {
+			network := family.rawNetwork
+			ip, other := net.ParseIP("192.0.2.1"), net.ParseIP("192.0.2.2")
+			if family.isIPv6 {
+				ip, other = net.ParseIP("2001:db8::1"), net.ParseIP("2001:db8::2")
+			}
+			var dst net.Addr = &net.IPAddr{IP: ip}
+			var wrongPeer net.Addr = &net.IPAddr{IP: other}
+			if datagram {
+				network = family.dgramNetwork
+				dst = &net.UDPAddr{IP: ip}
+				wrongPeer = &net.UDPAddr{IP: other}
+			}
+			for _, mismatch := range []string{"source", "id", "sequence", "payload", "type", "code", "malformed"} {
+				for _, eventuallyMatches := range []bool{false, true} {
+					ending := "timeout"
+					if eventuallyMatches {
+						ending = "success"
+					}
+					t.Run(network+"/"+mismatch+"/"+ending, func(t *testing.T) {
+						conn := &scriptedICMPConn{local: &net.IPAddr{IP: net.IPv4zero}}
+						if datagram {
+							conn.local = &net.UDPAddr{Port: 12345}
+							if runtime.GOOS == "linux" {
+								// Deliberately differ from the process ID.
+								conn.local = &net.UDPAddr{Port: (os.Getpid() % 65534) + 1}
+							}
+						}
+						conn.onWrite = func(data []byte, target net.Addr) {
+							require.Equal(t, dst, target)
+							request, err := icmp.ParseMessage(family.proto, data)
+							require.NoError(t, err)
+							echo := request.Body.(*icmp.Echo)
+							expectedID := os.Getpid() & 0xffff
+							if datagram && runtime.GOOS == "linux" {
+								expectedID = conn.local.(*net.UDPAddr).Port
+							}
+							require.Equal(t, expectedID, echo.ID)
+							reply := &icmp.Message{Type: family.replyType, Body: echo}
+							valid, err := reply.Marshal(nil)
+							require.NoError(t, err)
+							peer := dst
+							switch mismatch {
+							case "source":
+								peer = wrongPeer
+							case "id":
+								echo.ID ^= 1
+							case "sequence":
+								echo.Seq ^= 1
+							case "payload":
+								echo.Data[0] ^= 1
+							case "type":
+								reply.Type = family.echoType
+							case "code":
+								reply.Code = 1
+							}
+							invalid, err := reply.Marshal(nil)
+							require.NoError(t, err)
+							if mismatch == "malformed" {
+								invalid = invalid[:2]
+							}
+							conn.replies = []icmpTestReply{{invalid, peer}}
+							if eventuallyMatches {
+								conn.replies = append(conn.replies, icmpTestReply{valid, dst})
+							}
+						}
+						elapsed, err := monitorICMPPacket(conn, family, dst)
+						if eventuallyMatches {
+							require.NoError(t, err)
+							assert.GreaterOrEqual(t, elapsed, int64(0))
+						} else {
+							require.ErrorIs(t, err, os.ErrDeadlineExceeded)
+							assert.Equal(t, int64(-1), elapsed)
+						}
+						assert.Equal(t, 2, conn.reads)
+						assert.Equal(t, 1, conn.deadlineSets)
+					})
+				}
+			}
+		}
+	}
+}
+
+func TestMonitorICMPLoopback(t *testing.T) {
+	for _, family := range []*icmpFamily{&icmpV4, &icmpV6} {
+		for _, network := range []string{family.rawNetwork, family.dgramNetwork} {
+			t.Run(network, func(t *testing.T) {
+				conn, err := icmp.ListenPacket(network, family.listenAddr)
+				if err != nil {
+					t.Skipf("ICMP socket unavailable: %v", err)
+				}
+				defer conn.Close()
+				ip := net.ParseIP("127.0.0.1")
+				if family.isIPv6 {
+					ip = net.ParseIP("::1")
+				}
+				var dst net.Addr = &net.IPAddr{IP: ip}
+				if network == family.dgramNetwork {
+					dst = &net.UDPAddr{IP: ip}
+				}
+				elapsed, err := monitorICMPPacket(conn, family, dst)
+				require.NoError(t, err)
+				assert.GreaterOrEqual(t, elapsed, int64(0))
+			})
+		}
+	}
+}
 
 func TestDetectICMPMode(t *testing.T) {
 	tests := []struct {

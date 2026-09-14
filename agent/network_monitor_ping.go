@@ -1,6 +1,8 @@
 package agent
 
 import (
+	"bytes"
+	"crypto/rand"
 	"errors"
 	"math"
 	"net"
@@ -10,6 +12,7 @@ import (
 	"runtime"
 	"strconv"
 	"sync"
+	"sync/atomic"
 	"time"
 
 	"golang.org/x/net/icmp"
@@ -20,6 +23,8 @@ import (
 )
 
 var pingTimeRegex = regexp.MustCompile(`time[=<]([\d.]+)\s*ms`)
+
+var icmpSequence atomic.Uint32
 
 type icmpPacketConn interface {
 	Close() error
@@ -156,15 +161,31 @@ func monitorICMPNative(network string, family *icmpFamily, dst net.Addr) (int64,
 	}
 	defer conn.Close()
 
-	// Build ICMP echo request
+	return monitorICMPPacket(conn, family, dst)
+}
+
+func monitorICMPPacket(conn net.PacketConn, family *icmpFamily, dst net.Addr) (int64, error) {
+	// Prepare correlation data before starting the round-trip timer. The token
+	// also distinguishes delayed replies after the 16-bit sequence wraps.
+	token := make([]byte, 16)
+	if _, err := rand.Read(token); err != nil {
+		return -1, err
+	}
+	echo := &icmp.Echo{
+		ID:   os.Getpid() & 0xffff,
+		Seq:  int(icmpSequence.Add(1) & 0xffff),
+		Data: token,
+	}
+	// Linux ping sockets replace the Echo ID with their bound port. Darwin
+	// datagram sockets and raw sockets preserve the supplied ID.
+	if local, ok := conn.LocalAddr().(*net.UDPAddr); ok && runtime.GOOS == "linux" {
+		echo.ID = local.Port
+	}
+	targetIP := icmpAddrIP(dst)
 	msg := &icmp.Message{
 		Type: family.echoType,
 		Code: 0,
-		Body: &icmp.Echo{
-			ID:   os.Getpid() & 0xffff,
-			Seq:  1,
-			Data: []byte("beszel-monitor"),
-		},
+		Body: echo,
 	}
 	msgBytes, err := msg.Marshal(nil)
 	if err != nil {
@@ -172,30 +193,48 @@ func monitorICMPNative(network string, family *icmpFamily, dst net.Addr) (int64,
 	}
 
 	// Set deadline before sending
-	conn.SetDeadline(time.Now().Add(3 * time.Second))
+	if err := conn.SetDeadline(time.Now().Add(3 * time.Second)); err != nil {
+		return -1, err
+	}
 
+	buf := make([]byte, 1500)
 	start := time.Now()
 	if _, err := conn.WriteTo(msgBytes, dst); err != nil {
 		return -1, err
 	}
 
 	// Read reply
-	buf := make([]byte, 1500)
 	for {
-		n, _, err := conn.ReadFrom(buf)
+		n, peer, err := conn.ReadFrom(buf)
+		received := time.Now()
 		if err != nil {
 			return -1, err
+		}
+		if !targetIP.Equal(icmpAddrIP(peer)) {
+			continue
 		}
 
 		reply, err := icmp.ParseMessage(family.proto, buf[:n])
-		if err != nil {
-			return -1, err
+		if err != nil || reply.Type != family.replyType || reply.Code != 0 {
+			continue
 		}
 
-		if reply.Type == family.replyType {
-			return time.Since(start).Microseconds(), nil
+		body, ok := reply.Body.(*icmp.Echo)
+		if ok && body.ID == echo.ID && body.Seq == echo.Seq && bytes.Equal(body.Data, echo.Data) {
+			return received.Sub(start).Microseconds(), nil
 		}
-		// Ignore non-echo-reply messages (e.g. destination unreachable) and keep reading
+		// Keep waiting for our reply without extending the original deadline.
+	}
+}
+
+func icmpAddrIP(addr net.Addr) net.IP {
+	switch addr := addr.(type) {
+	case *net.IPAddr:
+		return addr.IP
+	case *net.UDPAddr:
+		return addr.IP
+	default:
+		return nil
 	}
 }
 
