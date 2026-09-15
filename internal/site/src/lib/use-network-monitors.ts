@@ -277,11 +277,10 @@ export function useNetworkMonitorStats(props: UseNetworkMonitorStatsProps) {
 
 async function fetchMonitors(system?: string) {
 	try {
-		const res = await pb.collection<NetworkMonitorRecord>("network_monitors").getList(0, 2000, {
+		return await pb.collection<NetworkMonitorRecord>("network_monitors").getFullList({
 			fields: NETWORK_MONITOR_FIELDS,
 			filter: system ? pb.filter("system={:system}", { system }) : undefined,
 		})
-		return res.items
 	} catch (error) {
 		toast({
 			title: "Error",
