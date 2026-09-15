@@ -205,7 +205,9 @@ func (rm *RecordManager) CreateLongerRecords() {
 					slog.Error("failed to average monitor stats", "monitor", monitorRec.Id, "err", err)
 					continue
 				}
-				if count < recordData.minShorterRecords {
+				// Monitor intervals can exceed the aggregation window, so average
+				// any available records at every level and skip only empty windows.
+				if count == 0 {
 					continue
 				}
 

@@ -97,27 +97,87 @@ func TestAverageMonitorStats(t *testing.T) {
 	require.NoError(t, err)
 	assert.Equal(t, 2, count)
 	assert.Equal(t, monitorEntity.Stats{ResAvg: 5, ResMin: 0, ResMax: 20, Loss: 50.75}, result)
-	// The rollup still requires nine samples and preserves the computed metrics.
-	for i := range 7 {
-		if i == 6 {
-			rm.CreateLongerRecords()
-			count, err := hub.CountRecords("network_monitor_stats", dbx.HashExp{"monitor": monitor.Id, "type": "10m"})
-			require.NoError(t, err)
-			assert.Zero(t, count, "eight samples must not produce a rollup")
-		}
-		_, err = tests.CreateRecord(hub, "network_monitor_stats", map[string]any{
-			"system": sys.Id, "monitor": monitor.Id, "type": "1m", "created": created,
-			"res_avg": 10, "res_min": 5, "res_max": 20, "loss": 0,
-		})
-		require.NoError(t, err)
-	}
+	// Sparse monitor records must propagate through every rollup level.
 	rm.CreateLongerRecords()
-	rollups, err := hub.FindAllRecords("network_monitor_stats", dbx.HashExp{"monitor": monitor.Id, "type": "10m"})
-	require.NoError(t, err)
-	require.Len(t, rollups, 1)
-	assert.Equal(t, 8.89, rollups[0].GetFloat("res_avg"))
-	assert.Equal(t, 0.0, rollups[0].GetFloat("res_min"))
-	assert.Equal(t, 20.0, rollups[0].GetFloat("res_max"))
-	assert.Equal(t, 11.28, rollups[0].GetFloat("loss"))
+	for _, recordType := range []string{"10m", "20m", "120m", "480m"} {
+		rollups, err := hub.FindAllRecords("network_monitor_stats", dbx.HashExp{"monitor": monitor.Id, "type": recordType})
+		require.NoError(t, err)
+		require.Len(t, rollups, 1, recordType)
+		assert.Equal(t, 5.0, rollups[0].GetFloat("res_avg"))
+		assert.Equal(t, 0.0, rollups[0].GetFloat("res_min"))
+		assert.Equal(t, 20.0, rollups[0].GetFloat("res_max"))
+		assert.Equal(t, 50.75, rollups[0].GetFloat("loss"))
+	}
+}
 
+func TestSparseMonitorRollups(t *testing.T) {
+	for _, tc := range []struct {
+		name     string
+		interval int
+		samples  int
+	}{
+		{"five minute interval", 300, 2},
+		{"ten minute interval", 600, 1},
+		{"fifteen minute interval", 900, 1},
+		{"empty window", 900, 0},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			hub, err := tests.NewTestHub(t.TempDir())
+			require.NoError(t, err)
+			defer hub.Cleanup()
+			user, err := tests.CreateUser(hub, "sparse-monitor@example.com", "testtesttest")
+			require.NoError(t, err)
+			sys, err := tests.CreateRecord(hub, "systems", map[string]any{
+				"name": "sparse-monitor-system", "host": "localhost", "port": "45876", "status": "up",
+				"users": []string{user.Id},
+			})
+			require.NoError(t, err)
+			monitor, err := tests.CreateRecord(hub, "network_monitors", map[string]any{
+				"system": sys.Id, "target": "1.1.1.1", "protocol": "icmp",
+				"interval": tc.interval, "enabled": true,
+			})
+			require.NoError(t, err)
+			now := time.Now()
+			for i := range tc.samples {
+				_, err := tests.CreateRecord(hub, "network_monitor_stats", map[string]any{
+					"system": sys.Id, "monitor": monitor.Id, "type": "1m",
+					"created": now.Add(-time.Minute - time.Duration(i*tc.interval)*time.Second).UnixMilli(),
+					"res_avg": 12, "res_min": 8, "res_max": 20, "loss": 25,
+				})
+				require.NoError(t, err)
+			}
+			// Other collections must still reject fewer than nine minute records.
+			for _, collection := range []string{"system_stats", "container_stats"} {
+				stats := `{"cpu":10}`
+				if collection == "container_stats" {
+					stats = `[{"name":"test","cpu":10}]`
+				}
+				for range 8 {
+					_, err := tests.CreateRecord(hub, collection, map[string]any{
+						"system": sys.Id, "type": "1m", "stats": stats,
+					})
+					require.NoError(t, err)
+				}
+			}
+			records.NewRecordManager(hub).CreateLongerRecords()
+			for _, recordType := range []string{"10m", "20m", "120m", "480m"} {
+				rollups, err := hub.FindAllRecords("network_monitor_stats", dbx.HashExp{"monitor": monitor.Id, "type": recordType})
+				require.NoError(t, err)
+				if tc.samples == 0 {
+					assert.Empty(t, rollups, recordType)
+				} else {
+					require.Len(t, rollups, 1, recordType)
+					assert.Equal(t, 12.0, rollups[0].GetFloat("res_avg"))
+					assert.Equal(t, 8.0, rollups[0].GetFloat("res_min"))
+					assert.Equal(t, 20.0, rollups[0].GetFloat("res_max"))
+					assert.Equal(t, 25.0, rollups[0].GetFloat("loss"))
+				}
+				for _, collection := range []string{"system_stats", "container_stats"} {
+					count, err := hub.CountRecords(collection, dbx.HashExp{"system": sys.Id, "type": recordType})
+					require.NoError(t, err)
+					assert.Zero(t, count, "%s %s", collection, recordType)
+				}
+			}
+		})
+	}
 }
