@@ -40,13 +40,13 @@ func bindNetworkMonitorsEvents(hub *Hub) {
 		if !e.Record.GetBool("enabled") {
 			return nil
 		}
-		// if system connected, run the monitor immediately
-		// if not, return and wait for the system to connect and sync monitors on reg schedule
+		// If connected, run the monitor immediately. Paused systems may be absent
+		// from the manager; their monitors will sync when they reconnect.
 		system, err := hub.sm.GetSystem(e.Record.GetString("system"))
 		if err == nil && system.Status == "up" {
 			go hub.upsertNetworkMonitor(e.Record, true)
 		}
-		return err
+		return nil
 	})
 
 	// On API update requests, if the monitor config changed in a way that requires a new ID, create a new

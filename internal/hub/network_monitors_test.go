@@ -1,13 +1,84 @@
 package hub
 
 import (
+	"bytes"
+	"encoding/json"
+	"net/http"
+	"net/http/httptest"
 	"testing"
 
 	"github.com/henrygd/beszel/internal/entities/monitor"
+	"github.com/pocketbase/pocketbase/apis"
 	"github.com/pocketbase/pocketbase/core"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
+
+func TestCreateNetworkMonitorsOnPausedSystem(t *testing.T) {
+	for _, batch := range []bool{false, true} {
+		name := "single"
+		if batch {
+			name = "batch"
+		}
+		t.Run(name, func(t *testing.T) {
+			hub, testApp, err := createTestHub(t)
+			require.NoError(t, err)
+			defer cleanupTestHub(hub, testApp)
+			bindNetworkMonitorsEvents(hub)
+
+			user, err := createTestUser(hub)
+			require.NoError(t, err)
+			system, err := createTestRecord(hub, "systems", map[string]any{
+				"name": "Paused", "host": "localhost", "port": "45876",
+				"status": "paused", "users": []string{user.Id},
+			})
+			require.NoError(t, err)
+			// Paused systems are not loaded into the manager at startup.
+			_, err = hub.sm.GetSystem(system.Id)
+			require.Error(t, err)
+
+			payload := func(target string) map[string]any {
+				return map[string]any{
+					"system": system.Id, "target": target, "protocol": "icmp",
+					"interval": 60, "enabled": true,
+				}
+			}
+			url := "/api/collections/network_monitors/records"
+			var body any = payload("1.1.1.1")
+			count := 1
+			if batch {
+				body = map[string]any{"requests": []map[string]any{
+					{"method": "POST", "url": url, "body": payload("1.1.1.1")},
+					{"method": "POST", "url": url, "body": payload("8.8.8.8")},
+				}}
+				url = "/api/batch"
+				count = 2
+			}
+			data, err := json.Marshal(body)
+			require.NoError(t, err)
+			token, err := user.NewAuthToken()
+			require.NoError(t, err)
+			router, err := apis.NewRouter(hub)
+			require.NoError(t, err)
+			handler, err := router.BuildMux()
+			require.NoError(t, err)
+			request := httptest.NewRequest(http.MethodPost, url, bytes.NewReader(data))
+			request.Header.Set("Content-Type", "application/json")
+			request.Header.Set("Authorization", token)
+			response := httptest.NewRecorder()
+			handler.ServeHTTP(response, request)
+			assert.Equal(t, http.StatusOK, response.Code, response.Body.String())
+
+			records, err := hub.FindAllRecords("network_monitors")
+			require.NoError(t, err)
+			require.Len(t, records, count)
+			for _, record := range records {
+				assert.Equal(t, system.Id, record.GetString("system"))
+				assert.True(t, record.GetBool("enabled"))
+			}
+		})
+	}
+}
 
 func TestGenerateMonitorID(t *testing.T) {
 	tests := []struct {
