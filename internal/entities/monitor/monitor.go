@@ -68,6 +68,9 @@ type Result struct {
 	PacketLoss1h  float64 `cbor:"7,keyasint,omitempty"`
 	// LastProbeAt is the latest completed probe's Unix timestamp in milliseconds.
 	LastProbeAt int64 `cbor:"8,keyasint"`
+	// SampleCount includes all completed probes since this monitor started.
+	// Used for alert warm-up even when the interval is longer than 20 minutes.
+	SampleCount int64 `cbor:"9,keyasint,omitempty"`
 }
 
 // Stats holds response times in microseconds and packet loss percentage (0-100).

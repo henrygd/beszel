@@ -95,3 +95,18 @@ func TestMonitorHistoryProbeTimestamp(t *testing.T) {
 	assert.Equal(t, failed.LastProbeAt, repeated.LastProbeAt)
 	assert.Equal(t, float64(100), repeated.PacketLoss)
 }
+
+func TestMonitorHistorySampleCount(t *testing.T) {
+	history := newMonitorHistory()
+	now := time.Now()
+	// Both failed and successful probes count, including older samples so
+	// monitors with hourly intervals can finish warming up.
+	history.record(monitorSample{responseUs: -1, timestamp: now.Add(-2 * time.Hour)})
+	for i, response := range []int64{10, -1, 20} {
+		result := history.record(monitorSample{responseUs: response, timestamp: now.Add(time.Duration(i) * time.Second)})
+		assert.EqualValues(t, i+2, result.SampleCount)
+	}
+	result, ok := history.clone().result(time.Minute, now.Add(3*time.Second))
+	require.True(t, ok)
+	assert.EqualValues(t, 4, result.SampleCount)
+}

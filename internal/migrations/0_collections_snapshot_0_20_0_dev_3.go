@@ -83,7 +83,8 @@ func init() {
 					"ContainerHealth",
 					"SystemdFailed",
 					"CPUIOWait",
-					"CPUSteal"
+					"CPUSteal",
+					"NetworkMonitorLoss"
 				]
 			},
 			{
@@ -121,6 +122,16 @@ func init() {
 			},
 			{
 				"hidden": true,
+				"id": "json4000656575",
+				"maxSize": 0,
+				"name": "state",
+				"presentable": false,
+				"required": false,
+				"system": false,
+				"type": "json"
+			},
+			{
+				"hidden": true,
 				"id": "date1302749137",
 				"max": "",
 				"min": "",
@@ -152,6 +163,7 @@ func init() {
 			}
 		],
 		"indexes": [
+			"CREATE INDEX idx_alerts_system_name ON alerts (system, name)",
 			"CREATE UNIQUE INDEX ` + "`" + `idx_MnhEt21L5r` + "`" + ` ON ` + "`" + `alerts` + "`" + ` (\n  ` + "`" + `user` + "`" + `,\n  ` + "`" + `system` + "`" + `,\n  ` + "`" + `name` + "`" + `\n)"
 		],
 		"system": false
@@ -231,6 +243,20 @@ func init() {
 					"presentable": false,
 					"primaryKey": false,
 					"required": true,
+					"system": false,
+					"type": "text"
+				},
+				{
+					"autogeneratePattern": "",
+					"hidden": false,
+					"id": "text3888135399",
+					"max": 0,
+					"min": 0,
+					"name": "monitor_name",
+					"pattern": "",
+					"presentable": false,
+					"primaryKey": false,
+					"required": false,
 					"system": false,
 					"type": "text"
 				},

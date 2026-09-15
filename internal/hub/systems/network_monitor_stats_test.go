@@ -3,7 +3,9 @@
 package systems
 
 import (
+	"fmt"
 	"testing"
+	"time"
 
 	"github.com/fxamacker/cbor/v2"
 	"github.com/henrygd/beszel/internal/entities/monitor"
@@ -160,6 +162,55 @@ func TestNetworkMonitorStatsFreshness(t *testing.T) {
 			sys = &System{Id: sys.Id, manager: sys.manager}
 			save()
 			count(10)
+		})
+	}
+}
+
+// Observes the committed DB through the hub, not the transaction's app.
+type monitorAlertHub struct {
+	stubHub
+	handle func(*core.Record, map[string]monitor.Result) error
+}
+
+func (h monitorAlertHub) HandleNetworkMonitorAlerts(record *core.Record, results map[string]monitor.Result) error {
+	return h.handle(record, results)
+}
+
+func TestNetworkMonitorAlertsAfterCommit(t *testing.T) {
+	for _, realtime := range []bool{false, true} {
+		t.Run(fmt.Sprint(realtime), func(t *testing.T) {
+			sys, app := newTestSystemWithHub(t)
+			if realtime {
+				client := subscriptions.NewDefaultClient()
+				client.Subscribe("network_monitors/*")
+				app.SubscriptionsBroker().Register(client)
+			}
+			collection, err := app.FindCachedCollectionByNameOrId("network_monitors")
+			require.NoError(t, err)
+			record := core.NewRecord(collection)
+			record.Set("system", sys.Id)
+			require.NoError(t, app.SaveNoValidate(record))
+			called := 0
+			result := monitor.Result{LastProbeAt: time.Now().UnixMilli(), SampleCount: 3, PacketLoss1h: 10}
+			sys.manager.hub = monitorAlertHub{stubHub: stubHub{app}, handle: func(systemRecord *core.Record, results map[string]monitor.Result) error {
+				called++
+				assert.Equal(t, sys.Id, systemRecord.Id)
+				assert.Equal(t, result, results[record.Id])
+				saved, err := app.FindRecordById("network_monitors", record.Id)
+				require.NoError(t, err)
+				assert.Equal(t, 10.0, saved.GetFloat("loss1h"))
+				return nil
+			}}
+			data := &system.CombinedData{Monitors: map[string]monitor.Result{record.Id: result}}
+			_, err = sys.createRecords(data)
+			require.NoError(t, err)
+			assert.Equal(t, 1, called)
+			// A transaction that fails after writing monitor stats must not notify.
+			_, err = app.DB().NewQuery(`CREATE TRIGGER fail_system BEFORE UPDATE ON systems BEGIN SELECT RAISE(ABORT, 'test rollback'); END`).Execute()
+			require.NoError(t, err)
+			_, err = sys.createRecords(data)
+			require.Error(t, err)
+			assert.Equal(t, 1, called)
 		})
 	}
 }

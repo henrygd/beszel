@@ -64,6 +64,7 @@ type hubLike interface {
 	core.App
 	GetSSHKey(dataDir string) (ssh.Signer, error)
 	HandleSystemAlerts(systemRecord *core.Record, data *system.CombinedData) error
+	HandleNetworkMonitorAlerts(systemRecord *core.Record, results map[string]monitor.Result) error
 	HandleStatusAlerts(status string, systemRecord *core.Record) error
 	HandleContainerAlerts(systemRecord *core.Record, data *system.CombinedData, fetchLogs func(containerID string) (string, error)) error
 	CancelPendingStatusAlerts(systemID string)
@@ -420,11 +421,12 @@ func (sm *SystemManager) createSSHClientConfig() error {
 
 // deactivateAlerts finds all triggered alerts for a system and sets them to inactive.
 // This is called when a system is paused or goes offline to prevent continued alerts.
+// Monitor incidents remain open: a missing observation does not establish recovery.
 func deactivateAlerts(app core.App, systemID string) error {
 	// Note: Direct SQL updates don't trigger SSE, so we use the PocketBase API
 	// _, err := app.DB().NewQuery(fmt.Sprintf("UPDATE alerts SET triggered = false WHERE system = '%s'", systemID)).Execute()
 
-	alerts, err := app.FindRecordsByFilter("alerts", fmt.Sprintf("system = '%s' && triggered = 1", systemID), "", -1, 0)
+	alerts, err := app.FindRecordsByFilter("alerts", fmt.Sprintf("system = '%s' && triggered = 1 && name != 'NetworkMonitorLoss'", systemID), "", -1, 0)
 	if err != nil {
 		return err
 	}

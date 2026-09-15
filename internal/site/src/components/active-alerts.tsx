@@ -61,6 +61,8 @@ export const ActiveAlerts = () => {
 										<AlertDescription>
 											{info.triggeredDesc ? (
 												info.triggeredDesc()
+											) : alert.name === "NetworkMonitorLoss" ? (
+												<Trans>One or more monitors exceed {alert.value}% loss</Trans>
 											) : alert.name === "Status" ? (
 												<Trans>Connection is down</Trans>
 											) : info.invert ? (

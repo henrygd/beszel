@@ -307,6 +307,7 @@ export interface AlertRecord extends RecordModel {
 }
 
 export interface AlertsHistoryRecord extends RecordModel {
+	monitor_name?: string
 	alert: string
 	user: string
 	system: string
@@ -405,6 +406,8 @@ export interface AlertInfo {
 	singleDesc?: () => string
 	/** Hides the duration slider for alerts that fire on first observation */
 	noDuration?: boolean
+	/** Hides the threshold control for binary alerts */
+	noThreshold?: boolean
 	/** Description shown instead of numeric threshold and duration values */
 	triggeredDesc?: () => string
 	/** Additional information that remains visible while the alert is enabled */
