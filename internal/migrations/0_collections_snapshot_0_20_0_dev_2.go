@@ -2115,7 +2115,7 @@ func init() {
 		],
 		"id": "nm_monitors_001",
 		"indexes": [
-			"CREATE INDEX ` + "`" + `idx_nm_system_enabled` + "`" + ` ON ` + "`" + `network_monitors` + "`" + ` (` + "`" + `system` + "`" + `)"
+			"CREATE INDEX ` + "`" + `idx_nm_system_enabled` + "`" + ` ON ` + "`" + `network_monitors` + "`" + ` (` + "`" + `system` + "`" + `, ` + "`" + `enabled` + "`" + `)"
 		],
 		"listRule": null,
 		"name": "network_monitors",
@@ -2258,7 +2258,8 @@ func init() {
 		"id": "nm_stats_001",
 		"indexes": [
 			"CREATE INDEX IF NOT EXISTS ` + "`" + `idx_nms_system_type_created` + "`" + ` ON ` + "`" + `network_monitor_stats` + "`" + ` (` + "`" + `system` + "`" + `, ` + "`" + `type` + "`" + `, ` + "`" + `created` + "`" + `)",
-			"CREATE INDEX IF NOT EXISTS ` + "`" + `idx_nms_monitor_type_created` + "`" + ` ON ` + "`" + `network_monitor_stats` + "`" + ` (` + "`" + `monitor` + "`" + `, ` + "`" + `type` + "`" + `, ` + "`" + `created` + "`" + `)"
+			"CREATE INDEX IF NOT EXISTS ` + "`" + `idx_nms_monitor_type_created` + "`" + ` ON ` + "`" + `network_monitor_stats` + "`" + ` (` + "`" + `monitor` + "`" + `, ` + "`" + `type` + "`" + `, ` + "`" + `created` + "`" + `)",
+			"CREATE INDEX IF NOT EXISTS ` + "`" + `idx_nms_type_created` + "`" + ` ON ` + "`" + `network_monitor_stats` + "`" + ` (` + "`" + `type` + "`" + `, ` + "`" + `created` + "`" + `)"
 		],
 		"listRule": null,
 		"name": "network_monitor_stats",
