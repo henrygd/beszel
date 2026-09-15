@@ -200,20 +200,12 @@ func (rm *RecordManager) CreateLongerRecords() {
 					}
 				}
 
-				var recordIds RecordIds
-				_ = db.Select("id").
-					From("network_monitor_stats").
-					Where(dbx.NewExp(
-						"monitor={:monitor} AND type={:type} AND created>{:created}",
-						dbx.Params{
-							"monitor": monitorRec.Id,
-							"type":    recordData.shorterType,
-							"created": shorterRecordPeriod.UnixMilli(),
-						},
-					)).
-					All(&recordIds)
-
-				if len(recordIds) < recordData.minShorterRecords {
+				stats, count, err := rm.AverageMonitorStats(db, monitorRec.Id, recordData.shorterType, shorterRecordPeriod.UnixMilli())
+				if err != nil {
+					slog.Error("failed to average monitor stats", "monitor", monitorRec.Id, "err", err)
+					continue
+				}
+				if count < recordData.minShorterRecords {
 					continue
 				}
 
@@ -222,7 +214,6 @@ func (rm *RecordManager) CreateLongerRecords() {
 				longerRecord.Set("monitor", monitorRec.Id)
 				longerRecord.Set("type", recordData.longerType)
 				longerRecord.Set("created", now.UnixMilli())
-				stats := rm.AverageMonitorStats(db, recordIds)
 				longerRecord.Set("res_avg", stats.ResAvg)
 				longerRecord.Set("res_min", stats.ResMin)
 				longerRecord.Set("res_max", stats.ResMax)
@@ -687,28 +678,27 @@ func AverageContainerStatsSlice(records [][]container.Stats) []container.Stats {
 
 // AverageMonitorStats averages response times and loss across per-monitor records.
 // Min and max retain the extremes; averages keep the average-of-averages behavior.
-func (rm *RecordManager) AverageMonitorStats(db dbx.Builder, records RecordIds) monitor.Stats {
-	var result monitor.Stats
-	if len(records) == 0 {
-		return result
-	}
-	ids := make([]any, len(records))
-	for i, record := range records {
-		ids[i] = record.Id
+func (rm *RecordManager) AverageMonitorStats(db dbx.Builder, monitorID, recordType string, createdAfter int64) (monitor.Stats, int, error) {
+	var result struct {
+		monitor.Stats
+		Count int `db:"count"`
 	}
 	err := db.Select(
+		"COUNT(*) AS count",
 		"COALESCE(AVG(res_avg), 0) AS res_avg",
 		"COALESCE(MIN(res_min), 0) AS res_min",
 		"COALESCE(MAX(res_max), 0) AS res_max",
 		"COALESCE(AVG(loss), 0) AS loss",
-	).From("network_monitor_stats").Where(dbx.In("id", ids...)).One(&result)
+	).From("network_monitor_stats").Where(dbx.NewExp(
+		"monitor={:monitor} AND type={:type} AND created>{:created}",
+		dbx.Params{"monitor": monitorID, "type": recordType, "created": createdAfter},
+	)).One(&result)
 	if err != nil {
-		slog.Error("failed to average monitor stats", "err", err)
-		return monitor.Stats{}
+		return monitor.Stats{}, 0, err
 	}
 	result.ResAvg = twoDecimals(result.ResAvg)
 	result.Loss = twoDecimals(result.Loss)
-	return result
+	return result.Stats, result.Count, nil
 }
 
 /* Round float to two decimals */
