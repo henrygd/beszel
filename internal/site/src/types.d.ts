@@ -185,6 +185,12 @@ export interface GPUData {
 }
 
 export interface ZfsPool {
+	/** Friendly name; map keys are stable pool identities. */
+	n?: string
+	/** Equivalent filesystem charts are already displayed. */
+	hu?: boolean
+	hi?: boolean
+	raw?: boolean
 	/** total capacity (GiB) */
 	d: number
 	/** allocated (GiB) */
@@ -221,6 +227,8 @@ export interface ZfsDataset {
 }
 
 export interface ZfsPoolRecord extends RecordModel {
+	display_name?: string
+	raw?: boolean
 	system: string
 	name: string
 	health: string
@@ -331,6 +339,7 @@ export interface ContainerRecord extends RecordModel {
 	system: string
 	name: string
 	image: string
+	updatable?: boolean
 	ports: string
 	cpu: number
 	memory: number

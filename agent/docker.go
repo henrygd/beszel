@@ -65,9 +65,13 @@ type dockerManager struct {
 	dockerVersionChecked bool                        // Whether a version probe has completed successfully
 	isWindows            bool                        // Whether the Docker Engine API is running on Windows
 	buf                  *bytes.Buffer               // Buffer to store and read response bodies
-	apiStats             *container.ApiStats         // Reusable API stats object
 	excludeContainers    []string                    // Patterns to exclude containers by name
 	usingPodman          bool                        // Whether the Docker Engine API is running on Podman
+
+	registryClient      *http.Client                  // Client for registry requests; nil uses a client with a 10-second timeout
+	imageUpdatesMutex   sync.RWMutex                  // Protects imageUpdates, its entries, and imageUpdatesRunning
+	imageUpdates        map[string]*imageUpdateStatus // Shared update status keyed by normalized image reference
+	imageUpdatesRunning bool                          // Whether a background image-update batch is in progress
 
 	// Cache-time-aware tracking for CPU stats (similar to cpu.go)
 	// Maps cache time intervals to container-specific CPU usage tracking
@@ -160,6 +164,9 @@ func (dm *dockerManager) getDockerStats(cacheTimeMs uint16) ([]*container.Stats,
 	} else {
 		clear(dm.validIds)
 	}
+
+	// Only schedule auxiliary work here; metrics never wait for image discovery.
+	dm.refreshImageUpdates(dm.apiContainerList, time.Now())
 
 	var failedContainers []*container.ApiInfo
 
@@ -506,6 +513,17 @@ func (dm *dockerManager) updateContainerStats(ctr *container.ApiInfo, cacheTimeM
 		}
 	}
 
+	// Read and decode the response before locking shared stats to avoid blocking
+	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		return fmt.Errorf("container stats request failed: %s", resp.Status)
+	}
+	res := &container.ApiStats{}
+	if err := json.NewDecoder(resp.Body).Decode(res); err != nil {
+		return err
+	}
+	updateAvailable := dm.cachedImageUpdate(ctr.Image)
+
 	dm.containerStatsMutex.Lock()
 	defer dm.containerStatsMutex.Unlock()
 
@@ -520,6 +538,9 @@ func (dm *dockerManager) updateContainerStats(ctr *container.ApiInfo, cacheTimeM
 	stats.Status = statusText
 	stats.Health = health
 
+	stats.Image = ctr.Image
+	stats.UpdateAvailable = updateAvailable
+
 	if len(ctr.Ports) > 0 {
 		stats.Ports = convertContainerPortsToString(ctr)
 	}
@@ -531,12 +552,6 @@ func (dm *dockerManager) updateContainerStats(ctr *container.ApiInfo, cacheTimeM
 	// TODO(0.19+): stop populating NetworkSent/NetworkRecv (deprecated in 0.18.3)
 	stats.NetworkSent = 0
 	stats.NetworkRecv = 0
-
-	res := dm.apiStats
-	res.Networks = nil
-	if err := dm.decode(resp, res); err != nil {
-		return err
-	}
 
 	// Initialize CPU tracking for this cache time interval
 	dm.initializeCpuTracking(cacheTimeMs)
@@ -695,7 +710,6 @@ func newDockerManager(agent *Agent) *dockerManager {
 		containerStatsMap: make(map[string]*container.Stats),
 		sem:               make(chan struct{}, 5),
 		apiContainerList:  []*container.ApiInfo{},
-		apiStats:          &container.ApiStats{},
 		excludeContainers: excludeContainers,
 
 		// Initialize cache-time-aware tracking structures

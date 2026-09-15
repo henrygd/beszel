@@ -1,6 +1,6 @@
 /** biome-ignore-all lint/suspicious/noAssignInExpressions: it's fine :) */
 import type { PreinitializedMapStore } from "nanostores"
-import { pb, verifyAuth } from "@/lib/api"
+import { pb } from "@/lib/api"
 import {
 	$allSystemsById,
 	$allSystemsByName,
@@ -167,11 +167,6 @@ export async function subscribe() {
 export async function refresh() {
 	try {
 		const records = await fetchSystems()
-		if (!records.length) {
-			// No systems found, verify authentication
-			verifyAuth()
-			return
-		}
 		for (const record of records) {
 			add(record)
 		}

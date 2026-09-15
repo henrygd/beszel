@@ -4,6 +4,7 @@ import { cn, decimalString, formatBytes, hourWithSeconds } from "@/lib/utils"
 import type { ContainerRecord } from "@/types"
 import { ContainerHealth, ContainerHealthLabels } from "@/lib/enums"
 import {
+	CircleArrowUpIcon,
 	ClockIcon,
 	ContainerIcon,
 	CpuIcon,
@@ -177,11 +178,25 @@ export const containerChartCols: ColumnDef<ContainerRecord>[] = [
 		header: ({ column }) => (
 			<HeaderButton column={column} name={t({ message: "Image", context: "Docker image" })} Icon={LayersIcon} />
 		),
-		cell: ({ getValue }) => {
+		cell: ({ getValue, row }) => {
 			const val = getValue() as string
 			return (
-				<div className="ms-1 xl:w-40 truncate" title={val}>
-					{val}
+				<div className="ms-1 xl:w-40 flex items-center gap-2">
+					<span className="truncate" title={val}>
+						{val}
+					</span>
+					{row.original.updatable && (
+						<Tooltip>
+							<TooltipTrigger
+								className="shrink-0 rounded-sm text-emerald-600 dark:text-emerald-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+								aria-label={t`Image update available`}
+								onClick={(event) => event.stopPropagation()}
+							>
+								<CircleArrowUpIcon className="size-4" aria-hidden="true" />
+							</TooltipTrigger>
+							<TooltipContent>{t`Image update available`}</TooltipContent>
+						</Tooltip>
+					)}
 				</div>
 			)
 		},

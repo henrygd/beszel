@@ -32,13 +32,12 @@ func (sys *System) FetchAndSaveZfsPools(force bool) error {
 		sys.recordZfsFetchResult(err, 0)
 		return err
 	}
-	if zfsData == nil || !zfsData.Complete {
-		err = errIncompleteZfsData
-		sys.recordZfsFetchResult(err, 0)
-		return err
-	}
 	err = sys.saveZfsPools(zfsData)
-	sys.recordZfsFetchResult(err, len(zfsData.Pools))
+	poolCount := 0
+	if zfsData != nil {
+		poolCount = len(zfsData.Pools)
+	}
+	sys.recordZfsFetchResult(err, poolCount)
 	return err
 }
 
@@ -79,7 +78,7 @@ func (sys *System) zfsFetchInterval() time.Duration {
 // saveZfsPools saves ZFS pool detail data to the zfs_pools collection and
 // removes records for pools no longer reported by a complete agent inventory.
 func (sys *System) saveZfsPools(zfsData *zfs.ZfsData) error {
-	if zfsData == nil || !zfsData.Complete {
+	if zfsData == nil || (!zfsData.CanRefreshPool("zfs") && !zfsData.CanRefreshPool("b:")) {
 		return errIncompleteZfsData
 	}
 
@@ -89,10 +88,10 @@ func (sys *System) saveZfsPools(zfsData *zfs.ZfsData) error {
 		return err
 	}
 
-	return hub.RunInTransaction(func(txApp core.App) error {
+	err = hub.RunInTransaction(func(txApp core.App) error {
 		alive := make(map[string]bool, len(zfsData.Pools))
 		for _, pool := range zfsData.Pools {
-			if pool == nil {
+			if pool == nil || !zfsData.CanRefreshPool(pool.Name) {
 				continue
 			}
 			alive[pool.Name] = true
@@ -111,7 +110,7 @@ func (sys *System) saveZfsPools(zfsData *zfs.ZfsData) error {
 			return err
 		}
 		for _, record := range existing {
-			if !alive[record.GetString("name")] {
+			if name := record.GetString("name"); zfsData.CanRefreshPool(name) && !alive[name] {
 				if err := txApp.Delete(record); err != nil {
 					return err
 				}
@@ -119,6 +118,14 @@ func (sys *System) saveZfsPools(zfsData *zfs.ZfsData) error {
 		}
 		return nil
 	})
+	if err != nil {
+		return err
+	}
+	// Report partial failure only after committing healthy backend updates.
+	if !zfsData.Complete {
+		return errIncompleteZfsData
+	}
+	return nil
 }
 
 func (sys *System) upsertZfsPoolRecord(app core.App, collection *core.Collection, pool *zfs.PoolDetail) error {
@@ -135,10 +142,12 @@ func (sys *System) upsertZfsPoolRecord(app core.App, collection *core.Collection
 
 	record.Set("system", sys.Id)
 	record.Set("name", pool.Name)
+	record.Set("display_name", pool.DisplayName)
 	record.Set("health", pool.Health)
 	record.Set("size", pool.Size)
 	record.Set("alloc", pool.Alloc)
 	record.Set("free", pool.Free)
+	record.Set("raw", pool.Raw)
 	record.Set("scrub", pool.Scrub)
 	record.Set("vdevs", pool.Vdevs)
 	record.Set("datasets", pool.Datasets)
@@ -172,7 +181,9 @@ func (sys *System) syncZfsPoolHealth(app core.App, pools map[string]*system.ZfsP
 			record.Set("id", recordID)
 			record.Set("system", sys.Id)
 			record.Set("name", name)
+			record.Set("display_name", pool.DisplayName)
 			record.Set("health", pool.Health)
+			record.Set("raw", pool.Raw)
 			record.Set("size", uint64(pool.Total*gib))
 			record.Set("alloc", uint64(pool.Used*gib))
 			record.Set("free", uint64(max(pool.Total-pool.Used, 0)*gib))
@@ -181,10 +192,15 @@ func (sys *System) syncZfsPoolHealth(app core.App, pools map[string]*system.ZfsP
 			}
 			continue
 		}
-		if record.GetString("health") == pool.Health {
+		if record.GetString("health") == pool.Health && record.GetBool("raw") == pool.Raw && record.GetString("display_name") == pool.DisplayName {
 			continue
 		}
+		record.Set("display_name", pool.DisplayName)
 		record.Set("health", pool.Health)
+		record.Set("raw", pool.Raw)
+		record.Set("size", uint64(pool.Total*gib))
+		record.Set("alloc", uint64(pool.Used*gib))
+		record.Set("free", uint64(max(pool.Total-pool.Used, 0)*gib))
 		if err := app.SaveNoValidate(record); err != nil {
 			return fmt.Errorf("updating ZFS pool health %q: %w", name, err)
 		}
