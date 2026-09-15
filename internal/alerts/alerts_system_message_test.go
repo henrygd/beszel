@@ -9,8 +9,8 @@ func TestFormatSystemAlertBodyTemperatureRelation(t *testing.T) {
 		triggered bool
 		want      string
 	}{
-		{name: "above threshold alert", val: 81.25, triggered: true, want: "Highest sensor CPU ABOVE 81.25°C for the previous 5 minutes."},
-		{name: "below threshold recovery", val: 79.5, triggered: false, want: "Highest sensor CPU BELOW 79.50°C for the previous 5 minutes."},
+		{name: "above threshold alert", val: 81.25, triggered: true, want: "Highest sensor CPU above 81.25°C for the previous 5 minutes."},
+		{name: "below threshold recovery", val: 79.5, triggered: false, want: "Highest sensor CPU below 79.50°C for the previous 5 minutes."},
 	}
 
 	for _, tt := range tests {
