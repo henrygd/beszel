@@ -66,6 +66,8 @@ type Result struct {
 	MaxResponse1h int64   `cbor:"5,keyasint,omitempty"`
 	PacketLoss    float64 `cbor:"6,keyasint,omitempty"`
 	PacketLoss1h  float64 `cbor:"7,keyasint,omitempty"`
+	// LastProbeAt is the latest completed probe's Unix timestamp in milliseconds.
+	LastProbeAt int64 `cbor:"8,keyasint"`
 }
 
 // Stats holds response times in microseconds and packet loss percentage (0-100).

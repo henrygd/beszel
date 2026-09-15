@@ -174,6 +174,9 @@ func (h *monitorHistory) resultLocked(duration time.Duration, now time.Time) (mo
 	}
 
 	result := agg.result()
+	if len(h.samples) > 0 {
+		result.LastProbeAt = h.samples[len(h.samples)-1].timestamp.UnixMilli()
+	}
 
 	result.AvgResponse1h = hourAgg.avgResponse()
 	result.MinResponse1h = hourAgg.minUs

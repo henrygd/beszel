@@ -9,6 +9,7 @@ import (
 	"math/rand"
 	"net"
 	"strings"
+	"sync"
 	"sync/atomic"
 	"time"
 
@@ -55,6 +56,10 @@ type System struct {
 	smartInterval  time.Duration              // Interval for periodic SMART data updates
 	zfsFetching    atomic.Bool                // True if ZFS pools are currently being fetched
 	zfsInterval    time.Duration              // Interval for periodic ZFS detail data updates
+	// Serialize persistence from scheduled updates and resumes through commit.
+	recordsMu sync.Mutex
+	// Protected by recordsMu; realtime reads don't consume probes.
+	lastSavedMonitorProbe map[string]int64
 }
 
 func (sm *SystemManager) NewSystem(systemId string) *System {
@@ -214,11 +219,15 @@ func (sys *System) handlePaused() {
 
 // createRecords updates the system record and adds system_stats and container_stats records
 func (sys *System) createRecords(data *system.CombinedData) (*core.Record, error) {
+	sys.recordsMu.Lock()
+	defer sys.recordsMu.Unlock()
+
 	systemRecord, err := sys.getRecord(sys.manager.hub)
 	if err != nil {
 		return nil, err
 	}
 	hub := sys.manager.hub
+	savedMonitorProbes := make(map[string]int64)
 	err = hub.RunInTransaction(func(txApp core.App) error {
 		// add system_stats record
 		systemStatsCollection, err := txApp.FindCachedCollectionByNameOrId("system_stats")
@@ -270,7 +279,7 @@ func (sys *System) createRecords(data *system.CombinedData) (*core.Record, error
 		}
 
 		if data.Monitors != nil {
-			if err := updateNetworkMonitorsRecords(txApp, data.Monitors, sys.Id); err != nil {
+			if err := sys.updateNetworkMonitorsRecords(txApp, data.Monitors, savedMonitorProbes); err != nil {
 				return err
 			}
 		}
@@ -296,6 +305,24 @@ func (sys *System) createRecords(data *system.CombinedData) (*core.Record, error
 		return nil
 	})
 
+	// Publish only successful inserts after the entire transaction commits.
+	if err == nil && len(savedMonitorProbes) > 0 {
+		if sys.lastSavedMonitorProbe == nil {
+			sys.lastSavedMonitorProbe = savedMonitorProbes
+		} else {
+			for id, timestamp := range savedMonitorProbes {
+				sys.lastSavedMonitorProbe[id] = timestamp
+			}
+		}
+	}
+	// A non-nil report includes cached results for all remaining monitors.
+	if err == nil && data.Monitors != nil {
+		for id := range sys.lastSavedMonitorProbe {
+			if _, exists := data.Monitors[id]; !exists {
+				delete(sys.lastSavedMonitorProbe, id)
+			}
+		}
+	}
 	return systemRecord, err
 }
 
@@ -372,11 +399,12 @@ func createSystemdStatsRecords(app core.App, data []*systemd.Service, systemId s
 	return err
 }
 
-func updateNetworkMonitorsRecords(app core.App, monitorResults map[string]monitor.Result, systemId string) error {
+func (sys *System) updateNetworkMonitorsRecords(app core.App, monitorResults map[string]monitor.Result, savedProbes map[string]int64) error {
 	if len(monitorResults) == 0 {
 		return nil
 	}
 	var err error
+	systemId := sys.Id
 	const monitorCollectionName = "network_monitors"
 
 	// If realtime updates are active, we save via PocketBase records to trigger realtime events.
@@ -437,6 +465,10 @@ func updateNetworkMonitorsRecords(app core.App, monitorResults map[string]monito
 	}
 
 	for monitorId, result := range monitorResults {
+		// Compare identity, not ordering, so agent clock changes don't stall writes.
+		if result.LastProbeAt == sys.lastSavedMonitorProbe[monitorId] {
+			continue
+		}
 		statsRecordData := map[string]any{
 			"system":  systemId,
 			"monitor": monitorId,
@@ -458,6 +490,8 @@ func updateNetworkMonitorsRecords(app core.App, monitorResults map[string]monito
 		}
 		if err != nil {
 			app.Logger().Error("Failed to update monitor stats", "system", systemId, "monitor", monitorId, "err", err)
+		} else {
+			savedProbes[monitorId] = result.LastProbeAt
 		}
 	}
 

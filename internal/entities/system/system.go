@@ -212,5 +212,5 @@ type CombinedData struct {
 	// SystemdServicesUpdated distinguishes a fresh empty snapshot from a response
 	// that omitted systemd data (for example, a short-cache dashboard request).
 	SystemdServicesUpdated bool                      `json:"systemdUpdated,omitempty" cbor:"5,keyasint,omitempty"`
-	Monitors               map[string]monitor.Result `cbor:"6,keyasint,omitempty"`
+	Monitors               map[string]monitor.Result `cbor:"6,keyasint"`
 }

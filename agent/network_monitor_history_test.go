@@ -68,3 +68,30 @@ func TestMonitorHistoryAddSampleLockedTrimsRawSamplesButKeepsBucketHistory(t *te
 	assert.Equal(t, int64(20), result.MaxResponse)
 	assert.Equal(t, 0.0, result.PacketLoss)
 }
+
+func TestMonitorHistoryProbeTimestamp(t *testing.T) {
+	history := newMonitorHistory()
+	start := time.Date(2026, time.September, 14, 12, 0, 0, 0, time.UTC)
+	_, ok := history.result(time.Minute, start)
+	require.False(t, ok)
+	first := history.record(monitorSample{responseUs: 20, timestamp: start})
+	assert.Equal(t, start.UnixMilli(), first.LastProbeAt)
+	for minute := 0; minute < 5; minute++ {
+		now := start.Add(time.Duration(minute)*time.Minute + time.Second)
+		// Realtime reads must not consume freshness for the persistence request.
+		for _, window := range []time.Duration{time.Second, time.Minute} {
+			result, ok := history.result(window, now)
+			require.True(t, ok)
+			assert.Equal(t, first.LastProbeAt, result.LastProbeAt)
+			assert.Equal(t, int64(20), result.AvgResponse)
+		}
+	}
+	next := start.Add(5 * time.Minute)
+	failed := history.record(monitorSample{responseUs: -1, timestamp: next})
+	assert.Equal(t, next.UnixMilli(), failed.LastProbeAt)
+	assert.Equal(t, float64(100), failed.PacketLoss)
+	repeated, ok := history.result(time.Minute, next.Add(2*time.Minute))
+	require.True(t, ok)
+	assert.Equal(t, failed.LastProbeAt, repeated.LastProbeAt)
+	assert.Equal(t, float64(100), repeated.PacketLoss)
+}
