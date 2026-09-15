@@ -446,9 +446,9 @@ func (am *AlertManager) sendSystemAlert(alert SystemAlertData) {
 
 func formatSystemAlertBody(alert SystemAlertData, minutesLabel string) string {
 	if alert.name == "Temperature" {
-		relation := "BELOW"
+		relation := "below"
 		if alert.triggered {
-			relation = "ABOVE"
+			relation = "above"
 		}
 		return fmt.Sprintf(
 			"%s %s %.2f%s for the previous %v %s.",
