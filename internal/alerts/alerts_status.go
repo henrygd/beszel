@@ -166,6 +166,8 @@ func (am *AlertManager) sendStatusAlert(alertStatus string, systemName string, a
 		Message:  message,
 		Link:     am.hub.MakeLink("system", systemID),
 		LinkText: "View " + systemName,
+		Kind:     NotificationKindStatus,
+		State:    alertStatus,
 	})
 }
 

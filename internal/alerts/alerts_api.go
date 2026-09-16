@@ -149,7 +149,7 @@ func (am *AlertManager) SendTestNotification(e *core.RequestEvent) error {
 	if !e.Auth.IsSuperuser() && e.Auth.GetString("role") != "admin" {
 		send = sendPublicNotification
 	}
-	err = am.sendShoutrrrAlert(data.URL, "Test Alert", "This is a notification from Beszel.", am.hub.Settings().Meta.AppURL, "View Beszel", send)
+	err = am.sendShoutrrrAlert(data.URL, "Test Alert", "This is a notification from Beszel.", am.hub.Settings().Meta.AppURL, "View Beszel", false, send)
 	if errors.Is(err, errInternalDestination) || errors.Is(err, errUnrestrictedService) {
 		return e.ForbiddenError(err.Error(), nil)
 	}

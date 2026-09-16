@@ -33,11 +33,22 @@ type AlertMessageData struct {
 	Message  string
 	Link     string
 	LinkText string
+	// Kind selects the user's notification template (see NotificationKinds).
+	Kind string
+	// State is the kind-specific state word exposed as {state} (down/up, above/below, ...).
+	State string
+	// Vars holds kind-specific placeholder values (metric, value, containers, ...).
+	Vars map[string]string
+	// OmitLink is set when a custom body template is in use, so the link is not appended again.
+	OmitLink bool
 }
 
 type UserNotificationSettings struct {
-	Emails   []string `json:"emails"`
-	Webhooks []string `json:"webhooks"`
+	Emails     []string                        `json:"emails"`
+	Webhooks   []string                        `json:"webhooks"`
+	Templates  map[string]NotificationTemplate `json:"notificationTemplates"`
+	Timezone   string                          `json:"notificationTimezone"`
+	HourFormat string                          `json:"hourFormat"`
 }
 
 type SystemAlertFsStats struct {
@@ -119,6 +130,8 @@ func (am *AlertManager) bindEvents() {
 	am.hub.OnRecordAfterUpdateSuccess("alerts").BindFunc(updateHistoryOnAlertUpdate)
 	am.hub.OnRecordAfterDeleteSuccess("alerts").BindFunc(resolveHistoryOnAlertDelete)
 	am.hub.OnRecordAfterUpdateSuccess("smart_devices").BindFunc(am.handleSmartDeviceAlert)
+	am.hub.OnRecordCreateRequest("user_settings").BindFunc(validateUserSettingsRequest)
+	am.hub.OnRecordUpdateRequest("user_settings").BindFunc(validateUserSettingsRequest)
 	am.hub.OnRecordAfterCreateSuccess("zfs_pools").BindFunc(am.handleZfsPoolCreateAlert)
 	am.hub.OnRecordAfterUpdateSuccess("zfs_pools").BindFunc(am.handleZfsPoolAlert)
 	am.hub.OnRecordAfterDeleteSuccess("zfs_pools").BindFunc(resolveZfsPoolHistoryOnDelete)
@@ -216,21 +229,12 @@ func (am *AlertManager) SendAlert(data AlertMessageData) error {
 	}
 
 	// get user settings
-	record, err := am.hub.FindFirstRecordByFilter(
-		"user_settings", "user={:user}",
-		dbx.Params{"user": data.UserID},
-	)
+	userAlertSettings, err := am.getUserNotificationSettings(data.UserID)
 	if err != nil {
 		return err
 	}
-	// unmarshal user settings
-	userAlertSettings := UserNotificationSettings{
-		Emails:   []string{},
-		Webhooks: []string{},
-	}
-	if err := record.UnmarshalJSONField("settings", &userAlertSettings); err != nil {
-		am.hub.Logger().Error("Failed to unmarshal user settings", "err", err)
-	}
+	// apply the user's notification template, if any
+	data = am.applyUserTemplates(userAlertSettings, data)
 	// send alerts via webhooks
 	send := sendPublicNotification
 	if len(userAlertSettings.Webhooks) > 0 {
@@ -245,7 +249,7 @@ func (am *AlertManager) SendAlert(data AlertMessageData) error {
 		}
 	}
 	for _, webhook := range userAlertSettings.Webhooks {
-		if err := am.sendShoutrrrAlert(webhook, data.Title, data.Message, data.Link, data.LinkText, send); err != nil {
+		if err := am.sendShoutrrrAlert(webhook, data.Title, data.Message, data.Link, data.LinkText, data.OmitLink, send); err != nil {
 			am.hub.Logger().Error("Failed to send shoutrrr alert", "err", err)
 		}
 	}
@@ -253,21 +257,48 @@ func (am *AlertManager) SendAlert(data AlertMessageData) error {
 	if len(userAlertSettings.Emails) == 0 {
 		return nil
 	}
-	addresses := []mail.Address{}
-	for _, email := range userAlertSettings.Emails {
+	return am.sendEmailAlert(userAlertSettings.Emails, data)
+}
+
+// getUserNotificationSettings loads and unmarshals the user's notification settings.
+func (am *AlertManager) getUserNotificationSettings(userID string) (UserNotificationSettings, error) {
+	settings := UserNotificationSettings{
+		Emails:   []string{},
+		Webhooks: []string{},
+	}
+	record, err := am.hub.FindFirstRecordByFilter(
+		"user_settings", "user={:user}",
+		dbx.Params{"user": userID},
+	)
+	if err != nil {
+		return settings, err
+	}
+	if err := record.UnmarshalJSONField("settings", &settings); err != nil {
+		am.hub.Logger().Error("Failed to unmarshal user settings", "err", err)
+	}
+	return settings, nil
+}
+
+// sendEmailAlert delivers the notification to the given addresses via the hub mailer.
+func (am *AlertManager) sendEmailAlert(emails []string, data AlertMessageData) error {
+	addresses := make([]mail.Address, 0, len(emails))
+	for _, email := range emails {
 		addresses = append(addresses, mail.Address{Address: email})
+	}
+	text := data.Message
+	if !data.OmitLink {
+		text += fmt.Sprintf("\n\n%s", data.Link)
 	}
 	message := mailer.Message{
 		To:      addresses,
 		Subject: data.Title,
-		Text:    data.Message + fmt.Sprintf("\n\n%s", data.Link),
+		Text:    text,
 		From: mail.Address{
 			Address: am.hub.Settings().Meta.SenderAddress,
 			Name:    am.hub.Settings().Meta.SenderName,
 		},
 	}
-	err = am.hub.NewMailClient().Send(&message)
-	if err != nil {
+	if err := am.hub.NewMailClient().Send(&message); err != nil {
 		return err
 	}
 	am.hub.Logger().Info("Sent email alert", "to", message.To, "subj", message.Subject)
@@ -276,10 +307,12 @@ func (am *AlertManager) SendAlert(data AlertMessageData) error {
 
 // SendShoutrrrAlert sends an alert via a Shoutrrr URL
 func (am *AlertManager) SendShoutrrrAlert(notificationUrl, title, message, link, linkText string) error {
-	return am.sendShoutrrrAlert(notificationUrl, title, message, link, linkText, shoutrrr.Send)
+	return am.sendShoutrrrAlert(notificationUrl, title, message, link, linkText, false, shoutrrr.Send)
 }
 
-func (am *AlertManager) sendShoutrrrAlert(notificationUrl, title, message, link, linkText string, send func(string, string) error) error {
+// sendShoutrrrAlert builds the service-specific payload. omitLink skips the
+// fallback "append link to body" step for services without native link support.
+func (am *AlertManager) sendShoutrrrAlert(notificationUrl, title, message, link, linkText string, omitLink bool, send func(string, string) error) error {
 	// Parse the URL
 	parsedURL, err := url.Parse(notificationUrl)
 	if err != nil {
@@ -315,7 +348,9 @@ func (am *AlertManager) sendShoutrrrAlert(notificationUrl, title, message, link,
 	case "bark":
 		queryParams.Add("url", link)
 	default:
-		message += "\n\n" + link
+		if !omitLink {
+			message += "\n\n" + link
+		}
 	}
 
 	// Encode the modified query parameters back into the URL

@@ -1,3 +1,4 @@
+import type { ClientResponseError } from "pocketbase"
 import { t } from "@lingui/core/macro"
 import { Trans, useLingui } from "@lingui/react/macro"
 import { useStore } from "@nanostores/react"
@@ -56,7 +57,7 @@ export async function saveSettings(newSettings: Partial<UserSettings>) {
 		// console.error('update settings', e)
 		toast({
 			title: t`Failed to save settings`,
-			description: t`Check logs for more details.`,
+			description: (e as ClientResponseError)?.data?.message || t`Check logs for more details.`,
 			variant: "destructive",
 		})
 	}
