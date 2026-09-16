@@ -9,14 +9,17 @@ import (
 	"github.com/henrygd/beszel/internal/entities/monitor"
 )
 
+const monitorFailureLogInterval = 5 * time.Minute
+
 // monitorTask coordinates a probe and its history for one immutable configuration.
 type monitorTask struct {
-	config   monitor.Config
-	ctx      context.Context
-	cancel   context.CancelFunc
-	history  *monitorHistory
-	runMu    sync.Mutex
-	inflight *monitorRun
+	config         monitor.Config
+	ctx            context.Context
+	cancel         context.CancelFunc
+	history        *monitorHistory
+	runMu          sync.Mutex
+	inflight       *monitorRun
+	lastFailureLog int64 // Unix nanoseconds
 }
 
 type monitorRun struct {
@@ -71,19 +74,28 @@ func (task *monitorTask) runProbe(probe monitorProbe) *monitor.Result {
 	task.runMu.Unlock()
 
 	responseUs, err := probe(task.ctx, task.config)
+	var logFailure bool
 	task.runMu.Lock()
 	if task.ctx.Err() == nil {
+		now := time.Now()
 		if err != nil {
 			responseUs = -1
+			logAt := now.UnixNano()
+			if task.lastFailureLog == 0 || logAt < task.lastFailureLog || logAt-task.lastFailureLog >= int64(monitorFailureLogInterval) {
+				logFailure = true
+				task.lastFailureLog = logAt
+			}
+		} else {
+			task.lastFailureLog = 0
 		}
-		result := task.history.record(monitorSample{responseUs: responseUs, timestamp: time.Now()})
+		result := task.history.record(monitorSample{responseUs: responseUs, timestamp: now})
 		run.result = &result
 	}
 
 	task.inflight = nil
 	close(run.done)
 	task.runMu.Unlock()
-	if run.result != nil && err != nil {
+	if logFailure {
 		slog.Warn("monitor failed", "err", err, "target", task.config.Target, "protocol", task.config.Protocol)
 	}
 	if task.ctx.Err() != nil {
