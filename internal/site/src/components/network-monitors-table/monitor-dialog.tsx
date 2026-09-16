@@ -37,14 +37,13 @@ type MonitorValues = {
 	protocol: MonitorProtocol
 	port: number
 	interval: string
-	name?: string
 }
 
 type NormalizedMonitorValues = Omit<MonitorValues, "system" | "interval"> & {
 	interval: number
 }
 
-type BulkMonitorLineSource = Pick<NetworkMonitorRecord, "target" | "protocol" | "port" | "interval" | "name">
+type BulkMonitorLineSource = Pick<NetworkMonitorRecord, "target" | "protocol" | "port" | "interval">
 
 const defaultInterval = 30
 
@@ -60,7 +59,6 @@ const NormalizedMonitorValuesSchema = v.pipe(
 		protocol: MonitorProtocolSchema,
 		port: v.number(),
 		interval: MonitorIntervalSchema,
-		name: v.optional(v.pipe(v.string(), v.trim())),
 	}),
 	v.transform((input): NormalizedMonitorValues => {
 		let { protocol, port } = input
@@ -80,7 +78,6 @@ const NormalizedMonitorValuesSchema = v.pipe(
 			protocol,
 			port,
 			interval: input.interval,
-			name: input.name || undefined,
 		}
 	}),
 	v.forward(
@@ -102,7 +99,6 @@ const BulkMonitorSchema = v.object({
 	protocol: v.optional(v.pipe(v.string(), v.trim())),
 	port: v.optional(v.pipe(v.string(), v.trim())),
 	interval: v.optional(v.pipe(v.string(), v.trim())),
-	name: v.optional(v.pipe(v.string(), v.trim())),
 })
 
 function normalizeHttpTarget(target: string, port = 0) {
@@ -152,15 +148,6 @@ function buildMonitorPayload(values: MonitorValues, enabled = true) {
 		...normalizedValues.output,
 	}
 
-	const trimmedName = normalizedValues.output.name?.trim()
-	const targetName = normalizedValues.output.target.replace(/^https?:\/\//i, "")
-	if (trimmedName) {
-		payload.name = trimmedName
-	} else if (targetName !== normalizedValues.output.target) {
-		payload.name = targetName
-	} else {
-		payload.name = ""
-	}
 	return payload
 }
 
@@ -170,13 +157,12 @@ function getMonitorIdentityKey({ system, target, protocol, port }: MonitorIdenti
 }
 
 function parseBulkMonitorLine(line: string, lineNumber: number, system: string) {
-	const [rawTarget = "", rawProtocol = "", rawPort = "", rawInterval = "", ...rawName] = line.split(",")
+	const [rawTarget = "", rawProtocol = "", rawPort = "", rawInterval = ""] = line.split(",")
 	const parsed = v.safeParse(BulkMonitorSchema, {
 		target: rawTarget,
 		protocol: rawProtocol,
 		port: rawPort,
 		interval: rawInterval,
-		name: rawName.join(","),
 	})
 	if (!parsed.success) {
 		throw new Error(`Line ${lineNumber}: ${parsed.issues[0]?.message || "invalid monitor entry"}`)
@@ -190,16 +176,13 @@ function parseBulkMonitorLine(line: string, lineNumber: number, system: string) 
 		protocol,
 		port: parsed.output.port ? Number(parsed.output.port) : 0,
 		interval: parsed.output.interval || `${defaultInterval}`,
-		name: parsed.output.name || undefined,
 	})
 }
 
 export function formatBulkMonitorLine(monitor: BulkMonitorLineSource) {
 	const port = monitor.protocol !== "tcp" || monitor.port === 443 ? "" : `${monitor.port}`
 	const interval = monitor.interval === defaultInterval ? "" : `${monitor.interval}`
-	return trimTrailingEmptyFields([monitor.target, monitor.protocol, port, interval, monitor.name?.trim() || ""]).join(
-		","
-	)
+	return trimTrailingEmptyFields([monitor.target, monitor.protocol, port, interval]).join(",")
 }
 
 function SystemMultiSelect({
@@ -497,7 +480,7 @@ export function AddMonitorDialog({ systemId, monitors }: { systemId?: string; mo
 						<SheetTitle>
 							<Trans>Bulk Add {{ foo: t`Network Monitors` }}</Trans>
 						</SheetTitle>
-						<SheetDescription>target[,protocol[,port[,interval[,name]]]]</SheetDescription>
+						<SheetDescription>target[,protocol[,port[,interval]]]</SheetDescription>
 					</SheetHeader>
 					<form ref={bulkFormRef} onSubmit={handleBulkSubmit} className="flex h-full flex-col overflow-hidden">
 						<div className="flex-1 flex flex-col space-y-4 overflow-auto p-4">
@@ -529,10 +512,10 @@ export function AddMonitorDialog({ systemId, monitors }: { systemId?: string; mo
 										}
 									}}
 									className="font-mono grow text-sm bg-card"
-									placeholder={["1.1.1.1", "example.com,tcp", "https://example.com,http,,60,Example"].join("\n")}
+									placeholder={["1.1.1.1", "example.com,tcp", "https://example.com,http,,60"].join("\n")}
 									required
 								/>
-								<p className="text-xs text-muted-foreground">target[,protocol[,port[,interval[,name]]]]</p>
+								<p className="text-xs text-muted-foreground">target[,protocol[,port[,interval]]]</p>
 							</div>
 						</div>
 						<SheetFooter className="border-t">
@@ -587,7 +570,6 @@ function MonitorDialogContent({
 	const [target, setTarget] = useState(monitor?.target ?? "")
 	const [port, setPort] = useState(monitor?.protocol === "tcp" && monitor.port ? String(monitor.port) : "")
 	const [monitorInterval, setMonitorInterval] = useState(String(monitor?.interval ?? defaultInterval))
-	const [name, setName] = useState(monitor?.name ?? "")
 	const [loading, setLoading] = useState(false)
 	const [selectedSystemId, setSelectedSystemId] = useState(monitor?.system ?? "")
 	const [selectedSystemIds, setSelectedSystemIds] = useState<Set<string>>(new Set())
@@ -595,7 +577,6 @@ function MonitorDialogContent({
 	const { toast } = useToast()
 	const { t } = useLingui()
 	const isEditing = !!monitor
-	const targetName = target.replace(/^https?:\/\//, "")
 
 	// When the dialog is opened, initialize form fields with monitor values (if editing) or defaults (if adding).
 	useEffect(() => {
@@ -607,7 +588,6 @@ function MonitorDialogContent({
 		setTarget(monitor?.target ?? "")
 		setPort(monitor?.protocol === "tcp" && monitor.port ? String(monitor.port) : "")
 		setMonitorInterval(String(monitor?.interval ?? defaultInterval))
-		setName(monitor?.name ?? "")
 		setSelectedSystemId(monitor?.system ?? "")
 		setSelectedSystemIds(new Set())
 		setLoading(false)
@@ -628,7 +608,6 @@ function MonitorDialogContent({
 					protocol,
 					port: protocol === "tcp" ? Number(port) : 0,
 					interval: monitorInterval,
-					name,
 				},
 				monitor ? monitor.enabled : true
 			)
@@ -753,16 +732,6 @@ function MonitorDialogContent({
 						min={1}
 						max={3600}
 						required
-					/>
-				</div>
-				<div className="grid gap-2">
-					<Label>
-						<Trans>Name (optional)</Trans>
-					</Label>
-					<Input
-						value={name}
-						onChange={(e) => setName(e.target.value)}
-						placeholder={targetName || t`e.g. Cloudflare DNS`}
 					/>
 				</div>
 				<DialogFooter>

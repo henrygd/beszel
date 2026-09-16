@@ -10,7 +10,6 @@ import {
 	MoreHorizontalIcon,
 	ServerIcon,
 	ClockIcon,
-	NetworkIcon,
 	RefreshCwIcon,
 	PenBoxIcon,
 	PauseCircleIcon,
@@ -38,6 +37,7 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { useMemo } from "react"
 import { formatBulkMonitorLine } from "@/components/network-monitors-table/monitor-dialog"
 import { Badge } from "../ui/badge"
+import { getMonitorTarget } from "@/lib/network-monitor-utils"
 import { pb } from "@/lib/api"
 
 const protocolColors: Record<string, string> = {
@@ -61,7 +61,6 @@ const isMuted = (record: NetworkMonitorRecord, systemRecord: SystemRecord | unde
 	!record.enabled || systemRecord?.status !== SystemStatus.Up
 
 export function getMonitorColumns(
-	longestName = "",
 	longestTarget = "",
 	{
 		onEdit,
@@ -98,34 +97,6 @@ export function getMonitorColumns(
 			size: 44,
 		},
 		{
-			id: "name",
-			sortingFn: (a, b) => (a.original.name || a.original.target).localeCompare(b.original.name || b.original.target),
-			accessorFn: (record) => record.name || record.target,
-			header: ({ column }) => <HeaderButton column={column} name={t`Name`} Icon={NetworkIcon} />,
-			cell: ({ row, getValue }) => {
-				const monitor = row.original
-				const { status } = useStore($allSystemsById)[monitor.system] || {}
-
-				let color = "bg-green-500"
-				if (!monitor.enabled || status === SystemStatus.Paused) {
-					color = "bg-primary/40"
-				} else if (status === SystemStatus.Down || status === SystemStatus.Pending) {
-					color = "bg-yellow-500"
-				}
-				return (
-					<div className="ms-1.5 max-w-40 flex gap-2 items-center tabular-nums">
-						<span className={cn("shrink-0 size-2 rounded-full", color)} />
-						<div className="relative w-fit min-w-0 max-w-full">
-							<span className="invisible block overflow-hidden whitespace-nowrap" aria-hidden="true">
-								{longestName}
-							</span>
-							<span className="absolute inset-0 truncate">{getValue() as string}</span>
-						</div>
-					</div>
-				)
-			},
-		},
-		{
 			id: "system",
 			accessorFn: (record) => record.system,
 			sortingFn: (a, b) => {
@@ -136,7 +107,7 @@ export function getMonitorColumns(
 				if (primary !== 0) {
 					return primary
 				}
-				return (a.original.name || a.original.target).localeCompare(b.original.name || b.original.target)
+				return a.original.target.localeCompare(b.original.target)
 			},
 			header: ({ column }) => <HeaderButton column={column} name={t`System`} Icon={ServerIcon} />,
 			cell: ({ getValue }) => {
@@ -164,17 +135,26 @@ export function getMonitorColumns(
 		{
 			id: "target",
 			sortingFn: (a, b) => a.original.target.localeCompare(b.original.target),
-			accessorFn: (record) => record.target,
+			accessorFn: (record) => getMonitorTarget(record),
 			header: ({ column }) => <HeaderButton column={column} name={t`Target`} Icon={GlobeIcon} />,
-			cell: ({ getValue }) => {
-				const target = getValue() as string
+			cell: ({ row, getValue }) => {
+				const monitor = row.original
+				const { status } = useStore($allSystemsById)[monitor.system] || {}
+
+				let color = "bg-green-500"
+				if (!monitor.enabled || status === SystemStatus.Paused) {
+					color = "bg-primary/40"
+				} else if (status === SystemStatus.Down || status === SystemStatus.Pending) {
+					color = "bg-yellow-500"
+				}
 				return (
-					<div className="ms-1.5 flex items-center gap-1 max-w-48">
-						<div className="relative w-fit min-w-0 max-w-full tabular-nums">
-							<span className="invisible block whitespace-nowrap" aria-hidden="true">
+					<div className="ms-1.5 max-w-64 flex gap-2 items-center tabular-nums">
+						<span className={cn("shrink-0 size-2 rounded-full", color)} />
+						<div className="relative w-fit min-w-0 max-w-full">
+							<span className="invisible block overflow-hidden whitespace-nowrap" aria-hidden="true">
 								{longestTarget}
 							</span>
-							<span className="absolute inset-0 truncate">{target}</span>
+							<span className="absolute inset-0 truncate">{getValue() as string}</span>
 						</div>
 					</div>
 				)

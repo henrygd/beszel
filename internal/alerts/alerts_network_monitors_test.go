@@ -28,7 +28,7 @@ func networkAlertSetup(t *testing.T) (*beszelTests.TestHub, *core.Record, *core.
 	var monitors []*core.Record
 	for _, name := range []string{"gateway", "website"} {
 		record, err := beszelTests.CreateRecord(hub, "network_monitors", map[string]any{
-			"system": system.Id, "name": name, "target": name + ".example.com", "protocol": "icmp", "interval": 60, "enabled": true,
+			"system": system.Id, "target": name + ".example.com", "protocol": "icmp", "interval": 60, "enabled": true,
 		})
 		require.NoError(t, err)
 		monitors = append(monitors, record)
@@ -83,6 +83,34 @@ func TestNetworkMonitorAlertIndependentIncidents(t *testing.T) {
 	require.Len(t, histories, 2)
 	for _, history := range histories {
 		assert.NotEmpty(t, history.GetString("monitor_name"))
+	}
+}
+
+func TestNetworkMonitorAlertTargetLabel(t *testing.T) {
+	for _, tc := range []struct {
+		protocol, target, label string
+		port                    int
+	}{
+		{"icmp", "gateway.example.com", "gateway.example.com", 0},
+		{"http", "https://example.com/health", "https://example.com/health", 0},
+		{"tcp", "example.com", "example.com:8443", 8443},
+		{"tcp", "2001:db8::1", "[2001:db8::1]:443", 443},
+	} {
+		t.Run(tc.label, func(t *testing.T) {
+			hub, system, alert, monitors := networkAlertSetup(t)
+			m := monitors[0]
+			m.Set("protocol", tc.protocol)
+			m.Set("target", tc.target)
+			m.Set("port", tc.port)
+			require.NoError(t, hub.Save(m))
+			am := alerts.NewTestAlertManagerWithoutWorker(hub)
+			require.NoError(t, am.HandleNetworkMonitorAlerts(system, map[string]monitor.Result{m.Id: monitorResult(10)}))
+			histories, err := hub.FindAllRecords("alerts_history", dbx.HashExp{"alert_id": alert.Id})
+			require.NoError(t, err)
+			require.Len(t, histories, 1)
+			assert.Equal(t, tc.label, histories[0].GetString("monitor_name"))
+			assert.Contains(t, hub.TestMailer.Messages()[hub.TestMailer.TotalSend()-1].Text, tc.label)
+		})
 	}
 }
 

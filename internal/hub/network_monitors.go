@@ -124,7 +124,7 @@ func copyMonitorToNewRecord(oldRecord *core.Record, newID string) *core.Record {
 	collection := oldRecord.Collection()
 	newRecord := core.NewRecord(collection)
 	newRecord.Id = newID
-	fields := []string{"system", "name", "target", "protocol", "port", "interval", "enabled"}
+	fields := []string{"system", "target", "protocol", "port", "interval", "enabled"}
 	for _, field := range fields {
 		newRecord.Set(field, oldRecord.Get(field))
 	}

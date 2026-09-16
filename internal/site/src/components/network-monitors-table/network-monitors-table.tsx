@@ -1,3 +1,4 @@
+import { getMonitorTarget } from "@/lib/network-monitor-utils"
 import { t } from "@lingui/core/macro"
 import { Trans } from "@lingui/react/macro"
 import {
@@ -44,7 +45,7 @@ import {
 } from "@/lib/utils"
 import type { ChartData, NetworkMonitorRecord } from "@/types"
 import { AddMonitorDialog, EditMonitorDialog } from "./monitor-dialog"
-import { ArrowLeftRightIcon, EthernetPortIcon, GlobeIcon, ServerIcon, XIcon } from "lucide-react"
+import { ArrowLeftRightIcon, EthernetPortIcon, ServerIcon, XIcon } from "lucide-react"
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet"
 import ChartTimeSelect from "@/components/charts/chart-time-select"
 import { LossChart, AvgMinMaxResponseChart } from "@/components/routes/system/charts/monitors-charts"
@@ -63,8 +64,8 @@ export default function NetworkMonitorsTableNew({
 	monitors: NetworkMonitorRecord[]
 }) {
 	const [sorting, setSorting] = useBrowserStorage<SortingState>(
-		`sort-np-${systemId ? 1 : 0}`,
-		[{ id: systemId ? "name" : "system", desc: false }],
+		`sort-np-target-${systemId ? 1 : 0}`,
+		[{ id: systemId ? "target" : "system", desc: false }],
 		sessionStorage
 	)
 	const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
@@ -78,19 +79,14 @@ export default function NetworkMonitorsTableNew({
 	const { toast } = useToast()
 	const canManageMonitors = !isReadOnlyUser()
 
-	const [longestName, longestTarget] = useMemo(() => {
-		let longestName = ""
+	const longestTarget = useMemo(() => {
 		let longestTarget = ""
 		for (const p of monitors) {
-			const name = p.name || p.target
-			if (isVisuallyLonger(name, longestName)) {
-				longestName = name
-			}
-			if (isVisuallyLonger(p.target, longestTarget)) {
-				longestTarget = p.target
+			if (isVisuallyLonger(getMonitorTarget(p), longestTarget)) {
+				longestTarget = getMonitorTarget(p)
 			}
 		}
-		return [longestName, longestTarget]
+		return longestTarget
 	}, [monitors])
 
 	const runMonitorBatch = useCallback(
@@ -192,7 +188,7 @@ export default function NetworkMonitorsTableNew({
 	)
 
 	const columns = useMemo(() => {
-		let columns = getMonitorColumns(longestName, longestTarget, {
+		let columns = getMonitorColumns(longestTarget, {
 			onEdit: setEditingMonitor,
 			onDelete: handleDeleteRequest,
 			onSetEnabled: handleSetEnabled,
@@ -200,7 +196,7 @@ export default function NetworkMonitorsTableNew({
 		columns = systemId ? columns.filter((col) => col.id !== "system") : columns
 		columns = canManageMonitors ? columns : columns.filter((col) => col.id !== "actions")
 		return columns
-	}, [canManageMonitors, handleDeleteRequest, handleSetEnabled, longestName, systemId, longestTarget])
+	}, [canManageMonitors, handleDeleteRequest, handleSetEnabled, systemId, longestTarget])
 
 	const table = useReactTable({
 		data: monitors,
@@ -231,7 +227,7 @@ export default function NetworkMonitorsTableNew({
 			if (!value) return true
 			const monitor = row.original
 			const systemName = $allSystemsById.get()[monitor.system]?.name ?? ""
-			const searchString = `${monitor.name}${monitor.target}${monitor.protocol}${systemName}`.toLocaleLowerCase()
+			const searchString = `${getMonitorTarget(monitor)}${monitor.protocol}${systemName}`.toLocaleLowerCase()
 			return matchesFilterGroups(searchString, parseFilterGroups(value))
 		},
 	})
@@ -508,7 +504,7 @@ function NetworkMonitorSheetContent({
 		[system?.info?.v, direction, chartTime]
 	)
 	const hasMonitorStats = monitorStats.some((record) => record.stats?.[monitor.id] != null)
-	const monitorLabel = monitor.name || monitor.target
+	const monitorLabel = getMonitorTarget(monitor)
 
 	return (
 		<Sheet open={open} onOpenChange={onOpenChange}>
@@ -523,9 +519,6 @@ function NetworkMonitorSheetContent({
 						<Separator orientation="vertical" className="h-2.5 bg-muted-foreground opacity-70" />
 						<ArrowLeftRightIcon className="size-3.5 text-muted-foreground" />
 						{monitor.protocol.toUpperCase()}
-						<Separator orientation="vertical" className="h-2.5 bg-muted-foreground opacity-70" />
-						<GlobeIcon className="size-3.5 text-muted-foreground" />
-						{monitor.target}
 						{monitor.protocol === "tcp" && monitor.port > 0 && (
 							<>
 								<Separator orientation="vertical" className="h-2.5 bg-muted-foreground opacity-70" />

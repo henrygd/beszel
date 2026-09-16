@@ -5,6 +5,8 @@ import (
 	"errors"
 	"fmt"
 	"math"
+	"net"
+	"strconv"
 	"time"
 
 	"github.com/henrygd/beszel/internal/entities/monitor"
@@ -164,15 +166,9 @@ func (am *AlertManager) evaluateNetworkMonitorAlerts(app core.App, systemID stri
 					if triggered == active {
 						continue
 					}
-					label := m.GetString("name")
-					target := m.GetString("target")
+					label := m.GetString("target")
 					if m.GetString("protocol") == "tcp" {
-						target = fmt.Sprintf("%s:%d", target, m.GetInt("port"))
-					}
-					if label == "" {
-						label = target
-					} else {
-						label += " (" + target + ")"
+						label = net.JoinHostPort(label, strconv.Itoa(m.GetInt("port")))
 					}
 					if triggered {
 						collection, err := tx.FindCachedCollectionByNameOrId("alerts_history")
