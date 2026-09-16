@@ -91,6 +91,11 @@ func TestParseSmartForSata(t *testing.T) {
 }
 
 func TestParseSmartForSataWarnsForCriticalAttributes(t *testing.T) {
+	attrNames := map[int]string{
+		5:   "Reallocated_Sector_Ct",
+		197: "Current_Pending_Sector",
+		198: "Offline_Uncorrectable",
+	}
 	for _, attrID := range []int{5, 197, 198} {
 		t.Run("attribute "+strconv.Itoa(attrID), func(t *testing.T) {
 			jsonPayload := []byte(fmt.Sprintf(`{
@@ -98,15 +103,49 @@ func TestParseSmartForSataWarnsForCriticalAttributes(t *testing.T) {
 				"device": {"name": "/dev/sda", "type": "sat"},
 				"model_name": "Example",
 				"serial_number": "WARNING%d",
+				"in_smartctl_database": true,
 				"smart_status": {"passed": true},
 				"temperature": {"current": 30},
-				"ata_smart_attributes": {"table": [{"id": %d, "raw": {"value": 1, "string": "1"}}]}
-			}`, attrID, attrID))
+				"ata_smart_attributes": {"table": [{"id": %d, "name": "%s", "raw": {"value": 1, "string": "1"}}]}
+			}`, attrID, attrID, attrNames[attrID]))
 
 			sm := &SmartManager{SmartDataMap: make(map[string]*smart.SmartData)}
 			hasData, _ := sm.parseSmartForSata(jsonPayload, "")
 			require.True(t, hasData)
 			assert.Equal(t, "WARNING", sm.SmartDataMap[fmt.Sprintf("WARNING%d", attrID)].SmartStatus)
+		})
+	}
+}
+
+func TestParseSmartForSataIgnoresVendorSpecificCriticalAttributeNames(t *testing.T) {
+	for _, test := range []struct {
+		name       string
+		inDatabase bool
+		attrID     int
+		attrName   string
+		wantState  string
+	}{
+		{name: "crucial pending ECC counter", inDatabase: true, attrID: 197, attrName: "Current_Pending_ECC_Cnt", wantState: "PASSED"},
+		{name: "unknown offline counter", inDatabase: false, attrID: 198, attrName: "Offline_Uncorrectable", wantState: "PASSED"},
+		{name: "known offline media counter", inDatabase: true, attrID: 198, attrName: "Offline_UErr_Media_Scan", wantState: "WARNING"},
+		{name: "crucial reallocated NAND blocks", inDatabase: true, attrID: 5, attrName: "Reallocate_NAND_Blk_Cnt", wantState: "WARNING"},
+	} {
+		t.Run(test.name, func(t *testing.T) {
+			jsonPayload := []byte(fmt.Sprintf(`{
+				"smartctl": {"exit_status": 0},
+				"device": {"name": "/dev/sda", "type": "sat"},
+				"model_name": "Example",
+				"serial_number": "IGNORE%d",
+				"in_smartctl_database": %t,
+				"smart_status": {"passed": true},
+				"temperature": {"current": 30},
+				"ata_smart_attributes": {"table": [{"id": %d, "name": "%s", "raw": {"value": 1, "string": "1"}}]}
+			}`, test.attrID, test.inDatabase, test.attrID, test.attrName))
+
+			sm := &SmartManager{SmartDataMap: make(map[string]*smart.SmartData)}
+			hasData, _ := sm.parseSmartForSata(jsonPayload, "")
+			require.True(t, hasData)
+			assert.Equal(t, test.wantState, sm.SmartDataMap[fmt.Sprintf("IGNORE%d", test.attrID)].SmartStatus)
 		})
 	}
 }
