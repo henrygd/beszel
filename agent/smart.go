@@ -1041,7 +1041,13 @@ func (sm *SmartManager) parseSmartForScsi(output []byte, deviceType string) (boo
 	// Identity-only output means smartctl could not read health data through
 	// this device type. Accepting it stores silent zeros; see
 	// github.com/henrygd/beszel/issues/2295.
-	if data.Temperature.Current == 0 && data.PowerOnTime.Hours == 0 && !data.SmartStatus.Passed {
+	var health struct {
+		SmartStatus *struct {
+			Passed *bool `json:"passed"`
+		} `json:"smart_status"`
+	}
+	_ = json.Unmarshal(output, &health)
+	if health.SmartStatus == nil || health.SmartStatus.Passed == nil {
 		slog.Debug("no SCSI health data", "device", data.Device.Name)
 		return false, data.Smartctl.ExitStatus
 	}
@@ -1060,7 +1066,14 @@ func (sm *SmartManager) parseSmartForScsi(output []byte, deviceType string) (boo
 	smartData.FirmwareVersion = data.ScsiRevision
 	smartData.Capacity = data.UserCapacity.Bytes
 	smartData.Temperature = data.Temperature.Current
-	smartData.SmartStatus = getSmartStatus(smartData.Temperature, data.SmartStatus.Passed)
+	// The presence check above proves smart_status was reported, so passed is
+	// authoritative. getSmartStatus falls back to temperature because the SATA
+	// path cannot tell a reported false from a decoded zero value; here we can.
+	if *health.SmartStatus.Passed {
+		smartData.SmartStatus = "PASSED"
+	} else {
+		smartData.SmartStatus = "FAILED"
+	}
 	smartData.DiskName = data.Device.Name
 	smartData.DiskType = data.Device.Type
 	if deviceType != "" {
@@ -1188,7 +1201,11 @@ func (sm *SmartManager) parseSmartForNvme(output []byte, deviceType string) (boo
 	// Identity-only output means smartctl could not read health data through
 	// this device type. Accepting it stores silent zeros; see
 	// github.com/henrygd/beszel/issues/2295.
-	if data.NVMeSmartHealthInformationLog.PowerOnHours == 0 && data.NVMeSmartHealthInformationLog.Temperature == 0 {
+	var health struct {
+		NVMeHealth json.RawMessage `json:"nvme_smart_health_information_log"`
+	}
+	_ = json.Unmarshal(output, &health)
+	if !hasJSONValue(health.NVMeHealth) {
 		slog.Debug("no NVMe health data", "device", data.Device.Name)
 		return false, data.Smartctl.ExitStatus
 	}

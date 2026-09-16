@@ -907,6 +907,37 @@ func assertAttrValue(t *testing.T, attributes []*smart.SmartAttribute, name stri
 	}
 }
 
+func TestParseSmartOutputHealthPresence(t *testing.T) {
+	for _, tt := range []struct {
+		name, deviceType, health string
+		wantValid                bool
+		wantStatus               string
+	}{
+		{"scsi_failed", "scsi", `,"smart_status":{"passed":false}`, true, "FAILED"},
+		{"scsi_passed", "scsi", `,"smart_status":{"passed":true}`, true, "PASSED"},
+		{"scsi_null", "scsi", `,"smart_status":null`, false, ""},
+		{"scsi_absent", "scsi", "", false, ""},
+		{"nvme_zero", "nvme", `,"nvme_smart_health_information_log":{"temperature":0,"power_on_hours":0}`, true, ""},
+		{"nvme_null", "nvme", `,"nvme_smart_health_information_log":null`, false, ""},
+		{"nvme_absent", "nvme", "", false, ""},
+	} {
+		t.Run(tt.name, func(t *testing.T) {
+			sm := &SmartManager{SmartDataMap: make(map[string]*smart.SmartData)}
+			device := &DeviceInfo{Name: "/dev/sda", Type: tt.deviceType}
+			output := []byte(fmt.Sprintf(`{"device":{"name":"/dev/sda","type":%q},"serial_number":"HEALTH"%s}`, tt.deviceType, tt.health))
+			require.Equal(t, tt.wantValid, sm.parseSmartOutput(device, output))
+			if !tt.wantValid {
+				assert.Empty(t, sm.SmartDataMap)
+				return
+			}
+			require.Contains(t, sm.SmartDataMap, "HEALTH")
+			if tt.wantStatus != "" {
+				assert.Equal(t, tt.wantStatus, sm.SmartDataMap["HEALTH"].SmartStatus)
+			}
+		})
+	}
+}
+
 // TestParseSmartOutputRejectsIdentityOnlyData verifies that smartctl output
 // carrying identity fields but no health sections is treated as a failed
 // collection rather than a valid record of zeros (issue #2295).
