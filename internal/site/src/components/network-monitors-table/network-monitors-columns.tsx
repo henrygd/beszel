@@ -337,7 +337,7 @@ export function getMonitorColumns(
 										<CopyPlusIcon className="me-2.5 size-4" />
 										<Trans>Copy to system</Trans>
 									</DropdownMenuSubTrigger>
-									<DropdownMenuSubContent>
+									<DropdownMenuSubContent className="max-h-[min(20rem,var(--radix-dropdown-menu-content-available-height))] overflow-y-auto">
 										{otherSystems.map((sys) => (
 											<DropdownMenuItem
 												key={sys.id}
