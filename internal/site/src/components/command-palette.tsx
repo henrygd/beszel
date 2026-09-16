@@ -14,6 +14,7 @@ import {
 	Server,
 	ServerIcon,
 	SettingsIcon,
+	TagIcon,
 	UsersIcon,
 } from "lucide-react"
 import { memo, useEffect, useMemo } from "react"
@@ -169,6 +170,18 @@ export default memo(function CommandPalette({ open, setOpen }: { open: boolean; 
 							<AlertOctagonIcon className="me-2 size-4" />
 							<span>
 								<Trans>Alert History</Trans>
+							</span>
+							{SettingsShortcut}
+						</CommandItem>
+						<CommandItem
+							onSelect={() => {
+								navigate(getPagePath($router, "settings", { name: "tags" }))
+								setOpen(false)
+							}}
+						>
+							<TagIcon className="me-2 size-4" />
+							<span>
+								<Trans>Tags</Trans>
 							</span>
 							{SettingsShortcut}
 						</CommandItem>

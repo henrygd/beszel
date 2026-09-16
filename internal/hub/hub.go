@@ -109,6 +109,38 @@ func (h *Hub) StartHub() error {
 	h.App.OnRecordCreate("users").BindFunc(h.um.InitializeUserRole)
 	h.App.OnRecordCreate("user_settings").BindFunc(h.um.InitializeUserSettings)
 
+	// trim tag names before create/update so the DB's case-insensitive unique
+	// index doesn't get bypassed by incidental leading/trailing whitespace
+	trimTagName := func(e *core.RecordEvent) error {
+		e.Record.Set("name", strings.TrimSpace(e.Record.GetString("name")))
+		return e.Next()
+	}
+	h.App.OnRecordCreate("tags").BindFunc(trimTagName)
+	h.App.OnRecordUpdate("tags").BindFunc(trimTagName)
+
+	// remove deleted tag ID from all system records
+	h.App.OnRecordAfterDeleteSuccess("tags").BindFunc(func(e *core.RecordEvent) error {
+		tagID := e.Record.Id
+		systems, err := e.App.FindRecordsByFilter("systems", "tags ~ {:id}", "", -1, 0, map[string]any{"id": tagID})
+		if err != nil || len(systems) == 0 {
+			return e.Next()
+		}
+		for _, system := range systems {
+			tags := system.GetStringSlice("tags")
+			filtered := tags[:0]
+			for _, t := range tags {
+				if t != tagID {
+					filtered = append(filtered, t)
+				}
+			}
+			system.Set("tags", filtered)
+			if err := e.App.Save(system); err != nil {
+				e.App.Logger().Error("failed to remove tag from system", "system", system.Id, "tag", tagID, "err", err)
+			}
+		}
+		return e.Next()
+	})
+
 	pb, ok := h.App.(*pocketbase.PocketBase)
 	if !ok {
 		return errors.New("not a pocketbase app")
