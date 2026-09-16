@@ -2,6 +2,7 @@ package systems
 
 import (
 	"database/sql"
+	"encoding/json"
 	"errors"
 	"strings"
 	"time"
@@ -118,6 +119,7 @@ func (sys *System) upsertSmartDeviceRecord(app core.App, collection *core.Collec
 	recordID := makeStableHashId(sys.Id, deviceKey)
 
 	record, err := app.FindRecordById(collection, recordID)
+	existingRecord := err == nil
 	if err != nil {
 		if !errors.Is(err, sql.ErrNoRows) {
 			return err
@@ -131,11 +133,25 @@ func (sys *System) upsertSmartDeviceRecord(app core.App, collection *core.Collec
 		name = deviceKey
 	}
 
+	now := time.Now().UTC()
+	var trendState smart.SmartTrendState
+	decodeRecordJSON(record, "smart_history", &trendState)
+	// A pre-migration row contains only its latest SMART snapshot. Preserve that
+	// one available baseline before replacing the record with the current sample.
+	if existingRecord && len(trendState.Samples) == 0 {
+		var previousAttributes []*smart.SmartAttribute
+		decodeRecordJSON(record, "attributes", &previousAttributes)
+		if previousUpdated := record.GetDateTime("updated").Time().UTC(); !previousUpdated.IsZero() && previousUpdated.Before(now) {
+			trendState, _ = smart.EvaluateSmartHealth(previousUpdated, record.GetString("serial"), record.GetString("state"), previousAttributes, trendState)
+		}
+	}
+	trendState, health := smart.EvaluateSmartHealth(now, device.SerialNumber, device.SmartStatus, device.Attributes, trendState)
+
 	powerOnHours, powerCycles := extractPowerMetrics(device.Attributes)
 	record.Set("system", sys.Id)
 	record.Set("name", name)
 	record.Set("model", device.ModelName)
-	record.Set("state", device.SmartStatus)
+	record.Set("state", health.Status)
 	record.Set("capacity", device.Capacity)
 	record.Set("temp", device.Temperature)
 	record.Set("firmware", device.FirmwareVersion)
@@ -144,8 +160,22 @@ func (sys *System) upsertSmartDeviceRecord(app core.App, collection *core.Collec
 	record.Set("hours", powerOnHours)
 	record.Set("cycles", powerCycles)
 	record.Set("attributes", device.Attributes)
+	record.Set("smart_history", trendState)
+	record.Set("smart_health", health)
 
 	return app.SaveNoValidate(record)
+}
+
+func decodeRecordJSON(record *core.Record, field string, dest any) {
+	raw := record.Get(field)
+	if raw == nil {
+		return
+	}
+	data, err := json.Marshal(raw)
+	if err != nil {
+		return
+	}
+	_ = json.Unmarshal(data, dest)
 }
 
 // extractPowerMetrics extracts power on hours and power cycles from SMART attributes

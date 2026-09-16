@@ -262,3 +262,33 @@ func TestSmartDeviceAlertWithoutModel(t *testing.T) {
 	assert.NotContains(t, lastMessage.Text, "()", "should not have empty parentheses for missing model")
 	assert.Contains(t, lastMessage.Text, "/dev/sdb")
 }
+
+func TestSmartDeviceAlertWarningToCritical(t *testing.T) {
+	hub, user := beszelTests.GetHubWithUser(t)
+	defer hub.Cleanup()
+
+	system, err := beszelTests.CreateRecord(hub, "systems", map[string]any{
+		"name":  "test-system",
+		"users": []string{user.Id},
+		"host":  "127.0.0.1",
+	})
+	assert.NoError(t, err)
+
+	smartDevice, err := beszelTests.CreateRecord(hub, "smart_devices", map[string]any{
+		"system": system.Id,
+		"name":   "/dev/sda",
+		"state":  "WARNING",
+	})
+	assert.NoError(t, err)
+
+	smartDevice, err = hub.FindRecordById("smart_devices", smartDevice.Id)
+	assert.NoError(t, err)
+	smartDevice.Set("state", "CRITICAL")
+	assert.NoError(t, hub.Save(smartDevice))
+	time.Sleep(50 * time.Millisecond)
+
+	assert.EqualValues(t, 1, hub.TestMailer.TotalSend())
+	lastMessage := hub.TestMailer.LastMessage()
+	assert.Contains(t, lastMessage.Subject, "SMART critical warning on test-system")
+	assert.Contains(t, lastMessage.Text, "CRITICAL")
+}
