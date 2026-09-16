@@ -43,18 +43,17 @@ func ARCSize() (uint64, error) {
 	return 0, fmt.Errorf("size field not found in arcstats")
 }
 
-// PoolStats returns capacity and health for all pools on the system using
-// `zpool list`. On Linux it first probes /dev/zfs so that containers without
-// the device mapped fail fast with ErrNoZfs instead of timing out the command.
-func PoolStats() ([]PoolStat, error) {
+// checkZfsDevice lets containers without /dev/zfs fail fast instead of
+// waiting for ZFS utility commands to time out.
+func checkZfsDevice() error {
 	_, err := os.Stat(devZfsPath)
 	if err != nil {
 		if errors.Is(err, os.ErrNotExist) {
-			return nil, ErrNoZfs
+			return ErrNoZfs
 		}
-		return nil, err
+		return err
 	}
-	return poolStats()
+	return nil
 }
 
 // PoolKernelStats reads pool state and cumulative I/O counters directly from

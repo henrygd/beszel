@@ -89,7 +89,7 @@ func TestReadObjsetIORequiresAllCounters(t *testing.T) {
 	require.Error(t, err)
 }
 
-func TestPoolStatsSkipsZpoolWhenDevZfsMissing(t *testing.T) {
+func TestCollectorsSkipCommandsWhenDevZfsMissing(t *testing.T) {
 	root := t.TempDir()
 	oldDevZfsPath := devZfsPath
 	devZfsPath = filepath.Join(root, "missing")
@@ -104,6 +104,27 @@ func TestPoolStatsSkipsZpoolWhenDevZfsMissing(t *testing.T) {
 
 	_, err := PoolStats()
 	assert.ErrorIs(t, err, ErrNoZfs)
+	_, err = Datasets()
+	assert.ErrorIs(t, err, ErrNoZfs)
+}
+
+func TestDatasetsDelegatesWhenDevZfsPresent(t *testing.T) {
+	oldDevZfsPath := devZfsPath
+	devZfsPath = filepath.Join(t.TempDir(), "zfs")
+	require.NoError(t, os.WriteFile(devZfsPath, nil, 0o644))
+	t.Cleanup(func() { devZfsPath = oldDevZfsPath })
+
+	oldCommandOutput := commandOutput
+	commandOutput = func(name string, args ...string) ([]byte, error) {
+		assert.Equal(t, "zfs", name)
+		assert.Equal(t, []string{"list", "-Hp", "-o", "name,used,avail,mountpoint"}, args)
+		return []byte("tank\t50\t50\t/tank\n"), nil
+	}
+	t.Cleanup(func() { commandOutput = oldCommandOutput })
+
+	datasets, err := Datasets()
+	require.NoError(t, err)
+	assert.Equal(t, []Dataset{{Name: "tank", Used: 50, Avail: 50, Mountpoint: "/tank"}}, datasets)
 }
 
 func TestPoolStatsDelegatesToZpoolWhenDevZfsPresent(t *testing.T) {
