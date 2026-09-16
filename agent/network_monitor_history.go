@@ -35,7 +35,8 @@ type monitorHistory struct {
 }
 
 func newMonitorHistory() *monitorHistory {
-	return &monitorHistory{samples: make([]monitorSample, 0, 64)}
+	// Start small for typical intervals; append grows the buffer for faster probes.
+	return &monitorHistory{samples: make([]monitorSample, 0, 4)}
 }
 
 func (h *monitorHistory) clone() *monitorHistory {
