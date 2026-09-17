@@ -9,7 +9,7 @@ require (
 	github.com/ebitengine/purego v0.11.0
 	github.com/fxamacker/cbor/v2 v2.9.3
 	github.com/gliderlabs/ssh v0.3.8
-	github.com/lxzan/gws v1.10.1
+	github.com/lxzan/gws v1.10.2
 	github.com/nicholas-fedor/shoutrrr v0.20.0
 	github.com/opencontainers/go-digest v1.0.0
 	github.com/pocketbase/dbx v1.12.0
