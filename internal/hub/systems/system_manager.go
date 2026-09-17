@@ -356,11 +356,14 @@ func (sm *SystemManager) AddWebSocketSystem(systemId string, agentVersion semver
 
 	// Sync network monitors to the newly connected agent
 	go func() {
-		configs := sm.GetMonitorConfigsForSystem(systemId)
-		if len(configs) > 0 {
-			if err := system.SyncNetworkMonitors(configs); err != nil {
-				sm.hub.Logger().Warn("failed to sync monitors to agent", "system", systemId, "err", err)
-			}
+		configs, err := sm.GetMonitorConfigsForSystem(systemId)
+		if err != nil {
+			sm.hub.Logger().Warn("failed to load monitors for agent", "system", systemId, "err", err)
+			return
+		}
+		// An empty set must also replace any probes retained across a disconnect.
+		if err := system.SyncNetworkMonitors(configs); err != nil {
+			sm.hub.Logger().Warn("failed to sync monitors to agent", "system", systemId, "err", err)
 		}
 	}()
 
@@ -377,13 +380,13 @@ func (sm *SystemManager) resetFailedSmartFetchState(systemID string) {
 }
 
 // GetMonitorConfigsForSystem returns all enabled monitor configs for a system.
-func (sm *SystemManager) GetMonitorConfigsForSystem(systemID string) []monitor.Config {
+func (sm *SystemManager) GetMonitorConfigsForSystem(systemID string) ([]monitor.Config, error) {
 	var configs []monitor.Config
-	_ = sm.hub.DB().
+	err := sm.hub.DB().
 		NewQuery("SELECT id, target, protocol, port, interval FROM network_monitors WHERE system = {:system} AND enabled = true").
 		Bind(dbx.Params{"system": systemID}).
 		All(&configs)
-	return configs
+	return configs, err
 }
 
 // resetFailedZfsFetchState clears only failed ZFS cooldown entries so a fresh
