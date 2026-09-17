@@ -1,4 +1,5 @@
 import { chartTimeData } from "@/lib/utils"
+import { getMonitorStats } from "@/lib/network-monitor-utils"
 import type {
 	ChartTimes,
 	MonitorStats,
@@ -46,12 +47,7 @@ export function mergeMonitorStats(rawRecords: RawMonitorStatsRecord[]): NetworkM
 			statsMap = {}
 			byTimestamp.set(rec.created, statsMap)
 		}
-		statsMap[rec.monitor] = {
-			res_avg: rec.res_avg,
-			res_min: rec.res_min,
-			res_max: rec.res_max,
-			loss: rec.loss,
-		}
+		statsMap[rec.monitor] = getMonitorStats(rec)
 	}
 	return Array.from(byTimestamp.entries())
 		.sort(([a], [b]) => a - b)
@@ -71,7 +67,7 @@ async function fetchMonitorStats(
 			created: getPbTimestamp(chartTime, lastCached ? new Date(lastCached + 1000) : undefined, true),
 			type: chartTimeData[chartTime].type,
 		}),
-		fields: "monitor,res_avg,res_min,res_max,loss,created",
+		fields: "monitor,res_min,res_max,total_count,success_count,res_sum,created",
 		sort: "created",
 	})
 	return mergeMonitorStats(rawRecords)
@@ -218,7 +214,7 @@ export function useNetworkMonitorStats(props: UseNetworkMonitorStatsProps) {
 		}
 		let unsubscribe: (() => void) | undefined
 		const pbOptions = {
-			fields: "monitor,res_avg,res_min,res_max,loss,created,type",
+			fields: "monitor,res_min,res_max,total_count,success_count,res_sum,created,type",
 			filter: pb.filter("system={:system} && type={:type}", {
 				system: systemId,
 				type: chartTimeData[chartTime].type,

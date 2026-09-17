@@ -479,13 +479,11 @@ func (sys *System) updateNetworkMonitorsRecords(app core.App, monitorResults map
 			"monitor":       monitorId,
 			"type":          "1m",
 			"created":       nowMilli,
-			"res_avg":       result.AvgResponse,
 			"res_min":       result.MinResponse,
 			"res_max":       result.MaxResponse,
-			"loss":          result.PacketLoss,
 			"total_count":   result.TotalCount,
 			"success_count": result.SuccessCount,
-			"response_sum":  result.ResponseSum,
+			"res_sum":       result.ResponseSum,
 		}
 		switch realtimeActive {
 		case true:

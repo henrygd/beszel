@@ -207,9 +207,7 @@ func (sm *SystemManager) finishRealtimeFetch(fetch realtimeFetch) {
 }
 
 // marshalRealtimeData marshals combined agent data for a realtime broadcast, converting
-// the per-monitor results into the named metric fields the frontend charts expect
-// (the same conversion used for persisted network_monitor_stats records) rather than the raw
-// monitor.Result struct used for hub<->agent transport.
+// the per-monitor results into the derived metric fields the frontend charts expect.
 func marshalRealtimeData(data *system.CombinedData) ([]byte, error) {
 	if len(data.Monitors) == 0 {
 		return json.Marshal(data)

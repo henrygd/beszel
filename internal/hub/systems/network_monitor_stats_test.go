@@ -96,7 +96,7 @@ func TestNetworkMonitorStatsFreshness(t *testing.T) {
 				result := data.Monitors[record.GetString("monitor")]
 				assert.EqualValues(t, result.TotalCount, record.GetInt("total_count"))
 				assert.EqualValues(t, result.SuccessCount, record.GetInt("success_count"))
-				assert.EqualValues(t, result.ResponseSum, record.GetInt("response_sum"))
+				assert.EqualValues(t, result.ResponseSum, record.GetInt("res_sum"))
 			}
 			// A resume can overlap the scheduled update with the same probe.
 			errs := make(chan error, 4)

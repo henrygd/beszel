@@ -660,7 +660,12 @@ export interface MonitorStats {
 }
 
 /** Raw per-monitor record stored in the DB. */
-export interface RawMonitorStatsRecord extends MonitorStats {
+export interface RawMonitorStatsRecord {
+	res_min: number
+	res_max: number
+	total_count: number
+	success_count: number
+	res_sum: number
 	id?: string
 	type?: string
 	monitor: string

@@ -20,6 +20,11 @@ func TestAverageMonitorStats(t *testing.T) {
 	require.NoError(t, err)
 	defer hub.Cleanup()
 
+	collection, err := hub.FindCachedCollectionByNameOrId("network_monitor_stats")
+	require.NoError(t, err)
+	assert.Nil(t, collection.Fields.GetByName("res_avg"))
+	assert.Nil(t, collection.Fields.GetByName("loss"))
+
 	rm := records.NewRecordManager(hub)
 	user, err := tests.CreateUser(hub, "monitor-avg@example.com", "testtesttest")
 	require.NoError(t, err)
@@ -48,11 +53,9 @@ func TestAverageMonitorStats(t *testing.T) {
 		"monitor":     monitor.Id,
 		"type":        "1m",
 		"created":     created,
-		"res_avg":     10,
 		"res_min":     5,
 		"res_max":     20,
-		"loss":        0,
-		"total_count": 6, "success_count": 6, "response_sum": 60,
+		"total_count": 6, "success_count": 6, "res_sum": 60,
 	})
 	require.NoError(t, err)
 	recordB, err := tests.CreateRecord(hub, "network_monitor_stats", map[string]any{
@@ -60,11 +63,9 @@ func TestAverageMonitorStats(t *testing.T) {
 		"monitor":     monitor.Id,
 		"type":        "1m",
 		"created":     created,
-		"res_avg":     22,
 		"res_min":     10,
 		"res_max":     60,
-		"loss":        0,
-		"total_count": 1, "success_count": 1, "response_sum": 22,
+		"total_count": 1, "success_count": 1, "res_sum": 22,
 	})
 	require.NoError(t, err)
 
@@ -90,12 +91,10 @@ func TestAverageMonitorStats(t *testing.T) {
 	}
 
 	// A failure-only bucket counts toward loss but must not lower latency.
-	recordB.Set("res_avg", 0)
 	recordB.Set("res_min", 0)
 	recordB.Set("res_max", 0)
-	recordB.Set("loss", 100)
 	recordB.Set("success_count", 0)
-	recordB.Set("response_sum", 0)
+	recordB.Set("res_sum", 0)
 	require.NoError(t, hub.Save(recordB))
 	result, count, err = rm.AverageMonitorStats(hub.DB(), monitor.Id, "1m", created-1)
 	require.NoError(t, err)
@@ -107,19 +106,17 @@ func TestAverageMonitorStats(t *testing.T) {
 		rollups, err := hub.FindAllRecords("network_monitor_stats", dbx.HashExp{"monitor": monitor.Id, "type": recordType})
 		require.NoError(t, err)
 		require.Len(t, rollups, 1, recordType)
-		assert.Equal(t, 10.0, rollups[0].GetFloat("res_avg"))
 		assert.Equal(t, 5.0, rollups[0].GetFloat("res_min"))
 		assert.Equal(t, 20.0, rollups[0].GetFloat("res_max"))
-		assert.Equal(t, 14.29, rollups[0].GetFloat("loss"))
 		assert.Equal(t, 7, rollups[0].GetInt("total_count"))
 		assert.Equal(t, 6, rollups[0].GetInt("success_count"))
-		assert.Equal(t, 60, rollups[0].GetInt("response_sum"))
+		assert.Equal(t, 60, rollups[0].GetInt("res_sum"))
 		// A sibling with a different number of probes must retain its actual
-		// weight when the next tier combines already-rounded display metrics.
+		// weight when the next tier combines their underlying counts.
 		_, err = tests.CreateRecord(hub, "network_monitor_stats", map[string]any{
 			"system": sys.Id, "monitor": monitor.Id, "type": recordType, "created": created,
-			"res_avg": 100, "res_min": 100, "res_max": 100, "loss": 66.67,
-			"total_count": 3, "success_count": 1, "response_sum": 100,
+			"res_min": 100, "res_max": 100,
+			"total_count": 3, "success_count": 1, "res_sum": 100,
 		})
 		require.NoError(t, err)
 		merged, count, err := rm.AverageMonitorStats(hub.DB(), monitor.Id, recordType, created-1)
@@ -133,7 +130,7 @@ func TestAverageMonitorStats(t *testing.T) {
 	// All failures produce zero latency, while a genuine zero-microsecond
 	// success remains a valid minimum (it must not be filtered out as a sentinel).
 	recordA.Set("success_count", 0)
-	recordA.Set("response_sum", 0)
+	recordA.Set("res_sum", 0)
 	require.NoError(t, hub.Save(recordA))
 	result, _, err = rm.AverageMonitorStats(hub.DB(), monitor.Id, "1m", created-1)
 	require.NoError(t, err)
@@ -182,8 +179,8 @@ func TestSparseMonitorRollups(t *testing.T) {
 				_, err := tests.CreateRecord(hub, "network_monitor_stats", map[string]any{
 					"system": sys.Id, "monitor": monitor.Id, "type": "1m",
 					"created": now.Add(-time.Minute - time.Duration(i*tc.interval)*time.Second).UnixMilli(),
-					"res_avg": 12, "res_min": 8, "res_max": 20, "loss": 25,
-					"total_count": 4, "success_count": 3, "response_sum": 36,
+					"res_min": 8, "res_max": 20,
+					"total_count": 4, "success_count": 3, "res_sum": 36,
 				})
 				require.NoError(t, err)
 			}
@@ -212,10 +209,11 @@ func TestSparseMonitorRollups(t *testing.T) {
 					assert.Empty(t, rollups, recordType)
 				} else {
 					require.Len(t, rollups, 1, recordType)
-					assert.Equal(t, 12.0, rollups[0].GetFloat("res_avg"))
 					assert.Equal(t, 8.0, rollups[0].GetFloat("res_min"))
 					assert.Equal(t, 20.0, rollups[0].GetFloat("res_max"))
-					assert.Equal(t, 25.0, rollups[0].GetFloat("loss"))
+					assert.Equal(t, 4*tc.samples, rollups[0].GetInt("total_count"))
+					assert.Equal(t, 3*tc.samples, rollups[0].GetInt("success_count"))
+					assert.Equal(t, 36*tc.samples, rollups[0].GetInt("res_sum"))
 				}
 				for _, collection := range []string{"system_stats", "container_stats"} {
 					count, err := hub.CountRecords(collection, dbx.HashExp{"system": sys.Id, "type": recordType})

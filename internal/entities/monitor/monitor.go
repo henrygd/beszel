@@ -80,13 +80,13 @@ type Result struct {
 
 // Stats holds response times in microseconds and packet loss percentage (0-100).
 type Stats struct {
-	ResAvg       float64 `json:"res_avg" db:"res_avg"`
+	ResAvg       float64 `json:"res_avg" db:"-"` // Derived for display; not stored.
 	ResMin       float64 `json:"res_min" db:"res_min"`
 	ResMax       float64 `json:"res_max" db:"res_max"`
-	Loss         float64 `json:"loss" db:"loss"`
+	Loss         float64 `json:"loss" db:"-"` // Derived for display; not stored.
 	TotalCount   int64   `json:"-" db:"total_count"`
 	SuccessCount int64   `json:"-" db:"success_count"`
-	ResponseSum  int64   `json:"-" db:"response_sum"`
+	ResponseSum  int64   `json:"-" db:"res_sum"`
 }
 
 func (s Stats) FromResult(result Result) Stats {
