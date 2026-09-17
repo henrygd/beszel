@@ -3,7 +3,7 @@ package hub
 import (
 	"context"
 	"fmt"
-	"log"
+	"log/slog"
 	"net"
 	"net/http"
 	"net/netip"
@@ -110,7 +110,7 @@ func parseTrustedProxies() (prefixes []netip.Prefix, restricted bool) {
 		if prefix, err := parseProxyPrefix(entry); err == nil {
 			prefixes = append(prefixes, prefix)
 		} else {
-			log.Printf("Ignoring invalid TRUSTED_PROXY_IPS entry %q", entry)
+			slog.Warn("Ignoring invalid TRUSTED_PROXY_IPS entry", "entry", entry)
 		}
 	}
 	return prefixes, true
