@@ -1,5 +1,11 @@
 import { chartTimeData } from "@/lib/utils"
-import type { ChartTimes, MonitorStats, NetworkMonitorRecord, NetworkMonitorStatsRecord, RawMonitorStatsRecord } from "@/types"
+import type {
+	ChartTimes,
+	MonitorStats,
+	NetworkMonitorRecord,
+	NetworkMonitorStatsRecord,
+	RawMonitorStatsRecord,
+} from "@/types"
 import { useEffect, useRef, useState } from "react"
 import { appendData } from "@/components/routes/system/chart-data"
 import { pb, getPbTimestamp } from "@/lib/api"
@@ -82,12 +88,23 @@ export function useNetworkMonitors(props: UseNetworkMonitorsProps) {
 	const { systemId } = props
 
 	const [monitors, setMonitors] = useState<NetworkMonitorRecord[]>([])
+	const [isLoading, setIsLoading] = useState(true)
 	const pendingMonitorEvents = useRef(new Map<string, RecordSubscription<NetworkMonitorRecord>>())
 	const monitorBatchTimeout = useRef<ReturnType<typeof setTimeout> | null>(null)
 
 	// initial load
 	useEffect(() => {
-		fetchMonitors(systemId).then((monitors) => setMonitors(monitors))
+		let cancelled = false
+		setIsLoading(true)
+		setMonitors([])
+		fetchMonitors(systemId).then((monitors) => {
+			if (cancelled) return
+			setMonitors(monitors)
+			setIsLoading(false)
+		})
+		return () => {
+			cancelled = true
+		}
 	}, [systemId])
 
 	// subscribe to updates
@@ -138,7 +155,7 @@ export function useNetworkMonitors(props: UseNetworkMonitorsProps) {
 		}
 	}, [systemId])
 
-	return monitors
+	return { monitors, isLoading }
 }
 
 interface UseNetworkMonitorStatsProps {

@@ -7,7 +7,7 @@ import { useNetworkMonitors } from "@/lib/use-network-monitors"
 
 export default memo(() => {
 	const { t } = useLingui()
-	const monitors = useNetworkMonitors({})
+	const { monitors, isLoading } = useNetworkMonitors({})
 
 	useEffect(() => {
 		document.title = `${t`Network Monitors`} / Beszel`
@@ -17,7 +17,7 @@ export default memo(() => {
 		<>
 			<div className="grid gap-4">
 				<ActiveAlerts />
-				<NetworkMonitorsTableNew monitors={monitors} />
+				<NetworkMonitorsTableNew monitors={monitors} isLoading={isLoading} />
 			</div>
 			<FooterRepoLink />
 		</>

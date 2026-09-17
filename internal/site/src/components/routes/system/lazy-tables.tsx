@@ -59,6 +59,6 @@ export function LazyNetworkMonitorsTable({ systemId }: { systemId: string }) {
 }
 
 function SystemNetworkMonitorsTable({ systemId }: { systemId: string }) {
-	const monitors = useNetworkMonitors({ systemId })
-	return <NetworkMonitorsTable systemId={systemId} monitors={monitors} />
+	const { monitors, isLoading } = useNetworkMonitors({ systemId })
+	return <NetworkMonitorsTable systemId={systemId} monitors={monitors} isLoading={isLoading} />
 }

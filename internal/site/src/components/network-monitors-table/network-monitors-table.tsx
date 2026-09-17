@@ -45,7 +45,7 @@ import {
 } from "@/lib/utils"
 import type { ChartData, NetworkMonitorRecord } from "@/types"
 import { AddMonitorDialog, EditMonitorDialog } from "./monitor-dialog"
-import { ArrowLeftRightIcon, EthernetPortIcon, ServerIcon, XIcon } from "lucide-react"
+import { ArrowLeftRightIcon, EthernetPortIcon, LoaderCircleIcon, ServerIcon, XIcon } from "lucide-react"
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet"
 import ChartTimeSelect from "@/components/charts/chart-time-select"
 import { LossChart, AvgMinMaxResponseChart } from "@/components/routes/system/charts/monitors-charts"
@@ -59,9 +59,11 @@ import { getPagePath } from "@nanostores/router"
 export default function NetworkMonitorsTableNew({
 	systemId,
 	monitors,
+	isLoading,
 }: {
 	systemId?: string
 	monitors: NetworkMonitorRecord[]
+	isLoading: boolean
 }) {
 	const [sorting, setSorting] = useBrowserStorage<SortingState>(
 		`sort-np-target-${systemId ? 1 : 0}`,
@@ -319,7 +321,13 @@ export default function NetworkMonitorsTableNew({
 				</div>
 			</CardHeader>
 			<div className="rounded-md">
-				<NetworkMonitorsTable table={table} rows={rows} colLength={visibleColumns.length} rowSelection={rowSelection} />
+				<NetworkMonitorsTable
+					table={table}
+					rows={rows}
+					colLength={visibleColumns.length}
+					rowSelection={rowSelection}
+					isLoading={isLoading}
+				/>
 			</div>
 		</Card>
 	)
@@ -330,11 +338,13 @@ const NetworkMonitorsTable = memo(function NetworkMonitorTable({
 	rows,
 	colLength,
 	rowSelection,
+	isLoading,
 }: {
 	table: TableType<NetworkMonitorRecord>
 	rows: Row<NetworkMonitorRecord>[]
 	colLength: number
 	rowSelection: RowSelectionState
+	isLoading: boolean
 }) {
 	const scrollRef = useRef<HTMLDivElement>(null)
 	const [sheetOpen, setSheetOpen] = useState(false)
@@ -387,7 +397,11 @@ const NetworkMonitorsTable = memo(function NetworkMonitorTable({
 						) : (
 							<TableRow>
 								<TableCell colSpan={colLength} className="h-37 text-center pointer-events-none">
-									<Trans>No results.</Trans>
+									{isLoading ? (
+										<LoaderCircleIcon className="animate-spin size-10 opacity-60 mx-auto" />
+									) : (
+										<Trans>No results.</Trans>
+									)}
 								</TableCell>
 							</TableRow>
 						)}
