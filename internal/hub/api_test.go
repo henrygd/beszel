@@ -6,12 +6,16 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/http/httptest"
+	"sort"
 	"testing"
+	"time"
 
 	beszelTests "github.com/henrygd/beszel/internal/tests"
 
 	"github.com/henrygd/beszel/internal/migrations"
 	"github.com/pocketbase/dbx"
+	"github.com/pocketbase/pocketbase/apis"
 	"github.com/pocketbase/pocketbase/core"
 	pbTests "github.com/pocketbase/pocketbase/tests"
 	"github.com/stretchr/testify/require"
@@ -24,6 +28,59 @@ func jsonReader(v any) io.Reader {
 		panic(err)
 	}
 	return bytes.NewReader(data)
+}
+
+type gatedReader struct {
+	data    []byte
+	started chan struct{}
+	release chan struct{}
+	offset  int
+}
+
+func (r *gatedReader) Read(p []byte) (int, error) {
+	if r.offset == 0 {
+		close(r.started)
+		<-r.release
+	}
+	if r.offset >= len(r.data) {
+		return 0, io.EOF
+	}
+	n := copy(p, r.data[r.offset:])
+	r.offset += n
+	return n, nil
+}
+
+func firstUserTestMux(t *testing.T) (*beszelTests.TestHub, http.Handler) {
+	t.Helper()
+	hub, err := beszelTests.NewTestHub(t.TempDir())
+	require.NoError(t, err)
+	_ = hub.StartHub()
+
+	router, err := apis.NewRouter(hub.TestApp)
+	require.NoError(t, err)
+	serveEvent := &core.ServeEvent{App: hub.TestApp, Router: router}
+
+	var handler http.Handler
+	err = hub.TestApp.OnServe().Trigger(serveEvent, func(e *core.ServeEvent) error {
+		var buildErr error
+		handler, buildErr = e.Router.BuildMux()
+		return buildErr
+	})
+	require.NoError(t, err)
+	require.NotNil(t, handler)
+	return hub, handler
+}
+
+func postFirstUser(handler http.Handler, email string) *httptest.ResponseRecorder {
+	body, _ := json.Marshal(map[string]string{
+		"email":    email,
+		"password": "password123",
+	})
+	req := httptest.NewRequest(http.MethodPost, "/api/beszel/create-user", bytes.NewReader(body))
+	req.Header.Set("Content-Type", "application/json")
+	recorder := httptest.NewRecorder()
+	handler.ServeHTTP(recorder, req)
+	return recorder
 }
 
 func TestApiRoutesAuthentication(t *testing.T) {
@@ -786,6 +843,87 @@ func TestFirstUserCreation(t *testing.T) {
 		}
 
 		scenario.Test(t)
+	})
+}
+
+func TestFirstUserBootstrapAtomicity(t *testing.T) {
+	t.Run("concurrent complete requests produce exactly one winner", func(t *testing.T) {
+		hub, handler := firstUserTestMux(t)
+		defer hub.Cleanup()
+
+		start := make(chan struct{})
+		statuses := make(chan int, 2)
+		for _, email := range []string{"first@example.com", "second@example.com"} {
+			go func(email string) {
+				<-start
+				statuses <- postFirstUser(handler, email).Code
+			}(email)
+		}
+		close(start)
+
+		got := []int{<-statuses, <-statuses}
+		sort.Ints(got)
+		require.Equal(t, []int{http.StatusOK, http.StatusForbidden}, got)
+
+		users, err := hub.FindAllRecords("users")
+		require.NoError(t, err)
+		require.Len(t, users, 1)
+		superusers, err := hub.FindAllRecords(core.CollectionNameSuperusers)
+		require.NoError(t, err)
+		require.Len(t, superusers, 1)
+		require.NotEqual(t, migrations.TempAdminEmail, superusers[0].Email())
+	})
+
+	t.Run("partial body cannot retain stale bootstrap authorization", func(t *testing.T) {
+		hub, handler := firstUserTestMux(t)
+		defer hub.Cleanup()
+
+		body, err := json.Marshal(map[string]string{
+			"email":    "parked@example.com",
+			"password": "password123",
+		})
+		require.NoError(t, err)
+		gated := &gatedReader{
+			data:    body,
+			started: make(chan struct{}),
+			release: make(chan struct{}),
+		}
+		parkedRequest := httptest.NewRequest(http.MethodPost, "/api/beszel/create-user", gated)
+		parkedRequest.Header.Set("Content-Type", "application/json")
+		parkedRecorder := httptest.NewRecorder()
+		parkedDone := make(chan struct{})
+		go func() {
+			handler.ServeHTTP(parkedRecorder, parkedRequest)
+			close(parkedDone)
+		}()
+
+		select {
+		case <-gated.started:
+		case <-time.After(2 * time.Second):
+			t.Fatal("parked request did not begin reading its body")
+		}
+
+		operatorRecorder := postFirstUser(handler, "operator@example.com")
+		require.Equal(t, http.StatusOK, operatorRecorder.Code)
+		lateRecorder := postFirstUser(handler, "late@example.com")
+		require.Equal(t, http.StatusForbidden, lateRecorder.Code)
+
+		close(gated.release)
+		select {
+		case <-parkedDone:
+		case <-time.After(2 * time.Second):
+			t.Fatal("parked request did not finish")
+		}
+		require.Equal(t, http.StatusForbidden, parkedRecorder.Code)
+
+		users, err := hub.FindAllRecords("users")
+		require.NoError(t, err)
+		require.Len(t, users, 1)
+		require.Equal(t, "operator@example.com", users[0].Email())
+		superusers, err := hub.FindAllRecords(core.CollectionNameSuperusers)
+		require.NoError(t, err)
+		require.Len(t, superusers, 1)
+		require.Equal(t, "operator@example.com", superusers[0].Email())
 	})
 }
 
