@@ -323,6 +323,21 @@ func TestDatasetUsageRefreshOnErrorKeepsPrevious(t *testing.T) {
 	assert.Len(t, usage, 1, "previous usage should be retained on error")
 }
 
+func TestDatasetUsageClearsAbsentBackend(t *testing.T) {
+	b := newZfsBackend()
+	b.datasetUsage = map[string]zfsDatasetUsage{"/tank": {used: 1, avail: 1}}
+	b.datasetsFn = optionalPoolSource(func() ([]zfs.Dataset, error) {
+		return nil, zfs.ErrNoZfs
+	})
+
+	datasets, err := b.datasets()
+	require.NoError(t, err, "an absent backend must not produce an error to log")
+	assert.Empty(t, datasets)
+	b.refreshDatasetUsage()
+	assert.Empty(t, b.datasetUsage)
+	assert.False(t, b.lastUsageRefresh.IsZero())
+}
+
 func TestGetDetailForceRefresh(t *testing.T) {
 	zm := &StoragePoolManager{detailInterval: time.Hour, backends: []*poolBackend{{name: "zfs"}}}
 	poolCalls := 0

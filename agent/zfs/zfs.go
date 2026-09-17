@@ -70,6 +70,9 @@ type Dataset struct {
 // PoolStats returns capacity and health for all pools on the system using
 // `zpool list`. Frequent health and I/O sampling uses PoolKernelStats instead.
 func PoolStats() ([]PoolStat, error) {
+	if err := checkZfsDevice(); err != nil {
+		return nil, err
+	}
 	out, err := commandOutput("zpool", "list", "-Hp", "-o", "name,size,alloc,free,health")
 	if err != nil {
 		var exitErr *exec.ExitError
@@ -84,6 +87,9 @@ func PoolStats() ([]PoolStat, error) {
 // Datasets returns all datasets on the system with usage and mountpoint
 // information using `zfs list` (recursive by default).
 func Datasets() ([]Dataset, error) {
+	if err := checkZfsDevice(); err != nil {
+		return nil, err
+	}
 	out, err := commandOutput("zfs", "list", "-Hp", "-o", "name,used,avail,mountpoint")
 	if err != nil {
 		return nil, fmt.Errorf("zfs list: %w", err)

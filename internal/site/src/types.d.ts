@@ -337,6 +337,7 @@ export interface ContainerRecord extends RecordModel {
 	system: string
 	name: string
 	image: string
+	updatable?: boolean
 	ports: string
 	cpu: number
 	memory: number
@@ -371,6 +372,13 @@ export interface UserSettings {
 	colorCrit?: number
 	hourFormat?: HourFormat
 	layoutWidth?: number
+	lang?: string
+	cols?: Record<string, boolean>
+	statusFilter?: "all" | "up" | "down" | "paused" | "pending"
+	viewMode?: "table" | "grid"
+	sortMode?: Array<{ id: string; desc: boolean }>
+	grid?: boolean
+	displayMode?: "default" | "tabs"
 }
 
 type ChartDataContainer = {
