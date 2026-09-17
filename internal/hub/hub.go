@@ -122,6 +122,8 @@ func (h *Hub) initialize(app core.App) error {
 	settings := app.Settings()
 	// batch requests (for alerts)
 	settings.Batch.Enabled = true
+	settings.Batch.MaxRequests = 100
+	settings.Batch.MaxBodySize = 1 << 20 // 1 MiB
 	// set URL if APP_URL env is set
 	if appURL, isSet := utils.GetEnv("APP_URL"); isSet {
 		h.appURL = appURL
