@@ -9,6 +9,7 @@ import (
 	"os"
 	"runtime"
 	"strings"
+	"time"
 
 	"github.com/henrygd/beszel"
 	"github.com/henrygd/beszel/agent/battery"
@@ -265,6 +266,13 @@ func (a *Agent) getSystemStats(cacheTimeMs uint16) system.Stats {
 				a.systemInfo.DashboardTemp = highestTemp
 			}
 		}
+	}
+
+	// process state counts
+	if counts, err := a.processCounts.get(time.Now(), getProcessCounts); err == nil {
+		systemStats.Processes = counts
+	} else {
+		slog.Debug("Error getting process counts", "err", err)
 	}
 
 	// update system info

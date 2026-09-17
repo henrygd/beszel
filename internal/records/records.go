@@ -197,6 +197,8 @@ func AverageSystemStatsSlice(records []system.Stats) system.Stats {
 	tempCount := float64(0)
 	var fanSums map[string]uint64
 	fanCount := uint64(0)
+	var processSums [5]uint64
+	processCount := uint64(0)
 	zfsPoolCounts := make(map[string]uint64)
 	zfsCapacityCounts := make(map[string]uint64)
 
@@ -212,6 +214,15 @@ func AverageSystemStatsSlice(records []system.Stats) system.Stats {
 			}
 			for j, v := range stats.CpuBreakdown {
 				cpuBreakdownSums[j] += v
+			}
+		}
+		// Process counts were added after older records were created. A zero
+		// tuple means the sample did not include process data, so exclude it
+		// from the process average.
+		if stats.Processes != [5]uint32{} {
+			processCount++
+			for j, v := range stats.Processes {
+				processSums[j] += uint64(v)
 			}
 		}
 		sum.Mem += stats.Mem
@@ -465,6 +476,14 @@ func AverageSystemStatsSlice(records []system.Stats) system.Stats {
 		sum.Fans = make(map[string]uint16, len(fanSums))
 		for key, value := range fanSums {
 			sum.Fans[key] = uint16(value / fanCount)
+		}
+	}
+
+	// Average process counts from samples that included process data. Use
+	// uint64 sums so counts cannot overflow before division.
+	if processCount > 0 {
+		for i, total := range processSums {
+			sum.Processes[i] = uint32(total / processCount)
 		}
 	}
 
