@@ -889,3 +889,34 @@ func TestAverageContainerStatsSlice_ManyContainers(t *testing.T) {
 	assert.Equal(t, 35.0, result[2].Cpu)
 	assert.Equal(t, 45.0, result[3].Cpu)
 }
+
+func TestAverageSystemStatsSlice_ZfsCapacityModes(t *testing.T) {
+	for _, raw := range []bool{false, true} {
+		result := records.AverageSystemStatsSlice([]system.Stats{
+			{ZfsPools: map[string]*system.ZfsPool{"pool": {Total: 200, Used: 40, Raw: !raw, ReadBytes: 100}}},
+			{ZfsPools: map[string]*system.ZfsPool{"pool": {Total: 100, Used: 10, Raw: raw, ReadBytes: 300}}},
+		})
+		assert.Equal(t, &system.ZfsPool{Total: 100, Used: 10, Raw: raw, ReadBytes: 200}, result.ZfsPools["pool"])
+	}
+}
+
+func TestAverageSystemStatsSlice_ZfsDuplicateCharts(t *testing.T) {
+	for _, hide := range []bool{false, true} {
+		result := records.AverageSystemStatsSlice([]system.Stats{
+			{ZfsPools: map[string]*system.ZfsPool{"pool": {HideUsage: true, HideIO: true}}},
+			{ZfsPools: map[string]*system.ZfsPool{"pool": {HideUsage: hide, HideIO: hide}}},
+		})
+		assert.Equal(t, hide, result.ZfsPools["pool"].HideUsage)
+		assert.Equal(t, hide, result.ZfsPools["pool"].HideIO)
+	}
+}
+
+func TestAverageSystemStatsSlice_BtrfsDisplayName(t *testing.T) {
+	result := records.AverageSystemStatsSlice([]system.Stats{
+		{ZfsPools: map[string]*system.ZfsPool{"b:uuid": {DisplayName: "before", Used: 10}}},
+		{ZfsPools: map[string]*system.ZfsPool{"b:uuid": {DisplayName: "after", Used: 20}}},
+	})
+	require.Len(t, result.ZfsPools, 1)
+	assert.Equal(t, "after", result.ZfsPools["b:uuid"].DisplayName)
+	assert.Equal(t, float64(15), result.ZfsPools["b:uuid"].Used)
+}

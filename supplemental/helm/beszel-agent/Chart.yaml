@@ -2,9 +2,9 @@ apiVersion: v1
 description: Installs beszel-agent in kubernetes
 home: https://github.com/henrygd/beszel/tree/main/supplemental/helm/beszel-agent
 name: beszel-agent
-appVersion: "0.18.8"
+appVersion: "0.19.0"
 # Bump this version when publishing chart changes.
-version: 0.1.5
+version: 0.1.6
 sources:
   - https://github.com/henrygd/beszel/tree/main/supplemental/helm/beszel-agent
   - https://www.beszel.dev/

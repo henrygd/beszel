@@ -42,7 +42,7 @@ func TestZfsPoolAlertOnlineToDegraded(t *testing.T) {
 
 	assert.EqualValues(t, 1, hub.TestMailer.TotalSend(), "should have 1 email sent after pool became DEGRADED")
 	lastMessage := hub.TestMailer.LastMessage()
-	assert.Contains(t, lastMessage.Subject, "ZFS pool DEGRADED on test-system")
+	assert.Contains(t, lastMessage.Subject, "Storage pool DEGRADED on test-system")
 	assert.Contains(t, lastMessage.Subject, "tank")
 	assert.Contains(t, lastMessage.Text, "ONLINE to DEGRADED")
 }
@@ -76,7 +76,7 @@ func TestZfsPoolAlertDegradedToFaulted(t *testing.T) {
 
 	assert.EqualValues(t, 2, hub.TestMailer.TotalSend(), "should alert on initial DEGRADED state and later FAULTED transition")
 	lastMessage := hub.TestMailer.LastMessage()
-	assert.Contains(t, lastMessage.Subject, "ZFS pool FAULTED on test-system")
+	assert.Contains(t, lastMessage.Subject, "Storage pool FAULTED on test-system")
 }
 
 func TestZfsPoolAlertNoAlertOnRecovery(t *testing.T) {
@@ -239,7 +239,7 @@ func TestZfsPoolAlertWritesHistory(t *testing.T) {
 	history, err := hub.FindRecordsByFilter("alerts_history", "alert_id={:alert_id}", "", 0, 0, map[string]any{"alert_id": pool.Id})
 	assert.NoError(t, err)
 	require.Len(t, history, 1, "expected one history entry per user")
-	assert.Equal(t, "ZFS Pool: tank", history[0].GetString("name"))
+	assert.Equal(t, "Storage Pool: tank", history[0].GetString("name"))
 	assert.Equal(t, system.Id, history[0].GetString("system"))
 }
 

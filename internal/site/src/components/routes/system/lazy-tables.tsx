@@ -24,7 +24,7 @@ export function LazySmartTable({ systemId }: { systemId: string }) {
 	)
 }
 
-const ZfsTable = lazy(() => import("./zfs-table"))
+const ZfsTable = lazy(() => import("./storage-pools-table"))
 
 export function LazyZfsTable({ systemId }: { systemId: string }) {
 	const { isIntersecting, ref } = useIntersectionObserver({ rootMargin: "90px" })

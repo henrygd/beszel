@@ -25,8 +25,15 @@ import (
 )
 
 const (
-	wsDeadline = 70 * time.Second
+	// Keep the connection alive long enough for a slow collection cycle to
+	// finish before the hub considers the agent disconnected.
+	wsDeadline = 120 * time.Second
 )
+
+// errNoHubURL is returned when HUB_URL is unset. This is not a failure
+// condition: an agent configured with only a public key runs in SSH-only mode,
+// where the hub dials the agent and no outbound WebSocket client is expected.
+var errNoHubURL = errors.New("HUB_URL environment variable not set")
 
 type caCertFileError struct {
 	err error
@@ -61,7 +68,7 @@ type WebSocketClient struct {
 func newWebSocketClient(agent *Agent) (client *WebSocketClient, err error) {
 	hubURLStr, exists := utils.GetEnv("HUB_URL")
 	if !exists {
-		return nil, errors.New("HUB_URL environment variable not set")
+		return nil, errNoHubURL
 	}
 
 	client = &WebSocketClient{}

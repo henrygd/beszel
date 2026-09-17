@@ -80,7 +80,7 @@ Essential parameters to configure:
 | `secret.sshKey` | `ssh-key` | Key name in the secret for the SSH public key |
 | `secret.tokenKey` | `token` | Key name in the secret for the authentication token |
 | `image.repository` | `henrygd/beszel-agent` | Container image |
-| `image.tag` | Chart AppVersion (0.18.8) | Image version |
+| `image.tag` | Chart AppVersion (0.19.0) | Image version |
 | `hostNetwork` | `false` | Use host network for network monitoring |
 | `tolerations` | Allows all taints | Tolerations for running on tainted nodes |
 
@@ -385,7 +385,7 @@ helm upgrade beszel-agent ./beszel-agent \
 
 # Change image version
 helm upgrade beszel-agent ./beszel-agent \
-  --set image.tag="0.18.8"
+  --set image.tag="0.19.0"
 ```
 
 ### Restart All Agents
@@ -522,7 +522,7 @@ kubectl get secret beszel-agent -o jsonpath='{.data.ssh-key}' | base64 -d
 ## Chart Information
 
 - **Chart Version**: 0.1.0
-- **App Version**: 0.18.8
+- **App Version**: 0.19.0
 - **Kubernetes Version**: 1.19+
 - **Maintainer**: cloudwithdan (nikoloskid@pm.me)
 

@@ -78,7 +78,7 @@ func (am *AlertManager) HandleSystemAlerts(systemRecord *core.Record, data *syst
 				}
 			}
 			for _, pool := range data.Stats.ZfsPools {
-				if pool != nil && pool.Total > 0 {
+				if pool != nil && !pool.Raw && pool.Total > 0 {
 					usedPct := pool.Used / pool.Total * 100
 					if usedPct > maxUsedPct {
 						maxUsedPct = usedPct
@@ -256,7 +256,7 @@ func (am *AlertManager) HandleSystemAlerts(systemRecord *core.Record, data *syst
 				}
 				// add zfs pool usage from historical record
 				for key, pool := range stats.ZfsPools {
-					if pool.Total > 0 {
+					if !pool.Raw && pool.Total > 0 {
 						zfsKey := zfsDiskAlertKey(key)
 						if _, ok := alert.mapSums[zfsKey]; !ok {
 							alert.mapSums[zfsKey] = 0.0
@@ -319,6 +319,11 @@ func (am *AlertManager) HandleSystemAlerts(systemRecord *core.Record, data *syst
 				if sumPct > maxPct {
 					maxPct = sumPct
 					alert.descriptor = diskAlertDescriptor(key)
+					if poolKey, ok := strings.CutPrefix(key, "zfs:"); ok {
+						if pool := data.Stats.ZfsPools[poolKey]; pool != nil && pool.DisplayName != "" {
+							alert.descriptor = diskAlertDescriptor(zfsDiskAlertKey(pool.DisplayName))
+						}
+					}
 				}
 			}
 			alert.val = float64(maxPct / float32(alert.count))
@@ -370,7 +375,7 @@ func zfsDiskAlertKey(poolName string) string {
 
 func diskAlertDescriptor(key string) string {
 	if poolName, ok := strings.CutPrefix(key, "zfs:"); ok {
-		return fmt.Sprintf("Usage of ZFS pool %s", poolName)
+		return fmt.Sprintf("Usage of storage pool %s", poolName)
 	}
 	return fmt.Sprintf("Usage of %s", key)
 }

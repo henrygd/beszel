@@ -1198,7 +1198,6 @@ func TestUpdateContainerStatsPodmanCpuCalculation(t *testing.T) {
 			}
 		})},
 		containerStatsMap: make(map[string]*container.Stats),
-		apiStats:          &container.ApiStats{},
 		usingPodman:       true,
 		lastCpuContainer: map[uint16]map[string]uint64{
 			defaultCacheTimeMs: {"0123456789ab": prevCpuUsage},
@@ -1690,7 +1689,6 @@ func TestUpdateContainerStatsUsesPodmanInspectHealthFallback(t *testing.T) {
 			}
 		})},
 		containerStatsMap:   make(map[string]*container.Stats),
-		apiStats:            &container.ApiStats{},
 		usingPodman:         true,
 		lastCpuContainer:    make(map[uint16]map[string]uint64),
 		lastCpuSystem:       make(map[uint16]map[string]uint64),

@@ -198,6 +198,7 @@ func AverageSystemStatsSlice(records []system.Stats) system.Stats {
 	var fanSums map[string]uint64
 	fanCount := uint64(0)
 	zfsPoolCounts := make(map[string]uint64)
+	zfsCapacityCounts := make(map[string]uint64)
 
 	// Accumulate totals
 	for i := range records {
@@ -350,9 +351,19 @@ func AverageSystemStatsSlice(records []system.Stats) system.Stats {
 				}
 				pool := sum.ZfsPools[name]
 				if pool == nil {
-					pool = &system.ZfsPool{}
+					pool = &system.ZfsPool{HideUsage: value.HideUsage, HideIO: value.HideIO}
 					sum.ZfsPools[name] = pool
 				}
+				// Never average physical and usable capacity into the same value.
+				if pool.Raw != value.Raw {
+					pool.Total, pool.Used = 0, 0
+					zfsCapacityCounts[name] = 0
+				}
+				pool.HideUsage = pool.HideUsage && value.HideUsage
+				pool.HideIO = pool.HideIO && value.HideIO
+				pool.DisplayName = value.DisplayName
+				pool.Raw = value.Raw
+				zfsCapacityCounts[name]++
 				pool.Total += value.Total
 				pool.Used += value.Used
 				pool.ReadBytes += value.ReadBytes
@@ -476,8 +487,8 @@ func AverageSystemStatsSlice(records []system.Stats) system.Stats {
 	// Average ZFS pool stats.
 	for name, pool := range sum.ZfsPools {
 		entryCount := zfsPoolCounts[name]
-		pool.Total = twoDecimals(pool.Total / float64(entryCount))
-		pool.Used = twoDecimals(pool.Used / float64(entryCount))
+		pool.Total = twoDecimals(pool.Total / float64(zfsCapacityCounts[name]))
+		pool.Used = twoDecimals(pool.Used / float64(zfsCapacityCounts[name]))
 		pool.ReadBytes /= entryCount
 		pool.WriteBytes /= entryCount
 	}

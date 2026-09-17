@@ -33,11 +33,15 @@ var ErrNoZfs = errors.New("zfs utilities unavailable")
 
 // PoolStat is a snapshot of a ZFS pool's capacity and health.
 type PoolStat struct {
-	Name   string
-	Size   uint64 // total capacity in bytes
-	Alloc  uint64 // allocated bytes
-	Free   uint64 // free bytes
-	Health string // ONLINE, DEGRADED, FAULTED, ...
+	DisplayName string // optional friendly name; Name remains the stable key
+	MountID     string // Btrfs filesystem identity, empty for other backends
+	IODevice    string // sole Btrfs member device, if known
+	Raw         bool   // physical accounting rather than usable filesystem space
+	Name        string
+	Size        uint64 // total capacity in bytes
+	Alloc       uint64 // allocated bytes
+	Free        uint64 // free bytes
+	Health      string // ONLINE, DEGRADED, FAULTED, ...
 }
 
 // PoolKernelStat is the inexpensive pool telemetry exposed by the ZFS kernel.
@@ -66,6 +70,9 @@ type Dataset struct {
 // PoolStats returns capacity and health for all pools on the system using
 // `zpool list`. Frequent health and I/O sampling uses PoolKernelStats instead.
 func PoolStats() ([]PoolStat, error) {
+	if err := checkZfsDevice(); err != nil {
+		return nil, err
+	}
 	out, err := commandOutput("zpool", "list", "-Hp", "-o", "name,size,alloc,free,health")
 	if err != nil {
 		var exitErr *exec.ExitError
@@ -80,6 +87,9 @@ func PoolStats() ([]PoolStat, error) {
 // Datasets returns all datasets on the system with usage and mountpoint
 // information using `zfs list` (recursive by default).
 func Datasets() ([]Dataset, error) {
+	if err := checkZfsDevice(); err != nil {
+		return nil, err
+	}
 	out, err := commandOutput("zfs", "list", "-Hp", "-o", "name,used,avail,mountpoint")
 	if err != nil {
 		return nil, fmt.Errorf("zfs list: %w", err)
