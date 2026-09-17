@@ -173,7 +173,10 @@ func (rm *RecordManager) CreateLongerRecords() {
 			Id     string `db:"id"`
 			System string `db:"system"`
 		}
-		_ = db.NewQuery("SELECT id, system FROM network_monitors WHERE enabled=TRUE").All(&monitors)
+		// Disabled monitors still have history that must advance through retention tiers.
+		if err := db.NewQuery("SELECT id, system FROM network_monitors").All(&monitors); err != nil {
+			return err
+		}
 
 		for _, monitorRec := range monitors {
 			for i := range longerRecordData {
@@ -220,6 +223,9 @@ func (rm *RecordManager) CreateLongerRecords() {
 				longerRecord.Set("res_min", stats.ResMin)
 				longerRecord.Set("res_max", stats.ResMax)
 				longerRecord.Set("loss", stats.Loss)
+				longerRecord.Set("total_count", stats.TotalCount)
+				longerRecord.Set("success_count", stats.SuccessCount)
+				longerRecord.Set("response_sum", stats.ResponseSum)
 				if err := txApp.SaveNoValidate(longerRecord); err != nil {
 					slog.Error("failed to save monitor longer record", "err", err)
 				}
@@ -678,8 +684,8 @@ func AverageContainerStatsSlice(records [][]container.Stats) []container.Stats {
 	return result
 }
 
-// AverageMonitorStats averages response times and loss across per-monitor records.
-// Min and max retain the extremes; averages keep the average-of-averages behavior.
+// AverageMonitorStats merges probe counts and response sums, preserving their
+// weights through every retention tier. Failed probes do not contribute latency.
 func (rm *RecordManager) AverageMonitorStats(db dbx.Builder, monitorID, recordType string, createdAfter int64) (monitor.Stats, int, error) {
 	var result struct {
 		monitor.Stats
@@ -687,10 +693,11 @@ func (rm *RecordManager) AverageMonitorStats(db dbx.Builder, monitorID, recordTy
 	}
 	err := db.Select(
 		"COUNT(*) AS count",
-		"COALESCE(AVG(res_avg), 0) AS res_avg",
-		"COALESCE(MIN(res_min), 0) AS res_min",
-		"COALESCE(MAX(res_max), 0) AS res_max",
-		"COALESCE(AVG(loss), 0) AS loss",
+		"COALESCE(SUM(total_count), 0) AS total_count",
+		"COALESCE(SUM(success_count), 0) AS success_count",
+		"COALESCE(SUM(response_sum), 0) AS response_sum",
+		"COALESCE(MIN(CASE WHEN success_count > 0 THEN res_min END), 0) AS res_min",
+		"COALESCE(MAX(CASE WHEN success_count > 0 THEN res_max END), 0) AS res_max",
 	).From("network_monitor_stats").Where(dbx.NewExp(
 		"monitor={:monitor} AND type={:type} AND created>{:created}",
 		dbx.Params{"monitor": monitorID, "type": recordType, "created": createdAfter},
@@ -698,8 +705,12 @@ func (rm *RecordManager) AverageMonitorStats(db dbx.Builder, monitorID, recordTy
 	if err != nil {
 		return monitor.Stats{}, 0, err
 	}
-	result.ResAvg = twoDecimals(result.ResAvg)
-	result.Loss = twoDecimals(result.Loss)
+	if result.SuccessCount > 0 {
+		result.ResAvg = twoDecimals(float64(result.ResponseSum) / float64(result.SuccessCount))
+	}
+	if result.TotalCount > 0 {
+		result.Loss = twoDecimals(float64(result.TotalCount-result.SuccessCount) * 100 / float64(result.TotalCount))
+	}
 	return result.Stats, result.Count, nil
 }
 

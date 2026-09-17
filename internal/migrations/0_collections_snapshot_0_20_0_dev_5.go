@@ -2183,6 +2183,45 @@ func init() {
 				"type": "relation"
 			},
 			{
+				"help": "Number of probe attempts",
+				"hidden": false,
+				"id": "nms_total_count",
+				"max": null,
+				"min": 0,
+				"name": "total_count",
+				"onlyInt": true,
+				"presentable": false,
+				"required": false,
+				"system": false,
+				"type": "number"
+			},
+			{
+				"help": "Number of successful probe attempts",
+				"hidden": false,
+				"id": "nms_success_count",
+				"max": null,
+				"min": 0,
+				"name": "success_count",
+				"onlyInt": true,
+				"presentable": false,
+				"required": false,
+				"system": false,
+				"type": "number"
+			},
+			{
+				"help": "Sum of successful response times in microseconds",
+				"hidden": false,
+				"id": "nms_response_sum",
+				"max": null,
+				"min": 0,
+				"name": "response_sum",
+				"onlyInt": true,
+				"presentable": false,
+				"required": false,
+				"system": false,
+				"type": "number"
+			},
+			{
 				"help": "Response time in microseconds",
 				"hidden": false,
 				"id": "nms_res_avg",

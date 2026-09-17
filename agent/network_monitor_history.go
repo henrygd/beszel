@@ -134,10 +134,13 @@ func (agg monitorAggregate) hasData() bool {
 func (agg monitorAggregate) result() monitor.Result {
 	avg := agg.avgResponse()
 	result := monitor.Result{
-		AvgResponse: avg,
-		MinResponse: agg.minUs,
-		MaxResponse: agg.maxUs,
-		PacketLoss:  agg.lossPercentage(),
+		AvgResponse:  avg,
+		MinResponse:  agg.minUs,
+		MaxResponse:  agg.maxUs,
+		PacketLoss:   agg.lossPercentage(),
+		TotalCount:   agg.totalCount,
+		SuccessCount: agg.successCount,
+		ResponseSum:  agg.sumUs,
 	}
 	if agg.successCount == 0 {
 		result.MinResponse, result.MaxResponse = 0, 0

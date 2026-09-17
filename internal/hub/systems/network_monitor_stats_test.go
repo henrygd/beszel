@@ -74,8 +74,8 @@ func TestNetworkMonitorStatsFreshness(t *testing.T) {
 				require.NoError(t, app.SaveNoValidate(record))
 			}
 			data := &system.CombinedData{Monitors: map[string]monitor.Result{
-				"monitor1": {LastProbeAt: 1000, AvgResponse: 20},
-				"monitor2": {LastProbeAt: 1000, PacketLoss: 100},
+				"monitor1": {LastProbeAt: 1000, AvgResponse: 20, TotalCount: 6, SuccessCount: 6, ResponseSum: 123},
+				"monitor2": {LastProbeAt: 1000, PacketLoss: 100, TotalCount: 1},
 			}}
 			count := func(want int64) {
 				t.Helper()
@@ -90,6 +90,14 @@ func TestNetworkMonitorStatsFreshness(t *testing.T) {
 			}
 			save()
 			count(2)
+			stored, err := app.FindAllRecords("network_monitor_stats")
+			require.NoError(t, err)
+			for _, record := range stored {
+				result := data.Monitors[record.GetString("monitor")]
+				assert.EqualValues(t, result.TotalCount, record.GetInt("total_count"))
+				assert.EqualValues(t, result.SuccessCount, record.GetInt("success_count"))
+				assert.EqualValues(t, result.ResponseSum, record.GetInt("response_sum"))
+			}
 			// A resume can overlap the scheduled update with the same probe.
 			errs := make(chan error, 4)
 			for range 4 {

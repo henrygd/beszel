@@ -4,9 +4,51 @@ import (
 	"testing"
 	"time"
 
+	"github.com/fxamacker/cbor/v2"
+	"github.com/henrygd/beszel/internal/entities/monitor"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
+
+func TestMonitorHistoryWindowCounts(t *testing.T) {
+	history := newMonitorHistory()
+	now := time.Now()
+	// This older success counts toward lifetime warm-up, but not this window.
+	history.record(monitorSample{responseUs: 1000, timestamp: now.Add(-2 * time.Minute)})
+	history.record(monitorSample{responseUs: 10, timestamp: now.Add(-30 * time.Second)})
+	history.record(monitorSample{responseUs: 21, timestamp: now.Add(-20 * time.Second)})
+	history.record(monitorSample{responseUs: -1, timestamp: now.Add(-10 * time.Second)})
+	result, ok := history.result(time.Minute, now)
+	require.True(t, ok)
+	assert.EqualValues(t, 4, result.SampleCount)
+	assert.EqualValues(t, 3, result.TotalCount)
+	assert.EqualValues(t, 2, result.SuccessCount)
+	assert.EqualValues(t, 31, result.ResponseSum, "preserve the sum before average rounding")
+	assert.EqualValues(t, 15, result.AvgResponse)
+	assert.Equal(t, 33.33, result.PacketLoss)
+
+	encoded, err := cbor.Marshal(result)
+	require.NoError(t, err)
+	var decoded monitor.Result
+	require.NoError(t, cbor.Unmarshal(encoded, &decoded))
+	assert.Equal(t, result, decoded)
+	stats := monitor.Stats{}.FromResult(decoded)
+	assert.Equal(t, result.TotalCount, stats.TotalCount)
+	assert.Equal(t, result.SuccessCount, stats.SuccessCount)
+	assert.Equal(t, result.ResponseSum, stats.ResponseSum)
+
+	// Reads do not consume samples. A short window's latest-sample fallback
+	// carries the count for that single failure, not the minute or lifetime count.
+	repeated, _ := history.result(time.Minute, now)
+	assert.Equal(t, result, repeated)
+	fallback, ok := history.result(time.Second, now)
+	require.True(t, ok)
+	assert.EqualValues(t, 1, fallback.TotalCount)
+	assert.Zero(t, fallback.SuccessCount)
+	assert.Zero(t, fallback.ResponseSum)
+	assert.Equal(t, 100.0, fallback.PacketLoss)
+	assert.EqualValues(t, 4, fallback.SampleCount)
+}
 
 func TestMonitorHistoryAggregateLockedUsesRawSamplesForShortWindows(t *testing.T) {
 	now := time.Date(2026, time.April, 21, 12, 0, 0, 0, time.UTC)

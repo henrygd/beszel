@@ -71,21 +71,32 @@ type Result struct {
 	// SampleCount includes all completed probes since this monitor started.
 	// Used for alert warm-up even when the interval is longer than 20 minutes.
 	SampleCount int64 `cbor:"9,keyasint,omitempty"`
+	// Counts and sum cover the current response window (or latest-sample
+	// fallback), not the hourly window or lifetime SampleCount.
+	TotalCount   int64 `cbor:"10,keyasint"`
+	SuccessCount int64 `cbor:"11,keyasint"`
+	ResponseSum  int64 `cbor:"12,keyasint"`
 }
 
 // Stats holds response times in microseconds and packet loss percentage (0-100).
 type Stats struct {
-	ResAvg float64 `json:"res_avg" db:"res_avg"`
-	ResMin float64 `json:"res_min" db:"res_min"`
-	ResMax float64 `json:"res_max" db:"res_max"`
-	Loss   float64 `json:"loss" db:"loss"`
+	ResAvg       float64 `json:"res_avg" db:"res_avg"`
+	ResMin       float64 `json:"res_min" db:"res_min"`
+	ResMax       float64 `json:"res_max" db:"res_max"`
+	Loss         float64 `json:"loss" db:"loss"`
+	TotalCount   int64   `json:"-" db:"total_count"`
+	SuccessCount int64   `json:"-" db:"success_count"`
+	ResponseSum  int64   `json:"-" db:"response_sum"`
 }
 
 func (s Stats) FromResult(result Result) Stats {
 	return Stats{
-		ResAvg: float64(result.AvgResponse),
-		ResMin: float64(result.MinResponse),
-		ResMax: float64(result.MaxResponse),
-		Loss:   result.PacketLoss,
+		ResAvg:       float64(result.AvgResponse),
+		ResMin:       float64(result.MinResponse),
+		ResMax:       float64(result.MaxResponse),
+		Loss:         result.PacketLoss,
+		TotalCount:   result.TotalCount,
+		SuccessCount: result.SuccessCount,
+		ResponseSum:  result.ResponseSum,
 	}
 }
