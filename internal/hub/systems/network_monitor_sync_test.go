@@ -42,6 +42,20 @@ type monitorSyncServer struct{ ws.Handler }
 
 func (*monitorSyncServer) OnClose(*gws.Conn, error) {}
 
+func TestNetworkMonitorSyncSkipsOlderAgents(t *testing.T) {
+	for _, version := range []string{"0.0.0", "0.18.0", "0.19.0"} {
+		t.Run(version, func(t *testing.T) {
+			// No transport: attempting to send any request would fail.
+			sys := &System{agentVersion: semver.MustParse(version)}
+			require.NoError(t, sys.SyncNetworkMonitors(nil))
+			result, err := sys.UpsertNetworkMonitor(monitor.Config{ID: "test"}, true)
+			require.NoError(t, err)
+			require.Nil(t, result)
+			require.NoError(t, sys.DeleteNetworkMonitor("test"))
+		})
+	}
+}
+
 func TestNetworkMonitorReconnectSync(t *testing.T) {
 	for _, change := range []string{"delete", "disable"} {
 		t.Run(change, func(t *testing.T) {
@@ -67,7 +81,7 @@ func TestNetworkMonitorReconnectSync(t *testing.T) {
 				sm.smartFetchMap.StopCleaner()
 				sm.zfsFetchMap.StopCleaner()
 			})
-			version := semver.MustParse("0.18.0")
+			version := semver.MustParse("0.20.0")
 			connections := make(chan *ws.WsConn, 1)
 			upgrader := gws.NewUpgrader(&monitorSyncServer{}, nil)
 			server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

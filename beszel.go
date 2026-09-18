@@ -6,7 +6,7 @@ import "github.com/blang/semver"
 
 const (
 	// Version is the current version of the application.
-	Version = "0.20.0-dev"
+	Version = "0.20.0"
 	// AppName is the name of the application.
 	AppName = "beszel"
 )
@@ -19,3 +19,6 @@ var MinVersionAgentResponse = semver.MustParse("0.13.0")
 
 // MinVersionZfsData is the minimum agent version that supports ZFS detail requests.
 var MinVersionZfsData = semver.MustParse("0.18.9")
+
+// MinVersionNetworkMonitors is the minimum agent version that supports network monitor sync.
+var MinVersionNetworkMonitors = semver.MustParse("0.20.0")

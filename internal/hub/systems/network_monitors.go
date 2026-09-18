@@ -4,6 +4,7 @@ import (
 	"context"
 	"time"
 
+	"github.com/henrygd/beszel"
 	"github.com/henrygd/beszel/internal/common"
 	"github.com/henrygd/beszel/internal/entities/monitor"
 )
@@ -41,6 +42,9 @@ func (sys *System) DeleteNetworkMonitor(id string) error {
 }
 
 func (sys *System) syncNetworkMonitors(req monitor.SyncRequest) (monitor.SyncResponse, error) {
+	if sys.agentVersion.LT(beszel.MinVersionNetworkMonitors) {
+		return monitor.SyncResponse{}, nil
+	}
 	timeout := 5 * time.Second
 	if req.Action == monitor.SyncActionUpsert && req.RunNow {
 		// Allow the probe to finish, including a timeout result, while preserving
