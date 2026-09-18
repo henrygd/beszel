@@ -14,7 +14,11 @@ func (pm *MonitorManager) startMonitor(task *monitorTask) {
 	}
 	delay := getStagger(interval.Milliseconds())
 	slog.Debug("starting monitor task", "target", task.config.Target, "delay", delay, "interval", interval)
-	go runMonitorSchedule(task.ctx, interval, delay, func() { task.runProbe(pm.probe) })
+	go runMonitorSchedule(task.ctx, interval, delay, func() {
+		if _, allowed := task.resumeGuard.snapshot(); allowed {
+			task.runProbe(pm.probe)
+		}
+	})
 }
 
 // runMonitorSchedule owns only timing. Checks run serially, and slow checks

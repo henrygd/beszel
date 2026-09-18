@@ -12,9 +12,10 @@ import (
 
 // MonitorManager manages network monitor configurations and task lifetimes.
 type MonitorManager struct {
-	mu       sync.RWMutex
-	monitors map[string]*monitorTask // keyed by monitor ID
-	probe    monitorProbe
+	mu          sync.RWMutex
+	monitors    map[string]*monitorTask // keyed by monitor ID
+	probe       monitorProbe
+	resumeGuard monitorResumeGuard
 }
 
 func newMonitorManager() *MonitorManager {
@@ -57,8 +58,13 @@ func (pm *MonitorManager) SyncMonitors(configs []monitor.Config) {
 			task.cancel()
 		}
 		task = newMonitorTaskFromExisting(cfg, task)
+		task.resumeGuard = &pm.resumeGuard
+		pm.resumeGuard.start()
 		pm.monitors[key] = task
 		pm.startMonitor(task)
+	}
+	if len(pm.monitors) == 0 {
+		pm.resumeGuard.shutdown()
 	}
 }
 
@@ -107,6 +113,8 @@ func (pm *MonitorManager) UpsertMonitor(config monitor.Config, runNow bool) (*mo
 		task.cancel()
 	}
 	task = newMonitorTaskFromExisting(config, task)
+	task.resumeGuard = &pm.resumeGuard
+	pm.resumeGuard.start()
 	pm.monitors[config.ID] = task
 	pm.mu.Unlock()
 
@@ -129,6 +137,9 @@ func (pm *MonitorManager) DeleteMonitor(id string) {
 	if task, exists := pm.monitors[id]; exists {
 		task.cancel()
 		delete(pm.monitors, id)
+	}
+	if len(pm.monitors) == 0 {
+		pm.resumeGuard.shutdown()
 	}
 }
 
@@ -161,4 +172,5 @@ func (pm *MonitorManager) Stop() {
 		task.cancel()
 		delete(pm.monitors, key)
 	}
+	pm.resumeGuard.shutdown()
 }

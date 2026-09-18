@@ -17,6 +17,7 @@ type monitorTask struct {
 	ctx            context.Context
 	cancel         context.CancelFunc
 	history        *monitorHistory
+	resumeGuard    *monitorResumeGuard
 	runMu          sync.Mutex
 	inflight       *monitorRun
 	lastFailureLog int64 // Unix nanoseconds
@@ -73,10 +74,12 @@ func (task *monitorTask) runProbe(probe monitorProbe) *monitor.Result {
 	task.inflight = run
 	task.runMu.Unlock()
 
+	generation, _ := task.resumeGuard.snapshot()
 	responseUs, err := probe(task.ctx, task.config)
 	var logFailure bool
 	task.runMu.Lock()
-	if task.ctx.Err() == nil {
+	currentGeneration, _ := task.resumeGuard.snapshot()
+	if task.ctx.Err() == nil && generation == currentGeneration {
 		now := time.Now()
 		if err != nil {
 			responseUs = -1
