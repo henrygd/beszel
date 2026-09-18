@@ -1,6 +1,6 @@
 import { memo, useState } from "react"
 import { Trans } from "@lingui/react/macro"
-import { compareSemVer, parseSemVer } from "@/lib/utils"
+import { compareSemVer, parseSemVer, supportsNetworkMonitors } from "@/lib/utils"
 import type { GPUData } from "@/types"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import InfoBar from "./system/info-bar"
@@ -71,6 +71,7 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 	const hasSystemd = system.info.sv
 	const hasGpu = hasGpuData || hasGpuPowerData
 	const hasZfs = Object.keys(systemStats.at(-1)?.stats?.z ?? {}).length > 0
+	const hasNetworkMonitors = supportsNetworkMonitors(system)
 
 	// keep tabsRef in sync for keyboard navigation
 	const tabs = ["core", "network", "disk"]
@@ -160,7 +161,7 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 
 				{hasSystemd && <LazySystemdTable systemId={system.id} />}
 
-				<LazyNetworkMonitorsTable systemId={system.id} />
+				{hasNetworkMonitors && <LazyNetworkMonitorsTable systemId={system.id} />}
 			</>
 		)
 	}
@@ -221,7 +222,7 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 							<div className="grid xl:grid-cols-2 gap-4">
 								<BandwidthChart {...coreProps} systemStats={systemStats} />
 							</div>
-							<LazyNetworkMonitorsTable systemId={system.id} />
+							{hasNetworkMonitors && <LazyNetworkMonitorsTable systemId={system.id} />}
 						</>
 					)}
 				</TabsContent>

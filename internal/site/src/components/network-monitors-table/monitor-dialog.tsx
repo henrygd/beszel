@@ -26,6 +26,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { ChevronDownIcon, ListIcon, SearchIcon, ServerIcon } from "lucide-react"
 import { useToast } from "@/components/ui/use-toast"
 import { $systems } from "@/lib/stores"
+import { supportsNetworkMonitors } from "@/lib/utils"
 import type { NetworkMonitorRecord } from "@/types"
 import * as v from "valibot"
 
@@ -209,7 +210,9 @@ function SystemMultiSelect({
 	}, [])
 	const contentRef = useRef<HTMLDivElement>(null)
 	const query = search.trim().toLocaleLowerCase()
-	const filteredSystems = systems.filter((system) => system.name.toLocaleLowerCase().includes(query))
+	const filteredSystems = systems.filter(
+		(system) => supportsNetworkMonitors(system) && system.name.toLocaleLowerCase().includes(query)
+	)
 	const allSelected = filteredSystems.every((system) => selectedSystemIds.has(system.id))
 	const anySelected = filteredSystems.some((system) => selectedSystemIds.has(system.id))
 
@@ -669,11 +672,13 @@ function MonitorDialogContent({
 								<SelectValue placeholder={t`Select a system`} />
 							</SelectTrigger>
 							<SelectContent>
-								{systems.map((sys) => (
-									<SelectItem key={sys.id} value={sys.id}>
-										{sys.name}
-									</SelectItem>
-								))}
+								{systems
+									.filter((sys) => sys.id === monitor?.system || supportsNetworkMonitors(sys))
+									.map((sys) => (
+										<SelectItem key={sys.id} value={sys.id}>
+											{sys.name}
+										</SelectItem>
+									))}
 							</SelectContent>
 						</Select>
 					</div>
