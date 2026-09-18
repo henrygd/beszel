@@ -1057,6 +1057,15 @@ func init() {
 					"required": true,
 					"system": false,
 					"type": "number"
+				},
+				{
+					"hidden": false,
+					"id": "bool2084032502",
+					"name": "updatable",
+					"presentable": false,
+					"required": false,
+					"system": false,
+					"type": "bool"
 				}
 		],
 		"indexes": [
