@@ -507,7 +507,12 @@ function NetworkMonitorSheetContent({
 	const direction = useStore($direction)
 	const system = useStore($allSystemsById)[monitor.system]
 
-	const monitorStats = useNetworkMonitorStats({ systemId: monitor.system, chartTime })
+	const monitorStats = useNetworkMonitorStats({
+		systemId: monitor.system,
+		monitorId: monitor.id,
+		chartTime,
+		enabled: open,
+	})
 
 	const chartData = useMemo<ChartData>(
 		() => ({

@@ -15,18 +15,18 @@ import type { RecordListOptions, RecordSubscription } from "pocketbase"
 
 const cache = new Map<string, NetworkMonitorStatsRecord[]>()
 
-function getCacheValue(systemId: string, chartTime: ChartTimes | "rt") {
-	return cache.get(`${systemId}${chartTime}`) || []
+function getCacheValue(monitorId: string, chartTime: ChartTimes | "rt") {
+	return cache.get(`${monitorId}:${chartTime}`) || []
 }
 
 function appendCacheValue(
-	systemId: string,
+	monitorId: string,
 	chartTime: ChartTimes | "rt",
 	newStats: NetworkMonitorStatsRecord[],
 	maxPoints = 100
 ) {
-	const cache_key = `${systemId}${chartTime}`
-	const existingStats = getCacheValue(systemId, chartTime)
+	const cache_key = `${monitorId}:${chartTime}`
+	const existingStats = getCacheValue(monitorId, chartTime)
 	if (existingStats) {
 		const { expectedInterval } = chartTimeData[chartTime]
 		const updatedStats = appendData(existingStats, newStats, expectedInterval, maxPoints)
@@ -54,16 +54,16 @@ export function mergeMonitorStats(rawRecords: RawMonitorStatsRecord[]): NetworkM
 		.map(([created, stats]) => ({ created, stats }))
 }
 
-/** Fetch raw per-monitor stats records for a system and time range, returning merged chart records. */
+/** Fetch stats for one monitor and time range, returning merged chart records. */
 async function fetchMonitorStats(
-	systemId: string,
+	monitorId: string,
 	chartTime: ChartTimes,
 	cached?: NetworkMonitorStatsRecord[]
 ): Promise<NetworkMonitorStatsRecord[]> {
 	const lastCached = cached?.at(-1)?.created as number | undefined
 	const rawRecords = await pb.collection<RawMonitorStatsRecord>("network_monitor_stats").getFullList({
-		filter: pb.filter("system={:id} && created>{:created} && type={:type}", {
-			id: systemId,
+		filter: pb.filter("monitor={:id} && created>{:created} && type={:type}", {
+			id: monitorId,
 			created: getPbTimestamp(chartTime, lastCached ? new Date(lastCached + 1000) : undefined, true),
 			type: chartTimeData[chartTime].type,
 		}),
@@ -155,40 +155,32 @@ export function useNetworkMonitors(props: UseNetworkMonitorsProps) {
 }
 
 interface UseNetworkMonitorStatsProps {
-	systemId?: string
+	systemId: string
+	monitorId: string
 	chartTime: ChartTimes
+	enabled?: boolean
 }
 
 export function useNetworkMonitorStats(props: UseNetworkMonitorStatsProps) {
-	const { systemId, chartTime } = props
+	const { systemId, monitorId, chartTime, enabled = true } = props
 	const [monitorStats, setMonitorStats] = useState<NetworkMonitorStatsRecord[]>([])
-	const requestID = useRef(0)
 	// pending raw events to be merged (keyed by monitor+created)
 	const pendingRaw = useRef(new Map<string, RawMonitorStatsRecord>())
 	const mergeBatchTimeout = useRef<ReturnType<typeof setTimeout> | null>(null)
 
 	useEffect(() => {
-		if (!systemId) {
-			setMonitorStats([])
-			return
-		}
-		if (chartTime === "1m") {
-			setMonitorStats(getCacheValue(systemId, "rt"))
-			return
-		}
-		setMonitorStats(getCacheValue(systemId, chartTime))
-	}, [systemId, chartTime])
+		setMonitorStats(getCacheValue(monitorId, chartTime === "1m" ? "rt" : chartTime))
+	}, [monitorId, chartTime])
 
-	// fetch missing monitor stats on load and when chart time changes
+	// Fetch only the selected monitor's missing history.
 	useEffect(() => {
-		if (!systemId || !chartTime || chartTime === "1m") {
+		if (!enabled || chartTime === "1m") {
 			return
 		}
 
+		let cancelled = false
 		const { expectedInterval } = chartTimeData[chartTime]
-		const requestId = ++requestID.current
-
-		const cachedMonitorStats = getCacheValue(systemId, chartTime)
+		const cachedMonitorStats = getCacheValue(monitorId, chartTime)
 
 		if (cachedMonitorStats.length) {
 			setMonitorStats(cachedMonitorStats)
@@ -198,25 +190,30 @@ export function useNetworkMonitorStats(props: UseNetworkMonitorStatsProps) {
 			}
 		}
 
-		fetchMonitorStats(systemId, chartTime, cachedMonitorStats).then((newMonitorStats) => {
-			if (requestId !== requestID.current) {
-				return
-			}
-			const merged = appendCacheValue(systemId, chartTime, newMonitorStats)
-			setMonitorStats(merged)
-		})
-	}, [systemId, chartTime])
+		fetchMonitorStats(monitorId, chartTime, cachedMonitorStats)
+			.then((newMonitorStats) => {
+				if (cancelled) return
+				setMonitorStats(appendCacheValue(monitorId, chartTime, newMonitorStats))
+			})
+			.catch((error) => {
+				if (!cancelled) console.error("Failed to fetch monitor stats:", error)
+			})
+		return () => {
+			cancelled = true
+		}
+	}, [monitorId, chartTime, enabled])
 
 	// subscribe to new per-monitor stats records; batch them into merged chart records
 	useEffect(() => {
-		if (!systemId || !chartTime || chartTime === "1m") {
+		if (!enabled || chartTime === "1m") {
 			return
 		}
+		let cancelled = false
 		let unsubscribe: (() => void) | undefined
 		const pbOptions = {
 			fields: "monitor,res_min,res_max,total_count,success_count,res_sum,created,type",
-			filter: pb.filter("system={:system} && type={:type}", {
-				system: systemId,
+			filter: pb.filter("monitor={:monitor} && type={:type}", {
+				monitor: monitorId,
 				type: chartTimeData[chartTime].type,
 			}),
 		}
@@ -227,7 +224,7 @@ export function useNetworkMonitorStats(props: UseNetworkMonitorStatsProps) {
 			pendingRaw.current = new Map()
 			const merged = mergeMonitorStats(Array.from(pending.values()))
 			if (merged.length > 0) {
-				const newStats = appendCacheValue(systemId!, chartTime, merged)
+				const newStats = appendCacheValue(monitorId, chartTime, merged)
 				setMonitorStats(newStats)
 			}
 		}
@@ -237,7 +234,7 @@ export function useNetworkMonitorStats(props: UseNetworkMonitorStatsProps) {
 				unsubscribe = await pb.collection<RawMonitorStatsRecord>("network_monitor_stats").subscribe(
 					"*",
 					(event) => {
-						if (event.action !== "create") {
+						if (cancelled || event.action !== "create") {
 							return
 						}
 						const rec = event.record
@@ -248,12 +245,14 @@ export function useNetworkMonitorStats(props: UseNetworkMonitorStatsProps) {
 					},
 					pbOptions
 				)
+				if (cancelled) unsubscribe()
 			} catch (error) {
 				console.error("Failed to subscribe to monitor stats:", error)
 			}
 		})()
 
 		return () => {
+			cancelled = true
 			if (mergeBatchTimeout.current) {
 				clearTimeout(mergeBatchTimeout.current)
 				mergeBatchTimeout.current = null
@@ -261,29 +260,36 @@ export function useNetworkMonitorStats(props: UseNetworkMonitorStatsProps) {
 			pendingRaw.current.clear()
 			unsubscribe?.()
 		}
-	}, [systemId, chartTime])
+	}, [monitorId, chartTime, enabled])
 
 	// subscribe to realtime metrics if chart time is 1m
 	useEffect(() => {
-		if (!systemId || chartTime !== "1m") {
+		if (!enabled || chartTime !== "1m") {
 			return
 		}
+		let cancelled = false
 		let unsubscribe: (() => void) | undefined
 		pb.realtime
 			.subscribe(
 				`rt_metrics`,
 				(data: { Monitors: NetworkMonitorStatsRecord["stats"] }) => {
-					const stats = { created: Date.now(), stats: data.Monitors } as NetworkMonitorStatsRecord
-					const newStats = appendCacheValue(systemId, "rt", [stats], 120)
+					const monitorStats = data.Monitors?.[monitorId]
+					if (cancelled || !monitorStats) return
+					const stats = { created: Date.now(), stats: { [monitorId]: monitorStats } }
+					const newStats = appendCacheValue(monitorId, "rt", [stats], 120)
 					setMonitorStats(newStats)
 				},
 				{ query: { system: systemId } }
 			)
 			.then((us) => {
 				unsubscribe = us
+				if (cancelled) unsubscribe()
 			})
-		return () => unsubscribe?.()
-	}, [chartTime, systemId])
+		return () => {
+			cancelled = true
+			unsubscribe?.()
+		}
+	}, [chartTime, systemId, monitorId, enabled])
 
 	return monitorStats
 }
