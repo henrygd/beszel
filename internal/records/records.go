@@ -3,7 +3,6 @@ package records
 
 import (
 	"encoding/json"
-	"log/slog"
 	"math"
 	"time"
 
@@ -71,18 +70,16 @@ func (rm *RecordManager) CreateLongerRecords() {
 	}
 	// wrap the operations in a transaction
 	// Pocketbase cron does not handle errors, log them here.
-	rm.app.RunInTransaction(func(txApp core.App) error {
+	err := rm.app.RunInTransaction(func(txApp core.App) error {
 		var err error
 
 		collections := [2]*core.Collection{}
 		collections[0], err = txApp.FindCachedCollectionByNameOrId("system_stats")
 		if err != nil {
-			slog.Error("Error finding cached collection using system stats:", "err", err)
 			return err
 		}
 		collections[1], err = txApp.FindCachedCollectionByNameOrId("container_stats")
 		if err != nil {
-			slog.Error("Error finding cached collection using container stats:", "err", err)
 			return err
 		}
 		monitorStatsColl, err := txApp.FindCachedCollectionByNameOrId("network_monitor_stats")
@@ -92,7 +89,9 @@ func (rm *RecordManager) CreateLongerRecords() {
 		var systems RecordIds
 		db := txApp.DB()
 
-		db.NewQuery("SELECT id FROM systems WHERE status='up'").All(&systems)
+		if err := db.NewQuery("SELECT id FROM systems WHERE status='up'").All(&systems); err != nil {
+			return err
+		}
 
 		// loop through all active systems, time periods, and collections
 		for _, system := range systems {
@@ -107,24 +106,19 @@ func (rm *RecordManager) CreateLongerRecords() {
 				for _, collection := range collections {
 					// check creation time of last longer record if not 10m, since 10m is created every run
 					if recordData.longerType != "10m" {
-						var existingRecord struct {
-							Id string
+						count, err := txApp.CountRecords(collection.Id, dbx.NewExp(
+							"system = {:system} AND type = {:type} AND created > {:created}",
+							dbx.Params{
+								"type":    recordData.longerType,
+								"system":  system.Id,
+								"created": longerRecordPeriod.Format(types.DefaultDateLayout),
+							},
+						))
+						if err != nil {
+							return err
 						}
-
-						params := dbx.Params{
-							"type":    recordData.longerType,
-							"system":  system.Id,
-							"created": getCreatedTimeField(collection.Name, longerRecordPeriod),
-						}
-
-						_ = db.Select("id").
-							From(collection.Name).
-							Where(dbx.NewExp("system = {:system} AND type = {:type} AND created > {:created}", params)).
-							Limit(1).
-							One(&existingRecord)
-
 						// continue if longer record exists
-						if existingRecord.Id != "" {
+						if count > 0 {
 							continue
 						}
 					}
@@ -134,10 +128,10 @@ func (rm *RecordManager) CreateLongerRecords() {
 					params := dbx.Params{
 						"type":    recordData.shorterType,
 						"system":  system.Id,
-						"created": getCreatedTimeField(collection.Name, shorterRecordPeriod),
+						"created": shorterRecordPeriod.Format(types.DefaultDateLayout),
 					}
 
-					_ = txApp.DB().
+					err := db.
 						Select("id").
 						From(collection.Name).
 						Where(dbx.NewExp(
@@ -146,6 +140,9 @@ func (rm *RecordManager) CreateLongerRecords() {
 						)).
 						OrderBy("created").
 						All(&recordIds)
+					if err != nil {
+						return err
+					}
 
 					// continue if not enough shorter records
 					if len(recordIds) < recordData.minShorterRecords {
@@ -162,7 +159,7 @@ func (rm *RecordManager) CreateLongerRecords() {
 						longerRecord.Set("stats", rm.AverageContainerStats(db, recordIds))
 					}
 					if err := txApp.SaveNoValidate(longerRecord); err != nil {
-						slog.Error("failed to save longer record", "err", err)
+						txApp.Logger().Error("failed to save longer record", "err", err)
 					}
 				}
 			}
@@ -185,27 +182,25 @@ func (rm *RecordManager) CreateLongerRecords() {
 				shorterRecordPeriod := now.Add(recordData.longerTimeDuration)
 
 				if recordData.longerType != "10m" {
-					var existingRecord struct{ Id string }
-					_ = db.Select("id").
-						From("network_monitor_stats").
-						Where(dbx.NewExp(
-							"monitor={:monitor} AND type={:type} AND created>{:created}",
-							dbx.Params{
-								"monitor": monitorRec.Id,
-								"type":    recordData.longerType,
-								"created": longerRecordPeriod.UnixMilli(),
-							},
-						)).
-						Limit(1).
-						One(&existingRecord)
-					if existingRecord.Id != "" {
+					count, err := txApp.CountRecords(monitorStatsColl.Id, dbx.NewExp(
+						"monitor={:monitor} AND type={:type} AND created>{:created}",
+						dbx.Params{
+							"monitor": monitorRec.Id,
+							"type":    recordData.longerType,
+							"created": longerRecordPeriod.UnixMilli(),
+						},
+					))
+					if err != nil {
+						return err
+					}
+					if count > 0 {
 						continue
 					}
 				}
 
 				stats, count, err := rm.AverageMonitorStats(db, monitorRec.Id, recordData.shorterType, shorterRecordPeriod.UnixMilli())
 				if err != nil {
-					slog.Error("failed to average monitor stats", "monitor", monitorRec.Id, "err", err)
+					txApp.Logger().Error("failed to average monitor stats", "monitor", monitorRec.Id, "err", err)
 					continue
 				}
 				// Monitor intervals can exceed the aggregation window, so average
@@ -225,15 +220,16 @@ func (rm *RecordManager) CreateLongerRecords() {
 				longerRecord.Set("success_count", stats.SuccessCount)
 				longerRecord.Set("res_sum", stats.ResponseSum)
 				if err := txApp.SaveNoValidate(longerRecord); err != nil {
-					slog.Error("failed to save monitor longer record", "err", err)
+					txApp.Logger().Error("failed to save monitor longer record", "err", err)
 				}
 			}
 		}
 
 		return nil
 	})
-
-	// slog.Info("finished creating longer records", "time (ms)", time.Since(now).Milliseconds())
+	if err != nil {
+		rm.app.Logger().Error("failed to create longer records", "err", err)
+	}
 }
 
 func getCreatedTimeField(collectionName string, period time.Time) any {
