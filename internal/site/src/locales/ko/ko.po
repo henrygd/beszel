@@ -30,6 +30,12 @@ msgstr "{0} 사용 가능"
 msgid "{0} of {1} row(s) selected."
 msgstr "{1}개의 행 중 {0}개가 선택되었습니다."
 
+#. placeholder {0}: selectedSystemIds.size
+#: src/components/network-monitors-table/monitor-dialog.tsx
+#: src/components/network-monitors-table/monitor-dialog.tsx
+msgid "{0} selected"
+msgstr "{0}개 선택됨"
+
 #: src/components/routes/system/info-bar.tsx
 msgid "{cores, plural, one {# core} other {# cores}}"
 msgstr "{cores, plural, one {# 코어} other {# 코어}}"
@@ -121,6 +127,10 @@ msgstr "활성 상태"
 #: src/components/add-system.tsx
 #: src/components/navbar.tsx
 #: src/components/navbar.tsx
+#: src/components/network-monitors-table/monitor-dialog.tsx
+#: src/components/network-monitors-table/monitor-dialog.tsx
+#: src/components/network-monitors-table/monitor-dialog.tsx
+#: src/components/network-monitors-table/monitor-dialog.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Add {foo}"
@@ -188,6 +198,7 @@ msgstr "모든 시스템"
 msgid "Are you sure you want to delete {name}?"
 msgstr "{name}을(를) 삭제하시겠습니까?"
 
+#: src/components/network-monitors-table/network-monitors-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Are you sure?"
 msgstr "확실합니까?"
@@ -244,6 +255,14 @@ msgstr "평균 {0} 사용량"
 #: src/components/routes/system/charts/gpu-charts.tsx
 msgid "Average utilization of GPU engines"
 msgstr "GPU 엔진 평균 사용량"
+
+#: src/components/routes/system/charts/monitors-charts.tsx
+msgid "Average, minimum, and maximum response time"
+msgstr "평균, 최소 및 최대 응답 시간"
+
+#: src/components/network-monitors-table/network-monitors-columns.tsx
+msgid "Avg 1h"
+msgstr "1시간 평균"
 
 #: src/components/command-palette.tsx
 #: src/components/navbar.tsx
@@ -306,6 +325,19 @@ msgstr "비트 (Kbps, Mbps, Gbps)"
 msgid "Boot state"
 msgstr "부팅 상태"
 
+#: src/components/network-monitors-table/monitor-dialog.tsx
+#: src/components/network-monitors-table/monitor-dialog.tsx
+msgid "Bulk Add"
+msgstr "일괄 추가"
+
+#: src/components/network-monitors-table/monitor-dialog.tsx
+msgid "Bulk Add {foo}"
+msgstr "{foo} 일괄 추가"
+
+#: src/components/network-monitors-table/network-monitors-columns.tsx
+msgid "Bulk copy"
+msgstr "일괄 복사"
+
 #: src/components/routes/settings/general.tsx
 #: src/components/routes/settings/general.tsx
 msgid "Bytes (KB/s, MB/s, GB/s)"
@@ -327,6 +359,7 @@ msgstr "시작 가능"
 msgid "Can stop"
 msgstr "중지 가능"
 
+#: src/components/network-monitors-table/network-monitors-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/systems-table/systems-table-columns.tsx
@@ -396,12 +429,21 @@ msgid "Checksum errors"
 msgstr "체크섬 오류"
 
 #: src/components/containers-table/containers-table.tsx
+#: src/components/network-monitors-table/network-monitors-table.tsx
 #: src/components/routes/system/smart-table.tsx
 #: src/components/routes/system/storage-pools-table.tsx
 #: src/components/routes/system/storage-pools-table.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "Clear"
 msgstr "지우기"
+
+#: src/components/network-monitors-table/monitor-dialog.tsx
+msgid "Clear all"
+msgstr "모두 지우기"
+
+#: src/components/network-monitors-table/monitor-dialog.tsx
+msgid "Clear matches"
+msgstr "일치 항목 지우기"
 
 #: src/components/containers-table/containers-table.tsx
 msgid "Click on a container to view more information."
@@ -432,6 +474,10 @@ msgstr "명령어 사용 지침"
 msgid "Configure how you receive alert notifications."
 msgstr "알림을 수신할 방법을 설정하세요."
 
+#: src/components/network-monitors-table/monitor-dialog.tsx
+msgid "Configure response monitoring from this agent."
+msgstr "이 에이전트의 응답 모니터링을 구성합니다."
+
 #: src/components/login/auth-form.tsx
 #: src/components/login/auth-form.tsx
 msgid "Confirm password"
@@ -457,6 +503,7 @@ msgstr "컨테이너 상태"
 msgid "Containers"
 msgstr "컨테이너"
 
+#: src/components/network-monitors-table/network-monitors-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Continue"
@@ -516,6 +563,10 @@ msgstr "아래 에이전트의 설치 명령을 복사하거나 <0>범용 토큰
 #: src/components/add-system.tsx
 msgid "Copy the<0>docker-compose.yml</0> content for the agent below, or register agents automatically with a <1>universal token</1>."
 msgstr "아래 에이전트의 <0>docker-compose.yml</0> 내용을 복사하거나 <1>범용 토큰</1>으로 에이전트를 자동으로 등록하세요."
+
+#: src/components/network-monitors-table/network-monitors-columns.tsx
+msgid "Copy to system"
+msgstr "시스템에 복사"
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Copy YAML"
@@ -630,6 +681,7 @@ msgstr "기본값"
 msgid "Default time period"
 msgstr "기본 기간"
 
+#: src/components/network-monitors-table/network-monitors-columns.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/system/smart-table.tsx
@@ -718,12 +770,14 @@ msgstr "다운로드"
 msgid "Duration"
 msgstr "기간"
 
+#: src/components/network-monitors-table/network-monitors-columns.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Edit"
 msgstr "수정"
 
 #: src/components/add-system.tsx
+#: src/components/network-monitors-table/monitor-dialog.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Edit {foo}"
 msgstr "{foo} 수정"
@@ -772,6 +826,11 @@ msgstr "OTP를 입력하세요."
 msgid "Ephemeral"
 msgstr "일시적"
 
+#: src/components/network-monitors-table/monitor-dialog.tsx
+#: src/components/network-monitors-table/monitor-dialog.tsx
+#: src/components/network-monitors-table/network-monitors-table.tsx
+#: src/components/network-monitors-table/network-monitors-table.tsx
+#: src/components/network-monitors-table/network-monitors-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/settings/config-yaml.tsx
 #: src/components/routes/settings/heartbeat.tsx
@@ -844,6 +903,11 @@ msgstr "실패한 서비스"
 msgid "Failed to authenticate"
 msgstr "인증 실패"
 
+#: src/components/network-monitors-table/network-monitors-table.tsx
+#: src/components/network-monitors-table/network-monitors-table.tsx
+msgid "Failed to delete monitors."
+msgstr "모니터를 삭제하지 못했습니다."
+
 #: src/components/routes/settings/layout.tsx
 #: src/components/routes/settings/notifications.tsx
 #: src/components/routes/settings/quiet-hours.tsx
@@ -862,6 +926,10 @@ msgstr "테스트 알림 전송 실패"
 msgid "Failed to update alert"
 msgstr "알림 수정 실패"
 
+#: src/components/network-monitors-table/network-monitors-table.tsx
+msgid "Failed to update monitors."
+msgstr "모니터를 업데이트하지 못했습니다."
+
 #. placeholder {0}: statusTotals[ServiceStatus.Failed]
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Failed: {0}"
@@ -872,6 +940,7 @@ msgid "Fans"
 msgstr "팬"
 
 #: src/components/containers-table/containers-table.tsx
+#: src/components/network-monitors-table/network-monitors-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/system/chart-card.tsx
 #: src/components/routes/system/smart-table.tsx
@@ -928,7 +997,7 @@ msgstr "전역"
 
 #: src/components/routes/system.tsx
 msgid "GPU"
-msgstr ""
+msgstr "GPU"
 
 #: src/components/routes/system/charts/gpu-charts.tsx
 msgid "GPU Engines"
@@ -1011,13 +1080,24 @@ msgctxt "Docker image"
 msgid "Image"
 msgstr "이미지"
 
+#: src/components/containers-table/containers-table-columns.tsx
+#: src/components/containers-table/containers-table-columns.tsx
+msgctxt "Docker image"
+msgid "Image update available"
+msgstr "이미지 업데이트 사용 가능"
+
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Inactive"
 msgstr "비활성"
 
+#: src/components/network-monitors-table/network-monitors-columns.tsx
 #: src/components/routes/settings/heartbeat.tsx
 msgid "Interval"
 msgstr "간격"
+
+#: src/components/network-monitors-table/monitor-dialog.tsx
+msgid "Interval (seconds)"
+msgstr "간격(초)"
 
 #: src/components/login/auth-form.tsx
 msgid "Invalid email address."
@@ -1097,6 +1177,15 @@ msgstr "로그"
 msgid "Looking instead for where to create alerts? Click the bell <0/> icons in the systems table."
 msgstr "알림을 생성하려 하시나요? 시스템 테이블의 종 <0/> 아이콘을 클릭하세요."
 
+#: src/components/routes/system/charts/monitors-charts.tsx
+msgctxt "Packet loss"
+msgid "Loss"
+msgstr "패킷 손실"
+
+#: src/components/network-monitors-table/network-monitors-columns.tsx
+msgid "Loss 1h"
+msgstr "1시간 패킷 손실"
+
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Main PID"
 msgstr "주 PID"
@@ -1114,6 +1203,10 @@ msgstr "수동 설정 방법"
 #: src/components/routes/system/chart-card.tsx
 msgid "Max 1 min"
 msgstr "1분간 최댓값"
+
+#: src/components/network-monitors-table/network-monitors-columns.tsx
+msgid "Max 1h"
+msgstr "1시간 최대"
 
 #: src/components/containers-table/containers-table-columns.tsx
 #: src/components/routes/system/info-bar.tsx
@@ -1141,10 +1234,24 @@ msgstr "메모리 사용량"
 msgid "Memory usage of containers"
 msgstr "컨테이너 메모리 사용량"
 
+#: src/components/network-monitors-table/network-monitors-columns.tsx
+msgid "Min 1h"
+msgstr "1시간 최소"
+
 #. Device model
 #: src/components/routes/system/smart-table.tsx
 msgid "Model"
 msgstr "모델"
+
+#: src/components/network-monitors-table/monitor-dialog.tsx
+#: src/components/network-monitors-table/monitor-dialog.tsx
+#: src/components/network-monitors-table/monitor-dialog.tsx
+msgid "Monitor"
+msgstr "모니터"
+
+#: src/components/network-monitors-table/monitor-dialog.tsx
+msgid "Monitors created"
+msgstr "모니터가 생성되었습니다"
 
 #: src/components/routes/system/storage-pools-table.tsx
 msgid "Mountpoint"
@@ -1162,6 +1269,29 @@ msgstr "이름"
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Net"
 msgstr "네트워크"
+
+#: src/components/routes/system.tsx
+msgid "Network"
+msgstr "네트워크"
+
+#: src/components/network-monitors-table/monitor-dialog.tsx
+#: src/components/network-monitors-table/monitor-dialog.tsx
+msgid "Network Monitor"
+msgstr "네트워크 모니터"
+
+#: src/lib/alerts.ts
+msgid "Network Monitor Loss"
+msgstr "네트워크 모니터 패킷 손실"
+
+#: src/components/command-palette.tsx
+#: src/components/navbar.tsx
+#: src/components/navbar.tsx
+#: src/components/network-monitors-table/monitor-dialog.tsx
+#: src/components/network-monitors-table/monitor-dialog.tsx
+#: src/components/network-monitors-table/network-monitors-table.tsx
+#: src/components/routes/monitors.tsx
+msgid "Network Monitors"
+msgstr "네트워크 모니터"
 
 #: src/components/routes/system/charts/network-charts.tsx
 msgid "Network traffic of containers"
@@ -1197,6 +1327,7 @@ msgstr "결과가 없습니다."
 #: src/components/containers-table/containers-table.tsx
 #: src/components/containers-table/containers-table.tsx
 #: src/components/containers-table/containers-table.tsx
+#: src/components/network-monitors-table/network-monitors-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/system/smart-table.tsx
 #: src/components/systemd-table/systemd-table.tsx
@@ -1207,6 +1338,7 @@ msgstr "결과 없음."
 msgid "No S.M.A.R.T. attributes available for this device."
 msgstr "이 장치에 사용할 수 있는 S.M.A.R.T. 속성이 없습니다."
 
+#: src/components/network-monitors-table/monitor-dialog.tsx
 #: src/components/systems-table/systems-table.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "No systems found."
@@ -1238,6 +1370,11 @@ msgstr "매 시작 시, 데이터베이스가 파일에 정의된 시스템과 �
 msgid "One or more containers are unhealthy"
 msgstr "하나 이상의 컨테이너가 비정상 상태입니다"
 
+#. placeholder {0}: alert.value
+#: src/components/active-alerts.tsx
+msgid "One or more monitors exceed {0}% loss"
+msgstr "하나 이상의 모니터에서 패킷 손실률이 {0}%를 초과했습니다"
+
 #: src/lib/alerts.ts
 msgid "One or more services are in a failed state"
 msgstr "하나 이상의 서비스가 실패 상태입니다"
@@ -1251,6 +1388,7 @@ msgstr "일회성"
 msgid "One-time password"
 msgstr "OTP"
 
+#: src/components/network-monitors-table/network-monitors-columns.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
@@ -1272,6 +1410,11 @@ msgstr "기타"
 msgid "Overwrite existing alerts"
 msgstr "기존 알림 덮어쓰기"
 
+#: src/components/routes/system/charts/monitors-charts.tsx
+msgid "Packet loss (%)"
+msgstr "패킷 손실(%)"
+
+#: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
@@ -1309,6 +1452,7 @@ msgstr "비밀번호 재설정 요청이 접수되었습니다"
 msgid "Past"
 msgstr "과거"
 
+#: src/components/network-monitors-table/network-monitors-columns.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Pause"
 msgstr "일시 중지"
@@ -1392,6 +1536,7 @@ msgid "Pool Usage"
 msgstr "풀 사용량"
 
 #: src/components/add-system.tsx
+#: src/components/network-monitors-table/monitor-dialog.tsx
 msgid "Port"
 msgstr "포트"
 
@@ -1417,6 +1562,11 @@ msgstr "선호 언어"
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Process started"
 msgstr "프로세스 시작됨"
+
+#: src/components/network-monitors-table/monitor-dialog.tsx
+#: src/components/network-monitors-table/network-monitors-columns.tsx
+msgid "Protocol"
+msgstr "프로토콜"
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Public key"
@@ -1503,10 +1653,20 @@ msgstr "비밀번호 재설정"
 msgid "Resolved"
 msgstr "해결됨"
 
+#: src/components/network-monitors-table/network-monitors-columns.tsx
+#: src/components/routes/system/charts/monitors-charts.tsx
+msgid "Response"
+msgstr "응답"
+
+#: src/components/network-monitors-table/network-monitors-table.tsx
+msgid "Response time monitoring from agents."
+msgstr "에이전트의 응답 시간을 모니터링합니다."
+
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Restarts"
 msgstr "재시작 횟수"
 
+#: src/components/network-monitors-table/network-monitors-columns.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Resume"
 msgstr "재개"
@@ -1539,6 +1699,7 @@ msgid "S.M.A.R.T. Self-Test"
 msgstr "S.M.A.R.T. 자체 테스트"
 
 #: src/components/add-system.tsx
+#: src/components/network-monitors-table/monitor-dialog.tsx
 msgid "Save {foo}"
 msgstr "{foo} 저장"
 
@@ -1575,6 +1736,11 @@ msgstr "검색"
 msgid "Search for systems or settings..."
 msgstr "시스템 또는 설정 검색..."
 
+#: src/components/network-monitors-table/monitor-dialog.tsx
+#: src/components/network-monitors-table/monitor-dialog.tsx
+msgid "Search systems"
+msgstr "시스템 검색"
+
 #: src/components/routes/settings/heartbeat.tsx
 msgid "Seconds between pings (default: 60)"
 msgstr "핑 사이 시간(초) (기본값: 60)"
@@ -1586,6 +1752,27 @@ msgstr "알림을 받는 방법을 구성하려면 <0>알림 설정</0>을 참�
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Select {foo}"
 msgstr "{foo} 선택"
+
+#: src/components/network-monitors-table/monitor-dialog.tsx
+msgid "Select a system"
+msgstr "시스템 선택"
+
+#: src/components/network-monitors-table/monitor-dialog.tsx
+#: src/components/network-monitors-table/network-monitors-columns.tsx
+msgid "Select all"
+msgstr "모두 선택"
+
+#: src/components/network-monitors-table/monitor-dialog.tsx
+msgid "Select matches"
+msgstr "일치 항목 선택"
+
+#: src/components/network-monitors-table/network-monitors-columns.tsx
+msgid "Select row"
+msgstr "행 선택"
+
+#: src/components/network-monitors-table/monitor-dialog.tsx
+msgid "Select systems"
+msgstr "시스템 선택"
 
 #: src/components/routes/settings/heartbeat.tsx
 msgid "Send a single heartbeat ping to verify your endpoint is working."
@@ -1692,6 +1879,8 @@ msgstr "테마 전환"
 #: src/components/alerts-history-columns.tsx
 #: src/components/containers-table/containers-table-columns.tsx
 #: src/components/navbar.tsx
+#: src/components/network-monitors-table/monitor-dialog.tsx
+#: src/components/network-monitors-table/network-monitors-columns.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/quiet-hours.tsx
@@ -1716,6 +1905,8 @@ msgid "Systemd Services"
 msgstr "Systemd 서비스"
 
 #: src/components/navbar.tsx
+#: src/components/network-monitors-table/monitor-dialog.tsx
+#: src/components/network-monitors-table/monitor-dialog.tsx
 msgid "Systems"
 msgstr "시스템"
 
@@ -1731,6 +1922,11 @@ msgstr "표"
 msgctxt "Tabs system layout option"
 msgid "Tabs"
 msgstr "탭"
+
+#: src/components/network-monitors-table/monitor-dialog.tsx
+#: src/components/network-monitors-table/network-monitors-columns.tsx
+msgid "Target"
+msgstr "대상"
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Tasks"
@@ -1779,6 +1975,7 @@ msgstr "그런 다음 백엔드에 로그인하여 사용자 테이블에서 사
 msgid "This action cannot be undone. This will permanently delete all current records for {name} from the database."
 msgstr "이 작업은 되돌릴 수 없습니다. 데이터베이스에서 {name}에 대한 모든 현재 기록이 영구적으로 삭제됩니다."
 
+#: src/components/network-monitors-table/network-monitors-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "This will permanently delete all selected records from the database."
 msgstr "선택한 모든 레코드를 데이터베이스에서 영구적으로 삭제합니다."
@@ -1902,6 +2099,10 @@ msgid "Triggers when memory usage exceeds a threshold"
 msgstr "메모리 사용량이 임계값을 초과할 때 트리거됩니다."
 
 #: src/lib/alerts.ts
+msgid "Triggers when one hour loss exceeds a threshold"
+msgstr "1시간 패킷 손실률이 임계값을 초과하면 트리거됩니다"
+
+#: src/lib/alerts.ts
 msgid "Triggers when status switches between up and down"
 msgstr "시스템의 전원이 켜지거나 꺼질때 트리거됩니다."
 
@@ -1960,6 +2161,7 @@ msgid "Update"
 msgstr "업데이트"
 
 #: src/components/containers-table/containers-table-columns.tsx
+#: src/components/network-monitors-table/network-monitors-columns.tsx
 #: src/components/routes/system/smart-table.tsx
 #: src/components/routes/system/storage-pools-table.tsx
 #: src/components/systemd-table/systemd-table-columns.tsx
@@ -2103,4 +2305,3 @@ msgstr "예"
 #: src/components/routes/settings/layout.tsx
 msgid "Your user settings have been updated."
 msgstr "사용자 설정이 업데이트되었습니다."
-
