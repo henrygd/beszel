@@ -34,12 +34,13 @@ func (g *monitorResumeGuard) start() {
 	g.lastTick = time.Now().Round(0)
 	g.pauseUntil = time.Time{}
 	go func() {
-		ticker := time.Tick(monitorResumeHeartbeat)
+		ticker := time.NewTicker(monitorResumeHeartbeat)
+		defer ticker.Stop()
 		for {
 			select {
 			case <-stop:
 				return
-			case <-ticker:
+			case <-ticker.C:
 				g.mu.Lock()
 				if g.stop == stop {
 					g.observe(time.Now())
