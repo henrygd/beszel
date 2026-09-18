@@ -106,6 +106,7 @@ func (h *Hub) StartHub() error {
 
 	// TODO: move to users package
 	// handle default values for user / user_settings creation
+	h.App.OnRecordAuthWithOAuth2Request("users").BindFunc(h.um.InitializeOAuthUserRole)
 	h.App.OnRecordCreate("users").BindFunc(h.um.InitializeUserRole)
 	h.App.OnRecordCreate("user_settings").BindFunc(h.um.InitializeUserSettings)
 
