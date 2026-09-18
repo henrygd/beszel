@@ -44,6 +44,7 @@ export function FilterBar({ store = $containerFilter }: { store?: typeof $contai
 		<>
 			<Input
 				placeholder={t`Filter...`}
+				title={t`Use commas to match any of multiple terms, e.g. "system1, system2"`}
 				className="ps-4 pe-8 w-full sm:w-44"
 				onChange={handleChange}
 				value={inputValue}
