@@ -26,7 +26,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { ChevronDownIcon, ListIcon, SearchIcon, ServerIcon } from "lucide-react"
 import { useToast } from "@/components/ui/use-toast"
 import { $systems } from "@/lib/stores"
-import { supportsNetworkMonitors } from "@/lib/utils"
+import { cn, supportsNetworkMonitors } from "@/lib/utils"
 import type { NetworkMonitorRecord } from "@/types"
 import * as v from "valibot"
 
@@ -191,11 +191,13 @@ function SystemMultiSelect({
 	selectedSystemIds,
 	onChange,
 	disabled,
+	className,
 }: {
 	id: string
 	selectedSystemIds: Set<string>
 	onChange: (ids: Set<string>) => void
 	disabled?: boolean
+	className?: string
 }) {
 	const systems = useStore($systems)
 	const { t } = useLingui()
@@ -232,7 +234,7 @@ function SystemMultiSelect({
 					disabled={disabled}
 					type="button"
 					variant="outline"
-					className="relative w-full min-w-0 ps-10 pe-10 justify-start font-normal bg-card text-start"
+					className={cn("relative w-full min-w-0 ps-10 pe-10 justify-start font-normal text-start", className)}
 				>
 					<ServerIcon className="size-3.5 absolute start-4 top-1/2 -translate-y-1/2 opacity-85" />
 					<span className="truncate">
@@ -497,6 +499,7 @@ export function AddMonitorDialog({ systemId, monitors }: { systemId?: string; mo
 										selectedSystemIds={bulkSelectedSystemIds}
 										onChange={setBulkSelectedSystemIds}
 										disabled={bulkLoading}
+										className="bg-card"
 									/>
 								</div>
 							)}
