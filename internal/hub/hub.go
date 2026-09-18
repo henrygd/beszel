@@ -81,7 +81,6 @@ func (h *Hub) StartHub() error {
 		}
 		// register middlewares
 		h.registerMiddlewares(e)
-		// bind events that aren't set up in different
 		// register api routes
 		if err := h.registerApiRoutes(e); err != nil {
 			return err
