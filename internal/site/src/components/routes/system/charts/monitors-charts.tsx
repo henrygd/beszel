@@ -186,7 +186,7 @@ export function AvgMinMaxResponseChart({ monitorStats, monitor, chartData, empty
 
 export function LossChart({ monitorStats, grid, monitors, chartData, empty, titlePrefix }: MonitorChartProps) {
 	const { t } = useLingui()
-	const lossTitle = t`Loss`
+	const lossTitle = t({ message: "Loss", context: "Packet loss" })
 	const title = titlePrefix ? `${titlePrefix} — ${lossTitle}` : lossTitle
 
 	return (

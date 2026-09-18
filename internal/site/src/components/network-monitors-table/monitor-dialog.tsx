@@ -242,7 +242,7 @@ function SystemMultiSelect({
 							? t`Select systems`
 							: selectedSystemIds.size === 1
 								? systems.find((s) => selectedSystemIds.has(s.id))?.name
-								: t`${selectedSystemIds.size} systems selected`}
+								: t`${selectedSystemIds.size} selected`}
 					</span>
 					<ChevronDownIcon className="size-4 absolute end-4 top-1/2 -translate-y-1/2 opacity-50" />
 				</Button>
@@ -450,7 +450,7 @@ export function AddMonitorDialog({ systemId, monitors }: { systemId?: string; mo
 				<div className="w-px h-full bg-muted"></div>
 				<DropdownMenu>
 					<DropdownMenuTrigger asChild>
-						<Button variant="outline" className="px-2 rounded-s-none border-s-0" aria-label={t`More monitor actions`}>
+						<Button variant="outline" className="px-2 rounded-s-none border-s-0" aria-label={`More actions`}>
 							<ChevronDownIcon className="size-4" />
 						</Button>
 					</DropdownMenuTrigger>
@@ -759,13 +759,7 @@ function MonitorDialogContent({
 						type="submit"
 						disabled={loading || (!systemId && (isEditing ? !selectedSystemId : !selectedSystemIds.size))}
 					>
-						{loading ? (
-							isEditing ? (
-								<Trans>Saving...</Trans>
-							) : (
-								<Trans>Creating...</Trans>
-							)
-						) : isEditing ? (
+						{isEditing ? (
 							<Trans>Save {{ foo: t`Monitor` }}</Trans>
 						) : (
 							<Trans>Add {{ foo: t`Monitor` }}</Trans>

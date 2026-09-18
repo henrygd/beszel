@@ -254,7 +254,6 @@ export default function NetworkMonitorsTableNew({
 							<div className="relative">
 								<Input
 									placeholder={t`Filter...`}
-									title={t`Use commas to match any of multiple terms, e.g. "system1, system2"`}
 									value={globalFilter}
 									onChange={(e) => setGlobalFilter(e.target.value)}
 									className="ms-auto px-4 w-full max-w-full md:w-50"

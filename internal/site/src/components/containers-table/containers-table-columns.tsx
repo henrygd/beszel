@@ -192,12 +192,12 @@ export const containerChartCols: ColumnDef<ContainerRecord>[] = [
 						<Tooltip>
 							<TooltipTrigger
 								className="shrink-0 rounded-sm text-emerald-600 dark:text-emerald-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-								aria-label={t`Image update available`}
+								aria-label={t({ message: "Image update available", context: "Docker image" })}
 								onClick={(event) => event.stopPropagation()}
 							>
 								<CircleArrowUpIcon className="size-4" aria-hidden="true" />
 							</TooltipTrigger>
-							<TooltipContent>{t`Image update available`}</TooltipContent>
+							<TooltipContent>{t({ message: "Image update available", context: "Docker image" })}</TooltipContent>
 						</Tooltip>
 					)}
 				</div>
