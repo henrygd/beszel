@@ -20,6 +20,8 @@
 
 - Fix missing root CA certificates in base agent image (#2291)
 
+- Fix false RAID health warnings during healthy data scrubbing (#2109)
+
 - Fix ZFS monitoring when /dev/zfs is unavailable (#2325)
 
 - Fix spurious `HUB_URL` warning in SSH-only mode (#2316)
