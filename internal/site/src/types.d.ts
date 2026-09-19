@@ -33,7 +33,13 @@ export interface SystemRecord extends RecordModel {
 	updated: string
 }
 
+export interface WiFi {
+	s?: string
+	r?: number
+}
+
 export interface SystemInfo {
+	wifi?: Record<string, WiFi> | null
 	/** hostname */
 	h: string
 	/** kernel **/
@@ -83,6 +89,7 @@ export interface SystemInfo {
 }
 
 export interface SystemStats {
+	wifi?: Record<string, WiFi>
 	/** cpu percent */
 	cpu: number
 	/** peak cpu */

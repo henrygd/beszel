@@ -2117,6 +2117,10 @@ msgstr "Slår inn når forbruk av hvilken som helst disk overstiger en grensever
 msgid "Type"
 msgstr "Type"
 
+#: src/components/routes/system/charts/wifi-chart.tsx
+msgid "Unavailable"
+msgstr ""
+
 #: src/lib/alerts.ts
 msgid "Unhealthy"
 msgstr "Usunn"
@@ -2266,6 +2270,10 @@ msgstr "Når aktivert, tillater denne tokenen agenter å registrere seg selv ute
 #: src/components/routes/settings/heartbeat.tsx
 msgid "When using POST, each heartbeat includes a JSON payload with system status summary, list of down systems, and triggered alerts."
 msgstr "Ved bruk av POST inkluderer hver hjerteslag en JSON-nyttelast med systemstatussammendrag, liste over nede systemer og utløste varsler."
+
+#: src/components/routes/system/charts/wifi-chart.tsx
+msgid "Wi-Fi signal"
+msgstr ""
 
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx

@@ -2117,6 +2117,10 @@ msgstr "當任何磁碟使用率超過閾值時觸發"
 msgid "Type"
 msgstr "類型"
 
+#: src/components/routes/system/charts/wifi-chart.tsx
+msgid "Unavailable"
+msgstr ""
+
 #: src/lib/alerts.ts
 msgid "Unhealthy"
 msgstr "不健康"
@@ -2266,6 +2270,10 @@ msgstr "啟用後，此 Token 可讓 Agent 自行註冊，無需預先在系統�
 #: src/components/routes/settings/heartbeat.tsx
 msgid "When using POST, each heartbeat includes a JSON payload with system status summary, list of down systems, and triggered alerts."
 msgstr "使用 POST 時，每個 Heartbeat 都會包含一個 JSON Payload，內容涵蓋系統狀態概況、離線系統清單以及已觸發的警報。"
+
+#: src/components/routes/system/charts/wifi-chart.tsx
+msgid "Wi-Fi signal"
+msgstr ""
 
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
