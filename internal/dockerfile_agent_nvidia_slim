@@ -17,7 +17,7 @@ RUN set -eux; \
   if [ "$TARGETARCH" = "arm" ] && [ -n "$TARGETVARIANT" ]; then \
     export GOARM="${TARGETVARIANT#v}"; \
   fi; \
-  CGO_ENABLED=0 GOGC=75 GOOS=$TARGETOS GOARCH=$TARGETARCH \
+  CGO_ENABLED=0 GOOS=$TARGETOS GOARCH=$TARGETARCH \
     go build -tags glibc -ldflags "-w -s" -o /agent ./internal/cmd/agent
 
 # --------------------------
