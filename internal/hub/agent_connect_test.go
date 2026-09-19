@@ -978,11 +978,18 @@ func TestAgentWebSocketIntegration(t *testing.T) {
 				}
 			}
 
-			// Verify system status
-			updatedSystemRecord, err := testApp.FindRecordById("systems", systemRecord.Id)
-			require.NoError(t, err)
-			status := updatedSystemRecord.GetString("status")
-			assert.Equal(t, tc.expectSystemStatus, status, "System status should match expected value")
+			// A connected WebSocket does not mean the hub has finished verifying
+			// the agent and updating the system. Wait for the database state rather
+			// than assuming that work completes within a fixed sleep under load.
+			var status string
+			require.EventuallyWithT(t, func(c *assert.CollectT) {
+				updatedSystemRecord, err := testApp.FindRecordById("systems", systemRecord.Id)
+				if !assert.NoError(c, err) {
+					return
+				}
+				status = updatedSystemRecord.GetString("status")
+				assert.Equal(c, tc.expectSystemStatus, status, "System status should match expected value")
+			}, 5*time.Second, 20*time.Millisecond)
 
 			t.Logf("%s - System status: %s, Fingerprint: %s", tc.description, status, finalFingerprint)
 		})
