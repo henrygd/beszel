@@ -16,6 +16,7 @@ import (
 	"github.com/henrygd/beszel/agent/utils"
 	"github.com/henrygd/beszel/internal/common"
 	"github.com/henrygd/beszel/internal/entities/system"
+	"github.com/shirou/gopsutil/v4/disk"
 	gossh "golang.org/x/crypto/ssh"
 )
 
@@ -28,6 +29,7 @@ type Agent struct {
 	memCalc                   string                                                // Memory calculation formula
 	fsNames                   []string                                              // List of filesystem device names being monitored
 	fsStats                   map[string]*system.FsStats                            // Keeps track of disk stats for each filesystem
+    partitions                []disk.PartitionStat                                  // Disk partitions for device lookup
 	diskPrev                  map[uint16]map[string]prevDisk                        // Previous disk I/O counters per cache interval
 	diskUsageCacheDuration    time.Duration                                         // How long to cache disk usage (to avoid waking sleeping disks)
 	lastDiskUsageUpdate       time.Time                                             // Last time disk usage was collected
