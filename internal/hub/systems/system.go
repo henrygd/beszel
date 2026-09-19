@@ -56,6 +56,9 @@ type System struct {
 	smartInterval  time.Duration              // Interval for periodic SMART data updates
 	zfsFetching    atomic.Bool                // True if ZFS pools are currently being fetched
 	zfsInterval    time.Duration              // Interval for periodic ZFS detail data updates
+
+	// A fresh connection needs a full monitor configuration sync.
+	monitorsNeedSync atomic.Bool
 	// Serialize persistence from scheduled updates and resumes through commit.
 	recordsMu sync.Mutex
 	// Protected by recordsMu; realtime reads don't consume probes.
@@ -630,7 +633,10 @@ func (sys *System) request(ctx context.Context, action common.WebSocketAction, r
 	err := sys.sshTransport.RequestWithRetry(ctx, action, req, dest, 1)
 	// Keep legacy SSH client/version fields in sync for other code paths.
 	if sys.sshTransport != nil {
-		sys.client.Store(sys.sshTransport.GetClient())
+		client := sys.sshTransport.GetClient()
+		if previous := sys.client.Swap(client); client != nil && client != previous {
+			sys.monitorsNeedSync.Store(true)
+		}
 		sys.agentVersion = sys.sshTransport.GetAgentVersion()
 	}
 	return err
@@ -688,6 +694,7 @@ func (sys *System) fetchDataFromAgent(options common.DataRequestOptions) (*syste
 	if sys.WsConn != nil && sys.WsConn.IsConnected() {
 		wsData, err := sys.fetchDataViaWebSocket(options)
 		if err == nil {
+			sys.syncPendingNetworkMonitors()
 			return wsData, nil
 		}
 		// close the WebSocket connection if error and try SSH
@@ -698,6 +705,7 @@ func (sys *System) fetchDataFromAgent(options common.DataRequestOptions) (*syste
 	if err != nil {
 		return nil, err
 	}
+	sys.syncPendingNetworkMonitors()
 	return sshData, nil
 }
 
@@ -932,6 +940,7 @@ func (s *System) createSSHClient() error {
 		return err
 	}
 	s.agentVersion, _ = extractAgentVersion(string(client.Conn.ServerVersion()))
+	s.monitorsNeedSync.Store(true)
 	s.manager.resetFailedSmartFetchState(s.Id)
 	s.manager.resetFailedZfsFetchState(s.Id)
 	return nil

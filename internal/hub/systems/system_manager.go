@@ -349,23 +349,14 @@ func (sm *SystemManager) AddWebSocketSystem(systemId string, agentVersion semver
 	system := sm.NewSystem(systemId)
 	system.WsConn = wsConn
 	system.agentVersion = agentVersion
+	system.monitorsNeedSync.Store(true)
 
 	if err := sm.AddRecord(systemRecord, system); err != nil {
 		return err
 	}
 
 	// Sync network monitors to the newly connected agent
-	go func() {
-		configs, err := sm.GetMonitorConfigsForSystem(systemId)
-		if err != nil {
-			sm.hub.Logger().Warn("failed to load monitors for agent", "system", systemId, "err", err)
-			return
-		}
-		// An empty set must also replace any probes retained across a disconnect.
-		if err := system.SyncNetworkMonitors(configs); err != nil {
-			sm.hub.Logger().Warn("failed to sync monitors to agent", "system", systemId, "err", err)
-		}
-	}()
+	go system.syncPendingNetworkMonitors()
 
 	return nil
 }

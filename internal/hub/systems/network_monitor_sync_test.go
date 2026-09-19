@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"strings"
+	"sync/atomic"
 	"testing"
 	"time"
 
@@ -13,6 +14,7 @@ import (
 	"github.com/fxamacker/cbor/v2"
 	"github.com/henrygd/beszel/internal/common"
 	"github.com/henrygd/beszel/internal/entities/monitor"
+	esystem "github.com/henrygd/beszel/internal/entities/system"
 	"github.com/henrygd/beszel/internal/hub/ws"
 	"github.com/lxzan/gws"
 	"github.com/pocketbase/pocketbase/core"
@@ -22,17 +24,31 @@ import (
 type monitorSyncClient struct {
 	gws.BuiltinEventHandler
 	requests chan common.HubRequest[monitor.SyncRequest]
+	failSync atomic.Bool
 }
 
 func (c *monitorSyncClient) OnMessage(conn *gws.Conn, message *gws.Message) {
 	defer message.Close()
-	var req common.HubRequest[monitor.SyncRequest]
+	var req common.HubRequest[cbor.RawMessage]
 	if err := cbor.Unmarshal(message.Bytes(), &req); err != nil {
 		return
 	}
-	c.requests <- req
-	data, _ := cbor.Marshal(monitor.SyncResponse{})
-	response, _ := cbor.Marshal(common.AgentResponse{Id: req.Id, Data: data})
+	resp := common.AgentResponse{Id: req.Id}
+	if req.Action == common.GetData {
+		resp.SystemData = &esystem.CombinedData{}
+	} else {
+		var data monitor.SyncRequest
+		if err := cbor.Unmarshal(req.Data, &data); err != nil {
+			return
+		}
+		c.requests <- common.HubRequest[monitor.SyncRequest]{Id: req.Id, Action: req.Action, Data: data}
+		if c.failSync.Load() {
+			resp.Error = "test sync failure"
+		} else {
+			resp.Data, _ = cbor.Marshal(monitor.SyncResponse{})
+		}
+	}
+	response, _ := cbor.Marshal(resp)
 	_ = conn.WriteMessage(gws.OpcodeBinary, response)
 }
 
@@ -57,7 +73,7 @@ func TestNetworkMonitorSyncSkipsOlderAgents(t *testing.T) {
 }
 
 func TestNetworkMonitorReconnectSync(t *testing.T) {
-	for _, change := range []string{"delete", "disable"} {
+	for _, change := range []string{"delete", "disable", "retry"} {
 		t.Run(change, func(t *testing.T) {
 			sys, app := newTestSystemWithHub(t)
 			record, err := app.FindRecordById("systems", sys.Id)
@@ -120,9 +136,33 @@ func TestNetworkMonitorReconnectSync(t *testing.T) {
 				}
 			}
 
+			client.failSync.Store(change == "retry")
 			initial := connect()
 			require.Len(t, initial.Configs, 1)
 			require.Equal(t, probe.Id, initial.Configs[0].ID)
+			if change == "retry" {
+				system, err := sm.GetSystem(sys.Id)
+				require.NoError(t, err)
+				require.Eventually(t, system.monitorsNeedSync.Load, time.Second, time.Millisecond)
+				// A second failed sync must not fail the stats fetch or clear pending state.
+				_, err = system.fetchDataFromAgent(common.DataRequestOptions{})
+				require.NoError(t, err)
+				require.True(t, system.monitorsNeedSync.Load())
+				require.Len(t, client.requests, 1)
+				<-client.requests
+				client.failSync.Store(false)
+				_, err = system.fetchDataFromAgent(common.DataRequestOptions{})
+				require.NoError(t, err)
+				require.False(t, system.monitorsNeedSync.Load())
+				require.Len(t, client.requests, 1)
+				retry := <-client.requests
+				require.Equal(t, monitor.SyncActionReplace, retry.Data.Action)
+				require.Equal(t, initial.Configs, retry.Data.Configs)
+				_, err = system.fetchDataFromAgent(common.DataRequestOptions{})
+				require.NoError(t, err)
+				require.Empty(t, client.requests, "successful sync must not repeat on every fetch")
+				return
+			}
 			require.NoError(t, sm.RemoveSystem(sys.Id))
 			if change == "delete" {
 				require.NoError(t, app.Delete(probe))

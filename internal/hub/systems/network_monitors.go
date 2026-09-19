@@ -2,12 +2,34 @@ package systems
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/henrygd/beszel"
 	"github.com/henrygd/beszel/internal/common"
 	"github.com/henrygd/beszel/internal/entities/monitor"
 )
+
+// syncPendingNetworkMonitors runs on WebSocket connect and after successful stats
+// fetches. Failed syncs retry on the next update without taking the system down.
+func (sys *System) syncPendingNetworkMonitors() {
+	if !sys.monitorsNeedSync.Swap(false) {
+		return
+	}
+	if err := sys.syncAllNetworkMonitors(); err != nil {
+		sys.monitorsNeedSync.Store(true)
+		sys.manager.hub.Logger().Warn("failed to sync monitors to agent", "system", sys.Id, "err", err)
+	}
+}
+
+func (sys *System) syncAllNetworkMonitors() error {
+	configs, err := sys.manager.GetMonitorConfigsForSystem(sys.Id)
+	if err != nil {
+		return fmt.Errorf("failed to load monitors: %w", err)
+	}
+	// An empty set must also replace probes retained across a disconnect.
+	return sys.SyncNetworkMonitors(configs)
+}
 
 // SyncNetworkMonitors sends monitor configurations to the agent.
 func (sys *System) SyncNetworkMonitors(configs []monitor.Config) error {
