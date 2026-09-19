@@ -487,15 +487,15 @@ func AverageSystemStatsSlice(records []system.Stats) system.Stats {
 
 	// Compute averages
 	sum.Cpu = twoDecimals(sum.Cpu / count)
-	sum.Mem = twoDecimals(sum.Mem / count)
-	sum.MemUsed = twoDecimals(sum.MemUsed / count)
+	sum.Mem = sum.Mem / count
+	sum.MemUsed = sum.MemUsed / count
 	sum.MemPct = twoDecimals(sum.MemPct / count)
-	sum.MemBuffCache = twoDecimals(sum.MemBuffCache / count)
-	sum.MemZfsArc = twoDecimals(sum.MemZfsArc / count)
-	sum.Swap = twoDecimals(sum.Swap / count)
-	sum.SwapUsed = twoDecimals(sum.SwapUsed / count)
-	sum.DiskTotal = twoDecimals(sum.DiskTotal / count)
-	sum.DiskUsed = twoDecimals(sum.DiskUsed / count)
+	sum.MemBuffCache = sum.MemBuffCache / count
+	sum.MemZfsArc = sum.MemZfsArc / count
+	sum.Swap = sum.Swap / count
+	sum.SwapUsed = sum.SwapUsed / count
+	sum.DiskTotal = sum.DiskTotal / count
+	sum.DiskUsed = sum.DiskUsed / count
 	sum.DiskPct = twoDecimals(sum.DiskPct / count)
 	sum.DiskIO[0] = sum.DiskIO[0] / uint64(count)
 	sum.DiskIO[1] = sum.DiskIO[1] / uint64(count)
