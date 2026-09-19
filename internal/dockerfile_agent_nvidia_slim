@@ -70,7 +70,9 @@ RUN set -eux; \
 # --------------------------
 FROM --platform=$TARGETPLATFORM debian:bookworm-slim AS zfsutils-builder
 
-RUN apt-get update && apt-get install -y --no-install-recommends \
+# zfsutils-linux is distributed in Debian's contrib component.
+RUN sed -i 's/Components: main/Components: main contrib/' /etc/apt/sources.list.d/debian.sources \
+  && apt-get update && apt-get install -y --no-install-recommends \
   zfsutils-linux \
   && rm -rf /var/lib/apt/lists/*
 
