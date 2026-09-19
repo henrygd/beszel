@@ -74,6 +74,12 @@ type Config struct {
 	// UseMirror specifies whether to use the beszel.dev mirror instead of GitHub API.
 	// When false (default), always uses api.github.com. When true, uses gh.beszel.dev.
 	UseMirror bool
+
+	// MaxVersion optionally caps the update target. When set, the updater will
+	// not update past this version even if a newer release exists, fetching the
+	// release matching MaxVersion from GitHub/Mirror instead. Leave empty to
+	// always update to the latest release.
+	MaxVersion string
 }
 
 type updater struct {
@@ -126,7 +132,28 @@ func (p *updater) update() (updated bool, err error) {
 	}
 
 	currentVersion := semver.MustParse(strings.TrimPrefix(p.currentVersion, "v"))
-	newVersion := semver.MustParse(strings.TrimPrefix(latest.Tag, "v"))
+	newVersion, err := releaseVersion(latest)
+	if err != nil {
+		return false, err
+	}
+
+	// Cap the update target at the configured max version (if any). This allows
+	// the agent to stay in lockstep with its hub, which may be older than the
+	// latest GitHub release.
+	if cap, capped, capErr := capVersion(newVersion, p.config.MaxVersion); capErr != nil {
+		return false, capErr
+	} else if capped {
+		ColorPrintf(ColorYellow, "Latest release is version %s; capping update at version %s.", newVersion, cap)
+		tagURL := getTagReleaseURL(p.config.UseMirror, p.config.Owner, p.config.Repo, "v"+cap.String())
+		latest, err = fetchRelease(p.config.Context, p.config.HttpClient, tagURL)
+		if err != nil {
+			return false, fmt.Errorf("failed to fetch release for max version %s: %w", cap, err)
+		}
+		newVersion, err = releaseVersion(latest)
+		if err != nil {
+			return false, err
+		}
+	}
 
 	if newVersion.LTE(currentVersion) {
 		ColorPrintf(ColorGreen, "You already have the latest version %s.", p.currentVersion)
@@ -238,7 +265,10 @@ func FetchLatestRelease(ctx context.Context, client HttpClient, url string) (*re
 	if url == "" {
 		url = getApiURL(false, "henrygd", "beszel")
 	}
+	return fetchRelease(ctx, client, url)
+}
 
+func fetchRelease(ctx context.Context, client HttpClient, url string) (*release, error) {
 	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
 	if err != nil {
 		return nil, err
@@ -270,6 +300,30 @@ func FetchLatestRelease(ctx context.Context, client HttpClient, url string) (*re
 	}
 
 	return result, nil
+}
+
+// releaseVersion parses the semver version from a release's tag,
+// tolerating a leading "v" prefix (e.g. "v0.19.0").
+func releaseVersion(r *release) (semver.Version, error) {
+	return semver.Parse(strings.TrimPrefix(r.Tag, "v"))
+}
+
+// capVersion returns the effective update target given a max version. It returns
+// the second value as true when the new version should be capped at maxVersion.
+// An empty maxVersion means no cap.
+func capVersion(newVersion semver.Version, maxVersion string) (semver.Version, bool, error) {
+	if maxVersion == "" {
+		return newVersion, false, nil
+	}
+	maxVersion = strings.TrimPrefix(maxVersion, "v")
+	cap, err := semver.Parse(maxVersion)
+	if err != nil {
+		return newVersion, false, fmt.Errorf("invalid max version %q: %w", maxVersion, err)
+	}
+	if cap.LT(newVersion) {
+		return cap, true, nil
+	}
+	return newVersion, false, nil
 }
 
 func downloadFile(
@@ -393,4 +447,11 @@ func getApiURL(useMirror bool, owner, repo string) string {
 		return fmt.Sprintf("https://gh.beszel.dev/repos/%s/%s/releases/latest?api=true", owner, repo)
 	}
 	return fmt.Sprintf("https://api.github.com/repos/%s/%s/releases/latest", owner, repo)
+}
+
+func getTagReleaseURL(useMirror bool, owner, repo, tag string) string {
+	if useMirror {
+		return fmt.Sprintf("https://gh.beszel.dev/repos/%s/%s/releases/tags/%s?api=true", owner, repo, tag)
+	}
+	return fmt.Sprintf("https://api.github.com/repos/%s/%s/releases/tags/%s", owner, repo, tag)
 }
