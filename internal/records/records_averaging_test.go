@@ -32,6 +32,7 @@ func TestAverageSystemStatsSlice_SingleRecord(t *testing.T) {
 			MemBuffCache: 2.0,
 			Swap:         4.0,
 			SwapUsed:     1.0,
+			SwapPct:      25.0,
 			DiskTotal:    500.0,
 			DiskUsed:     250.0,
 			DiskPct:      50.0,
@@ -55,6 +56,7 @@ func TestAverageSystemStatsSlice_SingleRecord(t *testing.T) {
 	assert.Equal(t, 2.0, result.MemBuffCache)
 	assert.Equal(t, 4.0, result.Swap)
 	assert.Equal(t, 1.0, result.SwapUsed)
+	assert.Equal(t, 25.0, result.SwapPct)
 	assert.Equal(t, 500.0, result.DiskTotal)
 	assert.Equal(t, 250.0, result.DiskUsed)
 	assert.Equal(t, 50.0, result.DiskPct)
@@ -80,6 +82,7 @@ func TestAverageSystemStatsSlice_BasicAveraging(t *testing.T) {
 			MemZfsArc:    0.5,
 			Swap:         4.0,
 			SwapUsed:     1.0,
+			SwapPct:      25.0,
 			DiskTotal:    500.0,
 			DiskUsed:     200.0,
 			DiskPct:      40.0,
@@ -101,6 +104,7 @@ func TestAverageSystemStatsSlice_BasicAveraging(t *testing.T) {
 			MemZfsArc:    1.5,
 			Swap:         4.0,
 			SwapUsed:     3.0,
+			SwapPct:      75.0,
 			DiskTotal:    500.0,
 			DiskUsed:     300.0,
 			DiskPct:      60.0,
@@ -125,6 +129,7 @@ func TestAverageSystemStatsSlice_BasicAveraging(t *testing.T) {
 	assert.Equal(t, 1.0, result.MemZfsArc)
 	assert.Equal(t, 4.0, result.Swap)
 	assert.Equal(t, 2.0, result.SwapUsed)
+	assert.Equal(t, 50.0, result.SwapPct)
 	assert.Equal(t, 500.0, result.DiskTotal)
 	assert.Equal(t, 250.0, result.DiskUsed)
 	assert.Equal(t, 50.0, result.DiskPct)
