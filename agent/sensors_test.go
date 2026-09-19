@@ -5,6 +5,8 @@ package agent
 import (
 	"context"
 	"fmt"
+	"os"
+	"path/filepath"
 	"testing"
 	"time"
 
@@ -328,7 +330,7 @@ func TestNewSensorConfigWithEnv(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			result := agent.newSensorConfigWithEnv(tt.primarySensor, tt.sysSensors, tt.sensors, tt.sensorsTimeout, tt.skipCollection)
+			result := agent.newSensorConfigWithEnv(tt.primarySensor, tt.sysSensors, tt.sensors, tt.sensorsTimeout, tt.skipCollection, false)
 
 			// Check primary sensor
 			assert.Equal(t, tt.expectedConfig.primarySensor, result.primarySensor)
@@ -619,4 +621,129 @@ func TestUpdateTemperaturesSkipsOnTimeout(t *testing.T) {
 
 	assert.Equal(t, 0.0, agent.systemInfo.DashboardTemp)
 	assert.Equal(t, map[string]float64{}, stats.Temperatures)
+}
+
+func TestIsGpuSensorKey(t *testing.T) {
+	for _, key := range []string{"xe", "XE_temp1", "amdgpu_edge", "NVIDIA"} {
+		assert.True(t, isGpuSensorKey(key), key)
+	}
+	for _, key := range []string{"coretemp_core_0", "acpitz", "xen_temp", "myxe", ""} {
+		assert.False(t, isGpuSensorKey(key), key)
+	}
+}
+
+func TestSkipGpuSensorShadow(t *testing.T) {
+	sysRoot := t.TempDir()
+	writeFile(t, filepath.Join(sysRoot, "class", "hwmon", "hwmon0", "name"), "coretemp\n")
+	writeFile(t, filepath.Join(sysRoot, "class", "hwmon", "hwmon0", "temp1_input"), "55000\n")
+	writeFile(t, filepath.Join(sysRoot, "class", "hwmon", "hwmon1", "name"), "xe\n")
+	writeFile(t, filepath.Join(sysRoot, "class", "hwmon", "hwmon1", "temp1_input"), "48000\n")
+	writeFile(t, filepath.Join(sysRoot, "class", "thermal", "thermal_zone0", "type"), "cpu-thermal\n")
+	writeFile(t, filepath.Join(sysRoot, "class", "thermal", "thermal_zone0", "temp"), "55000\n")
+	writeFile(t, filepath.Join(sysRoot, "class", "thermal", "thermal_zone1", "type"), "gpu\n")
+	writeFile(t, filepath.Join(sysRoot, "class", "thermal", "thermal_zone1", "temp"), "48000\n")
+
+	shadow, err := buildNonGpuSysShadow(sysRoot)
+	require.NoError(t, err)
+	t.Cleanup(func() { os.RemoveAll(shadow) })
+
+	assert.FileExists(t, filepath.Join(shadow, "class", "hwmon", "hwmon0", "temp1_input"))
+	assert.NoFileExists(t, filepath.Join(shadow, "class", "hwmon", "hwmon1"))
+	assert.FileExists(t, filepath.Join(shadow, "class", "thermal", "thermal_zone0", "temp"))
+	assert.NoFileExists(t, filepath.Join(shadow, "class", "thermal", "thermal_zone1"))
+}
+
+func TestSkipGpuSensorShadowKeepsThermalZonesWithoutNonGpuHwmon(t *testing.T) {
+	sysRoot := t.TempDir()
+	writeFile(t, filepath.Join(sysRoot, "class", "hwmon", "hwmon0", "name"), "xe\n")
+	writeFile(t, filepath.Join(sysRoot, "class", "hwmon", "hwmon0", "temp1_input"), "48000\n")
+	writeFile(t, filepath.Join(sysRoot, "class", "thermal", "thermal_zone0", "type"), "cpu-thermal\n")
+	writeFile(t, filepath.Join(sysRoot, "class", "thermal", "thermal_zone0", "temp"), "55000\n")
+	writeFile(t, filepath.Join(sysRoot, "class", "thermal", "thermal_zone1", "type"), "gpu\n")
+	writeFile(t, filepath.Join(sysRoot, "class", "thermal", "thermal_zone1", "temp"), "48000\n")
+
+	shadow, err := buildNonGpuSysShadow(sysRoot)
+	require.NoError(t, err)
+	t.Cleanup(func() { os.RemoveAll(shadow) })
+
+	hwmonTemps, err := filepath.Glob(filepath.Join(shadow, "class", "hwmon", "hwmon*", "temp*_input"))
+	require.NoError(t, err)
+	assert.Empty(t, hwmonTemps)
+	assert.FileExists(t, filepath.Join(shadow, "class", "thermal", "thermal_zone0", "temp"))
+	assert.NoFileExists(t, filepath.Join(shadow, "class", "thermal", "thermal_zone1"))
+}
+
+func TestNewSensorConfigSkipGpuWiresShadow(t *testing.T) {
+	t.Setenv("SKIP_GPU", "true")
+
+	agent := &Agent{}
+	config := agent.newSensorConfig()
+
+	assert.True(t, config.skipGPU)
+	envMap, ok := config.context.Value(common.EnvKey).(common.EnvMap)
+	require.True(t, ok, "SKIP_GPU should point the sensor context at a sysfs shadow")
+	shadow, ok := envMap[common.HostSysEnvKey]
+	require.True(t, ok)
+	assert.DirExists(t, filepath.Join(shadow, "class", "hwmon"))
+	assert.Equal(t, shadow, config.sensorShadow)
+	config.cleanupSensorShadow()
+	assert.NoDirExists(t, shadow)
+	assert.Empty(t, config.sensorShadow)
+}
+
+func TestSkipGpuShadowUsesSysSensorsRoot(t *testing.T) {
+	sysRoot := t.TempDir()
+	writeFile(t, filepath.Join(sysRoot, "class", "hwmon", "hwmon0", "name"), "coretemp\n")
+	writeFile(t, filepath.Join(sysRoot, "class", "hwmon", "hwmon0", "temp1_input"), "55000\n")
+	writeFile(t, filepath.Join(sysRoot, "class", "hwmon", "hwmon1", "name"), "xe\n")
+	writeFile(t, filepath.Join(sysRoot, "class", "hwmon", "hwmon1", "temp1_input"), "48000\n")
+
+	agent := &Agent{}
+	config := agent.newSensorConfigWithEnv("", sysRoot, "", "", false, true)
+	t.Cleanup(config.cleanupSensorShadow)
+
+	envMap, ok := config.context.Value(common.EnvKey).(common.EnvMap)
+	require.True(t, ok, "SKIP_GPU should point the sensor context at a sysfs shadow")
+	shadow, ok := envMap[common.HostSysEnvKey]
+	require.True(t, ok)
+	require.NotEqual(t, sysRoot, shadow, "shadow must not be the SYS_SENSORS tree itself")
+
+	target, err := os.Readlink(filepath.Join(shadow, "class", "hwmon", "hwmon0"))
+	require.NoError(t, err)
+	assert.Equal(t, filepath.Join(sysRoot, "class", "hwmon", "hwmon0"), target)
+	assert.NoFileExists(t, filepath.Join(shadow, "class", "hwmon", "hwmon1"))
+}
+
+func TestUpdateTemperaturesSkipGpu(t *testing.T) {
+	originalGetSensorTemps := getSensorTemps
+	t.Cleanup(func() {
+		getSensorTemps = originalGetSensorTemps
+	})
+	getSensorTemps = func(ctx context.Context) ([]sensors.TemperatureStat, error) {
+		return []sensors.TemperatureStat{
+			{SensorKey: "coretemp_core_0", Temperature: 55},
+			{SensorKey: "XE", Temperature: 48},
+		}, nil
+	}
+
+	newAgent := func(skipGPU bool) *Agent {
+		agent := &Agent{
+			systemInfo: system.Info{},
+			sensorConfig: &SensorConfig{
+				context: context.Background(),
+				timeout: 2 * time.Second,
+				sensors: map[string]struct{}{},
+				skipGPU: skipGPU,
+			},
+		}
+		return agent
+	}
+
+	stats := &system.Stats{}
+	newAgent(true).updateTemperatures(stats)
+	assert.Equal(t, map[string]float64{"coretemp_core_0": 55}, stats.Temperatures)
+
+	stats = &system.Stats{}
+	newAgent(false).updateTemperatures(stats)
+	assert.Len(t, stats.Temperatures, 2)
 }

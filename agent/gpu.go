@@ -454,8 +454,8 @@ func (gm *GPUManager) storeSnapshot(id string, gpu *system.GPUData, cacheKey uin
 // It only reports capability presence and does not apply policy decisions.
 func (gm *GPUManager) discoverGpuCapabilities() gpuCapabilities {
 	caps := gpuCapabilities{
-		hasAmdSysfs: gm.hasAmdSysfs(),
-		hasXe:       gm.hasXe(),
+		hasAmdSysfs:   gm.hasAmdSysfs(),
+		hasXe:         gm.hasXe(),
 		hasIntelSysfs: gm.hasIntelSysfs(),
 	}
 	if _, err := exec.LookPath(nvidiaSmiCmd); err == nil {
@@ -750,9 +750,36 @@ func (gm *GPUManager) resolveLegacyCollectorPriority(caps gpuCapabilities) []col
 	return priorities
 }
 
+// gpuHwmonChips are hwmon chip names belonging to GPUs. Sensor reads on some
+// of these drivers (notably Intel Xe, where each read is a runtime PM resume)
+// wake the card, so SKIP_GPU must avoid touching them, not just hide them.
+var gpuHwmonChips = []string{"xe", "i915", "amdgpu", "radeon", "nvidia", "nouveau"}
+
+func isGpuChipName(name string) bool {
+	name = strings.ToLower(strings.TrimSpace(name))
+	for _, chip := range gpuHwmonChips {
+		if name == chip {
+			return true
+		}
+	}
+	return false
+}
+
+// SensorKeys are "<chip>" or "<chip>_<label>".
+func isGpuSensorKey(key string) bool {
+	key = strings.ToLower(strings.TrimSpace(key))
+	for _, chip := range gpuHwmonChips {
+		if key == chip || strings.HasPrefix(key, chip+"_") {
+			return true
+		}
+	}
+	return false
+}
+
 // NewGPUManager creates and initializes a new GPUManager
 func NewGPUManager() (*GPUManager, error) {
 	if skipGPU, _ := utils.GetEnv("SKIP_GPU"); skipGPU == "true" {
+		slog.Info("SKIP_GPU enabled, skipping GPU monitoring (collectors, temperatures, and fans)")
 		return nil, nil
 	}
 	var gm GPUManager
