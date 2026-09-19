@@ -14,6 +14,7 @@ import {
 	HardDriveIcon,
 	MemoryStickIcon,
 	MoreHorizontalIcon,
+	PackageIcon,
 	PauseCircleIcon,
 	PenBoxIcon,
 	PlayCircleIcon,
@@ -371,6 +372,41 @@ export function SystemsTableColumns(viewMode: "table" | "grid"): ColumnDef<Syste
 						<span className="text-muted-foreground text-sm -ms-0.5">
 							({t`Failed`.toLowerCase()}: {numFailed})
 						</span>
+					</span>
+				)
+			},
+		},
+		{
+			accessorFn: ({ info }) => info.pu?.[0],
+			id: "updates",
+			name: () => t`Updates`,
+			size: 50,
+			Icon: PackageIcon,
+			header: sortableHeader,
+			hideSort: true,
+			sortingFn: (a, b) => {
+				// sort priorities: 1) security updates, 2) total updates
+				const [totalA, securityA = 0] = a.original.info.pu ?? [0]
+				const [totalB, securityB = 0] = b.original.info.pu ?? [0]
+				if (securityA !== securityB) {
+					return securityA - securityB
+				}
+				return totalA - totalB
+			},
+			cell(info) {
+				const sys = info.row.original
+				if (sys.status !== SystemStatus.Up || !sys.info.pu) {
+					return null
+				}
+				const [total, security] = sys.info.pu
+				return (
+					<span className="tabular-nums whitespace-nowrap flex gap-1.5 items-center">
+						{total}
+						{security !== undefined && (
+							<span className={cn("text-sm -ms-0.5", security > 0 ? "text-red-500" : "text-muted-foreground")}>
+								({t`Security`.toLowerCase()}: {security})
+							</span>
+						)}
 					</span>
 				)
 			},

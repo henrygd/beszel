@@ -1,0 +1,29 @@
+Warning: Repository 'Update repository of openSUSE Backports' metadata expired since 2025-03-02 19:18:12 UTC.
+Warning: Repository 'Main Update Repository' metadata expired since 2025-08-30 08:17:31 UTC.
+Warning: Repository 'Update Repository (Non-Oss)' metadata expired since 2025-04-10 11:03:28 UTC.
+
+
+S  | Repository                                                   | Name               | Current Version                          | Available Version                        | Arch
+---+--------------------------------------------------------------+--------------------+------------------------------------------+------------------------------------------+--------
+v  | Update repository with updates from SUSE Linux Enterprise 15 | aaa_base           | 84.87+git20180409.04c9dae-150300.10.20.1 | 84.87+git20180409.04c9dae-150300.10.23.1 | aarch64
+v  | Update repository with updates from SUSE Linux Enterprise 15 | bash               | 4.4-150400.25.22                         | 4.4-150400.27.3.2                        | aarch64
+v  | Update repository with updates from SUSE Linux Enterprise 15 | bash-sh            | 4.4-150400.25.22                         | 4.4-150400.27.3.2                        | aarch64
+v  | Update repository with updates from SUSE Linux Enterprise 15 | crypto-policies    | 20210917.c9d86d1-150400.3.6.1            | 20210917.c9d86d1-150400.3.8.1            | noarch
+v  | Update repository with updates from SUSE Linux Enterprise 15 | curl               | 8.0.1-150400.5.50.1                      | 8.0.1-150400.5.59.1                      | aarch64
+v  | Update repository with updates from SUSE Linux Enterprise 15 | glibc              | 2.31-150300.86.3                         | 2.31-150300.89.2                         | aarch64
+v  | Update repository with updates from SUSE Linux Enterprise 15 | libcom_err2        | 1.46.4-150400.3.6.2                      | 1.46.4-150400.3.9.2                      | aarch64
+v  | Update repository with updates from SUSE Linux Enterprise 15 | libcurl4           | 8.0.1-150400.5.50.1                      | 8.0.1-150400.5.59.1                      | aarch64
+v  | Update repository with updates from SUSE Linux Enterprise 15 | libgcc_s1          | 13.3.0+git8781-150000.1.12.1             | 14.2.0+git10526-150000.1.6.1             | aarch64
+v  | Update repository with updates from SUSE Linux Enterprise 15 | libglib-2_0-0      | 2.70.5-150400.3.14.1                     | 2.70.5-150400.3.17.1                     | aarch64
+v  | Update repository with updates from SUSE Linux Enterprise 15 | libopenssl1_1      | 1.1.1l-150500.17.34.1                    | 1.1.1l-150500.17.37.1                    | aarch64
+v  | Update repository with updates from SUSE Linux Enterprise 15 | libopenssl1_1-hmac | 1.1.1l-150500.17.34.1                    | 1.1.1l-150500.17.37.1                    | aarch64
+v  | Update repository with updates from SUSE Linux Enterprise 15 | libreadline7       | 7.0-150400.25.22                         | 7.0-150400.27.3.2                        | aarch64
+v  | Update repository with updates from SUSE Linux Enterprise 15 | libsolv-tools      | 0.7.30-150400.3.27.2                     | 0.7.31-150500.6.5.1                      | aarch64
+v  | Update repository with updates from SUSE Linux Enterprise 15 | libsolv-tools-base | 0.7.30-150400.3.27.2                     | 0.7.31-150500.6.5.1                      | aarch64
+v  | Update repository with updates from SUSE Linux Enterprise 15 | libstdc++6         | 13.3.0+git8781-150000.1.12.1             | 14.2.0+git10526-150000.1.6.1             | aarch64
+v  | Update repository with updates from SUSE Linux Enterprise 15 | libudev1           | 249.17-150400.8.43.1                     | 249.17-150400.8.46.1                     | aarch64
+v  | Update repository with updates from SUSE Linux Enterprise 15 | libzypp            | 17.35.8-150500.6.13.1                    | 17.35.16-150500.6.31.1                   | aarch64
+v  | Update repository with updates from SUSE Linux Enterprise 15 | login_defs         | 4.8.1-150400.10.21.1                     | 4.8.1-150400.10.24.1                     | noarch
+v  | Update repository with updates from SUSE Linux Enterprise 15 | openssl-1_1        | 1.1.1l-150500.17.34.1                    | 1.1.1l-150500.17.37.1                    | aarch64
+v  | Update repository with updates from SUSE Linux Enterprise 15 | shadow             | 4.8.1-150400.10.21.1                     | 4.8.1-150400.10.24.1                     | aarch64
+v  | Update repository with updates from SUSE Linux Enterprise 15 | zypper             | 1.14.76-150500.6.6.15                    | 1.14.78-150500.6.14.1                    | aarch64
