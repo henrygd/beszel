@@ -7,7 +7,7 @@ import (
 	"github.com/pocketbase/pocketbase/core"
 )
 
-// handleSmartDeviceAlert sends alerts when a SMART device state worsens into WARNING/FAILED.
+// handleSmartDeviceAlert sends alerts when a SMART device state worsens into WARNING/CRITICAL/FAILED.
 // This is automatic and does not require user opt-in.
 func (am *AlertManager) handleSmartDeviceAlert(e *core.RecordEvent) error {
 	oldState := e.Record.Original().GetString("state")
@@ -71,7 +71,7 @@ func shouldSendSmartDeviceAlert(oldState, newState string) bool {
 	newSeverity := smartStateSeverity(newState)
 
 	// Ignore unknown states and recoveries; only alert on worsening transitions
-	// from known-good/degraded states into WARNING/FAILED.
+	// from known-good/degraded states into WARNING/CRITICAL/FAILED.
 	return oldSeverity >= 1 && newSeverity > oldSeverity
 }
 
@@ -81,8 +81,10 @@ func smartStateSeverity(state string) int {
 		return 1
 	case "WARNING":
 		return 2
-	case "FAILED":
+	case "CRITICAL":
 		return 3
+	case "FAILED":
+		return 4
 	default:
 		return 0
 	}
@@ -101,6 +103,8 @@ func smartStateLabel(state string) string {
 	switch state {
 	case "FAILED":
 		return "failure"
+	case "CRITICAL":
+		return "critical warning"
 	default:
 		return strings.ToLower(state)
 	}

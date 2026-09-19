@@ -479,6 +479,31 @@ export interface SystemDetailsRecord extends RecordModel {
 	podman: boolean
 }
 
+export interface SmartTrendMetric {
+	raw: number
+	delta_24h?: number
+	delta_7d?: number
+	delta_30d?: number
+	delta_90d?: number
+	delta_365d?: number
+	previous_delta_7d?: number
+	previous_delta_30d?: number
+	consecutive_increasing: number
+	consecutive_nonzero: number
+	persisted_hours?: number
+	remained_zero_hours?: number
+}
+
+export interface SmartHealthAnalysis {
+	status: string
+	reported_status: string
+	warning_reasons?: string[]
+	critical_reasons?: string[]
+	metrics?: Record<string, SmartTrendMetric>
+	accelerating_for_3_windows?: boolean
+	pending_cleared_then_returned?: boolean
+}
+
 export interface SmartDeviceRecord extends RecordModel {
 	id: string
 	system: string
@@ -493,6 +518,7 @@ export interface SmartDeviceRecord extends RecordModel {
 	hours: number
 	cycles: number
 	attributes: SmartAttribute[]
+	smart_health?: SmartHealthAnalysis
 	updated: string
 }
 

@@ -182,7 +182,12 @@ export const createColumns = (
 		cell: ({ getValue }) => {
 			const status = getValue() as string
 			return (
-				<Badge className="ms-1" variant={status === "PASSED" ? "success" : status === "FAILED" ? "danger" : "warning"}>
+				<Badge
+					className="ms-1"
+					variant={
+						status === "PASSED" ? "success" : status === "FAILED" || status === "CRITICAL" ? "danger" : "warning"
+					}
+				>
 					{status}
 				</Badge>
 			)
@@ -760,6 +765,10 @@ function DiskSheet({
 	const serialNumber = disk?.serial
 	const firmwareVersion = disk?.firmware
 	const status = disk?.state || unknown
+	const healthReasons = [
+		...(disk?.smart_health?.critical_reasons ?? []),
+		...(disk?.smart_health?.warning_reasons ?? []),
+	]
 
 	return (
 		<Sheet open={open} onOpenChange={onOpenChange}>
@@ -815,6 +824,11 @@ function DiskSheet({
 								{failedAttributes.length > 0 && (
 									<AlertDescription>
 										<Trans>Failed Attributes:</Trans> {failedAttributes.map((attr) => attr.n).join(", ")}
+									</AlertDescription>
+								)}
+								{healthReasons.length > 0 && (
+									<AlertDescription>
+										<Trans>Triggered by</Trans>: {healthReasons.join("; ")}
 									</AlertDescription>
 								)}
 							</Alert>
