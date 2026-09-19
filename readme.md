@@ -18,6 +18,7 @@ It has a friendly web interface, simple configuration, and is ready to use out o
 - **Alerts**: Configurable alerts for most metrics. Supports many notification services.
 - **Docker stats**: Tracks CPU, memory, and network usage history for each container.
 - **Network monitoring**: Monitor response time and interruptions directly from agents.
+- **S.M.A.R.T.**: Disk health data and notifications on drive failure.
 - **Multi-user**: Users manage their own systems. Admins can share systems across users.
 - **OAuth / OIDC**: Supports many OAuth2 providers. Password auth can be disabled.
 - **Automatic backups**: Save to and restore from disk or S3-compatible storage.
