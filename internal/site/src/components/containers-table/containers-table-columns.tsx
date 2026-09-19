@@ -59,7 +59,11 @@ export const containerChartCols: ColumnDef<ContainerRecord>[] = [
 			const allSystems = $allSystemsById.get()
 			const systemNameA = allSystems[a.original.system]?.name ?? ""
 			const systemNameB = allSystems[b.original.system]?.name ?? ""
-			return systemNameA.localeCompare(systemNameB)
+			const primary = systemNameA.localeCompare(systemNameB)
+			if (primary !== 0) {
+				return primary
+			}
+			return a.original.name.localeCompare(b.original.name)
 		},
 		header: ({ column }) => <HeaderButton column={column} name={t`System`} Icon={ServerIcon} />,
 		cell: ({ getValue }) => {
