@@ -1923,6 +1923,11 @@ msgstr "Tabs"
 msgid "Target"
 msgstr "Target"
 
+#: src/components/network-monitors-table/monitor-dialog.tsx
+#: src/components/network-monitors-table/monitor-dialog.tsx
+msgid "target[,protocol[,port[,interval]]]"
+msgstr "target[,protocol[,port[,interval]]]"
+
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Tasks"
 msgstr "Tasks"
