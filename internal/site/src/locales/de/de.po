@@ -2271,6 +2271,10 @@ msgstr "Wenn aktiviert, ermöglicht dieser Token Agenten die Selbstregistrierung
 msgid "When using POST, each heartbeat includes a JSON payload with system status summary, list of down systems, and triggered alerts."
 msgstr "Bei Verwendung von POST enthält jeder Heartbeat eine JSON-Payload mit einer Zusammenfassung des Systemstatus, einer Liste der ausgefallenen Systeme und ausgelösten Warnungen."
 
+#: src/components/systems-table/systems-table-columns.tsx
+msgid "Wi-Fi"
+msgstr ""
+
 #: src/components/routes/system/charts/wifi-chart.tsx
 msgid "Wi-Fi signal"
 msgstr ""

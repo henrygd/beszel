@@ -2271,6 +2271,10 @@ msgstr "활성화되면 이 토큰은 사전 시스템 생성 없이 에이전�
 msgid "When using POST, each heartbeat includes a JSON payload with system status summary, list of down systems, and triggered alerts."
 msgstr "POST를 사용할 때 각 하트비트에는 시스템 상태 요약, 다운된 시스템 목록 및 트리거된 알림이 포함된 JSON 페이로드가 포함됩니다."
 
+#: src/components/systems-table/systems-table-columns.tsx
+msgid "Wi-Fi"
+msgstr ""
+
 #: src/components/routes/system/charts/wifi-chart.tsx
 msgid "Wi-Fi signal"
 msgstr ""

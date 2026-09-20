@@ -37,6 +37,7 @@ import {
 	secondsToUptimeString,
 } from "@/lib/utils"
 import { batteryStateTranslations } from "@/lib/i18n"
+import { connectedWiFi, strongestWiFiSignal } from "@/lib/wifi"
 import type { SystemRecord } from "@/types"
 import { SystemDialog } from "../add-system"
 import AlertButton from "../alerts/alert-button"
@@ -265,6 +266,45 @@ export function SystemsTableColumns(viewMode: "table" | "grid"): ColumnDef<Syste
 					<span className="tabular-nums whitespace-nowrap">
 						{decimalString(value, value >= 100 ? 1 : 2)} {unit}
 					</span>
+				)
+			},
+		},
+		{
+			accessorFn: strongestWiFiSignal,
+			id: "wifi",
+			name: () => t`Wi-Fi`,
+			size: 80,
+			Icon: WifiIcon,
+			header: sortableHeader,
+			sortUndefined: "last",
+			cell(info) {
+				const connections = connectedWiFi(info.row.original)
+				if (!connections.length) {
+					return null
+				}
+				const strongest = connections.reduce((best, current) =>
+					(current[1].r ?? Number.NEGATIVE_INFINITY) > (best[1].r ?? Number.NEGATIVE_INFINITY) ? current : best
+				)
+				const displayedConnections = viewMode === "table" ? [strongest] : connections
+				const title = connections
+					.map(([id, wifi]) => `${id}${wifi.s ? ` (${wifi.s})` : ""}: ${wifi.r === undefined ? "—" : `${wifi.r} dBm`}`)
+					.join("\n")
+				return (
+					<Link
+						href={getPagePath($router, "system", { id: info.row.original.id })}
+						tabIndex={-1}
+						className="flex flex-col gap-0.5 min-w-0 py-1 relative z-10"
+						title={title}
+					>
+						{displayedConnections.map(([id, wifi]) => (
+							<span key={id} className="tabular-nums whitespace-nowrap">
+								{wifi.r === undefined ? "—" : `${wifi.r} dBm`}
+							</span>
+						))}
+						{viewMode === "table" && connections.length > 1 && (
+							<span className="text-xs text-muted-foreground">+{connections.length - 1}</span>
+						)}
+					</Link>
 				)
 			},
 		},

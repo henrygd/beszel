@@ -2271,6 +2271,10 @@ msgstr "Lorsqu'il est activé, ce jeton permet aux agents de s'enregistrer autom
 msgid "When using POST, each heartbeat includes a JSON payload with system status summary, list of down systems, and triggered alerts."
 msgstr "En utilisant POST, chaque heartbeat inclut une charge utile JSON avec un résumé de l'état du système, la liste des systèmes en panne et les alertes déclenchées."
 
+#: src/components/systems-table/systems-table-columns.tsx
+msgid "Wi-Fi"
+msgstr ""
+
 #: src/components/routes/system/charts/wifi-chart.tsx
 msgid "Wi-Fi signal"
 msgstr ""

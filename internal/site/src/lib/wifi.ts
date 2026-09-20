@@ -6,6 +6,13 @@ export function connectedWiFi(system: Pick<SystemRecord, "status" | "info">): [s
 	return system.status === "up" ? Object.entries(system.info?.wifi ?? {}).sort(([a], [b]) => a.localeCompare(b)) : []
 }
 
+export function strongestWiFiSignal(system: Pick<SystemRecord, "status" | "info">): number | undefined {
+	const signals = connectedWiFi(system)
+		.map(([, wifi]) => wifi.r)
+		.filter((signal): signal is number => signal !== undefined && Number.isFinite(signal))
+	return signals.length ? Math.max(...signals) : undefined
+}
+
 export function wifiColor(id: string): string {
 	let hash = 0
 	for (const char of id) hash = (Math.imul(hash, 31) + char.charCodeAt(0)) | 0

@@ -2271,6 +2271,10 @@ msgstr "啟用後，此 Token 可讓 Agent 自行註冊，無需預先在系統�
 msgid "When using POST, each heartbeat includes a JSON payload with system status summary, list of down systems, and triggered alerts."
 msgstr "使用 POST 時，每個 Heartbeat 都會包含一個 JSON Payload，內容涵蓋系統狀態概況、離線系統清單以及已觸發的警報。"
 
+#: src/components/systems-table/systems-table-columns.tsx
+msgid "Wi-Fi"
+msgstr ""
+
 #: src/components/routes/system/charts/wifi-chart.tsx
 msgid "Wi-Fi signal"
 msgstr ""

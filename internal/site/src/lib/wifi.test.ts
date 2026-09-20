@@ -1,5 +1,5 @@
 import { expect, test } from "bun:test"
-import { connectedWiFi, wifiColor } from "./wifi"
+import { connectedWiFi, strongestWiFiSignal, wifiColor } from "./wifi"
 import type { SystemInfo } from "@/types"
 
 const system = (wifi?: SystemInfo["wifi"], status: "up" | "down" = "up") => ({ status, info: { wifi } as SystemInfo })
@@ -19,4 +19,10 @@ test("multiple interfaces retain independent stable identities and colors", () =
 	expect(connections.map(([id]) => id)).toEqual(["wlan0", "wlan1"])
 	expect(wifiColor(connections[0][0])).toBe(wifiColor("wlan0"))
 	expect(wifiColor("wlan0")).not.toBe(wifiColor("wlan1"))
+})
+
+test("strongestWiFiSignal returns the strongest current native RSSI", () => {
+	expect(strongestWiFiSignal(system({ wlan0: { r: -63 }, wlan1: { r: -48 }, wlan2: {} }))).toBe(-48)
+	expect(strongestWiFiSignal(system({ wlan0: {} }))).toBeUndefined()
+	expect(strongestWiFiSignal(system({ wlan0: { r: -48 } }, "down"))).toBeUndefined()
 })

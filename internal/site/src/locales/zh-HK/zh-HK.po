@@ -2271,6 +2271,10 @@ msgstr "啟用後，此權杖允許代理無需事先建立系統即可自行註
 msgid "When using POST, each heartbeat includes a JSON payload with system status summary, list of down systems, and triggered alerts."
 msgstr "使用 POST 時，每個 heartbeat 都包含一個 JSON 負載，其中包含系統狀態摘要、故障系統列表和觸發的警報。"
 
+#: src/components/systems-table/systems-table-columns.tsx
+msgid "Wi-Fi"
+msgstr ""
+
 #: src/components/routes/system/charts/wifi-chart.tsx
 msgid "Wi-Fi signal"
 msgstr ""

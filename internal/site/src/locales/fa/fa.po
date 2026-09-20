@@ -2271,6 +2271,10 @@ msgstr "هنگامی که فعال باشد، این توکن به عوامل ا
 msgid "When using POST, each heartbeat includes a JSON payload with system status summary, list of down systems, and triggered alerts."
 msgstr "هنگام استفاده از POST، هر ضربان قلب شامل یک پی‌لود JSON با خلاصه وضعیت سیستم، لیست سیستم‌های پایین و هشدارهای فعال شده است."
 
+#: src/components/systems-table/systems-table-columns.tsx
+msgid "Wi-Fi"
+msgstr ""
+
 #: src/components/routes/system/charts/wifi-chart.tsx
 msgid "Wi-Fi signal"
 msgstr ""

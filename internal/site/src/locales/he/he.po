@@ -2271,6 +2271,10 @@ msgstr "כאשר מופעל, אסימון זה מאפשר לסוכנים להי�
 msgid "When using POST, each heartbeat includes a JSON payload with system status summary, list of down systems, and triggered alerts."
 msgstr "בשימוש ב-POST, כל פעימת לב כוללת מטען JSON עם סיכום סטטוס המערכת, רשימת מערכות מושבתות והתראות שהופעלו."
 
+#: src/components/systems-table/systems-table-columns.tsx
+msgid "Wi-Fi"
+msgstr ""
+
 #: src/components/routes/system/charts/wifi-chart.tsx
 msgid "Wi-Fi signal"
 msgstr ""
