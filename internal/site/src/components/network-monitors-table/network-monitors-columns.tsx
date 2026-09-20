@@ -120,15 +120,15 @@ export function getMonitorColumns(
 					() => (
 						<div className="ms-1.5 max-w-44 flex gap-2 items-center tabular-nums">
 							<span className={cn("shrink-0 size-2 rounded-full", SYSTEM_STATUS_COLORS[status])} />
-							<div className="relative w-fit min-w-0 max-w-full">
-								<span className="invisible block whitespace-nowrap" aria-hidden="true">
+							<div className="grid w-fit min-w-0 max-w-full">
+								<span className="invisible col-start-1 row-start-1 truncate" aria-hidden="true">
 									{longestSystemName}
 								</span>
-								<span className="absolute inset-0 truncate">{name}</span>
+								<span className="col-start-1 row-start-1 truncate">{name}</span>
 							</div>
 						</div>
 					),
-					[status, name]
+					[status, name, longestSystemName]
 				)
 			},
 		},
