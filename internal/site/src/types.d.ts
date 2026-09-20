@@ -101,6 +101,11 @@ export interface RecoveryChannelRecord extends RecordModel {
 	system: string
 	maintenance: boolean
 	wol_enabled: boolean
+	auto_wol: boolean
+	/** target server's MAC, used for the magic packet - see recovery-modules settings */
+	mac_address?: string
+	broadcast_address?: string
+	wol_port?: number
 	hardware_recovery_disabled: boolean
 }
 

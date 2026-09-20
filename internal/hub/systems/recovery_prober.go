@@ -5,9 +5,11 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"log"
 	"net"
 	"net/http"
 	"os"
+	"runtime/debug"
 	"strconv"
 	"sync"
 	"sync/atomic"
@@ -79,6 +81,17 @@ func NewRecoveryProber(app core.App) *RecoveryProber {
 		ctx:       ctx,
 		cancel:    cancel,
 		locks:     expirymap.New[lockInfo](30 * time.Second),
+	}
+}
+
+// recoverPanic stops a panic inside a background recovery goroutine from
+// killing the hub. An unrecovered panic in any goroutine terminates the whole
+// Go process, so a bug in best-effort recovery probing must never be able to
+// take monitoring - and the web UI - down with it. Deferred argument values are
+// captured at defer time, but the Sprintf only runs when a panic is in flight.
+func recoverPanic(what string, args ...any) {
+	if r := recover(); r != nil {
+		log.Printf("beszel: %s panicked: %v\n%s", fmt.Sprintf(what, args...), r, debug.Stack())
 	}
 }
 
@@ -268,6 +281,8 @@ func (rp *RecoveryProber) Stop() {
 
 // runWatchdog runs the checking state machine loop.
 func (rp *RecoveryProber) runWatchdog(ctx context.Context, w *systemWatchdog) {
+	defer recoverPanic("recovery watchdog (system=%s channel=%s)", w.systemID, w.channelID)
+
 	ticker := time.NewTicker(5 * time.Second)
 	defer ticker.Stop()
 
@@ -601,10 +616,34 @@ func (rp *RecoveryProber) probeGateway(gatewayIP string) bool {
 	return false
 }
 
+// channelBySystem looks up the recovery channel mapped to systemID.
+//
+// It resolves the collection explicitly instead of passing the name straight
+// to FindFirstRecordByFilter. PocketBase's RecordQuery dereferences the
+// collection with no nil check (core/record_query.go:38 in v0.36.8), and
+// resolving "recovery_channels" by name through the cached-collection path can
+// hand back a nil collection without an accompanying error - which segfaults
+// the query builder instead of returning something we can handle. Passing a
+// *Collection takes the direct branch and skips that lookup entirely.
+func (rp *RecoveryProber) channelBySystem(systemID string) (*core.Record, bool) {
+	if rp == nil || rp.app == nil || systemID == "" {
+		return nil, false
+	}
+	collection, err := rp.app.FindCollectionByNameOrId("recovery_channels")
+	if err != nil || collection == nil {
+		return nil, false
+	}
+	rec, err := rp.app.FindFirstRecordByFilter(collection, "system = {:system}", dbx.Params{"system": systemID})
+	if err != nil || rec == nil {
+		return nil, false
+	}
+	return rec, true
+}
+
 // getGatewayIP queries database configuration to retrieve the gateway IP for a system ID.
 func (rp *RecoveryProber) getGatewayIP(systemID string) string {
-	chanRec, err := rp.app.FindFirstRecordByFilter("recovery_channels", "system = {:system}", dbx.Params{"system": systemID})
-	if err != nil {
+	chanRec, ok := rp.channelBySystem(systemID)
+	if !ok {
 		return ""
 	}
 	moduleID := chanRec.GetString("module")
@@ -624,8 +663,8 @@ func (rp *RecoveryProber) getGatewayIP(systemID string) string {
 // always-on polling loop - this only runs when a channel's fast-verify has
 // already failed and gateway health needs checking anyway.
 func (rp *RecoveryProber) updateGatewayOnlineStatus(systemID string, online bool) {
-	chanRec, err := rp.app.FindFirstRecordByFilter("recovery_channels", "system = {:system}", dbx.Params{"system": systemID})
-	if err != nil {
+	chanRec, ok := rp.channelBySystem(systemID)
+	if !ok {
 		return
 	}
 	moduleID := chanRec.GetString("module")
@@ -700,6 +739,8 @@ func moduleIsLive(rec *core.Record) bool {
 
 // runOfflineScanner runs a periodic check to transition recovery modules to offline if pings stop.
 func (rp *RecoveryProber) runOfflineScanner(ctx context.Context) {
+	defer recoverPanic("recovery offline scanner")
+
 	ticker := time.NewTicker(30 * time.Second)
 	defer ticker.Stop()
 	for {
