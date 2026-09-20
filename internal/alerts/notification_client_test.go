@@ -11,6 +11,7 @@ import (
 	"strings"
 	"sync/atomic"
 	"testing"
+	"testing/synctest"
 
 	"github.com/nicholas-fedor/shoutrrr/pkg/types"
 	"golang.org/x/net/dns/dnsmessage"
@@ -178,39 +179,45 @@ func TestPublicNotificationTCP(t *testing.T) {
 	} {
 		t.Run(rawURL, func(t *testing.T) {
 			t.Parallel()
+			// MQTT waits for a fixed library timeout even after a dial failure.
+			// Virtual time preserves the full send/cleanup path without that delay.
 			t.Run("internal destination", func(t *testing.T) {
-				err := sendPublicNotification(strings.ReplaceAll(rawURL, "HOST", "127.0.0.1"), "test")
-				if !errors.Is(err, errInternalDestination) {
-					t.Fatalf("expected blocked destination, got %v", err)
-				}
+				synctest.Test(t, func(t *testing.T) {
+					err := sendPublicNotification(strings.ReplaceAll(rawURL, "HOST", "127.0.0.1"), "test")
+					if !errors.Is(err, errInternalDestination) {
+						t.Fatalf("expected blocked destination, got %v", err)
+					}
+				})
 			})
 			t.Run("public destination uses injected dialer", func(t *testing.T) {
-				var calls atomic.Int32
-				stopped := errors.New("test dial stopped")
-				service, err := newPublicNotificationService(strings.ReplaceAll(rawURL, "HOST", "8.8.8.8"), types.SenderOptions{
-					DialContext: func(ctx context.Context, network, address string) (net.Conn, error) {
-						calls.Add(1)
-						if network != "tcp" || !strings.HasPrefix(address, "8.8.8.8:") {
-							t.Errorf("unexpected dial: %s %s", network, address)
-						}
-						if err := checkNotificationAddress(address); err != nil {
-							t.Error(err)
-						}
-						return nil, stopped
-					},
+				synctest.Test(t, func(t *testing.T) {
+					var calls atomic.Int32
+					stopped := errors.New("test dial stopped")
+					service, err := newPublicNotificationService(strings.ReplaceAll(rawURL, "HOST", "8.8.8.8"), types.SenderOptions{
+						DialContext: func(ctx context.Context, network, address string) (net.Conn, error) {
+							calls.Add(1)
+							if network != "tcp" || !strings.HasPrefix(address, "8.8.8.8:") {
+								t.Errorf("unexpected dial: %s %s", network, address)
+							}
+							if err := checkNotificationAddress(address); err != nil {
+								t.Error(err)
+							}
+							return nil, stopped
+						},
+					})
+					if err != nil {
+						t.Fatal(err)
+					}
+					if closer, ok := service.(io.Closer); ok {
+						defer closer.Close()
+					}
+					if err := service.Send("test", &types.Params{}); err == nil {
+						t.Fatal("expected dial failure")
+					}
+					if calls.Load() == 0 {
+						t.Fatal("custom dialer was not used")
+					}
 				})
-				if err != nil {
-					t.Fatal(err)
-				}
-				if closer, ok := service.(io.Closer); ok {
-					defer closer.Close()
-				}
-				if err := service.Send("test", &types.Params{}); err == nil {
-					t.Fatal("expected dial failure")
-				}
-				if calls.Load() == 0 {
-					t.Fatal("custom dialer was not used")
-				}
 			})
 		})
 	}

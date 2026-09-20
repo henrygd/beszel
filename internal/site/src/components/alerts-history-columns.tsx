@@ -30,7 +30,8 @@ export const alertsHistoryColumns: ColumnDef<AlertsHistoryRecord>[] = [
 		accessorFn: (record) => {
 			const name = record.name
 			const info = alertInfo[name]
-			return info?.name().replace("cpu", "CPU") || name
+			const label = info?.name().replace("cpu", "CPU") || name
+			return record.monitor_name ? `${label}: ${record.monitor_name}` : label
 		},
 		header: ({ column }) => (
 			<Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>

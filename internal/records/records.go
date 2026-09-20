@@ -3,15 +3,16 @@ package records
 
 import (
 	"encoding/json"
-	"log/slog"
 	"math"
 	"time"
 
 	"github.com/henrygd/beszel/internal/entities/container"
+	"github.com/henrygd/beszel/internal/entities/monitor"
 	"github.com/henrygd/beszel/internal/entities/system"
 
 	"github.com/pocketbase/dbx"
 	"github.com/pocketbase/pocketbase/core"
+	"github.com/pocketbase/pocketbase/tools/types"
 )
 
 type RecordManager struct {
@@ -39,7 +40,7 @@ type StatsRecord struct {
 
 // Create longer records by averaging shorter records
 func (rm *RecordManager) CreateLongerRecords() {
-	// start := time.Now()
+	now := time.Now().UTC()
 	longerRecordData := []LongerRecordData{
 		{
 			shorterType: "1m",
@@ -69,23 +70,28 @@ func (rm *RecordManager) CreateLongerRecords() {
 	}
 	// wrap the operations in a transaction
 	// Pocketbase cron does not handle errors, log them here.
-	rm.app.RunInTransaction(func(txApp core.App) error {
+	err := rm.app.RunInTransaction(func(txApp core.App) error {
 		var err error
+
 		collections := [2]*core.Collection{}
 		collections[0], err = txApp.FindCachedCollectionByNameOrId("system_stats")
 		if err != nil {
-			slog.Error("Error finding cached collection using system stats:", "err", err)
 			return err
 		}
 		collections[1], err = txApp.FindCachedCollectionByNameOrId("container_stats")
 		if err != nil {
-			slog.Error("Error finding cached collection using container stats:", "err", err)
+			return err
+		}
+		monitorStatsColl, err := txApp.FindCachedCollectionByNameOrId("network_monitor_stats")
+		if err != nil {
 			return err
 		}
 		var systems RecordIds
 		db := txApp.DB()
 
-		db.NewQuery("SELECT id FROM systems WHERE status='up'").All(&systems)
+		if err := db.NewQuery("SELECT id FROM systems WHERE status='up'").All(&systems); err != nil {
+			return err
+		}
 
 		// loop through all active systems, time periods, and collections
 		for _, system := range systems {
@@ -94,44 +100,52 @@ func (rm *RecordManager) CreateLongerRecords() {
 				recordData := longerRecordData[i]
 				// log.Println("processing longer record type", recordData.longerType)
 				// add one minute padding for longer records because they are created slightly later than the job start time
-				longerRecordPeriod := time.Now().UTC().Add(recordData.longerTimeDuration + time.Minute)
+				longerRecordPeriod := now.Add(recordData.longerTimeDuration + time.Minute)
 				// shorter records are created independently of longer records, so we shouldn't need to add padding
-				shorterRecordPeriod := time.Now().UTC().Add(recordData.longerTimeDuration)
-				// loop through both collections
+				shorterRecordPeriod := now.Add(recordData.longerTimeDuration)
 				for _, collection := range collections {
 					// check creation time of last longer record if not 10m, since 10m is created every run
 					if recordData.longerType != "10m" {
-						count, err := txApp.CountRecords(
-							collection.Id,
-							dbx.NewExp(
-								"system = {:system} AND type = {:type} AND created > {:created}",
-								dbx.Params{"type": recordData.longerType, "system": system.Id, "created": longerRecordPeriod},
-							),
-						)
+						count, err := txApp.CountRecords(collection.Id, dbx.NewExp(
+							"system = {:system} AND type = {:type} AND created > {:created}",
+							dbx.Params{
+								"type":    recordData.longerType,
+								"system":  system.Id,
+								"created": longerRecordPeriod.Format(types.DefaultDateLayout),
+							},
+						))
+						if err != nil {
+							return err
+						}
 						// continue if longer record exists
-						if err != nil || count > 0 {
+						if count > 0 {
 							continue
 						}
 					}
 					// get shorter records from the past x minutes
 					var recordIds RecordIds
 
-					err := txApp.DB().
+					params := dbx.Params{
+						"type":    recordData.shorterType,
+						"system":  system.Id,
+						"created": shorterRecordPeriod.Format(types.DefaultDateLayout),
+					}
+
+					err := db.
 						Select("id").
 						From(collection.Name).
-						AndWhere(dbx.NewExp(
+						Where(dbx.NewExp(
 							"system={:system} AND type={:type} AND created > {:created}",
-							dbx.Params{
-								"type":    recordData.shorterType,
-								"system":  system.Id,
-								"created": shorterRecordPeriod,
-							},
+							params,
 						)).
 						OrderBy("created").
 						All(&recordIds)
+					if err != nil {
+						return err
+					}
 
 					// continue if not enough shorter records
-					if err != nil || len(recordIds) < recordData.minShorterRecords {
+					if len(recordIds) < recordData.minShorterRecords {
 						continue
 					}
 					// average the shorter records and create longer record
@@ -142,20 +156,88 @@ func (rm *RecordManager) CreateLongerRecords() {
 					case "system_stats":
 						longerRecord.Set("stats", rm.AverageSystemStats(db, recordIds))
 					case "container_stats":
-
 						longerRecord.Set("stats", rm.AverageContainerStats(db, recordIds))
 					}
 					if err := txApp.SaveNoValidate(longerRecord); err != nil {
-						slog.Error("failed to save longer record", "err", err)
+						txApp.Logger().Error("failed to save longer record", "err", err)
 					}
+				}
+			}
+		}
+
+		// network_monitor_stats is aggregated per monitor (not per system)
+		var monitors []struct {
+			Id     string `db:"id"`
+			System string `db:"system"`
+		}
+		// Disabled monitors still have history that must advance through retention tiers.
+		if err := db.NewQuery("SELECT id, system FROM network_monitors").All(&monitors); err != nil {
+			return err
+		}
+
+		for _, monitorRec := range monitors {
+			for i := range longerRecordData {
+				recordData := longerRecordData[i]
+				longerRecordPeriod := now.Add(recordData.longerTimeDuration + time.Minute)
+				shorterRecordPeriod := now.Add(recordData.longerTimeDuration)
+
+				if recordData.longerType != "10m" {
+					count, err := txApp.CountRecords(monitorStatsColl.Id, dbx.NewExp(
+						"monitor={:monitor} AND type={:type} AND created>{:created}",
+						dbx.Params{
+							"monitor": monitorRec.Id,
+							"type":    recordData.longerType,
+							"created": longerRecordPeriod.UnixMilli(),
+						},
+					))
+					if err != nil {
+						return err
+					}
+					if count > 0 {
+						continue
+					}
+				}
+
+				stats, count, err := rm.AverageMonitorStats(db, monitorRec.Id, recordData.shorterType, shorterRecordPeriod.UnixMilli())
+				if err != nil {
+					txApp.Logger().Error("failed to average monitor stats", "monitor", monitorRec.Id, "err", err)
+					continue
+				}
+				// Monitor intervals can exceed the aggregation window, so average
+				// any available records at every level and skip only empty windows.
+				if count == 0 {
+					continue
+				}
+
+				longerRecord := core.NewRecord(monitorStatsColl)
+				longerRecord.Set("system", monitorRec.System)
+				longerRecord.Set("monitor", monitorRec.Id)
+				longerRecord.Set("type", recordData.longerType)
+				longerRecord.Set("created", now.UnixMilli())
+				longerRecord.Set("res_min", stats.ResMin)
+				longerRecord.Set("res_max", stats.ResMax)
+				longerRecord.Set("total_count", stats.TotalCount)
+				longerRecord.Set("success_count", stats.SuccessCount)
+				longerRecord.Set("res_sum", stats.ResponseSum)
+				if err := txApp.SaveNoValidate(longerRecord); err != nil {
+					txApp.Logger().Error("failed to save monitor longer record", "err", err)
 				}
 			}
 		}
 
 		return nil
 	})
+	if err != nil {
+		rm.app.Logger().Error("failed to create longer records", "err", err)
+	}
+}
 
-	// log.Println("finished creating longer records", "time (ms)", time.Since(start).Milliseconds())
+func getCreatedTimeField(collectionName string, period time.Time) any {
+	// network_monitor_stats stores created as unix timestamp in ms, not as a date string
+	if collectionName == "network_monitor_stats" {
+		return period.UnixMilli()
+	}
+	return period.Format(types.DefaultDateLayout)
 }
 
 // Calculate the average stats of a list of system_stats records without reflect
@@ -594,6 +676,36 @@ func AverageContainerStatsSlice(records [][]container.Stats) []container.Stats {
 		})
 	}
 	return result
+}
+
+// AverageMonitorStats merges probe counts and response sums, preserving their
+// weights through every retention tier. Failed probes do not contribute latency.
+func (rm *RecordManager) AverageMonitorStats(db dbx.Builder, monitorID, recordType string, createdAfter int64) (monitor.Stats, int, error) {
+	var result struct {
+		monitor.Stats
+		Count int `db:"count"`
+	}
+	err := db.Select(
+		"COUNT(*) AS count",
+		"COALESCE(SUM(total_count), 0) AS total_count",
+		"COALESCE(SUM(success_count), 0) AS success_count",
+		"COALESCE(SUM(res_sum), 0) AS res_sum",
+		"COALESCE(MIN(CASE WHEN success_count > 0 THEN res_min END), 0) AS res_min",
+		"COALESCE(MAX(CASE WHEN success_count > 0 THEN res_max END), 0) AS res_max",
+	).From("network_monitor_stats").Where(dbx.NewExp(
+		"monitor={:monitor} AND type={:type} AND created>{:created}",
+		dbx.Params{"monitor": monitorID, "type": recordType, "created": createdAfter},
+	)).One(&result)
+	if err != nil {
+		return monitor.Stats{}, 0, err
+	}
+	if result.SuccessCount > 0 {
+		result.ResAvg = twoDecimals(float64(result.ResponseSum) / float64(result.SuccessCount))
+	}
+	if result.TotalCount > 0 {
+		result.Loss = twoDecimals(float64(result.TotalCount-result.SuccessCount) * 100 / float64(result.TotalCount))
+	}
+	return result.Stats, result.Count, nil
 }
 
 /* Round float to two decimals */
