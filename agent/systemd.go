@@ -9,6 +9,7 @@ import (
 	"maps"
 	"math"
 	"os"
+	"slices"
 	"strconv"
 	"strings"
 	"sync"
@@ -27,7 +28,8 @@ type systemdManager struct {
 	serviceStatsMap map[string]*systemd.Service
 	isRunning       bool
 	hasFreshStats   bool
-	patterns        []string
+	patterns        []string // guarded by the embedded mutex; replaced, never mutated
+	patternsFromEnv bool     // SERVICE_PATTERNS is set, so hub patterns are ignored
 }
 
 // isSystemdAvailable checks if systemd is used on the system to avoid unnecessary connection attempts (#1548)
@@ -69,6 +71,9 @@ func newSystemdManager() (*systemdManager, error) {
 	manager := &systemdManager{
 		serviceStatsMap: make(map[string]*systemd.Service),
 		patterns:        getServicePatterns(),
+	}
+	if envPatterns, _ := utils.GetEnv("SERVICE_PATTERNS"); envPatterns != "" {
+		manager.patternsFromEnv = true
 	}
 
 	manager.startWorker(conn)
@@ -139,7 +144,10 @@ func (sm *systemdManager) getServiceStats(conn *dbus.Conn, refresh bool) []*syst
 		defer conn.Close()
 	}
 
-	units, err := conn.ListUnitsByPatternsContext(context.Background(), []string{"loaded"}, sm.patterns)
+	sm.Lock()
+	patterns := sm.patterns
+	sm.Unlock()
+	units, err := conn.ListUnitsByPatternsContext(context.Background(), []string{"loaded"}, patterns)
 	if err != nil {
 		slog.Error("Error listing systemd service units", "err", err)
 		return nil
@@ -290,22 +298,50 @@ func unescapeServiceName(name string) string {
 	return unescaped
 }
 
+// setHubServicePatterns replaces the service patterns with those configured in
+// the hub. It does nothing if SERVICE_PATTERNS is set, which takes precedence.
+// Empty patterns restore the default.
+func (sm *systemdManager) setHubServicePatterns(raw []string) {
+	if sm.patternsFromEnv {
+		slog.Debug("Ignoring hub service patterns; SERVICE_PATTERNS is set")
+		return
+	}
+	patterns := normalizeServicePatterns(raw)
+	sm.Lock()
+	changed := !slices.Equal(sm.patterns, patterns)
+	sm.patterns = patterns
+	sm.Unlock()
+	if !changed {
+		return
+	}
+	slog.Info("Hub service patterns", "patterns", patterns)
+	// Refresh now instead of waiting for the next 10 minute update.
+	if sm.isRunning {
+		go sm.getServiceStats(nil, true)
+	}
+}
+
 // getServicePatterns returns the list of service patterns to match.
 // It reads from the SERVICE_PATTERNS environment variable if set,
-// otherwise defaults to "*service".
+// otherwise defaults to "*.service".
 func getServicePatterns() []string {
+	envPatterns, _ := utils.GetEnv("SERVICE_PATTERNS")
+	return normalizeServicePatterns(strings.Split(envPatterns, ","))
+}
+
+// normalizeServicePatterns trims patterns, drops blanks and adds the ".service"
+// suffix to those without an explicit unit type. Defaults to "*.service" if empty.
+func normalizeServicePatterns(raw []string) []string {
 	patterns := []string{}
-	if envPatterns, _ := utils.GetEnv("SERVICE_PATTERNS"); envPatterns != "" {
-		for pattern := range strings.SplitSeq(envPatterns, ",") {
-			pattern = strings.TrimSpace(pattern)
-			if pattern == "" {
-				continue
-			}
-			if !strings.HasSuffix(pattern, "timer") && !strings.HasSuffix(pattern, ".service") {
-				pattern += ".service"
-			}
-			patterns = append(patterns, pattern)
+	for _, pattern := range raw {
+		pattern = strings.TrimSpace(pattern)
+		if pattern == "" {
+			continue
 		}
+		if !strings.HasSuffix(pattern, "timer") && !strings.HasSuffix(pattern, ".service") {
+			pattern += ".service"
+		}
+		patterns = append(patterns, pattern)
 	}
 	if len(patterns) == 0 {
 		patterns = []string{"*.service"}

@@ -8,4 +8,7 @@ func (a *Agent) applyAgentConfig(cfg agentconfig.Config) {
 	if a.dockerManager != nil {
 		a.dockerManager.setHubExcludeContainers(cfg.ExcludeContainers)
 	}
+	if a.systemdManager != nil {
+		a.systemdManager.setHubServicePatterns(cfg.ServicePatterns)
+	}
 }

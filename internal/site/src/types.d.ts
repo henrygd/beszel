@@ -38,6 +38,8 @@ export interface SystemConfigRecord extends RecordModel {
 	system: string
 	/** comma-separated container name patterns (same syntax as the EXCLUDE_CONTAINERS env var) */
 	exclude_containers: string
+	/** comma-separated systemd unit patterns (same syntax as the SERVICE_PATTERNS env var) */
+	service_patterns: string
 }
 
 export interface SystemInfo {

@@ -9,4 +9,7 @@ type Config struct {
 	// ExcludeContainers is a list of container name glob patterns to skip.
 	// Ignored by the agent if the EXCLUDE_CONTAINERS env var is set.
 	ExcludeContainers []string `cbor:"0,keyasint,omitempty"`
+	// ServicePatterns is a list of systemd unit name patterns to monitor. Empty
+	// means the agent default. Ignored by the agent if the SERVICE_PATTERNS env var is set.
+	ServicePatterns []string `cbor:"1,keyasint,omitempty"`
 }

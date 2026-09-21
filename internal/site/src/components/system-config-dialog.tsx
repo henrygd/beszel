@@ -1,15 +1,16 @@
 import { t } from "@lingui/core/macro"
 import { Plural, Trans } from "@lingui/react/macro"
+import { useStore } from "@nanostores/react"
 import { useEffect, useMemo, useState } from "react"
+import { SystemMultiSelect } from "@/components/network-monitors-table/monitor-dialog"
 import { Button } from "@/components/ui/button"
 import { DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { InputTags } from "@/components/ui/input-tags"
 import { Label } from "@/components/ui/label"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useToast } from "@/components/ui/use-toast"
-import { SystemMultiSelect } from "@/components/network-monitors-table/monitor-dialog"
 import { pb } from "@/lib/api"
 import { $systems } from "@/lib/stores"
-import { useStore } from "@nanostores/react"
 import { isAgentConfigUnsupported } from "@/lib/utils"
 import type { SystemConfigRecord, SystemRecord } from "@/types"
 
@@ -22,6 +23,73 @@ const splitList = (value = "") =>
 
 /** How many config writes to have in flight at once when saving many systems. */
 const SAVE_CONCURRENCY = 10
+
+/** Settings stored as a comma-separated list in the system_config record. */
+type ListSettingKey = "exclude_containers" | "service_patterns"
+
+/**
+ * State for one list setting across the selected systems. `edited` stays null until the user
+ * changes the field, and only edited settings are written on save.
+ */
+function useListSetting(key: ListSettingKey, systems: SystemRecord[], configs: Map<string, SystemConfigRecord>) {
+	const [edited, setEdited] = useState<string[] | null>(null)
+
+	// Current value across the selected systems. Normalised so "a,b" and "a, b" match.
+	const current = useMemo(() => {
+		const values = new Set(systems.map((s) => splitList(configs.get(s.id)?.[key]).join(", ")))
+		return { mixed: values.size > 1, list: values.size === 1 ? splitList([...values][0]) : [] }
+	}, [systems, configs, key])
+
+	const value = edited ?? current.list
+	const onChange: React.Dispatch<React.SetStateAction<string[]>> = (next) =>
+		setEdited(typeof next === "function" ? next(value) : next)
+
+	return { key, value, edited, mixed: current.mixed, onChange }
+}
+
+/** Marks a tab that has unsaved changes. */
+const EditedDot = () => <span className="size-1.5 rounded-full bg-primary" role="img" aria-label={t`Unsaved changes`} />
+
+function ListSettingField({
+	setting,
+	label,
+	placeholder,
+	help,
+	systemCount,
+	disabled,
+}: {
+	setting: ReturnType<typeof useListSetting>
+	label: React.ReactNode
+	placeholder: string
+	help: React.ReactNode
+	systemCount: number
+	disabled: boolean
+}) {
+	const id = `config-${setting.key}`
+	return (
+		<div className="grid gap-2">
+			<Label htmlFor={id}>{label}</Label>
+			<InputTags
+				id={id}
+				value={setting.value}
+				onChange={setting.onChange}
+				placeholder={setting.mixed && !setting.edited ? t`Different on each system` : placeholder}
+				autoComplete="off"
+				spellCheck={false}
+				disabled={disabled}
+				className="w-full"
+			/>
+			{setting.mixed && (
+				<p className="text-[0.8rem] text-amber-600 dark:text-amber-500 leading-relaxed">
+					<Trans>
+						These systems have different values. Changing this replaces the value on all {systemCount} systems.
+					</Trans>
+				</p>
+			)}
+			<p className="text-[0.8rem] text-muted-foreground leading-relaxed">{help}</p>
+		</div>
+	)
+}
 
 /**
  * Dialog for editing settings the hub pushes to agents. Opens for one system; more systems can be
@@ -42,8 +110,6 @@ export const SystemConfigDialog = ({
 	const allSystems = useStore($systems)
 	const [selectedIds, setSelectedIds] = useState(() => new Set([system.id]))
 	const [configs, setConfigs] = useState<Map<string, SystemConfigRecord>>(new Map())
-	// null until the user edits the field; only edited fields are written
-	const [edited, setEdited] = useState<string[] | null>(null)
 	const [loading, setLoading] = useState(true)
 	const [saving, setSaving] = useState(false)
 	const { toast } = useToast()
@@ -51,6 +117,11 @@ export const SystemConfigDialog = ({
 	const systems = useMemo(() => allSystems.filter((s) => selectedIds.has(s.id)), [allSystems, selectedIds])
 	const multiple = systems.length > 1
 	const outdatedCount = systems.filter(isAgentConfigUnsupported).length
+
+	const excludeContainers = useListSetting("exclude_containers", systems, configs)
+	const servicePatterns = useListSetting("service_patterns", systems, configs)
+	const settings = [excludeContainers, servicePatterns]
+	const hasChanges = settings.some((setting) => setting.edited)
 
 	// Load every config record once. Systems that were never configured have none yet.
 	useEffect(() => {
@@ -69,26 +140,17 @@ export const SystemConfigDialog = ({
 		}
 	}, [])
 
-	// Current value of the setting across the selected systems. Normalised so "a,b" and "a, b" match.
-	const current = useMemo(() => {
-		const values = new Set(systems.map((s) => splitList(configs.get(s.id)?.exclude_containers).join(", ")))
-		return { mixed: values.size > 1, list: values.size === 1 ? splitList([...values][0]) : [] }
-	}, [systems, configs])
-
-	const excludeContainers = edited ?? current.list
-
-	const handleExcludeChange: React.Dispatch<React.SetStateAction<string[]>> = (value) =>
-		setEdited(typeof value === "function" ? value(excludeContainers) : value)
-
 	async function handleSubmit(e: React.FormEvent) {
 		e.preventDefault()
-		if (!edited) return
+		if (!hasChanges) return
 		setSaving(true)
-		const data = {
-			exclude_containers: edited
-				.map((item) => item.trim())
-				.filter(Boolean)
-				.join(", "),
+		const data: Partial<Record<ListSettingKey, string>> = {}
+		for (const { key, edited } of settings) {
+			if (edited)
+				data[key] = edited
+					.map((item) => item.trim())
+					.filter(Boolean)
+					.join(", ")
 		}
 		const save = (s: SystemRecord) => {
 			const record = configs.get(s.id)
@@ -165,36 +227,52 @@ export const SystemConfigDialog = ({
 						)}
 					</p>
 				)}
-				<div className="grid gap-2">
-					<Label htmlFor="exclude-containers">
-						<Trans>Exclude containers</Trans>
-					</Label>
-					<InputTags
-						id="exclude-containers"
-						value={excludeContainers}
-						onChange={handleExcludeChange}
-						placeholder={current.mixed && !edited ? t`Different on each system` : "test-*"}
-						autoComplete="off"
-						spellCheck={false}
-						disabled={loading}
-						className="w-full"
-					/>
-					{current.mixed && (
-						<p className="text-[0.8rem] text-amber-600 dark:text-amber-500 leading-relaxed">
-							<Trans>
-								These systems have different values. Changing this replaces the value on all {systems.length} systems.
-							</Trans>
-						</p>
-					)}
-					<p className="text-[0.8rem] text-muted-foreground leading-relaxed">
-						<Trans>
-							Container names to skip. Wildcards are supported. Add each with Tab, Enter or comma. Ignored if{" "}
-							<code className="bg-muted px-1 rounded-sm">EXCLUDE_CONTAINERS</code> is set on the agent.
-						</Trans>
-					</p>
-				</div>
+				<Tabs defaultValue="container">
+					<TabsList className="grid w-full grid-cols-2">
+						<TabsTrigger value="container" className="gap-2">
+							<Trans>Container</Trans>
+							{excludeContainers.edited && <EditedDot />}
+						</TabsTrigger>
+						<TabsTrigger value="systemd" className="gap-2">
+							Systemd
+							{servicePatterns.edited && <EditedDot />}
+						</TabsTrigger>
+					</TabsList>
+					{/* forceMount keeps half-typed input in each field when switching tabs */}
+					<TabsContent value="container" forceMount className="mt-4 data-[state=inactive]:hidden">
+						<ListSettingField
+							setting={excludeContainers}
+							label={<Trans>Exclude containers</Trans>}
+							placeholder="test-*"
+							systemCount={systems.length}
+							disabled={loading}
+							help={
+								<Trans>
+									Container names to skip. Wildcards are supported. Add each with Tab, Enter or comma. Ignored if{" "}
+									<code className="bg-muted px-1 rounded-sm">EXCLUDE_CONTAINERS</code> is set on the agent.
+								</Trans>
+							}
+						/>
+					</TabsContent>
+					<TabsContent value="systemd" forceMount className="mt-4 data-[state=inactive]:hidden">
+						<ListSettingField
+							setting={servicePatterns}
+							label={<Trans>Services to monitor</Trans>}
+							placeholder="nginx, docker*"
+							systemCount={systems.length}
+							disabled={loading}
+							help={
+								<Trans>
+									Wildcards are supported and <code className="bg-muted px-1 rounded-sm">.service</code> is added if
+									missing. Leave empty to monitor all services. Ignored if{" "}
+									<code className="bg-muted px-1 rounded-sm">SERVICE_PATTERNS</code> is set on the agent.
+								</Trans>
+							}
+						/>
+					</TabsContent>
+				</Tabs>
 				<DialogFooter>
-					<Button type="submit" disabled={loading || saving || !edited || !systems.length}>
+					<Button type="submit" disabled={loading || saving || !hasChanges || !systems.length}>
 						{multiple ? <Trans>Apply to {systems.length} systems</Trans> : <Trans>Save Settings</Trans>}
 					</Button>
 				</DialogFooter>

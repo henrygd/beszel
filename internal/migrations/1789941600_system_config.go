@@ -36,6 +36,8 @@ func init() {
 			},
 			// Comma-separated container name patterns, same syntax as the EXCLUDE_CONTAINERS env var.
 			&core.TextField{Name: "exclude_containers"},
+			// Comma-separated systemd unit patterns, same syntax as the SERVICE_PATTERNS env var.
+			&core.TextField{Name: "service_patterns"},
 			&core.AutodateField{Name: "created", OnCreate: true},
 			&core.AutodateField{Name: "updated", OnCreate: true, OnUpdate: true},
 		)

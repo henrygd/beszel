@@ -180,6 +180,16 @@ func TestLoadAgentConfig(t *testing.T) {
 		require.Equal(t, []string{"web-*", "db"}, cfg.ExcludeContainers)
 	})
 
+	t.Run("reads service patterns", func(t *testing.T) {
+		record := saveSystemConfig(t, app, sys.Id, "web-*, db")
+		record.Set("service_patterns", " nginx, ,docker*,")
+		require.NoError(t, app.Save(record))
+		cfg, err := loadAgentConfig(app, sys.Id)
+		require.NoError(t, err)
+		require.Equal(t, []string{"nginx", "docker*"}, cfg.ServicePatterns)
+		require.Equal(t, []string{"web-*", "db"}, cfg.ExcludeContainers, "settings are independent")
+	})
+
 	t.Run("only reads the requested system", func(t *testing.T) {
 		collection, err := app.FindCachedCollectionByNameOrId("systems")
 		require.NoError(t, err)

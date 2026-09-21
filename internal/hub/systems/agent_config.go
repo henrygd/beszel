@@ -64,7 +64,10 @@ func loadAgentConfig(app core.App, systemId string) (agentconfig.Config, error) 
 	if err != nil {
 		return agentconfig.Config{}, fmt.Errorf("failed to load system config: %w", err)
 	}
-	return agentconfig.Config{ExcludeContainers: splitCommaList(record.GetString("exclude_containers"))}, nil
+	return agentconfig.Config{
+		ExcludeContainers: splitCommaList(record.GetString("exclude_containers")),
+		ServicePatterns:   splitCommaList(record.GetString("service_patterns")),
+	}, nil
 }
 
 // splitCommaList splits a comma-separated setting, dropping blanks.
