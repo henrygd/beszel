@@ -239,13 +239,13 @@ export function AlertContent({
 	/** Alerts that fire on first observation have no duration to configure */
 	const noDuration = alertData.noDuration === true
 	/** Binary alerts have no threshold to configure */
-	const noThreshold = !!singleDescription || noDuration
+	const noThreshold = !!singleDescription || alertData.noThreshold === true
 	/** Whether enabling the alert reveals anything to configure */
 	const hasControls = !(noThreshold && noDuration)
 
 	const [checked, setChecked] = useState(global ? false : !!alert)
 	const [min, setMin] = useState(alert?.min || (noDuration ? 0 : 10))
-	const [value, setValue] = useState(alert?.value || (noThreshold ? 0 : (alertData.start ?? 80)))
+	const [value, setValue] = useState(alert?.value ?? (noThreshold ? 0 : (alertData.start ?? 80)))
 
 	const Icon = alertData.icon
 
@@ -319,7 +319,7 @@ export function AlertContent({
 				<div className="grid sm:grid-cols-2 mt-1.5 gap-5 px-4 pb-5 tabular-nums text-muted-foreground">
 					<Suspense fallback={<div className="h-10" />}>
 						{!noThreshold && (
-							<div>
+							<div className={cn(noDuration && "col-span-full")}>
 								<p id={`v${name}`} className="text-sm block h-6">
 									{alertData.invert ? (
 										<Trans>
