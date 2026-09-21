@@ -74,7 +74,7 @@ async function fetchMonitorStats(
 }
 
 const NETWORK_MONITOR_FIELDS =
-	"id,system,target,protocol,port,interval,res,resMin1h,resMax1h,resAvg1h,loss1h,enabled,updated"
+	"id,system,target,protocol,port,interval,count,res,resMin1h,resMax1h,resAvg1h,loss1h,enabled,updated"
 
 interface UseNetworkMonitorsProps {
 	systemId?: string
