@@ -138,6 +138,9 @@ func (sm *SystemManager) bindEventHooks() {
 	sm.hub.OnRecordUpdate("systems").BindFunc(sm.onRecordUpdate)
 	sm.hub.OnRecordAfterUpdateSuccess("systems").BindFunc(sm.onRecordAfterUpdateSuccess)
 	sm.hub.OnRecordAfterDeleteSuccess("systems").BindFunc(sm.onRecordAfterDeleteSuccess)
+	sm.hub.OnRecordAfterCreateSuccess("system_config").BindFunc(sm.onSystemConfigChanged)
+	sm.hub.OnRecordAfterUpdateSuccess("system_config").BindFunc(sm.onSystemConfigChanged)
+	sm.hub.OnRecordAfterDeleteSuccess("system_config").BindFunc(sm.onSystemConfigChanged)
 	sm.hub.OnRecordAfterUpdateSuccess("fingerprints").BindFunc(sm.onTokenRotated)
 	sm.hub.OnRealtimeSubscribeRequest().BindFunc(sm.onRealtimeSubscribeRequest)
 	sm.hub.OnRealtimeConnectRequest().BindFunc(sm.onRealtimeConnectRequest)
@@ -263,6 +266,15 @@ func (sm *SystemManager) onRecordAfterUpdateSuccess(e *core.RecordEvent) error {
 	return e.Next()
 }
 
+// onSystemConfigChanged pushes changed agent settings to the system's agent.
+// Deleting the record also counts as a change, since the agent config becomes empty.
+func (sm *SystemManager) onSystemConfigChanged(e *core.RecordEvent) error {
+	if system, ok := sm.systems.GetOk(e.Record.GetString("system")); ok {
+		system.notifyAgentConfigChanged()
+	}
+	return e.Next()
+}
+
 // onRecordAfterDeleteSuccess is called after a system record is successfully deleted.
 // It removes the system from the manager and cleans up all associated resources.
 func (sm *SystemManager) onRecordAfterDeleteSuccess(e *core.RecordEvent) error {
@@ -350,6 +362,7 @@ func (sm *SystemManager) AddWebSocketSystem(systemId string, agentVersion semver
 	system.WsConn = wsConn
 	system.agentVersion = agentVersion
 	system.monitorsNeedSync.Store(true)
+	system.configNeedsSync.Store(true)
 
 	if err := sm.AddRecord(systemRecord, system); err != nil {
 		return err
@@ -357,6 +370,7 @@ func (sm *SystemManager) AddWebSocketSystem(systemId string, agentVersion semver
 
 	// Sync network monitors to the newly connected agent
 	go system.syncPendingNetworkMonitors()
+	go system.syncPendingAgentConfig()
 
 	return nil
 }

@@ -420,6 +420,13 @@ export function supportsNetworkMonitors(system: Pick<SystemRecord, "info">) {
 	return compareSemVer(parseSemVer(system.info?.v), MIN_NETWORK_MONITOR_AGENT_VERSION) >= 0
 }
 
+const MIN_AGENT_CONFIG_VERSION = parseSemVer("0.20.0")
+
+/** True if the agent is known to be too old to receive hub-managed config. Unknown versions return false. */
+export function isAgentConfigUnsupported(system: Pick<SystemRecord, "info">) {
+	return !!system.info?.v && compareSemVer(parseSemVer(system.info.v), MIN_AGENT_CONFIG_VERSION) < 0
+}
+
 // biome-ignore lint/suspicious/noExplicitAny: any is used to allow any function to be passed in
 export function debounce<T extends (...args: any[]) => any>(func: T, wait: number): (...args: Parameters<T>) => void {
 	let timeout: ReturnType<typeof setTimeout>

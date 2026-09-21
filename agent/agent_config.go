@@ -1,0 +1,11 @@
+package agent
+
+import "github.com/henrygd/beszel/internal/entities/agentconfig"
+
+// applyAgentConfig applies settings pushed from the hub. Settings that are also
+// available as env vars are ignored by their owners when the env var is set.
+func (a *Agent) applyAgentConfig(cfg agentconfig.Config) {
+	if a.dockerManager != nil {
+		a.dockerManager.setHubExcludeContainers(cfg.ExcludeContainers)
+	}
+}

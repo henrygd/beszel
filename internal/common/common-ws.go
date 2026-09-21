@@ -26,6 +26,8 @@ const (
 	GetZfsData
 	// Sync network monitor configuration to agent
 	SyncNetworkMonitors
+	// Sync hub-managed agent configuration to agent
+	SyncAgentConfig
 	// Add new actions here...
 )
 

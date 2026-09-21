@@ -118,6 +118,16 @@ func setCollectionAuthSettings(app core.App) error {
 		return err
 	}
 
+	if err := applyCollectionRules(app, []string{"system_config"}, collectionRules{
+		list:   &systemScopedReadRule,
+		view:   &systemScopedReadRule,
+		create: &systemScopedWriteRule,
+		update: &systemScopedWriteRule,
+		delete: &systemScopedWriteRule,
+	}); err != nil {
+		return err
+	}
+
 	if err := applyCollectionRules(app, []string{"system_details"}, collectionRules{
 		list: &systemScopedReadRule,
 		view: &systemScopedReadRule,

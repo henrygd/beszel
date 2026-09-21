@@ -59,6 +59,8 @@ type System struct {
 
 	// A fresh connection needs a full monitor configuration sync.
 	monitorsNeedSync atomic.Bool
+	// A fresh connection also needs the hub-managed agent config.
+	configNeedsSync atomic.Bool
 	// Serialize persistence from scheduled updates and resumes through commit.
 	recordsMu sync.Mutex
 	// Protected by recordsMu; realtime reads don't consume probes.
@@ -636,6 +638,7 @@ func (sys *System) request(ctx context.Context, action common.WebSocketAction, r
 		client := sys.sshTransport.GetClient()
 		if previous := sys.client.Swap(client); client != nil && client != previous {
 			sys.monitorsNeedSync.Store(true)
+			sys.configNeedsSync.Store(true)
 		}
 		sys.agentVersion = sys.sshTransport.GetAgentVersion()
 	}
@@ -695,6 +698,7 @@ func (sys *System) fetchDataFromAgent(options common.DataRequestOptions) (*syste
 		wsData, err := sys.fetchDataViaWebSocket(options)
 		if err == nil {
 			sys.syncPendingNetworkMonitors()
+			sys.syncPendingAgentConfig()
 			return wsData, nil
 		}
 		// close the WebSocket connection if error and try SSH
@@ -706,6 +710,7 @@ func (sys *System) fetchDataFromAgent(options common.DataRequestOptions) (*syste
 		return nil, err
 	}
 	sys.syncPendingNetworkMonitors()
+	sys.syncPendingAgentConfig()
 	return sshData, nil
 }
 
@@ -941,6 +946,7 @@ func (s *System) createSSHClient() error {
 	}
 	s.agentVersion, _ = extractAgentVersion(string(client.Conn.ServerVersion()))
 	s.monitorsNeedSync.Store(true)
+	s.configNeedsSync.Store(true)
 	s.manager.resetFailedSmartFetchState(s.Id)
 	s.manager.resetFailedZfsFetchState(s.Id)
 	return nil

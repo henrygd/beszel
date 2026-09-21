@@ -17,8 +17,10 @@ import (
 	"testing"
 	"time"
 
+	"github.com/fxamacker/cbor/v2"
 	"github.com/henrygd/beszel/agent/deltatracker"
 	"github.com/henrygd/beszel/agent/utils"
+	"github.com/henrygd/beszel/internal/entities/agentconfig"
 	"github.com/henrygd/beszel/internal/entities/container"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -1956,6 +1958,50 @@ func TestShouldExcludeContainer(t *testing.T) {
 			assert.Equal(t, tt.expected, result)
 		})
 	}
+}
+
+func TestSetHubExcludeContainers(t *testing.T) {
+	t.Run("hub patterns are applied and trimmed", func(t *testing.T) {
+		dm := &dockerManager{}
+		dm.setHubExcludeContainers([]string{" test-* ", "", "temp"})
+		assert.Equal(t, []string{"test-*", "temp"}, dm.excludeContainers)
+		assert.True(t, dm.shouldExcludeContainer("test-web"))
+		assert.True(t, dm.shouldExcludeContainer("temp"))
+		assert.False(t, dm.shouldExcludeContainer("prod"))
+	})
+
+	t.Run("empty hub config clears patterns", func(t *testing.T) {
+		dm := &dockerManager{excludeContainers: []string{"old"}}
+		dm.setHubExcludeContainers(nil)
+		assert.False(t, dm.shouldExcludeContainer("old"))
+	})
+
+	t.Run("env var takes precedence over hub config", func(t *testing.T) {
+		dm := &dockerManager{excludeContainers: []string{"env-*"}, excludeFromEnv: true}
+		dm.setHubExcludeContainers([]string{"hub-*"})
+		assert.True(t, dm.shouldExcludeContainer("env-app"))
+		assert.False(t, dm.shouldExcludeContainer("hub-app"))
+	})
+}
+
+func TestApplyAgentConfig(t *testing.T) {
+	t.Run("no docker manager does not panic", func(t *testing.T) {
+		a := &Agent{}
+		assert.NotPanics(t, func() {
+			a.applyAgentConfig(agentconfig.Config{ExcludeContainers: []string{"x"}})
+		})
+	})
+
+	t.Run("cbor round trip reaches docker manager", func(t *testing.T) {
+		data, err := cbor.Marshal(agentconfig.Config{ExcludeContainers: []string{"web-*"}})
+		require.NoError(t, err)
+		var cfg agentconfig.Config
+		require.NoError(t, cbor.Unmarshal(data, &cfg))
+
+		a := &Agent{dockerManager: &dockerManager{}}
+		a.applyAgentConfig(cfg)
+		assert.True(t, a.dockerManager.shouldExcludeContainer("web-1"))
+	})
 }
 
 func TestAnsiEscapePattern(t *testing.T) {
