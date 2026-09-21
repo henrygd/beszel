@@ -35,7 +35,7 @@ import { cn, runOnce } from "@/lib/utils"
 import { AddSystemDialog } from "./add-system"
 import { Logo } from "./logo"
 import { ModeToggle } from "./mode-toggle"
-import { $router, basePath, Link, navigate, prependBasePath } from "./router"
+import { $router, adminPath, basePath, Link, navigate, prependBasePath } from "./router"
 import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip"
 
 const CommandPalette = lazy(() => import("./command-palette"))
@@ -261,7 +261,7 @@ function AdminDropdownGroup() {
 	return (
 		<DropdownMenuGroup>
 			<DropdownMenuItem asChild>
-				<a href={prependBasePath("/_/")} target="_blank">
+				<a href={`${adminPath}#/collections?collection=_pb_users_auth_`} target="_blank">
 					<UsersIcon className="me-2.5 h-4 w-4" />
 					<span>
 						<Trans>Users</Trans>
@@ -269,7 +269,7 @@ function AdminDropdownGroup() {
 				</a>
 			</DropdownMenuItem>
 			<DropdownMenuItem asChild>
-				<a href={prependBasePath("/_/#/collections?collection=systems")} target="_blank">
+				<a href={`${adminPath}#/collections?collection=systems`} target="_blank">
 					<ServerIcon className="me-2.5 h-4 w-4" />
 					<span>
 						<Trans>Systems</Trans>
@@ -277,7 +277,7 @@ function AdminDropdownGroup() {
 				</a>
 			</DropdownMenuItem>
 			<DropdownMenuItem asChild>
-				<a href={prependBasePath("/_/#/logs")} target="_blank">
+				<a href={`${adminPath}#/logs`} target="_blank">
 					<LogsIcon className="me-2.5 h-4 w-4" />
 					<span>
 						<Trans>Logs</Trans>
@@ -285,7 +285,7 @@ function AdminDropdownGroup() {
 				</a>
 			</DropdownMenuItem>
 			<DropdownMenuItem asChild>
-				<a href={prependBasePath("/_/#/settings/backups")} target="_blank">
+				<a href={`${adminPath}#/settings/backups`} target="_blank">
 					<DatabaseBackupIcon className="me-2.5 h-4 w-4" />
 					<span>
 						<Trans>Backups</Trans>

@@ -1,9 +1,10 @@
 import { t } from "@lingui/core/macro"
 import { Trans } from "@lingui/react/macro"
-import { BellIcon, LoaderCircleIcon, PlusIcon, SaveIcon, Trash2Icon } from "lucide-react"
+import { BellIcon, EyeIcon, EyeOffIcon, LoaderCircleIcon, PlusIcon, SaveIcon, Trash2Icon } from "lucide-react"
 import { type ChangeEventHandler, useEffect, useState } from "react"
 import * as v from "valibot"
 import { prependBasePath } from "@/components/router"
+import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -97,7 +98,7 @@ const SettingsNotificationsPage = ({ userSettings }: { userSettings: UserSetting
 							<p className="text-sm text-muted-foreground leading-relaxed">
 								<Trans>
 									Please{" "}
-									<a href={prependBasePath("/_/#/settings/mail")} className="link" target="_blank">
+									<a href={prependBasePath("/admin/#/settings/mail")} className="link" target="_blank">
 										configure an SMTP server
 									</a>{" "}
 									to ensure alerts are delivered.
@@ -176,7 +177,38 @@ const SettingsNotificationsPage = ({ userSettings }: { userSettings: UserSetting
 	)
 }
 
-function showTestNotificationError(msg: string) {
+function getNotificationServiceType(url: string): string {
+	if (!url) return ""
+	const scheme = url.split("://")[0]?.toLowerCase()
+	switch (scheme) {
+		case "telegram":
+			return "Telegram"
+		case "discord":
+			return "Discord"
+		case "slack":
+			return "Slack"
+		case "gotify":
+			return "Gotify"
+		case "pushover":
+			return "Pushover"
+		case "teams":
+			return "Teams"
+		case "matrix":
+			return "Matrix"
+		case "bark":
+			return "Bark"
+		case "ntfy":
+			return "Ntfy"
+		case "generic":
+		case "http":
+		case "https":
+			return "Webhook"
+		default:
+			return scheme ? scheme.toUpperCase() : ""
+	}
+}
+
+function showTestNotificationError(msg?: string) {
 	toast({
 		title: t`Error`,
 		description: msg ?? t`Failed to send test notification`,
@@ -186,6 +218,8 @@ function showTestNotificationError(msg: string) {
 
 const ShoutrrrUrlCard = ({ url, onUrlChange, onRemove }: ShoutrrrUrlCardProps) => {
 	const [isLoading, setIsLoading] = useState(false)
+	const [showSecret, setShowSecret] = useState(false)
+	const serviceName = getNotificationServiceType(url)
 
 	const sendTestNotification = async () => {
 		setIsLoading(true)
@@ -208,15 +242,30 @@ const ShoutrrrUrlCard = ({ url, onUrlChange, onRemove }: ShoutrrrUrlCardProps) =
 
 	return (
 		<Card className="bg-table-header p-2 md:p-3">
-			<div className="flex items-center gap-1">
+			<div className="flex items-center gap-2">
+				{serviceName && (
+					<Badge variant="secondary" className="font-semibold text-xs shrink-0 px-2.5 py-1">
+						{serviceName}
+					</Badge>
+				)}
 				<Input
-					type="url"
+					type={showSecret ? "text" : "password"}
 					className="light:bg-card"
 					required
 					placeholder="generic://webhook.site/xxxxxx"
 					value={url}
 					onChange={onUrlChange}
 				/>
+				<Button
+					type="button"
+					variant="outline"
+					size="icon"
+					className="shrink-0"
+					aria-label={showSecret ? "Hide secret" : "Show secret"}
+					onClick={() => setShowSecret(!showSecret)}
+				>
+					{showSecret ? <EyeOffIcon className="h-4 w-4" /> : <EyeIcon className="h-4 w-4" />}
+				</Button>
 				<Button type="button" variant="outline" disabled={isLoading || url === ""} onClick={sendTestNotification}>
 					{isLoading ? (
 						<LoaderCircleIcon className="h-4 w-4 animate-spin" />

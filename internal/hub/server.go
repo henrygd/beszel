@@ -14,7 +14,8 @@ type PublicAppInfo struct {
 	BASE_PATH           string
 	HUB_VERSION         string
 	HUB_URL             string
-	OAUTH_DISABLE_POPUP bool `json:"OAUTH_DISABLE_POPUP,omitempty"`
+	OAUTH_DISABLE_POPUP bool   `json:"OAUTH_DISABLE_POPUP,omitempty"`
+	ADMIN_PATH          string `json:"ADMIN_PATH,omitempty"`
 }
 
 // modifyIndexHTML injects the public app information into the index.html content
@@ -37,6 +38,16 @@ func getPublicAppInfo(hub *Hub) PublicAppInfo {
 	}
 	if val, _ := utils.GetEnv("OAUTH_DISABLE_POPUP"); val == "true" {
 		info.OAUTH_DISABLE_POPUP = true
+	}
+	if adminPath, _ := utils.GetEnv("ADMIN_PATH"); adminPath != "" {
+		adminPath = strings.TrimSpace(adminPath)
+		if !strings.HasPrefix(adminPath, "/") {
+			adminPath = "/" + adminPath
+		}
+		if !strings.HasSuffix(adminPath, "/") {
+			adminPath = adminPath + "/"
+		}
+		info.ADMIN_PATH = adminPath
 	}
 	return info
 }
