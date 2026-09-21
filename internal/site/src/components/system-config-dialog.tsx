@@ -24,14 +24,14 @@ const splitList = (value = "") =>
 /** How many config writes to have in flight at once when saving many systems. */
 const SAVE_CONCURRENCY = 10
 
-/** Settings stored as a comma-separated list in the system_config record. */
-type ListSettingKey = "exclude_containers" | "service_patterns"
+/** Settings stored as a comma-separated string in the system_config record. */
+type SettingKey = "exclude_containers" | "service_patterns" | "nics"
 
 /**
  * State for one list setting across the selected systems. `edited` stays null until the user
  * changes the field, and only edited settings are written on save.
  */
-function useListSetting(key: ListSettingKey, systems: SystemRecord[], configs: Map<string, SystemConfigRecord>) {
+function useListSetting(key: SettingKey, systems: SystemRecord[], configs: Map<string, SystemConfigRecord>) {
 	const [edited, setEdited] = useState<string[] | null>(null)
 
 	// Current value across the selected systems. Normalised so "a,b" and "a, b" match.
@@ -44,8 +44,26 @@ function useListSetting(key: ListSettingKey, systems: SystemRecord[], configs: M
 	const onChange: React.Dispatch<React.SetStateAction<string[]>> = (next) =>
 		setEdited(typeof next === "function" ? next(value) : next)
 
-	return { key, value, edited, mixed: current.mixed, onChange }
+	return {
+		key,
+		value,
+		mixed: current.mixed,
+		onChange,
+		isEdited: edited !== null,
+		toValue: () =>
+			(edited ?? [])
+				.map((item) => item.trim())
+				.filter(Boolean)
+				.join(", "),
+	}
 }
+
+/** Shown when the selected systems have different values for a setting. */
+const MixedNote = ({ systemCount }: { systemCount: number }) => (
+	<p className="text-[0.8rem] text-amber-600 dark:text-amber-500 leading-relaxed">
+		<Trans>These systems have different values. Changing this replaces the value on all {systemCount} systems.</Trans>
+	</p>
+)
 
 /** Marks a tab that has unsaved changes. */
 const EditedDot = () => <span className="size-1.5 rounded-full bg-primary" role="img" aria-label={t`Unsaved changes`} />
@@ -55,6 +73,7 @@ function ListSettingField({
 	label,
 	placeholder,
 	help,
+	envVar,
 	systemCount,
 	disabled,
 }: {
@@ -62,6 +81,8 @@ function ListSettingField({
 	label: React.ReactNode
 	placeholder: string
 	help: React.ReactNode
+	/** env var that overrides this setting on the agent */
+	envVar: string
 	systemCount: number
 	disabled: boolean
 }) {
@@ -73,20 +94,19 @@ function ListSettingField({
 				id={id}
 				value={setting.value}
 				onChange={setting.onChange}
-				placeholder={setting.mixed && !setting.edited ? t`Different on each system` : placeholder}
+				placeholder={setting.mixed && !setting.isEdited ? t`Different on each system` : placeholder}
 				autoComplete="off"
 				spellCheck={false}
 				disabled={disabled}
 				className="w-full"
 			/>
-			{setting.mixed && (
-				<p className="text-[0.8rem] text-amber-600 dark:text-amber-500 leading-relaxed">
-					<Trans>
-						These systems have different values. Changing this replaces the value on all {systemCount} systems.
-					</Trans>
-				</p>
-			)}
-			<p className="text-[0.8rem] text-muted-foreground leading-relaxed">{help}</p>
+			{setting.mixed && <MixedNote systemCount={systemCount} />}
+			<p className="text-[0.8rem] text-muted-foreground leading-relaxed">
+				{help} <Trans>Add each with Tab, Enter or comma.</Trans>{" "}
+				<Trans>
+					Ignored if <code className="bg-muted px-1 rounded-sm">{envVar}</code> is set on the agent.
+				</Trans>
+			</p>
 		</div>
 	)
 }
@@ -120,8 +140,9 @@ export const SystemConfigDialog = ({
 
 	const excludeContainers = useListSetting("exclude_containers", systems, configs)
 	const servicePatterns = useListSetting("service_patterns", systems, configs)
-	const settings = [excludeContainers, servicePatterns]
-	const hasChanges = settings.some((setting) => setting.edited)
+	const nics = useListSetting("nics", systems, configs)
+	const settings = [excludeContainers, servicePatterns, nics]
+	const hasChanges = settings.some((setting) => setting.isEdited)
 
 	// Load every config record once. Systems that were never configured have none yet.
 	useEffect(() => {
@@ -144,13 +165,9 @@ export const SystemConfigDialog = ({
 		e.preventDefault()
 		if (!hasChanges) return
 		setSaving(true)
-		const data: Partial<Record<ListSettingKey, string>> = {}
-		for (const { key, edited } of settings) {
-			if (edited)
-				data[key] = edited
-					.map((item) => item.trim())
-					.filter(Boolean)
-					.join(", ")
+		const data: Partial<Record<SettingKey, string>> = {}
+		for (const setting of settings) {
+			if (setting.isEdited) data[setting.key] = setting.toValue()
 		}
 		const save = (s: SystemRecord) => {
 			const record = configs.get(s.id)
@@ -228,14 +245,18 @@ export const SystemConfigDialog = ({
 					</p>
 				)}
 				<Tabs defaultValue="container">
-					<TabsList className="grid w-full grid-cols-2">
+					<TabsList className="grid w-full grid-cols-3">
 						<TabsTrigger value="container" className="gap-2">
 							<Trans>Container</Trans>
-							{excludeContainers.edited && <EditedDot />}
+							{excludeContainers.isEdited && <EditedDot />}
 						</TabsTrigger>
 						<TabsTrigger value="systemd" className="gap-2">
 							Systemd
-							{servicePatterns.edited && <EditedDot />}
+							{servicePatterns.isEdited && <EditedDot />}
+						</TabsTrigger>
+						<TabsTrigger value="network" className="gap-2">
+							<Trans>Network</Trans>
+							{nics.isEdited && <EditedDot />}
 						</TabsTrigger>
 					</TabsList>
 					{/* forceMount keeps half-typed input in each field when switching tabs */}
@@ -247,11 +268,9 @@ export const SystemConfigDialog = ({
 							systemCount={systems.length}
 							disabled={loading}
 							help={
-								<Trans>
-									Container names to skip. Wildcards are supported. Add each with Tab, Enter or comma. Ignored if{" "}
-									<code className="bg-muted px-1 rounded-sm">EXCLUDE_CONTAINERS</code> is set on the agent.
-								</Trans>
+								<Trans>Container names to skip. Wildcards are supported. Leave empty to monitor all containers.</Trans>
 							}
+							envVar="EXCLUDE_CONTAINERS"
 						/>
 					</TabsContent>
 					<TabsContent value="systemd" forceMount className="mt-4 data-[state=inactive]:hidden">
@@ -263,11 +282,29 @@ export const SystemConfigDialog = ({
 							disabled={loading}
 							help={
 								<Trans>
-									Wildcards are supported and <code className="bg-muted px-1 rounded-sm">.service</code> is added if
-									missing. Leave empty to monitor all services. Ignored if{" "}
-									<code className="bg-muted px-1 rounded-sm">SERVICE_PATTERNS</code> is set on the agent.
+									Services to monitor. Wildcards are supported, and{" "}
+									<code className="bg-muted px-1 rounded-sm">.service</code> is added if missing. Leave empty to monitor
+									all services.
 								</Trans>
 							}
+							envVar="SERVICE_PATTERNS"
+						/>
+					</TabsContent>
+					<TabsContent value="network" forceMount className="mt-4 data-[state=inactive]:hidden">
+						<ListSettingField
+							setting={nics}
+							label={<Trans>Network interfaces</Trans>}
+							placeholder="eth0, wlan*"
+							systemCount={systems.length}
+							disabled={loading}
+							help={
+								<Trans>
+									Interfaces to monitor. Wildcards are supported. Start the first entry with{" "}
+									<code className="bg-muted px-1 rounded-sm">-</code> to exclude the listed interfaces instead. Leave
+									empty to detect interfaces automatically.
+								</Trans>
+							}
+							envVar="NICS"
 						/>
 					</TabsContent>
 				</Tabs>

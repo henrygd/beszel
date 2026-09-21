@@ -67,6 +67,7 @@ func loadAgentConfig(app core.App, systemId string) (agentconfig.Config, error) 
 	return agentconfig.Config{
 		ExcludeContainers: splitCommaList(record.GetString("exclude_containers")),
 		ServicePatterns:   splitCommaList(record.GetString("service_patterns")),
+		Nics:              strings.TrimSpace(record.GetString("nics")),
 	}, nil
 }
 

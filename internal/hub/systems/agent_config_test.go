@@ -187,6 +187,11 @@ func TestLoadAgentConfig(t *testing.T) {
 		cfg, err := loadAgentConfig(app, sys.Id)
 		require.NoError(t, err)
 		require.Equal(t, []string{"nginx", "docker*"}, cfg.ServicePatterns)
+		record.Set("nics", " -veth*, docker0 ")
+		require.NoError(t, app.Save(record))
+		cfg, err = loadAgentConfig(app, sys.Id)
+		require.NoError(t, err)
+		require.Equal(t, "-veth*, docker0", cfg.Nics)
 		require.Equal(t, []string{"web-*", "db"}, cfg.ExcludeContainers, "settings are independent")
 	})
 

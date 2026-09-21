@@ -38,6 +38,8 @@ func init() {
 			&core.TextField{Name: "exclude_containers"},
 			// Comma-separated systemd unit patterns, same syntax as the SERVICE_PATTERNS env var.
 			&core.TextField{Name: "service_patterns"},
+			// Network interface list in NICS env var syntax (a leading '-' excludes the listed interfaces).
+			&core.TextField{Name: "nics"},
 			&core.AutodateField{Name: "created", OnCreate: true},
 			&core.AutodateField{Name: "updated", OnCreate: true, OnUpdate: true},
 		)

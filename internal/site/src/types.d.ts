@@ -40,6 +40,8 @@ export interface SystemConfigRecord extends RecordModel {
 	exclude_containers: string
 	/** comma-separated systemd unit patterns (same syntax as the SERVICE_PATTERNS env var) */
 	service_patterns: string
+	/** network interface list in NICS env var syntax; a leading "-" excludes the listed interfaces */
+	nics: string
 }
 
 export interface SystemInfo {
