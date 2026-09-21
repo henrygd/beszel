@@ -18,7 +18,7 @@ import {
 	PenBoxIcon,
 	PlayCircleIcon,
 	ServerIcon,
-	SettingsIcon,
+	SlidersHorizontalIcon,
 	TerminalSquareIcon,
 	Trash2Icon,
 	WifiIcon,
@@ -598,6 +598,8 @@ export const ActionsButton = memo(({ system }: { system: SystemRecord }) => {
 	const editOpened = useRef(false)
 	const [configOpen, setConfigOpen] = useState(false)
 	const configOpened = useRef(false)
+	// Bumped on every open so the dialog remounts and reloads instead of showing state from its last use.
+	const [configKey, setConfigKey] = useState(0)
 	const { t } = useLingui()
 	const { id, status, host, name } = system
 
@@ -629,11 +631,12 @@ export const ActionsButton = memo(({ system }: { system: SystemRecord }) => {
 							<DropdownMenuItem
 								onSelect={() => {
 									configOpened.current = true
+									setConfigKey((key) => key + 1)
 									setConfigOpen(true)
 								}}
 							>
-								<SettingsIcon className="me-2.5 size-4" />
-								<Trans>Configure</Trans>
+								<SlidersHorizontalIcon className="me-2.5 size-4" />
+								<Trans>Agent settings</Trans>
 							</DropdownMenuItem>
 						)}
 						<DropdownMenuItem
@@ -677,7 +680,7 @@ export const ActionsButton = memo(({ system }: { system: SystemRecord }) => {
 				</Dialog>
 				{/* config dialog */}
 				<Dialog open={configOpen} onOpenChange={setConfigOpen}>
-					{configOpened.current && <SystemConfigDialog system={system} setOpen={setConfigOpen} />}
+					{configOpened.current && <SystemConfigDialog key={configKey} system={system} setOpen={setConfigOpen} />}
 				</Dialog>
 				{/* deletion dialog */}
 				<AlertDialog open={deleteOpen} onOpenChange={(open) => setDeleteOpen(open)}>
