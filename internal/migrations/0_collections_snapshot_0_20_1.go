@@ -2038,6 +2038,19 @@ func init() {
 			{
 				"help": "",
 				"hidden": false,
+				"id": "nm_count",
+				"max": 10,
+				"min": 1,
+				"name": "count",
+				"onlyInt": true,
+				"presentable": false,
+				"required": false,
+				"system": false,
+				"type": "number"
+			},
+			{
+				"help": "",
+				"hidden": false,
 				"id": "number926446584",
 				"max": null,
 				"min": null,

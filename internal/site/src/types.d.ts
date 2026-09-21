@@ -647,6 +647,7 @@ export interface NetworkMonitorRecord {
 	loss: number
 	loss1h: number
 	interval: number
+	count?: number
 	enabled: boolean
 	updated: string
 }

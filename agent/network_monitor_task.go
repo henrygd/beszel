@@ -75,7 +75,7 @@ func (task *monitorTask) runProbe(probe monitorProbe) *monitor.Result {
 	task.runMu.Unlock()
 
 	generation, _ := task.resumeGuard.snapshot()
-	responseUs, err := probe(task.ctx, task.config)
+	responseUs, pings, err := task.check(probe)
 	var logFailure bool
 	task.runMu.Lock()
 	currentGeneration, _ := task.resumeGuard.snapshot()
@@ -91,7 +91,7 @@ func (task *monitorTask) runProbe(probe monitorProbe) *monitor.Result {
 		} else {
 			task.lastFailureLog = 0
 		}
-		result := task.history.record(monitorSample{responseUs: responseUs, timestamp: now})
+		result := task.history.record(monitorSample{responseUs: responseUs, timestamp: now, pings: pings})
 		run.result = &result
 	}
 
@@ -105,6 +105,46 @@ func (task *monitorTask) runProbe(probe monitorProbe) *monitor.Result {
 		return nil
 	}
 	return copyMonitorResult(run.result)
+}
+
+// check runs one probe, or Count concurrent probes for a multi-ping ICMP config.
+// Multi-ping checks return per-ping stats so partial loss is reflected, and only
+// report an error when every ping failed.
+func (task *monitorTask) check(probe monitorProbe) (int64, *monitorAggregate, error) {
+	config := task.config
+	if config.Protocol != "icmp" || config.Count <= 1 {
+		responseUs, err := probe(task.ctx, config)
+		return responseUs, nil, err
+	}
+	count := min(int(config.Count), monitor.MaxICMPCount)
+	type pingResult struct {
+		responseUs int64
+		err        error
+	}
+	results := make([]pingResult, count)
+	var wg sync.WaitGroup
+	for i := range results {
+		wg.Go(func() {
+			results[i].responseUs, results[i].err = probe(task.ctx, config)
+		})
+	}
+	wg.Wait()
+
+	agg := newMonitorAggregate()
+	var firstErr error
+	for _, r := range results {
+		if r.err != nil {
+			r.responseUs = -1
+			if firstErr == nil {
+				firstErr = r.err
+			}
+		}
+		agg.addResponse(r.responseUs)
+	}
+	if agg.successCount == 0 {
+		return -1, &agg, firstErr
+	}
+	return agg.avgResponse(), &agg, nil
 }
 
 func copyMonitorResult(result *monitor.Result) *monitor.Result {

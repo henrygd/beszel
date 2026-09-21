@@ -25,7 +25,12 @@ type Config struct {
 	Protocol string `cbor:"2,keyasint"` // "icmp", "tcp", "http", or "dns"
 	Port     uint16 `cbor:"3,keyasint,omitempty"`
 	Interval uint16 `cbor:"4,keyasint"` // seconds
+	// Count is the number of pings sent per ICMP check. Zero means one.
+	Count uint8 `cbor:"5,keyasint,omitempty"`
 }
+
+// MaxICMPCount is the largest number of pings a single ICMP check may send.
+const MaxICMPCount = 10
 
 // SyncRequest defines an incremental or full monitor sync request sent to the agent.
 type SyncRequest struct {
