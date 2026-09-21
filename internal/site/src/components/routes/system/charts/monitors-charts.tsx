@@ -1,7 +1,7 @@
 import { getMonitorTarget } from "@/lib/network-monitor-utils"
 import LineChartDefault from "@/components/charts/line-chart"
 import type { DataPoint } from "@/components/charts/line-chart"
-import { decimalString, formatMicroseconds, matchesFilterGroups, parseFilterGroups, toFixedFloat } from "@/lib/utils"
+import { decimalString, formatMicroseconds, formatMicrosecondsTick, matchesFilterGroups, parseFilterGroups, toFixedFloat } from "@/lib/utils"
 import { $monitorFilter } from "@/lib/stores"
 import { useLingui } from "@lingui/react/macro"
 import { ChartCard, FilterBar } from "../chart-card"
@@ -154,6 +154,21 @@ export function AvgMinMaxResponseChart({ monitorStats, monitor, chartData, empty
 		return monitorStats.filter((record) => record.stats && monitor.id in record.stats)
 	}, [monitor, monitorStats])
 
+	// spread of plotted values, used to pick axis label precision
+	const span = useMemo(() => {
+		let min = Number.POSITIVE_INFINITY
+		let max = Number.NEGATIVE_INFINITY
+		for (const record of data) {
+			for (const point of dataPoints) {
+				const value = point.dataKey(record)
+				if (typeof value !== "number") continue
+				if (value < min) min = value
+				if (value > max) max = value
+			}
+		}
+		return max > min ? max - min : 0
+	}, [data, dataPoints])
+
 	const legend = dataPoints.length > 1
 
 	return (
@@ -172,7 +187,7 @@ export function AvgMinMaxResponseChart({ monitorStats, monitor, chartData, empty
 				domain={["auto", "auto"]}
 				connectNulls
 				legend={legend}
-				tickFormatter={(value) => formatMicroseconds(value, false)}
+				tickFormatter={(value) => formatMicrosecondsTick(value, span)}
 				contentFormatter={({ value }) => {
 					if (typeof value !== "number") {
 						return value

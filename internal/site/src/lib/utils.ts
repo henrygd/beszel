@@ -219,6 +219,25 @@ export function formatMicroseconds(microseconds: number, showDigits = true): str
 	return `${decimalString(seconds, showDigits ? digits : 0)}s`
 }
 
+/**
+ * Format a microsecond value as a chart axis tick, choosing decimals from the
+ * spread of the plotted data so neighboring ticks never collapse to the same label.
+ * @param spanMicroseconds max - min of the plotted values
+ */
+export function formatMicrosecondsTick(microseconds: number, spanMicroseconds: number): string {
+	if (!Number.isFinite(microseconds)) {
+		return "-"
+	}
+	if (microseconds < 1000) {
+		return formatMicroseconds(microseconds)
+	}
+	const divisor = microseconds < 1_000_000 ? 1000 : 1_000_000
+	// axis shows ~5 ticks, so the tick step is roughly a quarter of the span
+	const step = spanMicroseconds / 4 / divisor
+	const digits = step >= 10 ? 0 : step >= 1 ? 1 : 2
+	return `${decimalString(microseconds / divisor, digits)}${divisor === 1000 ? "ms" : "s"}`
+}
+
 /** Get value from local or session storage */
 function getStorageValue(key: string, defaultValue: unknown, storageInterface: Storage = localStorage) {
 	const saved = storageInterface?.getItem(key)
