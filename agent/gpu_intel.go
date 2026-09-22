@@ -1,10 +1,9 @@
 package agent
 
 import (
-	"bufio"
+	"encoding/json"
 	"io"
 	"os/exec"
-	"strconv"
 	"strings"
 
 	"github.com/henrygd/beszel/agent/utils"
@@ -49,10 +48,10 @@ func (gm *GPUManager) updateIntelFromStats(sample *intelGpuStats) bool {
 	return true
 }
 
-// collectIntelStats executes intel_gpu_top in text mode (-l) and parses the output
+// collectIntelStats executes intel_gpu_top in JSON mode (-J) and parses the output.
 func (gm *GPUManager) collectIntelStats() (err error) {
 	// Build command arguments, optionally selecting a device via -d
-	args := []string{"-s", intelGpuStatsInterval, "-l"}
+	args := []string{"-s", intelGpuStatsInterval, "-J"}
 	if dev, ok := utils.GetEnv("INTEL_GPU_DEVICE"); ok && dev != "" {
 		args = append(args, "-d", dev)
 	}
@@ -80,48 +79,41 @@ func (gm *GPUManager) collectIntelStats() (err error) {
 		}
 	}()
 
-	scanner := bufio.NewScanner(stdout)
-	var header1 string
-	var engineNames []string
-	var friendlyNames []string
-	var preEngineCols int
-	var powerIndex int
+	// intel_gpu_top JSON mode wraps all samples in a single array:
+	// "[", then one object per sample (comma separated), and "]" only
+	// when the process exits. Since the process usually runs until it is
+	// killed, the array is never fully read; each sample object is decoded
+	// individually as it becomes available.
+	dec := json.NewDecoder(stdout)
 	var hadDataRow bool
-	// skip first data row because it sometimes has erroneous data
-	var skippedFirstDataRow bool
-
-	for scanner.Scan() {
-		line := strings.TrimSpace(scanner.Text())
-		if line == "" {
-			continue
+	if _, err := dec.Token(); err != nil { // opening "[" of the sample array
+		if err == io.EOF {
+			return errNoValidData
 		}
-
-		// first header line
-		if strings.HasPrefix(line, "Freq") {
-			header1 = line
-			continue
-		}
-
-		// second header line
-		if strings.HasPrefix(line, "req") {
-			engineNames, friendlyNames, powerIndex, preEngineCols = gm.parseIntelHeaders(header1, line)
-			continue
-		}
-
-		// Data row
-		if !skippedFirstDataRow {
-			skippedFirstDataRow = true
-			continue
-		}
-		sample, err := gm.parseIntelData(line, engineNames, friendlyNames, powerIndex, preEngineCols)
-		if err != nil {
+		return err
+	}
+	// Each sample is a single JSON object. More() reports false once the
+	// closing "]" (or EOF, when the process is killed before the array is
+	// closed) is reached; Decode() reads exactly one object and transparently
+	// skips the commas the encoder emits between array elements.
+	for dec.More() {
+		var sample intelGpuJSONSample
+		if err := dec.Decode(&sample); err != nil {
+			// The process can be killed while a sample is being written; the
+			// trailing truncated object is unusable but all complete samples
+			// before it were already consumed.
+			if err == io.EOF || err == io.ErrUnexpectedEOF {
+				break
+			}
 			return err
 		}
-		hadDataRow = true
-		gm.updateIntelFromStats(&sample)
-	}
-	if scanErr := scanner.Err(); scanErr != nil {
-		return scanErr
+		stats := parseIntelJSONSample(sample)
+		// skip first data row because it sometimes has erroneous data
+		if !hadDataRow {
+			hadDataRow = true
+			continue
+		}
+		gm.updateIntelFromStats(&stats)
 	}
 	if !hadDataRow {
 		return errNoValidData
@@ -129,80 +121,65 @@ func (gm *GPUManager) collectIntelStats() (err error) {
 	return nil
 }
 
-func (gm *GPUManager) parseIntelHeaders(header1 string, header2 string) (engineNames []string, friendlyNames []string, powerIndex int, preEngineCols int) {
-	// Build indexes
-	h1 := strings.Fields(header1)
-	h2 := strings.Fields(header2)
-	powerIndex = -1 // Initialize to -1, will be set to actual index if found
-	// Collect engine names from header1
-	for _, col := range h1 {
-		key := strings.TrimRightFunc(col, func(r rune) bool {
-			return (r >= '0' && r <= '9') || r == '/'
-		})
-		var friendly string
-		switch key {
-		case "RCS":
-			friendly = "Render/3D"
-		case "BCS":
-			friendly = "Blitter"
-		case "VCS":
-			friendly = "Video"
-		case "VECS":
-			friendly = "VideoEnhance"
-		case "CCS":
-			friendly = "Compute"
-		default:
-			continue
-		}
-		engineNames = append(engineNames, key)
-		friendlyNames = append(friendlyNames, friendly)
-	}
-	// find power gpu index among pre-engine columns
-	if n := len(engineNames); n > 0 {
-		preEngineCols = max(len(h2)-3*n, 0)
-		limit := min(len(h2), preEngineCols)
-		for i := range limit {
-			if strings.EqualFold(h2[i], "gpu") {
-				powerIndex = i
-				break
-			}
-		}
-	}
-	return engineNames, friendlyNames, powerIndex, preEngineCols
+// intelGpuJSONSample is a single sample from intel_gpu_top -J output.
+// Only the fields we need are mapped; everything else (period, frequency,
+// interrupts, rc6, imc, clients, ...) is ignored by encoding/json.
+type intelGpuJSONSample struct {
+	Power *struct {
+		GPU     float64
+		Package float64
+	} `json:"power"`
+	Engines map[string]struct {
+		Busy float64 `json:"busy"`
+	} `json:"engines"`
 }
 
-func (gm *GPUManager) parseIntelData(line string, engineNames []string, friendlyNames []string, powerIndex int, preEngineCols int) (sample intelGpuStats, err error) {
-	fields := strings.Fields(line)
-	if len(fields) == 0 {
-		return sample, errNoValidData
+// parseIntelJSONSample maps one intel_gpu_top JSON sample into intelGpuStats.
+// The engines object keys are engine class short names (RCS, BCS, VCS, VECS,
+// CCS) in the default class view; physical-engine keys such as "RCS/0" are
+// handled by stripping the instance suffix. Unknown keys are kept as-is so
+// engines on newer/dedicated GPUs still feed the usage calculation instead of
+// being silently dropped.
+func parseIntelJSONSample(sample intelGpuJSONSample) (stats intelGpuStats) {
+	if sample.Power != nil {
+		stats.PowerGPU = sample.Power.GPU
+		stats.PowerPkg = sample.Power.Package
 	}
-	// Make sure row has enough columns for engines
-	if need := preEngineCols + 3*len(engineNames); len(fields) < need {
-		return sample, errNoValidData
-	}
-	if powerIndex >= 0 && powerIndex < len(fields) {
-		if v, perr := strconv.ParseFloat(fields[powerIndex], 64); perr == nil {
-			sample.PowerGPU = v
-		}
-		if v, perr := strconv.ParseFloat(fields[powerIndex+1], 64); perr == nil {
-			sample.PowerPkg = v
-		}
-	}
-	if len(engineNames) > 0 {
-		sample.Engines = make(map[string]float64, len(engineNames))
-		for k := range engineNames {
-			base := preEngineCols + 3*k
-			if base < len(fields) {
-				busy := 0.0
-				if v, e := strconv.ParseFloat(fields[base], 64); e == nil {
-					busy = v
+	if len(sample.Engines) > 0 {
+		stats.Engines = make(map[string]float64, len(sample.Engines))
+		for key, engine := range sample.Engines {
+			// Physical-engine keys look like "RCS/0"; strip the instance
+			// suffix so they map to the same class as in the class view.
+			name := key
+			if idx := strings.IndexByte(key, '/'); idx >= 0 {
+				if rest := key[idx+1:]; rest != "" && isDigits(rest) {
+					name = key[:idx]
 				}
-				cur := sample.Engines[friendlyNames[k]]
-				sample.Engines[friendlyNames[k]] = cur + busy
-			} else {
-				sample.Engines[friendlyNames[k]] = 0
+			}
+			switch name {
+			case "RCS":
+				stats.Engines["Render/3D"] += engine.Busy
+			case "BCS":
+				stats.Engines["Blitter"] += engine.Busy
+			case "VCS":
+				stats.Engines["Video"] += engine.Busy
+			case "VECS":
+				stats.Engines["VideoEnhance"] += engine.Busy
+			case "CCS":
+				stats.Engines["Compute"] += engine.Busy
+			default:
+				stats.Engines[name] += engine.Busy
 			}
 		}
 	}
-	return sample, nil
+	return stats
+}
+
+func isDigits(s string) bool {
+	for _, r := range s {
+		if r < '0' || r > '9' {
+			return false
+		}
+	}
+	return true
 }
