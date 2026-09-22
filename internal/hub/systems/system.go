@@ -9,6 +9,7 @@ import (
 	"math/rand"
 	"net"
 	"strings"
+	"sync"
 	"sync/atomic"
 	"time"
 
@@ -18,6 +19,7 @@ import (
 	"github.com/henrygd/beszel/internal/hub/ws"
 
 	"github.com/henrygd/beszel/internal/entities/container"
+	"github.com/henrygd/beszel/internal/entities/monitor"
 	"github.com/henrygd/beszel/internal/entities/smart"
 	"github.com/henrygd/beszel/internal/entities/system"
 	"github.com/henrygd/beszel/internal/entities/systemd"
@@ -30,6 +32,8 @@ import (
 	"github.com/lxzan/gws"
 	"github.com/pocketbase/dbx"
 	"github.com/pocketbase/pocketbase/core"
+	"github.com/pocketbase/pocketbase/tools/security"
+	"github.com/pocketbase/pocketbase/tools/types"
 	"golang.org/x/crypto/ssh"
 )
 
@@ -53,6 +57,13 @@ type System struct {
 	smartInterval  time.Duration           // Interval for periodic SMART data updates
 	zfsFetching    atomic.Bool                // True if ZFS pools are currently being fetched
 	zfsInterval    time.Duration              // Interval for periodic ZFS detail data updates
+
+	// A fresh connection needs a full monitor configuration sync.
+	monitorsNeedSync atomic.Bool
+	// Serialize persistence from scheduled updates and resumes through commit.
+	recordsMu sync.Mutex
+	// Protected by recordsMu; realtime reads don't consume probes.
+	lastSavedMonitorProbe map[string]int64
 }
 
 func (sm *SystemManager) NewSystem(systemId string) *System {
@@ -212,11 +223,15 @@ func (sys *System) handlePaused() {
 
 // createRecords updates the system record and adds system_stats and container_stats records
 func (sys *System) createRecords(data *system.CombinedData) (*core.Record, error) {
+	sys.recordsMu.Lock()
+	defer sys.recordsMu.Unlock()
+
 	systemRecord, err := sys.getRecord(sys.manager.hub)
 	if err != nil {
 		return nil, err
 	}
 	hub := sys.manager.hub
+	savedMonitorProbes := make(map[string]int64)
 	err = hub.RunInTransaction(func(txApp core.App) error {
 		// add system_stats record
 		systemStatsCollection, err := txApp.FindCachedCollectionByNameOrId("system_stats")
@@ -271,6 +286,12 @@ func (sys *System) createRecords(data *system.CombinedData) (*core.Record, error
 			}
 		}
 
+		if data.Monitors != nil {
+			if err := sys.updateNetworkMonitorsRecords(txApp, data.Monitors, savedMonitorProbes); err != nil {
+				return err
+			}
+		}
+
 		if err := sys.syncZfsPoolHealth(txApp, data.Stats.ZfsPools); err != nil {
 			return err
 		}
@@ -292,6 +313,29 @@ func (sys *System) createRecords(data *system.CombinedData) (*core.Record, error
 		return nil
 	})
 
+	// Publish only successful inserts after the entire transaction commits.
+	if err == nil && len(savedMonitorProbes) > 0 {
+		if sys.lastSavedMonitorProbe == nil {
+			sys.lastSavedMonitorProbe = savedMonitorProbes
+		} else {
+			for id, timestamp := range savedMonitorProbes {
+				sys.lastSavedMonitorProbe[id] = timestamp
+			}
+		}
+	}
+	// A non-nil report includes cached results for all remaining monitors.
+	if err == nil && data.Monitors != nil {
+		for id := range sys.lastSavedMonitorProbe {
+			if _, exists := data.Monitors[id]; !exists {
+				delete(sys.lastSavedMonitorProbe, id)
+			}
+		}
+	}
+	if err == nil {
+		if alertErr := hub.HandleNetworkMonitorAlerts(systemRecord, data.Monitors); alertErr != nil {
+			hub.Logger().Error("Error handling network monitor alerts", "err", alertErr)
+		}
+	}
 	return systemRecord, err
 }
 
@@ -342,7 +386,7 @@ func createSystemdStatsRecords(app core.App, data []*systemd.Service, systemId s
 		}
 		suffix := fmt.Sprintf("%d", i)
 		valueStrings = append(valueStrings, fmt.Sprintf("({:id%[1]s}, {:system}, {:name%[1]s}, {:state%[1]s}, {:sub%[1]s}, {:cpu%[1]s}, {:cpuPeak%[1]s}, {:memory%[1]s}, {:memPeak%[1]s}, {:updated})", suffix))
-		params["id"+suffix] = makeStableHashId(systemId, service.Name)
+		params["id"+suffix] = MakeStableHashId(systemId, service.Name)
 		params["name"+suffix] = service.Name
 		params["state"+suffix] = service.State
 		params["sub"+suffix] = service.Sub
@@ -366,6 +410,106 @@ func createSystemdStatsRecords(app core.App, data []*systemd.Service, systemId s
 		"DELETE FROM systemd_services WHERE system = {:system} AND updated < {:updated}",
 	).Bind(dbx.Params{"system": systemId, "updated": params["updated"]}).Execute()
 	return err
+}
+
+func (sys *System) updateNetworkMonitorsRecords(app core.App, monitorResults map[string]monitor.Result, savedProbes map[string]int64) error {
+	if len(monitorResults) == 0 {
+		return nil
+	}
+	var err error
+	systemId := sys.Id
+	const monitorCollectionName = "network_monitors"
+
+	// If realtime updates are active, we save via PocketBase records to trigger realtime events.
+	// Otherwise we can do a more efficient direct update via SQL
+	realtimeActive := utils.RealtimeActiveForCollection(app, monitorCollectionName, func(filterQuery string) bool {
+		return !strings.Contains(filterQuery, "system") || strings.Contains(filterQuery, systemId)
+	})
+
+	now := time.Now().UTC()
+	nowMilli := now.UnixMilli()
+	nowString := now.Format(types.DefaultDateLayout)
+	var db dbx.Builder
+	var updateQuery *dbx.Query
+	if !realtimeActive {
+		db = app.DB()
+		monitorFields := []string{"res", "resMin1h", "resMax1h", "resAvg1h", "loss1h", "updated"}
+		setClauses := make([]string, len(monitorFields))
+		for i, f := range monitorFields {
+			setClauses[i] = fmt.Sprintf("%s={:%s}", f, f)
+		}
+		queryString := fmt.Sprintf("UPDATE %s SET %s WHERE id={:id}", monitorCollectionName, strings.Join(setClauses, ", "))
+		updateQuery = db.NewQuery(queryString)
+	}
+
+	// update network_monitors records
+	for id, result := range monitorResults {
+		monitorData := map[string]any{
+			"id":       id,
+			"res":      result.AvgResponse,
+			"resAvg1h": result.AvgResponse1h,
+			"resMin1h": result.MinResponse1h,
+			"resMax1h": result.MaxResponse1h,
+			"loss1h":   result.PacketLoss1h,
+			"updated":  nowString,
+		}
+		switch realtimeActive {
+		case true:
+			var record *core.Record
+			record, err = app.FindRecordById(monitorCollectionName, id)
+			if err == nil {
+				record.Load(monitorData)
+				err = app.SaveNoValidate(record)
+			}
+		default:
+			_, err = updateQuery.Bind(dbx.Params(monitorData)).Execute()
+		}
+		if err != nil {
+			app.Logger().Warn("Failed to update monitor", "system", systemId, "monitor", id, "err", err)
+		}
+	}
+
+	// handle stats collection — one record per monitor
+	const statsCollectionName = "network_monitor_stats"
+
+	var statsCollection *core.Collection
+	if realtimeActive {
+		statsCollection, _ = app.FindCachedCollectionByNameOrId(statsCollectionName)
+	}
+
+	for monitorId, result := range monitorResults {
+		// Compare identity, not ordering, so agent clock changes don't stall writes.
+		if result.LastProbeAt == sys.lastSavedMonitorProbe[monitorId] {
+			continue
+		}
+		statsRecordData := map[string]any{
+			"system":        systemId,
+			"monitor":       monitorId,
+			"type":          "1m",
+			"created":       nowMilli,
+			"res_min":       result.MinResponse,
+			"res_max":       result.MaxResponse,
+			"total_count":   result.TotalCount,
+			"success_count": result.SuccessCount,
+			"res_sum":       result.ResponseSum,
+		}
+		switch realtimeActive {
+		case true:
+			record := core.NewRecord(statsCollection)
+			record.Load(statsRecordData)
+			err = app.SaveNoValidate(record)
+		default:
+			statsRecordData["id"] = security.PseudorandomStringWithAlphabet(10, core.DefaultIdAlphabet)
+			_, err = db.Insert(statsCollectionName, dbx.Params(statsRecordData)).Execute()
+		}
+		if err != nil {
+			app.Logger().Error("Failed to update monitor stats", "system", systemId, "monitor", monitorId, "err", err)
+		} else {
+			savedProbes[monitorId] = result.LastProbeAt
+		}
+	}
+
+	return nil
 }
 
 // createContainerRecords creates container records
@@ -494,7 +638,10 @@ func (sys *System) request(ctx context.Context, action common.WebSocketAction, r
 	err := sys.sshTransport.RequestWithRetry(ctx, action, req, dest, 1)
 	// Keep legacy SSH client/version fields in sync for other code paths.
 	if sys.sshTransport != nil {
-		sys.client.Store(sys.sshTransport.GetClient())
+		client := sys.sshTransport.GetClient()
+		if previous := sys.client.Swap(client); client != nil && client != previous {
+			sys.monitorsNeedSync.Store(true)
+		}
 		sys.agentVersion = sys.sshTransport.GetAgentVersion()
 	}
 	return err
@@ -552,6 +699,7 @@ func (sys *System) fetchDataFromAgent(options common.DataRequestOptions) (*syste
 	if sys.WsConn != nil && sys.WsConn.IsConnected() {
 		wsData, err := sys.fetchDataViaWebSocket(options)
 		if err == nil {
+			sys.syncPendingNetworkMonitors()
 			return wsData, nil
 		}
 		// close the WebSocket connection if error and try SSH
@@ -562,6 +710,7 @@ func (sys *System) fetchDataFromAgent(options common.DataRequestOptions) (*syste
 	if err != nil {
 		return nil, err
 	}
+	sys.syncPendingNetworkMonitors()
 	return sshData, nil
 }
 
@@ -627,7 +776,7 @@ func (sys *System) FetchZfsDataFromAgent(force bool) (*zfs.ZfsData, error) {
 	return &result, err
 }
 
-func makeStableHashId(strings ...string) string {
+func MakeStableHashId(strings ...string) string {
 	hash := fnv.New32a()
 	for _, str := range strings {
 		hash.Write([]byte(str))
@@ -796,6 +945,7 @@ func (s *System) createSSHClient() error {
 		return err
 	}
 	s.agentVersion, _ = extractAgentVersion(string(client.Conn.ServerVersion()))
+	s.monitorsNeedSync.Store(true)
 	s.manager.resetFailedSmartFetchState(s.Id)
 	s.manager.resetFailedZfsFetchState(s.Id)
 	return nil
