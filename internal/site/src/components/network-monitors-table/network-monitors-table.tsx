@@ -544,6 +544,13 @@ function NetworkMonitorSheetContent({
 								<span>{monitor.port}</span>
 							</>
 						)}
+						{monitor.protocol === "dns" && monitor.server && (
+							<>
+								<Separator orientation="vertical" className="h-2.5 bg-muted-foreground opacity-70" />
+								<ServerIcon className="size-3.5 text-muted-foreground" />
+								<span>{monitor.server}</span>
+							</>
+						)}
 					</SheetDescription>
 				</SheetHeader>
 				<div className="grid gap-4">

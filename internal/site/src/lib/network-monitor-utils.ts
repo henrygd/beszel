@@ -10,14 +10,8 @@ export function getMonitorStats(record: RawMonitorStatsRecord): MonitorStats {
 	}
 }
 
-export function getMonitorTarget(monitor: Pick<NetworkMonitorRecord, "target" | "protocol" | "port" | "server">) {
-	if (monitor.protocol === "tcp") {
-		const host =
-			monitor.target.includes(":") && !monitor.target.startsWith("[") ? `[${monitor.target}]` : monitor.target
-		return `${host}:${monitor.port}`
-	}
-	if (monitor.protocol === "dns" && monitor.server) {
-		return `${monitor.target} via ${monitor.server}`
-	}
-	return monitor.target
+export function getMonitorTarget(monitor: Pick<NetworkMonitorRecord, "target" | "protocol" | "port">) {
+	if (monitor.protocol !== "tcp") return monitor.target
+	const host = monitor.target.includes(":") && !monitor.target.startsWith("[") ? `[${monitor.target}]` : monitor.target
+	return `${host}:${monitor.port}`
 }
