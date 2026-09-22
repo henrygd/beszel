@@ -10,6 +10,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/henrygd/beszel"
 	"github.com/henrygd/beszel/internal/entities/monitor"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -240,6 +241,7 @@ func TestMonitorManagerGetRandomDelay(t *testing.T) {
 func TestMonitorHTTP(t *testing.T) {
 	t.Run("success", func(t *testing.T) {
 		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			assert.Equal(t, "Beszel-Agent/"+beszel.Version+" (+https://beszel.dev)", r.Header.Get("User-Agent"))
 			w.WriteHeader(http.StatusNoContent)
 		}))
 		defer server.Close()
