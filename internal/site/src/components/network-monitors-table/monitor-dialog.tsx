@@ -23,7 +23,6 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Textarea } from "@/components/ui/textarea"
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 import { ChevronDownIcon, ListIcon, SearchIcon, ServerIcon } from "lucide-react"
 import { useToast } from "@/components/ui/use-toast"
 import { $systems } from "@/lib/stores"
@@ -445,45 +444,31 @@ export function AddMonitorDialog({ systemId, monitors }: { systemId?: string; mo
 
 	return (
 		<>
-			<Tooltip>
-				<TooltipTrigger asChild>
-					<div className="flex gap-0 rounded-lg">
+			<div className="flex gap-0 rounded-lg">
+				<Button variant="outline" onClick={openAdd} className="rounded-e-none grow" disabled={!hasEligibleSystems}>
+					{/* <PlusIcon className="size-4 me-1" /> */}
+					<Trans>Add {{ foo: t`Monitor` }}</Trans>
+				</Button>
+				<div className="w-px h-full bg-muted"></div>
+				<DropdownMenu>
+					<DropdownMenuTrigger asChild>
 						<Button
 							variant="outline"
-							onClick={openAdd}
-							className="rounded-e-none grow"
+							className="px-2 rounded-s-none border-s-0"
+							aria-label={`More actions`}
 							disabled={!hasEligibleSystems}
 						>
-							{/* <PlusIcon className="size-4 me-1" /> */}
-							<Trans>Add {{ foo: t`Monitor` }}</Trans>
+							<ChevronDownIcon className="size-4" />
 						</Button>
-						<div className="w-px h-full bg-muted"></div>
-						<DropdownMenu>
-							<DropdownMenuTrigger asChild>
-								<Button
-									variant="outline"
-									className="px-2 rounded-s-none border-s-0"
-									aria-label={`More actions`}
-									disabled={!hasEligibleSystems}
-								>
-									<ChevronDownIcon className="size-4" />
-								</Button>
-							</DropdownMenuTrigger>
-							<DropdownMenuContent align="end">
-								<DropdownMenuItem onClick={() => openBulkAdd()}>
-									<ListIcon className="size-4 me-2" />
-									<Trans>Bulk Add</Trans>
-								</DropdownMenuItem>
-							</DropdownMenuContent>
-						</DropdownMenu>
-					</div>
-				</TooltipTrigger>
-				{!hasEligibleSystems && (
-					<TooltipContent>
-						<Trans>Add a system first</Trans>
-					</TooltipContent>
-				)}
-			</Tooltip>
+					</DropdownMenuTrigger>
+					<DropdownMenuContent align="end">
+						<DropdownMenuItem onClick={() => openBulkAdd()}>
+							<ListIcon className="size-4 me-2" />
+							<Trans>Bulk Add</Trans>
+						</DropdownMenuItem>
+					</DropdownMenuContent>
+				</DropdownMenu>
+			</div>
 			<Dialog
 				open={open}
 				onOpenChange={(nextOpen) => {
