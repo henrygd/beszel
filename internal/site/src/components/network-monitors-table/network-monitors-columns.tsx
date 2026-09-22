@@ -140,17 +140,14 @@ export function getMonitorColumns(
 			cell: ({ row, getValue }) => {
 				const monitor = row.original
 				const { status } = useStore($allSystemsById)[monitor.system] || {}
-				const { loss1h, res } = monitor
 
 				let color = "bg-green-500"
 				if (!monitor.enabled || status === SystemStatus.Paused) {
 					color = "bg-primary/40"
 				} else if (status === SystemStatus.Down || status === SystemStatus.Pending) {
 					color = "bg-yellow-500"
-				} else if (loss1h === 100 || (!res && loss1h === undefined)) {
+				} else if (monitor.updated && !monitor.res) {
 					color = "bg-red-500"
-				} else if (loss1h) {
-					color = loss1h > 20 ? "bg-red-500" : "bg-yellow-500"
 				}
 				return (
 					<div className="ms-1.5 max-w-64 flex gap-2 items-center tabular-nums">
