@@ -8,8 +8,11 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/henrygd/beszel"
 	"github.com/henrygd/beszel/internal/entities/monitor"
 )
+
+const networkMonitorUserAgent = "Beszel-Agent/" + beszel.Version + " (+https://beszel.dev)"
 
 // monitorProbe performs one check. Errors are recorded as loss by the task runner.
 // Implementations must honor cancellation and bound their execution time.
@@ -93,6 +96,7 @@ func monitorHTTP(ctx context.Context, client *http.Client, url string) (int64, e
 	if err != nil {
 		return -1, err
 	}
+	req.Header.Set("User-Agent", networkMonitorUserAgent)
 	resp, err := client.Do(req)
 	if err != nil {
 		return -1, err
