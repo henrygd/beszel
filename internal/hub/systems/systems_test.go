@@ -18,6 +18,38 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+func TestPauseSystemPreservesAgentVersion(t *testing.T) {
+	hub, user := tests.GetHubWithUser(t)
+	defer hub.Cleanup()
+
+	record, err := tests.CreateRecord(hub, "systems", map[string]any{
+		"name":  "pause-info-test",
+		"host":  "localhost",
+		"port":  "33914",
+		"users": []string{user.Id},
+	})
+	require.NoError(t, err)
+
+	record.Set("info", system.Info{
+		AgentVersion: "0.20.0",
+		Cpu:          42.5,
+		MemPct:       60,
+		Uptime:       3600,
+		Services:     []uint16{3, 1},
+	})
+	require.NoError(t, hub.Save(record))
+
+	record.Set("status", "paused")
+	require.NoError(t, hub.Save(record))
+
+	pausedRecord, err := hub.FindRecordById("systems", record.Id)
+	require.NoError(t, err)
+	assert.Equal(t, "paused", pausedRecord.GetString("status"))
+	var info system.Info
+	require.NoError(t, pausedRecord.UnmarshalJSONField("info", &info))
+	assert.Equal(t, system.Info{AgentVersion: "0.20.0"}, info)
+}
+
 func TestSystemManagerNew(t *testing.T) {
 	hub, err := tests.NewTestHub(t.TempDir())
 	if err != nil {

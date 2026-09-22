@@ -190,7 +190,9 @@ func (sm *SystemManager) onRecordAfterCreateSuccess(e *core.RecordEvent) error {
 // It clears system info when the status is changed to paused.
 func (sm *SystemManager) onRecordUpdate(e *core.RecordEvent) error {
 	if e.Record.GetString("status") == paused {
-		e.Record.Set("info", system.Info{})
+		var prevInfo system.Info
+		e.Record.UnmarshalJSONField("info", &prevInfo)
+		e.Record.Set("info", system.Info{AgentVersion: prevInfo.AgentVersion})
 	}
 	return e.Next()
 }
