@@ -1,4 +1,4 @@
-FROM --platform=$BUILDPLATFORM golang:bookworm AS builder
+vFROM --platform=$BUILDPLATFORM golang:bookworm AS builder
 
 WORKDIR /app
 
@@ -46,6 +46,11 @@ COPY --from=smartmontools-builder /usr/sbin/smartctl /usr/sbin/smartctl
 # Install ZFS userspace utilities (zpool, zfs) for pool/dataset monitoring
 RUN apt-get update && apt-get install -y --no-install-recommends \
   zfsutils-linux \
+  && apt-get clean && rm -rf /var/lib/apt/lists/*
+
+# Install intel-gpu-tools for iGPU monitoring
+RUN apt-get update && apt-get install -y \
+  intel-gpu-tools \
   && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Ensure data persistence across container recreations
