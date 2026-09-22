@@ -165,6 +165,55 @@ func TestSystemManagerNew(t *testing.T) {
 	})
 }
 
+func TestStatusAlertRecoveryAfterPendingTransition(t *testing.T) {
+	hub, user := tests.GetHubWithUser(t)
+	defer hub.Cleanup()
+
+	userSettings, err := hub.FindFirstRecordByFilter("user_settings", "user={:user}", map[string]any{"user": user.Id})
+	require.NoError(t, err)
+	userSettings.Set("settings", map[string]any{
+		"emails":   []string{"test@example.com"},
+		"webhooks": []string{},
+	})
+	require.NoError(t, hub.Save(userSettings))
+
+	record, err := tests.CreateRecord(hub, "systems", map[string]any{
+		"name":  "changed-address",
+		"host":  "192.0.2.1",
+		"port":  "33914",
+		"users": []string{user.Id},
+	})
+	require.NoError(t, err)
+	record.Set("status", "down")
+	require.NoError(t, hub.Save(record))
+
+	alert, err := tests.CreateRecord(hub, "alerts", map[string]any{
+		"name":      "Status",
+		"system":    record.Id,
+		"user":      user.Id,
+		"min":       1,
+		"triggered": true,
+	})
+	require.NoError(t, err)
+	initialEmailCount := hub.TestMailer.TotalSend()
+
+	// The edit dialog temporarily moves the system through pending. The active
+	// status alert must remain active until the new connection is confirmed.
+	record.Set("host", "192.0.2.2")
+	record.Set("status", "pending")
+	require.NoError(t, hub.Save(record))
+	alert, err = hub.FindRecordById("alerts", alert.Id)
+	require.NoError(t, err)
+	assert.True(t, alert.GetBool("triggered"), "pending connection update should preserve the active status alert")
+
+	record.Set("status", "up")
+	require.NoError(t, hub.Save(record))
+	alert, err = hub.FindRecordById("alerts", alert.Id)
+	require.NoError(t, err)
+	assert.False(t, alert.GetBool("triggered"), "pending -> up should resolve the active status alert")
+	assert.Equal(t, initialEmailCount+1, hub.TestMailer.TotalSend(), "recovery should send an up notification")
+}
+
 func testOld(t *testing.T, hub *tests.TestHub) {
 	user, err := tests.CreateUser(hub, "test@testy.com", "testtesttest")
 	require.NoError(t, err)
