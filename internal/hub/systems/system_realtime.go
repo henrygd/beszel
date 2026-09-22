@@ -6,6 +6,8 @@ import (
 	"time"
 
 	"github.com/henrygd/beszel/internal/common"
+	"github.com/henrygd/beszel/internal/entities/monitor"
+	"github.com/henrygd/beszel/internal/entities/system"
 	"github.com/henrygd/beszel/internal/hub/utils"
 	"github.com/pocketbase/dbx"
 	"github.com/pocketbase/pocketbase/apis"
@@ -165,7 +167,7 @@ func (sm *SystemManager) fetchRealtimeDataAndNotify() {
 			if err != nil {
 				return
 			}
-			bytes, err := json.Marshal(data)
+			bytes, err := marshalRealtimeData(data)
 			if err == nil {
 				notify(sm.hub, system, fetch.subscription, bytes)
 			}
@@ -202,6 +204,22 @@ func (sm *SystemManager) finishRealtimeFetch(fetch realtimeFetch) {
 	if info := sm.activeSubscriptions[fetch.systemID]; info == fetch.info {
 		info.fetching = false
 	}
+}
+
+// marshalRealtimeData marshals combined agent data for a realtime broadcast, converting
+// the per-monitor results into the derived metric fields the frontend charts expect.
+func marshalRealtimeData(data *system.CombinedData) ([]byte, error) {
+	if len(data.Monitors) == 0 {
+		return json.Marshal(data)
+	}
+	monitorStats := make(map[string]monitor.Stats, len(data.Monitors))
+	for id, result := range data.Monitors {
+		monitorStats[id] = monitor.Stats{}.FromResult(result)
+	}
+	return json.Marshal(struct {
+		*system.CombinedData
+		Monitors map[string]monitor.Stats `json:"Monitors"`
+	}{data, monitorStats})
 }
 
 // notify broadcasts realtime data to all clients subscribed to a specific subscription.

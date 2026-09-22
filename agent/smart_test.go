@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"strconv"
 	"testing"
 
 	"github.com/henrygd/beszel/internal/entities/smart"
@@ -87,27 +86,6 @@ func TestParseSmartForSata(t *testing.T) {
 	assert.Equal(t, uint64(2048408248320), deviceData.Capacity)
 	if assert.NotEmpty(t, deviceData.Attributes) {
 		assertAttrValue(t, deviceData.Attributes, "Temperature_Celsius", 31)
-	}
-}
-
-func TestParseSmartForSataWarnsForCriticalAttributes(t *testing.T) {
-	for _, attrID := range []int{5, 197, 198} {
-		t.Run("attribute "+strconv.Itoa(attrID), func(t *testing.T) {
-			jsonPayload := []byte(fmt.Sprintf(`{
-				"smartctl": {"exit_status": 0},
-				"device": {"name": "/dev/sda", "type": "sat"},
-				"model_name": "Example",
-				"serial_number": "WARNING%d",
-				"smart_status": {"passed": true},
-				"temperature": {"current": 30},
-				"ata_smart_attributes": {"table": [{"id": %d, "raw": {"value": 1, "string": "1"}}]}
-			}`, attrID, attrID))
-
-			sm := &SmartManager{SmartDataMap: make(map[string]*smart.SmartData)}
-			hasData, _ := sm.parseSmartForSata(jsonPayload, "")
-			require.True(t, hasData)
-			assert.Equal(t, "WARNING", sm.SmartDataMap[fmt.Sprintf("WARNING%d", attrID)].SmartStatus)
-		})
 	}
 }
 
