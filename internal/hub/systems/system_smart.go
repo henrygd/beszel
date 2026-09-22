@@ -77,7 +77,7 @@ func (sys *System) saveSmartDevices(smartData map[string]smart.SmartData, comple
 
 	currentIDs := make(map[string]struct{}, len(smartData))
 	for deviceKey := range smartData {
-		currentIDs[makeStableHashId(sys.Id, deviceKey)] = struct{}{}
+		currentIDs[MakeStableHashId(sys.Id, deviceKey)] = struct{}{}
 	}
 
 	err = hub.RunInTransaction(func(txApp core.App) error {
@@ -115,7 +115,7 @@ func (sys *System) saveSmartDevices(smartData map[string]smart.SmartData, comple
 }
 
 func (sys *System) upsertSmartDeviceRecord(app core.App, collection *core.Collection, deviceKey string, device smart.SmartData) error {
-	recordID := makeStableHashId(sys.Id, deviceKey)
+	recordID := MakeStableHashId(sys.Id, deviceKey)
 
 	record, err := app.FindRecordById(collection, recordID)
 	if err != nil {

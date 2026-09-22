@@ -17,7 +17,7 @@ RUN set -eux; \
   if [ "$TARGETARCH" = "arm" ] && [ -n "$TARGETVARIANT" ]; then \
     export GOARM="${TARGETVARIANT#v}"; \
   fi; \
-  CGO_ENABLED=0 GOGC=75 GOOS=$TARGETOS GOARCH=$TARGETARCH \
+  CGO_ENABLED=0 GOOS=$TARGETOS GOARCH=$TARGETARCH \
     go build -tags glibc -ldflags "-w -s" -o /agent ./internal/cmd/agent
 
 # --------------------------
@@ -70,7 +70,9 @@ RUN set -eux; \
 # --------------------------
 FROM --platform=$TARGETPLATFORM debian:bookworm-slim AS zfsutils-builder
 
-RUN apt-get update && apt-get install -y --no-install-recommends \
+# zfsutils-linux is distributed in Debian's contrib component.
+RUN sed -i 's/Components: main/Components: main contrib/' /etc/apt/sources.list.d/debian.sources \
+  && apt-get update && apt-get install -y --no-install-recommends \
   zfsutils-linux \
   && rm -rf /var/lib/apt/lists/*
 

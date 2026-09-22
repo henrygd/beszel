@@ -15,7 +15,7 @@ export default function () {
 	const page = useStore($router)
 	const [isFirstRun, setFirstRun] = useState(false)
 	const [authMethods, setAuthMethods] = useState<AuthMethodsList>()
-	const { theme } = useTheme()
+	const { resolvedTheme } = useTheme()
 
 	useEffect(() => {
 		document.title = t`Login` + " / Beszel"
@@ -54,7 +54,7 @@ export default function () {
 			<div
 				className="grid gap-5 w-full px-4 mx-auto"
 				// @ts-expect-error
-				style={{ maxWidth: "21.5em", "--border": theme == "light" ? "hsl(30, 8%, 70%)" : "hsl(220, 3%, 25%)" }}
+				style={{ maxWidth: "21.5em", "--border": resolvedTheme == "light" ? "hsl(30, 8%, 70%)" : "hsl(220, 3%, 25%)" }}
 			>
 				<div className="absolute top-3 right-3">
 					<ModeToggle />

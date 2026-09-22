@@ -4,6 +4,7 @@ const routes = {
 	home: "/",
 	containers: "/containers",
 	smart: "/smart",
+	monitors: "/monitors",
 	system: `/system/:id`,
 	settings: `/settings/:name?`,
 	forgot_password: `/forgot-password`,
