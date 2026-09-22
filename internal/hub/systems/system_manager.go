@@ -9,6 +9,7 @@ import (
 
 	"github.com/henrygd/beszel/internal/hub/ws"
 
+	"github.com/henrygd/beszel/internal/entities/monitor"
 	"github.com/henrygd/beszel/internal/entities/system"
 	"github.com/henrygd/beszel/internal/hub/expirymap"
 
@@ -17,6 +18,7 @@ import (
 	"github.com/henrygd/beszel"
 
 	"github.com/blang/semver"
+	"github.com/pocketbase/dbx"
 	"github.com/pocketbase/pocketbase/core"
 	"github.com/pocketbase/pocketbase/tools/store"
 	"golang.org/x/crypto/ssh"
@@ -62,6 +64,7 @@ type hubLike interface {
 	core.App
 	GetSSHKey(dataDir string) (ssh.Signer, error)
 	HandleSystemAlerts(systemRecord *core.Record, data *system.CombinedData) error
+	HandleNetworkMonitorAlerts(systemRecord *core.Record, results map[string]monitor.Result) error
 	HandleStatusAlerts(status string, systemRecord *core.Record) error
 	HandleContainerAlerts(systemRecord *core.Record, data *system.CombinedData, fetchLogs func(containerID string) (string, error)) error
 	CancelPendingStatusAlerts(systemID string)
@@ -346,10 +349,15 @@ func (sm *SystemManager) AddWebSocketSystem(systemId string, agentVersion semver
 	system := sm.NewSystem(systemId)
 	system.WsConn = wsConn
 	system.agentVersion = agentVersion
+	system.monitorsNeedSync.Store(true)
 
 	if err := sm.AddRecord(systemRecord, system); err != nil {
 		return err
 	}
+
+	// Sync network monitors to the newly connected agent
+	go system.syncPendingNetworkMonitors()
+
 	return nil
 }
 
@@ -360,6 +368,16 @@ func (sm *SystemManager) resetFailedSmartFetchState(systemID string) {
 	if ok && !state.Successful {
 		sm.smartFetchMap.Remove(systemID)
 	}
+}
+
+// GetMonitorConfigsForSystem returns all enabled monitor configs for a system.
+func (sm *SystemManager) GetMonitorConfigsForSystem(systemID string) ([]monitor.Config, error) {
+	var configs []monitor.Config
+	err := sm.hub.DB().
+		NewQuery("SELECT id, target, protocol, port, interval FROM network_monitors WHERE system = {:system} AND enabled = true").
+		Bind(dbx.Params{"system": systemID}).
+		All(&configs)
+	return configs, err
 }
 
 // resetFailedZfsFetchState clears only failed ZFS cooldown entries so a fresh
@@ -397,11 +415,12 @@ func (sm *SystemManager) createSSHClientConfig() error {
 
 // deactivateAlerts finds all triggered alerts for a system and sets them to inactive.
 // This is called when a system is paused or goes offline to prevent continued alerts.
+// Monitor incidents remain open: a missing observation does not establish recovery.
 func deactivateAlerts(app core.App, systemID string) error {
 	// Note: Direct SQL updates don't trigger SSE, so we use the PocketBase API
 	// _, err := app.DB().NewQuery(fmt.Sprintf("UPDATE alerts SET triggered = false WHERE system = '%s'", systemID)).Execute()
 
-	alerts, err := app.FindRecordsByFilter("alerts", fmt.Sprintf("system = '%s' && triggered = 1", systemID), "", -1, 0)
+	alerts, err := app.FindRecordsByFilter("alerts", fmt.Sprintf("system = '%s' && triggered = 1 && name != 'NetworkMonitorLoss'", systemID), "", -1, 0)
 	if err != nil {
 		return err
 	}

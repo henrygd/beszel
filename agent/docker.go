@@ -68,10 +68,11 @@ type dockerManager struct {
 	excludeContainers    []string                    // Patterns to exclude containers by name
 	usingPodman          bool                        // Whether the Docker Engine API is running on Podman
 
-	registryClient      *http.Client                  // Client for registry requests; nil uses a client with a 10-second timeout
-	imageUpdatesMutex   sync.RWMutex                  // Protects imageUpdates, its entries, and imageUpdatesRunning
-	imageUpdates        map[string]*imageUpdateStatus // Shared update status keyed by normalized image reference
-	imageUpdatesRunning bool                          // Whether a background image-update batch is in progress
+	registryClient       *http.Client                  // Client for registry requests; nil uses a client with a 10-second timeout
+	imageUpdatesDisabled bool                          // Whether image update checks are disabled by configuration
+	imageUpdatesMutex    sync.RWMutex                  // Protects imageUpdates, its entries, and imageUpdatesRunning
+	imageUpdates         map[string]*imageUpdateStatus // Shared update status keyed by normalized image reference
+	imageUpdatesRunning  bool                          // Whether a background image-update batch is in progress
 
 	// Cache-time-aware tracking for CPU stats (similar to cpu.go)
 	// Maps cache time intervals to container-specific CPU usage tracking
@@ -688,6 +689,8 @@ func newDockerManager(agent *Agent) *dockerManager {
 		userAgent: "Docker-Client/",
 	}
 
+	dockerImageCheck, _ := utils.GetEnv("DOCKER_IMAGE_CHECK")
+
 	// Read container exclusion patterns from environment variable
 	var excludeContainers []string
 	if excludeStr, set := utils.GetEnv("EXCLUDE_CONTAINERS"); set && excludeStr != "" {
@@ -707,10 +710,11 @@ func newDockerManager(agent *Agent) *dockerManager {
 			Timeout:   timeout,
 			Transport: userAgentTransport,
 		},
-		containerStatsMap: make(map[string]*container.Stats),
-		sem:               make(chan struct{}, 5),
-		apiContainerList:  []*container.ApiInfo{},
-		excludeContainers: excludeContainers,
+		containerStatsMap:    make(map[string]*container.Stats),
+		sem:                  make(chan struct{}, 5),
+		apiContainerList:     []*container.ApiInfo{},
+		excludeContainers:    excludeContainers,
+		imageUpdatesDisabled: dockerImageCheck == "false",
 
 		// Initialize cache-time-aware tracking structures
 		lastCpuContainer:    make(map[uint16]map[string]uint64),
