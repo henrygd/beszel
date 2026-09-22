@@ -17,6 +17,10 @@ func generateMonitorID(systemId string, config monitor.Config) string {
 	if config.Protocol == "tcp" {
 		args = append(args, strconv.FormatUint(uint64(config.Port), 10))
 	}
+	// only use server for DNS monitors, so the same target queried via different servers gets distinct monitors
+	if config.Protocol == "dns" {
+		args = append(args, config.Server)
+	}
 	return systems.MakeStableHashId(args...)
 }
 
@@ -53,9 +57,14 @@ func bindNetworkMonitorsEvents(hub *Hub) {
 	// record with the new ID and delete the old one. Otherwise, just update the existing monitor on the agent.
 	hub.OnRecordUpdateRequest("network_monitors").BindFunc(func(e *core.RecordRequestEvent) error {
 		systemID := e.Record.GetString("system")
+		protocol := e.Record.GetString("protocol")
 		// only tcp uses port - set other protocols port to zero
-		if e.Record.GetString("protocol") != "tcp" {
+		if protocol != "tcp" {
 			e.Record.Set("port", 0)
+		}
+		// only dns uses server - clear it for other protocols
+		if protocol != "dns" {
+			e.Record.Set("server", "")
 		}
 		ID := generateMonitorID(systemID, *monitorConfigFromRecord(e.Record))
 		if ID != e.Record.Id {
@@ -103,6 +112,7 @@ func monitorConfigFromRecord(record *core.Record) *monitor.Config {
 		Protocol: record.GetString("protocol"),
 		Port:     uint16(record.GetInt("port")),
 		Interval: uint16(record.GetInt("interval")),
+		Server:   record.GetString("server"),
 	}
 }
 
@@ -124,7 +134,7 @@ func copyMonitorToNewRecord(oldRecord *core.Record, newID string) *core.Record {
 	collection := oldRecord.Collection()
 	newRecord := core.NewRecord(collection)
 	newRecord.Id = newID
-	fields := []string{"system", "target", "protocol", "port", "interval", "enabled"}
+	fields := []string{"system", "target", "protocol", "port", "server", "interval", "enabled"}
 	for _, field := range fields {
 		newRecord.Set(field, oldRecord.Get(field))
 	}
