@@ -637,23 +637,24 @@ const certExpiryTextColors = { ok: "", warning: "text-yellow-600 dark:text-yello
 function CertExpiry({ cert }: { cert: MonitorCertInfo }) {
 	const daysLeft = getCertDaysLeft(cert)
 	const expires = formatShortDate(new Date(cert.expires).toISOString())
+	const level = getCertExpiryLevel(daysLeft)
 	return (
 		<>
 			<Separator orientation="vertical" className="h-2.5 bg-muted-foreground opacity-70" />
-			<ShieldCheckIcon className="size-3.5 text-muted-foreground" />
-			<span className={certExpiryTextColors[getCertExpiryLevel(daysLeft)]}>
+			<ShieldCheckIcon className={cn("size-3.5 text-muted-foreground -me-1", certExpiryTextColors[level])} />
+			<span className={certExpiryTextColors[level]}>
 				{daysLeft < 0 ? (
 					<Trans>Certificate expired {expires}</Trans>
 				) : (
 					<Trans>
-						Certificate expires {expires} (<Plural value={daysLeft} one="# day" other="# days" />)
+						Certificate expires {expires} 
 					</Trans>
 				)}
 			</span>
 			{cert.issuer && (
 				<>
 					<Separator orientation="vertical" className="h-2.5 bg-muted-foreground opacity-70" />
-					<LandmarkIcon className="size-3.5 text-muted-foreground" />
+					<LandmarkIcon className="size-3.5 text-muted-foreground -me-0.5" />
 					<span>{cert.issuer}</span>
 				</>
 			)}
@@ -708,7 +709,7 @@ function NetworkMonitorSheetContent({
 							{system?.name ?? ""}
 						</Link>
 						<Separator orientation="vertical" className="h-2.5 bg-muted-foreground opacity-70" />
-						<ArrowLeftRightIcon className="size-3.5 text-muted-foreground" />
+						<ArrowLeftRightIcon className="size-3.5 text-muted-foreground -me-0.5" />
 						{monitor.protocol.toUpperCase()}
 						{monitor.protocol === "tcp" && monitor.port > 0 && (
 							<>
