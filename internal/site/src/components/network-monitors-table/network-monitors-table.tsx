@@ -642,20 +642,11 @@ function NetworkMonitorSheet({
 function CertExpiry({ cert }: { cert: MonitorCertInfo }) {
 	const daysLeft = getCertDaysLeft(cert)
 	const expires = formatShortDate(new Date(cert.expires).toISOString())
-	const details = [
-		cert.subject && t`Subject: ${cert.subject}`,
-		t`Checked: ${formatShortDate(new Date(cert.checked).toISOString())}`,
-	]
-		.filter(Boolean)
-		.join("\n")
 	return (
 		<>
 			<Separator orientation="vertical" className="h-2.5 bg-muted-foreground opacity-70" />
 			<ShieldCheckIcon className="size-3.5 text-muted-foreground" />
-			<span
-				title={details}
-				className={cn(daysLeft < 7 ? "text-red-500" : daysLeft < 14 ? "text-yellow-600 dark:text-yellow-500" : "")}
-			>
+			<span className={cn(daysLeft < 7 ? "text-red-500" : daysLeft < 14 ? "text-yellow-600 dark:text-yellow-500" : "")}>
 				{daysLeft < 0 ? (
 					<Trans>Certificate expired {expires}</Trans>
 				) : (
@@ -668,7 +659,7 @@ function CertExpiry({ cert }: { cert: MonitorCertInfo }) {
 				<>
 					<Separator orientation="vertical" className="h-2.5 bg-muted-foreground opacity-70" />
 					<LandmarkIcon className="size-3.5 text-muted-foreground" />
-					<span title={t`Issuer`}>{cert.issuer}</span>
+					<span>{cert.issuer}</span>
 				</>
 			)}
 		</>

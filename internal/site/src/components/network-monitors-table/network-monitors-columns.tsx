@@ -16,6 +16,7 @@ import {
 	PlayCircleIcon,
 	CopyIcon,
 	CopyPlusIcon,
+	ShieldCheckIcon,
 } from "lucide-react"
 import { t } from "@lingui/core/macro"
 import type { NetworkMonitorRecord, SystemRecord } from "@/types"
@@ -37,7 +38,7 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { useMemo } from "react"
 import { formatBulkMonitorLine } from "@/components/network-monitors-table/monitor-dialog"
 import { Badge } from "../ui/badge"
-import { getMonitorTarget } from "@/lib/network-monitor-utils"
+import { getCertDaysLeft, getMonitorTarget } from "@/lib/network-monitor-utils"
 import { pb } from "@/lib/api"
 
 declare module "@tanstack/react-table" {
@@ -245,6 +246,33 @@ export function getMonitorColumns(
 					<span className="ms-1.5 tabular-nums flex gap-2 items-center">
 						<span className={cn("shrink-0 size-2 rounded-full", color)} />
 						{loss1h === 100 ? loss1h : decimalString(loss1h, loss1h >= 10 ? 1 : 2)}%
+					</span>
+				)
+			},
+		},
+		{
+			id: "cert",
+			accessorFn: (record) => (record.checkCert && record.certInfo?.expires ? record.certInfo.expires : undefined),
+			header: ({ column }) => <HeaderButton column={column} name={t`Certificate`} Icon={ShieldCheckIcon} />,
+			cell: ({ row }) => {
+				const { checkCert, certInfo, system } = row.original
+				const systemRecord = useStore($allSystemsById)[system]
+
+				if (!checkCert || !certInfo?.expires) {
+					return <span className="ms-1.5 text-muted-foreground">-</span>
+				}
+
+				const daysLeft = getCertDaysLeft(certInfo)
+				let color = "bg-green-500"
+				if (isMuted(row.original, systemRecord)) {
+					color = "bg-muted-foreground/50"
+				} else if (daysLeft < 14) {
+					color = daysLeft < 7 ? "bg-red-500" : "bg-yellow-500"
+				}
+				return (
+					<span className="ms-1.5 tabular-nums flex gap-2 items-center">
+						<span className={cn("shrink-0 size-2 rounded-full", color)} />
+						{daysLeft < 0 ? <Trans>Expired</Trans> : <Trans>{daysLeft} days</Trans>}
 					</span>
 				)
 			},
