@@ -25,6 +25,7 @@ type AlertManager struct {
 	stopOnce          sync.Once
 	pendingAlerts     sync.Map
 	alertsCache       *AlertsCache
+	networkMonitors   *networkMonitorCache
 	userSettingsMu    sync.RWMutex
 	userSettingsCache []*core.Record // nil means stale; populated lazily
 }
@@ -52,6 +53,7 @@ type SystemAlertFsStats struct {
 // Values pulled from system_stats.stats that are relevant to alerts.
 type SystemAlertStats struct {
 	Cpu          float64                       `json:"cpu"`
+	CpuBreakdown []float64                     `json:"cpub"`
 	Mem          float64                       `json:"mp"`
 	Disk         float64                       `json:"dp"`
 	Bandwidth    [2]uint64                     `json:"b"`
@@ -61,10 +63,17 @@ type SystemAlertStats struct {
 	Battery      [2]uint8                      `json:"bat"`
 	Batteries    map[string]uint8              `json:"bats"`
 	ExtraFs      map[string]SystemAlertFsStats `json:"efs"`
+	ZfsPools     map[string]SystemAlertZfsPool `json:"z"`
 }
 
 type SystemAlertGPUData struct {
 	Usage float64 `json:"u"`
+}
+
+type SystemAlertZfsPool struct {
+	Raw   bool    `json:"raw,omitempty"`
+	Total float64 `json:"d"`
+	Used  float64 `json:"du"`
 }
 
 type SystemAlertData struct {
@@ -103,8 +112,9 @@ var supportsTitle = map[string]struct{}{
 // NewAlertManager creates a new AlertManager instance.
 func NewAlertManager(app hubLike) *AlertManager {
 	am := &AlertManager{
-		hub:         app,
-		alertsCache: NewAlertsCache(app),
+		hub:             app,
+		alertsCache:     NewAlertsCache(app),
+		networkMonitors: newNetworkMonitorCache(app),
 	}
 	am.bindEvents()
 	return am
@@ -112,9 +122,13 @@ func NewAlertManager(app hubLike) *AlertManager {
 
 // Bind events to the alerts collection lifecycle
 func (am *AlertManager) bindEvents() {
+	am.bindNetworkMonitorAlertEvents()
 	am.hub.OnRecordAfterUpdateSuccess("alerts").BindFunc(updateHistoryOnAlertUpdate)
 	am.hub.OnRecordAfterDeleteSuccess("alerts").BindFunc(resolveHistoryOnAlertDelete)
 	am.hub.OnRecordAfterUpdateSuccess("smart_devices").BindFunc(am.handleSmartDeviceAlert)
+	am.hub.OnRecordAfterCreateSuccess("zfs_pools").BindFunc(am.handleZfsPoolCreateAlert)
+	am.hub.OnRecordAfterUpdateSuccess("zfs_pools").BindFunc(am.handleZfsPoolAlert)
+	am.hub.OnRecordAfterDeleteSuccess("zfs_pools").BindFunc(resolveZfsPoolHistoryOnDelete)
 
 	// Invalidate the user_settings cache whenever settings change
 	invalidateUserSettings := func(e *core.RecordEvent) error {
@@ -133,6 +147,9 @@ func (am *AlertManager) bindEvents() {
 
 		if err := resolveStatusAlerts(e.App); err != nil {
 			e.App.Logger().Error("Failed to resolve stale status alerts", "err", err)
+		}
+		if err := resolveSystemdAlerts(e.App); err != nil {
+			e.App.Logger().Error("Failed to resolve stale systemd alerts", "err", err)
 		}
 		if err := am.restorePendingStatusAlerts(); err != nil {
 			e.App.Logger().Error("Failed to restore pending status alerts", "err", err)
@@ -254,11 +271,26 @@ func (am *AlertManager) SendAlert(data AlertMessageData) error {
 			am.hub.Logger().Info("Notification silenced", "user", userID, "system", data.SystemID, "title", data.Title)
 			continue
 		}
+		// send alerts via webhooks
+		send := sendPublicNotification
+		if len(userAlertSettings.Webhooks) > 0 {
+			// Read the owner's current role at delivery time, including for URLs
+			// saved before an admin was demoted. Never fall back on lookup failure.
+			owner, err := am.hub.FindRecordById("users", userID)
+			if err != nil {
+				am.hub.Logger().Error("Failed to load notification owner", "err", err, "user", userID)
+				continue
+			}
+			if owner.GetString("role") == "admin" {
+				send = shoutrrr.Send
+			}
+		}
 		for _, webhook := range userAlertSettings.Webhooks {
-			if err := am.SendShoutrrrAlert(webhook, data.Title, data.Message, data.Link, data.LinkText); err != nil {
+			if err := am.sendShoutrrrAlert(webhook, data.Title, data.Message, data.Link, data.LinkText, send); err != nil {
 				am.hub.Logger().Error("Failed to send shoutrrr alert", "err", err)
 			}
 		}
+		// send alerts via email
 		if len(userAlertSettings.Emails) > 0 {
 			addresses := make([]mail.Address, 0, len(userAlertSettings.Emails))
 			for _, email := range userAlertSettings.Emails {
@@ -285,6 +317,10 @@ func (am *AlertManager) SendAlert(data AlertMessageData) error {
 
 // SendShoutrrrAlert sends an alert via a Shoutrrr URL
 func (am *AlertManager) SendShoutrrrAlert(notificationUrl, title, message, link, linkText string) error {
+	return am.sendShoutrrrAlert(notificationUrl, title, message, link, linkText, shoutrrr.Send)
+}
+
+func (am *AlertManager) sendShoutrrrAlert(notificationUrl, title, message, link, linkText string, send func(string, string) error) error {
 	// Parse the URL
 	parsedURL, err := url.Parse(notificationUrl)
 	if err != nil {
@@ -327,7 +363,7 @@ func (am *AlertManager) SendShoutrrrAlert(notificationUrl, title, message, link,
 	parsedURL.RawQuery = queryParams.Encode()
 	// log.Println("URL after modification:", parsedURL.String())
 
-	err = shoutrrr.Send(parsedURL.String(), message)
+	err = send(parsedURL.String(), message)
 
 	if err == nil {
 		am.hub.Logger().Info("Sent shoutrrr alert", "title", title)

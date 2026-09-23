@@ -9,6 +9,12 @@ import (
 
 // On triggered alert record delete, set matching alert history record to resolved
 func resolveHistoryOnAlertDelete(e *core.RecordEvent) error {
+	if e.Record.GetString("name") == alertNameNetworkMonitorLoss {
+		if err := resolveNetworkMonitorHistory(e.App, e.Record.Id); err != nil {
+			return err
+		}
+		return e.Next()
+	}
 	if !e.Record.GetBool("triggered") {
 		return e.Next()
 	}
@@ -18,6 +24,10 @@ func resolveHistoryOnAlertDelete(e *core.RecordEvent) error {
 
 // On alert record update, update alert history record
 func updateHistoryOnAlertUpdate(e *core.RecordEvent) error {
+	// Network monitor incidents have separate history entries per monitor.
+	if e.Record.GetString("name") == alertNameNetworkMonitorLoss {
+		return e.Next()
+	}
 	original := e.Record.Original()
 	new := e.Record
 

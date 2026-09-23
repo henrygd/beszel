@@ -11,11 +11,11 @@ func init() {
 		jsonData := `[
 	{
 		"id": "elngm8x1l60zi2v",
-		"listRule": "@request.auth.id != \"\"",
-		"viewRule": "@request.auth.id != \"\"",
-		"createRule": "@request.auth.superuser = true || @request.auth.role = 'admin'",
-		"updateRule": "@request.auth.superuser = true || @request.auth.role = 'admin'",
-		"deleteRule": "@request.auth.superuser = true || @request.auth.role = 'admin'",
+		"listRule": "@request.auth.id != \"\" && user = @request.auth.id",
+		"viewRule": null,
+		"createRule": "@request.auth.id != \"\" && user = @request.auth.id",
+		"updateRule": "@request.auth.id != \"\" && user = @request.auth.id",
+		"deleteRule": "@request.auth.id != \"\" && user = @request.auth.id",
 		"name": "alerts",
 		"type": "base",
 		"fields": [
@@ -32,6 +32,19 @@ func init() {
 				"required": true,
 				"system": true,
 				"type": "text"
+			},
+			{
+				"cascadeDelete": true,
+				"collectionId": "_pb_users_auth_",
+				"hidden": false,
+				"id": "hn5ly3vi",
+				"maxSelect": 1,
+				"minSelect": 0,
+				"name": "user",
+				"presentable": false,
+				"required": true,
+				"system": false,
+				"type": "relation"
 			},
 			{
 				"cascadeDelete": true,
@@ -66,7 +79,12 @@ func init() {
 					"LoadAvg1",
 					"LoadAvg5",
 					"LoadAvg15",
-					"Battery"
+					"Battery",
+					"ContainerHealth",
+					"SystemdFailed",
+					"CPUIOWait",
+					"CPUSteal",
+					"NetworkMonitorLoss"
 				]
 			},
 			{
@@ -103,6 +121,27 @@ func init() {
 				"type": "bool"
 			},
 			{
+				"hidden": true,
+				"id": "json4000656575",
+				"maxSize": 0,
+				"name": "state",
+				"presentable": false,
+				"required": false,
+				"system": false,
+				"type": "json"
+			},
+			{
+				"hidden": true,
+				"id": "date1302749137",
+				"max": "",
+				"min": "",
+				"name": "pending_since",
+				"presentable": false,
+				"required": false,
+				"system": false,
+				"type": "date"
+			},
+			{
 				"hidden": false,
 				"id": "autodate2990389176",
 				"name": "created",
@@ -124,17 +163,18 @@ func init() {
 			}
 		],
 		"indexes": [
-			"CREATE UNIQUE INDEX ` + "`" + `idx_MnhEt21L5r` + "`" + ` ON ` + "`" + `alerts` + "`" + ` (\n  ` + "`" + `system` + "`" + `,\n  ` + "`" + `name` + "`" + `\n)"
+			"CREATE INDEX idx_alerts_system_name ON alerts (system, name)",
+			"CREATE UNIQUE INDEX ` + "`" + `idx_MnhEt21L5r` + "`" + ` ON ` + "`" + `alerts` + "`" + ` (\n  ` + "`" + `user` + "`" + `,\n  ` + "`" + `system` + "`" + `,\n  ` + "`" + `name` + "`" + `\n)"
 		],
 		"system": false
 	},
 	{
 		"id": "pbc_1697146157",
-		"listRule": "@request.auth.id != \"\"",
-		"viewRule": "@request.auth.id != \"\"",
+		"listRule": "@request.auth.id != \"\" && user = @request.auth.id",
+		"viewRule": null,
 		"createRule": null,
 		"updateRule": null,
-		"deleteRule": null,
+		"deleteRule": "@request.auth.id != \"\" && user = @request.auth.id",
 		"name": "alerts_history",
 		"type": "base",
 		"fields": [
@@ -151,6 +191,19 @@ func init() {
 					"required": true,
 					"system": true,
 					"type": "text"
+				},
+				{
+					"cascadeDelete": true,
+					"collectionId": "_pb_users_auth_",
+					"hidden": false,
+					"id": "relation2375276105",
+					"maxSelect": 1,
+					"minSelect": 0,
+					"name": "user",
+					"presentable": false,
+					"required": true,
+					"system": false,
+					"type": "relation"
 				},
 				{
 					"cascadeDelete": true,
@@ -194,6 +247,20 @@ func init() {
 					"type": "text"
 				},
 				{
+					"autogeneratePattern": "",
+					"hidden": false,
+					"id": "text3888135399",
+					"max": 0,
+					"min": 0,
+					"name": "monitor_name",
+					"pattern": "",
+					"presentable": false,
+					"primaryKey": false,
+					"required": false,
+					"system": false,
+					"type": "text"
+				},
+				{
 					"hidden": false,
 					"id": "number494360628",
 					"max": null,
@@ -228,6 +295,7 @@ func init() {
 				}
 		],
 		"indexes": [
+			"CREATE INDEX ` + "`" + `idx_YdGnup5aqB` + "`" + ` ON ` + "`" + `alerts_history` + "`" + ` (` + "`" + `user` + "`" + `)",
 			"CREATE INDEX ` + "`" + `idx_taLet9VdME` + "`" + ` ON ` + "`" + `alerts_history` + "`" + ` (` + "`" + `created` + "`" + `)"
 		],
 		"system": false
@@ -989,6 +1057,15 @@ func init() {
 					"required": true,
 					"system": false,
 					"type": "number"
+				},
+				{
+					"hidden": false,
+					"id": "bool2084032502",
+					"name": "updatable",
+					"presentable": false,
+					"required": false,
+					"system": false,
+					"type": "bool"
 				}
 		],
 		"indexes": [
@@ -1668,6 +1745,557 @@ func init() {
 		],
 		"listRule": null,
 		"name": "universal_tokens",
+		"system": false,
+		"type": "base",
+		"updateRule": null,
+		"viewRule": null
+	},
+	{
+		"createRule": null,
+		"deleteRule": null,
+		"fields": [
+			{
+				"autogeneratePattern": "[a-z0-9]{15}",
+				"help": "",
+				"hidden": false,
+				"id": "text3208210256",
+				"max": 15,
+				"min": 15,
+				"name": "id",
+				"pattern": "^[a-z0-9]+$",
+				"presentable": false,
+				"primaryKey": true,
+				"required": true,
+				"system": true,
+				"type": "text"
+			},
+			{
+				"cascadeDelete": true,
+				"collectionId": "2hz5ncl8tizk5nx",
+				"help": "",
+				"hidden": false,
+				"id": "relation1204987316",
+				"maxSelect": 1,
+				"minSelect": 0,
+				"name": "system",
+				"presentable": false,
+				"required": true,
+				"system": false,
+				"type": "relation"
+			},
+			{
+				"autogeneratePattern": "",
+				"help": "",
+				"hidden": false,
+				"id": "text7739291048",
+				"max": 0,
+				"min": 0,
+				"name": "name",
+				"pattern": "",
+				"presentable": false,
+				"primaryKey": false,
+				"required": false,
+				"system": false,
+				"type": "text"
+			},
+			{
+				"autogeneratePattern": "",
+				"help": "",
+				"hidden": false,
+				"id": "text5528164482",
+				"max": 0,
+				"min": 0,
+				"name": "health",
+				"pattern": "",
+				"presentable": false,
+				"primaryKey": false,
+				"required": false,
+				"system": false,
+				"type": "text"
+			},
+			{
+				"help": "",
+				"hidden": false,
+				"id": "number8862034195",
+				"max": null,
+				"min": null,
+				"name": "size",
+				"onlyInt": true,
+				"presentable": false,
+				"required": false,
+				"system": false,
+				"type": "number"
+			},
+			{
+				"help": "",
+				"hidden": false,
+				"id": "number4418907321",
+				"max": null,
+				"min": null,
+				"name": "alloc",
+				"onlyInt": true,
+				"presentable": false,
+				"required": false,
+				"system": false,
+				"type": "number"
+			},
+			{
+				"help": "",
+				"hidden": false,
+				"id": "number2904183765",
+				"max": null,
+				"min": null,
+				"name": "free",
+				"onlyInt": true,
+				"presentable": false,
+				"required": false,
+				"system": false,
+				"type": "number"
+			},
+			{
+				"help": "",
+				"hidden": false,
+				"id": "json4466109723",
+				"maxSize": 0,
+				"name": "scrub",
+				"presentable": false,
+				"required": false,
+				"system": false,
+				"type": "json"
+			},
+			{
+				"help": "",
+				"hidden": false,
+				"id": "json9012873456",
+				"maxSize": 0,
+				"name": "vdevs",
+				"presentable": false,
+				"required": false,
+				"system": false,
+				"type": "json"
+			},
+			{
+				"help": "",
+				"hidden": false,
+				"id": "json7182045639",
+				"maxSize": 0,
+				"name": "datasets",
+				"presentable": false,
+				"required": false,
+				"system": false,
+				"type": "json"
+			},
+			{
+				"help": "",
+				"hidden": false,
+				"id": "date9274163058",
+				"max": "",
+				"min": "",
+				"name": "details_updated",
+				"presentable": false,
+				"required": false,
+				"system": false,
+				"type": "date"
+			},
+			{
+				"hidden": false,
+				"id": "autodate3332085495",
+				"name": "updated",
+				"onCreate": true,
+				"onUpdate": true,
+				"presentable": false,
+				"system": false,
+				"type": "autodate"
+			},
+			{
+				"autogeneratePattern": "",
+				"help": "",
+				"hidden": false,
+				"id": "text3578368839",
+				"max": 0,
+				"min": 0,
+				"name": "display_name",
+				"pattern": "",
+				"presentable": false,
+				"primaryKey": false,
+				"required": false,
+				"system": false,
+				"type": "text"
+			},
+			{
+				"help": "",
+				"hidden": false,
+				"id": "bool447994709",
+				"name": "raw",
+				"presentable": false,
+				"required": false,
+				"system": false,
+				"type": "bool"
+			}
+		],
+		"id": "pbc_8441057391",
+		"indexes": [
+			"CREATE INDEX ` + "`" + `idx_zfsPoolsSystem` + "`" + ` ON ` + "`" + `zfs_pools` + "`" + ` (` + "`" + `system` + "`" + `)"
+		],
+		"listRule": "@request.auth.id != \"\" && system.users.id ?= @request.auth.id",
+		"name": "zfs_pools",
+		"system": false,
+		"type": "base",
+		"updateRule": null,
+		"viewRule": "@request.auth.id != \"\" && system.users.id ?= @request.auth.id"
+	},
+	{
+		"createRule": null,
+		"deleteRule": null,
+		"fields": [
+			{
+				"autogeneratePattern": "[a-z0-9]{10}",
+				"help": "",
+				"hidden": false,
+				"id": "text3208210256",
+				"max": 10,
+				"min": 6,
+				"name": "id",
+				"pattern": "^[a-z0-9]+$",
+				"presentable": false,
+				"primaryKey": true,
+				"required": true,
+				"system": true,
+				"type": "text"
+			},
+			{
+				"cascadeDelete": true,
+				"collectionId": "2hz5ncl8tizk5nx",
+				"help": "",
+				"hidden": false,
+				"id": "nm_system",
+				"maxSelect": 1,
+				"minSelect": 0,
+				"name": "system",
+				"presentable": false,
+				"required": true,
+				"system": false,
+				"type": "relation"
+			},
+			{
+				"autogeneratePattern": "",
+				"help": "",
+				"hidden": false,
+				"id": "nm_target",
+				"max": 500,
+				"min": 1,
+				"name": "target",
+				"pattern": "",
+				"presentable": false,
+				"primaryKey": false,
+				"required": true,
+				"system": false,
+				"type": "text"
+			},
+			{
+				"help": "",
+				"hidden": false,
+				"id": "nm_protocol",
+				"maxSelect": 1,
+				"name": "protocol",
+				"presentable": false,
+				"required": true,
+				"system": false,
+				"type": "select",
+				"values": [
+					"icmp",
+					"tcp",
+					"http",
+					"dns"
+				]
+			},
+			{
+				"help": "",
+				"hidden": false,
+				"id": "nm_port",
+				"max": 65535,
+				"min": 0,
+				"name": "port",
+				"onlyInt": true,
+				"presentable": false,
+				"required": false,
+				"system": false,
+				"type": "number"
+			},
+			{
+				"help": "",
+				"hidden": false,
+				"id": "nm_interval",
+				"max": 3600,
+				"min": 1,
+				"name": "interval",
+				"onlyInt": true,
+				"presentable": false,
+				"required": true,
+				"system": false,
+				"type": "number"
+			},
+			{
+				"help": "",
+				"hidden": false,
+				"id": "number926446584",
+				"max": null,
+				"min": null,
+				"name": "res",
+				"onlyInt": false,
+				"presentable": false,
+				"required": false,
+				"system": false,
+				"type": "number"
+			},
+			{
+				"help": "",
+				"hidden": false,
+				"id": "number1006954605",
+				"max": null,
+				"min": null,
+				"name": "resAvg1h",
+				"onlyInt": false,
+				"presentable": false,
+				"required": false,
+				"system": false,
+				"type": "number"
+			},
+			{
+				"help": "",
+				"hidden": false,
+				"id": "number4267669802",
+				"max": null,
+				"min": null,
+				"name": "resMin1h",
+				"onlyInt": false,
+				"presentable": false,
+				"required": false,
+				"system": false,
+				"type": "number"
+			},
+			{
+				"help": "",
+				"hidden": false,
+				"id": "number591433223",
+				"max": null,
+				"min": null,
+				"name": "resMax1h",
+				"onlyInt": false,
+				"presentable": false,
+				"required": false,
+				"system": false,
+				"type": "number"
+			},
+			{
+				"help": "",
+				"hidden": false,
+				"id": "number3726709001",
+				"max": null,
+				"min": null,
+				"name": "loss1h",
+				"onlyInt": false,
+				"presentable": false,
+				"required": false,
+				"system": false,
+				"type": "number"
+			},
+			{
+				"help": "",
+				"hidden": false,
+				"id": "nm_enabled",
+				"name": "enabled",
+				"presentable": false,
+				"required": false,
+				"system": false,
+				"type": "bool"
+			},
+			{
+				"hidden": false,
+				"id": "autodate2990389176",
+				"name": "created",
+				"onCreate": true,
+				"onUpdate": false,
+				"presentable": false,
+				"system": false,
+				"type": "autodate"
+			},
+			{
+				"help": "",
+				"hidden": false,
+				"id": "date3332085495",
+				"max": "",
+				"min": "",
+				"name": "updated",
+				"presentable": false,
+				"required": false,
+				"system": false,
+				"type": "date"
+			}
+		],
+		"id": "nm_monitors_001",
+		"indexes": [
+			"CREATE INDEX ` + "`" + `idx_nm_system_enabled` + "`" + ` ON ` + "`" + `network_monitors` + "`" + ` (` + "`" + `system` + "`" + `, ` + "`" + `enabled` + "`" + `)"
+		],
+		"listRule": null,
+		"name": "network_monitors",
+		"system": false,
+		"type": "base",
+		"updateRule": null,
+		"viewRule": null
+	},
+	{
+		"createRule": null,
+		"deleteRule": null,
+		"fields": [
+			{
+				"autogeneratePattern": "[a-z0-9]{10}",
+				"help": "",
+				"hidden": false,
+				"id": "text3208210256",
+				"max": 10,
+				"min": 10,
+				"name": "id",
+				"pattern": "^[a-z0-9]+$",
+				"presentable": false,
+				"primaryKey": true,
+				"required": true,
+				"system": true,
+				"type": "text"
+			},
+			{
+				"cascadeDelete": true,
+				"collectionId": "2hz5ncl8tizk5nx",
+				"help": "",
+				"hidden": false,
+				"id": "nms_system",
+				"maxSelect": 1,
+				"minSelect": 0,
+				"name": "system",
+				"presentable": false,
+				"required": true,
+				"system": false,
+				"type": "relation"
+			},
+			{
+				"cascadeDelete": true,
+				"collectionId": "nm_monitors_001",
+				"help": "",
+				"hidden": false,
+				"id": "nms_monitor",
+				"maxSelect": 1,
+				"minSelect": 0,
+				"name": "monitor",
+				"presentable": false,
+				"required": false,
+				"system": false,
+				"type": "relation"
+			},
+			{
+				"help": "Number of probe attempts",
+				"hidden": false,
+				"id": "nms_total_count",
+				"max": null,
+				"min": 0,
+				"name": "total_count",
+				"onlyInt": true,
+				"presentable": false,
+				"required": false,
+				"system": false,
+				"type": "number"
+			},
+			{
+				"help": "Number of successful probe attempts",
+				"hidden": false,
+				"id": "nms_success_count",
+				"max": null,
+				"min": 0,
+				"name": "success_count",
+				"onlyInt": true,
+				"presentable": false,
+				"required": false,
+				"system": false,
+				"type": "number"
+			},
+			{
+				"help": "Sum of successful response times in microseconds",
+				"hidden": false,
+				"id": "nms_res_sum",
+				"max": null,
+				"min": 0,
+				"name": "res_sum",
+				"onlyInt": true,
+				"presentable": false,
+				"required": false,
+				"system": false,
+				"type": "number"
+			},
+			{
+				"help": "Response time in microseconds",
+				"hidden": false,
+				"id": "nms_res_min",
+				"max": null,
+				"min": 0,
+				"name": "res_min",
+				"onlyInt": false,
+				"presentable": false,
+				"required": false,
+				"system": false,
+				"type": "number"
+			},
+			{
+				"help": "Response time in microseconds",
+				"hidden": false,
+				"id": "nms_res_max",
+				"max": null,
+				"min": 0,
+				"name": "res_max",
+				"onlyInt": false,
+				"presentable": false,
+				"required": false,
+				"system": false,
+				"type": "number"
+			},
+			{
+				"help": "",
+				"hidden": false,
+				"id": "nms_type",
+				"maxSelect": 1,
+				"name": "type",
+				"presentable": false,
+				"required": true,
+				"system": false,
+				"type": "select",
+				"values": [
+					"1m",
+					"10m",
+					"20m",
+					"120m",
+					"480m"
+				]
+			},
+			{
+				"help": "",
+				"hidden": false,
+				"id": "number2990389176",
+				"max": null,
+				"min": null,
+				"name": "created",
+				"onlyInt": false,
+				"presentable": false,
+				"required": false,
+				"system": false,
+				"type": "number"
+			}
+		],
+		"id": "nm_stats_001",
+		"indexes": [
+			"CREATE INDEX IF NOT EXISTS ` + "`" + `idx_nms_system_type_created` + "`" + ` ON ` + "`" + `network_monitor_stats` + "`" + ` (` + "`" + `system` + "`" + `, ` + "`" + `type` + "`" + `, ` + "`" + `created` + "`" + `)",
+			"CREATE INDEX IF NOT EXISTS ` + "`" + `idx_nms_monitor_type_created` + "`" + ` ON ` + "`" + `network_monitor_stats` + "`" + ` (` + "`" + `monitor` + "`" + `, ` + "`" + `type` + "`" + `, ` + "`" + `created` + "`" + `)",
+			"CREATE INDEX IF NOT EXISTS ` + "`" + `idx_nms_type_created` + "`" + ` ON ` + "`" + `network_monitor_stats` + "`" + ` (` + "`" + `type` + "`" + `, ` + "`" + `created` + "`" + `)"
+		],
+		"listRule": null,
+		"name": "network_monitor_stats",
 		"system": false,
 		"type": "base",
 		"updateRule": null,

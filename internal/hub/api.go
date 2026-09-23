@@ -2,13 +2,17 @@ package hub
 
 import (
 	"context"
+	"fmt"
+	"log/slog"
+	"net"
 	"net/http"
+	"net/netip"
 	"regexp"
 	"strings"
 	"time"
+	"uuid"
 
 	"github.com/blang/semver"
-	"github.com/google/uuid"
 	"github.com/henrygd/beszel"
 	"github.com/henrygd/beszel/internal/alerts"
 	"github.com/henrygd/beszel/internal/ghupdate"
@@ -78,10 +82,79 @@ func (h *Hub) registerMiddlewares(se *core.ServeEvent) {
 	}
 	// authenticate with trusted header
 	if trustedHeader, _ := utils.GetEnv("TRUSTED_AUTH_HEADER"); trustedHeader != "" {
+		// only honor the header from these peers, if set
+		trustedProxies, restricted := parseTrustedProxies()
 		se.Router.BindFunc(func(e *core.RequestEvent) error {
+			if restricted && !isTrustedProxy(trustedProxies, e.Request.RemoteAddr) {
+				return e.Next()
+			}
 			return authorizeRequestWithEmail(e, e.Request.Header.Get(trustedHeader))
 		})
 	}
+}
+
+// parseTrustedProxies reads TRUSTED_PROXY_IPS (comma-separated IPs or CIDRs).
+// restricted is false when the variable is unset or empty, meaning the trusted
+// header is accepted from any peer. Invalid entries are skipped with a warning,
+// so a typo narrows the allowlist rather than widening it.
+func parseTrustedProxies() (prefixes []netip.Prefix, restricted bool) {
+	value, _ := utils.GetEnv("TRUSTED_PROXY_IPS")
+	if value == "" {
+		return nil, false
+	}
+	for entry := range strings.SplitSeq(value, ",") {
+		entry = strings.TrimSpace(entry)
+		if entry == "" {
+			continue
+		}
+		if prefix, err := parseProxyPrefix(entry); err == nil {
+			prefixes = append(prefixes, prefix)
+		} else {
+			slog.Warn("Ignoring invalid TRUSTED_PROXY_IPS entry", "entry", entry)
+		}
+	}
+	return prefixes, true
+}
+
+// parseProxyPrefix parses an IP or CIDR into a masked prefix. IPv4-mapped IPv6
+// entries are converted to IPv4 so they match IPv4 peers.
+func parseProxyPrefix(entry string) (netip.Prefix, error) {
+	prefix, err := netip.ParsePrefix(entry)
+	if err != nil {
+		addr, err := netip.ParseAddr(entry)
+		if err != nil {
+			return netip.Prefix{}, err
+		}
+		addr = addr.Unmap()
+		return netip.PrefixFrom(addr, addr.BitLen()), nil
+	}
+	if prefix.Addr().Is4In6() {
+		if prefix.Bits() < 96 {
+			return netip.Prefix{}, fmt.Errorf("%s covers more than the IPv4-mapped range", entry)
+		}
+		prefix = netip.PrefixFrom(prefix.Addr().Unmap(), prefix.Bits()-96)
+	}
+	return prefix.Masked(), nil
+}
+
+// isTrustedProxy reports whether the peer address of a request (host:port) is
+// within one of the prefixes.
+func isTrustedProxy(prefixes []netip.Prefix, remoteAddr string) bool {
+	host, _, err := net.SplitHostPort(remoteAddr)
+	if err != nil {
+		host = remoteAddr
+	}
+	addr, err := netip.ParseAddr(host)
+	if err != nil {
+		return false
+	}
+	addr = addr.Unmap().WithZone("")
+	for _, prefix := range prefixes {
+		if prefix.Contains(addr) {
+			return true
+		}
+	}
+	return false
 }
 
 // registerApiRoutes registers custom API routes
@@ -125,6 +198,8 @@ func (h *Hub) registerApiRoutes(se *core.ServeEvent) error {
 	apiAuth.DELETE("/alerts", alerts.DeleteAlerts)
 	// refresh SMART devices for a system
 	apiAuth.POST("/smart/refresh", h.refreshSmartData).BindFunc(excludeReadOnlyRole)
+	// refresh ZFS pool details for a system
+	apiAuth.POST("/zfs/refresh", h.refreshZfsData).BindFunc(excludeReadOnlyRole)
 	// get systemd service details
 	apiAuth.GET("/systemd/info", h.getSystemdInfo)
 	// /containers routes
@@ -384,6 +459,26 @@ func (h *Hub) refreshSmartData(e *core.RequestEvent) error {
 	}
 
 	if err := system.FetchAndSaveSmartDevices(); err != nil {
+		return e.InternalServerError("", err)
+	}
+
+	return e.JSON(http.StatusOK, map[string]string{"status": "ok"})
+}
+
+// refreshZfsData handles POST /api/beszel/zfs/refresh requests
+// Fetches fresh ZFS detail data from the agent and updates the collection
+func (h *Hub) refreshZfsData(e *core.RequestEvent) error {
+	systemID := e.Request.URL.Query().Get("system")
+	if systemID == "" {
+		return e.BadRequestError("Invalid system parameter", nil)
+	}
+
+	system, err := h.sm.GetSystem(systemID)
+	if err != nil || !system.HasUser(e.App, e.Auth) {
+		return e.NotFoundError("", nil)
+	}
+
+	if err := system.FetchAndSaveZfsPools(true); err != nil {
 		return e.InternalServerError("", err)
 	}
 
