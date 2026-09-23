@@ -200,6 +200,8 @@ func (h *Hub) registerApiRoutes(se *core.ServeEvent) error {
 	apiAuth.POST("/smart/refresh", h.refreshSmartData).BindFunc(excludeReadOnlyRole)
 	// refresh ZFS pool details for a system
 	apiAuth.POST("/zfs/refresh", h.refreshZfsData).BindFunc(excludeReadOnlyRole)
+	// refresh NUT (UPS/PDU) devices for a system
+	apiAuth.POST("/nut/refresh", h.refreshNutData).BindFunc(excludeReadOnlyRole)
 	// get systemd service details
 	apiAuth.GET("/systemd/info", h.getSystemdInfo)
 	// /containers routes
@@ -479,6 +481,26 @@ func (h *Hub) refreshZfsData(e *core.RequestEvent) error {
 	}
 
 	if err := system.FetchAndSaveZfsPools(true); err != nil {
+		return e.InternalServerError("", err)
+	}
+
+	return e.JSON(http.StatusOK, map[string]string{"status": "ok"})
+}
+
+// refreshNutData handles POST /api/beszel/nut/refresh requests
+// Fetches fresh NUT (UPS/PDU) data from the agent and updates the collection
+func (h *Hub) refreshNutData(e *core.RequestEvent) error {
+	systemID := e.Request.URL.Query().Get("system")
+	if systemID == "" {
+		return e.BadRequestError("Invalid system parameter", nil)
+	}
+
+	system, err := h.sm.GetSystem(systemID)
+	if err != nil || !system.HasUser(e.App, e.Auth) {
+		return e.NotFoundError("", nil)
+	}
+
+	if err := system.FetchAndSaveNutDevices(); err != nil {
 		return e.InternalServerError("", err)
 	}
 

@@ -8,6 +8,7 @@ import (
 	"github.com/fxamacker/cbor/v2"
 	"github.com/henrygd/beszel/internal/common"
 	"github.com/henrygd/beszel/internal/entities/monitor"
+	"github.com/henrygd/beszel/internal/entities/nut"
 	"github.com/henrygd/beszel/internal/entities/smart"
 
 	"log/slog"
@@ -51,6 +52,7 @@ func NewHandlerRegistry() *HandlerRegistry {
 	registry.Register(common.GetContainerLogs, &GetContainerLogsHandler{})
 	registry.Register(common.GetContainerInfo, &GetContainerInfoHandler{})
 	registry.Register(common.GetSmartData, &GetSmartDataHandler{})
+	registry.Register(common.GetNutData, &GetNutDataHandler{})
 	registry.Register(common.GetSystemdInfo, &GetSystemdInfoHandler{})
 	registry.Register(common.SyncNetworkMonitors, &SyncNetworkMonitorsHandler{})
 	registry.Register(common.GetZfsData, &GetZfsDataHandler{})
@@ -183,6 +185,23 @@ func (h *GetSmartDataHandler) Handle(hctx *HandlerContext) error {
 
 ////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////
+
+// GetNutDataHandler handles NUT (UPS/PDU) data requests
+type GetNutDataHandler struct{}
+
+func (h *GetNutDataHandler) Handle(hctx *HandlerContext) error {
+	if hctx.Agent.nutManager == nil {
+		return hctx.SendResponse(nut.NutDataResponse{Data: map[string]nut.NutData{}}, hctx.RequestID)
+	}
+	complete, err := hctx.Agent.nutManager.Refresh()
+	if err != nil {
+		slog.Debug("nut refresh failed", "err", err)
+	}
+	return hctx.SendResponse(nut.NutDataResponse{
+		Data:     hctx.Agent.nutManager.GetCurrentData(),
+		Complete: complete,
+	}, hctx.RequestID)
+}
 
 // GetZfsDataHandler handles ZFS detail data requests
 type GetZfsDataHandler struct{}

@@ -26,6 +26,8 @@ const (
 	GetZfsData
 	// Sync network monitor configuration to agent
 	SyncNetworkMonitors
+	// Request NUT (UPS/PDU) data from agent
+	GetNutData
 	// Add new actions here...
 )
 

@@ -2,6 +2,7 @@ import { t } from "@lingui/core/macro"
 import { Trans } from "@lingui/react/macro"
 import { getPagePath } from "@nanostores/router"
 import {
+	BatteryChargingIcon,
 	ContainerIcon,
 	DatabaseBackupIcon,
 	HardDriveIcon,
@@ -105,10 +106,14 @@ export default function Navbar() {
 								<ContainerIcon className="h-4 w-4 me-2.5" strokeWidth={1.5} />
 								<Trans>All Containers</Trans>
 							</DropdownMenuItem>
-							<DropdownMenuItem onClick={() => navigate(getPagePath($router, "smart"))} className="flex items-center">
-								<HardDriveIcon className="h-4 w-4 me-2.5" strokeWidth={1.5} />
-								<span>S.M.A.R.T.</span>
-							</DropdownMenuItem>
+<DropdownMenuItem onClick={() => navigate(getPagePath($router, "smart"))} className="flex items-center">
+							<HardDriveIcon className="h-4 w-4 me-2.5" strokeWidth={1.5} />
+							<span>S.M.A.R.T.</span>
+						</DropdownMenuItem>
+						<DropdownMenuItem onClick={() => navigate(getPagePath($router, "nut"))} className="flex items-center">
+							<BatteryChargingIcon className="h-4 w-4 me-2.5" strokeWidth={1.5} />
+							<span>UPS / PDU</span>
+						</DropdownMenuItem>
 							<DropdownMenuItem
 								onClick={() => navigate(getPagePath($router, "monitors"))}
 								className="flex items-center"
@@ -186,6 +191,18 @@ export default function Navbar() {
 						</Link>
 					</TooltipTrigger>
 					<TooltipContent>S.M.A.R.T.</TooltipContent>
+				</Tooltip>
+				<Tooltip>
+					<TooltipTrigger asChild>
+						<Link
+							href={getPagePath($router, "nut")}
+							className={cn("hidden md:grid", buttonVariants({ variant: "ghost", size: "icon" }))}
+							aria-label="UPS / PDU"
+						>
+							<BatteryChargingIcon className="h-[1.2rem] w-[1.2rem]" strokeWidth={1.5} />
+						</Link>
+					</TooltipTrigger>
+					<TooltipContent>UPS / PDU</TooltipContent>
 				</Tooltip>
 				<Tooltip>
 					<TooltipTrigger asChild>
