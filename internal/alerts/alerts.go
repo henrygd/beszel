@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/mail"
 	"net/url"
+	"slices"
 	"sync"
 	"time"
 
@@ -114,7 +115,6 @@ func (am *AlertManager) bindEvents() {
 	am.hub.OnRecordAfterUpdateSuccess("alerts").BindFunc(updateHistoryOnAlertUpdate)
 	am.hub.OnRecordAfterDeleteSuccess("alerts").BindFunc(resolveHistoryOnAlertDelete)
 	am.hub.OnRecordAfterUpdateSuccess("smart_devices").BindFunc(am.handleSmartDeviceAlert)
-	am.registerGlobalAlertHooks()
 
 	// Invalidate the user_settings cache whenever settings change
 	invalidateUserSettings := func(e *core.RecordEvent) error {
@@ -246,7 +246,7 @@ func (am *AlertManager) SendAlert(data AlertMessageData) error {
 		if !userAlertSettings.Enabled {
 			continue
 		}
-		if len(userAlertSettings.Systems) > 0 && !sliceToSet(userAlertSettings.Systems)[data.SystemID] {
+		if len(userAlertSettings.Systems) > 0 && !slices.Contains(userAlertSettings.Systems, data.SystemID) {
 			continue
 		}
 		userID := record.GetString("user")

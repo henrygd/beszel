@@ -1,7 +1,7 @@
 import { t } from "@lingui/core/macro"
 import { Trans } from "@lingui/react/macro"
 import { useStore } from "@nanostores/react"
-import { ChevronDownIcon, LoaderCircleIcon, PlusIcon, SaveIcon, Trash2Icon } from "lucide-react"
+import { BellIcon, ChevronDownIcon, LoaderCircleIcon, PlusIcon, SaveIcon, Trash2Icon } from "lucide-react"
 import { type ChangeEventHandler, useEffect, useState } from "react"
 import * as v from "valibot"
 import { prependBasePath } from "@/components/router"
@@ -19,8 +19,6 @@ import { Label } from "@/components/ui/label"
 import { Separator } from "@/components/ui/separator"
 import { Switch } from "@/components/ui/switch"
 import { toast } from "@/components/ui/use-toast"
-import { getPagePath } from "@nanostores/router"
-import { $router, Link } from "@/components/router"
 import { isAdmin, pb } from "@/lib/api"
 import { $systems } from "@/lib/stores"
 import type { UserSettings } from "@/types"
@@ -101,17 +99,12 @@ const SettingsNotificationsPage = ({ userSettings }: { userSettings: UserSetting
 				<p className="text-sm text-muted-foreground leading-relaxed">
 					<Trans>Configure how you receive alert notifications.</Trans>
 				</p>
-				{isAdmin() && (
-					<p className="text-sm text-muted-foreground mt-1.5 leading-relaxed">
-						<Trans>
-							Alerts are configured in{" "}
-							<Link href={getPagePath($router, "settings", { name: "global-alerts" })} className="link">
-								Global Alerts
-							</Link>
-							.
-						</Trans>
-					</p>
-				)}
+				<p className="text-sm text-muted-foreground mt-1.5 leading-relaxed">
+					<Trans>
+						Looking instead for where to create alerts? Click the bell <BellIcon className="inline h-4 w-4" /> icons in
+						the systems table.
+					</Trans>
+				</p>
 			</div>
 			<Separator className="my-4" />
 			<div className="space-y-5">
