@@ -1,6 +1,6 @@
-import { getMonitorTarget } from "@/lib/network-monitor-utils"
+import { getCertDaysLeft, getCertExpiryLevel, getMonitorTarget } from "@/lib/network-monitor-utils"
 import { t } from "@lingui/core/macro"
-import { Trans } from "@lingui/react/macro"
+import { Plural, Trans } from "@lingui/react/macro"
 import {
 	type ColumnFiltersState,
 	flexRender,
@@ -37,14 +37,8 @@ import { isReadOnlyUser, queueUserSettings } from "@/lib/api"
 import { pb } from "@/lib/api"
 import { SystemStatus } from "@/lib/enums"
 import { $allSystemsById, $direction, $userSettings, getUserChartTime } from "@/lib/stores"
-import {
-	cn,
-	isVisuallyLonger,
-	matchesFilterGroups,
-	parseFilterGroups,
-	parseSemVer,
-} from "@/lib/utils"
-import type { ChartData, NetworkMonitorRecord } from "@/types"
+import { cn, formatShortDate, isVisuallyLonger, matchesFilterGroups, parseFilterGroups, parseSemVer } from "@/lib/utils"
+import type { ChartData, MonitorCertInfo, NetworkMonitorRecord } from "@/types"
 import { AddMonitorDialog, EditMonitorDialog } from "./monitor-dialog"
 import {
 	ArrowDownIcon,
@@ -53,9 +47,11 @@ import {
 	ArrowUpIcon,
 	EthernetPortIcon,
 	EyeIcon,
+	LandmarkIcon,
 	LoaderCircleIcon,
 	ServerIcon,
 	Settings2Icon,
+	ShieldCheckIcon,
 	XIcon,
 } from "lucide-react"
 import {
@@ -636,6 +632,36 @@ function NetworkMonitorSheet({
 	return <NetworkMonitorSheetContent key={monitor.system} open={open} onOpenChange={onOpenChange} monitor={monitor} />
 }
 
+const certExpiryTextColors = { ok: "", warning: "text-yellow-600 dark:text-yellow-500", critical: "text-red-500" }
+
+function CertExpiry({ cert }: { cert: MonitorCertInfo }) {
+	const daysLeft = getCertDaysLeft(cert)
+	const expires = formatShortDate(new Date(cert.expires).toISOString())
+	const level = getCertExpiryLevel(daysLeft)
+	return (
+		<>
+			<Separator orientation="vertical" className="h-2.5 bg-muted-foreground opacity-70" />
+			<ShieldCheckIcon className={cn("size-3.5 text-muted-foreground -me-1", certExpiryTextColors[level])} />
+			<span className={certExpiryTextColors[level]}>
+				{daysLeft < 0 ? (
+					<Trans>Certificate expired {expires}</Trans>
+				) : (
+					<Trans>
+						Certificate expires {expires} 
+					</Trans>
+				)}
+			</span>
+			{cert.issuer && (
+				<>
+					<Separator orientation="vertical" className="h-2.5 bg-muted-foreground opacity-70" />
+					<LandmarkIcon className="size-3.5 text-muted-foreground -me-0.5" />
+					<span>{cert.issuer}</span>
+				</>
+			)}
+		</>
+	)
+}
+
 function NetworkMonitorSheetContent({
 	open,
 	onOpenChange,
@@ -683,7 +709,7 @@ function NetworkMonitorSheetContent({
 							{system?.name ?? ""}
 						</Link>
 						<Separator orientation="vertical" className="h-2.5 bg-muted-foreground opacity-70" />
-						<ArrowLeftRightIcon className="size-3.5 text-muted-foreground" />
+						<ArrowLeftRightIcon className="size-3.5 text-muted-foreground -me-0.5" />
 						{monitor.protocol.toUpperCase()}
 						{monitor.protocol === "tcp" && monitor.port > 0 && (
 							<>
@@ -692,6 +718,7 @@ function NetworkMonitorSheetContent({
 								<span>{monitor.port}</span>
 							</>
 						)}
+						{monitor.certInfo?.expires ? <CertExpiry cert={monitor.certInfo} /> : null}
 					</SheetDescription>
 				</SheetHeader>
 				<div className="grid gap-4">

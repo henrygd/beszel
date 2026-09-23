@@ -433,6 +433,8 @@ func (sys *System) updateNetworkMonitorsRecords(app core.App, monitorResults map
 		for i, f := range monitorFields {
 			setClauses[i] = fmt.Sprintf("%s={:%s}", f, f)
 		}
+		// Results omit certInfo unless it changed, so keep the stored value.
+		setClauses = append(setClauses, "certInfo=COALESCE({:certInfo}, certInfo)")
 		queryString := fmt.Sprintf("UPDATE %s SET %s WHERE id={:id}", monitorCollectionName, strings.Join(setClauses, ", "))
 		updateQuery = db.NewQuery(queryString)
 	}
@@ -453,11 +455,23 @@ func (sys *System) updateNetworkMonitorsRecords(app core.App, monitorResults map
 			var record *core.Record
 			record, err = app.FindRecordById(monitorCollectionName, id)
 			if err == nil {
+				if result.Cert != nil {
+					monitorData["certInfo"] = result.Cert
+				}
 				record.Load(monitorData)
 				err = app.SaveNoValidate(record)
 			}
 		default:
-			_, err = updateQuery.Bind(dbx.Params(monitorData)).Execute()
+			monitorData["certInfo"] = nil
+			if result.Cert != nil {
+				var cert []byte
+				if cert, err = json.Marshal(result.Cert); err == nil {
+					monitorData["certInfo"] = string(cert)
+				}
+			}
+			if err == nil {
+				_, err = updateQuery.Bind(dbx.Params(monitorData)).Execute()
+			}
 		}
 		if err != nil {
 			app.Logger().Warn("Failed to update monitor", "system", systemId, "monitor", id, "err", err)
