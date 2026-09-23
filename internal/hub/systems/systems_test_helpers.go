@@ -22,6 +22,9 @@ func backgroundSmartFetchEnabled() bool { return false }
 // Background ZFS fetching follows the same policy as SMART fetching.
 func backgroundZfsFetchEnabled() bool { return false }
 
+// Background NUT fetching follows the same policy as SMART fetching.
+func backgroundNutFetchEnabled() bool { return false }
+
 // InitializeSSHConfigForTesting prepares SSH without registering hooks or starting systems.
 func (sm *SystemManager) InitializeSSHConfigForTesting() error {
 	return sm.createSSHClientConfig()
@@ -125,6 +128,7 @@ func (sm *SystemManager) RemoveAllSystems() {
 	sm.updaters.Wait()
 	sm.smartFetchMap.StopCleaner()
 	sm.zfsFetchMap.StopCleaner()
+	sm.nutFetchMap.StopCleaner()
 }
 
 // ResetContextForTesting replaces the manager context for a new synctest bubble.

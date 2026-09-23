@@ -91,6 +91,13 @@ func setCollectionAuthSettings(app core.App) error {
 	}); err != nil {
 		return err
 	}
+	if err := applyCollectionRules(app, []string{"nut_devices"}, collectionRules{
+		list:   &systemScopedReadRule,
+		view:   &systemScopedReadRule,
+		delete: &systemScopedWriteRule,
+	}); err != nil {
+		return err
+	}
 	if err := applyCollectionRules(app, []string{"zfs_pools"}, collectionRules{
 		list: &systemScopedReadRule,
 		view: &systemScopedReadRule,
