@@ -1,5 +1,5 @@
 /** biome-ignore-all lint/correctness/useHookAtTopLevel: Hooks live inside memoized column definitions */
-import { t } from "@lingui/core/macro"
+import { plural, t } from "@lingui/core/macro"
 import { Trans, useLingui } from "@lingui/react/macro"
 import { useStore } from "@nanostores/react"
 import { getPagePath } from "@nanostores/router"
@@ -345,11 +345,13 @@ export function SystemsTableColumns(viewMode: "table" | "grid"): ColumnDef<Syste
 			header: sortableHeader,
 			hideSort: true,
 			sortingFn: (a, b) => {
-				// sort priorities: 1) failed services, 2) total services
+				// sort priorities: 1) has failed services (dot color), 2) total services
 				const [totalCountA, numFailedA] = a.original.info.sv ?? [0, 0]
 				const [totalCountB, numFailedB] = b.original.info.sv ?? [0, 0]
-				if (numFailedA !== numFailedB) {
-					return numFailedA - numFailedB
+				const hasFailedA = numFailedA > 0 ? 1 : 0
+				const hasFailedB = numFailedB > 0 ? 1 : 0
+				if (hasFailedA !== hasFailedB) {
+					return hasFailedA - hasFailedB
 				}
 				return totalCountA - totalCountB
 			},
@@ -367,10 +369,7 @@ export function SystemsTableColumns(viewMode: "table" | "grid"): ColumnDef<Syste
 								[STATUS_COLORS[SystemStatus.Up]]: numFailed === 0,
 							})}
 						/>
-						{totalCount}{" "}
-						<span className="text-muted-foreground text-sm -ms-0.5">
-							({t`Failed`.toLowerCase()}: {numFailed})
-						</span>
+						{plural(totalCount, { one: "# service", other: "# services" })}
 					</span>
 				)
 			},
