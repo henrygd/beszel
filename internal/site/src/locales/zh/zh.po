@@ -844,6 +844,10 @@ msgstr "臨時"
 msgid "Error"
 msgstr "錯誤"
 
+#: src/components/routes/system/charts/ups-charts.tsx
+msgid "Estimated runtime remaining on battery"
+msgstr ""
+
 #: src/components/routes/settings/heartbeat.tsx
 msgid "Example:"
 msgstr "範例："
@@ -1089,6 +1093,14 @@ msgstr "有可用的映像檔更新"
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Inactive"
 msgstr "未啟用"
+
+#: src/components/routes/system/charts/ups-charts.tsx
+msgid "Input"
+msgstr ""
+
+#: src/components/routes/system/charts/ups-charts.tsx
+msgid "Input and output voltage"
+msgstr ""
 
 #: src/components/network-monitors-table/network-monitors-columns.tsx
 #: src/components/routes/settings/heartbeat.tsx
@@ -1362,9 +1374,17 @@ msgstr "通知可能包含近期的容器日誌片段。"
 msgid "OAuth 2 / OIDC support"
 msgstr "支援 OAuth 2 / OIDC"
 
+#: src/components/routes/system/charts/ups-charts.tsx
+msgid "On battery"
+msgstr ""
+
 #: src/components/routes/settings/config-yaml.tsx
 msgid "On each restart, systems in the database will be updated to match the systems defined in the file."
 msgstr "每次重新啟動時，將會以檔案中的系統定義更新資料庫。"
+
+#: src/components/routes/system/charts/ups-charts.tsx
+msgid "On line"
+msgstr ""
 
 #: src/lib/alerts.ts
 msgid "One or more containers are unhealthy"
@@ -1405,6 +1425,10 @@ msgstr "或繼續使用"
 #: src/components/routes/system/cpu-sheet.tsx
 msgid "Other"
 msgstr "其他"
+
+#: src/components/routes/system/charts/ups-charts.tsx
+msgid "Output"
+msgstr ""
 
 #: src/components/alerts/alerts-sheet.tsx
 msgid "Overwrite existing alerts"
@@ -1851,6 +1875,7 @@ msgid "State"
 msgstr "狀態"
 
 #: src/components/containers-table/containers-table-columns.tsx
+#: src/components/routes/system/charts/ups-charts.tsx
 #: src/components/routes/system/smart-table.tsx
 #: src/components/systemd-table/systemd-table.tsx
 #: src/components/systems-table/systems-table.tsx
@@ -2107,6 +2132,14 @@ msgid "Triggers when status switches between up and down"
 msgstr "當連線和離線時觸發"
 
 #: src/lib/alerts.ts
+msgid "Triggers when the UPS switches to battery power"
+msgstr ""
+
+#: src/lib/alerts.ts
+msgid "Triggers when UPS battery charge drops below a threshold"
+msgstr ""
+
+#: src/lib/alerts.ts
 msgid "Triggers when usage of any disk exceeds a threshold"
 msgstr "當任何磁碟使用率超過閾值時觸發"
 
@@ -2175,6 +2208,35 @@ msgstr "每 10 分鐘更新一次。"
 #: src/components/routes/system/network-sheet.tsx
 msgid "Upload"
 msgstr "上傳"
+
+#: src/components/routes/system/charts/ups-charts.tsx
+#: src/lib/alerts.ts
+msgid "UPS Battery"
+msgstr ""
+
+#: src/lib/alerts.ts
+msgid "UPS is on battery power"
+msgstr ""
+
+#: src/components/routes/system/charts/ups-charts.tsx
+msgid "UPS Load"
+msgstr ""
+
+#: src/components/routes/system/charts/ups-charts.tsx
+msgid "UPS load percentage"
+msgstr ""
+
+#: src/lib/alerts.ts
+msgid "UPS On Battery"
+msgstr ""
+
+#: src/components/routes/system/charts/ups-charts.tsx
+msgid "UPS Runtime"
+msgstr ""
+
+#: src/components/routes/system/charts/ups-charts.tsx
+msgid "UPS Voltage"
+msgstr ""
 
 #: src/components/routes/system/info-bar.tsx
 #: src/components/systems-table/systems-table-columns.tsx

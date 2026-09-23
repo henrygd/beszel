@@ -55,7 +55,19 @@ type Stats struct {
 	Batteries         map[string]uint8     `json:"bats,omitempty" cbor:"37,keyasint,omitempty"`
 	ZfsPools          map[string]*ZfsPool  `json:"z,omitempty" cbor:"39,keyasint,omitempty"`  // ZFS pool metrics, keyed by pool name
 	DiskIOTotal       [2]uint64            `json:"diot,omitzero" cbor:"38,keyasint,omitzero"` // [total read bytes, total write bytes] cumulative device counters
+	Ups               map[string]UpsData   `json:"ups,omitempty" cbor:"30,keyasint,omitempty"` // UPS metrics from apcupsd, keyed by UPS name
+}
 
+// UpsData holds UPS metrics reported by apcupsd for a single collection interval.
+type UpsData struct {
+	Model      string  `json:"m,omitempty" cbor:"0,keyasint,omitempty"`
+	Status     string  `json:"s,omitempty" cbor:"1,keyasint,omitempty"` // e.g. OL (on line), OB (on battery)
+	OnBattery  bool    `json:"ob,omitempty" cbor:"2,keyasint,omitempty"`
+	BatteryPct float64 `json:"bat,omitzero" cbor:"3,keyasint,omitzero"` // BATT_CAPACITY
+	LoadPct    float64 `json:"lp,omitzero" cbor:"4,keyasint,omitzero"`  // LOADPCT
+	InputV     float64 `json:"iv,omitzero" cbor:"5,keyasint,omitzero"`  // INPUTV
+	OutputV    float64 `json:"ov,omitzero" cbor:"6,keyasint,omitzero"`  // OUTPUTV
+	TimeLeft   float64 `json:"tl,omitzero" cbor:"7,keyasint,omitzero"`  // TIMELEFT (minutes)
 }
 
 // ZfsPool holds per-pool ZFS metrics for a single collection interval.

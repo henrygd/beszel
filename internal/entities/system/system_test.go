@@ -50,6 +50,44 @@ func TestStatsDiskIOTotalAndFansTransport(t *testing.T) {
 	assert.Equal(t, stats.Fans, decoded.Fans)
 }
 
+func TestStatsUpsTransport(t *testing.T) {
+	stats := Stats{Ups: map[string]UpsData{
+		"ups1": {
+			Model:      "Back-UPS 900",
+			Status:     "OB",
+			OnBattery:  true,
+			BatteryPct: 45,
+			LoadPct:    25,
+			InputV:     120,
+			OutputV:    119.5,
+			TimeLeft:   12.5,
+		},
+	}}
+
+	jsonData, err := json.Marshal(stats)
+	require.NoError(t, err)
+	var jsonPayload map[string]any
+	require.NoError(t, json.Unmarshal(jsonData, &jsonPayload))
+	upsMap, ok := jsonPayload["ups"].(map[string]any)
+	require.True(t, ok, "expected ups in json payload")
+	ups1, ok := upsMap["ups1"].(map[string]any)
+	require.True(t, ok, "expected ups1 in json payload")
+	assert.Equal(t, "Back-UPS 900", ups1["m"])
+	assert.Equal(t, "OB", ups1["s"])
+	assert.Equal(t, true, ups1["ob"])
+	assert.Equal(t, float64(45), ups1["bat"])
+	assert.Equal(t, float64(25), ups1["lp"])
+	assert.Equal(t, float64(120), ups1["iv"])
+	assert.Equal(t, float64(119.5), ups1["ov"])
+	assert.Equal(t, float64(12.5), ups1["tl"])
+
+	cborData, err := cbor.Marshal(stats)
+	require.NoError(t, err)
+	var decoded Stats
+	require.NoError(t, cbor.Unmarshal(cborData, &decoded))
+	assert.Equal(t, stats.Ups, decoded.Ups)
+}
+
 func TestStatsBatteryNumericArrayUnmarshal(t *testing.T) {
 	var stats Stats
 	require.NoError(t, json.Unmarshal([]byte(`{"bat":[50,4]}`), &stats))

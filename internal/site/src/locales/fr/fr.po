@@ -844,6 +844,10 @@ msgstr "Éphémère"
 msgid "Error"
 msgstr "Erreur"
 
+#: src/components/routes/system/charts/ups-charts.tsx
+msgid "Estimated runtime remaining on battery"
+msgstr ""
+
 #: src/components/routes/settings/heartbeat.tsx
 msgid "Example:"
 msgstr "Exemple :"
@@ -1089,6 +1093,14 @@ msgstr "Mise à jour de l’image disponible"
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Inactive"
 msgstr "Inactif"
+
+#: src/components/routes/system/charts/ups-charts.tsx
+msgid "Input"
+msgstr ""
+
+#: src/components/routes/system/charts/ups-charts.tsx
+msgid "Input and output voltage"
+msgstr ""
 
 #: src/components/network-monitors-table/network-monitors-columns.tsx
 #: src/components/routes/settings/heartbeat.tsx
@@ -1362,9 +1374,17 @@ msgstr "Les notifications peuvent inclure des extraits récents des journaux des
 msgid "OAuth 2 / OIDC support"
 msgstr "Support OAuth 2 / OIDC"
 
+#: src/components/routes/system/charts/ups-charts.tsx
+msgid "On battery"
+msgstr ""
+
 #: src/components/routes/settings/config-yaml.tsx
 msgid "On each restart, systems in the database will be updated to match the systems defined in the file."
 msgstr "À chaque redémarrage, les systèmes dans la base de données seront mis à jour pour correspondre aux systèmes définis dans le fichier."
+
+#: src/components/routes/system/charts/ups-charts.tsx
+msgid "On line"
+msgstr ""
 
 #: src/lib/alerts.ts
 msgid "One or more containers are unhealthy"
@@ -1405,6 +1425,10 @@ msgstr "Ou continuer avec"
 #: src/components/routes/system/cpu-sheet.tsx
 msgid "Other"
 msgstr "Autre"
+
+#: src/components/routes/system/charts/ups-charts.tsx
+msgid "Output"
+msgstr ""
 
 #: src/components/alerts/alerts-sheet.tsx
 msgid "Overwrite existing alerts"
@@ -1851,6 +1875,7 @@ msgid "State"
 msgstr "État"
 
 #: src/components/containers-table/containers-table-columns.tsx
+#: src/components/routes/system/charts/ups-charts.tsx
 #: src/components/routes/system/smart-table.tsx
 #: src/components/systemd-table/systemd-table.tsx
 #: src/components/systems-table/systems-table.tsx
@@ -2107,6 +2132,14 @@ msgid "Triggers when status switches between up and down"
 msgstr "Se déclenche lorsque le statut passe de \"Joignable\" à \"Injoignable\""
 
 #: src/lib/alerts.ts
+msgid "Triggers when the UPS switches to battery power"
+msgstr ""
+
+#: src/lib/alerts.ts
+msgid "Triggers when UPS battery charge drops below a threshold"
+msgstr ""
+
+#: src/lib/alerts.ts
 msgid "Triggers when usage of any disk exceeds a threshold"
 msgstr "Déclenchement lorsque l'utilisation de tout disque dépasse un seuil"
 
@@ -2175,6 +2208,35 @@ msgstr "Mis à jour toutes les 10 minutes."
 #: src/components/routes/system/network-sheet.tsx
 msgid "Upload"
 msgstr "Téléverser"
+
+#: src/components/routes/system/charts/ups-charts.tsx
+#: src/lib/alerts.ts
+msgid "UPS Battery"
+msgstr ""
+
+#: src/lib/alerts.ts
+msgid "UPS is on battery power"
+msgstr ""
+
+#: src/components/routes/system/charts/ups-charts.tsx
+msgid "UPS Load"
+msgstr ""
+
+#: src/components/routes/system/charts/ups-charts.tsx
+msgid "UPS load percentage"
+msgstr ""
+
+#: src/lib/alerts.ts
+msgid "UPS On Battery"
+msgstr ""
+
+#: src/components/routes/system/charts/ups-charts.tsx
+msgid "UPS Runtime"
+msgstr ""
+
+#: src/components/routes/system/charts/ups-charts.tsx
+msgid "UPS Voltage"
+msgstr ""
 
 #: src/components/routes/system/info-bar.tsx
 #: src/components/systems-table/systems-table-columns.tsx

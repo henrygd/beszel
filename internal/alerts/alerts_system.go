@@ -3,6 +3,7 @@ package alerts
 import (
 	"encoding/json"
 	"fmt"
+	"math"
 	"strings"
 	"time"
 
@@ -108,6 +109,20 @@ func (am *AlertManager) HandleSystemAlerts(systemRecord *core.Record, data *syst
 				continue
 			}
 			val = float64(data.Stats.Battery[0])
+		case "UPS":
+			if pct, ok := minUpsBatteryPct(data.Stats.Ups, func(u system.UpsData) float64 { return u.BatteryPct }); !ok {
+				continue
+			} else {
+				val = pct
+			}
+		case "UPSOnBattery":
+			if len(data.Stats.Ups) == 0 {
+				continue
+			}
+			unit = ""
+			if anyUpsOnBattery(data.Stats.Ups, func(u system.UpsData) bool { return u.OnBattery }) {
+				val = 1
+			}
 		default:
 			var ok bool
 			if val, ok = cpuStateAlertValue(name, data.Stats.CpuBreakdown); !ok {
@@ -296,6 +311,16 @@ func (am *AlertManager) HandleSystemAlerts(systemRecord *core.Record, data *syst
 					continue
 				}
 				alert.val += float64(stats.Battery[0])
+			case "UPS":
+				if pct, ok := minUpsBatteryPct(stats.Ups, func(u SystemAlertUpsData) float64 { return u.BatteryPct }); !ok {
+					continue
+				} else {
+					alert.val += pct
+				}
+			case "UPSOnBattery":
+				if anyUpsOnBattery(stats.Ups, func(u SystemAlertUpsData) bool { return u.OnBattery }) {
+					alert.val += 1
+				}
 			default:
 				value, ok := cpuStateAlertValue(alert.name, stats.CpuBreakdown)
 				if !ok {
@@ -407,28 +432,39 @@ func (am *AlertManager) sendSystemAlert(alert SystemAlertData) {
 	}
 
 	var subject string
-	lowAlert := isLowAlert(alert.name)
-	if alert.triggered {
-		if lowAlert {
-			subject = fmt.Sprintf("%s %s below threshold", systemName, titleAlertName)
+	var body string
+	if alert.name == "UPSOnBattery" {
+		if alert.triggered {
+			subject = fmt.Sprintf("%s UPS on battery", systemName)
+			body = "The UPS has switched to battery power."
 		} else {
-			subject = fmt.Sprintf("%s %s above threshold", systemName, titleAlertName)
+			subject = fmt.Sprintf("%s UPS back on line", systemName)
+			body = "The UPS has returned to line power."
 		}
 	} else {
-		if lowAlert {
-			subject = fmt.Sprintf("%s %s above threshold", systemName, titleAlertName)
+		lowAlert := isLowAlert(alert.name)
+		if alert.triggered {
+			if lowAlert {
+				subject = fmt.Sprintf("%s %s below threshold", systemName, titleAlertName)
+			} else {
+				subject = fmt.Sprintf("%s %s above threshold", systemName, titleAlertName)
+			}
 		} else {
-			subject = fmt.Sprintf("%s %s below threshold", systemName, titleAlertName)
+			if lowAlert {
+				subject = fmt.Sprintf("%s %s above threshold", systemName, titleAlertName)
+			} else {
+				subject = fmt.Sprintf("%s %s below threshold", systemName, titleAlertName)
+			}
 		}
+		minutesLabel := "minute"
+		if alert.min > 1 {
+			minutesLabel += "s"
+		}
+		if alert.descriptor == "" {
+			alert.descriptor = alert.name
+		}
+		body = fmt.Sprintf("%s averaged %.2f%s for the previous %v %s.", alert.descriptor, alert.val, alert.unit, alert.min, minutesLabel)
 	}
-	minutesLabel := "minute"
-	if alert.min > 1 {
-		minutesLabel += "s"
-	}
-	if alert.descriptor == "" {
-		alert.descriptor = alert.name
-	}
-	body := fmt.Sprintf("%s averaged %.2f%s for the previous %v %s.", alert.descriptor, alert.val, alert.unit, alert.min, minutesLabel)
 
 	if err := am.setAlertTriggered(alert.alertData, alert.triggered); err != nil {
 		// app.Logger().Error("failed to save alert record", "err", err)
@@ -445,5 +481,30 @@ func (am *AlertManager) sendSystemAlert(alert SystemAlertData) {
 }
 
 func isLowAlert(name string) bool {
-	return name == "Battery"
+	return name == "Battery" || name == "UPS"
+}
+
+// minUpsBatteryPct returns the lowest battery charge across the given UPSes and
+// whether any UPS is present.
+func minUpsBatteryPct[T any](ups map[string]T, pct func(T) float64) (float64, bool) {
+	if len(ups) == 0 {
+		return 0, false
+	}
+	minPct := math.Inf(1)
+	for _, ups := range ups {
+		if v := pct(ups); v < minPct {
+			minPct = v
+		}
+	}
+	return minPct, true
+}
+
+// anyUpsOnBattery reports whether any of the given UPSes is on battery power.
+func anyUpsOnBattery[T any](ups map[string]T, onBattery func(T) bool) bool {
+	for _, ups := range ups {
+		if onBattery(ups) {
+			return true
+		}
+	}
+	return false
 }

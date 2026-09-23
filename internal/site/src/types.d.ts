@@ -161,6 +161,28 @@ export interface SystemStats {
 	bats?: Record<string, number>
 	/** network interfaces [upload bytes, download bytes, total upload bytes, total download bytes] */
 	ni?: Record<string, [number, number, number, number]>
+	/** UPS metrics from apcupsd, keyed by UPS name */
+	ups?: Record<string, UpsData>
+}
+
+/** UPS metrics reported by apcupsd */
+export interface UpsData {
+	/** model name */
+	m?: string
+	/** status flags (e.g. OL, OB) */
+	s?: string
+	/** UPS is on battery power */
+	ob?: boolean
+	/** battery charge (%) */
+	bat?: number
+	/** load (%) */
+	lp?: number
+	/** input voltage */
+	iv?: number
+	/** output voltage */
+	ov?: number
+	/** estimated runtime remaining (minutes) */
+	tl?: number
 }
 
 export interface GPUData {

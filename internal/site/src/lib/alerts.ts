@@ -116,6 +116,23 @@ export const alertInfo: Record<string, AlertInfo> = {
     start: 20,
     invert: true,
   },
+  UPS: {
+    name: () => t`UPS Battery`,
+    unit: "%",
+    icon: BatteryMediumIcon,
+    desc: () => t`Triggers when UPS battery charge drops below a threshold`,
+    start: 20,
+    invert: true,
+  },
+  UPSOnBattery: {
+    name: () => t`UPS On Battery`,
+    unit: "",
+    icon: BatteryMediumIcon,
+    desc: () => t`Triggers when the UPS switches to battery power`,
+    noThreshold: true,
+    noDuration: true,
+    triggeredDesc: () => t`UPS is on battery power`,
+  },
   ContainerHealth: {
     name: () => t`Container Health`,
     unit: "",

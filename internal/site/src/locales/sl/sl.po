@@ -844,6 +844,10 @@ msgstr "Prehodni"
 msgid "Error"
 msgstr "Napaka"
 
+#: src/components/routes/system/charts/ups-charts.tsx
+msgid "Estimated runtime remaining on battery"
+msgstr ""
+
 #: src/components/routes/settings/heartbeat.tsx
 msgid "Example:"
 msgstr "Primer:"
@@ -1089,6 +1093,14 @@ msgstr "Na voljo je posodobitev slike"
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Inactive"
 msgstr "Neaktivno"
+
+#: src/components/routes/system/charts/ups-charts.tsx
+msgid "Input"
+msgstr ""
+
+#: src/components/routes/system/charts/ups-charts.tsx
+msgid "Input and output voltage"
+msgstr ""
 
 #: src/components/network-monitors-table/network-monitors-columns.tsx
 #: src/components/routes/settings/heartbeat.tsx
@@ -1362,9 +1374,17 @@ msgstr "Obvestila lahko vključujejo nedavne izseke dnevnikov vsebnikov."
 msgid "OAuth 2 / OIDC support"
 msgstr "Podpora za OAuth 2 / OIDC"
 
+#: src/components/routes/system/charts/ups-charts.tsx
+msgid "On battery"
+msgstr ""
+
 #: src/components/routes/settings/config-yaml.tsx
 msgid "On each restart, systems in the database will be updated to match the systems defined in the file."
 msgstr "Ob vsakem ponovnem zagonu bodo sistemi v zbirki podatkov posodobljeni, da se bodo ujemali s sistemi, definiranimi v datoteki."
+
+#: src/components/routes/system/charts/ups-charts.tsx
+msgid "On line"
+msgstr ""
 
 #: src/lib/alerts.ts
 msgid "One or more containers are unhealthy"
@@ -1405,6 +1425,10 @@ msgstr "Ali nadaljuj z"
 #: src/components/routes/system/cpu-sheet.tsx
 msgid "Other"
 msgstr "Drugo"
+
+#: src/components/routes/system/charts/ups-charts.tsx
+msgid "Output"
+msgstr ""
 
 #: src/components/alerts/alerts-sheet.tsx
 msgid "Overwrite existing alerts"
@@ -1851,6 +1875,7 @@ msgid "State"
 msgstr "Stanje"
 
 #: src/components/containers-table/containers-table-columns.tsx
+#: src/components/routes/system/charts/ups-charts.tsx
 #: src/components/routes/system/smart-table.tsx
 #: src/components/systemd-table/systemd-table.tsx
 #: src/components/systems-table/systems-table.tsx
@@ -2107,6 +2132,14 @@ msgid "Triggers when status switches between up and down"
 msgstr "Sproži se, ko se stanje preklaplja med gor in dol"
 
 #: src/lib/alerts.ts
+msgid "Triggers when the UPS switches to battery power"
+msgstr ""
+
+#: src/lib/alerts.ts
+msgid "Triggers when UPS battery charge drops below a threshold"
+msgstr ""
+
+#: src/lib/alerts.ts
 msgid "Triggers when usage of any disk exceeds a threshold"
 msgstr "Sproži se, ko uporaba katerega koli diska preseže prag"
 
@@ -2175,6 +2208,35 @@ msgstr "Posodobljeno vsakih 10 minut."
 #: src/components/routes/system/network-sheet.tsx
 msgid "Upload"
 msgstr "Naloži"
+
+#: src/components/routes/system/charts/ups-charts.tsx
+#: src/lib/alerts.ts
+msgid "UPS Battery"
+msgstr ""
+
+#: src/lib/alerts.ts
+msgid "UPS is on battery power"
+msgstr ""
+
+#: src/components/routes/system/charts/ups-charts.tsx
+msgid "UPS Load"
+msgstr ""
+
+#: src/components/routes/system/charts/ups-charts.tsx
+msgid "UPS load percentage"
+msgstr ""
+
+#: src/lib/alerts.ts
+msgid "UPS On Battery"
+msgstr ""
+
+#: src/components/routes/system/charts/ups-charts.tsx
+msgid "UPS Runtime"
+msgstr ""
+
+#: src/components/routes/system/charts/ups-charts.tsx
+msgid "UPS Voltage"
+msgstr ""
 
 #: src/components/routes/system/info-bar.tsx
 #: src/components/systems-table/systems-table-columns.tsx

@@ -485,6 +485,33 @@ func AverageSystemStatsSlice(records []system.Stats) system.Stats {
 				sum.GPUData[id] = gpu
 			}
 		}
+
+		// Accumulate UPS data
+		if stats.Ups != nil {
+			if sum.Ups == nil {
+				sum.Ups = make(map[string]system.UpsData, len(stats.Ups))
+			}
+			for name, value := range stats.Ups {
+				upsData, ok := sum.Ups[name]
+				if !ok {
+					upsData = system.UpsData{Model: value.Model, Status: value.Status, OnBattery: value.OnBattery}
+				}
+				upsData.BatteryPct += value.BatteryPct
+				upsData.LoadPct += value.LoadPct
+				upsData.InputV += value.InputV
+				upsData.OutputV += value.OutputV
+				upsData.TimeLeft += value.TimeLeft
+				// keep the latest non-numeric values
+				if value.Model != "" {
+					upsData.Model = value.Model
+				}
+				if value.Status != "" {
+					upsData.Status = value.Status
+				}
+				upsData.OnBattery = value.OnBattery
+				sum.Ups[name] = upsData
+			}
+		}
 	}
 
 	// Compute averages
@@ -592,6 +619,19 @@ func AverageSystemStatsSlice(records []system.Stats) system.Stats {
 			}
 
 			sum.GPUData[id] = gpu
+		}
+	}
+
+	// Average UPS data
+	if sum.Ups != nil {
+		for name := range sum.Ups {
+			upsData := sum.Ups[name]
+			upsData.BatteryPct = twoDecimals(upsData.BatteryPct / count)
+			upsData.LoadPct = twoDecimals(upsData.LoadPct / count)
+			upsData.InputV = twoDecimals(upsData.InputV / count)
+			upsData.OutputV = twoDecimals(upsData.OutputV / count)
+			upsData.TimeLeft = twoDecimals(upsData.TimeLeft / count)
+			sum.Ups[name] = upsData
 		}
 	}
 

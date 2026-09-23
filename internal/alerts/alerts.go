@@ -60,6 +60,7 @@ type SystemAlertStats struct {
 	Batteries    map[string]uint8              `json:"bats"`
 	ExtraFs      map[string]SystemAlertFsStats `json:"efs"`
 	ZfsPools     map[string]SystemAlertZfsPool `json:"z"`
+	Ups          map[string]SystemAlertUpsData `json:"ups"`
 }
 
 type SystemAlertGPUData struct {
@@ -70,6 +71,11 @@ type SystemAlertZfsPool struct {
 	Raw   bool    `json:"raw,omitempty"`
 	Total float64 `json:"d"`
 	Used  float64 `json:"du"`
+}
+
+type SystemAlertUpsData struct {
+	BatteryPct float64 `json:"bat"`
+	OnBattery  bool    `json:"ob"`
 }
 
 type SystemAlertData struct {

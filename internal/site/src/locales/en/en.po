@@ -839,6 +839,10 @@ msgstr "Ephemeral"
 msgid "Error"
 msgstr "Error"
 
+#: src/components/routes/system/charts/ups-charts.tsx
+msgid "Estimated runtime remaining on battery"
+msgstr "Estimated runtime remaining on battery"
+
 #: src/components/routes/settings/heartbeat.tsx
 msgid "Example:"
 msgstr "Example:"
@@ -1084,6 +1088,14 @@ msgstr "Image update available"
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Inactive"
 msgstr "Inactive"
+
+#: src/components/routes/system/charts/ups-charts.tsx
+msgid "Input"
+msgstr "Input"
+
+#: src/components/routes/system/charts/ups-charts.tsx
+msgid "Input and output voltage"
+msgstr "Input and output voltage"
 
 #: src/components/network-monitors-table/network-monitors-columns.tsx
 #: src/components/routes/settings/heartbeat.tsx
@@ -1357,9 +1369,17 @@ msgstr "Notifications may include recent container log excerpts."
 msgid "OAuth 2 / OIDC support"
 msgstr "OAuth 2 / OIDC support"
 
+#: src/components/routes/system/charts/ups-charts.tsx
+msgid "On battery"
+msgstr "On battery"
+
 #: src/components/routes/settings/config-yaml.tsx
 msgid "On each restart, systems in the database will be updated to match the systems defined in the file."
 msgstr "On each restart, systems in the database will be updated to match the systems defined in the file."
+
+#: src/components/routes/system/charts/ups-charts.tsx
+msgid "On line"
+msgstr "On line"
 
 #: src/lib/alerts.ts
 msgid "One or more containers are unhealthy"
@@ -1400,6 +1420,10 @@ msgstr "Or continue with"
 #: src/components/routes/system/cpu-sheet.tsx
 msgid "Other"
 msgstr "Other"
+
+#: src/components/routes/system/charts/ups-charts.tsx
+msgid "Output"
+msgstr "Output"
 
 #: src/components/alerts/alerts-sheet.tsx
 msgid "Overwrite existing alerts"
@@ -1846,6 +1870,7 @@ msgid "State"
 msgstr "State"
 
 #: src/components/containers-table/containers-table-columns.tsx
+#: src/components/routes/system/charts/ups-charts.tsx
 #: src/components/routes/system/smart-table.tsx
 #: src/components/systemd-table/systemd-table.tsx
 #: src/components/systems-table/systems-table.tsx
@@ -2102,6 +2127,14 @@ msgid "Triggers when status switches between up and down"
 msgstr "Triggers when status switches between up and down"
 
 #: src/lib/alerts.ts
+msgid "Triggers when the UPS switches to battery power"
+msgstr "Triggers when the UPS switches to battery power"
+
+#: src/lib/alerts.ts
+msgid "Triggers when UPS battery charge drops below a threshold"
+msgstr "Triggers when UPS battery charge drops below a threshold"
+
+#: src/lib/alerts.ts
 msgid "Triggers when usage of any disk exceeds a threshold"
 msgstr "Triggers when usage of any disk exceeds a threshold"
 
@@ -2170,6 +2203,35 @@ msgstr "Updated every 10 minutes."
 #: src/components/routes/system/network-sheet.tsx
 msgid "Upload"
 msgstr "Upload"
+
+#: src/components/routes/system/charts/ups-charts.tsx
+#: src/lib/alerts.ts
+msgid "UPS Battery"
+msgstr "UPS Battery"
+
+#: src/lib/alerts.ts
+msgid "UPS is on battery power"
+msgstr "UPS is on battery power"
+
+#: src/components/routes/system/charts/ups-charts.tsx
+msgid "UPS Load"
+msgstr "UPS Load"
+
+#: src/components/routes/system/charts/ups-charts.tsx
+msgid "UPS load percentage"
+msgstr "UPS load percentage"
+
+#: src/lib/alerts.ts
+msgid "UPS On Battery"
+msgstr "UPS On Battery"
+
+#: src/components/routes/system/charts/ups-charts.tsx
+msgid "UPS Runtime"
+msgstr "UPS Runtime"
+
+#: src/components/routes/system/charts/ups-charts.tsx
+msgid "UPS Voltage"
+msgstr "UPS Voltage"
 
 #: src/components/routes/system/info-bar.tsx
 #: src/components/systems-table/systems-table-columns.tsx

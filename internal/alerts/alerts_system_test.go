@@ -203,6 +203,22 @@ func setBatteryAlertValue(info *system.Info, stats *system.Stats, value [2]uint8
 	stats.Battery = value
 }
 
+func setUpsAlertValue(_ *system.Info, stats *system.Stats, value float64) {
+	stats.Ups = map[string]system.UpsData{
+		"ups1": {BatteryPct: value, Status: "OL"},
+	}
+}
+
+func setUpsOnBatteryAlertValue(_ *system.Info, stats *system.Stats, value bool) {
+	status := "OL"
+	if value {
+		status = "OB"
+	}
+	stats.Ups = map[string]system.UpsData{
+		"ups1": {OnBattery: value, Status: status, BatteryPct: 100},
+	}
+}
+
 func TestSystemAlertsOneMin(t *testing.T) {
 	testOneMinuteSystemAlert(t, "CPU", 50, setCPUAlertValue, 51, 49)
 	for _, test := range cpuStateAlertTests {
@@ -219,6 +235,8 @@ func TestSystemAlertsOneMin(t *testing.T) {
 	testOneMinuteSystemAlert(t, "LoadAvg5", 4, setLoadAvgAlertValue, [3]float64{0, 4.1, 0}, [3]float64{0, 3.9, 0})
 	testOneMinuteSystemAlert(t, "LoadAvg15", 4, setLoadAvgAlertValue, [3]float64{0, 0, 4.1}, [3]float64{0, 0, 3.9})
 	testOneMinuteSystemAlert(t, "Battery", 20, setBatteryAlertValue, [2]uint8{0, 1}, [2]uint8{21, 0})
+	testOneMinuteSystemAlert(t, "UPS", 20, setUpsAlertValue, 19, 21)
+	testOneMinuteSystemAlert(t, "UPSOnBattery", 0, setUpsOnBatteryAlertValue, true, false)
 }
 
 func TestSystemAlertsTwoMin(t *testing.T) {
@@ -237,6 +255,7 @@ func TestSystemAlertsTwoMin(t *testing.T) {
 	testMultiMinuteSystemAlert(t, "LoadAvg5", 4, 2, setLoadAvgAlertValue, [3]float64{0, 2, 0}, [3]float64{0, 4.1, 0}, [3]float64{0, 3.5, 0})
 	testMultiMinuteSystemAlert(t, "LoadAvg15", 4, 2, setLoadAvgAlertValue, [3]float64{0, 0, 2}, [3]float64{0, 0, 4.1}, [3]float64{0, 0, 3.5})
 	testMultiMinuteSystemAlert(t, "Battery", 20, 2, setBatteryAlertValue, [2]uint8{21, 0}, [2]uint8{19, 0}, [2]uint8{25, 1})
+	testMultiMinuteSystemAlert(t, "UPS", 20, 2, setUpsAlertValue, 21, 19, 25)
 }
 
 func TestCPUStateAlertWithoutBreakdown(t *testing.T) {

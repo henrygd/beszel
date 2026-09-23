@@ -13,6 +13,7 @@ import (
 	"github.com/henrygd/beszel"
 	"github.com/henrygd/beszel/agent/battery"
 	"github.com/henrygd/beszel/agent/btrfs"
+	"github.com/henrygd/beszel/agent/ups"
 	"github.com/henrygd/beszel/agent/utils"
 	"github.com/henrygd/beszel/agent/zfs"
 	"github.com/henrygd/beszel/internal/entities/container"
@@ -154,6 +155,11 @@ func (a *Agent) getSystemStats(cacheTimeMs uint16) system.Stats {
 		}
 	}
 
+	// UPS (apcupsd)
+	if upsData, err := ups.GetStats(upsAddr()); err == nil {
+		systemStats.Ups = upsData
+	}
+
 	// cpu metrics
 	cpuMetrics, err := getCpuMetrics(cacheTimeMs)
 	if err == nil {
@@ -279,6 +285,15 @@ func (a *Agent) getSystemStats(cacheTimeMs uint16) system.Stats {
 	a.systemInfo.Threads = a.systemDetails.Threads
 
 	return systemStats
+}
+
+// upsAddr returns the apcupsd NIS socket address from the APCUPSD_ADDR env var,
+// defaulting to localhost:3551.
+func upsAddr() string {
+	if addr, exists := utils.GetEnv("APCUPSD_ADDR"); exists && addr != "" {
+		return addr
+	}
+	return ups.DefaultAddr
 }
 
 // cpuModelFallbackKeys are the field names to look for in /proc/cpuinfo when

@@ -551,6 +551,40 @@ func TestAverageSystemStatsSlice_MultipleGPUs(t *testing.T) {
 	assert.Equal(t, 75.0, result.GPUData["gpu1"].Temperature)
 }
 
+func TestAverageSystemStatsSlice_Ups(t *testing.T) {
+	input := []system.Stats{
+		{
+			Ups: map[string]system.UpsData{
+				"ups1": {
+					Model: "Back-UPS 900", Status: "OL", OnBattery: false,
+					BatteryPct: 100, LoadPct: 20, InputV: 120, OutputV: 120, TimeLeft: 0,
+				},
+			},
+		},
+		{
+			Ups: map[string]system.UpsData{
+				"ups1": {
+					Model: "Back-UPS 900", Status: "OB", OnBattery: true,
+					BatteryPct: 50, LoadPct: 40, InputV: 0, OutputV: 12, TimeLeft: 10,
+				},
+			},
+		},
+	}
+
+	result := records.AverageSystemStatsSlice(input)
+
+	require.NotNil(t, result.Ups)
+	ups := result.Ups["ups1"]
+	assert.Equal(t, "Back-UPS 900", ups.Model)
+	assert.Equal(t, "OB", ups.Status) // last record's status
+	assert.True(t, ups.OnBattery)     // last record's on-battery
+	assert.Equal(t, 75.0, ups.BatteryPct)
+	assert.Equal(t, 30.0, ups.LoadPct)
+	assert.Equal(t, 60.0, ups.InputV)
+	assert.Equal(t, 66.0, ups.OutputV)
+	assert.Equal(t, 5.0, ups.TimeLeft)
+}
+
 func TestAverageSystemStatsSlice_CpuCoresUsage(t *testing.T) {
 	input := []system.Stats{
 		{Cpu: 10.0, CpuCoresUsage: system.Uint8Slice{10, 20, 30, 40}},
