@@ -3,6 +3,7 @@ package agent
 import (
 	"context"
 	"log/slog"
+	"math"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -686,25 +687,27 @@ func (a *Agent) updateDiskIo(cacheTimeMs uint16, systemStats *system.Stats) {
 			// This is the total number of milliseconds spent by all reads (as
 			// measured from __make_request() to end_that_request_last()).
 			// https://www.kernel.org/doc/Documentation/iostats.txt (fields 4, 8)
-			diskReadTime := utils.TwoDecimals(float64(d.ReadTime-prev.readTime) / float64(msElapsed) * 100)
-			diskWriteTime := utils.TwoDecimals(float64(d.WriteTime-prev.writeTime) / float64(msElapsed) * 100)
+			deltaReadTime := ioTimeDelta(d.ReadTime, prev.readTime)
+			deltaWriteTime := ioTimeDelta(d.WriteTime, prev.writeTime)
+			diskReadTime := utils.TwoDecimals(float64(deltaReadTime) / float64(msElapsed) * 100)
+			diskWriteTime := utils.TwoDecimals(float64(deltaWriteTime) / float64(msElapsed) * 100)
 
 			// I/O utilization %: fraction of wall time the device had any I/O in progress (0-100).
-			diskIoUtilPct := utils.TwoDecimals(float64(d.IoTime-prev.ioTime) / float64(msElapsed) * 100)
+			diskIoUtilPct := utils.TwoDecimals(float64(ioTimeDelta(d.IoTime, prev.ioTime)) / float64(msElapsed) * 100)
 
 			// Weighted I/O: queue-depth weighted I/O time, normalized to interval (can exceed 100%).
 			// Linux kernel field 11: incremented by iops_in_progress × ms_since_last_update.
 			// Used to display queue depth. Multipled by 100 to increase accuracy of digit truncation (divided by 100 in UI).
-			diskWeightedIO := utils.TwoDecimals(float64(d.WeightedIO-prev.weightedIO) / float64(msElapsed) * 100)
+			diskWeightedIO := utils.TwoDecimals(float64(ioTimeDelta(d.WeightedIO, prev.weightedIO)) / float64(msElapsed) * 100)
 
 			// r_await / w_await: average time per read/write operation in milliseconds.
 			// Equivalent to r_await and w_await in iostat.
 			var rAwait, wAwait float64
 			if deltaReadCount := d.ReadCount - prev.readCount; deltaReadCount > 0 {
-				rAwait = utils.TwoDecimals(float64(d.ReadTime-prev.readTime) / float64(deltaReadCount))
+				rAwait = utils.TwoDecimals(float64(deltaReadTime) / float64(deltaReadCount))
 			}
 			if deltaWriteCount := d.WriteCount - prev.writeCount; deltaWriteCount > 0 {
-				wAwait = utils.TwoDecimals(float64(d.WriteTime-prev.writeTime) / float64(deltaWriteCount))
+				wAwait = utils.TwoDecimals(float64(deltaWriteTime) / float64(deltaWriteCount))
 			}
 
 			// Update global fsStats baseline for cross-interval correctness
@@ -738,6 +741,20 @@ func (a *Agent) updateDiskIo(cacheTimeMs uint16, systemStats *system.Stats) {
 			}
 		}
 	}
+}
+
+// ioTimeDelta returns the increase of a cumulative millisecond counter from
+// the disk I/O stats. Linux prints these fields of /proc/diskstats as 32-bit
+// unsigned ints, so they wrap to zero at 2^32. A busy disk reaches that in
+// days for the weighted I/O time.
+func ioTimeDelta(current, previous uint64) uint64 {
+	if current >= previous {
+		return current - previous
+	}
+	if previous <= math.MaxUint32 {
+		return current + (math.MaxUint32 + 1 - previous)
+	}
+	return 0
 }
 
 // getRootMountPoint returns the appropriate root mount point for the system.
