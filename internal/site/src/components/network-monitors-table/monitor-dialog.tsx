@@ -23,7 +23,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Textarea } from "@/components/ui/textarea"
-import { ChevronDownIcon, ListIcon, SearchIcon, ServerIcon } from "lucide-react"
+import { ChevronDownIcon, ListIcon, PlusIcon, SearchIcon, ServerIcon } from "lucide-react"
 import { useToast } from "@/components/ui/use-toast"
 import { $systems } from "@/lib/stores"
 import { cn, supportsNetworkMonitors } from "@/lib/utils"
@@ -446,8 +446,13 @@ export function AddMonitorDialog({ systemId, monitors }: { systemId?: string; mo
 		<>
 			<div className="flex gap-0 rounded-lg">
 				<Button variant="outline" onClick={openAdd} className="rounded-e-none grow" disabled={!hasEligibleSystems}>
-					{/* <PlusIcon className="size-4 me-1" /> */}
-					<Trans>Add {{ foo: t`Monitor` }}</Trans>
+					<PlusIcon className="size-4 me-1" />
+					<span className="sm:hidden">
+						<Trans>Add</Trans>
+					</span>
+					<span className="hidden sm:inline">
+						<Trans>Add {{ foo: t`Monitor` }}</Trans>
+					</span>
 				</Button>
 				<div className="w-px h-full bg-muted"></div>
 				<DropdownMenu>

@@ -309,7 +309,7 @@ export default function NetworkMonitorsTableNew({
 	return (
 		<Card className="@container w-full px-3 py-5 sm:py-6 sm:px-6">
 			<CardHeader className="p-0 mb-3 sm:mb-4">
-				<div className="grid md:flex gap-x-5 gap-y-3 w-full items-end">
+				<div className="grid md-lg:flex gap-x-5 gap-y-3 w-full items-end">
 					<div className="px-2 sm:px-1">
 						<CardTitle className="mb-2">
 							<Trans>Network Monitors</Trans>
@@ -318,14 +318,14 @@ export default function NetworkMonitorsTableNew({
 							<Trans>Response time monitoring from agents.</Trans>
 						</div>
 					</div>
-					<div className="md:ms-auto flex items-center gap-2">
+					<div className="md-lg:ms-auto flex items-center gap-2">
 						{monitors.length > 0 && (
-							<div className="relative">
+							<div className="relative grow">
 								<Input
 									placeholder={t`Filter...`}
 									value={globalFilter}
 									onChange={(e) => setGlobalFilter(e.target.value)}
-									className="ms-auto px-4 w-full max-w-full md:w-50"
+									className="ms-auto px-4 w-full max-w-full md-lg:w-50"
 								/>
 								{globalFilter && (
 									<Button
@@ -348,8 +348,8 @@ export default function NetworkMonitorsTableNew({
 									<Trans>View</Trans>
 								</Button>
 							</DropdownMenuTrigger>
-							<DropdownMenuContent align="end" className="h-72 md:h-auto min-w-48 md:min-w-auto overflow-y-auto">
-								<div className="grid grid-cols-1 md:grid-cols-2 divide-y md:divide-s md:divide-y-0">
+							<DropdownMenuContent className="h-72 md:h-auto min-w-48 md:min-w-auto overflow-y-auto">
+								<div className="grid grid-cols-2 divide-y md:divide-s md:divide-y-0">
 									<div className="border-r">
 										<DropdownMenuLabel className="pt-2 px-3.5 flex items-center gap-2">
 											<ArrowUpDownIcon className="size-4" />
