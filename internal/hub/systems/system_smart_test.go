@@ -7,6 +7,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/henrygd/beszel/internal/entities/monitor"
 	"github.com/henrygd/beszel/internal/entities/smart"
 	esystem "github.com/henrygd/beszel/internal/entities/system"
 	"github.com/henrygd/beszel/internal/hub/expirymap"
@@ -28,8 +29,14 @@ func (stubHub) GetSSHKey(dataDir string) (ssh.Signer, error) { return nil, nil }
 func (stubHub) HandleSystemAlerts(systemRecord *core.Record, data *esystem.CombinedData) error {
 	return nil
 }
-func (stubHub) HandleStatusAlerts(status string, systemRecord *core.Record) error { return nil }
-func (stubHub) CancelPendingStatusAlerts(systemID string)                         {}
+func (stubHub) HandleNetworkMonitorAlerts(*core.Record, map[string]monitor.Result) error { return nil }
+func (stubHub) HandleStatusAlerts(status string, systemRecord *core.Record) error        { return nil }
+func (stubHub) HandleRebootAlert(systemRecord *core.Record) error                        { return nil }
+func (stubHub) HandleContainerAlerts(systemRecord *core.Record, data *esystem.CombinedData, fetchLogs func(containerID string) (string, error)) error {
+	return nil
+}
+func (stubHub) CancelPendingStatusAlerts(systemID string)    {}
+func (stubHub) CancelPendingContainerAlerts(systemID string) {}
 
 // newTestSystemWithHub creates a System backed by a real (temp) database, along
 // with a matching "systems" record, for tests that need to exercise DB reads/writes.
@@ -208,7 +215,7 @@ func TestSaveSmartDevices_IncompleteDataDoesNotRemoveDevices(t *testing.T) {
 	}, false))
 
 	assert.Len(t, countSmartDeviceRecords(t, testApp, sys.Id), 2)
-	recordA, err := testApp.FindRecordById("smart_devices", makeStableHashId(sys.Id, "AAA"))
+	recordA, err := testApp.FindRecordById("smart_devices", MakeStableHashId(sys.Id, "AAA"))
 	require.NoError(t, err)
 	assert.EqualValues(t, 42, recordA.GetInt("temp"))
 }

@@ -1,5 +1,5 @@
 import { t } from "@lingui/core/macro"
-import { CpuIcon, HardDriveIcon, MemoryStickIcon, RotateCcwIcon, ServerIcon } from "lucide-react"
+import { ContainerIcon, CpuIcon, HardDriveIcon, MemoryStickIcon, NetworkIcon, RotateCcwIcon, ServerCrashIcon, ServerIcon } from "lucide-react"
 import type { RecordSubscription } from "pocketbase"
 import { EthernetIcon, GpuIcon } from "@/components/ui/icons"
 import { $alerts } from "@/lib/stores"
@@ -9,185 +9,231 @@ import { ThermometerIcon, BatteryMediumIcon, HourglassIcon } from "@/components/
 
 /** Alert info for each alert type */
 export const alertInfo: Record<string, AlertInfo> = {
-	Status: {
-		name: () => t`Status`,
-		unit: "",
-		icon: ServerIcon,
-		desc: () => t`Triggers when status switches between up and down`,
-		/** "for x minutes" is appended to desc when only one value */
-		singleDesc: () => `${t`System`} ${t`Down`}`,
-	},
-	CPU: {
-		name: () => t`CPU Usage`,
-		unit: "%",
-		icon: CpuIcon,
-		desc: () => t`Triggers when CPU usage exceeds a threshold`,
-	},
-	Memory: {
-		name: () => t`Memory Usage`,
-		unit: "%",
-		icon: MemoryStickIcon,
-		desc: () => t`Triggers when memory usage exceeds a threshold`,
-	},
-	Disk: {
-		name: () => t`Disk Usage`,
-		unit: "%",
-		icon: HardDriveIcon,
-		desc: () => t`Triggers when usage of any disk exceeds a threshold`,
-	},
-	Bandwidth: {
-		name: () => t`Bandwidth`,
-		unit: " MB/s",
-		icon: EthernetIcon,
-		desc: () => t`Triggers when combined up/down exceeds a threshold`,
-		max: 250,
-	},
-	GPU: {
-		name: () => t`GPU Usage`,
-		unit: "%",
-		icon: GpuIcon,
-		desc: () => t`Triggers when GPU usage exceeds a threshold`,
-	},
-	Temperature: {
-		name: () => t`Temperature`,
-		unit: "°C",
-		icon: ThermometerIcon,
-		desc: () => t`Triggers when any sensor exceeds a threshold`,
-	},
-	LoadAvg1: {
-		name: () => t`Load Average 1m`,
-		unit: "",
-		icon: HourglassIcon,
-		max: 100,
-		min: 0.1,
-		start: 10,
-		step: 0.1,
-		desc: () => t`Triggers when 1 minute load average exceeds a threshold`,
-	},
-	LoadAvg5: {
-		name: () => t`Load Average 5m`,
-		unit: "",
-		icon: HourglassIcon,
-		max: 100,
-		min: 0.1,
-		start: 10,
-		step: 0.1,
-		desc: () => t`Triggers when 5 minute load average exceeds a threshold`,
-	},
-	LoadAvg15: {
-		name: () => t`Load Average 15m`,
-		unit: "",
-		icon: HourglassIcon,
-		min: 0.1,
-		max: 100,
-		start: 10,
-		step: 0.1,
-		desc: () => t`Triggers when 15 minute load average exceeds a threshold`,
-	},
-	Battery: {
-		name: () => t`Battery`,
-		unit: "%",
-		icon: BatteryMediumIcon,
-		desc: () => t`Triggers when battery charge drops below a threshold`,
-		start: 20,
-		invert: true,
-	},
-	Reboot: {
-		name: () => t`Reboot`,
-		unit: "",
-		icon: RotateCcwIcon,
-		desc: () => t`Triggers when the system restarts unexpectedly`,
-		noSliders: true,
-	},
+  Status: {
+    name: () => t`Status`,
+    unit: "",
+    icon: ServerIcon,
+    desc: () => t`Triggers when status switches between up and down`,
+    /** "for x minutes" is appended to desc when only one value */
+    singleDesc: () => `${t`System`} ${t`Down`}`,
+  },
+  CPU: {
+    name: () => t`CPU Usage`,
+    unit: "%",
+    icon: CpuIcon,
+    desc: () => t`Triggers when CPU usage exceeds a threshold`,
+  },
+  CPUIOWait: {
+    name: () => t`CPU I/O Wait`,
+    unit: "%",
+    icon: CpuIcon,
+    desc: () => t`Triggers when CPU I/O wait exceeds a threshold`,
+  },
+  CPUSteal: {
+    name: () => t`CPU Steal Time`,
+    unit: "%",
+    icon: CpuIcon,
+    desc: () => t`Triggers when CPU steal time exceeds a threshold`,
+  },
+  Memory: {
+    name: () => t`Memory Usage`,
+    unit: "%",
+    icon: MemoryStickIcon,
+    desc: () => t`Triggers when memory usage exceeds a threshold`,
+  },
+  Disk: {
+    name: () => t`Disk Usage`,
+    unit: "%",
+    icon: HardDriveIcon,
+    desc: () => t`Triggers when usage of any disk exceeds a threshold`,
+  },
+  Bandwidth: {
+    name: () => t`Bandwidth`,
+    unit: " MB/s",
+    icon: EthernetIcon,
+    desc: () => t`Triggers when combined up/down exceeds a threshold`,
+    max: 250,
+  },
+  NetworkMonitorLoss: {
+    name: () => t`Network Monitor Loss`,
+    unit: "%",
+    icon: NetworkIcon,
+    desc: () => t`Triggers when one hour loss exceeds a threshold`,
+    // note: () => t`Uses available history after three probes.`,
+    noDuration: true,
+    min: 0,
+    max: 99.9,
+    step: 0.1,
+    start: 5,
+  },
+  GPU: {
+    name: () => t`GPU Usage`,
+    unit: "%",
+    icon: GpuIcon,
+    desc: () => t`Triggers when GPU usage exceeds a threshold`,
+  },
+  Temperature: {
+    name: () => t`Temperature`,
+    unit: "°C",
+    icon: ThermometerIcon,
+    desc: () => t`Triggers when any sensor exceeds a threshold`,
+  },
+  LoadAvg1: {
+    name: () => t`Load Average 1m`,
+    unit: "",
+    icon: HourglassIcon,
+    max: 100,
+    min: 0.1,
+    start: 10,
+    step: 0.1,
+    desc: () => t`Triggers when 1 minute load average exceeds a threshold`,
+  },
+  LoadAvg5: {
+    name: () => t`Load Average 5m`,
+    unit: "",
+    icon: HourglassIcon,
+    max: 100,
+    min: 0.1,
+    start: 10,
+    step: 0.1,
+    desc: () => t`Triggers when 5 minute load average exceeds a threshold`,
+  },
+  LoadAvg15: {
+    name: () => t`Load Average 15m`,
+    unit: "",
+    icon: HourglassIcon,
+    min: 0.1,
+    max: 100,
+    start: 10,
+    step: 0.1,
+    desc: () => t`Triggers when 15 minute load average exceeds a threshold`,
+  },
+  Battery: {
+    name: () => t`Battery`,
+    unit: "%",
+    icon: BatteryMediumIcon,
+    desc: () => t`Triggers when battery charge drops below a threshold`,
+    start: 20,
+    invert: true,
+  },
+  ContainerHealth: {
+    name: () => t`Container Health`,
+    unit: "",
+    icon: ContainerIcon,
+    desc: () => t`Triggers when a container's health check reports unhealthy`,
+    note: () =>
+      t`Notifications may include recent container log excerpts.`,
+    triggeredDesc: () => t`One or more containers are unhealthy`,
+    singleDesc: () => `${t`Container`} ${t`Unhealthy`}`,
+
+  },
+  SystemdFailed: {
+    name: () => t`Failed Services`,
+    unit: "",
+    icon: ServerCrashIcon,
+    desc: () => t`Triggers when any systemd service enters the failed state`,
+    triggeredDesc: () => t`One or more services are in a failed state`,
+    /** Fires on first observation - the agent only polls systemd every 10 minutes */
+    noDuration: true,
+    noThreshold: true,
+  },
+  Reboot: {
+    name: () => t`Reboot`,
+    unit: "",
+    icon: RotateCcwIcon,
+    desc: () => t`Triggers when the system restarts unexpectedly`,
+    noDuration: true,
+    noThreshold: true,
+  },
 } as const
 
 /** Helper to manage user alerts */
 export const alertManager = (() => {
-	const collection = pb.collection<AlertRecord>("alerts")
-	let unsub: () => void
+  const collection = pb.collection<AlertRecord>("alerts")
+  let unsub: () => void
 
-	/** Fields to fetch from alerts collection */
-	const fields = "id,name,system,value,min,triggered"
+  /** Fields to fetch from alerts collection */
+  const fields = "id,name,system,value,min,triggered"
 
-	/** Fetch alerts from collection */
-	async function fetchAlerts(): Promise<AlertRecord[]> {
-		return await collection.getFullList<AlertRecord>({ fields, sort: "updated" })
-	}
+  /** Fetch alerts from collection */
+  async function fetchAlerts(): Promise<AlertRecord[]> {
+    return await collection.getFullList<AlertRecord>({ fields, sort: "updated" })
+  }
 
-	/** Format alerts into a map of system id to alert name to alert record */
-	function add(alerts: AlertRecord[]) {
-		for (const alert of alerts) {
-			const systemId = alert.system
-			const systemAlerts = $alerts.get()[systemId] ?? new Map()
-			const newAlerts = new Map(systemAlerts)
-			newAlerts.set(alert.name, alert)
-			$alerts.setKey(systemId, newAlerts)
-		}
-	}
+  /** Format alerts into a map of system id to alert name to alert record */
+  function add(alerts: AlertRecord[]) {
+    for (const alert of alerts) {
+      const systemId = alert.system
+      const systemAlerts = $alerts.get()[systemId] ?? new Map()
+      const newAlerts = new Map(systemAlerts)
+      newAlerts.set(alert.name, alert)
+      $alerts.setKey(systemId, newAlerts)
+    }
+  }
 
-	function remove(alerts: Pick<AlertRecord, "name" | "system">[]) {
-		for (const alert of alerts) {
-			const systemId = alert.system
-			const systemAlerts = $alerts.get()[systemId]
-			const newAlerts = new Map(systemAlerts)
-			newAlerts.delete(alert.name)
-			$alerts.setKey(systemId, newAlerts)
-		}
-	}
+  function remove(alerts: Pick<AlertRecord, "name" | "system">[]) {
+    for (const alert of alerts) {
+      const systemId = alert.system
+      const systemAlerts = $alerts.get()[systemId]
+      const newAlerts = new Map(systemAlerts)
+      newAlerts.delete(alert.name)
+      $alerts.setKey(systemId, newAlerts)
+    }
+  }
 
-	const actionFns = {
-		create: add,
-		update: add,
-		delete: remove,
-	}
+  const actionFns = {
+    create: add,
+    update: add,
+    delete: remove,
+  }
 
-	// batch alert updates to prevent unnecessary re-renders when adding many alerts at once
-	const batchUpdate = (() => {
-		const batch = new Map<string, RecordSubscription<AlertRecord>>()
-		let timeout: ReturnType<typeof setTimeout>
+  // batch alert updates to prevent unnecessary re-renders when adding many alerts at once
+  const batchUpdate = (() => {
+    const batch = new Map<string, RecordSubscription<AlertRecord>>()
+    let timeout: ReturnType<typeof setTimeout>
 
-		return (data: RecordSubscription<AlertRecord>) => {
-			const { record } = data
-			batch.set(`${record.system}${record.name}`, data)
-			clearTimeout(timeout)
-			timeout = setTimeout(() => {
-				const groups = { create: [], update: [], delete: [] } as Record<string, AlertRecord[]>
-				for (const { action, record } of batch.values()) {
-					groups[action]?.push(record)
-				}
-				for (const key in groups) {
-					if (groups[key].length) {
-						actionFns[key as keyof typeof actionFns]?.(groups[key])
-					}
-				}
-				batch.clear()
-			}, 50)
-		}
-	})()
+    return (data: RecordSubscription<AlertRecord>) => {
+      const { record } = data
+      batch.set(`${record.system}${record.name}`, data)
+      clearTimeout(timeout)
+      timeout = setTimeout(() => {
+        const groups = { create: [], update: [], delete: [] } as Record<string, AlertRecord[]>
+        for (const { action, record } of batch.values()) {
+          groups[action]?.push(record)
+        }
+        for (const key in groups) {
+          if (groups[key].length) {
+            actionFns[key as keyof typeof actionFns]?.(groups[key])
+          }
+        }
+        batch.clear()
+      }, 50)
+    }
+  })()
 
-	async function subscribe() {
-		unsub = await collection.subscribe("*", batchUpdate, { fields })
-	}
+  async function subscribe() {
+    unsub = await collection.subscribe("*", batchUpdate, { fields })
+  }
 
-	function unsubscribe() {
-		unsub?.()
-	}
+  function unsubscribe() {
+    unsub?.()
+  }
 
-	async function refresh() {
-		const records = await fetchAlerts()
-		add(records)
-	}
+  async function refresh() {
+    const records = await fetchAlerts()
+    add(records)
+  }
 
-	return {
-		/** Add alerts to store */
-		add,
-		/** Remove alerts from store */
-		remove,
-		/** Subscribe to alerts */
-		subscribe,
-		/** Unsubscribe from alerts */
-		unsubscribe,
-		/** Refresh alerts with latest data from hub */
-		refresh,
-	}
+  return {
+    /** Add alerts to store */
+    add,
+    /** Remove alerts from store */
+    remove,
+    /** Subscribe to alerts */
+    subscribe,
+    /** Unsubscribe from alerts */
+    unsubscribe,
+    /** Refresh alerts with latest data from hub */
+    refresh,
+  }
 })()
