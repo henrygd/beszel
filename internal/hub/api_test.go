@@ -318,11 +318,11 @@ func TestApiRoutesAuthentication(t *testing.T) {
 			}),
 		},
 		{
-			Name:   "POST /alerts - with auth should succeed",
+			Name:   "POST /alerts - with admin auth should succeed",
 			Method: http.MethodPost,
 			URL:    "/api/beszel/alerts",
 			Headers: map[string]string{
-				"Authorization": userToken,
+				"Authorization": adminUserToken,
 			},
 			ExpectedStatus:  200,
 			ExpectedContent: []string{"\"success\":true"},
@@ -347,11 +347,11 @@ func TestApiRoutesAuthentication(t *testing.T) {
 			}),
 		},
 		{
-			Name:   "DELETE /alerts - with auth should succeed",
+			Name:   "DELETE /alerts - with admin auth should succeed",
 			Method: http.MethodDelete,
 			URL:    "/api/beszel/alerts",
 			Headers: map[string]string{
-				"Authorization": userToken,
+				"Authorization": adminUserToken,
 			},
 			ExpectedStatus:  200,
 			ExpectedContent: []string{"\"success\":true"},

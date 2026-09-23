@@ -25,6 +25,7 @@ func TestCollectionRulesDefault(t *testing.T) {
 
 	const isUserInSystemUsers = `@request.auth.id != "" && system.users.id ?= @request.auth.id`
 	const isUserInSystemUsersNotReadonly = `@request.auth.id != "" && system.users.id ?= @request.auth.id && @request.auth.role != "readonly"`
+	const isUserInSystemUsersAdmin = `@request.auth.id != "" && system.users.id ?= @request.auth.id && @request.auth.role = "admin"`
 
 	// users collection
 	usersCollection, err := hub.FindCollectionByNameOrId("users")
@@ -45,11 +46,11 @@ func TestCollectionRulesDefault(t *testing.T) {
 	// alerts collection
 	alertsCollection, err := hub.FindCollectionByNameOrId("alerts")
 	require.NoError(t, err, "Failed to find alerts collection")
-	assert.Equal(t, isUserMatchesUser, *alertsCollection.ListRule)
-	assert.Nil(t, alertsCollection.ViewRule)
-	assert.Equal(t, isUserMatchesUser, *alertsCollection.CreateRule)
-	assert.Equal(t, isUserMatchesUser, *alertsCollection.UpdateRule)
-	assert.Equal(t, isUserMatchesUser, *alertsCollection.DeleteRule)
+	assert.Equal(t, isUserInSystemUsers, *alertsCollection.ListRule)
+	assert.Equal(t, isUserInSystemUsers, *alertsCollection.ViewRule)
+	assert.Equal(t, isUserInSystemUsersAdmin, *alertsCollection.CreateRule)
+	assert.Equal(t, isUserInSystemUsersAdmin, *alertsCollection.UpdateRule)
+	assert.Equal(t, isUserInSystemUsersAdmin, *alertsCollection.DeleteRule)
 	alertNames := alertsCollection.Fields.GetByName("name").(*core.SelectField).Values
 	for _, name := range []string{"CPUIOWait", "CPUSteal"} {
 		assert.Contains(t, alertNames, name)
@@ -61,11 +62,11 @@ func TestCollectionRulesDefault(t *testing.T) {
 	// alerts_history collection
 	alertsHistoryCollection, err := hub.FindCollectionByNameOrId("alerts_history")
 	require.NoError(t, err, "Failed to find alerts_history collection")
-	assert.Equal(t, isUserMatchesUser, *alertsHistoryCollection.ListRule)
-	assert.Nil(t, alertsHistoryCollection.ViewRule)
+	assert.Equal(t, isUserInSystemUsers, *alertsHistoryCollection.ListRule)
+	assert.Equal(t, isUserInSystemUsers, *alertsHistoryCollection.ViewRule)
 	assert.Nil(t, alertsHistoryCollection.CreateRule)
 	assert.Nil(t, alertsHistoryCollection.UpdateRule)
-	assert.Equal(t, isUserMatchesUser, *alertsHistoryCollection.DeleteRule)
+	assert.Equal(t, isUserInSystemUsersNotReadonly, *alertsHistoryCollection.DeleteRule)
 
 	// containers collection
 	containersCollection, err := hub.FindCollectionByNameOrId("containers")
@@ -176,24 +177,25 @@ func TestCollectionRulesShareAllSystems(t *testing.T) {
 	const isUserNotReadonly = `@request.auth.id != "" && @request.auth.role != "readonly"`
 
 	const isUserMatchesUser = `@request.auth.id != "" && user = @request.auth.id`
+	const isUserAdmin = `@request.auth.id != "" && @request.auth.role = "admin"`
 
 	// alerts collection
 	alertsCollection, err := hub.FindCollectionByNameOrId("alerts")
 	require.NoError(t, err, "Failed to find alerts collection")
-	assert.Equal(t, isUserMatchesUser, *alertsCollection.ListRule)
-	assert.Nil(t, alertsCollection.ViewRule)
-	assert.Equal(t, isUserMatchesUser, *alertsCollection.CreateRule)
-	assert.Equal(t, isUserMatchesUser, *alertsCollection.UpdateRule)
-	assert.Equal(t, isUserMatchesUser, *alertsCollection.DeleteRule)
+	assert.Equal(t, isUser, *alertsCollection.ListRule)
+	assert.Equal(t, isUser, *alertsCollection.ViewRule)
+	assert.Equal(t, isUserAdmin, *alertsCollection.CreateRule)
+	assert.Equal(t, isUserAdmin, *alertsCollection.UpdateRule)
+	assert.Equal(t, isUserAdmin, *alertsCollection.DeleteRule)
 
 	// alerts_history collection
 	alertsHistoryCollection, err := hub.FindCollectionByNameOrId("alerts_history")
 	require.NoError(t, err, "Failed to find alerts_history collection")
-	assert.Equal(t, isUserMatchesUser, *alertsHistoryCollection.ListRule)
-	assert.Nil(t, alertsHistoryCollection.ViewRule)
+	assert.Equal(t, isUser, *alertsHistoryCollection.ListRule)
+	assert.Equal(t, isUser, *alertsHistoryCollection.ViewRule)
 	assert.Nil(t, alertsHistoryCollection.CreateRule)
 	assert.Nil(t, alertsHistoryCollection.UpdateRule)
-	assert.Equal(t, isUserMatchesUser, *alertsHistoryCollection.DeleteRule)
+	assert.Equal(t, isUserNotReadonly, *alertsHistoryCollection.DeleteRule)
 
 	// containers collection
 	containersCollection, err := hub.FindCollectionByNameOrId("containers")
@@ -365,10 +367,20 @@ func TestApiCollectionsAuthRules(t *testing.T) {
 	})
 
 	userOneAlert, _ := beszelTests.CreateRecord(hub, "alerts", map[string]any{
-		"name": "CPU", "system": userOneSystem.Id, "user": user1.Id, "value": 80,
+		"name": "CPU", "system": userOneSystem.Id, "value": 80,
+	})
+	sharedAlert, _ := beszelTests.CreateRecord(hub, "alerts", map[string]any{
+		"name": "CPU", "system": sharedSystem.Id, "value": 80,
 	})
 	userTwoAlert, _ := beszelTests.CreateRecord(hub, "alerts", map[string]any{
-		"name": "CPU", "system": userTwoSystem.Id, "user": user2.Id, "value": 80,
+		"name": "CPU", "system": userTwoSystem.Id, "value": 80,
+	})
+
+	userOneHistory, _ := beszelTests.CreateRecord(hub, "alerts_history", map[string]any{
+		"name": "CPU", "system": userOneSystem.Id, "alert_id": userOneAlert.Id, "value": 90,
+	})
+	userTwoHistory, _ := beszelTests.CreateRecord(hub, "alerts_history", map[string]any{
+		"name": "CPU", "system": userTwoSystem.Id, "alert_id": userTwoAlert.Id, "value": 90,
 	})
 
 	userRecords, _ := hub.CountRecords("users")
@@ -383,28 +395,57 @@ func TestApiCollectionsAuthRules(t *testing.T) {
 
 	scenarios := []beszelTests.ApiScenario{
 		{
-			Name:   "Users can only list their own alerts",
+			Name:   "Users can only list alerts on their systems",
 			Method: http.MethodGet,
 			URL:    "/api/collections/alerts/records",
 			Headers: map[string]string{
 				"Authorization": user1Token,
 			},
 			ExpectedStatus:     200,
-			ExpectedContent:    []string{userOneAlert.Id},
+			ExpectedContent:    []string{userOneAlert.Id, sharedAlert.Id},
 			NotExpectedContent: []string{userTwoAlert.Id},
 			TestAppFactory:     testAppFactory,
 		},
 		{
-			Name:   "Users cannot view another user's alert by id",
+			Name:   "Users cannot view an alert on another user's system by id",
 			Method: http.MethodGet,
 			URL:    fmt.Sprintf("/api/collections/alerts/records/%s", userTwoAlert.Id),
 			Headers: map[string]string{
 				"Authorization": user1Token,
 			},
-			ExpectedStatus:     403,
-			ExpectedContent:    []string{"Only superusers"},
+			ExpectedStatus:     404,
+			ExpectedContent:    []string{"wasn't found"},
 			NotExpectedContent: []string{userTwoAlert.Id},
 			TestAppFactory:     testAppFactory,
+		},
+		{
+			Name:   "Users can delete alert history on their systems",
+			Method: http.MethodDelete,
+			URL:    fmt.Sprintf("/api/collections/alerts_history/records/%s", userOneHistory.Id),
+			Headers: map[string]string{
+				"Authorization": user1Token,
+			},
+			ExpectedStatus: 204,
+			TestAppFactory: testAppFactory,
+			AfterTestFunc: func(t testing.TB, app *pbTests.TestApp, res *http.Response) {
+				_, err := app.FindRecordById("alerts_history", userOneHistory.Id)
+				assert.Error(t, err, "history record should be deleted")
+			},
+		},
+		{
+			Name:   "Users cannot delete alert history on another user's system",
+			Method: http.MethodDelete,
+			URL:    fmt.Sprintf("/api/collections/alerts_history/records/%s", userTwoHistory.Id),
+			Headers: map[string]string{
+				"Authorization": user1Token,
+			},
+			ExpectedStatus:  404,
+			ExpectedContent: []string{"wasn't found"},
+			TestAppFactory:  testAppFactory,
+			AfterTestFunc: func(t testing.TB, app *pbTests.TestApp, res *http.Response) {
+				_, err := app.FindRecordById("alerts_history", userTwoHistory.Id)
+				assert.NoError(t, err, "history record should not be deleted")
+			},
 		},
 		{
 			Name:               "Unauthorized user cannot list systems",

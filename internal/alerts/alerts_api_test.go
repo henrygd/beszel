@@ -47,14 +47,21 @@ func TestAlertsApi(t *testing.T) {
 
 	system1, _ := beszelTests.CreateRecord(hub, "systems", map[string]any{
 		"name":  "system1",
-		"users": []string{regularUser.Id},
+		"users": []string{regularUser.Id, adminUser.Id},
 		"host":  "127.0.0.1",
 	})
 
 	system2, _ := beszelTests.CreateRecord(hub, "systems", map[string]any{
 		"name":  "system2",
-		"users": []string{regularUser.Id},
+		"users": []string{regularUser.Id, adminUser.Id},
 		"host":  "127.0.0.2",
+	})
+
+	// system the admin is not a member of
+	otherSystem, _ := beszelTests.CreateRecord(hub, "systems", map[string]any{
+		"name":  "system3",
+		"users": []string{regularUser.Id},
+		"host":  "127.0.0.3",
 	})
 
 	testAppFactory := func(t testing.TB) *pbTests.TestApp {
@@ -65,7 +72,7 @@ func TestAlertsApi(t *testing.T) {
 		{
 			Name:            "POST no auth",
 			Method:          http.MethodPost,
-			URL:             "/api/beszel/user-alerts",
+			URL:             "/api/beszel/alerts",
 			ExpectedStatus:  401,
 			ExpectedContent: []string{"requires valid"},
 			TestAppFactory:  testAppFactory,
@@ -73,7 +80,7 @@ func TestAlertsApi(t *testing.T) {
 		{
 			Name:   "POST regular user is forbidden",
 			Method: http.MethodPost,
-			URL:    "/api/beszel/user-alerts",
+			URL:    "/api/beszel/alerts",
 			Headers: map[string]string{
 				"Authorization": regularUserToken,
 			},
@@ -90,7 +97,7 @@ func TestAlertsApi(t *testing.T) {
 		{
 			Name:   "POST no body",
 			Method: http.MethodPost,
-			URL:    "/api/beszel/user-alerts",
+			URL:    "/api/beszel/alerts",
 			Headers: map[string]string{
 				"Authorization": adminUserToken,
 			},
@@ -101,7 +108,7 @@ func TestAlertsApi(t *testing.T) {
 		{
 			Name:   "POST bad data",
 			Method: http.MethodPost,
-			URL:    "/api/beszel/user-alerts",
+			URL:    "/api/beszel/alerts",
 			Headers: map[string]string{
 				"Authorization": adminUserToken,
 			},
@@ -116,7 +123,7 @@ func TestAlertsApi(t *testing.T) {
 		{
 			Name:   "POST malformed JSON",
 			Method: http.MethodPost,
-			URL:    "/api/beszel/user-alerts",
+			URL:    "/api/beszel/alerts",
 			Headers: map[string]string{
 				"Authorization": adminUserToken,
 			},
@@ -128,7 +135,7 @@ func TestAlertsApi(t *testing.T) {
 		{
 			Name:   "POST admin creates alert for multiple systems",
 			Method: http.MethodPost,
-			URL:    "/api/beszel/user-alerts",
+			URL:    "/api/beszel/alerts",
 			Headers: map[string]string{
 				"Authorization": adminUserToken,
 			},
@@ -152,7 +159,7 @@ func TestAlertsApi(t *testing.T) {
 		{
 			Name:   "POST admin creates alert for single system",
 			Method: http.MethodPost,
-			URL:    "/api/beszel/user-alerts",
+			URL:    "/api/beszel/alerts",
 			Headers: map[string]string{
 				"Authorization": adminUserToken,
 			},
@@ -171,9 +178,32 @@ func TestAlertsApi(t *testing.T) {
 			},
 		},
 		{
+			Name:   "POST ignores systems the admin cannot access",
+			Method: http.MethodPost,
+			URL:    "/api/beszel/alerts",
+			Headers: map[string]string{
+				"Authorization": adminUserToken,
+			},
+			ExpectedStatus:  200,
+			ExpectedContent: []string{"\"success\":true"},
+			TestAppFactory:  testAppFactory,
+			Body: jsonReader(map[string]any{
+				"name":    "Disk",
+				"value":   85,
+				"min":     5,
+				"systems": []string{system1.Id, otherSystem.Id},
+			}),
+			AfterTestFunc: func(t testing.TB, app *pbTests.TestApp, res *http.Response) {
+				created, _ := app.CountRecords("alerts", dbx.HashExp{"name": "Disk", "system": system1.Id})
+				assert.EqualValues(t, 1, created, "should create alert on accessible system")
+				skipped, _ := app.CountRecords("alerts", dbx.HashExp{"name": "Disk", "system": otherSystem.Id})
+				assert.Zero(t, skipped, "should skip system the admin cannot access")
+			},
+		},
+		{
 			Name:   "POST overwrite:false should not overwrite existing alert",
 			Method: http.MethodPost,
-			URL:    "/api/beszel/user-alerts",
+			URL:    "/api/beszel/alerts",
 			Headers: map[string]string{
 				"Authorization": adminUserToken,
 			},
@@ -206,7 +236,7 @@ func TestAlertsApi(t *testing.T) {
 		{
 			Name:   "POST overwrite:true should overwrite existing alert",
 			Method: http.MethodPost,
-			URL:    "/api/beszel/user-alerts",
+			URL:    "/api/beszel/alerts",
 			Headers: map[string]string{
 				"Authorization": adminUserToken,
 			},
@@ -239,7 +269,7 @@ func TestAlertsApi(t *testing.T) {
 		{
 			Name:            "DELETE no auth",
 			Method:          http.MethodDelete,
-			URL:             "/api/beszel/user-alerts",
+			URL:             "/api/beszel/alerts",
 			ExpectedStatus:  401,
 			ExpectedContent: []string{"requires valid"},
 			TestAppFactory:  testAppFactory,
@@ -264,7 +294,7 @@ func TestAlertsApi(t *testing.T) {
 		{
 			Name:   "DELETE regular user is forbidden",
 			Method: http.MethodDelete,
-			URL:    "/api/beszel/user-alerts",
+			URL:    "/api/beszel/alerts",
 			Headers: map[string]string{
 				"Authorization": regularUserToken,
 			},
@@ -292,7 +322,7 @@ func TestAlertsApi(t *testing.T) {
 		{
 			Name:   "DELETE admin deletes alert",
 			Method: http.MethodDelete,
-			URL:    "/api/beszel/user-alerts",
+			URL:    "/api/beszel/alerts",
 			Headers: map[string]string{
 				"Authorization": adminUserToken,
 			},
@@ -318,9 +348,37 @@ func TestAlertsApi(t *testing.T) {
 			},
 		},
 		{
+			Name:   "DELETE ignores systems the admin cannot access",
+			Method: http.MethodDelete,
+			URL:    "/api/beszel/alerts",
+			Headers: map[string]string{
+				"Authorization": adminUserToken,
+			},
+			ExpectedStatus:  200,
+			ExpectedContent: []string{"\"count\":0", "\"success\":true"},
+			TestAppFactory:  testAppFactory,
+			Body: jsonReader(map[string]any{
+				"name":    "CPU",
+				"systems": []string{otherSystem.Id},
+			}),
+			BeforeTestFunc: func(t testing.TB, app *pbTests.TestApp, e *core.ServeEvent) {
+				beszelTests.ClearCollection(t, app, "alerts")
+				beszelTests.CreateRecord(app, "alerts", map[string]any{
+					"name":   "CPU",
+					"system": otherSystem.Id,
+					"value":  80,
+					"min":    10,
+				})
+			},
+			AfterTestFunc: func(t testing.TB, app *pbTests.TestApp, res *http.Response) {
+				alertCount, _ := app.CountRecords("alerts")
+				assert.EqualValues(t, 1, alertCount, "should have 1 alert (not deleted)")
+			},
+		},
+		{
 			Name:   "DELETE admin deletes alert across multiple systems",
 			Method: http.MethodDelete,
-			URL:    "/api/beszel/user-alerts",
+			URL:    "/api/beszel/alerts",
 			Headers: map[string]string{
 				"Authorization": adminUserToken,
 			},

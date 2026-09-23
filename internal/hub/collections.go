@@ -118,6 +118,27 @@ func setCollectionAuthSettings(app core.App) error {
 		return err
 	}
 
+	// Alerts belong to a system; admins with access to the system manage them.
+	systemScopedAdminRule := systemScopedReadRule + " && @request.auth.role = \"admin\""
+	if err := applyCollectionRules(app, []string{"alerts"}, collectionRules{
+		list:   &systemScopedReadRule,
+		view:   &systemScopedReadRule,
+		create: &systemScopedAdminRule,
+		update: &systemScopedAdminRule,
+		delete: &systemScopedAdminRule,
+	}); err != nil {
+		return err
+	}
+
+	// Alert history is written by the hub only; members can clear it.
+	if err := applyCollectionRules(app, []string{"alerts_history"}, collectionRules{
+		list:   &systemScopedReadRule,
+		view:   &systemScopedReadRule,
+		delete: &systemScopedWriteRule,
+	}); err != nil {
+		return err
+	}
+
 	if err := applyCollectionRules(app, []string{"system_details"}, collectionRules{
 		list: &systemScopedReadRule,
 		view: &systemScopedReadRule,

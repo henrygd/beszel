@@ -345,7 +345,8 @@ func TestAlertSilencedWithActualAlert(t *testing.T) {
 			userSettings, err = beszelTests.CreateRecord(hub, "user_settings", map[string]any{
 				"user": user.Id,
 				"settings": map[string]any{
-					"emails": []string{"test@example.com"},
+					"notificationsEnabled": true,
+					"emails":               []string{"test@example.com"},
 				},
 			})
 			assert.NoError(t, err)
