@@ -204,6 +204,7 @@ type Details struct {
 	SmartInterval time.Duration `cbor:"10,keyasint,omitempty"`
 	ZfsInterval   time.Duration `cbor:"11,keyasint,omitempty"` // interval for ZFS detail refresh
 	Sockets       int           `cbor:"12,keyasint,omitempty"` // physical CPU packages, 0 if unknown
+	NutInterval   time.Duration `cbor:"13,keyasint,omitempty"` // interval for NUT (UPS/PDU) detail refresh
 }
 
 // Final data structure to return to the hub
