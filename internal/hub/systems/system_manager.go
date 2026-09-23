@@ -211,7 +211,6 @@ func (sm *SystemManager) onRecordAfterUpdateSuccess(e *core.RecordEvent) error {
 	if ok {
 		prevStatus = system.Status
 		system.Status = newStatus
-		system.syncName.Store(e.Record.GetBool("sync_name"))
 	}
 
 	switch newStatus {
@@ -339,7 +338,6 @@ func (sm *SystemManager) AddRecord(record *core.Record, system *System) (err err
 	system.Status = record.GetString("status")
 	system.Host = record.GetString("host")
 	system.Port = record.GetString("port")
-	system.syncName.Store(record.GetBool("sync_name"))
 
 	return sm.AddSystem(system)
 }

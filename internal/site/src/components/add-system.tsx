@@ -183,7 +183,7 @@ export const SystemDialog = ({ setOpen, system }: { setOpen: (open: boolean) => 
 						<Label htmlFor="name" className="xs:text-end">
 							<Trans>Name</Trans>
 						</Label>
-						<Input id="name" name="name" defaultValue={system?.name} required disabled={syncName} />
+						<Input id="name" name="name" defaultValue={system?.name} required />
 						<span />
 						<div className="flex items-center gap-2">
 							<Checkbox

@@ -11,9 +11,6 @@ func init() {
 		if err != nil {
 			return err
 		}
-		if collection.Fields.GetByName("sync_name") != nil {
-			return nil
-		}
 		collection.Fields.Add(&core.BoolField{
 			Name: "sync_name",
 		})
