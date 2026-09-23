@@ -1090,6 +1090,10 @@ msgstr "Na voljo je posodobitev slike"
 msgid "Inactive"
 msgstr "Neaktivno"
 
+#: src/components/routes/system/charts/network-charts.tsx
+msgid "Interfaces"
+msgstr ""
+
 #: src/components/network-monitors-table/network-monitors-columns.tsx
 #: src/components/routes/settings/heartbeat.tsx
 msgid "Interval"
@@ -2015,6 +2019,7 @@ msgstr "Žetoni omogočajo agentom povezavo in registracijo. Prstni odtisi so st
 msgid "Tokens and fingerprints are used to authenticate WebSocket connections to the hub."
 msgstr "Žetoni in prstni odtisi se uporabljajo za preverjanje pristnosti WebSocket povezav do vozlišča."
 
+#: src/components/routes/system/charts/network-charts.tsx
 #: src/components/ui/chart.tsx
 #: src/components/ui/chart.tsx
 msgid "Total"

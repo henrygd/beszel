@@ -1090,6 +1090,10 @@ msgstr "Διατίθεται ενημέρωση εικόνας"
 msgid "Inactive"
 msgstr "Ανενεργό"
 
+#: src/components/routes/system/charts/network-charts.tsx
+msgid "Interfaces"
+msgstr ""
+
 #: src/components/network-monitors-table/network-monitors-columns.tsx
 #: src/components/routes/settings/heartbeat.tsx
 msgid "Interval"
@@ -2015,6 +2019,7 @@ msgstr "Τα διακριτικά επιτρέπουν στους πράκτορ
 msgid "Tokens and fingerprints are used to authenticate WebSocket connections to the hub."
 msgstr "Τα διακριτικά και τα αποτυπώματα χρησιμοποιούνται για την ταυτοποίηση συνδέσεων WebSocket προς τον κόμβο."
 
+#: src/components/routes/system/charts/network-charts.tsx
 #: src/components/ui/chart.tsx
 #: src/components/ui/chart.tsx
 msgid "Total"

@@ -52,7 +52,7 @@ export const $maxValues = atom(false)
 export const $userSettings = map<UserSettings>({
 	chartTime: "1h",
 	emails: [pb.authStore.record?.email || ""],
-	unitNet: Unit.Bytes,
+	unitNet: Unit.Bits,
 	unitTemp: Unit.Celsius,
 })
 // update chart time on change

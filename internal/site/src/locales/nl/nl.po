@@ -1090,6 +1090,10 @@ msgstr "Image-update beschikbaar"
 msgid "Inactive"
 msgstr "Inactief"
 
+#: src/components/routes/system/charts/network-charts.tsx
+msgid "Interfaces"
+msgstr ""
+
 #: src/components/network-monitors-table/network-monitors-columns.tsx
 #: src/components/routes/settings/heartbeat.tsx
 msgid "Interval"
@@ -2015,6 +2019,7 @@ msgstr "Tokens staan agenten toe om verbinding te maken met en te registreren. V
 msgid "Tokens and fingerprints are used to authenticate WebSocket connections to the hub."
 msgstr "Tokens en vingerafdrukken worden gebruikt om WebSocket verbindingen te verifiëren naar de hub."
 
+#: src/components/routes/system/charts/network-charts.tsx
 #: src/components/ui/chart.tsx
 #: src/components/ui/chart.tsx
 msgid "Total"

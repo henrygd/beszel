@@ -1090,6 +1090,10 @@ msgstr "يتوفر تحديث للصورة"
 msgid "Inactive"
 msgstr "غير نشط"
 
+#: src/components/routes/system/charts/network-charts.tsx
+msgid "Interfaces"
+msgstr ""
+
 #: src/components/network-monitors-table/network-monitors-columns.tsx
 #: src/components/routes/settings/heartbeat.tsx
 msgid "Interval"
@@ -2015,6 +2019,7 @@ msgstr "تسمح الرموز المميزة للوكلاء بالاتصال و�
 msgid "Tokens and fingerprints are used to authenticate WebSocket connections to the hub."
 msgstr "تُستخدم الرموز المميزة والبصمات للمصادقة على اتصالات WebSocket إلى المحور."
 
+#: src/components/routes/system/charts/network-charts.tsx
 #: src/components/ui/chart.tsx
 #: src/components/ui/chart.tsx
 msgid "Total"

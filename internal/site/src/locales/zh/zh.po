@@ -1090,6 +1090,10 @@ msgstr "有可用的映像檔更新"
 msgid "Inactive"
 msgstr "未啟用"
 
+#: src/components/routes/system/charts/network-charts.tsx
+msgid "Interfaces"
+msgstr ""
+
 #: src/components/network-monitors-table/network-monitors-columns.tsx
 #: src/components/routes/settings/heartbeat.tsx
 msgid "Interval"
@@ -2015,6 +2019,7 @@ msgstr "Token 用於 Agent 的連線和註冊。Fingerprint 則是每個系統�
 msgid "Tokens and fingerprints are used to authenticate WebSocket connections to the hub."
 msgstr "Token 與 Fingerprint 用於驗證連往 Hub 的 WebSocket 連線。"
 
+#: src/components/routes/system/charts/network-charts.tsx
 #: src/components/ui/chart.tsx
 #: src/components/ui/chart.tsx
 msgid "Total"
