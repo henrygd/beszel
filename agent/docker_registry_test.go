@@ -80,6 +80,45 @@ func TestCheckImageUpdateUsesInspectAndManifestDigests(t *testing.T) {
 	require.EqualValues(t, 1, manifestCalls.Load())
 }
 
+func TestCheckImageUpdateMatchesAnyRepositoryDigest(t *testing.T) {
+	platform := registryDigest('a')
+	index := registryDigest('b')
+	other := registryDigest('c')
+
+	for _, test := range []struct {
+		name      string
+		digests   []string
+		remote    string
+		available bool
+	}{
+		{name: "platform then index, remote index", digests: []string{platform, index}, remote: index},
+		{name: "index then platform, remote index", digests: []string{index, platform}, remote: index},
+		{name: "platform then index, remote platform", digests: []string{platform, index}, remote: platform},
+		{name: "index then platform, remote platform", digests: []string{index, platform}, remote: platform},
+		{name: "neither matches", digests: []string{platform, index}, remote: other, available: true},
+	} {
+		t.Run(test.name, func(t *testing.T) {
+			inspect := fmt.Sprintf(`{"RepoDigests":["docker.io/library/busybox@%s","docker.io/library/alpine@%s","docker.io/library/alpine@sha256:invalid","docker.io/library/alpine@%s"]}`, test.remote, test.digests[0], test.digests[1])
+			var manifestCalls atomic.Int32
+			dm := newRegistryChecker(t, inspect, registryTransportFunc(func(req *http.Request) (*http.Response, error) {
+				if req.Method == http.MethodGet {
+					return registryResponse(http.StatusOK, `{"token":"test"}`), nil
+				}
+				manifestCalls.Add(1)
+				require.Equal(t, http.MethodHead, req.Method)
+				resp := registryResponse(http.StatusOK, "")
+				resp.Header.Set("Docker-Content-Digest", test.remote)
+				return resp, nil
+			}))
+
+			available, err := dm.checkImageUpdate("alpine")
+			require.NoError(t, err)
+			require.Equal(t, test.available, available)
+			require.EqualValues(t, 1, manifestCalls.Load())
+		})
+	}
+}
+
 func TestCheckImageUpdateReportsUnknownInspectState(t *testing.T) {
 	for _, test := range []struct {
 		name string
