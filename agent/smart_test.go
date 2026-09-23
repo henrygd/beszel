@@ -874,6 +874,10 @@ func TestParseSmartForNvmeRejectsIdentityOnlyResponse(t *testing.T) {
 	assert.False(t, hasData)
 	assert.Equal(t, 2, exitStatus)
 	assert.NotContains(t, sm.SmartDataMap, "IDENTITY-ONLY")
+
+	device := &DeviceInfo{Name: "/dev/nvme0", Type: "nvme"}
+	assert.False(t, sm.parseSmartOutput(device, jsonPayload))
+	assert.NotContains(t, sm.SmartDataMap, "IDENTITY-ONLY")
 }
 
 func TestParseSmartOutputKeepsCustomType(t *testing.T) {

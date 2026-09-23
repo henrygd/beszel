@@ -311,11 +311,13 @@ func (sm *SmartManager) filterExcludedDevices(devices []*DeviceInfo) []*DeviceIn
 	return filtered
 }
 
-// detectSmartOutputType inspects sections that are unique to each smartctl
-// JSON schema (NVMe, ATA/SATA, SCSI) to determine which parser should be used
-// when the reported device type is ambiguous or missing.
+// detectSmartOutputType inspects protocol-specific sections and the reported
+// device type to choose a parser, including when the NVMe health log is missing.
 func detectSmartOutputType(output []byte) string {
 	var hints struct {
+		Device struct {
+			Type string `json:"type"`
+		} `json:"device"`
 		AtaSmartAttributes            json.RawMessage `json:"ata_smart_attributes"`
 		NVMeSmartHealthInformationLog json.RawMessage `json:"nvme_smart_health_information_log"`
 		ScsiErrorCounterLog           json.RawMessage `json:"scsi_error_counter_log"`
@@ -326,7 +328,7 @@ func detectSmartOutputType(output []byte) string {
 	}
 
 	switch {
-	case hasJSONValue(hints.NVMeSmartHealthInformationLog):
+	case hasJSONValue(hints.NVMeSmartHealthInformationLog), normalizeParserType(hints.Device.Type) == "nvme":
 		return "nvme"
 	case hasJSONValue(hints.AtaSmartAttributes):
 		return "sat"
@@ -397,11 +399,11 @@ func (sm *SmartManager) parseSmartOutput(deviceInfo *DeviceInfo, output []byte) 
 		}
 	}
 
-	// Only run the type detection when we do not yet know which parser works
-	// or the previous attempt failed.
+	// Inspect every response so a failed NVMe query cannot reach other parsers.
+	structureType := detectSmartOutputType(output)
+	// Update the stored parser only when it is not yet verified.
 	needsDetection := deviceType == "" || !deviceInfo.typeVerified
 	if needsDetection {
-		structureType := detectSmartOutputType(output)
 		if deviceType != structureType {
 			deviceType = structureType
 			deviceInfo.parserType = structureType
@@ -442,6 +444,11 @@ func (sm *SmartManager) parseSmartOutput(deviceInfo *DeviceInfo, output []byte) 
 
 	// Try the selected parsers in order until we find one that succeeds.
 	for _, parser := range selectedParsers {
+		// A failed NVMe response may still contain a serial number, which is
+		// enough for the SATA and SCSI parsers to accept incorrect zero values.
+		if structureType == "nvme" && parser.Type != "nvme" {
+			continue
+		}
 		hasData, _ := parser.Parse(output)
 		if hasData {
 			deviceInfo.parserType = parser.Type
