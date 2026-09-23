@@ -697,6 +697,11 @@ func (sys *System) fetchDataFromAgent(options common.DataRequestOptions) (*syste
 			sys.syncPendingNetworkMonitors()
 			return wsData, nil
 		}
+		// A slow collection doesn't mean the connection is broken. Closing it
+		// would force the agent into a reconnect loop, so only report the error.
+		if errors.Is(err, context.DeadlineExceeded) {
+			return nil, err
+		}
 		// close the WebSocket connection if error and try SSH
 		sys.closeWebSocketConnection()
 	}
@@ -709,12 +714,19 @@ func (sys *System) fetchDataFromAgent(options common.DataRequestOptions) (*syste
 	return sshData, nil
 }
 
+// wsDataRequestTimeout bounds how long to wait for stats over WebSocket. Agent
+// collection can legitimately take several seconds (e.g. a slow `zpool list`),
+// so this must be well above the request manager's 5s default.
+var wsDataRequestTimeout = 30 * time.Second
+
 func (sys *System) fetchDataViaWebSocket(options common.DataRequestOptions) (*system.CombinedData, error) {
 	if sys.WsConn == nil || !sys.WsConn.IsConnected() {
 		return nil, errors.New("no websocket connection")
 	}
+	ctx, cancel := context.WithTimeout(context.Background(), wsDataRequestTimeout)
+	defer cancel()
 	wsTransport := transport.NewWebSocketTransport(sys.WsConn)
-	err := wsTransport.Request(context.Background(), common.GetData, options, sys.data)
+	err := wsTransport.Request(ctx, common.GetData, options, sys.data)
 	if err != nil {
 		return nil, err
 	}
