@@ -362,7 +362,8 @@ export interface ChartTimeData {
 }
 
 export interface UserSettings {
-	chartTime: ChartTimes
+	/** may be missing in settings stored by older versions -- use getUserChartTime() */
+	chartTime?: ChartTimes
 	emails?: string[]
 	webhooks?: string[]
 	unitTemp?: Unit
@@ -377,6 +378,9 @@ export interface UserSettings {
 	statusFilter?: "all" | "up" | "down" | "paused" | "pending"
 	viewMode?: "table" | "grid"
 	sortMode?: Array<{ id: string; desc: boolean }>
+	monitorCols?: Record<string, boolean>
+	monitorSortMode?: Array<{ id: string; desc: boolean }>
+	monitorSortModeSystem?: Array<{ id: string; desc: boolean }>
 	grid?: boolean
 	displayMode?: "default" | "tabs"
 }
