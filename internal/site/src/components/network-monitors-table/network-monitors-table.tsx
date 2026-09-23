@@ -43,7 +43,6 @@ import {
 	matchesFilterGroups,
 	parseFilterGroups,
 	parseSemVer,
-	useBrowserStorage,
 } from "@/lib/utils"
 import type { ChartData, NetworkMonitorRecord } from "@/types"
 import { AddMonitorDialog, EditMonitorDialog } from "./monitor-dialog"
