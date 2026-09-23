@@ -2111,27 +2111,6 @@ func init() {
 				"type": "bool"
 			},
 			{
-				"help": "",
-				"hidden": false,
-				"id": "nm_check_cert",
-				"name": "checkCert",
-				"presentable": false,
-				"required": false,
-				"system": false,
-				"type": "bool"
-			},
-			{
-				"help": "",
-				"hidden": false,
-				"id": "nm_cert_info",
-				"maxSize": 0,
-				"name": "certInfo",
-				"presentable": false,
-				"required": false,
-				"system": false,
-				"type": "json"
-			},
-			{
 				"hidden": false,
 				"id": "autodate2990389176",
 				"name": "created",
