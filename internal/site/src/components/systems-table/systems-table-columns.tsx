@@ -365,8 +365,8 @@ export function SystemsTableColumns(viewMode: "table" | "grid"): ColumnDef<Syste
 					<span className="tabular-nums whitespace-nowrap flex gap-1.5 items-center">
 						<span
 							className={cn("block size-2 rounded-full", {
-								[STATUS_COLORS[SystemStatus.Down]]: numFailed > 0,
-								[STATUS_COLORS[SystemStatus.Up]]: numFailed === 0,
+								[STATUS_COLORS.pending]: numFailed > 0,
+								[STATUS_COLORS.up]: numFailed === 0,
 							})}
 						/>
 						{plural(totalCount, { one: "# service", other: "# services" })}
