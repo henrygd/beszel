@@ -2,7 +2,6 @@ package hub
 
 import (
 	"strconv"
-	"strings"
 	"time"
 
 	"github.com/henrygd/beszel/internal/entities/monitor"
@@ -26,7 +25,6 @@ func bindNetworkMonitorsEvents(hub *Hub) {
 	// on create, make sure the id is set to a stable hash
 	hub.OnRecordCreate("network_monitors").BindFunc(func(e *core.RecordEvent) error {
 		systemID := e.Record.GetString("system")
-		normalizeCertCheck(e.Record)
 		config := monitorConfigFromRecord(e.Record)
 		id := generateMonitorID(systemID, *config)
 		e.Record.Set("id", id)
@@ -59,7 +57,6 @@ func bindNetworkMonitorsEvents(hub *Hub) {
 		if e.Record.GetString("protocol") != "tcp" {
 			e.Record.Set("port", 0)
 		}
-		normalizeCertCheck(e.Record)
 		ID := generateMonitorID(systemID, *monitorConfigFromRecord(e.Record))
 		if ID != e.Record.Id {
 			newRecord := copyMonitorToNewRecord(e.Record, ID)
@@ -98,31 +95,14 @@ func bindNetworkMonitorsEvents(hub *Hub) {
 	})
 }
 
-// certCheckSupported reports whether a monitor can check the target's certificate.
-func certCheckSupported(record *core.Record) bool {
-	return record.GetString("protocol") == "http" && strings.HasPrefix(strings.ToLower(record.GetString("target")), "https://")
-}
-
-// normalizeCertCheck disables certificate checks for unsupported monitors and
-// clears stored certInfo when checks are disabled.
-func normalizeCertCheck(record *core.Record) {
-	if !certCheckSupported(record) {
-		record.Set("checkCert", false)
-	}
-	if !record.GetBool("checkCert") {
-		record.Set("certInfo", nil)
-	}
-}
-
 // monitorConfigFromRecord builds a monitor config from a network_monitors record.
 func monitorConfigFromRecord(record *core.Record) *monitor.Config {
 	return &monitor.Config{
-		ID:        record.Id,
-		Target:    record.GetString("target"),
-		Protocol:  record.GetString("protocol"),
-		Port:      uint16(record.GetInt("port")),
-		Interval:  uint16(record.GetInt("interval")),
-		CheckCert: record.GetBool("checkCert"),
+		ID:       record.Id,
+		Target:   record.GetString("target"),
+		Protocol: record.GetString("protocol"),
+		Port:     uint16(record.GetInt("port")),
+		Interval: uint16(record.GetInt("interval")),
 	}
 }
 
@@ -134,8 +114,7 @@ func setMonitorResultFields(record *core.Record, result monitor.Result) {
 	record.Set("resMin1h", result.MinResponse1h)
 	record.Set("resMax1h", result.MaxResponse1h)
 	record.Set("loss1h", result.PacketLoss1h)
-	// Ignore certInfo that arrives after checks were disabled.
-	if result.Cert != nil && record.GetBool("checkCert") {
+	if result.Cert != nil {
 		record.Set("certInfo", result.Cert)
 	}
 	record.Set("updated", nowString)
@@ -148,7 +127,7 @@ func copyMonitorToNewRecord(oldRecord *core.Record, newID string) *core.Record {
 	collection := oldRecord.Collection()
 	newRecord := core.NewRecord(collection)
 	newRecord.Id = newID
-	fields := []string{"system", "target", "protocol", "port", "interval", "enabled", "checkCert"}
+	fields := []string{"system", "target", "protocol", "port", "interval", "enabled"}
 	for _, field := range fields {
 		newRecord.Set(field, oldRecord.Get(field))
 	}

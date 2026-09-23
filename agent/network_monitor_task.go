@@ -53,7 +53,7 @@ func newMonitorTaskFromExisting(config monitor.Config, existing *monitorTask) *m
 		task.history = existing.history.clone()
 		// Keep the last known certificate, but check again soon for the new config.
 		// The hub already stores it, so it is not marked unsent.
-		if config.CheckCert && config.Target == existing.config.Target {
+		if config.Target == existing.config.Target {
 			task.cert = existing.certInfo()
 		}
 	}
@@ -118,13 +118,13 @@ func (task *monitorTask) runProbe(probe monitorProbe) *monitor.Result {
 	return copyMonitorResult(run.result)
 }
 
-// refreshCert checks the target's certificate when enabled and due. A failed
+// refreshCert checks the certificate of an HTTPS target when due. A failed
 // check keeps the last known certificate and retries sooner, as does a
 // certificate that expires before the next regular check, so renewals show up
 // quickly. Concurrent callers skip rather than wait, and no lock is held during
 // network I/O.
 func (task *monitorTask) refreshCert(check certChecker) {
-	if !task.config.CheckCert || check == nil {
+	if check == nil || !certCheckEnabled(task.config) {
 		return
 	}
 	task.certMu.Lock()

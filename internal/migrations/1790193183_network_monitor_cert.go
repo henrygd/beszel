@@ -11,7 +11,6 @@ func init() {
 		if err != nil {
 			return err
 		}
-		collection.Fields.Add(&core.BoolField{Name: "checkCert"})
 		collection.Fields.Add(&core.JSONField{Name: "certInfo"})
 		return app.Save(collection)
 	}, func(app core.App) error {
@@ -19,7 +18,6 @@ func init() {
 		if err != nil {
 			return err
 		}
-		collection.Fields.RemoveByName("checkCert")
 		collection.Fields.RemoveByName("certInfo")
 		return app.Save(collection)
 	})

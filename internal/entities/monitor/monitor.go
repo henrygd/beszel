@@ -25,8 +25,6 @@ type Config struct {
 	Protocol string `cbor:"2,keyasint"` // "icmp", "tcp", "http", or "dns"
 	Port     uint16 `cbor:"3,keyasint,omitempty"`
 	Interval uint16 `cbor:"4,keyasint"` // seconds
-	// CheckCert enables periodic TLS certificate checks for HTTPS targets.
-	CheckCert bool `cbor:"5,keyasint,omitempty"`
 }
 
 // CertInfo holds details of the leaf TLS certificate presented by a target.
@@ -85,7 +83,7 @@ type Result struct {
 	TotalCount   int64 `cbor:"10,keyasint"`
 	SuccessCount int64 `cbor:"11,keyasint"`
 	ResponseSum  int64 `cbor:"12,keyasint"`
-	// Cert is set when a certificate check has new info the hub has not stored yet.
+	// Cert is set for HTTPS targets when a certificate check has new info the hub has not stored yet.
 	Cert *CertInfo `cbor:"13,keyasint,omitempty"`
 }
 

@@ -21,6 +21,12 @@ const (
 // certChecker fetches the leaf certificate for an HTTPS target.
 type certChecker func(context.Context, string) (monitor.CertInfo, error)
 
+// certCheckEnabled reports whether a monitor's certificate is checked, which is
+// the case for every HTTP monitor with an https target.
+func certCheckEnabled(config monitor.Config) bool {
+	return config.Protocol == "http" && len(config.Target) > 8 && strings.EqualFold(config.Target[:8], "https://")
+}
+
 // checkCert reads the leaf certificate presented by an HTTPS target. The chain is
 // not verified, so expired or self-signed certificates are still reported.
 func checkCert(ctx context.Context, target string) (monitor.CertInfo, error) {

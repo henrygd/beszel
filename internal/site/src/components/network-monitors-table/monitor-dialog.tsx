@@ -19,7 +19,6 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Sheet, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle } from "@/components/ui/sheet"
 import { Button } from "@/components/ui/button"
-import { Checkbox } from "@/components/ui/checkbox"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
@@ -28,7 +27,6 @@ import { ChevronDownIcon, ListIcon, PlusIcon, SearchIcon, ServerIcon } from "luc
 import { useToast } from "@/components/ui/use-toast"
 import { $systems } from "@/lib/stores"
 import { cn, supportsNetworkMonitors } from "@/lib/utils"
-import { supportsCertCheck } from "@/lib/network-monitor-utils"
 import type { NetworkMonitorRecord } from "@/types"
 import * as v from "valibot"
 
@@ -40,10 +38,9 @@ type MonitorValues = {
 	protocol: MonitorProtocol
 	port: number
 	interval: string
-	checkCert?: boolean
 }
 
-type NormalizedMonitorValues = Omit<MonitorValues, "system" | "interval" | "checkCert"> & {
+type NormalizedMonitorValues = Omit<MonitorValues, "system" | "interval"> & {
 	interval: number
 }
 
@@ -150,8 +147,6 @@ function buildMonitorPayload(values: MonitorValues, enabled = true) {
 		system: values.system,
 		enabled,
 		...normalizedValues.output,
-		checkCert:
-			!!values.checkCert && supportsCertCheck(normalizedValues.output.protocol, normalizedValues.output.target),
 	}
 
 	return payload
@@ -593,7 +588,6 @@ function MonitorDialogContent({
 	const [target, setTarget] = useState(monitor?.target ?? "")
 	const [port, setPort] = useState(monitor?.protocol === "tcp" && monitor.port ? String(monitor.port) : "")
 	const [monitorInterval, setMonitorInterval] = useState(String(monitor?.interval ?? defaultInterval))
-	const [checkCert, setCheckCert] = useState(!!monitor?.checkCert)
 	const [loading, setLoading] = useState(false)
 	const [selectedSystemId, setSelectedSystemId] = useState(monitor?.system ?? "")
 	const [selectedSystemIds, setSelectedSystemIds] = useState<Set<string>>(new Set())
@@ -612,7 +606,6 @@ function MonitorDialogContent({
 		setTarget(monitor?.target ?? "")
 		setPort(monitor?.protocol === "tcp" && monitor.port ? String(monitor.port) : "")
 		setMonitorInterval(String(monitor?.interval ?? defaultInterval))
-		setCheckCert(!!monitor?.checkCert)
 		setSelectedSystemId(monitor?.system ?? "")
 		setSelectedSystemIds(new Set())
 		setLoading(false)
@@ -633,7 +626,6 @@ function MonitorDialogContent({
 					protocol,
 					port: protocol === "tcp" ? Number(port) : 0,
 					interval: monitorInterval,
-					checkCert,
 				},
 				monitor ? monitor.enabled : true
 			)
@@ -762,23 +754,6 @@ function MonitorDialogContent({
 						required
 					/>
 				</div>
-				{supportsCertCheck(protocol, normalizeHttpTarget(target.trim())) && (
-					<Label className="flex items-start gap-3 rounded-md border bg-background px-3 py-2.5 font-normal cursor-pointer">
-						<Checkbox
-							className="mt-0.5"
-							checked={checkCert}
-							onCheckedChange={(value) => setCheckCert(value === true)}
-						/>
-						<span className="grid gap-1">
-							<span className="font-medium">
-								<Trans>Check certificate expiry</Trans>
-							</span>
-							<span className="text-muted-foreground text-xs leading-snug">
-								<Trans>Show when the TLS certificate expires.</Trans>
-							</span>
-						</span>
-					</Label>
-				)}
 				<DialogFooter>
 					{!isEditing && onOpenBulkAdd && (
 						<Button

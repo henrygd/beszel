@@ -255,13 +255,13 @@ export function getMonitorColumns(
 		{
 			id: "cert",
 			meta: { label: t`Certificate` },
-			accessorFn: (record) => (record.checkCert && record.certInfo?.expires ? record.certInfo.expires : undefined),
+			accessorFn: (record) => record.certInfo?.expires,
 			header: ({ column }) => <HeaderButton column={column} name={t`Certificate`} Icon={ShieldCheckIcon} />,
 			cell: ({ row }) => {
-				const { checkCert, certInfo, system } = row.original
+				const { certInfo, system } = row.original
 				const systemRecord = useStore($allSystemsById)[system]
 
-				if (!checkCert || !certInfo?.expires) {
+				if (!certInfo?.expires) {
 					return <span className="ms-1.5 text-muted-foreground">-</span>
 				}
 

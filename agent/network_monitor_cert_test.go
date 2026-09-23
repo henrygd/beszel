@@ -53,7 +53,7 @@ func TestCertAddress(t *testing.T) {
 
 func TestRefreshCertCadence(t *testing.T) {
 	synctest.Test(t, func(t *testing.T) {
-		task := newMonitorTask(monitor.Config{ID: "test", Target: "https://example.test", Protocol: "http", CheckCert: true})
+		task := newMonitorTask(monitor.Config{ID: "test", Target: "https://example.test", Protocol: "http"})
 		defer task.cancel()
 		var calls int
 		var fail error
@@ -105,7 +105,7 @@ func TestRefreshCertRetriesSoonerNearExpiry(t *testing.T) {
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			synctest.Test(t, func(t *testing.T) {
-				task := newMonitorTask(monitor.Config{ID: "test", Target: "https://example.test", Protocol: "http", CheckCert: true})
+				task := newMonitorTask(monitor.Config{ID: "test", Target: "https://example.test", Protocol: "http"})
 				defer task.cancel()
 				var calls int
 				check := func(context.Context, string) (monitor.CertInfo, error) {
@@ -124,11 +124,28 @@ func TestRefreshCertRetriesSoonerNearExpiry(t *testing.T) {
 	}
 }
 
-func TestRefreshCertDisabled(t *testing.T) {
-	task := newMonitorTask(monitor.Config{ID: "test", Target: "https://example.test", Protocol: "http"})
+func TestCertCheckEnabled(t *testing.T) {
+	tests := []struct {
+		protocol, target string
+		want             bool
+	}{
+		{"http", "https://example.com", true},
+		{"http", "HTTPS://example.com:8443/path", true},
+		{"http", "http://example.com", false},
+		{"http", "https://", false},
+		{"tcp", "https://example.com", false},
+		{"icmp", "example.com", false},
+	}
+	for _, tt := range tests {
+		assert.Equal(t, tt.want, certCheckEnabled(monitor.Config{Protocol: tt.protocol, Target: tt.target}), tt.protocol+" "+tt.target)
+	}
+}
+
+func TestRefreshCertSkipsNonHTTPS(t *testing.T) {
+	task := newMonitorTask(monitor.Config{ID: "test", Target: "http://example.test", Protocol: "http"})
 	defer task.cancel()
 	task.refreshCert(func(context.Context, string) (monitor.CertInfo, error) {
-		t.Fatal("certificate check must not run when disabled")
+		t.Fatal("certificate check must not run for non-https targets")
 		return monitor.CertInfo{}, nil
 	})
 	assert.Nil(t, task.certInfo())
@@ -140,7 +157,7 @@ func TestUpsertMonitorRunNowIncludesCert(t *testing.T) {
 
 	pm := newMonitorManagerWithProbe(func(context.Context, monitor.Config) (int64, error) { return 100, nil })
 	defer pm.Stop()
-	config := monitor.Config{ID: "cert", Target: server.URL, Protocol: "http", Interval: 60, CheckCert: true}
+	config := monitor.Config{ID: "cert", Target: server.URL, Protocol: "http", Interval: 60}
 	result, err := pm.UpsertMonitor(config, true)
 	require.NoError(t, err)
 	require.NotNil(t, result)
@@ -155,8 +172,7 @@ func TestUpsertMonitorRunNowIncludesCert(t *testing.T) {
 	assert.Equal(t, result.Cert.Expires, results["cert"].Cert.Expires)
 	assert.Nil(t, pm.GetResults(defaultDataCacheTimeMs)["cert"].Cert)
 
-	// Changing the interval keeps the known certificate without resending it;
-	// disabling drops it.
+	// Changing the interval keeps the known certificate without resending it.
 	config.Interval = 30
 	_, err = pm.UpsertMonitor(config, false)
 	require.NoError(t, err)
@@ -165,11 +181,4 @@ func TestUpsertMonitorRunNowIncludesCert(t *testing.T) {
 	pm.mu.RUnlock()
 	assert.NotNil(t, task.certInfo())
 	assert.Nil(t, pm.GetResults(defaultDataCacheTimeMs)["cert"].Cert)
-	config.CheckCert = false
-	_, err = pm.UpsertMonitor(config, false)
-	require.NoError(t, err)
-	pm.mu.RLock()
-	task = pm.monitors["cert"]
-	pm.mu.RUnlock()
-	assert.Nil(t, task.certInfo())
 }

@@ -195,20 +195,19 @@ func TestCopyMonitorToNewRecordDropsResultFields(t *testing.T) {
 
 	oldRecord := core.NewRecord(collection)
 	oldRecord.Load(map[string]any{
-		"system":    "sys123",
-		"target":    "https://example.com",
-		"protocol":  "http",
-		"port":      443,
-		"interval":  60,
-		"enabled":   true,
-		"res":       1200,
-		"resAvg1h":  1300,
-		"resMin1h":  900,
-		"resMax1h":  1600,
-		"loss1h":    5,
-		"checkCert": true,
-		"certInfo":  map[string]any{"expires": 1800000000000},
-		"updated":   "2026-04-29 12:00:00.000Z",
+		"system":   "sys123",
+		"target":   "https://example.com",
+		"protocol": "http",
+		"port":     443,
+		"interval": 60,
+		"enabled":  true,
+		"res":      1200,
+		"resAvg1h": 1300,
+		"resMin1h": 900,
+		"resMax1h": 1600,
+		"loss1h":   5,
+		"certInfo": map[string]any{"expires": 1800000000000},
+		"updated":  "2026-04-29 12:00:00.000Z",
 	})
 
 	newRecord := copyMonitorToNewRecord(oldRecord, "next12345")
@@ -218,7 +217,6 @@ func TestCopyMonitorToNewRecordDropsResultFields(t *testing.T) {
 	assert.Equal(t, "http", newRecord.GetString("protocol"))
 	assert.Equal(t, 443, newRecord.GetInt("port"))
 	assert.True(t, newRecord.GetBool("enabled"))
-	assert.True(t, newRecord.GetBool("checkCert"))
 	assert.Contains(t, []string{"", "null"}, newRecord.GetString("certInfo"))
 	assert.Zero(t, newRecord.GetFloat("res"))
 	assert.Zero(t, newRecord.GetFloat("resAvg1h"))
@@ -226,33 +224,4 @@ func TestCopyMonitorToNewRecordDropsResultFields(t *testing.T) {
 	assert.Zero(t, newRecord.GetFloat("resMax1h"))
 	assert.Zero(t, newRecord.GetFloat("loss1h"))
 	assert.Equal(t, "", newRecord.GetString("updated"))
-}
-
-func TestNormalizeCertCheck(t *testing.T) {
-	hub, testApp, err := createTestHub(t)
-	require.NoError(t, err)
-	defer cleanupTestHub(hub, testApp)
-
-	collection, err := hub.FindCachedCollectionByNameOrId("network_monitors")
-	require.NoError(t, err)
-	cert := map[string]any{"expires": 1800000000000}
-	for _, tc := range []struct {
-		name, protocol, target string
-		checkCert, wantCheck   bool
-	}{
-		{"https", "http", "https://example.com", true, true},
-		{"uppercase scheme", "http", "HTTPS://example.com", true, true},
-		{"plain http", "http", "http://example.com", true, false},
-		{"tcp", "tcp", "example.com", true, false},
-		{"disabled", "http", "https://example.com", false, false},
-	} {
-		t.Run(tc.name, func(t *testing.T) {
-			record := core.NewRecord(collection)
-			record.Load(map[string]any{"protocol": tc.protocol, "target": tc.target, "checkCert": tc.checkCert, "certInfo": cert})
-			normalizeCertCheck(record)
-			assert.Equal(t, tc.wantCheck, record.GetBool("checkCert"))
-			assert.Equal(t, tc.wantCheck, monitorConfigFromRecord(record).CheckCert)
-			assert.Equal(t, tc.wantCheck, record.GetString("certInfo") != "null")
-		})
-	}
 }

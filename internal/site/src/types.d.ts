@@ -652,8 +652,7 @@ export interface NetworkMonitorRecord {
 	loss1h: number
 	interval: number
 	enabled: boolean
-	/** Periodically check the TLS certificate of HTTPS targets. */
-	checkCert?: boolean
+	/** Latest TLS certificate details, reported for HTTPS targets. */
 	certInfo?: MonitorCertInfo | null
 	updated: string
 }

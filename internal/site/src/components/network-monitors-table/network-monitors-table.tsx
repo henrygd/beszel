@@ -717,7 +717,7 @@ function NetworkMonitorSheetContent({
 								<span>{monitor.port}</span>
 							</>
 						)}
-						{monitor.checkCert && monitor.certInfo?.expires ? <CertExpiry cert={monitor.certInfo} /> : null}
+						{monitor.certInfo?.expires ? <CertExpiry cert={monitor.certInfo} /> : null}
 					</SheetDescription>
 				</SheetHeader>
 				<div className="grid gap-4">
