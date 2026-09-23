@@ -298,6 +298,7 @@ export default function NetworkMonitorsTableNew({
 
 	const rows = table.getRowModel().rows
 	const visibleColumns = table.getVisibleLeafColumns()
+	const visibleColumnsKey = visibleColumns.map((column) => column.id).join(",")
 
 	return (
 		<Card className="@container w-full px-3 py-5 sm:py-6 sm:px-6">
@@ -454,6 +455,7 @@ export default function NetworkMonitorsTableNew({
 					table={table}
 					rows={rows}
 					colLength={visibleColumns.length}
+					visibleColumnsKey={visibleColumnsKey}
 					rowSelection={rowSelection}
 					isLoading={isLoading}
 				/>
@@ -466,12 +468,14 @@ const NetworkMonitorsTable = memo(function NetworkMonitorTable({
 	table,
 	rows,
 	colLength,
+	visibleColumnsKey,
 	rowSelection,
 	isLoading,
 }: {
 	table: TableType<NetworkMonitorRecord>
 	rows: Row<NetworkMonitorRecord>[]
 	colLength: number
+	visibleColumnsKey: string
 	rowSelection: RowSelectionState
 	isLoading: boolean
 }) {
@@ -519,6 +523,7 @@ const NetworkMonitorsTable = memo(function NetworkMonitorTable({
 										virtualRow={virtualRow}
 										isSelected={row.getIsSelected()}
 										rowSelection={rowSelection}
+										visibleColumnsKey={visibleColumnsKey}
 										openSheet={openSheet}
 									/>
 								)
@@ -571,6 +576,9 @@ const NetworkMonitorTableRow = memo(function NetworkMonitorTableRow({
 	virtualRow,
 	isSelected,
 	rowSelection: _rowSelection,
+	// Column visibility doesn't change the row object identity, so this prop exists only
+	// to force a re-render (and a fresh row.getVisibleCells() read) when columns are toggled.
+	visibleColumnsKey: _visibleColumnsKey,
 	openSheet,
 }: {
 	row: Row<NetworkMonitorRecord>
@@ -578,6 +586,7 @@ const NetworkMonitorTableRow = memo(function NetworkMonitorTableRow({
 	isSelected: boolean
 	// Menus depend on the entire selection, including changes to other rows.
 	rowSelection: RowSelectionState
+	visibleColumnsKey: string
 	openSheet: (monitor: NetworkMonitorRecord) => void
 }) {
 	const system = useStore($allSystemsById)[row.original.system]
