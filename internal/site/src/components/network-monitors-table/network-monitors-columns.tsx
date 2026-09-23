@@ -252,6 +252,7 @@ export function getMonitorColumns(
 		},
 		{
 			id: "cert",
+			meta: { label: t`Certificate` },
 			accessorFn: (record) => (record.checkCert && record.certInfo?.expires ? record.certInfo.expires : undefined),
 			header: ({ column }) => <HeaderButton column={column} name={t`Certificate`} Icon={ShieldCheckIcon} />,
 			cell: ({ row }) => {
