@@ -154,6 +154,8 @@ export function getMonitorColumns(
 					color = "bg-primary/40"
 				} else if (status === SystemStatus.Down || status === SystemStatus.Pending) {
 					color = "bg-yellow-500"
+				} else if (monitor.updated && !monitor.res) {
+					color = "bg-red-500"
 				}
 				return (
 					<div className="ms-1.5 max-w-64 flex gap-2 items-center tabular-nums">
