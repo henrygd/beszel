@@ -59,17 +59,19 @@ func TestRefreshCertCadence(t *testing.T) {
 		defer task.cancel()
 		var calls int
 		var fail error
+		// Far enough out that the regular interval applies for the whole test.
+		expires := time.Now().Add(365 * 24 * time.Hour).UnixMilli()
 		check := func(context.Context, string) (monitor.CertInfo, error) {
 			calls++
 			if fail != nil {
 				return monitor.CertInfo{}, fail
 			}
-			return monitor.CertInfo{Expires: int64(calls), Checked: time.Now().UnixMilli()}, nil
+			return monitor.CertInfo{Expires: expires + int64(calls), Checked: time.Now().UnixMilli()}, nil
 		}
 
 		task.refreshCert(check)
 		require.NotNil(t, task.certInfo())
-		assert.Equal(t, int64(1), task.certInfo().Expires)
+		assert.Equal(t, expires+1, task.certInfo().Expires)
 
 		// Not due again until the check interval passes.
 		time.Sleep(certCheckInterval - time.Second)
@@ -84,13 +86,44 @@ func TestRefreshCertCadence(t *testing.T) {
 		time.Sleep(certCheckInterval)
 		task.refreshCert(check)
 		assert.Equal(t, 3, calls)
-		assert.Equal(t, int64(2), task.certInfo().Expires)
+		assert.Equal(t, expires+2, task.certInfo().Expires)
 		time.Sleep(certCheckRetryInterval)
 		fail = nil
 		task.refreshCert(check)
 		assert.Equal(t, 4, calls)
-		assert.Equal(t, int64(4), task.certInfo().Expires)
+		assert.Equal(t, expires+4, task.certInfo().Expires)
 	})
+}
+
+func TestRefreshCertRetriesSoonerNearExpiry(t *testing.T) {
+	for _, tc := range []struct {
+		name     string
+		expires  time.Duration // relative to the check
+		interval time.Duration
+	}{
+		{"expired", -time.Hour, certCheckRetryInterval},
+		{"expires before next regular check", certCheckInterval - time.Minute, certCheckRetryInterval},
+		{"expires after next regular check", certCheckInterval + time.Minute, certCheckInterval},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			synctest.Test(t, func(t *testing.T) {
+				task := newMonitorTask(monitor.Config{ID: "test", Target: "https://example.test", Protocol: "http", CheckCert: true})
+				defer task.cancel()
+				var calls int
+				check := func(context.Context, string) (monitor.CertInfo, error) {
+					calls++
+					return monitor.CertInfo{Expires: time.Now().Add(tc.expires).UnixMilli(), Checked: time.Now().UnixMilli()}, nil
+				}
+				task.refreshCert(check)
+				time.Sleep(tc.interval - time.Second)
+				task.refreshCert(check)
+				assert.Equal(t, 1, calls)
+				time.Sleep(time.Second)
+				task.refreshCert(check)
+				assert.Equal(t, 2, calls)
+			})
+		})
+	}
 }
 
 func TestRefreshCertDisabled(t *testing.T) {

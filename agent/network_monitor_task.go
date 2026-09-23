@@ -117,8 +117,10 @@ func (task *monitorTask) runProbe(probe monitorProbe) *monitor.Result {
 }
 
 // refreshCert checks the target's certificate when enabled and due. A failed
-// check keeps the last known certificate and retries sooner. Concurrent callers
-// skip rather than wait, and no lock is held during network I/O.
+// check keeps the last known certificate and retries sooner, as does a
+// certificate that expires before the next regular check, so renewals show up
+// quickly. Concurrent callers skip rather than wait, and no lock is held during
+// network I/O.
 func (task *monitorTask) refreshCert(check certChecker) {
 	if !task.config.CheckCert || check == nil {
 		return
@@ -145,7 +147,12 @@ func (task *monitorTask) refreshCert(check certChecker) {
 		return
 	}
 	task.cert = &info
-	task.nextCertCheck = time.Now().Add(certCheckInterval)
+	now := time.Now()
+	interval := certCheckInterval
+	if time.UnixMilli(info.Expires).Before(now.Add(certCheckInterval)) {
+		interval = certCheckRetryInterval
+	}
+	task.nextCertCheck = now.Add(interval)
 }
 
 // certInfo returns a copy of the latest certificate info, or nil if unknown.
