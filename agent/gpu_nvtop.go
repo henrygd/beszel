@@ -5,6 +5,7 @@ import (
 	"io"
 	"log/slog"
 	"os/exec"
+	"path/filepath"
 	"strconv"
 	"strings"
 	"time"
@@ -48,9 +49,14 @@ func (gm *GPUManager) updateNvtopSnapshots(snapshots []nvtopSnapshot) bool {
 
 	valid := false
 	usedIDs := make(map[string]struct{}, len(snapshots))
+	var xeName string
 	for i, sample := range snapshots {
+		// nvtop leaves device_name unset on xe devices.
 		if sample.DeviceName == "" {
-			continue
+			if xeName == "" {
+				xeName = xeGpuName()
+			}
+			sample.DeviceName = xeName
 		}
 		indexID := "n" + strconv.Itoa(i)
 		id := indexID
@@ -157,4 +163,39 @@ func (gm *GPUManager) startNvtopCollector(interval string, onFailure func()) {
 			}
 		}
 	}()
+}
+
+// xeDevicePath returns the sysfs device path of the first xe GPU, or "".
+func xeDevicePath() string {
+	cards, err := filepath.Glob("/sys/class/drm/card*")
+	if err != nil {
+		return ""
+	}
+	for _, card := range cards {
+		if strings.Contains(filepath.Base(card), "-") {
+			continue
+		}
+		if uevent, err := utils.ReadStringFileLimited(filepath.Join(card, "device", "uevent"), 4096); err == nil && strings.Contains(uevent, "DRIVER=xe") {
+			return filepath.Join(card, "device")
+		}
+	}
+	return ""
+}
+
+func (gm *GPUManager) hasXe() bool {
+	return xeDevicePath() != ""
+}
+
+// xeGpuName names an xe GPU from its PCI device id; nvtop leaves device_name unset on xe.
+func xeGpuName() string {
+	devicePath := xeDevicePath()
+	if devicePath == "" {
+		return "GPU"
+	}
+	id, err := utils.ReadStringFileLimited(filepath.Join(devicePath, "device"), 64)
+	if err != nil {
+		return "GPU"
+	}
+	id = strings.ToLower(strings.TrimSpace(strings.TrimPrefix(id, "0x")))
+	return "Intel GPU (" + id + ")"
 }

@@ -50,6 +50,13 @@ func TestCollectionRulesDefault(t *testing.T) {
 	assert.Equal(t, isUserMatchesUser, *alertsCollection.CreateRule)
 	assert.Equal(t, isUserMatchesUser, *alertsCollection.UpdateRule)
 	assert.Equal(t, isUserMatchesUser, *alertsCollection.DeleteRule)
+	alertNames := alertsCollection.Fields.GetByName("name").(*core.SelectField).Values
+	for _, name := range []string{"CPUIOWait", "CPUSteal"} {
+		assert.Contains(t, alertNames, name)
+	}
+	for _, name := range []string{"CPUSystem", "CPUUser", "CPUIdle", "CPUOther"} {
+		assert.NotContains(t, alertNames, name)
+	}
 
 	// alerts_history collection
 	alertsHistoryCollection, err := hub.FindCollectionByNameOrId("alerts_history")
@@ -81,8 +88,8 @@ func TestCollectionRulesDefault(t *testing.T) {
 	// fingerprints collection
 	fingerprintsCollection, err := hub.FindCollectionByNameOrId("fingerprints")
 	require.NoError(t, err, "Failed to find fingerprints collection")
-	assert.Equal(t, isUserInSystemUsers, *fingerprintsCollection.ListRule)
-	assert.Equal(t, isUserInSystemUsers, *fingerprintsCollection.ViewRule)
+	assert.Equal(t, isUserInSystemUsersNotReadonly, *fingerprintsCollection.ListRule)
+	assert.Equal(t, isUserInSystemUsersNotReadonly, *fingerprintsCollection.ViewRule)
 	assert.Equal(t, isUserInSystemUsersNotReadonly, *fingerprintsCollection.CreateRule)
 	assert.Equal(t, isUserInSystemUsersNotReadonly, *fingerprintsCollection.UpdateRule)
 	assert.Equal(t, isUserInSystemUsersNotReadonly, *fingerprintsCollection.DeleteRule)
@@ -209,8 +216,8 @@ func TestCollectionRulesShareAllSystems(t *testing.T) {
 	// fingerprints collection
 	fingerprintsCollection, err := hub.FindCollectionByNameOrId("fingerprints")
 	require.NoError(t, err, "Failed to find fingerprints collection")
-	assert.Equal(t, isUser, *fingerprintsCollection.ListRule)
-	assert.Equal(t, isUser, *fingerprintsCollection.ViewRule)
+	assert.Equal(t, isUserNotReadonly, *fingerprintsCollection.ListRule)
+	assert.Equal(t, isUserNotReadonly, *fingerprintsCollection.ViewRule)
 	assert.Equal(t, isUserNotReadonly, *fingerprintsCollection.CreateRule)
 	assert.Equal(t, isUserNotReadonly, *fingerprintsCollection.UpdateRule)
 	assert.Equal(t, isUserNotReadonly, *fingerprintsCollection.DeleteRule)
@@ -357,6 +364,13 @@ func TestApiCollectionsAuthRules(t *testing.T) {
 		"host":  "127.0.0.2",
 	})
 
+	userOneAlert, _ := beszelTests.CreateRecord(hub, "alerts", map[string]any{
+		"name": "CPU", "system": userOneSystem.Id, "user": user1.Id, "value": 80,
+	})
+	userTwoAlert, _ := beszelTests.CreateRecord(hub, "alerts", map[string]any{
+		"name": "CPU", "system": userTwoSystem.Id, "user": user2.Id, "value": 80,
+	})
+
 	userRecords, _ := hub.CountRecords("users")
 	assert.EqualValues(t, 3, userRecords, "all users should be created")
 
@@ -368,6 +382,30 @@ func TestApiCollectionsAuthRules(t *testing.T) {
 	}
 
 	scenarios := []beszelTests.ApiScenario{
+		{
+			Name:   "Users can only list their own alerts",
+			Method: http.MethodGet,
+			URL:    "/api/collections/alerts/records",
+			Headers: map[string]string{
+				"Authorization": user1Token,
+			},
+			ExpectedStatus:     200,
+			ExpectedContent:    []string{userOneAlert.Id},
+			NotExpectedContent: []string{userTwoAlert.Id},
+			TestAppFactory:     testAppFactory,
+		},
+		{
+			Name:   "Users cannot view another user's alert by id",
+			Method: http.MethodGet,
+			URL:    fmt.Sprintf("/api/collections/alerts/records/%s", userTwoAlert.Id),
+			Headers: map[string]string{
+				"Authorization": user1Token,
+			},
+			ExpectedStatus:     403,
+			ExpectedContent:    []string{"Only superusers"},
+			NotExpectedContent: []string{userTwoAlert.Id},
+			TestAppFactory:     testAppFactory,
+		},
 		{
 			Name:               "Unauthorized user cannot list systems",
 			Method:             http.MethodGet,

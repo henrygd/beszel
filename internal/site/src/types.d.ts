@@ -78,6 +78,8 @@ export interface SystemInfo {
 	efs?: Record<string, number>
 	/** services [totalServices, numFailedServices] */
 	sv?: [number, number]
+	/** custom root disk name */
+	rdn?: string
 }
 
 export interface SystemStats {
@@ -129,6 +131,8 @@ export interface SystemStats {
 	dios?: [number, number, number, number, number, number]
 	/** max disk io stats */
 	diosm?: [number, number, number, number, number, number]
+	/** cumulative device I/O bytes [total read, total write] */
+	diot?: [number, number]
 	/** network sent (mb) */
 	ns: number
 	/** network received (mb) */
@@ -147,10 +151,14 @@ export interface SystemStats {
 	f?: Record<string, number>
 	/** extra filesystems */
 	efs?: Record<string, ExtraFsStats>
+	/** ZFS pool metrics */
+	z?: Record<string, ZfsPool>
 	/** GPU data */
 	g?: Record<string, GPUData>
 	/** battery percent and state */
 	bat?: [number, BatteryState]
+	/** battery percentages by device name */
+	bats?: Record<string, number>
 	/** network interfaces [upload bytes, download bytes, total upload bytes, total download bytes] */
 	ni?: Record<string, [number, number, number, number]>
 }
@@ -170,6 +178,64 @@ export interface GPUData {
 	pp?: number
 	/** engines */
 	e?: Record<string, number>
+}
+
+export interface ZfsPool {
+	/** Friendly name; map keys are stable pool identities. */
+	n?: string
+	/** Equivalent filesystem charts are already displayed. */
+	hu?: boolean
+	hi?: boolean
+	raw?: boolean
+	/** total capacity (GiB) */
+	d: number
+	/** allocated (GiB) */
+	du: number
+	/** read throughput (bytes/s) */
+	rb?: number
+	/** write throughput (bytes/s) */
+	wb?: number
+	/** health: ONLINE, DEGRADED, FAULTED, ... */
+	h?: string
+}
+
+export interface ZfsScrub {
+	/** NONE, SCANNING, FINISHED, CANCELED */
+	state?: string
+	/** progress while scanning, e.g. "10.00%" */
+	progress?: string
+	errors?: number
+}
+
+export interface ZfsVdev {
+	name: string
+	state?: string
+	readErrs?: number
+	writeErrs?: number
+	checksumErrs?: number
+}
+
+export interface ZfsDataset {
+	name: string
+	used?: number
+	avail?: number
+	mount?: string
+}
+
+export interface ZfsPoolRecord extends RecordModel {
+	display_name?: string
+	raw?: boolean
+	system: string
+	name: string
+	health: string
+	size: number
+	alloc: number
+	free: number
+	scrub: ZfsScrub | null
+	vdevs: ZfsVdev[] | null
+	datasets: ZfsDataset[] | null
+	details_updated: string
+	updated: string
 }
 
 export interface ExtraFsStats {
@@ -197,6 +263,10 @@ export interface ExtraFsStats {
 	dios?: [number, number, number, number, number, number]
 	/** max disk io stats */
 	diosm?: [number, number, number, number, number, number]
+	/** cumulative device read bytes */
+	tr?: number
+	/** cumulative device write bytes */
+	tw?: number
 }
 
 export interface ContainerStatsRecord extends RecordModel {
@@ -237,6 +307,7 @@ export interface AlertRecord extends RecordModel {
 }
 
 export interface AlertsHistoryRecord extends RecordModel {
+	monitor_name?: string
 	alert: string
 	user: string
 	system: string
@@ -265,6 +336,7 @@ export interface ContainerRecord extends RecordModel {
 	system: string
 	name: string
 	image: string
+	updatable?: boolean
 	ports: string
 	cpu: number
 	memory: number
@@ -299,6 +371,13 @@ export interface UserSettings {
 	colorCrit?: number
 	hourFormat?: HourFormat
 	layoutWidth?: number
+	lang?: string
+	cols?: Record<string, boolean>
+	statusFilter?: "all" | "up" | "down" | "paused" | "pending"
+	viewMode?: "table" | "grid"
+	sortMode?: Array<{ id: string; desc: boolean }>
+	grid?: boolean
+	displayMode?: "default" | "tabs"
 }
 
 type ChartDataContainer = {
@@ -315,11 +394,9 @@ export interface SemVer {
 
 export interface ChartData {
 	agentVersion: SemVer
-	systemStats: SystemStatsRecord[]
-	containerData: ChartDataContainer[]
+	systemStats?: SystemStatsRecord[]
+	containerData?: ChartDataContainer[]
 	orientation: "right" | "left"
-	ticks: number[]
-	domain: number[]
 	chartTime: ChartTimes
 }
 
@@ -334,6 +411,14 @@ export interface AlertInfo {
 	start?: number
 	/** Single value description (when there's only one value, like status) */
 	singleDesc?: () => string
+	/** Hides the duration slider for alerts that fire on first observation */
+	noDuration?: boolean
+	/** Hides the threshold control for binary alerts */
+	noThreshold?: boolean
+	/** Description shown instead of numeric threshold and duration values */
+	triggeredDesc?: () => string
+	/** Additional information that remains visible while the alert is enabled */
+	note?: () => string
 	invert?: boolean
 }
 
@@ -547,4 +632,53 @@ export interface BeszelInfo {
 export interface UpdateInfo {
 	v: string // new version
 	url: string // url to new version
+}
+
+export interface NetworkMonitorRecord {
+	id: string
+	system: string
+	target: string
+	protocol: "icmp" | "tcp" | "http" | "dns"
+	port: number
+	res: number
+	resMin1h: number
+	resMax1h: number
+	resAvg1h: number
+	loss: number
+	loss1h: number
+	interval: number
+	enabled: boolean
+	updated: string
+}
+
+/** Response times in microseconds and packet loss percentage (0-100). */
+export interface MonitorStats {
+	res_avg: number
+	res_min: number
+	res_max: number
+	loss: number
+}
+
+/** Raw per-monitor record stored in the DB. */
+export interface RawMonitorStatsRecord {
+	res_min: number
+	res_max: number
+	total_count: number
+	success_count: number
+	res_sum: number
+	id?: string
+	type?: string
+	monitor: string
+	created: number // unix timestamp (ms)
+}
+
+/**
+ * Merged stats record keyed by monitor ID, used by chart components.
+ * Constructed from multiple RawMonitorStatsRecord entries sharing the same timestamp.
+ */
+export interface NetworkMonitorStatsRecord {
+	id?: string
+	type?: string
+	stats: Record<string, MonitorStats>
+	created: number // unix timestamp (ms) for Recharts xAxis
 }

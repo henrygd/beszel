@@ -115,6 +115,12 @@ func TestConnectionManager_EventHandling(t *testing.T) {
 			expectedState: SSHConnected,
 		},
 		{
+			name:          "SSH connect from WebSocket connected (no change)",
+			initialState:  WebSocketConnected,
+			event:         SSHConnect,
+			expectedState: WebSocketConnected,
+		},
+		{
 			name:          "WebSocket disconnect from connected",
 			initialState:  WebSocketConnected,
 			event:         WebSocketDisconnect,
@@ -263,6 +269,19 @@ func TestConnectionManager_StartWithInvalidConfig(t *testing.T) {
 	cm.eventChan = make(chan ConnectionEvent, 5)
 	err := cm.Start(serverOptions)
 	assert.Error(t, err, "Should error when starting already started connection manager")
+}
+
+func TestConnectionManager_StartRejectsInvalidCACertFile(t *testing.T) {
+	agent := createTestAgent(t)
+	cm := agent.connectionManager
+	t.Setenv("BESZEL_AGENT_HUB_URL", "https://hub.example.com")
+	t.Setenv("BESZEL_AGENT_TOKEN", "test-token")
+	t.Setenv("BESZEL_AGENT_CA_CERT_FILE", t.TempDir())
+
+	err := cm.Start(ServerOptions{})
+	require.Error(t, err)
+	assert.Contains(t, err.Error(), "read CA_CERT_FILE")
+	assert.Nil(t, cm.eventChan)
 }
 
 // TestConnectionManager_CloseWebSocket tests WebSocket closing

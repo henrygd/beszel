@@ -146,6 +146,20 @@ func setCPUAlertValue(info *system.Info, stats *system.Stats, value float64) {
 	stats.Cpu = value
 }
 
+func setCPUStateAlertValue(_ *system.Info, stats *system.Stats, value []float64) {
+	stats.CpuBreakdown = value
+}
+
+var cpuStateAlertTests = []struct {
+	name     string
+	trigger  []float64
+	resolve  []float64
+	baseline []float64
+}{
+	{"CPUIOWait", []float64{0, 0, 51, 0, 49}, []float64{0, 0, 48, 0, 52}, []float64{0, 0, 10, 0, 90}},
+	{"CPUSteal", []float64{0, 0, 0, 51, 49}, []float64{0, 0, 0, 48, 52}, []float64{0, 0, 0, 10, 90}},
+}
+
 func setMemoryAlertValue(info *system.Info, stats *system.Stats, value float64) {
 	info.MemPct = value
 	stats.MemPct = value
@@ -191,6 +205,11 @@ func setBatteryAlertValue(info *system.Info, stats *system.Stats, value [2]uint8
 
 func TestSystemAlertsOneMin(t *testing.T) {
 	testOneMinuteSystemAlert(t, "CPU", 50, setCPUAlertValue, 51, 49)
+	for _, test := range cpuStateAlertTests {
+		t.Run(test.name, func(t *testing.T) {
+			testOneMinuteSystemAlert(t, test.name, 50, setCPUStateAlertValue, test.trigger, test.resolve)
+		})
+	}
 	testOneMinuteSystemAlert(t, "Memory", 50, setMemoryAlertValue, 51, 49)
 	testOneMinuteSystemAlert(t, "Disk", 50, setDiskAlertValue, 51, 49)
 	testOneMinuteSystemAlert(t, "Bandwidth", 50, setBandwidthAlertValue, [2]uint64{megabytesToBytes(26), megabytesToBytes(25)}, [2]uint64{megabytesToBytes(25), megabytesToBytes(24)})
@@ -199,11 +218,16 @@ func TestSystemAlertsOneMin(t *testing.T) {
 	testOneMinuteSystemAlert(t, "LoadAvg1", 4, setLoadAvgAlertValue, [3]float64{4.1, 0, 0}, [3]float64{3.9, 0, 0})
 	testOneMinuteSystemAlert(t, "LoadAvg5", 4, setLoadAvgAlertValue, [3]float64{0, 4.1, 0}, [3]float64{0, 3.9, 0})
 	testOneMinuteSystemAlert(t, "LoadAvg15", 4, setLoadAvgAlertValue, [3]float64{0, 0, 4.1}, [3]float64{0, 0, 3.9})
-	testOneMinuteSystemAlert(t, "Battery", 20, setBatteryAlertValue, [2]uint8{19, 0}, [2]uint8{21, 0})
+	testOneMinuteSystemAlert(t, "Battery", 20, setBatteryAlertValue, [2]uint8{0, 1}, [2]uint8{21, 0})
 }
 
 func TestSystemAlertsTwoMin(t *testing.T) {
 	testMultiMinuteSystemAlert(t, "CPU", 50, 2, setCPUAlertValue, 10, 51, 48)
+	for _, test := range cpuStateAlertTests {
+		t.Run(test.name, func(t *testing.T) {
+			testMultiMinuteSystemAlert(t, test.name, 50, 2, setCPUStateAlertValue, test.baseline, test.trigger, test.resolve)
+		})
+	}
 	testMultiMinuteSystemAlert(t, "Memory", 50, 2, setMemoryAlertValue, 10, 51, 48)
 	testMultiMinuteSystemAlert(t, "Disk", 50, 2, setDiskAlertValue, 10, 51, 48)
 	testMultiMinuteSystemAlert(t, "Bandwidth", 50, 2, setBandwidthAlertValue, [2]uint64{megabytesToBytes(10), megabytesToBytes(10)}, [2]uint64{megabytesToBytes(26), megabytesToBytes(25)}, [2]uint64{megabytesToBytes(10), megabytesToBytes(10)})
@@ -213,4 +237,18 @@ func TestSystemAlertsTwoMin(t *testing.T) {
 	testMultiMinuteSystemAlert(t, "LoadAvg5", 4, 2, setLoadAvgAlertValue, [3]float64{0, 2, 0}, [3]float64{0, 4.1, 0}, [3]float64{0, 3.5, 0})
 	testMultiMinuteSystemAlert(t, "LoadAvg15", 4, 2, setLoadAvgAlertValue, [3]float64{0, 0, 2}, [3]float64{0, 0, 4.1}, [3]float64{0, 0, 3.5})
 	testMultiMinuteSystemAlert(t, "Battery", 20, 2, setBatteryAlertValue, [2]uint8{21, 0}, [2]uint8{19, 0}, [2]uint8{25, 1})
+}
+
+func TestCPUStateAlertWithoutBreakdown(t *testing.T) {
+	fixture := newSystemAlertTestFixture(t, "CPUSteal", 1, 1)
+	defer fixture.cleanup()
+
+	synctest.Test(t, func(t *testing.T) {
+		submitValue(fixture, t, []float64(nil), setCPUStateAlertValue)
+		submitValue(fixture, t, []float64{0, 0, 0, 0, 0}, setCPUStateAlertValue)
+		waitForSystemAlert(time.Second)
+
+		fixture.assertTriggered(t, false, "Alert should ignore missing CPU breakdown data")
+		assert.Zero(t, fixture.hub.TestMailer.TotalSend(), "No email should be sent without CPU breakdown data")
+	})
 }

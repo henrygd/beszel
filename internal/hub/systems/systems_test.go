@@ -18,6 +18,38 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+func TestPauseSystemPreservesAgentVersion(t *testing.T) {
+	hub, user := tests.GetHubWithUser(t)
+	defer hub.Cleanup()
+
+	record, err := tests.CreateRecord(hub, "systems", map[string]any{
+		"name":  "pause-info-test",
+		"host":  "localhost",
+		"port":  "33914",
+		"users": []string{user.Id},
+	})
+	require.NoError(t, err)
+
+	record.Set("info", system.Info{
+		AgentVersion: "0.20.0",
+		Cpu:          42.5,
+		MemPct:       60,
+		Uptime:       3600,
+		Services:     []uint16{3, 1},
+	})
+	require.NoError(t, hub.Save(record))
+
+	record.Set("status", "paused")
+	require.NoError(t, hub.Save(record))
+
+	pausedRecord, err := hub.FindRecordById("systems", record.Id)
+	require.NoError(t, err)
+	assert.Equal(t, "paused", pausedRecord.GetString("status"))
+	var info system.Info
+	require.NoError(t, pausedRecord.UnmarshalJSONField("info", &info))
+	assert.Equal(t, system.Info{AgentVersion: "0.20.0"}, info)
+}
+
 func TestSystemManagerNew(t *testing.T) {
 	hub, err := tests.NewTestHub(t.TempDir())
 	if err != nil {
@@ -30,6 +62,7 @@ func TestSystemManagerNew(t *testing.T) {
 	require.NoError(t, err)
 
 	synctest.Test(t, func(t *testing.T) {
+		sm.ResetContextForTesting()
 		sm.Initialize()
 
 		record, err := tests.CreateRecord(hub, "systems", map[string]any{
@@ -112,6 +145,8 @@ func TestSystemManagerNew(t *testing.T) {
 		assert.False(t, sm.HasSystem(record.Id), "System should not exist in the store after deletion")
 	})
 
+	// The following subtests run outside the synctest bubble.
+	sm.ResetContextForTesting()
 	testOld(t, hub)
 
 	synctest.Test(t, func(t *testing.T) {
@@ -128,6 +163,55 @@ func TestSystemManagerNew(t *testing.T) {
 
 		// TODO: test with websocket client
 	})
+}
+
+func TestStatusAlertRecoveryAfterPendingTransition(t *testing.T) {
+	hub, user := tests.GetHubWithUser(t)
+	defer hub.Cleanup()
+
+	userSettings, err := hub.FindFirstRecordByFilter("user_settings", "user={:user}", map[string]any{"user": user.Id})
+	require.NoError(t, err)
+	userSettings.Set("settings", map[string]any{
+		"emails":   []string{"test@example.com"},
+		"webhooks": []string{},
+	})
+	require.NoError(t, hub.Save(userSettings))
+
+	record, err := tests.CreateRecord(hub, "systems", map[string]any{
+		"name":  "changed-address",
+		"host":  "192.0.2.1",
+		"port":  "33914",
+		"users": []string{user.Id},
+	})
+	require.NoError(t, err)
+	record.Set("status", "down")
+	require.NoError(t, hub.Save(record))
+
+	alert, err := tests.CreateRecord(hub, "alerts", map[string]any{
+		"name":      "Status",
+		"system":    record.Id,
+		"user":      user.Id,
+		"min":       1,
+		"triggered": true,
+	})
+	require.NoError(t, err)
+	initialEmailCount := hub.TestMailer.TotalSend()
+
+	// The edit dialog temporarily moves the system through pending. The active
+	// status alert must remain active until the new connection is confirmed.
+	record.Set("host", "192.0.2.2")
+	record.Set("status", "pending")
+	require.NoError(t, hub.Save(record))
+	alert, err = hub.FindRecordById("alerts", alert.Id)
+	require.NoError(t, err)
+	assert.True(t, alert.GetBool("triggered"), "pending connection update should preserve the active status alert")
+
+	record.Set("status", "up")
+	require.NoError(t, hub.Save(record))
+	alert, err = hub.FindRecordById("alerts", alert.Id)
+	require.NoError(t, err)
+	assert.False(t, alert.GetBool("triggered"), "pending -> up should resolve the active status alert")
+	assert.Equal(t, initialEmailCount+1, hub.TestMailer.TotalSend(), "recovery should send an up notification")
 }
 
 func testOld(t *testing.T, hub *tests.TestHub) {
