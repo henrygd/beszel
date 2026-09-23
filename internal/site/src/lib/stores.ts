@@ -1,4 +1,4 @@
-import { atom, computed, listenKeys, map, type ReadableAtom } from "nanostores"
+import { atom, computed, map, type ReadableAtom } from "nanostores"
 import type { AlertMap, ChartTimes, SystemRecord, UpdateInfo, UserSettings } from "@/types"
 import { pb } from "./api"
 import { Unit } from "./enums"
@@ -64,10 +64,14 @@ export function getUserChartTime(settings: UserSettings = $userSettings.get()): 
 	return settings.chartTime || defaultChartTime
 }
 
-// update chart time on change. listenKeys also runs when the whole map is replaced by
-// $userSettings.set(), which happens when settings are loaded from the database, so
-// normalize the value instead of storing an empty chart time (#2104).
-listenKeys($userSettings, ["chartTime"], (settings) => $chartTime.set(getUserChartTime(settings)))
+/**
+ * Apply settings loaded from the database, including the default chart time.
+ * Other settings writes don't touch $chartTime so they can't reset the active chart range.
+ */
+export function hydrateUserSettings(settings: UserSettings) {
+	$userSettings.set(settings)
+	$chartTime.set(getUserChartTime(settings))
+}
 
 /** Container chart filter */
 export const $containerFilter = atom("")
