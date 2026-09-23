@@ -6,6 +6,7 @@ import (
 	"github.com/pocketbase/dbx"
 	"github.com/pocketbase/pocketbase/core"
 	m "github.com/pocketbase/pocketbase/migrations"
+	"github.com/pocketbase/pocketbase/tools/types"
 )
 
 func init() {
@@ -22,8 +23,8 @@ func init() {
 		// subscribed to exactly the systems they had alerts on, so notification
 		// behavior is preserved across the upgrade. Runs before the dedup delete
 		// below so a user's subscription isn't lost when another user's alert
-		// wins the (system, name) tie-break. Skipped on fresh installs, where the
-		// collections snapshot already creates alerts without a user column.
+		// wins the (system, name) tie-break. Skipped if the user column was
+		// already removed.
 		if alertsCollection.Fields.GetByName("user") != nil {
 			type alertUserSystem struct {
 				User   string `db:"user"`
@@ -63,18 +64,32 @@ func init() {
 
 		// Deduplicate alerts before dropping the user column:
 		// for each (system, name) pair, keep the most recently updated record.
-		_, err = db.NewQuery(`
-			DELETE FROM alerts
-			WHERE id NOT IN (
-				SELECT id FROM (
-					SELECT id, ROW_NUMBER() OVER (PARTITION BY system, name ORDER BY updated DESC) AS rn
-					FROM alerts
-				) ranked
-				WHERE rn = 1
-			)
-		`).Execute()
-		if err != nil {
+		var duplicateIDs []string
+		if err := db.NewQuery(`
+			SELECT id FROM (
+				SELECT id, ROW_NUMBER() OVER (PARTITION BY system, name ORDER BY updated DESC) AS rn
+				FROM alerts
+			) ranked
+			WHERE rn > 1
+		`).Column(&duplicateIDs); err != nil {
 			return err
+		}
+		if len(duplicateIDs) > 0 {
+			ids := make([]any, len(duplicateIDs))
+			for i, id := range duplicateIDs {
+				ids[i] = id
+			}
+			// Raw deletes skip the record hooks, so resolve open history entries
+			// of the removed alerts here the same way the delete hook would.
+			if _, err := db.Update("alerts_history",
+				dbx.Params{"resolved": types.NowDateTime().String()},
+				dbx.And(dbx.In("alert_id", ids...), dbx.NewExp("(resolved IS NULL OR resolved = '')")),
+			).Execute(); err != nil {
+				return err
+			}
+			if _, err := db.Delete("alerts", dbx.In("id", ids...)).Execute(); err != nil {
+				return err
+			}
 		}
 
 		// Drop old unique index (user, system, name) before modifying alerts schema
