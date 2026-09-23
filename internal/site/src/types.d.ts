@@ -307,6 +307,7 @@ export interface AlertRecord extends RecordModel {
 }
 
 export interface AlertsHistoryRecord extends RecordModel {
+	monitor_name?: string
 	alert: string
 	user: string
 	system: string
@@ -371,6 +372,13 @@ export interface UserSettings {
 	hourFormat?: HourFormat
 	layoutWidth?: number
 	cpuFixed?: boolean
+	lang?: string
+	cols?: Record<string, boolean>
+	statusFilter?: "all" | "up" | "down" | "paused" | "pending"
+	viewMode?: "table" | "grid"
+	sortMode?: Array<{ id: string; desc: boolean }>
+	grid?: boolean
+	displayMode?: "default" | "tabs"
 }
 
 type ChartDataContainer = {
@@ -387,11 +395,9 @@ export interface SemVer {
 
 export interface ChartData {
 	agentVersion: SemVer
-	systemStats: SystemStatsRecord[]
-	containerData: ChartDataContainer[]
+	systemStats?: SystemStatsRecord[]
+	containerData?: ChartDataContainer[]
 	orientation: "right" | "left"
-	ticks: number[]
-	domain: number[]
 	chartTime: ChartTimes
 }
 
@@ -408,6 +414,8 @@ export interface AlertInfo {
 	singleDesc?: () => string
 	/** Hides the duration slider for alerts that fire on first observation */
 	noDuration?: boolean
+	/** Hides the threshold control for binary alerts */
+	noThreshold?: boolean
 	/** Description shown instead of numeric threshold and duration values */
 	triggeredDesc?: () => string
 	/** Additional information that remains visible while the alert is enabled */
@@ -625,4 +633,53 @@ export interface BeszelInfo {
 export interface UpdateInfo {
 	v: string // new version
 	url: string // url to new version
+}
+
+export interface NetworkMonitorRecord {
+	id: string
+	system: string
+	target: string
+	protocol: "icmp" | "tcp" | "http" | "dns"
+	port: number
+	res: number
+	resMin1h: number
+	resMax1h: number
+	resAvg1h: number
+	loss: number
+	loss1h: number
+	interval: number
+	enabled: boolean
+	updated: string
+}
+
+/** Response times in microseconds and packet loss percentage (0-100). */
+export interface MonitorStats {
+	res_avg: number
+	res_min: number
+	res_max: number
+	loss: number
+}
+
+/** Raw per-monitor record stored in the DB. */
+export interface RawMonitorStatsRecord {
+	res_min: number
+	res_max: number
+	total_count: number
+	success_count: number
+	res_sum: number
+	id?: string
+	type?: string
+	monitor: string
+	created: number // unix timestamp (ms)
+}
+
+/**
+ * Merged stats record keyed by monitor ID, used by chart components.
+ * Constructed from multiple RawMonitorStatsRecord entries sharing the same timestamp.
+ */
+export interface NetworkMonitorStatsRecord {
+	id?: string
+	type?: string
+	stats: Record<string, MonitorStats>
+	created: number // unix timestamp (ms) for Recharts xAxis
 }

@@ -174,8 +174,25 @@ func TestMdraidSmartStatus(t *testing.T) {
 	if got := mdraidSmartStatus(mdraidHealth{arrayState: "clean", mismatchCnt: 1}); got != "WARNING" {
 		t.Fatalf("mdraidSmartStatus(clean+mismatch) = %q, want WARNING", got)
 	}
-	if got := mdraidSmartStatus(mdraidHealth{arrayState: "clean", syncAction: "repair"}); got != "WARNING" {
-		t.Fatalf("mdraidSmartStatus(repair) = %q, want WARNING", got)
+	for _, tc := range []struct {
+		name   string
+		health mdraidHealth
+		want   string
+	}{
+		{"clean", mdraidHealth{arrayState: "clean"}, "PASSED"},
+		{"active", mdraidHealth{arrayState: "active"}, "PASSED"},
+		{"mismatch", mdraidHealth{arrayState: "active", mismatchCnt: 1}, "WARNING"},
+		{"degraded", mdraidHealth{arrayState: "active", degraded: 1}, "FAILED"},
+		{"faulty member", mdraidHealth{arrayState: "active", faultyDisks: 1}, "FAILED"},
+		{"inactive", mdraidHealth{arrayState: "inactive"}, "FAILED"},
+		{"unknown", mdraidHealth{arrayState: "unknown"}, "UNKNOWN"},
+	} {
+		t.Run("repair/"+tc.name, func(t *testing.T) {
+			tc.health.syncAction = "repair"
+			if got := mdraidSmartStatus(tc.health); got != tc.want {
+				t.Fatalf("mdraidSmartStatus(%+v) = %q, want %s", tc.health, got, tc.want)
+			}
+		})
 	}
 	if got := mdraidSmartStatus(mdraidHealth{arrayState: "clean"}); got != "PASSED" {
 		t.Fatalf("mdraidSmartStatus(clean) = %q, want PASSED", got)
