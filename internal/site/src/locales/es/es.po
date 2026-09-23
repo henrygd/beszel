@@ -136,6 +136,13 @@ msgstr "Estado activo"
 msgid "Add {foo}"
 msgstr "Agregar {foo}"
 
+#: src/components/add-system.tsx
+#: src/components/add-system.tsx
+#: src/components/navbar.tsx
+#: src/components/navbar.tsx
+msgid "Add System"
+msgstr "Agregar Sistema"
+
 #: src/components/routes/settings/notifications.tsx
 msgid "Add URL"
 msgstr "Agregar URL"
@@ -781,6 +788,10 @@ msgstr "Editar"
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Edit {foo}"
 msgstr "Editar {foo}"
+
+#: src/components/add-system.tsx
+msgid "Edit System"
+msgstr "Editar Sistema"
 
 #: src/components/login/auth-form.tsx
 #: src/components/login/forgot-pass-form.tsx
@@ -1711,6 +1722,10 @@ msgstr "Guarda la dirección usando la tecla enter o coma. Deja en blanco para d
 #: src/components/routes/settings/notifications.tsx
 msgid "Save Settings"
 msgstr "Guardar configuración"
+
+#: src/components/add-system.tsx
+msgid "Save System"
+msgstr "Guardar Sistema"
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Saved in the database and does not expire until you disable it."

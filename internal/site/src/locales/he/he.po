@@ -136,6 +136,13 @@ msgstr "מצב פעיל"
 msgid "Add {foo}"
 msgstr "הוסף {foo}"
 
+#: src/components/add-system.tsx
+#: src/components/add-system.tsx
+#: src/components/navbar.tsx
+#: src/components/navbar.tsx
+msgid "Add System"
+msgstr "הוסף מערכת"
+
 #: src/components/routes/settings/notifications.tsx
 msgid "Add URL"
 msgstr "הוסף URL"
@@ -781,6 +788,10 @@ msgstr "ערוך"
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Edit {foo}"
 msgstr "ערוך {foo}"
+
+#: src/components/add-system.tsx
+msgid "Edit System"
+msgstr "ערוך מערכת"
 
 #: src/components/login/auth-form.tsx
 #: src/components/login/forgot-pass-form.tsx
@@ -1711,6 +1722,10 @@ msgstr "שמור כתובת באמצעות מקש enter או פסיק. השאר 
 #: src/components/routes/settings/notifications.tsx
 msgid "Save Settings"
 msgstr "שמור הגדרות"
+
+#: src/components/add-system.tsx
+msgid "Save System"
+msgstr "שמור מערכת"
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Saved in the database and does not expire until you disable it."

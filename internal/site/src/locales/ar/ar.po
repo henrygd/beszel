@@ -136,6 +136,13 @@ msgstr "الحالة النشطة"
 msgid "Add {foo}"
 msgstr "إضافة {foo}"
 
+#: src/components/add-system.tsx
+#: src/components/add-system.tsx
+#: src/components/navbar.tsx
+#: src/components/navbar.tsx
+msgid "Add System"
+msgstr "إضافة النظام"
+
 #: src/components/routes/settings/notifications.tsx
 msgid "Add URL"
 msgstr "إضافة رابط"
@@ -781,6 +788,10 @@ msgstr "تعديل"
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Edit {foo}"
 msgstr "إضافة {foo}"
+
+#: src/components/add-system.tsx
+msgid "Edit System"
+msgstr "إضافة النظام"
 
 #: src/components/login/auth-form.tsx
 #: src/components/login/forgot-pass-form.tsx
@@ -1711,6 +1722,10 @@ msgstr "احفظ العنوان باستخدام مفتاح الإدخال أو 
 #: src/components/routes/settings/notifications.tsx
 msgid "Save Settings"
 msgstr "حفظ الإعدادات"
+
+#: src/components/add-system.tsx
+msgid "Save System"
+msgstr "حفظ النظام"
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Saved in the database and does not expire until you disable it."
