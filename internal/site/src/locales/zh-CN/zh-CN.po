@@ -1928,11 +1928,6 @@ msgstr "标签页"
 msgid "Target"
 msgstr "目标"
 
-#: src/components/network-monitors-table/monitor-dialog.tsx
-#: src/components/network-monitors-table/monitor-dialog.tsx
-msgid "target[,protocol[,port[,interval]]]"
-msgstr ""
-
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Tasks"
 msgstr "任务数"

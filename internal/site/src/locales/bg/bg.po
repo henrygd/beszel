@@ -1928,11 +1928,6 @@ msgstr "Табове"
 msgid "Target"
 msgstr "Цел"
 
-#: src/components/network-monitors-table/monitor-dialog.tsx
-#: src/components/network-monitors-table/monitor-dialog.tsx
-msgid "target[,protocol[,port[,interval]]]"
-msgstr ""
-
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Tasks"
 msgstr "Задачи"

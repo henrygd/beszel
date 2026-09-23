@@ -1928,11 +1928,6 @@ msgstr "Lapok"
 msgid "Target"
 msgstr "Cél"
 
-#: src/components/network-monitors-table/monitor-dialog.tsx
-#: src/components/network-monitors-table/monitor-dialog.tsx
-msgid "target[,protocol[,port[,interval]]]"
-msgstr ""
-
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Tasks"
 msgstr "Feladatok"
