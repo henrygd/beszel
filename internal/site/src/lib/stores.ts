@@ -31,8 +31,11 @@ export const $publicKey = atom("")
 /** New version info if an update is available, otherwise undefined */
 export const $newVersion = atom<UpdateInfo | undefined>()
 
+/** Chart time period used when user settings don't provide one */
+export const defaultChartTime: ChartTimes = "1h"
+
 /** Chart time period */
-export const $chartTime = atom<ChartTimes>("1h")
+export const $chartTime = atom<ChartTimes>(defaultChartTime)
 
 /** Whether to display average or max chart values */
 export const $maxValues = atom(false)
@@ -50,13 +53,21 @@ export const $maxValues = atom(false)
 
 /** User settings */
 export const $userSettings = map<UserSettings>({
-	chartTime: "1h",
+	chartTime: defaultChartTime,
 	emails: [pb.authStore.record?.email || ""],
 	unitNet: Unit.Bytes,
 	unitTemp: Unit.Celsius,
 })
-// update chart time on change
-listenKeys($userSettings, ["chartTime"], ({ chartTime }) => $chartTime.set(chartTime))
+
+/** Chart time period stored in user settings, or the default if it's missing */
+export function getUserChartTime(settings: UserSettings = $userSettings.get()): ChartTimes {
+	return settings.chartTime || defaultChartTime
+}
+
+// update chart time on change. listenKeys also runs when the whole map is replaced by
+// $userSettings.set(), which happens when settings are loaded from the database, so
+// normalize the value instead of storing an empty chart time (#2104).
+listenKeys($userSettings, ["chartTime"], (settings) => $chartTime.set(getUserChartTime(settings)))
 
 /** Container chart filter */
 export const $containerFilter = atom("")

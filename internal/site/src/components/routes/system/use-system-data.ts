@@ -14,6 +14,7 @@ import {
 	$maxValues,
 	$systems,
 	$userSettings,
+	getUserChartTime,
 } from "@/lib/stores"
 import { chartTimeData, listen, parseSemVer } from "@/lib/utils"
 import type {
@@ -90,7 +91,7 @@ export function useSystemData(id: string) {
 	useEffect(() => {
 		return () => {
 			if (!persistChartTime.current) {
-				$chartTime.set($userSettings.get().chartTime)
+				$chartTime.set(getUserChartTime())
 			}
 			persistChartTime.current = false
 			setSystemStats([])
