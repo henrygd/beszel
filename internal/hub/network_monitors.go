@@ -122,7 +122,7 @@ func monitorConfigFromRecord(record *core.Record) *monitor.Config {
 		Protocol:  record.GetString("protocol"),
 		Port:      uint16(record.GetInt("port")),
 		Interval:  uint16(record.GetInt("interval")),
-		CheckCert: record.GetBool("checkCert") && certCheckSupported(record),
+		CheckCert: record.GetBool("checkCert"),
 	}
 }
 
@@ -134,7 +134,8 @@ func setMonitorResultFields(record *core.Record, result monitor.Result) {
 	record.Set("resMin1h", result.MinResponse1h)
 	record.Set("resMax1h", result.MaxResponse1h)
 	record.Set("loss1h", result.PacketLoss1h)
-	if result.Cert != nil {
+	// Ignore certInfo that arrives after checks were disabled.
+	if result.Cert != nil && record.GetBool("checkCert") {
 		record.Set("certInfo", result.Cert)
 	}
 	record.Set("updated", nowString)

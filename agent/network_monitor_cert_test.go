@@ -26,8 +26,6 @@ func TestCheckCertReadsUnverifiedLeaf(t *testing.T) {
 	leaf := server.Certificate()
 	assert.Equal(t, leaf.NotAfter.UnixMilli(), info.Expires)
 	assert.Equal(t, leaf.Issuer.CommonName, info.Issuer)
-	assert.Equal(t, leaf.Subject.CommonName, info.Subject)
-	assert.NotZero(t, info.Checked)
 }
 
 func TestCertAddress(t *testing.T) {
@@ -66,7 +64,7 @@ func TestRefreshCertCadence(t *testing.T) {
 			if fail != nil {
 				return monitor.CertInfo{}, fail
 			}
-			return monitor.CertInfo{Expires: expires + int64(calls), Checked: time.Now().UnixMilli()}, nil
+			return monitor.CertInfo{Expires: expires + int64(calls)}, nil
 		}
 
 		task.refreshCert(check)
@@ -112,7 +110,7 @@ func TestRefreshCertRetriesSoonerNearExpiry(t *testing.T) {
 				var calls int
 				check := func(context.Context, string) (monitor.CertInfo, error) {
 					calls++
-					return monitor.CertInfo{Expires: time.Now().Add(tc.expires).UnixMilli(), Checked: time.Now().UnixMilli()}, nil
+					return monitor.CertInfo{Expires: time.Now().Add(tc.expires).UnixMilli()}, nil
 				}
 				task.refreshCert(check)
 				time.Sleep(tc.interval - time.Second)
@@ -149,17 +147,29 @@ func TestUpsertMonitorRunNowIncludesCert(t *testing.T) {
 	require.NotNil(t, result.Cert)
 	assert.Equal(t, server.Certificate().NotAfter.UnixMilli(), result.Cert.Expires)
 
-	results := pm.GetResults(60_000)
+	// Realtime results never carry the certificate, and the default interval
+	// sends it only once per check.
+	assert.Nil(t, pm.GetResults(1000)["cert"].Cert)
+	results := pm.GetResults(defaultDataCacheTimeMs)
 	require.NotNil(t, results["cert"].Cert)
 	assert.Equal(t, result.Cert.Expires, results["cert"].Cert.Expires)
+	assert.Nil(t, pm.GetResults(defaultDataCacheTimeMs)["cert"].Cert)
 
-	// Changing the interval keeps the known certificate; disabling drops it.
+	// Changing the interval keeps the known certificate without resending it;
+	// disabling drops it.
 	config.Interval = 30
 	_, err = pm.UpsertMonitor(config, false)
 	require.NoError(t, err)
-	assert.NotNil(t, pm.GetResults(60_000)["cert"].Cert)
+	pm.mu.RLock()
+	task := pm.monitors["cert"]
+	pm.mu.RUnlock()
+	assert.NotNil(t, task.certInfo())
+	assert.Nil(t, pm.GetResults(defaultDataCacheTimeMs)["cert"].Cert)
 	config.CheckCert = false
 	_, err = pm.UpsertMonitor(config, false)
 	require.NoError(t, err)
-	assert.Nil(t, pm.GetResults(60_000)["cert"].Cert)
+	pm.mu.RLock()
+	task = pm.monitors["cert"]
+	pm.mu.RUnlock()
+	assert.Nil(t, task.certInfo())
 }

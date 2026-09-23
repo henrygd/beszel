@@ -433,8 +433,9 @@ func (sys *System) updateNetworkMonitorsRecords(app core.App, monitorResults map
 		for i, f := range monitorFields {
 			setClauses[i] = fmt.Sprintf("%s={:%s}", f, f)
 		}
-		// Older agents and monitors without certificate checks omit certInfo, so keep the stored value.
-		setClauses = append(setClauses, "certInfo=COALESCE({:certInfo}, certInfo)")
+		// Results omit certInfo unless it changed, so keep the stored value. Ignore
+		// certInfo that arrives after checks were disabled.
+		setClauses = append(setClauses, "certInfo=IIF(checkCert, COALESCE({:certInfo}, certInfo), certInfo)")
 		queryString := fmt.Sprintf("UPDATE %s SET %s WHERE id={:id}", monitorCollectionName, strings.Join(setClauses, ", "))
 		updateQuery = db.NewQuery(queryString)
 	}
@@ -455,7 +456,7 @@ func (sys *System) updateNetworkMonitorsRecords(app core.App, monitorResults map
 			var record *core.Record
 			record, err = app.FindRecordById(monitorCollectionName, id)
 			if err == nil {
-				if result.Cert != nil {
+				if result.Cert != nil && record.GetBool("checkCert") {
 					monitorData["certInfo"] = result.Cert
 				}
 				record.Load(monitorData)

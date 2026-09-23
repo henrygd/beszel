@@ -34,9 +34,6 @@ type CertInfo struct {
 	// Expires is the certificate's NotAfter Unix timestamp in milliseconds.
 	Expires int64  `cbor:"0,keyasint" json:"expires"`
 	Issuer  string `cbor:"1,keyasint,omitempty" json:"issuer,omitempty"`
-	Subject string `cbor:"2,keyasint,omitempty" json:"subject,omitempty"`
-	// Checked is the Unix timestamp in milliseconds of the latest successful check.
-	Checked int64 `cbor:"3,keyasint" json:"checked"`
 }
 
 // SyncRequest defines an incremental or full monitor sync request sent to the agent.
@@ -88,7 +85,7 @@ type Result struct {
 	TotalCount   int64 `cbor:"10,keyasint"`
 	SuccessCount int64 `cbor:"11,keyasint"`
 	ResponseSum  int64 `cbor:"12,keyasint"`
-	// Cert is the latest certificate info when certificate checks are enabled.
+	// Cert is set when a certificate check has new info the hub has not stored yet.
 	Cert *CertInfo `cbor:"13,keyasint,omitempty"`
 }
 

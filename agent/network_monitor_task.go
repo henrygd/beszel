@@ -24,6 +24,7 @@ type monitorTask struct {
 
 	certMu        sync.Mutex
 	cert          *monitor.CertInfo
+	certUnsent    bool // cert has not been included in a stats result yet
 	certChecking  bool
 	nextCertCheck time.Time
 }
@@ -51,6 +52,7 @@ func newMonitorTaskFromExisting(config monitor.Config, existing *monitorTask) *m
 	if existing != nil {
 		task.history = existing.history.clone()
 		// Keep the last known certificate, but check again soon for the new config.
+		// The hub already stores it, so it is not marked unsent.
 		if config.CheckCert && config.Target == existing.config.Target {
 			task.cert = existing.certInfo()
 		}
@@ -147,6 +149,7 @@ func (task *monitorTask) refreshCert(check certChecker) {
 		return
 	}
 	task.cert = &info
+	task.certUnsent = true
 	now := time.Now()
 	interval := certCheckInterval
 	if time.UnixMilli(info.Expires).Before(now.Add(certCheckInterval)) {
@@ -162,6 +165,19 @@ func (task *monitorTask) certInfo() *monitor.CertInfo {
 	if task.cert == nil {
 		return nil
 	}
+	cert := *task.cert
+	return &cert
+}
+
+// takeUnsentCert returns the latest certificate info once after each successful
+// check, so unchanged info is not resent with every stats result.
+func (task *monitorTask) takeUnsentCert() *monitor.CertInfo {
+	task.certMu.Lock()
+	defer task.certMu.Unlock()
+	if !task.certUnsent {
+		return nil
+	}
+	task.certUnsent = false
 	cert := *task.cert
 	return &cert
 }

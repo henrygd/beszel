@@ -30,7 +30,7 @@ import {
 	DropdownMenuSubTrigger,
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { Trans } from "@lingui/react/macro"
+import { Plural, Trans } from "@lingui/react/macro"
 import { $allSystemsById, $longestSystemName } from "@/lib/stores"
 import { useStore } from "@nanostores/react"
 import { SystemStatus } from "@/lib/enums"
@@ -38,8 +38,10 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { useMemo } from "react"
 import { formatBulkMonitorLine } from "@/components/network-monitors-table/monitor-dialog"
 import { Badge } from "../ui/badge"
-import { getCertDaysLeft, getMonitorTarget } from "@/lib/network-monitor-utils"
+import { getCertDaysLeft, getCertExpiryLevel, getMonitorTarget } from "@/lib/network-monitor-utils"
 import { pb } from "@/lib/api"
+
+const certExpiryDotColors = { ok: "bg-green-500", warning: "bg-yellow-500", critical: "bg-red-500" }
 
 declare module "@tanstack/react-table" {
 	interface ColumnMeta<TData, TValue> {
@@ -264,16 +266,13 @@ export function getMonitorColumns(
 				}
 
 				const daysLeft = getCertDaysLeft(certInfo)
-				let color = "bg-green-500"
-				if (isMuted(row.original, systemRecord)) {
-					color = "bg-muted-foreground/50"
-				} else if (daysLeft < 14) {
-					color = daysLeft < 7 ? "bg-red-500" : "bg-yellow-500"
-				}
+				const color = isMuted(row.original, systemRecord)
+					? "bg-muted-foreground/50"
+					: certExpiryDotColors[getCertExpiryLevel(daysLeft)]
 				return (
 					<span className="ms-1.5 tabular-nums flex gap-2 items-center">
 						<span className={cn("shrink-0 size-2 rounded-full", color)} />
-						{daysLeft < 0 ? <Trans>Expired</Trans> : <Trans>{daysLeft} days</Trans>}
+						{daysLeft < 0 ? <Trans>Expired</Trans> : <Plural value={daysLeft} one="# day" other="# days" />}
 					</span>
 				)
 			},

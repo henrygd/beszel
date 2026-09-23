@@ -242,6 +242,7 @@ func TestNetworkMonitorCertPersistence(t *testing.T) {
 			record := core.NewRecord(col)
 			record.Id = "monitor1"
 			record.Set("system", sys.Id)
+			record.Set("checkCert", true)
 			require.NoError(t, app.SaveNoValidate(record))
 
 			storedCert := func() monitor.CertInfo {
@@ -252,7 +253,7 @@ func TestNetworkMonitorCertPersistence(t *testing.T) {
 				require.NoError(t, record.UnmarshalJSONField("certInfo", &cert))
 				return cert
 			}
-			cert := &monitor.CertInfo{Expires: 1_800_000_000_000, Issuer: "Test CA", Subject: "example.com", Checked: 1_700_000_000_000}
+			cert := &monitor.CertInfo{Expires: 1_800_000_000_000, Issuer: "Test CA"}
 			_, err = sys.createRecords(&system.CombinedData{Monitors: map[string]monitor.Result{
 				"monitor1": {LastProbeAt: 1000, Cert: cert},
 			}})
@@ -265,6 +266,18 @@ func TestNetworkMonitorCertPersistence(t *testing.T) {
 			}})
 			require.NoError(t, err)
 			assert.Equal(t, *cert, storedCert())
+
+			// Cert info arriving after checks were disabled is ignored.
+			record, err = app.FindRecordById("network_monitors", "monitor1")
+			require.NoError(t, err)
+			record.Set("checkCert", false)
+			record.Set("certInfo", nil)
+			require.NoError(t, app.SaveNoValidate(record))
+			_, err = sys.createRecords(&system.CombinedData{Monitors: map[string]monitor.Result{
+				"monitor1": {LastProbeAt: 3000, Cert: &monitor.CertInfo{Expires: 1_900_000_000_000}},
+			}})
+			require.NoError(t, err)
+			assert.Zero(t, storedCert())
 		})
 	}
 }

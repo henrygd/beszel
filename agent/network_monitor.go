@@ -172,7 +172,11 @@ func (pm *MonitorManager) GetResults(durationMs uint16) map[string]monitor.Resul
 		if !ok {
 			continue
 		}
-		result.Cert = task.certInfo()
+		// Only the default interval updates monitor records on the hub, so
+		// realtime requests must not consume the unsent certificate.
+		if durationMs == defaultDataCacheTimeMs {
+			result.Cert = task.takeUnsentCert()
+		}
 		results[task.config.ID] = result
 	}
 

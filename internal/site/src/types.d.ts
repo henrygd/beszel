@@ -662,8 +662,6 @@ export interface NetworkMonitorRecord {
 export interface MonitorCertInfo {
 	expires: number
 	issuer?: string
-	subject?: string
-	checked: number
 }
 
 /** Response times in microseconds and packet loss percentage (0-100). */

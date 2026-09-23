@@ -14,7 +14,6 @@ import (
 )
 
 const (
-	certCheckTimeout       = 10 * time.Second
 	certCheckInterval      = 24 * time.Hour
 	certCheckRetryInterval = time.Hour
 )
@@ -29,7 +28,7 @@ func checkCert(ctx context.Context, target string) (monitor.CertInfo, error) {
 	if err != nil {
 		return monitor.CertInfo{}, err
 	}
-	ctx, cancel := context.WithTimeout(ctx, certCheckTimeout)
+	ctx, cancel := context.WithTimeout(ctx, monitor.MaxProbeTimeout)
 	defer cancel()
 	dialer := tls.Dialer{Config: &tls.Config{ServerName: host, InsecureSkipVerify: true}}
 	conn, err := dialer.DialContext(ctx, "tcp", address)
@@ -45,8 +44,6 @@ func checkCert(ctx context.Context, target string) (monitor.CertInfo, error) {
 	return monitor.CertInfo{
 		Expires: leaf.NotAfter.UnixMilli(),
 		Issuer:  leaf.Issuer.CommonName,
-		Subject: leaf.Subject.CommonName,
-		Checked: time.Now().UnixMilli(),
 	}, nil
 }
 

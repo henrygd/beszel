@@ -207,7 +207,7 @@ func TestCopyMonitorToNewRecordDropsResultFields(t *testing.T) {
 		"resMax1h":  1600,
 		"loss1h":    5,
 		"checkCert": true,
-		"certInfo":  map[string]any{"expires": 1800000000000, "checked": 1700000000000},
+		"certInfo":  map[string]any{"expires": 1800000000000},
 		"updated":   "2026-04-29 12:00:00.000Z",
 	})
 
@@ -235,7 +235,7 @@ func TestNormalizeCertCheck(t *testing.T) {
 
 	collection, err := hub.FindCachedCollectionByNameOrId("network_monitors")
 	require.NoError(t, err)
-	cert := map[string]any{"expires": 1800000000000, "checked": 1700000000000}
+	cert := map[string]any{"expires": 1800000000000}
 	for _, tc := range []struct {
 		name, protocol, target string
 		checkCert, wantCheck   bool

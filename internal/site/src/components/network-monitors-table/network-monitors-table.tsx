@@ -1,6 +1,6 @@
-import { getCertDaysLeft, getMonitorTarget } from "@/lib/network-monitor-utils"
+import { getCertDaysLeft, getCertExpiryLevel, getMonitorTarget } from "@/lib/network-monitor-utils"
 import { t } from "@lingui/core/macro"
-import { Trans } from "@lingui/react/macro"
+import { Plural, Trans } from "@lingui/react/macro"
 import {
 	type ColumnFiltersState,
 	flexRender,
@@ -632,6 +632,8 @@ function NetworkMonitorSheet({
 	return <NetworkMonitorSheetContent key={monitor.system} open={open} onOpenChange={onOpenChange} monitor={monitor} />
 }
 
+const certExpiryTextColors = { ok: "", warning: "text-yellow-600 dark:text-yellow-500", critical: "text-red-500" }
+
 function CertExpiry({ cert }: { cert: MonitorCertInfo }) {
 	const daysLeft = getCertDaysLeft(cert)
 	const expires = formatShortDate(new Date(cert.expires).toISOString())
@@ -639,12 +641,12 @@ function CertExpiry({ cert }: { cert: MonitorCertInfo }) {
 		<>
 			<Separator orientation="vertical" className="h-2.5 bg-muted-foreground opacity-70" />
 			<ShieldCheckIcon className="size-3.5 text-muted-foreground" />
-			<span className={cn(daysLeft < 7 ? "text-red-500" : daysLeft < 14 ? "text-yellow-600 dark:text-yellow-500" : "")}>
+			<span className={certExpiryTextColors[getCertExpiryLevel(daysLeft)]}>
 				{daysLeft < 0 ? (
 					<Trans>Certificate expired {expires}</Trans>
 				) : (
 					<Trans>
-						Certificate expires {expires} ({daysLeft} days)
+						Certificate expires {expires} (<Plural value={daysLeft} one="# day" other="# days" />)
 					</Trans>
 				)}
 			</span>

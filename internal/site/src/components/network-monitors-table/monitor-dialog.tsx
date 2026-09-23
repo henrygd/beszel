@@ -762,7 +762,7 @@ function MonitorDialogContent({
 						required
 					/>
 				</div>
-				{supportsCertCheck(protocol, target) && (
+				{supportsCertCheck(protocol, normalizeHttpTarget(target.trim())) && (
 					<Label className="flex items-center gap-2 font-normal">
 						<Checkbox checked={checkCert} onCheckedChange={(value) => setCheckCert(value === true)} />
 						<Trans>Check certificate expiry</Trans>
