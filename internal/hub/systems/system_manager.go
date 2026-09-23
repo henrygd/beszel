@@ -190,7 +190,9 @@ func (sm *SystemManager) onRecordAfterCreateSuccess(e *core.RecordEvent) error {
 // It clears system info when the status is changed to paused.
 func (sm *SystemManager) onRecordUpdate(e *core.RecordEvent) error {
 	if e.Record.GetString("status") == paused {
-		e.Record.Set("info", system.Info{})
+		var prevInfo system.Info
+		e.Record.UnmarshalJSONField("info", &prevInfo)
+		e.Record.Set("info", system.Info{AgentVersion: prevInfo.AgentVersion})
 	}
 	return e.Next()
 }
@@ -218,11 +220,15 @@ func (sm *SystemManager) onRecordAfterUpdateSuccess(e *core.RecordEvent) error {
 			// Pause monitoring but keep system in manager for potential resume
 			system.closeSSHConnection()
 		}
-		_ = deactivateAlerts(e.App, e.Record.Id)
+		_ = deactivateAlerts(e.App, e.Record.Id, false)
 		sm.hub.CancelPendingStatusAlerts(e.Record.Id)
 		sm.hub.CancelPendingContainerAlerts(e.Record.Id)
 		return e.Next()
 	case pending:
+		// Keep an active status alert until connectivity is confirmed. This lets
+		// pending -> up resolve it and send the recovery notification after a
+		// system address or other connection setting is changed.
+		_ = deactivateAlerts(e.App, e.Record.Id, true)
 		// Resume monitoring, preferring existing WebSocket connection
 		if ok && system.WsConn != nil {
 			go system.update()
@@ -232,7 +238,6 @@ func (sm *SystemManager) onRecordAfterUpdateSuccess(e *core.RecordEvent) error {
 		if err := sm.AddRecord(e.Record, nil); err != nil {
 			e.App.Logger().Error("Error adding record", "err", err)
 		}
-		_ = deactivateAlerts(e.App, e.Record.Id)
 		return e.Next()
 	case down:
 		// Docker state is unknown while the system is unreachable. Do not let a
@@ -255,8 +260,9 @@ func (sm *SystemManager) onRecordAfterUpdateSuccess(e *core.RecordEvent) error {
 		}
 	}
 
-	// Trigger status change alerts for up/down transitions
-	if (newStatus == down && prevStatus == up) || (newStatus == up && prevStatus == down) {
+	// A connection-setting update moves a down system through pending before it
+	// comes up, so recover active status alerts on any non-up -> up transition.
+	if (newStatus == down && prevStatus == up) || (newStatus == up && prevStatus != up) {
 		if err := sm.hub.HandleStatusAlerts(newStatus, e.Record); err != nil {
 			e.App.Logger().Error("Error handling status alerts", "err", err)
 		}
@@ -415,10 +421,11 @@ func (sm *SystemManager) createSSHClientConfig() error {
 	return nil
 }
 
-// deactivateAlerts finds all triggered alerts for a system and sets them to inactive.
-// This is called when a system is paused or goes offline to prevent continued alerts.
+// deactivateAlerts finds triggered alerts for a system and sets them to inactive.
+// Status alerts can be preserved while connection changes are pending so that a
+// confirmed recovery still produces an "up" notification.
 // Monitor incidents remain open: a missing observation does not establish recovery.
-func deactivateAlerts(app core.App, systemID string) error {
+func deactivateAlerts(app core.App, systemID string, preserveStatusAlert bool) error {
 	// Note: Direct SQL updates don't trigger SSE, so we use the PocketBase API
 	// _, err := app.DB().NewQuery(fmt.Sprintf("UPDATE alerts SET triggered = false WHERE system = '%s'", systemID)).Execute()
 
@@ -428,6 +435,9 @@ func deactivateAlerts(app core.App, systemID string) error {
 	}
 
 	for _, alert := range alerts {
+		if preserveStatusAlert && alert.GetString("name") == "Status" {
+			continue
+		}
 		alert.Set("triggered", false)
 		if err := app.SaveNoValidate(alert); err != nil {
 			return err
