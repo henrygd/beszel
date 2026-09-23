@@ -36,8 +36,15 @@ import { useToast } from "@/components/ui/use-toast"
 import { isReadOnlyUser, queueUserSettings } from "@/lib/api"
 import { pb } from "@/lib/api"
 import { SystemStatus } from "@/lib/enums"
-import { $allSystemsById, $direction, $userSettings } from "@/lib/stores"
-import { cn, isVisuallyLonger, matchesFilterGroups, parseFilterGroups, parseSemVer } from "@/lib/utils"
+import { $allSystemsById, $direction, $userSettings, getUserChartTime } from "@/lib/stores"
+import {
+	cn,
+	isVisuallyLonger,
+	matchesFilterGroups,
+	parseFilterGroups,
+	parseSemVer,
+	useBrowserStorage,
+} from "@/lib/utils"
 import type { ChartData, NetworkMonitorRecord } from "@/types"
 import { AddMonitorDialog, EditMonitorDialog } from "./monitor-dialog"
 import {
@@ -641,7 +648,7 @@ function NetworkMonitorSheetContent({
 }) {
 	// Keep monitor exploration independent of the system charts' time range.
 	const [chartTimeStore] = useState(() => {
-		const defaultTime = $userSettings.get().chartTime
+		const defaultTime = getUserChartTime()
 		return atom(defaultTime === "1m" ? "1h" : defaultTime)
 	})
 	const chartTime = useStore(chartTimeStore)

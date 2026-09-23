@@ -361,7 +361,8 @@ export interface ChartTimeData {
 }
 
 export interface UserSettings {
-	chartTime: ChartTimes
+	/** may be missing in settings stored by older versions -- use getUserChartTime() */
+	chartTime?: ChartTimes
 	emails?: string[]
 	webhooks?: string[]
 	unitTemp?: Unit
