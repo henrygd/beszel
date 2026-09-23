@@ -652,7 +652,18 @@ export interface NetworkMonitorRecord {
 	loss1h: number
 	interval: number
 	enabled: boolean
+	/** Periodically check the TLS certificate of HTTPS targets. */
+	checkCert?: boolean
+	certInfo?: MonitorCertInfo | null
 	updated: string
+}
+
+/** Leaf TLS certificate details reported by the agent. Timestamps are Unix milliseconds. */
+export interface MonitorCertInfo {
+	expires: number
+	issuer?: string
+	subject?: string
+	checked: number
 }
 
 /** Response times in microseconds and packet loss percentage (0-100). */

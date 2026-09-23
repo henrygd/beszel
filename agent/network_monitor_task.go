@@ -21,6 +21,11 @@ type monitorTask struct {
 	runMu          sync.Mutex
 	inflight       *monitorRun
 	lastFailureLog int64 // Unix nanoseconds
+
+	certMu        sync.Mutex
+	cert          *monitor.CertInfo
+	certChecking  bool
+	nextCertCheck time.Time
 }
 
 type monitorRun struct {
@@ -45,6 +50,10 @@ func newMonitorTaskFromExisting(config monitor.Config, existing *monitorTask) *m
 	task := newMonitorTask(config)
 	if existing != nil {
 		task.history = existing.history.clone()
+		// Keep the last known certificate, but check again soon for the new config.
+		if config.CheckCert && config.Target == existing.config.Target {
+			task.cert = existing.certInfo()
+		}
 	}
 	return task
 }
@@ -105,6 +114,49 @@ func (task *monitorTask) runProbe(probe monitorProbe) *monitor.Result {
 		return nil
 	}
 	return copyMonitorResult(run.result)
+}
+
+// refreshCert checks the target's certificate when enabled and due. A failed
+// check keeps the last known certificate and retries sooner. Concurrent callers
+// skip rather than wait, and no lock is held during network I/O.
+func (task *monitorTask) refreshCert(check certChecker) {
+	if !task.config.CheckCert || check == nil {
+		return
+	}
+	task.certMu.Lock()
+	if task.certChecking || time.Now().Before(task.nextCertCheck) {
+		task.certMu.Unlock()
+		return
+	}
+	task.certChecking = true
+	task.certMu.Unlock()
+
+	info, err := check(task.ctx, task.config.Target)
+
+	task.certMu.Lock()
+	defer task.certMu.Unlock()
+	task.certChecking = false
+	if task.ctx.Err() != nil {
+		return
+	}
+	if err != nil {
+		task.nextCertCheck = time.Now().Add(certCheckRetryInterval)
+		slog.Warn("certificate check failed", "err", err, "target", task.config.Target)
+		return
+	}
+	task.cert = &info
+	task.nextCertCheck = time.Now().Add(certCheckInterval)
+}
+
+// certInfo returns a copy of the latest certificate info, or nil if unknown.
+func (task *monitorTask) certInfo() *monitor.CertInfo {
+	task.certMu.Lock()
+	defer task.certMu.Unlock()
+	if task.cert == nil {
+		return nil
+	}
+	cert := *task.cert
+	return &cert
 }
 
 func copyMonitorResult(result *monitor.Result) *monitor.Result {

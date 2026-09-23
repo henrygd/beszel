@@ -1,4 +1,4 @@
-import { getMonitorTarget } from "@/lib/network-monitor-utils"
+import { getCertDaysLeft, getMonitorTarget } from "@/lib/network-monitor-utils"
 import { t } from "@lingui/core/macro"
 import { Trans } from "@lingui/react/macro"
 import {
@@ -39,12 +39,13 @@ import { SystemStatus } from "@/lib/enums"
 import { $allSystemsById, $direction, $userSettings, getUserChartTime } from "@/lib/stores"
 import {
 	cn,
+	formatShortDate,
 	isVisuallyLonger,
 	matchesFilterGroups,
 	parseFilterGroups,
 	parseSemVer,
 } from "@/lib/utils"
-import type { ChartData, NetworkMonitorRecord } from "@/types"
+import type { ChartData, MonitorCertInfo, NetworkMonitorRecord } from "@/types"
 import { AddMonitorDialog, EditMonitorDialog } from "./monitor-dialog"
 import {
 	ArrowDownIcon,
@@ -53,9 +54,11 @@ import {
 	ArrowUpIcon,
 	EthernetPortIcon,
 	EyeIcon,
+	LandmarkIcon,
 	LoaderCircleIcon,
 	ServerIcon,
 	Settings2Icon,
+	ShieldCheckIcon,
 	XIcon,
 } from "lucide-react"
 import {
@@ -636,6 +639,42 @@ function NetworkMonitorSheet({
 	return <NetworkMonitorSheetContent key={monitor.system} open={open} onOpenChange={onOpenChange} monitor={monitor} />
 }
 
+function CertExpiry({ cert }: { cert: MonitorCertInfo }) {
+	const daysLeft = getCertDaysLeft(cert)
+	const expires = formatShortDate(new Date(cert.expires).toISOString())
+	const details = [
+		cert.subject && t`Subject: ${cert.subject}`,
+		t`Checked: ${formatShortDate(new Date(cert.checked).toISOString())}`,
+	]
+		.filter(Boolean)
+		.join("\n")
+	return (
+		<>
+			<Separator orientation="vertical" className="h-2.5 bg-muted-foreground opacity-70" />
+			<ShieldCheckIcon className="size-3.5 text-muted-foreground" />
+			<span
+				title={details}
+				className={cn(daysLeft < 7 ? "text-red-500" : daysLeft < 14 ? "text-yellow-600 dark:text-yellow-500" : "")}
+			>
+				{daysLeft < 0 ? (
+					<Trans>Certificate expired {expires}</Trans>
+				) : (
+					<Trans>
+						Certificate expires {expires} ({daysLeft} days)
+					</Trans>
+				)}
+			</span>
+			{cert.issuer && (
+				<>
+					<Separator orientation="vertical" className="h-2.5 bg-muted-foreground opacity-70" />
+					<LandmarkIcon className="size-3.5 text-muted-foreground" />
+					<span title={t`Issuer`}>{cert.issuer}</span>
+				</>
+			)}
+		</>
+	)
+}
+
 function NetworkMonitorSheetContent({
 	open,
 	onOpenChange,
@@ -692,6 +731,7 @@ function NetworkMonitorSheetContent({
 								<span>{monitor.port}</span>
 							</>
 						)}
+						{monitor.checkCert && monitor.certInfo?.expires ? <CertExpiry cert={monitor.certInfo} /> : null}
 					</SheetDescription>
 				</SheetHeader>
 				<div className="grid gap-4">

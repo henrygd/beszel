@@ -17,6 +17,7 @@ func (pm *MonitorManager) startMonitor(task *monitorTask) {
 	go runMonitorSchedule(task.ctx, interval, delay, func() {
 		if _, allowed := task.resumeGuard.snapshot(); allowed {
 			task.runProbe(pm.probe)
+			task.refreshCert(pm.certCheck)
 		}
 	})
 }

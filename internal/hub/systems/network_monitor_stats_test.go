@@ -222,3 +222,49 @@ func TestNetworkMonitorAlertsAfterCommit(t *testing.T) {
 		})
 	}
 }
+
+func TestNetworkMonitorCertPersistence(t *testing.T) {
+	for _, realtime := range []bool{false, true} {
+		name := "sql"
+		if realtime {
+			name = "realtime"
+		}
+		t.Run(name, func(t *testing.T) {
+			sys, app := newTestSystemWithHub(t)
+			if realtime {
+				client := subscriptions.NewDefaultClient()
+				client.Subscribe("network_monitors/*")
+				app.SubscriptionsBroker().Register(client)
+				t.Cleanup(func() { app.SubscriptionsBroker().Unregister(client.Id()) })
+			}
+			col, err := app.FindCachedCollectionByNameOrId("network_monitors")
+			require.NoError(t, err)
+			record := core.NewRecord(col)
+			record.Id = "monitor1"
+			record.Set("system", sys.Id)
+			require.NoError(t, app.SaveNoValidate(record))
+
+			storedCert := func() monitor.CertInfo {
+				t.Helper()
+				record, err := app.FindRecordById("network_monitors", "monitor1")
+				require.NoError(t, err)
+				var cert monitor.CertInfo
+				require.NoError(t, record.UnmarshalJSONField("certInfo", &cert))
+				return cert
+			}
+			cert := &monitor.CertInfo{Expires: 1_800_000_000_000, Issuer: "Test CA", Subject: "example.com", Checked: 1_700_000_000_000}
+			_, err = sys.createRecords(&system.CombinedData{Monitors: map[string]monitor.Result{
+				"monitor1": {LastProbeAt: 1000, Cert: cert},
+			}})
+			require.NoError(t, err)
+			assert.Equal(t, *cert, storedCert())
+
+			// Results without cert info keep the stored certificate.
+			_, err = sys.createRecords(&system.CombinedData{Monitors: map[string]monitor.Result{
+				"monitor1": {LastProbeAt: 2000},
+			}})
+			require.NoError(t, err)
+			assert.Equal(t, *cert, storedCert())
+		})
+	}
+}

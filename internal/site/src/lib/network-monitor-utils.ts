@@ -1,4 +1,4 @@
-import type { MonitorStats, NetworkMonitorRecord, RawMonitorStatsRecord } from "@/types"
+import type { MonitorCertInfo, MonitorStats, NetworkMonitorRecord, RawMonitorStatsRecord } from "@/types"
 
 /** Derive chart metrics from the counts and response sum stored at every retention tier. */
 export function getMonitorStats(record: RawMonitorStatsRecord): MonitorStats {
@@ -14,4 +14,14 @@ export function getMonitorTarget(monitor: Pick<NetworkMonitorRecord, "target" | 
 	if (monitor.protocol !== "tcp") return monitor.target
 	const host = monitor.target.includes(":") && !monitor.target.startsWith("[") ? `[${monitor.target}]` : monitor.target
 	return `${host}:${monitor.port}`
+}
+
+/** Certificate checks apply to HTTP monitors unless the target explicitly uses plain http. */
+export function supportsCertCheck(protocol: NetworkMonitorRecord["protocol"], target: string) {
+	return protocol === "http" && !/^http:\/\//i.test(target.trim())
+}
+
+/** Whole days until the certificate expires; negative once expired. */
+export function getCertDaysLeft(cert: Pick<MonitorCertInfo, "expires">, now = Date.now()) {
+	return Math.floor((cert.expires - now) / 86_400_000)
 }

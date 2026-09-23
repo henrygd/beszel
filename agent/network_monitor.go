@@ -15,6 +15,7 @@ type MonitorManager struct {
 	mu          sync.RWMutex
 	monitors    map[string]*monitorTask // keyed by monitor ID
 	probe       monitorProbe
+	certCheck   certChecker
 	resumeGuard monitorResumeGuard
 }
 
@@ -23,7 +24,7 @@ func newMonitorManager() *MonitorManager {
 }
 
 func newMonitorManagerWithProbe(probe monitorProbe) *MonitorManager {
-	return &MonitorManager{monitors: make(map[string]*monitorTask), probe: probe}
+	return &MonitorManager{monitors: make(map[string]*monitorTask), probe: probe, certCheck: checkCert}
 }
 
 // SyncMonitors replaces all monitor tasks with the given configs.
@@ -107,7 +108,7 @@ func (pm *MonitorManager) UpsertMonitor(config monitor.Config, runNow bool) (*mo
 		if !runNow {
 			return nil, nil
 		}
-		return task.runProbe(pm.probe), nil
+		return pm.runNow(task), nil
 	}
 	if exists {
 		task.cancel()
@@ -119,12 +120,25 @@ func (pm *MonitorManager) UpsertMonitor(config monitor.Config, runNow bool) (*mo
 	pm.mu.Unlock()
 
 	if runNow {
-		result := task.runProbe(pm.probe)
+		result := pm.runNow(task)
 		pm.startMonitor(task)
 		return result, nil
 	}
 	pm.startMonitor(task)
 	return nil, nil
+}
+
+// runNow runs a probe and any due certificate check concurrently, so the
+// response fits within the hub's single probe timeout budget.
+func (pm *MonitorManager) runNow(task *monitorTask) *monitor.Result {
+	var wg sync.WaitGroup
+	wg.Go(func() { task.refreshCert(pm.certCheck) })
+	result := task.runProbe(pm.probe)
+	wg.Wait()
+	if result != nil {
+		result.Cert = task.certInfo()
+	}
+	return result
 }
 
 // DeleteMonitor stops and removes a single monitor task.
@@ -158,6 +172,7 @@ func (pm *MonitorManager) GetResults(durationMs uint16) map[string]monitor.Resul
 		if !ok {
 			continue
 		}
+		result.Cert = task.certInfo()
 		results[task.config.ID] = result
 	}
 
