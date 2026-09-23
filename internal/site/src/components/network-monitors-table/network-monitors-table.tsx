@@ -34,6 +34,7 @@ import { TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/compon
 import { useToast } from "@/components/ui/use-toast"
 import { isReadOnlyUser } from "@/lib/api"
 import { pb } from "@/lib/api"
+import { SystemStatus } from "@/lib/enums"
 import { $allSystemsById, $direction, $userSettings } from "@/lib/stores"
 import {
 	cn,
@@ -450,10 +451,13 @@ const NetworkMonitorTableRow = memo(function NetworkMonitorTableRow({
 	rowSelection: RowSelectionState
 	openSheet: (monitor: NetworkMonitorRecord) => void
 }) {
+	const system = useStore($allSystemsById)[row.original.system]
 	return (
 		<TableRow
 			data-state={isSelected && "selected"}
-			className="cursor-pointer transition-opacity"
+			className={cn("cursor-pointer transition-opacity", {
+				"opacity-50": system?.status === SystemStatus.Paused,
+			})}
 			onClick={() => openSheet(row.original)}
 		>
 			{row.getVisibleCells().map((cell) => (
