@@ -26,26 +26,40 @@ import {
 	AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
 import { Button, buttonVariants } from "@/components/ui/button"
-import { memo, useCallback, useMemo, useRef, useState } from "react"
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react"
+import { subscribeKeys } from "nanostores"
 import { getMonitorColumns } from "@/components/network-monitors-table/network-monitors-columns"
 import { Card, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { useToast } from "@/components/ui/use-toast"
-import { isReadOnlyUser } from "@/lib/api"
+import { isReadOnlyUser, queueUserSettings } from "@/lib/api"
 import { pb } from "@/lib/api"
 import { $allSystemsById, $direction, $userSettings } from "@/lib/stores"
-import {
-	cn,
-	isVisuallyLonger,
-	matchesFilterGroups,
-	parseFilterGroups,
-	parseSemVer,
-	useBrowserStorage,
-} from "@/lib/utils"
+import { cn, isVisuallyLonger, matchesFilterGroups, parseFilterGroups, parseSemVer } from "@/lib/utils"
 import type { ChartData, NetworkMonitorRecord } from "@/types"
 import { AddMonitorDialog, EditMonitorDialog } from "./monitor-dialog"
-import { ArrowLeftRightIcon, EthernetPortIcon, LoaderCircleIcon, ServerIcon, XIcon } from "lucide-react"
+import {
+	ArrowDownIcon,
+	ArrowLeftRightIcon,
+	ArrowUpDownIcon,
+	ArrowUpIcon,
+	EthernetPortIcon,
+	EyeIcon,
+	LoaderCircleIcon,
+	ServerIcon,
+	Settings2Icon,
+	XIcon,
+} from "lucide-react"
+import {
+	DropdownMenu,
+	DropdownMenuCheckboxItem,
+	DropdownMenuContent,
+	DropdownMenuItem,
+	DropdownMenuLabel,
+	DropdownMenuSeparator,
+	DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet"
 import ChartTimeSelect from "@/components/charts/chart-time-select"
 import { LossChart, AvgMinMaxResponseChart } from "@/components/routes/system/charts/monitors-charts"
@@ -65,13 +79,19 @@ export default function NetworkMonitorsTableNew({
 	monitors: NetworkMonitorRecord[]
 	isLoading: boolean
 }) {
-	const [sorting, setSorting] = useBrowserStorage<SortingState>(
-		`sort-np-target-${systemId ? 1 : 0}`,
-		[{ id: systemId ? "target" : "system", desc: false }],
-		sessionStorage
+	const sortSettingsKey = systemId ? "monitorSortModeSystem" : "monitorSortMode"
+	const sortStorageKey = `besz-sort-np-target-${systemId ? 1 : 0}`
+	const [sorting, setSorting] = useState<SortingState>(
+		() =>
+			$userSettings.get()[sortSettingsKey] ??
+			JSON.parse(sessionStorage.getItem(sortStorageKey) || "null") ?? [
+				{ id: systemId ? "target" : "system", desc: false },
+			]
 	)
 	const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
-	const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
+	const [columnVisibility, setColumnVisibility] = useState<VisibilityState>(
+		() => $userSettings.get().monitorCols ?? JSON.parse(localStorage.getItem("besz-monitor-cols") || "{}")
+	)
 	const [rowSelection, setRowSelection] = useState<RowSelectionState>({})
 	const [globalFilter, setGlobalFilter] = useState("")
 	const [deleteOpen, setDeleteOpen] = useState(false)
@@ -80,6 +100,47 @@ export default function NetworkMonitorsTableNew({
 
 	const { toast } = useToast()
 	const canManageMonitors = !isReadOnlyUser()
+
+	// Apply settings from server once they load (handles incognito / new devices)
+	const appliedSettings = useRef(new Set<string>())
+	useEffect(() => {
+		return subscribeKeys($userSettings, ["monitorCols", sortSettingsKey], (vals) => {
+			if (!appliedSettings.current.has("monitorCols") && vals.monitorCols !== undefined) {
+				appliedSettings.current.add("monitorCols")
+				setColumnVisibility(vals.monitorCols)
+			}
+			if (!appliedSettings.current.has(sortSettingsKey) && vals[sortSettingsKey] !== undefined) {
+				appliedSettings.current.add(sortSettingsKey)
+				setSorting(vals[sortSettingsKey] as SortingState)
+			}
+		})
+	}, [sortSettingsKey])
+
+	const handleColumnVisibilityChange = useCallback(
+		(updater: VisibilityState | ((prev: VisibilityState) => VisibilityState)) => {
+			setColumnVisibility((prev) => {
+				const next = typeof updater === "function" ? updater(prev) : updater
+				localStorage.setItem("besz-monitor-cols", JSON.stringify(next))
+				$userSettings.setKey("monitorCols", next)
+				queueUserSettings({ monitorCols: next })
+				return next
+			})
+		},
+		[]
+	)
+
+	const handleSortingChange = useCallback(
+		(updater: SortingState | ((prev: SortingState) => SortingState)) => {
+			setSorting((prev) => {
+				const next = typeof updater === "function" ? updater(prev) : updater
+				sessionStorage.setItem(sortStorageKey, JSON.stringify(next))
+				$userSettings.setKey(sortSettingsKey, next)
+				queueUserSettings({ [sortSettingsKey]: next })
+				return next
+			})
+		},
+		[sortSettingsKey, sortStorageKey]
+	)
 
 	const longestTarget = useMemo(() => {
 		let longestTarget = ""
@@ -207,9 +268,9 @@ export default function NetworkMonitorsTableNew({
 		getCoreRowModel: getCoreRowModel(),
 		getSortedRowModel: getSortedRowModel(),
 		getFilteredRowModel: getFilteredRowModel(),
-		onSortingChange: setSorting,
+		onSortingChange: handleSortingChange,
 		onColumnFiltersChange: setColumnFilters,
-		onColumnVisibilityChange: setColumnVisibility,
+		onColumnVisibilityChange: handleColumnVisibilityChange,
 		onRowSelectionChange: setRowSelection,
 		defaultColumn: {
 			sortUndefined: "last",
@@ -272,6 +333,74 @@ export default function NetworkMonitorsTableNew({
 								)}
 							</div>
 						)}
+						<DropdownMenu>
+							<DropdownMenuTrigger asChild>
+								<Button variant="outline">
+									<Settings2Icon className="me-1.5 size-4 opacity-80" />
+									<Trans>View</Trans>
+								</Button>
+							</DropdownMenuTrigger>
+							<DropdownMenuContent align="end" className="h-72 md:h-auto min-w-48 md:min-w-auto overflow-y-auto">
+								<div className="grid grid-cols-1 md:grid-cols-2 divide-y md:divide-s md:divide-y-0">
+									<div className="border-r">
+										<DropdownMenuLabel className="pt-2 px-3.5 flex items-center gap-2">
+											<ArrowUpDownIcon className="size-4" />
+											<Trans>Sort By</Trans>
+										</DropdownMenuLabel>
+										<DropdownMenuSeparator />
+										<div className="px-1 pb-1">
+											{table.getAllColumns().map((column) => {
+												if (!column.getCanSort()) return null
+												let Icon = <span className="w-6"></span>
+												if (sorting[0]?.id === column.id) {
+													Icon = sorting[0]?.desc ? (
+														<ArrowUpIcon className="me-2 size-4" />
+													) : (
+														<ArrowDownIcon className="me-2 size-4" />
+													)
+												}
+												return (
+													<DropdownMenuItem
+														onSelect={(e) => {
+															e.preventDefault()
+															handleSortingChange([
+																{ id: column.id, desc: sorting[0]?.id === column.id && !sorting[0]?.desc },
+															])
+														}}
+														key={column.id}
+													>
+														{Icon}
+														{column.columnDef.meta?.label ?? column.id}
+													</DropdownMenuItem>
+												)
+											})}
+										</div>
+									</div>
+									<div>
+										<DropdownMenuLabel className="pt-2 px-3.5 flex items-center gap-2">
+											<EyeIcon className="size-4" />
+											<Trans>Visible Fields</Trans>
+										</DropdownMenuLabel>
+										<DropdownMenuSeparator />
+										<div className="px-1.5 pb-1">
+											{table
+												.getAllColumns()
+												.filter((column) => column.getCanHide())
+												.map((column) => (
+													<DropdownMenuCheckboxItem
+														key={column.id}
+														onSelect={(e) => e.preventDefault()}
+														checked={column.getIsVisible()}
+														onCheckedChange={(value) => column.toggleVisibility(!!value)}
+													>
+														{column.columnDef.meta?.label ?? column.id}
+													</DropdownMenuCheckboxItem>
+												))}
+										</div>
+									</div>
+								</div>
+							</DropdownMenuContent>
+						</DropdownMenu>
 						{canManageMonitors ? <AddMonitorDialog systemId={systemId} monitors={monitors} /> : null}
 						{canManageMonitors ? (
 							<EditMonitorDialog
