@@ -70,7 +70,6 @@ func TestDeleteOldRecords(t *testing.T) {
 	// Create many alerts history records to trigger deletion
 	for i := range 260 { // More than countBeforeDeletion (250)
 		_, err = tests.CreateRecord(hub, "alerts_history", map[string]any{
-			"user":    user.Id,
 			"name":    "CPU",
 			"value":   i + 1,
 			"system":  system.Id,
@@ -200,26 +199,26 @@ func TestDeleteOldAlertsHistory(t *testing.T) {
 	require.NoError(t, err)
 	defer hub.Cleanup()
 
-	// Create test users
-	user1, err := tests.CreateUser(hub, "user1@example.com", "testtesttest")
+	user, err := tests.CreateUser(hub, "user1@example.com", "testtesttest")
 	require.NoError(t, err)
 
-	user2, err := tests.CreateUser(hub, "user2@example.com", "testtesttest")
-	require.NoError(t, err)
-
-	system, err := tests.CreateRecord(hub, "systems", map[string]any{
-		"name":   "test-system",
-		"host":   "localhost",
-		"port":   "45876",
-		"status": "up",
-		"users":  []string{user1.Id, user2.Id},
-	})
-	require.NoError(t, err)
+	// Create test systems
+	systems := make([]*core.Record, 2)
+	for i := range systems {
+		systems[i], err = tests.CreateRecord(hub, "systems", map[string]any{
+			"name":   fmt.Sprintf("test-system-%d", i),
+			"host":   fmt.Sprintf("host-%d", i),
+			"port":   "45876",
+			"status": "up",
+			"users":  []string{user.Id},
+		})
+		require.NoError(t, err)
+	}
 	now := time.Now().UTC()
 
 	testCases := []struct {
 		name                  string
-		user                  *core.Record
+		system                *core.Record
 		alertCount            int
 		countToKeep           int
 		countBeforeDeletion   int
@@ -227,34 +226,33 @@ func TestDeleteOldAlertsHistory(t *testing.T) {
 		description           string
 	}{
 		{
-			name:                  "User with few alerts (below threshold)",
-			user:                  user1,
+			name:                  "System with few alerts (below threshold)",
+			system:                systems[0],
 			alertCount:            100,
 			countToKeep:           50,
 			countBeforeDeletion:   150,
 			expectedAfterDeletion: 100, // No deletion because below threshold
-			description:           "User with alerts below countBeforeDeletion should not have any deleted",
+			description:           "System with alerts below countBeforeDeletion should not have any deleted",
 		},
 		{
-			name:                  "User with many alerts (above threshold)",
-			user:                  user2,
+			name:                  "System with many alerts (above threshold)",
+			system:                systems[1],
 			alertCount:            300,
 			countToKeep:           100,
 			countBeforeDeletion:   200,
 			expectedAfterDeletion: 100, // Should be trimmed to countToKeep
-			description:           "User with alerts above countBeforeDeletion should be trimmed to countToKeep",
+			description:           "System with alerts above countBeforeDeletion should be trimmed to countToKeep",
 		},
 	}
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			// Create alerts for this user
+			// Create alerts for this system
 			for i := 0; i < tc.alertCount; i++ {
 				_, err := tests.CreateRecord(hub, "alerts_history", map[string]any{
-					"user":    tc.user.Id,
 					"name":    "CPU",
 					"value":   i + 1,
-					"system":  system.Id,
+					"system":  tc.system.Id,
 					"created": now.Add(-time.Duration(i) * time.Minute),
 				})
 				require.NoError(t, err)
@@ -262,7 +260,7 @@ func TestDeleteOldAlertsHistory(t *testing.T) {
 
 			// Count before deletion
 			countBefore, err := hub.CountRecords("alerts_history",
-				dbx.NewExp("user = {:user}", dbx.Params{"user": tc.user.Id}))
+				dbx.NewExp("system = {:system}", dbx.Params{"system": tc.system.Id}))
 			require.NoError(t, err)
 			assert.Equal(t, int64(tc.alertCount), countBefore, "Initial count should match")
 
@@ -272,7 +270,7 @@ func TestDeleteOldAlertsHistory(t *testing.T) {
 
 			// Count after deletion
 			countAfter, err := hub.CountRecords("alerts_history",
-				dbx.NewExp("user = {:user}", dbx.Params{"user": tc.user.Id}))
+				dbx.NewExp("system = {:system}", dbx.Params{"system": tc.system.Id}))
 			require.NoError(t, err)
 
 			assert.Equal(t, int64(tc.expectedAfterDeletion), countAfter, tc.description)
@@ -280,11 +278,11 @@ func TestDeleteOldAlertsHistory(t *testing.T) {
 			// If deletion occurred, verify the most recent records were kept
 			if tc.expectedAfterDeletion < tc.alertCount {
 				records, err := hub.FindRecordsByFilter("alerts_history",
-					"user = {:user}",
+					"system = {:system}",
 					"-created", // Order by created DESC
 					tc.countToKeep,
 					0,
-					map[string]any{"user": tc.user.Id})
+					map[string]any{"system": tc.system.Id})
 				require.NoError(t, err)
 				assert.Len(t, records, tc.expectedAfterDeletion, "Should have exactly countToKeep records")
 
@@ -306,7 +304,7 @@ func TestDeleteOldAlertsHistoryEdgeCases(t *testing.T) {
 	require.NoError(t, err)
 	defer hub.Cleanup()
 
-	t.Run("No users with excessive alerts", func(t *testing.T) {
+	t.Run("No systems with excessive alerts", func(t *testing.T) {
 		// Create user with few alerts
 		user, err := tests.CreateUser(hub, "few@example.com", "testtesttest")
 		require.NoError(t, err)
@@ -322,7 +320,6 @@ func TestDeleteOldAlertsHistoryEdgeCases(t *testing.T) {
 		// Create only 5 alerts (well below threshold)
 		for i := range 5 {
 			_, err := tests.CreateRecord(hub, "alerts_history", map[string]any{
-				"user":   user.Id,
 				"name":   "CPU",
 				"value":  i + 1,
 				"system": system.Id,
