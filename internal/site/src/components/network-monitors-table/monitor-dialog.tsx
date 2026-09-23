@@ -763,9 +763,20 @@ function MonitorDialogContent({
 					/>
 				</div>
 				{supportsCertCheck(protocol, normalizeHttpTarget(target.trim())) && (
-					<Label className="flex items-center gap-2 font-normal">
-						<Checkbox checked={checkCert} onCheckedChange={(value) => setCheckCert(value === true)} />
-						<Trans>Check certificate expiry</Trans>
+					<Label className="flex items-start gap-3 rounded-md border bg-background px-3 py-2.5 font-normal cursor-pointer">
+						<Checkbox
+							className="mt-0.5"
+							checked={checkCert}
+							onCheckedChange={(value) => setCheckCert(value === true)}
+						/>
+						<span className="grid gap-1">
+							<span className="font-medium">
+								<Trans>Check certificate expiry</Trans>
+							</span>
+							<span className="text-muted-foreground text-xs leading-snug">
+								<Trans>Show when the TLS certificate expires.</Trans>
+							</span>
+						</span>
 					</Label>
 				)}
 				<DialogFooter>
