@@ -69,6 +69,8 @@ msgstr "{count, plural, one {{countString} 分} few {{countString} 分} many {{c
 msgid "{daysLeft, plural, one {# day} other {# days}}"
 msgstr "{daysLeft, plural, one {# 日} other {# 日}}"
 
+msgstr ""
+
 #: src/components/routes/system/charts/disk-charts.tsx
 msgid "{diskName} I/O"
 msgstr "{diskName} の I/O"
@@ -80,6 +82,8 @@ msgstr "{numFailed, plural, one {# 失敗したサービス} other {# 失敗し�
 #: src/components/active-alerts.tsx
 msgid "{systemCount, plural, one {Across # system} other {Across # systems}}"
 msgstr "{systemCount, plural, other {# 台のシステム全体}}"
+
+msgstr ""
 
 #: src/components/routes/system/info-bar.tsx
 msgid "{threads, plural, one {# thread} other {# threads}}"
@@ -164,6 +168,8 @@ msgstr "アクティブ状態"
 #: src/components/network-monitors-table/monitor-dialog.tsx
 msgid "Add"
 msgstr "追加"
+
+msgstr ""
 
 #: src/components/network-monitors-table/monitor-dialog.tsx
 #: src/components/network-monitors-table/monitor-dialog.tsx
@@ -461,6 +467,8 @@ msgstr "証明書は{expires}に期限が切れます"
 #: src/components/routes/system/package-updates-table.tsx
 msgid "Change"
 msgstr "変更"
+
+msgstr ""
 
 #: src/components/routes/settings/general.tsx
 msgid "Change display units for metrics."
@@ -1026,6 +1034,10 @@ msgstr "現在のシステム設定をエクスポートします。"
 #: src/components/routes/settings/general.tsx
 msgid "Fahrenheit (°F)"
 msgstr "華氏 (°F)"
+
+#: src/components/systems-table/systems-table-columns.tsx
+#~ msgid "Failed"
+#~ msgstr "失敗"
 
 #: src/components/routes/system/smart-table.tsx
 msgid "Failed Attributes:"
@@ -2249,6 +2261,8 @@ msgstr "対象"
 #: src/components/network-monitors-table/monitor-dialog.tsx
 #: src/components/network-monitors-table/monitor-dialog.tsx
 msgid "target[,protocol[,port[,interval[,server]]]]"
+
+msgid "target[,protocol[,port[,interval]]]"
 msgstr ""
 
 #: src/components/systemd-table/systemd-table.tsx
@@ -2511,6 +2525,9 @@ msgstr "更新"
 #: src/components/network-monitors-table/network-monitors-columns.tsx
 
 #: src/components/routes/system/nut-table.tsx#: src/components/routes/system/smart-table.tsx
+
+#: src/components/routes/system/nut-table.tsx
+#: src/components/routes/system/smart-table.tsx
 #: src/components/routes/system/storage-pools-table.tsx
 #: src/components/systemd-table/systemd-table-columns.tsx
 msgid "Updated"
@@ -2687,3 +2704,4 @@ msgstr "はい"
 #: src/components/routes/settings/layout.tsx
 msgid "Your user settings have been updated."
 msgstr "ユーザー設定が更新されました。"
+

@@ -69,6 +69,8 @@ msgstr "{count, plural, one {{countString} хвилина} few {{countString} х
 msgid "{daysLeft, plural, one {# day} other {# days}}"
 msgstr "{daysLeft, plural, one {# день} few {# дні} many {# днів} other {# днів}}"
 
+msgstr ""
+
 #: src/components/routes/system/charts/disk-charts.tsx
 msgid "{diskName} I/O"
 msgstr "Ввід/вивід {diskName}"
@@ -80,6 +82,8 @@ msgstr "{numFailed, plural, one {# службу не запущено} few {# с
 #: src/components/active-alerts.tsx
 msgid "{systemCount, plural, one {Across # system} other {Across # systems}}"
 msgstr "{systemCount, plural, one {У # системі} few {У # системах} many {У # системах} other {У # системах}}"
+
+msgstr ""
 
 #: src/components/routes/system/info-bar.tsx
 msgid "{threads, plural, one {# thread} other {# threads}}"
@@ -164,6 +168,8 @@ msgstr "Активний стан"
 #: src/components/network-monitors-table/monitor-dialog.tsx
 msgid "Add"
 msgstr "Додати"
+
+msgstr ""
 
 #: src/components/network-monitors-table/monitor-dialog.tsx
 #: src/components/network-monitors-table/monitor-dialog.tsx
@@ -461,6 +467,8 @@ msgstr "Термін дії сертифіката закінчується {exp
 #: src/components/routes/system/package-updates-table.tsx
 msgid "Change"
 msgstr "Зміна"
+
+msgstr ""
 
 #: src/components/routes/settings/general.tsx
 msgid "Change display units for metrics."
@@ -1026,6 +1034,10 @@ msgstr "Експортуйте поточну конфігурацію сист�
 #: src/components/routes/settings/general.tsx
 msgid "Fahrenheit (°F)"
 msgstr "Фаренгейт (°F)"
+
+#: src/components/systems-table/systems-table-columns.tsx
+#~ msgid "Failed"
+#~ msgstr "Не вдалося"
 
 #: src/components/routes/system/smart-table.tsx
 msgid "Failed Attributes:"
@@ -2251,6 +2263,9 @@ msgstr "Ціль"
 msgid "target[,protocol[,port[,interval[,server]]]]"
 msgstr "target[,protocol[,port[,interval[,server]]]]"
 
+msgid "target[,protocol[,port[,interval]]]"
+msgstr ""
+
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Tasks"
 msgstr "Завдання"
@@ -2511,6 +2526,9 @@ msgstr "Оновити"
 #: src/components/network-monitors-table/network-monitors-columns.tsx
 
 #: src/components/routes/system/nut-table.tsx#: src/components/routes/system/smart-table.tsx
+
+#: src/components/routes/system/nut-table.tsx
+#: src/components/routes/system/smart-table.tsx
 #: src/components/routes/system/storage-pools-table.tsx
 #: src/components/systemd-table/systemd-table-columns.tsx
 msgid "Updated"
@@ -2687,3 +2705,4 @@ msgstr "Так"
 #: src/components/routes/settings/layout.tsx
 msgid "Your user settings have been updated."
 msgstr "Ваші налаштування користувача були оновлені."
+
