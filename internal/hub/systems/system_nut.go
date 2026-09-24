@@ -70,10 +70,6 @@ func (sys *System) nutFetchInterval() time.Duration {
 // saveNutDevices saves NUT device data and, after a complete refresh,
 // removes rows for devices that are no longer reported.
 func (sys *System) saveNutDevices(nutData map[string]nut.NutData, complete bool) error {
-	if len(nutData) == 0 {
-		return nil
-	}
-
 	hub := sys.manager.hub
 	collection, err := hub.FindCachedCollectionByNameOrId("nut_devices")
 	if err != nil {

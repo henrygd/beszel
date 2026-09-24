@@ -974,6 +974,7 @@ func (s *System) createSSHClient() error {
 	s.agentVersion, _ = extractAgentVersion(string(client.Conn.ServerVersion()))
 	s.monitorsNeedSync.Store(true)
 	s.manager.resetFailedSmartFetchState(s.Id)
+	s.manager.resetFailedNutFetchState(s.Id)
 	s.manager.resetFailedZfsFetchState(s.Id)
 	return nil
 }

@@ -41,6 +41,9 @@ func NewNutManager() (*NutManager, error) {
 	if err != nil {
 		return nil, fmt.Errorf("upsc not found: %w", err)
 	}
+	if err := checkUpscJSONSupport(path); err != nil {
+		return nil, err
+	}
 
 	nm := &NutManager{
 		NutDataMap: make(map[string]*nut.NutData),
@@ -59,6 +62,15 @@ func NewNutManager() (*NutManager, error) {
 
 	slog.Debug("nut manager initialized", "upsc", path, "server", nm.server)
 	return nm, nil
+}
+
+// checkUpscJSONSupport verifies that upsc understands -j without contacting a
+// NUT server. JSON output was added in NUT 2.8.5.
+func checkUpscJSONSupport(path string) error {
+	if err := exec.Command(path, "-j", "-h").Run(); err != nil {
+		return fmt.Errorf("upsc does not support JSON output; NUT 2.8.5 or newer is required: %w", err)
+	}
+	return nil
 }
 
 // parseConfiguredDevices reads the optional NUT_DEVICES env var, which lets the

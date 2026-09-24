@@ -517,7 +517,7 @@ export interface NutDeviceRecord extends RecordModel {
 	driver: string
 	device_type: string
 	state: string
-	health: string
+	status: string
 	battery_charge: number
 	battery_voltage: number
 	battery_runtime: number
