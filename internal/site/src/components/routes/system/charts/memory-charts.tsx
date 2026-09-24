@@ -99,7 +99,7 @@ export function ContainerMemoryChart({
 			empty={dataEmpty}
 			grid={grid}
 			title={dockerOrPodman(t`Docker Memory Usage`, isPodman)}
-			description={dockerOrPodman(t`Memory usage of docker containers`, isPodman)}
+			description={t`Memory usage of containers`}
 			cornerEl={<FilterBar />}
 		>
 			<AreaChartDefault
@@ -108,7 +108,7 @@ export function ContainerMemoryChart({
 				dataPoints={dataPoints}
 				tickFormatter={(val) => {
 					const { value, unit } = formatBytes(val, false, Unit.Bytes, true)
-					return `${toFixedFloat(value, val >= 10 ? 0 : 1)} ${unit}`
+					return `${toFixedFloat(value, value >= 10 ? 0 : 1)} ${unit}`
 				}}
 				contentFormatter={(item) => {
 					const { value, unit } = formatBytes(item.value, false, Unit.Bytes, true)

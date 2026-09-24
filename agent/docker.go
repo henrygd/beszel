@@ -65,10 +65,14 @@ type dockerManager struct {
 	dockerVersionChecked bool                        // Whether a version probe has completed successfully
 	isWindows            bool                        // Whether the Docker Engine API is running on Windows
 	buf                  *bytes.Buffer               // Buffer to store and read response bodies
-	decoder              *json.Decoder               // Reusable JSON decoder that reads from buf
-	apiStats             *container.ApiStats         // Reusable API stats object
 	excludeContainers    []string                    // Patterns to exclude containers by name
 	usingPodman          bool                        // Whether the Docker Engine API is running on Podman
+
+	registryClient       *http.Client                  // Client for registry requests; nil uses a client with a 10-second timeout
+	imageUpdatesDisabled bool                          // Whether image update checks are disabled by configuration
+	imageUpdatesMutex    sync.RWMutex                  // Protects imageUpdates, its entries, and imageUpdatesRunning
+	imageUpdates         map[string]*imageUpdateStatus // Shared update status keyed by normalized image reference
+	imageUpdatesRunning  bool                          // Whether a background image-update batch is in progress
 
 	// Cache-time-aware tracking for CPU stats (similar to cpu.go)
 	// Maps cache time intervals to container-specific CPU usage tracking
@@ -161,6 +165,9 @@ func (dm *dockerManager) getDockerStats(cacheTimeMs uint16) ([]*container.Stats,
 	} else {
 		clear(dm.validIds)
 	}
+
+	// Only schedule auxiliary work here; metrics never wait for image discovery.
+	dm.refreshImageUpdates(dm.apiContainerList, time.Now())
 
 	var failedContainers []*container.ApiInfo
 
@@ -374,16 +381,26 @@ func convertContainerPortsToString(ctr *container.ApiInfo) string {
 		return ""
 	}
 	sort.Slice(ctr.Ports, func(i, j int) bool {
-		return ctr.Ports[i].PublicPort < ctr.Ports[j].PublicPort
+		if ctr.Ports[i].PublicPort != ctr.Ports[j].PublicPort {
+			return ctr.Ports[i].PublicPort < ctr.Ports[j].PublicPort
+		}
+		return ctr.Ports[i].IP < ctr.Ports[j].IP
 	})
 	var builder strings.Builder
-	seenPorts := make(map[uint16]struct{})
+	seen := make(map[string]struct{})
 	for _, p := range ctr.Ports {
-		_, ok := seenPorts[p.PublicPort]
-		if p.PublicPort == 0 || ok {
+		if p.PublicPort == 0 {
 			continue
 		}
-		seenPorts[p.PublicPort] = struct{}{}
+		keyIP := p.IP
+		if keyIP == "0.0.0.0" || keyIP == "::" {
+			keyIP = ""
+		}
+		key := keyIP + ":" + strconv.Itoa(int(p.PublicPort))
+		if _, ok := seen[key]; ok {
+			continue
+		}
+		seen[key] = struct{}{}
 		if builder.Len() > 0 {
 			builder.WriteString(", ")
 		}
@@ -497,6 +514,17 @@ func (dm *dockerManager) updateContainerStats(ctr *container.ApiInfo, cacheTimeM
 		}
 	}
 
+	// Read and decode the response before locking shared stats to avoid blocking
+	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		return fmt.Errorf("container stats request failed: %s", resp.Status)
+	}
+	res := &container.ApiStats{}
+	if err := json.NewDecoder(resp.Body).Decode(res); err != nil {
+		return err
+	}
+	updateAvailable := dm.cachedImageUpdate(ctr.Image)
+
 	dm.containerStatsMutex.Lock()
 	defer dm.containerStatsMutex.Unlock()
 
@@ -511,6 +539,9 @@ func (dm *dockerManager) updateContainerStats(ctr *container.ApiInfo, cacheTimeM
 	stats.Status = statusText
 	stats.Health = health
 
+	stats.Image = ctr.Image
+	stats.UpdateAvailable = updateAvailable
+
 	if len(ctr.Ports) > 0 {
 		stats.Ports = convertContainerPortsToString(ctr)
 	}
@@ -523,23 +554,24 @@ func (dm *dockerManager) updateContainerStats(ctr *container.ApiInfo, cacheTimeM
 	stats.NetworkSent = 0
 	stats.NetworkRecv = 0
 
-	res := dm.apiStats
-	res.Networks = nil
-	if err := dm.decode(resp, res); err != nil {
-		return err
-	}
-
 	// Initialize CPU tracking for this cache time interval
 	dm.initializeCpuTracking(cacheTimeMs)
 
 	// Get previous CPU values
 	prevCpuContainer, prevCpuSystem := dm.getCpuPreviousValues(cacheTimeMs, ctr.IdShort)
 
-	// Calculate CPU percentage based on platform
+	// Calculate CPU percentage based on platform.
+	// Podman reports system_cpu_usage from cgroup cpu.stat (not /proc/stat), so it reflects
+	// only cgroup-tracked activity rather than total host capacity. Use a time-based method
+	// instead so the result is comparable to host CPU utilization. See:
+	// https://github.com/henrygd/beszel/issues/2049
 	var cpuPct float64
 	if dm.isWindows {
 		prevRead := dm.lastCpuReadTime[cacheTimeMs][ctr.IdShort]
 		cpuPct = res.CalculateCpuPercentWindows(prevCpuContainer, prevRead)
+	} else if dm.usingPodman && res.CPUStats.OnlineCPUs > 0 {
+		prevRead := dm.lastCpuReadTime[cacheTimeMs][ctr.IdShort]
+		cpuPct = res.CalculateCpuPercentPodman(prevCpuContainer, prevRead)
 	} else {
 		cpuPct = res.CalculateCpuPercentLinux(prevCpuContainer, prevCpuSystem)
 	}
@@ -657,6 +689,8 @@ func newDockerManager(agent *Agent) *dockerManager {
 		userAgent: "Docker-Client/",
 	}
 
+	dockerImageCheck, _ := utils.GetEnv("DOCKER_IMAGE_CHECK")
+
 	// Read container exclusion patterns from environment variable
 	var excludeContainers []string
 	if excludeStr, set := utils.GetEnv("EXCLUDE_CONTAINERS"); set && excludeStr != "" {
@@ -676,11 +710,11 @@ func newDockerManager(agent *Agent) *dockerManager {
 			Timeout:   timeout,
 			Transport: userAgentTransport,
 		},
-		containerStatsMap: make(map[string]*container.Stats),
-		sem:               make(chan struct{}, 5),
-		apiContainerList:  []*container.ApiInfo{},
-		apiStats:          &container.ApiStats{},
-		excludeContainers: excludeContainers,
+		containerStatsMap:    make(map[string]*container.Stats),
+		sem:                  make(chan struct{}, 5),
+		apiContainerList:     []*container.ApiInfo{},
+		excludeContainers:    excludeContainers,
+		imageUpdatesDisabled: dockerImageCheck == "false",
 
 		// Initialize cache-time-aware tracking structures
 		lastCpuContainer:    make(map[uint16]map[string]uint64),
@@ -747,20 +781,18 @@ func (dm *dockerManager) applyDockerVersionInfo(serverHeader string, versionInfo
 	}
 }
 
-// Decodes Docker API JSON response using a reusable buffer and decoder. Not thread safe.
+// Decodes a Docker API JSON response using a reusable buffer. Not thread safe.
 func (dm *dockerManager) decode(resp *http.Response, d any) error {
 	if dm.buf == nil {
 		// initialize buffer with 256kb starting size
 		dm.buf = bytes.NewBuffer(make([]byte, 0, 1024*256))
-		dm.decoder = json.NewDecoder(dm.buf)
 	}
 	defer resp.Body.Close()
 	defer dm.buf.Reset()
-	_, err := dm.buf.ReadFrom(resp.Body)
-	if err != nil {
+	if _, err := dm.buf.ReadFrom(resp.Body); err != nil {
 		return err
 	}
-	return dm.decoder.Decode(d)
+	return json.Unmarshal(dm.buf.Bytes(), d)
 }
 
 // Test docker / podman sockets and return if one exists

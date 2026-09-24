@@ -317,6 +317,9 @@ func getRealIP(r *http.Request) string {
 	if ip := r.Header.Get("CF-Connecting-IP"); ip != "" {
 		return ip
 	}
+	if ip := r.Header.Get("X-Real-IP"); ip != "" {
+		return ip
+	}
 	if ip := r.Header.Get("X-Forwarded-For"); ip != "" {
 		// X-Forwarded-For can contain a comma-separated list: "client_ip, proxy1, proxy2"
 		// Take the first one

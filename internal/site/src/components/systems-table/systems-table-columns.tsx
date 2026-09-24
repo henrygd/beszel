@@ -26,7 +26,7 @@ import { memo, useMemo, useRef, useState } from "react"
 import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip"
 import { isReadOnlyUser, pb } from "@/lib/api"
 import { BatteryState, ConnectionType, connectionTypeLabels, MeterState, SystemStatus } from "@/lib/enums"
-import { $longestSystemNameLen, $userSettings } from "@/lib/stores"
+import { $longestSystemName, $userSettings } from "@/lib/stores"
 import {
 	cn,
 	copyToClipboard,
@@ -135,7 +135,7 @@ export function SystemsTableColumns(viewMode: "table" | "grid"): ColumnDef<Syste
 			Icon: ServerIcon,
 			cell: (info) => {
 				const { name, id } = info.row.original
-				const longestName = useStore($longestSystemNameLen)
+				const longestName = useStore($longestSystemName)
 				const linkUrl = getPagePath($router, "system", { id })
 
 				return (
@@ -145,8 +145,7 @@ export function SystemsTableColumns(viewMode: "table" | "grid"): ColumnDef<Syste
 							<Link
 								href={linkUrl}
 								tabIndex={-1}
-								className="truncate z-10 relative"
-								style={{ width: `${longestName / 1.05}ch` }}
+								className="relative w-fit max-w-48 z-10"
 								onMouseEnter={(e) => {
 									// set title on hover if text is truncated to show full name
 									const a = e.currentTarget
@@ -157,7 +156,10 @@ export function SystemsTableColumns(viewMode: "table" | "grid"): ColumnDef<Syste
 									}
 								}}
 							>
-								{name}
+								<span className="invisible block" aria-hidden="true">
+									{longestName}
+								</span>
+								<span className="absolute inset-0 truncate">{name}</span>
 							</Link>
 						</span>
 						<Link href={linkUrl} className="inset-0 absolute size-full" aria-label={name}></Link>
@@ -193,10 +195,16 @@ export function SystemsTableColumns(viewMode: "table" | "grid"): ColumnDef<Syste
 			header: sortableHeader,
 		},
 		{
-			accessorFn: ({ info }) => info.g || undefined,
+			accessorFn: ({ info }) => info.g,
 			id: "gpu",
 			name: () => "GPU",
-			cell: TableCellWithMeter,
+			cell: (info) => {
+				const val = info.getValue() as number | undefined
+				if (val === undefined) {
+					return null
+				}
+				return TableCellWithMeter(info)
+			},
 			Icon: GpuIcon,
 			header: sortableHeader,
 		},
@@ -470,7 +478,7 @@ function TableCellWithMeter(info: CellContext<SystemRecord, unknown>) {
 			STATUS_COLORS.down
 	)
 	return (
-		<div className="flex gap-2 items-center tabular-nums tracking-tight w-full">
+		<div className="flex gap-2 items-center tabular-nums tracking-tight w-full min-w-0">
 			<span className="min-w-8 shrink-0">{decimalString(val, val >= 10 ? 1 : 2)}%</span>
 			<span className="flex-1 min-w-8 grid bg-muted h-[1em] rounded-sm overflow-hidden">
 				<span className={meterClass} style={{ width: `${val}%` }}></span>
@@ -484,9 +492,9 @@ function DiskCellWithMultiple(info: CellContext<SystemRecord, unknown>) {
 	const { info: sysInfo, status, id } = info.row.original
 	const extraFs = Object.entries(sysInfo.efs ?? {})
 	const rootDiskPct = sysInfo.dp
+	const rootDiskName = sysInfo.rdn
 
-	// sort extra disks by percentage descending
-	extraFs.sort((a, b) => b[1] - a[1])
+	extraFs.sort((a, b) => a[0].localeCompare(b[0]))
 
 	function getIndicatorColor(pct: number) {
 		const threshold = getMeterStateByThresholds(pct, colorWarn, colorCrit)
@@ -541,8 +549,8 @@ function DiskCellWithMultiple(info: CellContext<SystemRecord, unknown>) {
 			<TooltipContent side="right" className="max-w-xs pb-2">
 				<div className="grid gap-1">
 					<div className="grid gap-0.5">
-						<div className="text-[0.65rem] text-muted-foreground uppercase tracking-wide tabular-nums">
-							<Trans context="Root disk label">Root</Trans>
+						<div className="text-[0.65rem] max-w-40 text-muted-foreground uppercase tracking-wide truncate tabular-nums">
+							{rootDiskName ?? <Trans context="Root disk label">Root</Trans>}
 						</div>
 						<div className="flex gap-2 items-center tabular-nums text-xs">
 							<span className="min-w-7">{decimalString(rootDiskPct, rootDiskPct >= 10 ? 1 : 2)}%</span>

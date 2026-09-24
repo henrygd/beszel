@@ -43,7 +43,6 @@ import {
 	toFixedFloat,
 	formatTemperature,
 	cn,
-	getVisualStringWidth,
 	secondsToString,
 	hourWithSeconds,
 	formatShortDate,
@@ -75,7 +74,12 @@ export const smartColumns: ColumnDef<SmartAttribute>[] = [
 		header: "Name",
 	},
 	{
-		accessorFn: (row) => row.rs || row.rv?.toString(),
+		accessorFn: (row) => {
+			if (row.n === "DataUnitsWritten" || row.n === "DataUnitsRead") {
+				return formatDataUnits(Number(row.rv ?? 0))
+			}
+			return row.rs || row.rv?.toString()
+		},
 		header: "Value",
 	},
 	{
@@ -103,12 +107,18 @@ function formatCapacity(bytes: number): string {
 	return `${toFixedFloat(value, value >= 10 ? 1 : 2)} ${unit}`
 }
 
+// Function to format NVMe data units
+// (1 unit = 1000 * 512 bytes) as a human-readable size
+function formatDataUnits(units: number): string {
+	return formatCapacity(units * 1000 * 512)
+}
+
 const SMART_DEVICE_FIELDS = "id,system,name,model,state,capacity,temp,type,hours,cycles,updated"
 
 export const createColumns = (
-	longestName: number,
-	longestModel: number,
-	longestDevice: number
+	longestName: string,
+	longestModel: string,
+	longestDevice: string
 ): ColumnDef<SmartDeviceRecord>[] => [
 	{
 		id: "system",
@@ -123,8 +133,11 @@ export const createColumns = (
 		cell: ({ getValue }) => {
 			const allSystems = useStore($allSystemsById)
 			return (
-				<div className="ms-1.5 max-w-40 block truncate" style={{ width: `${longestName / 1.05}ch` }}>
-					{allSystems[getValue() as string]?.name ?? ""}
+				<div className="ms-1.5 relative w-fit max-w-44">
+					<span className="invisible block whitespace-nowrap" aria-hidden="true">
+						{longestName}
+					</span>
+					<span className="absolute inset-0 truncate">{allSystems[getValue() as string]?.name ?? ""}</span>
 				</div>
 			)
 		},
@@ -134,12 +147,11 @@ export const createColumns = (
 		sortingFn: (a, b) => a.original.name.localeCompare(b.original.name),
 		header: ({ column }) => <HeaderButton column={column} name={t`Device`} Icon={HardDrive} />,
 		cell: ({ getValue }) => (
-			<div
-				className="font-medium max-w-40 truncate ms-1"
-				title={getValue() as string}
-				style={{ width: `${longestDevice / 1.05}ch` }}
-			>
-				{getValue() as string}
+			<div className="font-medium ms-1 relative w-fit max-w-44" title={getValue() as string}>
+				<span className="invisible block whitespace-nowrap" aria-hidden="true">
+					{longestDevice}
+				</span>
+				<span className="absolute inset-0 truncate">{getValue() as string}</span>
 			</div>
 		),
 	},
@@ -150,12 +162,11 @@ export const createColumns = (
 			<HeaderButton column={column} name={t({ message: "Model", comment: "Device model" })} Icon={Box} />
 		),
 		cell: ({ getValue }) => (
-			<div
-				className="max-w-48 truncate ms-1"
-				title={getValue() as string}
-				style={{ width: `${longestModel / 1.05}ch` }}
-			>
-				{getValue() as string}
+			<div className="ms-1 relative w-fit max-w-44" title={getValue() as string}>
+				<span className="invisible block whitespace-nowrap" aria-hidden="true">
+					{longestModel}
+				</span>
+				<span className="absolute inset-0 truncate">{getValue() as string}</span>
 			</div>
 		),
 	},
@@ -309,7 +320,7 @@ export default function DisksTable({ systemId }: { systemId?: string }) {
 
 	// Calculate the right width for the columns based on the longest strings among the displayed devices
 	const { longestName, longestModel, longestDevice } = useMemo(() => {
-		const result = { longestName: 0, longestModel: 0, longestDevice: 0 }
+		const result = { longestName: "", longestModel: "", longestDevice: "" }
 		if (!smartDevices || Object.keys(allSystems).length === 0) {
 			return result
 		}
@@ -318,10 +329,16 @@ export default function DisksTable({ systemId }: { systemId?: string }) {
 			if (!systemId && !seenSystems.has(device.system)) {
 				seenSystems.add(device.system)
 				const name = allSystems[device.system]?.name ?? ""
-				result.longestName = Math.max(result.longestName, getVisualStringWidth(name))
+				if (name.length > result.longestName.length) {
+					result.longestName = name
+				}
 			}
-			result.longestModel = Math.max(result.longestModel, getVisualStringWidth(device.model ?? ""))
-			result.longestDevice = Math.max(result.longestDevice, getVisualStringWidth(device.name ?? ""))
+			if ((device.model ?? "").length > result.longestModel.length) {
+				result.longestModel = device.model ?? ""
+			}
+			if ((device.name ?? "").length > result.longestDevice.length) {
+				result.longestDevice = device.name ?? ""
+			}
 		}
 		return result
 	}, [smartDevices, systemId, allSystems])

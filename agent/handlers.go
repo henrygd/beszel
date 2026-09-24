@@ -7,6 +7,7 @@ import (
 
 	"github.com/fxamacker/cbor/v2"
 	"github.com/henrygd/beszel/internal/common"
+	"github.com/henrygd/beszel/internal/entities/monitor"
 	"github.com/henrygd/beszel/internal/entities/smart"
 
 	"log/slog"
@@ -51,6 +52,8 @@ func NewHandlerRegistry() *HandlerRegistry {
 	registry.Register(common.GetContainerInfo, &GetContainerInfoHandler{})
 	registry.Register(common.GetSmartData, &GetSmartDataHandler{})
 	registry.Register(common.GetSystemdInfo, &GetSystemdInfoHandler{})
+	registry.Register(common.SyncNetworkMonitors, &SyncNetworkMonitorsHandler{})
+	registry.Register(common.GetZfsData, &GetZfsDataHandler{})
 
 	return registry
 }
@@ -166,14 +169,33 @@ type GetSmartDataHandler struct{}
 
 func (h *GetSmartDataHandler) Handle(hctx *HandlerContext) error {
 	if hctx.Agent.smartManager == nil {
-		// return empty map to indicate no data
-		return hctx.SendResponse(map[string]smart.SmartData{}, hctx.RequestID)
+		return hctx.SendResponse(smart.SmartDataResponse{Data: map[string]smart.SmartData{}}, hctx.RequestID)
 	}
-	if err := hctx.Agent.smartManager.Refresh(false); err != nil {
+	complete, err := hctx.Agent.smartManager.Refresh(false)
+	if err != nil {
 		slog.Debug("smart refresh failed", "err", err)
 	}
-	data := hctx.Agent.smartManager.GetCurrentData()
-	return hctx.SendResponse(data, hctx.RequestID)
+	return hctx.SendResponse(smart.SmartDataResponse{
+		Data:     hctx.Agent.smartManager.GetCurrentData(),
+		Complete: complete,
+	}, hctx.RequestID)
+}
+
+////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
+
+// GetZfsDataHandler handles ZFS detail data requests
+type GetZfsDataHandler struct{}
+
+func (h *GetZfsDataHandler) Handle(hctx *HandlerContext) error {
+	if hctx.Agent.storagePoolManager == nil {
+		return hctx.SendResponse(nil, hctx.RequestID)
+	}
+	var req common.ZfsDataRequest
+	if err := cbor.Unmarshal(hctx.Request.Data, &req); err != nil {
+		return err
+	}
+	return hctx.SendResponse(hctx.Agent.storagePoolManager.GetDetail(req.Force), hctx.RequestID)
 }
 
 ////////////////////////////////////////////////////////////////////////////
@@ -202,4 +224,22 @@ func (h *GetSystemdInfoHandler) Handle(hctx *HandlerContext) error {
 	}
 
 	return hctx.SendResponse(details, hctx.RequestID)
+}
+
+////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
+
+// SyncNetworkMonitorsHandler handles monitor configuration sync from hub
+type SyncNetworkMonitorsHandler struct{}
+
+func (h *SyncNetworkMonitorsHandler) Handle(hctx *HandlerContext) error {
+	var req monitor.SyncRequest
+	if err := cbor.Unmarshal(hctx.Request.Data, &req); err != nil {
+		return err
+	}
+	resp, err := hctx.Agent.monitorManager.HandleSyncRequest(req)
+	if err != nil {
+		return err
+	}
+	return hctx.SendResponse(resp, hctx.RequestID)
 }

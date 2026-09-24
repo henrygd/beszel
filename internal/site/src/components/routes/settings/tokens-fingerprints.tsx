@@ -139,6 +139,7 @@ const SectionUniversalToken = memo(() => {
 	const [isLoading, setIsLoading] = useState(true)
 	const [checked, setChecked] = useState(false)
 	const [isPermanent, setIsPermanent] = useState(false)
+	const publicKey = $publicKey.get()
 
 	async function updateToken(enable: number = -1, permanent: number = -1) {
 		// enable: 0 for disable, 1 for enable, -1 (unset) for get current state
@@ -190,6 +191,25 @@ const SectionUniversalToken = memo(() => {
 							</div>
 							<ActionsButtonUniversalToken token={token} checked={checked} />
 						</div>
+
+						{checked && (
+							<div className="flex items-center gap-4 min-w-0 border-t pt-3">
+								<span className="text-sm text-muted-foreground whitespace-nowrap">
+									<Trans>Public key</Trans>
+								</span>
+								<div className="min-w-0 flex-1 truncate">
+									<span className="text-sm text-primary font-mono">{publicKey}</span>
+								</div>
+								<Button
+									variant="ghost"
+									size="icon"
+									onClick={() => copyToClipboard(publicKey)}
+									title={t`Copy public key`}
+								>
+									<CopyIcon className="w-4" />
+								</Button>
+							</div>
+						)}
 
 						{checked && (
 							<div className="border-t pt-3">

@@ -1,5 +1,5 @@
 import { t } from "@lingui/core/macro"
-import { useRef, useMemo } from "react"
+import { Fragment, type ReactNode, useRef, useMemo } from "react"
 import AreaChartDefault, { type DataPoint } from "@/components/charts/area-chart"
 import LineChartDefault from "@/components/charts/line-chart"
 import { Unit } from "@/lib/enums"
@@ -79,6 +79,7 @@ export function GpuPowerChart({
 
 	return (
 		<ChartCard
+			className={cn(grid && "!col-span-1")}
 			empty={dataEmpty}
 			grid={grid}
 			title={t`GPU Power Draw`}
@@ -96,22 +97,26 @@ export function GpuPowerChart({
 	)
 }
 
-/** GPU detail grid (engines + per-GPU usage/VRAM) — rendered outside the main 2-col grid */
-export function GpuDetailCharts({
+/** All GPU charts (optional power-draw slot + engines + per-GPU usage/VRAM) in a single 2-col grid, so the
+ *  cards' odd:last-of-type parity rule flows across the whole tab and no row is left half-empty */
+export function GpuCharts({
 	chartData,
 	grid,
 	dataEmpty,
 	lastGpus,
 	hasGpuEnginesData,
+	children,
 }: {
 	chartData: ChartData
 	grid: boolean
 	dataEmpty: boolean
 	lastGpus: Record<string, GPUData>
 	hasGpuEnginesData: boolean
+	children?: ReactNode
 }) {
 	return (
 		<div className="grid xl:grid-cols-2 gap-4">
+			{children}
 			{hasGpuEnginesData && (
 				<ChartCard
 					legend={true}
@@ -126,9 +131,8 @@ export function GpuDetailCharts({
 			{Object.keys(lastGpus).map((id) => {
 				const gpu = lastGpus[id] as GPUData
 				return (
-					<div key={id} className="contents">
+					<Fragment key={id}>
 						<ChartCard
-							className={cn(grid && "!col-span-1")}
 							empty={dataEmpty}
 							grid={grid}
 							title={`${gpu.n} ${t`Usage`}`}
@@ -178,7 +182,7 @@ export function GpuDetailCharts({
 								/>
 							</ChartCard>
 						)}
-					</div>
+					</Fragment>
 				)
 			})}
 		</div>

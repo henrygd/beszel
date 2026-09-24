@@ -494,7 +494,7 @@ type SmartInfoForNvme struct {
 	FirmwareVersion string           `json:"firmware_version"`
 	// NVMePCIVendor                 NVMePCIVendor                 `json:"nvme_pci_vendor"`
 	// NVMeIEEEOUIIdentifier         uint32                        `json:"nvme_ieee_oui_identifier"`
-	NVMeTotalCapacity             uint64                        `json:"nvme_total_capacity"`
+	NVMeTotalCapacity uint64 `json:"nvme_total_capacity"`
 	// NVMeUnallocatedCapacity       uint64                        `json:"nvme_unallocated_capacity"`
 	// NVMeControllerID              uint16                        `json:"nvme_controller_id"`
 	// NVMeVersion                   VersionStringInfo             `json:"nvme_version"`
@@ -529,6 +529,13 @@ type SmartData struct {
 	DiskType        string            `json:"dt,omitempty" cbor:"7,keyasint,omitempty"`
 	Temperature     uint8             `json:"t,omitempty" cbor:"8,keyasint,omitempty"`
 	Attributes      []*SmartAttribute `json:"a,omitempty" cbor:"9,keyasint,omitempty"`
+}
+
+// SmartDataResponse contains the collected data and whether every discovered
+// device was collected. Older agents omit Complete, so hubs must not prune from it.
+type SmartDataResponse struct {
+	Data     map[string]SmartData `json:"data" cbor:"0,keyasint"`
+	Complete bool                 `json:"complete" cbor:"1,keyasint,omitempty"` // Whether every discovered device was collected
 }
 
 type SmartAttribute struct {
