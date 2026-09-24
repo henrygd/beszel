@@ -21,6 +21,12 @@ type monitorTask struct {
 	runMu          sync.Mutex
 	inflight       *monitorRun
 	lastFailureLog int64 // Unix nanoseconds
+
+	certMu        sync.Mutex
+	cert          *monitor.CertInfo
+	certUnsent    bool // cert has not been included in a stats result yet
+	certChecking  bool
+	nextCertCheck time.Time
 }
 
 type monitorRun struct {
@@ -45,6 +51,11 @@ func newMonitorTaskFromExisting(config monitor.Config, existing *monitorTask) *m
 	task := newMonitorTask(config)
 	if existing != nil {
 		task.history = existing.history.clone()
+		// Keep the last known certificate, but check again soon for the new config.
+		// The hub already stores it, so it is not marked unsent.
+		if config.Target == existing.config.Target {
+			task.cert = existing.certInfo()
+		}
 	}
 	return task
 }
@@ -105,6 +116,70 @@ func (task *monitorTask) runProbe(probe monitorProbe) *monitor.Result {
 		return nil
 	}
 	return copyMonitorResult(run.result)
+}
+
+// refreshCert checks the certificate of an HTTPS target when due. A failed
+// check keeps the last known certificate and retries sooner, as does a
+// certificate that expires before the next regular check, so renewals show up
+// quickly. Concurrent callers skip rather than wait, and no lock is held during
+// network I/O.
+func (task *monitorTask) refreshCert(check certChecker) {
+	if check == nil || !certCheckEnabled(task.config) {
+		return
+	}
+	task.certMu.Lock()
+	if task.certChecking || time.Now().Before(task.nextCertCheck) {
+		task.certMu.Unlock()
+		return
+	}
+	task.certChecking = true
+	task.certMu.Unlock()
+
+	info, err := check(task.ctx, task.config.Target)
+
+	task.certMu.Lock()
+	defer task.certMu.Unlock()
+	task.certChecking = false
+	if task.ctx.Err() != nil {
+		return
+	}
+	if err != nil {
+		task.nextCertCheck = time.Now().Add(certCheckRetryInterval)
+		slog.Warn("certificate check failed", "err", err, "target", task.config.Target)
+		return
+	}
+	task.cert = &info
+	task.certUnsent = true
+	now := time.Now()
+	interval := certCheckInterval
+	if time.UnixMilli(info.Expires).Before(now.Add(certCheckInterval)) {
+		interval = certCheckRetryInterval
+	}
+	task.nextCertCheck = now.Add(interval)
+}
+
+// certInfo returns a copy of the latest certificate info, or nil if unknown.
+func (task *monitorTask) certInfo() *monitor.CertInfo {
+	task.certMu.Lock()
+	defer task.certMu.Unlock()
+	if task.cert == nil {
+		return nil
+	}
+	cert := *task.cert
+	return &cert
+}
+
+// takeUnsentCert returns the latest certificate info once after each successful
+// check, so unchanged info is not resent with every stats result.
+func (task *monitorTask) takeUnsentCert() *monitor.CertInfo {
+	task.certMu.Lock()
+	defer task.certMu.Unlock()
+	if !task.certUnsent {
+		return nil
+	}
+	task.certUnsent = false
+	cert := *task.cert
+	return &cert
 }
 
 func copyMonitorResult(result *monitor.Result) *monitor.Result {

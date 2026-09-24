@@ -361,7 +361,8 @@ export interface ChartTimeData {
 }
 
 export interface UserSettings {
-	chartTime: ChartTimes
+	/** may be missing in settings stored by older versions -- use getUserChartTime() */
+	chartTime?: ChartTimes
 	emails?: string[]
 	webhooks?: string[]
 	unitTemp?: Unit
@@ -376,6 +377,9 @@ export interface UserSettings {
 	statusFilter?: "all" | "up" | "down" | "paused" | "pending"
 	viewMode?: "table" | "grid"
 	sortMode?: Array<{ id: string; desc: boolean }>
+	monitorCols?: Record<string, boolean>
+	monitorSortMode?: Array<{ id: string; desc: boolean }>
+	monitorSortModeSystem?: Array<{ id: string; desc: boolean }>
 	grid?: boolean
 	displayMode?: "default" | "tabs"
 }
@@ -698,7 +702,15 @@ export interface NetworkMonitorRecord {
 	loss1h: number
 	interval: number
 	enabled: boolean
+	/** Latest TLS certificate details, reported for HTTPS targets. */
+	certInfo?: MonitorCertInfo | null
 	updated: string
+}
+
+/** Leaf TLS certificate details reported by the agent. Timestamps are Unix milliseconds. */
+export interface MonitorCertInfo {
+	expires: number
+	issuer?: string
 }
 
 /** Response times in microseconds and packet loss percentage (0-100). */

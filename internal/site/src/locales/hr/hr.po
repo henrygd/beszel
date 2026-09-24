@@ -8,7 +8,7 @@ msgstr ""
 "Language: hr\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2026-09-18 19:22\n"
+"PO-Revision-Date: 2026-09-24 16:16\n"
 "Last-Translator: \n"
 "Language-Team: Croatian\n"
 "Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
@@ -136,6 +136,13 @@ msgstr "Aktivno stanje"
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Add {foo}"
 msgstr "Dodaj {foo}"
+
+#: src/components/add-system.tsx
+#: src/components/add-system.tsx
+#: src/components/navbar.tsx
+#: src/components/navbar.tsx
+msgid "Add System"
+msgstr "Dodaj Sustav"
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Add URL"
@@ -807,6 +814,10 @@ msgstr "Uredi"
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Edit {foo}"
 msgstr "Uredi {foo}"
+
+#: src/components/add-system.tsx
+msgid "Edit System"
+msgstr "Uredi Sustav"
 
 #: src/components/login/auth-form.tsx
 #: src/components/login/forgot-pass-form.tsx
@@ -1792,6 +1803,10 @@ msgstr "Spremite adresu pomoću tipke enter ili zarez. Ostavite prazno kako bist
 msgid "Save Settings"
 msgstr "Spremi Postavke"
 
+#: src/components/add-system.tsx
+msgid "Save System"
+msgstr "Spremi Sustav"
+
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Saved in the database and does not expire until you disable it."
 msgstr "Spremljeno u bazi podataka i ne istječe dok ga ne onemogućite."
@@ -2401,3 +2416,4 @@ msgstr "Da"
 #: src/components/routes/settings/layout.tsx
 msgid "Your user settings have been updated."
 msgstr "Vaše korisničke postavke su ažurirane."
+

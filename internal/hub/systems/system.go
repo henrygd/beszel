@@ -456,6 +456,8 @@ func (sys *System) updateNetworkMonitorsRecords(app core.App, monitorResults map
 		for i, f := range monitorFields {
 			setClauses[i] = fmt.Sprintf("%s={:%s}", f, f)
 		}
+		// Results omit certInfo unless it changed, so keep the stored value.
+		setClauses = append(setClauses, "certInfo=COALESCE({:certInfo}, certInfo)")
 		queryString := fmt.Sprintf("UPDATE %s SET %s WHERE id={:id}", monitorCollectionName, strings.Join(setClauses, ", "))
 		updateQuery = db.NewQuery(queryString)
 	}
@@ -476,11 +478,23 @@ func (sys *System) updateNetworkMonitorsRecords(app core.App, monitorResults map
 			var record *core.Record
 			record, err = app.FindRecordById(monitorCollectionName, id)
 			if err == nil {
+				if result.Cert != nil {
+					monitorData["certInfo"] = result.Cert
+				}
 				record.Load(monitorData)
 				err = app.SaveNoValidate(record)
 			}
 		default:
-			_, err = updateQuery.Bind(dbx.Params(monitorData)).Execute()
+			monitorData["certInfo"] = nil
+			if result.Cert != nil {
+				var cert []byte
+				if cert, err = json.Marshal(result.Cert); err == nil {
+					monitorData["certInfo"] = string(cert)
+				}
+			}
+			if err == nil {
+				_, err = updateQuery.Bind(dbx.Params(monitorData)).Execute()
+			}
 		}
 		if err != nil {
 			app.Logger().Warn("Failed to update monitor", "system", systemId, "monitor", id, "err", err)
@@ -720,6 +734,11 @@ func (sys *System) fetchDataFromAgent(options common.DataRequestOptions) (*syste
 			sys.syncPendingNetworkMonitors()
 			return wsData, nil
 		}
+		// A slow collection doesn't mean the connection is broken. Closing it
+		// would force the agent into a reconnect loop, so only report the error.
+		if errors.Is(err, context.DeadlineExceeded) {
+			return nil, err
+		}
 		// close the WebSocket connection if error and try SSH
 		sys.closeWebSocketConnection()
 	}
@@ -732,12 +751,19 @@ func (sys *System) fetchDataFromAgent(options common.DataRequestOptions) (*syste
 	return sshData, nil
 }
 
+// wsDataRequestTimeout bounds how long to wait for stats over WebSocket. Agent
+// collection can legitimately take several seconds (e.g. a slow `zpool list`),
+// so this must be well above the request manager's 5s default.
+var wsDataRequestTimeout = 30 * time.Second
+
 func (sys *System) fetchDataViaWebSocket(options common.DataRequestOptions) (*system.CombinedData, error) {
 	if sys.WsConn == nil || !sys.WsConn.IsConnected() {
 		return nil, errors.New("no websocket connection")
 	}
+	ctx, cancel := context.WithTimeout(context.Background(), wsDataRequestTimeout)
+	defer cancel()
 	wsTransport := transport.NewWebSocketTransport(sys.WsConn)
-	err := wsTransport.Request(context.Background(), common.GetData, options, sys.data)
+	err := wsTransport.Request(ctx, common.GetData, options, sys.data)
 	if err != nil {
 		return nil, err
 	}

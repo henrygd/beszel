@@ -8,7 +8,7 @@ msgstr ""
 "Language: fr\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2026-09-18 19:21\n"
+"PO-Revision-Date: 2026-09-24 16:15\n"
 "Last-Translator: \n"
 "Language-Team: French\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
@@ -136,6 +136,13 @@ msgstr "État actif"
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Add {foo}"
 msgstr "Ajouter {foo}"
+
+#: src/components/add-system.tsx
+#: src/components/add-system.tsx
+#: src/components/navbar.tsx
+#: src/components/navbar.tsx
+msgid "Add System"
+msgstr "Ajouter Système"
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Add URL"
@@ -807,6 +814,10 @@ msgstr "Éditer"
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Edit {foo}"
 msgstr "Modifier {foo}"
+
+#: src/components/add-system.tsx
+msgid "Edit System"
+msgstr "Modifier Système"
 
 #: src/components/login/auth-form.tsx
 #: src/components/login/forgot-pass-form.tsx
@@ -1792,6 +1803,10 @@ msgstr "Enregistrez l'adresse en utilisant la touche Entrée ou la virgule. Lais
 msgid "Save Settings"
 msgstr "Enregistrer les paramètres"
 
+#: src/components/add-system.tsx
+msgid "Save System"
+msgstr "Enregistrer Système"
+
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Saved in the database and does not expire until you disable it."
 msgstr "Enregistré dans la base de données et n'expire pas tant que vous ne le désactivez pas."
@@ -2401,3 +2416,4 @@ msgstr "Oui"
 #: src/components/routes/settings/layout.tsx
 msgid "Your user settings have been updated."
 msgstr "Vos paramètres utilisateur ont été mis à jour."
+
