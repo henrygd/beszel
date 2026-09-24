@@ -23,7 +23,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Textarea } from "@/components/ui/textarea"
-import { ChevronDownIcon, ListIcon, SearchIcon, ServerIcon } from "lucide-react"
+import { ChevronDownIcon, ListIcon, PlusIcon, SearchIcon, ServerIcon } from "lucide-react"
 import { useToast } from "@/components/ui/use-toast"
 import { $systems } from "@/lib/stores"
 import { cn, supportsNetworkMonitors } from "@/lib/utils"
@@ -361,6 +361,8 @@ export function AddMonitorDialog({ systemId, monitors }: { systemId?: string; mo
 	const bulkFormRef = useRef<HTMLFormElement>(null)
 	const { toast } = useToast()
 	const { t } = useLingui()
+	const systems = useStore($systems)
+	const hasEligibleSystems = systemId ? true : systems.some(supportsNetworkMonitors)
 
 	const resetBulkForm = () => {
 		setBulkInput("")
@@ -451,14 +453,24 @@ export function AddMonitorDialog({ systemId, monitors }: { systemId?: string; mo
 	return (
 		<>
 			<div className="flex gap-0 rounded-lg">
-				<Button variant="outline" onClick={openAdd} className="rounded-e-none grow">
-					{/* <PlusIcon className="size-4 me-1" /> */}
-					<Trans>Add {{ foo: t`Monitor` }}</Trans>
+				<Button variant="outline" onClick={openAdd} className="rounded-e-none grow" disabled={!hasEligibleSystems}>
+					<PlusIcon className="size-4 me-1" />
+					<span className="sm:hidden">
+						<Trans>Add</Trans>
+					</span>
+					<span className="hidden sm:inline">
+						<Trans>Add {{ foo: t`Monitor` }}</Trans>
+					</span>
 				</Button>
 				<div className="w-px h-full bg-muted"></div>
 				<DropdownMenu>
 					<DropdownMenuTrigger asChild>
-						<Button variant="outline" className="px-2 rounded-s-none border-s-0" aria-label={`More actions`}>
+						<Button
+							variant="outline"
+							className="px-2 rounded-s-none border-s-0"
+							aria-label={`More actions`}
+							disabled={!hasEligibleSystems}
+						>
 							<ChevronDownIcon className="size-4" />
 						</Button>
 					</DropdownMenuTrigger>
@@ -493,7 +505,9 @@ export function AddMonitorDialog({ systemId, monitors }: { systemId?: string; mo
 						<SheetTitle>
 							<Trans>Bulk Add {{ foo: t`Network Monitors` }}</Trans>
 						</SheetTitle>
-						<SheetDescription>target[,protocol[,port[,interval[,server]]]]</SheetDescription>
+						<SheetDescription>
+							<Trans>target[,protocol[,port[,interval]]]</Trans>
+						</SheetDescription>
 					</SheetHeader>
 					<form ref={bulkFormRef} onSubmit={handleBulkSubmit} className="flex h-full flex-col overflow-hidden">
 						<div className="flex-1 flex flex-col space-y-4 overflow-auto p-4">
@@ -534,7 +548,9 @@ export function AddMonitorDialog({ systemId, monitors }: { systemId?: string; mo
 									].join("\n")}
 									required
 								/>
-								<p className="text-xs text-muted-foreground">target[,protocol[,port[,interval[,server]]]]</p>
+								<p className="text-xs text-muted-foreground">
+									<Trans>target[,protocol[,port[,interval]]]</Trans>
+								</p>
 							</div>
 						</div>
 						<SheetFooter className="border-t">

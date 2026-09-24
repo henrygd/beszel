@@ -1,6 +1,6 @@
-import { getMonitorTarget } from "@/lib/network-monitor-utils"
+import { getCertDaysLeft, getCertExpiryLevel, getMonitorTarget } from "@/lib/network-monitor-utils"
 import { t } from "@lingui/core/macro"
-import { Trans } from "@lingui/react/macro"
+import { Plural, Trans } from "@lingui/react/macro"
 import {
 	type ColumnFiltersState,
 	flexRender,
@@ -26,26 +26,43 @@ import {
 	AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
 import { Button, buttonVariants } from "@/components/ui/button"
-import { memo, useCallback, useMemo, useRef, useState } from "react"
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react"
+import { subscribeKeys } from "nanostores"
 import { getMonitorColumns } from "@/components/network-monitors-table/network-monitors-columns"
 import { Card, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { useToast } from "@/components/ui/use-toast"
-import { isReadOnlyUser } from "@/lib/api"
+import { isReadOnlyUser, queueUserSettings } from "@/lib/api"
 import { pb } from "@/lib/api"
-import { $allSystemsById, $direction, $userSettings } from "@/lib/stores"
-import {
-	cn,
-	isVisuallyLonger,
-	matchesFilterGroups,
-	parseFilterGroups,
-	parseSemVer,
-	useBrowserStorage,
-} from "@/lib/utils"
-import type { ChartData, NetworkMonitorRecord } from "@/types"
+import { SystemStatus } from "@/lib/enums"
+import { $allSystemsById, $direction, $textMeasureVersion, $userSettings, getUserChartTime } from "@/lib/stores"
+import { cn, formatShortDate, isVisuallyLonger, matchesFilterGroups, parseFilterGroups, parseSemVer } from "@/lib/utils"
+import type { ChartData, MonitorCertInfo, NetworkMonitorRecord } from "@/types"
 import { AddMonitorDialog, EditMonitorDialog } from "./monitor-dialog"
-import { ArrowLeftRightIcon, EthernetPortIcon, LoaderCircleIcon, ServerIcon, XIcon } from "lucide-react"
+import {
+	ArrowDownIcon,
+	ArrowLeftRightIcon,
+	ArrowUpDownIcon,
+	ArrowUpIcon,
+	EthernetPortIcon,
+	EyeIcon,
+	LandmarkIcon,
+	LoaderCircleIcon,
+	ServerIcon,
+	Settings2Icon,
+	ShieldCheckIcon,
+	XIcon,
+} from "lucide-react"
+import {
+	DropdownMenu,
+	DropdownMenuCheckboxItem,
+	DropdownMenuContent,
+	DropdownMenuItem,
+	DropdownMenuLabel,
+	DropdownMenuSeparator,
+	DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet"
 import ChartTimeSelect from "@/components/charts/chart-time-select"
 import { LossChart, AvgMinMaxResponseChart } from "@/components/routes/system/charts/monitors-charts"
@@ -65,13 +82,19 @@ export default function NetworkMonitorsTableNew({
 	monitors: NetworkMonitorRecord[]
 	isLoading: boolean
 }) {
-	const [sorting, setSorting] = useBrowserStorage<SortingState>(
-		`sort-np-target-${systemId ? 1 : 0}`,
-		[{ id: systemId ? "target" : "system", desc: false }],
-		sessionStorage
+	const sortSettingsKey = systemId ? "monitorSortModeSystem" : "monitorSortMode"
+	const sortStorageKey = `besz-sort-np-target-${systemId ? 1 : 0}`
+	const [sorting, setSorting] = useState<SortingState>(
+		() =>
+			$userSettings.get()[sortSettingsKey] ??
+			JSON.parse(sessionStorage.getItem(sortStorageKey) || "null") ?? [
+				{ id: systemId ? "target" : "system", desc: false },
+			]
 	)
 	const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
-	const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
+	const [columnVisibility, setColumnVisibility] = useState<VisibilityState>(
+		() => $userSettings.get().monitorCols ?? JSON.parse(localStorage.getItem("besz-monitor-cols") || "{}")
+	)
 	const [rowSelection, setRowSelection] = useState<RowSelectionState>({})
 	const [globalFilter, setGlobalFilter] = useState("")
 	const [deleteOpen, setDeleteOpen] = useState(false)
@@ -81,6 +104,49 @@ export default function NetworkMonitorsTableNew({
 	const { toast } = useToast()
 	const canManageMonitors = !isReadOnlyUser()
 
+	// Apply settings from server once they load (handles incognito / new devices)
+	const appliedSettings = useRef(new Set<string>())
+	useEffect(() => {
+		return subscribeKeys($userSettings, ["monitorCols", sortSettingsKey], (vals) => {
+			if (!appliedSettings.current.has("monitorCols") && vals.monitorCols !== undefined) {
+				appliedSettings.current.add("monitorCols")
+				setColumnVisibility(vals.monitorCols)
+			}
+			if (!appliedSettings.current.has(sortSettingsKey) && vals[sortSettingsKey] !== undefined) {
+				appliedSettings.current.add(sortSettingsKey)
+				setSorting(vals[sortSettingsKey] as SortingState)
+			}
+		})
+	}, [sortSettingsKey])
+
+	const handleColumnVisibilityChange = useCallback(
+		(updater: VisibilityState | ((prev: VisibilityState) => VisibilityState)) => {
+			setColumnVisibility((prev) => {
+				const next = typeof updater === "function" ? updater(prev) : updater
+				localStorage.setItem("besz-monitor-cols", JSON.stringify(next))
+				$userSettings.setKey("monitorCols", next)
+				queueUserSettings({ monitorCols: next })
+				return next
+			})
+		},
+		[]
+	)
+
+	const handleSortingChange = useCallback(
+		(updater: SortingState | ((prev: SortingState) => SortingState)) => {
+			setSorting((prev) => {
+				const next = typeof updater === "function" ? updater(prev) : updater
+				sessionStorage.setItem(sortStorageKey, JSON.stringify(next))
+				$userSettings.setKey(sortSettingsKey, next)
+				queueUserSettings({ [sortSettingsKey]: next })
+				return next
+			})
+		},
+		[sortSettingsKey, sortStorageKey]
+	)
+
+	// recompute when measured widths are invalidated (e.g. web font finished loading)
+	const textMeasureVersion = useStore($textMeasureVersion)
 	const longestTarget = useMemo(() => {
 		let longestTarget = ""
 		for (const p of monitors) {
@@ -89,7 +155,7 @@ export default function NetworkMonitorsTableNew({
 			}
 		}
 		return longestTarget
-	}, [monitors])
+	}, [monitors, textMeasureVersion])
 
 	const runMonitorBatch = useCallback(
 		async (ids: string[], enqueue: (batch: ReturnType<typeof pb.createBatch>, id: string) => void) => {
@@ -207,9 +273,9 @@ export default function NetworkMonitorsTableNew({
 		getCoreRowModel: getCoreRowModel(),
 		getSortedRowModel: getSortedRowModel(),
 		getFilteredRowModel: getFilteredRowModel(),
-		onSortingChange: setSorting,
+		onSortingChange: handleSortingChange,
 		onColumnFiltersChange: setColumnFilters,
-		onColumnVisibilityChange: setColumnVisibility,
+		onColumnVisibilityChange: handleColumnVisibilityChange,
 		onRowSelectionChange: setRowSelection,
 		defaultColumn: {
 			sortUndefined: "last",
@@ -236,11 +302,12 @@ export default function NetworkMonitorsTableNew({
 
 	const rows = table.getRowModel().rows
 	const visibleColumns = table.getVisibleLeafColumns()
+	const visibleColumnsKey = visibleColumns.map((column) => column.id).join(",")
 
 	return (
 		<Card className="@container w-full px-3 py-5 sm:py-6 sm:px-6">
 			<CardHeader className="p-0 mb-3 sm:mb-4">
-				<div className="grid md:flex gap-x-5 gap-y-3 w-full items-end">
+				<div className="grid md-lg:flex gap-x-5 gap-y-3 w-full items-end">
 					<div className="px-2 sm:px-1">
 						<CardTitle className="mb-2">
 							<Trans>Network Monitors</Trans>
@@ -249,14 +316,14 @@ export default function NetworkMonitorsTableNew({
 							<Trans>Response time monitoring from agents.</Trans>
 						</div>
 					</div>
-					<div className="md:ms-auto flex items-center gap-2">
+					<div className="md-lg:ms-auto flex items-center gap-2">
 						{monitors.length > 0 && (
-							<div className="relative">
+							<div className="relative grow">
 								<Input
 									placeholder={t`Filter...`}
 									value={globalFilter}
 									onChange={(e) => setGlobalFilter(e.target.value)}
-									className="ms-auto px-4 w-full max-w-full md:w-50"
+									className="ms-auto px-4 w-full max-w-full md-lg:w-50"
 								/>
 								{globalFilter && (
 									<Button
@@ -272,6 +339,74 @@ export default function NetworkMonitorsTableNew({
 								)}
 							</div>
 						)}
+						<DropdownMenu>
+							<DropdownMenuTrigger asChild>
+								<Button variant="outline">
+									<Settings2Icon className="me-1.5 size-4 opacity-80" />
+									<Trans>View</Trans>
+								</Button>
+							</DropdownMenuTrigger>
+							<DropdownMenuContent className="h-72 md:h-auto min-w-48 md:min-w-auto overflow-y-auto">
+								<div className="grid grid-cols-2 divide-y md:divide-s md:divide-y-0">
+									<div className="border-r">
+										<DropdownMenuLabel className="pt-2 px-3.5 flex items-center gap-2">
+											<ArrowUpDownIcon className="size-4" />
+											<Trans>Sort By</Trans>
+										</DropdownMenuLabel>
+										<DropdownMenuSeparator />
+										<div className="px-1 pb-1">
+											{table.getAllColumns().map((column) => {
+												if (!column.getCanSort()) return null
+												let Icon = <span className="w-6"></span>
+												if (sorting[0]?.id === column.id) {
+													Icon = sorting[0]?.desc ? (
+														<ArrowUpIcon className="me-2 size-4" />
+													) : (
+														<ArrowDownIcon className="me-2 size-4" />
+													)
+												}
+												return (
+													<DropdownMenuItem
+														onSelect={(e) => {
+															e.preventDefault()
+															handleSortingChange([
+																{ id: column.id, desc: sorting[0]?.id === column.id && !sorting[0]?.desc },
+															])
+														}}
+														key={column.id}
+													>
+														{Icon}
+														{column.columnDef.meta?.label ?? column.id}
+													</DropdownMenuItem>
+												)
+											})}
+										</div>
+									</div>
+									<div>
+										<DropdownMenuLabel className="pt-2 px-3.5 flex items-center gap-2">
+											<EyeIcon className="size-4" />
+											<Trans>Visible Fields</Trans>
+										</DropdownMenuLabel>
+										<DropdownMenuSeparator />
+										<div className="px-1.5 pb-1">
+											{table
+												.getAllColumns()
+												.filter((column) => column.getCanHide())
+												.map((column) => (
+													<DropdownMenuCheckboxItem
+														key={column.id}
+														onSelect={(e) => e.preventDefault()}
+														checked={column.getIsVisible()}
+														onCheckedChange={(value) => column.toggleVisibility(!!value)}
+													>
+														{column.columnDef.meta?.label ?? column.id}
+													</DropdownMenuCheckboxItem>
+												))}
+										</div>
+									</div>
+								</div>
+							</DropdownMenuContent>
+						</DropdownMenu>
 						{canManageMonitors ? <AddMonitorDialog systemId={systemId} monitors={monitors} /> : null}
 						{canManageMonitors ? (
 							<EditMonitorDialog
@@ -324,6 +459,7 @@ export default function NetworkMonitorsTableNew({
 					table={table}
 					rows={rows}
 					colLength={visibleColumns.length}
+					visibleColumnsKey={visibleColumnsKey}
 					rowSelection={rowSelection}
 					isLoading={isLoading}
 				/>
@@ -336,12 +472,14 @@ const NetworkMonitorsTable = memo(function NetworkMonitorTable({
 	table,
 	rows,
 	colLength,
+	visibleColumnsKey,
 	rowSelection,
 	isLoading,
 }: {
 	table: TableType<NetworkMonitorRecord>
 	rows: Row<NetworkMonitorRecord>[]
 	colLength: number
+	visibleColumnsKey: string
 	rowSelection: RowSelectionState
 	isLoading: boolean
 }) {
@@ -389,6 +527,7 @@ const NetworkMonitorsTable = memo(function NetworkMonitorTable({
 										virtualRow={virtualRow}
 										isSelected={row.getIsSelected()}
 										rowSelection={rowSelection}
+										visibleColumnsKey={visibleColumnsKey}
 										openSheet={openSheet}
 									/>
 								)
@@ -441,6 +580,9 @@ const NetworkMonitorTableRow = memo(function NetworkMonitorTableRow({
 	virtualRow,
 	isSelected,
 	rowSelection: _rowSelection,
+	// Column visibility doesn't change the row object identity, so this prop exists only
+	// to force a re-render (and a fresh row.getVisibleCells() read) when columns are toggled.
+	visibleColumnsKey: _visibleColumnsKey,
 	openSheet,
 }: {
 	row: Row<NetworkMonitorRecord>
@@ -448,12 +590,16 @@ const NetworkMonitorTableRow = memo(function NetworkMonitorTableRow({
 	isSelected: boolean
 	// Menus depend on the entire selection, including changes to other rows.
 	rowSelection: RowSelectionState
+	visibleColumnsKey: string
 	openSheet: (monitor: NetworkMonitorRecord) => void
 }) {
+	const system = useStore($allSystemsById)[row.original.system]
 	return (
 		<TableRow
 			data-state={isSelected && "selected"}
-			className="cursor-pointer transition-opacity"
+			className={cn("cursor-pointer transition-opacity", {
+				"opacity-50": system?.status === SystemStatus.Paused,
+			})}
 			onClick={() => openSheet(row.original)}
 		>
 			{row.getVisibleCells().map((cell) => (
@@ -488,6 +634,36 @@ function NetworkMonitorSheet({
 	return <NetworkMonitorSheetContent key={monitor.system} open={open} onOpenChange={onOpenChange} monitor={monitor} />
 }
 
+const certExpiryTextColors = { ok: "", warning: "text-yellow-600 dark:text-yellow-500", critical: "text-red-500" }
+
+function CertExpiry({ cert }: { cert: MonitorCertInfo }) {
+	const daysLeft = getCertDaysLeft(cert)
+	const expires = formatShortDate(new Date(cert.expires).toISOString())
+	const level = getCertExpiryLevel(daysLeft)
+	return (
+		<>
+			<Separator orientation="vertical" className="h-2.5 bg-muted-foreground opacity-70" />
+			<ShieldCheckIcon className={cn("size-3.5 text-muted-foreground -me-1", certExpiryTextColors[level])} />
+			<span className={certExpiryTextColors[level]}>
+				{daysLeft < 0 ? (
+					<Trans>Certificate expired {expires}</Trans>
+				) : (
+					<Trans>
+						Certificate expires {expires} 
+					</Trans>
+				)}
+			</span>
+			{cert.issuer && (
+				<>
+					<Separator orientation="vertical" className="h-2.5 bg-muted-foreground opacity-70" />
+					<LandmarkIcon className="size-3.5 text-muted-foreground -me-0.5" />
+					<span>{cert.issuer}</span>
+				</>
+			)}
+		</>
+	)
+}
+
 function NetworkMonitorSheetContent({
 	open,
 	onOpenChange,
@@ -499,7 +675,7 @@ function NetworkMonitorSheetContent({
 }) {
 	// Keep monitor exploration independent of the system charts' time range.
 	const [chartTimeStore] = useState(() => {
-		const defaultTime = $userSettings.get().chartTime
+		const defaultTime = getUserChartTime()
 		return atom(defaultTime === "1m" ? "1h" : defaultTime)
 	})
 	const chartTime = useStore(chartTimeStore)
@@ -535,7 +711,7 @@ function NetworkMonitorSheetContent({
 							{system?.name ?? ""}
 						</Link>
 						<Separator orientation="vertical" className="h-2.5 bg-muted-foreground opacity-70" />
-						<ArrowLeftRightIcon className="size-3.5 text-muted-foreground" />
+						<ArrowLeftRightIcon className="size-3.5 text-muted-foreground -me-0.5" />
 						{monitor.protocol.toUpperCase()}
 						{monitor.protocol === "tcp" && monitor.port > 0 && (
 							<>
@@ -551,6 +727,7 @@ function NetworkMonitorSheetContent({
 								<span>{monitor.server}</span>
 							</>
 						)}
+						{monitor.certInfo?.expires ? <CertExpiry cert={monitor.certInfo} /> : null}
 					</SheetDescription>
 				</SheetHeader>
 				<div className="grid gap-4">
