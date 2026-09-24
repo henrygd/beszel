@@ -138,7 +138,7 @@ export function getMonitorColumns(
 							</div>
 						</div>
 					),
-					[status, name]
+					[status, name, longestSystemName]
 				)
 			},
 		},

@@ -7,7 +7,7 @@ import { twMerge } from "tailwind-merge"
 import { toast } from "@/components/ui/use-toast"
 import type { ChartTimeData, FingerprintRecord, SemVer, SystemRecord } from "@/types"
 import { HourFormat, Unit } from "./enums"
-import { $copyContent, $userSettings } from "./stores"
+import { $copyContent, $textMeasureVersion, $userSettings } from "./stores"
 
 export function cn(...inputs: ClassValue[]) {
 	return twMerge(clsx(inputs))
@@ -460,21 +460,34 @@ let measureFont = ""
 function getMeasureContext(): CanvasRenderingContext2D | null {
 	if (measureContext === undefined) {
 		measureContext = document.createElement("canvas").getContext("2d")
-		// the fallback font has different metrics, so drop cached widths once the real font is loaded
-		if ("fonts" in document) {
-			document.fonts.ready.then(() => visualWidthCache.clear())
+		// the fallback font has different metrics, so re-measure whenever a font finishes loading.
+		// loadingdone also covers fonts that start loading after the first measurement,
+		// which fonts.ready does not if it has already resolved.
+		if (measureContext && "fonts" in document) {
+			document.fonts.addEventListener("loadingdone", invalidateVisualWidths)
 		}
 	}
 	if (measureContext) {
 		const { fontFamily, fontWeight } = getComputedStyle(document.body)
 		const font = `${fontWeight} 16px ${fontFamily}`
 		if (font !== measureFont) {
+			const isFirstFont = !measureFont
 			measureFont = font
 			measureContext.font = font
 			visualWidthCache.clear()
+			// defer so stores aren't updated in the middle of a comparison or a render
+			if (!isFirstFont) {
+				queueMicrotask(invalidateVisualWidths)
+			}
 		}
 	}
 	return measureContext
+}
+
+/** Drop cached widths and notify anything holding a result from isVisuallyLonger */
+function invalidateVisualWidths() {
+	visualWidthCache.clear()
+	$textMeasureVersion.set($textMeasureVersion.get() + 1)
 }
 
 /** Get the visual width of a string, accounting for full-width and narrow punctuation characters.

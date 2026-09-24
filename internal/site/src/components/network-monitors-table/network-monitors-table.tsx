@@ -36,7 +36,7 @@ import { useToast } from "@/components/ui/use-toast"
 import { isReadOnlyUser, queueUserSettings } from "@/lib/api"
 import { pb } from "@/lib/api"
 import { SystemStatus } from "@/lib/enums"
-import { $allSystemsById, $direction, $userSettings, getUserChartTime } from "@/lib/stores"
+import { $allSystemsById, $direction, $textMeasureVersion, $userSettings, getUserChartTime } from "@/lib/stores"
 import { cn, formatShortDate, isVisuallyLonger, matchesFilterGroups, parseFilterGroups, parseSemVer } from "@/lib/utils"
 import type { ChartData, MonitorCertInfo, NetworkMonitorRecord } from "@/types"
 import { AddMonitorDialog, EditMonitorDialog } from "./monitor-dialog"
@@ -145,6 +145,8 @@ export default function NetworkMonitorsTableNew({
 		[sortSettingsKey, sortStorageKey]
 	)
 
+	// recompute when measured widths are invalidated (e.g. web font finished loading)
+	const textMeasureVersion = useStore($textMeasureVersion)
 	const longestTarget = useMemo(() => {
 		let longestTarget = ""
 		for (const p of monitors) {
@@ -153,7 +155,7 @@ export default function NetworkMonitorsTableNew({
 			}
 		}
 		return longestTarget
-	}, [monitors])
+	}, [monitors, textMeasureVersion])
 
 	const runMonitorBatch = useCallback(
 		async (ids: string[], enqueue: (batch: ReturnType<typeof pb.createBatch>, id: string) => void) => {
