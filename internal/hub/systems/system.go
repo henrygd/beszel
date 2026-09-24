@@ -280,7 +280,7 @@ func (sys *System) createRecords(data *system.CombinedData) (*core.Record, error
 				return err
 			}
 			// sync display name with hostname if enabled (details are fetched once per agent connection)
-			if systemRecord.GetBool("sync_name") && data.Details.Hostname != "" {
+			if syncNames, _ := utils.GetEnv("SYNC_SYSTEM_NAMES"); syncNames == "true" && data.Details.Hostname != "" {
 				systemRecord.Set("name", data.Details.Hostname)
 			}
 		}

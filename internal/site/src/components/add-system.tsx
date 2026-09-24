@@ -5,7 +5,6 @@ import { getPagePath } from "@nanostores/router"
 import { ChevronDownIcon, ExternalLinkIcon } from "lucide-react"
 import { memo, useEffect, useRef, useState } from "react"
 import { Button } from "@/components/ui/button"
-import { Checkbox } from "@/components/ui/checkbox"
 import {
 	Dialog,
 	DialogContent,
@@ -72,7 +71,6 @@ export const SystemDialog = ({ setOpen, system }: { setOpen: (open: boolean) => 
 	const isUnixSocket = hostValue.startsWith("/")
 	const [tab, setTab] = useBrowserStorage("as-tab", "docker")
 	const [token, setToken] = useState(system?.token ?? "")
-	const [syncName, setSyncName] = useState(system?.sync_name ?? false)
 
 	useEffect(() => {
 		;(async () => {
@@ -98,7 +96,6 @@ export const SystemDialog = ({ setOpen, system }: { setOpen: (open: boolean) => 
 		const formData = new FormData(e.target as HTMLFormElement)
 		const data = Object.fromEntries(formData) as Record<string, any>
 		data.users = pb.authStore.record!.id
-		data.sync_name = syncName
 		try {
 			setOpen(false)
 			if (system) {
@@ -182,17 +179,6 @@ export const SystemDialog = ({ setOpen, system }: { setOpen: (open: boolean) => 
 							<Trans>Name</Trans>
 						</Label>
 						<Input id="name" name="name" defaultValue={system?.name} required />
-						<span />
-						<div className="flex items-center gap-2">
-							<Checkbox
-								id="sync_name"
-								checked={syncName}
-								onCheckedChange={(checked) => setSyncName(checked === true)}
-							/>
-							<Label htmlFor="sync_name" className="font-normal cursor-pointer">
-								<Trans>Sync name with hostname</Trans>
-							</Label>
-						</div>
 						<Label htmlFor="host" className="xs:text-end">
 							<Trans>Host / IP</Trans>
 						</Label>

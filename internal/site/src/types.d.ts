@@ -31,7 +31,6 @@ export interface SystemRecord extends RecordModel {
 	info: SystemInfo
 	v: string
 	updated: string
-	sync_name: boolean
 }
 
 export interface SystemInfo {
