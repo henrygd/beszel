@@ -451,6 +451,32 @@ export function runOnce<T extends (...args: any[]) => any>(fn: T): T {
 
 const visualWidthCache = new Map<string, number>()
 
+let measureContext: CanvasRenderingContext2D | null | undefined
+let measureFont = ""
+
+/** Canvas context for measuring text in the font the app renders with, or null where canvas is unavailable.
+ *  Only relative widths matter here, so the font size is arbitrary.
+ */
+function getMeasureContext(): CanvasRenderingContext2D | null {
+	if (measureContext === undefined) {
+		measureContext = document.createElement("canvas").getContext("2d")
+		// the fallback font has different metrics, so drop cached widths once the real font is loaded
+		if ("fonts" in document) {
+			document.fonts.ready.then(() => visualWidthCache.clear())
+		}
+	}
+	if (measureContext) {
+		const { fontFamily, fontWeight } = getComputedStyle(document.body)
+		const font = `${fontWeight} 16px ${fontFamily}`
+		if (font !== measureFont) {
+			measureFont = font
+			measureContext.font = font
+			visualWidthCache.clear()
+		}
+	}
+	return measureContext
+}
+
 /** Get the visual width of a string, accounting for full-width and narrow punctuation characters.
  *  Don't use for monospaced fonts, use .length instead
  */
@@ -458,6 +484,11 @@ function getVisualStringWidth(str: string): number {
 	const cached = visualWidthCache.get(str)
 	if (cached !== undefined) {
 		return cached
+	}
+	const measured = getMeasureContext()?.measureText(str).width
+	if (measured !== undefined) {
+		visualWidthCache.set(str, measured)
+		return measured
 	}
 	let width = 0
 	for (const char of str) {
