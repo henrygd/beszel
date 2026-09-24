@@ -69,6 +69,8 @@ msgstr "{count, plural, one {{countString} Minute} other {{countString} Minuten}
 msgid "{daysLeft, plural, one {# day} other {# days}}"
 msgstr "{daysLeft, plural, one {# Tag} other {# Tage}}"
 
+msgstr ""
+
 #: src/components/routes/system/charts/disk-charts.tsx
 msgid "{diskName} I/O"
 msgstr "{diskName} E/A"
@@ -80,6 +82,8 @@ msgstr "{numFailed, plural, one {# fehlgeschlagener Dienst} other {# fehlgeschla
 #: src/components/active-alerts.tsx
 msgid "{systemCount, plural, one {Across # system} other {Across # systems}}"
 msgstr "{systemCount, plural, one {Über # System} other {Über # Systeme}}"
+
+msgstr ""
 
 #: src/components/routes/system/info-bar.tsx
 msgid "{threads, plural, one {# thread} other {# threads}}"
@@ -164,6 +168,8 @@ msgstr "Aktiver Zustand"
 #: src/components/network-monitors-table/monitor-dialog.tsx
 msgid "Add"
 msgstr "Hinzufügen"
+
+msgstr ""
 
 #: src/components/network-monitors-table/monitor-dialog.tsx
 #: src/components/network-monitors-table/monitor-dialog.tsx
@@ -461,6 +467,8 @@ msgstr "Zertifikat läuft ab {expires}"
 #: src/components/routes/system/package-updates-table.tsx
 msgid "Change"
 msgstr "Ändern"
+
+msgstr ""
 
 #: src/components/routes/settings/general.tsx
 msgid "Change display units for metrics."
@@ -1026,6 +1034,10 @@ msgstr "Exportiere die aktuelle Systemkonfiguration."
 #: src/components/routes/settings/general.tsx
 msgid "Fahrenheit (°F)"
 msgstr "Fahrenheit (°F)"
+
+#: src/components/systems-table/systems-table-columns.tsx
+#~ msgid "Failed"
+#~ msgstr "Fehlgeschlagen"
 
 #: src/components/routes/system/smart-table.tsx
 msgid "Failed Attributes:"
@@ -2251,6 +2263,9 @@ msgstr "Ziel"
 msgid "target[,protocol[,port[,interval[,server]]]]"
 msgstr "Ziel[,Protokoll[,Port[,Intervall[,Server]]]]"
 
+msgid "target[,protocol[,port[,interval]]]"
+msgstr ""
+
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Tasks"
 msgstr "Aufgaben"
@@ -2511,6 +2526,9 @@ msgstr "Aktualisieren"
 #: src/components/network-monitors-table/network-monitors-columns.tsx
 
 #: src/components/routes/system/nut-table.tsx#: src/components/routes/system/smart-table.tsx
+
+#: src/components/routes/system/nut-table.tsx
+#: src/components/routes/system/smart-table.tsx
 #: src/components/routes/system/storage-pools-table.tsx
 #: src/components/systemd-table/systemd-table-columns.tsx
 msgid "Updated"
@@ -2687,3 +2705,4 @@ msgstr "Ja"
 #: src/components/routes/settings/layout.tsx
 msgid "Your user settings have been updated."
 msgstr "Deine Benutzereinstellungen wurden aktualisiert."
+

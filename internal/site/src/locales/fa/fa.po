@@ -69,6 +69,8 @@ msgstr "{count, plural, one {{countString} دقیقه} few {{countString} دقی
 msgid "{daysLeft, plural, one {# day} other {# days}}"
 msgstr "{daysLeft, plural, one {# روز} other {# روز}}"
 
+msgstr ""
+
 #: src/components/routes/system/charts/disk-charts.tsx
 msgid "{diskName} I/O"
 msgstr "ورودی/خروجی {diskName}"
@@ -80,6 +82,8 @@ msgstr "{numFailed, plural, one {# سرویس ناموفق} other {# سرویس 
 #: src/components/active-alerts.tsx
 msgid "{systemCount, plural, one {Across # system} other {Across # systems}}"
 msgstr "{systemCount, plural, one {در # سیستم} other {در # سیستم}}"
+
+msgstr ""
 
 #: src/components/routes/system/info-bar.tsx
 msgid "{threads, plural, one {# thread} other {# threads}}"
@@ -164,6 +168,8 @@ msgstr "وضعیت فعال"
 #: src/components/network-monitors-table/monitor-dialog.tsx
 msgid "Add"
 msgstr "افزودن"
+
+msgstr ""
 
 #: src/components/network-monitors-table/monitor-dialog.tsx
 #: src/components/network-monitors-table/monitor-dialog.tsx
@@ -461,6 +467,8 @@ msgstr "گواهی منقضی می‌شود {expires}"
 #: src/components/routes/system/package-updates-table.tsx
 msgid "Change"
 msgstr "تغییر"
+
+msgstr ""
 
 #: src/components/routes/settings/general.tsx
 msgid "Change display units for metrics."
@@ -1026,6 +1034,10 @@ msgstr "پیکربندی سیستم‌های فعلی خود را خارج کن�
 #: src/components/routes/settings/general.tsx
 msgid "Fahrenheit (°F)"
 msgstr "فارنهایت (°F)"
+
+#: src/components/systems-table/systems-table-columns.tsx
+#~ msgid "Failed"
+#~ msgstr "ناموفق"
 
 #: src/components/routes/system/smart-table.tsx
 msgid "Failed Attributes:"
@@ -2249,6 +2261,8 @@ msgstr "هدف"
 #: src/components/network-monitors-table/monitor-dialog.tsx
 #: src/components/network-monitors-table/monitor-dialog.tsx
 msgid "target[,protocol[,port[,interval[,server]]]]"
+
+msgid "target[,protocol[,port[,interval]]]"
 msgstr ""
 
 #: src/components/systemd-table/systemd-table.tsx
@@ -2511,6 +2525,9 @@ msgstr "به‌روزرسانی"
 #: src/components/network-monitors-table/network-monitors-columns.tsx
 
 #: src/components/routes/system/nut-table.tsx#: src/components/routes/system/smart-table.tsx
+
+#: src/components/routes/system/nut-table.tsx
+#: src/components/routes/system/smart-table.tsx
 #: src/components/routes/system/storage-pools-table.tsx
 #: src/components/systemd-table/systemd-table-columns.tsx
 msgid "Updated"
@@ -2687,3 +2704,4 @@ msgstr "بله"
 #: src/components/routes/settings/layout.tsx
 msgid "Your user settings have been updated."
 msgstr "تنظیمات کاربری شما به‌روزرسانی شد."
+
