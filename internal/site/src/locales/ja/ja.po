@@ -8,7 +8,7 @@ msgstr ""
 "Language: ja\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2026-09-22 03:34\n"
+"PO-Revision-Date: 2026-09-24 16:15\n"
 "Last-Translator: \n"
 "Language-Team: Japanese\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
@@ -2104,7 +2104,7 @@ msgstr "1時間のパケットロス率がしきい値を超えるとトリガ�
 
 #: src/lib/alerts.ts
 msgid "Triggers when status switches between up and down"
-msgstr "ステータスが上から下に切り替わるときにトリガーされます"
+msgstr "システムが停止したときトリガーされます"
 
 #: src/lib/alerts.ts
 msgid "Triggers when usage of any disk exceeds a threshold"
