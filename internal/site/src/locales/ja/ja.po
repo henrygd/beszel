@@ -2104,7 +2104,7 @@ msgstr "1時間のパケットロス率がしきい値を超えるとトリガ�
 
 #: src/lib/alerts.ts
 msgid "Triggers when status switches between up and down"
-msgstr "システムが停止したときトリガーされます"
+msgstr "ステータスが稼働中と停止中の間で切り替わったときにトリガーされます"
 
 #: src/lib/alerts.ts
 msgid "Triggers when usage of any disk exceeds a threshold"
