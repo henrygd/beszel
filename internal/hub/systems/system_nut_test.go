@@ -142,6 +142,18 @@ func TestSaveNutDevices_RemovesStaleDevices(t *testing.T) {
 	records := countNutDeviceRecords(t, testApp, sys.Id)
 	require.Len(t, records, 2, "expected both devices to be saved")
 
+	nutStats, err := testApp.FindAllRecords("nut_stats", nil)
+	require.NoError(t, err)
+	var statsForSystem []*core.Record
+	for _, record := range nutStats {
+		if record.GetString("system") == sys.Id {
+			statsForSystem = append(statsForSystem, record)
+		}
+	}
+	require.Len(t, statsForSystem, 2, "expected each device sample to be stored in history")
+	charges := []float64{statsForSystem[0].GetFloat("battery_charge"), statsForSystem[1].GetFloat("battery_charge")}
+	assert.ElementsMatch(t, []float64{100, 95}, charges)
+
 	var record1 *core.Record
 	for _, r := range records {
 		if r.GetString("model") == "APC 1500" {

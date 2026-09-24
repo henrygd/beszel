@@ -104,8 +104,15 @@ func (sys *System) saveNutDevices(nutData map[string]nut.NutData, complete bool)
 			}
 		}
 
+		statsCollection, err := txApp.FindCachedCollectionByNameOrId("nut_stats")
+		if err != nil {
+			return err
+		}
 		for deviceKey, device := range nutData {
 			if err := sys.upsertNutDeviceRecord(txApp, collection, deviceKey, device); err != nil {
+				return err
+			}
+			if err := sys.createNutStatsRecord(txApp, statsCollection, deviceKey, device); err != nil {
 				return err
 			}
 		}
@@ -113,6 +120,22 @@ func (sys *System) saveNutDevices(nutData map[string]nut.NutData, complete bool)
 		return nil
 	})
 	return err
+}
+
+func (sys *System) createNutStatsRecord(app core.App, collection *core.Collection, deviceKey string, device nut.NutData) error {
+	record := core.NewRecord(collection)
+	record.Set("system", sys.Id)
+	record.Set("device", MakeStableHashId(sys.Id, deviceKey))
+	record.Set("type", "1m")
+	record.Set("battery_charge", device.BatteryCharge)
+	record.Set("battery_runtime", device.BatteryRuntime)
+	record.Set("battery_voltage", device.BatteryVoltage)
+	record.Set("input_voltage", device.InputVoltage)
+	record.Set("output_voltage", device.OutputVoltage)
+	record.Set("load", device.Load)
+	record.Set("output_current", device.OutputCurrent)
+	record.Set("output_power", device.OutputPower)
+	return app.SaveNoValidate(record)
 }
 
 func (sys *System) upsertNutDeviceRecord(app core.App, collection *core.Collection, deviceKey string, device nut.NutData) error {

@@ -33,14 +33,17 @@ import {
 	ZapIcon,
 } from "lucide-react"
 import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
+import LineChartDefault from "@/components/charts/line-chart"
+import ChartTimeSelect from "@/components/charts/chart-time-select"
+import { ChartCard } from "./chart-card"
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet"
 import { Input } from "@/components/ui/input"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { isReadOnlyUser, pb } from "@/lib/api"
-import type { NutDeviceRecord, NutOutlet } from "@/types"
-import { cn, toFixedFloat, hourWithSeconds, formatShortDate, secondsToString } from "@/lib/utils"
+import { getPbTimestamp, isReadOnlyUser, pb } from "@/lib/api"
+import type { ChartData, ChartTimes, NutDeviceRecord, NutOutlet, NutStatsRecord } from "@/types"
+import { chartTimeData, cn, parseSemVer, toFixedFloat, hourWithSeconds, formatShortDate, secondsToString } from "@/lib/utils"
 import { Trans } from "@lingui/react/macro"
 import { useStore } from "@nanostores/react"
 import { $allSystemsById } from "@/lib/stores"
@@ -55,6 +58,9 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { memo, useCallback, useMemo, useEffect, useRef, useState } from "react"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
+import { atom } from "nanostores"
+
+const $nutChartTime = atom<ChartTimes>("1h")
 
 const NUT_DEVICE_FIELDS =
 	"id,system,name,model,manufacturer,serial,firmware,driver,device_type,state,status,battery_charge,battery_voltage,battery_runtime,input_voltage,output_voltage,input_nominal,load,output_current,output_power,updated"
@@ -644,6 +650,9 @@ function DeviceSheet({
 }) {
 	const [device, setDevice] = useState<NutDeviceRecord | null>(null)
 	const [isLoading, setIsLoading] = useState(false)
+	const [stats, setStats] = useState<NutStatsRecord[]>([])
+	const [statsLoading, setStatsLoading] = useState(false)
+	const chartTime = useStore($nutChartTime)
 
 	useEffect(() => {
 		if (!deviceId) {
@@ -658,6 +667,48 @@ function DeviceSheet({
 			.catch(() => setDevice(null))
 			.finally(() => setIsLoading(false))
 	}, [open, deviceId])
+
+	useEffect(() => {
+		if (!open || !deviceId) return
+		let cancelled = false
+		const refreshStats = () => {
+			setStatsLoading(true)
+			const { type } = chartTimeData[chartTime]
+			pb.collection<NutStatsRecord>("nut_stats")
+				.getFullList({
+					filter: pb.filter("device={:device} && type={:type} && created>{:created}", {
+						device: deviceId,
+						type,
+						created: getPbTimestamp(chartTime),
+					}),
+					fields:
+						"created,battery_charge,battery_runtime,battery_voltage,input_voltage,output_voltage,load,output_current,output_power",
+					sort: "created",
+				})
+				.then((records) => {
+					if (!cancelled) {
+						setStats(
+							records.map((record) => ({
+								...record,
+								created: new Date(record.created).getTime(),
+							}))
+						)
+					}
+				})
+				.catch(() => {
+					if (!cancelled) setStats([])
+				})
+				.finally(() => {
+					if (!cancelled) setStatsLoading(false)
+				})
+		}
+		refreshStats()
+		const interval = window.setInterval(refreshStats, 30_000)
+		return () => {
+			cancelled = true
+			window.clearInterval(interval)
+		}
+	}, [open, deviceId, chartTime])
 
 	const unknown = "Unknown"
 	const deviceName = device?.name || unknown
@@ -681,6 +732,17 @@ function DeviceSheet({
 
 	const isHealthy = health === "ONLINE"
 	const isCritical = health === "FAULT" || health === "LOW_BATTERY" || health === "OVERLOAD"
+	const chartData = useMemo<ChartData>(
+		() => ({
+			systemStats: [],
+			containerData: [],
+			chartTime,
+			orientation: "left",
+			agentVersion: parseSemVer("0.20.0"),
+		}),
+		[chartTime]
+	)
+	const chartEmpty = !statsLoading && stats.length === 0
 
 	return (
 		<Sheet open={open} onOpenChange={onOpenChange}>
@@ -725,7 +787,7 @@ function DeviceSheet({
 						)}
 					</SheetDescription>
 				</SheetHeader>
-				<div className="flex-1 overflow-hidden p-4 flex flex-col gap-4">
+				<div className="flex-1 overflow-y-auto p-4 flex flex-col gap-4">
 					{isLoading ? (
 						<div className="flex justify-center py-8">
 							<LoaderCircleIcon className="animate-spin size-10 opacity-60" />
@@ -823,6 +885,75 @@ function DeviceSheet({
 										</div>
 									</div>
 								)}
+							</div>
+
+							<div className="grid gap-4 lg:grid-cols-2">
+								<ChartCard
+									empty={chartEmpty}
+									grid={true}
+									title={t`Battery`}
+									description={t`Battery charge and estimated runtime over time`}
+									cornerEl={<ChartTimeSelect agentVersion={parseSemVer("0.20.0")} chartTimeStore={$nutChartTime} allowRealtime={false} />}
+								>
+									<LineChartDefault
+										chartData={chartData}
+										customData={stats}
+										tickFormatter={(value) => `${toFixedFloat(value, 0)}%`}
+										tickFormatter2={(value) => secondsToString(value, "minute")}
+										contentFormatter={(item) =>
+											item.name === t`Runtime`
+												? secondsToString(item.value, "minute")
+												: `${toFixedFloat(item.value, 1)}%`
+										}
+										legend={true}
+										dataPoints={[
+											{ label: t`Charge`, color: 2, dataKey: (point: NutStatsRecord) => point.battery_charge },
+											{ label: t`Runtime`, color: 4, yAxisId: "right", dataKey: (point: NutStatsRecord) => point.battery_runtime },
+										]}
+									/>
+								</ChartCard>
+								<ChartCard
+									empty={chartEmpty}
+									grid={true}
+									title={t`Power`}
+									description={t`Load and output power over time`}
+								>
+									<LineChartDefault
+										chartData={chartData}
+										customData={stats}
+										tickFormatter={(value) => `${toFixedFloat(value, 0)}%`}
+										tickFormatter2={(value) => `${toFixedFloat(value, 0)} W`}
+										contentFormatter={(item) =>
+											item.name === t`Output Power`
+												? `${toFixedFloat(item.value, 1)} W`
+												: `${toFixedFloat(item.value, 1)}%`
+										}
+										legend={true}
+										dataPoints={[
+											{ label: t`Load`, color: 5, dataKey: (point: NutStatsRecord) => point.load },
+											{ label: t`Output Power`, color: 1, yAxisId: "right", dataKey: (point: NutStatsRecord) => point.output_power },
+										]}
+									/>
+								</ChartCard>
+								<ChartCard
+									empty={chartEmpty}
+									grid={true}
+									title={t`Voltage`}
+									description={t`Input, output, and battery voltage over time`}
+								>
+									<LineChartDefault
+										chartData={chartData}
+										customData={stats}
+										tickFormatter={(value) => `${toFixedFloat(value, 0)} V`}
+										contentFormatter={(item) => `${toFixedFloat(item.value, 1)} V`}
+										legend={true}
+										dataPoints={[
+											{ label: t`Input Voltage`, color: 2, dataKey: (point: NutStatsRecord) => point.input_voltage },
+											{ label: t`Output Voltage`, color: 5, dataKey: (point: NutStatsRecord) => point.output_voltage },
+											{ label: t`Battery`, color: 4, dataKey: (point: NutStatsRecord) => point.battery_voltage },
+										]}
+									/>
+								</ChartCard>
 							</div>
 
 							{outlets.length > 0 && (
