@@ -8,7 +8,7 @@ msgstr ""
 "Language: ja\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2026-09-18 19:21\n"
+"PO-Revision-Date: 2026-09-24 16:15\n"
 "Last-Translator: \n"
 "Language-Team: Japanese\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
@@ -2104,7 +2104,7 @@ msgstr "1時間のパケットロス率がしきい値を超えるとトリガ�
 
 #: src/lib/alerts.ts
 msgid "Triggers when status switches between up and down"
-msgstr "ステータスが上から下に切り替わるときにトリガーされます"
+msgstr "ステータスが稼働中と停止中の間で切り替わったときにトリガーされます"
 
 #: src/lib/alerts.ts
 msgid "Triggers when usage of any disk exceeds a threshold"
@@ -2305,3 +2305,4 @@ msgstr "はい"
 #: src/components/routes/settings/layout.tsx
 msgid "Your user settings have been updated."
 msgstr "ユーザー設定が更新されました。"
+
