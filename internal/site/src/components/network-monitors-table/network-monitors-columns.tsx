@@ -16,6 +16,7 @@ import {
 	PlayCircleIcon,
 	CopyIcon,
 	CopyPlusIcon,
+	ShieldCheckIcon,
 } from "lucide-react"
 import { t } from "@lingui/core/macro"
 import type { NetworkMonitorRecord, SystemRecord } from "@/types"
@@ -29,7 +30,7 @@ import {
 	DropdownMenuSubTrigger,
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { Trans } from "@lingui/react/macro"
+import { Plural, Trans } from "@lingui/react/macro"
 import { $allSystemsById, $longestSystemName } from "@/lib/stores"
 import { useStore } from "@nanostores/react"
 import { SystemStatus } from "@/lib/enums"
@@ -37,8 +38,16 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { useMemo } from "react"
 import { formatBulkMonitorLine } from "@/components/network-monitors-table/monitor-dialog"
 import { Badge } from "../ui/badge"
-import { getMonitorTarget } from "@/lib/network-monitor-utils"
+import { getCertDaysLeft, getCertExpiryLevel, getMonitorTarget } from "@/lib/network-monitor-utils"
 import { pb } from "@/lib/api"
+
+const certExpiryDotColors = { ok: "bg-green-500", warning: "bg-yellow-500", critical: "bg-red-500" }
+
+declare module "@tanstack/react-table" {
+	interface ColumnMeta<TData, TValue> {
+		label?: string
+	}
+}
 
 const protocolColors: Record<string, string> = {
 	icmp: "bg-blue-500/15! text-blue-600 dark:text-blue-400",
@@ -98,6 +107,7 @@ export function getMonitorColumns(
 		},
 		{
 			id: "system",
+			meta: { label: t`System` },
 			accessorFn: (record) => record.system,
 			sortingFn: (a, b) => {
 				const allSystems = $allSystemsById.get()
@@ -128,12 +138,13 @@ export function getMonitorColumns(
 							</div>
 						</div>
 					),
-					[status, name]
+					[status, name, longestSystemName]
 				)
 			},
 		},
 		{
 			id: "target",
+			meta: { label: t`Target` },
 			sortingFn: (a, b) => a.original.target.localeCompare(b.original.target),
 			accessorFn: (record) => getMonitorTarget(record),
 			header: ({ column }) => <HeaderButton column={column} name={t`Target`} Icon={GlobeIcon} />,
@@ -146,6 +157,8 @@ export function getMonitorColumns(
 					color = "bg-primary/40"
 				} else if (status === SystemStatus.Down || status === SystemStatus.Pending) {
 					color = "bg-yellow-500"
+				} else if (monitor.updated && !monitor.res) {
+					color = "bg-red-500"
 				}
 				return (
 					<div className="ms-1.5 max-w-64 flex gap-2 items-center tabular-nums">
@@ -162,6 +175,7 @@ export function getMonitorColumns(
 		},
 		{
 			id: "protocol",
+			meta: { label: t`Protocol` },
 			accessorFn: (record) => record.protocol,
 			header: ({ column }) => <HeaderButton column={column} name={t`Protocol`} Icon={ArrowLeftRightIcon} />,
 			cell: ({ getValue }) => {
@@ -171,6 +185,7 @@ export function getMonitorColumns(
 		},
 		{
 			id: "interval",
+			meta: { label: t`Interval` },
 			accessorFn: (record) => record.interval,
 			invertSorting: true,
 			header: ({ column }) => <HeaderButton column={column} name={t`Interval`} Icon={RefreshCwIcon} />,
@@ -178,6 +193,7 @@ export function getMonitorColumns(
 		},
 		{
 			id: "res",
+			meta: { label: t`Response` },
 			accessorFn: (record) => record.res,
 			invertSorting: true,
 			header: ({ column }) => <HeaderButton column={column} name={t`Response`} Icon={TimerIcon} />,
@@ -185,6 +201,7 @@ export function getMonitorColumns(
 		},
 		{
 			id: "res1h",
+			meta: { label: t`Avg 1h` },
 			accessorFn: (record) => record.resAvg1h,
 			invertSorting: true,
 			header: ({ column }) => <HeaderButton column={column} name={t`Avg 1h`} Icon={TimerIcon} />,
@@ -192,6 +209,7 @@ export function getMonitorColumns(
 		},
 		{
 			id: "max1h",
+			meta: { label: t`Max 1h` },
 			accessorFn: (record) => record.resMax1h,
 			invertSorting: true,
 			header: ({ column }) => <HeaderButton column={column} name={t`Max 1h`} Icon={TimerIcon} />,
@@ -199,6 +217,7 @@ export function getMonitorColumns(
 		},
 		{
 			id: "min1h",
+			meta: { label: t`Min 1h` },
 			accessorFn: (record) => record.resMin1h,
 			invertSorting: true,
 			header: ({ column }) => <HeaderButton column={column} name={t`Min 1h`} Icon={TimerIcon} />,
@@ -206,6 +225,7 @@ export function getMonitorColumns(
 		},
 		{
 			id: "loss",
+			meta: { label: t`Loss 1h` },
 			accessorFn: (record) => record.loss1h,
 			invertSorting: true,
 			header: ({ column }) => <HeaderButton column={column} name={t`Loss 1h`} Icon={WifiOffIcon} />,
@@ -233,7 +253,33 @@ export function getMonitorColumns(
 			},
 		},
 		{
+			id: "cert",
+			meta: { label: t`Certificate` },
+			accessorFn: (record) => record.certInfo?.expires,
+			header: ({ column }) => <HeaderButton column={column} name={t`Certificate`} Icon={ShieldCheckIcon} />,
+			cell: ({ row }) => {
+				const { certInfo, system } = row.original
+				const systemRecord = useStore($allSystemsById)[system]
+
+				if (!certInfo?.expires) {
+					return <span className="ms-1.5 text-muted-foreground">-</span>
+				}
+
+				const daysLeft = getCertDaysLeft(certInfo)
+				const color = isMuted(row.original, systemRecord)
+					? "bg-muted-foreground/50"
+					: certExpiryDotColors[getCertExpiryLevel(daysLeft)]
+				return (
+					<span className="ms-1.5 tabular-nums flex gap-2 items-center">
+						<span className={cn("shrink-0 size-2 rounded-full", color)} />
+						{daysLeft < 0 ? <Trans>Expired</Trans> : <Plural value={daysLeft} one="# day" other="# days" />}
+					</span>
+				)
+			},
+		},
+		{
 			id: "updated",
+			meta: { label: t`Updated` },
 			invertSorting: true,
 			accessorFn: (record) => record.updated,
 			header: ({ column }) => <HeaderButton column={column} name={t`Updated`} Icon={ClockIcon} />,
