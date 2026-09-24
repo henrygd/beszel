@@ -57,7 +57,7 @@ import { memo, useCallback, useMemo, useEffect, useRef, useState } from "react"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 
 const NUT_DEVICE_FIELDS =
-	"id,system,name,model,manufacturer,serial,firmware,driver,device_type,state,health,battery_charge,battery_voltage,battery_runtime,input_voltage,output_voltage,input_nominal,load,output_current,output_power,updated"
+	"id,system,name,model,manufacturer,serial,firmware,driver,device_type,state,status,battery_charge,battery_voltage,battery_runtime,input_voltage,output_voltage,input_nominal,load,output_current,output_power,updated"
 
 function healthVariant(health: string): "success" | "warning" | "danger" | "outline" {
 	switch (health) {
@@ -159,7 +159,7 @@ export const createColumns = (
 		},
 	},
 	{
-		accessorKey: "health",
+		accessorKey: "state",
 		header: ({ column }) => <HeaderButton column={column} name={t`Status`} Icon={Activity} />,
 		cell: ({ getValue }) => {
 			const health = getValue() as string
@@ -471,7 +471,7 @@ export default function NutTable({ systemId }: { systemId?: string }) {
 			const systemName = $allSystemsById.get()[device.system]?.name ?? ""
 			const name = device.name ?? ""
 			const model = device.model ?? ""
-			const health = device.health ?? ""
+			const health = device.state ?? ""
 			const type = device.device_type ?? ""
 			const searchString = `${systemName} ${name} ${model} ${health} ${type}`.toLowerCase()
 			return (filterValue as string)
@@ -666,7 +666,7 @@ function DeviceSheet({
 	const serial = device?.serial
 	const firmware = device?.firmware
 	const driver = device?.driver
-	const health = device?.health || unknown
+	const health = device?.state || unknown
 	const deviceType = device?.device_type || unknown
 	const batteryCharge = device?.battery_charge
 	const batteryVoltage = device?.battery_voltage
