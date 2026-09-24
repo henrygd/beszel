@@ -1,9 +1,11 @@
 package agent
 
 import (
+	"bufio"
 	"encoding/json"
 	"io"
 	"os/exec"
+	"strconv"
 	"strings"
 
 	"github.com/henrygd/beszel/agent/utils"
@@ -79,40 +81,53 @@ func (gm *GPUManager) collectIntelStats() (err error) {
 		}
 	}()
 
-	// intel_gpu_top JSON mode wraps all samples in a single array:
-	// "[", then one object per sample (comma separated), and "]" only
-	// when the process exits. Since the process usually runs until it is
-	// killed, the array is never fully read; each sample object is decoded
-	// individually as it becomes available.
-	dec := json.NewDecoder(stdout)
-	var hadDataRow bool
-	if _, err := dec.Token(); err != nil { // opening "[" of the sample array
+	return gm.parseIntelJSONStream(stdout)
+}
+
+// parseIntelJSONStream decodes samples from intel_gpu_top -J output and
+// aggregates them. Since v1.28 the samples are wrapped in an array ("[", then
+// comma separated objects, and "]" only when the process exits). Older
+// versions print the same comma separated objects without the opening "[", so
+// it is added here to let both formats decode as an array.
+func (gm *GPUManager) parseIntelJSONStream(r io.Reader) error {
+	er := &eofReader{r: r}
+	br := bufio.NewReader(er)
+	first, err := peekNonSpace(br)
+	if err != nil {
 		if err == io.EOF {
 			return errNoValidData
 		}
 		return err
 	}
-	// Each sample is a single JSON object. More() reports false once the
-	// closing "]" (or EOF, when the process is killed before the array is
-	// closed) is reached; Decode() reads exactly one object and transparently
-	// skips the commas the encoder emits between array elements.
+	var src io.Reader = br
+	if first != '[' {
+		src = io.MultiReader(strings.NewReader("["), br)
+	}
+
+	dec := json.NewDecoder(src)
+	if _, err := dec.Token(); err != nil { // opening "["
+		return err
+	}
+	var hadDataRow bool
+	// skip first data row because it sometimes has erroneous data
+	var skippedFirstDataRow bool
+	// Decode reads one object and skips the commas between them. The array is
+	// usually never closed, so output ending mid-array or mid-sample (the
+	// process was killed) is the normal end of the stream rather than an error.
 	for dec.More() {
 		var sample intelGpuJSONSample
 		if err := dec.Decode(&sample); err != nil {
-			// The process can be killed while a sample is being written; the
-			// trailing truncated object is unusable but all complete samples
-			// before it were already consumed.
-			if err == io.EOF || err == io.ErrUnexpectedEOF {
+			if er.eof {
 				break
 			}
 			return err
 		}
-		stats := parseIntelJSONSample(sample)
-		// skip first data row because it sometimes has erroneous data
-		if !hadDataRow {
-			hadDataRow = true
+		if !skippedFirstDataRow {
+			skippedFirstDataRow = true
 			continue
 		}
+		stats := parseIntelJSONSample(sample)
+		hadDataRow = true
 		gm.updateIntelFromStats(&stats)
 	}
 	if !hadDataRow {
@@ -121,25 +136,51 @@ func (gm *GPUManager) collectIntelStats() (err error) {
 	return nil
 }
 
-// intelGpuJSONSample is a single sample from intel_gpu_top -J output.
-// Only the fields we need are mapped; everything else (period, frequency,
-// interrupts, rc6, imc, clients, ...) is ignored by encoding/json.
+// eofReader records whether the underlying reader has returned io.EOF. The
+// json decoder reports a stream ending mid-value as a syntax error, so this
+// is how a truncated final sample is told apart from invalid output.
+type eofReader struct {
+	r   io.Reader
+	eof bool
+}
+
+func (e *eofReader) Read(p []byte) (int, error) {
+	n, err := e.r.Read(p)
+	if err == io.EOF {
+		e.eof = true
+	}
+	return n, err
+}
+
+// peekNonSpace discards leading JSON whitespace and returns the next byte without consuming it.
+func peekNonSpace(br *bufio.Reader) (byte, error) {
+	for {
+		b, err := br.Peek(1)
+		if err != nil {
+			return 0, err
+		}
+		switch b[0] {
+		case ' ', '\t', '\n', '\r':
+			_, _ = br.ReadByte()
+		default:
+			return b[0], nil
+		}
+	}
+}
+
+// intelGpuJSONSample is a single sample from intel_gpu_top -J output. Only the
+// needed fields are mapped.
 type intelGpuJSONSample struct {
 	Power *struct {
-		GPU     float64
-		Package float64
+		GPU     float64 `json:"GPU"`
+		Package float64 `json:"Package"`
 	} `json:"power"`
 	Engines map[string]struct {
 		Busy float64 `json:"busy"`
 	} `json:"engines"`
 }
 
-// parseIntelJSONSample maps one intel_gpu_top JSON sample into intelGpuStats.
-// The engines object keys are engine class short names (RCS, BCS, VCS, VECS,
-// CCS) in the default class view; physical-engine keys such as "RCS/0" are
-// handled by stripping the instance suffix. Unknown keys are kept as-is so
-// engines on newer/dedicated GPUs still feed the usage calculation instead of
-// being silently dropped.
+// parseIntelJSONSample converts one intel_gpu_top JSON sample into intelGpuStats.
 func parseIntelJSONSample(sample intelGpuJSONSample) (stats intelGpuStats) {
 	if sample.Power != nil {
 		stats.PowerGPU = sample.Power.GPU
@@ -148,38 +189,21 @@ func parseIntelJSONSample(sample intelGpuJSONSample) (stats intelGpuStats) {
 	if len(sample.Engines) > 0 {
 		stats.Engines = make(map[string]float64, len(sample.Engines))
 		for key, engine := range sample.Engines {
-			// Physical-engine keys look like "RCS/0"; strip the instance
-			// suffix so they map to the same class as in the class view.
-			name := key
-			if idx := strings.IndexByte(key, '/'); idx >= 0 {
-				if rest := key[idx+1:]; rest != "" && isDigits(rest) {
-					name = key[:idx]
-				}
-			}
-			switch name {
-			case "RCS":
-				stats.Engines["Render/3D"] += engine.Busy
-			case "BCS":
-				stats.Engines["Blitter"] += engine.Busy
-			case "VCS":
-				stats.Engines["Video"] += engine.Busy
-			case "VECS":
-				stats.Engines["VideoEnhance"] += engine.Busy
-			case "CCS":
-				stats.Engines["Compute"] += engine.Busy
-			default:
-				stats.Engines[name] += engine.Busy
-			}
+			stats.Engines[intelEngineClass(key)] += engine.Busy
 		}
 	}
 	return stats
 }
 
-func isDigits(s string) bool {
-	for _, r := range s {
-		if r < '0' || r > '9' {
-			return false
+// intelEngineClass returns the engine class name for an engine key. Keys are
+// class names ("Render/3D", "Video") in class view, which JSON output uses by
+// default since v1.28, and instance names ("Render/3D/0", "Video/1") in
+// physical view, which older versions use.
+func intelEngineClass(key string) string {
+	if i := strings.LastIndexByte(key, '/'); i >= 0 {
+		if _, err := strconv.ParseUint(key[i+1:], 10, 32); err == nil {
+			return key[:i]
 		}
 	}
-	return true
+	return key
 }
