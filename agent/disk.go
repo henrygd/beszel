@@ -746,12 +746,13 @@ func (a *Agent) updateDiskIo(cacheTimeMs uint16, systemStats *system.Stats) {
 // ioTimeDelta returns the increase of a cumulative millisecond counter from
 // the disk I/O stats. Linux prints these fields of /proc/diskstats as 32-bit
 // unsigned ints, so they wrap to zero at 2^32. A busy disk reaches that in
-// days for the weighted I/O time.
+// days for the weighted I/O time. Other platforms report 64-bit counters,
+// so a lower value there is a reset.
 func ioTimeDelta(current, previous uint64) uint64 {
 	if current >= previous {
 		return current - previous
 	}
-	if previous <= math.MaxUint32 {
+	if runtime.GOOS == "linux" && previous <= math.MaxUint32 {
 		return current + (math.MaxUint32 + 1 - previous)
 	}
 	return 0

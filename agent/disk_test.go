@@ -3,7 +3,9 @@
 package agent
 
 import (
+	"math"
 	"os"
+	"runtime"
 	"strings"
 	"testing"
 	"time"
@@ -1040,4 +1042,18 @@ func TestInitializeDiskIoStatsResetsTrackedDevices(t *testing.T) {
 	assert.Equal(t, []string{"sdb"}, agent.fsNames)
 	assert.Equal(t, uint64(50), agent.fsStats["sdb"].TotalRead)
 	assert.Equal(t, uint64(60), agent.fsStats["sdb"].TotalWrite)
+}
+
+func TestIoTimeDelta(t *testing.T) {
+	assert.Equal(t, uint64(300), ioTimeDelta(1200, 900))
+
+	// A lower value is a 32-bit wrap only on Linux. Other platforms
+	// report 64-bit counters, so there it is a reset.
+	var want uint64
+	if runtime.GOOS == "linux" {
+		want = 1200
+	}
+	assert.Equal(t, want, ioTimeDelta(200, math.MaxUint32+1-1000))
+
+	assert.Equal(t, uint64(0), ioTimeDelta(200, math.MaxUint32+1000))
 }
