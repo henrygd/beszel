@@ -2023,21 +2023,6 @@ func init() {
 				"type": "number"
 			},
 			{
-				"autogeneratePattern": "",
-				"help": "",
-				"hidden": false,
-				"id": "nm_server",
-				"max": 260,
-				"min": 0,
-				"name": "server",
-				"pattern": "",
-				"presentable": false,
-				"primaryKey": false,
-				"required": false,
-				"system": false,
-				"type": "text"
-			},
-			{
 				"help": "",
 				"hidden": false,
 				"id": "nm_interval",
