@@ -47,6 +47,7 @@ import {
 	ArrowUpIcon,
 	EthernetPortIcon,
 	EyeIcon,
+	GlobeIcon,
 	LandmarkIcon,
 	LoaderCircleIcon,
 	ServerIcon,
@@ -723,7 +724,7 @@ function NetworkMonitorSheetContent({
 						{monitor.protocol === "dns" && monitor.server && (
 							<>
 								<Separator orientation="vertical" className="h-2.5 bg-muted-foreground opacity-70" />
-								<ServerIcon className="size-3.5 text-muted-foreground" />
+								<GlobeIcon className="size-3.5 text-muted-foreground" />
 								<span>{monitor.server}</span>
 							</>
 						)}
