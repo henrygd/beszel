@@ -531,6 +531,21 @@ export interface NutDeviceRecord extends RecordModel {
 	updated: string
 }
 
+export interface NutStatsRecord extends RecordModel {
+	system: string
+	device: string
+	type: "1m" | "10m" | "20m" | "120m" | "480m"
+	created: string | number
+	battery_charge: number
+	battery_runtime: number
+	battery_voltage: number
+	input_voltage: number
+	output_voltage: number
+	load: number
+	output_current: number
+	output_power: number
+}
+
 export interface SystemdRecord extends RecordModel {
 	system: string
 	name: string
