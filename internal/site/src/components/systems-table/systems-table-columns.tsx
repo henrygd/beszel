@@ -1,5 +1,5 @@
 /** biome-ignore-all lint/correctness/useHookAtTopLevel: Hooks live inside memoized column definitions */
-import { t } from "@lingui/core/macro"
+import { plural, t } from "@lingui/core/macro"
 import { Trans, useLingui } from "@lingui/react/macro"
 import { useStore } from "@nanostores/react"
 import { getPagePath } from "@nanostores/router"
@@ -26,7 +26,7 @@ import { memo, useMemo, useRef, useState } from "react"
 import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip"
 import { isReadOnlyUser, pb } from "@/lib/api"
 import { BatteryState, ConnectionType, connectionTypeLabels, MeterState, SystemStatus } from "@/lib/enums"
-import { $longestSystemNameLen, $userSettings } from "@/lib/stores"
+import { $longestSystemName, $userSettings } from "@/lib/stores"
 import {
 	cn,
 	copyToClipboard,
@@ -135,7 +135,7 @@ export function SystemsTableColumns(viewMode: "table" | "grid"): ColumnDef<Syste
 			Icon: ServerIcon,
 			cell: (info) => {
 				const { name, id } = info.row.original
-				const longestName = useStore($longestSystemNameLen)
+				const longestName = useStore($longestSystemName)
 				const linkUrl = getPagePath($router, "system", { id })
 
 				return (
@@ -145,8 +145,7 @@ export function SystemsTableColumns(viewMode: "table" | "grid"): ColumnDef<Syste
 							<Link
 								href={linkUrl}
 								tabIndex={-1}
-								className="truncate z-10 relative"
-								style={{ width: `${longestName / 1.05}ch` }}
+								className="relative w-fit max-w-48 z-10"
 								onMouseEnter={(e) => {
 									// set title on hover if text is truncated to show full name
 									const a = e.currentTarget
@@ -157,7 +156,10 @@ export function SystemsTableColumns(viewMode: "table" | "grid"): ColumnDef<Syste
 									}
 								}}
 							>
-								{name}
+								<span className="invisible block" aria-hidden="true">
+									{longestName}
+								</span>
+								<span className="absolute inset-0 truncate">{name}</span>
 							</Link>
 						</span>
 						<Link href={linkUrl} className="inset-0 absolute size-full" aria-label={name}></Link>
@@ -343,11 +345,13 @@ export function SystemsTableColumns(viewMode: "table" | "grid"): ColumnDef<Syste
 			header: sortableHeader,
 			hideSort: true,
 			sortingFn: (a, b) => {
-				// sort priorities: 1) failed services, 2) total services
+				// sort priorities: 1) has failed services (dot color), 2) total services
 				const [totalCountA, numFailedA] = a.original.info.sv ?? [0, 0]
 				const [totalCountB, numFailedB] = b.original.info.sv ?? [0, 0]
-				if (numFailedA !== numFailedB) {
-					return numFailedA - numFailedB
+				const hasFailedA = numFailedA > 0 ? 1 : 0
+				const hasFailedB = numFailedB > 0 ? 1 : 0
+				if (hasFailedA !== hasFailedB) {
+					return hasFailedA - hasFailedB
 				}
 				return totalCountA - totalCountB
 			},
@@ -357,19 +361,35 @@ export function SystemsTableColumns(viewMode: "table" | "grid"): ColumnDef<Syste
 				if (sys.status !== SystemStatus.Up || totalCount === 0) {
 					return null
 				}
-				return (
+				const content = (
 					<span className="tabular-nums whitespace-nowrap flex gap-1.5 items-center">
 						<span
 							className={cn("block size-2 rounded-full", {
-								[STATUS_COLORS[SystemStatus.Down]]: numFailed > 0,
-								[STATUS_COLORS[SystemStatus.Up]]: numFailed === 0,
+								[STATUS_COLORS.pending]: numFailed > 0,
+								[STATUS_COLORS.up]: numFailed === 0,
 							})}
 						/>
-						{totalCount}{" "}
-						<span className="text-muted-foreground text-sm -ms-0.5">
-							({t`Failed`.toLowerCase()}: {numFailed})
-						</span>
+						{plural(totalCount, { one: "# service", other: "# services" })}
 					</span>
+				)
+				if (numFailed === 0) {
+					return content
+				}
+				return (
+					<Tooltip>
+						<TooltipTrigger asChild>
+							<Link
+								href={getPagePath($router, "system", { id: sys.id })}
+								tabIndex={-1}
+								className="relative z-10 w-fit block"
+							>
+								{content}
+							</Link>
+						</TooltipTrigger>
+						<TooltipContent>
+							{plural(numFailed, { one: "# failed service", other: "# failed services" })}
+						</TooltipContent>
+					</Tooltip>
 				)
 			},
 		},
