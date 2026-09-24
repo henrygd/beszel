@@ -323,7 +323,12 @@ func buildNonGpuSysShadow(sysRoot string) (string, error) {
 	}
 	for _, entry := range entries {
 		chipDir := filepath.Join(sysRoot, "class", "hwmon", entry.Name())
-		if name, ok := utils.ReadStringFileOK(filepath.Join(chipDir, "name")); !ok || isGpuChipName(name) {
+		// Some hwmon devices expose name under device/ (gopsutil's CentOS fallback).
+		name, ok := utils.ReadStringFileOK(filepath.Join(chipDir, "name"))
+		if !ok {
+			name, ok = utils.ReadStringFileOK(filepath.Join(chipDir, "device", "name"))
+		}
+		if !ok || isGpuChipName(name) {
 			continue
 		}
 		if err := os.Symlink(chipDir, filepath.Join(shadowHwmon, entry.Name())); err != nil {

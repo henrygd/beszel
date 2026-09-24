@@ -653,6 +653,21 @@ func TestSkipGpuSensorShadow(t *testing.T) {
 	assert.NoFileExists(t, filepath.Join(shadow, "class", "thermal", "thermal_zone1"))
 }
 
+func TestSkipGpuSensorShadowDeviceName(t *testing.T) {
+	sysRoot := t.TempDir()
+	writeFile(t, filepath.Join(sysRoot, "class", "hwmon", "hwmon0", "device", "name"), "coretemp\n")
+	writeFile(t, filepath.Join(sysRoot, "class", "hwmon", "hwmon0", "device", "temp1_input"), "55000\n")
+	writeFile(t, filepath.Join(sysRoot, "class", "hwmon", "hwmon1", "device", "name"), "xe\n")
+	writeFile(t, filepath.Join(sysRoot, "class", "hwmon", "hwmon1", "device", "temp1_input"), "48000\n")
+
+	shadow, err := buildNonGpuSysShadow(sysRoot)
+	require.NoError(t, err)
+	t.Cleanup(func() { os.RemoveAll(shadow) })
+
+	assert.FileExists(t, filepath.Join(shadow, "class", "hwmon", "hwmon0", "device", "temp1_input"))
+	assert.NoFileExists(t, filepath.Join(shadow, "class", "hwmon", "hwmon1"))
+}
+
 func TestSkipGpuSensorShadowKeepsThermalZonesWithoutNonGpuHwmon(t *testing.T) {
 	sysRoot := t.TempDir()
 	writeFile(t, filepath.Join(sysRoot, "class", "hwmon", "hwmon0", "name"), "xe\n")
