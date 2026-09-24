@@ -13,7 +13,7 @@ import (
 
 const (
 	intelGpuStatsCmd      string = "intel_gpu_top"
-	intelGpuStatsInterval string = "1000" // in milliseconds
+	intelGpuStatsInterval string = "3300" // in milliseconds
 )
 
 type intelGpuStats struct {
