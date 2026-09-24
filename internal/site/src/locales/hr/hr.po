@@ -953,10 +953,6 @@ msgstr "Izvoz trenutne sistemske konfiguracije."
 msgid "Fahrenheit (°F)"
 msgstr "Farenhajt (°F)"
 
-#: src/components/systems-table/systems-table-columns.tsx
-#~ msgid "Failed"
-#~ msgstr "Neuspješno"
-
 #: src/components/routes/system/smart-table.tsx
 msgid "Failed Attributes:"
 msgstr "Neuspjeli atributi:"

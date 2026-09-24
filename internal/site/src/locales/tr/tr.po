@@ -953,10 +953,6 @@ msgstr "Mevcut sistem yapılandırmanızı dışa aktarın."
 msgid "Fahrenheit (°F)"
 msgstr "Fahrenhayt (°F)"
 
-#: src/components/systems-table/systems-table-columns.tsx
-#~ msgid "Failed"
-#~ msgstr "Başarısız"
-
 #: src/components/routes/system/smart-table.tsx
 msgid "Failed Attributes:"
 msgstr "Başarısız Özellikler:"

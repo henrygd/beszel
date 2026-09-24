@@ -953,10 +953,6 @@ msgstr "Xuất cấu hình hệ thống hiện tại của bạn."
 msgid "Fahrenheit (°F)"
 msgstr "Độ F (°F)"
 
-#: src/components/systems-table/systems-table-columns.tsx
-#~ msgid "Failed"
-#~ msgstr "Thất bại"
-
 #: src/components/routes/system/smart-table.tsx
 msgid "Failed Attributes:"
 msgstr "Thuộc tính thất bại:"

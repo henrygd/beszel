@@ -953,10 +953,6 @@ msgstr "Εξαγάγετε την τρέχουσα διαμόρφωση των �
 msgid "Fahrenheit (°F)"
 msgstr "Φαρενάιτ (°F)"
 
-#: src/components/systems-table/systems-table-columns.tsx
-#~ msgid "Failed"
-#~ msgstr "Απέτυχε"
-
 #: src/components/routes/system/smart-table.tsx
 msgid "Failed Attributes:"
 msgstr "Αποτυχημένα χαρακτηριστικά:"

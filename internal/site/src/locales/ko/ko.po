@@ -953,10 +953,6 @@ msgstr "현재 시스템 구성 내보내기"
 msgid "Fahrenheit (°F)"
 msgstr "화씨 (°F)"
 
-#: src/components/systems-table/systems-table-columns.tsx
-#~ msgid "Failed"
-#~ msgstr "실패"
-
 #: src/components/routes/system/smart-table.tsx
 msgid "Failed Attributes:"
 msgstr "실패한 속성:"

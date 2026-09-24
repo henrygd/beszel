@@ -953,10 +953,6 @@ msgstr "تصدير تكوين الأنظمة الحالية الخاصة بك."
 msgid "Fahrenheit (°F)"
 msgstr "فهرنهايت (°ف)"
 
-#: src/components/systems-table/systems-table-columns.tsx
-#~ msgid "Failed"
-#~ msgstr "فشل"
-
 #: src/components/routes/system/smart-table.tsx
 msgid "Failed Attributes:"
 msgstr "السمات الفاشلة:"

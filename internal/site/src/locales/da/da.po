@@ -953,10 +953,6 @@ msgstr "Eksporter din nuværende systemkonfiguration."
 msgid "Fahrenheit (°F)"
 msgstr "Fahrenheit (°F)"
 
-#: src/components/systems-table/systems-table-columns.tsx
-#~ msgid "Failed"
-#~ msgstr "Mislykkedes"
-
 #: src/components/routes/system/smart-table.tsx
 msgid "Failed Attributes:"
 msgstr "Mislykkede attributter:"

@@ -953,10 +953,6 @@ msgstr "Exporte a configuração atual dos seus sistemas."
 msgid "Fahrenheit (°F)"
 msgstr "Fahrenheit (°F)"
 
-#: src/components/systems-table/systems-table-columns.tsx
-#~ msgid "Failed"
-#~ msgstr "Falhou"
-
 #: src/components/routes/system/smart-table.tsx
 msgid "Failed Attributes:"
 msgstr "Atributos com Falha:"

@@ -953,10 +953,6 @@ msgstr "Извезите тренутну конфигурацију систе�
 msgid "Fahrenheit (°F)"
 msgstr "Фаренхајт (°F)"
 
-#: src/components/systems-table/systems-table-columns.tsx
-#~ msgid "Failed"
-#~ msgstr "Неуспело"
-
 #: src/components/routes/system/smart-table.tsx
 msgid "Failed Attributes:"
 msgstr "Неуспели атрибути:"

@@ -953,10 +953,6 @@ msgstr "Joriy tizimlar konfiguratsiyasini eksport qiling."
 msgid "Fahrenheit (°F)"
 msgstr "Farengeyt (°F)"
 
-#: src/components/systems-table/systems-table-columns.tsx
-#~ msgid "Failed"
-#~ msgstr "Muvaffaqiyatsiz"
-
 #: src/components/routes/system/smart-table.tsx
 msgid "Failed Attributes:"
 msgstr "Muvaffaqiyatsiz atributlar:"

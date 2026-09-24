@@ -953,10 +953,6 @@ msgstr "ייצא את תצורת המערכות הנוכחית שלך."
 msgid "Fahrenheit (°F)"
 msgstr "פרנהייט (°F)"
 
-#: src/components/systems-table/systems-table-columns.tsx
-#~ msgid "Failed"
-#~ msgstr "נכשל"
-
 #: src/components/routes/system/smart-table.tsx
 msgid "Failed Attributes:"
 msgstr "מאפיינים שנכשלו:"

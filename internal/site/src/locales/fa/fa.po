@@ -953,10 +953,6 @@ msgstr "پیکربندی سیستم‌های فعلی خود را خارج کن�
 msgid "Fahrenheit (°F)"
 msgstr "فارنهایت (°F)"
 
-#: src/components/systems-table/systems-table-columns.tsx
-#~ msgid "Failed"
-#~ msgstr "ناموفق"
-
 #: src/components/routes/system/smart-table.tsx
 msgid "Failed Attributes:"
 msgstr "ویژگی‌های ناموفق:"

@@ -953,10 +953,6 @@ msgstr "匯出您現在的系統設定。"
 msgid "Fahrenheit (°F)"
 msgstr "華氏 (°F)"
 
-#: src/components/systems-table/systems-table-columns.tsx
-#~ msgid "Failed"
-#~ msgstr "失敗"
-
 #: src/components/routes/system/smart-table.tsx
 msgid "Failed Attributes:"
 msgstr "失敗屬性："

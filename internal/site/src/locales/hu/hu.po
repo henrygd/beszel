@@ -953,10 +953,6 @@ msgstr "Exportálja a jelenlegi rendszerkonfigurációt."
 msgid "Fahrenheit (°F)"
 msgstr "Fahrenheit (°F)"
 
-#: src/components/systems-table/systems-table-columns.tsx
-#~ msgid "Failed"
-#~ msgstr "Sikertelen"
-
 #: src/components/routes/system/smart-table.tsx
 msgid "Failed Attributes:"
 msgstr "Sikertelen attribútumok:"
