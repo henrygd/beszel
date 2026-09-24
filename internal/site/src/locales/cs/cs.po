@@ -52,13 +52,25 @@ msgstr "{count, plural, one {{countString} Hodina} few {{countString} Hodiny} ma
 msgid "{count, plural, one {{countString} minute} few {{countString} minutes} many {{countString} minutes} other {{countString} minutes}}"
 msgstr "{count, plural, one {{countString} minuta} few {{countString} minuty} many {{countString} minut} other {{countString} minut}}"
 
+#: src/components/network-monitors-table/network-monitors-columns.tsx
+msgid "{daysLeft, plural, one {# day} other {# days}}"
+msgstr ""
+
 #: src/components/routes/system/charts/disk-charts.tsx
 msgid "{diskName} I/O"
 msgstr "I/O {diskName}"
 
+#: src/components/systems-table/systems-table-columns.tsx
+msgid "{numFailed, plural, one {# failed service} other {# failed services}}"
+msgstr ""
+
 #: src/components/routes/system/info-bar.tsx
 msgid "{threads, plural, one {# thread} other {# threads}}"
 msgstr "{threads, plural, one {# vlákno} few {# vlákna} many {# vláken} other {# vláken}}"
+
+#: src/components/systems-table/systems-table-columns.tsx
+msgid "{totalCount, plural, one {# service} other {# services}}"
+msgstr ""
 
 #: src/lib/utils.ts
 msgid "1 hour"
@@ -124,10 +136,10 @@ msgstr "Aktivní výstrahy"
 msgid "Active state"
 msgstr "Aktivní stav"
 
-#: src/components/add-system.tsx
-#: src/components/add-system.tsx
-#: src/components/navbar.tsx
-#: src/components/navbar.tsx
+#: src/components/network-monitors-table/monitor-dialog.tsx
+msgid "Add"
+msgstr ""
+
 #: src/components/network-monitors-table/monitor-dialog.tsx
 #: src/components/network-monitors-table/monitor-dialog.tsx
 #: src/components/network-monitors-table/monitor-dialog.tsx
@@ -269,6 +281,7 @@ msgid "Average, minimum, and maximum response time"
 msgstr "Průměrná, minimální a maximální doba odezvy"
 
 #: src/components/network-monitors-table/network-monitors-columns.tsx
+#: src/components/network-monitors-table/network-monitors-columns.tsx
 msgid "Avg 1h"
 msgstr "Prům. 1h"
 
@@ -398,6 +411,19 @@ msgstr "Upozornění - možná ztráta dat"
 #: src/components/routes/settings/general.tsx
 msgid "Celsius (°C)"
 msgstr "Celsia (°C)"
+
+#: src/components/network-monitors-table/network-monitors-columns.tsx
+#: src/components/network-monitors-table/network-monitors-columns.tsx
+msgid "Certificate"
+msgstr ""
+
+#: src/components/network-monitors-table/network-monitors-table.tsx
+msgid "Certificate expired {expires}"
+msgstr ""
+
+#: src/components/network-monitors-table/network-monitors-table.tsx
+msgid "Certificate expires {expires}"
+msgstr ""
 
 #: src/components/routes/settings/general.tsx
 msgid "Change display units for metrics."
@@ -809,7 +835,6 @@ msgstr "Doba trvání"
 msgid "Edit"
 msgstr "Upravit"
 
-#: src/components/add-system.tsx
 #: src/components/network-monitors-table/monitor-dialog.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Edit {foo}"
@@ -904,6 +929,10 @@ msgstr "Stávající systémy, které nejsou definovány v <0>config.yml</0>, bu
 msgid "Exited active"
 msgstr "Ukončeno aktivně"
 
+#: src/components/network-monitors-table/network-monitors-columns.tsx
+msgid "Expired"
+msgstr ""
+
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Expires after one hour or on hub restart."
 msgstr "Vyprší po jedné hodině nebo při restartu hubu."
@@ -925,8 +954,8 @@ msgid "Fahrenheit (°F)"
 msgstr "Fahrenheita (°F)"
 
 #: src/components/systems-table/systems-table-columns.tsx
-msgid "Failed"
-msgstr "Selhalo"
+#~ msgid "Failed"
+#~ msgstr "Selhalo"
 
 #: src/components/routes/system/smart-table.tsx
 msgid "Failed Attributes:"
@@ -1139,6 +1168,7 @@ msgid "Input, output, and battery voltage over time"
 msgstr ""
 
 #: src/components/network-monitors-table/network-monitors-columns.tsx
+#: src/components/network-monitors-table/network-monitors-columns.tsx
 #: src/components/routes/settings/heartbeat.tsx
 msgid "Interval"
 msgstr ""
@@ -1241,6 +1271,7 @@ msgid "Loss"
 msgstr "Ztráta"
 
 #: src/components/network-monitors-table/network-monitors-columns.tsx
+#: src/components/network-monitors-table/network-monitors-columns.tsx
 msgid "Loss 1h"
 msgstr "Ztráta 1h"
 
@@ -1262,6 +1293,7 @@ msgstr "Pokyny k manuálnímu nastavení"
 msgid "Max 1 min"
 msgstr "Max. 1 min"
 
+#: src/components/network-monitors-table/network-monitors-columns.tsx
 #: src/components/network-monitors-table/network-monitors-columns.tsx
 msgid "Max 1h"
 msgstr "Max. 1h"
@@ -1292,6 +1324,7 @@ msgstr "Využití paměti"
 msgid "Memory usage of containers"
 msgstr "Využití paměti kontejnery"
 
+#: src/components/network-monitors-table/network-monitors-columns.tsx
 #: src/components/network-monitors-table/network-monitors-columns.tsx
 msgid "Min 1h"
 msgstr "Min. 1h"
@@ -1649,6 +1682,7 @@ msgstr "Proces spuštěn"
 
 #: src/components/network-monitors-table/monitor-dialog.tsx
 #: src/components/network-monitors-table/network-monitors-columns.tsx
+#: src/components/network-monitors-table/network-monitors-columns.tsx
 msgid "Protocol"
 msgstr "Protokol"
 
@@ -1739,6 +1773,7 @@ msgid "Resolved"
 msgstr "Vyřešeno"
 
 #: src/components/network-monitors-table/network-monitors-columns.tsx
+#: src/components/network-monitors-table/network-monitors-columns.tsx
 #: src/components/routes/system/charts/monitors-charts.tsx
 msgid "Response"
 msgstr "Odezva"
@@ -1789,7 +1824,6 @@ msgstr "S.M.A.R.T. Detaily"
 msgid "S.M.A.R.T. Self-Test"
 msgstr "S.M.A.R.T. Vlastní test"
 
-#: src/components/add-system.tsx
 #: src/components/network-monitors-table/monitor-dialog.tsx
 msgid "Save {foo}"
 msgstr "Uložit {foo}"
@@ -1929,6 +1963,7 @@ msgstr "Přihlásit se"
 msgid "SMTP settings"
 msgstr "Nastavení SMTP"
 
+#: src/components/network-monitors-table/network-monitors-table.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "Sort By"
 msgstr "Seřadit podle"
@@ -1974,11 +2009,10 @@ msgstr "Swap využití"
 msgid "Switch theme"
 msgstr "Přepnout motiv"
 
-#: src/components/add-system.tsx
 #: src/components/alerts-history-columns.tsx
 #: src/components/containers-table/containers-table-columns.tsx
-#: src/components/navbar.tsx
 #: src/components/network-monitors-table/monitor-dialog.tsx
+#: src/components/network-monitors-table/network-monitors-columns.tsx
 #: src/components/network-monitors-table/network-monitors-columns.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/quiet-hours.tsx
@@ -2025,8 +2059,14 @@ msgstr "Karty"
 
 #: src/components/network-monitors-table/monitor-dialog.tsx
 #: src/components/network-monitors-table/network-monitors-columns.tsx
+#: src/components/network-monitors-table/network-monitors-columns.tsx
 msgid "Target"
 msgstr "Cíl"
+
+#: src/components/network-monitors-table/monitor-dialog.tsx
+#: src/components/network-monitors-table/monitor-dialog.tsx
+msgid "target[,protocol[,port[,interval]]]"
+msgstr ""
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Tasks"
@@ -2263,6 +2303,7 @@ msgstr "Aktualizovat"
 
 #: src/components/containers-table/containers-table-columns.tsx
 #: src/components/network-monitors-table/network-monitors-columns.tsx
+#: src/components/network-monitors-table/network-monitors-columns.tsx
 #: src/components/routes/system/nut-table.tsx
 #: src/components/routes/system/smart-table.tsx
 #: src/components/routes/system/storage-pools-table.tsx
@@ -2323,6 +2364,7 @@ msgstr "Využití"
 msgid "Value"
 msgstr "Hodnota"
 
+#: src/components/network-monitors-table/network-monitors-table.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "View"
 msgstr "Zobrazení"
@@ -2337,6 +2379,7 @@ msgstr "Zobrazit více"
 msgid "View your 200 most recent alerts."
 msgstr "Zobrazit vašich 200 nejnovějších upozornění."
 
+#: src/components/network-monitors-table/network-monitors-table.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "Visible Fields"
 msgstr "Viditelné sloupce"
@@ -2416,4 +2459,3 @@ msgstr "Ano"
 #: src/components/routes/settings/layout.tsx
 msgid "Your user settings have been updated."
 msgstr "Vaše uživatelská nastavení byla aktualizována."
-

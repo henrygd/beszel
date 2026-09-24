@@ -52,13 +52,25 @@ msgstr "{count, plural, one {{countString} час} other {{countString} часо
 msgid "{count, plural, one {{countString} minute} few {{countString} minutes} many {{countString} minutes} other {{countString} minutes}}"
 msgstr "{count, plural, one {{countString} минута} few {{countString} минут} many {{countString} минут} other {{countString} минуты}}"
 
+#: src/components/network-monitors-table/network-monitors-columns.tsx
+msgid "{daysLeft, plural, one {# day} other {# days}}"
+msgstr ""
+
 #: src/components/routes/system/charts/disk-charts.tsx
 msgid "{diskName} I/O"
 msgstr "Ввод-вывод {diskName}"
 
+#: src/components/systems-table/systems-table-columns.tsx
+msgid "{numFailed, plural, one {# failed service} other {# failed services}}"
+msgstr ""
+
 #: src/components/routes/system/info-bar.tsx
 msgid "{threads, plural, one {# thread} other {# threads}}"
 msgstr "{threads, plural, one {# поток} few {# потока} many {# потоков} other {# потоков}}"
+
+#: src/components/systems-table/systems-table-columns.tsx
+msgid "{totalCount, plural, one {# service} other {# services}}"
+msgstr ""
 
 #: src/lib/utils.ts
 msgid "1 hour"
@@ -124,10 +136,10 @@ msgstr "Активные оповещения"
 msgid "Active state"
 msgstr "Активное состояние"
 
-#: src/components/add-system.tsx
-#: src/components/add-system.tsx
-#: src/components/navbar.tsx
-#: src/components/navbar.tsx
+#: src/components/network-monitors-table/monitor-dialog.tsx
+msgid "Add"
+msgstr ""
+
 #: src/components/network-monitors-table/monitor-dialog.tsx
 #: src/components/network-monitors-table/monitor-dialog.tsx
 #: src/components/network-monitors-table/monitor-dialog.tsx
@@ -269,6 +281,7 @@ msgid "Average, minimum, and maximum response time"
 msgstr "Среднее, минимальное и максимальное время отклика"
 
 #: src/components/network-monitors-table/network-monitors-columns.tsx
+#: src/components/network-monitors-table/network-monitors-columns.tsx
 msgid "Avg 1h"
 msgstr "Сред. за 1 ч"
 
@@ -398,6 +411,19 @@ msgstr "Внимание - возможная потеря данных"
 #: src/components/routes/settings/general.tsx
 msgid "Celsius (°C)"
 msgstr "Цельсий (°C)"
+
+#: src/components/network-monitors-table/network-monitors-columns.tsx
+#: src/components/network-monitors-table/network-monitors-columns.tsx
+msgid "Certificate"
+msgstr ""
+
+#: src/components/network-monitors-table/network-monitors-table.tsx
+msgid "Certificate expired {expires}"
+msgstr ""
+
+#: src/components/network-monitors-table/network-monitors-table.tsx
+msgid "Certificate expires {expires}"
+msgstr ""
 
 #: src/components/routes/settings/general.tsx
 msgid "Change display units for metrics."
@@ -809,7 +835,6 @@ msgstr "Длительность"
 msgid "Edit"
 msgstr "Редактировать"
 
-#: src/components/add-system.tsx
 #: src/components/network-monitors-table/monitor-dialog.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Edit {foo}"
@@ -904,6 +929,10 @@ msgstr "Существующие системы, не определенные �
 msgid "Exited active"
 msgstr "Завершился активным"
 
+#: src/components/network-monitors-table/network-monitors-columns.tsx
+msgid "Expired"
+msgstr ""
+
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Expires after one hour or on hub restart."
 msgstr "Истекает через час или при перезапуске хаба."
@@ -925,8 +954,8 @@ msgid "Fahrenheit (°F)"
 msgstr "Фаренгейт (°F)"
 
 #: src/components/systems-table/systems-table-columns.tsx
-msgid "Failed"
-msgstr "Неудачно"
+#~ msgid "Failed"
+#~ msgstr "Неудачно"
 
 #: src/components/routes/system/smart-table.tsx
 msgid "Failed Attributes:"
@@ -1139,6 +1168,7 @@ msgid "Input, output, and battery voltage over time"
 msgstr ""
 
 #: src/components/network-monitors-table/network-monitors-columns.tsx
+#: src/components/network-monitors-table/network-monitors-columns.tsx
 #: src/components/routes/settings/heartbeat.tsx
 msgid "Interval"
 msgstr "Интервал"
@@ -1241,6 +1271,7 @@ msgid "Loss"
 msgstr "Потери"
 
 #: src/components/network-monitors-table/network-monitors-columns.tsx
+#: src/components/network-monitors-table/network-monitors-columns.tsx
 msgid "Loss 1h"
 msgstr "Потери 1 h"
 
@@ -1262,6 +1293,7 @@ msgstr "Инструкции по ручной установке"
 msgid "Max 1 min"
 msgstr "Макс 1 мин"
 
+#: src/components/network-monitors-table/network-monitors-columns.tsx
 #: src/components/network-monitors-table/network-monitors-columns.tsx
 msgid "Max 1h"
 msgstr "Макс. за 1 ч"
@@ -1292,6 +1324,7 @@ msgstr "Использование памяти"
 msgid "Memory usage of containers"
 msgstr "Использование памяти контейнерами"
 
+#: src/components/network-monitors-table/network-monitors-columns.tsx
 #: src/components/network-monitors-table/network-monitors-columns.tsx
 msgid "Min 1h"
 msgstr "Мин. за 1 ч"
@@ -1649,6 +1682,7 @@ msgstr "Процесс запущен"
 
 #: src/components/network-monitors-table/monitor-dialog.tsx
 #: src/components/network-monitors-table/network-monitors-columns.tsx
+#: src/components/network-monitors-table/network-monitors-columns.tsx
 msgid "Protocol"
 msgstr "Протокол"
 
@@ -1739,6 +1773,7 @@ msgid "Resolved"
 msgstr "Завершено"
 
 #: src/components/network-monitors-table/network-monitors-columns.tsx
+#: src/components/network-monitors-table/network-monitors-columns.tsx
 #: src/components/routes/system/charts/monitors-charts.tsx
 msgid "Response"
 msgstr "Отклик"
@@ -1789,7 +1824,6 @@ msgstr "Детали S.M.A.R.T."
 msgid "S.M.A.R.T. Self-Test"
 msgstr "Запуск теста S.M.A.R.T."
 
-#: src/components/add-system.tsx
 #: src/components/network-monitors-table/monitor-dialog.tsx
 msgid "Save {foo}"
 msgstr "Сохранить {foo}"
@@ -1929,6 +1963,7 @@ msgstr "Войти"
 msgid "SMTP settings"
 msgstr "Настройки SMTP"
 
+#: src/components/network-monitors-table/network-monitors-table.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "Sort By"
 msgstr "Сортировать по"
@@ -1974,11 +2009,10 @@ msgstr "Использование подкачки"
 msgid "Switch theme"
 msgstr "Переключить тему"
 
-#: src/components/add-system.tsx
 #: src/components/alerts-history-columns.tsx
 #: src/components/containers-table/containers-table-columns.tsx
-#: src/components/navbar.tsx
 #: src/components/network-monitors-table/monitor-dialog.tsx
+#: src/components/network-monitors-table/network-monitors-columns.tsx
 #: src/components/network-monitors-table/network-monitors-columns.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/quiet-hours.tsx
@@ -2025,8 +2059,14 @@ msgstr "Вкладки"
 
 #: src/components/network-monitors-table/monitor-dialog.tsx
 #: src/components/network-monitors-table/network-monitors-columns.tsx
+#: src/components/network-monitors-table/network-monitors-columns.tsx
 msgid "Target"
 msgstr "Цель"
+
+#: src/components/network-monitors-table/monitor-dialog.tsx
+#: src/components/network-monitors-table/monitor-dialog.tsx
+msgid "target[,protocol[,port[,interval]]]"
+msgstr ""
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Tasks"
@@ -2263,6 +2303,7 @@ msgstr "Обновить"
 
 #: src/components/containers-table/containers-table-columns.tsx
 #: src/components/network-monitors-table/network-monitors-columns.tsx
+#: src/components/network-monitors-table/network-monitors-columns.tsx
 #: src/components/routes/system/nut-table.tsx
 #: src/components/routes/system/smart-table.tsx
 #: src/components/routes/system/storage-pools-table.tsx
@@ -2323,6 +2364,7 @@ msgstr "Использование"
 msgid "Value"
 msgstr "Значение"
 
+#: src/components/network-monitors-table/network-monitors-table.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "View"
 msgstr "Вид"
@@ -2337,6 +2379,7 @@ msgstr "Показать больше"
 msgid "View your 200 most recent alerts."
 msgstr "Просмотреть 200 последних оповещений."
 
+#: src/components/network-monitors-table/network-monitors-table.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "Visible Fields"
 msgstr "Видимые столбцы"
@@ -2416,4 +2459,3 @@ msgstr "Да"
 #: src/components/routes/settings/layout.tsx
 msgid "Your user settings have been updated."
 msgstr "Ваши настройки пользователя были обновлены."
-
