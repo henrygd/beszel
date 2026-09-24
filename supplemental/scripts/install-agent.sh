@@ -8,6 +8,11 @@ is_openwrt() {
   [ -f /etc/os-release ] && grep -qi "OpenWrt" /etc/os-release
 }
 
+is_entware() {
+  [ -x /opt/bin/opkg ] && [ -r /opt/etc/init.d/rc.func ] && [ -x /opt/etc/init.d/rc.unslung ] &&
+    ! is_openwrt && ! is_alpine && [ ! -d /run/systemd/system ]
+}
+
 is_freebsd() {
   [ "$(uname -s)" = "FreeBSD" ]
 }
@@ -105,6 +110,10 @@ ensure_trailing_slash() {
 configured_address() {
   if is_alpine || is_openwrt; then
     address_file=/etc/init.d/beszel-agent
+  elif is_entware; then
+    [ -f "$AGENT_DIR/env" ] || return 0
+    (. "$AGENT_DIR/env"; printf '%s\n' "$PORT")
+    return
   elif is_freebsd; then
     address_file="$AGENT_DIR/env"
   else
@@ -397,8 +406,10 @@ validate_platform() {
         command -v rc-service >/dev/null && command -v rc-update >/dev/null || fail "OpenRC is required."
       elif is_openwrt; then
         [ -f /etc/rc.common ] || fail "OpenWrt procd is required."
+      elif is_entware; then
+        : # Entware's rc.unslung starts S* scripts built on rc.func.
       else
-        command -v systemctl >/dev/null && [ -d /run/systemd/system ] || fail "This Linux installer requires a running systemd, OpenRC (Alpine), or procd (OpenWrt)."
+        command -v systemctl >/dev/null && [ -d /run/systemd/system ] || fail "This Linux installer requires a running systemd, OpenRC (Alpine), procd (OpenWrt), or Entware init."
       fi
       ;;
     FreeBSD)
@@ -414,6 +425,8 @@ agent_service() {
     rc-service beszel-agent "$1"
   elif is_openwrt; then
     /etc/init.d/beszel-agent "$1"
+  elif is_entware; then
+    /opt/etc/init.d/S99beszel-agent "$1"
   elif is_freebsd; then
     service beszel-agent "$1"
   else
@@ -426,7 +439,7 @@ agent_service() {
 agent_configuration_exists() {
   if is_alpine || is_openwrt; then
     [ -f /etc/init.d/beszel-agent ]
-  elif is_freebsd; then
+  elif is_entware || is_freebsd; then
     [ -f "$AGENT_DIR/env" ]
   else
     [ -f /etc/systemd/system/beszel-agent.service ]
@@ -438,6 +451,8 @@ agent_configuration_exists() {
 agent_service_registered() {
   if is_alpine || is_openwrt; then
     [ -f /etc/init.d/beszel-agent ]
+  elif is_entware; then
+    [ -f /opt/etc/init.d/S99beszel-agent ]
   elif is_freebsd; then
     [ -f /usr/local/etc/rc.d/beszel-agent ]
   else
@@ -709,6 +724,19 @@ if [ "$UNINSTALL" = true ]; then
       crontab -u root -l 2>/dev/null | grep -v "beszel-agent.*update" | crontab -u root -
     fi
 
+  elif is_entware; then
+    echo "Stopping the Entware agent service..."
+    if [ -f /opt/etc/init.d/S99beszel-agent ]; then
+      if /opt/etc/init.d/S99beszel-agent check >/dev/null 2>&1; then
+        /opt/etc/init.d/S99beszel-agent stop || fail "Could not stop the Entware agent service."
+      fi
+      rm -f /opt/etc/init.d/S99beszel-agent
+    fi
+    rm -f /opt/etc/cron.daily/beszel-agent
+    if [ -L /opt/bin/beszel-agent ] && [ "$(readlink /opt/bin/beszel-agent)" = "$BIN_PATH" ]; then
+      rm -f /opt/bin/beszel-agent
+    fi
+
   elif is_freebsd; then
     echo "Stopping and disabling the agent service..."
     service beszel-agent stop || warn "Cleanup command failed: service beszel-agent stop"
@@ -757,17 +785,19 @@ if [ "$UNINSTALL" = true ]; then
   echo "Removing the Beszel Agent directory..."
   rm -rf "$AGENT_DIR"
 
-  echo "Removing the dedicated user for the agent service..."
-  killall beszel-agent 2>/dev/null || true # Usually already stopped by the service manager.
-  if id -u beszel >/dev/null 2>&1; then
-    if is_openwrt; then
-      remove_openwrt_account
-    elif is_alpine; then
-      deluser beszel || fail "Could not remove the beszel user."
-    elif is_freebsd; then
-      pw user del beszel || fail "Could not remove the beszel user."
-    else
-      userdel beszel || fail "Could not remove the beszel user."
+  if ! is_entware; then
+    echo "Removing the dedicated user for the agent service..."
+    killall beszel-agent 2>/dev/null || true # Usually already stopped by the service manager.
+    if id -u beszel >/dev/null 2>&1; then
+      if is_openwrt; then
+        remove_openwrt_account
+      elif is_alpine; then
+        deluser beszel || fail "Could not remove the beszel user."
+      elif is_freebsd; then
+        pw user del beszel || fail "Could not remove the beszel user."
+      else
+        userdel beszel || fail "Could not remove the beszel user."
+      fi
     fi
   fi
 
@@ -788,9 +818,14 @@ if package_installed apk; then
     apk add tar curl coreutils shadow
   fi
 elif package_installed opkg; then
-  if ! package_installed tar || ! package_installed curl || ! package_installed sha256sum; then
+  if ! package_installed tar || ! package_installed curl || ! package_installed sha256sum || ! package_installed cron; then
     opkg update
-    opkg install tar curl coreutils
+    opkg install tar curl coreutils cron
+  fi
+  if is_entware && [ ! -s /opt/etc/ssl/certs/ca-certificates.crt ]; then
+    opkg update || fail "Could not update Entware package lists."
+    opkg install ca-bundle || fail "Could not install Entware CA bundle"
+    [ -s /opt/etc/ssl/certs/ca-certificates.crt ] || fail "Entware CA bundle is missing after installation."
   fi
 elif package_installed pkg && is_freebsd; then
   if ! package_installed tar || ! package_installed curl || ! package_installed sha256sum; then
@@ -850,7 +885,9 @@ INSTALL_STEP="configuring the service user"
 # Create a dedicated user for the service if it doesn't exist
 AGENT_USER="beszel"
 echo "Configuring the dedicated user for the Beszel Agent service..."
-if is_alpine; then
+if is_entware; then
+  AGENT_USER="root"
+elif is_alpine; then
   if ! id -u beszel >/dev/null 2>&1; then
     addgroup beszel
     adduser -S -D -H -s /sbin/nologin -G beszel beszel
@@ -1019,7 +1056,7 @@ rm -rf "$TEMP_DIR"
 TEMP_DIR=""
 
 # Make sure /etc/machine-id exists and is non-empty for persistent fingerprint
-if [ ! -s /etc/machine-id ]; then
+if ! is_entware && [ ! -s /etc/machine-id ]; then
   if [ -r /proc/sys/kernel/random/uuid ]; then
     tr -d '-' < /proc/sys/kernel/random/uuid > /etc/machine-id
   elif command -v uuidgen >/dev/null; then
@@ -1217,6 +1254,80 @@ EOF
     /etc/init.d/beszel-agent status
     exit 1
   fi
+
+elif is_entware; then
+  if [ -f "$AGENT_DIR/env" ]; then
+    NEW_PORT=$PORT NEW_KEY=$KEY NEW_TOKEN=$TOKEN NEW_HUB_URL=$HUB_URL
+    . "$AGENT_DIR/env"
+    if [ "$PORT_PROVIDED" = true ]; then PORT=$NEW_PORT; fi
+    if [ "$KEY_PROVIDED" = true ]; then KEY=$NEW_KEY; fi
+    if [ "$TOKEN_PROVIDED" = true ]; then TOKEN=$NEW_TOKEN; fi
+    if [ "$HUB_URL_PROVIDED" = true ]; then HUB_URL=$NEW_HUB_URL; fi
+  fi
+
+  (
+    umask 077
+    cat > "$AGENT_DIR/env" <<EOF
+PORT="$PORT"
+KEY="$KEY"
+TOKEN="$TOKEN"
+HUB_URL="$HUB_URL"
+EOF
+  )
+  chmod 600 "$AGENT_DIR/env"
+  mkdir -p "$AGENT_DIR/data"
+  chmod 700 "$AGENT_DIR/data"
+
+  cat > /opt/etc/init.d/S99beszel-agent <<EOF
+#!/bin/sh
+
+ENABLED=yes
+DESC="Beszel agent"
+PROCS=beszel-agent
+ARGS=""
+PREARGS=""
+DATA_DIR="$AGENT_DIR/data"
+FILESYSTEM=/opt
+PATH="$BIN_DIR:/opt/sbin:/opt/bin:\$PATH"
+. "$AGENT_DIR/env"
+export PORT KEY TOKEN HUB_URL DATA_DIR FILESYSTEM
+if [ -z "\${SSL_CERT_FILE:-}" ] && [ -s /opt/etc/ssl/certs/ca-certificates.crt ]; then
+  SSL_CERT_FILE=/opt/etc/ssl/certs/ca-certificates.crt
+  export SSL_CERT_FILE
+fi
+
+. /opt/etc/init.d/rc.func
+EOF
+  chmod 755 /opt/etc/init.d/S99beszel-agent
+  agent_service restart || fail "Could not start the Entware agent."
+  sleep 2
+  agent_service check || fail "The Entware agent did not stay running."
+  ln -sfn "$BIN_PATH" /opt/bin/beszel-agent || fail "Could not create the Entware command link."
+
+  if [ "$AUTO_UPDATE_FLAG" = true ]; then
+    AUTO_UPDATE=y
+  elif [ "$AUTO_UPDATE_FLAG" = false ]; then
+    AUTO_UPDATE=n
+  else
+    prompt_auto_update
+  fi
+  case "$AUTO_UPDATE" in
+  [Yy]*)
+    [ -d /opt/etc/cron.daily ] || fail "Entware cron.daily directory is unavailable."
+    cat > /opt/etc/cron.daily/beszel-agent <<EOF
+#!/bin/sh
+if [ -z "\${SSL_CERT_FILE:-}" ] && [ -s /opt/etc/ssl/certs/ca-certificates.crt ]; then
+  SSL_CERT_FILE=/opt/etc/ssl/certs/ca-certificates.crt
+  export SSL_CERT_FILE
+fi
+DATA_DIR="$AGENT_DIR/data" "$BIN_PATH" update >/dev/null 2>&1
+EOF
+    chmod 755 /opt/etc/cron.daily/beszel-agent
+    /opt/etc/init.d/S10cron start || fail "Could not start Entware cron."
+    echo "Daily updates have been enabled via Entware cron."
+    ;;
+  *) rm -f /opt/etc/cron.daily/beszel-agent ;;
+  esac
 
 elif is_freebsd; then
   echo "Checking for existing FreeBSD service configuration..."
