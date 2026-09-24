@@ -1,6 +1,6 @@
 import { getCertDaysLeft, getCertExpiryLevel, getMonitorTarget } from "@/lib/network-monitor-utils"
 import { t } from "@lingui/core/macro"
-import { Plural, Trans } from "@lingui/react/macro"
+import { Trans } from "@lingui/react/macro"
 import {
 	type ColumnFiltersState,
 	flexRender,
@@ -158,6 +158,26 @@ export default function NetworkMonitorsTableNew({
 		return longestTarget
 	}, [monitors, textMeasureVersion])
 
+	// longest name among systems that have monitors in this table (skipped for single-system view).
+	// Held in a store because memoized rows don't re-render when column definitions change.
+	const $longestSystemName = useMemo(() => atom(""), [])
+	useEffect(() => {
+		if (systemId) {
+			return
+		}
+		const systemIds = new Set(monitors.map((m) => m.system))
+		return $allSystemsById.subscribe((systems) => {
+			let longest = ""
+			for (const id of systemIds) {
+				const name = systems[id]?.name ?? ""
+				if (isVisuallyLonger(name, longest)) {
+					longest = name
+				}
+			}
+			$longestSystemName.set(longest)
+		})
+	}, [monitors, systemId, textMeasureVersion, $longestSystemName])
+
 	const runMonitorBatch = useCallback(
 		async (ids: string[], enqueue: (batch: ReturnType<typeof pb.createBatch>, id: string) => void) => {
 			let batch = pb.createBatch()
@@ -257,7 +277,7 @@ export default function NetworkMonitorsTableNew({
 	)
 
 	const columns = useMemo(() => {
-		let columns = getMonitorColumns(longestTarget, {
+		let columns = getMonitorColumns(longestTarget, $longestSystemName, {
 			onEdit: setEditingMonitor,
 			onDelete: handleDeleteRequest,
 			onSetEnabled: handleSetEnabled,
@@ -265,7 +285,7 @@ export default function NetworkMonitorsTableNew({
 		columns = systemId ? columns.filter((col) => col.id !== "system") : columns
 		columns = canManageMonitors ? columns : columns.filter((col) => col.id !== "actions")
 		return columns
-	}, [canManageMonitors, handleDeleteRequest, handleSetEnabled, systemId, longestTarget])
+	}, [canManageMonitors, handleDeleteRequest, handleSetEnabled, systemId, longestTarget, $longestSystemName])
 
 	const table = useReactTable({
 		data: monitors,
