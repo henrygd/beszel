@@ -1,5 +1,5 @@
 /** biome-ignore-all lint/correctness/useHookAtTopLevel: Hooks live inside memoized column definitions */
-import { t } from "@lingui/core/macro"
+import { plural, t } from "@lingui/core/macro"
 import { Trans, useLingui } from "@lingui/react/macro"
 import { useStore } from "@nanostores/react"
 import { getPagePath } from "@nanostores/router"
@@ -80,6 +80,15 @@ const STATUS_COLORS = {
 	[SystemStatus.Paused]: "bg-primary/40",
 	[SystemStatus.Pending]: "bg-yellow-500",
 } as const
+
+/** Rank of the updates dot color for sorting: 2 security (red), 1 regular (yellow), 0 up to date (green), -1 no data */
+function getUpdatesRank(pu: SystemRecord["info"]["pu"]): number {
+	if (!pu) {
+		return -1
+	}
+	const [total, security = 0] = pu
+	return security > 0 ? 2 : total > 0 ? 1 : 0
+}
 
 function getMeterStateByThresholds(value: number, warn = 65, crit = 90): MeterState {
 	return value >= crit ? MeterState.Crit : value >= warn ? MeterState.Warn : MeterState.Good
@@ -385,28 +394,32 @@ export function SystemsTableColumns(viewMode: "table" | "grid"): ColumnDef<Syste
 			header: sortableHeader,
 			hideSort: true,
 			sortingFn: (a, b) => {
-				// sort priorities: 1) security updates, 2) total updates
-				const [totalA, securityA = 0] = a.original.info.pu ?? [0]
-				const [totalB, securityB = 0] = b.original.info.pu ?? [0]
-				if (securityA !== securityB) {
-					return securityA - securityB
+				// sort priorities: 1) dot color (security > regular > up to date), 2) total updates
+				const puA = a.original.info.pu
+				const puB = b.original.info.pu
+				const rankA = getUpdatesRank(puA)
+				const rankB = getUpdatesRank(puB)
+				if (rankA !== rankB) {
+					return rankA - rankB
 				}
-				return totalA - totalB
+				return (puA?.[0] ?? 0) - (puB?.[0] ?? 0)
 			},
 			cell(info) {
 				const sys = info.row.original
 				if (sys.status !== SystemStatus.Up || !sys.info.pu) {
 					return null
 				}
-				const [total, security] = sys.info.pu
+				const [total, security = 0] = sys.info.pu
 				return (
 					<span className="tabular-nums whitespace-nowrap flex gap-1.5 items-center">
-						{total}
-						{security !== undefined && (
-							<span className={cn("text-sm -ms-0.5", security > 0 ? "text-red-500" : "text-muted-foreground")}>
-								({t`Security`.toLowerCase()}: {security})
-							</span>
-						)}
+						<span
+							className={cn("block size-2 rounded-full", {
+								[STATUS_COLORS[SystemStatus.Down]]: security > 0,
+								[STATUS_COLORS[SystemStatus.Pending]]: security === 0 && total > 0,
+								[STATUS_COLORS[SystemStatus.Up]]: total === 0,
+							})}
+						/>
+						{total === 0 ? t`Up to date` : plural(total, { one: "# update", other: "# updates" })}
 					</span>
 				)
 			},

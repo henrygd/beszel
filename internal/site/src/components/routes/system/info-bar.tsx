@@ -8,7 +8,6 @@ import {
 	GlobeIcon,
 	MemoryStickIcon,
 	MonitorIcon,
-	PackageIcon,
 	Settings2Icon,
 } from "lucide-react"
 import { useMemo } from "react"
@@ -121,15 +120,6 @@ export default function InfoBar({
 				Icon: MemoryStickIcon,
 				hide: !memory,
 				label: t`Memory`,
-			})
-		}
-
-		if (system.info.pu) {
-			const [total, security] = system.info.pu
-			info.push({
-				value: plural(total, { one: "# update", other: "# updates" }),
-				Icon: PackageIcon,
-				label: security !== undefined ? t`Security updates: ${security}` : t`Pending package updates`,
 			})
 		}
 
