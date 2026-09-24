@@ -136,6 +136,13 @@ msgstr "وضعیت فعال"
 msgid "Add {foo}"
 msgstr "افزودن {foo}"
 
+#: src/components/add-system.tsx
+#: src/components/add-system.tsx
+#: src/components/navbar.tsx
+#: src/components/navbar.tsx
+msgid "Add System"
+msgstr "افزودن سیستم"
+
 #: src/components/routes/settings/notifications.tsx
 msgid "Add URL"
 msgstr "افزودن آدرس اینترنتی"
@@ -781,6 +788,10 @@ msgstr "ویرایش"
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Edit {foo}"
 msgstr "ویرایش {foo}"
+
+#: src/components/add-system.tsx
+msgid "Edit System"
+msgstr "ویرایش سیستم"
 
 #: src/components/login/auth-form.tsx
 #: src/components/login/forgot-pass-form.tsx
@@ -1711,6 +1722,10 @@ msgstr "آدرس را با استفاده از کلید Enter یا کاما ذخ
 #: src/components/routes/settings/notifications.tsx
 msgid "Save Settings"
 msgstr "ذخیره تنظیمات"
+
+#: src/components/add-system.tsx
+msgid "Save System"
+msgstr "ذخیره سیستم"
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Saved in the database and does not expire until you disable it."

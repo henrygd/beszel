@@ -136,6 +136,13 @@ msgstr "État actif"
 msgid "Add {foo}"
 msgstr "Ajouter {foo}"
 
+#: src/components/add-system.tsx
+#: src/components/add-system.tsx
+#: src/components/navbar.tsx
+#: src/components/navbar.tsx
+msgid "Add System"
+msgstr "Ajouter Système"
+
 #: src/components/routes/settings/notifications.tsx
 msgid "Add URL"
 msgstr "Ajouter l’URL"
@@ -781,6 +788,10 @@ msgstr "Éditer"
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Edit {foo}"
 msgstr "Modifier {foo}"
+
+#: src/components/add-system.tsx
+msgid "Edit System"
+msgstr "Modifier Système"
 
 #: src/components/login/auth-form.tsx
 #: src/components/login/forgot-pass-form.tsx
@@ -1711,6 +1722,10 @@ msgstr "Enregistrez l'adresse en utilisant la touche Entrée ou la virgule. Lais
 #: src/components/routes/settings/notifications.tsx
 msgid "Save Settings"
 msgstr "Enregistrer les paramètres"
+
+#: src/components/add-system.tsx
+msgid "Save System"
+msgstr "Enregistrer Système"
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Saved in the database and does not expire until you disable it."
