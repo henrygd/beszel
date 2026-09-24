@@ -644,6 +644,7 @@ export interface NetworkMonitorRecord {
 	target: string
 	protocol: "icmp" | "tcp" | "http" | "dns"
 	port: number
+	server: string
 	res: number
 	resMin1h: number
 	resMax1h: number
