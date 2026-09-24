@@ -361,7 +361,7 @@ export function SystemsTableColumns(viewMode: "table" | "grid"): ColumnDef<Syste
 				if (sys.status !== SystemStatus.Up || totalCount === 0) {
 					return null
 				}
-				return (
+				const content = (
 					<span className="tabular-nums whitespace-nowrap flex gap-1.5 items-center">
 						<span
 							className={cn("block size-2 rounded-full", {
@@ -371,6 +371,25 @@ export function SystemsTableColumns(viewMode: "table" | "grid"): ColumnDef<Syste
 						/>
 						{plural(totalCount, { one: "# service", other: "# services" })}
 					</span>
+				)
+				if (numFailed === 0) {
+					return content
+				}
+				return (
+					<Tooltip>
+						<TooltipTrigger asChild>
+							<Link
+								href={getPagePath($router, "system", { id: sys.id })}
+								tabIndex={-1}
+								className="relative z-10 w-fit block"
+							>
+								{content}
+							</Link>
+						</TooltipTrigger>
+						<TooltipContent>
+							{plural(numFailed, { one: "# failed service", other: "# failed services" })}
+						</TooltipContent>
+					</Tooltip>
 				)
 			},
 		},
