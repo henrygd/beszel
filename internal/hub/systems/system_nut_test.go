@@ -192,7 +192,7 @@ func TestSaveNutDevices_IncompleteDataDoesNotRemoveDevices(t *testing.T) {
 	assert.EqualValues(t, 75, record1.GetFloat("battery_charge"))
 }
 
-func TestSaveNutDevices_EmptyDataIsNoop(t *testing.T) {
+func TestSaveNutDevices_CompleteEmptyDataRemovesStaleDevices(t *testing.T) {
 	sys, testApp := newTestSystemWithHub(t)
 
 	err := sys.saveNutDevices(map[string]nut.NutData{
@@ -204,7 +204,7 @@ func TestSaveNutDevices_EmptyDataIsNoop(t *testing.T) {
 	require.NoError(t, err)
 
 	records := countNutDeviceRecords(t, testApp, sys.Id)
-	assert.Len(t, records, 1, "empty fetch result should not delete existing devices")
+	assert.Empty(t, records, "complete empty fetch result should remove stale devices")
 }
 
 func TestSaveNutDevices_WithOutlets(t *testing.T) {

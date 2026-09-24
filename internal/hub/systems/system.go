@@ -788,6 +788,7 @@ func (sys *System) onSSHConnect(agentVersion semver.Version) {
 	sys.setAgentVersion(agentVersion)
 	sys.monitorsNeedSync.Store(true)
 	sys.manager.resetFailedSmartFetchState(sys.Id)
+	sys.manager.resetFailedNutFetchState(sys.Id)
 	sys.manager.resetFailedZfsFetchState(sys.Id)
 }
 
