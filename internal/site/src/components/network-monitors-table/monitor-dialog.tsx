@@ -725,7 +725,7 @@ function MonitorDialogContent({
 					<Input
 						value={target}
 						onChange={(e) => setTarget(e.target.value)}
-						placeholder={protocol === "http" ? "http://localhost:8090" : "1.1.1.1"}
+						placeholder={protocol === "http" ? "http://localhost:8090" : protocol === "dns" ? "example.com" : "1.1.1.1"}
 						required
 					/>
 				</div>
