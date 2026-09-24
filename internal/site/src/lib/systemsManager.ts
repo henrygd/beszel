@@ -7,6 +7,7 @@ import {
 	$downSystems,
 	$longestSystemName,
 	$pausedSystems,
+	$textMeasureVersion,
 	$upSystems,
 } from "@/lib/stores"
 import { isVisuallyLonger, updateFavicon } from "@/lib/utils"
@@ -67,6 +68,11 @@ export function init() {
 		// run things that need to be done when systems change
 		onSystemsChanged(newSystems, newSystem, oldSystem)
 	})
+
+	// widths measured with the fallback font may rank names differently, so recompute once they're invalidated
+	$textMeasureVersion.listen(() => {
+		$longestSystemName.set(findLongestName($allSystemsById.get()))
+	})
 }
 
 /** Update the longest system name string and favicon based on system status */
@@ -78,18 +84,23 @@ function onSystemsChanged(systems: Record<string, SystemRecord>, newSystem?: Sys
 	// otherwise, if the changed system's new name is longer than the current longest, update it
 	const longestName = $longestSystemName.get()
 	if (oldSystem?.name === longestName && oldSystem.name !== newSystem?.name) {
-		let newLongest = ""
-		for (const id in systems) {
-			if (isVisuallyLonger(systems[id].name, newLongest)) {
-				newLongest = systems[id].name
-			}
-		}
-		$longestSystemName.set(newLongest)
+		$longestSystemName.set(findLongestName(systems))
 	} else if (newSystem && newSystem.name !== longestName && isVisuallyLonger(newSystem.name, longestName)) {
 		$longestSystemName.set(newSystem.name)
 	}
 
 	updateFavicon(downSystems.length)
+}
+
+/** Find the visually longest system name */
+function findLongestName(systems: Record<string, SystemRecord>): string {
+	let longest = ""
+	for (const id in systems) {
+		if (isVisuallyLonger(systems[id].name, longest)) {
+			longest = systems[id].name
+		}
+	}
+	return longest
 }
 
 /** Fetch systems from collection */

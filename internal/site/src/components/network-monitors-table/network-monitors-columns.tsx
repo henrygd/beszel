@@ -16,6 +16,7 @@ import {
 	PlayCircleIcon,
 	CopyIcon,
 	CopyPlusIcon,
+	ShieldCheckIcon,
 } from "lucide-react"
 import { t } from "@lingui/core/macro"
 import type { NetworkMonitorRecord, SystemRecord } from "@/types"
@@ -29,7 +30,7 @@ import {
 	DropdownMenuSubTrigger,
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { Trans } from "@lingui/react/macro"
+import { Plural, Trans } from "@lingui/react/macro"
 import { $allSystemsById, $longestSystemName } from "@/lib/stores"
 import { useStore } from "@nanostores/react"
 import { SystemStatus } from "@/lib/enums"
@@ -37,8 +38,10 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { useMemo } from "react"
 import { formatBulkMonitorLine } from "@/components/network-monitors-table/monitor-dialog"
 import { Badge } from "../ui/badge"
-import { getMonitorTarget } from "@/lib/network-monitor-utils"
+import { getCertDaysLeft, getCertExpiryLevel, getMonitorTarget } from "@/lib/network-monitor-utils"
 import { pb } from "@/lib/api"
+
+const certExpiryDotColors = { ok: "bg-green-500", warning: "bg-yellow-500", critical: "bg-red-500" }
 
 declare module "@tanstack/react-table" {
 	interface ColumnMeta<TData, TValue> {
@@ -135,7 +138,7 @@ export function getMonitorColumns(
 							</div>
 						</div>
 					),
-					[status, name]
+					[status, name, longestSystemName]
 				)
 			},
 		},
@@ -245,6 +248,31 @@ export function getMonitorColumns(
 					<span className="ms-1.5 tabular-nums flex gap-2 items-center">
 						<span className={cn("shrink-0 size-2 rounded-full", color)} />
 						{loss1h === 100 ? loss1h : decimalString(loss1h, loss1h >= 10 ? 1 : 2)}%
+					</span>
+				)
+			},
+		},
+		{
+			id: "cert",
+			meta: { label: t`Certificate` },
+			accessorFn: (record) => record.certInfo?.expires,
+			header: ({ column }) => <HeaderButton column={column} name={t`Certificate`} Icon={ShieldCheckIcon} />,
+			cell: ({ row }) => {
+				const { certInfo, system } = row.original
+				const systemRecord = useStore($allSystemsById)[system]
+
+				if (!certInfo?.expires) {
+					return <span className="ms-1.5 text-muted-foreground">-</span>
+				}
+
+				const daysLeft = getCertDaysLeft(certInfo)
+				const color = isMuted(row.original, systemRecord)
+					? "bg-muted-foreground/50"
+					: certExpiryDotColors[getCertExpiryLevel(daysLeft)]
+				return (
+					<span className="ms-1.5 tabular-nums flex gap-2 items-center">
+						<span className={cn("shrink-0 size-2 rounded-full", color)} />
+						{daysLeft < 0 ? <Trans>Expired</Trans> : <Plural value={daysLeft} one="# day" other="# days" />}
 					</span>
 				)
 			},

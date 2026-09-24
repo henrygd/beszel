@@ -114,6 +114,9 @@ func setMonitorResultFields(record *core.Record, result monitor.Result) {
 	record.Set("resMin1h", result.MinResponse1h)
 	record.Set("resMax1h", result.MaxResponse1h)
 	record.Set("loss1h", result.PacketLoss1h)
+	if result.Cert != nil {
+		record.Set("certInfo", result.Cert)
+	}
 	record.Set("updated", nowString)
 }
 

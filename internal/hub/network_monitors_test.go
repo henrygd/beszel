@@ -206,6 +206,7 @@ func TestCopyMonitorToNewRecordDropsResultFields(t *testing.T) {
 		"resMin1h": 900,
 		"resMax1h": 1600,
 		"loss1h":   5,
+		"certInfo": map[string]any{"expires": 1800000000000},
 		"updated":  "2026-04-29 12:00:00.000Z",
 	})
 
@@ -216,6 +217,7 @@ func TestCopyMonitorToNewRecordDropsResultFields(t *testing.T) {
 	assert.Equal(t, "http", newRecord.GetString("protocol"))
 	assert.Equal(t, 443, newRecord.GetInt("port"))
 	assert.True(t, newRecord.GetBool("enabled"))
+	assert.Contains(t, []string{"", "null"}, newRecord.GetString("certInfo"))
 	assert.Zero(t, newRecord.GetFloat("res"))
 	assert.Zero(t, newRecord.GetFloat("resAvg1h"))
 	assert.Zero(t, newRecord.GetFloat("resMin1h"))

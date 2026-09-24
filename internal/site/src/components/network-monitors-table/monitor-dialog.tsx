@@ -497,7 +497,9 @@ export function AddMonitorDialog({ systemId, monitors }: { systemId?: string; mo
 						<SheetTitle>
 							<Trans>Bulk Add {{ foo: t`Network Monitors` }}</Trans>
 						</SheetTitle>
-						<SheetDescription>target[,protocol[,port[,interval]]]</SheetDescription>
+						<SheetDescription>
+							<Trans>target[,protocol[,port[,interval]]]</Trans>
+						</SheetDescription>
 					</SheetHeader>
 					<form ref={bulkFormRef} onSubmit={handleBulkSubmit} className="flex h-full flex-col overflow-hidden">
 						<div className="flex-1 flex flex-col space-y-4 overflow-auto p-4">
@@ -533,7 +535,9 @@ export function AddMonitorDialog({ systemId, monitors }: { systemId?: string; mo
 									placeholder={["1.1.1.1", "example.com,tcp", "https://example.com,http,,60"].join("\n")}
 									required
 								/>
-								<p className="text-xs text-muted-foreground">target[,protocol[,port[,interval]]]</p>
+								<p className="text-xs text-muted-foreground">
+									<Trans>target[,protocol[,port[,interval]]]</Trans>
+								</p>
 							</div>
 						</div>
 						<SheetFooter className="border-t">
