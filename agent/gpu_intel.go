@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"encoding/json"
 	"io"
+	"log/slog"
 	"os/exec"
 	"strconv"
 	"strings"
@@ -81,7 +82,13 @@ func (gm *GPUManager) collectIntelStats() (err error) {
 		}
 	}()
 
-	return gm.parseIntelJSONStream(stdout)
+	if err := gm.parseIntelJSONStream(stdout); err != nil {
+		return err
+	}
+	// The closing "]" is printed as the process exits, so read to EOF to let
+	// it finish instead of killing it.
+	_, _ = io.Copy(io.Discard, stdout)
+	return nil
 }
 
 // parseIntelJSONStream decodes samples from intel_gpu_top -J output and
@@ -127,6 +134,10 @@ func (gm *GPUManager) parseIntelJSONStream(r io.Reader) error {
 			continue
 		}
 		stats := parseIntelJSONSample(sample)
+		if !validIntelPower(stats.PowerGPU) || !validIntelPower(stats.PowerPkg) {
+			slog.Debug("Skipping intel_gpu_top sample with invalid power", "gpu", stats.PowerGPU, "pkg", stats.PowerPkg)
+			continue
+		}
 		hadDataRow = true
 		gm.updateIntelFromStats(&stats)
 	}
@@ -178,6 +189,14 @@ type intelGpuJSONSample struct {
 	Engines map[string]struct {
 		Busy float64 `json:"busy"`
 	} `json:"engines"`
+}
+
+// validIntelPower reports whether a power reading from intel_gpu_top is plausible.
+func validIntelPower(watts float64) bool {
+	// 5000 is well above any real GPU or package draw. intel_gpu_top
+	// computes power from unsigned energy counter deltas, so a counter that reads
+	// lower than the previous sample produces an enormous value for that period.
+	return watts >= 0 && watts <= 5000
 }
 
 // parseIntelJSONSample converts one intel_gpu_top JSON sample into intelGpuStats.

@@ -1888,6 +1888,24 @@ func TestParseIntelJSONStream(t *testing.T) {
 			wantEngines: map[string]float64{"Render/3D": 12, "Blitter": 1, "Video": 10, "VideoEnhance": 2},
 		},
 		{
+			// energy counter read lower than the previous sample in intel_gpu_top
+			name: "sample with invalid power is skipped",
+			input: intelJSONStream(true, first, classView[0],
+				intelJSONSample(86_000_000, 3, map[string]float64{"Render/3D": 50}),
+				intelJSONSample(2, 90_000_000, map[string]float64{"Render/3D": 50}),
+				classView[1],
+			),
+			wantCount:   2,
+			wantPower:   3,
+			wantPkg:     5,
+			wantEngines: classViewWant,
+		},
+		{
+			name:    "only samples with invalid power",
+			input:   intelJSONStream(true, first, intelJSONSample(86_000_000, 3, map[string]float64{"Render/3D": 50})),
+			wantErr: errNoValidData,
+		},
+		{
 			name:    "empty output",
 			input:   "",
 			wantErr: errNoValidData,
