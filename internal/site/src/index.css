@@ -141,6 +141,17 @@
 		overflow-anchor: none;
 	}
 
+	html {
+		scrollbar-gutter: stable;
+	}
+
+	@supports (scrollbar-gutter: stable) {
+		/* Radix scroll lock adds this margin even though the viewport keeps its gutter. */
+		html body[data-scroll-locked] {
+			margin-right: 0 !important;
+		}
+	}
+
 	body {
 		@apply bg-background text-foreground;
 		font-variant-ligatures: no-contextual;
