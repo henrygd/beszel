@@ -155,7 +155,7 @@ func registerFilesystemStats(existing map[string]*system.FsStats, device, mountp
 
 // addFsStat inserts a discovered filesystem if it resolves to a new tracking
 // key and reports whether it was added. The key selection itself lives in
-// buildFsStatRegistration so that logic can stay directly unit-tested.
+// registerFilesystemStats so that logic can stay directly unit-tested.
 func (d *diskDiscovery) addFsStat(device, mountpoint string, root bool, customName string) bool {
 	key, fsStats, ok := registerFilesystemStats(d.agent.fsStats, device, mountpoint, root, customName, d.ctx)
 	if !ok {
@@ -212,10 +212,16 @@ func (d *diskDiscovery) addPartitionRootFs(device, mountpoint string) bool {
 	if !match {
 		return false
 	}
-	// The resolved I/O device is already known here, so use it directly to avoid
-	// a second fallback search inside buildFsStatRegistration. Report failure if
-	// the key was already taken (e.g. root drive listed in EXTRA_FILESYSTEMS) so
-	// the caller can still fall back to addLastResortRootFs.
+	// The root device is already resolved, so if it was registered earlier as an
+	// extra filesystem (e.g. root drive listed in EXTRA_FILESYSTEMS), promote that
+	// entry rather than letting addLastResortRootFs guess a different device.
+	if stats, exists := d.agent.fsStats[fs]; exists {
+		stats.Root = true
+		stats.Mountpoint = mountpoint
+		return true
+	}
+	// Use the resolved I/O device directly to avoid a second fallback search
+	// inside registerFilesystemStats.
 	return d.addFsStat(fs, mountpoint, true, "")
 }
 

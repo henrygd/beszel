@@ -1128,11 +1128,11 @@ func TestAddPartitionRootFsWindowsDrive(t *testing.T) {
 
 func TestAddPartitionRootFsKeyAlreadyRegistered(t *testing.T) {
 	// The root drive is also listed in EXTRA_FILESYSTEMS, so its key is taken
-	// before the root fallback runs. addPartitionRootFs must report failure so
-	// the caller still falls back to addLastResortRootFs instead of ending up
-	// with no root filesystem.
+	// before the root fallback runs. The existing entry must be promoted to root
+	// rather than falling back to the most active device, which here is D:.
 	agent := &Agent{fsStats: map[string]*system.FsStats{
-		"C:": {Mountpoint: `C:\`},
+		"C:": {Mountpoint: `C:\`, Name: "System"},
+		"D:": {Mountpoint: `D:\`},
 	}}
 	discovery := diskDiscovery{
 		agent:          agent,
@@ -1141,16 +1141,16 @@ func TestAddPartitionRootFsKeyAlreadyRegistered(t *testing.T) {
 			isWindows: true,
 			diskIoCounters: map[string]disk.IOCountersStat{
 				"C:": {Name: "C:", ReadBytes: 10},
-				"D:": {Name: "D:"},
+				"D:": {Name: "D:", ReadBytes: 100},
 			},
 		},
 	}
 
 	ok := discovery.addPartitionRootFs("C:", `C:\`)
-	assert.False(t, ok)
-	assert.False(t, agent.fsStats["C:"].Root)
-
-	discovery.addLastResortRootFs()
-	assert.Len(t, agent.fsStats, 1)
+	assert.True(t, ok)
+	assert.Len(t, agent.fsStats, 2)
 	assert.True(t, agent.fsStats["C:"].Root)
+	assert.Equal(t, `C:\`, agent.fsStats["C:"].Mountpoint)
+	assert.Equal(t, "System", agent.fsStats["C:"].Name)
+	assert.False(t, agent.fsStats["D:"].Root)
 }
