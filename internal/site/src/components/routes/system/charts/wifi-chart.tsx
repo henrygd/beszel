@@ -16,7 +16,11 @@ export function WiFiChart({
 	dataEmpty: boolean
 }) {
 	const interfaces = connectedWiFi(system)
-	if (!interfaces.length) return null
+	// Associated interfaces may not report RSSI; without any readings the chart would never render.
+	const hasSignal = interfaces.some(
+		([id, wifi]) => wifi.r !== undefined || chartData.systemStats.some((record) => record.stats?.wf?.[id] !== undefined)
+	)
+	if (!hasSignal) return null
 	const dataPoints = interfaces.map(([id, current]) => ({
 		label: current.s ? `${id} (${current.s})` : id,
 		color: wifiColor(id),
@@ -27,12 +31,7 @@ export function WiFiChart({
 			empty={dataEmpty}
 			grid={grid}
 			title={t`Wi-Fi signal`}
-			description={interfaces
-				.map(
-					([id, value]) =>
-						`${id}${value.s ? ` (${value.s})` : ""}: ${value.r == null ? t`Unavailable` : `${value.r} dBm`}`,
-				)
-				.join(" · ")}
+			description={t`Signal strength of connected Wi-Fi interfaces`}
 		>
 			<LineChartDefault
 				chartData={chartData}

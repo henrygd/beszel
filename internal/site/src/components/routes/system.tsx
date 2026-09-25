@@ -213,7 +213,6 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 						<TemperatureChart {...coreProps} setPageBottomExtraMargin={setPageBottomExtraMargin} />
 						<FanChart {...coreProps} />
 						<BatteryChart system={system} {...coreProps} />
-						<WiFiChart system={system} {...coreProps} />
 						{pageBottomExtraMargin > 0 && <div style={{ marginBottom: pageBottomExtraMargin }}></div>}
 					</div>
 				</TabsContent>
@@ -223,6 +222,7 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 						<>
 							<div className="grid xl:grid-cols-2 gap-4">
 								<BandwidthChart {...coreProps} systemStats={systemStats} />
+								<WiFiChart system={system} {...coreProps} />
 							</div>
 							{hasNetworkMonitors && <LazyNetworkMonitorsTable systemId={system.id} />}
 						</>

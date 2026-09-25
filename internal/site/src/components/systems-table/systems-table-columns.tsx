@@ -708,9 +708,10 @@ function WiFiSignal({ wifi, className }: { wifi: WiFi; className?: ClassValue })
 					[STATUS_COLORS[SystemStatus.Up]]: state === MeterState.Good,
 					[STATUS_COLORS[SystemStatus.Pending]]: state === MeterState.Warn,
 					[STATUS_COLORS[SystemStatus.Down]]: state === MeterState.Crit,
+					[STATUS_COLORS[SystemStatus.Paused]]: state === undefined,
 				})}
 			/>
-			{wifi.r === undefined ? "—" : `${wifi.r} dBm`}
+			{wifi.r === undefined ? t`Unknown` : `${wifi.r} dBm`}
 		</span>
 	)
 }
