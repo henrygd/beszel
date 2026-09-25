@@ -41,6 +41,7 @@ const InputTags = React.forwardRef<HTMLInputElement, InputTagsProps>(
 					<Badge key={item}>
 						{item}
 						<Button
+							type="button"
 							variant="ghost"
 							size="icon"
 							className="ms-2 h-3 w-3"
@@ -58,6 +59,10 @@ const InputTags = React.forwardRef<HTMLInputElement, InputTagsProps>(
 					onChange={(e) => setPendingDataPoint(e.target.value)}
 					onKeyDown={(e) => {
 						if (e.key === "Enter" || e.key === ",") {
+							e.preventDefault()
+							addPendingDataPoint()
+						} else if (e.key === "Tab" && !e.shiftKey && pendingDataPoint.trim()) {
+							// only intercept Tab when there's text to add, so it still moves focus otherwise
 							e.preventDefault()
 							addPendingDataPoint()
 						} else if (e.key === "Backspace" && pendingDataPoint.length === 0 && value.length > 0) {

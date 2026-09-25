@@ -33,6 +33,17 @@ export interface SystemRecord extends RecordModel {
 	updated: string
 }
 
+/** Per-system settings the hub pushes to the agent. One record per system, one column per setting. */
+export interface SystemConfigRecord extends RecordModel {
+	system: string
+	/** comma-separated container name patterns (same syntax as the EXCLUDE_CONTAINERS env var) */
+	exclude_containers: string
+	/** comma-separated systemd unit patterns (same syntax as the SERVICE_PATTERNS env var) */
+	service_patterns: string
+	/** network interface list in NICS env var syntax; a leading "-" excludes the listed interfaces */
+	nics: string
+}
+
 export interface SystemInfo {
 	/** hostname */
 	h: string

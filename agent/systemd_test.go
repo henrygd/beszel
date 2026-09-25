@@ -183,3 +183,23 @@ func TestGetServicePatterns(t *testing.T) {
 		})
 	}
 }
+
+func TestSetHubServicePatterns(t *testing.T) {
+	t.Run("hub patterns are normalized and applied", func(t *testing.T) {
+		sm := &systemdManager{patterns: []string{"*.service"}}
+		sm.setHubServicePatterns([]string{" nginx ", "", "backup.timer", "*docker*"})
+		assert.Equal(t, []string{"nginx.service", "backup.timer", "*docker*.service"}, sm.patterns)
+	})
+
+	t.Run("empty hub config restores the default", func(t *testing.T) {
+		sm := &systemdManager{patterns: []string{"nginx.service"}}
+		sm.setHubServicePatterns(nil)
+		assert.Equal(t, []string{"*.service"}, sm.patterns)
+	})
+
+	t.Run("env var takes precedence over hub config", func(t *testing.T) {
+		sm := &systemdManager{patterns: []string{"env.service"}, patternsFromEnv: true}
+		sm.setHubServicePatterns([]string{"hub"})
+		assert.Equal(t, []string{"env.service"}, sm.patterns)
+	})
+}

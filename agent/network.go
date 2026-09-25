@@ -90,16 +90,46 @@ func (a *Agent) updateNetworkStats(cacheTimeMs uint16, systemStats *system.Stats
 	}
 }
 
+// nicConfig returns the interface filter from the NICS env var or, if that isn't
+// set, from the hub. Returns nil if neither is set, meaning automatic detection.
+func (a *Agent) nicConfig() *NicConfig {
+	envVal, envExists := utils.GetEnv("NICS")
+	switch {
+	case envVal != "":
+		return newNicConfig(envVal)
+	case a.hubNics != "":
+		return newNicConfig(a.hubNics)
+	case envExists:
+		return newNicConfig(envVal)
+	}
+	return nil
+}
+
+// setHubNics applies the NICS setting from the hub and re-detects interfaces if it
+// changed. It does nothing if the NICS env var is set, which takes precedence.
+func (a *Agent) setHubNics(raw string) {
+	raw = strings.TrimSpace(raw)
+	if envVal, _ := utils.GetEnv("NICS"); envVal != "" {
+		slog.Debug("Ignoring hub NICS; NICS is set")
+		return
+	}
+	// Stats collection reads the interface maps while holding the agent lock.
+	a.Lock()
+	defer a.Unlock()
+	if raw == a.hubNics {
+		return
+	}
+	a.hubNics = raw
+	slog.Info("Hub NICS", "nics", raw)
+	a.initializeNetIoStats()
+}
+
 func (a *Agent) initializeNetIoStats() {
 	// reset valid network interfaces
 	a.netInterfaces = make(map[string]struct{}, 0)
 
-	// parse NICS env var for whitelist / blacklist
-	nicsEnvVal, nicsEnvExists := utils.GetEnv("NICS")
-	var nicCfg *NicConfig
-	if nicsEnvExists {
-		nicCfg = newNicConfig(nicsEnvVal)
-	}
+	// parse NICS setting for whitelist / blacklist
+	nicCfg := a.nicConfig()
 
 	// get current network I/O stats and record valid interfaces
 	if netIO, err := psutilNet.IOCounters(true); err == nil {

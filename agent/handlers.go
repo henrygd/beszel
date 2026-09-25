@@ -7,6 +7,7 @@ import (
 
 	"github.com/fxamacker/cbor/v2"
 	"github.com/henrygd/beszel/internal/common"
+	"github.com/henrygd/beszel/internal/entities/agentconfig"
 	"github.com/henrygd/beszel/internal/entities/monitor"
 	"github.com/henrygd/beszel/internal/entities/smart"
 
@@ -53,6 +54,7 @@ func NewHandlerRegistry() *HandlerRegistry {
 	registry.Register(common.GetSmartData, &GetSmartDataHandler{})
 	registry.Register(common.GetSystemdInfo, &GetSystemdInfoHandler{})
 	registry.Register(common.SyncNetworkMonitors, &SyncNetworkMonitorsHandler{})
+	registry.Register(common.SyncAgentConfig, &SyncAgentConfigHandler{})
 	registry.Register(common.GetZfsData, &GetZfsDataHandler{})
 
 	return registry
@@ -242,4 +244,19 @@ func (h *SyncNetworkMonitorsHandler) Handle(hctx *HandlerContext) error {
 		return err
 	}
 	return hctx.SendResponse(resp, hctx.RequestID)
+}
+
+////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
+
+// SyncAgentConfigHandler handles hub-managed agent configuration sync
+type SyncAgentConfigHandler struct{}
+
+func (h *SyncAgentConfigHandler) Handle(hctx *HandlerContext) error {
+	var cfg agentconfig.Config
+	if err := cbor.Unmarshal(hctx.Request.Data, &cfg); err != nil {
+		return err
+	}
+	hctx.Agent.applyAgentConfig(cfg)
+	return hctx.SendResponse(struct{}{}, hctx.RequestID)
 }

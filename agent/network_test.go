@@ -511,3 +511,78 @@ func TestApplyNetworkTotals(t *testing.T) {
 		})
 	}
 }
+
+func TestNicConfigPrecedence(t *testing.T) {
+	t.Run("nothing set means automatic detection", func(t *testing.T) {
+		a := &Agent{}
+		assert.Nil(t, a.nicConfig())
+	})
+
+	t.Run("hub value is used when no env var", func(t *testing.T) {
+		a := &Agent{hubNics: "-eth1, wlan*"}
+		cfg := a.nicConfig()
+		require.NotNil(t, cfg)
+		assert.True(t, cfg.isBlacklist)
+		assert.Contains(t, cfg.nics, "eth1")
+		assert.Contains(t, cfg.nics, "wlan*")
+	})
+
+	t.Run("env var takes precedence over hub value", func(t *testing.T) {
+		t.Setenv("NICS", "eth0")
+		a := &Agent{hubNics: "-eth1"}
+		cfg := a.nicConfig()
+		require.NotNil(t, cfg)
+		assert.False(t, cfg.isBlacklist)
+		assert.Contains(t, cfg.nics, "eth0")
+		assert.NotContains(t, cfg.nics, "eth1")
+	})
+
+	t.Run("empty env var does not block the hub value", func(t *testing.T) {
+		t.Setenv("NICS", "")
+		a := &Agent{hubNics: "eth1"}
+		cfg := a.nicConfig()
+		require.NotNil(t, cfg)
+		assert.Contains(t, cfg.nics, "eth1")
+	})
+}
+
+func TestSetHubNics(t *testing.T) {
+	newAgent := func() *Agent {
+		return &Agent{
+			netInterfaces:             map[string]struct{}{},
+			netIoStats:                map[uint16]system.NetIoStats{},
+			netInterfaceDeltaTrackers: map[uint16]*deltatracker.DeltaTracker[string, uint64]{},
+		}
+	}
+
+	t.Run("applies the value and resets tracking", func(t *testing.T) {
+		a := newAgent()
+		a.netIoStats[60_000] = system.NetIoStats{BytesSent: 1}
+		a.setHubNics(" -veth* ")
+		assert.Equal(t, "-veth*", a.hubNics)
+		assert.Empty(t, a.netIoStats, "baselines are reset so bandwidth isn't computed across the change")
+	})
+
+	t.Run("unchanged value keeps existing baselines", func(t *testing.T) {
+		a := newAgent()
+		a.hubNics = "eth0"
+		a.netIoStats[60_000] = system.NetIoStats{BytesSent: 1}
+		a.setHubNics("eth0")
+		assert.Len(t, a.netIoStats, 1)
+	})
+
+	t.Run("empty value restores automatic detection", func(t *testing.T) {
+		a := newAgent()
+		a.hubNics = "eth0"
+		a.setHubNics("")
+		assert.Equal(t, "", a.hubNics)
+		assert.Nil(t, a.nicConfig())
+	})
+
+	t.Run("env var takes precedence over hub value", func(t *testing.T) {
+		t.Setenv("NICS", "eth0")
+		a := newAgent()
+		a.setHubNics("eth1")
+		assert.Equal(t, "", a.hubNics)
+	})
+}

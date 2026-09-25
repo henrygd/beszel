@@ -27,7 +27,7 @@ import { ChevronDownIcon, ListIcon, PlusIcon, SearchIcon, ServerIcon } from "luc
 import { useToast } from "@/components/ui/use-toast"
 import { $systems } from "@/lib/stores"
 import { cn, supportsNetworkMonitors } from "@/lib/utils"
-import type { NetworkMonitorRecord } from "@/types"
+import type { NetworkMonitorRecord, SystemRecord } from "@/types"
 import * as v from "valibot"
 
 type MonitorProtocol = "icmp" | "tcp" | "http" | "dns"
@@ -194,18 +194,21 @@ export function formatBulkMonitorLine(monitor: BulkMonitorLineSource) {
 	return trimTrailingEmptyFields([monitor.target, monitor.protocol, port, interval, server]).join(",")
 }
 
-function SystemMultiSelect({
+export function SystemMultiSelect({
 	id,
 	selectedSystemIds,
 	onChange,
 	disabled,
 	className,
+	isSelectable = supportsNetworkMonitors,
 }: {
 	id: string
 	selectedSystemIds: Set<string>
 	onChange: (ids: Set<string>) => void
 	disabled?: boolean
 	className?: string
+	/** which systems are listed; defaults to those whose agent supports network monitors */
+	isSelectable?: (system: SystemRecord) => boolean
 }) {
 	const systems = useStore($systems)
 	const { t } = useLingui()
@@ -221,7 +224,7 @@ function SystemMultiSelect({
 	const contentRef = useRef<HTMLDivElement>(null)
 	const query = search.trim().toLocaleLowerCase()
 	const filteredSystems = systems.filter(
-		(system) => supportsNetworkMonitors(system) && system.name.toLocaleLowerCase().includes(query)
+		(system) => isSelectable(system) && system.name.toLocaleLowerCase().includes(query)
 	)
 	const allSelected = filteredSystems.every((system) => selectedSystemIds.has(system.id))
 	const anySelected = filteredSystems.some((system) => selectedSystemIds.has(system.id))
@@ -806,11 +809,7 @@ function MonitorDialogContent({
 						type="submit"
 						disabled={loading || (!systemId && (isEditing ? !selectedSystemId : !selectedSystemIds.size))}
 					>
-						{isEditing ? (
-							<Trans>Save {{ foo: t`Monitor` }}</Trans>
-						) : (
-							<Trans>Add {{ foo: t`Monitor` }}</Trans>
-						)}
+						{isEditing ? <Trans>Save {{ foo: t`Monitor` }}</Trans> : <Trans>Add {{ foo: t`Monitor` }}</Trans>}
 					</Button>
 				</DialogFooter>
 			</form>
