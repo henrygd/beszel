@@ -280,12 +280,35 @@ export function SystemsTableColumns(viewMode: "table" | "grid"): ColumnDef<Syste
 			},
 		},
 		{
+			accessorFn: ({ info }) => info.dt,
+			id: "temp",
+			name: () => t({ message: "Temp", comment: "Temperature label in systems table" }),
+			size: 50,
+			hideSort: true,
+			Icon: ThermometerIcon,
+			header: sortableHeader,
+			cell(info) {
+				const val = info.getValue() as number
+				const userSettings = useStore($userSettings, { keys: ["unitTemp"] })
+				if (!val) {
+					return null
+				}
+				const { value, unit } = formatTemperature(val, userSettings.unitTemp)
+				return (
+					<span className={cn("tabular-nums whitespace-nowrap", viewMode === "table" && "ps-0.5")}>
+						{decimalString(value, value >= 100 ? 1 : 2)} {unit}
+					</span>
+				)
+			},
+		},
+		{
 			accessorFn: strongestWiFiSignal,
 			id: "wifi",
 			name: () => t`Wi-Fi`,
 			size: 80,
 			Icon: WifiIcon,
 			header: sortableHeader,
+			hideSort: true,
 			sortUndefined: "last",
 			cell(info) {
 				const connections = connectedWiFi(info.row.original)
@@ -315,28 +338,6 @@ export function SystemsTableColumns(viewMode: "table" | "grid"): ColumnDef<Syste
 							<span className="text-xs text-muted-foreground">+{connections.length - 1}</span>
 						)}
 					</Link>
-				)
-			},
-		},
-		{
-			accessorFn: ({ info }) => info.dt,
-			id: "temp",
-			name: () => t({ message: "Temp", comment: "Temperature label in systems table" }),
-			size: 50,
-			hideSort: true,
-			Icon: ThermometerIcon,
-			header: sortableHeader,
-			cell(info) {
-				const val = info.getValue() as number
-				const userSettings = useStore($userSettings, { keys: ["unitTemp"] })
-				if (!val) {
-					return null
-				}
-				const { value, unit } = formatTemperature(val, userSettings.unitTemp)
-				return (
-					<span className={cn("tabular-nums whitespace-nowrap", viewMode === "table" && "ps-0.5")}>
-						{decimalString(value, value >= 100 ? 1 : 2)} {unit}
-					</span>
 				)
 			},
 		},

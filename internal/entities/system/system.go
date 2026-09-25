@@ -166,10 +166,9 @@ const (
 // Core system data that is needed in All Systems table
 type Info struct {
 	// Always serialize the current snapshot, including null on unsupported agents.
-	WiFi          map[string]WiFi `json:"wifi" cbor:"25,keyasint"`
-	Hostname      string          `json:"h,omitempty" cbor:"0,keyasint,omitempty"` // deprecated - moved to Details struct
-	KernelVersion string          `json:"k,omitempty" cbor:"1,keyasint,omitempty"` // deprecated - moved to Details struct
-	Cores         int             `json:"c,omitzero" cbor:"2,keyasint,omitzero"`   // deprecated - moved to Details struct
+	Hostname      string `json:"h,omitempty" cbor:"0,keyasint,omitempty"` // deprecated - moved to Details struct
+	KernelVersion string `json:"k,omitempty" cbor:"1,keyasint,omitempty"` // deprecated - moved to Details struct
+	Cores         int    `json:"c,omitzero" cbor:"2,keyasint,omitzero"`   // deprecated - moved to Details struct
 	// Threads is needed in Info struct to calculate load average thresholds
 	Threads       int     `json:"t,omitempty" cbor:"3,keyasint,omitempty"`
 	CpuModel      string  `json:"m,omitempty" cbor:"4,keyasint,omitempty"` // deprecated - moved to Details struct
@@ -195,6 +194,7 @@ type Info struct {
 	Battery        Battery            `json:"bat,omitzero" cbor:"23,keyasint,omitzero"`   // [percent, charge state]
 	RootDiskName   string             `json:"rdn,omitempty" cbor:"24,keyasint,omitempty"` // custom name for root disk (set via FILESYSTEM=device__name)
 	PackageUpdates []uint16           `json:"pu,omitempty" cbor:"25,keyasint,omitempty"`  // [totalUpdates, securityUpdates] (security omitted if unknown)
+	WiFi           map[string]WiFi    `json:"wifi" cbor:"26,keyasint"`
 }
 
 // Data that does not change during process lifetime and is not needed in All Systems table
