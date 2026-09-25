@@ -8,7 +8,7 @@ msgstr ""
 "Language: ar\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2026-09-18 19:22\n"
+"PO-Revision-Date: 2026-09-24 16:16\n"
 "Last-Translator: \n"
 "Language-Team: Arabic\n"
 "Plural-Forms: nplurals=6; plural=(n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 && n%100<=10 ? 3 : n%100>=11 && n%100<=99 ? 4 : 5);\n"
@@ -52,13 +52,25 @@ msgstr "{count, plural, one {{countString} ساعة} other {{countString} ساع
 msgid "{count, plural, one {{countString} minute} few {{countString} minutes} many {{countString} minutes} other {{countString} minutes}}"
 msgstr "{count, plural, one {{countString} دقيقة} few {{countString} دقائق} many {{countString} دقيقة} other {{countString} دقيقة}}"
 
+#: src/components/network-monitors-table/network-monitors-columns.tsx
+msgid "{daysLeft, plural, one {# day} other {# days}}"
+msgstr ""
+
 #: src/components/routes/system/charts/disk-charts.tsx
 msgid "{diskName} I/O"
 msgstr "{diskName} إدخال/إخراج"
 
+#: src/components/systems-table/systems-table-columns.tsx
+msgid "{numFailed, plural, one {# failed service} other {# failed services}}"
+msgstr ""
+
 #: src/components/routes/system/info-bar.tsx
 msgid "{threads, plural, one {# thread} other {# threads}}"
 msgstr "{threads, plural, one {# خيط} other {# خيط}}"
+
+#: src/components/systems-table/systems-table-columns.tsx
+msgid "{totalCount, plural, one {# service} other {# services}}"
+msgstr ""
 
 #: src/lib/utils.ts
 msgid "1 hour"
@@ -123,10 +135,10 @@ msgstr "التنبيهات النشطة"
 msgid "Active state"
 msgstr "الحالة النشطة"
 
-#: src/components/add-system.tsx
-#: src/components/add-system.tsx
-#: src/components/navbar.tsx
-#: src/components/navbar.tsx
+#: src/components/network-monitors-table/monitor-dialog.tsx
+msgid "Add"
+msgstr ""
+
 #: src/components/network-monitors-table/monitor-dialog.tsx
 #: src/components/network-monitors-table/monitor-dialog.tsx
 #: src/components/network-monitors-table/monitor-dialog.tsx
@@ -135,6 +147,13 @@ msgstr "الحالة النشطة"
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Add {foo}"
 msgstr "إضافة {foo}"
+
+#: src/components/add-system.tsx
+#: src/components/add-system.tsx
+#: src/components/navbar.tsx
+#: src/components/navbar.tsx
+msgid "Add System"
+msgstr "إضافة النظام"
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Add URL"
@@ -261,6 +280,7 @@ msgid "Average, minimum, and maximum response time"
 msgstr "متوسط زمن الاستجابة والأدنى والأقصى"
 
 #: src/components/network-monitors-table/network-monitors-columns.tsx
+#: src/components/network-monitors-table/network-monitors-columns.tsx
 msgid "Avg 1h"
 msgstr "متوسط 1h"
 
@@ -382,6 +402,19 @@ msgstr "تحذير - فقدان محتمل للبيانات"
 #: src/components/routes/settings/general.tsx
 msgid "Celsius (°C)"
 msgstr "درجة مئوية (°م)"
+
+#: src/components/network-monitors-table/network-monitors-columns.tsx
+#: src/components/network-monitors-table/network-monitors-columns.tsx
+msgid "Certificate"
+msgstr ""
+
+#: src/components/network-monitors-table/network-monitors-table.tsx
+msgid "Certificate expired {expires}"
+msgstr ""
+
+#: src/components/network-monitors-table/network-monitors-table.tsx
+msgid "Certificate expires {expires}"
+msgstr ""
 
 #: src/components/routes/settings/general.tsx
 msgid "Change display units for metrics."
@@ -776,11 +809,14 @@ msgstr "المدة"
 msgid "Edit"
 msgstr "تعديل"
 
-#: src/components/add-system.tsx
 #: src/components/network-monitors-table/monitor-dialog.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Edit {foo}"
 msgstr "إضافة {foo}"
+
+#: src/components/add-system.tsx
+msgid "Edit System"
+msgstr "إضافة النظام"
 
 #: src/components/login/auth-form.tsx
 #: src/components/login/forgot-pass-form.tsx
@@ -867,6 +903,10 @@ msgstr "سيتم حذف الأنظمة الحالية غير المعرفة في
 msgid "Exited active"
 msgstr "خرج نشطًا"
 
+#: src/components/network-monitors-table/network-monitors-columns.tsx
+msgid "Expired"
+msgstr ""
+
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Expires after one hour or on hub restart."
 msgstr "ينتهي بعد ساعة واحدة أو عند إعادة تشغيل المحور."
@@ -886,10 +926,6 @@ msgstr "تصدير تكوين الأنظمة الحالية الخاصة بك."
 #: src/components/routes/settings/general.tsx
 msgid "Fahrenheit (°F)"
 msgstr "فهرنهايت (°ف)"
-
-#: src/components/systems-table/systems-table-columns.tsx
-msgid "Failed"
-msgstr "فشل"
 
 #: src/components/routes/system/smart-table.tsx
 msgid "Failed Attributes:"
@@ -1091,6 +1127,7 @@ msgid "Inactive"
 msgstr "غير نشط"
 
 #: src/components/network-monitors-table/network-monitors-columns.tsx
+#: src/components/network-monitors-table/network-monitors-columns.tsx
 #: src/components/routes/settings/heartbeat.tsx
 msgid "Interval"
 msgstr "الفاصل الزمني"
@@ -1183,6 +1220,7 @@ msgid "Loss"
 msgstr "الفقد"
 
 #: src/components/network-monitors-table/network-monitors-columns.tsx
+#: src/components/network-monitors-table/network-monitors-columns.tsx
 msgid "Loss 1h"
 msgstr "الفقد 1h"
 
@@ -1204,6 +1242,7 @@ msgstr "تعليمات الإعداد اليدوي"
 msgid "Max 1 min"
 msgstr "الحد الأقصى دقيقة"
 
+#: src/components/network-monitors-table/network-monitors-columns.tsx
 #: src/components/network-monitors-table/network-monitors-columns.tsx
 msgid "Max 1h"
 msgstr "الأقصى 1h"
@@ -1234,6 +1273,7 @@ msgstr "استخدام الذاكرة"
 msgid "Memory usage of containers"
 msgstr "استخدام الذاكرة للحاويات"
 
+#: src/components/network-monitors-table/network-monitors-columns.tsx
 #: src/components/network-monitors-table/network-monitors-columns.tsx
 msgid "Min 1h"
 msgstr "الأدنى 1h"
@@ -1565,6 +1605,7 @@ msgstr "تم بدء العملية"
 
 #: src/components/network-monitors-table/monitor-dialog.tsx
 #: src/components/network-monitors-table/network-monitors-columns.tsx
+#: src/components/network-monitors-table/network-monitors-columns.tsx
 msgid "Protocol"
 msgstr "البروتوكول"
 
@@ -1654,6 +1695,7 @@ msgid "Resolved"
 msgstr "تم حلها"
 
 #: src/components/network-monitors-table/network-monitors-columns.tsx
+#: src/components/network-monitors-table/network-monitors-columns.tsx
 #: src/components/routes/system/charts/monitors-charts.tsx
 msgid "Response"
 msgstr "الاستجابة"
@@ -1698,7 +1740,6 @@ msgstr "تفاصيل S.M.A.R.T."
 msgid "S.M.A.R.T. Self-Test"
 msgstr "اختبار S.M.A.R.T. الذاتي"
 
-#: src/components/add-system.tsx
 #: src/components/network-monitors-table/monitor-dialog.tsx
 msgid "Save {foo}"
 msgstr "حفظ {foo}"
@@ -1711,6 +1752,10 @@ msgstr "احفظ العنوان باستخدام مفتاح الإدخال أو 
 #: src/components/routes/settings/notifications.tsx
 msgid "Save Settings"
 msgstr "حفظ الإعدادات"
+
+#: src/components/add-system.tsx
+msgid "Save System"
+msgstr "حفظ النظام"
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Saved in the database and does not expire until you disable it."
@@ -1833,6 +1878,7 @@ msgstr "تسجيل الدخول"
 msgid "SMTP settings"
 msgstr "إعدادات SMTP"
 
+#: src/components/network-monitors-table/network-monitors-table.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "Sort By"
 msgstr "الترتيب حسب"
@@ -1875,11 +1921,10 @@ msgstr "استخدام التبديل"
 msgid "Switch theme"
 msgstr "تبديل السمة"
 
-#: src/components/add-system.tsx
 #: src/components/alerts-history-columns.tsx
 #: src/components/containers-table/containers-table-columns.tsx
-#: src/components/navbar.tsx
 #: src/components/network-monitors-table/monitor-dialog.tsx
+#: src/components/network-monitors-table/network-monitors-columns.tsx
 #: src/components/network-monitors-table/network-monitors-columns.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/quiet-hours.tsx
@@ -1925,8 +1970,14 @@ msgstr "تبويبات"
 
 #: src/components/network-monitors-table/monitor-dialog.tsx
 #: src/components/network-monitors-table/network-monitors-columns.tsx
+#: src/components/network-monitors-table/network-monitors-columns.tsx
 msgid "Target"
 msgstr "الهدف"
+
+#: src/components/network-monitors-table/monitor-dialog.tsx
+#: src/components/network-monitors-table/monitor-dialog.tsx
+msgid "target[,protocol[,port[,interval]]]"
+msgstr ""
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Tasks"
@@ -2166,6 +2217,7 @@ msgstr "تحديث"
 
 #: src/components/containers-table/containers-table-columns.tsx
 #: src/components/network-monitors-table/network-monitors-columns.tsx
+#: src/components/network-monitors-table/network-monitors-columns.tsx
 #: src/components/routes/system/smart-table.tsx
 #: src/components/routes/system/storage-pools-table.tsx
 #: src/components/systemd-table/systemd-table-columns.tsx
@@ -2221,6 +2273,7 @@ msgstr "الاستخدام"
 msgid "Value"
 msgstr "القيمة"
 
+#: src/components/network-monitors-table/network-monitors-table.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "View"
 msgstr "عرض"
@@ -2235,6 +2288,7 @@ msgstr "عرض المزيد"
 msgid "View your 200 most recent alerts."
 msgstr "عرض أحدث 200 تنبيه."
 
+#: src/components/network-monitors-table/network-monitors-table.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "Visible Fields"
 msgstr "الأعمدة الظاهرة"

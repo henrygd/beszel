@@ -8,7 +8,7 @@ msgstr ""
 "Language: vi\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2026-09-18 19:22\n"
+"PO-Revision-Date: 2026-09-24 16:15\n"
 "Last-Translator: \n"
 "Language-Team: Vietnamese\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
@@ -52,13 +52,25 @@ msgstr "{count, plural, one {{countString} giờ} other {{countString} giờ}}"
 msgid "{count, plural, one {{countString} minute} few {{countString} minutes} many {{countString} minutes} other {{countString} minutes}}"
 msgstr "{count, plural, one {{countString} phút} few {{countString} phút} many {{countString} phút} other {{countString} phút}}"
 
+#: src/components/network-monitors-table/network-monitors-columns.tsx
+msgid "{daysLeft, plural, one {# day} other {# days}}"
+msgstr ""
+
 #: src/components/routes/system/charts/disk-charts.tsx
 msgid "{diskName} I/O"
 msgstr "I/O {diskName}"
 
+#: src/components/systems-table/systems-table-columns.tsx
+msgid "{numFailed, plural, one {# failed service} other {# failed services}}"
+msgstr ""
+
 #: src/components/routes/system/info-bar.tsx
 msgid "{threads, plural, one {# thread} other {# threads}}"
 msgstr "{threads, plural, one {# luồng} other {# luồng}}"
+
+#: src/components/systems-table/systems-table-columns.tsx
+msgid "{totalCount, plural, one {# service} other {# services}}"
+msgstr ""
 
 #: src/lib/utils.ts
 msgid "1 hour"
@@ -123,10 +135,10 @@ msgstr "Cảnh báo hoạt động"
 msgid "Active state"
 msgstr "Trạng thái hoạt động"
 
-#: src/components/add-system.tsx
-#: src/components/add-system.tsx
-#: src/components/navbar.tsx
-#: src/components/navbar.tsx
+#: src/components/network-monitors-table/monitor-dialog.tsx
+msgid "Add"
+msgstr ""
+
 #: src/components/network-monitors-table/monitor-dialog.tsx
 #: src/components/network-monitors-table/monitor-dialog.tsx
 #: src/components/network-monitors-table/monitor-dialog.tsx
@@ -135,6 +147,13 @@ msgstr "Trạng thái hoạt động"
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Add {foo}"
 msgstr "Thêm {foo}"
+
+#: src/components/add-system.tsx
+#: src/components/add-system.tsx
+#: src/components/navbar.tsx
+#: src/components/navbar.tsx
+msgid "Add System"
+msgstr "Thêm Hệ thống"
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Add URL"
@@ -261,6 +280,7 @@ msgid "Average, minimum, and maximum response time"
 msgstr "Thời gian phản hồi trung bình, tối thiểu và tối đa"
 
 #: src/components/network-monitors-table/network-monitors-columns.tsx
+#: src/components/network-monitors-table/network-monitors-columns.tsx
 msgid "Avg 1h"
 msgstr "TB 1 giờ"
 
@@ -382,6 +402,19 @@ msgstr "Cẩn thận - có thể mất dữ liệu"
 #: src/components/routes/settings/general.tsx
 msgid "Celsius (°C)"
 msgstr "Độ C (°C)"
+
+#: src/components/network-monitors-table/network-monitors-columns.tsx
+#: src/components/network-monitors-table/network-monitors-columns.tsx
+msgid "Certificate"
+msgstr ""
+
+#: src/components/network-monitors-table/network-monitors-table.tsx
+msgid "Certificate expired {expires}"
+msgstr ""
+
+#: src/components/network-monitors-table/network-monitors-table.tsx
+msgid "Certificate expires {expires}"
+msgstr ""
 
 #: src/components/routes/settings/general.tsx
 msgid "Change display units for metrics."
@@ -776,11 +809,14 @@ msgstr "Thời lượng"
 msgid "Edit"
 msgstr "Chỉnh sửa"
 
-#: src/components/add-system.tsx
 #: src/components/network-monitors-table/monitor-dialog.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Edit {foo}"
 msgstr "Chỉnh sửa {foo}"
+
+#: src/components/add-system.tsx
+msgid "Edit System"
+msgstr "Chỉnh sửa Hệ thống"
 
 #: src/components/login/auth-form.tsx
 #: src/components/login/forgot-pass-form.tsx
@@ -867,6 +903,10 @@ msgstr "Các hệ thống hiện có không được định nghĩa trong <0>con
 msgid "Exited active"
 msgstr "Đã thoát khi hoạt động"
 
+#: src/components/network-monitors-table/network-monitors-columns.tsx
+msgid "Expired"
+msgstr ""
+
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Expires after one hour or on hub restart."
 msgstr "Hết hạn sau một giờ hoặc khi khởi động lại hub."
@@ -886,10 +926,6 @@ msgstr "Xuất cấu hình hệ thống hiện tại của bạn."
 #: src/components/routes/settings/general.tsx
 msgid "Fahrenheit (°F)"
 msgstr "Độ F (°F)"
-
-#: src/components/systems-table/systems-table-columns.tsx
-msgid "Failed"
-msgstr "Thất bại"
 
 #: src/components/routes/system/smart-table.tsx
 msgid "Failed Attributes:"
@@ -1091,6 +1127,7 @@ msgid "Inactive"
 msgstr "Không hoạt động"
 
 #: src/components/network-monitors-table/network-monitors-columns.tsx
+#: src/components/network-monitors-table/network-monitors-columns.tsx
 #: src/components/routes/settings/heartbeat.tsx
 msgid "Interval"
 msgstr "Khoảng thời gian"
@@ -1183,6 +1220,7 @@ msgid "Loss"
 msgstr "Mất gói"
 
 #: src/components/network-monitors-table/network-monitors-columns.tsx
+#: src/components/network-monitors-table/network-monitors-columns.tsx
 msgid "Loss 1h"
 msgstr "Mất gói 1 giờ"
 
@@ -1204,6 +1242,7 @@ msgstr "Hướng dẫn cài đặt thủ công"
 msgid "Max 1 min"
 msgstr "Tối đa 1 phút"
 
+#: src/components/network-monitors-table/network-monitors-columns.tsx
 #: src/components/network-monitors-table/network-monitors-columns.tsx
 msgid "Max 1h"
 msgstr "Tối đa 1 giờ"
@@ -1234,6 +1273,7 @@ msgstr "Sử dụng Bộ nhớ"
 msgid "Memory usage of containers"
 msgstr "Mức sử dụng bộ nhớ của các container"
 
+#: src/components/network-monitors-table/network-monitors-columns.tsx
 #: src/components/network-monitors-table/network-monitors-columns.tsx
 msgid "Min 1h"
 msgstr "Tối thiểu 1 giờ"
@@ -1565,6 +1605,7 @@ msgstr "Tiến trình đã khởi động"
 
 #: src/components/network-monitors-table/monitor-dialog.tsx
 #: src/components/network-monitors-table/network-monitors-columns.tsx
+#: src/components/network-monitors-table/network-monitors-columns.tsx
 msgid "Protocol"
 msgstr "Giao thức"
 
@@ -1654,6 +1695,7 @@ msgid "Resolved"
 msgstr "Đã giải quyết"
 
 #: src/components/network-monitors-table/network-monitors-columns.tsx
+#: src/components/network-monitors-table/network-monitors-columns.tsx
 #: src/components/routes/system/charts/monitors-charts.tsx
 msgid "Response"
 msgstr "Phản hồi"
@@ -1698,7 +1740,6 @@ msgstr "Chi tiết S.M.A.R.T."
 msgid "S.M.A.R.T. Self-Test"
 msgstr "Tự kiểm tra S.M.A.R.T."
 
-#: src/components/add-system.tsx
 #: src/components/network-monitors-table/monitor-dialog.tsx
 msgid "Save {foo}"
 msgstr "Lưu {foo}"
@@ -1711,6 +1752,10 @@ msgstr "Lưu địa chỉ bằng cách sử dụng phím enter hoặc dấu ph�
 #: src/components/routes/settings/notifications.tsx
 msgid "Save Settings"
 msgstr "Lưu Cài đặt"
+
+#: src/components/add-system.tsx
+msgid "Save System"
+msgstr "Lưu Hệ thống"
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Saved in the database and does not expire until you disable it."
@@ -1833,6 +1878,7 @@ msgstr "Đăng nhập"
 msgid "SMTP settings"
 msgstr "Cài đặt SMTP"
 
+#: src/components/network-monitors-table/network-monitors-table.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "Sort By"
 msgstr "Sắp xếp theo"
@@ -1875,11 +1921,10 @@ msgstr "Sử dụng Hoán đổi"
 msgid "Switch theme"
 msgstr "Đổi giao diện"
 
-#: src/components/add-system.tsx
 #: src/components/alerts-history-columns.tsx
 #: src/components/containers-table/containers-table-columns.tsx
-#: src/components/navbar.tsx
 #: src/components/network-monitors-table/monitor-dialog.tsx
+#: src/components/network-monitors-table/network-monitors-columns.tsx
 #: src/components/network-monitors-table/network-monitors-columns.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/quiet-hours.tsx
@@ -1925,8 +1970,14 @@ msgstr "Tab"
 
 #: src/components/network-monitors-table/monitor-dialog.tsx
 #: src/components/network-monitors-table/network-monitors-columns.tsx
+#: src/components/network-monitors-table/network-monitors-columns.tsx
 msgid "Target"
 msgstr "Mục tiêu"
+
+#: src/components/network-monitors-table/monitor-dialog.tsx
+#: src/components/network-monitors-table/monitor-dialog.tsx
+msgid "target[,protocol[,port[,interval]]]"
+msgstr ""
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Tasks"
@@ -2166,6 +2217,7 @@ msgstr "Cập nhật"
 
 #: src/components/containers-table/containers-table-columns.tsx
 #: src/components/network-monitors-table/network-monitors-columns.tsx
+#: src/components/network-monitors-table/network-monitors-columns.tsx
 #: src/components/routes/system/smart-table.tsx
 #: src/components/routes/system/storage-pools-table.tsx
 #: src/components/systemd-table/systemd-table-columns.tsx
@@ -2221,6 +2273,7 @@ msgstr "Sử dụng"
 msgid "Value"
 msgstr "Giá trị"
 
+#: src/components/network-monitors-table/network-monitors-table.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "View"
 msgstr "Xem"
@@ -2235,6 +2288,7 @@ msgstr "Xem thêm"
 msgid "View your 200 most recent alerts."
 msgstr "Xem 200 cảnh báo gần đây nhất của bạn."
 
+#: src/components/network-monitors-table/network-monitors-table.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "Visible Fields"
 msgstr "Các cột hiển thị"

@@ -27,6 +27,8 @@ type MonitorChartBaseProps = MonitorChartProps & {
 	tickFormatter: (value: number) => string
 	contentFormatter: ({ value }: { value: number | string }) => string | number
 	domain?: [number | "auto", number | "auto"]
+	/** Overrides the per-monitor line colors (e.g. a fixed color for single-monitor charts). */
+	color?: string
 }
 
 function MonitorChart({
@@ -41,6 +43,7 @@ function MonitorChart({
 	tickFormatter,
 	contentFormatter,
 	domain,
+	color,
 	showFilter = monitors.length > 1,
 }: MonitorChartBaseProps) {
 	const storedFilter = useStore($monitorFilter)
@@ -67,11 +70,12 @@ function MonitorChart({
 				label,
 				dataKey: (record: NetworkMonitorStatsRecord) => record.stats?.[p.id]?.[metric] ?? null,
 				dot,
-				color: count <= 5 ? i + 1 : `hsl(${(i * 360) / count}, var(--chart-saturation), var(--chart-lightness))`,
+				color:
+					color ?? (count <= 5 ? i + 1 : `hsl(${(i * 360) / count}, var(--chart-saturation), var(--chart-lightness))`),
 			})
 		}
 		return { dataPoints: points, visibleKeys: visibleIDs }
-	}, [monitors, filter, metric, chartData.chartTime])
+	}, [monitors, filter, metric, chartData.chartTime, color])
 
 	const filteredMonitorStats = useMemo(() => {
 		if (!visibleKeys.length) return monitorStats
@@ -200,6 +204,7 @@ export function LossChart({ monitorStats, grid, monitors, chartData, empty, titl
 			title={title}
 			description={t`Packet loss (%)`}
 			domain={[0, 100]}
+			color="var(--destructive)"
 			tickFormatter={(value) => `${toFixedFloat(value, value >= 10 ? 0 : 1)}%`}
 			contentFormatter={({ value }) => {
 				if (typeof value !== "number") {

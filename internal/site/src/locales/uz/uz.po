@@ -8,7 +8,7 @@ msgstr ""
 "Language: uz\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2026-09-18 19:22\n"
+"PO-Revision-Date: 2026-09-24 16:16\n"
 "Last-Translator: \n"
 "Language-Team: Uzbek\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
@@ -52,13 +52,25 @@ msgstr "{count, plural, other {{countString} soat}}"
 msgid "{count, plural, one {{countString} minute} few {{countString} minutes} many {{countString} minutes} other {{countString} minutes}}"
 msgstr "{count, plural, other {{countString} daqiqa}}"
 
+#: src/components/network-monitors-table/network-monitors-columns.tsx
+msgid "{daysLeft, plural, one {# day} other {# days}}"
+msgstr ""
+
 #: src/components/routes/system/charts/disk-charts.tsx
 msgid "{diskName} I/O"
 msgstr "{diskName} I/O"
 
+#: src/components/systems-table/systems-table-columns.tsx
+msgid "{numFailed, plural, one {# failed service} other {# failed services}}"
+msgstr ""
+
 #: src/components/routes/system/info-bar.tsx
 msgid "{threads, plural, one {# thread} other {# threads}}"
 msgstr "{threads, plural, other {# ip}}"
+
+#: src/components/systems-table/systems-table-columns.tsx
+msgid "{totalCount, plural, one {# service} other {# services}}"
+msgstr ""
 
 #: src/lib/utils.ts
 msgid "1 hour"
@@ -123,10 +135,10 @@ msgstr "Faol ogohlantirishlar"
 msgid "Active state"
 msgstr "Faol holat"
 
-#: src/components/add-system.tsx
-#: src/components/add-system.tsx
-#: src/components/navbar.tsx
-#: src/components/navbar.tsx
+#: src/components/network-monitors-table/monitor-dialog.tsx
+msgid "Add"
+msgstr ""
+
 #: src/components/network-monitors-table/monitor-dialog.tsx
 #: src/components/network-monitors-table/monitor-dialog.tsx
 #: src/components/network-monitors-table/monitor-dialog.tsx
@@ -135,6 +147,13 @@ msgstr "Faol holat"
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Add {foo}"
 msgstr "{foo} qo'shish"
+
+#: src/components/add-system.tsx
+#: src/components/add-system.tsx
+#: src/components/navbar.tsx
+#: src/components/navbar.tsx
+msgid "Add System"
+msgstr "Tizim qo'shish"
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Add URL"
@@ -261,6 +280,7 @@ msgid "Average, minimum, and maximum response time"
 msgstr "Ortacha, minimal va maksimal javob vaqti"
 
 #: src/components/network-monitors-table/network-monitors-columns.tsx
+#: src/components/network-monitors-table/network-monitors-columns.tsx
 msgid "Avg 1h"
 msgstr "1 soat o‘rtacha"
 
@@ -382,6 +402,19 @@ msgstr "Ehtiyot bo'ling - ma'lumotlar yo'qolishi mumkin"
 #: src/components/routes/settings/general.tsx
 msgid "Celsius (°C)"
 msgstr "Selsiy (°C)"
+
+#: src/components/network-monitors-table/network-monitors-columns.tsx
+#: src/components/network-monitors-table/network-monitors-columns.tsx
+msgid "Certificate"
+msgstr ""
+
+#: src/components/network-monitors-table/network-monitors-table.tsx
+msgid "Certificate expired {expires}"
+msgstr ""
+
+#: src/components/network-monitors-table/network-monitors-table.tsx
+msgid "Certificate expires {expires}"
+msgstr ""
 
 #: src/components/routes/settings/general.tsx
 msgid "Change display units for metrics."
@@ -776,11 +809,14 @@ msgstr "Davomiylik"
 msgid "Edit"
 msgstr "Tahrirlash"
 
-#: src/components/add-system.tsx
 #: src/components/network-monitors-table/monitor-dialog.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Edit {foo}"
 msgstr "{foo} tahrirlash"
+
+#: src/components/add-system.tsx
+msgid "Edit System"
+msgstr "Tizim tahrirlash"
 
 #: src/components/login/auth-form.tsx
 #: src/components/login/forgot-pass-form.tsx
@@ -867,6 +903,10 @@ msgstr "<0>config.yml</0> da aniqlanmagan mavjud tizimlar o'chiriladi. Iltimos, 
 msgid "Exited active"
 msgstr "Faollikdan chiqdi"
 
+#: src/components/network-monitors-table/network-monitors-columns.tsx
+msgid "Expired"
+msgstr ""
+
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Expires after one hour or on hub restart."
 msgstr "Bir soatdan keyin yoki hub qayta ishga tushganda muddati tugaydi."
@@ -886,10 +926,6 @@ msgstr "Joriy tizimlar konfiguratsiyasini eksport qiling."
 #: src/components/routes/settings/general.tsx
 msgid "Fahrenheit (°F)"
 msgstr "Farengeyt (°F)"
-
-#: src/components/systems-table/systems-table-columns.tsx
-msgid "Failed"
-msgstr "Muvaffaqiyatsiz"
 
 #: src/components/routes/system/smart-table.tsx
 msgid "Failed Attributes:"
@@ -1091,6 +1127,7 @@ msgid "Inactive"
 msgstr "Nofaol"
 
 #: src/components/network-monitors-table/network-monitors-columns.tsx
+#: src/components/network-monitors-table/network-monitors-columns.tsx
 #: src/components/routes/settings/heartbeat.tsx
 msgid "Interval"
 msgstr "Interval"
@@ -1183,6 +1220,7 @@ msgid "Loss"
 msgstr "Yo‘qotish"
 
 #: src/components/network-monitors-table/network-monitors-columns.tsx
+#: src/components/network-monitors-table/network-monitors-columns.tsx
 msgid "Loss 1h"
 msgstr "1 soatlik yo‘qotish"
 
@@ -1204,6 +1242,7 @@ msgstr "Qo'lda o'rnatish ko'rsatmalari"
 msgid "Max 1 min"
 msgstr "Maks 1 daq"
 
+#: src/components/network-monitors-table/network-monitors-columns.tsx
 #: src/components/network-monitors-table/network-monitors-columns.tsx
 msgid "Max 1h"
 msgstr "1 soat maksimal"
@@ -1234,6 +1273,7 @@ msgstr "Xotira ishlatilishi"
 msgid "Memory usage of containers"
 msgstr "Konteynerlarning xotira ishlatilishi"
 
+#: src/components/network-monitors-table/network-monitors-columns.tsx
 #: src/components/network-monitors-table/network-monitors-columns.tsx
 msgid "Min 1h"
 msgstr "1 soat minimal"
@@ -1565,6 +1605,7 @@ msgstr "Jarayon boshlandi"
 
 #: src/components/network-monitors-table/monitor-dialog.tsx
 #: src/components/network-monitors-table/network-monitors-columns.tsx
+#: src/components/network-monitors-table/network-monitors-columns.tsx
 msgid "Protocol"
 msgstr "Protokol"
 
@@ -1654,6 +1695,7 @@ msgid "Resolved"
 msgstr "Hal qilindi"
 
 #: src/components/network-monitors-table/network-monitors-columns.tsx
+#: src/components/network-monitors-table/network-monitors-columns.tsx
 #: src/components/routes/system/charts/monitors-charts.tsx
 msgid "Response"
 msgstr "Javob"
@@ -1698,7 +1740,6 @@ msgstr "S.M.A.R.T. tafsilotlar"
 msgid "S.M.A.R.T. Self-Test"
 msgstr "S.M.A.R.T. o'z-o'zini test"
 
-#: src/components/add-system.tsx
 #: src/components/network-monitors-table/monitor-dialog.tsx
 msgid "Save {foo}"
 msgstr "{foo} saqlash"
@@ -1711,6 +1752,10 @@ msgstr "Manzilni enter tugmasi yoki vergul yordamida saqlang. Elektron pochta bi
 #: src/components/routes/settings/notifications.tsx
 msgid "Save Settings"
 msgstr "Sozlamalarni saqlash"
+
+#: src/components/add-system.tsx
+msgid "Save System"
+msgstr "Tizim saqlash"
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Saved in the database and does not expire until you disable it."
@@ -1833,6 +1878,7 @@ msgstr "Kirish"
 msgid "SMTP settings"
 msgstr "SMTP sozlamalari"
 
+#: src/components/network-monitors-table/network-monitors-table.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "Sort By"
 msgstr "Saralash"
@@ -1875,11 +1921,10 @@ msgstr "Swap ishlatilishi"
 msgid "Switch theme"
 msgstr "Mavzuni almashtirish"
 
-#: src/components/add-system.tsx
 #: src/components/alerts-history-columns.tsx
 #: src/components/containers-table/containers-table-columns.tsx
-#: src/components/navbar.tsx
 #: src/components/network-monitors-table/monitor-dialog.tsx
+#: src/components/network-monitors-table/network-monitors-columns.tsx
 #: src/components/network-monitors-table/network-monitors-columns.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/quiet-hours.tsx
@@ -1925,8 +1970,14 @@ msgstr "Yorliqlar"
 
 #: src/components/network-monitors-table/monitor-dialog.tsx
 #: src/components/network-monitors-table/network-monitors-columns.tsx
+#: src/components/network-monitors-table/network-monitors-columns.tsx
 msgid "Target"
 msgstr "Maqsad"
+
+#: src/components/network-monitors-table/monitor-dialog.tsx
+#: src/components/network-monitors-table/monitor-dialog.tsx
+msgid "target[,protocol[,port[,interval]]]"
+msgstr ""
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Tasks"
@@ -2166,6 +2217,7 @@ msgstr "Yangilash"
 
 #: src/components/containers-table/containers-table-columns.tsx
 #: src/components/network-monitors-table/network-monitors-columns.tsx
+#: src/components/network-monitors-table/network-monitors-columns.tsx
 #: src/components/routes/system/smart-table.tsx
 #: src/components/routes/system/storage-pools-table.tsx
 #: src/components/systemd-table/systemd-table-columns.tsx
@@ -2221,6 +2273,7 @@ msgstr "Yuklanish"
 msgid "Value"
 msgstr "Qiymat"
 
+#: src/components/network-monitors-table/network-monitors-table.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "View"
 msgstr "Ko'rish"
@@ -2235,6 +2288,7 @@ msgstr "Ko'proq ko'rish"
 msgid "View your 200 most recent alerts."
 msgstr "So'nggi 200 ta ogohlantirishingizni ko'ring."
 
+#: src/components/network-monitors-table/network-monitors-table.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "Visible Fields"
 msgstr "Ko'rinadigan maydonlar"
