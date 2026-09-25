@@ -837,6 +837,27 @@ func TestParseSmartOutputMarksVerified(t *testing.T) {
 	assert.True(t, device.typeVerified)
 }
 
+func TestParseSmartForNvmeRejectsIdentityOnlyResponse(t *testing.T) {
+	jsonPayload := []byte(`{
+		"smartctl": {"exit_status": 2},
+		"device": {"name": "/dev/nvme0", "type": "nvme"},
+		"model_name": "Netac NVMe SSD 500GB",
+		"serial_number": "IDENTITY-ONLY",
+		"user_capacity": {"bytes": 500107862016}
+	}`)
+
+	sm := &SmartManager{SmartDataMap: make(map[string]*smart.SmartData)}
+	hasData, exitStatus := sm.parseSmartForNvme(jsonPayload, "")
+
+	assert.False(t, hasData)
+	assert.Equal(t, 2, exitStatus)
+	assert.NotContains(t, sm.SmartDataMap, "IDENTITY-ONLY")
+
+	device := &DeviceInfo{Name: "/dev/nvme0", Type: "nvme"}
+	assert.False(t, sm.parseSmartOutput(device, jsonPayload))
+	assert.NotContains(t, sm.SmartDataMap, "IDENTITY-ONLY")
+}
+
 func TestParseSmartOutputKeepsCustomType(t *testing.T) {
 	fixturePath := filepath.Join("test-data", "smart", "sda.json")
 	data, err := os.ReadFile(fixturePath)
