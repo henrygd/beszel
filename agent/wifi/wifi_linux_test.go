@@ -3,6 +3,7 @@
 package wifi
 
 import (
+	"bytes"
 	"context"
 	"errors"
 	"net"
@@ -27,9 +28,17 @@ func (f *fakeLinuxClient) Interfaces() ([]*native.Interface, error) {
 func (f *fakeLinuxClient) BSS(i *native.Interface) (*native.BSS, error) {
 	return f.bss[i.Name], f.bssErr
 }
-func (f *fakeLinuxClient) StationInfo(i *native.Interface) ([]*native.StationInfo, error) {
+func (f *fakeLinuxClient) Station(i *native.Interface, mac net.HardwareAddr) (*native.StationInfo, error) {
 	f.stationCalls++
-	return f.stations[i.Name], f.stationErr
+	if f.stationErr != nil {
+		return nil, f.stationErr
+	}
+	for _, station := range f.stations[i.Name] {
+		if bytes.Equal(station.HardwareAddr, mac) {
+			return station, nil
+		}
+	}
+	return nil, errors.New("no such station")
 }
 func (f *fakeLinuxClient) SetDeadline(d time.Time) error { f.deadline = d; return f.deadlineErr }
 func (f *fakeLinuxClient) Close() error                  { return nil }

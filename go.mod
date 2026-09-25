@@ -10,6 +10,8 @@ require (
 	github.com/fxamacker/cbor/v2 v2.9.4
 	github.com/gliderlabs/ssh v0.3.8
 	github.com/lxzan/gws v1.10.2
+	github.com/mdlayher/genetlink v1.4.0
+	github.com/mdlayher/netlink v1.11.2
 	github.com/mdlayher/wifi v0.8.0
 	github.com/nicholas-fedor/shoutrrr v0.21.0
 	github.com/opencontainers/go-digest v1.0.0
@@ -52,8 +54,6 @@ require (
 	github.com/lufia/plan9stats v0.0.0-20260802145828-341c2f0c90b5 // indirect
 	github.com/mattn/go-colorable v0.1.15 // indirect
 	github.com/mattn/go-isatty v0.0.24 // indirect
-	github.com/mdlayher/genetlink v1.4.0 // indirect
-	github.com/mdlayher/netlink v1.11.2 // indirect
 	github.com/mdlayher/socket v0.6.0 // indirect
 	github.com/ncruces/go-strftime v1.0.0 // indirect
 	github.com/pocketbase/ozzo-validation/v4 v4.3.0 // indirect
