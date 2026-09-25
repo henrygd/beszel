@@ -64,7 +64,7 @@
 }
 
 @theme inline {
-	--font-sans: TwemojiMozillaFlags, Inter, InterVariable, sans-serif;
+	--font-sans: TwemojiCountryFlags, Inter, InterVariable, sans-serif;
 
 	--breakpoint-xs: 26.6rem;
 	--breakpoint-450: 28rem;
@@ -119,18 +119,18 @@
 @layer utilities {
 	/* Fonts */
 	@font-face {
-		font-family: TwemojiMozillaFlags;
-		font-style: normal;
-		font-weight: 400;
-		font-display: swap;
-		src: url("./assets/TwemojiMozilla-flags.woff2") format("woff2");
-		/* Regional indicator symbols make up ISO 3166-1 flag emoji. */
-		unicode-range: U+1F1E6-1F1FF;
+	font-family: TwemojiCountryFlags;
+	font-style: normal;
+	font-weight: 400;
+	font-display: swap;
+	src: url("./assets/TwemojiCountryFlags.woff2") format("woff2");
+	/* Regional indicator symbols make up ISO 3166-1 flag emoji. */
+	unicode-range: U+1F1E6-1F1FF;
 	}
 
 	@supports (font-variation-settings: normal) {
 		:root {
-			font-family: TwemojiMozillaFlags, Inter, InterVariable, sans-serif;
+			font-family: TwemojiCountryFlags, Inter, InterVariable, sans-serif;
 		}
 	}
 
