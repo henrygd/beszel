@@ -302,46 +302,6 @@ export function SystemsTableColumns(viewMode: "table" | "grid"): ColumnDef<Syste
 			},
 		},
 		{
-			accessorFn: strongestWiFiSignal,
-			id: "wifi",
-			name: () => t`Wi-Fi`,
-			size: 80,
-			Icon: WifiIcon,
-			header: sortableHeader,
-			hideSort: true,
-			sortUndefined: "last",
-			cell(info) {
-				const connections = connectedWiFi(info.row.original)
-				if (!connections.length) {
-					return null
-				}
-				const strongest = connections.reduce((best, current) =>
-					(current[1].r ?? Number.NEGATIVE_INFINITY) > (best[1].r ?? Number.NEGATIVE_INFINITY) ? current : best
-				)
-				const displayedConnections = viewMode === "table" ? [strongest] : connections
-				const title = connections
-					.map(([id, wifi]) => `${id}${wifi.s ? ` (${wifi.s})` : ""}: ${wifi.r === undefined ? "—" : `${wifi.r} dBm`}`)
-					.join("\n")
-				return (
-					<Link
-						href={getPagePath($router, "system", { id: info.row.original.id })}
-						tabIndex={-1}
-						className="flex flex-col gap-0.5 min-w-0 py-1 relative z-10"
-						title={title}
-					>
-						{displayedConnections.map(([id, wifi]) => (
-							<span key={id} className="tabular-nums whitespace-nowrap">
-								{wifi.r === undefined ? "—" : `${wifi.r} dBm`}
-							</span>
-						))}
-						{viewMode === "table" && connections.length > 1 && (
-							<span className="text-xs text-muted-foreground">+{connections.length - 1}</span>
-						)}
-					</Link>
-				)
-			},
-		},
-		{
 			accessorFn: ({ info }) => info.bat?.[0],
 			id: "battery",
 			name: () => t({ message: "Bat", comment: "Battery label in systems table header" }),
@@ -383,6 +343,46 @@ export function SystemsTableColumns(viewMode: "table" | "grid"): ColumnDef<Syste
 					>
 						<Icon className={cn("size-3.5", iconColor)} />
 						<span className="min-w-10">{pct}%</span>
+					</Link>
+				)
+			},
+		},
+		{
+			accessorFn: strongestWiFiSignal,
+			id: "wifi",
+			name: () => t`Wi-Fi`,
+			size: 80,
+			Icon: WifiIcon,
+			header: sortableHeader,
+			hideSort: true,
+			sortUndefined: "last",
+			cell(info) {
+				const connections = connectedWiFi(info.row.original)
+				if (!connections.length) {
+					return null
+				}
+				const strongest = connections.reduce((best, current) =>
+					(current[1].r ?? Number.NEGATIVE_INFINITY) > (best[1].r ?? Number.NEGATIVE_INFINITY) ? current : best
+				)
+				const displayedConnections = viewMode === "table" ? [strongest] : connections
+				const title = connections
+					.map(([id, wifi]) => `${id}${wifi.s ? ` (${wifi.s})` : ""}: ${wifi.r === undefined ? "—" : `${wifi.r} dBm`}`)
+					.join("\n")
+				return (
+					<Link
+						href={getPagePath($router, "system", { id: info.row.original.id })}
+						tabIndex={-1}
+						className="flex flex-col gap-0.5 min-w-0 py-1 relative z-10"
+						title={title}
+					>
+						{displayedConnections.map(([id, wifi]) => (
+							<span key={id} className="tabular-nums whitespace-nowrap">
+								{wifi.r === undefined ? "—" : `${wifi.r} dBm`}
+							</span>
+						))}
+						{viewMode === "table" && connections.length > 1 && (
+							<span className="text-xs text-muted-foreground">+{connections.length - 1}</span>
+						)}
 					</Link>
 				)
 			},
