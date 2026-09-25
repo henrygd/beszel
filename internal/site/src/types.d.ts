@@ -68,6 +68,10 @@ export interface SystemInfo {
 	p?: boolean
 	/** highest gpu utilization */
 	g?: number
+	/** gpu memory used (mb) */
+	gm?: number
+	/** gpu memory total (mb) */
+	gmt?: number
 	/** dashboard display temperature */
 	dt?: number
 	/** operating system */
