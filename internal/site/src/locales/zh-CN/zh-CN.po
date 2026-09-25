@@ -8,7 +8,7 @@ msgstr ""
 "Language: zh\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2026-09-24 17:29\n"
+"PO-Revision-Date: 2026-09-25 06:03\n"
 "Last-Translator: \n"
 "Language-Team: Chinese Simplified\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
@@ -1977,7 +1977,7 @@ msgstr "目标"
 #: src/components/network-monitors-table/monitor-dialog.tsx
 #: src/components/network-monitors-table/monitor-dialog.tsx
 msgid "target[,protocol[,port[,interval]]]"
-msgstr ""
+msgstr "目标[,协议[,端口[,间隔]]]"
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Tasks"
