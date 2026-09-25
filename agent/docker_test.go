@@ -154,6 +154,32 @@ func TestCalculateMemoryUsage(t *testing.T) {
 	}
 }
 
+func TestGetContainerProject(t *testing.T) {
+	tests := []struct {
+		name     string
+		labels   map[string]string
+		expected string
+	}{
+		{"nil labels", nil, ""},
+		{"no project labels", map[string]string{"foo": "bar"}, ""},
+		{"compose project", map[string]string{"com.docker.compose.project": "web"}, "web"},
+		{"swarm stack", map[string]string{"com.docker.stack.namespace": "monitoring"}, "monitoring"},
+		{"compose takes precedence", map[string]string{
+			"com.docker.compose.project": "web",
+			"com.docker.stack.namespace": "monitoring",
+		}, "web"},
+		{"empty compose falls back to stack", map[string]string{
+			"com.docker.compose.project": "",
+			"com.docker.stack.namespace": "monitoring",
+		}, "monitoring"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.Equal(t, tt.expected, getContainerProject(tt.labels))
+		})
+	}
+}
+
 func TestBuildDockerContainerEndpoint(t *testing.T) {
 	t.Run("valid container ID builds escaped endpoint", func(t *testing.T) {
 		endpoint, err := buildDockerContainerEndpoint("0123456789ab", "json", nil)

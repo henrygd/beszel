@@ -20,12 +20,12 @@ type ApiInfo struct {
 		IP         string
 		// Type        string
 	}
+	Labels map[string]string
 	// ImageID string
 	// Command string
 	// Created int64
 	// SizeRw     int64 `json:",omitempty"`
 	// SizeRootFs int64 `json:",omitempty"`
-	// Labels     map[string]string
 	// HostConfig struct {
 	// 	NetworkMode string            `json:",omitempty"`
 	// 	Annotations map[string]string `json:",omitempty"`
@@ -192,6 +192,8 @@ type Stats struct {
 	Image           string       `json:"-" cbor:"8,keyasint"`
 	Ports           string       `json:"-" cbor:"10,keyasint"`
 	UpdateAvailable bool         `json:"u,omitzero" cbor:"11,keyasint,omitzero"`
+	ComposeProject  string       `json:"-" cbor:"12,keyasint,omitzero"`
+	NetTotal        [2]uint64    `json:"-" cbor:"13,keyasint,omitzero"` // [sent bytes, recv bytes] cumulative since container start
 	// PrevCpu     [2]uint64    `json:"-"`
 	CpuSystem    uint64       `json:"-"`
 	CpuContainer uint64       `json:"-"`
