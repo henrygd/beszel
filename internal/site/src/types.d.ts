@@ -80,6 +80,8 @@ export interface SystemInfo {
 	sv?: [number, number]
 	/** custom root disk name */
 	rdn?: string
+	/** pending package updates [total, security] (security omitted if unknown) */
+	pu?: [number, number?]
 }
 
 export interface SystemStats {
