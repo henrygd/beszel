@@ -2,6 +2,7 @@
 package users
 
 import (
+	"errors"
 	"log"
 	"net/http"
 
@@ -15,10 +16,23 @@ type UserManager struct {
 	app core.App
 }
 
+var errBootstrapUnavailable = errors.New("bootstrap unavailable")
+
 func NewUserManager(app core.App) *UserManager {
 	return &UserManager{
 		app: app,
 	}
+}
+
+// InitializeOAuthUserRole prevents self-registration from assigning a privileged role.
+func (um *UserManager) InitializeOAuthUserRole(e *core.RecordAuthWithOAuth2RequestEvent) error {
+	if e.IsNewRecord {
+		if e.CreateData == nil {
+			e.CreateData = make(map[string]any)
+		}
+		e.CreateData["role"] = "user"
+	}
+	return e.Next()
 }
 
 // Initialize user role if not set
@@ -59,17 +73,7 @@ func (um *UserManager) InitializeUserSettings(e *core.RecordEvent) error {
 // Custom API endpoint to create the first user.
 // Mimics previous default behavior in PocketBase < 0.23.0 allowing user to be created through the Beszel UI.
 func (um *UserManager) CreateFirstUser(e *core.RequestEvent) error {
-	// check that there are no users
-	totalUsers, err := um.app.CountRecords("users")
-	if err != nil || totalUsers > 0 {
-		return e.JSON(http.StatusForbidden, map[string]string{"err": "Forbidden"})
-	}
-	// check that there is only one superuser and the email matches the email of the superuser we set up in initial-settings.go
-	adminUsers, err := um.app.FindAllRecords(core.CollectionNameSuperusers)
-	if err != nil || len(adminUsers) != 1 || adminUsers[0].GetString("email") != migrations.TempAdminEmail {
-		return e.JSON(http.StatusForbidden, map[string]string{"err": "Forbidden"})
-	}
-	// create first user using supplied email and password in request body
+	// Consume the complete body before evaluating the one-time bootstrap state.
 	data := struct {
 		Email    string `json:"email"`
 		Password string `json:"password"`
@@ -81,26 +85,55 @@ func (um *UserManager) CreateFirstUser(e *core.RequestEvent) error {
 		return e.JSON(http.StatusBadRequest, map[string]string{"err": "Bad request"})
 	}
 
-	collection, _ := um.app.FindCollectionByNameOrId("users")
-	user := core.NewRecord(collection)
-	user.SetEmail(data.Email)
-	user.SetPassword(data.Password)
-	user.Set("role", "admin")
-	user.Set("verified", true)
-	if err := um.app.Save(user); err != nil {
+	err := um.app.RunInTransaction(func(txApp core.App) error {
+		totalUsers, err := txApp.CountRecords("users")
+		if err != nil {
+			return err
+		}
+		if totalUsers > 0 {
+			return errBootstrapUnavailable
+		}
+
+		adminUsers, err := txApp.FindAllRecords(core.CollectionNameSuperusers)
+		if err != nil {
+			return err
+		}
+		if len(adminUsers) != 1 || adminUsers[0].GetString("email") != migrations.TempAdminEmail {
+			return errBootstrapUnavailable
+		}
+
+		collection, err := txApp.FindCollectionByNameOrId("users")
+		if err != nil {
+			return err
+		}
+		user := core.NewRecord(collection)
+		user.SetEmail(data.Email)
+		user.SetPassword(data.Password)
+		user.Set("role", "admin")
+		user.Set("verified", true)
+		if err := txApp.Save(user); err != nil {
+			return err
+		}
+
+		collection, err = txApp.FindCollectionByNameOrId(core.CollectionNameSuperusers)
+		if err != nil {
+			return err
+		}
+		adminUser := core.NewRecord(collection)
+		adminUser.SetEmail(data.Email)
+		adminUser.SetPassword(data.Password)
+		if err := txApp.Save(adminUser); err != nil {
+			return err
+		}
+
+		return txApp.Delete(adminUsers[0])
+	})
+	if errors.Is(err, errBootstrapUnavailable) {
+		return e.JSON(http.StatusForbidden, map[string]string{"err": "Forbidden"})
+	}
+	if err != nil {
 		return e.JSON(http.StatusInternalServerError, map[string]string{"err": err.Error()})
 	}
-	// create superuser using the email of the first user
-	collection, _ = um.app.FindCollectionByNameOrId(core.CollectionNameSuperusers)
-	adminUser := core.NewRecord(collection)
-	adminUser.SetEmail(data.Email)
-	adminUser.SetPassword(data.Password)
-	if err := um.app.Save(adminUser); err != nil {
-		return e.JSON(http.StatusInternalServerError, map[string]string{"err": err.Error()})
-	}
-	// delete the intial superuser
-	if err := um.app.Delete(adminUsers[0]); err != nil {
-		return e.JSON(http.StatusInternalServerError, map[string]string{"err": err.Error()})
-	}
+
 	return e.JSON(http.StatusOK, map[string]string{"msg": "User created"})
 }

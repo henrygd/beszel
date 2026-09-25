@@ -11,8 +11,9 @@ import (
 
 func NewTestAlertManagerWithoutWorker(app hubLike) *AlertManager {
 	return &AlertManager{
-		hub:         app,
-		alertsCache: NewAlertsCache(app),
+		hub:             app,
+		alertsCache:     NewAlertsCache(app),
+		networkMonitors: newNetworkMonitorCache(app),
 	}
 }
 
@@ -98,10 +99,6 @@ func (am *AlertManager) RestorePendingStatusAlerts() error {
 
 func (am *AlertManager) SetAlertTriggered(alert CachedAlertData, triggered bool) error {
 	return am.setAlertTriggered(alert, triggered)
-}
-
-func IsInternalURL(rawURL string) (bool, error) {
-	return isInternalURL(rawURL)
 }
 
 // BuildContainerLogExcerpt exposes buildContainerLogExcerpt for testing.
