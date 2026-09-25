@@ -417,6 +417,14 @@ func convertContainerPortsToString(ctr *container.ApiInfo) string {
 	return builder.String()
 }
 
+// getContainerProject returns the compose project or swarm stack the container belongs to
+func getContainerProject(labels map[string]string) string {
+	if project := labels["com.docker.compose.project"]; project != "" {
+		return project
+	}
+	return labels["com.docker.stack.namespace"]
+}
+
 func parseDockerStatus(status string) (string, container.DockerHealth) {
 	trimmed := strings.TrimSpace(status)
 	if trimmed == "" {
@@ -538,7 +546,7 @@ func (dm *dockerManager) updateContainerStats(ctr *container.ApiInfo, cacheTimeM
 	stats.Id = ctr.IdShort
 	stats.Status = statusText
 	stats.Health = health
-	stats.ComposeProject = ctr.Labels["com.docker.compose.project"]
+	stats.ComposeProject = getContainerProject(ctr.Labels)
 
 	stats.Image = ctr.Image
 	stats.UpdateAvailable = updateAvailable
