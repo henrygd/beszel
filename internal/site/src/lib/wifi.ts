@@ -1,3 +1,4 @@
+import { MeterState } from "@/lib/enums"
 import type { SystemRecord, WiFi } from "@/types"
 
 // Current system info is independent of the selected historical chart window.
@@ -19,6 +20,11 @@ export function strongestWiFi(connections: [string, WiFi][]): [string, WiFi] | u
 
 export function strongestWiFiSignal(system: Pick<SystemRecord, "status" | "info">): number | undefined {
 	return strongestWiFi(connectedWiFi(system))?.[1].r
+}
+
+/** Signal quality for an RSSI reading: good at -65 dBm or stronger, warn down to -75 dBm, crit below. */
+export function wifiSignalState(rssi: number): MeterState {
+	return rssi >= -65 ? MeterState.Good : rssi >= -75 ? MeterState.Warn : MeterState.Crit
 }
 
 export function wifiColor(id: string): string {

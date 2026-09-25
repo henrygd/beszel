@@ -1,5 +1,6 @@
 import { expect, test } from "bun:test"
-import { connectedWiFi, strongestWiFiSignal, wifiColor } from "./wifi"
+import { MeterState } from "@/lib/enums"
+import { connectedWiFi, strongestWiFiSignal, wifiColor, wifiSignalState } from "./wifi"
 import type { SystemInfo } from "@/types"
 
 const system = (wf?: SystemInfo["wf"], status: "up" | "down" = "up") => ({ status, info: { wf } as SystemInfo })
@@ -25,4 +26,12 @@ test("strongestWiFiSignal returns the strongest current native RSSI", () => {
 	expect(strongestWiFiSignal(system({ wlan0: { r: -63 }, wlan1: { r: -48 }, wlan2: {} }))).toBe(-48)
 	expect(strongestWiFiSignal(system({ wlan0: {} }))).toBeUndefined()
 	expect(strongestWiFiSignal(system({ wlan0: { r: -48 } }, "down"))).toBeUndefined()
+})
+
+test("wifiSignalState thresholds", () => {
+	expect(wifiSignalState(-40)).toBe(MeterState.Good)
+	expect(wifiSignalState(-65)).toBe(MeterState.Good)
+	expect(wifiSignalState(-66)).toBe(MeterState.Warn)
+	expect(wifiSignalState(-75)).toBe(MeterState.Warn)
+	expect(wifiSignalState(-76)).toBe(MeterState.Crit)
 })
