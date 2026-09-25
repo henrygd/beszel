@@ -8,6 +8,7 @@ import { ChartCard, FilterBar, SelectAvgMax } from "../chart-card"
 import { dockerOrPodman } from "../chart-data"
 import { decimalString, formatBytes, toFixedFloat } from "@/lib/utils"
 import { pinnedAxisDomain } from "@/components/ui/chart"
+import { getMemoryChartTotal } from "./memory-chart-utils"
 
 export function MemoryChart({
 	chartData,
@@ -25,7 +26,7 @@ export function MemoryChart({
 	maxValues: boolean
 }) {
 	const maxValSelect = isLongerChart ? <SelectAvgMax max={maxValues} /> : null
-	const totalMem = toFixedFloat(chartData.systemStats.at(-1)?.stats.m ?? 0, 1)
+	const totalMem = getMemoryChartTotal(chartData.systemStats)
 
 	return (
 		<ChartCard
