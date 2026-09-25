@@ -25,6 +25,9 @@ type Config struct {
 	Protocol string `cbor:"2,keyasint"` // "icmp", "tcp", "http", or "dns"
 	Port     uint16 `cbor:"3,keyasint,omitempty"`
 	Interval uint16 `cbor:"4,keyasint"` // seconds
+	// Server is the DNS server to query (host or host:port, default port 53).
+	// Only used when Protocol is "dns"; empty means use the system resolver.
+	Server string `cbor:"5,keyasint,omitempty"`
 }
 
 // CertInfo holds details of the leaf TLS certificate presented by a target.

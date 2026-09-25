@@ -302,6 +302,10 @@ func (sys *System) createRecords(data *system.CombinedData) (*core.Record, error
 			if err := createSystemDetailsRecord(txApp, data.Details, sys.Id); err != nil {
 				return err
 			}
+			// sync display name with hostname if enabled (details are fetched once per agent connection)
+			if syncNames, _ := utils.GetEnv("SYNC_SYSTEM_NAMES"); syncNames == "true" && data.Details.Hostname != "" {
+				systemRecord.Set("name", data.Details.Hostname)
+			}
 		}
 
 		if data.Monitors != nil {
