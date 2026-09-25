@@ -1,5 +1,5 @@
 /** biome-ignore-all lint/correctness/useHookAtTopLevel: Hooks live inside memoized column definitions */
-import { t } from "@lingui/core/macro"
+import { plural, t } from "@lingui/core/macro"
 import { Trans, useLingui } from "@lingui/react/macro"
 import { useStore } from "@nanostores/react"
 import { getPagePath } from "@nanostores/router"
@@ -14,6 +14,7 @@ import {
 	HardDriveIcon,
 	MemoryStickIcon,
 	MoreHorizontalIcon,
+	PackageIcon,
 	PauseCircleIcon,
 	PenBoxIcon,
 	PlayCircleIcon,
@@ -81,6 +82,15 @@ const STATUS_COLORS = {
 	[SystemStatus.Paused]: "bg-primary/40",
 	[SystemStatus.Pending]: "bg-yellow-500",
 } as const
+
+/** Rank of the updates dot color for sorting: 2 security (red), 1 regular (yellow), 0 up to date (green), -1 no data */
+function getUpdatesRank(pu: SystemRecord["info"]["pu"]): number {
+	if (!pu) {
+		return -1
+	}
+	const [total, security = 0] = pu
+	return security > 0 ? 2 : total > 0 ? 1 : 0
+}
 
 function getMeterStateByThresholds(value: number, warn = 65, crit = 90): MeterState {
 	return value >= crit ? MeterState.Crit : value >= warn ? MeterState.Warn : MeterState.Good
@@ -347,11 +357,13 @@ export function SystemsTableColumns(viewMode: "table" | "grid"): ColumnDef<Syste
 			header: sortableHeader,
 			hideSort: true,
 			sortingFn: (a, b) => {
-				// sort priorities: 1) failed services, 2) total services
+				// sort priorities: 1) has failed services (dot color), 2) total services
 				const [totalCountA, numFailedA] = a.original.info.sv ?? [0, 0]
 				const [totalCountB, numFailedB] = b.original.info.sv ?? [0, 0]
-				if (numFailedA !== numFailedB) {
-					return numFailedA - numFailedB
+				const hasFailedA = numFailedA > 0 ? 1 : 0
+				const hasFailedB = numFailedB > 0 ? 1 : 0
+				if (hasFailedA !== hasFailedB) {
+					return hasFailedA - hasFailedB
 				}
 				return totalCountA - totalCountB
 			},
@@ -361,18 +373,73 @@ export function SystemsTableColumns(viewMode: "table" | "grid"): ColumnDef<Syste
 				if (sys.status !== SystemStatus.Up || totalCount === 0) {
 					return null
 				}
+				const content = (
+					<span className="tabular-nums whitespace-nowrap flex gap-1.5 items-center">
+						<span
+							className={cn("block size-2 rounded-full", {
+								[STATUS_COLORS.pending]: numFailed > 0,
+								[STATUS_COLORS.up]: numFailed === 0,
+							})}
+						/>
+						{plural(totalCount, { one: "# service", other: "# services" })}
+					</span>
+				)
+				if (numFailed === 0) {
+					return content
+				}
+				return (
+					<Tooltip>
+						<TooltipTrigger asChild>
+							<Link
+								href={getPagePath($router, "system", { id: sys.id })}
+								tabIndex={-1}
+								className="relative z-10 w-fit block"
+							>
+								{content}
+							</Link>
+						</TooltipTrigger>
+						<TooltipContent>
+							{plural(numFailed, { one: "# failed service", other: "# failed services" })}
+						</TooltipContent>
+					</Tooltip>
+				)
+			},
+		},
+		{
+			accessorFn: ({ info }) => info.pu?.[0],
+			id: "updates",
+			name: () => t`Updates`,
+			size: 50,
+			Icon: PackageIcon,
+			header: sortableHeader,
+			hideSort: true,
+			sortingFn: (a, b) => {
+				// sort priorities: 1) dot color (security > regular > up to date), 2) total updates
+				const puA = a.original.info.pu
+				const puB = b.original.info.pu
+				const rankA = getUpdatesRank(puA)
+				const rankB = getUpdatesRank(puB)
+				if (rankA !== rankB) {
+					return rankA - rankB
+				}
+				return (puA?.[0] ?? 0) - (puB?.[0] ?? 0)
+			},
+			cell(info) {
+				const sys = info.row.original
+				if (sys.status !== SystemStatus.Up || !sys.info.pu) {
+					return null
+				}
+				const [total, security = 0] = sys.info.pu
 				return (
 					<span className="tabular-nums whitespace-nowrap flex gap-1.5 items-center">
 						<span
 							className={cn("block size-2 rounded-full", {
-								[STATUS_COLORS[SystemStatus.Down]]: numFailed > 0,
-								[STATUS_COLORS[SystemStatus.Up]]: numFailed === 0,
+								[STATUS_COLORS[SystemStatus.Down]]: security > 0,
+								[STATUS_COLORS[SystemStatus.Pending]]: security === 0 && total > 0,
+								[STATUS_COLORS[SystemStatus.Up]]: total === 0,
 							})}
 						/>
-						{totalCount}{" "}
-						<span className="text-muted-foreground text-sm -ms-0.5">
-							({t`Failed`.toLowerCase()}: {numFailed})
-						</span>
+						{total === 0 ? t`Up to date` : plural(total, { one: "# update", other: "# updates" })}
 					</span>
 				)
 			},

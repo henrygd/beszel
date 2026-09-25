@@ -7,7 +7,7 @@ import { twMerge } from "tailwind-merge"
 import { toast } from "@/components/ui/use-toast"
 import type { ChartTimeData, FingerprintRecord, SemVer, SystemRecord } from "@/types"
 import { HourFormat, Unit } from "./enums"
-import { $copyContent, $userSettings } from "./stores"
+import { $copyContent, $textMeasureVersion, $userSettings } from "./stores"
 
 export function cn(...inputs: ClassValue[]) {
 	return twMerge(clsx(inputs))
@@ -458,6 +458,45 @@ export function runOnce<T extends (...args: any[]) => any>(fn: T): T {
 
 const visualWidthCache = new Map<string, number>()
 
+let measureContext: CanvasRenderingContext2D | null | undefined
+let measureFont = ""
+
+/** Canvas context for measuring text in the font the app renders with, or null where canvas is unavailable.
+ *  Only relative widths matter here, so the font size is arbitrary.
+ */
+function getMeasureContext(): CanvasRenderingContext2D | null {
+	if (measureContext === undefined) {
+		measureContext = document.createElement("canvas").getContext("2d")
+		// the fallback font has different metrics, so re-measure whenever a font finishes loading.
+		// loadingdone also covers fonts that start loading after the first measurement,
+		// which fonts.ready does not if it has already resolved.
+		if (measureContext && "fonts" in document) {
+			document.fonts.addEventListener("loadingdone", invalidateVisualWidths)
+		}
+	}
+	if (measureContext) {
+		const { fontFamily, fontWeight } = getComputedStyle(document.body)
+		const font = `${fontWeight} 16px ${fontFamily}`
+		if (font !== measureFont) {
+			const isFirstFont = !measureFont
+			measureFont = font
+			measureContext.font = font
+			visualWidthCache.clear()
+			// defer so stores aren't updated in the middle of a comparison or a render
+			if (!isFirstFont) {
+				queueMicrotask(invalidateVisualWidths)
+			}
+		}
+	}
+	return measureContext
+}
+
+/** Drop cached widths and notify anything holding a result from isVisuallyLonger */
+function invalidateVisualWidths() {
+	visualWidthCache.clear()
+	$textMeasureVersion.set($textMeasureVersion.get() + 1)
+}
+
 /** Get the visual width of a string, accounting for full-width and narrow punctuation characters.
  *  Don't use for monospaced fonts, use .length instead
  */
@@ -465,6 +504,11 @@ function getVisualStringWidth(str: string): number {
 	const cached = visualWidthCache.get(str)
 	if (cached !== undefined) {
 		return cached
+	}
+	const measured = getMeasureContext()?.measureText(str).width
+	if (measured !== undefined) {
+		visualWidthCache.set(str, measured)
+		return measured
 	}
 	let width = 0
 	for (const char of str) {
