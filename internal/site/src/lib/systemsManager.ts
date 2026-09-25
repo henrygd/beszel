@@ -1,23 +1,21 @@
 /** biome-ignore-all lint/suspicious/noAssignInExpressions: it's fine :) */
 import type { PreinitializedMapStore } from "nanostores"
-import { pb, verifyAuth } from "@/lib/api"
+import { pb } from "@/lib/api"
 import {
 	$allSystemsById,
 	$allSystemsByName,
 	$downSystems,
-	$longestSystemNameLen,
+	$longestSystemName,
 	$pausedSystems,
+	$textMeasureVersion,
 	$upSystems,
 } from "@/lib/stores"
-import { getVisualStringWidth, updateFavicon } from "@/lib/utils"
+import { isVisuallyLonger, updateFavicon } from "@/lib/utils"
 import type { SystemRecord } from "@/types"
 import { SystemStatus } from "./enums"
 
 const COLLECTION = pb.collection<SystemRecord>("systems")
 const FIELDS_DEFAULT = "id,name,host,port,info,status"
-
-/** Maximum system name length for display purposes */
-const MAX_SYSTEM_NAME_LENGTH = 22
 
 let initialized = false
 // biome-ignore lint/suspicious/noConfusingVoidType: typescript rocks
@@ -44,7 +42,7 @@ export function init() {
 		}
 
 		if (!newSystem) {
-			onSystemsChanged(newSystems, undefined)
+			onSystemsChanged(newSystems, newSystem, oldSystem)
 			return
 		}
 
@@ -68,23 +66,41 @@ export function init() {
 		}
 
 		// run things that need to be done when systems change
-		onSystemsChanged(newSystems, newSystem)
+		onSystemsChanged(newSystems, newSystem, oldSystem)
+	})
+
+	// widths measured with the fallback font may rank names differently, so recompute once they're invalidated
+	$textMeasureVersion.listen(() => {
+		$longestSystemName.set(findLongestName($allSystemsById.get()))
 	})
 }
 
-/** Update the longest system name length and favicon based on system status */
-function onSystemsChanged(_: Record<string, SystemRecord>, changedSystem: SystemRecord | undefined) {
+/** Update the longest system name string and favicon based on system status */
+function onSystemsChanged(systems: Record<string, SystemRecord>, newSystem?: SystemRecord, oldSystem?: SystemRecord) {
 	const downSystemsStore = $downSystems.get()
 	const downSystems = Object.values(downSystemsStore)
 
-	// Update longest system name length
-	const longestName = $longestSystemNameLen.get()
-	const nameLen = Math.min(MAX_SYSTEM_NAME_LENGTH, getVisualStringWidth(changedSystem?.name || ""))
-	if (nameLen > longestName) {
-		$longestSystemNameLen.set(nameLen)
+	// if the old system's old name was the longest, we need to find the new longest name
+	// otherwise, if the changed system's new name is longer than the current longest, update it
+	const longestName = $longestSystemName.get()
+	if (oldSystem?.name === longestName && oldSystem.name !== newSystem?.name) {
+		$longestSystemName.set(findLongestName(systems))
+	} else if (newSystem && newSystem.name !== longestName && isVisuallyLonger(newSystem.name, longestName)) {
+		$longestSystemName.set(newSystem.name)
 	}
 
 	updateFavicon(downSystems.length)
+}
+
+/** Find the visually longest system name */
+function findLongestName(systems: Record<string, SystemRecord>): string {
+	let longest = ""
+	for (const id in systems) {
+		if (isVisuallyLonger(systems[id].name, longest)) {
+			longest = systems[id].name
+		}
+	}
+	return longest
 }
 
 /** Fetch systems from collection */
@@ -167,11 +183,6 @@ export async function subscribe() {
 export async function refresh() {
 	try {
 		const records = await fetchSystems()
-		if (!records.length) {
-			// No systems found, verify authentication
-			verifyAuth()
-			return
-		}
 		for (const record of records) {
 			add(record)
 		}

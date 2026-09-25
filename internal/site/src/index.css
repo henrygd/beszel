@@ -68,6 +68,7 @@
 
 	--breakpoint-xs: 26.6rem;
 	--breakpoint-450: 28rem;
+	--breakpoint-md-lg: 53rem;
 	--breakpoint-2xl: 90rem;
 
 	--radius-sm: calc(var(--radius) - 4px);
@@ -117,6 +118,7 @@
 }
 
 @layer utilities {
+
 	/* Fonts */
 	@supports (font-variation-settings: normal) {
 		:root {
@@ -139,6 +141,17 @@
 		overflow-anchor: none;
 	}
 
+	html {
+		scrollbar-gutter: stable;
+	}
+
+	@supports (scrollbar-gutter: stable) {
+		/* Radix scroll lock adds this margin even though the viewport keeps its gutter. */
+		html body[data-scroll-locked] {
+			margin-right: 0 !important;
+		}
+	}
+
 	body {
 		@apply bg-background text-foreground;
 		font-variant-ligatures: no-contextual;
@@ -147,11 +160,11 @@
 	button {
 		cursor: pointer;
 	}
-	
+
 	/* cosmetic patch for half pixel gap in table headers when scrolling content shows at top  */
 	thead.sticky:before {
 		content: "";
-		@apply absolute -top-2 left-0 w-full h-4 bg-table-header z-50	
+		@apply absolute -top-2 left-0 w-full h-4 bg-table-header z-50
 	}
 }
 
@@ -172,6 +185,7 @@
 @utility scrollbar-hide {
 	-ms-overflow-style: none;
 	scrollbar-width: none;
+
 	&::-webkit-scrollbar {
 		display: none;
 	}

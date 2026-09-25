@@ -126,9 +126,9 @@ export function DiskUsageChart({ systemData, extraFsName }: { systemData: System
 	}
 
 	const rootName = systemData.system?.info?.rdn
-	const rootLabel = rootName ?? t`Root`
+	const rootLabel = rootName ?? t({ message: `Root`, context: "Root disk label" })
 	const title = extraFsName ? `${extraFsName} ${t`Usage`}` : `${rootLabel} ${t`Usage`}`
-	const description = extraFsName ? t`Disk usage of ${extraFsName}` : t`Disk usage of ${rootLabel}`
+	const description = t`Disk usage of ${{extraFsName: extraFsName ?? rootLabel.toLowerCase()}}`
 
 	return (
 		<ChartCard empty={dataEmpty} grid={grid} title={title} description={description}>
@@ -166,9 +166,9 @@ export function DiskIOChart({ systemData, extraFsName }: { systemData: SystemDat
 	}
 
 	const rootName = systemData.system?.info?.rdn
-	const rootLabel = rootName ?? t`Root`
-	const title = extraFsName ? `${extraFsName} I/O` : `${rootLabel} I/O`
-	const description = extraFsName ? t`Throughput of ${extraFsName}` : t`Throughput of ${rootLabel}`
+	const rootLabel = rootName ?? t({ message: `Root`, context: "Root disk label" })
+	const title = t`${{diskName: extraFsName ?? rootLabel}} I/O`
+	const description = t`Throughput of ${{extraFsName: extraFsName ?? rootLabel.toLowerCase()}}`
 
 	const hasMoreIOMetrics = chartData.systemStats?.some((record) => record.stats?.dios?.at(0))
 

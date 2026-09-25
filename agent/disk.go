@@ -3,6 +3,7 @@ package agent
 import (
 	"context"
 	"log/slog"
+	"math"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -18,11 +19,11 @@ import (
 // fsRegistrationContext holds the shared lookup state needed to resolve a
 // filesystem into the tracked fsStats key and metadata.
 type fsRegistrationContext struct {
-	filesystem         string // device part of optional FILESYSTEM env var
-	filesystemName     string // optional custom name from FILESYSTEM=device__name
-	isWindows          bool
-	efPath             string // path to extra filesystems (default "/extra-filesystems")
-	diskIoCounters     map[string]disk.IOCountersStat
+	filesystem     string // device part of optional FILESYSTEM env var
+	filesystemName string // optional custom name from FILESYSTEM=device__name
+	isWindows      bool
+	efPath         string // path to extra filesystems (default "/extra-filesystems")
+	diskIoCounters map[string]disk.IOCountersStat
 }
 
 // diskDiscovery groups the transient state for a single initializeDiskInfo run so
@@ -325,11 +326,11 @@ func (a *Agent) initializeDiskInfo() {
 	}
 	slog.Debug("Disk I/O", "diskstats", diskIoCounters)
 	ctx := fsRegistrationContext{
-		filesystem:         filesystem,
-		filesystemName:     filesystemName,
-		isWindows:          isWindows,
-		diskIoCounters:     diskIoCounters,
-		efPath:             "/extra-filesystems",
+		filesystem:     filesystem,
+		filesystemName: filesystemName,
+		isWindows:      isWindows,
+		diskIoCounters: diskIoCounters,
+		efPath:         "/extra-filesystems",
 	}
 
 	// Get the appropriate root mount point for this system
@@ -537,7 +538,16 @@ func normalizeDeviceName(value string) string {
 func (a *Agent) initializeDiskIoStats(diskIoCounters map[string]disk.IOCountersStat) {
 	a.fsNames = a.fsNames[:0]
 	now := time.Now()
+	// ZFS datasets have no /proc/diskstats entry, so they are excluded from
+	// I/O tracking instead of warning about a missing device (#1541).
+	var zfsMountpoints map[string]bool
+	if a.storagePoolManager != nil {
+		zfsMountpoints = a.storagePoolManager.ZfsMountpoints()
+	}
 	for device, stats := range a.fsStats {
+		if zfsMountpoints[stats.Mountpoint] {
+			continue
+		}
 		// skip if not in diskIoCounters
 		d, exists := diskIoCounters[device]
 		if !exists {
@@ -562,20 +572,31 @@ func (a *Agent) updateDiskUsage(systemStats *system.Stats) {
 		!a.lastDiskUsageUpdate.IsZero() &&
 		time.Since(a.lastDiskUsageUpdate) < a.diskUsageCacheDuration
 
+	// ZFS dataset mountpoints use `zfs list` values because statfs(2) reports
+	// dataset-level usage that excludes child datasets (#1541).
+	var zfsUsage map[string]zfsDatasetUsage
+	if a.storagePoolManager != nil {
+		zfsUsage = a.storagePoolManager.DatasetUsage()
+	}
+
 	// disk usage
 	for _, stats := range a.fsStats {
 		// Skip non-root filesystems if caching is active
 		if cacheExtraFs && !stats.Root {
 			continue
 		}
-		if d, err := disk.Usage(stats.Mountpoint); err == nil {
-			stats.DiskTotal = utils.BytesToGigabytes(d.Total)
-			stats.DiskUsed = utils.BytesToGigabytes(d.Used)
-			if stats.Root {
-				systemStats.DiskTotal = utils.BytesToGigabytes(d.Total)
-				systemStats.DiskUsed = utils.BytesToGigabytes(d.Used)
-				systemStats.DiskPct = utils.TwoDecimals(d.UsedPercent)
+		var total, used uint64
+		var usedPct float64
+		if u, ok := zfsUsage[stats.Mountpoint]; ok {
+			total = u.used + u.avail
+			used = u.used
+			if total > 0 {
+				usedPct = float64(used) / float64(total) * 100
 			}
+		} else if d, err := disk.Usage(stats.Mountpoint); err == nil {
+			total = d.Total
+			used = d.Used
+			usedPct = d.UsedPercent
 		} else {
 			// reset stats if error (likely unmounted)
 			slog.Error("Error getting disk stats", "name", stats.Mountpoint, "err", err)
@@ -583,6 +604,14 @@ func (a *Agent) updateDiskUsage(systemStats *system.Stats) {
 			stats.DiskUsed = 0
 			stats.TotalRead = 0
 			stats.TotalWrite = 0
+			continue
+		}
+		stats.DiskTotal = utils.BytesToGigabytes(total)
+		stats.DiskUsed = utils.BytesToGigabytes(used)
+		if stats.Root {
+			systemStats.DiskTotal = stats.DiskTotal
+			systemStats.DiskUsed = stats.DiskUsed
+			systemStats.DiskPct = utils.TwoDecimals(usedPct)
 		}
 	}
 
@@ -658,25 +687,27 @@ func (a *Agent) updateDiskIo(cacheTimeMs uint16, systemStats *system.Stats) {
 			// This is the total number of milliseconds spent by all reads (as
 			// measured from __make_request() to end_that_request_last()).
 			// https://www.kernel.org/doc/Documentation/iostats.txt (fields 4, 8)
-			diskReadTime := utils.TwoDecimals(float64(d.ReadTime-prev.readTime) / float64(msElapsed) * 100)
-			diskWriteTime := utils.TwoDecimals(float64(d.WriteTime-prev.writeTime) / float64(msElapsed) * 100)
+			deltaReadTime := ioTimeDelta(d.ReadTime, prev.readTime)
+			deltaWriteTime := ioTimeDelta(d.WriteTime, prev.writeTime)
+			diskReadTime := utils.TwoDecimals(float64(deltaReadTime) / float64(msElapsed) * 100)
+			diskWriteTime := utils.TwoDecimals(float64(deltaWriteTime) / float64(msElapsed) * 100)
 
 			// I/O utilization %: fraction of wall time the device had any I/O in progress (0-100).
-			diskIoUtilPct := utils.TwoDecimals(float64(d.IoTime-prev.ioTime) / float64(msElapsed) * 100)
+			diskIoUtilPct := utils.TwoDecimals(float64(ioTimeDelta(d.IoTime, prev.ioTime)) / float64(msElapsed) * 100)
 
 			// Weighted I/O: queue-depth weighted I/O time, normalized to interval (can exceed 100%).
 			// Linux kernel field 11: incremented by iops_in_progress × ms_since_last_update.
 			// Used to display queue depth. Multipled by 100 to increase accuracy of digit truncation (divided by 100 in UI).
-			diskWeightedIO := utils.TwoDecimals(float64(d.WeightedIO-prev.weightedIO) / float64(msElapsed) * 100)
+			diskWeightedIO := utils.TwoDecimals(float64(ioTimeDelta(d.WeightedIO, prev.weightedIO)) / float64(msElapsed) * 100)
 
 			// r_await / w_await: average time per read/write operation in milliseconds.
 			// Equivalent to r_await and w_await in iostat.
 			var rAwait, wAwait float64
 			if deltaReadCount := d.ReadCount - prev.readCount; deltaReadCount > 0 {
-				rAwait = utils.TwoDecimals(float64(d.ReadTime-prev.readTime) / float64(deltaReadCount))
+				rAwait = utils.TwoDecimals(float64(deltaReadTime) / float64(deltaReadCount))
 			}
 			if deltaWriteCount := d.WriteCount - prev.writeCount; deltaWriteCount > 0 {
-				wAwait = utils.TwoDecimals(float64(d.WriteTime-prev.writeTime) / float64(deltaWriteCount))
+				wAwait = utils.TwoDecimals(float64(deltaWriteTime) / float64(deltaWriteCount))
 			}
 
 			// Update global fsStats baseline for cross-interval correctness
@@ -710,6 +741,21 @@ func (a *Agent) updateDiskIo(cacheTimeMs uint16, systemStats *system.Stats) {
 			}
 		}
 	}
+}
+
+// ioTimeDelta returns the increase of a cumulative millisecond counter from
+// the disk I/O stats. Linux prints these fields of /proc/diskstats as 32-bit
+// unsigned ints, so they wrap to zero at 2^32. A busy disk reaches that in
+// days for the weighted I/O time. Other platforms report 64-bit counters,
+// so a lower value there is a reset.
+func ioTimeDelta(current, previous uint64) uint64 {
+	if current >= previous {
+		return current - previous
+	}
+	if runtime.GOOS == "linux" && previous <= math.MaxUint32 {
+		return current + (math.MaxUint32 + 1 - previous)
+	}
+	return 0
 }
 
 // getRootMountPoint returns the appropriate root mount point for the system.

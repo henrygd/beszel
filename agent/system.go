@@ -12,6 +12,7 @@ import (
 
 	"github.com/henrygd/beszel"
 	"github.com/henrygd/beszel/agent/battery"
+	"github.com/henrygd/beszel/agent/btrfs"
 	"github.com/henrygd/beszel/agent/utils"
 	"github.com/henrygd/beszel/agent/zfs"
 	"github.com/henrygd/beszel/internal/entities/container"
@@ -218,6 +219,10 @@ func (a *Agent) getSystemStats(cacheTimeMs uint16) system.Stats {
 
 	// disk i/o (cache-aware per interval)
 	a.updateDiskIo(cacheTimeMs, &systemStats)
+
+	// storage pool stats
+	a.storagePoolManager.Update(&systemStats)
+	a.storagePoolManager.markDuplicateCharts(&systemStats, a.fsStats, btrfs.MountID)
 
 	// network stats (per cache interval)
 	a.updateNetworkStats(cacheTimeMs, &systemStats)

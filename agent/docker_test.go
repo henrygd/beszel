@@ -729,6 +729,7 @@ func TestGetDockerStatsChecksDockerVersionAfterContainerList(t *testing.T) {
 
 			stats, err := dm.getDockerStats(defaultCacheTimeMs)
 			require.NoError(t, err)
+			require.NotNil(t, stats, "A successful empty snapshot must remain distinguishable from a collection failure")
 			assert.Empty(t, stats)
 			assert.True(t, dm.dockerVersionChecked)
 			assert.Equal(t, tt.expectedGood, dm.goodDockerVersion)
@@ -742,6 +743,7 @@ func TestGetDockerStatsChecksDockerVersionAfterContainerList(t *testing.T) {
 
 			stats, err = dm.getDockerStats(defaultCacheTimeMs)
 			require.NoError(t, err)
+			require.NotNil(t, stats, "A successful empty snapshot must remain distinguishable from a collection failure")
 			assert.Empty(t, stats)
 			assert.Equal(t, tt.expectedGood, dm.goodDockerVersion)
 			assert.Equal(t, tt.expectedPodman, dm.usingPodman)
@@ -1182,7 +1184,6 @@ func TestUpdateContainerStatsPodmanCpuCalculation(t *testing.T) {
 			}
 		})},
 		containerStatsMap: make(map[string]*container.Stats),
-		apiStats:          &container.ApiStats{},
 		usingPodman:       true,
 		lastCpuContainer: map[uint16]map[string]uint64{
 			defaultCacheTimeMs: {"0123456789ab": prevCpuUsage},
@@ -1674,7 +1675,6 @@ func TestUpdateContainerStatsUsesPodmanInspectHealthFallback(t *testing.T) {
 			}
 		})},
 		containerStatsMap:   make(map[string]*container.Stats),
-		apiStats:            &container.ApiStats{},
 		usingPodman:         true,
 		lastCpuContainer:    make(map[uint16]map[string]uint64),
 		lastCpuSystem:       make(map[uint16]map[string]uint64),

@@ -1,6 +1,7 @@
 import { lazy } from "react"
 import { useIntersectionObserver } from "@/lib/use-intersection-observer"
 import { cn } from "@/lib/utils"
+import { useNetworkMonitors } from "@/lib/use-network-monitors"
 
 const ContainersTable = lazy(() => import("../../containers-table/containers-table"))
 
@@ -24,6 +25,17 @@ export function LazySmartTable({ systemId }: { systemId: string }) {
 	)
 }
 
+const ZfsTable = lazy(() => import("./storage-pools-table"))
+
+export function LazyZfsTable({ systemId }: { systemId: string }) {
+	const { isIntersecting, ref } = useIntersectionObserver({ rootMargin: "90px" })
+	return (
+		<div ref={ref} className={cn(isIntersecting && "contents")}>
+			{isIntersecting && <ZfsTable systemId={systemId} />}
+		</div>
+	)
+}
+
 const SystemdTable = lazy(() => import("../../systemd-table/systemd-table"))
 
 export function LazySystemdTable({ systemId }: { systemId: string }) {
@@ -33,4 +45,20 @@ export function LazySystemdTable({ systemId }: { systemId: string }) {
 			{isIntersecting && <SystemdTable systemId={systemId} />}
 		</div>
 	)
+}
+
+const NetworkMonitorsTable = lazy(() => import("../../network-monitors-table/network-monitors-table"))
+
+export function LazyNetworkMonitorsTable({ systemId }: { systemId: string }) {
+	const { isIntersecting, ref } = useIntersectionObserver({ rootMargin: "90px" })
+	return (
+		<div ref={ref} className={cn(isIntersecting && "contents")}>
+			{isIntersecting && <SystemNetworkMonitorsTable systemId={systemId} />}
+		</div>
+	)
+}
+
+function SystemNetworkMonitorsTable({ systemId }: { systemId: string }) {
+	const { monitors, isLoading } = useNetworkMonitors({ systemId })
+	return <NetworkMonitorsTable systemId={systemId} monitors={monitors} isLoading={isLoading} />
 }

@@ -1,0 +1,29 @@
+  pool: tank
+ state: ONLINE
+  scan: scrub repaired 0B in 00:05:12 with 0 errors on Sun Jun  1 02:00:12 2025
+config:
+
+	NAME        STATE     READ WRITE CKSUM
+	tank        ONLINE       0     0     0
+	  mirror-0  ONLINE       0     0     0
+	    sda     ONLINE       0     0     0
+	    sdb     ONLINE       0     0     0
+
+errors: No known data errors
+
+  pool: rpool
+ state: DEGRADED
+ status: One or more devices could not be used because the label is missing or
+	invalid.  Sufficient replicas exist for the pool to continue functioning in a
+	degraded state.
+  scan: scrub in progress since Sun Jun  8 01:00:00 2025
+	10.00% done, 01:30:00 to go, 0.00/s
+config:
+
+	NAME        STATE     READ WRITE CKSUM
+	rpool       DEGRADED     0     0     0
+	  mirror-0  DEGRADED     0     0     0
+	    sda     ONLINE       0     0     0
+	    sdb     FAULTED      1     2     3
+
+errors: 1 data errors, use '-v' for a list

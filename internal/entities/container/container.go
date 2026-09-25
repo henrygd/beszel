@@ -186,13 +186,14 @@ type Stats struct {
 	NetworkRecv float64   `json:"nr,omitzero" cbor:"4,keyasint,omitzero"` // deprecated 0.18.3 (MB) - keep field for old agents/records
 	Bandwidth   [2]uint64 `json:"b,omitzero" cbor:"9,keyasint,omitzero"`  // [sent bytes, recv bytes]
 
-	Health         DockerHealth `json:"-" cbor:"5,keyasint"`
-	Status         string       `json:"-" cbor:"6,keyasint"`
-	Id             string       `json:"-" cbor:"7,keyasint"`
-	Image          string       `json:"-" cbor:"8,keyasint"`
-	Ports          string       `json:"-" cbor:"10,keyasint"`
-	ComposeProject string       `json:"-" cbor:"11,keyasint,omitzero"`
-	NetTotal       [2]uint64    `json:"-" cbor:"12,keyasint,omitzero"` // [sent bytes, recv bytes] cumulative since container start
+	Health          DockerHealth `json:"-" cbor:"5,keyasint"`
+	Status          string       `json:"-" cbor:"6,keyasint"`
+	Id              string       `json:"-" cbor:"7,keyasint"`
+	Image           string       `json:"-" cbor:"8,keyasint"`
+	Ports           string       `json:"-" cbor:"10,keyasint"`
+	UpdateAvailable bool         `json:"u,omitzero" cbor:"11,keyasint,omitzero"`
+	ComposeProject  string       `json:"-" cbor:"12,keyasint,omitzero"`
+	NetTotal        [2]uint64    `json:"-" cbor:"13,keyasint,omitzero"` // [sent bytes, recv bytes] cumulative since container start
 	// PrevCpu     [2]uint64    `json:"-"`
 	CpuSystem    uint64       `json:"-"`
 	CpuContainer uint64       `json:"-"`
