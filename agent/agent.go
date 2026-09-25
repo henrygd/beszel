@@ -51,6 +51,7 @@ type Agent struct {
 	systemdManager            *systemdManager                                       // Manages systemd services
 	monitorManager            *MonitorManager                                       // Manages network monitors
 	storagePoolManager        *StoragePoolManager                                   // Manages storage pool and dataset data
+	packageUpdates            *packageUpdatesManager                                // Checks for pending package updates
 }
 
 // NewAgent creates a new agent with the given data directory for persisting data.
@@ -171,6 +172,8 @@ func NewAgent(dataDir ...string) (agent *Agent, err error) {
 		slog.Debug("NUT", "err", err)
 	}
 
+	agent.packageUpdates = newPackageUpdatesManager(agent.dataDir)
+
 	// initialize GPU manager
 	agent.gpuManager, err = NewGPUManager()
 	if err != nil {
@@ -233,6 +236,10 @@ func (a *Agent) gatherStats(options common.DataRequestOptions) *system.CombinedD
 				data.Info.Services = []uint16{0, 0}
 			}
 		}
+	}
+
+	if a.packageUpdates != nil {
+		data.Info.PackageUpdates = a.packageUpdates.get(time.Now())
 	}
 
 	data.Stats.ExtraFs = make(map[string]*system.FsStats)
