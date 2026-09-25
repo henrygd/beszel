@@ -20,7 +20,7 @@ export function WiFiChart({
 	const dataPoints = interfaces.map(([id, current]) => ({
 		label: current.s ? `${id} (${current.s})` : id,
 		color: wifiColor(id),
-		dataKey: ({ stats }: SystemStatsRecord) => stats?.wifi?.[id]?.r,
+		dataKey: ({ stats }: SystemStatsRecord) => stats?.wf?.[id],
 	}))
 	return (
 		<ChartCard

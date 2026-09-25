@@ -16,13 +16,21 @@ func TestWiFiSequentialResponseSnapshots(t *testing.T) {
 		{"wlan0": {SSID: "home"}}, {}, nil,
 		{"wlan1": {SSID: "new", Signal: &signal}},
 	} {
-		payload, err := cbor.Marshal(system.CombinedData{Info: system.Info{WiFi: snapshot}, Stats: system.Stats{WiFi: snapshot}})
+		signals := make(map[string]int8)
+		for id, reading := range snapshot {
+			if reading.Signal != nil {
+				signals[id] = int8(*reading.Signal)
+			}
+		}
+		payload, err := cbor.Marshal(system.CombinedData{Info: system.Info{WiFi: snapshot}, Stats: system.Stats{WiFi: signals}})
 		require.NoError(t, err)
 		require.NoError(t, UnmarshalResponse(common.AgentResponse{Data: payload}, common.GetData, &decoded))
 		require.Len(t, decoded.Info.WiFi, len(snapshot))
-		require.Len(t, decoded.Stats.WiFi, len(snapshot))
+		require.Len(t, decoded.Stats.WiFi, len(signals))
 		for id, want := range snapshot {
 			require.Equal(t, want, decoded.Info.WiFi[id])
+		}
+		for id, want := range signals {
 			require.Equal(t, want, decoded.Stats.WiFi[id])
 		}
 	}

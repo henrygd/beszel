@@ -91,7 +91,6 @@ export interface SystemInfo {
 }
 
 export interface SystemStats {
-	wifi?: Record<string, WiFi>
 	/** cpu percent */
 	cpu: number
 	/** peak cpu */
@@ -168,6 +167,8 @@ export interface SystemStats {
 	bat?: [number, BatteryState]
 	/** battery percentages by device name */
 	bats?: Record<string, number>
+	/** Wi-Fi RSSI (dBm) by interface */
+	wf?: Record<string, number>
 	/** network interfaces [upload bytes, download bytes, total upload bytes, total download bytes] */
 	ni?: Record<string, [number, number, number, number]>
 }

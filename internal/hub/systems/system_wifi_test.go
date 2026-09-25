@@ -17,7 +17,7 @@ func TestCreateRecordsWiFiDisconnectReconnect(t *testing.T) {
 		{}, nil,
 		{"wlan0": {SSID: "new", Signal: &signal}},
 	} {
-		_, err := sys.createRecords(&system.CombinedData{Info: system.Info{WiFi: snapshot}, Stats: system.Stats{WiFi: snapshot}})
+		_, err := sys.createRecords(&system.CombinedData{Info: system.Info{WiFi: snapshot}})
 		require.NoError(t, err)
 		record, err := app.FindRecordById("systems", sys.Id)
 		require.NoError(t, err)

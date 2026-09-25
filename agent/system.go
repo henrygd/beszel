@@ -268,7 +268,13 @@ func (a *Agent) getSystemStats(cacheTimeMs uint16) system.Stats {
 		}
 	}
 
-	systemStats.WiFi = wifi.Collect()
+	// Wi-Fi collection spawns a process on macOS and dumps the BSS cache on
+	// Linux, so only refresh on the default interval. Real-time requests reuse
+	// the last snapshot.
+	if cacheTimeMs == defaultDataCacheTimeMs {
+		a.systemInfo.WiFi = wifi.Collect()
+	}
+	systemStats.WiFi = wifi.Signals(a.systemInfo.WiFi)
 
 	// update system info
 	a.systemInfo.ConnectionType = a.connectionManager.ConnectionType
@@ -277,7 +283,6 @@ func (a *Agent) getSystemStats(cacheTimeMs uint16) system.Stats {
 	a.systemInfo.MemPct = systemStats.MemPct
 	a.systemInfo.DiskPct = systemStats.DiskPct
 	a.systemInfo.Battery = systemStats.Battery
-	a.systemInfo.WiFi = systemStats.WiFi
 	a.systemInfo.Uptime, _ = getUptime()
 	a.systemInfo.BandwidthBytes = systemStats.Bandwidth[0] + systemStats.Bandwidth[1]
 	a.systemInfo.Threads = a.systemDetails.Threads

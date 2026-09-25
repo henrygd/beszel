@@ -1,16 +1,17 @@
 # Connected Wi-Fi signal
 
-Each fresh stats poll reports a snapshot of connected station interfaces in
-`stats.wifi` and `info.wifi`. Map keys identify interfaces, not networks. `s` is
-optional SSID metadata; `r` is nullable native RSSI in dBm. Quality percentages
-are never converted to dBm. An associated interface without an accessible RSSI
-still appears with an unavailable signal. No scans or network changes occur.
+Each default-interval poll reports a snapshot of connected station interfaces
+in `info.wifi`. Map keys identify interfaces, not networks. `s` is optional SSID
+metadata; `r` is nullable native RSSI in dBm. Quality percentages are never
+converted to dBm. An associated interface without an accessible RSSI still
+appears with an unavailable signal. No scans or network changes occur.
+`stats.wf` stores only available RSSI values (integer dBm) keyed by interface.
+Real-time requests reuse the last snapshot instead of collecting again.
 
 The hub panel gates exclusively on current `systems.info.wifi` and system `up`
 status, independently of the selected historical period. Empty/null snapshots
 clear it. Historical averages use only available readings per interface; gaps
 are not zero signal. Interface colors and keys remain stable on reconnect.
-SSID in an aggregate is the latest observed metadata, not a separate series.
 
 ## Platforms
 
@@ -39,7 +40,7 @@ SSID in an aggregate is the latest observed metadata, not a separate series.
 - FreeBSD and other platforms: unsupported, empty snapshot. No approximation
   from ifconfig quality and no stale data retained.
 
-Collectors retry each fresh poll, allowing interfaces and capabilities to appear
+Collectors retry each default-interval poll, allowing interfaces and capabilities to appear
 without an agent restart. Standard agent response caching still applies. Existing
 hub record JSON storage requires no database schema migration. Older agents
 without the field keep the panel hidden. Native macOS/Windows runtime checks and

@@ -20,7 +20,6 @@ type WiFi struct {
 }
 
 type Stats struct {
-	WiFi           map[string]WiFi     `json:"wifi,omitempty" cbor:"40,keyasint,omitempty"`
 	Cpu            float64             `json:"cpu" cbor:"0,keyasint"`
 	MaxCpu         float64             `json:"cpum,omitempty" cbor:"-"`
 	Mem            float64             `json:"m" cbor:"2,keyasint"`
@@ -64,6 +63,7 @@ type Stats struct {
 	Batteries         map[string]uint8     `json:"bats,omitempty" cbor:"37,keyasint,omitempty"`
 	ZfsPools          map[string]*ZfsPool  `json:"z,omitempty" cbor:"39,keyasint,omitempty"`  // ZFS pool metrics, keyed by pool name
 	DiskIOTotal       [2]uint64            `json:"diot,omitzero" cbor:"38,keyasint,omitzero"` // [total read bytes, total write bytes] cumulative device counters
+	WiFi              map[string]int8      `json:"wf,omitempty" cbor:"40,keyasint,omitempty"` // RSSI dBm keyed by interface; unavailable readings omitted
 
 }
 

@@ -33,3 +33,25 @@ func TestSSIDWireSafety(t *testing.T) {
 		})
 	}
 }
+
+func TestSignals(t *testing.T) {
+	strong, weak, rounded := -40.0, -200.0, -52.6
+	got := Signals(map[string]system.WiFi{
+		"wlan0": {SSID: "home", Signal: &strong},
+		"wlan1": {Signal: &weak},
+		"wlan2": {Signal: &rounded},
+		"wlan3": {SSID: "no rssi"},
+	})
+	want := map[string]int8{"wlan0": -40, "wlan1": -128, "wlan2": -53}
+	if len(got) != len(want) {
+		t.Fatalf("got %v, want %v", got, want)
+	}
+	for id, signal := range want {
+		if got[id] != signal {
+			t.Fatalf("got %v, want %v", got, want)
+		}
+	}
+	if Signals(map[string]system.WiFi{"wlan0": {}}) != nil || Signals(nil) != nil {
+		t.Fatal("expected nil without available readings")
+	}
+}

@@ -4,6 +4,7 @@ package wifi
 
 import (
 	"context"
+	"math"
 	"os"
 	"os/exec"
 	"time"
@@ -37,4 +38,20 @@ func Collect() map[string]system.WiFi {
 	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
 	defer cancel()
 	return collect(ctx)
+}
+
+// Signals reduces a snapshot to the RSSI values stored in stats history.
+// Interfaces without an available reading are omitted.
+func Signals(snapshot map[string]system.WiFi) map[string]int8 {
+	var signals map[string]int8
+	for id, reading := range snapshot {
+		if reading.Signal == nil {
+			continue
+		}
+		if signals == nil {
+			signals = make(map[string]int8, len(snapshot))
+		}
+		signals[id] = int8(max(math.Round(*reading.Signal), math.MinInt8))
+	}
+	return signals
 }

@@ -10,7 +10,10 @@ import (
 func TestWiFiWireSnapshot(t *testing.T) {
 	signal := -55.0
 	for _, wifi := range []map[string]WiFi{nil, {}, {"wlan0": {SSID: "home", Signal: &signal}, "wlan1": {}}} {
-		original := CombinedData{Info: Info{WiFi: wifi}, Stats: Stats{WiFi: wifi}}
+		original := CombinedData{Info: Info{WiFi: wifi}, Stats: Stats{WiFi: make(map[string]int8, len(wifi))}}
+		for id := range wifi {
+			original.Stats.WiFi[id] = -55
+		}
 		encoded, err := cbor.Marshal(original)
 		if err != nil {
 			t.Fatal(err)
