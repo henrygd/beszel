@@ -340,6 +340,11 @@ func TestComputeBytesPerSecond(t *testing.T) {
 	// (6000-1000)*1000/500 = 10000; (11000-1000)*1000/500 = 20000
 	assert.Equal(t, uint64(10000), bytesUp)
 	assert.Equal(t, uint64(20000), bytesDown)
+
+	// Counter reset -> treat current total as the delta instead of underflowing.
+	bytesUp, bytesDown = a.computeBytesPerSecond(1000, 2000, 3000, system.NetIoStats{BytesSent: 10000, BytesRecv: 12000})
+	assert.Equal(t, uint64(2000), bytesUp)
+	assert.Equal(t, uint64(3000), bytesDown)
 }
 
 func TestSumAndTrackPerNicDeltas(t *testing.T) {
