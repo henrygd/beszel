@@ -39,7 +39,7 @@ import {
 } from "@/lib/utils"
 import { batteryStateTranslations } from "@/lib/i18n"
 import { connectedWiFi, strongestWiFi, strongestWiFiSignal } from "@/lib/wifi"
-import type { SystemRecord } from "@/types"
+import type { SystemRecord, WiFi } from "@/types"
 import { SystemDialog } from "../add-system"
 import AlertButton from "../alerts/alert-button"
 import { $router, Link } from "../router"
@@ -363,25 +363,41 @@ export function SystemsTableColumns(viewMode: "table" | "grid"): ColumnDef<Syste
 					return null
 				}
 				const displayedConnections = viewMode === "table" ? [strongest] : connections
-				const title = connections
-					.map(([id, wifi]) => `${id}${wifi.s ? ` (${wifi.s})` : ""}: ${wifi.r === undefined ? "—" : `${wifi.r} dBm`}`)
-					.join("\n")
+				const signal = (wifi: WiFi) => (wifi.r === undefined ? "—" : `${wifi.r} dBm`)
 				return (
-					<Link
-						href={getPagePath($router, "system", { id: info.row.original.id })}
-						tabIndex={-1}
-						className="flex flex-col gap-0.5 min-w-0 py-1 relative z-10"
-						title={title}
-					>
-						{displayedConnections.map(([id, wifi]) => (
-							<span key={id} className="tabular-nums whitespace-nowrap">
-								{wifi.r === undefined ? "—" : `${wifi.r} dBm`}
-							</span>
-						))}
-						{viewMode === "table" && connections.length > 1 && (
-							<span className="text-xs text-muted-foreground">+{connections.length - 1}</span>
-						)}
-					</Link>
+					<Tooltip>
+						<TooltipTrigger asChild>
+							<Link
+								href={getPagePath($router, "system", { id: info.row.original.id })}
+								tabIndex={-1}
+								className="flex flex-col gap-0.5 min-w-0 py-1 relative z-10"
+							>
+								{displayedConnections.map(([id, wifi]) => (
+									<span key={id} className="tabular-nums whitespace-nowrap">
+										{signal(wifi)}
+									</span>
+								))}
+								{viewMode === "table" && connections.length > 1 && (
+									<span className="text-xs text-muted-foreground">+{connections.length - 1}</span>
+								)}
+							</Link>
+						</TooltipTrigger>
+						<TooltipContent side="right" className="max-w-xs pb-2">
+							<div className="grid gap-1">
+								{connections.map(([id, wifi]) => (
+									<div key={id} className="grid gap-0.5">
+										<div className="text-[0.65rem] max-w-40 text-muted-foreground uppercase tracking-wide truncate">
+											{id}
+										</div>
+										<div className="flex gap-2 items-center tabular-nums text-xs">
+											<span className="shrink-0">{signal(wifi)}</span>
+											{wifi.s && <span className="truncate max-w-40">{wifi.s}</span>}
+										</div>
+									</div>
+								))}
+							</div>
+						</TooltipContent>
+					</Tooltip>
 				)
 			},
 		},
