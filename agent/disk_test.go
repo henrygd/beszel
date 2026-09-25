@@ -1032,8 +1032,10 @@ func TestInitializeDiskIoStatsResetsTrackedDevices(t *testing.T) {
 	assert.Len(t, agent.fsNames, 2)
 	assert.Equal(t, uint64(10), agent.fsStats["sda"].TotalRead)
 	assert.Equal(t, uint64(20), agent.fsStats["sda"].TotalWrite)
-	assert.False(t, agent.fsStats["sda"].Time.IsZero())
-	assert.False(t, agent.fsStats["sdb"].Time.IsZero())
+	assert.Equal(t, uint64(10), agent.diskBaseline["sda"].readBytes)
+	assert.Equal(t, uint64(40), agent.diskBaseline["sdb"].writeBytes)
+	assert.False(t, agent.diskBaseline["sda"].at.IsZero())
+	assert.False(t, agent.diskBaseline["sdb"].at.IsZero())
 
 	agent.initializeDiskIoStats(map[string]disk.IOCountersStat{
 		"sdb": {Name: "sdb", ReadBytes: 50, WriteBytes: 60},

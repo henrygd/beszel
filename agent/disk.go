@@ -596,7 +596,6 @@ func (a *Agent) initializeDiskIoStats(diskIoCounters map[string]disk.IOCountersS
 			continue
 		}
 		// populate initial values
-		stats.Time = now
 		stats.TotalRead = d.ReadBytes
 		stats.TotalWrite = d.WriteBytes
 		a.setDiskBaseline(device, prevDiskFromCounter(d, now))
@@ -742,9 +741,8 @@ func (a *Agent) updateDiskIo(cacheTimeMs uint16, systemStats *system.Stats) {
 				wAwait = utils.TwoDecimals(float64(deltaWriteTime) / float64(deltaWriteCount))
 			}
 
-			// Update global fsStats baseline for cross-interval correctness
+			// Update the baseline that seeds new intervals
 			a.setDiskBaseline(name, prevDiskFromCounter(d, now))
-			stats.Time = now
 			stats.TotalRead = d.ReadBytes
 			stats.TotalWrite = d.WriteBytes
 			stats.DiskReadPs = readMbPerSecond

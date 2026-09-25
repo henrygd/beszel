@@ -110,18 +110,17 @@ type GPUData struct {
 }
 
 type FsStats struct {
-	Time           time.Time `json:"-"`
-	Root           bool      `json:"-"`
-	Mountpoint     string    `json:"-"`
-	Name           string    `json:"-"`
-	DiskTotal      float64   `json:"d" cbor:"0,keyasint"`
-	DiskUsed       float64   `json:"du" cbor:"1,keyasint"`
-	TotalRead      uint64    `json:"tr,omitzero" cbor:"9,keyasint,omitzero"`  // cumulative device read bytes
-	TotalWrite     uint64    `json:"tw,omitzero" cbor:"10,keyasint,omitzero"` // cumulative device write bytes
-	DiskReadPs     float64   `json:"r" cbor:"2,keyasint"`
-	DiskWritePs    float64   `json:"w" cbor:"3,keyasint"`
-	MaxDiskReadPS  float64   `json:"rm,omitempty" cbor:"-"`
-	MaxDiskWritePS float64   `json:"wm,omitempty" cbor:"-"`
+	Root           bool    `json:"-"`
+	Mountpoint     string  `json:"-"`
+	Name           string  `json:"-"`
+	DiskTotal      float64 `json:"d" cbor:"0,keyasint"`
+	DiskUsed       float64 `json:"du" cbor:"1,keyasint"`
+	TotalRead      uint64  `json:"tr,omitzero" cbor:"9,keyasint,omitzero"`  // cumulative device read bytes
+	TotalWrite     uint64  `json:"tw,omitzero" cbor:"10,keyasint,omitzero"` // cumulative device write bytes
+	DiskReadPs     float64 `json:"r" cbor:"2,keyasint"`
+	DiskWritePs    float64 `json:"w" cbor:"3,keyasint"`
+	MaxDiskReadPS  float64 `json:"rm,omitempty" cbor:"-"`
+	MaxDiskWritePS float64 `json:"wm,omitempty" cbor:"-"`
 	// TODO: remove DiskReadPs and DiskWritePs in future release in favor of DiskReadBytes and DiskWriteBytes
 	DiskReadBytes     uint64     `json:"rb" cbor:"6,keyasint,omitempty"`
 	DiskWriteBytes    uint64     `json:"wb" cbor:"7,keyasint,omitempty"`
