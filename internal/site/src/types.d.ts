@@ -374,6 +374,7 @@ export interface UserSettings {
 	colorCrit?: number
 	hourFormat?: HourFormat
 	layoutWidth?: number
+	cpuFixed?: boolean
 	lang?: string
 	cols?: Record<string, boolean>
 	statusFilter?: "all" | "up" | "down" | "paused" | "pending"
