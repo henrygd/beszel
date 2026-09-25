@@ -1,5 +1,5 @@
 import { t } from "@lingui/core/macro"
-import { ContainerIcon, CpuIcon, HardDriveIcon, MemoryStickIcon, NetworkIcon, ServerCrashIcon, ServerIcon } from "lucide-react"
+import { ContainerIcon, CpuIcon, HardDriveIcon, MemoryStickIcon, NetworkIcon, RotateCcwIcon, ServerCrashIcon, ServerIcon } from "lucide-react"
 import type { RecordSubscription } from "pocketbase"
 import { EthernetIcon, GpuIcon } from "@/components/ui/icons"
 import { $alerts } from "@/lib/stores"
@@ -134,6 +134,14 @@ export const alertInfo: Record<string, AlertInfo> = {
     desc: () => t`Triggers when any systemd service enters the failed state`,
     triggeredDesc: () => t`One or more services are in a failed state`,
     /** Fires on first observation - the agent only polls systemd every 10 minutes */
+    noDuration: true,
+    noThreshold: true,
+  },
+  Reboot: {
+    name: () => t`Reboot`,
+    unit: "",
+    icon: RotateCcwIcon,
+    desc: () => t`Triggers when the system restarts unexpectedly`,
     noDuration: true,
     noThreshold: true,
   },
