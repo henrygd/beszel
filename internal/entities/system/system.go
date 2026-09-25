@@ -184,6 +184,7 @@ type Info struct {
 	Services       []uint16           `json:"sv,omitempty" cbor:"22,keyasint,omitempty"`  // [totalServices, numFailedServices]
 	Battery        Battery            `json:"bat,omitzero" cbor:"23,keyasint,omitzero"`   // [percent, charge state]
 	RootDiskName   string             `json:"rdn,omitempty" cbor:"24,keyasint,omitempty"` // custom name for root disk (set via FILESYSTEM=device__name)
+	Ls             int64              `json:"ls,omitempty" cbor:"25,keyasint,omitempty"`  // unix timestamp of last agent data delivery
 }
 
 // Data that does not change during process lifetime and is not needed in All Systems table

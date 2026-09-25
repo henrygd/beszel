@@ -297,6 +297,7 @@ func (sys *System) createRecords(data *system.CombinedData) (*core.Record, error
 
 		// update system record (do this last because it triggers alerts and we need above records to be inserted first)
 		systemRecord.Set("status", up)
+		data.Info.Ls = time.Now().Unix()
 		// Distinguish an idle GPU from a system without GPU data (#2312)
 		info := struct {
 			system.Info
