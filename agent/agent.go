@@ -29,6 +29,7 @@ type Agent struct {
 	fsNames                   []string                                              // List of filesystem device names being monitored
 	fsStats                   map[string]*system.FsStats                            // Keeps track of disk stats for each filesystem
 	diskPrev                  map[uint16]map[string]prevDisk                        // Previous disk I/O counters per cache interval
+	diskBaseline              map[string]prevDisk                                   // Latest disk I/O counters of any interval, seeds a new interval
 	diskUsageCacheDuration    time.Duration                                         // How long to cache disk usage (to avoid waking sleeping disks)
 	lastDiskUsageUpdate       time.Time                                             // Last time disk usage was collected
 	netInterfaces             map[string]struct{}                                   // Stores all valid network interfaces

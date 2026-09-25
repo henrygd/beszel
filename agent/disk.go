@@ -558,6 +558,7 @@ func (a *Agent) initializeDiskIoStats(diskIoCounters map[string]disk.IOCountersS
 		stats.Time = now
 		stats.TotalRead = d.ReadBytes
 		stats.TotalWrite = d.WriteBytes
+		a.setDiskBaseline(device, prevDiskFromCounter(d, now))
 		// add to list of valid io device names
 		a.fsNames = append(a.fsNames, device)
 	}
@@ -640,19 +641,9 @@ func (a *Agent) updateDiskIo(cacheTimeMs uint16, systemStats *system.Stats) {
 			// Previous snapshot for this interval and device
 			prev, hasPrev := a.diskPrev[cacheTimeMs][name]
 			if !hasPrev {
-				// Seed from agent-level fsStats if present, else seed from current
-				prev = prevDisk{
-					readBytes:  stats.TotalRead,
-					writeBytes: stats.TotalWrite,
-					readTime:   d.ReadTime,
-					writeTime:  d.WriteTime,
-					ioTime:     d.IoTime,
-					weightedIO: d.WeightedIO,
-					readCount:  d.ReadCount,
-					writeCount: d.WriteCount,
-					at:         stats.Time,
-				}
-				if prev.at.IsZero() {
+				// Seed from the latest counters of any interval, else seed from current
+				prev, hasPrev = a.diskBaseline[name]
+				if !hasPrev {
 					prev = prevDiskFromCounter(d, now)
 				}
 			}
@@ -711,6 +702,7 @@ func (a *Agent) updateDiskIo(cacheTimeMs uint16, systemStats *system.Stats) {
 			}
 
 			// Update global fsStats baseline for cross-interval correctness
+			a.setDiskBaseline(name, prevDiskFromCounter(d, now))
 			stats.Time = now
 			stats.TotalRead = d.ReadBytes
 			stats.TotalWrite = d.WriteBytes
@@ -741,6 +733,15 @@ func (a *Agent) updateDiskIo(cacheTimeMs uint16, systemStats *system.Stats) {
 			}
 		}
 	}
+}
+
+// setDiskBaseline stores the latest counters of a device. A cache interval
+// without its own snapshot measures its first sample from them.
+func (a *Agent) setDiskBaseline(name string, d prevDisk) {
+	if a.diskBaseline == nil {
+		a.diskBaseline = make(map[string]prevDisk)
+	}
+	a.diskBaseline[name] = d
 }
 
 // ioTimeDelta returns the increase of a cumulative millisecond counter from
