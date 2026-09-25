@@ -203,7 +203,7 @@ export default function SettingsProfilePage({ userSettings }: { userSettings: Us
 							<Select
 								name="unitNet"
 								key={userSettings.unitNet}
-								defaultValue={userSettings.unitNet?.toString() ?? String(Unit.Bytes)}
+								defaultValue={userSettings.unitNet?.toString() ?? String(Unit.Bits)}
 							>
 								<SelectTrigger id="unitNet">
 									<SelectValue />

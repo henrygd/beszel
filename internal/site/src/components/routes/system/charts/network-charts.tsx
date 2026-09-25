@@ -83,7 +83,7 @@ export function BandwidthChart({
 				<AreaChartDefault
 					chartData={chartData}
 					itemSorter={(a, b) => b.value - a.value}
-					dataPoints={netInterfaces.data(1)}
+					dataPoints={netInterfaces.dataBoth()}
 					legend={showNetLegend}
 					tickFormatter={tickFormatter}
 					contentFormatter={contentFormatter}

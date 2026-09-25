@@ -164,5 +164,24 @@ export function useNetworkInterfaces(interfaces: SystemStats["ni"]) {
 				opacity: 0.3,
 			}))
 		},
+		dataBoth: () => {
+			return sortedKeys.flatMap((key, i) => {
+				const color = `hsl(${220 + (((i * 360) / sortedKeys.length) % 360)}, 70%, 50%)`
+				return [
+					{
+						label: `${key} ↓`,
+						dataKey: ({ stats }: SystemStatsRecord) => stats?.ni?.[key]?.[1],
+						color,
+						opacity: 0.3,
+					},
+					{
+						label: `${key} ↑`,
+						dataKey: ({ stats }: SystemStatsRecord) => stats?.ni?.[key]?.[0],
+						color,
+						opacity: 0.15,
+					},
+				]
+			})
+		},
 	}
 }
