@@ -154,12 +154,12 @@ func registerFilesystemStats(existing map[string]*system.FsStats, device, mountp
 }
 
 // addFsStat inserts a discovered filesystem if it resolves to a new tracking
-// key. The key selection itself lives in buildFsStatRegistration so that logic
-// can stay directly unit-tested.
-func (d *diskDiscovery) addFsStat(device, mountpoint string, root bool, customName string) {
+// key and reports whether it was added. The key selection itself lives in
+// buildFsStatRegistration so that logic can stay directly unit-tested.
+func (d *diskDiscovery) addFsStat(device, mountpoint string, root bool, customName string) bool {
 	key, fsStats, ok := registerFilesystemStats(d.agent.fsStats, device, mountpoint, root, customName, d.ctx)
 	if !ok {
-		return
+		return false
 	}
 	d.agent.fsStats[key] = fsStats
 	name := key
@@ -167,6 +167,7 @@ func (d *diskDiscovery) addFsStat(device, mountpoint string, root bool, customNa
 		name = customName
 	}
 	slog.Info("Detected disk", "name", name, "device", device, "mount", mountpoint, "io", key, "root", root)
+	return true
 }
 
 // addConfiguredRootFs resolves FILESYSTEM against partitions first, then falls
@@ -212,9 +213,10 @@ func (d *diskDiscovery) addPartitionRootFs(device, mountpoint string) bool {
 		return false
 	}
 	// The resolved I/O device is already known here, so use it directly to avoid
-	// a second fallback search inside buildFsStatRegistration.
-	d.addFsStat(fs, mountpoint, true, "")
-	return true
+	// a second fallback search inside buildFsStatRegistration. Report failure if
+	// the key was already taken (e.g. root drive listed in EXTRA_FILESYSTEMS) so
+	// the caller can still fall back to addLastResortRootFs.
+	return d.addFsStat(fs, mountpoint, true, "")
 }
 
 // addLastResortRootFs is only used when neither FILESYSTEM nor partition-based
@@ -542,7 +544,8 @@ func normalizeDeviceName(value string) string {
 }
 
 // windowsVolumeName returns the canonical form of a bare Windows volume
-// specifier, so that "C:", `C:\` and "C:/" all name the same drive.
+// specifier, so that "C:", "c:", `C:\` and "C:/" all name the same drive.
+// Drive letters are case-insensitive on Windows, so the letter is uppercased.
 //
 // filepath.Base cannot do this. On Windows it treats "C:" as a volume name
 // with no path element to take the base of and returns "\", so every drive
@@ -556,9 +559,6 @@ func windowsVolumeName(value string) (string, bool) {
 	if c := value[0]; !('a' <= c && c <= 'z' || 'A' <= c && c <= 'Z') {
 		return "", false
 	}
-	if len(value) == 2 {
-		return value, true
-	}
 	// Only separators may follow the specifier. "C:data" is a drive-relative
 	// path, not a volume.
 	for i := 2; i < len(value); i++ {
@@ -566,7 +566,7 @@ func windowsVolumeName(value string) (string, bool) {
 			return "", false
 		}
 	}
-	return value[:2], true
+	return strings.ToUpper(value[:2]), true
 }
 
 // Sets start values for disk I/O stats.

@@ -1066,9 +1066,10 @@ func TestNormalizeDeviceName(t *testing.T) {
 	for _, spelling := range []string{"C:", `C:\`, "C:/", `C:\\`} {
 		assert.Equal(t, "C:", normalizeDeviceName(spelling), "spelling %q", spelling)
 	}
-	// Case is left to the caller, as it already is for Linux device names.
-	assert.Equal(t, "d:", normalizeDeviceName("d:"))
-	assert.Equal(t, "c:", normalizeDeviceName(" c: "))
+	// Drive letters are case-insensitive, so the letter is uppercased.
+	assert.Equal(t, "D:", normalizeDeviceName("d:"))
+	assert.Equal(t, "C:", normalizeDeviceName(" c: "))
+	assert.Equal(t, "C:", normalizeDeviceName(`c:\`))
 
 	// Non-volume inputs keep using filepath.Base.
 	assert.Equal(t, "sda1", normalizeDeviceName("/dev/sda1"))
@@ -1123,4 +1124,33 @@ func TestAddPartitionRootFsWindowsDrive(t *testing.T) {
 	stats, exists := agent.fsStats["C:"]
 	assert.True(t, exists)
 	assert.True(t, stats.Root)
+}
+
+func TestAddPartitionRootFsKeyAlreadyRegistered(t *testing.T) {
+	// The root drive is also listed in EXTRA_FILESYSTEMS, so its key is taken
+	// before the root fallback runs. addPartitionRootFs must report failure so
+	// the caller still falls back to addLastResortRootFs instead of ending up
+	// with no root filesystem.
+	agent := &Agent{fsStats: map[string]*system.FsStats{
+		"C:": {Mountpoint: `C:\`},
+	}}
+	discovery := diskDiscovery{
+		agent:          agent,
+		rootMountPoint: `C:\`,
+		ctx: fsRegistrationContext{
+			isWindows: true,
+			diskIoCounters: map[string]disk.IOCountersStat{
+				"C:": {Name: "C:", ReadBytes: 10},
+				"D:": {Name: "D:"},
+			},
+		},
+	}
+
+	ok := discovery.addPartitionRootFs("C:", `C:\`)
+	assert.False(t, ok)
+	assert.False(t, agent.fsStats["C:"].Root)
+
+	discovery.addLastResortRootFs()
+	assert.Len(t, agent.fsStats, 1)
+	assert.True(t, agent.fsStats["C:"].Root)
 }
