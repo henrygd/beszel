@@ -48,7 +48,8 @@ type Agent struct {
 	keys                      []gossh.PublicKey                                     // SSH public keys
 	smartManager              *SmartManager                                         // Manages SMART data
 	systemdManager            *systemdManager                                       // Manages systemd services
-	zfsManager                *ZfsManager                                           // Manages ZFS pool and dataset data
+	monitorManager            *MonitorManager                                       // Manages network monitors
+	storagePoolManager        *StoragePoolManager                                   // Manages storage pool and dataset data
 }
 
 // NewAgent creates a new agent with the given data directory for persisting data.
@@ -122,12 +123,15 @@ func NewAgent(dataDir ...string) (agent *Agent, err error) {
 	// initialize handler registry
 	agent.handlerRegistry = NewHandlerRegistry()
 
-	agent.zfsManager = newZfsManager()
+	// initialize monitor manager
+	agent.monitorManager = newMonitorManager()
 
-	// ZFS_INTERVAL env var to update ZFS detail data at this interval
+	agent.storagePoolManager = newStoragePoolManager()
+
+	// Retain ZFS_INTERVAL for the shared storage pool detail refresh interval.
 	if zfsIntervalEnv, exists := utils.GetEnv("ZFS_INTERVAL"); exists {
 		if duration, err := time.ParseDuration(zfsIntervalEnv); err == nil && duration > 0 {
-			agent.zfsManager.detailInterval = duration
+			agent.storagePoolManager.detailInterval = duration
 			agent.systemDetails.ZfsInterval = duration
 			slog.Info("ZFS_INTERVAL", "duration", duration)
 		} else {
@@ -192,6 +196,11 @@ func (a *Agent) gatherStats(options common.DataRequestOptions) *system.CombinedD
 		}
 	}
 
+	if a.monitorManager != nil {
+		data.Monitors = a.monitorManager.GetResults(cacheTimeMs)
+		slog.Debug("Monitors", "data", data.Monitors)
+	}
+
 	// skip updating systemd services if cache time is not the default 60sec interval
 	if a.systemdManager != nil && cacheTimeMs == defaultDataCacheTimeMs {
 		totalCount := uint16(a.systemdManager.getServiceStatsCount())
@@ -243,7 +252,11 @@ func (a *Agent) gatherStats(options common.DataRequestOptions) *system.CombinedD
 // Start initializes and starts the agent with optional WebSocket connection
 func (a *Agent) Start(serverOptions ServerOptions) error {
 	a.keys = serverOptions.Keys
-	return a.connectionManager.Start(serverOptions)
+	err := a.connectionManager.Start(serverOptions)
+	if err != nil {
+		a.cleanupSensorShadow()
+	}
+	return err
 }
 
 func (a *Agent) getFingerprint() string {

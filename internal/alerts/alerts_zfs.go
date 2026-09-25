@@ -46,12 +46,15 @@ func (am *AlertManager) handleZfsPoolHealthAlert(e *core.RecordEvent, oldHealth 
 	}
 
 	systemName := systemRecord.GetString("name")
-	poolName := e.Record.GetString("name")
+	poolName := e.Record.GetString("display_name")
+	if poolName == "" {
+		poolName = e.Record.GetString("name")
+	}
 
-	title := fmt.Sprintf("ZFS pool %s on %s: %s", newHealth, systemName, poolName)
-	message := fmt.Sprintf("ZFS pool %s (%s) was first observed as %s", poolName, systemName, newHealth)
+	title := fmt.Sprintf("Storage pool %s on %s: %s", newHealth, systemName, poolName)
+	message := fmt.Sprintf("Storage pool %s (%s) was first observed as %s", poolName, systemName, newHealth)
 	if oldSeverity > 0 {
-		message = fmt.Sprintf("ZFS pool %s (%s) health changed from %s to %s", poolName, systemName, oldHealth, newHealth)
+		message = fmt.Sprintf("Storage pool %s (%s) health changed from %s to %s", poolName, systemName, oldHealth, newHealth)
 	}
 
 	userIDs := systemRecord.GetStringSlice("users")
@@ -116,7 +119,7 @@ func createZfsPoolHistoryRecord(app core.App, userID, systemID, alertID, poolNam
 	record.Set("user", userID)
 	record.Set("system", systemID)
 	record.Set("alert_id", alertID)
-	record.Set("name", "ZFS Pool: "+poolName)
+	record.Set("name", "Storage Pool: "+poolName)
 	return app.Save(record)
 }
 

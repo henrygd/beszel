@@ -161,7 +161,7 @@ export default function InfoBar({
 									{translatedStatus}
 								</div>
 							</TooltipTrigger>
-							{system.info.ct && (
+							{!!system.info.ct && (
 								<TooltipContent>
 									<div className="flex gap-1 items-center">
 										{system.info.ct === ConnectionType.WebSocket ? (

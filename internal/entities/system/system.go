@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/henrygd/beszel/internal/entities/container"
+	"github.com/henrygd/beszel/internal/entities/monitor"
 	"github.com/henrygd/beszel/internal/entities/systemd"
 )
 
@@ -59,11 +60,15 @@ type Stats struct {
 
 // ZfsPool holds per-pool ZFS metrics for a single collection interval.
 type ZfsPool struct {
-	Total      float64 `json:"d" cbor:"0,keyasint"`                     // total capacity in GiB
-	Used       float64 `json:"du" cbor:"1,keyasint"`                    // allocated in GiB
-	ReadBytes  uint64  `json:"rb,omitzero" cbor:"2,keyasint,omitzero"`  // read throughput in bytes/s
-	WriteBytes uint64  `json:"wb,omitzero" cbor:"3,keyasint,omitzero"`  // write throughput in bytes/s
-	Health     string  `json:"h,omitempty" cbor:"4,keyasint,omitempty"` // ONLINE, DEGRADED, FAULTED, ...
+	DisplayName string  `json:"n,omitempty" cbor:"8,keyasint,omitempty"`
+	HideUsage   bool    `json:"hu,omitempty" cbor:"6,keyasint,omitempty"` // equivalent filesystem usage chart exists
+	HideIO      bool    `json:"hi,omitempty" cbor:"7,keyasint,omitempty"` // equivalent filesystem I/O chart exists
+	Raw         bool    `json:"raw,omitempty" cbor:"5,keyasint,omitempty"`
+	Total       float64 `json:"d" cbor:"0,keyasint"`                     // total capacity in GiB
+	Used        float64 `json:"du" cbor:"1,keyasint"`                    // allocated in GiB
+	ReadBytes   uint64  `json:"rb,omitzero" cbor:"2,keyasint,omitzero"`  // read throughput in bytes/s
+	WriteBytes  uint64  `json:"wb,omitzero" cbor:"3,keyasint,omitzero"`  // write throughput in bytes/s
+	Health      string  `json:"h,omitempty" cbor:"4,keyasint,omitempty"` // ONLINE, DEGRADED, FAULTED, ...
 }
 
 // Uint8Slice wraps []uint8 to customize JSON encoding while keeping CBOR efficient.
@@ -206,5 +211,6 @@ type CombinedData struct {
 	Details         *Details           `cbor:"4,keyasint,omitempty"`
 	// SystemdServicesUpdated distinguishes a fresh empty snapshot from a response
 	// that omitted systemd data (for example, a short-cache dashboard request).
-	SystemdServicesUpdated bool `json:"systemdUpdated,omitempty" cbor:"5,keyasint,omitempty"`
+	SystemdServicesUpdated bool                      `json:"systemdUpdated,omitempty" cbor:"5,keyasint,omitempty"`
+	Monitors               map[string]monitor.Result `cbor:"6,keyasint"`
 }

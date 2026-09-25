@@ -24,6 +24,8 @@ const (
 	GetSystemdInfo
 	// Request ZFS detail data from agent
 	GetZfsData
+	// Sync network monitor configuration to agent
+	SyncNetworkMonitors
 	// Add new actions here...
 )
 
