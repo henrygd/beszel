@@ -5,6 +5,9 @@ package wifi
 import (
 	"context"
 	"encoding/json"
+	"os"
+	"os/exec"
+	"time"
 
 	"github.com/henrygd/beszel/internal/entities/system"
 )
@@ -31,7 +34,10 @@ if (interfaces) {
 JSON.stringify(result);`
 
 func collect(ctx context.Context) map[string]system.WiFi {
-	output, err := run(ctx, "/usr/bin/osascript", "-l", "JavaScript", "-e", coreWLANScript)
+	cmd := exec.CommandContext(ctx, "/usr/bin/osascript", "-l", "JavaScript", "-e", coreWLANScript)
+	cmd.Env = append(os.Environ(), "LC_ALL=C", "LANG=C")
+	cmd.WaitDelay = 100 * time.Millisecond
+	output, err := cmd.Output()
 	if err != nil {
 		return nil
 	}

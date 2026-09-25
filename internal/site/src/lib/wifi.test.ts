@@ -2,7 +2,7 @@ import { expect, test } from "bun:test"
 import { connectedWiFi, strongestWiFiSignal, wifiColor } from "./wifi"
 import type { SystemInfo } from "@/types"
 
-const system = (wifi?: SystemInfo["wifi"], status: "up" | "down" = "up") => ({ status, info: { wifi } as SystemInfo })
+const system = (wf?: SystemInfo["wf"], status: "up" | "down" = "up") => ({ status, info: { wf } as SystemInfo })
 
 test("current state gates panel, not retained history", () => {
 	expect(connectedWiFi(system())).toEqual([])

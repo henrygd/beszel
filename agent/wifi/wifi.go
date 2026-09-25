@@ -5,22 +5,11 @@ package wifi
 import (
 	"context"
 	"math"
-	"os"
-	"os/exec"
 	"time"
 	"unicode/utf8"
 
 	"github.com/henrygd/beszel/internal/entities/system"
 )
-
-type commandRunner func(context.Context, string, ...string) ([]byte, error)
-
-func run(ctx context.Context, name string, args ...string) ([]byte, error) {
-	cmd := exec.CommandContext(ctx, name, args...)
-	cmd.Env = append(os.Environ(), "LC_ALL=C", "LANG=C")
-	cmd.WaitDelay = 100 * time.Millisecond
-	return cmd.Output()
-}
 
 // validSSID omits non-UTF-8 SSIDs: 802.11 permits arbitrary octets, but CBOR
 // text strings require UTF-8. Metadata must never invalidate the whole response.

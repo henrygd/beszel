@@ -39,7 +39,8 @@ export interface WiFi {
 }
 
 export interface SystemInfo {
-	wifi?: Record<string, WiFi> | null
+	/** connected Wi-Fi interfaces */
+	wf?: Record<string, WiFi>
 	/** hostname */
 	h: string
 	/** kernel **/

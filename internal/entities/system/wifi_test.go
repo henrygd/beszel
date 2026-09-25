@@ -33,8 +33,8 @@ func TestWiFiWireSnapshot(t *testing.T) {
 		if err = json.Unmarshal(encoded, &info); err != nil {
 			t.Fatal(err)
 		}
-		if _, ok := info["wifi"]; !ok {
-			t.Fatal("current absence must be explicit")
+		if _, ok := info["wf"]; ok != (len(wifi) > 0) {
+			t.Fatalf("wf present = %v for snapshot %v", ok, wifi)
 		}
 	}
 }
