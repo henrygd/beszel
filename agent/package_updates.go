@@ -7,6 +7,7 @@ import (
 	"log/slog"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"runtime"
 	"slices"
 	"strings"
@@ -19,6 +20,9 @@ import (
 const (
 	defaultPackageUpdatesInterval = time.Hour
 	packageUpdatesTimeout         = 5 * time.Minute
+	// pacmanSyncInterval limits how often checkupdates downloads fresh sync
+	// databases. Checks in between reuse the last synced copy.
+	pacmanSyncInterval = 12 * time.Hour
 )
 
 // packageUpdatesCheck returns [total] or [total, security] pending package updates.
@@ -37,8 +41,8 @@ type packageUpdatesManager struct {
 
 // newPackageUpdatesManager returns nil if disabled or no supported package manager
 // is found. Agents running in a container are skipped because the container's
-// package database is not the host's.
-func newPackageUpdatesManager() *packageUpdatesManager {
+// package database is not the host's. dataDir holds pacman's private sync databases.
+func newPackageUpdatesManager(dataDir string) *packageUpdatesManager {
 	if runtime.GOOS != "linux" || runningInContainer() {
 		return nil
 	}
@@ -54,7 +58,7 @@ func newPackageUpdatesManager() *packageUpdatesManager {
 			slog.Warn("Invalid PACKAGE_UPDATES_INTERVAL", "value", env)
 		}
 	}
-	name, check := detectPackageManager()
+	name, check := detectPackageManager(dataDir)
 	if check == nil {
 		return nil
 	}
@@ -97,7 +101,7 @@ func runningInContainer() bool {
 	return false
 }
 
-func detectPackageManager() (string, packageUpdatesCheck) {
+func detectPackageManager(dataDir string) (string, packageUpdatesCheck) {
 	switch {
 	case commandExists("apt-get"):
 		return "apt", checkApt
@@ -106,7 +110,7 @@ func detectPackageManager() (string, packageUpdatesCheck) {
 	case commandExists("zypper"):
 		return "zypper", checkZypper
 	case commandExists("checkupdates"):
-		return "pacman", checkPacman
+		return "pacman", newPacmanCheck(dataDir)
 	case commandExists("apk"):
 		return "apk", checkApk
 	}
@@ -121,8 +125,17 @@ func commandExists(name string) bool {
 // runPackageCommand runs a read-only package manager command and returns stdout.
 // okCodes lists non-zero exit codes that still mean success.
 func runPackageCommand(ctx context.Context, okCodes []int, name string, args ...string) (string, error) {
+	return runPackageCommandEnv(ctx, nil, okCodes, name, args...)
+}
+
+// runPackageCommandEnv is runPackageCommand with extra environment variables.
+func runPackageCommandEnv(ctx context.Context, env []string, okCodes []int, name string, args ...string) (string, error) {
 	cmd := exec.CommandContext(ctx, name, args...)
 	cmd.Env = append(os.Environ(), "LC_ALL=C")
+	cmd.Env = append(cmd.Env, env...)
+	// checkupdates is a shell script, so a timeout kills only the script and its
+	// children can keep stdout open. WaitDelay stops Output from waiting on them.
+	cmd.WaitDelay = 10 * time.Second
 	out, err := cmd.Output()
 	if exitErr, ok := errors.AsType[*exec.ExitError](err); ok && slices.Contains(okCodes, exitErr.ExitCode()) {
 		return string(out), nil
@@ -168,14 +181,44 @@ func checkZypper(ctx context.Context) ([]uint16, error) {
 	return []uint16{total, parseZypperTable(out)}, nil
 }
 
-// checkPacman uses checkupdates (pacman-contrib), which syncs a private copy of
-// the databases and never touches pacman's own. Exit code 2 means no updates.
-func checkPacman(ctx context.Context) ([]uint16, error) {
-	out, err := runPackageCommand(ctx, []int{2}, "checkupdates")
-	if err != nil {
-		return nil, err
+// newPacmanCheck uses checkupdates (pacman-contrib), which syncs a private copy of
+// the databases and never touches pacman's own. The copy lives in dataDir because
+// the systemd unit's ProtectSystem=strict makes the default /tmp location read-only.
+// It syncs every pacmanSyncInterval and uses the existing copy (-n) in between.
+// Local upgrades show up right away since checkupdates links the live local DB.
+// Exit code 2 means no updates.
+func newPacmanCheck(dataDir string) packageUpdatesCheck {
+	var env []string
+	var syncDir string
+	if dataDir != "" {
+		dbPath := filepath.Join(dataDir, "checkup-db")
+		env = []string{"CHECKUPDATES_DB=" + dbPath}
+		syncDir = filepath.Join(dbPath, "sync")
 	}
-	return []uint16{parsePacmanCheckUpdates(out)}, nil
+	// checks never overlap (packageUpdatesManager.running), so no lock is needed
+	var lastSync time.Time
+	return func(ctx context.Context) ([]uint16, error) {
+		// -n with a missing database reports no updates rather than failing,
+		// so always sync first and whenever the private copy is missing
+		sync := lastSync.IsZero() || time.Since(lastSync) >= pacmanSyncInterval
+		if !sync && syncDir != "" {
+			if _, err := os.Stat(syncDir); err != nil {
+				sync = true
+			}
+		}
+		var args []string
+		if !sync {
+			args = append(args, "-n")
+		}
+		out, err := runPackageCommandEnv(ctx, env, []int{2}, "checkupdates", args...)
+		if err != nil {
+			return nil, err
+		}
+		if sync {
+			lastSync = time.Now()
+		}
+		return []uint16{parsePacmanCheckUpdates(out)}, nil
+	}
 }
 
 func checkApk(ctx context.Context) ([]uint16, error) {

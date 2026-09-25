@@ -156,7 +156,7 @@ func NewAgent(dataDir ...string) (agent *Agent, err error) {
 		slog.Debug("SMART", "err", err)
 	}
 
-	agent.packageUpdates = newPackageUpdatesManager()
+	agent.packageUpdates = newPackageUpdatesManager(agent.dataDir)
 
 	// initialize GPU manager
 	agent.gpuManager, err = NewGPUManager()

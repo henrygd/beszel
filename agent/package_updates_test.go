@@ -7,6 +7,8 @@ import (
 	"errors"
 	"os"
 	"path/filepath"
+	"runtime"
+	"strings"
 	"testing"
 	"time"
 
@@ -25,7 +27,7 @@ func readPackageUpdatesTestData(t *testing.T, name string) string {
 
 func TestParseAptSimulate(t *testing.T) {
 	tests := []struct {
-		file             string
+		file            string
 		total, security uint16
 	}{
 		{"apt_debian12.txt", 44, 5},
@@ -148,4 +150,47 @@ func TestPackageUpdatesManagerCaching(t *testing.T) {
 
 	// failed check clears the counts
 	assert.Nil(t, pm.get(time.Now()))
+}
+
+func TestPacmanCheckSync(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("requires a shell script on PATH")
+	}
+	binDir := t.TempDir()
+	dataDir := t.TempDir()
+	logFile := filepath.Join(binDir, "calls.log")
+	// fake checkupdates logs its args and db path, and creates the sync dir when syncing
+	script := `#!/bin/sh
+echo "args=[$*] db=$CHECKUPDATES_DB" >> ` + logFile + `
+[ "$1" = "-n" ] || mkdir -p "$CHECKUPDATES_DB/sync"
+echo "linux 6.1-1 -> 6.2-1"
+`
+	require.NoError(t, os.WriteFile(filepath.Join(binDir, "checkupdates"), []byte(script), 0o755))
+	t.Setenv("PATH", binDir+string(os.PathListSeparator)+os.Getenv("PATH"))
+
+	check := newPacmanCheck(dataDir)
+	dbPath := filepath.Join(dataDir, "checkup-db")
+	readCalls := func() []string {
+		data, err := os.ReadFile(logFile)
+		require.NoError(t, err)
+		return strings.Split(strings.TrimSpace(string(data)), "\n")
+	}
+
+	// first check syncs
+	counts, err := check(context.Background())
+	require.NoError(t, err)
+	assert.Equal(t, []uint16{1}, counts)
+	// later checks reuse the synced copy
+	_, err = check(context.Background())
+	require.NoError(t, err)
+	// a missing private copy forces a sync
+	require.NoError(t, os.RemoveAll(dbPath))
+	_, err = check(context.Background())
+	require.NoError(t, err)
+
+	assert.Equal(t, []string{
+		"args=[] db=" + dbPath,
+		"args=[-n] db=" + dbPath,
+		"args=[] db=" + dbPath,
+	}, readCalls())
 }
