@@ -2168,10 +2168,6 @@ msgstr "Ενεργοποιείται όταν η χρήση οποιουδήπο
 msgid "Type"
 msgstr "Τύπος"
 
-#: src/components/routes/system/charts/wifi-chart.tsx
-msgid "Unavailable"
-msgstr ""
-
 #: src/lib/alerts.ts
 msgid "Unhealthy"
 msgstr "Μη υγιές"
@@ -2324,14 +2320,6 @@ msgstr "Όταν είναι ενεργοποιημένο, αυτό το διακ
 #: src/components/routes/settings/heartbeat.tsx
 msgid "When using POST, each heartbeat includes a JSON payload with system status summary, list of down systems, and triggered alerts."
 msgstr "Όταν χρησιμοποιείται το POST, κάθε heartbeat περιλαμβάνει JSON payload με σύνοψη κατάστασης συστημάτων, λίστα συστημάτων εκτός λειτουργίας και ενεργοποιημένες ειδοποιήσεις."
-
-#: src/components/systems-table/systems-table-columns.tsx
-msgid "Wi-Fi"
-msgstr ""
-
-#: src/components/routes/system/charts/wifi-chart.tsx
-msgid "Wi-Fi signal"
-msgstr ""
 
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
