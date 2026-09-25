@@ -3,9 +3,11 @@
 package agent
 
 import (
+	"encoding/json"
 	"fmt"
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 	"testing"
 	"time"
@@ -1431,12 +1433,10 @@ func TestNewGPUManagerPriorityMixedCollectors(t *testing.T) {
 	t.Setenv("BESZEL_AGENT_GPU_COLLECTOR", "intel_gpu_top,rocm-smi")
 
 	intelPath := filepath.Join(dir, "intel_gpu_top")
-	intelScript := `#!/bin/sh
-echo "Freq MHz      IRQ RC6     Power W     IMC MiB/s             RCS             VCS"
-echo " req  act       /s   %   gpu   pkg     rd     wr       %  se  wa       %  se  wa"
-echo "226  223      338  58  2.00  2.69   1820    965   0.00    0   0    0.00   0   0"
-echo "189  187      412  67  1.80  2.45   1950    823   8.50    2   1    15.00   1   0"
-`
+	intelScript := "#!/bin/sh\necho '" + intelJSONStream(true,
+		intelJSONSample(2, 2.69, map[string]float64{"Render/3D": 0, "Video": 0}),
+		intelJSONSample(1.8, 2.45, map[string]float64{"Render/3D": 8.5, "Video": 15}),
+	) + "'\n"
 	require.NoError(t, os.WriteFile(intelPath, []byte(intelScript), 0755))
 
 	rocmPath := filepath.Join(dir, "rocm-smi")
@@ -1752,19 +1752,61 @@ func TestIntelUpdateFromStats(t *testing.T) {
 	assert.Equal(t, float64(2), gpu.Count)
 }
 
+// intelJSONSample returns one sample object formatted like intel_gpu_top -J output
+func intelJSONSample(powerGPU, powerPkg float64, engines map[string]float64) string {
+	var sb strings.Builder
+	sb.WriteString("{\n\t\"period\": {\n\t\t\"duration\": 3300.123456,\n\t\t\"unit\": \"ms\"\n\t},\n")
+	sb.WriteString("\t\"frequency\": {\n\t\t\"requested\": 373.000000,\n\t\t\"actual\": 373.000000,\n\t\t\"unit\": \"MHz\"\n\t},\n")
+	fmt.Fprintf(&sb, "\t\"power\": {\n\t\t\"GPU\": %f,\n\t\t\"Package\": %f,\n\t\t\"unit\": \"W\"\n\t},\n", powerGPU, powerPkg)
+	sb.WriteString("\t\"engines\": {")
+	names := make([]string, 0, len(engines))
+	for name := range engines {
+		names = append(names, name)
+	}
+	slices.Sort(names)
+	for i, name := range names {
+		if i > 0 {
+			sb.WriteString(",")
+		}
+		fmt.Fprintf(&sb, "\n\t\t%q: {\n\t\t\t\"busy\": %f,\n\t\t\t\"sema\": 0.000000,\n\t\t\t\"wait\": 0.000000,\n\t\t\t\"unit\": \"%%\"\n\t\t}", name, engines[name])
+	}
+	sb.WriteString("\n\t}\n}")
+	return sb.String()
+}
+
+// intelJSONStream joins samples as intel_gpu_top -J prints them. Since v1.28
+// the output starts with "[" (withArray); older versions omit it.
+func intelJSONStream(withArray bool, samples ...string) string {
+	var sb strings.Builder
+	if withArray {
+		sb.WriteString("[\n")
+	}
+	for i, s := range samples {
+		if i > 0 {
+			sb.WriteString(",\n")
+		}
+		sb.WriteString(s)
+	}
+	return sb.String()
+}
+
 func TestIntelCollectorStreaming(t *testing.T) {
 	dir := t.TempDir()
 	t.Setenv("PATH", dir)
 
-	// Create a fake intel_gpu_top that prints -l format with four samples (first will be skipped) and exits
+	engines := func(render, blitter, video float64) map[string]float64 {
+		return map[string]float64{"Render/3D": render, "Blitter": blitter, "Video": video}
+	}
+	output := intelJSONStream(true,
+		intelJSONSample(1.5, 4.13, engines(12.34, 0, 5)),
+		intelJSONSample(2.0, 2.69, engines(0, 0, 0)),
+		intelJSONSample(1.8, 2.45, engines(8.5, 15, 22)),
+		intelJSONSample(2.2, 3.12, engines(5.75, 9.5, 12)),
+	) + "\n]"
+
+	// Create a fake intel_gpu_top that prints -J output with four samples (first will be skipped) and exits
 	scriptPath := filepath.Join(dir, "intel_gpu_top")
-	script := `#!/bin/sh
-echo "Freq MHz      IRQ RC6     Power W     IMC MiB/s             RCS             BCS             VCS"
-echo " req  act       /s   %   gpu   pkg     rd     wr       %  se  wa       %  se  wa       %  se  wa"
-echo "373  373      224  45  1.50  4.13   2554    714   12.34   0   0    0.00   0   0    5.00   0   0"
-echo "226  223      338  58  2.00  2.69   1820    965   0.00    0   0    0.00   0   0    0.00   0   0"
-echo "189  187      412  67  1.80  2.45   1950    823   8.50    2   1    15.00   1   0    22.00  0   1"
-echo "298  295      278  51  2.20  3.12   1675    942   5.75    1   2    9.50    3   1    12.00  1   0"`
+	script := "#!/bin/sh\necho '" + output + "'\n"
 	if err := os.WriteFile(scriptPath, []byte(script), 0755); err != nil {
 		t.Fatal(err)
 	}
@@ -1781,229 +1823,168 @@ echo "298  295      278  51  2.20  3.12   1675    942   5.75    1   2    9.50   
 	gpu := gm.GpuDataMap["i0"]
 	require.NotNil(t, gpu)
 	// Power should be sum of samples 2-4 (first is skipped): 2.0 + 1.8 + 2.2 = 6.0
-	assert.EqualValues(t, 6.0, gpu.Power)
+	assert.InDelta(t, 6.0, gpu.Power, 0.001)
 	assert.InDelta(t, 8.26, gpu.PowerPkg, 0.01) // Allow small floating point differences
 	// Engines aggregated from samples 2-4
-	assert.EqualValues(t, 14.25, gpu.Engines["Render/3D"]) // 0.00 + 8.50 + 5.75
-	assert.EqualValues(t, 34.0, gpu.Engines["Video"])      // 0.00 + 22.00 + 12.00
-	assert.EqualValues(t, 24.5, gpu.Engines["Blitter"])    // 0.00 + 15.00 + 9.50
+	assert.InDelta(t, 14.25, gpu.Engines["Render/3D"], 0.001) // 0.00 + 8.50 + 5.75
+	assert.InDelta(t, 34.0, gpu.Engines["Video"], 0.001)      // 0.00 + 22.00 + 12.00
+	assert.InDelta(t, 24.5, gpu.Engines["Blitter"], 0.001)    // 0.00 + 15.00 + 9.50
 	// Count should be 3 samples (first is skipped)
 	assert.Equal(t, float64(3), gpu.Count)
 }
 
-func TestParseIntelHeaders(t *testing.T) {
+func TestParseIntelJSONStream(t *testing.T) {
+	first := intelJSONSample(9, 9, map[string]float64{"Render/3D": 99, "Compute": 99})
+	classView := []string{
+		intelJSONSample(2, 3, map[string]float64{"Render/3D": 10, "Blitter": 1, "Video": 5, "VideoEnhance": 0, "Compute": 40}),
+		intelJSONSample(1, 2, map[string]float64{"Render/3D": 20, "Blitter": 0, "Video": 5, "VideoEnhance": 3, "Compute": 60}),
+	}
+	classViewWant := map[string]float64{"Render/3D": 30, "Blitter": 1, "Video": 10, "VideoEnhance": 3, "Compute": 100}
+
 	tests := []struct {
-		name              string
-		header1           string
-		header2           string
-		wantEngineNames   []string
-		wantFriendlyNames []string
-		wantPowerIndex    int
-		wantPreEngineCols int
+		name        string
+		input       string
+		wantErr     error
+		wantAnyErr  bool
+		wantCount   float64
+		wantPower   float64
+		wantPkg     float64
+		wantEngines map[string]float64
 	}{
 		{
-			name:              "basic headers with RCS BCS VCS",
-			header1:           "Freq MHz      IRQ RC6     Power W     IMC MiB/s             RCS             BCS             VCS",
-			header2:           " req  act       /s   %   gpu   pkg     rd     wr       %  se  wa       %  se  wa       %  se  wa",
-			wantEngineNames:   []string{"RCS", "BCS", "VCS"},
-			wantFriendlyNames: []string{"Render/3D", "Blitter", "Video"},
-			wantPowerIndex:    4, // "gpu" is at index 4
-			wantPreEngineCols: 8, // 17 total cols - 3*3 = 8
+			name:        "array still open while process runs",
+			input:       intelJSONStream(true, first, classView[0], classView[1]),
+			wantCount:   2,
+			wantPower:   3,
+			wantPkg:     5,
+			wantEngines: classViewWant,
 		},
 		{
-			name:              "basic headers with RCS BCS VCS using index in name",
-			header1:           "Freq MHz      IRQ RC6     Power W     IMC MiB/s           RCS/0           BCS/1           VCS/2",
-			header2:           " req  act       /s   %   gpu   pkg     rd     wr       %  se  wa       %  se  wa       %  se  wa",
-			wantEngineNames:   []string{"RCS", "BCS", "VCS"},
-			wantFriendlyNames: []string{"Render/3D", "Blitter", "Video"},
-			wantPowerIndex:    4, // "gpu" is at index 4
-			wantPreEngineCols: 8, // 17 total cols - 3*3 = 8
+			name:        "closed array",
+			input:       intelJSONStream(true, first, classView[0], classView[1]) + "\n]\n",
+			wantCount:   2,
+			wantPower:   3,
+			wantPkg:     5,
+			wantEngines: classViewWant,
 		},
 		{
-			name:              "headers with only RCS",
-			header1:           "Freq MHz      IRQ RC6     Power W     IMC MiB/s             RCS",
-			header2:           " req  act       /s   %   gpu   pkg     rd     wr       %  se  wa",
-			wantEngineNames:   []string{"RCS"},
-			wantFriendlyNames: []string{"Render/3D"},
-			wantPowerIndex:    4,
-			wantPreEngineCols: 8, // 11 total - 3*1 = 8
+			name:        "truncated final sample",
+			input:       intelJSONStream(true, first, classView[0], classView[1], `{"period": {"duration": 33`),
+			wantCount:   2,
+			wantPower:   3,
+			wantPkg:     5,
+			wantEngines: classViewWant,
 		},
 		{
-			name:              "headers with VECS and CCS",
-			header1:           "Freq MHz      IRQ RC6     Power W     IMC MiB/s             VECS            CCS",
-			header2:           " req  act       /s   %   gpu   pkg     rd     wr       %  se  wa     %  se  wa",
-			wantEngineNames:   []string{"VECS", "CCS"},
-			wantFriendlyNames: []string{"VideoEnhance", "Compute"},
-			wantPowerIndex:    4,
-			wantPreEngineCols: 8, // 14 total - 3*2 = 8
+			// intel_gpu_top < 1.28 omits the opening "[" and uses physical engine names
+			name: "legacy output without array and with engine instances",
+			input: intelJSONStream(false,
+				intelJSONSample(9, 9, map[string]float64{"Render/3D/0": 99}),
+				intelJSONSample(1.5, 2.5, map[string]float64{"Render/3D/0": 12, "Blitter/0": 1, "Video/0": 4, "Video/1": 6, "VideoEnhance/0": 2}),
+			),
+			wantCount:   1,
+			wantPower:   1.5,
+			wantPkg:     2.5,
+			wantEngines: map[string]float64{"Render/3D": 12, "Blitter": 1, "Video": 10, "VideoEnhance": 2},
 		},
 		{
-			name:              "no engines",
-			header1:           "Freq MHz      IRQ RC6     Power W     IMC MiB/s",
-			header2:           " req  act       /s   %   gpu   pkg     rd     wr",
-			wantEngineNames:   nil, // no engines found, slices remain nil
-			wantFriendlyNames: nil,
-			wantPowerIndex:    -1, // no engines, so no search
-			wantPreEngineCols: 0,
+			// energy counter read lower than the previous sample in intel_gpu_top
+			name: "sample with invalid power is skipped",
+			input: intelJSONStream(true, first, classView[0],
+				intelJSONSample(86_000_000, 3, map[string]float64{"Render/3D": 50}),
+				intelJSONSample(2, 90_000_000, map[string]float64{"Render/3D": 50}),
+				classView[1],
+			),
+			wantCount:   2,
+			wantPower:   3,
+			wantPkg:     5,
+			wantEngines: classViewWant,
 		},
 		{
-			name:              "power index not found",
-			header1:           "Freq MHz      IRQ RC6     Power W     IMC MiB/s             RCS",
-			header2:           " req  act       /s   %   pkg   cpu     rd     wr       %  se  wa", // no "gpu"
-			wantEngineNames:   []string{"RCS"},
-			wantFriendlyNames: []string{"Render/3D"},
-			wantPowerIndex:    -1, // "gpu" not found
-			wantPreEngineCols: 8,  // 11 total - 3*1 = 8
+			name:    "only samples with invalid power",
+			input:   intelJSONStream(true, first, intelJSONSample(86_000_000, 3, map[string]float64{"Render/3D": 50})),
+			wantErr: errNoValidData,
 		},
 		{
-			name:              "empty headers",
-			header1:           "",
-			header2:           "",
-			wantEngineNames:   nil, // empty input, slices remain nil
-			wantFriendlyNames: nil,
-			wantPowerIndex:    -1,
-			wantPreEngineCols: 0,
+			name:    "empty output",
+			input:   "",
+			wantErr: errNoValidData,
+		},
+		{
+			name:    "only first sample, which is skipped",
+			input:   intelJSONStream(true, first),
+			wantErr: errNoValidData,
+		},
+		{
+			name:       "invalid output",
+			input:      "intel_gpu_top: command failed",
+			wantAnyErr: true,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			gm := &GPUManager{}
-			engineNames, friendlyNames, powerIndex, preEngineCols := gm.parseIntelHeaders(tt.header1, tt.header2)
+			gm := &GPUManager{GpuDataMap: make(map[string]*system.GPUData)}
+			err := gm.parseIntelJSONStream(strings.NewReader(tt.input))
+			if tt.wantAnyErr {
+				assert.Error(t, err)
+				return
+			}
+			if tt.wantErr != nil {
+				assert.ErrorIs(t, err, tt.wantErr)
+				assert.Empty(t, gm.GpuDataMap)
+				return
+			}
+			require.NoError(t, err)
 
-			assert.Equal(t, tt.wantEngineNames, engineNames)
-			assert.Equal(t, tt.wantFriendlyNames, friendlyNames)
-			assert.Equal(t, tt.wantPowerIndex, powerIndex)
-			assert.Equal(t, tt.wantPreEngineCols, preEngineCols)
+			gpu := gm.GpuDataMap["i0"]
+			require.NotNil(t, gpu)
+			assert.Equal(t, tt.wantCount, gpu.Count)
+			assert.InDelta(t, tt.wantPower, gpu.Power, 0.001)
+			assert.InDelta(t, tt.wantPkg, gpu.PowerPkg, 0.001)
+			assert.Len(t, gpu.Engines, len(tt.wantEngines))
+			for name, want := range tt.wantEngines {
+				assert.InDelta(t, want, gpu.Engines[name], 0.001, name)
+			}
 		})
 	}
 }
 
-func TestParseIntelData(t *testing.T) {
-	tests := []struct {
-		name          string
-		line          string
-		engineNames   []string
-		friendlyNames []string
-		powerIndex    int
-		preEngineCols int
-		wantPowerGPU  float64
-		wantEngines   map[string]float64
-		wantErr       error
-	}{
-		{
-			name:          "basic data with power and engines",
-			line:          "373  373      224  45  1.50  4.13   2554    714   12.34   0   0    0.00   0   0    5.00   0   0",
-			engineNames:   []string{"RCS", "BCS", "VCS"},
-			friendlyNames: []string{"Render/3D", "Blitter", "Video"},
-			powerIndex:    4,
-			preEngineCols: 8,
-			wantPowerGPU:  1.50,
-			wantEngines: map[string]float64{
-				"Render/3D": 12.34,
-				"Blitter":   0.00,
-				"Video":     5.00,
-			},
-		},
-		{
-			name:          "data with zero power",
-			line:          "226  223      338  58  0.00  2.69   1820    965   0.00    0   0    0.00   0   0    0.00   0   0",
-			engineNames:   []string{"RCS", "BCS", "VCS"},
-			friendlyNames: []string{"Render/3D", "Blitter", "Video"},
-			powerIndex:    4,
-			preEngineCols: 8,
-			wantPowerGPU:  0.00,
-			wantEngines: map[string]float64{
-				"Render/3D": 0.00,
-				"Blitter":   0.00,
-				"Video":     0.00,
-			},
-		},
-		{
-			name:          "data with no power index",
-			line:          "373  373      224  45  1.50  4.13   2554    714   12.34   0   0    0.00   0   0    5.00   0   0",
-			engineNames:   []string{"RCS", "BCS", "VCS"},
-			friendlyNames: []string{"Render/3D", "Blitter", "Video"},
-			powerIndex:    -1,
-			preEngineCols: 8,
-			wantPowerGPU:  0.0, // no power parsed
-			wantEngines: map[string]float64{
-				"Render/3D": 12.34,
-				"Blitter":   0.00,
-				"Video":     5.00,
-			},
-		},
-		{
-			name:          "data with insufficient columns",
-			line:          "373  373      224  45  1.50", // too few columns
-			engineNames:   []string{"RCS", "BCS", "VCS"},
-			friendlyNames: []string{"Render/3D", "Blitter", "Video"},
-			powerIndex:    4,
-			preEngineCols: 8,
-			wantPowerGPU:  0.0,
-			wantEngines:   nil, // empty sample returned
-			wantErr:       errNoValidData,
-		},
-		{
-			name:          "empty line",
-			line:          "",
-			engineNames:   []string{"RCS"},
-			friendlyNames: []string{"Render/3D"},
-			powerIndex:    4,
-			preEngineCols: 8,
-			wantPowerGPU:  0.0,
-			wantEngines:   nil,
-			wantErr:       errNoValidData,
-		},
-		{
-			name:          "data with invalid power value",
-			line:          "373  373      224  45  N/A  4.13   2554    714   12.34   0   0    0.00   0   0    5.00   0   0",
-			engineNames:   []string{"RCS", "BCS", "VCS"},
-			friendlyNames: []string{"Render/3D", "Blitter", "Video"},
-			powerIndex:    4,
-			preEngineCols: 8,
-			wantPowerGPU:  0.0, // N/A can't be parsed
-			wantEngines: map[string]float64{
-				"Render/3D": 12.34,
-				"Blitter":   0.00,
-				"Video":     5.00,
-			},
-		},
-		{
-			name:          "data with invalid engine value",
-			line:          "373  373      224  45  1.50  4.13   2554    714   N/A     0   0    0.00   0   0    5.00   0   0",
-			engineNames:   []string{"RCS", "BCS", "VCS"},
-			friendlyNames: []string{"Render/3D", "Blitter", "Video"},
-			powerIndex:    4,
-			preEngineCols: 8,
-			wantPowerGPU:  1.50,
-			wantEngines: map[string]float64{
-				"Render/3D": 0.0, // N/A becomes 0
-				"Blitter":   0.00,
-				"Video":     5.00,
-			},
-		},
-		{
-			name:          "data with no engines",
-			line:          "373  373      224  45  1.50  4.13   2554    714",
-			engineNames:   []string{},
-			friendlyNames: []string{},
-			powerIndex:    4,
-			preEngineCols: 8,
-			wantPowerGPU:  1.50,
-			wantEngines:   nil,
-		},
+func TestParseIntelJSONSample(t *testing.T) {
+	t.Run("without power", func(t *testing.T) {
+		var sample intelGpuJSONSample
+		require.NoError(t, json.Unmarshal([]byte(`{"engines": {"Render/3D": {"busy": 7.5, "unit": "%"}}}`), &sample))
+		stats := parseIntelJSONSample(sample)
+		assert.Zero(t, stats.PowerGPU)
+		assert.Zero(t, stats.PowerPkg)
+		assert.Equal(t, map[string]float64{"Render/3D": 7.5}, stats.Engines)
+	})
+
+	t.Run("without engines", func(t *testing.T) {
+		var sample intelGpuJSONSample
+		require.NoError(t, json.Unmarshal([]byte(`{"power": {"GPU": 1.25, "Package": 4.5, "unit": "W"}}`), &sample))
+		stats := parseIntelJSONSample(sample)
+		assert.Equal(t, 1.25, stats.PowerGPU)
+		assert.Equal(t, 4.5, stats.PowerPkg)
+		assert.Nil(t, stats.Engines)
+	})
+}
+
+func TestIntelEngineClass(t *testing.T) {
+	tests := map[string]string{
+		"Render/3D":      "Render/3D",
+		"Render/3D/0":    "Render/3D",
+		"Blitter":        "Blitter",
+		"Blitter/0":      "Blitter",
+		"Video/1":        "Video",
+		"VideoEnhance/0": "VideoEnhance",
+		"Compute/3":      "Compute",
+		"[unknown]":      "[unknown]",
+		"[unknown]/0":    "[unknown]",
+		"Video/":         "Video/",
 	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			gm := &GPUManager{}
-			sample, err := gm.parseIntelData(tt.line, tt.engineNames, tt.friendlyNames, tt.powerIndex, tt.preEngineCols)
-			assert.Equal(t, tt.wantErr, err)
-
-			assert.Equal(t, tt.wantPowerGPU, sample.PowerGPU)
-			assert.Equal(t, tt.wantEngines, sample.Engines)
-		})
+	for key, want := range tests {
+		assert.Equal(t, want, intelEngineClass(key), key)
 	}
 }
 
@@ -2016,13 +1997,11 @@ func TestIntelCollectorDeviceEnv(t *testing.T) {
 
 	// Create a fake intel_gpu_top that records its arguments and prints minimal valid output
 	scriptPath := filepath.Join(dir, "intel_gpu_top")
-	script := fmt.Sprintf(`#!/bin/sh
-echo "$@" > %s
-echo "Freq MHz      IRQ RC6     Power W     IMC MiB/s             RCS             VCS"
-echo " req  act       /s   %%   gpu   pkg     rd     wr       %%  se  wa       %%  se  wa"
-echo "226  223      338  58  2.00  2.69   1820    965   0.00    0   0    0.00   0   0"
-echo "189  187      412  67  1.80  2.45   1950    823   8.50    2   1    15.00   1   0"
-`, argsFile)
+	output := intelJSONStream(true,
+		intelJSONSample(2, 2.69, map[string]float64{"Render/3D": 0, "Video": 0}),
+		intelJSONSample(1.8, 2.45, map[string]float64{"Render/3D": 8.5, "Video": 15}),
+	)
+	script := fmt.Sprintf("#!/bin/sh\necho \"$@\" > %s\necho '%s'\n", argsFile, output)
 	if err := os.WriteFile(scriptPath, []byte(script), 0755); err != nil {
 		t.Fatal(err)
 	}
@@ -2043,5 +2022,5 @@ echo "189  187      412  67  1.80  2.45   1950    823   8.50    2   1    15.00  
 	argsStr := strings.TrimSpace(string(data))
 	require.Contains(t, argsStr, "-d sriov")
 	require.Contains(t, argsStr, "-s ")
-	require.Contains(t, argsStr, "-l")
+	require.Contains(t, argsStr, "-J")
 }
