@@ -22,6 +22,8 @@ const (
 	GetSmartData
 	// Request detailed systemd service info from agent
 	GetSystemdInfo
+	// Request system journal logs from agent
+	GetSystemLogs
 	// Request ZFS detail data from agent
 	GetZfsData
 	// Sync network monitor configuration to agent
@@ -82,4 +84,8 @@ type ContainerInfoRequest struct {
 
 type SystemdInfoRequest struct {
 	ServiceName string `cbor:"0,keyasint"`
+}
+
+type SystemLogsRequest struct {
+	ServiceName string `cbor:"0,keyasint,omitempty,omitzero"`
 }
