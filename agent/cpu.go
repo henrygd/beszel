@@ -24,12 +24,15 @@ func init() {
 
 // CpuMetrics contains detailed CPU usage breakdown
 type CpuMetrics struct {
-	Total  float64
-	User   float64
-	System float64
-	Iowait float64
-	Steal  float64
-	Idle   float64
+	Total   float64
+	User    float64
+	System  float64
+	Iowait  float64
+	Steal   float64
+	Idle    float64
+	Irq     float64
+	Softirq float64
+	Nice    float64
 }
 
 // getCpuMetrics calculates detailed CPU usage metrics using cached previous measurements.
@@ -56,12 +59,15 @@ func getCpuMetrics(cacheTimeMs uint16) (CpuMetrics, error) {
 	}
 
 	metrics := CpuMetrics{
-		Total:  calculateBusy(t1, t2),
-		User:   clampPercent((t2.User - t1.User) / totalDelta * 100),
-		System: clampPercent((t2.System - t1.System) / totalDelta * 100),
-		Iowait: clampPercent((t2.Iowait - t1.Iowait) / totalDelta * 100),
-		Steal:  clampPercent((t2.Steal - t1.Steal) / totalDelta * 100),
-		Idle:   clampPercent((t2.Idle - t1.Idle) / totalDelta * 100),
+		Total:   calculateBusy(t1, t2),
+		User:    clampPercent((t2.User - t1.User) / totalDelta * 100),
+		System:  clampPercent((t2.System - t1.System) / totalDelta * 100),
+		Iowait:  clampPercent((t2.Iowait - t1.Iowait) / totalDelta * 100),
+		Steal:   clampPercent((t2.Steal - t1.Steal) / totalDelta * 100),
+		Idle:    clampPercent((t2.Idle - t1.Idle) / totalDelta * 100),
+		Irq:     clampPercent((t2.Irq - t1.Irq) / totalDelta * 100),
+		Softirq: clampPercent((t2.Softirq - t1.Softirq) / totalDelta * 100),
+		Nice:    clampPercent((t2.Nice - t1.Nice) / totalDelta * 100),
 	}
 
 	lastCpuTimes[cacheTimeMs] = times[0]
