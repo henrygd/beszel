@@ -55,10 +55,6 @@ msgstr "{diskName} I/O"
 msgid "{threads, plural, one {# thread} other {# threads}}"
 msgstr "{threads, plural, one {# thread} other {# threads}}"
 
-#: src/components/systems-table/systems-table-columns.tsx
-msgid "{total, plural, one {# update} other {# updates}}"
-msgstr "{total, plural, one {# update} other {# updates}}"
-
 #: src/lib/utils.ts
 msgid "1 hour"
 msgstr "1 hour"
@@ -2155,10 +2151,6 @@ msgstr "Up"
 msgid "Up ({upSystemsLength})"
 msgstr "Up ({upSystemsLength})"
 
-#: src/components/systems-table/systems-table-columns.tsx
-msgid "Up to date"
-msgstr "Up to date"
-
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Update"
 msgstr "Update"
@@ -2174,10 +2166,6 @@ msgstr "Updated"
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Updated every 10 minutes."
 msgstr "Updated every 10 minutes."
-
-#: src/components/systems-table/systems-table-columns.tsx
-msgid "Updates"
-msgstr "Updates"
 
 #: src/components/routes/system/network-sheet.tsx
 msgid "Upload"
