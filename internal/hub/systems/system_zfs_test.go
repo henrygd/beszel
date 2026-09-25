@@ -135,14 +135,14 @@ func TestSavePartialBackendInventory(t *testing.T) {
 				{Name: healthyKey, Alloc: 10}, {Name: failedKey, Alloc: 10},
 			}}
 			require.NoError(t, sys.saveZfsPools(initial))
-			failedID := makeStableHashId(sys.Id, failedKey)
+			failedID := MakeStableHashId(sys.Id, failedKey)
 			before, err := app.FindRecordById("zfs_pools", failedID)
 			require.NoError(t, err)
 			partial := &zfs.ZfsData{CompleteBackends: []string{healthy}, Pools: []*zfs.PoolDetail{
 				{Name: healthyKey, Alloc: 20}, {Name: failedKey, Alloc: 99},
 			}}
 			assert.ErrorIs(t, sys.saveZfsPools(partial), errIncompleteZfsData)
-			fresh, err := app.FindRecordById("zfs_pools", makeStableHashId(sys.Id, healthyKey))
+			fresh, err := app.FindRecordById("zfs_pools", MakeStableHashId(sys.Id, healthyKey))
 			require.NoError(t, err)
 			assert.EqualValues(t, 20, fresh.GetInt("alloc"))
 			cached, err := app.FindRecordById("zfs_pools", failedID)
@@ -169,7 +169,7 @@ func TestSyncZfsPoolHealthWritesOnlyTransitions(t *testing.T) {
 	require.NoError(t, sys.syncZfsPoolHealth(app, map[string]*system.ZfsPool{
 		"tank": {Total: 100, Used: 25, Health: "ONLINE"},
 	}))
-	record, err := app.FindRecordById(collection, makeStableHashId(sys.Id, "tank"))
+	record, err := app.FindRecordById(collection, MakeStableHashId(sys.Id, "tank"))
 	require.NoError(t, err)
 	firstUpdated := record.GetDateTime("updated")
 	assert.Equal(t, "ONLINE", record.GetString("health"))
@@ -193,7 +193,7 @@ func TestSyncZfsPoolHealthWritesOnlyTransitions(t *testing.T) {
 func TestZfsRawCapacityPersistence(t *testing.T) {
 	sys, app := newTestSystemWithHub(t)
 	require.NoError(t, sys.saveZfsPools(&zfs.ZfsData{Complete: true, Pools: []*zfs.PoolDetail{{Name: "btrfs", Size: 200, Alloc: 10, Raw: true}}}))
-	record, err := app.FindRecordById("zfs_pools", makeStableHashId(sys.Id, "btrfs"))
+	record, err := app.FindRecordById("zfs_pools", MakeStableHashId(sys.Id, "btrfs"))
 	require.NoError(t, err)
 	require.True(t, record.GetBool("raw"))
 	require.NoError(t, sys.syncZfsPoolHealth(app, map[string]*system.ZfsPool{"btrfs": {Total: 1, Used: 0.25}}))
@@ -210,7 +210,7 @@ func TestBtrfsDisplayNameKeepsRecordIdentity(t *testing.T) {
 		key:    {DisplayName: "tank", Health: "ONLINE"},
 		"tank": {Health: "ONLINE"},
 	}))
-	id := makeStableHashId(sys.Id, key)
+	id := MakeStableHashId(sys.Id, key)
 	record, err := app.FindRecordById("zfs_pools", id)
 	require.NoError(t, err)
 	assert.Equal(t, "tank", record.GetString("display_name"))
@@ -225,6 +225,6 @@ func TestBtrfsDisplayNameKeepsRecordIdentity(t *testing.T) {
 	record, err = app.FindRecordById("zfs_pools", id)
 	require.NoError(t, err)
 	assert.Equal(t, "detail name", record.GetString("display_name"))
-	_, err = app.FindRecordById("zfs_pools", makeStableHashId(sys.Id, "tank"))
+	_, err = app.FindRecordById("zfs_pools", MakeStableHashId(sys.Id, "tank"))
 	require.NoError(t, err)
 }

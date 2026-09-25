@@ -11,6 +11,7 @@ import {
 	HardDriveIcon,
 	LogsIcon,
 	MailIcon,
+	NetworkIcon,
 	Server,
 	ServerIcon,
 	SettingsIcon,
@@ -119,6 +120,20 @@ export default memo(function CommandPalette({ open, setOpen }: { open: boolean; 
 						>
 							<HardDriveIcon className="me-2 size-4" />
 							<span>S.M.A.R.T.</span>
+							<CommandShortcut>
+								<Trans>Page</Trans>
+							</CommandShortcut>
+						</CommandItem>
+						<CommandItem
+							onSelect={() => {
+								navigate(getPagePath($router, "monitors"))
+								setOpen(false)
+							}}
+						>
+							<NetworkIcon className="me-2 size-4" />
+							<span>
+								<Trans>Network Monitors</Trans>
+							</span>
 							<CommandShortcut>
 								<Trans>Page</Trans>
 							</CommandShortcut>
