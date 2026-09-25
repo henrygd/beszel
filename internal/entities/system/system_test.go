@@ -50,6 +50,33 @@ func TestStatsDiskIOTotalAndFansTransport(t *testing.T) {
 	assert.Equal(t, stats.Fans, decoded.Fans)
 }
 
+func TestInfoSwapAndPackageUpdatesTransport(t *testing.T) {
+	info := Info{SwapPct: 42.5, PackageUpdates: []uint16{12, 3}}
+
+	data, err := cbor.Marshal(info)
+	require.NoError(t, err)
+	var payload map[uint64]cbor.RawMessage
+	require.NoError(t, cbor.Unmarshal(data, &payload))
+	var updates []uint16
+	require.NoError(t, cbor.Unmarshal(payload[25], &updates))
+	assert.Equal(t, info.PackageUpdates, updates)
+	var swap float64
+	require.NoError(t, cbor.Unmarshal(payload[26], &swap))
+	assert.Equal(t, info.SwapPct, swap)
+
+	var decoded Info
+	require.NoError(t, cbor.Unmarshal(data, &decoded))
+	assert.Equal(t, info.PackageUpdates, decoded.PackageUpdates)
+	assert.Equal(t, info.SwapPct, decoded.SwapPct)
+
+	legacyData, err := cbor.Marshal(map[uint64]any{25: info.PackageUpdates})
+	require.NoError(t, err)
+	var legacy Info
+	require.NoError(t, cbor.Unmarshal(legacyData, &legacy))
+	assert.Equal(t, info.PackageUpdates, legacy.PackageUpdates)
+	assert.Zero(t, legacy.SwapPct)
+}
+
 func TestStatsBatteryNumericArrayUnmarshal(t *testing.T) {
 	var stats Stats
 	require.NoError(t, json.Unmarshal([]byte(`{"bat":[50,4]}`), &stats))
