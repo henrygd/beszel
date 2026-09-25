@@ -1,5 +1,6 @@
 import { plural } from "@lingui/core/macro"
 import { Trans, useLingui } from "@lingui/react/macro"
+import { useStore } from "@nanostores/react"
 import {
 	AppleIcon,
 	ChevronRightSquareIcon,
@@ -26,7 +27,10 @@ import {
 import { FreeBsdIcon, TuxIcon, WebSocketIcon, WindowsIcon } from "@/components/ui/icons"
 import { Separator } from "@/components/ui/separator"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
+import { TagBadgeList } from "@/components/tags/tag-badge-list"
 import { ConnectionType, connectionTypeLabels, Os, SystemStatus } from "@/lib/enums"
+import { $tagsById } from "@/lib/stores"
+import { resolveTags } from "@/lib/tag-utils"
 import { cn, formatBytes, getHostDisplayValue, secondsToUptimeString, toFixedFloat } from "@/lib/utils"
 import type { ChartData, SystemDetailsRecord, SystemRecord } from "@/types"
 
@@ -48,6 +52,8 @@ export default function InfoBar({
 	details: SystemDetailsRecord | null
 }) {
 	const { t } = useLingui()
+	const tagsById = useStore($tagsById)
+	const tags = useMemo(() => resolveTags(system.tags, tagsById), [system.tags, tagsById])
 
 	// values for system info bar - use details with fallback to system.info
 	const systemInfo = useMemo(() => {
@@ -198,6 +204,15 @@ export default function InfoBar({
 								</div>
 							)
 						})}
+						{/* Tags — rendered independently so they show even if hostname is hidden */}
+						{tags.length > 0 && (
+							<>
+								<Separator orientation="vertical" className="h-4 bg-primary/30" />
+								<div className="flex gap-1 items-center flex-wrap">
+									<TagBadgeList tags={tags} max={3} overflow="collapse" />
+								</div>
+							</>
+						)}
 					</div>
 				</div>
 				<div className="xl:ms-auto flex items-center gap-2 max-sm:-mb-1">
