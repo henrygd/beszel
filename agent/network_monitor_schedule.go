@@ -14,9 +14,12 @@ func (pm *MonitorManager) startMonitor(task *monitorTask) {
 	}
 	delay := getStagger(interval.Milliseconds())
 	slog.Debug("starting monitor task", "target", task.config.Target, "delay", delay, "interval", interval)
+	// Certificate checks piggyback on probe ticks, so they run at most once per
+	// probe interval after they become due.
 	go runMonitorSchedule(task.ctx, interval, delay, func() {
 		if _, allowed := task.resumeGuard.snapshot(); allowed {
 			task.runProbe(pm.probe)
+			task.refreshCert(pm.certCheck)
 		}
 	})
 }
