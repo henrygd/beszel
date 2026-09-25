@@ -204,7 +204,10 @@ func isRootFallbackPartition(p disk.PartitionStat, rootMountPoint string) bool {
 // partition looks like the active root mount but still needs translating to an
 // I/O device key.
 func (d *diskDiscovery) addPartitionRootFs(device, mountpoint string) bool {
-	fs, match := findIoDevice(filepath.Base(device), d.ctx.diskIoCounters)
+	// device is passed through as-is: findIoDevice normalizes it, and
+	// filepath.Base would turn a Windows volume name such as "C:" into "\"
+	// on the way in (#2417).
+	fs, match := findIoDevice(device, d.ctx.diskIoCounters)
 	if !match {
 		return false
 	}
@@ -527,11 +530,43 @@ func filesystemMatchesPartitionSetting(filesystem string, p disk.PartitionStat) 
 
 // normalizeDeviceName canonicalizes device strings for comparisons.
 func normalizeDeviceName(value string) string {
-	name := filepath.Base(strings.TrimSpace(value))
+	name := strings.TrimSpace(value)
+	if volume, ok := windowsVolumeName(name); ok {
+		return volume
+	}
+	name = filepath.Base(name)
 	if name == "." {
 		return ""
 	}
 	return name
+}
+
+// windowsVolumeName returns the canonical form of a bare Windows volume
+// specifier, so that "C:", `C:\` and "C:/" all name the same drive.
+//
+// filepath.Base cannot do this. On Windows it treats "C:" as a volume name
+// with no path element to take the base of and returns "\", so every drive
+// letter normalizes to the same key. findIoDevice then returns whichever
+// counter the map happened to yield first, which registers the root
+// filesystem under a random drive (#2417).
+func windowsVolumeName(value string) (string, bool) {
+	if len(value) < 2 || value[1] != ':' {
+		return "", false
+	}
+	if c := value[0]; !('a' <= c && c <= 'z' || 'A' <= c && c <= 'Z') {
+		return "", false
+	}
+	if len(value) == 2 {
+		return value, true
+	}
+	// Only separators may follow the specifier. "C:data" is a drive-relative
+	// path, not a volume.
+	for i := 2; i < len(value); i++ {
+		if value[i] != '\\' && value[i] != '/' {
+			return "", false
+		}
+	}
+	return value[:2], true
 }
 
 // Sets start values for disk I/O stats.
