@@ -23,7 +23,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Textarea } from "@/components/ui/textarea"
-import { ChevronDownIcon, ListIcon, SearchIcon, ServerIcon } from "lucide-react"
+import { ChevronDownIcon, ListIcon, PlusIcon, SearchIcon, ServerIcon } from "lucide-react"
 import { useToast } from "@/components/ui/use-toast"
 import { $systems } from "@/lib/stores"
 import { cn, supportsNetworkMonitors } from "@/lib/utils"
@@ -37,6 +37,7 @@ type MonitorValues = {
 	target: string
 	protocol: MonitorProtocol
 	port: number
+	server: string
 	interval: string
 	count: string
 }
@@ -46,7 +47,10 @@ type NormalizedMonitorValues = Omit<MonitorValues, "system" | "interval" | "coun
 	count: number
 }
 
-type BulkMonitorLineSource = Pick<NetworkMonitorRecord, "target" | "protocol" | "port" | "interval" | "count">
+type BulkMonitorLineSource = Pick<
+	NetworkMonitorRecord,
+	"target" | "protocol" | "port" | "interval" | "server" | "count"
+>
 
 const defaultInterval = 30
 const defaultCount = 1
@@ -71,6 +75,7 @@ const NormalizedMonitorValuesSchema = v.pipe(
 		target: v.pipe(v.string(), v.trim(), v.nonEmpty("target is required")),
 		protocol: MonitorProtocolSchema,
 		port: v.number(),
+		server: v.pipe(v.string(), v.trim()),
 		interval: MonitorIntervalSchema,
 		count: MonitorCountSchema,
 	}),
@@ -91,6 +96,8 @@ const NormalizedMonitorValuesSchema = v.pipe(
 			target: protocol === "http" ? httpTarget : input.target,
 			protocol,
 			port,
+			// Only DNS monitors use a custom server; clear it for other protocols.
+			server: protocol === "dns" ? input.server : "",
 			interval: input.interval,
 			// only ICMP sends multiple pings
 			count: protocol === "icmp" ? input.count : defaultCount,
@@ -115,6 +122,7 @@ const BulkMonitorSchema = v.object({
 	protocol: v.optional(v.pipe(v.string(), v.trim())),
 	port: v.optional(v.pipe(v.string(), v.trim())),
 	interval: v.optional(v.pipe(v.string(), v.trim())),
+	server: v.optional(v.pipe(v.string(), v.trim())),
 	count: v.optional(v.pipe(v.string(), v.trim())),
 })
 
@@ -168,18 +176,20 @@ function buildMonitorPayload(values: MonitorValues, enabled = true) {
 	return payload
 }
 
-type MonitorIdentity = Pick<MonitorValues, "system" | "target" | "protocol" | "port">
-function getMonitorIdentityKey({ system, target, protocol, port }: MonitorIdentity) {
-	return `${system}${target}${protocol}${port}`
+type MonitorIdentity = Pick<MonitorValues, "system" | "target" | "protocol" | "port" | "server">
+function getMonitorIdentityKey({ system, target, protocol, port, server }: MonitorIdentity) {
+	return `${system}${target}${protocol}${port}${protocol === "dns" ? server : ""}`
 }
 
 function parseBulkMonitorLine(line: string, lineNumber: number, system: string) {
-	const [rawTarget = "", rawProtocol = "", rawPort = "", rawInterval = "", rawCount = ""] = line.split(",")
+	const [rawTarget = "", rawProtocol = "", rawPort = "", rawInterval = "", rawServer = "", rawCount = ""] =
+		line.split(",")
 	const parsed = v.safeParse(BulkMonitorSchema, {
 		target: rawTarget,
 		protocol: rawProtocol,
 		port: rawPort,
 		interval: rawInterval,
+		server: rawServer,
 		count: rawCount,
 	})
 	if (!parsed.success) {
@@ -193,6 +203,7 @@ function parseBulkMonitorLine(line: string, lineNumber: number, system: string) 
 		target: parsed.output.target,
 		protocol,
 		port: parsed.output.port ? Number(parsed.output.port) : 0,
+		server: parsed.output.server || "",
 		interval: parsed.output.interval || `${defaultInterval}`,
 		count: parsed.output.count || `${defaultCount}`,
 	})
@@ -201,9 +212,10 @@ function parseBulkMonitorLine(line: string, lineNumber: number, system: string) 
 export function formatBulkMonitorLine(monitor: BulkMonitorLineSource) {
 	const port = monitor.protocol !== "tcp" || monitor.port === 443 ? "" : `${monitor.port}`
 	const interval = monitor.interval === defaultInterval ? "" : `${monitor.interval}`
+	const server = monitor.protocol !== "dns" ? "" : monitor.server
 	const count =
 		monitor.protocol !== "icmp" || !monitor.count || monitor.count === defaultCount ? "" : `${monitor.count}`
-	return trimTrailingEmptyFields([monitor.target, monitor.protocol, port, interval, count]).join(",")
+	return trimTrailingEmptyFields([monitor.target, monitor.protocol, port, interval, server, count]).join(",")
 }
 
 function SystemMultiSelect({
@@ -373,6 +385,8 @@ export function AddMonitorDialog({ systemId, monitors }: { systemId?: string; mo
 	const bulkFormRef = useRef<HTMLFormElement>(null)
 	const { toast } = useToast()
 	const { t } = useLingui()
+	const systems = useStore($systems)
+	const hasEligibleSystems = systemId ? true : systems.some(supportsNetworkMonitors)
 
 	const resetBulkForm = () => {
 		setBulkInput("")
@@ -463,14 +477,24 @@ export function AddMonitorDialog({ systemId, monitors }: { systemId?: string; mo
 	return (
 		<>
 			<div className="flex gap-0 rounded-lg">
-				<Button variant="outline" onClick={openAdd} className="rounded-e-none grow">
-					{/* <PlusIcon className="size-4 me-1" /> */}
-					<Trans>Add {{ foo: t`Monitor` }}</Trans>
+				<Button variant="outline" onClick={openAdd} className="rounded-e-none grow" disabled={!hasEligibleSystems}>
+					<PlusIcon className="size-4 me-1" />
+					<span className="sm:hidden">
+						<Trans>Add</Trans>
+					</span>
+					<span className="hidden sm:inline">
+						<Trans>Add {{ foo: t`Monitor` }}</Trans>
+					</span>
 				</Button>
 				<div className="w-px h-full bg-muted"></div>
 				<DropdownMenu>
 					<DropdownMenuTrigger asChild>
-						<Button variant="outline" className="px-2 rounded-s-none border-s-0" aria-label={`More actions`}>
+						<Button
+							variant="outline"
+							className="px-2 rounded-s-none border-s-0"
+							aria-label={`More actions`}
+							disabled={!hasEligibleSystems}
+						>
 							<ChevronDownIcon className="size-4" />
 						</Button>
 					</DropdownMenuTrigger>
@@ -505,7 +529,9 @@ export function AddMonitorDialog({ systemId, monitors }: { systemId?: string; mo
 						<SheetTitle>
 							<Trans>Bulk Add {{ foo: t`Network Monitors` }}</Trans>
 						</SheetTitle>
-						<SheetDescription>target[,protocol[,port[,interval[,count]]]]</SheetDescription>
+						<SheetDescription>
+							<Trans>target[,protocol[,port[,interval[,server[,count]]]]]</Trans>
+						</SheetDescription>
 					</SheetHeader>
 					<form ref={bulkFormRef} onSubmit={handleBulkSubmit} className="flex h-full flex-col overflow-hidden">
 						<div className="flex-1 flex flex-col space-y-4 overflow-auto p-4">
@@ -538,10 +564,17 @@ export function AddMonitorDialog({ systemId, monitors }: { systemId?: string; mo
 										}
 									}}
 									className="font-mono grow text-sm bg-card"
-									placeholder={["1.1.1.1", "example.com,tcp", "https://example.com,http,,60"].join("\n")}
+									placeholder={[
+										"1.1.1.1",
+										"example.com,tcp",
+										"https://example.com,http,,60",
+										"example.com,dns,,,1.1.1.1",
+									].join("\n")}
 									required
 								/>
-								<p className="text-xs text-muted-foreground">target[,protocol[,port[,interval[,count]]]]</p>
+								<p className="text-xs text-muted-foreground">
+									<Trans>target[,protocol[,port[,interval[,server[,count]]]]]</Trans>
+								</p>
 							</div>
 						</div>
 						<SheetFooter className="border-t">
@@ -595,6 +628,7 @@ function MonitorDialogContent({
 	const [protocol, setProtocol] = useState<MonitorProtocol>(monitor?.protocol ?? "icmp")
 	const [target, setTarget] = useState(monitor?.target ?? "")
 	const [port, setPort] = useState(monitor?.protocol === "tcp" && monitor.port ? String(monitor.port) : "")
+	const [server, setServer] = useState(monitor?.protocol === "dns" ? (monitor.server ?? "") : "")
 	const [monitorInterval, setMonitorInterval] = useState(String(monitor?.interval ?? defaultInterval))
 	const [pingCount, setPingCount] = useState(String(monitor?.count || defaultCount))
 	const [loading, setLoading] = useState(false)
@@ -614,6 +648,7 @@ function MonitorDialogContent({
 		setProtocol(monitor?.protocol ?? "icmp")
 		setTarget(monitor?.target ?? "")
 		setPort(monitor?.protocol === "tcp" && monitor.port ? String(monitor.port) : "")
+		setServer(monitor?.protocol === "dns" ? (monitor.server ?? "") : "")
 		setMonitorInterval(String(monitor?.interval ?? defaultInterval))
 		setPingCount(String(monitor?.count || defaultCount))
 		setSelectedSystemId(monitor?.system ?? "")
@@ -635,6 +670,7 @@ function MonitorDialogContent({
 					target,
 					protocol,
 					port: protocol === "tcp" ? Number(port) : 0,
+					server: protocol === "dns" ? server.trim() : "",
 					interval: monitorInterval,
 					count: pingCount,
 				},
@@ -716,7 +752,7 @@ function MonitorDialogContent({
 					<Input
 						value={target}
 						onChange={(e) => setTarget(e.target.value)}
-						placeholder={protocol === "http" ? "http://localhost:8090" : "1.1.1.1"}
+						placeholder={protocol === "http" ? "http://localhost:8090" : protocol === "dns" ? "example.com" : "1.1.1.1"}
 						required
 					/>
 				</div>
@@ -765,6 +801,21 @@ function MonitorDialogContent({
 							max={maxCount}
 							required
 						/>
+					</div>
+				)}
+				{protocol === "dns" && (
+					<div className="grid gap-2">
+						<Label>
+							<Trans>DNS Server</Trans>
+						</Label>
+						<Input
+							value={server}
+							onChange={(e) => setServer(e.target.value)}
+							placeholder="1.1.1.1"
+						/>
+						<p className="text-xs text-muted-foreground">
+							<Trans>Optional. Defaults to the agent's system resolver.</Trans>
+						</p>
 					</div>
 				)}
 				<div className="grid gap-2">

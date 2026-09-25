@@ -17,6 +17,10 @@ func generateMonitorID(systemId string, config monitor.Config) string {
 	if config.Protocol == "tcp" {
 		args = append(args, strconv.FormatUint(uint64(config.Port), 10))
 	}
+	// only use server for DNS monitors, so the same target queried via different servers gets distinct monitors
+	if config.Protocol == "dns" {
+		args = append(args, config.Server)
+	}
 	return systems.MakeStableHashId(args...)
 }
 
@@ -53,12 +57,17 @@ func bindNetworkMonitorsEvents(hub *Hub) {
 	// record with the new ID and delete the old one. Otherwise, just update the existing monitor on the agent.
 	hub.OnRecordUpdateRequest("network_monitors").BindFunc(func(e *core.RecordRequestEvent) error {
 		systemID := e.Record.GetString("system")
+		protocol := e.Record.GetString("protocol")
 		// only tcp uses port - set other protocols port to zero
-		if e.Record.GetString("protocol") != "tcp" {
+		if protocol != "tcp" {
 			e.Record.Set("port", 0)
 		}
+		// only dns uses server - clear it for other protocols
+		if protocol != "dns" {
+			e.Record.Set("server", "")
+		}
 		// only icmp sends multiple pings
-		if e.Record.GetString("protocol") != "icmp" {
+		if protocol != "icmp" {
 			e.Record.Set("count", 1)
 		}
 		ID := generateMonitorID(systemID, *monitorConfigFromRecord(e.Record))
@@ -107,6 +116,7 @@ func monitorConfigFromRecord(record *core.Record) *monitor.Config {
 		Protocol: record.GetString("protocol"),
 		Port:     uint16(record.GetInt("port")),
 		Interval: uint16(record.GetInt("interval")),
+		Server:   record.GetString("server"),
 		Count:    uint8(record.GetInt("count")),
 	}
 }
@@ -119,6 +129,9 @@ func setMonitorResultFields(record *core.Record, result monitor.Result) {
 	record.Set("resMin1h", result.MinResponse1h)
 	record.Set("resMax1h", result.MaxResponse1h)
 	record.Set("loss1h", result.PacketLoss1h)
+	if result.Cert != nil {
+		record.Set("certInfo", result.Cert)
+	}
 	record.Set("updated", nowString)
 }
 
@@ -129,7 +142,7 @@ func copyMonitorToNewRecord(oldRecord *core.Record, newID string) *core.Record {
 	collection := oldRecord.Collection()
 	newRecord := core.NewRecord(collection)
 	newRecord.Id = newID
-	fields := []string{"system", "target", "protocol", "port", "interval", "count", "enabled"}
+	fields := []string{"system", "target", "protocol", "port", "server", "interval", "count", "enabled"}
 	for _, field := range fields {
 		newRecord.Set(field, oldRecord.Get(field))
 	}
