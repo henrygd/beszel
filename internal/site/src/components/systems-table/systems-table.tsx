@@ -25,7 +25,6 @@ import {
 	LayoutGridIcon,
 	LayoutListIcon,
 	Settings2Icon,
-	TagIcon,
 	XIcon,
 } from "lucide-react"
 import React, { memo, useCallback, useEffect, useMemo, useRef, useState } from "react"
@@ -45,15 +44,15 @@ import { Input } from "@/components/ui/input"
 import { TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { SystemStatus } from "@/lib/enums"
 import { queueUserSettings } from "@/lib/api"
-import { $downSystems, $pausedSystems, $systems, $tags, $upSystems, $userSettings } from "@/lib/stores"
+import { $downSystems, $pausedSystems, $systems, $upSystems, $userSettings } from "@/lib/stores"
 import { cn, runOnce } from "@/lib/utils"
 import type { SystemRecord } from "@/types"
 import AlertButton from "../alerts/alert-button"
 import { $router, Link } from "../router"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui/card"
 import { SystemsTableColumns, ActionsButton, IndicatorDot } from "./systems-table-columns"
-import { TagBadge } from "@/components/tags/tag-badge"
-import { buildTagSystemCounts, filterSystemsByTags } from "@/lib/tag-utils"
+import { TagFilterDropdown, useTagFilter } from "@/components/tags/tag-filter-dropdown"
+import { buildTagCounts, filterByTags } from "@/lib/tag-utils"
 
 type ViewMode = "table" | "grid"
 type StatusFilter = "all" | SystemRecord["status"]
@@ -73,8 +72,7 @@ export default function SystemsTable() {
 			(JSON.parse(localStorage.getItem("besz-statusFilter") || "null") as StatusFilter | null) ??
 			"all"
 	)
-	const availableTags = useStore($tags)
-	const [selectedTagFilter, setSelectedTagFilter] = useState<string[]>([])
+	const [selectedTagFilter, setSelectedTagFilter] = useTagFilter()
 	const [sorting, setSorting] = useState<SortingState>(
 		() =>
 			$userSettings.get().sortMode ??
@@ -149,11 +147,6 @@ export default function SystemsTable() {
 
 	const locale = i18n.locale
 
-	// Prune any tags that no longer exist out of the active filter
-	useEffect(() => {
-		setSelectedTagFilter((prev) => prev.filter((id) => availableTags.some((t) => t.id === id)))
-	}, [availableTags])
-
 	// Filter data based on status and tag filters
 	const filteredData = useMemo(() => {
 		let filtered = data
@@ -168,13 +161,13 @@ export default function SystemsTable() {
 		}
 
 		// Filter by tags
-		filtered = filterSystemsByTags(filtered, selectedTagFilter)
+		filtered = filterByTags(filtered, selectedTagFilter)
 
 		return filtered
 	}, [data, statusFilter, selectedTagFilter, upSystems, downSystems, pausedSystems])
 
 	// Number of systems per tag, for the tag-filter dropdown
-	const tagSystemCounts = useMemo(() => buildTagSystemCounts(data), [data])
+	const tagCounts = useMemo(() => buildTagCounts(data), [data])
 
 	const [viewMode, setViewMode] = useState<ViewMode>(
 		() =>
@@ -284,46 +277,12 @@ export default function SystemsTable() {
 										</DropdownMenuRadioGroup>
 									</div>
 
-							<div className="border-r">
-										<DropdownMenuLabel className="pt-2 px-3.5 flex items-center gap-2">
-											<TagIcon className="size-4" />
-											<Trans>Tags</Trans>
-										</DropdownMenuLabel>
-										<DropdownMenuSeparator />
-										<div className="px-1 pb-1 max-h-64 overflow-y-auto min-w-48">
-											{availableTags.length === 0 ? (
-												<p className="text-xs text-muted-foreground py-2 px-2">
-													<Trans>No tags available</Trans>
-												</p>
-											) : (
-												<div className="space-y-0.5">
-													{availableTags.map((tag) => {
-														const isSelected = selectedTagFilter.includes(tag.id)
-														return (
-															<div
-																key={tag.id}
-																className={cn(
-																	"flex items-center justify-between gap-3 px-2 py-1.5 rounded cursor-pointer transition-colors",
-																	isSelected ? "bg-accent" : "hover:bg-accent/50"
-																)}
-																onClick={() => {
-																	setSelectedTagFilter((prev) =>
-																		isSelected ? prev.filter((id) => id !== tag.id) : [...prev, tag.id]
-																	)
-																}}
-															>
-																<div className="flex items-center gap-2 min-w-0 flex-1">
-																	<TagBadge tag={tag} className="px-2 py-0.5 shrink-0" />
-																</div>
-																<span className="text-xs text-muted-foreground shrink-0">
-																	{tagSystemCounts[tag.id] ?? 0}
-																</span>
-															</div>
-														)
-													})}
-												</div>
-											)}
-										</div>
+									<div className="border-r">
+										<TagFilterDropdown
+											selected={selectedTagFilter}
+											onChange={setSelectedTagFilter}
+											counts={tagCounts}
+										/>
 									</div>
 
 									<div className="border-r">
@@ -427,7 +386,7 @@ export default function SystemsTable() {
 		locale,
 		statusFilter,
 		selectedTagFilter,
-		availableTags,
+		tagCounts,
 		upSystemsLength,
 		downSystemsLength,
 		pausedSystemsLength,

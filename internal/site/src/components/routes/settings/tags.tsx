@@ -44,7 +44,7 @@ import { $systems, $tags } from "@/lib/stores"
 import type { TagRecord } from "@/types"
 import { createTagsColumns, type TagWithSystems } from "@/components/tags/tags-columns"
 import { TagEditDialog } from "@/components/tags/tag-edit-dialog"
-import { getRandomColor, getSystemsForTag, syncTagAssignments } from "@/lib/tag-utils"
+import { getRandomColor, getRecordsForTag, syncTagAssignments } from "@/lib/tag-utils"
 
 export default function TagsSettings() {
 	const { t: tFunc } = useLingui()
@@ -73,7 +73,7 @@ export default function TagsSettings() {
 	const tagsWithSystems = useMemo((): TagWithSystems[] => {
 		return tags.map((tag) => ({
 			...tag,
-			systems: getSystemsForTag(sortedSystems, tag.id),
+			systems: getRecordsForTag(sortedSystems, tag.id),
 		}))
 	}, [tags, sortedSystems])
 
@@ -116,8 +116,8 @@ export default function TagsSettings() {
 				tagId = editingTag.id
 
 				// Update system assignments
-				const currentSystems = getSystemsForTag(systems, tagId).map((s) => s.id)
-				await syncTagAssignments(tagId, currentSystems, selectedSystems, systems)
+				const currentSystems = getRecordsForTag(systems, tagId).map((s) => s.id)
+				await syncTagAssignments("systems", tagId, currentSystems, selectedSystems, systems)
 
 				toast({
 					title: tFunc`Tag updated`,
@@ -133,7 +133,7 @@ export default function TagsSettings() {
 
 				// Assign to selected systems
 				if (selectedSystems.length > 0) {
-					await syncTagAssignments(tagId, [], selectedSystems, systems)
+					await syncTagAssignments("systems", tagId, [], selectedSystems, systems)
 				}
 
 				toast({

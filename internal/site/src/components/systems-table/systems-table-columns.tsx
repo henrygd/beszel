@@ -27,7 +27,7 @@ import { memo, useMemo, useRef, useState } from "react"
 import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip"
 import { isReadOnlyUser, pb } from "@/lib/api"
 import { BatteryState, ConnectionType, connectionTypeLabels, MeterState, SystemStatus } from "@/lib/enums"
-import { $longestSystemName, $userSettings } from "@/lib/stores"
+import { $longestSystemName, $tagsById, $userSettings } from "@/lib/stores"
 import {
 	cn,
 	copyToClipboard,
@@ -40,6 +40,7 @@ import {
 import { batteryStateTranslations } from "@/lib/i18n"
 import type { SystemRecord } from "@/types"
 import { TagBadgeList } from "@/components/tags/tag-badge-list"
+import { resolveTags } from "@/lib/tag-utils"
 import { SystemDialog } from "../add-system"
 import AlertButton from "../alerts/alert-button"
 import { $router, Link } from "../router"
@@ -133,11 +134,10 @@ export function SystemsTableColumns(viewMode: "table" | "grid"): ColumnDef<Syste
 						return true
 					}
 					// Search in tags
-					if (sys.expand?.tags) {
-						for (const tag of sys.expand.tags) {
-							if (tag.name.toLowerCase().includes(filterInputLower)) {
-								return true
-							}
+					const tagsById = $tagsById.get()
+					for (const tagId of sys.tags ?? []) {
+						if (tagsById[tagId]?.name.toLowerCase().includes(filterInputLower)) {
+							return true
 						}
 					}
 					return false
@@ -189,22 +189,7 @@ export function SystemsTableColumns(viewMode: "table" | "grid"): ColumnDef<Syste
 			hideSort: true,
 			Icon: TagIcon,
 			header: sortableHeader,
-			cell: ({ row }) => {
-				const system = row.original
-				if (!system.expand?.tags || system.expand.tags.length === 0) {
-					return null
-				}
-				const maxTags = viewMode === "table" ? 1 : 3
-				return (
-					<Link
-						href={getPagePath($router, "system", { id: system.id })}
-						tabIndex={-1}
-						className="flex flex-wrap gap-1 relative z-10"
-					>
-						<TagBadgeList tags={system.expand.tags} max={maxTags} badgeClassName="px-1.5 py-0" />
-					</Link>
-				)
-			},
+			cell: ({ row }) => <SystemTagsCell system={row.original} max={viewMode === "table" ? 1 : 3} />,
 		},
 		{
 			accessorFn: ({ info }) => info.cpu || undefined,
@@ -519,6 +504,23 @@ function sortableHeader(context: HeaderContext<SystemRecord, unknown>) {
 			{name()}
 			{hideSort || <ArrowUpDownIcon className="ms-2 size-4" />}
 		</Button>
+	)
+}
+
+function SystemTagsCell({ system, max }: { system: SystemRecord; max: number }) {
+	const tagsById = useStore($tagsById)
+	const tags = useMemo(() => resolveTags(system.tags, tagsById), [system.tags, tagsById])
+	if (tags.length === 0) {
+		return null
+	}
+	return (
+		<Link
+			href={getPagePath($router, "system", { id: system.id })}
+			tabIndex={-1}
+			className="flex flex-wrap gap-1 relative z-10"
+		>
+			<TagBadgeList tags={tags} max={max} badgeClassName="px-1.5 py-0" />
+		</Link>
 	)
 }
 

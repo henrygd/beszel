@@ -1,5 +1,5 @@
 import { pb } from "@/lib/api"
-import type { SystemRecord, TagRecord } from "@/types"
+import type { TagRecord } from "@/types"
 
 // Tag color names (Tailwind colors)
 export const tagColors = [
@@ -79,28 +79,42 @@ export function getSwatchColorClasses(color?: string): string {
 	return tagSwatchClasses[color || "blue"] || tagSwatchClasses.blue
 }
 
-// Systems that have the given tag assigned
-export function getSystemsForTag(systems: SystemRecord[], tagId: string): SystemRecord[] {
-	return systems.filter((s) => s.tags?.includes(tagId))
+/** Any record with a `tags` relation field (systems, and later network monitors) */
+export type Taggable = { id: string; tags?: string[] }
+
+/** Resolve tag ids to tag records, dropping unknown ids, sorted by name */
+export function resolveTags(ids: string[] | undefined, tagsById: Record<string, TagRecord | undefined>): TagRecord[] {
+	if (!ids?.length) return []
+	const tags: TagRecord[] = []
+	for (const id of ids) {
+		const tag = tagsById[id]
+		if (tag) tags.push(tag)
+	}
+	return tags.sort((a, b) => a.name.localeCompare(b.name))
 }
 
-// Whether a system has any of the given tag ids assigned
-export function systemHasAnyTag(system: SystemRecord, tagIds: string[]): boolean {
-	return !!system.tags?.length && tagIds.some((id) => system.tags?.includes(id))
+// Records that have the given tag assigned
+export function getRecordsForTag<T extends Taggable>(records: T[], tagId: string): T[] {
+	return records.filter((r) => r.tags?.includes(tagId))
 }
 
-// Filter systems down to those having any of the given tag ids assigned.
+// Whether a record has any of the given tag ids assigned
+export function hasAnyTag(record: Taggable, tagIds: string[]): boolean {
+	return !!record.tags?.length && tagIds.some((id) => record.tags?.includes(id))
+}
+
+// Filter records down to those having any of the given tag ids assigned.
 // Returns the input array unchanged (same reference) when tagIds is empty.
-export function filterSystemsByTags(systems: SystemRecord[], tagIds: string[]): SystemRecord[] {
-	if (tagIds.length === 0) return systems
-	return systems.filter((s) => systemHasAnyTag(s, tagIds))
+export function filterByTags<T extends Taggable>(records: T[], tagIds: string[]): T[] {
+	if (tagIds.length === 0) return records
+	return records.filter((r) => hasAnyTag(r, tagIds))
 }
 
-// Build a map of tag id -> number of systems having that tag assigned
-export function buildTagSystemCounts(systems: SystemRecord[]): Record<string, number> {
+// Build a map of tag id -> number of records having that tag assigned
+export function buildTagCounts(records: Taggable[]): Record<string, number> {
 	const counts: Record<string, number> = {}
-	for (const system of systems) {
-		for (const tagId of system.tags ?? []) {
+	for (const record of records) {
+		for (const tagId of record.tags ?? []) {
 			counts[tagId] = (counts[tagId] ?? 0) + 1
 		}
 	}
@@ -108,30 +122,31 @@ export function buildTagSystemCounts(systems: SystemRecord[]): Record<string, nu
 }
 
 /**
- * Synchronize tag assignments with systems
- * Handles adding/removing tags from systems based on current vs desired state
+ * Synchronize tag assignments with records of the given collection
+ * Handles adding/removing the tag based on current vs desired state
  */
 export async function syncTagAssignments(
+	collection: string,
 	tagId: string,
-	currentSystemIds: string[],
-	desiredSystemIds: string[],
-	systems: SystemRecord[]
+	currentIds: string[],
+	desiredIds: string[],
+	records: Taggable[]
 ): Promise<{ toAdd: string[]; toRemove: string[] }> {
-	const toAdd = desiredSystemIds.filter((id) => !currentSystemIds.includes(id))
-	const toRemove = currentSystemIds.filter((id) => !desiredSystemIds.includes(id))
+	const toAdd = desiredIds.filter((id) => !currentIds.includes(id))
+	const toRemove = currentIds.filter((id) => !desiredIds.includes(id))
 
 	if (toAdd.length === 0 && toRemove.length === 0) return { toAdd, toRemove }
 
 	const updates = [
-		...toAdd.map((systemId) => {
-			const system = systems.find((s) => s.id === systemId)
-			const newTags = [...(system?.tags || []), tagId]
-			return pb.collection("systems").update(systemId, { tags: newTags })
+		...toAdd.map((id) => {
+			const record = records.find((r) => r.id === id)
+			const newTags = [...(record?.tags || []), tagId]
+			return pb.collection(collection).update(id, { tags: newTags })
 		}),
-		...toRemove.map((systemId) => {
-			const system = systems.find((s) => s.id === systemId)
-			const newTags = (system?.tags || []).filter((t) => t !== tagId)
-			return pb.collection("systems").update(systemId, { tags: newTags })
+		...toRemove.map((id) => {
+			const record = records.find((r) => r.id === id)
+			const newTags = (record?.tags || []).filter((t) => t !== tagId)
+			return pb.collection(collection).update(id, { tags: newTags })
 		}),
 	]
 

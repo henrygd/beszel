@@ -37,9 +37,6 @@ export interface SystemRecord extends RecordModel {
 	v: string
 	updated: string
 	tags?: string[]
-	expand?: {
-		tags?: TagRecord[]
-	}
 }
 
 export interface SystemInfo {
