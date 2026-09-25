@@ -652,6 +652,7 @@ export interface NetworkMonitorRecord {
 	loss: number
 	loss1h: number
 	interval: number
+	count?: number
 	enabled: boolean
 	/** Latest TLS certificate details, reported for HTTPS targets. */
 	certInfo?: MonitorCertInfo | null

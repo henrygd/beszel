@@ -39,19 +39,34 @@ type MonitorValues = {
 	port: number
 	server: string
 	interval: string
+	count: string
 }
 
-type NormalizedMonitorValues = Omit<MonitorValues, "system" | "interval"> & {
+type NormalizedMonitorValues = Omit<MonitorValues, "system" | "interval" | "count"> & {
 	interval: number
+	count: number
 }
 
-type BulkMonitorLineSource = Pick<NetworkMonitorRecord, "target" | "protocol" | "port" | "interval" | "server">
+type BulkMonitorLineSource = Pick<
+	NetworkMonitorRecord,
+	"target" | "protocol" | "port" | "interval" | "server" | "count"
+>
 
 const defaultInterval = 30
+const defaultCount = 1
+const maxCount = 10
 
 const MonitorProtocolSchema = v.picklist(["icmp", "tcp", "http", "dns"])
 
 const MonitorIntervalSchema = v.pipe(v.string(), v.toNumber(), v.minValue(1), v.maxValue(3600))
+
+const MonitorCountSchema = v.pipe(
+	v.string(),
+	v.toNumber(),
+	v.integer("Count must be a whole number"),
+	v.minValue(1, "Count must be between 1 and 10"),
+	v.maxValue(maxCount, "Count must be between 1 and 10")
+)
 
 // Both the single-monitor form and the bulk importer flow through this schema so
 // defaults and HTTP target normalization stay in one place.
@@ -62,6 +77,7 @@ const NormalizedMonitorValuesSchema = v.pipe(
 		port: v.number(),
 		server: v.pipe(v.string(), v.trim()),
 		interval: MonitorIntervalSchema,
+		count: MonitorCountSchema,
 	}),
 	v.transform((input): NormalizedMonitorValues => {
 		let { protocol, port } = input
@@ -83,6 +99,8 @@ const NormalizedMonitorValuesSchema = v.pipe(
 			// Only DNS monitors use a custom server; clear it for other protocols.
 			server: protocol === "dns" ? input.server : "",
 			interval: input.interval,
+			// only ICMP sends multiple pings
+			count: protocol === "icmp" ? input.count : defaultCount,
 		}
 	}),
 	v.forward(
@@ -105,6 +123,7 @@ const BulkMonitorSchema = v.object({
 	port: v.optional(v.pipe(v.string(), v.trim())),
 	interval: v.optional(v.pipe(v.string(), v.trim())),
 	server: v.optional(v.pipe(v.string(), v.trim())),
+	count: v.optional(v.pipe(v.string(), v.trim())),
 })
 
 function normalizeHttpTarget(target: string, port = 0) {
@@ -163,13 +182,15 @@ function getMonitorIdentityKey({ system, target, protocol, port, server }: Monit
 }
 
 function parseBulkMonitorLine(line: string, lineNumber: number, system: string) {
-	const [rawTarget = "", rawProtocol = "", rawPort = "", rawInterval = "", rawServer = ""] = line.split(",")
+	const [rawTarget = "", rawProtocol = "", rawPort = "", rawInterval = "", rawServer = "", rawCount = ""] =
+		line.split(",")
 	const parsed = v.safeParse(BulkMonitorSchema, {
 		target: rawTarget,
 		protocol: rawProtocol,
 		port: rawPort,
 		interval: rawInterval,
 		server: rawServer,
+		count: rawCount,
 	})
 	if (!parsed.success) {
 		throw new Error(`Line ${lineNumber}: ${parsed.issues[0]?.message || "invalid monitor entry"}`)
@@ -184,6 +205,7 @@ function parseBulkMonitorLine(line: string, lineNumber: number, system: string) 
 		port: parsed.output.port ? Number(parsed.output.port) : 0,
 		server: parsed.output.server || "",
 		interval: parsed.output.interval || `${defaultInterval}`,
+		count: parsed.output.count || `${defaultCount}`,
 	})
 }
 
@@ -191,7 +213,9 @@ export function formatBulkMonitorLine(monitor: BulkMonitorLineSource) {
 	const port = monitor.protocol !== "tcp" || monitor.port === 443 ? "" : `${monitor.port}`
 	const interval = monitor.interval === defaultInterval ? "" : `${monitor.interval}`
 	const server = monitor.protocol !== "dns" ? "" : monitor.server
-	return trimTrailingEmptyFields([monitor.target, monitor.protocol, port, interval, server]).join(",")
+	const count =
+		monitor.protocol !== "icmp" || !monitor.count || monitor.count === defaultCount ? "" : `${monitor.count}`
+	return trimTrailingEmptyFields([monitor.target, monitor.protocol, port, interval, server, count]).join(",")
 }
 
 function SystemMultiSelect({
@@ -506,7 +530,7 @@ export function AddMonitorDialog({ systemId, monitors }: { systemId?: string; mo
 							<Trans>Bulk Add {{ foo: t`Network Monitors` }}</Trans>
 						</SheetTitle>
 						<SheetDescription>
-							<Trans>target[,protocol[,port[,interval[,server]]]]</Trans>
+							<Trans>target[,protocol[,port[,interval[,server[,count]]]]]</Trans>
 						</SheetDescription>
 					</SheetHeader>
 					<form ref={bulkFormRef} onSubmit={handleBulkSubmit} className="flex h-full flex-col overflow-hidden">
@@ -549,7 +573,7 @@ export function AddMonitorDialog({ systemId, monitors }: { systemId?: string; mo
 									required
 								/>
 								<p className="text-xs text-muted-foreground">
-									<Trans>target[,protocol[,port[,interval[,server]]]]</Trans>
+									<Trans>target[,protocol[,port[,interval[,server[,count]]]]]</Trans>
 								</p>
 							</div>
 						</div>
@@ -606,6 +630,7 @@ function MonitorDialogContent({
 	const [port, setPort] = useState(monitor?.protocol === "tcp" && monitor.port ? String(monitor.port) : "")
 	const [server, setServer] = useState(monitor?.protocol === "dns" ? (monitor.server ?? "") : "")
 	const [monitorInterval, setMonitorInterval] = useState(String(monitor?.interval ?? defaultInterval))
+	const [pingCount, setPingCount] = useState(String(monitor?.count || defaultCount))
 	const [loading, setLoading] = useState(false)
 	const [selectedSystemId, setSelectedSystemId] = useState(monitor?.system ?? "")
 	const [selectedSystemIds, setSelectedSystemIds] = useState<Set<string>>(new Set())
@@ -625,6 +650,7 @@ function MonitorDialogContent({
 		setPort(monitor?.protocol === "tcp" && monitor.port ? String(monitor.port) : "")
 		setServer(monitor?.protocol === "dns" ? (monitor.server ?? "") : "")
 		setMonitorInterval(String(monitor?.interval ?? defaultInterval))
+		setPingCount(String(monitor?.count || defaultCount))
 		setSelectedSystemId(monitor?.system ?? "")
 		setSelectedSystemIds(new Set())
 		setLoading(false)
@@ -646,6 +672,7 @@ function MonitorDialogContent({
 					port: protocol === "tcp" ? Number(port) : 0,
 					server: protocol === "dns" ? server.trim() : "",
 					interval: monitorInterval,
+					count: pingCount,
 				},
 				monitor ? monitor.enabled : true
 			)
@@ -761,6 +788,21 @@ function MonitorDialogContent({
 						/>
 					</div>
 				)}
+				{protocol === "icmp" && (
+					<div className="grid gap-2">
+						<Label>
+							<Trans>Pings per check</Trans>
+						</Label>
+						<Input
+							type="number"
+							value={pingCount}
+							onChange={(e) => setPingCount(e.target.value)}
+							min={1}
+							max={maxCount}
+							required
+						/>
+					</div>
+				)}
 				{protocol === "dns" && (
 					<div className="grid gap-2">
 						<Label>
@@ -806,11 +848,7 @@ function MonitorDialogContent({
 						type="submit"
 						disabled={loading || (!systemId && (isEditing ? !selectedSystemId : !selectedSystemIds.size))}
 					>
-						{isEditing ? (
-							<Trans>Save {{ foo: t`Monitor` }}</Trans>
-						) : (
-							<Trans>Add {{ foo: t`Monitor` }}</Trans>
-						)}
+						{isEditing ? <Trans>Save {{ foo: t`Monitor` }}</Trans> : <Trans>Add {{ foo: t`Monitor` }}</Trans>}
 					</Button>
 				</DialogFooter>
 			</form>

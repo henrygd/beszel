@@ -65,8 +65,20 @@ func (h *monitorHistory) record(sample monitorSample) monitor.Result {
 
 // monitorSample stores one monitor attempt and its collection time.
 type monitorSample struct {
-	responseUs int64 // -1 means loss
+	responseUs int64 // -1 means loss; for multi-ping checks, the mean of replies
 	timestamp  time.Time
+	// pings holds per-ping stats for multi-ping checks. Nil for single-ping checks.
+	pings *monitorAggregate
+}
+
+// aggregate returns the sample's contribution to window stats.
+func (s monitorSample) aggregate() monitorAggregate {
+	if s.pings != nil {
+		return *s.pings
+	}
+	agg := newMonitorAggregate()
+	agg.addResponse(s.responseUs)
+	return agg
 }
 
 // monitorBucket stores one minute of aggregated monitor data.
@@ -198,12 +210,10 @@ func (h *monitorHistory) resultLocked(duration time.Duration, now time.Time) (mo
 
 // latestSampleAggregateLocked returns an aggregate containing only the most recent sample, if any.
 func (h *monitorHistory) latestSampleAggregateLocked() monitorAggregate {
-	agg := newMonitorAggregate()
 	if len(h.samples) == 0 {
-		return agg
+		return newMonitorAggregate()
 	}
-	agg.addResponse(h.samples[len(h.samples)-1].responseUs)
-	return agg
+	return h.samples[len(h.samples)-1].aggregate()
 }
 
 // aggregateLocked collects monitor data for the requested time window.
@@ -223,7 +233,7 @@ func aggregateSamplesSince(samples []monitorSample, cutoff time.Time) monitorAgg
 		if sample.timestamp.Before(cutoff) {
 			continue
 		}
-		agg.addResponse(sample.responseUs)
+		agg.addAggregate(sample.aggregate())
 	}
 	return agg
 }
@@ -270,5 +280,5 @@ func (h *monitorHistory) addSampleLocked(sample monitorSample) {
 		bucket.filled = true
 		bucket.stats = newMonitorAggregate()
 	}
-	bucket.stats.addResponse(sample.responseUs)
+	bucket.stats.addAggregate(sample.aggregate())
 }

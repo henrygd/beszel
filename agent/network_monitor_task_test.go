@@ -7,6 +7,7 @@ import (
 	"context"
 	"errors"
 	"log/slog"
+	"sync/atomic"
 	"testing"
 	"testing/synctest"
 	"time"
@@ -76,4 +77,52 @@ func TestMonitorFailureLogCooldown(t *testing.T) {
 		assert.Nil(t, result)
 		assert.Empty(t, logs.String())
 	})
+}
+
+func TestMonitorICMPCountReflectsPartialLoss(t *testing.T) {
+	var calls atomic.Int32
+	// Of four pings: two reply (1ms, 3ms), two are lost.
+	probe := func(context.Context, monitor.Config) (int64, error) {
+		switch calls.Add(1) {
+		case 1:
+			return 1000, nil
+		case 2:
+			return 3000, nil
+		default:
+			return -1, errors.New("timeout")
+		}
+	}
+
+	task := newMonitorTask(monitor.Config{ID: "test", Target: "example.test", Protocol: "icmp", Count: 4})
+	defer task.cancel()
+	result := task.runProbe(probe)
+	require.NotNil(t, result)
+	assert.EqualValues(t, 4, calls.Load())
+	assert.EqualValues(t, 1, result.SampleCount, "a check is one sample regardless of count")
+	assert.EqualValues(t, 4, result.TotalCount)
+	assert.EqualValues(t, 2, result.SuccessCount)
+	assert.EqualValues(t, 2000, result.AvgResponse)
+	assert.EqualValues(t, 1000, result.MinResponse)
+	assert.EqualValues(t, 3000, result.MaxResponse)
+	assert.Equal(t, 50.0, result.PacketLoss)
+
+	// Every ping lost still records loss for the whole check.
+	task = newMonitorTask(monitor.Config{ID: "lost", Target: "example.test", Protocol: "icmp", Count: 3})
+	defer task.cancel()
+	result = task.runProbe(func(context.Context, monitor.Config) (int64, error) { return -1, errors.New("timeout") })
+	require.NotNil(t, result)
+	assert.EqualValues(t, 3, result.TotalCount)
+	assert.Equal(t, 100.0, result.PacketLoss)
+
+	// Count is ignored for other protocols and defaults to one ping.
+	calls.Store(0)
+	for _, cfg := range []monitor.Config{
+		{ID: "a", Protocol: "icmp"},
+		{ID: "b", Protocol: "tcp", Count: 5},
+	} {
+		task = newMonitorTask(cfg)
+		defer task.cancel()
+		task.runProbe(func(context.Context, monitor.Config) (int64, error) { calls.Add(1); return 1000, nil })
+	}
+	assert.EqualValues(t, 2, calls.Load())
 }

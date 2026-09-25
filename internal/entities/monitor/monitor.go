@@ -28,6 +28,8 @@ type Config struct {
 	// Server is the DNS server to query (host or host:port, default port 53).
 	// Only used when Protocol is "dns"; empty means use the system resolver.
 	Server string `cbor:"5,keyasint,omitempty"`
+	// Count is the number of pings sent per ICMP check. Zero means one.
+	Count uint8 `cbor:"6,keyasint,omitempty"`
 }
 
 // CertInfo holds details of the leaf TLS certificate presented by a target.
@@ -36,6 +38,9 @@ type CertInfo struct {
 	Expires int64  `cbor:"0,keyasint" json:"expires"`
 	Issuer  string `cbor:"1,keyasint,omitempty" json:"issuer,omitempty"`
 }
+
+// MaxICMPCount is the largest number of pings a single ICMP check may send.
+const MaxICMPCount = 10
 
 // SyncRequest defines an incremental or full monitor sync request sent to the agent.
 type SyncRequest struct {

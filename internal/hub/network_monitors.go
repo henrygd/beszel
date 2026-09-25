@@ -66,6 +66,10 @@ func bindNetworkMonitorsEvents(hub *Hub) {
 		if protocol != "dns" {
 			e.Record.Set("server", "")
 		}
+		// only icmp sends multiple pings
+		if protocol != "icmp" {
+			e.Record.Set("count", 1)
+		}
 		ID := generateMonitorID(systemID, *monitorConfigFromRecord(e.Record))
 		if ID != e.Record.Id {
 			newRecord := copyMonitorToNewRecord(e.Record, ID)
@@ -113,6 +117,7 @@ func monitorConfigFromRecord(record *core.Record) *monitor.Config {
 		Port:     uint16(record.GetInt("port")),
 		Interval: uint16(record.GetInt("interval")),
 		Server:   record.GetString("server"),
+		Count:    uint8(record.GetInt("count")),
 	}
 }
 
@@ -137,7 +142,7 @@ func copyMonitorToNewRecord(oldRecord *core.Record, newID string) *core.Record {
 	collection := oldRecord.Collection()
 	newRecord := core.NewRecord(collection)
 	newRecord.Id = newID
-	fields := []string{"system", "target", "protocol", "port", "server", "interval", "enabled"}
+	fields := []string{"system", "target", "protocol", "port", "server", "interval", "count", "enabled"}
 	for _, field := range fields {
 		newRecord.Set(field, oldRecord.Get(field))
 	}
