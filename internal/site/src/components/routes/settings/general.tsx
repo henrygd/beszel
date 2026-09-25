@@ -12,7 +12,7 @@ import Slider from "@/components/ui/slider"
 import { HourFormat, Unit } from "@/lib/enums"
 import { dynamicActivate } from "@/lib/i18n"
 import languages from "@/lib/languages"
-import { $userSettings, defaultLayoutWidth } from "@/lib/stores"
+import { $chartTime, $userSettings, defaultLayoutWidth, getUserChartTime } from "@/lib/stores"
 import { chartTimeData, currentHour12 } from "@/lib/utils"
 import type { UserSettings } from "@/types"
 import { saveSettings } from "./layout"
@@ -22,6 +22,9 @@ export default function SettingsProfilePage({ userSettings }: { userSettings: Us
 	const { i18n } = useLingui()
 	const currentUserSettings = useStore($userSettings)
 	const layoutWidth = currentUserSettings.layoutWidth ?? defaultLayoutWidth
+	// without a value the hidden select submits an empty string, which would persist
+	// a chart time that no longer loads any data (#2104)
+	const chartTime = getUserChartTime(userSettings)
 
 	async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
 		e.preventDefault()
@@ -29,6 +32,8 @@ export default function SettingsProfilePage({ userSettings }: { userSettings: Us
 		const formData = new FormData(e.target as HTMLFormElement)
 		const data = Object.fromEntries(formData) as Partial<UserSettings>
 		await saveSettings(data)
+		// apply the saved default time period to the active charts
+		$chartTime.set(getUserChartTime())
 		setIsLoading(false)
 	}
 
@@ -122,7 +127,7 @@ export default function SettingsProfilePage({ userSettings }: { userSettings: Us
 							<Label className="block" htmlFor="chartTime">
 								<Trans>Default time period</Trans>
 							</Label>
-							<Select name="chartTime" key={userSettings.chartTime} defaultValue={userSettings.chartTime}>
+							<Select name="chartTime" key={chartTime} defaultValue={chartTime}>
 								<SelectTrigger id="chartTime">
 									<SelectValue />
 								</SelectTrigger>
