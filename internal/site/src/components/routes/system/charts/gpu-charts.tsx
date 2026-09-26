@@ -3,7 +3,7 @@ import { Fragment, type ReactNode, useRef, useMemo } from "react"
 import AreaChartDefault, { type DataPoint } from "@/components/charts/area-chart"
 import LineChartDefault from "@/components/charts/line-chart"
 import { Unit } from "@/lib/enums"
-import { cn, decimalString, formatBytes, toFixedFloat } from "@/lib/utils"
+import { decimalString, formatBytes, toFixedFloat } from "@/lib/utils"
 import type { ChartData, GPUData, SystemStatsRecord } from "@/types"
 import { ChartCard } from "../chart-card"
 
@@ -79,7 +79,6 @@ export function GpuPowerChart({
 
 	return (
 		<ChartCard
-			className={cn(grid && "!col-span-1")}
 			empty={dataEmpty}
 			grid={grid}
 			title={t`GPU Power Draw`}
@@ -97,8 +96,8 @@ export function GpuPowerChart({
 	)
 }
 
-/** All GPU charts (optional power-draw slot + engines + per-GPU usage/VRAM) in a single 2-col grid, so the
- *  cards' odd:last-of-type parity rule flows across the whole tab and no row is left half-empty */
+/** GPU charts: summary grid (optional power-draw slot + engines) above a per-GPU usage/VRAM grid. Separate
+ *  grids keep each GPU's usage and VRAM cards paired, while odd:last-of-type stretches a lone summary card */
 export function GpuCharts({
 	chartData,
 	grid,
@@ -114,77 +113,86 @@ export function GpuCharts({
 	hasGpuEnginesData: boolean
 	children?: ReactNode
 }) {
+	const gpuIds = Object.keys(lastGpus)
 	return (
-		<div className="grid xl:grid-cols-2 gap-4">
-			{children}
-			{hasGpuEnginesData && (
-				<ChartCard
-					legend={true}
-					empty={dataEmpty}
-					grid={grid}
-					title={t`GPU Engines`}
-					description={t`Average utilization of GPU engines`}
-				>
-					<GpuEnginesChart chartData={chartData} />
-				</ChartCard>
-			)}
-			{Object.keys(lastGpus).map((id) => {
-				const gpu = lastGpus[id] as GPUData
-				return (
-					<Fragment key={id}>
+		<div className="grid gap-4">
+			{(children || hasGpuEnginesData) && (
+				<div className="grid xl:grid-cols-2 gap-4">
+					{children}
+					{hasGpuEnginesData && (
 						<ChartCard
+							legend={true}
 							empty={dataEmpty}
 							grid={grid}
-							title={`${gpu.n} ${t`Usage`}`}
-							description={t`Average utilization of ${gpu.n}`}
+							title={t`GPU Engines`}
+							description={t`Average utilization of GPU engines`}
 						>
-							<AreaChartDefault
-								chartData={chartData}
-								dataPoints={[
-									{
-										label: t`Usage`,
-										dataKey: ({ stats }) => stats?.g?.[id]?.u ?? 0,
-										color: 1,
-										opacity: 0.35,
-									},
-								]}
-								tickFormatter={(val) => `${toFixedFloat(val, 2)}%`}
-								contentFormatter={({ value }) => `${decimalString(value)}%`}
-							/>
+							<GpuEnginesChart chartData={chartData} />
 						</ChartCard>
+					)}
+				</div>
+			)}
+			{gpuIds.length > 0 && (
+				<div className="grid xl:grid-cols-2 gap-4">
+					{gpuIds.map((id) => {
+						const gpu = lastGpus[id] as GPUData
+						return (
+							<Fragment key={id}>
+								<ChartCard
+									empty={dataEmpty}
+									grid={grid}
+									title={`${gpu.n} ${t`Usage`}`}
+									description={t`Average utilization of ${gpu.n}`}
+								>
+									<AreaChartDefault
+										chartData={chartData}
+										dataPoints={[
+											{
+												label: t`Usage`,
+												dataKey: ({ stats }) => stats?.g?.[id]?.u ?? 0,
+												color: 1,
+												opacity: 0.35,
+											},
+										]}
+										tickFormatter={(val) => `${toFixedFloat(val, 2)}%`}
+										contentFormatter={({ value }) => `${decimalString(value)}%`}
+									/>
+								</ChartCard>
 
-						{(gpu.mt ?? 0) > 0 && (
-							<ChartCard
-								empty={dataEmpty}
-								grid={grid}
-								title={`${gpu.n} VRAM`}
-								description={t`Precise utilization at the recorded time`}
-							>
-								<AreaChartDefault
-									chartData={chartData}
-									dataPoints={[
-										{
-											label: t`Usage`,
-											dataKey: ({ stats }) => stats?.g?.[id]?.mu ?? 0,
-											color: 2,
-											opacity: 0.25,
-										},
-									]}
-									max={gpu.mt}
-									tickFormatter={(val) => {
-										const { value, unit } = formatBytes(val, false, Unit.Bytes, true)
-										return `${toFixedFloat(value, value >= 10 ? 0 : 1)} ${unit}`
-									}}
-									contentFormatter={({ value }) => {
-										const { value: convertedValue, unit } = formatBytes(value, false, Unit.Bytes, true)
-										return `${decimalString(convertedValue)} ${unit}`
-									}}
-								/>
-							</ChartCard>
-						)}
-					</Fragment>
-				)
-			})}
+								{(gpu.mt ?? 0) > 0 && (
+									<ChartCard
+										empty={dataEmpty}
+										grid={grid}
+										title={`${gpu.n} VRAM`}
+										description={t`Precise utilization at the recorded time`}
+									>
+										<AreaChartDefault
+											chartData={chartData}
+											dataPoints={[
+												{
+													label: t`Usage`,
+													dataKey: ({ stats }) => stats?.g?.[id]?.mu ?? 0,
+													color: 2,
+													opacity: 0.25,
+												},
+											]}
+											max={gpu.mt}
+											tickFormatter={(val) => {
+												const { value, unit } = formatBytes(val, false, Unit.Bytes, true)
+												return `${toFixedFloat(value, value >= 10 ? 0 : 1)} ${unit}`
+											}}
+											contentFormatter={({ value }) => {
+												const { value: convertedValue, unit } = formatBytes(value, false, Unit.Bytes, true)
+												return `${decimalString(convertedValue)} ${unit}`
+											}}
+										/>
+									</ChartCard>
+								)}
+							</Fragment>
+						)
+					})}
+				</div>
+			)}
 		</div>
 	)
 }

@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/henrygd/beszel/internal/entities/system"
+	"github.com/shirou/gopsutil/v4/disk"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -72,4 +73,53 @@ func TestUpdateDiskIoTimeCounterWrap(t *testing.T) {
 			}
 		})
 	}
+}
+
+// The first sample of a cache interval has no snapshot of its own. It must
+// measure the time counters from the same baseline as the byte counters.
+func TestUpdateDiskIoFirstSampleOfInterval(t *testing.T) {
+	dir := t.TempDir()
+	t.Setenv("HOST_PROC", dir)
+	t.Setenv("HOST_SYS", dir)
+	t.Setenv("HOST_DEV", dir)
+	t.Setenv("HOST_RUN", dir)
+	writeDiskstats := func(line string) {
+		require.NoError(t, os.WriteFile(filepath.Join(dir, "diskstats"), []byte(line), 0o644))
+	}
+
+	writeDiskstats("   8       0 sda 1000 0 20000 900 500 0 10000 700 0 400 0\n")
+	counters, err := disk.IOCounters("sda")
+	require.NoError(t, err)
+
+	fs := &system.FsStats{Root: true}
+	a := &Agent{
+		fsStats:  map[string]*system.FsStats{"sda": fs},
+		diskPrev: map[uint16]map[string]prevDisk{},
+	}
+	a.initializeDiskIoStats(counters)
+
+	// updateDiskIo skips samples less than 100ms apart.
+	time.Sleep(150 * time.Millisecond)
+
+	// Deltas: read 300ms / 10 ops, write 400ms / 20 ops, io time 1200ms, weighted io 3000ms.
+	writeDiskstats("   8       0 sda 1010 0 21200 1200 520 0 10400 1100 0 1600 3000\n")
+	var stats system.Stats
+	a.updateDiskIo(60000, &stats)
+
+	require.NotZero(t, fs.DiskReadBytes, "bytes are measured from the baseline")
+	for i := range 3 {
+		assert.NotZero(t, fs.DiskIoStats[i], "DiskIoStats[%d]", i)
+	}
+	assert.InDelta(t, 30, fs.DiskIoStats[3], 0.01, "r_await")
+	assert.InDelta(t, 20, fs.DiskIoStats[4], 0.01, "w_await")
+	assert.NotZero(t, fs.DiskIoStats[5], "weighted io")
+
+	// A second interval starts from the latest counters, not from the ones at start.
+	time.Sleep(150 * time.Millisecond)
+	// Deltas: read 100ms / 10 ops, write 100ms / 20 ops.
+	writeDiskstats("   8       0 sda 1020 0 22400 1300 540 0 10800 1200 0 1800 3500\n")
+	a.updateDiskIo(1000, &stats)
+
+	assert.InDelta(t, 10, fs.DiskIoStats[3], 0.01, "r_await")
+	assert.InDelta(t, 5, fs.DiskIoStats[4], 0.01, "w_await")
 }
