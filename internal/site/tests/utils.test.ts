@@ -8,7 +8,7 @@ mock.module("@lingui/core/macro", () => ({
 const { formatMicroseconds } = await import("../src/lib/utils")
 
 describe("formatMicroseconds", () => {
-	test("formats with showDigits = true (default)", () => {
+	test("formats with fixedDigits = true (default)", () => {
 		expect(formatMicroseconds(500)).toBe("500μs")
 		expect(formatMicroseconds(6000)).toBe("6.00ms")
 		expect(formatMicroseconds(6500)).toBe("6.50ms")
@@ -19,7 +19,7 @@ describe("formatMicroseconds", () => {
 		expect(formatMicroseconds(12_000_000)).toBe("12.0s")
 	})
 
-	test("formats with showDigits = false (used for chart y-axis ticks)", () => {
+	test("formats with fixedDigits = false (used for chart y-axis ticks)", () => {
 		expect(formatMicroseconds(500, false)).toBe("500μs")
 		expect(formatMicroseconds(500.5, false)).toBe("500.5μs")
 		expect(formatMicroseconds(6000, false)).toBe("6ms")
