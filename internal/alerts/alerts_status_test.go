@@ -191,6 +191,44 @@ func TestStatusAlertNormalRecovery(t *testing.T) {
 
 }
 
+func TestStatusAlertRecoveryIncludesHistoryDuration(t *testing.T) {
+	hub, user := beszelTests.GetHubWithUser(t)
+	defer hub.Cleanup()
+	setStatusAlertEmail(t, hub, user.Id, "test@example.com")
+
+	system, err := beszelTests.CreateRecord(hub, "systems", map[string]any{
+		"name": "test-system", "status": "up", "host": "127.0.0.1", "users": []string{user.Id},
+	})
+	require.NoError(t, err)
+	alert, err := beszelTests.CreateRecord(hub, "alerts", map[string]any{
+		"name": "Status", "system": system.Id, "user": user.Id, "min": 1,
+	})
+	require.NoError(t, err)
+	alert.Set("triggered", true)
+	require.NoError(t, hub.Save(alert))
+
+	history, err := hub.FindFirstRecordByFilter("alerts_history", "alert_id={:alert_id} && resolved=null", dbx.Params{"alert_id": alert.Id})
+	require.NoError(t, err)
+	// The created field is an autodate, so backdate the incident directly in SQL.
+	_, err = hub.DB().NewQuery("UPDATE alerts_history SET created = {:created} WHERE id = {:id}").
+		Bind(dbx.Params{"created": time.Now().UTC().Add(-17*time.Minute - 19*time.Second), "id": history.Id}).Execute()
+	require.NoError(t, err)
+	history, err = hub.FindRecordById("alerts_history", history.Id)
+	require.NoError(t, err)
+	require.InDelta(t, 17*60+19, time.Since(history.GetDateTime("created").Time()).Seconds(), 2)
+
+	initialEmailCount := hub.TestMailer.TotalSend()
+	require.NoError(t, hub.AlertManager.HandleStatusAlerts("up", system))
+	require.Equal(t, initialEmailCount+1, hub.TestMailer.TotalSend())
+	message := hub.TestMailer.LastMessage()
+	assert.Equal(t, "Connection to test-system is up ✅", message.Subject)
+	assert.Contains(t, message.Text, "Connection to test-system is up (duration 17m ")
+
+	history, err = hub.FindRecordById("alerts_history", history.Id)
+	require.NoError(t, err)
+	assert.False(t, history.GetDateTime("resolved").IsZero())
+}
+
 func TestHandleStatusAlertsDoesNotSendRecoveryWhileDownIsOnlyPending(t *testing.T) {
 	hub, user := beszelTests.GetHubWithUser(t)
 	defer hub.Cleanup()
