@@ -35,14 +35,6 @@ func UnmarshalResponse(resp common.AgentResponse, action common.WebSocketAction,
 	}
 	// Try generic Data field first (0.19+)
 	if len(resp.Data) > 0 {
-		// Wi-Fi maps are complete snapshots. CBOR otherwise merges entries into
-		// reused destinations, retaining disconnected interfaces and old RSSI.
-		if action == common.GetData {
-			if data, ok := dest.(*system.CombinedData); ok {
-				data.Info.WiFi = nil
-				data.Stats.WiFi = nil
-			}
-		}
 		if err := cbor.Unmarshal(resp.Data, dest); err != nil {
 			return fmt.Errorf("failed to unmarshal generic response data: %w", err)
 		}
