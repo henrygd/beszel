@@ -258,7 +258,7 @@ export function SystemsTableColumns(viewMode: "table" | "grid"): ColumnDef<Syste
 			},
 		},
 		{
-			accessorFn: ({ info, status }) => (status !== SystemStatus.Up ? undefined : (info.bs ?? info.bb)),
+			accessorFn: ({ info, status }) => (status !== SystemStatus.Up ? undefined : info.bb),
 			id: "net",
 			name: () => t`Network`,
 			size: 0,
@@ -266,34 +266,32 @@ export function SystemsTableColumns(viewMode: "table" | "grid"): ColumnDef<Syste
 			header: sortableHeader,
 			sortUndefined: "last",
 			cell(info) {
+				const userSettings = useStore($userSettings, { keys: ["unitNet"] })
 				const row = info.row.original
 				if (row.status !== SystemStatus.Up) {
 					return null
 				}
-				const userSettings = useStore($userSettings, { keys: ["unitNet"] })
 				const { bs, br, bb } = row.info
+				const format = (bytes: number) => {
+					const { value, unit } = formatBytes(bytes, true, userSettings.unitNet, false)
+					return `${decimalString(value, value >= 100 ? 1 : 2)} ${unit}`
+				}
 				if (bs !== undefined && br !== undefined) {
-					const up = formatBytes(bs, true, userSettings.unitNet, false)
-					const dn = formatBytes(br, true, userSettings.unitNet, false)
 					return (
-						<span className="tabular-nums whitespace-nowrap">
-							<span style={{ color: "var(--chart-1)" }}>↑</span>{" "}
-							{decimalString(up.value, up.value >= 100 ? 1 : 2)} {up.unit}{" "}
-							<span style={{ color: "hsl(160 60% 32%)" }}>↓</span>{" "}
-							{decimalString(dn.value, dn.value >= 100 ? 1 : 2)} {dn.unit}
-						</span>
+						<div className="flex flex-col gap-0.5 tabular-nums whitespace-nowrap">
+							<span>
+								<span className="text-chart-5">↑</span> {format(bs)}
+							</span>
+							<span>
+								<span className="text-chart-2">↓</span> {format(br)}
+							</span>
+						</div>
 					)
 				}
-				const val = bb
-				if (val === undefined) {
+				if (bb === undefined) {
 					return null
 				}
-				const { value, unit } = formatBytes(val, true, userSettings.unitNet, false)
-				return (
-					<span className="tabular-nums whitespace-nowrap">
-						{decimalString(value, value >= 100 ? 1 : 2)} {unit}
-					</span>
-				)
+				return <span className="tabular-nums whitespace-nowrap">{format(bb)}</span>
 			},
 		},
 		{
