@@ -199,7 +199,7 @@ export function decimalString(num: number, digits = 2) {
 	return formatter.format(num)
 }
 
-export function formatMicroseconds(microseconds: number, showDigits = true): string {
+export function formatMicroseconds(microseconds: number, fixedDigits = true): string {
 	if (!Number.isFinite(microseconds)) {
 		return "-"
 	}
@@ -208,15 +208,17 @@ export function formatMicroseconds(microseconds: number, showDigits = true): str
 		return `${microseconds}μs`
 	}
 
+	const digitFormatter = fixedDigits ? decimalString : toFixedFloat
+
 	if (microseconds < 1_000_000) {
 		const milliseconds = microseconds / 1000
 		const digits = milliseconds >= 10 ? 1 : 2
-		return `${decimalString(milliseconds, showDigits ? digits : 0)}ms`
+		return `${digitFormatter(milliseconds, digits)}ms`
 	}
 
 	const seconds = microseconds / 1_000_000
 	const digits = seconds >= 10 ? 1 : 2
-	return `${decimalString(seconds, showDigits ? digits : 0)}s`
+	return `${digitFormatter(seconds, digits)}s`
 }
 
 /** Get value from local or session storage */
