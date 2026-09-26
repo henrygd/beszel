@@ -9,6 +9,7 @@ import (
 	"github.com/henrygd/beszel/internal/common"
 	"github.com/henrygd/beszel/internal/entities/monitor"
 	"github.com/henrygd/beszel/internal/entities/smart"
+	"github.com/henrygd/beszel/internal/entities/system"
 
 	"log/slog"
 )
@@ -54,6 +55,7 @@ func NewHandlerRegistry() *HandlerRegistry {
 	registry.Register(common.GetSystemdInfo, &GetSystemdInfoHandler{})
 	registry.Register(common.SyncNetworkMonitors, &SyncNetworkMonitorsHandler{})
 	registry.Register(common.GetZfsData, &GetZfsDataHandler{})
+	registry.Register(common.GetPackageUpdates, &GetPackageUpdatesHandler{})
 
 	return registry
 }
@@ -196,6 +198,20 @@ func (h *GetZfsDataHandler) Handle(hctx *HandlerContext) error {
 		return err
 	}
 	return hctx.SendResponse(hctx.Agent.storagePoolManager.GetDetail(req.Force), hctx.RequestID)
+}
+
+////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
+
+// GetPackageUpdatesHandler returns the pending package updates found by the
+// last background check. It never runs a check itself.
+type GetPackageUpdatesHandler struct{}
+
+func (h *GetPackageUpdatesHandler) Handle(hctx *HandlerContext) error {
+	if hctx.Agent.packageUpdates == nil {
+		return hctx.SendResponse(system.PackageUpdates{}, hctx.RequestID)
+	}
+	return hctx.SendResponse(hctx.Agent.packageUpdates.list(), hctx.RequestID)
 }
 
 ////////////////////////////////////////////////////////////////////////////

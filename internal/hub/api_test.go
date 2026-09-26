@@ -548,6 +548,59 @@ func TestApiRoutesAuthentication(t *testing.T) {
 			ExpectedContent: []string{"Something went wrong while processing your request."},
 			TestAppFactory:  testAppFactory,
 		},
+		// /package-updates route
+		{
+			Name:            "GET /package-updates - no auth should fail",
+			Method:          http.MethodGet,
+			URL:             fmt.Sprintf("/api/beszel/package-updates?system=%s", system.Id),
+			ExpectedStatus:  401,
+			ExpectedContent: []string{"requires valid"},
+			TestAppFactory:  testAppFactory,
+		},
+		{
+			Name:   "GET /package-updates - missing system param should fail",
+			Method: http.MethodGet,
+			URL:    "/api/beszel/package-updates",
+			Headers: map[string]string{
+				"Authorization": userToken,
+			},
+			ExpectedStatus:  400,
+			ExpectedContent: []string{"Invalid", "parameter"},
+			TestAppFactory:  testAppFactory,
+		},
+		{
+			Name:   "GET /package-updates - invalid system should fail",
+			Method: http.MethodGet,
+			URL:    "/api/beszel/package-updates?system=invalid-system",
+			Headers: map[string]string{
+				"Authorization": userToken,
+			},
+			ExpectedStatus:  404,
+			ExpectedContent: []string{"The requested resource wasn't found."},
+			TestAppFactory:  testAppFactory,
+		},
+		{
+			Name:            "GET /package-updates - request for valid non-user system should fail",
+			Method:          http.MethodGet,
+			URL:             fmt.Sprintf("/api/beszel/package-updates?system=%s", system.Id),
+			ExpectedStatus:  404,
+			ExpectedContent: []string{"The requested resource wasn't found."},
+			TestAppFactory:  testAppFactory,
+			Headers: map[string]string{
+				"Authorization": user2Token,
+			},
+		},
+		{
+			Name:   "GET /package-updates - good user should pass validation",
+			Method: http.MethodGet,
+			URL:    fmt.Sprintf("/api/beszel/package-updates?system=%s", system.Id),
+			Headers: map[string]string{
+				"Authorization": userToken,
+			},
+			ExpectedStatus:  500,
+			ExpectedContent: []string{"Something went wrong while processing your request."},
+			TestAppFactory:  testAppFactory,
+		},
 		// /systemd routes
 		{
 			Name:            "GET /systemd/info - no auth should fail",
