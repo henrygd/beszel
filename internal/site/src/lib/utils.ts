@@ -205,18 +205,18 @@ export function formatMicroseconds(microseconds: number, showDigits = true): str
 	}
 
 	if (microseconds < 1000) {
-		return `${microseconds}μs`
+		return `${showDigits ? microseconds : toFixedFloat(microseconds, 1)}μs`
 	}
 
 	if (microseconds < 1_000_000) {
 		const milliseconds = microseconds / 1000
 		const digits = milliseconds >= 10 ? 1 : 2
-		return `${decimalString(milliseconds, showDigits ? digits : 0)}ms`
+		return `${showDigits ? decimalString(milliseconds, digits) : toFixedFloat(milliseconds, digits)}ms`
 	}
 
 	const seconds = microseconds / 1_000_000
 	const digits = seconds >= 10 ? 1 : 2
-	return `${decimalString(seconds, showDigits ? digits : 0)}s`
+	return `${showDigits ? decimalString(seconds, digits) : toFixedFloat(seconds, digits)}s`
 }
 
 /** Get value from local or session storage */
