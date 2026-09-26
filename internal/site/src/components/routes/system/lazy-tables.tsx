@@ -47,6 +47,17 @@ export function LazySystemdTable({ systemId }: { systemId: string }) {
 	)
 }
 
+const PackageUpdatesTable = lazy(() => import("./package-updates-table"))
+
+export function LazyPackageUpdatesTable({ systemId, counts }: { systemId: string; counts: string }) {
+	const { isIntersecting, ref } = useIntersectionObserver({ rootMargin: "90px" })
+	return (
+		<div ref={ref} className={cn(isIntersecting && "contents")}>
+			{isIntersecting && <PackageUpdatesTable systemId={systemId} counts={counts} />}
+		</div>
+	)
+}
+
 const NetworkMonitorsTable = lazy(() => import("../../network-monitors-table/network-monitors-table"))
 
 export function LazyNetworkMonitorsTable({ systemId }: { systemId: string }) {

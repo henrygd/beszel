@@ -26,6 +26,8 @@ const (
 	GetZfsData
 	// Sync network monitor configuration to agent
 	SyncNetworkMonitors
+	// Request the list of pending package updates from agent
+	GetPackageUpdates
 	// Add new actions here...
 )
 

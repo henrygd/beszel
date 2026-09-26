@@ -792,6 +792,15 @@ func (sys *System) FetchSmartDataFromAgent() (smart.SmartDataResponse, error) {
 	return result, err
 }
 
+// FetchPackageUpdatesFromAgent fetches the list of pending package updates from the agent.
+func (sys *System) FetchPackageUpdatesFromAgent() (system.PackageUpdates, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	var result system.PackageUpdates
+	err := sys.request(ctx, common.GetPackageUpdates, nil, &result)
+	return result, err
+}
+
 // FetchZfsDataFromAgent fetches ZFS detail data from the agent.
 func (sys *System) FetchZfsDataFromAgent(force bool) (*zfs.ZfsData, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)

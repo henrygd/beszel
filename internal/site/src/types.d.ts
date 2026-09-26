@@ -226,6 +226,25 @@ export interface ZfsVdev {
 	checksumErrs?: number
 }
 
+/** pending package update from GET /api/beszel/package-updates */
+export interface PackageUpdate {
+	name: string
+	/** installed version, missing if unknown */
+	current?: string
+	available: string
+	security?: boolean
+}
+
+export interface PackageUpdates {
+	/** package manager name, e.g. "apt" */
+	manager?: string
+	/** unix time in seconds of the last check */
+	checkedAt?: number
+	/** true if the package manager flags security updates per package */
+	securityKnown?: boolean
+	packages: PackageUpdate[] | null
+}
+
 export interface ZfsDataset {
 	name: string
 	used?: number
