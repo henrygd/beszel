@@ -130,3 +130,25 @@ sudo systemctl daemon-reload
 sudo systemctl enable beszel-agent.service
 sudo systemctl start beszel-agent.service
 ```
+
+## NUT UPS/PDU monitoring
+
+The agent can collect UPS and PDU data from Network UPS Tools (NUT). Install
+NUT 2.8.5 or newer on the monitored system; earlier versions do not provide the
+JSON output required by the agent. Add the optional settings below to the agent
+service, then reload systemd and restart the agent.
+
+```ini
+# Defaults to localhost when omitted.
+Environment="NUT_SERVER=localhost"
+# A Go duration; for example, refresh every 60 seconds.
+Environment="NUT_INTERVAL=60s"
+# Optional comma-separated UPS names. When omitted, the agent discovers them.
+# Environment="NUT_DEVICES=ups1,ups2"
+# Optional NUT nutauth.conf file, readable by the agent service user.
+# Environment="NUT_AUTHCONF_FILE=/etc/nut/nutauth.conf"
+```
+
+`NUT_AUTHCONF_FILE` is passed to `upsc -A`, so it must use NUT's
+`nutauth.conf` format and should be protected with mode 0600. It is not an
+`upscmd.conf` file.

@@ -21,6 +21,9 @@ func backgroundSmartFetchEnabled() bool { return false }
 // Background ZFS fetching follows the same policy as SMART fetching.
 func backgroundZfsFetchEnabled() bool { return false }
 
+// Background NUT fetching follows the same policy as SMART fetching.
+func backgroundNutFetchEnabled() bool { return false }
+
 // TESTING ONLY: GetSystemCount returns the number of systems in the store
 func (sm *SystemManager) GetSystemCount() int {
 	return sm.systems.Length()
@@ -120,6 +123,7 @@ func (sm *SystemManager) RemoveAllSystems() {
 	}
 	sm.smartFetchMap.StopCleaner()
 	sm.zfsFetchMap.StopCleaner()
+	sm.nutFetchMap.StopCleaner()
 }
 
 // ResetContextForTesting replaces the manager context for a new synctest bubble.

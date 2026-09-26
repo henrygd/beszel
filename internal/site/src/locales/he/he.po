@@ -114,6 +114,7 @@ msgstr "5 דק'"
 #. Table column
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
+#: src/components/routes/system/nut-table.tsx
 #: src/components/routes/system/smart-table.tsx
 #: src/components/routes/system/storage-pools-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
@@ -301,9 +302,17 @@ msgstr "סוללה"
 
 #: src/components/routes/system/charts/sensor-charts.tsx
 #: src/components/routes/system/charts/sensor-charts.tsx
+#: src/components/routes/system/nut-table.tsx
+#: src/components/routes/system/nut-table.tsx
+#: src/components/routes/system/nut-table.tsx
+#: src/components/routes/system/nut-table.tsx
 #: src/lib/alerts.ts
 msgid "Battery"
 msgstr "סוללה"
+
+#: src/components/routes/system/nut-table.tsx
+msgid "Battery charge and estimated runtime over time"
+msgstr ""
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Became active"
@@ -425,6 +434,7 @@ msgid "Change general application options."
 msgstr "שנה אפשרויות כלליות של היישום."
 
 #: src/components/routes/system/charts/sensor-charts.tsx
+#: src/components/routes/system/nut-table.tsx
 msgid "Charge"
 msgstr "טעינה"
 
@@ -463,6 +473,7 @@ msgstr "שגיאות סכום ביקורת"
 
 #: src/components/containers-table/containers-table.tsx
 #: src/components/network-monitors-table/network-monitors-table.tsx
+#: src/components/routes/system/nut-table.tsx
 #: src/components/routes/system/smart-table.tsx
 #: src/components/routes/system/storage-pools-table.tsx
 #: src/components/routes/system/storage-pools-table.tsx
@@ -482,6 +493,7 @@ msgstr "נקה התאמות"
 msgid "Click on a container to view more information."
 msgstr "לחץ על קונטיינר כדי לצפות במידע נוסף."
 
+#: src/components/routes/system/nut-table.tsx
 #: src/components/routes/system/smart-table.tsx
 msgid "Click on a device to view more information."
 msgstr "לחץ על התקן כדי לצפות במידע נוסף."
@@ -688,6 +700,10 @@ msgstr "העלאה מצטברת"
 msgid "Cumulative Write"
 msgstr "כתיבה מצטברת"
 
+#: src/components/routes/system/nut-table.tsx
+msgid "Current"
+msgstr ""
+
 #. Context: Battery state
 #. Context: Battery state
 #: src/components/routes/system/charts/sensor-charts.tsx
@@ -717,6 +733,7 @@ msgstr "תקופת זמן ברירת מחדל"
 #: src/components/network-monitors-table/network-monitors-columns.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/system/nut-table.tsx
 #: src/components/routes/system/smart-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Delete"
@@ -734,9 +751,14 @@ msgstr "תיאור"
 msgid "Detail"
 msgstr "פרט"
 
+#: src/components/routes/system/nut-table.tsx
 #: src/components/routes/system/smart-table.tsx
 msgid "Device"
 msgstr "התקן"
+
+#: src/components/routes/system/nut-table.tsx
+msgid "Device Type"
+msgstr ""
 
 #. Context: Battery state
 #: src/lib/i18n.ts
@@ -798,6 +820,10 @@ msgstr "כבוי ({downSystemsLength})"
 #: src/components/routes/system/network-sheet.tsx
 msgid "Download"
 msgstr "הורדה"
+
+#: src/components/routes/system/nut-table.tsx
+msgid "Driver"
+msgstr ""
 
 #: src/components/alerts-history-columns.tsx
 msgid "Duration"
@@ -979,6 +1005,7 @@ msgstr "מאווררים"
 #: src/components/network-monitors-table/network-monitors-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/system/chart-card.tsx
+#: src/components/routes/system/nut-table.tsx
 #: src/components/routes/system/smart-table.tsx
 #: src/components/routes/system/storage-pools-table.tsx
 #: src/components/routes/system/storage-pools-table.tsx
@@ -991,6 +1018,7 @@ msgstr "סנן..."
 msgid "Fingerprint"
 msgstr "טביעת אצבע"
 
+#: src/components/routes/system/nut-table.tsx
 #: src/components/routes/system/smart-table.tsx
 msgid "Firmware"
 msgstr "קושחה"
@@ -1126,6 +1154,15 @@ msgstr "עדכון תמונה זמין"
 msgid "Inactive"
 msgstr "לא פעיל"
 
+#: src/components/routes/system/nut-table.tsx
+#: src/components/routes/system/nut-table.tsx
+msgid "Input Voltage"
+msgstr ""
+
+#: src/components/routes/system/nut-table.tsx
+msgid "Input, output, and battery voltage over time"
+msgstr ""
+
 #: src/components/network-monitors-table/network-monitors-columns.tsx
 #: src/components/network-monitors-table/network-monitors-columns.tsx
 #: src/components/routes/settings/heartbeat.tsx
@@ -1160,6 +1197,16 @@ msgstr "מחזור חיים"
 #: src/components/systemd-table/systemd-table.tsx
 msgid "limit"
 msgstr "גבול"
+
+#: src/components/routes/system/nut-table.tsx
+#: src/components/routes/system/nut-table.tsx
+#: src/components/routes/system/nut-table.tsx
+msgid "Load"
+msgstr ""
+
+#: src/components/routes/system/nut-table.tsx
+msgid "Load and output power over time"
+msgstr ""
 
 #: src/components/routes/system/charts/load-average-chart.tsx
 msgid "Load Average"
@@ -1279,6 +1326,8 @@ msgid "Min 1h"
 msgstr "מינימום שעה אחת"
 
 #. Device model
+#. Device model
+#: src/components/routes/system/nut-table.tsx
 #: src/components/routes/system/smart-table.tsx
 msgid "Model"
 msgstr "דגם"
@@ -1369,6 +1418,7 @@ msgstr "לא נמצאו תוצאות."
 #: src/components/containers-table/containers-table.tsx
 #: src/components/network-monitors-table/network-monitors-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
+#: src/components/routes/system/nut-table.tsx
 #: src/components/routes/system/smart-table.tsx
 #: src/components/systemd-table/systemd-table.tsx
 msgid "No results."
@@ -1432,6 +1482,7 @@ msgstr "סיסמה חד-פעמית"
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
+#: src/components/routes/system/nut-table.tsx
 #: src/components/routes/system/smart-table.tsx
 #: src/components/routes/system/storage-pools-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
@@ -1446,6 +1497,21 @@ msgstr "או המשך עם"
 msgid "Other"
 msgstr "אחר"
 
+#: src/components/routes/system/nut-table.tsx
+msgid "Outlet"
+msgstr ""
+
+#: src/components/routes/system/nut-table.tsx
+#: src/components/routes/system/nut-table.tsx
+#: src/components/routes/system/nut-table.tsx
+msgid "Output Power"
+msgstr ""
+
+#: src/components/routes/system/nut-table.tsx
+#: src/components/routes/system/nut-table.tsx
+msgid "Output Voltage"
+msgstr ""
+
 #: src/components/alerts/alerts-sheet.tsx
 msgid "Overwrite existing alerts"
 msgstr "דרוס התראות קיימות"
@@ -1454,6 +1520,7 @@ msgstr "דרוס התראות קיימות"
 msgid "Packet loss (%)"
 msgstr "אובדן מנות (%)"
 
+#: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
@@ -1585,6 +1652,12 @@ msgctxt "Container ports"
 msgid "Ports"
 msgstr "פורטים"
 
+#: src/components/routes/system/nut-table.tsx
+#: src/components/routes/system/nut-table.tsx
+#: src/components/routes/system/nut-table.tsx
+msgid "Power"
+msgstr ""
+
 #. Power On Time
 #: src/components/routes/system/smart-table.tsx
 msgid "Power On"
@@ -1659,6 +1732,7 @@ msgstr "התקבל"
 
 #: src/components/containers-table/containers-table.tsx
 #: src/components/containers-table/containers-table.tsx
+#: src/components/routes/system/nut-table.tsx
 #: src/components/routes/system/smart-table.tsx
 #: src/components/routes/system/storage-pools-table.tsx
 msgid "Refresh"
@@ -1727,6 +1801,12 @@ msgstr "סובב token"
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Rows per page"
 msgstr "שורות לעמוד"
+
+#: src/components/routes/system/nut-table.tsx
+#: src/components/routes/system/nut-table.tsx
+#: src/components/routes/system/nut-table.tsx
+msgid "Runtime"
+msgstr ""
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Runtime Metrics"
@@ -1835,6 +1915,7 @@ msgstr "שליחת דופק לבדיקה"
 msgid "Sent"
 msgstr "נשלח"
 
+#: src/components/routes/system/nut-table.tsx
 #: src/components/routes/system/smart-table.tsx
 msgid "Serial Number"
 msgstr "מספר סידורי"
@@ -1897,6 +1978,9 @@ msgid "State"
 msgstr "מצב"
 
 #: src/components/containers-table/containers-table-columns.tsx
+#: src/components/routes/system/nut-table.tsx
+#: src/components/routes/system/nut-table.tsx
+#: src/components/routes/system/nut-table.tsx
 #: src/components/routes/system/smart-table.tsx
 #: src/components/systemd-table/systemd-table.tsx
 #: src/components/systems-table/systems-table.tsx
@@ -1931,6 +2015,7 @@ msgstr "החלף ערכת נושא"
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
+#: src/components/routes/system/nut-table.tsx
 #: src/components/routes/system/smart-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 #: src/lib/alerts.ts
@@ -2163,6 +2248,7 @@ msgstr "מופעל כאשר שימוש בכל דיסק עולה על סף"
 
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/system/nut-table.tsx
 #: src/components/routes/system/smart-table.tsx
 #: src/components/routes/system/storage-pools-table.tsx
 msgid "Type"
@@ -2214,6 +2300,7 @@ msgstr "עדכן"
 #: src/components/containers-table/containers-table-columns.tsx
 #: src/components/network-monitors-table/network-monitors-columns.tsx
 #: src/components/network-monitors-table/network-monitors-columns.tsx
+#: src/components/routes/system/nut-table.tsx
 #: src/components/routes/system/smart-table.tsx
 #: src/components/routes/system/storage-pools-table.tsx
 #: src/components/systemd-table/systemd-table-columns.tsx
@@ -2227,6 +2314,10 @@ msgstr "מתעדכן כל 10 דקות."
 #: src/components/routes/system/network-sheet.tsx
 msgid "Upload"
 msgstr "העלאה"
+
+#: src/components/routes/system/nut-table.tsx
+msgid "UPS / PDU Details"
+msgstr ""
 
 #: src/components/routes/system/info-bar.tsx
 #: src/components/systems-table/systems-table-columns.tsx
@@ -2288,6 +2379,11 @@ msgstr "צפה ב-200 ההתראות האחרונות שלך."
 #: src/components/systems-table/systems-table.tsx
 msgid "Visible Fields"
 msgstr "שדות גלויים"
+
+#: src/components/routes/system/nut-table.tsx
+#: src/components/routes/system/nut-table.tsx
+msgid "Voltage"
+msgstr ""
 
 #: src/components/routes/system/chart-card.tsx
 msgid "Waiting for enough records to display"

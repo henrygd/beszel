@@ -50,6 +50,7 @@ type SystemManager struct {
 	sshConfig           *ssh.ClientConfig                     // SSH client configuration for system connections
 	smartFetchMap       *expirymap.ExpiryMap[smartFetchState] // Stores last SMART fetch time/result; TTL is only for cleanup
 	zfsFetchMap         *expirymap.ExpiryMap[zfsFetchState]   // Stores last ZFS fetch time/result; TTL is only for cleanup
+	nutFetchMap         *expirymap.ExpiryMap[nutFetchState]   // Stores last NUT fetch time/result; TTL is only for cleanup
 	realtimeMutex       sync.Mutex                            // Protects all realtime worker and subscription state
 	activeSubscriptions map[string]*subscriptionInfo          // Realtime subscriptions keyed by system ID
 	realtimeWorkerStop  chan struct{}                         // Stops the current realtime worker generation
@@ -79,6 +80,7 @@ func NewSystemManager(hub hubLike) *SystemManager {
 		hub:                 hub,
 		smartFetchMap:       expirymap.New[smartFetchState](time.Hour),
 		zfsFetchMap:         expirymap.New[zfsFetchState](time.Hour),
+		nutFetchMap:         expirymap.New[nutFetchState](time.Hour),
 		activeSubscriptions: make(map[string]*subscriptionInfo),
 	}
 	sm.ctx, sm.cancel = context.WithCancel(context.Background())
@@ -351,6 +353,7 @@ func (sm *SystemManager) AddWebSocketSystem(systemId string, agentVersion semver
 		return err
 	}
 	sm.resetFailedSmartFetchState(systemId)
+	sm.resetFailedNutFetchState(systemId)
 
 	system := sm.NewSystem(systemId)
 	system.WsConn = wsConn
@@ -392,6 +395,15 @@ func (sm *SystemManager) resetFailedZfsFetchState(systemID string) {
 	state, ok := sm.zfsFetchMap.GetOk(systemID)
 	if ok && !state.Successful {
 		sm.zfsFetchMap.Remove(systemID)
+	}
+}
+
+// resetFailedNutFetchState clears only failed NUT cooldown entries so a fresh
+// agent reconnect retries NUT discovery immediately after configuration changes.
+func (sm *SystemManager) resetFailedNutFetchState(systemID string) {
+	state, ok := sm.nutFetchMap.GetOk(systemID)
+	if ok && !state.Successful {
+		sm.nutFetchMap.Remove(systemID)
 	}
 }
 

@@ -10,3 +10,6 @@ func backgroundSmartFetchEnabled() bool { return true }
 
 // Background ZFS fetching follows the same policy as SMART fetching.
 func backgroundZfsFetchEnabled() bool { return true }
+
+// Background NUT fetching follows the same policy as SMART fetching.
+func backgroundNutFetchEnabled() bool { return true }

@@ -20,6 +20,7 @@ import (
 
 	"github.com/henrygd/beszel/internal/entities/container"
 	"github.com/henrygd/beszel/internal/entities/monitor"
+	"github.com/henrygd/beszel/internal/entities/nut"
 	"github.com/henrygd/beszel/internal/entities/smart"
 	"github.com/henrygd/beszel/internal/entities/system"
 	"github.com/henrygd/beszel/internal/entities/systemd"
@@ -56,6 +57,8 @@ type System struct {
 	smartInterval  time.Duration              // Interval for periodic SMART data updates
 	zfsFetching    atomic.Bool                // True if ZFS pools are currently being fetched
 	zfsInterval    time.Duration              // Interval for periodic ZFS detail data updates
+	nutFetching    atomic.Bool                // True if NUT (UPS/PDU) devices are currently being fetched
+	nutInterval    time.Duration              // Interval for periodic NUT (UPS/PDU) data updates
 
 	// A fresh connection needs a full monitor configuration sync.
 	monitorsNeedSync atomic.Bool
@@ -175,6 +178,12 @@ func (sys *System) update() error {
 			sys.manager.hub.Logger().Info("ZFS interval updated from agent details", "system", sys.Id, "interval", sys.zfsInterval.String())
 			sys.manager.zfsFetchMap.UpdateExpiration(sys.Id, sys.zfsInterval+time.Minute)
 		}
+		// update nut interval if it's set on the agent side
+		if data.Details.NutInterval > 0 {
+			sys.nutInterval = data.Details.NutInterval
+			sys.manager.hub.Logger().Info("NUT interval updated from agent details", "system", sys.Id, "interval", sys.nutInterval.String())
+			sys.manager.nutFetchMap.UpdateExpiration(sys.Id, sys.nutInterval+time.Minute)
+		}
 	}
 
 	// Fetch and save SMART devices when system first comes online or at intervals
@@ -201,6 +210,20 @@ func (sys *System) update() error {
 			go func() {
 				defer sys.zfsFetching.Store(false)
 				_ = sys.FetchAndSaveZfsPools(false)
+			}()
+		}
+	}
+
+	// Fetch and save NUT (UPS/PDU) devices when system first comes online or at intervals
+	if backgroundNutFetchEnabled() && sys.detailsFetched.Load() && sys.supportsNutData() {
+		if sys.nutInterval <= 0 {
+			sys.nutInterval = time.Hour
+		}
+		if sys.shouldFetchNut() && sys.nutFetching.CompareAndSwap(false, true) {
+			sys.manager.hub.Logger().Info("NUT fetch", "system", sys.Id, "interval", sys.nutInterval.String())
+			go func() {
+				defer sys.nutFetching.Store(false)
+				_ = sys.FetchAndSaveNutDevices()
 			}()
 		}
 	}
@@ -800,6 +823,15 @@ func (sys *System) FetchZfsDataFromAgent(force bool) (*zfs.ZfsData, error) {
 	return &result, err
 }
 
+// FetchNutDataFromAgent fetches NUT (UPS/PDU) data from the agent.
+func (sys *System) FetchNutDataFromAgent() (nut.NutDataResponse, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
+	defer cancel()
+	var result nut.NutDataResponse
+	err := sys.request(ctx, common.GetNutData, nil, &result)
+	return result, err
+}
+
 func MakeStableHashId(strings ...string) string {
 	hash := fnv.New32a()
 	for _, str := range strings {
@@ -971,6 +1003,7 @@ func (s *System) createSSHClient() error {
 	s.agentVersion, _ = extractAgentVersion(string(client.Conn.ServerVersion()))
 	s.monitorsNeedSync.Store(true)
 	s.manager.resetFailedSmartFetchState(s.Id)
+	s.manager.resetFailedNutFetchState(s.Id)
 	s.manager.resetFailedZfsFetchState(s.Id)
 	return nil
 }

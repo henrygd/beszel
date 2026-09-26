@@ -45,8 +45,13 @@ func newTestSystemWithHub(t *testing.T) (*System, *pbtests.TestApp) {
 	require.NoError(t, err)
 	t.Cleanup(testApp.Cleanup)
 
-	sm := &SystemManager{hub: stubHub{testApp}, smartFetchMap: expirymap.New[smartFetchState](time.Hour)}
+	sm := &SystemManager{
+		hub:           stubHub{testApp},
+		smartFetchMap: expirymap.New[smartFetchState](time.Hour),
+		nutFetchMap:   expirymap.New[nutFetchState](time.Hour),
+	}
 	t.Cleanup(sm.smartFetchMap.StopCleaner)
+	t.Cleanup(sm.nutFetchMap.StopCleaner)
 
 	col, err := testApp.FindCachedCollectionByNameOrId("systems")
 	require.NoError(t, err)

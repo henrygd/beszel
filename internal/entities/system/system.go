@@ -210,6 +210,7 @@ type Details struct {
 	MemoryTotal   uint64        `cbor:"9,keyasint"`
 	SmartInterval time.Duration `cbor:"10,keyasint,omitempty"`
 	ZfsInterval   time.Duration `cbor:"11,keyasint,omitempty"` // interval for ZFS detail refresh
+	NutInterval   time.Duration `cbor:"12,keyasint,omitempty"` // interval for NUT (UPS/PDU) detail refresh
 }
 
 // Final data structure to return to the hub

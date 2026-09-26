@@ -48,6 +48,7 @@ type Agent struct {
 	dataDir                   string                                                // Directory for persisting data
 	keys                      []gossh.PublicKey                                     // SSH public keys
 	smartManager              *SmartManager                                         // Manages SMART data
+	nutManager                *NutManager                                           // Manages NUT (UPS/PDU) data
 	systemdManager            *systemdManager                                       // Manages systemd services
 	monitorManager            *MonitorManager                                       // Manages network monitors
 	storagePoolManager        *StoragePoolManager                                   // Manages storage pool and dataset data
@@ -119,6 +120,16 @@ func NewAgent(dataDir ...string) (agent *Agent, err error) {
 		}
 	}
 
+	// NUT_INTERVAL env var to update NUT (UPS/PDU) data at this interval
+	if nutIntervalEnv, exists := utils.GetEnv("NUT_INTERVAL"); exists {
+		if duration, err := time.ParseDuration(nutIntervalEnv); err == nil && duration > 0 {
+			agent.systemDetails.NutInterval = duration
+			slog.Info("NUT_INTERVAL", "duration", duration)
+		} else {
+			slog.Warn("Invalid NUT_INTERVAL", "err", err)
+		}
+	}
+
 	// initialize connection manager
 	agent.connectionManager = newConnectionManager(agent)
 
@@ -155,6 +166,11 @@ func NewAgent(dataDir ...string) (agent *Agent, err error) {
 	agent.smartManager, err = NewSmartManager()
 	if err != nil {
 		slog.Debug("SMART", "err", err)
+	}
+
+	agent.nutManager, err = NewNutManager()
+	if err != nil {
+		slog.Debug("NUT", "err", err)
 	}
 
 	agent.packageUpdates = newPackageUpdatesManager(agent.dataDir)

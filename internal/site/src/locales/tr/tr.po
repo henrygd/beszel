@@ -114,6 +114,7 @@ msgstr "5 dk"
 #. Table column
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
+#: src/components/routes/system/nut-table.tsx
 #: src/components/routes/system/smart-table.tsx
 #: src/components/routes/system/storage-pools-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
@@ -301,9 +302,17 @@ msgstr "Pil"
 
 #: src/components/routes/system/charts/sensor-charts.tsx
 #: src/components/routes/system/charts/sensor-charts.tsx
+#: src/components/routes/system/nut-table.tsx
+#: src/components/routes/system/nut-table.tsx
+#: src/components/routes/system/nut-table.tsx
+#: src/components/routes/system/nut-table.tsx
 #: src/lib/alerts.ts
 msgid "Battery"
 msgstr "Pil"
+
+#: src/components/routes/system/nut-table.tsx
+msgid "Battery charge and estimated runtime over time"
+msgstr ""
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Became active"
@@ -425,6 +434,7 @@ msgid "Change general application options."
 msgstr "Genel uygulama seçeneklerini değiştirin."
 
 #: src/components/routes/system/charts/sensor-charts.tsx
+#: src/components/routes/system/nut-table.tsx
 msgid "Charge"
 msgstr "Şarj"
 
@@ -463,6 +473,7 @@ msgstr "Sağlama toplamı hataları"
 
 #: src/components/containers-table/containers-table.tsx
 #: src/components/network-monitors-table/network-monitors-table.tsx
+#: src/components/routes/system/nut-table.tsx
 #: src/components/routes/system/smart-table.tsx
 #: src/components/routes/system/storage-pools-table.tsx
 #: src/components/routes/system/storage-pools-table.tsx
@@ -482,6 +493,7 @@ msgstr "Eşleşmeleri temizle"
 msgid "Click on a container to view more information."
 msgstr "Daha fazla bilgi görüntülemek için bir konteynere tıklayın."
 
+#: src/components/routes/system/nut-table.tsx
 #: src/components/routes/system/smart-table.tsx
 msgid "Click on a device to view more information."
 msgstr "Daha fazla bilgi görüntülemek için bir cihaza tıklayın."
@@ -688,6 +700,10 @@ msgstr "Kümülatif Yükleme"
 msgid "Cumulative Write"
 msgstr "Toplam yazma"
 
+#: src/components/routes/system/nut-table.tsx
+msgid "Current"
+msgstr ""
+
 #. Context: Battery state
 #. Context: Battery state
 #: src/components/routes/system/charts/sensor-charts.tsx
@@ -717,6 +733,7 @@ msgstr "Varsayılan zaman dilimi"
 #: src/components/network-monitors-table/network-monitors-columns.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/system/nut-table.tsx
 #: src/components/routes/system/smart-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Delete"
@@ -734,9 +751,14 @@ msgstr "Açıklama"
 msgid "Detail"
 msgstr "Ayrıntı"
 
+#: src/components/routes/system/nut-table.tsx
 #: src/components/routes/system/smart-table.tsx
 msgid "Device"
 msgstr "Cihaz"
+
+#: src/components/routes/system/nut-table.tsx
+msgid "Device Type"
+msgstr ""
 
 #. Context: Battery state
 #: src/lib/i18n.ts
@@ -798,6 +820,10 @@ msgstr "Kapalı ({downSystemsLength})"
 #: src/components/routes/system/network-sheet.tsx
 msgid "Download"
 msgstr "İndir"
+
+#: src/components/routes/system/nut-table.tsx
+msgid "Driver"
+msgstr ""
 
 #: src/components/alerts-history-columns.tsx
 msgid "Duration"
@@ -979,6 +1005,7 @@ msgstr "Fanlar"
 #: src/components/network-monitors-table/network-monitors-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/system/chart-card.tsx
+#: src/components/routes/system/nut-table.tsx
 #: src/components/routes/system/smart-table.tsx
 #: src/components/routes/system/storage-pools-table.tsx
 #: src/components/routes/system/storage-pools-table.tsx
@@ -991,6 +1018,7 @@ msgstr "Filtrele..."
 msgid "Fingerprint"
 msgstr "Parmak izi"
 
+#: src/components/routes/system/nut-table.tsx
 #: src/components/routes/system/smart-table.tsx
 msgid "Firmware"
 msgstr "Donanım Yazılımı"
@@ -1126,6 +1154,15 @@ msgstr "Görüntü güncellemesi mevcut"
 msgid "Inactive"
 msgstr "Pasif"
 
+#: src/components/routes/system/nut-table.tsx
+#: src/components/routes/system/nut-table.tsx
+msgid "Input Voltage"
+msgstr ""
+
+#: src/components/routes/system/nut-table.tsx
+msgid "Input, output, and battery voltage over time"
+msgstr ""
+
 #: src/components/network-monitors-table/network-monitors-columns.tsx
 #: src/components/network-monitors-table/network-monitors-columns.tsx
 #: src/components/routes/settings/heartbeat.tsx
@@ -1160,6 +1197,16 @@ msgstr "Yaşam döngüsü"
 #: src/components/systemd-table/systemd-table.tsx
 msgid "limit"
 msgstr "Sınır"
+
+#: src/components/routes/system/nut-table.tsx
+#: src/components/routes/system/nut-table.tsx
+#: src/components/routes/system/nut-table.tsx
+msgid "Load"
+msgstr ""
+
+#: src/components/routes/system/nut-table.tsx
+msgid "Load and output power over time"
+msgstr ""
 
 #: src/components/routes/system/charts/load-average-chart.tsx
 msgid "Load Average"
@@ -1279,6 +1326,8 @@ msgid "Min 1h"
 msgstr "Min. 1 saat"
 
 #. Device model
+#. Device model
+#: src/components/routes/system/nut-table.tsx
 #: src/components/routes/system/smart-table.tsx
 msgid "Model"
 msgstr "Model"
@@ -1369,6 +1418,7 @@ msgstr "Sonuç bulunamadı."
 #: src/components/containers-table/containers-table.tsx
 #: src/components/network-monitors-table/network-monitors-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
+#: src/components/routes/system/nut-table.tsx
 #: src/components/routes/system/smart-table.tsx
 #: src/components/systemd-table/systemd-table.tsx
 msgid "No results."
@@ -1432,6 +1482,7 @@ msgstr "Tek kullanımlık şifre"
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
+#: src/components/routes/system/nut-table.tsx
 #: src/components/routes/system/smart-table.tsx
 #: src/components/routes/system/storage-pools-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
@@ -1446,6 +1497,21 @@ msgstr "Veya devam et"
 msgid "Other"
 msgstr "Diğer"
 
+#: src/components/routes/system/nut-table.tsx
+msgid "Outlet"
+msgstr ""
+
+#: src/components/routes/system/nut-table.tsx
+#: src/components/routes/system/nut-table.tsx
+#: src/components/routes/system/nut-table.tsx
+msgid "Output Power"
+msgstr ""
+
+#: src/components/routes/system/nut-table.tsx
+#: src/components/routes/system/nut-table.tsx
+msgid "Output Voltage"
+msgstr ""
+
 #: src/components/alerts/alerts-sheet.tsx
 msgid "Overwrite existing alerts"
 msgstr "Mevcut uyarıların üzerine yaz"
@@ -1454,6 +1520,7 @@ msgstr "Mevcut uyarıların üzerine yaz"
 msgid "Packet loss (%)"
 msgstr "Paket kaybı (%)"
 
+#: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
@@ -1585,6 +1652,12 @@ msgctxt "Container ports"
 msgid "Ports"
 msgstr "Portlar"
 
+#: src/components/routes/system/nut-table.tsx
+#: src/components/routes/system/nut-table.tsx
+#: src/components/routes/system/nut-table.tsx
+msgid "Power"
+msgstr ""
+
 #. Power On Time
 #: src/components/routes/system/smart-table.tsx
 msgid "Power On"
@@ -1659,6 +1732,7 @@ msgstr "Alındı"
 
 #: src/components/containers-table/containers-table.tsx
 #: src/components/containers-table/containers-table.tsx
+#: src/components/routes/system/nut-table.tsx
 #: src/components/routes/system/smart-table.tsx
 #: src/components/routes/system/storage-pools-table.tsx
 msgid "Refresh"
@@ -1727,6 +1801,12 @@ msgstr "Token'ı döndür"
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Rows per page"
 msgstr "Sayfa başına satır"
+
+#: src/components/routes/system/nut-table.tsx
+#: src/components/routes/system/nut-table.tsx
+#: src/components/routes/system/nut-table.tsx
+msgid "Runtime"
+msgstr ""
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Runtime Metrics"
@@ -1835,6 +1915,7 @@ msgstr "Test heartbeat gönder"
 msgid "Sent"
 msgstr "Gönderildi"
 
+#: src/components/routes/system/nut-table.tsx
 #: src/components/routes/system/smart-table.tsx
 msgid "Serial Number"
 msgstr "Seri Numarası"
@@ -1897,6 +1978,9 @@ msgid "State"
 msgstr "Durum"
 
 #: src/components/containers-table/containers-table-columns.tsx
+#: src/components/routes/system/nut-table.tsx
+#: src/components/routes/system/nut-table.tsx
+#: src/components/routes/system/nut-table.tsx
 #: src/components/routes/system/smart-table.tsx
 #: src/components/systemd-table/systemd-table.tsx
 #: src/components/systems-table/systems-table.tsx
@@ -1931,6 +2015,7 @@ msgstr "Temayı değiştir"
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
+#: src/components/routes/system/nut-table.tsx
 #: src/components/routes/system/smart-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 #: src/lib/alerts.ts
@@ -2163,6 +2248,7 @@ msgstr "Herhangi bir diskin kullanımı bir eşiği aştığında tetiklenir"
 
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/system/nut-table.tsx
 #: src/components/routes/system/smart-table.tsx
 #: src/components/routes/system/storage-pools-table.tsx
 msgid "Type"
@@ -2214,6 +2300,7 @@ msgstr "Güncelle"
 #: src/components/containers-table/containers-table-columns.tsx
 #: src/components/network-monitors-table/network-monitors-columns.tsx
 #: src/components/network-monitors-table/network-monitors-columns.tsx
+#: src/components/routes/system/nut-table.tsx
 #: src/components/routes/system/smart-table.tsx
 #: src/components/routes/system/storage-pools-table.tsx
 #: src/components/systemd-table/systemd-table-columns.tsx
@@ -2227,6 +2314,10 @@ msgstr "Her 10 dakikada bir güncellenir."
 #: src/components/routes/system/network-sheet.tsx
 msgid "Upload"
 msgstr "Yükle"
+
+#: src/components/routes/system/nut-table.tsx
+msgid "UPS / PDU Details"
+msgstr ""
 
 #: src/components/routes/system/info-bar.tsx
 #: src/components/systems-table/systems-table-columns.tsx
@@ -2288,6 +2379,11 @@ msgstr "En son 200 uyarınızı görüntüleyin."
 #: src/components/systems-table/systems-table.tsx
 msgid "Visible Fields"
 msgstr "Görünür Alanlar"
+
+#: src/components/routes/system/nut-table.tsx
+#: src/components/routes/system/nut-table.tsx
+msgid "Voltage"
+msgstr ""
 
 #: src/components/routes/system/chart-card.tsx
 msgid "Waiting for enough records to display"
