@@ -32,8 +32,29 @@ import { Separator } from "../ui/separator"
 import { $router, Link } from "../router"
 import { listenKeys } from "nanostores"
 import { getPagePath } from "@nanostores/router"
+import { useStore } from "@nanostores/react"
 
 const syntaxTheme = "github-dark-dimmed"
+
+// The name column stays pinned while the rest of the table scrolls horizontally.
+// A fade past its edge hides the columns sliding underneath instead of cutting their text off mid-word.
+const stickyColumnClass = cn(
+	"sticky start-0 z-10 shadow-[1px_0_0_var(--color-border)]",
+	"after:absolute after:inset-y-0 after:start-full after:w-5 after:pointer-events-none after:bg-linear-to-r rtl:after:bg-linear-to-l after:to-transparent"
+)
+// Sticky cells need an opaque background, so the row's translucent hover and
+// selection colors are mixed into the card color instead.
+const stickyCellClass = cn(
+	stickyColumnClass,
+	"bg-card after:from-card",
+	"group-hover:bg-[color-mix(in_oklab,var(--color-muted)_40%,var(--color-card))]",
+	"dark:group-hover:bg-[color-mix(in_oklab,var(--color-muted)_20%,var(--color-card))]",
+	"group-data-[state=selected]:bg-[color-mix(in_oklab,var(--color-muted)_40%,var(--color-card))]"
+)
+
+// The system column only earns its space when it is wide enough; below that the
+// system name is shown under the container name instead.
+const systemColumnClass = "hidden @2xl:table-cell"
 
 export default function ContainersTable({ systemId }: { systemId?: string }) {
 	const loadTime = Date.now()
@@ -45,6 +66,8 @@ export default function ContainersTable({ systemId }: { systemId?: string }) {
 	)
 	const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
 	const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
+	// With a single system every row would repeat the same system name
+	const systemCount = Object.keys(useStore($allSystemsById)).length
 
 	// Hide ports column if no ports are present
 	useEffect(() => {
@@ -136,7 +159,7 @@ export default function ContainersTable({ systemId }: { systemId?: string }) {
 		state: {
 			sorting,
 			columnFilters,
-			columnVisibility,
+			columnVisibility: { ...columnVisibility, system: systemCount > 1 },
 			rowSelection,
 			globalFilter,
 		},
@@ -466,7 +489,15 @@ function ContainersTableHead({ table }: { table: TableType<ContainerRecord> }) {
 				<tr key={headerGroup.id}>
 					{headerGroup.headers.map((header) => {
 						return (
-							<TableHead className="px-2" key={header.id} style={{ width: header.getSize() }}>
+							<TableHead
+								className={cn(
+									"px-1 @lg:px-2",
+									header.column.id === "name" && cn(stickyColumnClass, "bg-table-header after:from-table-header"),
+									header.column.id === "system" && systemColumnClass
+								)}
+								key={header.id}
+								style={{ width: header.getSize() }}
+							>
 								{header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
 							</TableHead>
 						)
@@ -489,13 +520,17 @@ const ContainerTableRow = memo(function ContainerTableRow({
 	return (
 		<TableRow
 			data-state={row.getIsSelected() && "selected"}
-			className="cursor-pointer transition-opacity"
+			className="group cursor-pointer transition-opacity"
 			onClick={() => openSheet(row.original)}
 		>
 			{row.getVisibleCells().map((cell) => (
 				<TableCell
 					key={cell.id}
-					className="py-0 ps-4.5"
+					className={cn(
+						"py-0 ps-3 @lg:ps-4.5",
+						cell.column.id === "name" && stickyCellClass,
+						cell.column.id === "system" && systemColumnClass
+					)}
 					style={{
 						height: virtualRow.size,
 						width: cell.column.getSize(),

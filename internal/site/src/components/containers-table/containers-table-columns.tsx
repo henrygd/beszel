@@ -48,8 +48,16 @@ export const containerChartCols: ColumnDef<ContainerRecord>[] = [
 		sortingFn: (a, b) => a.original.name.localeCompare(b.original.name),
 		accessorFn: (record) => record.name,
 		header: ({ column }) => <HeaderButton column={column} name={t`Name`} Icon={ContainerIcon} />,
-		cell: ({ getValue }) => {
-			return <span className="ms-1.5 xl:w-48 block truncate">{getValue() as string}</span>
+		cell: ({ getValue, row, table }) => {
+			const name = getValue() as string
+			// On narrow screens the system column is hidden, so show the system under the name instead
+			const showSystem = table.getColumn("system")?.getIsVisible() ?? false
+			return (
+				<div className="ms-1.5 max-w-36 @lg:max-w-56 xl:w-48" title={name}>
+					<span className="block truncate">{name}</span>
+					{showSystem && <ContainerSystemName systemId={row.original.system} />}
+				</div>
+			)
 		},
 	},
 	{
@@ -243,17 +251,22 @@ function HeaderButton({
 	return (
 		<Button
 			className={cn(
-				"h-9 px-3 flex items-center gap-2 duration-50",
+				"h-9 px-2 @lg:px-3 flex items-center gap-2 duration-50",
 				isSorted && "bg-accent/70 light:bg-accent text-accent-foreground/90"
 			)}
 			variant="ghost"
 			onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
 		>
-			{Icon && <Icon className="size-4" />}
+			{Icon && <Icon className="size-4 hidden @lg:block" />}
 			{name}
 			{/* <ArrowUpDownIcon className="size-4" /> */}
 		</Button>
 	)
+}
+
+function ContainerSystemName({ systemId }: { systemId: string }) {
+	const allSystems = useStore($allSystemsById)
+	return <span className="block truncate text-xs text-muted-foreground @2xl:hidden">{allSystems[systemId]?.name}</span>
 }
 
 /**
