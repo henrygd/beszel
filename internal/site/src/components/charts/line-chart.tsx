@@ -41,6 +41,7 @@ export default function LineChartDefault({
 	domain2,
 	max2,
 	legend,
+	legendExclude,
 	itemSorter,
 	showTotal = false,
 	reverseStackOrder = false,
@@ -67,6 +68,8 @@ export default function LineChartDefault({
 	/** Domain for the right axis, when any dataPoint uses it. */
 	domain2?: AxisDomain
 	legend?: boolean
+	/** Series labels to leave out of the legend */
+	legendExclude?: Set<string>
 	showTotal?: boolean
 	// biome-ignore lint/suspicious/noExplicitAny: recharts tooltip item interop
 	itemSorter?: (a: any, b: any) => number
@@ -199,7 +202,7 @@ export default function LineChartDefault({
 						}
 					/>
 					{Lines}
-					{legend && <ChartLegend content={<ChartLegendContent />} />}
+					{legend && <ChartLegend content={<ChartLegendContent exclude={legendExclude} />} />}
 				</LineChart>
 			</ChartContainer>
 		)

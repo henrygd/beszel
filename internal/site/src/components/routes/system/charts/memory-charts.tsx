@@ -26,6 +26,7 @@ export function MemoryChart({
 }) {
 	const maxValSelect = isLongerChart ? <SelectAvgMax max={maxValues} /> : null
 	const totalMem = toFixedFloat(chartData.systemStats.at(-1)?.stats.m ?? 0, 1)
+	const hasZfsArc = chartData.systemStats.some((record) => record.stats?.mz)
 
 	return (
 		<ChartCard
@@ -34,9 +35,11 @@ export function MemoryChart({
 			title={t`Memory Usage`}
 			description={t`Precise utilization at the recorded time`}
 			cornerEl={maxValSelect}
+			legend={true}
 		>
 			<AreaChartDefault
 				chartData={chartData}
+				legend={true}
 				domain={[0, totalMem]}
 				itemSorter={(a, b) => a.order - b.order}
 				maxToggled={showMax}
@@ -58,13 +61,17 @@ export function MemoryChart({
 						stackId: "1",
 						order: 3,
 					},
-					{
-						label: "ZFS ARC",
-						dataKey: ({ stats }) => (showMax ? null : stats?.mz),
-						color: "hsla(175 60% 45% / 0.8)",
-						opacity: 0.5,
-						order: 2,
-					},
+					...(hasZfsArc
+						? [
+								{
+									label: "ZFS ARC",
+									dataKey: ({ stats }: SystemStatsRecord) => (showMax ? null : stats?.mz),
+									color: "hsla(175 60% 45% / 0.8)",
+									opacity: 0.5,
+									order: 2,
+								},
+							]
+						: []),
 					{
 						label: t`Cache / Buffers`,
 						dataKey: ({ stats }) => (showMax ? null : stats?.mb),
@@ -92,7 +99,7 @@ export function ContainerMemoryChart({
 	isPodman: boolean
 	memoryConfig: ChartConfig
 }) {
-	const { filter, dataPoints } = useContainerDataPoints(memoryConfig, (key, data) => data[key]?.m ?? null)
+	const { filter, dataPoints, filteredKeys } = useContainerDataPoints(memoryConfig, (key, data) => data[key]?.m ?? null)
 
 	return (
 		<ChartCard
@@ -101,10 +108,13 @@ export function ContainerMemoryChart({
 			title={dockerOrPodman(t`Docker Memory Usage`, isPodman)}
 			description={t`Memory usage of containers`}
 			cornerEl={<FilterBar />}
+			legend={true}
 		>
 			<AreaChartDefault
 				chartData={chartData}
 				customData={chartData.containerData}
+				legend={true}
+				legendExclude={filteredKeys}
 				dataPoints={dataPoints}
 				tickFormatter={(val) => {
 					const { value, unit } = formatBytes(val, false, Unit.Bytes, true)

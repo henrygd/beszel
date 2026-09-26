@@ -327,6 +327,9 @@ ChartTooltipContent.displayName = "ChartTooltip"
 
 const ChartLegend = RechartsPrimitive.Legend
 
+/** Max number of items listed in a chart legend; the rest are summarized as "+N" */
+export const LEGEND_LIMIT = 10
+
 const ChartLegendContent = React.forwardRef<
 	HTMLDivElement,
 	React.ComponentProps<"div"> &
@@ -334,15 +337,26 @@ const ChartLegendContent = React.forwardRef<
 			hideIcon?: boolean
 			nameKey?: string
 			reverse?: boolean
+			/** Max number of items to show (default LEGEND_LIMIT); the rest are summarized as "+N" */
+			limit?: number
+			/** Item names to leave out of the legend */
+			exclude?: Set<string>
 		}
->(({ className, payload, verticalAlign = "bottom", reverse = false }, ref) => {
+>(({ className, payload, verticalAlign = "bottom", reverse = false, limit = LEGEND_LIMIT, exclude }, ref) => {
 	// const { config } = useChart()
 
 	if (!payload?.length) {
 		return null
 	}
 
-	const reversedPayload = reverse ? [...payload].reverse() : payload
+	let reversedPayload = reverse ? [...payload].reverse() : payload
+	if (exclude?.size) {
+		reversedPayload = reversedPayload.filter((item) => !exclude.has(item.value))
+	}
+	const hiddenCount = Math.max(0, reversedPayload.length - limit)
+	if (hiddenCount) {
+		reversedPayload = reversedPayload.slice(0, limit)
+	}
 
 	return (
 		<div
@@ -374,12 +388,15 @@ const ChartLegendContent = React.forwardRef<
 								backgroundColor: item.color,
 							}}
 						/>
-						{item.value}
+						<span className="truncate max-w-40" title={item.value}>
+							{item.value}
+						</span>
 						{/* )} */}
 						{/* {itemConfig?.label} */}
 					</div>
 				)
 			})}
+			{hiddenCount > 0 && <span className="text-muted-foreground">+{hiddenCount}</span>}
 		</div>
 	)
 })

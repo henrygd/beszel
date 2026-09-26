@@ -190,9 +190,17 @@ export function DiskIOChart({ systemData, extraFsName }: { systemData: SystemDat
 	}
 
 	return (
-		<ChartCard empty={dataEmpty} grid={grid} title={title} description={description} cornerEl={CornerEl}>
+		<ChartCard
+			empty={dataEmpty}
+			grid={grid}
+			title={title}
+			description={description}
+			cornerEl={CornerEl}
+			legend={true}
+		>
 			<AreaChartDefault
 				chartData={chartData}
+				legend={true}
 				maxToggled={showMax}
 				// domain={pinnedAxisDomain(true)}
 				showTotal={true}
