@@ -225,6 +225,7 @@ func (client *WebSocketClient) OnClose(conn *gws.Conn, err error) {
 	if err != nil {
 		slog.Warn("Connection closed", "err", strings.TrimPrefix(err.Error(), "gws: "))
 	}
+	client.hubVerified = false
 	client.agent.connectionManager.eventChan <- WebSocketDisconnect
 }
 
@@ -303,6 +304,7 @@ func (client *WebSocketClient) verifySignature(signature []byte) (err error) {
 // Close closes the WebSocket connection gracefully.
 // This method is safe to call multiple times.
 func (client *WebSocketClient) Close() {
+	client.hubVerified = false
 	if client.Conn != nil {
 		_ = client.Conn.WriteClose(1000, nil)
 	}

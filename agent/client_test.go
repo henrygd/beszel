@@ -526,10 +526,13 @@ func TestWebSocketClient_Close(t *testing.T) {
 	client, err := newWebSocketClient(agent)
 	require.NoError(t, err)
 
+	client.hubVerified = true
+
 	// Test closing with nil connection (should not panic)
 	assert.NotPanics(t, func() {
 		client.Close()
 	})
+	assert.False(t, client.hubVerified, "hubVerified should be reset to false on Close")
 }
 
 // TestWebSocketClient_ConnectRateLimit tests connection rate limiting

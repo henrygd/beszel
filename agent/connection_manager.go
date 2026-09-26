@@ -171,6 +171,14 @@ func (c *ConnectionManager) handleEvent(event ConnectionEvent) {
 	case WebSocketDisconnect:
 		if c.State == WebSocketConnected {
 			c.handleStateChange(Disconnected)
+		} else if c.State == Disconnected {
+			c.closeWebSocket()
+			c.startSSHServer()
+			c.startWsTicker()
+			if !c.isConnecting {
+				c.isConnecting = true
+				go c.connect()
+			}
 		}
 	case SSHDisconnect:
 		if c.State == SSHConnected {
@@ -201,6 +209,7 @@ func (c *ConnectionManager) handleStateChange(newState ConnectionState) {
 		c.isConnecting = false
 	case Disconnected:
 		c.ConnectionType = system.ConnectionTypeNone
+		c.startWsTicker()
 		if c.isConnecting {
 			// Already handling reconnection, avoid duplicate attempts
 			return

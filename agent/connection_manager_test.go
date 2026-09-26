@@ -144,6 +144,12 @@ func TestConnectionManager_EventHandling(t *testing.T) {
 			event:         SSHDisconnect,
 			expectedState: WebSocketConnected,
 		},
+		{
+			name:          "WebSocket disconnect from disconnected (remains disconnected and ensures recovery)",
+			initialState:  Disconnected,
+			event:         WebSocketDisconnect,
+			expectedState: Disconnected,
+		},
 	}
 
 	for _, tc := range testCases {
@@ -153,6 +159,48 @@ func TestConnectionManager_EventHandling(t *testing.T) {
 			assert.Equal(t, tc.expectedState, cm.State, "State should match expected after event")
 		})
 	}
+}
+
+// TestConnectionManager_WebSocketDisconnectWhenDisconnected verifies that
+// receiving a WebSocketDisconnect event when already in Disconnected state
+// (e.g. an unauthenticated connection timed out or dropped) restarts the
+// reconnection ticker to prevent the agent from freezing permanently (#2326).
+func TestConnectionManager_WebSocketDisconnectWhenDisconnected(t *testing.T) {
+	agent := createTestAgent(t)
+	cm := agent.connectionManager
+	cm.wsClient = &WebSocketClient{
+		hubURL: &url.URL{
+			Host: "localhost:8080",
+		},
+	}
+	cm.State = Disconnected
+	cm.wsTicker = nil
+	cm.isConnecting = false
+
+	cm.handleEvent(WebSocketDisconnect)
+
+	assert.Equal(t, Disconnected, cm.State, "State should remain Disconnected")
+	assert.NotNil(t, cm.wsTicker, "WebSocket ticker must be running to retry connecting")
+}
+
+// TestConnectionManager_HandleStateChangeDisconnected_StartsTicker verifies
+// that transitioning to Disconnected state immediately starts the WebSocket ticker
+// so the agent does not lose its retry mechanism.
+func TestConnectionManager_HandleStateChangeDisconnected_StartsTicker(t *testing.T) {
+	agent := createTestAgent(t)
+	cm := agent.connectionManager
+	cm.wsClient = &WebSocketClient{
+		hubURL: &url.URL{
+			Host: "localhost:8080",
+		},
+	}
+	cm.State = WebSocketConnected
+	cm.wsTicker = nil
+
+	cm.handleStateChange(Disconnected)
+
+	assert.Equal(t, Disconnected, cm.State, "State should transition to Disconnected")
+	assert.NotNil(t, cm.wsTicker, "WebSocket ticker should be started when entering Disconnected state")
 }
 
 // TestConnectionManager_TickerManagement tests WebSocket ticker management
