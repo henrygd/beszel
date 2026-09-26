@@ -9,6 +9,7 @@ import (
 	"net"
 	"net/url"
 	"testing"
+	"testing/synctest"
 	"time"
 
 	"github.com/stretchr/testify/assert"
@@ -250,33 +251,35 @@ func TestConnectionManager_TickerSurvivesStaleDisconnect(t *testing.T) {
 	cm := agent.connectionManager
 	cm.eventChan = make(chan ConnectionEvent, 1)
 
-	// Simulate a healthy WebSocket connection, then a disconnect - mirroring
-	// handleStateChange's own Disconnected branch, but without launching the
-	// real async connect() goroutine so the ticker state can be asserted
-	// deterministically.
-	cm.State = WebSocketConnected
-	cm.stopWsTicker()
-	cm.setConnecting(true)
-	cm.handleStateChange(Disconnected)
-	require.NotNil(t, cm.wsTicker, "ticker must be armed as soon as the manager becomes Disconnected")
+	// Run on synctest's fake clock so the ticker fires without waiting a real
+	// wsTickerInterval. The ticker must be created inside the bubble.
+	synctest.Test(t, func(t *testing.T) {
+		// Simulate a healthy WebSocket connection, then a disconnect - mirroring
+		// handleStateChange's own Disconnected branch, but without launching the
+		// real async connect() goroutine so the ticker state can be asserted
+		// deterministically.
+		cm.State = WebSocketConnected
+		cm.stopWsTicker()
+		cm.setConnecting(true)
+		cm.handleStateChange(Disconnected)
+		require.NotNil(t, cm.wsTicker, "ticker must be armed as soon as the manager becomes Disconnected")
+		defer cm.stopWsTicker()
 
-	// Now simulate connect()'s in-flight handshake dying asynchronously with the
-	// manager still Disconnected (e.g. a late OnClose on an unauthenticated
-	// connection). This event is dropped by handleEvent since State is not
-	// WebSocketConnected, but the ticker armed above must still be running so
-	// the manager keeps retrying.
-	cm.isConnecting = false
-	cm.handleEvent(WebSocketDisconnect)
-	assert.Equal(t, Disconnected, cm.State)
-	assert.NotNil(t, cm.wsTicker, "ticker must still exist after a stale disconnect event")
+		// Now simulate connect()'s in-flight handshake dying asynchronously with the
+		// manager still Disconnected (e.g. a late OnClose on an unauthenticated
+		// connection). This event is dropped by handleEvent since State is not
+		// WebSocketConnected, but the ticker armed above must still be running so
+		// the manager keeps retrying.
+		cm.setConnecting(false)
+		cm.handleEvent(WebSocketDisconnect)
+		assert.Equal(t, Disconnected, cm.State)
 
-	select {
-	case <-cm.wsTicker.C:
-	case <-time.After(wsTickerInterval + 2*time.Second):
-		t.Fatal("ticker did not fire after a stale disconnect event - agent would freeze forever")
-	}
-
-	cm.stopWsTicker()
+		select {
+		case <-cm.wsTicker.C:
+		case <-time.After(wsTickerInterval + 2*time.Second):
+			t.Fatal("ticker did not fire after a stale disconnect event - agent would freeze forever")
+		}
+	})
 }
 
 // TestConnectionManager_ConnectWithRateLimit tests connection rate limiting

@@ -149,7 +149,10 @@ func (c *ConnectionManager) Start(serverOptions ServerOptions) error {
 		case connectionEvent := <-c.eventChan:
 			c.handleEvent(connectionEvent)
 		case <-c.wsTicker.C:
-			_ = c.startWebSocketConnection()
+			// skip if connect() is still running its own attempt
+			if !c.isConnectingNow() {
+				_ = c.startWebSocketConnection()
+			}
 		case <-healthTicker:
 			_ = health.Update()
 		case <-sigCtx.Done():
