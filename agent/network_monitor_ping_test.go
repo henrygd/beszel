@@ -10,12 +10,15 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
+	"slices"
 	"testing"
+	"testing/synctest"
 	"time"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"golang.org/x/net/icmp"
+	"golang.org/x/net/ipv4"
 )
 
 type testICMPPacketConn struct{}
@@ -45,7 +48,7 @@ func TestMonitorICMPPacketCancellation(t *testing.T) {
 	defer cancel()
 	done := make(chan error, 1)
 	go func() {
-		_, err := monitorICMPPacket(ctx, blocking, &icmpV4, conn.LocalAddr())
+		_, err := monitorICMPPacket(ctx, blocking, &icmpV4, conn.LocalAddr(), 1)
 		done <- err
 	}()
 	select {
@@ -73,7 +76,7 @@ func TestMonitorICMPExecCancellation(t *testing.T) {
 	defer cancel()
 	done := make(chan error, 1)
 	go func() {
-		_, err := monitorICMPExec(ctx, "127.0.0.1", false)
+		_, err := monitorICMPExec(ctx, "127.0.0.1", false, icmpPingCount)
 		done <- err
 	}()
 	select {
@@ -92,13 +95,13 @@ func TestPingCommand(t *testing.T) {
 				if ipv6 {
 					target, family = "2001:db8::1", "-6"
 				}
-				name, args, err := pingCommand(goos, target, ipv6)
+				name, args, err := pingCommand(goos, target, ipv6, 5)
 				require.NoError(t, err)
 				wantName := "ping"
-				wantArgs := []string{"-n", "-c", "1", target}
+				wantArgs := []string{"-n", "-c", "5", target}
 				switch goos {
 				case "windows":
-					wantArgs = []string{family, "-n", "1", "-w", "3000", target}
+					wantArgs = []string{family, "-n", "5", "-w", "3000", target}
 				case "linux":
 					wantArgs = append([]string{family}, wantArgs...)
 				default:
@@ -111,39 +114,48 @@ func TestPingCommand(t *testing.T) {
 			})
 		}
 	}
-	_, _, err := pingCommand("unsupported", "192.0.2.1", false)
+	_, _, err := pingCommand("unsupported", "192.0.2.1", false, 5)
 	require.Error(t, err)
 }
 
-func TestParsePingResponse(t *testing.T) {
+func TestParsePingResponses(t *testing.T) {
 	for _, tc := range []struct {
 		name   string
 		output string
-		wantUs int64
+		want   []int64
 	}{
-		{"linux", "64 bytes from 192.0.2.1: icmp_seq=1 ttl=64 time=12.345 ms", 12345},
-		{"bsd", "64 bytes from 192.0.2.1: icmp_seq=0 ttl=64 time=0.023 ms", 23},
-		{"ipv6", "64 bytes from 2001:db8::1: icmp_seq=0 hlim=64 time=1.234 ms", 1234},
-		{"windows", "Reply from 192.0.2.1: bytes=32 time=12ms TTL=128", 12000},
-		{"windows submillisecond", "Reply from ::1: time<1ms", 1000},
-		{"localized windows", "Antwort von 192.0.2.1: Bytes=32 Zeit=12ms TTL=128", 12000},
-		{"decimal comma", "64 bytes from 192.0.2.1: time=1,234 ms", 1234},
-		{"rounding", "time=0.1236 ms", 124},
-		{"empty", "", -1},
-		{"timeout", "Request timed out.", -1},
-		{"unreachable", "Reply from 192.0.2.1: Destination host unreachable.", -1},
-		{"malformed", "time=oops ms", -1},
-		{"negative", "time=-1 ms", -1},
-		{"overflow", "time=999999999999999999999 ms", -1},
+		{"linux", "64 bytes from 192.0.2.1: icmp_seq=1 ttl=64 time=12.345 ms", []int64{12345}},
+		{"bsd", "64 bytes from 192.0.2.1: icmp_seq=0 ttl=64 time=0.023 ms", []int64{23}},
+		{"ipv6", "64 bytes from 2001:db8::1: icmp_seq=0 hlim=64 time=1.234 ms", []int64{1234}},
+		{"windows", "Reply from 192.0.2.1: bytes=32 time=12ms TTL=128", []int64{12000}},
+		{"windows submillisecond", "Reply from ::1: time<1ms", []int64{1000}},
+		{"localized windows", "Antwort von 192.0.2.1: Bytes=32 Zeit=12ms TTL=128", []int64{12000}},
+		{"decimal comma", "64 bytes from 192.0.2.1: time=1,234 ms", []int64{1234}},
+		{"rounding", "time=0.1236 ms", []int64{124}},
+		{"empty", "", nil},
+		{"timeout", "Request timed out.", nil},
+		{"unreachable", "Reply from 192.0.2.1: Destination host unreachable.", nil},
+		{"malformed", "time=oops ms", nil},
+		{"negative", "time=-1 ms", nil},
+		{"overflow", "time=999999999999999999999 ms", nil},
+		{"linux partial loss", `PING 192.0.2.1 (192.0.2.1) 56(84) bytes of data.
+64 bytes from 192.0.2.1: icmp_seq=1 ttl=64 time=1.00 ms
+64 bytes from 192.0.2.1: icmp_seq=1 ttl=64 time=1.50 ms (DUP!)
+64 bytes from 192.0.2.1: icmp_seq=3 ttl=64 time=3.00 ms
+
+--- 192.0.2.1 ping statistics ---
+3 packets transmitted, 2 received, +1 duplicates, 33.3333% packet loss, time 2003ms
+rtt min/avg/max/mdev = 1.000/2.000/3.000/1.000 ms`, []int64{1000, 3000}},
+		{"windows partial loss", "Reply from 192.0.2.1: bytes=32 time=1ms TTL=128\r\n" +
+			"Request timed out.\r\n" +
+			"Reply from 192.0.2.1: bytes=32 time<1ms TTL=128\r\n\r\n" +
+			"Ping statistics for 192.0.2.1:\r\n" +
+			"    Packets: Sent = 3, Received = 2, Lost = 1 (33% loss),\r\n" +
+			"Approximate round trip times in milli-seconds:\r\n" +
+			"    Minimum = 1ms, Maximum = 1ms, Average = 1ms\r\n", []int64{1000, 1000}},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
-			responseUs, err := parsePingResponse([]byte(tc.output))
-			if tc.wantUs < 0 {
-				require.Error(t, err)
-			} else {
-				require.NoError(t, err)
-			}
-			assert.Equal(t, tc.wantUs, responseUs)
+			assert.Equal(t, tc.want, parsePingResponses([]byte(tc.output)))
 		})
 	}
 }
@@ -156,11 +168,12 @@ func TestMonitorICMPExecOutput(t *testing.T) {
 		name   string
 		output string
 		exit   int
-		wantUs int64
+		want   []int64
 	}{
-		{"success", "time=1.234 ms", 0, 1234},
-		{"missing RTT", "unrecognized output", 0, -1},
-		{"failed command with RTT", "time=1.234 ms", 1, -1},
+		{"success", "time=1.234 ms\ntime=2 ms", 0, []int64{1234, 2000, -1}},
+		{"missing RTT", "unrecognized output", 0, nil},
+		{"partial loss with failed exit", "time=1.234 ms", 1, []int64{1234, -1, -1}},
+		{"failed command", "", 1, nil},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			dir := t.TempDir()
@@ -169,13 +182,14 @@ func TestMonitorICMPExecOutput(t *testing.T) {
 			require.NoError(t, os.WriteFile(filepath.Join(dir, "ping"), []byte(script), 0o755))
 			t.Setenv("PATH", dir+string(os.PathListSeparator)+os.Getenv("PATH"))
 			t.Setenv("LC_ALL", "de_DE.UTF-8")
-			responseUs, err := monitorICMPExec(t.Context(), "127.0.0.1", false)
-			if tc.wantUs < 0 {
+			responses, err := monitorICMPExec(t.Context(), "127.0.0.1", false, 3)
+			if tc.want == nil {
 				require.Error(t, err)
+				assert.Equal(t, []int64{-1, -1, -1}, responses)
 			} else {
 				require.NoError(t, err)
+				assert.Equal(t, tc.want, responses)
 			}
-			assert.Equal(t, tc.wantUs, responseUs)
 		})
 	}
 }
@@ -187,17 +201,17 @@ type icmpTestReply struct {
 
 type scriptedICMPConn struct {
 	net.PacketConn
-	local        net.Addr
-	onWrite      func([]byte, net.Addr)
-	replies      []icmpTestReply
-	reads        int
-	deadlineSets int
+	local            net.Addr
+	onWrite          func([]byte, net.Addr)
+	replies          []icmpTestReply
+	reads            int
+	readDeadlineSets int
 }
 
 func (c *scriptedICMPConn) LocalAddr() net.Addr { return c.local }
 
-func (c *scriptedICMPConn) SetDeadline(deadline time.Time) error {
-	c.deadlineSets++
+func (c *scriptedICMPConn) SetReadDeadline(deadline time.Time) error {
+	c.readDeadlineSets++
 	return nil
 }
 
@@ -284,21 +298,111 @@ func TestMonitorICMPReplyCorrelation(t *testing.T) {
 								conn.replies = append(conn.replies, icmpTestReply{valid, dst})
 							}
 						}
-						elapsed, err := monitorICMPPacket(context.Background(), conn, family, dst)
+						responses, err := monitorICMPPacket(context.Background(), conn, family, dst, 1)
+						require.Len(t, responses, 1)
 						if eventuallyMatches {
 							require.NoError(t, err)
-							assert.GreaterOrEqual(t, elapsed, int64(0))
+							assert.GreaterOrEqual(t, responses[0], int64(0))
 						} else {
 							require.ErrorIs(t, err, os.ErrDeadlineExceeded)
-							assert.Equal(t, int64(-1), elapsed)
+							assert.Equal(t, int64(-1), responses[0])
 						}
 						assert.Equal(t, 2, conn.reads)
-						assert.Equal(t, 1, conn.deadlineSets)
+						assert.Equal(t, 1, conn.readDeadlineSets)
 					})
 				}
 			}
 		}
 	}
+}
+
+// timedICMPConn echoes each ping after a scripted round-trip time, honoring read deadlines.
+type timedICMPConn struct {
+	net.PacketConn
+	peer    net.Addr
+	rtts    []time.Duration // per ping; negative means lost
+	writes  int
+	replies []icmpTimedReply
+	until   time.Time
+}
+
+type icmpTimedReply struct {
+	data []byte
+	at   time.Time
+}
+
+func (c *timedICMPConn) LocalAddr() net.Addr { return &net.IPAddr{IP: net.IPv4zero} }
+
+func (c *timedICMPConn) SetReadDeadline(deadline time.Time) error {
+	c.until = deadline
+	return nil
+}
+
+func (c *timedICMPConn) WriteTo(data []byte, _ net.Addr) (int, error) {
+	rtt := c.rtts[c.writes]
+	c.writes++
+	if rtt >= 0 {
+		request, err := icmp.ParseMessage(icmpV4.proto, data)
+		if err != nil {
+			return 0, err
+		}
+		reply, err := (&icmp.Message{Type: ipv4.ICMPTypeEchoReply, Body: request.Body}).Marshal(nil)
+		if err != nil {
+			return 0, err
+		}
+		c.replies = append(c.replies, icmpTimedReply{reply, time.Now().Add(rtt)})
+		slices.SortFunc(c.replies, func(a, b icmpTimedReply) int { return a.at.Compare(b.at) })
+	}
+	return len(data), nil
+}
+
+func (c *timedICMPConn) ReadFrom(buf []byte) (int, net.Addr, error) {
+	for {
+		now := time.Now()
+		if len(c.replies) > 0 && !now.Before(c.replies[0].at) {
+			reply := c.replies[0]
+			c.replies = c.replies[1:]
+			return copy(buf, reply.data), c.peer, nil
+		}
+		if !now.Before(c.until) {
+			return 0, nil, os.ErrDeadlineExceeded
+		}
+		wake := c.until
+		if len(c.replies) > 0 && c.replies[0].at.Before(wake) {
+			wake = c.replies[0].at
+		}
+		time.Sleep(wake.Sub(now))
+	}
+}
+
+func TestMonitorICMPPacketMultiplePings(t *testing.T) {
+	synctest.Test(t, func(t *testing.T) {
+		dst := &net.IPAddr{IP: net.ParseIP("192.0.2.1")}
+		// The first reply arrives after later ones, and the third ping is lost.
+		conn := &timedICMPConn{peer: dst, rtts: []time.Duration{
+			500 * time.Millisecond, 10 * time.Millisecond, -1, 20 * time.Millisecond, 30 * time.Millisecond,
+		}}
+		start := time.Now()
+		responses, err := monitorICMPPacket(context.Background(), conn, &icmpV4, dst, 5)
+		require.NoError(t, err)
+		assert.Equal(t, []int64{500_000, 10_000, -1, 20_000, 30_000}, responses)
+		assert.Equal(t, 5, conn.writes)
+		assert.Equal(t, 4*icmpPingInterval+icmpReplyTimeout, time.Since(start), "waits for the lost ping until its reply timeout")
+
+		// Without loss, the check ends at the last reply.
+		conn = &timedICMPConn{peer: dst, rtts: []time.Duration{time.Millisecond, time.Millisecond, time.Millisecond}}
+		start = time.Now()
+		responses, err = monitorICMPPacket(context.Background(), conn, &icmpV4, dst, 3)
+		require.NoError(t, err)
+		assert.Equal(t, []int64{1000, 1000, 1000}, responses)
+		assert.Equal(t, 2*icmpPingInterval+time.Millisecond, time.Since(start))
+
+		// Every ping lost reports the read error.
+		conn = &timedICMPConn{peer: dst, rtts: []time.Duration{-1, -1}}
+		responses, err = monitorICMPPacket(context.Background(), conn, &icmpV4, dst, 2)
+		require.ErrorIs(t, err, os.ErrDeadlineExceeded)
+		assert.Equal(t, []int64{-1, -1}, responses)
+	})
 }
 
 func TestMonitorICMPLoopback(t *testing.T) {
@@ -318,9 +422,12 @@ func TestMonitorICMPLoopback(t *testing.T) {
 				if network == family.dgramNetwork {
 					dst = &net.UDPAddr{IP: ip}
 				}
-				elapsed, err := monitorICMPPacket(context.Background(), conn, family, dst)
+				responses, err := monitorICMPPacket(context.Background(), conn, family, dst, icmpPingCount)
 				require.NoError(t, err)
-				assert.GreaterOrEqual(t, elapsed, int64(0))
+				require.Len(t, responses, icmpPingCount)
+				for _, responseUs := range responses {
+					assert.GreaterOrEqual(t, responseUs, int64(0), "every loopback ping gets a reply")
+				}
 			})
 		}
 	}

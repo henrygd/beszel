@@ -14,24 +14,30 @@ import (
 
 const networkMonitorUserAgent = "Beszel-Agent/" + beszel.Version + " (+https://beszel.dev)"
 
-// monitorProbe performs one check. Errors are recorded as loss by the task runner.
+// monitorProbe performs one check and returns the response time of each attempt
+// in microseconds, or -1 for a lost attempt. ICMP checks send icmpPingCount pings;
+// other protocols make a single attempt. An error means every attempt failed and
+// is recorded as loss by the task runner.
 // Implementations must honor cancellation and bound their execution time.
-type monitorProbe func(context.Context, monitor.Config) (int64, error)
+type monitorProbe func(context.Context, monitor.Config) ([]int64, error)
 
 func networkMonitorProbe(client *http.Client) monitorProbe {
-	return func(ctx context.Context, config monitor.Config) (int64, error) {
+	return func(ctx context.Context, config monitor.Config) ([]int64, error) {
+		var responseUs int64
+		var err error
 		switch config.Protocol {
 		case "icmp":
-			return monitorICMP(ctx, config.Target)
+			return monitorICMP(ctx, config.Target, icmpPingCount)
 		case "tcp":
-			return monitorTCP(ctx, config.Target, config.Port)
+			responseUs, err = monitorTCP(ctx, config.Target, config.Port)
 		case "http":
-			return monitorHTTP(ctx, client, config.Target)
+			responseUs, err = monitorHTTP(ctx, client, config.Target)
 		case "dns":
-			return monitorDNS(ctx, config.Target, config.Server)
+			responseUs, err = monitorDNS(ctx, config.Target, config.Server)
 		default:
-			return -1, fmt.Errorf("unknown monitor protocol: %s", config.Protocol)
+			return nil, fmt.Errorf("unknown monitor protocol: %s", config.Protocol)
 		}
+		return []int64{responseUs}, err
 	}
 }
 

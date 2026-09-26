@@ -7,7 +7,6 @@ import (
 	"context"
 	"errors"
 	"log/slog"
-	"sync/atomic"
 	"testing"
 	"testing/synctest"
 	"time"
@@ -27,7 +26,7 @@ func TestMonitorFailureLogCooldown(t *testing.T) {
 		task := newMonitorTask(monitor.Config{ID: "test", Target: "example.test", Protocol: "tcp"})
 		defer task.cancel()
 		failure := errors.New("connection refused")
-		probe := func(context.Context, monitor.Config) (int64, error) { return 42, failure }
+		probe := func(context.Context, monitor.Config) ([]int64, error) { return []int64{42}, failure }
 		var samples int64
 		check := func(wantLog bool) {
 			t.Helper()
@@ -70,54 +69,39 @@ func TestMonitorFailureLogCooldown(t *testing.T) {
 
 		// A canceled probe must not publish a failure or emit a warning.
 		logs.Reset()
-		result := other.runProbe(func(context.Context, monitor.Config) (int64, error) {
+		result := other.runProbe(func(context.Context, monitor.Config) ([]int64, error) {
 			other.cancel()
-			return -1, context.Canceled
+			return []int64{-1}, context.Canceled
 		})
 		assert.Nil(t, result)
 		assert.Empty(t, logs.String())
 	})
 }
 
-func TestMonitorICMPPingsReflectPartialLoss(t *testing.T) {
-	var calls atomic.Int32
+func TestMonitorMultiPingCheckReflectsPartialLoss(t *testing.T) {
 	// Of five pings: two reply (1ms, 3ms), three are lost.
-	probe := func(context.Context, monitor.Config) (int64, error) {
-		switch calls.Add(1) {
-		case 1:
-			return 1000, nil
-		case 2:
-			return 3000, nil
-		default:
-			return -1, errors.New("timeout")
-		}
-	}
-
 	task := newMonitorTask(monitor.Config{ID: "test", Target: "example.test", Protocol: "icmp"})
 	defer task.cancel()
-	result := task.runProbe(probe)
+	result := task.runProbe(func(context.Context, monitor.Config) ([]int64, error) {
+		return []int64{1000, -1, 3000, -1, -1}, nil
+	})
 	require.NotNil(t, result)
-	assert.EqualValues(t, icmpPingCount, calls.Load())
 	assert.EqualValues(t, 1, result.SampleCount, "a check is one sample regardless of ping count")
-	assert.EqualValues(t, icmpPingCount, result.TotalCount)
+	assert.EqualValues(t, 5, result.TotalCount)
 	assert.EqualValues(t, 2, result.SuccessCount)
 	assert.EqualValues(t, 2000, result.AvgResponse)
 	assert.EqualValues(t, 1000, result.MinResponse)
 	assert.EqualValues(t, 3000, result.MaxResponse)
 	assert.Equal(t, 60.0, result.PacketLoss)
 
-	// Every ping lost still records loss for the whole check.
+	// Every ping lost still records loss for each ping.
 	task = newMonitorTask(monitor.Config{ID: "lost", Target: "example.test", Protocol: "icmp"})
 	defer task.cancel()
-	result = task.runProbe(func(context.Context, monitor.Config) (int64, error) { return -1, errors.New("timeout") })
+	result = task.runProbe(func(context.Context, monitor.Config) ([]int64, error) {
+		return []int64{-1, -1, -1, -1, -1}, errors.New("timeout")
+	})
 	require.NotNil(t, result)
-	assert.EqualValues(t, icmpPingCount, result.TotalCount)
+	assert.EqualValues(t, 5, result.TotalCount)
+	assert.Zero(t, result.SuccessCount)
 	assert.Equal(t, 100.0, result.PacketLoss)
-
-	// Other protocols send a single probe.
-	calls.Store(0)
-	task = newMonitorTask(monitor.Config{ID: "b", Protocol: "tcp"})
-	defer task.cancel()
-	task.runProbe(func(context.Context, monitor.Config) (int64, error) { calls.Add(1); return 1000, nil })
-	assert.EqualValues(t, 1, calls.Load())
 }

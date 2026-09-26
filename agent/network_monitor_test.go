@@ -545,7 +545,7 @@ func TestMonitorResolutionCancellation(t *testing.T) {
 				case "dns":
 					_, err = monitorDNS(ctx, "monitor-cancellation.invalid.", "")
 				case "icmp":
-					_, err = monitorICMP(ctx, "monitor-cancellation.invalid.")
+					_, err = monitorICMP(ctx, "monitor-cancellation.invalid.", icmpPingCount)
 				}
 				done <- err
 			}()

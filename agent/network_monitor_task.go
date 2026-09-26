@@ -11,9 +11,6 @@ import (
 
 const monitorFailureLogInterval = 5 * time.Minute
 
-// icmpPingCount is the number of pings sent per ICMP check.
-const icmpPingCount = 5
-
 // monitorTask coordinates a probe and its history for one immutable configuration.
 type monitorTask struct {
 	config         monitor.Config
@@ -121,43 +118,24 @@ func (task *monitorTask) runProbe(probe monitorProbe) *monitor.Result {
 	return copyMonitorResult(run.result)
 }
 
-// check runs one probe, or icmpPingCount concurrent probes for an ICMP config.
-// Multi-ping checks return per-ping stats so partial loss is reflected, and only
-// report an error when every ping failed.
+// check runs the probe once. Checks with several attempts, such as ICMP pings,
+// also return per-attempt stats so partial loss is reflected.
 func (task *monitorTask) check(probe monitorProbe) (int64, *monitorAggregate, error) {
-	config := task.config
-	if config.Protocol != "icmp" {
-		responseUs, err := probe(task.ctx, config)
-		return responseUs, nil, err
+	responses, err := probe(task.ctx, task.config)
+	switch len(responses) {
+	case 0:
+		return -1, nil, err
+	case 1:
+		return responses[0], nil, err
 	}
-	type pingResult struct {
-		responseUs int64
-		err        error
-	}
-	results := make([]pingResult, icmpPingCount)
-	var wg sync.WaitGroup
-	for i := range results {
-		wg.Go(func() {
-			results[i].responseUs, results[i].err = probe(task.ctx, config)
-		})
-	}
-	wg.Wait()
-
 	agg := newMonitorAggregate()
-	var firstErr error
-	for _, r := range results {
-		if r.err != nil {
-			r.responseUs = -1
-			if firstErr == nil {
-				firstErr = r.err
-			}
-		}
-		agg.addResponse(r.responseUs)
+	for _, responseUs := range responses {
+		agg.addResponse(responseUs)
 	}
 	if agg.successCount == 0 {
-		return -1, &agg, firstErr
+		return -1, &agg, err
 	}
-	return agg.avgResponse(), &agg, nil
+	return agg.avgResponse(), &agg, err
 }
 
 // refreshCert checks the certificate of an HTTPS target when due. A failed
