@@ -38,6 +38,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useToast } from "@/components/ui/use-toast"
 import { pb } from "@/lib/api"
+import { formatDateTimeLocal } from "@/lib/chart-range"
 import { $systems } from "@/lib/stores"
 import { formatShortDate } from "@/lib/utils"
 import type { QuietHoursRecord, SystemRecord } from "@/types"
@@ -270,16 +271,6 @@ export function QuietHours() {
 			)}
 		</>
 	)
-}
-
-// Helper function to format Date as datetime-local string (YYYY-MM-DDTHH:mm) in local time
-function formatDateTimeLocal(date: Date): string {
-	const year = date.getFullYear()
-	const month = String(date.getMonth() + 1).padStart(2, "0")
-	const day = String(date.getDate()).padStart(2, "0")
-	const hours = String(date.getHours()).padStart(2, "0")
-	const minutes = String(date.getMinutes()).padStart(2, "0")
-	return `${year}-${month}-${day}T${hours}:${minutes}`
 }
 
 function QuietHoursDialog({

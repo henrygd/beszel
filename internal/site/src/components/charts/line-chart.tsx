@@ -103,7 +103,7 @@ export default function LineChartDefault({
 	// Use a stable key derived from data point identities and visual properties
 	const linesKey = dataPoints?.map((d) => `${d.label}:${d.strokeOpacity}${d.dot}${d.yAxisId}${d.strokeDasharray}`).join("\0")
 
-	const XAxis = xAxis(chartData.chartTime, displayData.at(-1)?.created)
+	const XAxis = xAxis(chartData.chartTime, displayData.at(-1)?.created, chartData.chartRange)
 
 	const Lines = useMemo(() => {
 		return dataPoints?.map((dataPoint, i) => {

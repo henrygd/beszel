@@ -1,6 +1,7 @@
 import { useLingui } from "@lingui/react/macro"
 import * as React from "react"
 import * as RechartsPrimitive from "recharts"
+import { type ChartRange, coveringChartTime } from "@/lib/chart-range"
 import { chartTimeData, cn } from "@/lib/utils"
 import type { ChartTimes } from "@/types"
 import { Separator } from "./separator"
@@ -416,15 +417,13 @@ interface XAxisData {
 	domain: [number, number]
 }
 
-const xAxisCache = new Map<ChartTimes, XAxisData>()
+const xAxisCache = new Map<string, XAxisData>()
 
-function createXAxisData(chartTime: ChartTimes): XAxisData {
-	// console.log("Creating XAxis for", chartTime, new Date())
-	const axisEndTime = Date.now() + 500
-	const axisEndDate = new Date(axisEndTime)
-	const startTime = chartTimeData[chartTime].getOffset(axisEndDate)
-	const ticks = timeTicks(startTime, axisEndDate, chartTimeData[chartTime].ticks ?? 12).map((date) => date.getTime())
-	const domain: [number, number] = [startTime.getTime(), axisEndTime]
+function createXAxisData(startTime: number, axisEndTime: number, chartTime: ChartTimes): XAxisData {
+	const ticks = timeTicks(new Date(startTime), new Date(axisEndTime), chartTimeData[chartTime].ticks ?? 12).map(
+		(date) => date.getTime()
+	)
+	const domain: [number, number] = [startTime, axisEndTime]
 
 	return {
 		domain,
@@ -445,9 +444,18 @@ function createXAxisData(chartTime: ChartTimes): XAxisData {
 	}
 }
 
-function xAxis(chartTime: ChartTimes, lastCreated: number) {
+function xAxis(chartTime: ChartTimes, lastCreated: number, range?: ChartRange | null) {
 	if (!lastCreated) {
 		return null
+	}
+	if (range) {
+		const key = `${range.start}_${range.end}`
+		let rangeAxis = xAxisCache.get(key)
+		if (!rangeAxis) {
+			rangeAxis = createXAxisData(range.start, range.end, coveringChartTime(range.end - range.start))
+			xAxisCache.set(key, rangeAxis)
+		}
+		return rangeAxis.el
 	}
 	const cachedAxis = xAxisCache.get(chartTime)
 
@@ -459,7 +467,9 @@ function xAxis(chartTime: ChartTimes, lastCreated: number) {
 		return cachedAxis.el
 	}
 
-	const axisData = createXAxisData(chartTime)
+	const liveEndTime = Date.now() + 500
+	const liveStartTime = chartTimeData[chartTime].getOffset(new Date(liveEndTime)).getTime()
+	const axisData = createXAxisData(liveStartTime, liveEndTime, chartTime)
 	xAxisCache.set(chartTime, axisData)
 	return axisData.el
 }

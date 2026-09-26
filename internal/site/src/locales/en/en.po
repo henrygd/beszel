@@ -208,6 +208,10 @@ msgstr "All Containers"
 msgid "All Systems"
 msgstr "All Systems"
 
+#: src/components/charts/custom-range-dialog.tsx
+msgid "Apply"
+msgstr "Apply"
+
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Are you sure you want to delete {name}?"
 msgstr "Are you sure you want to delete {name}?"
@@ -690,6 +694,11 @@ msgstr "Cumulative Write"
 msgid "Current state"
 msgstr "Current state"
 
+#: src/components/charts/chart-time-select.tsx
+#: src/components/charts/custom-range-dialog.tsx
+msgid "Custom range"
+msgstr "Custom range"
+
 #. Power Cycles
 #: src/components/routes/system/smart-table.tsx
 msgid "Cycles"
@@ -699,6 +708,10 @@ msgstr "Cycles"
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Daily"
 msgstr "Daily"
+
+#: src/components/charts/custom-range-dialog.tsx
+msgid "Data is kept for 30 days. Older periods are shown at lower resolution."
+msgstr "Data is kept for 30 days. Older periods are shown at lower resolution."
 
 #: src/components/routes/system/info-bar.tsx
 msgctxt "Default system layout option"
@@ -1344,6 +1357,11 @@ msgstr "Network traffic of public interfaces"
 msgid "Network unit"
 msgstr "Network unit"
 
+#: src/components/charts/chart-time-select.tsx
+#: src/components/charts/chart-time-select.tsx
+msgid "Next period"
+msgstr "Next period"
+
 #: src/components/systemd-table/systemd-table.tsx
 #: src/components/systemd-table/systemd-table.tsx
 #: src/components/systemd-table/systemd-table.tsx
@@ -1593,6 +1611,11 @@ msgstr "Precise utilization at the recorded time"
 #: src/components/routes/settings/general.tsx
 msgid "Preferred Language"
 msgstr "Preferred Language"
+
+#: src/components/charts/chart-time-select.tsx
+#: src/components/charts/chart-time-select.tsx
+msgid "Previous period"
+msgstr "Previous period"
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Process started"

@@ -4,10 +4,12 @@ import { subscribeKeys } from "nanostores"
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useContainerChartConfigs } from "@/components/charts/hooks"
 import { pb, queueUserSettings } from "@/lib/api"
+import { rangeDataChartTime } from "@/lib/chart-range"
 import { SystemStatus } from "@/lib/enums"
 import {
 	$allSystemsById,
 	$allSystemsByName,
+	$chartRange,
 	$chartTime,
 	$containerFilter,
 	$direction,
@@ -27,7 +29,7 @@ import type {
 	SystemStatsRecord,
 } from "@/types"
 import { $router, navigate } from "../../router"
-import { appendData, cache, getStats, makeContainerData, makeContainerPoint } from "./chart-data"
+import { appendData, cache, getRangeStats, getStats, makeContainerData, makeContainerPoint } from "./chart-data"
 
 export type SystemData = ReturnType<typeof useSystemData>
 
@@ -35,6 +37,7 @@ export function useSystemData(id: string) {
 	const direction = useStore($direction)
 	const systems = useStore($systems)
 	const chartTime = useStore($chartTime)
+	const chartRange = useStore($chartRange)
 	const maxValues = useStore($maxValues)
 	const [grid, _setGrid] = useState<boolean>(
 		() => $userSettings.get().grid ?? JSON.parse(localStorage.getItem("besz-grid") ?? "null") ?? true
@@ -92,6 +95,7 @@ export function useSystemData(id: string) {
 		return () => {
 			if (!persistChartTime.current) {
 				$chartTime.set(getUserChartTime())
+				$chartRange.set(null)
 			}
 			persistChartTime.current = false
 			setSystemStats([])
@@ -190,10 +194,11 @@ export function useSystemData(id: string) {
 			systemStats,
 			containerData,
 			chartTime,
+			chartRange,
 			orientation: direction === "rtl" ? "right" : "left",
 			agentVersion,
 		}
-	}, [systemStats, containerData, direction])
+	}, [systemStats, containerData, direction, chartRange])
 
 	// Share chart config computation for all container charts
 	const containerChartConfigs = useContainerChartConfigs(containerData)
@@ -207,6 +212,44 @@ export function useSystemData(id: string) {
 		}
 
 		const systemId = system.id
+
+		// A fixed window never gets new records, so fetch it once and serve it from cache afterwards
+		if (chartRange) {
+			const rangeChartTime = rangeDataChartTime(chartRange)
+			const { expectedInterval } = chartTimeData[rangeChartTime]
+			const key = `${systemId}_${rangeChartTime}_${chartRange.start}_${chartRange.end}`
+			const cachedRangeStats = cache.get(`${key}_system_stats`) as SystemStatsRecord[] | undefined
+			if (cachedRangeStats) {
+				setSystemStats(cachedRangeStats)
+				setContainerData((cache.get(`${key}_container_stats`) || []) as ChartData["containerData"])
+				setChartLoading(false)
+				return
+			}
+			setChartLoading(true)
+			Promise.allSettled([
+				getRangeStats<SystemStatsRecord>("system_stats", systemId, rangeChartTime, chartRange),
+				getRangeStats<ContainerStatsRecord>("container_stats", systemId, rangeChartTime, chartRange),
+			]).then(([systemStats, containerStats]) => {
+				if (requestId !== statsRequestId.current) {
+					return
+				}
+				setChartLoading(false)
+				let systemData: SystemStatsRecord[] = []
+				if (systemStats.status === "fulfilled") {
+					systemData = appendData([], systemStats.value, expectedInterval)
+					cache.set(`${key}_system_stats`, systemData)
+				}
+				let containerData: ChartData["containerData"] = []
+				if (containerStats.status === "fulfilled") {
+					containerData = appendData([], makeContainerData(containerStats.value), expectedInterval)
+					cache.set(`${key}_container_stats`, containerData)
+				}
+				setSystemStats(systemData)
+				setContainerData(containerData)
+			})
+			return
+		}
+
 		const { expectedInterval } = chartTimeData[chartTime]
 		const ss_cache_key = `${systemId}_${chartTime}_system_stats`
 		const cs_cache_key = `${systemId}_${chartTime}_container_stats`
@@ -255,7 +298,7 @@ export function useSystemData(id: string) {
 			}
 			setContainerData(containerData)
 		})
-	}, [system, chartTime])
+	}, [system, chartTime, chartRange])
 
 	// keyboard navigation between systems
 	// in tabs mode: arrow keys switch tabs, shift+arrow switches systems
