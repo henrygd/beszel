@@ -8,7 +8,7 @@ msgstr ""
 "Language: el\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2026-09-18 19:21\n"
+"PO-Revision-Date: 2026-09-24 16:15\n"
 "Last-Translator: \n"
 "Language-Team: Greek\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
@@ -52,13 +52,25 @@ msgstr "{count, plural, one {{countString} ώρα} other {{countString} ώρες
 msgid "{count, plural, one {{countString} minute} few {{countString} minutes} many {{countString} minutes} other {{countString} minutes}}"
 msgstr "{count, plural, one {{countString} λεπτό} other {{countString} λεπτά}}"
 
+#: src/components/network-monitors-table/network-monitors-columns.tsx
+msgid "{daysLeft, plural, one {# day} other {# days}}"
+msgstr ""
+
 #: src/components/routes/system/charts/disk-charts.tsx
 msgid "{diskName} I/O"
 msgstr "I/O {diskName}"
 
+#: src/components/systems-table/systems-table-columns.tsx
+msgid "{numFailed, plural, one {# failed service} other {# failed services}}"
+msgstr ""
+
 #: src/components/routes/system/info-bar.tsx
 msgid "{threads, plural, one {# thread} other {# threads}}"
 msgstr "{threads, plural, one {# thread} other {# threads}}"
+
+#: src/components/systems-table/systems-table-columns.tsx
+msgid "{totalCount, plural, one {# service} other {# services}}"
+msgstr ""
 
 #: src/lib/utils.ts
 msgid "1 hour"
@@ -123,10 +135,10 @@ msgstr "Ενεργές ειδοποιήσεις"
 msgid "Active state"
 msgstr "Ενεργή κατάσταση"
 
-#: src/components/add-system.tsx
-#: src/components/add-system.tsx
-#: src/components/navbar.tsx
-#: src/components/navbar.tsx
+#: src/components/network-monitors-table/monitor-dialog.tsx
+msgid "Add"
+msgstr ""
+
 #: src/components/network-monitors-table/monitor-dialog.tsx
 #: src/components/network-monitors-table/monitor-dialog.tsx
 #: src/components/network-monitors-table/monitor-dialog.tsx
@@ -135,6 +147,13 @@ msgstr "Ενεργή κατάσταση"
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Add {foo}"
 msgstr "Προσθήκη {foo}"
+
+#: src/components/add-system.tsx
+#: src/components/add-system.tsx
+#: src/components/navbar.tsx
+#: src/components/navbar.tsx
+msgid "Add System"
+msgstr "Προσθήκη Σύστημα"
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Add URL"
@@ -261,6 +280,7 @@ msgid "Average, minimum, and maximum response time"
 msgstr "Μέσος, ελάχιστος και μέγιστος χρόνος απόκρισης"
 
 #: src/components/network-monitors-table/network-monitors-columns.tsx
+#: src/components/network-monitors-table/network-monitors-columns.tsx
 msgid "Avg 1h"
 msgstr "Μέσος όρος 1ώρου"
 
@@ -382,6 +402,19 @@ msgstr "Προσοχή - πιθανή απώλεια δεδομένων"
 #: src/components/routes/settings/general.tsx
 msgid "Celsius (°C)"
 msgstr "Κελσίου (°C)"
+
+#: src/components/network-monitors-table/network-monitors-columns.tsx
+#: src/components/network-monitors-table/network-monitors-columns.tsx
+msgid "Certificate"
+msgstr ""
+
+#: src/components/network-monitors-table/network-monitors-table.tsx
+msgid "Certificate expired {expires}"
+msgstr ""
+
+#: src/components/network-monitors-table/network-monitors-table.tsx
+msgid "Certificate expires {expires}"
+msgstr ""
 
 #: src/components/routes/settings/general.tsx
 msgid "Change display units for metrics."
@@ -776,11 +809,14 @@ msgstr "Διάρκεια"
 msgid "Edit"
 msgstr "Επεξεργασία"
 
-#: src/components/add-system.tsx
 #: src/components/network-monitors-table/monitor-dialog.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Edit {foo}"
 msgstr "Επεξεργασία {foo}"
+
+#: src/components/add-system.tsx
+msgid "Edit System"
+msgstr "Επεξεργασία Σύστημα"
 
 #: src/components/login/auth-form.tsx
 #: src/components/login/forgot-pass-form.tsx
@@ -867,6 +903,10 @@ msgstr "Τα υπάρχοντα συστήματα που δεν ορίζοντ�
 msgid "Exited active"
 msgstr "Ενεργό μετά την έξοδο"
 
+#: src/components/network-monitors-table/network-monitors-columns.tsx
+msgid "Expired"
+msgstr ""
+
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Expires after one hour or on hub restart."
 msgstr "Λήγει μετά από μία ώρα ή με επανεκκίνηση του κόμβου."
@@ -886,10 +926,6 @@ msgstr "Εξαγάγετε την τρέχουσα διαμόρφωση των �
 #: src/components/routes/settings/general.tsx
 msgid "Fahrenheit (°F)"
 msgstr "Φαρενάιτ (°F)"
-
-#: src/components/systems-table/systems-table-columns.tsx
-msgid "Failed"
-msgstr "Απέτυχε"
 
 #: src/components/routes/system/smart-table.tsx
 msgid "Failed Attributes:"
@@ -1091,6 +1127,7 @@ msgid "Inactive"
 msgstr "Ανενεργό"
 
 #: src/components/network-monitors-table/network-monitors-columns.tsx
+#: src/components/network-monitors-table/network-monitors-columns.tsx
 #: src/components/routes/settings/heartbeat.tsx
 msgid "Interval"
 msgstr "Διάστημα"
@@ -1183,6 +1220,7 @@ msgid "Loss"
 msgstr "Απώλεια"
 
 #: src/components/network-monitors-table/network-monitors-columns.tsx
+#: src/components/network-monitors-table/network-monitors-columns.tsx
 msgid "Loss 1h"
 msgstr "Απώλεια 1ώρου"
 
@@ -1204,6 +1242,7 @@ msgstr "Οδηγίες χειροκίνητης εγκατάστασης"
 msgid "Max 1 min"
 msgstr "Μέγ. 1 λ"
 
+#: src/components/network-monitors-table/network-monitors-columns.tsx
 #: src/components/network-monitors-table/network-monitors-columns.tsx
 msgid "Max 1h"
 msgstr "Μέγιστο 1ώρου"
@@ -1234,6 +1273,7 @@ msgstr "Χρήση μνήμης"
 msgid "Memory usage of containers"
 msgstr "Χρήση μνήμης των κοντέινερ"
 
+#: src/components/network-monitors-table/network-monitors-columns.tsx
 #: src/components/network-monitors-table/network-monitors-columns.tsx
 msgid "Min 1h"
 msgstr "Ελάχιστο 1ώρου"
@@ -1565,6 +1605,7 @@ msgstr "Η διεργασία ξεκίνησε"
 
 #: src/components/network-monitors-table/monitor-dialog.tsx
 #: src/components/network-monitors-table/network-monitors-columns.tsx
+#: src/components/network-monitors-table/network-monitors-columns.tsx
 msgid "Protocol"
 msgstr "Πρωτόκολλο"
 
@@ -1654,6 +1695,7 @@ msgid "Resolved"
 msgstr "Επιλύθηκε"
 
 #: src/components/network-monitors-table/network-monitors-columns.tsx
+#: src/components/network-monitors-table/network-monitors-columns.tsx
 #: src/components/routes/system/charts/monitors-charts.tsx
 msgid "Response"
 msgstr "Απόκριση"
@@ -1698,7 +1740,6 @@ msgstr "Λεπτομέρειες S.M.A.R.T."
 msgid "S.M.A.R.T. Self-Test"
 msgstr "Αυτοέλεγχος S.M.A.R.T."
 
-#: src/components/add-system.tsx
 #: src/components/network-monitors-table/monitor-dialog.tsx
 msgid "Save {foo}"
 msgstr "Αποθήκευση {foo}"
@@ -1711,6 +1752,10 @@ msgstr "Αποθηκεύστε τη διεύθυνση με Enter ή κόμμα.
 #: src/components/routes/settings/notifications.tsx
 msgid "Save Settings"
 msgstr "Αποθήκευση ρυθμίσεων"
+
+#: src/components/add-system.tsx
+msgid "Save System"
+msgstr "Αποθήκευση Σύστημα"
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Saved in the database and does not expire until you disable it."
@@ -1833,6 +1878,7 @@ msgstr "Σύνδεση"
 msgid "SMTP settings"
 msgstr "Ρυθμίσεις SMTP"
 
+#: src/components/network-monitors-table/network-monitors-table.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "Sort By"
 msgstr "Ταξινόμηση κατά"
@@ -1875,11 +1921,10 @@ msgstr "Χρήση swap"
 msgid "Switch theme"
 msgstr "Αλλαγή θέματος"
 
-#: src/components/add-system.tsx
 #: src/components/alerts-history-columns.tsx
 #: src/components/containers-table/containers-table-columns.tsx
-#: src/components/navbar.tsx
 #: src/components/network-monitors-table/monitor-dialog.tsx
+#: src/components/network-monitors-table/network-monitors-columns.tsx
 #: src/components/network-monitors-table/network-monitors-columns.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/quiet-hours.tsx
@@ -1925,8 +1970,14 @@ msgstr "Καρτέλες"
 
 #: src/components/network-monitors-table/monitor-dialog.tsx
 #: src/components/network-monitors-table/network-monitors-columns.tsx
+#: src/components/network-monitors-table/network-monitors-columns.tsx
 msgid "Target"
 msgstr "Στόχος"
+
+#: src/components/network-monitors-table/monitor-dialog.tsx
+#: src/components/network-monitors-table/monitor-dialog.tsx
+msgid "target[,protocol[,port[,interval]]]"
+msgstr ""
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Tasks"
@@ -2162,6 +2213,7 @@ msgstr "Ενημέρωση"
 
 #: src/components/containers-table/containers-table-columns.tsx
 #: src/components/network-monitors-table/network-monitors-columns.tsx
+#: src/components/network-monitors-table/network-monitors-columns.tsx
 #: src/components/routes/system/smart-table.tsx
 #: src/components/routes/system/storage-pools-table.tsx
 #: src/components/systemd-table/systemd-table-columns.tsx
@@ -2217,6 +2269,7 @@ msgstr "Χρήση"
 msgid "Value"
 msgstr "Τιμή"
 
+#: src/components/network-monitors-table/network-monitors-table.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "View"
 msgstr "Προβολή"
@@ -2231,6 +2284,7 @@ msgstr "Προβολή περισσότερων"
 msgid "View your 200 most recent alerts."
 msgstr "Προβάλετε τις 200 πιο πρόσφατες ειδοποιήσεις σας."
 
+#: src/components/network-monitors-table/network-monitors-table.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "Visible Fields"
 msgstr "Ορατά πεδία"
