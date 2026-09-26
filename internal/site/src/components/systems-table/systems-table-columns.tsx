@@ -14,6 +14,7 @@ import {
 	HardDriveIcon,
 	MemoryStickIcon,
 	MoreHorizontalIcon,
+	PackageIcon,
 	PauseCircleIcon,
 	PenBoxIcon,
 	PlayCircleIcon,
@@ -37,7 +38,8 @@ import {
 	secondsToUptimeString,
 } from "@/lib/utils"
 import { batteryStateTranslations } from "@/lib/i18n"
-import type { SystemRecord } from "@/types"
+import { connectedWiFi, strongestWiFi, strongestWiFiSignal, wifiSignalState } from "@/lib/wifi"
+import type { SystemRecord, WiFi } from "@/types"
 import { SystemDialog } from "../add-system"
 import AlertButton from "../alerts/alert-button"
 import { $router, Link } from "../router"
@@ -79,6 +81,15 @@ const STATUS_COLORS = {
 	[SystemStatus.Paused]: "bg-primary/40",
 	[SystemStatus.Pending]: "bg-yellow-500",
 } as const
+
+/** Rank of the updates dot color for sorting: 2 security (red), 1 regular (yellow), 0 up to date (green), -1 no data */
+function getUpdatesRank(pu: SystemRecord["info"]["pu"]): number {
+	if (!pu) {
+		return -1
+	}
+	const [total, security = 0] = pu
+	return security > 0 ? 2 : total > 0 ? 1 : 0
+}
 
 function getMeterStateByThresholds(value: number, warn = 65, crit = 90): MeterState {
 	return value >= crit ? MeterState.Crit : value >= warn ? MeterState.Warn : MeterState.Good
@@ -354,6 +365,57 @@ export function SystemsTableColumns(viewMode: "table" | "grid"): ColumnDef<Syste
 			},
 		},
 		{
+			accessorFn: strongestWiFiSignal,
+			id: "wifi",
+			name: () => t`Wi-Fi`,
+			size: 80,
+			Icon: WifiIcon,
+			header: sortableHeader,
+			hideSort: true,
+			sortUndefined: "last",
+			cell(info) {
+				const connections = connectedWiFi(info.row.original)
+				const strongest = strongestWiFi(connections)
+				if (!strongest) {
+					return null
+				}
+				const displayedConnections = viewMode === "table" ? [strongest] : connections
+				return (
+					<Tooltip>
+						<TooltipTrigger asChild>
+							<Link
+								href={getPagePath($router, "system", { id: info.row.original.id })}
+								tabIndex={-1}
+								className="flex flex-col gap-0.5 min-w-0 py-1 relative z-10"
+							>
+								{displayedConnections.map(([id, wifi]) => (
+									<WiFiSignal key={id} wifi={wifi} />
+								))}
+								{viewMode === "table" && connections.length > 1 && (
+									<span className="text-xs text-muted-foreground">+{connections.length - 1}</span>
+								)}
+							</Link>
+						</TooltipTrigger>
+						<TooltipContent side="right" className="max-w-xs pb-2">
+							<div className="grid gap-1">
+								{connections.map(([id, wifi]) => (
+									<div key={id} className="grid gap-0.5">
+										<div className="text-[0.65rem] max-w-40 text-muted-foreground uppercase tracking-wide truncate">
+											{id}
+										</div>
+										<div className="flex gap-2 items-center text-xs">
+											<WiFiSignal wifi={wifi} className="shrink-0" />
+											{wifi.s && <span className="truncate max-w-40">{wifi.s}</span>}
+										</div>
+									</div>
+								))}
+							</div>
+						</TooltipContent>
+					</Tooltip>
+				)
+			},
+		},
+		{
 			accessorFn: ({ info }) => info.sv?.[0],
 			id: "services",
 			name: () => t`Services`,
@@ -407,6 +469,45 @@ export function SystemsTableColumns(viewMode: "table" | "grid"): ColumnDef<Syste
 							{plural(numFailed, { one: "# failed service", other: "# failed services" })}
 						</TooltipContent>
 					</Tooltip>
+				)
+			},
+		},
+		{
+			accessorFn: ({ info }) => info.pu?.[0],
+			id: "updates",
+			name: () => t`Updates`,
+			size: 50,
+			Icon: PackageIcon,
+			header: sortableHeader,
+			hideSort: true,
+			sortingFn: (a, b) => {
+				// sort priorities: 1) dot color (security > regular > up to date), 2) total updates
+				const puA = a.original.info.pu
+				const puB = b.original.info.pu
+				const rankA = getUpdatesRank(puA)
+				const rankB = getUpdatesRank(puB)
+				if (rankA !== rankB) {
+					return rankA - rankB
+				}
+				return (puA?.[0] ?? 0) - (puB?.[0] ?? 0)
+			},
+			cell(info) {
+				const sys = info.row.original
+				if (sys.status !== SystemStatus.Up || !sys.info.pu) {
+					return null
+				}
+				const [total, security = 0] = sys.info.pu
+				return (
+					<span className="tabular-nums whitespace-nowrap flex gap-1.5 items-center">
+						<span
+							className={cn("block size-2 rounded-full", {
+								[STATUS_COLORS[SystemStatus.Down]]: security > 0,
+								[STATUS_COLORS[SystemStatus.Pending]]: security === 0 && total > 0,
+								[STATUS_COLORS[SystemStatus.Up]]: total === 0,
+							})}
+						/>
+						{total === 0 ? t`Up to date` : plural(total, { one: "# update", other: "# updates" })}
+					</span>
 				)
 			},
 		},
@@ -612,6 +713,23 @@ function DiskCellWithMultiple(info: CellContext<SystemRecord, unknown>) {
 				</div>
 			</TooltipContent>
 		</Tooltip>
+	)
+}
+
+function WiFiSignal({ wifi, className }: { wifi: WiFi; className?: ClassValue }) {
+	const state = wifi.r === undefined ? undefined : wifiSignalState(wifi.r)
+	return (
+		<span className={cn("flex items-center gap-1.5 tabular-nums whitespace-nowrap", className)}>
+			<span
+				className={cn("block size-2 rounded-full shrink-0", {
+					[STATUS_COLORS[SystemStatus.Up]]: state === MeterState.Good,
+					[STATUS_COLORS[SystemStatus.Pending]]: state === MeterState.Warn,
+					[STATUS_COLORS[SystemStatus.Down]]: state === MeterState.Crit,
+					[STATUS_COLORS[SystemStatus.Paused]]: state === undefined,
+				})}
+			/>
+			{wifi.r === undefined ? t`Unknown` : `${wifi.r} dBm`}
+		</span>
 	)
 }
 
