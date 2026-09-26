@@ -753,10 +753,11 @@ function NetworkMonitorSheetContent({
 				</SheetHeader>
 				<div className="grid gap-4">
 					<ChartTimeSelect
-						className="bg-card"
+						controlClassName="bg-card"
 						agentVersion={chartData.agentVersion}
 						chartTimeStore={chartTimeStore}
 						allowRealtime={false}
+						allowRange={false}
 					/>
 					<AvgMinMaxResponseChart
 						monitorStats={monitorStats}

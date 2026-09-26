@@ -68,7 +68,7 @@ export const hourWithMinutes = (timestamp: string) => {
 	return hourWithMinutesFormatter.format(new Date(timestamp))
 }
 
-export const formatShortDate = (timestamp: string) => {
+export const formatShortDate = (timestamp: string | number) => {
 	return shortDateFormatter.format(new Date(timestamp))
 }
 
