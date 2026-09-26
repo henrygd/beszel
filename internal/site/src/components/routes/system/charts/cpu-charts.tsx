@@ -71,7 +71,7 @@ export function ContainerCpuChart({
 	isPodman: boolean
 	cpuConfig: ChartConfig
 }) {
-	const { filter, dataPoints } = useContainerDataPoints(cpuConfig, (key, data) => data[key]?.c ?? null)
+	const { filter, dataPoints, filteredKeys } = useContainerDataPoints(cpuConfig, (key, data) => data[key]?.c ?? null)
 
 	return (
 		<ChartCard
@@ -80,10 +80,13 @@ export function ContainerCpuChart({
 			title={dockerOrPodman(t`Docker CPU Usage`, isPodman)}
 			description={t`Average CPU utilization of containers`}
 			cornerEl={<FilterBar />}
+			legend={true}
 		>
 			<AreaChartDefault
 				chartData={chartData}
 				customData={chartData.containerData}
+				legend={true}
+				legendExclude={filteredKeys}
 				dataPoints={dataPoints}
 				tickFormatter={(val) => `${toFixedFloat(val, 2)}%`}
 				contentFormatter={({ value }) => `${decimalString(value)}%`}
