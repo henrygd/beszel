@@ -11,6 +11,9 @@ import (
 
 const monitorFailureLogInterval = 5 * time.Minute
 
+// icmpPingCount is the number of pings sent per ICMP check.
+const icmpPingCount = 5
+
 // monitorTask coordinates a probe and its history for one immutable configuration.
 type monitorTask struct {
 	config         monitor.Config
@@ -118,21 +121,20 @@ func (task *monitorTask) runProbe(probe monitorProbe) *monitor.Result {
 	return copyMonitorResult(run.result)
 }
 
-// check runs one probe, or Count concurrent probes for a multi-ping ICMP config.
+// check runs one probe, or icmpPingCount concurrent probes for an ICMP config.
 // Multi-ping checks return per-ping stats so partial loss is reflected, and only
 // report an error when every ping failed.
 func (task *monitorTask) check(probe monitorProbe) (int64, *monitorAggregate, error) {
 	config := task.config
-	if config.Protocol != "icmp" || config.Count <= 1 {
+	if config.Protocol != "icmp" {
 		responseUs, err := probe(task.ctx, config)
 		return responseUs, nil, err
 	}
-	count := min(int(config.Count), monitor.MaxICMPCount)
 	type pingResult struct {
 		responseUs int64
 		err        error
 	}
-	results := make([]pingResult, count)
+	results := make([]pingResult, icmpPingCount)
 	var wg sync.WaitGroup
 	for i := range results {
 		wg.Go(func() {
