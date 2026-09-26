@@ -118,16 +118,20 @@
 }
 
 @layer utilities {
-
 	/* Fonts */
+
+  /* Twemoji Country Flags font from country-flag-emoji-polyfill,
+  * derived from Twemoji Mozilla. Twemoji graphics are licensed CC BY 4.0:
+  * https://creativecommons.org/licenses/by/4.0/
+  */
 	@font-face {
-	font-family: TwemojiCountryFlags;
-	font-style: normal;
-	font-weight: 400;
-	font-display: swap;
-	src: url("./assets/TwemojiCountryFlags.woff2") format("woff2");
-	/* Regional indicator symbols make up ISO 3166-1 flag emoji. */
-	unicode-range: U+1F1E6-1F1FF;
+    font-family: TwemojiCountryFlags;
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url("./assets/TwemojiCountryFlags.woff2") format("woff2");
+    /* Regional indicator symbols make up ISO 3166-1 flag emoji. */
+    unicode-range: U+1F1E6-1F1FF;
 	}
 
 	@supports (font-variation-settings: normal) {
