@@ -18,6 +18,7 @@ import (
 func (h *Hub) startServer(se *core.ServeEvent) error {
 	indexFile, _ := fs.ReadFile(site.DistDirFS, "index.html")
 	html := modifyIndexHTML(h, indexFile)
+	basePath := getPublicAppInfo(h).BASE_PATH
 	// set up static asset serving
 	staticPaths := [2]string{"/static/", "/assets/"}
 	serveStatic := apis.Static(site.DistDirFS, false)
@@ -36,7 +37,13 @@ func (h *Hub) startServer(se *core.ServeEvent) error {
 			e.Response.Header().Del("X-Frame-Options")
 			e.Response.Header().Set("Content-Security-Policy", csp)
 		}
-		return e.HTML(http.StatusOK, html)
+		// still serve the app for unknown paths (it renders a 404 page),
+		// but with a 404 status so scanners and fail2ban see the miss
+		status := http.StatusOK
+		if !isAppRoute(e.Request.URL.Path, basePath) {
+			status = http.StatusNotFound
+		}
+		return e.HTML(status, html)
 	})
 	return nil
 }
