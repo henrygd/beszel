@@ -213,18 +213,14 @@ func TestNetworkMonitorAlertCleanup(t *testing.T) {
 	}
 }
 
-func TestNetworkMonitorAlertPerUserThresholds(t *testing.T) {
+func TestNetworkMonitorAlertThresholdEdit(t *testing.T) {
 	hub, system, alert, monitors := networkAlertSetup(t)
-	user, err := beszelTests.CreateUser(hub, "monitor2@example.com", "password")
-	require.NoError(t, err)
-	other, err := beszelTests.CreateRecord(hub, "alerts", map[string]any{"name": "NetworkMonitorLoss", "system": system.Id, "user": user.Id, "value": 20})
-	require.NoError(t, err)
 	am := alerts.NewTestAlertManagerWithoutWorker(hub)
 	results := map[string]monitor.Result{monitors[0].Id: monitorResult(10)}
 	require.NoError(t, am.HandleNetworkMonitorAlerts(system, results))
-	other, err = hub.FindRecordById("alerts", other.Id)
+	alert, err := hub.FindRecordById("alerts", alert.Id)
 	require.NoError(t, err)
-	assert.False(t, other.GetBool("triggered"))
+	assert.True(t, alert.GetBool("triggered"))
 	// Editing the threshold re-evaluates on the next batch, without losing state.
 	alert, err = hub.FindRecordById("alerts", alert.Id)
 	require.NoError(t, err)
@@ -248,7 +244,8 @@ func TestNetworkMonitorAlertAPI(t *testing.T) {
 		{name: "negative threshold", value: -1, status: 400},
 		{name: "unreachable threshold", value: 100, status: 400},
 		{name: "bulk inaccessible system", value: 5, denied: true, status: 200},
-		{name: "direct inaccessible system", value: 5, direct: true, denied: true, status: 403},
+		// Rejected by the alerts create rule before the request hook runs.
+		{name: "direct inaccessible system", value: 5, direct: true, denied: true, status: 400},
 		{name: "direct invalid threshold", value: -1, direct: true, status: 400},
 		{name: "direct private state", value: 5, direct: true, status: 200},
 		{name: "patch preserves state", value: 10, direct: true, patch: true, status: 200},
@@ -256,6 +253,8 @@ func TestNetworkMonitorAlertAPI(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			hub, user := beszelTests.GetHubWithUser(t)
 			defer hub.Cleanup()
+			user.Set("role", "admin")
+			require.NoError(t, hub.Save(user))
 			owner := user.Id
 			if tc.denied {
 				other, err := beszelTests.CreateUser(hub, "other@example.com", "password")
@@ -267,14 +266,14 @@ func TestNetworkMonitorAlertAPI(t *testing.T) {
 			token, err := user.NewAuthToken()
 			require.NoError(t, err)
 			body := map[string]any{"name": "NetworkMonitorLoss", "value": tc.value, "min": 60, "systems": []string{systems[0].Id}, "overwrite": true}
-			url, method := "/api/beszel/user-alerts", "POST"
+			url, method := "/api/beszel/alerts", "POST"
 			if tc.direct {
 				url = "/api/collections/alerts/records"
-				body["system"], body["user"] = systems[0].Id, user.Id
+				body["system"] = systems[0].Id
 				body["state"], body["triggered"] = map[string]any{"monitors": map[string]string{"fake": "fake"}}, true
 			}
 			if tc.patch {
-				alert, err := beszelTests.CreateRecord(hub, "alerts", map[string]any{"name": "NetworkMonitorLoss", "system": systems[0].Id, "user": user.Id, "value": 5, "triggered": true, "state": map[string]any{"monitors": map[string]string{"real": "history"}}})
+				alert, err := beszelTests.CreateRecord(hub, "alerts", map[string]any{"name": "NetworkMonitorLoss", "system": systems[0].Id, "value": 5, "triggered": true, "state": map[string]any{"monitors": map[string]string{"real": "history"}}})
 				require.NoError(t, err)
 				url += "/" + alert.Id
 				method = "PATCH"

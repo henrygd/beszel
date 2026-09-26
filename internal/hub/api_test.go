@@ -14,7 +14,6 @@ import (
 	beszelTests "github.com/henrygd/beszel/internal/tests"
 
 	"github.com/henrygd/beszel/internal/migrations"
-	"github.com/pocketbase/dbx"
 	"github.com/pocketbase/pocketbase/apis"
 	"github.com/pocketbase/pocketbase/core"
 	pbTests "github.com/pocketbase/pocketbase/tests"
@@ -305,9 +304,9 @@ func TestApiRoutesAuthentication(t *testing.T) {
 			TestAppFactory:  testAppFactory,
 		},
 		{
-			Name:            "POST /user-alerts - no auth should fail",
+			Name:            "POST /alerts - no auth should fail",
 			Method:          http.MethodPost,
-			URL:             "/api/beszel/user-alerts",
+			URL:             "/api/beszel/alerts",
 			ExpectedStatus:  401,
 			ExpectedContent: []string{"requires valid"},
 			TestAppFactory:  testAppFactory,
@@ -319,11 +318,11 @@ func TestApiRoutesAuthentication(t *testing.T) {
 			}),
 		},
 		{
-			Name:   "POST /user-alerts - with auth should succeed",
+			Name:   "POST /alerts - with admin auth should succeed",
 			Method: http.MethodPost,
-			URL:    "/api/beszel/user-alerts",
+			URL:    "/api/beszel/alerts",
 			Headers: map[string]string{
-				"Authorization": userToken,
+				"Authorization": adminUserToken,
 			},
 			ExpectedStatus:  200,
 			ExpectedContent: []string{"\"success\":true"},
@@ -336,27 +335,9 @@ func TestApiRoutesAuthentication(t *testing.T) {
 			}),
 		},
 		{
-			Name:   "POST /user-alerts - readonly user can create own alert",
-			Method: http.MethodPost,
-			URL:    "/api/beszel/user-alerts",
-			Headers: map[string]string{
-				"Authorization": readOnlyUserToken,
-			},
-			ExpectedStatus:  200,
-			ExpectedContent: []string{"\"success\":true"},
-			TestAppFactory:  testAppFactory,
-			Body: jsonReader(map[string]any{
-				"name": "CPU", "value": 80, "min": 10, "systems": []string{system.Id},
-			}),
-			AfterTestFunc: func(t testing.TB, app *pbTests.TestApp, res *http.Response) {
-				alerts, _ := app.CountRecords("alerts", dbx.HashExp{"user": readOnlyUser.Id})
-				require.EqualValues(t, 1, alerts)
-			},
-		},
-		{
-			Name:            "DELETE /user-alerts - no auth should fail",
+			Name:            "DELETE /alerts - no auth should fail",
 			Method:          http.MethodDelete,
-			URL:             "/api/beszel/user-alerts",
+			URL:             "/api/beszel/alerts",
 			ExpectedStatus:  401,
 			ExpectedContent: []string{"requires valid"},
 			TestAppFactory:  testAppFactory,
@@ -366,11 +347,11 @@ func TestApiRoutesAuthentication(t *testing.T) {
 			}),
 		},
 		{
-			Name:   "DELETE /user-alerts - with auth should succeed",
+			Name:   "DELETE /alerts - with admin auth should succeed",
 			Method: http.MethodDelete,
-			URL:    "/api/beszel/user-alerts",
+			URL:    "/api/beszel/alerts",
 			Headers: map[string]string{
-				"Authorization": userToken,
+				"Authorization": adminUserToken,
 			},
 			ExpectedStatus:  200,
 			ExpectedContent: []string{"\"success\":true"},
@@ -388,29 +369,6 @@ func TestApiRoutesAuthentication(t *testing.T) {
 					"value":  80,
 					"min":    10,
 				})
-			},
-		},
-		{
-			Name:   "DELETE /user-alerts - readonly user can delete own alert",
-			Method: http.MethodDelete,
-			URL:    "/api/beszel/user-alerts",
-			Headers: map[string]string{
-				"Authorization": readOnlyUserToken,
-			},
-			ExpectedStatus:  200,
-			ExpectedContent: []string{"\"count\":1", "\"success\":true"},
-			TestAppFactory:  testAppFactory,
-			Body: jsonReader(map[string]any{
-				"name": "CPU", "systems": []string{system.Id},
-			}),
-			BeforeTestFunc: func(t testing.TB, app *pbTests.TestApp, e *core.ServeEvent) {
-				beszelTests.CreateRecord(app, "alerts", map[string]any{
-					"name": "CPU", "system": system.Id, "user": readOnlyUser.Id, "value": 80,
-				})
-			},
-			AfterTestFunc: func(t testing.TB, app *pbTests.TestApp, res *http.Response) {
-				alerts, _ := app.CountRecords("alerts", dbx.HashExp{"user": readOnlyUser.Id})
-				require.Zero(t, alerts)
 			},
 		},
 		{
@@ -705,9 +663,9 @@ func TestApiRoutesAuthentication(t *testing.T) {
 			TestAppFactory:  testAppFactory,
 		},
 		{
-			Name:   "POST /user-alerts - invalid auth token should fail",
+			Name:   "POST /alerts - invalid auth token should fail",
 			Method: http.MethodPost,
-			URL:    "/api/beszel/user-alerts",
+			URL:    "/api/beszel/alerts",
 			Headers: map[string]string{
 				"Authorization": "invalid-token",
 			},

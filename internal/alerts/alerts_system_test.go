@@ -43,13 +43,12 @@ func newSystemAlertTestFixture(t *testing.T, alertName string, min int, threshol
 
 	userSettings, err := hub.FindFirstRecordByFilter("user_settings", "user={:user}", map[string]any{"user": user.Id})
 	require.NoError(t, err)
-	userSettings.Set("settings", `{"emails":["test@example.com"],"webhooks":[]}`)
+	userSettings.Set("settings", `{"notificationsEnabled":true,"emails":["test@example.com"],"webhooks":[]}`)
 	require.NoError(t, hub.Save(userSettings))
 
 	alertRecord, err := beszelTests.CreateRecord(hub, "alerts", map[string]any{
 		"name":   alertName,
 		"system": systemRecord.Id,
-		"user":   user.Id,
 		"min":    min,
 		"value":  threshold,
 	})

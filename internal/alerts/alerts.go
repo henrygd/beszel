@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/mail"
 	"net/url"
+	"slices"
 	"sync"
 	"time"
 
@@ -20,15 +21,16 @@ type hubLike interface {
 }
 
 type AlertManager struct {
-	hub             hubLike
-	stopOnce        sync.Once
-	pendingAlerts   sync.Map
-	alertsCache     *AlertsCache
-	networkMonitors *networkMonitorCache
+	hub               hubLike
+	stopOnce          sync.Once
+	pendingAlerts     sync.Map
+	alertsCache       *AlertsCache
+	networkMonitors   *networkMonitorCache
+	userSettingsMu    sync.RWMutex
+	userSettingsCache []*core.Record // nil means stale; populated lazily
 }
 
 type AlertMessageData struct {
-	UserID   string
 	SystemID string
 	Title    string
 	Message  string
@@ -37,6 +39,8 @@ type AlertMessageData struct {
 }
 
 type UserNotificationSettings struct {
+	Enabled  bool     `json:"notificationsEnabled"`
+	Systems  []string `json:"systems"` // empty = all systems; non-empty = only these systems
 	Emails   []string `json:"emails"`
 	Webhooks []string `json:"webhooks"`
 }
@@ -126,6 +130,17 @@ func (am *AlertManager) bindEvents() {
 	am.hub.OnRecordAfterUpdateSuccess("zfs_pools").BindFunc(am.handleZfsPoolAlert)
 	am.hub.OnRecordAfterDeleteSuccess("zfs_pools").BindFunc(resolveZfsPoolHistoryOnDelete)
 
+	// Invalidate the user_settings cache whenever settings change
+	invalidateUserSettings := func(e *core.RecordEvent) error {
+		am.userSettingsMu.Lock()
+		am.userSettingsCache = nil
+		am.userSettingsMu.Unlock()
+		return e.Next()
+	}
+	am.hub.OnRecordAfterCreateSuccess("user_settings").BindFunc(invalidateUserSettings)
+	am.hub.OnRecordAfterUpdateSuccess("user_settings").BindFunc(invalidateUserSettings)
+	am.hub.OnRecordAfterDeleteSuccess("user_settings").BindFunc(invalidateUserSettings)
+
 	am.hub.OnServe().BindFunc(func(e *core.ServeEvent) error {
 		// Populate all alerts into cache on startup
 		_ = am.alertsCache.PopulateFromDB(true)
@@ -210,70 +225,93 @@ func (am *AlertManager) IsNotificationSilenced(userID, systemID string) bool {
 	return false
 }
 
-// SendAlert sends an alert to the user
-func (am *AlertManager) SendAlert(data AlertMessageData) error {
-	// Check if alert is silenced
-	if am.IsNotificationSilenced(data.UserID, data.SystemID) {
-		am.hub.Logger().Info("Notification silenced", "user", data.UserID, "system", data.SystemID, "title", data.Title)
-		return nil
+// getUserSettings returns all user_settings records, using a cache that is
+// invalidated whenever a user_settings record is created, updated, or deleted.
+func (am *AlertManager) getUserSettings() ([]*core.Record, error) {
+	am.userSettingsMu.RLock()
+	cached := am.userSettingsCache
+	am.userSettingsMu.RUnlock()
+	if cached != nil {
+		return cached, nil
 	}
+	records, err := am.hub.FindAllRecords("user_settings")
+	if err != nil {
+		return nil, err
+	}
+	am.userSettingsMu.Lock()
+	am.userSettingsCache = records
+	am.userSettingsMu.Unlock()
+	return records, nil
+}
 
-	// get user settings
-	record, err := am.hub.FindFirstRecordByFilter(
-		"user_settings", "user={:user}",
-		dbx.Params{"user": data.UserID},
-	)
+// SendAlert sends an alert to all users via their configured notification channels.
+// Each user's quiet hours are respected individually.
+func (am *AlertManager) SendAlert(data AlertMessageData) error {
+	records, err := am.getUserSettings()
 	if err != nil {
 		return err
 	}
-	// unmarshal user settings
-	userAlertSettings := UserNotificationSettings{
-		Emails:   []string{},
-		Webhooks: []string{},
-	}
-	if err := record.UnmarshalJSONField("settings", &userAlertSettings); err != nil {
-		am.hub.Logger().Error("Failed to unmarshal user settings", "err", err)
-	}
-	// send alerts via webhooks
-	send := sendPublicNotification
-	if len(userAlertSettings.Webhooks) > 0 {
-		// Read the owner's current role at delivery time, including for URLs
-		// saved before an admin was demoted. Never fall back on lookup failure.
-		owner, err := am.hub.FindRecordById("users", data.UserID)
-		if err != nil {
-			return fmt.Errorf("load notification owner: %w", err)
+	for _, record := range records {
+		userAlertSettings := UserNotificationSettings{
+			Emails:   []string{},
+			Webhooks: []string{},
 		}
-		if owner.GetString("role") == "admin" {
-			send = shoutrrr.Send
+		if err := record.UnmarshalJSONField("settings", &userAlertSettings); err != nil {
+			am.hub.Logger().Error("Failed to unmarshal user settings", "err", err)
+			continue
+		}
+		if !userAlertSettings.Enabled {
+			continue
+		}
+		if len(userAlertSettings.Systems) > 0 && !slices.Contains(userAlertSettings.Systems, data.SystemID) {
+			continue
+		}
+		userID := record.GetString("user")
+		if am.IsNotificationSilenced(userID, data.SystemID) {
+			am.hub.Logger().Info("Notification silenced", "user", userID, "system", data.SystemID, "title", data.Title)
+			continue
+		}
+		// send alerts via webhooks
+		send := sendPublicNotification
+		if len(userAlertSettings.Webhooks) > 0 {
+			// Read the owner's current role at delivery time, including for URLs
+			// saved before an admin was demoted. Never fall back on lookup failure.
+			owner, err := am.hub.FindRecordById("users", userID)
+			if err != nil {
+				am.hub.Logger().Error("Failed to load notification owner", "err", err, "user", userID)
+				continue
+			}
+			if owner.GetString("role") == "admin" {
+				send = shoutrrr.Send
+			}
+		}
+		for _, webhook := range userAlertSettings.Webhooks {
+			if err := am.sendShoutrrrAlert(webhook, data.Title, data.Message, data.Link, data.LinkText, send); err != nil {
+				am.hub.Logger().Error("Failed to send shoutrrr alert", "err", err)
+			}
+		}
+		// send alerts via email
+		if len(userAlertSettings.Emails) > 0 {
+			addresses := make([]mail.Address, 0, len(userAlertSettings.Emails))
+			for _, email := range userAlertSettings.Emails {
+				addresses = append(addresses, mail.Address{Address: email})
+			}
+			message := mailer.Message{
+				To:      addresses,
+				Subject: data.Title,
+				Text:    data.Message + fmt.Sprintf("\n\n%s", data.Link),
+				From: mail.Address{
+					Address: am.hub.Settings().Meta.SenderAddress,
+					Name:    am.hub.Settings().Meta.SenderName,
+				},
+			}
+			if err := am.hub.NewMailClient().Send(&message); err != nil {
+				am.hub.Logger().Error("Failed to send email alert", "err", err, "to", message.To)
+			} else {
+				am.hub.Logger().Info("Sent email alert", "to", message.To, "subj", message.Subject)
+			}
 		}
 	}
-	for _, webhook := range userAlertSettings.Webhooks {
-		if err := am.sendShoutrrrAlert(webhook, data.Title, data.Message, data.Link, data.LinkText, send); err != nil {
-			am.hub.Logger().Error("Failed to send shoutrrr alert", "err", err)
-		}
-	}
-	// send alerts via email
-	if len(userAlertSettings.Emails) == 0 {
-		return nil
-	}
-	addresses := []mail.Address{}
-	for _, email := range userAlertSettings.Emails {
-		addresses = append(addresses, mail.Address{Address: email})
-	}
-	message := mailer.Message{
-		To:      addresses,
-		Subject: data.Title,
-		Text:    data.Message + fmt.Sprintf("\n\n%s", data.Link),
-		From: mail.Address{
-			Address: am.hub.Settings().Meta.SenderAddress,
-			Name:    am.hub.Settings().Meta.SenderName,
-		},
-	}
-	err = am.hub.NewMailClient().Send(&message)
-	if err != nil {
-		return err
-	}
-	am.hub.Logger().Info("Sent email alert", "to", message.To, "subj", message.Subject)
 	return nil
 }
 

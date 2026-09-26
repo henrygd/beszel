@@ -162,7 +162,7 @@ func GetHubWithUser(t *testing.T) (*TestHub, *core.Record) {
 	// Create user settings for the test user (required for alert notifications)
 	userSettingsData := map[string]any{
 		"user":     user.Id,
-		"settings": `{"emails":[test@example.com],"webhooks":[]}`,
+		"settings": `{"notificationsEnabled":true,"emails":["test@example.com"],"webhooks":[]}`,
 	}
 	_, err = CreateRecord(hub, "user_settings", userSettingsData)
 	assert.NoError(t, err)

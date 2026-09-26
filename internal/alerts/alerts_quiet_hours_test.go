@@ -27,7 +27,6 @@ func TestAlertSilencedOneTime(t *testing.T) {
 	alert, err := beszelTests.CreateRecord(hub, "alerts", map[string]any{
 		"name":   "CPU",
 		"system": system.Id,
-		"user":   user.Id,
 		"value":  80,
 		"min":    1,
 	})
@@ -336,7 +335,6 @@ func TestAlertSilencedWithActualAlert(t *testing.T) {
 		_, err = beszelTests.CreateRecord(hub, "alerts", map[string]any{
 			"name":   "Status",
 			"system": system.Id,
-			"user":   user.Id,
 			"min":    1,
 		})
 		assert.NoError(t, err)
@@ -347,7 +345,8 @@ func TestAlertSilencedWithActualAlert(t *testing.T) {
 			userSettings, err = beszelTests.CreateRecord(hub, "user_settings", map[string]any{
 				"user": user.Id,
 				"settings": map[string]any{
-					"emails": []string{"test@example.com"},
+					"notificationsEnabled": true,
+					"emails":               []string{"test@example.com"},
 				},
 			})
 			assert.NoError(t, err)
