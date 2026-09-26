@@ -185,15 +185,17 @@ type Info struct {
 	// LoadAvg5       float64 `json:"l5,omitempty" cbor:"16,keyasint,omitempty"`  // deprecated - use `la` array instead
 	// LoadAvg15      float64 `json:"l15,omitempty" cbor:"17,keyasint,omitempty"` // deprecated - use `la` array instead
 
-	BandwidthBytes uint64             `json:"bb" cbor:"18,keyasint"`
-	LoadAvg        [3]float64         `json:"la,omitempty" cbor:"19,keyasint"`
-	ConnectionType ConnectionType     `json:"ct,omitempty" cbor:"20,keyasint,omitempty,omitzero"`
-	ExtraFsPct     map[string]float64 `json:"efs,omitempty" cbor:"21,keyasint,omitempty"`
-	Services       []uint16           `json:"sv,omitempty" cbor:"22,keyasint,omitempty"`  // [totalServices, numFailedServices]
-	Battery        Battery            `json:"bat,omitzero" cbor:"23,keyasint,omitzero"`   // [percent, charge state]
-	RootDiskName   string             `json:"rdn,omitempty" cbor:"24,keyasint,omitempty"` // custom name for root disk (set via FILESYSTEM=device__name)
-	PackageUpdates []uint16           `json:"pu,omitempty" cbor:"25,keyasint,omitempty"`  // [totalUpdates, securityUpdates] (security omitted if unknown)
-	WiFi           map[string]WiFi    `json:"wf,omitempty" cbor:"26,keyasint,omitempty"`  // connected Wi-Fi interfaces
+	BandwidthBytes     uint64             `json:"bb" cbor:"18,keyasint"`
+	LoadAvg            [3]float64         `json:"la,omitempty" cbor:"19,keyasint"`
+	ConnectionType     ConnectionType     `json:"ct,omitempty" cbor:"20,keyasint,omitempty,omitzero"`
+	ExtraFsPct         map[string]float64 `json:"efs,omitempty" cbor:"21,keyasint,omitempty"`
+	Services           []uint16           `json:"sv,omitempty" cbor:"22,keyasint,omitempty"`  // [totalServices, numFailedServices]
+	Battery            Battery            `json:"bat,omitzero" cbor:"23,keyasint,omitzero"`   // [percent, charge state]
+	RootDiskName       string             `json:"rdn,omitempty" cbor:"24,keyasint,omitempty"` // custom name for root disk (set via FILESYSTEM=device__name)
+	PackageUpdates     []uint16           `json:"pu,omitempty" cbor:"25,keyasint,omitempty"`  // [totalUpdates, securityUpdates] (security omitted if unknown)
+	WiFi               map[string]WiFi    `json:"wf,omitempty" cbor:"26,keyasint,omitempty"`  // connected Wi-Fi interfaces
+	BandwidthBytesSent uint64             `json:"bs,omitempty" cbor:"27,keyasint,omitempty"`
+	BandwidthBytesRecv uint64             `json:"br,omitempty" cbor:"28,keyasint,omitempty"`
 }
 
 // Data that does not change during process lifetime and is not needed in All Systems table
