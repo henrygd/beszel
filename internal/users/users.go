@@ -24,6 +24,17 @@ func NewUserManager(app core.App) *UserManager {
 	}
 }
 
+// InitializeOAuthUserRole prevents self-registration from assigning a privileged role.
+func (um *UserManager) InitializeOAuthUserRole(e *core.RecordAuthWithOAuth2RequestEvent) error {
+	if e.IsNewRecord {
+		if e.CreateData == nil {
+			e.CreateData = make(map[string]any)
+		}
+		e.CreateData["role"] = "user"
+	}
+	return e.Next()
+}
+
 // Initialize user role if not set
 func (um *UserManager) InitializeUserRole(e *core.RecordEvent) error {
 	if e.Record.GetString("role") == "" {

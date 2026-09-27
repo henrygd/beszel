@@ -1119,7 +1119,6 @@ func TestCalculateGPUAverage(t *testing.T) {
 }
 
 func TestGPUCapabilitiesAndLegacyPriority(t *testing.T) {
-	// Save original PATH
 	hasAmdSysfs := (&GPUManager{}).hasAmdSysfs()
 
 	tests := []struct {
@@ -1213,7 +1212,7 @@ echo "[]"`
 		{
 			name: "no gpu tools available",
 			setupCommands: func(_ string) error {
-				t.Setenv("PATH", "")
+				// The subtest already restricts PATH to its empty temporary directory.
 				return nil
 			},
 			wantErr: true,

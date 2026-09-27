@@ -978,11 +978,18 @@ func TestAgentWebSocketIntegration(t *testing.T) {
 				}
 			}
 
-			// Verify system status
-			updatedSystemRecord, err := testApp.FindRecordById("systems", systemRecord.Id)
-			require.NoError(t, err)
-			status := updatedSystemRecord.GetString("status")
-			assert.Equal(t, tc.expectSystemStatus, status, "System status should match expected value")
+			// A connected WebSocket does not mean the hub has finished verifying
+			// the agent and updating the system. Wait for the database state rather
+			// than assuming that work completes within a fixed sleep under load.
+			var status string
+			require.EventuallyWithT(t, func(c *assert.CollectT) {
+				updatedSystemRecord, err := testApp.FindRecordById("systems", systemRecord.Id)
+				if !assert.NoError(c, err) {
+					return
+				}
+				status = updatedSystemRecord.GetString("status")
+				assert.Equal(c, tc.expectSystemStatus, status, "System status should match expected value")
+			}, 5*time.Second, 20*time.Millisecond)
 
 			t.Logf("%s - System status: %s, Fingerprint: %s", tc.description, status, finalFingerprint)
 		})
@@ -1142,42 +1149,43 @@ func TestMultipleSystemsWithSameUniversalToken(t *testing.T) {
 
 			// Verify system creation/reuse behavior
 			if tc.expectConnection {
-				// Count systems after connection
-				systemsAfter, err := testApp.FindRecordsByFilter("systems", "users ~ {:userId}", "", -1, 0, map[string]any{"userId": userRecord.Id})
-				require.NoError(t, err)
-				systemsAfterCount := len(systemsAfter)
-
+				expectedSystemsAfter := systemsBeforeCount
 				if tc.expectNewSystem {
-					// Should have created a new system
+					expectedSystemsAfter++
 					systemCount++
-					assert.Equal(t, systemsBeforeCount+1, systemsAfterCount, "Should have created a new system")
-					assert.Equal(t, systemCount, systemsAfterCount, "Total system count should match expected")
-				} else {
-					// Should have reused existing system
-					assert.Equal(t, systemsBeforeCount, systemsAfterCount, "Should not have created a new system")
-					assert.Equal(t, systemCount, systemsAfterCount, "Total system count should remain the same")
 				}
 
-				time.Sleep(20 * time.Millisecond)
+				// WebSocket connection precedes the hub's asynchronous system
+				// setup. Re-read all database state until setup is complete.
+				var systemId, status string
+				require.EventuallyWithT(t, func(c *assert.CollectT) {
+					systemsAfter, err := testApp.FindRecordsByFilter("systems", "users ~ {:userId}", "", -1, 0, map[string]any{"userId": userRecord.Id})
+					if !assert.NoError(c, err) {
+						return
+					}
+					assert.Len(c, systemsAfter, expectedSystemsAfter, "System creation/reuse should match expected behavior")
+					assert.Len(c, systemsAfter, systemCount, "Total system count should match expected")
 
-				// Verify that a fingerprint record exists for this fingerprint
-				fingerprints, err := testApp.FindRecordsByFilter("fingerprints", "token = {:token} && fingerprint = {:fingerprint}", "", -1, 0, map[string]any{
-					"token":       universalToken,
-					"fingerprint": tc.agentFingerprint,
-				})
-				require.NoError(t, err)
-				require.Len(t, fingerprints, 1, "Should have exactly one fingerprint record for this token+fingerprint combination")
+					fingerprints, err := testApp.FindRecordsByFilter("fingerprints", "token = {:token} && fingerprint = {:fingerprint}", "", -1, 0, map[string]any{
+						"token":       universalToken,
+						"fingerprint": tc.agentFingerprint,
+					})
+					if !assert.NoError(c, err) || !assert.Len(c, fingerprints, 1, "Should have exactly one fingerprint record for this token+fingerprint combination") {
+						return
+					}
 
-				fingerprint := fingerprints[0]
-				assert.Equal(t, universalToken, fingerprint.GetString("token"), "Fingerprint should have the universal token")
-				assert.Equal(t, tc.agentFingerprint, fingerprint.GetString("fingerprint"), "Fingerprint should match agent's fingerprint")
+					fingerprint := fingerprints[0]
+					assert.Equal(c, universalToken, fingerprint.GetString("token"), "Fingerprint should have the universal token")
+					assert.Equal(c, tc.agentFingerprint, fingerprint.GetString("fingerprint"), "Fingerprint should match agent's fingerprint")
 
-				// Verify system status
-				systemId := fingerprint.GetString("system")
-				system, err := testApp.FindRecordById("systems", systemId)
-				require.NoError(t, err)
-				status := system.GetString("status")
-				assert.Equal(t, tc.expectSystemStatus, status, "System status should match expected value")
+					systemId = fingerprint.GetString("system")
+					system, err := testApp.FindRecordById("systems", systemId)
+					if !assert.NoError(c, err) {
+						return
+					}
+					status = system.GetString("status")
+					assert.Equal(c, tc.expectSystemStatus, status, "System status should match expected value")
+				}, 5*time.Second, 20*time.Millisecond)
 
 				t.Logf("%s - System ID: %s, Status: %s, New System: %v", tc.description, systemId, status, tc.expectNewSystem)
 			}

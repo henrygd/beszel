@@ -20,10 +20,11 @@ type hubLike interface {
 }
 
 type AlertManager struct {
-	hub           hubLike
-	stopOnce      sync.Once
-	pendingAlerts sync.Map
-	alertsCache   *AlertsCache
+	hub             hubLike
+	stopOnce        sync.Once
+	pendingAlerts   sync.Map
+	alertsCache     *AlertsCache
+	networkMonitors *networkMonitorCache
 }
 
 type AlertMessageData struct {
@@ -107,8 +108,9 @@ var supportsTitle = map[string]struct{}{
 // NewAlertManager creates a new AlertManager instance.
 func NewAlertManager(app hubLike) *AlertManager {
 	am := &AlertManager{
-		hub:         app,
-		alertsCache: NewAlertsCache(app),
+		hub:             app,
+		alertsCache:     NewAlertsCache(app),
+		networkMonitors: newNetworkMonitorCache(app),
 	}
 	am.bindEvents()
 	return am
@@ -116,6 +118,7 @@ func NewAlertManager(app hubLike) *AlertManager {
 
 // Bind events to the alerts collection lifecycle
 func (am *AlertManager) bindEvents() {
+	am.bindNetworkMonitorAlertEvents()
 	am.hub.OnRecordAfterUpdateSuccess("alerts").BindFunc(updateHistoryOnAlertUpdate)
 	am.hub.OnRecordAfterDeleteSuccess("alerts").BindFunc(resolveHistoryOnAlertDelete)
 	am.hub.OnRecordAfterUpdateSuccess("smart_devices").BindFunc(am.handleSmartDeviceAlert)

@@ -129,7 +129,7 @@ func (sys *System) saveZfsPools(zfsData *zfs.ZfsData) error {
 }
 
 func (sys *System) upsertZfsPoolRecord(app core.App, collection *core.Collection, pool *zfs.PoolDetail) error {
-	recordID := makeStableHashId(sys.Id, pool.Name)
+	recordID := MakeStableHashId(sys.Id, pool.Name)
 
 	record, err := app.FindRecordById(collection, recordID)
 	if err != nil {
@@ -171,7 +171,7 @@ func (sys *System) syncZfsPoolHealth(app core.App, pools map[string]*system.ZfsP
 		if pool == nil {
 			continue
 		}
-		recordID := makeStableHashId(sys.Id, name)
+		recordID := MakeStableHashId(sys.Id, name)
 		record, err := app.FindRecordById(collection, recordID)
 		if err != nil {
 			if !errors.Is(err, sql.ErrNoRows) {

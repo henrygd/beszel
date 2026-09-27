@@ -10,14 +10,14 @@ COPY . ./
 
 # Build
 ARG TARGETOS TARGETARCH
-RUN CGO_ENABLED=0 GOGC=75 GOOS=$TARGETOS GOARCH=$TARGETARCH go build -ldflags "-w -s" -o /agent ./internal/cmd/agent
+RUN CGO_ENABLED=0 GOOS=$TARGETOS GOARCH=$TARGETARCH go build -ldflags "-w -s" -o /agent ./internal/cmd/agent
 
 RUN rm -rf /tmp/*
 
 # --------------------------
 # Final image: default scratch-based agent
 # --------------------------
-FROM alpine:3.23
+FROM alpine:3.24
 COPY --from=builder /agent /agent
 
 # AMD GPU name lookup (used by agent on Linux when /usr/share/libdrm/amdgpu.ids is read)

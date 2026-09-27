@@ -8,7 +8,7 @@ msgstr ""
 "Language: zh\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2026-09-10 00:33\n"
+"PO-Revision-Date: 2026-09-24 16:16\n"
 "Last-Translator: \n"
 "Language-Team: Chinese Traditional, Hong Kong\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
@@ -30,6 +30,12 @@ msgstr "{0} 可用"
 msgid "{0} of {1} row(s) selected."
 msgstr "已選擇 {1} 個項目中的 {0} 個"
 
+#. placeholder {0}: selectedSystemIds.size
+#: src/components/network-monitors-table/monitor-dialog.tsx
+#: src/components/network-monitors-table/monitor-dialog.tsx
+msgid "{0} selected"
+msgstr "已選擇 {0} 個"
+
 #: src/components/routes/system/info-bar.tsx
 msgid "{cores, plural, one {# core} other {# cores}}"
 msgstr "{cores, plural, one {# 核心} other {# 核心}}"
@@ -46,13 +52,25 @@ msgstr "{count, plural, one {{countString} 小時} other {{countString} 小時}}
 msgid "{count, plural, one {{countString} minute} few {{countString} minutes} many {{countString} minutes} other {{countString} minutes}}"
 msgstr "{count, plural, one {{countString} 分鐘} few {{countString} 分鐘} many {{countString} 分鐘} other {{countString} 分鐘}}"
 
+#: src/components/network-monitors-table/network-monitors-columns.tsx
+msgid "{daysLeft, plural, one {# day} other {# days}}"
+msgstr ""
+
 #: src/components/routes/system/charts/disk-charts.tsx
 msgid "{diskName} I/O"
 msgstr "{diskName} 的 I/O"
 
+#: src/components/systems-table/systems-table-columns.tsx
+msgid "{numFailed, plural, one {# failed service} other {# failed services}}"
+msgstr ""
+
 #: src/components/routes/system/info-bar.tsx
 msgid "{threads, plural, one {# thread} other {# threads}}"
 msgstr "{threads, plural, one {# 執行緒} other {# 執行緒}}"
+
+#: src/components/systems-table/systems-table-columns.tsx
+msgid "{totalCount, plural, one {# service} other {# services}}"
+msgstr ""
 
 #: src/lib/utils.ts
 msgid "1 hour"
@@ -117,14 +135,25 @@ msgstr "活動警報"
 msgid "Active state"
 msgstr "活動狀態"
 
-#: src/components/add-system.tsx
-#: src/components/add-system.tsx
-#: src/components/navbar.tsx
-#: src/components/navbar.tsx
+#: src/components/network-monitors-table/monitor-dialog.tsx
+msgid "Add"
+msgstr ""
+
+#: src/components/network-monitors-table/monitor-dialog.tsx
+#: src/components/network-monitors-table/monitor-dialog.tsx
+#: src/components/network-monitors-table/monitor-dialog.tsx
+#: src/components/network-monitors-table/monitor-dialog.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Add {foo}"
 msgstr "新增 {foo}"
+
+#: src/components/add-system.tsx
+#: src/components/add-system.tsx
+#: src/components/navbar.tsx
+#: src/components/navbar.tsx
+msgid "Add System"
+msgstr "新增 系統"
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Add URL"
@@ -188,6 +217,7 @@ msgstr "所有系統"
 msgid "Are you sure you want to delete {name}?"
 msgstr "您確定要刪除 {name} 嗎？"
 
+#: src/components/network-monitors-table/network-monitors-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Are you sure?"
 msgstr "您確定嗎？"
@@ -244,6 +274,15 @@ msgstr "{0} 的平均使用率"
 #: src/components/routes/system/charts/gpu-charts.tsx
 msgid "Average utilization of GPU engines"
 msgstr "GPU 引擎的平均利用率"
+
+#: src/components/routes/system/charts/monitors-charts.tsx
+msgid "Average, minimum, and maximum response time"
+msgstr "平均、最小及最大回應時間"
+
+#: src/components/network-monitors-table/network-monitors-columns.tsx
+#: src/components/network-monitors-table/network-monitors-columns.tsx
+msgid "Avg 1h"
+msgstr "1 小時平均"
 
 #: src/components/command-palette.tsx
 #: src/components/navbar.tsx
@@ -306,6 +345,19 @@ msgstr "位元 (Kbps, Mbps, Gbps)"
 msgid "Boot state"
 msgstr "啟動狀態"
 
+#: src/components/network-monitors-table/monitor-dialog.tsx
+#: src/components/network-monitors-table/monitor-dialog.tsx
+msgid "Bulk Add"
+msgstr "批量新增"
+
+#: src/components/network-monitors-table/monitor-dialog.tsx
+msgid "Bulk Add {foo}"
+msgstr "批量新增{foo}"
+
+#: src/components/network-monitors-table/network-monitors-columns.tsx
+msgid "Bulk copy"
+msgstr "批量複製"
+
 #: src/components/routes/settings/general.tsx
 #: src/components/routes/settings/general.tsx
 msgid "Bytes (KB/s, MB/s, GB/s)"
@@ -327,6 +379,7 @@ msgstr "可啟動"
 msgid "Can stop"
 msgstr "可停止"
 
+#: src/components/network-monitors-table/network-monitors-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/systems-table/systems-table-columns.tsx
@@ -349,6 +402,19 @@ msgstr "注意 - 可能遺失資料"
 #: src/components/routes/settings/general.tsx
 msgid "Celsius (°C)"
 msgstr "攝氏 (°C)"
+
+#: src/components/network-monitors-table/network-monitors-columns.tsx
+#: src/components/network-monitors-table/network-monitors-columns.tsx
+msgid "Certificate"
+msgstr ""
+
+#: src/components/network-monitors-table/network-monitors-table.tsx
+msgid "Certificate expired {expires}"
+msgstr ""
+
+#: src/components/network-monitors-table/network-monitors-table.tsx
+msgid "Certificate expires {expires}"
+msgstr ""
 
 #: src/components/routes/settings/general.tsx
 msgid "Change display units for metrics."
@@ -396,12 +462,21 @@ msgid "Checksum errors"
 msgstr "校驗和錯誤"
 
 #: src/components/containers-table/containers-table.tsx
+#: src/components/network-monitors-table/network-monitors-table.tsx
 #: src/components/routes/system/smart-table.tsx
 #: src/components/routes/system/storage-pools-table.tsx
 #: src/components/routes/system/storage-pools-table.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "Clear"
 msgstr "清除"
+
+#: src/components/network-monitors-table/monitor-dialog.tsx
+msgid "Clear all"
+msgstr "全部清除"
+
+#: src/components/network-monitors-table/monitor-dialog.tsx
+msgid "Clear matches"
+msgstr "清除符合項目"
 
 #: src/components/containers-table/containers-table.tsx
 msgid "Click on a container to view more information."
@@ -432,6 +507,10 @@ msgstr "命令行指令"
 msgid "Configure how you receive alert notifications."
 msgstr "配置您接收警報通知的方式。"
 
+#: src/components/network-monitors-table/monitor-dialog.tsx
+msgid "Configure response monitoring from this agent."
+msgstr "從此代理程式設定回應監控。"
+
 #: src/components/login/auth-form.tsx
 #: src/components/login/auth-form.tsx
 msgid "Confirm password"
@@ -457,6 +536,7 @@ msgstr "容器健康狀態"
 msgid "Containers"
 msgstr "容器"
 
+#: src/components/network-monitors-table/network-monitors-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Continue"
@@ -516,6 +596,10 @@ msgstr "複製下面的代理程式安裝指令，或使用<0>通用令牌</0>�
 #: src/components/add-system.tsx
 msgid "Copy the<0>docker-compose.yml</0> content for the agent below, or register agents automatically with a <1>universal token</1>."
 msgstr "複製下面的代理程式<0>docker-compose.yml</0>內容，或使用<1>通用令牌</1>自動註冊代理程式。"
+
+#: src/components/network-monitors-table/network-monitors-columns.tsx
+msgid "Copy to system"
+msgstr "複製到系統"
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Copy YAML"
@@ -630,6 +714,7 @@ msgstr "預設"
 msgid "Default time period"
 msgstr "預設時間段"
 
+#: src/components/network-monitors-table/network-monitors-columns.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/system/smart-table.tsx
@@ -718,15 +803,20 @@ msgstr "下載"
 msgid "Duration"
 msgstr "持續時間"
 
+#: src/components/network-monitors-table/network-monitors-columns.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Edit"
 msgstr "編輯"
 
-#: src/components/add-system.tsx
+#: src/components/network-monitors-table/monitor-dialog.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Edit {foo}"
 msgstr "編輯 {foo}"
+
+#: src/components/add-system.tsx
+msgid "Edit System"
+msgstr "編輯 系統"
 
 #: src/components/login/auth-form.tsx
 #: src/components/login/forgot-pass-form.tsx
@@ -772,6 +862,11 @@ msgstr "輸入您的一次性密碼。"
 msgid "Ephemeral"
 msgstr "臨時"
 
+#: src/components/network-monitors-table/monitor-dialog.tsx
+#: src/components/network-monitors-table/monitor-dialog.tsx
+#: src/components/network-monitors-table/network-monitors-table.tsx
+#: src/components/network-monitors-table/network-monitors-table.tsx
+#: src/components/network-monitors-table/network-monitors-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/settings/config-yaml.tsx
 #: src/components/routes/settings/heartbeat.tsx
@@ -808,6 +903,10 @@ msgstr "未在<0>config.yml</0>中定義的現有系統將被刪除。請定期�
 msgid "Exited active"
 msgstr "退出活動狀態"
 
+#: src/components/network-monitors-table/network-monitors-columns.tsx
+msgid "Expired"
+msgstr ""
+
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Expires after one hour or on hub restart."
 msgstr "一小時後或重新啟動集線器時過期。"
@@ -828,10 +927,6 @@ msgstr "匯出您現在的系統設定。"
 msgid "Fahrenheit (°F)"
 msgstr "華氏 (°F)"
 
-#: src/components/systems-table/systems-table-columns.tsx
-msgid "Failed"
-msgstr "失敗"
-
 #: src/components/routes/system/smart-table.tsx
 msgid "Failed Attributes:"
 msgstr "失敗屬性："
@@ -843,6 +938,11 @@ msgstr "失敗的服務"
 #: src/lib/api.ts
 msgid "Failed to authenticate"
 msgstr "認證失敗"
+
+#: src/components/network-monitors-table/network-monitors-table.tsx
+#: src/components/network-monitors-table/network-monitors-table.tsx
+msgid "Failed to delete monitors."
+msgstr "刪除監控失敗。"
 
 #: src/components/routes/settings/layout.tsx
 #: src/components/routes/settings/notifications.tsx
@@ -862,6 +962,10 @@ msgstr "發送測試通知失敗"
 msgid "Failed to update alert"
 msgstr "更新警報失敗"
 
+#: src/components/network-monitors-table/network-monitors-table.tsx
+msgid "Failed to update monitors."
+msgstr "更新監控失敗。"
+
 #. placeholder {0}: statusTotals[ServiceStatus.Failed]
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Failed: {0}"
@@ -872,6 +976,7 @@ msgid "Fans"
 msgstr "風扇"
 
 #: src/components/containers-table/containers-table.tsx
+#: src/components/network-monitors-table/network-monitors-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/system/chart-card.tsx
 #: src/components/routes/system/smart-table.tsx
@@ -1011,13 +1116,25 @@ msgctxt "Docker image"
 msgid "Image"
 msgstr "鏡像"
 
+#: src/components/containers-table/containers-table-columns.tsx
+#: src/components/containers-table/containers-table-columns.tsx
+msgctxt "Docker image"
+msgid "Image update available"
+msgstr "有可用的鏡像更新"
+
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Inactive"
 msgstr "未啟用"
 
+#: src/components/network-monitors-table/network-monitors-columns.tsx
+#: src/components/network-monitors-table/network-monitors-columns.tsx
 #: src/components/routes/settings/heartbeat.tsx
 msgid "Interval"
 msgstr "間隔"
+
+#: src/components/network-monitors-table/monitor-dialog.tsx
+msgid "Interval (seconds)"
+msgstr "間隔 (秒)"
 
 #: src/components/login/auth-form.tsx
 msgid "Invalid email address."
@@ -1097,6 +1214,16 @@ msgstr "日誌"
 msgid "Looking instead for where to create alerts? Click the bell <0/> icons in the systems table."
 msgstr "在尋找創建警報的位置嗎？點擊系統表中的鈴鐺<0/>。"
 
+#: src/components/routes/system/charts/monitors-charts.tsx
+msgctxt "Packet loss"
+msgid "Loss"
+msgstr "封包遺失"
+
+#: src/components/network-monitors-table/network-monitors-columns.tsx
+#: src/components/network-monitors-table/network-monitors-columns.tsx
+msgid "Loss 1h"
+msgstr "1 小時封包遺失率"
+
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Main PID"
 msgstr "主進程 ID"
@@ -1114,6 +1241,11 @@ msgstr "手動設定說明"
 #: src/components/routes/system/chart-card.tsx
 msgid "Max 1 min"
 msgstr "一分鐘內最大值"
+
+#: src/components/network-monitors-table/network-monitors-columns.tsx
+#: src/components/network-monitors-table/network-monitors-columns.tsx
+msgid "Max 1h"
+msgstr "1 小時最大"
 
 #: src/components/containers-table/containers-table-columns.tsx
 #: src/components/routes/system/info-bar.tsx
@@ -1141,10 +1273,25 @@ msgstr "記憶體使用"
 msgid "Memory usage of containers"
 msgstr "容器記憶體使用量"
 
+#: src/components/network-monitors-table/network-monitors-columns.tsx
+#: src/components/network-monitors-table/network-monitors-columns.tsx
+msgid "Min 1h"
+msgstr "1 小時最小"
+
 #. Device model
 #: src/components/routes/system/smart-table.tsx
 msgid "Model"
 msgstr "型號"
+
+#: src/components/network-monitors-table/monitor-dialog.tsx
+#: src/components/network-monitors-table/monitor-dialog.tsx
+#: src/components/network-monitors-table/monitor-dialog.tsx
+msgid "Monitor"
+msgstr "監控"
+
+#: src/components/network-monitors-table/monitor-dialog.tsx
+msgid "Monitors created"
+msgstr "已建立監控"
 
 #: src/components/routes/system/storage-pools-table.tsx
 msgid "Mountpoint"
@@ -1162,6 +1309,29 @@ msgstr "名稱"
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Net"
 msgstr "網絡"
+
+#: src/components/routes/system.tsx
+msgid "Network"
+msgstr "網絡"
+
+#: src/components/network-monitors-table/monitor-dialog.tsx
+#: src/components/network-monitors-table/monitor-dialog.tsx
+msgid "Network Monitor"
+msgstr "網絡監控"
+
+#: src/lib/alerts.ts
+msgid "Network Monitor Loss"
+msgstr "網絡監控封包遺失"
+
+#: src/components/command-palette.tsx
+#: src/components/navbar.tsx
+#: src/components/navbar.tsx
+#: src/components/network-monitors-table/monitor-dialog.tsx
+#: src/components/network-monitors-table/monitor-dialog.tsx
+#: src/components/network-monitors-table/network-monitors-table.tsx
+#: src/components/routes/monitors.tsx
+msgid "Network Monitors"
+msgstr "網絡監控"
 
 #: src/components/routes/system/charts/network-charts.tsx
 msgid "Network traffic of containers"
@@ -1197,6 +1367,7 @@ msgstr "未找到結果。"
 #: src/components/containers-table/containers-table.tsx
 #: src/components/containers-table/containers-table.tsx
 #: src/components/containers-table/containers-table.tsx
+#: src/components/network-monitors-table/network-monitors-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/system/smart-table.tsx
 #: src/components/systemd-table/systemd-table.tsx
@@ -1207,6 +1378,7 @@ msgstr "沒有結果。"
 msgid "No S.M.A.R.T. attributes available for this device."
 msgstr "此裝置沒有可用的 S.M.A.R.T. 屬性。"
 
+#: src/components/network-monitors-table/monitor-dialog.tsx
 #: src/components/systems-table/systems-table.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "No systems found."
@@ -1238,6 +1410,11 @@ msgstr "每次重新啟動時，將會以檔案中的系統定義更新資料庫
 msgid "One or more containers are unhealthy"
 msgstr "一個或多個容器處於不健康狀態"
 
+#. placeholder {0}: alert.value
+#: src/components/active-alerts.tsx
+msgid "One or more monitors exceed {0}% loss"
+msgstr "一個或多個監控的封包遺失率超過 {0}%"
+
 #: src/lib/alerts.ts
 msgid "One or more services are in a failed state"
 msgstr "一個或多個服務處於失敗狀態"
@@ -1251,6 +1428,7 @@ msgstr "一次性"
 msgid "One-time password"
 msgstr "一次性密碼"
 
+#: src/components/network-monitors-table/network-monitors-columns.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
@@ -1272,6 +1450,11 @@ msgstr "其他"
 msgid "Overwrite existing alerts"
 msgstr "覆蓋現有警報"
 
+#: src/components/routes/system/charts/monitors-charts.tsx
+msgid "Packet loss (%)"
+msgstr "封包遺失 (%)"
+
+#: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
@@ -1309,6 +1492,7 @@ msgstr "已收到密碼重設請求"
 msgid "Past"
 msgstr "過去"
 
+#: src/components/network-monitors-table/network-monitors-columns.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Pause"
 msgstr "暫停"
@@ -1392,6 +1576,7 @@ msgid "Pool Usage"
 msgstr "Pool 使用量"
 
 #: src/components/add-system.tsx
+#: src/components/network-monitors-table/monitor-dialog.tsx
 msgid "Port"
 msgstr "端口"
 
@@ -1417,6 +1602,12 @@ msgstr "首選語言"
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Process started"
 msgstr "進程啟動"
+
+#: src/components/network-monitors-table/monitor-dialog.tsx
+#: src/components/network-monitors-table/network-monitors-columns.tsx
+#: src/components/network-monitors-table/network-monitors-columns.tsx
+msgid "Protocol"
+msgstr "通訊協定"
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Public key"
@@ -1503,10 +1694,21 @@ msgstr "重設密碼"
 msgid "Resolved"
 msgstr "已解決"
 
+#: src/components/network-monitors-table/network-monitors-columns.tsx
+#: src/components/network-monitors-table/network-monitors-columns.tsx
+#: src/components/routes/system/charts/monitors-charts.tsx
+msgid "Response"
+msgstr "回應"
+
+#: src/components/network-monitors-table/network-monitors-table.tsx
+msgid "Response time monitoring from agents."
+msgstr "來自代理程式的回應時間監控。"
+
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Restarts"
 msgstr "重啟次數"
 
+#: src/components/network-monitors-table/network-monitors-columns.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Resume"
 msgstr "恢復"
@@ -1538,7 +1740,7 @@ msgstr "S.M.A.R.T. 詳情"
 msgid "S.M.A.R.T. Self-Test"
 msgstr "S.M.A.R.T. 自檢"
 
-#: src/components/add-system.tsx
+#: src/components/network-monitors-table/monitor-dialog.tsx
 msgid "Save {foo}"
 msgstr "儲存 {foo}"
 
@@ -1550,6 +1752,10 @@ msgstr "使用回車鍵或逗號保存地址。留空以禁用電子郵件通知
 #: src/components/routes/settings/notifications.tsx
 msgid "Save Settings"
 msgstr "儲存設定"
+
+#: src/components/add-system.tsx
+msgid "Save System"
+msgstr "儲存 系統"
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Saved in the database and does not expire until you disable it."
@@ -1575,6 +1781,11 @@ msgstr "搜索"
 msgid "Search for systems or settings..."
 msgstr "搜索系統或設置..."
 
+#: src/components/network-monitors-table/monitor-dialog.tsx
+#: src/components/network-monitors-table/monitor-dialog.tsx
+msgid "Search systems"
+msgstr "搜索系統"
+
 #: src/components/routes/settings/heartbeat.tsx
 msgid "Seconds between pings (default: 60)"
 msgstr "Ping 之間的秒數 (預設：60)"
@@ -1586,6 +1797,27 @@ msgstr "查看<0>通知設置</0>以配置您接收警報的方式。"
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Select {foo}"
 msgstr "選擇 {foo}"
+
+#: src/components/network-monitors-table/monitor-dialog.tsx
+msgid "Select a system"
+msgstr "選擇系統"
+
+#: src/components/network-monitors-table/monitor-dialog.tsx
+#: src/components/network-monitors-table/network-monitors-columns.tsx
+msgid "Select all"
+msgstr "全選"
+
+#: src/components/network-monitors-table/monitor-dialog.tsx
+msgid "Select matches"
+msgstr "選擇符合項目"
+
+#: src/components/network-monitors-table/network-monitors-columns.tsx
+msgid "Select row"
+msgstr "選擇列"
+
+#: src/components/network-monitors-table/monitor-dialog.tsx
+msgid "Select systems"
+msgstr "選擇系統"
 
 #: src/components/routes/settings/heartbeat.tsx
 msgid "Send a single heartbeat ping to verify your endpoint is working."
@@ -1646,6 +1878,7 @@ msgstr "登錄"
 msgid "SMTP settings"
 msgstr "SMTP設置"
 
+#: src/components/network-monitors-table/network-monitors-table.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "Sort By"
 msgstr "排序依據"
@@ -1688,10 +1921,11 @@ msgstr "交換使用"
 msgid "Switch theme"
 msgstr "切換主題"
 
-#: src/components/add-system.tsx
 #: src/components/alerts-history-columns.tsx
 #: src/components/containers-table/containers-table-columns.tsx
-#: src/components/navbar.tsx
+#: src/components/network-monitors-table/monitor-dialog.tsx
+#: src/components/network-monitors-table/network-monitors-columns.tsx
+#: src/components/network-monitors-table/network-monitors-columns.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/quiet-hours.tsx
@@ -1716,6 +1950,8 @@ msgid "Systemd Services"
 msgstr "Systemd 服務"
 
 #: src/components/navbar.tsx
+#: src/components/network-monitors-table/monitor-dialog.tsx
+#: src/components/network-monitors-table/monitor-dialog.tsx
 msgid "Systems"
 msgstr "系統"
 
@@ -1731,6 +1967,17 @@ msgstr "表格"
 msgctxt "Tabs system layout option"
 msgid "Tabs"
 msgstr "分頁"
+
+#: src/components/network-monitors-table/monitor-dialog.tsx
+#: src/components/network-monitors-table/network-monitors-columns.tsx
+#: src/components/network-monitors-table/network-monitors-columns.tsx
+msgid "Target"
+msgstr "目標"
+
+#: src/components/network-monitors-table/monitor-dialog.tsx
+#: src/components/network-monitors-table/monitor-dialog.tsx
+msgid "target[,protocol[,port[,interval]]]"
+msgstr ""
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Tasks"
@@ -1779,6 +2026,7 @@ msgstr "然後登錄到後端並在用戶表中重置您的用戶帳戶密碼。
 msgid "This action cannot be undone. This will permanently delete all current records for {name} from the database."
 msgstr "此操作無法撤銷。這將永久刪除數據庫中{name}的所有當前記錄。"
 
+#: src/components/network-monitors-table/network-monitors-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "This will permanently delete all selected records from the database."
 msgstr "這將從資料庫中永久刪除所有選定的記錄。"
@@ -1902,6 +2150,10 @@ msgid "Triggers when memory usage exceeds a threshold"
 msgstr "當記憶體使用率超過閾值時觸發"
 
 #: src/lib/alerts.ts
+msgid "Triggers when one hour loss exceeds a threshold"
+msgstr "當一小時封包遺失率超過閾值時觸發"
+
+#: src/lib/alerts.ts
 msgid "Triggers when status switches between up and down"
 msgstr "當狀態在上和下之間切換時觸發"
 
@@ -1960,6 +2212,8 @@ msgid "Update"
 msgstr "更新"
 
 #: src/components/containers-table/containers-table-columns.tsx
+#: src/components/network-monitors-table/network-monitors-columns.tsx
+#: src/components/network-monitors-table/network-monitors-columns.tsx
 #: src/components/routes/system/smart-table.tsx
 #: src/components/routes/system/storage-pools-table.tsx
 #: src/components/systemd-table/systemd-table-columns.tsx
@@ -2015,6 +2269,7 @@ msgstr "利用率"
 msgid "Value"
 msgstr "值"
 
+#: src/components/network-monitors-table/network-monitors-table.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "View"
 msgstr "檢視"
@@ -2029,6 +2284,7 @@ msgstr "查看更多"
 msgid "View your 200 most recent alerts."
 msgstr "檢視最近 200 則警報。"
 
+#: src/components/network-monitors-table/network-monitors-table.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "Visible Fields"
 msgstr "可見欄位"

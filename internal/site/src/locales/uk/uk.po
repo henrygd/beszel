@@ -8,7 +8,7 @@ msgstr ""
 "Language: uk\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2026-09-10 00:33\n"
+"PO-Revision-Date: 2026-09-24 16:15\n"
 "Last-Translator: \n"
 "Language-Team: Ukrainian\n"
 "Plural-Forms: nplurals=4; plural=((n%10==1 && n%100!=11) ? 0 : ((n%10 >= 2 && n%10 <=4 && (n%100 < 12 || n%100 > 14)) ? 1 : ((n%10 == 0 || (n%10 >= 5 && n%10 <=9)) || (n%100 >= 11 && n%100 <= 14)) ? 2 : 3));\n"
@@ -30,6 +30,12 @@ msgstr "{0} Доступно"
 msgid "{0} of {1} row(s) selected."
 msgstr "Вибрано {0} з {1} рядків."
 
+#. placeholder {0}: selectedSystemIds.size
+#: src/components/network-monitors-table/monitor-dialog.tsx
+#: src/components/network-monitors-table/monitor-dialog.tsx
+msgid "{0} selected"
+msgstr "Вибрано: {0}"
+
 #: src/components/routes/system/info-bar.tsx
 msgid "{cores, plural, one {# core} other {# cores}}"
 msgstr "{cores, plural, one {# ядро} few {# ядра} many {# ядер} other {# ядер}}"
@@ -46,13 +52,25 @@ msgstr "{count, plural, one {{countString} година} few {{countString} го
 msgid "{count, plural, one {{countString} minute} few {{countString} minutes} many {{countString} minutes} other {{countString} minutes}}"
 msgstr "{count, plural, one {{countString} хвилина} few {{countString} хвилини} many {{countString} хвилин} other {{countString} хвилини}}"
 
+#: src/components/network-monitors-table/network-monitors-columns.tsx
+msgid "{daysLeft, plural, one {# day} other {# days}}"
+msgstr ""
+
 #: src/components/routes/system/charts/disk-charts.tsx
 msgid "{diskName} I/O"
 msgstr "Ввід/вивід {diskName}"
 
+#: src/components/systems-table/systems-table-columns.tsx
+msgid "{numFailed, plural, one {# failed service} other {# failed services}}"
+msgstr ""
+
 #: src/components/routes/system/info-bar.tsx
 msgid "{threads, plural, one {# thread} other {# threads}}"
 msgstr "{threads, plural, one {# потік} few {# потоки} many {# потоків} other {# потоків}}"
+
+#: src/components/systems-table/systems-table-columns.tsx
+msgid "{totalCount, plural, one {# service} other {# services}}"
+msgstr ""
 
 #: src/lib/utils.ts
 msgid "1 hour"
@@ -117,14 +135,25 @@ msgstr "Активні сповіщення"
 msgid "Active state"
 msgstr "Активний стан"
 
-#: src/components/add-system.tsx
-#: src/components/add-system.tsx
-#: src/components/navbar.tsx
-#: src/components/navbar.tsx
+#: src/components/network-monitors-table/monitor-dialog.tsx
+msgid "Add"
+msgstr ""
+
+#: src/components/network-monitors-table/monitor-dialog.tsx
+#: src/components/network-monitors-table/monitor-dialog.tsx
+#: src/components/network-monitors-table/monitor-dialog.tsx
+#: src/components/network-monitors-table/monitor-dialog.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Add {foo}"
 msgstr "Додати {foo}"
+
+#: src/components/add-system.tsx
+#: src/components/add-system.tsx
+#: src/components/navbar.tsx
+#: src/components/navbar.tsx
+msgid "Add System"
+msgstr "Додати систему"
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Add URL"
@@ -188,6 +217,7 @@ msgstr "Всі системи"
 msgid "Are you sure you want to delete {name}?"
 msgstr "Ви впевнені, що хочете видалити {name}?"
 
+#: src/components/network-monitors-table/network-monitors-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Are you sure?"
 msgstr "Ви впевнені?"
@@ -244,6 +274,15 @@ msgstr "Середнє використання {0}"
 #: src/components/routes/system/charts/gpu-charts.tsx
 msgid "Average utilization of GPU engines"
 msgstr "Середнє використання рушіїв GPU"
+
+#: src/components/routes/system/charts/monitors-charts.tsx
+msgid "Average, minimum, and maximum response time"
+msgstr "Середній, мінімальний і максимальний час відгуку"
+
+#: src/components/network-monitors-table/network-monitors-columns.tsx
+#: src/components/network-monitors-table/network-monitors-columns.tsx
+msgid "Avg 1h"
+msgstr "Сер. за 1 год"
 
 #: src/components/command-palette.tsx
 #: src/components/navbar.tsx
@@ -306,6 +345,19 @@ msgstr "Біти (Кбіт/с, Мбіт/с, Гбіт/с)"
 msgid "Boot state"
 msgstr "Стан завантаження"
 
+#: src/components/network-monitors-table/monitor-dialog.tsx
+#: src/components/network-monitors-table/monitor-dialog.tsx
+msgid "Bulk Add"
+msgstr "Масове додавання"
+
+#: src/components/network-monitors-table/monitor-dialog.tsx
+msgid "Bulk Add {foo}"
+msgstr "Масове додавання {foo}"
+
+#: src/components/network-monitors-table/network-monitors-columns.tsx
+msgid "Bulk copy"
+msgstr "Масове копіювання"
+
 #: src/components/routes/settings/general.tsx
 #: src/components/routes/settings/general.tsx
 msgid "Bytes (KB/s, MB/s, GB/s)"
@@ -327,6 +379,7 @@ msgstr "Може запустити"
 msgid "Can stop"
 msgstr "Може зупинити"
 
+#: src/components/network-monitors-table/network-monitors-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/systems-table/systems-table-columns.tsx
@@ -349,6 +402,19 @@ msgstr "Увага — можлива втрата даних"
 #: src/components/routes/settings/general.tsx
 msgid "Celsius (°C)"
 msgstr "Цельсій (°C)"
+
+#: src/components/network-monitors-table/network-monitors-columns.tsx
+#: src/components/network-monitors-table/network-monitors-columns.tsx
+msgid "Certificate"
+msgstr ""
+
+#: src/components/network-monitors-table/network-monitors-table.tsx
+msgid "Certificate expired {expires}"
+msgstr ""
+
+#: src/components/network-monitors-table/network-monitors-table.tsx
+msgid "Certificate expires {expires}"
+msgstr ""
 
 #: src/components/routes/settings/general.tsx
 msgid "Change display units for metrics."
@@ -396,12 +462,21 @@ msgid "Checksum errors"
 msgstr "Помилки контрольної суми"
 
 #: src/components/containers-table/containers-table.tsx
+#: src/components/network-monitors-table/network-monitors-table.tsx
 #: src/components/routes/system/smart-table.tsx
 #: src/components/routes/system/storage-pools-table.tsx
 #: src/components/routes/system/storage-pools-table.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "Clear"
 msgstr "Очистити"
+
+#: src/components/network-monitors-table/monitor-dialog.tsx
+msgid "Clear all"
+msgstr "Очистити все"
+
+#: src/components/network-monitors-table/monitor-dialog.tsx
+msgid "Clear matches"
+msgstr "Очистити збіги"
 
 #: src/components/containers-table/containers-table.tsx
 msgid "Click on a container to view more information."
@@ -432,6 +507,10 @@ msgstr "Інструкції командного рядка"
 msgid "Configure how you receive alert notifications."
 msgstr "Налаштуйте, як ви отримуєте сповіщення про тривоги."
 
+#: src/components/network-monitors-table/monitor-dialog.tsx
+msgid "Configure response monitoring from this agent."
+msgstr "Налаштуйте моніторинг часу відгуку з цього агента."
+
 #: src/components/login/auth-form.tsx
 #: src/components/login/auth-form.tsx
 msgid "Confirm password"
@@ -457,6 +536,7 @@ msgstr "Здоров'я контейнера"
 msgid "Containers"
 msgstr "Контейнери"
 
+#: src/components/network-monitors-table/network-monitors-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Continue"
@@ -516,6 +596,10 @@ msgstr "Скопіюйте наведену нижче команду встан
 #: src/components/add-system.tsx
 msgid "Copy the<0>docker-compose.yml</0> content for the agent below, or register agents automatically with a <1>universal token</1>."
 msgstr "Скопіюйте вміст <0>docker-compose.yml</0> для агента нижче, або зареєструйте агентів автоматично за допомогою <1>універсального токена</1>."
+
+#: src/components/network-monitors-table/network-monitors-columns.tsx
+msgid "Copy to system"
+msgstr "Копіювати в систему"
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Copy YAML"
@@ -630,6 +714,7 @@ msgstr "За замовчуванням"
 msgid "Default time period"
 msgstr "Стандартний період часу"
 
+#: src/components/network-monitors-table/network-monitors-columns.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/system/smart-table.tsx
@@ -718,15 +803,20 @@ msgstr "Завантажити"
 msgid "Duration"
 msgstr "Тривалість"
 
+#: src/components/network-monitors-table/network-monitors-columns.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Edit"
 msgstr "Редагувати"
 
-#: src/components/add-system.tsx
+#: src/components/network-monitors-table/monitor-dialog.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Edit {foo}"
 msgstr "Редагувати {foo}"
+
+#: src/components/add-system.tsx
+msgid "Edit System"
+msgstr "Редагувати систему"
 
 #: src/components/login/auth-form.tsx
 #: src/components/login/forgot-pass-form.tsx
@@ -772,6 +862,11 @@ msgstr "Введіть ваш одноразовий пароль."
 msgid "Ephemeral"
 msgstr "Тимчасовий"
 
+#: src/components/network-monitors-table/monitor-dialog.tsx
+#: src/components/network-monitors-table/monitor-dialog.tsx
+#: src/components/network-monitors-table/network-monitors-table.tsx
+#: src/components/network-monitors-table/network-monitors-table.tsx
+#: src/components/network-monitors-table/network-monitors-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/settings/config-yaml.tsx
 #: src/components/routes/settings/heartbeat.tsx
@@ -808,6 +903,10 @@ msgstr "Існуючі системи, не визначені в <0>config.yml<
 msgid "Exited active"
 msgstr "Завершилося активно"
 
+#: src/components/network-monitors-table/network-monitors-columns.tsx
+msgid "Expired"
+msgstr ""
+
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Expires after one hour or on hub restart."
 msgstr "Закінчується через годину або при перезапуску Hub."
@@ -828,10 +927,6 @@ msgstr "Експортуйте поточну конфігурацію сист�
 msgid "Fahrenheit (°F)"
 msgstr "Фаренгейт (°F)"
 
-#: src/components/systems-table/systems-table-columns.tsx
-msgid "Failed"
-msgstr "Не вдалося"
-
 #: src/components/routes/system/smart-table.tsx
 msgid "Failed Attributes:"
 msgstr "Невдалі атрибути:"
@@ -843,6 +938,11 @@ msgstr "Несправні служби"
 #: src/lib/api.ts
 msgid "Failed to authenticate"
 msgstr "Не вдалося автентифікувати"
+
+#: src/components/network-monitors-table/network-monitors-table.tsx
+#: src/components/network-monitors-table/network-monitors-table.tsx
+msgid "Failed to delete monitors."
+msgstr "Не вдалося видалити монітори."
 
 #: src/components/routes/settings/layout.tsx
 #: src/components/routes/settings/notifications.tsx
@@ -862,6 +962,10 @@ msgstr "Не вдалося надіслати тестове сповіщенн
 msgid "Failed to update alert"
 msgstr "Не вдалося оновити сповіщення"
 
+#: src/components/network-monitors-table/network-monitors-table.tsx
+msgid "Failed to update monitors."
+msgstr "Не вдалося оновити монітори."
+
 #. placeholder {0}: statusTotals[ServiceStatus.Failed]
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Failed: {0}"
@@ -872,6 +976,7 @@ msgid "Fans"
 msgstr "Вентилятори"
 
 #: src/components/containers-table/containers-table.tsx
+#: src/components/network-monitors-table/network-monitors-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/system/chart-card.tsx
 #: src/components/routes/system/smart-table.tsx
@@ -954,7 +1059,7 @@ msgstr "Здоров’я"
 
 #: src/components/routes/settings/layout.tsx
 msgid "Heartbeat"
-msgstr ""
+msgstr "Heartbeat"
 
 #: src/components/routes/settings/heartbeat.tsx
 msgid "Heartbeat Monitoring"
@@ -1011,13 +1116,25 @@ msgctxt "Docker image"
 msgid "Image"
 msgstr "Образ"
 
+#: src/components/containers-table/containers-table-columns.tsx
+#: src/components/containers-table/containers-table-columns.tsx
+msgctxt "Docker image"
+msgid "Image update available"
+msgstr "Доступне оновлення образу"
+
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Inactive"
 msgstr "Неактивне"
 
+#: src/components/network-monitors-table/network-monitors-columns.tsx
+#: src/components/network-monitors-table/network-monitors-columns.tsx
 #: src/components/routes/settings/heartbeat.tsx
 msgid "Interval"
 msgstr "Інтервал"
+
+#: src/components/network-monitors-table/monitor-dialog.tsx
+msgid "Interval (seconds)"
+msgstr "Інтервал (секунди)"
 
 #: src/components/login/auth-form.tsx
 msgid "Invalid email address."
@@ -1097,6 +1214,16 @@ msgstr "Журнали"
 msgid "Looking instead for where to create alerts? Click the bell <0/> icons in the systems table."
 msgstr "А може, ви шукаєте, де створити сповіщення? Натисніть на іконку дзвіночка <0/> у таблиці систем."
 
+#: src/components/routes/system/charts/monitors-charts.tsx
+msgctxt "Packet loss"
+msgid "Loss"
+msgstr "Втрата"
+
+#: src/components/network-monitors-table/network-monitors-columns.tsx
+#: src/components/network-monitors-table/network-monitors-columns.tsx
+msgid "Loss 1h"
+msgstr "Втрата 1 h"
+
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Main PID"
 msgstr "Основний PID"
@@ -1114,6 +1241,11 @@ msgstr "Інструкції з ручного налаштування"
 #: src/components/routes/system/chart-card.tsx
 msgid "Max 1 min"
 msgstr "Макс 1 хв"
+
+#: src/components/network-monitors-table/network-monitors-columns.tsx
+#: src/components/network-monitors-table/network-monitors-columns.tsx
+msgid "Max 1h"
+msgstr "Макс. за 1 год"
 
 #: src/components/containers-table/containers-table-columns.tsx
 #: src/components/routes/system/info-bar.tsx
@@ -1141,10 +1273,25 @@ msgstr "Використання пам’яті"
 msgid "Memory usage of containers"
 msgstr "Використання пам’яті контейнерами"
 
+#: src/components/network-monitors-table/network-monitors-columns.tsx
+#: src/components/network-monitors-table/network-monitors-columns.tsx
+msgid "Min 1h"
+msgstr "Мін. за 1 год"
+
 #. Device model
 #: src/components/routes/system/smart-table.tsx
 msgid "Model"
 msgstr "Модель"
+
+#: src/components/network-monitors-table/monitor-dialog.tsx
+#: src/components/network-monitors-table/monitor-dialog.tsx
+#: src/components/network-monitors-table/monitor-dialog.tsx
+msgid "Monitor"
+msgstr "Монітор"
+
+#: src/components/network-monitors-table/monitor-dialog.tsx
+msgid "Monitors created"
+msgstr "Монітори створено"
 
 #: src/components/routes/system/storage-pools-table.tsx
 msgid "Mountpoint"
@@ -1162,6 +1309,29 @@ msgstr "Ім’я"
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Net"
 msgstr "Мережа"
+
+#: src/components/routes/system.tsx
+msgid "Network"
+msgstr "Мережа"
+
+#: src/components/network-monitors-table/monitor-dialog.tsx
+#: src/components/network-monitors-table/monitor-dialog.tsx
+msgid "Network Monitor"
+msgstr "Мережевий монітор"
+
+#: src/lib/alerts.ts
+msgid "Network Monitor Loss"
+msgstr "Втрати мережевого монітора"
+
+#: src/components/command-palette.tsx
+#: src/components/navbar.tsx
+#: src/components/navbar.tsx
+#: src/components/network-monitors-table/monitor-dialog.tsx
+#: src/components/network-monitors-table/monitor-dialog.tsx
+#: src/components/network-monitors-table/network-monitors-table.tsx
+#: src/components/routes/monitors.tsx
+msgid "Network Monitors"
+msgstr "Мережеві монітори"
 
 #: src/components/routes/system/charts/network-charts.tsx
 msgid "Network traffic of containers"
@@ -1197,6 +1367,7 @@ msgstr "Результатів не знайдено."
 #: src/components/containers-table/containers-table.tsx
 #: src/components/containers-table/containers-table.tsx
 #: src/components/containers-table/containers-table.tsx
+#: src/components/network-monitors-table/network-monitors-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/system/smart-table.tsx
 #: src/components/systemd-table/systemd-table.tsx
@@ -1207,6 +1378,7 @@ msgstr "Немає результатів."
 msgid "No S.M.A.R.T. attributes available for this device."
 msgstr "Для цього пристрою немає доступних атрибутів S.M.A.R.T."
 
+#: src/components/network-monitors-table/monitor-dialog.tsx
 #: src/components/systems-table/systems-table.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "No systems found."
@@ -1238,6 +1410,11 @@ msgstr "При кожному перезапуску системи в базі 
 msgid "One or more containers are unhealthy"
 msgstr "Один або кілька контейнерів мають нездоровий стан"
 
+#. placeholder {0}: alert.value
+#: src/components/active-alerts.tsx
+msgid "One or more monitors exceed {0}% loss"
+msgstr "На одному або кількох моніторах втрати перевищують {0}%"
+
 #: src/lib/alerts.ts
 msgid "One or more services are in a failed state"
 msgstr "Одна або кілька служб перебувають у стані помилки"
@@ -1251,6 +1428,7 @@ msgstr "Одноразовий"
 msgid "One-time password"
 msgstr "Одноразовий пароль"
 
+#: src/components/network-monitors-table/network-monitors-columns.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
@@ -1272,6 +1450,11 @@ msgstr "Інше"
 msgid "Overwrite existing alerts"
 msgstr "Перезаписати існуючі сповіщення"
 
+#: src/components/routes/system/charts/monitors-charts.tsx
+msgid "Packet loss (%)"
+msgstr "Втрата пакетів (%)"
+
+#: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
@@ -1309,6 +1492,7 @@ msgstr "Запит на скидання пароля отримано"
 msgid "Past"
 msgstr "Минуле"
 
+#: src/components/network-monitors-table/network-monitors-columns.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Pause"
 msgstr "Призупинити"
@@ -1392,6 +1576,7 @@ msgid "Pool Usage"
 msgstr "Використання pool"
 
 #: src/components/add-system.tsx
+#: src/components/network-monitors-table/monitor-dialog.tsx
 msgid "Port"
 msgstr "Порт"
 
@@ -1417,6 +1602,12 @@ msgstr "Бажана мова"
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Process started"
 msgstr "Процес запущено"
+
+#: src/components/network-monitors-table/monitor-dialog.tsx
+#: src/components/network-monitors-table/network-monitors-columns.tsx
+#: src/components/network-monitors-table/network-monitors-columns.tsx
+msgid "Protocol"
+msgstr "Протокол"
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Public key"
@@ -1503,10 +1694,21 @@ msgstr "Скинути пароль"
 msgid "Resolved"
 msgstr "Вирішено"
 
+#: src/components/network-monitors-table/network-monitors-columns.tsx
+#: src/components/network-monitors-table/network-monitors-columns.tsx
+#: src/components/routes/system/charts/monitors-charts.tsx
+msgid "Response"
+msgstr "Відгук"
+
+#: src/components/network-monitors-table/network-monitors-table.tsx
+msgid "Response time monitoring from agents."
+msgstr "Моніторинг часу відгуку з агентів."
+
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Restarts"
 msgstr "Перезапуски"
 
+#: src/components/network-monitors-table/network-monitors-columns.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Resume"
 msgstr "Відновити"
@@ -1538,7 +1740,7 @@ msgstr "Деталі S.M.A.R.T."
 msgid "S.M.A.R.T. Self-Test"
 msgstr "Самодіагностика S.M.A.R.T."
 
-#: src/components/add-system.tsx
+#: src/components/network-monitors-table/monitor-dialog.tsx
 msgid "Save {foo}"
 msgstr "Зберегти {foo}"
 
@@ -1550,6 +1752,10 @@ msgstr "Збережіть адресу, використовуючи клаві
 #: src/components/routes/settings/notifications.tsx
 msgid "Save Settings"
 msgstr "Зберегти налаштування"
+
+#: src/components/add-system.tsx
+msgid "Save System"
+msgstr "Зберегти систему"
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Saved in the database and does not expire until you disable it."
@@ -1575,6 +1781,11 @@ msgstr "Пошук"
 msgid "Search for systems or settings..."
 msgstr "Шукати системи або налаштування..."
 
+#: src/components/network-monitors-table/monitor-dialog.tsx
+#: src/components/network-monitors-table/monitor-dialog.tsx
+msgid "Search systems"
+msgstr "Пошук систем"
+
 #: src/components/routes/settings/heartbeat.tsx
 msgid "Seconds between pings (default: 60)"
 msgstr "Секунди між пінгами (за замовчуванням: 60)"
@@ -1586,6 +1797,27 @@ msgstr "Перегляньте <0>налаштування сповіщень</0
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Select {foo}"
 msgstr "Вибрати {foo}"
+
+#: src/components/network-monitors-table/monitor-dialog.tsx
+msgid "Select a system"
+msgstr "Виберіть систему"
+
+#: src/components/network-monitors-table/monitor-dialog.tsx
+#: src/components/network-monitors-table/network-monitors-columns.tsx
+msgid "Select all"
+msgstr "Вибрати все"
+
+#: src/components/network-monitors-table/monitor-dialog.tsx
+msgid "Select matches"
+msgstr "Вибрати збіги"
+
+#: src/components/network-monitors-table/network-monitors-columns.tsx
+msgid "Select row"
+msgstr "Вибрати рядок"
+
+#: src/components/network-monitors-table/monitor-dialog.tsx
+msgid "Select systems"
+msgstr "Вибрати системи"
 
 #: src/components/routes/settings/heartbeat.tsx
 msgid "Send a single heartbeat ping to verify your endpoint is working."
@@ -1646,6 +1878,7 @@ msgstr "Увійти"
 msgid "SMTP settings"
 msgstr "Налаштування SMTP"
 
+#: src/components/network-monitors-table/network-monitors-table.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "Sort By"
 msgstr "Сортувати за"
@@ -1688,10 +1921,11 @@ msgstr "Використання підкачки"
 msgid "Switch theme"
 msgstr "Змінити тему"
 
-#: src/components/add-system.tsx
 #: src/components/alerts-history-columns.tsx
 #: src/components/containers-table/containers-table-columns.tsx
-#: src/components/navbar.tsx
+#: src/components/network-monitors-table/monitor-dialog.tsx
+#: src/components/network-monitors-table/network-monitors-columns.tsx
+#: src/components/network-monitors-table/network-monitors-columns.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/quiet-hours.tsx
@@ -1716,6 +1950,8 @@ msgid "Systemd Services"
 msgstr "Служби Systemd"
 
 #: src/components/navbar.tsx
+#: src/components/network-monitors-table/monitor-dialog.tsx
+#: src/components/network-monitors-table/monitor-dialog.tsx
 msgid "Systems"
 msgstr "Системи"
 
@@ -1731,6 +1967,17 @@ msgstr "Таблиця"
 msgctxt "Tabs system layout option"
 msgid "Tabs"
 msgstr "Вкладки"
+
+#: src/components/network-monitors-table/monitor-dialog.tsx
+#: src/components/network-monitors-table/network-monitors-columns.tsx
+#: src/components/network-monitors-table/network-monitors-columns.tsx
+msgid "Target"
+msgstr "Ціль"
+
+#: src/components/network-monitors-table/monitor-dialog.tsx
+#: src/components/network-monitors-table/monitor-dialog.tsx
+msgid "target[,protocol[,port[,interval]]]"
+msgstr ""
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Tasks"
@@ -1779,6 +2026,7 @@ msgstr "Потім увійдіть у бекенд і скиньте парол
 msgid "This action cannot be undone. This will permanently delete all current records for {name} from the database."
 msgstr "Цю дію не можна скасувати. Це назавжди видалить всі поточні записи для {name} з бази даних."
 
+#: src/components/network-monitors-table/network-monitors-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "This will permanently delete all selected records from the database."
 msgstr "Це назавжди видалить усі вибрані записи з бази даних."
@@ -1902,6 +2150,10 @@ msgid "Triggers when memory usage exceeds a threshold"
 msgstr "Спрацьовує, коли використання пам’яті перевищує поріг"
 
 #: src/lib/alerts.ts
+msgid "Triggers when one hour loss exceeds a threshold"
+msgstr "Спрацьовує, коли втрати за годину перевищують порогове значення"
+
+#: src/lib/alerts.ts
 msgid "Triggers when status switches between up and down"
 msgstr "Спрацьовує, коли статус перемикається між «працює» та «не працює»"
 
@@ -1960,6 +2212,8 @@ msgid "Update"
 msgstr "Оновити"
 
 #: src/components/containers-table/containers-table-columns.tsx
+#: src/components/network-monitors-table/network-monitors-columns.tsx
+#: src/components/network-monitors-table/network-monitors-columns.tsx
 #: src/components/routes/system/smart-table.tsx
 #: src/components/routes/system/storage-pools-table.tsx
 #: src/components/systemd-table/systemd-table-columns.tsx
@@ -2015,6 +2269,7 @@ msgstr "Використання"
 msgid "Value"
 msgstr "Значення"
 
+#: src/components/network-monitors-table/network-monitors-table.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "View"
 msgstr "Вигляд"
@@ -2029,6 +2284,7 @@ msgstr "Переглянути більше"
 msgid "View your 200 most recent alerts."
 msgstr "Переглянути 200 останніх сповіщень."
 
+#: src/components/network-monitors-table/network-monitors-table.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "Visible Fields"
 msgstr "Видимі стовпці"

@@ -1,6 +1,7 @@
 package alerts
 
 import (
+	"sync"
 	"time"
 
 	"github.com/pocketbase/dbx"
@@ -18,6 +19,9 @@ type CachedAlertData struct {
 	Triggered    bool
 	Min          uint8
 	PendingSince time.Time
+	// Immutable after publication; decoded only when the alert record changes.
+	MonitorStates      map[string]string
+	MonitorStatesValid bool
 	// Created   types.DateTime
 }
 
@@ -30,11 +34,18 @@ func (a *CachedAlertData) PopulateFromRecord(record *core.Record) {
 	a.Triggered = record.GetBool("triggered")
 	a.Min = uint8(record.GetInt("min"))
 	a.PendingSince = record.GetDateTime("pending_since").Time()
+	if a.Name == alertNameNetworkMonitorLoss {
+		var state networkMonitorAlertState
+		a.MonitorStatesValid = record.UnmarshalJSONField("state", &state) == nil
+		a.MonitorStates = state.Monitors
+	}
 	// a.Created = record.GetDateTime("created")
 }
 
 // AlertsCache provides an in-memory cache for system alerts.
 type AlertsCache struct {
+	// Serialize lazy loads with updates so a late load cannot replace newer state.
+	loadMu    sync.Mutex
 	app       core.App
 	store     *store.Store[string, *store.Store[string, CachedAlertData]]
 	populated bool
@@ -69,6 +80,8 @@ func (c *AlertsCache) bindEvents() *AlertsCache {
 
 // PopulateFromDB clears current entries and loads all alerts from the database into the cache.
 func (c *AlertsCache) PopulateFromDB(force bool) error {
+	c.loadMu.Lock()
+	defer c.loadMu.Unlock()
 	if !force && c.populated {
 		return nil
 	}
@@ -78,7 +91,7 @@ func (c *AlertsCache) PopulateFromDB(force bool) error {
 	}
 	c.store.RemoveAll()
 	for _, record := range records {
-		c.Update(record)
+		c.update(record)
 	}
 	c.populated = true
 	return nil
@@ -86,6 +99,12 @@ func (c *AlertsCache) PopulateFromDB(force bool) error {
 
 // Update adds or updates an alert record in the cache.
 func (c *AlertsCache) Update(record *core.Record) {
+	c.loadMu.Lock()
+	defer c.loadMu.Unlock()
+	c.update(record)
+}
+
+func (c *AlertsCache) update(record *core.Record) {
 	systemID := record.GetString("system")
 	if systemID == "" {
 		return
@@ -102,6 +121,8 @@ func (c *AlertsCache) Update(record *core.Record) {
 
 // Delete removes an alert record from the cache.
 func (c *AlertsCache) Delete(record *core.Record) {
+	c.loadMu.Lock()
+	defer c.loadMu.Unlock()
 	systemID := record.GetString("system")
 	if systemID == "" {
 		return
@@ -115,18 +136,23 @@ func (c *AlertsCache) Delete(record *core.Record) {
 func (c *AlertsCache) GetSystemAlerts(systemID string) []CachedAlertData {
 	systemStore, ok := c.store.GetOk(systemID)
 	if !ok {
-		// Populate cache for this system
-		records, err := c.app.FindAllRecords("alerts", dbx.NewExp("system={:system}", dbx.Params{"system": systemID}))
-		if err != nil {
-			return nil
+		c.loadMu.Lock()
+		defer c.loadMu.Unlock()
+		systemStore, ok = c.store.GetOk(systemID)
+		if !ok {
+			// Populate cache for this system
+			records, err := c.app.FindAllRecords("alerts", dbx.NewExp("system={:system}", dbx.Params{"system": systemID}))
+			if err != nil {
+				return nil
+			}
+			systemStore = store.New(map[string]CachedAlertData{})
+			for _, record := range records {
+				var ca CachedAlertData
+				ca.PopulateFromRecord(record)
+				systemStore.Set(record.Id, ca)
+			}
+			c.store.Set(systemID, systemStore)
 		}
-		systemStore = store.New(map[string]CachedAlertData{})
-		for _, record := range records {
-			var ca CachedAlertData
-			ca.PopulateFromRecord(record)
-			systemStore.Set(record.Id, ca)
-		}
-		c.store.Set(systemID, systemStore)
 	}
 	all := systemStore.GetAll()
 	alerts := make([]CachedAlertData, 0, len(all))

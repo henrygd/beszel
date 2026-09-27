@@ -298,6 +298,94 @@ warn() {
   echo "Warning: $*" >&2
 }
 
+# Keep IDs within 16 bits, including on older OpenWrt versions whose account
+# helpers start automatic allocation at 65536.
+openwrt_unused_id() {
+  awk -F: '
+    { used[$3] = 1 }
+    END {
+      for (id = 32768; id < 65534; id++) {
+        if (!(id in used)) { print id; exit }
+      }
+      exit 1
+    }
+  ' "$1"
+}
+
+validate_openwrt_account() {
+  # Duplicate numeric IDs share permissions even when the names differ.
+  for account_file in /etc/passwd /etc/group; do
+    if ! awk -F: '
+      $1 == "beszel" { id = $3; count++ }
+      { ids[$3]++ }
+      END { if (count && (count != 1 || id == 0 || ids[id] != 1)) exit 1 }
+    ' "$account_file"; then
+      fail "The beszel account has a duplicate or root ID in $account_file. Stop beszel-agent and assign beszel an unused UID/GID before reinstalling. Update ownership only in $AGENT_DIR; do not change all files owned by the shared ID."
+    fi
+  done
+  if grep -q '^beszel:' /etc/passwd; then
+    account_gid=$(awk -F: '$1 == "beszel" { print $4 }' /etc/passwd)
+    group_gid=$(awk -F: '$1 == "beszel" { print $3 }' /etc/group)
+    [ "$account_gid" = "$group_gid" ] || fail "The beszel user's primary group is not the dedicated beszel group. Repair the account before reinstalling."
+  fi
+}
+
+configure_openwrt_account() (
+  validate_openwrt_account
+  [ -r /lib/functions.sh ] || fail "OpenWrt account helpers (/lib/functions.sh) are required."
+  # OpenWrt's library expects unset variables and defines generic functions.
+  # Source it in a subshell so neither affects the rest of the installer.
+  set +u
+  . /lib/functions.sh
+  IPKG_INSTROOT=""
+
+  if ! grep -q '^beszel:' /etc/group; then
+    account_gid=$(openwrt_unused_id /etc/group) || fail "No unused service GID available."
+    group_add beszel "$account_gid" || fail "Could not create the beszel group."
+  fi
+  account_gid=$(awk -F: '$1 == "beszel" { print $3 }' /etc/group)
+  [ -n "$account_gid" ] || fail "The beszel group was not created."
+  if ! grep -q '^beszel:' /etc/passwd; then
+    account_uid=$(openwrt_unused_id /etc/passwd) || fail "No unused service UID available."
+    user_add beszel "$account_uid" "$account_gid" "Beszel agent" /nonexistent /bin/false || fail "Could not create the beszel user."
+  fi
+  grep -q '^beszel:' /etc/passwd || fail "The beszel account is incomplete."
+  validate_openwrt_account
+  # Previous installers omitted the shadow entry. Repair it with a locked
+  # password, without rewriting an existing account or changing its IDs.
+  if ! grep -q '^beszel:' /etc/shadow; then
+    lock /var/lock/passwd || fail "Could not lock the account database."
+    shadow_status=0
+    if ! grep -q '^beszel:' /etc/shadow; then
+      printf 'beszel:!:0:0:99999:7:::\n' >> /etc/shadow || shadow_status=$?
+    fi
+    lock -u /var/lock/passwd || fail "Could not unlock the account database."
+    [ "$shadow_status" -eq 0 ] || fail "Could not create the beszel shadow entry."
+  fi
+
+  if grep -q '^docker:' /etc/group; then
+    # Match complete member names and avoid a leading comma for empty groups.
+    if ! awk -F: '$1 == "docker" { n = split($4, members, ","); for (i = 1; i <= n; i++) if (members[i] == "beszel") found = 1 } END { exit !found }' /etc/group; then
+      echo "Adding beszel to docker group"
+      if grep -q '^docker:[^:]*:[^:]*:$' /etc/group; then
+        sed -i '/^docker:/s/$/beszel/' /etc/group
+      else
+        sed -i '/^docker:/s/$/,beszel/' /etc/group
+      fi
+    fi
+  fi
+)
+
+remove_openwrt_account() {
+  if command -v userdel >/dev/null 2>&1; then
+    userdel beszel || fail "Could not remove the beszel user."
+  elif command -v deluser >/dev/null 2>&1; then
+    deluser beszel || fail "Could not remove the beszel user."
+  else
+    warn "Neither userdel nor deluser is available; the beszel account has been retained."
+  fi
+}
+
 require_value() {
   [ "$#" -ge 2 ] && [ -n "$2" ] || fail "Option $1 requires a value."
 }
@@ -669,10 +757,15 @@ if [ "$UNINSTALL" = true ]; then
   echo "Removing the Beszel Agent directory..."
   rm -rf "$AGENT_DIR"
 
+  echo "Removing the Beszel Agent data directory..."
+  rm -rf /var/lib/beszel-agent
+
   echo "Removing the dedicated user for the agent service..."
   killall beszel-agent 2>/dev/null || true # Usually already stopped by the service manager.
   if id -u beszel >/dev/null 2>&1; then
-    if is_alpine || is_openwrt; then
+    if is_openwrt; then
+      remove_openwrt_account
+    elif is_alpine; then
       deluser beszel || fail "Could not remove the beszel user."
     elif is_freebsd; then
       pw user del beszel || fail "Could not remove the beszel user."
@@ -772,32 +865,7 @@ if is_alpine; then
   fi
   
 elif is_openwrt; then
-  # Create beszel group first if it doesn't exist (check /etc/group directly)
-  if ! grep -q "^beszel:" /etc/group >/dev/null 2>&1; then
-    echo "beszel:x:999:" >> /etc/group
-  fi
-  
-  # Create beszel user if it doesn't exist (double-check to prevent duplicates)
-  if ! id -u beszel >/dev/null 2>&1 && ! grep -q "^beszel:" /etc/passwd >/dev/null 2>&1; then
-    echo "beszel:x:999:999::/nonexistent:/bin/false" >> /etc/passwd
-  fi
-  
-  # Add the user to the docker group if docker group exists and user is not already in it
-  if grep -q "^docker:" /etc/group >/dev/null 2>&1; then
-    echo "Adding beszel to docker group"
-    # Check if beszel is already in docker group
-    if ! grep "^docker:" /etc/group | grep -q "beszel"; then
-      # Add beszel to docker group by modifying /etc/group
-      # Handle both cases: group with existing members and group without members
-      if grep "^docker:" /etc/group | grep -q ":.*:.*$"; then
-        # Group has existing members, append with comma
-        sed -i 's/^docker:\([^:]*:[^:]*:\)\(.*\)$/docker:\1\2,beszel/' /etc/group
-      else
-        # Group has no members, just append
-        sed -i 's/^docker:\([^:]*:[^:]*:\)$/docker:\1beszel/' /etc/group
-      fi
-    fi
-  fi
+  configure_openwrt_account
 
 elif is_freebsd; then
   if is_opnsense || is_pfsense; then

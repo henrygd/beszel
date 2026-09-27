@@ -11,6 +11,7 @@ import (
 	"strings"
 	"sync/atomic"
 	"testing"
+	"testing/synctest"
 
 	beszelTests "github.com/henrygd/beszel/internal/tests"
 	pbTests "github.com/pocketbase/pocketbase/tests"
@@ -533,6 +534,20 @@ func TestSendTestNotification(t *testing.T) {
 
 	for _, url := range []string{localURL, "smtp://user:pass@127.0.0.1/?fromAddress=sender@example.com&toAddresses=recipient@example.com", "mqtt://127.0.0.1/topic"} {
 		scenarios = append(scenarios, beszelTests.ApiScenario{
+			BeforeTestFunc: func(tb testing.TB, _ *pbTests.TestApp, e *core.ServeEvent) {
+				if !strings.HasPrefix(url, "mqtt://") {
+					return
+				}
+				// Keep the real MQTT rejection path, but advance its library's
+				// fixed timeout using virtual time instead of waiting 10 seconds.
+				e.Router.BindFunc(func(re *core.RequestEvent) error {
+					var err error
+					synctest.Test(tb.(*testing.T), func(t *testing.T) {
+						err = re.Next()
+					})
+					return err
+				})
+			},
 			Name:            "readonly cannot send to " + url,
 			Method:          http.MethodPost,
 			URL:             "/api/beszel/test-notification",

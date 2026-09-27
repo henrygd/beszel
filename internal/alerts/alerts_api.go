@@ -29,6 +29,13 @@ func UpsertUserAlerts(e *core.RequestEvent) error {
 		return e.BadRequestError("Bad data", err)
 	}
 
+	if reqData.Name == alertNameNetworkMonitorLoss {
+		if reqData.Value < 0 || reqData.Value >= 100 {
+			return e.BadRequestError("Monitor loss threshold must be at least 0 and below 100", nil)
+		}
+		reqData.Min = 0
+	}
+
 	alertsCollection, err := e.App.FindCachedCollectionByNameOrId("alerts")
 	if err != nil {
 		return err
