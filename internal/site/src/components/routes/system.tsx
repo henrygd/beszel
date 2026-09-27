@@ -23,7 +23,7 @@ import {
 	LazyZfsTable,
 } from "./system/lazy-tables"
 import { LoadAverageChart } from "./system/charts/load-average-chart"
-import { ContainerIcon, CpuIcon, HardDriveIcon, NetworkIcon, TerminalSquareIcon } from "lucide-react"
+import { ContainerIcon, CpuIcon, HardDriveIcon, NetworkIcon, PackageIcon, TerminalSquareIcon } from "lucide-react"
 import { GpuIcon } from "../ui/icons"
 import SystemdTable from "../systemd-table/systemd-table"
 import ContainersTable from "../containers-table/containers-table"
@@ -83,6 +83,7 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 	if (hasGpu) tabs.push("gpu")
 	if (hasContainers) tabs.push("containers")
 	if (hasSystemd) tabs.push("services")
+	if (packageUpdates) tabs.push("updates")
 	tabsRef.current = tabs
 
 	// shared chart props
@@ -208,6 +209,12 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 							<Trans>Services</Trans>
 						</TabsTrigger>
 					)}
+					{packageUpdates && (
+						<TabsTrigger value="updates" className="w-full flex items-center gap-2">
+							<PackageIcon className="size-3.5" />
+							<Trans>Updates</Trans>
+						</TabsTrigger>
+					)}
 				</TabsList>
 
 				<TabsContent value="core" forceMount className={activeTab === "core" ? "contents" : "hidden"}>
@@ -221,7 +228,6 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 						<BatteryChart system={system} {...coreProps} />
 						{pageBottomExtraMargin > 0 && <div style={{ marginBottom: pageBottomExtraMargin }}></div>}
 					</div>
-					{packageUpdates && <LazyPackageUpdatesTable systemId={system.id} counts={packageUpdates} />}
 				</TabsContent>
 
 				<TabsContent value="network" forceMount className={activeTab === "network" ? "contents" : "hidden"}>
@@ -300,6 +306,12 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 				{hasSystemd && (
 					<TabsContent value="services" forceMount className={activeTab === "services" ? "contents" : "hidden"}>
 						{mountedTabs.has("services") && <SystemdTable systemId={system.id} />}
+					</TabsContent>
+				)}
+
+				{packageUpdates && (
+					<TabsContent value="updates" forceMount className={activeTab === "updates" ? "contents" : "hidden"}>
+						{mountedTabs.has("updates") && <LazyPackageUpdatesTable systemId={system.id} counts={packageUpdates} />}
 					</TabsContent>
 				)}
 			</Tabs>

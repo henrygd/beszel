@@ -35,8 +35,8 @@ interface PackageUpdateRow extends PackageUpdate {
 	change: VersionChange
 }
 
-/** Sort order of version changes, largest first. */
-const changeRank: Record<VersionChange, number> = { major: 4, minor: 3, patch: 2, revision: 1, other: 0 }
+/** Sort order of version changes, so ascending puts major first. */
+const changeRank: Record<VersionChange, number> = { major: 0, minor: 1, patch: 2, revision: 3, other: 4 }
 
 const changeVariant: Record<VersionChange, BadgeProps["variant"]> = {
 	major: "danger",
@@ -107,7 +107,7 @@ function getColumns(securityKnown: boolean): ColumnDef<PackageUpdateRow>[] {
 				</span>
 			),
 			cell: ({ getValue }) => (
-				<span className="ms-1.5 block font-mono text-xs text-muted-foreground">{(getValue() as string) || "-"}</span>
+				<span className="ms-1.5 block font-mono text-sm text-muted-foreground">{(getValue() as string) || "-"}</span>
 			),
 		},
 		{
@@ -120,7 +120,7 @@ function getColumns(securityKnown: boolean): ColumnDef<PackageUpdateRow>[] {
 					<Trans context="Package version available to install">Available</Trans>
 				</span>
 			),
-			cell: ({ getValue }) => <span className="ms-1.5 block font-mono text-xs">{getValue() as string}</span>,
+			cell: ({ getValue }) => <span className="ms-1.5 block font-mono text-sm">{getValue() as string}</span>,
 		},
 		{
 			id: "change",
