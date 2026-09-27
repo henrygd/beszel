@@ -1,0 +1,109 @@
+name: Helm charts
+
+on:
+  pull_request:
+    paths:
+      - "supplemental/helm/**"
+  push:
+    branches:
+      - main
+    paths:
+      - "supplemental/helm/**"
+
+permissions:
+  contents: read
+  packages: write
+
+env:
+  OCI_REGISTRY: ghcr.io/henrygd/beszel-charts
+
+jobs:
+  changes:
+    name: Detect changed charts
+    runs-on: ubuntu-latest
+    outputs:
+      charts: ${{ steps.changes.outputs.charts }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Detect changed charts
+        id: changes
+        env:
+          BASE_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || github.event.before }}
+        run: |
+          charts=()
+
+          for name in beszel-agent beszel-hub; do
+            path="supplemental/helm/$name"
+            if ! git diff --quiet "$BASE_SHA" "$GITHUB_SHA" -- "$path"; then
+              charts+=("$name|$path")
+            fi
+          done
+
+          printf '%s\n' "${charts[@]}" \
+            | jq -Rsc 'split("\n") | map(select(length > 0) | split("|") | {name: .[0], path: .[1]})' \
+            | xargs -0 printf 'charts=%s\n' >> "$GITHUB_OUTPUT"
+
+  validate-and-publish:
+    name: ${{ github.event_name == 'push' && 'Publish' || 'Validate' }} ${{ matrix.chart.name }}
+    needs: changes
+    if: needs.changes.outputs.charts != '[]'
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        chart: ${{ fromJSON(needs.changes.outputs.charts) }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Set up Helm
+        uses: azure/setup-helm@v5
+
+      - name: Lint chart
+        run: helm lint "${{ matrix.chart.path }}" --set env.KEY=ci-placeholder
+
+      - name: Render chart
+        run: helm template "${{ matrix.chart.name }}" "${{ matrix.chart.path }}" --set env.KEY=ci-placeholder > /dev/null
+
+      - name: Package chart
+        id: package
+        env:
+          CHART_NAME: ${{ matrix.chart.name }}
+          CHART_PATH: ${{ matrix.chart.path }}
+        run: |
+          version=$(awk '/^version:/ { print $2 }' "$CHART_PATH/Chart.yaml")
+          test -n "$version"
+
+          mkdir -p .helm-packages
+          helm package "$CHART_PATH" --destination .helm-packages
+
+          package=".helm-packages/${CHART_NAME}-${version}.tgz"
+          test -f "$package"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "package=$package" >> "$GITHUB_OUTPUT"
+
+      - name: Log in to GHCR
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: echo "$GITHUB_TOKEN" | helm registry login ghcr.io --username "$GITHUB_ACTOR" --password-stdin
+
+      - name: Check chart version is unpublished
+        env:
+          CHART_NAME: ${{ matrix.chart.name }}
+          CHART_VERSION: ${{ steps.package.outputs.version }}
+        run: |
+          chart="oci://${OCI_REGISTRY}/${CHART_NAME}"
+          if helm show chart "$chart" --version "$CHART_VERSION" > /dev/null 2>&1; then
+            echo "${CHART_NAME} ${CHART_VERSION} is already published. Bump version in Chart.yaml." >&2
+            exit 1
+          fi
+
+      - name: Publish chart
+        if: github.event_name == 'push'
+        run: helm push "${{ steps.package.outputs.package }}" "oci://${OCI_REGISTRY}"

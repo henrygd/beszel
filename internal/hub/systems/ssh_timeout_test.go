@@ -4,11 +4,13 @@ package systems
 
 import (
 	"errors"
+	"sync"
 	"testing"
 	"testing/synctest"
 	"time"
 
 	"github.com/stretchr/testify/assert"
+	"golang.org/x/crypto/ssh"
 )
 
 // TestRunWithTimeout covers the guard added for issue #2041: the per-system SSH
@@ -53,4 +55,39 @@ func TestRunWithTimeout(t *testing.T) {
 			synctest.Wait() // ensure the released op goroutine exits cleanly
 		})
 	})
+}
+
+// closedConn stands in for a connection whose peer has gone away: opening a
+// channel fails rather than succeeding, which is what NewSession does on a
+// client that closeSSHConnection has already closed.
+type closedConn struct{ ssh.Conn }
+
+func (closedConn) OpenChannel(string, []byte) (ssh.Channel, <-chan *ssh.Request, error) {
+	return nil, nil, errors.New("use of closed network connection")
+}
+
+func (closedConn) Close() error { return nil }
+
+// TestCreateSessionDuringClose covers issue #2157: the background SMART fetch
+// creates a session while the updater can be tearing the same connection down,
+// so session creation must not read the client field after it is cleared.
+func TestCreateSessionDuringClose(t *testing.T) {
+	for range 500 {
+		sys := &System{ctx: t.Context()}
+		sys.client.Store(&ssh.Client{Conn: closedConn{}})
+
+		var wg sync.WaitGroup
+		wg.Add(2)
+		go func() {
+			defer wg.Done()
+			session, err := sys.createSessionWithTimeout(time.Second)
+			assert.Nil(t, session)
+			assert.Error(t, err, "a closed connection must surface an error, not a session")
+		}()
+		go func() {
+			defer wg.Done()
+			sys.closeSSHConnection()
+		}()
+		wg.Wait()
+	}
 }

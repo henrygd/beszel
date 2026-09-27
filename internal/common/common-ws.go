@@ -22,6 +22,10 @@ const (
 	GetSmartData
 	// Request detailed systemd service info from agent
 	GetSystemdInfo
+	// Request ZFS detail data from agent
+	GetZfsData
+	// Sync network monitor configuration to agent
+	SyncNetworkMonitors
 	// Add new actions here...
 )
 
@@ -62,6 +66,10 @@ type FingerprintResponse struct {
 type DataRequestOptions struct {
 	CacheTimeMs    uint16 `cbor:"0,keyasint"`
 	IncludeDetails bool   `cbor:"1,keyasint"`
+}
+
+type ZfsDataRequest struct {
+	Force bool `cbor:"0,keyasint,omitempty"`
 }
 
 type ContainerLogsRequest struct {

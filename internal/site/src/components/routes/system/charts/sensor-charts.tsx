@@ -3,7 +3,7 @@ import AreaChartDefault from "@/components/charts/area-chart"
 import { batteryStateTranslations } from "@/lib/i18n"
 import { $fanFilter, $temperatureFilter, $userSettings } from "@/lib/stores"
 import { cn, decimalString, formatTemperature, toFixedFloat } from "@/lib/utils"
-import type { ChartData, SystemStatsRecord } from "@/types"
+import type { ChartData, SystemRecord, SystemStatsRecord } from "@/types"
 import { ChartCard, FilterBar } from "../chart-card"
 import LineChartDefault from "@/components/charts/line-chart"
 import { useStore } from "@nanostores/react"
@@ -14,16 +14,58 @@ export function BatteryChart({
 	grid,
 	dataEmpty,
 	maxValues,
+	system,
 }: {
 	chartData: ChartData
 	grid: boolean
 	dataEmpty: boolean
 	maxValues: boolean
+	system: SystemRecord
 }) {
-	const showBatteryChart = chartData.systemStats.at(-1)?.stats.bat
+	const batteryNames = useMemo(() => {
+		const names = new Set<string>()
+		for (const record of chartData.systemStats) {
+			for (const name in record.stats?.bats ?? {}) {
+				names.add(name)
+			}
+		}
+		return [...names].sort()
+	}, [chartData.systemStats])
+	const hasNamedBatteries = batteryNames.length > 0
+	const showBatteryChart = hasNamedBatteries || chartData.systemStats.some((record) => record.stats?.bat)
 
 	if (!showBatteryChart) {
 		return null
+	}
+
+	if (hasNamedBatteries) {
+		const dataPoints = batteryNames.map((name, index) => ({
+			label: name,
+			dataKey: ({ stats }: SystemStatsRecord) => stats?.bats?.[name],
+			color: `hsl(${(index * 360 + 226) / batteryNames.length}, 65%, 52%)`,
+		}))
+		return (
+			<ChartCard
+				empty={dataEmpty}
+				grid={grid}
+				title={t`Battery`}
+				description={`${t({
+					message: "Current state",
+					comment: "Context: Battery state",
+				})}: ${batteryStateTranslations[system.info.bat?.[1] ?? 0]()}`}
+			>
+				<LineChartDefault
+					chartData={chartData}
+					maxToggled={maxValues}
+					dataPoints={dataPoints}
+					domain={[0, 100]}
+					legend={true}
+					tickFormatter={(val) => `${val}%`}
+					contentFormatter={({ value }) => `${value}%`}
+					itemSorter={(a, b) => b.value - a.value}
+				/>
+			</ChartCard>
+		)
 	}
 
 	return (
@@ -34,7 +76,7 @@ export function BatteryChart({
 			description={`${t({
 				message: "Current state",
 				comment: "Context: Battery state",
-			})}: ${batteryStateTranslations[chartData.systemStats.at(-1)?.stats.bat?.[1] ?? 0]()}`}
+			})}: ${batteryStateTranslations[system.info.bat?.[1] ?? 0]()}`}
 		>
 			<AreaChartDefault
 				chartData={chartData}
@@ -210,15 +252,7 @@ export function TemperatureChart({
 	)
 }
 
-export function FanChart({
-	chartData,
-	grid,
-	dataEmpty,
-}: {
-	chartData: ChartData
-	grid: boolean
-	dataEmpty: boolean
-}) {
+export function FanChart({ chartData, grid, dataEmpty }: { chartData: ChartData; grid: boolean; dataEmpty: boolean }) {
 	const showFanChart = chartData.systemStats.at(-1)?.stats.f
 
 	const filter = useStore($fanFilter)

@@ -602,6 +602,28 @@ func TestAverageSystemStatsSlice_BatteryLastChargeState(t *testing.T) {
 	assert.Equal(t, uint8(0), result.Battery[1]) // last record's charge state
 }
 
+func TestAverageSystemStatsSlice_BatteriesIndependentSamples(t *testing.T) {
+	input := []system.Stats{
+		{Battery: [2]uint8{80, 4}, Batteries: map[string]uint8{"Primary": 80, "Mouse": 0}},
+		{Battery: [2]uint8{60, 3}, Batteries: map[string]uint8{"Primary": 60}},
+		{Battery: [2]uint8{30, 4}, Batteries: map[string]uint8{"Mouse": 40}},
+		{},
+	}
+	result := records.AverageSystemStatsSlice(input)
+	assert.Equal(t, map[string]uint8{"Primary": 70, "Mouse": 20}, result.Batteries)
+	assert.Equal(t, uint8(56), result.Battery[0], "representative battery excludes absent samples")
+	assert.Equal(t, uint8(4), result.Battery[1], "representative state comes from its latest sample")
+}
+
+func TestAverageSystemStatsSlice_ZeroRepresentativeBattery(t *testing.T) {
+	result := records.AverageSystemStatsSlice([]system.Stats{
+		{Battery: [2]uint8{0, 1}, Batteries: map[string]uint8{"Primary": 0}},
+		{},
+	})
+	assert.Equal(t, system.Battery{0, 1}, result.Battery)
+	assert.Equal(t, map[string]uint8{"Primary": 0}, result.Batteries)
+}
+
 func TestAverageSystemStatsSlice_ThreeRecordsRounding(t *testing.T) {
 	input := []system.Stats{
 		{Cpu: 10.0, Mem: 8.0},
@@ -645,6 +667,33 @@ func TestAverageSystemStatsSlice_MixedOptionalFields(t *testing.T) {
 	// GPUData: only 1 record had it, so sum/2
 	require.NotNil(t, result.GPUData)
 	assert.Equal(t, 20.0, result.GPUData["gpu0"].Usage)
+}
+
+func TestAverageSystemStatsSlice_Zfs(t *testing.T) {
+	input := []system.Stats{
+		{
+			ZfsPools: map[string]*system.ZfsPool{
+				"tank": {Total: 100, Used: 40, ReadBytes: 100, WriteBytes: 200, Health: "ONLINE"},
+			},
+		},
+		{},
+		{
+			ZfsPools: map[string]*system.ZfsPool{
+				"tank":   {Total: 120, Used: 60, ReadBytes: 300, WriteBytes: 400, Health: "DEGRADED"},
+				"backup": {Total: 50, Used: 10, ReadBytes: 25, WriteBytes: 50, Health: "ONLINE"},
+			},
+		},
+	}
+
+	result := records.AverageSystemStatsSlice(input)
+
+	require.Len(t, result.ZfsPools, 2)
+	assert.Equal(t, &system.ZfsPool{
+		Total: 110, Used: 50, ReadBytes: 200, WriteBytes: 300, Health: "DEGRADED",
+	}, result.ZfsPools["tank"])
+	assert.Equal(t, &system.ZfsPool{
+		Total: 50, Used: 10, ReadBytes: 25, WriteBytes: 50, Health: "ONLINE",
+	}, result.ZfsPools["backup"])
 }
 
 // Tests with 10 records matching the common real-world case (10 x 1m -> 1 x 10m).
@@ -839,4 +888,35 @@ func TestAverageContainerStatsSlice_ManyContainers(t *testing.T) {
 	assert.Equal(t, 25.0, result[1].Cpu)
 	assert.Equal(t, 35.0, result[2].Cpu)
 	assert.Equal(t, 45.0, result[3].Cpu)
+}
+
+func TestAverageSystemStatsSlice_ZfsCapacityModes(t *testing.T) {
+	for _, raw := range []bool{false, true} {
+		result := records.AverageSystemStatsSlice([]system.Stats{
+			{ZfsPools: map[string]*system.ZfsPool{"pool": {Total: 200, Used: 40, Raw: !raw, ReadBytes: 100}}},
+			{ZfsPools: map[string]*system.ZfsPool{"pool": {Total: 100, Used: 10, Raw: raw, ReadBytes: 300}}},
+		})
+		assert.Equal(t, &system.ZfsPool{Total: 100, Used: 10, Raw: raw, ReadBytes: 200}, result.ZfsPools["pool"])
+	}
+}
+
+func TestAverageSystemStatsSlice_ZfsDuplicateCharts(t *testing.T) {
+	for _, hide := range []bool{false, true} {
+		result := records.AverageSystemStatsSlice([]system.Stats{
+			{ZfsPools: map[string]*system.ZfsPool{"pool": {HideUsage: true, HideIO: true}}},
+			{ZfsPools: map[string]*system.ZfsPool{"pool": {HideUsage: hide, HideIO: hide}}},
+		})
+		assert.Equal(t, hide, result.ZfsPools["pool"].HideUsage)
+		assert.Equal(t, hide, result.ZfsPools["pool"].HideIO)
+	}
+}
+
+func TestAverageSystemStatsSlice_BtrfsDisplayName(t *testing.T) {
+	result := records.AverageSystemStatsSlice([]system.Stats{
+		{ZfsPools: map[string]*system.ZfsPool{"b:uuid": {DisplayName: "before", Used: 10}}},
+		{ZfsPools: map[string]*system.ZfsPool{"b:uuid": {DisplayName: "after", Used: 20}}},
+	})
+	require.Len(t, result.ZfsPools, 1)
+	assert.Equal(t, "after", result.ZfsPools["b:uuid"].DisplayName)
+	assert.Equal(t, float64(15), result.ZfsPools["b:uuid"].Used)
 }

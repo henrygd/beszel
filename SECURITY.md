@@ -2,6 +2,8 @@
 
 ## Reporting a Vulnerability
 
-If you find a vulnerability in the latest version, please [submit a private advisory](https://github.com/henrygd/beszel/security/advisories/new).
+**PLEASE ONLY USE SECURITY ADVISORIES FOR REAL HIGH SEVERITY VULNERABILITIES.**
 
-If it's low severity (use best judgement) you may open an issue instead of an advisory.
+If you find a vulnerability in the latest version, and it is not high severity, open an issue instead of an advisory.
+
+I am overwhelmed with advisories, often erroneous, which are clearly found and written by AI. I don't have the capacity to review all of them.

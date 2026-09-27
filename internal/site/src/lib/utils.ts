@@ -7,7 +7,7 @@ import { twMerge } from "tailwind-merge"
 import { toast } from "@/components/ui/use-toast"
 import type { ChartTimeData, FingerprintRecord, SemVer, SystemRecord } from "@/types"
 import { HourFormat, Unit } from "./enums"
-import { $copyContent, $userSettings } from "./stores"
+import { $copyContent, $textMeasureVersion, $userSettings } from "./stores"
 
 export function cn(...inputs: ClassValue[]) {
 	return twMerge(clsx(inputs))
@@ -72,7 +72,7 @@ export const formatShortDate = (timestamp: string) => {
 	return shortDateFormatter.format(new Date(timestamp))
 }
 
-export const hourWithSeconds = (timestamp: string) => {
+export const hourWithSeconds = (timestamp: string | number) => {
 	return hourWithSecondsFormatter.format(new Date(timestamp))
 }
 
@@ -196,6 +196,28 @@ export function decimalString(num: number, digits = 2) {
 		decimalFormatters.set(digits, formatter)
 	}
 	return formatter.format(num)
+}
+
+export function formatMicroseconds(microseconds: number, fixedDigits = true): string {
+	if (!Number.isFinite(microseconds)) {
+		return "-"
+	}
+
+	if (microseconds < 1000) {
+		return `${microseconds}μs`
+	}
+
+	const digitFormatter = fixedDigits ? decimalString : toFixedFloat
+
+	if (microseconds < 1_000_000) {
+		const milliseconds = microseconds / 1000
+		const digits = milliseconds >= 10 ? 1 : 2
+		return `${digitFormatter(milliseconds, digits)}ms`
+	}
+
+	const seconds = microseconds / 1_000_000
+	const digits = seconds >= 10 ? 1 : 2
+	return `${digitFormatter(seconds, digits)}s`
 }
 
 /** Get value from local or session storage */
@@ -365,12 +387,12 @@ export function formatDuration(
 		.join(" ")
 }
 
-/** Parse semver string into major, minor, and patch numbers 
+/** Parse semver string into major, minor, and patch numbers
  * @example
  * const semVer = "1.2.3"
  * const { major, minor, patch } = parseSemVer(semVer)
  * console.log(major, minor, patch) // 1, 2, 3
-*/
+ */
 export const parseSemVer = (semVer = ""): SemVer => {
 	// if (semVer.startsWith("v")) {
 	// 	semVer = semVer.slice(1)
@@ -391,6 +413,12 @@ export function compareSemVer(a: SemVer, b: SemVer) {
 		return a.minor - b.minor
 	}
 	return a.patch - b.patch
+}
+
+const MIN_NETWORK_MONITOR_AGENT_VERSION = parseSemVer("0.20.0")
+
+export function supportsNetworkMonitors(system: Pick<SystemRecord, "info">) {
+	return compareSemVer(parseSemVer(system.info?.v), MIN_NETWORK_MONITOR_AGENT_VERSION) >= 0
 }
 
 // biome-ignore lint/suspicious/noExplicitAny: any is used to allow any function to be passed in
@@ -422,10 +450,66 @@ export function runOnce<T extends (...args: any[]) => any>(fn: T): T {
 	}) as T
 }
 
-/** Get the visual width of a string, accounting for full-width characters */
-export function getVisualStringWidth(str: string): number {
+const visualWidthCache = new Map<string, number>()
+
+let measureContext: CanvasRenderingContext2D | null | undefined
+let measureFont = ""
+
+/** Canvas context for measuring text in the font the app renders with, or null where canvas is unavailable.
+ *  Only relative widths matter here, so the font size is arbitrary.
+ */
+function getMeasureContext(): CanvasRenderingContext2D | null {
+	if (measureContext === undefined) {
+		measureContext = document.createElement("canvas").getContext("2d")
+		// the fallback font has different metrics, so re-measure whenever a font finishes loading.
+		// loadingdone also covers fonts that start loading after the first measurement,
+		// which fonts.ready does not if it has already resolved.
+		if (measureContext && "fonts" in document) {
+			document.fonts.addEventListener("loadingdone", invalidateVisualWidths)
+		}
+	}
+	if (measureContext) {
+		const { fontFamily, fontWeight } = getComputedStyle(document.body)
+		const font = `${fontWeight} 16px ${fontFamily}`
+		if (font !== measureFont) {
+			const isFirstFont = !measureFont
+			measureFont = font
+			measureContext.font = font
+			visualWidthCache.clear()
+			// defer so stores aren't updated in the middle of a comparison or a render
+			if (!isFirstFont) {
+				queueMicrotask(invalidateVisualWidths)
+			}
+		}
+	}
+	return measureContext
+}
+
+/** Drop cached widths and notify anything holding a result from isVisuallyLonger */
+function invalidateVisualWidths() {
+	visualWidthCache.clear()
+	$textMeasureVersion.set($textMeasureVersion.get() + 1)
+}
+
+/** Get the visual width of a string, accounting for full-width and narrow punctuation characters.
+ *  Don't use for monospaced fonts, use .length instead
+ */
+function getVisualStringWidth(str: string): number {
+	const cached = visualWidthCache.get(str)
+	if (cached !== undefined) {
+		return cached
+	}
+	const measured = getMeasureContext()?.measureText(str).width
+	if (measured !== undefined) {
+		visualWidthCache.set(str, measured)
+		return measured
+	}
 	let width = 0
 	for (const char of str) {
+		if (char === ".") {
+			width += 0.7
+			continue
+		}
 		const code = char.codePointAt(0) || 0
 		// Hangul Jamo and Syllables are often slightly thinner than Hanzi/Kanji
 		if ((code >= 0x1100 && code <= 0x115f) || (code >= 0xac00 && code <= 0xd7af)) {
@@ -443,7 +527,27 @@ export function getVisualStringWidth(str: string): number {
 			code > 0xffff // Emojis and other supplementary plane characters
 		width += isFullWidth ? 2 : 1
 	}
+	visualWidthCache.set(str, width)
 	return width
+}
+
+/** Compare the visual width of two strings imprecisely */
+export function isVisuallyLonger(str1: string, str2: string): boolean {
+	return getVisualStringWidth(str1) > getVisualStringWidth(str2)
+}
+
+/** Parses a filter string into OR'd groups of AND'd terms: "a b, c" -> [["a","b"], ["c"]] */
+export function parseFilterGroups(value: string): string[][] {
+	return value
+		.toLowerCase()
+		.split(",")
+		.map((group) => group.trim().split(" ").filter((term) => term.length > 0))
+		.filter((terms) => terms.length > 0)
+}
+
+/** True if every term in at least one OR'd group is found in searchString. */
+export function matchesFilterGroups(searchString: string, groups: string[][]): boolean {
+	return groups.some((terms) => terms.every((term) => searchString.includes(term)))
 }
 
 /** Format seconds to hours, minutes, or seconds */
@@ -452,7 +556,12 @@ export function secondsToString(seconds: number, unit: "hour" | "minute" | "day"
 	const countString = count.toLocaleString()
 	switch (unit) {
 		case "minute":
-			return plural(count, { one: `${countString} minute`, few: `${countString} minutes`, many: `${countString} minutes`, other: `${countString} minutes` })
+			return plural(count, {
+				one: `${countString} minute`,
+				few: `${countString} minutes`,
+				many: `${countString} minutes`,
+				other: `${countString} minutes`,
+			})
 		case "hour":
 			return plural(count, { one: `${countString} hour`, other: `${countString} hours` })
 		case "day":
