@@ -1032,8 +1032,10 @@ func TestInitializeDiskIoStatsResetsTrackedDevices(t *testing.T) {
 	assert.Len(t, agent.fsNames, 2)
 	assert.Equal(t, uint64(10), agent.fsStats["sda"].TotalRead)
 	assert.Equal(t, uint64(20), agent.fsStats["sda"].TotalWrite)
-	assert.False(t, agent.fsStats["sda"].Time.IsZero())
-	assert.False(t, agent.fsStats["sdb"].Time.IsZero())
+	assert.Equal(t, uint64(10), agent.diskBaseline["sda"].readBytes)
+	assert.Equal(t, uint64(40), agent.diskBaseline["sdb"].writeBytes)
+	assert.False(t, agent.diskBaseline["sda"].at.IsZero())
+	assert.False(t, agent.diskBaseline["sdb"].at.IsZero())
 
 	agent.initializeDiskIoStats(map[string]disk.IOCountersStat{
 		"sdb": {Name: "sdb", ReadBytes: 50, WriteBytes: 60},
@@ -1056,4 +1058,101 @@ func TestIoTimeDelta(t *testing.T) {
 	assert.Equal(t, want, ioTimeDelta(200, math.MaxUint32+1-1000))
 
 	assert.Equal(t, uint64(0), ioTimeDelta(200, math.MaxUint32+1000))
+}
+
+func TestNormalizeDeviceName(t *testing.T) {
+	// A Windows volume name is not a path element, so every spelling of the
+	// same drive has to normalize to the same key. filepath.Base cannot do
+	// this: on Windows it strips the "C:" specifier and returns "\", which
+	// collapses every drive letter onto one key (#2417).
+	for _, spelling := range []string{"C:", `C:\`, "C:/", `C:\\`} {
+		assert.Equal(t, "C:", normalizeDeviceName(spelling), "spelling %q", spelling)
+	}
+	// Drive letters are case-insensitive, so the letter is uppercased.
+	assert.Equal(t, "D:", normalizeDeviceName("d:"))
+	assert.Equal(t, "C:", normalizeDeviceName(" c: "))
+	assert.Equal(t, "C:", normalizeDeviceName(`c:\`))
+
+	// Non-volume inputs keep using filepath.Base.
+	assert.Equal(t, "sda1", normalizeDeviceName("/dev/sda1"))
+	assert.Equal(t, "sda1", normalizeDeviceName("/dev/sda1/"))
+	assert.Equal(t, "nvme0n1p2", normalizeDeviceName("  /dev/nvme0n1p2  "))
+	assert.Equal(t, "", normalizeDeviceName("."))
+	assert.Equal(t, "", normalizeDeviceName("   "))
+
+	// A drive-relative path is a path, not a volume.
+	assert.Equal(t, `C:data`, normalizeDeviceName(`C:data`))
+}
+
+func TestFindIoDeviceWindowsVolumeNames(t *testing.T) {
+	// Every drive normalizes to a distinct key, so the root drive resolves
+	// exactly instead of to whichever counter the map yielded first (#2417).
+	ioCounters := map[string]disk.IOCountersStat{
+		"C:": {Name: "C:", ReadBytes: 10, WriteBytes: 10},
+		"D:": {Name: "D:", ReadBytes: 20, WriteBytes: 20},
+		"P:": {Name: "P:", ReadBytes: 30, WriteBytes: 30},
+	}
+
+	for i := 0; i < 32; i++ {
+		device, ok := findIoDevice("C:", ioCounters)
+		assert.True(t, ok)
+		assert.Equal(t, "C:", device)
+	}
+
+	// The drive may arrive with a trailing separator, as a mount point does.
+	device, ok := findIoDevice(`C:\`, ioCounters)
+	assert.True(t, ok)
+	assert.Equal(t, "C:", device)
+}
+
+func TestAddPartitionRootFsWindowsDrive(t *testing.T) {
+	agent := &Agent{fsStats: make(map[string]*system.FsStats)}
+	discovery := diskDiscovery{
+		agent: agent,
+		ctx: fsRegistrationContext{
+			isWindows: true,
+			diskIoCounters: map[string]disk.IOCountersStat{
+				"C:": {Name: "C:"},
+				"D:": {Name: "D:"},
+				"P:": {Name: "P:"},
+			},
+		},
+	}
+
+	ok := discovery.addPartitionRootFs("C:", `C:\`)
+
+	assert.True(t, ok)
+	assert.Len(t, agent.fsStats, 1)
+	stats, exists := agent.fsStats["C:"]
+	assert.True(t, exists)
+	assert.True(t, stats.Root)
+}
+
+func TestAddPartitionRootFsKeyAlreadyRegistered(t *testing.T) {
+	// The root drive is also listed in EXTRA_FILESYSTEMS, so its key is taken
+	// before the root fallback runs. The existing entry must be promoted to root
+	// rather than falling back to the most active device, which here is D:.
+	agent := &Agent{fsStats: map[string]*system.FsStats{
+		"C:": {Mountpoint: `C:\`, Name: "System"},
+		"D:": {Mountpoint: `D:\`},
+	}}
+	discovery := diskDiscovery{
+		agent:          agent,
+		rootMountPoint: `C:\`,
+		ctx: fsRegistrationContext{
+			isWindows: true,
+			diskIoCounters: map[string]disk.IOCountersStat{
+				"C:": {Name: "C:", ReadBytes: 10},
+				"D:": {Name: "D:", ReadBytes: 100},
+			},
+		},
+	}
+
+	ok := discovery.addPartitionRootFs("C:", `C:\`)
+	assert.True(t, ok)
+	assert.Len(t, agent.fsStats, 2)
+	assert.True(t, agent.fsStats["C:"].Root)
+	assert.Equal(t, `C:\`, agent.fsStats["C:"].Mountpoint)
+	assert.Equal(t, "System", agent.fsStats["C:"].Name)
+	assert.False(t, agent.fsStats["D:"].Root)
 }
