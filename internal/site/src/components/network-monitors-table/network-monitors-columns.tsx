@@ -31,7 +31,8 @@ import {
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Plural, Trans } from "@lingui/react/macro"
-import { $allSystemsById, $longestSystemName } from "@/lib/stores"
+import { $allSystemsById } from "@/lib/stores"
+import type { ReadableAtom } from "nanostores"
 import { useStore } from "@nanostores/react"
 import { SystemStatus } from "@/lib/enums"
 import { Checkbox } from "@/components/ui/checkbox"
@@ -71,6 +72,7 @@ const isMuted = (record: NetworkMonitorRecord, systemRecord: SystemRecord | unde
 
 export function getMonitorColumns(
 	longestTarget = "",
+	$longestSystemName: ReadableAtom<string>,
 	{
 		onEdit,
 		onDelete,

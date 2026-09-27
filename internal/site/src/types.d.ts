@@ -33,7 +33,14 @@ export interface SystemRecord extends RecordModel {
 	updated: string
 }
 
+export interface WiFi {
+	s?: string
+	r?: number
+}
+
 export interface SystemInfo {
+	/** connected Wi-Fi interfaces */
+	wf?: Record<string, WiFi>
 	/** hostname */
 	h: string
 	/** kernel **/
@@ -80,6 +87,8 @@ export interface SystemInfo {
 	sv?: [number, number]
 	/** custom root disk name */
 	rdn?: string
+	/** pending package updates [total, security] (security omitted if unknown) */
+	pu?: [number, number?]
 }
 
 export interface SystemStats {
@@ -159,6 +168,8 @@ export interface SystemStats {
 	bat?: [number, BatteryState]
 	/** battery percentages by device name */
 	bats?: Record<string, number>
+	/** Wi-Fi RSSI (dBm) by interface */
+	wf?: Record<string, number>
 	/** network interfaces [upload bytes, download bytes, total upload bytes, total download bytes] */
 	ni?: Record<string, [number, number, number, number]>
 }
@@ -644,6 +655,7 @@ export interface NetworkMonitorRecord {
 	target: string
 	protocol: "icmp" | "tcp" | "http" | "dns"
 	port: number
+	server: string
 	res: number
 	resMin1h: number
 	resMax1h: number
