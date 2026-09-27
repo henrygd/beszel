@@ -31,7 +31,13 @@ export function clearFailedResponse(stats: MonitorStats): MonitorStats {
 }
 
 /**
- * Return the records that have stats for one monitor, with an empty record inserted wherever
+ * Gap marker in the same form appendData uses. Without a timestamp it can't become the active
+ * tooltip point, which would otherwise have no values and make the tooltip jump to the corner.
+ */
+export const monitorGapRecord = { created: null, stats: null } as unknown as NetworkMonitorStatsRecord
+
+/**
+ * Return the records that have stats for one monitor, with a gap marker inserted wherever
  * consecutive records are further apart than expected (e.g. while the agent was disconnected),
  * so charts break the line there instead of drawing across the missing time.
  */
@@ -48,7 +54,7 @@ export function withMonitorGaps(
 		// skip appendData's gap markers (created: null) and records without this monitor
 		if (record.created == null || !record.stats?.[monitor.id]) continue
 		if (prevTime && record.created - prevTime > maxGap) {
-			result.push({ created: (prevTime + record.created) / 2, stats: {} })
+			result.push(monitorGapRecord)
 		}
 		prevTime = record.created
 		result.push(record)

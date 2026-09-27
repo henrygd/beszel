@@ -1,4 +1,4 @@
-import { getMonitorTarget } from "@/lib/network-monitor-utils"
+import { getMonitorTarget, monitorGapRecord } from "@/lib/network-monitor-utils"
 import LineChartDefault, { isolatedDot } from "@/components/charts/line-chart"
 import type { DataPoint } from "@/components/charts/line-chart"
 import { decimalString, formatMicroseconds, matchesFilterGroups, parseFilterGroups, toFixedFloat } from "@/lib/utils"
@@ -160,6 +160,15 @@ export function AvgMinMaxResponseChart({ monitorStats, monitor, chartData, empty
 		]
 	}, [chartTime, hasLongInterval, monitor?.id])
 
+	// Replace records where every probe failed with gap markers, so the line breaks there without
+	// leaving points that have no response time for the tooltip to show.
+	const data = useMemo(() => {
+		const id = monitor?.id ?? ""
+		return monitorStats.map((record) =>
+			record.stats?.[id] && record.stats[id].res_avg == null ? monitorGapRecord : record
+		)
+	}, [monitorStats, monitor?.id])
+
 	const legend = dataPoints.length > 1
 
 	return (
@@ -173,7 +182,7 @@ export function AvgMinMaxResponseChart({ monitorStats, monitor, chartData, empty
 			<LineChartDefault
 				truncate
 				chartData={chartData}
-				customData={monitorStats}
+				customData={data}
 				dataPoints={dataPoints}
 				domain={["auto", "auto"]}
 				legend={legend}
