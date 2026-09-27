@@ -170,11 +170,18 @@ export function NetworkErrorsChart({ chartData, grid, dataEmpty, maxValues, syst
 	)
 }
 
+const compactNumber = new Intl.NumberFormat(undefined, { notation: "compact" })
+
 /** Conntrack entries and table size for a record, using peak entries when showing max values */
 function conntrackUsage(data: SystemStatsRecord, showMax: boolean) {
 	const ct = data?.stats?.ct
 	if (!ct?.[1]) return undefined
 	return { entries: showMax ? (data.stats.ctm ?? ct[0]) : ct[0], tableMax: ct[1] }
+}
+
+/** Formats conntrack entries as "125 (0.05%)" */
+function formatConntrack(entries: number, tableMax: number) {
+	return `${entries.toLocaleString()} (${decimalString((entries / tableMax) * 100)}%)`
 }
 
 export function ConntrackChart({
@@ -195,7 +202,7 @@ export function ConntrackChart({
 	systemStats: SystemStatsRecord[]
 }) {
 	// only Linux agents with the nf_conntrack module loaded send `ct`
-	if (!systemStats.at(-1)?.stats?.ct) {
+	if (!systemStats.at(-1)?.stats?.ct?.[1]) {
 		return null
 	}
 
@@ -205,29 +212,24 @@ export function ConntrackChart({
 			grid={grid}
 			title={t`Conntrack`}
 			cornerEl={isLongerChart ? <SelectAvgMax max={maxValues} /> : null}
-			description={t`Connection tracking table usage`}
+			description={t`Connection tracking table entries`}
 		>
 			<AreaChartDefault
 				chartData={chartData}
 				maxToggled={showMax}
 				dataPoints={[
 					{
-						label: t`Usage`,
-						dataKey: (data) => {
-							const usage = conntrackUsage(data, showMax)
-							return usage && (usage.entries / usage.tableMax) * 100
-						},
+						label: t`Entries`,
+						dataKey: (data) => conntrackUsage(data, showMax)?.entries,
 						color: 1,
 						opacity: 0.35,
 					},
 				]}
-				tickFormatter={(val) => `${toFixedFloat(val, 2)}%`}
+				tickFormatter={(val) => compactNumber.format(val)}
 				contentFormatter={({ value, payload }) => {
 					const usage = conntrackUsage(payload, showMax)
-					if (!usage) return `${decimalString(value)}%`
-					return `${decimalString(value)}% (${usage.entries.toLocaleString()} / ${usage.tableMax.toLocaleString()})`
+					return usage ? formatConntrack(usage.entries, usage.tableMax) : value.toLocaleString()
 				}}
-				domain={pinnedAxisDomain()}
 			/>
 		</ChartCard>
 	)
