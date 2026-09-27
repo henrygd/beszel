@@ -4,91 +4,103 @@ import type { AlertRecord } from "@/types"
 import { Plural, Trans } from "@lingui/react/macro"
 import { useStore } from "@nanostores/react"
 import { getPagePath } from "@nanostores/router"
-import { useMemo } from "react"
-import { $router, Link } from "./router"
-import { Alert, AlertTitle, AlertDescription } from "./ui/alert"
-import { Card, CardHeader, CardTitle, CardContent } from "./ui/card"
+import { useMemo, useState } from "react"
+import { AlertBannerSheet, AlertBannerSheetItem } from "./alert-banner-sheet"
+import { $router } from "./router"
 
-export const ActiveAlerts = () => {
+function AlertTriggeredDesc({ alert }: { alert: AlertRecord }) {
+	const info = alertInfo[alert.name as keyof typeof alertInfo]
+	if (info.triggeredDesc) {
+		return info.triggeredDesc()
+	}
+	if (alert.name === "NetworkMonitorLoss") {
+		return <Trans>One or more monitors exceed {alert.value}% loss</Trans>
+	}
+	if (alert.name === "Status") {
+		return <Trans>Connection is down</Trans>
+	}
+	if (info.invert) {
+		return (
+			<Trans>
+				Below {alert.value}
+				{info.unit} in last <Plural value={alert.min} one="# minute" other="# minutes" />
+			</Trans>
+		)
+	}
+	return (
+		<Trans>
+			Exceeds {alert.value}
+			{info.unit} in last <Plural value={alert.min} one="# minute" other="# minutes" />
+		</Trans>
+	)
+}
+
+/**
+ * Banner showing the number of triggered alerts, with a sheet listing them.
+ * Pass `filter` to limit which alerts are shown (e.g. only network monitor alerts).
+ * `filter` should be stable (defined outside the component or memoized).
+ */
+export const ActiveAlerts = ({ filter }: { filter?: (alert: AlertRecord) => boolean }) => {
 	const alerts = useStore($alerts)
 	const systems = useStore($allSystemsById)
+	const [open, setOpen] = useState(false)
 
-	const { activeAlerts, alertsKey } = useMemo(() => {
+	const { activeAlerts, systemCount, alertsKey } = useMemo(() => {
 		const activeAlerts: AlertRecord[] = []
+		const systemIds = new Set<string>()
 		// key to prevent re-rendering if alerts change but active alerts didn't
 		const alertsKey: string[] = []
 
 		for (const systemId of Object.keys(alerts)) {
 			for (const alert of alerts[systemId].values()) {
-				if (alert.triggered && alert.name in alertInfo) {
+				if (alert.triggered && alert.name in alertInfo && (!filter || filter(alert))) {
 					activeAlerts.push(alert)
+					systemIds.add(alert.system)
 					alertsKey.push(`${alert.id}${alert.value}${alert.min}`)
 				}
 			}
 		}
 
-		return { activeAlerts, alertsKey }
-	}, [alerts])
+		return { activeAlerts, systemCount: systemIds.size, alertsKey: alertsKey.join("") }
+	}, [alerts, filter])
 
 	// biome-ignore lint/correctness/useExhaustiveDependencies: alertsKey is inclusive
 	return useMemo(() => {
-		if (activeAlerts.length === 0) {
+		const alertCount = activeAlerts.length
+		if (alertCount === 0) {
 			return null
 		}
 		return (
-			<Card>
-				<CardHeader className="pb-4 px-2 sm:px-6 max-sm:pt-5 max-sm:pb-1">
-					<div className="px-2 sm:px-1">
-						<CardTitle>
-							<Trans>Active Alerts</Trans>
-						</CardTitle>
-					</div>
-				</CardHeader>
-				<CardContent className="max-sm:p-2">
-					{activeAlerts.length > 0 && (
-						<div className="grid sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-3">
-							{activeAlerts.map((alert) => {
-								const info = alertInfo[alert.name as keyof typeof alertInfo]
-								return (
-									<Alert
-										key={alert.id}
-										className="hover:-translate-y-px duration-200 bg-transparent border-foreground/10 hover:shadow-md shadow-black/5"
-									>
-										<info.icon className="h-4 w-4" />
-										<AlertTitle>
-											{systems[alert.system]?.name} {info.name()}
-										</AlertTitle>
-										<AlertDescription>
-											{info.triggeredDesc ? (
-												info.triggeredDesc()
-											) : alert.name === "NetworkMonitorLoss" ? (
-												<Trans>One or more monitors exceed {alert.value}% loss</Trans>
-											) : alert.name === "Status" ? (
-												<Trans>Connection is down</Trans>
-											) : info.invert ? (
-												<Trans>
-													Below {alert.value}
-													{info.unit} in last <Plural value={alert.min} one="# minute" other="# minutes" />
-												</Trans>
-											) : (
-												<Trans>
-													Exceeds {alert.value}
-													{info.unit} in last <Plural value={alert.min} one="# minute" other="# minutes" />
-												</Trans>
-											)}
-										</AlertDescription>
-										<Link
-											href={getPagePath($router, "system", { id: systems[alert.system]?.id })}
-											className="absolute inset-0 w-full h-full"
-											aria-label="View system"
-										></Link>
-									</Alert>
-								)
-							})}
-						</div>
-					)}
-				</CardContent>
-			</Card>
+			<AlertBannerSheet
+				open={open}
+				onOpenChange={setOpen}
+				title={<Plural value={alertCount} one="# active alert" other="# active alerts" />}
+				description={<Plural value={systemCount} one="Across # system" other="Across # systems" />}
+				buttonLabel={<Trans>View alerts</Trans>}
+				sheetTitle={<Trans>Active Alerts</Trans>}
+				sheetDescription={
+					<Plural value={alertCount} one="# alert is currently triggered" other="# alerts are currently triggered" />
+				}
+			>
+				{activeAlerts.map((alert) => {
+					const info = alertInfo[alert.name as keyof typeof alertInfo]
+					const system = systems[alert.system]
+					return (
+						<AlertBannerSheetItem
+							key={alert.id}
+							href={getPagePath($router, "system", { id: system?.id })}
+							onClick={() => setOpen(false)}
+							icon={info.icon}
+							title={
+								<>
+									{system?.name} <span className="text-muted-foreground font-normal">·</span> {info.name()}
+								</>
+							}
+							description={<AlertTriggeredDesc alert={alert} />}
+						/>
+					)
+				})}
+			</AlertBannerSheet>
 		)
-	}, [alertsKey.join("")])
+	}, [alertsKey, systemCount, open])
 }
