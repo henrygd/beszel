@@ -42,13 +42,41 @@ const ChartContainer = React.forwardRef<
 >(({ id, className, children, ...props }, ref) => {
 	const uniqueId = React.useId()
 	const chartId = `chart-${id || uniqueId.replace(/:/g, "")}`
+	const containerRef = React.useRef<HTMLDivElement>(null)
+	React.useImperativeHandle(ref, () => containerRef.current as HTMLDivElement)
+
+	// Scroll a tooltip that is taller than its max height with the mouse wheel,
+	// since the tooltip itself doesn't receive pointer events.
+	React.useEffect(() => {
+		const container = containerRef.current
+		if (!container) {
+			return
+		}
+		const onWheel = (e: WheelEvent) => {
+			const list = container.querySelector<HTMLElement>("[data-tooltip-scroll]")
+			if (!list || list.scrollHeight <= list.clientHeight) {
+				return
+			}
+			const delta = e.deltaMode === WheelEvent.DOM_DELTA_LINE ? e.deltaY * 16 : e.deltaY
+			const atTop = list.scrollTop <= 0
+			const atBottom = list.scrollTop + list.clientHeight >= list.scrollHeight - 1
+			// let the page scroll once the tooltip reaches its end
+			if ((delta < 0 && atTop) || (delta > 0 && atBottom)) {
+				return
+			}
+			e.preventDefault()
+			list.scrollTop += delta
+		}
+		container.addEventListener("wheel", onWheel, { passive: false })
+		return () => container.removeEventListener("wheel", onWheel)
+	}, [])
 
 	return (
 		//<ChartContext.Provider value={{ config }}>
 		//</ChartContext.Provider>
 		<div
 			data-chart={chartId}
-			ref={ref}
+			ref={containerRef}
 			className={cn(
 				"text-xs [&_.recharts-cartesian-axis-tick_text]:fill-muted-foreground [&_.recharts-cartesian-grid_line]:stroke-border/50 [&_.recharts-curve.recharts-tooltip-cursor]:stroke-border [&_.recharts-dot[stroke='#fff']]:stroke-transparent [&_.recharts-layer]:outline-hidden [&_.recharts-polar-grid_[stroke='#ccc']]:stroke-border [&_.recharts-radial-bar-background-sector]:fill-muted [&_.recharts-rectangle.recharts-tooltip-cursor]:fill-muted [&_.recharts-reference-line-line]:stroke-border [&_.recharts-sector[stroke='#fff']]:stroke-transparent [&_.recharts-sector]:outline-hidden [&_.recharts-surface]:outline-hidden",
 				className
@@ -105,8 +133,8 @@ const ChartTooltipContent = React.forwardRef<
 			truncate?: boolean
 			showTotal?: boolean
 			totalLabel?: React.ReactNode
-			/** Maximum number of items to show (highest values, default 10). `0` disables the limit. */
-			maxItems?: number
+			/** Number of items shown before the list becomes scrollable (default 10). */
+			maxVisibleItems?: number
 		}
 >(
 	(
@@ -130,7 +158,7 @@ const ChartTooltipContent = React.forwardRef<
 			truncate = false,
 			showTotal = false,
 			totalLabel,
-			maxItems = 10,
+			maxVisibleItems = 10,
 		},
 		ref
 	) => {
@@ -227,6 +255,22 @@ const ChartTooltipContent = React.forwardRef<
 			return <div className={cn("font-medium", labelClassName)}>{value}</div>
 		}, [label, labelFormatter, payload, hideLabel, labelClassName, config, labelKey])
 
+		// limit the list to the height of the first `maxVisibleItems` rows, then scroll
+		const listRef = React.useRef<HTMLDivElement>(null)
+		React.useLayoutEffect(() => {
+			const list = listRef.current
+			if (!list) {
+				return
+			}
+			const lastVisible = list.children[maxVisibleItems - 1] as HTMLElement | undefined
+			if (list.children.length <= maxVisibleItems || !lastVisible) {
+				list.style.maxHeight = ""
+				return
+			}
+			const height = lastVisible.getBoundingClientRect().bottom - list.getBoundingClientRect().top + list.scrollTop
+			list.style.maxHeight = `min(50vh, ${Math.ceil(height)}px)`
+		})
+
 		if (!active || !payload?.length) {
 			return null
 		}
@@ -234,14 +278,6 @@ const ChartTooltipContent = React.forwardRef<
 		payload = payload.filter((item) => item.value != null)
 		if (!payload.length) {
 			return null
-		}
-
-		let hiddenCount = 0
-		if (maxItems > 0 && payload.length > maxItems) {
-			// keep the highest values, in the chart's existing order
-			const top = new Set([...payload].sort((a, b) => Number(b.value) - Number(a.value)).slice(0, maxItems))
-			hiddenCount = payload.length - maxItems
-			payload = payload.filter((item) => top.has(item))
 		}
 
 		// const nestLabel = payload.length === 1 && indicator !== 'dot'
@@ -257,70 +293,78 @@ const ChartTooltipContent = React.forwardRef<
 			>
 				{!nestLabel ? tooltipLabel : null}
 				<div className="grid gap-1.5">
-					{payload.map((item, index) => {
-						const key = `${nameKey || item.name || item.dataKey || "value"}`
-						const itemConfig = getPayloadConfigFromPayload(config, item, key)
-						const indicatorColor = color || item.payload.fill || item.color
+					<div
+						ref={listRef}
+						data-tooltip-scroll
+						className={cn(
+							"grid gap-1.5",
+							payload.length > maxVisibleItems && "max-h-[50vh] overflow-y-auto [scrollbar-width:thin]"
+						)}
+					>
+						{payload.map((item, index) => {
+							const key = `${nameKey || item.name || item.dataKey || "value"}`
+							const itemConfig = getPayloadConfigFromPayload(config, item, key)
+							const indicatorColor = color || item.payload.fill || item.color
 
-						return (
-							<div
-								key={item?.name || item.dataKey}
-								className={cn(
-									"flex w-full items-stretch gap-2 [&>svg]:h-2.5 [&>svg]:w-2.5 [&>svg]:text-muted-foreground",
-									indicator === "dot" && "items-center"
-								)}
-							>
-								{formatter && item?.value !== undefined && item.name ? (
-									formatter(item.value, item.name, item, index, item.payload)
-								) : (
-									<>
-										{itemConfig?.icon ? (
-											<itemConfig.icon />
-										) : (
-											<div
-												className={cn("shrink-0 rounded-[2px] border-border bg-(--color-bg)", {
-													"h-2.5 w-2.5": indicator === "dot",
-													"w-1": indicator === "line",
-													"w-0 border-[1.5px] border-dashed bg-transparent": indicator === "dashed",
-													"my-0.5": nestLabel && indicator === "dashed",
-												})}
-												style={
-													{
-														"--color-bg": indicatorColor,
-														"--color-border": indicatorColor,
-													} as React.CSSProperties
-												}
-											/>
-										)}
-										<div
-											className={cn(
-												"flex flex-1 justify-between leading-none gap-2",
-												nestLabel ? "items-end" : "items-center"
+							return (
+								<div
+									key={item?.name || item.dataKey}
+									className={cn(
+										"flex w-full items-stretch gap-2 [&>svg]:h-2.5 [&>svg]:w-2.5 [&>svg]:text-muted-foreground",
+										indicator === "dot" && "items-center"
+									)}
+								>
+									{formatter && item?.value !== undefined && item.name ? (
+										formatter(item.value, item.name, item, index, item.payload)
+									) : (
+										<>
+											{itemConfig?.icon ? (
+												<itemConfig.icon />
+											) : (
+												<div
+													className={cn("shrink-0 rounded-[2px] border-border bg-(--color-bg)", {
+														"h-2.5 w-2.5": indicator === "dot",
+														"w-1": indicator === "line",
+														"w-0 border-[1.5px] border-dashed bg-transparent": indicator === "dashed",
+														"my-0.5": nestLabel && indicator === "dashed",
+													})}
+													style={
+														{
+															"--color-bg": indicatorColor,
+															"--color-border": indicatorColor,
+														} as React.CSSProperties
+													}
+												/>
 											)}
-										>
-											{nestLabel ? tooltipLabel : null}
-											<span
+											<div
 												className={cn(
-													"text-muted-foreground",
-													truncate ? "max-w-40 truncate leading-normal -my-1" : ""
+													"flex flex-1 justify-between leading-none gap-2",
+													nestLabel ? "items-end" : "items-center"
 												)}
 											>
-												{itemConfig?.label || item.name}
-											</span>
-											{item.value !== undefined && (
-												<span className="font-medium text-foreground">
-													{content && typeof content === "function"
-														? content(item, key)
-														: item.value.toLocaleString() + (unit ? unit : "")}
+												{nestLabel ? tooltipLabel : null}
+												<span
+													className={cn(
+														"text-muted-foreground",
+														truncate ? "max-w-40 truncate leading-normal -my-1" : ""
+													)}
+												>
+													{itemConfig?.label || item.name}
 												</span>
-											)}
-										</div>
-									</>
-								)}
-							</div>
-						)
-					})}
-					{hiddenCount > 0 ? <div className="text-muted-foreground ps-3">{t`+${hiddenCount} more`}</div> : null}
+												{item.value !== undefined && (
+													<span className="font-medium text-foreground">
+														{content && typeof content === "function"
+															? content(item, key)
+															: item.value.toLocaleString() + (unit ? unit : "")}
+													</span>
+												)}
+											</div>
+										</>
+									)}
+								</div>
+							)
+						})}
+					</div>
 					{totalValueDisplay ? (
 						<>
 							<Separator className="mt-0.5" />
