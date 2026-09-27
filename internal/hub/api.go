@@ -205,6 +205,8 @@ func (h *Hub) registerApiRoutes(se *core.ServeEvent) error {
 	apiAuth.GET("/systemd/info", h.getSystemdInfo)
 	// get recent logs for a systemd service
 	apiAuth.GET("/systemd/logs", h.getSystemdLogs)
+	// get pending package updates
+	apiAuth.GET("/package-updates", h.getPackageUpdates)
 	// /containers routes
 	if enabled, _ := utils.GetEnv("CONTAINER_DETAILS"); enabled != "false" {
 		// get container logs
@@ -484,6 +486,23 @@ func (h *Hub) getSystemdLogs(e *core.RequestEvent) error {
 		return e.JSON(http.StatusOK, map[string]string{"logs": ""})
 	}
 	return e.JSON(http.StatusOK, map[string]string{"logs": logs})
+}
+
+// getPackageUpdates handles GET /api/beszel/package-updates requests
+func (h *Hub) getPackageUpdates(e *core.RequestEvent) error {
+	systemID := e.Request.URL.Query().Get("system")
+	if systemID == "" {
+		return e.BadRequestError("Invalid system parameter", nil)
+	}
+	system, err := h.sm.GetSystem(systemID)
+	if err != nil || !system.HasUser(e.App, e.Auth) {
+		return e.NotFoundError("", nil)
+	}
+	updates, err := system.FetchPackageUpdatesFromAgent()
+	if err != nil {
+		return e.InternalServerError("", err)
+	}
+	return e.JSON(http.StatusOK, updates)
 }
 
 // refreshSmartData handles POST /api/beszel/smart/refresh requests
