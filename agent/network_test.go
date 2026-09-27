@@ -371,6 +371,43 @@ func TestSumAndTrackPerNicDeltas(t *testing.T) {
 	assert.Equal(t, uint64(7000), ni[1])
 }
 
+func TestSumAndTrackPerNicPacketRates(t *testing.T) {
+	a := &Agent{
+		netInterfaces:             map[string]struct{}{"eth0": {}},
+		netInterfaceDeltaTrackers: make(map[uint16]*deltatracker.DeltaTracker[string, uint64]),
+	}
+	cache := uint16(42)
+
+	net1 := []psutilNet.IOCountersStat{{
+		Name: "eth0", PacketsSent: 1000, PacketsRecv: 2000,
+		Errout: 5, Errin: 10, Dropout: 0, Dropin: 100,
+	}}
+	stats1 := &system.Stats{}
+	a.ensureNetworkInterfacesMap(stats1)
+	a.sumAndTrackPerNicDeltas(cache, 0, net1, stats1)
+	assert.Equal(t, [6]float64{}, stats1.NetworkInterfacePackets["eth0"], "first sample has no rates")
+
+	net2 := []psutilNet.IOCountersStat{{
+		Name: "eth0", PacketsSent: 3000, PacketsRecv: 6000,
+		Errout: 5, Errin: 13, Dropout: 1, Dropin: 102,
+	}}
+	stats2 := &system.Stats{}
+	a.ensureNetworkInterfacesMap(stats2)
+	a.sumAndTrackPerNicDeltas(cache, 2000, net2, stats2)
+
+	pkts, ok := stats2.NetworkInterfacePackets["eth0"]
+	require.True(t, ok)
+	// deltas over 2 seconds: 2000, 4000, 0, 3, 1, 2
+	assert.Equal(t, [6]float64{1000, 2000, 0, 1.5, 0.5, 1}, pkts)
+
+	// counter reset: new value is used as the delta
+	net3 := []psutilNet.IOCountersStat{{Name: "eth0", PacketsSent: 500, PacketsRecv: 6000, Errin: 13, Dropout: 1, Dropin: 102}}
+	stats3 := &system.Stats{}
+	a.ensureNetworkInterfacesMap(stats3)
+	a.sumAndTrackPerNicDeltas(cache, 1000, net3, stats3)
+	assert.Equal(t, [6]float64{500, 0, 0, 0, 0, 0}, stats3.NetworkInterfacePackets["eth0"])
+}
+
 func TestSumAndTrackPerNicDeltasHandlesCounterReset(t *testing.T) {
 	a := &Agent{
 		netInterfaces:             map[string]struct{}{"eth0": {}},

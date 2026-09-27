@@ -64,7 +64,8 @@ type Stats struct {
 	ZfsPools          map[string]*ZfsPool  `json:"z,omitempty" cbor:"39,keyasint,omitempty"`  // ZFS pool metrics, keyed by pool name
 	DiskIOTotal       [2]uint64            `json:"diot,omitzero" cbor:"38,keyasint,omitzero"` // [total read bytes, total write bytes] cumulative device counters
 	WiFi              map[string]int8      `json:"wf,omitempty" cbor:"40,keyasint,omitempty"` // RSSI dBm keyed by interface; unavailable readings omitted
-
+	// Per-interface packet rates, all per second: [packets sent, packets recv, errors out, errors in, drops out, drops in]
+	NetworkInterfacePackets map[string][6]float64 `json:"nip,omitempty" cbor:"41,keyasint,omitempty"`
 }
 
 // ZfsPool holds per-pool ZFS metrics for a single collection interval.
