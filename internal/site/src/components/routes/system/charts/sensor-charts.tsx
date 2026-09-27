@@ -235,7 +235,6 @@ export function TemperatureChart({
 					chartData={chartData}
 					itemSorter={(a, b) => b.value - a.value}
 					domain={["auto", "auto"]}
-					maxTooltipItems={10}
 					legend={legend}
 					tickFormatter={(val) => {
 						const { value, unit } = formatTemperature(val, userSettings.unitTemp)
@@ -333,7 +332,6 @@ export function FanChart({ chartData, grid, dataEmpty }: { chartData: ChartData;
 					chartData={chartData}
 					itemSorter={(a, b) => b.value - a.value}
 					domain={["auto", "auto"]}
-					maxTooltipItems={10}
 					legend={legend}
 					tickFormatter={(val) => `${toFixedFloat(val, 0)}`}
 					contentFormatter={(item) => `${decimalString(item.value, 0)} RPM`}

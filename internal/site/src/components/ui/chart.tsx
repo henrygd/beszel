@@ -105,7 +105,7 @@ const ChartTooltipContent = React.forwardRef<
 			truncate?: boolean
 			showTotal?: boolean
 			totalLabel?: React.ReactNode
-			/** Maximum number of items to show. Remaining items are summarized in a "+N more" row. */
+			/** Maximum number of items to show (highest values, default 10). `0` disables the limit. */
 			maxItems?: number
 		}
 >(
@@ -130,7 +130,7 @@ const ChartTooltipContent = React.forwardRef<
 			truncate = false,
 			showTotal = false,
 			totalLabel,
-			maxItems,
+			maxItems = 10,
 		},
 		ref
 	) => {
@@ -237,9 +237,11 @@ const ChartTooltipContent = React.forwardRef<
 		}
 
 		let hiddenCount = 0
-		if (maxItems && payload.length > maxItems) {
+		if (maxItems > 0 && payload.length > maxItems) {
+			// keep the highest values, in the chart's existing order
+			const top = new Set([...payload].sort((a, b) => Number(b.value) - Number(a.value)).slice(0, maxItems))
 			hiddenCount = payload.length - maxItems
-			payload = payload.slice(0, maxItems)
+			payload = payload.filter((item) => top.has(item))
 		}
 
 		// const nestLabel = payload.length === 1 && indicator !== 'dot'

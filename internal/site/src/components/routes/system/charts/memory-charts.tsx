@@ -120,7 +120,6 @@ export function ContainerMemoryChart({
 				filter={filter}
 				truncate={true}
 				itemSorter={(a, b) => b.value - a.value}
-				maxTooltipItems={10}
 			/>
 		</ChartCard>
 	)

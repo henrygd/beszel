@@ -169,7 +169,6 @@ export default memo(function CpuCoresSheet({
 								contentFormatter={({ value }) => `${value}%`}
 								reverseStackOrder={true}
 								itemSorter={(a, b) => b.value - a.value}
-								maxTooltipItems={10}
 							/>
 						</ChartCard>
 					)}
