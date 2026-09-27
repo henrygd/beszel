@@ -706,6 +706,7 @@ function NetworkMonitorSheetContent({
 	const monitorStats = useNetworkMonitorStats({
 		systemId: monitor.system,
 		monitorId: monitor.id,
+		interval: monitor.interval,
 		chartTime,
 		enabled: open,
 	})
