@@ -707,6 +707,8 @@ function NetworkMonitorSheetContent({
 	// Same target probed from other systems, for side-by-side comparison (#2385).
 	const matchingMonitors = useMatchingMonitors(monitor, open)
 	const [compareSystemIds, setCompareSystemIds] = useState<Set<string>>(() => new Set())
+	// Scoped to this sheet so a filter doesn't carry over to other monitors' sheets.
+	const [compareFilterStore] = useState(() => atom(""))
 	const matchingSystemIds = useMemo(() => matchingMonitors.map((m) => m.system), [matchingMonitors])
 	// The opened system is always charted; the picker only adds other systems to compare against.
 	const compareMonitors = useMemo(
@@ -795,6 +797,7 @@ function NetworkMonitorSheetContent({
 								chartData={chartData}
 								empty={!hasMonitorStats}
 								getLabel={getSystemName}
+								filterStore={compareFilterStore}
 							/>
 							<LossChart
 								monitorStats={monitorStats}
@@ -803,6 +806,7 @@ function NetworkMonitorSheetContent({
 								chartData={chartData}
 								empty={!hasMonitorStats}
 								getLabel={getSystemName}
+								filterStore={compareFilterStore}
 							/>
 						</>
 					) : (

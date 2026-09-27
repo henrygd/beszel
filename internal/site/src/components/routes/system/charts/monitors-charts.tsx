@@ -20,6 +20,8 @@ type MonitorChartProps = {
 	titlePrefix?: string
 	/** Line label for each monitor. Defaults to the monitor target; use the system name when comparing systems. */
 	getLabel?: (monitor: NetworkMonitorRecord) => string
+	/** Filter store for the chart's filter bar. Pass a local atom to keep the filter scoped to one view. */
+	filterStore?: typeof $monitorFilter
 }
 
 type MonitorChartBaseProps = MonitorChartProps & {
@@ -47,9 +49,10 @@ function MonitorChart({
 	domain,
 	color,
 	getLabel = getMonitorTarget,
+	filterStore = $monitorFilter,
 	showFilter = monitors.length > 1,
 }: MonitorChartBaseProps) {
-	const storedFilter = useStore($monitorFilter)
+	const storedFilter = useStore(filterStore)
 	const filter = showFilter ? storedFilter : ""
 
 	const { dataPoints, visibleKeys } = useMemo(() => {
@@ -94,7 +97,7 @@ function MonitorChart({
 	return (
 		<ChartCard
 			legend={legend || !showFilter}
-			cornerEl={showFilter ? <FilterBar store={$monitorFilter} /> : undefined}
+			cornerEl={showFilter ? <FilterBar store={filterStore} /> : undefined}
 			empty={empty}
 			title={title}
 			description={description}
@@ -209,6 +212,7 @@ export function ResponseChart({
 	empty,
 	titlePrefix,
 	getLabel,
+	filterStore,
 	showFilter,
 }: MonitorChartProps) {
 	const { t } = useLingui()
@@ -226,6 +230,7 @@ export function ResponseChart({
 			title={title}
 			description={t`Average response time`}
 			getLabel={getLabel}
+			filterStore={filterStore}
 			showFilter={showFilter}
 			tickFormatter={(value) => formatMicroseconds(value, false)}
 			contentFormatter={({ value }) => {
@@ -246,6 +251,7 @@ export function LossChart({
 	empty,
 	titlePrefix,
 	getLabel,
+	filterStore,
 	showFilter,
 }: MonitorChartProps) {
 	const { t } = useLingui()
@@ -266,6 +272,7 @@ export function LossChart({
 			// a single destructive color only makes sense for single-monitor charts
 			color={monitors.length > 1 ? undefined : "var(--destructive)"}
 			getLabel={getLabel}
+			filterStore={filterStore}
 			showFilter={showFilter}
 			tickFormatter={(value) => `${toFixedFloat(value, value >= 10 ? 0 : 1)}%`}
 			contentFormatter={({ value }) => {
