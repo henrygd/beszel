@@ -9,13 +9,7 @@ import { cn } from "@/lib/utils"
 import type { SystemRecord } from "@/types"
 import { AlertDialogContent } from "./alerts-sheet"
 
-export default memo(function AlertsButton({
-	system,
-	variant = "ghost",
-}: {
-	system: SystemRecord
-	variant?: "ghost" | "outline"
-}) {
+export default memo(function AlertsButton({ system }: { system: SystemRecord }) {
 	const [opened, setOpened] = useState(false)
 	const alerts = useStore($alerts)
 
@@ -24,7 +18,7 @@ export default memo(function AlertsButton({
 		() => (
 			<Sheet>
 				<SheetTrigger asChild>
-					<Button variant={variant} size="icon" aria-label={t`Alerts`} data-nolink onClick={() => setOpened(true)}>
+					<Button variant="ghost" size="icon" aria-label={t`Alerts`} data-nolink onClick={() => setOpened(true)}>
 						<BellIcon
 							className={cn("size-[1.2em] pointer-events-none", {
 								"fill-primary": hasSystemAlert,
@@ -37,6 +31,6 @@ export default memo(function AlertsButton({
 				</SheetContent>
 			</Sheet>
 		),
-		[opened, hasSystemAlert, variant]
+		[opened, hasSystemAlert]
 	)
 })
