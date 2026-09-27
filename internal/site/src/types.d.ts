@@ -44,7 +44,14 @@ export interface SystemConfigRecord extends RecordModel {
 	nics: string
 }
 
+export interface WiFi {
+	s?: string
+	r?: number
+}
+
 export interface SystemInfo {
+	/** connected Wi-Fi interfaces */
+	wf?: Record<string, WiFi>
 	/** hostname */
 	h: string
 	/** kernel **/
@@ -172,6 +179,8 @@ export interface SystemStats {
 	bat?: [number, BatteryState]
 	/** battery percentages by device name */
 	bats?: Record<string, number>
+	/** Wi-Fi RSSI (dBm) by interface */
+	wf?: Record<string, number>
 	/** network interfaces [upload bytes, download bytes, total upload bytes, total download bytes] */
 	ni?: Record<string, [number, number, number, number]>
 }

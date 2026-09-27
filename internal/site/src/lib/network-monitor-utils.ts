@@ -1,12 +1,16 @@
 import type { MonitorCertInfo, MonitorStats, NetworkMonitorRecord, RawMonitorStatsRecord } from "@/types"
+import { toFixedFloat } from "./utils"
 
 /** Derive chart metrics from the counts and response sum stored at every retention tier. */
 export function getMonitorStats(record: RawMonitorStatsRecord): MonitorStats {
 	return {
-		res_avg: record.success_count > 0 ? record.res_sum / record.success_count : 0,
+		res_avg: record.success_count > 0 ? toFixedFloat(record.res_sum / record.success_count, 2) : 0,
 		res_min: record.res_min,
 		res_max: record.res_max,
-		loss: record.total_count > 0 ? ((record.total_count - record.success_count) / record.total_count) * 100 : 0,
+		loss:
+			record.total_count > 0
+				? toFixedFloat(((record.total_count - record.success_count) / record.total_count) * 100, 2)
+				: 0,
 	}
 }
 

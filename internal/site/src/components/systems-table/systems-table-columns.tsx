@@ -39,7 +39,8 @@ import {
 	secondsToUptimeString,
 } from "@/lib/utils"
 import { batteryStateTranslations } from "@/lib/i18n"
-import type { SystemRecord } from "@/types"
+import { connectedWiFi, strongestWiFi, strongestWiFiSignal, wifiSignalState } from "@/lib/wifi"
+import type { SystemRecord, WiFi } from "@/types"
 import { SystemDialog } from "../add-system"
 import { SystemConfigDialog } from "../system-config-dialog"
 import AlertButton from "../alerts/alert-button"
@@ -349,6 +350,57 @@ export function SystemsTableColumns(viewMode: "table" | "grid"): ColumnDef<Syste
 			},
 		},
 		{
+			accessorFn: strongestWiFiSignal,
+			id: "wifi",
+			name: () => t`Wi-Fi`,
+			size: 80,
+			Icon: WifiIcon,
+			header: sortableHeader,
+			hideSort: true,
+			sortUndefined: "last",
+			cell(info) {
+				const connections = connectedWiFi(info.row.original)
+				const strongest = strongestWiFi(connections)
+				if (!strongest) {
+					return null
+				}
+				const displayedConnections = viewMode === "table" ? [strongest] : connections
+				return (
+					<Tooltip>
+						<TooltipTrigger asChild>
+							<Link
+								href={getPagePath($router, "system", { id: info.row.original.id })}
+								tabIndex={-1}
+								className="flex flex-col gap-0.5 min-w-0 py-1 relative z-10"
+							>
+								{displayedConnections.map(([id, wifi]) => (
+									<WiFiSignal key={id} wifi={wifi} />
+								))}
+								{viewMode === "table" && connections.length > 1 && (
+									<span className="text-xs text-muted-foreground">+{connections.length - 1}</span>
+								)}
+							</Link>
+						</TooltipTrigger>
+						<TooltipContent side="right" className="max-w-xs pb-2">
+							<div className="grid gap-1">
+								{connections.map(([id, wifi]) => (
+									<div key={id} className="grid gap-0.5">
+										<div className="text-[0.65rem] max-w-40 text-muted-foreground uppercase tracking-wide truncate">
+											{id}
+										</div>
+										<div className="flex gap-2 items-center text-xs">
+											<WiFiSignal wifi={wifi} className="shrink-0" />
+											{wifi.s && <span className="truncate max-w-40">{wifi.s}</span>}
+										</div>
+									</div>
+								))}
+							</div>
+						</TooltipContent>
+					</Tooltip>
+				)
+			},
+		},
+		{
 			accessorFn: ({ info }) => info.sv?.[0],
 			id: "services",
 			name: () => t`Services`,
@@ -646,6 +698,23 @@ function DiskCellWithMultiple(info: CellContext<SystemRecord, unknown>) {
 				</div>
 			</TooltipContent>
 		</Tooltip>
+	)
+}
+
+function WiFiSignal({ wifi, className }: { wifi: WiFi; className?: ClassValue }) {
+	const state = wifi.r === undefined ? undefined : wifiSignalState(wifi.r)
+	return (
+		<span className={cn("flex items-center gap-1.5 tabular-nums whitespace-nowrap", className)}>
+			<span
+				className={cn("block size-2 rounded-full shrink-0", {
+					[STATUS_COLORS[SystemStatus.Up]]: state === MeterState.Good,
+					[STATUS_COLORS[SystemStatus.Pending]]: state === MeterState.Warn,
+					[STATUS_COLORS[SystemStatus.Down]]: state === MeterState.Crit,
+					[STATUS_COLORS[SystemStatus.Paused]]: state === undefined,
+				})}
+			/>
+			{wifi.r === undefined ? t`Unknown` : `${wifi.r} dBm`}
+		</span>
 	)
 }
 

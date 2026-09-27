@@ -155,6 +155,7 @@ func (sys *System) update() error {
 
 	// ensure deprecated fields from older agents are migrated to current fields
 	migrateDeprecatedFields(data, !sys.detailsFetched.Load())
+	sys.data = data
 
 	// create system records
 	_, err = sys.createRecords(data)
@@ -707,11 +708,9 @@ func (sys *System) ensureSSHTransport() error {
 }
 
 // fetchDataFromAgent attempts to fetch data from the agent, prioritizing WebSocket if available.
+// Each fetch decodes into a new struct: CBOR leaves fields the agent omits
+// untouched, and real-time and regular updates may fetch concurrently.
 func (sys *System) fetchDataFromAgent(options common.DataRequestOptions) (*system.CombinedData, error) {
-	if sys.data == nil {
-		sys.data = &system.CombinedData{}
-	}
-
 	if sys.WsConn != nil && sys.WsConn.IsConnected() {
 		wsData, err := sys.fetchDataViaWebSocket(options)
 		if err == nil {
@@ -749,11 +748,11 @@ func (sys *System) fetchDataViaWebSocket(options common.DataRequestOptions) (*sy
 	ctx, cancel := context.WithTimeout(context.Background(), wsDataRequestTimeout)
 	defer cancel()
 	wsTransport := transport.NewWebSocketTransport(sys.WsConn)
-	err := wsTransport.Request(ctx, common.GetData, options, sys.data)
-	if err != nil {
+	data := &system.CombinedData{}
+	if err := wsTransport.Request(ctx, common.GetData, options, data); err != nil {
 		return nil, err
 	}
-	return sys.data, nil
+	return data, nil
 }
 
 // FetchContainerInfoFromAgent fetches container info from the agent
@@ -815,9 +814,8 @@ func MakeStableHashId(strings ...string) string {
 }
 
 // fetchDataViaSSH handles fetching data using SSH.
-// This function encapsulates the original SSH logic.
-// It updates sys.data directly upon successful fetch.
 func (sys *System) fetchDataViaSSH(options common.DataRequestOptions) (*system.CombinedData, error) {
+	data := &system.CombinedData{}
 	err := sys.runSSHOperation(4*time.Second, 1, func(session *ssh.Session) (bool, error) {
 		stdout, err := session.StdoutPipe()
 		if err != nil {
@@ -828,7 +826,8 @@ func (sys *System) fetchDataViaSSH(options common.DataRequestOptions) (*system.C
 			return false, err
 		}
 
-		*sys.data = system.CombinedData{}
+		// reset in case of retry after a partial decode
+		*data = system.CombinedData{}
 
 		if sys.agentVersion.GTE(beszel.MinVersionAgentResponse) && stdinErr == nil {
 			req := common.HubRequest[any]{Action: common.GetData, Data: options}
@@ -837,7 +836,7 @@ func (sys *System) fetchDataViaSSH(options common.DataRequestOptions) (*system.C
 
 			var resp common.AgentResponse
 			if decErr := cbor.NewDecoder(stdout).Decode(&resp); decErr == nil && resp.SystemData != nil {
-				*sys.data = *resp.SystemData
+				*data = *resp.SystemData
 				if err := session.Wait(); err != nil {
 					return false, err
 				}
@@ -847,9 +846,9 @@ func (sys *System) fetchDataViaSSH(options common.DataRequestOptions) (*system.C
 
 		var decodeErr error
 		if sys.agentVersion.GTE(beszel.MinVersionCbor) {
-			decodeErr = cbor.NewDecoder(stdout).Decode(sys.data)
+			decodeErr = cbor.NewDecoder(stdout).Decode(data)
 		} else {
-			decodeErr = json.NewDecoder(stdout).Decode(sys.data)
+			decodeErr = json.NewDecoder(stdout).Decode(data)
 		}
 
 		if decodeErr != nil {
@@ -866,7 +865,7 @@ func (sys *System) fetchDataViaSSH(options common.DataRequestOptions) (*system.C
 		return nil, err
 	}
 
-	return sys.data, nil
+	return data, nil
 }
 
 // runSSHOperation establishes an SSH session and executes the provided operation.
