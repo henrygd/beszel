@@ -36,6 +36,7 @@ export default function AreaChartDefault({
 	domain,
 	legend,
 	itemSorter,
+	maxTooltipItems,
 	showTotal = false,
 	reverseStackOrder = false,
 	hideYAxis = false,
@@ -58,6 +59,7 @@ export default function AreaChartDefault({
 	showTotal?: boolean
 	// biome-ignore lint/suspicious/noExplicitAny: recharts tooltip item interop
 	itemSorter?: (a: any, b: any) => number
+	maxTooltipItems?: number
 	reverseStackOrder?: boolean
 	hideYAxis?: boolean
 	filter?: string
@@ -161,6 +163,7 @@ export default function AreaChartDefault({
 								showTotal={showTotal}
 								filter={filter}
 								truncate={truncate}
+								maxItems={maxTooltipItems}
 							/>
 						}
 					/>

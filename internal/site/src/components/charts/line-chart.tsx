@@ -42,6 +42,7 @@ export default function LineChartDefault({
 	max2,
 	legend,
 	itemSorter,
+	maxTooltipItems,
 	showTotal = false,
 	reverseStackOrder = false,
 	hideYAxis = false,
@@ -70,6 +71,7 @@ export default function LineChartDefault({
 	showTotal?: boolean
 	// biome-ignore lint/suspicious/noExplicitAny: recharts tooltip item interop
 	itemSorter?: (a: any, b: any) => number
+	maxTooltipItems?: number
 	reverseStackOrder?: boolean
 	hideYAxis?: boolean
 	filter?: string
@@ -195,6 +197,7 @@ export default function LineChartDefault({
 								showTotal={showTotal}
 								filter={filter}
 								truncate={truncate}
+								maxItems={maxTooltipItems}
 							/>
 						}
 					/>

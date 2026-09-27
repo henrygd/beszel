@@ -105,6 +105,8 @@ const ChartTooltipContent = React.forwardRef<
 			truncate?: boolean
 			showTotal?: boolean
 			totalLabel?: React.ReactNode
+			/** Maximum number of items to show. Remaining items are summarized in a "+N more" row. */
+			maxItems?: number
 		}
 >(
 	(
@@ -128,6 +130,7 @@ const ChartTooltipContent = React.forwardRef<
 			truncate = false,
 			showTotal = false,
 			totalLabel,
+			maxItems,
 		},
 		ref
 	) => {
@@ -233,6 +236,12 @@ const ChartTooltipContent = React.forwardRef<
 			return null
 		}
 
+		let hiddenCount = 0
+		if (maxItems && payload.length > maxItems) {
+			hiddenCount = payload.length - maxItems
+			payload = payload.slice(0, maxItems)
+		}
+
 		// const nestLabel = payload.length === 1 && indicator !== 'dot'
 		const nestLabel = false
 
@@ -309,6 +318,7 @@ const ChartTooltipContent = React.forwardRef<
 							</div>
 						)
 					})}
+					{hiddenCount > 0 ? <div className="text-muted-foreground ps-3">{t`+${hiddenCount} more`}</div> : null}
 					{totalValueDisplay ? (
 						<>
 							<Separator className="mt-0.5" />
