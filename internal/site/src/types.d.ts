@@ -677,9 +677,10 @@ export interface MonitorCertInfo {
 
 /** Response times in microseconds and packet loss percentage (0-100). */
 export interface MonitorStats {
-	res_avg: number
-	res_min: number
-	res_max: number
+	/** null when no probe succeeded, so there is no response time */
+	res_avg: number | null
+	res_min: number | null
+	res_max: number | null
 	loss: number
 }
 
