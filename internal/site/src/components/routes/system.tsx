@@ -1,6 +1,7 @@
 import { memo, useState } from "react"
 import { Trans } from "@lingui/react/macro"
 import { compareSemVer, parseSemVer, supportsNetworkMonitors } from "@/lib/utils"
+import { SystemStatus } from "@/lib/enums"
 import type { GPUData } from "@/types"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import InfoBar from "./system/info-bar"
@@ -16,6 +17,7 @@ import { GpuPowerChart, GpuCharts } from "./system/charts/gpu-charts"
 import {
 	LazyContainersTable,
 	LazyNetworkMonitorsTable,
+	LazyPackageUpdatesTable,
 	LazySmartTable,
 	LazySystemdTable,
 	LazyZfsTable,
@@ -73,6 +75,8 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 	const hasGpu = hasGpuData || hasGpuPowerData
 	const hasZfs = Object.keys(systemStats.at(-1)?.stats?.z ?? {}).length > 0
 	const hasNetworkMonitors = supportsNetworkMonitors(system)
+	// counts key the table so it refetches the list only after a new check
+	const packageUpdates = system.status === SystemStatus.Up && system.info.pu?.[0] ? system.info.pu.join(",") : ""
 
 	// keep tabsRef in sync for keyboard navigation
 	const tabs = ["core", "network", "disk"]
@@ -163,6 +167,8 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 
 				{hasSystemd && <LazySystemdTable systemId={system.id} />}
 
+				{packageUpdates && <LazyPackageUpdatesTable systemId={system.id} counts={packageUpdates} />}
+
 				{hasNetworkMonitors && <LazyNetworkMonitorsTable systemId={system.id} />}
 			</>
 		)
@@ -215,6 +221,7 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 						<BatteryChart system={system} {...coreProps} />
 						{pageBottomExtraMargin > 0 && <div style={{ marginBottom: pageBottomExtraMargin }}></div>}
 					</div>
+					{packageUpdates && <LazyPackageUpdatesTable systemId={system.id} counts={packageUpdates} />}
 				</TabsContent>
 
 				<TabsContent value="network" forceMount className={activeTab === "network" ? "contents" : "hidden"}>
