@@ -8,6 +8,8 @@ import (
 	"github.com/henrygd/beszel/internal/entities/systemd"
 )
 
+func canReadSystemJournal() bool { return false }
+
 // systemdManager manages the collection of systemd service statistics.
 type systemdManager struct {
 	hasFreshStats bool

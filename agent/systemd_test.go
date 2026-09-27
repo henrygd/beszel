@@ -5,6 +5,7 @@ package agent
 import (
 	"errors"
 	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 
@@ -55,6 +56,28 @@ func TestServiceUnitName(t *testing.T) {
 	for input, want := range tests {
 		t.Run(input, func(t *testing.T) {
 			assert.Equal(t, want, serviceUnitName(input))
+		})
+	}
+}
+
+func TestCanReadSystemJournal(t *testing.T) {
+	tests := []struct {
+		name   string
+		script string
+		want   bool
+	}{
+		{"readable", "#!/bin/sh\nprintf 'system log\\n'\n", true},
+		{"empty", "#!/bin/sh\nexit 0\n", false},
+		{"denied", "#!/bin/sh\nexit 1\n", false},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			dir := t.TempDir()
+			if err := os.WriteFile(filepath.Join(dir, "journalctl"), []byte(test.script), 0755); err != nil {
+				t.Fatal(err)
+			}
+			t.Setenv("PATH", dir+":"+os.Getenv("PATH"))
+			assert.Equal(t, test.want, canReadSystemJournal())
 		})
 	}
 }

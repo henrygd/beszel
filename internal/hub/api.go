@@ -15,6 +15,7 @@ import (
 	"github.com/blang/semver"
 	"github.com/henrygd/beszel"
 	"github.com/henrygd/beszel/internal/alerts"
+	systementity "github.com/henrygd/beszel/internal/entities/system"
 	"github.com/henrygd/beszel/internal/ghupdate"
 	"github.com/henrygd/beszel/internal/hub/config"
 	"github.com/henrygd/beszel/internal/hub/systems"
@@ -467,6 +468,15 @@ func (h *Hub) getSystemdLogs(e *core.RequestEvent) error {
 	})
 	if err != nil {
 		return e.NotFoundError("", err)
+	}
+	// Old agents and agents without journal access do not advertise this capability.
+	systemRecord, err := e.App.FindRecordById("systems", systemID)
+	if err != nil {
+		return e.NotFoundError("", err)
+	}
+	var info systementity.Info
+	if err := systemRecord.UnmarshalJSONField("info", &info); err != nil || !info.SystemdLogs {
+		return e.JSON(http.StatusOK, map[string]string{"logs": ""})
 	}
 
 	logs, err := system.FetchSystemdLogsFromAgent(serviceName)

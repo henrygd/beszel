@@ -33,6 +33,17 @@ import { Separator } from "../ui/separator"
 
 const syntaxTheme = "github-dark-dimmed"
 
+async function getSystemdLogsHtml(systemId: string, serviceName: string): Promise<string> {
+	const [{ highlighter }, { logs }] = await Promise.all([
+		import("@/lib/shiki"),
+		pb.send<{ logs: string }>("/api/beszel/systemd/logs", {
+			requestKey: null,
+			query: { system: systemId, service: serviceName },
+		}),
+	])
+	return logs ? highlighter.codeToHtml(logs, { lang: "log", theme: syntaxTheme }) : ""
+}
+
 export default function SystemdTable({ systemId }: { systemId?: string }) {
 	const loadTime = Date.now()
 	const [data, setData] = useState<SystemdRecord[]>([])
@@ -203,8 +214,25 @@ const AllSystemdTable = memo(function AllSystemdTable({
 	const scrollRef = useRef<HTMLDivElement>(null)
 	const activeService = useRef<SystemdRecord | null>(null)
 	const [sheetOpen, setSheetOpen] = useState(false)
-	const openSheet = (service: SystemdRecord) => {
+	const [logs, setLogs] = useState("")
+	const [loadingServiceId, setLoadingServiceId] = useState<string | null>(null)
+	const openRequestId = useRef(0)
+	const openSheet = async (service: SystemdRecord) => {
+		const requestId = ++openRequestId.current
+		setLoadingServiceId(service.id)
+		let initialLogs = ""
+		try {
+			const targetSystemId = systemId ?? service.system
+			if (targetSystemId && $allSystemsById.get()[targetSystemId]?.info?.jl) {
+				initialLogs = await getSystemdLogsHtml(targetSystemId, service.name)
+			}
+		} catch (err) {
+			console.error(err)
+		}
+		if (requestId !== openRequestId.current) return
 		activeService.current = service
+		setLogs(initialLogs)
+		setLoadingServiceId(null)
 		setSheetOpen(true)
 	}
 
@@ -236,7 +264,15 @@ const AllSystemdTable = memo(function AllSystemdTable({
 						{rows.length ? (
 							virtualRows.map((virtualRow) => {
 								const row = rows[virtualRow.index]
-								return <SystemdTableRow key={row.id} row={row} virtualRow={virtualRow} openSheet={openSheet} />
+								return (
+									<SystemdTableRow
+										key={row.id}
+										row={row}
+										virtualRow={virtualRow}
+										openSheet={openSheet}
+										isOpening={loadingServiceId === row.id}
+									/>
+								)
 							})
 						) : (
 							<TableRow>
@@ -253,6 +289,8 @@ const AllSystemdTable = memo(function AllSystemdTable({
 				setSheetOpen={setSheetOpen}
 				activeService={activeService}
 				systemId={systemId}
+				logs={logs}
+				setLogs={setLogs}
 			/>
 		</div>
 	)
@@ -263,18 +301,21 @@ function SystemdSheet({
 	setSheetOpen,
 	activeService,
 	systemId,
+	logs,
+	setLogs,
 }: {
 	sheetOpen: boolean
 	setSheetOpen: (open: boolean) => void
 	activeService: React.RefObject<SystemdRecord | null>
 	systemId?: string
+	logs: string
+	setLogs: (logs: string) => void
 }) {
 	const service = activeService.current
 	const targetSystemId = systemId ?? service?.system
 	const [details, setDetails] = useState<SystemdServiceDetails | null>(null)
 	const [isLoading, setIsLoading] = useState(false)
 	const [error, setError] = useState<string | null>(null)
-	const [logs, setLogs] = useState("")
 	const [isLoadingLogs, setIsLoadingLogs] = useState(false)
 	const [logsFullscreenOpen, setLogsFullscreenOpen] = useState(false)
 	const logsContainerRef = useRef<HTMLDivElement>(null)
@@ -334,39 +375,24 @@ function SystemdSheet({
 		const requestId = ++logsRequestId.current
 		setIsLoadingLogs(true)
 		try {
-			const [{ highlighter }, { logs }] = await Promise.all([
-				import("@/lib/shiki"),
-				pb.send<{ logs: string }>("/api/beszel/systemd/logs", {
-					requestKey: null,
-					query: {
-						system: targetSystemId,
-						service: service.name,
-					},
-				}),
-			])
+			const logs = await getSystemdLogsHtml(targetSystemId, service.name)
 			if (requestId !== logsRequestId.current) return
-			setLogs(logs ? highlighter.codeToHtml(logs, { lang: "log", theme: syntaxTheme }) : "")
+			setLogs(logs)
 		} catch (err) {
 			if (requestId !== logsRequestId.current) return
 			console.error(err)
-			setLogs("")
 		} finally {
 			if (requestId === logsRequestId.current) setIsLoadingLogs(false)
 		}
 	}
 
 	useEffect(() => {
-		setLogs("")
-		if (!sheetOpen || !service || !targetSystemId) {
+		if (!sheetOpen) {
+			logsRequestId.current++
 			setIsLoadingLogs(false)
 			setLogsFullscreenOpen(false)
-			return
 		}
-		loadLogs()
-		return () => {
-			logsRequestId.current++
-		}
-	}, [sheetOpen, service, targetSystemId])
+	}, [sheetOpen])
 
 	useEffect(() => {
 		if (logs) {
@@ -733,15 +759,18 @@ const SystemdTableRow = memo(function SystemdTableRow({
 	row,
 	virtualRow,
 	openSheet,
+	isOpening,
 }: {
 	row: Row<SystemdRecord>
 	virtualRow: VirtualItem
 	openSheet: (service: SystemdRecord) => void
+	isOpening: boolean
 }) {
 	return (
 		<TableRow
 			data-state={row.getIsSelected() && "selected"}
 			className="cursor-pointer transition-opacity"
+			aria-busy={isOpening}
 			onClick={() => openSheet(row.original)}
 		>
 			{row.getVisibleCells().map((cell) => (
@@ -752,7 +781,14 @@ const SystemdTableRow = memo(function SystemdTableRow({
 						height: virtualRow.size,
 					}}
 				>
-					{flexRender(cell.column.columnDef.cell, cell.getContext())}
+					{cell.column.id === "name" && isOpening ? (
+						<div className="flex items-center">
+							<LoaderCircleIcon className="size-4 animate-spin shrink-0" />
+							{flexRender(cell.column.columnDef.cell, cell.getContext())}
+						</div>
+					) : (
+						flexRender(cell.column.columnDef.cell, cell.getContext())
+					)}
 				</TableCell>
 			))}
 		</TableRow>

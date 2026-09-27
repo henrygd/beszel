@@ -27,6 +27,16 @@ var errSystemdLogLimitReached = errors.New("systemd log size limit reached")
 
 const systemdLogsTail = 200
 
+// canReadSystemJournal probes the system journal using the agent's current
+// credentials. An empty result also means there are no system logs to show.
+func canReadSystemJournal() bool {
+	ctx, cancel := context.WithTimeout(context.Background(), 2100*time.Millisecond)
+	defer cancel()
+
+	output, err := exec.CommandContext(ctx, "journalctl", "--system", "--quiet", "--no-pager", "--lines", "1").Output()
+	return err == nil && len(output) > 0
+}
+
 // limitedBuffer bounds command output before it is sent over the agent connection.
 type limitedBuffer struct {
 	bytes.Buffer
@@ -316,7 +326,7 @@ func (sm *systemdManager) getServiceLogs(serviceName string) (string, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 2100*time.Millisecond)
 	defer cancel()
 
-	cmd := exec.CommandContext(ctx, "journalctl", "--quiet", "--no-pager", "--output=short-iso", "--unit", unitName, "--lines", strconv.Itoa(systemdLogsTail))
+	cmd := exec.CommandContext(ctx, "journalctl", "--system", "--quiet", "--no-pager", "--output=short-iso", "--unit", unitName, "--lines", strconv.Itoa(systemdLogsTail))
 	output := limitedBuffer{limit: maxTotalLogSize}
 	cmd.Stdout = &output
 	stderr := limitedBuffer{limit: 1024}

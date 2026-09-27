@@ -151,6 +151,9 @@ func NewAgent(dataDir ...string) (agent *Agent, err error) {
 	if err != nil {
 		slog.Debug("Systemd", "err", err)
 	}
+	if agent.systemdManager != nil {
+		agent.systemInfo.SystemdLogs = canReadSystemJournal()
+	}
 
 	agent.smartManager, err = NewSmartManager()
 	if err != nil {
