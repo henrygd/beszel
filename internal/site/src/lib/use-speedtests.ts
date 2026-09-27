@@ -1,6 +1,6 @@
 import { chartTimeData } from "@/lib/utils"
 import type { ChartTimes, SpeedtestRecord, SpeedtestStatsRecord } from "@/types"
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 import { appendData } from "@/components/routes/system/chart-data"
 import { pb, getPbTimestamp } from "@/lib/api"
 import { toast } from "@/components/ui/use-toast"
@@ -178,5 +178,11 @@ export function useSpeedtestStats({
 		}
 	}, [id, chartTime, cacheKey, expectedInterval, enabled])
 
-	return stats
+	// Replace failed runs with gap markers, so the line breaks there without leaving points that
+	// have no measurements for the tooltip to show. Done here rather than in the cache, which
+	// relies on the last run's timestamp to skip runs it already has.
+	return useMemo(() => stats.map((record) => (record.error ? speedtestGapRecord : record)), [stats])
 }
+
+/** Gap marker in the same form appendData uses. */
+const speedtestGapRecord = { created: null } as SpeedtestStatsRecord

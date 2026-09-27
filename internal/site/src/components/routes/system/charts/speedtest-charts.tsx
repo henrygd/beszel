@@ -7,10 +7,14 @@ import { ChartCard } from "../chart-card"
 import type { ChartData, SpeedtestStatsRecord } from "@/types"
 import { useMemo } from "react"
 
-/** Format a bandwidth in bytes/s as bits per second, the unit speedtests are usually quoted in. */
+/**
+ * Format a bandwidth in bytes/s as bits per second, the unit speedtests are usually quoted in.
+ * The short form is for axis ticks and uses a non-breaking space, since recharts measures tick
+ * words without the axis font styles and would otherwise wrap wide labels like "840 Mbps".
+ */
 export function formatBandwidth(bytesPerSecond: number, short = false) {
 	const { value, unit } = formatBytes(bytesPerSecond, true, Unit.Bits, false)
-	if (short) return `${toFixedFloat(value, value >= 10 ? 0 : 1)} ${unit}`
+	if (short) return `${toFixedFloat(value, value >= 10 ? 0 : 1)} ${unit}`
 	return `${decimalString(value, value >= 100 ? 1 : 2)} ${unit}`
 }
 
@@ -21,13 +25,13 @@ type SpeedtestChartProps = {
 }
 
 // Series overlap rather than stack, so a translucent fill keeps each one visible.
-// Failed runs have no measurements and plot as gaps. Runs are sparse, and an area
+// Failed runs arrive as gap markers (see useSpeedtestStats). Runs are sparse, and an area
 // needs two neighboring values, so a dot marks each run.
 function point(label: string, color: number | string, dataKey: DataPoint<SpeedtestStatsRecord>["dataKey"], order = 0) {
 	return {
 		label,
 		color,
-		dataKey: (record: SpeedtestStatsRecord) => (record.error ? null : dataKey(record)),
+		dataKey,
 		order,
 		opacity: 0.2,
 		dot: true,
