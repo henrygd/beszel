@@ -6,7 +6,7 @@ require (
 	github.com/blang/semver v3.5.1+incompatible
 	github.com/coreos/go-systemd/v22 v22.7.0
 	github.com/distribution/reference v0.6.0
-	github.com/ebitengine/purego v0.11.0
+	github.com/ebitengine/purego v0.11.1
 	github.com/fxamacker/cbor/v2 v2.9.4
 	github.com/gliderlabs/ssh v0.3.8
 	github.com/lxzan/gws v1.10.2
