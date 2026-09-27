@@ -28,6 +28,32 @@ func modifyIndexHTML(hub *Hub, html []byte) string {
 	return strings.Replace(htmlContent, "\"{info}\"", string(content), 1)
 }
 
+// isAppRoute reports whether urlPath matches a frontend route, so unknown paths
+// can be served with a 404 status. The base path prefix is optional because
+// reverse proxies may or may not strip it before forwarding.
+//
+// Keep in sync with routes in internal/site/src/components/router.tsx.
+func isAppRoute(urlPath, basePath string) bool {
+	urlPath = strings.ToLower(urlPath)
+	if base := strings.TrimSuffix(strings.ToLower(basePath), "/"); base != "" {
+		if rest, ok := strings.CutPrefix(urlPath, base); ok && (rest == "" || rest[0] == '/') {
+			urlPath = rest
+		}
+	}
+	urlPath = strings.TrimSuffix(urlPath, "/")
+	switch urlPath {
+	case "", "/containers", "/smart", "/monitors", "/settings", "/forgot-password", "/request-otp":
+		return true
+	}
+	// routes with a single required (/system/:id) or optional (/settings/:name?) param
+	for _, prefix := range [...]string{"/system/", "/settings/"} {
+		if param, ok := strings.CutPrefix(urlPath, prefix); ok {
+			return param != "" && !strings.Contains(param, "/")
+		}
+	}
+	return false
+}
+
 func getPublicAppInfo(hub *Hub) PublicAppInfo {
 	parsedURL, _ := url.Parse(hub.appURL)
 	info := PublicAppInfo{
