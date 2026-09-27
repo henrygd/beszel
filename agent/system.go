@@ -270,10 +270,12 @@ func (a *Agent) getSystemStats(cacheTimeMs uint16) system.Stats {
 	}
 
 	// process state counts
-	if counts, err := a.processCounts.get(time.Now(), getProcessCounts); err == nil {
-		systemStats.Processes = counts
-	} else {
-		slog.Debug("Error getting process counts", "err", err)
+	if !a.processCounts.disabled {
+		if counts, err := a.processCounts.get(time.Now(), getProcessCounts); err == nil {
+			systemStats.Processes = counts
+		} else {
+			slog.Debug("Error getting process counts", "err", err)
+		}
 	}
 
 	// Wi-Fi collection spawns a process on macOS and dumps the BSS cache on

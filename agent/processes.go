@@ -18,9 +18,10 @@ const maxProcessesForStateCounts = 2000
 // processCountsCache is shared across stats intervals and protected by Agent.Mutex.
 // Cache failures too, so frequent live requests cannot repeatedly trigger a failed scan.
 type processCountsCache struct {
-	updated time.Time
-	counts  [5]uint32
-	err     error
+	updated  time.Time
+	counts   [5]uint32
+	err      error
+	disabled bool // set when the agent runs in a container
 }
 
 func (c *processCountsCache) get(now time.Time, collect func() ([5]uint32, error)) ([5]uint32, error) {

@@ -78,6 +78,8 @@ func NewAgent(dataDir ...string) (agent *Agent, err error) {
 
 	agent.memCalc, _ = utils.GetEnv("MEM_CALC")
 	agent.sensorConfig = agent.newSensorConfig()
+	// A containerized agent only sees its own PID namespace, so process counts would be misleading
+	agent.processCounts.disabled = runningInContainer()
 
 	// Parse disk usage cache duration (e.g., "15m", "1h") to avoid waking sleeping disks
 	if diskUsageCache, exists := utils.GetEnv("DISK_USAGE_CACHE"); exists {
