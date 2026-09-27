@@ -7,7 +7,7 @@ import { twMerge } from "tailwind-merge"
 import { toast } from "@/components/ui/use-toast"
 import type { ChartTimeData, FingerprintRecord, SemVer, SystemRecord } from "@/types"
 import { HourFormat, Unit } from "./enums"
-import { $copyContent, $userSettings } from "./stores"
+import { $copyContent, $textMeasureVersion, $userSettings } from "./stores"
 
 export function cn(...inputs: ClassValue[]) {
 	return twMerge(clsx(inputs))
@@ -111,18 +111,17 @@ export const updateFavicon = (() => {
     </linearGradient>
   </defs>
   <path fill="url(#gradient)" d="M35 70H0V0h35q4.4 0 8.2 1.7a21.4 21.4 0 0 1 6.6 4.5q2.9 2.8 4.5 6.6Q56 16.7 56 21a15.4 15.4 0 0 1-.3 3.2 17.6 17.6 0 0 1-.2.8 19.4 19.4 0 0 1-1.5 4 17 17 0 0 1-2.4 3.4 13.5 13.5 0 0 1-2.6 2.3 12.5 12.5 0 0 1-.4.3q1.7 1 3 2.5Q53 39.1 54 41a18.3 18.3 0 0 1 1.5 4 17.4 17.4 0 0 1 .5 3 15.3 15.3 0 0 1 0 1q0 4.4-1.7 8.2a21.4 21.4 0 0 1-4.5 6.6q-2.8 2.9-6.6 4.6Q39.4 70 35 70ZM14 14v14h21a7 7 0 0 0 2.3-.3 6.6 6.6 0 0 0 .4-.2Q39 27 40 26a6.9 6.9 0 0 0 1.5-2.2q.5-1.3.5-2.8a7 7 0 0 0-.4-2.3 6.6 6.6 0 0 0-.1-.4Q40.9 17 40 16a7 7 0 0 0-2.3-1.4 6.9 6.9 0 0 0-2.5-.6 7.9 7.9 0 0 0-.2 0H14Zm0 28v14h21a7 7 0 0 0 2.3-.4 6.6 6.6 0 0 0 .4-.1Q39 54.9 40 54a7 7 0 0 0 1.5-2.2 6.9 6.9 0 0 0 .5-2.6 7.9 7.9 0 0 0 0-.2 7 7 0 0 0-.4-2.3 6.6 6.6 0 0 0-.1-.4Q40.9 45 40 44a7 7 0 0 0-2.3-1.5 6.9 6.9 0 0 0-2.5-.6 7.9 7.9 0 0 0-.2 0H14Z"/>
-  ${
-		downCount > 0 &&
-		`
+  ${downCount > 0 &&
+			`
 		<circle cx="40" cy="50" r="22" fill="#f00"/>
   	<text x="40" y="60" font-size="34" text-anchor="middle" fill="#fff" font-family="Arial" font-weight="bold">${downCount}</text>
 	`
-	}
+			}
 </svg>
 	`
 		const blob = new Blob([svg], { type: "image/svg+xml" })
 		const url = URL.createObjectURL(blob)
-		;(document.querySelector("link[rel='icon']") as HTMLLinkElement).href = url
+			; (document.querySelector("link[rel='icon']") as HTMLLinkElement).href = url
 	}
 })()
 
@@ -199,7 +198,7 @@ export function decimalString(num: number, digits = 2) {
 	return formatter.format(num)
 }
 
-export function formatMicroseconds(microseconds: number, showDigits = true): string {
+export function formatMicroseconds(microseconds: number, fixedDigits = true): string {
 	if (!Number.isFinite(microseconds)) {
 		return "-"
 	}
@@ -208,15 +207,17 @@ export function formatMicroseconds(microseconds: number, showDigits = true): str
 		return `${microseconds}μs`
 	}
 
+	const digitFormatter = fixedDigits ? decimalString : toFixedFloat
+
 	if (microseconds < 1_000_000) {
 		const milliseconds = microseconds / 1000
 		const digits = milliseconds >= 10 ? 1 : 2
-		return `${decimalString(milliseconds, showDigits ? digits : 0)}ms`
+		return `${digitFormatter(milliseconds, digits)}ms`
 	}
 
 	const seconds = microseconds / 1_000_000
 	const digits = seconds >= 10 ? 1 : 2
-	return `${decimalString(seconds, showDigits ? digits : 0)}s`
+	return `${digitFormatter(seconds, digits)}s`
 }
 
 /** Get value from local or session storage */
@@ -451,6 +452,45 @@ export function runOnce<T extends (...args: any[]) => any>(fn: T): T {
 
 const visualWidthCache = new Map<string, number>()
 
+let measureContext: CanvasRenderingContext2D | null | undefined
+let measureFont = ""
+
+/** Canvas context for measuring text in the font the app renders with, or null where canvas is unavailable.
+ *  Only relative widths matter here, so the font size is arbitrary.
+ */
+function getMeasureContext(): CanvasRenderingContext2D | null {
+	if (measureContext === undefined) {
+		measureContext = document.createElement("canvas").getContext("2d")
+		// the fallback font has different metrics, so re-measure whenever a font finishes loading.
+		// loadingdone also covers fonts that start loading after the first measurement,
+		// which fonts.ready does not if it has already resolved.
+		if (measureContext && "fonts" in document) {
+			document.fonts.addEventListener("loadingdone", invalidateVisualWidths)
+		}
+	}
+	if (measureContext) {
+		const { fontFamily, fontWeight } = getComputedStyle(document.body)
+		const font = `${fontWeight} 16px ${fontFamily}`
+		if (font !== measureFont) {
+			const isFirstFont = !measureFont
+			measureFont = font
+			measureContext.font = font
+			visualWidthCache.clear()
+			// defer so stores aren't updated in the middle of a comparison or a render
+			if (!isFirstFont) {
+				queueMicrotask(invalidateVisualWidths)
+			}
+		}
+	}
+	return measureContext
+}
+
+/** Drop cached widths and notify anything holding a result from isVisuallyLonger */
+function invalidateVisualWidths() {
+	visualWidthCache.clear()
+	$textMeasureVersion.set($textMeasureVersion.get() + 1)
+}
+
 /** Get the visual width of a string, accounting for full-width and narrow punctuation characters.
  *  Don't use for monospaced fonts, use .length instead
  */
@@ -458,6 +498,11 @@ function getVisualStringWidth(str: string): number {
 	const cached = visualWidthCache.get(str)
 	if (cached !== undefined) {
 		return cached
+	}
+	const measured = getMeasureContext()?.measureText(str).width
+	if (measured !== undefined) {
+		visualWidthCache.set(str, measured)
+		return measured
 	}
 	let width = 0
 	for (const char of str) {
