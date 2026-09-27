@@ -22,7 +22,7 @@ import { Card, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { LogsDisplay, LogsFullscreenDialog } from "@/components/logs-display"
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet"
+import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet"
 import { TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { pb } from "@/lib/api"
 import { ServiceStatus, ServiceStatusLabels, type ServiceSubState, ServiceSubStateLabels } from "@/lib/enums"
@@ -214,25 +214,10 @@ const AllSystemdTable = memo(function AllSystemdTable({
 	const scrollRef = useRef<HTMLDivElement>(null)
 	const activeService = useRef<SystemdRecord | null>(null)
 	const [sheetOpen, setSheetOpen] = useState(false)
-	const [logs, setLogs] = useState("")
-	const [loadingServiceId, setLoadingServiceId] = useState<string | null>(null)
-	const openRequestId = useRef(0)
-	const openSheet = async (service: SystemdRecord) => {
-		const requestId = ++openRequestId.current
-		setLoadingServiceId(service.id)
-		let initialLogs = ""
-		try {
-			const targetSystemId = systemId ?? service.system
-			if (targetSystemId && $allSystemsById.get()[targetSystemId]?.info?.jl) {
-				initialLogs = await getSystemdLogsHtml(targetSystemId, service.name)
-			}
-		} catch (err) {
-			console.error(err)
-		}
-		if (requestId !== openRequestId.current) return
+	const [sheetSession, setSheetSession] = useState(0)
+	const openSheet = (service: SystemdRecord) => {
 		activeService.current = service
-		setLogs(initialLogs)
-		setLoadingServiceId(null)
+		setSheetSession((session) => session + 1)
 		setSheetOpen(true)
 	}
 
@@ -270,7 +255,6 @@ const AllSystemdTable = memo(function AllSystemdTable({
 										row={row}
 										virtualRow={virtualRow}
 										openSheet={openSheet}
-										isOpening={loadingServiceId === row.id}
 									/>
 								)
 							})
@@ -285,12 +269,11 @@ const AllSystemdTable = memo(function AllSystemdTable({
 				</table>
 			</div>
 			<SystemdSheet
+				key={sheetSession}
 				sheetOpen={sheetOpen}
 				setSheetOpen={setSheetOpen}
 				activeService={activeService}
 				systemId={systemId}
-				logs={logs}
-				setLogs={setLogs}
 			/>
 		</div>
 	)
@@ -301,21 +284,20 @@ function SystemdSheet({
 	setSheetOpen,
 	activeService,
 	systemId,
-	logs,
-	setLogs,
 }: {
 	sheetOpen: boolean
 	setSheetOpen: (open: boolean) => void
 	activeService: React.RefObject<SystemdRecord | null>
 	systemId?: string
-	logs: string
-	setLogs: (logs: string) => void
 }) {
 	const service = activeService.current
 	const targetSystemId = systemId ?? service?.system
+	const canReadLogs = !!targetSystemId && !!$allSystemsById.get()[targetSystemId]?.info?.jl
 	const [details, setDetails] = useState<SystemdServiceDetails | null>(null)
 	const [isLoading, setIsLoading] = useState(false)
 	const [error, setError] = useState<string | null>(null)
+	const [logs, setLogs] = useState("")
+	const [logsStatus, setLogsStatus] = useState<"loading" | "ready" | "empty" | "error">("loading")
 	const [isLoadingLogs, setIsLoadingLogs] = useState(false)
 	const [logsFullscreenOpen, setLogsFullscreenOpen] = useState(false)
 	const logsContainerRef = useRef<HTMLDivElement>(null)
@@ -370,28 +352,36 @@ function SystemdSheet({
 	}, [sheetOpen, service, targetSystemId])
 
 	const loadLogs = async () => {
-		if (!service || !targetSystemId) return
+		if (!service || !targetSystemId || !canReadLogs) return
 
 		const requestId = ++logsRequestId.current
+		setLogsStatus(logs ? "ready" : "loading")
 		setIsLoadingLogs(true)
 		try {
 			const logs = await getSystemdLogsHtml(targetSystemId, service.name)
 			if (requestId !== logsRequestId.current) return
 			setLogs(logs)
+			setLogsStatus(logs ? "ready" : "empty")
 		} catch (err) {
 			if (requestId !== logsRequestId.current) return
 			console.error(err)
+			setLogsStatus("error")
 		} finally {
 			if (requestId === logsRequestId.current) setIsLoadingLogs(false)
 		}
 	}
 
 	useEffect(() => {
-		if (!sheetOpen) {
-			logsRequestId.current++
-			setIsLoadingLogs(false)
-			setLogsFullscreenOpen(false)
+		if (sheetOpen && canReadLogs) {
+			loadLogs()
 		}
+		return () => {
+			logsRequestId.current++
+		}
+	}, [sheetOpen, service, targetSystemId, canReadLogs])
+
+	useEffect(() => {
+		if (!sheetOpen) setLogsFullscreenOpen(false)
 	}, [sheetOpen])
 
 	useEffect(() => {
@@ -534,9 +524,10 @@ function SystemdSheet({
 					<SheetTitle>
 						<Trans>Service Details</Trans>
 					</SheetTitle>
+					<SheetDescription className="sr-only">{service.name}</SheetDescription>
 				</SheetHeader>
 				<div className="grid min-w-0 grid-cols-[minmax(0,1fr)] gap-6">
-					{logs && (
+					{canReadLogs && (
 						<div className="min-w-0">
 							<div className="flex items-center mb-3">
 								<h3 className="text-sm font-medium">
@@ -558,11 +549,28 @@ function SystemdSheet({
 									onClick={() => setLogsFullscreenOpen(true)}
 									className="h-8 w-8 p-0"
 									aria-label={t`Logs`}
+									disabled={!logs}
 								>
 									<MaximizeIcon className="size-4" />
 								</Button>
 							</div>
-							<LogsDisplay logsDisplay={logs} containerRef={logsContainerRef} />
+							{logs ? (
+								<LogsDisplay logsDisplay={logs} containerRef={logsContainerRef} />
+							) : logsStatus === "loading" ? (
+								<>
+									<div className="h-28" aria-busy="true">
+										<LogsDisplay logsDisplay="" containerRef={logsContainerRef} />
+									</div>
+									<output className="sr-only"><Trans>Loading...</Trans></output>
+								</>
+							) : (
+								<output className="flex min-h-28 items-center justify-center rounded-md bg-muted/40 p-3 text-sm text-muted-foreground">
+									{logsStatus === "error" ? <Trans>Failed to load logs.</Trans> : <Trans>No logs found.</Trans>}
+								</output>
+							)}
+							{logs && logsStatus === "error" && (
+								<output className="mt-2 block text-sm text-destructive"><Trans>Failed to load logs.</Trans></output>
+							)}
 						</div>
 					)}
 
@@ -760,18 +768,15 @@ const SystemdTableRow = memo(function SystemdTableRow({
 	row,
 	virtualRow,
 	openSheet,
-	isOpening,
 }: {
 	row: Row<SystemdRecord>
 	virtualRow: VirtualItem
 	openSheet: (service: SystemdRecord) => void
-	isOpening: boolean
 }) {
 	return (
 		<TableRow
 			data-state={row.getIsSelected() && "selected"}
 			className="cursor-pointer transition-opacity"
-			aria-busy={isOpening}
 			onClick={() => openSheet(row.original)}
 		>
 			{row.getVisibleCells().map((cell) => (
@@ -782,14 +787,7 @@ const SystemdTableRow = memo(function SystemdTableRow({
 						height: virtualRow.size,
 					}}
 				>
-					{cell.column.id === "name" && isOpening ? (
-						<div className="flex items-center">
-							<LoaderCircleIcon className="size-4 animate-spin shrink-0" />
-							{flexRender(cell.column.columnDef.cell, cell.getContext())}
-						</div>
-					) : (
-						flexRender(cell.column.columnDef.cell, cell.getContext())
-					)}
+					{flexRender(cell.column.columnDef.cell, cell.getContext())}
 				</TableCell>
 			))}
 		</TableRow>
