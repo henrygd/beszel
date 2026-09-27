@@ -13,13 +13,15 @@ import {
 	type VisibilityState,
 } from "@tanstack/react-table"
 import { useVirtualizer, type VirtualItem } from "@tanstack/react-virtual"
-import { LoaderCircleIcon } from "lucide-react"
+import { LoaderCircleIcon, MaximizeIcon, RefreshCwIcon } from "lucide-react"
 import { listenKeys } from "nanostores"
 import { memo, type ReactNode, useEffect, useMemo, useRef, useState } from "react"
 import { getStatusColor, systemdTableCols } from "@/components/systemd-table/systemd-table-columns"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Card, CardHeader, CardTitle } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { LogsDisplay, LogsFullscreenDialog } from "@/components/logs-display"
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet"
 import { TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { pb } from "@/lib/api"
@@ -28,6 +30,8 @@ import { $allSystemsById } from "@/lib/stores"
 import { cn, decimalString, formatBytes, useBrowserStorage } from "@/lib/utils"
 import type { SystemdRecord, SystemdServiceDetails } from "@/types"
 import { Separator } from "../ui/separator"
+
+const syntaxTheme = "github-dark-dimmed"
 
 export default function SystemdTable({ systemId }: { systemId?: string }) {
 	const loadTime = Date.now()
@@ -266,9 +270,21 @@ function SystemdSheet({
 	systemId?: string
 }) {
 	const service = activeService.current
+	const targetSystemId = systemId ?? service?.system
 	const [details, setDetails] = useState<SystemdServiceDetails | null>(null)
 	const [isLoading, setIsLoading] = useState(false)
 	const [error, setError] = useState<string | null>(null)
+	const [logs, setLogs] = useState("")
+	const [isLoadingLogs, setIsLoadingLogs] = useState(false)
+	const [logsFullscreenOpen, setLogsFullscreenOpen] = useState(false)
+	const logsContainerRef = useRef<HTMLDivElement>(null)
+	const logsRequestId = useRef(0)
+
+	const scrollLogsToBottom = () => {
+		if (logsContainerRef.current) {
+			logsContainerRef.current.scrollTo({ top: logsContainerRef.current.scrollHeight })
+		}
+	}
 
 	useEffect(() => {
 		if (!sheetOpen || !service) {
@@ -283,7 +299,7 @@ function SystemdSheet({
 
 		pb.send<{ details: SystemdServiceDetails }>("/api/beszel/systemd/info", {
 			query: {
-				system: systemId,
+				system: targetSystemId,
 				service: service.name,
 			},
 		})
@@ -310,7 +326,53 @@ function SystemdSheet({
 		return () => {
 			cancelled = true
 		}
-	}, [sheetOpen, service, systemId])
+	}, [sheetOpen, service, targetSystemId])
+
+	const loadLogs = async () => {
+		if (!service || !targetSystemId) return
+
+		const requestId = ++logsRequestId.current
+		setIsLoadingLogs(true)
+		try {
+			const [{ highlighter }, { logs }] = await Promise.all([
+				import("@/lib/shiki"),
+				pb.send<{ logs: string }>("/api/beszel/systemd/logs", {
+					requestKey: null,
+					query: {
+						system: targetSystemId,
+						service: service.name,
+					},
+				}),
+			])
+			if (requestId !== logsRequestId.current) return
+			setLogs(logs ? highlighter.codeToHtml(logs, { lang: "log", theme: syntaxTheme }) : "")
+		} catch (err) {
+			if (requestId !== logsRequestId.current) return
+			console.error(err)
+			setLogs("")
+		} finally {
+			if (requestId === logsRequestId.current) setIsLoadingLogs(false)
+		}
+	}
+
+	useEffect(() => {
+		setLogs("")
+		if (!sheetOpen || !service || !targetSystemId) {
+			setIsLoadingLogs(false)
+			setLogsFullscreenOpen(false)
+			return
+		}
+		loadLogs()
+		return () => {
+			logsRequestId.current++
+		}
+	}, [sheetOpen, service, targetSystemId])
+
+	useEffect(() => {
+		if (logs) {
+			setTimeout(scrollLogsToBottom, 20)
+		}
+	}, [logs])
 
 	if (!service) return null
 
@@ -433,19 +495,50 @@ function SystemdSheet({
 
 	return (
 		<Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
-			<SheetContent className="w-full sm:max-w-220 p-6 overflow-y-auto">
+			<LogsFullscreenDialog
+				open={logsFullscreenOpen && !!logs}
+				onOpenChange={setLogsFullscreenOpen}
+				logsDisplay={logs}
+				name={service.name}
+				onRefresh={loadLogs}
+				isRefreshing={isLoadingLogs}
+			/>
+			<SheetContent className="w-full min-w-0 sm:max-w-220 p-6 overflow-y-auto">
 				<SheetHeader className="p-0">
 					<SheetTitle>
 						<Trans>Service Details</Trans>
 					</SheetTitle>
 				</SheetHeader>
-				<div className="grid gap-6">
-					{isLoading && (
-						<div className="flex items-center gap-2 text-sm text-muted-foreground">
-							<LoaderCircleIcon className="size-4 animate-spin" />
-							<Trans>Loading...</Trans>
+				<div className="grid min-w-0 grid-cols-[minmax(0,1fr)] gap-6">
+					{logs && (
+						<div className="min-w-0">
+							<div className="flex items-center mb-3">
+								<h3 className="text-sm font-medium">
+									<Trans>Logs</Trans>
+								</h3>
+								<Button
+									variant="ghost"
+									size="sm"
+									onClick={loadLogs}
+									className="h-8 w-8 p-0 ms-auto"
+									disabled={isLoadingLogs}
+								>
+									<RefreshCwIcon className={cn("size-4 transition-transform duration-300", isLoadingLogs && "animate-spin")} />
+								</Button>
+								<Button
+									variant="ghost"
+									size="sm"
+									onClick={() => setLogsFullscreenOpen(true)}
+									className="h-8 w-8 p-0"
+									aria-label={t`Logs`}
+								>
+									<MaximizeIcon className="size-4" />
+								</Button>
+							</div>
+							<LogsDisplay logsDisplay={logs} containerRef={logsContainerRef} />
 						</div>
 					)}
+
 					{error && (
 						<Alert className="border-destructive/50 text-destructive dark:border-destructive/60 dark:text-destructive">
 							<AlertTitle>
@@ -453,6 +546,12 @@ function SystemdSheet({
 							</AlertTitle>
 							<AlertDescription>{error}</AlertDescription>
 						</Alert>
+					)}
+					{isLoading && (
+						<div className="flex items-center gap-2 text-sm text-muted-foreground">
+							<LoaderCircleIcon className="size-4 animate-spin" />
+							<Trans>Loading...</Trans>
+						</div>
 					)}
 
 					<div>
@@ -605,6 +704,7 @@ function SystemdSheet({
 							</table>
 						</div>
 					</div>
+
 				</div>
 			</SheetContent>
 		</Sheet>

@@ -3,6 +3,7 @@
 package agent
 
 import (
+	"errors"
 	"os"
 	"strings"
 	"testing"
@@ -28,6 +29,32 @@ func TestUnescapeServiceName(t *testing.T) {
 		t.Run(test.input, func(t *testing.T) {
 			result := unescapeServiceName(test.input)
 			assert.Equal(t, test.expected, result)
+		})
+	}
+}
+
+func TestLimitedBuffer(t *testing.T) {
+	buffer := limitedBuffer{limit: 5}
+
+	n, err := buffer.Write([]byte("abcdef"))
+	assert.Equal(t, 5, n)
+	assert.ErrorIs(t, err, errSystemdLogLimitReached)
+	assert.Equal(t, "abcde", buffer.String())
+
+	n, err = buffer.Write([]byte("g"))
+	assert.Zero(t, n)
+	assert.True(t, errors.Is(err, errSystemdLogLimitReached))
+}
+
+func TestServiceUnitName(t *testing.T) {
+	tests := map[string]string{
+		"nginx":         "nginx.service",
+		"nginx.service": "nginx.service",
+		"backup.timer":  "backup.timer",
+	}
+	for input, want := range tests {
+		t.Run(input, func(t *testing.T) {
+			assert.Equal(t, want, serviceUnitName(input))
 		})
 	}
 }

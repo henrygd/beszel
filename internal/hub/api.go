@@ -202,6 +202,8 @@ func (h *Hub) registerApiRoutes(se *core.ServeEvent) error {
 	apiAuth.POST("/zfs/refresh", h.refreshZfsData).BindFunc(excludeReadOnlyRole)
 	// get systemd service details
 	apiAuth.GET("/systemd/info", h.getSystemdInfo)
+	// get recent logs for a systemd service
+	apiAuth.GET("/systemd/logs", h.getSystemdLogs)
 	// /containers routes
 	if enabled, _ := utils.GetEnv("CONTAINER_DETAILS"); enabled != "false" {
 		// get container logs
@@ -443,6 +445,35 @@ func (h *Hub) getSystemdInfo(e *core.RequestEvent) error {
 	}
 	e.Response.Header().Set("Cache-Control", "public, max-age=60")
 	return e.JSON(http.StatusOK, map[string]any{"details": details})
+}
+
+// getSystemdLogs handles GET /api/beszel/systemd/logs requests.
+func (h *Hub) getSystemdLogs(e *core.RequestEvent) error {
+	query := e.Request.URL.Query()
+	systemID := query.Get("system")
+	serviceName := query.Get("service")
+
+	if systemID == "" || serviceName == "" {
+		return e.BadRequestError("Invalid system or service parameter", nil)
+	}
+	system, err := h.sm.GetSystem(systemID)
+	if err != nil || !system.HasUser(e.App, e.Auth) {
+		return e.NotFoundError("", nil)
+	}
+	// Only fetch logs for services that are currently monitored on this system.
+	_, err = e.App.FindFirstRecordByFilter("systemd_services", "system = {:system} && name = {:name}", dbx.Params{
+		"system": systemID,
+		"name":   serviceName,
+	})
+	if err != nil {
+		return e.NotFoundError("", err)
+	}
+
+	logs, err := system.FetchSystemdLogsFromAgent(serviceName)
+	if err != nil {
+		return e.JSON(http.StatusOK, map[string]string{"logs": ""})
+	}
+	return e.JSON(http.StatusOK, map[string]string{"logs": logs})
 }
 
 // refreshSmartData handles POST /api/beszel/smart/refresh requests

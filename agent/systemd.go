@@ -3,12 +3,15 @@
 package agent
 
 import (
+	"bytes"
 	"context"
 	"errors"
+	"fmt"
 	"log/slog"
 	"maps"
 	"math"
 	"os"
+	"os/exec"
 	"strconv"
 	"strings"
 	"sync"
@@ -20,6 +23,27 @@ import (
 )
 
 var errNoActiveTime = errors.New("no active time")
+var errSystemdLogLimitReached = errors.New("systemd log size limit reached")
+
+const systemdLogsTail = 200
+
+// limitedBuffer bounds command output before it is sent over the agent connection.
+type limitedBuffer struct {
+	bytes.Buffer
+	limit int
+}
+
+func (b *limitedBuffer) Write(p []byte) (int, error) {
+	remaining := b.limit - b.Len()
+	if remaining <= 0 {
+		return 0, errSystemdLogLimitReached
+	}
+	if len(p) > remaining {
+		_, _ = b.Buffer.Write(p[:remaining])
+		return remaining, errSystemdLogLimitReached
+	}
+	return b.Buffer.Write(p)
+}
 
 // systemdManager manages the collection of systemd service statistics.
 type systemdManager struct {
@@ -232,6 +256,14 @@ func (sm *systemdManager) updateServiceStats(conn *dbus.Conn, unit dbus.UnitStat
 	return service, nil
 }
 
+// serviceUnitName preserves monitored timer units and defaults bare names to services.
+func serviceUnitName(name string) string {
+	if strings.HasSuffix(name, ".service") || strings.HasSuffix(name, ".timer") {
+		return name
+	}
+	return name + ".service"
+}
+
 // getServiceDetails collects extended information for a specific systemd service.
 func (sm *systemdManager) getServiceDetails(serviceName string) (systemd.ServiceDetails, error) {
 	conn, err := dbus.NewSystemConnectionContext(context.Background())
@@ -240,10 +272,7 @@ func (sm *systemdManager) getServiceDetails(serviceName string) (systemd.Service
 	}
 	defer conn.Close()
 
-	unitName := serviceName
-	if !strings.HasSuffix(unitName, ".service") {
-		unitName += ".service"
-	}
+	unitName := serviceUnitName(serviceName)
 
 	ctx := context.Background()
 	props, err := conn.GetUnitPropertiesContext(ctx, unitName)
@@ -276,6 +305,37 @@ func (sm *systemdManager) getServiceDetails(serviceName string) (systemd.Service
 	}
 
 	return details, nil
+}
+
+// getServiceLogs returns the newest journal entries for a service. journalctl
+// receives the unit name as an argument (rather than through a shell), so a
+// service name can never alter the command being run.
+func (sm *systemdManager) getServiceLogs(serviceName string) (string, error) {
+	unitName := serviceUnitName(serviceName)
+
+	ctx, cancel := context.WithTimeout(context.Background(), 2100*time.Millisecond)
+	defer cancel()
+
+	cmd := exec.CommandContext(ctx, "journalctl", "--quiet", "--no-pager", "--output=short-iso", "--unit", unitName, "--lines", strconv.Itoa(systemdLogsTail))
+	output := limitedBuffer{limit: maxTotalLogSize}
+	cmd.Stdout = &output
+	stderr := limitedBuffer{limit: 1024}
+	cmd.Stderr = &stderr
+	if err := cmd.Run(); err != nil {
+		if errors.Is(err, errSystemdLogLimitReached) {
+			return output.String(), nil
+		}
+		if ctx.Err() != nil {
+			return "", ctx.Err()
+		}
+		message := strings.TrimSpace(stderr.String())
+		if message != "" {
+			return "", fmt.Errorf("journalctl failed: %s", message)
+		}
+		return "", fmt.Errorf("journalctl failed: %w", err)
+	}
+
+	return output.String(), nil
 }
 
 // unescapeServiceName unescapes systemd service names that contain C-style escape sequences like \x2d

@@ -901,6 +901,11 @@ else
     echo "Adding beszel to disk group"
     usermod -aG disk beszel
   fi
+  # Grant journal access on both fresh installs and upgrades of existing services.
+  if getent group systemd-journal >/dev/null 2>&1; then
+    echo "Adding beszel to systemd-journal group"
+    usermod -aG systemd-journal beszel
+  fi
 fi
 
 INSTALL_STEP="creating installation directories"

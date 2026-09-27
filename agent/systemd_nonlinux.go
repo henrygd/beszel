@@ -36,3 +36,7 @@ func (sm *systemdManager) getFailedServiceCount() uint16 {
 func (sm *systemdManager) getServiceDetails(string) (systemd.ServiceDetails, error) {
 	return nil, errors.New("systemd manager unavailable")
 }
+
+func (sm *systemdManager) getServiceLogs(string) (string, error) {
+	return "", errors.New("systemd manager unavailable")
+}
