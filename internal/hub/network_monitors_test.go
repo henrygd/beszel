@@ -174,6 +174,39 @@ func TestGenerateMonitorID(t *testing.T) {
 			},
 			expected: "84167969",
 		},
+		{
+			name:     "DNS monitor on example.com with server 1.1.1.1",
+			systemID: "sys999",
+			config: monitor.Config{
+				Protocol: "dns",
+				Target:   "example.com",
+				Server:   "1.1.1.1",
+				Interval: 30,
+			},
+			expected: "2175898b",
+		},
+		{
+			name:     "DNS monitor on example.com with different server",
+			systemID: "sys999",
+			config: monitor.Config{
+				Protocol: "dns",
+				Target:   "example.com",
+				Server:   "8.8.8.8",
+				Interval: 30,
+			},
+			expected: "ebcd8b33",
+		},
+		{
+			name:     "DNS monitor on example.com with no server (system resolver)",
+			systemID: "sys999",
+			config: monitor.Config{
+				Protocol: "dns",
+				Target:   "example.com",
+				Server:   "",
+				Interval: 30,
+			},
+			expected: "19476a7",
+		},
 	}
 
 	for _, tt := range tests {
@@ -199,6 +232,7 @@ func TestCopyMonitorToNewRecordDropsResultFields(t *testing.T) {
 		"target":   "https://example.com",
 		"protocol": "http",
 		"port":     443,
+		"server":   "1.1.1.1",
 		"interval": 60,
 		"enabled":  true,
 		"res":      1200,
@@ -206,6 +240,7 @@ func TestCopyMonitorToNewRecordDropsResultFields(t *testing.T) {
 		"resMin1h": 900,
 		"resMax1h": 1600,
 		"loss1h":   5,
+		"certInfo": map[string]any{"expires": 1800000000000},
 		"updated":  "2026-04-29 12:00:00.000Z",
 	})
 
@@ -215,7 +250,9 @@ func TestCopyMonitorToNewRecordDropsResultFields(t *testing.T) {
 	assert.Equal(t, "https://example.com", newRecord.GetString("target"))
 	assert.Equal(t, "http", newRecord.GetString("protocol"))
 	assert.Equal(t, 443, newRecord.GetInt("port"))
+	assert.Equal(t, "1.1.1.1", newRecord.GetString("server"))
 	assert.True(t, newRecord.GetBool("enabled"))
+	assert.Contains(t, []string{"", "null"}, newRecord.GetString("certInfo"))
 	assert.Zero(t, newRecord.GetFloat("res"))
 	assert.Zero(t, newRecord.GetFloat("resAvg1h"))
 	assert.Zero(t, newRecord.GetFloat("resMin1h"))
