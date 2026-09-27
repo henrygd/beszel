@@ -1,5 +1,5 @@
 import { chartTimeData } from "@/lib/utils"
-import { getMonitorStats } from "@/lib/network-monitor-utils"
+import { clearFailedResponse, getMonitorStats, withMonitorGaps } from "@/lib/network-monitor-utils"
 import type {
 	ChartTimes,
 	MonitorStats,
@@ -7,7 +7,7 @@ import type {
 	NetworkMonitorStatsRecord,
 	RawMonitorStatsRecord,
 } from "@/types"
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 import { appendData } from "@/components/routes/system/chart-data"
 import { pb, getPbTimestamp } from "@/lib/api"
 import { toast } from "@/components/ui/use-toast"
@@ -157,12 +157,15 @@ export function useNetworkMonitors(props: UseNetworkMonitorsProps) {
 interface UseNetworkMonitorStatsProps {
 	systemId: string
 	monitorId: string
+	/** Monitor probe interval in seconds, used to tell missing data apart from slow probes */
+	interval: number
 	chartTime: ChartTimes
 	enabled?: boolean
 }
 
+/** Returns the monitor's stats with empty records inserted where data is missing (see withMonitorGaps). */
 export function useNetworkMonitorStats(props: UseNetworkMonitorStatsProps) {
-	const { systemId, monitorId, chartTime, enabled = true } = props
+	const { systemId, monitorId, interval, chartTime, enabled = true } = props
 	const [monitorStats, setMonitorStats] = useState<NetworkMonitorStatsRecord[]>([])
 	// pending raw events to be merged (keyed by monitor+created)
 	const pendingRaw = useRef(new Map<string, RawMonitorStatsRecord>())
@@ -275,7 +278,7 @@ export function useNetworkMonitorStats(props: UseNetworkMonitorStatsProps) {
 				(data: { Monitors: NetworkMonitorStatsRecord["stats"] }) => {
 					const monitorStats = data.Monitors?.[monitorId]
 					if (cancelled || !monitorStats) return
-					const stats = { created: Date.now(), stats: { [monitorId]: monitorStats } }
+					const stats = { created: Date.now(), stats: { [monitorId]: clearFailedResponse(monitorStats) } }
 					const newStats = appendCacheValue(monitorId, "rt", [stats], 120)
 					setMonitorStats(newStats)
 				},
@@ -291,7 +294,10 @@ export function useNetworkMonitorStats(props: UseNetworkMonitorStatsProps) {
 		}
 	}, [chartTime, systemId, monitorId, enabled])
 
-	return monitorStats
+	return useMemo(
+		() => withMonitorGaps(monitorStats, { id: monitorId, interval }, chartTimeData[chartTime].expectedInterval),
+		[monitorStats, monitorId, interval, chartTime]
+	)
 }
 
 async function fetchMonitors(system?: string) {
