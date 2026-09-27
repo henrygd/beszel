@@ -6,6 +6,7 @@ import {
 	flexRender,
 	getCoreRowModel,
 	getFilteredRowModel,
+	getPaginationRowModel,
 	getSortedRowModel,
 	type Row,
 	type SortingState,
@@ -13,8 +14,8 @@ import {
 	useReactTable,
 	type VisibilityState,
 } from "@tanstack/react-table"
-import { useVirtualizer, type VirtualItem } from "@tanstack/react-virtual"
 import { memo, type RefObject, useEffect, useRef, useState } from "react"
+import { DataTablePagination, usePagination } from "@/components/ui/data-table-pagination"
 import { Input } from "@/components/ui/input"
 import { TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { pb } from "@/lib/api"
@@ -61,6 +62,7 @@ export default function ContainersTable({ systemId }: { systemId?: string }) {
 
 	const [rowSelection, setRowSelection] = useState({})
 	const [globalFilter, setGlobalFilter] = useState("")
+	const { pagination, onPaginationChange, resetPageIndex } = usePagination()
 
 	useEffect(() => {
 		function fetchData(systemId?: string) {
@@ -124,7 +126,13 @@ export default function ContainersTable({ systemId }: { systemId?: string }) {
 		getCoreRowModel: getCoreRowModel(),
 		getSortedRowModel: getSortedRowModel(),
 		getFilteredRowModel: getFilteredRowModel(),
-		onSortingChange: setSorting,
+		getPaginationRowModel: getPaginationRowModel(),
+		autoResetPageIndex: false,
+		onPaginationChange,
+		onSortingChange: (updater) => {
+			setSorting(updater)
+			resetPageIndex()
+		},
 		onColumnFiltersChange: setColumnFilters,
 		onColumnVisibilityChange: setColumnVisibility,
 		onRowSelectionChange: setRowSelection,
@@ -139,8 +147,12 @@ export default function ContainersTable({ systemId }: { systemId?: string }) {
 			columnVisibility,
 			rowSelection,
 			globalFilter,
+			pagination,
 		},
-		onGlobalFilterChange: setGlobalFilter,
+		onGlobalFilterChange: (value) => {
+			setGlobalFilter(value)
+			resetPageIndex()
+		},
 		globalFilterFn: (row, _columnId, filterValue) => {
 			const container = row.original
 			const systemName = $allSystemsById.get()[container.system]?.name ?? ""
@@ -178,7 +190,7 @@ export default function ContainersTable({ systemId }: { systemId?: string }) {
 						<Input
 							placeholder={t`Filter...`}
 							value={globalFilter}
-							onChange={(e) => setGlobalFilter(e.target.value)}
+							onChange={(e) => table.setGlobalFilter(e.target.value)}
 							className="ps-4 pe-10 w-full"
 						/>
 						{globalFilter && (
@@ -188,7 +200,7 @@ export default function ContainersTable({ systemId }: { systemId?: string }) {
 								size="icon"
 								aria-label={t`Clear`}
 								className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 text-muted-foreground"
-								onClick={() => setGlobalFilter("")}
+								onClick={() => table.setGlobalFilter("")}
 							>
 								<XIcon className="h-4 w-4" />
 							</Button>
@@ -199,6 +211,7 @@ export default function ContainersTable({ systemId }: { systemId?: string }) {
 			<div className="rounded-md">
 				<AllContainersTable table={table} rows={rows} colLength={visibleColumns.length} data={data} />
 			</div>
+			<DataTablePagination table={table} showSelected={false} />
 		</Card>
 	)
 }
@@ -214,8 +227,6 @@ const AllContainersTable = memo(function AllContainersTable({
 	colLength: number
 	data: ContainerRecord[] | undefined
 }) {
-	// The virtualizer will need a reference to the scrollable container element
-	const scrollRef = useRef<HTMLDivElement>(null)
 	const activeContainer = useRef<ContainerRecord | null>(null)
 	const [sheetOpen, setSheetOpen] = useState(false)
 	const openSheet = (container: ContainerRecord) => {
@@ -223,50 +234,26 @@ const AllContainersTable = memo(function AllContainersTable({
 		setSheetOpen(true)
 	}
 
-	const virtualizer = useVirtualizer<HTMLDivElement, HTMLTableRowElement>({
-		count: rows.length,
-		estimateSize: () => 54,
-		getScrollElement: () => scrollRef.current,
-		overscan: 5,
-	})
-	const virtualRows = virtualizer.getVirtualItems()
-
-	const paddingTop = Math.max(0, virtualRows[0]?.start ?? 0 - virtualizer.options.scrollMargin)
-	const paddingBottom = Math.max(0, virtualizer.getTotalSize() - (virtualRows[virtualRows.length - 1]?.end ?? 0))
-
 	return (
-		<div
-			className={cn(
-				"h-min max-h-[calc(100dvh-17rem)] max-w-full relative overflow-auto border rounded-md",
-				// don't set min height if there are less than 2 rows, do set if we need to display the empty state
-				(!rows.length || rows.length > 2) && "min-h-50"
-			)}
-			ref={scrollRef}
-		>
-			{/* add header height to table size */}
-			<div style={{ height: `${virtualizer.getTotalSize() + 48}px`, paddingTop, paddingBottom }}>
-				<table className="text-sm w-full h-full text-nowrap">
-					<ContainersTableHead table={table} />
-					<TableBody>
-						{rows.length ? (
-							virtualRows.map((virtualRow) => {
-								const row = rows[virtualRow.index]
-								return <ContainerTableRow key={row.id} row={row} virtualRow={virtualRow} openSheet={openSheet} />
-							})
-						) : (
-							<TableRow>
-								<TableCell colSpan={colLength} className="h-37 text-center pointer-events-none">
-									{data ? (
-										<Trans>No results.</Trans>
-									) : (
-										<LoaderCircleIcon className="animate-spin size-10 opacity-60 mx-auto" />
-									)}
-								</TableCell>
-							</TableRow>
-						)}
-					</TableBody>
-				</table>
-			</div>
+		<div className="max-w-full relative overflow-auto border rounded-md">
+			<table className="text-sm w-full h-full text-nowrap">
+				<ContainersTableHead table={table} />
+				<TableBody>
+					{rows.length ? (
+						rows.map((row) => <ContainerTableRow key={row.id} row={row} openSheet={openSheet} />)
+					) : (
+						<TableRow>
+							<TableCell colSpan={colLength} className="h-37 text-center pointer-events-none">
+								{data ? (
+									<Trans>No results.</Trans>
+								) : (
+									<LoaderCircleIcon className="animate-spin size-10 opacity-60 mx-auto" />
+								)}
+							</TableCell>
+						</TableRow>
+					)}
+				</TableBody>
+			</table>
 			<ContainerSheet sheetOpen={sheetOpen} setSheetOpen={setSheetOpen} activeContainer={activeContainer} />
 		</div>
 	)
@@ -479,11 +466,9 @@ function ContainersTableHead({ table }: { table: TableType<ContainerRecord> }) {
 
 const ContainerTableRow = memo(function ContainerTableRow({
 	row,
-	virtualRow,
 	openSheet,
 }: {
 	row: Row<ContainerRecord>
-	virtualRow: VirtualItem
 	openSheet: (container: ContainerRecord) => void
 }) {
 	return (
@@ -497,7 +482,7 @@ const ContainerTableRow = memo(function ContainerTableRow({
 					key={cell.id}
 					className="py-0 ps-4.5"
 					style={{
-						height: virtualRow.size,
+						height: 54,
 						width: cell.column.getSize(),
 					}}
 				>

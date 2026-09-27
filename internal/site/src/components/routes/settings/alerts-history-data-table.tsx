@@ -7,19 +7,11 @@ import {
 	getFilteredRowModel,
 	getPaginationRowModel,
 	getSortedRowModel,
-	type PaginationState,
 	type SortingState,
 	useReactTable,
 	type VisibilityState,
 } from "@tanstack/react-table"
-import {
-	ChevronLeftIcon,
-	ChevronRightIcon,
-	ChevronsLeftIcon,
-	ChevronsRightIcon,
-	DownloadIcon,
-	Trash2Icon,
-} from "lucide-react"
+import { DownloadIcon, Trash2Icon } from "lucide-react"
 import { memo, useEffect, useState } from "react"
 import {
 	AlertDialog,
@@ -34,14 +26,13 @@ import {
 } from "@/components/ui/alert-dialog"
 import { Button, buttonVariants } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
+import { DataTablePagination, usePagination } from "@/components/ui/data-table-pagination"
 import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { useToast } from "@/components/ui/use-toast"
 import { alertInfo } from "@/lib/alerts"
 import { pb } from "@/lib/api"
-import { cn, formatDuration, formatShortDate, useBrowserStorage } from "@/lib/utils"
+import { cn, formatDuration, formatShortDate } from "@/lib/utils"
 import type { AlertsHistoryRecord } from "@/types"
 import { alertsHistoryColumns } from "../../alerts-history-columns"
 
@@ -67,12 +58,7 @@ export default function AlertsHistoryDataTable() {
 	const [globalFilter, setGlobalFilter] = useState("")
 	const { toast } = useToast()
 	const [deleteOpen, setDeleteDialogOpen] = useState(false)
-	
-	// Store pagination preference in local storage
-	const [pagination, setPagination] = useBrowserStorage<PaginationState>("ah-pagination", {
-		pageIndex: 0,
-		pageSize: 10,
-	})
+	const { pagination, onPaginationChange } = usePagination()
 
 	useEffect(() => {
 		let unsubscribe: (() => void) | undefined
@@ -143,7 +129,7 @@ export default function AlertsHistoryDataTable() {
 		onColumnFiltersChange: setColumnFilters,
 		onColumnVisibilityChange: setColumnVisibility,
 		onRowSelectionChange: setRowSelection,
-		onPaginationChange: setPagination,
+		onPaginationChange,
 		state: {
 			sorting,
 			columnFilters,
@@ -312,84 +298,7 @@ export default function AlertsHistoryDataTable() {
 					</TableBody>
 				</Table>
 			</div>
-			<div className="flex items-center justify-between ps-1 tabular-nums">
-				<div className="text-muted-foreground hidden flex-1 text-sm lg:flex">
-					<Trans>
-						{table.getFilteredSelectedRowModel().rows.length} of {table.getFilteredRowModel().rows.length} row(s)
-						selected.
-					</Trans>
-				</div>
-				<div className="flex w-full items-center gap-8 lg:w-fit my-3">
-					<div className="hidden items-center gap-2 lg:flex">
-						<Label htmlFor="rows-per-page" className="text-sm font-medium">
-							<Trans>Rows per page</Trans>
-						</Label>
-						<Select
-							value={`${table.getState().pagination.pageSize}`}
-							onValueChange={(value) => {
-								table.setPageSize(Number(value));
-							}}
-						>
-							<SelectTrigger className="w-18" id="rows-per-page">
-								<SelectValue placeholder={table.getState().pagination.pageSize} />
-							</SelectTrigger>
-							<SelectContent side="top">
-								{[10, 20, 50, 100, 200].map((pageSize) => (
-									<SelectItem key={pageSize} value={`${pageSize}`}>
-										{pageSize}
-									</SelectItem>
-								))}
-							</SelectContent>
-						</Select>
-					</div>
-					<div className="flex w-fit items-center justify-center text-sm font-medium">
-						<Trans>
-							Page {table.getState().pagination.pageIndex + 1} of {table.getPageCount()}
-						</Trans>
-					</div>
-					<div className="ms-auto flex items-center gap-2 lg:ms-0">
-						<Button
-							variant="outline"
-							className="hidden size-9 p-0 lg:flex"
-							onClick={() => table.setPageIndex(0)}
-							disabled={!table.getCanPreviousPage()}
-						>
-							<span className="sr-only">Go to first page</span>
-							<ChevronsLeftIcon className="size-5" />
-						</Button>
-						<Button
-							variant="outline"
-							className="size-9"
-							size="icon"
-							onClick={() => table.previousPage()}
-							disabled={!table.getCanPreviousPage()}
-						>
-							<span className="sr-only">Go to previous page</span>
-							<ChevronLeftIcon className="size-5" />
-						</Button>
-						<Button
-							variant="outline"
-							className="size-9"
-							size="icon"
-							onClick={() => table.nextPage()}
-							disabled={!table.getCanNextPage()}
-						>
-							<span className="sr-only">Go to next page</span>
-							<ChevronRightIcon className="size-5" />
-						</Button>
-						<Button
-							variant="outline"
-							className="hidden size-9 lg:flex"
-							size="icon"
-							onClick={() => table.setPageIndex(table.getPageCount() - 1)}
-							disabled={!table.getCanNextPage()}
-						>
-							<span className="sr-only">Go to last page</span>
-							<ChevronsRightIcon className="size-5" />
-						</Button>
-					</div>
-				</div>
-			</div>
+			<DataTablePagination table={table} alwaysShow />
 		</div>
 	)
 }
