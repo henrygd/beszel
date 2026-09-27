@@ -66,6 +66,8 @@ type Stats struct {
 	WiFi              map[string]int8      `json:"wf,omitempty" cbor:"40,keyasint,omitempty"` // RSSI dBm keyed by interface; unavailable readings omitted
 	// Per-interface packet rates, all per second: [packets sent, packets recv, errors out, errors in, drops out, drops in]
 	NetworkInterfacePackets map[string][6]float64 `json:"nip,omitempty" cbor:"41,keyasint,omitempty"`
+	Conntrack               [2]uint64             `json:"ct,omitzero" cbor:"42,keyasint,omitzero"` // [entries, table max]
+	MaxConntrack            uint64                `json:"ctm,omitzero" cbor:"-"`                   // peak entries
 }
 
 // ZfsPool holds per-pool ZFS metrics for a single collection interval.

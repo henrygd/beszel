@@ -370,6 +370,27 @@ func TestAverageSystemStatsSlice_NetworkInterfacePacketsAbsent(t *testing.T) {
 	assert.Nil(t, result.NetworkInterfacePackets)
 }
 
+func TestAverageSystemStatsSlice_Conntrack(t *testing.T) {
+	input := []system.Stats{
+		{Cpu: 10.0, Conntrack: [2]uint64{100, 1000}},
+		// older agents or systems without conntrack don't send it
+		{Cpu: 20.0},
+		{Cpu: 30.0, Conntrack: [2]uint64{300, 2000}, MaxConntrack: 900},
+	}
+
+	result := records.AverageSystemStatsSlice(input)
+
+	// entries averaged over records that have conntrack, table max and peak are maxed
+	assert.Equal(t, [2]uint64{200, 2000}, result.Conntrack)
+	assert.Equal(t, uint64(900), result.MaxConntrack)
+}
+
+func TestAverageSystemStatsSlice_ConntrackAbsent(t *testing.T) {
+	result := records.AverageSystemStatsSlice([]system.Stats{{Cpu: 10.0}, {Cpu: 20.0}})
+	assert.Equal(t, [2]uint64{}, result.Conntrack)
+	assert.Zero(t, result.MaxConntrack)
+}
+
 func TestAverageSystemStatsSlice_ExtraFs(t *testing.T) {
 	input := []system.Stats{
 		{

@@ -3,6 +3,8 @@
 package agent
 
 import (
+	"os"
+	"path/filepath"
 	"testing"
 	"time"
 
@@ -547,4 +549,21 @@ func TestApplyNetworkTotals(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestUpdateConntrack(t *testing.T) {
+	procDir := t.TempDir()
+	netfilterDir := filepath.Join(procDir, "sys", "net", "netfilter")
+	require.NoError(t, os.MkdirAll(netfilterDir, 0o755))
+	t.Setenv("HOST_PROC", procDir)
+
+	// module not loaded: files missing, field left empty
+	var stats system.Stats
+	updateConntrack(&stats)
+	assert.Equal(t, [2]uint64{}, stats.Conntrack)
+
+	require.NoError(t, os.WriteFile(filepath.Join(netfilterDir, "nf_conntrack_count"), []byte("1234\n"), 0o644))
+	require.NoError(t, os.WriteFile(filepath.Join(netfilterDir, "nf_conntrack_max"), []byte("262144\n"), 0o644))
+	updateConntrack(&stats)
+	assert.Equal(t, [2]uint64{1234, 262144}, stats.Conntrack)
 }

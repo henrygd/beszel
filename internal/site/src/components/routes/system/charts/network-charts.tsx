@@ -170,6 +170,69 @@ export function NetworkErrorsChart({ chartData, grid, dataEmpty, maxValues, syst
 	)
 }
 
+/** Conntrack entries and table size for a record, using peak entries when showing max values */
+function conntrackUsage(data: SystemStatsRecord, showMax: boolean) {
+	const ct = data?.stats?.ct
+	if (!ct?.[1]) return undefined
+	return { entries: showMax ? (data.stats.ctm ?? ct[0]) : ct[0], tableMax: ct[1] }
+}
+
+export function ConntrackChart({
+	chartData,
+	grid,
+	dataEmpty,
+	showMax,
+	isLongerChart,
+	maxValues,
+	systemStats,
+}: {
+	chartData: ChartData
+	grid: boolean
+	dataEmpty: boolean
+	showMax: boolean
+	isLongerChart: boolean
+	maxValues: boolean
+	systemStats: SystemStatsRecord[]
+}) {
+	// only Linux agents with the nf_conntrack module loaded send `ct`
+	if (!systemStats.at(-1)?.stats?.ct) {
+		return null
+	}
+
+	return (
+		<ChartCard
+			empty={dataEmpty}
+			grid={grid}
+			title={t`Conntrack`}
+			cornerEl={isLongerChart ? <SelectAvgMax max={maxValues} /> : null}
+			description={t`Connection tracking table usage`}
+		>
+			<AreaChartDefault
+				chartData={chartData}
+				maxToggled={showMax}
+				dataPoints={[
+					{
+						label: t`Usage`,
+						dataKey: (data) => {
+							const usage = conntrackUsage(data, showMax)
+							return usage && (usage.entries / usage.tableMax) * 100
+						},
+						color: 1,
+						opacity: 0.35,
+					},
+				]}
+				tickFormatter={(val) => `${toFixedFloat(val, 2)}%`}
+				contentFormatter={({ value, payload }) => {
+					const usage = conntrackUsage(payload, showMax)
+					if (!usage) return `${decimalString(value)}%`
+					return `${decimalString(value)}% (${usage.entries.toLocaleString()} / ${usage.tableMax.toLocaleString()})`
+				}}
+				domain={pinnedAxisDomain()}
+			/>
+		</ChartCard>
+	)
+}
+
 export function ContainerNetworkChart({
 	chartData,
 	grid,

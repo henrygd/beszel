@@ -81,12 +81,24 @@ func (a *Agent) updateNetworkStats(cacheTimeMs uint16, systemStats *system.Stats
 
 	a.ensureNetworkInterfacesMap(systemStats)
 
+	updateConntrack(systemStats)
+
 	if netIO, err := psutilNet.IOCounters(true); err == nil {
 		nis, msElapsed := a.loadAndTickNetBaseline(cacheTimeMs)
 		totalBytesSent, totalBytesRecv := a.sumAndTrackPerNicDeltas(cacheTimeMs, msElapsed, netIO, systemStats)
 		bytesSentPerSecond, bytesRecvPerSecond := a.computeBytesPerSecond(msElapsed, totalBytesSent, totalBytesRecv, nis)
 		a.applyNetworkTotals(cacheTimeMs, netIO, systemStats, nis, totalBytesSent, totalBytesRecv, bytesSentPerSecond, bytesRecvPerSecond)
 	}
+}
+
+// updateConntrack records netfilter conntrack table usage. Only available on
+// Linux with the nf_conntrack module loaded; left empty otherwise.
+func updateConntrack(systemStats *system.Stats) {
+	filterStats, err := psutilNet.FilterCounters()
+	if err != nil || len(filterStats) == 0 || filterStats[0].ConnTrackMax <= 0 {
+		return
+	}
+	systemStats.Conntrack = [2]uint64{uint64(max(filterStats[0].ConnTrackCount, 0)), uint64(filterStats[0].ConnTrackMax)}
 }
 
 func (a *Agent) initializeNetIoStats() {

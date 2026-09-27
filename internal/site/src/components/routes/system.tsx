@@ -9,7 +9,13 @@ import { CpuChart, ContainerCpuChart } from "./system/charts/cpu-charts"
 import { MemoryChart, ContainerMemoryChart, SwapChart } from "./system/charts/memory-charts"
 import { RootDiskCharts, ExtraFsCharts } from "./system/charts/disk-charts"
 import { ZfsCharts } from "./system/charts/storage-pool-charts"
-import { BandwidthChart, ContainerNetworkChart, NetworkErrorsChart, PacketsChart } from "./system/charts/network-charts"
+import {
+	BandwidthChart,
+	ConntrackChart,
+	ContainerNetworkChart,
+	NetworkErrorsChart,
+	PacketsChart,
+} from "./system/charts/network-charts"
 import { TemperatureChart, FanChart, BatteryChart } from "./system/charts/sensor-charts"
 import { WiFiChart } from "./system/charts/wifi-chart"
 import { GpuPowerChart, GpuCharts } from "./system/charts/gpu-charts"
@@ -131,6 +137,7 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 
 					<PacketsChart {...coreProps} systemStats={systemStats} />
 					<NetworkErrorsChart {...coreProps} systemStats={systemStats} />
+					<ConntrackChart {...coreProps} systemStats={systemStats} />
 
 					<SwapChart chartData={chartData} grid={grid} dataEmpty={dataEmpty} systemStats={systemStats} />
 
@@ -229,6 +236,7 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 							<div className="grid xl:grid-cols-2 gap-4">
 								<PacketsChart {...coreProps} systemStats={systemStats} />
 								<NetworkErrorsChart {...coreProps} systemStats={systemStats} />
+								<ConntrackChart {...coreProps} systemStats={systemStats} />
 								<WiFiChart system={system} {...coreProps} />
 							</div>
 							{hasNetworkMonitors && <LazyNetworkMonitorsTable systemId={system.id} />}
