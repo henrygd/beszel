@@ -470,7 +470,7 @@ func TestWebSocketClient_HandleHubRequest(t *testing.T) {
 				Data:   cbor.RawMessage{},
 			}
 
-			err := client.handleHubRequest(hubRequest, nil)
+			err := client.handleHubRequest(hubRequest, nil, nil)
 
 			if tc.expectError {
 				assert.Error(t, err)
@@ -530,6 +530,18 @@ func TestWebSocketClient_Close(t *testing.T) {
 	assert.NotPanics(t, func() {
 		client.Close()
 	})
+}
+
+func TestWebSocketClient_IgnoresStaleClose(t *testing.T) {
+	agent := createTestAgent(t)
+	agent.connectionManager.eventChan = make(chan ConnectionEvent, 1)
+	current := &gws.Conn{}
+	client := &WebSocketClient{agent: agent, Conn: current, hubVerified: true}
+
+	client.OnClose(&gws.Conn{}, nil)
+	assert.Same(t, current, client.getConn())
+	assert.True(t, client.hubVerified)
+	assert.Empty(t, agent.connectionManager.eventChan)
 }
 
 // TestWebSocketClient_ConnectRateLimit tests connection rate limiting

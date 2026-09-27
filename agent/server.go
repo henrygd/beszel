@@ -34,11 +34,26 @@ type ServerOptions struct {
 // and begins listening for connections. Returns an error if the server
 // is already running or if there's an issue starting the server.
 func (a *Agent) StartServer(opts ServerOptions) error {
+	server, listener, err := a.prepareSSHServer(opts)
+	if err != nil {
+		return err
+	}
+	return a.serveSSHServer(server, listener)
+}
+
+var errSSHServerRunning = errors.New("server already started")
+
+// prepareSSHServer binds the listener before Serve starts so a concurrent stop
+// can always close it, including when the WebSocket wins the connection race.
+func (a *Agent) prepareSSHServer(opts ServerOptions) (*ssh.Server, net.Listener, error) {
+	a.serverMu.Lock()
+	defer a.serverMu.Unlock()
+
 	if disableSSH, _ := utils.GetEnv("DISABLE_SSH"); disableSSH == "true" {
-		return errors.New("SSH disabled")
+		return nil, nil, errors.New("SSH disabled")
 	}
 	if a.server != nil {
-		return errors.New("server already started")
+		return nil, nil, errSSHServerRunning
 	}
 
 	slog.Info("Starting SSH server", "addr", opts.Addr, "network", opts.Network)
@@ -46,16 +61,15 @@ func (a *Agent) StartServer(opts ServerOptions) error {
 	if opts.Network == "unix" {
 		// remove existing socket file if it exists
 		if err := os.Remove(opts.Addr); err != nil && !os.IsNotExist(err) {
-			return err
+			return nil, nil, err
 		}
 	}
 
 	// start listening on the address
 	ln, err := net.Listen(opts.Network, opts.Addr)
 	if err != nil {
-		return err
+		return nil, nil, err
 	}
-	defer ln.Close()
 
 	// base config (limit to allowed algorithms)
 	config := &gossh.ServerConfig{
@@ -65,10 +79,8 @@ func (a *Agent) StartServer(opts ServerOptions) error {
 	config.MACs = common.DefaultMACs
 	config.Ciphers = common.DefaultCiphers
 
-	// set default handler
-	ssh.Handle(a.handleSession)
-
-	a.server = &ssh.Server{
+	server := &ssh.Server{
+		Handler: a.handleSession,
 		ServerConfigCallback: func(ctx ssh.Context) *gossh.ServerConfig {
 			return config
 		},
@@ -78,6 +90,7 @@ func (a *Agent) StartServer(opts ServerOptions) error {
 			for _, pubKey := range opts.Keys {
 				if ssh.KeysEqual(key, pubKey) {
 					slog.Info("SSH connected", "addr", remoteAddr)
+					a.connectionManager.sshConnectionOpened(ctx)
 					return true
 				}
 			}
@@ -92,8 +105,20 @@ func (a *Agent) StartServer(opts ServerOptions) error {
 		IdleTimeout: 70 * time.Second,
 	}
 
-	// Start SSH server on the listener
-	return a.server.Serve(ln)
+	a.server = server
+	a.serverListener = ln
+	return server, ln, nil
+}
+
+func (a *Agent) serveSSHServer(server *ssh.Server, listener net.Listener) error {
+	err := server.Serve(listener)
+	a.serverMu.Lock()
+	if a.server == server {
+		a.server = nil
+		a.serverListener = nil
+	}
+	a.serverMu.Unlock()
+	return err
 }
 
 // getHubVersion extracts the hub version from the SSH client version string
@@ -112,8 +137,6 @@ func (a *Agent) getHubVersion(sessionCtx ssh.Context) semver.Version {
 // appropriate encoding format based on hub version, and exits with appropriate
 // status codes.
 func (a *Agent) handleSession(s ssh.Session) {
-	a.connectionManager.eventChan <- SSHConnect
-
 	sessionCtx := s.Context()
 
 	hubVersion := a.getHubVersion(sessionCtx)
@@ -161,12 +184,13 @@ func (a *Agent) handleSSHRequest(w io.Writer, req *common.HubRequest[cbor.RawMes
 	}
 
 	ctx := &HandlerContext{
-		Client:       nil,
-		Agent:        a,
-		Request:      req,
-		RequestID:    nil,
-		HubVerified:  true,
-		SendResponse: sshResponder,
+		Client:         nil,
+		Agent:          a,
+		Request:        req,
+		RequestID:      nil,
+		HubVerified:    true,
+		ConnectionType: system.ConnectionTypeSSH,
+		SendResponse:   sshResponder,
 	}
 
 	if handler, ok := a.handlerRegistry.GetHandler(req.Action); ok {
@@ -181,7 +205,9 @@ func (a *Agent) handleSSHRequest(w io.Writer, req *common.HubRequest[cbor.RawMes
 // handleLegacyStats serves the legacy one-shot stats payload for older hubs
 func (a *Agent) handleLegacyStats(w io.Writer, hubVersion semver.Version) error {
 	stats := a.gatherStats(common.DataRequestOptions{CacheTimeMs: defaultDataCacheTimeMs})
-	return a.writeToSession(w, stats, hubVersion)
+	response := *stats
+	response.Info.ConnectionType = system.ConnectionTypeSSH
+	return a.writeToSession(w, &response, hubVersion)
 }
 
 // writeToSession encodes and writes system statistics to the session.
@@ -258,12 +284,21 @@ func GetNetwork(addr string) string {
 // StopServer stops the SSH server if it's running.
 // It returns an error if the server is not running or if there's an error stopping it.
 func (a *Agent) StopServer() error {
+	a.serverMu.Lock()
 	if a.server == nil {
+		a.serverMu.Unlock()
 		return errors.New("SSH server not running")
 	}
+	server := a.server
+	listener := a.serverListener
+	a.server = nil
+	a.serverListener = nil
+	a.serverMu.Unlock()
 
 	slog.Info("Stopping SSH server")
-	_ = a.server.Close()
-	a.server = nil
+	if listener != nil {
+		_ = listener.Close()
+	}
+	_ = server.Close()
 	return nil
 }
