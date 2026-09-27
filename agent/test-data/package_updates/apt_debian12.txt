@@ -1,0 +1,101 @@
+Reading package lists...
+Building dependency tree...
+Reading state information...
+Calculating upgrade...
+The following packages will be upgraded:
+  base-files bash bsdutils debian-archive-keyring dpkg e2fsprogs gcc-12-base
+  gpgv init-system-helpers libblkid1 libc-bin libc6 libcap2 libcom-err2
+  libext2fs2 libgcc-s1 libgcrypt20 libgnutls30 liblzma5 libmount1
+  libpam-modules libpam-modules-bin libpam-runtime libpam0g libpcre2-8-0
+  libseccomp2 libsmartcols1 libss2 libstdc++6 libsystemd0 libtasn1-6 libudev1
+  libuuid1 login logsave mount passwd perl-base sed tar tzdata usr-is-merged
+  util-linux util-linux-extra
+44 upgraded, 0 newly installed, 0 to remove and 0 not upgraded.
+Inst base-files [12.4+deb12u4] (12.4+deb12u15 Debian:12.15/oldstable [arm64])
+Conf base-files (12.4+deb12u15 Debian:12.15/oldstable [arm64])
+Inst bash [5.2.15-2+b2] (5.2.15-2+b13 Debian:12.15/oldstable [arm64])
+Conf bash (5.2.15-2+b13 Debian:12.15/oldstable [arm64])
+Inst bsdutils [1:2.38.1-5+b1] (1:2.38.1-5+deb12u3 Debian:12.15/oldstable [arm64])
+Conf bsdutils (1:2.38.1-5+deb12u3 Debian:12.15/oldstable [arm64])
+Inst tar [1.34+dfsg-1.2] (1.34+dfsg-1.2+deb12u1 Debian:12.15/oldstable [arm64])
+Conf tar (1.34+dfsg-1.2+deb12u1 Debian:12.15/oldstable [arm64])
+Inst dpkg [1.21.22] (1.21.23 Debian:12.15/oldstable [arm64])
+Conf dpkg (1.21.23 Debian:12.15/oldstable [arm64])
+Inst login [1:4.13+dfsg1-1+b1] (1:4.13+dfsg1-1+deb12u2 Debian:12.15/oldstable [arm64])
+Conf login (1:4.13+dfsg1-1+deb12u2 Debian:12.15/oldstable [arm64])
+Inst perl-base [5.36.0-7+deb12u1] (5.36.0-7+deb12u3 Debian:12.15/oldstable [arm64])
+Conf perl-base (5.36.0-7+deb12u3 Debian:12.15/oldstable [arm64])
+Inst sed [4.9-1] (4.9-1+deb12u1 Debian:12.15/oldstable [arm64])
+Conf sed (4.9-1+deb12u1 Debian:12.15/oldstable [arm64])
+Inst gcc-12-base [12.2.0-14] (12.2.0-14+deb12u1 Debian:12.15/oldstable [arm64]) [libstdc++6:arm64 libgcc-s1:arm64 ]
+Conf gcc-12-base (12.2.0-14+deb12u1 Debian:12.15/oldstable [arm64]) [libstdc++6:arm64 libgcc-s1:arm64 ]
+Inst libgcc-s1 [12.2.0-14] (12.2.0-14+deb12u1 Debian:12.15/oldstable [arm64]) [libstdc++6:arm64 ]
+Conf libgcc-s1 (12.2.0-14+deb12u1 Debian:12.15/oldstable [arm64]) [libstdc++6:arm64 ]
+Inst libstdc++6 [12.2.0-14] (12.2.0-14+deb12u1 Debian:12.15/oldstable [arm64])
+Conf libstdc++6 (12.2.0-14+deb12u1 Debian:12.15/oldstable [arm64])
+Inst libc6 [2.36-9+deb12u3] (2.36-9+deb12u14 Debian:12.15/oldstable [arm64])
+Conf libc6 (2.36-9+deb12u14 Debian:12.15/oldstable [arm64])
+Inst libsmartcols1 [2.38.1-5+b1] (2.38.1-5+deb12u3 Debian:12.15/oldstable [arm64])
+Conf libsmartcols1 (2.38.1-5+deb12u3 Debian:12.15/oldstable [arm64])
+Inst util-linux-extra [2.38.1-5+b1] (2.38.1-5+deb12u3 Debian:12.15/oldstable [arm64])
+Conf util-linux-extra (2.38.1-5+deb12u3 Debian:12.15/oldstable [arm64])
+Inst util-linux [2.38.1-5+b1] (2.38.1-5+deb12u3 Debian:12.15/oldstable [arm64])
+Conf util-linux (2.38.1-5+deb12u3 Debian:12.15/oldstable [arm64])
+Inst usr-is-merged [35] (37~deb12u1 Debian:12.15/oldstable [all])
+Conf usr-is-merged (37~deb12u1 Debian:12.15/oldstable [all])
+Inst init-system-helpers [1.65.2] (1.65.2+deb12u1 Debian:12.15/oldstable [all])
+Conf init-system-helpers (1.65.2+deb12u1 Debian:12.15/oldstable [all])
+Inst libc-bin [2.36-9+deb12u3] (2.36-9+deb12u14 Debian:12.15/oldstable [arm64])
+Conf libc-bin (2.36-9+deb12u14 Debian:12.15/oldstable [arm64])
+Inst libpam0g [1.5.2-6+deb12u1] (1.5.2-6+deb12u2 Debian:12.15/oldstable [arm64])
+Conf libpam0g (1.5.2-6+deb12u2 Debian:12.15/oldstable [arm64])
+Inst libpam-modules-bin [1.5.2-6+deb12u1] (1.5.2-6+deb12u2 Debian:12.15/oldstable [arm64]) [libpam-modules:arm64 on libpam-modules-bin:arm64] [libpam-modules:arm64 ]
+Conf libpam-modules-bin (1.5.2-6+deb12u2 Debian:12.15/oldstable [arm64]) [libpam-modules:arm64 ]
+Inst libpam-modules [1.5.2-6+deb12u1] (1.5.2-6+deb12u2 Debian:12.15/oldstable [arm64])
+Conf libpam-modules (1.5.2-6+deb12u2 Debian:12.15/oldstable [arm64])
+Inst logsave [1.47.0-2] (1.47.0-2+b2 Debian:12.15/oldstable [arm64])
+Inst libext2fs2 [1.47.0-2] (1.47.0-2+b2 Debian:12.15/oldstable [arm64]) [e2fsprogs:arm64 on libext2fs2:arm64] [e2fsprogs:arm64 ]
+Conf libext2fs2 (1.47.0-2+b2 Debian:12.15/oldstable [arm64]) [e2fsprogs:arm64 ]
+Inst e2fsprogs [1.47.0-2] (1.47.0-2+b2 Debian:12.15/oldstable [arm64])
+Inst mount [2.38.1-5+b1] (2.38.1-5+deb12u3 Debian:12.15/oldstable [arm64])
+Inst libpam-runtime [1.5.2-6+deb12u1] (1.5.2-6+deb12u2 Debian:12.15/oldstable [all])
+Conf libpam-runtime (1.5.2-6+deb12u2 Debian:12.15/oldstable [all])
+Inst passwd [1:4.13+dfsg1-1+b1] (1:4.13+dfsg1-1+deb12u2 Debian:12.15/oldstable [arm64])
+Conf passwd (1:4.13+dfsg1-1+deb12u2 Debian:12.15/oldstable [arm64])
+Inst debian-archive-keyring [2023.3+deb12u1] (2023.3+deb12u2 Debian:12.15/oldstable [all])
+Conf debian-archive-keyring (2023.3+deb12u2 Debian:12.15/oldstable [all])
+Inst libgcrypt20 [1.10.1-3] (1.10.1-3+deb12u1 Debian:12.15/oldstable, Debian-Security:12/oldstable-security [arm64])
+Conf libgcrypt20 (1.10.1-3+deb12u1 Debian:12.15/oldstable, Debian-Security:12/oldstable-security [arm64])
+Inst gpgv [2.2.40-1.1] (2.2.40-1.1+deb12u2 Debian:12.15/oldstable [arm64])
+Conf gpgv (2.2.40-1.1+deb12u2 Debian:12.15/oldstable [arm64])
+Inst libblkid1 [2.38.1-5+b1] (2.38.1-5+deb12u3 Debian:12.15/oldstable [arm64])
+Conf libblkid1 (2.38.1-5+deb12u3 Debian:12.15/oldstable [arm64])
+Inst libcap2 [1:2.66-4] (1:2.66-4+deb12u3+b1 Debian:12.15/oldstable [arm64])
+Conf libcap2 (1:2.66-4+deb12u3+b1 Debian:12.15/oldstable [arm64])
+Inst libtasn1-6 [4.19.0-2] (4.19.0-2+deb12u1 Debian:12.15/oldstable, Debian-Security:12/oldstable-security [arm64])
+Conf libtasn1-6 (4.19.0-2+deb12u1 Debian:12.15/oldstable, Debian-Security:12/oldstable-security [arm64])
+Inst libgnutls30 [3.7.9-2+deb12u1] (3.7.9-2+deb12u7 Debian:12.15/oldstable, Debian-Security:12/oldstable-security [arm64])
+Conf libgnutls30 (3.7.9-2+deb12u7 Debian:12.15/oldstable, Debian-Security:12/oldstable-security [arm64])
+Inst liblzma5 [5.4.1-0.2] (5.4.1-1+deb12u2 Debian-Security:12/oldstable-security [arm64])
+Conf liblzma5 (5.4.1-1+deb12u2 Debian-Security:12/oldstable-security [arm64])
+Inst libmount1 [2.38.1-5+b1] (2.38.1-5+deb12u3 Debian:12.15/oldstable [arm64])
+Conf libmount1 (2.38.1-5+deb12u3 Debian:12.15/oldstable [arm64])
+Inst libpcre2-8-0 [10.42-1] (10.42-1+deb12u1 Debian-Security:12/oldstable-security [arm64])
+Conf libpcre2-8-0 (10.42-1+deb12u1 Debian-Security:12/oldstable-security [arm64])
+Inst libseccomp2 [2.5.4-1+b3] (2.5.4-1+deb12u1 Debian:12.15/oldstable [arm64])
+Conf libseccomp2 (2.5.4-1+deb12u1 Debian:12.15/oldstable [arm64])
+Inst libsystemd0 [252.19-1~deb12u1] (252.39-1~deb12u2 Debian:12.15/oldstable [arm64])
+Conf libsystemd0 (252.39-1~deb12u2 Debian:12.15/oldstable [arm64])
+Inst libudev1 [252.19-1~deb12u1] (252.39-1~deb12u2 Debian:12.15/oldstable [arm64])
+Conf libudev1 (252.39-1~deb12u2 Debian:12.15/oldstable [arm64])
+Inst libuuid1 [2.38.1-5+b1] (2.38.1-5+deb12u3 Debian:12.15/oldstable [arm64])
+Conf libuuid1 (2.38.1-5+deb12u3 Debian:12.15/oldstable [arm64])
+Inst tzdata [2023c-5+deb12u1] (2026b-0+deb12u1 Debian:12.15/oldstable [all])
+Inst libcom-err2 [1.47.0-2] (1.47.0-2+b2 Debian:12.15/oldstable [arm64])
+Inst libss2 [1.47.0-2] (1.47.0-2+b2 Debian:12.15/oldstable [arm64])
+Conf logsave (1.47.0-2+b2 Debian:12.15/oldstable [arm64])
+Conf e2fsprogs (1.47.0-2+b2 Debian:12.15/oldstable [arm64])
+Conf mount (2.38.1-5+deb12u3 Debian:12.15/oldstable [arm64])
+Conf tzdata (2026b-0+deb12u1 Debian:12.15/oldstable [all])
+Conf libcom-err2 (1.47.0-2+b2 Debian:12.15/oldstable [arm64])
+Conf libss2 (1.47.0-2+b2 Debian:12.15/oldstable [arm64])
