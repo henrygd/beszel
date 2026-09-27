@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"slices"
 	"strings"
 	"time"
 
@@ -37,7 +38,7 @@ func (dm *dockerManager) checkImageUpdate(image string) (bool, error) {
 	repository := reference.Path(named)
 	tag := named.(reference.Tagged).Tag()
 
-	localDigest, err := dm.inspectImageDigest(image, registry, repository)
+	localDigests, err := dm.inspectImageDigests(image, registry, repository)
 	if err != nil {
 		return false, err
 	}
@@ -47,48 +48,49 @@ func (dm *dockerManager) checkImageUpdate(image string) (bool, error) {
 		return false, err
 	}
 
-	return remoteDigest != localDigest, nil
+	return !slices.Contains(localDigests, remoteDigest), nil
 }
 
-// inspectImageDigest reads Docker's image metadata without using dm.decode.
+// inspectImageDigests reads Docker's image metadata without using dm.decode.
 // The checker runs in the image-discovery goroutine, so it must not hold any
 // of the container statistics locks while waiting on the Docker API.
-func (dm *dockerManager) inspectImageDigest(image, registry, repository string) (string, error) {
+func (dm *dockerManager) inspectImageDigests(image, registry, repository string) ([]string, error) {
 	if dm.client == nil {
-		return "", fmt.Errorf("inspect image %q: Docker client is unavailable", image)
+		return nil, fmt.Errorf("inspect image %q: Docker client is unavailable", image)
 	}
 
 	endpoint := "http://localhost/images/" + url.PathEscape(image) + "/json"
 	resp, err := dm.client.Get(endpoint)
 	if err != nil {
-		return "", fmt.Errorf("inspect image %q: %w", image, err)
+		return nil, fmt.Errorf("inspect image %q: %w", image, err)
 	}
 	defer resp.Body.Close()
 	if resp.StatusCode != http.StatusOK {
-		return "", fmt.Errorf("inspect image %q failed: %s", image, responseStatus(resp))
+		return nil, fmt.Errorf("inspect image %q failed: %s", image, responseStatus(resp))
 	}
 
 	var inspect struct {
 		RepoDigests []string `json:"RepoDigests"`
 	}
 	if err := json.NewDecoder(resp.Body).Decode(&inspect); err != nil {
-		return "", fmt.Errorf("decode image inspect %q: %w", image, err)
+		return nil, fmt.Errorf("decode image inspect %q: %w", image, err)
 	}
 	if len(inspect.RepoDigests) == 0 {
-		return "", fmt.Errorf("inspect image %q returned no repository digests", image)
+		return nil, fmt.Errorf("inspect image %q returned no repository digests", image)
 	}
 
-	localDigest, ok := matchingRepositoryDigest(inspect.RepoDigests, registry, repository)
-	if !ok {
-		return "", fmt.Errorf("inspect image %q returned no valid digest for %s/%s", image, registry, repository)
+	localDigests := matchingRepositoryDigests(inspect.RepoDigests, registry, repository)
+	if len(localDigests) == 0 {
+		return nil, fmt.Errorf("inspect image %q returned no valid digest for %s/%s", image, registry, repository)
 	}
-	return localDigest, nil
+	return localDigests, nil
 }
 
-// matchingRepositoryDigest returns a valid digest belonging to the requested
-// repository. Docker can return multiple RepoDigests for one local image; an
-// unrelated first entry must never be used for the comparison.
-func matchingRepositoryDigest(repoDigests []string, registry, repository string) (string, bool) {
+// matchingRepositoryDigests returns all valid digests belonging to the requested
+// repository. Container engines can return both index and platform manifest digests for one
+// local image, in either order.
+func matchingRepositoryDigests(repoDigests []string, registry, repository string) []string {
+	var digests []string
 	for _, repoDigest := range repoDigests {
 		repoDigest = strings.TrimSpace(repoDigest)
 		at := strings.LastIndexByte(repoDigest, '@')
@@ -108,9 +110,9 @@ func matchingRepositoryDigest(repoDigests []string, registry, repository string)
 		if err != nil {
 			continue
 		}
-		return d.String(), true
+		digests = append(digests, d.String())
 	}
-	return "", false
+	return digests
 }
 
 func sameRegistry(left, right string) bool {
