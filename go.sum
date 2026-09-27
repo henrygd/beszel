@@ -89,8 +89,8 @@ github.com/mdlayher/netlink v1.11.2 h1:HKh2jqe+omdSWcQ88nrT7INE61B0NXfiSPFdgL4Yb
 github.com/mdlayher/netlink v1.11.2/go.mod h1:uT2Yc/QLaZubzDpZIBi9d4GoeLwtp3x1AMeqSRrK2sA=
 github.com/mdlayher/socket v0.6.0 h1:ScZPaAGyO1icQnbFrhPM8mnXyMu9qukC1K4ZoM2IQKU=
 github.com/mdlayher/socket v0.6.0/go.mod h1:q7vozUAnxSqnjHc12Fik5yUKIzfZ8ITCfMkhOtE9z18=
-github.com/mdlayher/wifi v0.8.0 h1:qi73hVANXCYJEsT6t147dMILsx9V6UBNipZw0mPYdu0=
-github.com/mdlayher/wifi v0.8.0/go.mod h1:QHQ211ZKtZKSKssCznixGUOqBcoyBQAuQWSAOnanY4A=
+github.com/mdlayher/wifi v0.9.0 h1:d5mmqw9S2U4f95dcW5wnnUagpI6GJh328/AchVSP4ko=
+github.com/mdlayher/wifi v0.9.0/go.mod h1:Bfkrz+VncrVPaOLcFG/bR9tSY2PbmYNQicWvAZlUZlI=
 github.com/ncruces/go-strftime v1.0.0 h1:HMFp8mLCTPp341M/ZnA4qaf7ZlsbTc+miZjCLOFAw7w=
 github.com/ncruces/go-strftime v1.0.0/go.mod h1:Fwc5htZGVVkseilnfgOVb9mKy6w1naJmn9CehxcKcls=
 github.com/nicholas-fedor/shoutrrr v0.21.0 h1:as/mEwdaZMijCVu0FkTUEXashhvC3Y7C5g9dsXMcmQc=

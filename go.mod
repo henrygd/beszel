@@ -12,7 +12,7 @@ require (
 	github.com/lxzan/gws v1.10.2
 	github.com/mdlayher/genetlink v1.4.0
 	github.com/mdlayher/netlink v1.11.2
-	github.com/mdlayher/wifi v0.8.0
+	github.com/mdlayher/wifi v0.9.0
 	github.com/nicholas-fedor/shoutrrr v0.21.0
 	github.com/opencontainers/go-digest v1.0.0
 	github.com/pocketbase/dbx v1.12.0
