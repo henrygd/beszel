@@ -5,6 +5,7 @@ package agent
 import (
 	"errors"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -47,6 +48,16 @@ func TestLimitedBuffer(t *testing.T) {
 	assert.True(t, errors.Is(err, errSystemdLogLimitReached))
 }
 
+func TestLimitedBufferCapsExecOutput(t *testing.T) {
+	buffer := limitedBuffer{limit: 5}
+	cmd := exec.Command("sh", "-c", "printf 'abcdef'")
+	cmd.Stdout = &buffer
+
+	err := cmd.Run()
+	assert.ErrorIs(t, err, errSystemdLogLimitReached)
+	assert.Equal(t, "abcde", buffer.String())
+}
+
 func TestServiceUnitName(t *testing.T) {
 	tests := map[string]string{
 		"nginx":         "nginx.service",
@@ -67,7 +78,7 @@ func TestCanReadSystemJournal(t *testing.T) {
 		want   bool
 	}{
 		{"readable", "#!/bin/sh\nprintf 'system log\\n'\n", true},
-		{"empty", "#!/bin/sh\nexit 0\n", false},
+		{"empty", "#!/bin/sh\nexit 0\n", true},
 		{"denied", "#!/bin/sh\nexit 1\n", false},
 	}
 	for _, test := range tests {

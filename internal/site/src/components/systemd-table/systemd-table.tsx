@@ -548,6 +548,7 @@ function SystemdSheet({
 									onClick={loadLogs}
 									className="h-8 w-8 p-0 ms-auto"
 									disabled={isLoadingLogs}
+									aria-label={t`Refresh`}
 								>
 									<RefreshCwIcon className={cn("size-4 transition-transform duration-300", isLoadingLogs && "animate-spin")} />
 								</Button>
