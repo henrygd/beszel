@@ -619,7 +619,7 @@ function SystemTagsCell({ system, max }: { system: SystemRecord; max: number }) 
 		<Link
 			href={getPagePath($router, "system", { id: system.id })}
 			tabIndex={-1}
-			className="flex flex-wrap gap-1 relative z-10"
+			className="flex text-nowrap gap-1 relative z-10"
 		>
 			<TagBadgeList tags={tags} max={max} badgeClassName="px-1.5 py-0" />
 		</Link>
