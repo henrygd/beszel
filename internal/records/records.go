@@ -267,6 +267,8 @@ func AverageSystemStatsSlice(records []system.Stats) system.Stats {
 		return sum
 	}
 
+	wifiSums := make(map[string]int)
+	wifiCounts := make(map[string]int)
 	// necessary because uint8 is not big enough for the sum
 	batterySum := 0
 	batteryCount := 0
@@ -285,6 +287,10 @@ func AverageSystemStatsSlice(records []system.Stats) system.Stats {
 	// Accumulate totals
 	for i := range records {
 		stats := &records[i]
+		for id, signal := range stats.WiFi {
+			wifiSums[id] += int(signal)
+			wifiCounts[id]++
+		}
 
 		sum.Cpu += stats.Cpu
 		// accumulate cpu time breakdowns if present
@@ -612,6 +618,14 @@ func AverageSystemStatsSlice(records []system.Stats) system.Stats {
 			avg[i] = twoDecimals(cpuBreakdownSums[i] / count)
 		}
 		sum.CpuBreakdown = avg
+	}
+
+	// RSSI averages exclude records where the interface was absent.
+	if len(wifiSums) > 0 {
+		sum.WiFi = make(map[string]int8, len(wifiSums))
+		for id, total := range wifiSums {
+			sum.WiFi[id] = int8(math.Round(float64(total) / float64(wifiCounts[id])))
+		}
 	}
 
 	return sum

@@ -4,7 +4,7 @@ import { basePath } from "@/components/router"
 import { toast } from "@/components/ui/use-toast"
 import { dynamicActivate, getLocale } from "@/lib/i18n"
 import type { ChartTimes, UserSettings } from "@/types"
-import { $alerts, $allSystemsById, $allSystemsByName, $userSettings } from "./stores"
+import { $alerts, $allSystemsById, $allSystemsByName, $userSettings, hydrateUserSettings } from "./stores"
 import { chartTimeData, debounce } from "./utils"
 
 /** PocketBase JS Client */
@@ -90,7 +90,7 @@ export function queueUserSettings(newSettings: Partial<UserSettings>) {
 export async function updateUserSettings() {
 	try {
 		const req = await pb.collection("user_settings").getFirstListItem("", { fields: "settings" })
-		$userSettings.set(req.settings)
+		hydrateUserSettings(req.settings)
 		dynamicActivate(req.settings.lang || getLocale())
 		return
 	} catch (e) {
@@ -99,7 +99,7 @@ export async function updateUserSettings() {
 	// create user settings if error fetching existing
 	try {
 		const createdSettings = await pb.collection("user_settings").create({ user: pb.authStore.record?.id })
-		$userSettings.set(createdSettings.settings)
+		hydrateUserSettings(createdSettings.settings)
 		dynamicActivate(createdSettings.settings.lang || getLocale())
 	} catch (e) {
 		console.error("create settings", e)
