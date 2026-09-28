@@ -794,6 +794,15 @@ func (sys *System) FetchSystemdInfoFromAgent(serviceName string) (systemd.Servic
 	return result, err
 }
 
+// FetchSystemdLogsFromAgent fetches recent journal entries for a systemd service from the agent.
+func (sys *System) FetchSystemdLogsFromAgent(serviceName string) (string, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	var result string
+	err := sys.request(ctx, common.GetSystemdLogs, common.SystemdLogsRequest{ServiceName: serviceName}, &result)
+	return result, err
+}
+
 // FetchSmartDataFromAgent fetches SMART data from the agent.
 func (sys *System) FetchSmartDataFromAgent() (smart.SmartDataResponse, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
@@ -1009,6 +1018,12 @@ func (s *System) createSSHClient() error {
 // per-operation timeout in runSSHOperation instead (see issue #2041).
 const sshKeepAliveInterval = 30 * time.Second
 
+// sshHandshakeTimeout bounds the SSH handshake after the TCP connection is
+// established. ssh.ClientConfig.Timeout only covers the TCP connect, so a peer
+// that accepts the connection but never sends an SSH banner would otherwise
+// block the updater forever.
+var sshHandshakeTimeout = 10 * time.Second
+
 // dialSSHWithKeepAlive dials an SSH connection like ssh.Dial, but enables TCP
 // keep-alive on the underlying connection so half-open connections are
 // eventually detected by the operating system.
@@ -1021,11 +1036,14 @@ func dialSSHWithKeepAlive(network, addr string, config *ssh.ClientConfig) (*ssh.
 	if err != nil {
 		return nil, err
 	}
+	_ = conn.SetDeadline(time.Now().Add(sshHandshakeTimeout))
 	sshConn, chans, reqs, err := ssh.NewClientConn(conn, addr, config)
 	if err != nil {
 		_ = conn.Close()
 		return nil, err
 	}
+	// clear the handshake deadline so it doesn't apply to the long-lived connection
+	_ = conn.SetDeadline(time.Time{})
 	return ssh.NewClient(sshConn, chans, reqs), nil
 }
 

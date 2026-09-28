@@ -53,6 +53,7 @@ func NewHandlerRegistry() *HandlerRegistry {
 	registry.Register(common.GetContainerInfo, &GetContainerInfoHandler{})
 	registry.Register(common.GetSmartData, &GetSmartDataHandler{})
 	registry.Register(common.GetSystemdInfo, &GetSystemdInfoHandler{})
+	registry.Register(common.GetSystemdLogs, &GetSystemdLogsHandler{})
 	registry.Register(common.SyncNetworkMonitors, &SyncNetworkMonitorsHandler{})
 	registry.Register(common.GetZfsData, &GetZfsDataHandler{})
 	registry.Register(common.GetPackageUpdates, &GetPackageUpdatesHandler{})
@@ -240,6 +241,33 @@ func (h *GetSystemdInfoHandler) Handle(hctx *HandlerContext) error {
 	}
 
 	return hctx.SendResponse(details, hctx.RequestID)
+}
+
+////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
+
+// GetSystemdLogsHandler handles recent systemd service log requests.
+type GetSystemdLogsHandler struct{}
+
+func (h *GetSystemdLogsHandler) Handle(hctx *HandlerContext) error {
+	if hctx.Agent.systemdManager == nil {
+		return errors.ErrUnsupported
+	}
+
+	var req common.SystemdLogsRequest
+	if err := cbor.Unmarshal(hctx.Request.Data, &req); err != nil {
+		return err
+	}
+	if req.ServiceName == "" {
+		return errors.New("service name is required")
+	}
+
+	logs, err := hctx.Agent.systemdManager.getServiceLogs(req.ServiceName)
+	if err != nil {
+		return err
+	}
+
+	return hctx.SendResponse(logs, hctx.RequestID)
 }
 
 ////////////////////////////////////////////////////////////////////////////
