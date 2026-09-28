@@ -8,7 +8,7 @@ msgstr ""
 "Language: ja\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2026-09-28 10:23\n"
+"PO-Revision-Date: 2026-09-28 11:54\n"
 "Last-Translator: \n"
 "Language-Team: Japanese\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
@@ -54,7 +54,7 @@ msgstr "{count, plural, one {{countString} 分} few {{countString} 分} many {{c
 
 #: src/components/network-monitors-table/network-monitors-columns.tsx
 msgid "{daysLeft, plural, one {# day} other {# days}}"
-msgstr ""
+msgstr "{daysLeft, plural, one {# 日} other {# 日}}"
 
 #: src/components/routes/system/charts/disk-charts.tsx
 msgid "{diskName} I/O"
@@ -62,7 +62,7 @@ msgstr "{diskName} の I/O"
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "{numFailed, plural, one {# failed service} other {# failed services}}"
-msgstr ""
+msgstr "{numFailed, plural, one {# 失敗したサービス} other {# 失敗したサービス}}"
 
 #: src/components/routes/system/info-bar.tsx
 msgid "{threads, plural, one {# thread} other {# threads}}"
@@ -70,7 +70,7 @@ msgstr "{threads, plural, one {# スレッド} other {# スレッド}}"
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "{totalCount, plural, one {# service} other {# services}}"
-msgstr ""
+msgstr "{totalCount, plural, one {# サービス} other {# サービス}}"
 
 #: src/lib/utils.ts
 msgid "1 hour"
@@ -1977,7 +1977,7 @@ msgstr "対象"
 #: src/components/network-monitors-table/monitor-dialog.tsx
 #: src/components/network-monitors-table/monitor-dialog.tsx
 msgid "target[,protocol[,port[,interval]]]"
-msgstr ""
+msgstr "target[,protocol[,port[,interval]]]"
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Tasks"
