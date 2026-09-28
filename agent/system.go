@@ -28,6 +28,9 @@ import (
 // Sets initial / non-changing values about the host system
 func (a *Agent) refreshSystemDetails() {
 	a.systemInfo.AgentVersion = beszel.Version
+	// tell the hub not to fall back to SSH while the WebSocket connection is down
+	disableSSH, _ := utils.GetEnv("DISABLE_SSH")
+	a.systemInfo.SSHDisabled = disableSSH == "true"
 
 	// get host info from Docker if available
 	var hostInfo container.HostInfo

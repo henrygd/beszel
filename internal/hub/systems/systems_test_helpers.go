@@ -139,3 +139,8 @@ func (s *System) CreateRecords(data *entities.CombinedData) (*core.Record, error
 func CreateSystemdStatsRecords(app core.App, data []*systemd.Service, systemId string) error {
 	return createSystemdStatsRecords(app, data, systemId)
 }
+
+// TESTING ONLY: SSHDisabled reports whether the hub skips the SSH fallback for this system
+func (sys *System) SSHDisabled() bool {
+	return sys.sshDisabled.Load()
+}

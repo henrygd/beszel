@@ -32,6 +32,7 @@ func TestPauseSystemPreservesAgentVersion(t *testing.T) {
 
 	record.Set("info", system.Info{
 		AgentVersion: "0.20.0",
+		SSHDisabled:  true,
 		Cpu:          42.5,
 		MemPct:       60,
 		Uptime:       3600,
@@ -47,7 +48,55 @@ func TestPauseSystemPreservesAgentVersion(t *testing.T) {
 	assert.Equal(t, "paused", pausedRecord.GetString("status"))
 	var info system.Info
 	require.NoError(t, pausedRecord.UnmarshalJSONField("info", &info))
-	assert.Equal(t, system.Info{AgentVersion: "0.20.0"}, info)
+	assert.Equal(t, system.Info{AgentVersion: "0.20.0", SSHDisabled: true}, info)
+}
+
+func TestSSHDisabledLoadedFromRecord(t *testing.T) {
+	hub, err := tests.NewTestHub(t.TempDir())
+	require.NoError(t, err)
+	defer hub.Cleanup()
+	user, err := tests.CreateUser(hub, "test@example.com", "password")
+	require.NoError(t, err)
+
+	// created before the manager starts, as if saved by a previous hub run
+	record, err := tests.CreateRecord(hub, "systems", map[string]any{
+		"name":   "ssh-disabled-startup",
+		"host":   "localhost",
+		"port":   "33914",
+		"status": "down",
+		"info":   system.Info{SSHDisabled: true},
+		"users":  []string{user.Id},
+	})
+	require.NoError(t, err)
+
+	sm := hub.GetSystemManager()
+	require.NoError(t, sm.Initialize())
+
+	t.Run("on hub startup", func(t *testing.T) {
+		require.Eventually(t, func() bool {
+			sys, err := sm.GetSystemFromStore(record.Id)
+			return err == nil && sys.SSHDisabled()
+		}, 5*time.Second, 50*time.Millisecond)
+	})
+
+	t.Run("when re-added as pending", func(t *testing.T) {
+		record.Set("status", "pending")
+		require.NoError(t, hub.Save(record))
+		sys, err := sm.GetSystemFromStore(record.Id)
+		require.NoError(t, err)
+		assert.True(t, sys.SSHDisabled())
+	})
+
+	t.Run("cleared when agent no longer reports it", func(t *testing.T) {
+		record.Set("info", system.Info{})
+		record.Set("status", "paused")
+		require.NoError(t, hub.Save(record))
+		record.Set("status", "pending")
+		require.NoError(t, hub.Save(record))
+		sys, err := sm.GetSystemFromStore(record.Id)
+		require.NoError(t, err)
+		assert.False(t, sys.SSHDisabled())
+	})
 }
 
 func TestSystemManagerNew(t *testing.T) {

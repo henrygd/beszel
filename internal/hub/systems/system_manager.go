@@ -2,6 +2,7 @@ package systems
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"sync"
@@ -21,6 +22,7 @@ import (
 	"github.com/pocketbase/dbx"
 	"github.com/pocketbase/pocketbase/core"
 	"github.com/pocketbase/pocketbase/tools/store"
+	"github.com/pocketbase/pocketbase/tools/types"
 	"golang.org/x/crypto/ssh"
 )
 
@@ -107,10 +109,23 @@ func (sm *SystemManager) Initialize() error {
 	}
 
 	// Load existing systems from database (excluding paused ones)
-	var systems []*System
-	err = sm.hub.DB().NewQuery("SELECT id, host, port, status FROM systems WHERE status != 'paused'").All(&systems)
-	if err != nil || len(systems) == 0 {
+	var rows []struct {
+		Id     string        `db:"id"`
+		Host   string        `db:"host"`
+		Port   string        `db:"port"`
+		Status string        `db:"status"`
+		Info   types.JSONRaw `db:"info"`
+	}
+	err = sm.hub.DB().NewQuery("SELECT id, host, port, status, info FROM systems WHERE status != 'paused'").All(&rows)
+	if err != nil || len(rows) == 0 {
 		return err
+	}
+	systems := make([]*System, len(rows))
+	for i, row := range rows {
+		var info system.Info
+		_ = json.Unmarshal(row.Info, &info)
+		systems[i] = &System{Id: row.Id, Host: row.Host, Port: row.Port, Status: row.Status}
+		systems[i].sshDisabled.Store(info.SSHDisabled)
 	}
 
 	// Start systems in background with staggered timing
@@ -192,7 +207,7 @@ func (sm *SystemManager) onRecordUpdate(e *core.RecordEvent) error {
 	if e.Record.GetString("status") == paused {
 		var prevInfo system.Info
 		e.Record.UnmarshalJSONField("info", &prevInfo)
-		e.Record.Set("info", system.Info{AgentVersion: prevInfo.AgentVersion})
+		e.Record.Set("info", system.Info{AgentVersion: prevInfo.AgentVersion, SSHDisabled: prevInfo.SSHDisabled})
 	}
 	return e.Next()
 }
@@ -338,8 +353,16 @@ func (sm *SystemManager) AddRecord(record *core.Record, system *System) (err err
 	system.Status = record.GetString("status")
 	system.Host = record.GetString("host")
 	system.Port = record.GetString("port")
+	system.sshDisabled.Store(recordSSHDisabled(record))
 
 	return sm.AddSystem(system)
+}
+
+// recordSSHDisabled reports whether the agent last reported DISABLE_SSH in the record's info.
+func recordSSHDisabled(record *core.Record) bool {
+	var info system.Info
+	_ = record.UnmarshalJSONField("info", &info)
+	return info.SSHDisabled
 }
 
 // AddWebSocketSystem creates and adds a system with an established WebSocket connection.

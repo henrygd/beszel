@@ -6,7 +6,9 @@ import (
 	"context"
 	"testing"
 
+	"github.com/henrygd/beszel/internal/common"
 	"github.com/henrygd/beszel/internal/entities/system"
+	"github.com/stretchr/testify/require"
 )
 
 func TestCombinedData_MigrateDeprecatedFields(t *testing.T) {
@@ -171,4 +173,17 @@ func TestSetDownAfterContextCancelled(t *testing.T) {
 	if sys.Status != up {
 		t.Fatalf("status should be untouched, got %q", sys.Status)
 	}
+}
+
+func TestSSHDisabledSkipsSSHFallback(t *testing.T) {
+	// manager is nil on purpose: any SSH attempt would panic
+	sys := &System{}
+	sys.sshDisabled.Store(true)
+
+	var result string
+	err := sys.request(context.Background(), common.GetContainerInfo, nil, &result)
+	require.ErrorIs(t, err, errSSHDisabled)
+
+	_, err = sys.fetchDataFromAgent(common.DataRequestOptions{})
+	require.ErrorIs(t, err, errSSHDisabled)
 }
