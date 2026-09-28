@@ -103,7 +103,7 @@ func TestGetServiceLogsOnlyMonitoredUnits(t *testing.T) {
 	}
 	t.Setenv("PATH", dir+":"+os.Getenv("PATH"))
 
-	sm := &systemdManager{serviceStatsMap: map[string]*systemd.Service{
+	sm := &systemdManager{logsEnabled: true, serviceStatsMap: map[string]*systemd.Service{
 		"nginx.service":       {Name: "nginx"},
 		"backup.timer":        {Name: "backup.timer"},
 		"foo\\x2dbar.service": {Name: "foo-bar"},
@@ -135,6 +135,26 @@ func TestGetServiceLogsOnlyMonitoredUnits(t *testing.T) {
 			assert.Empty(t, logs)
 		})
 	}
+
+	t.Run("disabled", func(t *testing.T) {
+		sm.logsEnabled = false
+		logs, err := sm.getServiceLogs("nginx")
+		assert.Error(t, err)
+		assert.Empty(t, logs)
+	})
+}
+
+func TestSystemdLogsEnabled(t *testing.T) {
+	dir := t.TempDir()
+	if err := os.WriteFile(filepath.Join(dir, "journalctl"), []byte("#!/bin/sh\nexit 0\n"), 0755); err != nil {
+		t.Fatal(err)
+	}
+	t.Setenv("PATH", dir+":"+os.Getenv("PATH"))
+
+	assert.True(t, systemdLogsEnabled())
+
+	t.Setenv("SKIP_SYSTEMD_LOGS", "true")
+	assert.False(t, systemdLogsEnabled())
 }
 
 func TestUnescapeServiceNameInvalid(t *testing.T) {

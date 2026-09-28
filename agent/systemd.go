@@ -38,6 +38,14 @@ func canReadSystemJournal() bool {
 	return err == nil
 }
 
+// systemdLogsEnabled reports whether service logs can be served to the hub.
+func systemdLogsEnabled() bool {
+	if skip, _ := utils.GetEnv("SKIP_SYSTEMD_LOGS"); skip == "true" {
+		return false
+	}
+	return canReadSystemJournal()
+}
+
 // limitedBuffer bounds command output before it is sent over the agent connection.
 type limitedBuffer struct {
 	buffer bytes.Buffer
@@ -66,6 +74,7 @@ type systemdManager struct {
 	serviceStatsMap map[string]*systemd.Service
 	isRunning       bool
 	hasFreshStats   bool
+	logsEnabled     bool // journal logs can be read and are not disabled via SKIP_SYSTEMD_LOGS
 	patterns        []string
 }
 
@@ -107,6 +116,7 @@ func newSystemdManager() (*systemdManager, error) {
 
 	manager := &systemdManager{
 		serviceStatsMap: make(map[string]*systemd.Service),
+		logsEnabled:     systemdLogsEnabled(),
 		patterns:        getServicePatterns(),
 	}
 
@@ -346,6 +356,9 @@ func (sm *systemdManager) monitoredUnitName(serviceName string) (string, bool) {
 // journalctl receives the unit name as an argument (rather than through a
 // shell), so a service name can never alter the command being run.
 func (sm *systemdManager) getServiceLogs(serviceName string) (string, error) {
+	if !sm.logsEnabled {
+		return "", errors.New("systemd logs disabled")
+	}
 	unitName, ok := sm.monitoredUnitName(serviceName)
 	if !ok {
 		return "", fmt.Errorf("service %q is not monitored", serviceName)
