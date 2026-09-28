@@ -64,6 +64,7 @@ func init() {
 			&core.NumberField{Id: "sts_loss", Name: "loss", Help: "Packet loss percentage, -1 if unknown"},
 			&core.NumberField{Id: "sts_server_id", Name: "server_id", OnlyInt: true},
 			&core.TextField{Id: "sts_server_name", Name: "server_name", Max: 200},
+			&core.URLField{Id: "sts_url", Name: "url"},
 			&core.TextField{Id: "sts_error", Name: "error", Max: 1000, Help: "Set when the run failed; measurements are then empty"},
 		)
 		stats.AddIndex("idx_sts_speedtest_created", false, "`speedtest`, `created`", "")

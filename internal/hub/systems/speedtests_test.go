@@ -71,6 +71,7 @@ func TestUpdateSpeedtestRecords(t *testing.T) {
 	require.NoError(t, err)
 	assert.Equal(t, "no servers", failed.GetString("error"))
 	assert.Equal(t, 42, failed.GetInt("server_id"))
+	assert.Empty(t, failed.GetString("url"))
 	assert.Zero(t, failed.GetFloat("download"))
 	assert.Zero(t, failed.GetFloat("ping"))
 
@@ -85,6 +86,7 @@ func TestUpdateSpeedtestRecords(t *testing.T) {
 	assert.Equal(t, sys.Id, stats.GetString("system"))
 	assert.Equal(t, 50_000_000.0, stats.GetFloat("upload"))
 	assert.Equal(t, 42, stats.GetInt("server_id"))
+	assert.Equal(t, ok.URL, stats.GetString("url"))
 }
 
 func TestGetSpeedtestConfigsForSystem(t *testing.T) {

@@ -185,22 +185,26 @@ export default function SpeedtestsTable({
 	)
 
 	const handleDeleteRequest = useCallback(
-		async (toDelete: SpeedtestRecord[]) => {
-			if (toDelete.length === 1) {
-				await pb.collection("speedtests").delete(toDelete[0].id).catch(showError)
-				return
-			}
-			setPendingDeleteIds(toDelete.map((speedtest) => speedtest.id))
-		},
-		[showError]
+		(toDelete: SpeedtestRecord[]) => setPendingDeleteIds(toDelete.map((speedtest) => speedtest.id)),
+		[]
 	)
+
+	// Server and system names shown when confirming the deletion of a single speedtest.
+	const pendingDelete =
+		pendingDeleteIds.length === 1 ? speedtests.find((st) => st.id === pendingDeleteIds[0]) : undefined
+	const pendingDeleteServer = pendingDelete
+		? pendingDelete.server_name || getSpeedtestServerLabel(pendingDelete) || t`Automatic`
+		: ""
+	const pendingDeleteSystem = pendingDelete ? ($allSystemsById.get()[pendingDelete.system]?.name ?? "") : ""
 
 	const handleBulkDelete = async () => {
 		const ids = pendingDeleteIds
 		setPendingDeleteIds([])
 		try {
 			await runBatch(ids, (batch, id) => batch.collection("speedtests").delete(id))
-			setRowSelection({})
+			if (ids.length > 1) {
+				setRowSelection({})
+			}
 		} catch (err) {
 			showError(err)
 		}
@@ -406,10 +410,23 @@ export default function SpeedtestsTable({
 							<AlertDialogContent>
 								<AlertDialogHeader>
 									<AlertDialogTitle>
-										<Trans>Are you sure?</Trans>
+										{pendingDelete ? (
+											<Trans>
+												Are you sure you want to delete {pendingDeleteServer} from {pendingDeleteSystem}?
+											</Trans>
+										) : (
+											<Trans>Are you sure?</Trans>
+										)}
 									</AlertDialogTitle>
 									<AlertDialogDescription>
-										<Trans>This will permanently delete all selected records from the database.</Trans>
+										{pendingDelete ? (
+											<Trans>
+												This action cannot be undone. This will permanently delete all results for {pendingDeleteServer}{" "}
+												on {pendingDeleteSystem} from the database.
+											</Trans>
+										) : (
+											<Trans>This will permanently delete all selected records from the database.</Trans>
+										)}
 									</AlertDialogDescription>
 								</AlertDialogHeader>
 								<AlertDialogFooter>

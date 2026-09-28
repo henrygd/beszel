@@ -777,5 +777,7 @@ export interface SpeedtestStatsRecord {
 	upload_jitter: number
 	loss: number
 	server_name: string
+	/** Link to the run on speedtest.net; empty for failed runs. */
+	url?: string
 	created: number | null // unix timestamp (ms), null marks a gap
 }

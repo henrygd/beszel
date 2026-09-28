@@ -122,6 +122,7 @@ func (sys *System) updateSpeedtestRecords(app core.App, results map[string]speed
 			"created":     result.RunAt,
 			"server_id":   result.ServerID,
 			"server_name": result.ServerName,
+			"url":         result.URL,
 			"error":       result.Error,
 		})
 		if err := app.SaveNoValidate(stats); err != nil {

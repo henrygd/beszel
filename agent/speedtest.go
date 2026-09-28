@@ -83,6 +83,7 @@ func (sm *SpeedtestManager) SyncSpeedtests(configs []speedtest.Config) {
 	}
 	for id, task := range sm.tasks {
 		if _, exists := newConfigs[id]; !exists {
+			slog.Debug("stopping speedtest task", "id", id)
 			task.cancel()
 			delete(sm.tasks, id)
 		}
@@ -130,6 +131,7 @@ func (sm *SpeedtestManager) DeleteSpeedtest(id string) {
 	sm.mu.Lock()
 	defer sm.mu.Unlock()
 	if task, exists := sm.tasks[id]; exists {
+		slog.Debug("stopping speedtest task", "id", id)
 		task.cancel()
 		delete(sm.tasks, id)
 	}

@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react"
+import { plural } from "@lingui/core/macro"
 import { Trans, useLingui } from "@lingui/react/macro"
 import { useStore } from "@nanostores/react"
 import { pb } from "@/lib/api"
@@ -22,6 +23,10 @@ import { $systems } from "@/lib/stores"
 import { supportsSpeedtests } from "@/lib/utils"
 import { DEFAULT_SPEEDTEST_INTERVAL, MAX_SPEEDTEST_INTERVAL, MIN_SPEEDTEST_INTERVAL } from "@/lib/speedtest-utils"
 import type { SpeedtestRecord } from "@/types"
+import type { ClientResponseError } from "pocketbase"
+
+/** Hub error for a system that already has a speedtest for the chosen server. */
+const DUPLICATE_SPEEDTEST_ERROR = "This system already has a speedtest for this server."
 
 export function AddSpeedtestDialog({ systemId }: { systemId?: string }) {
 	const [open, setOpen] = useState(false)
@@ -92,6 +97,8 @@ function SpeedtestDialogContent({
 	const isEditing = !!speedtest
 	// System and server pairs created in this session, so a retry after a partial failure skips them.
 	const createdPairs = useRef(new Set<string>())
+	// Changing the server replaces the speedtest, which deletes its history.
+	const serverChanged = isEditing && servers[0]?.id !== speedtest.server_id
 
 	// Initialize form fields with speedtest values (if editing) or defaults (if adding).
 	useEffect(() => {
@@ -128,14 +135,29 @@ function SpeedtestDialogContent({
 			if (speedtest) {
 				await pb.collection("speedtests").update(speedtest.id, { ...payload(servers[0]), system: targetSystems[0] })
 			} else {
+				let skipped = 0
 				for (const system of targetSystems) {
 					for (const server of servers) {
 						const pair = `${system}:${server.id}`
 						if (createdPairs.current.has(pair)) continue
-						await pb.collection("speedtests").create({ ...payload(server), system, enabled: true })
+						try {
+							await pb.collection("speedtests").create({ ...payload(server), system, enabled: true })
+						} catch (err) {
+							const { status, message } = err as ClientResponseError
+							if (status !== 400 || message !== DUPLICATE_SPEEDTEST_ERROR) throw err
+							skipped++
+						}
 						createdPairs.current.add(pair)
 					}
 					remainingSystemIds.delete(system)
+				}
+				if (skipped) {
+					toast({
+						title: plural(skipped, {
+							one: "# speedtest already existed and was skipped",
+							other: "# speedtests already existed and were skipped",
+						}),
+					})
 				}
 			}
 			setOpen(false)
@@ -205,6 +227,11 @@ function SpeedtestDialogContent({
 						multiple={!isEditing}
 						disabled={loading}
 					/>
+					{serverChanged && (
+						<p className="text-xs text-red-500">
+							<Trans>Changing the server creates a new speedtest. Its past results will be deleted.</Trans>
+						</p>
+					)}
 					{!isEditing && (
 						<p className="text-xs text-muted-foreground">
 							<Trans>
