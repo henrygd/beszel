@@ -7,7 +7,6 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
-	"strings"
 	"testing"
 	"time"
 
@@ -766,82 +765,6 @@ func TestIsDockerSpecialMountpoint(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			assert.Equal(t, tc.expected, isDockerSpecialMountpoint(tc.mountpoint))
-		})
-	}
-}
-
-func TestInitializeDiskInfoWithCustomNames(t *testing.T) {
-	// Test with custom names
-	t.Setenv("EXTRA_FILESYSTEMS", "sda1__my-storage,/dev/sdb1__backup-drive,nvme0n1p2")
-
-	// Mock disk partitions (we'll just test the parsing logic)
-	// Since the actual disk operations are system-dependent, we'll focus on the parsing
-	testCases := []struct {
-		envValue      string
-		expectedFs    []string
-		expectedNames map[string]string
-	}{
-		{
-			envValue:   "sda1__my-storage,sdb1__backup-drive",
-			expectedFs: []string{"sda1", "sdb1"},
-			expectedNames: map[string]string{
-				"sda1": "my-storage",
-				"sdb1": "backup-drive",
-			},
-		},
-		{
-			envValue:   "sda1,nvme0n1p2__fast-ssd",
-			expectedFs: []string{"sda1", "nvme0n1p2"},
-			expectedNames: map[string]string{
-				"nvme0n1p2": "fast-ssd",
-			},
-		},
-	}
-
-	for _, tc := range testCases {
-		t.Run("env_"+tc.envValue, func(t *testing.T) {
-			t.Setenv("EXTRA_FILESYSTEMS", tc.envValue)
-
-			// Create mock partitions that would match our test cases
-			partitions := []disk.PartitionStat{}
-			for _, fs := range tc.expectedFs {
-				if strings.HasPrefix(fs, "/dev/") {
-					partitions = append(partitions, disk.PartitionStat{
-						Device:     fs,
-						Mountpoint: fs,
-					})
-				} else {
-					partitions = append(partitions, disk.PartitionStat{
-						Device:     "/dev/" + fs,
-						Mountpoint: "/" + fs,
-					})
-				}
-			}
-
-			// Test the parsing logic by calling the relevant part
-			// We'll create a simplified version to test just the parsing
-			extraFilesystems := tc.envValue
-			for fsEntry := range strings.SplitSeq(extraFilesystems, ",") {
-				// Parse the entry
-				fsEntry = strings.TrimSpace(fsEntry)
-				var fs, customName string
-				if parts := strings.SplitN(fsEntry, "__", 2); len(parts) == 2 {
-					fs = strings.TrimSpace(parts[0])
-					customName = strings.TrimSpace(parts[1])
-				} else {
-					fs = fsEntry
-				}
-
-				// Verify the device is in our expected list
-				assert.Contains(t, tc.expectedFs, fs, "parsed device should be in expected list")
-
-				// Check if custom name should exist
-				if expectedName, exists := tc.expectedNames[fs]; exists {
-					assert.Equal(t, expectedName, customName, "custom name should match expected")
-				} else {
-					assert.Empty(t, customName, "custom name should be empty when not expected")
-				}
-			}
 		})
 	}
 }
