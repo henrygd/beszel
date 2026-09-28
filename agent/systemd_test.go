@@ -10,6 +10,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/henrygd/beszel/internal/entities/systemd"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -89,6 +90,49 @@ func TestCanReadSystemJournal(t *testing.T) {
 			}
 			t.Setenv("PATH", dir+":"+os.Getenv("PATH"))
 			assert.Equal(t, test.want, canReadSystemJournal())
+		})
+	}
+}
+
+func TestGetServiceLogsOnlyMonitoredUnits(t *testing.T) {
+	// Fake journalctl prints the unit it was asked for
+	dir := t.TempDir()
+	script := "#!/bin/sh\nwhile [ $# -gt 0 ]; do [ \"$1\" = --unit ] && printf '%s' \"$2\"; shift; done\n"
+	if err := os.WriteFile(filepath.Join(dir, "journalctl"), []byte(script), 0755); err != nil {
+		t.Fatal(err)
+	}
+	t.Setenv("PATH", dir+":"+os.Getenv("PATH"))
+
+	sm := &systemdManager{serviceStatsMap: map[string]*systemd.Service{
+		"nginx.service":       {Name: "nginx"},
+		"backup.timer":        {Name: "backup.timer"},
+		"foo\\x2dbar.service": {Name: "foo-bar"},
+		"getty@tty1.service":  {Name: "getty@tty1"},
+	}}
+
+	tests := []struct {
+		name string
+		want string
+	}{
+		{"nginx", "nginx.service"},
+		{"nginx.service", "nginx.service"},
+		{"backup.timer", "backup.timer"},
+		{"foo-bar", "foo\\x2dbar.service"},
+		{"getty@tty1", "getty@tty1.service"},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			logs, err := sm.getServiceLogs(test.name)
+			assert.NoError(t, err)
+			assert.Equal(t, test.want, logs)
+		})
+	}
+
+	for _, name := range []string{"sshd", "*", "*.service", "nginx*"} {
+		t.Run("rejects "+name, func(t *testing.T) {
+			logs, err := sm.getServiceLogs(name)
+			assert.Error(t, err)
+			assert.Empty(t, logs)
 		})
 	}
 }

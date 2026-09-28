@@ -41,7 +41,7 @@ func canReadSystemJournal() bool {
 // limitedBuffer bounds command output before it is sent over the agent connection.
 type limitedBuffer struct {
 	buffer bytes.Buffer
-	limit int
+	limit  int
 }
 
 func (b *limitedBuffer) Write(p []byte) (int, error) {
@@ -322,11 +322,34 @@ func (sm *systemdManager) getServiceDetails(serviceName string) (systemd.Service
 	return details, nil
 }
 
-// getServiceLogs returns the newest journal entries for a service. journalctl
-// receives the unit name as an argument (rather than through a shell), so a
-// service name can never alter the command being run.
-func (sm *systemdManager) getServiceLogs(serviceName string) (string, error) {
+// monitoredUnitName resolves a service name to the unit name of a monitored
+// service. Only monitored units are accepted so a request can't read other
+// journal entries (journalctl --unit also accepts glob patterns).
+func (sm *systemdManager) monitoredUnitName(serviceName string) (string, bool) {
+	sm.Lock()
+	defer sm.Unlock()
+
 	unitName := serviceUnitName(serviceName)
+	if _, ok := sm.serviceStatsMap[unitName]; ok {
+		return unitName, true
+	}
+	// Service names are unescaped, so match against the stored name as well.
+	for unitName, service := range sm.serviceStatsMap {
+		if service.Name == serviceName {
+			return unitName, true
+		}
+	}
+	return "", false
+}
+
+// getServiceLogs returns the newest journal entries for a monitored service.
+// journalctl receives the unit name as an argument (rather than through a
+// shell), so a service name can never alter the command being run.
+func (sm *systemdManager) getServiceLogs(serviceName string) (string, error) {
+	unitName, ok := sm.monitoredUnitName(serviceName)
+	if !ok {
+		return "", fmt.Errorf("service %q is not monitored", serviceName)
+	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 2100*time.Millisecond)
 	defer cancel()
