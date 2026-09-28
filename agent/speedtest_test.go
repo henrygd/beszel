@@ -96,8 +96,8 @@ func TestSpeedtestManagerSync(t *testing.T) {
 
 		sm.SyncSpeedtests([]speedtest.Config{{ID: "a", ServerID: 1, Interval: 15}, {ID: "b", ServerID: 2, Interval: 15}, {ID: ""}})
 		assert.Len(t, sm.tasks, 2)
-		// First runs are staggered but capped.
-		time.Sleep(speedtestMaxStartDelay + time.Second)
+		// First runs land on each speedtest's slot within one interval.
+		time.Sleep(15*time.Minute + time.Second)
 		synctest.Wait()
 		assert.Len(t, sm.GetResults(), 2)
 
@@ -122,18 +122,84 @@ func TestSpeedtestManagerSync(t *testing.T) {
 	})
 }
 
-func TestSpeedtestManagerIntervalFloor(t *testing.T) {
+func TestSpeedtestManagerSlotSchedule(t *testing.T) {
 	synctest.Test(t, func(t *testing.T) {
-		var runs atomic.Int32
+		var mu sync.Mutex
+		var runTimes []time.Time
 		sm := newSpeedtestManagerWithRunner(func(context.Context, uint32) (speedtest.Result, error) {
-			runs.Add(1)
+			mu.Lock()
+			runTimes = append(runTimes, time.Now())
+			mu.Unlock()
 			return speedtest.Result{}, nil
 		})
 		defer sm.Stop()
+
+		// Interval 0 is raised to the minimum.
+		interval := time.Duration(speedtest.MinInterval) * time.Minute
+		offset := speedtestSlotOffset("a", interval)
+		start := time.Now()
 		require.NoError(t, sm.UpsertSpeedtest(speedtest.Config{ID: "a", Interval: 0}, true))
-		time.Sleep(10*time.Duration(speedtest.MinInterval)*time.Minute - time.Second)
+		time.Sleep(10 * interval)
 		synctest.Wait()
-		// One immediate run plus nine more at the minimum interval.
-		assert.Equal(t, int32(10), runs.Load())
+
+		mu.Lock()
+		defer mu.Unlock()
+		require.GreaterOrEqual(t, len(runTimes), 10)
+		assert.Equal(t, start, runTimes[0], "runNow runs immediately")
+		assert.GreaterOrEqual(t, runTimes[1].Sub(start), interval/2, "no scheduled run right after runNow")
+		for i, runAt := range runTimes[1:] {
+			assert.Zero(t, (time.Duration(runAt.UnixNano())-offset)%interval, "run %d is off its slot", i+1)
+			if i > 0 {
+				assert.Equal(t, interval, runAt.Sub(runTimes[i]))
+			}
+		}
 	})
+}
+
+func TestSpeedtestManagerSlotSurvivesRestart(t *testing.T) {
+	synctest.Test(t, func(t *testing.T) {
+		runAt := make(chan time.Time, 10)
+		runner := func(context.Context, uint32) (speedtest.Result, error) {
+			runAt <- time.Now()
+			return speedtest.Result{}, nil
+		}
+		cfg := speedtest.Config{ID: "a", Interval: 30}
+
+		sm := newSpeedtestManagerWithRunner(runner)
+		sm.SyncSpeedtests([]speedtest.Config{cfg})
+		first := <-runAt
+		sm.Stop()
+
+		// Restart partway through the interval: the next run keeps the same slot.
+		time.Sleep(7 * time.Minute)
+		sm = newSpeedtestManagerWithRunner(runner)
+		defer sm.Stop()
+		sm.SyncSpeedtests([]speedtest.Config{cfg})
+		assert.Equal(t, 30*time.Minute, (<-runAt).Sub(first))
+	})
+}
+
+func TestSpeedtestSlotOffset(t *testing.T) {
+	interval := 15 * time.Minute
+	offsets := map[time.Duration]bool{}
+	for _, id := range []string{"a", "b", "c", "d", "e"} {
+		offset := speedtestSlotOffset(id, interval)
+		assert.Equal(t, offset, speedtestSlotOffset(id, interval), "offset must be stable")
+		assert.GreaterOrEqual(t, offset, time.Duration(0))
+		assert.Less(t, offset, interval)
+		assert.Zero(t, offset%time.Second)
+		offsets[offset] = true
+	}
+	assert.Greater(t, len(offsets), 1, "different IDs should spread across the interval")
+}
+
+func TestNextSpeedtestSlot(t *testing.T) {
+	interval := 15 * time.Minute
+	offset := 3*time.Minute + 27*time.Second
+	base := time.Date(2026, 1, 1, 10, 0, 0, 0, time.UTC)
+
+	assert.Equal(t, base.Add(offset), nextSpeedtestSlot(base, interval, offset).UTC())
+	// A time exactly on a slot yields the following slot.
+	assert.Equal(t, base.Add(offset+interval), nextSpeedtestSlot(base.Add(offset), interval, offset).UTC())
+	assert.Equal(t, base.Add(offset+interval), nextSpeedtestSlot(base.Add(offset+time.Second), interval, offset).UTC())
 }

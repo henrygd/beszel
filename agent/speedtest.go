@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"hash/fnv"
 	"log/slog"
 	"sync"
 	"time"
@@ -11,10 +12,6 @@ import (
 	"github.com/henrygd/beszel/internal/entities/monitor"
 	"github.com/henrygd/beszel/internal/entities/speedtest"
 )
-
-// speedtestMaxStartDelay caps the initial stagger so long intervals don't
-// postpone the first result for hours after the agent starts.
-const speedtestMaxStartDelay = 5 * time.Minute
 
 // SpeedtestManager manages scheduled speedtests. Runs are serialized across all
 // speedtests, since concurrent tests would compete for the same bandwidth.
@@ -166,17 +163,59 @@ func (sm *SpeedtestManager) Stop() {
 	}
 }
 
-// schedule starts the task's timer. With runNow, the first run starts
-// immediately and the next one follows a full interval later.
+// schedule starts the task's timer. Runs land on wall-clock slots offset by a
+// hash of the speedtest ID, so a speedtest keeps its slot across restarts and
+// agents sharing an uplink don't all test at once. With runNow, the first run
+// starts immediately and any slot within half an interval of it is skipped.
 func (sm *SpeedtestManager) schedule(task *speedtestTask, runNow bool) {
 	interval := time.Duration(max(task.config.Interval, speedtest.MinInterval)) * time.Minute
-	delay := min(getStagger(interval.Milliseconds()), speedtestMaxStartDelay)
+	offset := speedtestSlotOffset(task.config.ID, interval)
+	from := time.Now()
 	if runNow {
-		delay = interval
+		from = from.Add(interval / 2)
 		go sm.run(task)
 	}
-	slog.Debug("starting speedtest task", "id", task.config.ID, "delay", delay, "interval", interval)
-	go runMonitorSchedule(task.ctx, interval, delay, func() { sm.run(task) })
+	slog.Debug("starting speedtest task", "id", task.config.ID, "offset", offset, "interval", interval)
+	go runSpeedtestSchedule(task.ctx, interval, offset, from, func() { sm.run(task) })
+}
+
+// speedtestSlotOffset returns a stable offset within the interval, in whole
+// seconds, derived from the speedtest ID.
+func speedtestSlotOffset(id string, interval time.Duration) time.Duration {
+	h := fnv.New64a()
+	h.Write([]byte(id))
+	return time.Duration(h.Sum64()%uint64(interval/time.Second)) * time.Second
+}
+
+// nextSpeedtestSlot returns the first slot strictly after t. Slots are
+// anchored to the Unix epoch, so they don't depend on when the agent started.
+func nextSpeedtestSlot(t time.Time, interval, offset time.Duration) time.Time {
+	elapsed := time.Duration(t.UnixNano()) - offset
+	return time.Unix(0, int64(elapsed-elapsed%interval+interval+offset))
+}
+
+// runSpeedtestSchedule runs at each slot after from. A run that overruns
+// later slots skips them rather than building a backlog.
+func runSpeedtestSchedule(ctx context.Context, interval, offset time.Duration, from time.Time, run func()) {
+	for {
+		next := nextSpeedtestSlot(from, interval, offset)
+		timer := time.NewTimer(time.Until(next))
+		select {
+		case <-ctx.Done():
+			timer.Stop()
+			return
+		case <-timer.C:
+		}
+		if ctx.Err() != nil {
+			return
+		}
+		run()
+		// Never reuse a slot, even if the wall clock stepped backwards.
+		from = time.Now()
+		if from.Before(next) {
+			from = next
+		}
+	}
 }
 
 // run performs one speedtest for the task, unless one is already running or queued.
