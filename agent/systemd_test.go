@@ -3,10 +3,14 @@
 package agent
 
 import (
+	"errors"
 	"os"
+	"os/exec"
+	"path/filepath"
 	"strings"
 	"testing"
 
+	"github.com/henrygd/beszel/internal/entities/systemd"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -30,6 +34,127 @@ func TestUnescapeServiceName(t *testing.T) {
 			assert.Equal(t, test.expected, result)
 		})
 	}
+}
+
+func TestLimitedBuffer(t *testing.T) {
+	buffer := limitedBuffer{limit: 5}
+
+	n, err := buffer.Write([]byte("abcdef"))
+	assert.Equal(t, 5, n)
+	assert.ErrorIs(t, err, errSystemdLogLimitReached)
+	assert.Equal(t, "abcde", buffer.String())
+
+	n, err = buffer.Write([]byte("g"))
+	assert.Zero(t, n)
+	assert.True(t, errors.Is(err, errSystemdLogLimitReached))
+}
+
+func TestLimitedBufferCapsExecOutput(t *testing.T) {
+	buffer := limitedBuffer{limit: 5}
+	cmd := exec.Command("sh", "-c", "printf 'abcdef'")
+	cmd.Stdout = &buffer
+
+	err := cmd.Run()
+	assert.ErrorIs(t, err, errSystemdLogLimitReached)
+	assert.Equal(t, "abcde", buffer.String())
+}
+
+func TestServiceUnitName(t *testing.T) {
+	tests := map[string]string{
+		"nginx":         "nginx.service",
+		"nginx.service": "nginx.service",
+		"backup.timer":  "backup.timer",
+	}
+	for input, want := range tests {
+		t.Run(input, func(t *testing.T) {
+			assert.Equal(t, want, serviceUnitName(input))
+		})
+	}
+}
+
+func TestCanReadSystemJournal(t *testing.T) {
+	tests := []struct {
+		name   string
+		script string
+		want   bool
+	}{
+		{"readable", "#!/bin/sh\nprintf 'system log\\n'\n", true},
+		{"empty", "#!/bin/sh\nexit 0\n", true},
+		{"denied", "#!/bin/sh\nexit 1\n", false},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			dir := t.TempDir()
+			if err := os.WriteFile(filepath.Join(dir, "journalctl"), []byte(test.script), 0755); err != nil {
+				t.Fatal(err)
+			}
+			t.Setenv("PATH", dir+":"+os.Getenv("PATH"))
+			assert.Equal(t, test.want, canReadSystemJournal())
+		})
+	}
+}
+
+func TestGetServiceLogsOnlyMonitoredUnits(t *testing.T) {
+	// Fake journalctl prints the unit it was asked for
+	dir := t.TempDir()
+	script := "#!/bin/sh\nwhile [ $# -gt 0 ]; do [ \"$1\" = --unit ] && printf '%s' \"$2\"; shift; done\n"
+	if err := os.WriteFile(filepath.Join(dir, "journalctl"), []byte(script), 0755); err != nil {
+		t.Fatal(err)
+	}
+	t.Setenv("PATH", dir+":"+os.Getenv("PATH"))
+
+	sm := &systemdManager{logsEnabled: true, serviceStatsMap: map[string]*systemd.Service{
+		"nginx.service":       {Name: "nginx"},
+		"backup.timer":        {Name: "backup.timer"},
+		"foo\\x2dbar.service": {Name: "foo-bar"},
+		"getty@tty1.service":  {Name: "getty@tty1"},
+	}}
+
+	tests := []struct {
+		name string
+		want string
+	}{
+		{"nginx", "nginx.service"},
+		{"nginx.service", "nginx.service"},
+		{"backup.timer", "backup.timer"},
+		{"foo-bar", "foo\\x2dbar.service"},
+		{"getty@tty1", "getty@tty1.service"},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			logs, err := sm.getServiceLogs(test.name)
+			assert.NoError(t, err)
+			assert.Equal(t, test.want, logs)
+		})
+	}
+
+	for _, name := range []string{"sshd", "*", "*.service", "nginx*"} {
+		t.Run("rejects "+name, func(t *testing.T) {
+			logs, err := sm.getServiceLogs(name)
+			assert.Error(t, err)
+			assert.Empty(t, logs)
+		})
+	}
+
+	t.Run("disabled", func(t *testing.T) {
+		sm.logsEnabled = false
+		logs, err := sm.getServiceLogs("nginx")
+		assert.Error(t, err)
+		assert.Empty(t, logs)
+	})
+}
+
+func TestSystemdLogsEnabled(t *testing.T) {
+	dir := t.TempDir()
+	if err := os.WriteFile(filepath.Join(dir, "journalctl"), []byte("#!/bin/sh\nexit 0\n"), 0755); err != nil {
+		t.Fatal(err)
+	}
+	t.Setenv("PATH", dir+":"+os.Getenv("PATH"))
+
+	assert.True(t, systemdLogsEnabled())
+
+	t.Setenv("SKIP_SYSTEMD_LOGS", "true")
+	assert.False(t, systemdLogsEnabled())
 }
 
 func TestUnescapeServiceNameInvalid(t *testing.T) {
