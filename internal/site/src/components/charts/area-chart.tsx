@@ -6,6 +6,7 @@ import {
 	ChartLegendContent,
 	ChartTooltip,
 	ChartTooltipContent,
+	fixedDomainTicks,
 	xAxis,
 } from "@/components/ui/chart"
 import { chartMargin, cn, formatShortDate } from "@/lib/utils"
@@ -143,6 +144,7 @@ export default function AreaChartDefault({
 							className="tracking-tighter"
 							width={yAxisWidth}
 							domain={domain ?? [0, max ?? "auto"]}
+							ticks={fixedDomainTicks(domain ?? [0, max ?? "auto"])}
 							tickFormatter={(value, index) => updateYAxisWidth(tickFormatter(value, index))}
 							tickLine={false}
 							axisLine={false}

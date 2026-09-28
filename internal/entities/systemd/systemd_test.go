@@ -3,7 +3,9 @@
 package systemd_test
 
 import (
+	"runtime"
 	"testing"
+	"testing/synctest"
 	"time"
 
 	"github.com/henrygd/beszel/internal/entities/systemd"
@@ -65,30 +67,36 @@ func TestServiceUpdateCPUPercent(t *testing.T) {
 	})
 
 	t.Run("subsequent call calculates CPU percentage", func(t *testing.T) {
-		service := &systemd.Service{}
-		service.PrevCpuUsage = 1000
-		service.PrevReadTime = time.Now().Add(-time.Second)
+		synctest.Test(t, func(t *testing.T) {
+			service := &systemd.Service{}
+			service.PrevCpuUsage = 1000
+			service.PrevReadTime = time.Now().Add(-time.Second)
 
-		service.UpdateCPUPercent(8000000000) // 8 seconds of CPU time
+			// Half of one second's CPU capacity across all cores.
+			cpuUsage := service.PrevCpuUsage + uint64(time.Second/2)*uint64(runtime.NumCPU())
+			service.UpdateCPUPercent(cpuUsage)
 
-		// CPU usage should be positive and reasonable
-		assert.Greater(t, service.Cpu, 0.0, "CPU usage should be positive")
-		assert.LessOrEqual(t, service.Cpu, 100.0, "CPU usage should not exceed 100%")
-		assert.Equal(t, uint64(8000000000), service.PrevCpuUsage)
-		assert.Greater(t, service.CpuPeak, 0.0, "CPU peak should be set")
+			assert.Equal(t, 50.0, service.Cpu)
+			assert.Equal(t, cpuUsage, service.PrevCpuUsage)
+			assert.Equal(t, time.Now(), service.PrevReadTime)
+			assert.Equal(t, 50.0, service.CpuPeak)
+		})
 	})
 
 	t.Run("CPU peak updates only when higher", func(t *testing.T) {
-		service := &systemd.Service{}
-		service.PrevCpuUsage = 1000
-		service.PrevReadTime = time.Now().Add(-time.Second)
-		service.UpdateCPUPercent(8000000000) // Set initial peak to ~50%
-		initialPeak := service.CpuPeak
+		synctest.Test(t, func(t *testing.T) {
+			service := &systemd.Service{}
+			service.PrevCpuUsage = 1000
+			service.PrevReadTime = time.Now().Add(-time.Second)
+			service.UpdateCPUPercent(service.PrevCpuUsage + uint64(time.Second/2)*uint64(runtime.NumCPU()))
+			assert.Equal(t, 50.0, service.CpuPeak)
 
-		// Now try with much lower CPU usage - should not update peak
-		service.PrevReadTime = time.Now().Add(-time.Second)
-		service.UpdateCPUPercent(1000000) // Much lower usage
-		assert.Equal(t, initialPeak, service.CpuPeak, "Peak should not update for lower CPU usage")
+			// A smaller increase in the cumulative counter gives 25% usage.
+			service.PrevReadTime = time.Now().Add(-time.Second)
+			service.UpdateCPUPercent(service.PrevCpuUsage + uint64(time.Second/4)*uint64(runtime.NumCPU()))
+			assert.Equal(t, 25.0, service.Cpu)
+			assert.Equal(t, 50.0, service.CpuPeak, "Peak should not update for lower CPU usage")
+		})
 	})
 
 	t.Run("handles zero duration", func(t *testing.T) {
