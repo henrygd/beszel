@@ -1,6 +1,7 @@
 package agent
 
 import (
+	"context"
 	"crypto/tls"
 	"crypto/x509"
 	"errors"
@@ -192,10 +193,35 @@ func (client *WebSocketClient) getOptions() *gws.ClientOption {
 			"X-Beszel":   []string{beszel.Version},
 		},
 		NewDialer: func() (gws.Dialer, error) {
-			return proxy.FromEnvironment(), nil
+			return agentDialer{client.agent.connectionManager.ctx}, nil
 		},
 	}
 	return client.options
+}
+
+// agentDialer keeps proxy selection while binding dialling and the resulting
+// connection to the agent lifetime, including a pending WebSocket handshake.
+type agentDialer struct{ ctx context.Context }
+
+func (d agentDialer) Dial(network, addr string) (net.Conn, error) {
+	conn, err := proxy.Dial(d.ctx, network, addr)
+	if err != nil {
+		return nil, err
+	}
+	return &agentConn{
+		Conn: conn,
+		stop: context.AfterFunc(d.ctx, func() { _ = conn.Close() }),
+	}, nil
+}
+
+type agentConn struct {
+	net.Conn
+	stop func() bool
+}
+
+func (c *agentConn) Close() error {
+	c.stop()
+	return c.Conn.Close()
 }
 
 // Connect establishes a WebSocket connection to the hub.
@@ -240,7 +266,7 @@ func (client *WebSocketClient) OnClose(conn *gws.Conn, err error) {
 	if err != nil {
 		slog.Warn("Connection closed", "err", strings.TrimPrefix(err.Error(), "gws: "))
 	}
-	client.agent.connectionManager.eventChan <- WebSocketDisconnect
+	client.agent.connectionManager.sendEvent(WebSocketDisconnect)
 }
 
 // OnMessage handles incoming WebSocket messages from the hub.
@@ -294,7 +320,7 @@ func (client *WebSocketClient) handleAuthChallenge(msg *common.HubRequest[cbor.R
 	}
 	client.hubVerified = true
 	client.connMu.Unlock()
-	client.agent.connectionManager.eventChan <- WebSocketConnect
+	client.agent.connectionManager.sendEvent(WebSocketConnect)
 
 	response := &common.FingerprintResponse{
 		Fingerprint: client.fingerprint,

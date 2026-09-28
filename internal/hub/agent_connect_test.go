@@ -3,6 +3,7 @@
 package hub
 
 import (
+	"context"
 	"crypto/ed25519"
 	"fmt"
 	"net/http"
@@ -46,6 +47,25 @@ func cleanupTestHub(hub *Hub, testApp *pbtests.TestApp) {
 	}
 	if testApp != nil {
 		testApp.Cleanup()
+	}
+}
+
+// startTestAgent returns a stop function that must run before hub cleanup.
+func startTestAgent(t *testing.T, testAgent *agent.Agent, opts agent.ServerOptions) (<-chan error, func()) {
+	t.Helper()
+	ctx, cancel := context.WithCancel(t.Context())
+	done := make(chan error, 1)
+	stopped := make(chan struct{})
+	var result error
+	go func() {
+		defer close(stopped)
+		result = testAgent.StartForTesting(ctx, opts)
+		done <- result
+	}()
+	return done, func() {
+		cancel()
+		<-stopped
+		assert.NoError(t, result)
 	}
 }
 
@@ -748,6 +768,8 @@ func TestHandleAgentConnect(t *testing.T) {
 
 // TestAgentWebSocketIntegration tests WebSocket connection scenarios with an actual agent
 func TestAgentWebSocketIntegration(t *testing.T) {
+	// Connection fixtures do not exercise the host package manager.
+	t.Setenv("BESZEL_AGENT_PACKAGE_UPDATES_INTERVAL", "0")
 	// Create hub and test app
 	hub, testApp, err := createTestHub(t)
 	require.NoError(t, err)
@@ -895,15 +917,12 @@ func TestAgentWebSocketIntegration(t *testing.T) {
 			t.Setenv("BESZEL_AGENT_TOKEN", tc.agentToken)
 
 			// Start agent in background
-			done := make(chan error, 1)
-			go func() {
-				serverOptions := agent.ServerOptions{
-					Network: "tcp",
-					Addr:    fmt.Sprintf("127.0.0.1:%d", portNum),
-					Keys:    []ssh.PublicKey{tc.agentSSHKey},
-				}
-				done <- testAgent.Start(serverOptions)
-			}()
+			done, stopAgent := startTestAgent(t, testAgent, agent.ServerOptions{
+				Network: "tcp",
+				Addr:    fmt.Sprintf("127.0.0.1:%d", portNum),
+				Keys:    []ssh.PublicKey{tc.agentSSHKey},
+			})
+			defer stopAgent()
 
 			// Wait for connection result
 			maxWait := 2 * time.Second
@@ -920,15 +939,15 @@ func TestAgentWebSocketIntegration(t *testing.T) {
 				case <-timeout:
 					// Timeout reached
 					if tc.expectConnection {
-						t.Fatalf("Expected connection to succeed but timed out - agent state: %d", connectionManager.State)
+						t.Fatalf("Expected connection to succeed but timed out - agent state: %d", connectionManager.GetState())
 					} else {
-						t.Logf("Connection properly rejected (timeout) - agent state: %d", connectionManager.State)
+						t.Logf("Connection properly rejected (timeout) - agent state: %d", connectionManager.GetState())
 					}
 					connectionResult = false
 				case <-ticker:
-					if connectionManager.State == agent.WebSocketConnected {
+					if connectionManager.GetState() == agent.WebSocketConnected {
 						if tc.expectConnection {
-							t.Logf("WebSocket connection successful - agent state: %d", connectionManager.State)
+							t.Logf("WebSocket connection successful - agent state: %d", connectionManager.GetState())
 							connectionResult = true
 						} else {
 							t.Errorf("Unexpected: Connection succeeded when it should have been rejected")
@@ -992,6 +1011,8 @@ func TestAgentWebSocketIntegration(t *testing.T) {
 
 // TestMultipleSystemsWithSameUniversalToken tests that multiple systems can share the same universal token
 func TestMultipleSystemsWithSameUniversalToken(t *testing.T) {
+	// Connection fixtures do not exercise the host package manager.
+	t.Setenv("BESZEL_AGENT_PACKAGE_UPDATES_INTERVAL", "0")
 	// Create hub and test app
 	hub, testApp, err := createTestHub(t)
 	require.NoError(t, err)
@@ -1086,15 +1107,12 @@ func TestMultipleSystemsWithSameUniversalToken(t *testing.T) {
 			systemsBeforeCount := len(systemsBefore)
 
 			// Start agent in background
-			done := make(chan error, 1)
-			go func() {
-				serverOptions := agent.ServerOptions{
-					Network: "tcp",
-					Addr:    fmt.Sprintf("127.0.0.1:%d", portNum),
-					Keys:    []ssh.PublicKey{goodPubKey},
-				}
-				done <- testAgent.Start(serverOptions)
-			}()
+			done, stopAgent := startTestAgent(t, testAgent, agent.ServerOptions{
+				Network: "tcp",
+				Addr:    fmt.Sprintf("127.0.0.1:%d", portNum),
+				Keys:    []ssh.PublicKey{goodPubKey},
+			})
+			defer stopAgent()
 
 			// Wait for connection result
 			maxWait := 2 * time.Second
@@ -1110,15 +1128,15 @@ func TestMultipleSystemsWithSameUniversalToken(t *testing.T) {
 				select {
 				case <-timeout:
 					if tc.expectConnection {
-						t.Fatalf("Expected connection to succeed but timed out - agent state: %d", connectionManager.State)
+						t.Fatalf("Expected connection to succeed but timed out - agent state: %d", connectionManager.GetState())
 					} else {
-						t.Logf("Connection properly rejected (timeout) - agent state: %d", connectionManager.State)
+						t.Logf("Connection properly rejected (timeout) - agent state: %d", connectionManager.GetState())
 					}
 					connectionResult = false
 				case <-ticker:
-					if connectionManager.State == agent.WebSocketConnected {
+					if connectionManager.GetState() == agent.WebSocketConnected {
 						if tc.expectConnection {
-							t.Logf("WebSocket connection successful - agent state: %d", connectionManager.State)
+							t.Logf("WebSocket connection successful - agent state: %d", connectionManager.GetState())
 							connectionResult = true
 						} else {
 							t.Errorf("Unexpected: Connection succeeded when it should have been rejected")
@@ -1191,6 +1209,8 @@ func TestMultipleSystemsWithSameUniversalToken(t *testing.T) {
 // (universal_tokens collection) is accepted for agent self-registration even if it is not
 // present in the in-memory universalTokenMap.
 func TestPermanentUniversalTokenFromDB(t *testing.T) {
+	// Connection fixtures do not exercise the host package manager.
+	t.Setenv("BESZEL_AGENT_PACKAGE_UPDATES_INTERVAL", "0")
 	// Create hub and test app
 	hub, testApp, err := createTestHub(t)
 	require.NoError(t, err)
@@ -1241,15 +1261,12 @@ func TestPermanentUniversalTokenFromDB(t *testing.T) {
 	t.Setenv("BESZEL_AGENT_TOKEN", universalToken)
 
 	// Start agent in background
-	done := make(chan error, 1)
-	go func() {
-		serverOptions := agent.ServerOptions{
-			Network: "tcp",
-			Addr:    "127.0.0.1:46050",
-			Keys:    []ssh.PublicKey{goodPubKey},
-		}
-		done <- testAgent.Start(serverOptions)
-	}()
+	done, stopAgent := startTestAgent(t, testAgent, agent.ServerOptions{
+		Network: "tcp",
+		Addr:    "127.0.0.1:46050",
+		Keys:    []ssh.PublicKey{goodPubKey},
+	})
+	defer stopAgent()
 
 	// Wait for connection result
 	maxWait := 2 * time.Second
@@ -1262,9 +1279,9 @@ func TestPermanentUniversalTokenFromDB(t *testing.T) {
 	for {
 		select {
 		case <-timeout:
-			t.Fatalf("Expected connection to succeed but timed out - agent state: %d", connectionManager.State)
+			t.Fatalf("Expected connection to succeed but timed out - agent state: %d", connectionManager.GetState())
 		case <-ticker:
-			if connectionManager.State == agent.WebSocketConnected {
+			if connectionManager.GetState() == agent.WebSocketConnected {
 				// Success
 				goto verify
 			}
