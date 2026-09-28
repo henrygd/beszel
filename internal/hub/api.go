@@ -202,6 +202,8 @@ func (h *Hub) registerApiRoutes(se *core.ServeEvent) error {
 	apiAuth.POST("/zfs/refresh", h.refreshZfsData).BindFunc(excludeReadOnlyRole)
 	// get systemd service details
 	apiAuth.GET("/systemd/info", h.getSystemdInfo)
+	// get pending package updates
+	apiAuth.GET("/package-updates", h.getPackageUpdates)
 	// /containers routes
 	if enabled, _ := utils.GetEnv("CONTAINER_DETAILS"); enabled != "false" {
 		// get container logs
@@ -443,6 +445,23 @@ func (h *Hub) getSystemdInfo(e *core.RequestEvent) error {
 	}
 	e.Response.Header().Set("Cache-Control", "public, max-age=60")
 	return e.JSON(http.StatusOK, map[string]any{"details": details})
+}
+
+// getPackageUpdates handles GET /api/beszel/package-updates requests
+func (h *Hub) getPackageUpdates(e *core.RequestEvent) error {
+	systemID := e.Request.URL.Query().Get("system")
+	if systemID == "" {
+		return e.BadRequestError("Invalid system parameter", nil)
+	}
+	system, err := h.sm.GetSystem(systemID)
+	if err != nil || !system.HasUser(e.App, e.Auth) {
+		return e.NotFoundError("", nil)
+	}
+	updates, err := system.FetchPackageUpdatesFromAgent()
+	if err != nil {
+		return e.InternalServerError("", err)
+	}
+	return e.JSON(http.StatusOK, updates)
 }
 
 // refreshSmartData handles POST /api/beszel/smart/refresh requests
