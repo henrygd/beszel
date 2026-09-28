@@ -242,6 +242,8 @@ func (sm *SpeedtestManager) run(task *speedtestTask) {
 	if task.ctx.Err() != nil {
 		return
 	}
+	slog.Debug("speedtest started", "id", task.config.ID, "server", task.config.ServerID)
+	start := time.Now()
 	result, err := sm.runner(task.ctx, task.config.ServerID)
 	if task.ctx.Err() != nil {
 		return
@@ -249,6 +251,8 @@ func (sm *SpeedtestManager) run(task *speedtestTask) {
 	if err != nil {
 		slog.Warn("speedtest failed", "err", err, "server", task.config.ServerID)
 		result = speedtest.Result{ServerID: task.config.ServerID, Error: err.Error()}
+	} else {
+		slog.Debug("speedtest finished", "id", task.config.ID, "server", result.ServerID, "duration", time.Since(start).Round(time.Millisecond), "download", result.Download, "upload", result.Upload, "ping", result.Ping)
 	}
 	result.RunAt = time.Now().UnixMilli()
 	task.mu.Lock()

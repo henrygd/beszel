@@ -81,7 +81,7 @@ function SpeedtestDialogContent({
 	systemId?: string
 	speedtest?: SpeedtestRecord
 }) {
-	const [server, setServer] = useState<SpeedtestServer>(AUTOMATIC_SERVER)
+	const [servers, setServers] = useState<SpeedtestServer[]>([AUTOMATIC_SERVER])
 	const [interval, setInterval] = useState(String(DEFAULT_SPEEDTEST_INTERVAL))
 	const [loading, setLoading] = useState(false)
 	const [selectedSystemId, setSelectedSystemId] = useState("")
@@ -90,17 +90,20 @@ function SpeedtestDialogContent({
 	const { toast } = useToast()
 	const { t } = useLingui()
 	const isEditing = !!speedtest
+	// System and server pairs created in this session, so a retry after a partial failure skips them.
+	const createdPairs = useRef(new Set<string>())
 
 	// Initialize form fields with speedtest values (if editing) or defaults (if adding).
 	useEffect(() => {
 		if (!open) {
 			return
 		}
-		setServer(
+		setServers([
 			speedtest?.server_id
 				? { id: speedtest.server_id, name: speedtest.server_name, location: speedtest.server_location }
-				: AUTOMATIC_SERVER
-		)
+				: AUTOMATIC_SERVER,
+		])
+		createdPairs.current = new Set()
 		setInterval(String(speedtest?.interval ?? DEFAULT_SPEEDTEST_INTERVAL))
 		setSelectedSystemId(speedtest?.system ?? "")
 		setSelectedSystemIds(new Set())
@@ -115,17 +118,23 @@ function SpeedtestDialogContent({
 		const remainingSystemIds = new Set(targetSystems)
 		try {
 			if (!targetSystems.length || !targetSystems[0]) throw new Error("Select at least one system.")
-			const payload = {
+			if (!servers.length) throw new Error("Select at least one server.")
+			const payload = (server: SpeedtestServer) => ({
 				server_id: server.id,
 				server_name: server.name,
 				server_location: server.location,
 				interval: Number(interval),
-			}
+			})
 			if (speedtest) {
-				await pb.collection("speedtests").update(speedtest.id, { ...payload, system: targetSystems[0] })
+				await pb.collection("speedtests").update(speedtest.id, { ...payload(servers[0]), system: targetSystems[0] })
 			} else {
 				for (const system of targetSystems) {
-					await pb.collection("speedtests").create({ ...payload, system, enabled: true })
+					for (const server of servers) {
+						const pair = `${system}:${server.id}`
+						if (createdPairs.current.has(pair)) continue
+						await pb.collection("speedtests").create({ ...payload(server), system, enabled: true })
+						createdPairs.current.add(pair)
+					}
 					remainingSystemIds.delete(system)
 				}
 			}
@@ -188,10 +197,22 @@ function SpeedtestDialogContent({
 					</div>
 				)}
 				<div className="grid gap-2">
-					<Label htmlFor="speedtest-server">
-						<Trans>Server</Trans>
-					</Label>
-					<SpeedtestServerSelect id="speedtest-server" value={server} onChange={setServer} disabled={loading} />
+					<Label htmlFor="speedtest-server">{isEditing ? <Trans>Server</Trans> : <Trans>Servers</Trans>}</Label>
+					<SpeedtestServerSelect
+						id="speedtest-server"
+						value={servers}
+						onChange={setServers}
+						multiple={!isEditing}
+						disabled={loading}
+					/>
+					{!isEditing && (
+						<p className="text-xs text-muted-foreground">
+							<Trans>
+								A separate speedtest is added for each selected server on each system. Automatic picks the best server
+								for each run.
+							</Trans>
+						</p>
+					)}
 				</div>
 				<div className="grid gap-2">
 					<Label htmlFor="speedtest-interval">
@@ -217,7 +238,9 @@ function SpeedtestDialogContent({
 				<DialogFooter>
 					<Button
 						type="submit"
-						disabled={loading || (!systemId && (isEditing ? !selectedSystemId : !selectedSystemIds.size))}
+						disabled={
+							loading || !servers.length || (!systemId && (isEditing ? !selectedSystemId : !selectedSystemIds.size))
+						}
 					>
 						{isEditing ? <Trans>Save {{ foo: t`Speedtest` }}</Trans> : <Trans>Add {{ foo: t`Speedtest` }}</Trans>}
 					</Button>

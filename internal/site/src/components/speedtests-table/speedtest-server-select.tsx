@@ -5,7 +5,13 @@ import { pb } from "@/lib/api"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import {
+	DropdownMenu,
+	DropdownMenuCheckboxItem,
+	DropdownMenuContent,
+	DropdownMenuItem,
+	DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 
 /** An Ookla server as returned by the hub. Zero ID means automatic server selection. */
 export interface SpeedtestServer {
@@ -19,18 +25,21 @@ export const AUTOMATIC_SERVER: SpeedtestServer = { id: 0, name: "", location: ""
 const SEARCH_DEBOUNCE_MS = 300
 
 /**
- * Searchable single-select for Ookla speedtest servers. Opening it lists the
- * servers closest to the hub; typing searches Ookla's server list.
+ * Searchable select for Ookla speedtest servers, single or multiple like the systems
+ * select. Opening it lists the servers closest to the hub; typing searches Ookla's
+ * server list.
  */
 export function SpeedtestServerSelect({
 	id,
 	value,
 	onChange,
+	multiple,
 	disabled,
 }: {
 	id: string
-	value: SpeedtestServer
-	onChange: (server: SpeedtestServer) => void
+	value: SpeedtestServer[]
+	onChange: (servers: SpeedtestServer[]) => void
+	multiple?: boolean
 	disabled?: boolean
 }) {
 	const { t } = useLingui()
@@ -83,8 +92,32 @@ export function SpeedtestServerSelect({
 		}
 	}, [open, search, t])
 
-	const isAutomatic = value.id === 0
-	const label = isAutomatic ? t`Automatic` : [value.name, value.location].filter(Boolean).join(" — ") || `#${value.id}`
+	const query = search.trim()
+	const listed = query ? servers : [AUTOMATIC_SERVER, ...servers]
+	const selectedIds = new Set(value.map((server) => server.id))
+	const allSelected = listed.every((server) => selectedIds.has(server.id))
+	const anySelected = listed.some((server) => selectedIds.has(server.id))
+
+	const serverLabel = (server: SpeedtestServer) =>
+		server.id === 0 ? t`Automatic` : [server.name, server.location].filter(Boolean).join(" — ") || `#${server.id}`
+	const label =
+		value.length === 0 ? t`Select servers` : value.length === 1 ? serverLabel(value[0]) : t`${value.length} selected`
+
+	const toggle = (server: SpeedtestServer, checked: boolean) => {
+		// Picking a first specific server replaces the default Automatic selection.
+		if (checked && server.id !== 0 && value.length === 1 && value[0].id === 0) {
+			onChange([server])
+			return
+		}
+		const rest = value.filter((selected) => selected.id !== server.id)
+		onChange(checked ? [...rest, server] : rest)
+	}
+
+	const selectListed = (selected: boolean) => {
+		const listedIds = new Set(listed.map((server) => server.id))
+		const rest = value.filter((server) => !listedIds.has(server.id))
+		onChange(selected ? [...rest, ...listed] : rest)
+	}
 
 	return (
 		<DropdownMenu
@@ -145,23 +178,46 @@ export function SpeedtestServerSelect({
 						/>
 						{loading && <LoaderCircleIcon className="size-4 shrink-0 animate-spin text-muted-foreground" />}
 					</div>
+					{multiple && (
+						<div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 px-1 pb-1">
+							<div className="flex items-center">
+								<DropdownMenuItem
+									className="px-1.5 py-1 text-xs text-muted-foreground"
+									disabled={!listed.length || allSelected}
+									onSelect={(event) => {
+										event.preventDefault()
+										selectListed(true)
+									}}
+								>
+									{query ? <Trans>Select matches</Trans> : <Trans>Select all</Trans>}
+								</DropdownMenuItem>
+								<span aria-hidden="true" className="text-xs text-muted-foreground/50">
+									·
+								</span>
+								<DropdownMenuItem
+									className="px-1.5 py-1 text-xs text-muted-foreground"
+									disabled={!anySelected}
+									onSelect={(event) => {
+										event.preventDefault()
+										selectListed(false)
+									}}
+								>
+									{query ? <Trans>Clear matches</Trans> : <Trans>Clear all</Trans>}
+								</DropdownMenuItem>
+							</div>
+							<span className="px-1.5 text-xs tabular-nums text-muted-foreground">{t`${value.length} selected`}</span>
+						</div>
+					)}
 				</div>
 				<div className="min-h-0 overflow-y-auto">
-					{!search.trim() && (
-						<ServerItem
-							selected={isAutomatic}
-							title={t`Automatic`}
-							description={t`Pick the best server for each run`}
-							onSelect={() => onChange(AUTOMATIC_SERVER)}
-						/>
-					)}
-					{servers.map((server) => (
+					{listed.map((server) => (
 						<ServerItem
 							key={server.id}
-							selected={server.id === value.id}
-							title={server.name}
-							description={server.location}
-							onSelect={() => onChange(server)}
+							multiple={multiple}
+							selected={selectedIds.has(server.id)}
+							title={server.id === 0 ? t`Automatic` : server.name}
+							description={server.id === 0 ? t`Pick the best server for each run` : server.location}
+							onSelect={(checked) => (multiple ? toggle(server, checked) : onChange([server]))}
 						/>
 					))}
 					{!loading && !error && servers.length === 0 && (
@@ -177,23 +233,41 @@ export function SpeedtestServerSelect({
 }
 
 function ServerItem({
+	multiple,
 	selected,
 	title,
 	description,
 	onSelect,
 }: {
+	multiple?: boolean
 	selected: boolean
 	title: string
 	description: string
-	onSelect: () => void
+	onSelect: (checked: boolean) => void
 }) {
+	const content = (
+		<div className="grid min-w-0">
+			<span className="truncate">{title}</span>
+			{description && <span className="truncate text-xs text-muted-foreground">{description}</span>}
+		</div>
+	)
+	if (multiple) {
+		return (
+			<DropdownMenuCheckboxItem
+				checked={selected}
+				onSelect={(event) => event.preventDefault()}
+				onCheckedChange={onSelect}
+				className="group min-w-0 gap-2.5 py-2 ps-2.5"
+				indicatorClassName="static size-4 shrink-0 rounded border border-input group-data-[state=checked]:border-primary group-data-[state=checked]:bg-primary group-data-[state=checked]:text-primary-foreground [&_svg]:size-3"
+			>
+				{content}
+			</DropdownMenuCheckboxItem>
+		)
+	}
 	return (
-		<DropdownMenuItem className="min-w-0 gap-2.5 py-2 ps-2.5" onSelect={onSelect}>
+		<DropdownMenuItem className="min-w-0 gap-2.5 py-2 ps-2.5" onSelect={() => onSelect(true)}>
 			<CheckIcon className={cn("size-4 shrink-0", !selected && "invisible")} />
-			<div className="grid min-w-0">
-				<span className="truncate">{title}</span>
-				{description && <span className="truncate text-xs text-muted-foreground">{description}</span>}
-			</div>
+			{content}
 		</DropdownMenuItem>
 	)
 }
