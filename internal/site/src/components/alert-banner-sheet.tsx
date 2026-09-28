@@ -41,21 +41,23 @@ export function AlertBannerSheet({
 					<Icon className="size-5 shrink-0" />
 					<div className="min-w-0">
 						<AlertTitle className="m-0">{title}</AlertTitle>
-						{description && <AlertDescription className="text-destructive/80">{description}</AlertDescription>}
+						{description && (
+							<AlertDescription className="text-destructive/80 dark:text-red-500/80">{description}</AlertDescription>
+						)}
 					</div>
 				</div>
 				<SheetTrigger asChild>
 					<Button
 						variant="outline"
 						size="sm"
-						className="shrink-0 bg-transparent border-destructive/40 text-destructive hover:bg-destructive/10 hover:text-destructive dark:hover:bg-destructive/15 max-sm:w-full"
+						className="shrink-0 bg-transparent border-destructive/40 text-destructive hover:bg-destructive/10 hover:text-destructive dark:text-red-500 dark:hover:bg-destructive/15 dark:hover:text-red-500 max-sm:w-full"
 					>
 						{buttonLabel ?? <Trans>View details</Trans>}
 						<ChevronRightIcon className="size-4 ms-1 -me-1" />
 					</Button>
 				</SheetTrigger>
 			</Alert>
-			<SheetContent className="w-120 !max-w-full gap-0">
+			<SheetContent className="w-140 !max-w-full gap-0">
 				<SheetHeader className="p-4 sm:p-6 pb-3 sm:pb-4 border-b">
 					<SheetTitle>{sheetTitle}</SheetTitle>
 					{sheetDescription && <SheetDescription>{sheetDescription}</SheetDescription>}

@@ -35,6 +35,15 @@ function AlertTriggeredDesc({ alert }: { alert: AlertRecord }) {
 	)
 }
 
+function AlertLabel({ alert, systemName }: { alert: AlertRecord; systemName?: string }) {
+	const info = alertInfo[alert.name as keyof typeof alertInfo]
+	return (
+		<>
+			{systemName} <span className="opacity-60 font-normal">·</span> {info.name()}
+		</>
+	)
+}
+
 /** Banner showing the number of triggered alerts, with a sheet listing them. */
 export const ActiveAlerts = ({ className }: { className?: string }) => {
 	const alerts = useStore($alerts)
@@ -65,13 +74,27 @@ export const ActiveAlerts = ({ className }: { className?: string }) => {
 		if (alertCount === 0) {
 			return null
 		}
+		// name the alert directly in the banner when there is only one
+		const [firstAlert] = activeAlerts
 		return (
 			<AlertBannerSheet
 				open={open}
 				onOpenChange={setOpen}
 				className={className}
-				title={<Plural value={alertCount} one="# active alert" other="# active alerts" />}
-				description={<Plural value={systemCount} one="Across # system" other="Across # systems" />}
+				title={
+					alertCount === 1 ? (
+						<AlertLabel alert={firstAlert} systemName={systems[firstAlert.system]?.name} />
+					) : (
+						<Plural value={alertCount} one="# active alert" other="# active alerts" />
+					)
+				}
+				description={
+					alertCount === 1 ? (
+						<AlertTriggeredDesc alert={firstAlert} />
+					) : (
+						<Plural value={systemCount} one="Across # system" other="Across # systems" />
+					)
+				}
 				buttonLabel={<Trans>View alerts</Trans>}
 				sheetTitle={<Trans>Active Alerts</Trans>}
 				sheetDescription={
@@ -87,11 +110,7 @@ export const ActiveAlerts = ({ className }: { className?: string }) => {
 							href={getPagePath($router, "system", { id: system?.id })}
 							onClick={() => setOpen(false)}
 							icon={info.icon}
-							title={
-								<>
-									{system?.name} <span className="text-muted-foreground font-normal">·</span> {info.name()}
-								</>
-							}
+							title={<AlertLabel alert={alert} systemName={system?.name} />}
 							description={<AlertTriggeredDesc alert={alert} />}
 						/>
 					)
