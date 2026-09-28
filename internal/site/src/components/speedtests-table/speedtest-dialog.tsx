@@ -209,7 +209,8 @@ function SpeedtestDialogContent({
 					/>
 					<p className="text-xs text-muted-foreground">
 						<Trans>
-							Minimum {MIN_SPEEDTEST_INTERVAL} minutes. Each run uses your full bandwidth for about 30 seconds.
+							Minimum {MIN_SPEEDTEST_INTERVAL} minutes. Each system tests at its own fixed time within the interval,
+							so systems on the same network don't overlap. Each run uses your full bandwidth for about 30 seconds.
 						</Trans>
 					</p>
 				</div>
