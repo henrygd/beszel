@@ -24,4 +24,6 @@ var MinVersionZfsData = semver.MustParse("0.18.9")
 var MinVersionNetworkMonitors = semver.MustParse("0.20.0")
 
 // MinVersionSpeedtests is the minimum agent version that supports speedtest sync.
-var MinVersionSpeedtests = semver.MustParse("0.21.0")
+// The -0 pre-release admits 0.21.0 pre-releases such as 0.21.0-dev, which the site
+// already treats as 0.21.0.
+var MinVersionSpeedtests = semver.MustParse("0.21.0-0")
