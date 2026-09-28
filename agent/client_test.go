@@ -236,8 +236,11 @@ func TestWebSocketClient_TLSVerification(t *testing.T) {
 	t.Run("custom CA trusts self-signed certificate", func(t *testing.T) {
 		systemRoots, err := x509.SystemCertPool()
 		require.NoError(t, err)
+		require.True(t, systemRoots.AppendCertsFromPEM(serverCertPEM))
 		client := newClient(t, caCertFile)
-		assert.Greater(t, len(client.getOptions().TlsConfig.RootCAs.Subjects()), len(systemRoots.Subjects()))
+		tlsConfig := client.getOptions().TlsConfig
+		require.NotNil(t, tlsConfig)
+		assert.True(t, tlsConfig.RootCAs.Equal(systemRoots))
 		conn, _, err := gws.NewClient(&gws.BuiltinEventHandler{}, client.getOptions())
 		require.NoError(t, err)
 		require.NoError(t, conn.NetConn().Close())
