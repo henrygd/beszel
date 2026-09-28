@@ -1,6 +1,7 @@
 package hub
 
 import (
+	"fmt"
 	"strconv"
 	"time"
 
@@ -21,7 +22,8 @@ func generateMonitorID(systemId string, config monitor.Config) string {
 	if config.Protocol == "dns" {
 		args = append(args, config.Server)
 	}
-	return systems.MakeStableHashId(args...)
+	// Meet the record ID minimum without changing existing IDs of six or more characters.
+	return fmt.Sprintf("%06s", systems.MakeStableHashId(args...))
 }
 
 // bindNetworkMonitorsEvents keeps monitor records and agent monitor state in sync.
