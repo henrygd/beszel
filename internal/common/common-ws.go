@@ -26,7 +26,7 @@ const (
 	GetZfsData
 	// Sync network monitor configuration to agent
 	SyncNetworkMonitors
-  // Request the list of pending package updates from agent
+	// Request the list of pending package updates from agent
 	GetPackageUpdates
 	// Request recent logs for a systemd service from the agent.
 	GetSystemdLogs

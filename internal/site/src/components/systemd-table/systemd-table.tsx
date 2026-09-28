@@ -249,14 +249,7 @@ const AllSystemdTable = memo(function AllSystemdTable({
 						{rows.length ? (
 							virtualRows.map((virtualRow) => {
 								const row = rows[virtualRow.index]
-								return (
-									<SystemdTableRow
-										key={row.id}
-										row={row}
-										virtualRow={virtualRow}
-										openSheet={openSheet}
-									/>
-								)
+								return <SystemdTableRow key={row.id} row={row} virtualRow={virtualRow} openSheet={openSheet} />
 							})
 						) : (
 							<TableRow>
@@ -541,7 +534,9 @@ function SystemdSheet({
 									disabled={isLoadingLogs}
 									aria-label={t`Refresh`}
 								>
-									<RefreshCwIcon className={cn("size-4 transition-transform duration-300", isLoadingLogs && "animate-spin")} />
+									<RefreshCwIcon
+										className={cn("size-4 transition-transform duration-300", isLoadingLogs && "animate-spin")}
+									/>
 								</Button>
 								<Button
 									variant="ghost"
@@ -561,7 +556,9 @@ function SystemdSheet({
 									<div className="h-28" aria-busy="true">
 										<LogsDisplay logsDisplay="" containerRef={logsContainerRef} />
 									</div>
-									<output className="sr-only"><Trans>Loading...</Trans></output>
+									<output className="sr-only">
+										<Trans>Loading...</Trans>
+									</output>
 								</>
 							) : (
 								<output className="flex min-h-28 items-center justify-center rounded-md bg-muted/40 p-3 text-sm text-muted-foreground">
@@ -569,7 +566,9 @@ function SystemdSheet({
 								</output>
 							)}
 							{logs && logsStatus === "error" && (
-								<output className="mt-2 block text-sm text-destructive"><Trans>Failed to load logs.</Trans></output>
+								<output className="mt-2 block text-sm text-destructive">
+									<Trans>Failed to load logs.</Trans>
+								</output>
 							)}
 						</div>
 					)}
@@ -739,7 +738,6 @@ function SystemdSheet({
 							</table>
 						</div>
 					</div>
-
 				</div>
 			</SheetContent>
 		</Sheet>
