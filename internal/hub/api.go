@@ -443,7 +443,7 @@ func (h *Hub) getSystemdInfo(e *core.RequestEvent) error {
 	if err != nil {
 		return e.InternalServerError("", err)
 	}
-	e.Response.Header().Set("Cache-Control", "public, max-age=60")
+	e.Response.Header().Set("Cache-Control", "private, no-store")
 	return e.JSON(http.StatusOK, map[string]any{"details": details})
 }
 
