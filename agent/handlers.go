@@ -251,7 +251,7 @@ type GetSystemdLogsHandler struct{}
 
 func (h *GetSystemdLogsHandler) Handle(hctx *HandlerContext) error {
 	if hctx.Agent.systemdManager == nil {
-		return hctx.SendResponse("", hctx.RequestID)
+		return errors.ErrUnsupported
 	}
 
 	var req common.SystemdLogsRequest
@@ -264,7 +264,7 @@ func (h *GetSystemdLogsHandler) Handle(hctx *HandlerContext) error {
 
 	logs, err := hctx.Agent.systemdManager.getServiceLogs(req.ServiceName)
 	if err != nil {
-		return hctx.SendResponse("", hctx.RequestID)
+		return err
 	}
 
 	return hctx.SendResponse(logs, hctx.RequestID)

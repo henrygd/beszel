@@ -483,7 +483,7 @@ func (h *Hub) getSystemdLogs(e *core.RequestEvent) error {
 
 	logs, err := system.FetchSystemdLogsFromAgent(serviceName)
 	if err != nil {
-		return e.JSON(http.StatusOK, map[string]string{"logs": ""})
+		return e.InternalServerError("", err)
 	}
 	return e.JSON(http.StatusOK, map[string]string{"logs": logs})
 }
