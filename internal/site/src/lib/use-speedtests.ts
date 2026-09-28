@@ -51,6 +51,7 @@ export function useSpeedtests({ systemId }: { systemId?: string }) {
 	}, [systemId])
 
 	useEffect(() => {
+		let cancelled = false
 		let unsubscribe: (() => void) | undefined
 
 		function flushPendingEvents() {
@@ -80,12 +81,14 @@ export function useSpeedtests({ systemId }: { systemId?: string }) {
 					},
 					pbOptions
 				)
+				if (cancelled) unsubscribe()
 			} catch (error) {
 				console.error("Failed to subscribe to speedtests", error)
 			}
 		})()
 
 		return () => {
+			cancelled = true
 			if (batchTimeout.current !== null) {
 				clearTimeout(batchTimeout.current)
 				batchTimeout.current = null
