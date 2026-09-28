@@ -35,12 +35,8 @@ function AlertTriggeredDesc({ alert }: { alert: AlertRecord }) {
 	)
 }
 
-/**
- * Banner showing the number of triggered alerts, with a sheet listing them.
- * Pass `filter` to limit which alerts are shown (e.g. only network monitor alerts).
- * `filter` should be stable (defined outside the component or memoized).
- */
-export const ActiveAlerts = ({ filter }: { filter?: (alert: AlertRecord) => boolean }) => {
+/** Banner showing the number of triggered alerts, with a sheet listing them. */
+export const ActiveAlerts = ({ className }: { className?: string }) => {
 	const alerts = useStore($alerts)
 	const systems = useStore($allSystemsById)
 	const [open, setOpen] = useState(false)
@@ -53,7 +49,7 @@ export const ActiveAlerts = ({ filter }: { filter?: (alert: AlertRecord) => bool
 
 		for (const systemId of Object.keys(alerts)) {
 			for (const alert of alerts[systemId].values()) {
-				if (alert.triggered && alert.name in alertInfo && (!filter || filter(alert))) {
+				if (alert.triggered && alert.name in alertInfo) {
 					activeAlerts.push(alert)
 					systemIds.add(alert.system)
 					alertsKey.push(`${alert.id}${alert.value}${alert.min}`)
@@ -62,9 +58,8 @@ export const ActiveAlerts = ({ filter }: { filter?: (alert: AlertRecord) => bool
 		}
 
 		return { activeAlerts, systemCount: systemIds.size, alertsKey: alertsKey.join("") }
-	}, [alerts, filter])
+	}, [alerts])
 
-	// biome-ignore lint/correctness/useExhaustiveDependencies: alertsKey is inclusive
 	return useMemo(() => {
 		const alertCount = activeAlerts.length
 		if (alertCount === 0) {
@@ -74,6 +69,7 @@ export const ActiveAlerts = ({ filter }: { filter?: (alert: AlertRecord) => bool
 			<AlertBannerSheet
 				open={open}
 				onOpenChange={setOpen}
+				className={className}
 				title={<Plural value={alertCount} one="# active alert" other="# active alerts" />}
 				description={<Plural value={systemCount} one="Across # system" other="Across # systems" />}
 				buttonLabel={<Trans>View alerts</Trans>}
@@ -102,5 +98,5 @@ export const ActiveAlerts = ({ filter }: { filter?: (alert: AlertRecord) => bool
 				})}
 			</AlertBannerSheet>
 		)
-	}, [alertsKey, systemCount, open])
+	}, [alertsKey, systemCount, systems, open, className])
 }
