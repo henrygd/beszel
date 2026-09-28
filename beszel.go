@@ -6,7 +6,7 @@ import "github.com/blang/semver"
 
 const (
 	// Version is the current version of the application.
-	Version = "0.20.0"
+	Version = "0.21.0-dev"
 	// AppName is the name of the application.
 	AppName = "beszel"
 )
@@ -24,4 +24,4 @@ var MinVersionZfsData = semver.MustParse("0.18.9")
 var MinVersionNetworkMonitors = semver.MustParse("0.20.0")
 
 // MinVersionSpeedtests is the minimum agent version that supports speedtest sync.
-var MinVersionSpeedtests = semver.MustParse("0.20.0")
+var MinVersionSpeedtests = semver.MustParse("0.21.0")
