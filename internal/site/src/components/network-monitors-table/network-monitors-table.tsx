@@ -708,7 +708,14 @@ function NetworkMonitorSheetContent({
 	const matchingMonitors = useMatchingMonitors(monitor, open)
 	const [compareSystemIds, setCompareSystemIds] = useState<Set<string>>(() => new Set())
 	// Scoped to this sheet so a filter doesn't carry over to other monitors' sheets.
-	const [compareFilterStore] = useState(() => atom(""))
+	const [compareFilterStore, setCompareFilterStore] = useState(() => atom(""))
+	// The sheet is keyed by system (to keep the time range), so reset comparison state per monitor.
+	const [compareMonitorId, setCompareMonitorId] = useState(monitor.id)
+	if (compareMonitorId !== monitor.id) {
+		setCompareMonitorId(monitor.id)
+		setCompareSystemIds(new Set())
+		setCompareFilterStore(atom(""))
+	}
 	const matchingSystemIds = useMemo(() => matchingMonitors.map((m) => m.system), [matchingMonitors])
 	// The opened system is always charted; the picker only adds other systems to compare against.
 	const compareMonitors = useMemo(
