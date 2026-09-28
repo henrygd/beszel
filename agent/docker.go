@@ -64,7 +64,6 @@ type dockerManager struct {
 	goodDockerVersion    bool                        // Whether docker version is at least 25.0.0 (one-shot works correctly)
 	dockerVersionChecked bool                        // Whether a version probe has completed successfully
 	isWindows            bool                        // Whether the Docker Engine API is running on Windows
-	collectAllContainers bool                        // Whether to collect stopped/exited containers in addition to running ones (default true)
 	buf                  *bytes.Buffer               // Buffer to store and read response bodies
 	excludeContainers    []string                    // Patterns to exclude containers by name
 	usingPodman          bool                        // Whether the Docker Engine API is running on Podman
@@ -138,13 +137,9 @@ func (dm *dockerManager) shouldExcludeContainer(name string) bool {
 }
 
 // Returns stats for all containers with cache-time-aware delta tracking.
-// Stopped/exited containers are included by default unless DOCKER_RUNNING_ONLY is set.
+// Stopped/exited containers are included.
 func (dm *dockerManager) getDockerStats(cacheTimeMs uint16) ([]*container.Stats, error) {
-	url := "http://localhost/containers/json"
-	if dm.collectAllContainers {
-		url += "?all=1"
-	}
-	resp, err := dm.client.Get(url)
+	resp, err := dm.client.Get("http://localhost/containers/json?all=1")
 	if err != nil {
 		return nil, err
 	}
@@ -732,12 +727,6 @@ func newDockerManager(agent *Agent) *dockerManager {
 		slog.Info("EXCLUDE_CONTAINERS", "patterns", excludeContainers)
 	}
 
-	collectAllContainers := true
-	if _, set := utils.GetEnv("DOCKER_RUNNING_ONLY"); set {
-		collectAllContainers = false
-		slog.Info("DOCKER_RUNNING_ONLY enabled: skipping stopped and exited containers")
-	}
-
 	manager := &dockerManager{
 		agent: agent,
 		client: &http.Client{
@@ -749,7 +738,6 @@ func newDockerManager(agent *Agent) *dockerManager {
 		apiContainerList:     []*container.ApiInfo{},
 		excludeContainers:    excludeContainers,
 		imageUpdatesDisabled: dockerImageCheck == "false",
-		collectAllContainers: collectAllContainers,
 
 		// Initialize cache-time-aware tracking structures
 		lastCpuContainer:    make(map[uint16]map[string]uint64),
