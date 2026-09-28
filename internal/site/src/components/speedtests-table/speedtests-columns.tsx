@@ -327,7 +327,10 @@ export function getSpeedtestColumns({
 
 /** Columns hidden until the user enables them in the view menu. */
 export const DEFAULT_HIDDEN_SPEEDTEST_COLUMNS = Object.fromEntries(
-	["isp", "location", "download_latency", "download_jitter", "upload_latency", "upload_jitter"].map((id) => [id, false])
+	["jitter", "isp", "location", "download_latency", "download_jitter", "upload_latency", "upload_jitter"].map((id) => [
+		id,
+		false,
+	])
 )
 
 function textCell({ getValue }: { getValue: () => unknown }) {

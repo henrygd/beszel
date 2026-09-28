@@ -410,6 +410,9 @@ export interface UserSettings {
 	monitorCols?: Record<string, boolean>
 	monitorSortMode?: Array<{ id: string; desc: boolean }>
 	monitorSortModeSystem?: Array<{ id: string; desc: boolean }>
+	speedtestCols?: Record<string, boolean>
+	speedtestSortMode?: Array<{ id: string; desc: boolean }>
+	speedtestSortModeSystem?: Array<{ id: string; desc: boolean }>
 	grid?: boolean
 	displayMode?: "default" | "tabs"
 }

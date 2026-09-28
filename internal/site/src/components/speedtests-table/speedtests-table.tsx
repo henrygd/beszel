@@ -21,14 +21,14 @@ import {
 	AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
 import { Button, buttonVariants } from "@/components/ui/button"
-import { useCallback, useMemo, useState } from "react"
+import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { Card, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { useToast } from "@/components/ui/use-toast"
-import { isReadOnlyUser, pb } from "@/lib/api"
+import { isReadOnlyUser, pb, queueUserSettings } from "@/lib/api"
 import { SystemStatus } from "@/lib/enums"
-import { $allSystemsById, $direction, getUserChartTime } from "@/lib/stores"
+import { $allSystemsById, $direction, $userSettings, getUserChartTime } from "@/lib/stores"
 import { cn, formatShortDate, matchesFilterGroups, parseFilterGroups, parseSemVer } from "@/lib/utils"
 import type { ChartData, ChartTimes, SpeedtestRecord } from "@/types"
 import { DEFAULT_HIDDEN_SPEEDTEST_COLUMNS, getSpeedtestColumns } from "./speedtests-columns"
@@ -66,7 +66,7 @@ import {
 import { useSpeedtestStats } from "@/lib/use-speedtests"
 import { formatSpeedtestInterval, getSpeedtestServerLabel } from "@/lib/speedtest-utils"
 import { useStore } from "@nanostores/react"
-import { atom } from "nanostores"
+import { atom, subscribeKeys } from "nanostores"
 import { Separator } from "../ui/separator"
 import { $router, Link } from "../router"
 import { getPagePath } from "@nanostores/router"
@@ -74,11 +74,13 @@ import { getPagePath } from "@nanostores/router"
 const COLUMN_STORAGE_KEY = "besz-speedtest-cols"
 
 function loadColumnVisibility(): VisibilityState {
-	try {
-		return { ...DEFAULT_HIDDEN_SPEEDTEST_COLUMNS, ...JSON.parse(localStorage.getItem(COLUMN_STORAGE_KEY) || "{}") }
-	} catch {
-		return { ...DEFAULT_HIDDEN_SPEEDTEST_COLUMNS }
+	let saved: VisibilityState = $userSettings.get().speedtestCols ?? {}
+	if (!$userSettings.get().speedtestCols) {
+		try {
+			saved = JSON.parse(localStorage.getItem(COLUMN_STORAGE_KEY) || "{}")
+		} catch {}
 	}
+	return { ...DEFAULT_HIDDEN_SPEEDTEST_COLUMNS, ...saved }
 }
 
 export default function SpeedtestsTable({
@@ -90,7 +92,17 @@ export default function SpeedtestsTable({
 	speedtests: SpeedtestRecord[]
 	isLoading: boolean
 }) {
-	const [sorting, setSorting] = useState<SortingState>([{ id: systemId ? "server" : "system", desc: false }])
+	const sortSettingsKey = systemId ? "speedtestSortModeSystem" : "speedtestSortMode"
+	const sortStorageKey = `besz-sort-speedtest-${systemId ? 1 : 0}`
+	const [sorting, setSorting] = useState<SortingState>(() => {
+		const saved = $userSettings.get()[sortSettingsKey]
+		if (saved) return saved
+		try {
+			const stored = JSON.parse(sessionStorage.getItem(sortStorageKey) || "null")
+			if (stored) return stored
+		} catch {}
+		return [{ id: systemId ? "server" : "system", desc: false }]
+	})
 	const [columnVisibility, setColumnVisibility] = useState<VisibilityState>(loadColumnVisibility)
 	const [rowSelection, setRowSelection] = useState<RowSelectionState>({})
 	const [globalFilter, setGlobalFilter] = useState("")
@@ -103,6 +115,21 @@ export default function SpeedtestsTable({
 	const { toast } = useToast()
 	const canManage = !isReadOnlyUser()
 
+	// Apply settings from server once they load (handles incognito / new devices)
+	const appliedSettings = useRef(new Set<string>())
+	useEffect(() => {
+		return subscribeKeys($userSettings, ["speedtestCols", sortSettingsKey], (vals) => {
+			if (!appliedSettings.current.has("speedtestCols") && vals.speedtestCols !== undefined) {
+				appliedSettings.current.add("speedtestCols")
+				setColumnVisibility({ ...DEFAULT_HIDDEN_SPEEDTEST_COLUMNS, ...vals.speedtestCols })
+			}
+			if (!appliedSettings.current.has(sortSettingsKey) && vals[sortSettingsKey] !== undefined) {
+				appliedSettings.current.add(sortSettingsKey)
+				setSorting(vals[sortSettingsKey] as SortingState)
+			}
+		})
+	}, [sortSettingsKey])
+
 	const handleColumnVisibilityChange = useCallback(
 		(updater: VisibilityState | ((prev: VisibilityState) => VisibilityState)) => {
 			setColumnVisibility((prev) => {
@@ -110,10 +137,27 @@ export default function SpeedtestsTable({
 				try {
 					localStorage.setItem(COLUMN_STORAGE_KEY, JSON.stringify(next))
 				} catch {}
+				$userSettings.setKey("speedtestCols", next)
+				queueUserSettings({ speedtestCols: next })
 				return next
 			})
 		},
 		[]
+	)
+
+	const handleSortingChange = useCallback(
+		(updater: SortingState | ((prev: SortingState) => SortingState)) => {
+			setSorting((prev) => {
+				const next = typeof updater === "function" ? updater(prev) : updater
+				try {
+					sessionStorage.setItem(sortStorageKey, JSON.stringify(next))
+				} catch {}
+				$userSettings.setKey(sortSettingsKey, next)
+				queueUserSettings({ [sortSettingsKey]: next })
+				return next
+			})
+		},
+		[sortSettingsKey, sortStorageKey]
 	)
 
 	const showError = useCallback(
@@ -216,7 +260,7 @@ export default function SpeedtestsTable({
 		getCoreRowModel: getCoreRowModel(),
 		getSortedRowModel: getSortedRowModel(),
 		getFilteredRowModel: getFilteredRowModel(),
-		onSortingChange: setSorting,
+		onSortingChange: handleSortingChange,
 		onColumnVisibilityChange: handleColumnVisibilityChange,
 		onRowSelectionChange: setRowSelection,
 		defaultColumn: {
@@ -304,7 +348,9 @@ export default function SpeedtestsTable({
 													<DropdownMenuItem
 														onSelect={(e) => {
 															e.preventDefault()
-															setSorting([{ id: column.id, desc: sorting[0]?.id === column.id && !sorting[0]?.desc }])
+															handleSortingChange([
+																{ id: column.id, desc: sorting[0]?.id === column.id && !sorting[0]?.desc },
+															])
 														}}
 														key={column.id}
 													>
