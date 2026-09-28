@@ -1,5 +1,5 @@
-import { getMonitorTarget } from "@/lib/network-monitor-utils"
-import LineChartDefault from "@/components/charts/line-chart"
+import { getMonitorTarget, monitorGapRecord } from "@/lib/network-monitor-utils"
+import LineChartDefault, { isolatedDot } from "@/components/charts/line-chart"
 import type { DataPoint } from "@/components/charts/line-chart"
 import { decimalString, formatMicroseconds, matchesFilterGroups, parseFilterGroups, toFixedFloat } from "@/lib/utils"
 import { $monitorFilter } from "@/lib/stores"
@@ -77,10 +77,14 @@ function MonitorChart({
 		return { dataPoints: points, visibleKeys: visibleIDs }
 	}, [monitors, filter, metric, chartData.chartTime, color])
 
+	// Monitors with different intervals don't share timestamps, so multiple lines need connectNulls.
+	// A single monitor's stats already contain empty records at real gaps, so the line breaks there.
+	const multipleMonitors = visibleKeys.length > 1
+
 	const filteredMonitorStats = useMemo(() => {
-		if (!visibleKeys.length) return monitorStats
+		if (!multipleMonitors) return monitorStats
 		return monitorStats.filter((record) => visibleKeys.some((id) => record.stats?.[id] != null))
-	}, [monitorStats, visibleKeys])
+	}, [monitorStats, visibleKeys, multipleMonitors])
 
 	const legend = dataPoints.length < 10 && showFilter
 
@@ -99,7 +103,7 @@ function MonitorChart({
 				customData={filteredMonitorStats}
 				dataPoints={dataPoints}
 				domain={domain ?? ["auto", "auto"]}
-				connectNulls
+				connectNulls={multipleMonitors}
 				tickFormatter={tickFormatter}
 				contentFormatter={contentFormatter}
 				legend={legend}
@@ -125,9 +129,10 @@ export function AvgMinMaxResponseChart({ monitorStats, monitor, chartData, empty
 	// only one monitor is relevant for this chart
 	const dataPoints: DataPoint<NetworkMonitorStatsRecord>[] = useMemo(() => {
 		const dataFn = (metric: keyof MonitorStats) => (record: NetworkMonitorStatsRecord) =>
-			record.stats?.[monitor?.id ?? ""]?.[metric] ?? "-"
+			record.stats?.[monitor?.id ?? ""]?.[metric] ?? null
 		const avgPoint = {
 			label: "Avg",
+			dot: isolatedDot,
 			dataKey: dataFn("res_avg"),
 			color: 1,
 			order: 0,
@@ -139,6 +144,7 @@ export function AvgMinMaxResponseChart({ monitorStats, monitor, chartData, empty
 		return [
 			{
 				label: "Max",
+				dot: isolatedDot,
 				dataKey: dataFn("res_max"),
 				color: 3,
 				order: 0,
@@ -146,6 +152,7 @@ export function AvgMinMaxResponseChart({ monitorStats, monitor, chartData, empty
 			avgPoint,
 			{
 				label: "Min",
+				dot: isolatedDot,
 				dataKey: dataFn("res_min"),
 				color: 2,
 				order: 2,
@@ -153,10 +160,14 @@ export function AvgMinMaxResponseChart({ monitorStats, monitor, chartData, empty
 		]
 	}, [chartTime, hasLongInterval, monitor?.id])
 
+	// Replace records where every probe failed with gap markers, so the line breaks there without
+	// leaving points that have no response time for the tooltip to show.
 	const data = useMemo(() => {
-		if (!monitor) return []
-		return monitorStats.filter((record) => record.stats && monitor.id in record.stats)
-	}, [monitor, monitorStats])
+		const id = monitor?.id ?? ""
+		return monitorStats.map((record) =>
+			record.stats?.[id] && record.stats[id].res_avg == null ? monitorGapRecord : record
+		)
+	}, [monitorStats, monitor?.id])
 
 	const legend = dataPoints.length > 1
 
@@ -174,7 +185,6 @@ export function AvgMinMaxResponseChart({ monitorStats, monitor, chartData, empty
 				customData={data}
 				dataPoints={dataPoints}
 				domain={["auto", "auto"]}
-				connectNulls
 				legend={legend}
 				tickFormatter={(value) => formatMicroseconds(value, false)}
 				contentFormatter={({ value }) => {

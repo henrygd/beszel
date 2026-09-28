@@ -22,10 +22,32 @@ export type DataPoint<T = SystemStatsRecord> = {
 	order?: number
 	strokeOpacity?: number
 	activeDot?: boolean
-	dot?: boolean
+	dot?: boolean | typeof isolatedDot
 	/** Which Y axis this series plots against. Defaults to "left". */
 	yAxisId?: "left" | "right"
 	strokeDasharray?: string
+}
+
+type IsolatedDotProps = {
+	key: string
+	cx: number
+	cy: number
+	stroke: string
+	index: number
+	points: { value: unknown }[]
+}
+
+const hasValue = (point?: { value: unknown }) => typeof point?.value === "number"
+
+/**
+ * Dot renderer that only draws points with no value on either side. Without connectNulls
+ * those points have no line segment, so they would otherwise only be visible on hover.
+ */
+export function isolatedDot({ key, cx, cy, stroke, index, points }: IsolatedDotProps) {
+	if (!hasValue(points[index]) || hasValue(points[index - 1]) || hasValue(points[index + 1])) {
+		return <g key={key} />
+	}
+	return <circle key={key} cx={cx} cy={cy} r={2} fill={stroke} />
 }
 
 export default function LineChartDefault({

@@ -33,6 +33,7 @@ const Smart = lazy(() => import("@/components/routes/smart.tsx"))
 const Monitors = lazy(() => import("@/components/routes/monitors.tsx"))
 const SystemDetail = lazy(() => import("@/components/routes/system.tsx"))
 const CopyToClipboardDialog = lazy(() => import("@/components/copy-to-clipboard.tsx"))
+const ActiveAlerts = lazy(() => import("@/components/active-alerts.tsx").then((m) => ({ default: m.ActiveAlerts })))
 
 const App = memo(() => {
 	const page = useStore($router)
@@ -109,6 +110,9 @@ const Layout = () => {
 						<Navbar />
 					</div>
 					<div className="container relative">
+						<Suspense>
+							<ActiveAlerts className="mb-4" />
+						</Suspense>
 						<App />
 						{copyContent && (
 							<Suspense>
