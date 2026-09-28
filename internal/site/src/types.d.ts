@@ -1,5 +1,6 @@
 import type { RecordModel } from "pocketbase"
 import type { Unit, Os, BatteryState, HourFormat, ConnectionType, ServiceStatus, ServiceSubState } from "@/lib/enums"
+import type { ChartRange } from "@/lib/chart-range"
 
 // global window properties
 declare global {
@@ -432,6 +433,7 @@ export interface ChartData {
 	containerData?: ChartDataContainer[]
 	orientation: "right" | "left"
 	chartTime: ChartTimes
+	chartRange?: ChartRange | null
 }
 
 export interface AlertInfo {

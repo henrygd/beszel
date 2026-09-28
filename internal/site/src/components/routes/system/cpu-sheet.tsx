@@ -118,7 +118,11 @@ export default memo(function CpuCoresSheet({
 			</SheetTrigger>
 			{hasOpened.current && (
 				<SheetContent aria-describedby={undefined} className="overflow-auto w-200 !max-w-full p-4 sm:p-6">
-					<ChartTimeSelect className="w-[calc(100%-2em)] bg-card" agentVersion={chartData.agentVersion} />
+					<ChartTimeSelect
+						className="w-[calc(100%-2em)]"
+						controlClassName="bg-card"
+						agentVersion={chartData.agentVersion}
+					/>
 					{hasBreakdown && (
 						<ChartCard
 							key="cpu-breakdown"

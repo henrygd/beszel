@@ -1,4 +1,5 @@
 import { getPbTimestamp, pb } from "@/lib/api"
+import type { ChartRange } from "@/lib/chart-range"
 import { chartTimeData } from "@/lib/utils"
 import type {
 	ChartData,
@@ -63,6 +64,25 @@ export async function getStats<T extends SystemStatsRecord | ContainerStatsRecor
 		filter: pb.filter("system={:id} && created > {:created} && type={:type}", {
 			id: systemId,
 			created: getPbTimestamp(chartTime, lastCached ? new Date(lastCached + 1000) : undefined, createdIsNumber),
+			type: chartTimeData[chartTime].type,
+		}),
+		fields: "created,stats",
+		sort: "created",
+	})
+}
+
+/** Fetch all stats of `chartTime`'s tier within a fixed window */
+export async function getRangeStats<T extends SystemStatsRecord | ContainerStatsRecord>(
+	collection: string,
+	systemId: string,
+	chartTime: ChartTimes,
+	range: ChartRange
+): Promise<T[]> {
+	return await pb.collection<T>(collection).getFullList({
+		filter: pb.filter("system={:id} && created >= {:start} && created <= {:end} && type={:type}", {
+			id: systemId,
+			start: getPbTimestamp(chartTime, new Date(range.start)),
+			end: getPbTimestamp(chartTime, new Date(range.end)),
 			type: chartTimeData[chartTime].type,
 		}),
 		fields: "created,stats",
