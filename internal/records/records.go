@@ -272,7 +272,6 @@ func AverageSystemStatsSlice(records []system.Stats) system.Stats {
 	// necessary because uint8 is not big enough for the sum
 	batterySum := 0
 	batteryCount := 0
-	var conntrackSum, conntrackCount uint64
 	batterySums := make(map[string]uint64)
 	batteryCounts := make(map[string]uint64)
 	// accumulate per-core usage across records
@@ -356,12 +355,6 @@ func AverageSystemStatsSlice(records []system.Stats) system.Stats {
 		sum.MaxDiskWritePs = max(sum.MaxDiskWritePs, stats.MaxDiskWritePs, stats.DiskWritePs)
 		sum.MaxBandwidth[0] = max(sum.MaxBandwidth[0], stats.MaxBandwidth[0], stats.Bandwidth[0])
 		sum.MaxBandwidth[1] = max(sum.MaxBandwidth[1], stats.MaxBandwidth[1], stats.Bandwidth[1])
-		if stats.Conntrack[1] > 0 {
-			conntrackSum += stats.Conntrack[0]
-			conntrackCount++
-			sum.Conntrack[1] = max(sum.Conntrack[1], stats.Conntrack[1])
-			sum.MaxConntrack = max(sum.MaxConntrack, stats.MaxConntrack, stats.Conntrack[0])
-		}
 		sum.MaxDiskIO[0] = max(sum.MaxDiskIO[0], stats.MaxDiskIO[0], stats.DiskIO[0])
 		sum.MaxDiskIO[1] = max(sum.MaxDiskIO[1], stats.MaxDiskIO[1], stats.DiskIO[1])
 		sum.DiskIOTotal[0] = max(sum.DiskIOTotal[0], stats.DiskIOTotal[0])
@@ -542,9 +535,6 @@ func AverageSystemStatsSlice(records []system.Stats) system.Stats {
 	sum.Bandwidth[1] = sum.Bandwidth[1] / uint64(count)
 	if batteryCount > 0 {
 		sum.Battery[0] = uint8(batterySum / batteryCount)
-	}
-	if conntrackCount > 0 {
-		sum.Conntrack[0] = conntrackSum / conntrackCount
 	}
 	if len(batterySums) > 0 {
 		sum.Batteries = make(map[string]uint8, len(batterySums))

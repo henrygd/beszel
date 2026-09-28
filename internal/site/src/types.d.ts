@@ -174,10 +174,6 @@ export interface SystemStats {
 	ni?: Record<string, [number, number, number, number]>
 	/** network interface rates per second [packets sent, packets recv, errors out, errors in, drops out, drops in] */
 	nip?: Record<string, [number, number, number, number, number, number]>
-	/** conntrack [entries, table max] */
-	ct?: [number, number]
-	/** peak conntrack entries */
-	ctm?: number
 }
 
 export interface GPUData {
