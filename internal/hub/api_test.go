@@ -684,6 +684,25 @@ func TestApiRoutesAuthentication(t *testing.T) {
 				})
 			},
 		},
+		{
+			Name:   "GET /systemd/logs - old agent without capability returns empty logs",
+			Method: http.MethodGet,
+			URL:    fmt.Sprintf("/api/beszel/systemd/logs?system=%s&service=nginx.service", system.Id),
+			Headers: map[string]string{
+				"Authorization": userToken,
+			},
+			ExpectedStatus:  200,
+			ExpectedContent: []string{`"logs":""`},
+			TestAppFactory:  testAppFactory,
+			BeforeTestFunc: func(t testing.TB, app *pbTests.TestApp, e *core.ServeEvent) {
+				beszelTests.CreateRecord(app, "systemd_services", map[string]any{
+					"system": system.Id,
+					"name":   "nginx.service",
+					"state":  0,
+					"sub":    1,
+				})
+			},
+		},
 
 		// Auth Optional Routes - Should work without authentication
 		{
