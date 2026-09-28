@@ -474,17 +474,34 @@ export {
 	// ChartStyle,
 }
 
-export function pinnedAxisDomain(): AxisDomain {
-	return [
-		0,
-		(dataMax: number) => {
-			if (dataMax > 10) {
-				return Math.round(dataMax)
-			}
-			if (dataMax > 1) {
-				return Math.round(dataMax / 0.1) * 0.1
-			}
-			return dataMax
-		},
-	]
+const roundFloat = (value: number) => Number(value.toPrecision(12))
+
+/** Round tick step (1, 2, 2.5 or 5 × 10^n) giving about four intervals up to max */
+function niceStep(max: number) {
+	const roughStep = max / 4
+	const magnitude = 10 ** Math.floor(Math.log10(roughStep))
+	const step = [1, 2, 2.5, 5, 10].find((n) => n * magnitude >= roughStep) ?? 10
+	return roundFloat(step * magnitude)
+}
+
+/**
+ * Evenly spaced ticks for a fixed [0, max] domain (e.g. total memory), always including max.
+ * Recharts stops one full step before max, which leaves a large gap below the top tick.
+ */
+export function fixedDomainTicks(domain?: AxisDomain): number[] | undefined {
+	if (!Array.isArray(domain)) {
+		return undefined
+	}
+	const [min, max] = domain
+	if (min !== 0 || typeof max !== "number" || !(max > 0) || !Number.isFinite(max)) {
+		return undefined
+	}
+	const step = niceStep(max)
+	const ticks: number[] = []
+	// skip ticks within half a step of max so labels don't collide
+	for (let tick = 0; tick <= max - step / 2; tick = roundFloat(tick + step)) {
+		ticks.push(tick)
+	}
+	ticks.push(max)
+	return ticks
 }
