@@ -100,8 +100,6 @@ export default function NetworkMonitorsTableNew({
 	const [globalFilter, setGlobalFilter] = useState("")
 	const [deleteOpen, setDeleteOpen] = useState(false)
 	const [pendingDelete, setPendingDelete] = useState<NetworkMonitorRecord[]>([])
-	const target = pendingDelete[0]?.target
-	const system = pendingDelete[0] ? ($allSystemsById.get()[pendingDelete[0].system]?.name ?? "") : ""
 	const [editingMonitor, setEditingMonitor] = useState<NetworkMonitorRecord>()
 
 	const { toast } = useToast()
@@ -441,28 +439,12 @@ export default function NetworkMonitorsTableNew({
 						>
 							<AlertDialogContent>
 								<AlertDialogHeader>
-									{pendingDelete.length === 1 ? (
-										<>
-											<AlertDialogTitle>
-												<Trans>Are you sure you want to delete {target} from {system}?</Trans>
-											</AlertDialogTitle>
-											<AlertDialogDescription>
-												<Trans>
-													This action cannot be undone. This will permanently delete all current records for{" "}
-													{target} from {system} in the database.
-												</Trans>
-											</AlertDialogDescription>
-										</>
-									) : (
-										<>
-											<AlertDialogTitle>
-												<Trans>Are you sure?</Trans>
-											</AlertDialogTitle>
-											<AlertDialogDescription>
-												<Trans>This will permanently delete all selected records from the database.</Trans>
-											</AlertDialogDescription>
-										</>
-									)}
+									<AlertDialogTitle>
+										<Trans>Are you sure?</Trans>
+									</AlertDialogTitle>
+									<AlertDialogDescription>
+										<Trans>This will permanently delete all selected records from the database.</Trans>
+									</AlertDialogDescription>
 								</AlertDialogHeader>
 								<AlertDialogFooter>
 									<AlertDialogCancel>
