@@ -210,8 +210,7 @@ func (sm *SystemManager) onRecordAfterUpdateSuccess(e *core.RecordEvent) error {
 	prevStatus := pending
 	system, ok := sm.systems.GetOk(e.Record.Id)
 	if ok {
-		prevStatus = system.Status
-		system.Status = newStatus
+		prevStatus = system.swapStatus(newStatus)
 	}
 
 	switch newStatus {
@@ -336,7 +335,7 @@ func (sm *SystemManager) AddRecord(record *core.Record, system *System) (err err
 	}
 
 	// Populate system from record
-	system.Status = record.GetString("status")
+	system.swapStatus(record.GetString("status"))
 	system.Host = record.GetString("host")
 	system.Port = record.GetString("port")
 
@@ -381,7 +380,7 @@ func (sm *SystemManager) resetFailedSmartFetchState(systemID string) {
 func (sm *SystemManager) GetMonitorConfigsForSystem(systemID string) ([]monitor.Config, error) {
 	var configs []monitor.Config
 	err := sm.hub.DB().
-		NewQuery("SELECT id, target, protocol, port, interval FROM network_monitors WHERE system = {:system} AND enabled = true").
+		NewQuery("SELECT id, target, protocol, port, interval, server FROM network_monitors WHERE system = {:system} AND enabled = true").
 		Bind(dbx.Params{"system": systemID}).
 		All(&configs)
 	return configs, err

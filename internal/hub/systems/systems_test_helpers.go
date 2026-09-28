@@ -44,7 +44,7 @@ func (sm *SystemManager) GetSystemStatusFromStore(systemID string) string {
 	if !ok {
 		return ""
 	}
-	return sys.Status
+	return sys.GetStatus()
 }
 
 // TESTING ONLY: GetSystemContextFromStore returns the context and cancel function for a system
