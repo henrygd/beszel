@@ -3,6 +3,7 @@
 package systems
 
 import (
+	"encoding/json"
 	"fmt"
 	"testing"
 	"time"
@@ -15,6 +16,126 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
+
+func TestNetworkMonitorResultOwnership(t *testing.T) {
+	for _, realtime := range []bool{false, true} {
+		t.Run(fmt.Sprintf("realtime=%t", realtime), func(t *testing.T) {
+			sys, app := newTestSystemWithHub(t)
+			if realtime {
+				client := subscriptions.NewDefaultClient()
+				client.Subscribe("network_monitors/*")
+				app.SubscriptionsBroker().Register(client)
+				t.Cleanup(func() { app.SubscriptionsBroker().Unregister(client.Id()) })
+			}
+			systems, err := app.FindCachedCollectionByNameOrId("systems")
+			require.NoError(t, err)
+			foreignSystem := core.NewRecord(systems)
+			require.NoError(t, app.SaveNoValidate(foreignSystem))
+			other := &System{Id: foreignSystem.Id, manager: sys.manager}
+			collection, err := app.FindCachedCollectionByNameOrId("network_monitors")
+			require.NoError(t, err)
+			for _, cfg := range []struct {
+				id, system string
+				enabled    bool
+			}{
+				{"owned", sys.Id, true},
+				{"disabled", sys.Id, false},
+				{"foreign", other.Id, true},
+			} {
+				record := core.NewRecord(collection)
+				record.Id = cfg.id
+				record.Load(map[string]any{"system": cfg.system, "enabled": cfg.enabled})
+				require.NoError(t, app.SaveNoValidate(record))
+			}
+			// Establish a legitimate result and history for the other system.
+			_, err = other.createRecords(&system.CombinedData{Monitors: map[string]monitor.Result{
+				"foreign": {LastProbeAt: 1000, AvgResponse: 77, TotalCount: 1, SuccessCount: 1, ResponseSum: 77},
+			}})
+			require.NoError(t, err)
+			snapshot := func(id string) []byte {
+				t.Helper()
+				record, err := app.FindRecordById("network_monitors", id)
+				require.NoError(t, err)
+				data, err := json.Marshal(record)
+				require.NoError(t, err)
+				return data
+			}
+			before := snapshot("foreign")
+			result := monitor.Result{
+				LastProbeAt: 2000, AvgResponse: 22, AvgResponse1h: 33,
+				MinResponse1h: 11, MaxResponse1h: 44, PacketLoss1h: 50,
+				TotalCount: 2, SuccessCount: 1, ResponseSum: 22,
+				Cert: &monitor.CertInfo{Expires: 1_800_000_000_000, Issuer: "Test CA"},
+			}
+			data := &system.CombinedData{Monitors: map[string]monitor.Result{
+				"owned": result, "disabled": result, "foreign": result, "nonexistent": result,
+			}}
+			for range 2 { // Repeated results must remain deduplicated.
+				_, err = sys.createRecords(data)
+				require.NoError(t, err)
+			}
+			assert.JSONEq(t, string(before), string(snapshot("foreign")))
+			assert.Equal(t, map[string]int64{"owned": 2000, "disabled": 2000}, sys.lastSavedMonitorProbe)
+			assert.Len(t, data.Monitors, 4, "ingestion must not mutate the shared telemetry payload")
+			for _, id := range []string{"owned", "disabled"} {
+				record, err := app.FindRecordById("network_monitors", id)
+				require.NoError(t, err)
+				assert.EqualValues(t, result.AvgResponse, record.GetInt("res"))
+				assert.EqualValues(t, result.AvgResponse1h, record.GetInt("resAvg1h"))
+				var cert monitor.CertInfo
+				require.NoError(t, record.UnmarshalJSONField("certInfo", &cert))
+				assert.Equal(t, *result.Cert, cert)
+			}
+			stats, err := app.FindAllRecords("network_monitor_stats")
+			require.NoError(t, err)
+			assert.Len(t, stats, 3)
+			for _, stat := range stats {
+				record, err := app.FindRecordById("network_monitors", stat.GetString("monitor"))
+				require.NoError(t, err)
+				assert.Equal(t, record.GetString("system"), stat.GetString("system"))
+				if record.Id == "foreign" {
+					assert.Equal(t, 77, stat.GetInt("res_sum"))
+				} else {
+					assert.Equal(t, 22, stat.GetInt("res_sum"))
+				}
+			}
+
+			// Ownership must be read afresh, even for IDs with saved probe markers.
+			moved, err := app.FindRecordById("network_monitors", "owned")
+			require.NoError(t, err)
+			moved.Set("system", other.Id)
+			require.NoError(t, app.SaveNoValidate(moved))
+			movedBefore := snapshot("owned")
+			for id, result := range data.Monitors {
+				result.LastProbeAt = 3000
+				result.AvgResponse = 999
+				data.Monitors[id] = result
+			}
+			_, err = sys.createRecords(data)
+			require.NoError(t, err)
+			assert.JSONEq(t, string(movedBefore), string(snapshot("owned")))
+			assert.JSONEq(t, string(before), string(snapshot("foreign")))
+			count, err := app.CountRecords("network_monitor_stats")
+			require.NoError(t, err)
+			assert.EqualValues(t, 4, count, "only the still-owned disabled monitor gets another sample")
+			assert.Equal(t, map[string]int64{"owned": 2000, "disabled": 3000}, sys.lastSavedMonitorProbe)
+		})
+	}
+}
+
+func TestNetworkMonitorOwnershipQueryFailure(t *testing.T) {
+	sys, app := newTestSystemWithHub(t)
+	_, err := app.DB().NewQuery("DROP TABLE network_monitors").Execute()
+	require.NoError(t, err)
+	_, err = sys.createRecords(&system.CombinedData{Monitors: map[string]monitor.Result{
+		"missing": {LastProbeAt: 1000},
+	}})
+	require.Error(t, err)
+	count, err := app.CountRecords("system_stats")
+	require.NoError(t, err)
+	assert.Zero(t, count, "an ownership lookup failure must roll back the transaction")
+	assert.Empty(t, sys.lastSavedMonitorProbe)
+}
 
 func TestNetworkMonitorProbePruning(t *testing.T) {
 	for _, tc := range []struct {

@@ -419,6 +419,13 @@ func (sys *System) updateNetworkMonitorsRecords(app core.App, monitorResults map
 	var err error
 	systemId := sys.Id
 	const monitorCollectionName = "network_monitors"
+	// Load ownership inside createRecords' transaction, before either result or
+	// history writes. Agent-provided IDs may refer to foreign or deleted monitors.
+	var monitorIDs []string
+	if err := app.DB().Select("id").From(monitorCollectionName).
+		Where(dbx.HashExp{"system": systemId}).Column(&monitorIDs); err != nil {
+		return err
+	}
 
 	// If realtime updates are active, we save via PocketBase records to trigger realtime events.
 	// Otherwise we can do a more efficient direct update via SQL
@@ -440,14 +447,19 @@ func (sys *System) updateNetworkMonitorsRecords(app core.App, monitorResults map
 		}
 		// Results omit certInfo unless it changed, so keep the stored value.
 		setClauses = append(setClauses, "certInfo=COALESCE({:certInfo}, certInfo)")
-		queryString := fmt.Sprintf("UPDATE %s SET %s WHERE id={:id}", monitorCollectionName, strings.Join(setClauses, ", "))
+		queryString := fmt.Sprintf("UPDATE %s SET %s WHERE id={:id} AND system={:system}", monitorCollectionName, strings.Join(setClauses, ", "))
 		updateQuery = db.NewQuery(queryString)
 	}
 
 	// update network_monitors records
-	for id, result := range monitorResults {
+	for _, id := range monitorIDs {
+		result, ok := monitorResults[id]
+		if !ok {
+			continue
+		}
 		monitorData := map[string]any{
 			"id":       id,
+			"system":   systemId,
 			"res":      result.AvgResponse,
 			"resAvg1h": result.AvgResponse1h,
 			"resMin1h": result.MinResponse1h,
@@ -491,7 +503,11 @@ func (sys *System) updateNetworkMonitorsRecords(app core.App, monitorResults map
 		statsCollection, _ = app.FindCachedCollectionByNameOrId(statsCollectionName)
 	}
 
-	for monitorId, result := range monitorResults {
+	for _, monitorId := range monitorIDs {
+		result, ok := monitorResults[monitorId]
+		if !ok {
+			continue
+		}
 		// Compare identity, not ordering, so agent clock changes don't stall writes.
 		if result.LastProbeAt == sys.lastSavedMonitorProbe[monitorId] {
 			continue
