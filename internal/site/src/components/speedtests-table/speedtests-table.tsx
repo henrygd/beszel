@@ -57,10 +57,11 @@ import {
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet"
 import ChartTimeSelect from "@/components/charts/chart-time-select"
 import {
-	SpeedtestBandwidthChart,
+	SpeedtestDownloadChart,
 	SpeedtestLatencyChart,
 	SpeedtestLoadedLatencyChart,
 	SpeedtestLossChart,
+	SpeedtestUploadChart,
 } from "@/components/routes/system/charts/speedtest-charts"
 import { useSpeedtestStats } from "@/lib/use-speedtests"
 import { formatSpeedtestInterval, getSpeedtestServerLabel } from "@/lib/speedtest-utils"
@@ -513,7 +514,8 @@ function SpeedtestSheet({
 						chartTimeStore={chartTimeStore}
 						allowRealtime={false}
 					/>
-					<SpeedtestBandwidthChart stats={stats} chartData={chartData} empty={empty} />
+					<SpeedtestDownloadChart stats={stats} chartData={chartData} empty={empty} />
+					<SpeedtestUploadChart stats={stats} chartData={chartData} empty={empty} />
 					<SpeedtestLatencyChart stats={stats} chartData={chartData} empty={empty} />
 					<SpeedtestLoadedLatencyChart stats={stats} chartData={chartData} empty={empty} />
 					<SpeedtestLossChart stats={stats} chartData={chartData} empty={empty} />

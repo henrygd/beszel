@@ -38,25 +38,56 @@ function point(label: string, color: number | string, dataKey: DataPoint<Speedte
 	} satisfies DataPoint<SpeedtestStatsRecord>
 }
 
-export function SpeedtestBandwidthChart({ stats, chartData, empty }: SpeedtestChartProps) {
-	const { t } = useLingui()
-	const dataPoints = useMemo(
-		() => [point(t`Download`, 2, (record) => record.download, 0), point(t`Upload`, 5, (record) => record.upload, 1)],
-		[t]
-	)
+function SpeedtestBandwidthChart({
+	stats,
+	chartData,
+	empty,
+	title,
+	description,
+	color,
+	dataKey,
+}: SpeedtestChartProps & {
+	title: string
+	description: string
+	color: number
+	dataKey: DataPoint<SpeedtestStatsRecord>["dataKey"]
+}) {
+	const dataPoints = useMemo(() => [point(title, color, dataKey)], [title, color, dataKey])
 	return (
-		<ChartCard empty={empty} title={t`Bandwidth`} description={t`Download and upload speed`} grid={false} legend>
+		<ChartCard empty={empty} title={title} description={description} grid={false}>
 			<AreaChartDefault
 				truncate
 				chartData={chartData}
 				customData={stats}
 				dataPoints={dataPoints}
 				domain={[0, "auto"]}
-				legend
 				tickFormatter={(value) => formatBandwidth(value, true)}
 				contentFormatter={({ value }) => (typeof value === "number" ? formatBandwidth(value) : value)}
 			/>
 		</ChartCard>
+	)
+}
+
+const downloadKey = (record: SpeedtestStatsRecord) => record.download
+const uploadKey = (record: SpeedtestStatsRecord) => record.upload
+
+export function SpeedtestDownloadChart(props: SpeedtestChartProps) {
+	const { t } = useLingui()
+	return (
+		<SpeedtestBandwidthChart
+			{...props}
+			title={t`Download`}
+			description={t`Download speed`}
+			color={2}
+			dataKey={downloadKey}
+		/>
+	)
+}
+
+export function SpeedtestUploadChart(props: SpeedtestChartProps) {
+	const { t } = useLingui()
+	return (
+		<SpeedtestBandwidthChart {...props} title={t`Upload`} description={t`Upload speed`} color={5} dataKey={uploadKey} />
 	)
 }
 
