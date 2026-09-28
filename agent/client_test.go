@@ -17,6 +17,7 @@ import (
 	"net/url"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"testing"
 	"time"
@@ -316,7 +317,7 @@ func TestGetTLSConfigErrors(t *testing.T) {
 			require.Error(t, err)
 			assert.Nil(t, tlsConfig)
 			assert.Contains(t, err.Error(), tc.errorMatch)
-			assert.Contains(t, err.Error(), tc.path)
+			assert.Contains(t, err.Error(), strconv.Quote(tc.path))
 		})
 	}
 }
@@ -681,12 +682,12 @@ func TestGetToken(t *testing.T) {
 
 	t.Run("error when TOKEN_FILE points to non-existent file", func(t *testing.T) {
 		// Set TOKEN_FILE to a non-existent file
-		t.Setenv("TOKEN_FILE", "/non/existent/file.txt")
+		t.Setenv("TOKEN_FILE", filepath.Join(t.TempDir(), "missing.txt"))
 
 		token, err := getToken()
 		assert.Error(t, err)
 		assert.Equal(t, "", token)
-		assert.Contains(t, err.Error(), "no such file or directory")
+		assert.ErrorIs(t, err, os.ErrNotExist)
 	})
 
 	t.Run("handles empty token file", func(t *testing.T) {

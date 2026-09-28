@@ -5,6 +5,7 @@ package agent
 import (
 	"math"
 	"os"
+	"path/filepath"
 	"runtime"
 	"strings"
 	"testing"
@@ -13,6 +14,7 @@ import (
 	"github.com/henrygd/beszel/internal/entities/system"
 	"github.com/shirou/gopsutil/v4/disk"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestParseFilesystemEntry(t *testing.T) {
@@ -506,13 +508,13 @@ func TestAddConfiguredExtraFilesystems(t *testing.T) {
 func TestAddExtraFilesystemFolders(t *testing.T) {
 	t.Run("adds missing folders and skips existing mountpoints", func(t *testing.T) {
 		agent := &Agent{fsStats: map[string]*system.FsStats{
-			"existing": {Mountpoint: "/extra-filesystems/existing"},
+			"existing": {Mountpoint: filepath.FromSlash("/extra-filesystems/existing")},
 		}}
 		discovery := diskDiscovery{
 			agent: agent,
 			ctx: fsRegistrationContext{
 				isWindows: false,
-				efPath:    "/extra-filesystems",
+				efPath:    filepath.FromSlash("/extra-filesystems"),
 				diskIoCounters: map[string]disk.IOCountersStat{
 					"newdisk": {Name: "newdisk"},
 				},
@@ -521,10 +523,10 @@ func TestAddExtraFilesystemFolders(t *testing.T) {
 
 		discovery.addExtraFilesystemFolders([]string{"existing", "newdisk__Archive"})
 
-		assert.Len(t, agent.fsStats, 2)
+		require.Len(t, agent.fsStats, 2)
 		stats, exists := agent.fsStats["newdisk"]
-		assert.True(t, exists)
-		assert.Equal(t, "/extra-filesystems/newdisk__Archive", stats.Mountpoint)
+		require.True(t, exists)
+		assert.Equal(t, filepath.FromSlash("/extra-filesystems/newdisk__Archive"), stats.Mountpoint)
 		assert.Equal(t, "Archive", stats.Name)
 	})
 }
@@ -535,7 +537,7 @@ func TestAddPartitionExtraFs(t *testing.T) {
 			agent: agent,
 			ctx: fsRegistrationContext{
 				isWindows: false,
-				efPath:    "/extra-filesystems",
+				efPath:    filepath.FromSlash("/extra-filesystems"),
 				diskIoCounters: map[string]disk.IOCountersStat{
 					"nvme0n1p1": {Name: "nvme0n1p1"},
 					"nvme1n1":   {Name: "nvme1n1"},
@@ -550,12 +552,12 @@ func TestAddPartitionExtraFs(t *testing.T) {
 
 		d.addPartitionExtraFs(disk.PartitionStat{
 			Device:     "/dev/nvme0n1p1",
-			Mountpoint: "/extra-filesystems/nvme0n1p1__caddy1-root",
+			Mountpoint: filepath.FromSlash("/extra-filesystems/nvme0n1p1__caddy1-root"),
 		})
 
 		stats, exists := agent.fsStats["nvme0n1p1"]
-		assert.True(t, exists)
-		assert.Equal(t, "/extra-filesystems/nvme0n1p1__caddy1-root", stats.Mountpoint)
+		require.True(t, exists)
+		assert.Equal(t, filepath.FromSlash("/extra-filesystems/nvme0n1p1__caddy1-root"), stats.Mountpoint)
 		assert.Equal(t, "caddy1-root", stats.Name)
 	})
 
@@ -566,10 +568,10 @@ func TestAddPartitionExtraFs(t *testing.T) {
 		// These simulate the virtual mounts that appear when host / is bind-mounted
 		// with disk.Partitions(all=true) — e.g. /proc, /sys, /dev visible under the mount.
 		for _, nested := range []string{
-			"/extra-filesystems/nvme0n1p1__caddy1-root/proc",
-			"/extra-filesystems/nvme0n1p1__caddy1-root/sys",
-			"/extra-filesystems/nvme0n1p1__caddy1-root/dev",
-			"/extra-filesystems/nvme0n1p1__caddy1-root/run",
+			filepath.FromSlash("/extra-filesystems/nvme0n1p1__caddy1-root/proc"),
+			filepath.FromSlash("/extra-filesystems/nvme0n1p1__caddy1-root/sys"),
+			filepath.FromSlash("/extra-filesystems/nvme0n1p1__caddy1-root/dev"),
+			filepath.FromSlash("/extra-filesystems/nvme0n1p1__caddy1-root/run"),
 		} {
 			d.addPartitionExtraFs(disk.PartitionStat{Device: "tmpfs", Mountpoint: nested})
 		}
@@ -582,18 +584,20 @@ func TestAddPartitionExtraFs(t *testing.T) {
 		d := makeDiscovery(agent)
 
 		partitions := []disk.PartitionStat{
-			{Device: "/dev/nvme0n1p1", Mountpoint: "/extra-filesystems/nvme0n1p1__caddy1-root"},
-			{Device: "/dev/nvme1n1", Mountpoint: "/extra-filesystems/nvme1n1__caddy1-docker"},
-			{Device: "proc", Mountpoint: "/extra-filesystems/nvme0n1p1__caddy1-root/proc"},
-			{Device: "sysfs", Mountpoint: "/extra-filesystems/nvme0n1p1__caddy1-root/sys"},
-			{Device: "overlay", Mountpoint: "/extra-filesystems/nvme0n1p1__caddy1-root/var/lib/docker"},
+			{Device: "/dev/nvme0n1p1", Mountpoint: filepath.FromSlash("/extra-filesystems/nvme0n1p1__caddy1-root")},
+			{Device: "/dev/nvme1n1", Mountpoint: filepath.FromSlash("/extra-filesystems/nvme1n1__caddy1-docker")},
+			{Device: "proc", Mountpoint: filepath.FromSlash("/extra-filesystems/nvme0n1p1__caddy1-root/proc")},
+			{Device: "sysfs", Mountpoint: filepath.FromSlash("/extra-filesystems/nvme0n1p1__caddy1-root/sys")},
+			{Device: "overlay", Mountpoint: filepath.FromSlash("/extra-filesystems/nvme0n1p1__caddy1-root/var/lib/docker")},
 		}
 		for _, p := range partitions {
 			d.addPartitionExtraFs(p)
 		}
 
-		assert.Len(t, agent.fsStats, 2)
+		require.Len(t, agent.fsStats, 2)
+		require.Contains(t, agent.fsStats, "nvme0n1p1")
 		assert.Equal(t, "caddy1-root", agent.fsStats["nvme0n1p1"].Name)
+		require.Contains(t, agent.fsStats, "nvme1n1")
 		assert.Equal(t, "caddy1-docker", agent.fsStats["nvme1n1"].Name)
 	})
 
@@ -1081,7 +1085,7 @@ func TestNormalizeDeviceName(t *testing.T) {
 	assert.Equal(t, "", normalizeDeviceName("   "))
 
 	// A drive-relative path is a path, not a volume.
-	assert.Equal(t, `C:data`, normalizeDeviceName(`C:data`))
+	assert.Equal(t, filepath.Base(`C:data`), normalizeDeviceName(`C:data`))
 }
 
 func TestFindIoDeviceWindowsVolumeNames(t *testing.T) {
