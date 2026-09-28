@@ -28,6 +28,10 @@ func updateHistoryOnAlertUpdate(e *core.RecordEvent) error {
 	if e.Record.GetString("name") == alertNameNetworkMonitorLoss {
 		return e.Next()
 	}
+	// History is visible to the subscriber, including after system access is removed.
+	if !userHasSystem(e.App, e.Record.GetString("user"), e.Record.GetString("system")) {
+		return e.Next()
+	}
 	original := e.Record.Original()
 	new := e.Record
 

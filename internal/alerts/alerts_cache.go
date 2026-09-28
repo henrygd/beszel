@@ -63,7 +63,6 @@ func NewAlertsCache(app core.App) *AlertsCache {
 // bindEvents sets up event listeners to keep the cache in sync with database changes.
 func (c *AlertsCache) bindEvents() *AlertsCache {
 	c.app.OnRecordAfterUpdateSuccess("alerts").BindFunc(func(e *core.RecordEvent) error {
-		// c.Delete(e.Record.Original()) // this would be needed if the system field on an existing alert was changed, however we don't currently allow that in the UI so we'll leave it commented out
 		c.Update(e.Record)
 		return e.Next()
 	})
@@ -106,6 +105,11 @@ func (c *AlertsCache) Update(record *core.Record) {
 
 func (c *AlertsCache) update(record *core.Record) {
 	systemID := record.GetString("system")
+	if previousSystemID := record.Original().GetString("system"); previousSystemID != systemID {
+		if previousStore, ok := c.store.GetOk(previousSystemID); ok {
+			previousStore.Remove(record.Id)
+		}
+	}
 	if systemID == "" {
 		return
 	}

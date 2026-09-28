@@ -119,6 +119,14 @@ func NewAlertManager(app hubLike) *AlertManager {
 // Bind events to the alerts collection lifecycle
 func (am *AlertManager) bindEvents() {
 	am.bindNetworkMonitorAlertEvents()
+	checkSystemAccess := func(e *core.RecordRequestEvent) error {
+		if !e.HasSuperuserAuth() && (e.Auth == nil || !userHasSystem(e.App, e.Auth.Id, e.Record.GetString("system"))) {
+			return e.ForbiddenError("You do not have access to this system", nil)
+		}
+		return e.Next()
+	}
+	am.hub.OnRecordCreateRequest("alerts").BindFunc(checkSystemAccess)
+	am.hub.OnRecordUpdateRequest("alerts").BindFunc(checkSystemAccess)
 	am.hub.OnRecordAfterUpdateSuccess("alerts").BindFunc(updateHistoryOnAlertUpdate)
 	am.hub.OnRecordAfterDeleteSuccess("alerts").BindFunc(resolveHistoryOnAlertDelete)
 	am.hub.OnRecordAfterUpdateSuccess("smart_devices").BindFunc(am.handleSmartDeviceAlert)
@@ -212,6 +220,10 @@ func (am *AlertManager) IsNotificationSilenced(userID, systemID string) bool {
 
 // SendAlert sends an alert to the user
 func (am *AlertManager) SendAlert(data AlertMessageData) error {
+	// Stored subscriptions and queued notifications may outlive system access.
+	if data.SystemID != "" && !userHasSystem(am.hub, data.UserID, data.SystemID) {
+		return nil
+	}
 	// Check if alert is silenced
 	if am.IsNotificationSilenced(data.UserID, data.SystemID) {
 		am.hub.Logger().Info("Notification silenced", "user", data.UserID, "system", data.SystemID, "title", data.Title)
