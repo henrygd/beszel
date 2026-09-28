@@ -23,7 +23,7 @@ function appendCacheValue(
 	monitorId: string,
 	chartTime: ChartTimes | "rt",
 	newStats: NetworkMonitorStatsRecord[],
-	maxPoints = 100
+	maxPoints = chartTimeData[chartTime]?.maxPoints ?? 100
 ) {
 	const cache_key = `${monitorId}:${chartTime}`
 	const existingStats = getCacheValue(monitorId, chartTime)

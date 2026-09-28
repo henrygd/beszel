@@ -95,6 +95,14 @@ export const formatDay = (timestamp: string) => {
 	return dayFormatter.format(new Date(timestamp))
 }
 
+const monthYearFormatter = new Intl.DateTimeFormat(undefined, {
+	month: "short",
+	year: "numeric",
+})
+export const formatMonthYear = (timestamp: string) => {
+	return monthYearFormatter.format(new Date(timestamp))
+}
+
 export const updateFavicon = (() => {
 	let prevDownCount = 0
 	return (downCount = 0) => {
@@ -175,36 +183,40 @@ export const chartTimeData: ChartTimeData = {
 		getOffset: (endTime: Date) => timeDay.offset(endTime, -30),
 	},
 	"6m": {
-		type: "480m",
-		expectedInterval: 60_000 * 480,
+		type: "24h",
+		expectedInterval: 60_000 * 1440,
 		label: () => t`6 months`,
 		ticks: 6,
 		format: (timestamp: string) => formatDay(timestamp),
 		getOffset: (endTime: Date) => timeMonth.offset(endTime, -6),
+		maxPoints: 200,
 	},
 	"1y": {
-		type: "480m",
-		expectedInterval: 60_000 * 480,
+		type: "24h",
+		expectedInterval: 60_000 * 1440,
 		label: () => t`1 year`,
 		ticks: 12,
-		format: (timestamp: string) => formatDay(timestamp),
+		format: (timestamp: string) => formatMonthYear(timestamp),
 		getOffset: (endTime: Date) => timeYear.offset(endTime, -1),
+		maxPoints: 400,
 	},
 	"2y": {
-		type: "480m",
-		expectedInterval: 60_000 * 480,
+		type: "24h",
+		expectedInterval: 60_000 * 1440,
 		label: () => t`2 years`,
 		ticks: 12,
-		format: (timestamp: string) => formatDay(timestamp),
+		format: (timestamp: string) => formatMonthYear(timestamp),
 		getOffset: (endTime: Date) => timeYear.offset(endTime, -2),
+		maxPoints: 800,
 	},
 	"5y": {
-		type: "480m",
-		expectedInterval: 60_000 * 480,
+		type: "24h",
+		expectedInterval: 60_000 * 1440,
 		label: () => t`5 years`,
 		ticks: 12,
-		format: (timestamp: string) => formatDay(timestamp),
+		format: (timestamp: string) => formatMonthYear(timestamp),
 		getOffset: (endTime: Date) => timeYear.offset(endTime, -5),
+		maxPoints: 2000,
 	},
 }
 
