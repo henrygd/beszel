@@ -65,17 +65,20 @@ async function fetchMonitorStats(
 	cached?: NetworkMonitorStatsRecord[]
 ): Promise<NetworkMonitorStatsRecord[]> {
 	const lastCached = cached?.at(-1)?.created as number | undefined
+	const bucketMs = getBucketMs(monitorIds, chartTime)
+	// Bucketed timestamps are floored, so refetch the whole last bucket; mergeSameTimestamps folds in the overlap.
+	const from = lastCached ? new Date(bucketMs ? lastCached - 1 : lastCached + 1000) : undefined
 	const { expr, params } = monitorIdsFilter(monitorIds)
 	const rawRecords = await pb.collection<RawMonitorStatsRecord>("network_monitor_stats").getFullList({
 		filter: pb.filter(`${expr} && created>{:created} && type={:type}`, {
 			...params,
-			created: getPbTimestamp(chartTime, lastCached ? new Date(lastCached + 1000) : undefined, true),
+			created: getPbTimestamp(chartTime, from, true),
 			type: chartTimeData[chartTime].type,
 		}),
 		fields: "monitor,res_min,res_max,total_count,success_count,res_sum,created",
 		sort: "created",
 	})
-	return mergeMonitorStats(rawRecords, getBucketMs(monitorIds, chartTime))
+	return mergeMonitorStats(rawRecords, bucketMs)
 }
 
 const NETWORK_MONITOR_FIELDS =
