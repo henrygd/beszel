@@ -209,8 +209,7 @@ func (sm *SystemManager) onRecordAfterUpdateSuccess(e *core.RecordEvent) error {
 	prevStatus := pending
 	system, ok := sm.systems.GetOk(e.Record.Id)
 	if ok {
-		prevStatus = system.Status
-		system.Status = newStatus
+		prevStatus = system.swapStatus(newStatus)
 	}
 
 	switch newStatus {
@@ -335,7 +334,7 @@ func (sm *SystemManager) AddRecord(record *core.Record, system *System) (err err
 	}
 
 	// Populate system from record
-	system.Status = record.GetString("status")
+	system.swapStatus(record.GetString("status"))
 	system.Host = record.GetString("host")
 	system.Port = record.GetString("port")
 
