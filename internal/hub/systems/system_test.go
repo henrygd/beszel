@@ -4,11 +4,14 @@ package systems
 
 import (
 	"context"
+	"net"
 	"testing"
+	"time"
 
 	"github.com/henrygd/beszel/internal/common"
 	"github.com/henrygd/beszel/internal/entities/system"
 	"github.com/stretchr/testify/require"
+	"golang.org/x/crypto/ssh"
 )
 
 func TestCombinedData_MigrateDeprecatedFields(t *testing.T) {
@@ -186,4 +189,46 @@ func TestSSHDisabledSkipsSSHFallback(t *testing.T) {
 
 	_, err = sys.fetchDataFromAgent(common.DataRequestOptions{})
 	require.ErrorIs(t, err, errSSHDisabled)
+}
+
+func TestCreateRecordsSavesSSHDisabledColumn(t *testing.T) {
+	sys, app := newTestSystemWithHub(t)
+	for _, disabled := range []bool{true, false} {
+		_, err := sys.createRecords(&system.CombinedData{Info: system.Info{SSHDisabled: disabled}})
+		require.NoError(t, err)
+		record, err := app.FindRecordById("systems", sys.Id)
+		require.NoError(t, err)
+		require.Equal(t, disabled, record.GetBool("ssh_disabled"))
+		require.NotContains(t, record.GetString("info"), `"sd"`, "flag belongs in its own column, not info")
+	}
+}
+
+func TestSSHFallbackDialsAgentUnlessDisabled(t *testing.T) {
+	for _, disabled := range []bool{false, true} {
+		listener, err := net.Listen("tcp", "127.0.0.1:0")
+		require.NoError(t, err)
+		accepted := make(chan struct{}, 1)
+		go func() {
+			if conn, err := listener.Accept(); err == nil {
+				accepted <- struct{}{}
+				conn.Close()
+			}
+		}()
+
+		host, port, _ := net.SplitHostPort(listener.Addr().String())
+		sm := &SystemManager{sshConfig: &ssh.ClientConfig{HostKeyCallback: ssh.InsecureIgnoreHostKey(), Timeout: time.Second}}
+		sys := &System{Host: host, Port: port, Status: down, manager: sm, ctx: context.Background()}
+		sys.sshDisabled.Store(disabled)
+
+		_, err = sys.fetchDataFromAgent(common.DataRequestOptions{})
+		require.Error(t, err) // listener isn't a real agent
+		listener.Close()
+
+		select {
+		case <-accepted:
+			require.False(t, disabled, "hub must not dial SSH when the agent disabled it")
+		case <-time.After(200 * time.Millisecond):
+			require.True(t, disabled, "hub must dial SSH when the agent allows it")
+		}
+	}
 }

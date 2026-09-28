@@ -32,7 +32,6 @@ func TestPauseSystemPreservesAgentVersion(t *testing.T) {
 
 	record.Set("info", system.Info{
 		AgentVersion: "0.20.0",
-		SSHDisabled:  true,
 		Cpu:          42.5,
 		MemPct:       60,
 		Uptime:       3600,
@@ -48,7 +47,7 @@ func TestPauseSystemPreservesAgentVersion(t *testing.T) {
 	assert.Equal(t, "paused", pausedRecord.GetString("status"))
 	var info system.Info
 	require.NoError(t, pausedRecord.UnmarshalJSONField("info", &info))
-	assert.Equal(t, system.Info{AgentVersion: "0.20.0", SSHDisabled: true}, info)
+	assert.Equal(t, system.Info{AgentVersion: "0.20.0"}, info)
 }
 
 func TestSSHDisabledLoadedFromRecord(t *testing.T) {
@@ -60,12 +59,12 @@ func TestSSHDisabledLoadedFromRecord(t *testing.T) {
 
 	// created before the manager starts, as if saved by a previous hub run
 	record, err := tests.CreateRecord(hub, "systems", map[string]any{
-		"name":   "ssh-disabled-startup",
-		"host":   "localhost",
-		"port":   "33914",
-		"status": "down",
-		"info":   system.Info{SSHDisabled: true},
-		"users":  []string{user.Id},
+		"name":         "ssh-disabled-startup",
+		"host":         "localhost",
+		"port":         "33914",
+		"status":       "down",
+		"ssh_disabled": true,
+		"users":        []string{user.Id},
 	})
 	require.NoError(t, err)
 
@@ -87,8 +86,18 @@ func TestSSHDisabledLoadedFromRecord(t *testing.T) {
 		assert.True(t, sys.SSHDisabled())
 	})
 
-	t.Run("cleared when agent no longer reports it", func(t *testing.T) {
-		record.Set("info", system.Info{})
+	t.Run("kept when paused and resumed", func(t *testing.T) {
+		record.Set("status", "paused")
+		require.NoError(t, hub.Save(record))
+		record.Set("status", "pending")
+		require.NoError(t, hub.Save(record))
+		sys, err := sm.GetSystemFromStore(record.Id)
+		require.NoError(t, err)
+		assert.True(t, sys.SSHDisabled())
+	})
+
+	t.Run("cleared when column is false", func(t *testing.T) {
+		record.Set("ssh_disabled", false)
 		record.Set("status", "paused")
 		require.NoError(t, hub.Save(record))
 		record.Set("status", "pending")

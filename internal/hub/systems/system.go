@@ -312,6 +312,7 @@ func (sys *System) createRecords(data *system.CombinedData) (*core.Record, error
 			info.GpuPct = &data.Info.GpuPct
 		}
 		systemRecord.Set("info", info)
+		systemRecord.Set("ssh_disabled", data.Info.SSHDisabled)
 		if err := txApp.SaveNoValidate(systemRecord); err != nil {
 			return err
 		}
