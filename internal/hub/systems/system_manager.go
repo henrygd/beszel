@@ -45,6 +45,7 @@ var errSystemExists = errors.New("system exists")
 // SystemManager manages a collection of monitored systems and their connections.
 // It handles system lifecycle, status updates, and maintains both SSH and WebSocket connections.
 type SystemManager struct {
+	updaters            sync.WaitGroup                        // Tracks updater completion independently of store membership.
 	hub                 hubLike                               // Hub interface for database and alert operations
 	systems             *store.Store[string, *System]         // Thread-safe store of active systems
 	sshConfig           *ssh.ClientConfig                     // SSH client configuration for system connections
@@ -293,7 +294,7 @@ func (sm *SystemManager) AddSystem(sys *System) error {
 	sm.systems.Set(sys.Id, sys)
 
 	// Start monitoring in background
-	go sys.StartUpdater()
+	sm.updaters.Go(sys.StartUpdater)
 	return nil
 }
 
