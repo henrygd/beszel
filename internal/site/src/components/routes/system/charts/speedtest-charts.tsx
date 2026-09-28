@@ -117,9 +117,8 @@ export function SpeedtestLoadedLatencyChart({ stats, chartData, empty }: Speedte
 	const { t } = useLingui()
 	const dataPoints = useMemo(
 		() => [
-			point(t`Idle`, 1, (record) => record.ping, 0),
-			point(t`Download`, 2, (record) => record.download_latency || null, 1),
-			point(t`Upload`, 5, (record) => record.upload_latency || null, 2),
+			point(t`Download`, 2, (record) => record.download_latency || null, 0),
+			point(t`Upload`, 5, (record) => record.upload_latency || null, 1),
 		],
 		[t]
 	)

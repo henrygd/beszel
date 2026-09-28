@@ -42,12 +42,11 @@ func TestUpdateSpeedtestRecords(t *testing.T) {
 		return record
 	}
 
-	ok := speedtest.Result{RunAt: 1000, Download: 125_000_000, Upload: 50_000_000, Ping: 8.5, Jitter: 0.4, Loss: 0, PingLow: 7.9, PingHigh: 9.2, DownloadLatency: speedtest.Latency{IQM: 21.4, Low: 4, High: 48.7, Jitter: 2.2}, UploadLatency: speedtest.Latency{IQM: 3.7, Low: 3.3, High: 6.4, Jitter: 0.3}, ServerID: 42, ServerName: "Example", ServerLocation: "Amsterdam", ISP: "ISP", URL: "https://www.speedtest.net/result/c/abc"}
+	ok := speedtest.Result{RunAt: 1000, Download: 125_000_000, Upload: 50_000_000, Ping: 8.5, Jitter: 0.4, Loss: 0, DownloadLatency: speedtest.Latency{IQM: 21.4, Jitter: 2.2}, UploadLatency: speedtest.Latency{IQM: 3.7, Jitter: 0.3}, ServerID: 42, ServerName: "Example", ServerLocation: "Amsterdam", ISP: "ISP", URL: "https://www.speedtest.net/result/c/abc"}
 	record = save(ok)
 	assert.Equal(t, 1000, record.GetInt("last_run"))
 	assert.Equal(t, 125_000_000.0, record.GetFloat("download"))
 	assert.Equal(t, "Example", record.GetString("server_name"))
-	assert.Equal(t, 7.9, record.GetFloat("ping_low"))
 	assert.Equal(t, 21.4, record.GetFloat("download_latency"))
 	assert.Equal(t, 0.3, record.GetFloat("upload_jitter"))
 	assert.Empty(t, record.GetString("error"))
@@ -86,9 +85,6 @@ func TestUpdateSpeedtestRecords(t *testing.T) {
 	assert.Equal(t, sys.Id, stats.GetString("system"))
 	assert.Equal(t, 50_000_000.0, stats.GetFloat("upload"))
 	assert.Equal(t, 42, stats.GetInt("server_id"))
-	assert.Equal(t, 9.2, stats.GetFloat("ping_high"))
-	assert.Equal(t, 48.7, stats.GetFloat("download_latency_high"))
-	assert.Equal(t, 3.3, stats.GetFloat("upload_latency_low"))
 }
 
 func TestGetSpeedtestConfigsForSystem(t *testing.T) {

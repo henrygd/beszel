@@ -29,8 +29,6 @@ type ooklaResult struct {
 	Ping struct {
 		Jitter  float64 `json:"jitter"`
 		Latency float64 `json:"latency"`
-		Low     float64 `json:"low"`
-		High    float64 `json:"high"`
 	} `json:"ping"`
 	Download   ooklaTransfer `json:"download"`
 	Upload     ooklaTransfer `json:"upload"`
@@ -52,14 +50,12 @@ type ooklaTransfer struct {
 	Bandwidth uint64 `json:"bandwidth"`
 	Latency   struct {
 		IQM    float64 `json:"iqm"`
-		Low    float64 `json:"low"`
-		High   float64 `json:"high"`
 		Jitter float64 `json:"jitter"`
 	} `json:"latency"`
 }
 
 func (t ooklaTransfer) latency() speedtest.Latency {
-	return speedtest.Latency{IQM: t.Latency.IQM, Low: t.Latency.Low, High: t.Latency.High, Jitter: t.Latency.Jitter}
+	return speedtest.Latency{IQM: t.Latency.IQM, Jitter: t.Latency.Jitter}
 }
 
 // ooklaLog is an Ookla CLI log line, written to stderr in JSON format.
@@ -132,8 +128,6 @@ func parseOoklaOutput(output []byte) (speedtest.Result, error) {
 			Upload:          res.Upload.Bandwidth,
 			Ping:            res.Ping.Latency,
 			Jitter:          res.Ping.Jitter,
-			PingLow:         res.Ping.Low,
-			PingHigh:        res.Ping.High,
 			DownloadLatency: res.Download.latency(),
 			UploadLatency:   res.Upload.latency(),
 			Loss:            loss,

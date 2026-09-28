@@ -4,6 +4,8 @@ import { cn, decimalString, formatShortDate } from "@/lib/utils"
 import {
 	ArrowDownIcon,
 	ArrowUpIcon,
+	ClockArrowDownIcon,
+	ClockArrowUpIcon,
 	ClockIcon,
 	ExternalLinkIcon,
 	GaugeIcon,
@@ -17,6 +19,8 @@ import {
 	Trash2Icon,
 	WifiOffIcon,
 	GlobeIcon,
+	LandmarkIcon,
+	MapPinIcon,
 } from "lucide-react"
 import { t } from "@lingui/core/macro"
 import { Trans } from "@lingui/react/macro"
@@ -143,6 +147,13 @@ export function getSpeedtestColumns({
 			},
 		},
 		{
+			id: "location",
+			meta: { label: t`Location` },
+			accessorFn: (record) => record.server_location,
+			header: ({ column }) => <HeaderButton column={column} name={t`Location`} Icon={MapPinIcon} />,
+			cell: textCell,
+		},
+		{
 			id: "interval",
 			meta: { label: t`Interval` },
 			accessorFn: (record) => record.interval,
@@ -195,6 +206,41 @@ export function getSpeedtestColumns({
 				if (!download || loss < 0) return empty
 				return <span className="ms-1.5 tabular-nums">{decimalString(loss, loss >= 10 ? 1 : 2)}%</span>
 			},
+		},
+		{
+			id: "download_latency",
+			meta: { label: t`Download latency` },
+			accessorFn: (record) => record.download_latency,
+			header: ({ column }) => <HeaderButton column={column} name={t`Download latency`} Icon={ClockArrowDownIcon} />,
+			cell: latencyCell,
+		},
+		{
+			id: "download_jitter",
+			meta: { label: t`Download jitter` },
+			accessorFn: (record) => record.download_jitter,
+			header: ({ column }) => <HeaderButton column={column} name={t`Download jitter`} Icon={TimerIcon} />,
+			cell: latencyCell,
+		},
+		{
+			id: "upload_latency",
+			meta: { label: t`Upload latency` },
+			accessorFn: (record) => record.upload_latency,
+			header: ({ column }) => <HeaderButton column={column} name={t`Upload latency`} Icon={ClockArrowUpIcon} />,
+			cell: latencyCell,
+		},
+		{
+			id: "upload_jitter",
+			meta: { label: t`Upload jitter` },
+			accessorFn: (record) => record.upload_jitter,
+			header: ({ column }) => <HeaderButton column={column} name={t`Upload jitter`} Icon={TimerIcon} />,
+			cell: latencyCell,
+		},
+		{
+			id: "isp",
+			meta: { label: t`ISP` },
+			accessorFn: (record) => record.isp,
+			header: ({ column }) => <HeaderButton column={column} name={t`ISP`} Icon={LandmarkIcon} />,
+			cell: textCell,
 		},
 		{
 			id: "last_run",
@@ -277,6 +323,17 @@ export function getSpeedtestColumns({
 			},
 		},
 	]
+}
+
+/** Columns hidden until the user enables them in the view menu. */
+export const DEFAULT_HIDDEN_SPEEDTEST_COLUMNS = Object.fromEntries(
+	["isp", "location", "download_latency", "download_jitter", "upload_latency", "upload_jitter"].map((id) => [id, false])
+)
+
+function textCell({ getValue }: { getValue: () => unknown }) {
+	const value = getValue() as string
+	if (!value) return empty
+	return <span className="ms-1.5 block max-w-56 truncate">{value}</span>
 }
 
 function bandwidthCell({ getValue }: { getValue: () => unknown }) {

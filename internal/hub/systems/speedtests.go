@@ -154,20 +154,14 @@ func setSpeedtestResultFields(record *core.Record, result speedtest.Result) {
 // stored on both speedtests and speedtest_stats records.
 func speedtestMeasurements(result speedtest.Result) map[string]any {
 	return map[string]any{
-		"download":              result.Download,
-		"upload":                result.Upload,
-		"ping":                  result.Ping,
-		"ping_low":              result.PingLow,
-		"ping_high":             result.PingHigh,
-		"jitter":                result.Jitter,
-		"loss":                  result.Loss,
-		"download_latency":      result.DownloadLatency.IQM,
-		"download_latency_low":  result.DownloadLatency.Low,
-		"download_latency_high": result.DownloadLatency.High,
-		"download_jitter":       result.DownloadLatency.Jitter,
-		"upload_latency":        result.UploadLatency.IQM,
-		"upload_latency_low":    result.UploadLatency.Low,
-		"upload_latency_high":   result.UploadLatency.High,
-		"upload_jitter":         result.UploadLatency.Jitter,
+		"download":         result.Download,
+		"upload":           result.Upload,
+		"ping":             result.Ping,
+		"jitter":           result.Jitter,
+		"loss":             result.Loss,
+		"download_latency": result.DownloadLatency.IQM,
+		"download_jitter":  result.DownloadLatency.Jitter,
+		"upload_latency":   result.UploadLatency.IQM,
+		"upload_jitter":    result.UploadLatency.Jitter,
 	}
 }

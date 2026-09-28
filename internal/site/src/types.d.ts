@@ -740,17 +740,10 @@ export interface SpeedtestRecord {
 	upload: number
 	ping: number
 	jitter: number
-	/** Lowest and highest idle latency. */
-	ping_low: number
-	ping_high: number
 	/** Latencies while downloading and uploading; download/upload_latency are interquartile means. */
 	download_latency: number
-	download_latency_low: number
-	download_latency_high: number
 	download_jitter: number
 	upload_latency: number
-	upload_latency_low: number
-	upload_latency_high: number
 	upload_jitter: number
 	/** Packet loss percentage, or -1 if the server doesn't report it. */
 	loss: number
@@ -774,17 +767,10 @@ export interface SpeedtestStatsRecord {
 	upload: number
 	ping: number
 	jitter: number
-	/** Lowest and highest idle latency. */
-	ping_low: number
-	ping_high: number
 	/** Latencies while downloading and uploading; download/upload_latency are interquartile means. */
 	download_latency: number
-	download_latency_low: number
-	download_latency_high: number
 	download_jitter: number
 	upload_latency: number
-	upload_latency_low: number
-	upload_latency_high: number
 	upload_jitter: number
 	loss: number
 	server_name: string

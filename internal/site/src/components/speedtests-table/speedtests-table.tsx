@@ -31,7 +31,7 @@ import { SystemStatus } from "@/lib/enums"
 import { $allSystemsById, $direction, getUserChartTime } from "@/lib/stores"
 import { cn, formatShortDate, matchesFilterGroups, parseFilterGroups, parseSemVer } from "@/lib/utils"
 import type { ChartData, ChartTimes, SpeedtestRecord } from "@/types"
-import { getSpeedtestColumns } from "./speedtests-columns"
+import { DEFAULT_HIDDEN_SPEEDTEST_COLUMNS, getSpeedtestColumns } from "./speedtests-columns"
 import { AddSpeedtestDialog, EditSpeedtestDialog } from "./speedtest-dialog"
 import {
 	ArrowDownIcon,
@@ -75,9 +75,9 @@ const COLUMN_STORAGE_KEY = "besz-speedtest-cols"
 
 function loadColumnVisibility(): VisibilityState {
 	try {
-		return JSON.parse(localStorage.getItem(COLUMN_STORAGE_KEY) || "{}")
+		return { ...DEFAULT_HIDDEN_SPEEDTEST_COLUMNS, ...JSON.parse(localStorage.getItem(COLUMN_STORAGE_KEY) || "{}") }
 	} catch {
-		return {}
+		return { ...DEFAULT_HIDDEN_SPEEDTEST_COLUMNS }
 	}
 }
 
