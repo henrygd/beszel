@@ -57,3 +57,13 @@ func TestIsAppRoute(t *testing.T) {
 		assert.Equal(t, tt.want, isAppRoute(tt.path, tt.basePath), "path=%q basePath=%q", tt.path, tt.basePath)
 	}
 }
+
+func TestPublicAppInfoSSHDisabled(t *testing.T) {
+	hub := &Hub{appURL: "https://hub.test"}
+	assert.False(t, getPublicAppInfo(hub).SSH_DISABLED)
+	assert.NotContains(t, modifyIndexHTML(hub, []byte(`"{info}"`)), "SSH_DISABLED")
+
+	t.Setenv("DISABLE_SSH", "true")
+	assert.True(t, getPublicAppInfo(hub).SSH_DISABLED)
+	assert.Contains(t, modifyIndexHTML(hub, []byte(`"{info}"`)), `"SSH_DISABLED":true`)
+}

@@ -56,7 +56,7 @@ type System struct {
 	smartInterval  time.Duration              // Interval for periodic SMART data updates
 	zfsFetching    atomic.Bool                // True if ZFS pools are currently being fetched
 	zfsInterval    time.Duration              // Interval for periodic ZFS detail data updates
-	sshDisabled    atomic.Bool                // Agent reported DISABLE_SSH, so don't fall back to SSH
+	sshDisabled    atomic.Bool                // Agent reported DISABLE_SSH (see sshFallbackDisabled for the hub setting)
 
 	// A fresh connection needs a full monitor configuration sync.
 	monitorsNeedSync atomic.Bool
@@ -66,8 +66,17 @@ type System struct {
 	lastSavedMonitorProbe map[string]int64
 }
 
-// errSSHDisabled is returned instead of dialing SSH when the agent runs with DISABLE_SSH.
-var errSSHDisabled = errors.New("no WebSocket connection and SSH is disabled on agent")
+// errSSHDisabled is returned instead of dialing SSH when DISABLE_SSH is set on the hub or the agent.
+var errSSHDisabled = errors.New("no WebSocket connection and SSH is disabled")
+
+// sshFallbackDisabled reports whether SSH is disabled on the hub or on this system's agent.
+func (sys *System) sshFallbackDisabled() bool {
+	if sys.sshDisabled.Load() {
+		return true
+	}
+	disableSSH, _ := utils.GetEnv("DISABLE_SSH")
+	return disableSSH == "true"
+}
 
 func (sm *SystemManager) NewSystem(systemId string) *System {
 	system := &System{
@@ -652,7 +661,7 @@ func (sys *System) request(ctx context.Context, action common.WebSocketAction, r
 	}
 
 	// Fall back to SSH if WebSocket fails
-	if sys.sshDisabled.Load() {
+	if sys.sshFallbackDisabled() {
 		return errSSHDisabled
 	}
 	if err := sys.ensureSSHTransport(); err != nil {
@@ -733,7 +742,7 @@ func (sys *System) fetchDataFromAgent(options common.DataRequestOptions) (*syste
 	}
 
 	// wait for the agent to reconnect via WebSocket
-	if sys.sshDisabled.Load() {
+	if sys.sshFallbackDisabled() {
 		return nil, errSSHDisabled
 	}
 	sshData, err := sys.fetchDataViaSSH(options)

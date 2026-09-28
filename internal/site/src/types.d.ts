@@ -8,6 +8,7 @@ declare global {
 		HUB_VERSION: string
 		HUB_URL: string
 		OAUTH_DISABLE_POPUP: boolean
+		SSH_DISABLED?: boolean
 	}
 }
 
