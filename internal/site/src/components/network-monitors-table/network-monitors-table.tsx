@@ -99,7 +99,7 @@ export default function NetworkMonitorsTableNew({
 	const [rowSelection, setRowSelection] = useState<RowSelectionState>({})
 	const [globalFilter, setGlobalFilter] = useState("")
 	const [deleteOpen, setDeleteOpen] = useState(false)
-	const [pendingDeleteIds, setPendingDeleteIds] = useState<string[]>([])
+	const [pendingDelete, setPendingDelete] = useState<NetworkMonitorRecord[]>([])
 	const [editingMonitor, setEditingMonitor] = useState<NetworkMonitorRecord>()
 
 	const { toast } = useToast()
@@ -197,41 +197,28 @@ export default function NetworkMonitorsTableNew({
 		[]
 	)
 
-	const handleDeleteRequest = useCallback(
-		async (monitorsToDelete: NetworkMonitorRecord[]) => {
-			if (!monitorsToDelete.length) {
-				return
-			}
+	const handleDeleteRequest = useCallback((monitorsToDelete: NetworkMonitorRecord[]) => {
+		if (!monitorsToDelete.length) {
+			return
+		}
+		setPendingDelete(monitorsToDelete)
+		setDeleteOpen(true)
+	}, [])
 
-			const ids = monitorsToDelete.map((monitor) => monitor.id)
-			if (ids.length === 1) {
-				try {
-					await pb.collection("network_monitors").delete(ids[0])
-				} catch (err: unknown) {
-					toast({
-						variant: "destructive",
-						title: t`Error`,
-						description: (err as Error)?.message || t`Failed to delete monitors.`,
-					})
-				}
-				return
-			}
-
-			setPendingDeleteIds(ids)
-			setDeleteOpen(true)
-		},
-		[toast]
-	)
-
-	const handleBulkDelete = async () => {
+	const handleConfirmDelete = async () => {
 		setDeleteOpen(false)
-		if (!pendingDeleteIds.length) {
+		const ids = pendingDelete.map((monitor) => monitor.id)
+		if (!ids.length) {
 			return
 		}
 
 		try {
-			await runMonitorBatch(pendingDeleteIds, (batch, id) => batch.collection("network_monitors").delete(id))
-			setPendingDeleteIds([])
+			if (ids.length === 1) {
+				await pb.collection("network_monitors").delete(ids[0])
+			} else {
+				await runMonitorBatch(ids, (batch, id) => batch.collection("network_monitors").delete(id))
+			}
+			setPendingDelete([])
 			setRowSelection({})
 		} catch (err: unknown) {
 			toast({
@@ -446,7 +433,7 @@ export default function NetworkMonitorsTableNew({
 							onOpenChange={(open) => {
 								setDeleteOpen(open)
 								if (!open) {
-									setPendingDeleteIds([])
+									setPendingDelete([])
 								}
 							}}
 						>
@@ -465,7 +452,7 @@ export default function NetworkMonitorsTableNew({
 									</AlertDialogCancel>
 									<AlertDialogAction
 										className={cn(buttonVariants({ variant: "destructive" }))}
-										onClick={handleBulkDelete}
+										onClick={handleConfirmDelete}
 									>
 										<Trans>Continue</Trans>
 									</AlertDialogAction>
