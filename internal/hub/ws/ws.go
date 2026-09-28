@@ -16,9 +16,14 @@ import (
 	"github.com/lxzan/gws"
 )
 
-const (
-	deadline = 70 * time.Second
-)
+// deadline bounds how long a connection may go without traffic from the agent.
+//
+// It has to outlast a whole failed poll: the updater polls every interval (60s)
+// and a fetch gives up after wsDataRequestTimeout (30s), so nothing can reset
+// the deadline before 90s into a stalled cycle. A shorter deadline expires
+// mid-collection, and by the time the failed fetch pings, the connection is
+// already closed. 100s keeps the same 10s margin the poll interval used to have.
+var deadline = 100 * time.Second
 
 // Handler implements the WebSocket event handler for agent connections.
 type Handler struct {
