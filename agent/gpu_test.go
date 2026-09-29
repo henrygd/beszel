@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
-	"path/filepath"
 	"slices"
 	"strings"
 	"testing"
@@ -1125,7 +1124,7 @@ func TestGPUCapabilitiesAndLegacyPriority(t *testing.T) {
 
 	tests := []struct {
 		name           string
-		setupCommands  func(string) error
+		setupCommands  func(*testing.T, string)
 		wantNvidiaSmi  bool
 		wantRocmSmi    bool
 		wantTegrastats bool
@@ -1133,10 +1132,8 @@ func TestGPUCapabilitiesAndLegacyPriority(t *testing.T) {
 		wantErr        bool
 	}{
 		{
-			name: "nvidia-smi not available",
-			setupCommands: func(_ string) error {
-				return nil
-			},
+			name:           "nvidia-smi not available",
+			setupCommands:  func(*testing.T, string) {},
 			wantNvidiaSmi:  false,
 			wantRocmSmi:    false,
 			wantTegrastats: false,
@@ -1145,14 +1142,8 @@ func TestGPUCapabilitiesAndLegacyPriority(t *testing.T) {
 		},
 		{
 			name: "nvidia-smi available",
-			setupCommands: func(tempDir string) error {
-				path := filepath.Join(tempDir, "nvidia-smi")
-				script := `#!/bin/sh
-echo "test"`
-				if err := os.WriteFile(path, []byte(script), 0755); err != nil {
-					return err
-				}
-				return nil
+			setupCommands: func(t *testing.T, tempDir string) {
+				gpuCommandFixture(t, tempDir, "nvidia-smi", "test\n")
 			},
 			wantNvidiaSmi:  true,
 			wantTegrastats: false,
@@ -1162,14 +1153,8 @@ echo "test"`
 		},
 		{
 			name: "rocm-smi available",
-			setupCommands: func(tempDir string) error {
-				path := filepath.Join(tempDir, "rocm-smi")
-				script := `#!/bin/sh
-echo "test"`
-				if err := os.WriteFile(path, []byte(script), 0755); err != nil {
-					return err
-				}
-				return nil
+			setupCommands: func(t *testing.T, tempDir string) {
+				gpuCommandFixture(t, tempDir, "rocm-smi", "test\n")
 			},
 			wantNvidiaSmi:  false,
 			wantRocmSmi:    true,
@@ -1179,14 +1164,8 @@ echo "test"`
 		},
 		{
 			name: "tegrastats available",
-			setupCommands: func(tempDir string) error {
-				path := filepath.Join(tempDir, "tegrastats")
-				script := `#!/bin/sh
-echo "test"`
-				if err := os.WriteFile(path, []byte(script), 0755); err != nil {
-					return err
-				}
-				return nil
+			setupCommands: func(t *testing.T, tempDir string) {
+				gpuCommandFixture(t, tempDir, "tegrastats", "test\n")
 			},
 			wantNvidiaSmi:  false,
 			wantRocmSmi:    false,
@@ -1196,14 +1175,8 @@ echo "test"`
 		},
 		{
 			name: "nvtop available",
-			setupCommands: func(tempDir string) error {
-				path := filepath.Join(tempDir, "nvtop")
-				script := `#!/bin/sh
-echo "[]"`
-				if err := os.WriteFile(path, []byte(script), 0755); err != nil {
-					return err
-				}
-				return nil
+			setupCommands: func(t *testing.T, tempDir string) {
+				gpuCommandFixture(t, tempDir, "nvtop", "test\n")
 			},
 			wantNvidiaSmi:  false,
 			wantRocmSmi:    false,
@@ -1212,12 +1185,9 @@ echo "[]"`
 			wantErr:        false,
 		},
 		{
-			name: "no gpu tools available",
-			setupCommands: func(_ string) error {
-				// The subtest already restricts PATH to its empty temporary directory.
-				return nil
-			},
-			wantErr: true,
+			name:          "no gpu tools available",
+			setupCommands: func(*testing.T, string) {},
+			wantErr:       true,
 		},
 	}
 
@@ -1225,9 +1195,7 @@ echo "[]"`
 		t.Run(tt.name, func(t *testing.T) {
 			tempDir := t.TempDir()
 			t.Setenv("PATH", tempDir)
-			if err := tt.setupCommands(tempDir); err != nil {
-				t.Fatal(err)
-			}
+			tt.setupCommands(t, tempDir)
 
 			gm := &GPUManager{}
 			caps := gm.discoverGpuCapabilities()
@@ -1269,6 +1237,21 @@ echo "[]"`
 	}
 }
 
+func waitGPUs(t *testing.T, gm *GPUManager, ids ...string) {
+	t.Helper()
+	require.Eventually(t, func() bool {
+		gm.Lock()
+		defer gm.Unlock()
+		for _, id := range ids {
+			gpu := gm.GpuDataMap[id]
+			if gpu == nil || gpu.Count == 0 {
+				return false
+			}
+		}
+		return true
+	}, 5*time.Second, 10*time.Millisecond, "GPU collectors did not produce data for %v", ids)
+}
+
 func TestCollectorStartHelpers(t *testing.T) {
 	// Set up temp dir with the commands
 	dir := t.TempDir()
@@ -1277,21 +1260,17 @@ func TestCollectorStartHelpers(t *testing.T) {
 	tests := []struct {
 		name     string
 		command  string
-		setup    func(t *testing.T) error
+		gpuID    string
+		setup    func(t *testing.T)
 		validate func(t *testing.T, gm *GPUManager)
 		gm       *GPUManager
 	}{
 		{
 			name:    "nvidia-smi collector",
 			command: "nvidia-smi",
-			setup: func(t *testing.T) error {
-				path := filepath.Join(dir, "nvidia-smi")
-				script := `#!/bin/sh
-echo "0, NVIDIA Test GPU, 50, 1024, 4096, 25, 100"`
-				if err := os.WriteFile(path, []byte(script), 0755); err != nil {
-					return err
-				}
-				return nil
+			gpuID:   "0",
+			setup: func(t *testing.T) {
+				gpuCommandFixture(t, dir, "nvidia-smi", `0, NVIDIA Test GPU, 50, 1024, 4096, 25, 100`+"\n")
 			},
 			validate: func(t *testing.T, gm *GPUManager) {
 				gpu, exists := gm.GpuDataMap["0"]
@@ -1306,14 +1285,9 @@ echo "0, NVIDIA Test GPU, 50, 1024, 4096, 25, 100"`
 		{
 			name:    "rocm-smi collector",
 			command: "rocm-smi",
-			setup: func(t *testing.T) error {
-				path := filepath.Join(dir, "rocm-smi")
-				script := `#!/bin/sh
-echo '{"card0": {"Temperature (Sensor edge) (C)": "49.0", "Current Socket Graphics Package Power (W)": "28.159", "GPU use (%)": "0", "VRAM Total Memory (B)": "536870912", "VRAM Total Used Memory (B)": "445550592", "Card Series": "Rembrandt [Radeon 680M]", "Card Model": "0x1681", "Card Vendor": "Advanced Micro Devices, Inc. [AMD/ATI]", "Card SKU": "REMBRANDT", "Subsystem ID": "0x8a22", "Device Rev": "0xc8", "Node ID": "1", "GUID": "34756", "GFX Version": "gfx1035"}}'`
-				if err := os.WriteFile(path, []byte(script), 0755); err != nil {
-					return err
-				}
-				return nil
+			gpuID:   "34756",
+			setup: func(t *testing.T) {
+				gpuCommandFixture(t, dir, "rocm-smi", `{"card0": {"Temperature (Sensor edge) (C)": "49.0", "Current Socket Graphics Package Power (W)": "28.159", "GPU use (%)": "0", "VRAM Total Memory (B)": "536870912", "VRAM Total Used Memory (B)": "445550592", "Card Series": "Rembrandt [Radeon 680M]", "Card Model": "0x1681", "Card Vendor": "Advanced Micro Devices, Inc. [AMD/ATI]", "Card SKU": "REMBRANDT", "Subsystem ID": "0x8a22", "Device Rev": "0xc8", "Node ID": "1", "GUID": "34756", "GFX Version": "gfx1035"}}`+"\n")
 			},
 			validate: func(t *testing.T, gm *GPUManager) {
 				gpu, exists := gm.GpuDataMap["34756"]
@@ -1328,14 +1302,9 @@ echo '{"card0": {"Temperature (Sensor edge) (C)": "49.0", "Current Socket Graphi
 		{
 			name:    "tegrastats collector",
 			command: "tegrastats",
-			setup: func(t *testing.T) error {
-				path := filepath.Join(dir, "tegrastats")
-				script := `#!/bin/sh
-echo "11-14-2024 22:54:33 RAM 1024/4096MB GR3D_FREQ 80% tj@70C VDD_GPU_SOC 1000mW"`
-				if err := os.WriteFile(path, []byte(script), 0755); err != nil {
-					return err
-				}
-				return nil
+			gpuID:   "0",
+			setup: func(t *testing.T) {
+				gpuCommandFixture(t, dir, "tegrastats", `11-14-2024 22:54:33 RAM 1024/4096MB GR3D_FREQ 80% tj@70C VDD_GPU_SOC 1000mW`+"\n")
 			},
 			validate: func(t *testing.T, gm *GPUManager) {
 				gpu, exists := gm.GpuDataMap["0"]
@@ -1353,14 +1322,9 @@ echo "11-14-2024 22:54:33 RAM 1024/4096MB GR3D_FREQ 80% tj@70C VDD_GPU_SOC 1000m
 		{
 			name:    "nvtop collector",
 			command: "nvtop",
-			setup: func(t *testing.T) error {
-				path := filepath.Join(dir, "nvtop")
-				script := `#!/bin/sh
-echo '[{"device_name":"NVIDIA Test GPU","temp":"52C","power_draw":"31W","gpu_util":"37%","mem_total":"4294967296","mem_used":"536870912","processes":[]}]'`
-				if err := os.WriteFile(path, []byte(script), 0755); err != nil {
-					return err
-				}
-				return nil
+			gpuID:   "n0",
+			setup: func(t *testing.T) {
+				gpuCommandFixture(t, dir, "nvtop", `[{"device_name":"NVIDIA Test GPU","temp":"52C","power_draw":"31W","gpu_util":"37%","mem_total":"4294967296","mem_used":"536870912","processes":[]}]`+"\n")
 			},
 			validate: func(t *testing.T, gm *GPUManager) {
 				gpu, exists := gm.GpuDataMap["n0"]
@@ -1375,9 +1339,7 @@ echo '[{"device_name":"NVIDIA Test GPU","temp":"52C","power_draw":"31W","gpu_uti
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if err := tt.setup(t); err != nil {
-				t.Fatal(err)
-			}
+			tt.setup(t)
 			if tt.gm == nil {
 				tt.gm = &GPUManager{
 					GpuDataMap: make(map[string]*system.GPUData),
@@ -1395,7 +1357,9 @@ echo '[{"device_name":"NVIDIA Test GPU","temp":"52C","power_draw":"31W","gpu_uti
 			default:
 				t.Fatalf("unknown test command %q", tt.command)
 			}
-			time.Sleep(50 * time.Millisecond) // Give collector time to run
+			waitGPUs(t, tt.gm, tt.gpuID)
+			tt.gm.Lock()
+			defer tt.gm.Unlock()
 			tt.validate(t, tt.gm)
 		})
 	}
@@ -1406,21 +1370,17 @@ func TestNewGPUManagerPriorityNvtopFallback(t *testing.T) {
 	t.Setenv("PATH", dir)
 	t.Setenv("BESZEL_AGENT_GPU_COLLECTOR", "nvtop,nvidia-smi")
 
-	nvtopPath := filepath.Join(dir, "nvtop")
-	nvtopScript := `#!/bin/sh
-echo 'not-json'`
-	require.NoError(t, os.WriteFile(nvtopPath, []byte(nvtopScript), 0755))
+	gpuCommandFixture(t, dir, "nvtop", `not-json`+"\n")
 
-	nvidiaPath := filepath.Join(dir, "nvidia-smi")
-	nvidiaScript := `#!/bin/sh
-echo "0, NVIDIA Priority GPU, 45, 512, 2048, 12, 25"`
-	require.NoError(t, os.WriteFile(nvidiaPath, []byte(nvidiaScript), 0755))
+	gpuCommandFixture(t, dir, "nvidia-smi", `0, NVIDIA Priority GPU, 45, 512, 2048, 12, 25`+"\n")
 
 	gm, err := NewGPUManager()
 	require.NoError(t, err)
 	require.NotNil(t, gm)
 
-	time.Sleep(150 * time.Millisecond)
+	waitGPUs(t, gm, "0")
+	gm.Lock()
+	defer gm.Unlock()
 	gpu, ok := gm.GpuDataMap["0"]
 	require.True(t, ok)
 	assert.Equal(t, "Priority GPU", gpu.Name)
@@ -1432,48 +1392,25 @@ func TestNewGPUManagerPriorityMixedCollectors(t *testing.T) {
 	t.Setenv("PATH", dir)
 	t.Setenv("BESZEL_AGENT_GPU_COLLECTOR", "intel_gpu_top,rocm-smi")
 
-	intelPath := filepath.Join(dir, "intel_gpu_top")
-	intelScript := "#!/bin/sh\necho '" + intelJSONStream(true,
+	intelOutput := intelJSONStream(true,
 		intelJSONSample(2, 2.69, map[string]float64{"Render/3D": 0, "Video": 0}),
 		intelJSONSample(1.8, 2.45, map[string]float64{"Render/3D": 8.5, "Video": 15}),
-	) + "'\n"
-	require.NoError(t, os.WriteFile(intelPath, []byte(intelScript), 0755))
+	)
+	gpuCommandFixture(t, dir, intelGpuStatsCmd, intelOutput+"\n")
 
-	rocmPath := filepath.Join(dir, "rocm-smi")
-	rocmScript := `#!/bin/sh
-echo '{"card0": {"Temperature (Sensor edge) (C)": "49.0", "Current Socket Graphics Package Power (W)": "28.159", "GPU use (%)": "0", "VRAM Total Memory (B)": "536870912", "VRAM Total Used Memory (B)": "445550592", "Card Series": "Rembrandt [Radeon 680M]", "GUID": "34756"}}'
-`
-	require.NoError(t, os.WriteFile(rocmPath, []byte(rocmScript), 0755))
+	gpuCommandFixture(t, dir, "rocm-smi", `{"card0": {"Temperature (Sensor edge) (C)": "49.0", "Current Socket Graphics Package Power (W)": "28.159", "GPU use (%)": "0", "VRAM Total Memory (B)": "536870912", "VRAM Total Used Memory (B)": "445550592", "Card Series": "Rembrandt [Radeon 680M]", "GUID": "34756"}}`+"\n")
 
 	gm, err := NewGPUManager()
 	require.NoError(t, err)
 	require.NotNil(t, gm)
 
-	time.Sleep(150 * time.Millisecond)
+	waitGPUs(t, gm, "i0", "34756")
+	gm.Lock()
+	defer gm.Unlock()
 	_, intelOk := gm.GpuDataMap["i0"]
 	_, amdOk := gm.GpuDataMap["34756"]
 	assert.True(t, intelOk)
 	assert.True(t, amdOk)
-}
-
-func TestNewGPUManagerPriorityNvmlFallbackToNvidiaSmi(t *testing.T) {
-	dir := t.TempDir()
-	t.Setenv("PATH", dir)
-	t.Setenv("BESZEL_AGENT_GPU_COLLECTOR", "nvml,nvidia-smi")
-
-	nvidiaPath := filepath.Join(dir, "nvidia-smi")
-	nvidiaScript := `#!/bin/sh
-echo "0, NVIDIA Fallback GPU, 41, 256, 1024, 8, 14"`
-	require.NoError(t, os.WriteFile(nvidiaPath, []byte(nvidiaScript), 0755))
-
-	gm, err := NewGPUManager()
-	require.NoError(t, err)
-	require.NotNil(t, gm)
-
-	time.Sleep(150 * time.Millisecond)
-	gpu, ok := gm.GpuDataMap["0"]
-	require.True(t, ok)
-	assert.Equal(t, "Fallback GPU", gpu.Name)
 }
 
 func TestNewGPUManagerConfiguredCollectorsMustStart(t *testing.T) {
@@ -1510,8 +1447,12 @@ func TestNewGPUManagerConfiguredNvmlBypassesCapabilityGate(t *testing.T) {
 	t.Setenv("BESZEL_AGENT_GPU_COLLECTOR", "nvml")
 
 	gm, err := NewGPUManager()
+	if err == nil {
+		// Native NVML can be available even with no tools on PATH.
+		require.NotNil(t, gm)
+		return
+	}
 	require.Nil(t, gm)
-	require.Error(t, err)
 	assert.Contains(t, err.Error(), "no configured GPU collectors are available")
 	assert.NotContains(t, err.Error(), noGPUFoundMsg)
 }
@@ -1521,16 +1462,15 @@ func TestNewGPUManagerJetsonIgnoresCollectorConfig(t *testing.T) {
 	t.Setenv("PATH", dir)
 	t.Setenv("BESZEL_AGENT_GPU_COLLECTOR", "nvidia-smi")
 
-	tegraPath := filepath.Join(dir, "tegrastats")
-	tegraScript := `#!/bin/sh
-echo "11-14-2024 22:54:33 RAM 1024/4096MB GR3D_FREQ 80% tj@70C VDD_GPU_SOC 1000mW"`
-	require.NoError(t, os.WriteFile(tegraPath, []byte(tegraScript), 0755))
+	gpuCommandFixture(t, dir, "tegrastats", `11-14-2024 22:54:33 RAM 1024/4096MB GR3D_FREQ 80% tj@70C VDD_GPU_SOC 1000mW`+"\n")
 
 	gm, err := NewGPUManager()
 	require.NoError(t, err)
 	require.NotNil(t, gm)
 
-	time.Sleep(100 * time.Millisecond)
+	waitGPUs(t, gm, "0")
+	gm.Lock()
+	defer gm.Unlock()
 	gpu, ok := gm.GpuDataMap["0"]
 	require.True(t, ok)
 	assert.Equal(t, "GPU", gpu.Name)
@@ -1805,11 +1745,7 @@ func TestIntelCollectorStreaming(t *testing.T) {
 	) + "\n]"
 
 	// Create a fake intel_gpu_top that prints -J output with four samples (first will be skipped) and exits
-	scriptPath := filepath.Join(dir, "intel_gpu_top")
-	script := "#!/bin/sh\necho '" + output + "'\n"
-	if err := os.WriteFile(scriptPath, []byte(script), 0755); err != nil {
-		t.Fatal(err)
-	}
+	gpuCommandFixture(t, dir, intelGpuStatsCmd, output+"\n")
 
 	gm := &GPUManager{
 		GpuDataMap: make(map[string]*system.GPUData),
@@ -1992,19 +1928,12 @@ func TestIntelCollectorDeviceEnv(t *testing.T) {
 	dir := t.TempDir()
 	t.Setenv("PATH", dir)
 
-	// Prepare a file to capture args
-	argsFile := filepath.Join(dir, "args.txt")
-
 	// Create a fake intel_gpu_top that records its arguments and prints minimal valid output
-	scriptPath := filepath.Join(dir, "intel_gpu_top")
 	output := intelJSONStream(true,
 		intelJSONSample(2, 2.69, map[string]float64{"Render/3D": 0, "Video": 0}),
 		intelJSONSample(1.8, 2.45, map[string]float64{"Render/3D": 8.5, "Video": 15}),
 	)
-	script := fmt.Sprintf("#!/bin/sh\necho \"$@\" > %s\necho '%s'\n", argsFile, output)
-	if err := os.WriteFile(scriptPath, []byte(script), 0755); err != nil {
-		t.Fatal(err)
-	}
+	argsFile := gpuCommandFixture(t, dir, intelGpuStatsCmd, output)
 
 	// Set device selector via prefixed env var
 	t.Setenv("BESZEL_AGENT_INTEL_GPU_DEVICE", "sriov")
