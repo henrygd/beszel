@@ -64,9 +64,10 @@ func TestAlertRecordSystemAccess(t *testing.T) {
 			require.NoError(t, err)
 			handler := alertAPIRouter(t, hub)
 			const records = "/api/collections/alerts/records"
-			readStatus, writeStatus := 404, 403
+			// Collection rules reject inaccessible creates as 400 and hide inaccessible updates as 404.
+			readStatus, createStatus, updateStatus := 404, 400, 404
 			if shareAll == "true" {
-				readStatus, writeStatus = 200, 200
+				readStatus, createStatus, updateStatus = 200, 200, 200
 			}
 			alertAPIRequest(t, handler, token, "GET", "/api/collections/systems/records/"+own[0].Id, nil, 200)
 			alertAPIRequest(t, handler, token, "GET", "/api/collections/systems/records/"+foreign[0].Id, nil, readStatus)
@@ -78,7 +79,7 @@ func TestAlertRecordSystemAccess(t *testing.T) {
 					for _, relation := range []any{foreign[0].Id, []string{foreign[0].Id}} {
 						result := alertAPIRequest(t, handler, token, "POST", records, map[string]any{
 							"name": name, "user": user.Id, "system": relation, "value": 50,
-						}, writeStatus)
+						}, createStatus)
 						if id, ok := result["id"].(string); ok {
 							record, err := hub.FindRecordById("alerts", id)
 							require.NoError(t, err)
@@ -95,41 +96,34 @@ func TestAlertRecordSystemAccess(t *testing.T) {
 						require.NoError(t, hub.Delete(record))
 					}()
 					alertAPIRequest(t, handler, token, "PATCH", records+"/"+id, map[string]any{"value": 51}, 200)
-					status := writeStatus
-					if name == "NetworkMonitorLoss" {
-						status = 400 // Existing runtime-state restriction forbids moving these alerts.
+					// The system of an existing alert is immutable through the API, even between accessible systems.
+					for _, body := range []map[string]any{
+						{"system": foreign[0].Id},
+						{"system+": foreign[0].Id},
+						{"system": []string{own[1].Id}},
+					} {
+						alertAPIRequest(t, handler, token, "PATCH", records+"/"+id, body, 404)
 					}
-					alertAPIRequest(t, handler, token, "PATCH", records+"/"+id, map[string]any{"system": foreign[0].Id}, status)
-					alertAPIRequest(t, handler, token, "PATCH", records+"/"+id, map[string]any{"system+": foreign[0].Id}, status)
 					saved, err := hub.FindRecordById("alerts", id)
 					require.NoError(t, err)
-					expectedSystem := own[0].Id
-					if status == 200 {
-						expectedSystem = foreign[0].Id
-					}
-					assert.Equal(t, expectedSystem, saved.GetString("system"))
-					moveStatus := 200
-					if name == "NetworkMonitorLoss" {
-						moveStatus = 400
-					}
-					alertAPIRequest(t, handler, token, "PATCH", records+"/"+id, map[string]any{"system": []string{own[1].Id}}, moveStatus)
+					assert.Equal(t, own[0].Id, saved.GetString("system"))
+					// Internal saves can still move an alert, which must remove its previous cache binding.
+					saved.Set("system", own[1].Id)
+					require.NoError(t, hub.Save(saved))
 					cache := hub.GetAlertManager().GetSystemAlertsCache()
-					if moveStatus == 200 {
-						assert.Empty(t, cache.GetSystemAlerts(own[0].Id), "moving an alert must remove its previous cache binding")
-						assert.Empty(t, cache.GetSystemAlerts(foreign[0].Id))
-						assert.Len(t, cache.GetSystemAlerts(own[1].Id), 1)
-					}
+					assert.Empty(t, cache.GetSystemAlerts(own[0].Id), "moving an alert must remove its previous cache binding")
+					assert.Len(t, cache.GetSystemAlerts(own[1].Id), 1)
 				})
 			}
 			alertAPIRequest(t, handler, token, "POST", records, map[string]any{"name": "CPU", "user": other.Id, "system": own[0].Id}, 400)
-			alertAPIRequest(t, handler, token, "POST", records, map[string]any{"name": "CPU", "user": user.Id, "system": "missing00000000"}, 403)
+			alertAPIRequest(t, handler, token, "POST", records, map[string]any{"name": "CPU", "user": user.Id, "system": "missing00000000"}, 400)
 			alertAPIRequest(t, handler, "", "POST", records, map[string]any{"name": "CPU", "user": user.Id, "system": own[0].Id}, 400)
 			// An old subscription must still be checked when PATCH omits the relation.
 			oldAlert, err := beszelTests.CreateRecord(hub, "alerts", map[string]any{
 				"name": "CPU", "user": user.Id, "system": foreign[0].Id, "value": 50,
 			})
 			require.NoError(t, err)
-			alertAPIRequest(t, handler, token, "PATCH", records+"/"+oldAlert.Id, map[string]any{"value": 51}, writeStatus)
+			alertAPIRequest(t, handler, token, "PATCH", records+"/"+oldAlert.Id, map[string]any{"value": 51}, updateStatus)
 			require.NoError(t, hub.Delete(oldAlert))
 			otherAlert, err := beszelTests.CreateRecord(hub, "alerts", map[string]any{
 				"name": "CPU", "user": other.Id, "system": foreign[0].Id,
@@ -137,6 +131,16 @@ func TestAlertRecordSystemAccess(t *testing.T) {
 			require.NoError(t, err)
 			alertAPIRequest(t, handler, token, "PATCH", records+"/"+otherAlert.Id, map[string]any{"system": own[0].Id}, 404)
 			require.NoError(t, hub.Delete(otherAlert))
+			// Alerts cannot be handed to another user.
+			ownAlert, err := beszelTests.CreateRecord(hub, "alerts", map[string]any{
+				"name": "CPU", "user": user.Id, "system": own[0].Id,
+			})
+			require.NoError(t, err)
+			alertAPIRequest(t, handler, token, "PATCH", records+"/"+ownAlert.Id, map[string]any{"user": other.Id}, 404)
+			ownAlert, err = hub.FindRecordById("alerts", ownAlert.Id)
+			require.NoError(t, err)
+			assert.Equal(t, user.Id, ownAlert.GetString("user"))
+			require.NoError(t, hub.Delete(ownAlert))
 			// Readonly users retain their own alert preferences; superusers retain their bypass.
 			user.Set("role", "readonly")
 			require.NoError(t, hub.Save(user))
@@ -195,7 +199,7 @@ func TestAlertRecordForeignSystemDelivery(t *testing.T) {
 		require.NoError(t, err)
 		status := 200
 		if recipient.Id == user.Id {
-			status = 403
+			status = 400
 		}
 		alertAPIRequest(t, handler, token, "POST", "/api/collections/alerts/records", map[string]any{
 			"name": "CPU", "user": recipient.Id, "system": foreign[0].Id, "min": 1, "value": 50,
