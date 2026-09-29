@@ -1500,6 +1500,13 @@ EOF
     [ "$HUB_URL_PROVIDED" = "true" ] && sed -i "s|^Environment=\"HUB_URL=.*\"|Environment=\"HUB_URL=$SED_HUB_URL\"|" /etc/systemd/system/beszel-agent.service
   fi
 
+  # Let the agent service (not the beszel user) read the system journal for service logs.
+  # Admins can opt out with a drop-in that sets an empty SupplementaryGroups=.
+  if getent group systemd-journal >/dev/null 2>&1 && ! grep -q '^SupplementaryGroups=' /etc/systemd/system/beszel-agent.service; then
+    echo "Granting the agent service read access to the systemd journal"
+    sed -i '/^User=beszel$/a SupplementaryGroups=systemd-journal' /etc/systemd/system/beszel-agent.service
+  fi
+
   # Load and start the service
   printf "\nLoading and starting the agent service...\n"
   systemctl daemon-reload
