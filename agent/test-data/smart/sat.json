@@ -1,0 +1,26 @@
+{
+  "smartctl": {
+    "exit_status": 0
+  },
+  "device": {
+    "name": "/dev/sda",
+    "info_name": "/dev/sda [SAT]",
+    "type": "sat",
+    "protocol": "ATA"
+  },
+  "model_name": "TOSHIBA MG03ACA200",
+  "serial_number": "Z4K2A01FS",
+  "firmware_version": "5701",
+  "user_capacity": { "blocks": 5860533168, "bytes": 3000592982016 },
+  "smart_status": { "passed": true },
+  "temperature": { "current": 38 },
+  "ata_smart_attributes": {
+    "revision": 16,
+    "table": [
+      { "id": 1, "name": "Raw_Read_Error_Rate", "value": 100, "worst": 100, "thresh": 16, "when_failed": "", "raw": { "value": 0, "string": "0" } },
+      { "id": 5, "name": "Reallocated_Sector_Ct", "value": 100, "worst": 100, "thresh": 5, "when_failed": "", "raw": { "value": 0, "string": "0" } },
+      { "id": 9, "name": "Power_On_Hours", "value": 1, "worst": 1, "thresh": 0, "when_failed": "", "raw": { "value": 43953, "string": "43953" } },
+      { "id": 194, "name": "Temperature_Celsius", "value": 62, "worst": 47, "thresh": 0, "when_failed": "", "raw": { "value": 38, "string": "38" } }
+    ]
+  }
+}
