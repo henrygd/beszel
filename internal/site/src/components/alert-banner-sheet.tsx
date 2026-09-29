@@ -1,5 +1,5 @@
-import { Trans } from "@lingui/react/macro"
-import { ChevronRightIcon, type LucideIcon, TriangleAlertIcon } from "lucide-react"
+import { Trans, useLingui } from "@lingui/react/macro"
+import { ChevronRightIcon, type LucideIcon, TriangleAlertIcon, XIcon } from "lucide-react"
 import type { ReactNode } from "react"
 import { cn } from "@/lib/utils"
 import { Link } from "./router"
@@ -20,6 +20,7 @@ export function AlertBannerSheet({
 	sheetTitle,
 	sheetDescription,
 	icon: Icon = TriangleAlertIcon,
+	onDismiss,
 	className,
 	children,
 }: {
@@ -31,9 +32,12 @@ export function AlertBannerSheet({
 	sheetTitle: ReactNode
 	sheetDescription?: ReactNode
 	icon?: LucideIcon
+	/** Shows a dismiss button when provided */
+	onDismiss?: () => void
 	className?: string
 	children: ReactNode
 }) {
+	const { t } = useLingui()
 	return (
 		<Sheet open={open} onOpenChange={onOpenChange}>
 			<Alert variant="destructive" className={cn("flex items-center gap-3 py-3 max-sm:flex-wrap", className)}>
@@ -50,12 +54,24 @@ export function AlertBannerSheet({
 					<Button
 						variant="outline"
 						size="sm"
-						className="shrink-0 bg-transparent border-destructive/40 text-destructive hover:bg-destructive/10 hover:text-destructive dark:text-red-400 dark:hover:bg-destructive/15 dark:hover:text-red-400 max-sm:w-full"
+						className="shrink-0 bg-transparent border-destructive/40 text-destructive hover:bg-destructive/10 hover:text-destructive dark:text-red-400 dark:hover:bg-destructive/15 dark:hover:text-red-400 max-sm:w-full max-sm:order-last"
 					>
 						{buttonLabel ?? <Trans>View details</Trans>}
 						<ChevronRightIcon className="size-4 ms-1 -me-1" />
 					</Button>
 				</SheetTrigger>
+				{onDismiss && (
+					<Button
+						variant="ghost"
+						size="icon"
+						onClick={onDismiss}
+						aria-label={t`Dismiss`}
+						title={t`Dismiss`}
+						className="size-8 shrink-0 -me-1.5 text-destructive/70 hover:bg-destructive/10 hover:text-destructive dark:text-red-400/70 dark:hover:bg-destructive/15 dark:hover:text-red-400"
+					>
+						<XIcon className="size-4" />
+					</Button>
+				)}
 			</Alert>
 			<SheetContent className="w-140 !max-w-full gap-0">
 				<SheetHeader className="p-4 sm:p-6 pb-3 sm:pb-4 border-b">
