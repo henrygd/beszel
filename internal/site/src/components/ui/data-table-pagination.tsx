@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { queueUserSettings } from "@/lib/api"
 import { $userSettings } from "@/lib/stores"
 
-const defaultPageSizes = [10, 20, 50, 100, 200]
+const defaultPageSizes = [5, 10, 20, 50, 100, 200]
 
 /**
  * Pagination state for a table. The page size is a user setting shared by all tables.
