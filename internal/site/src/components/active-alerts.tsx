@@ -73,16 +73,18 @@ export const ActiveAlerts = ({ className }: { className?: string }) => {
 	}, [alerts])
 
 	// forget dismissed alerts once they resolve so they show again if they retrigger.
-	// skipped while alerts are still loading so a reload doesn't clear the dismissal.
+	// skipped while alerts are still loading so a reload doesn't clear the dismissal,
+	// and re-run once loaded in case they resolved while the page was closed.
+	const alertsLoaded = Object.keys(alerts).length > 0
 	useEffect(() => {
-		if (Object.keys(alerts).length === 0) {
+		if (!alertsLoaded) {
 			return
 		}
 		const activeIds = new Set(activeAlerts.map((alert) => alert.id))
 		if (dismissedIds.some((id) => !activeIds.has(id))) {
 			setDismissedIds(dismissedIds.filter((id) => activeIds.has(id)))
 		}
-	}, [alertsKey])
+	}, [alertsKey, alertsLoaded])
 
 	return useMemo(() => {
 		const alertCount = activeAlerts.length
