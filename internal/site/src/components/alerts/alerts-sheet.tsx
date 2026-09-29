@@ -13,7 +13,7 @@ import { Input } from "@/components/ui/input"
 import { Switch } from "@/components/ui/switch"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { toast } from "@/components/ui/use-toast"
-import { alertInfo } from "@/lib/alerts"
+import { alertInfo, alertInputWidth, clampAlertValue } from "@/lib/alerts"
 import { pb } from "@/lib/api"
 import { $alerts, $systems } from "@/lib/stores"
 import { cn, debounce } from "@/lib/utils"
@@ -355,8 +355,7 @@ export function AlertContent({
 										onChange={(e) => {
 											let val = parseFloat(e.target.value)
 											if (!Number.isNaN(val)) {
-												if (alertData.max != null) val = Math.min(val, alertData.max)
-												if (alertData.min != null) val = Math.max(val, alertData.min)
+												val = clampAlertValue(alertData, val)
 												setValue(val)
 												sendUpsert(min, val)
 											}
@@ -364,7 +363,8 @@ export function AlertContent({
 										step={alertData.step ?? 1}
 										min={alertData.min ?? 1}
 										max={alertData.max ?? 99}
-										className="w-16 h-8 text-center px-1"
+										style={{ width: alertInputWidth(alertData) }}
+										className="h-8 text-center px-1"
 									/>
 								</div>
 							</div>

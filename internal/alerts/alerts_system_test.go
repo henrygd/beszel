@@ -213,6 +213,8 @@ func TestSystemAlertsOneMin(t *testing.T) {
 	testOneMinuteSystemAlert(t, "Memory", 50, setMemoryAlertValue, 51, 49)
 	testOneMinuteSystemAlert(t, "Disk", 50, setDiskAlertValue, 51, 49)
 	testOneMinuteSystemAlert(t, "Bandwidth", 50, setBandwidthAlertValue, [2]uint64{megabytesToBytes(26), megabytesToBytes(25)}, [2]uint64{megabytesToBytes(25), megabytesToBytes(24)})
+	// 10GbE: combined up + down above the threshold, though neither direction alone exceeds it
+	testOneMinuteSystemAlert(t, "Bandwidth", 2000, setBandwidthAlertValue, [2]uint64{megabytesToBytes(1100), megabytesToBytes(1100)}, [2]uint64{megabytesToBytes(950), megabytesToBytes(950)})
 	testOneMinuteSystemAlert(t, "GPU", 50, setGPUAlertValue, 51, 49)
 	testOneMinuteSystemAlert(t, "Temperature", 70, setTemperatureAlertValue, 71, 69)
 	testOneMinuteSystemAlert(t, "LoadAvg1", 4, setLoadAvgAlertValue, [3]float64{4.1, 0, 0}, [3]float64{3.9, 0, 0})
@@ -231,6 +233,7 @@ func TestSystemAlertsTwoMin(t *testing.T) {
 	testMultiMinuteSystemAlert(t, "Memory", 50, 2, setMemoryAlertValue, 10, 51, 48)
 	testMultiMinuteSystemAlert(t, "Disk", 50, 2, setDiskAlertValue, 10, 51, 48)
 	testMultiMinuteSystemAlert(t, "Bandwidth", 50, 2, setBandwidthAlertValue, [2]uint64{megabytesToBytes(10), megabytesToBytes(10)}, [2]uint64{megabytesToBytes(26), megabytesToBytes(25)}, [2]uint64{megabytesToBytes(10), megabytesToBytes(10)})
+	testMultiMinuteSystemAlert(t, "Bandwidth", 2000, 2, setBandwidthAlertValue, [2]uint64{megabytesToBytes(200), megabytesToBytes(200)}, [2]uint64{megabytesToBytes(1100), megabytesToBytes(1100)}, [2]uint64{megabytesToBytes(200), megabytesToBytes(200)})
 	testMultiMinuteSystemAlert(t, "GPU", 50, 2, setGPUAlertValue, 10, 51, 48)
 	testMultiMinuteSystemAlert(t, "Temperature", 70, 2, setTemperatureAlertValue, 10, 71, 67)
 	testMultiMinuteSystemAlert(t, "LoadAvg1", 4, 2, setLoadAvgAlertValue, [3]float64{0, 0, 0}, [3]float64{4.1, 0, 0}, [3]float64{3.5, 0, 0})

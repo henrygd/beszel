@@ -52,7 +52,8 @@ export const alertInfo: Record<string, AlertInfo> = {
     unit: " MB/s",
     icon: EthernetIcon,
     desc: () => t`Triggers when combined up/down exceeds a threshold`,
-    max: 250,
+    /** Covers a saturated full-duplex 10GbE link (~2384 MiB/s combined) */
+    max: 2500,
   },
   NetworkMonitorLoss: {
     name: () => t`Network Monitor Loss`,
@@ -138,6 +139,22 @@ export const alertInfo: Record<string, AlertInfo> = {
     noThreshold: true,
   },
 } as const
+
+/** Clamp a typed threshold to the alert's explicitly defined min / max */
+export function clampAlertValue(info: AlertInfo, value: number) {
+  if (info.max != null) value = Math.min(value, info.max)
+  if (info.min != null) value = Math.max(value, info.min)
+  return value
+}
+
+/** CSS width for the threshold input, wide enough for the largest allowed value */
+export function alertInputWidth(info: AlertInfo) {
+  const max = info.max ?? 99
+  const decimals = info.step?.toString().split(".")[1]?.length ?? 0
+  const chars = Math.floor(max).toString().length + (decimals ? decimals + 1 : 0)
+  // extra 3ch leaves room for padding and the number spinner; never narrower than w-16
+  return `max(4rem, ${chars + 3}ch)`
+}
 
 /** Helper to manage user alerts */
 export const alertManager = (() => {
