@@ -57,6 +57,47 @@ func TestSpeedtestServerChangeReplacesRecord(t *testing.T) {
 	assert.True(t, records[0].GetBool("enabled"))
 }
 
+// Speedtest IDs are unpadded hashes, so the schema must accept IDs shorter than six characters.
+func TestSpeedtestShortIDRequests(t *testing.T) {
+	const systemID, shortID = "000000000001739", "a0116"
+	require.Equal(t, shortID, generateSpeedtestID(systemID, 0))
+	for _, method := range []string{http.MethodPost, http.MethodPatch} {
+		t.Run(method, func(t *testing.T) {
+			hub, testApp, err := createTestHub(t)
+			require.NoError(t, err)
+			defer cleanupTestHub(hub, testApp)
+			bindSpeedtestsEvents(hub)
+			user, err := createTestUser(hub)
+			require.NoError(t, err)
+			system, err := createTestRecord(hub, "systems", map[string]any{
+				"id": systemID, "name": "Paused", "host": "localhost", "port": "45876",
+				"status": "paused", "users": []string{user.Id},
+			})
+			require.NoError(t, err)
+			url := "/api/collections/speedtests/records"
+			payload := map[string]any{"system": system.Id, "server_id": 0, "interval": 60, "enabled": true}
+			var oldID string
+			if method == http.MethodPatch {
+				previous, err := createTestRecord(hub, "speedtests", map[string]any{
+					"system": system.Id, "server_id": 42, "interval": 60,
+				})
+				require.NoError(t, err)
+				oldID = previous.Id
+				url += "/" + oldID
+				payload = map[string]any{"server_id": 0}
+			}
+			status, body := speedtestAPIRequest(t, hub, user, method, url, payload)
+			require.Equal(t, http.StatusOK, status, body)
+			_, err = hub.FindRecordById("speedtests", shortID)
+			require.NoError(t, err)
+			if oldID != "" {
+				_, err = hub.FindRecordById("speedtests", oldID)
+				require.Error(t, err)
+			}
+		})
+	}
+}
+
 func TestDuplicateSpeedtestIsRejected(t *testing.T) {
 	hub, testApp, err := createTestHub(t)
 	require.NoError(t, err)

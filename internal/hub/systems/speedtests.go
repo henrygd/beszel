@@ -2,7 +2,6 @@ package systems
 
 import (
 	"context"
-	"fmt"
 	"time"
 
 	"github.com/henrygd/beszel"
@@ -91,7 +90,9 @@ func (sm *SystemManager) GetSpeedtestConfigsForSystem(systemID string) ([]speedt
 // updateSpeedtestRecords stores new speedtest results on their speedtests records
 // and adds a speedtest_stats record for each run. Failed runs are stored with
 // their error and no measurements, so they show as gaps in the charts. Results
-// the hub has already stored are skipped by comparing run times.
+// the hub has already stored are skipped by comparing run times. A result that
+// fails to save is logged and skipped so it can't discard the rest of the
+// system's stats, which are written in the same transaction.
 func (sys *System) updateSpeedtestRecords(app core.App, results map[string]speedtest.Result) error {
 	var statsCollection *core.Collection
 	for id, result := range results {
@@ -105,7 +106,8 @@ func (sys *System) updateSpeedtestRecords(app core.App, results map[string]speed
 		}
 		setSpeedtestResultFields(record, result)
 		if err := app.SaveNoValidate(record); err != nil {
-			return fmt.Errorf("failed to update speedtest %s: %w", id, err)
+			app.Logger().Warn("Failed to update speedtest", "system", sys.Id, "speedtest", id, "err", err)
+			continue
 		}
 		if statsCollection == nil {
 			if statsCollection, err = app.FindCachedCollectionByNameOrId("speedtest_stats"); err != nil {
@@ -126,7 +128,7 @@ func (sys *System) updateSpeedtestRecords(app core.App, results map[string]speed
 			"error":       result.Error,
 		})
 		if err := app.SaveNoValidate(stats); err != nil {
-			return fmt.Errorf("failed to save speedtest stats %s: %w", id, err)
+			app.Logger().Error("Failed to save speedtest stats", "system", sys.Id, "speedtest", id, "err", err)
 		}
 	}
 	return nil

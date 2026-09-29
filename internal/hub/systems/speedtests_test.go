@@ -89,6 +89,58 @@ func TestUpdateSpeedtestRecords(t *testing.T) {
 	assert.Equal(t, ok.URL, stats.GetString("url"))
 }
 
+// Results are keyed by agent-supplied IDs, so a system may only write to its own speedtests.
+func TestSpeedtestResultOwnership(t *testing.T) {
+	sys, app := newTestSystemWithHub(t)
+	systems, err := app.FindCachedCollectionByNameOrId("systems")
+	require.NoError(t, err)
+	foreignSystem := core.NewRecord(systems)
+	require.NoError(t, app.SaveNoValidate(foreignSystem))
+	col, err := app.FindCachedCollectionByNameOrId("speedtests")
+	require.NoError(t, err)
+	for id, systemID := range map[string]string{"owned": sys.Id, "foreign": foreignSystem.Id} {
+		record := core.NewRecord(col)
+		record.Id = id
+		record.Load(map[string]any{"system": systemID, "interval": 60, "enabled": true})
+		require.NoError(t, app.SaveNoValidate(record))
+	}
+	report := func(runAt int64) {
+		t.Helper()
+		result := speedtest.Result{RunAt: runAt, Download: 1000, ServerID: 42}
+		_, err := sys.createRecords(&system.CombinedData{Speedtests: map[string]speedtest.Result{
+			"owned": result, "foreign": result,
+		}})
+		require.NoError(t, err)
+	}
+	lastRun := func(id string) int {
+		t.Helper()
+		record, err := app.FindRecordById("speedtests", id)
+		require.NoError(t, err)
+		return record.GetInt("last_run")
+	}
+	statsFor := func(id string) int64 {
+		t.Helper()
+		count, err := app.CountRecords("speedtest_stats", dbx.HashExp{"speedtest": id})
+		require.NoError(t, err)
+		return count
+	}
+
+	report(1000)
+	assert.Equal(t, 1000, lastRun("owned"))
+	assert.Equal(t, int64(1), statsFor("owned"))
+	assert.Zero(t, lastRun("foreign"))
+	assert.Zero(t, statsFor("foreign"))
+
+	// Ownership is read afresh, so a speedtest moved to another system stops accepting results.
+	moved, err := app.FindRecordById("speedtests", "owned")
+	require.NoError(t, err)
+	moved.Set("system", foreignSystem.Id)
+	require.NoError(t, app.SaveNoValidate(moved))
+	report(2000)
+	assert.Equal(t, 1000, lastRun("owned"))
+	assert.Equal(t, int64(1), statsFor("owned"))
+}
+
 func TestGetSpeedtestConfigsForSystem(t *testing.T) {
 	sys, app := newTestSystemWithHub(t)
 	col, err := app.FindCachedCollectionByNameOrId("speedtests")

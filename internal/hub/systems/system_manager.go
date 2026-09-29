@@ -361,8 +361,9 @@ func (sm *SystemManager) AddWebSocketSystem(systemId string, agentVersion semver
 		return err
 	}
 
-	// Sync network monitors and speedtests to the newly connected agent
-	go system.syncPendingAgentConfigs()
+	// Sync network monitors and speedtests to the newly connected agent.
+	// Tracked with the updaters so shutdown waits for it to finish.
+	sm.updaters.Go(system.syncPendingAgentConfigs)
 
 	return nil
 }
