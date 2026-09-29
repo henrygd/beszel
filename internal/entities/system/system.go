@@ -195,7 +195,6 @@ type Info struct {
 	PackageUpdates []uint16           `json:"pu,omitempty" cbor:"25,keyasint,omitempty"`  // [totalUpdates, securityUpdates] (security omitted if unknown)
 	WiFi           map[string]WiFi    `json:"wf,omitempty" cbor:"26,keyasint,omitempty"`  // connected Wi-Fi interfaces
 	SystemdLogs    bool               `json:"jl,omitempty" cbor:"27,keyasint,omitempty"`  // agent can read the system journal
-  SSHDisabled    bool               `json:"-" cbor:"28,keyasint,omitempty"`             // agent runs with DISABLE_SSH; saved to systems.ssh_disabled, not info
 }
 
 // Data that does not change during process lifetime and is not needed in All Systems table

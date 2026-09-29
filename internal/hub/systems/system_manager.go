@@ -108,21 +108,10 @@ func (sm *SystemManager) Initialize() error {
 	}
 
 	// Load existing systems from database (excluding paused ones)
-	var rows []struct {
-		Id          string `db:"id"`
-		Host        string `db:"host"`
-		Port        string `db:"port"`
-		Status      string `db:"status"`
-		SSHDisabled bool   `db:"ssh_disabled"`
-	}
-	err = sm.hub.DB().NewQuery("SELECT id, host, port, status, ssh_disabled FROM systems WHERE status != 'paused'").All(&rows)
-	if err != nil || len(rows) == 0 {
+	var systems []*System
+	err = sm.hub.DB().NewQuery("SELECT id, host, port, status FROM systems WHERE status != 'paused'").All(&systems)
+	if err != nil || len(systems) == 0 {
 		return err
-	}
-	systems := make([]*System, len(rows))
-	for i, row := range rows {
-		systems[i] = &System{Id: row.Id, Host: row.Host, Port: row.Port, Status: row.Status}
-		systems[i].sshDisabled.Store(row.SSHDisabled)
 	}
 
 	// Start systems in background with staggered timing
@@ -349,7 +338,6 @@ func (sm *SystemManager) AddRecord(record *core.Record, system *System) (err err
 	system.swapStatus(record.GetString("status"))
 	system.Host = record.GetString("host")
 	system.Port = record.GetString("port")
-	system.sshDisabled.Store(record.GetBool("ssh_disabled"))
 
 	return sm.AddSystem(system)
 }

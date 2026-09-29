@@ -179,9 +179,9 @@ func TestSetDownAfterContextCancelled(t *testing.T) {
 }
 
 func TestSSHDisabledSkipsSSHFallback(t *testing.T) {
+	t.Setenv("DISABLE_SSH", "true")
 	// manager is nil on purpose: any SSH attempt would panic
 	sys := &System{}
-	sys.sshDisabled.Store(true)
 
 	var result string
 	err := sys.request(context.Background(), common.GetContainerInfo, nil, &result)
@@ -191,27 +191,13 @@ func TestSSHDisabledSkipsSSHFallback(t *testing.T) {
 	require.ErrorIs(t, err, errSSHDisabled)
 }
 
-func TestCreateRecordsSavesSSHDisabledColumn(t *testing.T) {
-	sys, app := newTestSystemWithHub(t)
-	for _, disabled := range []bool{true, false} {
-		_, err := sys.createRecords(&system.CombinedData{Info: system.Info{SSHDisabled: disabled}})
-		require.NoError(t, err)
-		record, err := app.FindRecordById("systems", sys.Id)
-		require.NoError(t, err)
-		require.Equal(t, disabled, record.GetBool("ssh_disabled"))
-		require.NotContains(t, record.GetString("info"), `"sd"`, "flag belongs in its own column, not info")
-	}
-}
-
 func TestSSHFallbackDialsAgentUnlessDisabled(t *testing.T) {
 	for _, tc := range []struct {
-		name          string
-		agentDisabled bool
-		hubEnv        string
-		wantDial      bool
+		name     string
+		hubEnv   string
+		wantDial bool
 	}{
 		{name: "enabled", wantDial: true},
-		{name: "disabled on agent", agentDisabled: true},
 		{name: "disabled on hub", hubEnv: "DISABLE_SSH"},
 		{name: "disabled on hub with prefix", hubEnv: "BESZEL_HUB_DISABLE_SSH"},
 	} {
@@ -233,7 +219,6 @@ func TestSSHFallbackDialsAgentUnlessDisabled(t *testing.T) {
 			host, port, _ := net.SplitHostPort(listener.Addr().String())
 			sm := &SystemManager{sshConfig: &ssh.ClientConfig{HostKeyCallback: ssh.InsecureIgnoreHostKey(), Timeout: time.Second}}
 			sys := &System{Host: host, Port: port, Status: down, manager: sm, ctx: context.Background()}
-			sys.sshDisabled.Store(tc.agentDisabled)
 
 			_, err = sys.fetchDataFromAgent(common.DataRequestOptions{})
 			require.Error(t, err) // listener isn't a real agent

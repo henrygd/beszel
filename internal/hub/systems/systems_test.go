@@ -50,64 +50,6 @@ func TestPauseSystemPreservesAgentVersion(t *testing.T) {
 	assert.Equal(t, system.Info{AgentVersion: "0.20.0"}, info)
 }
 
-func TestSSHDisabledLoadedFromRecord(t *testing.T) {
-	hub, err := tests.NewTestHub(t.TempDir())
-	require.NoError(t, err)
-	defer hub.Cleanup()
-	user, err := tests.CreateUser(hub, "test@example.com", "password")
-	require.NoError(t, err)
-
-	// created before the manager starts, as if saved by a previous hub run
-	record, err := tests.CreateRecord(hub, "systems", map[string]any{
-		"name":         "ssh-disabled-startup",
-		"host":         "localhost",
-		"port":         "33914",
-		"status":       "down",
-		"ssh_disabled": true,
-		"users":        []string{user.Id},
-	})
-	require.NoError(t, err)
-
-	sm := hub.GetSystemManager()
-	require.NoError(t, sm.Initialize())
-
-	t.Run("on hub startup", func(t *testing.T) {
-		require.Eventually(t, func() bool {
-			sys, err := sm.GetSystemFromStore(record.Id)
-			return err == nil && sys.SSHDisabled()
-		}, 5*time.Second, 50*time.Millisecond)
-	})
-
-	t.Run("when re-added as pending", func(t *testing.T) {
-		record.Set("status", "pending")
-		require.NoError(t, hub.Save(record))
-		sys, err := sm.GetSystemFromStore(record.Id)
-		require.NoError(t, err)
-		assert.True(t, sys.SSHDisabled())
-	})
-
-	t.Run("kept when paused and resumed", func(t *testing.T) {
-		record.Set("status", "paused")
-		require.NoError(t, hub.Save(record))
-		record.Set("status", "pending")
-		require.NoError(t, hub.Save(record))
-		sys, err := sm.GetSystemFromStore(record.Id)
-		require.NoError(t, err)
-		assert.True(t, sys.SSHDisabled())
-	})
-
-	t.Run("cleared when column is false", func(t *testing.T) {
-		record.Set("ssh_disabled", false)
-		record.Set("status", "paused")
-		require.NoError(t, hub.Save(record))
-		record.Set("status", "pending")
-		require.NoError(t, hub.Save(record))
-		sys, err := sm.GetSystemFromStore(record.Id)
-		require.NoError(t, err)
-		assert.False(t, sys.SSHDisabled())
-	})
-}
-
 func TestSystemManagerNew(t *testing.T) {
 	hub, err := tests.NewTestHub(t.TempDir())
 	if err != nil {
