@@ -99,6 +99,7 @@ func TestApiRoutesAuthentication(t *testing.T) {
 	adminUser, err := beszelTests.CreateUserWithRole(hub, "admin@example.com", "password123", "admin")
 	require.NoError(t, err, "Failed to create admin user")
 	adminUserToken, err := adminUser.NewAuthToken()
+	require.NoError(t, err, "Failed to create admin auth token")
 
 	readOnlyUser, err := beszelTests.CreateUserWithRole(hub, "readonly@example.com", "password123", "readonly")
 	require.NoError(t, err, "Failed to create readonly user")
@@ -674,6 +675,25 @@ func TestApiRoutesAuthentication(t *testing.T) {
 			},
 			ExpectedStatus:  500,
 			ExpectedContent: []string{"Something went wrong while processing your request."},
+			TestAppFactory:  testAppFactory,
+			BeforeTestFunc: func(t testing.TB, app *pbTests.TestApp, e *core.ServeEvent) {
+				beszelTests.CreateRecord(app, "systemd_services", map[string]any{
+					"system": system.Id,
+					"name":   "nginx.service",
+					"state":  0,
+					"sub":    1,
+				})
+			},
+		},
+		{
+			Name:   "GET /systemd/logs - old agent without capability returns empty logs",
+			Method: http.MethodGet,
+			URL:    fmt.Sprintf("/api/beszel/systemd/logs?system=%s&service=nginx.service", system.Id),
+			Headers: map[string]string{
+				"Authorization": userToken,
+			},
+			ExpectedStatus:  200,
+			ExpectedContent: []string{`"logs":""`},
 			TestAppFactory:  testAppFactory,
 			BeforeTestFunc: func(t testing.TB, app *pbTests.TestApp, e *core.ServeEvent) {
 				beszelTests.CreateRecord(app, "systemd_services", map[string]any{

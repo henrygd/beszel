@@ -77,6 +77,8 @@ export interface SystemInfo {
 	bb?: number
 	/** agent version */
 	v: string
+	/** agent can read the system journal */
+	jl?: boolean
 	/** system is using podman */
 	p?: boolean
 	/** highest gpu utilization */
