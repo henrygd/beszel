@@ -38,7 +38,7 @@ import { pb } from "@/lib/api"
 import { SystemStatus } from "@/lib/enums"
 import { $allSystemsById, $direction, $textMeasureVersion, $userSettings, getUserChartTime } from "@/lib/stores"
 import { cn, formatShortDate, isVisuallyLonger, matchesFilterGroups, parseFilterGroups, parseSemVer } from "@/lib/utils"
-import type { ChartData, MonitorCertInfo, NetworkMonitorRecord } from "@/types"
+import type { ChartOptions, MonitorCertInfo, NetworkMonitorRecord } from "@/types"
 import { AddMonitorDialog, EditMonitorDialog, SystemMultiSelect } from "./monitor-dialog"
 import {
 	ArrowDownIcon,
@@ -720,7 +720,7 @@ function NetworkMonitorSheetContent({
 		enabled: open,
 	})
 
-	const chartData = useMemo<ChartData>(
+	const chartData = useMemo<ChartOptions>(
 		() => ({
 			agentVersion: parseSemVer(system?.info?.v),
 			orientation: direction === "rtl" ? "right" : "left",
