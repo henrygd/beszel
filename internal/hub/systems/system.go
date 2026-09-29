@@ -696,12 +696,11 @@ func (sys *System) request(ctx context.Context, action common.WebSocketAction, r
 			sys.closeWebSocketConnection()
 		}
 	}
-  
-  if sys.sshFallbackDisabled() {
+	
+  	// Fall back to SSH if WebSocket fails
+  	if sys.sshFallbackDisabled() {
 		return errSSHDisabled
 	}
-
-	// Fall back to SSH if WebSocket fails
 	sshTransport, err := sys.getSSHTransport()
 	if err != nil {
 		return err
