@@ -62,6 +62,42 @@ export function withMonitorGaps(
 	return result
 }
 
+/**
+ * Fold new records into recent cached records with the same timestamp. Bucketed multi-monitor
+ * stats arrive per system, so one bucket can be filled by several batches.
+ * Updates matching cached records in place; returns the records that still need appending.
+ */
+export function mergeSameTimestamps(existing: NetworkMonitorStatsRecord[], newStats: NetworkMonitorStatsRecord[]) {
+	if (!existing.length) return newStats
+	const recent = existing.slice(-10)
+	return newStats.filter((record) => {
+		const match = recent.find((r) => r.created !== null && r.created === record.created)
+		if (!match) return true
+		match.stats = { ...match.stats, ...record.stats }
+		return false
+	})
+}
+
+/**
+ * Merge an array of per-monitor raw records into the map-keyed format expected by chart components.
+ * `bucketMs` floors timestamps so records from different systems (which are not aligned) share a row.
+ */
+export function mergeMonitorStats(rawRecords: RawMonitorStatsRecord[], bucketMs = 0): NetworkMonitorStatsRecord[] {
+	const byTimestamp = new Map<number, Record<string, MonitorStats>>()
+	for (const rec of rawRecords) {
+		const created = bucketMs > 0 ? Math.floor(rec.created / bucketMs) * bucketMs : rec.created
+		let statsMap = byTimestamp.get(created)
+		if (!statsMap) {
+			statsMap = {}
+			byTimestamp.set(created, statsMap)
+		}
+		statsMap[rec.monitor] = getMonitorStats(rec)
+	}
+	return Array.from(byTimestamp.entries())
+		.sort(([a], [b]) => a - b)
+		.map(([created, stats]) => ({ created, stats }))
+}
+
 export function getMonitorTarget(monitor: Pick<NetworkMonitorRecord, "target" | "protocol" | "port">) {
 	if (monitor.protocol !== "tcp") return monitor.target
 	const host = monitor.target.includes(":") && !monitor.target.startsWith("[") ? `[${monitor.target}]` : monitor.target

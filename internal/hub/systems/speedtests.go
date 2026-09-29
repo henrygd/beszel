@@ -61,7 +61,7 @@ func (sys *System) DeleteSpeedtest(id string) error {
 }
 
 func (sys *System) syncSpeedtests(req speedtest.SyncRequest) error {
-	if sys.agentVersion.LT(beszel.MinVersionSpeedtests) {
+	if sys.getAgentVersion().LT(beszel.MinVersionSpeedtests) {
 		return nil
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)

@@ -532,6 +532,8 @@ function SpeedtestSheet({
 			agentVersion: parseSemVer(system?.info?.v),
 			orientation: direction === "rtl" ? "right" : "left",
 			chartTime,
+			systemStats: [],
+			containerData: [],
 		}),
 		[system?.info?.v, direction, chartTime]
 	)

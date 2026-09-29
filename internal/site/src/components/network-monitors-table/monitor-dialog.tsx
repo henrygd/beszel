@@ -201,6 +201,8 @@ export function SystemMultiSelect({
 	disabled,
 	className,
 	isEligible = supportsNetworkMonitors,
+	systemIds,
+	placeholder,
 }: {
 	id: string
 	selectedSystemIds: Set<string>
@@ -209,6 +211,9 @@ export function SystemMultiSelect({
 	className?: string
 	/** Filters the selectable systems. Defaults to systems that support network monitors. */
 	isEligible?: (system: SystemRecord) => boolean
+	/** Limit the options to these systems. Overrides isEligible when set. */
+	systemIds?: string[]
+	placeholder?: string
 }) {
 	const systems = useStore($systems)
 	const { t } = useLingui()
@@ -224,7 +229,9 @@ export function SystemMultiSelect({
 	const contentRef = useRef<HTMLDivElement>(null)
 	const query = search.trim().toLocaleLowerCase()
 	const filteredSystems = systems.filter(
-		(system) => isEligible(system) && system.name.toLocaleLowerCase().includes(query)
+		(system) =>
+			(systemIds ? systemIds.includes(system.id) : isEligible(system)) &&
+			system.name.toLocaleLowerCase().includes(query)
 	)
 	const allSelected = filteredSystems.every((system) => selectedSystemIds.has(system.id))
 	const anySelected = filteredSystems.some((system) => selectedSystemIds.has(system.id))
@@ -250,7 +257,7 @@ export function SystemMultiSelect({
 					<ServerIcon className="size-3.5 absolute start-4 top-1/2 -translate-y-1/2 opacity-85" />
 					<span className="truncate">
 						{selectedSystemIds.size === 0
-							? t`Select systems`
+							? (placeholder ?? t`Select systems`)
 							: selectedSystemIds.size === 1
 								? systems.find((s) => selectedSystemIds.has(s.id))?.name
 								: t`${selectedSystemIds.size} selected`}
