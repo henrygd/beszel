@@ -119,7 +119,8 @@ func calculateBusy(t1, t2 cpu.TimesStat) float64 {
 // On Linux, it excludes guest and guest_nice time from the total to match kernel behavior.
 // Returns total CPU time and busy CPU time (total minus idle and I/O wait time).
 func getAllBusy(t cpu.TimesStat) (float64, float64) {
-	tot := t.Total()
+	tot := t.User + t.System + t.Idle + t.Nice + t.Iowait + t.Irq +
+		t.Softirq + t.Steal + t.Guest + t.GuestNice
 	if runtime.GOOS == "linux" {
 		tot -= t.Guest     // Linux 2.6.24+
 		tot -= t.GuestNice // Linux 3.2.0+
