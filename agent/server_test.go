@@ -8,6 +8,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"net"
+	"net/http"
+	"net/http/httptest"
 	"os"
 	"path/filepath"
 	"strings"
@@ -218,6 +220,110 @@ func TestStopServerDoesNotBlockWhenEventQueueFull(t *testing.T) {
 
 	assert.Nil(t, agent.server)
 	assert.Equal(t, WebSocketConnect, <-agent.connectionManager.eventChan)
+}
+
+func TestSSHConnectionFallbackLifecycle(t *testing.T) {
+	t.Setenv("BESZEL_AGENT_DISABLE_SSH", "false")
+	agent := createTestAgent(t)
+	cm := agent.connectionManager
+	cm.eventChan = make(chan ConnectionEvent, 4)
+
+	_, privateKey, err := ed25519.GenerateKey(nil)
+	require.NoError(t, err)
+	signer, err := gossh.NewSignerFromKey(privateKey)
+	require.NoError(t, err)
+	cm.serverOptions = ServerOptions{
+		Network: "tcp",
+		Addr:    "127.0.0.1:0",
+		Keys:    []gossh.PublicKey{signer.PublicKey()},
+	}
+
+	// A WebSocket that closed after its upgrade returned nil must start SSH.
+	cm.handleEvent(WebSocketDisconnect)
+	agent.serverMu.Lock()
+	require.NotNil(t, agent.serverListener)
+	addr := agent.serverListener.Addr().String()
+	agent.serverMu.Unlock()
+	defer func() { _ = agent.StopServer() }()
+
+	clientConfig := &gossh.ClientConfig{
+		User:            "hub",
+		Auth:            []gossh.AuthMethod{gossh.PublicKeys(signer)},
+		HostKeyCallback: gossh.InsecureIgnoreHostKey(),
+		Timeout:         4 * time.Second,
+	}
+	client, err := gossh.Dial("tcp", addr, clientConfig)
+	require.NoError(t, err)
+	defer client.Close()
+
+	select {
+	case <-cm.sshChanged:
+		cm.handleSSHChange()
+	case <-time.After(5 * time.Second):
+		t.Fatal("SSH connection did not notify the manager")
+	}
+	require.Equal(t, SSHConnected, cm.getState())
+
+	wsAttempt := make(chan struct{}, 1)
+	releaseWS := make(chan struct{})
+	var releaseOnce sync.Once
+	release := func() { releaseOnce.Do(func() { close(releaseWS) }) }
+	hub := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		wsAttempt <- struct{}{}
+		<-releaseWS
+		w.WriteHeader(http.StatusServiceUnavailable)
+	}))
+	defer hub.Close()
+	defer release()
+	t.Setenv("BESZEL_AGENT_HUB_URL", hub.URL)
+	t.Setenv("BESZEL_AGENT_TOKEN", "test-token")
+	cm.wsClient, err = newWebSocketClient(agent)
+	require.NoError(t, err)
+
+	// A normal short-lived session must not be mistaken for a lost connection.
+	session, err := client.NewSession()
+	require.NoError(t, err)
+	require.NoError(t, session.Close())
+	select {
+	case <-cm.sshChanged:
+		t.Fatal("session close unexpectedly changed SSH connection state")
+	case <-time.After(100 * time.Millisecond):
+	}
+
+	secondClient, err := gossh.Dial("tcp", addr, clientConfig)
+	require.NoError(t, err)
+	defer secondClient.Close()
+	require.NoError(t, client.Close())
+	select {
+	case <-cm.sshChanged:
+		t.Fatal("closing one of two SSH connections changed SSH connection state")
+	case <-time.After(100 * time.Millisecond):
+	}
+	require.Equal(t, SSHConnected, cm.getState())
+	require.NoError(t, secondClient.Close())
+	select {
+	case <-cm.sshChanged:
+		cm.handleSSHChange()
+	case <-time.After(5 * time.Second):
+		t.Fatal("SSH TCP close did not notify the manager")
+	}
+	require.Equal(t, Disconnected, cm.getState())
+	require.NotNil(t, cm.wsTicker)
+	select {
+	case <-wsAttempt:
+	case <-time.After(5 * time.Second):
+		t.Fatal("agent did not retry WebSocket after SSH disconnected")
+	}
+	agent.serverMu.Lock()
+	assert.Nil(t, agent.serverListener, "SSH listener should close before the next WS-first cycle")
+	agent.serverMu.Unlock()
+	release()
+	require.Eventually(t, func() bool {
+		agent.serverMu.Lock()
+		defer agent.serverMu.Unlock()
+		return agent.serverListener != nil
+	}, 5*time.Second, 10*time.Millisecond, "SSH should reopen after the WebSocket attempt fails")
+	cm.stopWsTicker()
 }
 
 /////////////////////////////////////////////////////////////////

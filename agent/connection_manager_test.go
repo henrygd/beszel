@@ -12,6 +12,7 @@ import (
 	"testing/synctest"
 	"time"
 
+	"github.com/lxzan/gws"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"golang.org/x/crypto/ssh"
@@ -95,6 +96,7 @@ func TestConnectionManager_StateTransitions(t *testing.T) {
 func TestConnectionManager_EventHandling(t *testing.T) {
 	agent := createTestAgent(t)
 	cm := agent.connectionManager
+	t.Setenv("BESZEL_AGENT_DISABLE_SSH", "true")
 	cm.wsClient = &WebSocketClient{
 		hubURL: &url.URL{
 			Host: "localhost:8080",
@@ -157,6 +159,20 @@ func TestConnectionManager_EventHandling(t *testing.T) {
 			// and the goroutine would otherwise race with the direct field
 			// writes here and in later subtests.
 			cm.setConnecting(true)
+			cm.mu.Lock()
+			cm.sshConnections = 0
+			if tc.event == SSHConnect {
+				cm.sshConnections = 1
+			}
+			cm.mu.Unlock()
+			cm.wsClient.connMu.Lock()
+			cm.wsClient.Conn = nil
+			cm.wsClient.hubVerified = false
+			if tc.event == WebSocketConnect {
+				cm.wsClient.Conn = &gws.Conn{}
+				cm.wsClient.hubVerified = true
+			}
+			cm.wsClient.connMu.Unlock()
 			cm.State = tc.initialState
 			cm.handleEvent(tc.event)
 			assert.Equal(t, tc.expectedState, cm.State, "State should match expected after event")
@@ -236,6 +252,24 @@ func TestConnectionManager_ReconnectionLogic(t *testing.T) {
 	cm.handleStateChange(Disconnected)
 	assert.Equal(t, Disconnected, cm.State, "Should change to disconnected")
 	assert.True(t, cm.isConnectingNow(), "Should set isConnecting flag")
+}
+
+func TestWebSocketDisconnectStartsSSH(t *testing.T) {
+	t.Setenv("BESZEL_AGENT_DISABLE_SSH", "false")
+	agent := createTestAgent(t)
+	cm := agent.connectionManager
+	cm.serverOptions = createTestServerOptions(t)
+	cm.State = WebSocketConnected
+	cm.setConnecting(true) // keep this test focused on the synchronous fallback
+	defer cm.stopWsTicker()
+
+	cm.handleEvent(WebSocketDisconnect)
+	require.Equal(t, Disconnected, cm.getState())
+	agent.serverMu.Lock()
+	listener := agent.serverListener
+	agent.serverMu.Unlock()
+	require.NotNil(t, listener, "SSH should be ready as soon as an established WS closes")
+	require.NoError(t, agent.StopServer())
 }
 
 // TestConnectionManager_TickerSurvivesStaleDisconnect reproduces the freeze from

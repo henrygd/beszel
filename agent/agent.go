@@ -6,6 +6,7 @@ package agent
 
 import (
 	"log/slog"
+	"net"
 	"strings"
 	"sync"
 	"time"
@@ -45,6 +46,8 @@ type Agent struct {
 	connectionManager         *ConnectionManager                                    // Channel to signal connection events
 	handlerRegistry           *HandlerRegistry                                      // Registry for routing incoming messages
 	server                    *ssh.Server                                           // SSH server
+	serverListener            net.Listener                                          // SSH listener, also closed if Serve has not started yet
+	serverMu                  sync.Mutex                                            // Guards server and serverListener
 	dataDir                   string                                                // Directory for persisting data
 	keys                      []gossh.PublicKey                                     // SSH public keys
 	smartManager              *SmartManager                                         // Manages SMART data

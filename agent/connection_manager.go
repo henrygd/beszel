@@ -12,6 +12,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/gliderlabs/ssh"
 	"github.com/henrygd/beszel/agent/health"
 	"github.com/henrygd/beszel/agent/utils"
 	"github.com/henrygd/beszel/internal/entities/system"
@@ -22,15 +23,16 @@ import (
 // them based on availability and managing reconnection attempts.
 type ConnectionManager struct {
 	agent *Agent // Reference to the parent agent
-	// mu guards State and isConnecting, which are read and written from both
-	// the main event loop and the goroutine spawned by connect().
+	// mu guards state shared by the event loop, connection attempts and SSH callbacks.
 	mu             sync.Mutex
 	State          ConnectionState      // Current connection state
 	eventChan      chan ConnectionEvent // Channel for connection events
+	sshChanged     chan struct{}        // Coalesced, nonblocking SSH connection notifications
 	wsClient       *WebSocketClient     // WebSocket client for hub communication
 	serverOptions  ServerOptions        // Configuration for SSH server
 	wsTicker       *time.Ticker         // Ticker for WebSocket connection attempts
 	isConnecting   bool                 // Prevents multiple simultaneous reconnection attempts
+	sshConnections int                  // Authenticated SSH TCP connections, not sessions
 	ConnectionType system.ConnectionType
 }
 
@@ -60,8 +62,9 @@ const wsTickerInterval = 10 * time.Second
 // newConnectionManager creates a new connection manager for the given agent.
 func newConnectionManager(agent *Agent) *ConnectionManager {
 	cm := &ConnectionManager{
-		agent: agent,
-		State: Disconnected,
+		agent:      agent,
+		State:      Disconnected,
+		sshChanged: make(chan struct{}, 1),
 	}
 	return cm
 }
@@ -87,6 +90,47 @@ func (c *ConnectionManager) getState() ConnectionState {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 	return c.State
+}
+
+func (c *ConnectionManager) getConnectionType() system.ConnectionType {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	return c.ConnectionType
+}
+
+func (c *ConnectionManager) hasSSHConnection() bool {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	return c.sshConnections > 0
+}
+
+func (c *ConnectionManager) notifySSHChange() {
+	select {
+	case c.sshChanged <- struct{}{}:
+	default:
+	}
+}
+
+// sshConnectionOpened tracks the authenticated TCP connection. Individual SSH
+// sessions are short-lived and must not trigger a return to WebSocket.
+func (c *ConnectionManager) sshConnectionOpened(ctx ssh.Context) {
+	c.mu.Lock()
+	c.sshConnections++
+	first := c.sshConnections == 1
+	c.mu.Unlock()
+	if first {
+		c.notifySSHChange()
+	}
+	go func() {
+		<-ctx.Done()
+		c.mu.Lock()
+		c.sshConnections--
+		last := c.sshConnections == 0
+		c.mu.Unlock()
+		if last {
+			c.notifySSHChange()
+		}
+	}()
 }
 
 // setConnecting sets the isConnecting flag and reports its previous value.
@@ -148,10 +192,14 @@ func (c *ConnectionManager) Start(serverOptions ServerOptions) error {
 		select {
 		case connectionEvent := <-c.eventChan:
 			c.handleEvent(connectionEvent)
+		case <-c.sshChanged:
+			c.handleSSHChange()
 		case <-c.wsTicker.C:
 			// skip if connect() is still running its own attempt
 			if !c.isConnectingNow() {
-				_ = c.startWebSocketConnection()
+				if err := c.startWebSocketConnection(); err != nil {
+					c.startSSHServer()
+				}
 			}
 		case <-healthTicker:
 			_ = health.Update()
@@ -159,6 +207,14 @@ func (c *ConnectionManager) Start(serverOptions ServerOptions) error {
 			slog.Info("Shutting down", "cause", context.Cause(sigCtx))
 			return c.stop()
 		}
+	}
+}
+
+func (c *ConnectionManager) handleSSHChange() {
+	if c.hasSSHConnection() {
+		c.handleEvent(SSHConnect)
+	} else {
+		c.handleEvent(SSHDisconnect)
 	}
 }
 
@@ -193,17 +249,32 @@ func (c *ConnectionManager) stop() error {
 func (c *ConnectionManager) handleEvent(event ConnectionEvent) {
 	switch event {
 	case WebSocketConnect:
-		c.handleStateChange(WebSocketConnected)
-	case SSHConnect:
+		if c.wsClient == nil || !c.wsClient.isVerified() {
+			return // a superseded connection authenticated after a new attempt began
+		}
 		if c.getState() == Disconnected {
+			c.handleStateChange(WebSocketConnected)
+		} else if c.getState() == SSHConnected {
+			// An authentication result can arrive after SSH has won the race.
+			c.closeWebSocket()
+		}
+	case SSHConnect:
+		if c.getState() == Disconnected && c.hasSSHConnection() {
 			c.handleStateChange(SSHConnected)
 		}
 	case WebSocketDisconnect:
+		if c.wsClient != nil && c.wsClient.getConn() != nil {
+			return // an older connection closed after its replacement was installed
+		}
 		if c.getState() == WebSocketConnected {
 			c.handleStateChange(Disconnected)
+		} else if c.getState() == Disconnected {
+			// The WebSocket upgrade can succeed before authentication fails.
+			// In that case Connect returned nil, so its error path cannot start SSH.
+			c.startSSHServer()
 		}
 	case SSHDisconnect:
-		if c.getState() == SSHConnected {
+		if c.getState() == SSHConnected && !c.hasSSHConnection() {
 			c.handleStateChange(Disconnected)
 		}
 	}
@@ -217,24 +288,36 @@ func (c *ConnectionManager) handleStateChange(newState ConnectionState) {
 		c.mu.Unlock()
 		return
 	}
+	previousState := c.State
 	c.State = newState
+	switch newState {
+	case WebSocketConnected:
+		c.ConnectionType = system.ConnectionTypeWebSocket
+	case SSHConnected:
+		c.ConnectionType = system.ConnectionTypeSSH
+	default:
+		c.ConnectionType = system.ConnectionTypeNone
+	}
 	c.mu.Unlock()
 
 	switch newState {
 	case WebSocketConnected:
 		slog.Info("WebSocket connected", "host", c.wsClient.hubURL.Host)
-		c.ConnectionType = system.ConnectionTypeWebSocket
 		c.stopWsTicker()
 		_ = c.agent.StopServer()
-		c.setConnecting(false)
 	case SSHConnected:
 		// stop new ws connection attempts
 		slog.Info("SSH connection established")
-		c.ConnectionType = system.ConnectionTypeSSH
 		c.stopWsTicker()
-		c.setConnecting(false)
+		c.closeWebSocket()
 	case Disconnected:
-		c.ConnectionType = system.ConnectionTypeNone
+		if previousState == SSHConnected {
+			// The last SSH TCP connection is gone. Start a fresh WS-first cycle;
+			// open the SSH listener again only if WS cannot connect.
+			_ = c.agent.StopServer()
+		} else if previousState == WebSocketConnected {
+			c.startSSHServer()
+		}
 		// Always keep the ticker running while disconnected. A pending WebSocket
 		// handshake started by connect() can fail asynchronously (e.g. the hub
 		// closes the socket, or the deadline set in OnOpen expires) after
@@ -274,7 +357,6 @@ func (c *ConnectionManager) connect() {
 		}
 		if c.getState() == Disconnected {
 			c.startSSHServer()
-			c.startWsTicker()
 		}
 	}
 }
@@ -301,9 +383,28 @@ func (c *ConnectionManager) startWebSocketConnection() error {
 
 // startSSHServer starts the SSH server if the agent is currently disconnected.
 func (c *ConnectionManager) startSSHServer() {
-	if c.getState() == Disconnected {
-		go c.agent.StartServer(c.serverOptions)
+	c.mu.Lock()
+	if c.State != Disconnected {
+		c.mu.Unlock()
+		return
 	}
+	if disabled, _ := utils.GetEnv("DISABLE_SSH"); disabled == "true" {
+		c.mu.Unlock()
+		return
+	}
+	server, listener, err := c.agent.prepareSSHServer(c.serverOptions)
+	c.mu.Unlock()
+	if err != nil {
+		if !errors.Is(err, errSSHServerRunning) {
+			slog.Warn("SSH server failed to start", "err", err)
+		}
+		return
+	}
+	go func() {
+		if err := c.agent.serveSSHServer(server, listener); err != nil && !errors.Is(err, ssh.ErrServerClosed) && !errors.Is(err, net.ErrClosed) {
+			slog.Warn("SSH server stopped", "err", err)
+		}
+	}()
 }
 
 // closeWebSocket closes the WebSocket connection if it exists.
