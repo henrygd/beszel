@@ -31,3 +31,12 @@ func TestUnmarshalSmartDataResponse(t *testing.T) {
 		})
 	}
 }
+
+func TestUnmarshalSystemdLogsResponse(t *testing.T) {
+	logs := "2026-09-27T12:00:00+00:00 host nginx[1]: started"
+	response := common.AgentResponse{String: &logs}
+
+	var result string
+	require.NoError(t, UnmarshalResponse(response, common.GetSystemdLogs, &result))
+	assert.Equal(t, logs, result)
+}
