@@ -323,16 +323,6 @@ export function useNetworkMonitorStats(props: UseNetworkMonitorStatsProps) {
 	}, [monitorStats, cacheKey, interval, chartTime])
 }
 
-/** Identifies what a monitor probes, regardless of which system probes it. */
-export function getMonitorIdentityKey({
-	protocol,
-	target,
-	port,
-	server,
-}: Pick<NetworkMonitorRecord, "protocol" | "target" | "port" | "server">) {
-	return JSON.stringify([protocol, target, port, server])
-}
-
 /** Only what comparison charts and labels need. */
 const COMPARE_MONITOR_FIELDS = "id,system,target,protocol,port,server,interval,resAvg1h"
 
