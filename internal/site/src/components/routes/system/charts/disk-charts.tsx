@@ -4,7 +4,6 @@ import { decimalString, formatBytes, toFixedFloat } from "@/lib/utils"
 import type { SystemStatsRecord } from "@/types"
 import { ChartCard, SelectAvgMax } from "../chart-card"
 import { Unit } from "@/lib/enums"
-import { pinnedAxisDomain } from "@/components/ui/chart"
 import DiskIoSheet from "../disk-io-sheet"
 import type { SystemData } from "../use-system-data"
 import { useStore } from "@nanostores/react"
@@ -194,7 +193,6 @@ export function DiskIOChart({ systemData, extraFsName }: { systemData: SystemDat
 			<AreaChartDefault
 				chartData={chartData}
 				maxToggled={showMax}
-				// domain={pinnedAxisDomain(true)}
 				showTotal={true}
 				dataPoints={[
 					{
@@ -250,7 +248,6 @@ export function DiskUtilizationChart({ systemData, extraFsName }: { systemData: 
 		>
 			<AreaChartDefault
 				chartData={chartData}
-				domain={pinnedAxisDomain()}
 				tickFormatter={(val) => `${toFixedFloat(val, 2)}%`}
 				contentFormatter={({ value }) => `${decimalString(value)}%`}
 				maxToggled={showMax}
