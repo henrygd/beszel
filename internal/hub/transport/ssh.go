@@ -7,6 +7,7 @@ import (
 	"io"
 	"net"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/blang/semver"
@@ -17,6 +18,7 @@ import (
 
 // SSHTransport implements Transport over SSH connections.
 type SSHTransport struct {
+	mu           sync.Mutex
 	client       *ssh.Client
 	config       *ssh.ClientConfig
 	host         string
@@ -51,33 +53,57 @@ func NewSSHTransport(cfg SSHTransportConfig) *SSHTransport {
 
 // SetClient sets the SSH client for reuse across requests.
 func (t *SSHTransport) SetClient(client *ssh.Client) {
+	t.mu.Lock()
+	defer t.mu.Unlock()
 	t.client = client
 }
 
 // SetAgentVersion sets the agent version (extracted from SSH handshake).
 func (t *SSHTransport) SetAgentVersion(version semver.Version) {
+	t.mu.Lock()
+	defer t.mu.Unlock()
 	t.agentVersion = version
 }
 
 // GetClient returns the current SSH client (for connection management).
 func (t *SSHTransport) GetClient() *ssh.Client {
+	t.mu.Lock()
+	defer t.mu.Unlock()
 	return t.client
 }
 
 // GetAgentVersion returns the agent version.
 func (t *SSHTransport) GetAgentVersion() semver.Version {
+	t.mu.Lock()
+	defer t.mu.Unlock()
 	return t.agentVersion
 }
 
 // Request sends a request to the agent via SSH and unmarshals the response.
-func (t *SSHTransport) Request(ctx context.Context, action common.WebSocketAction, req any, dest any) error {
-	if t.client == nil {
-		if err := t.connect(); err != nil {
-			return err
-		}
+func (t *SSHTransport) Request(ctx context.Context, action common.WebSocketAction, req any, dest any) (err error) {
+	if err := ctx.Err(); err != nil {
+		return err
+	}
+	client, err := t.connect(ctx)
+	if err != nil {
+		return err
 	}
 
-	session, err := t.createSessionWithTimeout(ctx)
+	// Closing only the session still depends on the peer processing SSH packets.
+	// Close the captured connection to release every blocked read/write, including
+	// concurrent sessions; subsequent requests can reconnect.
+	stop := closeOnCancellation(ctx, func() { t.closeClient(client) })
+	defer func() {
+		stop()
+		if err != nil && ctx.Err() != nil {
+			err = ctx.Err()
+		}
+		if isConnectionError(err) {
+			t.closeClient(client)
+		}
+	}()
+
+	session, err := t.createSessionWithTimeout(ctx, client)
 	if err != nil {
 		return err
 	}
@@ -121,21 +147,48 @@ func (t *SSHTransport) Request(ctx context.Context, action common.WebSocketActio
 
 // IsConnected returns true if the SSH connection is active.
 func (t *SSHTransport) IsConnected() bool {
-	return t.client != nil
+	return t.GetClient() != nil
 }
 
 // Close terminates the SSH connection.
 func (t *SSHTransport) Close() {
-	if t.client != nil {
-		t.client.Close()
+	t.closeClient(t.GetClient())
+}
+
+// closeClient removes only the connection owned by the completed request.
+func (t *SSHTransport) closeClient(client *ssh.Client) {
+	t.mu.Lock()
+	if t.client == client {
 		t.client = nil
+	}
+	t.mu.Unlock()
+	if client != nil {
+		client.Close()
 	}
 }
 
-// connect establishes a new SSH connection.
-func (t *SSHTransport) connect() error {
+// closeOnCancellation stops I/O when ctx is cancelled. The returned function
+// waits for any in-progress close so it cannot outlive the operation.
+func closeOnCancellation(ctx context.Context, closeConn func()) func() {
+	done := make(chan struct{})
+	stop := context.AfterFunc(ctx, func() {
+		closeConn()
+		close(done)
+	})
+	return func() {
+		if !stop() {
+			<-done
+		}
+	}
+}
+
+// connect reuses the current client or establishes a cancellable SSH connection.
+func (t *SSHTransport) connect(ctx context.Context) (*ssh.Client, error) {
+	if client := t.GetClient(); client != nil {
+		return client, nil
+	}
 	if t.config == nil {
-		return errors.New("SSH config not set")
+		return nil, errors.New("SSH config not set")
 	}
 
 	network := "tcp"
@@ -146,46 +199,50 @@ func (t *SSHTransport) connect() error {
 		host = net.JoinHostPort(host, t.port)
 	}
 
-	client, err := ssh.Dial(network, host, t.config)
+	dialer := net.Dialer{Timeout: t.config.Timeout}
+	conn, err := dialer.DialContext(ctx, network, host)
 	if err != nil {
-		return err
+		return nil, err
+	}
+	stop := closeOnCancellation(ctx, func() { conn.Close() })
+	sshConn, chans, reqs, err := ssh.NewClientConn(conn, host, t.config)
+	stop()
+	if ctx.Err() != nil {
+		conn.Close()
+		return nil, ctx.Err()
+	}
+	if err != nil {
+		conn.Close()
+		return nil, err
+	}
+	client := ssh.NewClient(sshConn, chans, reqs)
+
+	t.mu.Lock()
+	if existing := t.client; existing != nil {
+		t.mu.Unlock()
+		client.Close()
+		return existing, nil
 	}
 	t.client = client
-
-	// Extract agent version from server version string
 	t.agentVersion, _ = extractAgentVersion(string(client.Conn.ServerVersion()))
-	return nil
+	t.mu.Unlock()
+	return client, nil
 }
 
-// createSessionWithTimeout creates a new SSH session with a timeout.
-func (t *SSHTransport) createSessionWithTimeout(ctx context.Context) (*ssh.Session, error) {
-	if t.client == nil {
-		return nil, errors.New("client not initialized")
-	}
-
+// createSessionWithTimeout bounds session creation independently of the request.
+func (t *SSHTransport) createSessionWithTimeout(ctx context.Context, client *ssh.Client) (*ssh.Session, error) {
 	ctx, cancel := context.WithTimeout(ctx, t.timeout)
 	defer cancel()
-
-	sessionChan := make(chan *ssh.Session, 1)
-	errChan := make(chan error, 1)
-
-	go func() {
-		session, err := t.client.NewSession()
-		if err != nil {
-			errChan <- err
-		} else {
-			sessionChan <- session
+	stop := closeOnCancellation(ctx, func() { t.closeClient(client) })
+	session, err := client.NewSession()
+	stop()
+	if ctx.Err() != nil {
+		if session != nil {
+			session.Close()
 		}
-	}()
-
-	select {
-	case session := <-sessionChan:
-		return session, nil
-	case err := <-errChan:
-		return nil, err
-	case <-ctx.Done():
-		return nil, errors.New("timeout creating session")
+		return nil, ctx.Err()
 	}
+	return session, err
 }
 
 // extractAgentVersion extracts the beszel version from SSH server version string.
@@ -206,7 +263,6 @@ func (t *SSHTransport) RequestWithRetry(ctx context.Context, action common.WebSo
 
 		// Check if it's a connection error that warrants a retry
 		if isConnectionError(err) && attempt < retries {
-			t.Close()
 			continue
 		}
 		return err
