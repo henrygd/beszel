@@ -194,18 +194,23 @@ export function formatBulkMonitorLine(monitor: BulkMonitorLineSource) {
 	return trimTrailingEmptyFields([monitor.target, monitor.protocol, port, interval, server]).join(",")
 }
 
-function SystemMultiSelect({
+export function SystemMultiSelect({
 	id,
 	selectedSystemIds,
 	onChange,
 	disabled,
 	className,
+	systemIds,
+	placeholder,
 }: {
 	id: string
 	selectedSystemIds: Set<string>
 	onChange: (ids: Set<string>) => void
 	disabled?: boolean
 	className?: string
+	/** Limit the options to these systems. Defaults to all systems that support network monitors. */
+	systemIds?: string[]
+	placeholder?: string
 }) {
 	const systems = useStore($systems)
 	const { t } = useLingui()
@@ -221,7 +226,9 @@ function SystemMultiSelect({
 	const contentRef = useRef<HTMLDivElement>(null)
 	const query = search.trim().toLocaleLowerCase()
 	const filteredSystems = systems.filter(
-		(system) => supportsNetworkMonitors(system) && system.name.toLocaleLowerCase().includes(query)
+		(system) =>
+			(systemIds ? systemIds.includes(system.id) : supportsNetworkMonitors(system)) &&
+			system.name.toLocaleLowerCase().includes(query)
 	)
 	const allSelected = filteredSystems.every((system) => selectedSystemIds.has(system.id))
 	const anySelected = filteredSystems.some((system) => selectedSystemIds.has(system.id))
@@ -247,7 +254,7 @@ function SystemMultiSelect({
 					<ServerIcon className="size-3.5 absolute start-4 top-1/2 -translate-y-1/2 opacity-85" />
 					<span className="truncate">
 						{selectedSystemIds.size === 0
-							? t`Select systems`
+							? (placeholder ?? t`Select systems`)
 							: selectedSystemIds.size === 1
 								? systems.find((s) => selectedSystemIds.has(s.id))?.name
 								: t`${selectedSystemIds.size} selected`}
