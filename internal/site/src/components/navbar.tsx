@@ -1,4 +1,4 @@
-import { Trans } from "@lingui/react/macro"
+import { Trans, useLingui } from "@lingui/react/macro"
 import { getPagePath } from "@nanostores/router"
 import {
 	ContainerIcon,
@@ -42,6 +42,7 @@ const CommandPalette = lazy(() => import("./command-palette"))
 const isMac = navigator.platform.toUpperCase().indexOf("MAC") >= 0
 
 export default function Navbar() {
+	const { t } = useLingui()
 	const [addSystemDialogOpen, setAddSystemDialogOpen] = useState(false)
 	const [commandPaletteOpen, setCommandPaletteOpen] = useState(false)
 
