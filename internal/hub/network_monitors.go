@@ -1,6 +1,7 @@
 package hub
 
 import (
+	"fmt"
 	"strconv"
 	"time"
 
@@ -21,7 +22,8 @@ func generateMonitorID(systemId string, config monitor.Config) string {
 	if config.Protocol == "dns" {
 		args = append(args, config.Server)
 	}
-	return systems.MakeStableHashId(args...)
+	// Meet the record ID minimum without changing existing IDs of six or more characters.
+	return fmt.Sprintf("%06s", systems.MakeStableHashId(args...))
 }
 
 // bindNetworkMonitorsEvents keeps monitor records and agent monitor state in sync.
@@ -47,7 +49,7 @@ func bindNetworkMonitorsEvents(hub *Hub) {
 		// If connected, run the monitor immediately. Paused systems may be absent
 		// from the manager; their monitors will sync when they reconnect.
 		system, err := hub.sm.GetSystem(e.Record.GetString("system"))
-		if err == nil && system.Status == "up" {
+		if err == nil && system.GetStatus() == "up" {
 			go hub.upsertNetworkMonitor(e.Record, true)
 		}
 		return nil

@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"runtime"
 	"testing"
 	"time"
 
@@ -695,6 +696,11 @@ func TestNewSensorConfigSkipGpuWiresShadow(t *testing.T) {
 	config := agent.newSensorConfig()
 
 	assert.True(t, config.skipGPU)
+	if runtime.GOOS != "linux" {
+		assert.Empty(t, config.sensorShadow)
+		assert.Nil(t, config.context.Value(common.EnvKey))
+		return
+	}
 	envMap, ok := config.context.Value(common.EnvKey).(common.EnvMap)
 	require.True(t, ok, "SKIP_GPU should point the sensor context at a sysfs shadow")
 	shadow, ok := envMap[common.HostSysEnvKey]
@@ -721,6 +727,11 @@ func TestSkipGpuShadowUsesSysSensorsRoot(t *testing.T) {
 	require.True(t, ok, "SKIP_GPU should point the sensor context at a sysfs shadow")
 	shadow, ok := envMap[common.HostSysEnvKey]
 	require.True(t, ok)
+	if runtime.GOOS != "linux" {
+		assert.Equal(t, sysRoot, shadow)
+		assert.Empty(t, config.sensorShadow)
+		return
+	}
 	require.NotEqual(t, sysRoot, shadow, "shadow must not be the SYS_SENSORS tree itself")
 
 	target, err := os.Readlink(filepath.Join(shadow, "class", "hwmon", "hwmon0"))
