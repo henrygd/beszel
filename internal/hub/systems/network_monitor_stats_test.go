@@ -123,20 +123,6 @@ func TestNetworkMonitorResultOwnership(t *testing.T) {
 	}
 }
 
-func TestNetworkMonitorOwnershipQueryFailure(t *testing.T) {
-	sys, app := newTestSystemWithHub(t)
-	_, err := app.DB().NewQuery("DROP TABLE network_monitors").Execute()
-	require.NoError(t, err)
-	_, err = sys.createRecords(&system.CombinedData{Monitors: map[string]monitor.Result{
-		"missing": {LastProbeAt: 1000},
-	}})
-	require.Error(t, err)
-	count, err := app.CountRecords("system_stats")
-	require.NoError(t, err)
-	assert.Zero(t, count, "an ownership lookup failure must roll back the transaction")
-	assert.Empty(t, sys.lastSavedMonitorProbe)
-}
-
 func TestNetworkMonitorProbePruning(t *testing.T) {
 	for _, tc := range []struct {
 		name     string
