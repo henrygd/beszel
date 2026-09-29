@@ -1,5 +1,5 @@
-import { getMonitorTarget } from "@/lib/network-monitor-utils"
-import LineChartDefault from "@/components/charts/line-chart"
+import { getMonitorTarget, monitorGapRecord } from "@/lib/network-monitor-utils"
+import LineChartDefault, { isolatedDot } from "@/components/charts/line-chart"
 import type { DataPoint } from "@/components/charts/line-chart"
 import { decimalString, formatMicroseconds, matchesFilterGroups, parseFilterGroups, toFixedFloat } from "@/lib/utils"
 import { $monitorFilter } from "@/lib/stores"
@@ -18,6 +18,10 @@ type MonitorChartProps = {
 	showFilter?: boolean
 	/** Prepended to the chart title, e.g. a target/system name (rendered as "{titlePrefix} — Response"). */
 	titlePrefix?: string
+	/** Line label for each monitor. Defaults to the monitor target; use the system name when comparing systems. */
+	getLabel?: (monitor: NetworkMonitorRecord) => string
+	/** Filter store for the chart's filter bar. Pass a local atom to keep the filter scoped to one view. */
+	filterStore?: typeof $monitorFilter
 }
 
 type MonitorChartBaseProps = MonitorChartProps & {
@@ -44,9 +48,11 @@ function MonitorChart({
 	contentFormatter,
 	domain,
 	color,
+	getLabel = getMonitorTarget,
+	filterStore = $monitorFilter,
 	showFilter = monitors.length > 1,
 }: MonitorChartBaseProps) {
-	const storedFilter = useStore($monitorFilter)
+	const storedFilter = useStore(filterStore)
 	const filter = showFilter ? storedFilter : ""
 
 	const { dataPoints, visibleKeys } = useMemo(() => {
@@ -58,7 +64,7 @@ function MonitorChart({
 		const dot = chartData.chartTime === "1m"
 		for (let i = 0; i < count; i++) {
 			const p = sortedMonitors[i]
-			const label = getMonitorTarget(p)
+			const label = getLabel(p)
 			const labelLower = label.toLowerCase()
 			const filtered = filterGroups.length > 0 && !matchesFilterGroups(labelLower, filterGroups)
 			if (filtered) {
@@ -75,19 +81,23 @@ function MonitorChart({
 			})
 		}
 		return { dataPoints: points, visibleKeys: visibleIDs }
-	}, [monitors, filter, metric, chartData.chartTime, color])
+	}, [monitors, filter, metric, chartData.chartTime, color, getLabel])
+
+	// Monitors with different intervals don't share timestamps, so multiple lines need connectNulls.
+	// A single monitor's stats already contain empty records at real gaps, so the line breaks there.
+	const multipleMonitors = visibleKeys.length > 1
 
 	const filteredMonitorStats = useMemo(() => {
-		if (!visibleKeys.length) return monitorStats
+		if (!multipleMonitors) return monitorStats
 		return monitorStats.filter((record) => visibleKeys.some((id) => record.stats?.[id] != null))
-	}, [monitorStats, visibleKeys])
+	}, [monitorStats, visibleKeys, multipleMonitors])
 
 	const legend = dataPoints.length < 10 && showFilter
 
 	return (
 		<ChartCard
 			legend={legend || !showFilter}
-			cornerEl={showFilter ? <FilterBar store={$monitorFilter} /> : undefined}
+			cornerEl={showFilter ? <FilterBar store={filterStore} /> : undefined}
 			empty={empty}
 			title={title}
 			description={description}
@@ -99,7 +109,7 @@ function MonitorChart({
 				customData={filteredMonitorStats}
 				dataPoints={dataPoints}
 				domain={domain ?? ["auto", "auto"]}
-				connectNulls
+				connectNulls={multipleMonitors}
 				tickFormatter={tickFormatter}
 				contentFormatter={contentFormatter}
 				legend={legend}
@@ -125,9 +135,10 @@ export function AvgMinMaxResponseChart({ monitorStats, monitor, chartData, empty
 	// only one monitor is relevant for this chart
 	const dataPoints: DataPoint<NetworkMonitorStatsRecord>[] = useMemo(() => {
 		const dataFn = (metric: keyof MonitorStats) => (record: NetworkMonitorStatsRecord) =>
-			record.stats?.[monitor?.id ?? ""]?.[metric] ?? "-"
+			record.stats?.[monitor?.id ?? ""]?.[metric] ?? null
 		const avgPoint = {
 			label: "Avg",
+			dot: isolatedDot,
 			dataKey: dataFn("res_avg"),
 			color: 1,
 			order: 0,
@@ -139,6 +150,7 @@ export function AvgMinMaxResponseChart({ monitorStats, monitor, chartData, empty
 		return [
 			{
 				label: "Max",
+				dot: isolatedDot,
 				dataKey: dataFn("res_max"),
 				color: 3,
 				order: 0,
@@ -146,6 +158,7 @@ export function AvgMinMaxResponseChart({ monitorStats, monitor, chartData, empty
 			avgPoint,
 			{
 				label: "Min",
+				dot: isolatedDot,
 				dataKey: dataFn("res_min"),
 				color: 2,
 				order: 2,
@@ -153,10 +166,14 @@ export function AvgMinMaxResponseChart({ monitorStats, monitor, chartData, empty
 		]
 	}, [chartTime, hasLongInterval, monitor?.id])
 
+	// Replace records where every probe failed with gap markers, so the line breaks there without
+	// leaving points that have no response time for the tooltip to show.
 	const data = useMemo(() => {
-		if (!monitor) return []
-		return monitorStats.filter((record) => record.stats && monitor.id in record.stats)
-	}, [monitor, monitorStats])
+		const id = monitor?.id ?? ""
+		return monitorStats.map((record) =>
+			record.stats?.[id] && record.stats[id].res_avg == null ? monitorGapRecord : record
+		)
+	}, [monitorStats, monitor?.id])
 
 	const legend = dataPoints.length > 1
 
@@ -174,7 +191,6 @@ export function AvgMinMaxResponseChart({ monitorStats, monitor, chartData, empty
 				customData={data}
 				dataPoints={dataPoints}
 				domain={["auto", "auto"]}
-				connectNulls
 				legend={legend}
 				tickFormatter={(value) => formatMicroseconds(value, false)}
 				contentFormatter={({ value }) => {
@@ -188,7 +204,56 @@ export function AvgMinMaxResponseChart({ monitorStats, monitor, chartData, empty
 	)
 }
 
-export function LossChart({ monitorStats, grid, monitors, chartData, empty, titlePrefix }: MonitorChartProps) {
+export function ResponseChart({
+	monitorStats,
+	grid,
+	monitors,
+	chartData,
+	empty,
+	titlePrefix,
+	getLabel,
+	filterStore,
+	showFilter,
+}: MonitorChartProps) {
+	const { t } = useLingui()
+	const responseTitle = t`Response`
+	const title = titlePrefix ? `${titlePrefix} — ${responseTitle}` : responseTitle
+
+	return (
+		<MonitorChart
+			monitorStats={monitorStats}
+			grid={grid}
+			monitors={monitors}
+			chartData={chartData}
+			empty={empty}
+			metric="res_avg"
+			title={title}
+			description={t`Average response time`}
+			getLabel={getLabel}
+			filterStore={filterStore}
+			showFilter={showFilter}
+			tickFormatter={(value) => formatMicroseconds(value, false)}
+			contentFormatter={({ value }) => {
+				if (typeof value !== "number") {
+					return value
+				}
+				return formatMicroseconds(value)
+			}}
+		/>
+	)
+}
+
+export function LossChart({
+	monitorStats,
+	grid,
+	monitors,
+	chartData,
+	empty,
+	titlePrefix,
+	getLabel,
+	filterStore,
+	showFilter,
+}: MonitorChartProps) {
 	const { t } = useLingui()
 	const lossTitle = t({ message: "Loss", context: "Packet loss" })
 	const title = titlePrefix ? `${titlePrefix} — ${lossTitle}` : lossTitle
@@ -204,7 +269,11 @@ export function LossChart({ monitorStats, grid, monitors, chartData, empty, titl
 			title={title}
 			description={t`Packet loss (%)`}
 			domain={[0, 100]}
-			color="var(--destructive)"
+			// a single destructive color only makes sense for single-monitor charts
+			color={monitors.length > 1 ? undefined : "var(--destructive)"}
+			getLabel={getLabel}
+			filterStore={filterStore}
+			showFilter={showFilter}
 			tickFormatter={(value) => `${toFixedFloat(value, value >= 10 ? 0 : 1)}%`}
 			contentFormatter={({ value }) => {
 				if (typeof value !== "number") {
