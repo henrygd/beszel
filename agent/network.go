@@ -200,17 +200,10 @@ func (a *Agent) sumAndTrackPerNicDeltas(cacheTimeMs uint16, msElapsed uint64, ne
 // computeBytesPerSecond calculates per-second totals from elapsed time and totals
 func (a *Agent) computeBytesPerSecond(msElapsed, totalBytesSent, totalBytesRecv uint64, nis system.NetIoStats) (bytesSentPerSecond, bytesRecvPerSecond uint64) {
 	if msElapsed > 0 {
-		bytesSentPerSecond = counterDelta(totalBytesSent, nis.BytesSent) * 1000 / msElapsed
-		bytesRecvPerSecond = counterDelta(totalBytesRecv, nis.BytesRecv) * 1000 / msElapsed
+		bytesSentPerSecond = (totalBytesSent - nis.BytesSent) * 1000 / msElapsed
+		bytesRecvPerSecond = (totalBytesRecv - nis.BytesRecv) * 1000 / msElapsed
 	}
 	return bytesSentPerSecond, bytesRecvPerSecond
-}
-
-func counterDelta(current, previous uint64) uint64 {
-	if current >= previous {
-		return current - previous
-	}
-	return current
 }
 
 // applyNetworkTotals validates and writes computed network stats, or resets on anomaly

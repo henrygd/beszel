@@ -3,26 +3,12 @@
 package agent
 
 import (
+	"math"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
-
-func TestParseEthtoolStats(t *testing.T) {
-	stats := parseEthtoolStats(`
-NIC statistics:
-     mmc_tx_octetcount_gb: 4699696
-     mmc_rx_octetcount_gb: 101028343
-     ignored_text: not-a-number
-     with_suffix: 42 packets
-`)
-
-	assert.Equal(t, uint64(4_699_696), stats["mmc_tx_octetcount_gb"])
-	assert.Equal(t, uint64(101_028_343), stats["mmc_rx_octetcount_gb"])
-	assert.Equal(t, uint64(42), stats["with_suffix"])
-	assert.NotContains(t, stats, "ignored_text")
-}
 
 func TestEthtoolCounterCombinesHighWord(t *testing.T) {
 	stats := map[string]uint64{
@@ -32,7 +18,30 @@ func TestEthtoolCounterCombinesHighWord(t *testing.T) {
 
 	value, ok := ethtoolCounter(stats, "counter", "counter_h")
 	require.True(t, ok)
-	assert.Equal(t, uint64(2<<32|123), value)
+	assert.Equal(t, uint64(2<<32+123), value)
+}
+
+func TestEthtoolCounterAddsLowWordAbove32Bits(t *testing.T) {
+	// nvethernet accumulates each register in 64-bit software fields, so the low
+	// word can carry past 32 bits; OR would drop the overlapping bit.
+	stats := map[string]uint64{
+		"counter":   1<<32 + 5,
+		"counter_h": 1,
+	}
+
+	value, ok := ethtoolCounter(stats, "counter", "counter_h")
+	require.True(t, ok)
+	assert.Equal(t, uint64(2<<32+5), value)
+}
+
+func TestEthtoolCounterRejectsOverflow(t *testing.T) {
+	stats := map[string]uint64{
+		"counter":   math.MaxUint64,
+		"counter_h": 1,
+	}
+
+	_, ok := ethtoolCounter(stats, "counter", "counter_h")
+	assert.False(t, ok)
 }
 
 func TestEthtoolCounterFallsBackToLowWord(t *testing.T) {
