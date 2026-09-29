@@ -805,26 +805,24 @@ function NetworkMonitorSheetContent({
 							chartTimeStore={chartTimeStore}
 							allowRealtime={false}
 						/>
-						{compare.targetOptions.length > 0 && (
-							<MonitorMultiSelect
-								id="monitor-compare-targets"
-								className="flex-1 min-w-0 basis-full sm:basis-0 bg-card"
-								monitors={compare.targetOptions}
-								selectedMonitorIds={compare.selectedTargetIds}
-								onChange={setCompareTargetIds}
-								placeholder={t`Compare with other targets`}
-							/>
-						)}
-						{compare.systemOptions.length > 0 && (
-							<SystemMultiSelect
-								id="monitor-compare-systems"
-								className="flex-1 min-w-0 basis-full sm:basis-0 bg-card"
-								systemIds={compare.systemOptions}
-								selectedSystemIds={compare.selectedSystemIds}
-								onChange={setCompareSystemIds}
-								placeholder={t`Compare with other systems`}
-							/>
-						)}
+						<MonitorMultiSelect
+							id="monitor-compare-targets"
+							className="flex-1 min-w-0 basis-full sm:basis-0 bg-card"
+							monitors={compare.targetOptions}
+							selectedMonitorIds={compare.selectedTargetIds}
+							onChange={setCompareTargetIds}
+							disabled={compare.targetOptions.length === 0}
+							placeholder={t`Compare with other targets`}
+						/>
+						<SystemMultiSelect
+							id="monitor-compare-systems"
+							className="flex-1 min-w-0 basis-full sm:basis-0 bg-card"
+							systemIds={compare.systemOptions}
+							selectedSystemIds={compare.selectedSystemIds}
+							onChange={setCompareSystemIds}
+							disabled={compare.systemOptions.length === 0}
+							placeholder={t`Compare with other systems`}
+						/>
 					</div>
 					{comparing ? (
 						<>

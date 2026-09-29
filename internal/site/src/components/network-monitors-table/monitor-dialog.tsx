@@ -248,6 +248,7 @@ export function MonitorMultiSelect({
 	monitors,
 	selectedMonitorIds,
 	onChange,
+	disabled,
 	className,
 	placeholder,
 }: {
@@ -255,6 +256,7 @@ export function MonitorMultiSelect({
 	monitors: NetworkMonitorRecord[]
 	selectedMonitorIds: Set<string>
 	onChange: (ids: Set<string>) => void
+	disabled?: boolean
 	className?: string
 	placeholder?: string
 }) {
@@ -268,6 +270,7 @@ export function MonitorMultiSelect({
 			options={options}
 			selectedIds={selectedMonitorIds}
 			onChange={onChange}
+			disabled={disabled}
 			className={className}
 			icon={CrosshairIcon}
 			placeholder={placeholder ?? t`Select targets`}
