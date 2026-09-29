@@ -2,6 +2,7 @@ package systems
 
 import (
 	"context"
+	"database/sql"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -41,7 +42,8 @@ type System struct {
 	Id             string                     `db:"id"`
 	Host           string                     `db:"host"`
 	Port           string                     `db:"port"`
-	Status         string                     `db:"status"`
+	Status         string                     `db:"status"` // Use GetStatus/swapStatus after publishing the system.
+	statusMu       sync.RWMutex               // Protects Status and exchanges used by alert transitions.
 	manager        *SystemManager             // Manager that this system belongs to
 	client         atomic.Pointer[ssh.Client] // SSH client for fetching data
 	sshTransport   *transport.SSHTransport    // SSH transport for requests
@@ -63,6 +65,22 @@ type System struct {
 	recordsMu sync.Mutex
 	// Protected by recordsMu; realtime reads don't consume probes.
 	lastSavedMonitorProbe map[string]int64
+}
+
+// GetStatus returns the current monitoring status.
+func (sys *System) GetStatus() string {
+	sys.statusMu.RLock()
+	defer sys.statusMu.RUnlock()
+	return sys.Status
+}
+
+// swapStatus updates the status and returns the previous value as one operation.
+func (sys *System) swapStatus(status string) string {
+	sys.statusMu.Lock()
+	defer sys.statusMu.Unlock()
+	previous := sys.Status
+	sys.Status = status
+	return previous
 }
 
 func (sm *SystemManager) NewSystem(systemId string) *System {
@@ -101,7 +119,7 @@ func (sys *System) StartUpdater() {
 
 	// update immediately if system is not paused (only for ws connections)
 	// we'll wait a minute before connecting via SSH to prioritize ws connections
-	if sys.Status != paused && sys.ctx.Err() == nil {
+	if sys.GetStatus() != paused && sys.ctx.Err() == nil {
 		if err := sys.update(); err != nil {
 			_ = sys.setDown(err)
 		}
@@ -134,7 +152,7 @@ func (sys *System) StartUpdater() {
 
 // update updates the system data and records.
 func (sys *System) update() error {
-	if sys.Status == paused {
+	if sys.GetStatus() == paused {
 		sys.handlePaused()
 		return nil
 	}
@@ -416,7 +434,6 @@ func (sys *System) updateNetworkMonitorsRecords(app core.App, monitorResults map
 	if len(monitorResults) == 0 {
 		return nil
 	}
-	var err error
 	systemId := sys.Id
 	const monitorCollectionName = "network_monitors"
 
@@ -440,14 +457,19 @@ func (sys *System) updateNetworkMonitorsRecords(app core.App, monitorResults map
 		}
 		// Results omit certInfo unless it changed, so keep the stored value.
 		setClauses = append(setClauses, "certInfo=COALESCE({:certInfo}, certInfo)")
-		queryString := fmt.Sprintf("UPDATE %s SET %s WHERE id={:id}", monitorCollectionName, strings.Join(setClauses, ", "))
+		queryString := fmt.Sprintf("UPDATE %s SET %s WHERE id={:id} AND system={:system}", monitorCollectionName, strings.Join(setClauses, ", "))
 		updateQuery = db.NewQuery(queryString)
 	}
+
+	// Results are keyed by agent-supplied IDs. Record history only for monitors
+	// this system owns, as confirmed by the update below
+	owned := make(map[string]struct{}, len(monitorResults))
 
 	// update network_monitors records
 	for id, result := range monitorResults {
 		monitorData := map[string]any{
 			"id":       id,
+			"system":   systemId,
 			"res":      result.AvgResponse,
 			"resAvg1h": result.AvgResponse1h,
 			"resMin1h": result.MinResponse1h,
@@ -455,11 +477,15 @@ func (sys *System) updateNetworkMonitorsRecords(app core.App, monitorResults map
 			"loss1h":   result.PacketLoss1h,
 			"updated":  nowString,
 		}
+		var err error
 		switch realtimeActive {
 		case true:
 			var record *core.Record
 			record, err = app.FindRecordById(monitorCollectionName, id)
 			if err == nil {
+				if record.GetString("system") != systemId {
+					continue
+				}
 				if result.Cert != nil {
 					monitorData["certInfo"] = result.Cert
 				}
@@ -475,12 +501,20 @@ func (sys *System) updateNetworkMonitorsRecords(app core.App, monitorResults map
 				}
 			}
 			if err == nil {
-				_, err = updateQuery.Bind(dbx.Params(monitorData)).Execute()
+				var res sql.Result
+				// Zero rows means the monitor is foreign or no longer exists.
+				if res, err = updateQuery.Bind(dbx.Params(monitorData)).Execute(); err == nil {
+					if n, _ := res.RowsAffected(); n == 0 {
+						continue
+					}
+				}
 			}
 		}
 		if err != nil {
 			app.Logger().Warn("Failed to update monitor", "system", systemId, "monitor", id, "err", err)
+			continue
 		}
+		owned[id] = struct{}{}
 	}
 
 	// handle stats collection — one record per monitor
@@ -492,6 +526,9 @@ func (sys *System) updateNetworkMonitorsRecords(app core.App, monitorResults map
 	}
 
 	for monitorId, result := range monitorResults {
+		if _, ok := owned[monitorId]; !ok {
+			continue
+		}
 		// Compare identity, not ordering, so agent clock changes don't stall writes.
 		if result.LastProbeAt == sys.lastSavedMonitorProbe[monitorId] {
 			continue
@@ -507,6 +544,7 @@ func (sys *System) updateNetworkMonitorsRecords(app core.App, monitorResults map
 			"success_count": result.SuccessCount,
 			"res_sum":       result.ResponseSum,
 		}
+		var err error
 		switch realtimeActive {
 		case true:
 			record := core.NewRecord(statsCollection)
@@ -603,7 +641,7 @@ func (sys *System) HasUser(app core.App, user *core.Record) bool {
 // encountered during the process of updating the system status.
 // It is a no-op if the system's context has been cancelled.
 func (sys *System) setDown(originalError error) error {
-	if sys.Status == down || sys.Status == paused {
+	if status := sys.GetStatus(); status == down || status == paused {
 		return nil
 	}
 	// the updater can race shutdown, and the app may already be disposed by the
@@ -777,6 +815,15 @@ func (sys *System) FetchSystemdInfoFromAgent(serviceName string) (systemd.Servic
 	return result, err
 }
 
+// FetchSystemdLogsFromAgent fetches recent journal entries for a systemd service from the agent.
+func (sys *System) FetchSystemdLogsFromAgent(serviceName string) (string, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	var result string
+	err := sys.request(ctx, common.GetSystemdLogs, common.SystemdLogsRequest{ServiceName: serviceName}, &result)
+	return result, err
+}
+
 // FetchSmartDataFromAgent fetches SMART data from the agent.
 func (sys *System) FetchSmartDataFromAgent() (smart.SmartDataResponse, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
@@ -876,7 +923,7 @@ func (sys *System) fetchDataViaSSH(options common.DataRequestOptions) (*system.C
 // The operation can request a retry by returning true as the first return value.
 func (sys *System) runSSHOperation(timeout time.Duration, retries int, operation func(*ssh.Session) (bool, error)) error {
 	for attempt := 0; attempt <= retries; attempt++ {
-		if sys.client.Load() == nil || sys.Status == down {
+		if sys.client.Load() == nil || sys.GetStatus() == down {
 			if err := sys.createSSHClient(); err != nil {
 				return err
 			}
@@ -992,6 +1039,12 @@ func (s *System) createSSHClient() error {
 // per-operation timeout in runSSHOperation instead (see issue #2041).
 const sshKeepAliveInterval = 30 * time.Second
 
+// sshHandshakeTimeout bounds the SSH handshake after the TCP connection is
+// established. ssh.ClientConfig.Timeout only covers the TCP connect, so a peer
+// that accepts the connection but never sends an SSH banner would otherwise
+// block the updater forever.
+var sshHandshakeTimeout = 10 * time.Second
+
 // dialSSHWithKeepAlive dials an SSH connection like ssh.Dial, but enables TCP
 // keep-alive on the underlying connection so half-open connections are
 // eventually detected by the operating system.
@@ -1004,11 +1057,14 @@ func dialSSHWithKeepAlive(network, addr string, config *ssh.ClientConfig) (*ssh.
 	if err != nil {
 		return nil, err
 	}
+	_ = conn.SetDeadline(time.Now().Add(sshHandshakeTimeout))
 	sshConn, chans, reqs, err := ssh.NewClientConn(conn, addr, config)
 	if err != nil {
 		_ = conn.Close()
 		return nil, err
 	}
+	// clear the handshake deadline so it doesn't apply to the long-lived connection
+	_ = conn.SetDeadline(time.Time{})
 	return ssh.NewClient(sshConn, chans, reqs), nil
 }
 

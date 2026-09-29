@@ -6,10 +6,11 @@ import {
 	ChartLegendContent,
 	ChartTooltip,
 	ChartTooltipContent,
+	fixedDomainTicks,
 	xAxis,
 } from "@/components/ui/chart"
 import { chartMargin, cn, formatShortDate } from "@/lib/utils"
-import type { ChartData, SystemStatsRecord } from "@/types"
+import type { ChartOptions, SystemStatsRecord } from "@/types"
 import { useYAxisWidth } from "./hooks"
 import type { AxisDomain } from "recharts/types/util/types"
 import { useIntersectionObserver } from "@/lib/use-intersection-observer"
@@ -72,7 +73,7 @@ export default function LineChartDefault({
 	chartProps,
 	connectNulls,
 }: {
-	chartData: ChartData
+	chartData: ChartOptions & { systemStats?: SystemStatsRecord[] }
 	// biome-ignore lint/suspicious/noExplicitAny: accepts different data source types (systemStats or containerData)
 	customData?: any[]
 	max?: number
@@ -186,6 +187,7 @@ export default function LineChartDefault({
 							className="tracking-tighter"
 							width={yAxisWidth}
 							domain={domain ?? [0, max ?? "auto"]}
+							ticks={fixedDomainTicks(domain ?? [0, max ?? "auto"])}
 							tickFormatter={(value, index) => updateYAxisWidth(tickFormatter(value, index))}
 							tickLine={false}
 							axisLine={false}
@@ -199,6 +201,7 @@ export default function LineChartDefault({
 							className="tracking-tighter"
 							width={rightAxisWidth}
 							domain={domain2 ?? [0, max2 ?? "auto"]}
+							ticks={fixedDomainTicks(domain2 ?? [0, max2 ?? "auto"])}
 							tickFormatter={tickFormatter2 ?? tickFormatter}
 							tickLine={false}
 							axisLine={false}

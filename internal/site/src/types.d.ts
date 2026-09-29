@@ -71,6 +71,8 @@ export interface SystemInfo {
 	bb?: number
 	/** agent version */
 	v: string
+	/** agent can read the system journal */
+	jl?: boolean
 	/** system is using podman */
 	p?: boolean
 	/** highest gpu utilization */
@@ -426,12 +428,15 @@ export interface SemVer {
 	patch: number
 }
 
-export interface ChartData {
+export interface ChartOptions {
 	agentVersion: SemVer
-	systemStats?: SystemStatsRecord[]
-	containerData?: ChartDataContainer[]
 	orientation: "right" | "left"
 	chartTime: ChartTimes
+}
+
+export interface ChartData extends ChartOptions {
+	systemStats: SystemStatsRecord[]
+	containerData: ChartDataContainer[]
 }
 
 export interface AlertInfo {

@@ -39,7 +39,7 @@ func TestNewWsConnection(t *testing.T) {
 	wsConn := NewWsConnection(nil, semver.MustParse("0.12.10"))
 
 	assert.NotNil(t, wsConn, "WebSocket connection should not be nil")
-	assert.Nil(t, wsConn.conn, "Connection should be nil as passed")
+	assert.Nil(t, wsConn.conn.Load(), "Connection should be nil as passed")
 	assert.NotNil(t, wsConn.requestManager, "Request manager should be initialized")
 	assert.NotNil(t, wsConn.DownChan, "Down channel should be initialized")
 	assert.Equal(t, 1, cap(wsConn.DownChan), "Down channel should have capacity of 1")
