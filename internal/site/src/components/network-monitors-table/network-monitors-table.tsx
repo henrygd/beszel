@@ -37,8 +37,8 @@ import { useToast } from "@/components/ui/use-toast"
 import { isReadOnlyUser, queueUserSettings } from "@/lib/api"
 import { pb } from "@/lib/api"
 import { SystemStatus } from "@/lib/enums"
-import { $allSystemsById, $direction, $textMeasureVersion, $userSettings, getUserChartTime } from "@/lib/stores"
-import { cn, formatShortDate, isVisuallyLonger, matchesFilterGroups, parseFilterGroups, parseSemVer } from "@/lib/utils"
+import { $allSystemsById, $direction, $userSettings, getUserChartTime } from "@/lib/stores"
+import { cn, formatShortDate, matchesFilterGroups, parseFilterGroups, parseSemVer } from "@/lib/utils"
 import type { ChartOptions, MonitorCertInfo, NetworkMonitorRecord } from "@/types"
 import { AddMonitorDialog, EditMonitorDialog, SystemMultiSelect } from "./monitor-dialog"
 import {
@@ -149,38 +149,6 @@ export default function NetworkMonitorsTableNew({
 		[sortSettingsKey, sortStorageKey, resetPageIndex]
 	)
 
-	// recompute when measured widths are invalidated (e.g. web font finished loading)
-	const textMeasureVersion = useStore($textMeasureVersion)
-	const longestTarget = useMemo(() => {
-		let longestTarget = ""
-		for (const p of monitors) {
-			if (isVisuallyLonger(getMonitorTarget(p), longestTarget)) {
-				longestTarget = getMonitorTarget(p)
-			}
-		}
-		return longestTarget
-	}, [monitors, textMeasureVersion])
-
-	// longest name among systems that have monitors in this table (skipped for single-system view).
-	// Held in a store because memoized rows don't re-render when column definitions change.
-	const $longestSystemName = useMemo(() => atom(""), [])
-	useEffect(() => {
-		if (systemId) {
-			return
-		}
-		const systemIds = new Set(monitors.map((m) => m.system))
-		return $allSystemsById.subscribe((systems) => {
-			let longest = ""
-			for (const id of systemIds) {
-				const name = systems[id]?.name ?? ""
-				if (isVisuallyLonger(name, longest)) {
-					longest = name
-				}
-			}
-			$longestSystemName.set(longest)
-		})
-	}, [monitors, systemId, textMeasureVersion, $longestSystemName])
-
 	const runMonitorBatch = useCallback(
 		async (ids: string[], enqueue: (batch: ReturnType<typeof pb.createBatch>, id: string) => void) => {
 			let batch = pb.createBatch()
@@ -267,7 +235,7 @@ export default function NetworkMonitorsTableNew({
 	)
 
 	const columns = useMemo(() => {
-		let columns = getMonitorColumns(longestTarget, $longestSystemName, {
+		let columns = getMonitorColumns({
 			onEdit: setEditingMonitor,
 			onDelete: handleDeleteRequest,
 			onSetEnabled: handleSetEnabled,
@@ -275,7 +243,7 @@ export default function NetworkMonitorsTableNew({
 		columns = systemId ? columns.filter((col) => col.id !== "system") : columns
 		columns = canManageMonitors ? columns : columns.filter((col) => col.id !== "actions")
 		return columns
-	}, [canManageMonitors, handleDeleteRequest, handleSetEnabled, systemId, longestTarget, $longestSystemName])
+	}, [canManageMonitors, handleDeleteRequest, handleSetEnabled, systemId])
 
 	const table = useReactTable({
 		data: monitors,
@@ -640,13 +608,7 @@ function CertExpiry({ cert }: { cert: MonitorCertInfo }) {
 			<Separator orientation="vertical" className="h-2.5 bg-muted-foreground opacity-70" />
 			<ShieldCheckIcon className={cn("size-3.5 text-muted-foreground -me-1", certExpiryTextColors[level])} />
 			<span className={certExpiryTextColors[level]}>
-				{daysLeft < 0 ? (
-					<Trans>Certificate expired {expires}</Trans>
-				) : (
-					<Trans>
-						Certificate expires {expires} 
-					</Trans>
-				)}
+				{daysLeft < 0 ? <Trans>Certificate expired {expires}</Trans> : <Trans>Certificate expires {expires}</Trans>}
 			</span>
 			{cert.issuer && (
 				<>

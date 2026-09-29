@@ -90,11 +90,3 @@ export const $copyContent = atom("")
 
 /** Direction for localization */
 export const $direction = atom<"ltr" | "rtl">("ltr")
-
-/** Longest system name string. Used to reserve width in virtualized tables. */
-export const $longestSystemName = atom("")
-
-/** Incremented when measured text widths are invalidated (e.g. web font finished loading).
- *  Anything that caches a comparison from isVisuallyLonger should recompute when this changes.
- */
-export const $textMeasureVersion = atom(0)
