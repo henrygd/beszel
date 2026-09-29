@@ -25,7 +25,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea"
 import {
 	ChevronDownIcon,
-	CrosshairIcon,
+	GlobeIcon,
 	ListIcon,
 	type LucideIcon,
 	PlusIcon,
@@ -277,11 +277,12 @@ export function MonitorMultiSelect({
 			onChange={onChange}
 			disabled={disabled}
 			className={className}
-			icon={CrosshairIcon}
+			icon={GlobeIcon}
 			canSelectMore={canSelectMore}
 			placeholder={placeholder ?? t`Select targets`}
 			searchPlaceholder={t`Search targets`}
 			emptyText={<Trans>No targets found.</Trans>}
+			paddingStart="ps-9.5"
 			renderOption={(option) => (
 				<>
 					<span className="truncate">{option.label}</span>
@@ -307,6 +308,7 @@ function MultiSelect<T extends MultiSelectOption>({
 	emptyText,
 	renderOption = (option) => <span className="truncate">{option.label}</span>,
 	canSelectMore = true,
+  	paddingStart = "ps-10",
 }: {
 	id: string
 	options: T[]
@@ -317,10 +319,12 @@ function MultiSelect<T extends MultiSelectOption>({
 	icon: LucideIcon
 	placeholder: string
 	searchPlaceholder: string
+	paddingStart?: string
 	emptyText: ReactNode
 	renderOption?: (option: T) => ReactNode
 	/** False once the selection is full; only already selected options can then be toggled. */
 	canSelectMore?: boolean
+  
 }) {
 	const { t } = useLingui()
 	const [search, setSearch] = useState("")
@@ -354,7 +358,7 @@ function MultiSelect<T extends MultiSelectOption>({
 					disabled={disabled}
 					type="button"
 					variant="outline"
-					className={cn("relative w-full min-w-0 ps-10 pe-10 justify-start font-normal text-start", className)}
+					className={cn("relative w-full min-w-0 pe-10 justify-start font-normal text-start", paddingStart, className)}
 				>
 					<Icon className="size-3.5 absolute start-4 top-1/2 -translate-y-1/2 opacity-85" />
 					<span className="truncate">
