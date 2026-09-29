@@ -2,6 +2,7 @@ package systems
 
 import (
 	"context"
+	"database/sql"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -433,7 +434,6 @@ func (sys *System) updateNetworkMonitorsRecords(app core.App, monitorResults map
 	if len(monitorResults) == 0 {
 		return nil
 	}
-	var err error
 	systemId := sys.Id
 	const monitorCollectionName = "network_monitors"
 
@@ -457,14 +457,19 @@ func (sys *System) updateNetworkMonitorsRecords(app core.App, monitorResults map
 		}
 		// Results omit certInfo unless it changed, so keep the stored value.
 		setClauses = append(setClauses, "certInfo=COALESCE({:certInfo}, certInfo)")
-		queryString := fmt.Sprintf("UPDATE %s SET %s WHERE id={:id}", monitorCollectionName, strings.Join(setClauses, ", "))
+		queryString := fmt.Sprintf("UPDATE %s SET %s WHERE id={:id} AND system={:system}", monitorCollectionName, strings.Join(setClauses, ", "))
 		updateQuery = db.NewQuery(queryString)
 	}
+
+	// Results are keyed by agent-supplied IDs. Record history only for monitors
+	// this system owns, as confirmed by the update below
+	owned := make(map[string]struct{}, len(monitorResults))
 
 	// update network_monitors records
 	for id, result := range monitorResults {
 		monitorData := map[string]any{
 			"id":       id,
+			"system":   systemId,
 			"res":      result.AvgResponse,
 			"resAvg1h": result.AvgResponse1h,
 			"resMin1h": result.MinResponse1h,
@@ -472,11 +477,15 @@ func (sys *System) updateNetworkMonitorsRecords(app core.App, monitorResults map
 			"loss1h":   result.PacketLoss1h,
 			"updated":  nowString,
 		}
+		var err error
 		switch realtimeActive {
 		case true:
 			var record *core.Record
 			record, err = app.FindRecordById(monitorCollectionName, id)
 			if err == nil {
+				if record.GetString("system") != systemId {
+					continue
+				}
 				if result.Cert != nil {
 					monitorData["certInfo"] = result.Cert
 				}
@@ -492,12 +501,20 @@ func (sys *System) updateNetworkMonitorsRecords(app core.App, monitorResults map
 				}
 			}
 			if err == nil {
-				_, err = updateQuery.Bind(dbx.Params(monitorData)).Execute()
+				var res sql.Result
+				// Zero rows means the monitor is foreign or no longer exists.
+				if res, err = updateQuery.Bind(dbx.Params(monitorData)).Execute(); err == nil {
+					if n, _ := res.RowsAffected(); n == 0 {
+						continue
+					}
+				}
 			}
 		}
 		if err != nil {
 			app.Logger().Warn("Failed to update monitor", "system", systemId, "monitor", id, "err", err)
+			continue
 		}
+		owned[id] = struct{}{}
 	}
 
 	// handle stats collection — one record per monitor
@@ -509,6 +526,9 @@ func (sys *System) updateNetworkMonitorsRecords(app core.App, monitorResults map
 	}
 
 	for monitorId, result := range monitorResults {
+		if _, ok := owned[monitorId]; !ok {
+			continue
+		}
 		// Compare identity, not ordering, so agent clock changes don't stall writes.
 		if result.LastProbeAt == sys.lastSavedMonitorProbe[monitorId] {
 			continue
@@ -524,6 +544,7 @@ func (sys *System) updateNetworkMonitorsRecords(app core.App, monitorResults map
 			"success_count": result.SuccessCount,
 			"res_sum":       result.ResponseSum,
 		}
+		var err error
 		switch realtimeActive {
 		case true:
 			record := core.NewRecord(statsCollection)
