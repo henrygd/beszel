@@ -189,14 +189,6 @@ export default function SpeedtestsTable({
 		[]
 	)
 
-	// Server and system names shown when confirming the deletion of a single speedtest.
-	const pendingDelete =
-		pendingDeleteIds.length === 1 ? speedtests.find((st) => st.id === pendingDeleteIds[0]) : undefined
-	const pendingDeleteServer = pendingDelete
-		? pendingDelete.server_name || getSpeedtestServerLabel(pendingDelete) || t`Automatic`
-		: ""
-	const pendingDeleteSystem = pendingDelete ? ($allSystemsById.get()[pendingDelete.system]?.name ?? "") : ""
-
 	const handleBulkDelete = async () => {
 		const ids = pendingDeleteIds
 		setPendingDeleteIds([])
@@ -410,23 +402,10 @@ export default function SpeedtestsTable({
 							<AlertDialogContent>
 								<AlertDialogHeader>
 									<AlertDialogTitle>
-										{pendingDelete ? (
-											<Trans>
-												Are you sure you want to delete {pendingDeleteServer} from {pendingDeleteSystem}?
-											</Trans>
-										) : (
-											<Trans>Are you sure?</Trans>
-										)}
+										<Trans>Are you sure?</Trans>
 									</AlertDialogTitle>
 									<AlertDialogDescription>
-										{pendingDelete ? (
-											<Trans>
-												This action cannot be undone. This will permanently delete all results for {pendingDeleteServer}{" "}
-												on {pendingDeleteSystem} from the database.
-											</Trans>
-										) : (
-											<Trans>This will permanently delete all selected records from the database.</Trans>
-										)}
+										<Trans>This will permanently delete all selected records from the database.</Trans>
 									</AlertDialogDescription>
 								</AlertDialogHeader>
 								<AlertDialogFooter>
