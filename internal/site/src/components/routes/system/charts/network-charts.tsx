@@ -5,7 +5,6 @@ import { useContainerDataPoints } from "@/components/charts/hooks"
 import { $userSettings } from "@/lib/stores"
 import { decimalString, formatBytes, toFixedFloat } from "@/lib/utils"
 import type { ChartConfig } from "@/components/ui/chart"
-import { pinnedAxisDomain } from "@/components/ui/chart"
 import type { ChartData, SystemStatsRecord } from "@/types"
 import { Separator } from "@/components/ui/separator"
 import NetworkSheet, { ErrorsSheet, PacketsSheet, packetContentFormatter, packetTickFormatter } from "../network-sheet"
@@ -253,7 +252,6 @@ export function ContainerNetworkChart({
 					return `${toFixedFloat(value, value >= 10 ? 0 : 1)} ${unit}`
 				}}
 				contentFormatter={contentFormatter}
-				domain={pinnedAxisDomain()}
 				showTotal={true}
 				reverseStackOrder={true}
 				filter={filter}

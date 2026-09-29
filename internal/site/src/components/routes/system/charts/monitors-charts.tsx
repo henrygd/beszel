@@ -18,6 +18,10 @@ type MonitorChartProps = {
 	showFilter?: boolean
 	/** Prepended to the chart title, e.g. a target/system name (rendered as "{titlePrefix} — Response"). */
 	titlePrefix?: string
+	/** Line label for each monitor. Defaults to the monitor target; use the system name when comparing systems. */
+	getLabel?: (monitor: NetworkMonitorRecord) => string
+	/** Filter store for the chart's filter bar. Pass a local atom to keep the filter scoped to one view. */
+	filterStore?: typeof $monitorFilter
 }
 
 type MonitorChartBaseProps = MonitorChartProps & {
@@ -44,9 +48,11 @@ function MonitorChart({
 	contentFormatter,
 	domain,
 	color,
+	getLabel = getMonitorTarget,
+	filterStore = $monitorFilter,
 	showFilter = monitors.length > 1,
 }: MonitorChartBaseProps) {
-	const storedFilter = useStore($monitorFilter)
+	const storedFilter = useStore(filterStore)
 	const filter = showFilter ? storedFilter : ""
 
 	const { dataPoints, visibleKeys } = useMemo(() => {
@@ -58,7 +64,7 @@ function MonitorChart({
 		const dot = chartData.chartTime === "1m"
 		for (let i = 0; i < count; i++) {
 			const p = sortedMonitors[i]
-			const label = getMonitorTarget(p)
+			const label = getLabel(p)
 			const labelLower = label.toLowerCase()
 			const filtered = filterGroups.length > 0 && !matchesFilterGroups(labelLower, filterGroups)
 			if (filtered) {
@@ -75,7 +81,7 @@ function MonitorChart({
 			})
 		}
 		return { dataPoints: points, visibleKeys: visibleIDs }
-	}, [monitors, filter, metric, chartData.chartTime, color])
+	}, [monitors, filter, metric, chartData.chartTime, color, getLabel])
 
 	// Monitors with different intervals don't share timestamps, so multiple lines need connectNulls.
 	// A single monitor's stats already contain empty records at real gaps, so the line breaks there.
@@ -91,7 +97,7 @@ function MonitorChart({
 	return (
 		<ChartCard
 			legend={legend || !showFilter}
-			cornerEl={showFilter ? <FilterBar store={$monitorFilter} /> : undefined}
+			cornerEl={showFilter ? <FilterBar store={filterStore} /> : undefined}
 			empty={empty}
 			title={title}
 			description={description}
@@ -198,7 +204,56 @@ export function AvgMinMaxResponseChart({ monitorStats, monitor, chartData, empty
 	)
 }
 
-export function LossChart({ monitorStats, grid, monitors, chartData, empty, titlePrefix }: MonitorChartProps) {
+export function ResponseChart({
+	monitorStats,
+	grid,
+	monitors,
+	chartData,
+	empty,
+	titlePrefix,
+	getLabel,
+	filterStore,
+	showFilter,
+}: MonitorChartProps) {
+	const { t } = useLingui()
+	const responseTitle = t`Response`
+	const title = titlePrefix ? `${titlePrefix} — ${responseTitle}` : responseTitle
+
+	return (
+		<MonitorChart
+			monitorStats={monitorStats}
+			grid={grid}
+			monitors={monitors}
+			chartData={chartData}
+			empty={empty}
+			metric="res_avg"
+			title={title}
+			description={t`Average response time`}
+			getLabel={getLabel}
+			filterStore={filterStore}
+			showFilter={showFilter}
+			tickFormatter={(value) => formatMicroseconds(value, false)}
+			contentFormatter={({ value }) => {
+				if (typeof value !== "number") {
+					return value
+				}
+				return formatMicroseconds(value)
+			}}
+		/>
+	)
+}
+
+export function LossChart({
+	monitorStats,
+	grid,
+	monitors,
+	chartData,
+	empty,
+	titlePrefix,
+	getLabel,
+	filterStore,
+	showFilter,
+}: MonitorChartProps) {
 	const { t } = useLingui()
 	const lossTitle = t({ message: "Loss", context: "Packet loss" })
 	const title = titlePrefix ? `${titlePrefix} — ${lossTitle}` : lossTitle
@@ -214,7 +269,11 @@ export function LossChart({ monitorStats, grid, monitors, chartData, empty, titl
 			title={title}
 			description={t`Packet loss (%)`}
 			domain={[0, 100]}
-			color="var(--destructive)"
+			// a single destructive color only makes sense for single-monitor charts
+			color={monitors.length > 1 ? undefined : "var(--destructive)"}
+			getLabel={getLabel}
+			filterStore={filterStore}
+			showFilter={showFilter}
 			tickFormatter={(value) => `${toFixedFloat(value, value >= 10 ? 0 : 1)}%`}
 			contentFormatter={({ value }) => {
 				if (typeof value !== "number") {
