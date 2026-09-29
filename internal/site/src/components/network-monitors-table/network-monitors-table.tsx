@@ -67,12 +67,7 @@ import {
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet"
 import ChartTimeSelect from "@/components/charts/chart-time-select"
 import { LossChart, AvgMinMaxResponseChart, ResponseChart } from "@/components/routes/system/charts/monitors-charts"
-import {
-	getMonitorIdentityKey,
-	useMatchingMonitors,
-	useNetworkMonitorStats,
-	useSystemsMonitors,
-} from "@/lib/use-network-monitors"
+import { getMonitorIdentityKey, useCompareMonitors, useNetworkMonitorStats } from "@/lib/use-network-monitors"
 import { useStore } from "@nanostores/react"
 import { atom } from "nanostores"
 import { Separator } from "../ui/separator"
@@ -717,9 +712,6 @@ function NetworkMonitorSheetContent({
 		[monitors, monitor.system, monitor.protocol, monitor.id]
 	)
 	const [compareTargetIds, setCompareTargetIds] = useState<Set<string>>(() => new Set())
-	// Same target probed from other systems, for side-by-side comparison (#2385).
-	const matchingMonitors = useMatchingMonitors(monitor, open)
-	const matchingSystemIds = useMemo(() => matchingMonitors.map((m) => m.system), [matchingMonitors])
 	const [compareSystemIds, setCompareSystemIds] = useState<Set<string>>(() => new Set())
 	// Scoped to this sheet so a filter doesn't carry over to other monitors' sheets.
 	const [compareFilterStore, setCompareFilterStore] = useState(() => atom(""))
@@ -731,26 +723,35 @@ function NetworkMonitorSheetContent({
 		setCompareTargetIds(new Set())
 		setCompareFilterStore(atom(""))
 	}
-	// Selected systems' monitors, used to chart each compared target on every selected system.
-	const selectedSystems = useSystemsMonitors([...compareSystemIds], monitor.protocol, open)
-	// Only offer targets that every selected system also probes, so each pick charts a line per system.
-	const sharedMonitors = useMemo(() => {
-		const { monitors: systemMonitors, loadedSystemIds } = selectedSystems
+	// Same-protocol monitors on other systems; everything below is derived from this one fetch.
+	const otherMonitors = useCompareMonitors(monitor.system, monitor.protocol, open)
+	const keysBySystem = useMemo(() => {
 		const keysBySystem = new Map<string, Set<string>>()
-		for (const m of systemMonitors) {
+		for (const m of otherMonitors) {
 			let keys = keysBySystem.get(m.system)
 			if (!keys) keysBySystem.set(m.system, (keys = new Set()))
 			keys.add(getMonitorIdentityKey(m))
 		}
-		// Systems still loading don't filter yet, so selected targets don't flicker off and back on.
-		return sameSystemMonitors.filter((m) => {
-			const key = getMonitorIdentityKey(m)
-			for (const id of loadedSystemIds) {
-				if (!keysBySystem.get(id)?.has(key)) return false
-			}
-			return true
-		})
-	}, [sameSystemMonitors, selectedSystems])
+		return keysBySystem
+	}, [otherMonitors])
+	// Systems that also probe the opened target.
+	const monitorKey = getMonitorIdentityKey(monitor)
+	const matchingSystemIds = useMemo(
+		() => [...keysBySystem].filter(([, keys]) => keys.has(monitorKey)).map(([id]) => id),
+		[keysBySystem, monitorKey]
+	)
+	// Only offer targets that every selected system also probes, so each pick charts a line per system.
+	const sharedMonitors = useMemo(
+		() =>
+			sameSystemMonitors.filter((m) => {
+				const key = getMonitorIdentityKey(m)
+				for (const id of compareSystemIds) {
+					if (!keysBySystem.get(id)?.has(key)) return false
+				}
+				return true
+			}),
+		[sameSystemMonitors, keysBySystem, compareSystemIds]
+	)
 	// Targets drop out of the list when a system without them is selected, so only chart selections still listed.
 	const visibleCompareTargetIds = useMemo(
 		() => new Set(sharedMonitors.filter((m) => compareTargetIds.has(m.id)).map((m) => m.id)),
@@ -760,8 +761,11 @@ function NetworkMonitorSheetContent({
 	const compareMonitors = useMemo(() => {
 		const targetMonitors = [monitor, ...sharedMonitors.filter((m) => visibleCompareTargetIds.has(m.id))]
 		const targetKeys = new Set(targetMonitors.map(getMonitorIdentityKey))
-		return [...targetMonitors, ...selectedSystems.monitors.filter((m) => targetKeys.has(getMonitorIdentityKey(m)))]
-	}, [monitor, sharedMonitors, visibleCompareTargetIds, selectedSystems])
+		const systemMonitors = otherMonitors.filter(
+			(m) => compareSystemIds.has(m.system) && targetKeys.has(getMonitorIdentityKey(m))
+		)
+		return [...targetMonitors, ...systemMonitors]
+	}, [monitor, sharedMonitors, visibleCompareTargetIds, otherMonitors, compareSystemIds])
 	const comparing = compareMonitors.length > 1
 	// Label series by whatever differs between them: system, target, or both.
 	const getCompareLabel = useMemo(() => {
@@ -853,7 +857,7 @@ function NetworkMonitorSheetContent({
 								placeholder={t`Compare with other targets`}
 							/>
 						)}
-						{matchingMonitors.length > 0 && (
+						{matchingSystemIds.length > 0 && (
 							<SystemMultiSelect
 								id="monitor-compare-systems"
 								className="flex-1 min-w-0 basis-full sm:basis-0 bg-card"

@@ -323,40 +323,6 @@ export function useNetworkMonitorStats(props: UseNetworkMonitorStatsProps) {
 	}, [monitorStats, cacheKey, interval, chartTime])
 }
 
-/**
- * Monitors on other systems that probe the same target (same protocol, target, port, and DNS server).
- * Fetched once per open so it also works in single-system tables, which only hold one system's monitors.
- */
-export function useMatchingMonitors(monitor: NetworkMonitorRecord, enabled = true) {
-	const [matches, setMatches] = useState<NetworkMonitorRecord[]>([])
-	const { id, system, protocol, target, port, server } = monitor
-
-	useEffect(() => {
-		setMatches([])
-		if (!enabled) return
-		let cancelled = false
-		pb.collection<NetworkMonitorRecord>("network_monitors")
-			.getFullList({
-				fields: NETWORK_MONITOR_FIELDS,
-				filter: pb.filter(
-					"id!={:id} && system!={:system} && protocol={:protocol} && target={:target} && port={:port} && server={:server}",
-					{ id, system, protocol, target, port, server }
-				),
-			})
-			.then((records) => {
-				if (!cancelled) setMatches(records)
-			})
-			.catch((error) => {
-				if (!cancelled) console.error("Failed to fetch matching monitors:", error)
-			})
-		return () => {
-			cancelled = true
-		}
-	}, [id, system, protocol, target, port, server, enabled])
-
-	return matches
-}
-
 /** Identifies what a monitor probes, regardless of which system probes it. */
 export function getMonitorIdentityKey({
 	protocol,
@@ -367,55 +333,38 @@ export function getMonitorIdentityKey({
 	return JSON.stringify([protocol, target, port, server])
 }
 
+/** Only what comparison charts and labels need. */
+const COMPARE_MONITOR_FIELDS = "id,system,target,protocol,port,server,interval,resAvg1h"
+
 /**
- * Monitors of one protocol on the given systems. Also returns which of those systems have loaded, since
- * results for the previous selection stay visible while a newly added system is fetched.
+ * Monitors of one protocol on all systems except the given one, to compare against (#2385).
+ * Fetched per open so it also works in single-system tables, which only hold one system's monitors.
  */
-export function useSystemsMonitors(systemIds: string[], protocol: string, enabled = true) {
-	const [result, setResult] = useState<{ systemIds: string[]; monitors: NetworkMonitorRecord[] }>({
-		systemIds: [],
-		monitors: [],
-	})
-	// Stable key so the fetch doesn't re-run when callers pass a new array with the same IDs.
-	const systemsKey = [...systemIds].sort().join(",")
+export function useCompareMonitors(system: string, protocol: string, enabled = true) {
+	const key = `${system}:${protocol}`
+	const [result, setResult] = useState<{ key: string; monitors: NetworkMonitorRecord[] }>({ key, monitors: [] })
 
 	useEffect(() => {
-		if (!enabled || !systemsKey) {
-			setResult({ systemIds: [], monitors: [] })
-			return
-		}
+		if (!enabled) return
 		let cancelled = false
-		const ids = systemsKey.split(",")
-		const params: Record<string, string> = { protocol }
-		const expr = ids
-			.map((id, i) => {
-				params[`s${i}`] = id
-				return `system={:s${i}}`
-			})
-			.join(" || ")
 		pb.collection<NetworkMonitorRecord>("network_monitors")
 			.getFullList({
-				fields: NETWORK_MONITOR_FIELDS,
-				filter: pb.filter(`protocol={:protocol} && (${expr})`, params),
+				fields: COMPARE_MONITOR_FIELDS,
+				filter: pb.filter("system!={:system} && protocol={:protocol}", { system, protocol }),
 			})
 			.then((monitors) => {
-				if (!cancelled) setResult({ systemIds: ids, monitors })
+				if (!cancelled) setResult({ key: `${system}:${protocol}`, monitors })
 			})
 			.catch((error) => {
-				if (!cancelled) console.error("Failed to fetch system monitors:", error)
+				if (!cancelled) console.error("Failed to fetch compare monitors:", error)
 			})
 		return () => {
 			cancelled = true
 		}
-	}, [systemsKey, protocol, enabled])
+	}, [system, protocol, enabled])
 
-	return useMemo(() => {
-		const selected = new Set(systemsKey ? systemsKey.split(",") : [])
-		return {
-			monitors: result.monitors.filter((m) => selected.has(m.system) && m.protocol === protocol),
-			loadedSystemIds: new Set(result.systemIds.filter((id) => selected.has(id))),
-		}
-	}, [result, systemsKey, protocol])
+	// Keep showing the last result while reopening refreshes it, but never another monitor's.
+	return result.key === key ? result.monitors : []
 }
 
 async function fetchMonitors(system?: string) {
