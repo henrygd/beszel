@@ -95,7 +95,8 @@ func TestSystemdInfoCachePolicy(t *testing.T) {
 			require.Equal(t, tc.status, response.StatusCode)
 			if tc.status == http.StatusOK {
 				require.JSONEq(t, `{"details":{"Description":"private service details"}}`, string(body))
-				require.Equal(t, "private, no-store", response.Header.Get("Cache-Control"))
+				require.Equal(t, "private, max-age=60", response.Header.Get("Cache-Control"))
+				require.Contains(t, response.Header.Values("Vary"), "Authorization")
 			} else {
 				require.NotContains(t, string(body), "private service details")
 				require.NotContains(t, response.Header.Get("Cache-Control"), "public")
