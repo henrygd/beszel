@@ -88,3 +88,66 @@ func TestReadObjsetIORequiresAllCounters(t *testing.T) {
 	_, _, err := readObjsetIO(path)
 	require.Error(t, err)
 }
+
+func TestCollectorsSkipCommandsWhenDevZfsMissing(t *testing.T) {
+	root := t.TempDir()
+	oldDevZfsPath := devZfsPath
+	devZfsPath = filepath.Join(root, "missing")
+	t.Cleanup(func() { devZfsPath = oldDevZfsPath })
+
+	oldCommandOutput := commandOutput
+	commandOutput = func(name string, args ...string) ([]byte, error) {
+		t.Fatalf("unexpected %s call with %v", name, args)
+		return nil, nil
+	}
+	t.Cleanup(func() { commandOutput = oldCommandOutput })
+
+	_, err := PoolStats()
+	assert.ErrorIs(t, err, ErrNoZfs)
+	_, err = Datasets()
+	assert.ErrorIs(t, err, ErrNoZfs)
+}
+
+func TestDatasetsDelegatesWhenDevZfsPresent(t *testing.T) {
+	oldDevZfsPath := devZfsPath
+	devZfsPath = filepath.Join(t.TempDir(), "zfs")
+	require.NoError(t, os.WriteFile(devZfsPath, nil, 0o644))
+	t.Cleanup(func() { devZfsPath = oldDevZfsPath })
+
+	oldCommandOutput := commandOutput
+	commandOutput = func(name string, args ...string) ([]byte, error) {
+		assert.Equal(t, "zfs", name)
+		assert.Equal(t, []string{"list", "-Hp", "-o", "name,used,avail,mountpoint"}, args)
+		return []byte("tank\t50\t50\t/tank\n"), nil
+	}
+	t.Cleanup(func() { commandOutput = oldCommandOutput })
+
+	datasets, err := Datasets()
+	require.NoError(t, err)
+	assert.Equal(t, []Dataset{{Name: "tank", Used: 50, Avail: 50, Mountpoint: "/tank"}}, datasets)
+}
+
+func TestPoolStatsDelegatesToZpoolWhenDevZfsPresent(t *testing.T) {
+	root := t.TempDir()
+	devFile := filepath.Join(root, "zfs")
+	require.NoError(t, os.WriteFile(devFile, []byte(""), 0o644))
+
+	oldDevZfsPath := devZfsPath
+	devZfsPath = devFile
+	t.Cleanup(func() { devZfsPath = oldDevZfsPath })
+
+	oldCommandOutput := commandOutput
+	called := false
+	commandOutput = func(name string, args ...string) ([]byte, error) {
+		called = true
+		assert.Equal(t, "zpool", name)
+		assert.Equal(t, []string{"list", "-Hp", "-o", "name,size,alloc,free,health"}, args)
+		return []byte("tank\t100\t50\t50\tONLINE\n"), nil
+	}
+	t.Cleanup(func() { commandOutput = oldCommandOutput })
+
+	pools, err := PoolStats()
+	require.NoError(t, err)
+	assert.True(t, called)
+	assert.Equal(t, []PoolStat{{Name: "tank", Size: 100, Alloc: 50, Free: 50, Health: "ONLINE"}}, pools)
+}

@@ -2,6 +2,7 @@ package systems
 
 import (
 	"context"
+	"database/sql"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -9,6 +10,7 @@ import (
 	"math/rand"
 	"net"
 	"strings"
+	"sync"
 	"sync/atomic"
 	"time"
 
@@ -18,6 +20,7 @@ import (
 	"github.com/henrygd/beszel/internal/hub/ws"
 
 	"github.com/henrygd/beszel/internal/entities/container"
+	"github.com/henrygd/beszel/internal/entities/monitor"
 	"github.com/henrygd/beszel/internal/entities/smart"
 	"github.com/henrygd/beszel/internal/entities/system"
 	"github.com/henrygd/beszel/internal/entities/systemd"
@@ -30,6 +33,8 @@ import (
 	"github.com/lxzan/gws"
 	"github.com/pocketbase/dbx"
 	"github.com/pocketbase/pocketbase/core"
+	"github.com/pocketbase/pocketbase/tools/security"
+	"github.com/pocketbase/pocketbase/tools/types"
 	"golang.org/x/crypto/ssh"
 )
 
@@ -37,7 +42,8 @@ type System struct {
 	Id             string                     `db:"id"`
 	Host           string                     `db:"host"`
 	Port           string                     `db:"port"`
-	Status         string                     `db:"status"`
+	Status         string                     `db:"status"` // Use GetStatus/swapStatus after publishing the system.
+	statusMu       sync.RWMutex               // Protects Status and exchanges used by alert transitions.
 	manager        *SystemManager             // Manager that this system belongs to
 	client         atomic.Pointer[ssh.Client] // SSH client for fetching data
 	sshTransport   *transport.SSHTransport    // SSH transport for requests
@@ -52,6 +58,29 @@ type System struct {
 	smartInterval  time.Duration              // Interval for periodic SMART data updates
 	zfsFetching    atomic.Bool                // True if ZFS pools are currently being fetched
 	zfsInterval    time.Duration              // Interval for periodic ZFS detail data updates
+
+	// A fresh connection needs a full monitor configuration sync.
+	monitorsNeedSync atomic.Bool
+	// Serialize persistence from scheduled updates and resumes through commit.
+	recordsMu sync.Mutex
+	// Protected by recordsMu; realtime reads don't consume probes.
+	lastSavedMonitorProbe map[string]int64
+}
+
+// GetStatus returns the current monitoring status.
+func (sys *System) GetStatus() string {
+	sys.statusMu.RLock()
+	defer sys.statusMu.RUnlock()
+	return sys.Status
+}
+
+// swapStatus updates the status and returns the previous value as one operation.
+func (sys *System) swapStatus(status string) string {
+	sys.statusMu.Lock()
+	defer sys.statusMu.Unlock()
+	previous := sys.Status
+	sys.Status = status
+	return previous
 }
 
 func (sm *SystemManager) NewSystem(systemId string) *System {
@@ -90,7 +119,7 @@ func (sys *System) StartUpdater() {
 
 	// update immediately if system is not paused (only for ws connections)
 	// we'll wait a minute before connecting via SSH to prioritize ws connections
-	if sys.Status != paused && sys.ctx.Err() == nil {
+	if sys.GetStatus() != paused && sys.ctx.Err() == nil {
 		if err := sys.update(); err != nil {
 			_ = sys.setDown(err)
 		}
@@ -123,7 +152,7 @@ func (sys *System) StartUpdater() {
 
 // update updates the system data and records.
 func (sys *System) update() error {
-	if sys.Status == paused {
+	if sys.GetStatus() == paused {
 		sys.handlePaused()
 		return nil
 	}
@@ -142,6 +171,7 @@ func (sys *System) update() error {
 
 	// ensure deprecated fields from older agents are migrated to current fields
 	migrateDeprecatedFields(data, !sys.detailsFetched.Load())
+	sys.data = data
 
 	// create system records
 	_, err = sys.createRecords(data)
@@ -211,11 +241,15 @@ func (sys *System) handlePaused() {
 
 // createRecords updates the system record and adds system_stats and container_stats records
 func (sys *System) createRecords(data *system.CombinedData) (*core.Record, error) {
+	sys.recordsMu.Lock()
+	defer sys.recordsMu.Unlock()
+
 	systemRecord, err := sys.getRecord(sys.manager.hub)
 	if err != nil {
 		return nil, err
 	}
 	hub := sys.manager.hub
+	savedMonitorProbes := make(map[string]int64)
 	err = hub.RunInTransaction(func(txApp core.App) error {
 		// add system_stats record
 		systemStatsCollection, err := txApp.FindCachedCollectionByNameOrId("system_stats")
@@ -264,6 +298,16 @@ func (sys *System) createRecords(data *system.CombinedData) (*core.Record, error
 			if err := createSystemDetailsRecord(txApp, data.Details, sys.Id); err != nil {
 				return err
 			}
+			// sync display name with hostname if enabled (details are fetched once per agent connection)
+			if syncNames, _ := utils.GetEnv("SYNC_SYSTEM_NAMES"); syncNames == "true" && data.Details.Hostname != "" {
+				systemRecord.Set("name", data.Details.Hostname)
+			}
+		}
+
+		if data.Monitors != nil {
+			if err := sys.updateNetworkMonitorsRecords(txApp, data.Monitors, savedMonitorProbes); err != nil {
+				return err
+			}
 		}
 
 		if err := sys.syncZfsPoolHealth(txApp, data.Stats.ZfsPools); err != nil {
@@ -287,6 +331,29 @@ func (sys *System) createRecords(data *system.CombinedData) (*core.Record, error
 		return nil
 	})
 
+	// Publish only successful inserts after the entire transaction commits.
+	if err == nil && len(savedMonitorProbes) > 0 {
+		if sys.lastSavedMonitorProbe == nil {
+			sys.lastSavedMonitorProbe = savedMonitorProbes
+		} else {
+			for id, timestamp := range savedMonitorProbes {
+				sys.lastSavedMonitorProbe[id] = timestamp
+			}
+		}
+	}
+	// A non-nil report includes cached results for all remaining monitors.
+	if err == nil && data.Monitors != nil {
+		for id := range sys.lastSavedMonitorProbe {
+			if _, exists := data.Monitors[id]; !exists {
+				delete(sys.lastSavedMonitorProbe, id)
+			}
+		}
+	}
+	if err == nil {
+		if alertErr := hub.HandleNetworkMonitorAlerts(systemRecord, data.Monitors); alertErr != nil {
+			hub.Logger().Error("Error handling network monitor alerts", "err", alertErr)
+		}
+	}
 	return systemRecord, err
 }
 
@@ -337,7 +404,7 @@ func createSystemdStatsRecords(app core.App, data []*systemd.Service, systemId s
 		}
 		suffix := fmt.Sprintf("%d", i)
 		valueStrings = append(valueStrings, fmt.Sprintf("({:id%[1]s}, {:system}, {:name%[1]s}, {:state%[1]s}, {:sub%[1]s}, {:cpu%[1]s}, {:cpuPeak%[1]s}, {:memory%[1]s}, {:memPeak%[1]s}, {:updated})", suffix))
-		params["id"+suffix] = makeStableHashId(systemId, service.Name)
+		params["id"+suffix] = MakeStableHashId(systemId, service.Name)
 		params["name"+suffix] = service.Name
 		params["state"+suffix] = service.State
 		params["sub"+suffix] = service.Sub
@@ -361,6 +428,140 @@ func createSystemdStatsRecords(app core.App, data []*systemd.Service, systemId s
 		"DELETE FROM systemd_services WHERE system = {:system} AND updated < {:updated}",
 	).Bind(dbx.Params{"system": systemId, "updated": params["updated"]}).Execute()
 	return err
+}
+
+func (sys *System) updateNetworkMonitorsRecords(app core.App, monitorResults map[string]monitor.Result, savedProbes map[string]int64) error {
+	if len(monitorResults) == 0 {
+		return nil
+	}
+	systemId := sys.Id
+	const monitorCollectionName = "network_monitors"
+
+	// If realtime updates are active, we save via PocketBase records to trigger realtime events.
+	// Otherwise we can do a more efficient direct update via SQL
+	realtimeActive := utils.RealtimeActiveForCollection(app, monitorCollectionName, func(filterQuery string) bool {
+		return !strings.Contains(filterQuery, "system") || strings.Contains(filterQuery, systemId)
+	})
+
+	now := time.Now().UTC()
+	nowMilli := now.UnixMilli()
+	nowString := now.Format(types.DefaultDateLayout)
+	var db dbx.Builder
+	var updateQuery *dbx.Query
+	if !realtimeActive {
+		db = app.DB()
+		monitorFields := []string{"res", "resMin1h", "resMax1h", "resAvg1h", "loss1h", "updated"}
+		setClauses := make([]string, len(monitorFields))
+		for i, f := range monitorFields {
+			setClauses[i] = fmt.Sprintf("%s={:%s}", f, f)
+		}
+		// Results omit certInfo unless it changed, so keep the stored value.
+		setClauses = append(setClauses, "certInfo=COALESCE({:certInfo}, certInfo)")
+		queryString := fmt.Sprintf("UPDATE %s SET %s WHERE id={:id} AND system={:system}", monitorCollectionName, strings.Join(setClauses, ", "))
+		updateQuery = db.NewQuery(queryString)
+	}
+
+	// Results are keyed by agent-supplied IDs. Record history only for monitors
+	// this system owns, as confirmed by the update below
+	owned := make(map[string]struct{}, len(monitorResults))
+
+	// update network_monitors records
+	for id, result := range monitorResults {
+		monitorData := map[string]any{
+			"id":       id,
+			"system":   systemId,
+			"res":      result.AvgResponse,
+			"resAvg1h": result.AvgResponse1h,
+			"resMin1h": result.MinResponse1h,
+			"resMax1h": result.MaxResponse1h,
+			"loss1h":   result.PacketLoss1h,
+			"updated":  nowString,
+		}
+		var err error
+		switch realtimeActive {
+		case true:
+			var record *core.Record
+			record, err = app.FindRecordById(monitorCollectionName, id)
+			if err == nil {
+				if record.GetString("system") != systemId {
+					continue
+				}
+				if result.Cert != nil {
+					monitorData["certInfo"] = result.Cert
+				}
+				record.Load(monitorData)
+				err = app.SaveNoValidate(record)
+			}
+		default:
+			monitorData["certInfo"] = nil
+			if result.Cert != nil {
+				var cert []byte
+				if cert, err = json.Marshal(result.Cert); err == nil {
+					monitorData["certInfo"] = string(cert)
+				}
+			}
+			if err == nil {
+				var res sql.Result
+				// Zero rows means the monitor is foreign or no longer exists.
+				if res, err = updateQuery.Bind(dbx.Params(monitorData)).Execute(); err == nil {
+					if n, _ := res.RowsAffected(); n == 0 {
+						continue
+					}
+				}
+			}
+		}
+		if err != nil {
+			app.Logger().Warn("Failed to update monitor", "system", systemId, "monitor", id, "err", err)
+			continue
+		}
+		owned[id] = struct{}{}
+	}
+
+	// handle stats collection — one record per monitor
+	const statsCollectionName = "network_monitor_stats"
+
+	var statsCollection *core.Collection
+	if realtimeActive {
+		statsCollection, _ = app.FindCachedCollectionByNameOrId(statsCollectionName)
+	}
+
+	for monitorId, result := range monitorResults {
+		if _, ok := owned[monitorId]; !ok {
+			continue
+		}
+		// Compare identity, not ordering, so agent clock changes don't stall writes.
+		if result.LastProbeAt == sys.lastSavedMonitorProbe[monitorId] {
+			continue
+		}
+		statsRecordData := map[string]any{
+			"system":        systemId,
+			"monitor":       monitorId,
+			"type":          "1m",
+			"created":       nowMilli,
+			"res_min":       result.MinResponse,
+			"res_max":       result.MaxResponse,
+			"total_count":   result.TotalCount,
+			"success_count": result.SuccessCount,
+			"res_sum":       result.ResponseSum,
+		}
+		var err error
+		switch realtimeActive {
+		case true:
+			record := core.NewRecord(statsCollection)
+			record.Load(statsRecordData)
+			err = app.SaveNoValidate(record)
+		default:
+			statsRecordData["id"] = security.PseudorandomStringWithAlphabet(10, core.DefaultIdAlphabet)
+			_, err = db.Insert(statsCollectionName, dbx.Params(statsRecordData)).Execute()
+		}
+		if err != nil {
+			app.Logger().Error("Failed to update monitor stats", "system", systemId, "monitor", monitorId, "err", err)
+		} else {
+			savedProbes[monitorId] = result.LastProbeAt
+		}
+	}
+
+	return nil
 }
 
 // createContainerRecords creates container records
@@ -440,7 +641,7 @@ func (sys *System) HasUser(app core.App, user *core.Record) bool {
 // encountered during the process of updating the system status.
 // It is a no-op if the system's context has been cancelled.
 func (sys *System) setDown(originalError error) error {
-	if sys.Status == down || sys.Status == paused {
+	if status := sys.GetStatus(); status == down || status == paused {
 		return nil
 	}
 	// the updater can race shutdown, and the app may already be disposed by the
@@ -489,7 +690,10 @@ func (sys *System) request(ctx context.Context, action common.WebSocketAction, r
 	err := sys.sshTransport.RequestWithRetry(ctx, action, req, dest, 1)
 	// Keep legacy SSH client/version fields in sync for other code paths.
 	if sys.sshTransport != nil {
-		sys.client.Store(sys.sshTransport.GetClient())
+		client := sys.sshTransport.GetClient()
+		if previous := sys.client.Swap(client); client != nil && client != previous {
+			sys.monitorsNeedSync.Store(true)
+		}
 		sys.agentVersion = sys.sshTransport.GetAgentVersion()
 	}
 	return err
@@ -539,15 +743,19 @@ func (sys *System) ensureSSHTransport() error {
 }
 
 // fetchDataFromAgent attempts to fetch data from the agent, prioritizing WebSocket if available.
+// Each fetch decodes into a new struct: CBOR leaves fields the agent omits
+// untouched, and real-time and regular updates may fetch concurrently.
 func (sys *System) fetchDataFromAgent(options common.DataRequestOptions) (*system.CombinedData, error) {
-	if sys.data == nil {
-		sys.data = &system.CombinedData{}
-	}
-
 	if sys.WsConn != nil && sys.WsConn.IsConnected() {
 		wsData, err := sys.fetchDataViaWebSocket(options)
 		if err == nil {
+			sys.syncPendingNetworkMonitors()
 			return wsData, nil
+		}
+		// A slow collection doesn't mean the connection is broken. Closing it
+		// would force the agent into a reconnect loop, so only report the error.
+		if errors.Is(err, context.DeadlineExceeded) {
+			return nil, err
 		}
 		// close the WebSocket connection if error and try SSH
 		sys.closeWebSocketConnection()
@@ -557,19 +765,27 @@ func (sys *System) fetchDataFromAgent(options common.DataRequestOptions) (*syste
 	if err != nil {
 		return nil, err
 	}
+	sys.syncPendingNetworkMonitors()
 	return sshData, nil
 }
+
+// wsDataRequestTimeout bounds how long to wait for stats over WebSocket. Agent
+// collection can legitimately take several seconds (e.g. a slow `zpool list`),
+// so this must be well above the request manager's 5s default.
+var wsDataRequestTimeout = 30 * time.Second
 
 func (sys *System) fetchDataViaWebSocket(options common.DataRequestOptions) (*system.CombinedData, error) {
 	if sys.WsConn == nil || !sys.WsConn.IsConnected() {
 		return nil, errors.New("no websocket connection")
 	}
+	ctx, cancel := context.WithTimeout(context.Background(), wsDataRequestTimeout)
+	defer cancel()
 	wsTransport := transport.NewWebSocketTransport(sys.WsConn)
-	err := wsTransport.Request(context.Background(), common.GetData, options, sys.data)
-	if err != nil {
+	data := &system.CombinedData{}
+	if err := wsTransport.Request(ctx, common.GetData, options, data); err != nil {
 		return nil, err
 	}
-	return sys.data, nil
+	return data, nil
 }
 
 // FetchContainerInfoFromAgent fetches container info from the agent
@@ -599,6 +815,15 @@ func (sys *System) FetchSystemdInfoFromAgent(serviceName string) (systemd.Servic
 	return result, err
 }
 
+// FetchSystemdLogsFromAgent fetches recent journal entries for a systemd service from the agent.
+func (sys *System) FetchSystemdLogsFromAgent(serviceName string) (string, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	var result string
+	err := sys.request(ctx, common.GetSystemdLogs, common.SystemdLogsRequest{ServiceName: serviceName}, &result)
+	return result, err
+}
+
 // FetchSmartDataFromAgent fetches SMART data from the agent.
 func (sys *System) FetchSmartDataFromAgent() (smart.SmartDataResponse, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
@@ -613,6 +838,15 @@ func (sys *System) FetchSmartDataFromAgent() (smart.SmartDataResponse, error) {
 	return result, err
 }
 
+// FetchPackageUpdatesFromAgent fetches the list of pending package updates from the agent.
+func (sys *System) FetchPackageUpdatesFromAgent() (system.PackageUpdates, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	var result system.PackageUpdates
+	err := sys.request(ctx, common.GetPackageUpdates, nil, &result)
+	return result, err
+}
+
 // FetchZfsDataFromAgent fetches ZFS detail data from the agent.
 func (sys *System) FetchZfsDataFromAgent(force bool) (*zfs.ZfsData, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
@@ -622,7 +856,7 @@ func (sys *System) FetchZfsDataFromAgent(force bool) (*zfs.ZfsData, error) {
 	return &result, err
 }
 
-func makeStableHashId(strings ...string) string {
+func MakeStableHashId(strings ...string) string {
 	hash := fnv.New32a()
 	for _, str := range strings {
 		hash.Write([]byte(str))
@@ -631,9 +865,8 @@ func makeStableHashId(strings ...string) string {
 }
 
 // fetchDataViaSSH handles fetching data using SSH.
-// This function encapsulates the original SSH logic.
-// It updates sys.data directly upon successful fetch.
 func (sys *System) fetchDataViaSSH(options common.DataRequestOptions) (*system.CombinedData, error) {
+	data := &system.CombinedData{}
 	err := sys.runSSHOperation(4*time.Second, 1, func(session *ssh.Session) (bool, error) {
 		stdout, err := session.StdoutPipe()
 		if err != nil {
@@ -644,7 +877,8 @@ func (sys *System) fetchDataViaSSH(options common.DataRequestOptions) (*system.C
 			return false, err
 		}
 
-		*sys.data = system.CombinedData{}
+		// reset in case of retry after a partial decode
+		*data = system.CombinedData{}
 
 		if sys.agentVersion.GTE(beszel.MinVersionAgentResponse) && stdinErr == nil {
 			req := common.HubRequest[any]{Action: common.GetData, Data: options}
@@ -653,7 +887,7 @@ func (sys *System) fetchDataViaSSH(options common.DataRequestOptions) (*system.C
 
 			var resp common.AgentResponse
 			if decErr := cbor.NewDecoder(stdout).Decode(&resp); decErr == nil && resp.SystemData != nil {
-				*sys.data = *resp.SystemData
+				*data = *resp.SystemData
 				if err := session.Wait(); err != nil {
 					return false, err
 				}
@@ -663,9 +897,9 @@ func (sys *System) fetchDataViaSSH(options common.DataRequestOptions) (*system.C
 
 		var decodeErr error
 		if sys.agentVersion.GTE(beszel.MinVersionCbor) {
-			decodeErr = cbor.NewDecoder(stdout).Decode(sys.data)
+			decodeErr = cbor.NewDecoder(stdout).Decode(data)
 		} else {
-			decodeErr = json.NewDecoder(stdout).Decode(sys.data)
+			decodeErr = json.NewDecoder(stdout).Decode(data)
 		}
 
 		if decodeErr != nil {
@@ -682,14 +916,14 @@ func (sys *System) fetchDataViaSSH(options common.DataRequestOptions) (*system.C
 		return nil, err
 	}
 
-	return sys.data, nil
+	return data, nil
 }
 
 // runSSHOperation establishes an SSH session and executes the provided operation.
 // The operation can request a retry by returning true as the first return value.
 func (sys *System) runSSHOperation(timeout time.Duration, retries int, operation func(*ssh.Session) (bool, error)) error {
 	for attempt := 0; attempt <= retries; attempt++ {
-		if sys.client.Load() == nil || sys.Status == down {
+		if sys.client.Load() == nil || sys.GetStatus() == down {
 			if err := sys.createSSHClient(); err != nil {
 				return err
 			}
@@ -791,6 +1025,7 @@ func (s *System) createSSHClient() error {
 		return err
 	}
 	s.agentVersion, _ = extractAgentVersion(string(client.Conn.ServerVersion()))
+	s.monitorsNeedSync.Store(true)
 	s.manager.resetFailedSmartFetchState(s.Id)
 	s.manager.resetFailedZfsFetchState(s.Id)
 	return nil
@@ -804,6 +1039,12 @@ func (s *System) createSSHClient() error {
 // per-operation timeout in runSSHOperation instead (see issue #2041).
 const sshKeepAliveInterval = 30 * time.Second
 
+// sshHandshakeTimeout bounds the SSH handshake after the TCP connection is
+// established. ssh.ClientConfig.Timeout only covers the TCP connect, so a peer
+// that accepts the connection but never sends an SSH banner would otherwise
+// block the updater forever.
+var sshHandshakeTimeout = 10 * time.Second
+
 // dialSSHWithKeepAlive dials an SSH connection like ssh.Dial, but enables TCP
 // keep-alive on the underlying connection so half-open connections are
 // eventually detected by the operating system.
@@ -816,11 +1057,14 @@ func dialSSHWithKeepAlive(network, addr string, config *ssh.ClientConfig) (*ssh.
 	if err != nil {
 		return nil, err
 	}
+	_ = conn.SetDeadline(time.Now().Add(sshHandshakeTimeout))
 	sshConn, chans, reqs, err := ssh.NewClientConn(conn, addr, config)
 	if err != nil {
 		_ = conn.Close()
 		return nil, err
 	}
+	// clear the handshake deadline so it doesn't apply to the long-lived connection
+	_ = conn.SetDeadline(time.Time{})
 	return ssh.NewClient(sshConn, chans, reqs), nil
 }
 

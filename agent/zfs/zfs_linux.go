@@ -13,7 +13,10 @@ import (
 	"strings"
 )
 
-var procZfsPath = "/proc/spl/kstat/zfs"
+var (
+	procZfsPath = "/proc/spl/kstat/zfs"
+	devZfsPath  = "/dev/zfs"
+)
 
 func ARCSize() (uint64, error) {
 	file, err := os.Open(filepath.Join(procZfsPath, "arcstats"))
@@ -38,6 +41,19 @@ func ARCSize() (uint64, error) {
 	}
 
 	return 0, fmt.Errorf("size field not found in arcstats")
+}
+
+// checkZfsDevice lets containers without /dev/zfs fail fast instead of
+// waiting for ZFS utility commands to time out.
+func checkZfsDevice() error {
+	_, err := os.Stat(devZfsPath)
+	if err != nil {
+		if errors.Is(err, os.ErrNotExist) {
+			return ErrNoZfs
+		}
+		return err
+	}
+	return nil
 }
 
 // PoolKernelStats reads pool state and cumulative I/O counters directly from

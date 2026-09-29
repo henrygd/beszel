@@ -103,3 +103,20 @@ func TestFanDiscoveryCache(t *testing.T) {
 	fans = readFanSensors(sensors)
 	assert.Equal(t, map[string]uint16{"chip_fan1": 1200}, fans)
 }
+
+func TestFilterGpuFans(t *testing.T) {
+	root := t.TempDir()
+	writeFile(t, filepath.Join(root, "hwmon0", "name"), "xe\n")
+	writeFile(t, filepath.Join(root, "hwmon0", "fan1_input"), "1200\n")
+	writeFile(t, filepath.Join(root, "hwmon1", "name"), "nct6798\n")
+	writeFile(t, filepath.Join(root, "hwmon1", "fan1_input"), "800\n")
+
+	discovered, err := discoverHwmonFans(root)
+	require.NoError(t, err)
+	require.Len(t, discovered, 2)
+
+	filtered := filterGpuFans(discovered)
+	require.Len(t, filtered, 1)
+	assert.Equal(t, "nct6798_fan1", filtered[0].key)
+	assert.Len(t, discovered, 2)
+}
