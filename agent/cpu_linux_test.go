@@ -281,6 +281,7 @@ func TestGetCpuMetricsHostFallback(t *testing.T) {
 	swapCpuContainerSeams(t)
 	m, err := getCpuMetrics(60000)
 	require.NoError(t, err)
+	assert.False(t, m.fromCgroup)
 	assert.GreaterOrEqual(t, m.Total, 0.0)
 	assert.LessOrEqual(t, m.Total, 100.0)
 }
@@ -306,6 +307,7 @@ func TestGetCpuMetricsPrefersCgroup(t *testing.T) {
 	m, err = getCpuMetrics(60000)
 	require.NoError(t, err)
 	assert.InDelta(t, 50, m.Total, 0.01)
+	assert.True(t, m.fromCgroup) // per-core usage is skipped for this source
 }
 
 func TestCountCpuList(t *testing.T) {

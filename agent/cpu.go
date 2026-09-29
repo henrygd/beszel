@@ -30,6 +30,9 @@ type CpuMetrics struct {
 	Iowait float64
 	Steal  float64
 	Idle   float64
+	// fromCgroup is set when Total comes from cgroup accounting (LXC) rather
+	// than /proc/stat, so per-core /proc/stat usage would not match it.
+	fromCgroup bool
 }
 
 // getCpuMetrics calculates detailed CPU usage metrics using cached previous measurements.
@@ -38,6 +41,7 @@ func getCpuMetrics(cacheTimeMs uint16) (CpuMetrics, error) {
 	// Inside LXC, lxcfs serves /proc/stat with the host cores' counters, not
 	// the guest's own usage. Prefer the cgroup's CPU accounting there. (#2332)
 	if metrics, ok := containerCpuMetrics(cacheTimeMs); ok {
+		metrics.fromCgroup = true
 		return metrics, nil
 	}
 	times, err := cpu.Times(false)
