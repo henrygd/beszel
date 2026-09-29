@@ -2,12 +2,12 @@ package systems
 
 import (
 	"context"
+	"database/sql"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"hash/fnv"
 	"math/rand"
-	"net"
 	"strings"
 	"sync"
 	"sync/atomic"
@@ -38,25 +38,25 @@ import (
 )
 
 type System struct {
-	Id             string                     `db:"id"`
-	Host           string                     `db:"host"`
-	Port           string                     `db:"port"`
-	Status         string                     `db:"status"` // Use GetStatus/swapStatus after publishing the system.
-	statusMu       sync.RWMutex               // Protects Status and exchanges used by alert transitions.
-	manager        *SystemManager             // Manager that this system belongs to
-	client         atomic.Pointer[ssh.Client] // SSH client for fetching data
-	sshTransport   *transport.SSHTransport    // SSH transport for requests
-	data           *system.CombinedData       // system data from agent
-	ctx            context.Context            // Context for stopping the updater
-	cancel         context.CancelFunc         // Stops and removes system from updater
-	WsConn         *ws.WsConn                 // Handler for agent WebSocket connection
-	agentVersion   semver.Version             // Agent version
-	updateTicker   *time.Ticker               // Ticker for updating the system
-	detailsFetched atomic.Bool                // True if static system details have been fetched and saved
-	smartFetching  atomic.Bool                // True if SMART devices are currently being fetched
-	smartInterval  time.Duration              // Interval for periodic SMART data updates
-	zfsFetching    atomic.Bool                // True if ZFS pools are currently being fetched
-	zfsInterval    time.Duration              // Interval for periodic ZFS detail data updates
+	Id             string                         `db:"id"`
+	Host           string                         `db:"host"`
+	Port           string                         `db:"port"`
+	Status         string                         `db:"status"` // Use GetStatus/swapStatus after publishing the system.
+	statusMu       sync.RWMutex                   // Protects Status and exchanges used by alert transitions.
+	manager        *SystemManager                 // Manager that this system belongs to
+	sshMu          sync.Mutex                     // Protects sshTransport creation
+	sshTransport   *transport.SSHTransport        // Owns the SSH connection to the agent
+	data           *system.CombinedData           // system data from agent
+	ctx            context.Context                // Context for stopping the updater
+	cancel         context.CancelFunc             // Stops and removes system from updater
+	WsConn         *ws.WsConn                     // Handler for agent WebSocket connection
+	agentVersion   atomic.Pointer[semver.Version] // Use getAgentVersion/setAgentVersion
+	updateTicker   *time.Ticker                   // Ticker for updating the system
+	detailsFetched atomic.Bool                    // True if static system details have been fetched and saved
+	smartFetching  atomic.Bool                    // True if SMART devices are currently being fetched
+	smartInterval  time.Duration                  // Interval for periodic SMART data updates
+	zfsFetching    atomic.Bool                    // True if ZFS pools are currently being fetched
+	zfsInterval    time.Duration                  // Interval for periodic ZFS detail data updates
 
 	// A fresh connection needs a full monitor configuration sync.
 	monitorsNeedSync atomic.Bool
@@ -433,7 +433,6 @@ func (sys *System) updateNetworkMonitorsRecords(app core.App, monitorResults map
 	if len(monitorResults) == 0 {
 		return nil
 	}
-	var err error
 	systemId := sys.Id
 	const monitorCollectionName = "network_monitors"
 
@@ -457,14 +456,19 @@ func (sys *System) updateNetworkMonitorsRecords(app core.App, monitorResults map
 		}
 		// Results omit certInfo unless it changed, so keep the stored value.
 		setClauses = append(setClauses, "certInfo=COALESCE({:certInfo}, certInfo)")
-		queryString := fmt.Sprintf("UPDATE %s SET %s WHERE id={:id}", monitorCollectionName, strings.Join(setClauses, ", "))
+		queryString := fmt.Sprintf("UPDATE %s SET %s WHERE id={:id} AND system={:system}", monitorCollectionName, strings.Join(setClauses, ", "))
 		updateQuery = db.NewQuery(queryString)
 	}
+
+	// Results are keyed by agent-supplied IDs. Record history only for monitors
+	// this system owns, as confirmed by the update below
+	owned := make(map[string]struct{}, len(monitorResults))
 
 	// update network_monitors records
 	for id, result := range monitorResults {
 		monitorData := map[string]any{
 			"id":       id,
+			"system":   systemId,
 			"res":      result.AvgResponse,
 			"resAvg1h": result.AvgResponse1h,
 			"resMin1h": result.MinResponse1h,
@@ -472,11 +476,15 @@ func (sys *System) updateNetworkMonitorsRecords(app core.App, monitorResults map
 			"loss1h":   result.PacketLoss1h,
 			"updated":  nowString,
 		}
+		var err error
 		switch realtimeActive {
 		case true:
 			var record *core.Record
 			record, err = app.FindRecordById(monitorCollectionName, id)
 			if err == nil {
+				if record.GetString("system") != systemId {
+					continue
+				}
 				if result.Cert != nil {
 					monitorData["certInfo"] = result.Cert
 				}
@@ -492,12 +500,20 @@ func (sys *System) updateNetworkMonitorsRecords(app core.App, monitorResults map
 				}
 			}
 			if err == nil {
-				_, err = updateQuery.Bind(dbx.Params(monitorData)).Execute()
+				var res sql.Result
+				// Zero rows means the monitor is foreign or no longer exists.
+				if res, err = updateQuery.Bind(dbx.Params(monitorData)).Execute(); err == nil {
+					if n, _ := res.RowsAffected(); n == 0 {
+						continue
+					}
+				}
 			}
 		}
 		if err != nil {
 			app.Logger().Warn("Failed to update monitor", "system", systemId, "monitor", id, "err", err)
+			continue
 		}
+		owned[id] = struct{}{}
 	}
 
 	// handle stats collection — one record per monitor
@@ -509,6 +525,9 @@ func (sys *System) updateNetworkMonitorsRecords(app core.App, monitorResults map
 	}
 
 	for monitorId, result := range monitorResults {
+		if _, ok := owned[monitorId]; !ok {
+			continue
+		}
 		// Compare identity, not ordering, so agent clock changes don't stall writes.
 		if result.LastProbeAt == sys.lastSavedMonitorProbe[monitorId] {
 			continue
@@ -524,6 +543,7 @@ func (sys *System) updateNetworkMonitorsRecords(app core.App, monitorResults map
 			"success_count": result.SuccessCount,
 			"res_sum":       result.ResponseSum,
 		}
+		var err error
 		switch realtimeActive {
 		case true:
 			record := core.NewRecord(statsCollection)
@@ -663,19 +683,11 @@ func (sys *System) request(ctx context.Context, action common.WebSocketAction, r
 	}
 
 	// Fall back to SSH if WebSocket fails
-	if err := sys.ensureSSHTransport(); err != nil {
+	sshTransport, err := sys.getSSHTransport()
+	if err != nil {
 		return err
 	}
-	err := sys.sshTransport.RequestWithRetry(ctx, action, req, dest, 1)
-	// Keep legacy SSH client/version fields in sync for other code paths.
-	if sys.sshTransport != nil {
-		client := sys.sshTransport.GetClient()
-		if previous := sys.client.Swap(client); client != nil && client != previous {
-			sys.monitorsNeedSync.Store(true)
-		}
-		sys.agentVersion = sys.sshTransport.GetAgentVersion()
-	}
-	return err
+	return sshTransport.RequestWithRetry(ctx, action, req, dest, 1)
 }
 
 func shouldFallbackToSSH(err error) bool {
@@ -698,27 +710,49 @@ func shouldCloseWebSocket(err error) bool {
 	return errors.Is(err, gws.ErrConnClosed) || errors.Is(err, transport.ErrWebSocketNotConnected)
 }
 
-// ensureSSHTransport ensures the SSH transport is initialized and connected.
-func (sys *System) ensureSSHTransport() error {
-	if sys.sshTransport == nil {
-		if sys.manager.sshConfig == nil {
-			if err := sys.manager.createSSHClientConfig(); err != nil {
-				return err
-			}
+// getSSHTransport returns the system's SSH transport, creating it on first use.
+// The transport owns the only SSH connection to the agent; it is shared by the
+// updater and on-demand requests and connects lazily.
+func (sys *System) getSSHTransport() (*transport.SSHTransport, error) {
+	sys.sshMu.Lock()
+	defer sys.sshMu.Unlock()
+	if sys.sshTransport != nil {
+		return sys.sshTransport, nil
+	}
+	if sys.manager.sshConfig == nil {
+		if err := sys.manager.createSSHClientConfig(); err != nil {
+			return nil, err
 		}
-		sys.sshTransport = transport.NewSSHTransport(transport.SSHTransportConfig{
-			Host:    sys.Host,
-			Port:    sys.Port,
-			Config:  sys.manager.sshConfig,
-			Timeout: 4 * time.Second,
-		})
 	}
-	// Sync client state with transport
-	if client := sys.client.Load(); client != nil {
-		sys.sshTransport.SetClient(client)
-		sys.sshTransport.SetAgentVersion(sys.agentVersion)
+	sys.sshTransport = transport.NewSSHTransport(transport.SSHTransportConfig{
+		Host:      sys.Host,
+		Port:      sys.Port,
+		Config:    sys.manager.sshConfig,
+		Timeout:   sessionTimeout,
+		OnConnect: sys.onSSHConnect,
+	})
+	return sys.sshTransport, nil
+}
+
+// onSSHConnect resets per-connection state after a new SSH connection is made.
+func (sys *System) onSSHConnect(agentVersion semver.Version) {
+	sys.setAgentVersion(agentVersion)
+	sys.monitorsNeedSync.Store(true)
+	sys.manager.resetFailedSmartFetchState(sys.Id)
+	sys.manager.resetFailedZfsFetchState(sys.Id)
+}
+
+// getAgentVersion returns the connected agent's version, or zero if unknown.
+func (sys *System) getAgentVersion() semver.Version {
+	if v := sys.agentVersion.Load(); v != nil {
+		return *v
 	}
-	return nil
+	return semver.Version{}
+}
+
+// setAgentVersion records the connected agent's version.
+func (sys *System) setAgentVersion(v semver.Version) {
+	sys.agentVersion.Store(&v)
 }
 
 // fetchDataFromAgent attempts to fetch data from the agent, prioritizing WebSocket if available.
@@ -807,7 +841,7 @@ func (sys *System) FetchSystemdLogsFromAgent(serviceName string) (string, error)
 func (sys *System) FetchSmartDataFromAgent() (smart.SmartDataResponse, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
 	defer cancel()
-	if sys.agentVersion.LT(beszel.MinVersionAgentResponse) {
+	if sys.getAgentVersion().LT(beszel.MinVersionAgentResponse) {
 		var data map[string]smart.SmartData
 		err := sys.request(ctx, common.GetSmartData, nil, &data)
 		return smart.SmartDataResponse{Data: data}, err
@@ -846,7 +880,7 @@ func MakeStableHashId(strings ...string) string {
 // fetchDataViaSSH handles fetching data using SSH.
 func (sys *System) fetchDataViaSSH(options common.DataRequestOptions) (*system.CombinedData, error) {
 	data := &system.CombinedData{}
-	err := sys.runSSHOperation(4*time.Second, 1, func(session *ssh.Session) (bool, error) {
+	err := sys.runSSHOperation(1, func(session *ssh.Session) (bool, error) {
 		stdout, err := session.StdoutPipe()
 		if err != nil {
 			return false, err
@@ -859,7 +893,7 @@ func (sys *System) fetchDataViaSSH(options common.DataRequestOptions) (*system.C
 		// reset in case of retry after a partial decode
 		*data = system.CombinedData{}
 
-		if sys.agentVersion.GTE(beszel.MinVersionAgentResponse) && stdinErr == nil {
+		if sys.getAgentVersion().GTE(beszel.MinVersionAgentResponse) && stdinErr == nil {
 			req := common.HubRequest[any]{Action: common.GetData, Data: options}
 			_ = cbor.NewEncoder(stdin).Encode(req)
 			_ = stdin.Close()
@@ -875,7 +909,7 @@ func (sys *System) fetchDataViaSSH(options common.DataRequestOptions) (*system.C
 		}
 
 		var decodeErr error
-		if sys.agentVersion.GTE(beszel.MinVersionCbor) {
+		if sys.getAgentVersion().GTE(beszel.MinVersionCbor) {
 			decodeErr = cbor.NewDecoder(stdout).Decode(data)
 		} else {
 			decodeErr = json.NewDecoder(stdout).Decode(data)
@@ -898,23 +932,31 @@ func (sys *System) fetchDataViaSSH(options common.DataRequestOptions) (*system.C
 	return data, nil
 }
 
-// runSSHOperation establishes an SSH session and executes the provided operation.
-// The operation can request a retry by returning true as the first return value.
-func (sys *System) runSSHOperation(timeout time.Duration, retries int, operation func(*ssh.Session) (bool, error)) error {
+// runSSHOperation opens a session on the system's SSH connection and executes
+// the provided operation. The operation can request a retry by returning true
+// as the first return value.
+func (sys *System) runSSHOperation(retries int, operation func(*ssh.Session) (bool, error)) error {
+	sshTransport, err := sys.getSSHTransport()
+	if err != nil {
+		return err
+	}
 	for attempt := 0; attempt <= retries; attempt++ {
-		if sys.client.Load() == nil || sys.GetStatus() == down {
-			if err := sys.createSSHClient(); err != nil {
-				return err
-			}
+		// A down system may still hold a dead connection, so always re-dial.
+		if sys.GetStatus() == down {
+			sshTransport.Close()
+		}
+		client, err := sshTransport.Connect(sys.ctx)
+		if err != nil {
+			return err
 		}
 
-		session, err := sys.createSessionWithTimeout(timeout)
+		session, err := sshTransport.NewSession(sys.ctx, client)
 		if err != nil {
 			if attempt >= retries {
 				return err
 			}
 			sys.manager.hub.Logger().Warn("Session closed. Retrying...", "host", sys.Host, "port", sys.Port, "err", err)
-			sys.closeSSHConnection()
+			sshTransport.CloseClient(client)
 			continue
 		}
 
@@ -928,14 +970,14 @@ func (sys *System) runSSHOperation(timeout time.Duration, retries int, operation
 		retry, opErr := runWithTimeout(sshOperationTimeout, func() (bool, error) {
 			defer session.Close()
 			return operation(session)
-		}, sys.closeSSHConnection)
+		}, func() { sshTransport.CloseClient(client) })
 
 		if opErr == nil {
 			return nil
 		}
 
 		if retry {
-			sys.closeSSHConnection()
+			sshTransport.CloseClient(client)
 			if attempt < retries {
 				continue
 			}
@@ -984,108 +1026,13 @@ func runWithTimeout(timeout time.Duration, op func() (bool, error), onTimeout fu
 	}
 }
 
-// createSSHClient creates a new SSH client for the system
-func (s *System) createSSHClient() error {
-	if s.manager.sshConfig == nil {
-		if err := s.manager.createSSHClientConfig(); err != nil {
-			return err
-		}
-	}
-	network := "tcp"
-	host := s.Host
-	if strings.HasPrefix(host, "/") {
-		network = "unix"
-	} else {
-		host = net.JoinHostPort(host, s.Port)
-	}
-	client, err := dialSSHWithKeepAlive(network, host, s.manager.sshConfig)
-	s.client.Store(client)
-	if err != nil {
-		return err
-	}
-	s.agentVersion, _ = extractAgentVersion(string(client.Conn.ServerVersion()))
-	s.monitorsNeedSync.Store(true)
-	s.manager.resetFailedSmartFetchState(s.Id)
-	s.manager.resetFailedZfsFetchState(s.Id)
-	return nil
-}
-
-// sshKeepAliveInterval is the TCP keep-alive idle interval for SSH connections
-// to agents. Enabling OS-level keep-alives lets the hub eventually detect a
-// dead peer on an otherwise idle connection instead of trusting it forever.
-// This is a backstop for genuine network death; an application-level wedge
-// (agent process hung while its kernel keeps ACKing) is caught by the
-// per-operation timeout in runSSHOperation instead (see issue #2041).
-const sshKeepAliveInterval = 30 * time.Second
-
-// sshHandshakeTimeout bounds the SSH handshake after the TCP connection is
-// established. ssh.ClientConfig.Timeout only covers the TCP connect, so a peer
-// that accepts the connection but never sends an SSH banner would otherwise
-// block the updater forever.
-var sshHandshakeTimeout = 10 * time.Second
-
-// dialSSHWithKeepAlive dials an SSH connection like ssh.Dial, but enables TCP
-// keep-alive on the underlying connection so half-open connections are
-// eventually detected by the operating system.
-func dialSSHWithKeepAlive(network, addr string, config *ssh.ClientConfig) (*ssh.Client, error) {
-	dialer := net.Dialer{
-		Timeout:   config.Timeout,
-		KeepAlive: sshKeepAliveInterval,
-	}
-	conn, err := dialer.Dial(network, addr)
-	if err != nil {
-		return nil, err
-	}
-	_ = conn.SetDeadline(time.Now().Add(sshHandshakeTimeout))
-	sshConn, chans, reqs, err := ssh.NewClientConn(conn, addr, config)
-	if err != nil {
-		_ = conn.Close()
-		return nil, err
-	}
-	// clear the handshake deadline so it doesn't apply to the long-lived connection
-	_ = conn.SetDeadline(time.Time{})
-	return ssh.NewClient(sshConn, chans, reqs), nil
-}
-
-// createSessionWithTimeout creates a new SSH session with a timeout to avoid hanging
-// in case of network issues
-func (sys *System) createSessionWithTimeout(timeout time.Duration) (*ssh.Session, error) {
-	client := sys.client.Load()
-	if client == nil {
-		return nil, fmt.Errorf("client not initialized")
-	}
-
-	ctx, cancel := context.WithTimeout(sys.ctx, timeout)
-	defer cancel()
-
-	sessionChan := make(chan *ssh.Session, 1)
-	errChan := make(chan error, 1)
-
-	go func() {
-		if session, err := client.NewSession(); err != nil {
-			errChan <- err
-		} else {
-			sessionChan <- session
-		}
-	}()
-
-	select {
-	case session := <-sessionChan:
-		return session, nil
-	case err := <-errChan:
-		return nil, err
-	case <-ctx.Done():
-		return nil, fmt.Errorf("timeout")
-	}
-}
-
 // closeSSHConnection closes the SSH connection but keeps the system in the manager
 func (sys *System) closeSSHConnection() {
-	if sys.sshTransport != nil {
-		sys.sshTransport.Close()
-	}
-	if client := sys.client.Swap(nil); client != nil {
-		client.Close()
+	sys.sshMu.Lock()
+	sshTransport := sys.sshTransport
+	sys.sshMu.Unlock()
+	if sshTransport != nil {
+		sshTransport.Close()
 	}
 }
 
@@ -1096,12 +1043,6 @@ func (sys *System) closeWebSocketConnection() {
 	if sys.WsConn != nil {
 		sys.WsConn.Close(nil)
 	}
-}
-
-// extractAgentVersion extracts the beszel version from SSH server version string
-func extractAgentVersion(versionString string) (semver.Version, error) {
-	_, after, _ := strings.Cut(versionString, "_")
-	return semver.Parse(after)
 }
 
 // getJitter returns a channel that will be triggered after a random delay
