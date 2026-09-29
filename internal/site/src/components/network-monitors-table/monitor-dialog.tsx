@@ -23,15 +23,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Textarea } from "@/components/ui/textarea"
-import {
-	ChevronDownIcon,
-	GlobeIcon,
-	ListIcon,
-	type LucideIcon,
-	PlusIcon,
-	SearchIcon,
-	ServerIcon,
-} from "lucide-react"
+import { ChevronDownIcon, GlobeIcon, ListIcon, type LucideIcon, PlusIcon, SearchIcon, ServerIcon } from "lucide-react"
 import { useToast } from "@/components/ui/use-toast"
 import { $systems } from "@/lib/stores"
 import { cn, supportsNetworkMonitors } from "@/lib/utils"
@@ -276,13 +268,12 @@ export function MonitorMultiSelect({
 			selectedIds={selectedMonitorIds}
 			onChange={onChange}
 			disabled={disabled}
-			className={className}
+			className={cn("ps-9.5", className)}
 			icon={GlobeIcon}
 			canSelectMore={canSelectMore}
 			placeholder={placeholder ?? t`Select targets`}
 			searchPlaceholder={t`Search targets`}
 			emptyText={<Trans>No targets found.</Trans>}
-			paddingStart="ps-9.5"
 			renderOption={(option) => (
 				<>
 					<span className="truncate">{option.label}</span>
@@ -308,7 +299,6 @@ function MultiSelect<T extends MultiSelectOption>({
 	emptyText,
 	renderOption = (option) => <span className="truncate">{option.label}</span>,
 	canSelectMore = true,
-  	paddingStart = "ps-10",
 }: {
 	id: string
 	options: T[]
@@ -319,12 +309,10 @@ function MultiSelect<T extends MultiSelectOption>({
 	icon: LucideIcon
 	placeholder: string
 	searchPlaceholder: string
-	paddingStart?: string
 	emptyText: ReactNode
 	renderOption?: (option: T) => ReactNode
 	/** False once the selection is full; only already selected options can then be toggled. */
 	canSelectMore?: boolean
-  
 }) {
 	const { t } = useLingui()
 	const [search, setSearch] = useState("")
@@ -358,7 +346,7 @@ function MultiSelect<T extends MultiSelectOption>({
 					disabled={disabled}
 					type="button"
 					variant="outline"
-					className={cn("relative w-full min-w-0 pe-10 justify-start font-normal text-start", paddingStart, className)}
+					className={cn("relative w-full min-w-0 ps-10 pe-10 justify-start font-normal text-start", className)}
 				>
 					<Icon className="size-3.5 absolute start-4 top-1/2 -translate-y-1/2 opacity-85" />
 					<span className="truncate">
