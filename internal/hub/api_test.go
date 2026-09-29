@@ -99,6 +99,7 @@ func TestApiRoutesAuthentication(t *testing.T) {
 	adminUser, err := beszelTests.CreateUserWithRole(hub, "admin@example.com", "password123", "admin")
 	require.NoError(t, err, "Failed to create admin user")
 	adminUserToken, err := adminUser.NewAuthToken()
+	require.NoError(t, err, "Failed to create admin auth token")
 
 	readOnlyUser, err := beszelTests.CreateUserWithRole(hub, "readonly@example.com", "password123", "readonly")
 	require.NoError(t, err, "Failed to create readonly user")

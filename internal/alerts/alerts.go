@@ -212,6 +212,10 @@ func (am *AlertManager) IsNotificationSilenced(userID, systemID string) bool {
 
 // SendAlert sends an alert to the user
 func (am *AlertManager) SendAlert(data AlertMessageData) error {
+	// Stored subscriptions and queued notifications may outlive system access.
+	if data.SystemID != "" && !userHasSystem(am.hub, data.UserID, data.SystemID) {
+		return nil
+	}
 	// Check if alert is silenced
 	if am.IsNotificationSilenced(data.UserID, data.SystemID) {
 		am.hub.Logger().Info("Notification silenced", "user", data.UserID, "system", data.SystemID, "title", data.Title)

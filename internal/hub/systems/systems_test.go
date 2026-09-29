@@ -120,13 +120,14 @@ func TestSystemManagerNew(t *testing.T) {
 	require.NoError(t, err)
 
 	synctest.Test(t, func(t *testing.T) {
-		sm.ResetContextForTesting()
+		sm.ResetContextForTesting(t)
 		sm.Initialize()
 
+		// Use a closed loopback endpoint so fake-clock tests do not initialise shared DNS state.
 		record, err := tests.CreateRecord(hub, "systems", map[string]any{
 			"name":  "it-was-coney-island",
-			"host":  "the-playground-of-the-world",
-			"port":  "33914",
+			"host":  "127.0.0.1",
+			"port":  "0",
 			"users": []string{user.Id},
 		})
 		require.NoError(t, err)
@@ -167,8 +168,8 @@ func TestSystemManagerNew(t *testing.T) {
 		// let's also make sure a system is removed from the store when the record is deleted
 		record, err = tests.CreateRecord(hub, "systems", map[string]any{
 			"name":  "there-was-no-place-like-it",
-			"host":  "in-the-whole-world",
-			"port":  "33914",
+			"host":  "127.0.0.1",
+			"port":  "0",
 			"users": []string{user.Id},
 		})
 		require.NoError(t, err)
@@ -204,7 +205,7 @@ func TestSystemManagerNew(t *testing.T) {
 	})
 
 	// The following subtests run outside the synctest bubble.
-	sm.ResetContextForTesting()
+	sm.ResetContextForTesting(t)
 	testOld(t, hub)
 
 	synctest.Test(t, func(t *testing.T) {
@@ -556,7 +557,7 @@ func testOld(t *testing.T, hub *tests.TestHub) {
 		assert.NoError(t, err)
 		assert.NotNil(t, newCtx, "New system context should not be nil")
 		assert.NotNil(t, newCancel, "New system cancel function should not be nil")
-		assert.NotEqual(t, originalCtx, newCtx, "New context should be different from original")
+		assert.NotSame(t, originalCtx, newCtx, "New context should be different from original")
 
 		// Clean up
 		err = sm.RemoveSystem(record.Id)
