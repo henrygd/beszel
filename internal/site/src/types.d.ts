@@ -434,12 +434,15 @@ export interface SemVer {
 	patch: number
 }
 
-export interface ChartData {
+export interface ChartOptions {
 	agentVersion: SemVer
-	systemStats?: SystemStatsRecord[]
-	containerData?: ChartDataContainer[]
 	orientation: "right" | "left"
 	chartTime: ChartTimes
+}
+
+export interface ChartData extends ChartOptions {
+	systemStats: SystemStatsRecord[]
+	containerData: ChartDataContainer[]
 }
 
 export interface AlertInfo {

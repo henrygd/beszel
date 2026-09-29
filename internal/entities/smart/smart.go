@@ -503,11 +503,11 @@ type SmartInfoForNvme struct {
 	UserCapacity UserCapacity `json:"user_capacity"`
 	// LogicalBlockSize              int                           `json:"logical_block_size"`
 	// LocalTime                     LocalTime                     `json:"local_time"`
-	SmartStatus                   SmartStatusInfoNvme           `json:"smart_status"`
-	NVMeSmartHealthInformationLog NVMeSmartHealthInformationLog `json:"nvme_smart_health_information_log"`
-	Temperature                   TemperatureInfoNvme           `json:"temperature"`
-	PowerCycleCount               uint16                        `json:"power_cycle_count"`
-	PowerOnTime                   PowerOnTimeInfoNvme           `json:"power_on_time"`
+	SmartStatus                   SmartStatusInfoNvme            `json:"smart_status"`
+	NVMeSmartHealthInformationLog *NVMeSmartHealthInformationLog `json:"nvme_smart_health_information_log"`
+	Temperature                   TemperatureInfoNvme            `json:"temperature"`
+	PowerCycleCount               uint16                         `json:"power_cycle_count"`
+	PowerOnTime                   PowerOnTimeInfoNvme            `json:"power_on_time"`
 }
 
 type TemperatureInfoNvme struct {
