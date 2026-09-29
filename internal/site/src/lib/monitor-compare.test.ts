@@ -1,6 +1,11 @@
 import { expect, test } from "bun:test"
 import type { NetworkMonitorRecord } from "@/types"
-import { getMonitorCompareState, getMonitorIdentityKey, getMonitorTarget } from "./monitor-compare"
+import {
+	getMonitorCompareState,
+	getMonitorIdentityKey,
+	getMonitorTarget,
+	MAX_COMPARE_MONITORS,
+} from "./monitor-compare"
 
 function mon(id: string, system: string, target: string, extra: Partial<NetworkMonitorRecord> = {}) {
 	return { id, system, target, protocol: "icmp", port: 0, server: "", interval: 30, ...extra } as NetworkMonitorRecord
@@ -123,4 +128,46 @@ test("uses separate local and fetched monitor lists on single-system pages", () 
 		getSystemName: (id) => systemNames[id],
 	})
 	expect(ids(s.compareMonitors)).toEqual(["a1", "a2", "b1", "b2"])
+})
+
+test("duplicate labels without a server are left alone", () => {
+	const b1Dupe = mon("b1Dupe", "b", "one.example")
+	const s = state(a1, [...all, b1Dupe], ["b"])
+	expect(ids(s.compareMonitors)).toEqual(["a1", "b1", "b1Dupe"])
+	expect(s.getLabel(b1)).toBe("Bravo")
+	expect(s.getLabel(b1Dupe)).toBe("Bravo")
+})
+
+// Every system probes every target, so selections multiply into targets × systems lines.
+function grid(systemCount: number, targetCount: number) {
+	const monitors: NetworkMonitorRecord[] = []
+	for (let s = 0; s < systemCount; s++) {
+		for (let t = 0; t < targetCount; t++) monitors.push(mon(`s${s}t${t}`, `s${s}`, `t${t}.example`))
+	}
+	return monitors
+}
+
+test("selecting everything is trimmed to the line limit, keeping targets and earlier picks", () => {
+	const monitors = grid(30, 5)
+	const allSystems = Array.from({ length: 29 }, (_, i) => `s${i + 1}`)
+	const allTargets = ["s0t1", "s0t2", "s0t3", "s0t4"]
+	const s = state(monitors[0], monitors, allSystems, allTargets)
+	expect([...s.selectedTargetIds]).toEqual(allTargets)
+	// 5 targets fit on 4 systems (the opened one plus 3) within the limit
+	expect([...s.selectedSystemIds]).toEqual(["s1", "s2", "s3"])
+	expect(s.compareMonitors.length).toBe(20)
+	expect(s.canAddSystem).toBe(false)
+})
+
+test("more can be added only while the next pick fits the line limit", () => {
+	const monitors = grid(12, 3)
+	const s = state(monitors[0], monitors, ["s1", "s2", "s3", "s4", "s5", "s6"])
+	// 1 target × 7 systems; another target makes 14, another system makes 8
+	expect(s.canAddTarget).toBe(true)
+	expect(s.canAddSystem).toBe(true)
+	const full = state(monitors[0], monitors, ["s1", "s2", "s3", "s4", "s5", "s6", "s7"], ["s0t1", "s0t2"])
+	// 3 targets × 8 systems = 24
+	expect(full.compareMonitors.length).toBe(MAX_COMPARE_MONITORS)
+	expect(full.canAddTarget).toBe(false)
+	expect(full.canAddSystem).toBe(false)
 })

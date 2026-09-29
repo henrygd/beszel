@@ -812,6 +812,7 @@ function NetworkMonitorSheetContent({
 							selectedMonitorIds={compare.selectedTargetIds}
 							onChange={setCompareTargetIds}
 							disabled={compare.targetOptions.length === 0}
+							canSelectMore={compare.canAddTarget}
 							placeholder={t`Compare with other targets`}
 						/>
 						<SystemMultiSelect
@@ -821,6 +822,7 @@ function NetworkMonitorSheetContent({
 							selectedSystemIds={compare.selectedSystemIds}
 							onChange={setCompareSystemIds}
 							disabled={compare.systemOptions.length === 0}
+							canSelectMore={compare.canAddSystem}
 							placeholder={t`Compare with other systems`}
 						/>
 					</div>

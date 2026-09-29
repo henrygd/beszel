@@ -211,6 +211,7 @@ export function SystemMultiSelect({
 	className,
 	systemIds,
 	placeholder,
+	canSelectMore,
 }: {
 	id: string
 	selectedSystemIds: Set<string>
@@ -220,6 +221,7 @@ export function SystemMultiSelect({
 	/** Limit the options to these systems. Defaults to all systems that support network monitors. */
 	systemIds?: string[]
 	placeholder?: string
+	canSelectMore?: boolean
 }) {
 	const systems = useStore($systems)
 	const { t } = useLingui()
@@ -235,6 +237,7 @@ export function SystemMultiSelect({
 			disabled={disabled}
 			className={className}
 			icon={ServerIcon}
+			canSelectMore={canSelectMore}
 			placeholder={placeholder ?? t`Select systems`}
 			searchPlaceholder={t`Search systems`}
 			emptyText={<Trans>No systems found.</Trans>}
@@ -251,6 +254,7 @@ export function MonitorMultiSelect({
 	disabled,
 	className,
 	placeholder,
+	canSelectMore,
 }: {
 	id: string
 	monitors: NetworkMonitorRecord[]
@@ -259,6 +263,7 @@ export function MonitorMultiSelect({
 	disabled?: boolean
 	className?: string
 	placeholder?: string
+	canSelectMore?: boolean
 }) {
 	const { t } = useLingui()
 	const options = monitors
@@ -273,6 +278,7 @@ export function MonitorMultiSelect({
 			disabled={disabled}
 			className={className}
 			icon={CrosshairIcon}
+			canSelectMore={canSelectMore}
 			placeholder={placeholder ?? t`Select targets`}
 			searchPlaceholder={t`Search targets`}
 			emptyText={<Trans>No targets found.</Trans>}
@@ -300,6 +306,7 @@ function MultiSelect<T extends MultiSelectOption>({
 	searchPlaceholder,
 	emptyText,
 	renderOption = (option) => <span className="truncate">{option.label}</span>,
+	canSelectMore = true,
 }: {
 	id: string
 	options: T[]
@@ -312,6 +319,8 @@ function MultiSelect<T extends MultiSelectOption>({
 	searchPlaceholder: string
 	emptyText: ReactNode
 	renderOption?: (option: T) => ReactNode
+	/** False once the selection is full; only already selected options can then be toggled. */
+	canSelectMore?: boolean
 }) {
 	const { t } = useLingui()
 	const [search, setSearch] = useState("")
@@ -399,7 +408,7 @@ function MultiSelect<T extends MultiSelectOption>({
 						<div className="flex items-center">
 							<DropdownMenuItem
 								className="px-1.5 py-1 text-xs text-muted-foreground"
-								disabled={!filteredOptions.length || allSelected}
+								disabled={!filteredOptions.length || allSelected || !canSelectMore}
 								onSelect={(event) => {
 									event.preventDefault()
 									selectFiltered(true)
@@ -432,6 +441,7 @@ function MultiSelect<T extends MultiSelectOption>({
 						<DropdownMenuCheckboxItem
 							key={option.id}
 							checked={selectedIds.has(option.id)}
+							disabled={!canSelectMore && !selectedIds.has(option.id)}
 							onSelect={(event) => event.preventDefault()}
 							onCheckedChange={(checked) => {
 								const next = new Set(selectedIds)

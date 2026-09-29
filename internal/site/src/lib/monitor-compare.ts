@@ -2,6 +2,9 @@ import type { NetworkMonitorRecord } from "@/types"
 
 // Kept free of UI and store imports so it can be unit tested with bun.
 
+/** Most lines a comparison charts, to keep it readable and the stats request's filter short. */
+export const MAX_COMPARE_MONITORS = 24
+
 type MonitorTarget = Pick<NetworkMonitorRecord, "target" | "protocol" | "port">
 
 export function getMonitorTarget(monitor: MonitorTarget) {
@@ -59,22 +62,30 @@ export function getMonitorCompareState({
 
 	// Each picker only offers what fits the other's selection, so every pick charts a line per system:
 	// systems must probe the opened target and every selected target, and targets must be probed by
-	// every selected system.
-	const requiredKeys = [monitor, ...systemTargets.filter((m) => selectedTargetIds.has(m.id))].map(getMonitorIdentityKey)
+	// every selected system. Selections outside the options (e.g. a monitor deleted while the sheet is
+	// open) are ignored, and ones past MAX_COMPARE_MONITORS lines are dropped, keeping targets over
+	// systems and earlier picks over later ones.
+	const systemTargetsById = new Map(systemTargets.map((m) => [m.id, m]))
+	const pickedTargets = [...selectedTargetIds]
+		.flatMap((id) => systemTargetsById.get(id) ?? [])
+		.slice(0, MAX_COMPARE_MONITORS - 1)
+	const targetMonitors = [monitor, ...pickedTargets]
+	const requiredKeys = targetMonitors.map(getMonitorIdentityKey)
 	const systemOptions = [...keysBySystem]
 		.filter(([, keys]) => requiredKeys.every((key) => keys.has(key)))
 		.map(([id]) => id)
-	// Selections outside the options (e.g. a monitor deleted while the sheet is open) are ignored.
-	const systemIds = systemOptions.filter((id) => selectedSystemIds.has(id))
+	const systemOptionSet = new Set(systemOptions)
+	const systemIds = [...selectedSystemIds]
+		.filter((id) => systemOptionSet.has(id))
+		.slice(0, Math.floor(MAX_COMPARE_MONITORS / targetMonitors.length) - 1)
 
 	const targetOptions = systemTargets.filter((m) => {
 		const key = getMonitorIdentityKey(m)
 		return systemIds.every((id) => keysBySystem.get(id)?.has(key))
 	})
-	const targetIds = new Set(targetOptions.filter((m) => selectedTargetIds.has(m.id)).map((m) => m.id))
+	const targetIds = new Set(pickedTargets.map((m) => m.id))
 
 	// Every charted target is also charted for each selected system.
-	const targetMonitors = [monitor, ...targetOptions.filter((m) => targetIds.has(m.id))]
 	const targetKeys = new Set(targetMonitors.map(getMonitorIdentityKey))
 	const selectedSystems = new Set(systemIds)
 	const compareMonitors = [
@@ -97,7 +108,7 @@ export function getMonitorCompareState({
 	// DNS lookups of the same name against different servers would otherwise share a label.
 	for (const m of compareMonitors) {
 		const label = labels.get(m.id) as string
-		if ((counts.get(label) ?? 0) > 1) labels.set(m.id, `${label} (${m.server})`)
+		if ((counts.get(label) ?? 0) > 1 && m.server) labels.set(m.id, `${label} (${m.server})`)
 	}
 
 	return {
@@ -107,6 +118,9 @@ export function getMonitorCompareState({
 		/** Other targets on the opened monitor's system that can be selected. */
 		targetOptions,
 		selectedTargetIds: targetIds,
+		/** Whether one more target or system still fits within MAX_COMPARE_MONITORS lines. */
+		canAddTarget: (targetMonitors.length + 1) * (systemIds.length + 1) <= MAX_COMPARE_MONITORS,
+		canAddSystem: targetMonitors.length * (systemIds.length + 2) <= MAX_COMPARE_MONITORS,
 		/** Monitors to chart, starting with the opened one. */
 		compareMonitors,
 		getLabel: (m: NetworkMonitorRecord) => labels.get(m.id) ?? getMonitorTarget(m),
