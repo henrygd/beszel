@@ -21,7 +21,7 @@ type zfsFetchState struct {
 }
 
 func (sys *System) supportsZfsData() bool {
-	return sys.agentVersion.GTE(beszel.MinVersionZfsData)
+	return sys.getAgentVersion().GTE(beszel.MinVersionZfsData)
 }
 
 // FetchAndSaveZfsPools fetches ZFS detail data from the agent and saves it to
