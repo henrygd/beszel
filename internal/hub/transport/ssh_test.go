@@ -12,6 +12,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/blang/semver"
 	"github.com/fxamacker/cbor/v2"
 	"github.com/henrygd/beszel/internal/common"
 	"github.com/stretchr/testify/require"
@@ -166,7 +167,7 @@ func TestSSHRequestCancellation(t *testing.T) {
 					// timing the later SSH phases on slower hosts.
 					if stage != "handshake" {
 						setupCtx, stopSetup := context.WithTimeout(t.Context(), 2*time.Second)
-						_, err := transport.connect(setupCtx)
+						_, err := transport.Connect(setupCtx)
 						stopSetup()
 						require.NoError(t, err)
 					}
@@ -270,7 +271,7 @@ func TestSSHCancelledSharedConnection(t *testing.T) {
 	transport, reached, _ := newSSHTestTransport(t, "response")
 	ctx, cancel := context.WithTimeout(t.Context(), 3*time.Second)
 	defer cancel()
-	client, err := transport.connect(ctx)
+	client, err := transport.Connect(ctx)
 	require.NoError(t, err)
 	// Keep another session on the shared connection waiting for an exit.
 	session, err := client.NewSession()
@@ -305,7 +306,36 @@ func TestSSHCancelledSharedConnection(t *testing.T) {
 	replacement := transport.GetClient()
 	require.NotSame(t, client, replacement)
 	// Late cleanup of the old connection must not discard its replacement.
-	transport.closeClient(client)
+	transport.CloseClient(client)
 	require.Same(t, replacement, transport.GetClient())
 	require.NoError(t, transport.Request(ctx, common.GetContainerLogs, nil, &result))
+}
+
+func TestConnectInitializesBeforePublishing(t *testing.T) {
+	transport, _, _ := newSSHTestTransport(t, "")
+	entered, release := make(chan struct{}), make(chan struct{})
+	transport.onConnect = func(semver.Version) {
+		close(entered)
+		<-release
+	}
+	connected := make(chan error, 1)
+	go func() {
+		_, err := transport.Connect(t.Context())
+		connected <- err
+	}()
+	select {
+	case <-entered:
+	case <-time.After(2 * time.Second):
+		t.Fatal("OnConnect was not called")
+	}
+	reused := make(chan *ssh.Client, 1)
+	go func() { reused <- transport.GetClient() }()
+	select {
+	case <-reused:
+		t.Fatal("client was exposed before OnConnect completed")
+	case <-time.After(100 * time.Millisecond):
+	}
+	close(release)
+	require.NoError(t, <-connected)
+	require.NotNil(t, <-reused)
 }
