@@ -42,7 +42,7 @@ export function AlertBannerSheet({
 					<div className="min-w-0">
 						<AlertTitle className="m-0">{title}</AlertTitle>
 						{description && (
-							<AlertDescription className="text-destructive/80 dark:text-red-500/80">{description}</AlertDescription>
+							<AlertDescription className="text-destructive/80 dark:text-red-400/80">{description}</AlertDescription>
 						)}
 					</div>
 				</div>
@@ -50,7 +50,7 @@ export function AlertBannerSheet({
 					<Button
 						variant="outline"
 						size="sm"
-						className="shrink-0 bg-transparent border-destructive/40 text-destructive hover:bg-destructive/10 hover:text-destructive dark:text-red-500 dark:hover:bg-destructive/15 dark:hover:text-red-500 max-sm:w-full"
+						className="shrink-0 bg-transparent border-destructive/40 text-destructive hover:bg-destructive/10 hover:text-destructive dark:text-red-400 dark:hover:bg-destructive/15 dark:hover:text-red-400 max-sm:w-full"
 					>
 						{buttonLabel ?? <Trans>View details</Trans>}
 						<ChevronRightIcon className="size-4 ms-1 -me-1" />
@@ -88,7 +88,7 @@ export function AlertBannerSheetItem({
 			onClick={onClick}
 			className="group flex items-start gap-3 rounded-lg border p-3 transition-colors hover:bg-accent/60"
 		>
-			<div className="rounded-md bg-destructive/10 p-2 text-destructive shrink-0">
+			<div className="rounded-md bg-destructive/10 p-2 text-destructive dark:text-red-400 shrink-0">
 				<Icon className="size-4" />
 			</div>
 			<div className="min-w-0 flex-1">
