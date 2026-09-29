@@ -3,7 +3,6 @@
 package agent
 
 import (
-	"bytes"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -15,24 +14,24 @@ import (
 	"github.com/henrygd/beszel/agent/utils"
 )
 
-// Container-aware CPU accounting (issue #2332).
+// LXC-aware CPU accounting (issue #2332).
 //
-// Inside a container /proc/stat does not describe the container's own usage:
-// lxcfs serves LXC guests the raw counters of the host cores in their cpuset,
-// and plain runtimes (Docker, k8s) expose the host's /proc outright. An idle
-// container sharing a host core with a busy neighbor then reports near-100%
-// CPU while doing nothing. The cgroup's own accounting (cpu.stat /
-// cpuacct.usage) reflects only the container's processes, so when the agent
-// runs inside a container we derive CPU% from that instead.
+// Inside an LXC guest, lxcfs serves /proc/stat with the raw counters of the
+// host cores in the guest's cpuset, not the guest's own usage. An idle guest
+// sharing a host core with a busy neighbor then reports near-100% CPU while
+// doing nothing. The cgroup's own accounting (cpu.stat / cpuacct.usage)
+// reflects only the guest's processes, so inside LXC we derive CPU% from that
+// instead.
+//
+// Other runtimes (Docker, Podman, k8s) are deliberately left alone: the agent
+// is normally deployed there to monitor the host, and the host's /proc/stat is
+// exactly what it should report.
 
 // File paths and hooks are variables so tests can point them at fixtures.
 var (
 	cpuCgroupRoot      = "/sys/fs/cgroup" // default cgroup v2 mount point
 	cpuCgroupMountinfo = "/proc/self/mountinfo"
 	cpuProcSelfCgroup  = "/proc/self/cgroup"
-	cpuProcOneEnviron  = "/proc/1/environ"
-	cpuDockerenvPath   = "/.dockerenv"
-	cpuContainerenv    = "/run/.containerenv"
 	cpuSystemdContPath = "/run/systemd/container"
 	cpuNumCPU          = runtime.NumCPU
 	cpuNow             = time.Now
@@ -41,41 +40,42 @@ var (
 // cpuUserHZ is the USER_HZ jiffies-per-second rate cpuacct.stat reports in.
 const cpuUserHZ = 100
 
-var (
-	containerOnce     sync.Once
-	containerDetected bool
-)
-
-// inContainer reports whether the agent itself runs inside a container.
+// inLxc reports whether the agent itself runs inside an LXC guest.
 // The result is cached because it cannot change during the process lifetime.
-func inContainer() bool {
-	containerOnce.Do(func() { containerDetected = detectContainer() })
-	return containerDetected
+var inLxc = sync.OnceValue(detectLxc)
+
+// detectLxc looks for LXC guest markers that are readable without root
+// (the agent usually runs as an unprivileged user, so /proc/1/environ is not).
+func detectLxc() bool {
+	// lxcfs mounted over /proc/stat is the direct cause of the host-core
+	// counters. Only match that mount point: an LXC host also has lxcfs
+	// mounted, but at /var/lib/lxcfs.
+	if data, err := os.ReadFile(cpuCgroupMountinfo); err == nil && procStatFromLxcfs(data) {
+		return true
+	}
+	// set by liblxc for the container init and inherited on non-systemd guests
+	if os.Getenv("container") == "lxc" {
+		return true
+	}
+	// written by systemd on systemd-based guests
+	if data, err := os.ReadFile(cpuSystemdContPath); err == nil &&
+		strings.TrimSpace(string(data)) == "lxc" {
+		return true
+	}
+	return false
 }
 
-// detectContainer looks for the usual container markers.
-func detectContainer() bool {
-	// set by systemd-nspawn, LXC, Podman and others
-	if os.Getenv("container") != "" {
-		return true
-	}
-	for _, p := range []string{cpuDockerenvPath, cpuContainerenv, cpuSystemdContPath} {
-		if utils.FileExists(p) {
+// procStatFromLxcfs reports whether mountinfo shows lxcfs mounted on /proc/stat.
+func procStatFromLxcfs(mountinfo []byte) bool {
+	for line := range strings.SplitSeq(string(mountinfo), "\n") {
+		left, right, found := strings.Cut(line, " - ")
+		if !found {
+			continue
+		}
+		fields, post := strings.Fields(left), strings.Fields(right)
+		if len(fields) >= 5 && len(post) > 0 && fields[4] == "/proc/stat" && post[0] == "fuse.lxcfs" {
 			return true
 		}
-	}
-	// liblxc always puts container=lxc in the container init's environment,
-	// which survives on non-systemd guests such as Alpine LXC.
-	if data, err := os.ReadFile(cpuProcOneEnviron); err == nil {
-		if bytes.HasPrefix(data, []byte("container=")) ||
-			bytes.Contains(data, []byte("\x00container=")) {
-			return true
-		}
-	}
-	// an lxcfs mount means /proc/stat is virtualized with host core counters
-	if data, err := os.ReadFile(cpuCgroupMountinfo); err == nil &&
-		bytes.Contains(data, []byte(" - fuse.lxcfs ")) {
-		return true
 	}
 	return false
 }
@@ -91,10 +91,10 @@ type cgroupCpuSample struct {
 
 var lastCgroupCpuSamples = make(map[uint16]cgroupCpuSample)
 
-// init seeds the container CPU baseline so the first reported value is a real
+// init seeds the LXC CPU baseline so the first reported value is a real
 // delta since startup rather than zero.
 func init() {
-	if !inContainer() {
+	if !inLxc() {
 		return
 	}
 	if s, ok := readContainerCpuSample(); ok {
@@ -103,12 +103,12 @@ func init() {
 	}
 }
 
-// containerCpuMetrics derives CPU metrics from the agent's own cgroup
-// accounting when running inside a container. It returns ok=false on plain
-// hosts and whenever cgroup accounting is unreadable, so callers keep the
-// /proc/stat fallback.
+// containerCpuMetrics derives CPU metrics from the guest's own cgroup
+// accounting when running inside LXC. It returns ok=false everywhere else and
+// whenever cgroup accounting is unreadable, so callers keep the /proc/stat
+// path.
 func containerCpuMetrics(cacheTimeMs uint16) (CpuMetrics, bool) {
-	if !inContainer() {
+	if !inLxc() {
 		return CpuMetrics{}, false
 	}
 	cur, ok := readContainerCpuSample()
@@ -342,7 +342,7 @@ func cpusetCount(dir string) float64 {
 // countCpuList counts the CPUs in a Linux CPU list like "0-3,5,8-9".
 func countCpuList(list string) int {
 	total := 0
-	for _, part := range strings.Split(list, ",") {
+	for part := range strings.SplitSeq(list, ",") {
 		lo, hi, ranged := strings.Cut(part, "-")
 		a, err := strconv.Atoi(lo)
 		if err != nil {
@@ -388,7 +388,7 @@ func cgroupStatValue(path, key string) (uint64, bool) {
 	if err != nil {
 		return 0, false
 	}
-	for _, line := range strings.Split(string(data), "\n") {
+	for line := range strings.SplitSeq(string(data), "\n") {
 		name, value, found := strings.Cut(line, " ")
 		if !found || name != key {
 			continue

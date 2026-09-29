@@ -18,30 +18,26 @@ import (
 func swapCpuContainerSeams(t *testing.T) {
 	t.Helper()
 	backup := struct {
-		root, mountinfo, selfCgroup, oneEnviron, dockerenv, containerenv, systemdCont string
-		numCPU                                                                        func() int
-		now                                                                           func() time.Time
+		root, mountinfo, selfCgroup, systemdCont string
+		numCPU                                   func() int
+		now                                      func() time.Time
 	}{
-		cpuCgroupRoot, cpuCgroupMountinfo, cpuProcSelfCgroup, cpuProcOneEnviron,
-		cpuDockerenvPath, cpuContainerenv, cpuSystemdContPath, cpuNumCPU, cpuNow,
+		cpuCgroupRoot, cpuCgroupMountinfo, cpuProcSelfCgroup, cpuSystemdContPath, cpuNumCPU, cpuNow,
 	}
-	detected := containerDetected
+	origInLxc := inLxc
 	samples := lastCgroupCpuSamples
 	env, hadEnv := os.LookupEnv("container")
 	t.Cleanup(func() {
-		cpuCgroupRoot, cpuCgroupMountinfo, cpuProcSelfCgroup, cpuProcOneEnviron = backup.root, backup.mountinfo, backup.selfCgroup, backup.oneEnviron
-		cpuDockerenvPath, cpuContainerenv, cpuSystemdContPath = backup.dockerenv, backup.containerenv, backup.systemdCont
+		cpuCgroupRoot, cpuCgroupMountinfo, cpuProcSelfCgroup, cpuSystemdContPath = backup.root, backup.mountinfo, backup.selfCgroup, backup.systemdCont
 		cpuNumCPU, cpuNow = backup.numCPU, backup.now
-		containerOnce = sync.Once{}
-		containerDetected = detected
+		inLxc = origInLxc
 		lastCgroupCpuSamples = samples
 		if hadEnv {
 			os.Setenv("container", env)
 		}
 	})
 
-	containerOnce = sync.Once{}
-	containerDetected = false
+	inLxc = sync.OnceValue(detectLxc)
 	lastCgroupCpuSamples = make(map[uint16]cgroupCpuSample)
 	os.Unsetenv("container")
 
@@ -49,9 +45,6 @@ func swapCpuContainerSeams(t *testing.T) {
 	cpuCgroupRoot = filepath.Join(tmp, "cgroup")
 	cpuCgroupMountinfo = filepath.Join(tmp, "mountinfo")
 	cpuProcSelfCgroup = filepath.Join(tmp, "self-cgroup")
-	cpuProcOneEnviron = filepath.Join(tmp, "one-environ")
-	cpuDockerenvPath = filepath.Join(tmp, "dockerenv")
-	cpuContainerenv = filepath.Join(tmp, "containerenv")
 	cpuSystemdContPath = filepath.Join(tmp, "systemd-container")
 }
 
@@ -59,6 +52,12 @@ func writeCpuFixture(t *testing.T, path, contents string) {
 	t.Helper()
 	require.NoError(t, os.MkdirAll(filepath.Dir(path), 0o755))
 	require.NoError(t, os.WriteFile(path, []byte(contents), 0o644))
+}
+
+// markLxc makes detection see a systemd-based LXC guest.
+func markLxc(t *testing.T) {
+	t.Helper()
+	writeCpuFixture(t, cpuSystemdContPath, "lxc\n")
 }
 
 // fakeNow installs a controllable clock and returns a function to advance it.
@@ -69,27 +68,26 @@ func fakeNow(t *testing.T) func(time.Duration) {
 	return func(d time.Duration) { cur = cur.Add(d) }
 }
 
-func TestDetectContainer(t *testing.T) {
+func TestDetectLxc(t *testing.T) {
 	tests := []struct {
 		name  string
 		setup func(t *testing.T)
 		want  bool
 	}{
 		{"plain host", func(t *testing.T) {}, false},
-		{"container env", func(t *testing.T) { t.Setenv("container", "lxc") }, true},
-		{".dockerenv", func(t *testing.T) { writeCpuFixture(t, cpuDockerenvPath, "") }, true},
-		{".containerenv", func(t *testing.T) { writeCpuFixture(t, cpuContainerenv, "") }, true},
-		{"systemd container", func(t *testing.T) { writeCpuFixture(t, cpuSystemdContPath, "lxc\n") }, true},
-		{"init environ container=lxc", func(t *testing.T) {
-			writeCpuFixture(t, cpuProcOneEnviron, "PATH=/sbin\x00container=lxc\x00HOME=/root\x00")
-		}, true},
-		{"init environ without marker", func(t *testing.T) {
-			writeCpuFixture(t, cpuProcOneEnviron, "PATH=/sbin\x00HOME=/root\x00")
-		}, false},
-		{"lxcfs serving /proc", func(t *testing.T) {
+		{"container env lxc", func(t *testing.T) { t.Setenv("container", "lxc") }, true},
+		{"container env podman", func(t *testing.T) { t.Setenv("container", "podman") }, false},
+		{"systemd container lxc", func(t *testing.T) { writeCpuFixture(t, cpuSystemdContPath, "lxc\n") }, true},
+		{"systemd container nspawn", func(t *testing.T) { writeCpuFixture(t, cpuSystemdContPath, "systemd-nspawn\n") }, false},
+		{"lxcfs serving /proc/stat", func(t *testing.T) {
 			writeCpuFixture(t, cpuCgroupMountinfo,
 				"31 25 0:28 / /proc/stat rw,nosuid,nodev,relatime - fuse.lxcfs lxcfs rw,user_id=0,group_id=0\n")
 		}, true},
+		// an LXC host (e.g. Proxmox) mounts lxcfs too, but not over its own /proc
+		{"lxcfs mounted on host", func(t *testing.T) {
+			writeCpuFixture(t, cpuCgroupMountinfo,
+				"45 25 0:40 / /var/lib/lxcfs rw,nosuid,nodev,relatime - fuse.lxcfs lxcfs rw,user_id=0,group_id=0\n")
+		}, false},
 		{"cgroup-only mountinfo", func(t *testing.T) {
 			writeCpuFixture(t, cpuCgroupMountinfo,
 				"36 25 0:32 / /sys/fs/cgroup rw - cgroup2 cgroup2 rw,nsdelegate\n")
@@ -99,7 +97,7 @@ func TestDetectContainer(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			swapCpuContainerSeams(t)
 			tt.setup(t)
-			assert.Equal(t, tt.want, detectContainer())
+			assert.Equal(t, tt.want, detectLxc())
 		})
 	}
 }
@@ -173,7 +171,7 @@ func TestReadCgroupV1CpuSample(t *testing.T) {
 
 func TestContainerCpuMetricsMath(t *testing.T) {
 	swapCpuContainerSeams(t)
-	writeCpuFixture(t, cpuDockerenvPath, "")
+	markLxc(t)
 	writeCpuFixture(t, cpuProcSelfCgroup, "0::/\n")
 	writeCpuFixture(t, cpuCgroupMountinfo, "")
 	require.NoError(t, os.MkdirAll(cpuCgroupRoot, 0o755))
@@ -203,7 +201,7 @@ func TestContainerCpuMetricsMath(t *testing.T) {
 
 func TestContainerCpuMetricsHonorsQuota(t *testing.T) {
 	swapCpuContainerSeams(t)
-	writeCpuFixture(t, cpuDockerenvPath, "")
+	markLxc(t)
 	writeCpuFixture(t, cpuProcSelfCgroup, "0::/\n")
 	writeCpuFixture(t, cpuCgroupMountinfo, "")
 	require.NoError(t, os.MkdirAll(cpuCgroupRoot, 0o755))
@@ -222,7 +220,7 @@ func TestContainerCpuMetricsHonorsQuota(t *testing.T) {
 
 func TestContainerCpuMetricsZeroAndBackwardDelta(t *testing.T) {
 	swapCpuContainerSeams(t)
-	writeCpuFixture(t, cpuDockerenvPath, "")
+	markLxc(t)
 	writeCpuFixture(t, cpuProcSelfCgroup, "0::/\n")
 	writeCpuFixture(t, cpuCgroupMountinfo, "")
 	require.NoError(t, os.MkdirAll(cpuCgroupRoot, 0o755))
@@ -252,14 +250,24 @@ func TestContainerCpuMetricsZeroAndBackwardDelta(t *testing.T) {
 }
 
 func TestContainerCpuMetricsFallbacks(t *testing.T) {
-	t.Run("not in container", func(t *testing.T) {
+	t.Run("not in lxc", func(t *testing.T) {
 		swapCpuContainerSeams(t)
 		_, ok := containerCpuMetrics(60000)
 		assert.False(t, ok)
 	})
-	t.Run("in container without cgroup accounting", func(t *testing.T) {
+	// Docker agents monitor the host, so cgroup accounting must not kick in
+	// even when it is readable and no LXC marker is present.
+	t.Run("docker container", func(t *testing.T) {
 		swapCpuContainerSeams(t)
-		writeCpuFixture(t, cpuDockerenvPath, "")
+		writeCpuFixture(t, cpuProcSelfCgroup, "0::/\n")
+		writeCpuFixture(t, cpuCgroupMountinfo, "")
+		writeCpuFixture(t, filepath.Join(cpuCgroupRoot, "cpu.stat"), "usage_usec 5000000\n")
+		_, ok := containerCpuMetrics(60000)
+		assert.False(t, ok)
+	})
+	t.Run("in lxc without cgroup accounting", func(t *testing.T) {
+		swapCpuContainerSeams(t)
+		markLxc(t)
 		writeCpuFixture(t, cpuProcSelfCgroup, "0::/\n")
 		writeCpuFixture(t, cpuCgroupMountinfo, "")
 		// cpuCgroupRoot has no cpu.stat
@@ -277,11 +285,11 @@ func TestGetCpuMetricsHostFallback(t *testing.T) {
 	assert.LessOrEqual(t, m.Total, 100.0)
 }
 
-// Inside a container getCpuMetrics must report the cgroup-derived value, not
+// Inside LXC getCpuMetrics must report the cgroup-derived value, not
 // the host core counters from /proc/stat.
 func TestGetCpuMetricsPrefersCgroup(t *testing.T) {
 	swapCpuContainerSeams(t)
-	writeCpuFixture(t, cpuDockerenvPath, "")
+	markLxc(t)
 	writeCpuFixture(t, cpuProcSelfCgroup, "0::/\n")
 	writeCpuFixture(t, cpuCgroupMountinfo, "")
 	require.NoError(t, os.MkdirAll(cpuCgroupRoot, 0o755))
