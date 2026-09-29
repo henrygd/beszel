@@ -100,9 +100,23 @@ func TestSSHNetworkMonitorReconnectSync(t *testing.T) {
 	}()
 	collection, err := app.FindCachedCollectionByNameOrId("network_monitors")
 	require.NoError(t, err)
-	probe := core.NewRecord(collection)
-	probe.Load(map[string]any{"system": sys.Id, "target": "localhost", "protocol": "tcp", "port": 80, "interval": 60, "enabled": true})
-	require.NoError(t, app.SaveNoValidate(probe))
+	configs := []monitor.Config{
+		{Target: "localhost", Protocol: "tcp", Port: 80, Interval: 60},
+		{Target: "localhost", Protocol: "dns", Interval: 60},
+		{Target: "localhost", Protocol: "dns", Server: "127.0.0.1:5353", Interval: 60},
+	}
+	var probes []*core.Record
+	for i := range configs {
+		cfg := &configs[i]
+		probe := core.NewRecord(collection)
+		probe.Load(map[string]any{
+			"system": sys.Id, "target": cfg.Target, "protocol": cfg.Protocol,
+			"port": cfg.Port, "server": cfg.Server, "interval": cfg.Interval, "enabled": true,
+		})
+		require.NoError(t, app.SaveNoValidate(probe))
+		cfg.ID = probe.Id
+		probes = append(probes, probe)
+	}
 	fetch := func() {
 		t.Helper()
 		_, err := sys.fetchDataFromAgent(common.DataRequestOptions{})
@@ -120,7 +134,7 @@ func TestSSHNetworkMonitorReconnectSync(t *testing.T) {
 		}
 	}
 	fetch()
-	require.Equal(t, probe.Id, receive().Configs[0].ID)
+	require.ElementsMatch(t, configs, receive().Configs)
 	require.False(t, sys.monitorsNeedSync.Load())
 	fetch()
 	require.Empty(t, requests, "steady-state fetch must not resync")
@@ -128,22 +142,24 @@ func TestSSHNetworkMonitorReconnectSync(t *testing.T) {
 	// Simulate loss of the agent process/connection and its in-memory monitors.
 	require.NoError(t, sys.client.Load().Close())
 	fetch()
-	require.Equal(t, probe.Id, receive().Configs[0].ID)
+	require.ElementsMatch(t, configs, receive().Configs)
 	require.False(t, sys.monitorsNeedSync.Load())
 
 	// Failed replacements are retried on the next successful stats fetch.
 	require.NoError(t, sys.client.Load().Close())
 	failSync.Store(true)
 	fetch()
-	receive()
+	require.ElementsMatch(t, configs, receive().Configs)
 	require.True(t, sys.monitorsNeedSync.Load())
 	failSync.Store(false)
 	fetch()
-	receive()
+	require.ElementsMatch(t, configs, receive().Configs)
 	require.False(t, sys.monitorsNeedSync.Load())
 
-	probe.Set("enabled", false)
-	require.NoError(t, app.SaveNoValidate(probe))
+	for _, probe := range probes {
+		probe.Set("enabled", false)
+		require.NoError(t, app.SaveNoValidate(probe))
+	}
 	require.NoError(t, sys.client.Load().Close())
 	fetch()
 	require.Empty(t, receive().Configs, "empty replacement must clear stale monitors")
