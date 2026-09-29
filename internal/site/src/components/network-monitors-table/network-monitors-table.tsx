@@ -1,4 +1,4 @@
-import { getMonitorTarget } from "@/lib/network-monitor-utils"
+import { getCertDaysLeft, getCertExpiryLevel, getMonitorTarget } from "@/lib/network-monitor-utils"
 import { t } from "@lingui/core/macro"
 import { Trans } from "@lingui/react/macro"
 import {
@@ -36,16 +36,10 @@ import { useToast } from "@/components/ui/use-toast"
 import { isReadOnlyUser, queueUserSettings } from "@/lib/api"
 import { pb } from "@/lib/api"
 import { SystemStatus } from "@/lib/enums"
-import { $allSystemsById, $direction, $userSettings, getUserChartTime } from "@/lib/stores"
-import {
-	cn,
-	isVisuallyLonger,
-	matchesFilterGroups,
-	parseFilterGroups,
-	parseSemVer,
-} from "@/lib/utils"
-import type { ChartData, NetworkMonitorRecord } from "@/types"
-import { AddMonitorDialog, EditMonitorDialog } from "./monitor-dialog"
+import { $allSystemsById, $direction, $textMeasureVersion, $userSettings, getUserChartTime } from "@/lib/stores"
+import { cn, formatShortDate, isVisuallyLonger, matchesFilterGroups, parseFilterGroups, parseSemVer } from "@/lib/utils"
+import type { ChartOptions, MonitorCertInfo, NetworkMonitorRecord } from "@/types"
+import { AddMonitorDialog, EditMonitorDialog, SystemMultiSelect } from "./monitor-dialog"
 import {
 	ArrowDownIcon,
 	ArrowLeftRightIcon,
@@ -53,9 +47,12 @@ import {
 	ArrowUpIcon,
 	EthernetPortIcon,
 	EyeIcon,
+	GlobeIcon,
+	LandmarkIcon,
 	LoaderCircleIcon,
 	ServerIcon,
 	Settings2Icon,
+	ShieldCheckIcon,
 	XIcon,
 } from "lucide-react"
 import {
@@ -69,8 +66,8 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet"
 import ChartTimeSelect from "@/components/charts/chart-time-select"
-import { LossChart, AvgMinMaxResponseChart } from "@/components/routes/system/charts/monitors-charts"
-import { useNetworkMonitorStats } from "@/lib/use-network-monitors"
+import { LossChart, AvgMinMaxResponseChart, ResponseChart } from "@/components/routes/system/charts/monitors-charts"
+import { useMatchingMonitors, useNetworkMonitorStats } from "@/lib/use-network-monitors"
 import { useStore } from "@nanostores/react"
 import { atom } from "nanostores"
 import { Separator } from "../ui/separator"
@@ -102,7 +99,7 @@ export default function NetworkMonitorsTableNew({
 	const [rowSelection, setRowSelection] = useState<RowSelectionState>({})
 	const [globalFilter, setGlobalFilter] = useState("")
 	const [deleteOpen, setDeleteOpen] = useState(false)
-	const [pendingDeleteIds, setPendingDeleteIds] = useState<string[]>([])
+	const [pendingDelete, setPendingDelete] = useState<NetworkMonitorRecord[]>([])
 	const [editingMonitor, setEditingMonitor] = useState<NetworkMonitorRecord>()
 
 	const { toast } = useToast()
@@ -149,6 +146,8 @@ export default function NetworkMonitorsTableNew({
 		[sortSettingsKey, sortStorageKey]
 	)
 
+	// recompute when measured widths are invalidated (e.g. web font finished loading)
+	const textMeasureVersion = useStore($textMeasureVersion)
 	const longestTarget = useMemo(() => {
 		let longestTarget = ""
 		for (const p of monitors) {
@@ -157,7 +156,27 @@ export default function NetworkMonitorsTableNew({
 			}
 		}
 		return longestTarget
-	}, [monitors])
+	}, [monitors, textMeasureVersion])
+
+	// longest name among systems that have monitors in this table (skipped for single-system view).
+	// Held in a store because memoized rows don't re-render when column definitions change.
+	const $longestSystemName = useMemo(() => atom(""), [])
+	useEffect(() => {
+		if (systemId) {
+			return
+		}
+		const systemIds = new Set(monitors.map((m) => m.system))
+		return $allSystemsById.subscribe((systems) => {
+			let longest = ""
+			for (const id of systemIds) {
+				const name = systems[id]?.name ?? ""
+				if (isVisuallyLonger(name, longest)) {
+					longest = name
+				}
+			}
+			$longestSystemName.set(longest)
+		})
+	}, [monitors, systemId, textMeasureVersion, $longestSystemName])
 
 	const runMonitorBatch = useCallback(
 		async (ids: string[], enqueue: (batch: ReturnType<typeof pb.createBatch>, id: string) => void) => {
@@ -178,41 +197,28 @@ export default function NetworkMonitorsTableNew({
 		[]
 	)
 
-	const handleDeleteRequest = useCallback(
-		async (monitorsToDelete: NetworkMonitorRecord[]) => {
-			if (!monitorsToDelete.length) {
-				return
-			}
+	const handleDeleteRequest = useCallback((monitorsToDelete: NetworkMonitorRecord[]) => {
+		if (!monitorsToDelete.length) {
+			return
+		}
+		setPendingDelete(monitorsToDelete)
+		setDeleteOpen(true)
+	}, [])
 
-			const ids = monitorsToDelete.map((monitor) => monitor.id)
-			if (ids.length === 1) {
-				try {
-					await pb.collection("network_monitors").delete(ids[0])
-				} catch (err: unknown) {
-					toast({
-						variant: "destructive",
-						title: t`Error`,
-						description: (err as Error)?.message || t`Failed to delete monitors.`,
-					})
-				}
-				return
-			}
-
-			setPendingDeleteIds(ids)
-			setDeleteOpen(true)
-		},
-		[toast]
-	)
-
-	const handleBulkDelete = async () => {
+	const handleConfirmDelete = async () => {
 		setDeleteOpen(false)
-		if (!pendingDeleteIds.length) {
+		const ids = pendingDelete.map((monitor) => monitor.id)
+		if (!ids.length) {
 			return
 		}
 
 		try {
-			await runMonitorBatch(pendingDeleteIds, (batch, id) => batch.collection("network_monitors").delete(id))
-			setPendingDeleteIds([])
+			if (ids.length === 1) {
+				await pb.collection("network_monitors").delete(ids[0])
+			} else {
+				await runMonitorBatch(ids, (batch, id) => batch.collection("network_monitors").delete(id))
+			}
+			setPendingDelete([])
 			setRowSelection({})
 		} catch (err: unknown) {
 			toast({
@@ -258,7 +264,7 @@ export default function NetworkMonitorsTableNew({
 	)
 
 	const columns = useMemo(() => {
-		let columns = getMonitorColumns(longestTarget, {
+		let columns = getMonitorColumns(longestTarget, $longestSystemName, {
 			onEdit: setEditingMonitor,
 			onDelete: handleDeleteRequest,
 			onSetEnabled: handleSetEnabled,
@@ -266,7 +272,7 @@ export default function NetworkMonitorsTableNew({
 		columns = systemId ? columns.filter((col) => col.id !== "system") : columns
 		columns = canManageMonitors ? columns : columns.filter((col) => col.id !== "actions")
 		return columns
-	}, [canManageMonitors, handleDeleteRequest, handleSetEnabled, systemId, longestTarget])
+	}, [canManageMonitors, handleDeleteRequest, handleSetEnabled, systemId, longestTarget, $longestSystemName])
 
 	const table = useReactTable({
 		data: monitors,
@@ -427,7 +433,7 @@ export default function NetworkMonitorsTableNew({
 							onOpenChange={(open) => {
 								setDeleteOpen(open)
 								if (!open) {
-									setPendingDeleteIds([])
+									setPendingDelete([])
 								}
 							}}
 						>
@@ -446,7 +452,7 @@ export default function NetworkMonitorsTableNew({
 									</AlertDialogCancel>
 									<AlertDialogAction
 										className={cn(buttonVariants({ variant: "destructive" }))}
-										onClick={handleBulkDelete}
+										onClick={handleConfirmDelete}
 									>
 										<Trans>Continue</Trans>
 									</AlertDialogAction>
@@ -636,6 +642,36 @@ function NetworkMonitorSheet({
 	return <NetworkMonitorSheetContent key={monitor.system} open={open} onOpenChange={onOpenChange} monitor={monitor} />
 }
 
+const certExpiryTextColors = { ok: "", warning: "text-yellow-600 dark:text-yellow-500", critical: "text-red-500" }
+
+function CertExpiry({ cert }: { cert: MonitorCertInfo }) {
+	const daysLeft = getCertDaysLeft(cert)
+	const expires = formatShortDate(new Date(cert.expires).toISOString())
+	const level = getCertExpiryLevel(daysLeft)
+	return (
+		<>
+			<Separator orientation="vertical" className="h-2.5 bg-muted-foreground opacity-70" />
+			<ShieldCheckIcon className={cn("size-3.5 text-muted-foreground -me-1", certExpiryTextColors[level])} />
+			<span className={certExpiryTextColors[level]}>
+				{daysLeft < 0 ? (
+					<Trans>Certificate expired {expires}</Trans>
+				) : (
+					<Trans>
+						Certificate expires {expires} 
+					</Trans>
+				)}
+			</span>
+			{cert.issuer && (
+				<>
+					<Separator orientation="vertical" className="h-2.5 bg-muted-foreground opacity-70" />
+					<LandmarkIcon className="size-3.5 text-muted-foreground -me-0.5" />
+					<span>{cert.issuer}</span>
+				</>
+			)}
+		</>
+	)
+}
+
 function NetworkMonitorSheetContent({
 	open,
 	onOpenChange,
@@ -652,16 +688,39 @@ function NetworkMonitorSheetContent({
 	})
 	const chartTime = useStore(chartTimeStore)
 	const direction = useStore($direction)
-	const system = useStore($allSystemsById)[monitor.system]
+	const systems = useStore($allSystemsById)
+	const system = systems[monitor.system]
+
+	// Same target probed from other systems, for side-by-side comparison (#2385).
+	const matchingMonitors = useMatchingMonitors(monitor, open)
+	const [compareSystemIds, setCompareSystemIds] = useState<Set<string>>(() => new Set())
+	// Scoped to this sheet so a filter doesn't carry over to other monitors' sheets.
+	const [compareFilterStore, setCompareFilterStore] = useState(() => atom(""))
+	// The sheet is keyed by system (to keep the time range), so reset comparison state per monitor.
+	const [compareMonitorId, setCompareMonitorId] = useState(monitor.id)
+	if (compareMonitorId !== monitor.id) {
+		setCompareMonitorId(monitor.id)
+		setCompareSystemIds(new Set())
+		setCompareFilterStore(atom(""))
+	}
+	const matchingSystemIds = useMemo(() => matchingMonitors.map((m) => m.system), [matchingMonitors])
+	// The opened system is always charted; the picker only adds other systems to compare against.
+	const compareMonitors = useMemo(
+		() => [monitor, ...matchingMonitors.filter((m) => compareSystemIds.has(m.system))],
+		[monitor, matchingMonitors, compareSystemIds]
+	)
+	const comparing = compareMonitors.length > 1
+	const getSystemName = useCallback((m: NetworkMonitorRecord) => systems[m.system]?.name ?? m.system, [systems])
 
 	const monitorStats = useNetworkMonitorStats({
 		systemId: monitor.system,
-		monitorId: monitor.id,
+		monitorIds: comparing ? compareMonitors.map((m) => m.id) : [monitor.id],
+		interval: monitor.interval,
 		chartTime,
 		enabled: open,
 	})
 
-	const chartData = useMemo<ChartData>(
+	const chartData = useMemo<ChartOptions>(
 		() => ({
 			agentVersion: parseSemVer(system?.info?.v),
 			orientation: direction === "rtl" ? "right" : "left",
@@ -669,7 +728,9 @@ function NetworkMonitorSheetContent({
 		}),
 		[system?.info?.v, direction, chartTime]
 	)
-	const hasMonitorStats = monitorStats.some((record) => record.stats?.[monitor.id] != null)
+	const hasMonitorStats = comparing
+		? monitorStats.some((record) => record.stats != null)
+		: monitorStats.some((record) => record.stats?.[monitor.id] != null)
 	const monitorLabel = getMonitorTarget(monitor)
 
 	return (
@@ -683,7 +744,7 @@ function NetworkMonitorSheetContent({
 							{system?.name ?? ""}
 						</Link>
 						<Separator orientation="vertical" className="h-2.5 bg-muted-foreground opacity-70" />
-						<ArrowLeftRightIcon className="size-3.5 text-muted-foreground" />
+						<ArrowLeftRightIcon className="size-3.5 text-muted-foreground -me-0.5" />
 						{monitor.protocol.toUpperCase()}
 						{monitor.protocol === "tcp" && monitor.port > 0 && (
 							<>
@@ -692,29 +753,74 @@ function NetworkMonitorSheetContent({
 								<span>{monitor.port}</span>
 							</>
 						)}
+						{monitor.protocol === "dns" && monitor.server && (
+							<>
+								<Separator orientation="vertical" className="h-2.5 bg-muted-foreground opacity-70" />
+								<GlobeIcon className="size-3.5 text-muted-foreground" />
+								<span>{monitor.server}</span>
+							</>
+						)}
+						{monitor.certInfo?.expires ? <CertExpiry cert={monitor.certInfo} /> : null}
 					</SheetDescription>
 				</SheetHeader>
 				<div className="grid gap-4">
-					<ChartTimeSelect
-						className="bg-card"
-						agentVersion={chartData.agentVersion}
-						chartTimeStore={chartTimeStore}
-						allowRealtime={false}
-					/>
-					<AvgMinMaxResponseChart
-						monitorStats={monitorStats}
-						monitor={monitor}
-						chartData={chartData}
-						empty={!hasMonitorStats}
-					/>
-					<LossChart
-						monitorStats={monitorStats}
-						grid={false}
-						monitors={[monitor]}
-						chartData={chartData}
-						empty={!hasMonitorStats}
-						showFilter={false}
-					/>
+					<div className="flex flex-wrap items-center gap-2">
+						<ChartTimeSelect
+							className="bg-card flex-1 basis-48"
+							agentVersion={chartData.agentVersion}
+							chartTimeStore={chartTimeStore}
+							allowRealtime={false}
+						/>
+						{matchingMonitors.length > 0 && (
+							<SystemMultiSelect
+								id="monitor-compare-systems"
+								className="w-full sm:w-1/3 shrink-0 bg-card"
+								systemIds={matchingSystemIds}
+								selectedSystemIds={compareSystemIds}
+								onChange={setCompareSystemIds}
+								placeholder={t`Compare with other systems`}
+							/>
+						)}
+					</div>
+					{comparing ? (
+						<>
+							<ResponseChart
+								monitorStats={monitorStats}
+								grid={false}
+								monitors={compareMonitors}
+								chartData={chartData}
+								empty={!hasMonitorStats}
+								getLabel={getSystemName}
+								filterStore={compareFilterStore}
+							/>
+							<LossChart
+								monitorStats={monitorStats}
+								grid={false}
+								monitors={compareMonitors}
+								chartData={chartData}
+								empty={!hasMonitorStats}
+								getLabel={getSystemName}
+								filterStore={compareFilterStore}
+							/>
+						</>
+					) : (
+						<>
+							<AvgMinMaxResponseChart
+								monitorStats={monitorStats}
+								monitor={monitor}
+								chartData={chartData}
+								empty={!hasMonitorStats}
+							/>
+							<LossChart
+								monitorStats={monitorStats}
+								grid={false}
+								monitors={[monitor]}
+								chartData={chartData}
+								empty={!hasMonitorStats}
+								showFilter={false}
+							/>
+						</>
+					)}
 				</div>
 			</SheetContent>
 		</Sheet>

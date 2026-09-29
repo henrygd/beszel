@@ -116,8 +116,6 @@ export const SystemDialog = ({ setOpen, system }: { setOpen: (open: boolean) => 
 		}
 	}
 
-	const systemTranslation = t`System`
-
 	return (
 		<DialogContent
 			className="w-[90%] sm:w-auto sm:ns-dialog max-w-full rounded-lg"
@@ -129,9 +127,9 @@ export const SystemDialog = ({ setOpen, system }: { setOpen: (open: boolean) => 
 				<DialogHeader>
 					<DialogTitle className="mb-1 pb-1 max-w-100 truncate pr-8">
 						{system ? (
-							<Trans>Edit {{ foo: systemTranslation }}</Trans>
+							<Trans>Edit System</Trans>
 						) : (
-							<Trans>Add {{ foo: systemTranslation }}</Trans>
+							<Trans>Add System</Trans>
 						)}
 					</DialogTitle>
 					<TabsList className="grid w-full grid-cols-2">
@@ -268,9 +266,9 @@ export const SystemDialog = ({ setOpen, system }: { setOpen: (open: boolean) => 
 						{/* Save */}
 						<Button>
 							{system ? (
-								<Trans>Save {{ foo: systemTranslation }}</Trans>
+								<Trans>Save System</Trans>
 							) : (
-								<Trans>Add {{ foo: systemTranslation }}</Trans>
+								<Trans>Add System</Trans>
 							)}
 						</Button>
 					</DialogFooter>

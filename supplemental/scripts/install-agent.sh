@@ -757,6 +757,9 @@ if [ "$UNINSTALL" = true ]; then
   echo "Removing the Beszel Agent directory..."
   rm -rf "$AGENT_DIR"
 
+  echo "Removing the Beszel Agent data directory..."
+  rm -rf /var/lib/beszel-agent
+
   echo "Removing the dedicated user for the agent service..."
   killall beszel-agent 2>/dev/null || true # Usually already stopped by the service manager.
   if id -u beszel >/dev/null 2>&1; then
@@ -1384,6 +1387,13 @@ EOF
     [ "$KEY_PROVIDED" = "true" ] && sed -i "s|^Environment=\"KEY=.*\"|Environment=\"KEY=$SED_KEY\"|" /etc/systemd/system/beszel-agent.service
     [ "$TOKEN_PROVIDED" = "true" ] && sed -i "s|^Environment=\"TOKEN=.*\"|Environment=\"TOKEN=$SED_TOKEN\"|" /etc/systemd/system/beszel-agent.service
     [ "$HUB_URL_PROVIDED" = "true" ] && sed -i "s|^Environment=\"HUB_URL=.*\"|Environment=\"HUB_URL=$SED_HUB_URL\"|" /etc/systemd/system/beszel-agent.service
+  fi
+
+  # Let the agent service (not the beszel user) read the system journal for service logs.
+  # Admins can opt out with a drop-in that sets an empty SupplementaryGroups=.
+  if getent group systemd-journal >/dev/null 2>&1 && ! grep -q '^SupplementaryGroups=' /etc/systemd/system/beszel-agent.service; then
+    echo "Granting the agent service read access to the systemd journal"
+    sed -i '/^User=beszel$/a SupplementaryGroups=systemd-journal' /etc/systemd/system/beszel-agent.service
   fi
 
   # Load and start the service

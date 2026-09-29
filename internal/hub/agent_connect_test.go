@@ -9,7 +9,6 @@ import (
 	"net/http/httptest"
 	"os"
 	"path/filepath"
-	"runtime"
 	"strings"
 	"testing"
 	"time"
@@ -32,23 +31,18 @@ func createTestHub(t testing.TB) (*Hub, *pbtests.TestApp, error) {
 	if err != nil {
 		return nil, nil, err
 	}
-	return NewHub(testApp), testApp, err
+	hub := NewHub(testApp)
+	if err := hub.sm.InitializeSSHConfigForTesting(); err != nil {
+		cleanupTestHub(hub, testApp)
+		return nil, nil, err
+	}
+	return hub, testApp, nil
 }
 
 // cleanupTestHub stops background system goroutines before tearing down the app.
 func cleanupTestHub(hub *Hub, testApp *pbtests.TestApp) {
 	if hub != nil {
-		sm := hub.GetSystemManager()
-		sm.RemoveAllSystems()
-		// Give updater goroutines a brief window to observe cancellation before DB teardown.
-		for range 20 {
-			if sm.GetSystemCount() == 0 {
-				break
-			}
-			runtime.Gosched()
-			time.Sleep(5 * time.Millisecond)
-		}
-		time.Sleep(20 * time.Millisecond)
+		hub.GetSystemManager().RemoveAllSystems()
 	}
 	if testApp != nil {
 		testApp.Cleanup()
