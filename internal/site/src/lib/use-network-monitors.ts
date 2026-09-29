@@ -357,6 +357,67 @@ export function useMatchingMonitors(monitor: NetworkMonitorRecord, enabled = tru
 	return matches
 }
 
+/** Identifies what a monitor probes, regardless of which system probes it. */
+export function getMonitorIdentityKey({
+	protocol,
+	target,
+	port,
+	server,
+}: Pick<NetworkMonitorRecord, "protocol" | "target" | "port" | "server">) {
+	return JSON.stringify([protocol, target, port, server])
+}
+
+/**
+ * Monitors of one protocol on the given systems. Also returns which of those systems have loaded, since
+ * results for the previous selection stay visible while a newly added system is fetched.
+ */
+export function useSystemsMonitors(systemIds: string[], protocol: string, enabled = true) {
+	const [result, setResult] = useState<{ systemIds: string[]; monitors: NetworkMonitorRecord[] }>({
+		systemIds: [],
+		monitors: [],
+	})
+	// Stable key so the fetch doesn't re-run when callers pass a new array with the same IDs.
+	const systemsKey = [...systemIds].sort().join(",")
+
+	useEffect(() => {
+		if (!enabled || !systemsKey) {
+			setResult({ systemIds: [], monitors: [] })
+			return
+		}
+		let cancelled = false
+		const ids = systemsKey.split(",")
+		const params: Record<string, string> = { protocol }
+		const expr = ids
+			.map((id, i) => {
+				params[`s${i}`] = id
+				return `system={:s${i}}`
+			})
+			.join(" || ")
+		pb.collection<NetworkMonitorRecord>("network_monitors")
+			.getFullList({
+				fields: NETWORK_MONITOR_FIELDS,
+				filter: pb.filter(`protocol={:protocol} && (${expr})`, params),
+			})
+			.then((monitors) => {
+				if (!cancelled) setResult({ systemIds: ids, monitors })
+			})
+			.catch((error) => {
+				if (!cancelled) console.error("Failed to fetch system monitors:", error)
+			})
+		return () => {
+			cancelled = true
+		}
+	}, [systemsKey, protocol, enabled])
+
+	return useMemo(() => {
+		const selected = new Set(systemsKey ? systemsKey.split(",") : [])
+		return {
+			monitors: result.monitors.filter((m) => selected.has(m.system) && m.protocol === protocol),
+			loadedSystemIds: new Set(result.systemIds.filter((id) => selected.has(id))),
+		}
+	}, [result, systemsKey, protocol])
+}
+
 async function fetchMonitors(system?: string) {
 	try {
 		return await pb.collection<NetworkMonitorRecord>("network_monitors").getFullList({

@@ -39,7 +39,7 @@ import { SystemStatus } from "@/lib/enums"
 import { $allSystemsById, $direction, $textMeasureVersion, $userSettings, getUserChartTime } from "@/lib/stores"
 import { cn, formatShortDate, isVisuallyLonger, matchesFilterGroups, parseFilterGroups, parseSemVer } from "@/lib/utils"
 import type { ChartOptions, MonitorCertInfo, NetworkMonitorRecord } from "@/types"
-import { AddMonitorDialog, EditMonitorDialog, SystemMultiSelect } from "./monitor-dialog"
+import { AddMonitorDialog, EditMonitorDialog, MonitorMultiSelect, SystemMultiSelect } from "./monitor-dialog"
 import {
 	ArrowDownIcon,
 	ArrowLeftRightIcon,
@@ -67,7 +67,12 @@ import {
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet"
 import ChartTimeSelect from "@/components/charts/chart-time-select"
 import { LossChart, AvgMinMaxResponseChart, ResponseChart } from "@/components/routes/system/charts/monitors-charts"
-import { useMatchingMonitors, useNetworkMonitorStats } from "@/lib/use-network-monitors"
+import {
+	getMonitorIdentityKey,
+	useMatchingMonitors,
+	useNetworkMonitorStats,
+	useSystemsMonitors,
+} from "@/lib/use-network-monitors"
 import { useStore } from "@nanostores/react"
 import { atom } from "nanostores"
 import { Separator } from "../ui/separator"
@@ -560,6 +565,7 @@ const NetworkMonitorsTable = memo(function NetworkMonitorTable({
 					setSheetOpen(nextOpen)
 				}}
 				monitor={activeMonitor}
+				monitors={table.options.data}
 			/>
 		</div>
 	)
@@ -630,16 +636,26 @@ function NetworkMonitorSheet({
 	open,
 	onOpenChange,
 	monitor,
+	monitors,
 }: {
 	open: boolean
 	onOpenChange: (open: boolean) => void
 	monitor?: NetworkMonitorRecord
+	monitors: NetworkMonitorRecord[]
 }) {
 	if (!monitor) {
 		return null
 	}
 
-	return <NetworkMonitorSheetContent key={monitor.system} open={open} onOpenChange={onOpenChange} monitor={monitor} />
+	return (
+		<NetworkMonitorSheetContent
+			key={monitor.system}
+			open={open}
+			onOpenChange={onOpenChange}
+			monitor={monitor}
+			monitors={monitors}
+		/>
+	)
 }
 
 const certExpiryTextColors = { ok: "", warning: "text-yellow-600 dark:text-yellow-500", critical: "text-red-500" }
@@ -676,10 +692,13 @@ function NetworkMonitorSheetContent({
 	open,
 	onOpenChange,
 	monitor,
+	monitors,
 }: {
 	open: boolean
 	onOpenChange: (open: boolean) => void
 	monitor: NetworkMonitorRecord
+	/** Table monitors; used to find other targets on the same system to compare against. */
+	monitors: NetworkMonitorRecord[]
 }) {
 	// Keep monitor exploration independent of the system charts' time range.
 	const [chartTimeStore] = useState(() => {
@@ -691,8 +710,16 @@ function NetworkMonitorSheetContent({
 	const systems = useStore($allSystemsById)
 	const system = systems[monitor.system]
 
+	// Other targets probed from the same system. Limited to the same protocol, since response time and
+	// loss mean different things per protocol.
+	const sameSystemMonitors = useMemo(
+		() => monitors.filter((m) => m.system === monitor.system && m.protocol === monitor.protocol && m.id !== monitor.id),
+		[monitors, monitor.system, monitor.protocol, monitor.id]
+	)
+	const [compareTargetIds, setCompareTargetIds] = useState<Set<string>>(() => new Set())
 	// Same target probed from other systems, for side-by-side comparison (#2385).
 	const matchingMonitors = useMatchingMonitors(monitor, open)
+	const matchingSystemIds = useMemo(() => matchingMonitors.map((m) => m.system), [matchingMonitors])
 	const [compareSystemIds, setCompareSystemIds] = useState<Set<string>>(() => new Set())
 	// Scoped to this sheet so a filter doesn't carry over to other monitors' sheets.
 	const [compareFilterStore, setCompareFilterStore] = useState(() => atom(""))
@@ -701,16 +728,61 @@ function NetworkMonitorSheetContent({
 	if (compareMonitorId !== monitor.id) {
 		setCompareMonitorId(monitor.id)
 		setCompareSystemIds(new Set())
+		setCompareTargetIds(new Set())
 		setCompareFilterStore(atom(""))
 	}
-	const matchingSystemIds = useMemo(() => matchingMonitors.map((m) => m.system), [matchingMonitors])
-	// The opened system is always charted; the picker only adds other systems to compare against.
-	const compareMonitors = useMemo(
-		() => [monitor, ...matchingMonitors.filter((m) => compareSystemIds.has(m.system))],
-		[monitor, matchingMonitors, compareSystemIds]
+	// Selected systems' monitors, used to chart each compared target on every selected system.
+	const selectedSystems = useSystemsMonitors([...compareSystemIds], monitor.protocol, open)
+	// Only offer targets that every selected system also probes, so each pick charts a line per system.
+	const sharedMonitors = useMemo(() => {
+		const { monitors: systemMonitors, loadedSystemIds } = selectedSystems
+		const keysBySystem = new Map<string, Set<string>>()
+		for (const m of systemMonitors) {
+			let keys = keysBySystem.get(m.system)
+			if (!keys) keysBySystem.set(m.system, (keys = new Set()))
+			keys.add(getMonitorIdentityKey(m))
+		}
+		// Systems still loading don't filter yet, so selected targets don't flicker off and back on.
+		return sameSystemMonitors.filter((m) => {
+			const key = getMonitorIdentityKey(m)
+			for (const id of loadedSystemIds) {
+				if (!keysBySystem.get(id)?.has(key)) return false
+			}
+			return true
+		})
+	}, [sameSystemMonitors, selectedSystems])
+	// Targets drop out of the list when a system without them is selected, so only chart selections still listed.
+	const visibleCompareTargetIds = useMemo(
+		() => new Set(sharedMonitors.filter((m) => compareTargetIds.has(m.id)).map((m) => m.id)),
+		[sharedMonitors, compareTargetIds]
 	)
+	// The opened monitor is always charted; every charted target is also shown for each selected system.
+	const compareMonitors = useMemo(() => {
+		const targetMonitors = [monitor, ...sharedMonitors.filter((m) => visibleCompareTargetIds.has(m.id))]
+		const targetKeys = new Set(targetMonitors.map(getMonitorIdentityKey))
+		return [...targetMonitors, ...selectedSystems.monitors.filter((m) => targetKeys.has(getMonitorIdentityKey(m)))]
+	}, [monitor, sharedMonitors, visibleCompareTargetIds, selectedSystems])
 	const comparing = compareMonitors.length > 1
-	const getSystemName = useCallback((m: NetworkMonitorRecord) => systems[m.system]?.name ?? m.system, [systems])
+	// Label series by whatever differs between them: system, target, or both.
+	const getCompareLabel = useMemo(() => {
+		const multiSystem = compareSystemIds.size > 0
+		const multiTarget = visibleCompareTargetIds.size > 0
+		const labels = new Map<string, string>()
+		const counts = new Map<string, number>()
+		for (const m of compareMonitors) {
+			const systemName = systems[m.system]?.name ?? m.system
+			const target = getMonitorTarget(m)
+			const label = multiSystem && multiTarget ? `${systemName} · ${target}` : multiTarget ? target : systemName
+			labels.set(m.id, label)
+			counts.set(label, (counts.get(label) ?? 0) + 1)
+		}
+		// DNS lookups of the same name against different servers would otherwise share a label.
+		for (const m of compareMonitors) {
+			const label = labels.get(m.id) as string
+			if ((counts.get(label) ?? 0) > 1) labels.set(m.id, `${label} (${m.server})`)
+		}
+		return (m: NetworkMonitorRecord) => labels.get(m.id) ?? getMonitorTarget(m)
+	}, [compareMonitors, compareSystemIds, visibleCompareTargetIds, systems])
 
 	const monitorStats = useNetworkMonitorStats({
 		systemId: monitor.system,
@@ -766,15 +838,25 @@ function NetworkMonitorSheetContent({
 				<div className="grid gap-4">
 					<div className="flex flex-wrap items-center gap-2">
 						<ChartTimeSelect
-							className="bg-card flex-1 basis-48"
+							className="bg-card flex-1 min-w-0 basis-full sm:basis-0"
 							agentVersion={chartData.agentVersion}
 							chartTimeStore={chartTimeStore}
 							allowRealtime={false}
 						/>
+						{sharedMonitors.length > 0 && (
+							<MonitorMultiSelect
+								id="monitor-compare-targets"
+								className="flex-1 min-w-0 basis-full sm:basis-0 bg-card"
+								monitors={sharedMonitors}
+								selectedMonitorIds={visibleCompareTargetIds}
+								onChange={setCompareTargetIds}
+								placeholder={t`Compare with other targets`}
+							/>
+						)}
 						{matchingMonitors.length > 0 && (
 							<SystemMultiSelect
 								id="monitor-compare-systems"
-								className="w-full sm:w-1/3 shrink-0 bg-card"
+								className="flex-1 min-w-0 basis-full sm:basis-0 bg-card"
 								systemIds={matchingSystemIds}
 								selectedSystemIds={compareSystemIds}
 								onChange={setCompareSystemIds}
@@ -790,7 +872,7 @@ function NetworkMonitorSheetContent({
 								monitors={compareMonitors}
 								chartData={chartData}
 								empty={!hasMonitorStats}
-								getLabel={getSystemName}
+								getLabel={getCompareLabel}
 								filterStore={compareFilterStore}
 							/>
 							<LossChart
@@ -799,7 +881,7 @@ function NetworkMonitorSheetContent({
 								monitors={compareMonitors}
 								chartData={chartData}
 								empty={!hasMonitorStats}
-								getLabel={getSystemName}
+								getLabel={getCompareLabel}
 								filterStore={compareFilterStore}
 							/>
 						</>
