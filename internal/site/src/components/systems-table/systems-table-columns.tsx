@@ -527,10 +527,11 @@ export function SystemsTableColumns(viewMode: "table" | "grid"): ColumnDef<Syste
 					return null
 				}
 				const system = info.row.original
-				const color = {
-					"text-green-500": version === globalThis.BESZEL.HUB_VERSION,
-					"text-yellow-500": version !== globalThis.BESZEL.HUB_VERSION,
-					"text-red-500": system.status !== SystemStatus.Up,
+				let color = "text-red-500"
+				if (system.status === SystemStatus.Up) {
+					color = version === globalThis.BESZEL.HUB_VERSION ? "text-green-500" : "text-yellow-500"
+				} else if (system.status === SystemStatus.Paused) {
+					color = "text-primary/40"
 				}
 				return (
 					<Link

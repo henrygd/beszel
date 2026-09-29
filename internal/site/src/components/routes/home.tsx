@@ -4,7 +4,6 @@ import { getPagePath } from "@nanostores/router"
 import { memo, Suspense, useEffect, useMemo } from "react"
 import { $router, navigate } from "@/components/router"
 import SystemsTable from "@/components/systems-table/systems-table"
-import { ActiveAlerts } from "@/components/active-alerts"
 import { FooterRepoLink } from "@/components/footer-repo-link"
 import { $systems, $userSettings } from "@/lib/stores"
 import { saveSettings } from "@/components/routes/settings/layout"
@@ -29,12 +28,9 @@ export default memo(() => {
 	return useMemo(
 		() => (
 			<>
-				<div className="flex flex-col gap-4">
-					<ActiveAlerts />
-					<Suspense>
-						<SystemsTable />
-					</Suspense>
-				</div>
+				<Suspense>
+					<SystemsTable />
+				</Suspense>
 				<FooterRepoLink />
 			</>
 		),
