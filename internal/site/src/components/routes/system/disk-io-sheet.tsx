@@ -12,7 +12,6 @@ import { decimalString, formatBytes, toFixedFloat } from "@/lib/utils"
 import { ChartCard, SelectAvgMax } from "@/components/routes/system/chart-card"
 import type { SystemData } from "@/components/routes/system/use-system-data"
 import { diskDataFns, DiskUtilizationChart } from "./charts/disk-charts"
-import { pinnedAxisDomain } from "@/components/ui/chart"
 
 export default memo(function DiskIOSheet({
 	systemData,
@@ -130,7 +129,6 @@ export default memo(function DiskIOSheet({
 							maxToggled={showMax}
 							chartProps={chartProps}
 							showTotal={true}
-							domain={pinnedAxisDomain()}
 							itemSorter={(a, b) => a.order - b.order}
 							reverseStackOrder={true}
 							dataPoints={[
@@ -179,7 +177,6 @@ export default memo(function DiskIOSheet({
 						<AreaChartDefault
 							legend={true}
 							chartData={chartData}
-							domain={pinnedAxisDomain()}
 							tickFormatter={(val) => `${toFixedFloat(val, 2)}%`}
 							contentFormatter={({ value }) => `${decimalString(value)}%`}
 							maxToggled={showMax}
@@ -219,7 +216,6 @@ export default memo(function DiskIOSheet({
 						>
 							<AreaChartDefault
 								chartData={chartData}
-								domain={pinnedAxisDomain()}
 								tickFormatter={(val) => `${toFixedFloat(val, 2)}`}
 								contentFormatter={({ value }) => decimalString(value, value < 10 ? 3 : 2)}
 								maxToggled={showMax}
@@ -252,7 +248,6 @@ export default memo(function DiskIOSheet({
 							<AreaChartDefault
 								legend={true}
 								chartData={chartData}
-								domain={pinnedAxisDomain()}
 								tickFormatter={(val) => `${toFixedFloat(val, 2)} ms`}
 								contentFormatter={({ value }) => `${decimalString(value)} ms`}
 								maxToggled={showMax}

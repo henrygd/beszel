@@ -491,17 +491,19 @@ export {
 	// ChartStyle,
 }
 
-export function pinnedAxisDomain(): AxisDomain {
-	return [
-		0,
-		(dataMax: number) => {
-			if (dataMax > 10) {
-				return Math.round(dataMax)
-			}
-			if (dataMax > 1) {
-				return Math.round(dataMax / 0.1) * 0.1
-			}
-			return dataMax
-		},
-	]
+const roundFloat = (value: number) => Number(value.toPrecision(12))
+
+/**
+ * Four equal intervals for a fixed [0, max] domain (e.g. total memory or disk size), with max as the top tick.
+ * Recharts stops one full step before max, which leaves a large gap below the top tick.
+ */
+export function fixedDomainTicks(domain?: AxisDomain): number[] | undefined {
+	if (!Array.isArray(domain)) {
+		return undefined
+	}
+	const [min, max] = domain
+	if (min !== 0 || typeof max !== "number" || !(max > 0) || !Number.isFinite(max)) {
+		return undefined
+	}
+	return [0, 1, 2, 3, 4].map((i) => roundFloat((max * i) / 4))
 }
