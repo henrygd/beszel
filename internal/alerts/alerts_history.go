@@ -39,6 +39,11 @@ func updateHistoryOnAlertUpdate(e *core.RecordEvent) error {
 		return e.Next()
 	}
 
+	// History is visible to the subscriber, including after system access is removed.
+	if !userHasSystem(e.App, new.GetString("user"), new.GetString("system")) {
+		return e.Next()
+	}
+
 	// if new state is triggered, create new alert history record
 	if newTriggered {
 		_, _ = createAlertHistoryRecord(e.App, new)
