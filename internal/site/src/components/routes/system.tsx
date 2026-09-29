@@ -1,6 +1,7 @@
 import { memo, useState } from "react"
 import { Trans } from "@lingui/react/macro"
-import { compareSemVer, parseSemVer } from "@/lib/utils"
+import { compareSemVer, parseSemVer, supportsNetworkMonitors } from "@/lib/utils"
+import { SystemStatus } from "@/lib/enums"
 import type { GPUData } from "@/types"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import InfoBar from "./system/info-bar"
@@ -11,10 +12,18 @@ import { RootDiskCharts, ExtraFsCharts } from "./system/charts/disk-charts"
 import { ZfsCharts } from "./system/charts/storage-pool-charts"
 import { BandwidthChart, ContainerNetworkChart } from "./system/charts/network-charts"
 import { TemperatureChart, FanChart, BatteryChart } from "./system/charts/sensor-charts"
+import { WiFiChart } from "./system/charts/wifi-chart"
 import { GpuPowerChart, GpuCharts } from "./system/charts/gpu-charts"
-import { LazyContainersTable, LazySmartTable, LazySystemdTable, LazyZfsTable } from "./system/lazy-tables"
+import {
+	LazyContainersTable,
+	LazyNetworkMonitorsTable,
+	LazyPackageUpdatesTable,
+	LazySmartTable,
+	LazySystemdTable,
+	LazyZfsTable,
+} from "./system/lazy-tables"
 import { LoadAverageChart } from "./system/charts/load-average-chart"
-import { ContainerIcon, CpuIcon, HardDriveIcon, TerminalSquareIcon } from "lucide-react"
+import { ContainerIcon, CpuIcon, HardDriveIcon, NetworkIcon, PackageIcon, TerminalSquareIcon } from "lucide-react"
 import { GpuIcon } from "../ui/icons"
 import SystemdTable from "../systemd-table/systemd-table"
 import ContainersTable from "../containers-table/containers-table"
@@ -65,12 +74,16 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 	const hasSystemd = system.info.sv
 	const hasGpu = hasGpuData || hasGpuPowerData
 	const hasZfs = Object.keys(systemStats.at(-1)?.stats?.z ?? {}).length > 0
+	const hasNetworkMonitors = supportsNetworkMonitors(system)
+	// counts key the table so it refetches the list only after a new check
+	const packageUpdates = system.status === SystemStatus.Up && system.info.pu?.[0] ? system.info.pu.join(",") : ""
 
 	// keep tabsRef in sync for keyboard navigation
-	const tabs = ["core", "disk"]
+	const tabs = ["core", "network", "disk"]
 	if (hasGpu) tabs.push("gpu")
 	if (hasContainers) tabs.push("containers")
 	if (hasSystemd) tabs.push("services")
+	if (packageUpdates) tabs.push("updates")
 	tabsRef.current = tabs
 
 	// shared chart props
@@ -128,6 +141,7 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 					<FanChart {...coreProps} />
 
 					<BatteryChart system={system} {...coreProps} />
+					<WiFiChart system={system} {...coreProps} />
 
 					{hasGpuPowerData && <GpuPowerChart chartData={chartData} grid={grid} dataEmpty={dataEmpty} />}
 				</div>
@@ -153,6 +167,10 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 				{hasContainersTable && <LazyContainersTable systemId={system.id} />}
 
 				{hasSystemd && <LazySystemdTable systemId={system.id} />}
+
+				{packageUpdates && <LazyPackageUpdatesTable systemId={system.id} counts={packageUpdates} />}
+
+				{hasNetworkMonitors && <LazyNetworkMonitorsTable systemId={system.id} />}
 			</>
 		)
 	}
@@ -164,6 +182,10 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 					<TabsTrigger value="core" className="w-full flex items-center gap-1.5">
 						<CpuIcon className="size-3.5" />
 						<Trans context="Core system metrics">Core</Trans>
+					</TabsTrigger>
+					<TabsTrigger value="network" className="w-full flex items-center gap-1.5">
+						<NetworkIcon className="size-3.5" />
+						<Trans>Network</Trans>
 					</TabsTrigger>
 					<TabsTrigger value="disk" className="w-full flex items-center gap-1.5">
 						<HardDriveIcon className="size-3.5" />
@@ -187,20 +209,37 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 							<Trans>Services</Trans>
 						</TabsTrigger>
 					)}
+					{packageUpdates && (
+						<TabsTrigger value="updates" className="w-full flex items-center gap-2">
+							<PackageIcon className="size-3.5" />
+							<Trans>Updates</Trans>
+						</TabsTrigger>
+					)}
 				</TabsList>
 
 				<TabsContent value="core" forceMount className={activeTab === "core" ? "contents" : "hidden"}>
 					<div className="grid xl:grid-cols-2 gap-4">
 						<CpuChart {...coreProps} />
-						<MemoryChart {...coreProps} />
 						<LoadAverageChart chartData={chartData} grid={grid} dataEmpty={dataEmpty} />
-						<BandwidthChart {...coreProps} systemStats={systemStats} />
+						<MemoryChart {...coreProps} />
+						<SwapChart chartData={chartData} grid={grid} dataEmpty={dataEmpty} systemStats={systemStats} />
 						<TemperatureChart {...coreProps} setPageBottomExtraMargin={setPageBottomExtraMargin} />
 						<FanChart {...coreProps} />
 						<BatteryChart system={system} {...coreProps} />
-						<SwapChart chartData={chartData} grid={grid} dataEmpty={dataEmpty} systemStats={systemStats} />
 						{pageBottomExtraMargin > 0 && <div style={{ marginBottom: pageBottomExtraMargin }}></div>}
 					</div>
+				</TabsContent>
+
+				<TabsContent value="network" forceMount className={activeTab === "network" ? "contents" : "hidden"}>
+					{mountedTabs.has("network") && (
+						<>
+							<div className="grid xl:grid-cols-2 gap-4">
+								<BandwidthChart {...coreProps} systemStats={systemStats} />
+								<WiFiChart system={system} {...coreProps} />
+							</div>
+							{hasNetworkMonitors && <LazyNetworkMonitorsTable systemId={system.id} />}
+						</>
+					)}
 				</TabsContent>
 
 				<TabsContent value="disk" forceMount className={activeTab === "disk" ? "contents" : "hidden"}>
@@ -267,6 +306,12 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 				{hasSystemd && (
 					<TabsContent value="services" forceMount className={activeTab === "services" ? "contents" : "hidden"}>
 						{mountedTabs.has("services") && <SystemdTable systemId={system.id} />}
+					</TabsContent>
+				)}
+
+				{packageUpdates && (
+					<TabsContent value="updates" forceMount className={activeTab === "updates" ? "contents" : "hidden"}>
+						{mountedTabs.has("updates") && <LazyPackageUpdatesTable systemId={system.id} counts={packageUpdates} />}
 					</TabsContent>
 				)}
 			</Tabs>

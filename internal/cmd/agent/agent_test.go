@@ -2,6 +2,7 @@ package main
 
 import (
 	"crypto/ed25519"
+	"errors"
 	"os"
 	"path/filepath"
 	"testing"
@@ -183,6 +184,26 @@ func TestLoadPublicKeys(t *testing.T) {
 			require.NoError(t, err)
 			assert.Len(t, keys, 1)
 			assert.Equal(t, signer.PublicKey().Type(), keys[0].Type())
+		})
+	}
+}
+
+func TestIsBenignStartupError(t *testing.T) {
+	tests := []struct {
+		name string
+		err  error
+		goos string
+		want bool
+	}{
+		{name: "missing key on windows", err: noKeyProvidedError{}, goos: "windows", want: true},
+		{name: "wrapped missing key on windows", err: errors.Join(errors.New("startup failed"), noKeyProvidedError{}), goos: "windows", want: true},
+		{name: "missing key on linux", err: noKeyProvidedError{}, goos: "linux", want: false},
+		{name: "different error on windows", err: errors.New("invalid key"), goos: "windows", want: false},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.Equal(t, tt.want, isBenignStartupError(tt.err, tt.goos))
 		})
 	}
 }

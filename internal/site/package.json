@@ -1,11 +1,11 @@
 {
 	"name": "beszel",
 	"private": true,
-	"version": "0.19.0",
+	"version": "0.20.0",
 	"type": "module",
 	"scripts": {
 		"dev": "vite --host",
-		"build": "lingui extract --overwrite && lingui compile && vite build",
+		"build": "lingui extract --overwrite && lingui compile && tsc -b && vite build",
 		"preview": "vite preview",
 		"sync": "lingui extract --overwrite && lingui compile",
 		"sync_no_compile": "lingui extract --overwrite --clean",

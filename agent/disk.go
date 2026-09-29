@@ -3,6 +3,7 @@ package agent
 import (
 	"context"
 	"log/slog"
+	"math"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -153,12 +154,12 @@ func registerFilesystemStats(existing map[string]*system.FsStats, device, mountp
 }
 
 // addFsStat inserts a discovered filesystem if it resolves to a new tracking
-// key. The key selection itself lives in buildFsStatRegistration so that logic
-// can stay directly unit-tested.
-func (d *diskDiscovery) addFsStat(device, mountpoint string, root bool, customName string) {
+// key and reports whether it was added. The key selection itself lives in
+// registerFilesystemStats so that logic can stay directly unit-tested.
+func (d *diskDiscovery) addFsStat(device, mountpoint string, root bool, customName string) bool {
 	key, fsStats, ok := registerFilesystemStats(d.agent.fsStats, device, mountpoint, root, customName, d.ctx)
 	if !ok {
-		return
+		return false
 	}
 	d.agent.fsStats[key] = fsStats
 	name := key
@@ -166,6 +167,7 @@ func (d *diskDiscovery) addFsStat(device, mountpoint string, root bool, customNa
 		name = customName
 	}
 	slog.Info("Detected disk", "name", name, "device", device, "mount", mountpoint, "io", key, "root", root)
+	return true
 }
 
 // addConfiguredRootFs resolves FILESYSTEM against partitions first, then falls
@@ -203,14 +205,24 @@ func isRootFallbackPartition(p disk.PartitionStat, rootMountPoint string) bool {
 // partition looks like the active root mount but still needs translating to an
 // I/O device key.
 func (d *diskDiscovery) addPartitionRootFs(device, mountpoint string) bool {
-	fs, match := findIoDevice(filepath.Base(device), d.ctx.diskIoCounters)
+	// device is passed through as-is: findIoDevice normalizes it, and
+	// filepath.Base would turn a Windows volume name such as "C:" into "\"
+	// on the way in (#2417).
+	fs, match := findIoDevice(device, d.ctx.diskIoCounters)
 	if !match {
 		return false
 	}
-	// The resolved I/O device is already known here, so use it directly to avoid
-	// a second fallback search inside buildFsStatRegistration.
-	d.addFsStat(fs, mountpoint, true, "")
-	return true
+	// The root device is already resolved, so if it was registered earlier as an
+	// extra filesystem (e.g. root drive listed in EXTRA_FILESYSTEMS), promote that
+	// entry rather than letting addLastResortRootFs guess a different device.
+	if stats, exists := d.agent.fsStats[fs]; exists {
+		stats.Root = true
+		stats.Mountpoint = mountpoint
+		return true
+	}
+	// Use the resolved I/O device directly to avoid a second fallback search
+	// inside registerFilesystemStats.
+	return d.addFsStat(fs, mountpoint, true, "")
 }
 
 // addLastResortRootFs is only used when neither FILESYSTEM nor partition-based
@@ -526,11 +538,41 @@ func filesystemMatchesPartitionSetting(filesystem string, p disk.PartitionStat) 
 
 // normalizeDeviceName canonicalizes device strings for comparisons.
 func normalizeDeviceName(value string) string {
-	name := filepath.Base(strings.TrimSpace(value))
+	name := strings.TrimSpace(value)
+	if volume, ok := windowsVolumeName(name); ok {
+		return volume
+	}
+	name = filepath.Base(name)
 	if name == "." {
 		return ""
 	}
 	return name
+}
+
+// windowsVolumeName returns the canonical form of a bare Windows volume
+// specifier, so that "C:", "c:", `C:\` and "C:/" all name the same drive.
+// Drive letters are case-insensitive on Windows, so the letter is uppercased.
+//
+// filepath.Base cannot do this. On Windows it treats "C:" as a volume name
+// with no path element to take the base of and returns "\", so every drive
+// letter normalizes to the same key. findIoDevice then returns whichever
+// counter the map happened to yield first, which registers the root
+// filesystem under a random drive (#2417).
+func windowsVolumeName(value string) (string, bool) {
+	if len(value) < 2 || value[1] != ':' {
+		return "", false
+	}
+	if c := value[0]; !('a' <= c && c <= 'z' || 'A' <= c && c <= 'Z') {
+		return "", false
+	}
+	// Only separators may follow the specifier. "C:data" is a drive-relative
+	// path, not a volume.
+	for i := 2; i < len(value); i++ {
+		if value[i] != '\\' && value[i] != '/' {
+			return "", false
+		}
+	}
+	return strings.ToUpper(value[:2]), true
 }
 
 // Sets start values for disk I/O stats.
@@ -554,9 +596,9 @@ func (a *Agent) initializeDiskIoStats(diskIoCounters map[string]disk.IOCountersS
 			continue
 		}
 		// populate initial values
-		stats.Time = now
 		stats.TotalRead = d.ReadBytes
 		stats.TotalWrite = d.WriteBytes
+		a.setDiskBaseline(device, prevDiskFromCounter(d, now))
 		// add to list of valid io device names
 		a.fsNames = append(a.fsNames, device)
 	}
@@ -639,19 +681,9 @@ func (a *Agent) updateDiskIo(cacheTimeMs uint16, systemStats *system.Stats) {
 			// Previous snapshot for this interval and device
 			prev, hasPrev := a.diskPrev[cacheTimeMs][name]
 			if !hasPrev {
-				// Seed from agent-level fsStats if present, else seed from current
-				prev = prevDisk{
-					readBytes:  stats.TotalRead,
-					writeBytes: stats.TotalWrite,
-					readTime:   d.ReadTime,
-					writeTime:  d.WriteTime,
-					ioTime:     d.IoTime,
-					weightedIO: d.WeightedIO,
-					readCount:  d.ReadCount,
-					writeCount: d.WriteCount,
-					at:         stats.Time,
-				}
-				if prev.at.IsZero() {
+				// Seed from the latest counters of any interval, else seed from current
+				prev, hasPrev = a.diskBaseline[name]
+				if !hasPrev {
 					prev = prevDiskFromCounter(d, now)
 				}
 			}
@@ -686,29 +718,31 @@ func (a *Agent) updateDiskIo(cacheTimeMs uint16, systemStats *system.Stats) {
 			// This is the total number of milliseconds spent by all reads (as
 			// measured from __make_request() to end_that_request_last()).
 			// https://www.kernel.org/doc/Documentation/iostats.txt (fields 4, 8)
-			diskReadTime := utils.TwoDecimals(float64(d.ReadTime-prev.readTime) / float64(msElapsed) * 100)
-			diskWriteTime := utils.TwoDecimals(float64(d.WriteTime-prev.writeTime) / float64(msElapsed) * 100)
+			deltaReadTime := ioTimeDelta(d.ReadTime, prev.readTime)
+			deltaWriteTime := ioTimeDelta(d.WriteTime, prev.writeTime)
+			diskReadTime := utils.TwoDecimals(float64(deltaReadTime) / float64(msElapsed) * 100)
+			diskWriteTime := utils.TwoDecimals(float64(deltaWriteTime) / float64(msElapsed) * 100)
 
 			// I/O utilization %: fraction of wall time the device had any I/O in progress (0-100).
-			diskIoUtilPct := utils.TwoDecimals(float64(d.IoTime-prev.ioTime) / float64(msElapsed) * 100)
+			diskIoUtilPct := utils.TwoDecimals(float64(ioTimeDelta(d.IoTime, prev.ioTime)) / float64(msElapsed) * 100)
 
 			// Weighted I/O: queue-depth weighted I/O time, normalized to interval (can exceed 100%).
 			// Linux kernel field 11: incremented by iops_in_progress × ms_since_last_update.
 			// Used to display queue depth. Multipled by 100 to increase accuracy of digit truncation (divided by 100 in UI).
-			diskWeightedIO := utils.TwoDecimals(float64(d.WeightedIO-prev.weightedIO) / float64(msElapsed) * 100)
+			diskWeightedIO := utils.TwoDecimals(float64(ioTimeDelta(d.WeightedIO, prev.weightedIO)) / float64(msElapsed) * 100)
 
 			// r_await / w_await: average time per read/write operation in milliseconds.
 			// Equivalent to r_await and w_await in iostat.
 			var rAwait, wAwait float64
 			if deltaReadCount := d.ReadCount - prev.readCount; deltaReadCount > 0 {
-				rAwait = utils.TwoDecimals(float64(d.ReadTime-prev.readTime) / float64(deltaReadCount))
+				rAwait = utils.TwoDecimals(float64(deltaReadTime) / float64(deltaReadCount))
 			}
 			if deltaWriteCount := d.WriteCount - prev.writeCount; deltaWriteCount > 0 {
-				wAwait = utils.TwoDecimals(float64(d.WriteTime-prev.writeTime) / float64(deltaWriteCount))
+				wAwait = utils.TwoDecimals(float64(deltaWriteTime) / float64(deltaWriteCount))
 			}
 
-			// Update global fsStats baseline for cross-interval correctness
-			stats.Time = now
+			// Update the baseline that seeds new intervals
+			a.setDiskBaseline(name, prevDiskFromCounter(d, now))
 			stats.TotalRead = d.ReadBytes
 			stats.TotalWrite = d.WriteBytes
 			stats.DiskReadPs = readMbPerSecond
@@ -738,6 +772,30 @@ func (a *Agent) updateDiskIo(cacheTimeMs uint16, systemStats *system.Stats) {
 			}
 		}
 	}
+}
+
+// setDiskBaseline stores the latest counters of a device. A cache interval
+// without its own snapshot measures its first sample from them.
+func (a *Agent) setDiskBaseline(name string, d prevDisk) {
+	if a.diskBaseline == nil {
+		a.diskBaseline = make(map[string]prevDisk)
+	}
+	a.diskBaseline[name] = d
+}
+
+// ioTimeDelta returns the increase of a cumulative millisecond counter from
+// the disk I/O stats. Linux prints these fields of /proc/diskstats as 32-bit
+// unsigned ints, so they wrap to zero at 2^32. A busy disk reaches that in
+// days for the weighted I/O time. Other platforms report 64-bit counters,
+// so a lower value there is a reset.
+func ioTimeDelta(current, previous uint64) uint64 {
+	if current >= previous {
+		return current - previous
+	}
+	if runtime.GOOS == "linux" && previous <= math.MaxUint32 {
+		return current + (math.MaxUint32 + 1 - previous)
+	}
+	return 0
 }
 
 // getRootMountPoint returns the appropriate root mount point for the system.

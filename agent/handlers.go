@@ -7,7 +7,9 @@ import (
 
 	"github.com/fxamacker/cbor/v2"
 	"github.com/henrygd/beszel/internal/common"
+	"github.com/henrygd/beszel/internal/entities/monitor"
 	"github.com/henrygd/beszel/internal/entities/smart"
+	"github.com/henrygd/beszel/internal/entities/system"
 
 	"log/slog"
 )
@@ -51,7 +53,10 @@ func NewHandlerRegistry() *HandlerRegistry {
 	registry.Register(common.GetContainerInfo, &GetContainerInfoHandler{})
 	registry.Register(common.GetSmartData, &GetSmartDataHandler{})
 	registry.Register(common.GetSystemdInfo, &GetSystemdInfoHandler{})
+	registry.Register(common.GetSystemdLogs, &GetSystemdLogsHandler{})
+	registry.Register(common.SyncNetworkMonitors, &SyncNetworkMonitorsHandler{})
 	registry.Register(common.GetZfsData, &GetZfsDataHandler{})
+	registry.Register(common.GetPackageUpdates, &GetPackageUpdatesHandler{})
 
 	return registry
 }
@@ -198,6 +203,20 @@ func (h *GetZfsDataHandler) Handle(hctx *HandlerContext) error {
 
 ////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////
+
+// GetPackageUpdatesHandler returns the pending package updates found by the
+// last background check. It never runs a check itself.
+type GetPackageUpdatesHandler struct{}
+
+func (h *GetPackageUpdatesHandler) Handle(hctx *HandlerContext) error {
+	if hctx.Agent.packageUpdates == nil {
+		return hctx.SendResponse(system.PackageUpdates{}, hctx.RequestID)
+	}
+	return hctx.SendResponse(hctx.Agent.packageUpdates.list(), hctx.RequestID)
+}
+
+////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////
 
 // GetSystemdInfoHandler handles detailed systemd service info requests
@@ -222,4 +241,49 @@ func (h *GetSystemdInfoHandler) Handle(hctx *HandlerContext) error {
 	}
 
 	return hctx.SendResponse(details, hctx.RequestID)
+}
+
+////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
+
+// GetSystemdLogsHandler handles recent systemd service log requests.
+type GetSystemdLogsHandler struct{}
+
+func (h *GetSystemdLogsHandler) Handle(hctx *HandlerContext) error {
+	if hctx.Agent.systemdManager == nil {
+		return errors.ErrUnsupported
+	}
+
+	var req common.SystemdLogsRequest
+	if err := cbor.Unmarshal(hctx.Request.Data, &req); err != nil {
+		return err
+	}
+	if req.ServiceName == "" {
+		return errors.New("service name is required")
+	}
+
+	logs, err := hctx.Agent.systemdManager.getServiceLogs(req.ServiceName)
+	if err != nil {
+		return err
+	}
+
+	return hctx.SendResponse(logs, hctx.RequestID)
+}
+
+////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
+
+// SyncNetworkMonitorsHandler handles monitor configuration sync from hub
+type SyncNetworkMonitorsHandler struct{}
+
+func (h *SyncNetworkMonitorsHandler) Handle(hctx *HandlerContext) error {
+	var req monitor.SyncRequest
+	if err := cbor.Unmarshal(hctx.Request.Data, &req); err != nil {
+		return err
+	}
+	resp, err := hctx.Agent.monitorManager.HandleSyncRequest(req)
+	if err != nil {
+		return err
+	}
+	return hctx.SendResponse(resp, hctx.RequestID)
 }

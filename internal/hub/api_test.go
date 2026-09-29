@@ -99,6 +99,7 @@ func TestApiRoutesAuthentication(t *testing.T) {
 	adminUser, err := beszelTests.CreateUserWithRole(hub, "admin@example.com", "password123", "admin")
 	require.NoError(t, err, "Failed to create admin user")
 	adminUserToken, err := adminUser.NewAuthToken()
+	require.NoError(t, err, "Failed to create admin auth token")
 
 	readOnlyUser, err := beszelTests.CreateUserWithRole(hub, "readonly@example.com", "password123", "readonly")
 	require.NoError(t, err, "Failed to create readonly user")
@@ -548,6 +549,59 @@ func TestApiRoutesAuthentication(t *testing.T) {
 			ExpectedContent: []string{"Something went wrong while processing your request."},
 			TestAppFactory:  testAppFactory,
 		},
+		// /package-updates route
+		{
+			Name:            "GET /package-updates - no auth should fail",
+			Method:          http.MethodGet,
+			URL:             fmt.Sprintf("/api/beszel/package-updates?system=%s", system.Id),
+			ExpectedStatus:  401,
+			ExpectedContent: []string{"requires valid"},
+			TestAppFactory:  testAppFactory,
+		},
+		{
+			Name:   "GET /package-updates - missing system param should fail",
+			Method: http.MethodGet,
+			URL:    "/api/beszel/package-updates",
+			Headers: map[string]string{
+				"Authorization": userToken,
+			},
+			ExpectedStatus:  400,
+			ExpectedContent: []string{"Invalid", "parameter"},
+			TestAppFactory:  testAppFactory,
+		},
+		{
+			Name:   "GET /package-updates - invalid system should fail",
+			Method: http.MethodGet,
+			URL:    "/api/beszel/package-updates?system=invalid-system",
+			Headers: map[string]string{
+				"Authorization": userToken,
+			},
+			ExpectedStatus:  404,
+			ExpectedContent: []string{"The requested resource wasn't found."},
+			TestAppFactory:  testAppFactory,
+		},
+		{
+			Name:            "GET /package-updates - request for valid non-user system should fail",
+			Method:          http.MethodGet,
+			URL:             fmt.Sprintf("/api/beszel/package-updates?system=%s", system.Id),
+			ExpectedStatus:  404,
+			ExpectedContent: []string{"The requested resource wasn't found."},
+			TestAppFactory:  testAppFactory,
+			Headers: map[string]string{
+				"Authorization": user2Token,
+			},
+		},
+		{
+			Name:   "GET /package-updates - good user should pass validation",
+			Method: http.MethodGet,
+			URL:    fmt.Sprintf("/api/beszel/package-updates?system=%s", system.Id),
+			Headers: map[string]string{
+				"Authorization": userToken,
+			},
+			ExpectedStatus:  500,
+			ExpectedContent: []string{"Something went wrong while processing your request."},
+			TestAppFactory:  testAppFactory,
+		},
 		// /systemd routes
 		{
 			Name:            "GET /systemd/info - no auth should fail",
@@ -621,6 +675,25 @@ func TestApiRoutesAuthentication(t *testing.T) {
 			},
 			ExpectedStatus:  500,
 			ExpectedContent: []string{"Something went wrong while processing your request."},
+			TestAppFactory:  testAppFactory,
+			BeforeTestFunc: func(t testing.TB, app *pbTests.TestApp, e *core.ServeEvent) {
+				beszelTests.CreateRecord(app, "systemd_services", map[string]any{
+					"system": system.Id,
+					"name":   "nginx.service",
+					"state":  0,
+					"sub":    1,
+				})
+			},
+		},
+		{
+			Name:   "GET /systemd/logs - old agent without capability returns empty logs",
+			Method: http.MethodGet,
+			URL:    fmt.Sprintf("/api/beszel/systemd/logs?system=%s&service=nginx.service", system.Id),
+			Headers: map[string]string{
+				"Authorization": userToken,
+			},
+			ExpectedStatus:  200,
+			ExpectedContent: []string{`"logs":""`},
 			TestAppFactory:  testAppFactory,
 			BeforeTestFunc: func(t testing.TB, app *pbTests.TestApp, e *core.ServeEvent) {
 				beszelTests.CreateRecord(app, "systemd_services", map[string]any{
@@ -1104,6 +1177,79 @@ func TestTrustedHeaderMiddleware(t *testing.T) {
 
 	for _, scenario := range scenarios {
 		scenario.Test(t)
+	}
+}
+
+func TestTrustedHeaderProxyAllowlist(t *testing.T) {
+	var hubs []*beszelTests.TestHub
+
+	defer func() {
+		for _, hub := range hubs {
+			hub.Cleanup()
+		}
+	}()
+
+	testAppFactory := func(t testing.TB) *pbTests.TestApp {
+		hub, _ := beszelTests.NewTestHub(t.TempDir())
+		hubs = append(hubs, hub)
+		hub.StartHub()
+		return hub.TestApp
+	}
+
+	// httptest requests arrive from 192.0.2.1:1234
+	testCases := []struct {
+		name            string
+		proxies         string
+		expectedStatus  int
+		expectedContent []string
+	}{
+		{
+			name:            "peer inside an allowed range",
+			proxies:         "10.0.0.0/8, 192.0.2.0/24",
+			expectedStatus:  200,
+			expectedContent: []string{"\"key\":", "\"v\":"},
+		},
+		{
+			name:            "peer is the listed address",
+			proxies:         "192.0.2.1",
+			expectedStatus:  200,
+			expectedContent: []string{"\"key\":", "\"v\":"},
+		},
+		{
+			name:            "peer outside the allowlist",
+			proxies:         "10.0.0.0/8",
+			expectedStatus:  401,
+			expectedContent: []string{"requires valid"},
+		},
+		{
+			name:            "allowlist with no valid entry",
+			proxies:         "proxy.internal",
+			expectedStatus:  401,
+			expectedContent: []string{"requires valid"},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			t.Setenv("TRUSTED_AUTH_HEADER", "X-Beszel-Trusted")
+			t.Setenv("TRUSTED_PROXY_IPS", tc.proxies)
+
+			scenario := beszelTests.ApiScenario{
+				Name:   "GET /getkey - with trusted header",
+				Method: http.MethodGet,
+				URL:    "/api/beszel/getkey",
+				Headers: map[string]string{
+					"X-Beszel-Trusted": "user@test.com",
+				},
+				ExpectedStatus:  tc.expectedStatus,
+				ExpectedContent: tc.expectedContent,
+				TestAppFactory:  testAppFactory,
+				BeforeTestFunc: func(t testing.TB, app *pbTests.TestApp, e *core.ServeEvent) {
+					beszelTests.CreateUser(app, "user@test.com", "password123")
+				},
+			}
+			scenario.Test(t)
+		})
 	}
 }
 
