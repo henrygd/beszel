@@ -95,7 +95,7 @@ func (t *SSHTransport) Request(ctx context.Context, action common.WebSocketActio
 	stop := closeOnCancellation(ctx, func() { t.closeClient(client) })
 	defer func() {
 		stop()
-		if ctx.Err() != nil {
+		if err != nil && ctx.Err() != nil {
 			err = ctx.Err()
 		}
 		if isConnectionError(err) {

@@ -18,8 +18,9 @@ import (
 	"golang.org/x/crypto/ssh"
 )
 
-// Adapted from the audit's loopback deadline reproduction. Only the first
-// connection stalls; later connections provide a real reconnection control.
+// newSSHTestTransport starts a loopback SSH server that stalls the first
+// connection at the given stage; later connections behave normally so tests
+// can verify reconnection.
 func newSSHTestTransport(t *testing.T, stage string) (*SSHTransport, <-chan struct{}, <-chan struct{}) {
 	t.Helper()
 	_, key, err := ed25519.GenerateKey(rand.Reader)
