@@ -33,6 +33,7 @@ import { Separator } from "../ui/separator"
 import { $router, Link } from "../router"
 import { listenKeys } from "nanostores"
 import { getPagePath } from "@nanostores/router"
+import { LogsDisplay, LogsFullscreenDialog } from "@/components/logs-display"
 
 const syntaxTheme = "github-dark-dimmed"
 
@@ -359,7 +360,7 @@ function ContainerSheet({
 				open={logsFullscreenOpen}
 				onOpenChange={setLogsFullscreenOpen}
 				logsDisplay={logsDisplay}
-				containerName={container.name}
+				name={container.name}
 				onRefresh={refreshLogs}
 				isRefreshing={isRefreshingLogs}
 			/>
@@ -411,15 +412,7 @@ function ContainerSheet({
 								<MaximizeIcon className="size-4" />
 							</Button>
 						</div>
-						<div
-							ref={logsContainerRef}
-							className={cn(
-								"max-h-[calc(50dvh-10rem)] w-full overflow-auto p-3 rounded-md bg-gh-dark text-white text-sm",
-								!logsDisplay && ["animate-pulse", "h-full"]
-							)}
-						>
-							<div dangerouslySetInnerHTML={{ __html: logsDisplay }} />
-						</div>
+						<LogsDisplay logsDisplay={logsDisplay} containerRef={logsContainerRef} />
 						<div className="flex items-center w-full">
 							<h3>{t`Detail`}</h3>
 							<Button
@@ -492,58 +485,6 @@ const ContainerTableRow = memo(function ContainerTableRow({
 		</TableRow>
 	)
 })
-
-function LogsFullscreenDialog({
-	open,
-	onOpenChange,
-	logsDisplay,
-	containerName,
-	onRefresh,
-	isRefreshing,
-}: {
-	open: boolean
-	onOpenChange: (open: boolean) => void
-	logsDisplay: string
-	containerName: string
-	onRefresh: () => void | Promise<void>
-	isRefreshing: boolean
-}) {
-	const outerContainerRef = useRef<HTMLDivElement>(null)
-
-	useEffect(() => {
-		if (open && logsDisplay) {
-			// Scroll the outer container to bottom
-			const scrollToBottom = () => {
-				if (outerContainerRef.current) {
-					outerContainerRef.current.scrollTop = outerContainerRef.current.scrollHeight
-				}
-			}
-			setTimeout(scrollToBottom, 50)
-		}
-	}, [open, logsDisplay])
-
-	return (
-		<Dialog open={open} onOpenChange={onOpenChange}>
-			<DialogContent className="w-[calc(100vw-20px)] h-[calc(100dvh-20px)] max-w-none p-0 bg-gh-dark border-0 text-white">
-				<DialogTitle className="sr-only">{containerName} logs</DialogTitle>
-				<div ref={outerContainerRef} className="h-full overflow-auto">
-					<div className="h-full w-full px-3 leading-relaxed rounded-md bg-gh-dark text-sm">
-						<div className="py-3" dangerouslySetInnerHTML={{ __html: logsDisplay }} />
-					</div>
-				</div>
-				<button
-					onClick={onRefresh}
-					className="absolute top-3 right-11 opacity-60 hover:opacity-100 p-1"
-					disabled={isRefreshing}
-					title={t`Refresh`}
-					aria-label={t`Refresh`}
-				>
-					<RefreshCwIcon className={`size-4 transition-transform duration-300 ${isRefreshing ? "animate-spin" : ""}`} />
-				</button>
-			</DialogContent>
-		</Dialog>
-	)
-}
 
 function InfoFullscreenDialog({
 	open,
