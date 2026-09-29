@@ -71,6 +71,8 @@ export interface SystemInfo {
 	bb?: number
 	/** agent version */
 	v: string
+	/** agent can read the system journal */
+	jl?: boolean
 	/** system is using podman */
 	p?: boolean
 	/** highest gpu utilization */
@@ -224,6 +226,25 @@ export interface ZfsVdev {
 	readErrs?: number
 	writeErrs?: number
 	checksumErrs?: number
+}
+
+/** pending package update from GET /api/beszel/package-updates */
+export interface PackageUpdate {
+	name: string
+	/** installed version, missing if unknown */
+	current?: string
+	available: string
+	security?: boolean
+}
+
+export interface PackageUpdates {
+	/** package manager name, e.g. "apt" */
+	manager?: string
+	/** unix time in seconds of the last check */
+	checkedAt?: number
+	/** true if the package manager flags security updates per package */
+	securityKnown?: boolean
+	packages: PackageUpdate[] | null
 }
 
 export interface ZfsDataset {
@@ -677,9 +698,10 @@ export interface MonitorCertInfo {
 
 /** Response times in microseconds and packet loss percentage (0-100). */
 export interface MonitorStats {
-	res_avg: number
-	res_min: number
-	res_max: number
+	/** null when no probe succeeded, so there is no response time */
+	res_avg: number | null
+	res_min: number | null
+	res_max: number | null
 	loss: number
 }
 

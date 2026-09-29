@@ -5,6 +5,7 @@ package alerts_test
 import (
 	"encoding/json"
 	"testing"
+	"testing/synctest"
 	"time"
 
 	"github.com/henrygd/beszel/internal/entities/system"
@@ -22,7 +23,7 @@ func TestDiskAlertExtraFsMultiMinute(t *testing.T) {
 	hub, user := beszelTests.GetHubWithUser(t)
 	defer hub.Cleanup()
 
-	systems, err := beszelTests.CreateSystems(hub, 1, user.Id, "up")
+	systems, err := beszelTests.CreateSystems(hub, 1, user.Id, "paused")
 	require.NoError(t, err)
 	systemRecord := systems[0]
 
@@ -83,13 +84,10 @@ func TestDiskAlertExtraFsMultiMinute(t *testing.T) {
 	}
 
 	systemRecord.Set("updated", now)
-	err = hub.SaveNoValidate(systemRecord)
-	require.NoError(t, err)
 
-	err = am.HandleSystemAlerts(systemRecord, combinedDataHigh)
-	require.NoError(t, err)
-
-	time.Sleep(20 * time.Millisecond)
+	synctest.Test(t, func(t *testing.T) {
+		require.NoError(t, am.HandleSystemAlerts(systemRecord, combinedDataHigh))
+	})
 
 	diskAlert, err = hub.FindFirstRecordByFilter("alerts", "id={:id}", dbx.Params{"id": diskAlert.Id})
 	require.NoError(t, err)
@@ -140,13 +138,10 @@ func TestDiskAlertExtraFsMultiMinute(t *testing.T) {
 	}
 
 	systemRecord.Set("updated", newNow)
-	err = hub.SaveNoValidate(systemRecord)
-	require.NoError(t, err)
 
-	err = am.HandleSystemAlerts(systemRecord, combinedDataLow)
-	require.NoError(t, err)
-
-	time.Sleep(20 * time.Millisecond)
+	synctest.Test(t, func(t *testing.T) {
+		require.NoError(t, am.HandleSystemAlerts(systemRecord, combinedDataLow))
+	})
 
 	diskAlert, err = hub.FindFirstRecordByFilter("alerts", "id={:id}", dbx.Params{"id": diskAlert.Id})
 	require.NoError(t, err)
