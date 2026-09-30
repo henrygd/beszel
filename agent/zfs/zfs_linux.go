@@ -103,7 +103,7 @@ func PoolKernelStats() ([]PoolKernelStat, error) {
 }
 
 // readPoolCounters supports the ZFS kernel interfaces. OpenZFS 2.3+ exposes
-// logical pool read/write counters in "iostats" that cover every objset,
+// pool-wide read/write counters in "iostats" that cover every objset,
 // including mounted snapshots, which never get an "objset-*" kstat. OpenZFS
 // through 2.0 exposes aggregate vdev counters in "io". When neither pool-level
 // interface is usable, sum the logical I/O counters exposed for each dataset.
@@ -163,10 +163,11 @@ func readPoolIO(path string) (uint64, uint64, error) {
 	return 0, 0, fmt.Errorf("I/O counters not found in %s", path)
 }
 
-// readPoolIOStats reads the logical pool I/O counters exported by OpenZFS 2.3+
-// in the "iostats" kstat. The file exists on earlier releases but then only
-// reports TRIM statistics, so all four byte counters are required for the file
-// to be usable.
+// readPoolIOStats reads the pool I/O counters exported by OpenZFS 2.3+ in the
+// "iostats" kstat. Reads are counted on ARC misses at their compressed size, so
+// reads served from the ARC are excluded; writes are counted at their logical
+// size. The file exists on earlier releases but then only reports TRIM
+// statistics, so all four byte counters are required for the file to be usable.
 func readPoolIOStats(path string) (uint64, uint64, error) {
 	file, err := os.Open(path)
 	if err != nil {
