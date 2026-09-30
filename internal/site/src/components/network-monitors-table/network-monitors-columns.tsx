@@ -15,7 +15,6 @@ import {
 	PauseCircleIcon,
 	PlayCircleIcon,
 	CopyIcon,
-	CopyPlusIcon,
 	ShieldCheckIcon,
 } from "lucide-react"
 import { t } from "@lingui/core/macro"
@@ -25,9 +24,6 @@ import {
 	DropdownMenuContent,
 	DropdownMenuItem,
 	DropdownMenuSeparator,
-	DropdownMenuSub,
-	DropdownMenuSubContent,
-	DropdownMenuSubTrigger,
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Plural, Trans } from "@lingui/react/macro"
@@ -36,12 +32,10 @@ import type { ReadableAtom } from "nanostores"
 import { useStore } from "@nanostores/react"
 import { SystemStatus } from "@/lib/enums"
 import { Checkbox } from "@/components/ui/checkbox"
-import { useMemo, useState } from "react"
-import { useToast } from "@/components/ui/use-toast"
+import { useMemo } from "react"
 import { formatBulkMonitorLine } from "@/components/network-monitors-table/monitor-dialog"
 import { Badge } from "../ui/badge"
 import { getCertDaysLeft, getCertExpiryLevel, getMonitorTarget } from "@/lib/network-monitor-utils"
-import { pb } from "@/lib/api"
 
 const certExpiryDotColors = { ok: "bg-green-500", warning: "bg-yellow-500", critical: "bg-red-500" }
 
@@ -309,11 +303,6 @@ export function getMonitorColumns(
 				const isBulkAction = actionRows.length > 1
 				const shouldPause = actionRows.some((monitor) => monitor.enabled)
 				const bulkCopyContent = actionRows.map((monitor) => formatBulkMonitorLine(monitor)).join("\n")
-				const allSystems = useStore($allSystemsById)
-				const otherSystems = useMemo(
-					() => Object.values(allSystems).filter((s) => !isBulkAction && s.id !== row.original.system),
-					[allSystems, isBulkAction]
-				)
 				return (
 					<DropdownMenu>
 						<DropdownMenuTrigger asChild>
@@ -358,11 +347,8 @@ export function getMonitorColumns(
 								}}
 							>
 								<CopyIcon className="me-2.5 size-4" />
-								<Trans>Bulk copy</Trans>
+								<Trans>Copy bulk config</Trans>
 							</DropdownMenuItem>
-							{!isBulkAction && otherSystems.length > 0 && (
-								<CopyToSystemMenu monitor={row.original} systems={otherSystems} />
-							)}
 							<DropdownMenuSeparator />
 							<DropdownMenuItem
 								onClick={() => {
@@ -378,73 +364,6 @@ export function getMonitorColumns(
 			},
 		},
 	]
-}
-
-/**
- * Submenu for copying a monitor to another system. Systems that already have an
- * equivalent monitor (same stable ID inputs on the hub) are disabled.
- */
-function CopyToSystemMenu({ monitor, systems }: { monitor: NetworkMonitorRecord; systems: SystemRecord[] }) {
-	const { toast } = useToast()
-	const [existingSystems, setExistingSystems] = useState<Set<string>>()
-
-	// mirrors generateMonitorID in internal/hub/network_monitors.go
-	const loadExistingSystems = async () => {
-		let filter = pb.filter("target = {:target} && protocol = {:protocol}", monitor)
-		if (monitor.protocol === "tcp") {
-			filter += pb.filter(" && port = {:port}", monitor)
-		} else if (monitor.protocol === "dns") {
-			filter += pb.filter(" && server = {:server}", monitor)
-		}
-		try {
-			const records = await pb
-				.collection<NetworkMonitorRecord>("network_monitors")
-				.getFullList({ filter, fields: "system" })
-			setExistingSystems(new Set(records.map((r) => r.system)))
-		} catch {
-			setExistingSystems(new Set())
-		}
-	}
-
-	const copyTo = async (system: SystemRecord) => {
-		const { target, protocol, port, server, interval, enabled } = monitor
-		try {
-			await pb
-				.collection("network_monitors")
-				.create({ target, protocol, port, server, interval, enabled, system: system.id })
-			toast({ title: t`Monitor copied`, description: t`Added to ${system.name}.` })
-		} catch (err: unknown) {
-			toast({
-				variant: "destructive",
-				title: t`Error`,
-				description: (err as Error)?.message || t`Failed to copy monitor.`,
-			})
-		}
-	}
-
-	return (
-		<DropdownMenuSub onOpenChange={(open) => open && loadExistingSystems()}>
-			<DropdownMenuSubTrigger>
-				<CopyPlusIcon className="me-2.5 size-4" />
-				<Trans>Copy to system</Trans>
-			</DropdownMenuSubTrigger>
-			<DropdownMenuSubContent className="max-h-[min(20rem,var(--radix-dropdown-menu-content-available-height))] overflow-y-auto">
-				{systems.map((sys) => {
-					const exists = existingSystems?.has(sys.id)
-					return (
-						<DropdownMenuItem key={sys.id} disabled={!existingSystems || exists} onClick={() => copyTo(sys)}>
-							{sys.name}
-							{exists && (
-								<span className="ms-auto ps-3 text-xs text-muted-foreground">
-									<Trans>Exists</Trans>
-								</span>
-							)}
-						</DropdownMenuItem>
-					)
-				})}
-			</DropdownMenuSubContent>
-		</DropdownMenuSub>
-	)
 }
 
 const responseTimeThresholds = {
