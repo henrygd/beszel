@@ -1,10 +1,11 @@
 import { alertInfo } from "@/lib/alerts"
 import { $alerts, $allSystemsById } from "@/lib/stores"
+import { useBrowserStorage } from "@/lib/utils"
 import type { AlertRecord } from "@/types"
 import { Plural, Trans } from "@lingui/react/macro"
 import { useStore } from "@nanostores/react"
 import { getPagePath } from "@nanostores/router"
-import { useMemo, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { AlertBannerSheet, AlertBannerSheetItem } from "./alert-banner-sheet"
 import { $router } from "./router"
 
@@ -49,6 +50,9 @@ export const ActiveAlerts = ({ className }: { className?: string }) => {
 	const alerts = useStore($alerts)
 	const systems = useStore($allSystemsById)
 	const [open, setOpen] = useState(false)
+	// ids of the alerts that were active when the banner was last dismissed.
+	// session storage because a retrigger while the page is closed keeps the same id.
+	const [dismissedIds, setDismissedIds] = useBrowserStorage<string[]>("dismissedAlerts", [], sessionStorage)
 
 	const { activeAlerts, systemCount, alertsKey } = useMemo(() => {
 		const activeAlerts: AlertRecord[] = []
@@ -69,9 +73,24 @@ export const ActiveAlerts = ({ className }: { className?: string }) => {
 		return { activeAlerts, systemCount: systemIds.size, alertsKey: alertsKey.join("") }
 	}, [alerts])
 
+	// forget dismissed alerts once they resolve so they show again if they retrigger.
+	// skipped while alerts are still loading so a reload doesn't clear the dismissal,
+	// and re-run once loaded in case they resolved while the page was closed.
+	const alertsLoaded = Object.keys(alerts).length > 0
+	useEffect(() => {
+		if (!alertsLoaded) {
+			return
+		}
+		const activeIds = new Set(activeAlerts.map((alert) => alert.id))
+		if (dismissedIds.some((id) => !activeIds.has(id))) {
+			setDismissedIds(dismissedIds.filter((id) => activeIds.has(id)))
+		}
+	}, [alertsKey, alertsLoaded])
+
 	return useMemo(() => {
 		const alertCount = activeAlerts.length
-		if (alertCount === 0) {
+		// stay hidden after dismissing until an alert triggers that wasn't active at the time
+		if (alertCount === 0 || activeAlerts.every((alert) => dismissedIds.includes(alert.id))) {
 			return null
 		}
 		// name the alert directly in the banner when there is only one
@@ -80,6 +99,7 @@ export const ActiveAlerts = ({ className }: { className?: string }) => {
 			<AlertBannerSheet
 				open={open}
 				onOpenChange={setOpen}
+				onDismiss={() => setDismissedIds(activeAlerts.map((alert) => alert.id))}
 				className={className}
 				title={
 					alertCount === 1 ? (
@@ -117,5 +137,5 @@ export const ActiveAlerts = ({ className }: { className?: string }) => {
 				})}
 			</AlertBannerSheet>
 		)
-	}, [alertsKey, systemCount, systems, open, className])
+	}, [alertsKey, systemCount, systems, open, className, dismissedIds])
 }
