@@ -229,14 +229,14 @@ function getStorageValue(key: string, defaultValue: unknown, storageInterface: S
 /** Hook to sync value in local or session storage */
 export function useBrowserStorage<T>(key: string, defaultValue: T, storageInterface: Storage = localStorage) {
 	key = `besz-${key}`
-	const [value, setValue] = useState(() => {
+	const [value, setValue] = useState<T>(() => {
 		return getStorageValue(key, defaultValue, storageInterface)
 	})
 	useEffect(() => {
 		storageInterface?.setItem(key, JSON.stringify(value))
 	}, [key, value])
 
-	return [value, setValue]
+	return [value, setValue] as const
 }
 
 /** Format temperature to user's preferred unit */
