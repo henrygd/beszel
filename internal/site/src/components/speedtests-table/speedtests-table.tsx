@@ -561,12 +561,10 @@ function SpeedtestSheet({
 		() =>
 			getSpeedtestCompareState({
 				speedtest,
-				localSpeedtests: speedtests,
-				otherSpeedtests: includesAllSystems ? speedtests : fetchedSpeedtests,
+				speedtests: includesAllSystems ? speedtests : [...speedtests, ...fetchedSpeedtests],
 				selectedSystemIds: compareSystemIds,
 				selectedServerIds: compareServerIds,
 				getSystemName: (id) => systems[id]?.name ?? id,
-				getServerLabel: getSpeedtestServerLabel,
 			}),
 		[speedtest, speedtests, includesAllSystems, fetchedSpeedtests, compareSystemIds, compareServerIds, systems]
 	)

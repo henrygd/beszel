@@ -1,107 +1,78 @@
 import type { SpeedtestRecord, SpeedtestStatsRecord } from "@/types"
+import { getSpeedtestServerLabel } from "./speedtest-utils"
 
 // Kept free of UI and store imports so it can be unit tested with bun.
 
 /** Most lines a comparison charts, to keep it readable and the stats request's filter short. */
 export const MAX_COMPARE_SPEEDTESTS = 24
 
-type CompareSpeedtest = Pick<SpeedtestRecord, "id" | "system" | "server_id" | "server_name" | "server_location">
-
-interface SpeedtestCompareInput<T extends CompareSpeedtest> {
-	/** The speedtest whose sheet is open; always charted. */
-	speedtest: T
-	/** Speedtests that may include other servers on the opened speedtest's system. */
-	localSpeedtests: T[]
-	/** Speedtests that may include other systems' speedtests. */
-	otherSpeedtests: T[]
-	selectedSystemIds: Set<string>
-	selectedServerIds: Set<string>
-	getSystemName: (systemId: string) => string
-	getServerLabel: (speedtest: T) => string
-}
-
 /**
- * Works out what the speedtest sheet can compare and what it charts: other servers tested by the
- * opened speedtest's system, and other systems testing the same servers. Speedtests are matched
- * across systems by server ID, so an automatic speedtest only compares with other systems'
- * automatic ones. Its server can change between runs, so it isn't compared with pinned servers.
+ * Works out what the speedtest sheet can compare and what it charts: other pinned servers on the
+ * opened speedtest's system, and other systems testing the same servers. Servers match by ID, so an
+ * automatic speedtest (ID 0) only compares with other systems' automatic ones.
+ *
+ * Every option charts a line: systems are only offered if they test every charted server, and
+ * servers only if every selected system tests them. Selections that are no longer options, or
+ * that go past MAX_COMPARE_SPEEDTESTS lines, are ignored.
  */
-export function getSpeedtestCompareState<T extends CompareSpeedtest>({
+export function getSpeedtestCompareState({
 	speedtest,
-	localSpeedtests,
-	otherSpeedtests,
+	speedtests,
 	selectedSystemIds,
 	selectedServerIds,
 	getSystemName,
-	getServerLabel,
-}: SpeedtestCompareInput<T>) {
-	// Other servers are only offered for pinned speedtests, and only pinned ones. Other systems' speedtests
-	// match on server ID below, which keeps automatic and pinned speedtests apart.
-	const serverTests = speedtest.server_id
-		? localSpeedtests.filter((s) => s.system === speedtest.system && s.id !== speedtest.id && s.server_id !== 0)
+}: {
+	/** The speedtest whose sheet is open; always charted. */
+	speedtest: SpeedtestRecord
+	/** Speedtests on the opened speedtest's system and the systems to compare against. */
+	speedtests: SpeedtestRecord[]
+	selectedSystemIds: Set<string>
+	selectedServerIds: Set<string>
+	getSystemName: (systemId: string) => string
+}) {
+	const tested = new Set(speedtests.map((s) => `${s.system}:${s.server_id}`))
+	const testsAll = (system: string, servers: SpeedtestRecord[]) =>
+		servers.every((s) => tested.has(`${system}:${s.server_id}`))
+
+	const localServers = speedtest.server_id
+		? speedtests.filter((s) => s.system === speedtest.system && s.id !== speedtest.id && s.server_id)
 		: []
-	const systemTests = otherSpeedtests.filter((s) => s.system !== speedtest.system)
+	const servers = [
+		speedtest,
+		...localServers.filter((s) => selectedServerIds.has(s.id)).slice(0, MAX_COMPARE_SPEEDTESTS - 1),
+	]
 
-	const serversBySystem = new Map<string, Set<number>>()
-	for (const s of systemTests) {
-		const servers = serversBySystem.get(s.system) ?? new Set<number>()
-		servers.add(s.server_id)
-		serversBySystem.set(s.system, servers)
-	}
+	const otherSystems = new Set(speedtests.map((s) => s.system).filter((id) => id !== speedtest.system))
+	const systemOptions = [...otherSystems].filter((id) => testsAll(id, servers))
+	const systems = systemOptions
+		.filter((id) => selectedSystemIds.has(id))
+		.slice(0, Math.floor(MAX_COMPARE_SPEEDTESTS / servers.length) - 1)
+	const serverOptions = localServers.filter((s) => systems.every((id) => testsAll(id, [s])))
 
-	// Each picker only offers what fits the other's selection, so every pick charts a line per system:
-	// systems must test the opened server and every selected server, and servers must be tested by
-	// every selected system. Selections outside the options (e.g. a speedtest deleted while the sheet
-	// is open) are ignored, and ones past MAX_COMPARE_SPEEDTESTS lines are dropped, keeping servers
-	// over systems and earlier picks over later ones.
-	const serverTestsById = new Map(serverTests.map((s) => [s.id, s]))
-	const pickedServers = [...selectedServerIds]
-		.flatMap((id) => serverTestsById.get(id) ?? [])
-		.slice(0, MAX_COMPARE_SPEEDTESTS - 1)
-	const serverSpeedtests = [speedtest, ...pickedServers]
-	const requiredServers = serverSpeedtests.map((s) => s.server_id)
-	const systemOptions = [...serversBySystem]
-		.filter(([, servers]) => requiredServers.every((server) => servers.has(server)))
-		.map(([id]) => id)
-	const systemOptionSet = new Set(systemOptions)
-	const systemIds = [...selectedSystemIds]
-		.filter((id) => systemOptionSet.has(id))
-		.slice(0, Math.floor(MAX_COMPARE_SPEEDTESTS / serverSpeedtests.length) - 1)
-
-	const serverOptions = serverTests.filter((s) => systemIds.every((id) => serversBySystem.get(id)?.has(s.server_id)))
-	const serverIds = new Set(pickedServers.map((s) => s.id))
-
-	// Every charted server is also charted for each selected system.
-	const chartedServers = new Set(requiredServers)
-	const selectedSystems = new Set(systemIds)
+	const serverIds = new Set(servers.map((s) => s.server_id))
 	const compareSpeedtests = [
-		...serverSpeedtests,
-		...systemTests.filter((s) => selectedSystems.has(s.system) && chartedServers.has(s.server_id)),
+		...servers,
+		...speedtests.filter((s) => systems.includes(s.system) && serverIds.has(s.server_id)),
 	]
 
 	// Label series by whatever differs between them: system, server, or both.
-	const multiSystem = systemIds.length > 0
-	const multiServer = serverIds.size > 0
-	const labels = new Map<string, string>()
-	for (const s of compareSpeedtests) {
-		const systemName = getSystemName(s.system)
-		const server = getServerLabel(s)
-		labels.set(s.id, multiSystem && multiServer ? `${systemName} · ${server}` : multiServer ? server : systemName)
+	const label = (s: SpeedtestRecord) => {
+		const server = getSpeedtestServerLabel(s)
+		if (servers.length === 1) return getSystemName(s.system)
+		return systems.length ? `${getSystemName(s.system)} · ${server}` : server
 	}
 
 	return {
-		/** Systems that can be selected to compare against. */
 		systemOptions,
-		selectedSystemIds: new Set(systemIds),
-		/** Other servers tested by the opened speedtest's system that can be selected. */
+		selectedSystemIds: new Set(systems),
 		serverOptions,
-		selectedServerIds: serverIds,
+		selectedServerIds: new Set(servers.slice(1).map((s) => s.id)),
 		/** Whether one more server or system still fits within MAX_COMPARE_SPEEDTESTS lines. */
-		canAddServer: (serverSpeedtests.length + 1) * (systemIds.length + 1) <= MAX_COMPARE_SPEEDTESTS,
-		canAddSystem: serverSpeedtests.length * (systemIds.length + 2) <= MAX_COMPARE_SPEEDTESTS,
+		canAddServer: (servers.length + 1) * (systems.length + 1) <= MAX_COMPARE_SPEEDTESTS,
+		canAddSystem: servers.length * (systems.length + 2) <= MAX_COMPARE_SPEEDTESTS,
 		/** Speedtests to chart, starting with the opened one. */
 		compareSpeedtests,
-		getLabel: (s: T) => labels.get(s.id) ?? getServerLabel(s),
+		getLabel: label,
 	}
 }
 

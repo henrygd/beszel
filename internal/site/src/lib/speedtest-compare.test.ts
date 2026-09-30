@@ -22,12 +22,10 @@ function state(
 ) {
 	return getSpeedtestCompareState({
 		speedtest,
-		localSpeedtests: speedtests,
-		otherSpeedtests: speedtests,
+		speedtests,
 		selectedSystemIds: new Set(selectedSystemIds),
 		selectedServerIds: new Set(selectedServerIds),
 		getSystemName: (id) => systemNames[id] ?? id,
-		getServerLabel: (s) => s.server_name,
 	})
 }
 
