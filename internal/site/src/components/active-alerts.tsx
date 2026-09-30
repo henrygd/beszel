@@ -50,8 +50,9 @@ export const ActiveAlerts = ({ className }: { className?: string }) => {
 	const alerts = useStore($alerts)
 	const systems = useStore($allSystemsById)
 	const [open, setOpen] = useState(false)
-	// ids of the alerts that were active when the banner was last dismissed
-	const [dismissedIds, setDismissedIds] = useBrowserStorage<string[]>("dismissedAlerts", [])
+	// ids of the alerts that were active when the banner was last dismissed.
+	// session storage because a retrigger while the page is closed keeps the same id.
+	const [dismissedIds, setDismissedIds] = useBrowserStorage<string[]>("dismissedAlerts", [], sessionStorage)
 
 	const { activeAlerts, systemCount, alertsKey } = useMemo(() => {
 		const activeAlerts: AlertRecord[] = []
