@@ -323,38 +323,38 @@ export function useNetworkMonitorStats(props: UseNetworkMonitorStatsProps) {
 	}, [monitorStats, cacheKey, interval, chartTime])
 }
 
+/** Only what comparison charts and labels need. */
+const COMPARE_MONITOR_FIELDS = "id,system,target,protocol,port,server,interval,resAvg1h"
+
 /**
- * Monitors on other systems that probe the same target (same protocol, target, port, and DNS server).
- * Fetched once per open so it also works in single-system tables, which only hold one system's monitors.
+ * Monitors of one protocol on all systems except the given one, to compare against (#2385).
+ * Fetched per open so it also works in single-system tables, which only hold one system's monitors.
  */
-export function useMatchingMonitors(monitor: NetworkMonitorRecord, enabled = true) {
-	const [matches, setMatches] = useState<NetworkMonitorRecord[]>([])
-	const { id, system, protocol, target, port, server } = monitor
+export function useCompareMonitors(system: string, protocol: string, enabled = true) {
+	const key = `${system}:${protocol}`
+	const [result, setResult] = useState<{ key: string; monitors: NetworkMonitorRecord[] }>({ key, monitors: [] })
 
 	useEffect(() => {
-		setMatches([])
 		if (!enabled) return
 		let cancelled = false
 		pb.collection<NetworkMonitorRecord>("network_monitors")
 			.getFullList({
-				fields: NETWORK_MONITOR_FIELDS,
-				filter: pb.filter(
-					"id!={:id} && system!={:system} && protocol={:protocol} && target={:target} && port={:port} && server={:server}",
-					{ id, system, protocol, target, port, server }
-				),
+				fields: COMPARE_MONITOR_FIELDS,
+				filter: pb.filter("system!={:system} && protocol={:protocol}", { system, protocol }),
 			})
-			.then((records) => {
-				if (!cancelled) setMatches(records)
+			.then((monitors) => {
+				if (!cancelled) setResult({ key: `${system}:${protocol}`, monitors })
 			})
 			.catch((error) => {
-				if (!cancelled) console.error("Failed to fetch matching monitors:", error)
+				if (!cancelled) console.error("Failed to fetch compare monitors:", error)
 			})
 		return () => {
 			cancelled = true
 		}
-	}, [id, system, protocol, target, port, server, enabled])
+	}, [system, protocol, enabled])
 
-	return matches
+	// Keep showing the last result while reopening refreshes it, but never another monitor's.
+	return result.key === key ? result.monitors : []
 }
 
 async function fetchMonitors(system?: string) {
