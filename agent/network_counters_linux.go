@@ -13,19 +13,15 @@ import (
 	psutilNet "github.com/shirou/gopsutil/v4/net"
 )
 
-func correctNetworkCounterStat(v psutilNet.IOCountersStat) psutilNet.IOCountersStat {
-	if !isNvidiaEthernet(v.Name) {
-		return v
-	}
-
+// correctNvethernetCounters replaces the inflated sysfs byte counters of an
+// nvethernet NIC with its MAC octet counters.
+func correctNvethernetCounters(v *psutilNet.IOCountersStat) {
 	tx, rx, ok := readEthtoolMACOctets(v.Name)
 	if !ok {
-		return v
+		return
 	}
-
 	v.BytesSent = tx
 	v.BytesRecv = rx
-	return v
 }
 
 func isNvidiaEthernet(name string) bool {

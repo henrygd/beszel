@@ -4,6 +4,8 @@ package agent
 
 import psutilNet "github.com/shirou/gopsutil/v4/net"
 
-func correctNetworkCounterStat(v psutilNet.IOCountersStat) psutilNet.IOCountersStat {
-	return v
+func isNvidiaEthernet(name string) bool {
+	return false
 }
+
+func correctNvethernetCounters(v *psutilNet.IOCountersStat) {}
