@@ -95,8 +95,21 @@ const NormalizedMonitorValuesSchema = v.pipe(
 			return Number.isInteger(input.port) && input.port >= 1 && input.port <= 65535
 		}, "Port must be between 1 and 65535"),
 		["port"]
+	),
+	// Resolving an IP literal returns it without querying anything, so the check would measure nothing.
+	v.forward(
+		v.check(
+			(input) => input.protocol !== "dns" || !isIpAddress(input.target),
+			"DNS target must be a domain name; put the resolver's IP in DNS Server"
+		),
+		["target"]
 	)
 )
+
+function isIpAddress(value: string) {
+	// Hostnames never contain ":", so any colon means an IPv6 literal (optionally bracketed).
+	return /^(\d{1,3}\.){3}\d{1,3}$/.test(value) || value.includes(":")
+}
 
 // Bulk parsing only trims raw CSV fields. Inference, defaults, and protocol-
 // specific validation still go through the shared normalization schema above.
@@ -714,6 +727,7 @@ function MonitorDialogContent({
 	const { toast } = useToast()
 	const { t } = useLingui()
 	const isEditing = !!monitor
+	const dnsTargetIsIp = protocol === "dns" && isIpAddress(target.trim())
 
 	// When the dialog is opened, initialize form fields with monitor values (if editing) or defaults (if adding).
 	useEffect(() => {
@@ -827,8 +841,14 @@ function MonitorDialogContent({
 						value={target}
 						onChange={(e) => setTarget(e.target.value)}
 						placeholder={protocol === "http" ? "http://localhost:8090" : protocol === "dns" ? "example.com" : "1.1.1.1"}
+						aria-invalid={dnsTargetIsIp}
 						required
 					/>
+					{dnsTargetIsIp && (
+						<p className="text-xs text-destructive">
+							<Trans>Enter a domain name to look up. Put the resolver's IP in DNS Server.</Trans>
+						</p>
+					)}
 				</div>
 				<div className="grid gap-2">
 					<Label>
@@ -905,7 +925,9 @@ function MonitorDialogContent({
 					)}
 					<Button
 						type="submit"
-						disabled={loading || (!systemId && (isEditing ? !selectedSystemId : !selectedSystemIds.size))}
+						disabled={
+							loading || dnsTargetIsIp || (!systemId && (isEditing ? !selectedSystemId : !selectedSystemIds.size))
+						}
 					>
 						{isEditing ? (
 							<Trans>Save {{ foo: t`Monitor` }}</Trans>
