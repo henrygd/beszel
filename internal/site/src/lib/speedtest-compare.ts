@@ -23,7 +23,8 @@ interface SpeedtestCompareInput<T extends CompareSpeedtest> {
 /**
  * Works out what the speedtest sheet can compare and what it charts: other servers tested by the
  * opened speedtest's system, and other systems testing the same servers. Speedtests are matched
- * across systems by server ID, so automatic speedtests compare with other automatic ones.
+ * across systems by server ID, so an automatic speedtest only compares with other systems'
+ * automatic ones. Its server can change between runs, so it isn't compared with pinned servers.
  */
 export function getSpeedtestCompareState<T extends CompareSpeedtest>({
 	speedtest,
@@ -34,7 +35,11 @@ export function getSpeedtestCompareState<T extends CompareSpeedtest>({
 	getSystemName,
 	getServerLabel,
 }: SpeedtestCompareInput<T>) {
-	const serverTests = localSpeedtests.filter((s) => s.system === speedtest.system && s.id !== speedtest.id)
+	// Other servers are only offered for pinned speedtests, and only pinned ones. Other systems' speedtests
+	// match on server ID below, which keeps automatic and pinned speedtests apart.
+	const serverTests = speedtest.server_id
+		? localSpeedtests.filter((s) => s.system === speedtest.system && s.id !== speedtest.id && s.server_id !== 0)
+		: []
 	const systemTests = otherSpeedtests.filter((s) => s.system !== speedtest.system)
 
 	const serversBySystem = new Map<string, Set<number>>()

@@ -5,7 +5,7 @@ import { Unit } from "@/lib/enums"
 import type { SpeedtestCompareRecord } from "@/lib/speedtest-compare"
 import { useLingui } from "@lingui/react/macro"
 import { useStore } from "@nanostores/react"
-import type { WritableAtom } from "nanostores"
+import type { $containerFilter } from "@/lib/stores"
 import { ChartCard, FilterBar } from "../chart-card"
 import type { ChartData, SpeedtestRecord, SpeedtestStatsRecord } from "@/types"
 import { useMemo } from "react"
@@ -154,7 +154,7 @@ type SpeedtestCompareChartProps = {
 	chartData: ChartData
 	empty: boolean
 	/** Scoped to the sheet so a filter doesn't carry over to other speedtests' sheets. */
-	filterStore: WritableAtom<string>
+	filterStore: typeof $containerFilter
 }
 
 /** One line per compared speedtest, for a single measurement. */
@@ -202,6 +202,18 @@ function SpeedtestCompareChart({
 	}, [speedtests, getLabel, filter, value])
 	const legend = dataPoints.length < 10
 
+	// Automatic speedtests can use a different server each run, so the tooltip names the run's server.
+	const formatContent = useMemo(() => {
+		const automaticIds = new Map(speedtests.filter((s) => !s.server_id).map((s) => [getLabel(s), s.id]))
+		if (!automaticIds.size) return contentFormatter
+		return (item: { value: number | string; name?: string; payload?: SpeedtestCompareRecord }) => {
+			const formatted = contentFormatter(item)
+			const id = automaticIds.get(item.name ?? "")
+			const server = id ? item.payload?.stats[id]?.server_name : ""
+			return server ? `${formatted} · ${server}` : formatted
+		}
+	}, [speedtests, getLabel, contentFormatter])
+
 	return (
 		<ChartCard
 			legend={legend}
@@ -222,7 +234,7 @@ function SpeedtestCompareChart({
 				legend={legend}
 				filter={filter}
 				tickFormatter={tickFormatter}
-				contentFormatter={contentFormatter}
+				contentFormatter={formatContent}
 			/>
 		</ChartCard>
 	)

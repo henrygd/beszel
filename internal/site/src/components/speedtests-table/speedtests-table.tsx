@@ -40,7 +40,7 @@ import {
 	EyeIcon,
 	GlobeIcon,
 	RefreshCwIcon,
-	LandmarkIcon,
+	RadioTowerIcon,
 	LoaderCircleIcon,
 	ServerIcon,
 	Settings2Icon,
@@ -557,7 +557,6 @@ function SpeedtestSheet({
 	const [compareFilterStore] = useState(() => atom(""))
 	// Other systems' speedtests come from the table when it lists every system, otherwise from one fetch.
 	const fetchedSpeedtests = useCompareSpeedtests(speedtest.system, open && !includesAllSystems)
-	const getServerLabel = useCallback((s: SpeedtestRecord) => getSpeedtestServerLabel(s) || t`Automatic`, [])
 	const compare = useMemo(
 		() =>
 			getSpeedtestCompareState({
@@ -567,18 +566,9 @@ function SpeedtestSheet({
 				selectedSystemIds: compareSystemIds,
 				selectedServerIds: compareServerIds,
 				getSystemName: (id) => systems[id]?.name ?? id,
-				getServerLabel,
+				getServerLabel: getSpeedtestServerLabel,
 			}),
-		[
-			speedtest,
-			speedtests,
-			includesAllSystems,
-			fetchedSpeedtests,
-			compareSystemIds,
-			compareServerIds,
-			systems,
-			getServerLabel,
-		]
+		[speedtest, speedtests, includesAllSystems, fetchedSpeedtests, compareSystemIds, compareServerIds, systems]
 	)
 	const { compareSpeedtests } = compare
 	const comparing = compareSpeedtests.length > 1
@@ -598,7 +588,7 @@ function SpeedtestSheet({
 		[system?.info?.v, direction, chartTime]
 	)
 	const empty = comparing ? compareStats.length === 0 : !stats.some((record) => record.created !== null)
-	const serverLabel = getServerLabel(speedtest)
+	const serverLabel = getSpeedtestServerLabel(speedtest) || t`Automatic`
 	const compareProps = {
 		compareStats,
 		speedtests: compareSpeedtests,
@@ -621,7 +611,7 @@ function SpeedtestSheet({
 						{speedtest.isp && (
 							<>
 								<Separator orientation="vertical" className="h-2.5 bg-muted-foreground opacity-70" />
-								<LandmarkIcon className="size-3.5 text-muted-foreground -me-0.5" />
+								<RadioTowerIcon className="size-3.5 text-muted-foreground -me-0.5" />
 								<span>{speedtest.isp}</span>
 							</>
 						)}
@@ -648,11 +638,12 @@ function SpeedtestSheet({
 							chartTimeStore={chartTimeStore}
 							allowRealtime={false}
 						/>
+						{/* Automatic speedtests only compare with other systems, so the server picker is disabled. */}
 						<SpeedtestServerMultiSelect
 							id="speedtest-compare-servers"
 							className="flex-1 min-w-0 basis-full sm:basis-0 bg-card"
 							speedtests={compare.serverOptions}
-							getLabel={getServerLabel}
+							getLabel={getSpeedtestServerLabel}
 							selectedIds={compare.selectedServerIds}
 							onChange={setCompareServerIds}
 							disabled={compare.serverOptions.length === 0}

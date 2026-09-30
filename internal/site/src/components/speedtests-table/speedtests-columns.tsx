@@ -19,7 +19,7 @@ import {
 	Trash2Icon,
 	WifiOffIcon,
 	GlobeIcon,
-	LandmarkIcon,
+	RadioTowerIcon,
 	MapPinIcon,
 } from "lucide-react"
 import { t } from "@lingui/core/macro"
@@ -239,7 +239,7 @@ export function getSpeedtestColumns({
 			id: "isp",
 			meta: { label: t`ISP` },
 			accessorFn: (record) => record.isp,
-			header: ({ column }) => <HeaderButton column={column} name={t`ISP`} Icon={LandmarkIcon} />,
+			header: ({ column }) => <HeaderButton column={column} name={t`ISP`} Icon={RadioTowerIcon} />,
 			cell: textCell,
 		},
 		{
