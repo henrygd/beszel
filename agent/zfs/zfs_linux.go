@@ -18,6 +18,11 @@ var (
 	devZfsPath  = "/dev/zfs"
 )
 
+// errNoPoolIOStats marks an "iostats" file that predates OpenZFS 2.3 and
+// reports no pool read/write counters (TRIM statistics only), so callers may
+// fall back to older counter sources.
+var errNoPoolIOStats = errors.New("no pool I/O counters")
+
 func ARCSize() (uint64, error) {
 	file, err := os.Open(filepath.Join(procZfsPath, "arcstats"))
 	if err != nil {
@@ -103,10 +108,19 @@ func PoolKernelStats() ([]PoolKernelStat, error) {
 // through 2.0 exposes aggregate vdev counters in "io". When neither pool-level
 // interface is usable, sum the logical I/O counters exposed for each dataset.
 func readPoolCounters(poolDir string) (uint64, uint64, error) {
-	if nread, nwrite, err := readPoolIOStats(filepath.Join(poolDir, "iostats")); err == nil {
+	nread, nwrite, err := readPoolIOStats(filepath.Join(poolDir, "iostats"))
+	if err == nil {
 		return nread, nwrite, nil
 	}
-	nread, nwrite, err := readPoolIO(filepath.Join(poolDir, "io"))
+	// Older sources are tried only when "iostats" is absent or predates
+	// OpenZFS 2.3. A read or parse failure on a usable file is returned:
+	// silently switching counter sources would feed kernelStats counters
+	// from different interfaces under the same pool name and produce a
+	// false I/O spike once "iostats" recovers.
+	if !errors.Is(err, os.ErrNotExist) && !errors.Is(err, errNoPoolIOStats) {
+		return 0, 0, err
+	}
+	nread, nwrite, err = readPoolIO(filepath.Join(poolDir, "io"))
 	if err == nil || !errors.Is(err, os.ErrNotExist) {
 		return nread, nwrite, err
 	}
@@ -192,8 +206,11 @@ func readPoolIOStats(path string) (uint64, uint64, error) {
 	if err := scanner.Err(); err != nil {
 		return 0, 0, err
 	}
+	if found == 0 {
+		return 0, 0, fmt.Errorf("%w in %s", errNoPoolIOStats, path)
+	}
 	if found != 0x0f {
-		return 0, 0, fmt.Errorf("pool I/O counters not found in %s", path)
+		return 0, 0, fmt.Errorf("incomplete pool I/O counters in %s", path)
 	}
 	return arcRead + directRead, arcWrite + directWrite, nil
 }
