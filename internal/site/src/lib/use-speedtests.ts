@@ -5,6 +5,7 @@ import { appendData } from "@/components/routes/system/chart-data"
 import { pb, getPbTimestamp } from "@/lib/api"
 import { toast } from "@/components/ui/use-toast"
 import { applyMonitorEvents } from "@/lib/use-network-monitors"
+import { mergeSpeedtestCompareStats } from "@/lib/speedtest-compare"
 import type { RecordListOptions, RecordSubscription } from "pocketbase"
 
 const SPEEDTEST_FIELDS =
@@ -189,3 +190,99 @@ export function useSpeedtestStats({
 
 /** Gap marker in the same form appendData uses. */
 const speedtestGapRecord = { created: null } as SpeedtestStatsRecord
+
+/** Only what comparison charts and labels need. */
+const COMPARE_SPEEDTEST_FIELDS = "id,system,server_id,server_name,server_location,interval"
+
+/**
+ * Speedtests on all systems except the given one, to compare against.
+ * Fetched per open so it also works in single-system tables, which only hold one system's speedtests.
+ */
+export function useCompareSpeedtests(system: string, enabled = true) {
+	const [result, setResult] = useState<{ system: string; speedtests: SpeedtestRecord[] }>({ system, speedtests: [] })
+
+	useEffect(() => {
+		if (!enabled) return
+		let cancelled = false
+		pb.collection<SpeedtestRecord>("speedtests")
+			.getFullList({
+				fields: COMPARE_SPEEDTEST_FIELDS,
+				filter: pb.filter("system!={:system}", { system }),
+			})
+			.then((speedtests) => {
+				if (!cancelled) setResult({ system, speedtests })
+			})
+			.catch((error) => {
+				if (!cancelled) console.error("Failed to fetch compare speedtests:", error)
+			})
+		return () => {
+			cancelled = true
+		}
+	}, [system, enabled])
+
+	// Keep showing the last result while reopening refreshes it, but never another system's.
+	return result.system === system ? result.speedtests : []
+}
+
+/** Load the runs of several speedtests within the chart time range, and append new runs in realtime. */
+export function useSpeedtestCompareStats({
+	speedtestIds,
+	chartTime,
+	enabled = true,
+}: {
+	speedtestIds: string[]
+	chartTime: ChartTimes
+	enabled?: boolean
+}) {
+	const key = `${chartTime}:${speedtestIds.join(",")}`
+	const [result, setResult] = useState<{ key: string; runs: SpeedtestStatsRecord[] }>({ key, runs: [] })
+
+	useEffect(() => {
+		if (!enabled) return
+		const ids = key.slice(key.indexOf(":") + 1).split(",")
+		let cancelled = false
+		let unsubscribe: (() => void) | undefined
+		const params = Object.fromEntries(ids.map((id, i) => [`id${i}`, id]))
+		const idsFilter = `(${ids.map((_, i) => `speedtest={:id${i}}`).join(" || ")})`
+
+		pb.collection<SpeedtestStatsRecord>("speedtest_stats")
+			.getFullList({
+				filter: pb.filter(`${idsFilter} && created>{:created}`, {
+					...params,
+					created: getPbTimestamp(chartTime, undefined, true),
+				}),
+				fields: SPEEDTEST_STATS_FIELDS,
+				sort: "created",
+			})
+			.then((runs) => {
+				if (!cancelled) setResult((prev) => ({ key, runs: prev.key === key ? [...runs, ...prev.runs] : runs }))
+			})
+			.catch((error) => {
+				if (!cancelled) console.error("Failed to fetch speedtest compare stats:", error)
+			})
+
+		;(async () => {
+			try {
+				unsubscribe = await pb.collection<SpeedtestStatsRecord>("speedtest_stats").subscribe(
+					"*",
+					(event) => {
+						if (cancelled || event.action !== "create") return
+						setResult((prev) => ({ key, runs: prev.key === key ? [...prev.runs, event.record] : [event.record] }))
+					},
+					{ fields: SPEEDTEST_STATS_FIELDS, filter: pb.filter(idsFilter, params) }
+				)
+				if (cancelled) unsubscribe()
+			} catch (error) {
+				console.error("Failed to subscribe to speedtest compare stats:", error)
+			}
+		})()
+
+		return () => {
+			cancelled = true
+			unsubscribe?.()
+		}
+	}, [key, chartTime, enabled])
+
+	const runs = result.key === key ? result.runs : []
+	return useMemo(() => mergeSpeedtestCompareStats(runs), [runs])
+}

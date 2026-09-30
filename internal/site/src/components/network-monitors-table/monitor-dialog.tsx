@@ -289,7 +289,7 @@ export function MonitorMultiSelect({
 
 type MultiSelectOption = { id: string; label: string }
 
-function MultiSelect<T extends MultiSelectOption>({
+export function MultiSelect<T extends MultiSelectOption>({
 	id,
 	options,
 	selectedIds,

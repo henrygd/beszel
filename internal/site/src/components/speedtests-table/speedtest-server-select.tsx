@@ -72,7 +72,7 @@ export function SpeedtestServerSelect({
 				})
 					.then((result) => {
 						if (cancelled) return
-						setServers(result ?? [])
+						setServers(Array.isArray(result) ? result : [])
 						setError("")
 					})
 					.catch((err: Error) => {

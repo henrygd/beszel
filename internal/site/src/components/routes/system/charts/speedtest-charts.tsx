@@ -1,10 +1,13 @@
 import AreaChartDefault from "@/components/charts/area-chart"
 import type { DataPoint } from "@/components/charts/area-chart"
-import { decimalString, formatBytes, toFixedFloat } from "@/lib/utils"
+import { decimalString, formatBytes, matchesFilterGroups, parseFilterGroups, toFixedFloat } from "@/lib/utils"
 import { Unit } from "@/lib/enums"
+import type { SpeedtestCompareRecord } from "@/lib/speedtest-compare"
 import { useLingui } from "@lingui/react/macro"
-import { ChartCard } from "../chart-card"
-import type { ChartData, SpeedtestStatsRecord } from "@/types"
+import { useStore } from "@nanostores/react"
+import type { WritableAtom } from "nanostores"
+import { ChartCard, FilterBar } from "../chart-card"
+import type { ChartData, SpeedtestRecord, SpeedtestStatsRecord } from "@/types"
 import { useMemo } from "react"
 
 /**
@@ -141,6 +144,158 @@ export function SpeedtestLoadedLatencyChart({ stats, chartData, empty }: Speedte
 				contentFormatter={({ value }) => (typeof value === "number" ? `${decimalString(value, 2)} ms` : value)}
 			/>
 		</ChartCard>
+	)
+}
+
+type SpeedtestCompareChartProps = {
+	compareStats: SpeedtestCompareRecord[]
+	speedtests: SpeedtestRecord[]
+	getLabel: (speedtest: SpeedtestRecord) => string
+	chartData: ChartData
+	empty: boolean
+	/** Scoped to the sheet so a filter doesn't carry over to other speedtests' sheets. */
+	filterStore: WritableAtom<string>
+}
+
+/** One line per compared speedtest, for a single measurement. */
+function SpeedtestCompareChart({
+	compareStats,
+	speedtests,
+	getLabel,
+	chartData,
+	empty,
+	filterStore,
+	title,
+	description,
+	value,
+	tickFormatter,
+	contentFormatter,
+}: SpeedtestCompareChartProps & {
+	title: string
+	description: string
+	value: (run: SpeedtestStatsRecord) => number | null
+	tickFormatter: (value: number) => string
+	contentFormatter: ({ value }: { value: number | string }) => string | number
+}) {
+	const filter = useStore(filterStore)
+	const dataPoints = useMemo(() => {
+		const count = speedtests.length
+		const filterGroups = parseFilterGroups(filter)
+		const points: DataPoint<SpeedtestCompareRecord>[] = []
+		for (let i = 0; i < count; i++) {
+			const speedtest = speedtests[i]
+			const label = getLabel(speedtest)
+			if (filterGroups.length > 0 && !matchesFilterGroups(label.toLowerCase(), filterGroups)) continue
+			points.push({
+				order: i,
+				label,
+				dataKey: (record) => {
+					const run = record.stats[speedtest.id]
+					return run ? value(run) : null
+				},
+				opacity: 0.2,
+				dot: true,
+				color: count <= 5 ? i + 1 : `hsl(${(i * 360) / count}, var(--chart-saturation), var(--chart-lightness))`,
+			})
+		}
+		return points
+	}, [speedtests, getLabel, filter, value])
+	const legend = dataPoints.length < 10
+
+	return (
+		<ChartCard
+			legend={legend}
+			cornerEl={<FilterBar store={filterStore} />}
+			empty={empty}
+			title={title}
+			description={description}
+			grid={false}
+		>
+			<AreaChartDefault
+				truncate
+				chartData={chartData}
+				customData={compareStats}
+				dataPoints={dataPoints}
+				domain={[0, "auto"]}
+				// Speedtests run at different times, so each area joins its runs across the others'.
+				connectNulls
+				legend={legend}
+				filter={filter}
+				tickFormatter={tickFormatter}
+				contentFormatter={contentFormatter}
+			/>
+		</ChartCard>
+	)
+}
+
+const compareDownload = (run: SpeedtestStatsRecord) => run.download
+const compareUpload = (run: SpeedtestStatsRecord) => run.upload
+const comparePing = (run: SpeedtestStatsRecord) => run.ping
+// Servers that don't measure packet loss report -1.
+const compareLoss = (run: SpeedtestStatsRecord) => (run.loss >= 0 ? run.loss : null)
+const bandwidthTick = (value: number) => formatBandwidth(value, true)
+const bandwidthContent = ({ value }: { value: number | string }) =>
+	typeof value === "number" ? formatBandwidth(value) : value
+const msTick = (value: number) => `${toFixedFloat(value, value >= 10 ? 0 : 1)} ms`
+const msContent = ({ value }: { value: number | string }) =>
+	typeof value === "number" ? `${decimalString(value, 2)} ms` : value
+const percentTick = (value: number) => `${toFixedFloat(value, value >= 10 ? 0 : 1)}%`
+const percentContent = ({ value }: { value: number | string }) =>
+	typeof value === "number" ? `${decimalString(value, 2)}%` : value
+
+export function SpeedtestCompareDownloadChart(props: SpeedtestCompareChartProps) {
+	const { t } = useLingui()
+	return (
+		<SpeedtestCompareChart
+			{...props}
+			title={t`Download`}
+			description={t`Download speed`}
+			value={compareDownload}
+			tickFormatter={bandwidthTick}
+			contentFormatter={bandwidthContent}
+		/>
+	)
+}
+
+export function SpeedtestCompareUploadChart(props: SpeedtestCompareChartProps) {
+	const { t } = useLingui()
+	return (
+		<SpeedtestCompareChart
+			{...props}
+			title={t`Upload`}
+			description={t`Upload speed`}
+			value={compareUpload}
+			tickFormatter={bandwidthTick}
+			contentFormatter={bandwidthContent}
+		/>
+	)
+}
+
+export function SpeedtestComparePingChart(props: SpeedtestCompareChartProps) {
+	const { t } = useLingui()
+	return (
+		<SpeedtestCompareChart
+			{...props}
+			title={t`Ping`}
+			description={t`Idle ping`}
+			value={comparePing}
+			tickFormatter={msTick}
+			contentFormatter={msContent}
+		/>
+	)
+}
+
+export function SpeedtestCompareLossChart(props: SpeedtestCompareChartProps) {
+	const { t } = useLingui()
+	return (
+		<SpeedtestCompareChart
+			{...props}
+			title={t({ message: "Loss", context: "Packet loss" })}
+			description={t`Packet loss (%)`}
+			value={compareLoss}
+			tickFormatter={percentTick}
+			contentFormatter={percentContent}
+		/>
 	)
 }
 

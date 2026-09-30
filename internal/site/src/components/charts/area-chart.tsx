@@ -45,6 +45,7 @@ export default function AreaChartDefault({
 	filter,
 	truncate = false,
 	chartProps,
+	connectNulls,
 }: {
 	chartData: ChartData
 	// biome-ignore lint/suspicious/noExplicitAny: accepts different data source types (systemStats or containerData)
@@ -66,6 +67,7 @@ export default function AreaChartDefault({
 	filter?: string
 	truncate?: boolean
 	chartProps?: Omit<React.ComponentProps<typeof AreaChart>, "data" | "margin">
+	connectNulls?: boolean
 }) {
 	const { yAxisWidth, updateYAxisWidth } = useYAxisWidth()
 	const { isIntersecting, ref } = useIntersectionObserver({ freeze: false })
@@ -110,10 +112,11 @@ export default function AreaChartDefault({
 					order={dataPoint.order || i}
 					activeDot={dataPoint.activeDot ?? true}
 					dot={dataPoint.dot || false}
+					connectNulls={connectNulls}
 				/>
 			)
 		})
-	}, [areasKey, displayMaxToggled])
+	}, [areasKey, displayMaxToggled, connectNulls])
 
 	const XAxis = xAxis(chartData.chartTime, displayData.at(-1)?.created)
 

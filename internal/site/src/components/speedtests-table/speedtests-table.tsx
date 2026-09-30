@@ -38,6 +38,7 @@ import {
 	ArrowUpDownIcon,
 	ArrowUpIcon,
 	EyeIcon,
+	GlobeIcon,
 	RefreshCwIcon,
 	LandmarkIcon,
 	LoaderCircleIcon,
@@ -57,13 +58,19 @@ import {
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet"
 import ChartTimeSelect from "@/components/charts/chart-time-select"
 import {
+	SpeedtestCompareDownloadChart,
+	SpeedtestCompareLossChart,
+	SpeedtestComparePingChart,
+	SpeedtestCompareUploadChart,
 	SpeedtestDownloadChart,
 	SpeedtestLatencyChart,
 	SpeedtestLoadedLatencyChart,
 	SpeedtestLossChart,
 	SpeedtestUploadChart,
 } from "@/components/routes/system/charts/speedtest-charts"
-import { useSpeedtestStats } from "@/lib/use-speedtests"
+import { MultiSelect, SystemMultiSelect } from "@/components/network-monitors-table/monitor-dialog"
+import { getSpeedtestCompareState } from "@/lib/speedtest-compare"
+import { useCompareSpeedtests, useSpeedtestCompareStats, useSpeedtestStats } from "@/lib/use-speedtests"
 import { formatSpeedtestInterval, getSpeedtestServerLabel } from "@/lib/speedtest-utils"
 import { useStore } from "@nanostores/react"
 import { atom, subscribeKeys } from "nanostores"
@@ -481,9 +488,41 @@ export default function SpeedtestsTable({
 					open={sheetOpen}
 					onOpenChange={setSheetOpen}
 					speedtest={activeSpeedtest}
+					speedtests={speedtests}
+					includesAllSystems={!systemId}
 				/>
 			)}
 		</Card>
+	)
+}
+
+/** Pick speedtests by server, e.g. other servers on the same system to compare against. */
+function SpeedtestServerMultiSelect({
+	speedtests,
+	getLabel,
+	...props
+}: {
+	id: string
+	speedtests: SpeedtestRecord[]
+	getLabel: (speedtest: SpeedtestRecord) => string
+	selectedIds: Set<string>
+	onChange: (ids: Set<string>) => void
+	disabled?: boolean
+	className?: string
+	canSelectMore?: boolean
+}) {
+	const options = speedtests
+		.map((speedtest) => ({ id: speedtest.id, label: getLabel(speedtest) }))
+		.sort((a, b) => a.label.localeCompare(b.label))
+	return (
+		<MultiSelect
+			{...props}
+			options={options}
+			icon={GlobeIcon}
+			placeholder={t`Compare with other servers`}
+			searchPlaceholder={t`Search servers`}
+			emptyText={<Trans>No servers found.</Trans>}
+		/>
 	)
 }
 
@@ -491,10 +530,16 @@ function SpeedtestSheet({
 	open,
 	onOpenChange,
 	speedtest,
+	speedtests,
+	includesAllSystems,
 }: {
 	open: boolean
 	onOpenChange: (open: boolean) => void
 	speedtest: SpeedtestRecord
+	/** Table speedtests; used to find other servers on the same system to compare against. */
+	speedtests: SpeedtestRecord[]
+	/** Whether `speedtests` covers every system, so other systems' speedtests needn't be fetched. */
+	includesAllSystems: boolean
 }) {
 	// Start from the user's default chart time, but keep it separate from the system charts' time range.
 	const [chartTimeStore] = useState(() => {
@@ -503,8 +548,44 @@ function SpeedtestSheet({
 	})
 	const chartTime = useStore(chartTimeStore)
 	const direction = useStore($direction)
-	const system = useStore($allSystemsById)[speedtest.system]
-	const stats = useSpeedtestStats({ speedtest, chartTime, enabled: open })
+	const systems = useStore($allSystemsById)
+	const system = systems[speedtest.system]
+
+	// The sheet remounts per speedtest, so compare selections never carry over to another one.
+	const [compareServerIds, setCompareServerIds] = useState<Set<string>>(() => new Set())
+	const [compareSystemIds, setCompareSystemIds] = useState<Set<string>>(() => new Set())
+	const [compareFilterStore] = useState(() => atom(""))
+	// Other systems' speedtests come from the table when it lists every system, otherwise from one fetch.
+	const fetchedSpeedtests = useCompareSpeedtests(speedtest.system, open && !includesAllSystems)
+	const getServerLabel = useCallback((s: SpeedtestRecord) => getSpeedtestServerLabel(s) || t`Automatic`, [])
+	const compare = useMemo(
+		() =>
+			getSpeedtestCompareState({
+				speedtest,
+				localSpeedtests: speedtests,
+				otherSpeedtests: includesAllSystems ? speedtests : fetchedSpeedtests,
+				selectedSystemIds: compareSystemIds,
+				selectedServerIds: compareServerIds,
+				getSystemName: (id) => systems[id]?.name ?? id,
+				getServerLabel,
+			}),
+		[
+			speedtest,
+			speedtests,
+			includesAllSystems,
+			fetchedSpeedtests,
+			compareSystemIds,
+			compareServerIds,
+			systems,
+			getServerLabel,
+		]
+	)
+	const { compareSpeedtests } = compare
+	const comparing = compareSpeedtests.length > 1
+	const compareIds = useMemo(() => compareSpeedtests.map((s) => s.id), [compareSpeedtests])
+
+	const stats = useSpeedtestStats({ speedtest, chartTime, enabled: open && !comparing })
+	const compareStats = useSpeedtestCompareStats({ speedtestIds: compareIds, chartTime, enabled: open && comparing })
 
 	const chartData = useMemo<ChartData>(
 		() => ({
@@ -516,8 +597,16 @@ function SpeedtestSheet({
 		}),
 		[system?.info?.v, direction, chartTime]
 	)
-	const empty = !stats.some((record) => record.created !== null)
-	const serverLabel = getSpeedtestServerLabel(speedtest) || t`Automatic`
+	const empty = comparing ? compareStats.length === 0 : !stats.some((record) => record.created !== null)
+	const serverLabel = getServerLabel(speedtest)
+	const compareProps = {
+		compareStats,
+		speedtests: compareSpeedtests,
+		getLabel: compare.getLabel,
+		chartData,
+		empty,
+		filterStore: compareFilterStore,
+	}
 
 	return (
 		<Sheet open={open} onOpenChange={onOpenChange}>
@@ -552,17 +641,50 @@ function SpeedtestSheet({
 					</SheetDescription>
 				</SheetHeader>
 				<div className="grid xl:grid-cols-2 gap-4">
-					<ChartTimeSelect
-						className="bg-card col-span-full"
-						agentVersion={chartData.agentVersion}
-						chartTimeStore={chartTimeStore}
-						allowRealtime={false}
-					/>
-					<SpeedtestDownloadChart stats={stats} chartData={chartData} empty={empty} />
-					<SpeedtestUploadChart stats={stats} chartData={chartData} empty={empty} />
-					<SpeedtestLatencyChart stats={stats} chartData={chartData} empty={empty} />
-					<SpeedtestLoadedLatencyChart stats={stats} chartData={chartData} empty={empty} />
-					<SpeedtestLossChart stats={stats} chartData={chartData} empty={empty} />
+					<div className="col-span-full flex flex-wrap items-center gap-2">
+						<ChartTimeSelect
+							className="bg-card flex-1 min-w-0 basis-full sm:basis-0"
+							agentVersion={chartData.agentVersion}
+							chartTimeStore={chartTimeStore}
+							allowRealtime={false}
+						/>
+						<SpeedtestServerMultiSelect
+							id="speedtest-compare-servers"
+							className="flex-1 min-w-0 basis-full sm:basis-0 bg-card"
+							speedtests={compare.serverOptions}
+							getLabel={getServerLabel}
+							selectedIds={compare.selectedServerIds}
+							onChange={setCompareServerIds}
+							disabled={compare.serverOptions.length === 0}
+							canSelectMore={compare.canAddServer}
+						/>
+						<SystemMultiSelect
+							id="speedtest-compare-systems"
+							className="flex-1 min-w-0 basis-full sm:basis-0 bg-card"
+							systemIds={compare.systemOptions}
+							selectedSystemIds={compare.selectedSystemIds}
+							onChange={setCompareSystemIds}
+							disabled={compare.systemOptions.length === 0}
+							canSelectMore={compare.canAddSystem}
+							placeholder={t`Compare with other systems`}
+						/>
+					</div>
+					{comparing ? (
+						<>
+							<SpeedtestCompareDownloadChart {...compareProps} />
+							<SpeedtestCompareUploadChart {...compareProps} />
+							<SpeedtestComparePingChart {...compareProps} />
+							<SpeedtestCompareLossChart {...compareProps} />
+						</>
+					) : (
+						<>
+							<SpeedtestDownloadChart stats={stats} chartData={chartData} empty={empty} />
+							<SpeedtestUploadChart stats={stats} chartData={chartData} empty={empty} />
+							<SpeedtestLatencyChart stats={stats} chartData={chartData} empty={empty} />
+							<SpeedtestLoadedLatencyChart stats={stats} chartData={chartData} empty={empty} />
+							<SpeedtestLossChart stats={stats} chartData={chartData} empty={empty} />
+						</>
+					)}
 				</div>
 			</SheetContent>
 		</Sheet>
