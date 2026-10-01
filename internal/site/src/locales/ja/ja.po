@@ -8,7 +8,7 @@ msgstr ""
 "Language: ja\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2026-09-28 11:54\n"
+"PO-Revision-Date: 2026-10-01 01:10\n"
 "Last-Translator: \n"
 "Language-Team: Japanese\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
@@ -189,7 +189,7 @@ msgstr "エージェント"
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/settings/layout.tsx
 msgid "Alert History"
-msgstr "アラート履歴"
+msgstr "通知履歴"
 
 #: src/components/alerts/alert-button.tsx
 #: src/components/alerts/alerts-sheet.tsx
@@ -435,7 +435,7 @@ msgstr "充電中"
 
 #: src/components/routes/settings/general.tsx
 msgid "Chart options"
-msgstr "チャートオプション"
+msgstr "チャートのオプション"
 
 #: src/components/routes/system/info-bar.tsx
 msgid "Chart width"
@@ -476,7 +476,7 @@ msgstr "すべてクリア"
 
 #: src/components/network-monitors-table/monitor-dialog.tsx
 msgid "Clear matches"
-msgstr "一致をクリア"
+msgstr "一致する項目をクリア"
 
 #: src/components/containers-table/containers-table.tsx
 msgid "Click on a container to view more information."
@@ -1019,7 +1019,7 @@ msgstr "FreeBSD コマンド"
 #: src/components/routes/system/info-bar.tsx
 #: src/lib/i18n.ts
 msgid "Full"
-msgstr "満充電"
+msgstr "フル"
 
 #. Context: General settings
 #: src/components/routes/settings/general.tsx
@@ -1180,7 +1180,7 @@ msgstr "負荷平均 (5分)"
 #. Short label for load average
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Load Avg"
-msgstr "負荷平均"
+msgstr "平均負荷"
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Load state"
@@ -2155,7 +2155,7 @@ msgstr "1時間のパケットロス率がしきい値を超えるとトリガ�
 
 #: src/lib/alerts.ts
 msgid "Triggers when status switches between up and down"
-msgstr "ステータスが稼働中と停止中の間で切り替わったときにトリガーされます"
+msgstr "システムが開始または停止したときトリガーされます"
 
 #: src/lib/alerts.ts
 msgid "Triggers when usage of any disk exceeds a threshold"
@@ -2291,7 +2291,7 @@ msgstr "表示列"
 
 #: src/components/routes/system/chart-card.tsx
 msgid "Waiting for enough records to display"
-msgstr "表示するのに十分なレコードを待っています"
+msgstr "表示に必要なデータが揃うまで待機中"
 
 #: src/components/routes/settings/general.tsx
 msgid "Want to help improve our translations? Check <0>Crowdin</0> for details."
