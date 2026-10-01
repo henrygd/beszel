@@ -32,7 +32,7 @@ import { Separator } from "../ui/separator"
 import { $router, Link } from "../router"
 import { listenKeys } from "nanostores"
 import { getPagePath } from "@nanostores/router"
-import { LogsDisplay, LogsFullscreenDialog, LogsTimestampToggle } from "@/components/logs-display"
+import { LogsDisplay, LogsFullscreenDialog, LogsIconButton, LogsTimestampToggle } from "@/components/logs-display"
 import { getLogTimestampDecorations } from "@/lib/logs"
 
 const syntaxTheme = "github-dark-dimmed"
@@ -325,8 +325,6 @@ function ContainerSheet({
 	activeContainer: RefObject<ContainerRecord | null>
 }) {
 	const [logsDisplay, setLogsDisplay] = useState<string>("")
-	const [showTimestamps, setShowTimestamps] = useState(false)
-	const toggleTimestamps = () => setShowTimestamps((shown) => !shown)
 	const [infoDisplay, setInfoDisplay] = useState<string>("")
 	const [logsFullscreenOpen, setLogsFullscreenOpen] = useState<boolean>(false)
 	const [infoFullscreenOpen, setInfoFullscreenOpen] = useState<boolean>(false)
@@ -385,8 +383,6 @@ function ContainerSheet({
 				name={container.name}
 				onRefresh={refreshLogs}
 				isRefreshing={isRefreshingLogs}
-				showTimestamps={showTimestamps}
-				onToggleTimestamps={toggleTimestamps}
 			/>
 			<InfoFullscreenDialog
 				open={infoFullscreenOpen}
@@ -421,23 +417,17 @@ function ContainerSheet({
 					<div className="px-3 pb-3 -mt-4 flex flex-col gap-3 h-full items-start">
 						<div className="flex items-center w-full">
 							<h3>{t`Logs`}</h3>
-							<LogsTimestampToggle showTimestamps={showTimestamps} onToggle={toggleTimestamps} className="ms-auto" />
-							<Button
-								variant="ghost"
-								size="sm"
-								onClick={refreshLogs}
-								className="h-8 w-8 p-0"
-								disabled={isRefreshingLogs}
-							>
+							<LogsTimestampToggle className="ms-auto" />
+							<LogsIconButton label={t`Refresh`} onClick={refreshLogs} disabled={isRefreshingLogs}>
 								<RefreshCwIcon
 									className={`size-4 transition-transform duration-300 ${isRefreshingLogs ? "animate-spin" : ""}`}
 								/>
-							</Button>
-							<Button variant="ghost" size="sm" onClick={() => setLogsFullscreenOpen(true)} className="h-8 w-8 p-0">
+							</LogsIconButton>
+							<LogsIconButton label={t`Fullscreen`} onClick={() => setLogsFullscreenOpen(true)}>
 								<MaximizeIcon className="size-4" />
-							</Button>
+							</LogsIconButton>
 						</div>
-						<LogsDisplay logsDisplay={logsDisplay} containerRef={logsContainerRef} showTimestamps={showTimestamps} />
+						<LogsDisplay logsDisplay={logsDisplay} containerRef={logsContainerRef} />
 						<div className="flex items-center w-full">
 							<h3>{t`Detail`}</h3>
 							<Button

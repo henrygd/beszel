@@ -19,9 +19,8 @@ import { memo, type ReactNode, useEffect, useMemo, useRef, useState } from "reac
 import { getStatusColor, systemdTableCols } from "@/components/systemd-table/systemd-table-columns"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Card, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { LogsDisplay, LogsFullscreenDialog, LogsTimestampToggle } from "@/components/logs-display"
+import { LogsDisplay, LogsFullscreenDialog, LogsIconButton, LogsTimestampToggle } from "@/components/logs-display"
 import { getLogTimestampDecorations } from "@/lib/logs"
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet"
 import { TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
@@ -297,8 +296,6 @@ function SystemdSheet({
 	const [isLoading, setIsLoading] = useState(false)
 	const [error, setError] = useState<string | null>(null)
 	const [logs, setLogs] = useState("")
-	const [showTimestamps, setShowTimestamps] = useState(true)
-	const toggleTimestamps = () => setShowTimestamps((shown) => !shown)
 	const [logsStatus, setLogsStatus] = useState<"loading" | "ready" | "empty" | "error">("loading")
 	const [isLoadingLogs, setIsLoadingLogs] = useState(false)
 	const [logsFullscreenOpen, setLogsFullscreenOpen] = useState(false)
@@ -520,8 +517,6 @@ function SystemdSheet({
 				name={service.name}
 				onRefresh={loadLogs}
 				isRefreshing={isLoadingLogs}
-				showTimestamps={showTimestamps}
-				onToggleTimestamps={toggleTimestamps}
 			/>
 			<SheetContent className="w-full min-w-0 sm:max-w-220 p-6 overflow-y-auto">
 				<SheetHeader className="p-0">
@@ -537,32 +532,18 @@ function SystemdSheet({
 								<h3 className="text-sm font-medium">
 									<Trans>Logs</Trans>
 								</h3>
-								<LogsTimestampToggle showTimestamps={showTimestamps} onToggle={toggleTimestamps} className="ms-auto" />
-								<Button
-									variant="ghost"
-									size="sm"
-									onClick={loadLogs}
-									className="h-8 w-8 p-0"
-									disabled={isLoadingLogs}
-									aria-label={t`Refresh`}
-								>
+								<LogsTimestampToggle className="ms-auto" />
+								<LogsIconButton label={t`Refresh`} onClick={loadLogs} disabled={isLoadingLogs}>
 									<RefreshCwIcon
 										className={cn("size-4 transition-transform duration-300", isLoadingLogs && "animate-spin")}
 									/>
-								</Button>
-								<Button
-									variant="ghost"
-									size="sm"
-									onClick={() => setLogsFullscreenOpen(true)}
-									className="h-8 w-8 p-0"
-									aria-label={t`Logs`}
-									disabled={!logs}
-								>
+								</LogsIconButton>
+								<LogsIconButton label={t`Fullscreen`} onClick={() => setLogsFullscreenOpen(true)} disabled={!logs}>
 									<MaximizeIcon className="size-4" />
-								</Button>
+								</LogsIconButton>
 							</div>
 							{logs ? (
-								<LogsDisplay logsDisplay={logs} containerRef={logsContainerRef} showTimestamps={showTimestamps} />
+								<LogsDisplay logsDisplay={logs} containerRef={logsContainerRef} />
 							) : logsStatus === "loading" ? (
 								<>
 									<div className="h-28" aria-busy="true">
