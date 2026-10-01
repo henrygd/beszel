@@ -1,43 +1,58 @@
 /** biome-ignore-all lint/security/noDangerouslySetInnerHtml: log HTML is generated locally by Shiki */
 import { t } from "@lingui/core/macro"
+import { useStore } from "@nanostores/react"
 import { ClockIcon, RefreshCwIcon } from "lucide-react"
-import { type RefObject, useEffect, useRef } from "react"
+import { type ComponentProps, type FocusEvent, type RefObject, useEffect, useRef } from "react"
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogTitle, dialogIconButtonClassName } from "@/components/ui/dialog"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
+import { $showLogTimestamps, toggleLogTimestamps } from "@/lib/stores"
 import { cn } from "@/lib/utils"
 
 type LogsDisplayProps = {
 	logsDisplay: string
 	containerRef: RefObject<HTMLDivElement | null>
-	showTimestamps?: boolean
 }
 
-export function LogsTimestampToggle({
-	showTimestamps,
-	onToggle,
-	className,
-}: {
-	showTimestamps: boolean
-	onToggle: () => void
-	className?: string
-}) {
+// Radix opens a tooltip on any focus, including when a sheet or dialog moves focus to
+// the button on open / close. Limit it to keyboard focus.
+function keyboardFocusOnly(e: FocusEvent<HTMLButtonElement>) {
+	if (!e.currentTarget.matches(":focus-visible")) {
+		e.preventDefault()
+	}
+}
+
+// Icon button with a tooltip, used in the log panel headers.
+export function LogsIconButton({ label, className, ...props }: { label: string } & ComponentProps<typeof Button>) {
 	return (
-		<Button
-			variant="ghost"
-			size="sm"
-			onClick={onToggle}
-			className={cn("h-8 w-8 p-0", showTimestamps && "bg-accent text-accent-foreground", className)}
+		<Tooltip>
+			<TooltipTrigger asChild onFocus={keyboardFocusOnly}>
+				<Button variant="ghost" size="sm" aria-label={label} className={cn("h-8 w-8 p-0", className)} {...props} />
+			</TooltipTrigger>
+			<TooltipContent>{label}</TooltipContent>
+		</Tooltip>
+	)
+}
+
+// Timestamp visibility is a single persisted preference shared by all log views.
+export function LogsTimestampToggle({ className }: { className?: string }) {
+	const showTimestamps = useStore($showLogTimestamps)
+	return (
+		<LogsIconButton
+			label={showTimestamps ? t`Hide timestamps` : t`Show timestamps`}
+			onClick={toggleLogTimestamps}
+			className={cn(showTimestamps && "bg-accent text-accent-foreground", className)}
 			aria-label={t`Show timestamps`}
 			aria-pressed={showTimestamps}
-			title={showTimestamps ? t`Hide timestamps` : t`Show timestamps`}
 		>
 			<ClockIcon className="size-4" />
-		</Button>
+		</LogsIconButton>
 	)
 }
 
 // Shared by Docker and systemd service sheets so logs behave identically.
-export function LogsDisplay({ logsDisplay, containerRef, showTimestamps = true }: LogsDisplayProps) {
+export function LogsDisplay({ logsDisplay, containerRef }: LogsDisplayProps) {
+	const showTimestamps = useStore($showLogTimestamps)
 	return (
 		<div
 			ref={containerRef}
@@ -59,8 +74,6 @@ export function LogsFullscreenDialog({
 	name,
 	onRefresh,
 	isRefreshing,
-	showTimestamps,
-	onToggleTimestamps,
 }: {
 	open: boolean
 	onOpenChange: (open: boolean) => void
@@ -68,9 +81,8 @@ export function LogsFullscreenDialog({
 	name: string
 	onRefresh: () => void | Promise<void>
 	isRefreshing: boolean
-	showTimestamps: boolean
-	onToggleTimestamps: () => void
 }) {
+	const showTimestamps = useStore($showLogTimestamps)
 	const outerContainerRef = useRef<HTMLDivElement>(null)
 
 	useEffect(() => {
@@ -97,20 +109,22 @@ export function LogsFullscreenDialog({
 						<div className="py-3" dangerouslySetInnerHTML={{ __html: logsDisplay }} />
 					</div>
 				</div>
-				<LogsTimestampToggle
-					showTimestamps={showTimestamps}
-					onToggle={onToggleTimestamps}
-					className="absolute end-18 top-2 hover:bg-white/10 hover:text-white aria-pressed:bg-white/15 aria-pressed:text-white"
-				/>
-				<button
-					onClick={onRefresh}
-					className={cn("absolute end-11 top-3 opacity-60 hover:opacity-100", dialogIconButtonClassName)}
-					disabled={isRefreshing}
-					title={t`Refresh`}
-					aria-label={t`Refresh`}
-				>
-					<RefreshCwIcon className={cn("size-4 transition-transform duration-300", isRefreshing && "animate-spin")} />
-				</button>
+				<LogsTimestampToggle className="absolute end-18 top-2 hover:bg-white/10 hover:text-white aria-pressed:bg-white/15 aria-pressed:text-white" />
+				<Tooltip>
+					<TooltipTrigger asChild onFocus={keyboardFocusOnly}>
+						<button
+							onClick={onRefresh}
+							className={cn("absolute end-11 top-3 opacity-60 hover:opacity-100", dialogIconButtonClassName)}
+							disabled={isRefreshing}
+							aria-label={t`Refresh`}
+						>
+							<RefreshCwIcon
+								className={cn("size-4 transition-transform duration-300", isRefreshing && "animate-spin")}
+							/>
+						</button>
+					</TooltipTrigger>
+					<TooltipContent>{t`Refresh`}</TooltipContent>
+				</Tooltip>
 			</DialogContent>
 		</Dialog>
 	)
