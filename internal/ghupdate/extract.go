@@ -46,18 +46,23 @@ func extractTarGz(srcPath, destDir string) error {
 			return err
 		}
 
+		path, err := archivePath(destDir, header.Name)
+		if err != nil {
+			return err
+		}
+
 		if header.Typeflag == tar.TypeDir {
-			if err := os.MkdirAll(filepath.Join(destDir, header.Name), 0755); err != nil {
+			if err := os.MkdirAll(path, 0755); err != nil {
 				return err
 			}
 			continue
 		}
 
-		if err := os.MkdirAll(filepath.Dir(filepath.Join(destDir, header.Name)), 0755); err != nil {
+		if err := os.MkdirAll(filepath.Dir(path), 0755); err != nil {
 			return err
 		}
 
-		outFile, err := os.Create(filepath.Join(destDir, header.Name))
+		outFile, err := os.Create(path)
 		if err != nil {
 			return err
 		}
@@ -72,6 +77,14 @@ func extractTarGz(srcPath, destDir string) error {
 	return nil
 }
 
+// archivePath returns a path within destDir, rejecting path traversal entries.
+func archivePath(destDir, name string) (string, error) {
+	if !filepath.IsLocal(name) {
+		return "", fmt.Errorf("invalid file path: %q", name)
+	}
+	return filepath.Join(destDir, name), nil
+}
+
 // extractZip extracts the zip archive at "src" to "dest".
 //
 // Note that only dirs and regular files will be extracted.
@@ -83,9 +96,6 @@ func extractZip(src, dest string) error {
 		return err
 	}
 	defer zr.Close()
-
-	// normalize dest path to check later for Zip Slip
-	dest = filepath.Clean(dest) + string(os.PathSeparator)
 
 	for _, f := range zr.File {
 		err := extractFile(f, dest)
@@ -100,11 +110,9 @@ func extractZip(src, dest string) error {
 // extractFile extracts the provided zipFile into "basePath/zipFileName" path,
 // creating all the necessary path directories.
 func extractFile(zipFile *zip.File, basePath string) error {
-	path := filepath.Join(basePath, zipFile.Name)
-
-	// check for Zip Slip
-	if !strings.HasPrefix(path, basePath) {
-		return fmt.Errorf("invalid file path: %s", path)
+	path, err := archivePath(basePath, zipFile.Name)
+	if err != nil {
+		return err
 	}
 
 	r, err := zipFile.Open()

@@ -88,15 +88,23 @@ func unmarshalLegacyResponse(resp common.AgentResponse, action common.WebSocketA
 		*d = *resp.String
 		return nil
 	case common.GetSmartData:
-		d, ok := dest.(*map[string]smart.SmartData)
-		if !ok {
+		switch d := dest.(type) {
+		case *map[string]smart.SmartData:
+			if resp.SmartData == nil {
+				return errors.New("no SMART data in response")
+			}
+			*d = resp.SmartData
+			return nil
+		case *smart.SmartDataResponse:
+			if resp.SmartData == nil {
+				return errors.New("no SMART data in response")
+			}
+			d.Data = resp.SmartData
+			d.Complete = resp.SmartComplete
+			return nil
+		default:
 			return fmt.Errorf("unexpected dest type for GetSmartData: %T", dest)
 		}
-		if resp.SmartData == nil {
-			return errors.New("no SMART data in response")
-		}
-		*d = resp.SmartData
-		return nil
 	case common.GetSystemdInfo:
 		d, ok := dest.(*systemd.ServiceDetails)
 		if !ok {
@@ -106,6 +114,16 @@ func unmarshalLegacyResponse(resp common.AgentResponse, action common.WebSocketA
 			return errors.New("no systemd info in response")
 		}
 		*d = resp.ServiceInfo
+		return nil
+	case common.GetSystemdLogs:
+		d, ok := dest.(*string)
+		if !ok {
+			return fmt.Errorf("unexpected dest type for GetSystemdLogs: %T", dest)
+		}
+		if resp.String == nil {
+			return errors.New("no systemd logs in response")
+		}
+		*d = *resp.String
 		return nil
 	}
 	return fmt.Errorf("unsupported action: %d", action)

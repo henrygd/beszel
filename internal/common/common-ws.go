@@ -22,6 +22,14 @@ const (
 	GetSmartData
 	// Request detailed systemd service info from agent
 	GetSystemdInfo
+	// Request ZFS detail data from agent
+	GetZfsData
+	// Sync network monitor configuration to agent
+	SyncNetworkMonitors
+	// Request the list of pending package updates from agent
+	GetPackageUpdates
+	// Request recent logs for a systemd service from the agent.
+	GetSystemdLogs
 	// Add new actions here...
 )
 
@@ -42,7 +50,8 @@ type AgentResponse struct {
 	SmartData   map[string]smart.SmartData `cbor:"5,keyasint,omitempty,omitzero"` // Legacy (<= 0.17)
 	ServiceInfo systemd.ServiceDetails     `cbor:"6,keyasint,omitempty,omitzero"` // Legacy (<= 0.17)
 	// Data is the generic response payload for new endpoints (0.18+)
-	Data cbor.RawMessage `cbor:"7,keyasint,omitempty,omitzero"`
+	Data          cbor.RawMessage `cbor:"7,keyasint,omitempty,omitzero"`
+	SmartComplete bool            `cbor:"8,keyasint,omitempty,omitzero"`
 }
 
 type FingerprintRequest struct {
@@ -63,6 +72,10 @@ type DataRequestOptions struct {
 	IncludeDetails bool   `cbor:"1,keyasint"`
 }
 
+type ZfsDataRequest struct {
+	Force bool `cbor:"0,keyasint,omitempty"`
+}
+
 type ContainerLogsRequest struct {
 	ContainerID string `cbor:"0,keyasint"`
 }
@@ -72,5 +85,9 @@ type ContainerInfoRequest struct {
 }
 
 type SystemdInfoRequest struct {
+	ServiceName string `cbor:"0,keyasint"`
+}
+
+type SystemdLogsRequest struct {
 	ServiceName string `cbor:"0,keyasint"`
 }

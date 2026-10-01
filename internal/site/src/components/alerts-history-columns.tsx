@@ -30,7 +30,8 @@ export const alertsHistoryColumns: ColumnDef<AlertsHistoryRecord>[] = [
 		accessorFn: (record) => {
 			const name = record.name
 			const info = alertInfo[name]
-			return info?.name().replace("cpu", "CPU") || name
+			const label = info?.name().replace("cpu", "CPU") || name
+			return record.monitor_name ? `${label}: ${record.monitor_name}` : label
 		},
 		header: ({ column }) => (
 			<Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
@@ -60,11 +61,15 @@ export const alertsHistoryColumns: ColumnDef<AlertsHistoryRecord>[] = [
 		),
 		cell({ row, getValue }) {
 			const name = row.original.name
+			const info = alertInfo[name]
+			if (info?.triggeredDesc) {
+				return <span className="ps-2">{info.triggeredDesc()}</span>
+			}
 			if (name === "Status") {
 				return <span className="ps-2">{t`Down`}</span>
 			}
 			const value = getValue() as number
-			const unit = alertInfo[name]?.unit
+			const unit = info?.unit
 			return (
 				<span className="tabular-nums ps-2.5">
 					{toFixedFloat(value, value < 10 ? 2 : 1)}

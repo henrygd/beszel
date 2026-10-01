@@ -1,19 +1,15 @@
 {
 	"name": "beszel",
 	"private": true,
-	"version": "0.18.7",
+	"version": "0.20.0",
 	"type": "module",
 	"scripts": {
 		"dev": "vite --host",
-		"build": "lingui extract --overwrite && lingui compile && vite build",
+		"build": "lingui extract --overwrite && lingui compile && tsc -b && vite build",
 		"preview": "vite preview",
 		"sync": "lingui extract --overwrite && lingui compile",
 		"sync_no_compile": "lingui extract --overwrite --clean",
-		"sync_and_purge": "lingui extract --overwrite --clean && lingui compile",
-		"format": "biome format --write .",
-		"lint": "biome lint .",
-		"check": "biome check .",
-		"check:fix": "biome check --fix ."
+		"sync_and_purge": "lingui extract --overwrite --clean && lingui compile"
 	},
 	"dependencies": {
 		"@henrygd/queue": "^1.0.7",

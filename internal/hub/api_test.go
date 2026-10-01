@@ -6,11 +6,16 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/http/httptest"
+	"sort"
 	"testing"
+	"time"
 
 	beszelTests "github.com/henrygd/beszel/internal/tests"
 
 	"github.com/henrygd/beszel/internal/migrations"
+	"github.com/pocketbase/dbx"
+	"github.com/pocketbase/pocketbase/apis"
 	"github.com/pocketbase/pocketbase/core"
 	pbTests "github.com/pocketbase/pocketbase/tests"
 	"github.com/stretchr/testify/require"
@@ -23,6 +28,59 @@ func jsonReader(v any) io.Reader {
 		panic(err)
 	}
 	return bytes.NewReader(data)
+}
+
+type gatedReader struct {
+	data    []byte
+	started chan struct{}
+	release chan struct{}
+	offset  int
+}
+
+func (r *gatedReader) Read(p []byte) (int, error) {
+	if r.offset == 0 {
+		close(r.started)
+		<-r.release
+	}
+	if r.offset >= len(r.data) {
+		return 0, io.EOF
+	}
+	n := copy(p, r.data[r.offset:])
+	r.offset += n
+	return n, nil
+}
+
+func firstUserTestMux(t *testing.T) (*beszelTests.TestHub, http.Handler) {
+	t.Helper()
+	hub, err := beszelTests.NewTestHub(t.TempDir())
+	require.NoError(t, err)
+	_ = hub.StartHub()
+
+	router, err := apis.NewRouter(hub.TestApp)
+	require.NoError(t, err)
+	serveEvent := &core.ServeEvent{App: hub.TestApp, Router: router}
+
+	var handler http.Handler
+	err = hub.TestApp.OnServe().Trigger(serveEvent, func(e *core.ServeEvent) error {
+		var buildErr error
+		handler, buildErr = e.Router.BuildMux()
+		return buildErr
+	})
+	require.NoError(t, err)
+	require.NotNil(t, handler)
+	return hub, handler
+}
+
+func postFirstUser(handler http.Handler, email string) *httptest.ResponseRecorder {
+	body, _ := json.Marshal(map[string]string{
+		"email":    email,
+		"password": "password123",
+	})
+	req := httptest.NewRequest(http.MethodPost, "/api/beszel/create-user", bytes.NewReader(body))
+	req.Header.Set("Content-Type", "application/json")
+	recorder := httptest.NewRecorder()
+	handler.ServeHTTP(recorder, req)
+	return recorder
 }
 
 func TestApiRoutesAuthentication(t *testing.T) {
@@ -41,6 +99,7 @@ func TestApiRoutesAuthentication(t *testing.T) {
 	adminUser, err := beszelTests.CreateUserWithRole(hub, "admin@example.com", "password123", "admin")
 	require.NoError(t, err, "Failed to create admin user")
 	adminUserToken, err := adminUser.NewAuthToken()
+	require.NoError(t, err, "Failed to create admin auth token")
 
 	readOnlyUser, err := beszelTests.CreateUserWithRole(hub, "readonly@example.com", "password123", "readonly")
 	require.NoError(t, err, "Failed to create readonly user")
@@ -55,7 +114,7 @@ func TestApiRoutesAuthentication(t *testing.T) {
 	// Create test system
 	system, err := beszelTests.CreateRecord(hub, "systems", map[string]any{
 		"name":  "test-system",
-		"users": []string{user.Id},
+		"users": []string{user.Id, readOnlyUser.Id},
 		"host":  "127.0.0.1",
 	})
 	require.NoError(t, err, "Failed to create test system")
@@ -278,6 +337,24 @@ func TestApiRoutesAuthentication(t *testing.T) {
 			}),
 		},
 		{
+			Name:   "POST /user-alerts - readonly user can create own alert",
+			Method: http.MethodPost,
+			URL:    "/api/beszel/user-alerts",
+			Headers: map[string]string{
+				"Authorization": readOnlyUserToken,
+			},
+			ExpectedStatus:  200,
+			ExpectedContent: []string{"\"success\":true"},
+			TestAppFactory:  testAppFactory,
+			Body: jsonReader(map[string]any{
+				"name": "CPU", "value": 80, "min": 10, "systems": []string{system.Id},
+			}),
+			AfterTestFunc: func(t testing.TB, app *pbTests.TestApp, res *http.Response) {
+				alerts, _ := app.CountRecords("alerts", dbx.HashExp{"user": readOnlyUser.Id})
+				require.EqualValues(t, 1, alerts)
+			},
+		},
+		{
 			Name:            "DELETE /user-alerts - no auth should fail",
 			Method:          http.MethodDelete,
 			URL:             "/api/beszel/user-alerts",
@@ -312,6 +389,29 @@ func TestApiRoutesAuthentication(t *testing.T) {
 					"value":  80,
 					"min":    10,
 				})
+			},
+		},
+		{
+			Name:   "DELETE /user-alerts - readonly user can delete own alert",
+			Method: http.MethodDelete,
+			URL:    "/api/beszel/user-alerts",
+			Headers: map[string]string{
+				"Authorization": readOnlyUserToken,
+			},
+			ExpectedStatus:  200,
+			ExpectedContent: []string{"\"count\":1", "\"success\":true"},
+			TestAppFactory:  testAppFactory,
+			Body: jsonReader(map[string]any{
+				"name": "CPU", "systems": []string{system.Id},
+			}),
+			BeforeTestFunc: func(t testing.TB, app *pbTests.TestApp, e *core.ServeEvent) {
+				beszelTests.CreateRecord(app, "alerts", map[string]any{
+					"name": "CPU", "system": system.Id, "user": readOnlyUser.Id, "value": 80,
+				})
+			},
+			AfterTestFunc: func(t testing.TB, app *pbTests.TestApp, res *http.Response) {
+				alerts, _ := app.CountRecords("alerts", dbx.HashExp{"user": readOnlyUser.Id})
+				require.Zero(t, alerts)
 			},
 		},
 		{
@@ -449,6 +549,59 @@ func TestApiRoutesAuthentication(t *testing.T) {
 			ExpectedContent: []string{"Something went wrong while processing your request."},
 			TestAppFactory:  testAppFactory,
 		},
+		// /package-updates route
+		{
+			Name:            "GET /package-updates - no auth should fail",
+			Method:          http.MethodGet,
+			URL:             fmt.Sprintf("/api/beszel/package-updates?system=%s", system.Id),
+			ExpectedStatus:  401,
+			ExpectedContent: []string{"requires valid"},
+			TestAppFactory:  testAppFactory,
+		},
+		{
+			Name:   "GET /package-updates - missing system param should fail",
+			Method: http.MethodGet,
+			URL:    "/api/beszel/package-updates",
+			Headers: map[string]string{
+				"Authorization": userToken,
+			},
+			ExpectedStatus:  400,
+			ExpectedContent: []string{"Invalid", "parameter"},
+			TestAppFactory:  testAppFactory,
+		},
+		{
+			Name:   "GET /package-updates - invalid system should fail",
+			Method: http.MethodGet,
+			URL:    "/api/beszel/package-updates?system=invalid-system",
+			Headers: map[string]string{
+				"Authorization": userToken,
+			},
+			ExpectedStatus:  404,
+			ExpectedContent: []string{"The requested resource wasn't found."},
+			TestAppFactory:  testAppFactory,
+		},
+		{
+			Name:            "GET /package-updates - request for valid non-user system should fail",
+			Method:          http.MethodGet,
+			URL:             fmt.Sprintf("/api/beszel/package-updates?system=%s", system.Id),
+			ExpectedStatus:  404,
+			ExpectedContent: []string{"The requested resource wasn't found."},
+			TestAppFactory:  testAppFactory,
+			Headers: map[string]string{
+				"Authorization": user2Token,
+			},
+		},
+		{
+			Name:   "GET /package-updates - good user should pass validation",
+			Method: http.MethodGet,
+			URL:    fmt.Sprintf("/api/beszel/package-updates?system=%s", system.Id),
+			Headers: map[string]string{
+				"Authorization": userToken,
+			},
+			ExpectedStatus:  500,
+			ExpectedContent: []string{"Something went wrong while processing your request."},
+			TestAppFactory:  testAppFactory,
+		},
 		// /systemd routes
 		{
 			Name:            "GET /systemd/info - no auth should fail",
@@ -522,6 +675,25 @@ func TestApiRoutesAuthentication(t *testing.T) {
 			},
 			ExpectedStatus:  500,
 			ExpectedContent: []string{"Something went wrong while processing your request."},
+			TestAppFactory:  testAppFactory,
+			BeforeTestFunc: func(t testing.TB, app *pbTests.TestApp, e *core.ServeEvent) {
+				beszelTests.CreateRecord(app, "systemd_services", map[string]any{
+					"system": system.Id,
+					"name":   "nginx.service",
+					"state":  0,
+					"sub":    1,
+				})
+			},
+		},
+		{
+			Name:   "GET /systemd/logs - old agent without capability returns empty logs",
+			Method: http.MethodGet,
+			URL:    fmt.Sprintf("/api/beszel/systemd/logs?system=%s&service=nginx.service", system.Id),
+			Headers: map[string]string{
+				"Authorization": userToken,
+			},
+			ExpectedStatus:  200,
+			ExpectedContent: []string{`"logs":""`},
 			TestAppFactory:  testAppFactory,
 			BeforeTestFunc: func(t testing.TB, app *pbTests.TestApp, e *core.ServeEvent) {
 				beszelTests.CreateRecord(app, "systemd_services", map[string]any{
@@ -747,6 +919,87 @@ func TestFirstUserCreation(t *testing.T) {
 	})
 }
 
+func TestFirstUserBootstrapAtomicity(t *testing.T) {
+	t.Run("concurrent complete requests produce exactly one winner", func(t *testing.T) {
+		hub, handler := firstUserTestMux(t)
+		defer hub.Cleanup()
+
+		start := make(chan struct{})
+		statuses := make(chan int, 2)
+		for _, email := range []string{"first@example.com", "second@example.com"} {
+			go func(email string) {
+				<-start
+				statuses <- postFirstUser(handler, email).Code
+			}(email)
+		}
+		close(start)
+
+		got := []int{<-statuses, <-statuses}
+		sort.Ints(got)
+		require.Equal(t, []int{http.StatusOK, http.StatusForbidden}, got)
+
+		users, err := hub.FindAllRecords("users")
+		require.NoError(t, err)
+		require.Len(t, users, 1)
+		superusers, err := hub.FindAllRecords(core.CollectionNameSuperusers)
+		require.NoError(t, err)
+		require.Len(t, superusers, 1)
+		require.NotEqual(t, migrations.TempAdminEmail, superusers[0].Email())
+	})
+
+	t.Run("partial body cannot retain stale bootstrap authorization", func(t *testing.T) {
+		hub, handler := firstUserTestMux(t)
+		defer hub.Cleanup()
+
+		body, err := json.Marshal(map[string]string{
+			"email":    "parked@example.com",
+			"password": "password123",
+		})
+		require.NoError(t, err)
+		gated := &gatedReader{
+			data:    body,
+			started: make(chan struct{}),
+			release: make(chan struct{}),
+		}
+		parkedRequest := httptest.NewRequest(http.MethodPost, "/api/beszel/create-user", gated)
+		parkedRequest.Header.Set("Content-Type", "application/json")
+		parkedRecorder := httptest.NewRecorder()
+		parkedDone := make(chan struct{})
+		go func() {
+			handler.ServeHTTP(parkedRecorder, parkedRequest)
+			close(parkedDone)
+		}()
+
+		select {
+		case <-gated.started:
+		case <-time.After(2 * time.Second):
+			t.Fatal("parked request did not begin reading its body")
+		}
+
+		operatorRecorder := postFirstUser(handler, "operator@example.com")
+		require.Equal(t, http.StatusOK, operatorRecorder.Code)
+		lateRecorder := postFirstUser(handler, "late@example.com")
+		require.Equal(t, http.StatusForbidden, lateRecorder.Code)
+
+		close(gated.release)
+		select {
+		case <-parkedDone:
+		case <-time.After(2 * time.Second):
+			t.Fatal("parked request did not finish")
+		}
+		require.Equal(t, http.StatusForbidden, parkedRecorder.Code)
+
+		users, err := hub.FindAllRecords("users")
+		require.NoError(t, err)
+		require.Len(t, users, 1)
+		require.Equal(t, "operator@example.com", users[0].Email())
+		superusers, err := hub.FindAllRecords(core.CollectionNameSuperusers)
+		require.NoError(t, err)
+		require.Len(t, superusers, 1)
+		require.Equal(t, "operator@example.com", superusers[0].Email())
+	})
+}
+
 func TestCreateUserEndpointAvailability(t *testing.T) {
 	t.Run("CreateUserEndpoint available when no users exist", func(t *testing.T) {
 		hub, _ := beszelTests.NewTestHub(t.TempDir())
@@ -924,6 +1177,79 @@ func TestTrustedHeaderMiddleware(t *testing.T) {
 
 	for _, scenario := range scenarios {
 		scenario.Test(t)
+	}
+}
+
+func TestTrustedHeaderProxyAllowlist(t *testing.T) {
+	var hubs []*beszelTests.TestHub
+
+	defer func() {
+		for _, hub := range hubs {
+			hub.Cleanup()
+		}
+	}()
+
+	testAppFactory := func(t testing.TB) *pbTests.TestApp {
+		hub, _ := beszelTests.NewTestHub(t.TempDir())
+		hubs = append(hubs, hub)
+		hub.StartHub()
+		return hub.TestApp
+	}
+
+	// httptest requests arrive from 192.0.2.1:1234
+	testCases := []struct {
+		name            string
+		proxies         string
+		expectedStatus  int
+		expectedContent []string
+	}{
+		{
+			name:            "peer inside an allowed range",
+			proxies:         "10.0.0.0/8, 192.0.2.0/24",
+			expectedStatus:  200,
+			expectedContent: []string{"\"key\":", "\"v\":"},
+		},
+		{
+			name:            "peer is the listed address",
+			proxies:         "192.0.2.1",
+			expectedStatus:  200,
+			expectedContent: []string{"\"key\":", "\"v\":"},
+		},
+		{
+			name:            "peer outside the allowlist",
+			proxies:         "10.0.0.0/8",
+			expectedStatus:  401,
+			expectedContent: []string{"requires valid"},
+		},
+		{
+			name:            "allowlist with no valid entry",
+			proxies:         "proxy.internal",
+			expectedStatus:  401,
+			expectedContent: []string{"requires valid"},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			t.Setenv("TRUSTED_AUTH_HEADER", "X-Beszel-Trusted")
+			t.Setenv("TRUSTED_PROXY_IPS", tc.proxies)
+
+			scenario := beszelTests.ApiScenario{
+				Name:   "GET /getkey - with trusted header",
+				Method: http.MethodGet,
+				URL:    "/api/beszel/getkey",
+				Headers: map[string]string{
+					"X-Beszel-Trusted": "user@test.com",
+				},
+				ExpectedStatus:  tc.expectedStatus,
+				ExpectedContent: tc.expectedContent,
+				TestAppFactory:  testAppFactory,
+				BeforeTestFunc: func(t testing.TB, app *pbTests.TestApp, e *core.ServeEvent) {
+					beszelTests.CreateUser(app, "user@test.com", "password123")
+				},
+			}
+			scenario.Test(t)
+		})
 	}
 }
 

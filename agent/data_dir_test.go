@@ -12,6 +12,14 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+func invalidDataDir(t *testing.T) string {
+	t.Helper()
+
+	filePath := filepath.Join(t.TempDir(), "file")
+	require.NoError(t, os.WriteFile(filePath, nil, 0644))
+	return filepath.Join(filePath, "data")
+}
+
 func TestGetDataDir(t *testing.T) {
 	// Test with explicit dataDir parameter
 	t.Run("explicit data dir", func(t *testing.T) {
@@ -48,7 +56,7 @@ func TestGetDataDir(t *testing.T) {
 
 	// Test with invalid explicit dataDir
 	t.Run("invalid explicit data dir", func(t *testing.T) {
-		invalidPath := "/invalid/path/that/cannot/be/created"
+		invalidPath := invalidDataDir(t)
 		_, err := GetDataDir(invalidPath)
 		assert.Error(t, err)
 	})
@@ -78,7 +86,7 @@ func TestTestDataDirs(t *testing.T) {
 	// Test with multiple directories, first one valid
 	t.Run("multiple dirs - first valid", func(t *testing.T) {
 		tempDir := t.TempDir()
-		invalidDir := "/invalid/path"
+		invalidDir := invalidDataDir(t)
 		result, err := testDataDirs([]string{tempDir, invalidDir})
 		require.NoError(t, err)
 		assert.Equal(t, tempDir, result)
@@ -87,7 +95,7 @@ func TestTestDataDirs(t *testing.T) {
 	// Test with multiple directories, second one valid
 	t.Run("multiple dirs - second valid", func(t *testing.T) {
 		tempDir := t.TempDir()
-		invalidDir := "/invalid/path"
+		invalidDir := invalidDataDir(t)
 		result, err := testDataDirs([]string{invalidDir, tempDir})
 		require.NoError(t, err)
 		assert.Equal(t, tempDir, result)
@@ -109,7 +117,7 @@ func TestTestDataDirs(t *testing.T) {
 
 	// Test with no valid directories
 	t.Run("no valid directories", func(t *testing.T) {
-		invalidPaths := []string{"/invalid/path1", "/invalid/path2"}
+		invalidPaths := []string{invalidDataDir(t), invalidDataDir(t)}
 		_, err := testDataDirs(invalidPaths)
 		assert.Error(t, err)
 		assert.Contains(t, err.Error(), "data directory not found")

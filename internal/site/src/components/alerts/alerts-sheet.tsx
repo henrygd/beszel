@@ -10,6 +10,7 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Input } from "@/components/ui/input"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Switch } from "@/components/ui/switch"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { toast } from "@/components/ui/use-toast"
@@ -17,7 +18,7 @@ import { alertInfo } from "@/lib/alerts"
 import { pb } from "@/lib/api"
 import { $alerts, $systems } from "@/lib/stores"
 import { cn, debounce } from "@/lib/utils"
-import type { AlertInfo, AlertRecord, SystemRecord } from "@/types"
+import type { AlertInfo, AlertRecord, AlertUnit, SystemRecord } from "@/types"
 
 const Slider = lazy(() => import("@/components/ui/slider"))
 
@@ -26,6 +27,24 @@ const endpoint = "/api/beszel/user-alerts"
 const alertDebounce = 400
 
 const alertKeys = Object.keys(alertInfo) as (keyof typeof alertInfo)[]
+
+/** Round to a multiple of step, trimming float noise like 0.30000000000000004 */
+const roundToStep = (val: number, step: number) => Number((Math.round(val / step) * step).toFixed(6))
+
+/** Number input step and minimum for a unit, which may be finer than the slider */
+const getInputRange = ({ min, step, inputStep = step }: AlertUnit) => ({ step: inputStep, min: Math.min(min, inputStep) })
+
+/** Index of the unit to display a stored value in: the largest unit whose input range and step fit it */
+function getUnitIndex(units: AlertUnit[], value: number) {
+	for (let i = units.length - 1; i > 0; i--) {
+		const { min, step } = getInputRange(units[i])
+		const val = value / units[i].factor
+		if (val >= min && val <= units[i].max && Math.abs(roundToStep(val, step) - val) < 1e-6) {
+			return i
+		}
+	}
+	return 0
+}
 
 const failedUpdateToast = (error: unknown) => {
 	console.error(error)
@@ -236,10 +255,26 @@ export function AlertContent({
 	const { name } = alertData
 
 	const singleDescription = alertData.singleDesc?.()
+	/** Alerts that fire on first observation have no duration to configure */
+	const noDuration = alertData.noDuration === true
+	/** Binary alerts have no threshold to configure */
+	const noThreshold = !!singleDescription || alertData.noThreshold === true
+	/** Whether enabling the alert reveals anything to configure */
+	const hasControls = !(noThreshold && noDuration)
 
 	const [checked, setChecked] = useState(global ? false : !!alert)
-	const [min, setMin] = useState(alert?.min || 10)
-	const [value, setValue] = useState(alert?.value || (singleDescription ? 0 : (alertData.start ?? 80)))
+	const [min, setMin] = useState(alert?.min || (noDuration ? 0 : 10))
+	const { units } = alertData
+	const storedValue = alert?.value ?? (noThreshold ? 0 : (alertData.start ?? 80))
+	const [unitIndex, setUnitIndex] = useState(() => (units ? getUnitIndex(units, storedValue) : 0))
+	/** Selected threshold unit, if the alert has selectable units */
+	const unit = units?.[unitIndex]
+	const factor = unit?.factor ?? 1
+	const unitLabel = unit?.unit ?? alertData.unit
+	const { min: valueMin, max: valueMax, step = 1 } = unit ?? alertData
+	const { min: inputMin, step: inputStep } = unit ? getInputRange(unit) : { min: valueMin, step }
+	/** Threshold value in the selected unit */
+	const [value, setValue] = useState(() => Number((storedValue / factor).toFixed(6)))
 
 	const Icon = alertData.icon
 
@@ -261,12 +296,12 @@ export function AlertContent({
 		return systemIds
 	}
 
-	function sendUpsert(min: number, value: number) {
+	function sendUpsert(min: number, value: number, valueFactor = factor) {
 		const systems = getSystemIds()
 		systems.length &&
 			upsertAlerts({
 				name: alertKey,
-				value,
+				value: Number((value * valueFactor).toFixed(6)),
 				min,
 				systems,
 			})
@@ -277,14 +312,16 @@ export function AlertContent({
 			<label
 				htmlFor={`s${name}`}
 				className={cn("flex flex-row items-center justify-between gap-4 cursor-pointer p-4", {
-					"pb-0": checked,
+					"pb-0": checked && hasControls,
 				})}
 			>
 				<div className="grid gap-1 select-none">
 					<p className="font-semibold flex gap-3 items-center">
 						<Icon className="h-4 w-4 opacity-85" /> {alertData.name()}
 					</p>
-					{!checked && <span className="block text-sm text-muted-foreground">{alertData.desc()}</span>}
+					{(!checked || !hasControls) && (
+						<span className="block text-sm text-muted-foreground">{alertData.desc()}</span>
+					)}
 				</div>
 				<Switch
 					id={`s${name}`}
@@ -307,18 +344,18 @@ export function AlertContent({
 					}}
 				/>
 			</label>
-			{checked && (
+			{checked && hasControls && (
 				<div className="grid sm:grid-cols-2 mt-1.5 gap-5 px-4 pb-5 tabular-nums text-muted-foreground">
 					<Suspense fallback={<div className="h-10" />}>
-						{!singleDescription && (
-							<div>
+						{!noThreshold && (
+							<div className={cn(noDuration && "col-span-full")}>
 								<p id={`v${name}`} className="text-sm block h-6">
 									{alertData.invert ? (
 										<Trans>
 											Average drops below{" "}
 											<strong className="text-foreground">
 												{value}
-												{alertData.unit}
+												{unitLabel}
 											</strong>
 										</Trans>
 									) : (
@@ -326,7 +363,7 @@ export function AlertContent({
 											Average exceeds{" "}
 											<strong className="text-foreground">
 												{value}
-												{alertData.unit}
+												{unitLabel}
 											</strong>
 										</Trans>
 									)}
@@ -337,9 +374,9 @@ export function AlertContent({
 										value={[value]}
 										onValueCommit={(val) => sendUpsert(min, val[0])}
 										onValueChange={(val) => setValue(val[0])}
-										step={alertData.step ?? 1}
-										min={alertData.min ?? 1}
-										max={alertData.max ?? 99}
+										step={step}
+										min={valueMin ?? 1}
+										max={valueMax ?? 99}
 									/>
 									<Input
 										type="number"
@@ -347,60 +384,91 @@ export function AlertContent({
 										onChange={(e) => {
 											let val = parseFloat(e.target.value)
 											if (!Number.isNaN(val)) {
-												if (alertData.max != null) val = Math.min(val, alertData.max)
-												if (alertData.min != null) val = Math.max(val, alertData.min)
+												// keep values on the step grid so the unit can be inferred on reload
+												if (unit) val = roundToStep(val, inputStep)
+												if (valueMax != null) val = Math.min(val, valueMax)
+												if (inputMin != null) val = Math.max(val, inputMin)
 												setValue(val)
 												sendUpsert(min, val)
 											}
 										}}
-										step={alertData.step ?? 1}
-										min={alertData.min ?? 1}
-										max={alertData.max ?? 99}
+										step={inputStep}
+										min={inputMin ?? 1}
+										max={valueMax ?? 99}
+										className="w-16 h-8 text-center px-1"
+									/>
+									{units && (
+										<Select
+											value={String(unitIndex)}
+											onValueChange={(index) => {
+												const next = units[Number(index)]
+												const nextInput = getInputRange(next)
+												// convert the current threshold to the new unit, clamped to its range
+												const val = roundToStep((value * factor) / next.factor, nextInput.step)
+												const clamped = Math.min(Math.max(val, nextInput.min), next.max)
+												setUnitIndex(Number(index))
+												setValue(clamped)
+												sendUpsert(min, clamped, next.factor)
+											}}
+										>
+											<SelectTrigger className="w-auto shrink-0 h-8 gap-1.5 px-2.5">
+												<SelectValue />
+											</SelectTrigger>
+											<SelectContent>
+												{units.map(({ unit }, i) => (
+													<SelectItem key={unit} value={String(i)}>
+														{unit.trim()}
+													</SelectItem>
+												))}
+											</SelectContent>
+										</Select>
+									)}
+								</div>
+							</div>
+						)}
+						{!noDuration && (
+							<div className={cn(singleDescription && "col-span-full lowercase")}>
+								<p id={`t${name}`} className="text-sm block h-6 first-letter:uppercase">
+									{singleDescription && (
+										<>
+											{singleDescription}
+											{` `}
+										</>
+									)}
+									<Trans>
+										For <strong className="text-foreground">{min}</strong>{" "}
+										<Plural value={min} one="minute" other="minutes" />
+									</Trans>
+								</p>
+								<div className="flex gap-3 items-center">
+									<Slider
+										aria-labelledby={`t${name}`}
+										value={[min]}
+										onValueCommit={(val) => sendUpsert(val[0], value)}
+										onValueChange={(val) => setMin(val[0])}
+										min={1}
+										max={60}
+									/>
+									<Input
+										type="number"
+										value={min}
+										onChange={(e) => {
+											let val = parseInt(e.target.value, 10)
+											if (!Number.isNaN(val)) {
+												val = Math.max(1, Math.min(val, 60))
+												setMin(val)
+												sendUpsert(val, value)
+											}
+										}}
+										min={1}
+										max={60}
 										className="w-16 h-8 text-center px-1"
 									/>
 								</div>
 							</div>
 						)}
-						<div className={cn(singleDescription && "col-span-full lowercase")}>
-							<p id={`t${name}`} className="text-sm block h-6 first-letter:uppercase">
-								{singleDescription && (
-									<>
-										{singleDescription}
-										{` `}
-									</>
-								)}
-								<Trans>
-									For <strong className="text-foreground">{min}</strong>{" "}
-									<Plural value={min} one="minute" other="minutes" />
-								</Trans>
-							</p>
-							<div className="flex gap-3 items-center">
-								<Slider
-									aria-labelledby={`t${name}`}
-									value={[min]}
-									onValueCommit={(val) => sendUpsert(val[0], value)}
-									onValueChange={(val) => setMin(val[0])}
-									min={1}
-									max={60}
-								/>
-								<Input
-									type="number"
-									value={min}
-									onChange={(e) => {
-										let val = parseInt(e.target.value, 10)
-										if (!Number.isNaN(val)) {
-											val = Math.max(1, Math.min(val, 60))
-											setMin(val)
-											sendUpsert(val, value)
-										}
-									}}
-									min={1}
-									max={60}
-									className="w-16 h-8 text-center px-1"
-								/>
-							</div>
-						</div>
 					</Suspense>
+          {checked && alertData.note && <span className="block col-span-full text-sm text-muted-foreground -mt-3">{alertData.note()}</span>}
 				</div>
 			)}
 		</div>

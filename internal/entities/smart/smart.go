@@ -475,7 +475,7 @@ type NVMeSmartHealthInformationLog struct {
 	HostReads               uint    `json:"host_reads"`
 	HostWrites              uint    `json:"host_writes"`
 	ControllerBusyTime      uint    `json:"controller_busy_time"`
-	PowerCycles             uint16  `json:"power_cycles"`
+	PowerCycles             uint    `json:"power_cycles"`
 	PowerOnHours            uint32  `json:"power_on_hours"`
 	UnsafeShutdowns         uint16  `json:"unsafe_shutdowns"`
 	MediaErrors             uint    `json:"media_errors"`
@@ -494,7 +494,7 @@ type SmartInfoForNvme struct {
 	FirmwareVersion string           `json:"firmware_version"`
 	// NVMePCIVendor                 NVMePCIVendor                 `json:"nvme_pci_vendor"`
 	// NVMeIEEEOUIIdentifier         uint32                        `json:"nvme_ieee_oui_identifier"`
-	NVMeTotalCapacity             uint64                        `json:"nvme_total_capacity"`
+	NVMeTotalCapacity uint64 `json:"nvme_total_capacity"`
 	// NVMeUnallocatedCapacity       uint64                        `json:"nvme_unallocated_capacity"`
 	// NVMeControllerID              uint16                        `json:"nvme_controller_id"`
 	// NVMeVersion                   VersionStringInfo             `json:"nvme_version"`
@@ -503,11 +503,11 @@ type SmartInfoForNvme struct {
 	UserCapacity UserCapacity `json:"user_capacity"`
 	// LogicalBlockSize              int                           `json:"logical_block_size"`
 	// LocalTime                     LocalTime                     `json:"local_time"`
-	SmartStatus                   SmartStatusInfoNvme           `json:"smart_status"`
-	NVMeSmartHealthInformationLog NVMeSmartHealthInformationLog `json:"nvme_smart_health_information_log"`
-	Temperature                   TemperatureInfoNvme           `json:"temperature"`
-	PowerCycleCount               uint16                        `json:"power_cycle_count"`
-	PowerOnTime                   PowerOnTimeInfoNvme           `json:"power_on_time"`
+	SmartStatus                   SmartStatusInfoNvme            `json:"smart_status"`
+	NVMeSmartHealthInformationLog *NVMeSmartHealthInformationLog `json:"nvme_smart_health_information_log"`
+	Temperature                   TemperatureInfoNvme            `json:"temperature"`
+	PowerCycleCount               uint                           `json:"power_cycle_count"`
+	PowerOnTime                   PowerOnTimeInfoNvme            `json:"power_on_time"`
 }
 
 type TemperatureInfoNvme struct {
@@ -529,6 +529,13 @@ type SmartData struct {
 	DiskType        string            `json:"dt,omitempty" cbor:"7,keyasint,omitempty"`
 	Temperature     uint8             `json:"t,omitempty" cbor:"8,keyasint,omitempty"`
 	Attributes      []*SmartAttribute `json:"a,omitempty" cbor:"9,keyasint,omitempty"`
+}
+
+// SmartDataResponse contains the collected data and whether every discovered
+// device was collected. Older agents omit Complete, so hubs must not prune from it.
+type SmartDataResponse struct {
+	Data     map[string]SmartData `json:"data" cbor:"0,keyasint"`
+	Complete bool                 `json:"complete" cbor:"1,keyasint,omitempty"` // Whether every discovered device was collected
 }
 
 type SmartAttribute struct {

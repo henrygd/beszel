@@ -29,9 +29,6 @@ type ServerOptions struct {
 	Keys    []gossh.PublicKey // SSH public keys for authentication
 }
 
-// hubVersions caches hub versions by session ID to avoid repeated parsing.
-var hubVersions map[string]semver.Version
-
 // StartServer starts the SSH server with the provided options.
 // It configures the server with secure defaults, sets up authentication,
 // and begins listening for connections. Returns an error if the server
@@ -60,21 +57,11 @@ func (a *Agent) StartServer(opts ServerOptions) error {
 	}
 	defer ln.Close()
 
-	// base config (limit to allowed algorithms)
-	config := &gossh.ServerConfig{
-		ServerVersion: fmt.Sprintf("SSH-2.0-%s_%s", beszel.AppName, beszel.Version),
-	}
-	config.KeyExchanges = common.DefaultKeyExchanges
-	config.MACs = common.DefaultMACs
-	config.Ciphers = common.DefaultCiphers
-
 	// set default handler
 	ssh.Handle(a.handleSession)
 
 	a.server = &ssh.Server{
-		ServerConfigCallback: func(ctx ssh.Context) *gossh.ServerConfig {
-			return config
-		},
+		ServerConfigCallback: newSSHServerConfig,
 		// check public key(s)
 		PublicKeyHandler: func(ctx ssh.Context, key ssh.PublicKey) bool {
 			remoteAddr := ctx.RemoteAddr()
@@ -99,24 +86,28 @@ func (a *Agent) StartServer(opts ServerOptions) error {
 	return a.server.Serve(ln)
 }
 
-// getHubVersion retrieves and caches the hub version for a given session.
-// It extracts the version from the SSH client version string and caches
-// it to avoid repeated parsing. Returns a zero version if parsing fails.
-func (a *Agent) getHubVersion(sessionId string, sessionCtx ssh.Context) semver.Version {
-	if hubVersions == nil {
-		hubVersions = make(map[string]semver.Version, 1)
+// newSSHServerConfig returns a separate config for each connection because
+// gliderlabs adds host keys and connection-specific callbacks to it.
+func newSSHServerConfig(ssh.Context) *gossh.ServerConfig {
+	return &gossh.ServerConfig{
+		Config: gossh.Config{
+			KeyExchanges: common.DefaultKeyExchanges,
+			MACs:         common.DefaultMACs,
+			Ciphers:      common.DefaultCiphers,
+		},
+		ServerVersion: fmt.Sprintf("SSH-2.0-%s_%s", beszel.AppName, beszel.Version),
 	}
-	hubVersion, ok := hubVersions[sessionId]
-	if ok {
-		return hubVersion
-	}
-	// Extract hub version from SSH client version
+}
+
+// getHubVersion extracts the hub version from the SSH client version string
+// for a given session. Returns a zero version if parsing fails.
+func (a *Agent) getHubVersion(sessionCtx ssh.Context) semver.Version {
 	clientVersion := sessionCtx.Value(ssh.ContextKeyClientVersion)
 	if versionStr, ok := clientVersion.(string); ok {
-		hubVersion, _ = extractHubVersion(versionStr)
+		hubVersion, _ := extractHubVersion(versionStr)
+		return hubVersion
 	}
-	hubVersions[sessionId] = hubVersion
-	return hubVersion
+	return semver.Version{}
 }
 
 // handleSession handles an incoming SSH session by gathering system statistics
@@ -127,9 +118,8 @@ func (a *Agent) handleSession(s ssh.Session) {
 	a.connectionManager.eventChan <- SSHConnect
 
 	sessionCtx := s.Context()
-	sessionID := sessionCtx.SessionID()
 
-	hubVersion := a.getHubVersion(sessionID, sessionCtx)
+	hubVersion := a.getHubVersion(sessionCtx)
 
 	// Legacy one-shot behavior for older hubs
 	if hubVersion.LT(beszel.MinVersionAgentResponse) {
@@ -278,6 +268,5 @@ func (a *Agent) StopServer() error {
 	slog.Info("Stopping SSH server")
 	_ = a.server.Close()
 	a.server = nil
-	a.connectionManager.eventChan <- SSHDisconnect
 	return nil
 }
