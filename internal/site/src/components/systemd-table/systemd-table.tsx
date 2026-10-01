@@ -21,7 +21,8 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Card, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { LogsDisplay, LogsFullscreenDialog } from "@/components/logs-display"
+import { LogsDisplay, LogsFullscreenDialog, LogsTimestampToggle } from "@/components/logs-display"
+import { getLogTimestampDecorations } from "@/lib/logs"
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet"
 import { TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { pb } from "@/lib/api"
@@ -41,7 +42,13 @@ async function getSystemdLogsHtml(systemId: string, serviceName: string): Promis
 			query: { system: systemId, service: serviceName },
 		}),
 	])
-	return logs ? highlighter.codeToHtml(logs, { lang: "log", theme: syntaxTheme }) : ""
+	return logs
+		? highlighter.codeToHtml(logs, {
+				lang: "log",
+				theme: syntaxTheme,
+				decorations: getLogTimestampDecorations(logs),
+			})
+		: ""
 }
 
 export default function SystemdTable({ systemId }: { systemId?: string }) {
@@ -290,6 +297,8 @@ function SystemdSheet({
 	const [isLoading, setIsLoading] = useState(false)
 	const [error, setError] = useState<string | null>(null)
 	const [logs, setLogs] = useState("")
+	const [showTimestamps, setShowTimestamps] = useState(true)
+	const toggleTimestamps = () => setShowTimestamps((shown) => !shown)
 	const [logsStatus, setLogsStatus] = useState<"loading" | "ready" | "empty" | "error">("loading")
 	const [isLoadingLogs, setIsLoadingLogs] = useState(false)
 	const [logsFullscreenOpen, setLogsFullscreenOpen] = useState(false)
@@ -511,6 +520,8 @@ function SystemdSheet({
 				name={service.name}
 				onRefresh={loadLogs}
 				isRefreshing={isLoadingLogs}
+				showTimestamps={showTimestamps}
+				onToggleTimestamps={toggleTimestamps}
 			/>
 			<SheetContent className="w-full min-w-0 sm:max-w-220 p-6 overflow-y-auto">
 				<SheetHeader className="p-0">
@@ -526,11 +537,12 @@ function SystemdSheet({
 								<h3 className="text-sm font-medium">
 									<Trans>Logs</Trans>
 								</h3>
+								<LogsTimestampToggle showTimestamps={showTimestamps} onToggle={toggleTimestamps} className="ms-auto" />
 								<Button
 									variant="ghost"
 									size="sm"
 									onClick={loadLogs}
-									className="h-8 w-8 p-0 ms-auto"
+									className="h-8 w-8 p-0"
 									disabled={isLoadingLogs}
 									aria-label={t`Refresh`}
 								>
@@ -550,7 +562,7 @@ function SystemdSheet({
 								</Button>
 							</div>
 							{logs ? (
-								<LogsDisplay logsDisplay={logs} containerRef={logsContainerRef} />
+								<LogsDisplay logsDisplay={logs} containerRef={logsContainerRef} showTimestamps={showTimestamps} />
 							) : logsStatus === "loading" ? (
 								<>
 									<div className="h-28" aria-busy="true">
