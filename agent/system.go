@@ -410,7 +410,7 @@ func (a *Agent) applyContainerMemoryLimit(v *mem.VirtualMemoryStat, used, cacheB
 		limit = min(limit, cg.limit)
 	}
 
-	if cg.usageOK {
+	if cg.usageOK && cg.limitOK && cg.limit <= runtimeTotal {
 		newUsed := min(cg.used, limit)
 		*used = newUsed
 		*cacheBuff = min(cg.cache, limit-newUsed)
