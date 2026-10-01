@@ -15,7 +15,6 @@ type PublicAppInfo struct {
 	HUB_VERSION         string
 	HUB_URL             string
 	OAUTH_DISABLE_POPUP bool `json:"OAUTH_DISABLE_POPUP,omitempty"`
-	SSH_DISABLED        bool `json:"SSH_DISABLED,omitempty"`
 }
 
 // modifyIndexHTML injects the public app information into the index.html content
@@ -64,9 +63,6 @@ func getPublicAppInfo(hub *Hub) PublicAppInfo {
 	}
 	if val, _ := utils.GetEnv("OAUTH_DISABLE_POPUP"); val == "true" {
 		info.OAUTH_DISABLE_POPUP = true
-	}
-	if val, _ := utils.GetEnv("DISABLE_SSH"); val == "true" {
-		info.SSH_DISABLED = true
 	}
 	return info
 }

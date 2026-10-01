@@ -692,9 +692,6 @@ func (sys *System) request(ctx context.Context, action common.WebSocketAction, r
 	}
 
 	// Fall back to SSH if WebSocket fails
-	if sshFallbackDisabled() {
-		return errSSHDisabled
-	}
 	sshTransport, err := sys.getSSHTransport()
 	if err != nil {
 		return err
@@ -725,7 +722,11 @@ func shouldCloseWebSocket(err error) bool {
 // getSSHTransport returns the system's SSH transport, creating it on first use.
 // The transport owns the only SSH connection to the agent; it is shared by the
 // updater and on-demand requests and connects lazily.
+// It returns errSSHDisabled if DISABLE_SSH is set on the hub.
 func (sys *System) getSSHTransport() (*transport.SSHTransport, error) {
+	if sshFallbackDisabled() {
+		return nil, errSSHDisabled
+	}
 	sys.sshMu.Lock()
 	defer sys.sshMu.Unlock()
 	if sys.sshTransport != nil {
@@ -786,10 +787,6 @@ func (sys *System) fetchDataFromAgent(options common.DataRequestOptions) (*syste
 		sys.closeWebSocketConnection()
 	}
 
-	// wait for the agent to reconnect via WebSocket
-	if sshFallbackDisabled() {
-		return nil, errSSHDisabled
-	}
 	sshData, err := sys.fetchDataViaSSH(options)
 	if err != nil {
 		return nil, err

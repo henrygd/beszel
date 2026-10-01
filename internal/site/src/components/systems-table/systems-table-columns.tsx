@@ -524,8 +524,6 @@ export function SystemsTableColumns(viewMode: "table" | "grid"): ColumnDef<Syste
 					return null
 				}
 				const system = info.row.original
-				// with SSH disabled on the hub every agent uses WebSocket, so the icon adds nothing
-				const connectionType = globalThis.BESZEL.SSH_DISABLED ? undefined : (system.info.ct as ConnectionType)
 				let color = "text-red-500"
 				if (system.status === SystemStatus.Up) {
 					color = version === globalThis.BESZEL.HUB_VERSION ? "text-green-500" : "text-yellow-500"
@@ -540,16 +538,16 @@ export function SystemsTableColumns(viewMode: "table" | "grid"): ColumnDef<Syste
 							viewMode === "table" && "ps-0.5"
 						)}
 						tabIndex={-1}
-						title={connectionType ? connectionTypeLabels[connectionType] : undefined}
+						title={connectionTypeLabels[system.info.ct as ConnectionType]}
 						role="none"
 					>
-						{connectionType === ConnectionType.WebSocket && (
+						{system.info.ct === ConnectionType.WebSocket && (
 							<WebSocketIcon className={cn("size-3 pointer-events-none", color)} />
 						)}
-						{connectionType === ConnectionType.SSH && (
+						{system.info.ct === ConnectionType.SSH && (
 							<ChevronRightSquareIcon className={cn("size-3 pointer-events-none", color)} />
 						)}
-						{!connectionType && <IndicatorDot system={system} className={cn(color, "bg-current mx-0.5")} />}
+						{!system.info.ct && <IndicatorDot system={system} className={cn(color, "bg-current mx-0.5")} />}
 						<span className="truncate max-w-14">{info.getValue() as string}</span>
 					</Link>
 				)
