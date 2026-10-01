@@ -32,7 +32,8 @@ import { Separator } from "../ui/separator"
 import { $router, Link } from "../router"
 import { listenKeys } from "nanostores"
 import { getPagePath } from "@nanostores/router"
-import { LogsDisplay, LogsFullscreenDialog } from "@/components/logs-display"
+import { LogsDisplay, LogsFullscreenDialog, LogsIconButton, LogsTimestampToggle } from "@/components/logs-display"
+import { getLogTimestampDecorations } from "@/lib/logs"
 
 const syntaxTheme = "github-dark-dimmed"
 
@@ -282,7 +283,13 @@ async function getLogsHtml(container: ContainerRecord): Promise<string> {
 				container: container.id,
 			}),
 		])
-		return logsHtml.logs ? highlighter.codeToHtml(logsHtml.logs, { lang: "log", theme: syntaxTheme }) : t`No results.`
+		return logsHtml.logs
+			? highlighter.codeToHtml(logsHtml.logs, {
+					lang: "log",
+					theme: syntaxTheme,
+					decorations: getLogTimestampDecorations(logsHtml.logs),
+				})
+			: t`No results.`
 	} catch (error) {
 		console.error(error)
 		return ""
@@ -410,20 +417,15 @@ function ContainerSheet({
 					<div className="px-3 pb-3 -mt-4 flex flex-col gap-3 h-full items-start">
 						<div className="flex items-center w-full">
 							<h3>{t`Logs`}</h3>
-							<Button
-								variant="ghost"
-								size="sm"
-								onClick={refreshLogs}
-								className="h-8 w-8 p-0 ms-auto"
-								disabled={isRefreshingLogs}
-							>
+							<LogsTimestampToggle className="ms-auto" />
+							<LogsIconButton label={t`Refresh`} onClick={refreshLogs} disabled={isRefreshingLogs}>
 								<RefreshCwIcon
 									className={`size-4 transition-transform duration-300 ${isRefreshingLogs ? "animate-spin" : ""}`}
 								/>
-							</Button>
-							<Button variant="ghost" size="sm" onClick={() => setLogsFullscreenOpen(true)} className="h-8 w-8 p-0">
+							</LogsIconButton>
+							<LogsIconButton label={t`Fullscreen`} onClick={() => setLogsFullscreenOpen(true)}>
 								<MaximizeIcon className="size-4" />
-							</Button>
+							</LogsIconButton>
 						</div>
 						<LogsDisplay logsDisplay={logsDisplay} containerRef={logsContainerRef} />
 						<div className="flex items-center w-full">
