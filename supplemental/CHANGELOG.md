@@ -1,3 +1,39 @@
+## 0.20.0
+
+- Add network monitoring from agents (#2266, #1911)
+
+- Add Docker image update available flag (#2211)
+
+- Add btrfs filesystem reporting as storage pools (#2315)
+
+- Add persistence of view preferences and language to user settings (#1831)
+
+- Add `TRUSTED_PROXY_IPS` allowlist for `TRUSTED_AUTH_HEADER` (#2327)
+
+- Add ZFS utilities to Intel and NVIDIA agent images (#2288, #2311)
+
+- Revert SMART warnings for certain attributes (#2296, #2308, #2347)
+
+- Improve NVMe data units display as human-readable GB/TB (#2303)
+
+- Fix agent disconnects during slow collections by extending WebSocket deadline (#2294)
+
+- Fix missing root CA certificates in base agent image (#2291)
+
+- Fix false RAID health warnings during healthy data scrubbing (#2109)
+
+- Fix ZFS monitoring when /dev/zfs is unavailable (#2325)
+
+- Fix spurious `HUB_URL` warning in SSH-only mode (#2316)
+
+- Fix idle GPU utilization display in systems table (#2312)
+
+- Fix session handling to clear auth store after token expiry (#2310)
+
+- Fix chart history handling when switching to live charts (#2333)
+
+- Update Go dependencies
+
 ## 0.19.0
 
 - **Potential breaking change:** Agents now verify HTTPS certificates. If an agent connects to a hub using a self-signed or otherwise untrusted certificate, configure `CA_CERT_FILE` with the appropriate CA certificate or the connection will be rejected.

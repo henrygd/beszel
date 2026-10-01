@@ -8,12 +8,16 @@ require (
 	github.com/containerd/containerd v1.7.34
 	github.com/containerd/typeurl/v2 v2.3.0
 	github.com/coreos/go-systemd/v22 v22.7.0
+	github.com/distribution/reference v0.6.0
 	github.com/ebitengine/purego v0.11.0
 	github.com/fxamacker/cbor/v2 v2.9.3
 	github.com/gliderlabs/ssh v0.3.8
-	github.com/google/uuid v1.6.0
 	github.com/lxzan/gws v1.10.1
+	github.com/mdlayher/genetlink v1.4.0
+	github.com/mdlayher/netlink v1.11.2
+	github.com/mdlayher/wifi v0.9.0
 	github.com/nicholas-fedor/shoutrrr v0.19.0
+	github.com/opencontainers/go-digest v1.0.0
 	github.com/pocketbase/dbx v1.12.0
 	github.com/pocketbase/pocketbase v0.40.2
 	github.com/shirou/gopsutil/v4 v4.26.8
@@ -24,6 +28,7 @@ require (
 	golang.org/x/crypto v0.56.0
 	golang.org/x/exp v0.0.0-20260824195058-e88cd73687aa
 	golang.org/x/net v0.58.0
+	golang.org/x/oauth2 v0.36.0
 	golang.org/x/sys v0.47.0
 	gopkg.in/yaml.v3 v3.0.1
 	howett.net/plist v1.0.1
@@ -66,12 +71,14 @@ require (
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
 	github.com/golang/protobuf v1.5.4 // indirect
 	github.com/google/go-cmp v0.7.0 // indirect
+	github.com/google/uuid v1.6.0 // indirect
 	github.com/gorilla/websocket v1.5.3 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
 	github.com/klauspost/compress v1.20.0 // indirect
 	github.com/lufia/plan9stats v0.0.0-20260802145828-341c2f0c90b5 // indirect
 	github.com/mattn/go-colorable v0.1.15 // indirect
 	github.com/mattn/go-isatty v0.0.24 // indirect
+	github.com/mdlayher/socket v0.6.0 // indirect
 	github.com/moby/locker v1.0.1 // indirect
 	github.com/moby/sys/mountinfo v0.6.2 // indirect
 	github.com/moby/sys/sequential v0.5.0 // indirect
@@ -99,7 +106,6 @@ require (
 	go.opentelemetry.io/otel/trace v1.21.0 // indirect
 	go.yaml.in/yaml/v3 v3.0.5 // indirect
 	golang.org/x/image v0.45.0 // indirect
-	golang.org/x/oauth2 v0.36.0 // indirect
 	golang.org/x/sync v0.22.0 // indirect
 	golang.org/x/term v0.45.0 // indirect
 	golang.org/x/text v0.41.0 // indirect

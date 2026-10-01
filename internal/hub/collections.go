@@ -78,7 +78,7 @@ func setCollectionAuthSettings(app core.App) error {
 		return err
 	}
 
-	if err := applyCollectionRules(app, []string{"containers", "container_stats", "system_stats", "systemd_services"}, collectionRules{
+	if err := applyCollectionRules(app, []string{"containers", "container_stats", "system_stats", "systemd_services", "network_monitor_stats"}, collectionRules{
 		list: &systemScopedReadRule,
 	}); err != nil {
 		return err
@@ -99,6 +99,16 @@ func setCollectionAuthSettings(app core.App) error {
 	}
 
 	if err := applyCollectionRules(app, []string{"fingerprints"}, collectionRules{
+		list:   &systemScopedWriteRule,
+		view:   &systemScopedWriteRule,
+		create: &systemScopedWriteRule,
+		update: &systemScopedWriteRule,
+		delete: &systemScopedWriteRule,
+	}); err != nil {
+		return err
+	}
+
+	if err := applyCollectionRules(app, []string{"network_monitors"}, collectionRules{
 		list:   &systemScopedReadRule,
 		view:   &systemScopedReadRule,
 		create: &systemScopedWriteRule,

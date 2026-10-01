@@ -29,13 +29,14 @@ type Agent struct {
 	fsNames                   []string                                              // List of filesystem device names being monitored
 	fsStats                   map[string]*system.FsStats                            // Keeps track of disk stats for each filesystem
 	diskPrev                  map[uint16]map[string]prevDisk                        // Previous disk I/O counters per cache interval
+	diskBaseline              map[string]prevDisk                                   // Latest disk I/O counters of any interval, seeds a new interval
 	diskUsageCacheDuration    time.Duration                                         // How long to cache disk usage (to avoid waking sleeping disks)
 	lastDiskUsageUpdate       time.Time                                             // Last time disk usage was collected
 	netInterfaces             map[string]struct{}                                   // Stores all valid network interfaces
 	netIoStats                map[uint16]system.NetIoStats                          // Keeps track of bandwidth usage per cache interval
 	netInterfaceDeltaTrackers map[uint16]*deltatracker.DeltaTracker[string, uint64] // Per-cache-time NIC delta trackers
 	dockerManager             *dockerManager                                        // Manages Docker API requests
-	containerdK8sManager      *ContainerdK8SManager // Manages containerd API requests
+	containerdK8sManager      *ContainerdK8SManager                                 // Manages containerd API requests
 	sensorConfig              *SensorConfig                                         // Sensors config
 	systemInfo                system.Info                                           // Host system info (dynamic)
 	systemDetails             system.Details                                        // Host system details (static, once-per-connection)
@@ -49,7 +50,9 @@ type Agent struct {
 	keys                      []gossh.PublicKey                                     // SSH public keys
 	smartManager              *SmartManager                                         // Manages SMART data
 	systemdManager            *systemdManager                                       // Manages systemd services
-	zfsManager                *ZfsManager                                           // Manages ZFS pool and dataset data
+	monitorManager            *MonitorManager                                       // Manages network monitors
+	storagePoolManager        *StoragePoolManager                                   // Manages storage pool and dataset data
+	packageUpdates            *packageUpdatesManager                                // Checks for pending package updates
 }
 
 // NewAgent creates a new agent with the given data directory for persisting data.
@@ -129,12 +132,15 @@ func NewAgent(dataDir ...string) (agent *Agent, err error) {
 	// initialize handler registry
 	agent.handlerRegistry = NewHandlerRegistry()
 
-	agent.zfsManager = newZfsManager()
+	// initialize monitor manager
+	agent.monitorManager = newMonitorManager()
 
-	// ZFS_INTERVAL env var to update ZFS detail data at this interval
+	agent.storagePoolManager = newStoragePoolManager()
+
+	// Retain ZFS_INTERVAL for the shared storage pool detail refresh interval.
 	if zfsIntervalEnv, exists := utils.GetEnv("ZFS_INTERVAL"); exists {
 		if duration, err := time.ParseDuration(zfsIntervalEnv); err == nil && duration > 0 {
-			agent.zfsManager.detailInterval = duration
+			agent.storagePoolManager.detailInterval = duration
 			agent.systemDetails.ZfsInterval = duration
 			slog.Info("ZFS_INTERVAL", "duration", duration)
 		} else {
@@ -157,6 +163,8 @@ func NewAgent(dataDir ...string) (agent *Agent, err error) {
 	if err != nil {
 		slog.Debug("SMART", "err", err)
 	}
+
+	agent.packageUpdates = newPackageUpdatesManager(agent.dataDir)
 
 	// initialize GPU manager
 	agent.gpuManager, err = NewGPUManager()
@@ -199,6 +207,10 @@ func (a *Agent) gatherStats(options common.DataRequestOptions) *system.CombinedD
 		}
 	}
 
+	if a.monitorManager != nil {
+		data.Monitors = a.monitorManager.GetResults(cacheTimeMs)
+		slog.Debug("Monitors", "data", data.Monitors)
+	}
 	if a.containerdK8sManager != nil {
 		if containerStats := a.containerdK8sManager.PollContainers(); len(containerStats) > 0 {
 			data.Containers = append(data.Containers, containerStats...)
@@ -222,6 +234,10 @@ func (a *Agent) gatherStats(options common.DataRequestOptions) *system.CombinedD
 				data.Info.Services = []uint16{0, 0}
 			}
 		}
+	}
+
+	if a.packageUpdates != nil {
+		data.Info.PackageUpdates = a.packageUpdates.get(time.Now())
 	}
 
 	data.Stats.ExtraFs = make(map[string]*system.FsStats)
@@ -257,7 +273,11 @@ func (a *Agent) gatherStats(options common.DataRequestOptions) *system.CombinedD
 // Start initializes and starts the agent with optional WebSocket connection
 func (a *Agent) Start(serverOptions ServerOptions) error {
 	a.keys = serverOptions.Keys
-	return a.connectionManager.Start(serverOptions)
+	err := a.connectionManager.Start(serverOptions)
+	if err != nil {
+		a.cleanupSensorShadow()
+	}
+	return err
 }
 
 func (a *Agent) getFingerprint() string {

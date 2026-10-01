@@ -201,12 +201,9 @@ func mdraidSmartStatus(health mdraidHealth) string {
 	if health.mismatchCnt > 0 {
 		return "WARNING"
 	}
-	// "check" scans for consistency problems without repairing mismatches.
-	// With no mismatches, keep it green while reporting progress attributes.
-	switch syncAction {
-	case "repair":
-		return "WARNING"
-	}
+	// "check" and "repair" are requested consistency scans, not evidence of
+	// array failure. With no health issues above, keep scrubbing green while
+	// reporting the sync action and progress attributes.
 	switch state {
 	case "clean", "active", "active-idle", "write-pending", "read-auto", "readonly":
 		return "PASSED"

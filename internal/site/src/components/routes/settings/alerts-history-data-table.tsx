@@ -78,7 +78,7 @@ export default function AlertsHistoryDataTable() {
 		let unsubscribe: (() => void) | undefined
 		const pbOptions = {
 			expand: "system",
-			fields: "id,name,value,state,created,resolved,expand.system.name",
+			fields: "id,name,monitor_name,value,state,created,resolved,expand.system.name",
 		}
 		// Initial load
 		pb.collection<AlertsHistoryRecord>("alerts_history")
@@ -199,7 +199,7 @@ export default function AlertsHistoryDataTable() {
 		if (!selectedRows.length) return
 		const cells: Record<string, (record: AlertsHistoryRecord) => string> = {
 			system: (record) => record.expand?.system?.name || record.system,
-			name: (record) => alertInfo[record.name]?.name() || record.name,
+			name: (record) => [alertInfo[record.name]?.name() || record.name, record.monitor_name].filter(Boolean).join(": "),
 			value: (record) => record.value + (alertInfo[record.name]?.unit ?? ""),
 			state: (record) => (record.resolved ? t`Resolved` : t`Active`),
 			created: (record) => formatShortDate(record.created),

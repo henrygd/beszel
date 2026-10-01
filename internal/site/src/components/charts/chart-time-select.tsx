@@ -9,14 +9,21 @@ import { memo } from "react"
 export default memo(function ChartTimeSelect({
 	className,
 	agentVersion,
+	chartTimeStore = $chartTime,
+	allowRealtime = true,
 }: {
 	className?: string
 	agentVersion: SemVer
+	chartTimeStore?: typeof $chartTime
+	allowRealtime?: boolean
 }) {
-	const chartTime = useStore($chartTime)
+	const chartTime = useStore(chartTimeStore)
 
 	// remove chart times that are not supported by the system agent version
-	const availableChartTimes = Object.entries(chartTimeData).filter(([_, { minVersion }]) => {
+	const availableChartTimes = Object.entries(chartTimeData).filter(([value, { minVersion }]) => {
+		if (value === "1m" && !allowRealtime) {
+			return false
+		}
 		if (!minVersion) {
 			return true
 		}
@@ -24,7 +31,7 @@ export default memo(function ChartTimeSelect({
 	})
 
 	return (
-		<Select defaultValue="1h" value={chartTime} onValueChange={(value: ChartTimes) => $chartTime.set(value)}>
+		<Select defaultValue="1h" value={chartTime} onValueChange={(value: ChartTimes) => chartTimeStore.set(value)}>
 			<SelectTrigger className={cn(className, "relative ps-10 pe-5")}>
 				<HistoryIcon className="h-4 w-4 absolute start-4 top-1/2 -translate-y-1/2 opacity-85" />
 				<SelectValue />

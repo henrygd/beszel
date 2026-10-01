@@ -29,6 +29,7 @@ jobs:
           # henrygd/beszel-agent:alpine
           - image: henrygd/beszel-agent
             dockerfile: ./internal/dockerfile_agent_alpine
+            flavor: latest=false
             registry: docker.io
             username_secret: DOCKERHUB_USERNAME
             password_secret: DOCKERHUB_TOKEN
@@ -55,6 +56,7 @@ jobs:
           # henrygd/beszel-agent-nvidia:slim
           - image: henrygd/beszel-agent-nvidia
             dockerfile: ./internal/dockerfile_agent_nvidia_slim
+            flavor: latest=false
             platforms: linux/amd64,linux/arm64
             registry: docker.io
             username_secret: DOCKERHUB_USERNAME
@@ -123,6 +125,7 @@ jobs:
           # ghcr.io/henrygd/beszel-agent-nvidia:slim
           - image: ghcr.io/${{ github.repository }}/beszel-agent-nvidia
             dockerfile: ./internal/dockerfile_agent_nvidia_slim
+            flavor: latest=false
             platforms: linux/amd64,linux/arm64
             registry: ghcr.io
             username: ${{ github.actor }}
@@ -150,6 +153,7 @@ jobs:
           # ghcr.io/henrygd/beszel-agent:alpine
           - image: ghcr.io/${{ github.repository }}/beszel-agent
             dockerfile: ./internal/dockerfile_agent_alpine
+            flavor: latest=false
             registry: ghcr.io
             username: ${{ github.actor }}
             password_secret: GITHUB_TOKEN
@@ -159,7 +163,7 @@ jobs:
               type=semver,pattern={{major}}.{{minor}}-alpine
               type=semver,pattern={{major}}-alpine
 
-          # henrygd/beszel-agent (keep at bottom so it gets built after :alpine and gets the latest tag)
+          # henrygd/beszel-agent
           - image: henrygd/beszel-agent
             dockerfile: ./internal/dockerfile_agent
             registry: docker.io
@@ -200,6 +204,8 @@ jobs:
         uses: docker/metadata-action@v6
         with:
           images: ${{ matrix.image }}
+          # Variant images must not overwrite the standard image's latest tag.
+          flavor: ${{ matrix.flavor || 'latest=auto' }}
           tags: ${{ matrix.tags }}
 
       # https://github.com/docker/login-action
