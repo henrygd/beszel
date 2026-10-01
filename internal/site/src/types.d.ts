@@ -71,6 +71,8 @@ export interface SystemInfo {
 	bb?: number
 	/** agent version */
 	v: string
+	/** agent can read the system journal */
+	jl?: boolean
 	/** system is using podman */
 	p?: boolean
 	/** highest gpu utilization */
@@ -426,12 +428,15 @@ export interface SemVer {
 	patch: number
 }
 
-export interface ChartData {
+export interface ChartOptions {
 	agentVersion: SemVer
-	systemStats?: SystemStatsRecord[]
-	containerData?: ChartDataContainer[]
 	orientation: "right" | "left"
 	chartTime: ChartTimes
+}
+
+export interface ChartData extends ChartOptions {
+	systemStats: SystemStatsRecord[]
+	containerData: ChartDataContainer[]
 }
 
 export interface AlertInfo {
@@ -454,6 +459,20 @@ export interface AlertInfo {
 	/** Additional information that remains visible while the alert is enabled */
 	note?: () => string
 	invert?: boolean
+	/** Selectable threshold units. Values are stored in the first unit (factor 1) */
+	units?: AlertUnit[]
+}
+
+export interface AlertUnit {
+	/** Unit suffix shown after the value */
+	unit: string
+	/** Multiplier converting a value in this unit to the stored value */
+	factor: number
+	min: number
+	max: number
+	step: number
+	/** Finer step for the number input, which also accepts values down to this step */
+	inputStep?: number
 }
 
 export type AlertMap = Record<string, Map<string, AlertRecord>>

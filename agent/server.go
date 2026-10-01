@@ -71,19 +71,9 @@ func (a *Agent) prepareSSHServer(opts ServerOptions) (*ssh.Server, net.Listener,
 		return nil, nil, err
 	}
 
-	// base config (limit to allowed algorithms)
-	config := &gossh.ServerConfig{
-		ServerVersion: fmt.Sprintf("SSH-2.0-%s_%s", beszel.AppName, beszel.Version),
-	}
-	config.KeyExchanges = common.DefaultKeyExchanges
-	config.MACs = common.DefaultMACs
-	config.Ciphers = common.DefaultCiphers
-
 	server := &ssh.Server{
-		Handler: a.handleSession,
-		ServerConfigCallback: func(ctx ssh.Context) *gossh.ServerConfig {
-			return config
-		},
+		Handler:              a.handleSession,
+		ServerConfigCallback: newSSHServerConfig,
 		// check public key(s)
 		PublicKeyHandler: func(ctx ssh.Context, key ssh.PublicKey) bool {
 			remoteAddr := ctx.RemoteAddr()
@@ -119,6 +109,19 @@ func (a *Agent) serveSSHServer(server *ssh.Server, listener net.Listener) error 
 	}
 	a.serverMu.Unlock()
 	return err
+}
+
+// newSSHServerConfig returns a separate config for each connection because
+// gliderlabs adds host keys and connection-specific callbacks to it.
+func newSSHServerConfig(ssh.Context) *gossh.ServerConfig {
+	return &gossh.ServerConfig{
+		Config: gossh.Config{
+			KeyExchanges: common.DefaultKeyExchanges,
+			MACs:         common.DefaultMACs,
+			Ciphers:      common.DefaultCiphers,
+		},
+		ServerVersion: fmt.Sprintf("SSH-2.0-%s_%s", beszel.AppName, beszel.Version),
+	}
 }
 
 // getHubVersion extracts the hub version from the SSH client version string

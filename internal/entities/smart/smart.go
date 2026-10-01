@@ -475,7 +475,7 @@ type NVMeSmartHealthInformationLog struct {
 	HostReads               uint    `json:"host_reads"`
 	HostWrites              uint    `json:"host_writes"`
 	ControllerBusyTime      uint    `json:"controller_busy_time"`
-	PowerCycles             uint16  `json:"power_cycles"`
+	PowerCycles             uint    `json:"power_cycles"`
 	PowerOnHours            uint32  `json:"power_on_hours"`
 	UnsafeShutdowns         uint16  `json:"unsafe_shutdowns"`
 	MediaErrors             uint    `json:"media_errors"`
@@ -503,11 +503,11 @@ type SmartInfoForNvme struct {
 	UserCapacity UserCapacity `json:"user_capacity"`
 	// LogicalBlockSize              int                           `json:"logical_block_size"`
 	// LocalTime                     LocalTime                     `json:"local_time"`
-	SmartStatus                   SmartStatusInfoNvme           `json:"smart_status"`
-	NVMeSmartHealthInformationLog NVMeSmartHealthInformationLog `json:"nvme_smart_health_information_log"`
-	Temperature                   TemperatureInfoNvme           `json:"temperature"`
-	PowerCycleCount               uint16                        `json:"power_cycle_count"`
-	PowerOnTime                   PowerOnTimeInfoNvme           `json:"power_on_time"`
+	SmartStatus                   SmartStatusInfoNvme            `json:"smart_status"`
+	NVMeSmartHealthInformationLog *NVMeSmartHealthInformationLog `json:"nvme_smart_health_information_log"`
+	Temperature                   TemperatureInfoNvme            `json:"temperature"`
+	PowerCycleCount               uint                           `json:"power_cycle_count"`
+	PowerOnTime                   PowerOnTimeInfoNvme            `json:"power_on_time"`
 }
 
 type TemperatureInfoNvme struct {
