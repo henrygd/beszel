@@ -1,5 +1,6 @@
 import AreaChartDefault from "@/components/charts/area-chart"
 import type { DataPoint } from "@/components/charts/area-chart"
+import LineChartDefault, { type DataPoint as LineDataPoint } from "@/components/charts/line-chart"
 import { decimalString, formatBytes, matchesFilterGroups, parseFilterGroups, toFixedFloat } from "@/lib/utils"
 import { Unit } from "@/lib/enums"
 import type { SpeedtestCompareRecord } from "@/lib/speedtest-compare"
@@ -219,7 +220,7 @@ function SpeedtestCompareChart({
 				usedSegments.set(id, used)
 			}
 		}
-		const points: DataPoint<SpeedtestCompareRecord>[] = []
+		const points: LineDataPoint<SpeedtestCompareRecord>[] = []
 		// Labels of the charted speedtests by ID, to mark and name only their failed runs.
 		const labels = new Map<string, string>()
 		for (let i = 0; i < count; i++) {
@@ -238,7 +239,6 @@ function SpeedtestCompareChart({
 						const run = record.stats[speedtest.id]
 						return run && record.segments[speedtest.id] === segment ? value(run) : null
 					},
-					opacity: 0.2,
 					dot: true,
 					color,
 					legend: n === 0,
@@ -295,14 +295,14 @@ function SpeedtestCompareChart({
 			description={description}
 			grid={false}
 		>
-			<AreaChartDefault
+			<LineChartDefault
 				truncate
 				chartData={chartData}
 				customData={compareStats}
 				dataPoints={dataPoints}
 				domain={[0, "auto"]}
-				// Speedtests run at different times, so each area joins its runs across the others'.
-				// A failed run starts a new area for its speedtest, which breaks the line there.
+				// Speedtests run at different times, so each line joins its runs across the others'.
+				// A failed run starts a new line for its speedtest, which breaks it there.
 				connectNulls
 				legend={legend}
 				filter={filter}

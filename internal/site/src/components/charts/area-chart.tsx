@@ -16,8 +16,6 @@ import type { AxisDomain } from "recharts/types/util/types"
 import { useIntersectionObserver } from "@/lib/use-intersection-observer"
 
 export type DataPoint<T = SystemStatsRecord> = {
-	/** Unique key when several data points share a label, e.g. segments of one line */
-	id?: string
 	label: string
 	dataKey: (data: T) => number | null | undefined
 	color: number | string
@@ -28,8 +26,6 @@ export type DataPoint<T = SystemStatsRecord> = {
 	activeDot?: boolean
 	/** Draws a dot on each value, so points without neighbors (e.g. between gaps) are visible. */
 	dot?: boolean
-	/** Set to false to leave the data point out of the legend, e.g. later segments of one line */
-	legend?: boolean
 }
 
 export default function AreaChartDefault({
@@ -100,7 +96,7 @@ export default function AreaChartDefault({
 	}, [displayData, displayMaxToggled, isIntersecting, maxToggled, sourceData])
 
 	// Use a stable key derived from data point identities and visual properties
-	const areasKey = dataPoints?.map((d) => `${d.id ?? d.label}:${d.opacity}${d.dot}`).join("\0")
+	const areasKey = dataPoints?.map((d) => `${d.label}:${d.opacity}${d.dot}`).join("\0")
 
 	const Areas = useMemo(() => {
 		return dataPoints?.map((dataPoint, i) => {
@@ -110,8 +106,7 @@ export default function AreaChartDefault({
 			}
 			return (
 				<Area
-					key={dataPoint.id ?? dataPoint.label}
-					legendType={dataPoint.legend === false ? "none" : undefined}
+					key={dataPoint.label}
 					dataKey={dataPoint.dataKey}
 					name={dataPoint.label}
 					type="monotoneX"
