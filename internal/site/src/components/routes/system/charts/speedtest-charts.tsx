@@ -1,6 +1,4 @@
-import AreaChartDefault from "@/components/charts/area-chart"
-import type { DataPoint } from "@/components/charts/area-chart"
-import LineChartDefault, { type DataPoint as LineDataPoint } from "@/components/charts/line-chart"
+import LineChartDefault, { type DataPoint } from "@/components/charts/line-chart"
 import { decimalString, formatBytes, matchesFilterGroups, parseFilterGroups, toFixedFloat } from "@/lib/utils"
 import { Unit } from "@/lib/enums"
 import type { SpeedtestCompareRecord } from "@/lib/speedtest-compare"
@@ -40,17 +38,15 @@ function failureNote(record: SpeedtestStatsRecord) {
 	)
 }
 
-// Series overlap rather than stack, so a translucent fill keeps each one visible.
 // Failed runs arrive without measurements (see useSpeedtestStats), so the lines break there
-// and a red line marks each one. Runs are sparse, and an area needs two neighboring
-// values, so a dot marks each run.
+// and a red line marks each one. Runs are sparse, and a line needs two neighboring values,
+// so a dot marks each run.
 function point(label: string, color: number | string, dataKey: DataPoint<SpeedtestStatsRecord>["dataKey"], order = 0) {
 	return {
 		label,
 		color,
 		dataKey,
 		order,
-		opacity: 0.2,
 		dot: true,
 	} satisfies DataPoint<SpeedtestStatsRecord>
 }
@@ -73,7 +69,7 @@ function SpeedtestBandwidthChart({
 	const dataPoints = useMemo(() => [point(title, color, dataKey)], [title, color, dataKey])
 	return (
 		<ChartCard empty={empty} title={title} description={description} grid={false}>
-			<AreaChartDefault
+			<LineChartDefault
 				truncate
 				chartData={chartData}
 				customData={stats}
@@ -119,7 +115,7 @@ export function SpeedtestLatencyChart({ stats, failures, chartData, empty }: Spe
 	)
 	return (
 		<ChartCard empty={empty} title={t`Latency`} description={t`Idle ping and jitter`} grid={false} legend>
-			<AreaChartDefault
+			<LineChartDefault
 				truncate
 				chartData={chartData}
 				customData={stats}
@@ -152,7 +148,7 @@ export function SpeedtestLoadedLatencyChart({ stats, failures, chartData, empty 
 			grid={false}
 			legend
 		>
-			<AreaChartDefault
+			<LineChartDefault
 				truncate
 				chartData={chartData}
 				customData={stats}
@@ -220,7 +216,7 @@ function SpeedtestCompareChart({
 				usedSegments.set(id, used)
 			}
 		}
-		const points: LineDataPoint<SpeedtestCompareRecord>[] = []
+		const points: DataPoint<SpeedtestCompareRecord>[] = []
 		// Labels of the charted speedtests by ID, to mark and name only their failed runs.
 		const labels = new Map<string, string>()
 		for (let i = 0; i < count; i++) {
@@ -404,7 +400,7 @@ export function SpeedtestLossChart({ stats, failures, chartData, empty }: Speedt
 			description={t`Packet loss (%)`}
 			grid={false}
 		>
-			<AreaChartDefault
+			<LineChartDefault
 				truncate
 				chartData={chartData}
 				customData={stats}
