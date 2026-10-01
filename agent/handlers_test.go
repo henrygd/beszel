@@ -10,6 +10,7 @@ import (
 	"github.com/henrygd/beszel/agent/zfs"
 	"github.com/henrygd/beszel/internal/common"
 	"github.com/henrygd/beszel/internal/entities/smart"
+	"github.com/henrygd/beszel/internal/entities/system"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -30,6 +31,30 @@ func TestNewAgentResponseSmartData(t *testing.T) {
 
 	assert.Equal(t, "AAA", response.SmartData["AAA"].SerialNumber)
 	assert.True(t, response.SmartComplete)
+}
+
+func TestGetDataHandlerReportsRequestTransport(t *testing.T) {
+	cache := NewSystemDataCache()
+	cached := &system.CombinedData{}
+	cache.Set(cached, defaultDataCacheTimeMs)
+	agent := &Agent{cache: cache}
+	options, err := cbor.Marshal(common.DataRequestOptions{CacheTimeMs: defaultDataCacheTimeMs})
+	assert.NoError(t, err)
+	request := &common.HubRequest[cbor.RawMessage]{Action: common.GetData, Data: options}
+	for _, transport := range []system.ConnectionType{system.ConnectionTypeSSH, system.ConnectionTypeWebSocket} {
+		ctx := &HandlerContext{
+			Agent:          agent,
+			Request:        request,
+			ConnectionType: transport,
+			SendResponse: func(data any, _ *uint32) error {
+				response := data.(*system.CombinedData)
+				assert.Equal(t, transport, response.Info.ConnectionType)
+				return nil
+			},
+		}
+		assert.NoError(t, (&GetDataHandler{}).Handle(ctx))
+		assert.Equal(t, system.ConnectionTypeNone, cached.Info.ConnectionType)
+	}
 }
 
 func TestGetZfsDataHandlerForceRefresh(t *testing.T) {
