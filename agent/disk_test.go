@@ -410,6 +410,30 @@ func TestBuildFsStatRegistration(t *testing.T) {
 		assert.True(t, ok)
 		assert.Equal(t, "volume_1", key)
 	})
+
+	t.Run("does not resolve symlinks for relative device names", func(t *testing.T) {
+		setEvalSymlinks(t, func(path string) (string, error) {
+			return "/dev/sdb1", nil
+		})
+
+		key, _, ok := registerFilesystemStats(
+			map[string]*system.FsStats{},
+			"data",
+			"/mnt/data",
+			false,
+			"",
+			fsRegistrationContext{
+				isWindows: false,
+				efPath:    "/extra-filesystems",
+				diskIoCounters: map[string]disk.IOCountersStat{
+					"sdb1": {Name: "sdb1"},
+				},
+			},
+		)
+
+		assert.True(t, ok)
+		assert.Equal(t, "data", key)
+	})
 }
 
 // setEvalSymlinks swaps the device-symlink resolver for the duration of a test.

@@ -111,9 +111,13 @@ func registerFilesystemStats(existing map[string]*system.FsStats, device, mountp
 		// Device-mapper mounts appear as symlinked paths like /dev/vg/lv whose
 		// base name matches neither the diskstats name (dm-N) nor the dm label
 		// (vg-lv); the resolved target's base is one of those existing names.
-		if resolved, err := evalSymlinks(device); err == nil {
-			if base := filepath.Base(resolved); base != key {
-				resolvedKey = base
+		// Bare names (folder devices, ZFS datasets) are skipped because they
+		// would resolve relative to the agent's working directory.
+		if filepath.IsAbs(device) {
+			if resolved, err := evalSymlinks(device); err == nil {
+				if base := filepath.Base(resolved); base != key {
+					resolvedKey = base
+				}
 			}
 		}
 	}
