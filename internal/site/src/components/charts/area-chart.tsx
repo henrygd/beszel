@@ -1,5 +1,5 @@
 import { type ReactNode, useEffect, useMemo, useState } from "react"
-import { Area, AreaChart, CartesianGrid, YAxis } from "recharts"
+import { Area, AreaChart, CartesianGrid, ReferenceLine, YAxis } from "recharts"
 import {
 	ChartContainer,
 	ChartLegend,
@@ -46,6 +46,8 @@ export default function AreaChartDefault({
 	truncate = false,
 	chartProps,
 	connectNulls,
+	markers,
+	tooltipNote,
 }: {
 	chartData: ChartData
 	// biome-ignore lint/suspicious/noExplicitAny: accepts different data source types (systemStats or containerData)
@@ -68,6 +70,11 @@ export default function AreaChartDefault({
 	truncate?: boolean
 	chartProps?: Omit<React.ComponentProps<typeof AreaChart>, "data" | "margin">
 	connectNulls?: boolean
+	/** Times in Unix ms marked with a dashed line in the destructive color, e.g. failed runs */
+	markers?: number[]
+	/** Extra tooltip line for the hovered row */
+	// biome-ignore lint/suspicious/noExplicitAny: row type depends on the chart's data
+	tooltipNote?: (row: any) => ReactNode
 }) {
 	const { yAxisWidth, updateYAxisWidth } = useYAxisWidth()
 	const { isIntersecting, ref } = useIntersectionObserver({ freeze: false })
@@ -120,6 +127,14 @@ export default function AreaChartDefault({
 
 	const XAxis = xAxis(chartData.chartTime, displayData.at(-1)?.created)
 
+	// Without any values recharts draws no y-axis ticks, so the axis width is never measured and
+	// the chart would stay hidden. Hide the axis instead, e.g. when every speedtest run failed.
+	const hasValues = useMemo(
+		() => !dataPoints || displayData.some((row) => dataPoints.some((point) => typeof point.dataKey(row) === "number")),
+		[displayData, areasKey]
+	)
+	const noYAxis = hideYAxis || !hasValues
+
 	return useMemo(() => {
 		if (displayData.length === 0) {
 			return null
@@ -131,19 +146,19 @@ export default function AreaChartDefault({
 			<ChartContainer
 				ref={ref}
 				className={cn("h-full w-full absolute aspect-auto bg-card opacity-0 transition-opacity", {
-					"opacity-100": yAxisWidth || hideYAxis,
-					"ps-4": hideYAxis,
+					"opacity-100": yAxisWidth || noYAxis,
+					"ps-4": noYAxis,
 				})}
 			>
 				<AreaChart
 					reverseStackOrder={reverseStackOrder}
 					accessibilityLayer
 					data={displayData}
-					margin={hideYAxis ? { ...chartMargin, left: 5 } : chartMargin}
+					margin={noYAxis ? { ...chartMargin, left: 5 } : chartMargin}
 					{...chartProps}
 				>
 					<CartesianGrid vertical={false} />
-					{!hideYAxis && (
+					{!noYAxis && (
 						<YAxis
 							direction="ltr"
 							orientation={chartData.orientation}
@@ -157,9 +172,23 @@ export default function AreaChartDefault({
 						/>
 					)}
 					{XAxis}
+					{markers?.map((time) => (
+						<ReferenceLine
+							key={time}
+							x={time}
+							// inline, since ChartContainer styles reference lines with the border color
+							style={{ stroke: "var(--destructive)" }}
+							strokeDasharray="3 3"
+							// a marker can fall just outside the visible time span
+							ifOverflow="hidden"
+						/>
+					))}
 					<ChartTooltip
 						animationEasing="ease-out"
 						animationDuration={150}
+						// Keep rows without values, e.g. a failed run, so their note can show.
+						// ChartTooltipContent drops the empty values itself.
+						filterNull={!tooltipNote}
 						// @ts-expect-error
 						itemSorter={itemSorter}
 						content={
@@ -169,6 +198,7 @@ export default function AreaChartDefault({
 								showTotal={showTotal}
 								filter={filter}
 								truncate={truncate}
+								note={tooltipNote}
 							/>
 						}
 					/>
@@ -177,5 +207,5 @@ export default function AreaChartDefault({
 				</AreaChart>
 			</ChartContainer>
 		)
-	}, [displayData, yAxisWidth, filter, Areas, XAxis])
+	}, [displayData, yAxisWidth, filter, Areas, XAxis, markers, tooltipNote, noYAxis])
 }

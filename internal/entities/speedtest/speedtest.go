@@ -47,14 +47,25 @@ type Result struct {
 	URL string `cbor:"10,keyasint,omitempty"`
 	// Error is set when the run failed; other measurement fields are then empty.
 	Error string `cbor:"11,keyasint,omitempty"`
+	// PingLow and PingHigh are the lowest and highest idle latencies in milliseconds.
+	PingLow  float64 `cbor:"12,keyasint,omitempty"`
+	PingHigh float64 `cbor:"13,keyasint,omitempty"`
 	// DownloadLatency and UploadLatency are latencies measured while the connection is loaded.
 	DownloadLatency Latency `cbor:"14,keyasint,omitempty"`
 	UploadLatency   Latency `cbor:"15,keyasint,omitempty"`
+	// InterfaceName is the network interface the run used.
+	InterfaceName string `cbor:"16,keyasint,omitempty"`
+	// ExternalIP is the public IP address the run went out on.
+	ExternalIP string `cbor:"17,keyasint,omitempty"`
+	// IsVPN reports whether the interface is a VPN, as detected by the CLI.
+	IsVPN bool `cbor:"18,keyasint,omitempty"`
 }
 
 // Latency summarizes latencies in milliseconds measured during a download or upload.
 type Latency struct {
 	// IQM is the interquartile mean, which excludes outliers.
 	IQM    float64 `cbor:"0,keyasint,omitempty"`
+	Low    float64 `cbor:"1,keyasint,omitempty"`
+	High   float64 `cbor:"2,keyasint,omitempty"`
 	Jitter float64 `cbor:"3,keyasint,omitempty"`
 }

@@ -182,14 +182,21 @@ export function useSpeedtestStats({
 		}
 	}, [id, chartTime, cacheKey, expectedInterval, enabled])
 
-	// Replace failed runs with gap markers, so the line breaks there without leaving points that
-	// have no measurements for the tooltip to show. Done here rather than in the cache, which
-	// relies on the last run's timestamp to skip runs it already has.
-	return useMemo(() => stats.map((record) => (record.error ? speedtestGapRecord : record)), [stats])
+	// Strip failed runs down to their time and error, so the lines break there while the
+	// tooltip can still name the failure, and collect their times for the charts to mark.
+	// Done here rather than in the cache, which relies on the last run's timestamp to skip
+	// runs it already has.
+	return useMemo(() => {
+		const failures: number[] = []
+		const records = stats.map((record) => {
+			if (!record.error) return record
+			const created = record.created as number
+			failures.push(created)
+			return { created, error: record.error } as SpeedtestStatsRecord
+		})
+		return { stats: records, failures }
+	}, [stats])
 }
-
-/** Gap marker in the same form appendData uses. */
-const speedtestGapRecord = { created: null } as SpeedtestStatsRecord
 
 /** Only what comparison charts and labels need. */
 const COMPARE_SPEEDTEST_FIELDS = "id,system,server_id,server_name,server_location,interface,interval"

@@ -118,6 +118,7 @@ func (sys *System) updateSpeedtestRecords(app core.App, results map[string]speed
 		stats := core.NewRecord(statsCollection)
 		if result.Error == "" {
 			stats.Load(speedtestMeasurements(result))
+			stats.Load(speedtestConnection(result))
 		}
 		stats.Load(map[string]any{
 			"system":      sys.Id,
@@ -150,22 +151,39 @@ func setSpeedtestResultFields(record *core.Record, result speedtest.Result) {
 	}
 	record.Set("server_name", result.ServerName)
 	record.Set("server_location", result.ServerLocation)
-	record.Set("isp", result.ISP)
 	record.Set("url", result.URL)
+	record.Load(speedtestConnection(result))
 }
 
 // speedtestMeasurements returns the measured values of a result, which are
 // stored on both speedtests and speedtest_stats records.
 func speedtestMeasurements(result speedtest.Result) map[string]any {
 	return map[string]any{
-		"download":         result.Download,
-		"upload":           result.Upload,
-		"ping":             result.Ping,
-		"jitter":           result.Jitter,
-		"loss":             result.Loss,
-		"download_latency": result.DownloadLatency.IQM,
-		"download_jitter":  result.DownloadLatency.Jitter,
-		"upload_latency":   result.UploadLatency.IQM,
-		"upload_jitter":    result.UploadLatency.Jitter,
+		"download":              result.Download,
+		"upload":                result.Upload,
+		"ping":                  result.Ping,
+		"ping_low":              result.PingLow,
+		"ping_high":             result.PingHigh,
+		"jitter":                result.Jitter,
+		"loss":                  result.Loss,
+		"download_latency":      result.DownloadLatency.IQM,
+		"download_latency_low":  result.DownloadLatency.Low,
+		"download_latency_high": result.DownloadLatency.High,
+		"download_jitter":       result.DownloadLatency.Jitter,
+		"upload_latency":        result.UploadLatency.IQM,
+		"upload_latency_low":    result.UploadLatency.Low,
+		"upload_latency_high":   result.UploadLatency.High,
+		"upload_jitter":         result.UploadLatency.Jitter,
+	}
+}
+
+// speedtestConnection returns how a successful run connected, which is
+// stored on both speedtests and speedtest_stats records.
+func speedtestConnection(result speedtest.Result) map[string]any {
+	return map[string]any{
+		"isp":            result.ISP,
+		"interface_name": result.InterfaceName,
+		"external_ip":    result.ExternalIP,
+		"is_vpn":         result.IsVPN,
 	}
 }

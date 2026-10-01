@@ -572,7 +572,7 @@ function SpeedtestSheet({
 	const comparing = compareSpeedtests.length > 1
 	const compareIds = useMemo(() => compareSpeedtests.map((s) => s.id), [compareSpeedtests])
 
-	const stats = useSpeedtestStats({ speedtest, chartTime, enabled: open && !comparing })
+	const { stats, failures } = useSpeedtestStats({ speedtest, chartTime, enabled: open && !comparing })
 	const compareStats = useSpeedtestCompareStats({ speedtestIds: compareIds, chartTime, enabled: open && comparing })
 
 	const chartData = useMemo<ChartData>(
@@ -585,6 +585,7 @@ function SpeedtestSheet({
 		}),
 		[system?.info?.v, direction, chartTime]
 	)
+	// A range where every run failed still shows, with each failure marked.
 	const empty = comparing ? compareStats.length === 0 : !stats.some((record) => record.created !== null)
 	const serverLabel = getSpeedtestServerLabel(speedtest) || t`Automatic`
 	const compareProps = {
@@ -667,11 +668,11 @@ function SpeedtestSheet({
 						</>
 					) : (
 						<>
-							<SpeedtestDownloadChart stats={stats} chartData={chartData} empty={empty} />
-							<SpeedtestUploadChart stats={stats} chartData={chartData} empty={empty} />
-							<SpeedtestLatencyChart stats={stats} chartData={chartData} empty={empty} />
-							<SpeedtestLoadedLatencyChart stats={stats} chartData={chartData} empty={empty} />
-							<SpeedtestLossChart stats={stats} chartData={chartData} empty={empty} />
+							<SpeedtestDownloadChart stats={stats} failures={failures} chartData={chartData} empty={empty} />
+							<SpeedtestUploadChart stats={stats} failures={failures} chartData={chartData} empty={empty} />
+							<SpeedtestLatencyChart stats={stats} failures={failures} chartData={chartData} empty={empty} />
+							<SpeedtestLoadedLatencyChart stats={stats} failures={failures} chartData={chartData} empty={empty} />
+							<SpeedtestLossChart stats={stats} failures={failures} chartData={chartData} empty={empty} />
 						</>
 					)}
 				</div>

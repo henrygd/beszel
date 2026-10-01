@@ -105,6 +105,9 @@ const ChartTooltipContent = React.forwardRef<
 			truncate?: boolean
 			showTotal?: boolean
 			totalLabel?: React.ReactNode
+			/** Extra line for the hovered row, shown even when it has no values, e.g. a failed run */
+			// biome-ignore lint/suspicious/noExplicitAny: row type depends on the chart's data
+			note?: (row: any) => React.ReactNode
 		}
 >(
 	(
@@ -128,6 +131,7 @@ const ChartTooltipContent = React.forwardRef<
 			truncate = false,
 			showTotal = false,
 			totalLabel,
+			note,
 		},
 		ref
 	) => {
@@ -228,8 +232,9 @@ const ChartTooltipContent = React.forwardRef<
 			return null
 		}
 
+		const noteNode = note?.(payload[0]?.payload)
 		payload = payload.filter((item) => item.value != null)
-		if (!payload.length) {
+		if (!payload.length && !noteNode) {
 			return null
 		}
 
@@ -318,6 +323,7 @@ const ChartTooltipContent = React.forwardRef<
 							</div>
 						</>
 					) : null}
+					{noteNode}
 				</div>
 			</div>
 		)

@@ -3,7 +3,7 @@ import type { DataPoint } from "@/components/charts/area-chart"
 import { decimalString, formatBytes, matchesFilterGroups, parseFilterGroups, toFixedFloat } from "@/lib/utils"
 import { Unit } from "@/lib/enums"
 import type { SpeedtestCompareRecord } from "@/lib/speedtest-compare"
-import { useLingui } from "@lingui/react/macro"
+import { Trans, useLingui } from "@lingui/react/macro"
 import { useStore } from "@nanostores/react"
 import type { $containerFilter } from "@/lib/stores"
 import { ChartCard, FilterBar } from "../chart-card"
@@ -23,13 +23,26 @@ export function formatBandwidth(bytesPerSecond: number, short = false) {
 
 type SpeedtestChartProps = {
 	stats: SpeedtestStatsRecord[]
+	/** Times of failed runs in Unix ms, marked with a red line */
+	failures: number[]
 	chartData: ChartData
 	empty: boolean
 }
 
+/** Tooltip line for a failed run */
+function failureNote(record: SpeedtestStatsRecord) {
+	if (!record?.error) return null
+	return (
+		<div className="border-t pt-1.5 max-w-64 text-wrap font-medium text-destructive">
+			<Trans>Run failed</Trans>: {record.error}
+		</div>
+	)
+}
+
 // Series overlap rather than stack, so a translucent fill keeps each one visible.
-// Failed runs arrive as gap markers (see useSpeedtestStats). Runs are sparse, and an area
-// needs two neighboring values, so a dot marks each run.
+// Failed runs arrive without measurements (see useSpeedtestStats), so the lines break there
+// and a red line marks each one. Runs are sparse, and an area needs two neighboring
+// values, so a dot marks each run.
 function point(label: string, color: number | string, dataKey: DataPoint<SpeedtestStatsRecord>["dataKey"], order = 0) {
 	return {
 		label,
@@ -43,6 +56,7 @@ function point(label: string, color: number | string, dataKey: DataPoint<Speedte
 
 function SpeedtestBandwidthChart({
 	stats,
+	failures,
 	chartData,
 	empty,
 	title,
@@ -62,6 +76,8 @@ function SpeedtestBandwidthChart({
 				truncate
 				chartData={chartData}
 				customData={stats}
+				markers={failures}
+				tooltipNote={failureNote}
 				dataPoints={dataPoints}
 				domain={[0, "auto"]}
 				tickFormatter={(value) => formatBandwidth(value, true)}
@@ -94,7 +110,7 @@ export function SpeedtestUploadChart(props: SpeedtestChartProps) {
 	)
 }
 
-export function SpeedtestLatencyChart({ stats, chartData, empty }: SpeedtestChartProps) {
+export function SpeedtestLatencyChart({ stats, failures, chartData, empty }: SpeedtestChartProps) {
 	const { t } = useLingui()
 	const dataPoints = useMemo(
 		() => [point(t`Ping`, 1, (record) => record.ping, 0), point(t`Jitter`, 3, (record) => record.jitter, 1)],
@@ -106,6 +122,8 @@ export function SpeedtestLatencyChart({ stats, chartData, empty }: SpeedtestChar
 				truncate
 				chartData={chartData}
 				customData={stats}
+				markers={failures}
+				tooltipNote={failureNote}
 				dataPoints={dataPoints}
 				domain={[0, "auto"]}
 				legend
@@ -116,7 +134,7 @@ export function SpeedtestLatencyChart({ stats, chartData, empty }: SpeedtestChar
 	)
 }
 
-export function SpeedtestLoadedLatencyChart({ stats, chartData, empty }: SpeedtestChartProps) {
+export function SpeedtestLoadedLatencyChart({ stats, failures, chartData, empty }: SpeedtestChartProps) {
 	const { t } = useLingui()
 	const dataPoints = useMemo(
 		() => [
@@ -137,6 +155,8 @@ export function SpeedtestLoadedLatencyChart({ stats, chartData, empty }: Speedte
 				truncate
 				chartData={chartData}
 				customData={stats}
+				markers={failures}
+				tooltipNote={failureNote}
 				dataPoints={dataPoints}
 				domain={[0, "auto"]}
 				legend
@@ -311,7 +331,7 @@ export function SpeedtestCompareLossChart(props: SpeedtestCompareChartProps) {
 	)
 }
 
-export function SpeedtestLossChart({ stats, chartData, empty }: SpeedtestChartProps) {
+export function SpeedtestLossChart({ stats, failures, chartData, empty }: SpeedtestChartProps) {
 	const { t } = useLingui()
 	const dataPoints = useMemo(
 		() => [
@@ -333,6 +353,8 @@ export function SpeedtestLossChart({ stats, chartData, empty }: SpeedtestChartPr
 				truncate
 				chartData={chartData}
 				customData={stats}
+				markers={failures}
+				tooltipNote={failureNote}
 				dataPoints={dataPoints}
 				domain={[0, "auto"]}
 				tickFormatter={(value) => `${toFixedFloat(value, value >= 10 ? 0 : 1)}%`}
