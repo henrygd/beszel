@@ -273,6 +273,151 @@ func TestBuildFsStatRegistration(t *testing.T) {
 		assert.Empty(t, key)
 		assert.Nil(t, stats)
 	})
+
+	t.Run("maps lvm symlinked device to io device through resolved name", func(t *testing.T) {
+		setEvalSymlinks(t, func(path string) (string, error) {
+			if path == "/dev/vg1/volume_1" {
+				return "/dev/dm-1", nil
+			}
+			return path, nil
+		})
+
+		key, stats, ok := registerFilesystemStats(
+			map[string]*system.FsStats{},
+			"/dev/vg1/volume_1",
+			"/volume1",
+			false,
+			"",
+			fsRegistrationContext{
+				isWindows: false,
+				efPath:    "/extra-filesystems",
+				diskIoCounters: map[string]disk.IOCountersStat{
+					"dm-0": {Name: "dm-0", Label: "vg1-syno_vg_reserved_area"},
+					"dm-1": {Name: "dm-1", Label: "vg1-volume_1"},
+				},
+			},
+		)
+
+		assert.True(t, ok)
+		assert.Equal(t, "dm-1", key)
+		assert.Equal(t, "/volume1", stats.Mountpoint)
+	})
+
+	t.Run("maps lvm device through resolved mapper label", func(t *testing.T) {
+		setEvalSymlinks(t, func(path string) (string, error) {
+			if path == "/dev/vg1/volume_1" {
+				return "/dev/mapper/vg1-volume_1", nil
+			}
+			return path, nil
+		})
+
+		key, _, ok := registerFilesystemStats(
+			map[string]*system.FsStats{},
+			"/dev/vg1/volume_1",
+			"/volume1",
+			false,
+			"",
+			fsRegistrationContext{
+				isWindows: false,
+				efPath:    "/extra-filesystems",
+				diskIoCounters: map[string]disk.IOCountersStat{
+					"dm-1": {Name: "dm-1", Label: "vg1-volume_1"},
+				},
+			},
+		)
+
+		assert.True(t, ok)
+		assert.Equal(t, "dm-1", key)
+	})
+
+	t.Run("maps lvm root device through resolved name", func(t *testing.T) {
+		setEvalSymlinks(t, func(path string) (string, error) {
+			if path == "/dev/vg1/volume_1" {
+				return "/dev/dm-1", nil
+			}
+			return path, nil
+		})
+
+		key, stats, ok := registerFilesystemStats(
+			map[string]*system.FsStats{},
+			"/dev/vg1/volume_1",
+			"/",
+			true,
+			"",
+			fsRegistrationContext{
+				isWindows: false,
+				efPath:    "/extra-filesystems",
+				diskIoCounters: map[string]disk.IOCountersStat{
+					"dm-1": {Name: "dm-1", Label: "vg1-volume_1"},
+				},
+			},
+		)
+
+		assert.True(t, ok)
+		assert.Equal(t, "dm-1", key)
+		assert.True(t, stats.Root)
+	})
+
+	t.Run("resolved device wins over filesystem fallback", func(t *testing.T) {
+		setEvalSymlinks(t, func(path string) (string, error) {
+			if path == "/dev/vg1/volume_1" {
+				return "/dev/dm-1", nil
+			}
+			return path, nil
+		})
+
+		key, _, ok := registerFilesystemStats(
+			map[string]*system.FsStats{},
+			"/dev/vg1/volume_1",
+			"/",
+			true,
+			"",
+			fsRegistrationContext{
+				filesystem: "sda",
+				isWindows:  false,
+				efPath:     "/extra-filesystems",
+				diskIoCounters: map[string]disk.IOCountersStat{
+					"dm-1": {Name: "dm-1", Label: "vg1-volume_1"},
+					"sda":  {Name: "sda"},
+				},
+			},
+		)
+
+		assert.True(t, ok)
+		assert.Equal(t, "dm-1", key)
+	})
+
+	t.Run("keeps base name when symlink resolution fails", func(t *testing.T) {
+		setEvalSymlinks(t, func(path string) (string, error) {
+			return "", os.ErrNotExist
+		})
+
+		key, _, ok := registerFilesystemStats(
+			map[string]*system.FsStats{},
+			"/dev/vg1/volume_1",
+			"/volume1",
+			false,
+			"",
+			fsRegistrationContext{
+				isWindows: false,
+				efPath:    "/extra-filesystems",
+				diskIoCounters: map[string]disk.IOCountersStat{
+					"dm-1": {Name: "dm-1", Label: "vg1-volume_1"},
+				},
+			},
+		)
+
+		assert.True(t, ok)
+		assert.Equal(t, "volume_1", key)
+	})
+}
+
+// setEvalSymlinks swaps the device-symlink resolver for the duration of a test.
+func setEvalSymlinks(t *testing.T, fn func(string) (string, error)) {
+	t.Helper()
+	old := evalSymlinks
+	evalSymlinks = fn
+	t.Cleanup(func() { evalSymlinks = old })
 }
 
 func TestAddConfiguredRootFs(t *testing.T) {
