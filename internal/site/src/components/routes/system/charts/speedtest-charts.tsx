@@ -8,7 +8,7 @@ import { useStore } from "@nanostores/react"
 import type { $containerFilter } from "@/lib/stores"
 import { ChartCard, FilterBar } from "../chart-card"
 import type { ChartData, SpeedtestRecord, SpeedtestStatsRecord } from "@/types"
-import { useMemo } from "react"
+import { useCallback, useMemo } from "react"
 
 /**
  * Format a bandwidth in bytes/s as bits per second, the unit speedtests are usually quoted in.
@@ -106,7 +106,7 @@ export function SpeedtestDownloadChart(props: SpeedtestChartProps) {
 export function SpeedtestUploadChart(props: SpeedtestChartProps) {
 	const { t } = useLingui()
 	return (
-		<SpeedtestBandwidthChart {...props} title={t`Upload`} description={t`Upload speed`} color={5} dataKey={uploadKey} />
+		<SpeedtestBandwidthChart {...props} title={t`Upload`} description={t`Upload speed`} color={4} dataKey={uploadKey} />
 	)
 }
 
@@ -139,7 +139,7 @@ export function SpeedtestLoadedLatencyChart({ stats, failures, chartData, empty 
 	const dataPoints = useMemo(
 		() => [
 			point(t`Download`, 2, (record) => record.download_latency || null, 0),
-			point(t`Upload`, 5, (record) => record.upload_latency || null, 1),
+			point(t`Upload`, 4, (record) => record.upload_latency || null, 1),
 		],
 		[t]
 	)
@@ -177,6 +177,15 @@ type SpeedtestCompareChartProps = {
 	filterStore: typeof $containerFilter
 }
 
+/**
+ * Color of a compared speedtest. Reds and pinks are left out, so the red lines that mark
+ * failed runs stand out: the first four chart colors, or else hues spread from 35° to 315°.
+ */
+function compareColor(index: number, count: number) {
+	if (count <= 4) return index + 1
+	return `hsl(${35 + (index * 280) / count}, var(--chart-saturation), var(--chart-lightness))`
+}
+
 /** One line per compared speedtest, for a single measurement. */
 function SpeedtestCompareChart({
 	compareStats,
@@ -198,29 +207,72 @@ function SpeedtestCompareChart({
 	contentFormatter: ({ value }: { value: number | string }) => string | number
 }) {
 	const filter = useStore(filterStore)
-	const dataPoints = useMemo(() => {
+	const { dataPoints, visibleLabels } = useMemo(() => {
 		const count = speedtests.length
 		const filterGroups = parseFilterGroups(filter)
+		// Segments of each speedtest that have runs; failed runs split a line into segments.
+		const usedSegments = new Map<string, Set<number>>()
+		for (const record of compareStats) {
+			for (const id in record.segments) {
+				const used = usedSegments.get(id) ?? new Set<number>()
+				used.add(record.segments[id])
+				usedSegments.set(id, used)
+			}
+		}
 		const points: DataPoint<SpeedtestCompareRecord>[] = []
+		// Labels of the charted speedtests by ID, to mark and name only their failed runs.
+		const labels = new Map<string, string>()
 		for (let i = 0; i < count; i++) {
 			const speedtest = speedtests[i]
 			const label = getLabel(speedtest)
 			if (filterGroups.length > 0 && !matchesFilterGroups(label.toLowerCase(), filterGroups)) continue
-			points.push({
-				order: i,
-				label,
-				dataKey: (record) => {
-					const run = record.stats[speedtest.id]
-					return run ? value(run) : null
-				},
-				opacity: 0.2,
-				dot: true,
-				color: count <= 5 ? i + 1 : `hsl(${(i * 360) / count}, var(--chart-saturation), var(--chart-lightness))`,
-			})
+			labels.set(speedtest.id, label)
+			const color = compareColor(i, count)
+			const segments = [...(usedSegments.get(speedtest.id) ?? [0])].sort((a, b) => a - b)
+			for (const [n, segment] of segments.entries()) {
+				points.push({
+					id: `${speedtest.id}:${segment}`,
+					order: i,
+					label,
+					dataKey: (record) => {
+						const run = record.stats[speedtest.id]
+						return run && record.segments[speedtest.id] === segment ? value(run) : null
+					},
+					opacity: 0.2,
+					dot: true,
+					color,
+					legend: n === 0,
+				})
+			}
 		}
-		return points
-	}, [speedtests, getLabel, filter, value])
-	const legend = dataPoints.length < 10
+		return { dataPoints: points, visibleLabels: labels }
+	}, [compareStats, speedtests, getLabel, filter, value])
+	const legend = visibleLabels.size < 10
+
+	const failures = useMemo(
+		() =>
+			compareStats
+				.filter((record) => Object.keys(record.failures ?? {}).some((id) => visibleLabels.has(id)))
+				.map((record) => record.created),
+		[compareStats, visibleLabels]
+	)
+	// Several speedtests share the chart, so the note names each one that failed.
+	const compareFailureNote = useCallback(
+		(record: SpeedtestCompareRecord) => {
+			const failed = Object.entries(record?.failures ?? {}).filter(([id]) => visibleLabels.has(id))
+			if (!failed.length) return null
+			return (
+				<div className="border-t pt-1.5 max-w-64 text-wrap font-medium text-destructive grid gap-1">
+					{failed.map(([id, error]) => (
+						<div key={id}>
+							<Trans>Run failed</Trans>: {visibleLabels.get(id)}: {error}
+						</div>
+					))}
+				</div>
+			)
+		},
+		[visibleLabels]
+	)
 
 	// Automatic speedtests can use a different server each run, so the tooltip names the run's server.
 	const formatContent = useMemo(() => {
@@ -250,11 +302,14 @@ function SpeedtestCompareChart({
 				dataPoints={dataPoints}
 				domain={[0, "auto"]}
 				// Speedtests run at different times, so each area joins its runs across the others'.
+				// A failed run starts a new area for its speedtest, which breaks the line there.
 				connectNulls
 				legend={legend}
 				filter={filter}
 				tickFormatter={tickFormatter}
 				contentFormatter={formatContent}
+				markers={failures}
+				tooltipNote={compareFailureNote}
 			/>
 		</ChartCard>
 	)

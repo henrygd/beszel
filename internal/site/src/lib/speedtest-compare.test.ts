@@ -105,10 +105,32 @@ test("caps the number of charted speedtests", () => {
 	expect(s.canAddServer).toBe(false)
 })
 
-test("merges runs by time and leaves out failed runs", () => {
+test("merges runs by time and keeps failed runs apart", () => {
 	const run = (speedtest: string, created: number, error = "") =>
 		({ speedtest, created, error, download: created }) as SpeedtestStatsRecord
-	const merged = mergeSpeedtestCompareStats([run("a", 2), run("b", 1), run("b", 2), run("a", 3, "failed")])
-	expect(merged.map((r) => r.created)).toEqual([1, 2])
-	expect(Object.keys(merged[1].stats).sort()).toEqual(["a", "b"])
+	const merged = mergeSpeedtestCompareStats([run("a", 2), run("b", 1), run("b", 2, "timeout"), run("a", 3, "failed")])
+	expect(merged.map((r) => r.created)).toEqual([1, 2, 3])
+	expect(Object.keys(merged[1].stats)).toEqual(["a"])
+	expect(merged[1].failures).toEqual({ b: "timeout" })
+	expect(merged[2].stats).toEqual({})
+	expect(merged[2].failures).toEqual({ a: "failed" })
+	expect(merged[0].failures).toBeUndefined()
+})
+
+test("starts a new segment after each failed run", () => {
+	const run = (speedtest: string, created: number, error = "") =>
+		({ speedtest, created, error, download: created }) as SpeedtestStatsRecord
+	const merged = mergeSpeedtestCompareStats([
+		run("a", 1),
+		run("b", 2),
+		run("a", 3, "failed"),
+		run("a", 4),
+		run("b", 5),
+		run("a", 6, "failed"),
+		run("a", 7, "failed"),
+		run("a", 8),
+	])
+	const segmentsOf = (id: string) => merged.filter((r) => r.stats[id]).map((r) => r.segments[id])
+	expect(segmentsOf("a")).toEqual([0, 1, 3])
+	expect(segmentsOf("b")).toEqual([0, 0])
 })

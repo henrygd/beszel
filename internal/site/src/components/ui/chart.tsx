@@ -344,11 +344,13 @@ const ChartLegendContent = React.forwardRef<
 >(({ className, payload, verticalAlign = "bottom", reverse = false }, ref) => {
 	// const { config } = useChart()
 
-	if (!payload?.length) {
+	// Like recharts' default legend, leave out items with legendType="none".
+	const items = payload?.filter((item) => item.type !== "none")
+	if (!items?.length) {
 		return null
 	}
 
-	const reversedPayload = reverse ? [...payload].reverse() : payload
+	const reversedPayload = reverse ? [...items].reverse() : items
 
 	return (
 		<div

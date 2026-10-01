@@ -80,20 +80,41 @@ export function getSpeedtestCompareState({
 export interface SpeedtestCompareRecord {
 	created: number
 	stats: Record<string, SpeedtestStatsRecord>
+	/** Errors of the runs that failed at this time, keyed by speedtest ID */
+	failures?: Record<string, string>
+	/**
+	 * Segment of each run, keyed by speedtest ID. A speedtest's segment number goes up after each
+	 * of its failed runs, so charts can join runs within a segment and break the line between them.
+	 */
+	segments: Record<string, number>
 }
 
 /**
  * Groups runs by time for comparison charts. Speedtests rarely run at the same moment, so most
  * records hold one run; the charts connect each speedtest's runs across the others'. Failed runs
- * are left out, since they have no measurements.
+ * have no measurements, so they are kept apart as failures for the charts to mark.
  */
 export function mergeSpeedtestCompareStats(runs: SpeedtestStatsRecord[]): SpeedtestCompareRecord[] {
 	const byCreated = new Map<number, SpeedtestCompareRecord>()
 	for (const run of runs) {
-		if (run.error || run.created === null) continue
-		const record = byCreated.get(run.created) ?? { created: run.created, stats: {} }
-		record.stats[run.speedtest] = run
+		if (run.created === null) continue
+		const record = byCreated.get(run.created) ?? { created: run.created, stats: {}, segments: {} }
+		if (run.error) {
+			record.failures = { ...record.failures, [run.speedtest]: run.error }
+		} else {
+			record.stats[run.speedtest] = run
+		}
 		byCreated.set(run.created, record)
 	}
-	return [...byCreated.values()].sort((a, b) => a.created - b.created)
+	const records = [...byCreated.values()].sort((a, b) => a.created - b.created)
+	const segment: Record<string, number> = {}
+	for (const record of records) {
+		for (const id in record.stats) {
+			record.segments[id] = segment[id] ?? 0
+		}
+		for (const id in record.failures) {
+			segment[id] = (segment[id] ?? 0) + 1
+		}
+	}
+	return records
 }
