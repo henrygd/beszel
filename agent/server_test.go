@@ -11,6 +11,7 @@ import (
 	"net"
 	"net/http"
 	"net/http/httptest"
+	"net/url"
 	"os"
 	"path/filepath"
 	"strings"
@@ -24,6 +25,7 @@ import (
 	"github.com/blang/semver"
 	"github.com/fxamacker/cbor/v2"
 	"github.com/gliderlabs/ssh"
+	"github.com/lxzan/gws"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	gossh "golang.org/x/crypto/ssh"
@@ -428,6 +430,134 @@ func TestSSHPublicKeyOfferIsNotAConnection(t *testing.T) {
 	close(signer.release)
 	require.Error(t, <-dialErr, "a signature from another key must be rejected")
 	assert.False(t, cm.hasSSHConnection())
+}
+
+// startSSHFallbackServer starts the fallback SSH server for a disconnected
+// agent and returns its address and a client config that can authenticate.
+func startSSHFallbackServer(t *testing.T) (*Agent, string, *gossh.ClientConfig) {
+	t.Helper()
+	t.Setenv("BESZEL_AGENT_DISABLE_SSH", "false")
+	agent := createTestAgent(t)
+	cm := agent.connectionManager
+	cm.eventChan = make(chan ConnectionEvent, 4)
+
+	_, privateKey, err := ed25519.GenerateKey(nil)
+	require.NoError(t, err)
+	signer, err := gossh.NewSignerFromKey(privateKey)
+	require.NoError(t, err)
+	cm.serverOptions = ServerOptions{
+		Network: "tcp",
+		Addr:    "127.0.0.1:0",
+		Keys:    []gossh.PublicKey{signer.PublicKey()},
+	}
+
+	cm.startSSHServer()
+	agent.serverMu.Lock()
+	require.NotNil(t, agent.serverListener)
+	addr := agent.serverListener.Addr().String()
+	agent.serverMu.Unlock()
+	t.Cleanup(func() { _ = agent.StopServer() })
+
+	return agent, addr, &gossh.ClientConfig{
+		User:            "hub",
+		Auth:            []gossh.AuthMethod{gossh.PublicKeys(signer)},
+		HostKeyCallback: gossh.InsecureIgnoreHostKey(),
+		Timeout:         4 * time.Second,
+	}
+}
+
+// connectSSHSession dials the agent and starts a session, which is what marks
+// the connection as established.
+func connectSSHSession(t *testing.T, addr string, config *gossh.ClientConfig) *gossh.Client {
+	t.Helper()
+	client, err := gossh.Dial("tcp", addr, config)
+	require.NoError(t, err)
+	t.Cleanup(func() { _ = client.Close() })
+	session, err := client.NewSession()
+	require.NoError(t, err)
+	require.NoError(t, session.Shell())
+	return client
+}
+
+// handleNextSSHChange applies the next SSH connection notification, as the
+// connection manager's event loop would.
+func handleNextSSHChange(t *testing.T, cm *ConnectionManager) {
+	t.Helper()
+	select {
+	case <-cm.sshChanged:
+		cm.handleSSHChange()
+	case <-time.After(5 * time.Second):
+		t.Fatal("SSH connection change did not notify the manager")
+	}
+}
+
+// Without a WebSocket client there is no WS-first cycle to run, so losing the
+// hub's SSH connection must leave the listener in place for it to reconnect.
+func TestSSHDisconnectKeepsListenerWithoutWebSocket(t *testing.T) {
+	agent, addr, clientConfig := startSSHFallbackServer(t)
+	cm := agent.connectionManager
+	require.Nil(t, cm.wsClient)
+	defer cm.stopWsTicker()
+
+	client := connectSSHSession(t, addr, clientConfig)
+	handleNextSSHChange(t, cm)
+	require.Equal(t, SSHConnected, cm.getState())
+
+	require.NoError(t, client.Close())
+	handleNextSSHChange(t, cm)
+	require.Equal(t, Disconnected, cm.getState())
+	require.Eventually(t, func() bool {
+		return !cm.isConnectingNow()
+	}, 5*time.Second, 10*time.Millisecond, "reconnect attempt did not finish")
+
+	agent.serverMu.Lock()
+	require.NotNil(t, agent.serverListener, "SSH listener should stay open")
+	assert.Equal(t, addr, agent.serverListener.Addr().String(), "SSH listener should not be restarted")
+	agent.serverMu.Unlock()
+
+	connectSSHSession(t, addr, clientConfig)
+	handleNextSSHChange(t, cm)
+	assert.Equal(t, SSHConnected, cm.getState())
+}
+
+// A WebSocket attempt that was already in flight can authenticate after SSH has
+// connected. WebSocket is preferred, so it takes over and SSH is shut down.
+func TestWebSocketTakesOverFromSSH(t *testing.T) {
+	agent, addr, clientConfig := startSSHFallbackServer(t)
+	cm := agent.connectionManager
+
+	client := connectSSHSession(t, addr, clientConfig)
+	handleNextSSHChange(t, cm)
+	require.Equal(t, SSHConnected, cm.getState())
+
+	cm.wsClient = &WebSocketClient{
+		agent:       agent,
+		hubURL:      &url.URL{Host: "localhost:8080"},
+		Conn:        &gws.Conn{},
+		hubVerified: true,
+	}
+	cm.handleEvent(WebSocketConnect)
+	require.Equal(t, WebSocketConnected, cm.getState())
+	assert.Equal(t, system.ConnectionTypeWebSocket, cm.getConnectionType())
+	agent.serverMu.Lock()
+	assert.Nil(t, agent.serverListener, "SSH listener should close once WebSocket takes over")
+	agent.serverMu.Unlock()
+
+	closed := make(chan struct{})
+	go func() {
+		_ = client.Wait()
+		close(closed)
+	}()
+	select {
+	case <-closed:
+	case <-time.After(5 * time.Second):
+		t.Fatal("SSH connection was not closed when WebSocket took over")
+	}
+
+	// The SSH connection closing must not disturb the WebSocket state.
+	handleNextSSHChange(t, cm)
+	assert.False(t, cm.hasSSHConnection())
+	assert.Equal(t, WebSocketConnected, cm.getState())
 }
 
 /////////////////////////////////////////////////////////////////

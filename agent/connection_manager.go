@@ -269,12 +269,9 @@ func (c *ConnectionManager) handleEvent(event ConnectionEvent) {
 		if c.wsClient == nil || !c.wsClient.isVerified() {
 			return // a superseded connection authenticated after a new attempt began
 		}
-		if c.getState() == Disconnected {
-			c.handleStateChange(WebSocketConnected)
-		} else if c.getState() == SSHConnected {
-			// An authentication result can arrive after SSH has won the race.
-			c.closeWebSocket()
-		}
+		// WebSocket is preferred, so it takes over even if an attempt that was
+		// already in flight authenticates after SSH has connected.
+		c.handleStateChange(WebSocketConnected)
 	case SSHConnect:
 		if c.getState() == Disconnected && c.hasSSHConnection() {
 			c.handleStateChange(SSHConnected)
@@ -326,12 +323,14 @@ func (c *ConnectionManager) handleStateChange(newState ConnectionState) {
 		// stop new ws connection attempts
 		slog.Info("SSH connection established")
 		c.stopWsTicker()
-		c.closeWebSocket()
 	case Disconnected:
 		if previousState == SSHConnected {
 			// The last SSH TCP connection is gone. Start a fresh WS-first cycle;
-			// open the SSH listener again only if WS cannot connect.
-			_ = c.agent.StopServer()
+			// open the SSH listener again only if WS cannot connect. Without a
+			// WebSocket client there is nothing to try first, so keep listening.
+			if c.wsClient != nil {
+				_ = c.agent.StopServer()
+			}
 		} else if previousState == WebSocketConnected {
 			c.startSSHServer()
 		}
