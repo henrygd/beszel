@@ -23,6 +23,7 @@ func init() {
 		speedtests.Fields.Add(
 			&core.RelationField{Id: "st_system", Name: "system", CollectionId: systems.Id, CascadeDelete: true, MaxSelect: 1, Required: true},
 			&core.NumberField{Id: "st_server_id", Name: "server_id", OnlyInt: true, Min: types.Pointer(0.0), Help: "Ookla server ID; empty selects a server automatically"},
+			&core.TextField{Id: "st_interface", Name: "interface", Max: 100, Help: "Network interface to bind to; empty uses the default route"},
 			&core.NumberField{Id: "st_interval", Name: "interval", OnlyInt: true, Min: types.Pointer(float64(speedtest.MinInterval)), Max: types.Pointer(10080.0), Required: true, Help: "Minutes between runs"},
 			&core.BoolField{Id: "st_enabled", Name: "enabled"},
 			&core.NumberField{Id: "st_download", Name: "download", Help: "Bytes per second"},

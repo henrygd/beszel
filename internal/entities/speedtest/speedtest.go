@@ -14,6 +14,8 @@ type Config struct {
 	ServerID uint32 `cbor:"1,keyasint,omitempty"`
 	// Interval is the time between runs in minutes.
 	Interval uint32 `cbor:"2,keyasint"`
+	// Interface is the network interface to bind to. Empty uses the default route.
+	Interface string `cbor:"3,keyasint,omitempty"`
 }
 
 // SyncRequest defines an incremental or full speedtest sync request sent to the agent.

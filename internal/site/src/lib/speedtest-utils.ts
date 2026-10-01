@@ -17,11 +17,13 @@ export function formatSpeedtestInterval(minutes: number) {
  * Label for the server a speedtest uses: its name and location. For automatic
  * speedtests this is the server of the latest run. Falls back to the ID only for
  * a pinned server whose name is unknown, e.g. one created through the API.
+ * A non-default interface is appended so tests of one server can be told apart.
  */
 export function getSpeedtestServerLabel(
-	speedtest: Pick<SpeedtestRecord, "server_id" | "server_name" | "server_location">
+	speedtest: Pick<SpeedtestRecord, "server_id" | "server_name" | "server_location"> &
+		Partial<Pick<SpeedtestRecord, "interface">>
 ) {
-	const name = [speedtest.server_name, speedtest.server_location].filter(Boolean).join(" — ")
-	if (!name && speedtest.server_id) return `#${speedtest.server_id}`
-	return name
+	let name = [speedtest.server_name, speedtest.server_location].filter(Boolean).join(" — ")
+	if (!name && speedtest.server_id) name = `#${speedtest.server_id}`
+	return name && speedtest.interface ? `${name} (${speedtest.interface})` : name
 }

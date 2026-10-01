@@ -755,6 +755,8 @@ export interface SpeedtestRecord {
 	system: string
 	/** Ookla server ID; 0 selects a server automatically. */
 	server_id: number
+	/** Network interface the agent binds to; empty uses the default route. */
+	interface: string
 	/** Minutes between runs. */
 	interval: number
 	enabled: boolean

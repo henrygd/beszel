@@ -72,17 +72,18 @@ func (sys *System) syncSpeedtests(req speedtest.SyncRequest) error {
 // GetSpeedtestConfigsForSystem returns all enabled speedtest configs for a system.
 func (sm *SystemManager) GetSpeedtestConfigsForSystem(systemID string) ([]speedtest.Config, error) {
 	var rows []struct {
-		ID       string `db:"id"`
-		ServerID uint32 `db:"server_id"`
-		Interval uint32 `db:"interval"`
+		ID        string `db:"id"`
+		ServerID  uint32 `db:"server_id"`
+		Interval  uint32 `db:"interval"`
+		Interface string `db:"interface"`
 	}
 	err := sm.hub.DB().
-		NewQuery("SELECT id, server_id, interval FROM speedtests WHERE system = {:system} AND enabled = true").
+		NewQuery("SELECT id, server_id, interval, interface FROM speedtests WHERE system = {:system} AND enabled = true").
 		Bind(dbx.Params{"system": systemID}).
 		All(&rows)
 	configs := make([]speedtest.Config, len(rows))
 	for i, row := range rows {
-		configs[i] = speedtest.Config{ID: row.ID, ServerID: row.ServerID, Interval: row.Interval}
+		configs[i] = speedtest.Config{ID: row.ID, ServerID: row.ServerID, Interval: row.Interval, Interface: row.Interface}
 	}
 	return configs, err
 }

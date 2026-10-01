@@ -13,6 +13,13 @@ import (
 // Real Ookla CLI 1.2.0 output, with interface addresses anonymized.
 const ooklaResultJSON = `{"type":"result","timestamp":"2026-09-26T16:51:54Z","ping":{"jitter":0.159,"latency":4.050,"low":3.871,"high":4.226},"download":{"bandwidth":129197602,"bytes":915984428,"elapsed":7213,"latency":{"iqm":21.424,"low":3.984,"high":48.748,"jitter":2.169}},"upload":{"bandwidth":127497495,"bytes":458073236,"elapsed":3600,"latency":{"iqm":3.676,"low":3.295,"high":6.417,"jitter":0.297}},"packetLoss":0,"isp":"Odido Netherlands","interface":{"internalIp":"192.168.1.2","name":"eth0","macAddr":"00:00:00:00:00:00","isVpn":false,"externalIp":"203.0.113.1"},"server":{"id":52365,"host":"speedtest.ams.t-mobile.nl","port":8080,"name":"Odido","location":"Amsterdam","country":"Netherlands","ip":"37.143.86.95"},"result":{"id":"f7a9c6df-f1a0-46a2-be24-800e575ae9b7","url":"https://www.speedtest.net/result/c/f7a9c6df-f1a0-46a2-be24-800e575ae9b7","persisted":true}}`
 
+func TestOoklaArgs(t *testing.T) {
+	base := []string{"--format=json", "--accept-license", "--accept-gdpr"}
+	assert.Equal(t, base, ooklaArgs(speedtest.Config{}))
+	assert.Equal(t, append(base, "--server-id=42", "--interface=eth1"), ooklaArgs(speedtest.Config{ServerID: 42, Interface: "eth1"}))
+	assert.Equal(t, append(base, "--interface=Ethernet 2"), ooklaArgs(speedtest.Config{Interface: "Ethernet 2"}))
+}
+
 func TestParseOoklaOutput(t *testing.T) {
 	result, err := parseOoklaOutput([]byte("\n" + ooklaResultJSON + "\n"))
 	require.NoError(t, err)

@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"log/slog"
 	"os/exec"
 	"strconv"
 	"strings"
@@ -21,7 +22,7 @@ const (
 )
 
 // speedtestRunner performs one speedtest. Implementations must honor cancellation.
-type speedtestRunner func(ctx context.Context, serverID uint32) (speedtest.Result, error)
+type speedtestRunner func(ctx context.Context, config speedtest.Config) (speedtest.Result, error)
 
 // ooklaResult is the subset of the Ookla CLI `--format=json` result we use.
 type ooklaResult struct {
@@ -65,8 +66,20 @@ type ooklaLog struct {
 	Message string `json:"message"`
 }
 
+// ooklaArgs returns the Ookla CLI arguments for a speedtest config.
+func ooklaArgs(config speedtest.Config) []string {
+	args := []string{"--format=json", "--accept-license", "--accept-gdpr"}
+	if config.ServerID > 0 {
+		args = append(args, "--server-id="+strconv.FormatUint(uint64(config.ServerID), 10))
+	}
+	if config.Interface != "" {
+		args = append(args, "--interface="+config.Interface)
+	}
+	return args
+}
+
 // runOoklaSpeedtest runs the Ookla speedtest CLI and parses its JSON result.
-func runOoklaSpeedtest(ctx context.Context, serverID uint32) (speedtest.Result, error) {
+func runOoklaSpeedtest(ctx context.Context, config speedtest.Config) (speedtest.Result, error) {
 	path, err := exec.LookPath(speedtestCmd)
 	if err != nil {
 		return speedtest.Result{}, errors.New("Ookla speedtest CLI not found in PATH")
@@ -74,12 +87,9 @@ func runOoklaSpeedtest(ctx context.Context, serverID uint32) (speedtest.Result, 
 	ctx, cancel := context.WithTimeout(ctx, speedtestTimeout)
 	defer cancel()
 
-	args := []string{"--format=json", "--accept-license", "--accept-gdpr"}
-	if serverID > 0 {
-		args = append(args, "--server-id="+strconv.FormatUint(uint64(serverID), 10))
-	}
 	var stdout, stderr bytes.Buffer
-	cmd := exec.CommandContext(ctx, path, args...)
+	cmd := exec.CommandContext(ctx, path, ooklaArgs(config)...)
+	slog.Debug("running speedtest command", "id", config.ID, "cmd", cmd.String())
 	cmd.Stdout = &stdout
 	cmd.Stderr = &stderr
 	runErr := cmd.Run()

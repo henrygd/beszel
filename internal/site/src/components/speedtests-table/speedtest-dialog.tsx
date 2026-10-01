@@ -25,8 +25,8 @@ import { DEFAULT_SPEEDTEST_INTERVAL, MAX_SPEEDTEST_INTERVAL, MIN_SPEEDTEST_INTER
 import type { SpeedtestRecord } from "@/types"
 import type { ClientResponseError } from "pocketbase"
 
-/** Hub error for a system that already has a speedtest for the chosen server. */
-const DUPLICATE_SPEEDTEST_ERROR = "This system already has a speedtest for this server."
+/** Hub error for a system that already has a speedtest for the chosen server and interface. */
+const DUPLICATE_SPEEDTEST_ERROR = "This system already has a speedtest for this server and interface."
 
 export function AddSpeedtestDialog({ systemId }: { systemId?: string }) {
 	const [open, setOpen] = useState(false)
@@ -87,6 +87,7 @@ function SpeedtestDialogContent({
 	speedtest?: SpeedtestRecord
 }) {
 	const [servers, setServers] = useState<SpeedtestServer[]>([AUTOMATIC_SERVER])
+	const [iface, setIface] = useState("")
 	const [interval, setInterval] = useState(String(DEFAULT_SPEEDTEST_INTERVAL))
 	const [loading, setLoading] = useState(false)
 	const [selectedSystemId, setSelectedSystemId] = useState("")
@@ -95,10 +96,11 @@ function SpeedtestDialogContent({
 	const { toast } = useToast()
 	const { t } = useLingui()
 	const isEditing = !!speedtest
-	// System and server pairs created in this session, so a retry after a partial failure skips them.
+	// System, server and interface combinations created in this session, so a retry after a partial failure skips them.
 	const createdPairs = useRef(new Set<string>())
-	// Changing the server replaces the speedtest, which deletes its history.
-	const serverChanged = isEditing && servers[0]?.id !== speedtest.server_id
+	// Changing the server or interface replaces the speedtest, which deletes its history.
+	const replacesSpeedtest =
+		isEditing && (servers[0]?.id !== speedtest.server_id || iface.trim() !== (speedtest.interface ?? ""))
 
 	// Initialize form fields with speedtest values (if editing) or defaults (if adding).
 	useEffect(() => {
@@ -111,6 +113,7 @@ function SpeedtestDialogContent({
 				: AUTOMATIC_SERVER,
 		])
 		createdPairs.current = new Set()
+		setIface(speedtest?.interface ?? "")
 		setInterval(String(speedtest?.interval ?? DEFAULT_SPEEDTEST_INTERVAL))
 		setSelectedSystemId(speedtest?.system ?? "")
 		setSelectedSystemIds(new Set())
@@ -130,6 +133,7 @@ function SpeedtestDialogContent({
 				server_id: server.id,
 				server_name: server.name,
 				server_location: server.location,
+				interface: iface.trim(),
 				interval: Number(interval),
 			})
 			if (speedtest) {
@@ -138,7 +142,7 @@ function SpeedtestDialogContent({
 				let skipped = 0
 				for (const system of targetSystems) {
 					for (const server of servers) {
-						const pair = `${system}:${server.id}`
+						const pair = `${system}:${server.id}:${iface.trim()}`
 						if (createdPairs.current.has(pair)) continue
 						try {
 							await pb.collection("speedtests").create({ ...payload(server), system, enabled: true })
@@ -227,9 +231,9 @@ function SpeedtestDialogContent({
 						multiple={!isEditing}
 						disabled={loading}
 					/>
-					{serverChanged && (
+					{replacesSpeedtest && (
 						<p className="text-xs text-red-500">
-							<Trans>Changing the server creates a new speedtest. Its past results will be deleted.</Trans>
+							<Trans>Changing the server or interface creates a new speedtest. Its past results will be deleted.</Trans>
 						</p>
 					)}
 					{!isEditing && (
@@ -240,6 +244,22 @@ function SpeedtestDialogContent({
 							</Trans>
 						</p>
 					)}
+				</div>
+				<div className="grid gap-2">
+					<Label htmlFor="speedtest-interface">
+						<Trans>Interface</Trans>
+					</Label>
+					<Input
+						id="speedtest-interface"
+						value={iface}
+						onChange={(e) => setIface(e.target.value)}
+						placeholder={t`Default`}
+						maxLength={100}
+						disabled={loading}
+					/>
+					<p className="text-xs text-muted-foreground">
+						<Trans>Network interface on the agent to run the test from. Leave empty to use the default route.</Trans>
+					</p>
 				</div>
 				<div className="grid gap-2">
 					<Label htmlFor="speedtest-interval">
@@ -257,8 +277,8 @@ function SpeedtestDialogContent({
 					/>
 					<p className="text-xs text-muted-foreground">
 						<Trans>
-							Minimum {MIN_SPEEDTEST_INTERVAL} minutes. Each system tests at its own fixed time within the interval,
-							so systems on the same network don't overlap. Each run uses your full bandwidth for about 30 seconds.
+							Minimum {MIN_SPEEDTEST_INTERVAL} minutes. Each system tests at its own fixed time within the interval, so
+							systems on the same network don't overlap. Each run uses your full bandwidth for about 30 seconds.
 						</Trans>
 					</p>
 				</div>

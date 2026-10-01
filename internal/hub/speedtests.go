@@ -3,19 +3,25 @@ package hub
 import (
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/henrygd/beszel/internal/entities/speedtest"
 	"github.com/henrygd/beszel/internal/hub/systems"
 	"github.com/pocketbase/pocketbase/core"
 )
 
-// generateSpeedtestID creates a stable hash ID for a speedtest based on its system and server.
-func generateSpeedtestID(systemID string, serverID uint32) string {
-	return systems.MakeStableHashId(systemID, "speedtest", strconv.FormatUint(uint64(serverID), 10))
+// generateSpeedtestID creates a stable hash ID for a speedtest based on its system,
+// server and interface. The default interface is left out of the hash.
+func generateSpeedtestID(systemID string, config speedtest.Config) string {
+	parts := []string{systemID, "speedtest", strconv.FormatUint(uint64(config.ServerID), 10)}
+	if config.Interface != "" {
+		parts = append(parts, config.Interface)
+	}
+	return systems.MakeStableHashId(parts...)
 }
 
-// errDuplicateSpeedtest is returned when a system already has a speedtest for the chosen server.
-const errDuplicateSpeedtest = "This system already has a speedtest for this server."
+// errDuplicateSpeedtest is returned when a system already has a speedtest for the chosen server and interface.
+const errDuplicateSpeedtest = "This system already has a speedtest for this server and interface."
 
 // speedtestExists reports whether a speedtest record with the given ID exists.
 func speedtestExists(app core.App, id string) bool {
@@ -25,16 +31,17 @@ func speedtestExists(app core.App, id string) bool {
 
 // bindSpeedtestsEvents keeps speedtest records and agent speedtest state in sync.
 func bindSpeedtestsEvents(hub *Hub) {
-	// on create, make sure the id is set to a stable hash
+	// on create, normalize the interface and make sure the id is set to a stable hash
 	hub.OnRecordCreate("speedtests").BindFunc(func(e *core.RecordEvent) error {
 		config := speedtestConfigFromRecord(e.Record)
-		e.Record.Set("id", generateSpeedtestID(e.Record.GetString("system"), config.ServerID))
+		e.Record.Set("interface", config.Interface)
+		e.Record.Set("id", generateSpeedtestID(e.Record.GetString("system"), config))
 		return e.Next()
 	})
 
 	// reject API creates that duplicate an existing speedtest with a clear message
 	hub.OnRecordCreateRequest("speedtests").BindFunc(func(e *core.RecordRequestEvent) error {
-		ID := generateSpeedtestID(e.Record.GetString("system"), speedtestConfigFromRecord(e.Record).ServerID)
+		ID := generateSpeedtestID(e.Record.GetString("system"), speedtestConfigFromRecord(e.Record))
 		if speedtestExists(e.App, ID) {
 			return e.BadRequestError(errDuplicateSpeedtest, nil)
 		}
@@ -61,18 +68,20 @@ func bindSpeedtestsEvents(hub *Hub) {
 		return nil
 	})
 
-	// On API update requests, if the server changed, replace the record so its ID
-	// stays a stable hash. Otherwise, update the speedtest on the agent.
+	// On API update requests, if the server or interface changed, replace the record
+	// so its ID stays a stable hash. Otherwise, update the speedtest on the agent.
 	hub.OnRecordUpdateRequest("speedtests").BindFunc(func(e *core.RecordRequestEvent) error {
 		systemID := e.Record.GetString("system")
-		ID := generateSpeedtestID(systemID, speedtestConfigFromRecord(e.Record).ServerID)
+		config := speedtestConfigFromRecord(e.Record)
+		e.Record.Set("interface", config.Interface)
+		ID := generateSpeedtestID(systemID, config)
 		if ID != e.Record.Id {
 			if speedtestExists(e.App, ID) {
 				return e.BadRequestError(errDuplicateSpeedtest, nil)
 			}
 			newRecord := core.NewRecord(e.Record.Collection())
 			newRecord.Id = ID
-			for _, field := range []string{"system", "server_id", "server_name", "server_location", "interval", "enabled"} {
+			for _, field := range []string{"system", "server_id", "server_name", "server_location", "interface", "interval", "enabled"} {
 				newRecord.Set(field, e.Record.Get(field))
 			}
 			if err := e.App.Save(newRecord); err != nil {
@@ -108,9 +117,10 @@ func bindSpeedtestsEvents(hub *Hub) {
 // speedtestConfigFromRecord builds a speedtest config from a speedtests record.
 func speedtestConfigFromRecord(record *core.Record) speedtest.Config {
 	return speedtest.Config{
-		ID:       record.Id,
-		ServerID: uint32(max(record.GetInt("server_id"), 0)),
-		Interval: uint32(max(record.GetInt("interval"), speedtest.MinInterval)),
+		ID:        record.Id,
+		ServerID:  uint32(max(record.GetInt("server_id"), 0)),
+		Interval:  uint32(max(record.GetInt("interval"), speedtest.MinInterval)),
+		Interface: strings.TrimSpace(record.GetString("interface")),
 	}
 }
 

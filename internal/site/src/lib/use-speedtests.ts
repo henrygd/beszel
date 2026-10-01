@@ -9,7 +9,7 @@ import { mergeSpeedtestCompareStats } from "@/lib/speedtest-compare"
 import type { RecordListOptions, RecordSubscription } from "pocketbase"
 
 const SPEEDTEST_FIELDS =
-	"id,system,server_id,interval,enabled,download,upload,ping,jitter,loss,download_latency,download_jitter,upload_latency,upload_jitter,server_name,server_location,isp,url,error,last_run,updated"
+	"id,system,server_id,interface,interval,enabled,download,upload,ping,jitter,loss,download_latency,download_jitter,upload_latency,upload_jitter,server_name,server_location,isp,url,error,last_run,updated"
 
 const SPEEDTEST_STATS_FIELDS =
 	"speedtest,download,upload,ping,jitter,loss,server_name,error,created,download_latency,download_jitter,upload_latency,upload_jitter"
@@ -192,7 +192,7 @@ export function useSpeedtestStats({
 const speedtestGapRecord = { created: null } as SpeedtestStatsRecord
 
 /** Only what comparison charts and labels need. */
-const COMPARE_SPEEDTEST_FIELDS = "id,system,server_id,server_name,server_location,interval"
+const COMPARE_SPEEDTEST_FIELDS = "id,system,server_id,server_name,server_location,interface,interval"
 
 /**
  * Speedtests on all systems except the given one, to compare against.

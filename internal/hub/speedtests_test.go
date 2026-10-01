@@ -9,6 +9,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/henrygd/beszel/internal/entities/speedtest"
 	"github.com/pocketbase/pocketbase/apis"
 	"github.com/pocketbase/pocketbase/core"
 
@@ -17,10 +18,12 @@ import (
 )
 
 func TestGenerateSpeedtestID(t *testing.T) {
-	auto := generateSpeedtestID("sys1", 0)
-	assert.Equal(t, auto, generateSpeedtestID("sys1", 0), "IDs must be stable")
-	assert.NotEqual(t, auto, generateSpeedtestID("sys2", 0))
-	assert.NotEqual(t, auto, generateSpeedtestID("sys1", 42))
+	auto := generateSpeedtestID("sys1", speedtest.Config{})
+	assert.Equal(t, auto, generateSpeedtestID("sys1", speedtest.Config{}), "IDs must be stable")
+	assert.NotEqual(t, auto, generateSpeedtestID("sys2", speedtest.Config{}))
+	assert.NotEqual(t, auto, generateSpeedtestID("sys1", speedtest.Config{ServerID: 42}))
+	assert.NotEqual(t, auto, generateSpeedtestID("sys1", speedtest.Config{Interface: "eth1"}))
+	assert.NotEqual(t, generateSpeedtestID("sys1", speedtest.Config{Interface: "eth1"}), generateSpeedtestID("sys1", speedtest.Config{Interface: "eth2"}))
 	assert.Regexp(t, "^[a-z0-9]{1,10}$", auto)
 }
 
@@ -41,7 +44,7 @@ func TestSpeedtestServerChangeReplacesRecord(t *testing.T) {
 		"system": system.Id, "interval": 60, "enabled": true,
 	})
 	require.NoError(t, err)
-	assert.Equal(t, generateSpeedtestID(system.Id, 0), record.Id)
+	assert.Equal(t, generateSpeedtestID(system.Id, speedtest.Config{}), record.Id)
 
 	status, body := speedtestAPIRequest(t, hub, user, http.MethodPatch, "/api/collections/speedtests/records/"+record.Id, map[string]any{"server_id": 42, "server_name": "Odido", "server_location": "Amsterdam, Netherlands"})
 	assert.Equal(t, http.StatusOK, status, body)
@@ -49,7 +52,7 @@ func TestSpeedtestServerChangeReplacesRecord(t *testing.T) {
 	records, err := hub.FindAllRecords("speedtests")
 	require.NoError(t, err)
 	require.Len(t, records, 1)
-	assert.Equal(t, generateSpeedtestID(system.Id, 42), records[0].Id)
+	assert.Equal(t, generateSpeedtestID(system.Id, speedtest.Config{ServerID: 42}), records[0].Id)
 	assert.Equal(t, 42, records[0].GetInt("server_id"))
 	assert.Equal(t, "Odido", records[0].GetString("server_name"))
 	assert.Equal(t, "Amsterdam, Netherlands", records[0].GetString("server_location"))
@@ -60,7 +63,7 @@ func TestSpeedtestServerChangeReplacesRecord(t *testing.T) {
 // Speedtest IDs are unpadded hashes, so the schema must accept IDs shorter than six characters.
 func TestSpeedtestShortIDRequests(t *testing.T) {
 	const systemID, shortID = "000000000001739", "a0116"
-	require.Equal(t, shortID, generateSpeedtestID(systemID, 0))
+	require.Equal(t, shortID, generateSpeedtestID(systemID, speedtest.Config{}))
 	for _, method := range []string{http.MethodPost, http.MethodPatch} {
 		t.Run(method, func(t *testing.T) {
 			hub, testApp, err := createTestHub(t)
@@ -129,13 +132,66 @@ func TestDuplicateSpeedtestIsRejected(t *testing.T) {
 
 	// Switching a speedtest to a server the system already tests against.
 	status, body = speedtestAPIRequest(t, hub, user, http.MethodPatch,
-		"/api/collections/speedtests/records/"+generateSpeedtestID(system.Id, 0), map[string]any{"server_id": 42})
+		"/api/collections/speedtests/records/"+generateSpeedtestID(system.Id, speedtest.Config{}), map[string]any{"server_id": 42})
 	assert.Equal(t, http.StatusBadRequest, status)
 	assert.Contains(t, body, errDuplicateSpeedtest)
 
 	records, err := hub.FindAllRecords("speedtests")
 	require.NoError(t, err)
 	assert.Len(t, records, 2, "the rejected edit must not delete the original speedtest")
+}
+
+func TestSpeedtestInterfaces(t *testing.T) {
+	hub, testApp, err := createTestHub(t)
+	require.NoError(t, err)
+	defer cleanupTestHub(hub, testApp)
+	bindSpeedtestsEvents(hub)
+
+	user, err := createTestUser(hub)
+	require.NoError(t, err)
+	system, err := createTestRecord(hub, "systems", map[string]any{
+		"name": "Paused", "host": "localhost", "port": "45876",
+		"status": "paused", "users": []string{user.Id},
+	})
+	require.NoError(t, err)
+	create := func(iface string) (int, string) {
+		return speedtestAPIRequest(t, hub, user, http.MethodPost, "/api/collections/speedtests/records", map[string]any{
+			"system": system.Id, "server_id": 42, "interface": iface, "interval": 60, "enabled": true,
+		})
+	}
+
+	// The same server can be tested once per interface.
+	for _, iface := range []string{"", "eth1"} {
+		status, body := create(iface)
+		require.Equal(t, http.StatusOK, status, body)
+	}
+	// Surrounding whitespace is trimmed, so this duplicates eth1.
+	status, body := create(" eth1 ")
+	assert.Equal(t, http.StatusBadRequest, status)
+	assert.Contains(t, body, errDuplicateSpeedtest)
+
+	eth1ID := generateSpeedtestID(system.Id, speedtest.Config{ServerID: 42, Interface: "eth1"})
+	record, err := hub.FindRecordById("speedtests", eth1ID)
+	require.NoError(t, err)
+	assert.Equal(t, "eth1", record.GetString("interface"))
+
+	// Changing the interface replaces the record.
+	status, body = speedtestAPIRequest(t, hub, user, http.MethodPatch, "/api/collections/speedtests/records/"+eth1ID, map[string]any{"interface": "eth2 "})
+	require.Equal(t, http.StatusOK, status, body)
+	_, err = hub.FindRecordById("speedtests", eth1ID)
+	assert.Error(t, err)
+	record, err = hub.FindRecordById("speedtests", generateSpeedtestID(system.Id, speedtest.Config{ServerID: 42, Interface: "eth2"}))
+	require.NoError(t, err)
+	assert.Equal(t, "eth2", record.GetString("interface"))
+	assert.Equal(t, 60, record.GetInt("interval"))
+
+	configs, err := hub.sm.GetSpeedtestConfigsForSystem(system.Id)
+	require.NoError(t, err)
+	interfaces := make([]string, len(configs))
+	for i, config := range configs {
+		interfaces[i] = config.Interface
+	}
+	assert.ElementsMatch(t, []string{"", "eth2"}, interfaces)
 }
 
 func TestRunSpeedtest(t *testing.T) {

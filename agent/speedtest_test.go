@@ -20,9 +20,9 @@ import (
 func TestSpeedtestManagerRunNowIsAsync(t *testing.T) {
 	synctest.Test(t, func(t *testing.T) {
 		release := make(chan struct{})
-		sm := newSpeedtestManagerWithRunner(func(ctx context.Context, serverID uint32) (speedtest.Result, error) {
+		sm := newSpeedtestManagerWithRunner(func(ctx context.Context, config speedtest.Config) (speedtest.Result, error) {
 			<-release
-			return speedtest.Result{Download: 100, ServerID: serverID}, nil
+			return speedtest.Result{Download: 100, ServerID: config.ServerID}, nil
 		})
 		defer sm.Stop()
 
@@ -43,7 +43,7 @@ func TestSpeedtestManagerRunNowIsAsync(t *testing.T) {
 func TestSpeedtestManagerSerializesRuns(t *testing.T) {
 	synctest.Test(t, func(t *testing.T) {
 		var active, maxActive atomic.Int32
-		sm := newSpeedtestManagerWithRunner(func(ctx context.Context, serverID uint32) (speedtest.Result, error) {
+		sm := newSpeedtestManagerWithRunner(func(ctx context.Context, config speedtest.Config) (speedtest.Result, error) {
 			n := active.Add(1)
 			defer active.Add(-1)
 			for {
@@ -53,7 +53,7 @@ func TestSpeedtestManagerSerializesRuns(t *testing.T) {
 				}
 			}
 			time.Sleep(30 * time.Second)
-			return speedtest.Result{Download: uint64(serverID)}, nil
+			return speedtest.Result{Download: uint64(config.ServerID)}, nil
 		})
 		defer sm.Stop()
 
@@ -69,7 +69,7 @@ func TestSpeedtestManagerSerializesRuns(t *testing.T) {
 
 func TestSpeedtestManagerRecordsErrors(t *testing.T) {
 	synctest.Test(t, func(t *testing.T) {
-		sm := newSpeedtestManagerWithRunner(func(context.Context, uint32) (speedtest.Result, error) {
+		sm := newSpeedtestManagerWithRunner(func(context.Context, speedtest.Config) (speedtest.Result, error) {
 			return speedtest.Result{}, errors.New("not installed")
 		})
 		defer sm.Stop()
@@ -82,15 +82,39 @@ func TestSpeedtestManagerRecordsErrors(t *testing.T) {
 	})
 }
 
+func TestSpeedtestManagerInterfaceChangeReplacesTask(t *testing.T) {
+	synctest.Test(t, func(t *testing.T) {
+		var mu sync.Mutex
+		var interfaces []string
+		sm := newSpeedtestManagerWithRunner(func(ctx context.Context, config speedtest.Config) (speedtest.Result, error) {
+			mu.Lock()
+			interfaces = append(interfaces, config.Interface)
+			mu.Unlock()
+			return speedtest.Result{}, nil
+		})
+		defer sm.Stop()
+
+		require.NoError(t, sm.UpsertSpeedtest(speedtest.Config{ID: "a", Interval: 60}, true))
+		synctest.Wait()
+		previous := sm.tasks["a"]
+		require.NoError(t, sm.UpsertSpeedtest(speedtest.Config{ID: "a", Interval: 60, Interface: "eth1"}, true))
+		synctest.Wait()
+		assert.NotSame(t, previous, sm.tasks["a"], "an interface change must replace the task")
+		mu.Lock()
+		assert.Equal(t, []string{"", "eth1"}, interfaces)
+		mu.Unlock()
+	})
+}
+
 func TestSpeedtestManagerSync(t *testing.T) {
 	synctest.Test(t, func(t *testing.T) {
 		var mu sync.Mutex
 		runs := map[uint32]int{}
-		sm := newSpeedtestManagerWithRunner(func(ctx context.Context, serverID uint32) (speedtest.Result, error) {
+		sm := newSpeedtestManagerWithRunner(func(ctx context.Context, config speedtest.Config) (speedtest.Result, error) {
 			mu.Lock()
-			runs[serverID]++
+			runs[config.ServerID]++
 			mu.Unlock()
-			return speedtest.Result{ServerID: serverID}, nil
+			return speedtest.Result{ServerID: config.ServerID}, nil
 		})
 		defer sm.Stop()
 
@@ -126,7 +150,7 @@ func TestSpeedtestManagerSlotSchedule(t *testing.T) {
 	synctest.Test(t, func(t *testing.T) {
 		var mu sync.Mutex
 		var runTimes []time.Time
-		sm := newSpeedtestManagerWithRunner(func(context.Context, uint32) (speedtest.Result, error) {
+		sm := newSpeedtestManagerWithRunner(func(context.Context, speedtest.Config) (speedtest.Result, error) {
 			mu.Lock()
 			runTimes = append(runTimes, time.Now())
 			mu.Unlock()
@@ -159,7 +183,7 @@ func TestSpeedtestManagerSlotSchedule(t *testing.T) {
 func TestSpeedtestManagerSlotSurvivesRestart(t *testing.T) {
 	synctest.Test(t, func(t *testing.T) {
 		runAt := make(chan time.Time, 10)
-		runner := func(context.Context, uint32) (speedtest.Result, error) {
+		runner := func(context.Context, speedtest.Config) (speedtest.Result, error) {
 			runAt <- time.Now()
 			return speedtest.Result{}, nil
 		}

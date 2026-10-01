@@ -142,6 +142,11 @@ export function getSpeedtestColumns({
 								<Trans>Auto</Trans>
 							</Badge>
 						)}
+						{speedtest.interface && (
+							<Badge variant="outline" className="shrink-0 font-normal text-muted-foreground">
+								{speedtest.interface}
+							</Badge>
+						)}
 					</div>
 				)
 			},

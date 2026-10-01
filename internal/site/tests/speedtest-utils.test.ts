@@ -26,4 +26,19 @@ describe("getSpeedtestServerLabel", () => {
 		expect(getSpeedtestServerLabel({ server_id: 0, server_name: "Example", server_location: "" })).toBe("Example")
 		expect(getSpeedtestServerLabel({ server_id: 0, server_name: "", server_location: "" })).toBe("")
 	})
+
+	test("appends a non-default interface", () => {
+		expect(
+			getSpeedtestServerLabel({
+				server_id: 42,
+				server_name: "Example",
+				server_location: "Amsterdam",
+				interface: "eth1",
+			})
+		).toBe("Example — Amsterdam (eth1)")
+		expect(getSpeedtestServerLabel({ server_id: 42, server_name: "", server_location: "", interface: "eth1" })).toBe(
+			"#42 (eth1)"
+		)
+		expect(getSpeedtestServerLabel({ server_id: 0, server_name: "", server_location: "", interface: "eth1" })).toBe("")
+	})
 })
