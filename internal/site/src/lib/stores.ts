@@ -47,6 +47,17 @@ export const $chartTime = atom<ChartTimes>(defaultChartTime)
 /** Whether to display average or max chart values */
 export const $maxValues = atom(false)
 
+const logTimestampsKey = "besz-log-ts"
+
+/** Whether to show timestamps in Docker and systemd logs */
+export const $showLogTimestamps = atom<boolean>(JSON.parse(localStorage.getItem(logTimestampsKey) ?? "true"))
+
+export function toggleLogTimestamps() {
+	const next = !$showLogTimestamps.get()
+	$showLogTimestamps.set(next)
+	localStorage.setItem(logTimestampsKey, JSON.stringify(next))
+}
+
 // export const UserSettingsSchema = v.object({
 // 	chartTime: v.picklist(["1h", "12h", "24h", "1w", "30d"]),
 // 	emails: v.optional(v.array(v.pipe(v.string(), v.email())), [pb?.authStore?.record?.email ?? ""]),
