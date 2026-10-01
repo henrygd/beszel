@@ -7,5 +7,6 @@ interval only; real-time requests reuse the last snapshot.
 
 - Linux: nl80211 via `github.com/mdlayher/wifi`. Docker needs `network_mode: host`.
 - macOS: CoreWLAN via `osascript` (JXA). SSID may be redacted by privacy settings.
-- Windows: native WLAN API, keyed by interface GUID.
+- Windows: native WLAN API, keyed by adapter alias (e.g. `Wi-Fi`), falling back
+  to interface GUID.
 - Other platforms: unsupported.

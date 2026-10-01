@@ -679,11 +679,11 @@ func (a *Agent) updateDiskIo(cacheTimeMs uint16, systemStats *system.Stats) {
 			}
 
 			// Previous snapshot for this interval and device
-			prev, hasPrev := a.diskPrev[cacheTimeMs][name]
-			if !hasPrev {
+			prev, ok := a.diskPrev[cacheTimeMs][name]
+			firstSample := !ok
+			if firstSample {
 				// Seed from the latest counters of any interval, else seed from current
-				prev, hasPrev = a.diskBaseline[name]
-				if !hasPrev {
+				if prev, ok = a.diskBaseline[name]; !ok {
 					prev = prevDiskFromCounter(d, now)
 				}
 			}
@@ -695,6 +695,12 @@ func (a *Agent) updateDiskIo(cacheTimeMs uint16, systemStats *system.Stats) {
 
 			// Avoid division by zero or clock issues
 			if msElapsed < 100 {
+				continue
+			}
+			// The first sample of an interval must span at least half the interval.
+			// Right after agent start the baseline is only a second or so old, and a
+			// burst of startup I/O would be recorded as the rate for the whole interval.
+			if firstSample && msElapsed < uint64(cacheTimeMs)/2 {
 				continue
 			}
 
