@@ -11,17 +11,20 @@ import (
 	"github.com/henrygd/beszel/internal/entities/smart"
 	"github.com/henrygd/beszel/internal/entities/speedtest"
 	"github.com/henrygd/beszel/internal/entities/system"
+	"github.com/lxzan/gws"
 
 	"log/slog"
 )
 
 // HandlerContext provides context for request handlers
 type HandlerContext struct {
-	Client      *WebSocketClient
-	Agent       *Agent
-	Request     *common.HubRequest[cbor.RawMessage]
-	RequestID   *uint32
-	HubVerified bool
+	Client         *WebSocketClient
+	Conn           *gws.Conn // WebSocket that carried this request, if any
+	Agent          *Agent
+	Request        *common.HubRequest[cbor.RawMessage]
+	RequestID      *uint32
+	HubVerified    bool
+	ConnectionType system.ConnectionType // Transport that carried this request
 	// SendResponse abstracts how a handler sends responses (WS or SSH)
 	SendResponse func(data any, requestID *uint32) error
 }
@@ -103,7 +106,11 @@ func (h *GetDataHandler) Handle(hctx *HandlerContext) error {
 	_ = cbor.Unmarshal(hctx.Request.Data, &options)
 
 	sysStats := hctx.Agent.gatherStats(options)
-	return hctx.SendResponse(sysStats, hctx.RequestID)
+	// Cached stats may be shared by concurrent SSH and WebSocket requests.
+	// Set the transport on the response copy, not on the cached data.
+	response := *sysStats
+	response.Info.ConnectionType = hctx.ConnectionType
+	return hctx.SendResponse(&response, hctx.RequestID)
 }
 
 ////////////////////////////////////////////////////////////////////////////
@@ -113,7 +120,7 @@ func (h *GetDataHandler) Handle(hctx *HandlerContext) error {
 type CheckFingerprintHandler struct{}
 
 func (h *CheckFingerprintHandler) Handle(hctx *HandlerContext) error {
-	return hctx.Client.handleAuthChallenge(hctx.Request, hctx.RequestID)
+	return hctx.Client.handleAuthChallenge(hctx.Request, hctx.RequestID, hctx.Conn)
 }
 
 ////////////////////////////////////////////////////////////////////////////

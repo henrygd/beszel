@@ -68,6 +68,15 @@ type System struct {
 	lastSavedMonitorProbe map[string]int64
 }
 
+// errSSHDisabled is returned instead of dialing SSH when DISABLE_SSH is set on the hub.
+var errSSHDisabled = errors.New("no WebSocket connection and SSH is disabled")
+
+// sshFallbackDisabled reports whether DISABLE_SSH is set on the hub.
+func sshFallbackDisabled() bool {
+	disableSSH, _ := utils.GetEnv("DISABLE_SSH")
+	return disableSSH == "true"
+}
+
 // GetStatus returns the current monitoring status.
 func (sys *System) GetStatus() string {
 	sys.statusMu.RLock()
@@ -721,7 +730,11 @@ func shouldCloseWebSocket(err error) bool {
 // getSSHTransport returns the system's SSH transport, creating it on first use.
 // The transport owns the only SSH connection to the agent; it is shared by the
 // updater and on-demand requests and connects lazily.
+// It returns errSSHDisabled if DISABLE_SSH is set on the hub.
 func (sys *System) getSSHTransport() (*transport.SSHTransport, error) {
+	if sshFallbackDisabled() {
+		return nil, errSSHDisabled
+	}
 	sys.sshMu.Lock()
 	defer sys.sshMu.Unlock()
 	if sys.sshTransport != nil {
