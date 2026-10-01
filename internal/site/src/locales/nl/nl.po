@@ -2360,3 +2360,10 @@ msgstr "Ja"
 msgid "Your user settings have been updated."
 msgstr "Je gebruikersinstellingen zijn bijgewerkt."
 
+#: src/components/logs-display.tsx
+msgid "Show timestamps"
+msgstr "Tijdstempels tonen"
+
+#: src/components/logs-display.tsx
+msgid "Hide timestamps"
+msgstr "Tijdstempels verbergen"

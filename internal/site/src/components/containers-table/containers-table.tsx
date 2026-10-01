@@ -32,7 +32,8 @@ import { Separator } from "../ui/separator"
 import { $router, Link } from "../router"
 import { listenKeys } from "nanostores"
 import { getPagePath } from "@nanostores/router"
-import { LogsDisplay, LogsFullscreenDialog } from "@/components/logs-display"
+import { LogsDisplay, LogsFullscreenDialog, LogsTimestampToggle } from "@/components/logs-display"
+import { getLogTimestampDecorations } from "@/lib/logs"
 
 const syntaxTheme = "github-dark-dimmed"
 
@@ -282,7 +283,13 @@ async function getLogsHtml(container: ContainerRecord): Promise<string> {
 				container: container.id,
 			}),
 		])
-		return logsHtml.logs ? highlighter.codeToHtml(logsHtml.logs, { lang: "log", theme: syntaxTheme }) : t`No results.`
+		return logsHtml.logs
+			? highlighter.codeToHtml(logsHtml.logs, {
+					lang: "log",
+					theme: syntaxTheme,
+					decorations: getLogTimestampDecorations(logsHtml.logs),
+				})
+			: t`No results.`
 	} catch (error) {
 		console.error(error)
 		return ""
@@ -318,6 +325,8 @@ function ContainerSheet({
 	activeContainer: RefObject<ContainerRecord | null>
 }) {
 	const [logsDisplay, setLogsDisplay] = useState<string>("")
+	const [showTimestamps, setShowTimestamps] = useState(false)
+	const toggleTimestamps = () => setShowTimestamps((shown) => !shown)
 	const [infoDisplay, setInfoDisplay] = useState<string>("")
 	const [logsFullscreenOpen, setLogsFullscreenOpen] = useState<boolean>(false)
 	const [infoFullscreenOpen, setInfoFullscreenOpen] = useState<boolean>(false)
@@ -376,6 +385,8 @@ function ContainerSheet({
 				name={container.name}
 				onRefresh={refreshLogs}
 				isRefreshing={isRefreshingLogs}
+				showTimestamps={showTimestamps}
+				onToggleTimestamps={toggleTimestamps}
 			/>
 			<InfoFullscreenDialog
 				open={infoFullscreenOpen}
@@ -410,11 +421,12 @@ function ContainerSheet({
 					<div className="px-3 pb-3 -mt-4 flex flex-col gap-3 h-full items-start">
 						<div className="flex items-center w-full">
 							<h3>{t`Logs`}</h3>
+							<LogsTimestampToggle showTimestamps={showTimestamps} onToggle={toggleTimestamps} className="ms-auto" />
 							<Button
 								variant="ghost"
 								size="sm"
 								onClick={refreshLogs}
-								className="h-8 w-8 p-0 ms-auto"
+								className="h-8 w-8 p-0"
 								disabled={isRefreshingLogs}
 							>
 								<RefreshCwIcon
@@ -425,7 +437,7 @@ function ContainerSheet({
 								<MaximizeIcon className="size-4" />
 							</Button>
 						</div>
-						<LogsDisplay logsDisplay={logsDisplay} containerRef={logsContainerRef} />
+						<LogsDisplay logsDisplay={logsDisplay} containerRef={logsContainerRef} showTimestamps={showTimestamps} />
 						<div className="flex items-center w-full">
 							<h3>{t`Detail`}</h3>
 							<Button
