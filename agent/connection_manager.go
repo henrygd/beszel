@@ -15,7 +15,6 @@ import (
 	"github.com/gliderlabs/ssh"
 	"github.com/henrygd/beszel/agent/health"
 	"github.com/henrygd/beszel/agent/utils"
-	"github.com/henrygd/beszel/internal/entities/system"
 )
 
 // ConnectionManager manages the connection state and events for the agent.
@@ -33,7 +32,6 @@ type ConnectionManager struct {
 	wsTicker       *time.Ticker         // Ticker for WebSocket connection attempts
 	isConnecting   bool                 // Prevents multiple simultaneous reconnection attempts
 	sshConnections int                  // Authenticated SSH TCP connections, not sessions
-	ConnectionType system.ConnectionType
 }
 
 // ConnectionState represents the current connection state of the agent.
@@ -90,12 +88,6 @@ func (c *ConnectionManager) getState() ConnectionState {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 	return c.State
-}
-
-func (c *ConnectionManager) getConnectionType() system.ConnectionType {
-	c.mu.Lock()
-	defer c.mu.Unlock()
-	return c.ConnectionType
 }
 
 func (c *ConnectionManager) hasSSHConnection() bool {
@@ -304,14 +296,6 @@ func (c *ConnectionManager) handleStateChange(newState ConnectionState) {
 	}
 	previousState := c.State
 	c.State = newState
-	switch newState {
-	case WebSocketConnected:
-		c.ConnectionType = system.ConnectionTypeWebSocket
-	case SSHConnected:
-		c.ConnectionType = system.ConnectionTypeSSH
-	default:
-		c.ConnectionType = system.ConnectionTypeNone
-	}
 	c.mu.Unlock()
 
 	switch newState {

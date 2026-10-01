@@ -538,7 +538,6 @@ func TestWebSocketTakesOverFromSSH(t *testing.T) {
 	}
 	cm.handleEvent(WebSocketConnect)
 	require.Equal(t, WebSocketConnected, cm.getState())
-	assert.Equal(t, system.ConnectionTypeWebSocket, cm.getConnectionType())
 	agent.serverMu.Lock()
 	assert.Nil(t, agent.serverListener, "SSH listener should close once WebSocket takes over")
 	agent.serverMu.Unlock()
