@@ -14,6 +14,7 @@ import (
 	"github.com/henrygd/beszel/agent/battery"
 	"github.com/henrygd/beszel/agent/btrfs"
 	"github.com/henrygd/beszel/agent/utils"
+	"github.com/henrygd/beszel/agent/wifi"
 	"github.com/henrygd/beszel/agent/zfs"
 	"github.com/henrygd/beszel/internal/entities/container"
 	"github.com/henrygd/beszel/internal/entities/system"
@@ -188,11 +189,7 @@ func (a *Agent) getSystemStats(cacheTimeMs uint16) system.Stats {
 	if v, err := mem.VirtualMemory(); err == nil {
 		used, cacheBuff, swapUsed := calculateHostMemoryUsage(v, a.memCalc == "htop")
 		// swap
-		systemStats.Swap = utils.BytesToGigabytes(v.SwapTotal)
-		systemStats.SwapUsed = utils.BytesToGigabytes(swapUsed)
-		if systemStats.Swap > 0 {
-			systemStats.SwapPct = utils.TwoDecimals(systemStats.SwapUsed / systemStats.Swap * 100)
-		}
+		systemStats.Swap, systemStats.SwapUsed, systemStats.SwapPct = calculateSwapUsage(v.SwapTotal, swapUsed)
 		v.Used = used
 		// if a.memCalc == "legacy" {
 		// 	v.Used = v.Total - v.Free - v.Buffers - v.Cached
@@ -270,6 +267,14 @@ func (a *Agent) getSystemStats(cacheTimeMs uint16) system.Stats {
 		}
 	}
 
+	// Wi-Fi collection spawns a process on macOS and dumps the BSS cache on
+	// Linux, so only refresh on the default interval. Real-time requests reuse
+	// the last snapshot.
+	if cacheTimeMs == defaultDataCacheTimeMs {
+		a.systemInfo.WiFi = wifi.Collect()
+	}
+	systemStats.WiFi = wifi.Signals(a.systemInfo.WiFi)
+
 	// update system info
 	a.systemInfo.ConnectionType = a.connectionManager.ConnectionType
 	a.systemInfo.Cpu = systemStats.Cpu
@@ -336,6 +341,16 @@ func readLines(r io.Reader) []string {
 		lines = append(lines, scanner.Text())
 	}
 	return lines
+}
+
+// calculateSwapUsage derives the percentage from bytes before rounding the GiB counters.
+func calculateSwapUsage(total, used uint64) (totalGiB, usedGiB, usedPct float64) {
+	totalGiB = utils.BytesToGigabytes(total)
+	usedGiB = utils.BytesToGigabytes(used)
+	if total > 0 {
+		usedPct = utils.TwoDecimals(float64(used) / float64(total) * 100)
+	}
+	return
 }
 
 // calculateHostMemoryUsage derives counters defensively because /proc/meminfo may

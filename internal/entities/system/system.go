@@ -11,6 +11,14 @@ import (
 	"github.com/henrygd/beszel/internal/entities/systemd"
 )
 
+// WiFi describes a currently connected station interface. Keys in WiFi maps are
+// OS interface identities, not SSIDs. Signal is native dBm only; nil means the
+// OS confirmed association but could not supply RSSI (never convert quality %).
+type WiFi struct {
+	SSID   string   `json:"s,omitempty" cbor:"0,keyasint,omitempty"`
+	Signal *float64 `json:"r,omitempty" cbor:"1,keyasint,omitempty"`
+}
+
 type Stats struct {
 	Cpu            float64             `json:"cpu" cbor:"0,keyasint"`
 	MaxCpu         float64             `json:"cpum,omitempty" cbor:"-"`
@@ -55,7 +63,8 @@ type Stats struct {
 	Batteries         map[string]uint8     `json:"bats,omitempty" cbor:"37,keyasint,omitempty"`
 	ZfsPools          map[string]*ZfsPool  `json:"z,omitempty" cbor:"39,keyasint,omitempty"`  // ZFS pool metrics, keyed by pool name
 	DiskIOTotal       [2]uint64            `json:"diot,omitzero" cbor:"38,keyasint,omitzero"` // [total read bytes, total write bytes] cumulative device counters
-	SwapPct           float64              `json:"sp" cbor:"40,keyasint"`
+	WiFi              map[string]int8      `json:"wf,omitempty" cbor:"40,keyasint,omitempty"` // RSSI dBm keyed by interface; unavailable readings omitted
+	SwapPct           float64              `json:"sp" cbor:"41,keyasint"`
 }
 
 // ZfsPool holds per-pool ZFS metrics for a single collection interval.
@@ -184,7 +193,9 @@ type Info struct {
 	Battery        Battery            `json:"bat,omitzero" cbor:"23,keyasint,omitzero"`   // [percent, charge state]
 	RootDiskName   string             `json:"rdn,omitempty" cbor:"24,keyasint,omitempty"` // custom name for root disk (set via FILESYSTEM=device__name)
 	PackageUpdates []uint16           `json:"pu,omitempty" cbor:"25,keyasint,omitempty"`  // [totalUpdates, securityUpdates] (security omitted if unknown)
-	SwapPct        float64            `json:"sp" cbor:"26,keyasint"`
+	WiFi           map[string]WiFi    `json:"wf,omitempty" cbor:"26,keyasint,omitempty"`  // connected Wi-Fi interfaces
+	SystemdLogs    bool               `json:"jl,omitempty" cbor:"27,keyasint,omitempty"`  // agent can read the system journal
+	SwapPct        float64            `json:"sp" cbor:"28,keyasint"`
 }
 
 // Data that does not change during process lifetime and is not needed in All Systems table

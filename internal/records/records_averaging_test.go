@@ -14,6 +14,22 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+func TestAverageSystemStatsSlice_SwapPercentage(t *testing.T) {
+	for _, tt := range []struct {
+		name     string
+		records  []system.Stats
+		expected float64
+	}{
+		{name: "no swap", records: []system.Stats{{}, {}}},
+		{name: "zero is a sample", records: []system.Stats{{SwapPct: 0}, {SwapPct: 100}}, expected: 50},
+		{name: "rounded average", records: []system.Stats{{SwapPct: 1.11}, {SwapPct: 2.22}}, expected: 1.67},
+	} {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.Equal(t, tt.expected, records.AverageSystemStatsSlice(tt.records).SwapPct)
+		})
+	}
+}
+
 func TestAverageSystemStatsSlice_Empty(t *testing.T) {
 	result := records.AverageSystemStatsSlice(nil)
 	assert.Equal(t, system.Stats{}, result)

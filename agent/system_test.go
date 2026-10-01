@@ -88,6 +88,33 @@ func TestCalculateHostMemoryUsage(t *testing.T) {
 	}
 }
 
+func TestCalculateSwapUsage(t *testing.T) {
+	const GiB = uint64(1 << 30)
+	tests := []struct {
+		name        string
+		total, used uint64
+		totalGiB    float64
+		usedGiB     float64
+		usedPct     float64
+	}{
+		{name: "no swap"},
+		{name: "unused", total: GiB, totalGiB: 1},
+		{name: "partial", total: 2 * GiB, used: GiB / 2, totalGiB: 2, usedGiB: 0.5, usedPct: 25},
+		{name: "full", total: GiB, used: GiB, totalGiB: 1, usedGiB: 1, usedPct: 100},
+		{name: "small swap below GiB rounding", total: 1 << 20, used: 1 << 19, usedPct: 50},
+		{name: "small usage below GiB rounding", total: GiB, used: 1 << 20, totalGiB: 1, usedPct: 0.1},
+		{name: "percentage rounding", total: 3 * GiB, used: GiB, totalGiB: 3, usedGiB: 1, usedPct: 33.33},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			totalGiB, usedGiB, usedPct := calculateSwapUsage(tt.total, tt.used)
+			assert.Equal(t, tt.totalGiB, totalGiB)
+			assert.Equal(t, tt.usedGiB, usedGiB)
+			assert.Equal(t, tt.usedPct, usedPct)
+		})
+	}
+}
+
 func TestUpdateSystemDetailsMarksDetailsDirty(t *testing.T) {
 	agent := &Agent{}
 
