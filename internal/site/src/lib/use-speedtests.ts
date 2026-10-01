@@ -1,11 +1,10 @@
 import { chartTimeData } from "@/lib/utils"
 import type { ChartTimes, SpeedtestRecord, SpeedtestStatsRecord } from "@/types"
 import { useEffect, useMemo, useRef, useState } from "react"
-import { appendData } from "@/components/routes/system/chart-data"
 import { pb, getPbTimestamp } from "@/lib/api"
 import { toast } from "@/components/ui/use-toast"
 import { applyMonitorEvents } from "@/lib/use-network-monitors"
-import { mergeSpeedtestCompareStats } from "@/lib/speedtest-compare"
+import { mergeSpeedtestRuns } from "@/lib/speedtest-compare"
 import type { RecordListOptions, RecordSubscription } from "pocketbase"
 
 const SPEEDTEST_FIELDS =
@@ -102,102 +101,6 @@ export function useSpeedtests({ systemId }: { systemId?: string }) {
 	return { speedtests, isLoading }
 }
 
-const statsCache = new Map<string, SpeedtestStatsRecord[]>()
-
-/** Load the runs of one speedtest within the chart time range, and append new runs in realtime. */
-export function useSpeedtestStats({
-	speedtest,
-	chartTime,
-	enabled = true,
-}: {
-	speedtest: Pick<SpeedtestRecord, "id" | "interval">
-	chartTime: ChartTimes
-	enabled?: boolean
-}) {
-	const { id, interval } = speedtest
-	const cacheKey = `${id}:${chartTime}`
-	const [stats, setStats] = useState<SpeedtestStatsRecord[]>(() => statsCache.get(cacheKey) ?? [])
-	// Missing more than one run leaves a gap in the charts.
-	const expectedInterval = interval * 60_000
-
-	useEffect(() => {
-		if (!enabled) {
-			return
-		}
-		let cancelled = false
-		let unsubscribe: (() => void) | undefined
-		const cached = statsCache.get(cacheKey) ?? []
-		setStats(cached)
-
-		const append = (newStats: SpeedtestStatsRecord[]) => {
-			const lastCreated = (statsCache.get(cacheKey)?.at(-1)?.created as number | undefined) ?? 0
-			const fresh = newStats.filter((record) => (record.created ?? 0) > lastCreated)
-			if (!fresh.length) return
-			// Drop runs that have fallen out of the selected time range.
-			const cutoff = chartTimeData[chartTime].getOffset(new Date()).getTime()
-			const kept = (statsCache.get(cacheKey) ?? []).filter(
-				(record) => record.created === null || record.created > cutoff
-			)
-			while (kept[0]?.created === null) kept.shift()
-			const updated = appendData(kept, fresh, expectedInterval)
-			statsCache.set(cacheKey, updated)
-			setStats(updated)
-		}
-
-		const lastCached = cached.at(-1)?.created
-		pb.collection<SpeedtestStatsRecord>("speedtest_stats")
-			.getFullList({
-				filter: pb.filter("speedtest={:id} && created>{:created}", {
-					id,
-					created: lastCached ?? getPbTimestamp(chartTime, undefined, true),
-				}),
-				fields: SPEEDTEST_STATS_FIELDS,
-				sort: "created",
-			})
-			.then((records) => {
-				if (!cancelled) append(records)
-			})
-			.catch((error) => {
-				if (!cancelled) console.error("Failed to fetch speedtest stats:", error)
-			})
-
-		;(async () => {
-			try {
-				unsubscribe = await pb.collection<SpeedtestStatsRecord>("speedtest_stats").subscribe(
-					"*",
-					(event) => {
-						if (!cancelled && event.action === "create") append([event.record])
-					},
-					{ fields: SPEEDTEST_STATS_FIELDS, filter: pb.filter("speedtest={:id}", { id }) }
-				)
-				if (cancelled) unsubscribe()
-			} catch (error) {
-				console.error("Failed to subscribe to speedtest stats:", error)
-			}
-		})()
-
-		return () => {
-			cancelled = true
-			unsubscribe?.()
-		}
-	}, [id, chartTime, cacheKey, expectedInterval, enabled])
-
-	// Strip failed runs down to their time and error, so the lines break there while the
-	// tooltip can still name the failure, and collect their times for the charts to mark.
-	// Done here rather than in the cache, which relies on the last run's timestamp to skip
-	// runs it already has.
-	return useMemo(() => {
-		const failures: number[] = []
-		const records = stats.map((record) => {
-			if (!record.error) return record
-			const created = record.created as number
-			failures.push(created)
-			return { created, error: record.error } as SpeedtestStatsRecord
-		})
-		return { stats: records, failures }
-	}, [stats])
-}
-
 /** Only what comparison charts and labels need. */
 const COMPARE_SPEEDTEST_FIELDS = "id,system,server_id,server_name,server_location,interface,interval"
 
@@ -231,17 +134,20 @@ export function useCompareSpeedtests(system: string, enabled = true) {
 	return result.system === system ? result.speedtests : []
 }
 
-/** Load the runs of several speedtests within the chart time range, and append new runs in realtime. */
-export function useSpeedtestCompareStats({
-	speedtestIds,
+/**
+ * Load the runs of one or more speedtests within the chart time range, append new runs in realtime,
+ * and merge them for the charts (see mergeSpeedtestRuns).
+ */
+export function useSpeedtestStats({
+	speedtests,
 	chartTime,
 	enabled = true,
 }: {
-	speedtestIds: string[]
+	speedtests: Pick<SpeedtestRecord, "id" | "interval">[]
 	chartTime: ChartTimes
 	enabled?: boolean
 }) {
-	const key = `${chartTime}:${speedtestIds.join(",")}`
+	const key = `${chartTime}:${speedtests.map((s) => s.id).join(",")}`
 	const [result, setResult] = useState<{ key: string; runs: SpeedtestStatsRecord[] }>({ key, runs: [] })
 
 	useEffect(() => {
@@ -262,10 +168,11 @@ export function useSpeedtestCompareStats({
 				sort: "created",
 			})
 			.then((runs) => {
+				// Runs that arrived in realtime during the fetch are kept; merging drops duplicates.
 				if (!cancelled) setResult((prev) => ({ key, runs: prev.key === key ? [...runs, ...prev.runs] : runs }))
 			})
 			.catch((error) => {
-				if (!cancelled) console.error("Failed to fetch speedtest compare stats:", error)
+				if (!cancelled) console.error("Failed to fetch speedtest stats:", error)
 			})
 
 		;(async () => {
@@ -274,13 +181,18 @@ export function useSpeedtestCompareStats({
 					"*",
 					(event) => {
 						if (cancelled || event.action !== "create") return
-						setResult((prev) => ({ key, runs: prev.key === key ? [...prev.runs, event.record] : [event.record] }))
+						// Drop runs that have fallen out of the selected time range.
+						const cutoff = chartTimeData[chartTime].getOffset(new Date()).getTime()
+						setResult((prev) => {
+							const kept = prev.key === key ? prev.runs.filter((run) => (run.created ?? 0) > cutoff) : []
+							return { key, runs: [...kept, event.record] }
+						})
 					},
 					{ fields: SPEEDTEST_STATS_FIELDS, filter: pb.filter(idsFilter, params) }
 				)
 				if (cancelled) unsubscribe()
 			} catch (error) {
-				console.error("Failed to subscribe to speedtest compare stats:", error)
+				console.error("Failed to subscribe to speedtest stats:", error)
 			}
 		})()
 
@@ -290,6 +202,7 @@ export function useSpeedtestCompareStats({
 		}
 	}, [key, chartTime, enabled])
 
+	const intervals = useMemo(() => new Map(speedtests.map((s) => [s.id, s.interval * 60_000])), [speedtests])
 	const runs = result.key === key ? result.runs : []
-	return useMemo(() => mergeSpeedtestCompareStats(runs), [runs])
+	return useMemo(() => mergeSpeedtestRuns(runs, intervals), [runs, intervals])
 }

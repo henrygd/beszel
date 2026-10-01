@@ -57,23 +57,10 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet"
 import ChartTimeSelect from "@/components/charts/chart-time-select"
-import {
-	SpeedtestCompareDownloadChart,
-	SpeedtestCompareDownloadLatencyChart,
-	SpeedtestCompareLossChart,
-	SpeedtestComparePingChart,
-	SpeedtestCompareUploadChart,
-	SpeedtestCompareUploadLatencyChart,
-	SpeedtestDownloadChart,
-	SpeedtestDownloadLatencyChart,
-	SpeedtestLatencyChart,
-	SpeedtestLossChart,
-	SpeedtestUploadChart,
-	SpeedtestUploadLatencyChart,
-} from "@/components/routes/system/charts/speedtest-charts"
+import { SpeedtestCharts } from "@/components/routes/system/charts/speedtest-charts"
 import { MultiSelect, SystemMultiSelect } from "@/components/network-monitors-table/monitor-dialog"
 import { getSpeedtestCompareState } from "@/lib/speedtest-compare"
-import { useCompareSpeedtests, useSpeedtestCompareStats, useSpeedtestStats } from "@/lib/use-speedtests"
+import { useCompareSpeedtests, useSpeedtestStats } from "@/lib/use-speedtests"
 import { formatSpeedtestInterval, getSpeedtestServerLabel } from "@/lib/speedtest-utils"
 import { useStore } from "@nanostores/react"
 import { atom, subscribeKeys } from "nanostores"
@@ -571,12 +558,7 @@ function SpeedtestSheet({
 			}),
 		[speedtest, speedtests, includesAllSystems, fetchedSpeedtests, compareSystemIds, compareServerIds, systems]
 	)
-	const { compareSpeedtests } = compare
-	const comparing = compareSpeedtests.length > 1
-	const compareIds = useMemo(() => compareSpeedtests.map((s) => s.id), [compareSpeedtests])
-
-	const { stats, failures } = useSpeedtestStats({ speedtest, chartTime, enabled: open && !comparing })
-	const compareStats = useSpeedtestCompareStats({ speedtestIds: compareIds, chartTime, enabled: open && comparing })
+	const stats = useSpeedtestStats({ speedtests: compare.compareSpeedtests, chartTime, enabled: open })
 
 	const chartData = useMemo<ChartData>(
 		() => ({
@@ -588,17 +570,7 @@ function SpeedtestSheet({
 		}),
 		[system?.info?.v, direction, chartTime]
 	)
-	// A range where every run failed still shows, with each failure marked.
-	const empty = comparing ? compareStats.length === 0 : !stats.some((record) => record.created !== null)
 	const serverLabel = getSpeedtestServerLabel(speedtest) || t`Automatic`
-	const compareProps = {
-		compareStats,
-		speedtests: compareSpeedtests,
-		getLabel: compare.getLabel,
-		chartData,
-		empty,
-		filterStore: compareFilterStore,
-	}
 
 	return (
 		<Sheet open={open} onOpenChange={onOpenChange}>
@@ -662,25 +634,15 @@ function SpeedtestSheet({
 							placeholder={t`Compare with other systems`}
 						/>
 					</div>
-					{comparing ? (
-						<>
-							<SpeedtestCompareDownloadChart {...compareProps} />
-							<SpeedtestCompareUploadChart {...compareProps} />
-							<SpeedtestComparePingChart {...compareProps} />
-							<SpeedtestCompareDownloadLatencyChart {...compareProps} />
-							<SpeedtestCompareUploadLatencyChart {...compareProps} />
-							<SpeedtestCompareLossChart {...compareProps} />
-						</>
-					) : (
-						<>
-							<SpeedtestDownloadChart stats={stats} failures={failures} chartData={chartData} empty={empty} />
-							<SpeedtestUploadChart stats={stats} failures={failures} chartData={chartData} empty={empty} />
-							<SpeedtestLatencyChart stats={stats} failures={failures} chartData={chartData} empty={empty} />
-							<SpeedtestDownloadLatencyChart stats={stats} failures={failures} chartData={chartData} empty={empty} />
-							<SpeedtestUploadLatencyChart stats={stats} failures={failures} chartData={chartData} empty={empty} />
-							<SpeedtestLossChart stats={stats} failures={failures} chartData={chartData} empty={empty} />
-						</>
-					)}
+					{/* A range where every run failed still shows, with each failure marked. */}
+					<SpeedtestCharts
+						stats={stats}
+						speedtests={compare.compareSpeedtests}
+						getLabel={compare.getLabel}
+						chartData={chartData}
+						empty={stats.length === 0}
+						filterStore={compareFilterStore}
+					/>
 				</div>
 			</SheetContent>
 		</Sheet>

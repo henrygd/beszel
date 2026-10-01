@@ -1,6 +1,6 @@
 import { expect, test } from "bun:test"
 import type { SpeedtestRecord, SpeedtestStatsRecord } from "@/types"
-import { getSpeedtestCompareState, MAX_COMPARE_SPEEDTESTS, mergeSpeedtestCompareStats } from "./speedtest-compare"
+import { getSpeedtestCompareState, MAX_COMPARE_SPEEDTESTS, mergeSpeedtestRuns } from "./speedtest-compare"
 
 function st(id: string, system: string, server_id: number) {
 	return {
@@ -108,7 +108,7 @@ test("caps the number of charted speedtests", () => {
 test("merges runs by time and keeps failed runs apart", () => {
 	const run = (speedtest: string, created: number, error = "") =>
 		({ speedtest, created, error, download: created }) as SpeedtestStatsRecord
-	const merged = mergeSpeedtestCompareStats([run("a", 2), run("b", 1), run("b", 2, "timeout"), run("a", 3, "failed")])
+	const merged = mergeSpeedtestRuns([run("a", 2), run("b", 1), run("b", 2, "timeout"), run("a", 3, "failed")])
 	expect(merged.map((r) => r.created)).toEqual([1, 2, 3])
 	expect(Object.keys(merged[1].stats)).toEqual(["a"])
 	expect(merged[1].failures).toEqual({ b: "timeout" })
@@ -120,7 +120,7 @@ test("merges runs by time and keeps failed runs apart", () => {
 test("starts a new segment after each failed run", () => {
 	const run = (speedtest: string, created: number, error = "") =>
 		({ speedtest, created, error, download: created }) as SpeedtestStatsRecord
-	const merged = mergeSpeedtestCompareStats([
+	const merged = mergeSpeedtestRuns([
 		run("a", 1),
 		run("b", 2),
 		run("a", 3, "failed"),
@@ -133,4 +133,12 @@ test("starts a new segment after each failed run", () => {
 	const segmentsOf = (id: string) => merged.filter((r) => r.stats[id]).map((r) => r.segments[id])
 	expect(segmentsOf("a")).toEqual([0, 1, 3])
 	expect(segmentsOf("b")).toEqual([0, 0])
+})
+
+test("starts a new segment after a missed run", () => {
+	const run = (speedtest: string, created: number) =>
+		({ speedtest, created, error: "", download: created }) as SpeedtestStatsRecord
+	// Interval of 10: gaps of 10 and 15 stay within 1.5 intervals, a gap of 25 does not.
+	const merged = mergeSpeedtestRuns([run("a", 1), run("a", 11), run("a", 26), run("a", 51)], new Map([["a", 10]]))
+	expect(merged.map((r) => r.segments.a)).toEqual([0, 0, 0, 1])
 })

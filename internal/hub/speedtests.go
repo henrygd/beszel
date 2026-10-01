@@ -58,7 +58,7 @@ func bindSpeedtestsEvents(hub *Hub) {
 		}
 		// Paused systems may be absent from the manager; their speedtests sync when they reconnect.
 		system, err := hub.sm.GetSystem(e.Record.GetString("system"))
-		if err == nil && system.Status == "up" {
+		if err == nil && system.GetStatus() == "up" {
 			go func() {
 				if err := hub.upsertSpeedtest(e.Record, true); err != nil {
 					hub.Logger().Warn("failed to sync new speedtest", "system", system.Id, "speedtest", e.Record.Id, "err", err)
@@ -79,12 +79,7 @@ func bindSpeedtestsEvents(hub *Hub) {
 			if speedtestExists(e.App, ID) {
 				return e.BadRequestError(errDuplicateSpeedtest, nil)
 			}
-			newRecord := core.NewRecord(e.Record.Collection())
-			newRecord.Id = ID
-			for _, field := range []string{"system", "server_id", "server_name", "server_location", "interface", "interval", "enabled"} {
-				newRecord.Set(field, e.Record.Get(field))
-			}
-			if err := e.App.Save(newRecord); err != nil {
+			if err := e.App.Save(copySpeedtestToNewRecord(e.Record, ID)); err != nil {
 				return err
 			}
 			return e.App.Delete(e.Record)
@@ -124,6 +119,17 @@ func speedtestConfigFromRecord(record *core.Record) speedtest.Config {
 	}
 }
 
+// copySpeedtestToNewRecord creates a new record with the old record's settings. It is
+// used when the server or interface changes, since those are part of the record ID.
+func copySpeedtestToNewRecord(oldRecord *core.Record, newID string) *core.Record {
+	newRecord := core.NewRecord(oldRecord.Collection())
+	newRecord.Id = newID
+	for _, field := range []string{"system", "server_id", "server_name", "server_location", "interface", "interval", "enabled"} {
+		newRecord.Set(field, oldRecord.Get(field))
+	}
+	return newRecord
+}
+
 // upsertSpeedtest creates or updates the record's speedtest on its system's agent.
 func (h *Hub) upsertSpeedtest(record *core.Record, runNow bool) error {
 	system, err := h.sm.GetSystem(record.GetString("system"))
@@ -152,7 +158,7 @@ func (h *Hub) runSpeedtest(e *core.RequestEvent) error {
 	if !record.GetBool("enabled") {
 		return e.BadRequestError("Speedtest is paused.", nil)
 	}
-	if system.Status != "up" {
+	if system.GetStatus() != "up" {
 		return e.BadRequestError("System is not connected.", nil)
 	}
 	if err := h.upsertSpeedtest(record, true); err != nil {

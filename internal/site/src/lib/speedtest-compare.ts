@@ -76,26 +76,32 @@ export function getSpeedtestCompareState({
 	}
 }
 
-/** Runs of several speedtests, keyed by speedtest ID, for charting them side by side. */
-export interface SpeedtestCompareRecord {
+/** Runs of one or more speedtests at one time, keyed by speedtest ID, for charting them together. */
+export interface SpeedtestChartRecord {
 	created: number
 	stats: Record<string, SpeedtestStatsRecord>
 	/** Errors of the runs that failed at this time, keyed by speedtest ID */
 	failures?: Record<string, string>
 	/**
 	 * Segment of each run, keyed by speedtest ID. A speedtest's segment number goes up after each
-	 * of its failed runs, so charts can join runs within a segment and break the line between them.
+	 * failed or missed run, so charts can join runs within a segment and break the line between them.
 	 */
 	segments: Record<string, number>
 }
 
 /**
- * Groups runs by time for comparison charts. Speedtests rarely run at the same moment, so most
+ * Groups runs by time for the speedtest charts. Speedtests rarely run at the same moment, so most
  * records hold one run; the charts connect each speedtest's runs across the others'. Failed runs
  * have no measurements, so they are kept apart as failures for the charts to mark.
+ *
+ * A failed run, or a gap of more than 1.5 intervals since the speedtest's previous run (as in
+ * appendData), starts a new segment. Intervals are in milliseconds, keyed by speedtest ID.
  */
-export function mergeSpeedtestCompareStats(runs: SpeedtestStatsRecord[]): SpeedtestCompareRecord[] {
-	const byCreated = new Map<number, SpeedtestCompareRecord>()
+export function mergeSpeedtestRuns(
+	runs: SpeedtestStatsRecord[],
+	intervals: Map<string, number> = new Map()
+): SpeedtestChartRecord[] {
+	const byCreated = new Map<number, SpeedtestChartRecord>()
 	for (const run of runs) {
 		if (run.created === null) continue
 		const record = byCreated.get(run.created) ?? { created: run.created, stats: {}, segments: {} }
@@ -108,12 +114,19 @@ export function mergeSpeedtestCompareStats(runs: SpeedtestStatsRecord[]): Speedt
 	}
 	const records = [...byCreated.values()].sort((a, b) => a.created - b.created)
 	const segment: Record<string, number> = {}
+	const lastRun: Record<string, number> = {}
 	for (const record of records) {
 		for (const id in record.stats) {
+			const interval = intervals.get(id)
+			if (interval && lastRun[id] && record.created - lastRun[id] > interval * 1.5) {
+				segment[id] = (segment[id] ?? 0) + 1
+			}
 			record.segments[id] = segment[id] ?? 0
+			lastRun[id] = record.created
 		}
 		for (const id in record.failures) {
 			segment[id] = (segment[id] ?? 0) + 1
+			lastRun[id] = record.created
 		}
 	}
 	return records

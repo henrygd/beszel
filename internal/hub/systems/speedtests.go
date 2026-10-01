@@ -2,6 +2,7 @@ package systems
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/henrygd/beszel"
@@ -32,15 +33,19 @@ func (sys *System) syncPendingSpeedtests() {
 	if !sys.speedtestsNeedSync.Swap(false) {
 		return
 	}
-	configs, err := sys.manager.GetSpeedtestConfigsForSystem(sys.Id)
-	if err == nil {
-		// An empty set must also replace speedtests retained across a disconnect.
-		err = sys.SyncSpeedtests(configs)
-	}
-	if err != nil {
+	if err := sys.syncAllSpeedtests(); err != nil {
 		sys.speedtestsNeedSync.Store(true)
 		sys.manager.hub.Logger().Warn("failed to sync speedtests to agent", "system", sys.Id, "err", err)
 	}
+}
+
+func (sys *System) syncAllSpeedtests() error {
+	configs, err := sys.manager.GetSpeedtestConfigsForSystem(sys.Id)
+	if err != nil {
+		return fmt.Errorf("failed to load speedtests: %w", err)
+	}
+	// An empty set must also replace speedtests retained across a disconnect.
+	return sys.SyncSpeedtests(configs)
 }
 
 // SyncSpeedtests replaces all speedtests on the agent with the given configs.
@@ -71,20 +76,11 @@ func (sys *System) syncSpeedtests(req speedtest.SyncRequest) error {
 
 // GetSpeedtestConfigsForSystem returns all enabled speedtest configs for a system.
 func (sm *SystemManager) GetSpeedtestConfigsForSystem(systemID string) ([]speedtest.Config, error) {
-	var rows []struct {
-		ID        string `db:"id"`
-		ServerID  uint32 `db:"server_id"`
-		Interval  uint32 `db:"interval"`
-		Interface string `db:"interface"`
-	}
+	var configs []speedtest.Config
 	err := sm.hub.DB().
 		NewQuery("SELECT id, server_id, interval, interface FROM speedtests WHERE system = {:system} AND enabled = true").
 		Bind(dbx.Params{"system": systemID}).
-		All(&rows)
-	configs := make([]speedtest.Config, len(rows))
-	for i, row := range rows {
-		configs[i] = speedtest.Config{ID: row.ID, ServerID: row.ServerID, Interval: row.Interval, Interface: row.Interface}
-	}
+		All(&configs)
 	return configs, err
 }
 

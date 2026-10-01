@@ -81,24 +81,16 @@ func (sm *SpeedtestManager) SyncSpeedtests(configs []speedtest.Config) {
 			newConfigs[cfg.ID] = cfg
 		}
 	}
-	for id, task := range sm.tasks {
+	for id := range sm.tasks {
 		if _, exists := newConfigs[id]; !exists {
-			slog.Debug("stopping speedtest task", "id", id)
-			task.cancel()
-			delete(sm.tasks, id)
+			sm.stopTask(id)
 		}
 	}
 	for id, cfg := range newConfigs {
-		existing, exists := sm.tasks[id]
-		if exists && existing.config == cfg {
+		if existing, exists := sm.tasks[id]; exists && existing.config == cfg {
 			continue
 		}
-		if exists {
-			existing.cancel()
-		}
-		task := newSpeedtestTask(cfg, existing)
-		sm.tasks[id] = task
-		sm.schedule(task, false)
+		sm.schedule(sm.replaceTask(cfg), false)
 	}
 }
 
@@ -110,19 +102,13 @@ func (sm *SpeedtestManager) UpsertSpeedtest(config speedtest.Config, runNow bool
 	}
 	sm.mu.Lock()
 	defer sm.mu.Unlock()
-	existing, exists := sm.tasks[config.ID]
-	if exists && existing.config == config {
+	if existing, exists := sm.tasks[config.ID]; exists && existing.config == config {
 		if runNow {
 			go sm.run(existing)
 		}
 		return nil
 	}
-	if exists {
-		existing.cancel()
-	}
-	task := newSpeedtestTask(config, existing)
-	sm.tasks[config.ID] = task
-	sm.schedule(task, runNow)
+	sm.schedule(sm.replaceTask(config), runNow)
 	return nil
 }
 
@@ -130,11 +116,7 @@ func (sm *SpeedtestManager) UpsertSpeedtest(config speedtest.Config, runNow bool
 func (sm *SpeedtestManager) DeleteSpeedtest(id string) {
 	sm.mu.Lock()
 	defer sm.mu.Unlock()
-	if task, exists := sm.tasks[id]; exists {
-		slog.Debug("stopping speedtest task", "id", id)
-		task.cancel()
-		delete(sm.tasks, id)
-	}
+	sm.stopTask(id)
 }
 
 // GetResults returns the latest result of each speedtest that has run, or nil if none have.
@@ -159,7 +141,28 @@ func (sm *SpeedtestManager) GetResults() map[string]speedtest.Result {
 func (sm *SpeedtestManager) Stop() {
 	sm.mu.Lock()
 	defer sm.mu.Unlock()
-	for id, task := range sm.tasks {
+	for id := range sm.tasks {
+		sm.stopTask(id)
+	}
+}
+
+// replaceTask stops any existing task for the config's speedtest and stores a
+// new one that keeps its latest result. The caller must hold sm.mu and schedule
+// the returned task.
+func (sm *SpeedtestManager) replaceTask(config speedtest.Config) *speedtestTask {
+	existing := sm.tasks[config.ID]
+	if existing != nil {
+		existing.cancel()
+	}
+	task := newSpeedtestTask(config, existing)
+	sm.tasks[config.ID] = task
+	return task
+}
+
+// stopTask stops and removes a task, including any run in progress. The caller must hold sm.mu.
+func (sm *SpeedtestManager) stopTask(id string) {
+	if task, exists := sm.tasks[id]; exists {
+		slog.Debug("stopping speedtest task", "id", id)
 		task.cancel()
 		delete(sm.tasks, id)
 	}
