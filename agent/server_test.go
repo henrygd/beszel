@@ -335,15 +335,23 @@ func TestSSHConnectionFallbackLifecycle(t *testing.T) {
 	case <-time.After(5 * time.Second):
 		t.Fatal("agent did not retry WebSocket after SSH disconnected")
 	}
-	agent.serverMu.Lock()
-	assert.Nil(t, agent.serverListener, "SSH listener should close before the next WS-first cycle")
-	agent.serverMu.Unlock()
-	release()
-	require.Eventually(t, func() bool {
+	// The hub may redial straight away, so the listener must stay open while
+	// the WebSocket attempt is pending and after it fails.
+	requireSameListener := func(msg string) {
 		agent.serverMu.Lock()
 		defer agent.serverMu.Unlock()
-		return agent.serverListener != nil
-	}, 5*time.Second, 10*time.Millisecond, "SSH should reopen after the WebSocket attempt fails")
+		require.NotNil(t, agent.serverListener, msg)
+		assert.Equal(t, addr, agent.serverListener.Addr().String(), msg)
+	}
+	requireSameListener("SSH listener should stay open during the WebSocket attempt")
+	thirdClient, err := gossh.Dial("tcp", addr, clientConfig)
+	require.NoError(t, err, "SSH should accept a redial during the WebSocket attempt")
+	require.NoError(t, thirdClient.Close())
+	release()
+	require.Eventually(t, func() bool {
+		return !cm.isConnectingNow()
+	}, 5*time.Second, 10*time.Millisecond, "reconnect attempt did not finish")
+	requireSameListener("SSH listener should stay open after the WebSocket attempt fails")
 	cm.stopWsTicker()
 }
 
@@ -491,8 +499,8 @@ func handleNextSSHChange(t *testing.T, cm *ConnectionManager) {
 	}
 }
 
-// Without a WebSocket client there is no WS-first cycle to run, so losing the
-// hub's SSH connection must leave the listener in place for it to reconnect.
+// An agent without a WebSocket client only has SSH, so losing the hub's SSH
+// connection must leave the listener in place for it to reconnect.
 func TestSSHDisconnectKeepsListenerWithoutWebSocket(t *testing.T) {
 	agent, addr, clientConfig := startSSHFallbackServer(t)
 	cm := agent.connectionManager

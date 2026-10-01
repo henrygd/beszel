@@ -294,7 +294,6 @@ func (c *ConnectionManager) handleStateChange(newState ConnectionState) {
 		c.mu.Unlock()
 		return
 	}
-	previousState := c.State
 	c.State = newState
 	c.mu.Unlock()
 
@@ -308,16 +307,10 @@ func (c *ConnectionManager) handleStateChange(newState ConnectionState) {
 		slog.Info("SSH connection established")
 		c.stopWsTicker()
 	case Disconnected:
-		if previousState == SSHConnected {
-			// The last SSH TCP connection is gone. Start a fresh WS-first cycle;
-			// open the SSH listener again only if WS cannot connect. Without a
-			// WebSocket client there is nothing to try first, so keep listening.
-			if c.wsClient != nil {
-				_ = c.agent.StopServer()
-			}
-		} else if previousState == WebSocketConnected {
-			c.startSSHServer()
-		}
+		// Listen for SSH whenever disconnected so the hub can fall back to it
+		// or redial straight away. WebSocket is still tried first below and
+		// stops the server if it connects.
+		c.startSSHServer()
 		// Always keep the ticker running while disconnected. A pending WebSocket
 		// handshake started by connect() can fail asynchronously (e.g. the hub
 		// closes the socket, or the deadline set in OnOpen expires) after
