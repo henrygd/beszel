@@ -8,7 +8,7 @@ msgstr ""
 "Language: uk\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2026-10-01 02:41\n"
+"PO-Revision-Date: 2026-10-01 17:09\n"
 "Last-Translator: \n"
 "Language-Team: Ukrainian\n"
 "Plural-Forms: nplurals=4; plural=((n%10==1 && n%100!=11) ? 0 : ((n%10 >= 2 && n%10 <=4 && (n%100 < 12 || n%100 > 14)) ? 1 : ((n%10 == 0 || (n%10 >= 5 && n%10 <=9)) || (n%100 >= 11 && n%100 <= 14)) ? 2 : 3));\n"
@@ -54,7 +54,12 @@ msgstr "{count, plural, one {{countString} хвилина} few {{countString} х
 
 #: src/components/network-monitors-table/network-monitors-columns.tsx
 msgid "{daysLeft, plural, one {# day} other {# days}}"
-msgstr ""
+msgstr "{daysLeft, plural,\n"
+"    one {# день}\n"
+"    few {# дні}\n"
+"    many {# днів}\n"
+"    other {# дня}\n"
+"}"
 
 #: src/components/routes/system/charts/disk-charts.tsx
 msgid "{diskName} I/O"
@@ -62,7 +67,12 @@ msgstr "Ввід/вивід {diskName}"
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "{numFailed, plural, one {# failed service} other {# failed services}}"
-msgstr ""
+msgstr "{numFailed, plural,\n"
+"    one {# служба з помилкою}\n"
+"    few {# служби з помилками}\n"
+"    many {# служб з помилками}\n"
+"    other {# служби з помилкою}\n"
+"}"
 
 #: src/components/routes/system/info-bar.tsx
 msgid "{threads, plural, one {# thread} other {# threads}}"
@@ -70,7 +80,12 @@ msgstr "{threads, plural, one {# потік} few {# потоки} many {# пот
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "{totalCount, plural, one {# service} other {# services}}"
-msgstr ""
+msgstr "{totalCount, plural,\n"
+"    one {# служба}\n"
+"    few {# служби}\n"
+"    many {# служб}\n"
+"    other {# служби}\n"
+"}"
 
 #: src/lib/utils.ts
 msgid "1 hour"
@@ -137,7 +152,7 @@ msgstr "Активний стан"
 
 #: src/components/network-monitors-table/monitor-dialog.tsx
 msgid "Add"
-msgstr ""
+msgstr "Додати"
 
 #: src/components/network-monitors-table/monitor-dialog.tsx
 #: src/components/network-monitors-table/monitor-dialog.tsx
@@ -406,15 +421,15 @@ msgstr "Цельсій (°C)"
 #: src/components/network-monitors-table/network-monitors-columns.tsx
 #: src/components/network-monitors-table/network-monitors-columns.tsx
 msgid "Certificate"
-msgstr ""
+msgstr "Сертифікат"
 
 #: src/components/network-monitors-table/network-monitors-table.tsx
 msgid "Certificate expired {expires}"
-msgstr ""
+msgstr "Термін дії сертифіката закінчився {expires}"
 
 #: src/components/network-monitors-table/network-monitors-table.tsx
 msgid "Certificate expires {expires}"
-msgstr ""
+msgstr "Термін дії сертифіката закінчується {expires}"
 
 #: src/components/routes/settings/general.tsx
 msgid "Change display units for metrics."
@@ -905,7 +920,7 @@ msgstr "Завершилося активно"
 
 #: src/components/network-monitors-table/network-monitors-columns.tsx
 msgid "Expired"
-msgstr ""
+msgstr "Термін дії закінчився"
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Expires after one hour or on hub restart."
@@ -933,7 +948,7 @@ msgstr "Невдалі атрибути:"
 
 #: src/lib/alerts.ts
 msgid "Failed Services"
-msgstr "Несправні служби"
+msgstr "Служби з помилкою"
 
 #: src/lib/api.ts
 msgid "Failed to authenticate"
@@ -1977,7 +1992,7 @@ msgstr "Ціль"
 #: src/components/network-monitors-table/monitor-dialog.tsx
 #: src/components/network-monitors-table/monitor-dialog.tsx
 msgid "target[,protocol[,port[,interval]]]"
-msgstr ""
+msgstr "target[,protocol[,port[,interval]]]"
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Tasks"
@@ -2362,9 +2377,9 @@ msgstr "Ваші налаштування користувача були оно
 
 #: src/components/logs-display.tsx
 msgid "Show timestamps"
-msgstr ""
+msgstr "Показувати часові мітки"
 
 #: src/components/logs-display.tsx
 msgid "Hide timestamps"
-msgstr ""
+msgstr "Приховувати часові мітки"
 
