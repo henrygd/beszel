@@ -8,7 +8,7 @@ msgstr ""
 "Language: zh\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2026-10-01 02:41\n"
+"PO-Revision-Date: 2026-10-01 15:13\n"
 "Last-Translator: \n"
 "Language-Team: Chinese Simplified\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
@@ -2362,9 +2362,9 @@ msgstr "您的用户设置已更新。"
 
 #: src/components/logs-display.tsx
 msgid "Show timestamps"
-msgstr ""
+msgstr "显示时间戳"
 
 #: src/components/logs-display.tsx
 msgid "Hide timestamps"
-msgstr ""
+msgstr "隐藏时间戳"
 
