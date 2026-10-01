@@ -158,25 +158,18 @@ func readContainerCpuSample() (cgroupCpuSample, bool) {
 
 // readCgroupV2CpuSample reads usage from the unified hierarchy's cpu.stat.
 //
-// The mount root is usually the right cgroup to read: inside a private cgroup
-// namespace (LXC, default Docker) /sys/fs/cgroup already is the container's
-// root cgroup, and its cpu.stat accounts for every process in the container,
-// including siblings of the agent's own service cgroup. When the hierarchy is
-// not namespaced (e.g. docker run --cgroupns=host) /proc/self/cgroup instead
-// holds the container's real host-side path, which is joined onto the mount.
+// The mount root is always the cgroup to read: an LXC guest has a private
+// cgroup namespace, so /sys/fs/cgroup already is the guest's root cgroup, and
+// its cpu.stat accounts for every process in the guest. The agent's own path
+// in /proc/self/cgroup (its service cgroup, or the ".lxc" leaf when started
+// from an attached shell) only covers a subset and must not be descended into.
 func readCgroupV2CpuSample() (cgroupCpuSample, bool) {
-	rel := selfCgroupPath("0::")
-	if rel == "" {
+	if !inCgroupV2() {
 		return cgroupCpuSample{}, false // no v2 membership; try v1
 	}
 	dir := cpuCgroupRoot
 	if mount := cgroupMountPoint("cgroup2", ""); mount != "" {
 		dir = mount
-	}
-	if rel != "/" && hasContainerRuntimeMarker(rel) {
-		if cand := filepath.Join(dir, rel); directoryExistsOK(cand) {
-			dir = cand
-		}
 	}
 	stat := filepath.Join(dir, "cpu.stat")
 	usage, ok := cgroupStatValue(stat, "usage_usec")
@@ -190,20 +183,13 @@ func readCgroupV2CpuSample() (cgroupCpuSample, bool) {
 }
 
 // readCgroupV1CpuSample reads usage from the legacy cpuacct controller.
-// Runtimes bind-mount the container's own cpuacct directory at the hierarchy
-// mount, so the mount root is normally already the container's cgroup; if the
-// process's cgroup path still resolves below the mount (shared host view),
-// that subdirectory is used instead.
+// As with v2, the hierarchy mount root is the guest's own cgroup and its
+// accounting includes every child cgroup, so it is read directly rather than
+// the agent's own sub-cgroup.
 func readCgroupV1CpuSample() (cgroupCpuSample, bool) {
-	mount := cgroupMountPoint("cgroup", "cpuacct")
-	if mount == "" {
+	dir := cgroupMountPoint("cgroup", "cpuacct")
+	if dir == "" {
 		return cgroupCpuSample{}, false
-	}
-	dir := mount
-	if rel := selfCgroupPath("cpuacct"); rel != "" && rel != "/" {
-		if cand := filepath.Join(mount, rel); utils.FileExists(filepath.Join(cand, "cpuacct.usage")) {
-			dir = cand
-		}
 	}
 	usageNs, ok := utils.ReadUintFile(filepath.Join(dir, "cpuacct.usage"))
 	if !ok {
@@ -220,32 +206,19 @@ func readCgroupV1CpuSample() (cgroupCpuSample, bool) {
 	return s, true
 }
 
-// selfCgroupPath returns the agent's cgroup path from /proc/self/cgroup: the
-// path after "0::" for the v2 unified hierarchy, or the path of the entry
-// whose controller list contains the given v1 controller (e.g. "cpuacct").
-func selfCgroupPath(selector string) string {
+// inCgroupV2 reports whether /proc/self/cgroup lists the v2 unified hierarchy
+// (a "0::<path>" entry).
+func inCgroupV2() bool {
 	data, err := os.ReadFile(cpuProcSelfCgroup)
 	if err != nil {
-		return ""
+		return false
 	}
-	for _, line := range strings.Split(string(data), "\n") {
-		parts := strings.SplitN(line, ":", 3)
-		if len(parts) != 3 {
-			continue
-		}
-		if selector == "0::" {
-			if parts[0] == "0" && parts[1] == "" {
-				return parts[2]
-			}
-			continue
-		}
-		for _, ctrl := range strings.Split(parts[1], ",") {
-			if ctrl == selector {
-				return parts[2]
-			}
+	for line := range strings.SplitSeq(string(data), "\n") {
+		if strings.HasPrefix(line, "0::") {
+			return true
 		}
 	}
-	return ""
+	return false
 }
 
 // cgroupMountPoint returns the mount point of a cgroup hierarchy from
@@ -294,18 +267,6 @@ func mountOptHas(post []string, opt string) bool {
 // mountinfo paths.
 func unescapeMountPoint(s string) string {
 	return strings.NewReplacer(`\040`, " ", `\011`, "\t", `\012`, "\n", `\134`, `\`).Replace(s)
-}
-
-// hasContainerRuntimeMarker reports whether a cgroup path looks like a real
-// host-side container cgroup path (docker/k8s/lxc/podman), meaning the visible
-// hierarchy is not namespaced and the path can be resolved under the mount.
-func hasContainerRuntimeMarker(path string) bool {
-	for _, m := range []string{"docker", "kubepods", "lxc", "crio", "libpod", "containerd", "podman"} {
-		if strings.Contains(path, m) {
-			return true
-		}
-	}
-	return false
 }
 
 // cpuCgroupCores returns how many CPU cores the cgroup at dir may use: the
@@ -408,10 +369,4 @@ func readCgroupInt(path string) (int64, bool) {
 	}
 	v, err := strconv.ParseInt(strings.TrimSpace(string(data)), 10, 64)
 	return v, err == nil
-}
-
-// directoryExistsOK reports whether path is a directory.
-func directoryExistsOK(path string) bool {
-	ok, _ := directoryExists(path)
-	return ok
 }

@@ -120,35 +120,38 @@ func TestReadCgroupV2CpuSample(t *testing.T) {
 	assert.InDelta(t, 4, s.cores, 0.001) // cpuset 2,5-7 = 4 cores
 }
 
-// In a namespaced container the agent may sit in a sub-cgroup (e.g. a systemd
-// service); the mount root still accounts for the whole container and must win.
+// The agent may sit in a sub-cgroup of the guest (a systemd service, or the
+// ".lxc" leaf when started from an attached shell); the mount root still
+// accounts for the whole guest and must win.
 func TestReadCgroupV2PrefersContainerRoot(t *testing.T) {
-	swapCpuContainerSeams(t)
-	writeCpuFixture(t, cpuProcSelfCgroup, "0::/system.slice/beszel-agent.service\n")
-	writeCpuFixture(t, cpuCgroupMountinfo, "")
-	writeCpuFixture(t, filepath.Join(cpuCgroupRoot, "cpu.stat"), "usage_usec 9000\n")
-	writeCpuFixture(t, filepath.Join(cpuCgroupRoot, "system.slice/beszel-agent.service/cpu.stat"), "usage_usec 5\n")
+	for _, rel := range []string{"system.slice/beszel-agent.service", ".lxc"} {
+		t.Run(rel, func(t *testing.T) {
+			swapCpuContainerSeams(t)
+			writeCpuFixture(t, cpuProcSelfCgroup, "0::/"+rel+"\n")
+			writeCpuFixture(t, cpuCgroupMountinfo, "")
+			writeCpuFixture(t, filepath.Join(cpuCgroupRoot, "cpu.stat"), "usage_usec 9000\n")
+			writeCpuFixture(t, filepath.Join(cpuCgroupRoot, rel, "cpu.stat"), "usage_usec 5\n")
 
-	s, ok := readCgroupV2CpuSample()
-	require.True(t, ok)
-	assert.EqualValues(t, 9000, s.usageUsec)
+			s, ok := readCgroupV2CpuSample()
+			require.True(t, ok)
+			assert.EqualValues(t, 9000, s.usageUsec)
+		})
+	}
 }
 
-// Without a cgroup namespace the mount shows the real host hierarchy and the
-// container's own path (docker/kubepods/lxc markers) resolves under it.
-func TestReadCgroupV2ResolvesRuntimePath(t *testing.T) {
+// Same for v1: the cpuacct mount root covers the agent's sibling services.
+func TestReadCgroupV1PrefersContainerRoot(t *testing.T) {
 	swapCpuContainerSeams(t)
-	writeCpuFixture(t, cpuProcSelfCgroup, "0::/system.slice/docker-deadbeef.scope\n")
-	writeCpuFixture(t, cpuCgroupMountinfo, "")
-	writeCpuFixture(t, filepath.Join(cpuCgroupRoot, "cpu.stat"), "usage_usec 9000\n")
-	sub := filepath.Join(cpuCgroupRoot, "system.slice/docker-deadbeef.scope")
-	writeCpuFixture(t, filepath.Join(sub, "cpu.stat"), "usage_usec 5\n")
-	writeCpuFixture(t, filepath.Join(sub, "cpu.max"), "100000 100000\n")
+	writeCpuFixture(t, cpuProcSelfCgroup, "3:cpu,cpuacct:/system.slice/beszel-agent.service\n")
+	v1 := filepath.Join(t.TempDir(), "cpu,cpuacct")
+	writeCpuFixture(t, cpuCgroupMountinfo,
+		"30 25 0:26 / "+v1+" rw,nosuid,nodev,noexec,relatime - cgroup cgroup rw,cpu,cpuacct\n")
+	writeCpuFixture(t, filepath.Join(v1, "cpuacct.usage"), "9000000\n")
+	writeCpuFixture(t, filepath.Join(v1, "system.slice/beszel-agent.service/cpuacct.usage"), "5000\n")
 
-	s, ok := readCgroupV2CpuSample()
+	s, ok := readContainerCpuSample()
 	require.True(t, ok)
-	assert.EqualValues(t, 5, s.usageUsec)
-	assert.InDelta(t, 1, s.cores, 0.001) // cpu.max quota of 1 core
+	assert.EqualValues(t, 9000, s.usageUsec)
 }
 
 func TestReadCgroupV1CpuSample(t *testing.T) {
