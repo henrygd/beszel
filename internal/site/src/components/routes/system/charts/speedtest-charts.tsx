@@ -131,23 +131,35 @@ export function SpeedtestLatencyChart({ stats, failures, chartData, empty }: Spe
 	)
 }
 
-export function SpeedtestLoadedLatencyChart({ stats, failures, chartData, empty }: SpeedtestChartProps) {
+// Loaded latency and jitter are 0 when the CLI didn't report them.
+const downloadLatencyKey = (record: SpeedtestStatsRecord) => record.download_latency || null
+const downloadJitterKey = (record: SpeedtestStatsRecord) => record.download_jitter || null
+const uploadLatencyKey = (record: SpeedtestStatsRecord) => record.upload_latency || null
+const uploadJitterKey = (record: SpeedtestStatsRecord) => record.upload_jitter || null
+
+/** Latency and jitter while the connection is loaded, like the idle latency chart. */
+function SpeedtestLoadedLatencyChart({
+	stats,
+	failures,
+	chartData,
+	empty,
+	title,
+	description,
+	latencyKey,
+	jitterKey,
+}: SpeedtestChartProps & {
+	title: string
+	description: string
+	latencyKey: DataPoint<SpeedtestStatsRecord>["dataKey"]
+	jitterKey: DataPoint<SpeedtestStatsRecord>["dataKey"]
+}) {
 	const { t } = useLingui()
 	const dataPoints = useMemo(
-		() => [
-			point(t`Download`, 2, (record) => record.download_latency || null, 0),
-			point(t`Upload`, 4, (record) => record.upload_latency || null, 1),
-		],
-		[t]
+		() => [point(t`Latency`, 1, latencyKey, 0), point(t`Jitter`, 3, jitterKey, 1)],
+		[t, latencyKey, jitterKey]
 	)
 	return (
-		<ChartCard
-			empty={empty}
-			title={t`Loaded latency`}
-			description={t`Latency while downloading and uploading (interquartile mean)`}
-			grid={false}
-			legend
-		>
+		<ChartCard empty={empty} title={title} description={description} grid={false} legend>
 			<LineChartDefault
 				truncate
 				chartData={chartData}
@@ -161,6 +173,32 @@ export function SpeedtestLoadedLatencyChart({ stats, failures, chartData, empty 
 				contentFormatter={({ value }) => (typeof value === "number" ? `${decimalString(value, 2)} ms` : value)}
 			/>
 		</ChartCard>
+	)
+}
+
+export function SpeedtestDownloadLatencyChart(props: SpeedtestChartProps) {
+	const { t } = useLingui()
+	return (
+		<SpeedtestLoadedLatencyChart
+			{...props}
+			title={t`Download latency`}
+			description={t`Latency and jitter while downloading (interquartile mean)`}
+			latencyKey={downloadLatencyKey}
+			jitterKey={downloadJitterKey}
+		/>
+	)
+}
+
+export function SpeedtestUploadLatencyChart(props: SpeedtestChartProps) {
+	const { t } = useLingui()
+	return (
+		<SpeedtestLoadedLatencyChart
+			{...props}
+			title={t`Upload latency`}
+			description={t`Latency and jitter while uploading (interquartile mean)`}
+			latencyKey={uploadLatencyKey}
+			jitterKey={uploadJitterKey}
+		/>
 	)
 }
 
@@ -362,6 +400,34 @@ export function SpeedtestComparePingChart(props: SpeedtestCompareChartProps) {
 			title={t`Ping`}
 			description={t`Idle ping`}
 			value={comparePing}
+			tickFormatter={msTick}
+			contentFormatter={msContent}
+		/>
+	)
+}
+
+export function SpeedtestCompareDownloadLatencyChart(props: SpeedtestCompareChartProps) {
+	const { t } = useLingui()
+	return (
+		<SpeedtestCompareChart
+			{...props}
+			title={t`Download latency`}
+			description={t`Latency while downloading (interquartile mean)`}
+			value={downloadLatencyKey}
+			tickFormatter={msTick}
+			contentFormatter={msContent}
+		/>
+	)
+}
+
+export function SpeedtestCompareUploadLatencyChart(props: SpeedtestCompareChartProps) {
+	const { t } = useLingui()
+	return (
+		<SpeedtestCompareChart
+			{...props}
+			title={t`Upload latency`}
+			description={t`Latency while uploading (interquartile mean)`}
+			value={uploadLatencyKey}
 			tickFormatter={msTick}
 			contentFormatter={msContent}
 		/>

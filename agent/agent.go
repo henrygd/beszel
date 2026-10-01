@@ -217,6 +217,7 @@ func (a *Agent) gatherStats(options common.DataRequestOptions) *system.CombinedD
 
 	if a.speedtestManager != nil {
 		data.Speedtests = a.speedtestManager.GetResults()
+		slog.Debug("Speedtests", "data", data.Speedtests)
 	}
 
 	// skip updating systemd services if cache time is not the default 60sec interval

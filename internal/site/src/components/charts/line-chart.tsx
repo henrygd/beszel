@@ -141,13 +141,14 @@ export default function LineChartDefault({
 
 	const XAxis = xAxis(chartData.chartTime, displayData.at(-1)?.created)
 
-	// Without any values recharts draws no y-axis ticks, so the axis width is never measured and
-	// the chart would stay hidden. Hide the axis instead, e.g. when every speedtest run failed.
+	// Without any values an "auto" domain has no ticks, so the axis width is never measured and
+	// the chart would stay hidden. Fall back to a fixed domain, e.g. when a speedtest server
+	// doesn't report packet loss or every run failed.
 	const hasValues = useMemo(
 		() => !dataPoints || displayData.some((row) => dataPoints.some((point) => typeof point.dataKey(row) === "number")),
 		[displayData, linesKey]
 	)
-	const noYAxis = hideYAxis || !hasValues
+	const leftDomain: AxisDomain = hasValues ? (domain ?? [0, max ?? "auto"]) : [0, 100]
 
 	const Lines = useMemo(() => {
 		return dataPoints?.map((dataPoint, i) => {
@@ -190,33 +191,33 @@ export default function LineChartDefault({
 			<ChartContainer
 				ref={ref}
 				className={cn("h-full w-full absolute aspect-auto bg-card opacity-0 transition-opacity", {
-					"opacity-100": yAxisWidth || noYAxis,
-					"ps-4": noYAxis,
+					"opacity-100": yAxisWidth || hideYAxis,
+					"ps-4": hideYAxis,
 				})}
 			>
 				<LineChart
 					reverseStackOrder={reverseStackOrder}
 					accessibilityLayer
 					data={displayData}
-					margin={noYAxis ? { ...chartMargin, left: 5 } : chartMargin}
+					margin={hideYAxis ? { ...chartMargin, left: 5 } : chartMargin}
 					{...chartProps}
 				>
 					<CartesianGrid vertical={false} />
-					{!noYAxis && (
+					{!hideYAxis && (
 						<YAxis
 							yAxisId="left"
 							direction="ltr"
 							orientation={chartData.orientation}
 							className="tracking-tighter"
 							width={yAxisWidth}
-							domain={domain ?? [0, max ?? "auto"]}
-							ticks={fixedDomainTicks(domain ?? [0, max ?? "auto"])}
+							domain={leftDomain}
+							ticks={fixedDomainTicks(leftDomain)}
 							tickFormatter={(value, index) => updateYAxisWidth(tickFormatter(value, index))}
 							tickLine={false}
 							axisLine={false}
 						/>
 					)}
-					{!noYAxis && hasRightAxis && (
+					{!hideYAxis && hasRightAxis && (
 						<YAxis
 							yAxisId="right"
 							direction="ltr"
@@ -267,5 +268,5 @@ export default function LineChartDefault({
 				</LineChart>
 			</ChartContainer>
 		)
-	}, [displayData, yAxisWidth, hasRightAxis, filter, Lines, XAxis, markers, tooltipNote, noYAxis])
+	}, [displayData, yAxisWidth, hasRightAxis, filter, Lines, XAxis, markers, tooltipNote, hasValues])
 }

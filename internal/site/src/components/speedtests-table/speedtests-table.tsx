@@ -59,14 +59,17 @@ import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "
 import ChartTimeSelect from "@/components/charts/chart-time-select"
 import {
 	SpeedtestCompareDownloadChart,
+	SpeedtestCompareDownloadLatencyChart,
 	SpeedtestCompareLossChart,
 	SpeedtestComparePingChart,
 	SpeedtestCompareUploadChart,
+	SpeedtestCompareUploadLatencyChart,
 	SpeedtestDownloadChart,
+	SpeedtestDownloadLatencyChart,
 	SpeedtestLatencyChart,
-	SpeedtestLoadedLatencyChart,
 	SpeedtestLossChart,
 	SpeedtestUploadChart,
+	SpeedtestUploadLatencyChart,
 } from "@/components/routes/system/charts/speedtest-charts"
 import { MultiSelect, SystemMultiSelect } from "@/components/network-monitors-table/monitor-dialog"
 import { getSpeedtestCompareState } from "@/lib/speedtest-compare"
@@ -664,6 +667,8 @@ function SpeedtestSheet({
 							<SpeedtestCompareDownloadChart {...compareProps} />
 							<SpeedtestCompareUploadChart {...compareProps} />
 							<SpeedtestComparePingChart {...compareProps} />
+							<SpeedtestCompareDownloadLatencyChart {...compareProps} />
+							<SpeedtestCompareUploadLatencyChart {...compareProps} />
 							<SpeedtestCompareLossChart {...compareProps} />
 						</>
 					) : (
@@ -671,7 +676,8 @@ function SpeedtestSheet({
 							<SpeedtestDownloadChart stats={stats} failures={failures} chartData={chartData} empty={empty} />
 							<SpeedtestUploadChart stats={stats} failures={failures} chartData={chartData} empty={empty} />
 							<SpeedtestLatencyChart stats={stats} failures={failures} chartData={chartData} empty={empty} />
-							<SpeedtestLoadedLatencyChart stats={stats} failures={failures} chartData={chartData} empty={empty} />
+							<SpeedtestDownloadLatencyChart stats={stats} failures={failures} chartData={chartData} empty={empty} />
+							<SpeedtestUploadLatencyChart stats={stats} failures={failures} chartData={chartData} empty={empty} />
 							<SpeedtestLossChart stats={stats} failures={failures} chartData={chartData} empty={empty} />
 						</>
 					)}
