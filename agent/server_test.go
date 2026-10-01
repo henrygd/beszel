@@ -7,6 +7,7 @@ import (
 	"crypto/ed25519"
 	"encoding/json"
 	"fmt"
+	"io"
 	"net"
 	"net/http"
 	"net/http/httptest"
@@ -256,6 +257,15 @@ func TestSSHConnectionFallbackLifecycle(t *testing.T) {
 	require.NoError(t, err)
 	defer client.Close()
 
+	// A connection is counted when it starts its first session.
+	startSession := func(c *gossh.Client) *gossh.Session {
+		session, err := c.NewSession()
+		require.NoError(t, err)
+		require.NoError(t, session.Shell())
+		return session
+	}
+	session := startSession(client)
+
 	select {
 	case <-cm.sshChanged:
 		cm.handleSSHChange()
@@ -280,19 +290,28 @@ func TestSSHConnectionFallbackLifecycle(t *testing.T) {
 	cm.wsClient, err = newWebSocketClient(agent)
 	require.NoError(t, err)
 
-	// A normal short-lived session must not be mistaken for a lost connection.
-	session, err := client.NewSession()
-	require.NoError(t, err)
-	require.NoError(t, session.Close())
+	// A normal short-lived session must not be mistaken for a lost connection,
+	// and further sessions must not count the same connection again.
+	_ = session.Close()
+	_ = startSession(client).Close()
 	select {
 	case <-cm.sshChanged:
 		t.Fatal("session close unexpectedly changed SSH connection state")
 	case <-time.After(100 * time.Millisecond):
 	}
+	cm.mu.Lock()
+	assert.Equal(t, 1, cm.sshConnections, "sessions should not be counted as connections")
+	cm.mu.Unlock()
 
 	secondClient, err := gossh.Dial("tcp", addr, clientConfig)
 	require.NoError(t, err)
 	defer secondClient.Close()
+	defer startSession(secondClient).Close()
+	require.Eventually(t, func() bool {
+		cm.mu.Lock()
+		defer cm.mu.Unlock()
+		return cm.sshConnections == 2
+	}, 5*time.Second, 10*time.Millisecond, "second SSH connection was not counted")
 	require.NoError(t, client.Close())
 	select {
 	case <-cm.sshChanged:
@@ -324,6 +343,91 @@ func TestSSHConnectionFallbackLifecycle(t *testing.T) {
 		return agent.serverListener != nil
 	}, 5*time.Second, 10*time.Millisecond, "SSH should reopen after the WebSocket attempt fails")
 	cm.stopWsTicker()
+}
+
+// offeredKeySigner offers an authorized public key without proving possession
+// of its private key: Sign blocks until released, then signs with another key.
+type offeredKeySigner struct {
+	gossh.Signer
+	publicKey gossh.PublicKey
+	signing   chan struct{}
+	release   chan struct{}
+}
+
+func (s *offeredKeySigner) PublicKey() gossh.PublicKey { return s.publicKey }
+
+func (s *offeredKeySigner) Sign(rand io.Reader, data []byte) (*gossh.Signature, error) {
+	close(s.signing)
+	<-s.release
+	return s.Signer.Sign(rand, data)
+}
+
+// The public key handler runs when a key is offered, before the client signs
+// anything, so it must not be what marks an SSH connection as established.
+func TestSSHPublicKeyOfferIsNotAConnection(t *testing.T) {
+	t.Setenv("BESZEL_AGENT_DISABLE_SSH", "false")
+	agent := createTestAgent(t)
+	cm := agent.connectionManager
+	cm.eventChan = make(chan ConnectionEvent, 4)
+
+	newSigner := func() gossh.Signer {
+		_, privateKey, err := ed25519.GenerateKey(nil)
+		require.NoError(t, err)
+		signer, err := gossh.NewSignerFromKey(privateKey)
+		require.NoError(t, err)
+		return signer
+	}
+	hubKey := newSigner().PublicKey()
+	cm.serverOptions = ServerOptions{
+		Network: "tcp",
+		Addr:    "127.0.0.1:0",
+		Keys:    []gossh.PublicKey{hubKey},
+	}
+
+	cm.handleEvent(WebSocketDisconnect)
+	agent.serverMu.Lock()
+	require.NotNil(t, agent.serverListener)
+	addr := agent.serverListener.Addr().String()
+	agent.serverMu.Unlock()
+	defer func() { _ = agent.StopServer() }()
+
+	signer := &offeredKeySigner{
+		Signer:    newSigner(),
+		publicKey: hubKey,
+		signing:   make(chan struct{}),
+		release:   make(chan struct{}),
+	}
+	dialErr := make(chan error, 1)
+	go func() {
+		client, err := gossh.Dial("tcp", addr, &gossh.ClientConfig{
+			User:            "hub",
+			Auth:            []gossh.AuthMethod{gossh.PublicKeys(signer)},
+			HostKeyCallback: gossh.InsecureIgnoreHostKey(),
+			Timeout:         4 * time.Second,
+		})
+		if client != nil {
+			client.Close()
+		}
+		dialErr <- err
+	}()
+
+	// The server has accepted the offered key and is waiting for a signature.
+	select {
+	case <-signer.signing:
+	case <-time.After(5 * time.Second):
+		t.Fatal("server did not accept the offered public key")
+	}
+	select {
+	case <-cm.sshChanged:
+		t.Fatal("offering a public key changed SSH connection state")
+	case <-time.After(100 * time.Millisecond):
+	}
+	assert.False(t, cm.hasSSHConnection())
+	assert.Equal(t, Disconnected, cm.getState())
+
+	close(signer.release)
+	require.Error(t, <-dialErr, "a signature from another key must be rejected")
+	assert.False(t, cm.hasSSHConnection())
 }
 
 /////////////////////////////////////////////////////////////////

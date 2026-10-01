@@ -111,9 +111,26 @@ func (c *ConnectionManager) notifySSHChange() {
 	}
 }
 
+// sshConnectionTrackedKey marks an SSH connection context as already counted.
+type sshConnectionTrackedKey struct{}
+
 // sshConnectionOpened tracks the authenticated TCP connection. Individual SSH
 // sessions are short-lived and must not trigger a return to WebSocket.
+//
+// It is called from the session handler rather than the public key handler,
+// which runs when a key is offered and before the client has proven it holds
+// the private key. A connection is counted once however many sessions it opens.
 func (c *ConnectionManager) sshConnectionOpened(ctx ssh.Context) {
+	ctx.Lock()
+	tracked := ctx.Value(sshConnectionTrackedKey{}) != nil
+	if !tracked {
+		ctx.SetValue(sshConnectionTrackedKey{}, true)
+	}
+	ctx.Unlock()
+	if tracked {
+		return
+	}
+
 	c.mu.Lock()
 	c.sshConnections++
 	first := c.sshConnections == 1
