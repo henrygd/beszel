@@ -58,7 +58,7 @@ func TestGetSpeedtestServers(t *testing.T) {
 	require.Equal(t, http.StatusOK, status, body)
 	var servers []speedtestServer
 	require.NoError(t, json.Unmarshal([]byte(body), &servers))
-	assert.Equal(t, []speedtestServer{{ID: 52365, Name: "Odido", Location: "Amsterdam, Netherlands"}}, servers)
+	assert.Equal(t, []speedtestServer{{ID: 52365, Name: "Odido", Location: "Amsterdam"}}, servers)
 	assert.Equal(t, "Amsterdam", lastSearch.Load())
 	assert.Equal(t, int32(1), requests.Load())
 

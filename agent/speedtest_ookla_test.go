@@ -35,7 +35,7 @@ func TestParseOoklaOutput(t *testing.T) {
 		Loss:            0,
 		ServerID:        52365,
 		ServerName:      "Odido",
-		ServerLocation:  "Amsterdam, Netherlands",
+		ServerLocation:  "Amsterdam",
 		ISP:             "Odido Netherlands",
 		InterfaceName:   "eth0",
 		ExternalIP:      "203.0.113.1",

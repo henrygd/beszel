@@ -93,7 +93,6 @@ func fetchSpeedtestServers(ctx context.Context, search string) ([]speedtestServe
 		ID      string `json:"id"`
 		Sponsor string `json:"sponsor"`
 		Name    string `json:"name"`
-		Country string `json:"country"`
 	}
 	if err := json.NewDecoder(resp.Body).Decode(&items); err != nil {
 		return nil, err
@@ -104,11 +103,7 @@ func fetchSpeedtestServers(ctx context.Context, search string) ([]speedtestServe
 		if err != nil || id == 0 {
 			continue
 		}
-		location := item.Name
-		if item.Country != "" {
-			location = strings.TrimPrefix(location+", "+item.Country, ", ")
-		}
-		servers = append(servers, speedtestServer{ID: uint32(id), Name: item.Sponsor, Location: location})
+		servers = append(servers, speedtestServer{ID: uint32(id), Name: item.Sponsor, Location: item.Name})
 	}
 	return servers, nil
 }

@@ -46,7 +46,6 @@ type ooklaResult struct {
 		ID       uint32 `json:"id"`
 		Name     string `json:"name"`
 		Location string `json:"location"`
-		Country  string `json:"country"`
 	} `json:"server"`
 	Result struct {
 		URL string `json:"url"`
@@ -134,10 +133,6 @@ func parseOoklaOutput(output []byte) (speedtest.Result, error) {
 		if err := json.Unmarshal(line, &res); err != nil || res.Type != "result" {
 			continue
 		}
-		location := res.Server.Location
-		if res.Server.Country != "" {
-			location = strings.TrimPrefix(location+", "+res.Server.Country, ", ")
-		}
 		loss := -1.0
 		if res.PacketLoss != nil {
 			loss = *res.PacketLoss
@@ -154,7 +149,7 @@ func parseOoklaOutput(output []byte) (speedtest.Result, error) {
 			Loss:            loss,
 			ServerID:        res.Server.ID,
 			ServerName:      res.Server.Name,
-			ServerLocation:  location,
+			ServerLocation:  res.Server.Location,
 			ISP:             res.ISP,
 			InterfaceName:   res.Interface.Name,
 			ExternalIP:      res.Interface.ExternalIP,
