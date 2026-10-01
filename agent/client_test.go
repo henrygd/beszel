@@ -19,6 +19,7 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
+	"sync/atomic"
 	"testing"
 	"time"
 
@@ -197,6 +198,116 @@ func TestWebSocketClient_GetOptions(t *testing.T) {
 			assert.Same(t, options, options2, "Options should be cached")
 		})
 	}
+}
+
+func TestHubRedirectError(t *testing.T) {
+	testCases := []struct {
+		name        string
+		currentAddr string
+		statusCode  int
+		location    string
+		expectError string
+	}{
+		{
+			name:        "308 http to https redirect",
+			currentAddr: "ws://hub.example.com/api/beszel/agent-connect",
+			statusCode:  http.StatusPermanentRedirect,
+			location:    "https://hub.example.com/api/beszel/agent-connect",
+			expectError: "hub redirected to https://hub.example.com/api/beszel/agent-connect; set HUB_URL to https://hub.example.com",
+		},
+		{
+			name:        "relative redirect",
+			currentAddr: "ws://hub.example.com/api/beszel/agent-connect",
+			statusCode:  http.StatusTemporaryRedirect,
+			location:    "/api/beszel/agent-connect",
+			expectError: "hub redirected to /api/beszel/agent-connect; set HUB_URL to http://hub.example.com",
+		},
+		{
+			name:        "wss redirect to other host",
+			currentAddr: "wss://hub.example.com/api/beszel/agent-connect",
+			statusCode:  http.StatusMovedPermanently,
+			location:    "wss://other.example.com/api/beszel/agent-connect",
+			expectError: "hub redirected to wss://other.example.com/api/beszel/agent-connect; set HUB_URL to https://other.example.com",
+		},
+		{
+			name:        "redirect with custom path",
+			currentAddr: "ws://hub.example.com/api/beszel/agent-connect",
+			statusCode:  http.StatusFound,
+			location:    "https://hub.example.com/beszel/api/beszel/agent-connect?x=1",
+			expectError: "hub redirected to https://hub.example.com/beszel/api/beszel/agent-connect?x=1; set HUB_URL to https://hub.example.com/beszel",
+		},
+		{
+			name:        "non redirect response",
+			currentAddr: "ws://hub.example.com/api/beszel/agent-connect",
+			statusCode:  http.StatusBadGateway,
+		},
+		{
+			name:        "redirect missing location",
+			currentAddr: "ws://hub.example.com/api/beszel/agent-connect",
+			statusCode:  http.StatusPermanentRedirect,
+			expectError: "hub returned status 308 with no Location header",
+		},
+		{
+			name:        "invalid location",
+			currentAddr: "ws://hub.example.com/api/beszel/agent-connect",
+			statusCode:  http.StatusPermanentRedirect,
+			location:    "http://[::1",
+			expectError: `hub redirected to "http://[::1"`,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			resp := &http.Response{
+				StatusCode: tc.statusCode,
+				Header:     http.Header{},
+			}
+			if tc.location != "" {
+				resp.Header.Set("Location", tc.location)
+			}
+
+			err := hubRedirectError(tc.currentAddr, resp)
+
+			if tc.expectError == "" {
+				assert.NoError(t, err)
+				return
+			}
+			require.Error(t, err)
+			assert.Equal(t, tc.expectError, err.Error())
+		})
+	}
+
+	assert.NoError(t, hubRedirectError("ws://hub.example.com", nil))
+}
+
+// TestWebSocketClient_ConnectRedirect tests that a redirect during the handshake
+// reports the hub address without sending the token to the redirect target.
+func TestWebSocketClient_ConnectRedirect(t *testing.T) {
+	agent := createTestAgent(t)
+
+	var targetHits int32
+	target := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		atomic.AddInt32(&targetHits, 1)
+		w.WriteHeader(http.StatusOK)
+	}))
+	defer target.Close()
+
+	hub := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		http.Redirect(w, r, target.URL+"/api/beszel/agent-connect", http.StatusPermanentRedirect)
+	}))
+	defer hub.Close()
+
+	t.Setenv("BESZEL_AGENT_HUB_URL", hub.URL)
+	t.Setenv("BESZEL_AGENT_TOKEN", "test-token")
+
+	client, err := newWebSocketClient(agent)
+	require.NoError(t, err)
+
+	err = client.Connect()
+	require.Error(t, err)
+	assert.Contains(t, err.Error(), "hub redirected to "+target.URL+"/api/beszel/agent-connect")
+	assert.Contains(t, err.Error(), "set HUB_URL to "+target.URL)
+	assert.Equal(t, int32(0), atomic.LoadInt32(&targetHits), "redirect target must not receive the token")
 }
 
 func TestWebSocketClient_TLSVerification(t *testing.T) {

@@ -27,7 +27,8 @@ import (
 const (
 	// Keep the connection alive long enough for a slow collection cycle to
 	// finish before the hub considers the agent disconnected.
-	wsDeadline = 120 * time.Second
+	wsDeadline        = 120 * time.Second
+	agentConnectRoute = "api/beszel/agent-connect"
 )
 
 // errNoHubURL is returned when HUB_URL is unset. This is not a failure
@@ -173,7 +174,7 @@ func (client *WebSocketClient) getOptions() *gws.ClientOption {
 	} else {
 		client.hubURL.Scheme = "ws"
 	}
-	client.hubURL.Path = path.Join(client.hubURL.Path, "api/beszel/agent-connect")
+	client.hubURL.Path = path.Join(client.hubURL.Path, agentConnectRoute)
 
 	// make sure BESZEL_AGENT_ALL_PROXY works (GWS only checks ALL_PROXY)
 	if val := os.Getenv("BESZEL_AGENT_ALL_PROXY"); val != "" {
@@ -197,20 +198,84 @@ func (client *WebSocketClient) getOptions() *gws.ClientOption {
 
 // Connect establishes a WebSocket connection to the hub.
 // It closes any existing connection before attempting to reconnect.
-func (client *WebSocketClient) Connect() (err error) {
+func (client *WebSocketClient) Connect() error {
 	client.lastConnectAttempt = time.Now()
 
 	// make sure previous connection is closed
 	client.Close()
 
-	client.Conn, _, err = gws.NewClient(client, client.getOptions())
+	options := client.getOptions()
+	conn, resp, err := gws.NewClient(client, options)
+	if resp != nil && resp.Body != nil {
+		_ = resp.Body.Close()
+	}
 	if err != nil {
+		if redirectErr := hubRedirectError(options.Addr, resp); redirectErr != nil {
+			return redirectErr
+		}
 		return err
 	}
 
+	client.Conn = conn
 	go client.Conn.ReadLoop()
 
 	return nil
+}
+
+// hubRedirectError returns an error describing an HTTP redirect received during
+// the WebSocket handshake. Redirects are never followed: the agent token is sent
+// in the handshake headers, and following a Location header would hand it to a
+// host the user did not configure (possibly over plain http).
+func hubRedirectError(currentAddr string, resp *http.Response) error {
+	if resp == nil || !isHTTPRedirect(resp.StatusCode) {
+		return nil
+	}
+
+	location := resp.Header.Get("Location")
+	if location == "" {
+		return fmt.Errorf("hub returned status %d with no Location header", resp.StatusCode)
+	}
+
+	baseURL, err := url.Parse(currentAddr)
+	if err != nil {
+		return fmt.Errorf("hub redirected to %q", location)
+	}
+	redirectURL, err := baseURL.Parse(location)
+	if err != nil {
+		return fmt.Errorf("hub redirected to %q", location)
+	}
+
+	return fmt.Errorf("hub redirected to %s; set HUB_URL to %s", location, hubURLFromRedirect(redirectURL))
+}
+
+// hubURLFromRedirect converts a redirect target into the hub URL the user should
+// configure, so the suggestion can be pasted into HUB_URL as-is.
+func hubURLFromRedirect(u *url.URL) string {
+	suggested := *u
+	if suggested.Scheme == "wss" || suggested.Scheme == "https" {
+		suggested.Scheme = "https"
+	} else {
+		suggested.Scheme = "http"
+	}
+	// HUB_URL is the hub root, not the agent connect endpoint
+	suggested.Path = strings.TrimSuffix(suggested.Path, "/"+agentConnectRoute)
+	suggested.RawPath = ""
+	suggested.RawQuery = ""
+	suggested.Fragment = ""
+	return suggested.String()
+}
+
+func isHTTPRedirect(statusCode int) bool {
+	switch statusCode {
+	case http.StatusMovedPermanently,
+		http.StatusFound,
+		http.StatusSeeOther,
+		http.StatusTemporaryRedirect,
+		http.StatusPermanentRedirect:
+		return true
+	default:
+		return false
+	}
 }
 
 // OnOpen handles WebSocket connection establishment.
