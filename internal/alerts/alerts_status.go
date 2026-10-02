@@ -5,6 +5,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/pocketbase/dbx"
 	"github.com/pocketbase/pocketbase/core"
 )
 
@@ -140,6 +141,18 @@ func (am *AlertManager) processPendingAlert(alertID string) {
 
 // sendStatusAlert sends a status alert ("up" or "down") to the users associated with the alert records.
 func (am *AlertManager) sendStatusAlert(alertStatus string, systemName string, alertData CachedAlertData) error {
+	// Capture the active incident before resolving it. The alert update hook
+	// fills in its resolved time, matching the duration shown in alert history.
+	var historyID string
+	if alertStatus == "up" {
+		history, err := am.hub.FindRecordsByFilter("alerts_history", "alert_id={:alert_id} && resolved=null", "-created", 1, 0, dbx.Params{"alert_id": alertData.Id})
+		if err != nil {
+			am.hub.Logger().Error("Failed to load status alert history", "err", err)
+		} else if len(history) > 0 {
+			historyID = history[0].Id
+		}
+	}
+
 	// Update trigger state for alert record before sending alert
 	triggered := alertStatus == "down"
 	if err := am.setAlertTriggered(alertData, triggered); err != nil {
@@ -155,6 +168,14 @@ func (am *AlertManager) sendStatusAlert(alertStatus string, systemName string, a
 
 	title := fmt.Sprintf("Connection to %s is %s %v", systemName, alertStatus, emoji)
 	message := strings.TrimSuffix(title, emoji)
+	if historyID != "" {
+		history, err := am.hub.FindRecordById("alerts_history", historyID)
+		if err != nil {
+			am.hub.Logger().Error("Failed to load resolved status alert history", "err", err)
+		} else if duration := formatStatusAlertDuration(history.GetDateTime("created").Time(), history.GetDateTime("resolved").Time()); duration != "" {
+			message = fmt.Sprintf("%s (duration %s)", strings.TrimSpace(message), duration)
+		}
+	}
 
 	// Get system ID for the link
 	systemID := alertData.SystemID
@@ -167,6 +188,38 @@ func (am *AlertManager) sendStatusAlert(alertStatus string, systemName string, a
 		Link:     am.hub.MakeLink("system", systemID),
 		LinkText: "View " + systemName,
 	})
+}
+
+// formatStatusAlertDuration matches the duration displayed in alert history.
+func formatStatusAlertDuration(created, resolved time.Time) string {
+	if created.IsZero() || resolved.IsZero() || resolved.Before(created) {
+		return ""
+	}
+
+	totalSeconds := int(resolved.Sub(created) / time.Second)
+	hours := totalSeconds / 3600
+	minutes := (totalSeconds % 3600) / 60
+	seconds := totalSeconds % 60
+	if seconds >= 58 {
+		minutes++
+		seconds = 0
+	}
+	if minutes >= 60 {
+		hours++
+		minutes = 0
+	}
+
+	var parts []string
+	if hours > 0 {
+		parts = append(parts, fmt.Sprintf("%dh", hours))
+	}
+	if minutes > 0 {
+		parts = append(parts, fmt.Sprintf("%dm", minutes))
+	}
+	if hours == 0 && seconds > 0 {
+		parts = append(parts, fmt.Sprintf("%ds", seconds))
+	}
+	return strings.Join(parts, " ")
 }
 
 // resolveStatusAlerts resolves any triggered status alerts that weren't resolved
