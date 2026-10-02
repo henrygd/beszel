@@ -8,7 +8,7 @@ msgstr ""
 "Language: uz\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2026-10-01 02:41\n"
+"PO-Revision-Date: 2026-10-02 17:15\n"
 "Last-Translator: \n"
 "Language-Team: Uzbek\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
@@ -30,11 +30,19 @@ msgstr "{0} mavjud"
 msgid "{0} of {1} row(s) selected."
 msgstr "{1} dan {0} qator tanlandi."
 
-#. placeholder {0}: selectedSystemIds.size
+#. placeholder {0}: selectedIds.size
 #: src/components/network-monitors-table/monitor-dialog.tsx
 #: src/components/network-monitors-table/monitor-dialog.tsx
 msgid "{0} selected"
 msgstr "{0} ta tanlandi"
+
+#: src/components/active-alerts.tsx
+msgid "{alertCount, plural, one {# active alert} other {# active alerts}}"
+msgstr "{alertCount, plural, one {# ta faol ogohlantirish} other {# ta faol ogohlantirish}}"
+
+#: src/components/active-alerts.tsx
+msgid "{alertCount, plural, one {# alert is currently triggered} other {# alerts are currently triggered}}"
+msgstr "{alertCount, plural, one {# ta ogohlantirish hozir ishga tushgan} other {# ta ogohlantirish hozir ishga tushgan}}"
 
 #: src/components/routes/system/info-bar.tsx
 msgid "{cores, plural, one {# core} other {# cores}}"
@@ -54,7 +62,7 @@ msgstr "{count, plural, other {{countString} daqiqa}}"
 
 #: src/components/network-monitors-table/network-monitors-columns.tsx
 msgid "{daysLeft, plural, one {# day} other {# days}}"
-msgstr ""
+msgstr "{daysLeft, plural, one {# kun} other {# kun}}"
 
 #: src/components/routes/system/charts/disk-charts.tsx
 msgid "{diskName} I/O"
@@ -62,15 +70,23 @@ msgstr "{diskName} I/O"
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "{numFailed, plural, one {# failed service} other {# failed services}}"
-msgstr ""
+msgstr "{numFailed, plural, one {# ta xizmat ishlamayapti} other {# ta xizmat ishlamayapti}}"
+
+#: src/components/active-alerts.tsx
+msgid "{systemCount, plural, one {Across # system} other {Across # systems}}"
+msgstr "{systemCount, plural, one {# ta tizim bo'yicha} other {# ta tizim bo'yicha}}"
 
 #: src/components/routes/system/info-bar.tsx
 msgid "{threads, plural, one {# thread} other {# threads}}"
 msgstr "{threads, plural, other {# ip}}"
 
 #: src/components/systems-table/systems-table-columns.tsx
+msgid "{total, plural, one {# update} other {# updates}}"
+msgstr "{total, plural, one {# ta yangilanish} other {# ta yangilanish}}"
+
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "{totalCount, plural, one {# service} other {# services}}"
-msgstr ""
+msgstr "{totalCount, plural, one {# ta xizmat} other {# ta xizmat}}"
 
 #: src/lib/utils.ts
 msgid "1 hour"
@@ -137,7 +153,7 @@ msgstr "Faol holat"
 
 #: src/components/network-monitors-table/monitor-dialog.tsx
 msgid "Add"
-msgstr ""
+msgstr "Qo'shish"
 
 #: src/components/network-monitors-table/monitor-dialog.tsx
 #: src/components/network-monitors-table/monitor-dialog.tsx
@@ -231,6 +247,11 @@ msgctxt "Disk space available"
 msgid "Available"
 msgstr "Mavjud"
 
+#. Package version available to install
+#: src/components/routes/system/package-updates-table.tsx
+msgid "Available"
+msgstr "Mavjud"
+
 #: src/components/routes/system/chart-card.tsx
 msgid "Average"
 msgstr "O'rtacha"
@@ -239,15 +260,13 @@ msgstr "O'rtacha"
 msgid "Average CPU utilization of containers"
 msgstr "Konteynerlarning o'rtacha CPU yuklanishi"
 
-#. placeholder {0}: alertData.unit
 #: src/components/alerts/alerts-sheet.tsx
-msgid "Average drops below <0>{value}{0}</0>"
-msgstr "O'rtacha <0>{value}{0}</0> dan pastga tushadi"
+msgid "Average drops below <0>{value}{unitLabel}</0>"
+msgstr "O'rtacha qiymat <0>{value}{unitLabel}</0> dan pastga tushadi"
 
-#. placeholder {0}: alertData.unit
 #: src/components/alerts/alerts-sheet.tsx
-msgid "Average exceeds <0>{value}{0}</0>"
-msgstr "O'rtacha <0>{value}{0}</0> dan oshadi"
+msgid "Average exceeds <0>{value}{unitLabel}</0>"
+msgstr "O'rtacha qiymat <0>{value}{unitLabel}</0> dan oshadi"
 
 #: src/components/routes/system/disk-io-sheet.tsx
 msgid "Average number of I/O operations waiting to be serviced"
@@ -261,6 +280,10 @@ msgstr "GPU'larning o'rtacha quvvat sarfi"
 msgctxt "Disk I/O average operation time (iostat await)"
 msgid "Average queue to completion time per operation"
 msgstr "Operatsiya boshlanishidan yakunlanishigacha o'rtacha vaqt"
+
+#: src/components/routes/system/charts/monitors-charts.tsx
+msgid "Average response time"
+msgstr "O'rtacha javob vaqti"
 
 #: src/components/routes/system/charts/cpu-charts.tsx
 msgid "Average system-wide CPU utilization"
@@ -354,10 +377,6 @@ msgstr "Ommaviy qo‘shish"
 msgid "Bulk Add {foo}"
 msgstr "{foo} ni ommaviy qo‘shish"
 
-#: src/components/network-monitors-table/network-monitors-columns.tsx
-msgid "Bulk copy"
-msgstr "Ommaviy nusxalash"
-
 #: src/components/routes/settings/general.tsx
 #: src/components/routes/settings/general.tsx
 msgid "Bytes (KB/s, MB/s, GB/s)"
@@ -406,15 +425,20 @@ msgstr "Selsiy (°C)"
 #: src/components/network-monitors-table/network-monitors-columns.tsx
 #: src/components/network-monitors-table/network-monitors-columns.tsx
 msgid "Certificate"
-msgstr ""
+msgstr "Sertifikat"
 
 #: src/components/network-monitors-table/network-monitors-table.tsx
 msgid "Certificate expired {expires}"
-msgstr ""
+msgstr "Sertifikat muddati tugagan: {expires}"
 
 #: src/components/network-monitors-table/network-monitors-table.tsx
 msgid "Certificate expires {expires}"
-msgstr ""
+msgstr "Sertifikat muddati tugaydi: {expires}"
+
+#. Version change
+#: src/components/routes/system/package-updates-table.tsx
+msgid "Change"
+msgstr "O'zgarish"
 
 #: src/components/routes/settings/general.tsx
 msgid "Change display units for metrics."
@@ -457,12 +481,18 @@ msgstr "Monitoring xizmatingizni tekshiring"
 msgid "Check your notification service"
 msgstr "Bildirishnoma xizmatingizni tekshiring"
 
+#. placeholder {0}: formatShortDate(new Date(data.checkedAt * 1000).toISOString())
+#: src/components/routes/system/package-updates-table.tsx
+msgid "Checked {0}"
+msgstr "Tekshirilgan: {0}"
+
 #: src/components/routes/system/storage-pools-table.tsx
 msgid "Checksum errors"
 msgstr "Nazorat summasi xatolari"
 
 #: src/components/containers-table/containers-table.tsx
 #: src/components/network-monitors-table/network-monitors-table.tsx
+#: src/components/routes/system/package-updates-table.tsx
 #: src/components/routes/system/smart-table.tsx
 #: src/components/routes/system/storage-pools-table.tsx
 #: src/components/routes/system/storage-pools-table.tsx
@@ -502,6 +532,14 @@ msgstr "Nusxalash uchun bosing"
 #: src/components/login/forgot-pass-form.tsx
 msgid "Command line instructions"
 msgstr "Buyruq qatori ko'rsatmalari"
+
+#: src/components/network-monitors-table/network-monitors-table.tsx
+msgid "Compare with other systems"
+msgstr "Boshqa tizimlar bilan solishtirish"
+
+#: src/components/network-monitors-table/network-monitors-table.tsx
+msgid "Compare with other targets"
+msgstr "Boshqa nishonlar bilan solishtirish"
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Configure how you receive alert notifications."
@@ -545,6 +583,10 @@ msgstr "Davom etish"
 #: src/lib/utils.ts
 msgid "Copied to clipboard"
 msgstr "Buferga nusxalandi"
+
+#: src/components/network-monitors-table/network-monitors-columns.tsx
+msgid "Copy bulk config"
+msgstr "Ommaviy konfiguratsiyani nusxalash"
 
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
@@ -596,10 +638,6 @@ msgstr "Agentni o'rnatish buyrug'ini pastdan nusxalang yoki agentlarni <0>univer
 #: src/components/add-system.tsx
 msgid "Copy the<0>docker-compose.yml</0> content for the agent below, or register agents automatically with a <1>universal token</1>."
 msgstr "Agent uchun<0>docker-compose.yml</0> mazmunini pastdan nusxalang yoki agentlarni <1>universal token</1> bilan avtomatik ro'yxatdan o'tkazing."
-
-#: src/components/network-monitors-table/network-monitors-columns.tsx
-msgid "Copy to system"
-msgstr "Tizimga nusxalash"
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Copy YAML"
@@ -688,6 +726,11 @@ msgstr "Jami yuklash"
 msgid "Cumulative Write"
 msgstr "Jami yozish"
 
+#. Current package version
+#: src/components/routes/system/package-updates-table.tsx
+msgid "Current"
+msgstr "Joriy"
+
 #. Context: Battery state
 #. Context: Battery state
 #: src/components/routes/system/charts/sensor-charts.tsx
@@ -761,10 +804,19 @@ msgstr "Disk ishlatilishi"
 msgid "Disk usage of {extraFsName}"
 msgstr "{extraFsName} ning disk ishlatilishi"
 
+#: src/components/alert-banner-sheet.tsx
+#: src/components/alert-banner-sheet.tsx
+msgid "Dismiss"
+msgstr "Yopish"
+
 #: src/components/routes/system/info-bar.tsx
 msgctxt "Layout display options"
 msgid "Display"
 msgstr "Ko'rsatish"
+
+#: src/components/network-monitors-table/monitor-dialog.tsx
+msgid "DNS Server"
+msgstr "DNS serveri"
 
 #: src/components/routes/system/charts/cpu-charts.tsx
 msgid "Docker CPU Usage"
@@ -846,6 +898,10 @@ msgstr "Endpoint URL"
 msgid "Endpoint URL to ping (required)"
 msgstr "Ping uchun endpoint URL (majburiy)"
 
+#: src/components/network-monitors-table/monitor-dialog.tsx
+msgid "Enter a domain name to look up. Put the resolver's IP in DNS Server."
+msgstr "Qidirish uchun domen nomini kiriting. Resolver IP manzilini DNS Server maydoniga kiriting."
+
 #: src/components/login/login.tsx
 msgid "Enter email address to reset password"
 msgstr "Parolni tiklash uchun elektron pochta manzilini kiriting"
@@ -864,7 +920,6 @@ msgstr "Vaqtinchalik"
 
 #: src/components/network-monitors-table/monitor-dialog.tsx
 #: src/components/network-monitors-table/monitor-dialog.tsx
-#: src/components/network-monitors-table/network-monitors-table.tsx
 #: src/components/network-monitors-table/network-monitors-table.tsx
 #: src/components/network-monitors-table/network-monitors-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
@@ -905,7 +960,7 @@ msgstr "Faollikdan chiqdi"
 
 #: src/components/network-monitors-table/network-monitors-columns.tsx
 msgid "Expired"
-msgstr ""
+msgstr "Muddati tugagan"
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Expires after one hour or on hub restart."
@@ -940,9 +995,17 @@ msgid "Failed to authenticate"
 msgstr "Autentifikatsiya muvaffaqiyatsiz tugadi"
 
 #: src/components/network-monitors-table/network-monitors-table.tsx
-#: src/components/network-monitors-table/network-monitors-table.tsx
 msgid "Failed to delete monitors."
 msgstr "Monitorlarni o‘chirish amalga oshmadi."
+
+#: src/components/systemd-table/systemd-table.tsx
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Failed to load logs."
+msgstr "Jurnallarni yuklab bo'lmadi."
+
+#: src/components/routes/system/package-updates-table.tsx
+msgid "Failed to load package updates"
+msgstr "Paket yangilanishlarini yuklab bo'lmadi"
 
 #: src/components/routes/settings/layout.tsx
 #: src/components/routes/settings/notifications.tsx
@@ -979,6 +1042,7 @@ msgstr "Ventilyatorlar"
 #: src/components/network-monitors-table/network-monitors-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/system/chart-card.tsx
+#: src/components/routes/system/package-updates-table.tsx
 #: src/components/routes/system/smart-table.tsx
 #: src/components/routes/system/storage-pools-table.tsx
 #: src/components/routes/system/storage-pools-table.tsx
@@ -1020,6 +1084,11 @@ msgstr "FreeBSD buyrug'i"
 #: src/lib/i18n.ts
 msgid "Full"
 msgstr "To'liq"
+
+#: src/components/containers-table/containers-table.tsx
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Fullscreen"
+msgstr "To'liq ekran"
 
 #. Context: General settings
 #: src/components/routes/settings/general.tsx
@@ -1068,6 +1137,10 @@ msgstr "Heartbeat monitoring"
 #: src/components/routes/settings/heartbeat.tsx
 msgid "Heartbeat sent successfully"
 msgstr "Heartbeat muvaffaqiyatli yuborildi"
+
+#: src/components/logs-display.tsx
+msgid "Hide timestamps"
+msgstr "Vaqt belgilarini yashirish"
 
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
@@ -1187,6 +1260,7 @@ msgid "Load state"
 msgstr "Yuklash holati"
 
 #: src/components/systemd-table/systemd-table.tsx
+#: src/components/systemd-table/systemd-table.tsx
 msgid "Loading..."
 msgstr "Yuklanmoqda..."
 
@@ -1207,6 +1281,7 @@ msgstr "Kirish urinishi muvaffaqiyatsiz tugadi"
 #: src/components/command-palette.tsx
 #: src/components/containers-table/containers-table.tsx
 #: src/components/navbar.tsx
+#: src/components/systemd-table/systemd-table.tsx
 msgid "Logs"
 msgstr "Jurnallar"
 
@@ -1227,6 +1302,11 @@ msgstr "1 soatlik yo‘qotish"
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Main PID"
 msgstr "Asosiy PID"
+
+#. Package version
+#: src/components/routes/system/package-updates-table.tsx
+msgid "Major"
+msgstr "Asosiy"
 
 #: src/components/routes/settings/layout.tsx
 msgid "Manage display and notification preferences."
@@ -1277,6 +1357,11 @@ msgstr "Konteynerlarning xotira ishlatilishi"
 #: src/components/network-monitors-table/network-monitors-columns.tsx
 msgid "Min 1h"
 msgstr "1 soat minimal"
+
+#. Package version
+#: src/components/routes/system/package-updates-table.tsx
+msgid "Minor"
+msgstr "Kichik"
 
 #. Device model
 #: src/components/routes/system/smart-table.tsx
@@ -1359,6 +1444,10 @@ msgstr "Yo'q"
 msgid "No detail data for this pool."
 msgstr "Bu pool uchun batafsil ma’lumot mavjud emas."
 
+#: src/components/systemd-table/systemd-table.tsx
+msgid "No logs found."
+msgstr "Jurnallar topilmadi."
+
 #: src/components/command-palette.tsx
 #: src/components/systemd-table/systemd-table.tsx
 msgid "No results found."
@@ -1369,6 +1458,7 @@ msgstr "Natijalar topilmadi."
 #: src/components/containers-table/containers-table.tsx
 #: src/components/network-monitors-table/network-monitors-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
+#: src/components/routes/system/package-updates-table.tsx
 #: src/components/routes/system/smart-table.tsx
 #: src/components/systemd-table/systemd-table.tsx
 msgid "No results."
@@ -1383,6 +1473,10 @@ msgstr "Ushbu qurilma uchun S.M.A.R.T. atributlari mavjud emas."
 #: src/components/systems-table/systems-table.tsx
 msgid "No systems found."
 msgstr "Tizimlar topilmadi."
+
+#: src/components/network-monitors-table/monitor-dialog.tsx
+msgid "No targets found."
+msgstr "Nishonlar topilmadi."
 
 #: src/components/routes/system/storage-pools-table.tsx
 msgid "None"
@@ -1438,17 +1532,32 @@ msgstr "Bir martalik parol"
 msgid "Open menu"
 msgstr "Menyuni ochish"
 
+#: src/components/network-monitors-table/monitor-dialog.tsx
+msgid "Optional. Defaults to the agent's system resolver."
+msgstr "Ixtiyoriy. Odatda agentning tizim resolveri ishlatiladi."
+
 #: src/components/login/auth-form.tsx
 msgid "Or continue with"
 msgstr "Yoki bilan davom eting"
 
+#. Package version
 #: src/components/routes/system/cpu-sheet.tsx
+#: src/components/routes/system/package-updates-table.tsx
 msgid "Other"
 msgstr "Boshqa"
 
 #: src/components/alerts/alerts-sheet.tsx
 msgid "Overwrite existing alerts"
 msgstr "Mavjud ogohlantirishlarni qayta yozish"
+
+#. Software package
+#: src/components/routes/system/package-updates-table.tsx
+msgid "Package"
+msgstr "Paket"
+
+#: src/components/routes/system/package-updates-table.tsx
+msgid "Package Updates"
+msgstr "Paket yangilanishlari"
 
 #: src/components/routes/system/charts/monitors-charts.tsx
 msgid "Packet loss (%)"
@@ -1461,9 +1570,12 @@ msgstr "Paket yo‘qotilishi (%)"
 msgid "Page"
 msgstr "Sahifa"
 
+#. placeholder {0}: pageIndex + 1
 #. placeholder {0}: table.getState().pagination.pageIndex + 1
+#. placeholder {1}: Math.max(table.getPageCount(), 1)
 #. placeholder {1}: table.getPageCount()
 #: src/components/routes/settings/alerts-history-data-table.tsx
+#: src/components/routes/system/package-updates-table.tsx
 msgid "Page {0} of {1}"
 msgstr "{0} / {1} sahifa"
 
@@ -1491,6 +1603,11 @@ msgstr "Parolni tiklash so'rovi qabul qilindi"
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Past"
 msgstr "O'tgan"
+
+#. Package version
+#: src/components/routes/system/package-updates-table.tsx
+msgid "Patch"
+msgstr ""
 
 #: src/components/network-monitors-table/network-monitors-columns.tsx
 #: src/components/systems-table/systems-table-columns.tsx
@@ -1624,6 +1741,7 @@ msgid "Queue Depth"
 msgstr "Navbat chuqurligi"
 
 #: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/settings/quiet-hours.tsx
 msgid "Quiet Hours"
 msgstr "Tinch soatlar"
 
@@ -1658,9 +1776,11 @@ msgid "Received"
 msgstr "Qabul qilindi"
 
 #: src/components/containers-table/containers-table.tsx
-#: src/components/containers-table/containers-table.tsx
+#: src/components/logs-display.tsx
+#: src/components/logs-display.tsx
 #: src/components/routes/system/smart-table.tsx
 #: src/components/routes/system/storage-pools-table.tsx
+#: src/components/systemd-table/systemd-table.tsx
 msgid "Refresh"
 msgstr "Yangilash"
 
@@ -1697,6 +1817,7 @@ msgstr "Hal qilindi"
 #: src/components/network-monitors-table/network-monitors-columns.tsx
 #: src/components/network-monitors-table/network-monitors-columns.tsx
 #: src/components/routes/system/charts/monitors-charts.tsx
+#: src/components/routes/system/charts/monitors-charts.tsx
 msgid "Response"
 msgstr "Javob"
 
@@ -1713,6 +1834,11 @@ msgstr "Qayta ishga tushirishlar"
 msgid "Resume"
 msgstr "Davom ettirish"
 
+#. Package version
+#: src/components/routes/system/package-updates-table.tsx
+msgid "Revision"
+msgstr "Revizya"
+
 #: src/components/routes/system/charts/disk-charts.tsx
 #: src/components/routes/system/charts/disk-charts.tsx
 #: src/components/systems-table/systems-table-columns.tsx
@@ -1725,6 +1851,7 @@ msgid "Rotate token"
 msgstr "Tokenni yangilash"
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
+#: src/components/routes/system/package-updates-table.tsx
 msgid "Rows per page"
 msgstr "Sahifadagi qatorlar"
 
@@ -1782,13 +1909,26 @@ msgid "Search for systems or settings..."
 msgstr "Tizimlar yoki sozlamalarni qidiring..."
 
 #: src/components/network-monitors-table/monitor-dialog.tsx
-#: src/components/network-monitors-table/monitor-dialog.tsx
 msgid "Search systems"
 msgstr "Tizimlarni qidirish"
+
+#: src/components/network-monitors-table/monitor-dialog.tsx
+msgid "Search targets"
+msgstr "Nishonlarni qidirish"
 
 #: src/components/routes/settings/heartbeat.tsx
 msgid "Seconds between pings (default: 60)"
 msgstr "Pinglar orasidagi soniyalar (standart: 60)"
+
+#. Security update
+#: src/components/routes/system/package-updates-table.tsx
+#: src/components/routes/system/package-updates-table.tsx
+msgid "Security"
+msgstr "Xavfsizlik"
+
+#: src/components/routes/system/package-updates-table.tsx
+msgid "Security: {securityCount}"
+msgstr "Xavfsizlik: {securityCount}"
 
 #: src/components/alerts/alerts-sheet.tsx
 msgid "See <0>notification settings</0> to configure how you receive alerts."
@@ -1818,6 +1958,10 @@ msgstr "Qatorni tanlash"
 #: src/components/network-monitors-table/monitor-dialog.tsx
 msgid "Select systems"
 msgstr "Tizimlarni tanlash"
+
+#: src/components/network-monitors-table/monitor-dialog.tsx
+msgid "Select targets"
+msgstr "Nishonlarni tanlang"
 
 #: src/components/routes/settings/heartbeat.tsx
 msgid "Send a single heartbeat ping to verify your endpoint is working."
@@ -1870,9 +2014,18 @@ msgstr "Sozlamalar"
 msgid "Settings saved"
 msgstr "Sozlamalar saqlandi"
 
+#: src/components/logs-display.tsx
+#: src/components/logs-display.tsx
+msgid "Show timestamps"
+msgstr "Vaqt belgilarini ko'rsatish"
+
 #: src/components/login/auth-form.tsx
 msgid "Sign in"
 msgstr "Kirish"
+
+#: src/components/routes/system/charts/wifi-chart.tsx
+msgid "Signal strength of connected Wi-Fi interfaces"
+msgstr "Ulangan Wi-Fi interfeyslarining signal kuchi"
 
 #: src/components/command-palette.tsx
 msgid "SMTP settings"
@@ -1976,7 +2129,7 @@ msgstr "Maqsad"
 
 #: src/components/network-monitors-table/monitor-dialog.tsx
 #: src/components/network-monitors-table/monitor-dialog.tsx
-msgid "target[,protocol[,port[,interval]]]"
+msgid "target[,protocol[,port[,interval[,server]]]]"
 msgstr ""
 
 #: src/components/systemd-table/systemd-table.tsx
@@ -2085,6 +2238,8 @@ msgid "Total time spent on read/write (can exceed 100%)"
 msgstr "O'qish/yozishga sarflangan jami vaqt (100% dan oshishi mumkin)"
 
 #. placeholder {0}: data.length
+#. placeholder {0}: rows.length
+#: src/components/routes/system/package-updates-table.tsx
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Total: {0}"
 msgstr "Jami: {0}"
@@ -2184,10 +2339,11 @@ msgstr "Birlik parametrlari"
 #: src/components/command-palette.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Universal token"
-msgstr "Universal token"
+msgstr "Universal tokeni"
 
 #. Context: Battery state
 #: src/components/routes/system/storage-pools-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 #: src/lib/i18n.ts
 msgid "Unknown"
 msgstr "Noma'lum"
@@ -2207,6 +2363,11 @@ msgstr "Ishlayapti"
 msgid "Up ({upSystemsLength})"
 msgstr "Ishlayapti ({upSystemsLength})"
 
+#: src/components/routes/system/package-updates-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
+msgid "Up to date"
+msgstr "Yangilangan"
+
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Update"
 msgstr "Yangilash"
@@ -2223,6 +2384,11 @@ msgstr "Yangilandi"
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Updated every 10 minutes."
 msgstr "Har 10 daqiqada yangilanadi."
+
+#: src/components/routes/system.tsx
+#: src/components/systems-table/systems-table-columns.tsx
+msgid "Updates"
+msgstr "Yangilanishlar"
 
 #: src/components/routes/system/network-sheet.tsx
 msgid "Upload"
@@ -2274,6 +2440,14 @@ msgstr "Qiymat"
 msgid "View"
 msgstr "Ko'rish"
 
+#: src/components/active-alerts.tsx
+msgid "View alerts"
+msgstr "Ogohlantirishlarni ko'rish"
+
+#: src/components/alert-banner-sheet.tsx
+msgid "View details"
+msgstr "Tafsilotlarni ko'rish"
+
 #: src/components/routes/system/cpu-sheet.tsx
 #: src/components/routes/system/disk-io-sheet.tsx
 #: src/components/routes/system/network-sheet.tsx
@@ -2321,6 +2495,10 @@ msgstr "Yoqilganda, ushbu token agentlarga oldindan tizim yaratmasdan o'z-o'zini
 msgid "When using POST, each heartbeat includes a JSON payload with system status summary, list of down systems, and triggered alerts."
 msgstr "POST ishlatilganda, har bir heartbeat tizim holati xulosasi, ishlamayotgan tizimlar ro'yxati va ishga tushirilgan ogohlantirishlarni o'z ichiga olgan JSON yuklamani o'z ichiga oladi."
 
+#: src/components/routes/system/charts/wifi-chart.tsx
+msgid "Wi-Fi signal"
+msgstr "Wi-Fi signali"
+
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgctxt "Button to copy install command"
@@ -2359,12 +2537,4 @@ msgstr "Ha"
 #: src/components/routes/settings/layout.tsx
 msgid "Your user settings have been updated."
 msgstr "Foydalanuvchi sozlamalaringiz yangilandi."
-
-#: src/components/logs-display.tsx
-msgid "Show timestamps"
-msgstr ""
-
-#: src/components/logs-display.tsx
-msgid "Hide timestamps"
-msgstr ""
 
