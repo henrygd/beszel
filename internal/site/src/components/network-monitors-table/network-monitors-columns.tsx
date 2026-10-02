@@ -142,7 +142,8 @@ export function getMonitorColumns(
 		{
 			id: "target",
 			meta: { label: t`Target` },
-			sortingFn: (a, b) => a.original.target.localeCompare(b.original.target),
+			sortingFn: (a, b) =>
+				(a.getValue("target") as string).localeCompare(b.getValue("target") as string, undefined, { numeric: true }),
 			accessorFn: (record) => getMonitorTarget(record),
 			header: ({ column }) => <HeaderButton column={column} name={t`Target`} Icon={GlobeIcon} />,
 			cell: ({ row, getValue }) => {
@@ -173,12 +174,13 @@ export function getMonitorColumns(
 		{
 			id: "protocol",
 			meta: { label: t`Protocol` },
-			accessorFn: (record) => record.protocol,
+			// The target column hides the URL scheme, so show https here instead.
+			accessorFn: (record) =>
+				record.protocol === "http" && /^https:\/\//i.test(record.target) ? "https" : record.protocol,
 			header: ({ column }) => <HeaderButton column={column} name={t`Protocol`} Icon={ArrowLeftRightIcon} />,
-			cell: ({ getValue }) => {
-				const protocol = getValue() as string
-				return <Badge className={cn("uppercase", protocolColors[protocol])}>{protocol}</Badge>
-			},
+			cell: ({ row, getValue }) => (
+				<Badge className={cn("uppercase", protocolColors[row.original.protocol])}>{getValue() as string}</Badge>
+			),
 		},
 		{
 			id: "interval",
