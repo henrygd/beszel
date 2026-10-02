@@ -42,13 +42,15 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 
 import { RawCapacityLabel } from "./raw-capacity-label"
 
-const ZFS_POOL_FIELDS = "id,system,name,display_name,health,size,alloc,free,raw,scrub,details_updated,updated"
+const ZFS_POOL_FIELDS = "id,system,name,display_name,health,status,size,alloc,free,raw,scrub,details_updated,updated"
 
-/** Maps a zpool health string to a Badge variant. */
-function healthVariant(health: string): "success" | "warning" | "danger" | "outline" {
+/** Maps a zpool health string to a Badge variant. A pool that carries a
+ * `zpool status` advisory message (e.g. corrected device errors) is shown
+ * as a warning even when its state is ONLINE. */
+function healthVariant(health: string, hasStatus = false): "success" | "warning" | "danger" | "outline" {
 	switch (health) {
 		case "ONLINE":
-			return "success"
+			return hasStatus ? "warning" : "success"
 		case "DEGRADED":
 			return "warning"
 		case "FAULTED":
@@ -113,9 +115,14 @@ const columns: ColumnDef<ZfsPoolRecord>[] = [
 		accessorKey: "health",
 		sortingFn: (a, b) => a.original.health.localeCompare(b.original.health),
 		header: ({ column }) => <HeaderButton column={column} name={t`Health`} Icon={ActivityIcon} />,
-		cell: ({ getValue }) => {
+		cell: ({ getValue, row }) => {
 			const health = (getValue() as string) || ""
-			return <Badge variant={healthVariant(health)}>{health || t`Unknown`}</Badge>
+			const status = row.original.status
+			return (
+				<Badge variant={healthVariant(health, !!status)} title={status || undefined}>
+					{health || t`Unknown`}
+				</Badge>
+			)
 		},
 	},
 	{
@@ -354,7 +361,7 @@ function PoolSheet({
 	}, [open, poolId])
 
 	const health = pool?.health || ""
-	const healthVariantValue = healthVariant(health)
+	const healthVariantValue = healthVariant(health, !!pool?.status)
 	const HealthIcon =
 		healthVariantValue === "success"
 			? CheckCircleIcon
@@ -410,6 +417,7 @@ function PoolSheet({
 									<AlertTitle>
 										<Trans>Pool Health</Trans>: {health}
 									</AlertTitle>
+									{pool.status && <AlertDescription>{pool.status}</AlertDescription>}
 									{pool.scrub?.state && (
 										<AlertDescription>
 											Scrub: {pool.scrub.state}
