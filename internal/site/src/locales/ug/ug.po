@@ -8,7 +8,7 @@ msgstr ""
 "Language: ug\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2026-10-01 02:41\n"
+"PO-Revision-Date: 2026-10-02 17:15\n"
 "Last-Translator: \n"
 "Language-Team: Uyghur\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
@@ -30,10 +30,18 @@ msgstr ""
 msgid "{0} of {1} row(s) selected."
 msgstr ""
 
-#. placeholder {0}: selectedSystemIds.size
+#. placeholder {0}: selectedIds.size
 #: src/components/network-monitors-table/monitor-dialog.tsx
 #: src/components/network-monitors-table/monitor-dialog.tsx
 msgid "{0} selected"
+msgstr ""
+
+#: src/components/active-alerts.tsx
+msgid "{alertCount, plural, one {# active alert} other {# active alerts}}"
+msgstr ""
+
+#: src/components/active-alerts.tsx
+msgid "{alertCount, plural, one {# alert is currently triggered} other {# alerts are currently triggered}}"
 msgstr ""
 
 #: src/components/routes/system/info-bar.tsx
@@ -64,8 +72,16 @@ msgstr ""
 msgid "{numFailed, plural, one {# failed service} other {# failed services}}"
 msgstr ""
 
+#: src/components/active-alerts.tsx
+msgid "{systemCount, plural, one {Across # system} other {Across # systems}}"
+msgstr ""
+
 #: src/components/routes/system/info-bar.tsx
 msgid "{threads, plural, one {# thread} other {# threads}}"
+msgstr ""
+
+#: src/components/systems-table/systems-table-columns.tsx
+msgid "{total, plural, one {# update} other {# updates}}"
 msgstr ""
 
 #: src/components/systems-table/systems-table-columns.tsx
@@ -231,6 +247,11 @@ msgctxt "Disk space available"
 msgid "Available"
 msgstr ""
 
+#. Package version available to install
+#: src/components/routes/system/package-updates-table.tsx
+msgid "Available"
+msgstr ""
+
 #: src/components/routes/system/chart-card.tsx
 msgid "Average"
 msgstr ""
@@ -239,14 +260,12 @@ msgstr ""
 msgid "Average CPU utilization of containers"
 msgstr ""
 
-#. placeholder {0}: alertData.unit
 #: src/components/alerts/alerts-sheet.tsx
-msgid "Average drops below <0>{value}{0}</0>"
+msgid "Average drops below <0>{value}{unitLabel}</0>"
 msgstr ""
 
-#. placeholder {0}: alertData.unit
 #: src/components/alerts/alerts-sheet.tsx
-msgid "Average exceeds <0>{value}{0}</0>"
+msgid "Average exceeds <0>{value}{unitLabel}</0>"
 msgstr ""
 
 #: src/components/routes/system/disk-io-sheet.tsx
@@ -260,6 +279,10 @@ msgstr ""
 #: src/components/routes/system/disk-io-sheet.tsx
 msgctxt "Disk I/O average operation time (iostat await)"
 msgid "Average queue to completion time per operation"
+msgstr ""
+
+#: src/components/routes/system/charts/monitors-charts.tsx
+msgid "Average response time"
 msgstr ""
 
 #: src/components/routes/system/charts/cpu-charts.tsx
@@ -354,10 +377,6 @@ msgstr ""
 msgid "Bulk Add {foo}"
 msgstr ""
 
-#: src/components/network-monitors-table/network-monitors-columns.tsx
-msgid "Bulk copy"
-msgstr ""
-
 #: src/components/routes/settings/general.tsx
 #: src/components/routes/settings/general.tsx
 msgid "Bytes (KB/s, MB/s, GB/s)"
@@ -416,6 +435,11 @@ msgstr ""
 msgid "Certificate expires {expires}"
 msgstr ""
 
+#. Version change
+#: src/components/routes/system/package-updates-table.tsx
+msgid "Change"
+msgstr ""
+
 #: src/components/routes/settings/general.tsx
 msgid "Change display units for metrics."
 msgstr ""
@@ -457,12 +481,18 @@ msgstr ""
 msgid "Check your notification service"
 msgstr ""
 
+#. placeholder {0}: formatShortDate(new Date(data.checkedAt * 1000).toISOString())
+#: src/components/routes/system/package-updates-table.tsx
+msgid "Checked {0}"
+msgstr ""
+
 #: src/components/routes/system/storage-pools-table.tsx
 msgid "Checksum errors"
 msgstr ""
 
 #: src/components/containers-table/containers-table.tsx
 #: src/components/network-monitors-table/network-monitors-table.tsx
+#: src/components/routes/system/package-updates-table.tsx
 #: src/components/routes/system/smart-table.tsx
 #: src/components/routes/system/storage-pools-table.tsx
 #: src/components/routes/system/storage-pools-table.tsx
@@ -501,6 +531,14 @@ msgstr ""
 #: src/components/login/forgot-pass-form.tsx
 #: src/components/login/forgot-pass-form.tsx
 msgid "Command line instructions"
+msgstr ""
+
+#: src/components/network-monitors-table/network-monitors-table.tsx
+msgid "Compare with other systems"
+msgstr ""
+
+#: src/components/network-monitors-table/network-monitors-table.tsx
+msgid "Compare with other targets"
 msgstr ""
 
 #: src/components/routes/settings/notifications.tsx
@@ -544,6 +582,10 @@ msgstr ""
 
 #: src/lib/utils.ts
 msgid "Copied to clipboard"
+msgstr ""
+
+#: src/components/network-monitors-table/network-monitors-columns.tsx
+msgid "Copy bulk config"
 msgstr ""
 
 #: src/components/add-system.tsx
@@ -595,10 +637,6 @@ msgstr ""
 
 #: src/components/add-system.tsx
 msgid "Copy the<0>docker-compose.yml</0> content for the agent below, or register agents automatically with a <1>universal token</1>."
-msgstr ""
-
-#: src/components/network-monitors-table/network-monitors-columns.tsx
-msgid "Copy to system"
 msgstr ""
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
@@ -688,6 +726,11 @@ msgstr ""
 msgid "Cumulative Write"
 msgstr ""
 
+#. Current package version
+#: src/components/routes/system/package-updates-table.tsx
+msgid "Current"
+msgstr ""
+
 #. Context: Battery state
 #. Context: Battery state
 #: src/components/routes/system/charts/sensor-charts.tsx
@@ -761,9 +804,18 @@ msgstr ""
 msgid "Disk usage of {extraFsName}"
 msgstr ""
 
+#: src/components/alert-banner-sheet.tsx
+#: src/components/alert-banner-sheet.tsx
+msgid "Dismiss"
+msgstr ""
+
 #: src/components/routes/system/info-bar.tsx
 msgctxt "Layout display options"
 msgid "Display"
+msgstr ""
+
+#: src/components/network-monitors-table/monitor-dialog.tsx
+msgid "DNS Server"
 msgstr ""
 
 #: src/components/routes/system/charts/cpu-charts.tsx
@@ -846,6 +898,10 @@ msgstr ""
 msgid "Endpoint URL to ping (required)"
 msgstr ""
 
+#: src/components/network-monitors-table/monitor-dialog.tsx
+msgid "Enter a domain name to look up. Put the resolver's IP in DNS Server."
+msgstr ""
+
 #: src/components/login/login.tsx
 msgid "Enter email address to reset password"
 msgstr ""
@@ -864,7 +920,6 @@ msgstr ""
 
 #: src/components/network-monitors-table/monitor-dialog.tsx
 #: src/components/network-monitors-table/monitor-dialog.tsx
-#: src/components/network-monitors-table/network-monitors-table.tsx
 #: src/components/network-monitors-table/network-monitors-table.tsx
 #: src/components/network-monitors-table/network-monitors-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
@@ -940,8 +995,16 @@ msgid "Failed to authenticate"
 msgstr ""
 
 #: src/components/network-monitors-table/network-monitors-table.tsx
-#: src/components/network-monitors-table/network-monitors-table.tsx
 msgid "Failed to delete monitors."
+msgstr ""
+
+#: src/components/systemd-table/systemd-table.tsx
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Failed to load logs."
+msgstr ""
+
+#: src/components/routes/system/package-updates-table.tsx
+msgid "Failed to load package updates"
 msgstr ""
 
 #: src/components/routes/settings/layout.tsx
@@ -979,6 +1042,7 @@ msgstr ""
 #: src/components/network-monitors-table/network-monitors-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/system/chart-card.tsx
+#: src/components/routes/system/package-updates-table.tsx
 #: src/components/routes/system/smart-table.tsx
 #: src/components/routes/system/storage-pools-table.tsx
 #: src/components/routes/system/storage-pools-table.tsx
@@ -1019,6 +1083,11 @@ msgstr ""
 #: src/components/routes/system/info-bar.tsx
 #: src/lib/i18n.ts
 msgid "Full"
+msgstr ""
+
+#: src/components/containers-table/containers-table.tsx
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Fullscreen"
 msgstr ""
 
 #. Context: General settings
@@ -1067,6 +1136,10 @@ msgstr ""
 
 #: src/components/routes/settings/heartbeat.tsx
 msgid "Heartbeat sent successfully"
+msgstr ""
+
+#: src/components/logs-display.tsx
+msgid "Hide timestamps"
 msgstr ""
 
 #: src/components/add-system.tsx
@@ -1187,6 +1260,7 @@ msgid "Load state"
 msgstr ""
 
 #: src/components/systemd-table/systemd-table.tsx
+#: src/components/systemd-table/systemd-table.tsx
 msgid "Loading..."
 msgstr ""
 
@@ -1207,6 +1281,7 @@ msgstr ""
 #: src/components/command-palette.tsx
 #: src/components/containers-table/containers-table.tsx
 #: src/components/navbar.tsx
+#: src/components/systemd-table/systemd-table.tsx
 msgid "Logs"
 msgstr ""
 
@@ -1226,6 +1301,11 @@ msgstr ""
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Main PID"
+msgstr ""
+
+#. Package version
+#: src/components/routes/system/package-updates-table.tsx
+msgid "Major"
 msgstr ""
 
 #: src/components/routes/settings/layout.tsx
@@ -1276,6 +1356,11 @@ msgstr "كونتېينېرلارنىڭ ئەسلەك ئىشلىتىشى"
 #: src/components/network-monitors-table/network-monitors-columns.tsx
 #: src/components/network-monitors-table/network-monitors-columns.tsx
 msgid "Min 1h"
+msgstr ""
+
+#. Package version
+#: src/components/routes/system/package-updates-table.tsx
+msgid "Minor"
 msgstr ""
 
 #. Device model
@@ -1359,6 +1444,10 @@ msgstr ""
 msgid "No detail data for this pool."
 msgstr ""
 
+#: src/components/systemd-table/systemd-table.tsx
+msgid "No logs found."
+msgstr ""
+
 #: src/components/command-palette.tsx
 #: src/components/systemd-table/systemd-table.tsx
 msgid "No results found."
@@ -1369,6 +1458,7 @@ msgstr ""
 #: src/components/containers-table/containers-table.tsx
 #: src/components/network-monitors-table/network-monitors-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
+#: src/components/routes/system/package-updates-table.tsx
 #: src/components/routes/system/smart-table.tsx
 #: src/components/systemd-table/systemd-table.tsx
 msgid "No results."
@@ -1382,6 +1472,10 @@ msgstr ""
 #: src/components/systems-table/systems-table.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "No systems found."
+msgstr ""
+
+#: src/components/network-monitors-table/monitor-dialog.tsx
+msgid "No targets found."
 msgstr ""
 
 #: src/components/routes/system/storage-pools-table.tsx
@@ -1438,16 +1532,31 @@ msgstr ""
 msgid "Open menu"
 msgstr ""
 
+#: src/components/network-monitors-table/monitor-dialog.tsx
+msgid "Optional. Defaults to the agent's system resolver."
+msgstr ""
+
 #: src/components/login/auth-form.tsx
 msgid "Or continue with"
 msgstr ""
 
+#. Package version
 #: src/components/routes/system/cpu-sheet.tsx
+#: src/components/routes/system/package-updates-table.tsx
 msgid "Other"
 msgstr ""
 
 #: src/components/alerts/alerts-sheet.tsx
 msgid "Overwrite existing alerts"
+msgstr ""
+
+#. Software package
+#: src/components/routes/system/package-updates-table.tsx
+msgid "Package"
+msgstr ""
+
+#: src/components/routes/system/package-updates-table.tsx
+msgid "Package Updates"
 msgstr ""
 
 #: src/components/routes/system/charts/monitors-charts.tsx
@@ -1461,9 +1570,12 @@ msgstr ""
 msgid "Page"
 msgstr ""
 
+#. placeholder {0}: pageIndex + 1
 #. placeholder {0}: table.getState().pagination.pageIndex + 1
+#. placeholder {1}: Math.max(table.getPageCount(), 1)
 #. placeholder {1}: table.getPageCount()
 #: src/components/routes/settings/alerts-history-data-table.tsx
+#: src/components/routes/system/package-updates-table.tsx
 msgid "Page {0} of {1}"
 msgstr ""
 
@@ -1490,6 +1602,11 @@ msgstr ""
 
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Past"
+msgstr ""
+
+#. Package version
+#: src/components/routes/system/package-updates-table.tsx
+msgid "Patch"
 msgstr ""
 
 #: src/components/network-monitors-table/network-monitors-columns.tsx
@@ -1624,6 +1741,7 @@ msgid "Queue Depth"
 msgstr ""
 
 #: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/settings/quiet-hours.tsx
 msgid "Quiet Hours"
 msgstr ""
 
@@ -1658,9 +1776,11 @@ msgid "Received"
 msgstr ""
 
 #: src/components/containers-table/containers-table.tsx
-#: src/components/containers-table/containers-table.tsx
+#: src/components/logs-display.tsx
+#: src/components/logs-display.tsx
 #: src/components/routes/system/smart-table.tsx
 #: src/components/routes/system/storage-pools-table.tsx
+#: src/components/systemd-table/systemd-table.tsx
 msgid "Refresh"
 msgstr ""
 
@@ -1697,6 +1817,7 @@ msgstr ""
 #: src/components/network-monitors-table/network-monitors-columns.tsx
 #: src/components/network-monitors-table/network-monitors-columns.tsx
 #: src/components/routes/system/charts/monitors-charts.tsx
+#: src/components/routes/system/charts/monitors-charts.tsx
 msgid "Response"
 msgstr ""
 
@@ -1713,6 +1834,11 @@ msgstr ""
 msgid "Resume"
 msgstr ""
 
+#. Package version
+#: src/components/routes/system/package-updates-table.tsx
+msgid "Revision"
+msgstr ""
+
 #: src/components/routes/system/charts/disk-charts.tsx
 #: src/components/routes/system/charts/disk-charts.tsx
 #: src/components/systems-table/systems-table-columns.tsx
@@ -1725,6 +1851,7 @@ msgid "Rotate token"
 msgstr ""
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
+#: src/components/routes/system/package-updates-table.tsx
 msgid "Rows per page"
 msgstr ""
 
@@ -1782,12 +1909,25 @@ msgid "Search for systems or settings..."
 msgstr ""
 
 #: src/components/network-monitors-table/monitor-dialog.tsx
-#: src/components/network-monitors-table/monitor-dialog.tsx
 msgid "Search systems"
+msgstr ""
+
+#: src/components/network-monitors-table/monitor-dialog.tsx
+msgid "Search targets"
 msgstr ""
 
 #: src/components/routes/settings/heartbeat.tsx
 msgid "Seconds between pings (default: 60)"
+msgstr ""
+
+#. Security update
+#: src/components/routes/system/package-updates-table.tsx
+#: src/components/routes/system/package-updates-table.tsx
+msgid "Security"
+msgstr ""
+
+#: src/components/routes/system/package-updates-table.tsx
+msgid "Security: {securityCount}"
 msgstr ""
 
 #: src/components/alerts/alerts-sheet.tsx
@@ -1817,6 +1957,10 @@ msgstr ""
 
 #: src/components/network-monitors-table/monitor-dialog.tsx
 msgid "Select systems"
+msgstr ""
+
+#: src/components/network-monitors-table/monitor-dialog.tsx
+msgid "Select targets"
 msgstr ""
 
 #: src/components/routes/settings/heartbeat.tsx
@@ -1870,8 +2014,17 @@ msgstr ""
 msgid "Settings saved"
 msgstr ""
 
+#: src/components/logs-display.tsx
+#: src/components/logs-display.tsx
+msgid "Show timestamps"
+msgstr ""
+
 #: src/components/login/auth-form.tsx
 msgid "Sign in"
+msgstr ""
+
+#: src/components/routes/system/charts/wifi-chart.tsx
+msgid "Signal strength of connected Wi-Fi interfaces"
 msgstr ""
 
 #: src/components/command-palette.tsx
@@ -1976,7 +2129,7 @@ msgstr ""
 
 #: src/components/network-monitors-table/monitor-dialog.tsx
 #: src/components/network-monitors-table/monitor-dialog.tsx
-msgid "target[,protocol[,port[,interval]]]"
+msgid "target[,protocol[,port[,interval[,server]]]]"
 msgstr ""
 
 #: src/components/systemd-table/systemd-table.tsx
@@ -2085,6 +2238,8 @@ msgid "Total time spent on read/write (can exceed 100%)"
 msgstr ""
 
 #. placeholder {0}: data.length
+#. placeholder {0}: rows.length
+#: src/components/routes/system/package-updates-table.tsx
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Total: {0}"
 msgstr ""
@@ -2188,6 +2343,7 @@ msgstr ""
 
 #. Context: Battery state
 #: src/components/routes/system/storage-pools-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 #: src/lib/i18n.ts
 msgid "Unknown"
 msgstr ""
@@ -2207,6 +2363,11 @@ msgstr ""
 msgid "Up ({upSystemsLength})"
 msgstr ""
 
+#: src/components/routes/system/package-updates-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
+msgid "Up to date"
+msgstr ""
+
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Update"
 msgstr ""
@@ -2222,6 +2383,11 @@ msgstr ""
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Updated every 10 minutes."
+msgstr ""
+
+#: src/components/routes/system.tsx
+#: src/components/systems-table/systems-table-columns.tsx
+msgid "Updates"
 msgstr ""
 
 #: src/components/routes/system/network-sheet.tsx
@@ -2274,6 +2440,14 @@ msgstr ""
 msgid "View"
 msgstr ""
 
+#: src/components/active-alerts.tsx
+msgid "View alerts"
+msgstr ""
+
+#: src/components/alert-banner-sheet.tsx
+msgid "View details"
+msgstr ""
+
 #: src/components/routes/system/cpu-sheet.tsx
 #: src/components/routes/system/disk-io-sheet.tsx
 #: src/components/routes/system/network-sheet.tsx
@@ -2321,6 +2495,10 @@ msgstr ""
 msgid "When using POST, each heartbeat includes a JSON payload with system status summary, list of down systems, and triggered alerts."
 msgstr ""
 
+#: src/components/routes/system/charts/wifi-chart.tsx
+msgid "Wi-Fi signal"
+msgstr ""
+
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgctxt "Button to copy install command"
@@ -2358,13 +2536,5 @@ msgstr ""
 
 #: src/components/routes/settings/layout.tsx
 msgid "Your user settings have been updated."
-msgstr ""
-
-#: src/components/logs-display.tsx
-msgid "Show timestamps"
-msgstr ""
-
-#: src/components/logs-display.tsx
-msgid "Hide timestamps"
 msgstr ""
 
