@@ -3,7 +3,8 @@
 Reports connected station interfaces only (no scans). `info.wf` holds the current
 snapshot keyed by interface (`s` SSID, `r` RSSI in dBm when available);
 `stats.wf` stores available RSSI as integer dBm. Collected on the default
-interval only; real-time requests reuse the last snapshot.
+interval only; real-time requests reuse the last snapshot. Set `SKIP_WIFI=true`
+on the agent to disable collection.
 
 - Linux: nl80211 via `github.com/mdlayher/wifi`. Docker needs `network_mode: host`.
   Skipped when `/sys/class/ieee80211` lists no wireless devices.
