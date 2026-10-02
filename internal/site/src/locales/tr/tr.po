@@ -8,7 +8,7 @@ msgstr ""
 "Language: tr\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2026-09-24 17:29\n"
+"PO-Revision-Date: 2026-10-02 14:33\n"
 "Last-Translator: \n"
 "Language-Team: Turkish\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
@@ -137,7 +137,7 @@ msgstr "Aktif durum"
 
 #: src/components/network-monitors-table/monitor-dialog.tsx
 msgid "Add"
-msgstr ""
+msgstr "Ekle"
 
 #: src/components/network-monitors-table/monitor-dialog.tsx
 #: src/components/network-monitors-table/monitor-dialog.tsx
@@ -406,7 +406,7 @@ msgstr "Santigrat (°C)"
 #: src/components/network-monitors-table/network-monitors-columns.tsx
 #: src/components/network-monitors-table/network-monitors-columns.tsx
 msgid "Certificate"
-msgstr ""
+msgstr "Sertifika"
 
 #: src/components/network-monitors-table/network-monitors-table.tsx
 msgid "Certificate expired {expires}"
@@ -2359,4 +2359,12 @@ msgstr "Evet"
 #: src/components/routes/settings/layout.tsx
 msgid "Your user settings have been updated."
 msgstr "Kullanıcı ayarlarınız güncellendi."
+
+#: src/components/logs-display.tsx
+msgid "Show timestamps"
+msgstr ""
+
+#: src/components/logs-display.tsx
+msgid "Hide timestamps"
+msgstr ""
 

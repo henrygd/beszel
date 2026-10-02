@@ -8,7 +8,7 @@ msgstr ""
 "Language: nl\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2026-09-24 17:29\n"
+"PO-Revision-Date: 2026-10-01 02:41\n"
 "Last-Translator: \n"
 "Language-Team: Dutch\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
@@ -2367,3 +2367,4 @@ msgstr "Tijdstempels tonen"
 #: src/components/logs-display.tsx
 msgid "Hide timestamps"
 msgstr "Tijdstempels verbergen"
+
