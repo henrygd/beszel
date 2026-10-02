@@ -141,6 +141,134 @@ func TestMountpointsDecodeEscapes(t *testing.T) {
 	assert.Equal(t, "/mnt/my data", mountpointsByDevice()["test-btrfs"])
 }
 
+func TestFilesystemsIoctlFallback(t *testing.T) {
+	// Kernels without sysfs devinfo (pre-5.13, e.g. Synology DSM) still
+	// answer FS_INFO and DEV_INFO; member state comes through them.
+	root := t.TempDir()
+	oldSysfs, oldMounts, oldInfo := sysfsPath, mountsPath, mountinfoPath
+	sysfsPath, mountsPath, mountinfoPath = root, filepath.Join(root, "mounts"), filepath.Join(root, "missing-mountinfo")
+	oldUUID, oldUsage, oldFSInfo, oldDevInfo := mountUUID, filesystemUsage, filesystemInfo, deviceInfo
+	t.Cleanup(func() {
+		sysfsPath, mountsPath, mountinfoPath = oldSysfs, oldMounts, oldInfo
+		mountUUID, filesystemUsage, filesystemInfo, deviceInfo = oldUUID, oldUsage, oldFSInfo, oldDevInfo
+	})
+
+	uuid := "1b2c3d4e-0000-0000-0000-000000000000"
+	fsDir := filepath.Join(root, uuid)
+	write := func(rel, content string) {
+		path := filepath.Join(fsDir, rel)
+		require.NoError(t, os.MkdirAll(filepath.Dir(path), 0o755))
+		require.NoError(t, os.WriteFile(path, []byte(content), 0o644))
+	}
+	write("devices/dm-1/size", "1000\n")
+	write("devices/dm-2/size", "1000\n")
+	write("label", "tank\n")
+	require.NoError(t, os.WriteFile(mountsPath, []byte("/dev/dm-1 /mnt/storage btrfs rw 0 0\n"), 0o644))
+	mountUUID = func(path string) string {
+		if path == "/mnt/storage" {
+			return uuid
+		}
+		return ""
+	}
+	filesystemUsage = func(string) (uint64, uint64, error) { return 0, 0, os.ErrNotExist }
+
+	// A healthy two-member pool with a devid gap left by a past device
+	// removal: devid 2 answering ENODEV must not imply degradation.
+	filesystemInfo = func(string) (fsInfoArgs, error) {
+		return fsInfoArgs{maxID: 3, numDevices: 2}, nil
+	}
+	deviceInfo = func(_ string, devid uint64) (deviceInfoArgs, error) {
+		switch devid {
+		case 1:
+			return deviceInfoArgs{totalBytes: 256000}, nil
+		case 3:
+			return deviceInfoArgs{totalBytes: 128000}, nil
+		}
+		return deviceInfoArgs{}, unix.ENODEV
+	}
+	filesystems, err := Filesystems()
+	require.NoError(t, err)
+	require.Len(t, filesystems, 1)
+	assert.Equal(t, "ONLINE", filesystems[0].Health)
+	assert.Equal(t, []Device{{Name: "devid 1", State: "ONLINE"}, {Name: "devid 3", State: "ONLINE"}}, filesystems[0].Devices)
+	assert.Equal(t, uint64(384000), filesystems[0].Size, "capacity comes from DEV_INFO totals")
+
+	// A member reporting no device path is missing.
+	deviceInfo = func(_ string, devid uint64) (deviceInfoArgs, error) {
+		switch devid {
+		case 1:
+			return deviceInfoArgs{totalBytes: 256000}, nil
+		case 3:
+			return deviceInfoArgs{totalBytes: 128000, missing: true}, nil
+		}
+		return deviceInfoArgs{}, unix.ENODEV
+	}
+	filesystems, err = Filesystems()
+	require.NoError(t, err)
+	assert.Equal(t, "DEGRADED", filesystems[0].Health)
+	assert.Equal(t, []Device{{Name: "devid 1", State: "ONLINE"}, {Name: "devid 3", State: "MISSING"}}, filesystems[0].Devices)
+
+	// The kernel count exceeding the sysfs device links also means a member
+	// is missing, even when every probed device still reports a path.
+	require.NoError(t, os.RemoveAll(filepath.Join(fsDir, "devices", "dm-2")))
+	deviceInfo = func(_ string, devid uint64) (deviceInfoArgs, error) {
+		switch devid {
+		case 1:
+			return deviceInfoArgs{totalBytes: 256000}, nil
+		case 3:
+			return deviceInfoArgs{totalBytes: 128000}, nil
+		}
+		return deviceInfoArgs{}, unix.ENODEV
+	}
+	filesystems, err = Filesystems()
+	require.NoError(t, err)
+	assert.Equal(t, "DEGRADED", filesystems[0].Health)
+	assert.Equal(t, []Device{{Name: "devid 1", State: "UNKNOWN"}, {Name: "devid 3", State: "UNKNOWN"}}, filesystems[0].Devices)
+
+	// Fewer probed members than the kernel reports means the enumeration
+	// raced a change; health stays UNKNOWN rather than guessing.
+	filesystemInfo = func(string) (fsInfoArgs, error) {
+		return fsInfoArgs{maxID: 4, numDevices: 3}, nil
+	}
+	deviceInfo = func(_ string, devid uint64) (deviceInfoArgs, error) {
+		switch devid {
+		case 1:
+			return deviceInfoArgs{totalBytes: 256000}, nil
+		case 3:
+			return deviceInfoArgs{totalBytes: 128000}, nil
+		}
+		return deviceInfoArgs{}, unix.ENODEV
+	}
+	filesystems, err = Filesystems()
+	require.NoError(t, err)
+	assert.Equal(t, "UNKNOWN", filesystems[0].Health)
+	assert.Empty(t, filesystems[0].Devices)
+	assert.Equal(t, uint64(512000), filesystems[0].Size, "partial ioctl data falls back to device sizes")
+
+	// Failures stay inert: no FS_INFO answer or no DEV_INFO answer leaves
+	// health UNKNOWN and the backing-device capacity.
+	filesystemInfo = func(string) (fsInfoArgs, error) { return fsInfoArgs{}, unix.ENOTTY }
+	filesystems, err = Filesystems()
+	require.NoError(t, err)
+	assert.Equal(t, "UNKNOWN", filesystems[0].Health)
+	assert.Empty(t, filesystems[0].Devices)
+	assert.Equal(t, uint64(512000), filesystems[0].Size)
+
+	filesystemInfo = func(string) (fsInfoArgs, error) { return fsInfoArgs{maxID: 1, numDevices: 1}, nil }
+	deviceInfo = func(string, uint64) (deviceInfoArgs, error) { return deviceInfoArgs{}, os.ErrPermission }
+	filesystems, err = Filesystems()
+	require.NoError(t, err)
+	assert.Equal(t, "UNKNOWN", filesystems[0].Health)
+	assert.Empty(t, filesystems[0].Devices)
+
+	// A single-member pool still resolves its I/O device without devinfo.
+	deviceInfo = func(string, uint64) (deviceInfoArgs, error) { return deviceInfoArgs{totalBytes: 256000}, nil }
+	filesystems, err = Filesystems()
+	require.NoError(t, err)
+	assert.Equal(t, "ONLINE", filesystems[0].Health)
+	assert.Equal(t, "dm-1", filesystems[0].IODevice)
+}
+
 func TestFilesystemWithoutDevinfo(t *testing.T) {
 	root := t.TempDir()
 	require.NoError(t, os.MkdirAll(filepath.Join(root, "devices", "sda"), 0755))
