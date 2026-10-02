@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Sheet, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle } from "@/components/ui/sheet"
 import { Button } from "@/components/ui/button"
+import { Checkbox } from "@/components/ui/checkbox"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
@@ -40,6 +41,7 @@ type MonitorValues = {
 	port: number
 	server: string
 	interval: string
+	skipTlsVerify: boolean
 }
 
 type NormalizedMonitorValues = Omit<MonitorValues, "system" | "interval"> & {
@@ -63,6 +65,7 @@ const NormalizedMonitorValuesSchema = v.pipe(
 		port: v.number(),
 		server: v.pipe(v.string(), v.trim()),
 		interval: MonitorIntervalSchema,
+		skipTlsVerify: v.boolean(),
 	}),
 	v.transform((input): NormalizedMonitorValues => {
 		let { protocol, port } = input
@@ -84,6 +87,8 @@ const NormalizedMonitorValuesSchema = v.pipe(
 			// Only DNS monitors use a custom server; clear it for other protocols.
 			server: protocol === "dns" ? input.server : "",
 			interval: input.interval,
+			// Only HTTPS targets use TLS; clear it for everything else.
+			skipTlsVerify: protocol === "http" && isHttpsTarget(httpTarget) && input.skipTlsVerify,
 		}
 	}),
 	v.forward(
@@ -120,6 +125,10 @@ const BulkMonitorSchema = v.object({
 	interval: v.optional(v.pipe(v.string(), v.trim())),
 	server: v.optional(v.pipe(v.string(), v.trim())),
 })
+
+function isHttpsTarget(target: string) {
+	return /^https:\/\//i.test(target)
+}
 
 function normalizeHttpTarget(target: string, port = 0) {
 	const useExplicitPort = port > 0 && port !== 80 && port !== 443
@@ -198,6 +207,7 @@ function parseBulkMonitorLine(line: string, lineNumber: number, system: string) 
 		port: parsed.output.port ? Number(parsed.output.port) : 0,
 		server: parsed.output.server || "",
 		interval: parsed.output.interval || `${defaultInterval}`,
+		skipTlsVerify: false,
 	})
 }
 
@@ -720,6 +730,7 @@ function MonitorDialogContent({
 	const [port, setPort] = useState(monitor?.protocol === "tcp" && monitor.port ? String(monitor.port) : "")
 	const [server, setServer] = useState(monitor?.protocol === "dns" ? (monitor.server ?? "") : "")
 	const [monitorInterval, setMonitorInterval] = useState(String(monitor?.interval ?? defaultInterval))
+	const [skipTlsVerify, setSkipTlsVerify] = useState(monitor?.skipTlsVerify ?? false)
 	const [loading, setLoading] = useState(false)
 	const [selectedSystemId, setSelectedSystemId] = useState(monitor?.system ?? "")
 	const [selectedSystemIds, setSelectedSystemIds] = useState<Set<string>>(new Set())
@@ -728,6 +739,8 @@ function MonitorDialogContent({
 	const { t } = useLingui()
 	const isEditing = !!monitor
 	const dnsTargetIsIp = protocol === "dns" && isIpAddress(target.trim())
+	// Bare hostnames are normalized to https, so they can also skip verification.
+	const usesTls = protocol === "http" && !/^http:\/\//i.test(target.trim())
 
 	// When the dialog is opened, initialize form fields with monitor values (if editing) or defaults (if adding).
 	useEffect(() => {
@@ -740,6 +753,7 @@ function MonitorDialogContent({
 		setPort(monitor?.protocol === "tcp" && monitor.port ? String(monitor.port) : "")
 		setServer(monitor?.protocol === "dns" ? (monitor.server ?? "") : "")
 		setMonitorInterval(String(monitor?.interval ?? defaultInterval))
+		setSkipTlsVerify(monitor?.skipTlsVerify ?? false)
 		setSelectedSystemId(monitor?.system ?? "")
 		setSelectedSystemIds(new Set())
 		setLoading(false)
@@ -761,6 +775,7 @@ function MonitorDialogContent({
 					port: protocol === "tcp" ? Number(port) : 0,
 					server: protocol === "dns" ? server.trim() : "",
 					interval: monitorInterval,
+					skipTlsVerify,
 				},
 				monitor ? monitor.enabled : true
 			)
@@ -910,6 +925,21 @@ function MonitorDialogContent({
 						required
 					/>
 				</div>
+				{usesTls && (
+					<div className="grid gap-2">
+						<label htmlFor="monitor-skip-tls-verify" className="flex gap-2 items-center cursor-pointer text-sm">
+							<Checkbox
+								id="monitor-skip-tls-verify"
+								checked={skipTlsVerify}
+								onCheckedChange={(checked) => setSkipTlsVerify(checked === true)}
+							/>
+							<Trans>Ignore TLS certificate errors</Trans>
+						</label>
+						<p className="text-xs text-muted-foreground">
+							<Trans>Use for self-signed or otherwise untrusted certificates.</Trans>
+						</p>
+					</div>
+				)}
 				<DialogFooter>
 					{!isEditing && onOpenBulkAdd && (
 						<Button
