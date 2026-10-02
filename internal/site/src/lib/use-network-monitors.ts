@@ -28,7 +28,7 @@ function appendCacheValue(
 	cacheKey: string,
 	chartTime: ChartTimes | "rt",
 	newStats: NetworkMonitorStatsRecord[],
-	maxPoints = 100
+	maxPoints = chartTimeData[chartTime]?.maxPoints ?? 100
 ) {
 	const existingStats = getCacheValue(cacheKey, chartTime)
 	const { expectedInterval } = chartTimeData[chartTime]
