@@ -177,7 +177,9 @@ export function getMonitorColumns(
 		{
 			id: "protocol",
 			meta: { label: t`Protocol` },
-			accessorFn: (record) => record.protocol,
+			// The target column hides the URL scheme, so show https here instead.
+			accessorFn: (record) =>
+				record.protocol === "http" && /^https:\/\//i.test(record.target) ? "https" : record.protocol,
 			header: ({ column }) => <HeaderButton column={column} name={t`Protocol`} Icon={ArrowLeftRightIcon} />,
 			cell: ({ row, getValue }) => {
 				const protocol = getValue() as string
@@ -189,7 +191,7 @@ export function getMonitorColumns(
 						</Badge>
 					)
 				}
-				return <Badge className={cn("uppercase", protocolColors[protocol])}>{protocol}</Badge>
+				return <Badge className={cn("uppercase", protocolColors[row.original.protocol])}>{protocol}</Badge>
 			},
 		},
 		{
