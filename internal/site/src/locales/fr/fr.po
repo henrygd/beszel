@@ -8,7 +8,7 @@ msgstr ""
 "Language: fr\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2026-09-25 14:03\n"
+"PO-Revision-Date: 2026-10-01 02:40\n"
 "Last-Translator: \n"
 "Language-Team: French\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
@@ -2359,4 +2359,12 @@ msgstr "Oui"
 #: src/components/routes/settings/layout.tsx
 msgid "Your user settings have been updated."
 msgstr "Vos paramètres utilisateur ont été mis à jour."
+
+#: src/components/logs-display.tsx
+msgid "Show timestamps"
+msgstr ""
+
+#: src/components/logs-display.tsx
+msgid "Hide timestamps"
+msgstr ""
 

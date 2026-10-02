@@ -8,7 +8,7 @@ msgstr ""
 "Language: cs\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2026-09-24 17:28\n"
+"PO-Revision-Date: 2026-10-01 02:40\n"
 "Last-Translator: \n"
 "Language-Team: Czech\n"
 "Plural-Forms: nplurals=4; plural=(n==1) ? 0 : (n>=2 && n<=4) ? 1 : 3;\n"
@@ -2359,4 +2359,12 @@ msgstr "Ano"
 #: src/components/routes/settings/layout.tsx
 msgid "Your user settings have been updated."
 msgstr "Vaše uživatelská nastavení byla aktualizována."
+
+#: src/components/logs-display.tsx
+msgid "Show timestamps"
+msgstr ""
+
+#: src/components/logs-display.tsx
+msgid "Hide timestamps"
+msgstr ""
 
