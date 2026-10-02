@@ -8,8 +8,8 @@ export const MAX_COMPARE_MONITORS = 24
 type MonitorTarget = Pick<NetworkMonitorRecord, "target" | "protocol" | "port">
 
 export function getMonitorTarget(monitor: MonitorTarget) {
-	// The protocol column already says http; keep the scheme only when it's plain http (no TLS).
-	if (monitor.protocol === "http") return monitor.target.replace(/^https:\/\//i, "")
+	// The protocol column already says http, so the URL scheme is redundant.
+	if (monitor.protocol === "http") return monitor.target.replace(/^https?:\/\//i, "")
 	if (monitor.protocol !== "tcp") return monitor.target
 	const host = monitor.target.includes(":") && !monitor.target.startsWith("[") ? `[${monitor.target}]` : monitor.target
 	return `${host}:${monitor.port}`

@@ -46,7 +46,7 @@ test("formats tcp targets with their port", () => {
 	expect(getMonitorTarget({ target: "https://example.com/health", protocol: "http", port: 0 })).toBe(
 		"example.com/health"
 	)
-	expect(getMonitorTarget({ target: "http://example.com", protocol: "http", port: 0 })).toBe("http://example.com")
+	expect(getMonitorTarget({ target: "http://example.com", protocol: "http", port: 0 })).toBe("example.com")
 })
 
 test("identity ignores the system but not protocol, port or server", () => {
