@@ -6,6 +6,7 @@ snapshot keyed by interface (`s` SSID, `r` RSSI in dBm when available);
 interval only; real-time requests reuse the last snapshot.
 
 - Linux: nl80211 via `github.com/mdlayher/wifi`. Docker needs `network_mode: host`.
+  Skipped when `/sys/class/ieee80211` lists no wireless devices.
 - macOS: CoreWLAN via `osascript` (JXA). SSID may be redacted by privacy settings.
 - Windows: native WLAN API, keyed by adapter alias (e.g. `Wi-Fi`), falling back
   to interface GUID.
