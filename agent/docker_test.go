@@ -124,13 +124,27 @@ func TestCalculateMemoryUsage(t *testing.T) {
 			expectError: false,
 		},
 		{
-			name: "Linux with zero usage returns error",
+			name: "Linux with zero usage (no cgroup accounting) returns 0 without error",
 			apiStats: &container.ApiStats{
 				MemoryStats: container.MemoryStats{
 					Usage: 0,
 					Stats: container.MemoryStatsStats{
 						Cache:        0,
 						InactiveFile: 0,
+					},
+				},
+			},
+			isWindows:   false,
+			expected:    0,
+			expectError: false,
+		},
+		{
+			name: "Linux with cache larger than usage returns error",
+			apiStats: &container.ApiStats{
+				MemoryStats: container.MemoryStats{
+					Usage: 262144,
+					Stats: container.MemoryStatsStats{
+						InactiveFile: 524288,
 					},
 				},
 			},
@@ -926,7 +940,7 @@ func TestMemoryStatsEdgeCases(t *testing.T) {
 		{"Linux normal case", 1000, 200, 0, false, 800, false},
 		{"Linux with inactive file", 1000, 0, 300, false, 700, false},
 		{"Windows normal case", 0, 0, 0, true, 500, false},
-		{"Linux zero usage error", 0, 0, 0, false, 0, true},
+		{"Linux zero usage means no accounting", 0, 0, 0, false, 0, false},
 	}
 
 	for _, tt := range tests {
