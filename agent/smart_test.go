@@ -1483,3 +1483,10 @@ func TestLookupDarwinNvmeCapacityProviderError(t *testing.T) {
 	// Cache should be initialized even on error so we don't retry (Once already fired)
 	assert.NotNil(t, sm.darwinNvmeCapacity)
 }
+
+func TestSmartctlMessages(t *testing.T) {
+	out := []byte(`{"smartctl":{"messages":[{"string":"Read Device Identity failed: IOCTL_SCSI_PASS_THROUGH_DIRECT failed, Error=5","severity":"error"}],"exit_status":2}}`)
+	assert.Equal(t, "Read Device Identity failed: IOCTL_SCSI_PASS_THROUGH_DIRECT failed, Error=5", smartctlMessages(out))
+	assert.Equal(t, "", smartctlMessages([]byte(`{"smartctl":{"exit_status":2}}`)))
+	assert.Equal(t, "not json", smartctlMessages([]byte("not json\n")))
+}

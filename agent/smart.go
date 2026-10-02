@@ -216,6 +216,12 @@ func (sm *SmartManager) ScanDevices(force bool) error {
 		hasValidScan = true
 	}
 
+	// Add AMD RAIDXpert2 member drives (Windows only), which smartctl cannot see.
+	if amdDevices := scanAmdRaidDevices(); len(amdDevices) > 0 {
+		scannedDevices = append(scannedDevices, amdDevices...)
+		hasValidScan = true
+	}
+
 	finalDevices := mergeDeviceLists(currentDevices, scannedDevices, configuredDevices)
 	finalDevices = sm.filterExcludedDevices(finalDevices)
 	sm.updateSmartDevices(finalDevices)
@@ -481,6 +487,12 @@ func (sm *SmartManager) CollectSmart(deviceInfo *DeviceInfo) error {
 		return errNoValidSmartData
 	}
 
+	// AMD RAID member drives are read through the AMD_RC2 DLL, not smartctl.
+	if deviceInfo != nil {
+		if ok, err := sm.collectAmdRaidHealth(deviceInfo); ok {
+			return err
+		}
+	}
 	// mdraid health is not exposed via SMART; Linux exposes array state in sysfs.
 	if deviceInfo != nil {
 		if ok, err := sm.collectMdraidHealth(deviceInfo); ok {
@@ -559,7 +571,7 @@ func (sm *SmartManager) CollectSmart(deviceInfo *DeviceInfo) error {
 
 	if !hasValidData {
 		if err != nil {
-			slog.Info("smartctl failed", "device", deviceInfo.Name, "err", err)
+			slog.Info("smartctl failed", "device", deviceInfo.Name, "err", err, "msg", smartctlMessages(output))
 			return err
 		}
 		slog.Info("no valid SMART data found", "device", deviceInfo.Name)
@@ -567,6 +579,26 @@ func (sm *SmartManager) CollectSmart(deviceInfo *DeviceInfo) error {
 	}
 
 	return nil
+}
+
+// smartctlMessages extracts smartctl's own error text from JSON output, falling
+// back to the raw output (e.g. when -j was not honored).
+func smartctlMessages(output []byte) string {
+	var out struct {
+		Smartctl struct {
+			Messages []struct {
+				String string `json:"string"`
+			} `json:"messages"`
+		} `json:"smartctl"`
+	}
+	if err := json.Unmarshal(output, &out); err != nil {
+		return strings.TrimSpace(string(output[:min(len(output), 300)]))
+	}
+	msgs := make([]string, 0, len(out.Smartctl.Messages))
+	for _, m := range out.Smartctl.Messages {
+		msgs = append(msgs, m.String)
+	}
+	return strings.Join(msgs, "; ")
 }
 
 // smartctlArgs returns the arguments for the smartctl command
@@ -1268,12 +1300,11 @@ func NewSmartManager() (*SmartManager, error) {
 	path, err := sm.detectSmartctl()
 	slog.Debug("smartctl", "path", path, "err", err)
 	if err != nil {
-		// Keep the previous fail-fast behavior unless this Linux host exposes
-		// eMMC or mdraid health via sysfs, in which case smartctl is optional.
-		if runtime.GOOS == "linux" {
-			if len(scanEmmcDevices()) > 0 || len(scanMdraidDevices()) > 0 {
-				return sm, nil
-			}
+		// Keep the previous fail-fast behavior unless this host exposes eMMC or
+		// mdraid health via sysfs, or AMD RAID drives via the AMD_RC2 DLL, in
+		// which case smartctl is optional.
+		if len(scanEmmcDevices()) > 0 || len(scanMdraidDevices()) > 0 || len(scanAmdRaidDevices()) > 0 {
+			return sm, nil
 		}
 		return nil, err
 	}
