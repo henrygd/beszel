@@ -142,7 +142,8 @@ export function getMonitorColumns(
 		{
 			id: "target",
 			meta: { label: t`Target` },
-			sortingFn: (a, b) => a.original.target.localeCompare(b.original.target),
+			sortingFn: (a, b) =>
+				(a.getValue("target") as string).localeCompare(b.getValue("target") as string, undefined, { numeric: true }),
 			accessorFn: (record) => getMonitorTarget(record),
 			header: ({ column }) => <HeaderButton column={column} name={t`Target`} Icon={GlobeIcon} />,
 			cell: ({ row, getValue }) => {
