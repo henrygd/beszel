@@ -40,7 +40,7 @@ import { SystemStatus } from "@/lib/enums"
 import { $allSystemsById, $direction, $userSettings, getUserChartTime } from "@/lib/stores"
 import { cn, formatShortDate, matchesFilterGroups, parseFilterGroups, parseSemVer } from "@/lib/utils"
 import type { ChartOptions, MonitorCertInfo, NetworkMonitorRecord } from "@/types"
-import { AddMonitorDialog, EditMonitorDialog, SystemMultiSelect } from "./monitor-dialog"
+import { AddMonitorDialog, EditMonitorDialog, MonitorMultiSelect, SystemMultiSelect } from "./monitor-dialog"
 import {
 	ArrowDownIcon,
 	ArrowLeftRightIcon,
@@ -68,7 +68,8 @@ import {
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet"
 import ChartTimeSelect from "@/components/charts/chart-time-select"
 import { LossChart, AvgMinMaxResponseChart, ResponseChart } from "@/components/routes/system/charts/monitors-charts"
-import { useMatchingMonitors, useNetworkMonitorStats } from "@/lib/use-network-monitors"
+import { getMonitorCompareState } from "@/lib/monitor-compare"
+import { useCompareMonitors, useNetworkMonitorStats } from "@/lib/use-network-monitors"
 import { useStore } from "@nanostores/react"
 import { atom } from "nanostores"
 import { Separator } from "../ui/separator"
@@ -448,6 +449,7 @@ export default function NetworkMonitorsTableNew({
 					visibleColumnsKey={visibleColumnsKey}
 					rowSelection={rowSelection}
 					isLoading={isLoading}
+					includesAllSystems={!systemId}
 				/>
 			</div>
 			<DataTablePagination table={table} />
@@ -462,6 +464,7 @@ const NetworkMonitorsTable = memo(function NetworkMonitorTable({
 	visibleColumnsKey,
 	rowSelection,
 	isLoading,
+	includesAllSystems,
 }: {
 	table: TableType<NetworkMonitorRecord>
 	rows: Row<NetworkMonitorRecord>[]
@@ -469,6 +472,8 @@ const NetworkMonitorsTable = memo(function NetworkMonitorTable({
 	visibleColumnsKey: string
 	rowSelection: RowSelectionState
 	isLoading: boolean
+	/** The table lists every system's monitors, so the sheet can compare without fetching. */
+	includesAllSystems: boolean
 }) {
 	const [sheetOpen, setSheetOpen] = useState(false)
 	const [activeMonitorId, setActiveMonitorId] = useState<string | null>(null)
@@ -517,6 +522,8 @@ const NetworkMonitorsTable = memo(function NetworkMonitorTable({
 					setSheetOpen(nextOpen)
 				}}
 				monitor={activeMonitor}
+				monitors={table.options.data}
+				includesAllSystems={includesAllSystems}
 			/>
 		</div>
 	)
@@ -585,16 +592,29 @@ function NetworkMonitorSheet({
 	open,
 	onOpenChange,
 	monitor,
+	monitors,
+	includesAllSystems,
 }: {
 	open: boolean
 	onOpenChange: (open: boolean) => void
 	monitor?: NetworkMonitorRecord
+	monitors: NetworkMonitorRecord[]
+	includesAllSystems: boolean
 }) {
 	if (!monitor) {
 		return null
 	}
 
-	return <NetworkMonitorSheetContent key={monitor.system} open={open} onOpenChange={onOpenChange} monitor={monitor} />
+	return (
+		<NetworkMonitorSheetContent
+			key={monitor.system}
+			open={open}
+			onOpenChange={onOpenChange}
+			monitor={monitor}
+			monitors={monitors}
+			includesAllSystems={includesAllSystems}
+		/>
+	)
 }
 
 const certExpiryTextColors = { ok: "", warning: "text-yellow-600 dark:text-yellow-500", critical: "text-red-500" }
@@ -625,10 +645,16 @@ function NetworkMonitorSheetContent({
 	open,
 	onOpenChange,
 	monitor,
+	monitors,
+	includesAllSystems,
 }: {
 	open: boolean
 	onOpenChange: (open: boolean) => void
 	monitor: NetworkMonitorRecord
+	/** Table monitors; used to find other targets on the same system to compare against. */
+	monitors: NetworkMonitorRecord[]
+	/** Whether `monitors` covers every system, so other systems' monitors needn't be fetched. */
+	includesAllSystems: boolean
 }) {
 	// Keep monitor exploration independent of the system charts' time range.
 	const [chartTimeStore] = useState(() => {
@@ -640,8 +666,7 @@ function NetworkMonitorSheetContent({
 	const systems = useStore($allSystemsById)
 	const system = systems[monitor.system]
 
-	// Same target probed from other systems, for side-by-side comparison (#2385).
-	const matchingMonitors = useMatchingMonitors(monitor, open)
+	const [compareTargetIds, setCompareTargetIds] = useState<Set<string>>(() => new Set())
 	const [compareSystemIds, setCompareSystemIds] = useState<Set<string>>(() => new Set())
 	// Scoped to this sheet so a filter doesn't carry over to other monitors' sheets.
 	const [compareFilterStore, setCompareFilterStore] = useState(() => atom(""))
@@ -650,16 +675,25 @@ function NetworkMonitorSheetContent({
 	if (compareMonitorId !== monitor.id) {
 		setCompareMonitorId(monitor.id)
 		setCompareSystemIds(new Set())
+		setCompareTargetIds(new Set())
 		setCompareFilterStore(atom(""))
 	}
-	const matchingSystemIds = useMemo(() => matchingMonitors.map((m) => m.system), [matchingMonitors])
-	// The opened system is always charted; the picker only adds other systems to compare against.
-	const compareMonitors = useMemo(
-		() => [monitor, ...matchingMonitors.filter((m) => compareSystemIds.has(m.system))],
-		[monitor, matchingMonitors, compareSystemIds]
+	// Other systems' monitors come from the table when it lists every system, otherwise from one fetch.
+	const fetchedMonitors = useCompareMonitors(monitor.system, monitor.protocol, open && !includesAllSystems)
+	const compare = useMemo(
+		() =>
+			getMonitorCompareState({
+				monitor,
+				localMonitors: monitors,
+				otherMonitors: includesAllSystems ? monitors : fetchedMonitors,
+				selectedSystemIds: compareSystemIds,
+				selectedTargetIds: compareTargetIds,
+				getSystemName: (id) => systems[id]?.name ?? id,
+			}),
+		[monitor, monitors, includesAllSystems, fetchedMonitors, compareSystemIds, compareTargetIds, systems]
 	)
+	const { compareMonitors } = compare
 	const comparing = compareMonitors.length > 1
-	const getSystemName = useCallback((m: NetworkMonitorRecord) => systems[m.system]?.name ?? m.system, [systems])
 
 	const monitorStats = useNetworkMonitorStats({
 		systemId: monitor.system,
@@ -715,21 +749,31 @@ function NetworkMonitorSheetContent({
 				<div className="grid gap-4">
 					<div className="flex flex-wrap items-center gap-2">
 						<ChartTimeSelect
-							className="bg-card flex-1 basis-48"
+							className="bg-card flex-1 min-w-0 basis-full sm:basis-0"
 							agentVersion={chartData.agentVersion}
 							chartTimeStore={chartTimeStore}
 							allowRealtime={false}
 						/>
-						{matchingMonitors.length > 0 && (
-							<SystemMultiSelect
-								id="monitor-compare-systems"
-								className="w-full sm:w-1/3 shrink-0 bg-card"
-								systemIds={matchingSystemIds}
-								selectedSystemIds={compareSystemIds}
-								onChange={setCompareSystemIds}
-								placeholder={t`Compare with other systems`}
-							/>
-						)}
+						<MonitorMultiSelect
+							id="monitor-compare-targets"
+							className="flex-1 min-w-0 basis-full sm:basis-0 bg-card"
+							monitors={compare.targetOptions}
+							selectedMonitorIds={compare.selectedTargetIds}
+							onChange={setCompareTargetIds}
+							disabled={compare.targetOptions.length === 0}
+							canSelectMore={compare.canAddTarget}
+							placeholder={t`Compare with other targets`}
+						/>
+						<SystemMultiSelect
+							id="monitor-compare-systems"
+							className="flex-1 min-w-0 basis-full sm:basis-0 bg-card"
+							systemIds={compare.systemOptions}
+							selectedSystemIds={compare.selectedSystemIds}
+							onChange={setCompareSystemIds}
+							disabled={compare.systemOptions.length === 0}
+							canSelectMore={compare.canAddSystem}
+							placeholder={t`Compare with other systems`}
+						/>
 					</div>
 					{comparing ? (
 						<>
@@ -739,7 +783,7 @@ function NetworkMonitorSheetContent({
 								monitors={compareMonitors}
 								chartData={chartData}
 								empty={!hasMonitorStats}
-								getLabel={getSystemName}
+								getLabel={compare.getLabel}
 								filterStore={compareFilterStore}
 							/>
 							<LossChart
@@ -748,7 +792,7 @@ function NetworkMonitorSheetContent({
 								monitors={compareMonitors}
 								chartData={chartData}
 								empty={!hasMonitorStats}
-								getLabel={getSystemName}
+								getLabel={compare.getLabel}
 								filterStore={compareFilterStore}
 							/>
 						</>

@@ -19,10 +19,10 @@ import { memo, type ReactNode, useEffect, useMemo, useRef, useState } from "reac
 import { getStatusColor, systemdTableCols } from "@/components/systemd-table/systemd-table-columns"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Card, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
 import { DataTablePagination, usePagination } from "@/components/ui/data-table-pagination"
 import { Input } from "@/components/ui/input"
-import { LogsDisplay, LogsFullscreenDialog } from "@/components/logs-display"
+import { LogsDisplay, LogsFullscreenDialog, LogsIconButton, LogsTimestampToggle } from "@/components/logs-display"
+import { getLogTimestampDecorations } from "@/lib/logs"
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet"
 import { TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { pb } from "@/lib/api"
@@ -42,7 +42,13 @@ async function getSystemdLogsHtml(systemId: string, serviceName: string): Promis
 			query: { system: systemId, service: serviceName },
 		}),
 	])
-	return logs ? highlighter.codeToHtml(logs, { lang: "log", theme: syntaxTheme }) : ""
+	return logs
+		? highlighter.codeToHtml(logs, {
+				lang: "log",
+				theme: syntaxTheme,
+				decorations: getLogTimestampDecorations(logs),
+			})
+		: ""
 }
 
 export default function SystemdTable({ systemId }: { systemId?: string }) {
@@ -514,28 +520,15 @@ function SystemdSheet({
 								<h3 className="text-sm font-medium">
 									<Trans>Logs</Trans>
 								</h3>
-								<Button
-									variant="ghost"
-									size="sm"
-									onClick={loadLogs}
-									className="h-8 w-8 p-0 ms-auto"
-									disabled={isLoadingLogs}
-									aria-label={t`Refresh`}
-								>
+								<LogsTimestampToggle className="ms-auto" />
+								<LogsIconButton label={t`Refresh`} onClick={loadLogs} disabled={isLoadingLogs}>
 									<RefreshCwIcon
 										className={cn("size-4 transition-transform duration-300", isLoadingLogs && "animate-spin")}
 									/>
-								</Button>
-								<Button
-									variant="ghost"
-									size="sm"
-									onClick={() => setLogsFullscreenOpen(true)}
-									className="h-8 w-8 p-0"
-									aria-label={t`Logs`}
-									disabled={!logs}
-								>
+								</LogsIconButton>
+								<LogsIconButton label={t`Fullscreen`} onClick={() => setLogsFullscreenOpen(true)} disabled={!logs}>
 									<MaximizeIcon className="size-4" />
-								</Button>
+								</LogsIconButton>
 							</div>
 							{logs ? (
 								<LogsDisplay logsDisplay={logs} containerRef={logsContainerRef} />
