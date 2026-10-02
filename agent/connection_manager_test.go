@@ -115,6 +115,12 @@ func TestConnectionManager_EventHandling(t *testing.T) {
 			expectedState: WebSocketConnected,
 		},
 		{
+			name:          "WebSocket connect from SSH connected",
+			initialState:  SSHConnected,
+			event:         WebSocketConnect,
+			expectedState: WebSocketConnected,
+		},
+		{
 			name:          "SSH connect from disconnected",
 			initialState:  Disconnected,
 			event:         SSHConnect,

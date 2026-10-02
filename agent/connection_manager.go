@@ -15,7 +15,6 @@ import (
 	"github.com/gliderlabs/ssh"
 	"github.com/henrygd/beszel/agent/health"
 	"github.com/henrygd/beszel/agent/utils"
-	"github.com/henrygd/beszel/internal/entities/system"
 )
 
 // ConnectionManager manages the connection state and events for the agent.
@@ -35,7 +34,6 @@ type ConnectionManager struct {
 	wsTicker       *time.Ticker         // Ticker for WebSocket connection attempts
 	isConnecting   bool                 // Prevents multiple simultaneous reconnection attempts
 	sshConnections int                  // Authenticated SSH TCP connections, not sessions
-	ConnectionType system.ConnectionType
 }
 
 // ConnectionState represents the current connection state of the agent.
@@ -95,12 +93,6 @@ func (c *ConnectionManager) getState() ConnectionState {
 	return c.State
 }
 
-func (c *ConnectionManager) getConnectionType() system.ConnectionType {
-	c.mu.Lock()
-	defer c.mu.Unlock()
-	return c.ConnectionType
-}
-
 func (c *ConnectionManager) hasSSHConnection() bool {
 	c.mu.Lock()
 	defer c.mu.Unlock()
@@ -114,9 +106,26 @@ func (c *ConnectionManager) notifySSHChange() {
 	}
 }
 
+// sshConnectionTrackedKey marks an SSH connection context as already counted.
+type sshConnectionTrackedKey struct{}
+
 // sshConnectionOpened tracks the authenticated TCP connection. Individual SSH
 // sessions are short-lived and must not trigger a return to WebSocket.
+//
+// It is called from the session handler rather than the public key handler,
+// which runs when a key is offered and before the client has proven it holds
+// the private key. A connection is counted once however many sessions it opens.
 func (c *ConnectionManager) sshConnectionOpened(ctx ssh.Context) {
+	ctx.Lock()
+	tracked := ctx.Value(sshConnectionTrackedKey{}) != nil
+	if !tracked {
+		ctx.SetValue(sshConnectionTrackedKey{}, true)
+	}
+	ctx.Unlock()
+	if tracked {
+		return
+	}
+
 	c.mu.Lock()
 	c.sshConnections++
 	first := c.sshConnections == 1
@@ -245,12 +254,9 @@ func (c *ConnectionManager) handleEvent(event ConnectionEvent) {
 		if c.wsClient == nil || !c.wsClient.isVerified() {
 			return // a superseded connection authenticated after a new attempt began
 		}
-		if c.getState() == Disconnected {
-			c.handleStateChange(WebSocketConnected)
-		} else if c.getState() == SSHConnected {
-			// An authentication result can arrive after SSH has won the race.
-			c.closeWebSocket()
-		}
+		// WebSocket is preferred, so it takes over even if an attempt that was
+		// already in flight authenticates after SSH has connected.
+		c.handleStateChange(WebSocketConnected)
 	case SSHConnect:
 		if c.getState() == Disconnected && c.hasSSHConnection() {
 			c.handleStateChange(SSHConnected)
@@ -281,16 +287,7 @@ func (c *ConnectionManager) handleStateChange(newState ConnectionState) {
 		c.mu.Unlock()
 		return
 	}
-	previousState := c.State
 	c.State = newState
-	switch newState {
-	case WebSocketConnected:
-		c.ConnectionType = system.ConnectionTypeWebSocket
-	case SSHConnected:
-		c.ConnectionType = system.ConnectionTypeSSH
-	default:
-		c.ConnectionType = system.ConnectionTypeNone
-	}
 	c.mu.Unlock()
 
 	switch newState {
@@ -302,15 +299,11 @@ func (c *ConnectionManager) handleStateChange(newState ConnectionState) {
 		// stop new ws connection attempts
 		slog.Info("SSH connection established")
 		c.stopWsTicker()
-		c.closeWebSocket()
 	case Disconnected:
-		if previousState == SSHConnected {
-			// The last SSH TCP connection is gone. Start a fresh WS-first cycle;
-			// open the SSH listener again only if WS cannot connect.
-			_ = c.agent.StopServer()
-		} else if previousState == WebSocketConnected {
-			c.startSSHServer()
-		}
+		// Listen for SSH whenever disconnected so the hub can fall back to it
+		// or redial straight away. WebSocket is still tried first below and
+		// stops the server if it connects.
+		c.startSSHServer()
 		// Always keep the ticker running while disconnected. A pending WebSocket
 		// handshake started by connect() can fail asynchronously (e.g. the hub
 		// closes the socket, or the deadline set in OnOpen expires) after

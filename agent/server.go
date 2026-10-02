@@ -80,7 +80,6 @@ func (a *Agent) prepareSSHServer(opts ServerOptions) (*ssh.Server, net.Listener,
 			for _, pubKey := range opts.Keys {
 				if ssh.KeysEqual(key, pubKey) {
 					slog.Info("SSH connected", "addr", remoteAddr)
-					a.connectionManager.sshConnectionOpened(ctx)
 					return true
 				}
 			}
@@ -141,6 +140,7 @@ func (a *Agent) getHubVersion(sessionCtx ssh.Context) semver.Version {
 // status codes.
 func (a *Agent) handleSession(s ssh.Session) {
 	sessionCtx := s.Context()
+	a.connectionManager.sshConnectionOpened(sessionCtx)
 
 	hubVersion := a.getHubVersion(sessionCtx)
 

@@ -71,6 +71,9 @@ func TestAgentCancellationJoinsReconnect(t *testing.T) {
 		return err == nil
 	}, 2*time.Second, 10*time.Millisecond)
 	defer client.Close()
+	session, err := client.NewSession()
+	require.NoError(t, err)
+	require.NoError(t, session.Shell())
 	cm := a.connectionManager
 	require.Eventually(t, func() bool { return cm.getState() == SSHConnected }, time.Second, time.Millisecond)
 	require.NoError(t, client.Close())
