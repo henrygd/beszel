@@ -1,17 +1,17 @@
 import { t } from "@lingui/core/macro"
 import { Plural, Trans } from "@lingui/react/macro"
 import { useStore } from "@nanostores/react"
+import { ChevronDownIcon, ContainerIcon, type LucideIcon, NetworkIcon, ServerCogIcon } from "lucide-react"
 import { useEffect, useMemo, useState } from "react"
 import { SystemMultiSelect } from "@/components/network-monitors-table/monitor-dialog"
 import { Button } from "@/components/ui/button"
-import { DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { InputTags } from "@/components/ui/input-tags"
 import { Label } from "@/components/ui/label"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle } from "@/components/ui/sheet"
 import { useToast } from "@/components/ui/use-toast"
 import { pb } from "@/lib/api"
 import { $systems } from "@/lib/stores"
-import { isAgentConfigUnsupported } from "@/lib/utils"
+import { cn, isAgentConfigUnsupported } from "@/lib/utils"
 import type { SystemConfigRecord, SystemRecord } from "@/types"
 
 /** Split a comma-separated setting, dropping blanks. */
@@ -65,65 +65,106 @@ const MixedNote = ({ systemCount }: { systemCount: number }) => (
 	</p>
 )
 
-/** Marks a tab that has unsaved changes. */
-const EditedDot = () => <span className="size-1.5 rounded-full bg-primary" role="img" aria-label={t`Unsaved changes`} />
-
+/**
+ * One setting as a collapsible card, styled like the cards in the alerts sheet.
+ * Collapsed, the header shows the current value instead of the help text.
+ */
 function ListSettingField({
 	setting,
+	icon: Icon,
 	label,
 	placeholder,
 	help,
+	emptySummary,
 	envVar,
 	systemCount,
 	disabled,
 }: {
 	setting: ReturnType<typeof useListSetting>
+	icon: LucideIcon
 	label: React.ReactNode
 	placeholder: string
 	help: React.ReactNode
+	/** summary shown while collapsed if the setting is empty */
+	emptySummary: React.ReactNode
 	/** env var that overrides this setting on the agent */
 	envVar: string
 	systemCount: number
 	disabled: boolean
 }) {
+	const [open, setOpen] = useState(false)
 	const id = `config-${setting.key}`
+	const summary =
+		setting.mixed && !setting.isEdited ? (
+			<span className="text-amber-600 dark:text-amber-500">
+				<Trans>Different on each system</Trans>
+			</span>
+		) : setting.value.length ? (
+			setting.value.join(", ")
+		) : (
+			emptySummary
+		)
 	return (
-		<div className="grid gap-2">
-			<Label htmlFor={id}>{label}</Label>
-			<InputTags
-				id={id}
-				value={setting.value}
-				onChange={setting.onChange}
-				placeholder={setting.mixed && !setting.isEdited ? t`Different on each system` : placeholder}
-				autoComplete="off"
-				spellCheck={false}
-				disabled={disabled}
-				className="w-full"
-			/>
-			{setting.mixed && <MixedNote systemCount={systemCount} />}
-			<p className="text-[0.8rem] text-muted-foreground leading-relaxed">
-				{help} <Trans>Add each with Tab, Enter or comma.</Trans>{" "}
-				<Trans>
-					Ignored if <code className="bg-muted px-1 rounded-sm">{envVar}</code> is set on the agent.
-				</Trans>
-			</p>
+		<div className="rounded-lg border border-muted-foreground/15 hover:border-muted-foreground/20 transition-colors duration-100">
+			<button
+				type="button"
+				aria-expanded={open}
+				aria-controls={`${id}-content`}
+				onClick={() => setOpen(!open)}
+				className={cn("flex w-full items-center justify-between gap-4 p-4 text-start cursor-pointer", open && "pb-0")}
+			>
+				<div className="grid gap-1 min-w-0 select-none">
+					<p id={`${id}-label`} className="font-semibold flex gap-3 items-center">
+						<Icon className="h-4 w-4 opacity-85" /> {label}
+						{setting.isEdited && (
+							<span className="size-1.5 rounded-full bg-primary" role="img" aria-label={t`Unsaved changes`} />
+						)}
+					</p>
+					{!open && <span className="block text-sm text-muted-foreground truncate">{summary}</span>}
+				</div>
+				<ChevronDownIcon
+					className={cn("h-4 w-4 shrink-0 opacity-70 transition-transform duration-200", open && "rotate-180")}
+				/>
+			</button>
+			{/* Hidden rather than unmounted so half-typed input survives collapsing */}
+			<div id={`${id}-content`} className={cn("grid gap-3 p-4 pt-3", !open && "hidden")}>
+				<p className="text-sm text-muted-foreground">{help}</p>
+				<InputTags
+					id={id}
+					aria-labelledby={`${id}-label`}
+					value={setting.value}
+					onChange={setting.onChange}
+					placeholder={setting.mixed && !setting.isEdited ? t`Different on each system` : placeholder}
+					autoComplete="off"
+					spellCheck={false}
+					disabled={disabled}
+					className="w-full"
+				/>
+				{setting.mixed && <MixedNote systemCount={systemCount} />}
+				<p className="text-[0.8rem] text-muted-foreground leading-relaxed">
+					<Trans>Add each with Tab, Enter or comma.</Trans>{" "}
+					<Trans>
+						Ignored if <code className="bg-muted px-1 rounded-sm">{envVar}</code> is set on the agent.
+					</Trans>
+				</p>
+			</div>
 		</div>
 	)
 }
 
 /**
- * Dialog for editing settings the hub pushes to agents. Opens for one system; more systems can be
+ * Sheet for editing settings the hub pushes to agents. Opens for one system; more systems can be
  * added from the systems dropdown to apply the same settings to all of them.
  * Settings live in each system's `system_config` record (one per system, one column per setting).
  *
  * Only settings the user actually changes are written, so other settings on each system are left
- * as they were. Render inside a `Dialog`, like `SystemDialog`.
+ * as they were. Render inside a `Sheet`.
  */
-export const SystemConfigDialog = ({
+export const SystemConfigSheet = ({
 	system,
 	setOpen,
 }: {
-	/** the system the dialog was opened for; preselected */
+	/** the system the sheet was opened for; preselected */
 	system: SystemRecord
 	setOpen: (open: boolean) => void
 }) => {
@@ -204,66 +245,53 @@ export const SystemConfigDialog = ({
 	}
 
 	return (
-		<DialogContent className="w-[90%] max-w-md rounded-lg">
-			<DialogHeader>
-				<DialogTitle className="max-w-100 truncate pr-8">
+		<SheetContent className="w-160 !max-w-full gap-0">
+			<SheetHeader className="p-4 sm:p-6 pb-3 sm:pb-4 border-b">
+				<SheetTitle className="text-xl truncate pe-8">
 					{multiple ? (
 						<Trans>Agent settings for {systems.length} systems</Trans>
 					) : (
 						<Trans>Agent settings: {system.name}</Trans>
 					)}
-				</DialogTitle>
-				<DialogDescription>
+				</SheetTitle>
+				<SheetDescription>
 					<Trans>Settings sent from the hub to the agent. Changes apply without restarting the agent.</Trans>
-				</DialogDescription>
-			</DialogHeader>
-			<form onSubmit={handleSubmit} className="grid gap-4">
-				{allSystems.length > 1 && (
-					<div className="grid gap-2">
-						<Label htmlFor="config-systems">
-							<Trans>Systems</Trans>
-						</Label>
-						<SystemMultiSelect
-							id="config-systems"
-							selectedSystemIds={selectedIds}
-							onChange={setSelectedIds}
-							disabled={saving}
-							systemIds={allSystemIds}
-						/>
-					</div>
-				)}
-				{outdatedCount > 0 && (
-					<p className="text-sm text-amber-600 dark:text-amber-500">
-						{multiple ? (
-							<Plural
-								value={outdatedCount}
-								one="# selected agent is too old to receive these settings. Update it to version 0.20.0 or newer."
-								other="# selected agents are too old to receive these settings. Update them to version 0.20.0 or newer."
+				</SheetDescription>
+			</SheetHeader>
+			<form onSubmit={handleSubmit} className="flex h-full flex-col overflow-hidden">
+				<div className="flex-1 grid content-start gap-4 overflow-auto p-4 sm:p-6">
+					{allSystems.length > 1 && (
+						<div className="grid gap-2">
+							<Label htmlFor="config-systems">
+								<Trans>Systems</Trans>
+							</Label>
+							<SystemMultiSelect
+								id="config-systems"
+								selectedSystemIds={selectedIds}
+								onChange={setSelectedIds}
+								disabled={saving}
+								systemIds={allSystemIds}
 							/>
-						) : (
-							<Trans>This agent is too old to receive these settings. Update it to version 0.20.0 or newer.</Trans>
-						)}
-					</p>
-				)}
-				<Tabs defaultValue="container">
-					<TabsList className="grid w-full grid-cols-3">
-						<TabsTrigger value="container" className="gap-2">
-							<Trans>Container</Trans>
-							{excludeContainers.isEdited && <EditedDot />}
-						</TabsTrigger>
-						<TabsTrigger value="systemd" className="gap-2">
-							Systemd
-							{servicePatterns.isEdited && <EditedDot />}
-						</TabsTrigger>
-						<TabsTrigger value="network" className="gap-2">
-							<Trans>Network</Trans>
-							{nics.isEdited && <EditedDot />}
-						</TabsTrigger>
-					</TabsList>
-					{/* forceMount keeps half-typed input in each field when switching tabs */}
-					<TabsContent value="container" forceMount className="mt-4 data-[state=inactive]:hidden">
+						</div>
+					)}
+					{outdatedCount > 0 && (
+						<p className="text-sm text-amber-600 dark:text-amber-500">
+							{multiple ? (
+								<Plural
+									value={outdatedCount}
+									one="# selected agent is too old to receive these settings. Update it to version 0.20.0 or newer."
+									other="# selected agents are too old to receive these settings. Update them to version 0.20.0 or newer."
+								/>
+							) : (
+								<Trans>This agent is too old to receive these settings. Update it to version 0.20.0 or newer.</Trans>
+							)}
+						</p>
+					)}
+					<div className="grid gap-3">
 						<ListSettingField
 							setting={excludeContainers}
+							icon={ContainerIcon}
+							emptySummary={<Trans>All containers</Trans>}
 							label={<Trans>Exclude containers</Trans>}
 							placeholder="test-*"
 							systemCount={systems.length}
@@ -273,10 +301,10 @@ export const SystemConfigDialog = ({
 							}
 							envVar="EXCLUDE_CONTAINERS"
 						/>
-					</TabsContent>
-					<TabsContent value="systemd" forceMount className="mt-4 data-[state=inactive]:hidden">
 						<ListSettingField
 							setting={servicePatterns}
+							icon={ServerCogIcon}
+							emptySummary={<Trans>All services</Trans>}
 							label={<Trans>Services to monitor</Trans>}
 							placeholder="nginx, docker*"
 							systemCount={systems.length}
@@ -290,10 +318,10 @@ export const SystemConfigDialog = ({
 							}
 							envVar="SERVICE_PATTERNS"
 						/>
-					</TabsContent>
-					<TabsContent value="network" forceMount className="mt-4 data-[state=inactive]:hidden">
 						<ListSettingField
 							setting={nics}
+							icon={NetworkIcon}
+							emptySummary={<Trans>Detected automatically</Trans>}
 							label={<Trans>Network interfaces</Trans>}
 							placeholder="eth0, wlan*"
 							systemCount={systems.length}
@@ -307,14 +335,14 @@ export const SystemConfigDialog = ({
 							}
 							envVar="NICS"
 						/>
-					</TabsContent>
-				</Tabs>
-				<DialogFooter>
+					</div>
+				</div>
+				<SheetFooter className="border-t sm:px-6">
 					<Button type="submit" disabled={loading || saving || !hasChanges || !systems.length}>
 						{multiple ? <Trans>Apply to {systems.length} systems</Trans> : <Trans>Save Settings</Trans>}
 					</Button>
-				</DialogFooter>
+				</SheetFooter>
 			</form>
-		</DialogContent>
+		</SheetContent>
 	)
 }

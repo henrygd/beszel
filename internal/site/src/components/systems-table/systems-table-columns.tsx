@@ -42,7 +42,7 @@ import { batteryStateTranslations } from "@/lib/i18n"
 import { connectedWiFi, strongestWiFi, strongestWiFiSignal, wifiSignalState } from "@/lib/wifi"
 import type { SystemRecord, WiFi } from "@/types"
 import { SystemDialog } from "../add-system"
-import { SystemConfigDialog } from "../system-config-dialog"
+import { SystemConfigSheet } from "../system-config-sheet"
 import AlertButton from "../alerts/alert-button"
 import { $router, Link } from "../router"
 import {
@@ -57,6 +57,7 @@ import {
 } from "../ui/alert-dialog"
 import { Button, buttonVariants } from "../ui/button"
 import { Dialog } from "../ui/dialog"
+import { Sheet } from "../ui/sheet"
 import {
 	DropdownMenu,
 	DropdownMenuContent,
@@ -815,10 +816,10 @@ export const ActionsButton = memo(({ system }: { system: SystemRecord }) => {
 				<Dialog open={editOpen} onOpenChange={setEditOpen}>
 					{editOpened.current && <SystemDialog system={system} setOpen={setEditOpen} />}
 				</Dialog>
-				{/* config dialog */}
-				<Dialog open={configOpen} onOpenChange={setConfigOpen}>
-					{configOpened.current && <SystemConfigDialog key={configKey} system={system} setOpen={setConfigOpen} />}
-				</Dialog>
+				{/* config sheet */}
+				<Sheet open={configOpen} onOpenChange={setConfigOpen}>
+					{configOpened.current && <SystemConfigSheet key={configKey} system={system} setOpen={setConfigOpen} />}
+				</Sheet>
 				{/* deletion dialog */}
 				<AlertDialog open={deleteOpen} onOpenChange={(open) => setDeleteOpen(open)}>
 					<AlertDialogContent>
