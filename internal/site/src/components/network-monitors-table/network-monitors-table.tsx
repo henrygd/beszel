@@ -304,7 +304,7 @@ export default function NetworkMonitorsTableNew({
 			if (!value) return true
 			const monitor = row.original
 			const systemName = $allSystemsById.get()[monitor.system]?.name ?? ""
-			// Include the raw target so searches for the hidden https:// scheme still match.
+			// Include the raw target so searches for the hidden URL scheme still match.
 			const searchString =
 				`${getMonitorTarget(monitor)}${monitor.target}${monitor.protocol}${systemName}`.toLocaleLowerCase()
 			return matchesFilterGroups(searchString, parseFilterGroups(value))
