@@ -2354,3 +2354,11 @@ msgstr "Yes"
 #: src/components/routes/settings/layout.tsx
 msgid "Your user settings have been updated."
 msgstr "Your user settings have been updated."
+
+#: src/components/logs-display.tsx
+msgid "Show timestamps"
+msgstr "Show timestamps"
+
+#: src/components/logs-display.tsx
+msgid "Hide timestamps"
+msgstr "Hide timestamps"

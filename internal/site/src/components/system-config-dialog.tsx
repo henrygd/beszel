@@ -134,6 +134,7 @@ export const SystemConfigDialog = ({
 	const [saving, setSaving] = useState(false)
 	const { toast } = useToast()
 
+	const allSystemIds = useMemo(() => allSystems.map((s) => s.id), [allSystems])
 	const systems = useMemo(() => allSystems.filter((s) => selectedIds.has(s.id)), [allSystems, selectedIds])
 	const multiple = systems.length > 1
 	const outdatedCount = systems.filter(isAgentConfigUnsupported).length
@@ -227,7 +228,7 @@ export const SystemConfigDialog = ({
 							selectedSystemIds={selectedIds}
 							onChange={setSelectedIds}
 							disabled={saving}
-							isSelectable={() => true}
+							systemIds={allSystemIds}
 						/>
 					</div>
 				)}

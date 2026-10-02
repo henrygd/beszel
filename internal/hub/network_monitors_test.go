@@ -88,6 +88,18 @@ func TestGenerateMonitorID(t *testing.T) {
 		expected string
 	}{
 		{
+			name:     "Short hash meets the record ID minimum",
+			systemID: "000000000012369",
+			config:   monitor.Config{Protocol: "icmp", Target: "gateway.example.com"},
+			expected: "0b3fd2",
+		},
+		{
+			name:     "Existing six-character ID is unchanged",
+			systemID: "000000000000274",
+			config:   monitor.Config{Protocol: "icmp", Target: "gateway.example.com"},
+			expected: "77a996",
+		},
+		{
 			name:     "HTTP monitor on example.com",
 			systemID: "sys123",
 			config: monitor.Config{
@@ -213,6 +225,59 @@ func TestGenerateMonitorID(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			got := generateMonitorID(tt.systemID, tt.config)
 			assert.Equal(t, tt.expected, got, "generateMonitorID() = %v, want %v", got, tt.expected)
+		})
+	}
+}
+
+func TestNetworkMonitorShortIDRequests(t *testing.T) {
+	for _, method := range []string{http.MethodPost, http.MethodPatch} {
+		t.Run(method, func(t *testing.T) {
+			hub, testApp, err := createTestHub(t)
+			require.NoError(t, err)
+			defer cleanupTestHub(hub, testApp)
+			bindNetworkMonitorsEvents(hub)
+			user, err := createTestUser(hub)
+			require.NoError(t, err)
+			system, err := createTestRecord(hub, "systems", map[string]any{
+				"id": "000000000012369", "name": "Paused", "host": "localhost", "port": "45876",
+				"status": "paused", "users": []string{user.Id},
+			})
+			require.NoError(t, err)
+			payload := map[string]any{
+				"system": system.Id, "target": "gateway.example.com", "protocol": "icmp",
+				"interval": 60, "enabled": true,
+			}
+			url := "/api/collections/network_monitors/records"
+			var oldID string
+			if method == http.MethodPatch {
+				previous, err := createTestRecord(hub, "network_monitors", map[string]any{
+					"system": system.Id, "target": "website.example.com", "protocol": "icmp", "interval": 60,
+				})
+				require.NoError(t, err)
+				oldID = previous.Id
+				url += "/" + oldID
+			}
+			data, err := json.Marshal(payload)
+			require.NoError(t, err)
+			token, err := user.NewAuthToken()
+			require.NoError(t, err)
+			router, err := apis.NewRouter(hub)
+			require.NoError(t, err)
+			handler, err := router.BuildMux()
+			require.NoError(t, err)
+			request := httptest.NewRequest(method, url, bytes.NewReader(data))
+			request.Header.Set("Content-Type", "application/json")
+			request.Header.Set("Authorization", token)
+			response := httptest.NewRecorder()
+			handler.ServeHTTP(response, request)
+			require.Equal(t, http.StatusOK, response.Code, response.Body.String())
+			record, err := hub.FindRecordById("network_monitors", "0b3fd2")
+			require.NoError(t, err)
+			assert.Equal(t, "gateway.example.com", record.GetString("target"))
+			if oldID != "" {
+				_, err = hub.FindRecordById("network_monitors", oldID)
+				require.Error(t, err)
+			}
 		})
 	}
 }

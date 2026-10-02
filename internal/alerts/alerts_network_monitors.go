@@ -32,9 +32,6 @@ func (am *AlertManager) bindNetworkMonitorAlertEvents() {
 			return e.BadRequestError("Delete and recreate the alert to change its type or system", nil)
 		}
 		if e.Record.GetString("name") == alertNameNetworkMonitorLoss {
-			if !e.HasSuperuserAuth() && (e.Auth == nil || !userHasSystem(e.App, e.Auth.Id, e.Record.GetString("system"))) {
-				return e.ForbiddenError("You do not have access to this system", nil)
-			}
 			e.Record.Set("triggered", e.Record.Original().GetBool("triggered"))
 			value := e.Record.GetFloat("value")
 			if math.IsNaN(value) || math.IsInf(value, 0) || value < 0 || value >= 100 {
@@ -136,6 +133,9 @@ func (am *AlertManager) evaluateNetworkMonitorAlerts(app core.App, systemID stri
 		}
 		now := time.Now()
 		for _, alert := range alerts {
+			if !userHasSystem(tx, alert.GetString("user"), systemID) {
+				continue
+			}
 			var state networkMonitorAlertState
 			if err := alert.UnmarshalJSONField("state", &state); err != nil {
 				return err

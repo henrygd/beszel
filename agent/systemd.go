@@ -3,12 +3,15 @@
 package agent
 
 import (
+	"bytes"
 	"context"
 	"errors"
+	"fmt"
 	"log/slog"
 	"maps"
 	"math"
 	"os"
+	"os/exec"
 	"slices"
 	"strconv"
 	"strings"
@@ -21,6 +24,50 @@ import (
 )
 
 var errNoActiveTime = errors.New("no active time")
+var errSystemdLogLimitReached = errors.New("systemd log size limit reached")
+
+const systemdLogsTail = 200
+
+// canReadSystemJournal probes whether the agent's current credentials can read
+// the system journal. A successful empty result is still readable: entries may
+// be written after the agent starts.
+func canReadSystemJournal() bool {
+	ctx, cancel := context.WithTimeout(context.Background(), 2100*time.Millisecond)
+	defer cancel()
+
+	_, err := exec.CommandContext(ctx, "journalctl", "--system", "--quiet", "--no-pager", "--lines", "1").Output()
+	return err == nil
+}
+
+// systemdLogsEnabled reports whether service logs can be served to the hub.
+func systemdLogsEnabled() bool {
+	if skip, _ := utils.GetEnv("SKIP_SYSTEMD_LOGS"); skip == "true" {
+		return false
+	}
+	return canReadSystemJournal()
+}
+
+// limitedBuffer bounds command output before it is sent over the agent connection.
+type limitedBuffer struct {
+	buffer bytes.Buffer
+	limit  int
+}
+
+func (b *limitedBuffer) Write(p []byte) (int, error) {
+	remaining := b.limit - b.buffer.Len()
+	if remaining <= 0 {
+		return 0, errSystemdLogLimitReached
+	}
+	if len(p) > remaining {
+		_, _ = b.buffer.Write(p[:remaining])
+		return remaining, errSystemdLogLimitReached
+	}
+	return b.buffer.Write(p)
+}
+
+func (b *limitedBuffer) String() string {
+	return b.buffer.String()
+}
 
 // systemdManager manages the collection of systemd service statistics.
 type systemdManager struct {
@@ -28,6 +75,7 @@ type systemdManager struct {
 	serviceStatsMap map[string]*systemd.Service
 	isRunning       bool
 	hasFreshStats   bool
+	logsEnabled     bool     // journal logs can be read and are not disabled via SKIP_SYSTEMD_LOGS
 	patterns        []string // guarded by the embedded mutex; replaced, never mutated
 	patternsFromEnv bool     // SERVICE_PATTERNS is set, so hub patterns are ignored
 }
@@ -70,6 +118,7 @@ func newSystemdManager() (*systemdManager, error) {
 
 	manager := &systemdManager{
 		serviceStatsMap: make(map[string]*systemd.Service),
+		logsEnabled:     systemdLogsEnabled(),
 		patterns:        getServicePatterns(),
 	}
 	if envPatterns, _ := utils.GetEnv("SERVICE_PATTERNS"); envPatterns != "" {
@@ -240,6 +289,14 @@ func (sm *systemdManager) updateServiceStats(conn *dbus.Conn, unit dbus.UnitStat
 	return service, nil
 }
 
+// serviceUnitName preserves monitored timer units and defaults bare names to services.
+func serviceUnitName(name string) string {
+	if strings.HasSuffix(name, ".service") || strings.HasSuffix(name, ".timer") {
+		return name
+	}
+	return name + ".service"
+}
+
 // getServiceDetails collects extended information for a specific systemd service.
 func (sm *systemdManager) getServiceDetails(serviceName string) (systemd.ServiceDetails, error) {
 	conn, err := dbus.NewSystemConnectionContext(context.Background())
@@ -248,10 +305,7 @@ func (sm *systemdManager) getServiceDetails(serviceName string) (systemd.Service
 	}
 	defer conn.Close()
 
-	unitName := serviceName
-	if !strings.HasSuffix(unitName, ".service") {
-		unitName += ".service"
-	}
+	unitName := serviceUnitName(serviceName)
 
 	ctx := context.Background()
 	props, err := conn.GetUnitPropertiesContext(ctx, unitName)
@@ -284,6 +338,63 @@ func (sm *systemdManager) getServiceDetails(serviceName string) (systemd.Service
 	}
 
 	return details, nil
+}
+
+// monitoredUnitName resolves a service name to the unit name of a monitored
+// service. Only monitored units are accepted so a request can't read other
+// journal entries (journalctl --unit also accepts glob patterns).
+func (sm *systemdManager) monitoredUnitName(serviceName string) (string, bool) {
+	sm.Lock()
+	defer sm.Unlock()
+
+	unitName := serviceUnitName(serviceName)
+	if _, ok := sm.serviceStatsMap[unitName]; ok {
+		return unitName, true
+	}
+	// Service names are unescaped, so match against the stored name as well.
+	for unitName, service := range sm.serviceStatsMap {
+		if service.Name == serviceName {
+			return unitName, true
+		}
+	}
+	return "", false
+}
+
+// getServiceLogs returns the newest journal entries for a monitored service.
+// journalctl receives the unit name as an argument (rather than through a
+// shell), so a service name can never alter the command being run.
+func (sm *systemdManager) getServiceLogs(serviceName string) (string, error) {
+	if !sm.logsEnabled {
+		return "", errors.New("systemd logs disabled")
+	}
+	unitName, ok := sm.monitoredUnitName(serviceName)
+	if !ok {
+		return "", fmt.Errorf("service %q is not monitored", serviceName)
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 2100*time.Millisecond)
+	defer cancel()
+
+	cmd := exec.CommandContext(ctx, "journalctl", "--system", "--quiet", "--no-pager", "--output=short-iso", "--unit", unitName, "--lines", strconv.Itoa(systemdLogsTail))
+	output := limitedBuffer{limit: maxTotalLogSize}
+	cmd.Stdout = &output
+	stderr := limitedBuffer{limit: 1024}
+	cmd.Stderr = &stderr
+	if err := cmd.Run(); err != nil {
+		if errors.Is(err, errSystemdLogLimitReached) {
+			return output.String(), nil
+		}
+		if ctx.Err() != nil {
+			return "", ctx.Err()
+		}
+		message := strings.TrimSpace(stderr.String())
+		if message != "" {
+			return "", fmt.Errorf("journalctl failed: %s", message)
+		}
+		return "", fmt.Errorf("journalctl failed: %w", err)
+	}
+
+	return output.String(), nil
 }
 
 // unescapeServiceName unescapes systemd service names that contain C-style escape sequences like \x2d

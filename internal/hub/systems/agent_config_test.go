@@ -24,7 +24,8 @@ func TestAgentConfigSyncSkipsOlderAgents(t *testing.T) {
 	for _, version := range []string{"0.0.0", "0.18.0", "0.19.0"} {
 		t.Run(version, func(t *testing.T) {
 			// No manager or transport: attempting to send anything would fail.
-			sys := &System{agentVersion: semver.MustParse(version)}
+			sys := &System{}
+			sys.setAgentVersion(semver.MustParse(version))
 			require.NoError(t, sys.syncAgentConfig())
 		})
 	}

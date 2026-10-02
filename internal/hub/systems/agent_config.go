@@ -19,7 +19,7 @@ import (
 // system is up. Systems that aren't up sync on their next connection.
 func (sys *System) notifyAgentConfigChanged() {
 	sys.configNeedsSync.Store(true)
-	if sys.Status == up {
+	if sys.GetStatus() == up {
 		go sys.syncPendingAgentConfig()
 	}
 }
@@ -40,7 +40,7 @@ func (sys *System) syncPendingAgentConfig() {
 // config must also be sent, since the agent retains the last config across a
 // disconnect and the hub value may have been cleared in the meantime.
 func (sys *System) syncAgentConfig() error {
-	if sys.agentVersion.LT(beszel.MinVersionAgentConfig) {
+	if sys.getAgentVersion().LT(beszel.MinVersionAgentConfig) {
 		return nil
 	}
 	cfg, err := loadAgentConfig(sys.manager.hub, sys.Id)

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react"
+import { type ReactNode, useCallback, useEffect, useRef, useState } from "react"
 import { Trans, useLingui } from "@lingui/react/macro"
 import { useStore } from "@nanostores/react"
 import { pb } from "@/lib/api"
@@ -23,11 +23,12 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Textarea } from "@/components/ui/textarea"
-import { ChevronDownIcon, ListIcon, PlusIcon, SearchIcon, ServerIcon } from "lucide-react"
+import { ChevronDownIcon, GlobeIcon, ListIcon, type LucideIcon, PlusIcon, SearchIcon, ServerIcon } from "lucide-react"
 import { useToast } from "@/components/ui/use-toast"
 import { $systems } from "@/lib/stores"
 import { cn, supportsNetworkMonitors } from "@/lib/utils"
-import type { NetworkMonitorRecord, SystemRecord } from "@/types"
+import { getMonitorTarget } from "@/lib/network-monitor-utils"
+import type { NetworkMonitorRecord } from "@/types"
 import * as v from "valibot"
 
 type MonitorProtocol = "icmp" | "tcp" | "http" | "dns"
@@ -94,8 +95,21 @@ const NormalizedMonitorValuesSchema = v.pipe(
 			return Number.isInteger(input.port) && input.port >= 1 && input.port <= 65535
 		}, "Port must be between 1 and 65535"),
 		["port"]
+	),
+	// Resolving an IP literal returns it without querying anything, so the check would measure nothing.
+	v.forward(
+		v.check(
+			(input) => input.protocol !== "dns" || !isIpAddress(input.target),
+			"DNS target must be a domain name; put the resolver's IP in DNS Server"
+		),
+		["target"]
 	)
 )
+
+function isIpAddress(value: string) {
+	// Hostnames never contain ":", so any colon means an IPv6 literal (optionally bracketed).
+	return /^(\d{1,3}\.){3}\d{1,3}$/.test(value) || value.includes(":")
+}
 
 // Bulk parsing only trims raw CSV fields. Inference, defaults, and protocol-
 // specific validation still go through the shared normalization schema above.
@@ -200,17 +214,119 @@ export function SystemMultiSelect({
 	onChange,
 	disabled,
 	className,
-	isSelectable = supportsNetworkMonitors,
+	systemIds,
+	placeholder,
+	canSelectMore,
 }: {
 	id: string
 	selectedSystemIds: Set<string>
 	onChange: (ids: Set<string>) => void
 	disabled?: boolean
 	className?: string
-	/** which systems are listed; defaults to those whose agent supports network monitors */
-	isSelectable?: (system: SystemRecord) => boolean
+	/** Limit the options to these systems. Defaults to all systems that support network monitors. */
+	systemIds?: string[]
+	placeholder?: string
+	canSelectMore?: boolean
 }) {
 	const systems = useStore($systems)
+	const { t } = useLingui()
+	const options = systems
+		.filter((system) => (systemIds ? systemIds.includes(system.id) : supportsNetworkMonitors(system)))
+		.map((system) => ({ id: system.id, label: system.name }))
+	return (
+		<MultiSelect
+			id={id}
+			options={options}
+			selectedIds={selectedSystemIds}
+			onChange={onChange}
+			disabled={disabled}
+			className={className}
+			icon={ServerIcon}
+			canSelectMore={canSelectMore}
+			placeholder={placeholder ?? t`Select systems`}
+			searchPlaceholder={t`Search systems`}
+			emptyText={<Trans>No systems found.</Trans>}
+		/>
+	)
+}
+
+/** Pick monitors by target, e.g. other targets on the same system to compare against. */
+export function MonitorMultiSelect({
+	id,
+	monitors,
+	selectedMonitorIds,
+	onChange,
+	disabled,
+	className,
+	placeholder,
+	canSelectMore,
+}: {
+	id: string
+	monitors: NetworkMonitorRecord[]
+	selectedMonitorIds: Set<string>
+	onChange: (ids: Set<string>) => void
+	disabled?: boolean
+	className?: string
+	placeholder?: string
+	canSelectMore?: boolean
+}) {
+	const { t } = useLingui()
+	const options = monitors
+		.map((monitor) => ({ id: monitor.id, label: getMonitorTarget(monitor), server: monitor.server }))
+		.sort((a, b) => a.label.localeCompare(b.label))
+	return (
+		<MultiSelect
+			id={id}
+			options={options}
+			selectedIds={selectedMonitorIds}
+			onChange={onChange}
+			disabled={disabled}
+			className={cn("ps-9.5", className)}
+			icon={GlobeIcon}
+			canSelectMore={canSelectMore}
+			placeholder={placeholder ?? t`Select targets`}
+			searchPlaceholder={t`Search targets`}
+			emptyText={<Trans>No targets found.</Trans>}
+			renderOption={(option) => (
+				<>
+					<span className="truncate">{option.label}</span>
+					{option.server && <span className="ms-auto shrink-0 text-xs text-muted-foreground">{option.server}</span>}
+				</>
+			)}
+		/>
+	)
+}
+
+type MultiSelectOption = { id: string; label: string }
+
+function MultiSelect<T extends MultiSelectOption>({
+	id,
+	options,
+	selectedIds,
+	onChange,
+	disabled,
+	className,
+	icon: Icon,
+	placeholder,
+	searchPlaceholder,
+	emptyText,
+	renderOption = (option) => <span className="truncate">{option.label}</span>,
+	canSelectMore = true,
+}: {
+	id: string
+	options: T[]
+	selectedIds: Set<string>
+	onChange: (ids: Set<string>) => void
+	disabled?: boolean
+	className?: string
+	icon: LucideIcon
+	placeholder: string
+	searchPlaceholder: string
+	emptyText: ReactNode
+	renderOption?: (option: T) => ReactNode
+	/** False once the selection is full; only already selected options can then be toggled. */
+	canSelectMore?: boolean
+}) {
 	const { t } = useLingui()
 	const [search, setSearch] = useState("")
 	const searchRef = useRef<HTMLInputElement>(null)
@@ -223,17 +339,15 @@ export function SystemMultiSelect({
 	}, [])
 	const contentRef = useRef<HTMLDivElement>(null)
 	const query = search.trim().toLocaleLowerCase()
-	const filteredSystems = systems.filter(
-		(system) => isSelectable(system) && system.name.toLocaleLowerCase().includes(query)
-	)
-	const allSelected = filteredSystems.every((system) => selectedSystemIds.has(system.id))
-	const anySelected = filteredSystems.some((system) => selectedSystemIds.has(system.id))
+	const filteredOptions = options.filter((option) => option.label.toLocaleLowerCase().includes(query))
+	const allSelected = filteredOptions.every((option) => selectedIds.has(option.id))
+	const anySelected = filteredOptions.some((option) => selectedIds.has(option.id))
 
 	const selectFiltered = (selected: boolean) => {
-		const next = new Set(selectedSystemIds)
-		for (const system of filteredSystems) {
-			if (selected) next.add(system.id)
-			else next.delete(system.id)
+		const next = new Set(selectedIds)
+		for (const option of filteredOptions) {
+			if (selected) next.add(option.id)
+			else next.delete(option.id)
 		}
 		onChange(next)
 	}
@@ -247,13 +361,13 @@ export function SystemMultiSelect({
 					variant="outline"
 					className={cn("relative w-full min-w-0 ps-10 pe-10 justify-start font-normal text-start", className)}
 				>
-					<ServerIcon className="size-3.5 absolute start-4 top-1/2 -translate-y-1/2 opacity-85" />
+					<Icon className="size-3.5 absolute start-4 top-1/2 -translate-y-1/2 opacity-85" />
 					<span className="truncate">
-						{selectedSystemIds.size === 0
-							? t`Select systems`
-							: selectedSystemIds.size === 1
-								? systems.find((s) => selectedSystemIds.has(s.id))?.name
-								: t`${selectedSystemIds.size} selected`}
+						{selectedIds.size === 0
+							? placeholder
+							: selectedIds.size === 1
+								? options.find((option) => selectedIds.has(option.id))?.label
+								: t`${selectedIds.size} selected`}
 					</span>
 					<ChevronDownIcon className="size-4 absolute end-4 top-1/2 -translate-y-1/2 opacity-50" />
 				</Button>
@@ -276,8 +390,8 @@ export function SystemMultiSelect({
 							ref={focusSearchOnMount}
 							value={search}
 							onChange={(event) => setSearch(event.target.value)}
-							placeholder={t`Search systems`}
-							aria-label={t`Search systems`}
+							placeholder={searchPlaceholder}
+							aria-label={searchPlaceholder}
 							className="h-10 min-w-0 rounded-none border-0 bg-transparent px-0 shadow-none focus-visible:ring-0 focus-visible:ring-offset-0"
 							onKeyDown={(event) => {
 								if (event.key === "Escape") return
@@ -299,7 +413,7 @@ export function SystemMultiSelect({
 						<div className="flex items-center">
 							<DropdownMenuItem
 								className="px-1.5 py-1 text-xs text-muted-foreground"
-								disabled={!filteredSystems.length || allSelected}
+								disabled={!filteredOptions.length || allSelected || !canSelectMore}
 								onSelect={(event) => {
 									event.preventDefault()
 									selectFiltered(true)
@@ -321,32 +435,29 @@ export function SystemMultiSelect({
 								{query ? <Trans>Clear matches</Trans> : <Trans>Clear all</Trans>}
 							</DropdownMenuItem>
 						</div>
-						<span className="px-1.5 text-xs tabular-nums text-muted-foreground">
-							{t`${selectedSystemIds.size} selected`}
-						</span>
+						<span className="px-1.5 text-xs tabular-nums text-muted-foreground">{t`${selectedIds.size} selected`}</span>
 					</div>
 				</div>
 				<div className="min-h-0 overflow-y-auto">
-					{filteredSystems.length === 0 && (
-						<output className="block px-2.5 py-3 text-sm text-muted-foreground">
-							<Trans>No systems found.</Trans>
-						</output>
+					{filteredOptions.length === 0 && (
+						<output className="block px-2.5 py-3 text-sm text-muted-foreground">{emptyText}</output>
 					)}
-					{filteredSystems.map((sys) => (
+					{filteredOptions.map((option) => (
 						<DropdownMenuCheckboxItem
-							key={sys.id}
-							checked={selectedSystemIds.has(sys.id)}
+							key={option.id}
+							checked={selectedIds.has(option.id)}
+							disabled={!canSelectMore && !selectedIds.has(option.id)}
 							onSelect={(event) => event.preventDefault()}
 							onCheckedChange={(checked) => {
-								const next = new Set(selectedSystemIds)
-								if (checked) next.add(sys.id)
-								else next.delete(sys.id)
+								const next = new Set(selectedIds)
+								if (checked) next.add(option.id)
+								else next.delete(option.id)
 								onChange(next)
 							}}
 							className="group min-w-0 gap-2.5 py-2 ps-2.5"
 							indicatorClassName="static size-4 shrink-0 rounded border border-input group-data-[state=checked]:border-primary group-data-[state=checked]:bg-primary group-data-[state=checked]:text-primary-foreground [&_svg]:size-3"
 						>
-							<span className="truncate">{sys.name}</span>
+							{renderOption(option)}
 						</DropdownMenuCheckboxItem>
 					))}
 				</div>
@@ -616,6 +727,7 @@ function MonitorDialogContent({
 	const { toast } = useToast()
 	const { t } = useLingui()
 	const isEditing = !!monitor
+	const dnsTargetIsIp = protocol === "dns" && isIpAddress(target.trim())
 
 	// When the dialog is opened, initialize form fields with monitor values (if editing) or defaults (if adding).
 	useEffect(() => {
@@ -729,8 +841,14 @@ function MonitorDialogContent({
 						value={target}
 						onChange={(e) => setTarget(e.target.value)}
 						placeholder={protocol === "http" ? "http://localhost:8090" : protocol === "dns" ? "example.com" : "1.1.1.1"}
+						aria-invalid={dnsTargetIsIp}
 						required
 					/>
+					{dnsTargetIsIp && (
+						<p className="text-xs text-destructive">
+							<Trans>Enter a domain name to look up. Put the resolver's IP in DNS Server.</Trans>
+						</p>
+					)}
 				</div>
 				<div className="grid gap-2">
 					<Label>
@@ -807,7 +925,9 @@ function MonitorDialogContent({
 					)}
 					<Button
 						type="submit"
-						disabled={loading || (!systemId && (isEditing ? !selectedSystemId : !selectedSystemIds.size))}
+						disabled={
+							loading || dnsTargetIsIp || (!systemId && (isEditing ? !selectedSystemId : !selectedSystemIds.size))
+						}
 					>
 						{isEditing ? <Trans>Save {{ foo: t`Monitor` }}</Trans> : <Trans>Add {{ foo: t`Monitor` }}</Trans>}
 					</Button>

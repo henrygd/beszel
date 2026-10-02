@@ -6,6 +6,7 @@ package agent
 
 import (
 	"log/slog"
+	"net"
 	"strings"
 	"sync"
 	"time"
@@ -32,7 +33,7 @@ type Agent struct {
 	diskBaseline              map[string]prevDisk                                   // Latest disk I/O counters of any interval, seeds a new interval
 	diskUsageCacheDuration    time.Duration                                         // How long to cache disk usage (to avoid waking sleeping disks)
 	lastDiskUsageUpdate       time.Time                                             // Last time disk usage was collected
-	netInterfaces             map[string]struct{}                                   // Stores all valid network interfaces
+	netInterfaces             map[string]bool                                       // Valid network interfaces; true if byte counters come from MAC stats (Jetson nvethernet)
 	hubNics                   string                                                // NICS setting pushed from the hub (env var takes precedence)
 	netIoStats                map[uint16]system.NetIoStats                          // Keeps track of bandwidth usage per cache interval
 	netInterfaceDeltaTrackers map[uint16]*deltatracker.DeltaTracker[string, uint64] // Per-cache-time NIC delta trackers
@@ -46,6 +47,8 @@ type Agent struct {
 	connectionManager         *ConnectionManager                                    // Channel to signal connection events
 	handlerRegistry           *HandlerRegistry                                      // Registry for routing incoming messages
 	server                    *ssh.Server                                           // SSH server
+	serverListener            net.Listener                                          // SSH listener, also closed if Serve has not started yet
+	serverMu                  sync.Mutex                                            // Guards server and serverListener
 	dataDir                   string                                                // Directory for persisting data
 	keys                      []gossh.PublicKey                                     // SSH public keys
 	smartManager              *SmartManager                                         // Manages SMART data
@@ -151,6 +154,9 @@ func NewAgent(dataDir ...string) (agent *Agent, err error) {
 	agent.systemdManager, err = newSystemdManager()
 	if err != nil {
 		slog.Debug("Systemd", "err", err)
+	}
+	if agent.systemdManager != nil {
+		agent.systemInfo.SystemdLogs = agent.systemdManager.logsEnabled
 	}
 
 	agent.smartManager, err = NewSmartManager()
