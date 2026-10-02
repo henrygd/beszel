@@ -59,15 +59,15 @@ const pageSizes = [10, 20, 50, 100, 200]
 function changeLabel(change: VersionChange) {
 	switch (change) {
 		case "major":
-			return t({ message: "Major", context: "Version change" })
+			return t({ message: "Major", comment: "Package version" })
 		case "minor":
-			return t({ message: "Minor", context: "Version change" })
+			return t({ message: "Minor", comment: "Package version" })
 		case "patch":
-			return t({ message: "Patch", context: "Version change" })
+			return t({ message: "Patch", comment: "Package version" })
 		case "revision":
-			return t({ message: "Revision", context: "Version change" })
+			return t({ message: "Revision", comment: "Package version" })
 		default:
-			return t({ message: "Other", context: "Version change" })
+			return t({ message: "Other", comment: "Package version" })
 	}
 }
 
@@ -103,7 +103,13 @@ function getColumns(securityKnown: boolean): ColumnDef<PackageUpdateRow>[] {
 			id: "name",
 			accessorFn: (pkg) => pkg.name,
 			sortingFn: (a, b) => a.original.name.localeCompare(b.original.name),
-			header: ({ column }) => <HeaderButton column={column} name={t`Package`} Icon={PackageIcon} />,
+			header: ({ column }) => (
+				<HeaderButton
+					column={column}
+					name={t({ message: "Package", comment: "Software package" })}
+					Icon={PackageIcon}
+				/>
+			),
 			cell: ({ getValue }) => <span className="ms-1.5 block">{getValue() as string}</span>,
 		},
 		{
@@ -113,7 +119,7 @@ function getColumns(securityKnown: boolean): ColumnDef<PackageUpdateRow>[] {
 			header: () => (
 				<span className="flex items-center gap-2 px-3">
 					<PackageCheckIcon className="size-4" />
-					<Trans context="Installed package version">Current</Trans>
+					<Trans comment="Current package version">Current</Trans>
 				</span>
 			),
 			cell: ({ getValue }) => (
@@ -127,7 +133,7 @@ function getColumns(securityKnown: boolean): ColumnDef<PackageUpdateRow>[] {
 			header: () => (
 				<span className="flex items-center gap-2 px-3">
 					<PackageOpenIcon className="size-4" />
-					<Trans context="Package version available to install">Available</Trans>
+					<Trans comment="Package version available to install">Available</Trans>
 				</span>
 			),
 			cell: ({ getValue }) => <span className="ms-1.5 block font-mono text-sm">{getValue() as string}</span>,
@@ -137,7 +143,13 @@ function getColumns(securityKnown: boolean): ColumnDef<PackageUpdateRow>[] {
 		columns.push({
 			id: "security",
 			accessorFn: (pkg) => (pkg.security ? 1 : 0),
-			header: ({ column }) => <HeaderButton column={column} name={t`Security`} Icon={ShieldAlertIcon} />,
+			header: ({ column }) => (
+				<HeaderButton
+					column={column}
+					name={t({ message: "Security", comment: "Security update" })}
+					Icon={ShieldAlertIcon}
+				/>
+			),
 			cell: ({ row }) =>
 				row.original.security ? (
 					<span className="ms-1.5 flex items-center gap-1.5 text-red-600 dark:text-red-400">
@@ -151,7 +163,13 @@ function getColumns(securityKnown: boolean): ColumnDef<PackageUpdateRow>[] {
 	columns.push({
 		id: "change",
 		accessorFn: (pkg) => changeRank[pkg.change],
-		header: ({ column }) => <HeaderButton column={column} name={t`Change`} Icon={GitCompareArrowsIcon} />,
+		header: ({ column }) => (
+			<HeaderButton
+				column={column}
+				name={t({ message: `Change`, comment: "Version change" })}
+				Icon={GitCompareArrowsIcon}
+			/>
+		),
 		cell: ({ row }) => (
 			<Badge variant={changeVariant[row.original.change]} className="ms-1.5">
 				{changeLabel(row.original.change)}
