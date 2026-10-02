@@ -193,8 +193,7 @@ func (a *Agent) getSystemStats(cacheTimeMs uint16) system.Stats {
 	if v, err := mem.VirtualMemory(); err == nil {
 		used, cacheBuff, swapUsed := calculateHostMemoryUsage(v, a.memCalc == "htop")
 		// swap
-		systemStats.Swap = utils.BytesToGigabytes(v.SwapTotal)
-		systemStats.SwapUsed = utils.BytesToGigabytes(swapUsed)
+		systemStats.Swap, systemStats.SwapUsed, systemStats.SwapPct = calculateSwapUsage(v.SwapTotal, swapUsed)
 		v.Used = used
 		// if a.memCalc == "legacy" {
 		// 	v.Used = v.Total - v.Free - v.Buffers - v.Cached
@@ -284,6 +283,7 @@ func (a *Agent) getSystemStats(cacheTimeMs uint16) system.Stats {
 	a.systemInfo.Cpu = systemStats.Cpu
 	a.systemInfo.LoadAvg = systemStats.LoadAvg
 	a.systemInfo.MemPct = systemStats.MemPct
+	a.systemInfo.SwapPct = systemStats.SwapPct
 	a.systemInfo.DiskPct = systemStats.DiskPct
 	a.systemInfo.Battery = systemStats.Battery
 	a.systemInfo.Uptime, _ = getUptime()
@@ -344,6 +344,16 @@ func readLines(r io.Reader) []string {
 		lines = append(lines, scanner.Text())
 	}
 	return lines
+}
+
+// calculateSwapUsage derives the percentage from bytes before rounding the GiB counters.
+func calculateSwapUsage(total, used uint64) (totalGiB, usedGiB, usedPct float64) {
+	totalGiB = utils.BytesToGigabytes(total)
+	usedGiB = utils.BytesToGigabytes(used)
+	if total > 0 {
+		usedPct = utils.TwoDecimals(float64(used) / float64(total) * 100)
+	}
+	return
 }
 
 // calculateHostMemoryUsage derives counters defensively because /proc/meminfo may

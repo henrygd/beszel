@@ -14,6 +14,22 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+func TestAverageSystemStatsSlice_SwapPercentage(t *testing.T) {
+	for _, tt := range []struct {
+		name     string
+		records  []system.Stats
+		expected float64
+	}{
+		{name: "no swap", records: []system.Stats{{}, {}}},
+		{name: "zero is a sample", records: []system.Stats{{SwapPct: 0}, {SwapPct: 100}}, expected: 50},
+		{name: "rounded average", records: []system.Stats{{SwapPct: 1.11}, {SwapPct: 2.22}}, expected: 1.67},
+	} {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.Equal(t, tt.expected, records.AverageSystemStatsSlice(tt.records).SwapPct)
+		})
+	}
+}
+
 func TestAverageSystemStatsSlice_Empty(t *testing.T) {
 	result := records.AverageSystemStatsSlice(nil)
 	assert.Equal(t, system.Stats{}, result)
@@ -32,6 +48,7 @@ func TestAverageSystemStatsSlice_SingleRecord(t *testing.T) {
 			MemBuffCache: 2.0,
 			Swap:         4.0,
 			SwapUsed:     1.0,
+			SwapPct:      25.0,
 			DiskTotal:    500.0,
 			DiskUsed:     250.0,
 			DiskPct:      50.0,
@@ -55,6 +72,7 @@ func TestAverageSystemStatsSlice_SingleRecord(t *testing.T) {
 	assert.Equal(t, 2.0, result.MemBuffCache)
 	assert.Equal(t, 4.0, result.Swap)
 	assert.Equal(t, 1.0, result.SwapUsed)
+	assert.Equal(t, 25.0, result.SwapPct)
 	assert.Equal(t, 500.0, result.DiskTotal)
 	assert.Equal(t, 250.0, result.DiskUsed)
 	assert.Equal(t, 50.0, result.DiskPct)
@@ -80,6 +98,7 @@ func TestAverageSystemStatsSlice_BasicAveraging(t *testing.T) {
 			MemZfsArc:    0.5,
 			Swap:         4.0,
 			SwapUsed:     1.0,
+			SwapPct:      25.0,
 			DiskTotal:    500.0,
 			DiskUsed:     200.0,
 			DiskPct:      40.0,
@@ -101,6 +120,7 @@ func TestAverageSystemStatsSlice_BasicAveraging(t *testing.T) {
 			MemZfsArc:    1.5,
 			Swap:         4.0,
 			SwapUsed:     3.0,
+			SwapPct:      75.0,
 			DiskTotal:    500.0,
 			DiskUsed:     300.0,
 			DiskPct:      60.0,
@@ -125,6 +145,7 @@ func TestAverageSystemStatsSlice_BasicAveraging(t *testing.T) {
 	assert.Equal(t, 1.0, result.MemZfsArc)
 	assert.Equal(t, 4.0, result.Swap)
 	assert.Equal(t, 2.0, result.SwapUsed)
+	assert.Equal(t, 50.0, result.SwapPct)
 	assert.Equal(t, 500.0, result.DiskTotal)
 	assert.Equal(t, 250.0, result.DiskUsed)
 	assert.Equal(t, 50.0, result.DiskPct)
