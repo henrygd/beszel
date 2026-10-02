@@ -6,12 +6,18 @@ import {
 	flexRender,
 	getCoreRowModel,
 	getFilteredRowModel,
+	getPaginationRowModel,
 	getSortedRowModel,
+	type PaginationState,
 	type SortingState,
 	useReactTable,
 } from "@tanstack/react-table"
 import {
 	ArrowUpDownIcon,
+	ChevronLeftIcon,
+	ChevronRightIcon,
+	ChevronsLeftIcon,
+	ChevronsRightIcon,
 	GitCompareArrowsIcon,
 	PackageCheckIcon,
 	PackageIcon,
@@ -24,11 +30,13 @@ import { Badge, type BadgeProps } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Separator } from "@/components/ui/separator"
 import { TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { pb } from "@/lib/api"
 import { classifyVersionChange, type VersionChange } from "@/lib/package-updates"
-import { cn, formatShortDate } from "@/lib/utils"
+import { cn, formatShortDate, useBrowserStorage } from "@/lib/utils"
 import type { PackageUpdate, PackageUpdates } from "@/types"
 
 interface PackageUpdateRow extends PackageUpdate {
@@ -45,6 +53,8 @@ const changeVariant: Record<VersionChange, BadgeProps["variant"]> = {
 	revision: "secondary",
 	other: "outline",
 }
+
+const pageSizes = [10, 20, 50, 100, 200]
 
 function changeLabel(change: VersionChange) {
 	switch (change) {
@@ -122,16 +132,6 @@ function getColumns(securityKnown: boolean): ColumnDef<PackageUpdateRow>[] {
 			),
 			cell: ({ getValue }) => <span className="ms-1.5 block font-mono text-sm">{getValue() as string}</span>,
 		},
-		{
-			id: "change",
-			accessorFn: (pkg) => changeRank[pkg.change],
-			header: ({ column }) => <HeaderButton column={column} name={t`Change`} Icon={GitCompareArrowsIcon} />,
-			cell: ({ row }) => (
-				<Badge variant={changeVariant[row.original.change]} className="ms-1.5">
-					{changeLabel(row.original.change)}
-				</Badge>
-			),
-		},
 	]
 	if (securityKnown) {
 		columns.push({
@@ -147,6 +147,17 @@ function getColumns(securityKnown: boolean): ColumnDef<PackageUpdateRow>[] {
 				) : null,
 		})
 	}
+	// Change is always the last column, pinned to the right edge of the table
+	columns.push({
+		id: "change",
+		accessorFn: (pkg) => changeRank[pkg.change],
+		header: ({ column }) => <HeaderButton column={column} name={t`Change`} Icon={GitCompareArrowsIcon} />,
+		cell: ({ row }) => (
+			<Badge variant={changeVariant[row.original.change]} className="ms-1.5">
+				{changeLabel(row.original.change)}
+			</Badge>
+		),
+	})
 	return columns
 }
 
@@ -159,6 +170,10 @@ export default function PackageUpdatesTable({ systemId, counts }: { systemId: st
 	const [error, setError] = useState<string | null>(null)
 	const [sorting, setSorting] = useState<SortingState>([{ id: "name", desc: false }])
 	const [globalFilter, setGlobalFilter] = useState("")
+	// Store page size preference in local storage
+	const [pageSize, setPageSize] = useBrowserStorage("pu-page-size", pageSizes[1], sessionStorage)
+	const [pageIndex, setPageIndex] = useState(0)
+	const pagination = useMemo<PaginationState>(() => ({ pageIndex, pageSize }), [pageIndex, pageSize])
 
 	useEffect(() => {
 		let cancelled = false
@@ -190,9 +205,15 @@ export default function PackageUpdatesTable({ systemId, counts }: { systemId: st
 		getCoreRowModel: getCoreRowModel(),
 		getSortedRowModel: getSortedRowModel(),
 		getFilteredRowModel: getFilteredRowModel(),
+		getPaginationRowModel: getPaginationRowModel(),
 		onSortingChange: setSorting,
 		onGlobalFilterChange: setGlobalFilter,
-		state: { sorting, globalFilter },
+		onPaginationChange: (updater) => {
+			const next = typeof updater === "function" ? updater(pagination) : updater
+			setPageIndex(next.pageIndex)
+			setPageSize(next.pageSize)
+		},
+		state: { sorting, globalFilter, pagination },
 		globalFilterFn: (row, _columnId, filterValue: string) => {
 			const pkg = row.original
 			const searchString = `${pkg.name} ${pkg.current ?? ""} ${pkg.available} ${changeLabel(pkg.change)}`.toLowerCase()
@@ -267,13 +288,13 @@ export default function PackageUpdatesTable({ systemId, counts }: { systemId: st
 			{error ? (
 				<p className="px-2 sm:px-1 text-sm text-muted-foreground">{error}</p>
 			) : (
-				<div className="h-min max-h-[calc(100dvh-17rem)] max-w-full relative overflow-auto border rounded-md">
+				<div className="max-w-full relative overflow-x-auto border rounded-md">
 					<table className="text-sm w-full text-nowrap">
 						<TableHeader className="sticky top-0 z-50 w-full border-b-2">
 							{table.getHeaderGroups().map((headerGroup) => (
 								<tr key={headerGroup.id}>
 									{headerGroup.headers.map((header) => (
-										<TableHead className="px-2" key={header.id}>
+										<TableHead className={cn("px-2", header.column.id === "change" && "w-0")} key={header.id}>
 											{header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
 										</TableHead>
 									))}
@@ -300,6 +321,73 @@ export default function PackageUpdatesTable({ systemId, counts }: { systemId: st
 							)}
 						</TableBody>
 					</table>
+				</div>
+			)}
+			{!error && rows.length > pageSizes[0] && (
+				<div className="flex items-center gap-8 mt-3 sm:mt-4 ps-1 tabular-nums">
+					<div className="hidden items-center gap-2 me-auto @xl:flex">
+						<Label htmlFor="pu-rows-per-page" className="text-sm font-medium">
+							<Trans>Rows per page</Trans>
+						</Label>
+						<Select value={`${pageSize}`} onValueChange={(value) => table.setPageSize(Number(value))}>
+							<SelectTrigger className="w-18" id="pu-rows-per-page">
+								<SelectValue placeholder={pageSize} />
+							</SelectTrigger>
+							<SelectContent side="top">
+								{pageSizes.map((size) => (
+									<SelectItem key={size} value={`${size}`}>
+										{size}
+									</SelectItem>
+								))}
+							</SelectContent>
+						</Select>
+					</div>
+					<div className="flex w-fit items-center justify-center text-sm font-medium">
+						<Trans>
+							Page {pageIndex + 1} of {Math.max(table.getPageCount(), 1)}
+						</Trans>
+					</div>
+					<div className="ms-auto flex items-center gap-2 @xl:ms-0">
+						<Button
+							variant="outline"
+							className="hidden size-9 p-0 @xl:flex"
+							onClick={() => table.setPageIndex(0)}
+							disabled={!table.getCanPreviousPage()}
+						>
+							<span className="sr-only">Go to first page</span>
+							<ChevronsLeftIcon className="size-5" />
+						</Button>
+						<Button
+							variant="outline"
+							className="size-9"
+							size="icon"
+							onClick={() => table.previousPage()}
+							disabled={!table.getCanPreviousPage()}
+						>
+							<span className="sr-only">Go to previous page</span>
+							<ChevronLeftIcon className="size-5" />
+						</Button>
+						<Button
+							variant="outline"
+							className="size-9"
+							size="icon"
+							onClick={() => table.nextPage()}
+							disabled={!table.getCanNextPage()}
+						>
+							<span className="sr-only">Go to next page</span>
+							<ChevronRightIcon className="size-5" />
+						</Button>
+						<Button
+							variant="outline"
+							className="hidden size-9 @xl:flex"
+							size="icon"
+							onClick={() => table.setPageIndex(table.getPageCount() - 1)}
+							disabled={!table.getCanNextPage()}
+						>
+							<span className="sr-only">Go to last page</span>
+							<ChevronsRightIcon className="size-5" />
+						</Button>
+					</div>
 				</div>
 			)}
 		</Card>
