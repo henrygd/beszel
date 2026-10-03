@@ -298,7 +298,7 @@ export default function AlertsHistoryDataTable() {
 					</TableBody>
 				</Table>
 			</div>
-			<DataTablePagination table={table} alwaysShow />
+			<DataTablePagination table={table} />
 		</div>
 	)
 }

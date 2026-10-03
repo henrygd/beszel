@@ -2,6 +2,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { DataTablePagination, usePagination } from "@/components/ui/data-table-pagination"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Input } from "@/components/ui/input"
 import { Separator } from "@/components/ui/separator"
@@ -12,11 +13,12 @@ import { cn, formatBytes, formatShortDate, hourWithSeconds, toFixedFloat } from 
 import type { ZfsDataset, ZfsPoolRecord, ZfsVdev } from "@/types"
 import { t } from "@lingui/core/macro"
 import { Trans } from "@lingui/react/macro"
-import type { Column, ColumnDef } from "@tanstack/react-table"
+import type { Column, ColumnDef, SortingState } from "@tanstack/react-table"
 import {
 	flexRender,
 	getCoreRowModel,
 	getFilteredRowModel,
+	getPaginationRowModel,
 	getSortedRowModel,
 	useReactTable,
 } from "@tanstack/react-table"
@@ -442,6 +444,8 @@ function PoolSheet({
 export default function ZfsTable({ systemId }: { systemId?: string }) {
 	const [zfsPools, setZfsPools] = useState<ZfsPoolRecord[]>()
 	const [globalFilter, setGlobalFilter] = useState("")
+	const [sorting, setSorting] = useState<SortingState>([{ id: "name", desc: false }])
+	const { pagination, onPaginationChange, resetPageIndex } = usePagination()
 	const [activePoolId, setActivePoolId] = useState<string | null>(null)
 	const [sheetOpen, setSheetOpen] = useState(false)
 	const [refreshingId, setRefreshingId] = useState<string | null>(null)
@@ -584,12 +588,21 @@ export default function ZfsTable({ systemId }: { systemId?: string }) {
 	const table = useReactTable({
 		data: zfsPools || ([] as ZfsPoolRecord[]),
 		columns: tableColumns,
-		initialState: { sorting: [{ id: "name", desc: false }] },
 		getCoreRowModel: getCoreRowModel(),
 		getSortedRowModel: getSortedRowModel(),
 		getFilteredRowModel: getFilteredRowModel(),
-		state: { globalFilter },
-		onGlobalFilterChange: setGlobalFilter,
+		getPaginationRowModel: getPaginationRowModel(),
+		autoResetPageIndex: false,
+		onPaginationChange,
+		state: { sorting, globalFilter, pagination },
+		onSortingChange: (updater) => {
+			setSorting(updater)
+			resetPageIndex()
+		},
+		onGlobalFilterChange: (value) => {
+			setGlobalFilter(value)
+			resetPageIndex()
+		},
 		globalFilterFn: (row, _columnId, filterValue) => {
 			const pool = row.original
 			const searchString = `${pool.display_name ?? ""} ${pool.name} ${poolType(pool)} ${pool.health ?? ""}`.toLowerCase()
@@ -673,6 +686,7 @@ export default function ZfsTable({ systemId }: { systemId?: string }) {
 						</TableBody>
 					</Table>
 				</div>
+				<DataTablePagination table={table} showSelected={false} />
 			</Card>
 			<PoolSheet poolId={activePoolId} open={sheetOpen} onOpenChange={setSheetOpen} />
 		</div>
