@@ -170,9 +170,13 @@ func (a *Agent) getSystemStats(cacheTimeMs uint16) system.Stats {
 		slog.Error("Error getting cpu metrics", "err", err)
 	}
 
-	// per-core cpu usage
-	if perCoreUsage, err := getPerCoreCpuUsage(cacheTimeMs); err == nil {
-		systemStats.CpuCoresUsage = perCoreUsage
+	// per-core cpu usage. Skipped when the total comes from cgroup accounting:
+	// per-core /proc/stat counters there describe shared host cores, not the
+	// guest, and would contradict the total.
+	if !cpuMetrics.fromCgroup {
+		if perCoreUsage, err := getPerCoreCpuUsage(cacheTimeMs); err == nil {
+			systemStats.CpuCoresUsage = perCoreUsage
+		}
 	}
 
 	// load average
@@ -277,7 +281,6 @@ func (a *Agent) getSystemStats(cacheTimeMs uint16) system.Stats {
 	systemStats.WiFi = wifi.Signals(a.systemInfo.WiFi)
 
 	// update system info
-	a.systemInfo.ConnectionType = a.connectionManager.ConnectionType
 	a.systemInfo.Cpu = systemStats.Cpu
 	a.systemInfo.LoadAvg = systemStats.LoadAvg
 	a.systemInfo.MemPct = systemStats.MemPct

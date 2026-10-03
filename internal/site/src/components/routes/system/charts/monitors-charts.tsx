@@ -5,7 +5,7 @@ import { decimalString, formatMicroseconds, matchesFilterGroups, parseFilterGrou
 import { $monitorFilter } from "@/lib/stores"
 import { useLingui } from "@lingui/react/macro"
 import { ChartCard, FilterBar } from "../chart-card"
-import type { ChartData, MonitorStats, NetworkMonitorRecord, NetworkMonitorStatsRecord } from "@/types"
+import type { ChartOptions, MonitorStats, NetworkMonitorRecord, NetworkMonitorStatsRecord } from "@/types"
 import { useMemo } from "react"
 import { useStore } from "@nanostores/react"
 
@@ -13,7 +13,7 @@ type MonitorChartProps = {
 	monitorStats: NetworkMonitorStatsRecord[]
 	grid?: boolean
 	monitors: NetworkMonitorRecord[]
-	chartData: ChartData
+	chartData: ChartOptions
 	empty: boolean
 	showFilter?: boolean
 	/** Prepended to the chart title, e.g. a target/system name (rendered as "{titlePrefix} — Response"). */
@@ -122,7 +122,7 @@ function MonitorChart({
 interface AvgMinMaxResponseChartProps {
 	monitorStats: NetworkMonitorStatsRecord[]
 	monitor: NetworkMonitorRecord | null
-	chartData: ChartData
+	chartData: ChartOptions
 	empty: boolean
 }
 

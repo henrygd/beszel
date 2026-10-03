@@ -365,7 +365,7 @@ export function SystemsTableColumns(viewMode: "table" | "grid"): ColumnDef<Syste
 		{
 			accessorFn: strongestWiFiSignal,
 			id: "wifi",
-			name: () => t`Wi-Fi`,
+			name: () => "Wi-Fi",
 			size: 80,
 			Icon: WifiIcon,
 			header: sortableHeader,
