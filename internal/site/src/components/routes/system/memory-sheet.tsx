@@ -11,7 +11,6 @@ import { Unit } from "@/lib/enums"
 import { ChartCard } from "./chart-card"
 import type { SystemData } from "./use-system-data"
 
-const psiDomain: [number, (max: number) => number] = [0, (dataMax: number) => Math.max(dataMax, 1)]
 // OOM kills are integers — round max up to next multiple of 4 so Recharts picks integer ticks
 const oomDomain: [number, (max: number) => number] = [0, (dataMax: number) => Math.max(Math.ceil(dataMax / 4) * 4, 4)]
 
@@ -98,7 +97,6 @@ export default memo(function MemorySheet({ systemData }: { systemData: SystemDat
 					>
 						<AreaChartDefault
 							chartData={chartData}
-							domain={psiDomain}
 							tickFormatter={(val) => `${toFixedFloat(val, 2)}%`}
 							contentFormatter={({ value }) => `${decimalString(value, 2)}%`}
 							legend={true}
@@ -128,8 +126,7 @@ export default memo(function MemorySheet({ systemData }: { systemData: SystemDat
 					>
 						<AreaChartDefault
 							chartData={chartData}
-							domain={psiDomain}
-							tickFormatter={(val) => `${toFixedFloat(val, val >= 10 ? 0 : 1)}/s`}
+							tickFormatter={(val) => `${toFixedFloat(val, 2)}/s`}
 							contentFormatter={({ value }) => `${decimalString(value, value >= 100 ? 0 : 2)}/s`}
 							dataPoints={[
 								{
