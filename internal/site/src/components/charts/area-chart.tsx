@@ -36,6 +36,7 @@ export default function AreaChartDefault({
 	dataPoints,
 	domain,
 	legend,
+	legendExclude,
 	itemSorter,
 	showTotal = false,
 	reverseStackOrder = false,
@@ -56,6 +57,8 @@ export default function AreaChartDefault({
 	dataPoints?: DataPoint<any>[]
 	domain?: AxisDomain
 	legend?: boolean
+	/** Series labels to leave out of the legend */
+	legendExclude?: Set<string>
 	showTotal?: boolean
 	// biome-ignore lint/suspicious/noExplicitAny: recharts tooltip item interop
 	itemSorter?: (a: any, b: any) => number
@@ -167,7 +170,7 @@ export default function AreaChartDefault({
 						}
 					/>
 					{Areas}
-					{legend && <ChartLegend content={<ChartLegendContent />} />}
+					{legend && <ChartLegend content={<ChartLegendContent exclude={legendExclude} />} />}
 				</AreaChart>
 			</ChartContainer>
 		)

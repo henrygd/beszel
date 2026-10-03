@@ -148,8 +148,9 @@ export function TemperatureChart({
 		return { colorMap, dataKeys, sortedKeys: sorted }
 	}, [sensorNamesKey])
 
-	const dataPoints = useMemo(() => {
-		return sortedKeys.map((key) => {
+	const { dataPoints, filteredKeys } = useMemo(() => {
+		const filteredKeys = new Set<string>()
+		const dataPoints = sortedKeys.map((key) => {
 			const filterTerms = filter
 				? filter
 						.toLowerCase()
@@ -157,6 +158,7 @@ export function TemperatureChart({
 						.filter((term) => term.length > 0)
 				: []
 			const filtered = filterTerms.length > 0 && !filterTerms.some((term) => key.toLowerCase().includes(term))
+			if (filtered) filteredKeys.add(key)
 			const strokeOpacity = filtered ? 0.1 : 1
 			return {
 				label: key,
@@ -166,6 +168,7 @@ export function TemperatureChart({
 				activeDot: !filtered,
 			}
 		})
+		return { dataPoints, filteredKeys }
 	}, [sortedKeys, filter, dataKeys, colorMap])
 
 	// test with lots of data points
@@ -219,8 +222,6 @@ export function TemperatureChart({
 		return null
 	}
 
-	const legend = dataPoints.length < 12
-
 	return (
 		<div ref={chartRef} className={cn("odd:last-of-type:col-span-full", { "col-span-full": !grid })}>
 			<ChartCard
@@ -229,13 +230,14 @@ export function TemperatureChart({
 				title={t`Temperature`}
 				description={t`Temperatures of system sensors`}
 				cornerEl={<FilterBar store={$temperatureFilter} />}
-				legend={legend}
+				legend={true}
 			>
 				<LineChartDefault
 					chartData={chartData}
 					itemSorter={(a, b) => b.value - a.value}
 					domain={["auto", "auto"]}
-					legend={legend}
+					legend={true}
+					legendExclude={filteredKeys}
 					tickFormatter={(val) => {
 						const { value, unit } = formatTemperature(val, userSettings.unitTemp)
 						return `${toFixedFloat(value, 2)} ${unit}`
