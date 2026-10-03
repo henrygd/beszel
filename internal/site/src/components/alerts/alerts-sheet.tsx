@@ -15,14 +15,14 @@ import { Switch } from "@/components/ui/switch"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { toast } from "@/components/ui/use-toast"
 import { alertInfo } from "@/lib/alerts"
-import { pb } from "@/lib/api"
+import { isAdmin, pb } from "@/lib/api"
 import { $alerts, $systems } from "@/lib/stores"
 import { cn, debounce } from "@/lib/utils"
 import type { AlertInfo, AlertRecord, AlertUnit, SystemRecord } from "@/types"
 
 const Slider = lazy(() => import("@/components/ui/slider"))
 
-const endpoint = "/api/beszel/user-alerts"
+const endpoint = "/api/beszel/alerts"
 
 const alertDebounce = 400
 
@@ -88,6 +88,7 @@ export const AlertDialogContent = memo(function AlertDialogContent({ system }: {
 	const systems = useStore($systems)
 	const [overwriteExisting, setOverwriteExisting] = useState<boolean | "indeterminate">(false)
 	const [currentTab, setCurrentTab] = useState("system")
+	const canEdit = isAdmin()
 	// copyKey is used to force remount AlertContent components with
 	// new alert data after copying alerts from another system
 	const [copyKey, setCopyKey] = useState(0)
@@ -166,12 +167,14 @@ export const AlertDialogContent = memo(function AlertDialogContent({ system }: {
 							<ServerIcon className="me-2 h-3.5 w-3.5" />
 							<span className="truncate max-w-60">{system.name}</span>
 						</TabsTrigger>
-						<TabsTrigger value="global">
-							<GlobeIcon className="me-1.5 h-3.5 w-3.5" />
-							<Trans>All Systems</Trans>
-						</TabsTrigger>
+						{canEdit && (
+							<TabsTrigger value="global">
+								<GlobeIcon className="me-1.5 h-3.5 w-3.5" />
+								<Trans>All Systems</Trans>
+							</TabsTrigger>
+						)}
 					</TabsList>
-					{systemsWithAlerts.length > 0 && currentTab === "system" && (
+					{canEdit && systemsWithAlerts.length > 0 && currentTab === "system" && (
 						<DropdownMenu>
 							<DropdownMenuTrigger asChild>
 								<Button variant="ghost" size="sm" className="text-muted-foreground text-xs gap-1.5">
@@ -198,6 +201,7 @@ export const AlertDialogContent = memo(function AlertDialogContent({ system }: {
 								data={alertInfo[name as keyof typeof alertInfo]}
 								alert={systemAlerts.get(name)}
 								system={system}
+								canEdit={canEdit}
 							/>
 						))}
 					</div>
@@ -243,6 +247,7 @@ export function AlertContent({
 	global = false,
 	overwriteExisting = false,
 	initialAlertsState = {},
+	canEdit = true,
 }: {
 	alertKey: string
 	data: AlertInfo
@@ -251,6 +256,7 @@ export function AlertContent({
 	global?: boolean
 	overwriteExisting?: boolean
 	initialAlertsState?: Record<string, Map<string, AlertRecord>>
+	canEdit?: boolean
 }) {
 	const { name } = alertData
 
@@ -326,6 +332,7 @@ export function AlertContent({
 				<Switch
 					id={`s${name}`}
 					checked={checked}
+					disabled={!canEdit}
 					onCheckedChange={(newChecked) => {
 						setChecked(newChecked)
 						if (newChecked) {
@@ -377,6 +384,7 @@ export function AlertContent({
 										step={step}
 										min={valueMin ?? 1}
 										max={valueMax ?? 99}
+										disabled={!canEdit}
 									/>
 									<Input
 										type="number"
@@ -396,10 +404,12 @@ export function AlertContent({
 										min={inputMin ?? 1}
 										max={valueMax ?? 99}
 										className="w-16 h-8 text-center px-1"
+										disabled={!canEdit}
 									/>
 									{units && (
 										<Select
 											value={String(unitIndex)}
+											disabled={!canEdit}
 											onValueChange={(index) => {
 												const next = units[Number(index)]
 												const nextInput = getInputRange(next)
@@ -448,6 +458,7 @@ export function AlertContent({
 										onValueChange={(val) => setMin(val[0])}
 										min={1}
 										max={60}
+										disabled={!canEdit}
 									/>
 									<Input
 										type="number"
@@ -463,6 +474,7 @@ export function AlertContent({
 										min={1}
 										max={60}
 										className="w-16 h-8 text-center px-1"
+										disabled={!canEdit}
 									/>
 								</div>
 							</div>

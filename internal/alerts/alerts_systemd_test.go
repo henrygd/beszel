@@ -63,7 +63,7 @@ func systemdTestSetup(t *testing.T, triggered bool) (*beszelTests.TestHub, *core
 
 	userSettings, err := hub.FindFirstRecordByFilter("user_settings", "user={:user}", map[string]any{"user": user.Id})
 	require.NoError(t, err)
-	userSettings.Set("settings", `{"emails":["test@example.com"],"webhooks":[]}`)
+	userSettings.Set("settings", `{"notificationsEnabled":true,"emails":["test@example.com"],"webhooks":[]}`)
 	require.NoError(t, hub.Save(userSettings))
 
 	// "paused" avoids spawning a background updater goroutine that would outlive
@@ -75,7 +75,6 @@ func systemdTestSetup(t *testing.T, triggered bool) (*beszelTests.TestHub, *core
 	alert, err := beszelTests.CreateRecord(hub, "alerts", map[string]any{
 		"name":      "SystemdFailed",
 		"system":    system.Id,
-		"user":      user.Id,
 		"triggered": triggered,
 	})
 	require.NoError(t, err)
@@ -341,7 +340,7 @@ func TestResolveSystemdAlertsKeepsStillFailing(t *testing.T) {
 	assert.True(t, alertRecord.GetBool("triggered"), "alert should stay triggered while a service is still failed")
 }
 
-func TestSystemdAlertMultipleUsersRespectOwnAlerts(t *testing.T) {
+func TestSystemdAlertNotifiesAllSubscribedUsers(t *testing.T) {
 	hub, user1 := beszelTests.GetHubWithUser(t)
 	defer hub.Cleanup()
 
@@ -352,8 +351,9 @@ func TestSystemdAlertMultipleUsersRespectOwnAlerts(t *testing.T) {
 	_, err = beszelTests.CreateRecord(hub, "user_settings", map[string]any{
 		"user": user2.Id,
 		"settings": map[string]any{
-			"emails":   []string{"user2@example.com"},
-			"webhooks": []string{},
+			"notificationsEnabled": true,
+			"emails":               []string{"user2@example.com"},
+			"webhooks":             []string{},
 		},
 	})
 	require.NoError(t, err)
@@ -365,19 +365,16 @@ func TestSystemdAlertMultipleUsersRespectOwnAlerts(t *testing.T) {
 	})
 	require.NoError(t, err)
 
-	for _, user := range []*core.Record{user1, user2} {
-		_, err = beszelTests.CreateRecord(hub, "alerts", map[string]any{
-			"name":   "SystemdFailed",
-			"system": system.Id,
-			"user":   user.Id,
-		})
-		require.NoError(t, err)
-	}
+	_, err = beszelTests.CreateRecord(hub, "alerts", map[string]any{
+		"name":   "SystemdFailed",
+		"system": system.Id,
+	})
+	require.NoError(t, err)
 
 	am := alerts.NewTestAlertManagerWithoutWorker(hub)
 	seedServices(t, hub, system.Id, systemd.StatusFailed)
 	require.NoError(t, am.HandleSystemdAlerts(system))
 
 	messages := hub.TestMailer.Messages()
-	require.Len(t, messages, 2, "each user should receive their own alert")
+	require.Len(t, messages, 2, "each subscribed user should receive the system's alert")
 }

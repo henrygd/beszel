@@ -40,7 +40,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { useToast } from "@/components/ui/use-toast"
 import { alertInfo } from "@/lib/alerts"
-import { pb } from "@/lib/api"
+import { isReadOnlyUser, pb } from "@/lib/api"
 import { cn, formatDuration, formatShortDate, useBrowserStorage } from "@/lib/utils"
 import type { AlertsHistoryRecord } from "@/types"
 import { alertsHistoryColumns } from "../../alerts-history-columns"
@@ -231,37 +231,39 @@ export default function AlertsHistoryDataTable() {
 				<div className="flex items-center gap-2 ms-auto mt-3 @3xl:mt-0">
 					{table.getFilteredSelectedRowModel().rows.length > 0 && (
 						<div className="fixed bottom-0 left-0 w-full p-4 grid grid-cols-2 items-center gap-4 z-50 backdrop-blur-md shrink-0 @lg:static @lg:p-0 @lg:w-auto @lg:gap-3">
-							<AlertDialog open={deleteOpen} onOpenChange={(open) => setDeleteDialogOpen(open)}>
-								<AlertDialogTrigger asChild>
-									<Button variant="destructive" className="h-9 shrink-0">
-										<Trash2Icon className="size-4 shrink-0" />
-										<span className="ms-1">
-											<Trans>Delete</Trans>
-										</span>
-									</Button>
-								</AlertDialogTrigger>
-								<AlertDialogContent>
-									<AlertDialogHeader>
-										<AlertDialogTitle>
-											<Trans>Are you sure?</Trans>
-										</AlertDialogTitle>
-										<AlertDialogDescription>
-											<Trans>This will permanently delete all selected records from the database.</Trans>
-										</AlertDialogDescription>
-									</AlertDialogHeader>
-									<AlertDialogFooter>
-										<AlertDialogCancel>
-											<Trans>Cancel</Trans>
-										</AlertDialogCancel>
-										<AlertDialogAction
-											className={cn(buttonVariants({ variant: "destructive" }))}
-											onClick={handleBulkDelete}
-										>
-											<Trans>Continue</Trans>
-										</AlertDialogAction>
-									</AlertDialogFooter>
-								</AlertDialogContent>
-							</AlertDialog>
+							{!isReadOnlyUser() && (
+								<AlertDialog open={deleteOpen} onOpenChange={(open) => setDeleteDialogOpen(open)}>
+									<AlertDialogTrigger asChild>
+										<Button variant="destructive" className="h-9 shrink-0">
+											<Trash2Icon className="size-4 shrink-0" />
+											<span className="ms-1">
+												<Trans>Delete</Trans>
+											</span>
+										</Button>
+									</AlertDialogTrigger>
+									<AlertDialogContent>
+										<AlertDialogHeader>
+											<AlertDialogTitle>
+												<Trans>Are you sure?</Trans>
+											</AlertDialogTitle>
+											<AlertDialogDescription>
+												<Trans>This will permanently delete all selected records from the database.</Trans>
+											</AlertDialogDescription>
+										</AlertDialogHeader>
+										<AlertDialogFooter>
+											<AlertDialogCancel>
+												<Trans>Cancel</Trans>
+											</AlertDialogCancel>
+											<AlertDialogAction
+												className={cn(buttonVariants({ variant: "destructive" }))}
+												onClick={handleBulkDelete}
+											>
+												<Trans>Continue</Trans>
+											</AlertDialogAction>
+										</AlertDialogFooter>
+									</AlertDialogContent>
+								</AlertDialog>
+							)}
 							<Button variant="outline" className="h-10" onClick={handleExportCSV}>
 								<DownloadIcon className="size-4" />
 								<span className="ms-1">

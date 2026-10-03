@@ -341,7 +341,6 @@ export interface AlertRecord extends RecordModel {
 export interface AlertsHistoryRecord extends RecordModel {
 	monitor_name?: string
 	alert: string
-	user: string
 	system: string
 	name: string
 	val: number
@@ -395,6 +394,8 @@ export interface ChartTimeData {
 export interface UserSettings {
 	/** may be missing in settings stored by older versions -- use getUserChartTime() */
 	chartTime?: ChartTimes
+	notificationsEnabled?: boolean
+	systems?: string[]
 	emails?: string[]
 	webhooks?: string[]
 	unitTemp?: Unit

@@ -39,7 +39,8 @@ import { SystemStatus } from "@/lib/enums"
 import { $allSystemsById, $direction, $textMeasureVersion, $userSettings, getUserChartTime } from "@/lib/stores"
 import { cn, formatShortDate, isVisuallyLonger, matchesFilterGroups, parseFilterGroups, parseSemVer } from "@/lib/utils"
 import type { ChartOptions, MonitorCertInfo, NetworkMonitorRecord } from "@/types"
-import { AddMonitorDialog, EditMonitorDialog, MonitorMultiSelect, SystemMultiSelect } from "./monitor-dialog"
+import { SystemMultiSelect } from "@/components/multi-select"
+import { AddMonitorDialog, EditMonitorDialog, MonitorMultiSelect } from "./monitor-dialog"
 import {
 	ArrowDownIcon,
 	ArrowLeftRightIcon,
