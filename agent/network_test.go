@@ -344,7 +344,7 @@ func TestComputeBytesPerSecond(t *testing.T) {
 
 func TestSumAndTrackPerNicDeltas(t *testing.T) {
 	a := &Agent{
-		netInterfaces:             map[string]struct{}{"eth0": {}, "wlan0": {}},
+		netInterfaces:             map[string]bool{"eth0": false, "wlan0": false},
 		netInterfaceDeltaTrackers: make(map[uint16]*deltatracker.DeltaTracker[string, uint64]),
 	}
 
@@ -410,7 +410,7 @@ func TestSumAndTrackPerNicPacketRates(t *testing.T) {
 
 func TestSumAndTrackPerNicDeltasHandlesCounterReset(t *testing.T) {
 	a := &Agent{
-		netInterfaces:             map[string]struct{}{"eth0": {}},
+		netInterfaces:             map[string]bool{"eth0": false},
 		netInterfaceDeltaTrackers: make(map[uint16]*deltatracker.DeltaTracker[string, uint64]),
 	}
 
@@ -506,7 +506,7 @@ func TestApplyNetworkTotals(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			// Setup agent with initialized maps
 			a := &Agent{
-				netInterfaces:             make(map[string]struct{}),
+				netInterfaces:             make(map[string]bool),
 				netIoStats:                make(map[uint16]system.NetIoStats),
 				netInterfaceDeltaTrackers: make(map[uint16]*deltatracker.DeltaTracker[string, uint64]),
 			}
@@ -547,4 +547,23 @@ func TestApplyNetworkTotals(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestSumAndTrackPerNicDeltasKeepsCountersWhenMacReadFails(t *testing.T) {
+	a := &Agent{
+		// missing0 is flagged for MAC counters but has no ethtool stats to read
+		netInterfaces:             map[string]bool{"eth0": false, "missing0": true},
+		netInterfaceDeltaTrackers: make(map[uint16]*deltatracker.DeltaTracker[string, uint64]),
+	}
+	netIO := []psutilNet.IOCountersStat{
+		{Name: "eth0", BytesSent: 100, BytesRecv: 200},
+		{Name: "missing0", BytesSent: 300, BytesRecv: 400},
+	}
+	stats := &system.Stats{}
+	a.ensureNetworkInterfacesMap(stats)
+
+	tx, rx := a.sumAndTrackPerNicDeltas(1, 0, netIO, stats)
+	assert.Equal(t, uint64(400), tx)
+	assert.Equal(t, uint64(600), rx)
+	assert.Equal(t, [4]uint64{0, 0, 300, 400}, stats.NetworkInterfaces["missing0"])
 }
