@@ -65,9 +65,9 @@ func detectLxc() bool {
 	return false
 }
 
-// useCgroupCpu enables cgroup-root CPU accounting automatically in LXC or
+// useCgroup enables cgroup-root accounting automatically in LXC or
 // explicitly when requested by the agent configuration.
-func useCgroupCpu(forceUse bool) bool {
+func useCgroup(forceUse bool) bool {
 	return forceUse || inLxc()
 }
 
@@ -100,7 +100,7 @@ var lastCgroupCpuSamples = make(map[uint16]cgroupCpuSample)
 // initializeCpu seeds the cgroup baseline after Agent configuration is read,
 // so the first reported CPU value is a delta instead of zero.
 func (a *Agent) initializeCpu() {
-	if !useCgroupCpu(a.forceUseCgroup) {
+	if !useCgroup(a.forceUseCgroup) {
 		return
 	}
 	if s, ok := readContainerCpuSample(); ok {
@@ -114,7 +114,7 @@ func (a *Agent) initializeCpu() {
 // ok=false when disabled or whenever cgroup accounting is unreadable, so
 // callers keep the /proc/stat path.
 func containerCpuMetrics(cacheTimeMs uint16, forceUseCgroup bool) (CpuMetrics, bool) {
-	if !useCgroupCpu(forceUseCgroup) {
+	if !useCgroup(forceUseCgroup) {
 		return CpuMetrics{}, false
 	}
 	cur, ok := readContainerCpuSample()
