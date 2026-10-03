@@ -7,7 +7,10 @@ const system = (wf?: SystemInfo["wf"], status: "up" | "down" = "up") => ({ statu
 
 test("current state gates panel, not retained history", () => {
 	expect(connectedWiFi(system())).toEqual([])
-	expect(connectedWiFi(system(null))).toEqual([])
+	const nullWifi = system()
+	// Exercise malformed stored data without widening the normal wire type.
+	Reflect.set(nullWifi.info, "wf", null)
+	expect(connectedWiFi(nullWifi)).toEqual([])
 	expect(connectedWiFi(system({}))).toEqual([])
 	expect(connectedWiFi(system({ wlan0: { r: -50 } }, "down"))).toEqual([])
 	expect(connectedWiFi(system({ wlan0: { r: -50 } }))).toHaveLength(1)
