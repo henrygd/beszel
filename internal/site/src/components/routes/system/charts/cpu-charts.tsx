@@ -4,7 +4,6 @@ import { useContainerDataPoints } from "@/components/charts/hooks"
 import { decimalString, toFixedFloat } from "@/lib/utils"
 import type { ChartConfig } from "@/components/ui/chart"
 import type { ChartData } from "@/types"
-import { pinnedAxisDomain } from "@/components/ui/chart"
 import CpuCoresSheet from "../cpu-sheet"
 import { ChartCard, FilterBar, SelectAvgMax } from "../chart-card"
 import { dockerOrPodman } from "../chart-data"
@@ -55,7 +54,7 @@ export function CpuChart({
 				]}
 				tickFormatter={(val) => `${toFixedFloat(val, 2)}%`}
 				contentFormatter={({ value }) => `${decimalString(value)}%`}
-				domain={cpuFixed ? [0, 100] : pinnedAxisDomain()}
+				domain={cpuFixed ? [0, 100] : undefined}
 			/>
 		</ChartCard>
 	)
@@ -90,7 +89,6 @@ export function ContainerCpuChart({
 				dataPoints={dataPoints}
 				tickFormatter={(val) => `${toFixedFloat(val, 2)}%`}
 				contentFormatter={({ value }) => `${decimalString(value)}%`}
-				domain={pinnedAxisDomain()}
 				showTotal={true}
 				reverseStackOrder={true}
 				filter={filter}

@@ -38,8 +38,8 @@ import { pb } from "@/lib/api"
 import { SystemStatus } from "@/lib/enums"
 import { $allSystemsById, $direction, $textMeasureVersion, $userSettings, getUserChartTime } from "@/lib/stores"
 import { cn, formatShortDate, isVisuallyLonger, matchesFilterGroups, parseFilterGroups, parseSemVer } from "@/lib/utils"
-import type { ChartData, MonitorCertInfo, NetworkMonitorRecord } from "@/types"
-import { AddMonitorDialog, EditMonitorDialog } from "./monitor-dialog"
+import type { ChartOptions, MonitorCertInfo, NetworkMonitorRecord } from "@/types"
+import { AddMonitorDialog, EditMonitorDialog, MonitorMultiSelect, SystemMultiSelect } from "./monitor-dialog"
 import {
 	ArrowDownIcon,
 	ArrowLeftRightIcon,
@@ -66,8 +66,9 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet"
 import ChartTimeSelect from "@/components/charts/chart-time-select"
-import { LossChart, AvgMinMaxResponseChart } from "@/components/routes/system/charts/monitors-charts"
-import { useNetworkMonitorStats } from "@/lib/use-network-monitors"
+import { LossChart, AvgMinMaxResponseChart, ResponseChart } from "@/components/routes/system/charts/monitors-charts"
+import { getMonitorCompareState } from "@/lib/monitor-compare"
+import { useCompareMonitors, useNetworkMonitorStats } from "@/lib/use-network-monitors"
 import { useStore } from "@nanostores/react"
 import { atom } from "nanostores"
 import { Separator } from "../ui/separator"
@@ -99,7 +100,7 @@ export default function NetworkMonitorsTableNew({
 	const [rowSelection, setRowSelection] = useState<RowSelectionState>({})
 	const [globalFilter, setGlobalFilter] = useState("")
 	const [deleteOpen, setDeleteOpen] = useState(false)
-	const [pendingDeleteIds, setPendingDeleteIds] = useState<string[]>([])
+	const [pendingDelete, setPendingDelete] = useState<NetworkMonitorRecord[]>([])
 	const [editingMonitor, setEditingMonitor] = useState<NetworkMonitorRecord>()
 
 	const { toast } = useToast()
@@ -197,41 +198,28 @@ export default function NetworkMonitorsTableNew({
 		[]
 	)
 
-	const handleDeleteRequest = useCallback(
-		async (monitorsToDelete: NetworkMonitorRecord[]) => {
-			if (!monitorsToDelete.length) {
-				return
-			}
+	const handleDeleteRequest = useCallback((monitorsToDelete: NetworkMonitorRecord[]) => {
+		if (!monitorsToDelete.length) {
+			return
+		}
+		setPendingDelete(monitorsToDelete)
+		setDeleteOpen(true)
+	}, [])
 
-			const ids = monitorsToDelete.map((monitor) => monitor.id)
-			if (ids.length === 1) {
-				try {
-					await pb.collection("network_monitors").delete(ids[0])
-				} catch (err: unknown) {
-					toast({
-						variant: "destructive",
-						title: t`Error`,
-						description: (err as Error)?.message || t`Failed to delete monitors.`,
-					})
-				}
-				return
-			}
-
-			setPendingDeleteIds(ids)
-			setDeleteOpen(true)
-		},
-		[toast]
-	)
-
-	const handleBulkDelete = async () => {
+	const handleConfirmDelete = async () => {
 		setDeleteOpen(false)
-		if (!pendingDeleteIds.length) {
+		const ids = pendingDelete.map((monitor) => monitor.id)
+		if (!ids.length) {
 			return
 		}
 
 		try {
-			await runMonitorBatch(pendingDeleteIds, (batch, id) => batch.collection("network_monitors").delete(id))
-			setPendingDeleteIds([])
+			if (ids.length === 1) {
+				await pb.collection("network_monitors").delete(ids[0])
+			} else {
+				await runMonitorBatch(ids, (batch, id) => batch.collection("network_monitors").delete(id))
+			}
+			setPendingDelete([])
 			setRowSelection({})
 		} catch (err: unknown) {
 			toast({
@@ -446,7 +434,7 @@ export default function NetworkMonitorsTableNew({
 							onOpenChange={(open) => {
 								setDeleteOpen(open)
 								if (!open) {
-									setPendingDeleteIds([])
+									setPendingDelete([])
 								}
 							}}
 						>
@@ -465,7 +453,7 @@ export default function NetworkMonitorsTableNew({
 									</AlertDialogCancel>
 									<AlertDialogAction
 										className={cn(buttonVariants({ variant: "destructive" }))}
-										onClick={handleBulkDelete}
+										onClick={handleConfirmDelete}
 									>
 										<Trans>Continue</Trans>
 									</AlertDialogAction>
@@ -483,6 +471,7 @@ export default function NetworkMonitorsTableNew({
 					visibleColumnsKey={visibleColumnsKey}
 					rowSelection={rowSelection}
 					isLoading={isLoading}
+					includesAllSystems={!systemId}
 				/>
 			</div>
 		</Card>
@@ -496,6 +485,7 @@ const NetworkMonitorsTable = memo(function NetworkMonitorTable({
 	visibleColumnsKey,
 	rowSelection,
 	isLoading,
+	includesAllSystems,
 }: {
 	table: TableType<NetworkMonitorRecord>
 	rows: Row<NetworkMonitorRecord>[]
@@ -503,6 +493,8 @@ const NetworkMonitorsTable = memo(function NetworkMonitorTable({
 	visibleColumnsKey: string
 	rowSelection: RowSelectionState
 	isLoading: boolean
+	/** The table lists every system's monitors, so the sheet can compare without fetching. */
+	includesAllSystems: boolean
 }) {
 	const scrollRef = useRef<HTMLDivElement>(null)
 	const [sheetOpen, setSheetOpen] = useState(false)
@@ -573,6 +565,8 @@ const NetworkMonitorsTable = memo(function NetworkMonitorTable({
 					setSheetOpen(nextOpen)
 				}}
 				monitor={activeMonitor}
+				monitors={table.options.data}
+				includesAllSystems={includesAllSystems}
 			/>
 		</div>
 	)
@@ -643,16 +637,29 @@ function NetworkMonitorSheet({
 	open,
 	onOpenChange,
 	monitor,
+	monitors,
+	includesAllSystems,
 }: {
 	open: boolean
 	onOpenChange: (open: boolean) => void
 	monitor?: NetworkMonitorRecord
+	monitors: NetworkMonitorRecord[]
+	includesAllSystems: boolean
 }) {
 	if (!monitor) {
 		return null
 	}
 
-	return <NetworkMonitorSheetContent key={monitor.system} open={open} onOpenChange={onOpenChange} monitor={monitor} />
+	return (
+		<NetworkMonitorSheetContent
+			key={monitor.system}
+			open={open}
+			onOpenChange={onOpenChange}
+			monitor={monitor}
+			monitors={monitors}
+			includesAllSystems={includesAllSystems}
+		/>
+	)
 }
 
 const certExpiryTextColors = { ok: "", warning: "text-yellow-600 dark:text-yellow-500", critical: "text-red-500" }
@@ -689,10 +696,16 @@ function NetworkMonitorSheetContent({
 	open,
 	onOpenChange,
 	monitor,
+	monitors,
+	includesAllSystems,
 }: {
 	open: boolean
 	onOpenChange: (open: boolean) => void
 	monitor: NetworkMonitorRecord
+	/** Table monitors; used to find other targets on the same system to compare against. */
+	monitors: NetworkMonitorRecord[]
+	/** Whether `monitors` covers every system, so other systems' monitors needn't be fetched. */
+	includesAllSystems: boolean
 }) {
 	// Keep monitor exploration independent of the system charts' time range.
 	const [chartTimeStore] = useState(() => {
@@ -701,17 +714,47 @@ function NetworkMonitorSheetContent({
 	})
 	const chartTime = useStore(chartTimeStore)
 	const direction = useStore($direction)
-	const system = useStore($allSystemsById)[monitor.system]
+	const systems = useStore($allSystemsById)
+	const system = systems[monitor.system]
+
+	const [compareTargetIds, setCompareTargetIds] = useState<Set<string>>(() => new Set())
+	const [compareSystemIds, setCompareSystemIds] = useState<Set<string>>(() => new Set())
+	// Scoped to this sheet so a filter doesn't carry over to other monitors' sheets.
+	const [compareFilterStore, setCompareFilterStore] = useState(() => atom(""))
+	// The sheet is keyed by system (to keep the time range), so reset comparison state per monitor.
+	const [compareMonitorId, setCompareMonitorId] = useState(monitor.id)
+	if (compareMonitorId !== monitor.id) {
+		setCompareMonitorId(monitor.id)
+		setCompareSystemIds(new Set())
+		setCompareTargetIds(new Set())
+		setCompareFilterStore(atom(""))
+	}
+	// Other systems' monitors come from the table when it lists every system, otherwise from one fetch.
+	const fetchedMonitors = useCompareMonitors(monitor.system, monitor.protocol, open && !includesAllSystems)
+	const compare = useMemo(
+		() =>
+			getMonitorCompareState({
+				monitor,
+				localMonitors: monitors,
+				otherMonitors: includesAllSystems ? monitors : fetchedMonitors,
+				selectedSystemIds: compareSystemIds,
+				selectedTargetIds: compareTargetIds,
+				getSystemName: (id) => systems[id]?.name ?? id,
+			}),
+		[monitor, monitors, includesAllSystems, fetchedMonitors, compareSystemIds, compareTargetIds, systems]
+	)
+	const { compareMonitors } = compare
+	const comparing = compareMonitors.length > 1
 
 	const monitorStats = useNetworkMonitorStats({
 		systemId: monitor.system,
-		monitorId: monitor.id,
+		monitorIds: comparing ? compareMonitors.map((m) => m.id) : [monitor.id],
 		interval: monitor.interval,
 		chartTime,
 		enabled: open,
 	})
 
-	const chartData = useMemo<ChartData>(
+	const chartData = useMemo<ChartOptions>(
 		() => ({
 			agentVersion: parseSemVer(system?.info?.v),
 			orientation: direction === "rtl" ? "right" : "left",
@@ -719,7 +762,9 @@ function NetworkMonitorSheetContent({
 		}),
 		[system?.info?.v, direction, chartTime]
 	)
-	const hasMonitorStats = monitorStats.some((record) => record.stats?.[monitor.id] != null)
+	const hasMonitorStats = comparing
+		? monitorStats.some((record) => record.stats != null)
+		: monitorStats.some((record) => record.stats?.[monitor.id] != null)
 	const monitorLabel = getMonitorTarget(monitor)
 
 	return (
@@ -753,26 +798,73 @@ function NetworkMonitorSheetContent({
 					</SheetDescription>
 				</SheetHeader>
 				<div className="grid gap-4">
-					<ChartTimeSelect
-						className="bg-card"
-						agentVersion={chartData.agentVersion}
-						chartTimeStore={chartTimeStore}
-						allowRealtime={false}
-					/>
-					<AvgMinMaxResponseChart
-						monitorStats={monitorStats}
-						monitor={monitor}
-						chartData={chartData}
-						empty={!hasMonitorStats}
-					/>
-					<LossChart
-						monitorStats={monitorStats}
-						grid={false}
-						monitors={[monitor]}
-						chartData={chartData}
-						empty={!hasMonitorStats}
-						showFilter={false}
-					/>
+					<div className="flex flex-wrap items-center gap-2">
+						<ChartTimeSelect
+							className="bg-card flex-1 min-w-0 basis-full sm:basis-0"
+							agentVersion={chartData.agentVersion}
+							chartTimeStore={chartTimeStore}
+							allowRealtime={false}
+						/>
+						<MonitorMultiSelect
+							id="monitor-compare-targets"
+							className="flex-1 min-w-0 basis-full sm:basis-0 bg-card"
+							monitors={compare.targetOptions}
+							selectedMonitorIds={compare.selectedTargetIds}
+							onChange={setCompareTargetIds}
+							disabled={compare.targetOptions.length === 0}
+							canSelectMore={compare.canAddTarget}
+							placeholder={t`Compare with other targets`}
+						/>
+						<SystemMultiSelect
+							id="monitor-compare-systems"
+							className="flex-1 min-w-0 basis-full sm:basis-0 bg-card"
+							systemIds={compare.systemOptions}
+							selectedSystemIds={compare.selectedSystemIds}
+							onChange={setCompareSystemIds}
+							disabled={compare.systemOptions.length === 0}
+							canSelectMore={compare.canAddSystem}
+							placeholder={t`Compare with other systems`}
+						/>
+					</div>
+					{comparing ? (
+						<>
+							<ResponseChart
+								monitorStats={monitorStats}
+								grid={false}
+								monitors={compareMonitors}
+								chartData={chartData}
+								empty={!hasMonitorStats}
+								getLabel={compare.getLabel}
+								filterStore={compareFilterStore}
+							/>
+							<LossChart
+								monitorStats={monitorStats}
+								grid={false}
+								monitors={compareMonitors}
+								chartData={chartData}
+								empty={!hasMonitorStats}
+								getLabel={compare.getLabel}
+								filterStore={compareFilterStore}
+							/>
+						</>
+					) : (
+						<>
+							<AvgMinMaxResponseChart
+								monitorStats={monitorStats}
+								monitor={monitor}
+								chartData={chartData}
+								empty={!hasMonitorStats}
+							/>
+							<LossChart
+								monitorStats={monitorStats}
+								grid={false}
+								monitors={[monitor]}
+								chartData={chartData}
+								empty={!hasMonitorStats}
+								showFilter={false}
+							/>
+						</>
+					)}
 				</div>
 			</SheetContent>
 		</Sheet>

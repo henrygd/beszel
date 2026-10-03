@@ -17,6 +17,7 @@ import (
 	"net/url"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"testing"
 	"time"
@@ -235,8 +236,11 @@ func TestWebSocketClient_TLSVerification(t *testing.T) {
 	t.Run("custom CA trusts self-signed certificate", func(t *testing.T) {
 		systemRoots, err := x509.SystemCertPool()
 		require.NoError(t, err)
+		require.True(t, systemRoots.AppendCertsFromPEM(serverCertPEM))
 		client := newClient(t, caCertFile)
-		assert.Greater(t, len(client.getOptions().TlsConfig.RootCAs.Subjects()), len(systemRoots.Subjects()))
+		tlsConfig := client.getOptions().TlsConfig
+		require.NotNil(t, tlsConfig)
+		assert.True(t, tlsConfig.RootCAs.Equal(systemRoots))
 		conn, _, err := gws.NewClient(&gws.BuiltinEventHandler{}, client.getOptions())
 		require.NoError(t, err)
 		require.NoError(t, conn.NetConn().Close())
@@ -316,7 +320,7 @@ func TestGetTLSConfigErrors(t *testing.T) {
 			require.Error(t, err)
 			assert.Nil(t, tlsConfig)
 			assert.Contains(t, err.Error(), tc.errorMatch)
-			assert.Contains(t, err.Error(), tc.path)
+			assert.Contains(t, err.Error(), strconv.Quote(tc.path))
 		})
 	}
 }
@@ -470,7 +474,7 @@ func TestWebSocketClient_HandleHubRequest(t *testing.T) {
 				Data:   cbor.RawMessage{},
 			}
 
-			err := client.handleHubRequest(hubRequest, nil)
+			err := client.handleHubRequest(hubRequest, nil, nil)
 
 			if tc.expectError {
 				assert.Error(t, err)
@@ -530,6 +534,18 @@ func TestWebSocketClient_Close(t *testing.T) {
 	assert.NotPanics(t, func() {
 		client.Close()
 	})
+}
+
+func TestWebSocketClient_IgnoresStaleClose(t *testing.T) {
+	agent := createTestAgent(t)
+	agent.connectionManager.eventChan = make(chan ConnectionEvent, 1)
+	current := &gws.Conn{}
+	client := &WebSocketClient{agent: agent, Conn: current, hubVerified: true}
+
+	client.OnClose(&gws.Conn{}, nil)
+	assert.Same(t, current, client.getConn())
+	assert.True(t, client.hubVerified)
+	assert.Empty(t, agent.connectionManager.eventChan)
 }
 
 // TestWebSocketClient_ConnectRateLimit tests connection rate limiting
@@ -681,12 +697,12 @@ func TestGetToken(t *testing.T) {
 
 	t.Run("error when TOKEN_FILE points to non-existent file", func(t *testing.T) {
 		// Set TOKEN_FILE to a non-existent file
-		t.Setenv("TOKEN_FILE", "/non/existent/file.txt")
+		t.Setenv("TOKEN_FILE", filepath.Join(t.TempDir(), "missing.txt"))
 
 		token, err := getToken()
 		assert.Error(t, err)
 		assert.Equal(t, "", token)
-		assert.Contains(t, err.Error(), "no such file or directory")
+		assert.ErrorIs(t, err, os.ErrNotExist)
 	})
 
 	t.Run("handles empty token file", func(t *testing.T) {

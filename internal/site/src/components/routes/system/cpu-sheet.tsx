@@ -198,7 +198,7 @@ export default memo(function CpuCoresSheet({
 										opacity: 0.35,
 									},
 								]}
-								tickFormatter={(val) => `${val}%`}
+								tickFormatter={(val) => `${toFixedFloat(val, 2)}%`}
 								contentFormatter={({ value }) => `${value}%`}
 							/>
 						</ChartCard>

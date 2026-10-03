@@ -62,7 +62,8 @@ func TestNetworkMonitorSyncSkipsOlderAgents(t *testing.T) {
 	for _, version := range []string{"0.0.0", "0.18.0", "0.19.0"} {
 		t.Run(version, func(t *testing.T) {
 			// No transport: attempting to send any request would fail.
-			sys := &System{agentVersion: semver.MustParse(version)}
+			sys := &System{}
+			sys.setAgentVersion(semver.MustParse(version))
 			require.NoError(t, sys.SyncNetworkMonitors(nil))
 			result, err := sys.UpsertNetworkMonitor(monitor.Config{ID: "test"}, true)
 			require.NoError(t, err)
@@ -91,6 +92,7 @@ func TestNetworkMonitorReconnectSync(t *testing.T) {
 			require.NoError(t, app.SaveNoValidate(probe))
 
 			sm := NewSystemManager(stubHub{app})
+			require.NoError(t, sm.createSSHClientConfig())
 			t.Cleanup(func() {
 				sm.cancel()
 				_ = sm.RemoveSystem(sys.Id)
