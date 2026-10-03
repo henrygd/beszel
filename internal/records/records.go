@@ -283,6 +283,9 @@ func AverageSystemStatsSlice(records []system.Stats) system.Stats {
 	fanCount := uint64(0)
 	zfsPoolCounts := make(map[string]uint64)
 	zfsCapacityCounts := make(map[string]uint64)
+	// memory PSI is only reported on Linux with PSI enabled
+	var memPsiSums []float64
+	memPsiCount := float64(0)
 
 	// Accumulate totals
 	for i := range records {
@@ -309,6 +312,20 @@ func AverageSystemStatsSlice(records []system.Stats) system.Stats {
 		sum.MemZfsArc += stats.MemZfsArc
 		sum.Swap += stats.Swap
 		sum.SwapUsed += stats.SwapUsed
+		sum.SwapIn += stats.SwapIn
+		sum.SwapOut += stats.SwapOut
+		sum.MemSlab += stats.MemSlab
+		// OOM kills are event counts, so they are summed rather than averaged
+		sum.MemOomKills += stats.MemOomKills
+		if stats.MemPsi != nil {
+			if len(memPsiSums) < len(stats.MemPsi) {
+				memPsiSums = append(memPsiSums, make([]float64, len(stats.MemPsi)-len(memPsiSums))...)
+			}
+			for j, v := range stats.MemPsi {
+				memPsiSums[j] += v
+			}
+			memPsiCount++
+		}
 		sum.DiskTotal += stats.DiskTotal
 		sum.DiskUsed += stats.DiskUsed
 		sum.DiskPct += stats.DiskPct
@@ -502,6 +519,15 @@ func AverageSystemStatsSlice(records []system.Stats) system.Stats {
 	sum.MemZfsArc = twoDecimals(sum.MemZfsArc / count)
 	sum.Swap = twoDecimals(sum.Swap / count)
 	sum.SwapUsed = twoDecimals(sum.SwapUsed / count)
+	sum.SwapIn = twoDecimals(sum.SwapIn / count)
+	sum.SwapOut = twoDecimals(sum.SwapOut / count)
+	sum.MemSlab = twoDecimals(sum.MemSlab / count)
+	if memPsiCount > 0 {
+		sum.MemPsi = make([]float64, len(memPsiSums))
+		for j, v := range memPsiSums {
+			sum.MemPsi[j] = twoDecimals(v / memPsiCount)
+		}
+	}
 	sum.DiskTotal = twoDecimals(sum.DiskTotal / count)
 	sum.DiskUsed = twoDecimals(sum.DiskUsed / count)
 	sum.DiskPct = twoDecimals(sum.DiskPct / count)

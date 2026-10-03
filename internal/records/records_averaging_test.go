@@ -589,6 +589,27 @@ func TestAverageSystemStatsSlice_CpuBreakdown(t *testing.T) {
 	assert.Equal(t, []float64{10.0, 5.0, 2.0, 1.0, 82.0}, result.CpuBreakdown)
 }
 
+func TestAverageSystemStatsSlice_MemExtras(t *testing.T) {
+	input := []system.Stats{
+		{SwapIn: 100, SwapOut: 300, MemSlab: 0.5, MemOomKills: 1, MemPsi: []float64{1.0, 2.0, 0.5, 1.0}},
+		{SwapIn: 200, SwapOut: 500, MemSlab: 0.7, MemOomKills: 2, MemPsi: []float64{3.0, 4.0, 1.5, 2.0}},
+		{SwapIn: 0, SwapOut: 100, MemSlab: 0.6}, // no PSI reported
+	}
+
+	result := records.AverageSystemStatsSlice(input)
+
+	assert.Equal(t, 100.0, result.SwapIn)
+	assert.Equal(t, 300.0, result.SwapOut)
+	assert.Equal(t, 0.6, result.MemSlab)
+	assert.Equal(t, uint32(3), result.MemOomKills, "OOM kills are summed, not averaged")
+	assert.Equal(t, []float64{2.0, 3.0, 1.0, 1.5}, result.MemPsi, "PSI averages only samples that reported it")
+}
+
+func TestAverageSystemStatsSlice_NoMemPsi(t *testing.T) {
+	result := records.AverageSystemStatsSlice([]system.Stats{{Cpu: 10}, {Cpu: 20}})
+	assert.Nil(t, result.MemPsi)
+}
+
 // Tests that Battery[1] (charge state) uses the last record's value.
 func TestAverageSystemStatsSlice_BatteryLastChargeState(t *testing.T) {
 	input := []system.Stats{
