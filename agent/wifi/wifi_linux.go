@@ -6,6 +6,7 @@ import (
 	"context"
 	"errors"
 	"net"
+	"os"
 	"time"
 
 	"github.com/henrygd/beszel/internal/entities/system"
@@ -80,7 +81,27 @@ func (c *nl80211Client) Close() error {
 	return errors.Join(c.conn.Close(), c.Client.Close())
 }
 
+// wiphyClassDir lists the wireless devices registered with cfg80211.
+const wiphyClassDir = "/sys/class/ieee80211"
+
+// hasWirelessDevice gates nl80211 access. Looking up the nl80211 family while
+// cfg80211 is not loaded makes the kernel run modprobe, which loads the module
+// on hosts without wireless hardware, or fails again on every poll. Not cached,
+// so devices registered after startup are still picked up.
+func hasWirelessDevice(dir string) bool {
+	f, err := os.Open(dir)
+	if err != nil {
+		return false
+	}
+	defer f.Close()
+	names, _ := f.Readdirnames(1)
+	return len(names) > 0
+}
+
 func collect(ctx context.Context) map[string]system.WiFi {
+	if !hasWirelessDevice(wiphyClassDir) {
+		return nil
+	}
 	client, err := newNL80211Client()
 	if err != nil {
 		return nil

@@ -8,7 +8,7 @@ msgstr ""
 "Language: ar\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2026-09-24 17:29\n"
+"PO-Revision-Date: 2026-10-01 02:41\n"
 "Last-Translator: \n"
 "Language-Team: Arabic\n"
 "Plural-Forms: nplurals=6; plural=(n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 && n%100<=10 ? 3 : n%100>=11 && n%100<=99 ? 4 : 5);\n"
@@ -30,11 +30,19 @@ msgstr "{0} متاح"
 msgid "{0} of {1} row(s) selected."
 msgstr "تم تحديد {0} من {1} صف"
 
-#. placeholder {0}: selectedSystemIds.size
+#. placeholder {0}: selectedIds.size
 #: src/components/network-monitors-table/monitor-dialog.tsx
 #: src/components/network-monitors-table/monitor-dialog.tsx
 msgid "{0} selected"
 msgstr "تم تحديد {0}"
+
+#: src/components/active-alerts.tsx
+msgid "{alertCount, plural, one {# active alert} other {# active alerts}}"
+msgstr "{alertCount, plural, zero {لا توجد تنبيهات نشطة} one {تنبيه نشط واحد} two {تنبيهان نشطان} few {# تنبيهات نشطة} many {# تنبيهًا نشطًا} other {# تنبيه نشط}}"
+
+#: src/components/active-alerts.tsx
+msgid "{alertCount, plural, one {# alert is currently triggered} other {# alerts are currently triggered}}"
+msgstr "{alertCount, plural, zero {لا توجد تنبيهات مفعّلة حاليًا} one {تنبيه واحد مفعّل حاليًا} two {تنبيهان مفعّلان حاليًا} few {# تنبيهات مفعّلة حاليًا} many {# تنبيهًا مفعّلًا حاليًا} other {# تنبيه مفعّل حاليًا}}"
 
 #: src/components/routes/system/info-bar.tsx
 msgid "{cores, plural, one {# core} other {# cores}}"
@@ -54,7 +62,7 @@ msgstr "{count, plural, one {{countString} دقيقة} few {{countString} دقا
 
 #: src/components/network-monitors-table/network-monitors-columns.tsx
 msgid "{daysLeft, plural, one {# day} other {# days}}"
-msgstr ""
+msgstr "{daysLeft, plural, zero {# يوم} one {يوم واحد} two {يومان} few {# أيام} many {# يومًا} other {# يوم}}"
 
 #: src/components/routes/system/charts/disk-charts.tsx
 msgid "{diskName} I/O"
@@ -62,15 +70,23 @@ msgstr "{diskName} إدخال/إخراج"
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "{numFailed, plural, one {# failed service} other {# failed services}}"
-msgstr ""
+msgstr "{numFailed, plural, zero {لا توجد خدمات فاشلة} one {خدمة فاشلة واحدة} two {خدمتان فاشلتان} few {# خدمات فاشلة} many {# خدمة فاشلة} other {# خدمة فاشلة}}"
+
+#: src/components/active-alerts.tsx
+msgid "{systemCount, plural, one {Across # system} other {Across # systems}}"
+msgstr "{systemCount, plural, zero {عبر 0 نظام} one {عبر نظام واحد} two {عبر نظامين} few {عبر # أنظمة} many {عبر # نظامًا} other {عبر # نظام}}"
 
 #: src/components/routes/system/info-bar.tsx
 msgid "{threads, plural, one {# thread} other {# threads}}"
 msgstr "{threads, plural, one {# خيط} other {# خيط}}"
 
 #: src/components/systems-table/systems-table-columns.tsx
+msgid "{total, plural, one {# update} other {# updates}}"
+msgstr "{total, plural, zero {لا توجد تحديثات} one {تحديث واحد} two {تحديثان} few {# تحديثات} many {# تحديثًا} other {# تحديث}}"
+
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "{totalCount, plural, one {# service} other {# services}}"
-msgstr ""
+msgstr "{totalCount, plural, zero {لا توجد خدمات} one {خدمة واحدة} two {خدمتان} few {# خدمات} many {# خدمة} other {# خدمة}}"
 
 #: src/lib/utils.ts
 msgid "1 hour"
@@ -137,7 +153,7 @@ msgstr "الحالة النشطة"
 
 #: src/components/network-monitors-table/monitor-dialog.tsx
 msgid "Add"
-msgstr ""
+msgstr "إضافة"
 
 #: src/components/network-monitors-table/monitor-dialog.tsx
 #: src/components/network-monitors-table/monitor-dialog.tsx
@@ -231,6 +247,11 @@ msgctxt "Disk space available"
 msgid "Available"
 msgstr "المتاح"
 
+#. Package version available to install
+#: src/components/routes/system/package-updates-table.tsx
+msgid "Available"
+msgstr "متاح"
+
 #: src/components/routes/system/chart-card.tsx
 msgid "Average"
 msgstr "متوسط"
@@ -239,15 +260,13 @@ msgstr "متوسط"
 msgid "Average CPU utilization of containers"
 msgstr "متوسط استخدام وحدة المعالجة المركزية للحاويات"
 
-#. placeholder {0}: alertData.unit
 #: src/components/alerts/alerts-sheet.tsx
-msgid "Average drops below <0>{value}{0}</0>"
-msgstr "المتوسط ينخفض أقل من <0>{value}{0}</0>"
+msgid "Average drops below <0>{value}{unitLabel}</0>"
+msgstr "ينخفض المتوسط عن <0>{value}{unitLabel}</0>"
 
-#. placeholder {0}: alertData.unit
 #: src/components/alerts/alerts-sheet.tsx
-msgid "Average exceeds <0>{value}{0}</0>"
-msgstr "المتوسط يتجاوز <0>{value}{0}</0>"
+msgid "Average exceeds <0>{value}{unitLabel}</0>"
+msgstr "يتجاوز المتوسط <0>{value}{unitLabel}</0>"
 
 #: src/components/routes/system/disk-io-sheet.tsx
 msgid "Average number of I/O operations waiting to be serviced"
@@ -261,6 +280,10 @@ msgstr "متوسط ​​استهلاك طاقة وحدة معالجة الرس�
 msgctxt "Disk I/O average operation time (iostat await)"
 msgid "Average queue to completion time per operation"
 msgstr "متوسط الوقت من الانتظار في الدور حتى الإتمام لكل عملية"
+
+#: src/components/routes/system/charts/monitors-charts.tsx
+msgid "Average response time"
+msgstr "متوسط زمن الاستجابة"
 
 #: src/components/routes/system/charts/cpu-charts.tsx
 msgid "Average system-wide CPU utilization"
@@ -354,10 +377,6 @@ msgstr "إضافة جماعية"
 msgid "Bulk Add {foo}"
 msgstr "إضافة جماعية {foo}"
 
-#: src/components/network-monitors-table/network-monitors-columns.tsx
-msgid "Bulk copy"
-msgstr "نسخ جماعي"
-
 #: src/components/routes/settings/general.tsx
 #: src/components/routes/settings/general.tsx
 msgid "Bytes (KB/s, MB/s, GB/s)"
@@ -406,15 +425,20 @@ msgstr "درجة مئوية (°م)"
 #: src/components/network-monitors-table/network-monitors-columns.tsx
 #: src/components/network-monitors-table/network-monitors-columns.tsx
 msgid "Certificate"
-msgstr ""
+msgstr "الشهادة"
 
 #: src/components/network-monitors-table/network-monitors-table.tsx
 msgid "Certificate expired {expires}"
-msgstr ""
+msgstr "انتهت صلاحية الشهادة {expires}"
 
 #: src/components/network-monitors-table/network-monitors-table.tsx
 msgid "Certificate expires {expires}"
-msgstr ""
+msgstr "تنتهي صلاحية الشهادة {expires}"
+
+#. Version change
+#: src/components/routes/system/package-updates-table.tsx
+msgid "Change"
+msgstr "تغيير"
 
 #: src/components/routes/settings/general.tsx
 msgid "Change display units for metrics."
@@ -457,12 +481,18 @@ msgstr "تحقق من خدمة المراقبة الخاصة بك"
 msgid "Check your notification service"
 msgstr "تحقق من خدمة الإشعارات الخاصة بك"
 
+#. placeholder {0}: formatShortDate(new Date(data.checkedAt * 1000).toISOString())
+#: src/components/routes/system/package-updates-table.tsx
+msgid "Checked {0}"
+msgstr "تم الفحص {0}"
+
 #: src/components/routes/system/storage-pools-table.tsx
 msgid "Checksum errors"
 msgstr "أخطاء المجموع الاختباري"
 
 #: src/components/containers-table/containers-table.tsx
 #: src/components/network-monitors-table/network-monitors-table.tsx
+#: src/components/routes/system/package-updates-table.tsx
 #: src/components/routes/system/smart-table.tsx
 #: src/components/routes/system/storage-pools-table.tsx
 #: src/components/routes/system/storage-pools-table.tsx
@@ -502,6 +532,14 @@ msgstr "انقر للنسخ"
 #: src/components/login/forgot-pass-form.tsx
 msgid "Command line instructions"
 msgstr "تعليمات سطر الأوامر"
+
+#: src/components/network-monitors-table/network-monitors-table.tsx
+msgid "Compare with other systems"
+msgstr "مقارنة مع أنظمة أخرى"
+
+#: src/components/network-monitors-table/network-monitors-table.tsx
+msgid "Compare with other targets"
+msgstr "مقارنة مع أهداف أخرى"
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Configure how you receive alert notifications."
@@ -545,6 +583,10 @@ msgstr "متابعة"
 #: src/lib/utils.ts
 msgid "Copied to clipboard"
 msgstr "تم النسخ إلى الحافظة"
+
+#: src/components/network-monitors-table/network-monitors-columns.tsx
+msgid "Copy bulk config"
+msgstr "نسخ الإعدادات المجمّعة"
 
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
@@ -596,10 +638,6 @@ msgstr "انسخ أمر التثبيت للوكيل أدناه، أو سجل ا�
 #: src/components/add-system.tsx
 msgid "Copy the<0>docker-compose.yml</0> content for the agent below, or register agents automatically with a <1>universal token</1>."
 msgstr "انسخ محتوى <0>docker-compose.yml</0> للوكيل أدناه، أو سجل الوكلاء تلقائياً باستخدام <1>رمز مميز عالمي</1>."
-
-#: src/components/network-monitors-table/network-monitors-columns.tsx
-msgid "Copy to system"
-msgstr "نسخ إلى النظام"
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Copy YAML"
@@ -688,6 +726,11 @@ msgstr "الرفع التراكمي"
 msgid "Cumulative Write"
 msgstr "إجمالي الكتابة"
 
+#. Current package version
+#: src/components/routes/system/package-updates-table.tsx
+msgid "Current"
+msgstr "الحالي"
+
 #. Context: Battery state
 #. Context: Battery state
 #: src/components/routes/system/charts/sensor-charts.tsx
@@ -761,10 +804,19 @@ msgstr "استخدام القرص"
 msgid "Disk usage of {extraFsName}"
 msgstr "استخدام القرص لـ {extraFsName}"
 
+#: src/components/alert-banner-sheet.tsx
+#: src/components/alert-banner-sheet.tsx
+msgid "Dismiss"
+msgstr "إغلاق"
+
 #: src/components/routes/system/info-bar.tsx
 msgctxt "Layout display options"
 msgid "Display"
 msgstr "عرض"
+
+#: src/components/network-monitors-table/monitor-dialog.tsx
+msgid "DNS Server"
+msgstr "خادم DNS"
 
 #: src/components/routes/system/charts/cpu-charts.tsx
 msgid "Docker CPU Usage"
@@ -846,6 +898,10 @@ msgstr "عنوان URL للنقطة النهائية"
 msgid "Endpoint URL to ping (required)"
 msgstr "رابط نقطة النهاية إلى ping (مطلوب)"
 
+#: src/components/network-monitors-table/monitor-dialog.tsx
+msgid "Enter a domain name to look up. Put the resolver's IP in DNS Server."
+msgstr "أدخل اسم نطاق للبحث عنه. ضع عنوان IP الخاص بالمحلّل في خادم DNS."
+
 #: src/components/login/login.tsx
 msgid "Enter email address to reset password"
 msgstr "أدخل عنوان البريد الإشباكي لإعادة تعيين كلمة المرور"
@@ -864,7 +920,6 @@ msgstr "مؤقت"
 
 #: src/components/network-monitors-table/monitor-dialog.tsx
 #: src/components/network-monitors-table/monitor-dialog.tsx
-#: src/components/network-monitors-table/network-monitors-table.tsx
 #: src/components/network-monitors-table/network-monitors-table.tsx
 #: src/components/network-monitors-table/network-monitors-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
@@ -905,7 +960,7 @@ msgstr "خرج نشطًا"
 
 #: src/components/network-monitors-table/network-monitors-columns.tsx
 msgid "Expired"
-msgstr ""
+msgstr "منتهية الصلاحية"
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Expires after one hour or on hub restart."
@@ -940,9 +995,17 @@ msgid "Failed to authenticate"
 msgstr "فشل في المصادقة"
 
 #: src/components/network-monitors-table/network-monitors-table.tsx
-#: src/components/network-monitors-table/network-monitors-table.tsx
 msgid "Failed to delete monitors."
 msgstr "فشل حذف أجهزة المراقبة."
+
+#: src/components/systemd-table/systemd-table.tsx
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Failed to load logs."
+msgstr "فشل تحميل السجلات."
+
+#: src/components/routes/system/package-updates-table.tsx
+msgid "Failed to load package updates"
+msgstr "فشل تحميل تحديثات الحزم"
 
 #: src/components/routes/settings/layout.tsx
 #: src/components/routes/settings/notifications.tsx
@@ -979,6 +1042,7 @@ msgstr "المراوح"
 #: src/components/network-monitors-table/network-monitors-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/system/chart-card.tsx
+#: src/components/routes/system/package-updates-table.tsx
 #: src/components/routes/system/smart-table.tsx
 #: src/components/routes/system/storage-pools-table.tsx
 #: src/components/routes/system/storage-pools-table.tsx
@@ -1020,6 +1084,11 @@ msgstr "أمر FreeBSD"
 #: src/lib/i18n.ts
 msgid "Full"
 msgstr "ممتلئة"
+
+#: src/components/containers-table/containers-table.tsx
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Fullscreen"
+msgstr "ملء الشاشة"
 
 #. Context: General settings
 #: src/components/routes/settings/general.tsx
@@ -1068,6 +1137,10 @@ msgstr "مراقبة نبضة القلب"
 #: src/components/routes/settings/heartbeat.tsx
 msgid "Heartbeat sent successfully"
 msgstr "تم إرسال نبضة القلب بنجاح"
+
+#: src/components/logs-display.tsx
+msgid "Hide timestamps"
+msgstr "إخفاء الطوابع الزمنية"
 
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
@@ -1187,6 +1260,7 @@ msgid "Load state"
 msgstr "حالة التحميل"
 
 #: src/components/systemd-table/systemd-table.tsx
+#: src/components/systemd-table/systemd-table.tsx
 msgid "Loading..."
 msgstr "جاري التحميل..."
 
@@ -1207,6 +1281,7 @@ msgstr "فشل محاولة تسجيل الدخول"
 #: src/components/command-palette.tsx
 #: src/components/containers-table/containers-table.tsx
 #: src/components/navbar.tsx
+#: src/components/systemd-table/systemd-table.tsx
 msgid "Logs"
 msgstr "السجلات"
 
@@ -1227,6 +1302,11 @@ msgstr "الفقد 1h"
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Main PID"
 msgstr "معرف العملية الرئيسي"
+
+#. Package version
+#: src/components/routes/system/package-updates-table.tsx
+msgid "Major"
+msgstr "رئيسي"
 
 #: src/components/routes/settings/layout.tsx
 msgid "Manage display and notification preferences."
@@ -1277,6 +1357,11 @@ msgstr "استخدام الذاكرة للحاويات"
 #: src/components/network-monitors-table/network-monitors-columns.tsx
 msgid "Min 1h"
 msgstr "الأدنى 1h"
+
+#. Package version
+#: src/components/routes/system/package-updates-table.tsx
+msgid "Minor"
+msgstr "ثانوي"
 
 #. Device model
 #: src/components/routes/system/smart-table.tsx
@@ -1359,6 +1444,10 @@ msgstr "لا"
 msgid "No detail data for this pool."
 msgstr "لا تتوفر بيانات تفصيلية لمجموعة التخزين هذه."
 
+#: src/components/systemd-table/systemd-table.tsx
+msgid "No logs found."
+msgstr "لم يتم العثور على سجلات."
+
 #: src/components/command-palette.tsx
 #: src/components/systemd-table/systemd-table.tsx
 msgid "No results found."
@@ -1369,6 +1458,7 @@ msgstr "لم يتم العثور على نتائج."
 #: src/components/containers-table/containers-table.tsx
 #: src/components/network-monitors-table/network-monitors-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
+#: src/components/routes/system/package-updates-table.tsx
 #: src/components/routes/system/smart-table.tsx
 #: src/components/systemd-table/systemd-table.tsx
 msgid "No results."
@@ -1383,6 +1473,10 @@ msgstr "لا توجد سمات S.M.A.R.T. متاحة لهذا الجهاز."
 #: src/components/systems-table/systems-table.tsx
 msgid "No systems found."
 msgstr "لم يتم العثور على أنظمة."
+
+#: src/components/network-monitors-table/monitor-dialog.tsx
+msgid "No targets found."
+msgstr "لم يتم العثور على أهداف."
 
 #: src/components/routes/system/storage-pools-table.tsx
 msgid "None"
@@ -1438,17 +1532,32 @@ msgstr "كلمة مرور لمرة واحدة"
 msgid "Open menu"
 msgstr "فتح القائمة"
 
+#: src/components/network-monitors-table/monitor-dialog.tsx
+msgid "Optional. Defaults to the agent's system resolver."
+msgstr "اختياري. القيمة الافتراضية هي محلّل النظام الخاص بالوكيل."
+
 #: src/components/login/auth-form.tsx
 msgid "Or continue with"
 msgstr "أو المتابعة باستخدام"
 
+#. Package version
 #: src/components/routes/system/cpu-sheet.tsx
+#: src/components/routes/system/package-updates-table.tsx
 msgid "Other"
 msgstr "أخرى"
 
 #: src/components/alerts/alerts-sheet.tsx
 msgid "Overwrite existing alerts"
 msgstr "الكتابة فوق التنبيهات الحالية"
+
+#. Software package
+#: src/components/routes/system/package-updates-table.tsx
+msgid "Package"
+msgstr "الحزمة"
+
+#: src/components/routes/system/package-updates-table.tsx
+msgid "Package Updates"
+msgstr "تحديثات الحزم"
 
 #: src/components/routes/system/charts/monitors-charts.tsx
 msgid "Packet loss (%)"
@@ -1461,9 +1570,12 @@ msgstr "فقدان الحزم (٪)"
 msgid "Page"
 msgstr "صفحة"
 
+#. placeholder {0}: pageIndex + 1
 #. placeholder {0}: table.getState().pagination.pageIndex + 1
+#. placeholder {1}: Math.max(table.getPageCount(), 1)
 #. placeholder {1}: table.getPageCount()
 #: src/components/routes/settings/alerts-history-data-table.tsx
+#: src/components/routes/system/package-updates-table.tsx
 msgid "Page {0} of {1}"
 msgstr "صفحة {0} من {1}"
 
@@ -1491,6 +1603,11 @@ msgstr "تم استلام طلب إعادة تعيين كلمة المرور"
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Past"
 msgstr "الماضي"
+
+#. Package version
+#: src/components/routes/system/package-updates-table.tsx
+msgid "Patch"
+msgstr "ترقيع"
 
 #: src/components/network-monitors-table/network-monitors-columns.tsx
 #: src/components/systems-table/systems-table-columns.tsx
@@ -1624,6 +1741,7 @@ msgid "Queue Depth"
 msgstr "عمق الدور"
 
 #: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/settings/quiet-hours.tsx
 msgid "Quiet Hours"
 msgstr "ساعات الهدوء"
 
@@ -1658,9 +1776,11 @@ msgid "Received"
 msgstr "تم الاستلام"
 
 #: src/components/containers-table/containers-table.tsx
-#: src/components/containers-table/containers-table.tsx
+#: src/components/logs-display.tsx
+#: src/components/logs-display.tsx
 #: src/components/routes/system/smart-table.tsx
 #: src/components/routes/system/storage-pools-table.tsx
+#: src/components/systemd-table/systemd-table.tsx
 msgid "Refresh"
 msgstr "تحديث"
 
@@ -1697,6 +1817,7 @@ msgstr "تم حلها"
 #: src/components/network-monitors-table/network-monitors-columns.tsx
 #: src/components/network-monitors-table/network-monitors-columns.tsx
 #: src/components/routes/system/charts/monitors-charts.tsx
+#: src/components/routes/system/charts/monitors-charts.tsx
 msgid "Response"
 msgstr "الاستجابة"
 
@@ -1713,6 +1834,11 @@ msgstr "إعادة التشغيل"
 msgid "Resume"
 msgstr "استئناف"
 
+#. Package version
+#: src/components/routes/system/package-updates-table.tsx
+msgid "Revision"
+msgstr "المراجعة"
+
 #: src/components/routes/system/charts/disk-charts.tsx
 #: src/components/routes/system/charts/disk-charts.tsx
 #: src/components/systems-table/systems-table-columns.tsx
@@ -1725,6 +1851,7 @@ msgid "Rotate token"
 msgstr "تدوير الرمز المميز"
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
+#: src/components/routes/system/package-updates-table.tsx
 msgid "Rows per page"
 msgstr "صفوف لكل صفحة"
 
@@ -1782,13 +1909,26 @@ msgid "Search for systems or settings..."
 msgstr "البحث عن الأنظمة أو الإعدادات..."
 
 #: src/components/network-monitors-table/monitor-dialog.tsx
-#: src/components/network-monitors-table/monitor-dialog.tsx
 msgid "Search systems"
 msgstr "البحث عن الأنظمة"
+
+#: src/components/network-monitors-table/monitor-dialog.tsx
+msgid "Search targets"
+msgstr "البحث عن أهداف"
 
 #: src/components/routes/settings/heartbeat.tsx
 msgid "Seconds between pings (default: 60)"
 msgstr "ثواني بين ال pings (الافتراضي: 60)"
+
+#. Security update
+#: src/components/routes/system/package-updates-table.tsx
+#: src/components/routes/system/package-updates-table.tsx
+msgid "Security"
+msgstr "الأمان"
+
+#: src/components/routes/system/package-updates-table.tsx
+msgid "Security: {securityCount}"
+msgstr "الأمان: {securityCount}"
 
 #: src/components/alerts/alerts-sheet.tsx
 msgid "See <0>notification settings</0> to configure how you receive alerts."
@@ -1818,6 +1958,10 @@ msgstr "تحديد الصف"
 #: src/components/network-monitors-table/monitor-dialog.tsx
 msgid "Select systems"
 msgstr "تحديد الأنظمة"
+
+#: src/components/network-monitors-table/monitor-dialog.tsx
+msgid "Select targets"
+msgstr "تحديد الأهداف"
 
 #: src/components/routes/settings/heartbeat.tsx
 msgid "Send a single heartbeat ping to verify your endpoint is working."
@@ -1870,9 +2014,18 @@ msgstr "الإعدادات"
 msgid "Settings saved"
 msgstr "تم حفظ الإعدادات"
 
+#: src/components/logs-display.tsx
+#: src/components/logs-display.tsx
+msgid "Show timestamps"
+msgstr "إظهار الطوابع الزمنية"
+
 #: src/components/login/auth-form.tsx
 msgid "Sign in"
 msgstr "تسجيل الدخول"
+
+#: src/components/routes/system/charts/wifi-chart.tsx
+msgid "Signal strength of connected Wi-Fi interfaces"
+msgstr "قوة إشارة واجهات Wi-Fi المتصلة"
 
 #: src/components/command-palette.tsx
 msgid "SMTP settings"
@@ -1976,7 +2129,7 @@ msgstr "الهدف"
 
 #: src/components/network-monitors-table/monitor-dialog.tsx
 #: src/components/network-monitors-table/monitor-dialog.tsx
-msgid "target[,protocol[,port[,interval]]]"
+msgid "target[,protocol[,port[,interval[,server]]]]"
 msgstr ""
 
 #: src/components/systemd-table/systemd-table.tsx
@@ -2085,6 +2238,8 @@ msgid "Total time spent on read/write (can exceed 100%)"
 msgstr "إجمالي الوقت المستغرق في القراءة/الكتابة (يمكن أن يتجاوز 100٪)"
 
 #. placeholder {0}: data.length
+#. placeholder {0}: rows.length
+#: src/components/routes/system/package-updates-table.tsx
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Total: {0}"
 msgstr "الإجمالي: {0}"
@@ -2188,6 +2343,7 @@ msgstr "رمز مميز عالمي"
 
 #. Context: Battery state
 #: src/components/routes/system/storage-pools-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 #: src/lib/i18n.ts
 msgid "Unknown"
 msgstr "غير معروفة"
@@ -2207,6 +2363,11 @@ msgstr "قيد التشغيل"
 msgid "Up ({upSystemsLength})"
 msgstr "قيد التشغيل ({upSystemsLength})"
 
+#: src/components/routes/system/package-updates-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
+msgid "Up to date"
+msgstr "محدّث"
+
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Update"
 msgstr "تحديث"
@@ -2223,6 +2384,11 @@ msgstr "تم التحديث"
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Updated every 10 minutes."
 msgstr "يتم التحديث كل 10 دقائق."
+
+#: src/components/routes/system.tsx
+#: src/components/systems-table/systems-table-columns.tsx
+msgid "Updates"
+msgstr "التحديثات"
 
 #: src/components/routes/system/network-sheet.tsx
 msgid "Upload"
@@ -2274,6 +2440,14 @@ msgstr "القيمة"
 msgid "View"
 msgstr "عرض"
 
+#: src/components/active-alerts.tsx
+msgid "View alerts"
+msgstr "عرض التنبيهات"
+
+#: src/components/alert-banner-sheet.tsx
+msgid "View details"
+msgstr "عرض التفاصيل"
+
 #: src/components/routes/system/cpu-sheet.tsx
 #: src/components/routes/system/disk-io-sheet.tsx
 #: src/components/routes/system/network-sheet.tsx
@@ -2321,6 +2495,10 @@ msgstr "عند التفعيل، يسمح هذا الرمز المميز للوك
 msgid "When using POST, each heartbeat includes a JSON payload with system status summary, list of down systems, and triggered alerts."
 msgstr "عند استخدام POST، تتضمن كل نبضة قلب حمولة JSON مع ملخص حالة النظام وقائمة الأنظمة المعطلة والتنبيهات التي تم تشغيلها."
 
+#: src/components/routes/system/charts/wifi-chart.tsx
+msgid "Wi-Fi signal"
+msgstr "إشارة Wi-Fi"
+
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgctxt "Button to copy install command"
@@ -2359,4 +2537,3 @@ msgstr "نعم"
 #: src/components/routes/settings/layout.tsx
 msgid "Your user settings have been updated."
 msgstr "تم تحديث إعدادات المستخدم الخاصة بك."
-
