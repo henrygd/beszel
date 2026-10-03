@@ -7,6 +7,7 @@ import type { CellContext, ColumnDef, HeaderContext } from "@tanstack/react-tabl
 import type { ClassValue } from "clsx"
 import {
 	ArrowUpDownIcon,
+	BellIcon,
 	ChevronRightSquareIcon,
 	ClockArrowUp,
 	CopyIcon,
@@ -25,9 +26,9 @@ import {
 } from "lucide-react"
 import { memo, useMemo, useRef, useState } from "react"
 import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip"
-import { isReadOnlyUser, pb } from "@/lib/api"
+import { isReadOnlyUser, pb, saveUserSettings } from "@/lib/api"
 import { BatteryState, ConnectionType, connectionTypeLabels, MeterState, SystemStatus } from "@/lib/enums"
-import { $longestSystemName, $userSettings } from "@/lib/stores"
+import { $alerts, $longestSystemName, $userSettings } from "@/lib/stores"
 import {
 	cn,
 	copyToClipboard,
@@ -42,7 +43,8 @@ import { connectedWiFi, strongestWiFi, strongestWiFiSignal, wifiSignalState } fr
 import type { SystemRecord, WiFi } from "@/types"
 import { SystemDialog } from "../add-system"
 import AlertButton from "../alerts/alert-button"
-import { $router, Link } from "../router"
+import { AlertDialogContent as AlertsSheetContent } from "../alerts/alerts-sheet"
+import { $router, Link, navigate } from "../router"
 import {
 	AlertDialog,
 	AlertDialogAction,
@@ -55,6 +57,7 @@ import {
 } from "../ui/alert-dialog"
 import { Button, buttonVariants } from "../ui/button"
 import { Dialog } from "../ui/dialog"
+import { Sheet, SheetContent } from "../ui/sheet"
 import {
 	DropdownMenu,
 	DropdownMenuContent,
@@ -727,10 +730,44 @@ export function IndicatorDot({ system, className }: { system: SystemRecord; clas
 	)
 }
 
-export const ActionsButton = memo(({ system }: { system: SystemRecord }) => {
+/** Menu item that opens the alerts sheet; the bell is filled when the system has alerts configured. */
+const AlertsMenuItem = ({ systemId, onSelect }: { systemId: string; onSelect: () => void }) => {
+	const alerts = useStore($alerts)
+	const hasSystemAlert = alerts[systemId]?.size > 0
+	return (
+		<DropdownMenuItem onSelect={onSelect}>
+			<BellIcon className={cn("me-2.5 size-4", { "fill-primary": hasSystemAlert })} />
+			<Trans>Alerts</Trans>
+		</DropdownMenuItem>
+	)
+}
+
+async function deleteSystem(id: string) {
+	await pb.collection("systems").delete(id)
+	// single node mode has nothing to point at once its system is gone
+	if ($userSettings.get().singleNodeMode) {
+		await saveUserSettings({ singleNodeMode: false })
+	}
+	// leave the dashboard of the system that was just deleted
+	const page = $router.get()
+	if (page?.route === "system" && page.params.id === id) {
+		navigate(getPagePath($router, "home"))
+	}
+}
+
+type ActionsButtonProps = {
+	system: SystemRecord
+	variant?: "ghost" | "outline"
+	/** Include an item that opens the alerts sheet (used where no separate alerts button is shown). */
+	showAlerts?: boolean
+}
+
+export const ActionsButton = memo(({ system, variant = "ghost", showAlerts = false }: ActionsButtonProps) => {
 	const [deleteOpen, setDeleteOpen] = useState(false)
 	const [editOpen, setEditOpen] = useState(false)
 	const editOpened = useRef(false)
+	const [alertsOpen, setAlertsOpen] = useState(false)
+	const alertsOpened = useRef(false)
 	const { t } = useLingui()
 	const { id, status, host, name } = system
 
@@ -739,7 +776,7 @@ export const ActionsButton = memo(({ system }: { system: SystemRecord }) => {
 			<>
 				<DropdownMenu>
 					<DropdownMenuTrigger asChild>
-						<Button variant="ghost" size={"icon"}>
+						<Button variant={variant} size={"icon"}>
 							<span className="sr-only">
 								<Trans>Open menu</Trans>
 							</span>
@@ -747,6 +784,18 @@ export const ActionsButton = memo(({ system }: { system: SystemRecord }) => {
 						</Button>
 					</DropdownMenuTrigger>
 					<DropdownMenuContent align="end">
+						{showAlerts && (
+							<>
+								<AlertsMenuItem
+									systemId={id}
+									onSelect={() => {
+										alertsOpened.current = true
+										setAlertsOpen(true)
+									}}
+								/>
+								<DropdownMenuSeparator />
+							</>
+						)}
 						{!isReadOnlyUser() && (
 							<DropdownMenuItem
 								onSelect={() => {
@@ -793,6 +842,14 @@ export const ActionsButton = memo(({ system }: { system: SystemRecord }) => {
 						</DropdownMenuItem>
 					</DropdownMenuContent>
 				</DropdownMenu>
+				{/* alerts sheet */}
+				{showAlerts && (
+					<Sheet open={alertsOpen} onOpenChange={setAlertsOpen}>
+						<SheetContent className="max-h-full overflow-auto w-160 !max-w-full p-4 sm:p-6">
+							{alertsOpened.current && <AlertsSheetContent system={system} />}
+						</SheetContent>
+					</Sheet>
+				)}
 				{/* edit dialog */}
 				<Dialog open={editOpen} onOpenChange={setEditOpen}>
 					{editOpened.current && <SystemDialog system={system} setOpen={setEditOpen} />}
@@ -817,7 +874,7 @@ export const ActionsButton = memo(({ system }: { system: SystemRecord }) => {
 							</AlertDialogCancel>
 							<AlertDialogAction
 								className={cn(buttonVariants({ variant: "destructive" }))}
-								onClick={() => pb.collection("systems").delete(id)}
+								onClick={() => deleteSystem(id)}
 							>
 								<Trans>Continue</Trans>
 							</AlertDialogAction>
@@ -826,5 +883,5 @@ export const ActionsButton = memo(({ system }: { system: SystemRecord }) => {
 				</AlertDialog>
 			</>
 		)
-	}, [id, status, host, name, system, t, deleteOpen, editOpen])
+	}, [id, status, host, name, system, t, deleteOpen, editOpen, alertsOpen, variant, showAlerts])
 })
