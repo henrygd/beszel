@@ -61,6 +61,19 @@ export default function ContainersTable({ systemId }: { systemId?: string }) {
 		}
 	}, [data])
 
+	// Hide engine column unless the agent reports more than one Docker engine
+	useEffect(() => {
+		if (data) {
+			const hasEngine = data.some((container) => container.engine)
+			setColumnVisibility((prev) => {
+				if (prev.engine === hasEngine) {
+					return prev
+				}
+				return { ...prev, engine: hasEngine }
+			})
+		}
+	}, [data])
+
 	const [rowSelection, setRowSelection] = useState({})
 	const [globalFilter, setGlobalFilter] = useState("")
 
@@ -68,7 +81,7 @@ export default function ContainersTable({ systemId }: { systemId?: string }) {
 		function fetchData(systemId?: string) {
 			pb.collection<ContainerRecord>("containers")
 				.getList(0, 2000, {
-					fields: "id,name,image,updatable,ports,cpu,memory,net,health,status,system,updated",
+					fields: "id,name,image,updatable,ports,engine,cpu,memory,net,health,status,system,updated",
 					filter: systemId ? pb.filter("system={:system}", { system: systemId }) : undefined,
 				})
 				.then(({ items }) => {
@@ -152,7 +165,8 @@ export default function ContainersTable({ systemId }: { systemId?: string }) {
 			const healthLabel = ContainerHealthLabels[container.health as ContainerHealth] ?? ""
 			const image = container.image ?? ""
 			const ports = container.ports ?? ""
-			const searchString = `${systemName} ${id} ${name} ${healthLabel} ${status} ${image} ${ports}`.toLowerCase()
+			const engine = container.engine ?? ""
+			const searchString = `${systemName} ${id} ${name} ${healthLabel} ${status} ${image} ${ports} ${engine}`.toLowerCase()
 
 			return (filterValue as string)
 				.toLowerCase()
@@ -400,6 +414,12 @@ function ContainerSheet({
 							</Link>
 							<Separator orientation="vertical" className="h-2.5 bg-muted-foreground opacity-70" />
 							{container.status}
+							{container.engine && (
+								<>
+									<Separator orientation="vertical" className="h-2.5 bg-muted-foreground opacity-70" />
+									{container.engine}
+								</>
+							)}
 							<Separator orientation="vertical" className="h-2.5 bg-muted-foreground opacity-70" />
 							{container.image}
 							<Separator orientation="vertical" className="h-2.5 bg-muted-foreground opacity-70" />

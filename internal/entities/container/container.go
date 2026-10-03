@@ -191,6 +191,7 @@ type Stats struct {
 	Id              string       `json:"-" cbor:"7,keyasint"`
 	Image           string       `json:"-" cbor:"8,keyasint"`
 	Ports           string       `json:"-" cbor:"10,keyasint"`
+	Engine          string       `json:"-" cbor:"12,keyasint,omitzero"` // endpoint of the Docker engine, set only when the agent monitors several
 	UpdateAvailable bool         `json:"u,omitzero" cbor:"11,keyasint,omitzero"`
 	// PrevCpu     [2]uint64    `json:"-"`
 	CpuSystem    uint64       `json:"-"`

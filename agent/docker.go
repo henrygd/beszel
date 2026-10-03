@@ -54,6 +54,7 @@ const (
 
 type dockerManager struct {
 	agent                *Agent                      // Used to propagate system detail changes back to the agent
+	engine               string                      // Endpoint label reported on each container; empty with a single engine
 	client               *http.Client                // Client to query Docker API
 	wg                   sync.WaitGroup              // WaitGroup to wait for all goroutines to finish
 	sem                  chan struct{}               // Semaphore to limit concurrent container requests
@@ -531,7 +532,7 @@ func (dm *dockerManager) updateContainerStats(ctr *container.ApiInfo, cacheTimeM
 	// add empty values if they doesn't exist in map
 	stats, initialized := dm.containerStatsMap[ctr.IdShort]
 	if !initialized {
-		stats = &container.Stats{Name: name, Id: ctr.IdShort, Image: ctr.Image}
+		stats = &container.Stats{Name: name, Id: ctr.IdShort, Image: ctr.Image, Engine: dm.engine}
 		dm.containerStatsMap[ctr.IdShort] = stats
 	}
 

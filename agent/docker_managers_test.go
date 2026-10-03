@@ -165,3 +165,20 @@ func TestNewDockerManagersEnv(t *testing.T) {
 		assert.Len(t, dms.managers, 2)
 	})
 }
+
+func TestDockerManagersLabelContainersWithEngine(t *testing.T) {
+	a := fakeEngine(t, "a", "aaaaaaaaaaaa")
+	b := fakeEngine(t, "b", "bbbbbbbbbbbb")
+	engineOf := func(env string) map[string]string {
+		t.Setenv("BESZEL_AGENT_DOCKER_HOST", env)
+		stats, err := newDockerManagers(nil).getDockerStats(defaultCacheTimeMs)
+		require.NoError(t, err)
+		got := map[string]string{}
+		for _, s := range stats {
+			got[s.Id] = s.Engine
+		}
+		return got
+	}
+	assert.Equal(t, map[string]string{"aaaaaaaaaaaa": a.URL, "bbbbbbbbbbbb": b.URL}, engineOf(a.URL+","+b.URL))
+	assert.Equal(t, map[string]string{"aaaaaaaaaaaa": ""}, engineOf(a.URL))
+}

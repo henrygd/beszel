@@ -42,7 +42,11 @@ func newDockerManagers(agent *Agent) *dockerManagers {
 		if i == 0 {
 			owner = agent
 		}
-		dms.managers = append(dms.managers, newDockerManager(owner, host, opts))
+		dm := newDockerManager(owner, host, opts)
+		if len(hosts) > 1 {
+			dm.engine = strings.TrimPrefix(host, "unix://")
+		}
+		dms.managers = append(dms.managers, dm)
 	}
 	if len(hosts) > 1 {
 		slog.Info("DOCKER_HOST", "endpoints", hosts)

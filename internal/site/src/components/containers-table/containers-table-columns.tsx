@@ -179,6 +179,26 @@ export const containerChartCols: ColumnDef<ContainerRecord>[] = [
 		},
 	},
 	{
+		id: "engine",
+		accessorFn: (record) => record.engine || undefined,
+		header: ({ column }) => (
+			<HeaderButton column={column} name={t({ message: "Engine", context: "Docker engine" })} Icon={ServerIcon} />
+		),
+		minSize: 147,
+		cell: ({ getValue }) => {
+			const val = getValue() as string | undefined
+			if (!val) {
+				return <div className="ms-1.5 text-muted-foreground">-</div>
+			}
+			return (
+				<Tooltip>
+					<TooltipTrigger className="ms-1 w-40 block truncate">{val}</TooltipTrigger>
+					<TooltipContent>{val}</TooltipContent>
+				</Tooltip>
+			)
+		},
+	},
+	{
 		id: "image",
 		sortingFn: (a, b) => a.original.image.localeCompare(b.original.image),
 		accessorFn: (record) => record.image,
