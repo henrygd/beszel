@@ -42,12 +42,14 @@ func TestSSHNetworkMonitorReconnectSync(t *testing.T) {
 	t.Cleanup(sys.closeSSHConnection)
 	requests := make(chan monitor.SyncRequest, 10)
 	var failSync atomic.Bool
+	var connections atomic.Int32
 	go func() {
 		for {
 			conn, err := listener.Accept()
 			if err != nil {
 				return
 			}
+			connections.Add(1)
 			go func() {
 				server, channels, reqs, err := ssh.NewServerConn(conn, config)
 				if err != nil {
@@ -138,15 +140,17 @@ func TestSSHNetworkMonitorReconnectSync(t *testing.T) {
 	require.False(t, sys.monitorsNeedSync.Load())
 	fetch()
 	require.Empty(t, requests, "steady-state fetch must not resync")
+	require.Equal(t, int32(1), connections.Load(), "stats and monitor sync must share one connection")
 
 	// Simulate loss of the agent process/connection and its in-memory monitors.
-	require.NoError(t, sys.client.Load().Close())
+	require.NoError(t, sys.sshTransport.GetClient().Close())
 	fetch()
 	require.ElementsMatch(t, configs, receive().Configs)
 	require.False(t, sys.monitorsNeedSync.Load())
+	require.Equal(t, int32(2), connections.Load(), "reconnect must open exactly one new connection")
 
 	// Failed replacements are retried on the next successful stats fetch.
-	require.NoError(t, sys.client.Load().Close())
+	require.NoError(t, sys.sshTransport.GetClient().Close())
 	failSync.Store(true)
 	fetch()
 	require.ElementsMatch(t, configs, receive().Configs)
@@ -160,7 +164,7 @@ func TestSSHNetworkMonitorReconnectSync(t *testing.T) {
 		probe.Set("enabled", false)
 		require.NoError(t, app.SaveNoValidate(probe))
 	}
-	require.NoError(t, sys.client.Load().Close())
+	require.NoError(t, sys.sshTransport.GetClient().Close())
 	fetch()
 	require.Empty(t, receive().Configs, "empty replacement must clear stale monitors")
 }

@@ -7,6 +7,8 @@ import (
 	"context"
 	"errors"
 	"net"
+	"os"
+	"path/filepath"
 	"testing"
 	"time"
 
@@ -129,6 +131,22 @@ func TestLinuxInvalidSSID(t *testing.T) {
 	got := collectLinux(context.Background(), f)
 	if len(got) != 1 || got["wlan0"].SSID != "" || got["wlan0"].Signal == nil {
 		t.Fatal(got)
+	}
+}
+
+func TestHasWirelessDevice(t *testing.T) {
+	dir := t.TempDir()
+	if hasWirelessDevice(filepath.Join(dir, "missing")) {
+		t.Fatal("missing class directory")
+	}
+	if hasWirelessDevice(dir) {
+		t.Fatal("empty class directory")
+	}
+	if err := os.Mkdir(filepath.Join(dir, "phy0"), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	if !hasWirelessDevice(dir) {
+		t.Fatal("registered device not detected")
 	}
 }
 

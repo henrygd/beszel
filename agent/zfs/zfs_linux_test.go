@@ -66,6 +66,111 @@ func TestPoolKernelStatsOpenZfs24(t *testing.T) {
 	}, stats[0])
 }
 
+func TestPoolKernelStatsOpenZfs23(t *testing.T) {
+	root := t.TempDir()
+	oldPath := procZfsPath
+	procZfsPath = root
+	t.Cleanup(func() { procZfsPath = oldPath })
+
+	// OpenZFS 2.3+ exposes logical pool read/write counters in "iostats".
+	// They cover every objset, including mounted snapshots, which never get
+	// an "objset-*" kstat, so the objset sum alone under-reports reads.
+	poolDir := filepath.Join(root, "tank")
+	require.NoError(t, os.MkdirAll(poolDir, 0o755))
+	require.NoError(t, os.WriteFile(filepath.Join(poolDir, "state"), []byte("ONLINE\n"), 0o644))
+	require.NoError(t, os.WriteFile(filepath.Join(poolDir, "iostats"), []byte(
+		"15 1 0x01 26 5176 227423 2127661979232\n"+
+			"name type data\n"+
+			"trim_extents_written 4 0\n"+
+			"arc_read_count 4 12\n"+
+			"arc_read_bytes 4 5000\n"+
+			"arc_write_count 4 7\n"+
+			"arc_write_bytes 4 3000\n"+
+			"direct_read_count 4 1\n"+
+			"direct_read_bytes 4 500\n"+
+			"direct_write_count 4 1\n"+
+			"direct_write_bytes 4 200\n",
+	), 0o644))
+	require.NoError(t, os.WriteFile(filepath.Join(poolDir, "objset-0x1"), []byte(
+		"34 1 0x01 28 7872 0 0\n"+
+			"name type data\n"+
+			"dataset_name 7 tank\n"+
+			"nwritten 4 2000\n"+
+			"nread 4 1000\n",
+	), 0o644))
+
+	stats, err := PoolKernelStats()
+	require.NoError(t, err)
+	require.Len(t, stats, 1)
+	assert.Equal(t, PoolKernelStat{
+		Name: "tank", Health: "ONLINE", NRead: 5500, NWrite: 3200,
+	}, stats[0])
+}
+
+func TestPoolKernelStatsIOStatsTrimOnly(t *testing.T) {
+	root := t.TempDir()
+	oldPath := procZfsPath
+	procZfsPath = root
+	t.Cleanup(func() { procZfsPath = oldPath })
+
+	// Before OpenZFS 2.3 the "iostats" file only reports TRIM counters, so
+	// the per-dataset "objset-*" files remain the only usable source.
+	poolDir := filepath.Join(root, "tank")
+	require.NoError(t, os.MkdirAll(poolDir, 0o755))
+	require.NoError(t, os.WriteFile(filepath.Join(poolDir, "state"), []byte("ONLINE\n"), 0o644))
+	require.NoError(t, os.WriteFile(filepath.Join(poolDir, "iostats"), []byte(
+		"15 1 0x01 18 3736 227423 2127661979232\n"+
+			"name type data\n"+
+			"trim_extents_written 4 10\n"+
+			"trim_bytes_written 4 4096\n",
+	), 0o644))
+	require.NoError(t, os.WriteFile(filepath.Join(poolDir, "objset-0x1"), []byte(
+		"34 1 0x01 28 7872 0 0\n"+
+			"name type data\n"+
+			"dataset_name 7 tank\n"+
+			"nwritten 4 2000\n"+
+			"nread 4 1000\n",
+	), 0o644))
+
+	stats, err := PoolKernelStats()
+	require.NoError(t, err)
+	require.Len(t, stats, 1)
+	assert.Equal(t, PoolKernelStat{
+		Name: "tank", Health: "ONLINE", NRead: 1000, NWrite: 2000,
+	}, stats[0])
+}
+
+func TestPoolKernelStatsIOStatsErrorDoesNotFallback(t *testing.T) {
+	root := t.TempDir()
+	oldPath := procZfsPath
+	procZfsPath = root
+	t.Cleanup(func() { procZfsPath = oldPath })
+
+	// A malformed "iostats" on a kernel that supports it must surface an
+	// error. Silently switching to the per-dataset sum would drop snapshot
+	// reads and, when "iostats" recovers, make kernelStats report a false
+	// I/O spike by comparing counters from two different interfaces.
+	poolDir := filepath.Join(root, "tank")
+	require.NoError(t, os.MkdirAll(poolDir, 0o755))
+	require.NoError(t, os.WriteFile(filepath.Join(poolDir, "state"), []byte("ONLINE\n"), 0o644))
+	require.NoError(t, os.WriteFile(filepath.Join(poolDir, "iostats"), []byte(
+		"arc_read_bytes 4 notanumber\n"+
+			"arc_write_bytes 4 3000\n"+
+			"direct_read_bytes 4 500\n"+
+			"direct_write_bytes 4 200\n",
+	), 0o644))
+	require.NoError(t, os.WriteFile(filepath.Join(poolDir, "objset-0x1"), []byte(
+		"34 1 0x01 28 7872 0 0\n"+
+			"name type data\n"+
+			"dataset_name 7 tank\n"+
+			"nwritten 4 2000\n"+
+			"nread 4 1000\n",
+	), 0o644))
+
+	_, err := PoolKernelStats()
+	require.Error(t, err)
+}
+
 func TestPoolKernelStatsNoZfs(t *testing.T) {
 	oldPath := procZfsPath
 	procZfsPath = t.TempDir()
@@ -87,6 +192,22 @@ func TestReadObjsetIORequiresAllCounters(t *testing.T) {
 	require.NoError(t, os.WriteFile(path, []byte("nread 4 10\n"), 0o644))
 	_, _, err := readObjsetIO(path)
 	require.Error(t, err)
+}
+
+func TestReadPoolIOStatsRequiresAllCounters(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "iostats")
+	require.NoError(t, os.WriteFile(path, []byte(
+		"arc_read_bytes 4 10\ndirect_read_bytes 4 5\narc_write_bytes 4 7\n"), 0o644))
+	_, _, err := readPoolIOStats(path)
+	require.Error(t, err)
+}
+
+func TestReadPoolIOStatsTrimOnlySignalsFallback(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "iostats")
+	require.NoError(t, os.WriteFile(path, []byte(
+		"trim_extents_written 4 10\ntrim_bytes_written 4 4096\n"), 0o644))
+	_, _, err := readPoolIOStats(path)
+	assert.ErrorIs(t, err, errNoPoolIOStats)
 }
 
 func TestCollectorsSkipCommandsWhenDevZfsMissing(t *testing.T) {
