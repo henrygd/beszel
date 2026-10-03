@@ -68,6 +68,9 @@ export const alertsHistoryColumns: ColumnDef<AlertsHistoryRecord>[] = [
 			if (name === "Status") {
 				return <span className="ps-2">{t`Down`}</span>
 			}
+			if (info?.noThreshold) {
+				return <span className="tabular-nums ps-2.5">N/A</span>
+			}
 			const value = getValue() as number
 			const unit = info?.unit
 			return (
