@@ -17,6 +17,10 @@ var wlanEnum = wlan.NewProc("WlanEnumInterfaces")
 var wlanQuery = wlan.NewProc("WlanQueryInterface")
 var wlanFree = wlan.NewProc("WlanFreeMemory")
 
+var iphlpapi = windows.NewLazySystemDLL("iphlpapi.dll")
+var guidToLuid = iphlpapi.NewProc("ConvertInterfaceGuidToLuid")
+var luidToAlias = iphlpapi.NewProc("ConvertInterfaceLuidToAlias")
+
 type wlanInterface struct {
 	GUID        windows.GUID
 	Description [256]uint16
@@ -84,7 +88,7 @@ func collect(ctx context.Context) map[string]system.WiFi {
 			}
 			wlanFree.Call(uintptr(data))
 		}
-		result[iface.GUID.String()] = reading
+		result[interfaceName(&iface.GUID)] = reading
 	}
 	return result
 }
@@ -96,4 +100,21 @@ func queryWLAN(handle windows.Handle, guid *windows.GUID, opcode uintptr) (unsaf
 		return nil, 0
 	}
 	return data, size
+}
+
+// interfaceName returns the adapter alias ("Wi-Fi"), matching the names used by
+// network interface stats. Falls back to the GUID if the alias is unavailable.
+func interfaceName(guid *windows.GUID) string {
+	if guidToLuid.Find() == nil && luidToAlias.Find() == nil {
+		var luid uint64
+		if rc, _, _ := guidToLuid.Call(uintptr(unsafe.Pointer(guid)), uintptr(unsafe.Pointer(&luid))); rc == 0 {
+			var alias [windows.IF_MAX_STRING_SIZE + 1]uint16
+			if rc, _, _ := luidToAlias.Call(uintptr(unsafe.Pointer(&luid)), uintptr(unsafe.Pointer(&alias[0])), uintptr(len(alias))); rc == 0 {
+				if name := windows.UTF16ToString(alias[:]); name != "" {
+					return name
+				}
+			}
+		}
+	}
+	return guid.String()
 }

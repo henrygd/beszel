@@ -92,7 +92,7 @@ func (a *Agent) updateNetworkStats(cacheTimeMs uint16, systemStats *system.Stats
 
 func (a *Agent) initializeNetIoStats() {
 	// reset valid network interfaces
-	a.netInterfaces = make(map[string]struct{}, 0)
+	a.netInterfaces = make(map[string]bool, 0)
 
 	// parse NICS env var for whitelist / blacklist
 	nicsEnvVal, nicsEnvExists := utils.GetEnv("NICS")
@@ -107,9 +107,14 @@ func (a *Agent) initializeNetIoStats() {
 			if skipNetworkInterface(v, nicCfg) {
 				continue
 			}
+			// driver is checked only here so updates don't pay for it on non-Jetson systems
+			useMacCounters := isNvidiaEthernet(v.Name)
+			if useMacCounters {
+				correctNvethernetCounters(&v)
+			}
 			slog.Info("Detected network interface", "name", v.Name, "sent", v.BytesSent, "recv", v.BytesRecv)
 			// store as a valid network interface
-			a.netInterfaces[v.Name] = struct{}{}
+			a.netInterfaces[v.Name] = useMacCounters
 		}
 	}
 
@@ -159,8 +164,12 @@ func (a *Agent) sumAndTrackPerNicDeltas(cacheTimeMs uint16, msElapsed uint64, ne
 	tracker.Cycle()
 
 	for _, v := range netIO {
-		if _, exists := a.netInterfaces[v.Name]; !exists {
+		useMacCounters, exists := a.netInterfaces[v.Name]
+		if !exists {
 			continue
+		}
+		if useMacCounters {
+			correctNvethernetCounters(&v)
 		}
 		totalBytesSent += v.BytesSent
 		totalBytesRecv += v.BytesRecv
