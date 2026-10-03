@@ -19,12 +19,12 @@ const maxProcessesForStateCounts = 2000
 // Cache failures too, so frequent live requests cannot repeatedly trigger a failed scan.
 type processCountsCache struct {
 	updated  time.Time
-	counts   [5]uint32
+	counts   [6]uint32
 	err      error
 	disabled bool // set when the agent runs in a container
 }
 
-func (c *processCountsCache) get(now time.Time, collect func() ([5]uint32, error)) ([5]uint32, error) {
+func (c *processCountsCache) get(now time.Time, collect func() ([6]uint32, error)) ([6]uint32, error) {
 	if c.updated.IsZero() || now.Sub(c.updated) >= processCountsCacheDuration {
 		c.counts, c.err = collect()
 		c.updated = now
@@ -32,9 +32,9 @@ func (c *processCountsCache) get(now time.Time, collect func() ([5]uint32, error
 	return c.counts, c.err
 }
 
-// getProcessCounts returns process state counts as [running, sleeping, idle, stopped, zombie].
-func getProcessCounts() ([5]uint32, error) {
-	var counts [5]uint32
+// getProcessCounts returns process state counts as [running, sleeping, idle, stopped, zombie, blocked].
+func getProcessCounts() ([6]uint32, error) {
+	var counts [6]uint32
 	pids, err := process.Pids()
 	if err != nil {
 		return counts, err
@@ -60,6 +60,8 @@ func getProcessCounts() ([5]uint32, error) {
 			counts[3]++
 		case process.Zombie:
 			counts[4]++
+		case process.Blocked:
+			counts[5]++
 		}
 	}
 	return counts, nil

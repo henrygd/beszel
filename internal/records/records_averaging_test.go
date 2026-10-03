@@ -591,25 +591,25 @@ func TestAverageSystemStatsSlice_CpuBreakdown(t *testing.T) {
 
 func TestAverageSystemStatsSlice_Processes(t *testing.T) {
 	input := []system.Stats{
-		{Processes: [5]uint32{10, 70, 15, 3, 2}},
+		{Processes: [6]uint32{10, 70, 15, 3, 2, 4}},
 		{}, // Process data was absent from this older record.
-		{Processes: [5]uint32{20, 140, 30, 6, 4}},
+		{Processes: [6]uint32{20, 140, 30, 6, 4, 8}},
 	}
 
 	result := records.AverageSystemStatsSlice(input)
 
-	assert.Equal(t, [5]uint32{15, 105, 22, 4, 3}, result.Processes)
+	assert.Equal(t, [6]uint32{15, 105, 22, 4, 3, 6}, result.Processes)
 }
 
 func TestAverageSystemStatsSlice_ProcessesLargeValues(t *testing.T) {
 	input := []system.Stats{
-		{Processes: [5]uint32{3_000_000_000, 2_000_000_000, 1_000_000_000, 500_000_000, 250_000_000}},
-		{Processes: [5]uint32{4_000_000_000, 2_000_000_000, 1_000_000_000, 500_000_000, 250_000_000}},
+		{Processes: [6]uint32{3_000_000_000, 2_000_000_000, 1_000_000_000, 500_000_000, 250_000_000}},
+		{Processes: [6]uint32{4_000_000_000, 2_000_000_000, 1_000_000_000, 500_000_000, 250_000_000}},
 	}
 
 	result := records.AverageSystemStatsSlice(input)
 
-	assert.Equal(t, [5]uint32{3_500_000_000, 2_000_000_000, 1_000_000_000, 500_000_000, 250_000_000}, result.Processes)
+	assert.Equal(t, [6]uint32{3_500_000_000, 2_000_000_000, 1_000_000_000, 500_000_000, 250_000_000}, result.Processes)
 }
 
 // Tests that Battery[1] (charge state) uses the last record's value.

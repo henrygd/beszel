@@ -18,9 +18,9 @@ func TestProcessCountsCache(t *testing.T) {
 			if fail {
 				wantErr = errors.New("scan failed")
 			}
-			collect := func() ([5]uint32, error) {
+			collect := func() ([6]uint32, error) {
 				calls++
-				return [5]uint32{uint32(calls)}, wantErr
+				return [6]uint32{uint32(calls)}, wantErr
 			}
 			counts, err := cache.get(now, collect)
 			require.Equal(t, wantErr, err)

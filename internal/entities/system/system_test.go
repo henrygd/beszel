@@ -125,13 +125,13 @@ func TestStatsStableCBORKeys(t *testing.T) {
 		Batteries:   map[string]uint8{"mouse": 80},
 		DiskIOTotal: [2]uint64{123, 456},
 		ZfsPools:    map[string]*ZfsPool{"tank": {}},
-		Processes:   [5]uint32{1, 70000, 1, 1, 1},
+		Processes:   [6]uint32{1, 70000, 1, 1, 1, 1},
 	}
 	data, err := cbor.Marshal(stats)
 	require.NoError(t, err)
 	var payload map[int]cbor.RawMessage
 	require.NoError(t, cbor.Unmarshal(data, &payload))
-	for key, value := range map[int]any{36: stats.Fans, 37: stats.Batteries, 38: stats.DiskIOTotal, 39: stats.ZfsPools, 40: stats.Processes} {
+	for key, value := range map[int]any{36: stats.Fans, 37: stats.Batteries, 38: stats.DiskIOTotal, 39: stats.ZfsPools, 41: stats.Processes} {
 		expected, err := cbor.Marshal(value)
 		require.NoError(t, err)
 		assert.Equal(t, cbor.RawMessage(expected), payload[key], "CBOR key %d", key)
@@ -146,4 +146,17 @@ func TestStatsStableCBORKeys(t *testing.T) {
 	assert.Zero(t, decoded.Processes)
 	require.NoError(t, cbor.Unmarshal(data, &decoded))
 	assert.Equal(t, stats.Processes, decoded.Processes)
+}
+
+// Older agents and stored records carry five process counts, before blocked was added.
+func TestStatsProcessesFromFiveCounts(t *testing.T) {
+	legacy, err := cbor.Marshal(map[int]any{41: [5]uint32{1, 2, 3, 4, 5}})
+	require.NoError(t, err)
+	var decoded Stats
+	require.NoError(t, cbor.Unmarshal(legacy, &decoded))
+	assert.Equal(t, [6]uint32{1, 2, 3, 4, 5, 0}, decoded.Processes)
+
+	var fromJSON Stats
+	require.NoError(t, json.Unmarshal([]byte(`{"ps":[1,2,3,4,5]}`), &fromJSON))
+	assert.Equal(t, [6]uint32{1, 2, 3, 4, 5, 0}, fromJSON.Processes)
 }

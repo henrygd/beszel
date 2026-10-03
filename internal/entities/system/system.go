@@ -64,7 +64,7 @@ type Stats struct {
 	DiskIOTotal       [2]uint64            `json:"diot,omitzero" cbor:"38,keyasint,omitzero"` // [total read bytes, total write bytes] cumulative device counters
 	ZfsPools          map[string]*ZfsPool  `json:"z,omitempty" cbor:"39,keyasint,omitempty"`  // ZFS pool metrics, keyed by pool name
 	WiFi              map[string]int8      `json:"wf,omitempty" cbor:"40,keyasint,omitempty"` // RSSI dBm keyed by interface; unavailable readings omitted
-	Processes         [5]uint32            `json:"ps,omitzero" cbor:"41,keyasint,omitzero"`   // [running, sleeping, idle, stopped, zombie]
+	Processes         [6]uint32            `json:"ps,omitzero" cbor:"41,keyasint,omitzero"`   // [running, sleeping, idle, stopped, zombie, blocked]
 }
 
 // ZfsPool holds per-pool ZFS metrics for a single collection interval.

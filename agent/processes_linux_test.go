@@ -15,7 +15,7 @@ func processFixture(t testing.TB, n int) {
 	t.Helper()
 	root := t.TempDir()
 	t.Setenv("HOST_PROC", root)
-	// Include a blocked and an unreadable process: neither contributes to a tracked state.
+	// Include an unreadable process: it does not contribute to a tracked state.
 	states := []string{"R", "S", "I", "T", "Z", "D", ""}
 	for i := range n {
 		dir := filepath.Join(root, fmt.Sprint(i+1))
@@ -31,7 +31,7 @@ func TestGetProcessCounts(t *testing.T) {
 	processFixture(t, 7)
 	counts, err := getProcessCounts()
 	require.NoError(t, err)
-	require.Equal(t, [5]uint32{1, 1, 1, 1, 1}, counts)
+	require.Equal(t, [6]uint32{1, 1, 1, 1, 1, 1}, counts)
 }
 
 func TestGetProcessCountsEnumerationFailure(t *testing.T) {
@@ -44,14 +44,14 @@ func TestGetProcessCountsOverLimit(t *testing.T) {
 	processFixture(t, maxProcessesForStateCounts+1)
 	counts, err := getProcessCounts()
 	require.Error(t, err)
-	require.Equal(t, [5]uint32{}, counts)
+	require.Equal(t, [6]uint32{}, counts)
 }
 
 func TestGetProcessCountsAtLimit(t *testing.T) {
 	processFixture(t, maxProcessesForStateCounts)
 	counts, err := getProcessCounts()
 	require.NoError(t, err)
-	require.NotEqual(t, [5]uint32{}, counts)
+	require.NotEqual(t, [6]uint32{}, counts)
 }
 
 // Synthetic proc trees measure scan scaling; real-host cost is measured separately.

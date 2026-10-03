@@ -58,6 +58,11 @@ export function ProcessesChart({
 						color: "hsl(340, 82%, 52%)",
 						dataKey: ({ stats }) => stats?.ps?.[4],
 					},
+					{
+						label: t`Blocked`,
+						color: "hsl(199, 89%, 48%)",
+						dataKey: ({ stats }) => stats?.ps?.[5],
+					},
 				]}
 			></LineChartDefault>
 		</ChartCard>
