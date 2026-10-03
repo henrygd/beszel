@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/henrygd/beszel/agent/btrfs"
+	"github.com/henrygd/beszel/agent/lvm"
 	"github.com/henrygd/beszel/agent/zfs"
 	"github.com/henrygd/beszel/internal/entities/system"
 	zfsentity "github.com/henrygd/beszel/internal/entities/zfs"
@@ -29,8 +30,12 @@ const datasetUsageRefreshInterval = 5 * time.Minute
 // needs to refresh slow-moving space accounting.
 const poolStatsRefreshInterval = time.Minute
 
-// btrfsFilesystems is the btrfs source; overridable in tests.
-var btrfsFilesystems = btrfs.Filesystems
+// btrfsFilesystems and lvmPools are the btrfs and LVM sources;
+// overridable in tests.
+var (
+	btrfsFilesystems = btrfs.Filesystems
+	lvmPools         = lvm.Pools
+)
 
 type poolKernelSample struct {
 	nread  uint64
@@ -77,7 +82,7 @@ type poolBackend struct {
 
 func newStoragePoolManager() *StoragePoolManager {
 	return &StoragePoolManager{
-		backends:       []*poolBackend{newZfsBackend(), newBtrfsBackend()},
+		backends:       []*poolBackend{newZfsBackend(), newBtrfsBackend(), newLvmBackend()},
 		detailInterval: time.Hour,
 	}
 }
@@ -101,6 +106,15 @@ func newBtrfsBackend() *poolBackend {
 	}
 }
 
+func newLvmBackend() *poolBackend {
+	return &poolBackend{
+		name:           "lvm",
+		poolStatsFn:    lvmSource(lvmPoolStats),
+		kernelStatsFn:  lvmSource(lvmKernelStats),
+		poolStatusesFn: lvmSource(lvmPoolStatuses),
+	}
+}
+
 // datasets is optional: only backends that expose datasets provide a collector.
 func (b *poolBackend) datasets() ([]zfs.Dataset, error) {
 	if b.datasetsFn == nil {
@@ -121,16 +135,25 @@ func optionalPoolSource[T any](source func() ([]T, error)) func() ([]T, error) {
 }
 
 func btrfsSource[T any](convert func(btrfs.Filesystem) T) func() ([]T, error) {
+	return convertedSource(func() ([]btrfs.Filesystem, error) { return btrfsFilesystems() }, convert)
+}
+
+func lvmSource[T any](convert func(lvm.Pool) T) func() ([]T, error) {
+	return convertedSource(func() ([]lvm.Pool, error) { return lvmPools() }, convert)
+}
+
+// convertedSource maps an optional backend inventory into pool records.
+func convertedSource[S, T any](source func() ([]S, error), convert func(S) T) func() ([]T, error) {
 	return func() ([]T, error) {
-		filesystems, err := optionalPoolSource(btrfsFilesystems)()
+		items, err := optionalPoolSource(source)()
 		if err != nil {
 			return nil, err
 		}
-		items := make([]T, 0, len(filesystems))
-		for _, fs := range filesystems {
-			items = append(items, convert(fs))
+		converted := make([]T, 0, len(items))
+		for _, item := range items {
+			converted = append(converted, convert(item))
 		}
-		return items, nil
+		return converted, nil
 	}
 }
 
@@ -474,6 +497,22 @@ func btrfsPoolStatuses(fs btrfs.Filesystem) zfs.PoolStatus {
 			Name: dev.Name, State: dev.State,
 			ReadErrs: dev.ReadErrs, WriteErrs: dev.WriteErrs, ChecksumErrs: dev.CorruptionErrs,
 		})
+	}
+	return status
+}
+
+func lvmPoolStats(pool lvm.Pool) zfs.PoolStat {
+	return zfs.PoolStat{DisplayName: pool.Name, Raw: pool.Raw, Name: "l:" + pool.UUID, Size: pool.Size, Alloc: pool.Alloc, Free: pool.Size - min(pool.Alloc, pool.Size), Health: pool.Health}
+}
+
+func lvmKernelStats(pool lvm.Pool) zfs.PoolKernelStat {
+	return zfs.PoolKernelStat{Name: "l:" + pool.UUID, Health: pool.Health, NRead: pool.NRead, NWrite: pool.NWrite}
+}
+
+func lvmPoolStatuses(pool lvm.Pool) zfs.PoolStatus {
+	status := zfs.PoolStatus{Name: "l:" + pool.UUID, State: pool.Health, Scrub: zfs.ScrubStatus{State: "NONE"}}
+	for _, dev := range pool.Devices {
+		status.Vdevs = append(status.Vdevs, zfs.VdevStatus{Name: dev.Name, State: dev.State})
 	}
 	return status
 }

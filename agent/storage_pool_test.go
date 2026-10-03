@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/henrygd/beszel/agent/btrfs"
+	"github.com/henrygd/beszel/agent/lvm"
 	"github.com/henrygd/beszel/agent/zfs"
 	"github.com/henrygd/beszel/internal/entities/system"
 	"github.com/stretchr/testify/assert"
@@ -545,4 +546,53 @@ func TestStaleUtilityCachesRefreshInBackground(t *testing.T) {
 	require.Eventually(t, func() bool {
 		return b.poolStats()[0].Name == "new" && b.refreshDatasetUsage()["/new"] == zfsDatasetUsage{}
 	}, time.Second, time.Millisecond)
+}
+
+func TestLvmThinPoolBackend(t *testing.T) {
+	old := lvmPools
+	t.Cleanup(func() { lvmPools = old })
+	read := uint64(1000)
+	lvmPools = func() ([]lvm.Pool, error) {
+		return []lvm.Pool{{
+			UUID: "vg-lv", Name: "pve/data", Health: "ONLINE", Size: 400, Alloc: 100, NRead: read,
+			Devices: []lvm.Device{{Name: "pve/data_tmeta", State: "ONLINE"}, {Name: "pve/data_tdata", State: "SUSPENDED"}},
+		}, {
+			UUID: "vg", Name: "pve", Raw: true, Health: "ONLINE", Size: 1000, Alloc: 900,
+			Devices: []lvm.Device{{Name: "/dev/nvme0n1p3", State: "ONLINE"}},
+		}}, nil
+	}
+	zm := &StoragePoolManager{detailInterval: time.Hour, backends: []*poolBackend{newLvmBackend()}}
+	var stats system.Stats
+	zm.Update(&stats)
+	pool := stats.ZfsPools["l:vg-lv"]
+	require.NotNil(t, pool)
+	assert.Equal(t, "pve/data", pool.DisplayName)
+	assert.False(t, pool.Raw, "thin pool usage feeds disk alerts")
+	assert.Equal(t, "ONLINE", pool.Health)
+	vg := stats.ZfsPools["l:vg"]
+	require.NotNil(t, vg)
+	assert.True(t, vg.Raw, "VG allocation must not trigger disk alerts")
+
+	zm.backends[0].kernelSamples["l:vg-lv"] = poolKernelSample{nread: 0, at: time.Now().Add(-time.Second)}
+	zm.Update(&stats)
+	assert.Positive(t, stats.ZfsPools["l:vg-lv"].ReadBytes)
+
+	detail := zm.GetDetail(true)
+	require.True(t, detail.Complete)
+	assert.Equal(t, []string{"lvm"}, detail.CompleteBackends)
+	require.Len(t, detail.Pools, 2)
+	assert.Equal(t, uint64(300), detail.Pools[0].Free)
+	assert.True(t, detail.Pools[1].Raw)
+	assert.Equal(t, "/dev/nvme0n1p3", detail.Pools[1].Vdevs[0].Name)
+	require.Len(t, detail.Pools[0].Vdevs, 2)
+	assert.Equal(t, "SUSPENDED", detail.Pools[0].Vdevs[1].State)
+	assert.Nil(t, detail.Pools[0].Scrub)
+	assert.Empty(t, detail.Pools[0].Datasets)
+
+	// A transient failure keeps the previous inventory.
+	lvmPools = func() ([]lvm.Pool, error) { return nil, errors.New("suspended") }
+	zm.backends[0].lastPoolStats = time.Time{}
+	zm.Update(&stats)
+	assert.Contains(t, stats.ZfsPools, "l:vg-lv")
+	assert.False(t, zm.GetDetail(true).CanRefreshPool("l:vg-lv"))
 }

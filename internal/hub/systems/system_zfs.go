@@ -78,7 +78,7 @@ func (sys *System) zfsFetchInterval() time.Duration {
 // saveZfsPools saves ZFS pool detail data to the zfs_pools collection and
 // removes records for pools no longer reported by a complete agent inventory.
 func (sys *System) saveZfsPools(zfsData *zfs.ZfsData) error {
-	if zfsData == nil || (!zfsData.CanRefreshPool("zfs") && !zfsData.CanRefreshPool("b:")) {
+	if zfsData == nil || !zfsData.AnyBackendComplete() {
 		return errIncompleteZfsData
 	}
 

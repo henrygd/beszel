@@ -125,12 +125,13 @@ func TestSaveZfsPoolsIncompletePreservesRecords(t *testing.T) {
 }
 
 func TestSavePartialBackendInventory(t *testing.T) {
-	for _, healthy := range []string{"zfs", "btrfs"} {
+	keys := map[string]string{"zfs": "tank", "btrfs": "b:uuid", "lvm": "l:uuid"}
+	for _, healthy := range []string{"zfs", "btrfs", "lvm"} {
 		t.Run(healthy, func(t *testing.T) {
 			sys, app := newTestSystemWithHub(t)
-			healthyKey, failedKey := "tank", "b:uuid"
-			if healthy == "btrfs" {
-				healthyKey, failedKey = failedKey, healthyKey
+			healthyKey, failedKey := keys[healthy], keys["zfs"]
+			if healthy == "zfs" {
+				failedKey = keys["btrfs"]
 			}
 			initial := &zfs.ZfsData{Complete: true, Pools: []*zfs.PoolDetail{
 				{Name: healthyKey, Alloc: 10}, {Name: failedKey, Alloc: 10},
