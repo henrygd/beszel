@@ -174,6 +174,8 @@ export interface SystemStats {
 	wf?: Record<string, number>
 	/** network interfaces [upload bytes, download bytes, total upload bytes, total download bytes] */
 	ni?: Record<string, [number, number, number, number]>
+	/** network interface rates per second [packets sent, packets recv, errors out, errors in, drops out, drops in] */
+	nip?: Record<string, [number, number, number, number, number, number]>
 }
 
 export interface GPUData {
