@@ -96,6 +96,9 @@ func (gm *GPUManager) collectIntelStats() (err error) {
 // comma separated objects, and "]" only when the process exits). Older
 // versions print the same comma separated objects without the opening "[", so
 // it is added here to let both formats decode as an array.
+//
+// The elements are run through intelCommaInserter first, because some builds
+// print the array elements with no separator at all.
 func (gm *GPUManager) parseIntelJSONStream(r io.Reader) error {
 	er := &eofReader{r: r}
 	br := bufio.NewReader(er)
@@ -111,7 +114,7 @@ func (gm *GPUManager) parseIntelJSONStream(r io.Reader) error {
 		src = io.MultiReader(strings.NewReader("["), br)
 	}
 
-	dec := json.NewDecoder(src)
+	dec := json.NewDecoder(&intelCommaInserter{src: src})
 	if _, err := dec.Token(); err != nil { // opening "["
 		return err
 	}
@@ -177,6 +180,116 @@ func peekNonSpace(br *bufio.Reader) (byte, error) {
 			return b[0], nil
 		}
 	}
+}
+
+// intelCommaInserter passes intel_gpu_top -J output through to the json decoder
+// one element at a time, adding the separator between elements that some
+// builds omit.
+//
+// Since v1.28 the tool wraps its samples in a JSON array, but builds older than
+// igt 2.4 print the elements back to back with no separator:
+//
+//	[
+//	{ ... "clients": {
+//	}
+//	}
+//	{ ...
+//
+// encoding/json rejects that, which made every Intel GPU reading fail in agent
+// 0.21.0 - the beszel-agent-intel image installs igt-gpu-tools from alpine
+// edge/testing, which still packages igt 2.3. Upstream fixed the missing
+// separator in
+// https://gitlab.freedesktop.org/drm/igt-gpu-tools/-/work_items/199, but the
+// parser still has to cope with the builds that are already deployed.
+//
+// Bytes are forwarded unchanged apart from the separators: the two elements of
+// a source pair are joined with exactly one ',' whether the source wrote one or
+// not. Braces inside a string are data rather than framing, so the depth
+// counter tracks string literals and escapes.
+type intelCommaInserter struct {
+	src io.Reader
+	// out holds the bytes produced for the source byte being read: the byte
+	// itself, a separator followed by the byte, or nothing if the byte is
+	// dropped.
+	out []byte
+	// depth is the brace nesting level, 0 between samples.
+	depth int
+	// samples counts how many top level elements have been started.
+	samples  int
+	inString bool
+	escaped  bool
+	// idle counts consecutive (0, nil) reads from src, which a well behaved
+	// io.Reader does not return.
+	idle int
+}
+
+func (c *intelCommaInserter) Read(p []byte) (int, error) {
+	for n := 0; ; {
+		if len(c.out) == 0 {
+			var one [1]byte
+			read, err := c.src.Read(one[:])
+			if read > 0 {
+				c.idle = 0
+				c.out = c.translate(one[0])
+				continue
+			}
+			if err == nil {
+				if c.idle++; c.idle > maxIdleReads {
+					err = io.ErrNoProgress
+				} else {
+					continue
+				}
+			}
+			if n > 0 {
+				return n, nil
+			}
+			return 0, err
+		}
+		written := copy(p[n:], c.out)
+		n += written
+		c.out = c.out[written:]
+		if n == len(p) {
+			return n, nil
+		}
+	}
+}
+
+// maxIdleReads bounds how many (0, nil) reads are tolerated from src before
+// giving up, so a misbehaving reader cannot spin forever.
+const maxIdleReads = 100
+
+// translate returns the bytes to emit for one source byte, inserting the
+// element separator when the byte opens a new top level element. A nil result
+// drops the byte: a ',' the source already supplied, because exactly one is
+// written when the next element opens.
+func (c *intelCommaInserter) translate(b byte) []byte {
+	switch {
+	case c.escaped:
+		c.escaped = false
+	case c.inString && b == '\\':
+		c.escaped = true
+	case b == '"':
+		c.inString = !c.inString
+	case c.inString:
+		// Braces inside a string are data, not framing.
+	case b == '{':
+		if c.depth > 0 {
+			c.depth++ // nested object inside a sample
+			break
+		}
+		c.depth++
+		if c.samples++; c.samples > 1 {
+			return []byte{',', b}
+		}
+		return []byte{b}
+	case b == ',' && c.depth == 0:
+		return nil
+	case b == '}':
+		if c.depth > 0 {
+			c.depth--
+		}
+	}
+	return []byte{b}
 }
 
 // intelGpuJSONSample is a single sample from intel_gpu_top -J output. Only the

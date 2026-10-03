@@ -5,6 +5,7 @@ package agent
 import (
 	"encoding/json"
 	"fmt"
+	"io"
 	"os"
 	"slices"
 	"strings"
@@ -1717,13 +1718,21 @@ func intelJSONSample(powerGPU, powerPkg float64, engines map[string]float64) str
 // intelJSONStream joins samples as intel_gpu_top -J prints them. Since v1.28
 // the output starts with "[" (withArray); older versions omit it.
 func intelJSONStream(withArray bool, samples ...string) string {
+	return intelJSONStreamSeparated(withArray, ",", samples...)
+}
+
+// intelJSONStreamSeparated joins samples the way intel_gpu_top -J prints them,
+// with sep between elements. Builds older than igt 2.4 print the elements of
+// the v1.28 array back to back, so sep is "" for them.
+func intelJSONStreamSeparated(withArray bool, sep string, samples ...string) string {
 	var sb strings.Builder
 	if withArray {
 		sb.WriteString("[\n")
 	}
 	for i, s := range samples {
 		if i > 0 {
-			sb.WriteString(",\n")
+			sb.WriteString(sep)
+			sb.WriteString("\n")
 		}
 		sb.WriteString(s)
 	}
@@ -1731,42 +1740,48 @@ func intelJSONStream(withArray bool, samples ...string) string {
 }
 
 func TestIntelCollectorStreaming(t *testing.T) {
-	dir := t.TempDir()
-	t.Setenv("PATH", dir)
+	// Builds older than igt 2.4 print the array elements with no separator, so
+	// both shapes have to come back from the real child process.
+	for _, sep := range []string{",", ""} {
+		t.Run("separator "+sep, func(t *testing.T) {
+			dir := t.TempDir()
+			t.Setenv("PATH", dir)
 
-	engines := func(render, blitter, video float64) map[string]float64 {
-		return map[string]float64{"Render/3D": render, "Blitter": blitter, "Video": video}
+			engines := func(render, blitter, video float64) map[string]float64 {
+				return map[string]float64{"Render/3D": render, "Blitter": blitter, "Video": video}
+			}
+			output := intelJSONStreamSeparated(true, sep,
+				intelJSONSample(1.5, 4.13, engines(12.34, 0, 5)),
+				intelJSONSample(2.0, 2.69, engines(0, 0, 0)),
+				intelJSONSample(1.8, 2.45, engines(8.5, 15, 22)),
+				intelJSONSample(2.2, 3.12, engines(5.75, 9.5, 12)),
+			) + "\n]"
+
+			// Create a fake intel_gpu_top that prints -J output with four samples (first will be skipped) and exits
+			gpuCommandFixture(t, dir, intelGpuStatsCmd, output+"\n")
+
+			gm := &GPUManager{
+				GpuDataMap: make(map[string]*system.GPUData),
+			}
+
+			// Run the collector once; it should read four samples but skip the first and return
+			if err := gm.collectIntelStats(); err != nil {
+				t.Fatalf("collectIntelStats error: %v", err)
+			}
+
+			gpu := gm.GpuDataMap["i0"]
+			require.NotNil(t, gpu)
+			// Power should be sum of samples 2-4 (first is skipped): 2.0 + 1.8 + 2.2 = 6.0
+			assert.InDelta(t, 6.0, gpu.Power, 0.001)
+			assert.InDelta(t, 8.26, gpu.PowerPkg, 0.01) // Allow small floating point differences
+			// Engines aggregated from samples 2-4
+			assert.InDelta(t, 14.25, gpu.Engines["Render/3D"], 0.001) // 0.00 + 8.50 + 5.75
+			assert.InDelta(t, 34.0, gpu.Engines["Video"], 0.001)      // 0.00 + 22.00 + 12.00
+			assert.InDelta(t, 24.5, gpu.Engines["Blitter"], 0.001)    // 0.00 + 15.00 + 9.50
+			// Count should be 3 samples (first is skipped)
+			assert.Equal(t, float64(3), gpu.Count)
+		})
 	}
-	output := intelJSONStream(true,
-		intelJSONSample(1.5, 4.13, engines(12.34, 0, 5)),
-		intelJSONSample(2.0, 2.69, engines(0, 0, 0)),
-		intelJSONSample(1.8, 2.45, engines(8.5, 15, 22)),
-		intelJSONSample(2.2, 3.12, engines(5.75, 9.5, 12)),
-	) + "\n]"
-
-	// Create a fake intel_gpu_top that prints -J output with four samples (first will be skipped) and exits
-	gpuCommandFixture(t, dir, intelGpuStatsCmd, output+"\n")
-
-	gm := &GPUManager{
-		GpuDataMap: make(map[string]*system.GPUData),
-	}
-
-	// Run the collector once; it should read four samples but skip the first and return
-	if err := gm.collectIntelStats(); err != nil {
-		t.Fatalf("collectIntelStats error: %v", err)
-	}
-
-	gpu := gm.GpuDataMap["i0"]
-	require.NotNil(t, gpu)
-	// Power should be sum of samples 2-4 (first is skipped): 2.0 + 1.8 + 2.2 = 6.0
-	assert.InDelta(t, 6.0, gpu.Power, 0.001)
-	assert.InDelta(t, 8.26, gpu.PowerPkg, 0.01) // Allow small floating point differences
-	// Engines aggregated from samples 2-4
-	assert.InDelta(t, 14.25, gpu.Engines["Render/3D"], 0.001) // 0.00 + 8.50 + 5.75
-	assert.InDelta(t, 34.0, gpu.Engines["Video"], 0.001)      // 0.00 + 22.00 + 12.00
-	assert.InDelta(t, 24.5, gpu.Engines["Blitter"], 0.001)    // 0.00 + 15.00 + 9.50
-	// Count should be 3 samples (first is skipped)
-	assert.Equal(t, float64(3), gpu.Count)
 }
 
 func TestParseIntelJSONStream(t *testing.T) {
@@ -1802,6 +1817,42 @@ func TestParseIntelJSONStream(t *testing.T) {
 			wantPower:   3,
 			wantPkg:     5,
 			wantEngines: classViewWant,
+		},
+		{
+			// igt < 2.4 prints the elements of the array back to back
+			name:        "array without separators between samples",
+			input:       intelJSONStreamSeparated(true, "", first, classView[0], classView[1]),
+			wantCount:   2,
+			wantPower:   3,
+			wantPkg:     5,
+			wantEngines: classViewWant,
+		},
+		{
+			name:        "closed array without separators between samples",
+			input:       intelJSONStreamSeparated(true, "", first, classView[0], classView[1]) + "\n]\n",
+			wantCount:   2,
+			wantPower:   3,
+			wantPkg:     5,
+			wantEngines: classViewWant,
+		},
+		{
+			name:        "truncated final sample without separators between samples",
+			input:       intelJSONStreamSeparated(true, "", first, classView[0], classView[1], `{"period": {"duration": 33`),
+			wantCount:   2,
+			wantPower:   3,
+			wantPkg:     5,
+			wantEngines: classViewWant,
+		},
+		{
+			name: "legacy output without array and without separators",
+			input: intelJSONStreamSeparated(false, "",
+				intelJSONSample(9, 9, map[string]float64{"Render/3D/0": 99}),
+				intelJSONSample(1.5, 2.5, map[string]float64{"Render/3D/0": 12, "Blitter/0": 1, "Video/0": 4, "Video/1": 6, "VideoEnhance/0": 2}),
+			),
+			wantCount:   1,
+			wantPower:   1.5,
+			wantPkg:     2.5,
+			wantEngines: map[string]float64{"Render/3D": 12, "Blitter": 1, "Video": 10, "VideoEnhance": 2},
 		},
 		{
 			name:        "truncated final sample",
@@ -1881,6 +1932,74 @@ func TestParseIntelJSONStream(t *testing.T) {
 			assert.Len(t, gpu.Engines, len(tt.wantEngines))
 			for name, want := range tt.wantEngines {
 				assert.InDelta(t, want, gpu.Engines[name], 0.001, name)
+			}
+		})
+	}
+}
+
+// TestIntelCommaInserter pins the byte level rewrite. The read buffer size is
+// varied because the json decoder and intel_gpu_top's pipe both hand over
+// arbitrary chunk sizes, and the separator has to land before the '{' no
+// matter where a chunk happens to end.
+func TestIntelCommaInserter(t *testing.T) {
+	tests := []struct {
+		name string
+		in   string
+		want string
+	}{
+		{
+			name: "separator supplied by the source is kept",
+			in:   `[{"a":1},{"a":2}]`,
+			want: `[{"a":1},{"a":2}]`,
+		},
+		{
+			name: "missing separators are added between elements only",
+			in:   "[\n{\"a\":1}\n{\"a\":2}\n]",
+			want: "[\n{\"a\":1}\n,{\"a\":2}\n]",
+		},
+		{
+			name: "nested objects are not elements",
+			in:   "[\n{\"a\":{\"b\":1},\"c\":2}\n{\"d\":3}\n]",
+			want: "[\n{\"a\":{\"b\":1},\"c\":2}\n,{\"d\":3}\n]",
+		},
+		{
+			name: "braces inside a string are not framing",
+			in:   "[\n{\"a\":\"}{\"}\n{\"b\":\"{\"}\n]",
+			want: "[\n{\"a\":\"}{\"}\n,{\"b\":\"{\"}\n]",
+		},
+		{
+			name: "escaped quote does not end the string",
+			in:   "[\n{\"a\":\"\\\"}{\"}\n{\"b\":2}\n]",
+			want: "[\n{\"a\":\"\\\"}{\"}\n,{\"b\":2}\n]",
+		},
+		{
+			name: "truncated element keeps the bytes it got",
+			in:   "[\n{\"a\":1}\n{\"b\":",
+			want: "[\n{\"a\":1}\n,{\"b\":",
+		},
+		{
+			name: "no array wrapper",
+			in:   "{\"a\":1}\n{\"b\":2}",
+			want: "{\"a\":1}\n,{\"b\":2}",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			for _, size := range []int{1, 2, 3, 7, 64, 4096} {
+				var sb strings.Builder
+				r := &intelCommaInserter{src: strings.NewReader(tt.in)}
+				buf := make([]byte, size)
+				for {
+					n, err := r.Read(buf)
+					sb.Write(buf[:n])
+					if err == io.EOF {
+						break
+					}
+					require.NoErrorf(t, err, "read size %d", size)
+					require.NotZerof(t, n, "read size %d made no progress", size)
+				}
+				assert.Equalf(t, tt.want, sb.String(), "read size %d", size)
 			}
 		})
 	}
