@@ -8,7 +8,7 @@ msgstr ""
 "Language: el\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2026-09-24 16:15\n"
+"PO-Revision-Date: 2026-10-01 02:40\n"
 "Last-Translator: \n"
 "Language-Team: Greek\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
@@ -30,11 +30,19 @@ msgstr "Διαθέσιμη έκδοση {0}"
 msgid "{0} of {1} row(s) selected."
 msgstr "{0} από {1} σειρά(ες) επιλέχθηκαν."
 
-#. placeholder {0}: selectedSystemIds.size
+#. placeholder {0}: selectedIds.size
 #: src/components/network-monitors-table/monitor-dialog.tsx
 #: src/components/network-monitors-table/monitor-dialog.tsx
 msgid "{0} selected"
 msgstr "{0} επιλεγμένα"
+
+#: src/components/active-alerts.tsx
+msgid "{alertCount, plural, one {# active alert} other {# active alerts}}"
+msgstr "{alertCount, plural, one {# ενεργή ειδοποίηση} other {# ενεργές ειδοποιήσεις}}"
+
+#: src/components/active-alerts.tsx
+msgid "{alertCount, plural, one {# alert is currently triggered} other {# alerts are currently triggered}}"
+msgstr "{alertCount, plural, one {# ειδοποίηση έχει ενεργοποιηθεί αυτή τη στιγμή} other {# ειδοποιήσεις έχουν ενεργοποιηθεί αυτή τη στιγμή}}"
 
 #: src/components/routes/system/info-bar.tsx
 msgid "{cores, plural, one {# core} other {# cores}}"
@@ -54,7 +62,7 @@ msgstr "{count, plural, one {{countString} λεπτό} other {{countString} λε
 
 #: src/components/network-monitors-table/network-monitors-columns.tsx
 msgid "{daysLeft, plural, one {# day} other {# days}}"
-msgstr ""
+msgstr "{daysLeft, plural, one {# ημέρα} other {# ημέρες}}"
 
 #: src/components/routes/system/charts/disk-charts.tsx
 msgid "{diskName} I/O"
@@ -62,15 +70,23 @@ msgstr "I/O {diskName}"
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "{numFailed, plural, one {# failed service} other {# failed services}}"
-msgstr ""
+msgstr "{numFailed, plural, one {# αποτυχημένη υπηρεσία} other {# αποτυχημένες υπηρεσίες}}"
+
+#: src/components/active-alerts.tsx
+msgid "{systemCount, plural, one {Across # system} other {Across # systems}}"
+msgstr "{systemCount, plural, one {Σε # σύστημα} other {Σε # συστήματα}}"
 
 #: src/components/routes/system/info-bar.tsx
 msgid "{threads, plural, one {# thread} other {# threads}}"
-msgstr "{threads, plural, one {# thread} other {# threads}}"
+msgstr "{threads, plural, one {# νήμα} other {# νήματα}}"
+
+#: src/components/systems-table/systems-table-columns.tsx
+msgid "{total, plural, one {# update} other {# updates}}"
+msgstr "{total, plural, one {# ενημέρωση} other {# ενημερώσεις}}"
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "{totalCount, plural, one {# service} other {# services}}"
-msgstr ""
+msgstr "{totalCount, plural, one {# υπηρεσία} other {# υπηρεσίες}}"
 
 #: src/lib/utils.ts
 msgid "1 hour"
@@ -137,7 +153,7 @@ msgstr "Ενεργή κατάσταση"
 
 #: src/components/network-monitors-table/monitor-dialog.tsx
 msgid "Add"
-msgstr ""
+msgstr "Προσθήκη"
 
 #: src/components/network-monitors-table/monitor-dialog.tsx
 #: src/components/network-monitors-table/monitor-dialog.tsx
@@ -231,6 +247,11 @@ msgctxt "Disk space available"
 msgid "Available"
 msgstr "Διαθέσιμο"
 
+#. Package version available to install
+#: src/components/routes/system/package-updates-table.tsx
+msgid "Available"
+msgstr "Διαθέσιμο"
+
 #: src/components/routes/system/chart-card.tsx
 msgid "Average"
 msgstr "Μέσος όρος"
@@ -239,15 +260,13 @@ msgstr "Μέσος όρος"
 msgid "Average CPU utilization of containers"
 msgstr "Μέση χρήση CPU των κοντέινερ"
 
-#. placeholder {0}: alertData.unit
 #: src/components/alerts/alerts-sheet.tsx
-msgid "Average drops below <0>{value}{0}</0>"
-msgstr "Ο μέσος όρος πέφτει κάτω από <0>{value}{0}</0>"
+msgid "Average drops below <0>{value}{unitLabel}</0>"
+msgstr "Ο μέσος όρος πέφτει κάτω από <0>{value}{unitLabel}</0>"
 
-#. placeholder {0}: alertData.unit
 #: src/components/alerts/alerts-sheet.tsx
-msgid "Average exceeds <0>{value}{0}</0>"
-msgstr "Ο μέσος όρος υπερβαίνει <0>{value}{0}</0>"
+msgid "Average exceeds <0>{value}{unitLabel}</0>"
+msgstr "Ο μέσος όρος υπερβαίνει τα <0>{value}{unitLabel}</0>"
 
 #: src/components/routes/system/disk-io-sheet.tsx
 msgid "Average number of I/O operations waiting to be serviced"
@@ -261,6 +280,10 @@ msgstr "Μέση κατανάλωση ισχύος των GPU"
 msgctxt "Disk I/O average operation time (iostat await)"
 msgid "Average queue to completion time per operation"
 msgstr "Μέσος χρόνος από την ουρά έως την ολοκλήρωση ανά λειτουργία"
+
+#: src/components/routes/system/charts/monitors-charts.tsx
+msgid "Average response time"
+msgstr "Μέσος χρόνος απόκρισης"
 
 #: src/components/routes/system/charts/cpu-charts.tsx
 msgid "Average system-wide CPU utilization"
@@ -354,10 +377,6 @@ msgstr "Μαζική προσθήκη"
 msgid "Bulk Add {foo}"
 msgstr "Μαζική προσθήκη {foo}"
 
-#: src/components/network-monitors-table/network-monitors-columns.tsx
-msgid "Bulk copy"
-msgstr "Μαζική αντιγραφή"
-
 #: src/components/routes/settings/general.tsx
 #: src/components/routes/settings/general.tsx
 msgid "Bytes (KB/s, MB/s, GB/s)"
@@ -406,15 +425,20 @@ msgstr "Κελσίου (°C)"
 #: src/components/network-monitors-table/network-monitors-columns.tsx
 #: src/components/network-monitors-table/network-monitors-columns.tsx
 msgid "Certificate"
-msgstr ""
+msgstr "Πιστοποιητικό"
 
 #: src/components/network-monitors-table/network-monitors-table.tsx
 msgid "Certificate expired {expires}"
-msgstr ""
+msgstr "Το πιστοποιητικό έληξε {expires}"
 
 #: src/components/network-monitors-table/network-monitors-table.tsx
 msgid "Certificate expires {expires}"
-msgstr ""
+msgstr "Το πιστοποιητικό λήγει {expires}"
+
+#. Version change
+#: src/components/routes/system/package-updates-table.tsx
+msgid "Change"
+msgstr "Αλλαγή"
 
 #: src/components/routes/settings/general.tsx
 msgid "Change display units for metrics."
@@ -457,12 +481,18 @@ msgstr "Ελέγξτε την υπηρεσία παρακολούθησής σα
 msgid "Check your notification service"
 msgstr "Ελέγξτε την υπηρεσία ειδοποιήσεών σας"
 
+#. placeholder {0}: formatShortDate(new Date(data.checkedAt * 1000).toISOString())
+#: src/components/routes/system/package-updates-table.tsx
+msgid "Checked {0}"
+msgstr "Έλεγχος {0}"
+
 #: src/components/routes/system/storage-pools-table.tsx
 msgid "Checksum errors"
 msgstr "Σφάλματα αθροίσματος ελέγχου"
 
 #: src/components/containers-table/containers-table.tsx
 #: src/components/network-monitors-table/network-monitors-table.tsx
+#: src/components/routes/system/package-updates-table.tsx
 #: src/components/routes/system/smart-table.tsx
 #: src/components/routes/system/storage-pools-table.tsx
 #: src/components/routes/system/storage-pools-table.tsx
@@ -502,6 +532,14 @@ msgstr "Κάντε κλικ για αντιγραφή"
 #: src/components/login/forgot-pass-form.tsx
 msgid "Command line instructions"
 msgstr "Οδηγίες γραμμής εντολών"
+
+#: src/components/network-monitors-table/network-monitors-table.tsx
+msgid "Compare with other systems"
+msgstr "Σύγκριση με άλλα συστήματα"
+
+#: src/components/network-monitors-table/network-monitors-table.tsx
+msgid "Compare with other targets"
+msgstr "Σύγκριση με άλλους στόχους"
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Configure how you receive alert notifications."
@@ -545,6 +583,10 @@ msgstr "Συνέχεια"
 #: src/lib/utils.ts
 msgid "Copied to clipboard"
 msgstr "Αντιγράφηκε στο πρόχειρο"
+
+#: src/components/network-monitors-table/network-monitors-columns.tsx
+msgid "Copy bulk config"
+msgstr "Αντιγραφή μαζικής διαμόρφωσης"
 
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
@@ -597,10 +639,6 @@ msgstr "Αντιγράψτε την παρακάτω εντολή εγκατάσ
 msgid "Copy the<0>docker-compose.yml</0> content for the agent below, or register agents automatically with a <1>universal token</1>."
 msgstr "Αντιγράψτε το περιεχόμενο του <0>docker-compose.yml</0> για τον παρακάτω πράκτορα ή καταχωρίστε πράκτορες αυτόματα με ένα <1>καθολικό διακριτικό</1>."
 
-#: src/components/network-monitors-table/network-monitors-columns.tsx
-msgid "Copy to system"
-msgstr "Αντιγραφή στο σύστημα"
-
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Copy YAML"
 msgstr "Αντιγραφή YAML"
@@ -614,7 +652,7 @@ msgstr "Βασικά"
 #: src/components/systemd-table/systemd-table-columns.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "CPU"
-msgstr "CPU"
+msgstr ""
 
 #: src/components/routes/system/cpu-sheet.tsx
 msgid "CPU Cores"
@@ -687,6 +725,11 @@ msgstr "Συνολική αποστολή"
 #: src/components/routes/system/disk-io-sheet.tsx
 msgid "Cumulative Write"
 msgstr "Συνολική εγγραφή"
+
+#. Current package version
+#: src/components/routes/system/package-updates-table.tsx
+msgid "Current"
+msgstr "Τρέχον"
 
 #. Context: Battery state
 #. Context: Battery state
@@ -761,10 +804,19 @@ msgstr "Χρήση δίσκου"
 msgid "Disk usage of {extraFsName}"
 msgstr "Χρήση δίσκου του {extraFsName}"
 
+#: src/components/alert-banner-sheet.tsx
+#: src/components/alert-banner-sheet.tsx
+msgid "Dismiss"
+msgstr "Απόρριψη"
+
 #: src/components/routes/system/info-bar.tsx
 msgctxt "Layout display options"
 msgid "Display"
 msgstr "Εμφάνιση"
+
+#: src/components/network-monitors-table/monitor-dialog.tsx
+msgid "DNS Server"
+msgstr "Διακομιστής DNS"
 
 #: src/components/routes/system/charts/cpu-charts.tsx
 msgid "Docker CPU Usage"
@@ -822,7 +874,7 @@ msgstr "Επεξεργασία Σύστημα"
 #: src/components/login/forgot-pass-form.tsx
 #: src/components/login/otp-forms.tsx
 msgid "Email"
-msgstr "Email"
+msgstr ""
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Email notifications"
@@ -846,6 +898,10 @@ msgstr "URL τελικού σημείου"
 msgid "Endpoint URL to ping (required)"
 msgstr "URL τελικού σημείου για ping (απαιτείται)"
 
+#: src/components/network-monitors-table/monitor-dialog.tsx
+msgid "Enter a domain name to look up. Put the resolver's IP in DNS Server."
+msgstr "Εισάγετε ένα όνομα τομέα για αναζήτηση. Βάλτε την IP του resolver στο πεδίο Διακομιστής DNS."
+
 #: src/components/login/login.tsx
 msgid "Enter email address to reset password"
 msgstr "Εισαγάγετε διεύθυνση email για επαναφορά κωδικού πρόσβασης"
@@ -864,7 +920,6 @@ msgstr "Προσωρινό"
 
 #: src/components/network-monitors-table/monitor-dialog.tsx
 #: src/components/network-monitors-table/monitor-dialog.tsx
-#: src/components/network-monitors-table/network-monitors-table.tsx
 #: src/components/network-monitors-table/network-monitors-table.tsx
 #: src/components/network-monitors-table/network-monitors-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
@@ -905,7 +960,7 @@ msgstr "Ενεργό μετά την έξοδο"
 
 #: src/components/network-monitors-table/network-monitors-columns.tsx
 msgid "Expired"
-msgstr ""
+msgstr "Έληξε"
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Expires after one hour or on hub restart."
@@ -940,9 +995,17 @@ msgid "Failed to authenticate"
 msgstr "Η ταυτοποίηση απέτυχε"
 
 #: src/components/network-monitors-table/network-monitors-table.tsx
-#: src/components/network-monitors-table/network-monitors-table.tsx
 msgid "Failed to delete monitors."
 msgstr "Η διαγραφή των monitors απέτυχε."
+
+#: src/components/systemd-table/systemd-table.tsx
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Failed to load logs."
+msgstr "Αποτυχία φόρτωσης των αρχείων καταγραφής."
+
+#: src/components/routes/system/package-updates-table.tsx
+msgid "Failed to load package updates"
+msgstr "Αποτυχία φόρτωσης των ενημερώσεων πακέτων"
 
 #: src/components/routes/settings/layout.tsx
 #: src/components/routes/settings/notifications.tsx
@@ -979,6 +1042,7 @@ msgstr "Ανεμιστήρες"
 #: src/components/network-monitors-table/network-monitors-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/system/chart-card.tsx
+#: src/components/routes/system/package-updates-table.tsx
 #: src/components/routes/system/smart-table.tsx
 #: src/components/routes/system/storage-pools-table.tsx
 #: src/components/routes/system/storage-pools-table.tsx
@@ -1021,6 +1085,11 @@ msgstr "Εντολή FreeBSD"
 msgid "Full"
 msgstr "Πλήρες"
 
+#: src/components/containers-table/containers-table.tsx
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Fullscreen"
+msgstr "Πλήρης οθόνη"
+
 #. Context: General settings
 #: src/components/routes/settings/general.tsx
 #: src/components/routes/settings/layout.tsx
@@ -1033,7 +1102,7 @@ msgstr "Καθολικό"
 
 #: src/components/routes/system.tsx
 msgid "GPU"
-msgstr "GPU"
+msgstr ""
 
 #: src/components/routes/system/charts/gpu-charts.tsx
 msgid "GPU Engines"
@@ -1059,7 +1128,7 @@ msgstr "Υγεία"
 
 #: src/components/routes/settings/layout.tsx
 msgid "Heartbeat"
-msgstr "Heartbeat"
+msgstr ""
 
 #: src/components/routes/settings/heartbeat.tsx
 msgid "Heartbeat Monitoring"
@@ -1068,6 +1137,10 @@ msgstr "Παρακολούθηση heartbeat"
 #: src/components/routes/settings/heartbeat.tsx
 msgid "Heartbeat sent successfully"
 msgstr "Το heartbeat στάλθηκε με επιτυχία"
+
+#: src/components/logs-display.tsx
+msgid "Hide timestamps"
+msgstr "Απόκρυψη χρονοσφραγίδων"
 
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
@@ -1187,6 +1260,7 @@ msgid "Load state"
 msgstr "Κατάσταση φόρτωσης"
 
 #: src/components/systemd-table/systemd-table.tsx
+#: src/components/systemd-table/systemd-table.tsx
 msgid "Loading..."
 msgstr "Φόρτωση..."
 
@@ -1207,6 +1281,7 @@ msgstr "Η προσπάθεια σύνδεσης απέτυχε"
 #: src/components/command-palette.tsx
 #: src/components/containers-table/containers-table.tsx
 #: src/components/navbar.tsx
+#: src/components/systemd-table/systemd-table.tsx
 msgid "Logs"
 msgstr "Αρχεία καταγραφής"
 
@@ -1227,6 +1302,11 @@ msgstr "Απώλεια 1ώρου"
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Main PID"
 msgstr "Κύριο PID"
+
+#. Package version
+#: src/components/routes/system/package-updates-table.tsx
+msgid "Major"
+msgstr "Σημαντική"
 
 #: src/components/routes/settings/layout.tsx
 msgid "Manage display and notification preferences."
@@ -1278,6 +1358,11 @@ msgstr "Χρήση μνήμης των κοντέινερ"
 msgid "Min 1h"
 msgstr "Ελάχιστο 1ώρου"
 
+#. Package version
+#: src/components/routes/system/package-updates-table.tsx
+msgid "Minor"
+msgstr "Δευτερεύουσα"
+
 #. Device model
 #: src/components/routes/system/smart-table.tsx
 msgid "Model"
@@ -1287,7 +1372,7 @@ msgstr "Μοντέλο"
 #: src/components/network-monitors-table/monitor-dialog.tsx
 #: src/components/network-monitors-table/monitor-dialog.tsx
 msgid "Monitor"
-msgstr "Monitor"
+msgstr ""
 
 #: src/components/network-monitors-table/monitor-dialog.tsx
 msgid "Monitors created"
@@ -1359,6 +1444,10 @@ msgstr "Όχι"
 msgid "No detail data for this pool."
 msgstr "Δεν υπάρχουν λεπτομερή δεδομένα για αυτό το pool."
 
+#: src/components/systemd-table/systemd-table.tsx
+msgid "No logs found."
+msgstr "Δεν βρέθηκαν αρχεία καταγραφής."
+
 #: src/components/command-palette.tsx
 #: src/components/systemd-table/systemd-table.tsx
 msgid "No results found."
@@ -1369,6 +1458,7 @@ msgstr "Δεν βρέθηκαν αποτελέσματα."
 #: src/components/containers-table/containers-table.tsx
 #: src/components/network-monitors-table/network-monitors-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
+#: src/components/routes/system/package-updates-table.tsx
 #: src/components/routes/system/smart-table.tsx
 #: src/components/systemd-table/systemd-table.tsx
 msgid "No results."
@@ -1383,6 +1473,10 @@ msgstr "Δεν υπάρχουν διαθέσιμα χαρακτηριστικά 
 #: src/components/systems-table/systems-table.tsx
 msgid "No systems found."
 msgstr "Δεν βρέθηκαν συστήματα."
+
+#: src/components/network-monitors-table/monitor-dialog.tsx
+msgid "No targets found."
+msgstr "Δεν βρέθηκαν στόχοι."
 
 #: src/components/routes/system/storage-pools-table.tsx
 msgid "None"
@@ -1438,17 +1532,32 @@ msgstr "Κωδικός μίας χρήσης"
 msgid "Open menu"
 msgstr "Άνοιγμα μενού"
 
+#: src/components/network-monitors-table/monitor-dialog.tsx
+msgid "Optional. Defaults to the agent's system resolver."
+msgstr "Προαιρετικό. Από προεπιλογή χρησιμοποιείται ο resolver συστήματος του πράκτορα."
+
 #: src/components/login/auth-form.tsx
 msgid "Or continue with"
 msgstr "Ή συνεχίστε με"
 
+#. Package version
 #: src/components/routes/system/cpu-sheet.tsx
+#: src/components/routes/system/package-updates-table.tsx
 msgid "Other"
 msgstr "Άλλο"
 
 #: src/components/alerts/alerts-sheet.tsx
 msgid "Overwrite existing alerts"
 msgstr "Αντικατάσταση υπαρχουσών ειδοποιήσεων"
+
+#. Software package
+#: src/components/routes/system/package-updates-table.tsx
+msgid "Package"
+msgstr "Πακέτο"
+
+#: src/components/routes/system/package-updates-table.tsx
+msgid "Package Updates"
+msgstr "Ενημερώσεις πακέτων"
 
 #: src/components/routes/system/charts/monitors-charts.tsx
 msgid "Packet loss (%)"
@@ -1461,9 +1570,12 @@ msgstr "Απώλεια πακέτων (%)"
 msgid "Page"
 msgstr "Σελίδα"
 
+#. placeholder {0}: pageIndex + 1
 #. placeholder {0}: table.getState().pagination.pageIndex + 1
+#. placeholder {1}: Math.max(table.getPageCount(), 1)
 #. placeholder {1}: table.getPageCount()
 #: src/components/routes/settings/alerts-history-data-table.tsx
+#: src/components/routes/system/package-updates-table.tsx
 msgid "Page {0} of {1}"
 msgstr "Σελίδα {0} από {1}"
 
@@ -1491,6 +1603,11 @@ msgstr "Το αίτημα επαναφοράς κωδικού πρόσβασης
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Past"
 msgstr "Παρελθόν"
+
+#. Package version
+#: src/components/routes/system/package-updates-table.tsx
+msgid "Patch"
+msgstr "Διόρθωση"
 
 #: src/components/network-monitors-table/network-monitors-columns.tsx
 #: src/components/systems-table/systems-table-columns.tsx
@@ -1624,6 +1741,7 @@ msgid "Queue Depth"
 msgstr "Βάθος ουράς"
 
 #: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/settings/quiet-hours.tsx
 msgid "Quiet Hours"
 msgstr "Ώρες σίγασης"
 
@@ -1658,9 +1776,11 @@ msgid "Received"
 msgstr "Λήφθηκαν"
 
 #: src/components/containers-table/containers-table.tsx
-#: src/components/containers-table/containers-table.tsx
+#: src/components/logs-display.tsx
+#: src/components/logs-display.tsx
 #: src/components/routes/system/smart-table.tsx
 #: src/components/routes/system/storage-pools-table.tsx
+#: src/components/systemd-table/systemd-table.tsx
 msgid "Refresh"
 msgstr "Ανανέωση"
 
@@ -1697,6 +1817,7 @@ msgstr "Επιλύθηκε"
 #: src/components/network-monitors-table/network-monitors-columns.tsx
 #: src/components/network-monitors-table/network-monitors-columns.tsx
 #: src/components/routes/system/charts/monitors-charts.tsx
+#: src/components/routes/system/charts/monitors-charts.tsx
 msgid "Response"
 msgstr "Απόκριση"
 
@@ -1713,6 +1834,11 @@ msgstr "Επανεκκινήσεις"
 msgid "Resume"
 msgstr "Συνέχιση"
 
+#. Package version
+#: src/components/routes/system/package-updates-table.tsx
+msgid "Revision"
+msgstr "Αναθεώρηση"
+
 #: src/components/routes/system/charts/disk-charts.tsx
 #: src/components/routes/system/charts/disk-charts.tsx
 #: src/components/systems-table/systems-table-columns.tsx
@@ -1725,6 +1851,7 @@ msgid "Rotate token"
 msgstr "Ανανέωση token"
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
+#: src/components/routes/system/package-updates-table.tsx
 msgid "Rows per page"
 msgstr "Γραμμές ανά σελίδα"
 
@@ -1782,13 +1909,26 @@ msgid "Search for systems or settings..."
 msgstr "Αναζήτηση συστημάτων ή ρυθμίσεων..."
 
 #: src/components/network-monitors-table/monitor-dialog.tsx
-#: src/components/network-monitors-table/monitor-dialog.tsx
 msgid "Search systems"
 msgstr "Αναζήτηση συστημάτων"
+
+#: src/components/network-monitors-table/monitor-dialog.tsx
+msgid "Search targets"
+msgstr "Αναζήτηση στόχων"
 
 #: src/components/routes/settings/heartbeat.tsx
 msgid "Seconds between pings (default: 60)"
 msgstr "Δευτερόλεπτα μεταξύ ping (προεπιλογή: 60)"
+
+#. Security update
+#: src/components/routes/system/package-updates-table.tsx
+#: src/components/routes/system/package-updates-table.tsx
+msgid "Security"
+msgstr "Ασφάλεια"
+
+#: src/components/routes/system/package-updates-table.tsx
+msgid "Security: {securityCount}"
+msgstr "Ασφάλεια: {securityCount}"
 
 #: src/components/alerts/alerts-sheet.tsx
 msgid "See <0>notification settings</0> to configure how you receive alerts."
@@ -1818,6 +1958,10 @@ msgstr "Επιλογή γραμμής"
 #: src/components/network-monitors-table/monitor-dialog.tsx
 msgid "Select systems"
 msgstr "Επιλογή συστημάτων"
+
+#: src/components/network-monitors-table/monitor-dialog.tsx
+msgid "Select targets"
+msgstr "Επιλογή στόχων"
 
 #: src/components/routes/settings/heartbeat.tsx
 msgid "Send a single heartbeat ping to verify your endpoint is working."
@@ -1870,9 +2014,18 @@ msgstr "Ρυθμίσεις"
 msgid "Settings saved"
 msgstr "Οι ρυθμίσεις αποθηκεύτηκαν"
 
+#: src/components/logs-display.tsx
+#: src/components/logs-display.tsx
+msgid "Show timestamps"
+msgstr "Εμφάνιση χρονοσφραγίδων"
+
 #: src/components/login/auth-form.tsx
 msgid "Sign in"
 msgstr "Σύνδεση"
+
+#: src/components/routes/system/charts/wifi-chart.tsx
+msgid "Signal strength of connected Wi-Fi interfaces"
+msgstr "Ισχύς σήματος των συνδεδεμένων διεπαφών Wi-Fi"
 
 #: src/components/command-palette.tsx
 msgid "SMTP settings"
@@ -1976,7 +2129,7 @@ msgstr "Στόχος"
 
 #: src/components/network-monitors-table/monitor-dialog.tsx
 #: src/components/network-monitors-table/monitor-dialog.tsx
-msgid "target[,protocol[,port[,interval]]]"
+msgid "target[,protocol[,port[,interval[,server]]]]"
 msgstr ""
 
 #: src/components/systemd-table/systemd-table.tsx
@@ -2085,6 +2238,8 @@ msgid "Total time spent on read/write (can exceed 100%)"
 msgstr "Συνολικός χρόνος ανάγνωσης/εγγραφής (μπορεί να υπερβαίνει το 100%)"
 
 #. placeholder {0}: data.length
+#. placeholder {0}: rows.length
+#: src/components/routes/system/package-updates-table.tsx
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Total: {0}"
 msgstr "Σύνολο: {0}"
@@ -2188,6 +2343,7 @@ msgstr "Καθολικό διακριτικό"
 
 #. Context: Battery state
 #: src/components/routes/system/storage-pools-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 #: src/lib/i18n.ts
 msgid "Unknown"
 msgstr "Άγνωστο"
@@ -2207,6 +2363,11 @@ msgstr "Σε λειτουργία"
 msgid "Up ({upSystemsLength})"
 msgstr "Σε λειτουργία ({upSystemsLength})"
 
+#: src/components/routes/system/package-updates-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
+msgid "Up to date"
+msgstr "Ενημερωμένο"
+
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Update"
 msgstr "Ενημέρωση"
@@ -2223,6 +2384,11 @@ msgstr "Ενημερώθηκε"
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Updated every 10 minutes."
 msgstr "Ενημερώνεται κάθε 10 λεπτά."
+
+#: src/components/routes/system.tsx
+#: src/components/systems-table/systems-table-columns.tsx
+msgid "Updates"
+msgstr "Ενημερώσεις"
 
 #: src/components/routes/system/network-sheet.tsx
 msgid "Upload"
@@ -2274,6 +2440,14 @@ msgstr "Τιμή"
 msgid "View"
 msgstr "Προβολή"
 
+#: src/components/active-alerts.tsx
+msgid "View alerts"
+msgstr "Προβολή ειδοποιήσεων"
+
+#: src/components/alert-banner-sheet.tsx
+msgid "View details"
+msgstr "Προβολή λεπτομερειών"
+
 #: src/components/routes/system/cpu-sheet.tsx
 #: src/components/routes/system/disk-io-sheet.tsx
 #: src/components/routes/system/network-sheet.tsx
@@ -2320,6 +2494,10 @@ msgstr "Όταν είναι ενεργοποιημένο, αυτό το διακ
 #: src/components/routes/settings/heartbeat.tsx
 msgid "When using POST, each heartbeat includes a JSON payload with system status summary, list of down systems, and triggered alerts."
 msgstr "Όταν χρησιμοποιείται το POST, κάθε heartbeat περιλαμβάνει JSON payload με σύνοψη κατάστασης συστημάτων, λίστα συστημάτων εκτός λειτουργίας και ενεργοποιημένες ειδοποιήσεις."
+
+#: src/components/routes/system/charts/wifi-chart.tsx
+msgid "Wi-Fi signal"
+msgstr "Σήμα Wi-Fi"
 
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx

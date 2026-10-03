@@ -889,9 +889,10 @@ func (dm *dockerManager) getContainerInfo(ctx context.Context, containerID strin
 // getLogs fetches the logs for a container
 func (dm *dockerManager) getLogs(ctx context.Context, containerID string) (string, error) {
 	query := url.Values{
-		"stdout": []string{"1"},
-		"stderr": []string{"1"},
-		"tail":   []string{fmt.Sprintf("%d", dockerLogsTail)},
+		"timestamps": []string{"1"},
+		"stdout":     []string{"1"},
+		"stderr":     []string{"1"},
+		"tail":       []string{fmt.Sprintf("%d", dockerLogsTail)},
 	}
 	endpoint, err := buildDockerContainerEndpoint(containerID, "logs", query)
 	if err != nil {
