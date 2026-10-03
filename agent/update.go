@@ -46,6 +46,22 @@ func (w *openWRTRestarter) Restart() error {
 	return exec.Command("/etc/init.d/beszel-agent", "restart").Run()
 }
 
+type entwareRestarter struct{}
+
+func (e *entwareRestarter) Restart() error {
+	const service = "/opt/etc/init.d/S99beszel-agent"
+	if err := exec.Command(service, "check").Run(); err != nil {
+		return nil
+	}
+	// Entware's rc.func stops every process named beszel-agent. Running restart
+	// here would kill this updater before it can exit cleanly.
+	cmd := exec.Command("/bin/sh", "-c", "sleep 2; /opt/etc/init.d/S99beszel-agent restart >/dev/null 2>&1 || logger -t beszel-agent 'Restart after update failed'")
+	if err := cmd.Start(); err != nil {
+		return err
+	}
+	return cmd.Process.Release()
+}
+
 type freeBSDRestarter struct{ cmd string }
 
 func (f *freeBSDRestarter) Restart() error {
@@ -65,6 +81,11 @@ func detectRestarter() restarter {
 	}
 	if path, err := exec.LookPath("procd"); err == nil {
 		return &openWRTRestarter{cmd: path}
+	}
+	if _, err := os.Stat("/opt/etc/init.d/rc.func"); err == nil {
+		if _, err := os.Stat("/opt/etc/init.d/S99beszel-agent"); err == nil {
+			return &entwareRestarter{}
+		}
 	}
 	if path, err := exec.LookPath("service"); err == nil {
 		if runtime.GOOS == "freebsd" {
@@ -99,10 +120,13 @@ func Update(useMirror bool) error {
 	if err := os.Chmod(exePath, 0755); err != nil {
 		ghupdate.ColorPrintf(ghupdate.ColorYellow, "Warning: failed to set executable permissions: %v", err)
 	}
-	// set ownership to beszel:beszel if possible
-	if chownPath, err := exec.LookPath("chown"); err == nil {
-		if err := exec.Command(chownPath, "beszel:beszel", exePath).Run(); err != nil {
-			ghupdate.ColorPrintf(ghupdate.ColorYellow, "Warning: failed to set file ownership: %v", err)
+	r := detectRestarter()
+	// Entware runs as root, so its replacement binary is already root-owned.
+	if _, entware := r.(*entwareRestarter); !entware {
+		if chownPath, err := exec.LookPath("chown"); err == nil {
+			if err := exec.Command(chownPath, "beszel:beszel", exePath).Run(); err != nil {
+				ghupdate.ColorPrintf(ghupdate.ColorYellow, "Warning: failed to set file ownership: %v", err)
+			}
 		}
 	}
 
@@ -112,7 +136,7 @@ func Update(useMirror bool) error {
 	}
 
 	// Restart service if running under a recognised init system
-	if r := detectRestarter(); r != nil {
+	if r != nil {
 		if err := r.Restart(); err != nil {
 			ghupdate.ColorPrintf(ghupdate.ColorYellow, "Warning: failed to restart service: %v", err)
 			ghupdate.ColorPrint(ghupdate.ColorYellow, "Please restart the service manually.")
