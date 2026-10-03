@@ -6,6 +6,7 @@ import {
 	flexRender,
 	getCoreRowModel,
 	getFilteredRowModel,
+	getPaginationRowModel,
 	getSortedRowModel,
 	type Row,
 	type RowSelectionState,
@@ -14,7 +15,6 @@ import {
 	useReactTable,
 	type VisibilityState,
 } from "@tanstack/react-table"
-import { useVirtualizer, type VirtualItem } from "@tanstack/react-virtual"
 import {
 	AlertDialog,
 	AlertDialogAction,
@@ -30,14 +30,15 @@ import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { subscribeKeys } from "nanostores"
 import { getMonitorColumns } from "@/components/network-monitors-table/network-monitors-columns"
 import { Card, CardHeader, CardTitle } from "@/components/ui/card"
+import { DataTablePagination, usePagination } from "@/components/ui/data-table-pagination"
 import { Input } from "@/components/ui/input"
 import { TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { useToast } from "@/components/ui/use-toast"
 import { isReadOnlyUser, queueUserSettings } from "@/lib/api"
 import { pb } from "@/lib/api"
 import { SystemStatus } from "@/lib/enums"
-import { $allSystemsById, $direction, $textMeasureVersion, $userSettings, getUserChartTime } from "@/lib/stores"
-import { cn, formatShortDate, isVisuallyLonger, matchesFilterGroups, parseFilterGroups, parseSemVer } from "@/lib/utils"
+import { $allSystemsById, $direction, $userSettings, getUserChartTime } from "@/lib/stores"
+import { cn, formatShortDate, matchesFilterGroups, parseFilterGroups, parseSemVer } from "@/lib/utils"
 import type { ChartOptions, MonitorCertInfo, NetworkMonitorRecord } from "@/types"
 import { AddMonitorDialog, EditMonitorDialog, MonitorMultiSelect, SystemMultiSelect } from "./monitor-dialog"
 import {
@@ -99,6 +100,7 @@ export default function NetworkMonitorsTableNew({
 	)
 	const [rowSelection, setRowSelection] = useState<RowSelectionState>({})
 	const [globalFilter, setGlobalFilter] = useState("")
+	const { pagination, onPaginationChange, resetPageIndex } = usePagination()
 	const [deleteOpen, setDeleteOpen] = useState(false)
 	const [pendingDelete, setPendingDelete] = useState<NetworkMonitorRecord[]>([])
 	const [editingMonitor, setEditingMonitor] = useState<NetworkMonitorRecord>()
@@ -143,41 +145,10 @@ export default function NetworkMonitorsTableNew({
 				queueUserSettings({ [sortSettingsKey]: next })
 				return next
 			})
+			resetPageIndex()
 		},
-		[sortSettingsKey, sortStorageKey]
+		[sortSettingsKey, sortStorageKey, resetPageIndex]
 	)
-
-	// recompute when measured widths are invalidated (e.g. web font finished loading)
-	const textMeasureVersion = useStore($textMeasureVersion)
-	const longestTarget = useMemo(() => {
-		let longestTarget = ""
-		for (const p of monitors) {
-			if (isVisuallyLonger(getMonitorTarget(p), longestTarget)) {
-				longestTarget = getMonitorTarget(p)
-			}
-		}
-		return longestTarget
-	}, [monitors, textMeasureVersion])
-
-	// longest name among systems that have monitors in this table (skipped for single-system view).
-	// Held in a store because memoized rows don't re-render when column definitions change.
-	const $longestSystemName = useMemo(() => atom(""), [])
-	useEffect(() => {
-		if (systemId) {
-			return
-		}
-		const systemIds = new Set(monitors.map((m) => m.system))
-		return $allSystemsById.subscribe((systems) => {
-			let longest = ""
-			for (const id of systemIds) {
-				const name = systems[id]?.name ?? ""
-				if (isVisuallyLonger(name, longest)) {
-					longest = name
-				}
-			}
-			$longestSystemName.set(longest)
-		})
-	}, [monitors, systemId, textMeasureVersion, $longestSystemName])
 
 	const runMonitorBatch = useCallback(
 		async (ids: string[], enqueue: (batch: ReturnType<typeof pb.createBatch>, id: string) => void) => {
@@ -265,7 +236,7 @@ export default function NetworkMonitorsTableNew({
 	)
 
 	const columns = useMemo(() => {
-		let columns = getMonitorColumns(longestTarget, $longestSystemName, {
+		let columns = getMonitorColumns({
 			onEdit: setEditingMonitor,
 			onDelete: handleDeleteRequest,
 			onSetEnabled: handleSetEnabled,
@@ -273,7 +244,7 @@ export default function NetworkMonitorsTableNew({
 		columns = systemId ? columns.filter((col) => col.id !== "system") : columns
 		columns = canManageMonitors ? columns : columns.filter((col) => col.id !== "actions")
 		return columns
-	}, [canManageMonitors, handleDeleteRequest, handleSetEnabled, systemId, longestTarget, $longestSystemName])
+	}, [canManageMonitors, handleDeleteRequest, handleSetEnabled, systemId])
 
 	const table = useReactTable({
 		data: monitors,
@@ -282,6 +253,9 @@ export default function NetworkMonitorsTableNew({
 		getCoreRowModel: getCoreRowModel(),
 		getSortedRowModel: getSortedRowModel(),
 		getFilteredRowModel: getFilteredRowModel(),
+		getPaginationRowModel: getPaginationRowModel(),
+		autoResetPageIndex: false,
+		onPaginationChange,
 		onSortingChange: handleSortingChange,
 		onColumnFiltersChange: setColumnFilters,
 		onColumnVisibilityChange: handleColumnVisibilityChange,
@@ -297,8 +271,12 @@ export default function NetworkMonitorsTableNew({
 			columnVisibility,
 			rowSelection,
 			globalFilter,
+			pagination,
 		},
-		onGlobalFilterChange: setGlobalFilter,
+		onGlobalFilterChange: (value) => {
+			setGlobalFilter(value)
+			resetPageIndex()
+		},
 		globalFilterFn: (row, _columnId, filterValue) => {
 			const value = (filterValue as string).trim()
 			if (!value) return true
@@ -331,7 +309,7 @@ export default function NetworkMonitorsTableNew({
 								<Input
 									placeholder={t`Filter...`}
 									value={globalFilter}
-									onChange={(e) => setGlobalFilter(e.target.value)}
+									onChange={(e) => table.setGlobalFilter(e.target.value)}
 									className="ms-auto px-4 w-full max-w-full md-lg:w-50"
 								/>
 								{globalFilter && (
@@ -341,7 +319,7 @@ export default function NetworkMonitorsTableNew({
 										size="icon"
 										aria-label={t`Clear`}
 										className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 text-muted-foreground"
-										onClick={() => setGlobalFilter("")}
+										onClick={() => table.setGlobalFilter("")}
 									>
 										<XIcon className="h-4 w-4" />
 									</Button>
@@ -474,6 +452,7 @@ export default function NetworkMonitorsTableNew({
 					includesAllSystems={!systemId}
 				/>
 			</div>
+			<DataTablePagination table={table} />
 		</Card>
 	)
 }
@@ -496,7 +475,6 @@ const NetworkMonitorsTable = memo(function NetworkMonitorTable({
 	/** The table lists every system's monitors, so the sheet can compare without fetching. */
 	includesAllSystems: boolean
 }) {
-	const scrollRef = useRef<HTMLDivElement>(null)
 	const [sheetOpen, setSheetOpen] = useState(false)
 	const [activeMonitorId, setActiveMonitorId] = useState<string | null>(null)
 	const activeMonitor = activeMonitorId
@@ -507,58 +485,37 @@ const NetworkMonitorsTable = memo(function NetworkMonitorTable({
 		setSheetOpen(true)
 	}, [])
 
-	const virtualizer = useVirtualizer<HTMLDivElement, HTMLTableRowElement>({
-		count: rows.length,
-		estimateSize: () => 54,
-		getScrollElement: () => scrollRef.current,
-		overscan: 5,
-	})
-	const virtualRows = virtualizer.getVirtualItems()
-
-	const paddingTop = Math.max(0, virtualRows[0]?.start ?? 0 - virtualizer.options.scrollMargin)
-	const paddingBottom = Math.max(0, virtualizer.getTotalSize() - (virtualRows[virtualRows.length - 1]?.end ?? 0))
-
 	return (
-		<div
-			className={cn(
-				"h-min max-h-[calc(100dvh-17rem)] max-w-full relative overflow-auto border rounded-md",
-				(!rows.length || rows.length > 2) && "min-h-50"
-			)}
-			ref={scrollRef}
-		>
-			<div style={{ height: `${virtualizer.getTotalSize() + 48}px`, paddingTop, paddingBottom }}>
-				<table className="text-sm w-full h-full text-nowrap">
-					<NetworkMonitorTableHead table={table} />
-					<TableBody>
-						{rows.length ? (
-							virtualRows.map((virtualRow) => {
-								const row = rows[virtualRow.index]
-								return (
-									<NetworkMonitorTableRow
-										key={row.id}
-										row={row}
-										virtualRow={virtualRow}
-										isSelected={row.getIsSelected()}
-										rowSelection={rowSelection}
-										visibleColumnsKey={visibleColumnsKey}
-										openSheet={openSheet}
-									/>
-								)
-							})
-						) : (
-							<TableRow>
-								<TableCell colSpan={colLength} className="h-37 text-center pointer-events-none">
-									{isLoading ? (
-										<LoaderCircleIcon className="animate-spin size-10 opacity-60 mx-auto" />
-									) : (
-										<Trans>No results.</Trans>
-									)}
-								</TableCell>
-							</TableRow>
-						)}
-					</TableBody>
-				</table>
-			</div>
+		<div className="max-w-full relative overflow-auto border rounded-md">
+			<table className="text-sm w-full h-full text-nowrap">
+				<NetworkMonitorTableHead table={table} />
+				<TableBody>
+					{rows.length ? (
+						rows.map((row) => {
+							return (
+								<NetworkMonitorTableRow
+									key={row.id}
+									row={row}
+									isSelected={row.getIsSelected()}
+									rowSelection={rowSelection}
+									visibleColumnsKey={visibleColumnsKey}
+									openSheet={openSheet}
+								/>
+							)
+						})
+					) : (
+						<TableRow>
+							<TableCell colSpan={colLength} className="h-37 text-center pointer-events-none">
+								{isLoading ? (
+									<LoaderCircleIcon className="animate-spin size-10 opacity-60 mx-auto" />
+								) : (
+									<Trans>No results.</Trans>
+								)}
+							</TableCell>
+						</TableRow>
+					)}
+				</TableBody>
+			</table>
 			<NetworkMonitorSheet
 				open={sheetOpen}
 				onOpenChange={(nextOpen) => {
@@ -592,7 +549,6 @@ function NetworkMonitorTableHead({ table }: { table: TableType<NetworkMonitorRec
 
 const NetworkMonitorTableRow = memo(function NetworkMonitorTableRow({
 	row,
-	virtualRow,
 	isSelected,
 	rowSelection: _rowSelection,
 	// Column visibility doesn't change the row object identity, so this prop exists only
@@ -601,7 +557,6 @@ const NetworkMonitorTableRow = memo(function NetworkMonitorTableRow({
 	openSheet,
 }: {
 	row: Row<NetworkMonitorRecord>
-	virtualRow: VirtualItem
 	isSelected: boolean
 	// Menus depend on the entire selection, including changes to other rows.
 	rowSelection: RowSelectionState
@@ -623,7 +578,7 @@ const NetworkMonitorTableRow = memo(function NetworkMonitorTableRow({
 					className="py-0"
 					style={{
 						width: `${cell.column.getSize()}px`,
-						height: virtualRow.size,
+						height: 54,
 					}}
 				>
 					{flexRender(cell.column.columnDef.cell, cell.getContext())}
@@ -673,13 +628,7 @@ function CertExpiry({ cert }: { cert: MonitorCertInfo }) {
 			<Separator orientation="vertical" className="h-2.5 bg-muted-foreground opacity-70" />
 			<ShieldCheckIcon className={cn("size-3.5 text-muted-foreground -me-1", certExpiryTextColors[level])} />
 			<span className={certExpiryTextColors[level]}>
-				{daysLeft < 0 ? (
-					<Trans>Certificate expired {expires}</Trans>
-				) : (
-					<Trans>
-						Certificate expires {expires} 
-					</Trans>
-				)}
+				{daysLeft < 0 ? <Trans>Certificate expired {expires}</Trans> : <Trans>Certificate expires {expires}</Trans>}
 			</span>
 			{cert.issuer && (
 				<>

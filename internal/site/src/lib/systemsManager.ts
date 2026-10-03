@@ -1,16 +1,8 @@
 /** biome-ignore-all lint/suspicious/noAssignInExpressions: it's fine :) */
 import type { PreinitializedMapStore } from "nanostores"
 import { pb } from "@/lib/api"
-import {
-	$allSystemsById,
-	$allSystemsByName,
-	$downSystems,
-	$longestSystemName,
-	$pausedSystems,
-	$textMeasureVersion,
-	$upSystems,
-} from "@/lib/stores"
-import { isVisuallyLonger, updateFavicon } from "@/lib/utils"
+import { $allSystemsById, $allSystemsByName, $downSystems, $pausedSystems, $upSystems } from "@/lib/stores"
+import { updateFavicon } from "@/lib/utils"
 import type { SystemRecord } from "@/types"
 import { SystemStatus } from "./enums"
 
@@ -42,7 +34,7 @@ export function init() {
 		}
 
 		if (!newSystem) {
-			onSystemsChanged(newSystems, newSystem, oldSystem)
+			onSystemsChanged()
 			return
 		}
 
@@ -66,41 +58,13 @@ export function init() {
 		}
 
 		// run things that need to be done when systems change
-		onSystemsChanged(newSystems, newSystem, oldSystem)
-	})
-
-	// widths measured with the fallback font may rank names differently, so recompute once they're invalidated
-	$textMeasureVersion.listen(() => {
-		$longestSystemName.set(findLongestName($allSystemsById.get()))
+		onSystemsChanged()
 	})
 }
 
-/** Update the longest system name string and favicon based on system status */
-function onSystemsChanged(systems: Record<string, SystemRecord>, newSystem?: SystemRecord, oldSystem?: SystemRecord) {
-	const downSystemsStore = $downSystems.get()
-	const downSystems = Object.values(downSystemsStore)
-
-	// if the old system's old name was the longest, we need to find the new longest name
-	// otherwise, if the changed system's new name is longer than the current longest, update it
-	const longestName = $longestSystemName.get()
-	if (oldSystem?.name === longestName && oldSystem.name !== newSystem?.name) {
-		$longestSystemName.set(findLongestName(systems))
-	} else if (newSystem && newSystem.name !== longestName && isVisuallyLonger(newSystem.name, longestName)) {
-		$longestSystemName.set(newSystem.name)
-	}
-
-	updateFavicon(downSystems.length)
-}
-
-/** Find the visually longest system name */
-function findLongestName(systems: Record<string, SystemRecord>): string {
-	let longest = ""
-	for (const id in systems) {
-		if (isVisuallyLonger(systems[id].name, longest)) {
-			longest = systems[id].name
-		}
-	}
-	return longest
+/** Update the favicon based on system status */
+function onSystemsChanged() {
+	updateFavicon(Object.keys($downSystems.get()).length)
 }
 
 /** Fetch systems from collection */
