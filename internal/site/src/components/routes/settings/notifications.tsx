@@ -1,18 +1,13 @@
 import { t } from "@lingui/core/macro"
 import { Trans } from "@lingui/react/macro"
 import { useStore } from "@nanostores/react"
-import { BellIcon, ChevronDownIcon, LoaderCircleIcon, PlusIcon, SaveIcon, Trash2Icon } from "lucide-react"
+import { BellIcon, LoaderCircleIcon, PlusIcon, SaveIcon, Trash2Icon } from "lucide-react"
 import { type ChangeEventHandler, useEffect, useState } from "react"
 import * as v from "valibot"
+import { SystemMultiSelect } from "@/components/multi-select"
 import { prependBasePath } from "@/components/router"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
-import {
-	DropdownMenu,
-	DropdownMenuCheckboxItem,
-	DropdownMenuContent,
-	DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
 import { Input } from "@/components/ui/input"
 import { InputTags } from "@/components/ui/input-tags"
 import { Label } from "@/components/ui/label"
@@ -52,12 +47,6 @@ const SettingsNotificationsPage = ({ userSettings }: { userSettings: UserSetting
 		setWebhooks(userSettings.webhooks ?? [])
 		setEmails(userSettings.emails ?? [])
 	}, [userSettings])
-
-	function toggleSystem(systemId: string) {
-		setSubscribedSystems((prev) =>
-			prev.includes(systemId) ? prev.filter((id) => id !== systemId) : [...prev, systemId]
-		)
-	}
 
 	function addWebhook() {
 		setWebhooks([...webhooks, ""])
@@ -135,30 +124,14 @@ const SettingsNotificationsPage = ({ userSettings }: { userSettings: UserSetting
 								<Trans>Receiving notifications for {subscribedSystems.length} system(s).</Trans>
 							)}
 						</p>
-						<DropdownMenu>
-							<DropdownMenuTrigger asChild>
-								<Button variant="outline" size="sm" className="text-xs gap-1.5 h-8">
-									{subscribedSystems.length === 0 ? (
-										<Trans>All systems</Trans>
-									) : (
-										<Trans>{subscribedSystems.length} selected</Trans>
-									)}
-									<ChevronDownIcon className="h-3.5 w-3.5" />
-								</Button>
-							</DropdownMenuTrigger>
-							<DropdownMenuContent align="start" className="max-h-64 overflow-auto min-w-44">
-								{systems.map((system) => (
-									<DropdownMenuCheckboxItem
-										key={system.id}
-										checked={subscribedSystems.includes(system.id)}
-										onCheckedChange={() => toggleSystem(system.id)}
-										onSelect={(e) => e.preventDefault()}
-									>
-										{system.name}
-									</DropdownMenuCheckboxItem>
-								))}
-							</DropdownMenuContent>
-						</DropdownMenu>
+						<SystemMultiSelect
+							id="notif-systems"
+							systemIds={systems.map((system) => system.id)}
+							selectedSystemIds={new Set(subscribedSystems)}
+							onChange={(ids) => setSubscribedSystems(Array.from(ids))}
+							placeholder={t`All systems`}
+							className="sm:max-w-80"
+						/>
 					</div>
 				)}
 				<Separator />
