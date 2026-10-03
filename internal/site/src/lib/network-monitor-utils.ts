@@ -98,11 +98,7 @@ export function mergeMonitorStats(rawRecords: RawMonitorStatsRecord[], bucketMs 
 		.map(([created, stats]) => ({ created, stats }))
 }
 
-export function getMonitorTarget(monitor: Pick<NetworkMonitorRecord, "target" | "protocol" | "port">) {
-	if (monitor.protocol !== "tcp") return monitor.target
-	const host = monitor.target.includes(":") && !monitor.target.startsWith("[") ? `[${monitor.target}]` : monitor.target
-	return `${host}:${monitor.port}`
-}
+export { getMonitorTarget } from "./monitor-compare"
 
 /** Whole days until the certificate expires; negative once expired. */
 export function getCertDaysLeft(cert: Pick<MonitorCertInfo, "expires">, now = Date.now()) {
