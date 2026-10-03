@@ -149,6 +149,11 @@ export function SwapChart({
 	dataEmpty: boolean
 	systemData?: SystemData
 }) {
+	// show even when swap is unused, but hide if the system has no swap configured
+	const hasSwap = (chartData.systemStats.at(-1)?.stats.s ?? 0) > 0
+	if (!hasSwap) {
+		return null
+	}
 	const cornerEl = systemData ? <SwapSheet systemData={systemData} /> : null
 	return (
 		<ChartCard
