@@ -104,6 +104,8 @@ export interface SystemStats {
 	cpus?: number[]
 	/** load average */
 	la?: [number, number, number]
+	/** process counts [running, sleeping, idle, stopped, zombie, blocked] (blocked missing from older agents) */
+	ps?: [number, number, number, number, number, number?]
 	/** total memory (gb) */
 	m: number
 	/** memory used (gb) */
