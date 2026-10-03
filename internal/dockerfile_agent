@@ -17,10 +17,29 @@ RUN CGO_ENABLED=0 GOOS=$TARGETOS GOARCH=$TARGETARCH go build -ldflags "-w -s" -o
 RUN rm -rf /tmp/*
 
 # --------------------------
+# Ookla speedtest CLI for speedtest monitoring (static binary, works in scratch)
+# --------------------------
+FROM --platform=$BUILDPLATFORM alpine:3.24 AS speedtest
+ARG TARGETARCH
+ARG TARGETVARIANT
+ARG SPEEDTEST_VERSION=1.2.0
+RUN set -eux; \
+  case "${TARGETARCH}${TARGETVARIANT}" in \
+    amd64*) arch=x86_64 ;; \
+    arm64*) arch=aarch64 ;; \
+    armv7) arch=armhf ;; \
+    armv6) arch=armel ;; \
+    *) echo "no Ookla speedtest CLI build for ${TARGETARCH}${TARGETVARIANT}" >&2; exit 1 ;; \
+  esac; \
+  wget -qO- "https://install.speedtest.net/app/cli/ookla-speedtest-${SPEEDTEST_VERSION}-linux-${arch}.tgz" \
+    | tar xz -C /usr/local/bin speedtest
+
+# --------------------------
 # Final image: default scratch-based agent
 # --------------------------
 FROM scratch
 COPY --from=builder /agent /agent
+COPY --from=speedtest /usr/local/bin/speedtest /usr/bin/speedtest
 COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 
 # this is so we don't need to create the /tmp directory in the scratch container

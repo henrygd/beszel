@@ -421,6 +421,12 @@ export function supportsNetworkMonitors(system: Pick<SystemRecord, "info">) {
 	return compareSemVer(parseSemVer(system.info?.v), MIN_NETWORK_MONITOR_AGENT_VERSION) >= 0
 }
 
+const MIN_SPEEDTEST_AGENT_VERSION = parseSemVer("0.21.0")
+
+export function supportsSpeedtests(system: Pick<SystemRecord, "info">) {
+	return compareSemVer(parseSemVer(system.info?.v), MIN_SPEEDTEST_AGENT_VERSION) >= 0
+}
+
 // biome-ignore lint/suspicious/noExplicitAny: any is used to allow any function to be passed in
 export function debounce<T extends (...args: any[]) => any>(func: T, wait: number): (...args: Parameters<T>) => void {
 	let timeout: ReturnType<typeof setTimeout>

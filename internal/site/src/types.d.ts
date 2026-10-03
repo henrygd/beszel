@@ -412,6 +412,9 @@ export interface UserSettings {
 	monitorCols?: Record<string, boolean>
 	monitorSortMode?: Array<{ id: string; desc: boolean }>
 	monitorSortModeSystem?: Array<{ id: string; desc: boolean }>
+	speedtestCols?: Record<string, boolean>
+	speedtestSortMode?: Array<{ id: string; desc: boolean }>
+	speedtestSortModeSystem?: Array<{ id: string; desc: boolean }>
 	grid?: boolean
 	displayMode?: "default" | "tabs"
 }
@@ -744,4 +747,58 @@ export interface NetworkMonitorStatsRecord {
 	type?: string
 	stats: Record<string, MonitorStats>
 	created: number // unix timestamp (ms) for Recharts xAxis
+}
+
+/** Scheduled Ookla speedtest with its latest result. Bandwidths in bytes/s, latencies in ms. */
+export interface SpeedtestRecord {
+	id: string
+	system: string
+	/** Ookla server ID; 0 selects a server automatically. */
+	server_id: number
+	/** Network interface the agent binds to; empty uses the default route. */
+	interface: string
+	/** Minutes between runs. */
+	interval: number
+	enabled: boolean
+	download: number
+	upload: number
+	ping: number
+	jitter: number
+	/** Latencies while downloading and uploading; download/upload_latency are interquartile means. */
+	download_latency: number
+	download_jitter: number
+	upload_latency: number
+	upload_jitter: number
+	/** Packet loss percentage, or -1 if the server doesn't report it. */
+	loss: number
+	server_name: string
+	server_location: string
+	isp: string
+	url: string
+	/** Error from the latest run, empty if it succeeded. */
+	error: string
+	/** Unix timestamp (ms) of the latest run. */
+	last_run: number
+	updated: string
+}
+
+/** One successful speedtest run. Bandwidths in bytes/s, latencies in ms. */
+export interface SpeedtestStatsRecord {
+	speedtest: string
+	/** Set when the run failed; measurements are then empty. */
+	error?: string
+	download: number
+	upload: number
+	ping: number
+	jitter: number
+	/** Latencies while downloading and uploading; download/upload_latency are interquartile means. */
+	download_latency: number
+	download_jitter: number
+	upload_latency: number
+	upload_jitter: number
+	loss: number
+	server_name: string
+	/** Link to the run on speedtest.net; empty for failed runs. */
+	url?: string
+	created: number | null // unix timestamp (ms), null marks a gap
 }

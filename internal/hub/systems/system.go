@@ -60,6 +60,8 @@ type System struct {
 
 	// A fresh connection needs a full monitor configuration sync.
 	monitorsNeedSync atomic.Bool
+	// A fresh connection needs a full speedtest configuration sync.
+	speedtestsNeedSync atomic.Bool
 	// Serialize persistence from scheduled updates and resumes through commit.
 	recordsMu sync.Mutex
 	// Protected by recordsMu; realtime reads don't consume probes.
@@ -314,6 +316,12 @@ func (sys *System) createRecords(data *system.CombinedData) (*core.Record, error
 
 		if data.Monitors != nil {
 			if err := sys.updateNetworkMonitorsRecords(txApp, data.Monitors, savedMonitorProbes); err != nil {
+				return err
+			}
+		}
+
+		if len(data.Speedtests) > 0 {
+			if err := sys.updateSpeedtestRecords(txApp, data.Speedtests); err != nil {
 				return err
 			}
 		}
@@ -750,7 +758,7 @@ func (sys *System) getSSHTransport() (*transport.SSHTransport, error) {
 // onSSHConnect resets per-connection state after a new SSH connection is made.
 func (sys *System) onSSHConnect(agentVersion semver.Version) {
 	sys.setAgentVersion(agentVersion)
-	sys.monitorsNeedSync.Store(true)
+	sys.markAgentConfigsNeedSync()
 	sys.manager.resetFailedSmartFetchState(sys.Id)
 	sys.manager.resetFailedZfsFetchState(sys.Id)
 }
@@ -775,7 +783,7 @@ func (sys *System) fetchDataFromAgent(options common.DataRequestOptions) (*syste
 	if sys.WsConn != nil && sys.WsConn.IsConnected() {
 		wsData, err := sys.fetchDataViaWebSocket(options)
 		if err == nil {
-			sys.syncPendingNetworkMonitors()
+			sys.syncPendingAgentConfigs()
 			return wsData, nil
 		}
 		// A slow collection doesn't mean the connection is broken. Closing it
@@ -791,7 +799,7 @@ func (sys *System) fetchDataFromAgent(options common.DataRequestOptions) (*syste
 	if err != nil {
 		return nil, err
 	}
-	sys.syncPendingNetworkMonitors()
+	sys.syncPendingAgentConfigs()
 	return sshData, nil
 }
 

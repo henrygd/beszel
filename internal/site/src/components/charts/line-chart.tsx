@@ -1,5 +1,5 @@
 import { type ReactNode, useEffect, useMemo, useState } from "react"
-import { CartesianGrid, Line, LineChart, YAxis } from "recharts"
+import { CartesianGrid, Line, LineChart, ReferenceLine, YAxis } from "recharts"
 import {
 	ChartContainer,
 	ChartLegend,
@@ -16,6 +16,8 @@ import type { AxisDomain } from "recharts/types/util/types"
 import { useIntersectionObserver } from "@/lib/use-intersection-observer"
 
 export type DataPoint<T = SystemStatsRecord> = {
+	/** Unique key when several data points share a label, e.g. segments of one line */
+	id?: string
 	label: string
 	dataKey: (data: T) => number | null | undefined
 	color: number | string
@@ -27,6 +29,8 @@ export type DataPoint<T = SystemStatsRecord> = {
 	/** Which Y axis this series plots against. Defaults to "left". */
 	yAxisId?: "left" | "right"
 	strokeDasharray?: string
+	/** Set to false to leave the data point out of the legend, e.g. later segments of one line */
+	legend?: boolean
 }
 
 type IsolatedDotProps = {
@@ -72,6 +76,8 @@ export default function LineChartDefault({
 	truncate = false,
 	chartProps,
 	connectNulls,
+	markers,
+	tooltipNote,
 }: {
 	chartData: ChartOptions & { systemStats?: SystemStatsRecord[] }
 	// biome-ignore lint/suspicious/noExplicitAny: accepts different data source types (systemStats or containerData)
@@ -99,6 +105,11 @@ export default function LineChartDefault({
 	truncate?: boolean
 	chartProps?: Omit<React.ComponentProps<typeof LineChart>, "data" | "margin">
 	connectNulls?: boolean
+	/** Times in Unix ms marked with a dashed line in the destructive color, e.g. failed runs */
+	markers?: number[]
+	/** Extra tooltip line for the hovered row */
+	// biome-ignore lint/suspicious/noExplicitAny: row type depends on the chart's data
+	tooltipNote?: (row: any) => ReactNode
 }) {
 	const { yAxisWidth, updateYAxisWidth } = useYAxisWidth()
 	const hasRightAxis = !!dataPoints?.some((dp) => dp.yAxisId === "right")
@@ -124,9 +135,20 @@ export default function LineChartDefault({
 	}, [displayData, displayMaxToggled, isIntersecting, maxToggled, sourceData])
 
 	// Use a stable key derived from data point identities and visual properties
-	const linesKey = dataPoints?.map((d) => `${d.label}:${d.strokeOpacity}${d.dot}${d.yAxisId}${d.strokeDasharray}`).join("\0")
+	const linesKey = dataPoints
+		?.map((d) => `${d.id ?? d.label}:${d.strokeOpacity}${d.dot}${d.yAxisId}${d.strokeDasharray}`)
+		.join("\0")
 
 	const XAxis = xAxis(chartData.chartTime, displayData.at(-1)?.created)
+
+	// Without any values an "auto" domain has no ticks, so the axis width is never measured and
+	// the chart would stay hidden. Fall back to a fixed domain, e.g. when a speedtest server
+	// doesn't report packet loss or every run failed.
+	const hasValues = useMemo(
+		() => !dataPoints || displayData.some((row) => dataPoints.some((point) => typeof point.dataKey(row) === "number")),
+		[displayData, linesKey]
+	)
+	const leftDomain: AxisDomain = hasValues ? (domain ?? [0, max ?? "auto"]) : [0, 100]
 
 	const Lines = useMemo(() => {
 		return dataPoints?.map((dataPoint, i) => {
@@ -136,12 +158,14 @@ export default function LineChartDefault({
 			}
 			return (
 				<Line
-					key={dataPoint.label}
+					key={dataPoint.id ?? dataPoint.label}
+					legendType={dataPoint.legend === false ? "none" : undefined}
 					yAxisId={dataPoint.yAxisId ?? "left"}
 					dataKey={dataPoint.dataKey}
 					name={dataPoint.label}
 					type="monotoneX"
-					dot={dataPoint.dot || false}
+					// recharts' default dots are white with a colored outline; fill them like isolatedDot
+					dot={dataPoint.dot === true ? { r: 2, fill: color, stroke: color } : dataPoint.dot || false}
 					strokeWidth={1.5}
 					stroke={color}
 					strokeOpacity={dataPoint.strokeOpacity}
@@ -186,8 +210,8 @@ export default function LineChartDefault({
 							orientation={chartData.orientation}
 							className="tracking-tighter"
 							width={yAxisWidth}
-							domain={domain ?? [0, max ?? "auto"]}
-							ticks={fixedDomainTicks(domain ?? [0, max ?? "auto"])}
+							domain={leftDomain}
+							ticks={fixedDomainTicks(leftDomain)}
 							tickFormatter={(value, index) => updateYAxisWidth(tickFormatter(value, index))}
 							tickLine={false}
 							axisLine={false}
@@ -208,9 +232,24 @@ export default function LineChartDefault({
 						/>
 					)}
 					{XAxis}
+					{markers?.map((time) => (
+						<ReferenceLine
+							key={time}
+							x={time}
+							yAxisId="left"
+							// inline, since ChartContainer styles reference lines with the border color
+							style={{ stroke: "var(--destructive)" }}
+							strokeDasharray="3 3"
+							// a marker can fall just outside the visible time span
+							ifOverflow="hidden"
+						/>
+					))}
 					<ChartTooltip
 						animationEasing="ease-out"
 						animationDuration={150}
+						// Keep rows without values, e.g. a failed run, so their note can show.
+						// ChartTooltipContent drops the empty values itself.
+						filterNull={!tooltipNote}
 						// @ts-expect-error
 						itemSorter={itemSorter}
 						content={
@@ -220,6 +259,7 @@ export default function LineChartDefault({
 								showTotal={showTotal}
 								filter={filter}
 								truncate={truncate}
+								note={tooltipNote}
 							/>
 						}
 					/>
@@ -228,5 +268,5 @@ export default function LineChartDefault({
 				</LineChart>
 			</ChartContainer>
 		)
-	}, [displayData, yAxisWidth, hasRightAxis, filter, Lines, XAxis])
+	}, [displayData, yAxisWidth, hasRightAxis, filter, Lines, XAxis, markers, tooltipNote, hasValues])
 }
