@@ -355,7 +355,7 @@ func (sm *SystemManager) AddWebSocketSystem(systemId string, agentVersion semver
 
 	system := sm.NewSystem(systemId)
 	system.WsConn = wsConn
-	system.agentVersion = agentVersion
+	system.setAgentVersion(agentVersion)
 	system.monitorsNeedSync.Store(true)
 
 	if err := sm.AddRecord(systemRecord, system); err != nil {

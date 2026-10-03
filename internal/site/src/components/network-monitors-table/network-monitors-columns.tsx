@@ -15,7 +15,6 @@ import {
 	PauseCircleIcon,
 	PlayCircleIcon,
 	CopyIcon,
-	CopyPlusIcon,
 	ShieldCheckIcon,
 } from "lucide-react"
 import { t } from "@lingui/core/macro"
@@ -25,9 +24,6 @@ import {
 	DropdownMenuContent,
 	DropdownMenuItem,
 	DropdownMenuSeparator,
-	DropdownMenuSub,
-	DropdownMenuSubContent,
-	DropdownMenuSubTrigger,
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Plural, Trans } from "@lingui/react/macro"
@@ -40,7 +36,6 @@ import { useMemo } from "react"
 import { formatBulkMonitorLine } from "@/components/network-monitors-table/monitor-dialog"
 import { Badge } from "../ui/badge"
 import { getCertDaysLeft, getCertExpiryLevel, getMonitorTarget } from "@/lib/network-monitor-utils"
-import { pb } from "@/lib/api"
 
 const certExpiryDotColors = { ok: "bg-green-500", warning: "bg-yellow-500", critical: "bg-red-500" }
 
@@ -308,11 +303,6 @@ export function getMonitorColumns(
 				const isBulkAction = actionRows.length > 1
 				const shouldPause = actionRows.some((monitor) => monitor.enabled)
 				const bulkCopyContent = actionRows.map((monitor) => formatBulkMonitorLine(monitor)).join("\n")
-				const allSystems = useStore($allSystemsById)
-				const otherSystems = useMemo(
-					() => Object.values(allSystems).filter((s) => !isBulkAction && s.id !== row.original.system),
-					[allSystems, isBulkAction]
-				)
 				return (
 					<DropdownMenu>
 						<DropdownMenuTrigger asChild>
@@ -357,31 +347,8 @@ export function getMonitorColumns(
 								}}
 							>
 								<CopyIcon className="me-2.5 size-4" />
-								<Trans>Bulk copy</Trans>
+								<Trans>Copy bulk config</Trans>
 							</DropdownMenuItem>
-							{!isBulkAction && otherSystems.length > 0 && (
-								<DropdownMenuSub>
-									<DropdownMenuSubTrigger>
-										<CopyPlusIcon className="me-2.5 size-4" />
-										<Trans>Copy to system</Trans>
-									</DropdownMenuSubTrigger>
-									<DropdownMenuSubContent className="max-h-[min(20rem,var(--radix-dropdown-menu-content-available-height))] overflow-y-auto">
-										{otherSystems.map((sys) => (
-											<DropdownMenuItem
-												key={sys.id}
-												onClick={() => {
-													const { id: _id, system: _system, ...rest } = row.original
-													pb.collection("network_monitors")
-														.create({ ...rest, system: sys.id })
-														.catch(() => {})
-												}}
-											>
-												{sys.name}
-											</DropdownMenuItem>
-										))}
-									</DropdownMenuSubContent>
-								</DropdownMenuSub>
-							)}
 							<DropdownMenuSeparator />
 							<DropdownMenuItem
 								onClick={() => {

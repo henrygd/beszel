@@ -53,6 +53,11 @@ export const alertInfo: Record<string, AlertInfo> = {
     icon: EthernetIcon,
     desc: () => t`Triggers when combined up/down exceeds a threshold`,
     max: 250,
+    // 1024 to match the hub, which converts bandwidth with 1024 * 1024
+    units: [
+      { unit: " MB/s", factor: 1, min: 1, max: 250, step: 1, inputStep: 0.1 },
+      { unit: " GB/s", factor: 1024, min: 0.1, max: 5, step: 0.1 },
+    ],
   },
   NetworkMonitorLoss: {
     name: () => t`Network Monitor Loss`,

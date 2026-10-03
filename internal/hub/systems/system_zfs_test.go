@@ -16,10 +16,11 @@ import (
 )
 
 func TestSupportsZfsData(t *testing.T) {
-	sys := &System{agentVersion: semver.MustParse("0.18.8")}
+	sys := &System{}
+	sys.setAgentVersion(semver.MustParse("0.18.8"))
 	assert.False(t, sys.supportsZfsData())
 
-	sys.agentVersion = semver.MustParse("0.18.9")
+	sys.setAgentVersion(semver.MustParse("0.18.9"))
 	assert.True(t, sys.supportsZfsData())
 }
 

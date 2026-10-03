@@ -7,6 +7,34 @@ import (
 	"github.com/henrygd/beszel/internal/entities/system"
 )
 
+func TestSkipFromEnv(t *testing.T) {
+	for _, tc := range []struct {
+		key, value string
+		want       bool
+	}{
+		{"SKIP_WIFI", "true", true},
+		{"BESZEL_AGENT_SKIP_WIFI", "true", true},
+		{"SKIP_WIFI", "false", false},
+		{"SKIP_WIFI", "", false},
+	} {
+		t.Run(tc.key+"="+tc.value, func(t *testing.T) {
+			t.Setenv(tc.key, tc.value)
+			if got := skipFromEnv(); got != tc.want {
+				t.Fatalf("got %v, want %v", got, tc.want)
+			}
+		})
+	}
+}
+
+func TestCollectSkipped(t *testing.T) {
+	original := skip
+	t.Cleanup(func() { skip = original })
+	skip = func() bool { return true }
+	if got := Collect(); got != nil {
+		t.Fatalf("collected while skipped: %v", got)
+	}
+}
+
 func TestSSIDWireSafety(t *testing.T) {
 	for _, tc := range []struct{ input, want string }{
 		{"home", "home"}, {"网络 café", "网络 café"}, {"", ""},
