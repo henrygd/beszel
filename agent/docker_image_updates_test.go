@@ -39,7 +39,7 @@ func TestDisableDockerImageUpdateCheck(t *testing.T) {
 	defer server.Close()
 	t.Setenv("BESZEL_AGENT_DOCKER_HOST", server.URL)
 
-	dm := newDockerManager(nil)
+	dm := newDockerManagers(nil).managers[0]
 	require.True(t, dm.imageUpdatesDisabled)
 	dm.registryClient = &http.Client{Transport: roundTripFunc(func(*http.Request) (*http.Response, error) {
 		t.Fatal("disabled image update check made a registry request")
