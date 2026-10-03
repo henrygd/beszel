@@ -52,6 +52,7 @@ type Agent struct {
 	keys                      []gossh.PublicKey                                     // SSH public keys
 	smartManager              *SmartManager                                         // Manages SMART data
 	systemdManager            *systemdManager                                       // Manages systemd services
+	prevMem                   map[uint16]prevMemData                                // Previous memory counters per cache interval
 	monitorManager            *MonitorManager                                       // Manages network monitors
 	storagePoolManager        *StoragePoolManager                                   // Manages storage pool and dataset data
 	packageUpdates            *packageUpdatesManager                                // Checks for pending package updates
@@ -70,6 +71,8 @@ func NewAgent(dataDir ...string) (agent *Agent, err error) {
 	// Initialize per-cache-time network tracking structures
 	agent.netIoStats = make(map[uint16]system.NetIoStats)
 	agent.netInterfaceDeltaTrackers = make(map[uint16]*deltatracker.DeltaTracker[string, uint64])
+	// Initialize per-cache-time memory counter tracking
+	agent.prevMem = make(map[uint16]prevMemData)
 
 	agent.dataDir, err = GetDataDir(dataDir...)
 	if err != nil {

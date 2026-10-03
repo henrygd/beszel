@@ -217,7 +217,12 @@ func (a *Agent) getSystemStats(cacheTimeMs uint16) system.Stats {
 		systemStats.MemBuffCache = utils.BytesToGigabytes(cacheBuff)
 		systemStats.MemUsed = utils.BytesToGigabytes(v.Used)
 		systemStats.MemPct = utils.TwoDecimals(v.UsedPercent)
+		systemStats.MemSlabReclaim = utils.BytesToGigabytes(v.Sreclaimable)
+		systemStats.MemSlabUnreclaim = utils.BytesToGigabytes(v.Sunreclaim)
 	}
+
+	// swap I/O, major faults, OOM kills, and memory pressure (Linux only)
+	a.updateMemExtras(cacheTimeMs, &systemStats)
 
 	// disk usage
 	a.updateDiskUsage(&systemStats)
