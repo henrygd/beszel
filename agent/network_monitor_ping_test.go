@@ -18,6 +18,16 @@ import (
 	"golang.org/x/net/icmp"
 )
 
+// setICMPBurst shortens the echo burst for a test.
+func setICMPBurst(t *testing.T, count int, spacing, replyTimeout time.Duration) {
+	t.Helper()
+	prevCount, prevSpacing, prevTimeout := icmpPingCount, icmpPingSpacing, icmpReplyTimeout
+	icmpPingCount, icmpPingSpacing, icmpReplyTimeout = count, spacing, replyTimeout
+	t.Cleanup(func() {
+		icmpPingCount, icmpPingSpacing, icmpReplyTimeout = prevCount, prevSpacing, prevTimeout
+	})
+}
+
 type testICMPPacketConn struct{}
 
 func (testICMPPacketConn) Close() error { return nil }
@@ -45,7 +55,8 @@ func TestMonitorICMPPacketCancellation(t *testing.T) {
 	defer cancel()
 	done := make(chan error, 1)
 	go func() {
-		_, err := monitorICMPPacket(ctx, blocking, &icmpV4, conn.LocalAddr())
+		responses, err := monitorICMPPacket(ctx, blocking, &icmpV4, conn.LocalAddr())
+		assert.Nil(t, responses)
 		done <- err
 	}()
 	select {
@@ -95,12 +106,12 @@ func TestPingCommand(t *testing.T) {
 				name, args, err := pingCommand(goos, target, ipv6)
 				require.NoError(t, err)
 				wantName := "ping"
-				wantArgs := []string{"-n", "-c", "1", target}
+				wantArgs := []string{"-n", "-c", "5", target}
 				switch goos {
 				case "windows":
-					wantArgs = []string{family, "-n", "1", "-w", "3000", target}
+					wantArgs = []string{family, "-n", "5", "-w", "3000", target}
 				case "linux":
-					wantArgs = append([]string{family}, wantArgs...)
+					wantArgs = []string{family, "-n", "-c", "5", "-w", "7", target}
 				default:
 					if ipv6 {
 						wantName = "ping6"
@@ -115,7 +126,7 @@ func TestPingCommand(t *testing.T) {
 	require.Error(t, err)
 }
 
-func TestParsePingResponse(t *testing.T) {
+func TestParsePingResponses(t *testing.T) {
 	for _, tc := range []struct {
 		name   string
 		output string
@@ -137,13 +148,71 @@ func TestParsePingResponse(t *testing.T) {
 		{"overflow", "time=999999999999999999999 ms", -1},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
-			responseUs, err := parsePingResponse([]byte(tc.output))
+			responses, err := parsePingResponses([]byte(tc.output), 1)
 			if tc.wantUs < 0 {
 				require.Error(t, err)
+				assert.Nil(t, responses)
 			} else {
 				require.NoError(t, err)
+				assert.Equal(t, []int64{tc.wantUs}, responses)
 			}
-			assert.Equal(t, tc.wantUs, responseUs)
+		})
+	}
+}
+
+func TestParsePingResponsesBurst(t *testing.T) {
+	for _, tc := range []struct {
+		name   string
+		output string
+		want   []int64
+	}{
+		{
+			name: "linux partial loss",
+			output: `PING 192.0.2.1 (192.0.2.1) 56(84) bytes of data.
+64 bytes from 192.0.2.1: icmp_seq=1 ttl=64 time=1.10 ms
+64 bytes from 192.0.2.1: icmp_seq=2 ttl=64 time=1.20 ms
+64 bytes from 192.0.2.1: icmp_seq=2 ttl=64 time=1.25 ms (DUP!)
+64 bytes from 192.0.2.1: icmp_seq=4 ttl=64 time=1.40 ms
+64 bytes from 192.0.2.1: icmp_seq=5 ttl=64 time=1.50 ms
+
+--- 192.0.2.1 ping statistics ---
+5 packets transmitted, 4 received, +1 duplicates, 20% packet loss, time 4005ms
+rtt min/avg/max/mdev = 1.100/1.300/1.500/0.158 ms
+`,
+			want: []int64{1100, 1200, 1400, 1500, -1},
+		},
+		{
+			name: "macos",
+			output: `PING 192.0.2.1 (192.0.2.1): 56 data bytes
+64 bytes from 192.0.2.1: icmp_seq=0 ttl=64 time=2.001 ms
+64 bytes from 192.0.2.1: icmp_seq=1 ttl=64 time=2.002 ms
+64 bytes from 192.0.2.1: icmp_seq=2 ttl=64 time=2.003 ms
+64 bytes from 192.0.2.1: icmp_seq=3 ttl=64 time=2.004 ms
+64 bytes from 192.0.2.1: icmp_seq=4 ttl=64 time=2.005 ms
+
+--- 192.0.2.1 ping statistics ---
+5 packets transmitted, 5 packets received, 0.0% packet loss
+round-trip min/avg/max/stddev = 2.001/2.003/2.005/0.001 ms
+`,
+			want: []int64{2001, 2002, 2003, 2004, 2005},
+		},
+		{
+			name: "windows partial loss",
+			output: "\r\nPinging 192.0.2.1 with 32 bytes of data:\r\n" +
+				"Reply from 192.0.2.1: bytes=32 time=12ms TTL=128\r\n" +
+				"Request timed out.\r\n" +
+				"Reply from 192.0.2.1: bytes=32 time<1ms TTL=128\r\n" +
+				"\r\nPing statistics for 192.0.2.1:\r\n" +
+				"    Packets: Sent = 3, Received = 2, Lost = 1 (33% loss),\r\n" +
+				"Approximate round trip times in milli-seconds:\r\n" +
+				"    Minimum = 0ms, Maximum = 12ms, Average = 6ms\r\n",
+			want: []int64{12000, 1000, -1, -1, -1},
+		},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			responses, err := parsePingResponses([]byte(tc.output), 5)
+			require.NoError(t, err)
+			assert.Equal(t, tc.want, responses)
 		})
 	}
 }
@@ -156,11 +225,12 @@ func TestMonitorICMPExecOutput(t *testing.T) {
 		name   string
 		output string
 		exit   int
-		wantUs int64
+		want   []int64
 	}{
-		{"success", "time=1.234 ms", 0, 1234},
-		{"missing RTT", "unrecognized output", 0, -1},
-		{"failed command with RTT", "time=1.234 ms", 1, -1},
+		{"success", "time=1.234 ms", 0, []int64{1234, -1, -1, -1, -1}},
+		{"missing RTT", "unrecognized output", 0, nil},
+		{"partial loss exits non-zero", "time=1.234 ms", 1, []int64{1234, -1, -1, -1, -1}},
+		{"failed command", "unrecognized output", 1, nil},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			dir := t.TempDir()
@@ -169,13 +239,13 @@ func TestMonitorICMPExecOutput(t *testing.T) {
 			require.NoError(t, os.WriteFile(filepath.Join(dir, "ping"), []byte(script), 0o755))
 			t.Setenv("PATH", dir+string(os.PathListSeparator)+os.Getenv("PATH"))
 			t.Setenv("LC_ALL", "de_DE.UTF-8")
-			responseUs, err := monitorICMPExec(t.Context(), "127.0.0.1", false)
-			if tc.wantUs < 0 {
+			responses, err := monitorICMPExec(t.Context(), "127.0.0.1", false)
+			if tc.want == nil {
 				require.Error(t, err)
 			} else {
 				require.NoError(t, err)
 			}
-			assert.Equal(t, tc.wantUs, responseUs)
+			assert.Equal(t, tc.want, responses)
 		})
 	}
 }
@@ -187,17 +257,17 @@ type icmpTestReply struct {
 
 type scriptedICMPConn struct {
 	net.PacketConn
-	local        net.Addr
-	onWrite      func([]byte, net.Addr)
-	replies      []icmpTestReply
-	reads        int
-	deadlineSets int
+	local     net.Addr
+	onWrite   func([]byte, net.Addr)
+	replies   []icmpTestReply
+	reads     int
+	deadlines []time.Time
 }
 
 func (c *scriptedICMPConn) LocalAddr() net.Addr { return c.local }
 
-func (c *scriptedICMPConn) SetDeadline(deadline time.Time) error {
-	c.deadlineSets++
+func (c *scriptedICMPConn) SetReadDeadline(deadline time.Time) error {
+	c.deadlines = append(c.deadlines, deadline)
 	return nil
 }
 
@@ -217,6 +287,7 @@ func (c *scriptedICMPConn) ReadFrom(buf []byte) (int, net.Addr, error) {
 }
 
 func TestMonitorICMPReplyCorrelation(t *testing.T) {
+	setICMPBurst(t, 1, time.Second, 3*time.Second)
 	for _, family := range []*icmpFamily{&icmpV4, &icmpV6} {
 		for _, datagram := range []bool{false, true} {
 			network := family.rawNetwork
@@ -284,16 +355,19 @@ func TestMonitorICMPReplyCorrelation(t *testing.T) {
 								conn.replies = append(conn.replies, icmpTestReply{valid, dst})
 							}
 						}
-						elapsed, err := monitorICMPPacket(context.Background(), conn, family, dst)
+						responses, err := monitorICMPPacket(context.Background(), conn, family, dst)
+						require.Len(t, responses, 1)
 						if eventuallyMatches {
 							require.NoError(t, err)
-							assert.GreaterOrEqual(t, elapsed, int64(0))
+							assert.GreaterOrEqual(t, responses[0], int64(0))
 						} else {
 							require.ErrorIs(t, err, os.ErrDeadlineExceeded)
-							assert.Equal(t, int64(-1), elapsed)
+							assert.Equal(t, int64(-1), responses[0])
 						}
 						assert.Equal(t, 2, conn.reads)
-						assert.Equal(t, 1, conn.deadlineSets)
+						// Ignored replies must not extend the reply deadline.
+						require.Len(t, conn.deadlines, 2)
+						assert.Equal(t, conn.deadlines[0], conn.deadlines[1])
 					})
 				}
 			}
@@ -301,7 +375,48 @@ func TestMonitorICMPReplyCorrelation(t *testing.T) {
 	}
 }
 
+func TestMonitorICMPBurst(t *testing.T) {
+	setICMPBurst(t, 5, 0, time.Second)
+	dst := &net.IPAddr{IP: net.ParseIP("192.0.2.1")}
+	conn := &scriptedICMPConn{local: &net.IPAddr{IP: net.IPv4zero}}
+	var echoes []*icmp.Echo
+	conn.onWrite = func(data []byte, _ net.Addr) {
+		request, err := icmp.ParseMessage(icmpV4.proto, data)
+		require.NoError(t, err)
+		echoes = append(echoes, request.Body.(*icmp.Echo))
+		reply := func(echo *icmp.Echo) icmpTestReply {
+			data, err := (&icmp.Message{Type: icmpV4.replyType, Body: echo}).Marshal(nil)
+			require.NoError(t, err)
+			return icmpTestReply{data, dst}
+		}
+		switch len(echoes) {
+		case 2, 3:
+			// The second request is answered after the fourth; the third is lost.
+		case 4:
+			conn.replies = append(conn.replies, reply(echoes[3]), reply(echoes[1]), reply(echoes[1]))
+		default:
+			conn.replies = append(conn.replies, reply(echoes[len(echoes)-1]))
+		}
+	}
+
+	responses, err := monitorICMPPacket(context.Background(), conn, &icmpV4, dst)
+	require.NoError(t, err)
+	require.Len(t, echoes, 5)
+	for i, echo := range echoes[1:] {
+		assert.NotEqual(t, echoes[i].Seq, echo.Seq, "each request needs its own sequence")
+	}
+	require.Len(t, responses, 5)
+	for i, responseUs := range responses {
+		if i == 2 {
+			assert.Equal(t, int64(-1), responseUs)
+		} else {
+			assert.GreaterOrEqual(t, responseUs, int64(0))
+		}
+	}
+}
+
 func TestMonitorICMPLoopback(t *testing.T) {
+	setICMPBurst(t, 3, 10*time.Millisecond, 3*time.Second)
 	for _, family := range []*icmpFamily{&icmpV4, &icmpV6} {
 		for _, network := range []string{family.rawNetwork, family.dgramNetwork} {
 			t.Run(network, func(t *testing.T) {
@@ -318,9 +433,12 @@ func TestMonitorICMPLoopback(t *testing.T) {
 				if network == family.dgramNetwork {
 					dst = &net.UDPAddr{IP: ip}
 				}
-				elapsed, err := monitorICMPPacket(context.Background(), conn, family, dst)
+				responses, err := monitorICMPPacket(context.Background(), conn, family, dst)
 				require.NoError(t, err)
-				assert.GreaterOrEqual(t, elapsed, int64(0))
+				require.Len(t, responses, 3)
+				for _, responseUs := range responses {
+					assert.GreaterOrEqual(t, responseUs, int64(0))
+				}
 			})
 		}
 	}

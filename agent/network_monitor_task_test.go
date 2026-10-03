@@ -26,7 +26,7 @@ func TestMonitorFailureLogCooldown(t *testing.T) {
 		task := newMonitorTask(monitor.Config{ID: "test", Target: "example.test", Protocol: "tcp"})
 		defer task.cancel()
 		failure := errors.New("connection refused")
-		probe := func(context.Context, monitor.Config) (int64, error) { return 42, failure }
+		probe := func(context.Context, monitor.Config) ([]int64, error) { return []int64{42}, failure }
 		var samples int64
 		check := func(wantLog bool) {
 			t.Helper()
@@ -69,9 +69,9 @@ func TestMonitorFailureLogCooldown(t *testing.T) {
 
 		// A canceled probe must not publish a failure or emit a warning.
 		logs.Reset()
-		result := other.runProbe(func(context.Context, monitor.Config) (int64, error) {
+		result := other.runProbe(func(context.Context, monitor.Config) ([]int64, error) {
 			other.cancel()
-			return -1, context.Canceled
+			return nil, context.Canceled
 		})
 		assert.Nil(t, result)
 		assert.Empty(t, logs.String())

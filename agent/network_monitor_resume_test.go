@@ -51,7 +51,7 @@ func TestMonitorResumePause(t *testing.T) {
 
 func TestMonitorResumeGuardLifecycle(t *testing.T) {
 	synctest.Test(t, func(t *testing.T) {
-		pm := newMonitorManagerWithProbe(func(context.Context, monitor.Config) (int64, error) { return 1, nil })
+		pm := newMonitorManagerWithProbe(func(context.Context, monitor.Config) ([]int64, error) { return []int64{1}, nil })
 		defer pm.Stop()
 		assert.Nil(t, pm.resumeGuard.stop)
 		pm.SyncMonitors([]monitor.Config{{ID: "a", Interval: 3600}, {ID: "b", Interval: 3600}})
@@ -84,15 +84,15 @@ func TestMonitorResumeDiscardsInflightProbe(t *testing.T) {
 		task := newMonitorTask(monitor.Config{ID: "test"})
 		defer task.cancel()
 		task.resumeGuard = &g
-		result := task.runProbe(func(context.Context, monitor.Config) (int64, error) {
+		result := task.runProbe(func(context.Context, monitor.Config) ([]int64, error) {
 			simulateMonitorSleep(&g)
-			return 0, errors.New("network not ready")
+			return nil, errors.New("network not ready")
 		})
 		assert.Nil(t, result)
 		assert.Empty(t, task.history.samples)
 		// Explicit requests may still run during the pause and record real failures.
-		result = task.runProbe(func(context.Context, monitor.Config) (int64, error) {
-			return 0, errors.New("unreachable")
+		result = task.runProbe(func(context.Context, monitor.Config) ([]int64, error) {
+			return nil, errors.New("unreachable")
 		})
 		require.NotNil(t, result)
 		assert.Equal(t, 100.0, result.PacketLoss)
@@ -102,9 +102,9 @@ func TestMonitorResumeDiscardsInflightProbe(t *testing.T) {
 func TestMonitorResumeSkipsScheduledProbes(t *testing.T) {
 	synctest.Test(t, func(t *testing.T) {
 		var calls atomic.Int32
-		pm := newMonitorManagerWithProbe(func(context.Context, monitor.Config) (int64, error) {
+		pm := newMonitorManagerWithProbe(func(context.Context, monitor.Config) ([]int64, error) {
 			calls.Add(1)
-			return 1, nil
+			return []int64{1}, nil
 		})
 		defer pm.Stop()
 		pm.SyncMonitors([]monitor.Config{{ID: "test", Interval: 1}})
