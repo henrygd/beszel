@@ -23,9 +23,9 @@ import (
 // reflects only the guest's processes, so inside LXC we derive CPU% from that
 // instead.
 //
-// Other runtimes (Docker, Podman, k8s) are deliberately left alone: the agent
-// is normally deployed there to monitor the host, and the host's /proc/stat is
-// exactly what it should report.
+// Other runtimes (Docker, Podman, k8s) use /proc/stat by default: the agent
+// is normally deployed there to monitor the host. BESZEL_AGENT_USE_CGROUP=true
+// explicitly opts into cgroup-root CPU accounting outside LXC.
 
 // File paths and hooks are variables so tests can point them at fixtures.
 var (
@@ -65,6 +65,12 @@ func detectLxc() bool {
 	return false
 }
 
+// useCgroupCpu enables cgroup-root CPU accounting automatically in LXC or
+// explicitly when requested by the agent configuration.
+func useCgroupCpu(forceUse bool) bool {
+	return forceUse || inLxc()
+}
+
 // procStatFromLxcfs reports whether mountinfo shows lxcfs mounted on /proc/stat.
 func procStatFromLxcfs(mountinfo []byte) bool {
 	for line := range strings.SplitSeq(string(mountinfo), "\n") {
@@ -91,10 +97,10 @@ type cgroupCpuSample struct {
 
 var lastCgroupCpuSamples = make(map[uint16]cgroupCpuSample)
 
-// init seeds the LXC CPU baseline so the first reported value is a real
-// delta since startup rather than zero.
-func init() {
-	if !inLxc() {
+// initializeCpu seeds the cgroup baseline after Agent configuration is read,
+// so the first reported CPU value is a delta instead of zero.
+func (a *Agent) initializeCpu() {
+	if !useCgroupCpu(a.forceUseCgroup) {
 		return
 	}
 	if s, ok := readContainerCpuSample(); ok {
@@ -103,12 +109,12 @@ func init() {
 	}
 }
 
-// containerCpuMetrics derives CPU metrics from the guest's own cgroup
-// accounting when running inside LXC. It returns ok=false everywhere else and
-// whenever cgroup accounting is unreadable, so callers keep the /proc/stat
-// path.
-func containerCpuMetrics(cacheTimeMs uint16) (CpuMetrics, bool) {
-	if !inLxc() {
+// containerCpuMetrics derives CPU metrics from the cgroup mount root's
+// accounting when running inside LXC or explicitly enabled. It returns
+// ok=false when disabled or whenever cgroup accounting is unreadable, so
+// callers keep the /proc/stat path.
+func containerCpuMetrics(cacheTimeMs uint16, forceUseCgroup bool) (CpuMetrics, bool) {
+	if !useCgroupCpu(forceUseCgroup) {
 		return CpuMetrics{}, false
 	}
 	cur, ok := readContainerCpuSample()

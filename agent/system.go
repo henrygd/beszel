@@ -156,7 +156,7 @@ func (a *Agent) getSystemStats(cacheTimeMs uint16) system.Stats {
 	}
 
 	// cpu metrics
-	cpuMetrics, err := getCpuMetrics(cacheTimeMs)
+	cpuMetrics, err := getCpuMetrics(cacheTimeMs, a.forceUseCgroup)
 	if err == nil {
 		systemStats.Cpu = utils.TwoDecimals(cpuMetrics.Total)
 		systemStats.CpuBreakdown = []float64{
