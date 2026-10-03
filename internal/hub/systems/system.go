@@ -174,6 +174,26 @@ func (sys *System) update() error {
 
 	data, err := sys.fetchDataFromAgent(options)
 	if err != nil {
+		// Keep the WebSocket alive even though this fetch failed.
+		//
+		// Only a message from the agent resets the read deadline, and an agent
+		// still collecting sends nothing. Without this ping the deadline expires
+		// between polls, the hub closes the connection, the agent reconnects,
+		// collects slowly again, and the cycle repeats. Pinging here is the same
+		// move handlePaused already makes for a paused system, and Ping() pushes
+		// the deadline out as it sends, so it works without an answer, which
+		// matters because a collecting agent cannot answer.
+		//
+		// This is why the deadline has to exceed interval + wsDataRequestTimeout:
+		// the ping only happens once the fetch gives up. See ws.deadline.
+		//
+		// The system is still reported down: that comes from the error we
+		// return. Only the connection survives, so recovery costs no reconnect.
+		// A failed ping needs no handling either, since a connection that
+		// cannot be pinged runs into its deadline anyway.
+		if sys.WsConn != nil && sys.WsConn.IsConnected() {
+			_ = sys.WsConn.Ping()
+		}
 		return err
 	}
 
