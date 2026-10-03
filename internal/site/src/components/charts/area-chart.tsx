@@ -11,7 +11,8 @@ import {
 } from "@/components/ui/chart"
 import { chartMargin, cn, formatShortDate } from "@/lib/utils"
 import type { ChartData, SystemStatsRecord } from "@/types"
-import { useYAxisWidth } from "./hooks"
+import { hasChartValues, useYAxisWidth } from "./hooks"
+import { ChartNoValues } from "./chart-no-values"
 import type { AxisDomain } from "recharts/types/util/types"
 import { useIntersectionObserver } from "@/lib/use-intersection-observer"
 
@@ -117,6 +118,9 @@ export default function AreaChartDefault({
 	return useMemo(() => {
 		if (displayData.length === 0) {
 			return null
+		}
+		if (!hasChartValues(displayData, dataPoints)) {
+			return <ChartNoValues />
 		}
 		// if (logRender) {
 		// console.log("Rendered", dataPoints?.map((d) => d.label).join(", "), new Date())
