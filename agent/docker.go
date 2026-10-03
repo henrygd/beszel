@@ -16,6 +16,7 @@ import (
 	"os"
 	"path"
 	"regexp"
+	"slices"
 	"sort"
 	"strconv"
 	"strings"
@@ -66,6 +67,8 @@ type dockerManager struct {
 	isWindows            bool                        // Whether the Docker Engine API is running on Windows
 	buf                  *bytes.Buffer               // Buffer to store and read response bodies
 	excludeContainers    []string                    // Patterns to exclude containers by name
+	excludeMutex         sync.RWMutex                // Protects excludeContainers, which the hub can replace at runtime
+	excludeFromEnv       bool                        // Whether excludeContainers comes from the EXCLUDE_CONTAINERS env var (takes precedence over hub config)
 	usingPodman          bool                        // Whether the Docker Engine API is running on Podman
 
 	registryClient       *http.Client                  // Client for registry requests; nil uses a client with a 10-second timeout
@@ -125,6 +128,8 @@ func (d *dockerManager) dequeue() {
 
 // shouldExcludeContainer checks if a container name matches any exclusion pattern
 func (dm *dockerManager) shouldExcludeContainer(name string) bool {
+	dm.excludeMutex.RLock()
+	defer dm.excludeMutex.RUnlock()
 	if len(dm.excludeContainers) == 0 {
 		return false
 	}
@@ -134,6 +139,34 @@ func (dm *dockerManager) shouldExcludeContainer(name string) bool {
 		}
 	}
 	return false
+}
+
+// parseExcludePatterns trims whitespace and drops empty entries.
+func parseExcludePatterns(raw []string) []string {
+	var patterns []string
+	for _, part := range raw {
+		if trimmed := strings.TrimSpace(part); trimmed != "" {
+			patterns = append(patterns, trimmed)
+		}
+	}
+	return patterns
+}
+
+// setHubExcludeContainers replaces the exclusion patterns with those configured
+// in the hub. It does nothing if EXCLUDE_CONTAINERS is set, which takes precedence.
+func (dm *dockerManager) setHubExcludeContainers(raw []string) {
+	if dm.excludeFromEnv {
+		slog.Debug("Ignoring hub exclude containers; EXCLUDE_CONTAINERS is set")
+		return
+	}
+	patterns := parseExcludePatterns(raw)
+	dm.excludeMutex.Lock()
+	changed := !slices.Equal(dm.excludeContainers, patterns)
+	dm.excludeContainers = patterns
+	dm.excludeMutex.Unlock()
+	if changed {
+		slog.Info("Hub exclude containers", "patterns", patterns)
+	}
 }
 
 // Returns stats for all running containers with cache-time-aware delta tracking
@@ -693,14 +726,10 @@ func newDockerManager(agent *Agent) *dockerManager {
 
 	// Read container exclusion patterns from environment variable
 	var excludeContainers []string
+	excludeFromEnv := false
 	if excludeStr, set := utils.GetEnv("EXCLUDE_CONTAINERS"); set && excludeStr != "" {
-		parts := strings.SplitSeq(excludeStr, ",")
-		for part := range parts {
-			trimmed := strings.TrimSpace(part)
-			if trimmed != "" {
-				excludeContainers = append(excludeContainers, trimmed)
-			}
-		}
+		excludeContainers = parseExcludePatterns(strings.Split(excludeStr, ","))
+		excludeFromEnv = true
 		slog.Info("EXCLUDE_CONTAINERS", "patterns", excludeContainers)
 	}
 
@@ -714,6 +743,7 @@ func newDockerManager(agent *Agent) *dockerManager {
 		sem:                  make(chan struct{}, 5),
 		apiContainerList:     []*container.ApiInfo{},
 		excludeContainers:    excludeContainers,
+		excludeFromEnv:       excludeFromEnv,
 		imageUpdatesDisabled: dockerImageCheck == "false",
 
 		// Initialize cache-time-aware tracking structures

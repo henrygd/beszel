@@ -118,6 +118,16 @@ func setCollectionAuthSettings(app core.App) error {
 		return err
 	}
 
+	if err := applyCollectionRules(app, []string{"system_config"}, collectionRules{
+		list:   &systemScopedReadRule,
+		view:   &systemScopedReadRule,
+		create: &systemScopedWriteRule,
+		update: &systemScopedWriteRule,
+		delete: &systemScopedWriteRule,
+	}); err != nil {
+		return err
+	}
+
 	// Alerts belong to their user and may only reference systems the user can access.
 	// The user and system of an existing alert cannot be changed through the API.
 	// Readonly users can still manage their own alerts, so these build on the read rule.

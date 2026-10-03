@@ -13,6 +13,7 @@ import (
 	"github.com/blang/semver"
 	"github.com/fxamacker/cbor/v2"
 	"github.com/henrygd/beszel/internal/common"
+	"github.com/henrygd/beszel/internal/entities/agentconfig"
 	"github.com/henrygd/beszel/internal/entities/monitor"
 	esystem "github.com/henrygd/beszel/internal/entities/system"
 	"github.com/henrygd/beszel/internal/hub/ws"
@@ -24,6 +25,8 @@ import (
 type monitorSyncClient struct {
 	gws.BuiltinEventHandler
 	requests chan common.HubRequest[monitor.SyncRequest]
+	// configs receives agent config syncs when set; otherwise they are only acknowledged.
+	configs  chan agentconfig.Config
 	failSync atomic.Bool
 }
 
@@ -36,6 +39,15 @@ func (c *monitorSyncClient) OnMessage(conn *gws.Conn, message *gws.Message) {
 	resp := common.AgentResponse{Id: req.Id}
 	if req.Action == common.GetData {
 		resp.SystemData = &esystem.CombinedData{}
+	} else if req.Action == common.SyncAgentConfig {
+		var cfg agentconfig.Config
+		if err := cbor.Unmarshal(req.Data, &cfg); err != nil {
+			return
+		}
+		if c.configs != nil {
+			c.configs <- cfg
+		}
+		resp.Data, _ = cbor.Marshal(struct{}{})
 	} else {
 		var data monitor.SyncRequest
 		if err := cbor.Unmarshal(req.Data, &data); err != nil {

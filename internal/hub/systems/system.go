@@ -60,6 +60,8 @@ type System struct {
 
 	// A fresh connection needs a full monitor configuration sync.
 	monitorsNeedSync atomic.Bool
+	// A fresh connection also needs the hub-managed agent config.
+	configNeedsSync atomic.Bool
 	// Serialize persistence from scheduled updates and resumes through commit.
 	recordsMu sync.Mutex
 	// Protected by recordsMu; realtime reads don't consume probes.
@@ -751,6 +753,7 @@ func (sys *System) getSSHTransport() (*transport.SSHTransport, error) {
 func (sys *System) onSSHConnect(agentVersion semver.Version) {
 	sys.setAgentVersion(agentVersion)
 	sys.monitorsNeedSync.Store(true)
+	sys.configNeedsSync.Store(true)
 	sys.manager.resetFailedSmartFetchState(sys.Id)
 	sys.manager.resetFailedZfsFetchState(sys.Id)
 }
@@ -776,6 +779,7 @@ func (sys *System) fetchDataFromAgent(options common.DataRequestOptions) (*syste
 		wsData, err := sys.fetchDataViaWebSocket(options)
 		if err == nil {
 			sys.syncPendingNetworkMonitors()
+			sys.syncPendingAgentConfig()
 			return wsData, nil
 		}
 		// A slow collection doesn't mean the connection is broken. Closing it
@@ -792,6 +796,7 @@ func (sys *System) fetchDataFromAgent(options common.DataRequestOptions) (*syste
 		return nil, err
 	}
 	sys.syncPendingNetworkMonitors()
+	sys.syncPendingAgentConfig()
 	return sshData, nil
 }
 
