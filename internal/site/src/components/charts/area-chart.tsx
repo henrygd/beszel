@@ -171,5 +171,5 @@ export default function AreaChartDefault({
 				</AreaChart>
 			</ChartContainer>
 		)
-	}, [displayData, yAxisWidth, filter, Areas, XAxis])
+	}, [displayData, yAxisWidth, filter, Areas, XAxis, domain])
 }
