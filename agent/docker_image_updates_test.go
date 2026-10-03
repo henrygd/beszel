@@ -27,6 +27,29 @@ func waitForImageUpdates(t *testing.T, dm *dockerManager) {
 	}, time.Second*3, time.Millisecond)
 }
 
+func TestDisableDockerImageUpdateCheck(t *testing.T) {
+	t.Setenv("BESZEL_AGENT_DOCKER_IMAGE_CHECK", "false")
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path == "/version" {
+			fmt.Fprint(w, `{"Version":"25.0.0"}`)
+			return
+		}
+		http.NotFound(w, r)
+	}))
+	defer server.Close()
+	t.Setenv("BESZEL_AGENT_DOCKER_HOST", server.URL)
+
+	dm := newDockerManager(nil)
+	require.True(t, dm.imageUpdatesDisabled)
+	dm.registryClient = &http.Client{Transport: roundTripFunc(func(*http.Request) (*http.Response, error) {
+		t.Fatal("disabled image update check made a registry request")
+		return nil, nil
+	})}
+	dm.refreshImageUpdates([]*container.ApiInfo{{Image: "nginx", Names: []string{"/nginx"}}}, time.Now())
+	require.False(t, dm.imageUpdatesRunning)
+	require.Nil(t, dm.imageUpdates)
+}
+
 func TestImageUpdateCacheAndStats(t *testing.T) {
 	local := "sha256:" + strings.Repeat("a", 64)
 	remote := "sha256:" + strings.Repeat("b", 64)

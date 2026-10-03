@@ -25,6 +25,16 @@ type Config struct {
 	Protocol string `cbor:"2,keyasint"` // "icmp", "tcp", "http", or "dns"
 	Port     uint16 `cbor:"3,keyasint,omitempty"`
 	Interval uint16 `cbor:"4,keyasint"` // seconds
+	// Server is the DNS server to query (host or host:port, default port 53).
+	// Only used when Protocol is "dns"; empty means use the system resolver.
+	Server string `cbor:"5,keyasint,omitempty"`
+}
+
+// CertInfo holds details of the leaf TLS certificate presented by a target.
+type CertInfo struct {
+	// Expires is the certificate's NotAfter Unix timestamp in milliseconds.
+	Expires int64  `cbor:"0,keyasint" json:"expires"`
+	Issuer  string `cbor:"1,keyasint,omitempty" json:"issuer,omitempty"`
 }
 
 // SyncRequest defines an incremental or full monitor sync request sent to the agent.
@@ -76,6 +86,8 @@ type Result struct {
 	TotalCount   int64 `cbor:"10,keyasint"`
 	SuccessCount int64 `cbor:"11,keyasint"`
 	ResponseSum  int64 `cbor:"12,keyasint"`
+	// Cert is set for HTTPS targets when a certificate check has new info the hub has not stored yet.
+	Cert *CertInfo `cbor:"13,keyasint,omitempty"`
 }
 
 // Stats holds response times in microseconds and packet loss percentage (0-100).

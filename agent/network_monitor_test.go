@@ -10,6 +10,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/henrygd/beszel"
 	"github.com/henrygd/beszel/internal/entities/monitor"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -240,6 +241,7 @@ func TestMonitorManagerGetRandomDelay(t *testing.T) {
 func TestMonitorHTTP(t *testing.T) {
 	t.Run("success", func(t *testing.T) {
 		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			assert.Equal(t, "Beszel-Agent/"+beszel.Version+" (+https://beszel.dev)", r.Header.Get("User-Agent"))
 			w.WriteHeader(http.StatusNoContent)
 		}))
 		defer server.Close()
@@ -374,15 +376,79 @@ func tcpMonitorTestResolver(ips []string) *net.Resolver {
 	}}
 }
 
+// udpDNSTestServer starts a UDP server on loopback that answers A queries with the
+// given IPs, and returns its listen address (host:port).
+func udpDNSTestServer(t *testing.T, ips []string) string {
+	t.Helper()
+	conn, err := net.ListenUDP("udp", &net.UDPAddr{IP: net.ParseIP("127.0.0.1")})
+	require.NoError(t, err)
+	t.Cleanup(func() { conn.Close() })
+
+	go func() {
+		buf := make([]byte, 512)
+		for {
+			n, addr, err := conn.ReadFromUDP(buf)
+			if err != nil {
+				return
+			}
+			var msg dnsmessage.Message
+			if err := msg.Unpack(buf[:n]); err != nil {
+				continue
+			}
+			msg.Header.Response = true
+			msg.Header.RecursionAvailable = true
+			for _, question := range msg.Questions {
+				if question.Type != dnsmessage.TypeA {
+					continue
+				}
+				for _, ip := range ips {
+					msg.Answers = append(msg.Answers, dnsmessage.Resource{
+						Header: dnsmessage.ResourceHeader{Name: question.Name, Type: dnsmessage.TypeA, Class: dnsmessage.ClassINET},
+						Body:   &dnsmessage.AResource{A: [4]byte(net.ParseIP(ip).To4())},
+					})
+				}
+			}
+			packet, err := msg.Pack()
+			if err != nil {
+				continue
+			}
+			_, _ = conn.WriteToUDP(packet, addr)
+		}
+	}()
+
+	return conn.LocalAddr().String()
+}
+
 func TestMonitorDNS(t *testing.T) {
 	t.Run("success", func(t *testing.T) {
-		responseUs, err := monitorDNS(context.Background(), "localhost")
+		responseUs, err := monitorDNS(context.Background(), "localhost", "")
 		require.NoError(t, err)
 		assert.GreaterOrEqual(t, responseUs, int64(0))
 	})
 
 	t.Run("lookup failure", func(t *testing.T) {
-		responseUs, err := monitorDNS(context.Background(), "")
+		responseUs, err := monitorDNS(context.Background(), "", "")
+		assert.Equal(t, int64(-1), responseUs)
+		require.Error(t, err)
+	})
+
+	t.Run("custom server", func(t *testing.T) {
+		serverAddr := udpDNSTestServer(t, []string{"192.0.2.10"})
+		responseUs, err := monitorDNS(context.Background(), "example.test.", serverAddr)
+		require.NoError(t, err)
+		assert.GreaterOrEqual(t, responseUs, int64(0))
+	})
+
+	t.Run("custom server without port defaults to 53", func(t *testing.T) {
+		resolver := dnsResolverForServer("127.0.0.1")
+		conn, err := resolver.Dial(context.Background(), "udp", "")
+		require.NoError(t, err)
+		defer conn.Close()
+		assert.Equal(t, "127.0.0.1:53", conn.RemoteAddr().String())
+	})
+
+	t.Run("custom server unreachable", func(t *testing.T) {
+		responseUs, err := monitorDNS(context.Background(), "example.test.", "127.0.0.1:1")
 		assert.Equal(t, int64(-1), responseUs)
 		require.Error(t, err)
 	})
@@ -477,7 +543,7 @@ func TestMonitorResolutionCancellation(t *testing.T) {
 				case "tcp":
 					_, err = monitorTCP(ctx, "monitor-cancellation.invalid.", 80)
 				case "dns":
-					_, err = monitorDNS(ctx, "monitor-cancellation.invalid.")
+					_, err = monitorDNS(ctx, "monitor-cancellation.invalid.", "")
 				case "icmp":
 					_, err = monitorICMP(ctx, "monitor-cancellation.invalid.")
 				}

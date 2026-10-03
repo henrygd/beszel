@@ -31,6 +31,9 @@ func normalizedImageReference(image string) string {
 // refreshImageUpdates starts at most one background batch. Neither its network
 // work nor its completion is part of the container metrics wait group.
 func (dm *dockerManager) refreshImageUpdates(containers []*container.ApiInfo, now time.Time) {
+	if dm.imageUpdatesDisabled {
+		return
+	}
 	dm.imageUpdatesMutex.Lock()
 	defer dm.imageUpdatesMutex.Unlock()
 	if dm.imageUpdatesRunning {
