@@ -15,7 +15,7 @@ import type { SystemRecord } from "@/types"
 import { SystemStatus } from "./enums"
 
 const COLLECTION = pb.collection<SystemRecord>("systems")
-const FIELDS_DEFAULT = "id,name,host,port,info,status"
+const FIELDS_DEFAULT = "id,name,host,port,info,status,tags"
 
 let initialized = false
 // biome-ignore lint/suspicious/noConfusingVoidType: typescript rocks

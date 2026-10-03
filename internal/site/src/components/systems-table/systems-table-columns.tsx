@@ -19,6 +19,7 @@ import {
 	PenBoxIcon,
 	PlayCircleIcon,
 	ServerIcon,
+	TagIcon,
 	TerminalSquareIcon,
 	Trash2Icon,
 	WifiIcon,
@@ -27,7 +28,7 @@ import { memo, useMemo, useRef, useState } from "react"
 import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip"
 import { isReadOnlyUser, pb } from "@/lib/api"
 import { BatteryState, ConnectionType, connectionTypeLabels, MeterState, SystemStatus } from "@/lib/enums"
-import { $longestSystemName, $userSettings } from "@/lib/stores"
+import { $longestSystemName, $tagsById, $userSettings } from "@/lib/stores"
 import {
 	cn,
 	copyToClipboard,
@@ -38,6 +39,8 @@ import {
 	secondsToUptimeString,
 } from "@/lib/utils"
 import { batteryStateTranslations } from "@/lib/i18n"
+import { TagBadgeList } from "@/components/tags/tag-badge-list"
+import { resolveTags } from "@/lib/tag-utils"
 import { connectedWiFi, strongestWiFi, strongestWiFiSignal, wifiSignalState } from "@/lib/wifi"
 import type { SystemRecord, WiFi } from "@/types"
 import { SystemDialog } from "../add-system"
@@ -138,7 +141,17 @@ export function SystemsTableColumns(viewMode: "table" | "grid"): ColumnDef<Syste
 						return true
 					}
 					const statusLower = statusTranslations[sys.status as keyof typeof statusTranslations]
-					return statusLower?.includes(filterInputLower) || false
+					if (statusLower?.includes(filterInputLower)) {
+						return true
+					}
+					// Search in tags
+					const tagsById = $tagsById.get()
+					for (const tagId of sys.tags ?? []) {
+						if (tagsById[tagId]?.name.toLowerCase().includes(filterInputLower)) {
+							return true
+						}
+					}
+					return false
 				}
 			})(),
 			enableHiding: false,
@@ -178,6 +191,16 @@ export function SystemsTableColumns(viewMode: "table" | "grid"): ColumnDef<Syste
 				)
 			},
 			header: sortableHeader,
+		},
+		{
+			accessorKey: "tags",
+			id: "tags",
+			name: () => t`Tags`,
+			size: 120,
+			hideSort: true,
+			Icon: TagIcon,
+			header: sortableHeader,
+			cell: ({ row }) => <SystemTagsCell system={row.original} max={viewMode === "table" ? 1 : 3} />,
 		},
 		{
 			accessorFn: ({ info }) => info.cpu || undefined,
@@ -583,6 +606,23 @@ function sortableHeader(context: HeaderContext<SystemRecord, unknown>) {
 			{name()}
 			{hideSort || <ArrowUpDownIcon className="ms-2 size-4" />}
 		</Button>
+	)
+}
+
+function SystemTagsCell({ system, max }: { system: SystemRecord; max: number }) {
+	const tagsById = useStore($tagsById)
+	const tags = useMemo(() => resolveTags(system.tags, tagsById), [system.tags, tagsById])
+	if (tags.length === 0) {
+		return null
+	}
+	return (
+		<Link
+			href={getPagePath($router, "system", { id: system.id })}
+			tabIndex={-1}
+			className="flex text-nowrap gap-1 relative z-10"
+		>
+			<TagBadgeList tags={tags} max={max} badgeClassName="px-1.5 py-0" />
+		</Link>
 	)
 }
 
