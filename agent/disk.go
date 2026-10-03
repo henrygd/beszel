@@ -97,20 +97,40 @@ func isDockerSpecialMountpoint(mountpoint string) bool {
 	return false
 }
 
+// evalSymlinks resolves device symlinks; it is a seam so tests can fake the
+// /dev topology (e.g. /dev/vg/lv -> /dev/dm-N created by udev for LVM).
+var evalSymlinks = filepath.EvalSymlinks
+
 // registerFilesystemStats resolves the tracked key and stats payload for a
 // filesystem before it is inserted into fsStats.
 func registerFilesystemStats(existing map[string]*system.FsStats, device, mountpoint string, root bool, customName string, ctx fsRegistrationContext) (string, *system.FsStats, bool) {
 	key := device
+	resolvedKey := ""
 	if !ctx.isWindows {
 		key = filepath.Base(device)
+		// Device-mapper mounts appear as symlinked paths like /dev/vg/lv whose
+		// base name matches neither the diskstats name (dm-N) nor the dm label
+		// (vg-lv); the resolved target's base is one of those existing names.
+		// Bare names (folder devices, ZFS datasets) are skipped because they
+		// would resolve relative to the agent's working directory.
+		if filepath.IsAbs(device) {
+			if resolved, err := evalSymlinks(device); err == nil {
+				if base := filepath.Base(resolved); base != key {
+					resolvedKey = base
+				}
+			}
+		}
 	}
 
 	if root {
 		// Try to map root device to a diskIoCounters entry. First checks for an
 		// exact key match, then uses findIoDevice for normalized / prefix-based
-		// matching (e.g. nda0p2 -> nda0), and finally falls back to FILESYSTEM.
+		// matching (e.g. nda0p2 -> nda0) and the symlink-resolved device name,
+		// and finally falls back to FILESYSTEM.
 		if _, ioMatch := ctx.diskIoCounters[key]; !ioMatch {
 			if matchedKey, match := findIoDevice(key, ctx.diskIoCounters); match {
+				key = matchedKey
+			} else if matchedKey, match := findIoDevice(resolvedKey, ctx.diskIoCounters); match {
 				key = matchedKey
 			} else if ctx.filesystem != "" {
 				if matchedKey, match := findIoDevice(ctx.filesystem, ctx.diskIoCounters); match {
@@ -136,6 +156,8 @@ func registerFilesystemStats(existing map[string]*system.FsStats, device, mountp
 			}
 			if _, ioMatch = ctx.diskIoCounters[key]; !ioMatch {
 				if matchedKey, match := findIoDevice(key, ctx.diskIoCounters); match {
+					key = matchedKey
+				} else if matchedKey, match := findIoDevice(resolvedKey, ctx.diskIoCounters); match {
 					key = matchedKey
 				}
 			}
