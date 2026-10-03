@@ -26,6 +26,10 @@ const (
 	GetZfsData
 	// Sync network monitor configuration to agent
 	SyncNetworkMonitors
+	// Request the list of pending package updates from agent
+	GetPackageUpdates
+	// Request recent logs for a systemd service from the agent.
+	GetSystemdLogs
 	// Add new actions here...
 )
 
@@ -81,5 +85,9 @@ type ContainerInfoRequest struct {
 }
 
 type SystemdInfoRequest struct {
+	ServiceName string `cbor:"0,keyasint"`
+}
+
+type SystemdLogsRequest struct {
 	ServiceName string `cbor:"0,keyasint"`
 }
