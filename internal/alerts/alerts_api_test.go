@@ -20,6 +20,7 @@ import (
 	"github.com/pocketbase/pocketbase/core"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 // marshal to json and return an io.Reader (for use in ApiScenario.Body)
@@ -218,7 +219,7 @@ func TestAlertsApi(t *testing.T) {
 				"overwrite": false,
 			}),
 			BeforeTestFunc: func(t testing.TB, app *pbTests.TestApp, e *core.ServeEvent) {
-				beszelTests.ClearCollection(t, app, "alerts")
+				require.NoError(t, beszelTests.ClearCollection(t, app, "alerts"))
 				beszelTests.CreateRecord(app, "alerts", map[string]any{
 					"name":   "CPU",
 					"system": system1.Id,
@@ -251,7 +252,7 @@ func TestAlertsApi(t *testing.T) {
 				"overwrite": true,
 			}),
 			BeforeTestFunc: func(t testing.TB, app *pbTests.TestApp, e *core.ServeEvent) {
-				beszelTests.ClearCollection(t, app, "alerts")
+				require.NoError(t, beszelTests.ClearCollection(t, app, "alerts"))
 				beszelTests.CreateRecord(app, "alerts", map[string]any{
 					"name":   "CPU",
 					"system": system2.Id,
@@ -278,7 +279,7 @@ func TestAlertsApi(t *testing.T) {
 				"systems": []string{system1.Id},
 			}),
 			BeforeTestFunc: func(t testing.TB, app *pbTests.TestApp, e *core.ServeEvent) {
-				beszelTests.ClearCollection(t, app, "alerts")
+				require.NoError(t, beszelTests.ClearCollection(t, app, "alerts"))
 				beszelTests.CreateRecord(app, "alerts", map[string]any{
 					"name":   "CPU",
 					"system": system1.Id,
@@ -334,7 +335,7 @@ func TestAlertsApi(t *testing.T) {
 				"systems": []string{system1.Id},
 			}),
 			BeforeTestFunc: func(t testing.TB, app *pbTests.TestApp, e *core.ServeEvent) {
-				beszelTests.ClearCollection(t, app, "alerts")
+				require.NoError(t, beszelTests.ClearCollection(t, app, "alerts"))
 				beszelTests.CreateRecord(app, "alerts", map[string]any{
 					"name":   "CPU",
 					"system": system1.Id,
@@ -390,7 +391,7 @@ func TestAlertsApi(t *testing.T) {
 				"systems": []string{system1.Id, system2.Id},
 			}),
 			BeforeTestFunc: func(t testing.TB, app *pbTests.TestApp, e *core.ServeEvent) {
-				beszelTests.ClearCollection(t, app, "alerts")
+				require.NoError(t, beszelTests.ClearCollection(t, app, "alerts"))
 				for _, systemId := range []string{system1.Id, system2.Id} {
 					_, err := beszelTests.CreateRecord(app, "alerts", map[string]any{
 						"name":   "Memory",
@@ -427,19 +428,21 @@ func TestSendTestNotification(t *testing.T) {
 	localURL := "generic+" + server.URL
 
 	readonlyUser, err := beszelTests.CreateUserWithRole(hub, "readonly@example.com", "password123", "readonly")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	readonlyToken, err := readonlyUser.NewAuthToken()
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	userToken, err := user.NewAuthToken()
+	require.NoError(t, err, "Failed to create user auth token")
 
 	adminUser, err := beszelTests.CreateUserWithRole(hub, "admin@example.com", "password123", "admin")
-	assert.NoError(t, err, "Failed to create admin user")
+	require.NoError(t, err, "Failed to create admin user")
 	adminUserToken, err := adminUser.NewAuthToken()
+	require.NoError(t, err, "Failed to create admin auth token")
 
 	superuser, err := beszelTests.CreateSuperuser(hub, "superuser@example.com", "password123")
-	assert.NoError(t, err, "Failed to create superuser")
+	require.NoError(t, err, "Failed to create superuser")
 	superuserToken, err := superuser.NewAuthToken()
-	assert.NoError(t, err, "Failed to create superuser auth token")
+	require.NoError(t, err, "Failed to create superuser auth token")
 
 	testAppFactory := func(t testing.TB) *pbTests.TestApp {
 		return hub.TestApp

@@ -4,7 +4,7 @@ import { pb } from "./api"
 import { Unit } from "./enums"
 
 /** Default layout width. Used as fallback when user setting is unset. */
-export const defaultLayoutWidth = 1580
+export const defaultLayoutWidth = 1600
 
 /** Store if user is authenticated */
 export const $authenticated = atom(pb.authStore.isValid)
@@ -39,6 +39,17 @@ export const $chartTime = atom<ChartTimes>(defaultChartTime)
 
 /** Whether to display average or max chart values */
 export const $maxValues = atom(false)
+
+const logTimestampsKey = "besz-log-ts"
+
+/** Whether to show timestamps in Docker and systemd logs */
+export const $showLogTimestamps = atom<boolean>(JSON.parse(localStorage.getItem(logTimestampsKey) ?? "true"))
+
+export function toggleLogTimestamps() {
+	const next = !$showLogTimestamps.get()
+	$showLogTimestamps.set(next)
+	localStorage.setItem(logTimestampsKey, JSON.stringify(next))
+}
 
 // export const UserSettingsSchema = v.object({
 // 	chartTime: v.picklist(["1h", "12h", "24h", "1w", "30d"]),
@@ -93,3 +104,8 @@ export const $direction = atom<"ltr" | "rtl">("ltr")
 
 /** Longest system name string. Used to reserve width in virtualized tables. */
 export const $longestSystemName = atom("")
+
+/** Incremented when measured text widths are invalidated (e.g. web font finished loading).
+ *  Anything that caches a comparison from isVisuallyLonger should recompute when this changes.
+ */
+export const $textMeasureVersion = atom(0)

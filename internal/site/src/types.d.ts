@@ -33,7 +33,14 @@ export interface SystemRecord extends RecordModel {
 	updated: string
 }
 
+export interface WiFi {
+	s?: string
+	r?: number
+}
+
 export interface SystemInfo {
+	/** connected Wi-Fi interfaces */
+	wf?: Record<string, WiFi>
 	/** hostname */
 	h: string
 	/** kernel **/
@@ -64,6 +71,8 @@ export interface SystemInfo {
 	bb?: number
 	/** agent version */
 	v: string
+	/** agent can read the system journal */
+	jl?: boolean
 	/** system is using podman */
 	p?: boolean
 	/** highest gpu utilization */
@@ -80,6 +89,8 @@ export interface SystemInfo {
 	sv?: [number, number]
 	/** custom root disk name */
 	rdn?: string
+	/** pending package updates [total, security] (security omitted if unknown) */
+	pu?: [number, number?]
 }
 
 export interface SystemStats {
@@ -159,6 +170,8 @@ export interface SystemStats {
 	bat?: [number, BatteryState]
 	/** battery percentages by device name */
 	bats?: Record<string, number>
+	/** Wi-Fi RSSI (dBm) by interface */
+	wf?: Record<string, number>
 	/** network interfaces [upload bytes, download bytes, total upload bytes, total download bytes] */
 	ni?: Record<string, [number, number, number, number]>
 }
@@ -213,6 +226,25 @@ export interface ZfsVdev {
 	readErrs?: number
 	writeErrs?: number
 	checksumErrs?: number
+}
+
+/** pending package update from GET /api/beszel/package-updates */
+export interface PackageUpdate {
+	name: string
+	/** installed version, missing if unknown */
+	current?: string
+	available: string
+	security?: boolean
+}
+
+export interface PackageUpdates {
+	/** package manager name, e.g. "apt" */
+	manager?: string
+	/** unix time in seconds of the last check */
+	checkedAt?: number
+	/** true if the package manager flags security updates per package */
+	securityKnown?: boolean
+	packages: PackageUpdate[] | null
 }
 
 export interface ZfsDataset {
@@ -397,12 +429,15 @@ export interface SemVer {
 	patch: number
 }
 
-export interface ChartData {
+export interface ChartOptions {
 	agentVersion: SemVer
-	systemStats?: SystemStatsRecord[]
-	containerData?: ChartDataContainer[]
 	orientation: "right" | "left"
 	chartTime: ChartTimes
+}
+
+export interface ChartData extends ChartOptions {
+	systemStats: SystemStatsRecord[]
+	containerData: ChartDataContainer[]
 }
 
 export interface AlertInfo {
@@ -425,6 +460,20 @@ export interface AlertInfo {
 	/** Additional information that remains visible while the alert is enabled */
 	note?: () => string
 	invert?: boolean
+	/** Selectable threshold units. Values are stored in the first unit (factor 1) */
+	units?: AlertUnit[]
+}
+
+export interface AlertUnit {
+	/** Unit suffix shown after the value */
+	unit: string
+	/** Multiplier converting a value in this unit to the stored value */
+	factor: number
+	min: number
+	max: number
+	step: number
+	/** Finer step for the number input, which also accepts values down to this step */
+	inputStep?: number
 }
 
 export type AlertMap = Record<string, Map<string, AlertRecord>>
@@ -645,6 +694,7 @@ export interface NetworkMonitorRecord {
 	target: string
 	protocol: "icmp" | "tcp" | "http" | "dns"
 	port: number
+	server: string
 	res: number
 	resMin1h: number
 	resMax1h: number
@@ -653,14 +703,23 @@ export interface NetworkMonitorRecord {
 	loss1h: number
 	interval: number
 	enabled: boolean
+	/** Latest TLS certificate details, reported for HTTPS targets. */
+	certInfo?: MonitorCertInfo | null
 	updated: string
+}
+
+/** Leaf TLS certificate details reported by the agent. Timestamps are Unix milliseconds. */
+export interface MonitorCertInfo {
+	expires: number
+	issuer?: string
 }
 
 /** Response times in microseconds and packet loss percentage (0-100). */
 export interface MonitorStats {
-	res_avg: number
-	res_min: number
-	res_max: number
+	/** null when no probe succeeded, so there is no response time */
+	res_avg: number | null
+	res_min: number | null
+	res_max: number | null
 	loss: number
 }
 

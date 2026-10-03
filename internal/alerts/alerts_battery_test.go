@@ -5,6 +5,7 @@ package alerts_test
 import (
 	"encoding/json"
 	"testing"
+	"testing/synctest"
 	"time"
 
 	"github.com/henrygd/beszel/internal/entities/system"
@@ -23,7 +24,7 @@ func TestBatteryAlertLogic(t *testing.T) {
 	defer hub.Cleanup()
 
 	// Create a system
-	systems, err := beszelTests.CreateSystems(hub, 1, user.Id, "up")
+	systems, err := beszelTests.CreateSystems(hub, 1, user.Id, "paused")
 	require.NoError(t, err)
 	systemRecord := systems[0]
 
@@ -67,13 +68,12 @@ func TestBatteryAlertLogic(t *testing.T) {
 
 	// Simulate system update time
 	systemRecord.Set("updated", time.Now().UTC())
-	err = hub.SaveNoValidate(systemRecord)
-	require.NoError(t, err)
 
 	// Handle system alerts with high battery
 	am := hub.GetAlertManager()
-	err = am.HandleSystemAlerts(systemRecord, combinedDataHigh)
-	require.NoError(t, err)
+	synctest.Test(t, func(t *testing.T) {
+		require.NoError(t, am.HandleSystemAlerts(systemRecord, combinedDataHigh))
+	})
 
 	// Verify alert is still NOT triggered (battery 50% is above threshold 20%)
 	batteryAlert, err = hub.FindFirstRecordByFilter("alerts", "id={:id}", dbx.Params{"id": batteryAlert.Id})
@@ -107,15 +107,11 @@ func TestBatteryAlertLogic(t *testing.T) {
 
 	// Update system timestamp
 	systemRecord.Set("updated", time.Now().UTC())
-	err = hub.SaveNoValidate(systemRecord)
-	require.NoError(t, err)
 
 	// Handle system alerts with low battery
-	err = am.HandleSystemAlerts(systemRecord, combinedDataLow)
-	require.NoError(t, err)
-
-	// Wait for the alert to be processed
-	time.Sleep(20 * time.Millisecond)
+	synctest.Test(t, func(t *testing.T) {
+		require.NoError(t, am.HandleSystemAlerts(systemRecord, combinedDataLow))
+	})
 
 	// Verify alert IS triggered (battery 15% is below threshold 20%)
 	batteryAlert, err = hub.FindFirstRecordByFilter("alerts", "id={:id}", dbx.Params{"id": batteryAlert.Id})
@@ -149,15 +145,11 @@ func TestBatteryAlertLogic(t *testing.T) {
 
 	// Update system timestamp
 	systemRecord.Set("updated", time.Now().UTC())
-	err = hub.SaveNoValidate(systemRecord)
-	require.NoError(t, err)
 
 	// Handle system alerts with recovered battery
-	err = am.HandleSystemAlerts(systemRecord, combinedDataRecovered)
-	require.NoError(t, err)
-
-	// Wait for the alert to be processed
-	time.Sleep(20 * time.Millisecond)
+	synctest.Test(t, func(t *testing.T) {
+		require.NoError(t, am.HandleSystemAlerts(systemRecord, combinedDataRecovered))
+	})
 
 	// Verify alert is now resolved (battery 25% is above threshold 20%)
 	batteryAlert, err = hub.FindFirstRecordByFilter("alerts", "id={:id}", dbx.Params{"id": batteryAlert.Id})
@@ -171,7 +163,7 @@ func TestBatteryAlertNoBattery(t *testing.T) {
 	defer hub.Cleanup()
 
 	// Create a system
-	systems, err := beszelTests.CreateSystems(hub, 1, user.Id, "up")
+	systems, err := beszelTests.CreateSystems(hub, 1, user.Id, "paused")
 	require.NoError(t, err)
 	systemRecord := systems[0]
 
@@ -204,16 +196,12 @@ func TestBatteryAlertNoBattery(t *testing.T) {
 
 	// Simulate system update time
 	systemRecord.Set("updated", time.Now().UTC())
-	err = hub.SaveNoValidate(systemRecord)
-	require.NoError(t, err)
 
 	// Handle system alerts
 	am := hub.GetAlertManager()
-	err = am.HandleSystemAlerts(systemRecord, combinedData)
-	require.NoError(t, err)
-
-	// Wait a moment for processing
-	time.Sleep(20 * time.Millisecond)
+	synctest.Test(t, func(t *testing.T) {
+		require.NoError(t, am.HandleSystemAlerts(systemRecord, combinedData))
+	})
 
 	// Verify alert is NOT triggered (no battery data should skip the alert)
 	batteryAlert, err = hub.FindFirstRecordByFilter("alerts", "id={:id}", dbx.Params{"id": batteryAlert.Id})
@@ -228,7 +216,7 @@ func TestBatteryAlertAveragedSamples(t *testing.T) {
 	defer hub.Cleanup()
 
 	// Create a system
-	systems, err := beszelTests.CreateSystems(hub, 1, user.Id, "up")
+	systems, err := beszelTests.CreateSystems(hub, 1, user.Id, "paused")
 	require.NoError(t, err)
 	systemRecord := systems[0]
 
@@ -299,15 +287,11 @@ func TestBatteryAlertAveragedSamples(t *testing.T) {
 
 	// Update system timestamp
 	systemRecord.Set("updated", now)
-	err = hub.SaveNoValidate(systemRecord)
-	require.NoError(t, err)
 
 	// Handle system alerts - should trigger because average battery is below threshold
-	err = am.HandleSystemAlerts(systemRecord, combinedDataLow)
-	require.NoError(t, err)
-
-	// Wait for alert processing
-	time.Sleep(20 * time.Millisecond)
+	synctest.Test(t, func(t *testing.T) {
+		require.NoError(t, am.HandleSystemAlerts(systemRecord, combinedDataLow))
+	})
 
 	// Verify alert IS triggered (average battery 15% is below threshold 25%)
 	batteryAlert, err = hub.FindFirstRecordByFilter("alerts", "id={:id}", dbx.Params{"id": batteryAlert.Id})
@@ -365,15 +349,11 @@ func TestBatteryAlertAveragedSamples(t *testing.T) {
 
 	// Update system timestamp to the new time window
 	systemRecord.Set("updated", newNow)
-	err = hub.SaveNoValidate(systemRecord)
-	require.NoError(t, err)
 
 	// Handle system alerts - should resolve because average battery is now above threshold
-	err = am.HandleSystemAlerts(systemRecord, combinedDataHigh)
-	require.NoError(t, err)
-
-	// Wait for alert processing
-	time.Sleep(20 * time.Millisecond)
+	synctest.Test(t, func(t *testing.T) {
+		require.NoError(t, am.HandleSystemAlerts(systemRecord, combinedDataHigh))
+	})
 
 	// Verify alert is resolved (average battery 50% is above threshold 25%)
 	batteryAlert, err = hub.FindFirstRecordByFilter("alerts", "id={:id}", dbx.Params{"id": batteryAlert.Id})

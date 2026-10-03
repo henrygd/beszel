@@ -88,6 +88,18 @@ func TestGenerateMonitorID(t *testing.T) {
 		expected string
 	}{
 		{
+			name:     "Short hash meets the record ID minimum",
+			systemID: "000000000012369",
+			config:   monitor.Config{Protocol: "icmp", Target: "gateway.example.com"},
+			expected: "0b3fd2",
+		},
+		{
+			name:     "Existing six-character ID is unchanged",
+			systemID: "000000000000274",
+			config:   monitor.Config{Protocol: "icmp", Target: "gateway.example.com"},
+			expected: "77a996",
+		},
+		{
 			name:     "HTTP monitor on example.com",
 			systemID: "sys123",
 			config: monitor.Config{
@@ -174,12 +186,98 @@ func TestGenerateMonitorID(t *testing.T) {
 			},
 			expected: "84167969",
 		},
+		{
+			name:     "DNS monitor on example.com with server 1.1.1.1",
+			systemID: "sys999",
+			config: monitor.Config{
+				Protocol: "dns",
+				Target:   "example.com",
+				Server:   "1.1.1.1",
+				Interval: 30,
+			},
+			expected: "2175898b",
+		},
+		{
+			name:     "DNS monitor on example.com with different server",
+			systemID: "sys999",
+			config: monitor.Config{
+				Protocol: "dns",
+				Target:   "example.com",
+				Server:   "8.8.8.8",
+				Interval: 30,
+			},
+			expected: "ebcd8b33",
+		},
+		{
+			name:     "DNS monitor on example.com with no server (system resolver)",
+			systemID: "sys999",
+			config: monitor.Config{
+				Protocol: "dns",
+				Target:   "example.com",
+				Server:   "",
+				Interval: 30,
+			},
+			expected: "19476a7",
+		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got := generateMonitorID(tt.systemID, tt.config)
 			assert.Equal(t, tt.expected, got, "generateMonitorID() = %v, want %v", got, tt.expected)
+		})
+	}
+}
+
+func TestNetworkMonitorShortIDRequests(t *testing.T) {
+	for _, method := range []string{http.MethodPost, http.MethodPatch} {
+		t.Run(method, func(t *testing.T) {
+			hub, testApp, err := createTestHub(t)
+			require.NoError(t, err)
+			defer cleanupTestHub(hub, testApp)
+			bindNetworkMonitorsEvents(hub)
+			user, err := createTestUser(hub)
+			require.NoError(t, err)
+			system, err := createTestRecord(hub, "systems", map[string]any{
+				"id": "000000000012369", "name": "Paused", "host": "localhost", "port": "45876",
+				"status": "paused", "users": []string{user.Id},
+			})
+			require.NoError(t, err)
+			payload := map[string]any{
+				"system": system.Id, "target": "gateway.example.com", "protocol": "icmp",
+				"interval": 60, "enabled": true,
+			}
+			url := "/api/collections/network_monitors/records"
+			var oldID string
+			if method == http.MethodPatch {
+				previous, err := createTestRecord(hub, "network_monitors", map[string]any{
+					"system": system.Id, "target": "website.example.com", "protocol": "icmp", "interval": 60,
+				})
+				require.NoError(t, err)
+				oldID = previous.Id
+				url += "/" + oldID
+			}
+			data, err := json.Marshal(payload)
+			require.NoError(t, err)
+			token, err := user.NewAuthToken()
+			require.NoError(t, err)
+			router, err := apis.NewRouter(hub)
+			require.NoError(t, err)
+			handler, err := router.BuildMux()
+			require.NoError(t, err)
+			request := httptest.NewRequest(method, url, bytes.NewReader(data))
+			request.Header.Set("Content-Type", "application/json")
+			request.Header.Set("Authorization", token)
+			response := httptest.NewRecorder()
+			handler.ServeHTTP(response, request)
+			require.Equal(t, http.StatusOK, response.Code, response.Body.String())
+			record, err := hub.FindRecordById("network_monitors", "0b3fd2")
+			require.NoError(t, err)
+			assert.Equal(t, "gateway.example.com", record.GetString("target"))
+			if oldID != "" {
+				_, err = hub.FindRecordById("network_monitors", oldID)
+				require.Error(t, err)
+			}
 		})
 	}
 }
@@ -199,6 +297,7 @@ func TestCopyMonitorToNewRecordDropsResultFields(t *testing.T) {
 		"target":   "https://example.com",
 		"protocol": "http",
 		"port":     443,
+		"server":   "1.1.1.1",
 		"interval": 60,
 		"enabled":  true,
 		"res":      1200,
@@ -206,6 +305,7 @@ func TestCopyMonitorToNewRecordDropsResultFields(t *testing.T) {
 		"resMin1h": 900,
 		"resMax1h": 1600,
 		"loss1h":   5,
+		"certInfo": map[string]any{"expires": 1800000000000},
 		"updated":  "2026-04-29 12:00:00.000Z",
 	})
 
@@ -215,7 +315,9 @@ func TestCopyMonitorToNewRecordDropsResultFields(t *testing.T) {
 	assert.Equal(t, "https://example.com", newRecord.GetString("target"))
 	assert.Equal(t, "http", newRecord.GetString("protocol"))
 	assert.Equal(t, 443, newRecord.GetInt("port"))
+	assert.Equal(t, "1.1.1.1", newRecord.GetString("server"))
 	assert.True(t, newRecord.GetBool("enabled"))
+	assert.Contains(t, []string{"", "null"}, newRecord.GetString("certInfo"))
 	assert.Zero(t, newRecord.GetFloat("res"))
 	assert.Zero(t, newRecord.GetFloat("resAvg1h"))
 	assert.Zero(t, newRecord.GetFloat("resMin1h"))

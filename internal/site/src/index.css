@@ -64,7 +64,7 @@
 }
 
 @theme inline {
-	--font-sans: Inter, InterVariable, sans-serif;
+	--font-sans: TwemojiCountryFlags, Inter, InterVariable, sans-serif;
 
 	--breakpoint-xs: 26.6rem;
 	--breakpoint-450: 28rem;
@@ -118,11 +118,25 @@
 }
 
 @layer utilities {
-
 	/* Fonts */
+
+  /* Twemoji Country Flags font from country-flag-emoji-polyfill,
+  * derived from Twemoji Mozilla. Twemoji graphics are licensed CC BY 4.0:
+  * https://creativecommons.org/licenses/by/4.0/
+  */
+	@font-face {
+    font-family: TwemojiCountryFlags;
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url("./assets/TwemojiCountryFlags.woff2") format("woff2");
+    /* Regional indicator symbols make up ISO 3166-1 flag emoji. */
+    unicode-range: U+1F1E6-1F1FF;
+	}
+
 	@supports (font-variation-settings: normal) {
 		:root {
-			font-family: Inter, InterVariable, sans-serif;
+			font-family: TwemojiCountryFlags, Inter, InterVariable, sans-serif;
 		}
 	}
 
@@ -139,6 +153,17 @@
 	* {
 		@apply border-border outline-ring/50;
 		overflow-anchor: none;
+	}
+
+	html {
+		scrollbar-gutter: stable;
+	}
+
+	@supports (scrollbar-gutter: stable) {
+		/* Radix scroll lock adds this margin even though the viewport keeps its gutter. */
+		html body[data-scroll-locked] {
+			margin-right: 0 !important;
+		}
 	}
 
 	body {

@@ -286,9 +286,6 @@ func TestNetworkMonitorAlertAPI(t *testing.T) {
 			if tc.status == 400 {
 				content = `"status":400`
 			}
-			if tc.status == 403 {
-				content = `"status":403`
-			}
 			scenario := beszelTests.ApiScenario{
 				Name: tc.name, Method: method, URL: url, Body: jsonReader(body),
 				Headers: map[string]string{"Authorization": token}, ExpectedStatus: tc.status, ExpectedContent: []string{content},

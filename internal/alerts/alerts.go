@@ -267,6 +267,10 @@ func (am *AlertManager) SendAlert(data AlertMessageData) error {
 			continue
 		}
 		userID := record.GetString("user")
+		// Stored settings may outlive system access.
+		if data.SystemID != "" && !userHasSystem(am.hub, userID, data.SystemID) {
+			continue
+		}
 		if am.IsNotificationSilenced(userID, data.SystemID) {
 			am.hub.Logger().Info("Notification silenced", "user", userID, "system", data.SystemID, "title", data.Title)
 			continue
