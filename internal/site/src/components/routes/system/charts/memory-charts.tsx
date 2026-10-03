@@ -7,7 +7,6 @@ import type { ChartData, SystemStatsRecord } from "@/types"
 import { ChartCard, FilterBar, SelectAvgMax } from "../chart-card"
 import { dockerOrPodman } from "../chart-data"
 import { decimalString, formatBytes, toFixedFloat } from "@/lib/utils"
-import { pinnedAxisDomain } from "@/components/ui/chart"
 import MemorySheet from "../memory-sheet"
 import SwapSheet from "../swap-sheet"
 import type { SystemData } from "../use-system-data"
@@ -129,7 +128,6 @@ export function ContainerMemoryChart({
 					const { value, unit } = formatBytes(item.value, false, Unit.Bytes, true)
 					return `${decimalString(value)} ${unit}`
 				}}
-				domain={pinnedAxisDomain()}
 				showTotal={true}
 				reverseStackOrder={true}
 				filter={filter}

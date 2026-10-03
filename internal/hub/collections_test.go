@@ -47,8 +47,8 @@ func TestCollectionRulesDefault(t *testing.T) {
 	require.NoError(t, err, "Failed to find alerts collection")
 	assert.Equal(t, isUserMatchesUser, *alertsCollection.ListRule)
 	assert.Nil(t, alertsCollection.ViewRule)
-	assert.Equal(t, isUserMatchesUser, *alertsCollection.CreateRule)
-	assert.Equal(t, isUserMatchesUser, *alertsCollection.UpdateRule)
+	assert.Equal(t, isUserMatchesUser+` && system.users.id ?= @request.auth.id`, *alertsCollection.CreateRule)
+	assert.Equal(t, isUserMatchesUser+` && @request.body.user:changed = false && @request.body.system:changed = false && system.users.id ?= @request.auth.id`, *alertsCollection.UpdateRule)
 	assert.Equal(t, isUserMatchesUser, *alertsCollection.DeleteRule)
 	alertNames := alertsCollection.Fields.GetByName("name").(*core.SelectField).Values
 	for _, name := range []string{"CPUIOWait", "CPUSteal"} {
@@ -183,7 +183,7 @@ func TestCollectionRulesShareAllSystems(t *testing.T) {
 	assert.Equal(t, isUserMatchesUser, *alertsCollection.ListRule)
 	assert.Nil(t, alertsCollection.ViewRule)
 	assert.Equal(t, isUserMatchesUser, *alertsCollection.CreateRule)
-	assert.Equal(t, isUserMatchesUser, *alertsCollection.UpdateRule)
+	assert.Equal(t, isUserMatchesUser+` && @request.body.user:changed = false && @request.body.system:changed = false`, *alertsCollection.UpdateRule)
 	assert.Equal(t, isUserMatchesUser, *alertsCollection.DeleteRule)
 
 	// alerts_history collection

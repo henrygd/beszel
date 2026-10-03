@@ -1,5 +1,4 @@
-import { t } from "@lingui/core/macro"
-import { Trans } from "@lingui/react/macro"
+import { Trans, useLingui } from "@lingui/react/macro"
 import { useStore } from "@nanostores/react"
 import { getPagePath } from "@nanostores/router"
 import { ChevronDownIcon, ExternalLinkIcon } from "lucide-react"
@@ -65,6 +64,7 @@ let nextSystemToken: string | null = null
  * @param {SystemRecord} [props.system] - Optional system record for editing an existing system.
  */
 export const SystemDialog = ({ setOpen, system }: { setOpen: (open: boolean) => void; system?: SystemRecord }) => {
+	const { t } = useLingui()
 	const publicKey = useStore($publicKey)
 	const port = useRef<HTMLInputElement>(null)
 	const [hostValue, setHostValue] = useState(system?.host ?? "")
