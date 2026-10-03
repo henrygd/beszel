@@ -87,7 +87,7 @@ func (sm *SpeedtestManager) SyncSpeedtests(configs []speedtest.Config) {
 		}
 	}
 	for id, cfg := range newConfigs {
-		if existing, exists := sm.tasks[id]; exists && existing.config == cfg {
+		if existing, exists := sm.tasks[id]; exists && existing.active(cfg) {
 			continue
 		}
 		sm.schedule(sm.replaceTask(cfg), false)
@@ -102,7 +102,7 @@ func (sm *SpeedtestManager) UpsertSpeedtest(config speedtest.Config, runNow bool
 	}
 	sm.mu.Lock()
 	defer sm.mu.Unlock()
-	if existing, exists := sm.tasks[config.ID]; exists && existing.config == config {
+	if existing, exists := sm.tasks[config.ID]; exists && existing.active(config) {
 		if runNow {
 			go sm.run(existing)
 		}
@@ -143,6 +143,21 @@ func (sm *SpeedtestManager) Stop() {
 	defer sm.mu.Unlock()
 	for id := range sm.tasks {
 		sm.stopTask(id)
+	}
+}
+
+// Suspend stops all scheduled and in-progress runs while the hub is disconnected,
+// so speedtests don't use bandwidth when no one is collecting their results.
+// Tasks keep their latest results, which are reported once the hub reconnects,
+// and are rescheduled by the full sync the hub sends on reconnect.
+func (sm *SpeedtestManager) Suspend() {
+	sm.mu.Lock()
+	defer sm.mu.Unlock()
+	if len(sm.tasks) > 0 {
+		slog.Debug("suspending speedtests", "count", len(sm.tasks))
+	}
+	for _, task := range sm.tasks {
+		task.cancel()
 	}
 }
 
@@ -263,6 +278,12 @@ func (sm *SpeedtestManager) run(task *speedtestTask) {
 	task.mu.Lock()
 	task.result = &result
 	task.mu.Unlock()
+}
+
+// active reports whether the task is scheduled with the given config. Suspended
+// tasks are not active, so syncing them again reschedules them.
+func (task *speedtestTask) active(config speedtest.Config) bool {
+	return task.config == config && task.ctx.Err() == nil
 }
 
 // latestResult returns a copy of the latest result, or nil if the task has not run yet.

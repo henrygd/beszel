@@ -146,6 +146,50 @@ func TestSpeedtestManagerSync(t *testing.T) {
 	})
 }
 
+func TestSpeedtestManagerSuspend(t *testing.T) {
+	synctest.Test(t, func(t *testing.T) {
+		var runs atomic.Int32
+		var canceled atomic.Bool
+		release := make(chan struct{})
+		sm := newSpeedtestManagerWithRunner(func(ctx context.Context, config speedtest.Config) (speedtest.Result, error) {
+			if runs.Add(1) == 2 {
+				// The second run is in progress when the hub disconnects.
+				select {
+				case <-ctx.Done():
+					canceled.Store(true)
+					return speedtest.Result{}, ctx.Err()
+				case <-release:
+				}
+			}
+			return speedtest.Result{Download: 100}, nil
+		})
+		defer sm.Stop()
+
+		cfg := speedtest.Config{ID: "a", Interval: 15}
+		require.NoError(t, sm.UpsertSpeedtest(cfg, true))
+		synctest.Wait()
+		require.Equal(t, int32(1), runs.Load())
+		require.NoError(t, sm.UpsertSpeedtest(cfg, true))
+		synctest.Wait()
+		require.Equal(t, int32(2), runs.Load())
+
+		sm.Suspend()
+		synctest.Wait()
+		assert.True(t, canceled.Load(), "suspend must cancel the run in progress")
+		assert.Contains(t, sm.GetResults(), "a", "suspend keeps results the hub hasn't collected yet")
+
+		time.Sleep(time.Hour)
+		synctest.Wait()
+		assert.Equal(t, int32(2), runs.Load(), "suspended speedtests must not run")
+
+		// The full sync on reconnect reschedules the unchanged config.
+		sm.SyncSpeedtests([]speedtest.Config{cfg})
+		time.Sleep(15 * time.Minute)
+		synctest.Wait()
+		assert.Equal(t, int32(3), runs.Load())
+	})
+}
+
 func TestSpeedtestManagerSlotSchedule(t *testing.T) {
 	synctest.Test(t, func(t *testing.T) {
 		var mu sync.Mutex

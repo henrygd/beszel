@@ -48,6 +48,25 @@ func (sys *System) syncAllSpeedtests() error {
 	return sys.SyncSpeedtests(configs)
 }
 
+// suspendSpeedtests stops all speedtests on the agent of a paused system. Pausing
+// keeps a WebSocket connection open, so the agent can't tell it should stop on its
+// own; SSH agents suspend them when the hub closes the connection. The first update
+// after the system resumes syncs them again.
+func (sys *System) suspendSpeedtests() {
+	sys.speedtestsNeedSync.Store(true)
+	if sys.WsConn == nil || !sys.WsConn.IsConnected() {
+		return
+	}
+	if err := sys.SyncSpeedtests(nil); err != nil {
+		sys.manager.hub.Logger().Warn("failed to suspend speedtests on agent", "system", sys.Id, "err", err)
+	}
+	// A resume may have synced while this request was in flight and been undone by
+	// it, so make sure the next update syncs again.
+	if sys.GetStatus() != paused {
+		sys.speedtestsNeedSync.Store(true)
+	}
+}
+
 // SyncSpeedtests replaces all speedtests on the agent with the given configs.
 func (sys *System) SyncSpeedtests(configs []speedtest.Config) error {
 	return sys.syncSpeedtests(speedtest.SyncRequest{Action: monitor.SyncActionReplace, Configs: configs})

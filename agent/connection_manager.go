@@ -308,6 +308,9 @@ func (c *ConnectionManager) handleStateChange(newState ConnectionState) {
 		slog.Info("SSH connection established")
 		c.stopWsTicker()
 	case Disconnected:
+		// Don't run speedtests while no hub collects their results. The hub's
+		// full sync on reconnect reschedules them.
+		c.agent.speedtestManager.Suspend()
 		// Listen for SSH whenever disconnected so the hub can fall back to it
 		// or redial straight away. WebSocket is still tried first below and
 		// stops the server if it connects.
