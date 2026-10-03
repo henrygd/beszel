@@ -51,7 +51,7 @@ import type { SystemRecord } from "@/types"
 import AlertButton from "../alerts/alert-button"
 import { $router, Link } from "../router"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui/card"
-import { SystemsTableColumns, ActionsButton, IndicatorDot } from "./systems-table-columns"
+import { SystemsTableColumns, ActionsButton, IndicatorDot, useLoadOsDetails } from "./systems-table-columns"
 
 type ViewMode = "table" | "grid"
 type StatusFilter = "all" | SystemRecord["status"]
@@ -60,6 +60,7 @@ const preloadSystemDetail = runOnce(() => import("@/components/routes/system.tsx
 
 export default function SystemsTable() {
 	const data = useStore($systems)
+	useLoadOsDetails()
 	const downSystems = $downSystems.get()
 	const upSystems = $upSystems.get()
 	const pausedSystems = $pausedSystems.get()
