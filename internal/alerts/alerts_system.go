@@ -428,7 +428,7 @@ func (am *AlertManager) sendSystemAlert(alert SystemAlertData) {
 	if alert.descriptor == "" {
 		alert.descriptor = alert.name
 	}
-	body := fmt.Sprintf("%s averaged %.2f%s for the previous %v %s.", alert.descriptor, alert.val, alert.unit, alert.min, minutesLabel)
+	body := formatSystemAlertBody(alert, minutesLabel)
 
 	if err := am.setAlertTriggered(alert.alertData, alert.triggered); err != nil {
 		// app.Logger().Error("failed to save alert record", "err", err)
@@ -442,6 +442,25 @@ func (am *AlertManager) sendSystemAlert(alert SystemAlertData) {
 		Link:     am.hub.MakeLink("system", alert.systemRecord.Id),
 		LinkText: "View " + systemName,
 	})
+}
+
+func formatSystemAlertBody(alert SystemAlertData, minutesLabel string) string {
+	if alert.name == "Temperature" {
+		relation := "below"
+		if alert.triggered {
+			relation = "above"
+		}
+		return fmt.Sprintf(
+			"%s %s %.2f%s for the previous %v %s.",
+			alert.descriptor,
+			relation,
+			alert.val,
+			alert.unit,
+			alert.min,
+			minutesLabel,
+		)
+	}
+	return fmt.Sprintf("%s averaged %.2f%s for the previous %v %s.", alert.descriptor, alert.val, alert.unit, alert.min, minutesLabel)
 }
 
 func isLowAlert(name string) bool {
