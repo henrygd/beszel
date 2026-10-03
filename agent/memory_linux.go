@@ -39,9 +39,9 @@ func containerMemoryMetrics(hostTotal uint64, forceUseCgroup bool) (memoryMetric
 // rather than the agent's own service cgroup. A v1 unlimited limit is a
 // page-aligned LONG_MAX sentinel; the threshold also covers 32-bit kernels.
 func readCgroupMemoryMetrics(dir string, hostTotal uint64, v2 bool) (memoryMetrics, bool) {
-	usageFile, limitFile, cacheKey := "memory.usage_in_bytes", "memory.limit_in_bytes", "total_inactive_file"
+	usageFile, limitFile, cacheKey, shmemKey := "memory.usage_in_bytes", "memory.limit_in_bytes", "total_cache", "total_shmem"
 	if v2 {
-		usageFile, limitFile, cacheKey = "memory.current", "memory.max", "inactive_file"
+		usageFile, limitFile, cacheKey, shmemKey = "memory.current", "memory.max", "file", "shmem"
 	}
 	usage, ok := utils.ReadUintFile(filepath.Join(dir, usageFile))
 	if !ok {
@@ -79,6 +79,12 @@ func readCgroupMemoryMetrics(dir string, hostTotal uint64, v2 bool) (memoryMetri
 	if !ok {
 		return memoryMetrics{}, false
 	}
-	cache = min(cache, usage)
+	shmem, ok := stat[shmemKey]
+	if !ok {
+		return memoryMetrics{}, false
+	}
+	// Both cache (v1) and file (v2) include shmem/tmpfs, which must remain
+	// charged as used memory rather than being classified as file cache.
+	cache = min(saturatingSub(cache, shmem), usage)
 	return memoryMetrics{Total: total, Used: usage - cache, BuffCache: cache}, true
 }

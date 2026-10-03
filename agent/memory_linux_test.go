@@ -54,9 +54,12 @@ func TestContainerMemoryMetrics(t *testing.T) {
 	for _, v2 := range []bool{true, false} {
 		t.Run(strconv.FormatBool(v2), func(t *testing.T) {
 			dir := setupMemoryCgroup(t, v2)
-			key := "total_inactive_file"
+			key, shmemKey := "total_cache", "total_shmem"
 			if v2 {
-				key = "inactive_file"
+				key, shmemKey = "file", "shmem"
+			}
+			stat := func(cache, shmem string) string {
+				return key + " " + cache + "\n" + shmemKey + " " + shmem + "\n"
 			}
 			for _, tt := range []struct {
 				name, usage, limit, stat string
@@ -64,16 +67,20 @@ func TestContainerMemoryMetrics(t *testing.T) {
 				want                     memoryMetrics
 				ok                       bool
 			}{
-				{"working set", "600", "1000", key + " 200\n", 2000, memoryMetrics{1000, 400, 200}, true},
-				{"zero usage", "0", "1000", key + " 0\n", 2000, memoryMetrics{1000, 0, 0}, true},
-				{"cache larger than charge", "100", "1000", key + " 200\n", 2000, memoryMetrics{1000, 0, 100}, true},
-				{"host caps limit", "600", "3000", key + " 200\n", 2000, memoryMetrics{2000, 400, 200}, true},
-				{"finite without host", "600", "1000", key + " 200\n", 0, memoryMetrics{1000, 400, 200}, true},
-				{"missing cache key", "600", "1000", "file 200\n", 2000, memoryMetrics{}, false},
-				{"invalid cache", "600", "1000", key + " -1\n", 2000, memoryMetrics{}, false},
-				{"invalid usage", "bad", "1000", key + " 200\n", 2000, memoryMetrics{}, false},
-				{"invalid limit", "600", "bad", key + " 200\n", 2000, memoryMetrics{}, false},
-				{"zero limit", "600", "0", key + " 200\n", 2000, memoryMetrics{}, false},
+				{"file cache excluded", "600", "1000", stat("200", "0"), 2000, memoryMetrics{1000, 400, 200}, true},
+				{"shared memory retained", "600", "1000", stat("200", "50"), 2000, memoryMetrics{1000, 450, 150}, true},
+				{"shared memory larger than cache", "600", "1000", stat("200", "300"), 2000, memoryMetrics{1000, 600, 0}, true},
+				{"zero usage", "0", "1000", stat("0", "0"), 2000, memoryMetrics{1000, 0, 0}, true},
+				{"cache larger than charge", "100", "1000", stat("200", "0"), 2000, memoryMetrics{1000, 0, 100}, true},
+				{"host caps limit", "600", "3000", stat("200", "0"), 2000, memoryMetrics{2000, 400, 200}, true},
+				{"finite without host", "600", "1000", stat("200", "0"), 0, memoryMetrics{1000, 400, 200}, true},
+				{"missing cache key", "600", "1000", shmemKey + " 0\n", 2000, memoryMetrics{}, false},
+				{"missing shared memory key", "600", "1000", key + " 200\n", 2000, memoryMetrics{}, false},
+				{"invalid cache", "600", "1000", stat("-1", "0"), 2000, memoryMetrics{}, false},
+				{"invalid shared memory", "600", "1000", stat("200", "-1"), 2000, memoryMetrics{}, false},
+				{"invalid usage", "bad", "1000", stat("200", "0"), 2000, memoryMetrics{}, false},
+				{"invalid limit", "600", "bad", stat("200", "0"), 2000, memoryMetrics{}, false},
+				{"zero limit", "600", "0", stat("200", "0"), 2000, memoryMetrics{}, false},
 			} {
 				t.Run(tt.name, func(t *testing.T) {
 					writeMemoryFixture(t, dir, v2, tt.usage, tt.limit, tt.stat)
@@ -86,15 +93,15 @@ func TestContainerMemoryMetrics(t *testing.T) {
 			if v2 {
 				limit = "max"
 			}
-			writeMemoryFixture(t, dir, v2, "600", limit, key+" 200\n")
-			writeMemoryFixture(t, filepath.Join(dir, "system.slice/agent.service"), v2, "1", "100", key+" 0\n")
+			writeMemoryFixture(t, dir, v2, "600", limit, stat("200", "0"))
+			writeMemoryFixture(t, filepath.Join(dir, "system.slice/agent.service"), v2, "1", "100", stat("0", "0"))
 			metrics, ok := containerMemoryMetrics(2000, true)
 			require.True(t, ok)
 			assert.Equal(t, memoryMetrics{2000, 400, 200}, metrics)
 			_, ok = containerMemoryMetrics(0, true)
 			assert.False(t, ok)
 			if !v2 {
-				writeMemoryFixture(t, dir, false, "600", "2147479552", key+" 200\n")
+				writeMemoryFixture(t, dir, false, "600", "2147479552", stat("200", "0"))
 				metrics, ok = containerMemoryMetrics(2000, true)
 				require.True(t, ok)
 				assert.EqualValues(t, 2000, metrics.Total)
@@ -109,9 +116,9 @@ func TestContainerMemoryScopeAndEnablement(t *testing.T) {
 	mount := filepath.Join(t.TempDir(), "unified")
 	writeCpuFixture(t, memoryCgroupMountinfo,
 		"30 25 0:26 /guest "+mount+" rw - cgroup2 cgroup2 rw\n")
-	writeMemoryFixture(t, dir, true, "1", "1000", "inactive_file 0\n")
-	writeMemoryFixture(t, mount, true, "600", "1000", "inactive_file 200\n")
-	writeMemoryFixture(t, filepath.Join(mount, "system.slice/agent.service"), true, "10", "100", "inactive_file 0\n")
+	writeMemoryFixture(t, dir, true, "1", "1000", "file 0\nshmem 0\n")
+	writeMemoryFixture(t, mount, true, "600", "1000", "file 200\nshmem 0\n")
+	writeMemoryFixture(t, filepath.Join(mount, "system.slice/agent.service"), true, "10", "100", "file 0\nshmem 0\n")
 	_, ok := containerMemoryMetrics(2000, false)
 	assert.False(t, ok) // Docker/host agents keep the existing path by default.
 	markLxc(t)
@@ -128,7 +135,7 @@ func TestUpdateMemoryStatsCgroupAndFallback(t *testing.T) {
 	dir := setupMemoryCgroup(t, true)
 	const gib = uint64(1 << 30)
 	writeMemoryFixture(t, dir, true, strconv.FormatUint(6*gib, 10), strconv.FormatUint(10*gib, 10),
-		"inactive_file "+strconv.FormatUint(2*gib, 10)+"\n")
+		"file "+strconv.FormatUint(2*gib, 10)+"\nshmem 0\n")
 	original := memoryVirtualMemory
 	t.Cleanup(func() { memoryVirtualMemory = original })
 	memoryVirtualMemory = func() (*mem.VirtualMemoryStat, error) {
@@ -169,7 +176,7 @@ func TestUpdateMemoryStatsCgroupAndFallback(t *testing.T) {
 
 	// Finite cgroup limits still work if /proc/meminfo cannot be read.
 	memoryVirtualMemory = func() (*mem.VirtualMemoryStat, error) { return nil, errors.New("unreadable") }
-	writeCpuFixture(t, filepath.Join(dir, "memory.stat"), "inactive_file 0\n")
+	writeCpuFixture(t, filepath.Join(dir, "memory.stat"), "file 0\nshmem 0\n")
 	stats = system.Stats{}
 	a.updateMemoryStats(&stats)
 	assert.Equal(t, float64(8), stats.Mem)
@@ -180,7 +187,7 @@ func TestUpdateMemoryStatsCgroupAndFallback(t *testing.T) {
 
 func TestMemoryDetailsInitiallyUseCgroupLimit(t *testing.T) {
 	dir := setupMemoryCgroup(t, true)
-	writeMemoryFixture(t, dir, true, "600", "1000", "inactive_file 200\n")
+	writeMemoryFixture(t, dir, true, "600", "1000", "file 200\nshmem 0\n")
 	original := memoryVirtualMemory
 	t.Cleanup(func() { memoryVirtualMemory = original })
 	memoryVirtualMemory = func() (*mem.VirtualMemoryStat, error) {
@@ -189,4 +196,32 @@ func TestMemoryDetailsInitiallyUseCgroupLimit(t *testing.T) {
 	a := &Agent{forceUseCgroup: true}
 	a.refreshSystemDetails()
 	assert.EqualValues(t, 1000, a.systemDetails.MemoryTotal)
+}
+
+// Captured from this container: active file cache made the working-set
+// calculation report ~80 GiB despite only ~17 GiB of anonymous RSS.
+func TestMemoryStatsExcludeActiveFileCache(t *testing.T) {
+	dir := setupMemoryCgroup(t, false)
+	const usage = uint64(135881601024)
+	const cache = uint64(116823166976)
+	const shmem = uint64(77180928)
+	writeMemoryFixture(t, dir, false, strconv.FormatUint(usage, 10), "137438953472",
+		"total_cache 116823166976\ntotal_shmem 77180928\n"+
+			"total_inactive_file 49902608384\ntotal_active_file 67684671488\n")
+	original := memoryVirtualMemory
+	t.Cleanup(func() { memoryVirtualMemory = original })
+	memoryVirtualMemory = func() (*mem.VirtualMemoryStat, error) {
+		return &mem.VirtualMemoryStat{Total: 1580621720 * 1024}, nil
+	}
+	metrics, ok := containerMemoryMetrics(1580621720*1024, true)
+	require.True(t, ok)
+	assert.Equal(t, usage-(cache-shmem), metrics.Used)
+	assert.Equal(t, cache-shmem, metrics.BuffCache)
+	assert.Equal(t, usage, metrics.Used+metrics.BuffCache)
+	var stats system.Stats
+	a := &Agent{forceUseCgroup: true}
+	a.updateMemoryStats(&stats)
+	assert.Equal(t, float64(17.82), stats.MemUsed)
+	assert.Equal(t, float64(108.73), stats.MemBuffCache)
+	assert.Equal(t, float64(13.92), stats.MemPct)
 }

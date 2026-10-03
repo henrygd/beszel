@@ -7,8 +7,8 @@ import (
 	"github.com/shirou/gopsutil/v4/mem"
 )
 
-// memoryMetrics holds byte counters. For cgroups, Used is the working set and
-// BuffCache is the inactive file memory subtracted from the raw charge.
+// memoryMetrics holds byte counters. For cgroups, Used excludes file cache,
+// while retaining shared memory/tmpfs. BuffCache is the subtracted file cache.
 type memoryMetrics struct {
 	Total, Used, BuffCache uint64
 }
