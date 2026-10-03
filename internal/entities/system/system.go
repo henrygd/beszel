@@ -66,9 +66,11 @@ type Stats struct {
 	WiFi              map[string]int8      `json:"wf,omitempty" cbor:"40,keyasint,omitempty"`   // RSSI dBm keyed by interface; unavailable readings omitted
 	SwapIn            float64              `json:"si,omitzero" cbor:"41,keyasint,omitzero"`     // swap in rate (bytes/sec)
 	SwapOut           float64              `json:"so,omitzero" cbor:"42,keyasint,omitzero"`     // swap out rate (bytes/sec)
-	MemPsi            []float64            `json:"mpsi,omitempty" cbor:"43,keyasint,omitempty"` // PSI [some_avg10, some_avg60, full_avg10, full_avg60]
+	MemPressure       []float64            `json:"mpr,omitempty" cbor:"43,keyasint,omitempty"`  // PSI % of interval stalled [some, full]
 	MemOomKills       uint32               `json:"moom,omitzero" cbor:"44,keyasint,omitzero"`   // OOM kill event count delta
-	MemSlab           float64              `json:"msl,omitzero" cbor:"45,keyasint,omitzero"`    // total slab memory (GB)
+	MemSlabReclaim    float64              `json:"msr,omitzero" cbor:"45,keyasint,omitzero"`    // reclaimable slab memory (GB)
+	MemSlabUnreclaim  float64              `json:"msu,omitzero" cbor:"46,keyasint,omitzero"`    // unreclaimable slab memory (GB)
+	MemMajorFaults    float64              `json:"mpf,omitzero" cbor:"47,keyasint,omitzero"`    // major page fault rate (faults/sec)
 
 }
 

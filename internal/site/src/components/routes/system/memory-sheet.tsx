@@ -24,7 +24,7 @@ export default memo(function MemorySheet({ systemData }: { systemData: SystemDat
 		hasOpened.current = true
 	}
 
-	const hasSlabData = chartData.systemStats?.some((r) => (r.stats?.msl ?? 0) > 0)
+	const hasSlabData = chartData.systemStats?.some((r) => (r.stats?.msr ?? 0) + (r.stats?.msu ?? 0) > 0)
 	if (!hasSlabData) {
 		return null
 	}
@@ -59,20 +59,30 @@ export default memo(function MemorySheet({ systemData }: { systemData: SystemDat
 						empty={dataEmpty}
 						grid={grid}
 						title={t`Kernel Slab`}
-						description={t`Memory used by the kernel slab allocator (includes reclaimable)`}
+						description={t`Memory used by the kernel slab allocator`}
 						className="min-h-auto"
+						legend={true}
 					>
 						<AreaChartDefault
 							chartData={chartData}
-							domain={psiDomain}
 							tickFormatter={memTickFormatter}
 							contentFormatter={({ value }) => memFormatter(value)}
+							showTotal={true}
+							legend={true}
 							dataPoints={[
 								{
-									label: t`Slab`,
-									dataKey: ({ stats }) => stats?.msl ?? null,
+									label: t`Reclaimable`,
+									dataKey: ({ stats }) => stats?.msr ?? null,
 									color: 1,
 									opacity: 0.4,
+									stackId: 0,
+								},
+								{
+									label: t`Unreclaimable`,
+									dataKey: ({ stats }) => stats?.msu ?? null,
+									color: 5,
+									opacity: 0.4,
+									stackId: 0,
 								},
 							]}
 						/>
@@ -81,8 +91,8 @@ export default memo(function MemorySheet({ systemData }: { systemData: SystemDat
 					<ChartCard
 						empty={dataEmpty}
 						grid={grid}
-						title={t`Memory Pressure — Partial Stall`}
-						description={t`% of time at least one task was stalled waiting for memory`}
+						title={t`Memory Pressure`}
+						description={t`% of time tasks were stalled waiting for memory`}
 						className="min-h-auto"
 						legend={true}
 					>
@@ -94,15 +104,15 @@ export default memo(function MemorySheet({ systemData }: { systemData: SystemDat
 							legend={true}
 							dataPoints={[
 								{
-									label: "avg60",
-									dataKey: ({ stats }) => stats?.mpsi?.[1] ?? null,
-									color: "hsla(30 80% 55% / 0.6)",
+									label: t`Some`,
+									dataKey: ({ stats }) => stats?.mpr?.[0] ?? null,
+									color: 3,
 									opacity: 0.3,
 								},
 								{
-									label: "avg10",
-									dataKey: ({ stats }) => stats?.mpsi?.[0] ?? null,
-									color: 3,
+									label: t`Full`,
+									dataKey: ({ stats }) => stats?.mpr?.[1] ?? null,
+									color: 5,
 									opacity: 0.4,
 								},
 							]}
@@ -112,28 +122,20 @@ export default memo(function MemorySheet({ systemData }: { systemData: SystemDat
 					<ChartCard
 						empty={dataEmpty}
 						grid={grid}
-						title={t`Memory Pressure — Full Stall`}
-						description={t`% of time all tasks were stalled waiting for memory`}
+						title={t`Major Page Faults`}
+						description={t`Page faults that required reading from disk`}
 						className="min-h-auto"
-						legend={true}
 					>
 						<AreaChartDefault
 							chartData={chartData}
 							domain={psiDomain}
-							tickFormatter={(val) => `${toFixedFloat(val, 2)}%`}
-							contentFormatter={({ value }) => `${decimalString(value, 2)}%`}
-							legend={true}
+							tickFormatter={(val) => `${toFixedFloat(val, val >= 10 ? 0 : 1)}/s`}
+							contentFormatter={({ value }) => `${decimalString(value, value >= 100 ? 0 : 2)}/s`}
 							dataPoints={[
 								{
-									label: "avg60",
-									dataKey: ({ stats }) => stats?.mpsi?.[3] ?? null,
-									color: "hsla(0 70% 55% / 0.5)",
-									opacity: 0.3,
-								},
-								{
-									label: "avg10",
-									dataKey: ({ stats }) => stats?.mpsi?.[2] ?? null,
-									color: 5,
+									label: t`Major Faults`,
+									dataKey: ({ stats }) => stats?.mpf ?? 0,
+									color: 2,
 									opacity: 0.4,
 								},
 							]}

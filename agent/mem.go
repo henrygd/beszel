@@ -11,46 +11,69 @@ import (
 	"github.com/henrygd/beszel/internal/entities/system"
 )
 
-type prevSwapData struct {
-	pswpin  uint64
-	pswpout uint64
-	oomKill uint64
-	at      time.Time
+type prevMemData struct {
+	pswpin   uint64
+	pswpout  uint64
+	majFault uint64
+	oomKill  uint64
+	psi      [2]uint64 // cumulative stall time in microseconds [some, full]
+	hasPsi   bool
+	at       time.Time
 }
 
-// updateMemExtras collects swap I/O rates, OOM kill events, and memory pressure (PSI).
+// updateMemExtras collects swap I/O and major fault rates, OOM kill events,
+// and memory pressure (PSI) as deltas over the cache interval.
 // Slab memory is read directly from gopsutil in system.go.
 func (a *Agent) updateMemExtras(cacheTimeMs uint16, stats *system.Stats) {
 	vmstat, err := readVmstat()
 	if err != nil {
 		return
 	}
+	psi, psiErr := readMemPsiTotals()
 
 	now := time.Now()
-	prev, hasPrev := a.prevSwap[cacheTimeMs]
+	prev, hasPrev := a.prevMem[cacheTimeMs]
 
 	if hasPrev {
 		elapsed := now.Sub(prev.at).Seconds()
 		if elapsed > 0 {
-			pageSize := uint64(os.Getpagesize())
-			swapInDelta := vmstat["pswpin"] - prev.pswpin
-			swapOutDelta := vmstat["pswpout"] - prev.pswpout
-			stats.SwapIn = utils.TwoDecimals(float64(swapInDelta*pageSize) / elapsed)
-			stats.SwapOut = utils.TwoDecimals(float64(swapOutDelta*pageSize) / elapsed)
-			stats.MemOomKills = uint32(vmstat["oom_kill"] - prev.oomKill)
+			pageSize := float64(os.Getpagesize())
+			stats.SwapIn = utils.TwoDecimals(float64(counterDelta(vmstat["pswpin"], prev.pswpin)) * pageSize / elapsed)
+			stats.SwapOut = utils.TwoDecimals(float64(counterDelta(vmstat["pswpout"], prev.pswpout)) * pageSize / elapsed)
+			stats.MemMajorFaults = utils.TwoDecimals(float64(counterDelta(vmstat["pgmajfault"], prev.majFault)) / elapsed)
+			stats.MemOomKills = uint32(counterDelta(vmstat["oom_kill"], prev.oomKill))
+			if psiErr == nil && prev.hasPsi {
+				elapsedUs := elapsed * 1e6
+				stats.MemPressure = []float64{
+					stallPercent(counterDelta(psi[0], prev.psi[0]), elapsedUs),
+					stallPercent(counterDelta(psi[1], prev.psi[1]), elapsedUs),
+				}
+			}
 		}
 	}
 
-	a.prevSwap[cacheTimeMs] = prevSwapData{
-		pswpin:  vmstat["pswpin"],
-		pswpout: vmstat["pswpout"],
-		oomKill: vmstat["oom_kill"],
-		at:      now,
+	a.prevMem[cacheTimeMs] = prevMemData{
+		pswpin:   vmstat["pswpin"],
+		pswpout:  vmstat["pswpout"],
+		majFault: vmstat["pgmajfault"],
+		oomKill:  vmstat["oom_kill"],
+		psi:      psi,
+		hasPsi:   psiErr == nil,
+		at:       now,
 	}
+}
 
-	if psi, err := readMemPsi(); err == nil {
-		stats.MemPsi = psi[:]
+// counterDelta returns cur - prev, or 0 if the counter went backwards.
+func counterDelta(cur, prev uint64) uint64 {
+	if cur < prev {
+		return 0
 	}
+	return cur - prev
+}
+
+// stallPercent converts a stall time delta to a percentage of the elapsed interval.
+func stallPercent(stallUs uint64, elapsedUs float64) float64 {
+	return utils.TwoDecimals(min(float64(stallUs)/elapsedUs*100, 100))
 }
 
 // readVmstat reads /proc/vmstat and returns selected key-value pairs.
@@ -68,7 +91,7 @@ func readVmstat() (map[string]uint64, error) {
 		parts := strings.Fields(line)
 		if len(parts) == 2 {
 			switch parts[0] {
-			case "pswpin", "pswpout", "oom_kill":
+			case "pswpin", "pswpout", "pgmajfault", "oom_kill":
 				if val, err := strconv.ParseUint(parts[1], 10, 64); err == nil {
 					result[parts[0]] = val
 				}
@@ -78,38 +101,33 @@ func readVmstat() (map[string]uint64, error) {
 	return result, scanner.Err()
 }
 
-// readMemPsi reads /proc/pressure/memory and returns [some_avg10, some_avg60, full_avg10, full_avg60].
-func readMemPsi() ([4]float64, error) {
+// readMemPsiTotals reads /proc/pressure/memory and returns the cumulative
+// stall times in microseconds as [some_total, full_total].
+func readMemPsiTotals() ([2]uint64, error) {
 	f, err := os.Open("/proc/pressure/memory")
 	if err != nil {
-		return [4]float64{}, err
+		return [2]uint64{}, err
 	}
 	defer f.Close()
 
-	var result [4]float64
+	var result [2]uint64
 	scanner := bufio.NewScanner(f)
 	for scanner.Scan() {
-		line := scanner.Text()
-		parts := strings.Fields(line)
-		if len(parts) < 3 {
+		parts := strings.Fields(scanner.Text())
+		if len(parts) < 2 {
 			continue
 		}
-		prefix := parts[0]
-		var avg10, avg60 float64
+		var total uint64
 		for _, part := range parts[1:] {
-			if after, ok := strings.CutPrefix(part, "avg10="); ok {
-				avg10, _ = strconv.ParseFloat(after, 64)
-			} else if after, ok := strings.CutPrefix(part, "avg60="); ok {
-				avg60, _ = strconv.ParseFloat(after, 64)
+			if after, ok := strings.CutPrefix(part, "total="); ok {
+				total, _ = strconv.ParseUint(after, 10, 64)
 			}
 		}
-		switch prefix {
+		switch parts[0] {
 		case "some":
-			result[0] = avg10
-			result[1] = avg60
+			result[0] = total
 		case "full":
-			result[2] = avg10
-			result[3] = avg60
+			result[1] = total
 		}
 	}
 	return result, scanner.Err()

@@ -124,12 +124,16 @@ export interface SystemStats {
 	si?: number
 	/** swap out rate (bytes/sec) */
 	so?: number
-	/** memory PSI [some_avg10, some_avg60, full_avg10, full_avg60] */
-	mpsi?: [number, number, number, number]
+	/** memory pressure, % of interval stalled [some, full] */
+	mpr?: [number, number]
 	/** OOM kill event count delta */
 	moom?: number
-	/** total slab memory (gb) */
-	msl?: number
+	/** reclaimable slab memory (gb) */
+	msr?: number
+	/** unreclaimable slab memory (gb) */
+	msu?: number
+	/** major page fault rate (faults/sec) */
+	mpf?: number
 	/** disk size (gb) */
 	d: number
 	/** disk used (gb) */

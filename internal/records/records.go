@@ -283,9 +283,9 @@ func AverageSystemStatsSlice(records []system.Stats) system.Stats {
 	fanCount := uint64(0)
 	zfsPoolCounts := make(map[string]uint64)
 	zfsCapacityCounts := make(map[string]uint64)
-	// memory PSI is only reported on Linux with PSI enabled
-	var memPsiSums []float64
-	memPsiCount := float64(0)
+	// memory pressure is only reported on Linux with PSI enabled
+	var memPressureSums []float64
+	memPressureCount := float64(0)
 
 	// Accumulate totals
 	for i := range records {
@@ -314,17 +314,19 @@ func AverageSystemStatsSlice(records []system.Stats) system.Stats {
 		sum.SwapUsed += stats.SwapUsed
 		sum.SwapIn += stats.SwapIn
 		sum.SwapOut += stats.SwapOut
-		sum.MemSlab += stats.MemSlab
+		sum.MemSlabReclaim += stats.MemSlabReclaim
+		sum.MemSlabUnreclaim += stats.MemSlabUnreclaim
+		sum.MemMajorFaults += stats.MemMajorFaults
 		// OOM kills are event counts, so they are summed rather than averaged
 		sum.MemOomKills += stats.MemOomKills
-		if stats.MemPsi != nil {
-			if len(memPsiSums) < len(stats.MemPsi) {
-				memPsiSums = append(memPsiSums, make([]float64, len(stats.MemPsi)-len(memPsiSums))...)
+		if stats.MemPressure != nil {
+			if len(memPressureSums) < len(stats.MemPressure) {
+				memPressureSums = append(memPressureSums, make([]float64, len(stats.MemPressure)-len(memPressureSums))...)
 			}
-			for j, v := range stats.MemPsi {
-				memPsiSums[j] += v
+			for j, v := range stats.MemPressure {
+				memPressureSums[j] += v
 			}
-			memPsiCount++
+			memPressureCount++
 		}
 		sum.DiskTotal += stats.DiskTotal
 		sum.DiskUsed += stats.DiskUsed
@@ -521,11 +523,13 @@ func AverageSystemStatsSlice(records []system.Stats) system.Stats {
 	sum.SwapUsed = twoDecimals(sum.SwapUsed / count)
 	sum.SwapIn = twoDecimals(sum.SwapIn / count)
 	sum.SwapOut = twoDecimals(sum.SwapOut / count)
-	sum.MemSlab = twoDecimals(sum.MemSlab / count)
-	if memPsiCount > 0 {
-		sum.MemPsi = make([]float64, len(memPsiSums))
-		for j, v := range memPsiSums {
-			sum.MemPsi[j] = twoDecimals(v / memPsiCount)
+	sum.MemSlabReclaim = twoDecimals(sum.MemSlabReclaim / count)
+	sum.MemSlabUnreclaim = twoDecimals(sum.MemSlabUnreclaim / count)
+	sum.MemMajorFaults = twoDecimals(sum.MemMajorFaults / count)
+	if memPressureCount > 0 {
+		sum.MemPressure = make([]float64, len(memPressureSums))
+		for j, v := range memPressureSums {
+			sum.MemPressure[j] = twoDecimals(v / memPressureCount)
 		}
 	}
 	sum.DiskTotal = twoDecimals(sum.DiskTotal / count)
