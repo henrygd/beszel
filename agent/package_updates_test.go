@@ -248,21 +248,18 @@ exit 100`,
 func TestDetectPackageManager(t *testing.T) {
 	tests := []struct {
 		name     string
-		commands []string
+		commands map[string]string
 		manager  string
 	}{
-		{"apt", []string{"apt-get", "dpkg"}, "apt"},
-		{"zypper with zypper-aptitude", []string{"apt-get", "zypper"}, "zypper"},
-		{"dnf", []string{"dnf", "rpm"}, "dnf"},
+		{"apt", map[string]string{"apt-get": "", "dpkg-query": "exit 0"}, "apt"},
+		{"zypper-aptitude", map[string]string{"apt-get": "", "zypper": ""}, "zypper"},
+		{"zypper-aptitude with dpkg", map[string]string{"apt-get": "", "dpkg-query": "exit 1", "zypper": ""}, "zypper"},
+		{"dnf", map[string]string{"dnf": "", "rpm": ""}, "dnf"},
 		{"none", nil, ""},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			scripts := make(map[string]string)
-			for _, name := range tt.commands {
-				scripts[name] = "exit 0"
-			}
-			fakeCommands(t, scripts)
+			fakeCommands(t, tt.commands)
 			// only the fake commands, so the host's package managers are not found
 			t.Setenv("PATH", strings.SplitN(os.Getenv("PATH"), string(os.PathListSeparator), 2)[0])
 			manager, _ := detectPackageManager(t.TempDir())
