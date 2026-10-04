@@ -8,7 +8,7 @@ msgstr ""
 "Language: de\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2026-10-02 17:15\n"
+"PO-Revision-Date: 2026-10-04 17:47\n"
 "Last-Translator: \n"
 "Language-Team: German\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
@@ -1306,7 +1306,7 @@ msgstr "Haupt-PID"
 #. Package version
 #: src/components/routes/system/package-updates-table.tsx
 msgid "Major"
-msgstr ""
+msgstr "Major"
 
 #: src/components/routes/settings/layout.tsx
 msgid "Manage display and notification preferences."
@@ -1325,7 +1325,7 @@ msgstr "Max 1 Min"
 #: src/components/network-monitors-table/network-monitors-columns.tsx
 #: src/components/network-monitors-table/network-monitors-columns.tsx
 msgid "Max 1h"
-msgstr ""
+msgstr "Max. 1 Stunde"
 
 #: src/components/containers-table/containers-table-columns.tsx
 #: src/components/routes/system/info-bar.tsx
@@ -1356,12 +1356,12 @@ msgstr "Speichernutzung der Container"
 #: src/components/network-monitors-table/network-monitors-columns.tsx
 #: src/components/network-monitors-table/network-monitors-columns.tsx
 msgid "Min 1h"
-msgstr ""
+msgstr "Min. 1 Stunde"
 
 #. Package version
 #: src/components/routes/system/package-updates-table.tsx
 msgid "Minor"
-msgstr ""
+msgstr "Minor"
 
 #. Device model
 #: src/components/routes/system/smart-table.tsx
@@ -1372,7 +1372,7 @@ msgstr "Modell"
 #: src/components/network-monitors-table/monitor-dialog.tsx
 #: src/components/network-monitors-table/monitor-dialog.tsx
 msgid "Monitor"
-msgstr ""
+msgstr "Monitor"
 
 #: src/components/network-monitors-table/monitor-dialog.tsx
 msgid "Monitors created"
@@ -1607,7 +1607,7 @@ msgstr "Vergangen"
 #. Package version
 #: src/components/routes/system/package-updates-table.tsx
 msgid "Patch"
-msgstr ""
+msgstr "Patch"
 
 #: src/components/network-monitors-table/network-monitors-columns.tsx
 #: src/components/systems-table/systems-table-columns.tsx
@@ -1837,7 +1837,7 @@ msgstr "Fortsetzen"
 #. Package version
 #: src/components/routes/system/package-updates-table.tsx
 msgid "Revision"
-msgstr ""
+msgstr "Revision"
 
 #: src/components/routes/system/charts/disk-charts.tsx
 #: src/components/routes/system/charts/disk-charts.tsx
@@ -2130,7 +2130,7 @@ msgstr "Ziel"
 #: src/components/network-monitors-table/monitor-dialog.tsx
 #: src/components/network-monitors-table/monitor-dialog.tsx
 msgid "target[,protocol[,port[,interval[,server]]]]"
-msgstr ""
+msgstr "Ziel[,Protokoll[,Port[,Intervall[,Server]]]]"
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Tasks"
@@ -2388,7 +2388,7 @@ msgstr "Alle 10 Minuten aktualisiert."
 #: src/components/routes/system.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Updates"
-msgstr ""
+msgstr "Updates"
 
 #: src/components/routes/system/network-sheet.tsx
 msgid "Upload"
