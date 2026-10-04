@@ -14,6 +14,7 @@ import (
 	"github.com/henrygd/beszel/agent/battery"
 	"github.com/henrygd/beszel/agent/btrfs"
 	"github.com/henrygd/beszel/agent/utils"
+	"github.com/henrygd/beszel/agent/wifi"
 	"github.com/henrygd/beszel/agent/zfs"
 	"github.com/henrygd/beszel/internal/entities/container"
 	"github.com/henrygd/beszel/internal/entities/system"
@@ -169,9 +170,13 @@ func (a *Agent) getSystemStats(cacheTimeMs uint16) system.Stats {
 		slog.Error("Error getting cpu metrics", "err", err)
 	}
 
-	// per-core cpu usage
-	if perCoreUsage, err := getPerCoreCpuUsage(cacheTimeMs); err == nil {
-		systemStats.CpuCoresUsage = perCoreUsage
+	// per-core cpu usage. Skipped when the total comes from cgroup accounting:
+	// per-core /proc/stat counters there describe shared host cores, not the
+	// guest, and would contradict the total.
+	if !cpuMetrics.fromCgroup {
+		if perCoreUsage, err := getPerCoreCpuUsage(cacheTimeMs); err == nil {
+			systemStats.CpuCoresUsage = perCoreUsage
+		}
 	}
 
 	// load average
@@ -267,8 +272,15 @@ func (a *Agent) getSystemStats(cacheTimeMs uint16) system.Stats {
 		}
 	}
 
+	// Wi-Fi collection spawns a process on macOS and dumps the BSS cache on
+	// Linux, so only refresh on the default interval. Real-time requests reuse
+	// the last snapshot.
+	if cacheTimeMs == defaultDataCacheTimeMs {
+		a.systemInfo.WiFi = wifi.Collect()
+	}
+	systemStats.WiFi = wifi.Signals(a.systemInfo.WiFi)
+
 	// update system info
-	a.systemInfo.ConnectionType = a.connectionManager.ConnectionType
 	a.systemInfo.Cpu = systemStats.Cpu
 	a.systemInfo.LoadAvg = systemStats.LoadAvg
 	a.systemInfo.MemPct = systemStats.MemPct

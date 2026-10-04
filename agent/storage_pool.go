@@ -54,12 +54,18 @@ type poolBackend struct {
 	kernelStatsFn  func() ([]zfs.PoolKernelStat, error) // procfs pool state/I/O source
 	poolStatusesFn func() ([]zfs.PoolStatus, error)     // scrub/vdev detail source
 
-	poolData      []zfs.PoolStat // cached pool inventory (TTL below)
-	lastPoolStats time.Time
-	kernelSamples map[string]poolKernelSample
+	// Utility-backed caches below are refreshed in the background after the
+	// first collection, so cacheMu guards them against those goroutines.
+	cacheMu        sync.Mutex
+	poolData       []zfs.PoolStat // cached pool inventory (TTL below)
+	lastPoolStats  time.Time
+	poolRefreshing bool
 
 	datasetUsage     map[string]zfsDatasetUsage // mountpoint -> usage
 	lastUsageRefresh time.Time
+	usageRefreshing  bool
+
+	kernelSamples map[string]poolKernelSample
 
 	// Detail data (pools, vdevs, scrub, datasets) is cached and refreshed on
 	// an interval. Accessed from handler goroutines, so it is mutex-protected.
@@ -80,7 +86,7 @@ func newZfsBackend() *poolBackend {
 	return &poolBackend{
 		name:           "zfs",
 		poolStatsFn:    optionalPoolSource(zfs.PoolStats),
-		datasetsFn:     zfs.Datasets,
+		datasetsFn:     optionalPoolSource(zfs.Datasets),
 		kernelStatsFn:  optionalPoolSource(zfs.PoolKernelStats),
 		poolStatusesFn: optionalPoolSource(zfs.PoolStatuses),
 	}
@@ -177,19 +183,40 @@ func (b *poolBackend) updateBackendStats(systemStats *system.Stats) {
 }
 
 // poolStats returns the cached pool inventory, calling its collector at most
-// every poolStatsRefreshInterval. On failure the previous inventory is
-// retained and the refresh is retried on the next cadence.
+// every poolStatsRefreshInterval. Only the first collection blocks; later
+// refreshes run in the background because utilities like `zpool list` can hang
+// for seconds on busy hosts, which would otherwise delay the hub's stats
+// response. On failure the previous inventory is retained and the refresh is
+// retried on the next cadence.
 func (b *poolBackend) poolStats() []zfs.PoolStat {
-	if b.lastPoolStats.IsZero() || time.Since(b.lastPoolStats) >= poolStatsRefreshInterval {
-		pools, err := b.poolStatsFn()
-		if err != nil {
-			slog.Debug("Storage pool stats unavailable", "backend", b.name, "err", err)
-		} else {
-			b.poolData = pools
-		}
-		b.lastPoolStats = time.Now()
+	b.cacheMu.Lock()
+	defer b.cacheMu.Unlock()
+	if b.poolRefreshing || (!b.lastPoolStats.IsZero() && time.Since(b.lastPoolStats) < poolStatsRefreshInterval) {
+		return b.poolData
 	}
+	if b.lastPoolStats.IsZero() {
+		b.storePoolStats(b.poolStatsFn())
+		return b.poolData
+	}
+	b.poolRefreshing = true
+	go func() {
+		pools, err := b.poolStatsFn()
+		b.cacheMu.Lock()
+		defer b.cacheMu.Unlock()
+		b.poolRefreshing = false
+		b.storePoolStats(pools, err)
+	}()
 	return b.poolData
+}
+
+// storePoolStats records a pool inventory result. Callers must hold cacheMu.
+func (b *poolBackend) storePoolStats(pools []zfs.PoolStat, err error) {
+	if err != nil {
+		slog.Debug("Storage pool stats unavailable", "backend", b.name, "err", err)
+	} else {
+		b.poolData = pools
+	}
+	b.lastPoolStats = time.Now()
 }
 
 // kernelStats reads cumulative pool counters and converts them to per-second
@@ -225,12 +252,33 @@ func (b *poolBackend) kernelStats() (map[string]zfs.PoolKernelStat, map[string]z
 }
 
 // refreshDatasetUsage re-runs `zfs list` when the refresh window has elapsed
-// and rebuilds the mountpoint-keyed usage map.
-func (b *poolBackend) refreshDatasetUsage() {
-	if !b.lastUsageRefresh.IsZero() && time.Since(b.lastUsageRefresh) < datasetUsageRefreshInterval {
-		return
+// and returns the mountpoint-keyed usage map. Like poolStats, only the first
+// collection blocks and later refreshes run in the background.
+func (b *poolBackend) refreshDatasetUsage() map[string]zfsDatasetUsage {
+	b.cacheMu.Lock()
+	defer b.cacheMu.Unlock()
+	if b.usageRefreshing || (!b.lastUsageRefresh.IsZero() && time.Since(b.lastUsageRefresh) < datasetUsageRefreshInterval) {
+		return b.datasetUsage
 	}
-	datasets, err := b.datasets()
+	if b.lastUsageRefresh.IsZero() {
+		b.storeDatasetUsage(b.datasets())
+		return b.datasetUsage
+	}
+	b.usageRefreshing = true
+	go func() {
+		datasets, err := b.datasets()
+		b.cacheMu.Lock()
+		defer b.cacheMu.Unlock()
+		b.usageRefreshing = false
+		b.storeDatasetUsage(datasets, err)
+	}()
+	return b.datasetUsage
+}
+
+// storeDatasetUsage rebuilds the usage map from a dataset listing. The map is
+// replaced rather than mutated so returned references stay safe to read.
+// Callers must hold cacheMu.
+func (b *poolBackend) storeDatasetUsage(datasets []zfs.Dataset, err error) {
 	if err != nil {
 		slog.Debug("Storage pool dataset usage unavailable", "backend", b.name, "err", err)
 	} else {
@@ -251,8 +299,7 @@ func (b *poolBackend) refreshDatasetUsage() {
 func (m *StoragePoolManager) DatasetUsage() map[string]zfsDatasetUsage {
 	for _, backend := range m.backends {
 		if backend.name == "zfs" {
-			backend.refreshDatasetUsage()
-			return backend.datasetUsage
+			return backend.refreshDatasetUsage()
 		}
 	}
 	return nil
@@ -442,7 +489,10 @@ func (m *StoragePoolManager) markDuplicateCharts(stats *system.Stats, filesystem
 		}
 	}
 	for _, backend := range m.backends {
-		for _, pool := range backend.poolData {
+		backend.cacheMu.Lock()
+		pools := backend.poolData
+		backend.cacheMu.Unlock()
+		for _, pool := range pools {
 			sample := stats.ZfsPools[pool.Name]
 			if sample == nil || pool.MountID == "" {
 				continue

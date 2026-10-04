@@ -1,5 +1,4 @@
-import { t } from "@lingui/core/macro"
-import { Trans } from "@lingui/react/macro"
+import { Trans, useLingui } from "@lingui/react/macro"
 import { useStore } from "@nanostores/react"
 import { getPagePath } from "@nanostores/router"
 import { ChevronDownIcon, ExternalLinkIcon } from "lucide-react"
@@ -65,6 +64,7 @@ let nextSystemToken: string | null = null
  * @param {SystemRecord} [props.system] - Optional system record for editing an existing system.
  */
 export const SystemDialog = ({ setOpen, system }: { setOpen: (open: boolean) => void; system?: SystemRecord }) => {
+	const { t } = useLingui()
 	const publicKey = useStore($publicKey)
 	const port = useRef<HTMLInputElement>(null)
 	const [hostValue, setHostValue] = useState(system?.host ?? "")
@@ -116,8 +116,6 @@ export const SystemDialog = ({ setOpen, system }: { setOpen: (open: boolean) => 
 		}
 	}
 
-	const systemTranslation = t`System`
-
 	return (
 		<DialogContent
 			className="w-[90%] sm:w-auto sm:ns-dialog max-w-full rounded-lg"
@@ -129,9 +127,9 @@ export const SystemDialog = ({ setOpen, system }: { setOpen: (open: boolean) => 
 				<DialogHeader>
 					<DialogTitle className="mb-1 pb-1 max-w-100 truncate pr-8">
 						{system ? (
-							<Trans>Edit {{ foo: systemTranslation }}</Trans>
+							<Trans>Edit System</Trans>
 						) : (
-							<Trans>Add {{ foo: systemTranslation }}</Trans>
+							<Trans>Add System</Trans>
 						)}
 					</DialogTitle>
 					<TabsList className="grid w-full grid-cols-2">
@@ -268,9 +266,9 @@ export const SystemDialog = ({ setOpen, system }: { setOpen: (open: boolean) => 
 						{/* Save */}
 						<Button>
 							{system ? (
-								<Trans>Save {{ foo: systemTranslation }}</Trans>
+								<Trans>Save System</Trans>
 							) : (
-								<Trans>Add {{ foo: systemTranslation }}</Trans>
+								<Trans>Add System</Trans>
 							)}
 						</Button>
 					</DialogFooter>
