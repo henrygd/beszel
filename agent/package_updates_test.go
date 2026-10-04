@@ -191,6 +191,24 @@ func TestParseRpmInstalled(t *testing.T) {
 	assert.Equal(t, "5.14.0-503.el9", installed["kernel.x86_64"])
 }
 
+func TestParseXbpsUpdate(t *testing.T) {
+	tests := []struct {
+		file  string
+		count int
+	}{
+		{"xbps_void_check_update.txt", 3},
+	}
+	for _, tt := range tests {
+		t.Run(tt.file, func(t *testing.T) {
+			assert.Len(t, parseXbpsSimulate(readPackageUpdatesTestData(t, tt.file)), tt.count)
+		})
+	}
+
+	t.Run("no updates", func(t *testing.T) {
+		assert.Empty(t, parseXbpsSimulate("\n"))
+	})
+}
+
 func TestCheckDnf(t *testing.T) {
 	tests := []struct {
 		name, updates, security, installed string

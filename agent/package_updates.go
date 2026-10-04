@@ -151,6 +151,8 @@ func detectPackageManager(dataDir string) (string, packageUpdatesCheck) {
 		return "pacman", newPacmanCheck(dataDir)
 	case commandExists("apk"):
 		return "apk", checkApk
+	case commandExists("xbps-install"):
+		return "xbps", checkXbps
 	}
 	return "", nil
 }
@@ -505,4 +507,58 @@ func splitApkNameVersion(s string) (name, version string) {
 		return s, ""
 	}
 	return s[:ver], s[ver+1:]
+}
+
+// checkXbps lists package updates. There are no security updates, so always returns `securityKnown: false`
+func checkXbps(ctx context.Context) (packageUpdatesResult, error) {
+	out, err := runPackageCommand(ctx, nil, "xbps-install", "-Mun")
+	if err != nil {
+		return packageUpdatesResult{}, err
+	}
+	packages := parseXbpsSimulate(out)
+
+	for i := range packages {
+		out, err = runPackageCommand(ctx, nil, "xbps-query", "-p", "pkgver", packages[i].Name)
+		if err == nil {
+			_, ver := parseXbpsNameVersion(out)
+			packages[i].Current = ver
+		}
+	}
+
+	return packageUpdatesResult{
+		counts:        []uint16{uint16(len(packages)), countSecurity(packages)},
+		packages:      packages,
+		securityKnown: false,
+	}, nil
+}
+
+// parseXbpsSimulate parses upgrades in `xbps-install -Mun` output. Upgrade lines look like
+// "libgbm-26.2.4_1 update x86_64 https://void.sakamoto.pl/current 18488 6762"
+func parseXbpsSimulate(out string) (packages []system.PackageUpdate) {
+	scanner := bufio.NewScanner(strings.NewReader(out))
+	for scanner.Scan() {
+		line := scanner.Text()
+		fields := strings.Fields(line)
+		if len(fields) < 2 || fields[1] != "update" {
+			continue
+		}
+		name, ver := parseXbpsNameVersion(fields[0])
+		pkg := system.PackageUpdate{
+			Name:      name,
+			Available: ver,
+			Security: false,
+		}
+		packages = append(packages, pkg)
+	}
+	return packages
+}
+
+// parseXbpsNameVersion splits name-version to tuple (name, version)
+// Names may contain dashes, but versions do not.
+func parseXbpsNameVersion(s string) (name, ver string) {
+	i := strings.LastIndexByte(s, '-')
+	if i < 0 {
+		return s, ""
+	}
+	return s[:i], s[i+1:]
 }
