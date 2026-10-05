@@ -8,7 +8,6 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
-	"strings"
 	"testing"
 	"time"
 
@@ -218,7 +217,7 @@ exit 100`,
 				"rpm": `cat "` + testDataPath(t, tt.installed) + `"
 exit 1`,
 			})
-			result, err := checkDnf(context.Background())
+			result, err := newDnfCheck(t.TempDir())(context.Background())
 			require.NoError(t, err)
 			assert.Equal(t, []uint16{uint16(tt.total), uint16(tt.securityCount)}, result.counts)
 			assert.True(t, result.securityKnown)
@@ -237,11 +236,35 @@ echo "bash.x86_64 5.1.8-9.el9 baseos"
 exit 100`,
 			"rpm": `echo "bash.x86_64 5.1.8-6.el9_1"`,
 		})
-		result, err := checkDnf(context.Background())
+		result, err := newDnfCheck(t.TempDir())(context.Background())
 		require.NoError(t, err)
 		assert.Equal(t, []uint16{1}, result.counts)
 		assert.False(t, result.securityKnown)
 		assert.Equal(t, []system.PackageUpdate{{Name: "bash", Current: "5.1.8-6.el9_1", Available: "5.1.8-9.el9"}}, result.packages)
+	})
+
+	t.Run("error includes stderr", func(t *testing.T) {
+		fakeCommands(t, map[string]string{
+			"dnf": `echo "Error: Cache-only enabled but no cache for 'baseos'" >&2
+exit 1`,
+		})
+		_, err := newDnfCheck(t.TempDir())(context.Background())
+		require.Error(t, err)
+		assert.Equal(t, "dnf: exit status 1: Error: Cache-only enabled but no cache for 'baseos'", err.Error())
+	})
+
+	t.Run("state and cache in data dir", func(t *testing.T) {
+		dataDir := t.TempDir()
+		envFile := filepath.Join(t.TempDir(), "env")
+		fakeCommands(t, map[string]string{
+			"dnf": `echo "$XDG_STATE_HOME $XDG_CACHE_HOME" >> "` + envFile + `"`,
+		})
+		_, err := newDnfCheck(dataDir)(context.Background())
+		require.NoError(t, err)
+		env, err := os.ReadFile(envFile)
+		require.NoError(t, err)
+		want := filepath.Join(dataDir, "state") + " " + filepath.Join(dataDir, "cache") + "\n"
+		assert.Equal(t, want+want, string(env))
 	})
 }
 
@@ -273,25 +296,36 @@ func TestParseZypperListUpdates(t *testing.T) {
 }
 
 func TestCheckZypper(t *testing.T) {
+	dataDir := t.TempDir()
+	argsFile := filepath.Join(t.TempDir(), "args")
 	fakeCommands(t, map[string]string{
-		"zypper": `case "$*" in *list-patches*) cat "` + testDataPath(t, "zypper_leap155_list_patches_security.txt") + `" ;; *) cat "` + testDataPath(t, "zypper_leap155_list_updates.txt") + `" ;; esac`,
+		"zypper": `echo "$*" >> "` + argsFile + `"
+case "$*" in *list-patches*) cat "` + testDataPath(t, "zypper_leap155_list_patches_security.txt") + `" ;; *) cat "` + testDataPath(t, "zypper_leap155_list_updates.txt") + `" ;; esac`,
 	})
-	result, err := checkZypper(context.Background())
+	result, err := newZypperCheck(dataDir)(context.Background())
 	require.NoError(t, err)
 	// security patches don't map to packages, so only the count is known
 	assert.Equal(t, []uint16{22, 4}, result.counts)
 	assert.False(t, result.securityKnown)
 	assert.Len(t, result.packages, 22)
+
+	// both commands use the agent's own solv cache
+	args, err := os.ReadFile(argsFile)
+	require.NoError(t, err)
+	solvDir := filepath.Join(dataDir, "zypp-solv")
+	assert.Equal(t, "--no-refresh -q --solv-cache-dir "+solvDir+" list-updates\n"+
+		"--no-refresh -q --solv-cache-dir "+solvDir+" list-patches --category security\n", string(args))
 }
 
-func TestParsePacmanCheckUpdates(t *testing.T) {
+func TestParsePacmanQueryUpgrades(t *testing.T) {
 	assert.Equal(t, []system.PackageUpdate{
 		{Name: "libpcap", Current: "1.10.7-1", Available: "1.11.0-1"},
 		{Name: "libsecret", Current: "0.21.7-1", Available: "0.21.8.2-1"},
 		{Name: "libtirpc", Current: "1.3.7-1", Available: "1.3.8-1"},
 		{Name: "tzdata", Current: "2026c-1", Available: "2026d-1"},
-	}, parsePacmanCheckUpdates(readPackageUpdatesTestData(t, "pacman_checkupdates.txt")))
-	assert.Empty(t, parsePacmanCheckUpdates(""))
+	}, parsePacmanQueryUpgrades(readPackageUpdatesTestData(t, "pacman_query_upgrades.txt")))
+	assert.Empty(t, parsePacmanQueryUpgrades(""))
+	assert.Equal(t, []system.PackageUpdate{{Name: "linux", Current: "6.1-1", Available: "6.2-1"}}, parsePacmanQueryUpgrades("linux 6.1-1 -> 6.2-1 [ignored]\n"))
 }
 
 func TestParseApkUpgradable(t *testing.T) {
@@ -400,46 +434,28 @@ func TestGetPackageUpdatesHandler(t *testing.T) {
 	assert.Equal(t, system.PackageUpdates{Manager: "apk", CheckedAt: 1700000000, Packages: packages}, sent)
 }
 
-func TestPacmanCheckSync(t *testing.T) {
-	if runtime.GOOS == "windows" {
-		t.Skip("requires a shell script on PATH")
+func TestCheckPacman(t *testing.T) {
+	tests := []struct {
+		name, script string
+		counts       []uint16
+		err          string
+	}{
+		{"updates", `echo "linux 6.1-1 -> 6.2-1"`, []uint16{1}, ""},
+		{"no updates", "exit 1", []uint16{0}, ""},
+		{"error", `echo "error: failed to initialize alpm library" >&2
+exit 1`, nil, "pacman: exit status 1: error: failed to initialize alpm library"},
 	}
-	binDir := t.TempDir()
-	dataDir := t.TempDir()
-	logFile := filepath.Join(binDir, "calls.log")
-	// fake checkupdates logs its args and db path, and creates the sync dir when syncing
-	script := `#!/bin/sh
-echo "args=[$*] db=$CHECKUPDATES_DB" >> ` + logFile + `
-[ "$1" = "-n" ] || mkdir -p "$CHECKUPDATES_DB/sync"
-echo "linux 6.1-1 -> 6.2-1"
-`
-	require.NoError(t, os.WriteFile(filepath.Join(binDir, "checkupdates"), []byte(script), 0o755))
-	t.Setenv("PATH", binDir+string(os.PathListSeparator)+os.Getenv("PATH"))
-
-	check := newPacmanCheck(dataDir)
-	dbPath := filepath.Join(dataDir, "checkup-db")
-	readCalls := func() []string {
-		data, err := os.ReadFile(logFile)
-		require.NoError(t, err)
-		return strings.Split(strings.TrimSpace(string(data)), "\n")
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			fakeCommands(t, map[string]string{"pacman": `[ "$*" = "-Qu" ] || exit 9
+` + tt.script})
+			result, err := checkPacman(context.Background())
+			if tt.err != "" {
+				require.EqualError(t, err, tt.err)
+				return
+			}
+			require.NoError(t, err)
+			assert.Equal(t, tt.counts, result.counts)
+		})
 	}
-
-	// first check syncs
-	result, err := check(context.Background())
-	require.NoError(t, err)
-	assert.Equal(t, []uint16{1}, result.counts)
-	assert.Equal(t, []system.PackageUpdate{{Name: "linux", Current: "6.1-1", Available: "6.2-1"}}, result.packages)
-	// later checks reuse the synced copy
-	_, err = check(context.Background())
-	require.NoError(t, err)
-	// a missing private copy forces a sync
-	require.NoError(t, os.RemoveAll(dbPath))
-	_, err = check(context.Background())
-	require.NoError(t, err)
-
-	assert.Equal(t, []string{
-		"args=[] db=" + dbPath,
-		"args=[-n] db=" + dbPath,
-		"args=[] db=" + dbPath,
-	}, readCalls())
 }

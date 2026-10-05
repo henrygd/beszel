@@ -2,8 +2,10 @@ package agent
 
 import (
 	"bufio"
+	"bytes"
 	"context"
 	"errors"
+	"fmt"
 	"log/slog"
 	"os"
 	"os/exec"
@@ -21,9 +23,6 @@ import (
 const (
 	defaultPackageUpdatesInterval = time.Hour
 	packageUpdatesTimeout         = 5 * time.Minute
-	// pacmanSyncInterval limits how often checkupdates downloads fresh sync
-	// databases. Checks in between reuse the last synced copy.
-	pacmanSyncInterval = 12 * time.Hour
 )
 
 // packageUpdatesResult is the outcome of one package manager check.
@@ -51,7 +50,8 @@ type packageUpdatesManager struct {
 
 // newPackageUpdatesManager returns nil if disabled or no supported package manager
 // is found. Agents running in a container are skipped because the container's
-// package database is not the host's. dataDir holds pacman's private sync databases.
+// package database is not the host's. dataDir holds the package managers' per-user
+// caches and state, which they cannot write to their usual locations as the agent user.
 func newPackageUpdatesManager(dataDir string) *packageUpdatesManager {
 	if runtime.GOOS != "linux" || runningInContainer() {
 		return nil
@@ -144,11 +144,11 @@ func detectPackageManager(dataDir string) (string, packageUpdatesCheck) {
 	case commandExists("apt-get"):
 		return "apt", checkApt
 	case commandExists("dnf"):
-		return "dnf", checkDnf
+		return "dnf", newDnfCheck(dataDir)
 	case commandExists("zypper"):
-		return "zypper", checkZypper
-	case commandExists("checkupdates"):
-		return "pacman", newPacmanCheck(dataDir)
+		return "zypper", newZypperCheck(dataDir)
+	case commandExists("pacman"):
+		return "pacman", checkPacman
 	case commandExists("apk"):
 		return "apk", checkApk
 	}
@@ -171,12 +171,18 @@ func runPackageCommandEnv(ctx context.Context, env []string, okCodes []int, name
 	cmd := exec.CommandContext(ctx, name, args...)
 	cmd.Env = append(os.Environ(), "LC_ALL=C")
 	cmd.Env = append(cmd.Env, env...)
-	// checkupdates is a shell script, so a timeout kills only the script and its
-	// children can keep stdout open. WaitDelay stops Output from waiting on them.
+	// a timeout kills only the command itself, and children it started can keep
+	// stdout open. WaitDelay stops Output from waiting on them.
 	cmd.WaitDelay = 10 * time.Second
 	out, err := cmd.Output()
-	if exitErr, ok := errors.AsType[*exec.ExitError](err); ok && slices.Contains(okCodes, exitErr.ExitCode()) {
-		return string(out), nil
+	if exitErr, ok := errors.AsType[*exec.ExitError](err); ok {
+		if slices.Contains(okCodes, exitErr.ExitCode()) {
+			return string(out), nil
+		}
+		// include stderr so a failure says why, not just "exit status 1"
+		if stderr := strings.TrimSpace(string(exitErr.Stderr)); stderr != "" {
+			err = fmt.Errorf("%s: %w: %s", name, err, stderr)
+		}
 	}
 	return string(out), err
 }
@@ -206,10 +212,26 @@ func checkApt(ctx context.Context) (packageUpdatesResult, error) {
 	}, nil
 }
 
+// newDnfCheck points dnf5's per-user state (log) and cache dirs into dataDir.
+// They default to $HOME/.local/state and $HOME/.cache, and the agent user's home
+// is usually /nonexistent. With -C, dnf5 still reads the system metadata cache.
+func newDnfCheck(dataDir string) packageUpdatesCheck {
+	var env []string
+	if dataDir != "" {
+		env = []string{
+			"XDG_STATE_HOME=" + filepath.Join(dataDir, "state"),
+			"XDG_CACHE_HOME=" + filepath.Join(dataDir, "cache"),
+		}
+	}
+	return func(ctx context.Context) (packageUpdatesResult, error) {
+		return checkDnf(ctx, env)
+	}
+}
+
 // checkDnf uses the system metadata cache only (-C), so it never downloads metadata.
 // check-update lists only available versions, so installed versions come from rpm.
-func checkDnf(ctx context.Context) (packageUpdatesResult, error) {
-	out, err := runPackageCommand(ctx, []int{100}, "dnf", "-q", "-C", "check-update")
+func checkDnf(ctx context.Context, env []string) (packageUpdatesResult, error) {
+	out, err := runPackageCommandEnv(ctx, env, []int{100}, "dnf", "-q", "-C", "check-update")
 	if err != nil {
 		return packageUpdatesResult{}, err
 	}
@@ -229,7 +251,7 @@ func checkDnf(ctx context.Context) (packageUpdatesResult, error) {
 		}
 	}
 
-	out, err = runPackageCommand(ctx, []int{100}, "dnf", "-q", "-C", "check-update", "--security")
+	out, err = runPackageCommandEnv(ctx, env, []int{100}, "dnf", "-q", "-C", "check-update", "--security")
 	if err == nil {
 		// --security lists the lowest version that fixes an advisory, which may be
 		// older than the version check-update offers, so match on name.arch only
@@ -253,61 +275,43 @@ func checkDnf(ctx context.Context) (packageUpdatesResult, error) {
 	return result, nil
 }
 
-// checkZypper lists package updates. Security updates come from patches, which
+// newZypperCheck lists package updates. Security updates come from patches, which
 // zypper does not map to packages here, so only the security count is known.
-func checkZypper(ctx context.Context) (packageUpdatesResult, error) {
-	out, err := runPackageCommand(ctx, nil, "zypper", "--no-refresh", "-q", "list-updates")
-	if err != nil {
-		return packageUpdatesResult{}, err
-	}
-	packages := parseZypperListUpdates(out)
-	result := packageUpdatesResult{packages: packages, counts: []uint16{uint16(len(packages))}}
-	out, err = runPackageCommand(ctx, nil, "zypper", "--no-refresh", "-q", "list-patches", "--category", "security")
-	if err == nil {
-		result.counts = append(result.counts, parseZypperTable(out))
-	}
-	return result, nil
-}
-
-// newPacmanCheck uses checkupdates (pacman-contrib), which syncs a private copy of
-// the databases and never touches pacman's own. The copy lives in dataDir because
-// the systemd unit's ProtectSystem=strict makes the default /tmp location read-only.
-// It syncs every pacmanSyncInterval and uses the existing copy (-n) in between.
-// Local upgrades show up right away since checkupdates links the live local DB.
-// Exit code 2 means no updates.
-func newPacmanCheck(dataDir string) packageUpdatesCheck {
-	var env []string
-	var syncDir string
+// zypper rebuilds the solv cache from the raw metadata when it is missing or stale,
+// which the agent user cannot do in /var/cache/zypp, so it keeps its own in dataDir.
+func newZypperCheck(dataDir string) packageUpdatesCheck {
+	args := []string{"--no-refresh", "-q"}
 	if dataDir != "" {
-		dbPath := filepath.Join(dataDir, "checkup-db")
-		env = []string{"CHECKUPDATES_DB=" + dbPath}
-		syncDir = filepath.Join(dbPath, "sync")
+		args = append(args, "--solv-cache-dir", filepath.Join(dataDir, "zypp-solv"))
 	}
-	// checks never overlap (packageUpdatesManager.running), so no lock is needed
-	var lastSync time.Time
 	return func(ctx context.Context) (packageUpdatesResult, error) {
-		// -n with a missing database reports no updates rather than failing,
-		// so always sync first and whenever the private copy is missing
-		sync := lastSync.IsZero() || time.Since(lastSync) >= pacmanSyncInterval
-		if !sync && syncDir != "" {
-			if _, err := os.Stat(syncDir); err != nil {
-				sync = true
-			}
-		}
-		var args []string
-		if !sync {
-			args = append(args, "-n")
-		}
-		out, err := runPackageCommandEnv(ctx, env, []int{2}, "checkupdates", args...)
+		out, err := runPackageCommand(ctx, nil, "zypper", slices.Concat(args, []string{"list-updates"})...)
 		if err != nil {
 			return packageUpdatesResult{}, err
 		}
-		if sync {
-			lastSync = time.Now()
+		packages := parseZypperListUpdates(out)
+		result := packageUpdatesResult{packages: packages, counts: []uint16{uint16(len(packages))}}
+		out, err = runPackageCommand(ctx, nil, "zypper", slices.Concat(args, []string{"list-patches", "--category", "security"})...)
+		if err == nil {
+			result.counts = append(result.counts, parseZypperTable(out))
 		}
-		packages := parsePacmanCheckUpdates(out)
-		return packageUpdatesResult{counts: []uint16{uint16(len(packages))}, packages: packages}, nil
+		return result, nil
 	}
+}
+
+// checkPacman compares installed packages against the system sync databases.
+// It never syncs them; pacman -Sy(u) by the user or a timer does that.
+func checkPacman(ctx context.Context) (packageUpdatesResult, error) {
+	out, err := runPackageCommand(ctx, nil, "pacman", "-Qu")
+	// -Qu exits 1 with no output when nothing is upgradable; errors print to stderr
+	if exitErr, ok := errors.AsType[*exec.ExitError](err); ok && exitErr.ExitCode() == 1 && len(bytes.TrimSpace(exitErr.Stderr)) == 0 {
+		err = nil
+	}
+	if err != nil {
+		return packageUpdatesResult{}, err
+	}
+	packages := parsePacmanQueryUpgrades(out)
+	return packageUpdatesResult{counts: []uint16{uint16(len(packages))}, packages: packages}, nil
 }
 
 func checkApk(ctx context.Context) (packageUpdatesResult, error) {
@@ -462,8 +466,8 @@ func parseZypperListUpdates(out string) (packages []system.PackageUpdate) {
 	return packages
 }
 
-// parsePacmanCheckUpdates parses "name old -> new" lines.
-func parsePacmanCheckUpdates(out string) (packages []system.PackageUpdate) {
+// parsePacmanQueryUpgrades parses "name old -> new" lines, which may end in "[ignored]".
+func parsePacmanQueryUpgrades(out string) (packages []system.PackageUpdate) {
 	scanner := bufio.NewScanner(strings.NewReader(out))
 	for scanner.Scan() {
 		fields := strings.Fields(scanner.Text())
