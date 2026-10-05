@@ -183,11 +183,18 @@ func (client *WebSocketClient) getOptions() *gws.ClientOption {
 		os.Setenv("ALL_PROXY", val)
 	}
 
+	// The default User-Agent mimics a browser so hubs behind Cloudflare-style
+	// anti-bot filters are reachable; USER_AGENT overrides it.
+	userAgent := getUserAgent()
+	if val, _ := utils.GetEnv("USER_AGENT"); val != "" {
+		userAgent = val
+	}
+
 	client.options = &gws.ClientOption{
 		Addr:      client.hubURL.String(),
 		TlsConfig: client.tlsConfig,
 		RequestHeader: http.Header{
-			"User-Agent": []string{getUserAgent()},
+			"User-Agent": []string{userAgent},
 			"X-Token":    []string{client.token},
 			"X-Beszel":   []string{beszel.Version},
 		},

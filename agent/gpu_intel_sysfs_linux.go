@@ -146,8 +146,6 @@ func (gm *GPUManager) updateIntelSysfsGpuData(cardPath, hwmonDir string) bool {
 	}
 
 	now := intelSysfsNow()
-	power, hasPower := gm.calculateIntelSysfsPower(id, energy, now)
-	powerPkg, hasPowerPkg := gm.readIntelSysfsPowerPkg(id, hwmonDir, now)
 	temp := readIntelSysfsTemperature(hwmonDir)
 	usage, usageErr := readOptionalSysfsFloat(filepath.Join(devicePath, "gpu_busy_percent"))
 	memUsed, memUsedErr := readFirstOptionalSysfsFloat(
@@ -160,6 +158,12 @@ func (gm *GPUManager) updateIntelSysfsGpuData(cardPath, hwmonDir string) bool {
 		filepath.Join(devicePath, "mem_info_lmem_total"),
 		filepath.Join(devicePath, "mem_info_local_mem_total"),
 	)
+
+	// calculateIntelSysfsPower/readIntelSysfsPowerPkg do sysfs I/O and touch
+	// the energy snapshot map, which has its own lock - the manager lock is
+	// only taken for the GpuDataMap update below.
+	power, hasPower := gm.calculateIntelSysfsPower(id, energy, now)
+	powerPkg, hasPowerPkg := gm.readIntelSysfsPowerPkg(id, hwmonDir, now)
 
 	gm.Lock()
 	defer gm.Unlock()
@@ -194,6 +198,9 @@ func (gm *GPUManager) updateIntelSysfsGpuData(cardPath, hwmonDir string) bool {
 }
 
 func (gm *GPUManager) calculateIntelSysfsPower(cardID string, microjoules uint64, timestamp time.Time) (float64, bool) {
+	gm.energyMu.Lock()
+	defer gm.energyMu.Unlock()
+
 	if gm.intelSysfsEnergySnapshots == nil {
 		gm.intelSysfsEnergySnapshots = make(map[string]intelSysfsEnergySnapshot)
 	}

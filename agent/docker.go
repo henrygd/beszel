@@ -275,8 +275,13 @@ func calculateMemoryUsage(apiStats *container.ApiStats, isWindows bool) (uint64,
 		memCache = apiStats.MemoryStats.Stats.Cache
 	}
 
+	// usage < cache is an inconsistent snapshot: reject it explicitly instead
+	// of relying on the unsigned wraparound landing above maxMemoryUsage.
+	if apiStats.MemoryStats.Usage < memCache {
+		return 0, fmt.Errorf("bad memory stats")
+	}
 	usedDelta := apiStats.MemoryStats.Usage - memCache
-	if usedDelta <= 0 || usedDelta > maxMemoryUsage {
+	if usedDelta == 0 || usedDelta > maxMemoryUsage {
 		return 0, fmt.Errorf("bad memory stats")
 	}
 
@@ -337,6 +342,8 @@ func (dm *dockerManager) calculateNetworkStats(ctr *container.ApiInfo, apiStats 
 		if millisecondsElapsed > 0 {
 			if sent_delta_raw > 0 {
 				sent_delta = sent_delta_raw * 1000 / millisecondsElapsed
+				// Underflow safety: a counter reset wraps the delta near 2^64, so
+				// it must exceed this fuse; see the note at the disk I/O fuse.
 				if sent_delta > maxNetworkSpeedBps {
 					slog.Warn("Bad network delta", "container", name)
 					sent_delta = 0

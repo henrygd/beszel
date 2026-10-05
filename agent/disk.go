@@ -732,6 +732,11 @@ func (a *Agent) updateDiskIo(cacheTimeMs uint16, systemStats *system.Stats) {
 			writeMbPerSecond := utils.BytesToMegabytes(float64(diskIOWrite))
 
 			// validate values
+			// Underflow safety: a counter reset wraps the byte delta near
+			// 2^64; multiplied by 1000 it still lands far above this fuse, so
+			// a reset can never pass as a plausible rate. If this threshold is
+			// lowered or the multiply/divide order changes, re-verify that
+			// premise.
 			if readMbPerSecond > 50_000 || writeMbPerSecond > 50_000 {
 				slog.Warn("Invalid disk I/O. Resetting.", "name", d.Name, "read", readMbPerSecond, "write", writeMbPerSecond)
 				// also refresh agent baseline to avoid future negatives

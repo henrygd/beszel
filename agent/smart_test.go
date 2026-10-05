@@ -1483,3 +1483,16 @@ func TestLookupDarwinNvmeCapacityProviderError(t *testing.T) {
 	// Cache should be initialized even on error so we don't retry (Once already fired)
 	assert.NotNil(t, sm.darwinNvmeCapacity)
 }
+
+// TestSmartRefreshFailureStreak pins the escalation counter behavior used to
+// surface a silently dead SMART feed: the streak grows per failure and resets
+// on the first success.
+func TestSmartRefreshFailureStreak(t *testing.T) {
+	sm := &SmartManager{}
+	for i := uint32(1); i <= 3; i++ {
+		assert.Equal(t, i, sm.recordRefreshFailure())
+	}
+	sm.recordRefreshSuccess()
+	assert.Equal(t, uint32(0), sm.refreshFailStreak.Load(),
+		"a successful refresh must reset the streak")
+}

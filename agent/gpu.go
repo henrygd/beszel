@@ -50,6 +50,10 @@ type GPUManager struct {
 	lastSnapshots map[uint16]map[string]*gpuSnapshot
 	// Per-card energy snapshots for Intel sysfs power calculation.
 	intelSysfsEnergySnapshots map[string]intelSysfsEnergySnapshot
+	// energyMu guards intelSysfsEnergySnapshots. It is separate from the
+	// manager lock so the sysfs reads around the snapshot stay outside any
+	// critical section that other goroutines contend on.
+	energyMu sync.Mutex
 }
 
 // gpuSnapshot stores the last observed incremental values for delta tracking

@@ -183,7 +183,15 @@ func (h *GetSmartDataHandler) Handle(hctx *HandlerContext) error {
 	}
 	complete, err := hctx.Agent.smartManager.Refresh(false)
 	if err != nil {
-		slog.Debug("smart refresh failed", "err", err)
+		// Escalate to WARN once failures repeat: a silently dead SMART feed
+		// is exactly the kind of failure a monitoring tool must not hide.
+		if streak := hctx.Agent.smartManager.recordRefreshFailure(); streak == 3 {
+			slog.Warn("SMART refresh failing repeatedly", "streak", streak, "err", err)
+		} else {
+			slog.Debug("smart refresh failed", "err", err)
+		}
+	} else {
+		hctx.Agent.smartManager.recordRefreshSuccess()
 	}
 	return hctx.SendResponse(smart.SmartDataResponse{
 		Data:     hctx.Agent.smartManager.GetCurrentData(),

@@ -16,6 +16,7 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+	"sync/atomic"
 	"time"
 
 	"github.com/henrygd/beszel/agent/utils"
@@ -25,6 +26,7 @@ import (
 // SmartManager manages data collection for SMART devices
 type SmartManager struct {
 	sync.Mutex
+	refreshFailStreak  atomic.Uint32 // consecutive Refresh failures, for log escalation
 	SmartDataMap       map[string]*smart.SmartData
 	SmartDevices       []*DeviceInfo
 	refreshMutex       sync.Mutex
@@ -1279,4 +1281,18 @@ func NewSmartManager() (*SmartManager, error) {
 	}
 	sm.smartctlPath = path
 	return sm, nil
+}
+
+// recordRefreshFailure bumps the consecutive SMART refresh failure count and
+// returns the new streak length.
+func (sm *SmartManager) recordRefreshFailure() uint32 {
+	return sm.refreshFailStreak.Add(1)
+}
+
+// recordRefreshSuccess resets the consecutive failure count, logging a debug
+// line when the refresh recovered after repeated failures.
+func (sm *SmartManager) recordRefreshSuccess() {
+	if previous := sm.refreshFailStreak.Swap(0); previous >= 3 {
+		slog.Debug("SMART refresh recovered", "previousFailures", previous)
+	}
 }
