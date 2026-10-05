@@ -4,6 +4,7 @@ package alerts_test
 
 import (
 	"sync"
+	"sync/atomic"
 	"testing"
 	"testing/synctest"
 	"time"
@@ -1203,4 +1204,58 @@ func TestStatusAlertCancelledPendingStillResolvesTriggeredAlert(t *testing.T) {
 
 	assert.False(t, findStatusAlert(t, hub, alert.Id).GetBool("triggered"), "triggered alert should resolve")
 	assert.Equal(t, initialEmailCount+1, hub.TestMailer.TotalSend(), "a recovery notification should be sent")
+}
+
+// Every "up" save handles status alerts, so two saves for the same system can
+// run at the same time. Only one of them may send the recovery notification.
+func TestStatusAlertConcurrentUpUpdatesResolveOnce(t *testing.T) {
+	hub, user := beszelTests.GetHubWithUser(t)
+	defer hub.Cleanup()
+	setStatusAlertEmail(t, hub, user.Id, "test@example.com")
+
+	systemCollection, err := hub.FindCollectionByNameOrId("systems")
+	require.NoError(t, err)
+	system := core.NewRecord(systemCollection)
+	system.Set("name", "test-system")
+	system.Set("status", "up")
+	system.Set("host", "127.0.0.1")
+	system.Set("users", []string{user.Id})
+	require.NoError(t, hub.Save(system))
+
+	alertCollection, err := hub.FindCollectionByNameOrId("alerts")
+	require.NoError(t, err)
+	alert := core.NewRecord(alertCollection)
+	alert.Set("user", user.Id)
+	alert.Set("system", system.Id)
+	alert.Set("name", "Status")
+	alert.Set("triggered", true)
+	alert.Set("min", 1)
+	require.NoError(t, hub.Save(alert))
+
+	am := alerts.NewTestAlertManagerWithoutWorker(hub)
+	initialEmailCount := hub.TestMailer.TotalSend()
+
+	// hold the first recovery write while a second update comes in
+	resolveStarted := make(chan struct{})
+	releaseResolve := make(chan struct{})
+	var resolveWrites atomic.Int32
+	hub.OnRecordUpdate("alerts").BindFunc(func(e *core.RecordEvent) error {
+		if e.Record.Id == alert.Id && !e.Record.GetBool("triggered") && resolveWrites.Add(1) == 1 {
+			close(resolveStarted)
+			<-releaseResolve
+		}
+		return e.Next()
+	})
+
+	done := make(chan error)
+	go func() { done <- am.HandleStatusAlerts("up", system) }()
+	<-resolveStarted
+	require.NoError(t, am.HandleStatusAlerts("up", system))
+	close(releaseResolve)
+	require.NoError(t, <-done)
+	// a later update reads the resolved alert from the cache
+	require.NoError(t, am.HandleStatusAlerts("up", system))
+
+	assert.False(t, findStatusAlert(t, hub, alert.Id).GetBool("triggered"))
+	assert.Equal(t, initialEmailCount+1, hub.TestMailer.TotalSend(), "recovery notification should be sent once")
 }
