@@ -3,6 +3,7 @@
 package agent
 
 import (
+	"log/slog"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -107,6 +108,32 @@ func (a *Agent) initializeCpu() {
 		s.at = cpuNow()
 		lastCgroupCpuSamples[60000] = s
 	}
+}
+
+// warnIfRootCgroup logs at startup when USE_CGROUP would read the host's root
+// cgroup (e.g. a container run with --cgroupns=host), whose accounting covers
+// the whole machine rather than the container.
+func (a *Agent) warnIfRootCgroup() {
+	if a.forceUseCgroup && inRootCgroupV2() {
+		slog.Warn("USE_CGROUP is reading the host's root cgroup; use --cgroupns=private to monitor the container")
+	}
+}
+
+// inRootCgroupV2 reports whether the visible cgroup v2 mount is the root
+// cgroup. Every cgroup except the root has a cgroup.type file.
+func inRootCgroupV2() bool {
+	if !utils.InCgroupV2(cpuProcSelfCgroup) {
+		return false
+	}
+	dir := cpuCgroupRoot
+	if mount := utils.CgroupMountPoint(cpuCgroupMountinfo, "cgroup2", ""); mount != "" {
+		dir = mount
+	}
+	if _, err := os.Stat(filepath.Join(dir, "cgroup.controllers")); err != nil {
+		return false // no cgroup v2 mount here
+	}
+	_, err := os.Stat(filepath.Join(dir, "cgroup.type"))
+	return os.IsNotExist(err)
 }
 
 // containerCpuMetrics derives CPU metrics from the cgroup mount root's

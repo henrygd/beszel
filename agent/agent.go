@@ -112,6 +112,8 @@ func NewAgent(dataDir ...string) (agent *Agent, err error) {
 
 	slog.Debug(beszel.Version)
 
+	agent.warnIfRootCgroup()
+
 	// initialize docker manager
 	agent.dockerManager = newDockerManager(agent)
 

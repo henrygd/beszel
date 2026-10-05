@@ -307,6 +307,28 @@ func TestContainerCpuMetricsExplicitOptInUnreadable(t *testing.T) {
 	assert.False(t, ok)
 }
 
+func TestInRootCgroupV2(t *testing.T) {
+	swapCpuContainerSeams(t)
+	writeCpuFixture(t, cpuCgroupMountinfo, "")
+
+	// no cgroup v2 membership
+	writeCpuFixture(t, cpuProcSelfCgroup, "4:cpu,cpuacct:/docker/abc\n")
+	writeCpuFixture(t, filepath.Join(cpuCgroupRoot, "cgroup.controllers"), "cpu memory\n")
+	assert.False(t, inRootCgroupV2())
+
+	// --cgroupns=host: the mount is the host root, which has no cgroup.type
+	writeCpuFixture(t, cpuProcSelfCgroup, "0::/system.slice/docker-abc.scope\n")
+	assert.True(t, inRootCgroupV2())
+
+	// --cgroupns=private: the mount is the container's own (non-root) cgroup
+	writeCpuFixture(t, filepath.Join(cpuCgroupRoot, "cgroup.type"), "domain\n")
+	assert.False(t, inRootCgroupV2())
+
+	// no cgroup v2 mount at all
+	require.NoError(t, os.RemoveAll(cpuCgroupRoot))
+	assert.False(t, inRootCgroupV2())
+}
+
 func TestInitializeCpuDetectsLxc(t *testing.T) {
 	swapCpuContainerSeams(t)
 	markLxc(t)

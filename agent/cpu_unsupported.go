@@ -9,3 +9,5 @@ func containerCpuMetrics(uint16, bool) (CpuMetrics, bool) {
 }
 
 func (a *Agent) initializeCpu() {}
+
+func (a *Agent) warnIfRootCgroup() {}
