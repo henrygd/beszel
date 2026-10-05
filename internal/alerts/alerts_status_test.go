@@ -3,6 +3,7 @@
 package alerts_test
 
 import (
+	"sync"
 	"testing"
 	"testing/synctest"
 	"time"
@@ -1041,4 +1042,165 @@ func TestCancelPendingStatusAlertsClearsAllAlertsForSystem(t *testing.T) {
 	require.NoError(t, err)
 	assert.Len(t, processed, 1, "only the non-paused system's alert should be processed")
 	assert.Equal(t, initialEmailCount+1, hub.TestMailer.TotalSend(), "only system2 should send a down notification")
+}
+
+func findStatusAlert(t *testing.T, hub core.App, alertID string) *core.Record {
+	t.Helper()
+	alert, err := hub.FindRecordById("alerts", alertID)
+	require.NoError(t, err)
+	return alert
+}
+
+// A stale triggered status alert (its recovery was missed) must be resolved by
+// the next "up" update, even though the system was already up before it.
+func TestStatusAlertStaleTriggeredResolvesOnNextUpUpdate(t *testing.T) {
+	hub, user := beszelTests.GetHubWithUser(t)
+	defer hub.Cleanup()
+
+	synctest.Test(t, func(t *testing.T) {
+		t.Cleanup(func() {
+			synctest.Wait()
+			hub.GetAlertManager().Stop()
+		})
+		hub.GetSystemManager().ResetContextForTesting(t)
+		setStatusAlertEmail(t, hub, user.Id, "test@example.com")
+
+		systems, err := beszelTests.CreateSystems(hub, 1, user.Id, "up")
+		require.NoError(t, err)
+		system := systems[0]
+
+		alert, err := beszelTests.CreateRecord(hub, "alerts", map[string]any{
+			"name":   "Status",
+			"system": system.Id,
+			"user":   user.Id,
+			"min":    1,
+		})
+		require.NoError(t, err)
+		alert.Set("triggered", true)
+		require.NoError(t, hub.Save(alert))
+		synctest.Wait()
+		initialEmailCount := hub.TestMailer.TotalSend()
+
+		// regular update: the system was up and stays up
+		system.Set("status", "up")
+		require.NoError(t, hub.SaveNoValidate(system))
+		synctest.Wait()
+
+		assert.False(t, findStatusAlert(t, hub, alert.Id).GetBool("triggered"), "stale alert should resolve on the next up update")
+		assert.Equal(t, initialEmailCount+1, hub.TestMailer.TotalSend(), "a recovery notification should be sent")
+		unresolved, err := hub.CountRecords("alerts_history", dbx.HashExp{"alert_id": alert.Id, "resolved": ""})
+		require.NoError(t, err)
+		assert.Zero(t, unresolved, "alert history should be resolved")
+
+		// later updates do nothing for an untriggered alert
+		require.NoError(t, hub.SaveNoValidate(system))
+		synctest.Wait()
+		assert.Equal(t, initialEmailCount+1, hub.TestMailer.TotalSend(), "repeated up updates should not send notifications")
+	})
+}
+
+// Reproduces the race where the pending "down" timer fires just before the
+// system comes back and its write lands after the recovery was handled. The
+// alert is left triggered while the system is up; the next update must resolve it.
+func TestStatusAlertDownWrittenAfterRecoveryResolvesOnNextUpdate(t *testing.T) {
+	hub, user := beszelTests.GetHubWithUser(t)
+	defer hub.Cleanup()
+
+	synctest.Test(t, func(t *testing.T) {
+		t.Cleanup(func() {
+			synctest.Wait()
+			hub.GetAlertManager().Stop()
+		})
+		hub.GetSystemManager().ResetContextForTesting(t)
+		setStatusAlertEmail(t, hub, user.Id, "test@example.com")
+
+		systems, err := beszelTests.CreateSystems(hub, 1, user.Id, "up")
+		require.NoError(t, err)
+		system := systems[0]
+
+		alert, err := beszelTests.CreateRecord(hub, "alerts", map[string]any{
+			"name":   "Status",
+			"system": system.Id,
+			"user":   user.Id,
+			"min":    1,
+		})
+		require.NoError(t, err)
+
+		// Hold the "down" write until the recovery has been handled, like a slow
+		// database write would.
+		downWriteStarted := make(chan struct{})
+		releaseDownWrite := make(chan struct{})
+		var once sync.Once
+		hub.OnRecordUpdate("alerts").BindFunc(func(e *core.RecordEvent) error {
+			if e.Record.Id == alert.Id && e.Record.GetBool("triggered") {
+				once.Do(func() {
+					close(downWriteStarted)
+					<-releaseDownWrite
+				})
+			}
+			return e.Next()
+		})
+		initialEmailCount := hub.TestMailer.TotalSend()
+
+		system.Set("status", "down")
+		require.NoError(t, hub.SaveNoValidate(system))
+
+		// the pending timer fires after the alert's minimum and starts the down write
+		<-downWriteStarted
+
+		// the system comes back while the down write is still in flight
+		system.Set("status", "up")
+		require.NoError(t, hub.SaveNoValidate(system))
+		close(releaseDownWrite)
+		synctest.Wait()
+		require.True(t, findStatusAlert(t, hub, alert.Id).GetBool("triggered"), "down write should land after the recovery was handled")
+
+		// next regular update while the system is still up
+		require.NoError(t, hub.SaveNoValidate(system))
+		synctest.Wait()
+
+		assert.False(t, findStatusAlert(t, hub, alert.Id).GetBool("triggered"), "alert should be resolved by the next up update")
+		assert.Equal(t, initialEmailCount+2, hub.TestMailer.TotalSend(), "should send the down and the recovery notification")
+		unresolved, err := hub.CountRecords("alerts_history", dbx.HashExp{"alert_id": alert.Id, "resolved": ""})
+		require.NoError(t, err)
+		assert.Zero(t, unresolved, "alert history should be resolved")
+	})
+}
+
+// A short outage that cancels a pending alert must still resolve an alert that
+// is triggered from an earlier outage.
+func TestStatusAlertCancelledPendingStillResolvesTriggeredAlert(t *testing.T) {
+	hub, user := beszelTests.GetHubWithUser(t)
+	defer hub.Cleanup()
+	setStatusAlertEmail(t, hub, user.Id, "test@example.com")
+
+	systemCollection, err := hub.FindCollectionByNameOrId("systems")
+	require.NoError(t, err)
+	system := core.NewRecord(systemCollection)
+	system.Set("name", "test-system")
+	system.Set("status", "up")
+	system.Set("host", "127.0.0.1")
+	system.Set("users", []string{user.Id})
+	require.NoError(t, hub.Save(system))
+
+	alertCollection, err := hub.FindCollectionByNameOrId("alerts")
+	require.NoError(t, err)
+	alert := core.NewRecord(alertCollection)
+	alert.Set("user", user.Id)
+	alert.Set("system", system.Id)
+	alert.Set("name", "Status")
+	alert.Set("triggered", true)
+	alert.Set("min", 1)
+	require.NoError(t, hub.Save(alert))
+
+	initialEmailCount := hub.TestMailer.TotalSend()
+	am := alerts.NewTestAlertManagerWithoutWorker(hub)
+
+	require.NoError(t, am.HandleStatusAlerts("down", system))
+	assert.Equal(t, 1, am.GetPendingAlertsCount())
+	require.NoError(t, am.HandleStatusAlerts("up", system))
+	assert.Zero(t, am.GetPendingAlertsCount(), "recovery should cancel the pending alert")
+
+	assert.False(t, findStatusAlert(t, hub, alert.Id).GetBool("triggered"), "triggered alert should resolve")
+	assert.Equal(t, initialEmailCount+1, hub.TestMailer.TotalSend(), "a recovery notification should be sent")
 }

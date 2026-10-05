@@ -29,7 +29,7 @@ func (am *AlertManager) Stop() {
 	})
 }
 
-// HandleStatusAlerts manages the logic when system status changes.
+// HandleStatusAlerts manages status alerts when a system goes down or is saved as up.
 func (am *AlertManager) HandleStatusAlerts(newStatus string, systemRecord *core.Record) error {
 	if newStatus != "up" && newStatus != "down" {
 		return nil
@@ -78,14 +78,15 @@ func (am *AlertManager) schedulePendingStatusAlert(systemName string, alertData 
 	return true
 }
 
-// handleSystemUp manages the logic when a system status changes to "up".
-// It cancels any pending alerts and sends "up" alerts.
+// handleSystemUp manages the logic when a system is "up". It cancels any pending
+// alerts and resolves alerts that are still triggered. It is called on every
+// "up" update, so it must be a no-op for alerts that are not triggered.
 func (am *AlertManager) handleSystemUp(systemName string, alerts []CachedAlertData) {
 	for _, alertData := range alerts {
-		// If alert exists for record, delete and continue (down alert not sent)
-		if am.cancelPendingAlert(alertData.Id) {
-			continue
-		}
+		// A pending alert means the current outage never reached the alert's
+		// minimum, so no "down" alert was sent for it. The alert may still be
+		// triggered from an earlier outage whose recovery was missed, though.
+		am.cancelPendingAlert(alertData.Id)
 		if !alertData.Triggered {
 			continue
 		}
