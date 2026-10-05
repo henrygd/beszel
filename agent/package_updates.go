@@ -141,7 +141,10 @@ func runningInContainer() bool {
 
 func detectPackageManager(dataDir string) (string, packageUpdatesCheck) {
 	switch {
-	case commandExists("apt-get"):
+	// openSUSE's zypper-aptitude provides an apt-get wrapper around zypper, so
+	// apt also requires the apt package in dpkg's database. dpkg alone is not
+	// enough because openSUSE packages it too.
+	case commandExists("apt-get") && exec.Command("dpkg-query", "-W", "apt").Run() == nil:
 		return "apt", checkApt
 	case commandExists("dnf"):
 		return "dnf", checkDnf
