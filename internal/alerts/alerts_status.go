@@ -90,9 +90,24 @@ func (am *AlertManager) handleSystemUp(systemName string, alerts []CachedAlertDa
 		if !alertData.Triggered {
 			continue
 		}
-		if err := am.sendStatusAlert("up", systemName, alertData); err != nil {
-			am.hub.Logger().Error("Failed to send alert", "err", err)
-		}
+		am.resolveStatusAlert(systemName, alertData)
+	}
+}
+
+// resolveStatusAlert sends the "up" alert for a triggered status alert. Concurrent
+// "up" saves for the same system skip an alert that is already being resolved.
+func (am *AlertManager) resolveStatusAlert(systemName string, alertData CachedAlertData) {
+	if _, busy := am.resolvingAlerts.LoadOrStore(alertData.Id, struct{}{}); busy {
+		return
+	}
+	defer am.resolvingAlerts.Delete(alertData.Id)
+	// re-check after claiming it, the alert may have been resolved since it was read
+	alertData, ok := am.alertsCache.Refresh(alertData)
+	if !ok || !alertData.Triggered {
+		return
+	}
+	if err := am.sendStatusAlert("up", systemName, alertData); err != nil {
+		am.hub.Logger().Error("Failed to send alert", "err", err)
 	}
 }
 
