@@ -22,5 +22,5 @@ func (h *Hub) SetPubkey(pubkey string) {
 }
 
 func (h *Hub) SetCollectionAuthSettings() error {
-	return setCollectionAuthSettings(h)
+	return ApplyCollectionAuthSettings(h)
 }
