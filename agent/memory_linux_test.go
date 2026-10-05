@@ -19,22 +19,14 @@ import (
 func setupMemoryCgroup(t *testing.T, v2 bool) string {
 	t.Helper()
 	swapCpuContainerSeams(t)
-	root, mountinfo, selfCgroup := memoryCgroupRoot, memoryCgroupMountinfo, memoryProcSelfCgroup
-	t.Cleanup(func() {
-		memoryCgroupRoot, memoryCgroupMountinfo, memoryProcSelfCgroup = root, mountinfo, selfCgroup
-	})
-	tmp := t.TempDir()
-	memoryCgroupRoot = filepath.Join(tmp, "cgroup")
-	memoryCgroupMountinfo = filepath.Join(tmp, "mountinfo")
-	memoryProcSelfCgroup = filepath.Join(tmp, "self-cgroup")
 	if v2 {
-		writeCpuFixture(t, memoryProcSelfCgroup, "0::/system.slice/agent.service\n")
-		writeCpuFixture(t, memoryCgroupMountinfo, "")
-		return memoryCgroupRoot
+		writeCpuFixture(t, cpuProcSelfCgroup, "0::/system.slice/agent.service\n")
+		writeCpuFixture(t, cpuCgroupMountinfo, "")
+		return cpuCgroupRoot
 	}
-	dir := filepath.Join(tmp, "memory")
-	writeCpuFixture(t, memoryProcSelfCgroup, "2:memory:/system.slice/agent.service\n")
-	writeCpuFixture(t, memoryCgroupMountinfo,
+	dir := filepath.Join(filepath.Dir(cpuCgroupRoot), "memory")
+	writeCpuFixture(t, cpuProcSelfCgroup, "2:memory:/system.slice/agent.service\n")
+	writeCpuFixture(t, cpuCgroupMountinfo,
 		"30 25 0:26 / "+dir+" rw - cgroup cgroup rw,memory\n")
 	return dir
 }
@@ -114,7 +106,7 @@ func TestContainerMemoryScopeAndEnablement(t *testing.T) {
 	dir := setupMemoryCgroup(t, true)
 	// A discovered non-default mount must win over the default root.
 	mount := filepath.Join(t.TempDir(), "unified")
-	writeCpuFixture(t, memoryCgroupMountinfo,
+	writeCpuFixture(t, cpuCgroupMountinfo,
 		"30 25 0:26 /guest "+mount+" rw - cgroup2 cgroup2 rw\n")
 	writeMemoryFixture(t, dir, true, "1", "1000", "file 0\nshmem 0\n")
 	writeMemoryFixture(t, mount, true, "600", "1000", "file 200\nshmem 0\n")

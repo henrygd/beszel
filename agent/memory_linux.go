@@ -9,13 +9,6 @@ import (
 	"github.com/henrygd/beszel/agent/utils"
 )
 
-// Paths are injectable so tests do not depend on the host's cgroup layout.
-var (
-	memoryCgroupRoot      = "/sys/fs/cgroup"
-	memoryCgroupMountinfo = "/proc/self/mountinfo"
-	memoryProcSelfCgroup  = "/proc/self/cgroup"
-)
-
 // containerMemoryMetrics is only used when USE_CGROUP is explicitly enabled.
 // Unlike /proc/stat, lxcfs already serves a container-scoped /proc/meminfo,
 // so LXC keeps the existing memory path by default.
@@ -23,16 +16,16 @@ func containerMemoryMetrics(hostTotal uint64, forceUseCgroup bool) (memoryMetric
 	if !forceUseCgroup {
 		return memoryMetrics{}, false
 	}
-	if utils.InCgroupV2(memoryProcSelfCgroup) {
-		dir := memoryCgroupRoot
-		if mount := utils.CgroupMountPoint(memoryCgroupMountinfo, "cgroup2", ""); mount != "" {
+	if utils.InCgroupV2(cpuProcSelfCgroup) {
+		dir := cpuCgroupRoot
+		if mount := utils.CgroupMountPoint(cpuCgroupMountinfo, "cgroup2", ""); mount != "" {
 			dir = mount
 		}
 		if metrics, ok := readCgroupMemoryMetrics(dir, hostTotal, true); ok {
 			return metrics, true
 		}
 	}
-	if dir := utils.CgroupMountPoint(memoryCgroupMountinfo, "cgroup", "memory"); dir != "" {
+	if dir := utils.CgroupMountPoint(cpuCgroupMountinfo, "cgroup", "memory"); dir != "" {
 		return readCgroupMemoryMetrics(dir, hostTotal, false)
 	}
 	return memoryMetrics{}, false
