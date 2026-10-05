@@ -120,7 +120,7 @@ export default function AreaChartDefault({
 			return null
 		}
 		if (!hasChartValues(displayData, dataPoints)) {
-			return <ChartNoValues />
+			return <ChartNoValues ref={ref} />
 		}
 		// if (logRender) {
 		// console.log("Rendered", dataPoints?.map((d) => d.label).join(", "), new Date())
