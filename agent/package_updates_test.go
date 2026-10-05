@@ -195,6 +195,11 @@ func TestParseXbpsSimulate(t *testing.T) {
 	packages := parseXbpsSimulate(readPackageUpdatesTestData(t, "xbps_void_check_update.txt"))
 	assert.Len(t, packages, 3)
 	assert.Equal(t, system.PackageUpdate{Name: "libmariadbclient", Available: "12.3.2_2"}, findPackage(t, packages, "libmariadbclient"))
+
+	packages = parseXbpsSimulate(readPackageUpdatesTestData(t, "xbps_void_install_update.txt"))
+	assert.Len(t, packages, 7)
+	assert.Equal(t, system.PackageUpdate{Name: "ca-certificates", Available: "20250419+3.127_1"}, findPackage(t, packages, "ca-certificates"))
+	assert.Equal(t, system.PackageUpdate{Name: "libcrypto3", Available: "3.6.5_1"}, findPackage(t, packages, "libcrypto3"))
 	// new dependencies are not updates
 	assert.Empty(t, parseXbpsSimulate("libfoo-1.0_1 install x86_64 https://repo-default.voidlinux.org/current 100 50\n"))
 	assert.Empty(t, parseXbpsSimulate("\n"))
