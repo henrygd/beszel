@@ -151,11 +151,19 @@ func (a *Agent) handleSession(s ssh.Session) {
 			s.Exit(1)
 			return
 		}
+		// A legacy hub never sends a request, so the session is done once the
+		// payload is out. Falling through to the decode below used to read an
+		// immediate EOF and re-run the legacy write, sending the hub a second
+		// stats payload.
+		_ = s.Exit(0)
+		return
 	}
 
 	var req common.HubRequest[cbor.RawMessage]
 	if err := cbor.NewDecoder(s).Decode(&req); err != nil {
-		// Fallback to legacy one-shot if the first decode fails
+		// Only reachable for hubs that report >= MinVersionAgentResponse: a
+		// malformed or truncated request falls back to the one-shot payload
+		// so the peer still receives something parseable.
 		if err2 := a.handleLegacyStats(s, hubVersion); err2 != nil {
 			slog.Error("Error encoding stats (fallback)", "err", err2)
 			s.Exit(1)
