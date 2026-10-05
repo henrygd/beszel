@@ -268,6 +268,29 @@ exit 1`,
 	})
 }
 
+func TestDetectPackageManager(t *testing.T) {
+	tests := []struct {
+		name     string
+		commands map[string]string
+		manager  string
+	}{
+		{"apt", map[string]string{"apt-get": "", "dpkg-query": "exit 0"}, "apt"},
+		{"zypper-aptitude", map[string]string{"apt-get": "", "zypper": ""}, "zypper"},
+		{"zypper-aptitude with dpkg", map[string]string{"apt-get": "", "dpkg-query": "exit 1", "zypper": ""}, "zypper"},
+		{"dnf", map[string]string{"dnf": "", "rpm": ""}, "dnf"},
+		{"none", nil, ""},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			fakeCommands(t, tt.commands)
+			// only the fake commands, so the host's package managers are not found
+			t.Setenv("PATH", strings.SplitN(os.Getenv("PATH"), string(os.PathListSeparator), 2)[0])
+			manager, _ := detectPackageManager(t.TempDir())
+			assert.Equal(t, tt.manager, manager)
+		})
+	}
+}
+
 func TestParseZypperTable(t *testing.T) {
 	tests := []struct {
 		file  string
