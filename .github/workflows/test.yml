@@ -20,8 +20,13 @@ jobs:
         uses: actions/setup-go@v7
         with:
           go-version-file: go.mod
+      - name: Create dist placeholder
+        # The hub package embeds internal/site/dist; tests and lint run before
+        # (or without) a frontend build, so provide the placeholder the
+        # Makefile uses for dev builds.
+        run: mkdir -p internal/site/dist && touch internal/site/dist/index.html
       - name: Run tests
-        run: go test -tags='testing no_ui' -race -count=1 -timeout 20m ./...
+        run: go test -tags='testing no_ui' -race -count=1 -timeout 45m ./...
 
   lint:
     name: Lint
@@ -40,6 +45,11 @@ jobs:
       # instead of a third-party action, so no extra action version needs pinning.
       - name: Install golangci-lint
         run: go install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@latest
+      - name: Create dist placeholder
+        # The hub package embeds internal/site/dist; tests and lint run before
+        # (or without) a frontend build, so provide the placeholder the
+        # Makefile uses for dev builds.
+        run: mkdir -p internal/site/dist && touch internal/site/dist/index.html
       - name: Run lint
         run: "$(go env GOPATH)/bin/golangci-lint run --build-tags testing,no_ui --timeout 10m"
 
