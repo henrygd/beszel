@@ -125,3 +125,31 @@ func TestIsTrustedProxy(t *testing.T) {
 		assert.False(t, isTrustedProxy(nil, "10.0.0.1:1"))
 	})
 }
+
+// TestTrustedAuthWarnings pins the startup warnings for dangerous
+// authentication proxy configuration: AUTO_LOGIN must always warn (it
+// authenticates every anonymous request), and TRUSTED_AUTH_HEADER must warn
+// when TRUSTED_PROXY_IPS does not restrict peers, because in that state any
+// client able to reach the hub can impersonate any user by setting the header.
+func TestTrustedAuthWarnings(t *testing.T) {
+	tests := []struct {
+		name          string
+		autoLogin     bool
+		trustedHeader bool
+		restricted    bool
+		expectedCount int
+	}{
+		{name: "nothing configured", expectedCount: 0},
+		{name: "auto login warns even with allowlist", autoLogin: true, restricted: true, expectedCount: 1},
+		{name: "trusted header with allowlist is accepted", trustedHeader: true, restricted: true, expectedCount: 0},
+		{name: "trusted header without allowlist warns", trustedHeader: true, restricted: false, expectedCount: 1},
+		{name: "both dangerous settings warn", autoLogin: true, trustedHeader: true, restricted: false, expectedCount: 2},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			warnings := trustedAuthWarnings(tt.autoLogin, tt.trustedHeader, tt.restricted)
+			assert.Len(t, warnings, tt.expectedCount)
+		})
+	}
+}

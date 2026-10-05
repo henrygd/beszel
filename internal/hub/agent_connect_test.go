@@ -1730,96 +1730,109 @@ func TestFindOrCreateSystemForToken(t *testing.T) {
 	}
 }
 
-// TestGetRealIP tests the getRealIP function
+// TestGetRealIP pins the proxy-header trust model: headers are honored only
+// from peers in TRUSTED_PROXY_IPS, and X-Forwarded-For uses the rightmost
+// entry, since the leftmost is client-controlled. Regression targets: the
+// function used to honor CF-Connecting-IP/X-Real-IP/X-Forwarded-For from ANY
+// peer (header spoofing = full identity control over recorded hosts) and to
+// take the spoofable leftmost XFF entry.
 func TestGetRealIP(t *testing.T) {
 	testCases := []struct {
-		name       string
-		headers    map[string]string
-		remoteAddr string
-		expectedIP string
+		name            string
+		trustedProxyIPs string // TRUSTED_PROXY_IPS value; "" = unset
+		headers         map[string]string
+		remoteAddr      string
+		expectedIP      string
 	}{
+		// Default (no allowlist): proxy headers are ignored entirely.
 		{
-			name:       "CF-Connecting-IP header",
-			headers:    map[string]string{"CF-Connecting-IP": "192.168.1.1"},
-			remoteAddr: "127.0.0.1:12345",
-			expectedIP: "192.168.1.1",
-		},
-		{
-			name:       "X-Forwarded-For header with single IP",
+			name:       "no config ignores X-Forwarded-For",
 			headers:    map[string]string{"X-Forwarded-For": "192.168.1.2"},
-			remoteAddr: "127.0.0.1:12345",
-			expectedIP: "192.168.1.2",
-		},
-		{
-			name:       "X-Forwarded-For header with multiple IPs",
-			headers:    map[string]string{"X-Forwarded-For": "192.168.1.3, 10.0.0.1, 172.16.0.1"},
-			remoteAddr: "127.0.0.1:12345",
-			expectedIP: "192.168.1.3",
-		},
-		{
-			name:       "X-Forwarded-For header with spaces",
-			headers:    map[string]string{"X-Forwarded-For": "  192.168.1.4  "},
-			remoteAddr: "127.0.0.1:12345",
-			expectedIP: "192.168.1.4",
-		},
-		{
-			name:       "No headers, fallback to RemoteAddr with port",
-			headers:    map[string]string{},
 			remoteAddr: "192.168.1.5:54321",
 			expectedIP: "192.168.1.5",
 		},
 		{
-			name:       "No headers, fallback to RemoteAddr without port",
-			headers:    map[string]string{},
-			remoteAddr: "192.168.1.6",
-			expectedIP: "192.168.1.6",
-		},
-		{
-			name:       "Both headers present, CF takes precedence",
-			headers:    map[string]string{"CF-Connecting-IP": "192.168.1.1", "X-Forwarded-For": "192.168.1.2"},
-			remoteAddr: "127.0.0.1:12345",
-			expectedIP: "192.168.1.1",
-		},
-		{
-			name:       "X-Forwarded-For present, takes precedence over RemoteAddr",
-			headers:    map[string]string{"X-Forwarded-For": "192.168.1.2"},
+			name:       "no config ignores CF-Connecting-IP",
+			headers:    map[string]string{"CF-Connecting-IP": "192.168.1.1"},
 			remoteAddr: "192.168.1.5:54321",
-			expectedIP: "192.168.1.2",
+			expectedIP: "192.168.1.5",
 		},
 		{
-			name:       "Empty X-Forwarded-For, fallback to RemoteAddr",
-			headers:    map[string]string{"X-Forwarded-For": ""},
-			remoteAddr: "192.168.1.7:12345",
-			expectedIP: "192.168.1.7",
-		},
-		{
-			name:       "Empty CF-Connecting-IP, fallback to X-Forwarded-For",
-			headers:    map[string]string{"CF-Connecting-IP": "", "X-Forwarded-For": "192.168.1.8"},
-			remoteAddr: "127.0.0.1:12345",
-			expectedIP: "192.168.1.8",
-		},
-		{
-			name:       "X-Real-IP header",
+			name:       "no config ignores X-Real-IP",
 			headers:    map[string]string{"X-Real-IP": "10.8.0.4"},
 			remoteAddr: "172.21.0.1:12345",
-			expectedIP: "10.8.0.4",
+			expectedIP: "172.21.0.1",
+		},
+		// Trusted peer: precedence CF-Connecting-IP > X-Real-IP > XFF (rightmost) > RemoteAddr.
+		{
+			name:            "trusted peer uses CF-Connecting-IP",
+			trustedProxyIPs: "127.0.0.1",
+			headers:         map[string]string{"CF-Connecting-IP": "192.168.1.1", "X-Real-IP": "10.8.0.4", "X-Forwarded-For": "192.168.1.2"},
+			remoteAddr:      "127.0.0.1:12345",
+			expectedIP:      "192.168.1.1",
 		},
 		{
-			name:       "X-Real-IP takes precedence over X-Forwarded-For",
-			headers:    map[string]string{"X-Real-IP": "10.8.0.4", "X-Forwarded-For": "10.8.0.5"},
-			remoteAddr: "172.21.0.1:12345",
-			expectedIP: "10.8.0.4",
+			name:            "trusted peer X-Real-IP beats XFF",
+			trustedProxyIPs: "127.0.0.1",
+			headers:         map[string]string{"X-Real-IP": "10.8.0.4", "X-Forwarded-For": "10.8.0.5"},
+			remoteAddr:      "127.0.0.1:12345",
+			expectedIP:      "10.8.0.4",
 		},
 		{
-			name:       "CF-Connecting-IP takes precedence over X-Real-IP",
-			headers:    map[string]string{"CF-Connecting-IP": "1.2.3.4", "X-Real-IP": "10.8.0.4"},
-			remoteAddr: "172.21.0.1:12345",
-			expectedIP: "1.2.3.4",
+			name:            "trusted peer XFF takes rightmost entry",
+			trustedProxyIPs: "127.0.0.1",
+			headers:         map[string]string{"X-Forwarded-For": "192.168.1.3, 10.0.0.1, 172.16.0.1"},
+			remoteAddr:      "127.0.0.1:12345",
+			expectedIP:      "172.16.0.1",
+		},
+		{
+			name:            "trusted peer XFF single entry is trimmed",
+			trustedProxyIPs: "127.0.0.1",
+			headers:         map[string]string{"X-Forwarded-For": "  192.168.1.4  "},
+			remoteAddr:      "127.0.0.1:12345",
+			expectedIP:      "192.168.1.4",
+		},
+		{
+			name:            "trusted peer unparsable XFF falls back to RemoteAddr",
+			trustedProxyIPs: "127.0.0.1",
+			headers:         map[string]string{"X-Forwarded-For": "not-an-ip"},
+			remoteAddr:      "127.0.0.1:12345",
+			expectedIP:      "127.0.0.1",
+		},
+		{
+			name:            "trusted peer unparsable CF header falls through to XFF",
+			trustedProxyIPs: "127.0.0.1",
+			headers:         map[string]string{"CF-Connecting-IP": "garbage", "X-Forwarded-For": "192.168.1.8"},
+			remoteAddr:      "127.0.0.1:12345",
+			expectedIP:      "192.168.1.8",
+		},
+		{
+			name:            "trusted peer without headers falls back to RemoteAddr",
+			trustedProxyIPs: "127.0.0.1",
+			headers:         map[string]string{},
+			remoteAddr:      "192.168.1.7:12345",
+			expectedIP:      "192.168.1.7",
+		},
+		// Allowlist configured but peer not in it: same as no config.
+		{
+			name:            "untrusted peer with allowlist ignores XFF",
+			trustedProxyIPs: "10.0.0.0/8",
+			headers:         map[string]string{"X-Forwarded-For": "192.168.1.2"},
+			remoteAddr:      "192.168.1.5:54321",
+			expectedIP:      "192.168.1.5",
+		},
+		{
+			name:            "untrusted peer with allowlist ignores CF-Connecting-IP",
+			trustedProxyIPs: "10.0.0.0/8",
+			headers:         map[string]string{"CF-Connecting-IP": "192.168.1.1"},
+			remoteAddr:      "192.168.1.6",
+			expectedIP:      "192.168.1.6",
 		},
 	}
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
+			t.Setenv("TRUSTED_PROXY_IPS", tc.trustedProxyIPs)
 			req := httptest.NewRequest("GET", "/", nil)
 			for key, value := range tc.headers {
 				req.Header.Set(key, value)

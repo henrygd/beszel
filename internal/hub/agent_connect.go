@@ -5,6 +5,7 @@ import (
 	"errors"
 	"net"
 	"net/http"
+	"net/netip"
 	"strings"
 	"sync"
 	"time"
@@ -311,27 +312,45 @@ func (h *Hub) SetFingerprint(fpRecord *ws.FingerprintRecord, fingerprint string)
 	return h.SaveNoValidate(record)
 }
 
-// getRealIP extracts the client's real IP address from request headers,
-// checking common proxy headers before falling back to the remote address.
+// getRealIP extracts the client's real IP address from the request. Proxy
+// headers are only honored when the direct peer is a trusted proxy
+// (TRUSTED_PROXY_IPS); anything else would let the connecting party choose
+// the recorded address. X-Forwarded-For takes the rightmost entry, since the
+// leftmost is controlled by the connecting client.
 func getRealIP(r *http.Request) string {
-	if ip := r.Header.Get("CF-Connecting-IP"); ip != "" {
-		return ip
+	prefixes, restricted := parseTrustedProxies()
+	if !restricted || !isTrustedProxy(prefixes, r.RemoteAddr) {
+		return remoteAddrIP(r)
 	}
-	if ip := r.Header.Get("X-Real-IP"); ip != "" {
-		return ip
+	if ip := r.Header.Get("CF-Connecting-IP"); isValidIPHeader(ip) {
+		return strings.TrimSpace(ip)
 	}
-	if ip := r.Header.Get("X-Forwarded-For"); ip != "" {
-		// X-Forwarded-For can contain a comma-separated list: "client_ip, proxy1, proxy2"
-		// Take the first one
-		ips := strings.Split(ip, ",")
-		if len(ips) > 0 {
-			return strings.TrimSpace(ips[0])
+	if ip := r.Header.Get("X-Real-IP"); isValidIPHeader(ip) {
+		return strings.TrimSpace(ip)
+	}
+	if xff := r.Header.Get("X-Forwarded-For"); xff != "" {
+		// X-Forwarded-For is "client, proxy1, proxy2": the rightmost entry was
+		// appended by the nearest proxy — the one just verified as trusted.
+		entries := strings.Split(xff, ",")
+		if last := strings.TrimSpace(entries[len(entries)-1]); isValidIPHeader(last) {
+			return last
 		}
 	}
-	// Fallback to RemoteAddr
+	return remoteAddrIP(r)
+}
+
+// remoteAddrIP returns the host part of the request's RemoteAddr.
+func remoteAddrIP(r *http.Request) string {
 	ip, _, err := net.SplitHostPort(r.RemoteAddr)
 	if err != nil {
 		return r.RemoteAddr
 	}
 	return ip
+}
+
+// isValidIPHeader reports whether a proxy-header value is a parseable IP
+// address, so garbage from a misbehaving proxy falls back to RemoteAddr.
+func isValidIPHeader(value string) bool {
+	_, err := netip.ParseAddr(strings.TrimSpace(value))
+	return err == nil
 }

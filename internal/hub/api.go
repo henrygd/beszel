@@ -58,6 +58,20 @@ func customAuthMiddleware(fn func(*core.RequestEvent) bool) func(*core.RequestEv
 	}
 }
 
+// trustedAuthWarnings returns startup warnings for authentication proxy
+// settings that are dangerous when the hub is reachable by untrusted peers,
+// so misconfiguration is visible at startup instead of only after an incident.
+func trustedAuthWarnings(autoLoginSet, trustedHeaderSet, proxiesRestricted bool) []string {
+	var warnings []string
+	if autoLoginSet {
+		warnings = append(warnings, "AUTO_LOGIN authenticates every unauthenticated request as a fixed user; only use it on isolated, non-public deployments")
+	}
+	if trustedHeaderSet && !proxiesRestricted {
+		warnings = append(warnings, "TRUSTED_AUTH_HEADER is honored from any connecting peer because TRUSTED_PROXY_IPS is not set; any client able to reach the hub can impersonate any user by setting the header")
+	}
+	return warnings
+}
+
 // registerMiddlewares registers custom middlewares
 func (h *Hub) registerMiddlewares(se *core.ServeEvent) {
 	// authorizes request with user matching the provided email
@@ -75,16 +89,21 @@ func (h *Hub) registerMiddlewares(se *core.ServeEvent) {
 		e.Request.Header.Set("Authorization", token)
 		return e.Next()
 	}
+	autoLogin, _ := utils.GetEnv("AUTO_LOGIN")
+	trustedHeader, _ := utils.GetEnv("TRUSTED_AUTH_HEADER")
+	trustedProxies, restricted := parseTrustedProxies()
+	for _, warning := range trustedAuthWarnings(autoLogin != "", trustedHeader != "", restricted) {
+		slog.Warn(warning)
+	}
 	// authenticate with trusted header
-	if autoLogin, _ := utils.GetEnv("AUTO_LOGIN"); autoLogin != "" {
+	if autoLogin != "" {
 		se.Router.BindFunc(func(e *core.RequestEvent) error {
 			return authorizeRequestWithEmail(e, autoLogin)
 		})
 	}
 	// authenticate with trusted header
-	if trustedHeader, _ := utils.GetEnv("TRUSTED_AUTH_HEADER"); trustedHeader != "" {
+	if trustedHeader != "" {
 		// only honor the header from these peers, if set
-		trustedProxies, restricted := parseTrustedProxies()
 		se.Router.BindFunc(func(e *core.RequestEvent) error {
 			if restricted && !isTrustedProxy(trustedProxies, e.Request.RemoteAddr) {
 				return e.Next()
