@@ -242,16 +242,17 @@ msgstr "Είστε βέβαιοι;"
 msgid "Automatic copy requires a secure context."
 msgstr "Η αυτόματη αντιγραφή απαιτεί ασφαλές περιβάλλον."
 
-#: src/components/routes/system/storage-pools-table.tsx
-msgctxt "Disk space available"
-msgid "Available"
-msgstr "Διαθέσιμο"
-
 #. Package version available to install
 #: src/components/routes/system/package-updates-table.tsx
 msgid "Available"
 msgstr "Διαθέσιμο"
 
+#: src/components/routes/system/storage-pools-table.tsx
+msgctxt "Disk space available"
+msgid "Available"
+msgstr "Διαθέσιμο"
+
+#: src/components/routes/system/chart-card.tsx
 #: src/components/routes/system/chart-card.tsx
 msgid "Average"
 msgstr "Μέσος όρος"
@@ -465,6 +466,10 @@ msgstr "Επιλογές γραφήματος"
 msgid "Chart width"
 msgstr "Πλάτος γραφήματος"
 
+#: src/components/charts/chart-presentation.tsx
+msgid "Charts"
+msgstr ""
+
 #: src/components/login/forgot-pass-form.tsx
 msgid "Check {email} for a reset link."
 msgstr "Ελέγξτε το {email} για έναν σύνδεσμο επαναφοράς."
@@ -647,6 +652,10 @@ msgstr "Αντιγραφή YAML"
 msgctxt "Core system metrics"
 msgid "Core"
 msgstr "Βασικά"
+
+#: src/components/charts/chart-presentation.tsx
+msgid "Could not save the view. Try again."
+msgstr ""
 
 #: src/components/containers-table/containers-table-columns.tsx
 #: src/components/systemd-table/systemd-table-columns.tsx
@@ -1042,6 +1051,7 @@ msgstr "Ανεμιστήρες"
 #: src/components/network-monitors-table/network-monitors-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/system/chart-card.tsx
+#: src/components/routes/system/chart-card.tsx
 #: src/components/routes/system/package-updates-table.tsx
 #: src/components/routes/system/smart-table.tsx
 #: src/components/routes/system/storage-pools-table.tsx
@@ -1327,6 +1337,14 @@ msgstr "Μέγ. 1 λ"
 msgid "Max 1h"
 msgstr "Μέγιστο 1ώρου"
 
+#: src/components/charts/chart-table.tsx
+msgid "Measurement time (local time zone)"
+msgstr ""
+
+#: src/components/charts/chart-table.tsx
+msgid "Measurements"
+msgstr ""
+
 #: src/components/containers-table/containers-table-columns.tsx
 #: src/components/routes/system/info-bar.tsx
 #: src/components/systemd-table/systemd-table-columns.tsx
@@ -1352,6 +1370,10 @@ msgstr "Χρήση μνήμης"
 #: src/components/routes/system/charts/memory-charts.tsx
 msgid "Memory usage of containers"
 msgstr "Χρήση μνήμης των κοντέινερ"
+
+#: src/components/charts/chart-presentation.tsx
+msgid "Metric view"
+msgstr ""
 
 #: src/components/network-monitors-table/network-monitors-columns.tsx
 #: src/components/network-monitors-table/network-monitors-columns.tsx
@@ -1434,11 +1456,24 @@ msgstr "Κίνηση δικτύου δημόσιων interfaces"
 msgid "Network unit"
 msgstr "Μονάδα δικτύου"
 
+#: src/components/charts/chart-presentation.tsx
+#: src/components/charts/chart-table.tsx
+msgid "New data available. The table stays unchanged until you refresh it."
+msgstr ""
+
+#: src/components/charts/chart-table.tsx
+msgid "Next page"
+msgstr ""
+
 #: src/components/systemd-table/systemd-table.tsx
 #: src/components/systemd-table/systemd-table.tsx
 #: src/components/systemd-table/systemd-table.tsx
 msgid "No"
 msgstr "Όχι"
+
+#: src/components/charts/chart-table.tsx
+msgid "No data"
+msgstr ""
 
 #: src/components/routes/system/storage-pools-table.tsx
 msgid "No detail data for this pool."
@@ -1716,6 +1751,10 @@ msgstr "Ακριβής χρήση κατά τον καταγεγραμμένο �
 msgid "Preferred Language"
 msgstr "Προτιμώμενη γλώσσα"
 
+#: src/components/charts/chart-table.tsx
+msgid "Previous page"
+msgstr ""
+
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Process started"
 msgstr "Η διεργασία ξεκίνησε"
@@ -1784,6 +1823,10 @@ msgstr "Λήφθηκαν"
 msgid "Refresh"
 msgstr "Ανανέωση"
 
+#: src/components/charts/chart-table.tsx
+msgid "Refresh table"
+msgstr ""
+
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Relationships"
 msgstr "Σχέσεις"
@@ -1849,6 +1892,15 @@ msgstr "Ρίζα"
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Rotate token"
 msgstr "Ανανέωση token"
+
+#. placeholder {0}: snapshot.rows.length ? range.start + 1 : 0
+#. placeholder {1}: range.end
+#. placeholder {2}: snapshot.rows.length
+#. placeholder {3}: range.page + 1
+#. placeholder {4}: range.pages
+#: src/components/charts/chart-table.tsx
+msgid "Rows {0}–{1} of {2}; page {3} of {4}"
+msgstr ""
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/system/package-updates-table.tsx
@@ -2036,6 +2088,10 @@ msgstr "Ρυθμίσεις SMTP"
 msgid "Sort By"
 msgstr "Ταξινόμηση κατά"
 
+#: src/components/charts/chart-table.tsx
+msgid "Stable table snapshot."
+msgstr ""
+
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Start Time"
@@ -2115,6 +2171,14 @@ msgstr "Η διαχείριση των συστημάτων μπορεί να γ
 #: src/components/systems-table/systems-table.tsx
 msgid "Table"
 msgstr "Πίνακας"
+
+#: src/components/charts/chart-table.tsx
+msgid "Table pages"
+msgstr ""
+
+#: src/components/charts/chart-presentation.tsx
+msgid "Tables"
+msgstr ""
 
 #: src/components/routes/system/info-bar.tsx
 msgctxt "Tabs system layout option"
@@ -2196,6 +2260,10 @@ msgstr "Ρυθμός μεταφοράς του pool αποθήκευσης {disp
 msgid "Time format"
 msgstr "Μορφή ώρας"
 
+#: src/components/charts/chart-time-select.tsx
+msgid "Time period"
+msgstr ""
+
 #: src/components/routes/settings/notifications.tsx
 msgid "To email(s)"
 msgstr "Προς email"
@@ -2223,6 +2291,11 @@ msgstr "Τα διακριτικά και τα αποτυπώματα χρησι�
 #: src/components/ui/chart.tsx
 msgid "Total"
 msgstr "Σύνολο"
+
+#: src/components/charts/chart-table.tsx
+msgctxt "Metric table total"
+msgid "Total"
+msgstr ""
 
 #: src/components/routes/system/network-sheet.tsx
 msgid "Total data received for each interface"
@@ -2335,6 +2408,10 @@ msgstr "Αρχείο μονάδας"
 #: src/components/routes/settings/general.tsx
 msgid "Unit preferences"
 msgstr "Προτιμήσεις μονάδων μέτρησης"
+
+#: src/components/charts/chart-table.tsx
+msgid "Units are shown with each value. Total sums the available series; missing values are not zero."
+msgstr ""
 
 #: src/components/command-palette.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx

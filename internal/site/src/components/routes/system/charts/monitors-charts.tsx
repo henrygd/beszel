@@ -105,7 +105,13 @@ function MonitorChart({
 		>
 			<LineChartDefault
 				truncate
-				chartData={chartData}
+				chartData={{
+					...chartData,
+					dataScope: monitors
+						.map((m) => m.id)
+						.sort()
+						.join(","),
+				}}
 				customData={filteredMonitorStats}
 				dataPoints={dataPoints}
 				domain={domain ?? ["auto", "auto"]}
@@ -187,7 +193,8 @@ export function AvgMinMaxResponseChart({ monitorStats, monitor, chartData, empty
 		>
 			<LineChartDefault
 				truncate
-				chartData={chartData}
+				chartData={{ ...chartData, dataScope: monitor?.id }}
+				tableData={monitorStats}
 				customData={data}
 				dataPoints={dataPoints}
 				domain={["auto", "auto"]}

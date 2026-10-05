@@ -1,5 +1,6 @@
 import { t } from "@lingui/core/macro"
 import AreaChartDefault from "@/components/charts/area-chart"
+import { withChartFallback } from "@/components/charts/table-model"
 import { decimalString, formatBytes, toFixedFloat } from "@/lib/utils"
 import type { SystemStatsRecord } from "@/types"
 import { ChartCard, SelectAvgMax } from "../chart-card"
@@ -9,64 +10,54 @@ import type { SystemData } from "../use-system-data"
 import { useStore } from "@nanostores/react"
 import { $userSettings } from "@/lib/stores"
 
+/** A MiB/s legacy field converted to bytes/s, or undefined when the older field is absent too. */
+const legacyMiB = (value: number | undefined) => (value == null ? undefined : value * 1024 * 1024)
+
 // Helpers for indexed dios/diosm access
-const dios =
-	(i: number) =>
-	({ stats }: SystemStatsRecord) =>
-		stats?.dios?.[i] ?? 0
-const diosMax =
-	(i: number) =>
-	({ stats }: SystemStatsRecord) =>
-		stats?.diosm?.[i] ?? 0
-const extraDios =
-	(name: string, i: number) =>
-	({ stats }: SystemStatsRecord) =>
-		stats?.efs?.[name]?.dios?.[i] ?? 0
-const extraDiosMax =
-	(name: string, i: number) =>
-	({ stats }: SystemStatsRecord) =>
-		stats?.efs?.[name]?.diosm?.[i] ?? 0
+const dios = (i: number) => withChartFallback(({ stats }: SystemStatsRecord) => stats?.dios?.[i])
+const diosMax = (i: number) => withChartFallback(({ stats }: SystemStatsRecord) => stats?.diosm?.[i])
+const extraDios = (name: string, i: number) =>
+	withChartFallback(({ stats }: SystemStatsRecord) => stats?.efs?.[name]?.dios?.[i])
+const extraDiosMax = (name: string, i: number) =>
+	withChartFallback(({ stats }: SystemStatsRecord) => stats?.efs?.[name]?.diosm?.[i])
+/** Queue depth is stored as depth * 100 in Go; scale the sample, keep a real gap missing. */
+const diosScaled = (sample: (r: SystemStatsRecord) => number | undefined) =>
+	withChartFallback((row: SystemStatsRecord) => {
+		const value = sample(row)
+		return value == null ? undefined : value / 100
+	})
 
 export const diskDataFns = {
 	// usage
-	usage: ({ stats }: SystemStatsRecord) => stats?.du ?? 0,
-	extraUsage:
-		(name: string) =>
-		({ stats }: SystemStatsRecord) =>
-			stats?.efs?.[name]?.du ?? 0,
+	usage: withChartFallback(({ stats }: SystemStatsRecord) => stats?.du),
+	extraUsage: (name: string) => withChartFallback(({ stats }: SystemStatsRecord) => stats?.efs?.[name]?.du),
 	// throughput
-	read: ({ stats }: SystemStatsRecord) => stats?.dio?.[0] ?? (stats?.dr ?? 0) * 1024 * 1024,
-	readMax: ({ stats }: SystemStatsRecord) => stats?.diom?.[0] ?? (stats?.drm ?? 0) * 1024 * 1024,
-	write: ({ stats }: SystemStatsRecord) => stats?.dio?.[1] ?? (stats?.dw ?? 0) * 1024 * 1024,
-	writeMax: ({ stats }: SystemStatsRecord) => stats?.diom?.[1] ?? (stats?.dwm ?? 0) * 1024 * 1024,
+	read: withChartFallback(({ stats }: SystemStatsRecord) => stats?.dio?.[0] ?? legacyMiB(stats?.dr)),
+	readMax: withChartFallback(({ stats }: SystemStatsRecord) => stats?.diom?.[0] ?? legacyMiB(stats?.drm)),
+	write: withChartFallback(({ stats }: SystemStatsRecord) => stats?.dio?.[1] ?? legacyMiB(stats?.dw)),
+	writeMax: withChartFallback(({ stats }: SystemStatsRecord) => stats?.diom?.[1] ?? legacyMiB(stats?.dwm)),
 	// extra fs throughput
-	extraRead:
-		(name: string) =>
-		({ stats }: SystemStatsRecord) =>
-			stats?.efs?.[name]?.rb ?? (stats?.efs?.[name]?.r ?? 0) * 1024 * 1024,
-	extraReadMax:
-		(name: string) =>
-		({ stats }: SystemStatsRecord) =>
-			stats?.efs?.[name]?.rbm ?? (stats?.efs?.[name]?.rm ?? 0) * 1024 * 1024,
-	extraWrite:
-		(name: string) =>
-		({ stats }: SystemStatsRecord) =>
-			stats?.efs?.[name]?.wb ?? (stats?.efs?.[name]?.w ?? 0) * 1024 * 1024,
-	extraWriteMax:
-		(name: string) =>
-		({ stats }: SystemStatsRecord) =>
-			stats?.efs?.[name]?.wbm ?? (stats?.efs?.[name]?.wm ?? 0) * 1024 * 1024,
+	extraRead: (name: string) =>
+		withChartFallback(
+			({ stats }: SystemStatsRecord) => stats?.efs?.[name]?.rb ?? legacyMiB(stats?.efs?.[name]?.r)
+		),
+	extraReadMax: (name: string) =>
+		withChartFallback(
+			({ stats }: SystemStatsRecord) => stats?.efs?.[name]?.rbm ?? legacyMiB(stats?.efs?.[name]?.rm)
+		),
+	extraWrite: (name: string) =>
+		withChartFallback(
+			({ stats }: SystemStatsRecord) => stats?.efs?.[name]?.wb ?? legacyMiB(stats?.efs?.[name]?.w)
+		),
+	extraWriteMax: (name: string) =>
+		withChartFallback(
+			({ stats }: SystemStatsRecord) => stats?.efs?.[name]?.wbm ?? legacyMiB(stats?.efs?.[name]?.wm)
+		),
 	// cumulative totals
-	totalRead: ({ stats }: SystemStatsRecord) => stats?.diot?.[0] ?? 0,
-	totalWrite: ({ stats }: SystemStatsRecord) => stats?.diot?.[1] ?? 0,
-	extraTotalRead:
-		(name: string) =>
-		({ stats }: SystemStatsRecord) =>
-			stats?.efs?.[name]?.tr ?? 0,
-	extraTotalWrite:
-		(name: string) =>
-		({ stats }: SystemStatsRecord) =>
-			stats?.efs?.[name]?.tw ?? 0,
+	totalRead: withChartFallback(({ stats }: SystemStatsRecord) => stats?.diot?.[0]),
+	totalWrite: withChartFallback(({ stats }: SystemStatsRecord) => stats?.diot?.[1]),
+	extraTotalRead: (name: string) => withChartFallback(({ stats }: SystemStatsRecord) => stats?.efs?.[name]?.tr),
+	extraTotalWrite: (name: string) => withChartFallback(({ stats }: SystemStatsRecord) => stats?.efs?.[name]?.tw),
 	// read/write time
 	readTime: dios(0),
 	readTimeMax: diosMax(0),
@@ -91,16 +82,10 @@ export const diskDataFns = {
 	extraWAwait: (name: string) => extraDios(name, 4),
 	extraWAwaitMax: (name: string) => extraDiosMax(name, 4),
 	// average queue depth: stored as queue_depth * 100 in Go, divided here
-	weightedIO: ({ stats }: SystemStatsRecord) => (stats?.dios?.[5] ?? 0) / 100,
-	weightedIOMax: ({ stats }: SystemStatsRecord) => (stats?.diosm?.[5] ?? 0) / 100,
-	extraWeightedIO:
-		(name: string) =>
-		({ stats }: SystemStatsRecord) =>
-			(stats?.efs?.[name]?.dios?.[5] ?? 0) / 100,
-	extraWeightedIOMax:
-		(name: string) =>
-		({ stats }: SystemStatsRecord) =>
-			(stats?.efs?.[name]?.diosm?.[5] ?? 0) / 100,
+	weightedIO: diosScaled(({ stats }) => stats?.dios?.[5]),
+	weightedIOMax: diosScaled(({ stats }) => stats?.diosm?.[5]),
+	extraWeightedIO: (name: string) => diosScaled(({ stats }) => stats?.efs?.[name]?.dios?.[5]),
+	extraWeightedIOMax: (name: string) => diosScaled(({ stats }) => stats?.efs?.[name]?.diosm?.[5]),
 }
 
 export function RootDiskCharts({ systemData }: { systemData: SystemData }) {

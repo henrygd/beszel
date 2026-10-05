@@ -180,14 +180,23 @@ export function useNetworkMonitorStats(props: UseNetworkMonitorStatsProps) {
 	const { systemId, interval, chartTime, enabled = true } = props
 	// Stable key so effects don't re-run when callers pass a new array with the same IDs.
 	const cacheKey = [...props.monitorIds].sort().join(",")
-	const [monitorStats, setMonitorStats] = useState<NetworkMonitorStatsRecord[]>([])
+	const statsScope = `${systemId}:${cacheKey}:${chartTime}`
+	const [scopedStats, setScopedStats] = useState<{ scope: string; rows: NetworkMonitorStatsRecord[] }>({
+		scope: statsScope,
+		rows: [],
+	})
+	const monitorStats = scopedStats.scope === statsScope ? scopedStats.rows : []
+	// Do not expose the previous query while the cache/fetch effect is still pending.
+	const setMonitorStats = (rows: NetworkMonitorStatsRecord[]) => setScopedStats({ scope: statsScope, rows })
 	// pending raw events to be merged (keyed by monitor+created)
 	const pendingRaw = useRef(new Map<string, RawMonitorStatsRecord>())
 	const mergeBatchTimeout = useRef<ReturnType<typeof setTimeout> | null>(null)
 
+	// systemId belongs in these deps: it is part of statsScope, so without it a system change
+	// leaves the exposed rows permanently empty and lets a late fetch write the previous scope.
 	useEffect(() => {
 		setMonitorStats(getCacheValue(cacheKey, chartTime === "1m" ? "rt" : chartTime))
-	}, [cacheKey, chartTime])
+	}, [cacheKey, chartTime, systemId])
 
 	// Fetch only the selected monitors' missing history.
 	useEffect(() => {
@@ -218,7 +227,7 @@ export function useNetworkMonitorStats(props: UseNetworkMonitorStatsProps) {
 		return () => {
 			cancelled = true
 		}
-	}, [cacheKey, chartTime, enabled])
+	}, [cacheKey, chartTime, enabled, systemId])
 
 	// subscribe to new per-monitor stats records; batch them into merged chart records
 	useEffect(() => {
@@ -280,7 +289,7 @@ export function useNetworkMonitorStats(props: UseNetworkMonitorStatsProps) {
 			pendingRaw.current.clear()
 			unsubscribe?.()
 		}
-	}, [cacheKey, chartTime, enabled])
+	}, [cacheKey, chartTime, enabled, systemId])
 
 	// subscribe to realtime metrics if chart time is 1m
 	useEffect(() => {

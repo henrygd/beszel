@@ -3,6 +3,7 @@ import { useStore } from "@nanostores/react"
 import type { ChartConfig } from "@/components/ui/chart"
 import type { ChartData, SystemStats, SystemStatsRecord } from "@/types"
 import type { DataPoint } from "./area-chart"
+import { tableSample } from "./table-model"
 import { $containerFilter } from "@/lib/stores"
 
 /** Chart configurations for CPU, memory, and network usage charts */
@@ -129,10 +130,13 @@ export function useContainerDataPoints(
 		const points = Object.keys(chartConfig).map((key) => {
 			const isFiltered = filterTerms.length > 0 && !filterTerms.some((term) => key.toLowerCase().includes(term))
 			if (isFiltered) filtered.add(key)
+			// biome-ignore lint/suspicious/noExplicitAny: container data records have dynamic keys
+			const dataKey = (data: Record<string, any>) => dataFn(key, data)
+			// Carry a caller's unsubstituted sample through the per-key closure, so the table still sees gaps.
+			dataKey.tableDataKey = (data: Parameters<typeof dataFn>[1]) => tableSample(dataFn)(key, data) as number | null
 			return {
 				label: key,
-				// biome-ignore lint/suspicious/noExplicitAny: container data records have dynamic keys
-				dataKey: (data: Record<string, any>) => dataFn(key, data),
+				dataKey,
 				color: chartConfig[key].color ?? "",
 				opacity: isFiltered ? 0.05 : 0.4,
 				strokeOpacity: isFiltered ? 0.1 : 1,

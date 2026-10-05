@@ -1,3 +1,6 @@
+import { ChartTable, type ChartRecord } from "./chart-table"
+import { useChartPresentation } from "./chart-presentation"
+
 import { type ReactNode, useEffect, useMemo, useState } from "react"
 import { Area, AreaChart, CartesianGrid, YAxis } from "recharts"
 import {
@@ -15,6 +18,13 @@ import { useYAxisWidth } from "./hooks"
 import type { AxisDomain } from "recharts/types/util/types"
 import { useIntersectionObserver } from "@/lib/use-intersection-observer"
 
+export default function AreaChartDefault(
+	props: React.ComponentProps<typeof AreaChartGraphic> & { tableData?: ChartRecord[] }
+) {
+	const mode = useChartPresentation()
+	return mode === "tables" ? <ChartTable {...props} /> : <AreaChartGraphic {...props} />
+}
+
 export type DataPoint<T = SystemStatsRecord> = {
 	label: string
 	dataKey: (data: T) => number | null | undefined
@@ -26,7 +36,7 @@ export type DataPoint<T = SystemStatsRecord> = {
 	activeDot?: boolean
 }
 
-export default function AreaChartDefault({
+function AreaChartGraphic({
 	chartData,
 	customData,
 	max,

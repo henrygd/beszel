@@ -81,6 +81,7 @@ export function useSystemData(id: string) {
 		setMountedTabs((prev) => (prev.has(tab) ? prev : new Set([...prev, tab])))
 	}
 	const [system, setSystem] = useState({} as SystemRecord)
+	const [loadedScope, setLoadedScope] = useState("")
 	const [systemStats, setSystemStats] = useState([] as SystemStatsRecord[])
 	const [containerData, setContainerData] = useState([] as ChartData["containerData"])
 	const persistChartTime = useRef(false)
@@ -155,6 +156,7 @@ export function useSystemData(id: string) {
 			.subscribe(
 				`rt_metrics`,
 				(data: { container: ContainerStatsRecord[]; info: SystemInfo; stats: SystemStats }) => {
+					setLoadedScope(`${id}:${chartTime}`)
 					const now = Date.now()
 					const statsPoint = { created: now, stats: data.stats } as SystemStatsRecord
 					const containerPoint =
@@ -187,13 +189,14 @@ export function useSystemData(id: string) {
 
 	const chartData: ChartData = useMemo(() => {
 		return {
-			systemStats,
-			containerData,
+			dataScope: id,
+			systemStats: loadedScope === `${id}:${chartTime}` ? systemStats : [],
+			containerData: loadedScope === `${id}:${chartTime}` ? containerData : [],
 			chartTime,
 			orientation: direction === "rtl" ? "right" : "left",
 			agentVersion,
 		}
-	}, [systemStats, containerData, direction])
+	}, [systemStats, containerData, direction, chartTime, agentVersion, id, loadedScope])
 
 	// Share chart config computation for all container charts
 	const containerChartConfigs = useContainerChartConfigs(containerData)
@@ -216,6 +219,7 @@ export function useSystemData(id: string) {
 
 		// Render from cache immediately if available
 		if (cachedSystemStats?.length) {
+			setLoadedScope(`${id}:${chartTime}`)
 			setSystemStats(cachedSystemStats)
 			setContainerData(cachedContainerData || [])
 			setChartLoading(false)
@@ -226,6 +230,8 @@ export function useSystemData(id: string) {
 				return
 			}
 		} else {
+			setSystemStats([])
+			setContainerData([])
 			setChartLoading(true)
 		}
 
@@ -246,6 +252,7 @@ export function useSystemData(id: string) {
 				systemData = appendData(systemData, systemStats.value, expectedInterval, 100)
 				cache.set(ss_cache_key, systemData)
 			}
+			setLoadedScope(`${id}:${chartTime}`)
 			setSystemStats(systemData)
 			// make new container stats
 			let containerData = (cache.get(cs_cache_key) || []) as ChartData["containerData"]
@@ -265,6 +272,7 @@ export function useSystemData(id: string) {
 			return
 		}
 		const handleKeyUp = (e: KeyboardEvent) => {
+			if ($userSettings.get().chartPresentation === "tables") return
 			if (
 				e.target instanceof HTMLInputElement ||
 				e.target instanceof HTMLTextAreaElement ||

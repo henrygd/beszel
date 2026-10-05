@@ -242,16 +242,17 @@ msgstr "확실합니까?"
 msgid "Automatic copy requires a secure context."
 msgstr "자동 복사는 안전한 컨텍스트가 필요합니다."
 
-#: src/components/routes/system/storage-pools-table.tsx
-msgctxt "Disk space available"
-msgid "Available"
-msgstr "사용 가능"
-
 #. Package version available to install
 #: src/components/routes/system/package-updates-table.tsx
 msgid "Available"
 msgstr "사용 가능"
 
+#: src/components/routes/system/storage-pools-table.tsx
+msgctxt "Disk space available"
+msgid "Available"
+msgstr "사용 가능"
+
+#: src/components/routes/system/chart-card.tsx
 #: src/components/routes/system/chart-card.tsx
 msgid "Average"
 msgstr "평균"
@@ -465,6 +466,10 @@ msgstr "차트 옵션"
 msgid "Chart width"
 msgstr "차트 너비"
 
+#: src/components/charts/chart-presentation.tsx
+msgid "Charts"
+msgstr ""
+
 #: src/components/login/forgot-pass-form.tsx
 msgid "Check {email} for a reset link."
 msgstr "{email}에서 재설정 링크를 확인하세요."
@@ -647,6 +652,10 @@ msgstr "YAML 복사"
 msgctxt "Core system metrics"
 msgid "Core"
 msgstr "코어"
+
+#: src/components/charts/chart-presentation.tsx
+msgid "Could not save the view. Try again."
+msgstr ""
 
 #: src/components/containers-table/containers-table-columns.tsx
 #: src/components/systemd-table/systemd-table-columns.tsx
@@ -1042,6 +1051,7 @@ msgstr "팬"
 #: src/components/network-monitors-table/network-monitors-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/system/chart-card.tsx
+#: src/components/routes/system/chart-card.tsx
 #: src/components/routes/system/package-updates-table.tsx
 #: src/components/routes/system/smart-table.tsx
 #: src/components/routes/system/storage-pools-table.tsx
@@ -1327,6 +1337,14 @@ msgstr "1분간 최댓값"
 msgid "Max 1h"
 msgstr "1시간 최대"
 
+#: src/components/charts/chart-table.tsx
+msgid "Measurement time (local time zone)"
+msgstr ""
+
+#: src/components/charts/chart-table.tsx
+msgid "Measurements"
+msgstr ""
+
 #: src/components/containers-table/containers-table-columns.tsx
 #: src/components/routes/system/info-bar.tsx
 #: src/components/systemd-table/systemd-table-columns.tsx
@@ -1352,6 +1370,10 @@ msgstr "메모리 사용량"
 #: src/components/routes/system/charts/memory-charts.tsx
 msgid "Memory usage of containers"
 msgstr "컨테이너 메모리 사용량"
+
+#: src/components/charts/chart-presentation.tsx
+msgid "Metric view"
+msgstr ""
 
 #: src/components/network-monitors-table/network-monitors-columns.tsx
 #: src/components/network-monitors-table/network-monitors-columns.tsx
@@ -1434,11 +1456,24 @@ msgstr "공용 인터페이스의 네트워크 트래픽"
 msgid "Network unit"
 msgstr "네트워크 단위"
 
+#: src/components/charts/chart-presentation.tsx
+#: src/components/charts/chart-table.tsx
+msgid "New data available. The table stays unchanged until you refresh it."
+msgstr ""
+
+#: src/components/charts/chart-table.tsx
+msgid "Next page"
+msgstr ""
+
 #: src/components/systemd-table/systemd-table.tsx
 #: src/components/systemd-table/systemd-table.tsx
 #: src/components/systemd-table/systemd-table.tsx
 msgid "No"
 msgstr "아니오"
+
+#: src/components/charts/chart-table.tsx
+msgid "No data"
+msgstr ""
 
 #: src/components/routes/system/storage-pools-table.tsx
 msgid "No detail data for this pool."
@@ -1716,6 +1751,10 @@ msgstr "기록된 시간의 정확한 사용량"
 msgid "Preferred Language"
 msgstr "선호 언어"
 
+#: src/components/charts/chart-table.tsx
+msgid "Previous page"
+msgstr ""
+
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Process started"
 msgstr "프로세스 시작됨"
@@ -1784,6 +1823,10 @@ msgstr "수신됨"
 msgid "Refresh"
 msgstr "새로고침"
 
+#: src/components/charts/chart-table.tsx
+msgid "Refresh table"
+msgstr ""
+
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Relationships"
 msgstr "관계"
@@ -1849,6 +1892,15 @@ msgstr "최상위"
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Rotate token"
 msgstr "토큰 회전"
+
+#. placeholder {0}: snapshot.rows.length ? range.start + 1 : 0
+#. placeholder {1}: range.end
+#. placeholder {2}: snapshot.rows.length
+#. placeholder {3}: range.page + 1
+#. placeholder {4}: range.pages
+#: src/components/charts/chart-table.tsx
+msgid "Rows {0}–{1} of {2}; page {3} of {4}"
+msgstr ""
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/system/package-updates-table.tsx
@@ -2036,6 +2088,10 @@ msgstr "SMTP 설정"
 msgid "Sort By"
 msgstr "정렬 기준"
 
+#: src/components/charts/chart-table.tsx
+msgid "Stable table snapshot."
+msgstr ""
+
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Start Time"
@@ -2115,6 +2171,14 @@ msgstr "시스템은 데이터 디렉토리 내의 <0>config.yml</0> 파일에�
 #: src/components/systems-table/systems-table.tsx
 msgid "Table"
 msgstr "표"
+
+#: src/components/charts/chart-table.tsx
+msgid "Table pages"
+msgstr ""
+
+#: src/components/charts/chart-presentation.tsx
+msgid "Tables"
+msgstr ""
 
 #: src/components/routes/system/info-bar.tsx
 msgctxt "Tabs system layout option"
@@ -2196,6 +2260,10 @@ msgstr "스토리지 풀 {displayName}의 처리량"
 msgid "Time format"
 msgstr "시간 형식"
 
+#: src/components/charts/chart-time-select.tsx
+msgid "Time period"
+msgstr ""
+
 #: src/components/routes/settings/notifications.tsx
 msgid "To email(s)"
 msgstr "받는사람(들)"
@@ -2223,6 +2291,11 @@ msgstr "토큰과 지문은 허브에 대한 WebSocket 연결을 인증하는 �
 #: src/components/ui/chart.tsx
 msgid "Total"
 msgstr "총"
+
+#: src/components/charts/chart-table.tsx
+msgctxt "Metric table total"
+msgid "Total"
+msgstr ""
 
 #: src/components/routes/system/network-sheet.tsx
 msgid "Total data received for each interface"
@@ -2335,6 +2408,10 @@ msgstr "Unit 파일"
 #: src/components/routes/settings/general.tsx
 msgid "Unit preferences"
 msgstr "단위 기본 설정"
+
+#: src/components/charts/chart-table.tsx
+msgid "Units are shown with each value. Total sums the available series; missing values are not zero."
+msgstr ""
 
 #: src/components/command-palette.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx

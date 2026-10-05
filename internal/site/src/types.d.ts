@@ -393,6 +393,7 @@ export interface ChartTimeData {
 }
 
 export interface UserSettings {
+	chartPresentation?: "tables" | "charts"
 	/** may be missing in settings stored by older versions -- use getUserChartTime() */
 	chartTime?: ChartTimes
 	emails?: string[]
@@ -429,6 +430,7 @@ export interface SemVer {
 }
 
 export interface ChartOptions {
+	dataScope?: string
 	agentVersion: SemVer
 	orientation: "right" | "left"
 	chartTime: ChartTimes
