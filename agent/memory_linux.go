@@ -16,8 +16,11 @@ var (
 	memoryProcSelfCgroup  = "/proc/self/cgroup"
 )
 
+// containerMemoryMetrics is only used when USE_CGROUP is explicitly enabled.
+// Unlike /proc/stat, lxcfs already serves a container-scoped /proc/meminfo,
+// so LXC keeps the existing memory path by default.
 func containerMemoryMetrics(hostTotal uint64, forceUseCgroup bool) (memoryMetrics, bool) {
-	if !useCgroup(forceUseCgroup) {
+	if !forceUseCgroup {
 		return memoryMetrics{}, false
 	}
 	if utils.InCgroupV2(memoryProcSelfCgroup) {

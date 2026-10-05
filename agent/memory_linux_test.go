@@ -123,7 +123,9 @@ func TestContainerMemoryScopeAndEnablement(t *testing.T) {
 	assert.False(t, ok) // Docker/host agents keep the existing path by default.
 	markLxc(t)
 	inLxc = sync.OnceValue(detectLxc) // Simulate a fresh process in LXC.
-	metrics, ok := containerMemoryMetrics(2000, false)
+	_, ok = containerMemoryMetrics(2000, false)
+	assert.False(t, ok) // lxcfs already serves container-scoped /proc/meminfo.
+	metrics, ok := containerMemoryMetrics(2000, true)
 	require.True(t, ok)
 	assert.Equal(t, memoryMetrics{1000, 400, 200}, metrics)
 	require.NoError(t, os.Remove(filepath.Join(mount, "memory.stat")))
