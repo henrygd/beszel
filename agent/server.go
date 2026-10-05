@@ -151,10 +151,7 @@ func (a *Agent) handleSession(s ssh.Session) {
 			s.Exit(1)
 			return
 		}
-		// A legacy hub never sends a request, so the session is done once the
-		// payload is out. Falling through to the decode below used to read an
-		// immediate EOF and re-run the legacy write, sending the hub a second
-		// stats payload.
+		// A legacy hub never sends a request, so the session is done once the payload is out.
 		_ = s.Exit(0)
 		return
 	}
