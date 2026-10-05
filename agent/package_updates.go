@@ -523,7 +523,7 @@ func checkXbps(ctx context.Context) (packageUpdatesResult, error) {
 	for i := range packages {
 		out, err = runPackageCommand(ctx, nil, "xbps-query", "-p", "pkgver", packages[i].Name)
 		if err == nil {
-			_, ver := parseXbpsNameVersion(out)
+			_, ver := parseXbpsNameVersion(strings.TrimSpace(out))
 			packages[i].Current = ver
 		}
 	}
