@@ -16,16 +16,12 @@ func containerMemoryMetrics(hostTotal uint64, forceUseCgroup bool) (memoryMetric
 	if !forceUseCgroup {
 		return memoryMetrics{}, false
 	}
-	if utils.InCgroupV2(cpuProcSelfCgroup) {
-		dir := cpuCgroupRoot
-		if mount := utils.CgroupMountPoint(cpuCgroupMountinfo, "cgroup2", ""); mount != "" {
-			dir = mount
-		}
+	if dir, ok := cgroupV2Dir(); ok {
 		if metrics, ok := readCgroupMemoryMetrics(dir, hostTotal, true); ok {
 			return metrics, true
 		}
 	}
-	if dir := utils.CgroupMountPoint(cpuCgroupMountinfo, "cgroup", "memory"); dir != "" {
+	if dir := utils.CgroupMountPoint(cgroupMountinfo, "cgroup", "memory"); dir != "" {
 		return readCgroupMemoryMetrics(dir, hostTotal, false)
 	}
 	return memoryMetrics{}, false

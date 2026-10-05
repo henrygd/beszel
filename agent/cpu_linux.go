@@ -30,9 +30,9 @@ import (
 
 // File paths and hooks are variables so tests can point them at fixtures.
 var (
-	cpuCgroupRoot      = "/sys/fs/cgroup" // default cgroup v2 mount point
-	cpuCgroupMountinfo = "/proc/self/mountinfo"
-	cpuProcSelfCgroup  = "/proc/self/cgroup"
+	cgroupRoot         = "/sys/fs/cgroup" // default cgroup v2 mount point
+	cgroupMountinfo    = "/proc/self/mountinfo"
+	procSelfCgroup     = "/proc/self/cgroup"
 	cpuSystemdContPath = "/run/systemd/container"
 	cpuNumCPU          = runtime.NumCPU
 	cpuNow             = time.Now
@@ -51,7 +51,7 @@ func detectLxc() bool {
 	// lxcfs mounted over /proc/stat is the direct cause of the host-core
 	// counters. Only match that mount point: an LXC host also has lxcfs
 	// mounted, but at /var/lib/lxcfs.
-	if data, err := os.ReadFile(cpuCgroupMountinfo); err == nil && procStatFromLxcfs(data) {
+	if data, err := os.ReadFile(cgroupMountinfo); err == nil && procStatFromLxcfs(data) {
 		return true
 	}
 	// set by liblxc for the container init and inherited on non-systemd guests
@@ -119,15 +119,24 @@ func (a *Agent) warnIfRootCgroup() {
 	}
 }
 
+// cgroupV2Dir returns the cgroup v2 mount point (the mount root, not the
+// agent's own leaf), or false if the process is not in the v2 hierarchy.
+func cgroupV2Dir() (string, bool) {
+	if !utils.InCgroupV2(procSelfCgroup) {
+		return "", false
+	}
+	if mount := utils.CgroupMountPoint(cgroupMountinfo, "cgroup2", ""); mount != "" {
+		return mount, true
+	}
+	return cgroupRoot, true
+}
+
 // inRootCgroupV2 reports whether the visible cgroup v2 mount is the root
 // cgroup. Every cgroup except the root has a cgroup.type file.
 func inRootCgroupV2() bool {
-	if !utils.InCgroupV2(cpuProcSelfCgroup) {
+	dir, ok := cgroupV2Dir()
+	if !ok {
 		return false
-	}
-	dir := cpuCgroupRoot
-	if mount := utils.CgroupMountPoint(cpuCgroupMountinfo, "cgroup2", ""); mount != "" {
-		dir = mount
 	}
 	if _, err := os.Stat(filepath.Join(dir, "cgroup.controllers")); err != nil {
 		return false // no cgroup v2 mount here
@@ -197,12 +206,9 @@ func readContainerCpuSample() (cgroupCpuSample, bool) {
 // in /proc/self/cgroup (its service cgroup, or the ".lxc" leaf when started
 // from an attached shell) only covers a subset and must not be descended into.
 func readCgroupV2CpuSample() (cgroupCpuSample, bool) {
-	if !utils.InCgroupV2(cpuProcSelfCgroup) {
+	dir, ok := cgroupV2Dir()
+	if !ok {
 		return cgroupCpuSample{}, false // no v2 membership; try v1
-	}
-	dir := cpuCgroupRoot
-	if mount := utils.CgroupMountPoint(cpuCgroupMountinfo, "cgroup2", ""); mount != "" {
-		dir = mount
 	}
 	stat, err := utils.ReadCgroupStat(filepath.Join(dir, "cpu.stat"))
 	if err != nil {
@@ -223,7 +229,7 @@ func readCgroupV2CpuSample() (cgroupCpuSample, bool) {
 // accounting includes every child cgroup, so it is read directly rather than
 // the agent's own sub-cgroup.
 func readCgroupV1CpuSample() (cgroupCpuSample, bool) {
-	dir := utils.CgroupMountPoint(cpuCgroupMountinfo, "cgroup", "cpuacct")
+	dir := utils.CgroupMountPoint(cgroupMountinfo, "cgroup", "cpuacct")
 	if dir == "" {
 		return cgroupCpuSample{}, false
 	}

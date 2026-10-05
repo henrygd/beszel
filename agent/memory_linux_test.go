@@ -20,13 +20,13 @@ func setupMemoryCgroup(t *testing.T, v2 bool) string {
 	t.Helper()
 	swapCpuContainerSeams(t)
 	if v2 {
-		writeCpuFixture(t, cpuProcSelfCgroup, "0::/system.slice/agent.service\n")
-		writeCpuFixture(t, cpuCgroupMountinfo, "")
-		return cpuCgroupRoot
+		writeCpuFixture(t, procSelfCgroup, "0::/system.slice/agent.service\n")
+		writeCpuFixture(t, cgroupMountinfo, "")
+		return cgroupRoot
 	}
-	dir := filepath.Join(filepath.Dir(cpuCgroupRoot), "memory")
-	writeCpuFixture(t, cpuProcSelfCgroup, "2:memory:/system.slice/agent.service\n")
-	writeCpuFixture(t, cpuCgroupMountinfo,
+	dir := filepath.Join(filepath.Dir(cgroupRoot), "memory")
+	writeCpuFixture(t, procSelfCgroup, "2:memory:/system.slice/agent.service\n")
+	writeCpuFixture(t, cgroupMountinfo,
 		"30 25 0:26 / "+dir+" rw - cgroup cgroup rw,memory\n")
 	return dir
 }
@@ -106,7 +106,7 @@ func TestContainerMemoryScopeAndEnablement(t *testing.T) {
 	dir := setupMemoryCgroup(t, true)
 	// A discovered non-default mount must win over the default root.
 	mount := filepath.Join(t.TempDir(), "unified")
-	writeCpuFixture(t, cpuCgroupMountinfo,
+	writeCpuFixture(t, cgroupMountinfo,
 		"30 25 0:26 /guest "+mount+" rw - cgroup2 cgroup2 rw\n")
 	writeMemoryFixture(t, dir, true, "1", "1000", "file 0\nshmem 0\n")
 	writeMemoryFixture(t, mount, true, "600", "1000", "file 200\nshmem 0\n")
