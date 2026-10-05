@@ -180,8 +180,14 @@ func mdraidSmartStatus(health mdraidHealth) string {
 	// warning instead of hard failure while synchronization is in progress.
 	syncAction := strings.ToLower(strings.TrimSpace(health.syncAction))
 	switch syncAction {
-	case "resync", "recover", "reshape":
+	case "recover", "reshape":
 		return "WARNING"
+	case "resync":
+		// A resync with every member present (initial build or after an unclean
+		// shutdown) only re-verifies redundancy, so let the checks below decide.
+		if health.degraded > 0 || health.faultyDisks > 0 {
+			return "WARNING"
+		}
 	}
 	// Use actual faulty member count rather than the degraded counter, which
 	// equals raid_disks minus active_disks. On QNAP systems raid_disks may be

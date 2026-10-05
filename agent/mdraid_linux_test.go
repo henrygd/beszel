@@ -79,8 +79,8 @@ func TestMdraidMockSysfsScanAndCollect(t *testing.T) {
 	if got.DiskType != "mdraid" || got.DiskName != "/dev/md0" {
 		t.Fatalf("disk fields = (type=%q name=%q), want (mdraid,/dev/md0)", got.DiskType, got.DiskName)
 	}
-	if got.SmartStatus != "WARNING" {
-		t.Fatalf("SmartStatus=%q, want WARNING", got.SmartStatus)
+	if got.SmartStatus != "PASSED" {
+		t.Fatalf("SmartStatus=%q, want PASSED", got.SmartStatus)
 	}
 	if got.ModelName == "" || got.Capacity == 0 {
 		t.Fatalf("identity fields = (model=%q cap=%d), want non-empty model and cap>0", got.ModelName, got.Capacity)
@@ -161,6 +161,23 @@ func TestMdraidSmartStatus(t *testing.T) {
 	// still fail rather than being silently treated as a sparse QNAP array.
 	if got := mdraidSmartStatus(mdraidHealth{arrayState: "clean", degraded: 1, faultyDisks: 0, raidDisks: 4, populatedDisks: 0}); got != "FAILED" {
 		t.Fatalf("mdraidSmartStatus(degraded, no member info) = %q, want FAILED", got)
+	}
+	// A resync with all members present (initial build or after an unclean
+	// shutdown) is not a health problem on its own.
+	if got := mdraidSmartStatus(mdraidHealth{arrayState: "clean", syncAction: "resync"}); got != "PASSED" {
+		t.Fatalf("mdraidSmartStatus(clean+resync) = %q, want PASSED", got)
+	}
+	if got := mdraidSmartStatus(mdraidHealth{arrayState: "active", syncAction: "resync", mismatchCnt: 1}); got != "WARNING" {
+		t.Fatalf("mdraidSmartStatus(resync+mismatch) = %q, want WARNING", got)
+	}
+	if got := mdraidSmartStatus(mdraidHealth{arrayState: "active", syncAction: "resync", degraded: 1}); got != "WARNING" {
+		t.Fatalf("mdraidSmartStatus(degraded+resync) = %q, want WARNING", got)
+	}
+	if got := mdraidSmartStatus(mdraidHealth{arrayState: "active", syncAction: "resync", faultyDisks: 1}); got != "WARNING" {
+		t.Fatalf("mdraidSmartStatus(faulty+resync) = %q, want WARNING", got)
+	}
+	if got := mdraidSmartStatus(mdraidHealth{arrayState: "inactive", syncAction: "resync"}); got != "FAILED" {
+		t.Fatalf("mdraidSmartStatus(inactive+resync) = %q, want FAILED", got)
 	}
 	if got := mdraidSmartStatus(mdraidHealth{arrayState: "active", syncAction: "recover"}); got != "WARNING" {
 		t.Fatalf("mdraidSmartStatus(recover) = %q, want WARNING", got)
