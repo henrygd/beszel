@@ -108,7 +108,7 @@ func TestNetworkMonitorReconnectSync(t *testing.T) {
 					t.Error(err)
 					return
 				}
-				wsConn := ws.NewWsConnection(conn, version)
+				wsConn := ws.NewWsConnection(conn, version, "")
 				conn.Session().Store("wsConn", wsConn)
 				connections <- wsConn
 				conn.ReadLoop()

@@ -93,6 +93,17 @@ func (a *Agent) prepareSSHServer(opts ServerOptions) (*ssh.Server, net.Listener,
 		// close idle connections after 70 seconds
 		IdleTimeout: 70 * time.Second,
 	}
+	// Persist the host key so the hub can pin it instead of trusting any host.
+	// Without a data directory the server keeps an ephemeral key (previous
+	// behavior); the hub only pins keys for agents new enough to persist one.
+	if hostKeySigner, err := a.getHostKeySigner(); err == nil {
+		server.AddHostKey(hostKeySigner)
+	} else {
+		// Loud on purpose: a hub that already pinned this agent's host key
+		// will reject the ephemeral key after restart until the pin is
+		// cleared, so the operator must know why.
+		slog.Warn("SSH host key unavailable, using an ephemeral key; a hub pinning the previous key will reject this agent", "reason", err)
+	}
 
 	a.server = server
 	a.serverListener = ln

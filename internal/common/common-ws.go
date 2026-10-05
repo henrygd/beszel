@@ -57,6 +57,11 @@ type AgentResponse struct {
 type FingerprintRequest struct {
 	Signature   []byte `cbor:"0,keyasint"`
 	NeedSysInfo bool   `cbor:"1,keyasint"` // For universal token system creation
+	// Nonce, when set, is prefixed to the signed challenge (the token) for
+	// replay protection. Hubs >= 0.22.0 send it to agents >= 0.22.0; older
+	// agents ignore the field (cbor skips unknown fields) and verify the
+	// token alone.
+	Nonce []byte `cbor:"2,keyasint,omitempty"`
 }
 
 type FingerprintResponse struct {

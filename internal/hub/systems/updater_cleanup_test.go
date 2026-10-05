@@ -58,7 +58,7 @@ func TestRemoveAllSystemsWaitsForUpdater(t *testing.T) {
 					t.Error(err)
 					return
 				}
-				wsConn := ws.NewWsConnection(conn, semver.MustParse("0.20.0"))
+				wsConn := ws.NewWsConnection(conn, semver.MustParse("0.20.0"), "")
 				conn.Session().Store("wsConn", wsConn)
 				connections <- wsConn
 				conn.ReadLoop()

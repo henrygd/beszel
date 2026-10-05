@@ -25,7 +25,7 @@ func TestWsConnConcurrentClose(t *testing.T) {
 			t.Error(err)
 			return
 		}
-		ws := NewWsConnection(conn, semver.MustParse("0.12.10"))
+		ws := NewWsConnection(conn, semver.MustParse("0.12.10"), "")
 		conn.Session().Store("wsConn", ws)
 		connections <- ws
 		conn.ReadLoop()
