@@ -95,7 +95,10 @@ export function useYAxisWidth() {
 			maxChars = str.length
 			const div = document.createElement("div")
 			div.className = "text-xs tabular-nums tracking-tighter table sr-only"
-			div.innerHTML = str
+			// textContent, not innerHTML: the label is appended to the live DOM,
+			// so an innerHTML write would become an injection point the day a
+			// string label (e.g. a container name) reaches this formatter.
+			div.textContent = str
 			clearTimeout(timeout)
 			timeout = setTimeout(() => {
 				document.body.appendChild(div)
