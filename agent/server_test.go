@@ -1063,11 +1063,10 @@ func waitSessionOutput(t *testing.T, readFn func() ([]byte, error)) []byte {
 // older than MinVersionAgentResponse never sends a request, so the agent must
 // write exactly one stats payload, exit with status 0, and end the session
 // promptly. Regression target: the handler used to fall through into the
-// request decode after the legacy write, hanging the session until the peer
-// hung up (or the 70s idle timeout fired) and then attempting a second
-// payload via the decode-failure fallback. Covers all three routes into the
-// legacy path: a pre-0.13 CBOR hub, a pre-0.12 JSON hub, and a client whose
-// version string cannot be parsed at all.
+// request decode after the legacy write, read an immediate EOF from the hub's
+// empty stdin, and send a second payload via the decode-failure fallback.
+// Covers all three routes into the legacy path: a pre-0.13 CBOR hub, a
+// pre-0.12 JSON hub, and a client whose version string cannot be parsed.
 func TestLegacyHubGetsSinglePayload(t *testing.T) {
 	tests := []struct {
 		name          string
