@@ -19,7 +19,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Sheet, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle } from "@/components/ui/sheet"
 import { Button } from "@/components/ui/button"
-import { Checkbox } from "@/components/ui/checkbox"
+import { Switch } from "@/components/ui/switch"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
@@ -926,19 +926,20 @@ function MonitorDialogContent({
 					/>
 				</div>
 				{usesTls && (
-					<div className="grid gap-2">
-						<label htmlFor="monitor-skip-tls-verify" className="flex gap-2 items-center cursor-pointer text-sm">
-							<Checkbox
-								id="monitor-skip-tls-verify"
-								checked={skipTlsVerify}
-								onCheckedChange={(checked) => setSkipTlsVerify(checked === true)}
-							/>
-							<Trans>Ignore TLS certificate errors</Trans>
-						</label>
-						<p className="text-xs text-muted-foreground">
-							<Trans>Use for self-signed or otherwise untrusted certificates.</Trans>
-						</p>
-					</div>
+					<label
+						htmlFor="monitor-skip-tls-verify"
+						className="flex items-center justify-between gap-4 cursor-pointer rounded-lg border border-muted-foreground/15 hover:border-muted-foreground/20 transition-colors duration-100 px-3.5 py-3"
+					>
+						<div className="grid gap-1 select-none">
+							<span className="text-sm font-medium">
+								<Trans>Ignore TLS certificate errors</Trans>
+							</span>
+							<span className="text-xs text-muted-foreground">
+								<Trans>Use for self-signed certificates.</Trans>
+							</span>
+						</div>
+						<Switch id="monitor-skip-tls-verify" checked={skipTlsVerify} onCheckedChange={setSkipTlsVerify} />
+					</label>
 				)}
 				<DialogFooter>
 					{!isEditing && onOpenBulkAdd && (
