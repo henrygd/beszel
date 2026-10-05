@@ -34,8 +34,7 @@ func (h *Hub) startServer(se *core.ServeEvent) error {
 			}
 		}
 		if cspExists {
-			e.Response.Header().Del("X-Frame-Options")
-			e.Response.Header().Set("Content-Security-Policy", csp)
+			applyCSPHeaders(e.Response.Header(), csp)
 		}
 		// still serve the app for unknown paths (it renders a 404 page),
 		// but with a 404 status so scanners and fail2ban see the miss
@@ -46,4 +45,15 @@ func (h *Hub) startServer(se *core.ServeEvent) error {
 		return e.HTML(status, html)
 	})
 	return nil
+}
+
+// applyCSPHeaders sets a custom Content-Security-Policy and drops the default
+// X-Frame-Options header only when the CSP actually covers framing
+// (frame-ancestors). Removing it for an unrelated CSP value would silently
+// strip the clickjacking protection PocketBase sets by default.
+func applyCSPHeaders(header http.Header, csp string) {
+	if strings.Contains(csp, "frame-ancestors") {
+		header.Del("X-Frame-Options")
+	}
+	header.Set("Content-Security-Policy", csp)
 }
