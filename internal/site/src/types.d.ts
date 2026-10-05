@@ -340,7 +340,7 @@ export interface AlertRecord extends RecordModel {
 
 export interface AlertsHistoryRecord extends RecordModel {
 	monitor_name?: string
-	alert: string
+	alert_id: string
 	user: string
 	system: string
 	name: string
@@ -414,6 +414,10 @@ export interface UserSettings {
 	monitorSortModeSystem?: Array<{ id: string; desc: boolean }>
 	grid?: boolean
 	displayMode?: "default" | "tabs"
+	/** "clear" (default) removes an alert from active alerts once it resolves, "keep" keeps it until dismissed */
+	resolvedAlerts?: "clear" | "keep"
+	/** with resolvedAlerts "keep", alerts resolved at or before this time have been dismissed */
+	resolvedAlertsDismissed?: string
 }
 
 type ChartDataContainer = {
