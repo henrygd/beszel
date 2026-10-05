@@ -24,6 +24,9 @@ const (
 	// pacmanSyncInterval limits how often checkupdates downloads fresh sync
 	// databases. Checks in between reuse the last synced copy.
 	pacmanSyncInterval = 12 * time.Hour
+	// xbpsSyncInterval limits how often xbps-install fetches remote repository
+	// data. Checks in between reuse the last fetched update list.
+	xbpsSyncInterval = 12 * time.Hour
 )
 
 // packageUpdatesResult is the outcome of one package manager check.
@@ -155,7 +158,7 @@ func detectPackageManager(dataDir string) (string, packageUpdatesCheck) {
 	case commandExists("apk"):
 		return "apk", checkApk
 	case commandExists("xbps-install"):
-		return "xbps", checkXbps
+		return "xbps", newXbpsCheck()
 	}
 	return "", nil
 }
@@ -512,23 +515,47 @@ func splitApkNameVersion(s string) (name, version string) {
 	return s[:ver], s[ver+1:]
 }
 
-// checkXbps lists package updates. xbps has no security metadata, so the security count is omitted.
-func checkXbps(ctx context.Context) (packageUpdatesResult, error) {
-	out, err := runPackageCommand(ctx, nil, "xbps-install", "-Mun")
-	if err != nil {
-		return packageUpdatesResult{}, err
-	}
-	packages := parseXbpsSimulate(out)
-
-	for i := range packages {
-		out, err = runPackageCommand(ctx, nil, "xbps-query", "-p", "pkgver", packages[i].Name)
-		if err == nil {
-			_, ver := parseXbpsNameVersion(strings.TrimSpace(out))
-			packages[i].Current = ver
+// newXbpsCheck fetches remote repository data into memory (-M) every
+// xbpsSyncInterval. The system's on-disk copy is only refreshed by xbps-install -S,
+// so it is often stale, and xbps cannot keep the fetched data. Checks in between
+// reuse the last fetched update list and drop packages whose installed version
+// changed since, so local upgrades show up right away. xbps has no security
+// metadata, so the security count is omitted.
+func newXbpsCheck() packageUpdatesCheck {
+	// checks never overlap (packageUpdatesManager.running), so no lock is needed
+	var lastSync time.Time
+	var synced []system.PackageUpdate
+	return func(ctx context.Context) (packageUpdatesResult, error) {
+		sync := lastSync.IsZero() || time.Since(lastSync) >= xbpsSyncInterval
+		var updates []system.PackageUpdate
+		if sync {
+			out, err := runPackageCommand(ctx, nil, "xbps-install", "-Mun")
+			if err != nil {
+				return packageUpdatesResult{}, err
+			}
+			updates = parseXbpsSimulate(out)
 		}
+		out, err := runPackageCommand(ctx, nil, "xbps-query", "-l")
+		if err != nil {
+			return packageUpdatesResult{}, err
+		}
+		installed := parseXbpsInstalled(out)
+		if sync {
+			for i := range updates {
+				updates[i].Current = installed[updates[i].Name]
+			}
+			synced = updates
+			lastSync = time.Now()
+		}
+		var packages []system.PackageUpdate
+		for _, pkg := range synced {
+			// skip packages upgraded or removed since the last sync
+			if ver, ok := installed[pkg.Name]; ok && ver == pkg.Current {
+				packages = append(packages, pkg)
+			}
+		}
+		return packageUpdatesResult{counts: []uint16{uint16(len(packages))}, packages: packages}, nil
 	}
-
-	return packageUpdatesResult{counts: []uint16{uint16(len(packages))}, packages: packages}, nil
 }
 
 // parseXbpsSimulate parses upgrades in `xbps-install -Mun` output. Upgrade lines look like
@@ -545,6 +572,22 @@ func parseXbpsSimulate(out string) (packages []system.PackageUpdate) {
 		packages = append(packages, system.PackageUpdate{Name: name, Available: ver})
 	}
 	return packages
+}
+
+// parseXbpsInstalled maps package names to installed versions from `xbps-query -l`
+// output. Lines look like "ii xbps-0.60.7_1 XBPS package system utilities".
+func parseXbpsInstalled(out string) map[string]string {
+	installed := make(map[string]string)
+	scanner := bufio.NewScanner(strings.NewReader(out))
+	for scanner.Scan() {
+		fields := strings.Fields(scanner.Text())
+		if len(fields) < 2 {
+			continue
+		}
+		name, ver := parseXbpsNameVersion(fields[1])
+		installed[name] = ver
+	}
+	return installed
 }
 
 // parseXbpsNameVersion splits name-version to tuple (name, version)
