@@ -512,7 +512,7 @@ func splitApkNameVersion(s string) (name, version string) {
 	return s[:ver], s[ver+1:]
 }
 
-// checkXbps lists package updates. There are no security updates, so always returns `securityKnown: false`
+// checkXbps lists package updates. xbps has no security metadata, so the security count is omitted.
 func checkXbps(ctx context.Context) (packageUpdatesResult, error) {
 	out, err := runPackageCommand(ctx, nil, "xbps-install", "-Mun")
 	if err != nil {
@@ -528,11 +528,7 @@ func checkXbps(ctx context.Context) (packageUpdatesResult, error) {
 		}
 	}
 
-	return packageUpdatesResult{
-		counts:        []uint16{uint16(len(packages)), countSecurity(packages)},
-		packages:      packages,
-		securityKnown: false,
-	}, nil
+	return packageUpdatesResult{counts: []uint16{uint16(len(packages))}, packages: packages}, nil
 }
 
 // parseXbpsSimulate parses upgrades in `xbps-install -Mun` output. Upgrade lines look like
@@ -546,12 +542,7 @@ func parseXbpsSimulate(out string) (packages []system.PackageUpdate) {
 			continue
 		}
 		name, ver := parseXbpsNameVersion(fields[0])
-		pkg := system.PackageUpdate{
-			Name:      name,
-			Available: ver,
-			Security: false,
-		}
-		packages = append(packages, pkg)
+		packages = append(packages, system.PackageUpdate{Name: name, Available: ver})
 	}
 	return packages
 }
