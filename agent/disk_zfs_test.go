@@ -4,6 +4,7 @@ package agent
 
 import (
 	"testing"
+	"time"
 
 	"github.com/henrygd/beszel/agent/zfs"
 	"github.com/henrygd/beszel/internal/entities/system"
@@ -16,8 +17,8 @@ import (
 // is a ZFS dataset reports `zfs list` usage (which includes child datasets)
 // instead of the dataset-scoped statfs values (#1541).
 func TestUpdateDiskUsageZfsMountpoint(t *testing.T) {
-	zm := &ZfsManager{}
-	zm.datasetsFn = func() ([]zfs.Dataset, error) {
+	zm := &StoragePoolManager{detailInterval: time.Hour, backends: []*poolBackend{{name: "zfs"}}}
+	zm.backends[0].datasetsFn = func() ([]zfs.Dataset, error) {
 		return []zfs.Dataset{
 			{Name: "tank", Used: 12000000000000, Avail: 11999000000000, Mountpoint: "/tank"},
 		}, nil
@@ -26,7 +27,7 @@ func TestUpdateDiskUsageZfsMountpoint(t *testing.T) {
 		fsStats: map[string]*system.FsStats{
 			"tank": {Root: false, Mountpoint: "/tank"},
 		},
-		zfsManager: zm,
+		storagePoolManager: zm,
 	}
 
 	var stats system.Stats
@@ -43,8 +44,8 @@ func TestUpdateDiskUsageZfsMountpoint(t *testing.T) {
 // TestUpdateDiskUsageZfsRootPopulatesSystemStats verifies the root disk values
 // are derived from ZFS usage when the root mountpoint is a ZFS dataset.
 func TestUpdateDiskUsageZfsRootPopulatesSystemStats(t *testing.T) {
-	zm := &ZfsManager{}
-	zm.datasetsFn = func() ([]zfs.Dataset, error) {
+	zm := &StoragePoolManager{detailInterval: time.Hour, backends: []*poolBackend{{name: "zfs"}}}
+	zm.backends[0].datasetsFn = func() ([]zfs.Dataset, error) {
 		return []zfs.Dataset{
 			{Name: "rpool/ROOT/pve-1", Used: 900000000000, Avail: 300000000000, Mountpoint: "/"},
 		}, nil
@@ -53,7 +54,7 @@ func TestUpdateDiskUsageZfsRootPopulatesSystemStats(t *testing.T) {
 		fsStats: map[string]*system.FsStats{
 			"rpool/ROOT/pve-1": {Root: true, Mountpoint: "/"},
 		},
-		zfsManager: zm,
+		storagePoolManager: zm,
 	}
 
 	var stats system.Stats
@@ -85,8 +86,8 @@ func TestUpdateDiskUsageWithoutZfsManager(t *testing.T) {
 // TestInitializeDiskIoStatsSkipsZfsMountpoints verifies ZFS filesystems are
 // excluded from diskstats I/O tracking instead of warning about a missing device.
 func TestInitializeDiskIoStatsSkipsZfsMountpoints(t *testing.T) {
-	zm := &ZfsManager{}
-	zm.datasetsFn = func() ([]zfs.Dataset, error) {
+	zm := &StoragePoolManager{detailInterval: time.Hour, backends: []*poolBackend{{name: "zfs"}}}
+	zm.backends[0].datasetsFn = func() ([]zfs.Dataset, error) {
 		return []zfs.Dataset{{Name: "tank", Mountpoint: "/tank"}}, nil
 	}
 	agent := &Agent{
@@ -94,8 +95,8 @@ func TestInitializeDiskIoStatsSkipsZfsMountpoints(t *testing.T) {
 			"tank": {Root: false, Mountpoint: "/tank"},
 			"sda1": {Root: false, Mountpoint: "/mnt/data"},
 		},
-		zfsManager: zm,
-		diskPrev:   make(map[uint16]map[string]prevDisk),
+		storagePoolManager: zm,
+		diskPrev:           make(map[uint16]map[string]prevDisk),
 	}
 
 	agent.initializeDiskIoStats(map[string]disk.IOCountersStat{

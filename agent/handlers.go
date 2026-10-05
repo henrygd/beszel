@@ -7,18 +7,23 @@ import (
 
 	"github.com/fxamacker/cbor/v2"
 	"github.com/henrygd/beszel/internal/common"
+	"github.com/henrygd/beszel/internal/entities/monitor"
 	"github.com/henrygd/beszel/internal/entities/smart"
+	"github.com/henrygd/beszel/internal/entities/system"
+	"github.com/lxzan/gws"
 
 	"log/slog"
 )
 
 // HandlerContext provides context for request handlers
 type HandlerContext struct {
-	Client      *WebSocketClient
-	Agent       *Agent
-	Request     *common.HubRequest[cbor.RawMessage]
-	RequestID   *uint32
-	HubVerified bool
+	Client         *WebSocketClient
+	Conn           *gws.Conn // WebSocket that carried this request, if any
+	Agent          *Agent
+	Request        *common.HubRequest[cbor.RawMessage]
+	RequestID      *uint32
+	HubVerified    bool
+	ConnectionType system.ConnectionType // Transport that carried this request
 	// SendResponse abstracts how a handler sends responses (WS or SSH)
 	SendResponse func(data any, requestID *uint32) error
 }
@@ -51,7 +56,10 @@ func NewHandlerRegistry() *HandlerRegistry {
 	registry.Register(common.GetContainerInfo, &GetContainerInfoHandler{})
 	registry.Register(common.GetSmartData, &GetSmartDataHandler{})
 	registry.Register(common.GetSystemdInfo, &GetSystemdInfoHandler{})
+	registry.Register(common.GetSystemdLogs, &GetSystemdLogsHandler{})
+	registry.Register(common.SyncNetworkMonitors, &SyncNetworkMonitorsHandler{})
 	registry.Register(common.GetZfsData, &GetZfsDataHandler{})
+	registry.Register(common.GetPackageUpdates, &GetPackageUpdatesHandler{})
 
 	return registry
 }
@@ -96,7 +104,11 @@ func (h *GetDataHandler) Handle(hctx *HandlerContext) error {
 	_ = cbor.Unmarshal(hctx.Request.Data, &options)
 
 	sysStats := hctx.Agent.gatherStats(options)
-	return hctx.SendResponse(sysStats, hctx.RequestID)
+	// Cached stats may be shared by concurrent SSH and WebSocket requests.
+	// Set the transport on the response copy, not on the cached data.
+	response := *sysStats
+	response.Info.ConnectionType = hctx.ConnectionType
+	return hctx.SendResponse(&response, hctx.RequestID)
 }
 
 ////////////////////////////////////////////////////////////////////////////
@@ -106,7 +118,7 @@ func (h *GetDataHandler) Handle(hctx *HandlerContext) error {
 type CheckFingerprintHandler struct{}
 
 func (h *CheckFingerprintHandler) Handle(hctx *HandlerContext) error {
-	return hctx.Client.handleAuthChallenge(hctx.Request, hctx.RequestID)
+	return hctx.Client.handleAuthChallenge(hctx.Request, hctx.RequestID, hctx.Conn)
 }
 
 ////////////////////////////////////////////////////////////////////////////
@@ -186,14 +198,28 @@ func (h *GetSmartDataHandler) Handle(hctx *HandlerContext) error {
 type GetZfsDataHandler struct{}
 
 func (h *GetZfsDataHandler) Handle(hctx *HandlerContext) error {
-	if hctx.Agent.zfsManager == nil {
+	if hctx.Agent.storagePoolManager == nil {
 		return hctx.SendResponse(nil, hctx.RequestID)
 	}
 	var req common.ZfsDataRequest
 	if err := cbor.Unmarshal(hctx.Request.Data, &req); err != nil {
 		return err
 	}
-	return hctx.SendResponse(hctx.Agent.zfsManager.GetDetail(req.Force), hctx.RequestID)
+	return hctx.SendResponse(hctx.Agent.storagePoolManager.GetDetail(req.Force), hctx.RequestID)
+}
+
+////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
+
+// GetPackageUpdatesHandler returns the pending package updates found by the
+// last background check. It never runs a check itself.
+type GetPackageUpdatesHandler struct{}
+
+func (h *GetPackageUpdatesHandler) Handle(hctx *HandlerContext) error {
+	if hctx.Agent.packageUpdates == nil {
+		return hctx.SendResponse(system.PackageUpdates{}, hctx.RequestID)
+	}
+	return hctx.SendResponse(hctx.Agent.packageUpdates.list(), hctx.RequestID)
 }
 
 ////////////////////////////////////////////////////////////////////////////
@@ -222,4 +248,49 @@ func (h *GetSystemdInfoHandler) Handle(hctx *HandlerContext) error {
 	}
 
 	return hctx.SendResponse(details, hctx.RequestID)
+}
+
+////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
+
+// GetSystemdLogsHandler handles recent systemd service log requests.
+type GetSystemdLogsHandler struct{}
+
+func (h *GetSystemdLogsHandler) Handle(hctx *HandlerContext) error {
+	if hctx.Agent.systemdManager == nil {
+		return errors.ErrUnsupported
+	}
+
+	var req common.SystemdLogsRequest
+	if err := cbor.Unmarshal(hctx.Request.Data, &req); err != nil {
+		return err
+	}
+	if req.ServiceName == "" {
+		return errors.New("service name is required")
+	}
+
+	logs, err := hctx.Agent.systemdManager.getServiceLogs(req.ServiceName)
+	if err != nil {
+		return err
+	}
+
+	return hctx.SendResponse(logs, hctx.RequestID)
+}
+
+////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
+
+// SyncNetworkMonitorsHandler handles monitor configuration sync from hub
+type SyncNetworkMonitorsHandler struct{}
+
+func (h *SyncNetworkMonitorsHandler) Handle(hctx *HandlerContext) error {
+	var req monitor.SyncRequest
+	if err := cbor.Unmarshal(hctx.Request.Data, &req); err != nil {
+		return err
+	}
+	resp, err := hctx.Agent.monitorManager.HandleSyncRequest(req)
+	if err != nil {
+		return err
+	}
+	return hctx.SendResponse(resp, hctx.RequestID)
 }

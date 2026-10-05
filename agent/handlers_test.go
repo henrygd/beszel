@@ -10,6 +10,7 @@ import (
 	"github.com/henrygd/beszel/agent/zfs"
 	"github.com/henrygd/beszel/internal/common"
 	"github.com/henrygd/beszel/internal/entities/smart"
+	"github.com/henrygd/beszel/internal/entities/system"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -32,21 +33,45 @@ func TestNewAgentResponseSmartData(t *testing.T) {
 	assert.True(t, response.SmartComplete)
 }
 
+func TestGetDataHandlerReportsRequestTransport(t *testing.T) {
+	cache := NewSystemDataCache()
+	cached := &system.CombinedData{}
+	cache.Set(cached, defaultDataCacheTimeMs)
+	agent := &Agent{cache: cache}
+	options, err := cbor.Marshal(common.DataRequestOptions{CacheTimeMs: defaultDataCacheTimeMs})
+	assert.NoError(t, err)
+	request := &common.HubRequest[cbor.RawMessage]{Action: common.GetData, Data: options}
+	for _, transport := range []system.ConnectionType{system.ConnectionTypeSSH, system.ConnectionTypeWebSocket} {
+		ctx := &HandlerContext{
+			Agent:          agent,
+			Request:        request,
+			ConnectionType: transport,
+			SendResponse: func(data any, _ *uint32) error {
+				response := data.(*system.CombinedData)
+				assert.Equal(t, transport, response.Info.ConnectionType)
+				return nil
+			},
+		}
+		assert.NoError(t, (&GetDataHandler{}).Handle(ctx))
+		assert.Equal(t, system.ConnectionTypeNone, cached.Info.ConnectionType)
+	}
+}
+
 func TestGetZfsDataHandlerForceRefresh(t *testing.T) {
 	poolCalls := 0
-	zm := &ZfsManager{detailInterval: time.Hour}
-	zm.poolStatsFn = func() ([]zfs.PoolStat, error) {
+	zm := &StoragePoolManager{detailInterval: time.Hour, backends: []*poolBackend{{name: "zfs"}}}
+	zm.backends[0].poolStatsFn = func() ([]zfs.PoolStat, error) {
 		poolCalls++
 		return []zfs.PoolStat{{Name: "tank", Alloc: uint64(poolCalls)}}, nil
 	}
-	zm.poolStatusesFn = func() ([]zfs.PoolStatus, error) { return nil, nil }
-	zm.datasetsFn = func() ([]zfs.Dataset, error) { return nil, nil }
+	zm.backends[0].poolStatusesFn = func() ([]zfs.PoolStatus, error) { return nil, nil }
+	zm.backends[0].datasetsFn = func() ([]zfs.Dataset, error) { return nil, nil }
 	zm.GetDetail(false)
 
 	requestData, err := cbor.Marshal(common.ZfsDataRequest{Force: true})
 	assert.NoError(t, err)
 	ctx := &HandlerContext{
-		Agent: &Agent{zfsManager: zm},
+		Agent: &Agent{storagePoolManager: zm},
 		Request: &common.HubRequest[cbor.RawMessage]{
 			Action: common.GetZfsData,
 			Data:   requestData,

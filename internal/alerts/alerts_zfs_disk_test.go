@@ -5,6 +5,7 @@ package alerts_test
 import (
 	"encoding/json"
 	"testing"
+	"testing/synctest"
 	"time"
 
 	"github.com/henrygd/beszel/internal/entities/system"
@@ -23,7 +24,7 @@ func TestDiskAlertZfsPoolMultiMinute(t *testing.T) {
 	hub, user := beszelTests.GetHubWithUser(t)
 	defer hub.Cleanup()
 
-	systems, err := beszelTests.CreateSystems(hub, 1, user.Id, "up")
+	systems, err := beszelTests.CreateSystems(hub, 1, user.Id, "paused")
 	require.NoError(t, err)
 	systemRecord := systems[0]
 
@@ -80,13 +81,10 @@ func TestDiskAlertZfsPoolMultiMinute(t *testing.T) {
 	}
 
 	systemRecord.Set("updated", now)
-	err = hub.SaveNoValidate(systemRecord)
-	require.NoError(t, err)
 
-	err = am.HandleSystemAlerts(systemRecord, combinedDataHigh)
-	require.NoError(t, err)
-
-	time.Sleep(20 * time.Millisecond)
+	synctest.Test(t, func(t *testing.T) {
+		require.NoError(t, am.HandleSystemAlerts(systemRecord, combinedDataHigh))
+	})
 
 	diskAlert, err = hub.FindFirstRecordByFilter("alerts", "id={:id}", dbx.Params{"id": diskAlert.Id})
 	require.NoError(t, err)
@@ -130,16 +128,49 @@ func TestDiskAlertZfsPoolMultiMinute(t *testing.T) {
 	}
 
 	systemRecord.Set("updated", newNow)
-	err = hub.SaveNoValidate(systemRecord)
-	require.NoError(t, err)
 
-	err = am.HandleSystemAlerts(systemRecord, combinedDataLow)
-	require.NoError(t, err)
-
-	time.Sleep(20 * time.Millisecond)
+	synctest.Test(t, func(t *testing.T) {
+		require.NoError(t, am.HandleSystemAlerts(systemRecord, combinedDataLow))
+	})
 
 	diskAlert, err = hub.FindFirstRecordByFilter("alerts", "id={:id}", dbx.Params{"id": diskAlert.Id})
 	require.NoError(t, err)
 	assert.False(t, diskAlert.GetBool("triggered"),
 		"Alert should be resolved when ZFS pool average (50%%) drops below threshold (80%%)")
+}
+
+func TestDiskAlertIgnoresRawPool(t *testing.T) {
+	for _, minutes := range []int{0, 2} {
+		hub, user := beszelTests.GetHubWithUser(t)
+		systems, err := beszelTests.CreateSystems(hub, 1, user.Id, "paused")
+		require.NoError(t, err)
+		alert, err := beszelTests.CreateRecord(hub, "alerts", map[string]any{"name": "Disk", "system": systems[0].Id, "user": user.Id, "value": 80, "min": minutes})
+		require.NoError(t, err)
+		pools := map[string]*system.ZfsPool{"btrfs": {Total: 100, Used: 99, Raw: true}}
+		for _, offset := range []time.Duration{-180, -90, -60, -30} {
+			data, err := json.Marshal(system.Stats{ZfsPools: pools})
+			require.NoError(t, err)
+			record, err := beszelTests.CreateRecord(hub, "system_stats", map[string]any{"system": systems[0].Id, "type": "1m", "stats": string(data)})
+			require.NoError(t, err)
+			record.SetRaw("created", time.Now().UTC().Add(offset*time.Second).Format(types.DefaultDateLayout))
+			require.NoError(t, hub.SaveNoValidate(record))
+		}
+		synctest.Test(t, func(t *testing.T) {
+			require.NoError(t, hub.GetAlertManager().HandleSystemAlerts(systems[0], &system.CombinedData{Stats: system.Stats{ZfsPools: pools}}))
+		})
+		record, err := hub.FindRecordById("alerts", alert.Id)
+		require.NoError(t, err)
+		assert.False(t, record.GetBool("triggered"))
+		if minutes > 0 {
+			// A current usable sample must not make raw historical values eligible.
+			pools["btrfs"].Raw = false
+			synctest.Test(t, func(t *testing.T) {
+				require.NoError(t, hub.GetAlertManager().HandleSystemAlerts(systems[0], &system.CombinedData{Stats: system.Stats{ZfsPools: pools}}))
+			})
+			record, err = hub.FindRecordById("alerts", alert.Id)
+			require.NoError(t, err)
+			assert.False(t, record.GetBool("triggered"))
+		}
+		hub.Cleanup()
+	}
 }

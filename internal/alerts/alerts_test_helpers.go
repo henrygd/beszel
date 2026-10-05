@@ -10,10 +10,17 @@ import (
 )
 
 func NewTestAlertManagerWithoutWorker(app hubLike) *AlertManager {
-	return &AlertManager{
-		hub:         app,
-		alertsCache: NewAlertsCache(app),
+	am := &AlertManager{
+		hub:             app,
+		alertsCache:     NewAlertsCache(app),
+		networkMonitors: newNetworkMonitorCache(app),
 	}
+	// Standalone managers can own status timers even without the serve hooks.
+	app.OnTerminate().BindFunc(func(e *core.TerminateEvent) error {
+		am.Stop()
+		return e.Next()
+	})
+	return am
 }
 
 // GetSystemAlertsCache returns the internal system alerts cache.
@@ -98,10 +105,6 @@ func (am *AlertManager) RestorePendingStatusAlerts() error {
 
 func (am *AlertManager) SetAlertTriggered(alert CachedAlertData, triggered bool) error {
 	return am.setAlertTriggered(alert, triggered)
-}
-
-func IsInternalURL(rawURL string) (bool, error) {
-	return isInternalURL(rawURL)
 }
 
 // BuildContainerLogExcerpt exposes buildContainerLogExcerpt for testing.

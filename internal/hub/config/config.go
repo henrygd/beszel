@@ -6,8 +6,8 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"uuid"
 
-	"github.com/google/uuid"
 	"github.com/henrygd/beszel/internal/entities/system"
 
 	"github.com/pocketbase/dbx"

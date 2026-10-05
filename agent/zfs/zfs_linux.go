@@ -13,7 +13,15 @@ import (
 	"strings"
 )
 
-var procZfsPath = "/proc/spl/kstat/zfs"
+var (
+	procZfsPath = "/proc/spl/kstat/zfs"
+	devZfsPath  = "/dev/zfs"
+)
+
+// errNoPoolIOStats marks an "iostats" file that predates OpenZFS 2.3 and
+// reports no pool read/write counters (TRIM statistics only), so callers may
+// fall back to older counter sources.
+var errNoPoolIOStats = errors.New("no pool I/O counters")
 
 func ARCSize() (uint64, error) {
 	file, err := os.Open(filepath.Join(procZfsPath, "arcstats"))
@@ -40,12 +48,25 @@ func ARCSize() (uint64, error) {
 	return 0, fmt.Errorf("size field not found in arcstats")
 }
 
+// checkZfsDevice lets containers without /dev/zfs fail fast instead of
+// waiting for ZFS utility commands to time out.
+func checkZfsDevice() error {
+	_, err := os.Stat(devZfsPath)
+	if err != nil {
+		if errors.Is(err, os.ErrNotExist) {
+			return ErrNoZfs
+		}
+		return err
+	}
+	return nil
+}
+
 // PoolKernelStats reads pool state and cumulative I/O counters directly from
 // procfs. These kstats are the same interfaces used by node_exporter's Linux
 // ZFS collector and avoid keeping a `zpool iostat` subprocess alive.
 func PoolKernelStats() ([]PoolKernelStat, error) {
 	poolDirs := make(map[string]struct{})
-	for _, filename := range []string{"state", "io", "objset-*"} {
+	for _, filename := range []string{"state", "io", "iostats", "objset-*"} {
 		paths, err := filepath.Glob(filepath.Join(procZfsPath, "*", filename))
 		if err != nil {
 			return nil, err
@@ -81,11 +102,25 @@ func PoolKernelStats() ([]PoolKernelStat, error) {
 	return pools, nil
 }
 
-// readPoolCounters supports both ZFS kernel interfaces. OpenZFS through 2.3
-// exposes aggregate vdev counters in "io". When that file is unavailable, sum
-// the logical I/O counters exposed for each dataset in the pool.
+// readPoolCounters supports the ZFS kernel interfaces. OpenZFS 2.3+ exposes
+// pool-wide read/write counters in "iostats" that cover every objset,
+// including mounted snapshots, which never get an "objset-*" kstat. OpenZFS
+// through 2.0 exposes aggregate vdev counters in "io". When neither pool-level
+// interface is usable, sum the logical I/O counters exposed for each dataset.
 func readPoolCounters(poolDir string) (uint64, uint64, error) {
-	nread, nwrite, err := readPoolIO(filepath.Join(poolDir, "io"))
+	nread, nwrite, err := readPoolIOStats(filepath.Join(poolDir, "iostats"))
+	if err == nil {
+		return nread, nwrite, nil
+	}
+	// Older sources are tried only when "iostats" is absent or predates
+	// OpenZFS 2.3. A read or parse failure on a usable file is returned:
+	// silently switching counter sources would feed kernelStats counters
+	// from different interfaces under the same pool name and produce a
+	// false I/O spike once "iostats" recovers.
+	if !errors.Is(err, os.ErrNotExist) && !errors.Is(err, errNoPoolIOStats) {
+		return 0, 0, err
+	}
+	nread, nwrite, err = readPoolIO(filepath.Join(poolDir, "io"))
 	if err == nil || !errors.Is(err, os.ErrNotExist) {
 		return nread, nwrite, err
 	}
@@ -126,6 +161,59 @@ func readPoolIO(path string) (uint64, uint64, error) {
 		return 0, 0, err
 	}
 	return 0, 0, fmt.Errorf("I/O counters not found in %s", path)
+}
+
+// readPoolIOStats reads the pool I/O counters exported by OpenZFS 2.3+ in the
+// "iostats" kstat. Reads are counted on ARC misses at their compressed size, so
+// reads served from the ARC are excluded; writes are counted at their logical
+// size. The file exists on earlier releases but then only reports TRIM
+// statistics, so all four byte counters are required for the file to be usable.
+func readPoolIOStats(path string) (uint64, uint64, error) {
+	file, err := os.Open(path)
+	if err != nil {
+		return 0, 0, err
+	}
+	defer file.Close()
+
+	var arcRead, arcWrite, directRead, directWrite uint64
+	var found uint8
+	scanner := bufio.NewScanner(file)
+	for scanner.Scan() {
+		fields := strings.Fields(scanner.Text())
+		if len(fields) < 3 {
+			continue
+		}
+		var target *uint64
+		var bit uint8
+		switch fields[0] {
+		case "arc_read_bytes":
+			target, bit = &arcRead, 1<<0
+		case "direct_read_bytes":
+			target, bit = &directRead, 1<<1
+		case "arc_write_bytes":
+			target, bit = &arcWrite, 1<<2
+		case "direct_write_bytes":
+			target, bit = &directWrite, 1<<3
+		default:
+			continue
+		}
+		value, err := strconv.ParseUint(fields[2], 10, 64)
+		if err != nil {
+			return 0, 0, fmt.Errorf("parsing %s in %s: %w", fields[0], path, err)
+		}
+		*target = value
+		found |= bit
+	}
+	if err := scanner.Err(); err != nil {
+		return 0, 0, err
+	}
+	if found == 0 {
+		return 0, 0, fmt.Errorf("%w in %s", errNoPoolIOStats, path)
+	}
+	if found != 0x0f {
+		return 0, 0, fmt.Errorf("incomplete pool I/O counters in %s", path)
+	}
+	return arcRead + directRead, arcWrite + directWrite, nil
 }
 
 func readPoolObjsets(poolDir string) (uint64, uint64, error) {

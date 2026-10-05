@@ -4,6 +4,7 @@ const routes = {
 	home: "/",
 	containers: "/containers",
 	smart: "/smart",
+	monitors: "/monitors",
 	system: `/system/:id`,
 	settings: `/settings/:name?`,
 	forgot_password: `/forgot-password`,
@@ -14,7 +15,7 @@ const routes = {
  * The base path of the application.
  * This is used to prepend the base path to all routes.
  */
-export const basePath = BESZEL?.BASE_PATH || ""
+export const basePath = globalThis.BESZEL?.BASE_PATH || ""
 
 /**
  * Prepends the base path to the given path.

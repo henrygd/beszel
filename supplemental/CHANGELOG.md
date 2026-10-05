@@ -1,3 +1,135 @@
+## 0.21.0
+
+- Add pending package updates list to the system page (#2357, #2427)
+
+- Add Wi-Fi signal strength monitoring (#2367)
+
+- Add TLS certificate expiry check to HTTPS network monitors (#2401)
+
+- Add systemd service logs to service details (#2440)
+
+- Add option to set the DNS server queried by DNS monitors (#2389)
+
+- Add network monitor comparison across systems and within the same system (#2442, #2477)
+
+- Add `SYNC_SYSTEM_NAMES` environment variable to sync system names with hostnames (#1917)
+
+- Add `DISABLE_SSH` option to the hub to skip SSH fallback (#2469)
+
+- Add environment variable to disable container image update checks (#2371)
+
+- Add MB/s and GB/s unit selection to bandwidth alerts
+
+- Add log timestamp toggle (#2471)
+
+- Add view settings to the network monitors table (#2396)
+
+- Add Twemoji Country Flags font so flags always render (#2363)
+
+- Change active alerts grid to a banner and sheet (#2445)
+
+- Change network packet loss to a red line (#2377)
+
+- Improve Intel GPU monitoring by parsing `intel_gpu_top` JSON output (#2387)
+
+- Improve LXC guest CPU usage reporting using cgroup accounting (#2341)
+
+- Improve WebSocket and SSH fallback handling (#2441)
+
+- Fix LVM volumes not mapping to disk I/O by resolving device symlinks (#2486)
+
+- Fix ZFS pool I/O stats to include snapshot reads (#2474)
+
+- Fix inaccurate disk I/O on the first sample of an interval (#2420)
+
+- Fix Windows volume names being altered when matching I/O devices (#2419)
+
+- Fix 32-bit wrap of disk I/O time counters (#2407)
+
+- Fix partial NVMe SMART data handling (#2340)
+
+- Fix NVMe power-cycle SMART fields overflowing (#2484)
+
+- Fix `nvethernet` network counters (#2090)
+
+- Fix agent not reconnecting after an async WebSocket handshake failure (#2329, #2326)
+
+- Fix WebSocket reconnect loops on slow agent collections (#2294)
+
+- Fix `SKIP_GPU` not excluding GPU hwmon temperatures and fans (#2313)
+
+- Fix Docker image update check across all image repository digests (#2393)
+
+- Fix status alerts being lost during pending recovery (#2375)
+
+- Fix hub requiring system access for alert subscriptions and delivery (#2455)
+
+- Fix hub not honoring SSH request cancellation (#2450)
+
+- Fix hub not restarting `beszel-hub.service` after update (#2410)
+
+- Fix custom DNS resolvers being lost when syncing monitors (#2448)
+
+- Fix IP targets being accepted for DNS monitors (#2483)
+
+- Fix short monitor IDs failing schema validation (#2454)
+
+- Fix network monitor charts to show gaps for failed probes and disconnects (#2428)
+
+- Fix duplicate y-axis labels on network monitor response charts (#2426)
+
+- Fix confirmation before deleting a single network monitor (#2467)
+
+- Fix translations not refreshing on locale change (#2405)
+
+- Fix scrollbar layout shifts (#2406)
+
+- Fix hub returning 200 for unknown frontend routes (#2414)
+
+- Fix proxy caching of systemd details (#2456)
+
+- Fix agent not exiting with code 0 when run without a key on Windows (#2376, #2247)
+
+- Fix OpenWrt user account handling in the install script (#2370)
+
+- Update Go dependencies
+
+## 0.20.0
+
+- Add network monitoring from agents (#2266, #1911)
+
+- Add Docker image update available flag (#2211)
+
+- Add btrfs filesystem reporting as storage pools (#2315)
+
+- Add persistence of view preferences and language to user settings (#1831)
+
+- Add `TRUSTED_PROXY_IPS` allowlist for `TRUSTED_AUTH_HEADER` (#2327)
+
+- Add ZFS utilities to Intel and NVIDIA agent images (#2288, #2311)
+
+- Revert SMART warnings for certain attributes (#2296, #2308, #2347)
+
+- Improve NVMe data units display as human-readable GB/TB (#2303)
+
+- Fix agent disconnects during slow collections by extending WebSocket deadline (#2294)
+
+- Fix missing root CA certificates in base agent image (#2291)
+
+- Fix false RAID health warnings during healthy data scrubbing (#2109)
+
+- Fix ZFS monitoring when /dev/zfs is unavailable (#2325)
+
+- Fix spurious `HUB_URL` warning in SSH-only mode (#2316)
+
+- Fix idle GPU utilization display in systems table (#2312)
+
+- Fix session handling to clear auth store after token expiry (#2310)
+
+- Fix chart history handling when switching to live charts (#2333)
+
+- Update Go dependencies
+
 ## 0.19.0
 
 - **Potential breaking change:** Agents now verify HTTPS certificates. If an agent connects to a hub using a self-signed or otherwise untrusted certificate, configure `CA_CERT_FILE` with the appropriate CA certificate or the connection will be rejected.

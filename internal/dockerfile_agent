@@ -12,7 +12,7 @@ RUN apk add --no-cache ca-certificates && update-ca-certificates
 
 # Build
 ARG TARGETOS TARGETARCH
-RUN CGO_ENABLED=0 GOGC=75 GOOS=$TARGETOS GOARCH=$TARGETARCH go build -ldflags "-w -s" -o /agent ./internal/cmd/agent
+RUN CGO_ENABLED=0 GOOS=$TARGETOS GOARCH=$TARGETARCH go build -ldflags "-w -s" -o /agent ./internal/cmd/agent
 
 RUN rm -rf /tmp/*
 
