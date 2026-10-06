@@ -1,3 +1,5 @@
+//go:build testing
+
 package hub
 
 import (
@@ -293,20 +295,21 @@ func TestCopyMonitorToNewRecordDropsResultFields(t *testing.T) {
 
 	oldRecord := core.NewRecord(collection)
 	oldRecord.Load(map[string]any{
-		"system":   "sys123",
-		"target":   "https://example.com",
-		"protocol": "http",
-		"port":     443,
-		"server":   "1.1.1.1",
-		"interval": 60,
-		"enabled":  true,
-		"res":      1200,
-		"resAvg1h": 1300,
-		"resMin1h": 900,
-		"resMax1h": 1600,
-		"loss1h":   5,
-		"certInfo": map[string]any{"expires": 1800000000000},
-		"updated":  "2026-04-29 12:00:00.000Z",
+		"system":        "sys123",
+		"target":        "https://example.com",
+		"protocol":      "http",
+		"port":          443,
+		"server":        "1.1.1.1",
+		"interval":      60,
+		"enabled":       true,
+		"skipTlsVerify": true,
+		"res":           1200,
+		"resAvg1h":      1300,
+		"resMin1h":      900,
+		"resMax1h":      1600,
+		"loss1h":        5,
+		"certInfo":      map[string]any{"expires": 1800000000000},
+		"updated":       "2026-04-29 12:00:00.000Z",
 	})
 
 	newRecord := copyMonitorToNewRecord(oldRecord, "next12345")
@@ -317,6 +320,7 @@ func TestCopyMonitorToNewRecordDropsResultFields(t *testing.T) {
 	assert.Equal(t, 443, newRecord.GetInt("port"))
 	assert.Equal(t, "1.1.1.1", newRecord.GetString("server"))
 	assert.True(t, newRecord.GetBool("enabled"))
+	assert.True(t, newRecord.GetBool("skipTlsVerify"))
 	assert.Contains(t, []string{"", "null"}, newRecord.GetString("certInfo"))
 	assert.Zero(t, newRecord.GetFloat("res"))
 	assert.Zero(t, newRecord.GetFloat("resAvg1h"))
