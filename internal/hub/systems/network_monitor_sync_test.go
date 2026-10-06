@@ -178,6 +178,23 @@ func TestNetworkMonitorReconnectSync(t *testing.T) {
 	}
 }
 
+func TestGetMonitorConfigsForSystemIncludesSkipTLSVerify(t *testing.T) {
+	sys, app := newTestSystemWithHub(t)
+	collection, err := app.FindCachedCollectionByNameOrId("network_monitors")
+	require.NoError(t, err)
+	record := core.NewRecord(collection)
+	record.Load(map[string]any{
+		"system": sys.Id, "target": "https://self-signed.example", "protocol": "http",
+		"interval": 60, "enabled": true, "skipTlsVerify": true,
+	})
+	require.NoError(t, app.SaveNoValidate(record))
+
+	configs, err := sys.manager.GetMonitorConfigsForSystem(sys.Id)
+	require.NoError(t, err)
+	require.Len(t, configs, 1)
+	require.True(t, configs[0].SkipTLSVerify, "full sync must keep the skip TLS verify option")
+}
+
 func TestGetMonitorConfigsForSystemQueryError(t *testing.T) {
 	sys, app := newTestSystemWithHub(t)
 	_, err := app.DB().NewQuery("DROP TABLE network_monitors").Execute()

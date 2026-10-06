@@ -11,7 +11,8 @@ import {
 } from "@/components/ui/chart"
 import { chartMargin, cn, formatShortDate } from "@/lib/utils"
 import type { ChartOptions, SystemStatsRecord } from "@/types"
-import { useYAxisWidth } from "./hooks"
+import { hasChartValues, useYAxisWidth } from "./hooks"
+import { ChartNoValues } from "./chart-no-values"
 import type { AxisDomain } from "recharts/types/util/types"
 import { useIntersectionObserver } from "@/lib/use-intersection-observer"
 
@@ -165,7 +166,11 @@ export default function LineChartDefault({
 					name={dataPoint.label}
 					type="monotoneX"
 					// recharts' default dots are white with a colored outline; fill them like isolatedDot
-					dot={dataPoint.dot === true ? { r: 2, fill: color, stroke: color } : dataPoint.dot || false}
+					dot={
+						dataPoint.dot === true
+							? { r: 2, fill: color, stroke: color }
+							: (dataPoint.dot ?? (connectNulls ? false : isolatedDot))
+					}
 					strokeWidth={1.5}
 					stroke={color}
 					strokeOpacity={dataPoint.strokeOpacity}
@@ -183,6 +188,9 @@ export default function LineChartDefault({
 	return useMemo(() => {
 		if (displayData.length === 0) {
 			return null
+		}
+		if (!hasChartValues(displayData, dataPoints)) {
+			return <ChartNoValues ref={ref} />
 		}
 		// if (logRender) {
 		// console.log("Rendered", dataPoints?.map((d) => d.label).join(", "), new Date())
