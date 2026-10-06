@@ -893,6 +893,11 @@ msgstr "Endpoint URL"
 msgid "Endpoint URL to ping (required)"
 msgstr "Endpoint URL to ping (required)"
 
+#: src/components/containers-table/containers-table-columns.tsx
+msgctxt "Docker engine"
+msgid "Engine"
+msgstr "Engine"
+
 #: src/components/network-monitors-table/monitor-dialog.tsx
 msgid "Enter a domain name to look up. Put the resolver's IP in DNS Server."
 msgstr "Enter a domain name to look up. Put the resolver's IP in DNS Server."
