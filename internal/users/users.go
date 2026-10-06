@@ -48,8 +48,10 @@ func (um *UserManager) InitializeUserSettings(e *core.RecordEvent) error {
 	record := e.Record
 	// intialize settings with defaults (zero values can be ignored)
 	settings := struct {
-		ChartTime string   `json:"chartTime"`
-		Emails    []string `json:"emails"`
+		ChartTime            string   `json:"chartTime"`
+		Emails               []string `json:"emails"`
+		NotificationsEnabled bool     `json:"notificationsEnabled,omitempty"`
+		Systems              []string `json:"systems,omitempty"`
 	}{
 		ChartTime: "1h",
 	}
