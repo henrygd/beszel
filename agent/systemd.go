@@ -367,7 +367,10 @@ func (sm *systemdManager) getServiceLogs(serviceName string) (string, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 2100*time.Millisecond)
 	defer cancel()
 
-	cmd := exec.CommandContext(ctx, "journalctl", "--system", "--quiet", "--no-pager", "--output=short-iso", "--unit", unitName, "--lines", strconv.Itoa(systemdLogsTail))
+	// No --system: journald (SplitMode=uid) stores output from services running
+	// as a non-system User= in user-UID.journal, which --system excludes.
+	// --unit still restricts results to the system unit.
+	cmd := exec.CommandContext(ctx, "journalctl", "--quiet", "--no-pager", "--output=short-iso", "--unit", unitName, "--lines", strconv.Itoa(systemdLogsTail))
 	output := limitedBuffer{limit: maxTotalLogSize}
 	cmd.Stdout = &output
 	stderr := limitedBuffer{limit: 1024}
