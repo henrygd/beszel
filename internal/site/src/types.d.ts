@@ -698,6 +698,8 @@ export interface NetworkMonitorRecord {
 	protocol: "icmp" | "tcp" | "http" | "dns"
 	port: number
 	server: string
+	/** Skip TLS certificate verification for HTTPS targets. */
+	skipTlsVerify: boolean
 	res: number
 	resMin1h: number
 	resMax1h: number
