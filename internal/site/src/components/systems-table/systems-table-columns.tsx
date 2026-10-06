@@ -6,6 +6,7 @@ import { getPagePath } from "@nanostores/router"
 import type { CellContext, ColumnDef, HeaderContext } from "@tanstack/react-table"
 import type { ClassValue } from "clsx"
 import {
+	AppleIcon,
 	ArrowUpDownIcon,
 	ChevronRightSquareIcon,
 	ClockArrowUp,
@@ -13,6 +14,7 @@ import {
 	CpuIcon,
 	HardDriveIcon,
 	MemoryStickIcon,
+	MonitorIcon,
 	MoreHorizontalIcon,
 	PackageIcon,
 	PauseCircleIcon,
@@ -23,11 +25,12 @@ import {
 	Trash2Icon,
 	WifiIcon,
 } from "lucide-react"
-import { memo, useMemo, useRef, useState } from "react"
+import { atom } from "nanostores"
+import { memo, useEffect, useMemo, useRef, useState } from "react"
 import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip"
 import { isReadOnlyUser, pb } from "@/lib/api"
-import { BatteryState, ConnectionType, connectionTypeLabels, MeterState, SystemStatus } from "@/lib/enums"
-import { $longestSystemName, $userSettings } from "@/lib/stores"
+import { BatteryState, ConnectionType, connectionTypeLabels, MeterState, Os, SystemStatus } from "@/lib/enums"
+import { $longestSystemName, $upSystems, $userSettings } from "@/lib/stores"
 import {
 	cn,
 	copyToClipboard,
@@ -43,6 +46,7 @@ import type { SystemRecord, WiFi } from "@/types"
 import { SystemDialog } from "../add-system"
 import AlertButton from "../alerts/alert-button"
 import { $router, Link } from "../router"
+import { getDistro } from "../ui/distro-icons"
 import {
 	AlertDialog,
 	AlertDialogAction,
@@ -73,7 +77,37 @@ import {
 	BatteryLowIcon,
 	PlugChargingIcon,
 	BatteryFullIcon,
+	FreeBsdIcon,
+	TuxIcon,
+	WindowsIcon,
 } from "../ui/icons"
+
+const OS_INFO = {
+	[Os.Linux]: { Icon: TuxIcon, name: "Linux" },
+	[Os.Darwin]: { Icon: AppleIcon, name: "macOS" },
+	[Os.Windows]: { Icon: WindowsIcon, name: "Windows" },
+	[Os.FreeBSD]: { Icon: FreeBsdIcon, name: "FreeBSD" },
+} as const
+
+type OsDetails = { os: Os; os_name: string }
+
+/** os and os_name from system_details, keyed by system id (systems.info.os is deprecated) */
+const $osDetails = atom<Record<string, OsDetails>>({})
+
+/** Loads OS details for the OS column; refetches when the set of connected systems changes. */
+export function useLoadOsDetails() {
+	const upSystems = useStore($upSystems)
+	const upKey = Object.keys(upSystems).sort().join(",")
+	useEffect(() => {
+		if (!upKey) {
+			return
+		}
+		pb.collection("system_details")
+			.getFullList<OsDetails & { id: string }>({ fields: "id,os,os_name", requestKey: "os-details" })
+			.then((records) => $osDetails.set(Object.fromEntries(records.map(({ id, ...details }) => [id, details]))))
+			.catch(() => {})
+	}, [upKey])
+}
 
 const STATUS_COLORS = {
 	[SystemStatus.Up]: "bg-green-500",
@@ -491,6 +525,44 @@ export function SystemsTableColumns(viewMode: "table" | "grid"): ColumnDef<Syste
 						/>
 						{total === 0 ? t`Up to date` : plural(total, { one: "# update", other: "# updates" })}
 					</span>
+				)
+			},
+		},
+		{
+			// fall back to the deprecated info.os for agents older than 0.19.0
+			accessorFn: ({ id, info }) => $osDetails.get()[id]?.os ?? info.os,
+			id: "os",
+			name: () => t`OS`,
+			size: 30,
+			Icon: MonitorIcon,
+			header: sortableHeader,
+			cell(info) {
+				const { id, info: systemInfo } = info.row.original
+				const details = useStore($osDetails)[id]
+				const osName = details?.os_name
+				const os = details?.os ?? systemInfo.os
+				const distro = os === Os.Linux ? getDistro(osName) : undefined
+				const { Icon, name: osLabel } = distro ?? OS_INFO[os] ?? {}
+				if (!Icon) {
+					return null
+				}
+				const name = osName || osLabel
+				if (viewMode === "grid") {
+					return (
+						<span className="flex gap-1.5 items-center min-w-0">
+							<Icon className="size-4 shrink-0 opacity-75" /> <span className="truncate">{name}</span>
+						</span>
+					)
+				}
+				return (
+					<Tooltip delayDuration={100}>
+						<TooltipTrigger asChild>
+							<span className="flex relative z-10 w-fit mx-auto">
+								<Icon className="size-5 opacity-75" aria-label={name} />
+							</span>
+						</TooltipTrigger>
+						<TooltipContent>{name}</TooltipContent>
+					</Tooltip>
 				)
 			},
 		},
