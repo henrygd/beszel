@@ -43,6 +43,7 @@ type Agent struct {
 	systemDetails             system.Details                                        // Host system details (static, once-per-connection)
 	detailsDirty              bool                                                  // Whether system details have changed and need to be resent
 	gpuManager                *GPUManager                                           // Manages GPU data
+	processCounts             processCountsCache                                    // Process counts shared across stats intervals
 	cache                     *systemDataCache                                      // Cache for system stats based on cache time
 	connectionManager         *ConnectionManager                                    // Channel to signal connection events
 	handlerRegistry           *HandlerRegistry                                      // Registry for routing incoming messages
@@ -86,6 +87,8 @@ func NewAgent(dataDir ...string) (agent *Agent, err error) {
 	}
 	agent.initializeCpu()
 	agent.sensorConfig = agent.newSensorConfig()
+	// A containerized agent only sees its own PID namespace, so process counts would be misleading
+	agent.processCounts.disabled = runningInContainer()
 
 	// Parse disk usage cache duration (e.g., "15m", "1h") to avoid waking sleeping disks
 	if diskUsageCache, exists := utils.GetEnv("DISK_USAGE_CACHE"); exists {
