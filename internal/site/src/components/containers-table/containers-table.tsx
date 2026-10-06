@@ -166,7 +166,8 @@ export default function ContainersTable({ systemId }: { systemId?: string }) {
 			const image = container.image ?? ""
 			const ports = container.ports ?? ""
 			const engine = container.engine ?? ""
-			const searchString = `${systemName} ${id} ${name} ${healthLabel} ${status} ${image} ${ports} ${engine}`.toLowerCase()
+			const searchString =
+				`${systemName} ${id} ${name} ${healthLabel} ${status} ${image} ${ports} ${engine}`.toLowerCase()
 
 			return (filterValue as string)
 				.toLowerCase()
