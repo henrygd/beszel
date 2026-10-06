@@ -36,6 +36,29 @@ func TestStatsBatteryTransport(t *testing.T) {
 	assert.Equal(t, stats.Batteries, decoded.Batteries)
 }
 
+// GPUs without a package power reading (e.g. NVIDIA) must not get a "pp" key,
+// otherwise the UI shows an empty package power series (PocketBase uses json/v2)
+func TestGPUDataPowerPkgOmittedWhenZero(t *testing.T) {
+	gpus := map[string]GPUData{
+		"0": {Name: "GeForce RTX 4060", Power: 91.21},
+		"1": {Name: "Arc A380", Power: 10, PowerPkg: 20},
+	}
+
+	for name, marshal := range map[string]func(any) ([]byte, error){
+		"json_v1": json.Marshal,
+		"json_v2": func(value any) ([]byte, error) { return jsonv2.Marshal(value) },
+	} {
+		t.Run(name, func(t *testing.T) {
+			jsonData, err := marshal(gpus)
+			require.NoError(t, err)
+			var jsonPayload map[string]map[string]any
+			require.NoError(t, json.Unmarshal(jsonData, &jsonPayload))
+			assert.NotContains(t, jsonPayload["0"], "pp")
+			assert.Equal(t, float64(20), jsonPayload["1"]["pp"])
+		})
+	}
+}
+
 func TestStatsDiskIOTotalAndFansTransport(t *testing.T) {
 	stats := Stats{
 		DiskIOTotal: [2]uint64{437348527104, 331522465792},
