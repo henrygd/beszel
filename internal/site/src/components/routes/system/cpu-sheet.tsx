@@ -179,7 +179,6 @@ export default memo(function CpuCoresSheet({
 								chartData={chartData}
 								maxToggled={maxValues}
 								legend={numCores < 10}
-								domain={[0, (dataMax: number) => Math.max(dataMax, 0.1)]}
 								dataPoints={Array.from({ length: latest?.cf?.length ?? 0 }).map((_, i) => ({
 									label: `CPU ${i}`,
 									dataKey: ({ stats }: SystemStatsRecord) => stats?.cf?.[i],
@@ -187,7 +186,7 @@ export default memo(function CpuCoresSheet({
 									opacity: 0.35,
 									stackId: undefined,
 								}))}
-								tickFormatter={(val) => `${decimalString(val, 2)} GHz`}
+								tickFormatter={(val) => `${toFixedFloat(val, 2)} GHz`}
 								contentFormatter={({ value }) => `${decimalString(value, 2)} GHz`}
 								itemSorter={() => 1}
 							/>
