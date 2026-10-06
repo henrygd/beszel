@@ -16,6 +16,7 @@ import {
 	PlayCircleIcon,
 	CopyIcon,
 	ShieldCheckIcon,
+	ShieldOffIcon,
 } from "lucide-react"
 import { t } from "@lingui/core/macro"
 import type { NetworkMonitorRecord, SystemRecord } from "@/types"
@@ -49,6 +50,8 @@ const protocolColors: Record<string, string> = {
 	tcp: "bg-purple-500/15! text-purple-600 dark:text-purple-400",
 	http: "bg-green-500/15! text-green-700 dark:text-green-400",
 	dns: "bg-amber-500/15! text-amber-600 dark:text-amber-400",
+	// HTTP monitors that skip TLS certificate verification
+	insecure: "bg-orange-500/15! text-orange-600 dark:text-orange-400",
 }
 
 const SYSTEM_STATUS_COLORS = {
@@ -159,8 +162,16 @@ export function getMonitorColumns({
 			meta: { label: t`Protocol` },
 			accessorFn: (record) => record.protocol,
 			header: ({ column }) => <HeaderButton column={column} name={t`Protocol`} Icon={ArrowLeftRightIcon} />,
-			cell: ({ getValue }) => {
+			cell: ({ row, getValue }) => {
 				const protocol = getValue() as string
+				if (row.original.skipTlsVerify) {
+					return (
+						<Badge className={cn("uppercase gap-1", protocolColors.insecure)}>
+							{protocol}
+							<ShieldOffIcon className="size-3" />
+						</Badge>
+					)
+				}
 				return <Badge className={cn("uppercase", protocolColors[protocol])}>{protocol}</Badge>
 			},
 		},
