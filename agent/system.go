@@ -107,10 +107,15 @@ func (a *Agent) refreshSystemDetails() {
 
 	// total memory
 	a.systemDetails.MemoryTotal = hostInfo.MemTotal
-	if a.systemDetails.MemoryTotal == 0 {
-		if v, err := mem.VirtualMemory(); err == nil {
+	hostMemoryTotal := hostInfo.MemTotal
+	if v, err := memoryVirtualMemory(); err == nil {
+		hostMemoryTotal = v.Total
+		if a.systemDetails.MemoryTotal == 0 {
 			a.systemDetails.MemoryTotal = v.Total
 		}
+	}
+	if metrics, ok := containerMemoryMetrics(hostMemoryTotal, a.forceUseCgroup); ok {
+		a.systemDetails.MemoryTotal = metrics.Total
 	}
 
 	// zfs
@@ -157,7 +162,7 @@ func (a *Agent) getSystemStats(cacheTimeMs uint16) system.Stats {
 	}
 
 	// cpu metrics
-	cpuMetrics, err := getCpuMetrics(cacheTimeMs)
+	cpuMetrics, err := getCpuMetrics(cacheTimeMs, a.forceUseCgroup)
 	if err == nil {
 		systemStats.Cpu = utils.TwoDecimals(cpuMetrics.Total)
 		systemStats.CpuBreakdown = []float64{
@@ -197,34 +202,7 @@ func (a *Agent) getSystemStats(cacheTimeMs uint16) system.Stats {
 	}
 
 	// memory
-	if v, err := mem.VirtualMemory(); err == nil {
-		used, cacheBuff, swapUsed := calculateHostMemoryUsage(v, a.memCalc == "htop")
-		// swap
-		systemStats.Swap = utils.BytesToGigabytes(v.SwapTotal)
-		systemStats.SwapUsed = utils.BytesToGigabytes(swapUsed)
-		v.Used = used
-		// if a.memCalc == "legacy" {
-		// 	v.Used = v.Total - v.Free - v.Buffers - v.Cached
-		// 	cacheBuff = v.Total - v.Free - v.Used
-		// 	v.UsedPercent = float64(v.Used) / float64(v.Total) * 100.0
-		// }
-		// subtract ZFS ARC size from used memory and add as its own category
-		if a.zfs {
-			if arcSize, _ := zfs.ARCSize(); arcSize > 0 && arcSize < v.Used {
-				v.Used = v.Used - arcSize
-				systemStats.MemZfsArc = utils.BytesToGigabytes(arcSize)
-			}
-		}
-		if v.Total > 0 {
-			v.UsedPercent = float64(v.Used) / float64(v.Total) * 100.0
-		} else {
-			v.UsedPercent = 0
-		}
-		systemStats.Mem = utils.BytesToGigabytes(v.Total)
-		systemStats.MemBuffCache = utils.BytesToGigabytes(cacheBuff)
-		systemStats.MemUsed = utils.BytesToGigabytes(v.Used)
-		systemStats.MemPct = utils.TwoDecimals(v.UsedPercent)
-	}
+	a.updateMemoryStats(&systemStats)
 
 	// disk usage
 	a.updateDiskUsage(&systemStats)

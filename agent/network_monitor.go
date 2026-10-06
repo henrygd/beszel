@@ -1,6 +1,7 @@
 package agent
 
 import (
+	"crypto/tls"
 	"errors"
 	"fmt"
 	"net/http"
@@ -20,7 +21,11 @@ type MonitorManager struct {
 }
 
 func newMonitorManager() *MonitorManager {
-	return newMonitorManagerWithProbe(networkMonitorProbe(&http.Client{Timeout: monitor.MaxProbeTimeout}))
+	client := &http.Client{Timeout: monitor.MaxProbeTimeout}
+	insecureTransport := http.DefaultTransport.(*http.Transport).Clone()
+	insecureTransport.TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
+	insecureClient := &http.Client{Timeout: monitor.MaxProbeTimeout, Transport: insecureTransport}
+	return newMonitorManagerWithProbe(networkMonitorProbe(client, insecureClient))
 }
 
 func newMonitorManagerWithProbe(probe monitorProbe) *MonitorManager {

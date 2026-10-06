@@ -33,17 +33,17 @@ type CpuMetrics struct {
 	Irq     float64
 	Softirq float64
 	Nice    float64
-	// fromCgroup is set when Total comes from cgroup accounting (LXC) rather
-	// than /proc/stat, so per-core /proc/stat usage would not match it.
+	// fromCgroup is set when Total comes from cgroup accounting rather than
+	// /proc/stat, so per-core /proc/stat usage would not match it.
 	fromCgroup bool
 }
 
 // getCpuMetrics calculates detailed CPU usage metrics using cached previous measurements.
 // It returns percentages for total, user, system, iowait, and steal time.
-func getCpuMetrics(cacheTimeMs uint16) (CpuMetrics, error) {
+func getCpuMetrics(cacheTimeMs uint16, forceUseCgroup bool) (CpuMetrics, error) {
 	// Inside LXC, lxcfs serves /proc/stat with the host cores' counters, not
-	// the guest's own usage. Prefer the cgroup's CPU accounting there. (#2332)
-	if metrics, ok := containerCpuMetrics(cacheTimeMs); ok {
+	// the guest's own usage. Prefer cgroup accounting there or when requested. (#2332)
+	if metrics, ok := containerCpuMetrics(cacheTimeMs, forceUseCgroup); ok {
 		metrics.fromCgroup = true
 		return metrics, nil
 	}
