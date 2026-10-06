@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Sheet, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle } from "@/components/ui/sheet"
 import { Button } from "@/components/ui/button"
+import { Switch } from "@/components/ui/switch"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
@@ -40,6 +41,7 @@ type MonitorValues = {
 	port: number
 	server: string
 	interval: string
+	skipTlsVerify: boolean
 }
 
 type NormalizedMonitorValues = Omit<MonitorValues, "system" | "interval"> & {
@@ -63,6 +65,7 @@ const NormalizedMonitorValuesSchema = v.pipe(
 		port: v.number(),
 		server: v.pipe(v.string(), v.trim()),
 		interval: MonitorIntervalSchema,
+		skipTlsVerify: v.boolean(),
 	}),
 	v.transform((input): NormalizedMonitorValues => {
 		let { protocol, port } = input
@@ -84,6 +87,8 @@ const NormalizedMonitorValuesSchema = v.pipe(
 			// Only DNS monitors use a custom server; clear it for other protocols.
 			server: protocol === "dns" ? input.server : "",
 			interval: input.interval,
+			// Only HTTPS targets use TLS; clear it for everything else.
+			skipTlsVerify: protocol === "http" && isHttpsTarget(httpTarget) && input.skipTlsVerify,
 		}
 	}),
 	v.forward(
@@ -95,8 +100,21 @@ const NormalizedMonitorValuesSchema = v.pipe(
 			return Number.isInteger(input.port) && input.port >= 1 && input.port <= 65535
 		}, "Port must be between 1 and 65535"),
 		["port"]
+	),
+	// Resolving an IP literal returns it without querying anything, so the check would measure nothing.
+	v.forward(
+		v.check(
+			(input) => input.protocol !== "dns" || !isIpAddress(input.target),
+			"DNS target must be a domain name; put the resolver's IP in DNS Server"
+		),
+		["target"]
 	)
 )
+
+function isIpAddress(value: string) {
+	// Hostnames never contain ":", so any colon means an IPv6 literal (optionally bracketed).
+	return /^(\d{1,3}\.){3}\d{1,3}$/.test(value) || value.includes(":")
+}
 
 // Bulk parsing only trims raw CSV fields. Inference, defaults, and protocol-
 // specific validation still go through the shared normalization schema above.
@@ -107,6 +125,10 @@ const BulkMonitorSchema = v.object({
 	interval: v.optional(v.pipe(v.string(), v.trim())),
 	server: v.optional(v.pipe(v.string(), v.trim())),
 })
+
+function isHttpsTarget(target: string) {
+	return /^https:\/\//i.test(target)
+}
 
 function normalizeHttpTarget(target: string, port = 0) {
 	const useExplicitPort = port > 0 && port !== 80 && port !== 443
@@ -185,6 +207,7 @@ function parseBulkMonitorLine(line: string, lineNumber: number, system: string) 
 		port: parsed.output.port ? Number(parsed.output.port) : 0,
 		server: parsed.output.server || "",
 		interval: parsed.output.interval || `${defaultInterval}`,
+		skipTlsVerify: false,
 	})
 }
 
@@ -707,6 +730,7 @@ function MonitorDialogContent({
 	const [port, setPort] = useState(monitor?.protocol === "tcp" && monitor.port ? String(monitor.port) : "")
 	const [server, setServer] = useState(monitor?.protocol === "dns" ? (monitor.server ?? "") : "")
 	const [monitorInterval, setMonitorInterval] = useState(String(monitor?.interval ?? defaultInterval))
+	const [skipTlsVerify, setSkipTlsVerify] = useState(monitor?.skipTlsVerify ?? false)
 	const [loading, setLoading] = useState(false)
 	const [selectedSystemId, setSelectedSystemId] = useState(monitor?.system ?? "")
 	const [selectedSystemIds, setSelectedSystemIds] = useState<Set<string>>(new Set())
@@ -714,6 +738,9 @@ function MonitorDialogContent({
 	const { toast } = useToast()
 	const { t } = useLingui()
 	const isEditing = !!monitor
+	const dnsTargetIsIp = protocol === "dns" && isIpAddress(target.trim())
+	// Bare hostnames are normalized to https, so they can also skip verification.
+	const usesTls = protocol === "http" && !/^http:\/\//i.test(target.trim())
 
 	// When the dialog is opened, initialize form fields with monitor values (if editing) or defaults (if adding).
 	useEffect(() => {
@@ -726,6 +753,7 @@ function MonitorDialogContent({
 		setPort(monitor?.protocol === "tcp" && monitor.port ? String(monitor.port) : "")
 		setServer(monitor?.protocol === "dns" ? (monitor.server ?? "") : "")
 		setMonitorInterval(String(monitor?.interval ?? defaultInterval))
+		setSkipTlsVerify(monitor?.skipTlsVerify ?? false)
 		setSelectedSystemId(monitor?.system ?? "")
 		setSelectedSystemIds(new Set())
 		setLoading(false)
@@ -747,6 +775,7 @@ function MonitorDialogContent({
 					port: protocol === "tcp" ? Number(port) : 0,
 					server: protocol === "dns" ? server.trim() : "",
 					interval: monitorInterval,
+					skipTlsVerify,
 				},
 				monitor ? monitor.enabled : true
 			)
@@ -827,8 +856,14 @@ function MonitorDialogContent({
 						value={target}
 						onChange={(e) => setTarget(e.target.value)}
 						placeholder={protocol === "http" ? "http://localhost:8090" : protocol === "dns" ? "example.com" : "1.1.1.1"}
+						aria-invalid={dnsTargetIsIp}
 						required
 					/>
+					{dnsTargetIsIp && (
+						<p className="text-xs text-destructive">
+							<Trans>Enter a domain name to look up. Put the resolver's IP in DNS Server.</Trans>
+						</p>
+					)}
 				</div>
 				<div className="grid gap-2">
 					<Label>
@@ -890,6 +925,22 @@ function MonitorDialogContent({
 						required
 					/>
 				</div>
+				{usesTls && (
+					<label
+						htmlFor="monitor-skip-tls-verify"
+						className="flex items-center justify-between gap-4 cursor-pointer rounded-lg border border-muted-foreground/15 hover:border-muted-foreground/20 transition-colors duration-100 px-3.5 py-3"
+					>
+						<div className="grid gap-1 select-none">
+							<span className="text-sm font-medium">
+								<Trans>Ignore TLS certificate errors</Trans>
+							</span>
+							<span className="text-xs text-muted-foreground">
+								<Trans>Use for self-signed certificates.</Trans>
+							</span>
+						</div>
+						<Switch id="monitor-skip-tls-verify" checked={skipTlsVerify} onCheckedChange={setSkipTlsVerify} />
+					</label>
+				)}
 				<DialogFooter>
 					{!isEditing && onOpenBulkAdd && (
 						<Button
@@ -905,7 +956,9 @@ function MonitorDialogContent({
 					)}
 					<Button
 						type="submit"
-						disabled={loading || (!systemId && (isEditing ? !selectedSystemId : !selectedSystemIds.size))}
+						disabled={
+							loading || dnsTargetIsIp || (!systemId && (isEditing ? !selectedSystemId : !selectedSystemIds.size))
+						}
 					>
 						{isEditing ? (
 							<Trans>Save {{ foo: t`Monitor` }}</Trans>

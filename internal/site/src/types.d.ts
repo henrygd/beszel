@@ -459,6 +459,20 @@ export interface AlertInfo {
 	/** Additional information that remains visible while the alert is enabled */
 	note?: () => string
 	invert?: boolean
+	/** Selectable threshold units. Values are stored in the first unit (factor 1) */
+	units?: AlertUnit[]
+}
+
+export interface AlertUnit {
+	/** Unit suffix shown after the value */
+	unit: string
+	/** Multiplier converting a value in this unit to the stored value */
+	factor: number
+	min: number
+	max: number
+	step: number
+	/** Finer step for the number input, which also accepts values down to this step */
+	inputStep?: number
 }
 
 export type AlertMap = Record<string, Map<string, AlertRecord>>
@@ -680,6 +694,8 @@ export interface NetworkMonitorRecord {
 	protocol: "icmp" | "tcp" | "http" | "dns"
 	port: number
 	server: string
+	/** Skip TLS certificate verification for HTTPS targets. */
+	skipTlsVerify: boolean
 	res: number
 	resMin1h: number
 	resMax1h: number
