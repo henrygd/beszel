@@ -32,12 +32,12 @@ func (a *Agent) refreshSystemDetails() {
 	// get host info from Docker if available
 	var hostInfo container.HostInfo
 
-	if a.dockerManager != nil {
-		a.systemDetails.Podman = a.dockerManager.IsPodman()
+	if a.dockerManagers != nil {
+		a.systemDetails.Podman = a.dockerManagers.IsPodman()
 		// Docker's host info describes the machine its daemon runs on. On macOS and
 		// Windows that is a Linux VM, so its CPU and memory totals are not this host's.
 		if runtime.GOOS != "darwin" && runtime.GOOS != "windows" {
-			hostInfo, _ = a.dockerManager.GetHostInfo()
+			hostInfo, _ = a.dockerManagers.GetHostInfo()
 		}
 	}
 

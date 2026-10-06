@@ -54,6 +54,7 @@ const (
 
 type dockerManager struct {
 	agent                *Agent                      // Used to propagate system detail changes back to the agent
+	engine               string                      // Endpoint label reported on each container; empty with a single engine
 	client               *http.Client                // Client to query Docker API
 	wg                   sync.WaitGroup              // WaitGroup to wait for all goroutines to finish
 	sem                  chan struct{}               // Semaphore to limit concurrent container requests
@@ -531,7 +532,7 @@ func (dm *dockerManager) updateContainerStats(ctr *container.ApiInfo, cacheTimeM
 	// add empty values if they doesn't exist in map
 	stats, initialized := dm.containerStatsMap[ctr.IdShort]
 	if !initialized {
-		stats = &container.Stats{Name: name, Id: ctr.IdShort, Image: ctr.Image}
+		stats = &container.Stats{Name: name, Id: ctr.IdShort, Image: ctr.Image, Engine: dm.engine}
 		dm.containerStatsMap[ctr.IdShort] = stats
 	}
 
@@ -636,18 +637,47 @@ func (dm *dockerManager) deleteContainerStatsSync(id string) {
 	}
 }
 
-// Creates a new http client for Docker or Podman API
-func newDockerManager(agent *Agent) *dockerManager {
-	dockerHost, exists := utils.GetEnv("DOCKER_HOST")
-	if exists {
-		// return nil if set to empty string
-		if dockerHost == "" {
-			return nil
+// dockerOptions holds settings shared by every Docker / Podman engine the agent monitors.
+type dockerOptions struct {
+	timeout              time.Duration
+	excludeContainers    []string
+	imageUpdatesDisabled bool
+}
+
+// readDockerOptions reads the engine-independent settings from the environment.
+func readDockerOptions() dockerOptions {
+	opts := dockerOptions{timeout: time.Millisecond * time.Duration(dockerTimeoutMs)}
+
+	// configurable timeout
+	if t, set := utils.GetEnv("DOCKER_TIMEOUT"); set {
+		var err error
+		opts.timeout, err = time.ParseDuration(t)
+		if err != nil {
+			slog.Error(err.Error())
+			os.Exit(1)
 		}
-	} else {
-		dockerHost = getDockerHost()
+		slog.Info("DOCKER_TIMEOUT", "timeout", opts.timeout)
 	}
 
+	dockerImageCheck, _ := utils.GetEnv("DOCKER_IMAGE_CHECK")
+	opts.imageUpdatesDisabled = dockerImageCheck == "false"
+
+	// Read container exclusion patterns from environment variable
+	if excludeStr, set := utils.GetEnv("EXCLUDE_CONTAINERS"); set && excludeStr != "" {
+		parts := strings.SplitSeq(excludeStr, ",")
+		for part := range parts {
+			trimmed := strings.TrimSpace(part)
+			if trimmed != "" {
+				opts.excludeContainers = append(opts.excludeContainers, trimmed)
+			}
+		}
+		slog.Info("EXCLUDE_CONTAINERS", "patterns", opts.excludeContainers)
+	}
+	return opts
+}
+
+// Creates a new http client for a single Docker or Podman API endpoint
+func newDockerManager(agent *Agent, dockerHost string, opts dockerOptions) *dockerManager {
 	parsedURL, err := url.Parse(dockerHost)
 	if err != nil {
 		os.Exit(1)
@@ -672,49 +702,23 @@ func newDockerManager(agent *Agent) *dockerManager {
 		os.Exit(1)
 	}
 
-	// configurable timeout
-	timeout := time.Millisecond * time.Duration(dockerTimeoutMs)
-	if t, set := utils.GetEnv("DOCKER_TIMEOUT"); set {
-		timeout, err = time.ParseDuration(t)
-		if err != nil {
-			slog.Error(err.Error())
-			os.Exit(1)
-		}
-		slog.Info("DOCKER_TIMEOUT", "timeout", timeout)
-	}
-
 	// Custom user-agent to avoid docker bug: https://github.com/docker/for-mac/issues/7575
 	userAgentTransport := &userAgentRoundTripper{
 		rt:        transport,
 		userAgent: "Docker-Client/",
 	}
 
-	dockerImageCheck, _ := utils.GetEnv("DOCKER_IMAGE_CHECK")
-
-	// Read container exclusion patterns from environment variable
-	var excludeContainers []string
-	if excludeStr, set := utils.GetEnv("EXCLUDE_CONTAINERS"); set && excludeStr != "" {
-		parts := strings.SplitSeq(excludeStr, ",")
-		for part := range parts {
-			trimmed := strings.TrimSpace(part)
-			if trimmed != "" {
-				excludeContainers = append(excludeContainers, trimmed)
-			}
-		}
-		slog.Info("EXCLUDE_CONTAINERS", "patterns", excludeContainers)
-	}
-
 	manager := &dockerManager{
 		agent: agent,
 		client: &http.Client{
-			Timeout:   timeout,
+			Timeout:   opts.timeout,
 			Transport: userAgentTransport,
 		},
 		containerStatsMap:    make(map[string]*container.Stats),
 		sem:                  make(chan struct{}, 5),
 		apiContainerList:     []*container.ApiInfo{},
-		excludeContainers:    excludeContainers,
-		imageUpdatesDisabled: dockerImageCheck == "false",
+		excludeContainers:    opts.excludeContainers,
+		imageUpdatesDisabled: opts.imageUpdatesDisabled,
 
 		// Initialize cache-time-aware tracking structures
 		lastCpuContainer:    make(map[uint16]map[string]uint64),

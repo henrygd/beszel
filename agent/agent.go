@@ -37,7 +37,7 @@ type Agent struct {
 	netInterfaces             map[string]bool                                       // Valid network interfaces; true if byte counters come from MAC stats (Jetson nvethernet)
 	netIoStats                map[uint16]system.NetIoStats                          // Keeps track of bandwidth usage per cache interval
 	netInterfaceDeltaTrackers map[uint16]*deltatracker.DeltaTracker[string, uint64] // Per-cache-time NIC delta trackers
-	dockerManager             *dockerManager                                        // Manages Docker API requests
+	dockerManagers            *dockerManagers                                       // Manages Docker API requests
 	sensorConfig              *SensorConfig                                         // Sensors config
 	systemInfo                system.Info                                           // Host system info (dynamic)
 	systemDetails             system.Details                                        // Host system details (static, once-per-connection)
@@ -115,7 +115,7 @@ func NewAgent(dataDir ...string) (agent *Agent, err error) {
 	agent.warnIfRootCgroup()
 
 	// initialize docker manager
-	agent.dockerManager = newDockerManager(agent)
+	agent.dockerManagers = newDockerManagers(agent)
 
 	// initialize system info
 	agent.refreshSystemDetails()
@@ -205,8 +205,8 @@ func (a *Agent) gatherStats(options common.DataRequestOptions) *system.CombinedD
 
 	// slog.Info("System data", "data", data, "cacheTimeMs", cacheTimeMs)
 
-	if a.dockerManager != nil {
-		if containerStats, err := a.dockerManager.getDockerStats(cacheTimeMs); err == nil {
+	if a.dockerManagers != nil {
+		if containerStats, err := a.dockerManagers.getDockerStats(cacheTimeMs); err == nil {
 			data.Containers = containerStats
 			slog.Debug("Containers", "data", data.Containers)
 		} else {
