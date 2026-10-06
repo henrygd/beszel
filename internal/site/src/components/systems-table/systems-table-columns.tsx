@@ -476,19 +476,19 @@ export function SystemsTableColumns(viewMode: "table" | "grid"): ColumnDef<Syste
 			},
 			cell(info) {
 				const sys = info.row.original
-				if (sys.status !== SystemStatus.Up || !sys.info.pu) {
+				if (!sys.info.pu) {
 					return null
 				}
 				const [total, security = 0] = sys.info.pu
+				// keep last known count when not up, but gray out the indicator like other columns
+				const dotColor =
+					(sys.status !== SystemStatus.Up && STATUS_COLORS.paused) ||
+					(security > 0 && STATUS_COLORS.down) ||
+					(total > 0 && STATUS_COLORS.pending) ||
+					STATUS_COLORS.up
 				return (
 					<span className="tabular-nums whitespace-nowrap flex gap-1.5 items-center">
-						<span
-							className={cn("block size-2 rounded-full", {
-								[STATUS_COLORS[SystemStatus.Down]]: security > 0,
-								[STATUS_COLORS[SystemStatus.Pending]]: security === 0 && total > 0,
-								[STATUS_COLORS[SystemStatus.Up]]: total === 0,
-							})}
-						/>
+						<span className={cn("block size-2 rounded-full", dotColor)} />
 						{total === 0 ? t`Up to date` : plural(total, { one: "# update", other: "# updates" })}
 					</span>
 				)
