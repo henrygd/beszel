@@ -4,6 +4,7 @@ import * as RechartsPrimitive from "recharts"
 import { chartTimeData, cn } from "@/lib/utils"
 import type { ChartTimes } from "@/types"
 import { Separator } from "./separator"
+import { Tooltip, TooltipContent, TooltipTrigger } from "./tooltip"
 import type { AxisDomain } from "recharts/types/util/types"
 import { timeTicks } from "d3-time"
 
@@ -327,6 +328,9 @@ ChartTooltipContent.displayName = "ChartTooltip"
 
 const ChartLegend = RechartsPrimitive.Legend
 
+/** Max number of items listed in a chart legend; the rest are shown in a "+N" tooltip */
+export const LEGEND_LIMIT = 10
+
 const ChartLegendContent = React.forwardRef<
 	HTMLDivElement,
 	React.ComponentProps<"div"> &
@@ -334,15 +338,24 @@ const ChartLegendContent = React.forwardRef<
 			hideIcon?: boolean
 			nameKey?: string
 			reverse?: boolean
+			/** Max number of items to show (default LEGEND_LIMIT); the rest are shown in a "+N" tooltip */
+			limit?: number
+			/** Item names to leave out of the legend */
+			exclude?: Set<string>
 		}
->(({ className, payload, verticalAlign = "bottom", reverse = false }, ref) => {
-	// const { config } = useChart()
-
+>(({ className, payload, verticalAlign = "bottom", reverse = false, limit = LEGEND_LIMIT, exclude }, ref) => {
 	if (!payload?.length) {
 		return null
 	}
 
-	const reversedPayload = reverse ? [...payload].reverse() : payload
+	let reversedPayload = reverse ? [...payload].reverse() : payload
+	if (exclude?.size) {
+		reversedPayload = reversedPayload.filter((item) => !exclude.has(item.value))
+	}
+	const hiddenItems = reversedPayload.slice(limit)
+	if (hiddenItems.length) {
+		reversedPayload = reversedPayload.slice(0, limit)
+	}
 
 	return (
 		<div
@@ -353,37 +366,69 @@ const ChartLegendContent = React.forwardRef<
 				className
 			)}
 		>
-			{reversedPayload.map((item) => {
-				// const key = `${nameKey || item.dataKey || 'value'}`
-				// const itemConfig = getPayloadConfigFromPayload(config, item, key)
-
-				return (
-					<div
-						key={item.value}
-						className={cn(
-							// 'flex items-center gap-1.5 [&>svg]:h-3 [&>svg]:w-3 [&>svg]:text-muted-foreground text-muted-foreground'
-							"flex items-center gap-1.5 text-muted-foreground"
-						)}
-					>
-						{/* {itemConfig?.icon && !hideIcon ? (
-							<itemConfig.icon />
-						) : ( */}
-						<div
-							className="h-2 w-2 shrink-0 rounded-[2px]"
-							style={{
-								backgroundColor: item.color,
-							}}
-						/>
-						{item.value}
-						{/* )} */}
-						{/* {itemConfig?.label} */}
-					</div>
-				)
-			})}
+			{reversedPayload.map((item) => (
+				<ChartLegendItem key={item.value} item={item} />
+			))}
+			{hiddenItems.length > 0 && <ChartLegendOverflow items={hiddenItems} />}
 		</div>
 	)
 })
 ChartLegendContent.displayName = "ChartLegend"
+
+type LegendPayloadItem = NonNullable<RechartsPrimitive.LegendProps["payload"]>[number]
+
+/** "+N" that shows the hidden legend items in a tooltip on hover, and keeps it open when clicked */
+function ChartLegendOverflow({ items }: { items: LegendPayloadItem[] }) {
+	const [hovered, setHovered] = React.useState(false)
+	const [pinned, setPinned] = React.useState(false)
+	const triggerRef = React.useRef<HTMLButtonElement>(null)
+
+	// React events bubble through the tooltip portal to the recharts wrapper, which would
+	// otherwise treat moving over the (plot-overlapping) tooltip as hovering the chart
+	const stopPropagation = (e: React.MouseEvent) => e.stopPropagation()
+
+	return (
+		<Tooltip open={hovered || pinned} onOpenChange={setHovered}>
+			<TooltipTrigger asChild>
+				<button
+					ref={triggerRef}
+					type="button"
+					className="text-muted-foreground hover:text-foreground"
+					onClick={() => setPinned(!pinned)}
+					onMouseMove={stopPropagation}
+				>
+					+{items.length}
+				</button>
+			</TooltipTrigger>
+			<TooltipContent
+				className="rounded-lg px-2.5 py-1.5 text-xs shadow-xl"
+				onMouseMove={stopPropagation}
+				onEscapeKeyDown={() => setPinned(false)}
+				onPointerDownOutside={(e) => {
+					// the trigger's own click toggles the pin
+					if (!triggerRef.current?.contains(e.target as Node)) setPinned(false)
+				}}
+			>
+				<div className="grid gap-1.5 max-h-72 overflow-y-auto">
+					{items.map((item) => (
+						<ChartLegendItem key={item.value} item={item} />
+					))}
+				</div>
+			</TooltipContent>
+		</Tooltip>
+	)
+}
+
+function ChartLegendItem({ item }: { item: LegendPayloadItem }) {
+	return (
+		<div className="flex items-center gap-1.5 text-muted-foreground">
+			<div className="h-2 w-2 shrink-0 rounded-[2px]" style={{ backgroundColor: item.color }} />
+			<span className="truncate max-w-40" title={item.value}>
+				{item.value}
+			</span>
+		</div>
+	)
+}
 
 // Helper to extract item config from a payload.
 function getPayloadConfigFromPayload(config: ChartConfig, payload: unknown, key: string) {
