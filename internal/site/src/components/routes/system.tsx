@@ -1,6 +1,7 @@
 import { memo, useState } from "react"
 import { Trans } from "@lingui/react/macro"
 import { compareSemVer, parseSemVer, supportsNetworkMonitors } from "@/lib/utils"
+import { hasCustomMetrics } from "@/lib/custom-metrics"
 import { SystemStatus } from "@/lib/enums"
 import type { GPUData } from "@/types"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -13,6 +14,7 @@ import { ZfsCharts } from "./system/charts/storage-pool-charts"
 import { BandwidthChart, ContainerNetworkChart } from "./system/charts/network-charts"
 import { TemperatureChart, FanChart, BatteryChart } from "./system/charts/sensor-charts"
 import { WiFiChart } from "./system/charts/wifi-chart"
+import { CustomMetricCharts } from "./system/charts/custom-metric-charts"
 import { GpuPowerChart, GpuCharts } from "./system/charts/gpu-charts"
 import {
 	LazyContainersTable,
@@ -23,7 +25,15 @@ import {
 	LazyZfsTable,
 } from "./system/lazy-tables"
 import { LoadAverageChart } from "./system/charts/load-average-chart"
-import { ContainerIcon, CpuIcon, HardDriveIcon, NetworkIcon, PackageIcon, TerminalSquareIcon } from "lucide-react"
+import {
+	ActivityIcon,
+	ContainerIcon,
+	CpuIcon,
+	HardDriveIcon,
+	NetworkIcon,
+	PackageIcon,
+	TerminalSquareIcon,
+} from "lucide-react"
 import { GpuIcon } from "../ui/icons"
 import SystemdTable from "../systemd-table/systemd-table"
 import ContainersTable from "../containers-table/containers-table"
@@ -75,12 +85,14 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 	const hasGpu = hasGpuData || hasGpuPowerData
 	const hasZfs = Object.keys(systemStats.at(-1)?.stats?.z ?? {}).length > 0
 	const hasNetworkMonitors = supportsNetworkMonitors(system)
+	const hasCustom = hasCustomMetrics(chartData.customData)
 	// counts key the table so it refetches the list only after a new check
 	const packageUpdates = system.status === SystemStatus.Up && system.info.pu?.[0] ? system.info.pu.join(",") : ""
 
 	// keep tabsRef in sync for keyboard navigation
 	const tabs = ["core", "network", "disk"]
 	if (hasGpu) tabs.push("gpu")
+	if (hasCustom) tabs.push("custom")
 	if (hasContainers) tabs.push("containers")
 	if (hasSystemd) tabs.push("services")
 	if (packageUpdates) tabs.push("updates")
@@ -142,6 +154,7 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 
 					<BatteryChart system={system} {...coreProps} />
 					<WiFiChart system={system} {...coreProps} />
+					<CustomMetricCharts system={system} {...coreProps} />
 
 					{hasGpuPowerData && <GpuPowerChart chartData={chartData} grid={grid} dataEmpty={dataEmpty} />}
 				</div>
@@ -195,6 +208,12 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 						<TabsTrigger value="gpu" className="w-full flex items-center gap-2">
 							<GpuIcon className="size-3.5" />
 							<Trans>GPU</Trans>
+						</TabsTrigger>
+					)}
+					{hasCustom && (
+						<TabsTrigger value="custom" className="w-full flex items-center gap-2">
+							<ActivityIcon className="size-3.5" />
+							<Trans comment="Context: system page tab for metrics the user defines">Custom</Trans>
 						</TabsTrigger>
 					)}
 					{hasContainers && (
@@ -267,6 +286,16 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 						>
 							{hasGpuPowerData && <GpuPowerChart chartData={chartData} grid={grid} dataEmpty={dataEmpty} />}
 						</GpuCharts>
+					</TabsContent>
+				)}
+
+				{hasCustom && (
+					<TabsContent value="custom" forceMount className={activeTab === "custom" ? "contents" : "hidden"}>
+						{mountedTabs.has("custom") && (
+							<div className="grid xl:grid-cols-2 gap-4">
+								<CustomMetricCharts system={system} {...coreProps} />
+							</div>
+						)}
 					</TabsContent>
 				)}
 
