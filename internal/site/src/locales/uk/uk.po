@@ -8,7 +8,7 @@ msgstr ""
 "Language: uk\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2026-10-02 17:14\n"
+"PO-Revision-Date: 2026-10-07 13:10\n"
 "Last-Translator: \n"
 "Language-Team: Ukrainian\n"
 "Plural-Forms: nplurals=4; plural=((n%10==1 && n%100!=11) ? 0 : ((n%10 >= 2 && n%10 <=4 && (n%100 < 12 || n%100 > 14)) ? 1 : ((n%10 == 0 || (n%10 >= 5 && n%10 <=9)) || (n%100 >= 11 && n%100 <= 14)) ? 2 : 3));\n"
@@ -900,7 +900,7 @@ msgstr "URL-адреса кінцевої точки для пінгу (обов
 
 #: src/components/network-monitors-table/monitor-dialog.tsx
 msgid "Enter a domain name to look up. Put the resolver's IP in DNS Server."
-msgstr "Введіть доменне ім'я для пошуку. IP-адресу резолвера вкажіть у полі DNS Server."
+msgstr "Введіть ім’я домену для пошуку. У полі «DNS-сервер» вкажіть IP-адресу резолвера."
 
 #: src/components/login/login.tsx
 msgid "Enter email address to reset password"
@@ -1534,7 +1534,7 @@ msgstr "Відкрити меню"
 
 #: src/components/network-monitors-table/monitor-dialog.tsx
 msgid "Optional. Defaults to the agent's system resolver."
-msgstr "Необов'язково. За замовчуванням використовується системний резолвер агента."
+msgstr "Необов’язково. За замовчуванням використовується системний резолвер агента."
 
 #: src/components/login/auth-form.tsx
 msgid "Or continue with"
