@@ -346,11 +346,20 @@ func (sys *System) createRecords(data *system.CombinedData) (*core.Record, error
 		// Distinguish an idle GPU from a system without GPU data (#2312)
 		info := struct {
 			system.Info
-			GpuPct *float64 `json:"g,omitempty"`
+			GpuPct               *float64                       `json:"g,omitempty"`
+			RetiredCustomMetrics map[string]RetiredCustomMetric `json:"cmr,omitempty"`
 		}{Info: data.Info}
 		if len(data.Stats.GPUData) > 0 {
 			info.GpuPct = &data.Info.GpuPct
 		}
+		// Keep the names of custom metrics the agent stopped reporting, so their
+		// history stays readable. A previous info that fails to decode keeps none.
+		var prev struct {
+			Reported map[string]system.CustomMetricMeta `json:"cmm"`
+			Retired  map[string]RetiredCustomMetric     `json:"cmr"`
+		}
+		_ = systemRecord.UnmarshalJSONField("info", &prev)
+		info.RetiredCustomMetrics = retainCustomMetrics(prev.Reported, prev.Retired, data.Info.CustomMetricsMeta, time.Now())
 		systemRecord.Set("info", info)
 		if err := txApp.SaveNoValidate(systemRecord); err != nil {
 			return err
