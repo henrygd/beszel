@@ -143,8 +143,8 @@ func TestDeleteOldSystemStats(t *testing.T) {
 		{"480m", 30 * 24 * time.Hour, false, 45 * 24 * time.Hour, "480m record older than 30 days should be deleted"},
 	}
 
-	// Create test records for both system_stats and container_stats
-	collections := []string{"system_stats", "container_stats"}
+	// Create test records for system_stats, container_stats and custom_stats
+	collections := []string{"system_stats", "container_stats", "custom_stats"}
 	recordIds := make(map[string][]string)
 
 	for _, collection := range collections {
@@ -154,10 +154,13 @@ func TestDeleteOldSystemStats(t *testing.T) {
 			recordTime := now.Add(-tc.ageFromNow)
 
 			var stats string
-			if collection == "system_stats" {
+			switch collection {
+			case "system_stats":
 				stats = fmt.Sprintf(`{"cpu": %d.0, "mem": %d}`, i*10, i*100)
-			} else {
+			case "container_stats":
 				stats = fmt.Sprintf(`[{"name": "container%d", "cpu": %d.0, "mem": %d}]`, i, i*5, i*50)
+			case "custom_stats":
+				stats = fmt.Sprintf(`{"power_watts": %d.5}`, i)
 			}
 
 			record, err := tests.CreateRecord(hub, collection, map[string]any{
