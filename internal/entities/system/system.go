@@ -64,7 +64,14 @@ type Stats struct {
 	ZfsPools          map[string]*ZfsPool  `json:"z,omitempty" cbor:"39,keyasint,omitempty"`  // ZFS pool metrics, keyed by pool name
 	DiskIOTotal       [2]uint64            `json:"diot,omitzero" cbor:"38,keyasint,omitzero"` // [total read bytes, total write bytes] cumulative device counters
 	WiFi              map[string]int8      `json:"wf,omitempty" cbor:"40,keyasint,omitempty"` // RSSI dBm keyed by interface; unavailable readings omitted
-
+	// CustomMetrics holds values from local metric sources, keyed by series
+	// key; the hub stores them in custom_stats. Key 48 skips 41-47, which open
+	// pull requests used at the time: they are free, not retired. Omitted when
+	// empty; the hub decodes each response into a fresh struct, so an omitted
+	// map never repeats the previous one. Alerts cannot use these values yet:
+	// an alert's name is a fixed select, so a rule naming a series needs a
+	// migration.
+	CustomMetrics map[string]float64 `json:"cm,omitempty" cbor:"48,keyasint,omitempty"`
 }
 
 // ZfsPool holds per-pool ZFS metrics for a single collection interval.
@@ -195,6 +202,21 @@ type Info struct {
 	PackageUpdates []uint16           `json:"pu,omitempty" cbor:"25,keyasint,omitempty"`  // [totalUpdates, securityUpdates] (security omitted if unknown)
 	WiFi           map[string]WiFi    `json:"wf,omitempty" cbor:"26,keyasint,omitempty"`  // connected Wi-Fi interfaces
 	SystemdLogs    bool               `json:"jl,omitempty" cbor:"27,keyasint,omitempty"`  // agent can read the system journal
+	// CustomMetricsMeta describes Stats.CustomMetrics, keyed the same way. It
+	// goes out in full with every response, the 1 s live ones included, though
+	// the page reads it only from the system record. Key 30 skips 28 and 29,
+	// which open pull requests used at the time.
+	CustomMetricsMeta map[string]CustomMetricMeta `json:"cmm,omitempty" cbor:"30,keyasint,omitempty"`
+}
+
+// CustomMetricMeta describes one custom metric series for display.
+type CustomMetricMeta struct {
+	Unit        string `json:"u,omitempty" cbor:"0,keyasint,omitempty"` // from # UNIT (capped at 256 characters) or the name suffix; "/s" appended for rates
+	Help        string `json:"h,omitempty" cbor:"1,keyasint,omitempty"` // # HELP text, capped at 200 characters
+	DisplayName string `json:"l,omitempty" cbor:"2,keyasint,omitempty"` // resolved display name
+	Chart       string `json:"c,omitempty" cbor:"3,keyasint,omitempty"` // title of the chart the series is drawn in; series with the same title share a chart
+	// ChartDescription is the text under the chart's title, from the source's chart config
+	ChartDescription string `json:"cd,omitempty" cbor:"4,keyasint,omitempty"`
 }
 
 // Data that does not change during process lifetime and is not needed in All Systems table
