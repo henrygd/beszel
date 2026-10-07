@@ -3,7 +3,10 @@
 package systems
 
 import (
+	"maps"
+	"slices"
 	"testing"
+	"time"
 
 	"github.com/henrygd/beszel/internal/entities/system"
 	"github.com/stretchr/testify/assert"
@@ -14,7 +17,8 @@ import (
 // has them, and never in system_stats; their metadata is stored with the rest
 // of the info in systems.info. A later response without them, from an older or
 // unconfigured agent, writes no custom_stats row and must clear the agent's
-// metadata, cmm. The info is saved through a
+// metadata, cmm; the hub then keeps the names as cmr (see
+// TestCreateRecordsRetainsCustomMetricNames). The info is saved through a
 // wrapper struct that adds the GPU percentage only for systems with GPU data,
 // so both shapes are checked.
 func TestCreateRecordsCustomMetrics(t *testing.T) {
@@ -87,4 +91,57 @@ func TestCreateRecordsCustomMetrics(t *testing.T) {
 			}
 		})
 	}
+}
+
+// When the agent stops reporting a series, the hub keeps its metadata as cmr,
+// so the series' stored history keeps its title and unit. A series reported
+// again leaves cmr, and a system that never had custom metrics gets no cmr.
+func TestCreateRecordsRetainsCustomMetricNames(t *testing.T) {
+	board := system.CustomMetricMeta{Unit: "watts", DisplayName: "Board power", Chart: "Power consumption"}
+	wall := system.CustomMetricMeta{Unit: "watts", DisplayName: "Wall power (est)", Chart: "Power consumption"}
+	sys, app := newTestSystemWithHub(t)
+
+	stored := func() (cmm map[string]system.CustomMetricMeta, cmr map[string]RetiredCustomMetric, raw string) {
+		t.Helper()
+		record, err := app.FindRecordById("systems", sys.Id)
+		require.NoError(t, err)
+		var info struct {
+			Reported map[string]system.CustomMetricMeta `json:"cmm"`
+			Retired  map[string]RetiredCustomMetric     `json:"cmr"`
+		}
+		require.NoError(t, record.UnmarshalJSONField("info", &info))
+		return info.Reported, info.Retired, record.GetString("info")
+	}
+	report := func(meta map[string]system.CustomMetricMeta) {
+		t.Helper()
+		_, err := sys.createRecords(&system.CombinedData{Stats: system.Stats{Cpu: 1}, Info: system.Info{CustomMetricsMeta: meta}})
+		require.NoError(t, err)
+	}
+
+	report(nil)
+	_, _, raw := stored()
+	assert.NotContains(t, raw, `"cmr"`, "no custom metrics, no cmr")
+
+	report(map[string]system.CustomMetricMeta{"board": board, "wall": wall})
+	cmm, cmr, _ := stored()
+	assert.Len(t, cmm, 2)
+	assert.Nil(t, cmr)
+
+	before := time.Now().Unix()
+	report(map[string]system.CustomMetricMeta{"board": board})
+	cmm, cmr, _ = stored()
+	assert.Equal(t, map[string]system.CustomMetricMeta{"board": board}, cmm)
+	require.Contains(t, cmr, "wall")
+	assert.Equal(t, wall, cmr["wall"].CustomMetricMeta)
+	assert.GreaterOrEqual(t, cmr["wall"].LastReported, before)
+
+	report(nil)
+	_, cmr, _ = stored()
+	assert.Equal(t, []string{"board", "wall"}, slices.Sorted(maps.Keys(cmr)), "kept across updates")
+	assert.Equal(t, board, cmr["board"].CustomMetricMeta)
+
+	report(map[string]system.CustomMetricMeta{"wall": wall})
+	cmm, cmr, _ = stored()
+	assert.Contains(t, cmm, "wall")
+	assert.Equal(t, []string{"board"}, slices.Sorted(maps.Keys(cmr)), "reported again, so no longer kept")
 }
