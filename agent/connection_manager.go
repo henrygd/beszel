@@ -307,6 +307,9 @@ func (c *ConnectionManager) handleStateChange(newState ConnectionState) {
 		slog.Info("SSH connection established")
 		c.stopWsTicker()
 	case Disconnected:
+		// Don't probe while no hub collects the results. The hub's full sync on
+		// reconnect restarts the monitors.
+		c.agent.monitorManager.Suspend()
 		// Listen for SSH whenever disconnected so the hub can fall back to it
 		// or redial straight away. WebSocket is still tried first below and
 		// stops the server if it connects.
