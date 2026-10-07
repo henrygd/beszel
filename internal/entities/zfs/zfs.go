@@ -17,16 +17,31 @@ func (data *ZfsData) CanRefreshPool(name string) bool {
 	if data.Complete {
 		return true
 	}
-	backend := "zfs"
-	if strings.HasPrefix(name, "b:") {
-		backend = "btrfs"
-	}
+	backend := PoolBackend(name)
 	for _, complete := range data.CompleteBackends {
 		if complete == backend {
 			return true
 		}
 	}
 	return false
+}
+
+// AnyBackendComplete reports whether at least one backend inventory succeeded.
+func (data *ZfsData) AnyBackendComplete() bool {
+	return data.Complete || len(data.CompleteBackends) > 0
+}
+
+// PoolBackend returns the agent backend that reports a pool, from the prefix
+// of its stable name.
+func PoolBackend(name string) string {
+	switch {
+	case strings.HasPrefix(name, "b:"):
+		return "btrfs"
+	case strings.HasPrefix(name, "l:"):
+		return "lvm"
+	default:
+		return "zfs"
+	}
 }
 
 // PoolDetail holds the verbose state of a single pool: capacity, health,
