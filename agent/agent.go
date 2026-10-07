@@ -13,6 +13,7 @@ import (
 
 	"github.com/gliderlabs/ssh"
 	"github.com/henrygd/beszel"
+	"github.com/henrygd/beszel/agent/custommetrics"
 	"github.com/henrygd/beszel/agent/deltatracker"
 	"github.com/henrygd/beszel/agent/utils"
 	"github.com/henrygd/beszel/internal/common"
@@ -56,6 +57,7 @@ type Agent struct {
 	monitorManager            *MonitorManager                                       // Manages network monitors
 	storagePoolManager        *StoragePoolManager                                   // Manages storage pool and dataset data
 	packageUpdates            *packageUpdatesManager                                // Checks for pending package updates
+	customMetrics             *custommetrics.Collector                              // Reads custom metrics; nil when no config path can be resolved
 }
 
 // NewAgent creates a new agent with the given data directory for persisting data.
@@ -113,6 +115,9 @@ func NewAgent(dataDir ...string) (agent *Agent, err error) {
 	slog.Debug(beszel.Version)
 
 	agent.warnIfRootCgroup()
+
+	// custom metrics from the metrics: section of config.yml
+	agent.customMetrics = custommetrics.NewCollector(agent.dataDir)
 
 	// initialize docker manager
 	agent.dockerManager = newDockerManager(agent)
