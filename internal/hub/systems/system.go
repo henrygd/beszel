@@ -247,7 +247,7 @@ func (sys *System) handlePaused() {
 	}
 }
 
-// createRecords updates the system record and adds system_stats and container_stats records
+// createRecords updates the system record and adds system_stats, container_stats and custom_stats records
 func (sys *System) createRecords(data *system.CombinedData) (*core.Record, error) {
 	sys.recordsMu.Lock()
 	defer sys.recordsMu.Unlock()
@@ -266,10 +266,29 @@ func (sys *System) createRecords(data *system.CombinedData) (*core.Record, error
 		}
 		systemStatsRecord := core.NewRecord(systemStatsCollection)
 		systemStatsRecord.Set("system", systemRecord.Id)
-		systemStatsRecord.Set("stats", data.Stats)
+		// Custom metric values go to custom_stats, so systems without them store
+		// exactly what they did before. The copy leaves data.Stats intact.
+		stats := data.Stats
+		stats.CustomMetrics = nil
+		systemStatsRecord.Set("stats", stats)
 		systemStatsRecord.Set("type", "1m")
 		if err := txApp.SaveNoValidate(systemStatsRecord); err != nil {
 			return err
+		}
+
+		// add custom_stats record, only when the agent reported values
+		if len(data.Stats.CustomMetrics) > 0 {
+			customStatsCollection, err := txApp.FindCachedCollectionByNameOrId("custom_stats")
+			if err != nil {
+				return err
+			}
+			customStatsRecord := core.NewRecord(customStatsCollection)
+			customStatsRecord.Set("system", systemRecord.Id)
+			customStatsRecord.Set("stats", data.Stats.CustomMetrics)
+			customStatsRecord.Set("type", "1m")
+			if err := txApp.SaveNoValidate(customStatsRecord); err != nil {
+				return err
+			}
 		}
 
 		// add containers and container_stats records
