@@ -56,8 +56,14 @@ func TestFetchDataViaWebSocketDoesNotRetainOmittedFields(t *testing.T) {
 	client.responses <- esystem.CombinedData{
 		Details:                &esystem.Details{Hostname: "host"},
 		SystemdServicesUpdated: true,
-		Stats:                  esystem.Stats{Batteries: map[string]uint8{"BAT0": 50, "BAT1": 60}},
-		Info:                   esystem.Info{WiFi: map[string]esystem.WiFi{"wlan0": {SSID: "home"}}},
+		Stats: esystem.Stats{
+			Batteries:     map[string]uint8{"BAT0": 50, "BAT1": 60},
+			CustomMetrics: map[string]float64{"pi_power_board_watts": 1.84},
+		},
+		Info: esystem.Info{
+			WiFi:              map[string]esystem.WiFi{"wlan0": {SSID: "home"}},
+			CustomMetricsMeta: map[string]esystem.CustomMetricMeta{"pi_power_board_watts": {Unit: "watts"}},
+		},
 	}
 	client.responses <- esystem.CombinedData{
 		Stats: esystem.Stats{Batteries: map[string]uint8{"BAT0": 40}},
@@ -79,6 +85,8 @@ func TestFetchDataViaWebSocketDoesNotRetainOmittedFields(t *testing.T) {
 	require.NoError(t, err)
 	require.NotNil(t, first.Details)
 	require.Len(t, first.Stats.Batteries, 2)
+	require.Len(t, first.Stats.CustomMetrics, 1)
+	require.Len(t, first.Info.CustomMetricsMeta, 1)
 
 	second, err := sys.fetchDataFromAgent(common.DataRequestOptions{})
 	require.NoError(t, err)
@@ -86,6 +94,8 @@ func TestFetchDataViaWebSocketDoesNotRetainOmittedFields(t *testing.T) {
 	require.False(t, second.SystemdServicesUpdated)
 	require.Equal(t, map[string]uint8{"BAT0": 40}, second.Stats.Batteries)
 	require.Empty(t, second.Info.WiFi)
+	require.Empty(t, second.Stats.CustomMetrics)
+	require.Empty(t, second.Info.CustomMetricsMeta)
 
 	// the first result is not mutated by the second fetch
 	require.Len(t, first.Stats.Batteries, 2)
