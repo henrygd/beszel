@@ -222,6 +222,8 @@ func (a *Agent) applyNetworkTotals(
 	totalBytesSent, totalBytesRecv uint64,
 	bytesSentPerSecond, bytesRecvPerSecond uint64,
 ) {
+	// Underflow safety: a counter reset wraps the total delta near 2^64 and
+	// must exceed this fuse (see the note at the disk I/O fuse).
 	if bytesSentPerSecond > 10_000_000_000 || bytesRecvPerSecond > 10_000_000_000 {
 		slog.Warn("Invalid net stats. Resetting.", "sent", bytesSentPerSecond, "recv", bytesRecvPerSecond)
 		for _, v := range netIO {

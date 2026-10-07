@@ -2133,3 +2133,30 @@ func TestConvertContainerPortsToString(t *testing.T) {
 		})
 	}
 }
+
+// TestCalculateMemoryUsageUnderflow pins the guard for an inconsistent
+// snapshot where memory usage reads smaller than the cache value: the
+// container must be skipped with an error, never produce a wrapped value.
+// Regression target: the guard relied on the uint64 wraparound landing above
+// maxMemoryUsage instead of comparing explicitly, and used the meaningless
+// `usedDelta <= 0` form for an unsigned value.
+func TestCalculateMemoryUsageUnderflow(t *testing.T) {
+	stats := &container.ApiStats{}
+	stats.MemoryStats.Usage = 100
+	stats.MemoryStats.Stats.InactiveFile = 200
+
+	used, err := calculateMemoryUsage(stats, false)
+	assert.Error(t, err, "usage below cache must be rejected")
+	assert.Zero(t, used)
+
+	// usage == cache is likewise rejected as bad stats (preserved behavior).
+	stats.MemoryStats.Usage = 200
+	_, err = calculateMemoryUsage(stats, false)
+	assert.Error(t, err)
+
+	// A healthy snapshot still passes through.
+	stats.MemoryStats.Usage = 300
+	used, err = calculateMemoryUsage(stats, false)
+	assert.NoError(t, err)
+	assert.Equal(t, uint64(100), used)
+}
