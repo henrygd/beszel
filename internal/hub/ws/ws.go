@@ -31,6 +31,9 @@ type WsConn struct {
 	requestManager *RequestManager
 	DownChan       chan struct{}
 	agentVersion   semver.Version
+	// agentNonce is the per-connection nonce the agent sent in its
+	// X-Agent-Nonce header; empty when the agent did not send one.
+	agentNonce string
 }
 
 // FingerprintRecord is fingerprints collection record data in the hub
@@ -54,11 +57,12 @@ func GetUpgrader() *gws.Upgrader {
 }
 
 // NewWsConnection creates a new WebSocket connection wrapper with agent version.
-func NewWsConnection(conn *gws.Conn, agentVersion semver.Version) *WsConn {
+func NewWsConnection(conn *gws.Conn, agentVersion semver.Version, agentNonce string) *WsConn {
 	ws := &WsConn{
 		requestManager: NewRequestManager(conn),
 		DownChan:       make(chan struct{}, 1),
 		agentVersion:   agentVersion,
+		agentNonce:     agentNonce,
 	}
 	ws.conn.Store(conn)
 	return ws

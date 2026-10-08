@@ -36,7 +36,7 @@ func TestGetUpgrader(t *testing.T) {
 // TestNewWsConnection tests WebSocket connection creation
 func TestNewWsConnection(t *testing.T) {
 	// We can't easily mock gws.Conn, so we'll pass nil and test the structure
-	wsConn := NewWsConnection(nil, semver.MustParse("0.12.10"))
+	wsConn := NewWsConnection(nil, semver.MustParse("0.12.10"), "")
 
 	assert.NotNil(t, wsConn, "WebSocket connection should not be nil")
 	assert.Nil(t, wsConn.conn.Load(), "Connection should be nil as passed")
@@ -48,13 +48,13 @@ func TestNewWsConnection(t *testing.T) {
 // TestWsConn_IsConnected tests the connection status check
 func TestWsConn_IsConnected(t *testing.T) {
 	// Test with nil connection
-	wsConn := NewWsConnection(nil, semver.MustParse("0.12.10"))
+	wsConn := NewWsConnection(nil, semver.MustParse("0.12.10"), "")
 	assert.False(t, wsConn.IsConnected(), "Should not be connected when conn is nil")
 }
 
 // TestWsConn_Close tests the connection closing with nil connection
 func TestWsConn_Close(t *testing.T) {
-	wsConn := NewWsConnection(nil, semver.MustParse("0.12.10"))
+	wsConn := NewWsConnection(nil, semver.MustParse("0.12.10"), "")
 
 	// Should handle nil connection gracefully
 	assert.NotPanics(t, func() {
@@ -64,7 +64,7 @@ func TestWsConn_Close(t *testing.T) {
 
 // TestWsConn_SendMessage_CBOR tests CBOR encoding in sendMessage
 func TestWsConn_SendMessage_CBOR(t *testing.T) {
-	wsConn := NewWsConnection(nil, semver.MustParse("0.12.10"))
+	wsConn := NewWsConnection(nil, semver.MustParse("0.12.10"), "")
 
 	testData := common.HubRequest[any]{
 		Action: common.GetData,
@@ -208,7 +208,7 @@ func TestHandler(t *testing.T) {
 
 // TestWsConnChannelBehavior tests channel behavior without WebSocket connections
 func TestWsConnChannelBehavior(t *testing.T) {
-	wsConn := NewWsConnection(nil, semver.MustParse("0.12.10"))
+	wsConn := NewWsConnection(nil, semver.MustParse("0.12.10"), "")
 
 	// Test that channels are properly initialized and can be used
 	select {

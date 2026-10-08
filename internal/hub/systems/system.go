@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"hash/fnv"
 	"math/rand"
+	"net"
 	"strings"
 	"sync"
 	"sync/atomic"
@@ -737,14 +738,75 @@ func (sys *System) getSSHTransport() (*transport.SSHTransport, error) {
 			return nil, err
 		}
 	}
+	// Per-system config so the host key callback can key its TOFU state on
+	// this system rather than on the dialed hostname (which users may change).
+	sshConfig := *sys.manager.sshConfig
+	sshConfig.HostKeyCallback = sys.hostKeyCallback()
 	sys.sshTransport = transport.NewSSHTransport(transport.SSHTransportConfig{
 		Host:      sys.Host,
 		Port:      sys.Port,
-		Config:    sys.manager.sshConfig,
+		Config:    &sshConfig,
 		Timeout:   sessionTimeout,
 		OnConnect: sys.onSSHConnect,
 	})
 	return sys.sshTransport, nil
+}
+
+// hostKeyCallback returns a TOFU host key verifier for this system's agent:
+// the first key seen from an agent new enough to persist one is recorded, and
+// later connections must present the same key. Older agents regenerate their
+// host key on every restart, so they are exempt (previous behavior).
+func (sys *System) hostKeyCallback() ssh.HostKeyCallback {
+	return func(hostname string, remote net.Addr, key ssh.PublicKey) error {
+		return sys.verifyAgentHostKey(key)
+	}
+}
+
+// verifyAgentHostKey verifies the agent's host key against the one recorded
+// on the system's fingerprint record. A missing record or key is learned when
+// the agent advertises MinVersionStableHostKey (key persisted in its data
+// directory); otherwise the key is accepted unpinned, matching the behavior
+// for agents whose keys are ephemeral.
+func (sys *System) verifyAgentHostKey(key ssh.PublicKey) error {
+	hub := sys.manager.hub
+	fingerprint := ssh.FingerprintSHA256(key)
+
+	systemRecord, err := hub.FindRecordById("systems", sys.Id)
+	if err != nil {
+		return fmt.Errorf("host key check: %w", err)
+	}
+	var info system.Info
+	if err := systemRecord.UnmarshalJSONField("info", &info); err != nil {
+		info = system.Info{}
+	}
+
+	fpRecord, err := hub.FindFirstRecordByFilter("fingerprints", "system = {:system}", dbx.Params{"system": sys.Id})
+	if err != nil && !errors.Is(err, sql.ErrNoRows) {
+		return fmt.Errorf("host key check: %w", err)
+	}
+
+	storedKey := ""
+	if fpRecord != nil {
+		storedKey = fpRecord.GetString("host_key")
+	}
+
+	if storedKey == "" {
+		// First contact: learn the key only from agents that persist one, so
+		// restarts of older agents never poison the record.
+		agentVersion, _ := semver.Parse(info.AgentVersion)
+		if agentVersion.GTE(beszel.MinVersionStableHostKey) && fpRecord != nil {
+			fpRecord.Set("host_key", fingerprint)
+			if err := hub.SaveNoValidate(fpRecord); err != nil {
+				return fmt.Errorf("host key check: %w", err)
+			}
+		}
+		return nil
+	}
+	if storedKey != fingerprint {
+		return fmt.Errorf("agent host key mismatch for system %s: got %s, expected %s; if the agent was reinstalled, clear its fingerprint record's host_key field",
+			sys.Id, fingerprint, storedKey)
+	}
+	return nil
 }
 
 // onSSHConnect resets per-connection state after a new SSH connection is made.

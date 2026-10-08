@@ -103,7 +103,14 @@ func (acr *agentConnectRequest) agentConnect() (err error) {
 // verifyWsConn verifies the WebSocket connection using the agent's fingerprint and
 // SSH key signature, then adds the system to the system manager.
 func (acr *agentConnectRequest) verifyWsConn(conn *gws.Conn, fpRecords []ws.FingerprintRecord) (err error) {
-	wsConn := ws.NewWsConnection(conn, acr.agentSemVer)
+	// The agent's per-connection nonce binds the hub's fingerprint-challenge
+	// signature to this connection (replay protection); empty for agents
+	// that do not send one.
+	agentNonce := acr.req.Header.Get("X-Agent-Nonce")
+	if len(agentNonce) > 64 {
+		agentNonce = ""
+	}
+	wsConn := ws.NewWsConnection(conn, acr.agentSemVer, agentNonce)
 
 	// must set wsConn in connection store before the read loop
 	conn.Session().Store("wsConn", wsConn)

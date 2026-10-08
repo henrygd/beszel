@@ -373,40 +373,77 @@ func TestWebSocketClient_VerifySignature(t *testing.T) {
 	client, err := newWebSocketClient(agent)
 	require.NoError(t, err)
 
+	// Nonce cases pin the replay protection: the agent generates its own
+	// per-connection nonce (wsNonce) and the hub signs nonce||token, echoing
+	// the nonce in the request. A signature captured on an EARLIER connection
+	// (signed over a DIFFERENT nonce) must be rejected even though the hub
+	// echoes a nonce - that is the actual replay attack path.
 	testCases := []struct {
 		name        string
 		keys        []ssh.PublicKey
 		token       string
+		wsNonce     string // the agent's own per-connection nonce
+		echo        []byte // nonce echoed by the hub in the request (nil = none)
+		signOver    string // what the presented signature actually covers
 		signWith    ed25519.PrivateKey
 		expectError bool
 	}{
 		{
-			name:        "valid signature with correct key",
-			keys:        []ssh.PublicKey{goodPubKey},
-			token:       "test-token",
-			signWith:    goodPrivKey,
-			expectError: false,
+			name:     "valid signature with correct key",
+			keys:     []ssh.PublicKey{goodPubKey},
+			token:    "test-token",
+			signOver: "test-token",
+			signWith: goodPrivKey,
 		},
 		{
 			name:        "invalid signature with wrong key",
 			keys:        []ssh.PublicKey{goodPubKey},
 			token:       "test-token",
+			signOver:    "test-token",
 			signWith:    badPrivKey,
 			expectError: true,
 		},
 		{
-			name:        "valid signature with multiple keys",
-			keys:        []ssh.PublicKey{badPubKey, goodPubKey},
-			token:       "test-token",
-			signWith:    goodPrivKey,
-			expectError: false,
+			name:     "valid signature with multiple keys",
+			keys:     []ssh.PublicKey{badPubKey, goodPubKey},
+			token:    "test-token",
+			signOver: "test-token",
+			signWith: goodPrivKey,
 		},
 		{
 			name:        "no valid keys",
 			keys:        []ssh.PublicKey{badPubKey},
 			token:       "test-token",
+			signOver:    "test-token",
 			signWith:    goodPrivKey,
 			expectError: true,
+		},
+		{
+			name:     "valid nonce-bound signature from current connection",
+			keys:     []ssh.PublicKey{goodPubKey},
+			token:    "test-token",
+			wsNonce:  "nonce-current",
+			echo:     []byte("nonce-current"),
+			signOver: "nonce-current" + "test-token",
+			signWith: goodPrivKey,
+		},
+		{
+			name:        "replay: signature from an earlier connection rejected",
+			keys:        []ssh.PublicKey{goodPubKey},
+			token:       "test-token",
+			wsNonce:     "nonce-new-connection",
+			echo:        []byte("nonce-old-connection"),
+			signOver:    "nonce-old-connection" + "test-token",
+			signWith:    goodPrivKey,
+			expectError: true,
+		},
+		{
+			name:     "legacy hub (no echo) falls back to bare-token challenge",
+			keys:     []ssh.PublicKey{goodPubKey},
+			token:    "test-token",
+			wsNonce:  "nonce-current",
+			signOver: "test-token",
+			signWith: goodPrivKey,
 		},
 	}
 
@@ -416,14 +453,24 @@ func TestWebSocketClient_VerifySignature(t *testing.T) {
 			agent.keys = tc.keys
 			client.token = tc.token
 
-			// Create signature
-			signature := ed25519.Sign(tc.signWith, []byte(tc.token))
+			// The presented signature covers whatever the (possibly rogue)
+			// hub signed; verification against the agent's own nonce state
+			// decides whether it is accepted.
+			signature := ed25519.Sign(tc.signWith, []byte(tc.signOver))
 
-			err := client.verifySignature(signature)
+			client.wsNonce = tc.wsNonce
+			err := client.verifySignature(signature, tc.echo)
 
 			if tc.expectError {
-				assert.Error(t, err)
-				assert.Contains(t, err.Error(), "invalid signature")
+				require.Error(t, err)
+				if tc.name == "replay: signature from an earlier connection rejected" {
+					// The nonce gate must be what rejects the replay, not the
+					// key check: the signature itself is perfectly valid for
+					// the connection it was captured on.
+					assert.Contains(t, err.Error(), "nonce mismatch")
+				} else {
+					assert.Contains(t, err.Error(), "invalid signature")
+				}
 			} else {
 				assert.NoError(t, err)
 			}

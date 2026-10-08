@@ -4,6 +4,9 @@ import (
 	"context"
 	"errors"
 
+	"github.com/henrygd/beszel"
+
+	"github.com/blang/semver"
 	"github.com/fxamacker/cbor/v2"
 	"github.com/henrygd/beszel/internal/common"
 	"github.com/lxzan/gws"
@@ -45,14 +48,39 @@ func (h *fingerprintHandler) Handle(agentResponse common.AgentResponse) error {
 	return errors.New("no fingerprint data in response")
 }
 
+// buildWsChallenge builds the signed challenge for the fingerprint check.
+// For agents >= MinVersionWsNonce that supplied a connection nonce, the
+// challenge is nonce||token where the nonce comes from the agent's own
+// X-Agent-Nonce header - so the signature is bound to this connection and an
+// observed handshake cannot be replayed by an impersonating hub. Agents
+// without a nonce (legacy, or pre-0.22) get the bare-token challenge.
+func buildWsChallenge(signer ssh.Signer, token, agentNonce string, agentVersion semver.Version) ([]byte, *ssh.Signature, error) {
+	if agentVersion.GTE(beszel.MinVersionWsNonce) && agentNonce != "" {
+		challenge := []byte(agentNonce + token)
+		signature, err := signer.Sign(nil, challenge)
+		if err != nil {
+			return nil, nil, err
+		}
+		// Echo the agent's nonce so it knows to verify nonce||token.
+		return []byte(agentNonce), signature, nil
+	}
+	signature, err := signer.Sign(nil, []byte(token))
+	if err != nil {
+		return nil, nil, err
+	}
+	// No echo: the agent falls back to the legacy bare-token verification.
+	return nil, signature, nil
+}
+
 // GetFingerprint authenticates with the agent using SSH signature and returns the agent's fingerprint.
 func (ws *WsConn) GetFingerprint(ctx context.Context, token string, signer ssh.Signer, needSysInfo bool) (common.FingerprintResponse, error) {
 	if !ws.IsConnected() {
 		return common.FingerprintResponse{}, gws.ErrConnClosed
 	}
 
-	challenge := []byte(token)
-	signature, err := signer.Sign(nil, challenge)
+	// The returned challenge doubles as the echo: for the nonce protocol it
+	// is the agent's own nonce, telling the agent which challenge to verify.
+	challenge, signature, err := buildWsChallenge(signer, token, ws.agentNonce, ws.agentVersion)
 	if err != nil {
 		return common.FingerprintResponse{}, err
 	}
@@ -60,6 +88,7 @@ func (ws *WsConn) GetFingerprint(ctx context.Context, token string, signer ssh.S
 	req, err := ws.requestManager.SendRequest(ctx, common.CheckFingerprint, common.FingerprintRequest{
 		Signature:   signature.Blob,
 		NeedSysInfo: needSysInfo,
+		Nonce:       challenge,
 	})
 	if err != nil {
 		return common.FingerprintResponse{}, err

@@ -1,8 +1,11 @@
 package agent
 
 import (
+	"bytes"
+	"crypto/rand"
 	"crypto/tls"
 	"crypto/x509"
+	"encoding/hex"
 	"errors"
 	"fmt"
 	"log/slog"
@@ -62,6 +65,7 @@ type WebSocketClient struct {
 	fingerprint        string                              // System fingerprint for identification
 	hubRequest         *common.HubRequest[cbor.RawMessage] // Reusable request structure for message parsing
 	lastConnectAttempt time.Time                           // Timestamp of last connection attempt
+	wsNonce            string                              // Per-connection nonce sent as X-Agent-Nonce
 	hubVerified        bool                                // Whether the hub has been cryptographically verified
 	tlsConfig          *tls.Config                         // Optional TLS configuration with custom CA certificates
 }
@@ -187,9 +191,10 @@ func (client *WebSocketClient) getOptions() *gws.ClientOption {
 		Addr:      client.hubURL.String(),
 		TlsConfig: client.tlsConfig,
 		RequestHeader: http.Header{
-			"User-Agent": []string{getUserAgent()},
-			"X-Token":    []string{client.token},
-			"X-Beszel":   []string{beszel.Version},
+			"User-Agent":    []string{getUserAgent()},
+			"X-Token":       []string{client.token},
+			"X-Beszel":      []string{beszel.Version},
+			"X-Agent-Nonce": []string{client.rotateNonce()},
 		},
 		NewDialer: func() (gws.Dialer, error) {
 			return proxy.FromEnvironment(), nil
@@ -205,6 +210,11 @@ func (client *WebSocketClient) Connect() (err error) {
 
 	// make sure previous connection is closed
 	client.Close()
+
+	// Fresh per-connection nonce: the hub (0.22+) echoes it and signs
+	// nonce||token for the fingerprint challenge, so a signature observed on
+	// an earlier connection cannot be replayed on this one.
+	client.getOptions().RequestHeader.Set("X-Agent-Nonce", client.rotateNonce())
 
 	conn, _, err := gws.NewClient(client, client.getOptions())
 	if err != nil {
@@ -283,7 +293,7 @@ func (client *WebSocketClient) handleAuthChallenge(msg *common.HubRequest[cbor.R
 		return err
 	}
 
-	if err := client.verifySignature(authRequest.Signature); err != nil {
+	if err := client.verifySignature(authRequest.Signature, authRequest.Nonce); err != nil {
 		return err
 	}
 
@@ -313,14 +323,47 @@ func (client *WebSocketClient) handleAuthChallenge(msg *common.HubRequest[cbor.R
 	return client.sendResponse(response, requestID)
 }
 
-// verifySignature verifies the signature of the token using the public keys.
-func (client *WebSocketClient) verifySignature(signature []byte) (err error) {
+// rotateNonce generates a fresh per-connection nonce and stores it. The hub
+// (0.22+) reads it from the X-Agent-Nonce header, echoes it in the
+// fingerprint challenge, and signs nonce||token with its private key.
+func (client *WebSocketClient) rotateNonce() string {
+	buf := make([]byte, 32)
+	if _, err := rand.Read(buf); err != nil {
+		return ""
+	}
+	nonce := hex.EncodeToString(buf)
+	client.connMu.Lock()
+	client.wsNonce = nonce
+	client.connMu.Unlock()
+	return nonce
+}
+
+// verifySignature verifies the hub's signature over the fingerprint
+// challenge. When the hub echoes the connection nonce (0.22+ protocol), the
+// signature must be over nonce||token for THIS connection: replaying a
+// signature captured on an earlier connection fails the nonce comparison,
+// and forging a fresh one requires the hub's private key. A hub that does
+// not echo a nonce is pre-0.22 and verifies the legacy bare-token challenge
+// (replayable - unchanged behavior for that hub generation).
+func (client *WebSocketClient) verifySignature(signature []byte, echoedNonce []byte) (err error) {
+	client.connMu.RLock()
+	wsNonce := client.wsNonce
+	client.connMu.RUnlock()
+	challenge := []byte(client.token)
+	if len(echoedNonce) > 0 {
+		if !bytes.Equal(echoedNonce, []byte(wsNonce)) {
+			return errors.New("nonce mismatch - replayed handshake")
+		}
+		challenge = append([]byte(wsNonce), client.token...)
+	} else if wsNonce != "" {
+		slog.Warn("hub did not echo the connection nonce; legacy challenge in use")
+	}
 	for _, pubKey := range client.agent.keys {
 		sig := ssh.Signature{
 			Format: pubKey.Type(),
 			Blob:   signature,
 		}
-		if err = pubKey.Verify([]byte(client.token), &sig); err == nil {
+		if err = pubKey.Verify(challenge, &sig); err == nil {
 			return nil
 		}
 	}
