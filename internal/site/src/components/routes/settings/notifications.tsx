@@ -9,6 +9,7 @@ import { Card } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { InputTags } from "@/components/ui/input-tags"
 import { Label } from "@/components/ui/label"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Separator } from "@/components/ui/separator"
 import { toast } from "@/components/ui/use-toast"
 import { isAdmin, pb } from "@/lib/api"
@@ -31,12 +32,14 @@ const NotificationSchema = v.object({
 const SettingsNotificationsPage = ({ userSettings }: { userSettings: UserSettings }) => {
 	const [webhooks, setWebhooks] = useState(userSettings.webhooks ?? [])
 	const [emails, setEmails] = useState<string[]>(userSettings.emails ?? [])
+	const [resolvedAlerts, setResolvedAlerts] = useState(userSettings.resolvedAlerts ?? "clear")
 	const [isLoading, setIsLoading] = useState(false)
 
 	// update values when userSettings changes
 	useEffect(() => {
 		setWebhooks(userSettings.webhooks ?? [])
 		setEmails(userSettings.emails ?? [])
+		setResolvedAlerts(userSettings.resolvedAlerts ?? "clear")
 	}, [userSettings])
 
 	function addWebhook() {
@@ -59,7 +62,12 @@ const SettingsNotificationsPage = ({ userSettings }: { userSettings: UserSetting
 		setIsLoading(true)
 		try {
 			const parsedData = v.parse(NotificationSchema, { emails, webhooks })
-			await saveSettings(parsedData)
+			const newSettings: Partial<UserSettings> = { ...parsedData, resolvedAlerts }
+			// only keep alerts that resolve after switching, not the whole alert history
+			if (resolvedAlerts === "keep" && userSettings.resolvedAlerts !== "keep") {
+				newSettings.resolvedAlertsDismissed = new Date().toISOString()
+			}
+			await saveSettings(newSettings)
 		} catch (e: unknown) {
 			toast({
 				title: t`Failed to save settings`,
@@ -160,6 +168,47 @@ const SettingsNotificationsPage = ({ userSettings }: { userSettings: UserSetting
 				<Separator />
 				<div className="space-y-3">
 					<QuietHours />
+				</div>
+				<Separator />
+				<div className="grid gap-2">
+					<div className="mb-2">
+						<h3 className="mb-1 text-lg font-medium">
+							<Trans>Resolved alerts</Trans>
+						</h3>
+						<p className="text-sm text-muted-foreground leading-relaxed">
+							<Trans>
+								Choose what happens in Active Alerts when a system comes back online or a value returns below its
+								threshold. Resolved notifications are sent either way.
+							</Trans>
+						</p>
+					</div>
+					<Label className="block" htmlFor="resolvedAlerts">
+						<Trans>When an alert resolves</Trans>
+					</Label>
+					<Select
+						name="resolvedAlerts"
+						value={resolvedAlerts}
+						onValueChange={(value) => setResolvedAlerts(value as "clear" | "keep")}
+					>
+						<SelectTrigger id="resolvedAlerts" className="sm:w-80">
+							<SelectValue />
+						</SelectTrigger>
+						<SelectContent>
+							<SelectItem value="clear">
+								<Trans>Clear it automatically</Trans>
+							</SelectItem>
+							<SelectItem value="keep">
+								<Trans>Keep it until dismissed</Trans>
+							</SelectItem>
+						</SelectContent>
+					</Select>
+					<p className="text-[0.8rem] text-muted-foreground">
+						{resolvedAlerts === "keep" ? (
+							<Trans>Resolved alerts stay in Active Alerts, marked as resolved, until you dismiss them.</Trans>
+						) : (
+							<Trans>Alerts disappear from Active Alerts as soon as they resolve.</Trans>
+						)}
+					</p>
 				</div>
 				<Separator />
 				<Button

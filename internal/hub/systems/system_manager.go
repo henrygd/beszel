@@ -259,9 +259,12 @@ func (sm *SystemManager) onRecordAfterUpdateSuccess(e *core.RecordEvent) error {
 		}
 	}
 
-	// A connection-setting update moves a down system through pending before it
-	// comes up, so recover active status alerts on any non-up -> up transition.
-	if (newStatus == down && prevStatus == up) || (newStatus == up && prevStatus != up) {
+	// Status alerts are resolved on every "up" save, not only on a non-up -> up
+	// transition. A recovery can be missed (a delayed "down" write can land after
+	// the system already came back, or the recovery write can fail), and checking
+	// again on each update lets the next one resolve it. This is a cheap no-op for
+	// alerts that are not triggered.
+	if (newStatus == down && prevStatus == up) || newStatus == up {
 		if err := sm.hub.HandleStatusAlerts(newStatus, e.Record); err != nil {
 			e.App.Logger().Error("Error handling status alerts", "err", err)
 		}
