@@ -22,6 +22,7 @@ import {
 } from "@/components/install-dropdowns"
 import { $router } from "@/components/router"
 import { Button } from "@/components/ui/button"
+import { IconButton } from "@/components/ui/icon-button"
 import {
 	DropdownMenu,
 	DropdownMenuContent,
@@ -200,14 +201,14 @@ const SectionUniversalToken = memo(() => {
 								<div className="min-w-0 flex-1 truncate">
 									<span className="text-sm text-primary font-mono">{publicKey}</span>
 								</div>
-								<Button
+								<IconButton
 									variant="ghost"
 									size="icon"
 									onClick={() => copyToClipboard(publicKey)}
-									title={t`Copy public key`}
+									label={t`Copy public key`}
 								>
 									<CopyIcon className="w-4" />
-								</Button>
+								</IconButton>
 							</div>
 						)}
 

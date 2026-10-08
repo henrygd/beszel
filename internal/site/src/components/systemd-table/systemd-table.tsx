@@ -20,7 +20,8 @@ import { getStatusColor, systemdTableCols } from "@/components/systemd-table/sys
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Card, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
-import { LogsDisplay, LogsFullscreenDialog, LogsIconButton, LogsTimestampToggle } from "@/components/logs-display"
+import { LogsDisplay, LogsFullscreenDialog, LogsTimestampToggle } from "@/components/logs-display"
+import { IconButton } from "@/components/ui/icon-button"
 import { getLogTimestampDecorations } from "@/lib/logs"
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet"
 import { TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
@@ -533,14 +534,14 @@ function SystemdSheet({
 									<Trans>Logs</Trans>
 								</h3>
 								<LogsTimestampToggle className="ms-auto" />
-								<LogsIconButton label={t`Refresh`} onClick={loadLogs} disabled={isLoadingLogs}>
+								<IconButton label={t`Refresh`} onClick={loadLogs} disabled={isLoadingLogs}>
 									<RefreshCwIcon
 										className={cn("size-4 transition-transform duration-300", isLoadingLogs && "animate-spin")}
 									/>
-								</LogsIconButton>
-								<LogsIconButton label={t`Fullscreen`} onClick={() => setLogsFullscreenOpen(true)} disabled={!logs}>
+								</IconButton>
+								<IconButton label={t`Fullscreen`} onClick={() => setLogsFullscreenOpen(true)} disabled={!logs}>
 									<MaximizeIcon className="size-4" />
-								</LogsIconButton>
+								</IconButton>
 							</div>
 							{logs ? (
 								<LogsDisplay logsDisplay={logs} containerRef={logsContainerRef} />

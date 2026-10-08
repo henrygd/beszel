@@ -4,7 +4,7 @@ import { MoreHorizontalIcon } from "lucide-react"
 import { memo, useRef, useState } from "react"
 import AreaChartDefault from "@/components/charts/area-chart"
 import ChartTimeSelect from "@/components/charts/chart-time-select"
-import { Button } from "@/components/ui/button"
+import { IconButton } from "@/components/ui/icon-button"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 import { DialogTitle } from "@/components/ui/dialog"
 import { $userSettings } from "@/lib/stores"
@@ -101,14 +101,14 @@ export default memo(function DiskIOSheet({
 		<Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
 			<DialogTitle className="sr-only">{title}</DialogTitle>
 			<SheetTrigger asChild>
-				<Button
-					title={t`View more`}
+				<IconButton
+					label={t`View more`}
 					variant="outline"
 					size="icon"
 					className="shrink-0 max-sm:absolute max-sm:top-0 max-sm:end-0"
 				>
 					<MoreHorizontalIcon />
-				</Button>
+				</IconButton>
 			</SheetTrigger>
 			{hasOpened.current && (
 				<SheetContent aria-describedby={undefined} className="overflow-auto w-200 !max-w-full p-4 sm:p-6">

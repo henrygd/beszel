@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils"
 import { Link } from "./router"
 import { Alert, AlertDescription, AlertTitle } from "./ui/alert"
 import { Button } from "./ui/button"
+import { IconButton } from "./ui/icon-button"
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from "./ui/sheet"
 
 /**
@@ -61,16 +62,13 @@ export function AlertBannerSheet({
 					</Button>
 				</SheetTrigger>
 				{onDismiss && (
-					<Button
-						variant="ghost"
-						size="icon"
+					<IconButton
+						label={t`Dismiss`}
 						onClick={onDismiss}
-						aria-label={t`Dismiss`}
-						title={t`Dismiss`}
-						className="size-8 shrink-0 -me-1.5 text-destructive/70 hover:bg-destructive/10 hover:text-destructive dark:text-red-400/70 dark:hover:bg-destructive/15 dark:hover:text-red-400"
+						className="shrink-0 -me-1.5 text-destructive hover:bg-destructive/10 hover:text-destructive dark:text-red-400 dark:hover:bg-destructive/15 dark:hover:text-red-400"
 					>
 						<XIcon className="size-4" />
-					</Button>
+					</IconButton>
 				)}
 			</Alert>
 			<SheetContent className="w-140 !max-w-full gap-0">
