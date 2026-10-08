@@ -7,6 +7,7 @@ import {
 	ClockArrowDownIcon,
 	ClockArrowUpIcon,
 	ClockIcon,
+	EthernetPortIcon,
 	ExternalLinkIcon,
 	GaugeIcon,
 	MoreHorizontalIcon,
@@ -142,13 +143,26 @@ export function getSpeedtestColumns({
 								<Trans>Auto</Trans>
 							</Badge>
 						)}
-						{speedtest.interface && (
-							<Badge variant="outline" className="shrink-0 font-normal text-muted-foreground">
-								{speedtest.interface}
-							</Badge>
-						)}
 					</div>
 				)
+			},
+		},
+		{
+			id: "interface",
+			meta: { label: t`Interface` },
+			accessorFn: (record) => record.interface,
+			header: ({ column }) => <HeaderButton column={column} name={t`Interface`} Icon={EthernetPortIcon} />,
+			cell: ({ getValue }) => {
+				const value = getValue() as string
+				// Empty uses the default route.
+				if (!value) {
+					return (
+						<span className="ms-1.5">
+							<Trans>Auto</Trans>
+						</span>
+					)
+				}
+				return <span className="ms-1.5 block max-w-40 truncate">{value}</span>
 			},
 		},
 		{
