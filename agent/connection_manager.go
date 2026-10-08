@@ -83,6 +83,12 @@ func (c *ConnectionManager) stopWsTicker() {
 	}
 }
 
+// GetState returns the current connection state safely for external readers
+// (tests, integrations) that don't hold the manager lock.
+func (c *ConnectionManager) GetState() ConnectionState {
+	return c.getState()
+}
+
 // getState returns the current connection state.
 func (c *ConnectionManager) getState() ConnectionState {
 	c.mu.Lock()

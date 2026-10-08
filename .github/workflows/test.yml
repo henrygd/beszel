@@ -1,0 +1,75 @@
+name: Test
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  go-test:
+    name: Go test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v7
+      - name: Set up Go
+        uses: actions/setup-go@v7
+        with:
+          go-version-file: go.mod
+      - name: Create dist placeholder
+        # The hub package embeds internal/site/dist; tests and lint run before
+        # (or without) a frontend build, so provide the placeholder the
+        # Makefile uses for dev builds.
+        run: mkdir -p internal/site/dist && touch internal/site/dist/index.html
+      - name: Run tests
+        run: go test -tags='testing no_ui' -race -count=1 -timeout 45m ./...
+
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    steps:
+      # Full history so golangci-lint's `new: true` baseline can diff against main.
+      - name: Check out code
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - name: Set up Go
+        uses: actions/setup-go@v7
+        with:
+          go-version-file: go.mod
+      # Installed with `go install` (matching the repo's own vulncheck.yml style)
+      # instead of a third-party action, so no extra action version needs pinning.
+      - name: Install golangci-lint
+        run: go install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@latest
+      - name: Create dist placeholder
+        # The hub package embeds internal/site/dist; tests and lint run before
+        # (or without) a frontend build, so provide the placeholder the
+        # Makefile uses for dev builds.
+        run: mkdir -p internal/site/dist && touch internal/site/dist/index.html
+      - name: Run lint
+        run: "$(go env GOPATH)/bin/golangci-lint run --build-tags testing,no_ui --timeout 10m"
+
+  frontend-test:
+    name: Frontend test
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: internal/site
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v7
+      - name: Set up Bun
+        uses: oven-sh/setup-bun@v2
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+      - name: Compile locales
+        # The compiled locale files are gitignored build artifacts that
+        # src/lib/i18n.ts imports. Compile only - running the extractor here
+        # would churn the Crowdin-managed .po catalogs.
+        run: bunx lingui compile
+      - name: Run tests
+        run: bun test
