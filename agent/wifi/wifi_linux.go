@@ -5,8 +5,13 @@ package wifi
 import (
 	"context"
 	"errors"
+	"math"
 	"net"
 	"os"
+	"os/exec"
+	"regexp"
+	"strconv"
+	"strings"
 	"time"
 
 	"github.com/henrygd/beszel/internal/entities/system"
@@ -99,15 +104,92 @@ func hasWirelessDevice(dir string) bool {
 }
 
 func collect(ctx context.Context) map[string]system.WiFi {
-	if !hasWirelessDevice(wiphyClassDir) {
+	results := make(map[string]system.WiFi)
+
+	if hasWirelessDevice(wiphyClassDir) {
+		if client, err := newNL80211Client(); err == nil {
+			defer client.Close()
+			for k, v := range collectLinux(ctx, client) {
+				results[k] = v
+			}
+		}
+	}
+
+	if _, err := exec.LookPath("iwinfo"); err == nil {
+		for k, v := range collectOpenWrtAP() {
+			results[k] = v
+		}
+	}
+
+	if len(results) == 0 {
 		return nil
 	}
-	client, err := newNL80211Client()
+	return results
+}
+
+func collectOpenWrtAP() map[string]system.WiFi {
+	results := make(map[string]system.WiFi)
+
+	entries, err := os.ReadDir("/sys/class/net")
 	if err != nil {
-		return nil
+		return results
 	}
-	defer client.Close()
-	return collectLinux(ctx, client)
+
+	reMode := regexp.MustCompile(`Mode:\s*Master`)
+	reSsid := regexp.MustCompile(`ESSID:\s*"([^"]+)"`)
+	reAssoc := regexp.MustCompile(`(?m)^([0-9a-fA-F]{2}[:-]){5}[0-9a-fA-F]{2}.*?(-?\d+)\s+dBm`)
+
+	for _, entry := range entries {
+		iface := entry.Name()
+
+		if iface == "lo" || strings.HasPrefix(iface, "eth") || strings.HasPrefix(iface, "br-") ||
+			strings.HasPrefix(iface, "docker") || strings.HasPrefix(iface, "veth") || strings.HasPrefix(iface, "pppoe") {
+			continue
+		}
+
+		infoOut, err := exec.Command("iwinfo", iface, "info").Output()
+		if err != nil {
+			continue
+		}
+		infoStr := string(infoOut)
+
+		if !reMode.MatchString(infoStr) {
+			continue
+		}
+
+		ssid := "Unknown"
+		if m := reSsid.FindStringSubmatch(infoStr); len(m) > 1 {
+			ssid = m[1]
+		}
+
+		var avgRssi float64 = -100
+		assocOut, err := exec.Command("iwinfo", iface, "assoclist").Output()
+		if err == nil {
+			matches := reAssoc.FindAllStringSubmatch(string(assocOut), -1)
+			sum, count := 0, 0
+			for _, m := range matches {
+				if len(m) > 2 {
+					if rssi, err := strconv.Atoi(m[2]); err == nil {
+						sum += rssi
+						count++
+					}
+				}
+			}
+			if count > 0 {
+				avgRssi = math.Round(float64(sum) / float64(count))
+			}
+		}
+
+		reading := system.WiFi{SSID: validSSID(ssid)}
+		if avgRssi >= -150 && avgRssi < 0 {
+			sig := avgRssi
+			reading.Signal = &sig
+		}
+
+		results[iface] = reading
+	}
+
+	return results
 }
 
 func collectLinux(ctx context.Context, client linuxClient) map[string]system.WiFi {
