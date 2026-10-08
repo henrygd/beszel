@@ -1279,6 +1279,35 @@ func TestNetworkStatsCalculationWithRealData(t *testing.T) {
 	assert.Equal(t, uint64(0), recv3)
 }
 
+func TestNetworkStatsCounterResetDoesNotUnderflow(t *testing.T) {
+	dm := &dockerManager{
+		networkSentTrackers: make(map[uint16]*deltatracker.DeltaTracker[string, uint64]),
+		networkRecvTrackers: make(map[uint16]*deltatracker.DeltaTracker[string, uint64]),
+		lastNetworkReadTime: make(map[uint16]map[string]time.Time),
+	}
+	ctr := &container.ApiInfo{IdShort: "test-container"}
+	cacheTimeMs := uint16(60000)
+
+	before := &container.ApiStats{Networks: map[string]container.NetworkStats{
+		"eth0": {TxBytes: 5_000_000, RxBytes: 8_000_000},
+	}}
+	_, _ = dm.calculateNetworkStats(ctr, before, "test", cacheTimeMs)
+	dm.cycleNetworkDeltasForCacheTime(cacheTimeMs)
+	dm.lastNetworkReadTime[cacheTimeMs] = map[string]time.Time{
+		"test-container": time.Now().Add(-1000 * time.Millisecond),
+	}
+
+	// Container restarted: counters start over from a lower value
+	after := &container.ApiStats{Networks: map[string]container.NetworkStats{
+		"eth0": {TxBytes: 2_000, RxBytes: 3_000},
+	}}
+	sent, recv := dm.calculateNetworkStats(ctr, after, "test", cacheTimeMs)
+
+	// Delta is the new counter value, not a wrapped-around huge number
+	assert.InDelta(t, 2_000, sent, 20)
+	assert.InDelta(t, 3_000, recv, 30)
+}
+
 func TestContainerStatsEndToEndWithRealData(t *testing.T) {
 	// Load minimal container stats
 	data, err := os.ReadFile("test-data/container.json")
