@@ -5,6 +5,7 @@ package wifi
 import (
 	"context"
 	"errors"
+	"math"
 	"net"
 	"os"
 	"os/exec"
@@ -175,7 +176,7 @@ func collectOpenWrtAP() map[string]system.WiFi {
 				}
 			}
 			if count > 0 {
-				avgRssi = float64(sum) / float64(count)
+				avgRssi = math.Round(float64(sum) / float64(count))
 			}
 		}
 
