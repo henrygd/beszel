@@ -182,7 +182,7 @@ func collectOpenWrtAP() map[string]system.WiFi {
 
 		reading := system.WiFi{SSID: validSSID(ssid)}
 		if avgRssi >= -150 && avgRssi < 0 {
-			sig := avgRssi 
+			sig := avgRssi
 			reading.Signal = &sig
 		}
 
