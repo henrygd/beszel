@@ -44,13 +44,19 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 
 import { RawCapacityLabel } from "./raw-capacity-label"
 
-const ZFS_POOL_FIELDS = "id,system,name,display_name,health,size,alloc,free,raw,scrub,details_updated,updated"
+const ZFS_POOL_FIELDS = "id,system,name,display_name,health,size,alloc,free,raw,scrub,vdevs,details_updated,updated"
 
-/** Maps a zpool health string to a Badge variant. */
-function healthVariant(health: string): "success" | "warning" | "danger" | "outline" {
+/** Reports whether any vdev has nonzero read, write, or checksum errors. */
+function hasVdevErrors(vdevs?: ZfsVdev[] | null): boolean {
+	return !!vdevs?.some((vdev) => vdev.readErrs || vdev.writeErrs || vdev.checksumErrs)
+}
+
+/** Maps a zpool health string to a Badge variant. An ONLINE pool with vdev
+ * error counters (e.g. corrected checksum errors) is shown as a warning. */
+function healthVariant(health: string, hasErrors = false): "success" | "warning" | "danger" | "outline" {
 	switch (health) {
 		case "ONLINE":
-			return "success"
+			return hasErrors ? "warning" : "success"
 		case "DEGRADED":
 			return "warning"
 		case "FAULTED":
@@ -115,9 +121,9 @@ const columns: ColumnDef<ZfsPoolRecord>[] = [
 		accessorKey: "health",
 		sortingFn: (a, b) => a.original.health.localeCompare(b.original.health),
 		header: ({ column }) => <HeaderButton column={column} name={t`Health`} Icon={ActivityIcon} />,
-		cell: ({ getValue }) => {
+		cell: ({ getValue, row }) => {
 			const health = (getValue() as string) || ""
-			return <Badge variant={healthVariant(health)}>{health || t`Unknown`}</Badge>
+			return <Badge variant={healthVariant(health, hasVdevErrors(row.original.vdevs))}>{health || t`Unknown`}</Badge>
 		},
 	},
 	{
@@ -356,7 +362,7 @@ function PoolSheet({
 	}, [open, poolId])
 
 	const health = pool?.health || ""
-	const healthVariantValue = healthVariant(health)
+	const healthVariantValue = healthVariant(health, hasVdevErrors(pool?.vdevs))
 	const HealthIcon =
 		healthVariantValue === "success"
 			? CheckCircleIcon
@@ -412,6 +418,7 @@ function PoolSheet({
 									<AlertTitle>
 										<Trans>Pool Health</Trans>: {health}
 									</AlertTitle>
+									{pool.status && <AlertDescription>{pool.status}</AlertDescription>}
 									{pool.scrub?.state && (
 										<AlertDescription>
 											Scrub: {pool.scrub.state}
