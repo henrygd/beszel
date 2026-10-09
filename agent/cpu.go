@@ -51,20 +51,28 @@ func getCpuMetrics(cacheTimeMs uint16, forceUseCgroup bool) (CpuMetrics, error) 
 	if err != nil || len(times) == 0 {
 		return CpuMetrics{}, err
 	}
+	return cpuMetricsFromTimes(cacheTimeMs, times[0]), nil
+}
+
+// cpuMetricsFromTimes calculates host CPU usage from the latest counters.
+func cpuMetricsFromTimes(cacheTimeMs uint16, current cpu.TimesStat) CpuMetrics {
 	// if cacheTimeMs is not in lastCpuTimes, use 60000 as fallback lastCpuTime
 	if _, ok := lastCpuTimes[cacheTimeMs]; !ok {
 		lastCpuTimes[cacheTimeMs] = lastCpuTimes[60000]
 	}
 
 	t1 := lastCpuTimes[cacheTimeMs]
-	t2 := times[0]
+	t2 := current
+	// A counter reset or wrap must establish a new baseline even if this
+	// sample cannot produce a valid delta.
+	lastCpuTimes[cacheTimeMs] = current
 
 	t1All, _ := getAllBusy(t1)
 	t2All, _ := getAllBusy(t2)
 
 	totalDelta := t2All - t1All
 	if totalDelta <= 0 {
-		return CpuMetrics{}, nil
+		return CpuMetrics{}
 	}
 
 	metrics := CpuMetrics{
@@ -79,8 +87,7 @@ func getCpuMetrics(cacheTimeMs uint16, forceUseCgroup bool) (CpuMetrics, error) 
 		Nice:    clampPercent((t2.Nice - t1.Nice) / totalDelta * 100),
 	}
 
-	lastCpuTimes[cacheTimeMs] = times[0]
-	return metrics, nil
+	return metrics
 }
 
 // clampPercent ensures the percentage is between 0 and 100
