@@ -114,6 +114,13 @@ func newSystemdManager() (*systemdManager, error) {
 		return nil, err
 	}
 
+	// dbus may be present without systemd (e.g. runit, OpenRC), so verify systemd is on the bus (#2555)
+	if _, err := conn.GetManagerProperty("Version"); err != nil {
+		conn.Close()
+		slog.Debug("Systemd not available on dbus", "err", err)
+		return nil, nil
+	}
+
 	manager := &systemdManager{
 		serviceStatsMap: make(map[string]*systemd.Service),
 		logsEnabled:     systemdLogsEnabled(),

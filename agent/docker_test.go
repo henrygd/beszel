@@ -1279,6 +1279,64 @@ func TestNetworkStatsCalculationWithRealData(t *testing.T) {
 	assert.Equal(t, uint64(0), recv3)
 }
 
+func TestNetworkStatsCounterDecreaseDoesNotUnderflow(t *testing.T) {
+	tests := []struct {
+		name   string
+		before map[string]container.NetworkStats
+		after  map[string]container.NetworkStats
+	}{
+		{
+			name:   "container restarted",
+			before: map[string]container.NetworkStats{"eth0": {TxBytes: 5_000_000, RxBytes: 8_000_000}},
+			after:  map[string]container.NetworkStats{"eth0": {TxBytes: 2_000, RxBytes: 3_000}},
+		},
+		{
+			name: "interface removed",
+			before: map[string]container.NetworkStats{
+				"eth0": {TxBytes: 1_000_000_000, RxBytes: 2_000_000_000},
+				"eth1": {TxBytes: 500_000_000, RxBytes: 500_000_000},
+			},
+			after: map[string]container.NetworkStats{"eth0": {TxBytes: 1_010_000_000, RxBytes: 2_010_000_000}},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			dm := &dockerManager{
+				networkSentTrackers: make(map[uint16]*deltatracker.DeltaTracker[string, uint64]),
+				networkRecvTrackers: make(map[uint16]*deltatracker.DeltaTracker[string, uint64]),
+				lastNetworkReadTime: make(map[uint16]map[string]time.Time),
+			}
+			ctr := &container.ApiInfo{IdShort: "test-container"}
+			cacheTimeMs := uint16(60000)
+			nextCycle := func() {
+				dm.cycleNetworkDeltasForCacheTime(cacheTimeMs)
+				dm.lastNetworkReadTime[cacheTimeMs] = map[string]time.Time{
+					"test-container": time.Now().Add(-1000 * time.Millisecond),
+				}
+			}
+
+			_, _ = dm.calculateNetworkStats(ctr, &container.ApiStats{Networks: tt.before}, "test", cacheTimeMs)
+			nextCycle()
+
+			// Summed counters went down: skip this cycle rather than wrap around or report a spike
+			sent, recv := dm.calculateNetworkStats(ctr, &container.ApiStats{Networks: tt.after}, "test", cacheTimeMs)
+			assert.Equal(t, uint64(0), sent)
+			assert.Equal(t, uint64(0), recv)
+
+			// Next cycle measures from the new baseline
+			nextCycle()
+			grown := make(map[string]container.NetworkStats, len(tt.after))
+			for name, v := range tt.after {
+				grown[name] = container.NetworkStats{TxBytes: v.TxBytes + 1_000, RxBytes: v.RxBytes + 2_000}
+			}
+			sent, recv = dm.calculateNetworkStats(ctr, &container.ApiStats{Networks: grown}, "test", cacheTimeMs)
+			assert.InDelta(t, 1_000, sent, 10)
+			assert.InDelta(t, 2_000, recv, 20)
+		})
+	}
+}
+
 func TestContainerStatsEndToEndWithRealData(t *testing.T) {
 	// Load minimal container stats
 	data, err := os.ReadFile("test-data/container.json")
