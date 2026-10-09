@@ -376,6 +376,20 @@ func AverageSystemStatsSlice(records []system.Stats) system.Stats {
 			}
 		}
 
+		// Accumulate network interface packet rates
+		if stats.NetworkInterfacePackets != nil {
+			if sum.NetworkInterfacePackets == nil {
+				sum.NetworkInterfacePackets = make(map[string][6]float64, len(stats.NetworkInterfacePackets))
+			}
+			for key, value := range stats.NetworkInterfacePackets {
+				rates := sum.NetworkInterfacePackets[key]
+				for i := range rates {
+					rates[i] += value[i]
+				}
+				sum.NetworkInterfacePackets[key] = rates
+			}
+		}
+
 		// Accumulate temperatures
 		if stats.Temperatures != nil {
 			if sum.Temperatures == nil {
@@ -539,6 +553,14 @@ func AverageSystemStatsSlice(records []system.Stats) system.Stats {
 				sum.NetworkInterfaces[key][3],
 			}
 		}
+	}
+
+	// Average network interface packet rates
+	for key, rates := range sum.NetworkInterfacePackets {
+		for i := range rates {
+			rates[i] = twoDecimals(rates[i] / count)
+		}
+		sum.NetworkInterfacePackets[key] = rates
 	}
 
 	// Average temperatures
