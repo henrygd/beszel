@@ -5,6 +5,7 @@ import {
 	flexRender,
 	getCoreRowModel,
 	getFilteredRowModel,
+	getPaginationRowModel,
 	getSortedRowModel,
 	type Row,
 	type SortingState,
@@ -12,13 +13,13 @@ import {
 	useReactTable,
 	type VisibilityState,
 } from "@tanstack/react-table"
-import { useVirtualizer, type VirtualItem } from "@tanstack/react-virtual"
 import { LoaderCircleIcon, MaximizeIcon, RefreshCwIcon } from "lucide-react"
 import { listenKeys } from "nanostores"
 import { memo, type ReactNode, useEffect, useMemo, useRef, useState } from "react"
 import { getStatusColor, systemdTableCols } from "@/components/systemd-table/systemd-table-columns"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Card, CardHeader, CardTitle } from "@/components/ui/card"
+import { DataTablePagination, usePagination } from "@/components/ui/data-table-pagination"
 import { Input } from "@/components/ui/input"
 import { LogsDisplay, LogsFullscreenDialog, LogsIconButton, LogsTimestampToggle } from "@/components/logs-display"
 import { getLogTimestampDecorations } from "@/lib/logs"
@@ -61,9 +62,11 @@ export default function SystemdTable({ systemId }: { systemId?: string }) {
 	const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
 	const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
 	const [globalFilter, setGlobalFilter] = useState("")
+	const { pagination, onPaginationChange, resetPageIndex } = usePagination()
 
 	// clear old data when systemId changes
 	useEffect(() => {
+		resetPageIndex()
 		return setData([])
 	}, [systemId])
 
@@ -129,7 +132,13 @@ export default function SystemdTable({ systemId }: { systemId?: string }) {
 		getCoreRowModel: getCoreRowModel(),
 		getSortedRowModel: getSortedRowModel(),
 		getFilteredRowModel: getFilteredRowModel(),
-		onSortingChange: setSorting,
+		getPaginationRowModel: getPaginationRowModel(),
+		autoResetPageIndex: false,
+		onPaginationChange,
+		onSortingChange: (updater) => {
+			setSorting(updater)
+			resetPageIndex()
+		},
 		onColumnFiltersChange: setColumnFilters,
 		onColumnVisibilityChange: setColumnVisibility,
 		defaultColumn: {
@@ -142,8 +151,12 @@ export default function SystemdTable({ systemId }: { systemId?: string }) {
 			columnFilters,
 			columnVisibility,
 			globalFilter,
+			pagination,
 		},
-		onGlobalFilterChange: setGlobalFilter,
+		onGlobalFilterChange: (value) => {
+			setGlobalFilter(value)
+			resetPageIndex()
+		},
 		globalFilterFn: (row, _columnId, filterValue) => {
 			const service = row.original
 			const systemName = $allSystemsById.get()[service.system]?.name ?? ""
@@ -193,7 +206,7 @@ export default function SystemdTable({ systemId }: { systemId?: string }) {
 					<Input
 						placeholder={t`Filter...`}
 						value={globalFilter}
-						onChange={(e) => setGlobalFilter(e.target.value)}
+						onChange={(e) => table.setGlobalFilter(e.target.value)}
 						className="ms-auto px-4 w-full max-w-full md:w-64"
 					/>
 				</div>
@@ -201,6 +214,7 @@ export default function SystemdTable({ systemId }: { systemId?: string }) {
 			<div className="rounded-md">
 				<AllSystemdTable table={table} rows={rows} colLength={visibleColumns.length} systemId={systemId} />
 			</div>
+			<DataTablePagination table={table} showSelected={false} />
 		</Card>
 	)
 }
@@ -216,8 +230,6 @@ const AllSystemdTable = memo(function AllSystemdTable({
 	colLength: number
 	systemId?: string
 }) {
-	// The virtualizer will need a reference to the scrollable container element
-	const scrollRef = useRef<HTMLDivElement>(null)
 	const activeService = useRef<SystemdRecord | null>(null)
 	const [sheetOpen, setSheetOpen] = useState(false)
 	const [sheetSession, setSheetSession] = useState(0)
@@ -227,46 +239,22 @@ const AllSystemdTable = memo(function AllSystemdTable({
 		setSheetOpen(true)
 	}
 
-	const virtualizer = useVirtualizer<HTMLDivElement, HTMLTableRowElement>({
-		count: rows.length,
-		estimateSize: () => 54,
-		getScrollElement: () => scrollRef.current,
-		overscan: 5,
-	})
-	const virtualRows = virtualizer.getVirtualItems()
-
-	const paddingTop = Math.max(0, virtualRows[0]?.start ?? 0 - virtualizer.options.scrollMargin)
-	const paddingBottom = Math.max(0, virtualizer.getTotalSize() - (virtualRows[virtualRows.length - 1]?.end ?? 0))
-
 	return (
-		<div
-			className={cn(
-				"h-min max-h-[calc(100dvh-17rem)] max-w-full relative overflow-auto border rounded-md",
-				// don't set min height if there are less than 2 rows, do set if we need to display the empty state
-				(!rows.length || rows.length > 2) && "min-h-50"
-			)}
-			ref={scrollRef}
-		>
-			{/* add header height to table size */}
-			<div style={{ height: `${virtualizer.getTotalSize() + 48}px`, paddingTop, paddingBottom }}>
-				<table className="text-sm w-full h-full text-nowrap">
-					<SystemdTableHead table={table} />
-					<TableBody>
-						{rows.length ? (
-							virtualRows.map((virtualRow) => {
-								const row = rows[virtualRow.index]
-								return <SystemdTableRow key={row.id} row={row} virtualRow={virtualRow} openSheet={openSheet} />
-							})
-						) : (
-							<TableRow>
-								<TableCell colSpan={colLength} className="h-37 text-center pointer-events-none">
-									<Trans>No results.</Trans>
-								</TableCell>
-							</TableRow>
-						)}
-					</TableBody>
-				</table>
-			</div>
+		<div className="max-w-full relative overflow-auto border rounded-md">
+			<table className="text-sm w-full h-full text-nowrap">
+				<SystemdTableHead table={table} />
+				<TableBody>
+					{rows.length ? (
+						rows.map((row) => <SystemdTableRow key={row.id} row={row} openSheet={openSheet} />)
+					) : (
+						<TableRow>
+							<TableCell colSpan={colLength} className="h-37 text-center pointer-events-none">
+								<Trans>No results.</Trans>
+							</TableCell>
+						</TableRow>
+					)}
+				</TableBody>
+			</table>
 			<SystemdSheet
 				key={sheetSession}
 				sheetOpen={sheetOpen}
@@ -757,11 +745,9 @@ function SystemdTableHead({ table }: { table: TableType<SystemdRecord> }) {
 
 const SystemdTableRow = memo(function SystemdTableRow({
 	row,
-	virtualRow,
 	openSheet,
 }: {
 	row: Row<SystemdRecord>
-	virtualRow: VirtualItem
 	openSheet: (service: SystemdRecord) => void
 }) {
 	return (
@@ -775,7 +761,7 @@ const SystemdTableRow = memo(function SystemdTableRow({
 					key={cell.id}
 					className="py-0"
 					style={{
-						height: virtualRow.size,
+						height: 54,
 					}}
 				>
 					{flexRender(cell.column.columnDef.cell, cell.getContext())}
