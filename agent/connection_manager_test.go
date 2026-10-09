@@ -245,19 +245,22 @@ func TestConnectionManager_WebSocketConnectionFlow(t *testing.T) {
 
 // TestConnectionManager_ReconnectionLogic tests reconnection prevention logic
 func TestConnectionManager_ReconnectionLogic(t *testing.T) {
+	t.Setenv("BESZEL_AGENT_DISABLE_SSH", "true")
 	agent := createTestAgent(t)
 	cm := agent.connectionManager
 	cm.eventChan = make(chan ConnectionEvent, 1)
 
-	// Test that isConnecting flag prevents duplicate reconnection attempts
-	// Start from connected state, then simulate disconnect
-	cm.State = WebSocketConnected
-	cm.setConnecting(false)
+	synctest.Test(t, func(t *testing.T) {
+		// An in-flight attempt must remain owned by its existing goroutine.
+		cm.State = WebSocketConnected
+		cm.setConnecting(true)
+		cm.handleStateChange(Disconnected)
+		defer cm.stopWsTicker()
+		synctest.Wait()
 
-	// First disconnect should trigger reconnection logic
-	cm.handleStateChange(Disconnected)
-	assert.Equal(t, Disconnected, cm.State, "Should change to disconnected")
-	assert.True(t, cm.isConnectingNow(), "Should set isConnecting flag")
+		assert.Equal(t, Disconnected, cm.getState(), "Should change to disconnected")
+		assert.True(t, cm.isConnectingNow(), "Must not start another attempt that clears the in-flight flag")
+	})
 }
 
 func TestWebSocketDisconnectStartsSSH(t *testing.T) {
