@@ -170,9 +170,15 @@ func TestFingerprintRecord(t *testing.T) {
 	assert.Equal(t, "test-token", record.Token)
 }
 
-// TestDeadlineConstant tests that the deadline constant is reasonable
+// TestDeadlineConstant tests that the deadline is reasonable.
+//
+// It has to stay above the 90s a failed poll takes in the systems package (a
+// 60s poll interval plus a 30s request timeout), because the keepalive ping
+// only goes out once that fetch gives up. Lowering this reopens the reconnect
+// loop from #2294; TestSlowAgentKeepsConnectionAcrossPolls covers the effect.
 func TestDeadlineConstant(t *testing.T) {
-	assert.Equal(t, 70*time.Second, deadline, "Deadline should be 70 seconds")
+	assert.Equal(t, 100*time.Second, deadline, "Deadline should be 100 seconds")
+	assert.Greater(t, deadline, 90*time.Second, "Deadline must outlast a failed poll")
 }
 
 // TestCommonActions tests that the common actions are properly defined
