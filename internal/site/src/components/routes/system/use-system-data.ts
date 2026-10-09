@@ -4,6 +4,7 @@ import { subscribeKeys } from "nanostores"
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useContainerChartConfigs } from "@/components/charts/hooks"
 import { pb, queueUserSettings } from "@/lib/api"
+import { customStatsPoint, systemHasCustomMetrics } from "@/lib/custom-metrics"
 import { SystemStatus } from "@/lib/enums"
 import {
 	$allSystemsById,
@@ -20,6 +21,7 @@ import { chartTimeData, listen, parseSemVer } from "@/lib/utils"
 import type {
 	ChartData,
 	ContainerStatsRecord,
+	CustomStatsRecord,
 	SystemDetailsRecord,
 	SystemInfo,
 	SystemRecord,
@@ -83,6 +85,7 @@ export function useSystemData(id: string) {
 	const [system, setSystem] = useState({} as SystemRecord)
 	const [systemStats, setSystemStats] = useState([] as SystemStatsRecord[])
 	const [containerData, setContainerData] = useState([] as ChartData["containerData"])
+	const [customData, setCustomData] = useState([] as CustomStatsRecord[])
 	const persistChartTime = useRef(false)
 	const statsRequestId = useRef(0)
 	const [chartLoading, setChartLoading] = useState(true)
@@ -96,6 +99,7 @@ export function useSystemData(id: string) {
 			persistChartTime.current = false
 			setSystemStats([])
 			setContainerData([])
+			setCustomData([])
 			setDetails({} as SystemDetailsRecord)
 			$containerFilter.set("")
 		}
@@ -162,16 +166,21 @@ export function useSystemData(id: string) {
 						data.container?.length > 0
 							? makeContainerPoint(now, data.container as unknown as ContainerStatsRecord["stats"])
 							: null
+					const customPoint = customStatsPoint(now, data.stats)
 					// on first message, make sure we clear out data from other time periods
 					if (isFirst) {
 						isFirst = false
 						setSystemStats([statsPoint])
 						setContainerData(containerPoint ? [containerPoint] : [])
+						setCustomData(customPoint ? [customPoint] : [])
 						return
 					}
 					setSystemStats((prev) => appendData(prev, [statsPoint], expectedInterval, 60))
 					if (containerPoint) {
 						setContainerData((prev) => appendData(prev, [containerPoint], expectedInterval, 60))
+					}
+					if (customPoint) {
+						setCustomData((prev) => appendData(prev, [customPoint], 1000, 60))
 					}
 				},
 				{ query: { system: system.id } }
@@ -190,11 +199,12 @@ export function useSystemData(id: string) {
 		return {
 			systemStats,
 			containerData,
+			customData,
 			chartTime,
 			orientation: direction === "rtl" ? "right" : "left",
 			agentVersion,
 		}
-	}, [systemStats, containerData, direction])
+	}, [systemStats, containerData, customData, direction])
 
 	// Share chart config computation for all container charts
 	const containerChartConfigs = useContainerChartConfigs(containerData)
@@ -211,19 +221,25 @@ export function useSystemData(id: string) {
 		const { expectedInterval } = chartTimeData[chartTime]
 		const ss_cache_key = `${systemId}_${chartTime}_system_stats`
 		const cs_cache_key = `${systemId}_${chartTime}_container_stats`
+		const cus_cache_key = `${systemId}_${chartTime}_custom_stats`
+		// Only systems with custom metrics fetch their history, so the others make no extra request
+		const hasCustom = systemHasCustomMetrics(system)
 
 		const cachedSystemStats = cache.get(ss_cache_key) as SystemStatsRecord[] | undefined
 		const cachedContainerData = cache.get(cs_cache_key) as ChartData["containerData"] | undefined
+		const cachedCustomData = hasCustom ? (cache.get(cus_cache_key) as CustomStatsRecord[] | undefined) : []
 
 		// Render from cache immediately if available
 		if (cachedSystemStats?.length) {
 			setSystemStats(cachedSystemStats)
 			setContainerData(cachedContainerData || [])
+			setCustomData(cachedCustomData || [])
 			setChartLoading(false)
 
-			// Skip the fetch if the latest cached point is recent enough that no new point is expected yet
+			// Skip the fetch if the latest cached point is recent enough that no new point is expected yet,
+			// unless custom metrics just appeared and their history has not been fetched
 			const lastCreated = cachedSystemStats.at(-1)?.created as number | undefined
-			if (lastCreated && Date.now() - lastCreated < expectedInterval * 0.9) {
+			if (lastCreated && Date.now() - lastCreated < expectedInterval * 0.9 && cachedCustomData) {
 				return
 			}
 		} else {
@@ -233,7 +249,10 @@ export function useSystemData(id: string) {
 		Promise.allSettled([
 			getStats<SystemStatsRecord>("system_stats", systemId, chartTime, cachedSystemStats),
 			getStats<ContainerStatsRecord>("container_stats", systemId, chartTime, cachedContainerData),
-		]).then(([systemStats, containerStats]) => {
+			hasCustom
+				? getStats<CustomStatsRecord>("custom_stats", systemId, chartTime, cachedCustomData)
+				: Promise.resolve([] as CustomStatsRecord[]),
+		]).then(([systemStats, containerStats, customStats]) => {
 			// Ignore responses for a previous system or chart time
 			if (requestId !== statsRequestId.current) {
 				return
@@ -255,6 +274,13 @@ export function useSystemData(id: string) {
 				cache.set(cs_cache_key, containerData)
 			}
 			setContainerData(containerData)
+			// make new custom stats, cached even when empty so a fetched system is not fetched again early
+			let customData = (hasCustom && (cache.get(cus_cache_key) as CustomStatsRecord[] | undefined)) || []
+			if (hasCustom && customStats.status === "fulfilled") {
+				customData = appendData(customData, customStats.value, expectedInterval, 100)
+				cache.set(cus_cache_key, customData)
+			}
+			setCustomData(customData)
 		})
 	}, [system, chartTime])
 

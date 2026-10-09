@@ -10,11 +10,12 @@ import (
 	"github.com/henrygd/beszel/internal/tests"
 	"github.com/pocketbase/dbx"
 	"github.com/pocketbase/pocketbase/tools/types"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
 func TestLongerRecordsPreventDuplicates(t *testing.T) {
-	for _, collection := range []string{"system_stats", "container_stats", "network_monitor_stats"} {
+	for _, collection := range []string{"system_stats", "container_stats", "custom_stats", "network_monitor_stats"} {
 		for _, tier := range []struct {
 			shorter, longer string
 			count           int
@@ -47,6 +48,8 @@ func TestLongerRecordsPreventDuplicates(t *testing.T) {
 					data["stats"] = `{"cpu":10}`
 				case "container_stats":
 					data["stats"] = `[{"name":"test","cpu":10}]`
+				case "custom_stats":
+					data["stats"] = `{"power_watts":10}`
 				case "network_monitor_stats":
 					monitor, err := tests.CreateRecord(hub, "network_monitors", map[string]any{
 						"system": sys.Id, "target": "1.1.1.1", "protocol": "icmp",
@@ -83,4 +86,55 @@ func TestLongerRecordsPreventDuplicates(t *testing.T) {
 			})
 		}
 	}
+}
+
+// custom_stats has rows only for minutes with values, so a 10m record averages
+// whatever rows the window has, per key, where system_stats needs 9 of 10. A
+// window without rows gets no record.
+func TestCustomStatsRollupAveragesAnyRows(t *testing.T) {
+	hub, err := tests.NewTestHub(t.TempDir())
+	require.NoError(t, err)
+	defer hub.Cleanup()
+
+	user, err := tests.CreateUser(hub, "custom-rollup@example.com", "testtesttest")
+	require.NoError(t, err)
+	newSystem := func(name string) string {
+		t.Helper()
+		sys, err := tests.CreateRecord(hub, "systems", map[string]any{
+			"name": name, "host": "localhost", "port": "45876",
+			"status": "up", "users": []string{user.Id},
+		})
+		require.NoError(t, err)
+		return sys.Id
+	}
+	withValues := newSystem("with-values")
+	withoutValues := newSystem("without-values")
+
+	now := time.Now().UTC()
+	for i, values := range []string{`{"a":1}`, `{"a":3,"b":5}`, `{"b":7}`} {
+		created := now.Add(-time.Duration(i+1) * time.Minute).Format(types.DefaultDateLayout)
+		for collection, stats := range map[string]string{"custom_stats": values, "system_stats": `{"cpu":10}`} {
+			_, err := tests.CreateRecord(hub, collection, map[string]any{
+				"system": withValues, "type": "1m", "stats": stats, "created": created,
+			})
+			require.NoError(t, err)
+		}
+	}
+
+	records.NewRecordManager(hub).CreateLongerRecords()
+
+	rollups, err := hub.FindAllRecords("custom_stats", dbx.HashExp{"system": withValues, "type": "10m"})
+	require.NoError(t, err)
+	require.Len(t, rollups, 1, "three rows are enough")
+	var averages map[string]float64
+	require.NoError(t, rollups[0].UnmarshalJSONField("stats", &averages))
+	assert.Equal(t, map[string]float64{"a": 2, "b": 6}, averages, "each key over the rows it appears in")
+
+	systemRollups, err := hub.FindAllRecords("system_stats", dbx.HashExp{"system": withValues, "type": "10m"})
+	require.NoError(t, err)
+	assert.Empty(t, systemRollups, "system_stats keeps its 9-of-10 rule")
+
+	none, err := hub.FindAllRecords("custom_stats", dbx.HashExp{"system": withoutValues})
+	require.NoError(t, err)
+	assert.Empty(t, none, "no rows, no rollup")
 }

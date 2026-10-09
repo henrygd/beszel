@@ -5,6 +5,7 @@ import type {
 	ChartDataContainer,
 	ChartTimes,
 	ContainerStatsRecord,
+	CustomStatsRecord,
 	NetworkMonitorStatsRecord,
 	SystemStatsRecord,
 } from "@/types"
@@ -20,7 +21,7 @@ type ChartTimeData = {
 
 export const cache = new Map<
 	string,
-	ChartTimeData | SystemStatsRecord[] | ContainerStatsRecord[] | ChartData["containerData"]
+	ChartTimeData | SystemStatsRecord[] | ContainerStatsRecord[] | ChartData["containerData"] | CustomStatsRecord[]
 >()
 
 /** Append new records onto prev with gap detection. Converts string `created` values to ms timestamps in place.
@@ -51,7 +52,9 @@ export function appendData<T extends { created: string | number | null }>(
 	return result
 }
 
-export async function getStats<T extends SystemStatsRecord | ContainerStatsRecord | NetworkMonitorStatsRecord>(
+export async function getStats<
+	T extends SystemStatsRecord | ContainerStatsRecord | CustomStatsRecord | NetworkMonitorStatsRecord,
+>(
 	collection: string,
 	systemId: string,
 	chartTime: ChartTimes,

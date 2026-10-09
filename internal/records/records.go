@@ -73,12 +73,16 @@ func (rm *RecordManager) CreateLongerRecords() {
 	err := rm.app.RunInTransaction(func(txApp core.App) error {
 		var err error
 
-		collections := [2]*core.Collection{}
+		collections := [3]*core.Collection{}
 		collections[0], err = txApp.FindCachedCollectionByNameOrId("system_stats")
 		if err != nil {
 			return err
 		}
 		collections[1], err = txApp.FindCachedCollectionByNameOrId("container_stats")
+		if err != nil {
+			return err
+		}
+		collections[2], err = txApp.FindCachedCollectionByNameOrId("custom_stats")
 		if err != nil {
 			return err
 		}
@@ -145,7 +149,13 @@ func (rm *RecordManager) CreateLongerRecords() {
 					}
 
 					// continue if not enough shorter records
-					if len(recordIds) < recordData.minShorterRecords {
+					minShorterRecords := recordData.minShorterRecords
+					// custom_stats has rows only for minutes with values, which come and
+					// go as producers go stale, so any rows in the window are averaged
+					if collection.Name == "custom_stats" {
+						minShorterRecords = 1
+					}
+					if len(recordIds) < minShorterRecords {
 						continue
 					}
 					// average the shorter records and create longer record
@@ -157,6 +167,12 @@ func (rm *RecordManager) CreateLongerRecords() {
 						longerRecord.Set("stats", rm.AverageSystemStats(db, recordIds))
 					case "container_stats":
 						longerRecord.Set("stats", rm.AverageContainerStats(db, recordIds))
+					case "custom_stats":
+						stats := rm.AverageCustomStats(db, recordIds)
+						if len(stats) == 0 {
+							continue
+						}
+						longerRecord.Set("stats", stats)
 					}
 					if err := txApp.SaveNoValidate(longerRecord); err != nil {
 						txApp.Logger().Error("failed to save longer record", "err", err)
@@ -633,6 +649,54 @@ func AverageSystemStatsSlice(records []system.Stats) system.Stats {
 
 func hasBattery(legacy [2]uint8, batteries map[string]uint8) bool {
 	return legacy != [2]uint8{} || len(batteries) > 0
+}
+
+// AverageCustomStats averages the custom_stats records with the given ids.
+func (rm *RecordManager) AverageCustomStats(db dbx.Builder, records RecordIds) map[string]float64 {
+	allStats := make([]map[string]float64, 0, len(records))
+	var row StatsRecord
+	params := make(dbx.Params, 1)
+	for _, rec := range records {
+		row.Stats = row.Stats[:0]
+		params["id"] = rec.Id
+		if err := db.NewQuery("SELECT stats FROM custom_stats WHERE id = {:id}").Bind(params).One(&row); err != nil {
+			continue
+		}
+		var stats map[string]float64
+		if err := json.Unmarshal(row.Stats, &stats); err != nil {
+			continue
+		}
+		allStats = append(allStats, stats)
+	}
+	return AverageCustomStatsSlice(allStats)
+}
+
+// AverageCustomStatsSlice averages each custom metric over the records it appears
+// in, since metrics come and go as producers go stale. Unrounded, so small ratios
+// survive. Returns nil when no record has a value. Tiers from 20m up average the
+// tier below, where each record counts the same whatever minutes it covered: a
+// 10m record that held a key for one minute weighs as much as one that held it
+// for ten.
+func AverageCustomStatsSlice(records []map[string]float64) map[string]float64 {
+	sums := make(map[string]float64)
+	counts := make(map[string]int)
+	for _, stats := range records {
+		for key, value := range stats {
+			sums[key] += value
+			counts[key]++
+		}
+	}
+	if len(sums) == 0 {
+		return nil
+	}
+	averages := make(map[string]float64, len(sums))
+	for key, total := range sums {
+		// Huge values can overflow the sum, and ±Inf would make the whole record fail to save.
+		if avg := total / float64(counts[key]); !math.IsInf(avg, 0) {
+			averages[key] = avg
+		}
+	}
+	return averages
 }
 
 // Calculate the average stats of a list of container_stats records
