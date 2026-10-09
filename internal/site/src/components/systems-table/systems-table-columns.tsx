@@ -19,6 +19,7 @@ import {
 	PenBoxIcon,
 	PlayCircleIcon,
 	ServerIcon,
+	SlidersHorizontalIcon,
 	TerminalSquareIcon,
 	Trash2Icon,
 	WifiIcon,
@@ -41,6 +42,7 @@ import { batteryStateTranslations } from "@/lib/i18n"
 import { connectedWiFi, strongestWiFi, strongestWiFiSignal, wifiSignalState } from "@/lib/wifi"
 import type { SystemRecord, WiFi } from "@/types"
 import { SystemDialog } from "../add-system"
+import { SystemConfigSheet } from "../system-config-sheet"
 import AlertButton from "../alerts/alert-button"
 import { $router, Link } from "../router"
 import {
@@ -55,6 +57,7 @@ import {
 } from "../ui/alert-dialog"
 import { Button, buttonVariants } from "../ui/button"
 import { Dialog } from "../ui/dialog"
+import { Sheet } from "../ui/sheet"
 import {
 	DropdownMenu,
 	DropdownMenuContent,
@@ -732,6 +735,10 @@ export const ActionsButton = memo(({ system }: { system: SystemRecord }) => {
 	const [deleteOpen, setDeleteOpen] = useState(false)
 	const [editOpen, setEditOpen] = useState(false)
 	const editOpened = useRef(false)
+	const [configOpen, setConfigOpen] = useState(false)
+	const configOpened = useRef(false)
+	// Bumped on every open so the dialog remounts and reloads instead of showing state from its last use.
+	const [configKey, setConfigKey] = useState(0)
 	const { t } = useLingui()
 	const { id, status, host, name } = system
 
@@ -757,6 +764,18 @@ export const ActionsButton = memo(({ system }: { system: SystemRecord }) => {
 							>
 								<PenBoxIcon className="me-2.5 size-4" />
 								<Trans>Edit</Trans>
+							</DropdownMenuItem>
+						)}
+						{!isReadOnlyUser() && (
+							<DropdownMenuItem
+								onSelect={() => {
+									configOpened.current = true
+									setConfigKey((key) => key + 1)
+									setConfigOpen(true)
+								}}
+							>
+								<SlidersHorizontalIcon className="me-2.5 size-4" />
+								<Trans>Agent settings</Trans>
 							</DropdownMenuItem>
 						)}
 						<DropdownMenuItem
@@ -798,6 +817,10 @@ export const ActionsButton = memo(({ system }: { system: SystemRecord }) => {
 				<Dialog open={editOpen} onOpenChange={setEditOpen}>
 					{editOpened.current && <SystemDialog system={system} setOpen={setEditOpen} />}
 				</Dialog>
+				{/* config sheet */}
+				<Sheet open={configOpen} onOpenChange={setConfigOpen}>
+					{configOpened.current && <SystemConfigSheet key={configKey} system={system} setOpen={setConfigOpen} />}
+				</Sheet>
 				{/* deletion dialog */}
 				<AlertDialog open={deleteOpen} onOpenChange={(open) => setDeleteOpen(open)}>
 					<AlertDialogContent>
@@ -827,5 +850,5 @@ export const ActionsButton = memo(({ system }: { system: SystemRecord }) => {
 				</AlertDialog>
 			</>
 		)
-	}, [id, status, host, name, system, t, deleteOpen, editOpen])
+	}, [id, status, host, name, system, t, deleteOpen, editOpen, configOpen])
 })

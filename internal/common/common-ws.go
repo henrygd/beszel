@@ -30,6 +30,8 @@ const (
 	GetPackageUpdates
 	// Request recent logs for a systemd service from the agent.
 	GetSystemdLogs
+	// Sync hub-managed agent configuration to agent
+	SyncAgentConfig
 	// Add new actions here...
 )
 
