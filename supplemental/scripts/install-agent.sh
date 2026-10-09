@@ -128,6 +128,66 @@ escape_sed_replacement() {
   printf '%s' "$1" | sed 's/[\\&|]/\\&/g'
 }
 
+# Migrate only the TOKEN assignment written by this installer. Read it before
+# replacing/stopping the agent, and never evaluate a service file as shell code.
+read_systemd_token() {
+  SYSTEMD_TOKEN_UPDATE=false
+  [ -f "$1" ] || { SYSTEMD_TOKEN_UPDATE=true; return; }
+  # Match assignments, not TOKEN= text inside another value (e.g. an SSH key
+  # comment). Also detect combined/custom assignments so they are not ignored.
+  token_lines=$(sed -n '
+    /^[[:space:]]*Environment=[[:space:]]*"\{0,1\}\(BESZEL_AGENT_\)\{0,1\}TOKEN=/p
+    /^[[:space:]]*Environment=.*"[[:space:]][[:space:]]*"\{0,1\}\(BESZEL_AGENT_\)\{0,1\}TOKEN=/p
+    /^[[:space:]]*Environment=[^"]*[[:space:]]\(BESZEL_AGENT_\)\{0,1\}TOKEN=/p
+  ' "$1")
+  if [ -n "$token_lines" ]; then
+    # Combined assignments, escaped values and prefixed variables need manual
+    # migration; interpreting them as literal bytes could change authentication.
+    [ "$(printf '%s\n' "$token_lines" | wc -l)" -eq 1 ] &&
+      printf '%s\n' "$token_lines" | grep -q '^Environment="TOKEN=[^"\\]*"$' ||
+      fail "Cannot migrate the custom TOKEN assignment in $1. Move it to a private EnvironmentFile before reinstalling."
+    if [ "$TOKEN_PROVIDED" != true ]; then
+      TOKEN=${token_lines#Environment=\"TOKEN=}
+      TOKEN=${TOKEN%\"}
+      case "$TOKEN" in
+        *%*) fail "Cannot migrate systemd TOKEN specifiers literally. Supply the resolved token with -t or use a private EnvironmentFile." ;;
+      esac
+    fi
+    SYSTEMD_TOKEN_UPDATE=true
+  fi
+  [ "$TOKEN_PROVIDED" != true ] || SYSTEMD_TOKEN_UPDATE=true
+  if [ "$SYSTEMD_TOKEN_UPDATE" = true ]; then
+    [ "$(grep -c '^\[Service\]$' "$1")" -eq 1 ] ||
+      fail "Cannot migrate TOKEN without a single [Service] section in $1."
+  fi
+}
+
+# EnvironmentFile values are read by systemd at process start rather than
+# exposed in the unit's Environment property. Keep the file private from birth;
+# an atomic rename also avoids truncating a previous credential on write failure.
+write_systemd_token() (
+  [ "$SYSTEMD_TOKEN_UPDATE" = true ] || exit 0
+  # A writable unit would let another account replace the credential consumer.
+  chmod go-w "$1"
+  token_env="$AGENT_DIR/token.env"
+  [ ! -d "$token_env" ] || fail "$token_env must be a regular file."
+  token_tmp=$(mktemp "$AGENT_DIR/.token.env.XXXXXX")
+  trap 'rm -f "$token_tmp"' 0
+  chmod 600 "$token_tmp"
+  chown root:root "$token_tmp"
+  # EnvironmentFile uses shell-style double quoting, without shell expansion.
+  escaped_token=$(printf '%s' "$TOKEN" | sed 's/[\\"$`]/\\&/g')
+  printf 'TOKEN="%s"\n' "$escaped_token" > "$token_tmp"
+  mv -f "$token_tmp" "$token_env"
+
+  # Keep other unit settings intact and remove the old public copy, including
+  # on a reinstall that did not explicitly supply -t.
+  if ! grep -qxF "EnvironmentFile=$token_env" "$1"; then
+    sed -i "/^\[Service\]$/a EnvironmentFile=$token_env" "$1"
+  fi
+  sed -i '/^Environment="TOKEN=/d' "$1"
+)
+
 # Generate FreeBSD rc service content
 generate_freebsd_rc_service() {
   cat <<'EOF'
@@ -838,6 +898,10 @@ KEY=$(printf '%s' "$KEY" | tr -d '\n')
 # TOKEN and HUB_URL are optional for backwards compatibility - no interactive prompts
 # They will be set as empty environment variables if not provided
 
+if ! is_alpine && ! is_openwrt && ! is_freebsd; then
+  read_systemd_token /etc/systemd/system/beszel-agent.service
+fi
+
 # Verify checksum
 if command -v sha256sum >/dev/null; then
   CHECK_CMD="sha256sum"
@@ -1343,7 +1407,9 @@ else
     # Detect NVIDIA devices and grant device permissions
     NVIDIA_DEVICES=$(detect_nvidia_devices)
 
-    cat >/etc/systemd/system/beszel-agent.service <<EOF
+    (
+      umask 022
+      cat >/etc/systemd/system/beszel-agent.service <<EOF
 [Unit]
 Description=Beszel Agent Service
 Wants=network-online.target
@@ -1352,7 +1418,6 @@ After=network-online.target
 [Service]
 Environment="PORT=$PORT"
 Environment="KEY=$KEY"
-Environment="TOKEN=$TOKEN"
 Environment="HUB_URL=$HUB_URL"
 # Environment="EXTRA_FILESYSTEMS=sdb"
 ExecStart=$BIN_PATH
@@ -1377,17 +1442,18 @@ $(if [ -n "$NVIDIA_DEVICES" ]; then printf "%b" "# NVIDIA device permissions\n${
 [Install]
 WantedBy=multi-user.target
 EOF
+    )
   else
     echo "Systemd service file already exists. Updating environment variables..."
     SED_PORT=$(escape_sed_replacement "$PORT")
     SED_KEY=$(escape_sed_replacement "$KEY")
-    SED_TOKEN=$(escape_sed_replacement "$TOKEN")
     SED_HUB_URL=$(escape_sed_replacement "$HUB_URL")
     [ "$PORT_PROVIDED" = "true" ] && sed -i "s|^Environment=\"PORT=.*\"|Environment=\"PORT=$SED_PORT\"|" /etc/systemd/system/beszel-agent.service
     [ "$KEY_PROVIDED" = "true" ] && sed -i "s|^Environment=\"KEY=.*\"|Environment=\"KEY=$SED_KEY\"|" /etc/systemd/system/beszel-agent.service
-    [ "$TOKEN_PROVIDED" = "true" ] && sed -i "s|^Environment=\"TOKEN=.*\"|Environment=\"TOKEN=$SED_TOKEN\"|" /etc/systemd/system/beszel-agent.service
     [ "$HUB_URL_PROVIDED" = "true" ] && sed -i "s|^Environment=\"HUB_URL=.*\"|Environment=\"HUB_URL=$SED_HUB_URL\"|" /etc/systemd/system/beszel-agent.service
   fi
+
+  write_systemd_token /etc/systemd/system/beszel-agent.service
 
   # Let the agent service (not the beszel user) read the system journal for service logs.
   # Admins can opt out with a drop-in that sets an empty SupplementaryGroups=.
