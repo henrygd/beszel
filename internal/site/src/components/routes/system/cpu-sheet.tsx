@@ -17,11 +17,13 @@ export default memo(function CpuCoresSheet({
 	dataEmpty,
 	grid,
 	maxValues,
+	cpuMhz,
 }: {
 	chartData: ChartData
 	dataEmpty: boolean
 	grid: boolean
 	maxValues: boolean
+	cpuMhz?: number
 }) {
 	const [cpuCoresOpen, setCpuCoresOpen] = useState(false)
 	const hasOpened = useRef(false)
@@ -179,6 +181,8 @@ export default memo(function CpuCoresSheet({
 								chartData={chartData}
 								maxToggled={maxValues}
 								legend={numCores < 10}
+								// scale to rated max clock, but let boost / overclock exceed it
+								domain={[0, (dataMax: number) => Math.max(dataMax, (cpuMhz ?? 0) / 1000)]}
 								dataPoints={Array.from({ length: latest?.cf?.length ?? 0 }).map((_, i) => ({
 									label: `CPU ${i}`,
 									dataKey: ({ stats }: SystemStatsRecord) => stats?.cf?.[i],

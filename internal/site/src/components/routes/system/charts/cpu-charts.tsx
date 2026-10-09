@@ -15,6 +15,7 @@ export function CpuChart({
 	showMax,
 	isLongerChart,
 	maxValues,
+	cpuMhz,
 }: {
 	chartData: ChartData
 	grid: boolean
@@ -22,6 +23,7 @@ export function CpuChart({
 	showMax: boolean
 	isLongerChart: boolean
 	maxValues: boolean
+	cpuMhz?: number
 }) {
 	const maxValSelect = isLongerChart ? <SelectAvgMax max={maxValues} /> : null
 
@@ -34,7 +36,7 @@ export function CpuChart({
 			cornerEl={
 				<div className="flex gap-2">
 					{maxValSelect}
-					<CpuCoresSheet chartData={chartData} dataEmpty={dataEmpty} grid={grid} maxValues={maxValues} />
+					<CpuCoresSheet chartData={chartData} dataEmpty={dataEmpty} grid={grid} maxValues={maxValues} cpuMhz={cpuMhz} />
 				</div>
 			}
 		>
