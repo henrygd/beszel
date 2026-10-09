@@ -73,11 +73,12 @@ func TestParseZpoolStatusOutput(t *testing.T) {
 
 	pools, err := parseZpoolStatusOutput(data)
 	require.NoError(t, err)
-	require.Len(t, pools, 2)
+	require.Len(t, pools, 3)
 
 	tank := pools[0]
 	assert.Equal(t, "tank", tank.Name)
 	assert.Equal(t, "ONLINE", tank.State)
+	assert.Empty(t, tank.Status)
 	assert.Equal(t, "FINISHED", tank.Scrub.State)
 	assert.Equal(t, "", tank.Scrub.Progress)
 	assert.Equal(t, uint64(0), tank.Scrub.Errors)
@@ -90,6 +91,7 @@ func TestParseZpoolStatusOutput(t *testing.T) {
 	rpool := pools[1]
 	assert.Equal(t, "rpool", rpool.Name)
 	assert.Equal(t, "DEGRADED", rpool.State)
+	assert.Equal(t, "One or more devices could not be used because the label is missing or invalid. Sufficient replicas exist for the pool to continue functioning in a degraded state.", rpool.Status)
 	assert.Equal(t, "SCANNING", rpool.Scrub.State)
 	assert.Equal(t, "10.00%", rpool.Scrub.Progress)
 	require.Len(t, rpool.Vdevs, 3)
@@ -97,6 +99,17 @@ func TestParseZpoolStatusOutput(t *testing.T) {
 	assert.Equal(t, uint64(1), rpool.Vdevs[2].ReadErrs)
 	assert.Equal(t, uint64(2), rpool.Vdevs[2].WriteErrs)
 	assert.Equal(t, uint64(3), rpool.Vdevs[2].ChecksumErrs)
+
+	// state: ONLINE with a status: message (ZFS-8000-9P) - issue #2490.
+	// The status text stops at action:/see: and the pool stays ONLINE.
+	pve := pools[2]
+	assert.Equal(t, "pve1storage", pve.Name)
+	assert.Equal(t, "ONLINE", pve.State)
+	assert.Equal(t, "One or more devices has experienced an unrecoverable error. An attempt was made to correct the error. Applications are unaffected.", pve.Status)
+	assert.Equal(t, "FINISHED", pve.Scrub.State)
+	require.Len(t, pve.Vdevs, 3)
+	assert.Equal(t, "raidz2-0", pve.Vdevs[0].Name)
+	assert.Equal(t, uint64(1), pve.Vdevs[2].ChecksumErrs)
 }
 
 func TestParseScanLine(t *testing.T) {
