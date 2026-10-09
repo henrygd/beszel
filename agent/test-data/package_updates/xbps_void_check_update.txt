@@ -1,0 +1,3 @@
+libgbm-26.2.4_1 update x86_64 https://void.sakamoto.pl/current 18488 6762
+libmariadbclient-12.3.2_2 update x86_64 https://void.sakamoto.pl/current 27749752 7203074
+libpipewire-1.6.9_1 update x86_64 https://void.sakamoto.pl/current 4895536 1155261
