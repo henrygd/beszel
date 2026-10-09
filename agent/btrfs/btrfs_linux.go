@@ -3,6 +3,7 @@
 package btrfs
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
 	"os"
@@ -21,6 +22,8 @@ var (
 	mountinfoPath   = "/proc/self/mountinfo"
 	mountUUID       = MountID
 	deviceSize      = ioctlDeviceSize
+	deviceInfo      = ioctlDeviceInfo
+	filesystemInfo  = ioctlFilesystemInfo
 	filesystemUsage = statfsUsage
 )
 
@@ -55,10 +58,15 @@ func readFilesystem(dir string, mounts map[string]string) (Filesystem, error) {
 			fs.Alloc += value
 		}
 	}
-	// devices/<name> links to the block device's sysfs directory.
+	// devices/<name> links to the block device's sysfs directory. Only
+	// present devices appear, so the count doubles as a health check.
 	devices, err := os.ReadDir(filepath.Join(dir, "devices"))
 	if err != nil && !errors.Is(err, os.ErrNotExist) {
 		return fs, err
+	}
+	attached := -1
+	if err == nil {
+		attached = len(devices)
 	}
 	mountpoint := mounts["uuid:"+fs.UUID]
 	if fs.Name == "" {
@@ -126,6 +134,11 @@ func readFilesystem(dir string, mounts map[string]string) (Filesystem, error) {
 		}
 		fs.Devices = append(fs.Devices, dev)
 	}
+	// Kernels without sysfs devinfo (pre-5.13, e.g. Synology DSM) expose the
+	// same device state through ioctls on the mountpoint.
+	if errors.Is(err, os.ErrNotExist) {
+		capacityAvailable, healthKnown = fs.readDevicesIoctl(mountpoint, attached)
+	}
 	// Use one capacity source for the whole filesystem: device IDs cannot be
 	// reliably matched to block-device names in sysfs. A partial ioctl result
 	// must not be added to the complete backing-device total.
@@ -136,7 +149,7 @@ func readFilesystem(dir string, mounts map[string]string) (Filesystem, error) {
 		fs.Health = "ONLINE"
 	}
 	fs.MountID = mountUUID(mountpoint)
-	if len(devices) == 1 && len(devids) == 1 && fs.Health == "ONLINE" {
+	if len(devices) == 1 && len(fs.Devices) == 1 && fs.Health == "ONLINE" {
 		fs.IODevice = devices[0].Name()
 	}
 	fs.Raw = true
@@ -149,6 +162,55 @@ func readFilesystem(dir string, mounts map[string]string) (Filesystem, error) {
 		fs.Name = filepath.Base(dir)
 	}
 	return fs, nil
+}
+
+// readDevicesIoctl determines member devices, capacity and health through the
+// BTRFS_IOC_FS_INFO and BTRFS_IOC_DEV_INFO ioctls when sysfs devinfo is
+// unavailable. It returns (capacityAvailable, healthKnown) for the shared
+// accounting in readFilesystem, and stays inert when the mountpoint cannot
+// be queried. attached is the sysfs devices count, or -1 when unknown.
+func (fs *Filesystem) readDevicesIoctl(mountpoint string, attached int) (capacityAvailable, healthKnown bool) {
+	info, err := filesystemInfo(mountpoint)
+	if err != nil || info.numDevices == 0 {
+		return false, false
+	}
+	var members []Device
+	var size, probed, missing uint64
+	for devid := uint64(1); devid <= info.maxID && probed < info.numDevices; devid++ {
+		dev, err := deviceInfo(mountpoint, devid)
+		if errors.Is(err, unix.ENODEV) {
+			continue // the devid was freed by a device remove/replace
+		}
+		if err != nil {
+			return false, false
+		}
+		probed++
+		size += dev.totalBytes
+		member := Device{Name: "devid " + strconv.FormatUint(devid, 10), State: "ONLINE"}
+		if dev.missing {
+			member.State = "MISSING"
+			missing++
+			fs.Health = "DEGRADED"
+		}
+		members = append(members, member)
+	}
+	if probed != info.numDevices {
+		return false, false // a device appeared or vanished mid-probe
+	}
+	// The kernel counts missing members too, so a number above the sysfs
+	// devices count means one is missing even if no path proved it. Members
+	// the missing one hides among can no longer be verified.
+	if attached >= 0 && uint64(attached)+missing < info.numDevices {
+		fs.Health = "DEGRADED"
+		for i := range members {
+			if members[i].State == "ONLINE" {
+				members[i].State = "UNKNOWN"
+			}
+		}
+	}
+	fs.Devices = members
+	fs.Size += size
+	return true, true
 }
 
 // mountpointsByDevice prefers UUID matches from mountinfo and retains source
@@ -176,16 +238,26 @@ func parseUint(s string) uint64 {
 	return n
 }
 
-// ioctlDeviceSize reads Btrfs's recorded device size, which can be smaller
-// than the block device after a filesystem resize. BTRFS_IOC_DEV_INFO is
-// _IOWR(0x94, 30, struct btrfs_ioctl_dev_info_args), a 4096-byte ABI structure.
-func ioctlDeviceSize(mountpoint string, devid uint64) (uint64, error) {
+// deviceInfoArgs is the subset of struct btrfs_ioctl_dev_info_args the agent
+// uses: the recorded capacity and whether the member is missing.
+type deviceInfoArgs struct {
+	totalBytes uint64
+	missing    bool
+}
+
+// ioctlDeviceInfo reads a member device's state with BTRFS_IOC_DEV_INFO,
+// _IOWR(0x94, 30, struct btrfs_ioctl_dev_info_args), a 4096-byte ABI
+// structure. Missing members answer the ioctl but report no device path
+// (dev->name is NULL, or the "<missing disk>" placeholder on kernels that
+// print via btrfs_dev_name); freed devids fail with ENODEV.
+func ioctlDeviceInfo(mountpoint string, devid uint64) (deviceInfoArgs, error) {
+	var info deviceInfoArgs
 	if mountpoint == "" {
-		return 0, errors.New("no accessible mountpoint")
+		return info, errors.New("no accessible mountpoint")
 	}
 	f, err := os.Open(mountpoint)
 	if err != nil {
-		return 0, err
+		return info, err
 	}
 	defer f.Close()
 	args := struct {
@@ -193,13 +265,27 @@ func ioctlDeviceSize(mountpoint string, devid uint64) (uint64, error) {
 		UUID       [16]byte
 		BytesUsed  uint64
 		TotalBytes uint64
-		Reserved   [4096 - 40]byte
+		Reserved   [3072 - 40]byte
+		Path       [1024]byte
 	}{Devid: devid}
 	_, _, errno := unix.Syscall(unix.SYS_IOCTL, f.Fd(), 0xd000941e, uintptr(unsafe.Pointer(&args)))
 	if errno != 0 {
-		return 0, errno
+		return info, errno
 	}
-	return args.TotalBytes, nil
+	info.totalBytes = args.TotalBytes
+	name := args.Path[:]
+	if end := bytes.IndexByte(name, 0); end >= 0 {
+		name = name[:end]
+	}
+	info.missing = len(name) == 0 || strings.HasPrefix(string(name), "<missing")
+	return info, nil
+}
+
+// ioctlDeviceSize reads Btrfs's recorded device size, which can be smaller
+// than the block device after a filesystem resize.
+func ioctlDeviceSize(mountpoint string, devid uint64) (uint64, error) {
+	info, err := ioctlDeviceInfo(mountpoint, devid)
+	return info.totalBytes, err
 }
 
 // The filesystem magic is unsigned even when Statfs_t.Type is int32.
@@ -222,19 +308,25 @@ func statfsUsage(path string) (used, available uint64, err error) {
 	return (stat.Blocks - min(stat.Blocks, stat.Bfree)) * blockSize, min(stat.Blocks, stat.Bavail) * blockSize, nil
 }
 
-// MountID returns the filesystem UUID via BTRFS_IOC_FS_INFO. Unlike statfs
-// f_fsid, this identity is shared by all subvolumes and bind mounts.
-func MountID(path string) string {
-	if path == "" {
-		return ""
-	}
+// fsInfoArgs is the subset of struct btrfs_ioctl_fs_info_args the agent
+// uses: the highest devid, the member count including missing devices, and
+// the filesystem UUID.
+type fsInfoArgs struct {
+	maxID      uint64
+	numDevices uint64
+	fsid       [16]byte
+}
+
+// ioctlFilesystemInfo reads BTRFS_IOC_FS_INFO for a mounted btrfs path.
+func ioctlFilesystemInfo(path string) (fsInfoArgs, error) {
+	var info fsInfoArgs
 	var stat unix.Statfs_t
 	if unix.Statfs(path, &stat) != nil || !isBtrfs(&stat) {
-		return ""
+		return info, errors.New("mountpoint is not Btrfs")
 	}
 	f, err := os.Open(path)
 	if err != nil {
-		return ""
+		return info, err
 	}
 	defer f.Close()
 	args := struct {
@@ -248,9 +340,23 @@ func MountID(path string) string {
 	request := uintptr(unix.FS_IOC_GETFLAGS&0xe0000000) | 0x0400941f
 	_, _, errno := unix.Syscall(unix.SYS_IOCTL, f.Fd(), request, uintptr(unsafe.Pointer(&args)))
 	if errno != 0 {
+		return info, errno
+	}
+	info.maxID, info.numDevices, info.fsid = args.MaxID, args.NumDevices, args.FSID
+	return info, nil
+}
+
+// MountID returns the filesystem UUID via BTRFS_IOC_FS_INFO. Unlike statfs
+// f_fsid, this identity is shared by all subvolumes and bind mounts.
+func MountID(path string) string {
+	if path == "" {
 		return ""
 	}
-	id := args.FSID
+	info, err := ioctlFilesystemInfo(path)
+	if err != nil {
+		return ""
+	}
+	id := info.fsid
 	return fmt.Sprintf("%x-%x-%x-%x-%x", id[:4], id[4:6], id[6:8], id[8:10], id[10:])
 }
 
