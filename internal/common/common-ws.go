@@ -30,6 +30,8 @@ const (
 	GetPackageUpdates
 	// Request recent logs for a systemd service from the agent.
 	GetSystemdLogs
+	// Sync speedtest configuration to agent
+	SyncSpeedtests
 	// Add new actions here...
 )
 

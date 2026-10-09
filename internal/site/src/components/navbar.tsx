@@ -8,6 +8,7 @@ import {
 	LogsIcon,
 	MenuIcon,
 	NetworkIcon,
+	GaugeIcon,
 	PlusIcon,
 	SearchIcon,
 	ServerIcon,
@@ -114,6 +115,13 @@ export default function Navbar() {
 								<Trans>Network Monitors</Trans>
 							</DropdownMenuItem>
 							<DropdownMenuItem
+								onClick={() => navigate(getPagePath($router, "speedtests"))}
+								className="flex items-center"
+							>
+								<GaugeIcon className="h-4 w-4 me-2.5" strokeWidth={1.5} />
+								<Trans>Speedtests</Trans>
+							</DropdownMenuItem>
+							<DropdownMenuItem
 								onClick={() => navigate(getPagePath($router, "settings", { name: "general" }))}
 								className="flex items-center"
 							>
@@ -197,6 +205,21 @@ export default function Navbar() {
 					</TooltipTrigger>
 					<TooltipContent>
 						<Trans>Network Monitors</Trans>
+					</TooltipContent>
+				</Tooltip>
+				<Tooltip>
+					<TooltipTrigger asChild>
+						<Link
+							href={getPagePath($router, "speedtests")}
+							className={cn("hidden md:grid", buttonVariants({ variant: "ghost", size: "icon" }))}
+							aria-label="Speedtests"
+							onMouseEnter={() => import("@/components/routes/speedtests")}
+						>
+							<GaugeIcon className="h-[1.2rem] w-[1.2rem]" strokeWidth={1.5} />
+						</Link>
+					</TooltipTrigger>
+					<TooltipContent>
+						<Trans>Speedtests</Trans>
 					</TooltipContent>
 				</Tooltip>
 				<ModeToggle />

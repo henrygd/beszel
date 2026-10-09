@@ -96,6 +96,7 @@ func TestNetworkMonitorReconnectSync(t *testing.T) {
 			t.Cleanup(func() {
 				sm.cancel()
 				_ = sm.RemoveSystem(sys.Id)
+				sm.updaters.Wait()
 				sm.smartFetchMap.StopCleaner()
 				sm.zfsFetchMap.StopCleaner()
 			})

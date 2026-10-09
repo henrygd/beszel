@@ -12,6 +12,7 @@ import {
 	LogsIcon,
 	MailIcon,
 	NetworkIcon,
+	GaugeIcon,
 	Server,
 	ServerIcon,
 	SettingsIcon,
@@ -132,6 +133,20 @@ export default memo(function CommandPalette({ open, setOpen }: { open: boolean; 
 							<NetworkIcon className="me-2 size-4" />
 							<span>
 								<Trans>Network Monitors</Trans>
+							</span>
+							<CommandShortcut>
+								<Trans>Page</Trans>
+							</CommandShortcut>
+						</CommandItem>
+						<CommandItem
+							onSelect={() => {
+								navigate(getPagePath($router, "speedtests"))
+								setOpen(false)
+							}}
+						>
+							<GaugeIcon className="me-2 size-4" />
+							<span>
+								<Trans>Speedtests</Trans>
 							</span>
 							<CommandShortcut>
 								<Trans>Page</Trans>

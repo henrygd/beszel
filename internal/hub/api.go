@@ -207,6 +207,10 @@ func (h *Hub) registerApiRoutes(se *core.ServeEvent) error {
 	apiAuth.GET("/systemd/logs", h.getSystemdLogs)
 	// get pending package updates
 	apiAuth.GET("/package-updates", h.getPackageUpdates)
+	// list Ookla speedtest servers for the speedtest server picker
+	apiAuth.GET("/speedtest/servers", h.getSpeedtestServers)
+	// run a speedtest now
+	apiAuth.POST("/speedtest/run", h.runSpeedtest).BindFunc(excludeReadOnlyRole)
 	// /containers routes
 	if enabled, _ := utils.GetEnv("CONTAINER_DETAILS"); enabled != "false" {
 		// get container logs
