@@ -356,15 +356,13 @@ func (dm *dockerManager) calculateNetworkStats(ctr *container.ApiInfo, apiStats 
 }
 
 // counterDelta returns the increase of a cumulative counter since the previous cycle.
-// If the counter went down (e.g. container restarted with a new network namespace),
-// it is treated as a reset and the current value is used as the delta.
+// If the counter went down, 0 is returned for this cycle. The counter is summed across
+// the container's interfaces, so a decrease may be a restart (all counters reset) or a
+// removed interface (others keep their totals), and the current value isn't a safe delta.
 func counterDelta(tracker *deltatracker.DeltaTracker[string, uint64], id string, current uint64) uint64 {
 	prev, ok := tracker.Previous(id)
-	if !ok {
+	if !ok || current < prev {
 		return 0
-	}
-	if current < prev {
-		return current
 	}
 	return current - prev
 }
