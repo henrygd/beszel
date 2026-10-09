@@ -3,6 +3,7 @@ package transport
 import (
 	"testing"
 
+	"github.com/fxamacker/cbor/v2"
 	"github.com/henrygd/beszel/internal/common"
 	"github.com/henrygd/beszel/internal/entities/smart"
 	"github.com/stretchr/testify/assert"
@@ -39,4 +40,16 @@ func TestUnmarshalSystemdLogsResponse(t *testing.T) {
 	var result string
 	require.NoError(t, UnmarshalResponse(response, common.GetSystemdLogs, &result))
 	assert.Equal(t, logs, result)
+}
+
+func TestUnmarshalEmptySmartDataResponse(t *testing.T) {
+	payload, err := cbor.Marshal(common.AgentResponse{SmartData: map[string]smart.SmartData{}})
+	require.NoError(t, err)
+	var response common.AgentResponse
+	require.NoError(t, cbor.Unmarshal(payload, &response))
+
+	var result smart.SmartDataResponse
+	require.NoError(t, UnmarshalResponse(response, common.GetSmartData, &result))
+	assert.NotNil(t, result.Data)
+	assert.Empty(t, result.Data)
 }

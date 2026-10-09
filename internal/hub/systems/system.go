@@ -176,6 +176,13 @@ func (sys *System) update() error {
 
 	data, err := sys.fetchDataFromAgent(options)
 	if err != nil {
+		// Ping so a slow agent's connection survives until the next poll. Ping()
+		// extends the read deadline without needing a reply (see ws.deadline).
+		// Once the agent has been silent for maxAgentSilence, stop pinging and let
+		// the deadline close what is likely a dead connection.
+		if sys.WsConn != nil && sys.WsConn.IsConnected() && sys.WsConn.TimeSinceLastMessage() < maxAgentSilence {
+			_ = sys.WsConn.Ping()
+		}
 		return err
 	}
 
@@ -804,6 +811,12 @@ func (sys *System) fetchDataFromAgent(options common.DataRequestOptions) (*syste
 // collection can legitimately take several seconds (e.g. a slow `zpool list`),
 // so this must be well above the request manager's 5s default.
 var wsDataRequestTimeout = 30 * time.Second
+
+// maxAgentSilence is how long a WebSocket agent may go without sending anything
+// before failed polls stop keeping its connection alive. An agent whose
+// collection runs past its own 120s deadline drops the connection itself, so a
+// live agent always answers within interval + 120s.
+var maxAgentSilence = 3 * time.Minute
 
 func (sys *System) fetchDataViaWebSocket(options common.DataRequestOptions) (*system.CombinedData, error) {
 	if sys.WsConn == nil || !sys.WsConn.IsConnected() {
