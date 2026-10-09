@@ -185,18 +185,26 @@ const timelineScale = 100
 // happens once the fetch gives up, which is interval + wsDataRequestTimeout into
 // the cycle, so the read deadline has to outlast that. With a deadline below
 // that sum the connection is already closed when the ping would go out, which is
-// the reconnect loop from #2294.
+// the reconnect loop from #2294. An agent silent for longer than
+// maxAgentSilence is no longer pinged, so its connection is allowed to expire.
 func TestSlowAgentKeepsConnectionAcrossPolls(t *testing.T) {
 	tick := time.Duration(interval) * time.Millisecond / timelineScale
 
 	tests := []struct {
 		name          string
 		deadline      time.Duration
+		polls         int
 		wantConnected bool
 	}{
-		{"production deadline outlasts a failed poll", ws.Deadline() / timelineScale, true},
+		// The first failed poll shows the ping lands, the second shows the ping
+		// keeps re-arming the deadline.
+		{"production deadline outlasts a failed poll", ws.Deadline() / timelineScale, 2, true},
 		// 70s was the old value and sits below the 90s a failed poll needs.
-		{"deadline below interval plus request timeout", 70 * time.Second / timelineScale, false},
+		{"deadline below interval plus request timeout", 70 * time.Second / timelineScale, 2, false},
+		// The third failed poll ends 210s after the last message, past
+		// maxAgentSilence, so it skips the ping and the deadline closes the
+		// connection before the fifth poll.
+		{"agent silent past maxAgentSilence", ws.Deadline() / timelineScale, 5, false},
 	}
 
 	for _, tc := range tests {
@@ -206,6 +214,9 @@ func TestSlowAgentKeepsConnectionAcrossPolls(t *testing.T) {
 			previousTimeout := wsDataRequestTimeout
 			wsDataRequestTimeout = 30 * time.Second / timelineScale
 			t.Cleanup(func() { wsDataRequestTimeout = previousTimeout })
+			previousSilence := maxAgentSilence
+			maxAgentSilence = 3 * time.Minute / timelineScale
+			t.Cleanup(func() { maxAgentSilence = previousSilence })
 
 			connections := make(chan *ws.WsConn, 1)
 			// The real handler: OnClose has to run, or a dropped connection
@@ -244,9 +255,7 @@ func TestSlowAgentKeepsConnectionAcrossPolls(t *testing.T) {
 			require.NoError(t, err, "the first poll must succeed")
 			pollZero := time.Now()
 
-			// Two failed polls: the first shows the ping lands, the second shows
-			// the ping keeps re-arming the deadline.
-			for poll := 1; poll <= 2; poll++ {
+			for poll := 1; poll <= tc.polls; poll++ {
 				time.Sleep(time.Until(pollZero.Add(time.Duration(poll) * tick)))
 				if !sys.WsConn.IsConnected() {
 					break

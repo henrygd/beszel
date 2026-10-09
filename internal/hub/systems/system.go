@@ -174,24 +174,11 @@ func (sys *System) update() error {
 
 	data, err := sys.fetchDataFromAgent(options)
 	if err != nil {
-		// Keep the WebSocket alive even though this fetch failed.
-		//
-		// Only a message from the agent resets the read deadline, and an agent
-		// still collecting sends nothing. Without this ping the deadline expires
-		// between polls, the hub closes the connection, the agent reconnects,
-		// collects slowly again, and the cycle repeats. Pinging here is the same
-		// move handlePaused already makes for a paused system, and Ping() pushes
-		// the deadline out as it sends, so it works without an answer, which
-		// matters because a collecting agent cannot answer.
-		//
-		// This is why the deadline has to exceed interval + wsDataRequestTimeout:
-		// the ping only happens once the fetch gives up. See ws.deadline.
-		//
-		// The system is still reported down: that comes from the error we
-		// return. Only the connection survives, so recovery costs no reconnect.
-		// A failed ping needs no handling either, since a connection that
-		// cannot be pinged runs into its deadline anyway.
-		if sys.WsConn != nil && sys.WsConn.IsConnected() {
+		// Ping so a slow agent's connection survives until the next poll. Ping()
+		// extends the read deadline without needing a reply (see ws.deadline).
+		// Once the agent has been silent for maxAgentSilence, stop pinging and let
+		// the deadline close what is likely a dead connection.
+		if sys.WsConn != nil && sys.WsConn.IsConnected() && sys.WsConn.TimeSinceLastMessage() < maxAgentSilence {
 			_ = sys.WsConn.Ping()
 		}
 		return err
@@ -819,6 +806,12 @@ func (sys *System) fetchDataFromAgent(options common.DataRequestOptions) (*syste
 // collection can legitimately take several seconds (e.g. a slow `zpool list`),
 // so this must be well above the request manager's 5s default.
 var wsDataRequestTimeout = 30 * time.Second
+
+// maxAgentSilence is how long a WebSocket agent may go without sending anything
+// before failed polls stop keeping its connection alive. An agent whose
+// collection runs past its own 120s deadline drops the connection itself, so a
+// live agent always answers within interval + 120s.
+var maxAgentSilence = 3 * time.Minute
 
 func (sys *System) fetchDataViaWebSocket(options common.DataRequestOptions) (*system.CombinedData, error) {
 	if sys.WsConn == nil || !sys.WsConn.IsConnected() {
