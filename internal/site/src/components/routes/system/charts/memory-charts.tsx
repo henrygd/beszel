@@ -7,6 +7,7 @@ import type { ChartData, SystemStatsRecord } from "@/types"
 import { ChartCard, FilterBar, SelectAvgMax } from "../chart-card"
 import { dockerOrPodman } from "../chart-data"
 import { decimalString, formatBytes, toFixedFloat } from "@/lib/utils"
+import { hasZfsArcStats } from "@/lib/zfs"
 
 export function MemoryChart({
 	chartData,
@@ -25,6 +26,14 @@ export function MemoryChart({
 }) {
 	const maxValSelect = isLongerChart ? <SelectAvgMax max={maxValues} /> : null
 	const totalMem = toFixedFloat(chartData.systemStats.at(-1)?.stats.m ?? 0, 1)
+	// Hosts without ZFS never report ARC memory, so the series is omitted rather than drawn empty.
+	const zfsArcDataPoint = {
+		label: "ZFS ARC",
+		dataKey: ({ stats }: SystemStatsRecord) => (showMax ? null : stats?.mz),
+		color: "hsla(175 60% 45% / 0.8)",
+		opacity: 0.5,
+		order: 2,
+	}
 
 	return (
 		<ChartCard
@@ -58,13 +67,6 @@ export function MemoryChart({
 						order: 3,
 					},
 					{
-						label: "ZFS ARC",
-						dataKey: ({ stats }) => (showMax ? null : stats?.mz),
-						color: "hsla(175 60% 45% / 0.8)",
-						opacity: 0.5,
-						order: 2,
-					},
-					{
 						label: t`Cache / Buffers`,
 						dataKey: ({ stats }) => (showMax ? null : stats?.mb),
 						color: "hsla(160 60% 45% / 0.5)",
@@ -72,6 +74,7 @@ export function MemoryChart({
 						stackId: "1",
 						order: 1,
 					},
+					...(hasZfsArcStats(chartData.systemStats) ? [zfsArcDataPoint] : []),
 				]}
 			/>
 		</ChartCard>
