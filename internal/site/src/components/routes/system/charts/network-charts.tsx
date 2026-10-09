@@ -164,6 +164,7 @@ export function NetworkErrorsChart({ chartData, grid, dataEmpty, maxValues, syst
 				tickFormatter={packetTickFormatter}
 				contentFormatter={packetContentFormatter}
 				legend={true}
+				showTotal={true}
 			/>
 		</ChartCard>
 	)
