@@ -35,6 +35,7 @@ type SensorConfig struct {
 	hasWildcards   bool
 	skipCollection bool
 	skipGPU        bool
+	skipFans       bool
 	sensorShadow   string
 	firstRun       bool
 }
@@ -47,7 +48,17 @@ func (a *Agent) newSensorConfig() *SensorConfig {
 	sensorsTimeout, _ := utils.GetEnv("SENSORS_TIMEOUT")
 	skipGPU, _ := utils.GetEnv("SKIP_GPU")
 
-	return a.newSensorConfigWithEnv(primarySensor, sysSensors, sensorsEnvVal, sensorsTimeout, skipCollection, skipGPU == "true")
+	// LXC/VM guests only see the host's sensors or synthetic ones, so skip
+	// temperatures and fans unless SYS_SENSORS points at a real sysfs tree.
+	skipGuest := sysSensors == "" && isVirtualGuest()
+	if skipGuest {
+		slog.Info("Virtual guest detected, skipping temperatures and fans")
+		skipCollection = true
+	}
+
+	config := a.newSensorConfigWithEnv(primarySensor, sysSensors, sensorsEnvVal, sensorsTimeout, skipCollection, skipGPU == "true")
+	config.skipFans = skipGuest
+	return config
 }
 
 // newSensorConfigWithEnv creates a SensorConfig with the provided environment variables
