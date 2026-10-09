@@ -42,15 +42,19 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 
 import { RawCapacityLabel } from "./raw-capacity-label"
 
-const ZFS_POOL_FIELDS = "id,system,name,display_name,health,status,size,alloc,free,raw,scrub,details_updated,updated"
+const ZFS_POOL_FIELDS = "id,system,name,display_name,health,size,alloc,free,raw,scrub,vdevs,details_updated,updated"
 
-/** Maps a zpool health string to a Badge variant. A pool that carries a
- * `zpool status` advisory message (e.g. corrected device errors) is shown
- * as a warning even when its state is ONLINE. */
-function healthVariant(health: string, hasStatus = false): "success" | "warning" | "danger" | "outline" {
+/** Reports whether any vdev has nonzero read, write, or checksum errors. */
+function hasVdevErrors(vdevs?: ZfsVdev[] | null): boolean {
+	return !!vdevs?.some((vdev) => vdev.readErrs || vdev.writeErrs || vdev.checksumErrs)
+}
+
+/** Maps a zpool health string to a Badge variant. An ONLINE pool with vdev
+ * error counters (e.g. corrected checksum errors) is shown as a warning. */
+function healthVariant(health: string, hasErrors = false): "success" | "warning" | "danger" | "outline" {
 	switch (health) {
 		case "ONLINE":
-			return hasStatus ? "warning" : "success"
+			return hasErrors ? "warning" : "success"
 		case "DEGRADED":
 			return "warning"
 		case "FAULTED":
@@ -117,12 +121,7 @@ const columns: ColumnDef<ZfsPoolRecord>[] = [
 		header: ({ column }) => <HeaderButton column={column} name={t`Health`} Icon={ActivityIcon} />,
 		cell: ({ getValue, row }) => {
 			const health = (getValue() as string) || ""
-			const status = row.original.status
-			return (
-				<Badge variant={healthVariant(health, !!status)} title={status || undefined}>
-					{health || t`Unknown`}
-				</Badge>
-			)
+			return <Badge variant={healthVariant(health, hasVdevErrors(row.original.vdevs))}>{health || t`Unknown`}</Badge>
 		},
 	},
 	{
@@ -361,7 +360,7 @@ function PoolSheet({
 	}, [open, poolId])
 
 	const health = pool?.health || ""
-	const healthVariantValue = healthVariant(health, !!pool?.status)
+	const healthVariantValue = healthVariant(health, hasVdevErrors(pool?.vdevs))
 	const HealthIcon =
 		healthVariantValue === "success"
 			? CheckCircleIcon
