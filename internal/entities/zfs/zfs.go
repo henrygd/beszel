@@ -36,6 +36,7 @@ type PoolDetail struct {
 	Raw         bool       `json:"raw,omitempty"`
 	Name        string     `json:"name"`
 	Health      string     `json:"health,omitempty"`
+	Status      string     `json:"status,omitempty"`
 	Size        uint64     `json:"size,omitempty"`  // bytes
 	Alloc       uint64     `json:"alloc,omitempty"` // bytes
 	Free        uint64     `json:"free,omitempty"`  // bytes

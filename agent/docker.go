@@ -349,8 +349,8 @@ func (dm *dockerManager) calculateNetworkStats(ctr *container.ApiInfo, apiStats 
 	recvTracker.Set(ctr.IdShort, total_recv)
 
 	// Get deltas (bytes since last measurement)
-	sent_delta_raw := sentTracker.Delta(ctr.IdShort)
-	recv_delta_raw := recvTracker.Delta(ctr.IdShort)
+	sent_delta_raw := counterDelta(sentTracker, ctr.IdShort, total_sent)
+	recv_delta_raw := counterDelta(recvTracker, ctr.IdShort, total_recv)
 
 	// Calculate bytes per second using per-cache-time read time to avoid
 	// interference between different cache intervals (e.g. 1000ms vs 60000ms)
@@ -376,6 +376,18 @@ func (dm *dockerManager) calculateNetworkStats(ctr *container.ApiInfo, apiStats 
 	}
 
 	return sent_delta, recv_delta
+}
+
+// counterDelta returns the increase of a cumulative counter since the previous cycle.
+// If the counter went down, 0 is returned for this cycle. The counter is summed across
+// the container's interfaces, so a decrease may be a restart (all counters reset) or a
+// removed interface (others keep their totals), and the current value isn't a safe delta.
+func counterDelta(tracker *deltatracker.DeltaTracker[string, uint64], id string, current uint64) uint64 {
+	prev, ok := tracker.Previous(id)
+	if !ok || current < prev {
+		return 0
+	}
+	return current - prev
 }
 
 // validateCpuPercentage checks if CPU percentage is within valid range
