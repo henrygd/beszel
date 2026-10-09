@@ -61,7 +61,7 @@ func newMonitorTaskFromExisting(config monitor.Config, existing *monitorTask) *m
 }
 
 // runProbe shares an in-flight check between scheduled and immediate requests.
-// Every completed check contributes exactly one sample, regardless of how many
+// Every completed check contributes its samples once, regardless of how many
 // callers were waiting for it. No task or history lock is held during network I/O.
 func (task *monitorTask) runProbe(probe monitorProbe) *monitor.Result {
 	task.runMu.Lock()
@@ -86,14 +86,13 @@ func (task *monitorTask) runProbe(probe monitorProbe) *monitor.Result {
 	task.runMu.Unlock()
 
 	generation, _ := task.resumeGuard.snapshot()
-	responseUs, err := probe(task.ctx, task.config)
+	responses, err := probe(task.ctx, task.config)
 	var logFailure bool
 	task.runMu.Lock()
 	currentGeneration, _ := task.resumeGuard.snapshot()
 	if task.ctx.Err() == nil && generation == currentGeneration {
 		now := time.Now()
 		if err != nil {
-			responseUs = -1
 			logAt := now.UnixNano()
 			if task.lastFailureLog == 0 || logAt < task.lastFailureLog || logAt-task.lastFailureLog >= int64(monitorFailureLogInterval) {
 				logFailure = true
@@ -102,7 +101,15 @@ func (task *monitorTask) runProbe(probe monitorProbe) *monitor.Result {
 		} else {
 			task.lastFailureLog = 0
 		}
-		result := task.history.record(monitorSample{responseUs: responseUs, timestamp: now})
+		// A failed probe counts every attempt as lost, or one loss if it reported none.
+		samples := make([]monitorSample, max(len(responses), 1))
+		for i := range samples {
+			samples[i] = monitorSample{responseUs: -1, timestamp: now}
+			if err == nil && i < len(responses) {
+				samples[i].responseUs = responses[i]
+			}
+		}
+		result := task.history.recordAll(samples)
 		run.result = &result
 	}
 
