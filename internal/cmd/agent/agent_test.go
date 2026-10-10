@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/henrygd/beszel/agent"
+	"github.com/henrygd/beszel/agent/utils"
 
 	"github.com/spf13/pflag"
 	"github.com/stretchr/testify/assert"
@@ -274,10 +275,14 @@ func TestParseFlags(t *testing.T) {
 		name     string
 		args     []string
 		expected cmdOptions
+		envHeaders  string
+		expectedHeaders string
 	}{
 		{
 			name: "no flags",
 			args: []string{"cmd"},
+			envHeaders:  "X-Env: value",
+			expectedHeaders: "X-Env: value",
 			expected: cmdOptions{
 				key:    "",
 				listen: "",
@@ -339,6 +344,24 @@ func TestParseFlags(t *testing.T) {
 				listen: ":8080",
 			},
 		},
+		{
+			name:        "additional headers override environment",
+			args:        []string{"cmd", "--additional_headers", "X-One: 1, X-Two: 2"},
+			expected:    cmdOptions{additionalHeaders: "X-One: 1, X-Two: 2"},
+			envHeaders:  "X-Env: value",
+			expectedHeaders: "X-One: 1, X-Two: 2",
+		},
+		{
+			name:        "additional headers single dash with equals",
+			args:        []string{"cmd", "-additional_headers=X-One: 1"},
+			expected:    cmdOptions{additionalHeaders: "X-One: 1"},
+			expectedHeaders: "X-One: 1",
+		},
+		{
+			name:       "empty additional headers clear environment",
+			args:       []string{"cmd", "--additional_headers="},
+			envHeaders: "X-Env: value",
+		},
 	}
 
 	for _, tt := range tests {
@@ -346,12 +369,16 @@ func TestParseFlags(t *testing.T) {
 			// Reset flags for each test
 			pflag.CommandLine = pflag.NewFlagSet(tt.args[0], pflag.ExitOnError)
 			os.Args = tt.args
+			t.Setenv("ADDITIONAL_HEADERS", "X-Unprefixed: value")
+			t.Setenv("BESZEL_AGENT_ADDITIONAL_HEADERS", tt.envHeaders)
 
 			var opts cmdOptions
 			opts.parse()
 			pflag.Parse()
 
 			assert.Equal(t, tt.expected, opts)
+			headers, _ := utils.GetEnv("ADDITIONAL_HEADERS")
+			assert.Equal(t, tt.expectedHeaders, headers)
 		})
 	}
 }
