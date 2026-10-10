@@ -242,16 +242,17 @@ msgstr "¿Estás seguro?"
 msgid "Automatic copy requires a secure context."
 msgstr "La copia automática requiere un contexto seguro."
 
-#: src/components/routes/system/storage-pools-table.tsx
-msgctxt "Disk space available"
-msgid "Available"
-msgstr "Disponible"
-
 #. Package version available to install
 #: src/components/routes/system/package-updates-table.tsx
 msgid "Available"
 msgstr "Disponible"
 
+#: src/components/routes/system/storage-pools-table.tsx
+msgctxt "Disk space available"
+msgid "Available"
+msgstr "Disponible"
+
+#: src/components/routes/system/chart-card.tsx
 #: src/components/routes/system/chart-card.tsx
 msgid "Average"
 msgstr "Promedio"
@@ -465,6 +466,10 @@ msgstr "Opciones de gráficos"
 msgid "Chart width"
 msgstr "Ancho del gráfico"
 
+#: src/components/charts/chart-presentation.tsx
+msgid "Charts"
+msgstr ""
+
 #: src/components/login/forgot-pass-form.tsx
 msgid "Check {email} for a reset link."
 msgstr "Revisa {email} para un enlace de restablecimiento."
@@ -647,6 +652,10 @@ msgstr "Copiar YAML"
 msgctxt "Core system metrics"
 msgid "Core"
 msgstr "Núcleo"
+
+#: src/components/charts/chart-presentation.tsx
+msgid "Could not save the view. Try again."
+msgstr ""
 
 #: src/components/containers-table/containers-table-columns.tsx
 #: src/components/systemd-table/systemd-table-columns.tsx
@@ -1042,6 +1051,7 @@ msgstr "Ventiladores"
 #: src/components/network-monitors-table/network-monitors-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/system/chart-card.tsx
+#: src/components/routes/system/chart-card.tsx
 #: src/components/routes/system/package-updates-table.tsx
 #: src/components/routes/system/smart-table.tsx
 #: src/components/routes/system/storage-pools-table.tsx
@@ -1327,6 +1337,14 @@ msgstr "Máx. 1 min"
 msgid "Max 1h"
 msgstr "Máx. 1 h"
 
+#: src/components/charts/chart-table.tsx
+msgid "Measurement time (local time zone)"
+msgstr ""
+
+#: src/components/charts/chart-table.tsx
+msgid "Measurements"
+msgstr ""
+
 #: src/components/containers-table/containers-table-columns.tsx
 #: src/components/routes/system/info-bar.tsx
 #: src/components/systemd-table/systemd-table-columns.tsx
@@ -1352,6 +1370,10 @@ msgstr "Uso de memoria"
 #: src/components/routes/system/charts/memory-charts.tsx
 msgid "Memory usage of containers"
 msgstr "Uso de memoria de los contenedores"
+
+#: src/components/charts/chart-presentation.tsx
+msgid "Metric view"
+msgstr ""
 
 #: src/components/network-monitors-table/network-monitors-columns.tsx
 #: src/components/network-monitors-table/network-monitors-columns.tsx
@@ -1434,10 +1456,23 @@ msgstr "Tráfico de red de interfaces públicas"
 msgid "Network unit"
 msgstr "Unidad de red"
 
+#: src/components/charts/chart-presentation.tsx
+#: src/components/charts/chart-table.tsx
+msgid "New data available. The table stays unchanged until you refresh it."
+msgstr ""
+
+#: src/components/charts/chart-table.tsx
+msgid "Next page"
+msgstr ""
+
 #: src/components/systemd-table/systemd-table.tsx
 #: src/components/systemd-table/systemd-table.tsx
 #: src/components/systemd-table/systemd-table.tsx
 msgid "No"
+msgstr ""
+
+#: src/components/charts/chart-table.tsx
+msgid "No data"
 msgstr ""
 
 #: src/components/routes/system/storage-pools-table.tsx
@@ -1716,6 +1751,10 @@ msgstr "Utilización precisa en el momento registrado"
 msgid "Preferred Language"
 msgstr "Idioma preferido"
 
+#: src/components/charts/chart-table.tsx
+msgid "Previous page"
+msgstr ""
+
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Process started"
 msgstr "Proceso iniciado"
@@ -1784,6 +1823,10 @@ msgstr "Recibido"
 msgid "Refresh"
 msgstr "Actualizar"
 
+#: src/components/charts/chart-table.tsx
+msgid "Refresh table"
+msgstr ""
+
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Relationships"
 msgstr "Relaciones"
@@ -1849,6 +1892,15 @@ msgstr "Raíz"
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Rotate token"
 msgstr "Rotar token"
+
+#. placeholder {0}: snapshot.rows.length ? range.start + 1 : 0
+#. placeholder {1}: range.end
+#. placeholder {2}: snapshot.rows.length
+#. placeholder {3}: range.page + 1
+#. placeholder {4}: range.pages
+#: src/components/charts/chart-table.tsx
+msgid "Rows {0}–{1} of {2}; page {3} of {4}"
+msgstr ""
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/system/package-updates-table.tsx
@@ -2036,6 +2088,10 @@ msgstr "Configuración SMTP"
 msgid "Sort By"
 msgstr "Ordenar por"
 
+#: src/components/charts/chart-table.tsx
+msgid "Stable table snapshot."
+msgstr ""
+
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Start Time"
@@ -2115,6 +2171,14 @@ msgstr "Los sistemas pueden ser gestionados en un archivo <0>config.yml</0> dent
 #: src/components/systems-table/systems-table.tsx
 msgid "Table"
 msgstr "Tabla"
+
+#: src/components/charts/chart-table.tsx
+msgid "Table pages"
+msgstr ""
+
+#: src/components/charts/chart-presentation.tsx
+msgid "Tables"
+msgstr ""
 
 #: src/components/routes/system/info-bar.tsx
 msgctxt "Tabs system layout option"
@@ -2196,6 +2260,10 @@ msgstr "Rendimiento del pool de almacenamiento {displayName}"
 msgid "Time format"
 msgstr "Formato de hora"
 
+#: src/components/charts/chart-time-select.tsx
+msgid "Time period"
+msgstr ""
+
 #: src/components/routes/settings/notifications.tsx
 msgid "To email(s)"
 msgstr "A correo(s)"
@@ -2221,6 +2289,11 @@ msgstr "Los tokens y las huellas digitales se utilizan para autenticar las conex
 
 #: src/components/ui/chart.tsx
 #: src/components/ui/chart.tsx
+msgid "Total"
+msgstr ""
+
+#: src/components/charts/chart-table.tsx
+msgctxt "Metric table total"
 msgid "Total"
 msgstr ""
 
@@ -2335,6 +2408,10 @@ msgstr "Archivo de unidad"
 #: src/components/routes/settings/general.tsx
 msgid "Unit preferences"
 msgstr "Preferencias de unidad"
+
+#: src/components/charts/chart-table.tsx
+msgid "Units are shown with each value. Total sums the available series; missing values are not zero."
+msgstr ""
 
 #: src/components/command-palette.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx

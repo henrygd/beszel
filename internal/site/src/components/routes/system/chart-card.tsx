@@ -1,3 +1,5 @@
+import { ChartTitleContext } from "@/components/charts/chart-table"
+import { useChartPresentation } from "@/components/charts/chart-presentation"
 import { t } from "@lingui/core/macro"
 import { Trans, useLingui } from "@lingui/react/macro"
 import { useStore } from "@nanostores/react"
@@ -43,6 +45,7 @@ export function FilterBar({ store = $containerFilter }: { store?: typeof $contai
 	return (
 		<>
 			<Input
+				aria-label={t`Filter...`}
 				placeholder={t`Filter...`}
 				className="ps-4 pe-8 w-full sm:w-44"
 				onChange={handleChange}
@@ -68,7 +71,7 @@ export const SelectAvgMax = memo(({ max }: { max: boolean }) => {
 	const Icon = max ? ChartMax : ChartAverage
 	return (
 		<Select value={max ? "max" : "avg"} onValueChange={(e) => $maxValues.set(e === "max")}>
-			<SelectTrigger className="relative ps-10 pe-5 w-full sm:w-44">
+			<SelectTrigger aria-label={t`Average`} className="relative ps-10 pe-5 w-full sm:w-44">
 				<Icon className="h-4 w-4 absolute start-4 top-1/2 -translate-y-1/2 opacity-85" />
 				<SelectValue />
 			</SelectTrigger>
@@ -104,12 +107,13 @@ export function ChartCard({
 	className?: string
 }) {
 	const { isIntersecting, ref } = useIntersectionObserver()
+	const tables = useChartPresentation() === "tables"
 
 	return (
 		<Card
 			className={cn(
 				"px-3 py-5 sm:py-6 sm:px-6 odd:last-of-type:col-span-full min-h-full",
-				{ "col-span-full": !grid },
+				{ "col-span-full": tables || !grid, "min-w-0": tables },
 				className
 			)}
 			ref={ref}
@@ -119,14 +123,18 @@ export function ChartCard({
 				<CardDescription>{description}</CardDescription>
 				{cornerEl && <div className="grid sm:justify-end sm:absolute sm:top-0 sm:end-0 my-1 sm:my-0">{cornerEl}</div>}
 			</CardHeader>
-			<div className={cn("ps-0 -me-1 -ms-3.5 relative group", legend ? "h-54 md:h-56" : "h-48 md:h-52")}>
-				{
+			<div
+				className={
+					tables ? "min-w-0" : cn("ps-0 -me-1 -ms-3.5 relative group", legend ? "h-54 md:h-56" : "h-48 md:h-52")
+				}
+			>
+				{!tables && (
 					<Spinner
 						msg={empty ? t`Waiting for enough records to display` : undefined}
 						className="group-has-[.opacity-100]:invisible duration-100"
 					/>
-				}
-				{isIntersecting && children}
+				)}
+				<ChartTitleContext.Provider value={title}>{(tables || isIntersecting) && children}</ChartTitleContext.Provider>
 			</div>
 		</Card>
 	)

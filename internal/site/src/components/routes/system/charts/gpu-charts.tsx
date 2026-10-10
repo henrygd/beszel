@@ -2,6 +2,7 @@ import { t } from "@lingui/core/macro"
 import { Fragment, type ReactNode, useRef, useMemo } from "react"
 import AreaChartDefault, { type DataPoint } from "@/components/charts/area-chart"
 import LineChartDefault from "@/components/charts/line-chart"
+import { withChartFallback } from "@/components/charts/table-model"
 import { Unit } from "@/lib/enums"
 import { decimalString, formatBytes, toFixedFloat } from "@/lib/utils"
 import type { ChartData, GPUData, SystemStatsRecord } from "@/types"
@@ -67,10 +68,10 @@ export function GpuPowerChart({
 		return sorted.map(
 			(entry, i): DataPoint => ({
 				label: entry.label,
-				dataKey: (data: SystemStatsRecord) => {
+				dataKey: withChartFallback((data: SystemStatsRecord) => {
 					const gpu = data.stats?.g?.[entry.gpuId]
-					return entry.isPackage ? (gpu?.pp ?? 0) : (gpu?.p ?? 0)
-				},
+					return entry.isPackage ? gpu?.pp : gpu?.p
+				}),
 				color: `hsl(${226 + (((i * 360) / sorted.length) % 360)}, 65%, 52%)`,
 				opacity: 1,
 			})
@@ -149,7 +150,7 @@ export function GpuCharts({
 										dataPoints={[
 											{
 												label: t`Usage`,
-												dataKey: ({ stats }) => stats?.g?.[id]?.u ?? 0,
+												dataKey: withChartFallback(({ stats }: SystemStatsRecord) => stats?.g?.[id]?.u),
 												color: 1,
 												opacity: 0.35,
 											},
@@ -171,7 +172,7 @@ export function GpuCharts({
 											dataPoints={[
 												{
 													label: t`Usage`,
-													dataKey: ({ stats }) => stats?.g?.[id]?.mu ?? 0,
+													dataKey: withChartFallback(({ stats }: SystemStatsRecord) => stats?.g?.[id]?.mu),
 													color: 2,
 													opacity: 0.25,
 												},
@@ -221,7 +222,7 @@ function GpuEnginesChart({ chartData }: { chartData: ChartData }) {
 			gpuId: gId,
 			dataPoints: engineNames.map((engine, i) => ({
 				label: engine,
-				dataKey: ({ stats }: SystemStatsRecord) => stats?.g?.[gId]?.e?.[engine] ?? 0,
+				dataKey: withChartFallback(({ stats }: SystemStatsRecord) => stats?.g?.[gId]?.e?.[engine]),
 				color: `hsl(${140 + (((i * 360) / engineNames.length) % 360)}, 65%, 52%)`,
 				opacity: 0.35,
 			})),

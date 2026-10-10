@@ -1,3 +1,4 @@
+import { useChartPresentation } from "@/components/charts/chart-presentation"
 import { lazy } from "react"
 import { useIntersectionObserver } from "@/lib/use-intersection-observer"
 import { cn } from "@/lib/utils"
@@ -61,10 +62,11 @@ export function LazyPackageUpdatesTable({ systemId, counts }: { systemId: string
 const NetworkMonitorsTable = lazy(() => import("../../network-monitors-table/network-monitors-table"))
 
 export function LazyNetworkMonitorsTable({ systemId }: { systemId: string }) {
+	const tables = useChartPresentation() === "tables"
 	const { isIntersecting, ref } = useIntersectionObserver({ rootMargin: "90px" })
 	return (
 		<div ref={ref} className={cn(isIntersecting && "contents")}>
-			{isIntersecting && <SystemNetworkMonitorsTable systemId={systemId} />}
+			{(tables || isIntersecting) && <SystemNetworkMonitorsTable systemId={systemId} />}
 		</div>
 	)
 }

@@ -242,16 +242,17 @@ msgstr "您確定嗎？"
 msgid "Automatic copy requires a secure context."
 msgstr "自動複製需要安全的上下文。"
 
-#: src/components/routes/system/storage-pools-table.tsx
-msgctxt "Disk space available"
-msgid "Available"
-msgstr "可用"
-
 #. Package version available to install
 #: src/components/routes/system/package-updates-table.tsx
 msgid "Available"
 msgstr "可用"
 
+#: src/components/routes/system/storage-pools-table.tsx
+msgctxt "Disk space available"
+msgid "Available"
+msgstr "可用"
+
+#: src/components/routes/system/chart-card.tsx
 #: src/components/routes/system/chart-card.tsx
 msgid "Average"
 msgstr "平均"
@@ -465,6 +466,10 @@ msgstr "圖表選項"
 msgid "Chart width"
 msgstr "圖表寬度"
 
+#: src/components/charts/chart-presentation.tsx
+msgid "Charts"
+msgstr ""
+
 #: src/components/login/forgot-pass-form.tsx
 msgid "Check {email} for a reset link."
 msgstr "檢查 {email} 以獲取重置鏈接。"
@@ -647,6 +652,10 @@ msgstr "複製YAML"
 msgctxt "Core system metrics"
 msgid "Core"
 msgstr "核心"
+
+#: src/components/charts/chart-presentation.tsx
+msgid "Could not save the view. Try again."
+msgstr ""
 
 #: src/components/containers-table/containers-table-columns.tsx
 #: src/components/systemd-table/systemd-table-columns.tsx
@@ -1042,6 +1051,7 @@ msgstr "風扇"
 #: src/components/network-monitors-table/network-monitors-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/system/chart-card.tsx
+#: src/components/routes/system/chart-card.tsx
 #: src/components/routes/system/package-updates-table.tsx
 #: src/components/routes/system/smart-table.tsx
 #: src/components/routes/system/storage-pools-table.tsx
@@ -1327,6 +1337,14 @@ msgstr "一分鐘內最大值"
 msgid "Max 1h"
 msgstr "1 小時最大"
 
+#: src/components/charts/chart-table.tsx
+msgid "Measurement time (local time zone)"
+msgstr ""
+
+#: src/components/charts/chart-table.tsx
+msgid "Measurements"
+msgstr ""
+
 #: src/components/containers-table/containers-table-columns.tsx
 #: src/components/routes/system/info-bar.tsx
 #: src/components/systemd-table/systemd-table-columns.tsx
@@ -1352,6 +1370,10 @@ msgstr "記憶體使用"
 #: src/components/routes/system/charts/memory-charts.tsx
 msgid "Memory usage of containers"
 msgstr "容器記憶體使用量"
+
+#: src/components/charts/chart-presentation.tsx
+msgid "Metric view"
+msgstr ""
 
 #: src/components/network-monitors-table/network-monitors-columns.tsx
 #: src/components/network-monitors-table/network-monitors-columns.tsx
@@ -1434,11 +1456,24 @@ msgstr "公共接口的網絡流量"
 msgid "Network unit"
 msgstr "網路單位"
 
+#: src/components/charts/chart-presentation.tsx
+#: src/components/charts/chart-table.tsx
+msgid "New data available. The table stays unchanged until you refresh it."
+msgstr ""
+
+#: src/components/charts/chart-table.tsx
+msgid "Next page"
+msgstr ""
+
 #: src/components/systemd-table/systemd-table.tsx
 #: src/components/systemd-table/systemd-table.tsx
 #: src/components/systemd-table/systemd-table.tsx
 msgid "No"
 msgstr "否"
+
+#: src/components/charts/chart-table.tsx
+msgid "No data"
+msgstr ""
 
 #: src/components/routes/system/storage-pools-table.tsx
 msgid "No detail data for this pool."
@@ -1716,6 +1751,10 @@ msgstr "記錄時間的精確使用率"
 msgid "Preferred Language"
 msgstr "首選語言"
 
+#: src/components/charts/chart-table.tsx
+msgid "Previous page"
+msgstr ""
+
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Process started"
 msgstr "進程啟動"
@@ -1784,6 +1823,10 @@ msgstr "接收"
 msgid "Refresh"
 msgstr "重新整理"
 
+#: src/components/charts/chart-table.tsx
+msgid "Refresh table"
+msgstr ""
+
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Relationships"
 msgstr "關係"
@@ -1849,6 +1892,15 @@ msgstr "根"
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Rotate token"
 msgstr "輪換令牌"
+
+#. placeholder {0}: snapshot.rows.length ? range.start + 1 : 0
+#. placeholder {1}: range.end
+#. placeholder {2}: snapshot.rows.length
+#. placeholder {3}: range.page + 1
+#. placeholder {4}: range.pages
+#: src/components/charts/chart-table.tsx
+msgid "Rows {0}–{1} of {2}; page {3} of {4}"
+msgstr ""
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/system/package-updates-table.tsx
@@ -2036,6 +2088,10 @@ msgstr "SMTP設置"
 msgid "Sort By"
 msgstr "排序依據"
 
+#: src/components/charts/chart-table.tsx
+msgid "Stable table snapshot."
+msgstr ""
+
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Start Time"
@@ -2115,6 +2171,14 @@ msgstr "系統可以在您的數據目錄中的<0>config.yml</0>文件中管理�
 #: src/components/systems-table/systems-table.tsx
 msgid "Table"
 msgstr "表格"
+
+#: src/components/charts/chart-table.tsx
+msgid "Table pages"
+msgstr ""
+
+#: src/components/charts/chart-presentation.tsx
+msgid "Tables"
+msgstr ""
 
 #: src/components/routes/system/info-bar.tsx
 msgctxt "Tabs system layout option"
@@ -2196,6 +2260,10 @@ msgstr "Pool {displayName} 的吞吐量"
 msgid "Time format"
 msgstr "時間格式"
 
+#: src/components/charts/chart-time-select.tsx
+msgid "Time period"
+msgstr ""
+
 #: src/components/routes/settings/notifications.tsx
 msgid "To email(s)"
 msgstr "發送到電子郵件"
@@ -2223,6 +2291,11 @@ msgstr "令牌和指紋用於驗證到中心的WebSocket連接。"
 #: src/components/ui/chart.tsx
 msgid "Total"
 msgstr "總計"
+
+#: src/components/charts/chart-table.tsx
+msgctxt "Metric table total"
+msgid "Total"
+msgstr ""
 
 #: src/components/routes/system/network-sheet.tsx
 msgid "Total data received for each interface"
@@ -2335,6 +2408,10 @@ msgstr "單元檔案"
 #: src/components/routes/settings/general.tsx
 msgid "Unit preferences"
 msgstr "單位偏好"
+
+#: src/components/charts/chart-table.tsx
+msgid "Units are shown with each value. Total sums the available series; missing values are not zero."
+msgstr ""
 
 #: src/components/command-palette.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx

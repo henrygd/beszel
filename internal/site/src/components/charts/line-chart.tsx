@@ -1,3 +1,6 @@
+import { ChartTable, type ChartRecord } from "./chart-table"
+import { useChartPresentation } from "./chart-presentation"
+
 import { type ReactNode, useEffect, useMemo, useState } from "react"
 import { CartesianGrid, Line, LineChart, YAxis } from "recharts"
 import {
@@ -15,6 +18,13 @@ import { hasChartValues, useYAxisWidth } from "./hooks"
 import { ChartNoValues } from "./chart-no-values"
 import type { AxisDomain } from "recharts/types/util/types"
 import { useIntersectionObserver } from "@/lib/use-intersection-observer"
+
+export default function LineChartDefault(
+	props: React.ComponentProps<typeof LineChartGraphic> & { tableData?: ChartRecord[] }
+) {
+	const mode = useChartPresentation()
+	return mode === "tables" ? <ChartTable {...props} /> : <LineChartGraphic {...props} />
+}
 
 export type DataPoint<T = SystemStatsRecord> = {
 	label: string
@@ -52,7 +62,7 @@ export function isolatedDot({ key, cx, cy, stroke, index, points }: IsolatedDotP
 	return <circle key={key} cx={cx} cy={cy} r={2} fill={stroke} />
 }
 
-export default function LineChartDefault({
+function LineChartGraphic({
 	chartData,
 	customData,
 	max,

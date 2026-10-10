@@ -237,16 +237,17 @@ msgstr "Are you sure?"
 msgid "Automatic copy requires a secure context."
 msgstr "Automatic copy requires a secure context."
 
-#: src/components/routes/system/storage-pools-table.tsx
-msgctxt "Disk space available"
-msgid "Available"
-msgstr "Available"
-
 #. Package version available to install
 #: src/components/routes/system/package-updates-table.tsx
 msgid "Available"
 msgstr "Available"
 
+#: src/components/routes/system/storage-pools-table.tsx
+msgctxt "Disk space available"
+msgid "Available"
+msgstr "Available"
+
+#: src/components/routes/system/chart-card.tsx
 #: src/components/routes/system/chart-card.tsx
 msgid "Average"
 msgstr "Average"
@@ -460,6 +461,10 @@ msgstr "Chart options"
 msgid "Chart width"
 msgstr "Chart width"
 
+#: src/components/charts/chart-presentation.tsx
+msgid "Charts"
+msgstr "Charts"
+
 #: src/components/login/forgot-pass-form.tsx
 msgid "Check {email} for a reset link."
 msgstr "Check {email} for a reset link."
@@ -642,6 +647,10 @@ msgstr "Copy YAML"
 msgctxt "Core system metrics"
 msgid "Core"
 msgstr "Core"
+
+#: src/components/charts/chart-presentation.tsx
+msgid "Could not save the view. Try again."
+msgstr "Could not save the view. Try again."
 
 #: src/components/containers-table/containers-table-columns.tsx
 #: src/components/systemd-table/systemd-table-columns.tsx
@@ -1037,6 +1046,7 @@ msgstr "Fans"
 #: src/components/network-monitors-table/network-monitors-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/system/chart-card.tsx
+#: src/components/routes/system/chart-card.tsx
 #: src/components/routes/system/package-updates-table.tsx
 #: src/components/routes/system/smart-table.tsx
 #: src/components/routes/system/storage-pools-table.tsx
@@ -1322,6 +1332,14 @@ msgstr "Max 1 min"
 msgid "Max 1h"
 msgstr "Max 1h"
 
+#: src/components/charts/chart-table.tsx
+msgid "Measurement time (local time zone)"
+msgstr "Measurement time (local time zone)"
+
+#: src/components/charts/chart-table.tsx
+msgid "Measurements"
+msgstr "Measurements"
+
 #: src/components/containers-table/containers-table-columns.tsx
 #: src/components/routes/system/info-bar.tsx
 #: src/components/systemd-table/systemd-table-columns.tsx
@@ -1347,6 +1365,10 @@ msgstr "Memory Usage"
 #: src/components/routes/system/charts/memory-charts.tsx
 msgid "Memory usage of containers"
 msgstr "Memory usage of containers"
+
+#: src/components/charts/chart-presentation.tsx
+msgid "Metric view"
+msgstr "Metric view"
 
 #: src/components/network-monitors-table/network-monitors-columns.tsx
 #: src/components/network-monitors-table/network-monitors-columns.tsx
@@ -1429,11 +1451,24 @@ msgstr "Network traffic of public interfaces"
 msgid "Network unit"
 msgstr "Network unit"
 
+#: src/components/charts/chart-presentation.tsx
+#: src/components/charts/chart-table.tsx
+msgid "New data available. The table stays unchanged until you refresh it."
+msgstr "New data available. The table stays unchanged until you refresh it."
+
+#: src/components/charts/chart-table.tsx
+msgid "Next page"
+msgstr "Next page"
+
 #: src/components/systemd-table/systemd-table.tsx
 #: src/components/systemd-table/systemd-table.tsx
 #: src/components/systemd-table/systemd-table.tsx
 msgid "No"
 msgstr "No"
+
+#: src/components/charts/chart-table.tsx
+msgid "No data"
+msgstr "No data"
 
 #: src/components/routes/system/storage-pools-table.tsx
 msgid "No detail data for this pool."
@@ -1711,6 +1746,10 @@ msgstr "Precise utilization at the recorded time"
 msgid "Preferred Language"
 msgstr "Preferred Language"
 
+#: src/components/charts/chart-table.tsx
+msgid "Previous page"
+msgstr "Previous page"
+
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Process started"
 msgstr "Process started"
@@ -1779,6 +1818,10 @@ msgstr "Received"
 msgid "Refresh"
 msgstr "Refresh"
 
+#: src/components/charts/chart-table.tsx
+msgid "Refresh table"
+msgstr "Refresh table"
+
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Relationships"
 msgstr "Relationships"
@@ -1844,6 +1887,15 @@ msgstr "Root"
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Rotate token"
 msgstr "Rotate token"
+
+#. placeholder {0}: snapshot.rows.length ? range.start + 1 : 0
+#. placeholder {1}: range.end
+#. placeholder {2}: snapshot.rows.length
+#. placeholder {3}: range.page + 1
+#. placeholder {4}: range.pages
+#: src/components/charts/chart-table.tsx
+msgid "Rows {0}–{1} of {2}; page {3} of {4}"
+msgstr "Rows {0}–{1} of {2}; page {3} of {4}"
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/system/package-updates-table.tsx
@@ -2031,6 +2083,10 @@ msgstr "SMTP settings"
 msgid "Sort By"
 msgstr "Sort By"
 
+#: src/components/charts/chart-table.tsx
+msgid "Stable table snapshot."
+msgstr "Stable table snapshot."
+
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Start Time"
@@ -2110,6 +2166,14 @@ msgstr "Systems may be managed in a <0>config.yml</0> file inside your data dire
 #: src/components/systems-table/systems-table.tsx
 msgid "Table"
 msgstr "Table"
+
+#: src/components/charts/chart-table.tsx
+msgid "Table pages"
+msgstr "Table pages"
+
+#: src/components/charts/chart-presentation.tsx
+msgid "Tables"
+msgstr "Tables"
 
 #: src/components/routes/system/info-bar.tsx
 msgctxt "Tabs system layout option"
@@ -2191,6 +2255,10 @@ msgstr "Throughput of storage pool {displayName}"
 msgid "Time format"
 msgstr "Time format"
 
+#: src/components/charts/chart-time-select.tsx
+msgid "Time period"
+msgstr "Time period"
+
 #: src/components/routes/settings/notifications.tsx
 msgid "To email(s)"
 msgstr "To email(s)"
@@ -2216,6 +2284,11 @@ msgstr "Tokens and fingerprints are used to authenticate WebSocket connections t
 
 #: src/components/ui/chart.tsx
 #: src/components/ui/chart.tsx
+msgid "Total"
+msgstr "Total"
+
+#: src/components/charts/chart-table.tsx
+msgctxt "Metric table total"
 msgid "Total"
 msgstr "Total"
 
@@ -2330,6 +2403,10 @@ msgstr "Unit file"
 #: src/components/routes/settings/general.tsx
 msgid "Unit preferences"
 msgstr "Unit preferences"
+
+#: src/components/charts/chart-table.tsx
+msgid "Units are shown with each value. Total sums the available series; missing values are not zero."
+msgstr "Units are shown with each value. Total sums the available series; missing values are not zero."
 
 #: src/components/command-palette.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx

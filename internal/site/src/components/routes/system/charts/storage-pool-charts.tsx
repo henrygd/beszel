@@ -1,5 +1,6 @@
 import { t } from "@lingui/core/macro"
 import AreaChartDefault from "@/components/charts/area-chart"
+import { withChartFallback } from "@/components/charts/table-model"
 import { decimalString, formatBytes, toFixedFloat } from "@/lib/utils"
 import type { SystemStatsRecord } from "@/types"
 import { ChartCard } from "../chart-card"
@@ -16,14 +17,11 @@ const poolUsage =
 		const pool = stats?.z?.[name]
 		return pool && !!pool.raw === raw ? pool.du : null
 	}
-const poolRead =
-	(name: string) =>
-	({ stats }: SystemStatsRecord) =>
-		stats?.z?.[name]?.rb ?? 0
-const poolWrite =
-	(name: string) =>
-	({ stats }: SystemStatsRecord) =>
-		stats?.z?.[name]?.wb ?? 0
+const poolRead = (name: string) => withChartFallback(({ stats }: SystemStatsRecord) => stats?.z?.[name]?.rb)
+const poolWrite = (name: string) => withChartFallback(({ stats }: SystemStatsRecord) => stats?.z?.[name]?.wb)
+
+/** ZFS pool accessors, exported so the projection behaviour is testable without rendering. */
+export const zfsPoolDataFns = { usage: poolUsage, read: poolRead, write: poolWrite }
 
 export function ZfsPoolUsageChart({ systemData, poolName }: { systemData: SystemData; poolName: string }) {
 	const { chartData, grid, dataEmpty } = systemData

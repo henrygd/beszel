@@ -1,3 +1,4 @@
+import { useLingui } from "@lingui/react/macro"
 import { useStore } from "@nanostores/react"
 import { HistoryIcon } from "lucide-react"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
@@ -17,6 +18,7 @@ export default memo(function ChartTimeSelect({
 	chartTimeStore?: typeof $chartTime
 	allowRealtime?: boolean
 }) {
+	const { t } = useLingui()
 	const chartTime = useStore(chartTimeStore)
 
 	// remove chart times that are not supported by the system agent version
@@ -32,7 +34,7 @@ export default memo(function ChartTimeSelect({
 
 	return (
 		<Select defaultValue="1h" value={chartTime} onValueChange={(value: ChartTimes) => chartTimeStore.set(value)}>
-			<SelectTrigger className={cn(className, "relative ps-10 pe-5")}>
+			<SelectTrigger aria-label={t`Time period`} className={cn(className, "relative ps-10 pe-5")}>
 				<HistoryIcon className="h-4 w-4 absolute start-4 top-1/2 -translate-y-1/2 opacity-85" />
 				<SelectValue />
 			</SelectTrigger>

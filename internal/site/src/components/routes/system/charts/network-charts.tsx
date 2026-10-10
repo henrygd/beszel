@@ -1,15 +1,46 @@
 import { useMemo } from "react"
 import { t } from "@lingui/core/macro"
 import AreaChartDefault from "@/components/charts/area-chart"
+import { withChartFallback } from "@/components/charts/table-model"
 import { useContainerDataPoints } from "@/components/charts/hooks"
 import { $userSettings } from "@/lib/stores"
 import { decimalString, formatBytes, toFixedFloat } from "@/lib/utils"
 import type { ChartConfig } from "@/components/ui/chart"
-import type { ChartData, SystemStatsRecord } from "@/types"
+import type { ChartData, ContainerStats, SystemStatsRecord } from "@/types"
 import { Separator } from "@/components/ui/separator"
 import NetworkSheet from "../network-sheet"
 import { ChartCard, FilterBar, SelectAvgMax } from "../chart-card"
 import { dockerOrPodman } from "../chart-data"
+
+/** A MiB/s legacy field converted to bytes/s, or undefined when the older field is absent too. */
+const legacyMiB = (value: number | undefined) => (value == null ? undefined : value * 1024 * 1024)
+
+function containerNetworkValue(key: string, data: Record<string, ContainerStats>, missing?: number) {
+	const payload = data[key]
+	if (!payload) return null
+	const sent = payload.b?.[0] ?? legacyMiB(payload.ns) ?? missing
+	const recv = payload.b?.[1] ?? legacyMiB(payload.nr) ?? missing
+	return sent == null || recv == null ? null : sent + recv
+}
+
+/** Public-interface bandwidth accessors. The graphic keeps the historical zero substitution. */
+export const networkDataFns = {
+	container: Object.assign((key: string, data: Record<string, ContainerStats>) => containerNetworkValue(key, data, 0), {
+		tableDataKey: (key: string, data: Record<string, ContainerStats>) => containerNetworkValue(key, data),
+	}),
+	sent: (showMax: boolean) =>
+		withChartFallback((data: SystemStatsRecord) =>
+			showMax
+				? (data?.stats?.bm?.[0] ?? legacyMiB(data?.stats?.nsm))
+				: (data?.stats?.b?.[0] ?? legacyMiB(data?.stats?.ns))
+		),
+	received: (showMax: boolean) =>
+		withChartFallback((data: SystemStatsRecord) =>
+			showMax
+				? (data?.stats?.bm?.[1] ?? legacyMiB(data?.stats?.nrm))
+				: (data?.stats?.b?.[1] ?? legacyMiB(data?.stats?.nr))
+		),
+}
 
 export function BandwidthChart({
 	chartData,
@@ -50,23 +81,13 @@ export function BandwidthChart({
 				dataPoints={[
 					{
 						label: t`Sent`,
-						dataKey(data: SystemStatsRecord) {
-							if (showMax) {
-								return data?.stats?.bm?.[0] ?? (data?.stats?.nsm ?? 0) * 1024 * 1024
-							}
-							return data?.stats?.b?.[0] ?? (data?.stats?.ns ?? 0) * 1024 * 1024
-						},
+						dataKey: networkDataFns.sent(showMax),
 						color: 5,
 						opacity: 0.2,
 					},
 					{
 						label: t`Received`,
-						dataKey(data: SystemStatsRecord) {
-							if (showMax) {
-								return data?.stats?.bm?.[1] ?? (data?.stats?.nrm ?? 0) * 1024 * 1024
-							}
-							return data?.stats?.b?.[1] ?? (data?.stats?.nr ?? 0) * 1024 * 1024
-						},
+						dataKey: networkDataFns.received(showMax),
 						color: 2,
 						opacity: 0.2,
 					},
@@ -101,13 +122,7 @@ export function ContainerNetworkChart({
 	networkConfig: ChartConfig
 }) {
 	const userSettings = $userSettings.get()
-	const { filter, dataPoints, filteredKeys } = useContainerDataPoints(networkConfig, (key, data) => {
-		const payload = data[key]
-		if (!payload) return null
-		const sent = payload?.b?.[0] ?? (payload?.ns ?? 0) * 1024 * 1024
-		const recv = payload?.b?.[1] ?? (payload?.nr ?? 0) * 1024 * 1024
-		return sent + recv
-	})
+	const { filter, dataPoints, filteredKeys } = useContainerDataPoints(networkConfig, networkDataFns.container)
 
 	const contentFormatter = useMemo(() => {
 		const getRxTxBytes = (record?: { b?: [number, number]; ns?: number; nr?: number }) => {

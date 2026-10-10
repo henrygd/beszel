@@ -2,6 +2,7 @@ import { t } from "@lingui/core/macro"
 import { MoreHorizontalIcon } from "lucide-react"
 import { memo, useRef, useState } from "react"
 import AreaChartDefault, { type DataPoint } from "@/components/charts/area-chart"
+import { withChartFallback } from "@/components/charts/table-model"
 import ChartTimeSelect from "@/components/charts/chart-time-select"
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
@@ -11,6 +12,15 @@ import type { ChartData, SystemStatsRecord } from "@/types"
 import { ChartCard } from "./chart-card"
 
 const minAgentVersion = parseSemVer("0.15.3")
+
+/** Per-core accessors. The graphic keeps the historical 1/coreCount substitution for a missing core. */
+export const cpuCoreDataFns = {
+	core: (i: number) =>
+		withChartFallback(
+			({ stats }: SystemStatsRecord) => stats?.cpus?.[i],
+			({ stats }: SystemStatsRecord) => 1 / (stats?.cpus?.length ?? 1)
+		),
+}
 
 export default memo(function CpuCoresSheet({
 	chartData,
@@ -160,7 +170,7 @@ export default memo(function CpuCoresSheet({
 								legend={numCores < 10}
 								dataPoints={Array.from({ length: numCores }).map((_, i) => ({
 									label: `CPU ${i}`,
-									dataKey: ({ stats }: SystemStatsRecord) => stats?.cpus?.[i] ?? 1 / (stats?.cpus?.length ?? 1),
+									dataKey: cpuCoreDataFns.core(i),
 									color: `hsl(${226 + (((i * 360) / Math.max(1, numCores)) % 360)}, var(--chart-saturation), var(--chart-lightness))`,
 									opacity: 0.35,
 									stackId: "a",
