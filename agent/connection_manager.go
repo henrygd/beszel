@@ -168,7 +168,7 @@ func (c *ConnectionManager) Start(serverOptions ServerOptions) error {
 	wsClient, err := newWebSocketClient(c.agent)
 	if err != nil {
 		var caCertErr *caCertFileError
-		if errors.As(err, &caCertErr) {
+		if errors.As(err, &caCertErr) || errors.Is(err, errInvalidAdditionalHeaders) {
 			return err
 		}
 		disableSSH, _ := utils.GetEnv("DISABLE_SSH")

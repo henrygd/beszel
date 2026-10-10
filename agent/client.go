@@ -23,6 +23,7 @@ import (
 	"github.com/fxamacker/cbor/v2"
 	"github.com/lxzan/gws"
 	"golang.org/x/crypto/ssh"
+	"golang.org/x/net/http/httpguts"
 	"golang.org/x/net/proxy"
 )
 
@@ -36,6 +37,9 @@ const (
 // condition: an agent configured with only a public key runs in SSH-only mode,
 // where the hub dials the agent and no outbound WebSocket client is expected.
 var errNoHubURL = errors.New("HUB_URL environment variable not set")
+
+// errInvalidAdditionalHeaders returned when there is malformed ADDITIONAL_HEADERS value. 
+var errInvalidAdditionalHeaders = errors.New("invalid ADDITIONAL_HEADERS")
 
 type caCertFileError struct {
 	err error
@@ -64,6 +68,7 @@ type WebSocketClient struct {
 	lastConnectAttempt time.Time                           // Timestamp of last connection attempt
 	hubVerified        bool                                // Whether the hub has been cryptographically verified
 	tlsConfig          *tls.Config                         // Optional TLS configuration with custom CA certificates
+	additionalHeaders  http.Header                         // Extra request headers from ADDITIONAL_HEADERS
 }
 
 // newWebSocketClient creates a new WebSocket client for the given agent.
@@ -86,6 +91,10 @@ func newWebSocketClient(agent *Agent) (client *WebSocketClient, err error) {
 		return nil, err
 	}
 	client.tlsConfig, err = getTLSConfig()
+	if err != nil {
+		return nil, err
+	}
+	client.additionalHeaders, err = getAdditionalHeaders()
 	if err != nil {
 		return nil, err
 	}
@@ -163,6 +172,36 @@ func getTLSConfig() (*tls.Config, error) {
 	return &tls.Config{RootCAs: rootCAs}, nil
 }
 
+// getAdditionalHeaders parses ADDITIONAL_HEADERS into extra headers sent with
+// the WebSocket handshake.
+//
+// The value is a comma separated list of "Name: value" pairs:
+//	ADDITIONAL_HEADERS="CF-Access-Client-Id: abc.access, CF-Access-Client-Secret: def456"
+func getAdditionalHeaders() (http.Header, error) {
+
+	raw, _ := utils.GetEnv("ADDITIONAL_HEADERS")
+	if strings.TrimSpace(raw) == "" {
+		return nil, nil
+	}
+	var headers http.Header
+	for _, entry := range strings.FieldsFunc(raw, func(r rune) bool {
+		return r == ',' || r == '\n' || r == '\r'
+	}) {
+		name, value, ok := strings.Cut(entry, ":")
+		name, value = strings.TrimSpace(name), strings.TrimSpace(value)
+		if !ok || !httpguts.ValidHeaderFieldName(name) ||
+			!httpguts.ValidHeaderFieldValue(value) {
+			return nil, fmt.Errorf("%w: invalid header %q", errInvalidAdditionalHeaders, entry)
+		}
+		if headers == nil {
+			headers = make(http.Header)
+		}
+		headers.Add(name, value)
+	}
+	return headers, nil
+
+}
+
 // getOptions returns the WebSocket client options, creating them if necessary.
 // It configures the connection URL, TLS settings, and authentication headers.
 func (client *WebSocketClient) getOptions() *gws.ClientOption {
@@ -195,6 +234,16 @@ func (client *WebSocketClient) getOptions() *gws.ClientOption {
 			return proxy.FromEnvironment(), nil
 		},
 	}
+
+	// hub rejects a handshake without a valid X-Token or X-Beszel, ignoring user supplied values
+	for name, values := range client.additionalHeaders {
+		if name == "X-Token" || name == "X-Beszel" {
+			slog.Warn("Ignoring reserved header in ADDITIONAL_HEADERS", "header", name)
+			continue
+		}
+		client.options.RequestHeader[name] = values
+	}
+
 	return client.options
 }
 
