@@ -503,8 +503,8 @@ func (sm *SmartManager) CollectSmart(deviceInfo *DeviceInfo) error {
 	cmd := exec.CommandContext(ctx, sm.smartctlPath, args...)
 	output, err := cmd.CombinedOutput()
 
-	// Check if device is in standby (exit status 2)
-	if exitErr, ok := errors.AsType[*exec.ExitError](err); ok && exitErr.ExitCode() == 2 {
+	// NVMe has no standby check; exit status 2 may mean the controller is inaccessible.
+	if exitErr, ok := errors.AsType[*exec.ExitError](err); ok && exitErr.ExitCode() == 2 && !isNvmeControllerPath(deviceInfo.Name) {
 		if hasExistingData {
 			// Device is in standby and we have cached data, keep using cache
 			return nil
