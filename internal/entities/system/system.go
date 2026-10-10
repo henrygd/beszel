@@ -184,7 +184,6 @@ type Info struct {
 	// LoadAvg1       float64 `json:"l1,omitempty" cbor:"15,keyasint,omitempty"`  // deprecated - use `la` array instead
 	// LoadAvg5       float64 `json:"l5,omitempty" cbor:"16,keyasint,omitempty"`  // deprecated - use `la` array instead
 	// LoadAvg15      float64 `json:"l15,omitempty" cbor:"17,keyasint,omitempty"` // deprecated - use `la` array instead
-
 	BandwidthBytes uint64             `json:"bb" cbor:"18,keyasint"`
 	LoadAvg        [3]float64         `json:"la,omitempty" cbor:"19,keyasint"`
 	ConnectionType ConnectionType     `json:"ct,omitempty" cbor:"20,keyasint,omitempty,omitzero"`
@@ -195,6 +194,8 @@ type Info struct {
 	PackageUpdates []uint16           `json:"pu,omitempty" cbor:"25,keyasint,omitempty"`  // [totalUpdates, securityUpdates] (security omitted if unknown)
 	WiFi           map[string]WiFi    `json:"wf,omitempty" cbor:"26,keyasint,omitempty"`  // connected Wi-Fi interfaces
 	SystemdLogs    bool               `json:"jl,omitempty" cbor:"27,keyasint,omitempty"`  // agent can read the system journal
+	BandwidthBytesSent uint64         `json:"bs,omitempty" cbor:"28,keyasint,omitempty"`
+	BandwidthBytesRecv uint64         `json:"br,omitempty" cbor:"29,keyasint,omitempty"`
 }
 
 // Data that does not change during process lifetime and is not needed in All Systems table
