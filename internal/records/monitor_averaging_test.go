@@ -102,7 +102,7 @@ func TestAverageMonitorStats(t *testing.T) {
 	assert.Equal(t, monitorEntity.Stats{ResAvg: 10, ResMin: 5, ResMax: 20, Loss: 14.29, TotalCount: 7, SuccessCount: 6, ResponseSum: 60}, result)
 	// Sparse monitor records must propagate through every rollup level.
 	rm.CreateLongerRecords()
-	for _, recordType := range []string{"10m", "20m", "120m", "480m"} {
+	for _, recordType := range []string{"10m", "20m", "120m", "480m", "24h"} {
 		rollups, err := hub.FindAllRecords("network_monitor_stats", dbx.HashExp{"monitor": monitor.Id, "type": recordType})
 		require.NoError(t, err)
 		require.Len(t, rollups, 1, recordType)
@@ -202,7 +202,7 @@ func TestSparseMonitorRollups(t *testing.T) {
 				require.NoError(t, hub.Save(monitor))
 			}
 			records.NewRecordManager(hub).CreateLongerRecords()
-			for _, recordType := range []string{"10m", "20m", "120m", "480m"} {
+			for _, recordType := range []string{"10m", "20m", "120m", "480m", "24h"} {
 				rollups, err := hub.FindAllRecords("network_monitor_stats", dbx.HashExp{"monitor": monitor.Id, "type": recordType})
 				require.NoError(t, err)
 				if tc.samples == 0 {

@@ -141,6 +141,8 @@ func TestDeleteOldSystemStats(t *testing.T) {
 		{"120m", 7 * 24 * time.Hour, false, 10 * 24 * time.Hour, "120m record older than 7 days should be deleted"},
 		{"480m", 30 * 24 * time.Hour, true, 15 * 24 * time.Hour, "480m record within 30 days should be kept"},
 		{"480m", 30 * 24 * time.Hour, false, 45 * 24 * time.Hour, "480m record older than 30 days should be deleted"},
+		{"24h", 5 * 365 * 24 * time.Hour, true, 2 * 365 * 24 * time.Hour, "24h record within 5 years should be kept"},
+		{"24h", 5 * 365 * 24 * time.Hour, false, 6 * 365 * 24 * time.Hour, "24h record older than 5 years should be deleted"},
 	}
 
 	// Create test records for both system_stats and container_stats
