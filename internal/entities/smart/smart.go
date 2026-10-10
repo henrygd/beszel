@@ -477,7 +477,7 @@ type NVMeSmartHealthInformationLog struct {
 	ControllerBusyTime      uint    `json:"controller_busy_time"`
 	PowerCycles             uint    `json:"power_cycles"`
 	PowerOnHours            uint32  `json:"power_on_hours"`
-	UnsafeShutdowns         uint16  `json:"unsafe_shutdowns"`
+	UnsafeShutdowns         uint    `json:"unsafe_shutdowns"`
 	MediaErrors             uint    `json:"media_errors"`
 	NumErrLogEntries        uint    `json:"num_err_log_entries"`
 	WarningTempTime         uint    `json:"warning_temp_time"`
