@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strings"
 	"testing"
 
@@ -290,6 +291,29 @@ func TestParseSmartForNvme(t *testing.T) {
 		assertAttrValue(t, deviceData.Attributes, "PercentageUsed", 0)
 		assertAttrValue(t, deviceData.Attributes, "DataUnitsWritten", 16040567)
 	}
+}
+
+func TestParseSmartForNvmeLargeUnsafeShutdowns(t *testing.T) {
+	fixturePath := filepath.Join("test-data", "smart", "nvme0.json")
+	data, err := os.ReadFile(fixturePath)
+	require.NoError(t, err)
+
+	// Some drives report counts that overflow uint16, which previously made the
+	// whole record fail to unmarshal and get discarded.
+	re := regexp.MustCompile(`"unsafe_shutdowns":\s*\d+`)
+	require.True(t, re.Match(data), "fixture should contain unsafe_shutdowns")
+	data = re.ReplaceAll(data, []byte(`"unsafe_shutdowns": 159754`))
+
+	sm := &SmartManager{
+		SmartDataMap: make(map[string]*smart.SmartData),
+	}
+
+	hasData, _ := sm.parseSmartForNvme(data, "")
+	require.True(t, hasData)
+
+	deviceData, ok := sm.SmartDataMap["2024031600129"]
+	require.True(t, ok, "expected smart data entry for serial 2024031600129")
+	assertAttrValue(t, deviceData.Attributes, "UnsafeShutdowns", 159754)
 }
 
 func TestHasDataForDevice(t *testing.T) {
