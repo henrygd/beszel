@@ -3,6 +3,7 @@ package agent
 import (
 	"bufio"
 	"encoding/json"
+	"fmt"
 	"io"
 	"log/slog"
 	"os/exec"
@@ -93,37 +94,34 @@ func (gm *GPUManager) collectIntelStats() (err error) {
 
 // parseIntelJSONStream decodes samples from intel_gpu_top -J output and
 // aggregates them. Since v1.28 the samples are wrapped in an array ("[", then
-// comma separated objects, and "]" only when the process exits). Older
-// versions print the same comma separated objects without the opening "[", so
-// it is added here to let both formats decode as an array.
+// objects, and "]" only when the process exits). Older versions print objects
+// without the opening "[". Some builds (seen on i915 / Arrow Lake) omit the
+// commas between objects inside the array; those are tolerated by reading
+// successive objects rather than decoding the whole stream as one JSON array.
 func (gm *GPUManager) parseIntelJSONStream(r io.Reader) error {
 	er := &eofReader{r: r}
 	br := bufio.NewReader(er)
-	first, err := peekNonSpace(br)
-	if err != nil {
-		if err == io.EOF {
-			return errNoValidData
-		}
-		return err
-	}
-	var src io.Reader = br
-	if first != '[' {
-		src = io.MultiReader(strings.NewReader("["), br)
-	}
 
-	dec := json.NewDecoder(src)
-	if _, err := dec.Token(); err != nil { // opening "["
-		return err
-	}
 	var hadDataRow bool
 	// skip first data row because it sometimes has erroneous data
 	var skippedFirstDataRow bool
-	// Decode reads one object and skips the commas between them. The array is
-	// usually never closed, so output ending mid-array or mid-sample (the
-	// process was killed) is the normal end of the stream rather than an error.
-	for dec.More() {
+	for {
+		obj, err := nextIntelJSONObject(br)
+		if err != nil {
+			if err == io.EOF {
+				break
+			}
+			// A truncated final sample when the process is killed is normal.
+			if er.eof {
+				break
+			}
+			return err
+		}
+		if obj == nil { // closing "]"
+			break
+		}
 		var sample intelGpuJSONSample
-		if err := dec.Decode(&sample); err != nil {
+		if err := json.Unmarshal(obj, &sample); err != nil {
 			if er.eof {
 				break
 			}
@@ -145,6 +143,72 @@ func (gm *GPUManager) parseIntelJSONStream(r io.Reader) error {
 		return errNoValidData
 	}
 	return nil
+}
+
+// nextIntelJSONObject returns the next top-level JSON object from br, skipping
+// an optional opening "[", commas, and whitespace. A closing "]" returns
+// (nil, nil). EOF with no further object returns (nil, io.EOF).
+func nextIntelJSONObject(br *bufio.Reader) ([]byte, error) {
+	for {
+		b, err := peekNonSpace(br)
+		if err != nil {
+			return nil, err
+		}
+		switch b {
+		case '[', ',':
+			_, _ = br.ReadByte()
+			continue
+		case ']':
+			_, _ = br.ReadByte()
+			return nil, nil
+		case '{':
+			return readJSONObject(br)
+		default:
+			return nil, fmt.Errorf("invalid character %q looking for beginning of intel_gpu_top sample", b)
+		}
+	}
+}
+
+// readJSONObject reads one JSON object from br, respecting strings and nesting.
+func readJSONObject(br *bufio.Reader) ([]byte, error) {
+	var buf []byte
+	depth := 0
+	inString := false
+	escape := false
+	for {
+		c, err := br.ReadByte()
+		if err != nil {
+			if err == io.EOF {
+				return nil, io.ErrUnexpectedEOF
+			}
+			return nil, err
+		}
+		buf = append(buf, c)
+		if inString {
+			if escape {
+				escape = false
+				continue
+			}
+			switch c {
+			case '\\':
+				escape = true
+			case '"':
+				inString = false
+			}
+			continue
+		}
+		switch c {
+		case '"':
+			inString = true
+		case '{':
+			depth++
+		case '}':
+			depth--
+			if depth == 0 {
+				return buf, nil
+			}
+		}
+	}
 }
 
 // eofReader records whether the underlying reader has returned io.EOF. The
