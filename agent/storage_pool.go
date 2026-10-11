@@ -484,10 +484,10 @@ func btrfsPoolStatuses(fs btrfs.Filesystem) zfs.PoolStatus {
 // hub which charts already have a filesystem equivalent. Only exact kernel
 // filesystem and I/O-device matches qualify; labels are never used.
 func (m *StoragePoolManager) markDuplicateCharts(stats *system.Stats, filesystems map[string]*system.FsStats, mountID func(string) string) {
-	identities := make(map[string]string, len(filesystems))
-	for device, fs := range filesystems {
+	identities := make(map[*system.FsStats]string, len(filesystems))
+	for _, fs := range filesystems {
 		if fs.DiskTotal > 0 {
-			identities[device] = mountID(fs.Mountpoint)
+			identities[fs] = mountID(fs.Mountpoint)
 		}
 	}
 	for _, backend := range m.backends {
@@ -499,13 +499,13 @@ func (m *StoragePoolManager) markDuplicateCharts(stats *system.Stats, filesystem
 			if sample == nil || pool.MountID == "" {
 				continue
 			}
-			for device, identity := range identities {
+			for fs, identity := range identities {
 				if identity != pool.MountID {
 					continue
 				}
 				// Raw physical usage is not equivalent to a filesystem usage chart.
 				sample.HideUsage = !pool.Raw
-				if pool.IODevice != "" && pool.IODevice == device {
+				if pool.IODevice != "" && pool.IODevice == fs.IoDevice {
 					sample.HideIO = true
 				}
 			}

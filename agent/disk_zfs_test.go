@@ -92,8 +92,8 @@ func TestInitializeDiskIoStatsSkipsZfsMountpoints(t *testing.T) {
 	}
 	agent := &Agent{
 		fsStats: map[string]*system.FsStats{
-			"tank": {Root: false, Mountpoint: "/tank"},
-			"sda1": {Root: false, Mountpoint: "/mnt/data"},
+			"tank": {Root: false, Mountpoint: "/tank", IoDevice: "tank"},
+			"sda1": {Root: false, Mountpoint: "/mnt/data", IoDevice: "sda1"},
 		},
 		storagePoolManager: zm,
 		diskPrev:           make(map[uint16]map[string]prevDisk),

@@ -56,7 +56,7 @@ func TestUpdateDiskIoTimeCounterWrap(t *testing.T) {
 			t.Setenv("HOST_DEV", dir)
 			t.Setenv("HOST_RUN", dir)
 
-			fs := &system.FsStats{Root: true}
+			fs := &system.FsStats{Root: true, IoDevice: "sda"}
 			a := &Agent{
 				fsNames:  []string{"sda"},
 				fsStats:  map[string]*system.FsStats{"sda": fs},
@@ -104,7 +104,7 @@ func TestUpdateDiskIoFirstSampleOfInterval(t *testing.T) {
 	counters, err := disk.IOCounters("sda")
 	require.NoError(t, err)
 
-	fs := &system.FsStats{Root: true}
+	fs := &system.FsStats{Root: true, IoDevice: "sda"}
 	a := &Agent{
 		fsStats:  map[string]*system.FsStats{"sda": fs},
 		diskPrev: map[uint16]map[string]prevDisk{},
@@ -145,7 +145,7 @@ func TestUpdateDiskIoSkipsShortSeededSample(t *testing.T) {
 	counters, err := disk.IOCounters("sda")
 	require.NoError(t, err)
 
-	fs := &system.FsStats{Root: true}
+	fs := &system.FsStats{Root: true, IoDevice: "sda"}
 	a := &Agent{
 		fsStats:  map[string]*system.FsStats{"sda": fs},
 		diskPrev: map[uint16]map[string]prevDisk{},

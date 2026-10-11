@@ -89,696 +89,537 @@ func TestParseFilesystemEntry(t *testing.T) {
 	}
 }
 
-func TestExtraFilesystemPartitionInfo(t *testing.T) {
-	t.Run("uses partition device for label-only mountpoint", func(t *testing.T) {
-		device, customName := extraFilesystemPartitionInfo(disk.PartitionStat{
-			Device:     "/dev/sdc",
-			Mountpoint: "/extra-filesystems/Share",
-		})
-
-		assert.Equal(t, "/dev/sdc", device)
-		assert.Equal(t, "", customName)
-	})
-
-	t.Run("uses custom name from mountpoint suffix", func(t *testing.T) {
-		device, customName := extraFilesystemPartitionInfo(disk.PartitionStat{
-			Device:     "/dev/sdc",
-			Mountpoint: "/extra-filesystems/sdc__Share",
-		})
-
-		assert.Equal(t, "/dev/sdc", device)
-		assert.Equal(t, "Share", customName)
-	})
-
-	t.Run("falls back to folder device when partition device is unavailable", func(t *testing.T) {
-		device, customName := extraFilesystemPartitionInfo(disk.PartitionStat{
-			Mountpoint: "/extra-filesystems/sdc__Share",
-		})
-
-		assert.Equal(t, "sdc", device)
-		assert.Equal(t, "Share", customName)
-	})
-
-	t.Run("supports custom name without folder device prefix", func(t *testing.T) {
-		device, customName := extraFilesystemPartitionInfo(disk.PartitionStat{
-			Device:     "/dev/sdc",
-			Mountpoint: "/extra-filesystems/__Share",
-		})
-
-		assert.Equal(t, "/dev/sdc", device)
-		assert.Equal(t, "Share", customName)
-	})
-}
-
-func TestBuildFsStatRegistration(t *testing.T) {
-	t.Run("uses basename for non-windows exact io match", func(t *testing.T) {
-		key, stats, ok := registerFilesystemStats(
-			map[string]*system.FsStats{},
-			"/dev/sda1",
-			"/mnt/data",
-			false,
-			"archive",
-			fsRegistrationContext{
-				isWindows: false,
-				diskIoCounters: map[string]disk.IOCountersStat{
-					"sda1": {Name: "sda1"},
-				},
-			},
-		)
-
-		assert.True(t, ok)
-		assert.Equal(t, "sda1", key)
-		assert.Equal(t, "/mnt/data", stats.Mountpoint)
-		assert.Equal(t, "archive", stats.Name)
-		assert.False(t, stats.Root)
-	})
-
-	t.Run("maps root partition to io device by prefix", func(t *testing.T) {
-		key, stats, ok := registerFilesystemStats(
-			map[string]*system.FsStats{},
-			"/dev/ada0p2",
-			"/",
-			true,
-			"",
-			fsRegistrationContext{
-				isWindows: false,
-				diskIoCounters: map[string]disk.IOCountersStat{
-					"ada0": {Name: "ada0", ReadBytes: 1000, WriteBytes: 1000},
-				},
-			},
-		)
-
-		assert.True(t, ok)
-		assert.Equal(t, "ada0", key)
-		assert.True(t, stats.Root)
-		assert.Equal(t, "/", stats.Mountpoint)
-	})
-
-	t.Run("uses filesystem setting as root fallback", func(t *testing.T) {
-		key, _, ok := registerFilesystemStats(
-			map[string]*system.FsStats{},
-			"overlay",
-			"/",
-			true,
-			"",
-			fsRegistrationContext{
-				filesystem: "nvme0n1p2",
-				isWindows:  false,
-				diskIoCounters: map[string]disk.IOCountersStat{
-					"nvme0n1": {Name: "nvme0n1", ReadBytes: 1000, WriteBytes: 1000},
-				},
-			},
-		)
-
-		assert.True(t, ok)
-		assert.Equal(t, "nvme0n1", key)
-	})
-
-	t.Run("prefers parsed extra-filesystems device over mapper device", func(t *testing.T) {
-		key, stats, ok := registerFilesystemStats(
-			map[string]*system.FsStats{},
-			"/dev/mapper/luks-2bcb02be-999d-4417-8d18-5c61e660fb6e",
-			"/extra-filesystems/nvme0n1p2__Archive",
-			false,
-			"Archive",
-			fsRegistrationContext{
-				isWindows: false,
-				diskIoCounters: map[string]disk.IOCountersStat{
-					"dm-1":      {Name: "dm-1", Label: "luks-2bcb02be-999d-4417-8d18-5c61e660fb6e"},
-					"nvme0n1p2": {Name: "nvme0n1p2"},
-				},
-			},
-		)
-
-		assert.True(t, ok)
-		assert.Equal(t, "nvme0n1p2", key)
-		assert.Equal(t, "Archive", stats.Name)
-	})
-
-	t.Run("falls back to mapper io device when folder device cannot be resolved", func(t *testing.T) {
-		key, stats, ok := registerFilesystemStats(
-			map[string]*system.FsStats{},
-			"/dev/mapper/luks-2bcb02be-999d-4417-8d18-5c61e660fb6e",
-			"/extra-filesystems/Archive",
-			false,
-			"Archive",
-			fsRegistrationContext{
-				isWindows: false,
-				diskIoCounters: map[string]disk.IOCountersStat{
-					"dm-1": {Name: "dm-1", Label: "luks-2bcb02be-999d-4417-8d18-5c61e660fb6e"},
-				},
-			},
-		)
-
-		assert.True(t, ok)
-		assert.Equal(t, "dm-1", key)
-		assert.Equal(t, "Archive", stats.Name)
-	})
-
-	t.Run("uses full device name on windows", func(t *testing.T) {
-		key, _, ok := registerFilesystemStats(
-			map[string]*system.FsStats{},
-			`C:`,
-			`C:\\`,
-			false,
-			"",
-			fsRegistrationContext{
-				isWindows: true,
-				diskIoCounters: map[string]disk.IOCountersStat{
-					`C:`: {Name: `C:`},
-				},
-			},
-		)
-
-		assert.True(t, ok)
-		assert.Equal(t, `C:`, key)
-	})
-
-	t.Run("skips existing key", func(t *testing.T) {
-		key, stats, ok := registerFilesystemStats(
-			map[string]*system.FsStats{"sda1": {Mountpoint: "/existing"}},
-			"/dev/sda1",
-			"/mnt/data",
-			false,
-			"",
-			fsRegistrationContext{
-				isWindows: false,
-				diskIoCounters: map[string]disk.IOCountersStat{
-					"sda1": {Name: "sda1"},
-				},
-			},
-		)
-
-		assert.False(t, ok)
-		assert.Empty(t, key)
-		assert.Nil(t, stats)
-	})
-
-	t.Run("maps lvm symlinked device to io device through resolved name", func(t *testing.T) {
-		setEvalSymlinks(t, func(path string) (string, error) {
-			if path == "/dev/vg1/volume_1" {
-				return "/dev/dm-1", nil
-			}
-			return path, nil
-		})
-
-		key, stats, ok := registerFilesystemStats(
-			map[string]*system.FsStats{},
-			"/dev/vg1/volume_1",
-			"/volume1",
-			false,
-			"",
-			fsRegistrationContext{
-				isWindows: false,
-				efPath:    "/extra-filesystems",
-				diskIoCounters: map[string]disk.IOCountersStat{
-					"dm-0": {Name: "dm-0", Label: "vg1-syno_vg_reserved_area"},
-					"dm-1": {Name: "dm-1", Label: "vg1-volume_1"},
-				},
-			},
-		)
-
-		assert.True(t, ok)
-		assert.Equal(t, "dm-1", key)
-		assert.Equal(t, "/volume1", stats.Mountpoint)
-	})
-
-	t.Run("maps lvm device through resolved mapper label", func(t *testing.T) {
-		setEvalSymlinks(t, func(path string) (string, error) {
-			if path == "/dev/vg1/volume_1" {
-				return "/dev/mapper/vg1-volume_1", nil
-			}
-			return path, nil
-		})
-
-		key, _, ok := registerFilesystemStats(
-			map[string]*system.FsStats{},
-			"/dev/vg1/volume_1",
-			"/volume1",
-			false,
-			"",
-			fsRegistrationContext{
-				isWindows: false,
-				efPath:    "/extra-filesystems",
-				diskIoCounters: map[string]disk.IOCountersStat{
-					"dm-1": {Name: "dm-1", Label: "vg1-volume_1"},
-				},
-			},
-		)
-
-		assert.True(t, ok)
-		assert.Equal(t, "dm-1", key)
-	})
-
-	t.Run("maps lvm root device through resolved name", func(t *testing.T) {
-		setEvalSymlinks(t, func(path string) (string, error) {
-			if path == "/dev/vg1/volume_1" {
-				return "/dev/dm-1", nil
-			}
-			return path, nil
-		})
-
-		key, stats, ok := registerFilesystemStats(
-			map[string]*system.FsStats{},
-			"/dev/vg1/volume_1",
-			"/",
-			true,
-			"",
-			fsRegistrationContext{
-				isWindows: false,
-				efPath:    "/extra-filesystems",
-				diskIoCounters: map[string]disk.IOCountersStat{
-					"dm-1": {Name: "dm-1", Label: "vg1-volume_1"},
-				},
-			},
-		)
-
-		assert.True(t, ok)
-		assert.Equal(t, "dm-1", key)
-		assert.True(t, stats.Root)
-	})
-
-	t.Run("resolved device wins over filesystem fallback", func(t *testing.T) {
-		setEvalSymlinks(t, func(path string) (string, error) {
-			if path == "/dev/vg1/volume_1" {
-				return "/dev/dm-1", nil
-			}
-			return path, nil
-		})
-
-		key, _, ok := registerFilesystemStats(
-			map[string]*system.FsStats{},
-			"/dev/vg1/volume_1",
-			"/",
-			true,
-			"",
-			fsRegistrationContext{
-				filesystem: "sda",
-				isWindows:  false,
-				efPath:     "/extra-filesystems",
-				diskIoCounters: map[string]disk.IOCountersStat{
-					"dm-1": {Name: "dm-1", Label: "vg1-volume_1"},
-					"sda":  {Name: "sda"},
-				},
-			},
-		)
-
-		assert.True(t, ok)
-		assert.Equal(t, "dm-1", key)
-	})
-
-	t.Run("keeps base name when symlink resolution fails", func(t *testing.T) {
-		setEvalSymlinks(t, func(path string) (string, error) {
-			return "", os.ErrNotExist
-		})
-
-		key, _, ok := registerFilesystemStats(
-			map[string]*system.FsStats{},
-			"/dev/vg1/volume_1",
-			"/volume1",
-			false,
-			"",
-			fsRegistrationContext{
-				isWindows: false,
-				efPath:    "/extra-filesystems",
-				diskIoCounters: map[string]disk.IOCountersStat{
-					"dm-1": {Name: "dm-1", Label: "vg1-volume_1"},
-				},
-			},
-		)
-
-		assert.True(t, ok)
-		assert.Equal(t, "volume_1", key)
-	})
-
-	t.Run("does not resolve symlinks for relative device names", func(t *testing.T) {
-		setEvalSymlinks(t, func(path string) (string, error) {
-			return "/dev/sdb1", nil
-		})
-
-		key, _, ok := registerFilesystemStats(
-			map[string]*system.FsStats{},
-			"data",
-			"/mnt/data",
-			false,
-			"",
-			fsRegistrationContext{
-				isWindows: false,
-				efPath:    "/extra-filesystems",
-				diskIoCounters: map[string]disk.IOCountersStat{
-					"sdb1": {Name: "sdb1"},
-				},
-			},
-		)
-
-		assert.True(t, ok)
-		assert.Equal(t, "data", key)
-	})
-}
-
-// setEvalSymlinks swaps the device-symlink resolver for the duration of a test.
-func setEvalSymlinks(t *testing.T, fn func(string) (string, error)) {
+// setStatMount fakes statMount for the duration of a test. Paths missing from
+// mounts return an empty mountInfo, as on platforms without statMount.
+func setStatMount(t *testing.T, mounts map[string]mountInfo) {
 	t.Helper()
-	old := evalSymlinks
-	evalSymlinks = fn
-	t.Cleanup(func() { evalSymlinks = old })
+	old := statMount
+	statMount = func(path string) mountInfo { return mounts[path] }
+	t.Cleanup(func() { statMount = old })
 }
 
-func TestAddConfiguredRootFs(t *testing.T) {
-	t.Run("adds root from matching partition", func(t *testing.T) {
-		agent := &Agent{fsStats: make(map[string]*system.FsStats)}
-		discovery := diskDiscovery{
-			agent:          agent,
-			rootMountPoint: "/",
-			partitions:     []disk.PartitionStat{{Device: "/dev/ada0p2", Mountpoint: "/"}},
-			ctx: fsRegistrationContext{
-				filesystem:     "/dev/ada0p2",
-				filesystemName: "root disk",
-				isWindows:      false,
-				diskIoCounters: map[string]disk.IOCountersStat{
-					"ada0": {Name: "ada0", ReadBytes: 1000, WriteBytes: 1000},
-				},
-			},
-		}
-
-		ok := discovery.addConfiguredRootFs()
-
-		assert.True(t, ok)
-		stats, exists := agent.fsStats["ada0"]
-		assert.True(t, exists)
-		assert.True(t, stats.Root)
-		assert.Equal(t, "/", stats.Mountpoint)
-		assert.Equal(t, "root disk", stats.Name)
-	})
-
-	t.Run("adds root from io device when partition is missing", func(t *testing.T) {
-		agent := &Agent{fsStats: make(map[string]*system.FsStats)}
-		discovery := diskDiscovery{
-			agent:          agent,
-			rootMountPoint: "/sysroot",
-			ctx: fsRegistrationContext{
-				filesystem:     "zroot",
-				filesystemName: "root pool",
-				isWindows:      false,
-				diskIoCounters: map[string]disk.IOCountersStat{
-					"nda0": {Name: "nda0", Label: "zroot", ReadBytes: 1000, WriteBytes: 1000},
-				},
-			},
-		}
-
-		ok := discovery.addConfiguredRootFs()
-
-		assert.True(t, ok)
-		stats, exists := agent.fsStats["nda0"]
-		assert.True(t, exists)
-		assert.True(t, stats.Root)
-		assert.Equal(t, "/sysroot", stats.Mountpoint)
-		assert.Equal(t, "root pool", stats.Name)
-	})
-
-	t.Run("returns false when filesystem cannot be resolved", func(t *testing.T) {
-		agent := &Agent{fsStats: make(map[string]*system.FsStats)}
-		discovery := diskDiscovery{
-			agent:          agent,
-			rootMountPoint: "/",
-			ctx: fsRegistrationContext{
-				filesystem:     "missing-disk",
-				isWindows:      false,
-				diskIoCounters: map[string]disk.IOCountersStat{},
-			},
-		}
-
-		ok := discovery.addConfiguredRootFs()
-
-		assert.False(t, ok)
-		assert.Empty(t, agent.fsStats)
-	})
+// newTestDiscovery returns a discovery over the given diskstats devices with a
+// usage function that accepts every path and never reports equal usage. It
+// fakes statMount with no mounts; call setStatMount afterwards to add some.
+func newTestDiscovery(t *testing.T, counters map[string]disk.IOCountersStat) (*Agent, *diskDiscovery) {
+	t.Helper()
+	setStatMount(t, nil)
+	agent := &Agent{fsStats: make(map[string]*system.FsStats)}
+	return agent, &diskDiscovery{
+		agent:          agent,
+		rootMountPoint: "/",
+		usageFn:        func(string) (*disk.UsageStat, error) { return &disk.UsageStat{}, nil },
+		keys:           loadFsKeyStore(""),
+		ctx: fsRegistrationContext{
+			efPath:         filepath.FromSlash("/extra-filesystems"),
+			diskIoCounters: counters,
+		},
+	}
 }
 
-func TestAddPartitionRootFs(t *testing.T) {
-	t.Run("adds root from fallback partition candidate", func(t *testing.T) {
-		agent := &Agent{fsStats: make(map[string]*system.FsStats)}
-		discovery := diskDiscovery{
-			agent: agent,
-			ctx: fsRegistrationContext{
-				isWindows: false,
-				diskIoCounters: map[string]disk.IOCountersStat{
-					"nvme0n1": {Name: "nvme0n1", ReadBytes: 1000, WriteBytes: 1000},
-				},
-			},
-		}
-
-		ok := discovery.addPartitionRootFs("/dev/nvme0n1p2", "/")
-
-		assert.True(t, ok)
-		stats, exists := agent.fsStats["nvme0n1"]
-		assert.True(t, exists)
-		assert.True(t, stats.Root)
-		assert.Equal(t, "/", stats.Mountpoint)
-	})
-
-	t.Run("returns false when no io device matches", func(t *testing.T) {
-		agent := &Agent{fsStats: make(map[string]*system.FsStats)}
-		discovery := diskDiscovery{agent: agent, ctx: fsRegistrationContext{diskIoCounters: map[string]disk.IOCountersStat{}}}
-
-		ok := discovery.addPartitionRootFs("/dev/mapper/root", "/")
-
-		assert.False(t, ok)
-		assert.Empty(t, agent.fsStats)
-	})
+func counters(names ...string) map[string]disk.IOCountersStat {
+	m := make(map[string]disk.IOCountersStat, len(names))
+	for _, name := range names {
+		m[name] = disk.IOCountersStat{Name: name}
+	}
+	return m
 }
 
-func TestAddLastResortRootFs(t *testing.T) {
-	t.Run("uses most active io device when available", func(t *testing.T) {
-		agent := &Agent{fsStats: make(map[string]*system.FsStats)}
-		discovery := diskDiscovery{agent: agent, rootMountPoint: "/", ctx: fsRegistrationContext{diskIoCounters: map[string]disk.IOCountersStat{
+func TestAddRootFs(t *testing.T) {
+	t.Run("uses the device behind the root mount", func(t *testing.T) {
+		agent, d := newTestDiscovery(t, counters("nvme0n1", "nvme0n1p2"))
+		setStatMount(t, map[string]mountInfo{"/": {id: "dev:259:2", devName: "nvme0n1p2"}})
+
+		d.addRootFs()
+
+		root := agent.fsStats[rootFsKey]
+		require.NotNil(t, root)
+		assert.True(t, root.Root)
+		assert.Equal(t, "/", root.Mountpoint)
+		assert.Equal(t, "nvme0n1p2", root.IoDevice)
+	})
+
+	t.Run("container root uses the filesystem holding /etc/hosts", func(t *testing.T) {
+		agent, d := newTestDiscovery(t, counters("nvme0n1p3", "nvme0n1p6"))
+		setStatMount(t, map[string]mountInfo{
+			"/":          {id: "dev:0:50", overlay: true},
+			"/etc/hosts": {id: "dev:259:6", devName: "nvme0n1p6"},
+		})
+
+		d.addRootFs()
+
+		assert.Equal(t, "nvme0n1p6", agent.fsStats[rootFsKey].IoDevice)
+		assert.Equal(t, "/", agent.fsStats[rootFsKey].Mountpoint)
+		assert.ElementsMatch(t, []string{"mount:/", "dev:0:50", "dev:259:6"}, d.rootIDs)
+	})
+
+	t.Run("FILESYSTEM matches a partition", func(t *testing.T) {
+		agent, d := newTestDiscovery(t, map[string]disk.IOCountersStat{
+			"ada0": {Name: "ada0", ReadBytes: 1000, WriteBytes: 1000},
+		})
+		d.partitions = []disk.PartitionStat{{Device: "/dev/ada0p2", Mountpoint: "/"}}
+		d.ctx.filesystem, d.ctx.filesystemName = "/dev/ada0p2", "root disk"
+
+		d.addRootFs()
+
+		root := agent.fsStats[rootFsKey]
+		assert.Equal(t, "ada0", root.IoDevice)
+		assert.Equal(t, "root disk", root.Name)
+	})
+
+	t.Run("FILESYSTEM names an I/O device missing from partitions", func(t *testing.T) {
+		agent, d := newTestDiscovery(t, map[string]disk.IOCountersStat{
+			"nda0": {Name: "nda0", Label: "zroot", ReadBytes: 1000, WriteBytes: 1000},
+		})
+		d.rootMountPoint = "/sysroot"
+		d.ctx.filesystem, d.ctx.filesystemName = "zroot", "root pool"
+
+		d.addRootFs()
+
+		root := agent.fsStats[rootFsKey]
+		assert.Equal(t, "nda0", root.IoDevice)
+		assert.Equal(t, "/sysroot", root.Mountpoint)
+		assert.Equal(t, "root pool", root.Name)
+	})
+
+	t.Run("FILESYSTEM takes precedence over the root mount device", func(t *testing.T) {
+		agent, d := newTestDiscovery(t, map[string]disk.IOCountersStat{
+			"nvme0n1": {Name: "nvme0n1", ReadBytes: 1000, WriteBytes: 1000},
+		})
+		setStatMount(t, map[string]mountInfo{"/": {id: "dev:0:50", overlay: true}})
+		d.ctx.filesystem = "nvme0n1p2"
+
+		d.addRootFs()
+
+		assert.Equal(t, "nvme0n1", agent.fsStats[rootFsKey].IoDevice)
+	})
+
+	t.Run("unresolved FILESYSTEM falls back to the most active device", func(t *testing.T) {
+		agent, d := newTestDiscovery(t, map[string]disk.IOCountersStat{
 			"sda": {Name: "sda", ReadBytes: 5000, WriteBytes: 5000},
 			"sdb": {Name: "sdb", ReadBytes: 1000, WriteBytes: 1000},
-		}}}
+		})
+		d.ctx.filesystem = "missing-disk"
 
-		discovery.addLastResortRootFs()
+		d.addRootFs()
 
-		stats, exists := agent.fsStats["sda"]
-		assert.True(t, exists)
-		assert.True(t, stats.Root)
+		assert.Equal(t, "sda", agent.fsStats[rootFsKey].IoDevice)
 	})
 
-	t.Run("falls back to root key when mountpoint basename collides", func(t *testing.T) {
-		agent := &Agent{fsStats: map[string]*system.FsStats{
-			"sysroot": {Mountpoint: "/extra-filesystems/sysroot"},
-		}}
-		discovery := diskDiscovery{agent: agent, rootMountPoint: "/sysroot", ctx: fsRegistrationContext{diskIoCounters: map[string]disk.IOCountersStat{}}}
+	t.Run("maps a root partition to its disk by name", func(t *testing.T) {
+		agent, d := newTestDiscovery(t, map[string]disk.IOCountersStat{
+			"nvme0n1": {Name: "nvme0n1", ReadBytes: 1000, WriteBytes: 1000},
+		})
+		d.partitions = []disk.PartitionStat{{Device: "/dev/nvme0n1p2", Mountpoint: "/"}}
 
-		discovery.addLastResortRootFs()
+		d.addRootFs()
 
-		stats, exists := agent.fsStats["root"]
-		assert.True(t, exists)
-		assert.True(t, stats.Root)
-		assert.Equal(t, "/sysroot", stats.Mountpoint)
+		assert.Equal(t, "nvme0n1", agent.fsStats[rootFsKey].IoDevice)
+	})
+
+	t.Run("uses Docker bind mounts when the root partition is an overlay", func(t *testing.T) {
+		agent, d := newTestDiscovery(t, map[string]disk.IOCountersStat{
+			"sda1": {Name: "sda1", ReadBytes: 10},
+			"sdb":  {Name: "sdb", ReadBytes: 5000},
+		})
+		d.partitions = []disk.PartitionStat{
+			{Device: "overlay", Mountpoint: "/"},
+			{Device: "/dev/sda1", Mountpoint: "/etc/hosts"},
+		}
+
+		d.addRootFs()
+
+		assert.Equal(t, "sda1", agent.fsStats[rootFsKey].IoDevice)
+	})
+
+	t.Run("keeps the root mountpoint without any I/O device", func(t *testing.T) {
+		agent, d := newTestDiscovery(t, map[string]disk.IOCountersStat{})
+		d.rootMountPoint = "/sysroot"
+
+		d.addRootFs()
+
+		root := agent.fsStats[rootFsKey]
+		assert.Equal(t, "/sysroot", root.Mountpoint)
+		assert.Empty(t, root.IoDevice)
+	})
+
+	t.Run("matches the Windows system drive exactly (#2417)", func(t *testing.T) {
+		agent, d := newTestDiscovery(t, map[string]disk.IOCountersStat{
+			"C:": {Name: "C:", ReadBytes: 10},
+			"D:": {Name: "D:", ReadBytes: 100},
+			"P:": {Name: "P:", ReadBytes: 1000},
+		})
+		d.rootMountPoint = `C:\`
+		d.partitions = []disk.PartitionStat{{Device: "D:", Mountpoint: `D:\`}, {Device: "C:", Mountpoint: `C:\`}}
+
+		d.addRootFs()
+
+		assert.Len(t, agent.fsStats, 1)
+		assert.Equal(t, "C:", agent.fsStats[rootFsKey].IoDevice)
 	})
 }
 
-func TestAddConfiguredExtraFsEntry(t *testing.T) {
-	t.Run("uses matching partition when present", func(t *testing.T) {
-		agent := &Agent{fsStats: make(map[string]*system.FsStats)}
-		discovery := diskDiscovery{
-			agent:      agent,
-			partitions: []disk.PartitionStat{{Device: "/dev/sdb1", Mountpoint: "/mnt/backup"}},
-			usageFn: func(string) (*disk.UsageStat, error) {
-				t.Fatal("usage fallback should not be called when partition matches")
-				return nil, nil
-			},
-			ctx: fsRegistrationContext{
-				isWindows: false,
-				diskIoCounters: map[string]disk.IOCountersStat{
-					"sdb1": {Name: "sdb1"},
-				},
-			},
-		}
+func TestExtraFilesystemFolders(t *testing.T) {
+	ef := func(name string) string { return filepath.Join(filepath.FromSlash("/extra-filesystems"), name) }
 
-		discovery.addConfiguredExtraFsEntry("sdb1", "backup")
+	t.Run("keys by folder name and reads I/O from the mounted device (#294)", func(t *testing.T) {
+		agent, d := newTestDiscovery(t, counters("sdb1", "sdc1"))
+		// The folders were named after sdb1/sdc1, but the disks swapped names.
+		setStatMount(t, map[string]mountInfo{
+			ef("sdb1__media"): {id: "dev:8:33", devName: "sdc1"},
+			ef("sdc1"):        {id: "dev:8:17", devName: "sdb1"},
+		})
 
-		stats, exists := agent.fsStats["sdb1"]
-		assert.True(t, exists)
-		assert.Equal(t, "/mnt/backup", stats.Mountpoint)
-		assert.Equal(t, "backup", stats.Name)
-	})
-
-	t.Run("falls back to usage-validated path", func(t *testing.T) {
-		agent := &Agent{fsStats: make(map[string]*system.FsStats)}
-		discovery := diskDiscovery{
-			agent: agent,
-			usageFn: func(path string) (*disk.UsageStat, error) {
-				assert.Equal(t, "/srv/archive", path)
-				return &disk.UsageStat{}, nil
-			},
-			ctx: fsRegistrationContext{
-				isWindows: false,
-				diskIoCounters: map[string]disk.IOCountersStat{
-					"archive": {Name: "archive"},
-				},
-			},
-		}
-
-		discovery.addConfiguredExtraFsEntry("/srv/archive", "archive")
-
-		stats, exists := agent.fsStats["archive"]
-		assert.True(t, exists)
-		assert.Equal(t, "/srv/archive", stats.Mountpoint)
-		assert.Equal(t, "archive", stats.Name)
-	})
-
-	t.Run("ignores invalid filesystem entry", func(t *testing.T) {
-		agent := &Agent{fsStats: make(map[string]*system.FsStats)}
-		discovery := diskDiscovery{
-			agent: agent,
-			usageFn: func(string) (*disk.UsageStat, error) {
-				return nil, os.ErrNotExist
-			},
-		}
-
-		discovery.addConfiguredExtraFsEntry("/missing/archive", "")
-
-		assert.Empty(t, agent.fsStats)
-	})
-}
-
-func TestAddConfiguredExtraFilesystems(t *testing.T) {
-	t.Run("parses and registers multiple configured filesystems", func(t *testing.T) {
-		agent := &Agent{fsStats: make(map[string]*system.FsStats)}
-		discovery := diskDiscovery{
-			agent:      agent,
-			partitions: []disk.PartitionStat{{Device: "/dev/sda1", Mountpoint: "/mnt/fast"}},
-			usageFn: func(path string) (*disk.UsageStat, error) {
-				if path == "/srv/archive" {
-					return &disk.UsageStat{}, nil
-				}
-				return nil, os.ErrNotExist
-			},
-			ctx: fsRegistrationContext{
-				isWindows: false,
-				diskIoCounters: map[string]disk.IOCountersStat{
-					"sda1":    {Name: "sda1"},
-					"archive": {Name: "archive"},
-				},
-			},
-		}
-
-		discovery.addConfiguredExtraFilesystems("sda1__fast,/srv/archive__cold")
-
-		assert.Contains(t, agent.fsStats, "sda1")
-		assert.Equal(t, "fast", agent.fsStats["sda1"].Name)
-		assert.Contains(t, agent.fsStats, "archive")
-		assert.Equal(t, "cold", agent.fsStats["archive"].Name)
-	})
-}
-
-func TestAddExtraFilesystemFolders(t *testing.T) {
-	t.Run("adds missing folders and skips existing mountpoints", func(t *testing.T) {
-		agent := &Agent{fsStats: map[string]*system.FsStats{
-			"existing": {Mountpoint: filepath.FromSlash("/extra-filesystems/existing")},
-		}}
-		discovery := diskDiscovery{
-			agent: agent,
-			ctx: fsRegistrationContext{
-				isWindows: false,
-				efPath:    filepath.FromSlash("/extra-filesystems"),
-				diskIoCounters: map[string]disk.IOCountersStat{
-					"newdisk": {Name: "newdisk"},
-				},
-			},
-		}
-
-		discovery.addExtraFilesystemFolders([]string{"existing", "newdisk__Archive"})
+		d.addExtraFilesystemFolders([]string{"sdb1__media", "sdc1"})
+		d.registerExtraFilesystems()
 
 		require.Len(t, agent.fsStats, 2)
-		stats, exists := agent.fsStats["newdisk"]
-		require.True(t, exists)
-		assert.Equal(t, filepath.FromSlash("/extra-filesystems/newdisk__Archive"), stats.Mountpoint)
-		assert.Equal(t, "Archive", stats.Name)
+		assert.Equal(t, "sdc1", agent.fsStats["media"].IoDevice)
+		assert.Equal(t, "media", agent.fsStats["media"].Name)
+		assert.Equal(t, ef("sdb1__media"), agent.fsStats["media"].Mountpoint)
+		assert.Equal(t, "sdb1", agent.fsStats["sdc1"].IoDevice)
+		assert.Empty(t, agent.fsStats["sdc1"].Name)
+	})
+
+	t.Run("falls back to the folder device hint", func(t *testing.T) {
+		agent, d := newTestDiscovery(t, map[string]disk.IOCountersStat{
+			"dm-1":      {Name: "dm-1", Label: "luks-2bcb02be"},
+			"nvme0n1p2": {Name: "nvme0n1p2"},
+		})
+		d.partitions = []disk.PartitionStat{{Device: "/dev/mapper/luks-2bcb02be", Mountpoint: ef("nvme0n1p2__Archive")}}
+
+		d.addExtraFilesystemFolders([]string{"nvme0n1p2__Archive"})
+		d.registerExtraFilesystems()
+
+		assert.Equal(t, "nvme0n1p2", agent.fsStats["Archive"].IoDevice)
+	})
+
+	t.Run("falls back to the partition device", func(t *testing.T) {
+		agent, d := newTestDiscovery(t, map[string]disk.IOCountersStat{
+			"dm-1": {Name: "dm-1", Label: "luks-2bcb02be"},
+		})
+		d.partitions = []disk.PartitionStat{{Device: "/dev/mapper/luks-2bcb02be", Mountpoint: ef("Archive")}}
+
+		d.addExtraFilesystemFolders([]string{"Archive"})
+		d.registerExtraFilesystems()
+
+		assert.Equal(t, "dm-1", agent.fsStats["Archive"].IoDevice)
+	})
+
+	t.Run("custom name without device", func(t *testing.T) {
+		agent, d := newTestDiscovery(t, counters())
+
+		d.addExtraFilesystemFolders([]string{"__Share"})
+		d.registerExtraFilesystems()
+
+		require.Contains(t, agent.fsStats, "Share")
+		assert.Empty(t, agent.fsStats["Share"].IoDevice)
 	})
 }
 
-func TestAddPartitionExtraFs(t *testing.T) {
-	makeDiscovery := func(agent *Agent) diskDiscovery {
-		return diskDiscovery{
-			agent: agent,
-			ctx: fsRegistrationContext{
-				isWindows: false,
-				efPath:    filepath.FromSlash("/extra-filesystems"),
-				diskIoCounters: map[string]disk.IOCountersStat{
-					"nvme0n1p1": {Name: "nvme0n1p1"},
-					"nvme1n1":   {Name: "nvme1n1"},
-				},
-			},
+func TestConfiguredExtraFilesystems(t *testing.T) {
+	t.Run("registers partitions and usage-validated paths", func(t *testing.T) {
+		agent, d := newTestDiscovery(t, counters("sda1"))
+		d.partitions = []disk.PartitionStat{{Device: "/dev/sda1", Mountpoint: "/mnt/fast"}}
+		d.usageFn = func(path string) (*disk.UsageStat, error) {
+			if path == "/srv/archive" {
+				return &disk.UsageStat{}, nil
+			}
+			return nil, os.ErrNotExist
 		}
+
+		auto := d.addConfiguredExtraFilesystems("sda1__fast, ,/srv/archive__cold,/missing,")
+		d.registerExtraFilesystems()
+
+		assert.False(t, auto)
+		require.Len(t, agent.fsStats, 2)
+		assert.Equal(t, "/mnt/fast", agent.fsStats["fast"].Mountpoint)
+		assert.Equal(t, "sda1", agent.fsStats["fast"].IoDevice)
+		assert.Equal(t, "/srv/archive", agent.fsStats["cold"].Mountpoint)
+	})
+
+	t.Run("unnamed entry keeps the device name as key", func(t *testing.T) {
+		agent, d := newTestDiscovery(t, counters("sdb1"))
+		d.partitions = []disk.PartitionStat{{Device: "/dev/sdb1", Mountpoint: "/mnt/data"}}
+
+		d.addConfiguredExtraFilesystems("/mnt/data")
+		d.registerExtraFilesystems()
+
+		require.Contains(t, agent.fsStats, "sdb1")
+		assert.Equal(t, "/mnt/data", agent.fsStats["sdb1"].Mountpoint)
+	})
+
+	t.Run("maps LVM volumes to their dm device (#1790, #2482)", func(t *testing.T) {
+		agent, d := newTestDiscovery(t, map[string]disk.IOCountersStat{
+			"dm-0": {Name: "dm-0", Label: "vg1-syno_vg_reserved_area"},
+			"dm-1": {Name: "dm-1", Label: "vg1-volume_1"},
+		})
+		setStatMount(t, map[string]mountInfo{"/volume1": {id: "dev:253:1", devName: "dm-1"}})
+		d.partitions = []disk.PartitionStat{{Device: "/dev/vg1/volume_1", Mountpoint: "/volume1"}}
+
+		d.addConfiguredExtraFilesystems("/volume1")
+		d.registerExtraFilesystems()
+
+		require.Contains(t, agent.fsStats, "dm-1")
+		assert.Equal(t, "dm-1", agent.fsStats["dm-1"].IoDevice)
+	})
+
+	t.Run("skips autofs placeholders of systemd automounts (#1931)", func(t *testing.T) {
+		agent, d := newTestDiscovery(t, counters("sdb1", "sdc1"))
+		setStatMount(t, map[string]mountInfo{
+			"/media/video":  {id: "dev:8:33", devName: "sdc1"},
+			"/media/backup": {id: "dev:8:17", devName: "sdb1"},
+		})
+		d.partitions = []disk.PartitionStat{
+			{Device: "systemd-1", Mountpoint: "/media/backup", Fstype: "autofs"},
+			{Device: "systemd-1", Mountpoint: "/media/video", Fstype: "autofs"},
+			{Device: "/dev/sdc1", Mountpoint: "/media/video", Fstype: "exfat"},
+		}
+
+		// /media/backup is not mounted yet, so only its autofs entry is listed.
+		d.addConfiguredExtraFilesystems("/media/video__Video,/media/backup__Backup")
+		d.registerExtraFilesystems()
+
+		require.Len(t, agent.fsStats, 2)
+		assert.Equal(t, "sdc1", agent.fsStats["Video"].IoDevice)
+		assert.Equal(t, "sdb1", agent.fsStats["Backup"].IoDevice)
+	})
+
+	t.Run("discovers disks automatically unless a list is given", func(t *testing.T) {
+		for value, want := range map[string]bool{
+			"":                 true, // unset or empty: discovery is the default
+			" , ":              true,
+			"AUTO":             true,
+			"auto,/mnt/x__X":   true,
+			"none":             false,
+			"/mnt/x__X":        false,
+			"__auto":           false, // a custom name, not the token
+			"/mnt/x__X, none ": false,
+		} {
+			_, d := newTestDiscovery(t, counters())
+			d.usageFn = func(string) (*disk.UsageStat, error) { return nil, os.ErrNotExist }
+			assert.Equal(t, want, d.addConfiguredExtraFilesystems(value), "EXTRA_FILESYSTEMS=%q", value)
+			assert.Empty(t, d.extras)
+		}
+	})
+}
+
+func TestDedupeExtraFilesystems(t *testing.T) {
+	ef := func(name string) string { return filepath.Join(filepath.FromSlash("/extra-filesystems"), name) }
+
+	t.Run("merges the root filesystem into root and keeps its name (#1428)", func(t *testing.T) {
+		agent, d := newTestDiscovery(t, counters("nvme0n1p2"))
+		setStatMount(t, map[string]mountInfo{
+			"/":                 {id: "dev:259:2", devName: "nvme0n1p2"},
+			ef("nvme0n1p2__OS"): {id: "dev:259:2", devName: "nvme0n1p2"},
+		})
+
+		d.addRootFs()
+		d.addExtraFilesystemFolders([]string{"nvme0n1p2__OS"})
+		d.registerExtraFilesystems()
+
+		require.Len(t, agent.fsStats, 1)
+		assert.Equal(t, "OS", agent.fsStats[rootFsKey].Name)
+	})
+
+	t.Run("merges a volume holding the container into root (#1878)", func(t *testing.T) {
+		agent, d := newTestDiscovery(t, counters("dm-1", "dm-2"))
+		setStatMount(t, map[string]mountInfo{
+			"/":                    {id: "dev:0:50", overlay: true},
+			"/etc/hosts":           {id: "dev:253:2", devName: "dm-2"},
+			ef("md2__Volume2"):     {id: "dev:253:2", devName: "dm-2"},
+			ef("md1__Volume1"):     {id: "dev:253:1", devName: "dm-1"},
+			ef("not-a-bind-mount"): {id: "dev:0:50", overlay: true},
+		})
+
+		d.addRootFs()
+		d.addExtraFilesystemFolders([]string{"md1__Volume1", "md2__Volume2", "not-a-bind-mount"})
+		d.registerExtraFilesystems()
+
+		require.Len(t, agent.fsStats, 2)
+		assert.Equal(t, "Volume2", agent.fsStats[rootFsKey].Name)
+		assert.Equal(t, "dm-2", agent.fsStats[rootFsKey].IoDevice)
+		assert.Equal(t, "dm-1", agent.fsStats["Volume1"].IoDevice)
+	})
+
+	t.Run("keeps different filesystems with equal usage (#2103)", func(t *testing.T) {
+		agent, d := newTestDiscovery(t, counters("nvme0n1p3", "nvme0n1p6"))
+		setStatMount(t, map[string]mountInfo{
+			"/":        {id: "dev:259:3", devName: "nvme0n1p3"},
+			ef("DATA"): {id: "dev:259:6", devName: "nvme0n1p6"},
+		})
+		d.usageFn = func(string) (*disk.UsageStat, error) {
+			return &disk.UsageStat{Total: 100 << 30, Used: 40 << 30}, nil
+		}
+
+		d.addRootFs()
+		d.addExtraFilesystemFolders([]string{"DATA"})
+		d.registerExtraFilesystems()
+
+		require.Contains(t, agent.fsStats, "DATA")
+		assert.Equal(t, "nvme0n1p6", agent.fsStats["DATA"].IoDevice)
+	})
+
+	t.Run("keeps one entry per filesystem", func(t *testing.T) {
+		agent, d := newTestDiscovery(t, counters("sdb1"))
+		setStatMount(t, map[string]mountInfo{
+			"/mnt/data":      {id: "dev:8:17", devName: "sdb1"},
+			ef("sdb1__Data"): {id: "dev:8:17", devName: "sdb1"},
+		})
+		d.partitions = []disk.PartitionStat{{Device: "/dev/sdb1", Mountpoint: "/mnt/data"}}
+
+		d.addConfiguredExtraFilesystems("/mnt/data__Explicit,/mnt/data__Again")
+		d.addExtraFilesystemFolders([]string{"sdb1__Data"})
+		d.registerExtraFilesystems()
+
+		require.Len(t, agent.fsStats, 1)
+		assert.Equal(t, "/mnt/data", agent.fsStats["Explicit"].Mountpoint)
+	})
+
+	t.Run("compares usage without filesystem identities", func(t *testing.T) {
+		// A folder on the system drive is listed in EXTRA_FILESYSTEMS on Windows.
+		agent, d := newTestDiscovery(t, counters("C:", "D:"))
+		d.rootMountPoint = `C:\`
+		d.partitions = []disk.PartitionStat{{Device: "C:", Mountpoint: `C:\`}, {Device: "D:", Mountpoint: `D:\`}}
+		d.usageFn = func(path string) (*disk.UsageStat, error) {
+			if path == `D:\` {
+				return &disk.UsageStat{Total: 500 << 30, Used: 1 << 30}, nil
+			}
+			return &disk.UsageStat{Total: 100 << 30, Used: 40 << 30}, nil
+		}
+
+		d.addRootFs()
+		d.addConfiguredExtraFilesystems(`C:\Users__System,D:`)
+		d.registerExtraFilesystems()
+
+		require.Len(t, agent.fsStats, 2)
+		assert.Equal(t, "System", agent.fsStats[rootFsKey].Name)
+		assert.Equal(t, "D:", agent.fsStats["D:"].IoDevice)
+	})
+}
+
+func TestAssignKeys(t *testing.T) {
+	t.Run("pins unnamed keys to stable IDs across device renames (#294)", func(t *testing.T) {
+		dataDir := t.TempDir()
+		run := func(mounts map[string]mountInfo, partitions []disk.PartitionStat) *Agent {
+			agent, d := newTestDiscovery(t, counters("sdb1", "sdc1"))
+			setStatMount(t, mounts)
+			d.keys = loadFsKeyStore(dataDir)
+			d.partitions = partitions
+			d.addConfiguredExtraFilesystems("/mnt/a,/mnt/b")
+			d.registerExtraFilesystems()
+			d.keys.save()
+			return agent
+		}
+
+		agent := run(map[string]mountInfo{
+			"/mnt/a": {id: "dev:8:17", devName: "sdb1", stableID: "fsid:a"},
+			"/mnt/b": {id: "dev:8:33", devName: "sdc1", stableID: "fsid:b"},
+		}, []disk.PartitionStat{{Device: "/dev/sdb1", Mountpoint: "/mnt/a"}, {Device: "/dev/sdc1", Mountpoint: "/mnt/b"}})
+		assert.Equal(t, "/mnt/a", agent.fsStats["sdb1"].Mountpoint)
+		assert.Equal(t, "/mnt/b", agent.fsStats["sdc1"].Mountpoint)
+
+		// After a reboot the disks swapped names.
+		agent = run(map[string]mountInfo{
+			"/mnt/a": {id: "dev:8:33", devName: "sdc1", stableID: "fsid:a"},
+			"/mnt/b": {id: "dev:8:17", devName: "sdb1", stableID: "fsid:b"},
+		}, []disk.PartitionStat{{Device: "/dev/sdc1", Mountpoint: "/mnt/a"}, {Device: "/dev/sdb1", Mountpoint: "/mnt/b"}})
+		assert.Equal(t, "/mnt/a", agent.fsStats["sdb1"].Mountpoint)
+		assert.Equal(t, "sdc1", agent.fsStats["sdb1"].IoDevice)
+		assert.Equal(t, "/mnt/b", agent.fsStats["sdc1"].Mountpoint)
+		assert.Equal(t, "sdb1", agent.fsStats["sdc1"].IoDevice)
+
+		// Disk a was replaced. The new disk is named sdb1 now, while b still
+		// claims its own key.
+		agent = run(map[string]mountInfo{
+			"/mnt/a": {id: "dev:8:17", devName: "sdb1", stableID: "fsid:new"},
+			"/mnt/b": {id: "dev:8:33", devName: "sdc1", stableID: "fsid:b"},
+		}, []disk.PartitionStat{{Device: "/dev/sdb1", Mountpoint: "/mnt/a"}, {Device: "/dev/sdc1", Mountpoint: "/mnt/b"}})
+		assert.Equal(t, "/mnt/a", agent.fsStats["sdb1"].Mountpoint)
+		assert.Equal(t, "/mnt/b", agent.fsStats["sdc1"].Mountpoint)
+
+		assert.Equal(t, map[string]string{"fsid:new": "sdb1", "fsid:b": "sdc1"}, loadFsKeyStore(dataDir).keys)
+	})
+
+	t.Run("never drops a filesystem whose key is taken", func(t *testing.T) {
+		agent, d := newTestDiscovery(t, counters("disk1"))
+		d.partitions = []disk.PartitionStat{
+			{Device: "/dev/disk1s1", Mountpoint: "/Volumes/A"},
+			{Device: "/dev/disk1s2", Mountpoint: "/Volumes/B"},
+			{Device: "/dev/disk1s3", Mountpoint: "/Volumes/C/B"},
+		}
+
+		d.addConfiguredExtraFilesystems("/Volumes/A,/Volumes/B,/Volumes/C/B")
+		d.registerExtraFilesystems()
+
+		require.Len(t, agent.fsStats, 3)
+		assert.Equal(t, "/Volumes/A", agent.fsStats["disk1"].Mountpoint)
+		assert.Equal(t, "/Volumes/B", agent.fsStats["B"].Mountpoint)
+		assert.Equal(t, "/Volumes/C/B", agent.fsStats["disk1-2"].Mountpoint)
+	})
+
+	t.Run("explicit names win over pinned keys", func(t *testing.T) {
+		agent, d := newTestDiscovery(t, counters("sdb1", "sdc1"))
+		setStatMount(t, map[string]mountInfo{
+			"/mnt/a": {id: "dev:8:17", devName: "sdb1", stableID: "fsid:a"},
+			"/mnt/b": {id: "dev:8:33", devName: "sdc1", stableID: "fsid:b"},
+		})
+		d.keys.keys["fsid:b"] = "Media"
+		d.partitions = []disk.PartitionStat{{Device: "/dev/sdb1", Mountpoint: "/mnt/a"}, {Device: "/dev/sdc1", Mountpoint: "/mnt/b"}}
+
+		d.addConfiguredExtraFilesystems("/mnt/a__Media,/mnt/b")
+		d.registerExtraFilesystems()
+
+		assert.Equal(t, "/mnt/a", agent.fsStats["Media"].Mountpoint)
+		assert.Equal(t, "/mnt/b", agent.fsStats["sdc1"].Mountpoint)
+		assert.Equal(t, "sdc1", d.keys.keys["fsid:b"])
+	})
+}
+
+func TestAutoFilesystems(t *testing.T) {
+	dir := t.TempDir()
+	data, bind, file := filepath.Join(dir, "data"), filepath.Join(dir, "bind"), filepath.Join(dir, "localtime")
+	require.NoError(t, os.Mkdir(data, 0o755))
+	require.NoError(t, os.Mkdir(bind, 0o755))
+	require.NoError(t, os.WriteFile(file, nil, 0o644))
+
+	agent, d := newTestDiscovery(t, counters("sda1", "sdb1"))
+	setStatMount(t, map[string]mountInfo{
+		data: {id: "dev:8:17", devName: "sdb1"},
+		bind: {id: "dev:8:17", devName: "sdb1"},
+	})
+	d.partitions = []disk.PartitionStat{
+		{Device: "/dev/sda1", Mountpoint: "/", Fstype: "ext4"},
+		{Device: "/dev/sdb1", Mountpoint: data, Fstype: "ext4"},
+		{Device: "/dev/sdb1", Mountpoint: bind, Fstype: "ext4"},
+		{Device: "/dev/sda1", Mountpoint: file, Fstype: "ext4"},
+		{Device: "tmpfs", Mountpoint: "/run/user/1000", Fstype: "tmpfs"},
+		{Device: "/dev/loop0", Mountpoint: "/snap/core/1", Fstype: "squashfs"},
+		{Device: "/dev/sdc1", Mountpoint: "/var/lib/docker/overlay2", Fstype: "ext4"},
+		{Device: "/dev/sdd1", Mountpoint: "/extra-filesystems/sdd1", Fstype: "ext4"},
+		{Device: "tank/data", Mountpoint: "/tank/data", Fstype: "zfs"},
+		{Device: "systemd-1", Mountpoint: "/media/backup", Fstype: "autofs"},
+		{Device: "/dev/nvme0n1p1", Mountpoint: "/boot/efi", Fstype: "vfat"},
 	}
 
-	t.Run("registers direct child of extra-filesystems", func(t *testing.T) {
-		agent := &Agent{fsStats: make(map[string]*system.FsStats)}
-		d := makeDiscovery(agent)
+	require.True(t, d.addConfiguredExtraFilesystems(""))
+	d.addAutoFilesystems()
+	d.registerExtraFilesystems()
 
-		d.addPartitionExtraFs(disk.PartitionStat{
-			Device:     "/dev/nvme0n1p1",
-			Mountpoint: filepath.FromSlash("/extra-filesystems/nvme0n1p1__caddy1-root"),
-		})
+	require.Len(t, agent.fsStats, 1)
+	assert.Equal(t, data, agent.fsStats["sdb1"].Mountpoint)
 
-		stats, exists := agent.fsStats["nvme0n1p1"]
-		require.True(t, exists)
-		assert.Equal(t, filepath.FromSlash("/extra-filesystems/nvme0n1p1__caddy1-root"), stats.Mountpoint)
-		assert.Equal(t, "caddy1-root", stats.Name)
-	})
+	t.Run("explicit entries win over auto", func(t *testing.T) {
+		agent, d := newTestDiscovery(t, counters("sdb1"))
+		d.partitions = []disk.PartitionStat{{Device: "/dev/sdb1", Mountpoint: data, Fstype: "ext4"}}
 
-	t.Run("skips nested mount under extra-filesystem bind mount", func(t *testing.T) {
-		agent := &Agent{fsStats: make(map[string]*system.FsStats)}
-		d := makeDiscovery(agent)
-
-		// These simulate the virtual mounts that appear when host / is bind-mounted
-		// with disk.Partitions(all=true) — e.g. /proc, /sys, /dev visible under the mount.
-		for _, nested := range []string{
-			filepath.FromSlash("/extra-filesystems/nvme0n1p1__caddy1-root/proc"),
-			filepath.FromSlash("/extra-filesystems/nvme0n1p1__caddy1-root/sys"),
-			filepath.FromSlash("/extra-filesystems/nvme0n1p1__caddy1-root/dev"),
-			filepath.FromSlash("/extra-filesystems/nvme0n1p1__caddy1-root/run"),
-		} {
-			d.addPartitionExtraFs(disk.PartitionStat{Device: "tmpfs", Mountpoint: nested})
+		if d.addConfiguredExtraFilesystems("auto," + data + "__Data") {
+			d.addAutoFilesystems()
 		}
+		d.registerExtraFilesystems()
 
-		assert.Empty(t, agent.fsStats)
-	})
-
-	t.Run("registers both direct children, skips their nested mounts", func(t *testing.T) {
-		agent := &Agent{fsStats: make(map[string]*system.FsStats)}
-		d := makeDiscovery(agent)
-
-		partitions := []disk.PartitionStat{
-			{Device: "/dev/nvme0n1p1", Mountpoint: filepath.FromSlash("/extra-filesystems/nvme0n1p1__caddy1-root")},
-			{Device: "/dev/nvme1n1", Mountpoint: filepath.FromSlash("/extra-filesystems/nvme1n1__caddy1-docker")},
-			{Device: "proc", Mountpoint: filepath.FromSlash("/extra-filesystems/nvme0n1p1__caddy1-root/proc")},
-			{Device: "sysfs", Mountpoint: filepath.FromSlash("/extra-filesystems/nvme0n1p1__caddy1-root/sys")},
-			{Device: "overlay", Mountpoint: filepath.FromSlash("/extra-filesystems/nvme0n1p1__caddy1-root/var/lib/docker")},
-		}
-		for _, p := range partitions {
-			d.addPartitionExtraFs(p)
-		}
-
-		require.Len(t, agent.fsStats, 2)
-		require.Contains(t, agent.fsStats, "nvme0n1p1")
-		assert.Equal(t, "caddy1-root", agent.fsStats["nvme0n1p1"].Name)
-		require.Contains(t, agent.fsStats, "nvme1n1")
-		assert.Equal(t, "caddy1-docker", agent.fsStats["nvme1n1"].Name)
-	})
-
-	t.Run("skips partition not under extra-filesystems", func(t *testing.T) {
-		agent := &Agent{fsStats: make(map[string]*system.FsStats)}
-		d := makeDiscovery(agent)
-
-		d.addPartitionExtraFs(disk.PartitionStat{
-			Device:     "/dev/nvme0n1p1",
-			Mountpoint: "/",
-		})
-
-		assert.Empty(t, agent.fsStats)
+		require.Len(t, agent.fsStats, 1)
+		assert.Contains(t, agent.fsStats, "Data")
 	})
 }
 
@@ -1113,8 +954,10 @@ func TestHasSameDiskUsage(t *testing.T) {
 func TestInitializeDiskIoStatsResetsTrackedDevices(t *testing.T) {
 	agent := &Agent{
 		fsStats: map[string]*system.FsStats{
-			"sda": {},
-			"sdb": {},
+			"root":  {Root: true, IoDevice: "sda"},
+			"data":  {IoDevice: "sdb"},
+			"share": {IoDevice: "sdb"},
+			"nfs":   {},
 		},
 		fsNames: []string{"stale", "sda"},
 	}
@@ -1124,10 +967,11 @@ func TestInitializeDiskIoStatsResetsTrackedDevices(t *testing.T) {
 		"sdb": {Name: "sdb", ReadBytes: 30, WriteBytes: 40},
 	})
 
+	// Filesystems sharing a device track it once.
 	assert.ElementsMatch(t, []string{"sda", "sdb"}, agent.fsNames)
-	assert.Len(t, agent.fsNames, 2)
-	assert.Equal(t, uint64(10), agent.fsStats["sda"].TotalRead)
-	assert.Equal(t, uint64(20), agent.fsStats["sda"].TotalWrite)
+	assert.Equal(t, uint64(10), agent.fsStats["root"].TotalRead)
+	assert.Equal(t, uint64(20), agent.fsStats["root"].TotalWrite)
+	assert.Equal(t, uint64(30), agent.fsStats["share"].TotalRead)
 	assert.Equal(t, uint64(10), agent.diskBaseline["sda"].readBytes)
 	assert.Equal(t, uint64(40), agent.diskBaseline["sdb"].writeBytes)
 	assert.False(t, agent.diskBaseline["sda"].at.IsZero())
@@ -1138,8 +982,8 @@ func TestInitializeDiskIoStatsResetsTrackedDevices(t *testing.T) {
 	})
 
 	assert.Equal(t, []string{"sdb"}, agent.fsNames)
-	assert.Equal(t, uint64(50), agent.fsStats["sdb"].TotalRead)
-	assert.Equal(t, uint64(60), agent.fsStats["sdb"].TotalWrite)
+	assert.Equal(t, uint64(50), agent.fsStats["data"].TotalRead)
+	assert.Equal(t, uint64(60), agent.fsStats["share"].TotalWrite)
 }
 
 func TestIoTimeDelta(t *testing.T) {
@@ -1199,56 +1043,4 @@ func TestFindIoDeviceWindowsVolumeNames(t *testing.T) {
 	device, ok := findIoDevice(`C:\`, ioCounters)
 	assert.True(t, ok)
 	assert.Equal(t, "C:", device)
-}
-
-func TestAddPartitionRootFsWindowsDrive(t *testing.T) {
-	agent := &Agent{fsStats: make(map[string]*system.FsStats)}
-	discovery := diskDiscovery{
-		agent: agent,
-		ctx: fsRegistrationContext{
-			isWindows: true,
-			diskIoCounters: map[string]disk.IOCountersStat{
-				"C:": {Name: "C:"},
-				"D:": {Name: "D:"},
-				"P:": {Name: "P:"},
-			},
-		},
-	}
-
-	ok := discovery.addPartitionRootFs("C:", `C:\`)
-
-	assert.True(t, ok)
-	assert.Len(t, agent.fsStats, 1)
-	stats, exists := agent.fsStats["C:"]
-	assert.True(t, exists)
-	assert.True(t, stats.Root)
-}
-
-func TestAddPartitionRootFsKeyAlreadyRegistered(t *testing.T) {
-	// The root drive is also listed in EXTRA_FILESYSTEMS, so its key is taken
-	// before the root fallback runs. The existing entry must be promoted to root
-	// rather than falling back to the most active device, which here is D:.
-	agent := &Agent{fsStats: map[string]*system.FsStats{
-		"C:": {Mountpoint: `C:\`, Name: "System"},
-		"D:": {Mountpoint: `D:\`},
-	}}
-	discovery := diskDiscovery{
-		agent:          agent,
-		rootMountPoint: `C:\`,
-		ctx: fsRegistrationContext{
-			isWindows: true,
-			diskIoCounters: map[string]disk.IOCountersStat{
-				"C:": {Name: "C:", ReadBytes: 10},
-				"D:": {Name: "D:", ReadBytes: 100},
-			},
-		},
-	}
-
-	ok := discovery.addPartitionRootFs("C:", `C:\`)
-	assert.True(t, ok)
-	assert.Len(t, agent.fsStats, 2)
-	assert.True(t, agent.fsStats["C:"].Root)
-	assert.Equal(t, `C:\`, agent.fsStats["C:"].Mountpoint)
-	assert.Equal(t, "System", agent.fsStats["C:"].Name)
-	assert.False(t, agent.fsStats["D:"].Root)
 }
