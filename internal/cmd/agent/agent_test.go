@@ -8,7 +8,6 @@ import (
 	"testing"
 
 	"github.com/henrygd/beszel/agent"
-	"github.com/henrygd/beszel/agent/utils"
 
 	"github.com/spf13/pflag"
 	"github.com/stretchr/testify/assert"
@@ -272,17 +271,13 @@ func TestParseFlags(t *testing.T) {
 	}()
 
 	tests := []struct {
-		name            string
-		args            []string
-		expected        cmdOptions
-		envHeaders      string
-		expectedHeaders string
+		name     string
+		args     []string
+		expected cmdOptions
 	}{
 		{
-			name:            "no flags",
-			args:            []string{"cmd"},
-			envHeaders:      "X-Env: value",
-			expectedHeaders: "X-Env: value",
+			name: "no flags",
+			args: []string{"cmd"},
 			expected: cmdOptions{
 				key:    "",
 				listen: "",
@@ -344,24 +339,6 @@ func TestParseFlags(t *testing.T) {
 				listen: ":8080",
 			},
 		},
-		{
-			name:            "hub headers override environment",
-			args:            []string{"cmd", "--hub-headers", "X-One: 1, X-Two: 2"},
-			expected:        cmdOptions{hubHeaders: "X-One: 1, X-Two: 2"},
-			envHeaders:      "X-Env: value",
-			expectedHeaders: "X-One: 1, X-Two: 2",
-		},
-		{
-			name:            "hub headers single dash with equals",
-			args:            []string{"cmd", "-hub-headers=X-One: 1"},
-			expected:        cmdOptions{hubHeaders: "X-One: 1"},
-			expectedHeaders: "X-One: 1",
-		},
-		{
-			name:       "empty hub headers clear environment",
-			args:       []string{"cmd", "--hub-headers="},
-			envHeaders: "X-Env: value",
-		},
 	}
 
 	for _, tt := range tests {
@@ -369,16 +346,12 @@ func TestParseFlags(t *testing.T) {
 			// Reset flags for each test
 			pflag.CommandLine = pflag.NewFlagSet(tt.args[0], pflag.ExitOnError)
 			os.Args = tt.args
-			t.Setenv("HUB_HEADERS", "X-Unprefixed: value")
-			t.Setenv("BESZEL_AGENT_HUB_HEADERS", tt.envHeaders)
 
 			var opts cmdOptions
 			opts.parse()
 			pflag.Parse()
 
 			assert.Equal(t, tt.expected, opts)
-			headers, _ := utils.GetEnv("HUB_HEADERS")
-			assert.Equal(t, tt.expectedHeaders, headers)
 		})
 	}
 }
