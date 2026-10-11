@@ -523,11 +523,11 @@ type SmartData struct {
 	ModelName       string            `json:"mn,omitempty" cbor:"1,keyasint,omitempty"`
 	SerialNumber    string            `json:"sn,omitempty" cbor:"2,keyasint,omitempty"`
 	FirmwareVersion string            `json:"fv,omitempty" cbor:"3,keyasint,omitempty"`
-	Capacity        uint64            `json:"c,omitempty" cbor:"4,keyasint,omitempty"`
+	Capacity        uint64            `json:"c,omitzero" cbor:"4,keyasint,omitempty"`
 	SmartStatus     string            `json:"s,omitempty" cbor:"5,keyasint,omitempty"`
 	DiskName        string            `json:"dn,omitempty" cbor:"6,keyasint,omitempty"`
 	DiskType        string            `json:"dt,omitempty" cbor:"7,keyasint,omitempty"`
-	Temperature     uint8             `json:"t,omitempty" cbor:"8,keyasint,omitempty"`
+	Temperature     uint8             `json:"t,omitzero" cbor:"8,keyasint,omitempty"`
 	Attributes      []*SmartAttribute `json:"a,omitempty" cbor:"9,keyasint,omitempty"`
 }
 
@@ -539,11 +539,11 @@ type SmartDataResponse struct {
 }
 
 type SmartAttribute struct {
-	ID         uint16 `json:"id,omitempty" cbor:"0,keyasint,omitempty"`
+	ID         uint16 `json:"id,omitzero" cbor:"0,keyasint,omitempty"`
 	Name       string `json:"n" cbor:"1,keyasint"`
-	Value      uint16 `json:"v,omitempty" cbor:"2,keyasint,omitempty"`
-	Worst      uint16 `json:"w,omitempty" cbor:"3,keyasint,omitempty"`
-	Threshold  uint16 `json:"t,omitempty" cbor:"4,keyasint,omitempty"`
+	Value      uint16 `json:"v,omitzero" cbor:"2,keyasint,omitempty"`
+	Worst      uint16 `json:"w,omitzero" cbor:"3,keyasint,omitempty"`
+	Threshold  uint16 `json:"t,omitzero" cbor:"4,keyasint,omitempty"`
 	RawValue   uint64 `json:"rv" cbor:"5,keyasint"`
 	RawString  string `json:"rs,omitempty" cbor:"6,keyasint,omitempty"`
 	WhenFailed string `json:"wf,omitempty" cbor:"7,keyasint,omitempty"`

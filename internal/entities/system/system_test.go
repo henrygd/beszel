@@ -7,6 +7,8 @@ import (
 
 	"github.com/fxamacker/cbor/v2"
 	"github.com/henrygd/beszel/internal/entities/container"
+	"github.com/henrygd/beszel/internal/entities/smart"
+	"github.com/henrygd/beszel/internal/entities/zfs"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -116,4 +118,33 @@ func TestCombinedDataContainerValidityTransport(t *testing.T) {
 	var decodedInvalid CombinedData
 	require.NoError(t, cbor.Unmarshal(invalidData, &decodedInvalid))
 	assert.Nil(t, decodedInvalid.Containers)
+}
+
+// PocketBase marshals record JSON fields with encoding/json/v2, where omitempty
+// no longer omits zero numbers or false. Scalar fields must use omitzero so
+// stored records keep the same shape as encoding/json (v1).
+func TestZeroValueJSONMatchesV1(t *testing.T) {
+	for name, value := range map[string]any{
+		"stats": Stats{
+			ExtraFs:  map[string]*FsStats{"sda": {}},
+			GPUData:  map[string]GPUData{"0": {}},
+			ZfsPools: map[string]*ZfsPool{"tank": {}},
+		},
+		"info":            Info{WiFi: map[string]WiFi{"wlan0": {}}},
+		"package_updates": PackageUpdates{Packages: []PackageUpdate{{}}},
+		"zfs": zfs.ZfsData{Pools: []*zfs.PoolDetail{{
+			Scrub:    &zfs.Scrub{State: "NONE"}, // a scrub encoding to {} is dropped by v2 omitempty
+			Vdevs:    []*zfs.Vdev{{}},
+			Datasets: []*zfs.Dataset{{}},
+		}}},
+		"smart": smart.SmartData{Attributes: []*smart.SmartAttribute{{}}},
+	} {
+		t.Run(name, func(t *testing.T) {
+			v1Data, err := json.Marshal(value)
+			require.NoError(t, err)
+			v2Data, err := jsonv2.Marshal(value)
+			require.NoError(t, err)
+			assert.JSONEq(t, string(v1Data), string(v2Data))
+		})
+	}
 }
