@@ -292,6 +292,47 @@ func TestParseSmartForNvme(t *testing.T) {
 	}
 }
 
+func TestParseSmartForNvmeUnsafeShutdownsAboveUint16(t *testing.T) {
+	// A drive can report more than 65535 unsafe shutdowns. Decoding must not
+	// fail on the whole record just because that counter outgrew uint16.
+	payload := []byte(`{
+		"smartctl": {"exit_status": 0, "version": [7, 5]},
+		"device": {"name": "/dev/nvme0", "type": "nvme", "protocol": "NVMe"},
+		"model_name": "WD Blue SN570 2TB",
+		"serial_number": "2024031600999",
+		"firmware_version": "74110000",
+		"user_capacity": {"bytes": 2000398934016, "blocks": 3907029168},
+		"smart_status": {"passed": true},
+		"nvme_smart_health_information_log": {
+			"critical_warning": 0,
+			"temperature": 38,
+			"available_spare": 100,
+			"available_spare_threshold": 10,
+			"percentage_used": 3,
+			"power_cycles": 411,
+			"power_on_hours": 8123,
+			"unsafe_shutdowns": 159754,
+			"media_errors": 0,
+			"num_err_log_entries": 0
+		}
+	}`)
+
+	sm := &SmartManager{
+		SmartDataMap: make(map[string]*smart.SmartData),
+	}
+
+	hasData, exitStatus := sm.parseSmartForNvme(payload, "")
+	require.True(t, hasData, "unsafe_shutdowns above 65535 must not discard the record")
+	assert.Equal(t, 0, exitStatus)
+
+	deviceData, ok := sm.SmartDataMap["2024031600999"]
+	require.True(t, ok, "expected smart data entry for serial 2024031600999")
+	assert.Equal(t, "WD Blue SN570 2TB", deviceData.ModelName)
+	if assert.NotEmpty(t, deviceData.Attributes) {
+		assertAttrValue(t, deviceData.Attributes, "UnsafeShutdowns", 159754)
+	}
+}
+
 func TestHasDataForDevice(t *testing.T) {
 	sm := &SmartManager{
 		SmartDataMap: map[string]*smart.SmartData{

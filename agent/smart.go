@@ -1138,6 +1138,7 @@ func (sm *SmartManager) parseSmartForNvme(output []byte, deviceType string) (boo
 	data := &smart.SmartInfoForNvme{}
 
 	if err := json.Unmarshal(output, &data); err != nil {
+		slog.Debug("unmarshal smart data", "err", err)
 		return false, 0
 	}
 
