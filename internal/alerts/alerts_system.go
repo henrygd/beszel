@@ -3,6 +3,7 @@ package alerts
 import (
 	"encoding/json"
 	"fmt"
+	"strconv"
 	"strings"
 	"time"
 
@@ -445,22 +446,31 @@ func (am *AlertManager) sendSystemAlert(alert SystemAlertData) {
 }
 
 func formatSystemAlertBody(alert SystemAlertData, minutesLabel string) string {
-	if alert.name == "Temperature" {
-		relation := "below"
-		if alert.triggered {
-			relation = "above"
-		}
-		return fmt.Sprintf(
-			"%s %s %.2f%s for the previous %v %s.",
-			alert.descriptor,
-			relation,
-			alert.val,
-			alert.unit,
-			alert.min,
-			minutesLabel,
-		)
+	return fmt.Sprintf(
+		"%s averaged %.2f%s for the previous %v %s (%s %s%s threshold).",
+		alert.descriptor,
+		alert.val,
+		alert.unit,
+		alert.min,
+		minutesLabel,
+		alertThresholdRelation(alert),
+		strconv.FormatFloat(alert.threshold, 'f', -1, 64),
+		alert.unit,
+	)
+}
+
+// alertThresholdRelation describes where the value sits relative to the
+// threshold. Recovery fires at equality, so equal values say "at or".
+func alertThresholdRelation(alert SystemAlertData) string {
+	aboveIsBad := !isLowAlert(alert.name)
+	relation := "below"
+	if alert.triggered == aboveIsBad {
+		relation = "above"
 	}
-	return fmt.Sprintf("%s averaged %.2f%s for the previous %v %s.", alert.descriptor, alert.val, alert.unit, alert.min, minutesLabel)
+	if !alert.triggered && alert.val == alert.threshold {
+		relation = "at or " + relation
+	}
+	return relation
 }
 
 func isLowAlert(name string) bool {
