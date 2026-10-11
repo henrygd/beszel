@@ -105,8 +105,10 @@ func (gm *GPUManager) parseIntelJSONStream(r io.Reader) error {
 	var hadDataRow bool
 	// skip first data row because it sometimes has erroneous data
 	var skippedFirstDataRow bool
+	// buf is reused across samples; json.Unmarshal does not retain its input.
+	var buf []byte
 	for {
-		obj, err := nextIntelJSONObject(br)
+		obj, err := nextIntelJSONObject(br, buf)
 		if err != nil {
 			if err == io.EOF {
 				break
@@ -120,6 +122,7 @@ func (gm *GPUManager) parseIntelJSONStream(r io.Reader) error {
 		if obj == nil { // closing "]"
 			break
 		}
+		buf = obj
 		var sample intelGpuJSONSample
 		if err := json.Unmarshal(obj, &sample); err != nil {
 			if er.eof {
@@ -147,8 +150,9 @@ func (gm *GPUManager) parseIntelJSONStream(r io.Reader) error {
 
 // nextIntelJSONObject returns the next top-level JSON object from br, skipping
 // an optional opening "[", commas, and whitespace. A closing "]" returns
-// (nil, nil). EOF with no further object returns (nil, io.EOF).
-func nextIntelJSONObject(br *bufio.Reader) ([]byte, error) {
+// (nil, nil). EOF with no further object returns (nil, io.EOF). The object is
+// appended to buf[:0], so the returned slice may share buf's backing array.
+func nextIntelJSONObject(br *bufio.Reader, buf []byte) ([]byte, error) {
 	for {
 		b, err := peekNonSpace(br)
 		if err != nil {
@@ -162,16 +166,16 @@ func nextIntelJSONObject(br *bufio.Reader) ([]byte, error) {
 			_, _ = br.ReadByte()
 			return nil, nil
 		case '{':
-			return readJSONObject(br)
+			return readJSONObject(br, buf[:0])
 		default:
 			return nil, fmt.Errorf("invalid character %q looking for beginning of intel_gpu_top sample", b)
 		}
 	}
 }
 
-// readJSONObject reads one JSON object from br, respecting strings and nesting.
-func readJSONObject(br *bufio.Reader) ([]byte, error) {
-	var buf []byte
+// readJSONObject appends one JSON object from br to buf, respecting strings
+// and nesting.
+func readJSONObject(br *bufio.Reader, buf []byte) ([]byte, error) {
 	depth := 0
 	inString := false
 	escape := false
