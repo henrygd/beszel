@@ -747,8 +747,8 @@ func TestWebSocketDeadlineCoversSlowCollection(t *testing.T) {
 	}
 }
 
-// TestGetAdditionalHeaders covers ADDITIONAL_HEADERS parsing
-func TestGetAdditionalHeaders(t *testing.T) {
+// TestGetHubHeaders covers HUB_HEADERS parsing
+func TestGetHubHeaders(t *testing.T) {
 	testCases := []struct {
 		name    string
 		raw     string
@@ -807,11 +807,11 @@ func TestGetAdditionalHeaders(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			t.Setenv("BESZEL_AGENT_ADDITIONAL_HEADERS", tc.raw)
-			headers, err := getAdditionalHeaders()
+			t.Setenv("BESZEL_AGENT_HUB_HEADERS", tc.raw)
+			headers, err := getHubHeaders()
 			if tc.wantErr {
 				require.Error(t, err)
-				assert.ErrorIs(t, err, errInvalidAdditionalHeaders)
+				assert.ErrorIs(t, err, errInvalidHubHeaders)
 				assert.Nil(t, headers)
 				return
 			}
@@ -821,13 +821,29 @@ func TestGetAdditionalHeaders(t *testing.T) {
 	}
 }
 
-// TestWebSocketClient_GetOptionsAdditionalHeaders verifies that
-// ADDITIONAL_HEADERS values reach the handshake, and user supplied X-BESZEL values are ignored
-func TestWebSocketClient_GetOptionsAdditionalHeaders(t *testing.T) {
+// TestGetHubHeadersErrorOmitsValues verifies that parse errors do not leak
+// header values, which are often secrets
+func TestGetHubHeadersErrorOmitsValues(t *testing.T) {
+	const secret = "super-secret-value"
+	for _, raw := range []string{
+		"CF-Access-Client-Secret: " + secret + "\x7f",
+		"Bad Name: " + secret,
+		secret,
+	} {
+		t.Setenv("BESZEL_AGENT_HUB_HEADERS", raw)
+		_, err := getHubHeaders()
+		require.ErrorIs(t, err, errInvalidHubHeaders)
+		assert.NotContains(t, err.Error(), secret)
+	}
+}
+
+// TestWebSocketClient_GetOptionsHubHeaders verifies that
+// HUB_HEADERS values reach the handshake, and user supplied X-BESZEL values are ignored
+func TestWebSocketClient_GetOptionsHubHeaders(t *testing.T) {
 	agent := createTestAgent(t)
 	t.Setenv("BESZEL_AGENT_HUB_URL", "http://localhost:8080")
 	t.Setenv("BESZEL_AGENT_TOKEN", "test-token")
-	t.Setenv("BESZEL_AGENT_ADDITIONAL_HEADERS",
+	t.Setenv("BESZEL_AGENT_HUB_HEADERS",
 		"CF-Access-Client-Id: abc.access, User-Agent: curl/8.0, x-token: hijack, X-BESZEL: 0.0.1")
 
 	client, err := newWebSocketClient(agent)
@@ -840,17 +856,17 @@ func TestWebSocketClient_GetOptionsAdditionalHeaders(t *testing.T) {
 	assert.Equal(t, beszel.Version, header.Get("X-Beszel"))
 }
 
-// TestNewWebSocketClientInvalidAdditionalHeaders verifies that a malformed
-// ADDITIONAL_HEADERS value fails client creation
-func TestNewWebSocketClientInvalidAdditionalHeaders(t *testing.T) {
+// TestNewWebSocketClientInvalidHubHeaders verifies that a malformed
+// HUB_HEADERS value fails client creation
+func TestNewWebSocketClientInvalidHubHeaders(t *testing.T) {
 	agent := createTestAgent(t)
 	t.Setenv("BESZEL_AGENT_HUB_URL", "http://localhost:8080")
 	t.Setenv("BESZEL_AGENT_TOKEN", "test-token")
-	t.Setenv("BESZEL_AGENT_ADDITIONAL_HEADERS", "malfored-header")
+	t.Setenv("BESZEL_AGENT_HUB_HEADERS", "malfored-header")
 
 	client, err := newWebSocketClient(agent)
 
 	require.Error(t, err)
 	assert.Nil(t, client)
-	assert.ErrorIs(t, err, errInvalidAdditionalHeaders)
+	assert.ErrorIs(t, err, errInvalidHubHeaders)
 }

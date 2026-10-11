@@ -24,11 +24,11 @@ func (noKeyProvidedError) Error() string {
 
 // cli options
 type cmdOptions struct {
-	key               string // key is the public key(s) for SSH authentication.
-	listen            string // listen is the address or port to listen on.
-	hubURL            string // hubURL is the URL of the Beszel hub.
-	token             string // token is the token to use for authentication.
-	additionalHeaders string // Extra headers for the WebSocket handshake.
+	key        string // key is the public key(s) for SSH authentication.
+	listen     string // listen is the address or port to listen on.
+	hubURL     string // hubURL is the URL of the Beszel hub.
+	token      string // token is the token to use for authentication.
+	hubHeaders string // Extra headers for the WebSocket handshake.
 }
 
 // parse parses the command line flags and populates the config struct.
@@ -58,13 +58,13 @@ func (opts *cmdOptions) parse() bool {
 	pflag.StringVarP(&opts.listen, "listen", "l", "", "Address or port to listen on")
 	pflag.StringVarP(&opts.hubURL, "url", "u", "", "URL of the Beszel hub")
 	pflag.StringVarP(&opts.token, "token", "t", "", "Token to use for authentication")
-	pflag.StringVar(&opts.additionalHeaders, "additional_headers", "", "Extra WebSocket header(s) as comma-separated 'Name: value' pairs")
+	pflag.StringVar(&opts.hubHeaders, "hub-headers", "", "Extra header(s) sent to the hub as comma-separated 'Name: value' pairs")
 	chinaMirrors := pflag.BoolP("china-mirrors", "c", false, "Use mirror for update (gh.beszel.dev) instead of GitHub")
 	version := pflag.BoolP("version", "v", false, "Show version information")
 	help := pflag.BoolP("help", "h", false, "Show this help message")
 
 	// Convert old single-dash long flags to double-dash for backward compatibility
-	flagsToConvert := []string{"key", "listen", "url", "token", "additional_headers"}
+	flagsToConvert := []string{"key", "listen", "url", "token", "hub-headers"}
 	for i, arg := range os.Args {
 		for _, flag := range flagsToConvert {
 			singleDash := "-" + flag
@@ -116,8 +116,8 @@ func (opts *cmdOptions) parse() bool {
 	if opts.token != "" {
 		os.Setenv("TOKEN", opts.token)
 	}
-	if pflag.CommandLine.Changed("additional_headers") {
-		os.Setenv("BESZEL_AGENT_ADDITIONAL_HEADERS", opts.additionalHeaders)
+	if pflag.CommandLine.Changed("hub-headers") {
+		os.Setenv("BESZEL_AGENT_HUB_HEADERS", opts.hubHeaders)
 	}
 	return false
 }
