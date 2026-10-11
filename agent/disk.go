@@ -2,11 +2,13 @@ package agent
 
 import (
 	"context"
+	"errors"
 	"log/slog"
 	"math"
 	"os"
 	"path/filepath"
 	"runtime"
+	"slices"
 	"strings"
 	"time"
 
@@ -278,16 +280,142 @@ func findPartitionByFilesystemSetting(filesystem string, partitions []disk.Parti
 // addConfiguredExtraFsEntry resolves one EXTRA_FILESYSTEMS entry, preferring a
 // discovered partition and falling back to any path that disk.Usage accepts.
 func (d *diskDiscovery) addConfiguredExtraFsEntry(filesystem, customName string) {
+	device, mountpoint, ok := d.resolveConfiguredExtraFsEntry(filesystem)
+	if ok {
+		d.addFsStat(device, mountpoint, false, customName)
+	}
+}
+
+// macVolumePath excludes /Volumes itself, which belongs to the root filesystem.
+func macVolumePath(path string) bool {
+	return strings.HasPrefix(filepath.Clean(path), "/Volumes/")
+}
+
+func mountedMacVolume(path string, partitions []disk.PartitionStat) bool {
+	path = filepath.Clean(path)
+	for _, p := range partitions {
+		mount := filepath.Clean(p.Mountpoint)
+		if macVolumePath(mount) && (path == mount || strings.HasPrefix(path, mount+"/")) {
+			return true
+		}
+	}
+	return false
+}
+
+func (d *diskDiscovery) resolveConfiguredExtraFsEntry(filesystem string) (device, mountpoint string, ok bool) {
+	// macOS may retain the mount directory after ejecting a volume. Checking
+	// usage alone would then report the root filesystem as the missing disk.
+	if runtime.GOOS == "darwin" && macVolumePath(filesystem) && !mountedMacVolume(filesystem, d.partitions) {
+		return "", "", false
+	}
 	if p, found := findPartitionByFilesystemSetting(filesystem, d.partitions); found {
-		d.addFsStat(p.Device, p.Mountpoint, false, customName)
-		return
+		return p.Device, p.Mountpoint, true
+	}
+	// A registered subdirectory needs no second usage check during discovery.
+	// Its normal usage collection still validates it when the cache expires.
+	for _, stats := range d.agent.fsStats {
+		if !stats.Root && stats.Mountpoint == filesystem {
+			return filepath.Base(filesystem), filesystem, true
+		}
 	}
 
 	if _, err := d.usageFn(filesystem); err == nil {
-		d.addFsStat(filepath.Base(filesystem), filesystem, false, customName)
-		return
+		return filepath.Base(filesystem), filesystem, true
 	} else {
 		slog.Error("Invalid filesystem", "name", filesystem, "err", err)
+	}
+	return "", "", false
+}
+
+// Refresh explicitly configured macOS volumes on the normal disk-usage cadence.
+// Root and unconfigured filesystems retain their original discovery behavior.
+func (a *Agent) refreshMacVolumes() {
+	if runtime.GOOS != "darwin" {
+		return
+	}
+	extraFilesystems, _ := utils.GetEnv("EXTRA_FILESYSTEMS")
+	if !strings.Contains(extraFilesystems, "/Volumes/") {
+		return
+	}
+	partitions, err := disk.PartitionsWithContext(context.Background(), true)
+	if err != nil {
+		slog.Error("Error getting disk partitions", "err", err)
+		return
+	}
+	ioCounters, err := disk.IOCounters()
+	if err != nil {
+		slog.Error("Error getting diskstats", "err", err)
+		return
+	}
+	d := diskDiscovery{agent: a, partitions: partitions, usageFn: disk.Usage,
+		ctx: fsRegistrationContext{diskIoCounters: ioCounters, efPath: "/extra-filesystems"}}
+	d.refreshMountedMacVolumes(extraFilesystems)
+}
+
+func (d *diskDiscovery) refreshMountedMacVolumes(extraFilesystems string) {
+	for entry := range strings.SplitSeq(extraFilesystems, ",") {
+		filesystem, customName := parseFilesystemEntry(entry)
+		if !macVolumePath(filesystem) {
+			continue
+		}
+		mounted := mountedMacVolume(filesystem, d.partitions)
+		var device, mountpoint, key string
+		ok := false
+		if mounted {
+			device, mountpoint, ok = d.resolveConfiguredExtraFsEntry(filesystem)
+			if ok {
+				key, _, _ = registerFilesystemStats(nil, device, mountpoint, false, customName, d.ctx)
+			}
+		}
+		for oldKey, stats := range d.agent.fsStats {
+			if !stats.Root && filepath.Clean(stats.Mountpoint) == filepath.Clean(filesystem) && (!mounted || (ok && oldKey != key)) {
+				delete(d.agent.fsStats, oldKey)
+				d.agent.resetDiskIoDevice(oldKey)
+			}
+		}
+		if !ok {
+			continue
+		}
+		if stats, exists := d.agent.fsStats[key]; exists {
+			counter, hasCounter := d.ctx.diskIoCounters[key]
+			if stats.Root || stats.Mountpoint != mountpoint || !hasCounter ||
+				(counter.ReadBytes >= stats.TotalRead && counter.WriteBytes >= stats.TotalWrite) {
+				continue
+			}
+			// A device ID can be reused between polls. Lower cumulative counters
+			// must start a new sample, rather than underflow into an I/O spike.
+			*stats = system.FsStats{Mountpoint: stats.Mountpoint, Name: stats.Name}
+		} else {
+			// Preserve startup's root-duplicate exclusion before logging a disk.
+			duplicate := false
+			for _, stats := range d.agent.fsStats {
+				if stats.Root {
+					rootUsage, rootErr := d.usageFn(stats.Mountpoint)
+					extraUsage, extraErr := d.usageFn(mountpoint)
+					duplicate = rootErr == nil && extraErr == nil && hasSameDiskUsage(rootUsage, extraUsage)
+					break
+				}
+			}
+			if duplicate || !d.addFsStat(device, mountpoint, false, customName) {
+				continue
+			}
+		}
+		d.agent.resetDiskIoDevice(key)
+		if counter, exists := d.ctx.diskIoCounters[key]; exists {
+			stats := d.agent.fsStats[key]
+			stats.TotalRead, stats.TotalWrite = counter.ReadBytes, counter.WriteBytes
+			d.agent.setDiskBaseline(key, prevDiskFromCounter(counter, time.Now()))
+			d.agent.fsNames = append(d.agent.fsNames, key)
+		}
+	}
+}
+
+// Drop all sampling intervals so reusing a device name cannot reuse old counters.
+func (a *Agent) resetDiskIoDevice(key string) {
+	a.fsNames = slices.DeleteFunc(a.fsNames, func(name string) bool { return name == key })
+	delete(a.diskBaseline, key)
+	for _, previous := range a.diskPrev {
+		delete(previous, key)
 	}
 }
 
@@ -634,6 +762,9 @@ func (a *Agent) updateDiskUsage(systemStats *system.Stats) {
 	cacheExtraFs := a.diskUsageCacheDuration > 0 &&
 		!a.lastDiskUsageUpdate.IsZero() &&
 		time.Since(a.lastDiskUsageUpdate) < a.diskUsageCacheDuration
+	// Mount-table and I/O-counter reads do not wake sleeping disks. Keep
+	// presence current even while reusing cached usage for mounted volumes.
+	a.refreshMacVolumes()
 
 	// ZFS dataset mountpoints use `zfs list` values because statfs(2) reports
 	// dataset-level usage that excludes child datasets (#1541).
@@ -645,7 +776,7 @@ func (a *Agent) updateDiskUsage(systemStats *system.Stats) {
 	// disk usage
 	for _, stats := range a.fsStats {
 		// Skip non-root filesystems if caching is active
-		if cacheExtraFs && !stats.Root {
+		if cacheExtraFs && !stats.Root && !(runtime.GOOS == "darwin" && macVolumePath(stats.Mountpoint) && stats.DiskTotal == 0) {
 			continue
 		}
 		var total, used uint64
@@ -662,7 +793,10 @@ func (a *Agent) updateDiskUsage(systemStats *system.Stats) {
 			usedPct = d.UsedPercent
 		} else {
 			// reset stats if error (likely unmounted)
-			slog.Error("Error getting disk stats", "name", stats.Mountpoint, "err", err)
+			// Ejecting a configured macOS volume can race with mount discovery.
+			if stats.Root || runtime.GOOS != "darwin" || !macVolumePath(stats.Mountpoint) || !errors.Is(err, os.ErrNotExist) {
+				slog.Error("Error getting disk stats", "name", stats.Mountpoint, "err", err)
+			}
 			stats.DiskTotal = 0
 			stats.DiskUsed = 0
 			stats.TotalRead = 0
