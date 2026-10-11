@@ -2,7 +2,6 @@ package agent
 
 import (
 	"context"
-	"errors"
 	"log/slog"
 	"math"
 	"os"
@@ -793,8 +792,16 @@ func (a *Agent) updateDiskUsage(systemStats *system.Stats) {
 			usedPct = d.UsedPercent
 		} else {
 			// reset stats if error (likely unmounted)
-			// Ejecting a configured macOS volume can race with mount discovery.
-			if stats.Root || runtime.GOOS != "darwin" || !macVolumePath(stats.Mountpoint) || !errors.Is(err, os.ErrNotExist) {
+			// Ejection can race with discovery. Confirm the volume disappeared
+			// before suppressing an error; a missing subdirectory on a still
+			// mounted volume, permission errors and real I/O errors stay visible.
+			unmounted := false
+			if !stats.Root && runtime.GOOS == "darwin" && macVolumePath(stats.Mountpoint) {
+				if partitions, partitionErr := disk.PartitionsWithContext(context.Background(), true); partitionErr == nil {
+					unmounted = !mountedMacVolume(stats.Mountpoint, partitions)
+				}
+			}
+			if !unmounted {
 				slog.Error("Error getting disk stats", "name", stats.Mountpoint, "err", err)
 			}
 			stats.DiskTotal = 0
