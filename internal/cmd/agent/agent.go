@@ -24,10 +24,10 @@ func (noKeyProvidedError) Error() string {
 
 // cli options
 type cmdOptions struct {
-	key    string // key is the public key(s) for SSH authentication.
-	listen string // listen is the address or port to listen on.
-	hubURL string // hubURL is the URL of the Beszel hub.
-	token  string // token is the token to use for authentication.
+	key               string // key is the public key(s) for SSH authentication.
+	listen            string // listen is the address or port to listen on.
+	hubURL            string // hubURL is the URL of the Beszel hub.
+	token             string // token is the token to use for authentication.
 	additionalHeaders string // Extra headers for the WebSocket handshake.
 }
 

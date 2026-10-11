@@ -272,16 +272,16 @@ func TestParseFlags(t *testing.T) {
 	}()
 
 	tests := []struct {
-		name     string
-		args     []string
-		expected cmdOptions
-		envHeaders  string
+		name            string
+		args            []string
+		expected        cmdOptions
+		envHeaders      string
 		expectedHeaders string
 	}{
 		{
-			name: "no flags",
-			args: []string{"cmd"},
-			envHeaders:  "X-Env: value",
+			name:            "no flags",
+			args:            []string{"cmd"},
+			envHeaders:      "X-Env: value",
 			expectedHeaders: "X-Env: value",
 			expected: cmdOptions{
 				key:    "",
@@ -345,16 +345,16 @@ func TestParseFlags(t *testing.T) {
 			},
 		},
 		{
-			name:        "additional headers override environment",
-			args:        []string{"cmd", "--additional_headers", "X-One: 1, X-Two: 2"},
-			expected:    cmdOptions{additionalHeaders: "X-One: 1, X-Two: 2"},
-			envHeaders:  "X-Env: value",
+			name:            "additional headers override environment",
+			args:            []string{"cmd", "--additional_headers", "X-One: 1, X-Two: 2"},
+			expected:        cmdOptions{additionalHeaders: "X-One: 1, X-Two: 2"},
+			envHeaders:      "X-Env: value",
 			expectedHeaders: "X-One: 1, X-Two: 2",
 		},
 		{
-			name:        "additional headers single dash with equals",
-			args:        []string{"cmd", "-additional_headers=X-One: 1"},
-			expected:    cmdOptions{additionalHeaders: "X-One: 1"},
+			name:            "additional headers single dash with equals",
+			args:            []string{"cmd", "-additional_headers=X-One: 1"},
+			expected:        cmdOptions{additionalHeaders: "X-One: 1"},
 			expectedHeaders: "X-One: 1",
 		},
 		{

@@ -38,7 +38,7 @@ const (
 // where the hub dials the agent and no outbound WebSocket client is expected.
 var errNoHubURL = errors.New("HUB_URL environment variable not set")
 
-// errInvalidAdditionalHeaders returned when there is malformed ADDITIONAL_HEADERS value. 
+// errInvalidAdditionalHeaders returned when there is malformed ADDITIONAL_HEADERS value.
 var errInvalidAdditionalHeaders = errors.New("invalid ADDITIONAL_HEADERS")
 
 type caCertFileError struct {
@@ -176,6 +176,7 @@ func getTLSConfig() (*tls.Config, error) {
 // the WebSocket handshake.
 //
 // The value is a comma separated list of "Name: value" pairs:
+//
 //	ADDITIONAL_HEADERS="CF-Access-Client-Id: abc.access, CF-Access-Client-Secret: def456"
 func getAdditionalHeaders() (http.Header, error) {
 
