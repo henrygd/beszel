@@ -18,7 +18,9 @@ const networkMonitorUserAgent = "Beszel-Agent/" + beszel.Version + " (+https://b
 // Implementations must honor cancellation and bound their execution time.
 type monitorProbe func(context.Context, monitor.Config) (int64, error)
 
-func networkMonitorProbe(client *http.Client) monitorProbe {
+// networkMonitorProbe returns a probe that uses client for HTTP monitors, or
+// insecureClient for HTTP monitors that skip TLS certificate verification.
+func networkMonitorProbe(client, insecureClient *http.Client) monitorProbe {
 	return func(ctx context.Context, config monitor.Config) (int64, error) {
 		switch config.Protocol {
 		case "icmp":
@@ -26,6 +28,9 @@ func networkMonitorProbe(client *http.Client) monitorProbe {
 		case "tcp":
 			return monitorTCP(ctx, config.Target, config.Port)
 		case "http":
+			if config.SkipTLSVerify {
+				return monitorHTTP(ctx, insecureClient, config.Target)
+			}
 			return monitorHTTP(ctx, client, config.Target)
 		case "dns":
 			return monitorDNS(ctx, config.Target, config.Server)
