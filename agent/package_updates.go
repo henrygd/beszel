@@ -2,7 +2,6 @@ package agent
 
 import (
 	"bufio"
-	"bytes"
 	"context"
 	"errors"
 	"fmt"
@@ -23,6 +22,9 @@ import (
 const (
 	defaultPackageUpdatesInterval = time.Hour
 	packageUpdatesTimeout         = 5 * time.Minute
+	// pacmanSyncInterval limits how often checkupdates downloads fresh sync
+	// databases. Checks in between reuse the last synced copy.
+	pacmanSyncInterval = 12 * time.Hour
 )
 
 // packageUpdatesResult is the outcome of one package manager check.
@@ -150,8 +152,8 @@ func detectPackageManager(dataDir string) (string, packageUpdatesCheck) {
 		return "dnf", newDnfCheck(dataDir)
 	case commandExists("zypper"):
 		return "zypper", newZypperCheck(dataDir)
-	case commandExists("pacman"):
-		return "pacman", checkPacman
+	case commandExists("checkupdates"):
+		return "pacman", newPacmanCheck(dataDir)
 	case commandExists("apk"):
 		return "apk", checkApk
 	}
@@ -174,8 +176,8 @@ func runPackageCommandEnv(ctx context.Context, env []string, okCodes []int, name
 	cmd := exec.CommandContext(ctx, name, args...)
 	cmd.Env = append(os.Environ(), "LC_ALL=C")
 	cmd.Env = append(cmd.Env, env...)
-	// a timeout kills only the command itself, and children it started can keep
-	// stdout open. WaitDelay stops Output from waiting on them.
+	// checkupdates is a shell script, so a timeout kills only the script and its
+	// children can keep stdout open. WaitDelay stops Output from waiting on them.
 	cmd.WaitDelay = 10 * time.Second
 	out, err := cmd.Output()
 	if exitErr, ok := errors.AsType[*exec.ExitError](err); ok {
@@ -302,19 +304,45 @@ func newZypperCheck(dataDir string) packageUpdatesCheck {
 	}
 }
 
-// checkPacman compares installed packages against the system sync databases.
-// It never syncs them; pacman -Sy(u) by the user or a timer does that.
-func checkPacman(ctx context.Context) (packageUpdatesResult, error) {
-	out, err := runPackageCommand(ctx, nil, "pacman", "-Qu")
-	// -Qu exits 1 with no output when nothing is upgradable; errors print to stderr
-	if exitErr, ok := errors.AsType[*exec.ExitError](err); ok && exitErr.ExitCode() == 1 && len(bytes.TrimSpace(exitErr.Stderr)) == 0 {
-		err = nil
+// newPacmanCheck uses checkupdates (pacman-contrib), which syncs a private copy of
+// the databases and never touches pacman's own. The copy lives in dataDir because
+// the systemd unit's ProtectSystem=strict makes the default /tmp location read-only.
+// It syncs every pacmanSyncInterval and uses the existing copy (-n) in between.
+// Local upgrades show up right away since checkupdates links the live local DB.
+// Exit code 2 means no updates.
+func newPacmanCheck(dataDir string) packageUpdatesCheck {
+	var env []string
+	var syncDir string
+	if dataDir != "" {
+		dbPath := filepath.Join(dataDir, "checkup-db")
+		env = []string{"CHECKUPDATES_DB=" + dbPath}
+		syncDir = filepath.Join(dbPath, "sync")
 	}
-	if err != nil {
-		return packageUpdatesResult{}, err
+	// checks never overlap (packageUpdatesManager.running), so no lock is needed
+	var lastSync time.Time
+	return func(ctx context.Context) (packageUpdatesResult, error) {
+		// -n with a missing database reports no updates rather than failing,
+		// so always sync first and whenever the private copy is missing
+		sync := lastSync.IsZero() || time.Since(lastSync) >= pacmanSyncInterval
+		if !sync && syncDir != "" {
+			if _, err := os.Stat(syncDir); err != nil {
+				sync = true
+			}
+		}
+		var args []string
+		if !sync {
+			args = append(args, "-n")
+		}
+		out, err := runPackageCommandEnv(ctx, env, []int{2}, "checkupdates", args...)
+		if err != nil {
+			return packageUpdatesResult{}, err
+		}
+		if sync {
+			lastSync = time.Now()
+		}
+		packages := parsePacmanCheckUpdates(out)
+		return packageUpdatesResult{counts: []uint16{uint16(len(packages))}, packages: packages}, nil
 	}
-	packages := parsePacmanQueryUpgrades(out)
-	return packageUpdatesResult{counts: []uint16{uint16(len(packages))}, packages: packages}, nil
 }
 
 func checkApk(ctx context.Context) (packageUpdatesResult, error) {
@@ -469,8 +497,8 @@ func parseZypperListUpdates(out string) (packages []system.PackageUpdate) {
 	return packages
 }
 
-// parsePacmanQueryUpgrades parses "name old -> new" lines, which may end in "[ignored]".
-func parsePacmanQueryUpgrades(out string) (packages []system.PackageUpdate) {
+// parsePacmanCheckUpdates parses "name old -> new" lines.
+func parsePacmanCheckUpdates(out string) (packages []system.PackageUpdate) {
 	scanner := bufio.NewScanner(strings.NewReader(out))
 	for scanner.Scan() {
 		fields := strings.Fields(scanner.Text())

@@ -8,6 +8,7 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
+	"strings"
 	"testing"
 	"time"
 
@@ -340,15 +341,14 @@ case "$*" in *list-patches*) cat "` + testDataPath(t, "zypper_leap155_list_patch
 		"--no-refresh -q --solv-cache-dir "+solvDir+" list-patches --category security\n", string(args))
 }
 
-func TestParsePacmanQueryUpgrades(t *testing.T) {
+func TestParsePacmanCheckUpdates(t *testing.T) {
 	assert.Equal(t, []system.PackageUpdate{
 		{Name: "libpcap", Current: "1.10.7-1", Available: "1.11.0-1"},
 		{Name: "libsecret", Current: "0.21.7-1", Available: "0.21.8.2-1"},
 		{Name: "libtirpc", Current: "1.3.7-1", Available: "1.3.8-1"},
 		{Name: "tzdata", Current: "2026c-1", Available: "2026d-1"},
-	}, parsePacmanQueryUpgrades(readPackageUpdatesTestData(t, "pacman_query_upgrades.txt")))
-	assert.Empty(t, parsePacmanQueryUpgrades(""))
-	assert.Equal(t, []system.PackageUpdate{{Name: "linux", Current: "6.1-1", Available: "6.2-1"}}, parsePacmanQueryUpgrades("linux 6.1-1 -> 6.2-1 [ignored]\n"))
+	}, parsePacmanCheckUpdates(readPackageUpdatesTestData(t, "pacman_checkupdates.txt")))
+	assert.Empty(t, parsePacmanCheckUpdates(""))
 }
 
 func TestParseApkUpgradable(t *testing.T) {
@@ -457,28 +457,46 @@ func TestGetPackageUpdatesHandler(t *testing.T) {
 	assert.Equal(t, system.PackageUpdates{Manager: "apk", CheckedAt: 1700000000, Packages: packages}, sent)
 }
 
-func TestCheckPacman(t *testing.T) {
-	tests := []struct {
-		name, script string
-		counts       []uint16
-		err          string
-	}{
-		{"updates", `echo "linux 6.1-1 -> 6.2-1"`, []uint16{1}, ""},
-		{"no updates", "exit 1", []uint16{0}, ""},
-		{"error", `echo "error: failed to initialize alpm library" >&2
-exit 1`, nil, "pacman: exit status 1: error: failed to initialize alpm library"},
+func TestPacmanCheckSync(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("requires a shell script on PATH")
 	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			fakeCommands(t, map[string]string{"pacman": `[ "$*" = "-Qu" ] || exit 9
-` + tt.script})
-			result, err := checkPacman(context.Background())
-			if tt.err != "" {
-				require.EqualError(t, err, tt.err)
-				return
-			}
-			require.NoError(t, err)
-			assert.Equal(t, tt.counts, result.counts)
-		})
+	binDir := t.TempDir()
+	dataDir := t.TempDir()
+	logFile := filepath.Join(binDir, "calls.log")
+	// fake checkupdates logs its args and db path, and creates the sync dir when syncing
+	script := `#!/bin/sh
+echo "args=[$*] db=$CHECKUPDATES_DB" >> ` + logFile + `
+[ "$1" = "-n" ] || mkdir -p "$CHECKUPDATES_DB/sync"
+echo "linux 6.1-1 -> 6.2-1"
+`
+	require.NoError(t, os.WriteFile(filepath.Join(binDir, "checkupdates"), []byte(script), 0o755))
+	t.Setenv("PATH", binDir+string(os.PathListSeparator)+os.Getenv("PATH"))
+
+	check := newPacmanCheck(dataDir)
+	dbPath := filepath.Join(dataDir, "checkup-db")
+	readCalls := func() []string {
+		data, err := os.ReadFile(logFile)
+		require.NoError(t, err)
+		return strings.Split(strings.TrimSpace(string(data)), "\n")
 	}
+
+	// first check syncs
+	result, err := check(context.Background())
+	require.NoError(t, err)
+	assert.Equal(t, []uint16{1}, result.counts)
+	assert.Equal(t, []system.PackageUpdate{{Name: "linux", Current: "6.1-1", Available: "6.2-1"}}, result.packages)
+	// later checks reuse the synced copy
+	_, err = check(context.Background())
+	require.NoError(t, err)
+	// a missing private copy forces a sync
+	require.NoError(t, os.RemoveAll(dbPath))
+	_, err = check(context.Background())
+	require.NoError(t, err)
+
+	assert.Equal(t, []string{
+		"args=[] db=" + dbPath,
+		"args=[-n] db=" + dbPath,
+		"args=[] db=" + dbPath,
+	}, readCalls())
 }
