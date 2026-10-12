@@ -181,11 +181,26 @@ function getColumns(securityKnown: boolean): ColumnDef<PackageUpdateRow>[] {
 
 /**
  * Lists pending package updates reported by the agent. The agent caches the result of
- * its background check, so this refetches only when the update counts change.
+ * its background check, so this refetches when the counts change or the system reconnects.
  */
-export default function PackageUpdatesTable({ systemId, counts }: { systemId: string; counts: string }) {
-	const [data, setData] = useState<PackageUpdates | null>(null)
-	const [error, setError] = useState<string | null>(null)
+export default function PackageUpdatesTable({
+	systemId,
+	counts,
+	isOnline,
+}: {
+	systemId: string
+	counts: string
+	isOnline: boolean
+}) {
+	const [result, setResult] = useState<{
+		systemId: string
+		counts: string
+		data?: PackageUpdates
+		error?: string
+	} | null>(null)
+	const currentResult = result?.systemId === systemId && result.counts === counts ? result : null
+	const data = currentResult?.data
+	const error = currentResult?.error
 	const [sorting, setSorting] = useState<SortingState>([{ id: "name", desc: false }])
 	const [globalFilter, setGlobalFilter] = useState("")
 	// Store page size preference in local storage
@@ -194,27 +209,29 @@ export default function PackageUpdatesTable({ systemId, counts }: { systemId: st
 	const pagination = useMemo<PaginationState>(() => ({ pageIndex, pageSize }), [pageIndex, pageSize])
 
 	useEffect(() => {
+		setResult(null)
+		if (!isOnline) return
 		let cancelled = false
 		pb.send<PackageUpdates>("/api/beszel/package-updates", { query: { system: systemId } })
 			.then((result) => {
 				if (cancelled) return
-				setData(result)
-				setError(null)
+				setResult({ systemId, counts, data: result })
 			})
 			.catch((err) => {
 				if (cancelled) return
-				setError(err?.message || t`Failed to load package updates`)
+				setResult({ systemId, counts, error: err?.message || t`Failed to load package updates` })
 			})
 		return () => {
 			cancelled = true
 		}
-	}, [systemId, counts])
+	}, [systemId, counts, isOnline])
 
 	const rows = useMemo<PackageUpdateRow[]>(
 		() => (data?.packages ?? []).map((pkg) => ({ ...pkg, change: classifyVersionChange(pkg.current, pkg.available) })),
 		[data]
 	)
-	const securityKnown = !!data?.securityKnown
+	const cachedCounts = counts.split(",").map(Number)
+	const securityKnown = isOnline ? !!data?.securityKnown : cachedCounts.length > 1 && cachedCounts[1] >= 0
 	const columns = useMemo(() => getColumns(securityKnown), [securityKnown])
 
 	const table = useReactTable({
@@ -242,11 +259,11 @@ export default function PackageUpdatesTable({ systemId, counts }: { systemId: st
 		},
 	})
 
-	if (!data && !error) {
+	if (isOnline && !data && !error) {
 		return null
 	}
 
-	const securityCount = rows.filter((pkg) => pkg.security).length
+	const securityCount = isOnline ? rows.filter((pkg) => pkg.security).length : cachedCounts[1]
 	const tableRows = table.getRowModel().rows
 
 	return (
@@ -258,20 +275,20 @@ export default function PackageUpdatesTable({ systemId, counts }: { systemId: st
 							<Trans>Package Updates</Trans>
 						</CardTitle>
 						<CardDescription className="flex items-center flex-wrap">
-							{data?.manager && (
+							{isOnline && data?.manager && (
 								<>
 									<span className="font-mono">{data.manager}</span>
 									<Separator orientation="vertical" className="h-4 mx-2 bg-primary/40" />
 								</>
 							)}
-							<Trans>Total: {rows.length}</Trans>
+							<Trans>Total: {isOnline ? rows.length : cachedCounts[0]}</Trans>
 							{securityKnown && (
 								<>
 									<Separator orientation="vertical" className="h-4 mx-2 bg-primary/40" />
 									<Trans>Security: {securityCount}</Trans>
 								</>
 							)}
-							{!!data?.checkedAt && (
+							{isOnline && !!data?.checkedAt && (
 								<>
 									<Separator orientation="vertical" className="h-4 mx-2 bg-primary/40" />
 									<Trans>Checked {formatShortDate(new Date(data.checkedAt * 1000).toISOString())}</Trans>
@@ -279,7 +296,7 @@ export default function PackageUpdatesTable({ systemId, counts }: { systemId: st
 							)}
 						</CardDescription>
 					</div>
-					{rows.length > 0 && (
+					{isOnline && rows.length > 0 && (
 						<div className="relative ms-auto w-full max-w-full md:w-64">
 							<Input
 								placeholder={t`Filter...`}
@@ -303,7 +320,11 @@ export default function PackageUpdatesTable({ systemId, counts }: { systemId: st
 					)}
 				</div>
 			</CardHeader>
-			{error ? (
+			{!isOnline ? (
+				<p className="px-2 sm:px-1 text-sm text-muted-foreground">
+					<Trans>Package details will be refreshed when the system is back online.</Trans>
+				</p>
+			) : error ? (
 				<p className="px-2 sm:px-1 text-sm text-muted-foreground">{error}</p>
 			) : (
 				<div className="max-w-full relative overflow-x-auto border rounded-md">
@@ -341,7 +362,7 @@ export default function PackageUpdatesTable({ systemId, counts }: { systemId: st
 					</table>
 				</div>
 			)}
-			{!error && rows.length > pageSizes[0] && (
+			{isOnline && !error && rows.length > pageSizes[0] && (
 				<div className="flex items-center gap-8 mt-3 sm:mt-4 ps-1 tabular-nums">
 					<div className="hidden items-center gap-2 me-auto @xl:flex">
 						<Label htmlFor="pu-rows-per-page" className="text-sm font-medium">

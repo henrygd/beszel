@@ -49,11 +49,19 @@ export function LazySystemdTable({ systemId }: { systemId: string }) {
 
 const PackageUpdatesTable = lazy(() => import("./package-updates-table"))
 
-export function LazyPackageUpdatesTable({ systemId, counts }: { systemId: string; counts: string }) {
+export function LazyPackageUpdatesTable({
+	systemId,
+	counts,
+	isOnline,
+}: {
+	systemId: string
+	counts: string
+	isOnline: boolean
+}) {
 	const { isIntersecting, ref } = useIntersectionObserver({ rootMargin: "90px" })
 	return (
 		<div ref={ref} className={cn(isIntersecting && "contents")}>
-			{isIntersecting && <PackageUpdatesTable systemId={systemId} counts={counts} />}
+			{isIntersecting && <PackageUpdatesTable systemId={systemId} counts={counts} isOnline={isOnline} />}
 		</div>
 	)
 }

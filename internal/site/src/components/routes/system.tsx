@@ -75,8 +75,8 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 	const hasGpu = hasGpuData || hasGpuPowerData
 	const hasZfs = Object.keys(systemStats.at(-1)?.stats?.z ?? {}).length > 0
 	const hasNetworkMonitors = supportsNetworkMonitors(system)
-	// counts key the table so it refetches the list only after a new check
-	const packageUpdates = system.status === SystemStatus.Up && system.info.pu?.[0] ? system.info.pu.join(",") : ""
+	// Keep the last known counts visible while the system is offline.
+	const packageUpdates = system.info.pu?.[0] ? system.info.pu.join(",") : ""
 
 	// keep tabsRef in sync for keyboard navigation
 	const tabs = ["core", "network", "disk"]
@@ -168,7 +168,13 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 
 				{hasSystemd && <LazySystemdTable systemId={system.id} />}
 
-				{packageUpdates && <LazyPackageUpdatesTable systemId={system.id} counts={packageUpdates} />}
+				{packageUpdates && (
+					<LazyPackageUpdatesTable
+						systemId={system.id}
+						counts={packageUpdates}
+						isOnline={system.status === SystemStatus.Up}
+					/>
+				)}
 
 				{hasNetworkMonitors && <LazyNetworkMonitorsTable systemId={system.id} />}
 			</>
@@ -311,7 +317,13 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 
 				{packageUpdates && (
 					<TabsContent value="updates" forceMount className={activeTab === "updates" ? "contents" : "hidden"}>
-						{mountedTabs.has("updates") && <LazyPackageUpdatesTable systemId={system.id} counts={packageUpdates} />}
+						{mountedTabs.has("updates") && (
+							<LazyPackageUpdatesTable
+								systemId={system.id}
+								counts={packageUpdates}
+								isOnline={system.status === SystemStatus.Up}
+							/>
+						)}
 					</TabsContent>
 				)}
 			</Tabs>
