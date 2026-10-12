@@ -38,13 +38,18 @@ func TestParseDockerHosts(t *testing.T) {
 }
 
 // fakeEngine serves a minimal Docker API with one running container per id.
+// An id may be given as "id/name" to set the container name (default "c-<id>").
 func fakeEngine(t *testing.T, name string, ids ...string) *httptest.Server {
 	t.Helper()
 	known := make(map[string]bool, len(ids))
 	var list []string
 	for _, id := range ids {
+		id, ctrName, _ := strings.Cut(id, "/")
+		if ctrName == "" {
+			ctrName = "c-" + id
+		}
 		known[id] = true
-		list = append(list, fmt.Sprintf(`{"Id":"%s","Names":["/c-%s"],"Status":"Up 5 minutes","Image":"img"}`, id+strings.Repeat("0", 64-len(id)), id))
+		list = append(list, fmt.Sprintf(`{"Id":"%s","Names":["/%s"],"Status":"Up 5 minutes","Image":"img"}`, id+strings.Repeat("0", 64-len(id)), ctrName))
 	}
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		parts := strings.Split(strings.Trim(r.URL.Path, "/"), "/")
@@ -181,4 +186,28 @@ func TestDockerManagersLabelContainersWithEngine(t *testing.T) {
 	}
 	assert.Equal(t, map[string]string{"aaaaaaaaaaaa": a.URL, "bbbbbbbbbbbb": b.URL}, engineOf(a.URL+","+b.URL))
 	assert.Equal(t, map[string]string{"aaaaaaaaaaaa": ""}, engineOf(a.URL))
+}
+
+func TestDockerManagersDisambiguateDuplicateNames(t *testing.T) {
+	a := fakeEngine(t, "a", "aaaaaaaaaaaa/web", "cccccccccccc/db")
+	b := fakeEngine(t, "b", "bbbbbbbbbbbb/web")
+	t.Setenv("BESZEL_AGENT_DOCKER_HOST", a.URL+","+b.URL)
+	dms := newDockerManagers(nil)
+
+	for range 2 {
+		stats, err := dms.getDockerStats(defaultCacheTimeMs)
+		require.NoError(t, err)
+		got := map[string]string{}
+		for _, s := range stats {
+			got[s.Id] = s.Name
+		}
+		assert.Equal(t, map[string]string{
+			"aaaaaaaaaaaa": "web",
+			"cccccccccccc": "db",
+			"bbbbbbbbbbbb": "web (" + b.URL + ")",
+		}, got)
+	}
+
+	// the engine's own stats keep the original name
+	assert.Equal(t, "web", dms.managers[1].containerStatsMap["bbbbbbbbbbbb"].Name)
 }

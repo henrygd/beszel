@@ -103,6 +103,7 @@ func (d *dockerManagers) getDockerStats(cacheTimeMs uint16) ([]*container.Stats,
 	var all []*container.Stats
 	var errs []error
 	owners := make(map[string]*dockerManager)
+	names := make(map[string]struct{})
 	for i, res := range results {
 		if res.err != nil {
 			errs = append(errs, res.err)
@@ -110,8 +111,16 @@ func (d *dockerManagers) getDockerStats(cacheTimeMs uint16) ([]*container.Stats,
 		}
 		for _, stats := range res.stats {
 			owners[stats.Id] = d.managers[i]
+			// Charts key containers by name, so a name already used by an earlier engine
+			// gets the engine appended. The stats are copied because they are owned by the manager.
+			if _, taken := names[stats.Name]; taken {
+				renamed := *stats
+				renamed.Name = stats.Name + " (" + stats.Engine + ")"
+				stats = &renamed
+			}
+			names[stats.Name] = struct{}{}
+			all = append(all, stats)
 		}
-		all = append(all, res.stats...)
 	}
 	if len(errs) == len(results) {
 		return nil, errors.Join(errs...)
