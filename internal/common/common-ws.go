@@ -47,7 +47,7 @@ type AgentResponse struct {
 	Fingerprint *FingerprintResponse       `cbor:"2,keyasint,omitempty,omitzero"` // Legacy (<= 0.17)
 	Error       string                     `cbor:"3,keyasint,omitempty,omitzero"`
 	String      *string                    `cbor:"4,keyasint,omitempty,omitzero"` // Legacy (<= 0.17)
-	SmartData   map[string]smart.SmartData `cbor:"5,keyasint,omitempty,omitzero"` // Legacy (<= 0.17)
+	SmartData   map[string]smart.SmartData `cbor:"5,keyasint,omitzero"`           // Legacy (<= 0.17)
 	ServiceInfo systemd.ServiceDetails     `cbor:"6,keyasint,omitempty,omitzero"` // Legacy (<= 0.17)
 	// Data is the generic response payload for new endpoints (0.18+)
 	Data          cbor.RawMessage `cbor:"7,keyasint,omitempty,omitzero"`
