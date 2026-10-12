@@ -31,6 +31,7 @@ type SmartManager struct {
 	lastScanTime       time.Time
 	smartctlPath       string
 	excludedDevices    map[string]struct{}
+	nvmeNamespacePaths map[string]string // controller to working namespace; guarded by Mutex
 	darwinNvmeOnce     sync.Once
 	darwinNvmeCapacity map[string]uint64      // serial → bytes cache, written once via darwinNvmeOnce
 	darwinNvmeProvider func() ([]byte, error) // overridable for testing
@@ -106,14 +107,6 @@ func (sm *SmartManager) devicesSnapshot() []*DeviceInfo {
 	copy(devices, sm.SmartDevices)
 	return devices
 }
-
-// hasSmartData reports whether any SMART data has been collected.
-// func (sm *SmartManager) hasSmartData() bool {
-// 	sm.Lock()
-// 	defer sm.Unlock()
-
-// 	return len(sm.SmartDataMap) > 0
-// }
 
 // resolveRefreshError determines the proper error to return after a refresh.
 func (sm *SmartManager) resolveRefreshError(scanErr, collectErr error) error {
@@ -216,6 +209,8 @@ func (sm *SmartManager) ScanDevices(force bool) error {
 		hasValidScan = true
 	}
 
+	scannedDevices = sm.resolveNvmeNamespacePaths(scannedDevices)
+	configuredDevices = sm.resolveNvmeNamespacePaths(configuredDevices)
 	finalDevices := mergeDeviceLists(currentDevices, scannedDevices, configuredDevices)
 	finalDevices = sm.filterExcludedDevices(finalDevices)
 	sm.updateSmartDevices(finalDevices)
@@ -229,6 +224,39 @@ func (sm *SmartManager) ScanDevices(force bool) error {
 	}
 
 	return nil
+}
+
+// resolveNvmeNamespacePaths keeps successful namespace fallbacks when a later
+// scan (or SMART_DEVICES) reports the original controller path again. Preserve
+// the controller's presence in the scan so removed drives can still be pruned.
+func (sm *SmartManager) resolveNvmeNamespacePaths(devices []*DeviceInfo) []*DeviceInfo {
+	sm.Lock()
+	defer sm.Unlock()
+
+	if len(sm.nvmeNamespacePaths) == 0 {
+		return devices
+	}
+	resolved := make([]*DeviceInfo, 0, len(devices))
+	seen := make(map[deviceKey]struct{}, len(devices))
+	for _, device := range devices {
+		if device == nil {
+			continue
+		}
+		// Keep excluded controller entries unchanged until filterExcludedDevices
+		// runs, so an empty input cannot make mergeDeviceLists retain old devices.
+		if namespace := sm.nvmeNamespacePaths[device.Name]; namespace != "" && !sm.isExcludedDevice(device.Name) {
+			copyDevice := *device
+			copyDevice.Name = namespace
+			device = &copyDevice
+		}
+		key := makeDeviceKey(device.Name, device.Type)
+		if _, ok := seen[key]; ok {
+			continue
+		}
+		seen[key] = struct{}{}
+		resolved = append(resolved, device)
+	}
+	return resolved
 }
 
 func (sm *SmartManager) parseConfiguredDevices(config string) ([]*DeviceInfo, error) {
@@ -499,8 +527,6 @@ func (sm *SmartManager) CollectSmart(deviceInfo *DeviceInfo) error {
 		return errNoValidSmartData
 	}
 
-	// slog.Info("collecting SMART data", "device", deviceInfo.Name, "type", deviceInfo.Type, "has_existing_data", sm.hasDataForDevice(deviceInfo))
-
 	// Check if we have existing data for this exact device identity. Multiple
 	// bridge slots can share a path, so a name-only match is not sufficient.
 	hasExistingData := sm.hasDataForDevice(deviceInfo)
@@ -535,24 +561,26 @@ func (sm *SmartManager) CollectSmart(deviceInfo *DeviceInfo) error {
 		controllerPath := deviceInfo.Name
 		namespacePath := controllerPath + "n1"
 		if !sm.isExcludedDevice(namespacePath) {
-			deviceInfo.Name = namespacePath
+			namespaceDevice := *deviceInfo
+			namespaceDevice.Name = namespacePath
 
 			ctx3, cancel3 := context.WithTimeout(context.Background(), 15*time.Second)
 			defer cancel3()
-			args = sm.smartctlArgs(deviceInfo, false)
+			args = sm.smartctlArgs(&namespaceDevice, false)
 			cmd = exec.CommandContext(ctx3, sm.smartctlPath, args...)
 			output, err = cmd.CombinedOutput()
-			hasValidData = sm.parseSmartOutput(deviceInfo, output)
+			hasValidData = sm.parseSmartOutput(&namespaceDevice, output)
 
-			// Auto-exclude the controller path so future scans don't re-add it
+			// Resolve future controller scan results to this working namespace.
 			if hasValidData {
 				sm.Lock()
-				if sm.excludedDevices == nil {
-					sm.excludedDevices = make(map[string]struct{})
+				*deviceInfo = namespaceDevice
+				if sm.nvmeNamespacePaths == nil {
+					sm.nvmeNamespacePaths = make(map[string]string)
 				}
-				sm.excludedDevices[controllerPath] = struct{}{}
+				sm.nvmeNamespacePaths[controllerPath] = namespacePath
 				sm.Unlock()
-				slog.Debug("auto-excluded NVMe controller path", "path", controllerPath)
+				slog.Debug("using NVMe namespace path", "controller", controllerPath, "namespace", namespacePath)
 			}
 		}
 	}
@@ -802,10 +830,6 @@ func (sm *SmartManager) updateSmartDevices(devices []*DeviceInfo) {
 
 	sm.SmartDevices = devices
 
-	if len(sm.SmartDataMap) == 0 {
-		return
-	}
-
 	validKeys := make(map[deviceKey]struct{}, len(devices))
 	nameCounts := make(map[string]int, len(devices))
 	for _, device := range devices {
@@ -814,6 +838,14 @@ func (sm *SmartManager) updateSmartDevices(devices []*DeviceInfo) {
 		}
 		validKeys[makeDeviceKey(device.Name, device.Type)] = struct{}{}
 		nameCounts[device.Name]++
+	}
+
+	// Forget aliases when their device disappears, so a replacement controller
+	// can be queried normally instead of inheriting an old namespace fallback.
+	for controller, namespace := range sm.nvmeNamespacePaths {
+		if nameCounts[controller] == 0 && nameCounts[namespace] == 0 {
+			delete(sm.nvmeNamespacePaths, controller)
+		}
 	}
 
 	for key, data := range sm.SmartDataMap {
@@ -835,124 +867,110 @@ func (sm *SmartManager) updateSmartDevices(devices []*DeviceInfo) {
 }
 
 // isVirtualDevice checks if a device is a virtual disk that should be filtered out
-func (sm *SmartManager) isVirtualDevice(data *smart.SmartInfoForSata) bool {
-	vendorUpper := strings.ToUpper(data.ScsiVendor)
-	productUpper := strings.ToUpper(data.ScsiProduct)
-	modelUpper := strings.ToUpper(data.ModelName)
-
-	return sm.isVirtualDeviceFromStrings(vendorUpper, productUpper, modelUpper)
-}
-
-// isVirtualDeviceNvme checks if an NVMe device is a virtual disk that should be filtered out
-func (sm *SmartManager) isVirtualDeviceNvme(data *smart.SmartInfoForNvme) bool {
-	modelUpper := strings.ToUpper(data.ModelName)
-
-	return sm.isVirtualDeviceFromStrings(modelUpper)
-}
-
-// isVirtualDeviceScsi checks if a SCSI device is a virtual disk that should be filtered out
-func (sm *SmartManager) isVirtualDeviceScsi(data *smart.SmartInfoForScsi) bool {
-	vendorUpper := strings.ToUpper(data.ScsiVendor)
-	productUpper := strings.ToUpper(data.ScsiProduct)
-	modelUpper := strings.ToUpper(data.ScsiModelName)
-
-	return sm.isVirtualDeviceFromStrings(vendorUpper, productUpper, modelUpper)
-}
-
-// isVirtualDeviceFromStrings checks if any of the provided strings indicate a virtual device
-func (sm *SmartManager) isVirtualDeviceFromStrings(fields ...string) bool {
-	for _, field := range fields {
-		fieldUpper := strings.ToUpper(field)
+// (e.g., Kubernetes PVCs, QEMU, VirtualBox, etc.)
+func isVirtualDevice(data *smart.SmartctlOutput) bool {
+	for _, field := range []string{data.ScsiVendor, data.ScsiProduct, data.ModelName, data.ScsiModelName} {
+		field = strings.ToUpper(field)
 		switch {
-		case strings.Contains(fieldUpper, "IET"), // iSCSI Enterprise Target
-			strings.Contains(fieldUpper, "VIRTUAL"),
-			strings.Contains(fieldUpper, "QEMU"),
-			strings.Contains(fieldUpper, "VBOX"),
-			strings.Contains(fieldUpper, "VMWARE"),
-			strings.Contains(fieldUpper, "MSFT"): // Microsoft Hyper-V
+		case strings.Contains(field, "IET"), // iSCSI Enterprise Target
+			strings.Contains(field, "VIRTUAL"),
+			strings.Contains(field, "QEMU"),
+			strings.Contains(field, "VBOX"),
+			strings.Contains(field, "VMWARE"),
+			strings.Contains(field, "MSFT"): // Microsoft Hyper-V
 			return true
 		}
 	}
 	return false
 }
 
-// parseSmartForSata parses the output of smartctl --all -j for SATA/ATA devices and updates the SmartDataMap.
-// deviceType is the exact type used to identify and query the device; when set,
-// it takes precedence over the generic type reported by smartctl.
-// Returns hasValidData and exitStatus
-func (sm *SmartManager) parseSmartForSata(output []byte, deviceType string) (bool, int) {
-	var data smart.SmartInfoForSata
-
+// decodeSmartctlOutput unmarshals smartctl JSON output and rejects devices
+// without a serial number and virtual devices. It also returns the smartctl exit status.
+func decodeSmartctlOutput(output []byte) (*smart.SmartctlOutput, int, bool) {
+	var data smart.SmartctlOutput
 	if err := json.Unmarshal(output, &data); err != nil {
-		return false, 0
+		slog.Debug("failed to parse smartctl output", "err", err)
+		return nil, 0, false
 	}
+	exitStatus := data.Smartctl.ExitStatus
 
 	if data.SerialNumber == "" {
 		slog.Debug("no serial number", "device", data.Device.Name)
-		return false, data.Smartctl.ExitStatus
+		return nil, exitStatus, false
 	}
-
-	// Skip virtual devices (e.g., Kubernetes PVCs, QEMU, VirtualBox, etc.)
-	if sm.isVirtualDevice(&data) {
+	if isVirtualDevice(&data) {
 		slog.Debug("skipping smart", "device", data.Device.Name, "model", data.ModelName)
-		return false, data.Smartctl.ExitStatus
+		return nil, exitStatus, false
 	}
+	return &data, exitStatus, true
+}
 
-	sm.Lock()
-	defer sm.Unlock()
-
-	keyName := data.SerialNumber
-
-	// if device does not exist in SmartDataMap, initialize it
-	if _, ok := sm.SmartDataMap[keyName]; !ok {
-		sm.SmartDataMap[keyName] = &smart.SmartData{}
+// newSmartData fills the fields shared by all smartctl protocols. deviceType is
+// the exact type used to identify and query the device; when set, it takes
+// precedence over the generic type reported by smartctl.
+func newSmartData(data *smart.SmartctlOutput, deviceType, model, firmware string, temperature int64) *smart.SmartData {
+	temp := uint8(min(max(temperature, 0), 255))
+	smartData := &smart.SmartData{
+		ModelName:       model,
+		SerialNumber:    data.SerialNumber,
+		FirmwareVersion: firmware,
+		Capacity:        data.UserCapacity.Bytes,
+		Temperature:     temp,
+		SmartStatus:     getSmartStatus(temp, data.SmartStatus.Passed),
+		DiskName:        data.Device.Name,
+		DiskType:        data.Device.Type,
 	}
-
-	// update SmartData
-	smartData := sm.SmartDataMap[keyName]
-	// smartData.ModelFamily = data.ModelFamily
-	smartData.ModelName = data.ModelName
-	smartData.SerialNumber = data.SerialNumber
-	smartData.FirmwareVersion = data.FirmwareVersion
-	smartData.Capacity = data.UserCapacity.Bytes
-	smartData.Temperature = data.Temperature.Current
-	smartData.SmartStatus = getSmartStatus(smartData.Temperature, data.SmartStatus.Passed)
-	smartData.DiskName = data.Device.Name
-	smartData.DiskType = data.Device.Type
 	if deviceType != "" {
 		smartData.DiskType = deviceType
 	}
+	return smartData
+}
+
+// storeSmartData saves parsed smartctl data, keyed by serial number.
+func (sm *SmartManager) storeSmartData(smartData *smart.SmartData) {
+	sm.Lock()
+	defer sm.Unlock()
+	sm.SmartDataMap[smartData.SerialNumber] = smartData
+}
+
+// parseSmartForSata parses the output of smartctl --all -j for SATA/ATA devices and updates the SmartDataMap.
+// Returns hasValidData and exitStatus
+func (sm *SmartManager) parseSmartForSata(output []byte, deviceType string) (bool, int) {
+	data, exitStatus, ok := decodeSmartctlOutput(output)
+	if !ok {
+		return false, exitStatus
+	}
+
+	smartData := newSmartData(data, deviceType, data.ModelName, data.FirmwareVersion, data.Temperature.Current)
 
 	// get values from ata_device_statistics if necessary
 	var ataDeviceStats smart.AtaDeviceStatistics
 	if smartData.Temperature == 0 {
-		if temp := findAtaDeviceStatisticsValue(&data, &ataDeviceStats, 5, "Current Temperature", 0, 255); temp != nil {
+		if temp := findAtaDeviceStatisticsValue(data, &ataDeviceStats, 5, "Current Temperature", 0, 255); temp != nil {
 			smartData.Temperature = uint8(*temp)
 		}
 	}
 
-	// update SmartAttributes
-	smartData.Attributes = make([]*smart.SmartAttribute, 0, len(data.AtaSmartAttributes.Table))
-	for _, attr := range data.AtaSmartAttributes.Table {
-		rawValue := uint64(attr.Raw.Value)
-		if parsed, ok := smart.ParseSmartRawValueString(attr.Raw.String); ok {
-			rawValue = parsed
-		}
-		smartAttr := &smart.SmartAttribute{
+	var table []smart.AtaSmartAttribute
+	if data.AtaSmartAttributes != nil {
+		table = data.AtaSmartAttributes.Table
+	}
+	smartData.Attributes = make([]*smart.SmartAttribute, 0, len(table))
+	for _, attr := range table {
+		smartData.Attributes = append(smartData.Attributes, &smart.SmartAttribute{
 			ID:         attr.ID,
 			Name:       attr.Name,
 			Value:      attr.Value,
 			Worst:      attr.Worst,
 			Threshold:  attr.Thresh,
-			RawValue:   rawValue,
+			RawValue:   uint64(attr.Raw.Value), // already parsed from raw.string when possible
 			RawString:  attr.Raw.String,
 			WhenFailed: attr.WhenFailed,
-		}
-		smartData.Attributes = append(smartData.Attributes, smartAttr)
+		})
 	}
-	sm.SmartDataMap[keyName] = smartData
 
-	return true, data.Smartctl.ExitStatus
+	sm.storeSmartData(smartData)
+	return true, exitStatus
 }
 
 func getSmartStatus(temperature uint8, passed bool) string {
@@ -967,7 +985,7 @@ func getSmartStatus(temperature uint8, passed bool) string {
 
 // findAtaDeviceStatisticsEntry centralizes ATA devstat lookups so additional
 // metrics can be pulled from the same structure in the future.
-func findAtaDeviceStatisticsValue(data *smart.SmartInfoForSata, ataDeviceStats *smart.AtaDeviceStatistics, entryNumber uint8, entryName string, minValue, maxValue int64) *int64 {
+func findAtaDeviceStatisticsValue(data *smart.SmartctlOutput, ataDeviceStats *smart.AtaDeviceStatistics, entryNumber uint8, entryName string, minValue, maxValue int64) *int64 {
 	if len(ataDeviceStats.Pages) == 0 {
 		if len(data.AtaDeviceStatistics) == 0 {
 			return nil
@@ -995,81 +1013,48 @@ func findAtaDeviceStatisticsValue(data *smart.SmartInfoForSata, ataDeviceStats *
 	return nil
 }
 
+// parseSmartForScsi parses the output of smartctl --all -j for SCSI devices and updates the SmartDataMap.
+// Returns hasValidData and exitStatus
 func (sm *SmartManager) parseSmartForScsi(output []byte, deviceType string) (bool, int) {
-	var data smart.SmartInfoForScsi
-
-	if err := json.Unmarshal(output, &data); err != nil {
-		return false, 0
+	data, exitStatus, ok := decodeSmartctlOutput(output)
+	if !ok {
+		return false, exitStatus
 	}
 
-	if data.SerialNumber == "" {
-		slog.Debug("no serial number", "device", data.Device.Name)
-		return false, data.Smartctl.ExitStatus
+	smartData := newSmartData(data, deviceType, data.ScsiModelName, data.ScsiRevision, data.Temperature.Current)
+
+	cycles := data.ScsiStartStopCycleCounter
+	attributes := []*smart.SmartAttribute{
+		{Name: "PowerOnHours", RawValue: data.PowerOnTime.Hours},
+		{Name: "PowerOnMinutes", RawValue: data.PowerOnTime.Minutes},
+		{Name: "GrownDefectList", RawValue: data.ScsiGrownDefectList},
+		{Name: "StartStopCycles", RawValue: cycles.AccumulatedStartStopCycles},
+		{Name: "LoadUnloadCycles", RawValue: cycles.AccumulatedLoadUnloadCycles},
+		{Name: "StartStopSpecified", RawValue: cycles.SpecifiedCycleCountOverDeviceLifetime},
+		{Name: "LoadUnloadSpecified", RawValue: cycles.SpecifiedLoadUnloadCountOverDeviceLifetime},
 	}
 
-	// Skip virtual devices (e.g., Kubernetes PVCs, QEMU, VirtualBox, etc.)
-	if sm.isVirtualDeviceScsi(&data) {
-		slog.Debug("skipping smart", "device", data.Device.Name, "model", data.ScsiModelName)
-		return false, data.Smartctl.ExitStatus
+	var errorLog smart.ScsiErrorCounterLog
+	if data.ScsiErrorCounterLog != nil {
+		errorLog = *data.ScsiErrorCounterLog
 	}
-
-	sm.Lock()
-	defer sm.Unlock()
-
-	keyName := data.SerialNumber
-	if _, ok := sm.SmartDataMap[keyName]; !ok {
-		sm.SmartDataMap[keyName] = &smart.SmartData{}
+	for _, counter := range []struct {
+		prefix string
+		stats  smart.ScsiErrorCounter
+	}{{"Read", errorLog.Read}, {"Write", errorLog.Write}, {"Verify", errorLog.Verify}} {
+		attributes = append(attributes,
+			&smart.SmartAttribute{Name: counter.prefix + "TotalErrorsCorrected", RawValue: counter.stats.TotalErrorsCorrected},
+			&smart.SmartAttribute{Name: counter.prefix + "TotalUncorrectedErrors", RawValue: counter.stats.TotalUncorrectedErrors},
+			&smart.SmartAttribute{Name: counter.prefix + "CorrectionAlgorithmInvocations", RawValue: counter.stats.CorrectionAlgorithmInvocations},
+		)
+		if val := parseScsiGigabytesProcessed(counter.stats.GigabytesProcessed); val >= 0 {
+			attributes = append(attributes, &smart.SmartAttribute{Name: counter.prefix + "GigabytesProcessed", RawValue: uint64(val)})
+		}
 	}
-
-	smartData := sm.SmartDataMap[keyName]
-	smartData.ModelName = data.ScsiModelName
-	smartData.SerialNumber = data.SerialNumber
-	smartData.FirmwareVersion = data.ScsiRevision
-	smartData.Capacity = data.UserCapacity.Bytes
-	smartData.Temperature = data.Temperature.Current
-	smartData.SmartStatus = getSmartStatus(smartData.Temperature, data.SmartStatus.Passed)
-	smartData.DiskName = data.Device.Name
-	smartData.DiskType = data.Device.Type
-	if deviceType != "" {
-		smartData.DiskType = deviceType
-	}
-
-	attributes := make([]*smart.SmartAttribute, 0, 10)
-	attributes = append(attributes, &smart.SmartAttribute{Name: "PowerOnHours", RawValue: data.PowerOnTime.Hours})
-	attributes = append(attributes, &smart.SmartAttribute{Name: "PowerOnMinutes", RawValue: data.PowerOnTime.Minutes})
-	attributes = append(attributes, &smart.SmartAttribute{Name: "GrownDefectList", RawValue: data.ScsiGrownDefectList})
-	attributes = append(attributes, &smart.SmartAttribute{Name: "StartStopCycles", RawValue: data.ScsiStartStopCycleCounter.AccumulatedStartStopCycles})
-	attributes = append(attributes, &smart.SmartAttribute{Name: "LoadUnloadCycles", RawValue: data.ScsiStartStopCycleCounter.AccumulatedLoadUnloadCycles})
-	attributes = append(attributes, &smart.SmartAttribute{Name: "StartStopSpecified", RawValue: data.ScsiStartStopCycleCounter.SpecifiedCycleCountOverDeviceLifetime})
-	attributes = append(attributes, &smart.SmartAttribute{Name: "LoadUnloadSpecified", RawValue: data.ScsiStartStopCycleCounter.SpecifiedLoadUnloadCountOverDeviceLifetime})
-
-	readStats := data.ScsiErrorCounterLog.Read
-	writeStats := data.ScsiErrorCounterLog.Write
-	verifyStats := data.ScsiErrorCounterLog.Verify
-
-	attributes = append(attributes, &smart.SmartAttribute{Name: "ReadTotalErrorsCorrected", RawValue: readStats.TotalErrorsCorrected})
-	attributes = append(attributes, &smart.SmartAttribute{Name: "ReadTotalUncorrectedErrors", RawValue: readStats.TotalUncorrectedErrors})
-	attributes = append(attributes, &smart.SmartAttribute{Name: "ReadCorrectionAlgorithmInvocations", RawValue: readStats.CorrectionAlgorithmInvocations})
-	if val := parseScsiGigabytesProcessed(readStats.GigabytesProcessed); val >= 0 {
-		attributes = append(attributes, &smart.SmartAttribute{Name: "ReadGigabytesProcessed", RawValue: uint64(val)})
-	}
-	attributes = append(attributes, &smart.SmartAttribute{Name: "WriteTotalErrorsCorrected", RawValue: writeStats.TotalErrorsCorrected})
-	attributes = append(attributes, &smart.SmartAttribute{Name: "WriteTotalUncorrectedErrors", RawValue: writeStats.TotalUncorrectedErrors})
-	attributes = append(attributes, &smart.SmartAttribute{Name: "WriteCorrectionAlgorithmInvocations", RawValue: writeStats.CorrectionAlgorithmInvocations})
-	if val := parseScsiGigabytesProcessed(writeStats.GigabytesProcessed); val >= 0 {
-		attributes = append(attributes, &smart.SmartAttribute{Name: "WriteGigabytesProcessed", RawValue: uint64(val)})
-	}
-	attributes = append(attributes, &smart.SmartAttribute{Name: "VerifyTotalErrorsCorrected", RawValue: verifyStats.TotalErrorsCorrected})
-	attributes = append(attributes, &smart.SmartAttribute{Name: "VerifyTotalUncorrectedErrors", RawValue: verifyStats.TotalUncorrectedErrors})
-	attributes = append(attributes, &smart.SmartAttribute{Name: "VerifyCorrectionAlgorithmInvocations", RawValue: verifyStats.CorrectionAlgorithmInvocations})
-	if val := parseScsiGigabytesProcessed(verifyStats.GigabytesProcessed); val >= 0 {
-		attributes = append(attributes, &smart.SmartAttribute{Name: "VerifyGigabytesProcessed", RawValue: uint64(val)})
-	}
-
 	smartData.Attributes = attributes
-	sm.SmartDataMap[keyName] = smartData
 
-	return true, data.Smartctl.ExitStatus
+	sm.storeSmartData(smartData)
+	return true, exitStatus
 }
 
 func parseScsiGigabytesProcessed(value string) int64 {
@@ -1135,22 +1120,9 @@ func (sm *SmartManager) lookupDarwinNvmeCapacity(serial string) uint64 {
 // it takes precedence over the generic type reported by smartctl.
 // Returns hasValidData and exitStatus
 func (sm *SmartManager) parseSmartForNvme(output []byte, deviceType string) (bool, int) {
-	data := &smart.SmartInfoForNvme{}
-
-	if err := json.Unmarshal(output, &data); err != nil {
-		slog.Debug("failed to parse NVMe smartctl output", "err", err)
-		return false, 0
-	}
-
-	if data.SerialNumber == "" {
-		slog.Debug("no serial number", "device", data.Device.Name)
-		return false, data.Smartctl.ExitStatus
-	}
-
-	// Skip virtual devices (e.g., Kubernetes PVCs, QEMU, VirtualBox, etc.)
-	if sm.isVirtualDeviceNvme(data) {
-		slog.Debug("skipping smart", "device", data.Device.Name, "model", data.ModelName)
-		return false, data.Smartctl.ExitStatus
+	data, exitStatus, ok := decodeSmartctlOutput(output)
+	if !ok {
+		return false, exitStatus
 	}
 
 	// smartctl may return device identity fields before failing to read the NVMe
@@ -1160,64 +1132,41 @@ func (sm *SmartManager) parseSmartForNvme(output []byte, deviceType string) (boo
 	log := data.NVMeSmartHealthInformationLog
 	if log == nil {
 		slog.Debug("no NVMe SMART health information", "device", data.Device.Name)
-		return false, data.Smartctl.ExitStatus
+		return false, exitStatus
 	}
 
-	sm.Lock()
-	defer sm.Unlock()
-
-	keyName := data.SerialNumber
-
-	// if device does not exist in SmartDataMap, initialize it
-	if _, ok := sm.SmartDataMap[keyName]; !ok {
-		sm.SmartDataMap[keyName] = &smart.SmartData{}
-	}
-
-	// update SmartData
-	smartData := sm.SmartDataMap[keyName]
-	smartData.ModelName = data.ModelName
-	smartData.SerialNumber = data.SerialNumber
-	smartData.FirmwareVersion = data.FirmwareVersion
-	smartData.Capacity = data.UserCapacity.Bytes
+	smartData := newSmartData(data, deviceType, data.ModelName, data.FirmwareVersion, log.Temperature)
 	if smartData.Capacity == 0 {
 		smartData.Capacity = data.NVMeTotalCapacity
 	}
 	if smartData.Capacity == 0 && (runtime.GOOS == "darwin" || sm.darwinNvmeProvider != nil) {
 		smartData.Capacity = sm.lookupDarwinNvmeCapacity(data.SerialNumber)
 	}
-	smartData.Temperature = log.Temperature
-	smartData.SmartStatus = getSmartStatus(smartData.Temperature, data.SmartStatus.Passed)
-	smartData.DiskName = data.Device.Name
-	smartData.DiskType = data.Device.Type
-	if deviceType != "" {
-		smartData.DiskType = deviceType
-	}
 
 	// nvme attributes does not follow the same format as ata attributes,
 	// so we manually map each field to SmartAttributes
 	smartData.Attributes = []*smart.SmartAttribute{
-		{Name: "CriticalWarning", RawValue: uint64(log.CriticalWarning)},
-		{Name: "Temperature", RawValue: uint64(log.Temperature)},
-		{Name: "AvailableSpare", RawValue: uint64(log.AvailableSpare)},
-		{Name: "AvailableSpareThreshold", RawValue: uint64(log.AvailableSpareThreshold)},
-		{Name: "PercentageUsed", RawValue: uint64(log.PercentageUsed)},
+		{Name: "CriticalWarning", RawValue: log.CriticalWarning},
+		{Name: "Temperature", RawValue: uint64(smartData.Temperature)},
+		{Name: "AvailableSpare", RawValue: log.AvailableSpare},
+		{Name: "AvailableSpareThreshold", RawValue: log.AvailableSpareThreshold},
+		{Name: "PercentageUsed", RawValue: log.PercentageUsed},
 		{Name: "DataUnitsRead", RawValue: log.DataUnitsRead},
 		{Name: "DataUnitsWritten", RawValue: log.DataUnitsWritten},
-		{Name: "HostReads", RawValue: uint64(log.HostReads)},
-		{Name: "HostWrites", RawValue: uint64(log.HostWrites)},
-		{Name: "ControllerBusyTime", RawValue: uint64(log.ControllerBusyTime)},
-		{Name: "PowerCycles", RawValue: uint64(log.PowerCycles)},
-		{Name: "PowerOnHours", RawValue: uint64(log.PowerOnHours)},
-		{Name: "UnsafeShutdowns", RawValue: uint64(log.UnsafeShutdowns)},
-		{Name: "MediaErrors", RawValue: uint64(log.MediaErrors)},
-		{Name: "NumErrLogEntries", RawValue: uint64(log.NumErrLogEntries)},
-		{Name: "WarningTempTime", RawValue: uint64(log.WarningTempTime)},
-		{Name: "CriticalCompTime", RawValue: uint64(log.CriticalCompTime)},
+		{Name: "HostReads", RawValue: log.HostReads},
+		{Name: "HostWrites", RawValue: log.HostWrites},
+		{Name: "ControllerBusyTime", RawValue: log.ControllerBusyTime},
+		{Name: "PowerCycles", RawValue: log.PowerCycles},
+		{Name: "PowerOnHours", RawValue: log.PowerOnHours},
+		{Name: "UnsafeShutdowns", RawValue: log.UnsafeShutdowns},
+		{Name: "MediaErrors", RawValue: log.MediaErrors},
+		{Name: "NumErrLogEntries", RawValue: log.NumErrLogEntries},
+		{Name: "WarningTempTime", RawValue: log.WarningTempTime},
+		{Name: "CriticalCompTime", RawValue: log.CriticalCompTime},
 	}
 
-	sm.SmartDataMap[keyName] = smartData
-
-	return true, data.Smartctl.ExitStatus
+	sm.storeSmartData(smartData)
+	return true, exitStatus
 }
 
 // detectSmartctl checks if smartctl is installed, returns an error if not
