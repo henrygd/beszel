@@ -1568,7 +1568,7 @@ func TestRefreshNvmeNamespaceFallbackSurvivesRescan(t *testing.T) {
 	// rather than only preserving the previous cached data.
 	fixtureData, err := os.ReadFile(fixture)
 	require.NoError(t, err)
-	var updatedData smart.SmartInfoForNvme
+	var updatedData smart.SmartctlOutput
 	require.NoError(t, json.Unmarshal(fixtureData, &updatedData))
 	require.NotNil(t, updatedData.NVMeSmartHealthInformationLog)
 	updatedData.NVMeSmartHealthInformationLog.Temperature++
@@ -1587,7 +1587,7 @@ func TestRefreshNvmeNamespaceFallbackSurvivesRescan(t *testing.T) {
 	assert.Equal(t, "/dev/nvme0n1", sm.SmartDevices[0].Name)
 	require.Contains(t, sm.SmartDataMap, "2024031600129")
 	assert.Equal(t, "/dev/nvme0n1", sm.SmartDataMap["2024031600129"].DiskName)
-	assert.Equal(t, updatedData.NVMeSmartHealthInformationLog.Temperature, sm.SmartDataMap["2024031600129"].Temperature)
+	assert.Equal(t, uint8(updatedData.NVMeSmartHealthInformationLog.Temperature), sm.SmartDataMap["2024031600129"].Temperature)
 	assert.True(t, sm.SmartDevices[0].typeVerified)
 	assert.Equal(t, "nvme", sm.SmartDevices[0].parserType)
 
