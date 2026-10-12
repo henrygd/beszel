@@ -67,6 +67,20 @@ func TestParseZfsListOutput(t *testing.T) {
 	assert.Equal(t, uint64(11999000000000), datasets[0].Avail)
 }
 
+func TestParseRootDatasetOutput(t *testing.T) {
+	roots := parseRootDatasetOutput([]byte(
+		"tank\t40\t60\t0\n" +
+			"backup\t5\t15\tnone\n" +
+			"quota\t40\t10\t20\n" +
+			"broken\tnotanumber\t60\t0\n" +
+			"short\t40\t60\n",
+	))
+	assert.Equal(t, map[string]Dataset{
+		"tank":   {Name: "tank", Used: 40, Avail: 60},
+		"backup": {Name: "backup", Used: 5, Avail: 15},
+	}, roots)
+}
+
 func TestParseZpoolStatusOutput(t *testing.T) {
 	data, err := os.ReadFile(fixturePath("zpool_status.txt"))
 	require.NoError(t, err)

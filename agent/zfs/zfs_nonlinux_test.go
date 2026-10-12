@@ -3,6 +3,7 @@
 package zfs
 
 import (
+	"slices"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -16,6 +17,9 @@ func TestCollectorsUseUtilitiesOnNonLinux(t *testing.T) {
 		case "zpool":
 			return []byte("tank\t100\t50\t50\tONLINE\n"), nil
 		case "zfs":
+			if slices.Contains(args, "-d") {
+				return []byte("tank\t40\t60\tnone\n"), nil
+			}
 			return []byte("tank\t50\t50\t/tank\n"), nil
 		default:
 			t.Fatalf("unexpected command %s", name)
@@ -26,7 +30,7 @@ func TestCollectorsUseUtilitiesOnNonLinux(t *testing.T) {
 
 	pools, err := PoolStats()
 	require.NoError(t, err)
-	assert.Equal(t, []PoolStat{{Name: "tank", Size: 100, Alloc: 50, Free: 50, Health: "ONLINE"}}, pools)
+	assert.Equal(t, []PoolStat{{Name: "tank", Size: 100, Alloc: 40, Free: 60, Health: "ONLINE"}}, pools)
 	datasets, err := Datasets()
 	require.NoError(t, err)
 	assert.Equal(t, []Dataset{{Name: "tank", Used: 50, Avail: 50, Mountpoint: "/tank"}}, datasets)

@@ -268,8 +268,8 @@ func TestPoolStatsDelegatesToZpoolWhenDevZfsPresent(t *testing.T) {
 			// raidz: the raw figures include parity
 			return []byte("tank\t150\t60\t90\tONLINE\n"), nil
 		case "zfs":
-			assert.Equal(t, []string{"list", "-Hp", "-d", "0", "-o", "name,used,avail,mountpoint"}, args)
-			return []byte("tank\t40\t60\t/tank\n"), nil
+			assert.Equal(t, []string{"list", "-Hp", "-d", "0", "-o", "name,used,avail,refquota"}, args)
+			return []byte("tank\t40\t60\t0\n"), nil
 		}
 		t.Fatalf("unexpected %s call with %v", name, args)
 		return nil, nil
@@ -295,7 +295,9 @@ func TestPoolStatsKeepsRawCapacityWithoutRootDataset(t *testing.T) {
 		zfsErr error
 	}{
 		{"zfs list fails", nil, errors.New("zfs list failed")},
-		{"root dataset missing", []byte("other\t1\t1\t/other\n"), nil},
+		{"root dataset missing", []byte("other\t1\t1\t0\n"), nil},
+		// a refquota caps the root's avail below the pool's free space
+		{"root dataset has refquota", []byte("tank\t40\t10\t20\n"), nil},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			oldCommandOutput := commandOutput
