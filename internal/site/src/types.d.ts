@@ -260,6 +260,8 @@ export interface ZfsPoolRecord extends RecordModel {
 	system: string
 	name: string
 	health: string
+	/** zpool status: advisory message, when the pool carries one */
+	status?: string
 	size: number
 	alloc: number
 	free: number
@@ -695,6 +697,8 @@ export interface NetworkMonitorRecord {
 	protocol: "icmp" | "tcp" | "http" | "dns"
 	port: number
 	server: string
+	/** Skip TLS certificate verification for HTTPS targets. */
+	skipTlsVerify: boolean
 	res: number
 	resMin1h: number
 	resMax1h: number
