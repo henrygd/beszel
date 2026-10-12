@@ -31,6 +31,7 @@ type SmartManager struct {
 	lastScanTime       time.Time
 	smartctlPath       string
 	excludedDevices    map[string]struct{}
+	nvmeNamespacePaths map[string]string // controller to working namespace; guarded by Mutex
 	darwinNvmeOnce     sync.Once
 	darwinNvmeCapacity map[string]uint64      // serial → bytes cache, written once via darwinNvmeOnce
 	darwinNvmeProvider func() ([]byte, error) // overridable for testing
@@ -216,6 +217,8 @@ func (sm *SmartManager) ScanDevices(force bool) error {
 		hasValidScan = true
 	}
 
+	scannedDevices = sm.resolveNvmeNamespacePaths(scannedDevices)
+	configuredDevices = sm.resolveNvmeNamespacePaths(configuredDevices)
 	finalDevices := mergeDeviceLists(currentDevices, scannedDevices, configuredDevices)
 	finalDevices = sm.filterExcludedDevices(finalDevices)
 	sm.updateSmartDevices(finalDevices)
@@ -229,6 +232,39 @@ func (sm *SmartManager) ScanDevices(force bool) error {
 	}
 
 	return nil
+}
+
+// resolveNvmeNamespacePaths keeps successful namespace fallbacks when a later
+// scan (or SMART_DEVICES) reports the original controller path again. Preserve
+// the controller's presence in the scan so removed drives can still be pruned.
+func (sm *SmartManager) resolveNvmeNamespacePaths(devices []*DeviceInfo) []*DeviceInfo {
+	sm.Lock()
+	defer sm.Unlock()
+
+	if len(sm.nvmeNamespacePaths) == 0 {
+		return devices
+	}
+	resolved := make([]*DeviceInfo, 0, len(devices))
+	seen := make(map[deviceKey]struct{}, len(devices))
+	for _, device := range devices {
+		if device == nil {
+			continue
+		}
+		// Keep excluded controller entries unchanged until filterExcludedDevices
+		// runs, so an empty input cannot make mergeDeviceLists retain old devices.
+		if namespace := sm.nvmeNamespacePaths[device.Name]; namespace != "" && !sm.isExcludedDevice(device.Name) {
+			copyDevice := *device
+			copyDevice.Name = namespace
+			device = &copyDevice
+		}
+		key := makeDeviceKey(device.Name, device.Type)
+		if _, ok := seen[key]; ok {
+			continue
+		}
+		seen[key] = struct{}{}
+		resolved = append(resolved, device)
+	}
+	return resolved
 }
 
 func (sm *SmartManager) parseConfiguredDevices(config string) ([]*DeviceInfo, error) {
@@ -535,24 +571,26 @@ func (sm *SmartManager) CollectSmart(deviceInfo *DeviceInfo) error {
 		controllerPath := deviceInfo.Name
 		namespacePath := controllerPath + "n1"
 		if !sm.isExcludedDevice(namespacePath) {
-			deviceInfo.Name = namespacePath
+			namespaceDevice := *deviceInfo
+			namespaceDevice.Name = namespacePath
 
 			ctx3, cancel3 := context.WithTimeout(context.Background(), 15*time.Second)
 			defer cancel3()
-			args = sm.smartctlArgs(deviceInfo, false)
+			args = sm.smartctlArgs(&namespaceDevice, false)
 			cmd = exec.CommandContext(ctx3, sm.smartctlPath, args...)
 			output, err = cmd.CombinedOutput()
-			hasValidData = sm.parseSmartOutput(deviceInfo, output)
+			hasValidData = sm.parseSmartOutput(&namespaceDevice, output)
 
-			// Auto-exclude the controller path so future scans don't re-add it
+			// Resolve future controller scan results to this working namespace.
 			if hasValidData {
 				sm.Lock()
-				if sm.excludedDevices == nil {
-					sm.excludedDevices = make(map[string]struct{})
+				*deviceInfo = namespaceDevice
+				if sm.nvmeNamespacePaths == nil {
+					sm.nvmeNamespacePaths = make(map[string]string)
 				}
-				sm.excludedDevices[controllerPath] = struct{}{}
+				sm.nvmeNamespacePaths[controllerPath] = namespacePath
 				sm.Unlock()
-				slog.Debug("auto-excluded NVMe controller path", "path", controllerPath)
+				slog.Debug("using NVMe namespace path", "controller", controllerPath, "namespace", namespacePath)
 			}
 		}
 	}
@@ -802,10 +840,6 @@ func (sm *SmartManager) updateSmartDevices(devices []*DeviceInfo) {
 
 	sm.SmartDevices = devices
 
-	if len(sm.SmartDataMap) == 0 {
-		return
-	}
-
 	validKeys := make(map[deviceKey]struct{}, len(devices))
 	nameCounts := make(map[string]int, len(devices))
 	for _, device := range devices {
@@ -814,6 +848,14 @@ func (sm *SmartManager) updateSmartDevices(devices []*DeviceInfo) {
 		}
 		validKeys[makeDeviceKey(device.Name, device.Type)] = struct{}{}
 		nameCounts[device.Name]++
+	}
+
+	// Forget aliases when their device disappears, so a replacement controller
+	// can be queried normally instead of inheriting an old namespace fallback.
+	for controller, namespace := range sm.nvmeNamespacePaths {
+		if nameCounts[controller] == 0 && nameCounts[namespace] == 0 {
+			delete(sm.nvmeNamespacePaths, controller)
+		}
 	}
 
 	for key, data := range sm.SmartDataMap {

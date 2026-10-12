@@ -3,6 +3,7 @@
 package agent
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"os"
@@ -10,6 +11,7 @@ import (
 	"regexp"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/henrygd/beszel/internal/entities/smart"
 	"github.com/stretchr/testify/assert"
@@ -1516,7 +1518,15 @@ func init() {
 	if fixture == "" {
 		return
 	}
-	if isNvmeControllerPath(os.Args[len(os.Args)-1]) {
+	if os.Args[1] == "--scan" {
+		if scan := os.Getenv("BESZEL_SMART_TEST_SCAN"); scan != "" {
+			fmt.Print(scan)
+		} else {
+			fmt.Print(`{"devices":[{"name":"/dev/nvme0","type":"nvme","protocol":"NVMe"}]}`)
+		}
+		os.Exit(0)
+	}
+	if isNvmeControllerPath(os.Args[len(os.Args)-1]) || os.Getenv("BESZEL_SMART_TEST_NAMESPACE_FAIL") == "true" {
 		fmt.Print(`{"smartctl":{"exit_status":2,"messages":[{"string":"Permission denied","severity":"error"}]}}`)
 		os.Exit(2)
 	}
@@ -1545,7 +1555,109 @@ func TestCollectSmartNvmeNamespaceFallback(t *testing.T) {
 			require.NoError(t, sm.CollectSmart(device))
 			assert.Equal(t, "/dev/nvme0n1", device.Name)
 			assert.Equal(t, "/dev/nvme0n1", sm.SmartDataMap["2024031600129"].DiskName)
-			assert.True(t, sm.isExcludedDevice("/dev/nvme0"))
+			assert.Equal(t, "/dev/nvme0n1", sm.nvmeNamespacePaths["/dev/nvme0"])
+			assert.False(t, sm.isExcludedDevice("/dev/nvme0"))
+		})
+	}
+}
+
+func TestRefreshNvmeNamespaceFallbackSurvivesRescan(t *testing.T) {
+	fixture, err := filepath.Abs(filepath.Join("test-data", "smart", "nvme0.json"))
+	require.NoError(t, err)
+	t.Setenv("BESZEL_SMART_TEST_FIXTURE", fixture)
+	executable, err := os.Executable()
+	require.NoError(t, err)
+	sm := &SmartManager{smartctlPath: executable, SmartDataMap: make(map[string]*smart.SmartData)}
+
+	complete, err := sm.Refresh(false)
+	require.NoError(t, err)
+	require.True(t, complete)
+	require.Len(t, sm.SmartDevices, 1)
+	require.Equal(t, "/dev/nvme0n1", sm.SmartDevices[0].Name)
+
+	// Return a newer health reading to prove the next refresh queries the disk,
+	// rather than only preserving the previous cached data.
+	fixtureData, err := os.ReadFile(fixture)
+	require.NoError(t, err)
+	var updatedData smart.SmartInfoForNvme
+	require.NoError(t, json.Unmarshal(fixtureData, &updatedData))
+	require.NotNil(t, updatedData.NVMeSmartHealthInformationLog)
+	updatedData.NVMeSmartHealthInformationLog.Temperature++
+	fixtureData, err = json.Marshal(updatedData)
+	require.NoError(t, err)
+	updatedFixture := filepath.Join(t.TempDir(), "nvme.json")
+	require.NoError(t, os.WriteFile(updatedFixture, fixtureData, 0o600))
+	t.Setenv("BESZEL_SMART_TEST_FIXTURE", updatedFixture)
+
+	// Simulate the next refresh after the 30-minute scan cache has expired.
+	sm.lastScanTime = time.Now().Add(-31 * time.Minute)
+	complete, err = sm.Refresh(false)
+	require.NoError(t, err)
+	require.True(t, complete)
+	require.Len(t, sm.SmartDevices, 1)
+	assert.Equal(t, "/dev/nvme0n1", sm.SmartDevices[0].Name)
+	require.Contains(t, sm.SmartDataMap, "2024031600129")
+	assert.Equal(t, "/dev/nvme0n1", sm.SmartDataMap["2024031600129"].DiskName)
+	assert.Equal(t, updatedData.NVMeSmartHealthInformationLog.Temperature, sm.SmartDataMap["2024031600129"].Temperature)
+	assert.True(t, sm.SmartDevices[0].typeVerified)
+	assert.Equal(t, "nvme", sm.SmartDevices[0].parserType)
+
+	// Explicit controller configuration must keep resolving to the namespace.
+	t.Setenv("SMART_DEVICES", "/dev/nvme0:nvme")
+	require.NoError(t, sm.ScanDevices(true))
+	require.Len(t, sm.SmartDevices, 1)
+	assert.Equal(t, "/dev/nvme0n1", sm.SmartDevices[0].Name)
+	require.Contains(t, sm.SmartDataMap, "2024031600129")
+
+	// A scan that reports both aliases must not duplicate the drive.
+	t.Setenv("SMART_DEVICES", "")
+	require.NoError(t, os.Unsetenv("SMART_DEVICES"))
+	t.Setenv("BESZEL_SMART_TEST_SCAN", `{"devices":[{"name":"/dev/nvme0","type":"nvme"},{"name":"/dev/nvme0n1","type":"nvme"}]}`)
+	require.NoError(t, sm.ScanDevices(true))
+	require.Len(t, sm.SmartDevices, 1)
+
+	// Retaining a fallback must not retain a drive absent from a valid scan.
+	t.Setenv("BESZEL_SMART_TEST_SCAN", `{"devices":[{"name":"/dev/sda","type":"sat"}]}`)
+	require.NoError(t, sm.ScanDevices(true))
+	require.Len(t, sm.SmartDevices, 1)
+	assert.Equal(t, "/dev/sda", sm.SmartDevices[0].Name)
+	assert.Empty(t, sm.SmartDataMap)
+	assert.Empty(t, sm.nvmeNamespacePaths)
+}
+
+func TestCollectSmartNvmeNamespaceFailureKeepsController(t *testing.T) {
+	t.Setenv("BESZEL_SMART_TEST_FIXTURE", "unused")
+	t.Setenv("BESZEL_SMART_TEST_NAMESPACE_FAIL", "true")
+	executable, err := os.Executable()
+	require.NoError(t, err)
+	device := &DeviceInfo{Name: "/dev/nvme0", Type: "nvme"}
+	sm := &SmartManager{smartctlPath: executable, SmartDataMap: make(map[string]*smart.SmartData)}
+
+	require.Error(t, sm.CollectSmart(device))
+	assert.Equal(t, "/dev/nvme0", device.Name)
+	assert.Empty(t, sm.nvmeNamespacePaths)
+	assert.Empty(t, sm.SmartDataMap)
+}
+
+func TestNvmeNamespaceFallbackHonorsExclusions(t *testing.T) {
+	fixture, err := filepath.Abs(filepath.Join("test-data", "smart", "nvme0.json"))
+	require.NoError(t, err)
+	t.Setenv("BESZEL_SMART_TEST_FIXTURE", fixture)
+	executable, err := os.Executable()
+	require.NoError(t, err)
+	for _, excluded := range []string{"/dev/nvme0", "/dev/nvme0n1"} {
+		t.Run(excluded, func(t *testing.T) {
+			sm := &SmartManager{
+				smartctlPath:       executable,
+				SmartDevices:       []*DeviceInfo{{Name: "/dev/nvme0n1", Type: "nvme"}},
+				SmartDataMap:       map[string]*smart.SmartData{"2024031600129": {DiskName: "/dev/nvme0n1", DiskType: "nvme"}},
+				nvmeNamespacePaths: map[string]string{"/dev/nvme0": "/dev/nvme0n1"},
+				excludedDevices:    map[string]struct{}{excluded: {}},
+			}
+			require.ErrorIs(t, sm.ScanDevices(true), errNoValidSmartData)
+			assert.Empty(t, sm.SmartDevices)
+			assert.Empty(t, sm.SmartDataMap)
+			assert.Empty(t, sm.nvmeNamespacePaths)
 		})
 	}
 }
