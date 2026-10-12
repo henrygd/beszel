@@ -143,6 +143,11 @@ export function useSystemData(id: string) {
 	// subscribe to realtime metrics if chart time is 1m
 	useEffect(() => {
 		let unsub = () => {}
+		// subscribe() resolves only after the server confirms the subscription. If the
+		// effect is cleaned up before that (e.g. switching back to 1h quickly, or a slow
+		// realtime connection behind a proxy), unsub is still the no-op above, so the
+		// subscription would stay active and its 1m points would overwrite the history.
+		let cancelled = false
 		if (!system.id || chartTime !== "1m") {
 			return
 		}
@@ -156,6 +161,9 @@ export function useSystemData(id: string) {
 			.subscribe(
 				`rt_metrics`,
 				(data: { container: ContainerStatsRecord[]; info: SystemInfo; stats: SystemStats }) => {
+					if (cancelled) {
+						return
+					}
 					const now = Date.now()
 					const statsPoint = { created: now, stats: data.stats } as SystemStatsRecord
 					const containerPoint =
@@ -177,9 +185,14 @@ export function useSystemData(id: string) {
 				{ query: { system: system.id } }
 			)
 			.then((us) => {
+				if (cancelled) {
+					us()
+					return
+				}
 				unsub = us
 			})
 		return () => {
+			cancelled = true
 			unsub?.()
 		}
 	}, [chartTime, system.id])

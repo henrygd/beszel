@@ -5,6 +5,7 @@ package agent
 import (
 	"fmt"
 	"log/slog"
+	"math"
 	"strings"
 	"time"
 	"unsafe"
@@ -15,7 +16,9 @@ import (
 
 // NVML constants and types
 const (
-	nvmlSuccess int = 0
+	nvmlSuccess           int        = 0
+	nvmlErrorNotFound     nvmlReturn = 6
+	nvmlTotalPowerSamples int        = 0
 )
 
 type nvmlDevice uintptr
@@ -41,6 +44,12 @@ type nvmlUtilization struct {
 	Memory uint32
 }
 
+// nvmlSample mirrors nvmlSample_t: a timestamp plus an 8-byte nvmlValue_t union
+type nvmlSample struct {
+	TimeStamp   uint64
+	SampleValue uint64
+}
+
 type nvmlPciInfo struct {
 	BusId          [16]byte
 	Domain         uint32
@@ -62,6 +71,7 @@ var (
 	nvmlDeviceGetTemperature      func(device nvmlDevice, sensorType int, temp *uint32) nvmlReturn
 	nvmlDeviceGetPowerUsage       func(device nvmlDevice, power *uint32) nvmlReturn
 	nvmlDeviceGetPciInfo          func(device nvmlDevice, pci *nvmlPciInfo) nvmlReturn
+	nvmlDeviceGetSamples          func(device nvmlDevice, sampleType int, lastSeenTimeStamp uint64, sampleValType *int32, sampleCount *uint32, samples *nvmlSample) nvmlReturn
 	nvmlErrorString               func(result nvmlReturn) string
 )
 
@@ -71,6 +81,9 @@ type nvmlCollector struct {
 	devices []nvmlDevice
 	bdfs    []string
 	isV2    bool
+	// per-device state for the power sample fallback
+	lastSampleTs []uint64
+	lastPower    []float64
 }
 
 func (c *nvmlCollector) init() error {
@@ -100,6 +113,9 @@ func (c *nvmlCollector) init() error {
 	purego.RegisterLibFunc(&nvmlDeviceGetPowerUsage, lib, "nvmlDeviceGetPowerUsage")
 	purego.RegisterLibFunc(&nvmlDeviceGetPciInfo, lib, "nvmlDeviceGetPciInfo")
 	purego.RegisterLibFunc(&nvmlErrorString, lib, "nvmlErrorString")
+	if hasSymbol(lib, "nvmlDeviceGetSamples") {
+		purego.RegisterLibFunc(&nvmlDeviceGetSamples, lib, "nvmlDeviceGetSamples")
+	}
 
 	if ret := nvmlInit(); ret != nvmlReturn(nvmlSuccess) {
 		return fmt.Errorf("nvmlInit failed: %v", ret)
@@ -125,6 +141,8 @@ func (c *nvmlCollector) init() error {
 			} else {
 				c.bdfs = append(c.bdfs, "")
 			}
+			c.lastSampleTs = append(c.lastSampleTs, 0)
+			c.lastPower = append(c.lastPower, 0)
 		}
 	}
 
@@ -213,12 +231,79 @@ func (c *nvmlCollector) collect() {
 
 		// Power
 		var power uint32
-		nvmlDeviceGetPowerUsage(device, &power)
+		powerWatts := 0.0
+		if ret := nvmlDeviceGetPowerUsage(device, &power); ret == nvmlReturn(nvmlSuccess) {
+			powerWatts = float64(power) / 1000.0
+		} else {
+			// Some GPUs / drivers (e.g. RTX 4060 on 580.x) report power.draw as N/A
+			// but still expose the driver's power sample buffer
+			powerWatts = c.powerFromSamples(i, device)
+		}
 
 		gpu.Temperature = float64(temp)
 		gpu.Usage += float64(utilization.Gpu)
-		gpu.Power += float64(power) / 1000.0
+		gpu.Power += powerWatts
 		gpu.Count++
 		slog.Debug("NVML: Collected data", "gpu", gpu)
 	}
+}
+
+// powerFromSamples returns the average power in watts of the NVML power samples
+// recorded since the previous call, or the last known value if there are none.
+func (c *nvmlCollector) powerFromSamples(i int, device nvmlDevice) float64 {
+	if nvmlDeviceGetSamples == nil {
+		return 0
+	}
+	var valType int32
+	var count uint32
+	// first call with nil buffer returns the maximum number of samples
+	if ret := nvmlDeviceGetSamples(device, nvmlTotalPowerSamples, c.lastSampleTs[i], &valType, &count, nil); ret != nvmlReturn(nvmlSuccess) || count == 0 {
+		if ret != nvmlErrorNotFound {
+			slog.Debug("NVML: power samples unavailable", "ret", ret)
+		}
+		return c.lastPower[i]
+	}
+	samples := make([]nvmlSample, count)
+	if ret := nvmlDeviceGetSamples(device, nvmlTotalPowerSamples, c.lastSampleTs[i], &valType, &count, &samples[0]); ret != nvmlReturn(nvmlSuccess) || count == 0 {
+		if ret != nvmlErrorNotFound {
+			slog.Debug("NVML: power samples failed", "ret", ret)
+		}
+		return c.lastPower[i]
+	}
+	var sum float64
+	var n int
+	for _, s := range samples[:count] {
+		v, ok := nvmlSampleToFloat(valType, s.SampleValue)
+		if !ok {
+			continue
+		}
+		sum += v
+		n++
+		if s.TimeStamp > c.lastSampleTs[i] {
+			c.lastSampleTs[i] = s.TimeStamp
+		}
+	}
+	if n > 0 {
+		c.lastPower[i] = sum / float64(n) / 1000.0 // milliwatts -> watts
+	}
+	return c.lastPower[i]
+}
+
+// nvmlSampleToFloat decodes an nvmlValue_t union according to its nvmlValueType_t
+func nvmlSampleToFloat(valType int32, raw uint64) (float64, bool) {
+	switch valType {
+	case 0: // NVML_VALUE_TYPE_DOUBLE
+		return math.Float64frombits(raw), true
+	case 1: // NVML_VALUE_TYPE_UNSIGNED_INT
+		return float64(uint32(raw)), true
+	case 2, 3: // NVML_VALUE_TYPE_UNSIGNED_LONG, NVML_VALUE_TYPE_UNSIGNED_LONG_LONG
+		return float64(raw), true
+	case 4: // NVML_VALUE_TYPE_SIGNED_LONG_LONG
+		return float64(int64(raw)), true
+	case 5: // NVML_VALUE_TYPE_SIGNED_INT
+		return float64(int32(uint32(raw))), true
+	case 6: // NVML_VALUE_TYPE_UNSIGNED_SHORT
+		return float64(uint16(raw)), true
+	}
+	return 0, false
 }
