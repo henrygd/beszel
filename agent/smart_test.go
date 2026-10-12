@@ -8,7 +8,6 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"regexp"
 	"strings"
 	"testing"
 	"time"
@@ -60,6 +59,11 @@ func TestParseSmartForScsi(t *testing.T) {
 	assertAttrValue(t, deviceData.Attributes, "GrownDefectList", 0)
 	assertAttrValue(t, deviceData.Attributes, "StartStopCycles", 2)
 	assertAttrValue(t, deviceData.Attributes, "LoadUnloadCycles", 418)
+	assertAttrValue(t, deviceData.Attributes, "StartStopSpecified", 50000)
+	assertAttrValue(t, deviceData.Attributes, "LoadUnloadSpecified", 600000)
+	assertAttrValue(t, deviceData.Attributes, "ReadCorrectionAlgorithmInvocations", 346)
+	assertAttrValue(t, deviceData.Attributes, "WriteCorrectionAlgorithmInvocations", 4052)
+	assertAttrValue(t, deviceData.Attributes, "VerifyCorrectionAlgorithmInvocations", 223)
 	assertAttrValue(t, deviceData.Attributes, "ReadGigabytesProcessed", 3641)
 	assertAttrValue(t, deviceData.Attributes, "WriteGigabytesProcessed", 2124590)
 	assertAttrValue(t, deviceData.Attributes, "VerifyGigabytesProcessed", 0)
@@ -295,27 +299,79 @@ func TestParseSmartForNvme(t *testing.T) {
 	}
 }
 
-func TestParseSmartForNvmeLargeUnsafeShutdowns(t *testing.T) {
-	fixturePath := filepath.Join("test-data", "smart", "nvme0.json")
-	data, err := os.ReadFile(fixturePath)
-	require.NoError(t, err)
+// Counters larger than their old narrow Go types used to fail json.Unmarshal and
+// drop the whole device (#2484, #2582).
+func TestParseSmartForNvmeLargeCounters(t *testing.T) {
+	jsonPayload := []byte(`{
+		"smartctl": {"exit_status": 0},
+		"device": {"name": "/dev/nvme0", "type": "nvme"},
+		"model_name": "Test NVMe",
+		"serial_number": "NVME-LARGE",
+		"smart_status": {"passed": true},
+		"nvme_smart_health_information_log": {
+			"temperature": 40,
+			"percentage_used": 300,
+			"power_cycles": 70000,
+			"power_on_hours": 5000000000,
+			"unsafe_shutdowns": 159754
+		}
+	}`)
 
-	// Some drives report counts that overflow uint16, which previously made the
-	// whole record fail to unmarshal and get discarded.
-	re := regexp.MustCompile(`"unsafe_shutdowns":\s*\d+`)
-	require.True(t, re.Match(data), "fixture should contain unsafe_shutdowns")
-	data = re.ReplaceAll(data, []byte(`"unsafe_shutdowns": 159754`))
-
-	sm := &SmartManager{
-		SmartDataMap: make(map[string]*smart.SmartData),
-	}
-
-	hasData, _ := sm.parseSmartForNvme(data, "")
+	sm := &SmartManager{SmartDataMap: make(map[string]*smart.SmartData)}
+	hasData, _ := sm.parseSmartForNvme(jsonPayload, "")
 	require.True(t, hasData)
 
-	deviceData, ok := sm.SmartDataMap["2024031600129"]
-	require.True(t, ok, "expected smart data entry for serial 2024031600129")
+	deviceData := sm.SmartDataMap["NVME-LARGE"]
+	require.NotNil(t, deviceData)
 	assertAttrValue(t, deviceData.Attributes, "UnsafeShutdowns", 159754)
+	assertAttrValue(t, deviceData.Attributes, "PowerCycles", 70000)
+	assertAttrValue(t, deviceData.Attributes, "PowerOnHours", 5000000000)
+	assertAttrValue(t, deviceData.Attributes, "PercentageUsed", 300)
+}
+
+// Out-of-range temperatures are clamped instead of failing the whole parse.
+func TestParseSmartTemperatureOutOfRange(t *testing.T) {
+	sm := &SmartManager{SmartDataMap: make(map[string]*smart.SmartData)}
+
+	hasData, _ := sm.parseSmartForSata([]byte(`{
+		"device": {"name": "/dev/sda", "type": "sat"},
+		"serial_number": "SATA-NEG",
+		"smart_status": {"passed": true},
+		"temperature": {"current": -5},
+		"ata_smart_attributes": {"table": []}
+	}`), "")
+	require.True(t, hasData)
+	assert.Equal(t, uint8(0), sm.SmartDataMap["SATA-NEG"].Temperature)
+
+	hasData, _ = sm.parseSmartForNvme([]byte(`{
+		"device": {"name": "/dev/nvme0", "type": "nvme"},
+		"serial_number": "NVME-HOT",
+		"smart_status": {"passed": true},
+		"nvme_smart_health_information_log": {"temperature": 300}
+	}`), "")
+	require.True(t, hasData)
+	assert.Equal(t, uint8(255), sm.SmartDataMap["NVME-HOT"].Temperature)
+	assertAttrValue(t, sm.SmartDataMap["NVME-HOT"].Attributes, "Temperature", 255)
+}
+
+func TestParseSmartForScsiWithoutErrorCounterLog(t *testing.T) {
+	sm := &SmartManager{SmartDataMap: make(map[string]*smart.SmartData)}
+
+	hasData, _ := sm.parseSmartForScsi([]byte(`{
+		"device": {"name": "/dev/sdb", "type": "scsi"},
+		"scsi_model_name": "SEAGATE ST4000NM0023",
+		"serial_number": "SCSI-NOLOG",
+		"smart_status": {"passed": true},
+		"temperature": {"current": 30},
+		"power_on_time": {"hours": 1234}
+	}`), "")
+	require.True(t, hasData)
+
+	deviceData := sm.SmartDataMap["SCSI-NOLOG"]
+	require.NotNil(t, deviceData)
+	assertAttrValue(t, deviceData.Attributes, "PowerOnHours", 1234)
+	assertAttrValue(t, deviceData.Attributes, "ReadTotalUncorrectedErrors", 0)
+	assert.Nil(t, findAttr(deviceData.Attributes, "ReadGigabytesProcessed"))
 }
 
 func TestHasDataForDevice(t *testing.T) {
@@ -943,91 +999,29 @@ func findAttr(attributes []*smart.SmartAttribute, name string) *smart.SmartAttri
 }
 
 func TestIsVirtualDevice(t *testing.T) {
-	sm := &SmartManager{}
-
 	tests := []struct {
 		name     string
-		vendor   string
-		product  string
-		model    string
+		data     smart.SmartctlOutput
 		expected bool
 	}{
-		{"regular drive", "SEAGATE", "ST1000DM003", "ST1000DM003-1CH162", false},
-		{"qemu virtual", "QEMU", "QEMU HARDDISK", "QEMU HARDDISK", true},
-		{"virtualbox virtual", "VBOX", "HARDDISK", "VBOX HARDDISK", true},
-		{"vmware virtual", "VMWARE", "Virtual disk", "VMWARE Virtual disk", true},
-		{"virtual in model", "ATA", "VIRTUAL", "VIRTUAL DISK", true},
-		{"iet virtual", "IET", "VIRTUAL-DISK", "VIRTUAL-DISK", true},
-		{"hyper-v virtual", "MSFT", "VIRTUAL HD", "VIRTUAL HD", true},
+		{"regular sata", smart.SmartctlOutput{ScsiVendor: "SEAGATE", ScsiProduct: "ST1000DM003", ModelName: "ST1000DM003-1CH162"}, false},
+		{"qemu sata", smart.SmartctlOutput{ScsiVendor: "QEMU", ScsiProduct: "QEMU HARDDISK", ModelName: "QEMU HARDDISK"}, true},
+		{"virtualbox sata", smart.SmartctlOutput{ScsiVendor: "VBOX", ScsiProduct: "HARDDISK", ModelName: "VBOX HARDDISK"}, true},
+		{"vmware sata", smart.SmartctlOutput{ScsiVendor: "VMWARE", ScsiProduct: "Virtual disk", ModelName: "VMWARE Virtual disk"}, true},
+		{"virtual in model", smart.SmartctlOutput{ScsiVendor: "ATA", ScsiProduct: "VIRTUAL", ModelName: "VIRTUAL DISK"}, true},
+		{"iet virtual", smart.SmartctlOutput{ScsiVendor: "IET", ScsiProduct: "VIRTUAL-DISK", ModelName: "VIRTUAL-DISK"}, true},
+		{"hyper-v virtual", smart.SmartctlOutput{ScsiVendor: "MSFT", ScsiProduct: "VIRTUAL HD", ModelName: "VIRTUAL HD"}, true},
+		{"regular nvme", smart.SmartctlOutput{ModelName: "Samsung SSD 970 EVO Plus 1TB"}, false},
+		{"qemu nvme", smart.SmartctlOutput{ModelName: "QEMU NVMe Ctrl"}, true},
+		{"virtual nvme", smart.SmartctlOutput{ModelName: "Virtual NVMe Device"}, true},
+		{"regular scsi", smart.SmartctlOutput{ScsiVendor: "SEAGATE", ScsiProduct: "ST1000DM003", ScsiModelName: "ST1000DM003-1CH162"}, false},
+		{"vmware scsi", smart.SmartctlOutput{ScsiVendor: "VMWARE", ScsiProduct: "Virtual disk", ScsiModelName: "VMWARE Virtual disk"}, true},
+		{"virtual scsi model only", smart.SmartctlOutput{ScsiModelName: "QEMU HARDDISK"}, true},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			data := &smart.SmartInfoForSata{
-				ScsiVendor:  tt.vendor,
-				ScsiProduct: tt.product,
-				ModelName:   tt.model,
-			}
-			result := sm.isVirtualDevice(data)
-			assert.Equal(t, tt.expected, result)
-		})
-	}
-}
-
-func TestIsVirtualDeviceNvme(t *testing.T) {
-	sm := &SmartManager{}
-
-	tests := []struct {
-		name     string
-		model    string
-		expected bool
-	}{
-		{"regular nvme", "Samsung SSD 970 EVO Plus 1TB", false},
-		{"qemu virtual", "QEMU NVMe Ctrl", true},
-		{"virtualbox virtual", "VBOX NVMe", true},
-		{"vmware virtual", "VMWARE NVMe", true},
-		{"virtual in model", "Virtual NVMe Device", true},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			data := &smart.SmartInfoForNvme{
-				ModelName: tt.model,
-			}
-			result := sm.isVirtualDeviceNvme(data)
-			assert.Equal(t, tt.expected, result)
-		})
-	}
-}
-
-func TestIsVirtualDeviceScsi(t *testing.T) {
-	sm := &SmartManager{}
-
-	tests := []struct {
-		name     string
-		vendor   string
-		product  string
-		model    string
-		expected bool
-	}{
-		{"regular scsi", "SEAGATE", "ST1000DM003", "ST1000DM003-1CH162", false},
-		{"qemu virtual", "QEMU", "QEMU HARDDISK", "QEMU HARDDISK", true},
-		{"virtualbox virtual", "VBOX", "HARDDISK", "VBOX HARDDISK", true},
-		{"vmware virtual", "VMWARE", "Virtual disk", "VMWARE Virtual disk", true},
-		{"virtual in model", "ATA", "VIRTUAL", "VIRTUAL DISK", true},
-		{"iet virtual", "IET", "VIRTUAL-DISK", "VIRTUAL-DISK", true},
-		{"hyper-v virtual", "MSFT", "VIRTUAL HD", "VIRTUAL HD", true},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			data := &smart.SmartInfoForScsi{
-				ScsiVendor:    tt.vendor,
-				ScsiProduct:   tt.product,
-				ScsiModelName: tt.model,
-			}
-			result := sm.isVirtualDeviceScsi(data)
-			assert.Equal(t, tt.expected, result)
+			assert.Equal(t, tt.expected, isVirtualDevice(&tt.data))
 		})
 	}
 }
@@ -1039,7 +1033,7 @@ func TestFindAtaDeviceStatisticsValue(t *testing.T) {
 
 	tests := []struct {
 		name           string
-		data           smart.SmartInfoForSata
+		data           smart.SmartctlOutput
 		ataDeviceStats smart.AtaDeviceStatistics
 		entryNumber    uint8
 		entryName      string
@@ -1067,7 +1061,7 @@ func TestFindAtaDeviceStatisticsValue(t *testing.T) {
 		},
 		{
 			name: "value unmarshaled from data",
-			data: smart.SmartInfoForSata{
+			data: smart.SmartctlOutput{
 				AtaDeviceStatistics: []byte(`{"pages":[{"number":5,"table":[{"name":"Current Temperature","value":100}]}]}`),
 			},
 			entryNumber:   5,
@@ -1114,7 +1108,7 @@ func TestFindAtaDeviceStatisticsValue(t *testing.T) {
 		},
 		{
 			name:          "no statistics available",
-			data:          smart.SmartInfoForSata{},
+			data:          smart.SmartctlOutput{},
 			entryNumber:   5,
 			entryName:     "Current Temperature",
 			minValue:      0,
@@ -1579,7 +1573,7 @@ func TestRefreshNvmeNamespaceFallbackSurvivesRescan(t *testing.T) {
 	// rather than only preserving the previous cached data.
 	fixtureData, err := os.ReadFile(fixture)
 	require.NoError(t, err)
-	var updatedData smart.SmartInfoForNvme
+	var updatedData smart.SmartctlOutput
 	require.NoError(t, json.Unmarshal(fixtureData, &updatedData))
 	require.NotNil(t, updatedData.NVMeSmartHealthInformationLog)
 	updatedData.NVMeSmartHealthInformationLog.Temperature++
@@ -1598,7 +1592,7 @@ func TestRefreshNvmeNamespaceFallbackSurvivesRescan(t *testing.T) {
 	assert.Equal(t, "/dev/nvme0n1", sm.SmartDevices[0].Name)
 	require.Contains(t, sm.SmartDataMap, "2024031600129")
 	assert.Equal(t, "/dev/nvme0n1", sm.SmartDataMap["2024031600129"].DiskName)
-	assert.Equal(t, updatedData.NVMeSmartHealthInformationLog.Temperature, sm.SmartDataMap["2024031600129"].Temperature)
+	assert.Equal(t, uint8(updatedData.NVMeSmartHealthInformationLog.Temperature), sm.SmartDataMap["2024031600129"].Temperature)
 	assert.True(t, sm.SmartDevices[0].typeVerified)
 	assert.Equal(t, "nvme", sm.SmartDevices[0].parserType)
 
