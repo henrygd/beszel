@@ -27,3 +27,21 @@ config:
 	    sdb     FAULTED      1     2     3
 
 errors: 1 data errors, use '-v' for a list
+
+  pool: pve1storage
+ state: ONLINE
+status: One or more devices has experienced an unrecoverable error.  An
+	attempt was made to correct the error.  Applications are unaffected.
+action: Determine if the device needs to be replaced, and clear the errors
+	using 'zpool clear' or replace the device with 'zpool replace'.
+   see: https://openzfs.github.io/openzfs-docs/msg/ZFS-8000-9P
+  scan: scrub repaired 208K in 15:18:53 with 0 errors on Thu Oct  1 15:40:36 2026
+config:
+
+	NAME         STATE     READ WRITE CKSUM
+	pve1storage  ONLINE       0     0     0
+	  raidz2-0   ONLINE       0     0     0
+	    sda      ONLINE       0     0     0
+	    sdb      ONLINE       0     0     1
+
+errors: No known data errors
