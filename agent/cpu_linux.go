@@ -3,6 +3,7 @@
 package agent
 
 import (
+	"log/slog"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -23,15 +24,15 @@ import (
 // reflects only the guest's processes, so inside LXC we derive CPU% from that
 // instead.
 //
-// Other runtimes (Docker, Podman, k8s) are deliberately left alone: the agent
-// is normally deployed there to monitor the host, and the host's /proc/stat is
-// exactly what it should report.
+// Other runtimes (Docker, Podman, k8s) use /proc/stat by default: the agent
+// is normally deployed there to monitor the host. BESZEL_AGENT_USE_CGROUP=true
+// explicitly opts into cgroup-root CPU accounting outside LXC.
 
 // File paths and hooks are variables so tests can point them at fixtures.
 var (
-	cpuCgroupRoot      = "/sys/fs/cgroup" // default cgroup v2 mount point
-	cpuCgroupMountinfo = "/proc/self/mountinfo"
-	cpuProcSelfCgroup  = "/proc/self/cgroup"
+	cgroupRoot         = "/sys/fs/cgroup" // default cgroup v2 mount point
+	cgroupMountinfo    = "/proc/self/mountinfo"
+	procSelfCgroup     = "/proc/self/cgroup"
 	cpuSystemdContPath = "/run/systemd/container"
 	cpuNumCPU          = runtime.NumCPU
 	cpuNow             = time.Now
@@ -50,7 +51,7 @@ func detectLxc() bool {
 	// lxcfs mounted over /proc/stat is the direct cause of the host-core
 	// counters. Only match that mount point: an LXC host also has lxcfs
 	// mounted, but at /var/lib/lxcfs.
-	if data, err := os.ReadFile(cpuCgroupMountinfo); err == nil && procStatFromLxcfs(data) {
+	if data, err := os.ReadFile(cgroupMountinfo); err == nil && procStatFromLxcfs(data) {
 		return true
 	}
 	// set by liblxc for the container init and inherited on non-systemd guests
@@ -63,6 +64,12 @@ func detectLxc() bool {
 		return true
 	}
 	return false
+}
+
+// useCgroup enables cgroup-root accounting automatically in LXC or
+// explicitly when requested by the agent configuration.
+func useCgroup(forceUse bool) bool {
+	return forceUse || inLxc()
 }
 
 // procStatFromLxcfs reports whether mountinfo shows lxcfs mounted on /proc/stat.
@@ -91,10 +98,10 @@ type cgroupCpuSample struct {
 
 var lastCgroupCpuSamples = make(map[uint16]cgroupCpuSample)
 
-// init seeds the LXC CPU baseline so the first reported value is a real
-// delta since startup rather than zero.
-func init() {
-	if !inLxc() {
+// initializeCpu seeds the cgroup baseline after Agent configuration is read,
+// so the first reported CPU value is a delta instead of zero.
+func (a *Agent) initializeCpu() {
+	if !useCgroup(a.forceUseCgroup) {
 		return
 	}
 	if s, ok := readContainerCpuSample(); ok {
@@ -103,12 +110,47 @@ func init() {
 	}
 }
 
-// containerCpuMetrics derives CPU metrics from the guest's own cgroup
-// accounting when running inside LXC. It returns ok=false everywhere else and
-// whenever cgroup accounting is unreadable, so callers keep the /proc/stat
-// path.
-func containerCpuMetrics(cacheTimeMs uint16) (CpuMetrics, bool) {
-	if !inLxc() {
+// warnIfRootCgroup logs at startup when USE_CGROUP would read the host's root
+// cgroup (e.g. a container run with --cgroupns=host), whose accounting covers
+// the whole machine rather than the container.
+func (a *Agent) warnIfRootCgroup() {
+	if a.forceUseCgroup && inRootCgroupV2() {
+		slog.Warn("USE_CGROUP is reading the host's root cgroup; use --cgroupns=private to monitor the container")
+	}
+}
+
+// cgroupV2Dir returns the cgroup v2 mount point (the mount root, not the
+// agent's own leaf), or false if the process is not in the v2 hierarchy.
+func cgroupV2Dir() (string, bool) {
+	if !utils.InCgroupV2(procSelfCgroup) {
+		return "", false
+	}
+	if mount := utils.CgroupMountPoint(cgroupMountinfo, "cgroup2", ""); mount != "" {
+		return mount, true
+	}
+	return cgroupRoot, true
+}
+
+// inRootCgroupV2 reports whether the visible cgroup v2 mount is the root
+// cgroup. Every cgroup except the root has a cgroup.type file.
+func inRootCgroupV2() bool {
+	dir, ok := cgroupV2Dir()
+	if !ok {
+		return false
+	}
+	if _, err := os.Stat(filepath.Join(dir, "cgroup.controllers")); err != nil {
+		return false // no cgroup v2 mount here
+	}
+	_, err := os.Stat(filepath.Join(dir, "cgroup.type"))
+	return os.IsNotExist(err)
+}
+
+// containerCpuMetrics derives CPU metrics from the cgroup mount root's
+// accounting when running inside LXC or explicitly enabled. It returns
+// ok=false when disabled or whenever cgroup accounting is unreadable, so
+// callers keep the /proc/stat path.
+func containerCpuMetrics(cacheTimeMs uint16, forceUseCgroup bool) (CpuMetrics, bool) {
+	if !useCgroup(forceUseCgroup) {
 		return CpuMetrics{}, false
 	}
 	cur, ok := readContainerCpuSample()
@@ -164,21 +206,21 @@ func readContainerCpuSample() (cgroupCpuSample, bool) {
 // in /proc/self/cgroup (its service cgroup, or the ".lxc" leaf when started
 // from an attached shell) only covers a subset and must not be descended into.
 func readCgroupV2CpuSample() (cgroupCpuSample, bool) {
-	if !inCgroupV2() {
+	dir, ok := cgroupV2Dir()
+	if !ok {
 		return cgroupCpuSample{}, false // no v2 membership; try v1
 	}
-	dir := cpuCgroupRoot
-	if mount := cgroupMountPoint("cgroup2", ""); mount != "" {
-		dir = mount
+	stat, err := utils.ReadCgroupStat(filepath.Join(dir, "cpu.stat"))
+	if err != nil {
+		return cgroupCpuSample{}, false
 	}
-	stat := filepath.Join(dir, "cpu.stat")
-	usage, ok := cgroupStatValue(stat, "usage_usec")
+	usage, ok := stat["usage_usec"]
 	if !ok {
 		return cgroupCpuSample{}, false
 	}
 	s := cgroupCpuSample{usageUsec: usage, cores: cpuCgroupCores(dir)}
-	s.userUsec, _ = cgroupStatValue(stat, "user_usec")
-	s.systemUsec, _ = cgroupStatValue(stat, "system_usec")
+	s.userUsec = stat["user_usec"]
+	s.systemUsec = stat["system_usec"]
 	return s, true
 }
 
@@ -187,7 +229,7 @@ func readCgroupV2CpuSample() (cgroupCpuSample, bool) {
 // accounting includes every child cgroup, so it is read directly rather than
 // the agent's own sub-cgroup.
 func readCgroupV1CpuSample() (cgroupCpuSample, bool) {
-	dir := cgroupMountPoint("cgroup", "cpuacct")
+	dir := utils.CgroupMountPoint(cgroupMountinfo, "cgroup", "cpuacct")
 	if dir == "" {
 		return cgroupCpuSample{}, false
 	}
@@ -197,76 +239,11 @@ func readCgroupV1CpuSample() (cgroupCpuSample, bool) {
 	}
 	s := cgroupCpuSample{usageUsec: usageNs / 1000, cores: cpuCgroupCores(dir)}
 	// cpuacct.stat reports user/system in USER_HZ jiffies.
-	if v, ok := cgroupStatValue(filepath.Join(dir, "cpuacct.stat"), "user"); ok {
-		s.userUsec = v * 1e6 / cpuUserHZ
-	}
-	if v, ok := cgroupStatValue(filepath.Join(dir, "cpuacct.stat"), "system"); ok {
-		s.systemUsec = v * 1e6 / cpuUserHZ
+	if stat, err := utils.ReadCgroupStat(filepath.Join(dir, "cpuacct.stat")); err == nil {
+		s.userUsec = stat["user"] * 1e6 / cpuUserHZ
+		s.systemUsec = stat["system"] * 1e6 / cpuUserHZ
 	}
 	return s, true
-}
-
-// inCgroupV2 reports whether /proc/self/cgroup lists the v2 unified hierarchy
-// (a "0::<path>" entry).
-func inCgroupV2() bool {
-	data, err := os.ReadFile(cpuProcSelfCgroup)
-	if err != nil {
-		return false
-	}
-	for line := range strings.SplitSeq(string(data), "\n") {
-		if strings.HasPrefix(line, "0::") {
-			return true
-		}
-	}
-	return false
-}
-
-// cgroupMountPoint returns the mount point of a cgroup hierarchy from
-// /proc/self/mountinfo: the cgroup2 mount for v2, or the cgroup mount whose
-// super options list the wanted v1 controller.
-func cgroupMountPoint(fstype, v1ctrl string) string {
-	data, err := os.ReadFile(cpuCgroupMountinfo)
-	if err != nil {
-		return ""
-	}
-	for _, line := range strings.Split(string(data), "\n") {
-		left, right, found := strings.Cut(line, " - ")
-		if !found {
-			continue
-		}
-		post := strings.Fields(right)
-		if len(post) == 0 || post[0] != fstype {
-			continue
-		}
-		if v1ctrl != "" && !mountOptHas(post, v1ctrl) {
-			continue
-		}
-		fields := strings.Fields(left)
-		if len(fields) >= 5 {
-			return unescapeMountPoint(fields[4])
-		}
-	}
-	return ""
-}
-
-// mountOptHas reports whether the comma-separated super options (field 3 after
-// the " - " separator) contain opt.
-func mountOptHas(post []string, opt string) bool {
-	if len(post) < 3 {
-		return false
-	}
-	for _, o := range strings.Split(post[2], ",") {
-		if o == opt {
-			return true
-		}
-	}
-	return false
-}
-
-// unescapeMountPoint decodes octal escapes (e.g. \040 for space) used in
-// mountinfo paths.
-func unescapeMountPoint(s string) string {
-	return strings.NewReplacer(`\040`, " ", `\011`, "\t", `\012`, "\n", `\134`, `\`).Replace(s)
 }
 
 // cpuCgroupCores returns how many CPU cores the cgroup at dir may use: the
@@ -335,38 +312,10 @@ func cpuQuotaCores(dir string) (float64, bool) {
 			}
 		}
 	}
-	if quota, ok := readCgroupInt(filepath.Join(dir, "cpu.cfs_quota_us")); ok && quota > 0 {
-		if period, ok := readCgroupInt(filepath.Join(dir, "cpu.cfs_period_us")); ok && period > 0 {
+	if quota, ok := utils.ReadIntFile(filepath.Join(dir, "cpu.cfs_quota_us")); ok && quota > 0 {
+		if period, ok := utils.ReadIntFile(filepath.Join(dir, "cpu.cfs_period_us")); ok && period > 0 {
 			return float64(quota) / float64(period), true
 		}
 	}
 	return 0, false
-}
-
-// cgroupStatValue returns the value of key in a cgroup "key value" stat file.
-func cgroupStatValue(path, key string) (uint64, bool) {
-	data, err := os.ReadFile(path)
-	if err != nil {
-		return 0, false
-	}
-	for line := range strings.SplitSeq(string(data), "\n") {
-		name, value, found := strings.Cut(line, " ")
-		if !found || name != key {
-			continue
-		}
-		v, err := strconv.ParseUint(strings.TrimSpace(value), 10, 64)
-		return v, err == nil
-	}
-	return 0, false
-}
-
-// readCgroupInt reads a file containing a single signed integer
-// (cpu.cfs_quota_us is -1 when no quota is set).
-func readCgroupInt(path string) (int64, bool) {
-	data, err := os.ReadFile(path)
-	if err != nil {
-		return 0, false
-	}
-	v, err := strconv.ParseInt(strings.TrimSpace(string(data)), 10, 64)
-	return v, err == nil
 }
