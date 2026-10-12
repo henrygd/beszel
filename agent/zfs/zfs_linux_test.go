@@ -3,6 +3,7 @@
 package zfs
 
 import (
+	"errors"
 	"os"
 	"path/filepath"
 	"testing"
@@ -260,15 +261,55 @@ func TestPoolStatsDelegatesToZpoolWhenDevZfsPresent(t *testing.T) {
 	oldCommandOutput := commandOutput
 	called := false
 	commandOutput = func(name string, args ...string) ([]byte, error) {
-		called = true
-		assert.Equal(t, "zpool", name)
-		assert.Equal(t, []string{"list", "-Hp", "-o", "name,size,alloc,free,health"}, args)
-		return []byte("tank\t100\t50\t50\tONLINE\n"), nil
+		switch name {
+		case "zpool":
+			called = true
+			assert.Equal(t, []string{"list", "-Hp", "-o", "name,size,alloc,free,health"}, args)
+			// raidz: the raw figures include parity
+			return []byte("tank\t150\t60\t90\tONLINE\n"), nil
+		case "zfs":
+			assert.Equal(t, []string{"list", "-Hp", "-d", "0", "-o", "name,used,avail,mountpoint"}, args)
+			return []byte("tank\t40\t60\t/tank\n"), nil
+		}
+		t.Fatalf("unexpected %s call with %v", name, args)
+		return nil, nil
 	}
 	t.Cleanup(func() { commandOutput = oldCommandOutput })
 
 	pools, err := PoolStats()
 	require.NoError(t, err)
 	assert.True(t, called)
-	assert.Equal(t, []PoolStat{{Name: "tank", Size: 100, Alloc: 50, Free: 50, Health: "ONLINE"}}, pools)
+	assert.Equal(t, []PoolStat{{Name: "tank", Size: 100, Alloc: 40, Free: 60, Health: "ONLINE"}}, pools)
+}
+
+func TestPoolStatsKeepsRawCapacityWithoutRootDataset(t *testing.T) {
+	devFile := filepath.Join(t.TempDir(), "zfs")
+	require.NoError(t, os.WriteFile(devFile, nil, 0o644))
+	oldDevZfsPath := devZfsPath
+	devZfsPath = devFile
+	t.Cleanup(func() { devZfsPath = oldDevZfsPath })
+
+	for _, tc := range []struct {
+		name   string
+		zfsOut []byte
+		zfsErr error
+	}{
+		{"zfs list fails", nil, errors.New("zfs list failed")},
+		{"root dataset missing", []byte("other\t1\t1\t/other\n"), nil},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			oldCommandOutput := commandOutput
+			commandOutput = func(name string, args ...string) ([]byte, error) {
+				if name == "zpool" {
+					return []byte("tank\t150\t60\t90\tONLINE\n"), nil
+				}
+				return tc.zfsOut, tc.zfsErr
+			}
+			t.Cleanup(func() { commandOutput = oldCommandOutput })
+
+			pools, err := PoolStats()
+			require.NoError(t, err)
+			assert.Equal(t, []PoolStat{{Name: "tank", Size: 150, Alloc: 60, Free: 90, Health: "ONLINE", Raw: true}}, pools)
+		})
+	}
 }
