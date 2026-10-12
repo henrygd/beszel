@@ -5,6 +5,7 @@ package agent
 import (
 	"math"
 	"testing"
+	"unsafe"
 )
 
 func TestNvmlSampleToFloat(t *testing.T) {
@@ -27,5 +28,67 @@ func TestNvmlSampleToFloat(t *testing.T) {
 		if got != tt.want || ok != tt.ok {
 			t.Errorf("nvmlSampleToFloat(%d, %#x) = %v, %v; want %v, %v", tt.valType, tt.raw, got, ok, tt.want, tt.ok)
 		}
+	}
+}
+
+func TestPowerFromSamples(t *testing.T) {
+	buf := []nvmlSample{{100, 110000}, {200, 120000}, {300, 130000}}
+	var seenTs []uint64
+	nvmlDeviceGetSamples = func(_ nvmlDevice, _ int, last uint64, valType *int32, count *uint32, samples *nvmlSample) nvmlReturn {
+		seenTs = append(seenTs, last)
+		var out []nvmlSample
+		for _, s := range buf {
+			if s.TimeStamp > last {
+				out = append(out, s)
+			}
+		}
+		if len(out) == 0 {
+			return nvmlErrorNotFound
+		}
+		*valType = 1 // NVML_VALUE_TYPE_UNSIGNED_INT
+		if samples == nil {
+			*count = 120 // driver buffer size
+			return nvmlReturn(nvmlSuccess)
+		}
+		*count = uint32(copy(unsafe.Slice(samples, *count), out))
+		return nvmlReturn(nvmlSuccess)
+	}
+	defer func() { nvmlDeviceGetSamples = nil }()
+
+	c := &nvmlCollector{lastSampleTs: []uint64{0}, lastPower: []float64{0}}
+
+	// first poll averages the whole buffer
+	if got := c.powerFromSamples(0, 0); got != 120 {
+		t.Fatalf("first poll = %v; want 120", got)
+	}
+	// no new samples reuses the last value
+	if got := c.powerFromSamples(0, 0); got != 120 {
+		t.Fatalf("poll without new samples = %v; want 120", got)
+	}
+	// only samples newer than the last seen timestamp are averaged
+	buf = append(buf, nvmlSample{400, 50000})
+	if got := c.powerFromSamples(0, 0); got != 50 {
+		t.Fatalf("poll with new sample = %v; want 50", got)
+	}
+
+	wantTs := []uint64{0, 0, 300, 300, 300}
+	if len(seenTs) != len(wantTs) {
+		t.Fatalf("lastSeenTimeStamp args = %v; want %v", seenTs, wantTs)
+	}
+	for i := range wantTs {
+		if seenTs[i] != wantTs[i] {
+			t.Fatalf("lastSeenTimeStamp args = %v; want %v", seenTs, wantTs)
+		}
+	}
+	if c.lastSampleTs[0] != 400 {
+		t.Fatalf("lastSampleTs = %d; want 400", c.lastSampleTs[0])
+	}
+}
+
+func TestPowerFromSamplesUnavailable(t *testing.T) {
+	nvmlDeviceGetSamples = nil
+	c := &nvmlCollector{lastSampleTs: []uint64{0}, lastPower: []float64{0}}
+	if got := c.powerFromSamples(0, 0); got != 0 {
+		t.Fatalf("powerFromSamples without symbol = %v; want 0", got)
 	}
 }
