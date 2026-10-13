@@ -27,9 +27,14 @@ func NewUserManager(app core.App) *UserManager {
 
 // oauthDefaultRole returns the role for new OAuth users from OAUTH_DEFAULT_USER_ROLE.
 // Only "user" and "readonly" are accepted; anything else (including "admin") falls back to "user".
-func oauthDefaultRole() string {
-	if role, _ := utils.GetEnv("OAUTH_DEFAULT_USER_ROLE"); role == "readonly" {
+func oauthDefaultRole(app core.App) string {
+	role, _ := utils.GetEnv("OAUTH_DEFAULT_USER_ROLE")
+	switch role {
+	case "readonly":
 		return role
+	case "", "user":
+	default:
+		app.Logger().Warn("Invalid OAUTH_DEFAULT_USER_ROLE, using \"user\"", "value", role)
 	}
 	return "user"
 }
@@ -40,7 +45,7 @@ func (um *UserManager) InitializeOAuthUserRole(e *core.RecordAuthWithOAuth2Reque
 		if e.CreateData == nil {
 			e.CreateData = make(map[string]any)
 		}
-		e.CreateData["role"] = oauthDefaultRole()
+		e.CreateData["role"] = oauthDefaultRole(e.App)
 	}
 	return e.Next()
 }
