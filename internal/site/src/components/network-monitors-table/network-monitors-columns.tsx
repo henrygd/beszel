@@ -36,7 +36,12 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { useMemo } from "react"
 import { formatBulkMonitorLine } from "@/components/network-monitors-table/monitor-dialog"
 import { Badge } from "../ui/badge"
-import { getCertDaysLeft, getCertExpiryLevel, getMonitorTarget } from "@/lib/network-monitor-utils"
+import {
+	getCertDaysLeft,
+	getCertExpiryLevel,
+	getMonitorProtocolLabel,
+	getMonitorTarget,
+} from "@/lib/network-monitor-utils"
 
 const certExpiryDotColors = { ok: "bg-green-500", warning: "bg-yellow-500", critical: "bg-red-500" }
 
@@ -178,9 +183,7 @@ export function getMonitorColumns(
 		{
 			id: "protocol",
 			meta: { label: t`Protocol` },
-			// The target column hides the URL scheme, so show https here instead.
-			accessorFn: (record) =>
-				record.protocol === "http" && /^https:\/\//i.test(record.target) ? "https" : record.protocol,
+			accessorFn: (record) => getMonitorProtocolLabel(record),
 			header: ({ column }) => <HeaderButton column={column} name={t`Protocol`} Icon={ArrowLeftRightIcon} />,
 			cell: ({ row, getValue }) => {
 				const protocol = getValue() as string
