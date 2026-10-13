@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/henrygd/beszel/internal/hub/utils"
 	"github.com/henrygd/beszel/internal/migrations"
 
 	"github.com/pocketbase/dbx"
@@ -24,13 +25,27 @@ func NewUserManager(app core.App) *UserManager {
 	}
 }
 
+// oauthDefaultRole returns the role for new OAuth users from OAUTH_DEFAULT_USER_ROLE.
+// Only "user" and "readonly" are accepted; anything else (including "admin") falls back to "user".
+func oauthDefaultRole(app core.App) string {
+	role, _ := utils.GetEnv("OAUTH_DEFAULT_USER_ROLE")
+	switch role {
+	case "readonly":
+		return role
+	case "", "user":
+	default:
+		app.Logger().Warn("Invalid OAUTH_DEFAULT_USER_ROLE, using \"user\"", "value", role)
+	}
+	return "user"
+}
+
 // InitializeOAuthUserRole prevents self-registration from assigning a privileged role.
 func (um *UserManager) InitializeOAuthUserRole(e *core.RecordAuthWithOAuth2RequestEvent) error {
 	if e.IsNewRecord {
 		if e.CreateData == nil {
 			e.CreateData = make(map[string]any)
 		}
-		e.CreateData["role"] = "user"
+		e.CreateData["role"] = oauthDefaultRole(e.App)
 	}
 	return e.Next()
 }

@@ -5,6 +5,7 @@
 package agent
 
 import (
+	"context"
 	"log/slog"
 	"net"
 	"strings"
@@ -27,6 +28,7 @@ type Agent struct {
 	debug                     bool                                                  // true if LOG_LEVEL is set to debug
 	zfs                       bool                                                  // true if system has arcstats
 	memCalc                   string                                                // Memory calculation formula
+	forceUseCgroup            bool                                                  // Explicitly use the cgroup mount root for CPU accounting
 	fsNames                   []string                                              // List of filesystem device names being monitored
 	fsStats                   map[string]*system.FsStats                            // Keeps track of disk stats for each filesystem
 	diskPrev                  map[uint16]map[string]prevDisk                        // Previous disk I/O counters per cache interval
@@ -79,6 +81,11 @@ func NewAgent(dataDir ...string) (agent *Agent, err error) {
 	}
 
 	agent.memCalc, _ = utils.GetEnv("MEM_CALC")
+
+	if useCgroup, exists := utils.GetEnv("USE_CGROUP"); exists {
+		agent.forceUseCgroup = useCgroup == "true"
+	}
+	agent.initializeCpu()
 	agent.sensorConfig = agent.newSensorConfig()
 
 	// Parse disk usage cache duration (e.g., "15m", "1h") to avoid waking sleeping disks
@@ -105,6 +112,8 @@ func NewAgent(dataDir ...string) (agent *Agent, err error) {
 	}
 
 	slog.Debug(beszel.Version)
+
+	agent.warnIfRootCgroup()
 
 	// initialize docker manager
 	agent.dockerManager = newDockerManager(agent)
@@ -263,10 +272,11 @@ func (a *Agent) gatherStats(options common.DataRequestOptions) *system.CombinedD
 	return a.attachSystemDetails(data, cacheTimeMs, options.IncludeDetails)
 }
 
-// Start initializes and starts the agent with optional WebSocket connection
-func (a *Agent) Start(serverOptions ServerOptions) error {
+// Start initializes and starts the agent with optional WebSocket connection.
+// It runs until ctx is cancelled or the process receives SIGINT or SIGTERM.
+func (a *Agent) Start(ctx context.Context, serverOptions ServerOptions) error {
 	a.keys = serverOptions.Keys
-	err := a.connectionManager.Start(serverOptions)
+	err := a.connectionManager.Start(ctx, serverOptions)
 	if err != nil {
 		a.cleanupSensorShadow()
 	}

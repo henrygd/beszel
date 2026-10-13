@@ -1,4 +1,9 @@
-import { getCertDaysLeft, getCertExpiryLevel, getMonitorTarget } from "@/lib/network-monitor-utils"
+import {
+	getCertDaysLeft,
+	getCertExpiryLevel,
+	getMonitorProtocolLabel,
+	getMonitorTarget,
+} from "@/lib/network-monitor-utils"
 import { t } from "@lingui/core/macro"
 import { Trans } from "@lingui/react/macro"
 import {
@@ -305,7 +310,9 @@ export default function NetworkMonitorsTableNew({
 			if (!value) return true
 			const monitor = row.original
 			const systemName = $allSystemsById.get()[monitor.system]?.name ?? ""
-			const searchString = `${getMonitorTarget(monitor)}${monitor.protocol}${systemName}`.toLocaleLowerCase()
+			// Include the raw target so searches for the hidden URL scheme still match.
+			const searchString =
+				`${getMonitorTarget(monitor)}${monitor.target}${monitor.protocol}${systemName}`.toLocaleLowerCase()
 			return matchesFilterGroups(searchString, parseFilterGroups(value))
 		},
 	})
@@ -780,7 +787,7 @@ function NetworkMonitorSheetContent({
 						</Link>
 						<Separator orientation="vertical" className="h-2.5 bg-muted-foreground opacity-70" />
 						<ArrowLeftRightIcon className="size-3.5 text-muted-foreground -me-0.5" />
-						{monitor.protocol.toUpperCase()}
+						{getMonitorProtocolLabel(monitor).toUpperCase()}
 						{monitor.protocol === "tcp" && monitor.port > 0 && (
 							<>
 								<Separator orientation="vertical" className="h-2.5 bg-muted-foreground opacity-70" />
