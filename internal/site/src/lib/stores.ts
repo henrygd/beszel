@@ -4,7 +4,7 @@ import { pb } from "./api"
 import { Unit } from "./enums"
 
 /** Default layout width. Used as fallback when user setting is unset. */
-export const defaultLayoutWidth = 1580
+export const defaultLayoutWidth = 1600
 
 /** Store if user is authenticated */
 export const $authenticated = atom(pb.authStore.isValid)

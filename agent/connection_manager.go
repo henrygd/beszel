@@ -175,7 +175,7 @@ func (c *ConnectionManager) start(ctx context.Context, serverOptions ServerOptio
 	wsClient, err := newWebSocketClient(c.agent)
 	if err != nil {
 		var caCertErr *caCertFileError
-		if errors.As(err, &caCertErr) {
+		if errors.As(err, &caCertErr) || errors.Is(err, errInvalidHubHeaders) {
 			return err
 		}
 		disableSSH, _ := utils.GetEnv("DISABLE_SSH")
