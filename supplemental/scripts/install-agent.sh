@@ -108,7 +108,10 @@ configured_address() {
   elif is_freebsd; then
     address_file="$AGENT_DIR/env"
   else
-    address_file=/etc/systemd/system/beszel-agent.service
+    # PORT/LISTEN moved into the protected env file; fall back to the unit
+    # file for installs that have not been migrated yet.
+    address_file=/etc/beszel-agent/env
+    [ -f "$address_file" ] || address_file=/etc/systemd/system/beszel-agent.service
   fi
 
   [ -f "$address_file" ] || return 0
@@ -126,6 +129,39 @@ configured_address() {
 # for the destination configuration syntax is handled separately.
 escape_sed_replacement() {
   printf '%s' "$1" | sed 's/[\\&|]/\\&/g'
+}
+
+# Write the agent's environment configuration (PORT/KEY/TOKEN/HUB_URL) to a
+# root-owned file readable only by the agent user, instead of embedding the
+# TOKEN in a world-readable service or init file. When the file already
+# exists, only explicitly provided variables are updated so an upgrade never
+# clobbers existing values.
+write_protected_env_file() {
+  env_file=$1
+  SED_PORT=$(escape_sed_replacement "$PORT")
+  SED_KEY=$(escape_sed_replacement "$KEY")
+  SED_TOKEN=$(escape_sed_replacement "$TOKEN")
+  SED_HUB_URL=$(escape_sed_replacement "$HUB_URL")
+  mkdir -p "$(dirname "$env_file")"
+  if [ -f "$env_file" ]; then
+    [ "$PORT_PROVIDED" = "true" ] && sed -i "s|^PORT=.*|PORT=\"$SED_PORT\"|" "$env_file"
+    [ "$KEY_PROVIDED" = "true" ] && sed -i "s|^KEY=.*|KEY=\"$SED_KEY\"|" "$env_file"
+    [ "$TOKEN_PROVIDED" = "true" ] && sed -i "s|^TOKEN=.*|TOKEN=\"$SED_TOKEN\"|" "$env_file"
+    [ "$HUB_URL_PROVIDED" = "true" ] && sed -i "s|^HUB_URL=.*|HUB_URL=\"$SED_HUB_URL\"|" "$env_file"
+  else
+    # Create with a restrictive umask, then restore whatever the caller had.
+    umask_save=$(umask)
+    umask 027
+    cat >"$env_file" <<BESZEL_ENV_EOF
+PORT="$PORT"
+KEY="$KEY"
+TOKEN="$TOKEN"
+HUB_URL="$HUB_URL"
+BESZEL_ENV_EOF
+    umask "$umask_save"
+  fi
+  chown "root:${AGENT_USER}" "$env_file"
+  chmod 640 "$env_file"
 }
 
 # Generate FreeBSD rc service content
@@ -682,6 +718,7 @@ if [ "$UNINSTALL" = true ]; then
 
     echo "Removing the OpenRC service files..."
     rm -f /etc/init.d/beszel-agent
+    rm -f "$AGENT_DIR/env"
 
     # Remove the daily update cron job if it exists
     echo "Removing the daily update cron job..."
@@ -733,6 +770,8 @@ if [ "$UNINSTALL" = true ]; then
     # Remove env file and directories
     echo "Removing environment configuration file..."
     rm -f "$AGENT_DIR/env"
+    rm -f /etc/beszel-agent/env
+    rmdir /etc/beszel-agent 2>/dev/null || true
     rm -f "$BIN_PATH"
     rmdir "$AGENT_DIR" 2>/dev/null || true
 
@@ -743,6 +782,8 @@ if [ "$UNINSTALL" = true ]; then
 
     echo "Removing the systemd service file..."
     rm -f /etc/systemd/system/beszel-agent.service
+    rm -f /etc/beszel-agent/env
+    rmdir /etc/beszel-agent 2>/dev/null || true
 
     # Remove the update timer and service if they exist
     echo "Removing the daily update service and timer..."
@@ -1049,6 +1090,7 @@ INSTALL_STEP="configuring and starting the service"
 if is_alpine; then
   if [ ! -f /etc/init.d/beszel-agent ]; then
     echo "Creating OpenRC service for Alpine Linux..."
+    write_protected_env_file "$AGENT_DIR/env"
     cat >/etc/init.d/beszel-agent <<EOF
 #!/sbin/openrc-run
 
@@ -1065,10 +1107,9 @@ start_pre() {
     checkpath -f -m 0644 -o beszel:beszel "\$output_log" "\$error_log"
 }
 
-export PORT="$PORT"
-export KEY="$KEY"
-export TOKEN="$TOKEN"
-export HUB_URL="$HUB_URL"
+# Secrets (TOKEN) live in a root-owned env file readable only by the agent
+# user; the init script must not embed them (it is world-readable).
+[ -f "$AGENT_DIR/env" ] && . "$AGENT_DIR/env"
 
 depend() {
     need net
@@ -1079,14 +1120,17 @@ EOF
     rc-update add beszel-agent default
   else
     echo "Alpine OpenRC service file already exists. Updating environment variables..."
-    SED_PORT=$(escape_sed_replacement "$PORT")
-    SED_KEY=$(escape_sed_replacement "$KEY")
-    SED_TOKEN=$(escape_sed_replacement "$TOKEN")
-    SED_HUB_URL=$(escape_sed_replacement "$HUB_URL")
-    [ "$PORT_PROVIDED" = "true" ] && sed -i "s|^export PORT=.*|export PORT=\"$SED_PORT\"|" /etc/init.d/beszel-agent
-    [ "$KEY_PROVIDED" = "true" ] && sed -i "s|^export KEY=.*|export KEY=\"$SED_KEY\"|" /etc/init.d/beszel-agent
-    [ "$TOKEN_PROVIDED" = "true" ] && sed -i "s|^export TOKEN=.*|export TOKEN=\"$SED_TOKEN\"|" /etc/init.d/beszel-agent
-    [ "$HUB_URL_PROVIDED" = "true" ] && sed -i "s|^export HUB_URL=.*|export HUB_URL=\"$SED_HUB_URL\"|" /etc/init.d/beszel-agent
+    # Preserve values that were not provided on this run by reading them back
+    # from the existing init script before migrating them into the env file.
+    [ "$PORT_PROVIDED" = "true" ] || PORT=$(sed -n 's/^export PORT="\(.*\)"/\1/p' /etc/init.d/beszel-agent | head -n 1)
+    [ "$KEY_PROVIDED" = "true" ] || KEY=$(sed -n 's/^export KEY="\(.*\)"/\1/p' /etc/init.d/beszel-agent | head -n 1)
+    [ "$TOKEN_PROVIDED" = "true" ] || TOKEN=$(sed -n 's/^export TOKEN="\(.*\)"/\1/p' /etc/init.d/beszel-agent | head -n 1)
+    [ "$HUB_URL_PROVIDED" = "true" ] || HUB_URL=$(sed -n 's/^export HUB_URL="\(.*\)"/\1/p' /etc/init.d/beszel-agent | head -n 1)
+    write_protected_env_file "$AGENT_DIR/env"
+    # Migrate any embedded secrets out of the world-readable init script.
+    sed -i '/^export PORT=/d;/^export KEY=/d;/^export TOKEN=/d;/^export HUB_URL=/d' /etc/init.d/beszel-agent
+    grep -q "$AGENT_DIR/env" /etc/init.d/beszel-agent || \
+      sed -i "/^depend()/i [ -f \"$AGENT_DIR/env\" ] && . \"$AGENT_DIR/env\"" /etc/init.d/beszel-agent
   fi
 
   # Create log files with proper permissions
@@ -1135,6 +1179,7 @@ EOF
 elif is_openwrt; then
   if [ ! -f /etc/init.d/beszel-agent ]; then
     echo "Creating procd init script service for OpenWRT..."
+    write_protected_env_file /etc/beszel-agent/env
     cat >/etc/init.d/beszel-agent <<EOF
 #!/bin/sh /etc/rc.common
 
@@ -1142,11 +1187,16 @@ USE_PROCD=1
 START=99
 
 start_service() {
+    # Secrets (TOKEN) live in a root-owned env file readable only by the agent
+    # user; the init script itself is world-readable and must not embed them.
+    # The \$ escapes keep these as variable references - the heredoc must not
+    # expand the values into this file.
+    [ -f /etc/beszel-agent/env ] && . /etc/beszel-agent/env
     procd_open_instance
     procd_set_param command $BIN_PATH
     procd_set_param user beszel
     procd_set_param pidfile /var/run/beszel-agent.pid
-    procd_set_param env PORT="$PORT" KEY="$KEY" TOKEN="$TOKEN" HUB_URL="$HUB_URL"
+    procd_set_param env PORT="\$PORT" KEY="\$KEY" TOKEN="\$TOKEN" HUB_URL="\$HUB_URL"
     procd_set_param respawn
     procd_set_param stdout 1
     procd_set_param stderr 1
@@ -1180,11 +1230,12 @@ EOF
     [ "$KEY_PROVIDED" = "true" ] || KEY=$(printf '%s\n' "$CUR_ENV_LINE" | sed -n 's/.*KEY="\([^"]*\)".*/\1/p')
     [ "$TOKEN_PROVIDED" = "true" ] || TOKEN=$(printf '%s\n' "$CUR_ENV_LINE" | sed -n 's/.*TOKEN="\([^"]*\)".*/\1/p')
     [ "$HUB_URL_PROVIDED" = "true" ] || HUB_URL=$(printf '%s\n' "$CUR_ENV_LINE" | sed -n 's/.*HUB_URL="\([^"]*\)".*/\1/p')
-    SED_PORT=$(escape_sed_replacement "$PORT")
-    SED_KEY=$(escape_sed_replacement "$KEY")
-    SED_TOKEN=$(escape_sed_replacement "$TOKEN")
-    SED_HUB_URL=$(escape_sed_replacement "$HUB_URL")
-    sed -i "s|procd_set_param env PORT=.*|procd_set_param env PORT=\"$SED_PORT\" KEY=\"$SED_KEY\" TOKEN=\"$SED_TOKEN\" HUB_URL=\"$SED_HUB_URL\"|" /etc/init.d/beszel-agent
+    write_protected_env_file /etc/beszel-agent/env
+    # Migrate secrets out of the world-readable init script: the env line now
+    # references variables that are sourced from the protected env file.
+    sed -i "s|procd_set_param env PORT=.*|procd_set_param env PORT=\"\$PORT\" KEY=\"\$KEY\" TOKEN=\"\$TOKEN\" HUB_URL=\"\$HUB_URL\"|" /etc/init.d/beszel-agent
+    grep -q "/etc/beszel-agent/env" /etc/init.d/beszel-agent || \
+      sed -i "s|^start_service() {|start_service() {\n    . /etc/beszel-agent/env|" /etc/init.d/beszel-agent
   fi
 
   # Start the service
@@ -1343,6 +1394,7 @@ else
     # Detect NVIDIA devices and grant device permissions
     NVIDIA_DEVICES=$(detect_nvidia_devices)
 
+    write_protected_env_file /etc/beszel-agent/env
     cat >/etc/systemd/system/beszel-agent.service <<EOF
 [Unit]
 Description=Beszel Agent Service
@@ -1350,10 +1402,9 @@ Wants=network-online.target
 After=network-online.target
 
 [Service]
-Environment="PORT=$PORT"
-Environment="KEY=$KEY"
-Environment="TOKEN=$TOKEN"
-Environment="HUB_URL=$HUB_URL"
+# Environment variables (incl. the TOKEN secret) live in a root-owned env
+# file readable only by the agent user; the unit file is world-readable.
+EnvironmentFile=/etc/beszel-agent/env
 # Environment="EXTRA_FILESYSTEMS=sdb"
 ExecStart=$BIN_PATH
 User=beszel
@@ -1379,14 +1430,23 @@ WantedBy=multi-user.target
 EOF
   else
     echo "Systemd service file already exists. Updating environment variables..."
-    SED_PORT=$(escape_sed_replacement "$PORT")
-    SED_KEY=$(escape_sed_replacement "$KEY")
-    SED_TOKEN=$(escape_sed_replacement "$TOKEN")
-    SED_HUB_URL=$(escape_sed_replacement "$HUB_URL")
-    [ "$PORT_PROVIDED" = "true" ] && sed -i "s|^Environment=\"PORT=.*\"|Environment=\"PORT=$SED_PORT\"|" /etc/systemd/system/beszel-agent.service
-    [ "$KEY_PROVIDED" = "true" ] && sed -i "s|^Environment=\"KEY=.*\"|Environment=\"KEY=$SED_KEY\"|" /etc/systemd/system/beszel-agent.service
-    [ "$TOKEN_PROVIDED" = "true" ] && sed -i "s|^Environment=\"TOKEN=.*\"|Environment=\"TOKEN=$SED_TOKEN\"|" /etc/systemd/system/beszel-agent.service
-    [ "$HUB_URL_PROVIDED" = "true" ] && sed -i "s|^Environment=\"HUB_URL=.*\"|Environment=\"HUB_URL=$SED_HUB_URL\"|" /etc/systemd/system/beszel-agent.service
+    UNIT_FILE=/etc/systemd/system/beszel-agent.service
+    if ! grep -qE '^Environment="(PORT|KEY|TOKEN|HUB_URL)=' "$UNIT_FILE" && ! grep -q '^EnvironmentFile=' "$UNIT_FILE"; then
+      echo "Unit file has no beszel environment lines; leaving it untouched."
+      warn "Configure PORT/KEY/TOKEN/HUB_URL via /etc/beszel-agent/env (EnvironmentFile) or re-run the installer."
+    else
+    # Preserve values that were not provided on this run before migrating
+    # them out of the unit file.
+    [ "$PORT_PROVIDED" = "true" ] || PORT=$(sed -n 's/^Environment="PORT=\(.*\)"/\1/p' "$UNIT_FILE" | head -n 1)
+    [ "$KEY_PROVIDED" = "true" ] || KEY=$(sed -n 's/^Environment="KEY=\(.*\)"/\1/p' "$UNIT_FILE" | head -n 1)
+    [ "$TOKEN_PROVIDED" = "true" ] || TOKEN=$(sed -n 's/^Environment="TOKEN=\(.*\)"/\1/p' "$UNIT_FILE" | head -n 1)
+    [ "$HUB_URL_PROVIDED" = "true" ] || HUB_URL=$(sed -n 's/^Environment="HUB_URL=\(.*\)"/\1/p' "$UNIT_FILE" | head -n 1)
+    write_protected_env_file /etc/beszel-agent/env
+    # Migrate secrets out of the world-readable unit file.
+    sed -E -i '/^Environment="(PORT|KEY|TOKEN|HUB_URL)=/d' "$UNIT_FILE"
+    grep -q '^EnvironmentFile=' "$UNIT_FILE" || \
+      sed -i '/^\[Service\]/a EnvironmentFile=/etc/beszel-agent/env' "$UNIT_FILE"
+    fi
   fi
 
   # Let the agent service (not the beszel user) read the system journal for service logs.
