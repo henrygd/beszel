@@ -195,7 +195,11 @@ func (fs *Filesystem) readDevicesIoctl(mountpoint string, attached int) (capacit
 		members = append(members, member)
 	}
 	if probed != info.numDevices {
-		return false, false // a device appeared or vanished mid-probe
+		// A device appeared or vanished mid-probe, or a replace is running
+		// (old kernels count the devid 0 target, which is never probed).
+		// A member already confirmed missing keeps DEGRADED, matching the
+		// sysfs path where missing evidence outranks an incomplete read.
+		return false, false
 	}
 	// The kernel counts missing members too, so a number above the sysfs
 	// devices count means one is missing even if no path proved it. Members
