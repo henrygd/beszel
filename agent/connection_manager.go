@@ -200,8 +200,7 @@ func (c *ConnectionManager) Start(ctx context.Context, serverOptions ServerOptio
 
 	// update health status immediately and every 90 seconds
 	_ = health.Update()
-	healthTicker := time.NewTicker(90 * time.Second)
-	defer healthTicker.Stop()
+	healthTicker := time.Tick(90 * time.Second)
 
 	for {
 		select {
@@ -216,7 +215,7 @@ func (c *ConnectionManager) Start(ctx context.Context, serverOptions ServerOptio
 					c.startSSHServer()
 				}
 			}
-		case <-healthTicker.C:
+		case <-healthTicker:
 			_ = health.Update()
 		case <-sigCtx.Done():
 			slog.Info("Shutting down", "cause", context.Cause(sigCtx))
@@ -326,10 +325,8 @@ func (c *ConnectionManager) connect() {
 	defer c.setConnecting(false)
 
 	if c.wsClient != nil && time.Since(c.wsClient.lastConnectAttempt) < 5*time.Second {
-		timer := time.NewTimer(5 * time.Second)
-		defer timer.Stop()
 		select {
-		case <-timer.C:
+		case <-time.After(5 * time.Second):
 		case <-c.ctx.Done():
 			return
 		}
