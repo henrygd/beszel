@@ -163,11 +163,7 @@ func (c *ConnectionManager) isConnectingNow() bool {
 
 // Start begins connection attempts and enters the main event loop.
 // It handles connection events, periodic health updates, and graceful shutdown.
-func (c *ConnectionManager) Start(serverOptions ServerOptions) error {
-	return c.start(context.Background(), serverOptions)
-}
-
-func (c *ConnectionManager) start(ctx context.Context, serverOptions ServerOptions) error {
+func (c *ConnectionManager) Start(ctx context.Context, serverOptions ServerOptions) error {
 	if c.eventChan != nil {
 		return errors.New("already started")
 	}

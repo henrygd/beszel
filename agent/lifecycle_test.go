@@ -22,7 +22,7 @@ func TestAgentCancellationReleasesListener(t *testing.T) {
 		a := createTestAgent(t)
 		ctx, cancel := context.WithCancel(t.Context())
 		done := make(chan error, 1)
-		go func() { done <- a.start(ctx, opts) }()
+		go func() { done <- a.Start(ctx, opts) }()
 		require.Eventually(t, func() bool {
 			conn, err := net.DialTimeout("tcp", opts.Addr, 20*time.Millisecond)
 			if err != nil {
@@ -61,7 +61,7 @@ func TestAgentCancellationJoinsReconnect(t *testing.T) {
 	ctx, cancel := context.WithCancel(t.Context())
 	defer cancel()
 	done := make(chan error, 1)
-	go func() { done <- a.start(ctx, opts) }()
+	go func() { done <- a.Start(ctx, opts) }()
 	var client *ssh.Client
 	require.Eventually(t, func() bool {
 		client, err = ssh.Dial("tcp", opts.Addr, &ssh.ClientConfig{
@@ -105,7 +105,7 @@ func TestAgentCancellationDuringHandshake(t *testing.T) {
 	ctx, cancel := context.WithCancel(t.Context())
 	defer cancel()
 	done := make(chan error, 1)
-	go func() { done <- a.start(ctx, opts) }()
+	go func() { done <- a.Start(ctx, opts) }()
 	select {
 	case <-entered:
 	case <-time.After(2 * time.Second):

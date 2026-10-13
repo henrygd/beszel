@@ -363,7 +363,7 @@ func TestConnectionManager_StartWithInvalidConfig(t *testing.T) {
 
 	// Test starting when already started
 	cm.eventChan = make(chan ConnectionEvent, 5)
-	err := cm.Start(serverOptions)
+	err := cm.Start(t.Context(), serverOptions)
 	assert.Error(t, err, "Should error when starting already started connection manager")
 }
 
@@ -374,7 +374,7 @@ func TestConnectionManager_StartRejectsInvalidCACertFile(t *testing.T) {
 	t.Setenv("BESZEL_AGENT_TOKEN", "test-token")
 	t.Setenv("BESZEL_AGENT_CA_CERT_FILE", t.TempDir())
 
-	err := cm.Start(ServerOptions{})
+	err := cm.Start(t.Context(), ServerOptions{})
 	require.Error(t, err)
 	assert.Contains(t, err.Error(), "read CA_CERT_FILE")
 	assert.Nil(t, cm.eventChan)

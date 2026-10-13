@@ -59,7 +59,7 @@ func startTestAgent(t *testing.T, testAgent *agent.Agent, opts agent.ServerOptio
 	var result error
 	go func() {
 		defer close(stopped)
-		result = testAgent.StartForTesting(ctx, opts)
+		result = testAgent.Start(ctx, opts)
 		done <- result
 	}()
 	return done, func() {
