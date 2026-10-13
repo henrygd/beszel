@@ -36,7 +36,12 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { useMemo } from "react"
 import { formatBulkMonitorLine } from "@/components/network-monitors-table/monitor-dialog"
 import { Badge } from "../ui/badge"
-import { getCertDaysLeft, getCertExpiryLevel, getMonitorTarget } from "@/lib/network-monitor-utils"
+import {
+	getCertDaysLeft,
+	getCertExpiryLevel,
+	getMonitorProtocolLabel,
+	getMonitorTarget,
+} from "@/lib/network-monitor-utils"
 
 const certExpiryDotColors = { ok: "bg-green-500", warning: "bg-yellow-500", critical: "bg-red-500" }
 
@@ -49,7 +54,8 @@ declare module "@tanstack/react-table" {
 const protocolColors: Record<string, string> = {
 	icmp: "bg-blue-500/15! text-blue-600 dark:text-blue-400",
 	tcp: "bg-purple-500/15! text-purple-600 dark:text-purple-400",
-	http: "bg-green-500/15! text-green-700 dark:text-green-400",
+	http: "bg-teal-500/15! text-teal-700 dark:text-teal-400",
+	https: "bg-green-500/15! text-green-700 dark:text-green-400",
 	dns: "bg-amber-500/15! text-amber-600 dark:text-amber-400",
 	// HTTP monitors that skip TLS certificate verification
 	insecure: "bg-orange-500/15! text-orange-600 dark:text-orange-400",
@@ -145,7 +151,8 @@ export function getMonitorColumns(
 		{
 			id: "target",
 			meta: { label: t`Target` },
-			sortingFn: (a, b) => a.original.target.localeCompare(b.original.target),
+			sortingFn: (a, b) =>
+				(a.getValue("target") as string).localeCompare(b.getValue("target") as string, undefined, { numeric: true }),
 			accessorFn: (record) => getMonitorTarget(record),
 			header: ({ column }) => <HeaderButton column={column} name={t`Target`} Icon={GlobeIcon} />,
 			cell: ({ row, getValue }) => {
@@ -176,7 +183,7 @@ export function getMonitorColumns(
 		{
 			id: "protocol",
 			meta: { label: t`Protocol` },
-			accessorFn: (record) => record.protocol,
+			accessorFn: (record) => getMonitorProtocolLabel(record),
 			header: ({ column }) => <HeaderButton column={column} name={t`Protocol`} Icon={ArrowLeftRightIcon} />,
 			cell: ({ row, getValue }) => {
 				const protocol = getValue() as string
