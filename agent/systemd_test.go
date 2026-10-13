@@ -180,10 +180,13 @@ func TestIsSystemdAvailable(t *testing.T) {
 	// On systems without systemd, it should return false
 	result := isSystemdAvailable()
 
-	// Check if either the /run/systemd/system directory exists or PID 1 is systemd
-	runSystemdExists := false
-	if _, err := os.Stat("/run/systemd/system"); err == nil {
-		runSystemdExists = true
+	// Check if the systemd directory or a dbus socket exists, or PID 1 is systemd
+	pathExists := false
+	for _, path := range []string{"/run/systemd/system", "/run/dbus/system_bus_socket", "/var/run/dbus/system_bus_socket"} {
+		if _, err := os.Stat(path); err == nil {
+			pathExists = true
+			break
+		}
 	}
 
 	pid1IsSystemd := false
@@ -191,7 +194,7 @@ func TestIsSystemdAvailable(t *testing.T) {
 		pid1IsSystemd = strings.TrimSpace(string(data)) == "systemd"
 	}
 
-	expected := runSystemdExists || pid1IsSystemd
+	expected := pathExists || pid1IsSystemd
 
 	assert.Equal(t, expected, result, "isSystemdAvailable should correctly detect systemd presence")
 
