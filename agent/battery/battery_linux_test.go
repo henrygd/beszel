@@ -107,3 +107,62 @@ func TestGetBatteryStatsNoReadableCapacity(t *testing.T) {
 	assert.Error(t, err)
 	assert.False(t, HasReadableBattery())
 }
+
+func setBatteryDevices(t *testing.T, value string) {
+	t.Helper()
+	t.Setenv("BATTERY_DEVICES", value)
+	batteryFilter = getBatteryFilter()
+	t.Cleanup(func() { batteryFilter = nil })
+}
+
+func TestGetBatteryStats_BatteryDevicesFilter(t *testing.T) {
+	setBatteryDevices(t, "BAT0")
+	_, add := setupFakeSysfs(t)
+	add(fakeBattery{id: "BAT0", capacity: "50", status: "Charging"})
+	add(fakeBattery{id: "BAT1", capacity: "80", status: "Discharging"})
+
+	batteries, err := GetBatteryStats()
+	require.NoError(t, err)
+	require.Len(t, batteries, 1)
+	assert.Equal(t, "BAT0", batteries[0].Name)
+	assert.Equal(t, uint8(50), batteries[0].Percent)
+	assert.Equal(t, stateCharging, batteries[0].State)
+}
+
+func TestGetBatteryStats_BatteryDevicesMultiple(t *testing.T) {
+	setBatteryDevices(t, "BAT0, BAT2")
+	_, add := setupFakeSysfs(t)
+	add(fakeBattery{id: "BAT0", capacity: "50", status: "Charging"})
+	add(fakeBattery{id: "BAT1", capacity: "80", status: "Discharging"})
+	add(fakeBattery{id: "BAT2", capacity: "30", status: "Full"})
+
+	batteries, err := GetBatteryStats()
+	require.NoError(t, err)
+	require.Len(t, batteries, 2)
+	assert.Equal(t, "BAT0", batteries[0].Name)
+	assert.Equal(t, "BAT2", batteries[1].Name)
+}
+
+func TestGetBatteryStats_BatteryDevicesUnset(t *testing.T) {
+	for _, value := range []string{"", "   "} {
+		setBatteryDevices(t, value)
+		_, add := setupFakeSysfs(t)
+		add(fakeBattery{id: "BAT0", capacity: "50", status: "Charging"})
+		add(fakeBattery{id: "BAT1", capacity: "80", status: "Discharging"})
+
+		batteries, err := GetBatteryStats()
+		require.NoError(t, err)
+		assert.Len(t, batteries, 2, "BATTERY_DEVICES=%q should disable filtering", value)
+	}
+}
+
+func TestGetBatteryStats_BatteryDevicesNoMatch(t *testing.T) {
+	setBatteryDevices(t, "BAT9")
+	_, add := setupFakeSysfs(t)
+	add(fakeBattery{id: "BAT0", capacity: "50", status: "Charging"})
+	add(fakeBattery{id: "BAT1", capacity: "80", status: "Discharging"})
+
+	_, err := GetBatteryStats()
+	assert.ErrorIs(t, err, errNoBatteries)
+	assert.False(t, HasReadableBattery())
+}
