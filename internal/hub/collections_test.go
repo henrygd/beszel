@@ -3,7 +3,9 @@
 package hub_test
 
 import (
+	"bytes"
 	"fmt"
+	"log/slog"
 	"net/http"
 	"testing"
 
@@ -562,4 +564,82 @@ func TestApiCollectionsAuthRules(t *testing.T) {
 	for _, scenario := range scenarios {
 		scenario.Test(t)
 	}
+}
+
+// TestCollectionRulesDriftRestored pins that beszel-owned rules win: a rule
+// edited out-of-band (as an admin would in the PocketBase UI) is overwritten
+// on the next apply, so the security posture cannot be silently weakened by
+// drift. The overwrite is accompanied by a warning log (see compareCollectionRules).
+func TestCollectionRulesDriftRestored(t *testing.T) {
+	hub, _ := beszelTests.NewTestHub(t.TempDir())
+	defer hub.Cleanup()
+
+	col, err := hub.FindCollectionByNameOrId("systems")
+	require.NoError(t, err)
+	custom := "id != ''"
+	col.ListRule = &custom
+	require.NoError(t, hub.Save(col))
+
+	require.NoError(t, hub.SetCollectionAuthSettings())
+
+	restored, err := hub.FindCollectionByNameOrId("systems")
+	require.NoError(t, err)
+	require.NotNil(t, restored.ListRule)
+	assert.Contains(t, *restored.ListRule, "users.id ?= @request.auth.id",
+		"beszel-managed rule must replace the customized value")
+}
+
+// TestCollectionRulesApplySkipsUnchanged pins the skip-when-unchanged
+// behavior: re-applying rules without drift must not rewrite collections.
+// Regression target: the applier used to Save every collection on every boot,
+// which both wrote needlessly and silently swallowed admin customizations.
+func TestCollectionRulesApplySkipsUnchanged(t *testing.T) {
+	hub, _ := beszelTests.NewTestHub(t.TempDir())
+	defer hub.Cleanup()
+
+	before, err := hub.FindCollectionByNameOrId("systems")
+	require.NoError(t, err)
+
+	require.NoError(t, hub.SetCollectionAuthSettings())
+
+	after, err := hub.FindCollectionByNameOrId("systems")
+	require.NoError(t, err)
+	assert.Equal(t, before.Updated, after.Updated,
+		"unchanged collection must not be re-saved")
+}
+
+// TestAuthSettingsDriftRestored pins the same protection as the rules tests,
+// for the beszel-managed users/superusers auth settings (MFA, OTP, password
+// auth, create rule): an out-of-band edit is overwritten with a warning.
+// Regression target: these collections were saved unconditionally on boot,
+// silently rolling back admin changes.
+func TestAuthSettingsDriftRestored(t *testing.T) {
+	hub, _ := beszelTests.NewTestHub(t.TempDir())
+	defer hub.Cleanup()
+
+	usersCol, err := hub.FindCollectionByNameOrId("users")
+	require.NoError(t, err)
+	// OTP.Length has no cross-field validation, unlike MFA (which requires
+	// two enabled auth methods before it can be turned on).
+	usersCol.OTP.Length = 9
+	require.NoError(t, hub.Save(usersCol))
+
+	var logBuf bytes.Buffer
+	previousLogger := slog.Default()
+	slog.SetDefault(slog.New(slog.NewTextHandler(&logBuf, nil)))
+	defer slog.SetDefault(previousLogger)
+
+	require.NoError(t, hub.SetCollectionAuthSettings())
+
+	restored, err := hub.FindCollectionByNameOrId("users")
+	require.NoError(t, err)
+	assert.Equal(t, 6, restored.OTP.Length, "beszel-managed auth settings must be restored")
+	assert.Contains(t, logBuf.String(), "users.OTP.Length",
+		"overwriting a drifted setting must be logged")
+
+	// A second run with no drift must not log again (and must not save).
+	logBuf.Reset()
+	require.NoError(t, hub.SetCollectionAuthSettings())
+	assert.NotContains(t, logBuf.String(), "drifted",
+		"an in-sync re-apply must be silent")
 }
