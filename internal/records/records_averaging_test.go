@@ -139,6 +139,35 @@ func TestAverageSystemStatsSlice_BasicAveraging(t *testing.T) {
 	assert.Equal(t, uint8(1), result.Battery[1])
 }
 
+func TestAverageSystemStatsSlice_PreservesSmallMemoryAndDiskValues(t *testing.T) {
+	const totalMemoryGiB = 311.3 / 1024 / 1024
+	const usedMemoryGiB = 221.1 / 1024 / 1024
+	const totalDiskGiB = 4.0 / 1024
+	const usedDiskGiB = 1.5 / 1024
+
+	result := records.AverageSystemStatsSlice([]system.Stats{
+		{
+			Mem: totalMemoryGiB, MemUsed: usedMemoryGiB, MemBuffCache: usedMemoryGiB,
+			MemZfsArc: usedMemoryGiB, Swap: totalMemoryGiB, SwapUsed: usedMemoryGiB,
+			DiskTotal: totalDiskGiB, DiskUsed: usedDiskGiB,
+		},
+		{
+			Mem: totalMemoryGiB, MemUsed: usedMemoryGiB, MemBuffCache: usedMemoryGiB,
+			MemZfsArc: usedMemoryGiB, Swap: totalMemoryGiB, SwapUsed: usedMemoryGiB,
+			DiskTotal: totalDiskGiB, DiskUsed: usedDiskGiB,
+		},
+	})
+
+	assert.InDelta(t, totalMemoryGiB, result.Mem, 1e-12)
+	assert.InDelta(t, usedMemoryGiB, result.MemUsed, 1e-12)
+	assert.InDelta(t, usedMemoryGiB, result.MemBuffCache, 1e-12)
+	assert.InDelta(t, usedMemoryGiB, result.MemZfsArc, 1e-12)
+	assert.InDelta(t, totalMemoryGiB, result.Swap, 1e-12)
+	assert.InDelta(t, usedMemoryGiB, result.SwapUsed, 1e-12)
+	assert.InDelta(t, totalDiskGiB, result.DiskTotal, 1e-12)
+	assert.InDelta(t, usedDiskGiB, result.DiskUsed, 1e-12)
+}
+
 func TestAverageSystemStatsSlice_PeakValues(t *testing.T) {
 	input := []system.Stats{
 		{
