@@ -30,11 +30,12 @@ const datasetUsageRefreshInterval = 5 * time.Minute
 // needs to refresh slow-moving space accounting.
 const poolStatsRefreshInterval = time.Minute
 
-// btrfsFilesystems and lvmPools are the btrfs and LVM sources;
-// overridable in tests.
+// btrfsFilesystems, lvmPools and lvmIOCounters are the btrfs and LVM
+// sources; overridable in tests.
 var (
 	btrfsFilesystems = btrfs.Filesystems
 	lvmPools         = lvm.Pools
+	lvmIOCounters    = lvm.IOCounters
 )
 
 type poolKernelSample struct {
@@ -106,11 +107,13 @@ func newBtrfsBackend() *poolBackend {
 	}
 }
 
+// LVM I/O counters come from sysfs alone. Health and capacity need device
+// reads, so they stay on the cached pool inventory.
 func newLvmBackend() *poolBackend {
 	return &poolBackend{
 		name:           "lvm",
 		poolStatsFn:    lvmSource(lvmPoolStats),
-		kernelStatsFn:  lvmSource(lvmKernelStats),
+		kernelStatsFn:  convertedSource(func() ([]lvm.Counters, error) { return lvmIOCounters() }, lvmKernelStats),
 		poolStatusesFn: lvmSource(lvmPoolStatuses),
 	}
 }
@@ -505,8 +508,8 @@ func lvmPoolStats(pool lvm.Pool) zfs.PoolStat {
 	return zfs.PoolStat{DisplayName: pool.Name, Raw: pool.Raw, Name: "l:" + pool.UUID, Size: pool.Size, Alloc: pool.Alloc, Free: pool.Size - min(pool.Alloc, pool.Size), Health: pool.Health}
 }
 
-func lvmKernelStats(pool lvm.Pool) zfs.PoolKernelStat {
-	return zfs.PoolKernelStat{Name: "l:" + pool.UUID, Health: pool.Health, NRead: pool.NRead, NWrite: pool.NWrite}
+func lvmKernelStats(c lvm.Counters) zfs.PoolKernelStat {
+	return zfs.PoolKernelStat{Name: "l:" + c.UUID, NRead: c.NRead, NWrite: c.NWrite}
 }
 
 func lvmPoolStatuses(pool lvm.Pool) zfs.PoolStatus {

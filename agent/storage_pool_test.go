@@ -549,17 +549,21 @@ func TestStaleUtilityCachesRefreshInBackground(t *testing.T) {
 }
 
 func TestLvmThinPoolBackend(t *testing.T) {
-	old := lvmPools
-	t.Cleanup(func() { lvmPools = old })
-	read := uint64(1000)
+	oldPools, oldCounters := lvmPools, lvmIOCounters
+	t.Cleanup(func() { lvmPools, lvmIOCounters = oldPools, oldCounters })
+	poolCalls := 0
 	lvmPools = func() ([]lvm.Pool, error) {
+		poolCalls++
 		return []lvm.Pool{{
-			UUID: "vg-lv", Name: "pve/data", Health: "ONLINE", Size: 400, Alloc: 100, NRead: read,
+			UUID: "vg-lv", Name: "pve/data", Health: "ONLINE", Size: 400, Alloc: 100,
 			Devices: []lvm.Device{{Name: "pve/data_tmeta", State: "ONLINE"}, {Name: "pve/data_tdata", State: "SUSPENDED"}},
 		}, {
 			UUID: "vg", Name: "pve", Raw: true, Health: "ONLINE", Size: 1000, Alloc: 900,
 			Devices: []lvm.Device{{Name: "/dev/nvme0n1p3", State: "ONLINE"}},
 		}}, nil
+	}
+	lvmIOCounters = func() ([]lvm.Counters, error) {
+		return []lvm.Counters{{UUID: "vg-lv", NRead: 1000}}, nil
 	}
 	zm := &StoragePoolManager{detailInterval: time.Hour, backends: []*poolBackend{newLvmBackend()}}
 	var stats system.Stats
@@ -576,6 +580,8 @@ func TestLvmThinPoolBackend(t *testing.T) {
 	zm.backends[0].kernelSamples["l:vg-lv"] = poolKernelSample{nread: 0, at: time.Now().Add(-time.Second)}
 	zm.Update(&stats)
 	assert.Positive(t, stats.ZfsPools["l:vg-lv"].ReadBytes)
+	assert.Equal(t, "ONLINE", stats.ZfsPools["l:vg-lv"].Health, "counters keep the inventory's health")
+	assert.Equal(t, 1, poolCalls, "live stats must not re-read device metadata")
 
 	detail := zm.GetDetail(true)
 	require.True(t, detail.Complete)

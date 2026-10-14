@@ -78,14 +78,44 @@ func pvFixture() []byte {
 
 // setMetadata points raw_locn[0] at text and reseals the metadata area header.
 func setMetadata(b []byte, mdaSize, offset uint64, text []byte) []byte {
+	return setMetadataAt(b, fixtureMda, mdaSize, offset, text)
+}
+
+// setMetadataAt is setMetadata for the metadata area at mda.
+func setMetadataAt(b []byte, mda, mdaSize, offset uint64, text []byte) []byte {
 	le := binary.LittleEndian
-	header := b[fixtureMda : fixtureMda+mdaHeaderSize]
+	header := b[mda : mda+mdaHeaderSize]
 	le.PutUint64(header[32:], mdaSize)
 	le.PutUint64(header[40:], offset)
 	le.PutUint64(header[48:], uint64(len(text)))
 	le.PutUint32(header[56:], lvmCrc(lvmInitialCrc, text))
 	le.PutUint32(header, lvmCrc(lvmInitialCrc, header[4:]))
 	return b
+}
+
+// withSecondMda appends a second metadata area holding text, as created by
+// pvcreate --metadatacopies 2, and returns the extended PV head.
+func withSecondMda(b []byte, text []byte) []byte {
+	le := binary.LittleEndian
+	mda := uint64(len(b)+sectorSize-1) &^ (sectorSize - 1)
+	size := uint64(mdaHeaderSize + len(text))
+	b = append(b, make([]byte, mda+size-uint64(len(b)))...)
+
+	// The mda list follows the data area list; the second entry replaces
+	// the terminator and the header extension, which the reader ignores.
+	label := b[sectorSize : 2*sectorSize]
+	pv := label[32:]
+	le.PutUint64(pv[88:], mda)
+	le.PutUint64(pv[96:], size)
+	clear(pv[104:120])
+	le.PutUint32(label[16:], lvmCrc(lvmInitialCrc, label[labelCrcOffset:]))
+
+	header := b[mda:]
+	copy(header[4:], mdaMagic)
+	le.PutUint32(header[20:], mdaVersion)
+	le.PutUint64(header[24:], mda)
+	copy(b[mda+mdaHeaderSize:], text)
+	return setMetadataAt(b, mda, size, mdaHeaderSize, text)
 }
 
 // pvMetadataText is VG pve's metadata as LVM 2.03.31 wrote it, verbatim.

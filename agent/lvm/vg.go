@@ -49,25 +49,40 @@ func lvmCrc(initial uint32, b []byte) uint32 {
 	return ^crc32.Update(^initial, crc32.IEEETable, b)
 }
 
-// readPVMetadata returns the VG metadata text of the newest copy referenced
-// by the PV's first usable metadata area.
-func readPVMetadata(r io.ReaderAt) (string, error) {
+// readPVVolumeGroup returns the newest valid VG metadata copy across all of
+// the PV's metadata areas, so a corrupt or stale area is outvoted by another.
+func readPVVolumeGroup(r io.ReaderAt) (VolumeGroup, error) {
 	head := make([]byte, labelScanBytes)
 	if _, err := r.ReadAt(head, 0); err != nil {
-		return "", err
+		return VolumeGroup{}, err
 	}
 	mdas, err := parseLabel(head)
 	if err != nil {
-		return "", err
+		return VolumeGroup{}, err
 	}
+	var newest VolumeGroup
+	found, lastErr := false, errNoMetadata
 	for _, mda := range mdas {
 		text, err := readMetadataArea(r, mda)
 		if errors.Is(err, errNoMetadata) {
 			continue
 		}
-		return text, err
+		var vg VolumeGroup
+		if err == nil {
+			vg, err = ParseVGMetadata(text)
+		}
+		if err != nil {
+			lastErr = err
+			continue
+		}
+		if !found || vg.Seqno > newest.Seqno {
+			newest, found = vg, true
+		}
 	}
-	return "", errNoMetadata
+	if !found {
+		return VolumeGroup{}, lastErr
+	}
+	return newest, nil
 }
 
 type diskLocn struct{ offset, size uint64 }

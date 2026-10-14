@@ -29,24 +29,22 @@ func TestPVFixtureMatchesCapture(t *testing.T) {
 	assert.Equal(t, uint32(capturedMdaHeaderCsum), le.Uint32(b[fixtureMda:]))
 }
 
-func TestReadPVMetadataFixture(t *testing.T) {
-	text, err := readPVMetadata(bytes.NewReader(readPVFixture(t)))
-	require.NoError(t, err)
-	assert.True(t, strings.HasPrefix(text, "pve {"))
-
-	vg, err := ParseVGMetadata(text)
-	require.NoError(t, err)
-	assert.Equal(t, VolumeGroup{
-		UUID:    "Q34p3SP0kHuKfR0v1aRkFOK6cVBttXev",
-		Name:    "pve",
-		Seqno:   55,
-		Size:    499029901312,
-		Alloc:   499029901312 - 17184063488,
-		Devices: []Device{{Name: "/dev/nvme0n1p3", State: "ONLINE"}},
-	}, vg)
+var pveVolumeGroup = VolumeGroup{
+	UUID:    "Q34p3SP0kHuKfR0v1aRkFOK6cVBttXev",
+	Name:    "pve",
+	Seqno:   55,
+	Size:    499029901312,
+	Alloc:   499029901312 - 17184063488,
+	Devices: []Device{{Name: "/dev/nvme0n1p3", State: "ONLINE"}},
 }
 
-func TestReadPVMetadataWrapsAround(t *testing.T) {
+func TestReadPVVolumeGroupFixture(t *testing.T) {
+	vg, err := readPVVolumeGroup(bytes.NewReader(readPVFixture(t)))
+	require.NoError(t, err)
+	assert.Equal(t, pveVolumeGroup, vg)
+}
+
+func TestReadMetadataAreaWrapsAround(t *testing.T) {
 	b := readPVFixture(t)
 	text := []byte(strings.Repeat("x", 300) + strings.Repeat("y", 200))
 	// A 1024-byte area holds 512 bytes of text space after its header; a copy
@@ -55,48 +53,83 @@ func TestReadPVMetadataWrapsAround(t *testing.T) {
 	copy(b[fixtureMda+812:], text[:212])
 	copy(b[fixtureMda+mdaHeaderSize:], text[212:])
 
-	got, err := readPVMetadata(bytes.NewReader(b))
+	got, err := readMetadataArea(bytes.NewReader(b), diskLocn{fixtureMda, 1024})
 	require.NoError(t, err)
 	assert.Equal(t, string(text), got)
 }
 
-func TestReadPVMetadataInvalid(t *testing.T) {
+func TestReadPVVolumeGroupMultipleAreas(t *testing.T) {
+	text := []byte(pvMetadataText + "\x00")
+	newer := bytes.Replace(text, []byte("seqno = 55"), []byte("seqno = 56"), 1)
+
+	t.Run("first area corrupt", func(t *testing.T) {
+		b := withSecondMda(readPVFixture(t), text)
+		b[fixtureMda+100]++
+		vg, err := readPVVolumeGroup(bytes.NewReader(b))
+		require.NoError(t, err, "a valid second copy must be used")
+		assert.Equal(t, pveVolumeGroup, vg)
+	})
+
+	t.Run("newest copy wins", func(t *testing.T) {
+		b := withSecondMda(readPVFixture(t), newer)
+		vg, err := readPVVolumeGroup(bytes.NewReader(b))
+		require.NoError(t, err)
+		assert.Equal(t, int64(56), vg.Seqno)
+	})
+
+	t.Run("first area empty", func(t *testing.T) {
+		b := withSecondMda(setMetadata(readPVFixture(t), 0xff000, mdaHeaderSize, nil), text)
+		vg, err := readPVVolumeGroup(bytes.NewReader(b))
+		require.NoError(t, err)
+		assert.Equal(t, pveVolumeGroup, vg)
+	})
+
+	t.Run("all areas corrupt", func(t *testing.T) {
+		b := withSecondMda(readPVFixture(t), text)
+		b[fixtureMda+100]++
+		b[len(b)-10]++
+		_, err := readPVVolumeGroup(bytes.NewReader(b))
+		assert.ErrorIs(t, err, ErrInvalidPV)
+	})
+}
+
+func TestReadPVVolumeGroupInvalid(t *testing.T) {
 	t.Run("no label", func(t *testing.T) {
-		_, err := readPVMetadata(bytes.NewReader(make([]byte, 8192)))
+		_, err := readPVVolumeGroup(bytes.NewReader(make([]byte, 8192)))
 		assert.ErrorIs(t, err, ErrInvalidPV)
 	})
 
 	t.Run("label checksum", func(t *testing.T) {
 		b := readPVFixture(t)
 		b[sectorSize+40]++ // inside the PV UUID
-		_, err := readPVMetadata(bytes.NewReader(b))
+		_, err := readPVVolumeGroup(bytes.NewReader(b))
 		assert.ErrorIs(t, err, ErrInvalidPV)
 	})
 
 	t.Run("metadata area checksum", func(t *testing.T) {
 		b := readPVFixture(t)
 		b[fixtureMda+100]++
-		_, err := readPVMetadata(bytes.NewReader(b))
+		_, err := readPVVolumeGroup(bytes.NewReader(b))
 		assert.ErrorIs(t, err, ErrInvalidPV)
 	})
 
 	t.Run("text checksum", func(t *testing.T) {
 		b := readPVFixture(t)
 		b[fixtureMda+mdaHeaderSize+10]++
-		_, err := readPVMetadata(bytes.NewReader(b))
+		_, err := readPVVolumeGroup(bytes.NewReader(b))
 		assert.ErrorIs(t, err, ErrInvalidPV)
 	})
 
 	t.Run("location out of range", func(t *testing.T) {
 		b := readPVFixture(t)
 		b = setMetadata(b, 1024, 2048, []byte("pve {}"))
-		_, err := readPVMetadata(bytes.NewReader(b))
+		_, err := readPVVolumeGroup(bytes.NewReader(b))
 		assert.ErrorIs(t, err, ErrInvalidPV)
 	})
 
 	t.Run("empty metadata area", func(t *testing.T) {
 		b := setMetadata(readPVFixture(t), 0xff000, mdaHeaderSize, nil)
-		_, err := readPVMetadata(bytes.NewReader(b))
+		_, err := readPVVolumeGroup(bytes.NewReader(b))
 		assert.ErrorIs(t, err, errNoMetadata)
 	})
 }

@@ -76,6 +76,70 @@ func Pools() ([]Pool, error) {
 	return pools, nil
 }
 
+// IOCounters returns cumulative I/O for every VG with an active LV and every
+// active thin pool. Unlike Pools it reads only sysfs, never the devices, so
+// it is cheap enough to call on every stats collection.
+func IOCounters() ([]Counters, error) {
+	devices, err := blockDevices()
+	if err != nil || len(devices) == 0 {
+		return nil, err
+	}
+	// A VG's PVs are the non-LV slaves of its LVs, whose dm uuids start with
+	// the VG UUID. This needs no metadata, so PVs without a metadata area
+	// count too. A thin pool's members are its _tmeta and _tdata sub-LVs.
+	members := make(map[string]map[string]blockDevice)
+	add := func(uuid string, d blockDevice) {
+		if members[uuid] == nil {
+			members[uuid] = make(map[string]blockDevice)
+		}
+		members[uuid][d.dev] = d
+	}
+	for _, d := range devices {
+		vg, ok := lvVGUUID(d.uuid)
+		if !ok {
+			continue
+		}
+		pool, isPool := lvmUUID(d.uuid, "-tpool")
+		for _, name := range d.slaves {
+			slave, ok := devices[name]
+			switch {
+			case !ok:
+			case !slave.isLV():
+				add(vg, slave)
+			case isPool && isThinSubLV(slave):
+				add(pool, slave)
+			}
+		}
+	}
+	counters := make([]Counters, 0, len(members))
+	for uuid, devs := range members {
+		c := Counters{UUID: uuid}
+		for _, d := range devs {
+			read, written := d.stat()
+			c.NRead += read
+			c.NWrite += written
+		}
+		counters = append(counters, c)
+	}
+	slices.SortFunc(counters, func(a, b Counters) int { return strings.Compare(a.UUID, b.UUID) })
+	return counters, nil
+}
+
+// lvVGUUID returns the VG UUID that prefixes an LVM dm uuid.
+func lvVGUUID(dmUUID string) (string, bool) {
+	id, ok := strings.CutPrefix(dmUUID, "LVM-")
+	if !ok || len(id) < 64 {
+		return "", false
+	}
+	return id[:32], true
+}
+
+func isThinSubLV(d blockDevice) bool {
+	_, isMeta := lvmUUID(d.uuid, "-tmeta")
+	_, isData := lvmUUID(d.uuid, "-tdata")
+	return isMeta || isData
+}
+
 func blockDevices() (map[string]blockDevice, error) {
 	entries, err := os.ReadDir(sysClassBlock)
 	if errors.Is(err, os.ErrNotExist) {
@@ -119,7 +183,6 @@ func volumeGroups(devices map[string]blockDevice) ([]Pool, error) {
 	}
 
 	newest := make(map[string]VolumeGroup)
-	members := make(map[string][]blockDevice)
 	for _, pv := range candidates {
 		if pv.suspended() {
 			return nil, fmt.Errorf("%s: %w", pv.dev, errSuspended)
@@ -132,7 +195,6 @@ func volumeGroups(devices map[string]blockDevice) ([]Pool, error) {
 			slog.Debug("LVM physical volume unreadable", "device", pv.dev, "err", err)
 			continue
 		}
-		members[vg.UUID] = append(members[vg.UUID], pv)
 		if current, ok := newest[vg.UUID]; !ok || vg.Seqno > current.Seqno {
 			newest[vg.UUID] = vg
 		}
@@ -146,11 +208,6 @@ func volumeGroups(devices map[string]blockDevice) ([]Pool, error) {
 				pool.Health = "DEGRADED"
 			}
 		}
-		for _, pv := range members[uuid] {
-			read, written := pv.stat()
-			pool.NRead += read
-			pool.NWrite += written
-		}
 		pools = append(pools, pool)
 	}
 	return pools, nil
@@ -162,11 +219,7 @@ func readVolumeGroup(path string) (VolumeGroup, error) {
 		return VolumeGroup{}, err
 	}
 	defer f.Close()
-	text, err := readPVMetadata(f)
-	if err != nil {
-		return VolumeGroup{}, err
-	}
-	return ParseVGMetadata(text)
+	return readPVVolumeGroup(f)
 }
 
 func thinPools(devices map[string]blockDevice) ([]Pool, error) {
@@ -198,15 +251,10 @@ func readThinPool(d blockDevice, uuid string, devices map[string]blockDevice) (P
 	var meta blockDevice
 	for _, name := range d.slaves {
 		slave, ok := devices[name]
-		if !ok {
+		if !ok || !isThinSubLV(slave) {
 			continue
 		}
-		_, isMeta := lvmUUID(slave.uuid, "-tmeta")
-		_, isData := lvmUUID(slave.uuid, "-tdata")
-		if !isMeta && !isData {
-			continue
-		}
-		if isMeta {
+		if _, isMeta := lvmUUID(slave.uuid, "-tmeta"); isMeta {
 			meta = slave
 		}
 		state := "ONLINE"
@@ -214,9 +262,6 @@ func readThinPool(d blockDevice, uuid string, devices map[string]blockDevice) (P
 			state = "SUSPENDED"
 		}
 		pool.Devices = append(pool.Devices, Device{Name: decodeName(slave.name), State: state})
-		read, written := slave.stat()
-		pool.NRead += read
-		pool.NWrite += written
 	}
 	if meta.dev == "" {
 		return pool, errors.New("no metadata device")

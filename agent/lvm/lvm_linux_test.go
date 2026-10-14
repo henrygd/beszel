@@ -73,7 +73,6 @@ func (nopCloser) Close() error { return nil }
 var pveVG = Pool{
 	UUID: vgUUID, Name: "pve", Raw: true, Health: "ONLINE",
 	Size: 499029901312, Alloc: 499029901312 - 17184063488,
-	NRead: 1000 * 512, NWrite: 2000 * 512,
 	Devices: []Device{{Name: "/dev/nvme0n1p3", State: "ONLINE"}},
 }
 
@@ -92,8 +91,6 @@ func TestPools(t *testing.T) {
 		Alloc:        214696 * 65536,
 		MetadataSize: 903168 * 4096,
 		MetadataUsed: (1589 + 4096) * 4096,
-		NRead:        108 * 512,
-		NWrite:       216 * 512,
 		Devices: []Device{
 			{Name: "pve/data_tmeta", State: "ONLINE"},
 			{Name: "pve/data_tdata", State: "ONLINE"},
@@ -166,7 +163,25 @@ func TestVolumeGroupsNewestCopyWins(t *testing.T) {
 	require.NoError(t, err)
 	require.Len(t, pools, 2)
 	assert.Equal(t, pveVG.Size, pools[0].Size)
-	assert.Equal(t, pveVG.NRead+512, pools[0].NRead, "I/O covers every PV of the VG")
+}
+
+func TestIOCounters(t *testing.T) {
+	contents := fakeProxmox(t)
+	clear(contents) // counters must never read the devices
+	// A PV without a metadata area (--metadatacopies 0) still counts.
+	dir := filepath.Join(sysClassBlock, "sdb")
+	require.NoError(t, os.MkdirAll(dir, 0o755))
+	require.NoError(t, os.WriteFile(filepath.Join(dir, "stat"), []byte("1 0 1 0 1 0 1 0 0 0 0\n"), 0o644))
+	require.NoError(t, os.WriteFile(filepath.Join(sysClassBlock, "dm-1", "slaves", "sdb"), nil, 0o644))
+	// Suspended devices block reads, but their sysfs counters stay readable.
+	require.NoError(t, os.WriteFile(filepath.Join(sysClassBlock, "dm-2", "dm", "suspended"), []byte("1\n"), 0o644))
+
+	counters, err := IOCounters()
+	require.NoError(t, err)
+	assert.Equal(t, []Counters{
+		{UUID: vgUUID, NRead: 1001 * 512, NWrite: 2001 * 512},
+		{UUID: poolUUID, NRead: 108 * 512, NWrite: 216 * 512},
+	}, counters)
 }
 
 func TestPoolsNoSysfs(t *testing.T) {
@@ -177,6 +192,9 @@ func TestPoolsNoSysfs(t *testing.T) {
 	pools, err := Pools()
 	require.NoError(t, err)
 	assert.Nil(t, pools)
+	counters, err := IOCounters()
+	require.NoError(t, err)
+	assert.Nil(t, counters)
 }
 
 func TestDecodeName(t *testing.T) {

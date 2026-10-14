@@ -40,9 +40,14 @@ type Pool struct {
 	Alloc        uint64 // allocated bytes
 	MetadataSize uint64 // thin-pool metadata capacity in bytes
 	MetadataUsed uint64 // thin-pool metadata bytes, including the kernel reserve
-	NRead        uint64 // cumulative bytes read from the member devices
-	NWrite       uint64 // cumulative bytes written to the member devices
 	Devices      []Device
+}
+
+// Counters is a pool's cumulative I/O, summed over its member devices.
+type Counters struct {
+	UUID   string // matches Pool.UUID
+	NRead  uint64 // bytes read
+	NWrite uint64 // bytes written
 }
 
 // Device is a PV of a volume group, or a hidden sub-LV (_tdata, _tmeta) of a
