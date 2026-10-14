@@ -9,6 +9,7 @@ import (
 	"net/netip"
 	"regexp"
 	"strings"
+	"sync"
 	"time"
 	"uuid"
 
@@ -25,8 +26,11 @@ import (
 	"github.com/pocketbase/pocketbase/core"
 )
 
-// UpdateInfo holds information about the latest update check
+// UpdateInfo holds information about the latest update check. Requests are
+// serialized by the mutex: lastCheck is written on the hot path and e.JSON
+// marshals the struct concurrently.
 type UpdateInfo struct {
+	mu        sync.Mutex
 	lastCheck time.Time
 	Version   string `json:"v"`
 	Url       string `json:"url"`
@@ -236,6 +240,8 @@ func (h *Hub) getInfo(e *core.RequestEvent) error {
 
 // getUpdate checks for the latest release on GitHub and returns update info if a newer version is available
 func (info *UpdateInfo) getUpdate(e *core.RequestEvent) error {
+	info.mu.Lock()
+	defer info.mu.Unlock()
 	if time.Since(info.lastCheck) < 6*time.Hour {
 		return e.JSON(http.StatusOK, info)
 	}

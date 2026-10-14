@@ -427,7 +427,7 @@ func deactivateAlerts(app core.App, systemID string, preserveStatusAlert bool) e
 	// Note: Direct SQL updates don't trigger SSE, so we use the PocketBase API
 	// _, err := app.DB().NewQuery(fmt.Sprintf("UPDATE alerts SET triggered = false WHERE system = '%s'", systemID)).Execute()
 
-	alerts, err := app.FindRecordsByFilter("alerts", fmt.Sprintf("system = '%s' && triggered = 1 && name != 'NetworkMonitorLoss'", systemID), "", -1, 0)
+	alerts, err := app.FindRecordsByFilter("alerts", "system = {:system} && triggered = 1 && name != 'NetworkMonitorLoss'", "", -1, 0, dbx.Params{"system": systemID})
 	if err != nil {
 		return err
 	}
