@@ -67,6 +67,12 @@ export interface SystemInfo {
 	ip?: number
 	/** extra filesystem inode used percent */
 	eip?: Record<string, number>
+	/** root filesystem is read-only */
+	rro?: boolean
+	/** extra filesystem read-only flags */
+	efro?: Record<string, boolean>
+	/** display names of unexpected read-only mounts */
+	rof?: string[]
 	/** battery percent and state */
 	bat?: [number, BatteryState]
 	/** bandwidth (mb) */
@@ -291,6 +297,8 @@ export interface ExtraFsStats {
 	it?: number
 	/** inode used */
 	iu?: number
+	/** host mount is read-only */
+	ro?: boolean
 	/** total read (mb) */
 	r: number
 	/** total write (mb) */

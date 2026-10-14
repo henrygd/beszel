@@ -678,6 +678,7 @@ func (a *Agent) updateDiskUsage(systemStats *system.Stats) {
 			stats.DiskUsed = 0
 			stats.InodesTotal = 0
 			stats.InodesUsed = 0
+			stats.ReadOnly = false
 			stats.TotalRead = 0
 			stats.TotalWrite = 0
 			continue
@@ -702,6 +703,8 @@ func (a *Agent) updateDiskUsage(systemStats *system.Stats) {
 			}
 		}
 	}
+
+	a.updateDiskReadOnly()
 
 	// Update the last disk usage update time when we've collected extra filesystems
 	if !cacheExtraFs {

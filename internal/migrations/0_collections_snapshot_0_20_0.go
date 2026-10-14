@@ -85,7 +85,8 @@ func init() {
 					"CPUIOWait",
 					"CPUSteal",
 					"NetworkMonitorLoss",
-					"Inodes"
+					"Inodes",
+					"FilesystemReadOnly"
 				]
 			},
 			{

@@ -57,6 +57,7 @@ type Agent struct {
 	monitorManager            *MonitorManager                                       // Manages network monitors
 	storagePoolManager        *StoragePoolManager                                   // Manages storage pool and dataset data
 	packageUpdates            *packageUpdatesManager                                // Checks for pending package updates
+	mountRO                   *mountReadOnlyState                                   // Host mount read-only detection
 }
 
 // NewAgent creates a new agent with the given data directory for persisting data.
@@ -65,6 +66,7 @@ func NewAgent(dataDir ...string) (agent *Agent, err error) {
 	agent = &Agent{
 		fsStats: make(map[string]*system.FsStats),
 		cache:   NewSystemDataCache(),
+		mountRO: newMountReadOnlyState(),
 	}
 
 	// Initialize disk I/O previous counters storage
@@ -270,6 +272,7 @@ func (a *Agent) gatherStats(options common.DataRequestOptions) *system.CombinedD
 			}
 		}
 	}
+	a.applyReadOnlyInfo(data)
 	slog.Debug("Extra FS", "data", data.Stats.ExtraFs)
 
 	a.cache.Set(data, cacheTimeMs)

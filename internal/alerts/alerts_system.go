@@ -47,7 +47,12 @@ func (am *AlertManager) HandleSystemAlerts(systemRecord *core.Record, data *syst
 		return nil
 	}
 
-	alerts := am.alertsCache.GetAlertsExcludingNames(systemRecord.Id, "Status", alertNameSystemdFailed, containerAlertName, alertNameNetworkMonitorLoss)
+	// Filesystem read-only is a binary state alert (immediate, no threshold).
+	if err := am.HandleFilesystemReadOnlyAlerts(systemRecord, data); err != nil {
+		am.hub.Logger().Error("Error handling filesystem read-only alerts", "err", err)
+	}
+
+	alerts := am.alertsCache.GetAlertsExcludingNames(systemRecord.Id, "Status", alertNameSystemdFailed, containerAlertName, alertNameNetworkMonitorLoss, alertNameFilesystemReadOnly)
 	if len(alerts) == 0 {
 		return nil
 	}
