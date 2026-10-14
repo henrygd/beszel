@@ -99,11 +99,12 @@ func TestSaveZfsPoolsCompleteEmptyPrunesFinalPool(t *testing.T) {
 	sys, app := newTestSystemWithHub(t)
 	require.NoError(t, sys.saveZfsPools(&zfs.ZfsData{
 		Complete: true,
-		Pools:    []*zfs.PoolDetail{{Name: "tank", Health: "ONLINE"}},
+		Pools:    []*zfs.PoolDetail{{Name: "tank", Health: "ONLINE", Status: "One or more devices has experienced an unrecoverable error."}},
 	}))
 	records, err := app.FindRecordsByFilter("zfs_pools", "system={:system}", "", 0, 0, map[string]any{"system": sys.Id})
 	require.NoError(t, err)
 	require.Len(t, records, 1)
+	assert.Equal(t, "One or more devices has experienced an unrecoverable error.", records[0].GetString("status"))
 	assert.False(t, records[0].GetDateTime("details_updated").Time().IsZero())
 
 	require.NoError(t, sys.saveZfsPools(&zfs.ZfsData{Complete: true}))

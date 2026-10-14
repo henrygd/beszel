@@ -144,6 +144,7 @@ func (sys *System) upsertZfsPoolRecord(app core.App, collection *core.Collection
 	record.Set("name", pool.Name)
 	record.Set("display_name", pool.DisplayName)
 	record.Set("health", pool.Health)
+	record.Set("status", pool.Status)
 	record.Set("size", pool.Size)
 	record.Set("alloc", pool.Alloc)
 	record.Set("free", pool.Free)

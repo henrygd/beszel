@@ -1,0 +1,7 @@
+acl-2.4.0_1 update x86_64 https://repo-default.voidlinux.org/current 43080 20653
+attr-2.6.0_1 update x86_64 https://repo-default.voidlinux.org/current 27348 9495
+ca-certificates-20250419+3.127_1 update x86_64 https://repo-default.voidlinux.org/current 273335 164765
+libarchive-3.8.9_1 update x86_64 https://repo-default.voidlinux.org/current 817232 380316
+libcrypto3-3.6.5_1 update x86_64 https://repo-default.voidlinux.org/current 6443040 2193502
+libssl3-3.6.5_1 update x86_64 https://repo-default.voidlinux.org/current 1065048 444864
+openssl-3.6.5_1 update x86_64 https://repo-default.voidlinux.org/current 2270125 635762
