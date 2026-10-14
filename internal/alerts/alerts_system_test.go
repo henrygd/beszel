@@ -170,6 +170,13 @@ func setDiskAlertValue(info *system.Info, stats *system.Stats, value float64) {
 	stats.DiskPct = value
 }
 
+func setInodesAlertValue(info *system.Info, stats *system.Stats, value float64) {
+	info.InodesPct = value
+	stats.InodesPct = value
+	stats.InodesTotal = 100
+	stats.InodesUsed = value
+}
+
 func setBandwidthAlertValue(info *system.Info, stats *system.Stats, value [2]uint64) {
 	info.BandwidthBytes = value[0] + value[1]
 	stats.Bandwidth = value
@@ -212,6 +219,7 @@ func TestSystemAlertsOneMin(t *testing.T) {
 	}
 	testOneMinuteSystemAlert(t, "Memory", 50, setMemoryAlertValue, 51, 49)
 	testOneMinuteSystemAlert(t, "Disk", 50, setDiskAlertValue, 51, 49)
+	testOneMinuteSystemAlert(t, "Inodes", 50, setInodesAlertValue, 51, 49)
 	testOneMinuteSystemAlert(t, "Bandwidth", 50, setBandwidthAlertValue, [2]uint64{megabytesToBytes(26), megabytesToBytes(25)}, [2]uint64{megabytesToBytes(25), megabytesToBytes(24)})
 	testOneMinuteSystemAlert(t, "GPU", 50, setGPUAlertValue, 51, 49)
 	testOneMinuteSystemAlert(t, "Temperature", 70, setTemperatureAlertValue, 71, 69)
@@ -230,6 +238,7 @@ func TestSystemAlertsTwoMin(t *testing.T) {
 	}
 	testMultiMinuteSystemAlert(t, "Memory", 50, 2, setMemoryAlertValue, 10, 51, 48)
 	testMultiMinuteSystemAlert(t, "Disk", 50, 2, setDiskAlertValue, 10, 51, 48)
+	testMultiMinuteSystemAlert(t, "Inodes", 50, 2, setInodesAlertValue, 10, 51, 48)
 	testMultiMinuteSystemAlert(t, "Bandwidth", 50, 2, setBandwidthAlertValue, [2]uint64{megabytesToBytes(10), megabytesToBytes(10)}, [2]uint64{megabytesToBytes(26), megabytesToBytes(25)}, [2]uint64{megabytesToBytes(10), megabytesToBytes(10)})
 	testMultiMinuteSystemAlert(t, "GPU", 50, 2, setGPUAlertValue, 10, 51, 48)
 	testMultiMinuteSystemAlert(t, "Temperature", 70, 2, setTemperatureAlertValue, 10, 71, 67)

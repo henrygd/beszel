@@ -244,6 +244,7 @@ func (a *Agent) gatherStats(options common.DataRequestOptions) *system.CombinedD
 
 	data.Stats.ExtraFs = make(map[string]*system.FsStats)
 	data.Info.ExtraFsPct = make(map[string]float64)
+	data.Info.ExtraFsInodesPct = make(map[string]float64)
 	for name, stats := range a.fsStats {
 		if stats.Root {
 			if stats.Name != "" {
@@ -262,6 +263,10 @@ func (a *Agent) gatherStats(options common.DataRequestOptions) *system.CombinedD
 			if stats.DiskTotal > 0 {
 				pct := utils.TwoDecimals((stats.DiskUsed / stats.DiskTotal) * 100)
 				data.Info.ExtraFsPct[key] = pct
+			}
+			if stats.InodesTotal > 0 {
+				pct := utils.TwoDecimals((stats.InodesUsed / stats.InodesTotal) * 100)
+				data.Info.ExtraFsInodesPct[key] = pct
 			}
 		}
 	}

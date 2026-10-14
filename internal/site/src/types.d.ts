@@ -63,6 +63,10 @@ export interface SystemInfo {
 	mp: number
 	/** disk percent */
 	dp: number
+	/** root filesystem inode used percent */
+	ip?: number
+	/** extra filesystem inode used percent */
+	eip?: Record<string, number>
 	/** battery percent and state */
 	bat?: [number, BatteryState]
 	/** bandwidth (mb) */
@@ -126,6 +130,12 @@ export interface SystemStats {
 	du: number
 	/** disk percent */
 	dp: number
+	/** root filesystem inode total */
+	it?: number
+	/** root filesystem inode used */
+	iu?: number
+	/** root filesystem inode used percent */
+	ip?: number
 	/** disk read (mb) */
 	dr: number
 	/** disk write (mb) */
@@ -277,6 +287,10 @@ export interface ExtraFsStats {
 	d: number
 	/** disk used (gb) */
 	du: number
+	/** inode total */
+	it?: number
+	/** inode used */
+	iu?: number
 	/** total read (mb) */
 	r: number
 	/** total write (mb) */

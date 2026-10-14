@@ -614,6 +614,8 @@ function DiskCellWithMultiple(info: CellContext<SystemRecord, unknown>) {
 	const extraFs = Object.entries(sysInfo.efs ?? {})
 	const rootDiskPct = sysInfo.dp
 	const rootDiskName = sysInfo.rdn
+	const rootInodesPct = sysInfo.ip
+	const extraFsInodes = sysInfo.eip ?? {}
 
 	extraFs.sort((a, b) => a[0].localeCompare(b[0]))
 
@@ -679,8 +681,17 @@ function DiskCellWithMultiple(info: CellContext<SystemRecord, unknown>) {
 								<span className={getMeterClass(rootDiskPct)} style={{ width: `${rootDiskPct}%` }}></span>
 							</span>
 						</div>
+						{rootInodesPct !== undefined && (
+							<div className="flex gap-2 items-center tabular-nums text-xs text-muted-foreground">
+								<span className="min-w-7">{decimalString(rootInodesPct, rootInodesPct >= 10 ? 1 : 2)}%</span>
+								<span>
+									<Trans>Inodes</Trans>
+								</span>
+							</div>
+						)}
 					</div>
 					{extraFs.map(([name, pct]) => {
+						const inodesPct = extraFsInodes[name]
 						return (
 							<div key={name} className="grid gap-0.5">
 								<div className="text-[0.65rem] max-w-40 text-muted-foreground uppercase tracking-wide truncate">
@@ -692,6 +703,14 @@ function DiskCellWithMultiple(info: CellContext<SystemRecord, unknown>) {
 										<span className={getMeterClass(pct)} style={{ width: `${pct}%` }}></span>
 									</span>
 								</div>
+								{inodesPct !== undefined && (
+									<div className="flex gap-2 items-center tabular-nums text-xs text-muted-foreground">
+										<span className="min-w-7">{decimalString(inodesPct, inodesPct >= 10 ? 1 : 2)}%</span>
+										<span>
+											<Trans>Inodes</Trans>
+										</span>
+									</div>
+								)}
 							</div>
 						)
 					})}

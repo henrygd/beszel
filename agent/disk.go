@@ -650,31 +650,56 @@ func (a *Agent) updateDiskUsage(systemStats *system.Stats) {
 		}
 		var total, used uint64
 		var usedPct float64
+		var inodesTotal, inodesUsed uint64
+		var inodesPct float64
 		if u, ok := zfsUsage[stats.Mountpoint]; ok {
 			total = u.used + u.avail
 			used = u.used
 			if total > 0 {
 				usedPct = float64(used) / float64(total) * 100
 			}
+			// ZFS list has no inode counts; read them from statfs separately.
+			if d, err := disk.Usage(stats.Mountpoint); err == nil {
+				inodesTotal = d.InodesTotal
+				inodesUsed = d.InodesUsed
+				inodesPct = d.InodesUsedPercent
+			}
 		} else if d, err := disk.Usage(stats.Mountpoint); err == nil {
 			total = d.Total
 			used = d.Used
 			usedPct = d.UsedPercent
+			inodesTotal = d.InodesTotal
+			inodesUsed = d.InodesUsed
+			inodesPct = d.InodesUsedPercent
 		} else {
 			// reset stats if error (likely unmounted)
 			slog.Error("Error getting disk stats", "name", stats.Mountpoint, "err", err)
 			stats.DiskTotal = 0
 			stats.DiskUsed = 0
+			stats.InodesTotal = 0
+			stats.InodesUsed = 0
 			stats.TotalRead = 0
 			stats.TotalWrite = 0
 			continue
 		}
 		stats.DiskTotal = utils.BytesToGigabytes(total)
 		stats.DiskUsed = utils.BytesToGigabytes(used)
+		if inodesTotal > 0 {
+			stats.InodesTotal = float64(inodesTotal)
+			stats.InodesUsed = float64(inodesUsed)
+		} else {
+			stats.InodesTotal = 0
+			stats.InodesUsed = 0
+		}
 		if stats.Root {
 			systemStats.DiskTotal = stats.DiskTotal
 			systemStats.DiskUsed = stats.DiskUsed
 			systemStats.DiskPct = utils.TwoDecimals(usedPct)
+			if inodesTotal > 0 {
+				systemStats.InodesTotal = float64(inodesTotal)
+				systemStats.InodesUsed = float64(inodesUsed)
+				systemStats.InodesPct = utils.TwoDecimals(inodesPct)
+			}
 		}
 	}
 

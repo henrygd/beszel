@@ -42,8 +42,10 @@ type UserNotificationSettings struct {
 }
 
 type SystemAlertFsStats struct {
-	DiskTotal float64 `json:"d"`
-	DiskUsed  float64 `json:"du"`
+	DiskTotal   float64 `json:"d"`
+	DiskUsed    float64 `json:"du"`
+	InodesTotal float64 `json:"it"`
+	InodesUsed  float64 `json:"iu"`
 }
 
 // Values pulled from system_stats.stats that are relevant to alerts.
@@ -52,6 +54,7 @@ type SystemAlertStats struct {
 	CpuBreakdown []float64                     `json:"cpub"`
 	Mem          float64                       `json:"mp"`
 	Disk         float64                       `json:"dp"`
+	Inodes       float64                       `json:"ip"`
 	Bandwidth    [2]uint64                     `json:"b"`
 	GPU          map[string]SystemAlertGPUData `json:"g"`
 	Temperatures map[string]float32            `json:"t"`

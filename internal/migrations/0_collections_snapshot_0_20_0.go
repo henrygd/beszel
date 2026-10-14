@@ -84,7 +84,8 @@ func init() {
 					"SystemdFailed",
 					"CPUIOWait",
 					"CPUSteal",
-					"NetworkMonitorLoss"
+					"NetworkMonitorLoss",
+					"Inodes"
 				]
 			},
 			{
