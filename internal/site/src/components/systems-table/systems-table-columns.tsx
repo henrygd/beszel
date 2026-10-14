@@ -808,7 +808,7 @@ export const ActionsButton = memo(({ system }: { system: SystemRecord }) => {
 					{editOpened.current && <SystemDialog system={system} setOpen={setEditOpen} />}
 				</Dialog>
 				{/* agent update dialog */}
-				{updateOpen && <AgentUpdateDialog systems={[system]} open={updateOpen} setOpen={setUpdateOpen} />}
+				{updateOpen && <AgentUpdateDialog system={system} open={updateOpen} setOpen={setUpdateOpen} />}
 				{/* deletion dialog */}
 				<AlertDialog open={deleteOpen} onOpenChange={(open) => setDeleteOpen(open)}>
 					<AlertDialogContent>

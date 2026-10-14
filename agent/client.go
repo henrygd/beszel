@@ -342,7 +342,11 @@ func (client *WebSocketClient) OnMessage(conn *gws.Conn, message *gws.Message) {
 	}
 
 	if err := client.handleHubRequest(&HubRequest, HubRequest.Id, conn); err != nil {
-		slog.Error("Error handling message", "err", err)
+		slog.Error("Error handling message", "action", HubRequest.Action, "err", err)
+		// Return the error so the hub doesn't wait for a response until it times out.
+		if HubRequest.Id != nil {
+			_ = client.sendMessageOnConn(conn, common.AgentResponse{Id: HubRequest.Id, Error: err.Error()})
+		}
 	}
 }
 
