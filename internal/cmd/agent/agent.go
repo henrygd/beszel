@@ -87,6 +87,8 @@ func (opts *cmdOptions) parse() bool {
 		builder.WriteString("  fingerprint  View or reset the agent fingerprint\n")
 		builder.WriteString("  health       Check if the agent is running\n")
 		builder.WriteString("  update       Update to the latest version\n")
+		builder.WriteString("  remote-update [enable|disable|status]\n")
+		builder.WriteString("               Allow the hub to trigger agent updates (systemd, run as root)\n")
 		builder.WriteString("\nFlags:\n")
 		fmt.Print(builder.String())
 		pflag.PrintDefaults()
@@ -105,6 +107,11 @@ func (opts *cmdOptions) parse() bool {
 		return true
 	case subcommand == "update":
 		agent.Update(*chinaMirrors)
+		return true
+	case subcommand == "remote-update":
+		if err := agent.RemoteUpdateCommand(pflag.Arg(1), *chinaMirrors); err != nil {
+			log.Fatal(err)
+		}
 		return true
 	}
 

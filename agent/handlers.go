@@ -60,6 +60,7 @@ func NewHandlerRegistry() *HandlerRegistry {
 	registry.Register(common.SyncNetworkMonitors, &SyncNetworkMonitorsHandler{})
 	registry.Register(common.GetZfsData, &GetZfsDataHandler{})
 	registry.Register(common.GetPackageUpdates, &GetPackageUpdatesHandler{})
+	registry.Register(common.RequestAgentUpdate, &RequestAgentUpdateHandler{})
 
 	return registry
 }
@@ -220,6 +221,21 @@ func (h *GetPackageUpdatesHandler) Handle(hctx *HandlerContext) error {
 		return hctx.SendResponse(system.PackageUpdates{}, hctx.RequestID)
 	}
 	return hctx.SendResponse(hctx.Agent.packageUpdates.list(), hctx.RequestID)
+}
+
+////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
+
+// RequestAgentUpdateHandler asks the root-owned remote update service to
+// update the agent. The update itself runs outside the agent process.
+type RequestAgentUpdateHandler struct{}
+
+func (h *RequestAgentUpdateHandler) Handle(hctx *HandlerContext) error {
+	if err := requestRemoteUpdate(); err != nil {
+		return err
+	}
+	slog.Info("Agent update requested by hub")
+	return hctx.SendResponse(true, hctx.RequestID)
 }
 
 ////////////////////////////////////////////////////////////////////////////

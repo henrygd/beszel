@@ -44,7 +44,7 @@ import {
 import { Input } from "@/components/ui/input"
 import { TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { SystemStatus } from "@/lib/enums"
-import { queueUserSettings } from "@/lib/api"
+import { isAdmin, queueUserSettings } from "@/lib/api"
 import { $downSystems, $pausedSystems, $systems, $upSystems, $userSettings } from "@/lib/stores"
 import { cn, runOnce } from "@/lib/utils"
 import type { SystemRecord } from "@/types"
@@ -52,6 +52,7 @@ import AlertButton from "../alerts/alert-button"
 import { $router, Link } from "../router"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui/card"
 import { SystemsTableColumns, ActionsButton, IndicatorDot } from "./systems-table-columns"
+import { UpdateOutdatedAgentsButton } from "./agent-update"
 
 type ViewMode = "table" | "grid"
 type StatusFilter = "all" | SystemRecord["status"]
@@ -219,8 +220,9 @@ export default function SystemsTable() {
 						</CardDescription>
 					</div>
 
-					<div className="flex gap-2 ms-auto w-full md:w-80">
-						<div className="relative flex-1">
+					<div className="flex gap-2 ms-auto w-full md:w-auto">
+						{isAdmin() && <UpdateOutdatedAgentsButton />}
+						<div className="relative flex-1 md:w-56 md:flex-none">
 							<Input
 								placeholder={t`Filter...`}
 								onChange={(e) => setFilter(e.target.value)}

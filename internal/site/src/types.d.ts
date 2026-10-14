@@ -73,6 +73,8 @@ export interface SystemInfo {
 	v: string
 	/** agent can read the system journal */
 	jl?: boolean
+	/** agent can be updated from the hub */
+	ru?: boolean
 	/** system is using podman */
 	p?: boolean
 	/** highest gpu utilization */
