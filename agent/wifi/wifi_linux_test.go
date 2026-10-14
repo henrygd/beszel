@@ -158,3 +158,97 @@ func TestLinuxCancelled(t *testing.T) {
 		t.Fatal("ignored cancellation")
 	}
 }
+
+// Sample bare `iwinfo` output in the format printed by OpenWrt (nl80211): one
+// block per wireless interface, with an AP (Master) interface and a client
+// interface. SSIDs and MAC addresses are anonymized.
+const iwinfoMixed = `phy1-ap0 ESSID: "TestAP"
+         Access Point: 02:00:00:00:00:01
+         Mode: Master  Channel: 6 (2.437 GHz)  HT Mode: HT40
+         Center Channel 1: 6 2: unknown
+         Tx-Power: 30 dBm  Link Quality: 70/70
+         Signal: -36 dBm  Noise: -96 dBm
+         Bit Rate: 72.2 MBit/s
+         Encryption: SAE (CCMP)
+         Type: nl80211  HW Mode(s): 802.11ac/n/g/b
+         Hardware: embedded [Qualcomm Atheros IPQ4019]
+         TX power offset: none
+         Channel offset: none
+         Supports VAPs: yes  PHY name: phy1
+
+lan_bridge ESSID: "TestUpstream"
+         Access Point: 02:00:00:00:00:02
+         Mode: Client  Channel: 149 (5.745 GHz)  HT Mode: VHT80
+         Center Channel 1: 155 2: unknown
+         Tx-Power: 30 dBm  Link Quality: 50/70
+         Signal: -60 dBm  Noise: -99 dBm
+         Bit Rate: 260.0 MBit/s
+         Encryption: none
+         Type: nl80211  HW Mode(s): 802.11ac/n
+         Hardware: 0x168c:0x0056 0x0000:0x0000 [Qualcomm Atheros QCA9886]
+         TX power offset: none
+         Channel offset: none
+         Supports VAPs: yes  PHY name: phy0
+`
+
+func TestSplitAndParseIwinfo(t *testing.T) {
+	blocks := splitIwinfoBlocks(iwinfoMixed)
+	if len(blocks) != 2 || blocks[0].name != "phy1-ap0" || blocks[1].name != "lan_bridge" {
+		t.Fatalf("unexpected blocks: %+v", blocks)
+	}
+	if ssid, isAP := parseIwinfoInfo(blocks[0].text); !isAP || ssid != "TestAP" {
+		t.Fatalf("ap block: got (%q, %v)", ssid, isAP)
+	}
+	if _, isAP := parseIwinfoInfo(blocks[1].text); isAP {
+		t.Fatal("client-mode interface must not be reported as AP")
+	}
+	if got := splitIwinfoBlocks(""); len(got) != 0 {
+		t.Fatalf("empty output: got %+v", got)
+	}
+}
+
+func TestParseIwinfoInfoHiddenSSID(t *testing.T) {
+	block := "wlan0 ESSID: unknown\n         Mode: Master  Channel: 6 (2.437 GHz)\n"
+	if ssid, isAP := parseIwinfoInfo(block); !isAP || ssid != "" {
+		t.Fatalf("got (%q, %v)", ssid, isAP)
+	}
+}
+
+// Client MAC addresses are anonymized; the line format matches
+// `iwinfo <device> assoclist`.
+func TestParseAssocRSSI(t *testing.T) {
+	for _, tc := range []struct {
+		name   string
+		in     string
+		want   float64
+		wantOK bool
+	}{
+		{"multiple clients",
+			"02:00:00:00:00:01  -33 dBm / -97 dBm (SNR 64)  740 ms ago\n" +
+				"        RX: 54.0 MBit/s   1191056 Pkts.\n" +
+				"        TX: 72.2 MBit/s, MCS 7, unknownMHz     90627 Pkts.\n" +
+				"        expected throughput: 65.0 MBit/s\n\n" +
+				"02:00:00:00:00:02  -41 dBm / -97 dBm (SNR 56)  30150 ms ago\n" +
+				"        RX: 72.2 MBit/s, MCS 7, unknownMHz     12378 Pkts.\n",
+			-37, true},
+		{"single wifi7 client",
+			"02:00:00:00:00:03  -41 dBm / -100 dBm (SNR 59)  11320 ms ago\n" +
+				"        RX: 2401.9 MBit/s, HE-MCS 11, 160MHz, HE-NSS 2, HE-GI 0, HE-DCM 0      8268 Pkts.\n",
+			-41, true},
+		{"no clients (empty output)", "", 0, false},
+		{"malformed", "garbage\n02:00:00 not-a-mac -50 dBm\n", 0, false},
+		{"missing rssi", "02:00:00:00:00:01  unknown signal  100 ms ago\n", 0, false},
+		{"invalid values ignored",
+			"02:00:00:00:00:01  -40 dBm / -95 dBm (SNR 55)  100 ms ago\n" +
+				"02:00:00:00:00:02  0 dBm / -95 dBm  100 ms ago\n" +
+				"02:00:00:00:00:03  -200 dBm / -95 dBm  100 ms ago\n",
+			-40, true},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			got, ok := parseAssocRSSI(tc.in)
+			if ok != tc.wantOK || (ok && got != tc.want) {
+				t.Fatalf("got (%v, %v), want (%v, %v)", got, ok, tc.want, tc.wantOK)
+			}
+		})
+	}
+}
