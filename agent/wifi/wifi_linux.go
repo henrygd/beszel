@@ -11,7 +11,6 @@ import (
 	"os/exec"
 	"regexp"
 	"strconv"
-	"strings"
 	"time"
 
 	"github.com/henrygd/beszel/internal/entities/system"
@@ -108,15 +107,15 @@ func collect(ctx context.Context) map[string]system.WiFi {
 
 	if hasWirelessDevice(wiphyClassDir) {
 		if client, err := newNL80211Client(); err == nil {
-			defer client.Close()
 			for k, v := range collectLinux(ctx, client) {
 				results[k] = v
 			}
+			client.Close()
 		}
 	}
 
 	if _, err := exec.LookPath("iwinfo"); err == nil {
-		for k, v := range collectOpenWrtAP() {
+		for k, v := range collectOpenWrtAP(ctx) {
 			results[k] = v
 		}
 	}
@@ -127,68 +126,86 @@ func collect(ctx context.Context) map[string]system.WiFi {
 	return results
 }
 
-func collectOpenWrtAP() map[string]system.WiFi {
+var (
+	iwinfoIfaceRe = regexp.MustCompile(`(?m)^(\S+)[ \t]+ESSID:`)
+	iwinfoModeRe  = regexp.MustCompile(`Mode:[ \t]*Master`)
+	iwinfoSSIDRe  = regexp.MustCompile(`ESSID:\s*"([^"]+)"`)
+	iwinfoAssocRe = regexp.MustCompile(`(?m)^(?:[0-9a-fA-F]{2}[:-]){5}[0-9a-fA-F]{2}.*?(-?\d+)\s+dBm`)
+)
+
+type iwinfoBlock struct {
+	name string
+	text string
+}
+
+// splitIwinfoBlocks splits bare `iwinfo` output into one block per interface.
+func splitIwinfoBlocks(out string) []iwinfoBlock {
+	idx := iwinfoIfaceRe.FindAllStringSubmatchIndex(out, -1)
+	blocks := make([]iwinfoBlock, 0, len(idx))
+	for i, m := range idx {
+		end := len(out)
+		if i+1 < len(idx) {
+			end = idx[i+1][0]
+		}
+		blocks = append(blocks, iwinfoBlock{name: out[m[2]:m[3]], text: out[m[0]:end]})
+	}
+	return blocks
+}
+
+// parseIwinfoInfo reports whether a block is a Master (AP) interface and its SSID.
+func parseIwinfoInfo(block string) (ssid string, isAP bool) {
+	if !iwinfoModeRe.MatchString(block) {
+		return "", false
+	}
+	if m := iwinfoSSIDRe.FindStringSubmatch(block); len(m) > 1 {
+		ssid = m[1]
+	}
+	return ssid, true
+}
+
+// parseAssocRSSI returns the rounded average RSSI of associated clients.
+// ok is false when no valid RSSI value was found.
+func parseAssocRSSI(out string) (avg float64, ok bool) {
+	sum, count := 0, 0
+	for _, m := range iwinfoAssocRe.FindAllStringSubmatch(out, -1) {
+		rssi, err := strconv.Atoi(m[1])
+		if err != nil || rssi >= 0 || rssi < -150 {
+			continue
+		}
+		sum += rssi
+		count++
+	}
+	if count == 0 {
+		return 0, false
+	}
+	return math.Round(float64(sum) / float64(count)), true
+}
+
+func collectOpenWrtAP(ctx context.Context) map[string]system.WiFi {
 	results := make(map[string]system.WiFi)
 
-	entries, err := os.ReadDir("/sys/class/net")
-	if err != nil {
+	out, err := exec.CommandContext(ctx, "iwinfo").Output()
+	if err != nil && len(out) == 0 {
 		return results
 	}
 
-	reMode := regexp.MustCompile(`Mode:\s*Master`)
-	reSsid := regexp.MustCompile(`ESSID:\s*"([^"]+)"`)
-	reAssoc := regexp.MustCompile(`(?m)^([0-9a-fA-F]{2}[:-]){5}[0-9a-fA-F]{2}.*?(-?\d+)\s+dBm`)
-
-	for _, entry := range entries {
-		iface := entry.Name()
-
-		if iface == "lo" || strings.HasPrefix(iface, "eth") || strings.HasPrefix(iface, "br-") ||
-			strings.HasPrefix(iface, "docker") || strings.HasPrefix(iface, "veth") || strings.HasPrefix(iface, "pppoe") {
+	for _, b := range splitIwinfoBlocks(string(out)) {
+		if ctx.Err() != nil {
+			return results
+		}
+		ssid, isAP := parseIwinfoInfo(b.text)
+		if !isAP {
 			continue
-		}
-
-		infoOut, err := exec.Command("iwinfo", iface, "info").Output()
-		if err != nil {
-			continue
-		}
-		infoStr := string(infoOut)
-
-		if !reMode.MatchString(infoStr) {
-			continue
-		}
-
-		ssid := "Unknown"
-		if m := reSsid.FindStringSubmatch(infoStr); len(m) > 1 {
-			ssid = m[1]
-		}
-
-		var avgRssi float64 = -100
-		assocOut, err := exec.Command("iwinfo", iface, "assoclist").Output()
-		if err == nil {
-			matches := reAssoc.FindAllStringSubmatch(string(assocOut), -1)
-			sum, count := 0, 0
-			for _, m := range matches {
-				if len(m) > 2 {
-					if rssi, err := strconv.Atoi(m[2]); err == nil {
-						sum += rssi
-						count++
-					}
-				}
-			}
-			if count > 0 {
-				avgRssi = math.Round(float64(sum) / float64(count))
-			}
 		}
 
 		reading := system.WiFi{SSID: validSSID(ssid)}
-		if avgRssi >= -150 && avgRssi < 0 {
-			sig := avgRssi
-			reading.Signal = &sig
+		if assocOut, err := exec.CommandContext(ctx, "iwinfo", b.name, "assoclist").Output(); err == nil {
+			if avg, ok := parseAssocRSSI(string(assocOut)); ok {
+				reading.Signal = &avg
+			}
 		}
-
-		results[iface] = reading
+		results[b.name] = reading
 	}
-
 	return results
 }
 
