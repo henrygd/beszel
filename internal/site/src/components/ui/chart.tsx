@@ -1,7 +1,7 @@
 import { useLingui } from "@lingui/react/macro"
 import * as React from "react"
 import * as RechartsPrimitive from "recharts"
-import { chartTimeData, cn } from "@/lib/utils"
+import { chartTimeData, cn, formatNumber } from "@/lib/utils"
 import type { ChartTimes } from "@/types"
 import { Separator } from "./separator"
 import type { AxisDomain } from "recharts/types/util/types"
@@ -200,7 +200,7 @@ const ChartTooltipContent = React.forwardRef<
 				return content(totalItem, totalKey)
 			}
 
-			return `${totalValue.toLocaleString()}${unit ?? ""}`
+			return `${formatNumber(totalValue)}${unit ?? ""}`
 		}, [color, content, formatter, nameKey, payload, showTotal, totalName, unit])
 
 		const tooltipLabel = React.useMemo(() => {
@@ -300,7 +300,7 @@ const ChartTooltipContent = React.forwardRef<
 												<span className="font-medium text-foreground">
 													{content && typeof content === "function"
 														? content(item, key)
-														: item.value.toLocaleString() + (unit ? unit : "")}
+														: formatNumber(item.value) + (unit ? unit : "")}
 												</span>
 											)}
 										</div>
