@@ -167,6 +167,10 @@ func TestParseSmartctlRequiresHealthData(t *testing.T) {
 		"user_capacity": {"bytes": 500107862016}
 	}`), "")
 	assert.ErrorIs(t, err, errNoHealthData)
+
+	// Real smartctl output when the agent lacks CAP_SYS_ADMIN for NVMe.
+	_, _, err = (&SmartManager{}).parseSmartctl(readSmartFixture(t, "nvme_permission_denied.json"), "nvme")
+	assert.ErrorIs(t, err, errNoHealthData)
 }
 
 func TestParseSmartctlRejectsInvalidOutput(t *testing.T) {
@@ -459,6 +463,9 @@ func TestIsStandby(t *testing.T) {
 	assert.True(t, isStandby([]byte(`{"smartctl":{"messages":[{"string":"Device is in SLEEP mode, exit(2)"}]}}`), 2))
 	assert.False(t, isStandby([]byte(standbyOutput), 0), "needs exit bit 1")
 	assert.False(t, isStandby([]byte(`{"smartctl":{"messages":[{"string":"Permission denied"}]}}`), 2))
+	// smartctl reports SLEEP (power_mode.ata_value -1) when it lacks permission
+	// to check the power mode; a really sleeping disk looks the same.
+	assert.True(t, isStandby(readSmartFixture(t, "sat_sleep_permission.json"), 2))
 }
 
 const standbyOutput = `{"smartctl":{"exit_status":2,"messages":[{"string":"Device is in STANDBY mode, exit(2)","severity":"information"}]},"device":{"name":"/dev/sda","type":"sat"}}`
@@ -606,11 +613,15 @@ func TestRefreshNvmeNamespaceFallback(t *testing.T) {
 }
 
 func TestRefreshNvmeNamespaceFailure(t *testing.T) {
-	fake := &fakeSmartctl{scan: scanOf("/dev/nvme0:nvme")}
+	denied := fakeResponse{output: string(readSmartFixture(t, "nvme_permission_denied.json")), exit: 4}
+	fake := &fakeSmartctl{
+		scan:      scanOf("/dev/nvme0:nvme"),
+		responses: map[string]fakeResponse{"nvme /dev/nvme0": denied, "nvme /dev/nvme0n1": denied},
+	}
 	sm := newFakeSmartManager(t, fake)
 
 	complete, err := sm.Refresh(false)
-	assert.Error(t, err)
+	assert.ErrorIs(t, err, errNoHealthData)
 	assert.False(t, complete)
 	assert.Empty(t, sm.GetCurrentData())
 	assert.Len(t, fake.deviceCalls(), 2)
@@ -639,7 +650,7 @@ func TestRefreshHonorsExclusions(t *testing.T) {
 func TestRefreshStandby(t *testing.T) {
 	fake := &fakeSmartctl{
 		scan:      scanOf("/dev/sda:sat"),
-		responses: map[string]fakeResponse{"sat /dev/sda": {output: standbyOutput, exit: 2}},
+		responses: map[string]fakeResponse{"sat /dev/sda": {output: string(readSmartFixture(t, "sat_sleep_permission.json")), exit: 2}},
 	}
 	sm := newFakeSmartManager(t, fake)
 
