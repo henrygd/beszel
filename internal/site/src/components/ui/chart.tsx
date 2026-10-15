@@ -300,7 +300,8 @@ const ChartTooltipContent = React.forwardRef<
 												<span className="font-medium text-foreground">
 													{content && typeof content === "function"
 														? content(item, key)
-														: formatNumber(item.value) + (unit ? unit : "")}
+														: (typeof item.value === "number" ? formatNumber(item.value) : String(item.value)) +
+															(unit ? unit : "")}
 												</span>
 											)}
 										</div>
