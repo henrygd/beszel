@@ -1551,6 +1551,10 @@ msgid "Package"
 msgstr "Package"
 
 #: src/components/routes/system/package-updates-table.tsx
+msgid "Package details will be refreshed when the system is back online."
+msgstr "Package details will be refreshed when the system is back online."
+
+#: src/components/routes/system/package-updates-table.tsx
 msgid "Package Updates"
 msgstr "Package Updates"
 
