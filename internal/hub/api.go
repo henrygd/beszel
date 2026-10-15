@@ -2,15 +2,20 @@ package hub
 
 import (
 	"context"
+	"fmt"
+	"log/slog"
+	"net"
 	"net/http"
+	"net/netip"
 	"regexp"
 	"strings"
 	"time"
+	"uuid"
 
 	"github.com/blang/semver"
-	"github.com/google/uuid"
 	"github.com/henrygd/beszel"
 	"github.com/henrygd/beszel/internal/alerts"
+	systementity "github.com/henrygd/beszel/internal/entities/system"
 	"github.com/henrygd/beszel/internal/ghupdate"
 	"github.com/henrygd/beszel/internal/hub/config"
 	"github.com/henrygd/beszel/internal/hub/systems"
@@ -78,10 +83,79 @@ func (h *Hub) registerMiddlewares(se *core.ServeEvent) {
 	}
 	// authenticate with trusted header
 	if trustedHeader, _ := utils.GetEnv("TRUSTED_AUTH_HEADER"); trustedHeader != "" {
+		// only honor the header from these peers, if set
+		trustedProxies, restricted := parseTrustedProxies()
 		se.Router.BindFunc(func(e *core.RequestEvent) error {
+			if restricted && !isTrustedProxy(trustedProxies, e.Request.RemoteAddr) {
+				return e.Next()
+			}
 			return authorizeRequestWithEmail(e, e.Request.Header.Get(trustedHeader))
 		})
 	}
+}
+
+// parseTrustedProxies reads TRUSTED_PROXY_IPS (comma-separated IPs or CIDRs).
+// restricted is false when the variable is unset or empty, meaning the trusted
+// header is accepted from any peer. Invalid entries are skipped with a warning,
+// so a typo narrows the allowlist rather than widening it.
+func parseTrustedProxies() (prefixes []netip.Prefix, restricted bool) {
+	value, _ := utils.GetEnv("TRUSTED_PROXY_IPS")
+	if value == "" {
+		return nil, false
+	}
+	for entry := range strings.SplitSeq(value, ",") {
+		entry = strings.TrimSpace(entry)
+		if entry == "" {
+			continue
+		}
+		if prefix, err := parseProxyPrefix(entry); err == nil {
+			prefixes = append(prefixes, prefix)
+		} else {
+			slog.Warn("Ignoring invalid TRUSTED_PROXY_IPS entry", "entry", entry)
+		}
+	}
+	return prefixes, true
+}
+
+// parseProxyPrefix parses an IP or CIDR into a masked prefix. IPv4-mapped IPv6
+// entries are converted to IPv4 so they match IPv4 peers.
+func parseProxyPrefix(entry string) (netip.Prefix, error) {
+	prefix, err := netip.ParsePrefix(entry)
+	if err != nil {
+		addr, err := netip.ParseAddr(entry)
+		if err != nil {
+			return netip.Prefix{}, err
+		}
+		addr = addr.Unmap()
+		return netip.PrefixFrom(addr, addr.BitLen()), nil
+	}
+	if prefix.Addr().Is4In6() {
+		if prefix.Bits() < 96 {
+			return netip.Prefix{}, fmt.Errorf("%s covers more than the IPv4-mapped range", entry)
+		}
+		prefix = netip.PrefixFrom(prefix.Addr().Unmap(), prefix.Bits()-96)
+	}
+	return prefix.Masked(), nil
+}
+
+// isTrustedProxy reports whether the peer address of a request (host:port) is
+// within one of the prefixes.
+func isTrustedProxy(prefixes []netip.Prefix, remoteAddr string) bool {
+	host, _, err := net.SplitHostPort(remoteAddr)
+	if err != nil {
+		host = remoteAddr
+	}
+	addr, err := netip.ParseAddr(host)
+	if err != nil {
+		return false
+	}
+	addr = addr.Unmap().WithZone("")
+	for _, prefix := range prefixes {
+		if prefix.Contains(addr) {
+			return true
+		}
+	}
+	return false
 }
 
 // registerApiRoutes registers custom API routes
@@ -125,8 +199,14 @@ func (h *Hub) registerApiRoutes(se *core.ServeEvent) error {
 	apiAuth.DELETE("/user-alerts", alerts.DeleteUserAlerts)
 	// refresh SMART devices for a system
 	apiAuth.POST("/smart/refresh", h.refreshSmartData).BindFunc(excludeReadOnlyRole)
+	// refresh ZFS pool details for a system
+	apiAuth.POST("/zfs/refresh", h.refreshZfsData).BindFunc(excludeReadOnlyRole)
 	// get systemd service details
 	apiAuth.GET("/systemd/info", h.getSystemdInfo)
+	// get recent logs for a systemd service
+	apiAuth.GET("/systemd/logs", h.getSystemdLogs)
+	// get pending package updates
+	apiAuth.GET("/package-updates", h.getPackageUpdates)
 	// /containers routes
 	if enabled, _ := utils.GetEnv("CONTAINER_DETAILS"); enabled != "false" {
 		// get container logs
@@ -366,8 +446,64 @@ func (h *Hub) getSystemdInfo(e *core.RequestEvent) error {
 	if err != nil {
 		return e.InternalServerError("", err)
 	}
-	e.Response.Header().Set("Cache-Control", "public, max-age=60")
+	e.Response.Header().Set("Cache-Control", "private, max-age=60")
+	e.Response.Header().Add("Vary", "Authorization")
 	return e.JSON(http.StatusOK, map[string]any{"details": details})
+}
+
+// getSystemdLogs handles GET /api/beszel/systemd/logs requests.
+func (h *Hub) getSystemdLogs(e *core.RequestEvent) error {
+	query := e.Request.URL.Query()
+	systemID := query.Get("system")
+	serviceName := query.Get("service")
+
+	if systemID == "" || serviceName == "" {
+		return e.BadRequestError("Invalid system or service parameter", nil)
+	}
+	system, err := h.sm.GetSystem(systemID)
+	if err != nil || !system.HasUser(e.App, e.Auth) {
+		return e.NotFoundError("", nil)
+	}
+	// Only fetch logs for services that are currently monitored on this system.
+	_, err = e.App.FindFirstRecordByFilter("systemd_services", "system = {:system} && name = {:name}", dbx.Params{
+		"system": systemID,
+		"name":   serviceName,
+	})
+	if err != nil {
+		return e.NotFoundError("", err)
+	}
+	// Old agents and agents without journal access do not advertise this capability.
+	systemRecord, err := e.App.FindRecordById("systems", systemID)
+	if err != nil {
+		return e.NotFoundError("", err)
+	}
+	var info systementity.Info
+	if err := systemRecord.UnmarshalJSONField("info", &info); err != nil || !info.SystemdLogs {
+		return e.JSON(http.StatusOK, map[string]string{"logs": ""})
+	}
+
+	logs, err := system.FetchSystemdLogsFromAgent(serviceName)
+	if err != nil {
+		return e.InternalServerError("", err)
+	}
+	return e.JSON(http.StatusOK, map[string]string{"logs": logs})
+}
+
+// getPackageUpdates handles GET /api/beszel/package-updates requests
+func (h *Hub) getPackageUpdates(e *core.RequestEvent) error {
+	systemID := e.Request.URL.Query().Get("system")
+	if systemID == "" {
+		return e.BadRequestError("Invalid system parameter", nil)
+	}
+	system, err := h.sm.GetSystem(systemID)
+	if err != nil || !system.HasUser(e.App, e.Auth) {
+		return e.NotFoundError("", nil)
+	}
+	updates, err := system.FetchPackageUpdatesFromAgent()
+	if err != nil {
+		return e.InternalServerError("", err)
+	}
+	return e.JSON(http.StatusOK, updates)
 }
 
 // refreshSmartData handles POST /api/beszel/smart/refresh requests
@@ -384,6 +520,26 @@ func (h *Hub) refreshSmartData(e *core.RequestEvent) error {
 	}
 
 	if err := system.FetchAndSaveSmartDevices(); err != nil {
+		return e.InternalServerError("", err)
+	}
+
+	return e.JSON(http.StatusOK, map[string]string{"status": "ok"})
+}
+
+// refreshZfsData handles POST /api/beszel/zfs/refresh requests
+// Fetches fresh ZFS detail data from the agent and updates the collection
+func (h *Hub) refreshZfsData(e *core.RequestEvent) error {
+	systemID := e.Request.URL.Query().Get("system")
+	if systemID == "" {
+		return e.BadRequestError("Invalid system parameter", nil)
+	}
+
+	system, err := h.sm.GetSystem(systemID)
+	if err != nil || !system.HasUser(e.App, e.Auth) {
+		return e.NotFoundError("", nil)
+	}
+
+	if err := system.FetchAndSaveZfsPools(true); err != nil {
 		return e.InternalServerError("", err)
 	}
 

@@ -29,19 +29,31 @@ type ServerOptions struct {
 	Keys    []gossh.PublicKey // SSH public keys for authentication
 }
 
-// hubVersions caches hub versions by session ID to avoid repeated parsing.
-var hubVersions map[string]semver.Version
-
 // StartServer starts the SSH server with the provided options.
 // It configures the server with secure defaults, sets up authentication,
 // and begins listening for connections. Returns an error if the server
 // is already running or if there's an issue starting the server.
 func (a *Agent) StartServer(opts ServerOptions) error {
+	server, listener, err := a.prepareSSHServer(opts)
+	if err != nil {
+		return err
+	}
+	return a.serveSSHServer(server, listener)
+}
+
+var errSSHServerRunning = errors.New("server already started")
+
+// prepareSSHServer binds the listener before Serve starts so a concurrent stop
+// can always close it, including when the WebSocket wins the connection race.
+func (a *Agent) prepareSSHServer(opts ServerOptions) (*ssh.Server, net.Listener, error) {
+	a.serverMu.Lock()
+	defer a.serverMu.Unlock()
+
 	if disableSSH, _ := utils.GetEnv("DISABLE_SSH"); disableSSH == "true" {
-		return errors.New("SSH disabled")
+		return nil, nil, errors.New("SSH disabled")
 	}
 	if a.server != nil {
-		return errors.New("server already started")
+		return nil, nil, errSSHServerRunning
 	}
 
 	slog.Info("Starting SSH server", "addr", opts.Addr, "network", opts.Network)
@@ -49,32 +61,19 @@ func (a *Agent) StartServer(opts ServerOptions) error {
 	if opts.Network == "unix" {
 		// remove existing socket file if it exists
 		if err := os.Remove(opts.Addr); err != nil && !os.IsNotExist(err) {
-			return err
+			return nil, nil, err
 		}
 	}
 
 	// start listening on the address
 	ln, err := net.Listen(opts.Network, opts.Addr)
 	if err != nil {
-		return err
+		return nil, nil, err
 	}
-	defer ln.Close()
 
-	// base config (limit to allowed algorithms)
-	config := &gossh.ServerConfig{
-		ServerVersion: fmt.Sprintf("SSH-2.0-%s_%s", beszel.AppName, beszel.Version),
-	}
-	config.KeyExchanges = common.DefaultKeyExchanges
-	config.MACs = common.DefaultMACs
-	config.Ciphers = common.DefaultCiphers
-
-	// set default handler
-	ssh.Handle(a.handleSession)
-
-	a.server = &ssh.Server{
-		ServerConfigCallback: func(ctx ssh.Context) *gossh.ServerConfig {
-			return config
-		},
+	server := &ssh.Server{
+		Handler:              a.handleSession,
+		ServerConfigCallback: newSSHServerConfig,
 		// check public key(s)
 		PublicKeyHandler: func(ctx ssh.Context, key ssh.PublicKey) bool {
 			remoteAddr := ctx.RemoteAddr()
@@ -95,28 +94,44 @@ func (a *Agent) StartServer(opts ServerOptions) error {
 		IdleTimeout: 70 * time.Second,
 	}
 
-	// Start SSH server on the listener
-	return a.server.Serve(ln)
+	a.server = server
+	a.serverListener = ln
+	return server, ln, nil
 }
 
-// getHubVersion retrieves and caches the hub version for a given session.
-// It extracts the version from the SSH client version string and caches
-// it to avoid repeated parsing. Returns a zero version if parsing fails.
-func (a *Agent) getHubVersion(sessionId string, sessionCtx ssh.Context) semver.Version {
-	if hubVersions == nil {
-		hubVersions = make(map[string]semver.Version, 1)
+func (a *Agent) serveSSHServer(server *ssh.Server, listener net.Listener) error {
+	err := server.Serve(listener)
+	a.serverMu.Lock()
+	if a.server == server {
+		a.server = nil
+		a.serverListener = nil
 	}
-	hubVersion, ok := hubVersions[sessionId]
-	if ok {
-		return hubVersion
+	a.serverMu.Unlock()
+	return err
+}
+
+// newSSHServerConfig returns a separate config for each connection because
+// gliderlabs adds host keys and connection-specific callbacks to it.
+func newSSHServerConfig(ssh.Context) *gossh.ServerConfig {
+	return &gossh.ServerConfig{
+		Config: gossh.Config{
+			KeyExchanges: common.DefaultKeyExchanges,
+			MACs:         common.DefaultMACs,
+			Ciphers:      common.DefaultCiphers,
+		},
+		ServerVersion: fmt.Sprintf("SSH-2.0-%s_%s", beszel.AppName, beszel.Version),
 	}
-	// Extract hub version from SSH client version
+}
+
+// getHubVersion extracts the hub version from the SSH client version string
+// for a given session. Returns a zero version if parsing fails.
+func (a *Agent) getHubVersion(sessionCtx ssh.Context) semver.Version {
 	clientVersion := sessionCtx.Value(ssh.ContextKeyClientVersion)
 	if versionStr, ok := clientVersion.(string); ok {
-		hubVersion, _ = extractHubVersion(versionStr)
+		hubVersion, _ := extractHubVersion(versionStr)
+		return hubVersion
 	}
-	hubVersions[sessionId] = hubVersion
-	return hubVersion
+	return semver.Version{}
 }
 
 // handleSession handles an incoming SSH session by gathering system statistics
@@ -124,12 +139,10 @@ func (a *Agent) getHubVersion(sessionId string, sessionCtx ssh.Context) semver.V
 // appropriate encoding format based on hub version, and exits with appropriate
 // status codes.
 func (a *Agent) handleSession(s ssh.Session) {
-	a.connectionManager.eventChan <- SSHConnect
-
 	sessionCtx := s.Context()
-	sessionID := sessionCtx.SessionID()
+	a.connectionManager.sshConnectionOpened(sessionCtx)
 
-	hubVersion := a.getHubVersion(sessionID, sessionCtx)
+	hubVersion := a.getHubVersion(sessionCtx)
 
 	// Legacy one-shot behavior for older hubs
 	if hubVersion.LT(beszel.MinVersionAgentResponse) {
@@ -138,11 +151,16 @@ func (a *Agent) handleSession(s ssh.Session) {
 			s.Exit(1)
 			return
 		}
+		// A legacy hub never sends a request, so the session is done once the payload is out.
+		_ = s.Exit(0)
+		return
 	}
 
 	var req common.HubRequest[cbor.RawMessage]
 	if err := cbor.NewDecoder(s).Decode(&req); err != nil {
-		// Fallback to legacy one-shot if the first decode fails
+		// Only reachable for hubs that report >= MinVersionAgentResponse: a
+		// malformed or truncated request falls back to the one-shot payload
+		// so the peer still receives something parseable.
 		if err2 := a.handleLegacyStats(s, hubVersion); err2 != nil {
 			slog.Error("Error encoding stats (fallback)", "err", err2)
 			s.Exit(1)
@@ -174,12 +192,13 @@ func (a *Agent) handleSSHRequest(w io.Writer, req *common.HubRequest[cbor.RawMes
 	}
 
 	ctx := &HandlerContext{
-		Client:       nil,
-		Agent:        a,
-		Request:      req,
-		RequestID:    nil,
-		HubVerified:  true,
-		SendResponse: sshResponder,
+		Client:         nil,
+		Agent:          a,
+		Request:        req,
+		RequestID:      nil,
+		HubVerified:    true,
+		ConnectionType: system.ConnectionTypeSSH,
+		SendResponse:   sshResponder,
 	}
 
 	if handler, ok := a.handlerRegistry.GetHandler(req.Action); ok {
@@ -194,7 +213,9 @@ func (a *Agent) handleSSHRequest(w io.Writer, req *common.HubRequest[cbor.RawMes
 // handleLegacyStats serves the legacy one-shot stats payload for older hubs
 func (a *Agent) handleLegacyStats(w io.Writer, hubVersion semver.Version) error {
 	stats := a.gatherStats(common.DataRequestOptions{CacheTimeMs: defaultDataCacheTimeMs})
-	return a.writeToSession(w, stats, hubVersion)
+	response := *stats
+	response.Info.ConnectionType = system.ConnectionTypeSSH
+	return a.writeToSession(w, &response, hubVersion)
 }
 
 // writeToSession encodes and writes system statistics to the session.
@@ -271,13 +292,21 @@ func GetNetwork(addr string) string {
 // StopServer stops the SSH server if it's running.
 // It returns an error if the server is not running or if there's an error stopping it.
 func (a *Agent) StopServer() error {
+	a.serverMu.Lock()
 	if a.server == nil {
+		a.serverMu.Unlock()
 		return errors.New("SSH server not running")
 	}
+	server := a.server
+	listener := a.serverListener
+	a.server = nil
+	a.serverListener = nil
+	a.serverMu.Unlock()
 
 	slog.Info("Stopping SSH server")
-	_ = a.server.Close()
-	a.server = nil
-	a.connectionManager.eventChan <- SSHDisconnect
+	if listener != nil {
+		_ = listener.Close()
+	}
+	_ = server.Close()
 	return nil
 }

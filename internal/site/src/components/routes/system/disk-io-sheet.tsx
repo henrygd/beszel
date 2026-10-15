@@ -12,7 +12,6 @@ import { decimalString, formatBytes, toFixedFloat } from "@/lib/utils"
 import { ChartCard, SelectAvgMax } from "@/components/routes/system/chart-card"
 import type { SystemData } from "@/components/routes/system/use-system-data"
 import { diskDataFns, DiskUtilizationChart } from "./charts/disk-charts"
-import { pinnedAxisDomain } from "@/components/ui/chart"
 
 export default memo(function DiskIOSheet({
 	systemData,
@@ -52,6 +51,14 @@ export default memo(function DiskIOSheet({
 		writeTimeFn = showMax ? diskDataFns.extraWriteTimeMax(extraFsName) : diskDataFns.extraWriteTime(extraFsName)
 	}
 
+	// cumulative total functions, with extra fs variants if needed
+	let totalReadFn = diskDataFns.totalRead
+	let totalWriteFn = diskDataFns.totalWrite
+	if (extraFsName) {
+		totalReadFn = diskDataFns.extraTotalRead(extraFsName)
+		totalWriteFn = diskDataFns.extraTotalWrite(extraFsName)
+	}
+
 	// I/O await functions, with extra fs variants if needed
 	let rAwaitFn = showMax ? diskDataFns.rAwaitMax : diskDataFns.rAwait
 	let wAwaitFn = showMax ? diskDataFns.wAwaitMax : diskDataFns.wAwait
@@ -70,12 +77,16 @@ export default memo(function DiskIOSheet({
 	let hasUtilization = false
 	let hasAwait = false
 	let hasWeightedIO = false
+	let hasCumulative = false
 	for (const record of chartData.systemStats ?? []) {
 		const dios = record.stats?.dios
 		if ((dios?.at(2) ?? 0) > 0) hasUtilization = true
 		if ((dios?.at(3) ?? 0) > 0) hasAwait = true
 		if ((dios?.at(5) ?? 0) > 0) hasWeightedIO = true
-		if (hasUtilization && hasAwait && hasWeightedIO) {
+		if (!hasCumulative && (totalReadFn(record) > 0 || totalWriteFn(record) > 0)) {
+			hasCumulative = true
+		}
+		if (hasUtilization && hasAwait && hasWeightedIO && hasCumulative) {
 			break
 		}
 	}
@@ -117,7 +128,6 @@ export default memo(function DiskIOSheet({
 							maxToggled={showMax}
 							chartProps={chartProps}
 							showTotal={true}
-							domain={pinnedAxisDomain()}
 							itemSorter={(a, b) => a.order - b.order}
 							reverseStackOrder={true}
 							dataPoints={[
@@ -164,7 +174,6 @@ export default memo(function DiskIOSheet({
 					>
 						<AreaChartDefault
 							chartData={chartData}
-							domain={pinnedAxisDomain()}
 							tickFormatter={(val) => `${toFixedFloat(val, 2)}%`}
 							contentFormatter={({ value }) => `${decimalString(value)}%`}
 							maxToggled={showMax}
@@ -204,7 +213,6 @@ export default memo(function DiskIOSheet({
 						>
 							<AreaChartDefault
 								chartData={chartData}
-								domain={pinnedAxisDomain()}
 								tickFormatter={(val) => `${toFixedFloat(val, 2)}`}
 								contentFormatter={({ value }) => decimalString(value, value < 10 ? 3 : 2)}
 								maxToggled={showMax}
@@ -236,7 +244,6 @@ export default memo(function DiskIOSheet({
 						>
 							<AreaChartDefault
 								chartData={chartData}
-								domain={pinnedAxisDomain()}
 								tickFormatter={(val) => `${toFixedFloat(val, 2)} ms`}
 								contentFormatter={({ value }) => `${decimalString(value)} ms`}
 								maxToggled={showMax}
@@ -258,6 +265,69 @@ export default memo(function DiskIOSheet({
 							/>
 						</ChartCard>
 					)}
+
+					{hasCumulative && (
+						<ChartCard
+							empty={dataEmpty}
+							grid={grid}
+							title={t`Cumulative Read`}
+							description={t`Cumulative data read since boot`}
+							className="min-h-auto"
+						>
+							<AreaChartDefault
+								chartData={chartData}
+                chartProps={{syncId: "c"}}
+								dataPoints={[
+									{
+										label: t`Read`,
+										dataKey: totalReadFn,
+										color: 1,
+										opacity: 0.4,
+									},
+								]}
+								tickFormatter={(val) => {
+									const { value, unit } = formatBytes(val, false, userSettings.unitDisk, false)
+									return `${toFixedFloat(value, value >= 10 ? 0 : 1)} ${unit}`
+								}}
+								contentFormatter={({ value }) => {
+									const { value: convertedValue, unit } = formatBytes(value, false, userSettings.unitDisk, false)
+									return `${decimalString(convertedValue, convertedValue >= 100 ? 1 : 2)} ${unit}`
+								}}
+							/>
+						</ChartCard>
+					)}
+
+					{hasCumulative && (
+						<ChartCard
+							empty={dataEmpty}
+							grid={grid}
+							title={t`Cumulative Write`}
+							description={t`Cumulative data written since boot`}
+							className="min-h-auto"
+						>
+							<AreaChartDefault
+								chartData={chartData}
+                chartProps={{syncId: "c"}}
+								dataPoints={[
+									{
+										label: t`Write`,
+										dataKey: totalWriteFn,
+										color: 3,
+										opacity: 0.4,
+									},
+								]}
+								tickFormatter={(val) => {
+									const { value, unit } = formatBytes(val, false, userSettings.unitDisk, false)
+									return `${toFixedFloat(value, value >= 10 ? 0 : 1)} ${unit}`
+								}}
+								contentFormatter={({ value }) => {
+									const { value: convertedValue, unit } = formatBytes(value, false, userSettings.unitDisk, false)
+									return `${decimalString(convertedValue, convertedValue >= 100 ? 1 : 2)} ${unit}`
+								}}
+							/>
+						</ChartCard>
+					)}
+
 				</SheetContent>
 			)}
 		</Sheet>

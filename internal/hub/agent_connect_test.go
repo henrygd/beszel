@@ -3,13 +3,13 @@
 package hub
 
 import (
+	"context"
 	"crypto/ed25519"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"os"
 	"path/filepath"
-	"runtime"
 	"strings"
 	"testing"
 	"time"
@@ -32,26 +32,40 @@ func createTestHub(t testing.TB) (*Hub, *pbtests.TestApp, error) {
 	if err != nil {
 		return nil, nil, err
 	}
-	return NewHub(testApp), testApp, err
+	hub := NewHub(testApp)
+	if err := hub.sm.InitializeSSHConfigForTesting(); err != nil {
+		cleanupTestHub(hub, testApp)
+		return nil, nil, err
+	}
+	return hub, testApp, nil
 }
 
 // cleanupTestHub stops background system goroutines before tearing down the app.
 func cleanupTestHub(hub *Hub, testApp *pbtests.TestApp) {
 	if hub != nil {
-		sm := hub.GetSystemManager()
-		sm.RemoveAllSystems()
-		// Give updater goroutines a brief window to observe cancellation before DB teardown.
-		for range 20 {
-			if sm.GetSystemCount() == 0 {
-				break
-			}
-			runtime.Gosched()
-			time.Sleep(5 * time.Millisecond)
-		}
-		time.Sleep(20 * time.Millisecond)
+		hub.GetSystemManager().RemoveAllSystems()
 	}
 	if testApp != nil {
 		testApp.Cleanup()
+	}
+}
+
+// startTestAgent returns a stop function that must run before hub cleanup.
+func startTestAgent(t *testing.T, testAgent *agent.Agent, opts agent.ServerOptions) (<-chan error, func()) {
+	t.Helper()
+	ctx, cancel := context.WithCancel(t.Context())
+	done := make(chan error, 1)
+	stopped := make(chan struct{})
+	var result error
+	go func() {
+		defer close(stopped)
+		result = testAgent.Start(ctx, opts)
+		done <- result
+	}()
+	return done, func() {
+		cancel()
+		<-stopped
+		assert.NoError(t, result)
 	}
 }
 
@@ -754,6 +768,8 @@ func TestHandleAgentConnect(t *testing.T) {
 
 // TestAgentWebSocketIntegration tests WebSocket connection scenarios with an actual agent
 func TestAgentWebSocketIntegration(t *testing.T) {
+	// Connection fixtures do not exercise the host package manager.
+	t.Setenv("BESZEL_AGENT_PACKAGE_UPDATES_INTERVAL", "0")
 	// Create hub and test app
 	hub, testApp, err := createTestHub(t)
 	require.NoError(t, err)
@@ -901,15 +917,12 @@ func TestAgentWebSocketIntegration(t *testing.T) {
 			t.Setenv("BESZEL_AGENT_TOKEN", tc.agentToken)
 
 			// Start agent in background
-			done := make(chan error, 1)
-			go func() {
-				serverOptions := agent.ServerOptions{
-					Network: "tcp",
-					Addr:    fmt.Sprintf("127.0.0.1:%d", portNum),
-					Keys:    []ssh.PublicKey{tc.agentSSHKey},
-				}
-				done <- testAgent.Start(serverOptions)
-			}()
+			done, stopAgent := startTestAgent(t, testAgent, agent.ServerOptions{
+				Network: "tcp",
+				Addr:    fmt.Sprintf("127.0.0.1:%d", portNum),
+				Keys:    []ssh.PublicKey{tc.agentSSHKey},
+			})
+			defer stopAgent()
 
 			// Wait for connection result
 			maxWait := 2 * time.Second
@@ -926,15 +939,15 @@ func TestAgentWebSocketIntegration(t *testing.T) {
 				case <-timeout:
 					// Timeout reached
 					if tc.expectConnection {
-						t.Fatalf("Expected connection to succeed but timed out - agent state: %d", connectionManager.State)
+						t.Fatalf("Expected connection to succeed but timed out - agent state: %d", connectionManager.GetState())
 					} else {
-						t.Logf("Connection properly rejected (timeout) - agent state: %d", connectionManager.State)
+						t.Logf("Connection properly rejected (timeout) - agent state: %d", connectionManager.GetState())
 					}
 					connectionResult = false
 				case <-ticker:
-					if connectionManager.State == agent.WebSocketConnected {
+					if connectionManager.GetState() == agent.WebSocketConnected {
 						if tc.expectConnection {
-							t.Logf("WebSocket connection successful - agent state: %d", connectionManager.State)
+							t.Logf("WebSocket connection successful - agent state: %d", connectionManager.GetState())
 							connectionResult = true
 						} else {
 							t.Errorf("Unexpected: Connection succeeded when it should have been rejected")
@@ -978,11 +991,18 @@ func TestAgentWebSocketIntegration(t *testing.T) {
 				}
 			}
 
-			// Verify system status
-			updatedSystemRecord, err := testApp.FindRecordById("systems", systemRecord.Id)
-			require.NoError(t, err)
-			status := updatedSystemRecord.GetString("status")
-			assert.Equal(t, tc.expectSystemStatus, status, "System status should match expected value")
+			// A connected WebSocket does not mean the hub has finished verifying
+			// the agent and updating the system. Wait for the database state rather
+			// than assuming that work completes within a fixed sleep under load.
+			var status string
+			require.EventuallyWithT(t, func(c *assert.CollectT) {
+				updatedSystemRecord, err := testApp.FindRecordById("systems", systemRecord.Id)
+				if !assert.NoError(c, err) {
+					return
+				}
+				status = updatedSystemRecord.GetString("status")
+				assert.Equal(c, tc.expectSystemStatus, status, "System status should match expected value")
+			}, 5*time.Second, 20*time.Millisecond)
 
 			t.Logf("%s - System status: %s, Fingerprint: %s", tc.description, status, finalFingerprint)
 		})
@@ -991,6 +1011,8 @@ func TestAgentWebSocketIntegration(t *testing.T) {
 
 // TestMultipleSystemsWithSameUniversalToken tests that multiple systems can share the same universal token
 func TestMultipleSystemsWithSameUniversalToken(t *testing.T) {
+	// Connection fixtures do not exercise the host package manager.
+	t.Setenv("BESZEL_AGENT_PACKAGE_UPDATES_INTERVAL", "0")
 	// Create hub and test app
 	hub, testApp, err := createTestHub(t)
 	require.NoError(t, err)
@@ -1085,15 +1107,12 @@ func TestMultipleSystemsWithSameUniversalToken(t *testing.T) {
 			systemsBeforeCount := len(systemsBefore)
 
 			// Start agent in background
-			done := make(chan error, 1)
-			go func() {
-				serverOptions := agent.ServerOptions{
-					Network: "tcp",
-					Addr:    fmt.Sprintf("127.0.0.1:%d", portNum),
-					Keys:    []ssh.PublicKey{goodPubKey},
-				}
-				done <- testAgent.Start(serverOptions)
-			}()
+			done, stopAgent := startTestAgent(t, testAgent, agent.ServerOptions{
+				Network: "tcp",
+				Addr:    fmt.Sprintf("127.0.0.1:%d", portNum),
+				Keys:    []ssh.PublicKey{goodPubKey},
+			})
+			defer stopAgent()
 
 			// Wait for connection result
 			maxWait := 2 * time.Second
@@ -1109,15 +1128,15 @@ func TestMultipleSystemsWithSameUniversalToken(t *testing.T) {
 				select {
 				case <-timeout:
 					if tc.expectConnection {
-						t.Fatalf("Expected connection to succeed but timed out - agent state: %d", connectionManager.State)
+						t.Fatalf("Expected connection to succeed but timed out - agent state: %d", connectionManager.GetState())
 					} else {
-						t.Logf("Connection properly rejected (timeout) - agent state: %d", connectionManager.State)
+						t.Logf("Connection properly rejected (timeout) - agent state: %d", connectionManager.GetState())
 					}
 					connectionResult = false
 				case <-ticker:
-					if connectionManager.State == agent.WebSocketConnected {
+					if connectionManager.GetState() == agent.WebSocketConnected {
 						if tc.expectConnection {
-							t.Logf("WebSocket connection successful - agent state: %d", connectionManager.State)
+							t.Logf("WebSocket connection successful - agent state: %d", connectionManager.GetState())
 							connectionResult = true
 						} else {
 							t.Errorf("Unexpected: Connection succeeded when it should have been rejected")
@@ -1142,42 +1161,43 @@ func TestMultipleSystemsWithSameUniversalToken(t *testing.T) {
 
 			// Verify system creation/reuse behavior
 			if tc.expectConnection {
-				// Count systems after connection
-				systemsAfter, err := testApp.FindRecordsByFilter("systems", "users ~ {:userId}", "", -1, 0, map[string]any{"userId": userRecord.Id})
-				require.NoError(t, err)
-				systemsAfterCount := len(systemsAfter)
-
+				expectedSystemsAfter := systemsBeforeCount
 				if tc.expectNewSystem {
-					// Should have created a new system
+					expectedSystemsAfter++
 					systemCount++
-					assert.Equal(t, systemsBeforeCount+1, systemsAfterCount, "Should have created a new system")
-					assert.Equal(t, systemCount, systemsAfterCount, "Total system count should match expected")
-				} else {
-					// Should have reused existing system
-					assert.Equal(t, systemsBeforeCount, systemsAfterCount, "Should not have created a new system")
-					assert.Equal(t, systemCount, systemsAfterCount, "Total system count should remain the same")
 				}
 
-				time.Sleep(20 * time.Millisecond)
+				// WebSocket connection precedes the hub's asynchronous system
+				// setup. Re-read all database state until setup is complete.
+				var systemId, status string
+				require.EventuallyWithT(t, func(c *assert.CollectT) {
+					systemsAfter, err := testApp.FindRecordsByFilter("systems", "users ~ {:userId}", "", -1, 0, map[string]any{"userId": userRecord.Id})
+					if !assert.NoError(c, err) {
+						return
+					}
+					assert.Len(c, systemsAfter, expectedSystemsAfter, "System creation/reuse should match expected behavior")
+					assert.Len(c, systemsAfter, systemCount, "Total system count should match expected")
 
-				// Verify that a fingerprint record exists for this fingerprint
-				fingerprints, err := testApp.FindRecordsByFilter("fingerprints", "token = {:token} && fingerprint = {:fingerprint}", "", -1, 0, map[string]any{
-					"token":       universalToken,
-					"fingerprint": tc.agentFingerprint,
-				})
-				require.NoError(t, err)
-				require.Len(t, fingerprints, 1, "Should have exactly one fingerprint record for this token+fingerprint combination")
+					fingerprints, err := testApp.FindRecordsByFilter("fingerprints", "token = {:token} && fingerprint = {:fingerprint}", "", -1, 0, map[string]any{
+						"token":       universalToken,
+						"fingerprint": tc.agentFingerprint,
+					})
+					if !assert.NoError(c, err) || !assert.Len(c, fingerprints, 1, "Should have exactly one fingerprint record for this token+fingerprint combination") {
+						return
+					}
 
-				fingerprint := fingerprints[0]
-				assert.Equal(t, universalToken, fingerprint.GetString("token"), "Fingerprint should have the universal token")
-				assert.Equal(t, tc.agentFingerprint, fingerprint.GetString("fingerprint"), "Fingerprint should match agent's fingerprint")
+					fingerprint := fingerprints[0]
+					assert.Equal(c, universalToken, fingerprint.GetString("token"), "Fingerprint should have the universal token")
+					assert.Equal(c, tc.agentFingerprint, fingerprint.GetString("fingerprint"), "Fingerprint should match agent's fingerprint")
 
-				// Verify system status
-				systemId := fingerprint.GetString("system")
-				system, err := testApp.FindRecordById("systems", systemId)
-				require.NoError(t, err)
-				status := system.GetString("status")
-				assert.Equal(t, tc.expectSystemStatus, status, "System status should match expected value")
+					systemId = fingerprint.GetString("system")
+					system, err := testApp.FindRecordById("systems", systemId)
+					if !assert.NoError(c, err) {
+						return
+					}
+					status = system.GetString("status")
+					assert.Equal(c, tc.expectSystemStatus, status, "System status should match expected value")
+				}, 5*time.Second, 20*time.Millisecond)
 
 				t.Logf("%s - System ID: %s, Status: %s, New System: %v", tc.description, systemId, status, tc.expectNewSystem)
 			}
@@ -1189,6 +1209,8 @@ func TestMultipleSystemsWithSameUniversalToken(t *testing.T) {
 // (universal_tokens collection) is accepted for agent self-registration even if it is not
 // present in the in-memory universalTokenMap.
 func TestPermanentUniversalTokenFromDB(t *testing.T) {
+	// Connection fixtures do not exercise the host package manager.
+	t.Setenv("BESZEL_AGENT_PACKAGE_UPDATES_INTERVAL", "0")
 	// Create hub and test app
 	hub, testApp, err := createTestHub(t)
 	require.NoError(t, err)
@@ -1239,15 +1261,12 @@ func TestPermanentUniversalTokenFromDB(t *testing.T) {
 	t.Setenv("BESZEL_AGENT_TOKEN", universalToken)
 
 	// Start agent in background
-	done := make(chan error, 1)
-	go func() {
-		serverOptions := agent.ServerOptions{
-			Network: "tcp",
-			Addr:    "127.0.0.1:46050",
-			Keys:    []ssh.PublicKey{goodPubKey},
-		}
-		done <- testAgent.Start(serverOptions)
-	}()
+	done, stopAgent := startTestAgent(t, testAgent, agent.ServerOptions{
+		Network: "tcp",
+		Addr:    "127.0.0.1:46050",
+		Keys:    []ssh.PublicKey{goodPubKey},
+	})
+	defer stopAgent()
 
 	// Wait for connection result
 	maxWait := 2 * time.Second
@@ -1260,9 +1279,9 @@ func TestPermanentUniversalTokenFromDB(t *testing.T) {
 	for {
 		select {
 		case <-timeout:
-			t.Fatalf("Expected connection to succeed but timed out - agent state: %d", connectionManager.State)
+			t.Fatalf("Expected connection to succeed but timed out - agent state: %d", connectionManager.GetState())
 		case <-ticker:
-			if connectionManager.State == agent.WebSocketConnected {
+			if connectionManager.GetState() == agent.WebSocketConnected {
 				// Success
 				goto verify
 			}
@@ -1795,6 +1814,24 @@ func TestGetRealIP(t *testing.T) {
 			headers:    map[string]string{"CF-Connecting-IP": "", "X-Forwarded-For": "192.168.1.8"},
 			remoteAddr: "127.0.0.1:12345",
 			expectedIP: "192.168.1.8",
+		},
+		{
+			name:       "X-Real-IP header",
+			headers:    map[string]string{"X-Real-IP": "10.8.0.4"},
+			remoteAddr: "172.21.0.1:12345",
+			expectedIP: "10.8.0.4",
+		},
+		{
+			name:       "X-Real-IP takes precedence over X-Forwarded-For",
+			headers:    map[string]string{"X-Real-IP": "10.8.0.4", "X-Forwarded-For": "10.8.0.5"},
+			remoteAddr: "172.21.0.1:12345",
+			expectedIP: "10.8.0.4",
+		},
+		{
+			name:       "CF-Connecting-IP takes precedence over X-Real-IP",
+			headers:    map[string]string{"CF-Connecting-IP": "1.2.3.4", "X-Real-IP": "10.8.0.4"},
+			remoteAddr: "172.21.0.1:12345",
+			expectedIP: "1.2.3.4",
 		},
 	}
 

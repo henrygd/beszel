@@ -1,0 +1,413 @@
+import { t } from "@lingui/core/macro"
+import { Trans } from "@lingui/react/macro"
+import {
+	type Column,
+	type ColumnDef,
+	flexRender,
+	getCoreRowModel,
+	getFilteredRowModel,
+	getPaginationRowModel,
+	getSortedRowModel,
+	type PaginationState,
+	type SortingState,
+	useReactTable,
+} from "@tanstack/react-table"
+import {
+	ArrowUpDownIcon,
+	ChevronLeftIcon,
+	ChevronRightIcon,
+	ChevronsLeftIcon,
+	ChevronsRightIcon,
+	GitCompareArrowsIcon,
+	PackageCheckIcon,
+	PackageIcon,
+	PackageOpenIcon,
+	ShieldAlertIcon,
+	XIcon,
+} from "lucide-react"
+import { useEffect, useMemo, useState } from "react"
+import { Badge, type BadgeProps } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
+import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Separator } from "@/components/ui/separator"
+import { TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { pb } from "@/lib/api"
+import { classifyVersionChange, type VersionChange } from "@/lib/package-updates"
+import { cn, formatShortDate, useBrowserStorage } from "@/lib/utils"
+import type { PackageUpdate, PackageUpdates } from "@/types"
+
+interface PackageUpdateRow extends PackageUpdate {
+	change: VersionChange
+}
+
+/** Sort order of version changes, so ascending puts major first. */
+const changeRank: Record<VersionChange, number> = { major: 0, minor: 1, patch: 2, revision: 3, other: 4 }
+
+const changeVariant: Record<VersionChange, BadgeProps["variant"]> = {
+	major: "danger",
+	minor: "warning",
+	patch: "success",
+	revision: "secondary",
+	other: "outline",
+}
+
+const pageSizes = [10, 20, 50, 100, 200]
+
+function changeLabel(change: VersionChange) {
+	switch (change) {
+		case "major":
+			return t({ message: "Major", comment: "Package version" })
+		case "minor":
+			return t({ message: "Minor", comment: "Package version" })
+		case "patch":
+			return t({ message: "Patch", comment: "Package version" })
+		case "revision":
+			return t({ message: "Revision", comment: "Package version" })
+		default:
+			return t({ message: "Other", comment: "Package version" })
+	}
+}
+
+function HeaderButton({
+	column,
+	name,
+	Icon,
+}: {
+	column: Column<PackageUpdateRow>
+	name: string
+	Icon: React.ElementType
+}) {
+	const isSorted = column.getIsSorted()
+	return (
+		<Button
+			className={cn(
+				"h-9 px-3 flex items-center gap-2 duration-50",
+				isSorted && "bg-accent/70 light:bg-accent text-accent-foreground/90"
+			)}
+			variant="ghost"
+			onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+		>
+			<Icon className="size-4" />
+			{name}
+			<ArrowUpDownIcon className="size-4" />
+		</Button>
+	)
+}
+
+function getColumns(securityKnown: boolean): ColumnDef<PackageUpdateRow>[] {
+	const columns: ColumnDef<PackageUpdateRow>[] = [
+		{
+			id: "name",
+			accessorFn: (pkg) => pkg.name,
+			sortingFn: (a, b) => a.original.name.localeCompare(b.original.name),
+			header: ({ column }) => (
+				<HeaderButton
+					column={column}
+					name={t({ message: "Package", comment: "Software package" })}
+					Icon={PackageIcon}
+				/>
+			),
+			cell: ({ getValue }) => <span className="ms-1.5 block">{getValue() as string}</span>,
+		},
+		{
+			id: "current",
+			accessorFn: (pkg) => pkg.current ?? "",
+			enableSorting: false,
+			header: () => (
+				<span className="flex items-center gap-2 px-3">
+					<PackageCheckIcon className="size-4" />
+					<Trans comment="Current package version">Current</Trans>
+				</span>
+			),
+			cell: ({ getValue }) => (
+				<span className="ms-1.5 block font-mono text-sm text-muted-foreground">{(getValue() as string) || "-"}</span>
+			),
+		},
+		{
+			id: "available",
+			accessorFn: (pkg) => pkg.available,
+			enableSorting: false,
+			header: () => (
+				<span className="flex items-center gap-2 px-3">
+					<PackageOpenIcon className="size-4" />
+					<Trans comment="Package version available to install">Available</Trans>
+				</span>
+			),
+			cell: ({ getValue }) => <span className="ms-1.5 block font-mono text-sm">{getValue() as string}</span>,
+		},
+	]
+	if (securityKnown) {
+		columns.push({
+			id: "security",
+			accessorFn: (pkg) => (pkg.security ? 1 : 0),
+			header: ({ column }) => (
+				<HeaderButton
+					column={column}
+					name={t({ message: "Security", comment: "Security update" })}
+					Icon={ShieldAlertIcon}
+				/>
+			),
+			cell: ({ row }) =>
+				row.original.security ? (
+					<span className="ms-1.5 flex items-center gap-1.5 text-red-600 dark:text-red-400">
+						<ShieldAlertIcon className="size-4" />
+						<Trans>Security</Trans>
+					</span>
+				) : null,
+		})
+	}
+	// Change is always the last column, pinned to the right edge of the table
+	columns.push({
+		id: "change",
+		accessorFn: (pkg) => changeRank[pkg.change],
+		header: ({ column }) => (
+			<HeaderButton
+				column={column}
+				name={t({ message: `Change`, comment: "Version change" })}
+				Icon={GitCompareArrowsIcon}
+			/>
+		),
+		cell: ({ row }) => (
+			<Badge variant={changeVariant[row.original.change]} className="ms-1.5">
+				{changeLabel(row.original.change)}
+			</Badge>
+		),
+	})
+	return columns
+}
+
+/**
+ * Lists pending package updates reported by the agent. The agent caches the result of
+ * its background check, so this refetches only when the update counts change.
+ */
+export default function PackageUpdatesTable({ systemId, counts }: { systemId: string; counts: string }) {
+	const [data, setData] = useState<PackageUpdates | null>(null)
+	const [error, setError] = useState<string | null>(null)
+	const [sorting, setSorting] = useState<SortingState>([{ id: "name", desc: false }])
+	const [globalFilter, setGlobalFilter] = useState("")
+	// Store page size preference in local storage
+	const [pageSize, setPageSize] = useBrowserStorage("pu-page-size", pageSizes[1], sessionStorage)
+	const [pageIndex, setPageIndex] = useState(0)
+	const pagination = useMemo<PaginationState>(() => ({ pageIndex, pageSize }), [pageIndex, pageSize])
+
+	useEffect(() => {
+		let cancelled = false
+		pb.send<PackageUpdates>("/api/beszel/package-updates", { query: { system: systemId } })
+			.then((result) => {
+				if (cancelled) return
+				setData(result)
+				setError(null)
+			})
+			.catch((err) => {
+				if (cancelled) return
+				setError(err?.message || t`Failed to load package updates`)
+			})
+		return () => {
+			cancelled = true
+		}
+	}, [systemId, counts])
+
+	const rows = useMemo<PackageUpdateRow[]>(
+		() => (data?.packages ?? []).map((pkg) => ({ ...pkg, change: classifyVersionChange(pkg.current, pkg.available) })),
+		[data]
+	)
+	const securityKnown = !!data?.securityKnown
+	const columns = useMemo(() => getColumns(securityKnown), [securityKnown])
+
+	const table = useReactTable({
+		data: rows,
+		columns,
+		getCoreRowModel: getCoreRowModel(),
+		getSortedRowModel: getSortedRowModel(),
+		getFilteredRowModel: getFilteredRowModel(),
+		getPaginationRowModel: getPaginationRowModel(),
+		onSortingChange: setSorting,
+		onGlobalFilterChange: setGlobalFilter,
+		onPaginationChange: (updater) => {
+			const next = typeof updater === "function" ? updater(pagination) : updater
+			setPageIndex(next.pageIndex)
+			setPageSize(next.pageSize)
+		},
+		state: { sorting, globalFilter, pagination },
+		globalFilterFn: (row, _columnId, filterValue: string) => {
+			const pkg = row.original
+			const searchString = `${pkg.name} ${pkg.current ?? ""} ${pkg.available} ${changeLabel(pkg.change)}`.toLowerCase()
+			return filterValue
+				.toLowerCase()
+				.split(" ")
+				.every((term) => searchString.includes(term))
+		},
+	})
+
+	if (!data && !error) {
+		return null
+	}
+
+	const securityCount = rows.filter((pkg) => pkg.security).length
+	const tableRows = table.getRowModel().rows
+
+	return (
+		<Card className="@container w-full px-3 py-5 sm:py-6 sm:px-6">
+			<CardHeader className="p-0 mb-3 sm:mb-4">
+				<div className="grid md:flex gap-x-5 gap-y-3 w-full items-end">
+					<div className="px-2 sm:px-1">
+						<CardTitle className="mb-2">
+							<Trans>Package Updates</Trans>
+						</CardTitle>
+						<CardDescription className="flex items-center flex-wrap">
+							{data?.manager && (
+								<>
+									<span className="font-mono">{data.manager}</span>
+									<Separator orientation="vertical" className="h-4 mx-2 bg-primary/40" />
+								</>
+							)}
+							<Trans>Total: {rows.length}</Trans>
+							{securityKnown && (
+								<>
+									<Separator orientation="vertical" className="h-4 mx-2 bg-primary/40" />
+									<Trans>Security: {securityCount}</Trans>
+								</>
+							)}
+							{!!data?.checkedAt && (
+								<>
+									<Separator orientation="vertical" className="h-4 mx-2 bg-primary/40" />
+									<Trans>Checked {formatShortDate(new Date(data.checkedAt * 1000).toISOString())}</Trans>
+								</>
+							)}
+						</CardDescription>
+					</div>
+					{rows.length > 0 && (
+						<div className="relative ms-auto w-full max-w-full md:w-64">
+							<Input
+								placeholder={t`Filter...`}
+								value={globalFilter}
+								onChange={(event) => setGlobalFilter(event.target.value)}
+								className="px-4 w-full max-w-full md:w-64"
+							/>
+							{globalFilter && (
+								<Button
+									type="button"
+									variant="ghost"
+									size="icon"
+									aria-label={t`Clear`}
+									className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 text-muted-foreground"
+									onClick={() => setGlobalFilter("")}
+								>
+									<XIcon className="h-4 w-4" />
+								</Button>
+							)}
+						</div>
+					)}
+				</div>
+			</CardHeader>
+			{error ? (
+				<p className="px-2 sm:px-1 text-sm text-muted-foreground">{error}</p>
+			) : (
+				<div className="max-w-full relative overflow-x-auto border rounded-md">
+					<table className="text-sm w-full text-nowrap">
+						<TableHeader className="sticky top-0 z-50 w-full border-b-2">
+							{table.getHeaderGroups().map((headerGroup) => (
+								<tr key={headerGroup.id}>
+									{headerGroup.headers.map((header) => (
+										<TableHead className={cn("px-2", header.column.id === "change" && "w-0")} key={header.id}>
+											{header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
+										</TableHead>
+									))}
+								</tr>
+							))}
+						</TableHeader>
+						<TableBody>
+							{tableRows.length ? (
+								tableRows.map((row) => (
+									<TableRow key={row.id}>
+										{row.getVisibleCells().map((cell) => (
+											<TableCell key={cell.id} className="py-2.5">
+												{flexRender(cell.column.columnDef.cell, cell.getContext())}
+											</TableCell>
+										))}
+									</TableRow>
+								))
+							) : (
+								<TableRow>
+									<TableCell colSpan={columns.length} className="h-24 text-center pointer-events-none">
+										{rows.length ? <Trans>No results.</Trans> : <Trans>Up to date</Trans>}
+									</TableCell>
+								</TableRow>
+							)}
+						</TableBody>
+					</table>
+				</div>
+			)}
+			{!error && rows.length > pageSizes[0] && (
+				<div className="flex items-center gap-8 mt-3 sm:mt-4 ps-1 tabular-nums">
+					<div className="hidden items-center gap-2 me-auto @xl:flex">
+						<Label htmlFor="pu-rows-per-page" className="text-sm font-medium">
+							<Trans>Rows per page</Trans>
+						</Label>
+						<Select value={`${pageSize}`} onValueChange={(value) => table.setPageSize(Number(value))}>
+							<SelectTrigger className="w-18" id="pu-rows-per-page">
+								<SelectValue placeholder={pageSize} />
+							</SelectTrigger>
+							<SelectContent side="top">
+								{pageSizes.map((size) => (
+									<SelectItem key={size} value={`${size}`}>
+										{size}
+									</SelectItem>
+								))}
+							</SelectContent>
+						</Select>
+					</div>
+					<div className="flex w-fit items-center justify-center text-sm font-medium">
+						<Trans>
+							Page {pageIndex + 1} of {Math.max(table.getPageCount(), 1)}
+						</Trans>
+					</div>
+					<div className="ms-auto flex items-center gap-2 @xl:ms-0">
+						<Button
+							variant="outline"
+							className="hidden size-9 p-0 @xl:flex"
+							onClick={() => table.setPageIndex(0)}
+							disabled={!table.getCanPreviousPage()}
+						>
+							<span className="sr-only">Go to first page</span>
+							<ChevronsLeftIcon className="size-5" />
+						</Button>
+						<Button
+							variant="outline"
+							className="size-9"
+							size="icon"
+							onClick={() => table.previousPage()}
+							disabled={!table.getCanPreviousPage()}
+						>
+							<span className="sr-only">Go to previous page</span>
+							<ChevronLeftIcon className="size-5" />
+						</Button>
+						<Button
+							variant="outline"
+							className="size-9"
+							size="icon"
+							onClick={() => table.nextPage()}
+							disabled={!table.getCanNextPage()}
+						>
+							<span className="sr-only">Go to next page</span>
+							<ChevronRightIcon className="size-5" />
+						</Button>
+						<Button
+							variant="outline"
+							className="hidden size-9 @xl:flex"
+							size="icon"
+							onClick={() => table.setPageIndex(table.getPageCount() - 1)}
+							disabled={!table.getCanNextPage()}
+						>
+							<span className="sr-only">Go to last page</span>
+							<ChevronsRightIcon className="size-5" />
+						</Button>
+					</div>
+				</div>
+			)}
+		</Card>
+	)
+}

@@ -7,31 +7,40 @@ import (
 	"time"
 
 	"github.com/henrygd/beszel/internal/entities/container"
+	"github.com/henrygd/beszel/internal/entities/monitor"
 	"github.com/henrygd/beszel/internal/entities/systemd"
 )
 
+// WiFi describes a currently connected station interface. Keys in WiFi maps are
+// OS interface identities, not SSIDs. Signal is native dBm only; nil means the
+// OS confirmed association but could not supply RSSI (never convert quality %).
+type WiFi struct {
+	SSID   string   `json:"s,omitempty" cbor:"0,keyasint,omitempty"`
+	Signal *float64 `json:"r,omitempty" cbor:"1,keyasint,omitempty"`
+}
+
 type Stats struct {
 	Cpu            float64             `json:"cpu" cbor:"0,keyasint"`
-	MaxCpu         float64             `json:"cpum,omitempty" cbor:"-"`
+	MaxCpu         float64             `json:"cpum,omitzero" cbor:"-"`
 	Mem            float64             `json:"m" cbor:"2,keyasint"`
-	MaxMem         float64             `json:"mm,omitempty" cbor:"-"`
+	MaxMem         float64             `json:"mm,omitzero" cbor:"-"`
 	MemUsed        float64             `json:"mu" cbor:"3,keyasint"`
 	MemPct         float64             `json:"mp" cbor:"4,keyasint"`
 	MemBuffCache   float64             `json:"mb" cbor:"5,keyasint"`
-	MemZfsArc      float64             `json:"mz,omitempty" cbor:"6,keyasint,omitempty"` // ZFS ARC memory
-	Swap           float64             `json:"s,omitempty" cbor:"7,keyasint,omitempty"`
-	SwapUsed       float64             `json:"su,omitempty" cbor:"8,keyasint,omitempty"`
+	MemZfsArc      float64             `json:"mz,omitzero" cbor:"6,keyasint,omitempty"` // ZFS ARC memory
+	Swap           float64             `json:"s,omitzero" cbor:"7,keyasint,omitempty"`
+	SwapUsed       float64             `json:"su,omitzero" cbor:"8,keyasint,omitempty"`
 	DiskTotal      float64             `json:"d" cbor:"9,keyasint"`
 	DiskUsed       float64             `json:"du" cbor:"10,keyasint"`
 	DiskPct        float64             `json:"dp" cbor:"11,keyasint"`
 	DiskReadPs     float64             `json:"dr,omitzero" cbor:"12,keyasint,omitzero"`
 	DiskWritePs    float64             `json:"dw,omitzero" cbor:"13,keyasint,omitzero"`
-	MaxDiskReadPs  float64             `json:"drm,omitempty" cbor:"-"`
-	MaxDiskWritePs float64             `json:"dwm,omitempty" cbor:"-"`
+	MaxDiskReadPs  float64             `json:"drm,omitzero" cbor:"-"`
+	MaxDiskWritePs float64             `json:"dwm,omitzero" cbor:"-"`
 	NetworkSent    float64             `json:"ns,omitzero" cbor:"16,keyasint,omitzero"`
 	NetworkRecv    float64             `json:"nr,omitzero" cbor:"17,keyasint,omitzero"`
-	MaxNetworkSent float64             `json:"nsm,omitempty" cbor:"-"`
-	MaxNetworkRecv float64             `json:"nrm,omitempty" cbor:"-"`
+	MaxNetworkSent float64             `json:"nsm,omitzero" cbor:"-"`
+	MaxNetworkRecv float64             `json:"nrm,omitzero" cbor:"-"`
 	Temperatures   map[string]float64  `json:"t,omitempty" cbor:"20,keyasint,omitempty"`
 	ExtraFs        map[string]*FsStats `json:"efs,omitempty" cbor:"21,keyasint,omitempty"`
 	GPUData        map[string]GPUData  `json:"g,omitempty" cbor:"22,keyasint,omitempty"`
@@ -42,7 +51,7 @@ type Stats struct {
 	MaxBandwidth [2]uint64 `json:"bm,omitzero" cbor:"-"`                   // [sent bytes, recv bytes]
 	// TODO: remove other load fields in future release in favor of load avg array
 	LoadAvg           [3]float64           `json:"la,omitempty" cbor:"28,keyasint"`
-	Battery           [2]uint8             `json:"bat,omitzero" cbor:"29,keyasint,omitzero"`    // [percent, charge state, current]
+	Battery           Battery              `json:"bat,omitzero" cbor:"29,keyasint,omitzero"`    // [percent, charge state]
 	NetworkInterfaces map[string][4]uint64 `json:"ni,omitempty" cbor:"31,keyasint,omitempty"`   // [upload bytes, download bytes, total upload, total download]
 	DiskIO            [2]uint64            `json:"dio,omitzero" cbor:"32,keyasint,omitzero"`    // [read bytes, write bytes]
 	MaxDiskIO         [2]uint64            `json:"diom,omitzero" cbor:"-"`                      // [max read bytes, max write bytes]
@@ -50,6 +59,25 @@ type Stats struct {
 	CpuCoresUsage     Uint8Slice           `json:"cpus,omitempty" cbor:"34,keyasint,omitempty"` // per-core busy usage [CPU0..]
 	DiskIoStats       [6]float64           `json:"dios,omitzero" cbor:"35,keyasint,omitzero"`   // [read time %, write time %, io utilization %, r_await ms, w_await ms, weighted io %]
 	MaxDiskIoStats    [6]float64           `json:"diosm,omitzero" cbor:"-"`                     // max values for DiskIoStats
+	Fans              map[string]uint16    `json:"f,omitempty" cbor:"36,keyasint,omitempty"`
+	Batteries         map[string]uint8     `json:"bats,omitempty" cbor:"37,keyasint,omitempty"`
+	ZfsPools          map[string]*ZfsPool  `json:"z,omitempty" cbor:"39,keyasint,omitempty"`  // ZFS pool metrics, keyed by pool name
+	DiskIOTotal       [2]uint64            `json:"diot,omitzero" cbor:"38,keyasint,omitzero"` // [total read bytes, total write bytes] cumulative device counters
+	WiFi              map[string]int8      `json:"wf,omitempty" cbor:"40,keyasint,omitempty"` // RSSI dBm keyed by interface; unavailable readings omitted
+
+}
+
+// ZfsPool holds per-pool ZFS metrics for a single collection interval.
+type ZfsPool struct {
+	DisplayName string  `json:"n,omitempty" cbor:"8,keyasint,omitempty"`
+	HideUsage   bool    `json:"hu,omitzero" cbor:"6,keyasint,omitempty"` // equivalent filesystem usage chart exists
+	HideIO      bool    `json:"hi,omitzero" cbor:"7,keyasint,omitempty"` // equivalent filesystem I/O chart exists
+	Raw         bool    `json:"raw,omitzero" cbor:"5,keyasint,omitempty"`
+	Total       float64 `json:"d" cbor:"0,keyasint"`                     // total capacity in GiB
+	Used        float64 `json:"du" cbor:"1,keyasint"`                    // allocated in GiB
+	ReadBytes   uint64  `json:"rb,omitzero" cbor:"2,keyasint,omitzero"`  // read throughput in bytes/s
+	WriteBytes  uint64  `json:"wb,omitzero" cbor:"3,keyasint,omitzero"`  // write throughput in bytes/s
+	Health      string  `json:"h,omitempty" cbor:"4,keyasint,omitempty"` // ONLINE, DEGRADED, FAULTED, ...
 }
 
 // Uint8Slice wraps []uint8 to customize JSON encoding while keeping CBOR efficient.
@@ -69,36 +97,44 @@ func (s Uint8Slice) MarshalJSON() ([]byte, error) {
 	return json.Marshal(arr)
 }
 
+// Battery stores the representative battery's percent and charge state.
+// Its custom JSON encoding keeps the public and persisted representation as a
+// numeric tuple under both encoding/json v1 and v2.
+type Battery [2]uint8
+
+func (b Battery) MarshalJSON() ([]byte, error) {
+	return json.Marshal([2]uint16{uint16(b[0]), uint16(b[1])})
+}
+
 type GPUData struct {
 	Name        string             `json:"n" cbor:"0,keyasint"`
 	Temperature float64            `json:"-"`
-	MemoryUsed  float64            `json:"mu,omitempty,omitzero" cbor:"1,keyasint,omitempty,omitzero"`
-	MemoryTotal float64            `json:"mt,omitempty,omitzero" cbor:"2,keyasint,omitempty,omitzero"`
+	MemoryUsed  float64            `json:"mu,omitzero" cbor:"1,keyasint,omitempty,omitzero"`
+	MemoryTotal float64            `json:"mt,omitzero" cbor:"2,keyasint,omitempty,omitzero"`
 	Usage       float64            `json:"u" cbor:"3,keyasint,omitempty"`
-	Power       float64            `json:"p,omitempty" cbor:"4,keyasint,omitempty"`
+	Power       float64            `json:"p,omitzero" cbor:"4,keyasint,omitempty"`
 	Count       float64            `json:"-"`
 	Engines     map[string]float64 `json:"e,omitempty" cbor:"5,keyasint,omitempty"`
-	PowerPkg    float64            `json:"pp,omitempty" cbor:"6,keyasint,omitempty"`
+	PowerPkg    float64            `json:"pp,omitzero" cbor:"6,keyasint,omitempty"`
 }
 
 type FsStats struct {
-	Time           time.Time `json:"-"`
-	Root           bool      `json:"-"`
-	Mountpoint     string    `json:"-"`
-	Name           string    `json:"-"`
-	DiskTotal      float64   `json:"d" cbor:"0,keyasint"`
-	DiskUsed       float64   `json:"du" cbor:"1,keyasint"`
-	TotalRead      uint64    `json:"-"`
-	TotalWrite     uint64    `json:"-"`
-	DiskReadPs     float64   `json:"r" cbor:"2,keyasint"`
-	DiskWritePs    float64   `json:"w" cbor:"3,keyasint"`
-	MaxDiskReadPS  float64   `json:"rm,omitempty" cbor:"-"`
-	MaxDiskWritePS float64   `json:"wm,omitempty" cbor:"-"`
+	Root           bool    `json:"-"`
+	Mountpoint     string  `json:"-"`
+	Name           string  `json:"-"`
+	DiskTotal      float64 `json:"d" cbor:"0,keyasint"`
+	DiskUsed       float64 `json:"du" cbor:"1,keyasint"`
+	TotalRead      uint64  `json:"tr,omitzero" cbor:"9,keyasint,omitzero"`  // cumulative device read bytes
+	TotalWrite     uint64  `json:"tw,omitzero" cbor:"10,keyasint,omitzero"` // cumulative device write bytes
+	DiskReadPs     float64 `json:"r" cbor:"2,keyasint"`
+	DiskWritePs    float64 `json:"w" cbor:"3,keyasint"`
+	MaxDiskReadPS  float64 `json:"rm,omitzero" cbor:"-"`
+	MaxDiskWritePS float64 `json:"wm,omitzero" cbor:"-"`
 	// TODO: remove DiskReadPs and DiskWritePs in future release in favor of DiskReadBytes and DiskWriteBytes
 	DiskReadBytes     uint64     `json:"rb" cbor:"6,keyasint,omitempty"`
 	DiskWriteBytes    uint64     `json:"wb" cbor:"7,keyasint,omitempty"`
-	MaxDiskReadBytes  uint64     `json:"rbm,omitempty" cbor:"-"`
-	MaxDiskWriteBytes uint64     `json:"wbm,omitempty" cbor:"-"`
+	MaxDiskReadBytes  uint64     `json:"rbm,omitzero" cbor:"-"`
+	MaxDiskWriteBytes uint64     `json:"wbm,omitzero" cbor:"-"`
 	DiskIoStats       [6]float64 `json:"dios,omitzero" cbor:"8,keyasint,omitzero"` // [read time %, write time %, io utilization %, r_await ms, w_await ms, weighted io %]
 	MaxDiskIoStats    [6]float64 `json:"diosm,omitzero" cbor:"-"`                  // max values for DiskIoStats
 }
@@ -133,7 +169,7 @@ type Info struct {
 	KernelVersion string `json:"k,omitempty" cbor:"1,keyasint,omitempty"` // deprecated - moved to Details struct
 	Cores         int    `json:"c,omitzero" cbor:"2,keyasint,omitzero"`   // deprecated - moved to Details struct
 	// Threads is needed in Info struct to calculate load average thresholds
-	Threads       int     `json:"t,omitempty" cbor:"3,keyasint,omitempty"`
+	Threads       int     `json:"t,omitzero" cbor:"3,keyasint,omitempty"`
 	CpuModel      string  `json:"m,omitempty" cbor:"4,keyasint,omitempty"` // deprecated - moved to Details struct
 	Uptime        uint64  `json:"u" cbor:"5,keyasint"`
 	Cpu           float64 `json:"cpu" cbor:"6,keyasint"`
@@ -141,20 +177,24 @@ type Info struct {
 	DiskPct       float64 `json:"dp" cbor:"8,keyasint"`
 	Bandwidth     float64 `json:"b,omitzero" cbor:"9,keyasint"` // deprecated in favor of BandwidthBytes
 	AgentVersion  string  `json:"v" cbor:"10,keyasint"`
-	Podman        bool    `json:"p,omitempty" cbor:"11,keyasint,omitempty"` // deprecated - moved to Details struct
-	GpuPct        float64 `json:"g,omitempty" cbor:"12,keyasint,omitempty"`
-	DashboardTemp float64 `json:"dt,omitempty" cbor:"13,keyasint,omitempty"`
-	Os            Os      `json:"os,omitempty" cbor:"14,keyasint,omitempty"` // deprecated - moved to Details struct
+	Podman        bool    `json:"p,omitzero" cbor:"11,keyasint,omitempty"` // deprecated - moved to Details struct
+	GpuPct        float64 `json:"g,omitzero" cbor:"12,keyasint,omitempty"`
+	DashboardTemp float64 `json:"dt,omitzero" cbor:"13,keyasint,omitempty"`
+	Os            Os      `json:"os,omitzero" cbor:"14,keyasint,omitempty"` // deprecated - moved to Details struct
 	// LoadAvg1       float64 `json:"l1,omitempty" cbor:"15,keyasint,omitempty"`  // deprecated - use `la` array instead
 	// LoadAvg5       float64 `json:"l5,omitempty" cbor:"16,keyasint,omitempty"`  // deprecated - use `la` array instead
 	// LoadAvg15      float64 `json:"l15,omitempty" cbor:"17,keyasint,omitempty"` // deprecated - use `la` array instead
 
 	BandwidthBytes uint64             `json:"bb" cbor:"18,keyasint"`
 	LoadAvg        [3]float64         `json:"la,omitempty" cbor:"19,keyasint"`
-	ConnectionType ConnectionType     `json:"ct,omitempty" cbor:"20,keyasint,omitempty,omitzero"`
+	ConnectionType ConnectionType     `json:"ct,omitzero" cbor:"20,keyasint,omitempty,omitzero"`
 	ExtraFsPct     map[string]float64 `json:"efs,omitempty" cbor:"21,keyasint,omitempty"`
-	Services       []uint16           `json:"sv,omitempty" cbor:"22,keyasint,omitempty"` // [totalServices, numFailedServices]
-	Battery        [2]uint8           `json:"bat,omitzero" cbor:"23,keyasint,omitzero"`  // [percent, charge state]
+	Services       []uint16           `json:"sv,omitempty" cbor:"22,keyasint,omitempty"`  // [totalServices, numFailedServices]
+	Battery        Battery            `json:"bat,omitzero" cbor:"23,keyasint,omitzero"`   // [percent, charge state]
+	RootDiskName   string             `json:"rdn,omitempty" cbor:"24,keyasint,omitempty"` // custom name for root disk (set via FILESYSTEM=device__name)
+	PackageUpdates []uint16           `json:"pu,omitempty" cbor:"25,keyasint,omitempty"`  // [totalUpdates, securityUpdates] (security omitted if unknown)
+	WiFi           map[string]WiFi    `json:"wf,omitempty" cbor:"26,keyasint,omitempty"`  // connected Wi-Fi interfaces
+	SystemdLogs    bool               `json:"jl,omitzero" cbor:"27,keyasint,omitempty"`   // agent can read the system journal
 }
 
 // Data that does not change during process lifetime and is not needed in All Systems table
@@ -170,6 +210,7 @@ type Details struct {
 	Podman        bool          `cbor:"8,keyasint,omitempty"`
 	MemoryTotal   uint64        `cbor:"9,keyasint"`
 	SmartInterval time.Duration `cbor:"10,keyasint,omitempty"`
+	ZfsInterval   time.Duration `cbor:"11,keyasint,omitempty"` // interval for ZFS detail refresh
 }
 
 // Final data structure to return to the hub
@@ -179,4 +220,8 @@ type CombinedData struct {
 	Containers      []*container.Stats `json:"container" cbor:"2,keyasint"`
 	SystemdServices []*systemd.Service `json:"systemd,omitempty" cbor:"3,keyasint,omitempty"`
 	Details         *Details           `cbor:"4,keyasint,omitempty"`
+	// SystemdServicesUpdated distinguishes a fresh empty snapshot from a response
+	// that omitted systemd data (for example, a short-cache dashboard request).
+	SystemdServicesUpdated bool                      `json:"systemdUpdated,omitzero" cbor:"5,keyasint,omitempty"`
+	Monitors               map[string]monitor.Result `cbor:"6,keyasint"`
 }

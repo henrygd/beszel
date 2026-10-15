@@ -15,10 +15,10 @@ export default function () {
 	const page = useStore($router)
 	const [isFirstRun, setFirstRun] = useState(false)
 	const [authMethods, setAuthMethods] = useState<AuthMethodsList>()
-	const { theme } = useTheme()
+	const { resolvedTheme } = useTheme()
 
 	useEffect(() => {
-		document.title = t`Login` + " / Beszel"
+		document.title = `${t`Login`} / Beszel`
 
 		pb.send("/api/beszel/first-run", {}).then(({ firstRun }) => {
 			setFirstRun(firstRun)
@@ -54,15 +54,15 @@ export default function () {
 			<div
 				className="grid gap-5 w-full px-4 mx-auto"
 				// @ts-expect-error
-				style={{ maxWidth: "21.5em", "--border": theme == "light" ? "hsl(30, 8%, 70%)" : "hsl(220, 3%, 25%)" }}
+				style={{ maxWidth: "21.5em", "--border": resolvedTheme === "light" ? "hsl(30, 8%, 70%)" : "hsl(220, 3%, 25%)" }}
 			>
 				<div className="absolute top-3 right-3">
 					<ModeToggle />
 				</div>
 				<div className="text-center">
 					<h1 className="mb-3">
+						{/* Logo's aria-label provides the heading text */}
 						<Logo className="h-7 fill-foreground mx-auto" />
-						<span className="sr-only">Beszel</span>
 					</h1>
 					<p className="text-sm text-muted-foreground">{subtitle}</p>
 				</div>

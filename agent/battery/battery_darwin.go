@@ -3,11 +3,7 @@
 package battery
 
 import (
-	"errors"
-	"log/slog"
-	"math"
 	"os/exec"
-	"sync"
 
 	"howett.net/plist"
 )
@@ -35,62 +31,46 @@ func readMacBatteries() ([]macBattery, error) {
 	return batteries, nil
 }
 
-// HasReadableBattery checks if the system has a battery and returns true if it does.
-var HasReadableBattery = sync.OnceValue(func() bool {
-	systemHasBattery := false
-	batteries, err := readMacBatteries()
-	slog.Debug("Batteries", "batteries", batteries, "err", err)
-	for _, bat := range batteries {
-		if bat.MaxCapacity > 0 {
-			systemHasBattery = true
-			break
-		}
-	}
-	return systemHasBattery
-})
+func HasReadableBattery() bool {
+	batteries, _ := GetBatteryStats()
+	return len(batteries) > 0
+}
 
-// GetBatteryStats returns the current battery percent and charge state.
-// Uses CurrentCapacity/MaxCapacity to match the value macOS displays.
-func GetBatteryStats() (batteryPercent uint8, batteryState uint8, err error) {
-	if !HasReadableBattery() {
-		return batteryPercent, batteryState, errors.ErrUnsupported
-	}
+// GetBatteryStats returns every readable battery reported by macOS.
+func GetBatteryStats() ([]Battery, error) {
 	batteries, err := readMacBatteries()
+	if err != nil {
+		return nil, err
+	}
 	if len(batteries) == 0 {
-		return batteryPercent, batteryState, errors.New("no batteries")
+		return nil, errNoBatteries
 	}
-
-	totalCapacity := 0
-	totalCharge := 0
-	batteryState = math.MaxUint8
-
+	result := make([]Battery, 0, len(batteries))
 	for _, bat := range batteries {
-		if bat.MaxCapacity == 0 {
+		if bat.MaxCapacity <= 0 {
 			// skip ghost batteries with 0 capacity
 			// https://github.com/distatus/battery/issues/34
 			continue
 		}
-		totalCapacity += bat.MaxCapacity
-		totalCharge += min(bat.CurrentCapacity, bat.MaxCapacity)
-
+		percent := min(max(float64(bat.CurrentCapacity)/float64(bat.MaxCapacity)*100, 0), 100)
+		state := stateUnknown
 		switch {
 		case !bat.ExternalConnected:
-			batteryState = stateDischarging
+			state = stateDischarging
 		case bat.IsCharging:
-			batteryState = stateCharging
+			state = stateCharging
 		case bat.CurrentCapacity == 0:
-			batteryState = stateEmpty
+			state = stateEmpty
 		case !bat.FullyCharged:
-			batteryState = stateIdle
+			state = stateIdle
 		default:
-			batteryState = stateFull
+			state = stateFull
 		}
+		result = append(result, Battery{Name: "Primary", Percent: uint8(percent), State: state,
+			FullChargeCapacity: uint64(bat.MaxCapacity), HasFullChargeCapacity: true, System: true})
 	}
-
-	if totalCapacity == 0 || batteryState == math.MaxUint8 {
-		return batteryPercent, batteryState, errors.New("no battery capacity")
+	if len(result) == 0 {
+		return nil, errNoBatteries
 	}
-
-	batteryPercent = uint8(float64(totalCharge) / float64(totalCapacity) * 100)
-	return batteryPercent, batteryState, nil
+	return normalizeBatteries(result), nil
 }

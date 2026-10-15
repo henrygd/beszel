@@ -1,0 +1,15 @@
+Warning: Repository 'Update repository of openSUSE Backports' metadata expired since 2025-03-02 19:18:12 UTC.
+Warning: Repository 'Main Update Repository' metadata expired since 2025-08-30 08:17:31 UTC.
+Warning: Repository 'Update Repository (Non-Oss)' metadata expired since 2025-04-10 11:03:28 UTC.
+
+
+
+Repository                                                   | Name                        | Category | Severity  | Interactive | Status | Summary
+-------------------------------------------------------------+-----------------------------+----------+-----------+-------------+--------+--------------------------------
+Update repository with updates from SUSE Linux Enterprise 15 | openSUSE-SLE-15.5-2024-3765 | security | moderate  | ---         | needed | Security update for openssl-1_1
+Update repository with updates from SUSE Linux Enterprise 15 | openSUSE-SLE-15.5-2024-3926 | security | moderate  | ---         | needed | Security update for curl
+Update repository with updates from SUSE Linux Enterprise 15 | openSUSE-SLE-15.5-2024-4078 | security | important | ---         | needed | Security update for glib2
+Update repository with updates from SUSE Linux Enterprise 15 | openSUSE-SLE-15.5-2024-4359 | security | moderate  | ---         | needed | Security update for curl
+
+4 patches needed (4 security patches)
+

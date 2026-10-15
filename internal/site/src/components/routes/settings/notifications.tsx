@@ -24,7 +24,7 @@ interface ShoutrrrUrlCardProps {
 }
 
 const NotificationSchema = v.object({
-	emails: v.array(v.pipe(v.string(), v.email())),
+	emails: v.array(v.pipe(v.string(), v.rfcEmail())),
 	webhooks: v.array(v.pipe(v.string(), v.url())),
 })
 

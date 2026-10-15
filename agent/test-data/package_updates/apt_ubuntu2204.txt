@@ -1,0 +1,130 @@
+Reading package lists...
+Building dependency tree...
+Reading state information...
+Calculating upgrade...
+The following packages will be upgraded:
+  apt base-files bash bsdutils coreutils diffutils dpkg e2fsprogs gcc-12-base
+  gpgv gzip libapt-pkg6.0 libattr1 libblkid1 libbz2-1.0 libc-bin libc6 libcap2
+  libcom-err2 libext2fs2 libgcc-s1 libgcrypt20 libgnutls30 libgssapi-krb5-2
+  libk5crypto3 libkrb5-3 libkrb5support0 liblzma5 libmount1 libncurses6
+  libncursesw6 libp11-kit0 libpam-modules libpam-modules-bin libpam-runtime
+  libpam0g libprocps8 libseccomp2 libsmartcols1 libss2 libssl3 libstdc++6
+  libsystemd0 libtasn1-6 libtinfo6 libudev1 libuuid1 login logsave mount
+  ncurses-base ncurses-bin passwd perl-base procps sed tar util-linux
+58 upgraded, 0 newly installed, 0 to remove and 0 not upgraded.
+Inst gcc-12-base [12.3.0-1ubuntu1~22.04] (12.3.0-1ubuntu1~22.04.3 Ubuntu:22.04/jammy-updates, Ubuntu:22.04/jammy-security [arm64]) [libstdc++6:arm64 libgcc-s1:arm64 ]
+Conf gcc-12-base (12.3.0-1ubuntu1~22.04.3 Ubuntu:22.04/jammy-updates, Ubuntu:22.04/jammy-security [arm64]) [libstdc++6:arm64 libgcc-s1:arm64 ]
+Inst libgcc-s1 [12.3.0-1ubuntu1~22.04] (12.3.0-1ubuntu1~22.04.3 Ubuntu:22.04/jammy-updates, Ubuntu:22.04/jammy-security [arm64]) [libstdc++6:arm64 ]
+Conf libgcc-s1 (12.3.0-1ubuntu1~22.04.3 Ubuntu:22.04/jammy-updates, Ubuntu:22.04/jammy-security [arm64]) [libstdc++6:arm64 ]
+Inst libstdc++6 [12.3.0-1ubuntu1~22.04] (12.3.0-1ubuntu1~22.04.3 Ubuntu:22.04/jammy-updates, Ubuntu:22.04/jammy-security [arm64])
+Conf libstdc++6 (12.3.0-1ubuntu1~22.04.3 Ubuntu:22.04/jammy-updates, Ubuntu:22.04/jammy-security [arm64])
+Inst libc6 [2.35-0ubuntu3.4] (2.35-0ubuntu3.15 Ubuntu:22.04/jammy-updates, Ubuntu:22.04/jammy-security [arm64])
+Conf libc6 (2.35-0ubuntu3.15 Ubuntu:22.04/jammy-updates, Ubuntu:22.04/jammy-security [arm64])
+Inst base-files [12ubuntu4.4] (12ubuntu4.7 Ubuntu:22.04/jammy-updates [arm64])
+Conf base-files (12ubuntu4.7 Ubuntu:22.04/jammy-updates [arm64])
+Inst bash [5.1-6ubuntu1] (5.1-6ubuntu1.1 Ubuntu:22.04/jammy-updates, Ubuntu:22.04/jammy-security [arm64])
+Conf bash (5.1-6ubuntu1.1 Ubuntu:22.04/jammy-updates, Ubuntu:22.04/jammy-security [arm64])
+Inst bsdutils [1:2.37.2-4ubuntu3] (1:2.37.2-4ubuntu3.6 Ubuntu:22.04/jammy-updates, Ubuntu:22.04/jammy-security [arm64])
+Conf bsdutils (1:2.37.2-4ubuntu3.6 Ubuntu:22.04/jammy-updates, Ubuntu:22.04/jammy-security [arm64])
+Inst coreutils [8.32-4.1ubuntu1] (8.32-4.1ubuntu1.4 Ubuntu:22.04/jammy-updates, Ubuntu:22.04/jammy-security [arm64])
+Conf coreutils (8.32-4.1ubuntu1.4 Ubuntu:22.04/jammy-updates, Ubuntu:22.04/jammy-security [arm64])
+Inst diffutils [1:3.8-0ubuntu2] (1:3.8-0ubuntu2.1 Ubuntu:22.04/jammy-updates, Ubuntu:22.04/jammy-security [arm64])
+Conf diffutils (1:3.8-0ubuntu2.1 Ubuntu:22.04/jammy-updates, Ubuntu:22.04/jammy-security [arm64])
+Inst libbz2-1.0 [1.0.8-5build1] (1.0.8-5ubuntu0.1 Ubuntu:22.04/jammy-updates, Ubuntu:22.04/jammy-security [arm64])
+Conf libbz2-1.0 (1.0.8-5ubuntu0.1 Ubuntu:22.04/jammy-updates, Ubuntu:22.04/jammy-security [arm64])
+Inst libgcrypt20 [1.9.4-3ubuntu3] (1.9.4-3ubuntu3.3 Ubuntu:22.04/jammy-updates, Ubuntu:22.04/jammy-security [arm64])
+Conf libgcrypt20 (1.9.4-3ubuntu3.3 Ubuntu:22.04/jammy-updates, Ubuntu:22.04/jammy-security [arm64])
+Inst liblzma5 [5.2.5-2ubuntu1] (5.2.5-2ubuntu1.1 Ubuntu:22.04/jammy-updates, Ubuntu:22.04/jammy-security [arm64])
+Conf liblzma5 (5.2.5-2ubuntu1.1 Ubuntu:22.04/jammy-updates, Ubuntu:22.04/jammy-security [arm64])
+Inst libsystemd0 [249.11-0ubuntu3.10] (249.11-0ubuntu3.22 Ubuntu:22.04/jammy-updates, Ubuntu:22.04/jammy-security [arm64])
+Conf libsystemd0 (249.11-0ubuntu3.22 Ubuntu:22.04/jammy-updates, Ubuntu:22.04/jammy-security [arm64])
+Inst libudev1 [249.11-0ubuntu3.10] (249.11-0ubuntu3.22 Ubuntu:22.04/jammy-updates, Ubuntu:22.04/jammy-security [arm64])
+Conf libudev1 (249.11-0ubuntu3.22 Ubuntu:22.04/jammy-updates, Ubuntu:22.04/jammy-security [arm64])
+Inst libapt-pkg6.0 [2.4.10] (2.4.14 Ubuntu:22.04/jammy-updates [arm64])
+Conf libapt-pkg6.0 (2.4.14 Ubuntu:22.04/jammy-updates [arm64])
+Inst tar [1.34+dfsg-1ubuntu0.1.22.04.1] (1.34+dfsg-1ubuntu0.1.22.04.6 Ubuntu:22.04/jammy-updates, Ubuntu:22.04/jammy-security [arm64])
+Conf tar (1.34+dfsg-1ubuntu0.1.22.04.6 Ubuntu:22.04/jammy-updates, Ubuntu:22.04/jammy-security [arm64])
+Inst dpkg [1.21.1ubuntu2.2] (1.21.1ubuntu2.6 Ubuntu:22.04/jammy-updates, Ubuntu:22.04/jammy-security [arm64])
+Conf dpkg (1.21.1ubuntu2.6 Ubuntu:22.04/jammy-updates, Ubuntu:22.04/jammy-security [arm64])
+Inst gzip [1.10-4ubuntu4.1] (1.10-4ubuntu4.2 Ubuntu:22.04/jammy-updates, Ubuntu:22.04/jammy-security [arm64])
+Conf gzip (1.10-4ubuntu4.2 Ubuntu:22.04/jammy-updates, Ubuntu:22.04/jammy-security [arm64])
+Inst login [1:4.8.1-2ubuntu2.1] (1:4.8.1-2ubuntu2.2 Ubuntu:22.04/jammy-updates, Ubuntu:22.04/jammy-security [arm64])
+Conf login (1:4.8.1-2ubuntu2.2 Ubuntu:22.04/jammy-updates, Ubuntu:22.04/jammy-security [arm64])
+Inst ncurses-bin [6.3-2ubuntu0.1] (6.3-2ubuntu0.3 Ubuntu:22.04/jammy-updates, Ubuntu:22.04/jammy-security [arm64])
+Conf ncurses-bin (6.3-2ubuntu0.3 Ubuntu:22.04/jammy-updates, Ubuntu:22.04/jammy-security [arm64])
+Inst perl-base [5.34.0-3ubuntu1.2] (5.34.0-3ubuntu1.9 Ubuntu:22.04/jammy-updates, Ubuntu:22.04/jammy-security [arm64])
+Conf perl-base (5.34.0-3ubuntu1.9 Ubuntu:22.04/jammy-updates, Ubuntu:22.04/jammy-security [arm64])
+Inst sed [4.8-1ubuntu2] (4.8-1ubuntu2.1 Ubuntu:22.04/jammy-updates, Ubuntu:22.04/jammy-security [arm64])
+Conf sed (4.8-1ubuntu2.1 Ubuntu:22.04/jammy-updates, Ubuntu:22.04/jammy-security [arm64])
+Inst util-linux [2.37.2-4ubuntu3] (2.37.2-4ubuntu3.6 Ubuntu:22.04/jammy-updates, Ubuntu:22.04/jammy-security [arm64])
+Conf util-linux (2.37.2-4ubuntu3.6 Ubuntu:22.04/jammy-updates, Ubuntu:22.04/jammy-security [arm64])
+Inst libc-bin [2.35-0ubuntu3.4] (2.35-0ubuntu3.15 Ubuntu:22.04/jammy-updates, Ubuntu:22.04/jammy-security [arm64])
+Conf libc-bin (2.35-0ubuntu3.15 Ubuntu:22.04/jammy-updates, Ubuntu:22.04/jammy-security [arm64])
+Inst ncurses-base [6.3-2ubuntu0.1] (6.3-2ubuntu0.3 Ubuntu:22.04/jammy-updates, Ubuntu:22.04/jammy-security [all])
+Conf ncurses-base (6.3-2ubuntu0.3 Ubuntu:22.04/jammy-updates, Ubuntu:22.04/jammy-security [all])
+Inst gpgv [2.2.27-3ubuntu2.1] (2.2.27-3ubuntu2.5 Ubuntu:22.04/jammy-updates, Ubuntu:22.04/jammy-security [arm64])
+Conf gpgv (2.2.27-3ubuntu2.5 Ubuntu:22.04/jammy-updates, Ubuntu:22.04/jammy-security [arm64])
+Inst libp11-kit0 [0.24.0-6build1] (0.24.0-6ubuntu0.1 Ubuntu:22.04/jammy-updates, Ubuntu:22.04/jammy-security [arm64])
+Conf libp11-kit0 (0.24.0-6ubuntu0.1 Ubuntu:22.04/jammy-updates, Ubuntu:22.04/jammy-security [arm64])
+Inst libtasn1-6 [4.18.0-4build1] (4.18.0-4ubuntu0.2 Ubuntu:22.04/jammy-updates, Ubuntu:22.04/jammy-security [arm64])
+Conf libtasn1-6 (4.18.0-4ubuntu0.2 Ubuntu:22.04/jammy-updates, Ubuntu:22.04/jammy-security [arm64])
+Inst libgnutls30 [3.7.3-4ubuntu1.2] (3.7.3-4ubuntu1.9 Ubuntu:22.04/jammy-updates, Ubuntu:22.04/jammy-security [arm64])
+Conf libgnutls30 (3.7.3-4ubuntu1.9 Ubuntu:22.04/jammy-updates, Ubuntu:22.04/jammy-security [arm64])
+Inst libseccomp2 [2.5.3-2ubuntu2] (2.5.3-2ubuntu3~22.04.1 Ubuntu:22.04/jammy-updates [arm64])
+Conf libseccomp2 (2.5.3-2ubuntu3~22.04.1 Ubuntu:22.04/jammy-updates [arm64])
+Inst apt [2.4.10] (2.4.14 Ubuntu:22.04/jammy-updates [arm64])
+Conf apt (2.4.14 Ubuntu:22.04/jammy-updates [arm64])
+Inst libpam0g [1.4.0-11ubuntu2.3] (1.4.0-11ubuntu2.8 Ubuntu:22.04/jammy-updates, Ubuntu:22.04/jammy-security [arm64])
+Conf libpam0g (1.4.0-11ubuntu2.8 Ubuntu:22.04/jammy-updates, Ubuntu:22.04/jammy-security [arm64])
+Inst libpam-modules-bin [1.4.0-11ubuntu2.3] (1.4.0-11ubuntu2.8 Ubuntu:22.04/jammy-updates, Ubuntu:22.04/jammy-security [arm64]) [libpam-modules:arm64 on libpam-modules-bin:arm64] [libpam-modules:arm64 ]
+Conf libpam-modules-bin (1.4.0-11ubuntu2.8 Ubuntu:22.04/jammy-updates, Ubuntu:22.04/jammy-security [arm64]) [libpam-modules:arm64 ]
+Inst libpam-modules [1.4.0-11ubuntu2.3] (1.4.0-11ubuntu2.8 Ubuntu:22.04/jammy-updates, Ubuntu:22.04/jammy-security [arm64])
+Conf libpam-modules (1.4.0-11ubuntu2.8 Ubuntu:22.04/jammy-updates, Ubuntu:22.04/jammy-security [arm64])
+Inst logsave [1.46.5-2ubuntu1.1] (1.46.5-2ubuntu1.2 Ubuntu:22.04/jammy-updates [arm64])
+Inst libext2fs2 [1.46.5-2ubuntu1.1] (1.46.5-2ubuntu1.2 Ubuntu:22.04/jammy-updates [arm64]) [e2fsprogs:arm64 on libext2fs2:arm64] [e2fsprogs:arm64 ]
+Conf libext2fs2 (1.46.5-2ubuntu1.2 Ubuntu:22.04/jammy-updates [arm64]) [e2fsprogs:arm64 ]
+Inst e2fsprogs [1.46.5-2ubuntu1.1] (1.46.5-2ubuntu1.2 Ubuntu:22.04/jammy-updates [arm64])
+Inst mount [2.37.2-4ubuntu3] (2.37.2-4ubuntu3.6 Ubuntu:22.04/jammy-updates, Ubuntu:22.04/jammy-security [arm64])
+Inst libattr1 [1:2.5.1-1build1] (1:2.5.1-1ubuntu0.1 Ubuntu:22.04/jammy-updates, Ubuntu:22.04/jammy-security [arm64])
+Conf libattr1 (1:2.5.1-1ubuntu0.1 Ubuntu:22.04/jammy-updates, Ubuntu:22.04/jammy-security [arm64])
+Inst libblkid1 [2.37.2-4ubuntu3] (2.37.2-4ubuntu3.6 Ubuntu:22.04/jammy-updates, Ubuntu:22.04/jammy-security [arm64])
+Conf libblkid1 (2.37.2-4ubuntu3.6 Ubuntu:22.04/jammy-updates, Ubuntu:22.04/jammy-security [arm64])
+Inst libcap2 [1:2.44-1ubuntu0.22.04.1] (1:2.44-1ubuntu0.22.04.3 Ubuntu:22.04/jammy-updates, Ubuntu:22.04/jammy-security [arm64])
+Conf libcap2 (1:2.44-1ubuntu0.22.04.3 Ubuntu:22.04/jammy-updates, Ubuntu:22.04/jammy-security [arm64])
+Inst libcom-err2 [1.46.5-2ubuntu1.1] (1.46.5-2ubuntu1.2 Ubuntu:22.04/jammy-updates [arm64])
+Conf libcom-err2 (1.46.5-2ubuntu1.2 Ubuntu:22.04/jammy-updates [arm64])
+Inst libk5crypto3 [1.19.2-2ubuntu0.2] (1.19.2-2ubuntu0.10 Ubuntu:22.04/jammy-updates [arm64])
+Conf libk5crypto3 (1.19.2-2ubuntu0.10 Ubuntu:22.04/jammy-updates [arm64])
+Inst libkrb5support0 [1.19.2-2ubuntu0.2] (1.19.2-2ubuntu0.10 Ubuntu:22.04/jammy-updates [arm64]) [libkrb5-3:arm64 ]
+Conf libkrb5support0 (1.19.2-2ubuntu0.10 Ubuntu:22.04/jammy-updates [arm64]) [libkrb5-3:arm64 ]
+Inst libkrb5-3 [1.19.2-2ubuntu0.2] (1.19.2-2ubuntu0.10 Ubuntu:22.04/jammy-updates [arm64]) [libgssapi-krb5-2:arm64 ]
+Conf libkrb5-3 (1.19.2-2ubuntu0.10 Ubuntu:22.04/jammy-updates [arm64]) [libgssapi-krb5-2:arm64 ]
+Inst libgssapi-krb5-2 [1.19.2-2ubuntu0.2] (1.19.2-2ubuntu0.10 Ubuntu:22.04/jammy-updates [arm64])
+Conf libgssapi-krb5-2 (1.19.2-2ubuntu0.10 Ubuntu:22.04/jammy-updates [arm64])
+Inst libssl3 [3.0.2-0ubuntu1.10] (3.0.2-0ubuntu1.29 Ubuntu:22.04/jammy-updates, Ubuntu:22.04/jammy-security [arm64])
+Conf libssl3 (3.0.2-0ubuntu1.29 Ubuntu:22.04/jammy-updates, Ubuntu:22.04/jammy-security [arm64])
+Inst libmount1 [2.37.2-4ubuntu3] (2.37.2-4ubuntu3.6 Ubuntu:22.04/jammy-updates, Ubuntu:22.04/jammy-security [arm64])
+Conf libmount1 (2.37.2-4ubuntu3.6 Ubuntu:22.04/jammy-updates, Ubuntu:22.04/jammy-security [arm64])
+Inst libpam-runtime [1.4.0-11ubuntu2.3] (1.4.0-11ubuntu2.8 Ubuntu:22.04/jammy-updates, Ubuntu:22.04/jammy-security [all])
+Conf libpam-runtime (1.4.0-11ubuntu2.8 Ubuntu:22.04/jammy-updates, Ubuntu:22.04/jammy-security [all])
+Inst libsmartcols1 [2.37.2-4ubuntu3] (2.37.2-4ubuntu3.6 Ubuntu:22.04/jammy-updates, Ubuntu:22.04/jammy-security [arm64])
+Conf libsmartcols1 (2.37.2-4ubuntu3.6 Ubuntu:22.04/jammy-updates, Ubuntu:22.04/jammy-security [arm64])
+Inst libncurses6 [6.3-2ubuntu0.1] (6.3-2ubuntu0.3 Ubuntu:22.04/jammy-updates, Ubuntu:22.04/jammy-security [arm64]) []
+Inst libncursesw6 [6.3-2ubuntu0.1] (6.3-2ubuntu0.3 Ubuntu:22.04/jammy-updates, Ubuntu:22.04/jammy-security [arm64]) []
+Inst libtinfo6 [6.3-2ubuntu0.1] (6.3-2ubuntu0.3 Ubuntu:22.04/jammy-updates, Ubuntu:22.04/jammy-security [arm64])
+Conf libtinfo6 (6.3-2ubuntu0.3 Ubuntu:22.04/jammy-updates, Ubuntu:22.04/jammy-security [arm64])
+Inst libuuid1 [2.37.2-4ubuntu3] (2.37.2-4ubuntu3.6 Ubuntu:22.04/jammy-updates, Ubuntu:22.04/jammy-security [arm64])
+Conf libuuid1 (2.37.2-4ubuntu3.6 Ubuntu:22.04/jammy-updates, Ubuntu:22.04/jammy-security [arm64])
+Inst passwd [1:4.8.1-2ubuntu2.1] (1:4.8.1-2ubuntu2.2 Ubuntu:22.04/jammy-updates, Ubuntu:22.04/jammy-security [arm64])
+Conf passwd (1:4.8.1-2ubuntu2.2 Ubuntu:22.04/jammy-updates, Ubuntu:22.04/jammy-security [arm64])
+Inst libprocps8 [2:3.3.17-6ubuntu2] (2:3.3.17-6ubuntu2.1 Ubuntu:22.04/jammy-updates, Ubuntu:22.04/jammy-security [arm64])
+Inst libss2 [1.46.5-2ubuntu1.1] (1.46.5-2ubuntu1.2 Ubuntu:22.04/jammy-updates [arm64])
+Inst procps [2:3.3.17-6ubuntu2] (2:3.3.17-6ubuntu2.1 Ubuntu:22.04/jammy-updates, Ubuntu:22.04/jammy-security [arm64])
+Conf logsave (1.46.5-2ubuntu1.2 Ubuntu:22.04/jammy-updates [arm64])
+Conf e2fsprogs (1.46.5-2ubuntu1.2 Ubuntu:22.04/jammy-updates [arm64])
+Conf mount (2.37.2-4ubuntu3.6 Ubuntu:22.04/jammy-updates, Ubuntu:22.04/jammy-security [arm64])
+Conf libncurses6 (6.3-2ubuntu0.3 Ubuntu:22.04/jammy-updates, Ubuntu:22.04/jammy-security [arm64])
+Conf libncursesw6 (6.3-2ubuntu0.3 Ubuntu:22.04/jammy-updates, Ubuntu:22.04/jammy-security [arm64])
+Conf libprocps8 (2:3.3.17-6ubuntu2.1 Ubuntu:22.04/jammy-updates, Ubuntu:22.04/jammy-security [arm64])
+Conf libss2 (1.46.5-2ubuntu1.2 Ubuntu:22.04/jammy-updates [arm64])
+Conf procps (2:3.3.17-6ubuntu2.1 Ubuntu:22.04/jammy-updates, Ubuntu:22.04/jammy-security [arm64])

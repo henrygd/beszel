@@ -1,5 +1,4 @@
-import { t } from "@lingui/core/macro"
-import { Trans } from "@lingui/react/macro"
+import { Trans, useLingui } from "@lingui/react/macro"
 import { useStore } from "@nanostores/react"
 import { getPagePath } from "@nanostores/router"
 import { ChevronDownIcon, ExternalLinkIcon } from "lucide-react"
@@ -65,6 +64,7 @@ let nextSystemToken: string | null = null
  * @param {SystemRecord} [props.system] - Optional system record for editing an existing system.
  */
 export const SystemDialog = ({ setOpen, system }: { setOpen: (open: boolean) => void; system?: SystemRecord }) => {
+	const { t } = useLingui()
 	const publicKey = useStore($publicKey)
 	const port = useRef<HTMLInputElement>(null)
 	const [hostValue, setHostValue] = useState(system?.host ?? "")
@@ -116,8 +116,6 @@ export const SystemDialog = ({ setOpen, system }: { setOpen: (open: boolean) => 
 		}
 	}
 
-	const systemTranslation = t`System`
-
 	return (
 		<DialogContent
 			className="w-[90%] sm:w-auto sm:ns-dialog max-w-full rounded-lg"
@@ -125,14 +123,10 @@ export const SystemDialog = ({ setOpen, system }: { setOpen: (open: boolean) => 
 				setHostValue(system?.host ?? "")
 			}}
 		>
-			<Tabs defaultValue={tab} onValueChange={setTab}>
+			<Tabs value={tab} onValueChange={setTab}>
 				<DialogHeader>
 					<DialogTitle className="mb-1 pb-1 max-w-100 truncate pr-8">
-						{system ? (
-							<Trans>Edit {{ foo: systemTranslation }}</Trans>
-						) : (
-							<Trans>Add {{ foo: systemTranslation }}</Trans>
-						)}
+						{system ? <Trans>Edit System</Trans> : <Trans>Add System</Trans>}
 					</DialogTitle>
 					<TabsList className="grid w-full grid-cols-2">
 						<TabsTrigger value="docker">Docker</TabsTrigger>
@@ -141,40 +135,55 @@ export const SystemDialog = ({ setOpen, system }: { setOpen: (open: boolean) => 
 						</TabsTrigger>
 					</TabsList>
 				</DialogHeader>
-				{/* Docker (set tab index to prevent auto focusing content in edit system dialog) */}
-				<TabsContent value="docker" tabIndex={-1}>
-					<DialogDescription className="mb-3 leading-relaxed w-0 min-w-full">
-						<Trans>
-							Copy the
-							<code className="bg-muted px-1 rounded-sm leading-3">docker-compose.yml</code> content for the agent
-							below, or register agents automatically with a{" "}
-							<Link
-								onClick={() => setOpen(false)}
-								href={getPagePath($router, "settings", { name: "tokens" })}
-								className="link"
-							>
-								universal token
-							</Link>
-							.
-						</Trans>
-					</DialogDescription>
-				</TabsContent>
-				{/* Binary */}
-				<TabsContent value="binary" tabIndex={-1}>
-					<DialogDescription className="mb-3 leading-relaxed w-0 min-w-full">
-						<Trans>
-							Copy the installation command for the agent below, or register agents automatically with a{" "}
-							<Link
-								onClick={() => setOpen(false)}
-								href={getPagePath($router, "settings", { name: "tokens" })}
-								className="link"
-							>
-								universal token
-							</Link>
-							.
-						</Trans>
-					</DialogDescription>
-				</TabsContent>
+				{/* Keep both translations in the same grid cell so tab changes do not resize the dialog. */}
+				<DialogDescription asChild className="mb-3 leading-relaxed">
+					<div className="grid">
+						{/* Docker (set tab index to prevent auto focusing content in edit system dialog) */}
+						<TabsContent
+							value="docker"
+							forceMount
+							tabIndex={-1}
+							className="col-start-1 row-start-1 data-[state=inactive]:invisible"
+						>
+							<p className="w-0 min-w-full">
+								<Trans>
+									Copy the
+									<code className="bg-muted px-1 rounded-sm leading-3">docker-compose.yml</code> content for the agent
+									below, or register agents automatically with a{" "}
+									<Link
+										onClick={() => setOpen(false)}
+										href={getPagePath($router, "settings", { name: "tokens" })}
+										className="link"
+									>
+										universal token
+									</Link>
+									.
+								</Trans>
+							</p>
+						</TabsContent>
+						{/* Binary */}
+						<TabsContent
+							value="binary"
+							forceMount
+							tabIndex={-1}
+							className="col-start-1 row-start-1 data-[state=inactive]:invisible"
+						>
+							<p className="w-0 min-w-full">
+								<Trans>
+									Copy the installation command for the agent below, or register agents automatically with a{" "}
+									<Link
+										onClick={() => setOpen(false)}
+										href={getPagePath($router, "settings", { name: "tokens" })}
+										className="link"
+									>
+										universal token
+									</Link>
+									.
+								</Trans>
+							</p>
+						</TabsContent>
+					</div>
+				</DialogDescription>
 				<form onSubmit={handleSubmit as any}>
 					<div className="grid xs:grid-cols-[auto_1fr] gap-y-3 gap-x-4 items-center mt-1 mb-4">
 						<Label htmlFor="name" className="xs:text-end">
@@ -214,65 +223,63 @@ export const SystemDialog = ({ setOpen, system }: { setOpen: (open: boolean) => 
 						<InputCopy value={token} id="tkn" name="tkn" />
 					</div>
 					<DialogFooter className="flex justify-end gap-x-2 gap-y-3 flex-col mt-5">
-						{/* Docker */}
-						<TabsContent value="docker" className="contents">
-							<CopyButton
-								text={t({ message: "Copy docker compose", context: "Button to copy docker compose file content" })}
-								onClick={async () =>
-									copyDockerCompose(isUnixSocket ? hostValue : port.current?.value, publicKey, token)
-								}
-								icon={<DockerIcon className="size-4 -me-0.5" />}
-								dropdownItems={[
-									{
-										text: t({ message: "Copy docker run", context: "Button to copy docker run command" }),
-										onClick: async () =>
-											copyDockerRun(isUnixSocket ? hostValue : port.current?.value, publicKey, token),
-										icons: [DockerIcon],
-									},
-								]}
-							/>
-						</TabsContent>
-						{/* Binary */}
-						<TabsContent value="binary" className="contents">
-							<CopyButton
-								text={t`Copy Linux command`}
-								icon={<TuxIcon className="size-4" />}
-								onClick={async () => copyLinuxCommand(isUnixSocket ? hostValue : port.current?.value, publicKey, token)}
-								dropdownItems={[
-									{
-										text: t({ message: "Homebrew command", context: "Button to copy install command" }),
-										onClick: async () =>
-											copyLinuxCommand(isUnixSocket ? hostValue : port.current?.value, publicKey, token, true),
-										icons: [AppleIcon, TuxIcon],
-									},
-									{
-										text: t({ message: "Windows command", context: "Button to copy install command" }),
-										onClick: async () =>
-											copyWindowsCommand(isUnixSocket ? hostValue : port.current?.value, publicKey, token),
-										icons: [WindowsIcon],
-									},
-									{
-										text: t({ message: "FreeBSD command", context: "Button to copy install command" }),
-										onClick: async () =>
-											copyLinuxCommand(isUnixSocket ? hostValue : port.current?.value, publicKey, token),
-										icons: [FreeBsdIcon],
-									},
-									{
-										text: t`Manual setup instructions`,
-										url: "https://beszel.dev/guide/agent-installation#binary",
-										icons: [ExternalLinkIcon],
-									},
-								]}
-							/>
-						</TabsContent>
+						<div className="grid">
+							{/* Docker */}
+							<div className={cn("col-start-1 row-start-1", tab !== "docker" && "invisible")}>
+								<CopyButton
+									text={t({ message: "Copy docker compose", context: "Button to copy docker compose file content" })}
+									onClick={async () =>
+										copyDockerCompose(isUnixSocket ? hostValue : port.current?.value, publicKey, token)
+									}
+									icon={<DockerIcon className="size-4 -me-0.5" />}
+									dropdownItems={[
+										{
+											text: t({ message: "Copy docker run", context: "Button to copy docker run command" }),
+											onClick: async () =>
+												copyDockerRun(isUnixSocket ? hostValue : port.current?.value, publicKey, token),
+											icons: [DockerIcon],
+										},
+									]}
+								/>
+							</div>
+							{/* Binary */}
+							<div className={cn("col-start-1 row-start-1", tab !== "binary" && "invisible")}>
+								<CopyButton
+									text={t`Copy Linux command`}
+									icon={<TuxIcon className="size-4" />}
+									onClick={async () =>
+										copyLinuxCommand(isUnixSocket ? hostValue : port.current?.value, publicKey, token)
+									}
+									dropdownItems={[
+										{
+											text: t({ message: "Homebrew command", context: "Button to copy install command" }),
+											onClick: async () =>
+												copyLinuxCommand(isUnixSocket ? hostValue : port.current?.value, publicKey, token, true),
+											icons: [AppleIcon, TuxIcon],
+										},
+										{
+											text: t({ message: "Windows command", context: "Button to copy install command" }),
+											onClick: async () =>
+												copyWindowsCommand(isUnixSocket ? hostValue : port.current?.value, publicKey, token),
+											icons: [WindowsIcon],
+										},
+										{
+											text: t({ message: "FreeBSD command", context: "Button to copy install command" }),
+											onClick: async () =>
+												copyLinuxCommand(isUnixSocket ? hostValue : port.current?.value, publicKey, token),
+											icons: [FreeBsdIcon],
+										},
+										{
+											text: t`Manual setup instructions`,
+											url: "https://beszel.dev/guide/agent-installation#binary",
+											icons: [ExternalLinkIcon],
+										},
+									]}
+								/>
+							</div>
+						</div>
 						{/* Save */}
-						<Button>
-							{system ? (
-								<Trans>Save {{ foo: systemTranslation }}</Trans>
-							) : (
-								<Trans>Add {{ foo: systemTranslation }}</Trans>
-							)}
-						</Button>
+						<Button>{system ? <Trans>Save System</Trans> : <Trans>Add System</Trans>}</Button>
 					</DialogFooter>
 				</form>
 			</Tabs>

@@ -7,10 +7,12 @@ import (
 	"encoding/json"
 	"io"
 	"net/http"
+	"net/http/httptest"
 	"strings"
+	"sync/atomic"
 	"testing"
+	"testing/synctest"
 
-	"github.com/henrygd/beszel/internal/alerts"
 	beszelTests "github.com/henrygd/beszel/internal/tests"
 	pbTests "github.com/pocketbase/pocketbase/tests"
 
@@ -18,6 +20,7 @@ import (
 	"github.com/pocketbase/pocketbase/core"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 // marshal to json and return an io.Reader (for use in ApiScenario.Body)
@@ -27,31 +30,6 @@ func jsonReader(v any) io.Reader {
 		panic(err)
 	}
 	return bytes.NewReader(data)
-}
-
-func TestIsInternalURL(t *testing.T) {
-	testCases := []struct {
-		name     string
-		url      string
-		internal bool
-	}{
-		{name: "loopback ipv4", url: "generic://127.0.0.1", internal: true},
-		{name: "localhost hostname", url: "generic://localhost", internal: true},
-		{name: "localhost hostname", url: "generic+http://localhost/api/v1/postStuff", internal: true},
-		{name: "localhost hostname", url: "generic+http://127.0.0.1:8080/api/v1/postStuff", internal: true},
-		{name: "localhost hostname", url: "generic+https://beszel.dev/api/v1/postStuff", internal: false},
-		{name: "public ipv4", url: "generic://8.8.8.8", internal: false},
-		{name: "token style service url", url: "discord://abc123@123456789", internal: false},
-		{name: "single label service url", url: "slack://token@team/channel", internal: false},
-	}
-
-	for _, testCase := range testCases {
-		t.Run(testCase.name, func(t *testing.T) {
-			internal, err := alerts.IsInternalURL(testCase.url)
-			assert.NoError(t, err)
-			assert.Equal(t, testCase.internal, internal)
-		})
-	}
 }
 
 func TestUserAlertsApi(t *testing.T) {
@@ -191,6 +169,30 @@ func TestUserAlertsApi(t *testing.T) {
 			},
 		},
 		{
+			Name:   "POST ignores systems the user cannot access",
+			Method: http.MethodPost,
+			URL:    "/api/beszel/user-alerts",
+			Headers: map[string]string{
+				"Authorization": user2Token,
+			},
+			ExpectedStatus:  200,
+			ExpectedContent: []string{"\"success\":true"},
+			TestAppFactory:  testAppFactory,
+			Body: jsonReader(map[string]any{
+				"name":    "CPU",
+				"systems": []string{system1.Id},
+				"value":   90,
+				"min":     10,
+			}),
+			BeforeTestFunc: func(t testing.TB, app *pbTests.TestApp, e *core.ServeEvent) {
+				require.NoError(t, beszelTests.ClearCollection(t, app, "alerts"))
+			},
+			AfterTestFunc: func(t testing.TB, app *pbTests.TestApp, res *http.Response) {
+				alerts, _ := app.CountRecords("alerts")
+				assert.Zero(t, alerts)
+			},
+		},
+		{
 			Name:   "Overwrite: false, should not overwrite existing alert",
 			Method: http.MethodPost,
 			URL:    "/api/beszel/user-alerts",
@@ -208,7 +210,7 @@ func TestUserAlertsApi(t *testing.T) {
 				"overwrite": false,
 			}),
 			BeforeTestFunc: func(t testing.TB, app *pbTests.TestApp, e *core.ServeEvent) {
-				beszelTests.ClearCollection(t, app, "alerts")
+				require.NoError(t, beszelTests.ClearCollection(t, app, "alerts"))
 				beszelTests.CreateRecord(app, "alerts", map[string]any{
 					"name":   "CPU",
 					"system": system1.Id,
@@ -242,7 +244,7 @@ func TestUserAlertsApi(t *testing.T) {
 				"overwrite": true,
 			}),
 			BeforeTestFunc: func(t testing.TB, app *pbTests.TestApp, e *core.ServeEvent) {
-				beszelTests.ClearCollection(t, app, "alerts")
+				require.NoError(t, beszelTests.ClearCollection(t, app, "alerts"))
 				beszelTests.CreateRecord(app, "alerts", map[string]any{
 					"name":   "CPU",
 					"system": system2.Id,
@@ -270,7 +272,7 @@ func TestUserAlertsApi(t *testing.T) {
 				"systems": []string{system1.Id},
 			}),
 			BeforeTestFunc: func(t testing.TB, app *pbTests.TestApp, e *core.ServeEvent) {
-				beszelTests.ClearCollection(t, app, "alerts")
+				require.NoError(t, beszelTests.ClearCollection(t, app, "alerts"))
 				beszelTests.CreateRecord(app, "alerts", map[string]any{
 					"name":   "CPU",
 					"system": system1.Id,
@@ -299,7 +301,7 @@ func TestUserAlertsApi(t *testing.T) {
 				"systems": []string{system1.Id},
 			}),
 			BeforeTestFunc: func(t testing.TB, app *pbTests.TestApp, e *core.ServeEvent) {
-				beszelTests.ClearCollection(t, app, "alerts")
+				require.NoError(t, beszelTests.ClearCollection(t, app, "alerts"))
 				beszelTests.CreateRecord(app, "alerts", map[string]any{
 					"name":   "CPU",
 					"system": system1.Id,
@@ -328,7 +330,7 @@ func TestUserAlertsApi(t *testing.T) {
 				"systems": []string{system1.Id, system2.Id},
 			}),
 			BeforeTestFunc: func(t testing.TB, app *pbTests.TestApp, e *core.ServeEvent) {
-				beszelTests.ClearCollection(t, app, "alerts")
+				require.NoError(t, beszelTests.ClearCollection(t, app, "alerts"))
 				for _, systemId := range []string{system1.Id, system2.Id} {
 					_, err := beszelTests.CreateRecord(app, "alerts", map[string]any{
 						"name":   "Memory",
@@ -348,6 +350,31 @@ func TestUserAlertsApi(t *testing.T) {
 			},
 		},
 		{
+			Name:   "DELETE ignores systems the user cannot access",
+			Method: http.MethodDelete,
+			URL:    "/api/beszel/user-alerts",
+			Headers: map[string]string{
+				"Authorization": user2Token,
+			},
+			ExpectedStatus:  200,
+			ExpectedContent: []string{"\"count\":0", "\"success\":true"},
+			TestAppFactory:  testAppFactory,
+			Body: jsonReader(map[string]any{
+				"name":    "CPU",
+				"systems": []string{system1.Id},
+			}),
+			BeforeTestFunc: func(t testing.TB, app *pbTests.TestApp, e *core.ServeEvent) {
+				require.NoError(t, beszelTests.ClearCollection(t, app, "alerts"))
+				beszelTests.CreateRecord(app, "alerts", map[string]any{
+					"name": "CPU", "system": system1.Id, "user": user2.Id, "value": 80,
+				})
+			},
+			AfterTestFunc: func(t testing.TB, app *pbTests.TestApp, res *http.Response) {
+				alerts, _ := app.CountRecords("alerts")
+				assert.EqualValues(t, 1, alerts)
+			},
+		},
+		{
 			Name:   "User 2 should not be able to delete alert of user 1",
 			Method: http.MethodDelete,
 			URL:    "/api/beszel/user-alerts",
@@ -362,7 +389,7 @@ func TestUserAlertsApi(t *testing.T) {
 				"systems": []string{system2.Id},
 			}),
 			BeforeTestFunc: func(t testing.TB, app *pbTests.TestApp, e *core.ServeEvent) {
-				beszelTests.ClearCollection(t, app, "alerts")
+				require.NoError(t, beszelTests.ClearCollection(t, app, "alerts"))
 				for _, user := range []string{user1.Id, user2.Id} {
 					beszelTests.CreateRecord(app, "alerts", map[string]any{
 						"name":   "CPU",
@@ -396,16 +423,29 @@ func TestSendTestNotification(t *testing.T) {
 	hub, user := beszelTests.GetHubWithUser(t)
 	defer hub.Cleanup()
 
+	var delivered atomic.Int32
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		delivered.Add(1)
+	}))
+	defer server.Close()
+	localURL := "generic+" + server.URL
+
+	readonlyUser, err := beszelTests.CreateUserWithRole(hub, "readonly@example.com", "password123", "readonly")
+	require.NoError(t, err)
+	readonlyToken, err := readonlyUser.NewAuthToken()
+	require.NoError(t, err)
 	userToken, err := user.NewAuthToken()
+	require.NoError(t, err, "Failed to create user auth token")
 
 	adminUser, err := beszelTests.CreateUserWithRole(hub, "admin@example.com", "password123", "admin")
-	assert.NoError(t, err, "Failed to create admin user")
+	require.NoError(t, err, "Failed to create admin user")
 	adminUserToken, err := adminUser.NewAuthToken()
+	require.NoError(t, err, "Failed to create admin auth token")
 
 	superuser, err := beszelTests.CreateSuperuser(hub, "superuser@example.com", "password123")
-	assert.NoError(t, err, "Failed to create superuser")
+	require.NoError(t, err, "Failed to create superuser")
 	superuserToken, err := superuser.NewAuthToken()
-	assert.NoError(t, err, "Failed to create superuser auth token")
+	require.NoError(t, err, "Failed to create superuser auth token")
 
 	testAppFactory := func(t testing.TB) *pbTests.TestApp {
 		return hub.TestApp
@@ -420,11 +460,11 @@ func TestSendTestNotification(t *testing.T) {
 			ExpectedContent: []string{"requires valid"},
 			TestAppFactory:  testAppFactory,
 			Body: jsonReader(map[string]any{
-				"url": "generic://127.0.0.1",
+				"url": localURL,
 			}),
 		},
 		{
-			Name:           "POST /test-notification - with external auth should succeed",
+			Name:           "POST /test-notification - invalid service reports error",
 			Method:         http.MethodPost,
 			URL:            "/api/beszel/test-notification",
 			TestAppFactory: testAppFactory,
@@ -432,7 +472,7 @@ func TestSendTestNotification(t *testing.T) {
 				"Authorization": userToken,
 			},
 			Body: jsonReader(map[string]any{
-				"url": "generic://8.8.8.8",
+				"url": "unknown://example.com",
 			}),
 			ExpectedStatus:  200,
 			ExpectedContent: []string{"\"err\":"},
@@ -474,10 +514,10 @@ func TestSendTestNotification(t *testing.T) {
 				"Authorization": adminUserToken,
 			},
 			Body: jsonReader(map[string]any{
-				"url": "generic://127.0.0.1",
+				"url": localURL,
 			}),
 			ExpectedStatus:  200,
-			ExpectedContent: []string{"\"err\":"},
+			ExpectedContent: []string{"\"err\":false"},
 		},
 		{
 			Name:           "POST /test-notification - internal url with superuser auth should succeed",
@@ -488,14 +528,42 @@ func TestSendTestNotification(t *testing.T) {
 				"Authorization": superuserToken,
 			},
 			Body: jsonReader(map[string]any{
-				"url": "generic://127.0.0.1",
+				"url": localURL,
 			}),
 			ExpectedStatus:  200,
 			ExpectedContent: []string{"\"err\":"},
 		},
 	}
 
+	for _, url := range []string{localURL, "smtp://user:pass@127.0.0.1/?fromAddress=sender@example.com&toAddresses=recipient@example.com", "mqtt://127.0.0.1/topic"} {
+		scenarios = append(scenarios, beszelTests.ApiScenario{
+			BeforeTestFunc: func(tb testing.TB, _ *pbTests.TestApp, e *core.ServeEvent) {
+				if !strings.HasPrefix(url, "mqtt://") {
+					return
+				}
+				// Keep the real MQTT rejection path, but advance its library's
+				// fixed timeout using virtual time instead of waiting 10 seconds.
+				e.Router.BindFunc(func(re *core.RequestEvent) error {
+					var err error
+					synctest.Test(tb.(*testing.T), func(t *testing.T) {
+						err = re.Next()
+					})
+					return err
+				})
+			},
+			Name:            "readonly cannot send to " + url,
+			Method:          http.MethodPost,
+			URL:             "/api/beszel/test-notification",
+			TestAppFactory:  testAppFactory,
+			Headers:         map[string]string{"Authorization": readonlyToken},
+			Body:            jsonReader(map[string]any{"url": url}),
+			ExpectedStatus:  403,
+			ExpectedContent: []string{"Only admins"},
+		})
+	}
+
 	for _, scenario := range scenarios {
 		scenario.Test(t)
 	}
+	assert.EqualValues(t, 2, delivered.Load(), "only admin and superuser requests should reach the server")
 }

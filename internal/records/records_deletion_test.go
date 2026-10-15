@@ -318,6 +318,7 @@ func TestDeleteOldAlertsHistoryEdgeCases(t *testing.T) {
 			"status": "up",
 			"users":  []string{user.Id},
 		})
+		require.NoError(t, err)
 
 		// Create only 5 alerts (well below threshold)
 		for i := range 5 {

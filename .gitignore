@@ -3,7 +3,6 @@ pb_data
 data
 temp
 .vscode
-beszel-agent
 beszel_data
 beszel_data*
 dist
@@ -21,3 +20,5 @@ __debug_*
 agent/lhm/obj
 agent/lhm/bin
 dockerfile_agent_dev
+.cr-release-packages
+.tmp

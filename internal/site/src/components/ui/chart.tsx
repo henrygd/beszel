@@ -1,11 +1,11 @@
-import type { JSX } from "react"
 import { useLingui } from "@lingui/react/macro"
 import * as React from "react"
 import * as RechartsPrimitive from "recharts"
 import { chartTimeData, cn } from "@/lib/utils"
-import type { ChartData } from "@/types"
+import type { ChartTimes } from "@/types"
 import { Separator } from "./separator"
-import { AxisDomain } from "recharts/types/util/types"
+import type { AxisDomain } from "recharts/types/util/types"
+import { timeTicks } from "d3-time"
 
 // Format: { THEME_NAME: CSS_SELECTOR }
 const THEMES = { light: "", dark: ".dark" } as const
@@ -101,7 +101,7 @@ const ChartTooltipContent = React.forwardRef<
 			labelKey?: string
 			unit?: string
 			filter?: string
-			contentFormatter?: (item: any, key: string) => React.ReactNode | string
+			contentFormatter?: (item: unknown, key: string) => React.ReactNode | string
 			truncate?: boolean
 			showTotal?: boolean
 			totalLabel?: React.ReactNode
@@ -175,7 +175,13 @@ const ChartTooltipContent = React.forwardRef<
 			}
 
 			const totalKey = "__total__"
-			const totalItem: any = {
+			const totalItem: {
+				value: number
+				name: string
+				dataKey: string
+				color: string | undefined
+				payload?: unknown
+			} = {
 				value: totalValue,
 				name: totalName,
 				dataKey: totalKey,
@@ -219,6 +225,11 @@ const ChartTooltipContent = React.forwardRef<
 		}, [label, labelFormatter, payload, hideLabel, labelClassName, config, labelKey])
 
 		if (!active || !payload?.length) {
+			return null
+		}
+
+		payload = payload.filter((item) => item.value != null)
+		if (!payload.length) {
 			return null
 		}
 
@@ -400,26 +411,57 @@ function getPayloadConfigFromPayload(config: ChartConfig, payload: unknown, key:
 	return configLabelKey in config ? config[configLabelKey] : config[key as keyof typeof config]
 }
 
-let cachedAxis: JSX.Element
-const xAxis = ({ domain, ticks, chartTime }: ChartData) => {
-	if (cachedAxis && domain[0] === cachedAxis.props.domain[0]) {
-		return cachedAxis
+interface XAxisData {
+	el: React.ReactElement
+	domain: [number, number]
+}
+
+const xAxisCache = new Map<ChartTimes, XAxisData>()
+
+function createXAxisData(chartTime: ChartTimes): XAxisData {
+	// console.log("Creating XAxis for", chartTime, new Date())
+	const axisEndTime = Date.now() + 500
+	const axisEndDate = new Date(axisEndTime)
+	const startTime = chartTimeData[chartTime].getOffset(axisEndDate)
+	const ticks = timeTicks(startTime, axisEndDate, chartTimeData[chartTime].ticks ?? 12).map((date) => date.getTime())
+	const domain: [number, number] = [startTime.getTime(), axisEndTime]
+
+	return {
+		domain,
+		el: (
+			<RechartsPrimitive.XAxis
+				dataKey="created"
+				domain={domain}
+				ticks={ticks}
+				allowDataOverflow
+				type="number"
+				scale="time"
+				minTickGap={12}
+				tickMargin={8}
+				axisLine={false}
+				tickFormatter={chartTimeData[chartTime].format}
+			/>
+		),
 	}
-	cachedAxis = (
-		<RechartsPrimitive.XAxis
-			dataKey="created"
-			domain={domain}
-			ticks={ticks}
-			allowDataOverflow
-			type="number"
-			scale="time"
-			minTickGap={12}
-			tickMargin={8}
-			axisLine={false}
-			tickFormatter={chartTimeData[chartTime].format}
-		/>
-	)
-	return cachedAxis
+}
+
+function xAxis(chartTime: ChartTimes, lastCreated: number) {
+	if (!lastCreated) {
+		return null
+	}
+	const cachedAxis = xAxisCache.get(chartTime)
+
+	const expectedInterval = chartTimeData[chartTime].expectedInterval
+	const conservativeEndTime = Date.now() - expectedInterval / 2
+	const axisEndTime = Math.max(lastCreated, conservativeEndTime)
+
+	if (cachedAxis && axisEndTime < cachedAxis.domain[1]) {
+		return cachedAxis.el
+	}
+
+	const axisData = createXAxisData(chartTime)
+	xAxisCache.set(chartTime, axisData)
+	return axisData.el
 }
 
 export {
@@ -432,17 +474,19 @@ export {
 	// ChartStyle,
 }
 
-export function pinnedAxisDomain(): AxisDomain {
-	return [
-		0,
-		(dataMax: number) => {
-			if (dataMax > 10) {
-				return Math.round(dataMax)
-			}
-			if (dataMax > 1) {
-				return Math.round(dataMax / 0.1) * 0.1
-			}
-			return dataMax
-		},
-	]
+const roundFloat = (value: number) => Number(value.toPrecision(12))
+
+/**
+ * Four equal intervals for a fixed [0, max] domain (e.g. total memory or disk size), with max as the top tick.
+ * Recharts stops one full step before max, which leaves a large gap below the top tick.
+ */
+export function fixedDomainTicks(domain?: AxisDomain): number[] | undefined {
+	if (!Array.isArray(domain)) {
+		return undefined
+	}
+	const [min, max] = domain
+	if (min !== 0 || typeof max !== "number" || !(max > 0) || !Number.isFinite(max)) {
+		return undefined
+	}
+	return [0, 1, 2, 3, 4].map((i) => roundFloat((max * i) / 4))
 }

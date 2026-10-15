@@ -48,6 +48,8 @@ type GPUManager struct {
 	// Per-cache-key tracking for delta calculations
 	// cacheKey -> gpuId -> snapshot of last count/usage/power values
 	lastSnapshots map[uint16]map[string]*gpuSnapshot
+	// Per-card energy snapshots for Intel sysfs power calculation.
+	intelSysfsEnergySnapshots map[string]intelSysfsEnergySnapshot
 }
 
 // gpuSnapshot stores the last observed incremental values for delta tracking
@@ -90,6 +92,7 @@ const (
 	collectorSourceNVML         collectorSource = "nvml"
 	collectorSourceNvidiaSMI    collectorSource = collectorSource(nvidiaSmiCmd)
 	collectorSourceIntelGpuTop  collectorSource = collectorSource(intelGpuStatsCmd)
+	collectorSourceIntelSysfs   collectorSource = "intel_sysfs"
 	collectorSourceAmdSysfs     collectorSource = "amd_sysfs"
 	collectorSourceRocmSMI      collectorSource = collectorSource(rocmSmiCmd)
 	collectorSourceMacmon       collectorSource = collectorSource(macmonCmd)
@@ -106,6 +109,7 @@ func isValidCollectorSource(source collectorSource) bool {
 		collectorSourceNVML,
 		collectorSourceNvidiaSMI,
 		collectorSourceIntelGpuTop,
+		collectorSourceIntelSysfs,
 		collectorSourceAmdSysfs,
 		collectorSourceRocmSMI,
 		collectorSourceMacmon,
@@ -122,6 +126,8 @@ type gpuCapabilities struct {
 	hasAmdSysfs     bool
 	hasTegrastats   bool
 	hasIntelGpuTop  bool
+	hasXe           bool
+	hasIntelSysfs   bool
 	hasNvtop        bool
 	hasMacmon       bool
 	hasPowermetrics bool
@@ -355,12 +361,16 @@ func (gm *GPUManager) calculateGPUAverage(id string, gpu *system.GPUData, cacheK
 
 	// If no new data arrived
 	if deltaCount == 0 {
-		// If GPU appears suspended (instantaneous values are 0), return zero values
-		// Otherwise return last known average for temporary collection gaps
-		if gpu.Temperature == 0 && gpu.MemoryUsed == 0 {
+		// Only discrete GPUs report temp/memory, so treat all-zero as suspended (return zeros).
+		// Engine-based (Intel) GPUs don't, so carry the last average forward across sample gaps.
+		if gpu.Engines == nil && gpu.Temperature == 0 && gpu.MemoryUsed == 0 {
 			return system.GPUData{Name: gpu.Name}
 		}
-		return gm.lastAvgData[id] // zero value if not found
+		lastAvg := gm.lastAvgData[id] // zero value if not found
+		if lastAvg.Name == "" {
+			lastAvg.Name = gpu.Name
+		}
+		return lastAvg
 	}
 
 	// Calculate new average
@@ -369,12 +379,13 @@ func (gm *GPUManager) calculateGPUAverage(id string, gpu *system.GPUData, cacheK
 
 	gpuAvg.Power = utils.TwoDecimals(deltaPower / float64(deltaCount))
 
+	gpuAvg.PowerPkg = utils.TwoDecimals(deltaPowerPkg / float64(deltaCount))
+
 	if gpu.Engines != nil {
 		// make fresh map for averaged engine metrics to avoid mutating
 		// the accumulator map stored in gm.GpuDataMap
 		gpuAvg.Engines = make(map[string]float64, len(gpu.Engines))
 		gpuAvg.Usage = gm.calculateIntelGPUUsage(&gpuAvg, gpu, lastSnapshot, deltaCount)
-		gpuAvg.PowerPkg = utils.TwoDecimals(deltaPowerPkg / float64(deltaCount))
 	} else {
 		gpuAvg.Usage = utils.TwoDecimals(deltaUsage / float64(deltaCount))
 	}
@@ -443,7 +454,9 @@ func (gm *GPUManager) storeSnapshot(id string, gpu *system.GPUData, cacheKey uin
 // It only reports capability presence and does not apply policy decisions.
 func (gm *GPUManager) discoverGpuCapabilities() gpuCapabilities {
 	caps := gpuCapabilities{
-		hasAmdSysfs: gm.hasAmdSysfs(),
+		hasAmdSysfs:   gm.hasAmdSysfs(),
+		hasXe:         gm.hasXe(),
+		hasIntelSysfs: gm.hasIntelSysfs(),
 	}
 	if _, err := exec.LookPath(nvidiaSmiCmd); err == nil {
 		caps.hasNvidiaSmi = true
@@ -472,7 +485,7 @@ func (gm *GPUManager) discoverGpuCapabilities() gpuCapabilities {
 }
 
 func hasAnyGpuCollector(caps gpuCapabilities) bool {
-	return caps.hasNvidiaSmi || caps.hasRocmSmi || caps.hasAmdSysfs || caps.hasTegrastats || caps.hasIntelGpuTop || caps.hasNvtop || caps.hasMacmon || caps.hasPowermetrics
+	return caps.hasNvidiaSmi || caps.hasRocmSmi || caps.hasAmdSysfs || caps.hasTegrastats || caps.hasIntelGpuTop || caps.hasIntelSysfs || caps.hasNvtop || caps.hasMacmon || caps.hasPowermetrics
 }
 
 func (gm *GPUManager) startIntelCollector() {
@@ -561,6 +574,13 @@ func (gm *GPUManager) collectorDefinitions(caps gpuCapabilities) map[collectorSo
 			start: func(_ func()) bool {
 				gm.startIntelCollector()
 				return true
+			},
+		},
+		collectorSourceIntelSysfs: {
+			group:     collectorGroupIntel,
+			available: caps.hasIntelSysfs,
+			start: func(_ func()) bool {
+				return gm.startIntelSysfsCollector()
 			},
 		},
 		collectorSourceAmdSysfs: {
@@ -705,8 +725,11 @@ func (gm *GPUManager) resolveLegacyCollectorPriority(caps gpuCapabilities) []col
 		priorities = append(priorities, collectorSourceAmdSysfs)
 	}
 
-	if caps.hasIntelGpuTop {
+	if caps.hasIntelGpuTop && !caps.hasXe {
 		priorities = append(priorities, collectorSourceIntelGpuTop)
+	}
+	if caps.hasIntelSysfs {
+		priorities = append(priorities, collectorSourceIntelSysfs)
 	}
 
 	// Apple collectors are currently opt-in only for testing.
@@ -727,9 +750,36 @@ func (gm *GPUManager) resolveLegacyCollectorPriority(caps gpuCapabilities) []col
 	return priorities
 }
 
+// gpuHwmonChips are hwmon chip names belonging to GPUs. Sensor reads on some
+// of these drivers (notably Intel Xe, where each read is a runtime PM resume)
+// wake the card, so SKIP_GPU must avoid touching them, not just hide them.
+var gpuHwmonChips = []string{"xe", "i915", "amdgpu", "radeon", "nvidia", "nouveau"}
+
+func isGpuChipName(name string) bool {
+	name = strings.ToLower(strings.TrimSpace(name))
+	for _, chip := range gpuHwmonChips {
+		if name == chip {
+			return true
+		}
+	}
+	return false
+}
+
+// SensorKeys are "<chip>" or "<chip>_<label>".
+func isGpuSensorKey(key string) bool {
+	key = strings.ToLower(strings.TrimSpace(key))
+	for _, chip := range gpuHwmonChips {
+		if key == chip || strings.HasPrefix(key, chip+"_") {
+			return true
+		}
+	}
+	return false
+}
+
 // NewGPUManager creates and initializes a new GPUManager
 func NewGPUManager() (*GPUManager, error) {
 	if skipGPU, _ := utils.GetEnv("SKIP_GPU"); skipGPU == "true" {
+		slog.Info("SKIP_GPU enabled, skipping GPU monitoring (collectors, temperatures, and fans)")
 		return nil, nil
 	}
 	var gm GPUManager

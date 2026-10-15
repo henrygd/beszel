@@ -112,6 +112,9 @@ func CreateRecord(app core.App, collectionName string, fields map[string]any) (*
 
 func ClearCollection(t testing.TB, app core.App, collectionName string) error {
 	_, err := app.DB().NewQuery(fmt.Sprintf("DELETE from %s", collectionName)).Execute()
+	if err != nil {
+		return err
+	}
 	recordCount, err := app.CountRecords(collectionName)
 	assert.EqualValues(t, recordCount, 0, "should have 0 records after clearing")
 	return err

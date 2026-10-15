@@ -1,9 +1,12 @@
 package main
 
 import (
+	"context"
+	"errors"
 	"fmt"
 	"log"
 	"os"
+	"runtime"
 	"strings"
 
 	"github.com/henrygd/beszel"
@@ -13,6 +16,12 @@ import (
 	"github.com/spf13/pflag"
 	"golang.org/x/crypto/ssh"
 )
+
+type noKeyProvidedError struct{}
+
+func (noKeyProvidedError) Error() string {
+	return "no key provided: must set -key flag, KEY env var, or KEY_FILE env var. Use 'beszel-agent help' for usage"
+}
 
 // cli options
 type cmdOptions struct {
@@ -124,7 +133,7 @@ func (opts *cmdOptions) loadPublicKeys() ([]ssh.PublicKey, error) {
 	// Try key file
 	keyFile, ok := utils.GetEnv("KEY_FILE")
 	if !ok {
-		return nil, fmt.Errorf("no key provided: must set -key flag, KEY env var, or KEY_FILE env var. Use 'beszel-agent help' for usage")
+		return nil, noKeyProvidedError{}
 	}
 
 	pubKey, err := os.ReadFile(keyFile)
@@ -136,6 +145,14 @@ func (opts *cmdOptions) loadPublicKeys() ([]ssh.PublicKey, error) {
 
 func (opts *cmdOptions) getAddress() string {
 	return agent.GetAddress(opts.listen)
+}
+
+func isBenignStartupError(err error, goos string) bool {
+	if goos != "windows" {
+		return false
+	}
+	var noKeyErr noKeyProvidedError
+	return errors.As(err, &noKeyErr)
 }
 
 // handleFingerprint handles the "fingerprint" command with subcommands "view" and "reset".
@@ -182,6 +199,12 @@ func main() {
 	var err error
 	serverConfig.Keys, err = opts.loadPublicKeys()
 	if err != nil {
+		if isBenignStartupError(err, runtime.GOOS) {
+			// WinGet launches the executable without configuration during validation.
+			// Exit successfully in that case while retaining the error on other platforms.
+			log.Print("Failed to load public keys:", err)
+			return
+		}
 		log.Fatal("Failed to load public keys:", err)
 	}
 
@@ -194,7 +217,7 @@ func main() {
 		log.Fatal("Failed to create agent: ", err)
 	}
 
-	if err := a.Start(serverConfig); err != nil {
-		log.Fatal("Failed to start server: ", err)
+	if err := a.Start(context.Background(), serverConfig); err != nil {
+		log.Fatal("Failed to start: ", err)
 	}
 }

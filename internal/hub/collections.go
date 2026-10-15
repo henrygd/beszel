@@ -78,7 +78,7 @@ func setCollectionAuthSettings(app core.App) error {
 		return err
 	}
 
-	if err := applyCollectionRules(app, []string{"containers", "container_stats", "system_stats", "systemd_services"}, collectionRules{
+	if err := applyCollectionRules(app, []string{"containers", "container_stats", "system_stats", "systemd_services", "network_monitor_stats"}, collectionRules{
 		list: &systemScopedReadRule,
 	}); err != nil {
 		return err
@@ -91,13 +91,48 @@ func setCollectionAuthSettings(app core.App) error {
 	}); err != nil {
 		return err
 	}
+	if err := applyCollectionRules(app, []string{"zfs_pools"}, collectionRules{
+		list: &systemScopedReadRule,
+		view: &systemScopedReadRule,
+	}); err != nil {
+		return err
+	}
 
 	if err := applyCollectionRules(app, []string{"fingerprints"}, collectionRules{
+		list:   &systemScopedWriteRule,
+		view:   &systemScopedWriteRule,
+		create: &systemScopedWriteRule,
+		update: &systemScopedWriteRule,
+		delete: &systemScopedWriteRule,
+	}); err != nil {
+		return err
+	}
+
+	if err := applyCollectionRules(app, []string{"network_monitors"}, collectionRules{
 		list:   &systemScopedReadRule,
 		view:   &systemScopedReadRule,
 		create: &systemScopedWriteRule,
 		update: &systemScopedWriteRule,
 		delete: &systemScopedWriteRule,
+	}); err != nil {
+		return err
+	}
+
+	// Alerts belong to their user and may only reference systems the user can access.
+	// The user and system of an existing alert cannot be changed through the API.
+	// Readonly users can still manage their own alerts, so these build on the read rule.
+	alertsOwnerRule := authenticatedRule + " && user = @request.auth.id"
+	alertsCreateRule := alertsOwnerRule
+	alertsUpdateRule := alertsOwnerRule + " && @request.body.user:changed = false && @request.body.system:changed = false"
+	if shareAllSystems != "true" {
+		alertsCreateRule += " && system.users.id ?= @request.auth.id"
+		alertsUpdateRule += " && system.users.id ?= @request.auth.id"
+	}
+	if err := applyCollectionRules(app, []string{"alerts"}, collectionRules{
+		list:   &alertsOwnerRule,
+		create: &alertsCreateRule,
+		update: &alertsUpdateRule,
+		delete: &alertsOwnerRule,
 	}); err != nil {
 		return err
 	}

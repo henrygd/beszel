@@ -4,6 +4,7 @@ import { cn, decimalString, formatBytes, hourWithSeconds } from "@/lib/utils"
 import type { ContainerRecord } from "@/types"
 import { ContainerHealth, ContainerHealthLabels } from "@/lib/enums"
 import {
+	CircleArrowUpIcon,
 	ClockIcon,
 	ContainerIcon,
 	CpuIcon,
@@ -15,7 +16,7 @@ import {
 import { EthernetIcon, HourglassIcon, SquareArrowRightEnterIcon } from "../ui/icons"
 import { Badge } from "../ui/badge"
 import { t } from "@lingui/core/macro"
-import { $allSystemsById, $longestSystemNameLen } from "@/lib/stores"
+import { $allSystemsById, $longestSystemName } from "@/lib/stores"
 import { useStore } from "@nanostores/react"
 import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip"
 
@@ -58,15 +59,22 @@ export const containerChartCols: ColumnDef<ContainerRecord>[] = [
 			const allSystems = $allSystemsById.get()
 			const systemNameA = allSystems[a.original.system]?.name ?? ""
 			const systemNameB = allSystems[b.original.system]?.name ?? ""
-			return systemNameA.localeCompare(systemNameB)
+			const primary = systemNameA.localeCompare(systemNameB)
+			if (primary !== 0) {
+				return primary
+			}
+			return a.original.name.localeCompare(b.original.name)
 		},
 		header: ({ column }) => <HeaderButton column={column} name={t`System`} Icon={ServerIcon} />,
 		cell: ({ getValue }) => {
 			const allSystems = useStore($allSystemsById)
-			const longestName = useStore($longestSystemNameLen)
+			const longestName = useStore($longestSystemName)
 			return (
-				<div className="ms-1 max-w-40 truncate" style={{ width: `${longestName / 1.05}ch` }}>
-					{allSystems[getValue() as string]?.name ?? ""}
+				<div className="ms-1 relative w-fit max-w-40">
+					<span className="invisible block whitespace-nowrap" aria-hidden="true">
+						{longestName}
+					</span>
+					<span className="absolute inset-0 truncate">{allSystems[getValue() as string]?.name ?? ""}</span>
 				</div>
 			)
 		},
@@ -177,11 +185,25 @@ export const containerChartCols: ColumnDef<ContainerRecord>[] = [
 		header: ({ column }) => (
 			<HeaderButton column={column} name={t({ message: "Image", context: "Docker image" })} Icon={LayersIcon} />
 		),
-		cell: ({ getValue }) => {
+		cell: ({ getValue, row }) => {
 			const val = getValue() as string
 			return (
-				<div className="ms-1 xl:w-40 truncate" title={val}>
-					{val}
+				<div className="ms-1 xl:w-40 flex items-center gap-2">
+					<span className="truncate" title={val}>
+						{val}
+					</span>
+					{row.original.updatable && (
+						<Tooltip>
+							<TooltipTrigger
+								className="shrink-0 rounded-sm text-emerald-600 dark:text-emerald-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+								aria-label={t({ message: "Image update available", context: "Docker image" })}
+								onClick={(event) => event.stopPropagation()}
+							>
+								<CircleArrowUpIcon className="size-4" aria-hidden="true" />
+							</TooltipTrigger>
+							<TooltipContent>{t({ message: "Image update available", context: "Docker image" })}</TooltipContent>
+						</Tooltip>
+					)}
 				</div>
 			)
 		},

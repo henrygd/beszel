@@ -30,29 +30,46 @@ type CpuMetrics struct {
 	Iowait float64
 	Steal  float64
 	Idle   float64
+	// fromCgroup is set when Total comes from cgroup accounting rather than
+	// /proc/stat, so per-core /proc/stat usage would not match it.
+	fromCgroup bool
 }
 
 // getCpuMetrics calculates detailed CPU usage metrics using cached previous measurements.
 // It returns percentages for total, user, system, iowait, and steal time.
-func getCpuMetrics(cacheTimeMs uint16) (CpuMetrics, error) {
+func getCpuMetrics(cacheTimeMs uint16, forceUseCgroup bool) (CpuMetrics, error) {
+	// Inside LXC, lxcfs serves /proc/stat with the host cores' counters, not
+	// the guest's own usage. Prefer cgroup accounting there or when requested. (#2332)
+	if metrics, ok := containerCpuMetrics(cacheTimeMs, forceUseCgroup); ok {
+		metrics.fromCgroup = true
+		return metrics, nil
+	}
 	times, err := cpu.Times(false)
 	if err != nil || len(times) == 0 {
 		return CpuMetrics{}, err
 	}
+	return cpuMetricsFromTimes(cacheTimeMs, times[0]), nil
+}
+
+// cpuMetricsFromTimes calculates host CPU usage from the latest counters.
+func cpuMetricsFromTimes(cacheTimeMs uint16, current cpu.TimesStat) CpuMetrics {
 	// if cacheTimeMs is not in lastCpuTimes, use 60000 as fallback lastCpuTime
 	if _, ok := lastCpuTimes[cacheTimeMs]; !ok {
 		lastCpuTimes[cacheTimeMs] = lastCpuTimes[60000]
 	}
 
 	t1 := lastCpuTimes[cacheTimeMs]
-	t2 := times[0]
+	t2 := current
+	// A counter reset or wrap must establish a new baseline even if this
+	// sample cannot produce a valid delta.
+	lastCpuTimes[cacheTimeMs] = current
 
 	t1All, _ := getAllBusy(t1)
 	t2All, _ := getAllBusy(t2)
 
 	totalDelta := t2All - t1All
 	if totalDelta <= 0 {
-		return CpuMetrics{}, nil
+		return CpuMetrics{}
 	}
 
 	metrics := CpuMetrics{
@@ -64,8 +81,7 @@ func getCpuMetrics(cacheTimeMs uint16) (CpuMetrics, error) {
 		Idle:   clampPercent((t2.Idle - t1.Idle) / totalDelta * 100),
 	}
 
-	lastCpuTimes[cacheTimeMs] = times[0]
-	return metrics, nil
+	return metrics
 }
 
 // clampPercent ensures the percentage is between 0 and 100
@@ -119,7 +135,8 @@ func calculateBusy(t1, t2 cpu.TimesStat) float64 {
 // On Linux, it excludes guest and guest_nice time from the total to match kernel behavior.
 // Returns total CPU time and busy CPU time (total minus idle and I/O wait time).
 func getAllBusy(t cpu.TimesStat) (float64, float64) {
-	tot := t.Total()
+	tot := t.User + t.System + t.Idle + t.Nice + t.Iowait + t.Irq +
+		t.Softirq + t.Steal + t.Guest + t.GuestNice
 	if runtime.GOOS == "linux" {
 		tot -= t.Guest     // Linux 2.6.24+
 		tot -= t.GuestNice // Linux 3.2.0+
