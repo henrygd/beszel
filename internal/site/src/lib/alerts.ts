@@ -1,5 +1,5 @@
 import { t } from "@lingui/core/macro"
-import { ContainerIcon, CpuIcon, HardDriveIcon, MemoryStickIcon, NetworkIcon, ServerCrashIcon, ServerIcon } from "lucide-react"
+import { ContainerIcon, CpuIcon, HardDriveIcon, MemoryStickIcon, NetworkIcon, ServerCrashIcon, ServerIcon, ShieldCheckIcon } from "lucide-react"
 import type { RecordSubscription } from "pocketbase"
 import { EthernetIcon, GpuIcon } from "@/components/ui/icons"
 import { $alerts } from "@/lib/stores"
@@ -70,6 +70,16 @@ export const alertInfo: Record<string, AlertInfo> = {
     max: 99.9,
     step: 0.1,
     start: 5,
+  },
+  NetworkMonitorCert: {
+    name: () => t`Certificate Expiration`,
+    unit: " days",
+    icon: ShieldCheckIcon,
+    desc: () => t`Triggers when an HTTPS monitor certificate expires within a number of days`,
+    noDuration: true,
+    min: 1,
+    max: 365,
+    start: 14,
   },
   GPU: {
     name: () => t`GPU Usage`,
