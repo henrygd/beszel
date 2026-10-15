@@ -639,6 +639,11 @@ msgstr "Copia el comando de instalación del agente a continuación, o registra 
 msgid "Copy the<0>docker-compose.yml</0> content for the agent below, or register agents automatically with a <1>universal token</1>."
 msgstr "Copia el contenido del<0>docker-compose.yml</0> para el agente a continuación, o registra agentes automáticamente con un <1>token universal</1>."
 
+#: src/components/token-value.tsx
+#: src/components/token-value.tsx
+msgid "Copy token"
+msgstr ""
+
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Copy YAML"
 msgstr "Copiar YAML"
@@ -1141,6 +1146,11 @@ msgstr "Latido enviado con éxito"
 #: src/components/logs-display.tsx
 msgid "Hide timestamps"
 msgstr "Ocultar marcas de tiempo"
+
+#: src/components/token-value.tsx
+#: src/components/token-value.tsx
+msgid "Hide token"
+msgstr ""
 
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
@@ -1834,6 +1844,11 @@ msgstr "Reinicios"
 msgid "Resume"
 msgstr "Reanudar"
 
+#: src/components/token-value.tsx
+#: src/components/token-value.tsx
+msgid "Reveal token"
+msgstr ""
+
 #. Package version
 #: src/components/routes/system/package-updates-table.tsx
 msgid "Revision"
@@ -2205,6 +2220,15 @@ msgstr "A correo(s)"
 msgid "Token"
 msgstr ""
 
+#. placeholder {0}: fingerprint.expand.system.name
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Token for {0}"
+msgstr ""
+
+#: src/components/token-value.tsx
+msgid "Token hidden"
+msgstr ""
+
 #: src/components/command-palette.tsx
 #: src/components/routes/settings/layout.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
@@ -2337,6 +2361,7 @@ msgid "Unit preferences"
 msgstr "Preferencias de unidad"
 
 #: src/components/command-palette.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Universal token"
 msgstr "Token universal"

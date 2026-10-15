@@ -639,6 +639,11 @@ msgstr "Aşağıdaki agent için kurulum komutunu kopyalayın veya <0>evrensel t
 msgid "Copy the<0>docker-compose.yml</0> content for the agent below, or register agents automatically with a <1>universal token</1>."
 msgstr "Aşağıdaki agent için <0>docker-compose.yml</0> içeriğini kopyalayın veya <1>evrensel token</1> ile agentları otomatik olarak kaydedin."
 
+#: src/components/token-value.tsx
+#: src/components/token-value.tsx
+msgid "Copy token"
+msgstr ""
+
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Copy YAML"
 msgstr "YAML'ı kopyala"
@@ -1141,6 +1146,11 @@ msgstr "Heartbeat başarıyla gönderildi"
 #: src/components/logs-display.tsx
 msgid "Hide timestamps"
 msgstr "Zaman damgalarını gizle"
+
+#: src/components/token-value.tsx
+#: src/components/token-value.tsx
+msgid "Hide token"
+msgstr ""
 
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
@@ -1834,6 +1844,11 @@ msgstr "Yeniden başlatmalar"
 msgid "Resume"
 msgstr "Devam et"
 
+#: src/components/token-value.tsx
+#: src/components/token-value.tsx
+msgid "Reveal token"
+msgstr ""
+
 #. Package version
 #: src/components/routes/system/package-updates-table.tsx
 msgid "Revision"
@@ -2205,6 +2220,15 @@ msgstr "E-posta(lar)a"
 msgid "Token"
 msgstr "Erişim Anahtarı"
 
+#. placeholder {0}: fingerprint.expand.system.name
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Token for {0}"
+msgstr ""
+
+#: src/components/token-value.tsx
+msgid "Token hidden"
+msgstr ""
+
 #: src/components/command-palette.tsx
 #: src/components/routes/settings/layout.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
@@ -2337,6 +2361,7 @@ msgid "Unit preferences"
 msgstr "Birim tercihleri"
 
 #: src/components/command-palette.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Universal token"
 msgstr "Evrensel token"
