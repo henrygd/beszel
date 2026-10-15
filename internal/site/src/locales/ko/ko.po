@@ -639,11 +639,6 @@ msgstr "아래 에이전트의 설치 명령을 복사하거나 <0>범용 토큰
 msgid "Copy the<0>docker-compose.yml</0> content for the agent below, or register agents automatically with a <1>universal token</1>."
 msgstr "아래 에이전트의 <0>docker-compose.yml</0> 내용을 복사하거나 <1>범용 토큰</1>으로 에이전트를 자동으로 등록하세요."
 
-#: src/components/token-value.tsx
-#: src/components/token-value.tsx
-msgid "Copy token"
-msgstr ""
-
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Copy YAML"
 msgstr "YAML 복사"
@@ -1146,11 +1141,6 @@ msgstr "하트비트 전송 성공"
 #: src/components/logs-display.tsx
 msgid "Hide timestamps"
 msgstr "타임스탬프 숨기기"
-
-#: src/components/token-value.tsx
-#: src/components/token-value.tsx
-msgid "Hide token"
-msgstr ""
 
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
@@ -1844,11 +1834,6 @@ msgstr "재시작 횟수"
 msgid "Resume"
 msgstr "재개"
 
-#: src/components/token-value.tsx
-#: src/components/token-value.tsx
-msgid "Reveal token"
-msgstr ""
-
 #. Package version
 #: src/components/routes/system/package-updates-table.tsx
 msgid "Revision"
@@ -2220,15 +2205,6 @@ msgstr "받는사람(들)"
 msgid "Token"
 msgstr "토큰"
 
-#. placeholder {0}: fingerprint.expand.system.name
-#: src/components/routes/settings/tokens-fingerprints.tsx
-msgid "Token for {0}"
-msgstr ""
-
-#: src/components/token-value.tsx
-msgid "Token hidden"
-msgstr ""
-
 #: src/components/command-palette.tsx
 #: src/components/routes/settings/layout.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
@@ -2361,7 +2337,6 @@ msgid "Unit preferences"
 msgstr "단위 기본 설정"
 
 #: src/components/command-palette.tsx
-#: src/components/routes/settings/tokens-fingerprints.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Universal token"
 msgstr "범용 토큰"

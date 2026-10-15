@@ -634,11 +634,6 @@ msgstr "Copy the installation command for the agent below, or register agents au
 msgid "Copy the<0>docker-compose.yml</0> content for the agent below, or register agents automatically with a <1>universal token</1>."
 msgstr "Copy the<0>docker-compose.yml</0> content for the agent below, or register agents automatically with a <1>universal token</1>."
 
-#: src/components/token-value.tsx
-#: src/components/token-value.tsx
-msgid "Copy token"
-msgstr "Copy token"
-
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Copy YAML"
 msgstr "Copy YAML"
@@ -1141,11 +1136,6 @@ msgstr "Heartbeat sent successfully"
 #: src/components/logs-display.tsx
 msgid "Hide timestamps"
 msgstr "Hide timestamps"
-
-#: src/components/token-value.tsx
-#: src/components/token-value.tsx
-msgid "Hide token"
-msgstr "Hide token"
 
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
@@ -1839,11 +1829,6 @@ msgstr "Restarts"
 msgid "Resume"
 msgstr "Resume"
 
-#: src/components/token-value.tsx
-#: src/components/token-value.tsx
-msgid "Reveal token"
-msgstr "Reveal token"
-
 #. Package version
 #: src/components/routes/system/package-updates-table.tsx
 msgid "Revision"
@@ -2215,15 +2200,6 @@ msgstr "To email(s)"
 msgid "Token"
 msgstr "Token"
 
-#. placeholder {0}: fingerprint.expand.system.name
-#: src/components/routes/settings/tokens-fingerprints.tsx
-msgid "Token for {0}"
-msgstr "Token for {0}"
-
-#: src/components/token-value.tsx
-msgid "Token hidden"
-msgstr "Token hidden"
-
 #: src/components/command-palette.tsx
 #: src/components/routes/settings/layout.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
@@ -2356,7 +2332,6 @@ msgid "Unit preferences"
 msgstr "Unit preferences"
 
 #: src/components/command-palette.tsx
-#: src/components/routes/settings/tokens-fingerprints.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Universal token"
 msgstr "Universal token"
