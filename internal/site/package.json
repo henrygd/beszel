@@ -51,7 +51,7 @@
 		"valibot": "^1.4.2"
 	},
 	"devDependencies": {
-		"@biomejs/biome": "2.2.4",
+		"@biomejs/biome": "2.3.15",
 		"@lingui/cli": "^5.4.1",
 		"@lingui/swc-plugin": "^5.6.1",
 		"@lingui/vite-plugin": "^5.4.1",
