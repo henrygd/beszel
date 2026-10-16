@@ -1,3 +1,81 @@
+## 0.21.1
+
+For developers using the agent as a Go package, `Agent.Start` now requires a `context.Context`.
+
+- Add opt-in cgroup CPU and memory accounting (#2505)
+
+- Add `HUB_HEADERS` environment variable to set custom WebSocket headers on the agent (#2585)
+
+- Add `OAUTH_DEFAULT_USER_ROLE` environment variable to set the role of new OAuth users (#2516)
+
+- Add option to ignore TLS errors for HTTPS monitors (#2500)
+
+- Add zpool status messages to ZFS pool health (#2509)
+
+- Add xbps support to package update checks (#2522)
+
+- Change the user created from `USER_EMAIL` to be an admin (#2516)
+
+- Fix btrfs pool health when sysfs device info is unavailable (#2489)
+
+- Fix ZFS pool capacity to use the root dataset (#2540)
+
+- Fix package update checks under the systemd sandbox (#2538)
+
+- Fix systemd service logs missing output from services running as a non-system user (#2553)
+
+- Fix systemd monitoring starting when systemd is not available on D-Bus (#2573)
+
+- Fix hub dropping slow agent connections between polls (#2435)
+
+- Fix hub keeping connections open to unresponsive agents
+
+- Fix agent reconnect and shutdown handling (#2464)
+
+- Fix network counter underflow when interfaces are removed or containers restart (#2574)
+
+- Fix host CPU usage after a counter rollback
+
+- Fix larger stored stats records caused by zero-value fields
+
+- Fix legacy hubs receiving a duplicate stats payload (#2529)
+
+- Fix NVIDIA GPU power when power usage is unsupported by falling back to NVML power samples (#2550)
+
+- Fix zero GPU package power being stored (#2551)
+
+- Fix `intel_gpu_top` parsing when samples are missing commas (#2589)
+
+- Fix NVMe unsafe shutdowns counter overflowing (#2583)
+
+- Fix NVMe namespace fallbacks being lost on rescan (#2597)
+
+- Fix handling of cached NVMe failures and empty SMART responses
+
+- Fix zypper's apt-get wrapper being detected as apt (#2523)
+
+- Fix updater stopping when the system record lookup fails (#2588)
+
+- Fix systems table losing the update count when a host is down (#2559)
+
+- Fix latency tolerance in 1m realtime charts (#2521)
+
+- Fix charts hiding isolated points and spinning endlessly on empty values (#2514)
+
+- Fix live metrics subscriptions not ending after leaving the 1m view (#2599)
+
+- Fix sorting of monitor targets without a URL scheme and show HTTPS in the badge (#2501)
+
+- Fix lazy loading of the systemd table (#2602)
+
+- Fix system dialog layout shifting between tabs (#2571)
+
+- Improve accessibility and fix login page translation (#2604)
+
+- Update Go to 1.27.2 and Go dependencies
+
+- Update npm packages with security alerts (#2575)
+
 ## 0.21.0
 
 - Add pending package updates list to the system page (#2357, #2427)

@@ -5,6 +5,7 @@
 package agent
 
 import (
+	"context"
 	"log/slog"
 	"net"
 	"strings"
@@ -272,10 +273,11 @@ func (a *Agent) gatherStats(options common.DataRequestOptions) *system.CombinedD
 	return a.attachSystemDetails(data, cacheTimeMs, options.IncludeDetails)
 }
 
-// Start initializes and starts the agent with optional WebSocket connection
-func (a *Agent) Start(serverOptions ServerOptions) error {
+// Start initializes and starts the agent with optional WebSocket connection.
+// It runs until ctx is cancelled or the process receives SIGINT or SIGTERM.
+func (a *Agent) Start(ctx context.Context, serverOptions ServerOptions) error {
 	a.keys = serverOptions.Keys
-	err := a.connectionManager.Start(serverOptions)
+	err := a.connectionManager.Start(ctx, serverOptions)
 	if err != nil {
 		a.cleanupSensorShadow()
 	}

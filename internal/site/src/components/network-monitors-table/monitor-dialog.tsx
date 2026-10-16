@@ -28,7 +28,7 @@ import { ChevronDownIcon, GlobeIcon, ListIcon, type LucideIcon, PlusIcon, Search
 import { useToast } from "@/components/ui/use-toast"
 import { $systems } from "@/lib/stores"
 import { cn, supportsNetworkMonitors } from "@/lib/utils"
-import { getMonitorTarget } from "@/lib/network-monitor-utils"
+import { getMonitorTarget, isHttpsTarget } from "@/lib/network-monitor-utils"
 import type { NetworkMonitorRecord } from "@/types"
 import * as v from "valibot"
 
@@ -125,10 +125,6 @@ const BulkMonitorSchema = v.object({
 	interval: v.optional(v.pipe(v.string(), v.trim())),
 	server: v.optional(v.pipe(v.string(), v.trim())),
 })
-
-function isHttpsTarget(target: string) {
-	return /^https:\/\//i.test(target)
-}
 
 function normalizeHttpTarget(target: string, port = 0) {
 	const useExplicitPort = port > 0 && port !== 80 && port !== 443
@@ -281,8 +277,18 @@ export function MonitorMultiSelect({
 	canSelectMore?: boolean
 }) {
 	const { t } = useLingui()
+	const labelCounts = new Map<string, number>()
+	for (const monitor of monitors) {
+		const label = getMonitorTarget(monitor)
+		labelCounts.set(label, (labelCounts.get(label) ?? 0) + 1)
+	}
 	const options = monitors
-		.map((monitor) => ({ id: monitor.id, label: getMonitorTarget(monitor), server: monitor.server }))
+		.map((monitor) => {
+			let label = getMonitorTarget(monitor)
+			// Show the URL scheme when it's all that tells http and https monitors apart.
+			if (monitor.protocol === "http" && (labelCounts.get(label) ?? 0) > 1) label = monitor.target
+			return { id: monitor.id, label, server: monitor.server }
+		})
 		.sort((a, b) => a.label.localeCompare(b.label))
 	return (
 		<MultiSelect
