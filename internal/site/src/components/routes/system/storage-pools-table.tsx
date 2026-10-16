@@ -62,6 +62,7 @@ function healthVariant(health: string, hasErrors = false): "success" | "warning"
 		case "UNAVAIL":
 		case "REMOVED":
 		case "SUSPENDED":
+		case "FULL":
 			return "danger"
 		default:
 			return "outline"
@@ -92,7 +93,15 @@ function HeaderButton<T>({ column, name, Icon }: { column: Column<T>; name: stri
 }
 
 function poolType(pool: ZfsPoolRecord): string {
-	return pool.name.startsWith("b:") ? "Btrfs" : "ZFS"
+	if (pool.name.startsWith("b:")) return "Btrfs"
+	if (pool.name.startsWith("l:")) return "LVM"
+	return "ZFS"
+}
+
+const poolTypeColors: Record<string, string> = {
+	ZFS: "bg-blue-200 text-blue-800",
+	Btrfs: "bg-yellow-200 text-yellow-800",
+	LVM: "bg-green-200 text-green-800",
 }
 
 const columns: ColumnDef<ZfsPoolRecord>[] = [
@@ -109,7 +118,7 @@ const columns: ColumnDef<ZfsPoolRecord>[] = [
 		cell: ({ getValue }) => {
 			const type = getValue() as string
 			return (
-				<Badge variant="outline" className={cn("border-transparent", type === "ZFS" ? "bg-blue-200 text-blue-800" : "bg-yellow-200 text-yellow-800")}>
+				<Badge variant="outline" className={cn("border-transparent", poolTypeColors[type])}>
 					{type}
 				</Badge>
 			)
