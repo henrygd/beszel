@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"net/netip"
 	"regexp"
+	"strconv"
 	"strings"
 	"time"
 	"uuid"
@@ -192,8 +193,9 @@ func (h *Hub) registerApiRoutes(se *core.ServeEvent) error {
 	apiAuth.GET("/config-yaml", config.GetYamlConfig).BindFunc(requireAdminRole)
 	// handle agent websocket connection
 	apiNoAuth.GET("/agent-connect", h.handleAgentConnect)
-	// get or create universal tokens
+	// Preserve GET for existing clients; the dashboard sends tokens in POST bodies.
 	apiAuth.GET("/universal-token", h.getUniversalToken).BindFunc(excludeReadOnlyRole)
+	apiAuth.POST("/universal-token", h.getUniversalToken).BindFunc(excludeReadOnlyRole)
 	// update / delete user alerts
 	apiAuth.POST("/user-alerts", alerts.UpsertUserAlerts)
 	apiAuth.DELETE("/user-alerts", alerts.DeleteUserAlerts)
@@ -261,6 +263,7 @@ func (info *UpdateInfo) getUpdate(e *core.RequestEvent) error {
 
 // GetUniversalToken handles the universal token API endpoint (create, read, delete)
 func (h *Hub) getUniversalToken(e *core.RequestEvent) error {
+	e.Response.Header().Set("Cache-Control", "no-store")
 	if e.Auth.IsSuperuser() {
 		return e.ForbiddenError("Superusers cannot use universal tokens", nil)
 	}
@@ -271,6 +274,22 @@ func (h *Hub) getUniversalToken(e *core.RequestEvent) error {
 	token := query.Get("token")
 	enable := query.Get("enable")
 	permanent := query.Get("permanent")
+	if e.Request.Method == http.MethodPost {
+		data := struct {
+			Token     string `json:"token"`
+			Enable    int    `json:"enable"`
+			Permanent int    `json:"permanent"`
+		}{Enable: -1, Permanent: -1}
+		if err := e.BindBody(&data); err != nil {
+			return e.BadRequestError("Invalid universal token request", err)
+		}
+		if data.Enable < -1 || data.Enable > 1 || data.Permanent < -1 || data.Permanent > 1 {
+			return e.BadRequestError("Invalid universal token options", nil)
+		}
+		token = data.Token
+		enable = strconv.Itoa(data.Enable)
+		permanent = strconv.Itoa(data.Permanent)
+	}
 
 	// helper for deleting any existing permanent token record for this user
 	deletePermanent := func() error {
