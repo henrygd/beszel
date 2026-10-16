@@ -21,6 +21,8 @@ export const $downSystems = map<Record<string, SystemRecord>>({})
 export const $pausedSystems = map<Record<string, SystemRecord>>({})
 /** List of all system records */
 export const $systems: ReadableAtom<SystemRecord[]> = computed($allSystemsById, Object.values)
+/** Whether the initial systems list has been fetched */
+export const $systemsLoaded = atom(false)
 
 /** Map of tag records by id */
 export const $tagsById = map<Record<string, TagRecord>>({})
