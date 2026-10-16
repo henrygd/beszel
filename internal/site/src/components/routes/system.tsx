@@ -21,12 +21,12 @@ import {
 	LazySmartTable,
 	LazySystemdTable,
 	LazyZfsTable,
+	SystemdTable,
 } from "./system/lazy-tables"
 import { LoadAverageChart } from "./system/charts/load-average-chart"
 import { ProcessesChart } from "./system/charts/processes-chart"
 import { ContainerIcon, CpuIcon, HardDriveIcon, NetworkIcon, PackageIcon, TerminalSquareIcon } from "lucide-react"
 import { GpuIcon } from "../ui/icons"
-import SystemdTable from "../systemd-table/systemd-table"
 import ContainersTable from "../containers-table/containers-table"
 
 const SEMVER_0_14_0 = parseSemVer("0.14.0")

@@ -39,13 +39,13 @@ export const navigate = (urlString: string) => {
 	$router.open(urlString)
 }
 
-export function Link(props: React.AnchorHTMLAttributes<HTMLAnchorElement>) {
+export function Link({ href, ...props }: React.AnchorHTMLAttributes<HTMLAnchorElement> & { href: string }) {
 	return (
 		<a
 			{...props}
+			href={href}
 			onClick={(e) => {
 				e.preventDefault()
-				const href = props.href || ""
 				if (e.ctrlKey || e.metaKey) {
 					window.open(href, "_blank")
 				} else {
