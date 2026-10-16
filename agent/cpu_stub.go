@@ -1,4 +1,4 @@
-//go:build !linux && !darwin && !windows
+//go:build !linux
 
 package agent
 
