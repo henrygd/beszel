@@ -339,6 +339,37 @@ func TestAverageSystemStatsSlice_NetworkInterfaces(t *testing.T) {
 	assert.Equal(t, [4]uint64{100, 110, 170, 180}, result.NetworkInterfaces["eth1"])
 }
 
+func TestAverageSystemStatsSlice_NetworkInterfacePackets(t *testing.T) {
+	input := []system.Stats{
+		{
+			Cpu: 10.0,
+			NetworkInterfacePackets: map[string][6]float64{
+				"eth0": {100, 200, 0, 1, 0, 0.5},
+			},
+		},
+		{
+			// older agents don't send packet rates
+			Cpu: 20.0,
+		},
+		{
+			Cpu: 30.0,
+			NetworkInterfacePackets: map[string][6]float64{
+				"eth0": {200, 400, 0, 0, 3, 0},
+			},
+		},
+	}
+
+	result := records.AverageSystemStatsSlice(input)
+
+	require.NotNil(t, result.NetworkInterfacePackets)
+	assert.Equal(t, [6]float64{100, 200, 0, 0.33, 1, 0.17}, result.NetworkInterfacePackets["eth0"])
+}
+
+func TestAverageSystemStatsSlice_NetworkInterfacePacketsAbsent(t *testing.T) {
+	result := records.AverageSystemStatsSlice([]system.Stats{{Cpu: 10.0}, {Cpu: 20.0}})
+	assert.Nil(t, result.NetworkInterfacePackets)
+}
+
 func TestAverageSystemStatsSlice_ExtraFs(t *testing.T) {
 	input := []system.Stats{
 		{

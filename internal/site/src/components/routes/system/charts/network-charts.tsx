@@ -7,7 +7,7 @@ import { decimalString, formatBytes, toFixedFloat } from "@/lib/utils"
 import type { ChartConfig } from "@/components/ui/chart"
 import type { ChartData, SystemStatsRecord } from "@/types"
 import { Separator } from "@/components/ui/separator"
-import NetworkSheet from "../network-sheet"
+import NetworkSheet, { ErrorsSheet, PacketsSheet, packetContentFormatter, packetTickFormatter } from "../network-sheet"
 import { ChartCard, FilterBar, SelectAvgMax } from "../chart-card"
 import { dockerOrPodman } from "../chart-data"
 
@@ -19,6 +19,7 @@ export function BandwidthChart({
 	isLongerChart,
 	maxValues,
 	systemStats,
+	fullWidth = false,
 }: {
 	chartData: ChartData
 	grid: boolean
@@ -27,6 +28,7 @@ export function BandwidthChart({
 	isLongerChart: boolean
 	maxValues: boolean
 	systemStats: SystemStatsRecord[]
+	fullWidth?: boolean
 }) {
 	const maxValSelect = isLongerChart ? <SelectAvgMax max={maxValues} /> : null
 	const userSettings = $userSettings.get()
@@ -36,6 +38,7 @@ export function BandwidthChart({
 			empty={dataEmpty}
 			grid={grid}
 			title={t`Bandwidth`}
+			className={fullWidth ? "col-span-full" : undefined}
 			cornerEl={
 				<div className="flex gap-2">
 					{maxValSelect}
@@ -81,6 +84,86 @@ export function BandwidthChart({
 					const { value, unit } = formatBytes(data.value, true, userSettings.unitNet, false)
 					return `${decimalString(value, value >= 100 ? 1 : 2)} ${unit}`
 				}}
+				showTotal={true}
+			/>
+		</ChartCard>
+	)
+}
+
+/** Sum a `nip` rate index across all interfaces */
+function sumPacketRate(data: SystemStatsRecord, index: number) {
+	const nip = data?.stats?.nip
+	if (!nip) return undefined
+	let total = 0
+	for (const rates of Object.values(nip)) {
+		total += rates[index] ?? 0
+	}
+	return total
+}
+
+interface PacketChartProps {
+	chartData: ChartData
+	grid: boolean
+	dataEmpty: boolean
+	maxValues: boolean
+	systemStats: SystemStatsRecord[]
+}
+
+export function PacketsChart({ chartData, grid, dataEmpty, maxValues, systemStats }: PacketChartProps) {
+	// agents before packet stats were added don't send `nip`
+	if (!systemStats.at(-1)?.stats?.nip) {
+		return null
+	}
+
+	return (
+		<ChartCard
+			empty={dataEmpty}
+			grid={grid}
+			title={t`Packets`}
+			cornerEl={<PacketsSheet chartData={chartData} dataEmpty={dataEmpty} grid={grid} maxValues={maxValues} />}
+			description={t`Packets per second on public interfaces`}
+			legend={true}
+		>
+			<AreaChartDefault
+				chartData={chartData}
+				dataPoints={[
+					{ label: t`Sent`, dataKey: (data) => sumPacketRate(data, 0), color: 5, opacity: 0.2 },
+					{ label: t`Received`, dataKey: (data) => sumPacketRate(data, 1), color: 2, opacity: 0.2 },
+				]}
+				tickFormatter={packetTickFormatter}
+				contentFormatter={packetContentFormatter}
+				legend={true}
+				showTotal={true}
+			/>
+		</ChartCard>
+	)
+}
+
+export function NetworkErrorsChart({ chartData, grid, dataEmpty, maxValues, systemStats }: PacketChartProps) {
+	if (!systemStats.at(-1)?.stats?.nip) {
+		return null
+	}
+
+	return (
+		<ChartCard
+			empty={dataEmpty}
+			grid={grid}
+			title={t`Errors & Discards`}
+			cornerEl={<ErrorsSheet chartData={chartData} dataEmpty={dataEmpty} grid={grid} maxValues={maxValues} />}
+			description={t`Packet errors and discards per second on public interfaces`}
+			legend={true}
+		>
+			<AreaChartDefault
+				chartData={chartData}
+				dataPoints={[
+					{ label: t`Errors Sent`, dataKey: (data) => sumPacketRate(data, 2), color: 5, opacity: 0.2 },
+					{ label: t`Errors Received`, dataKey: (data) => sumPacketRate(data, 3), color: 2, opacity: 0.2 },
+					{ label: t`Discards Sent`, dataKey: (data) => sumPacketRate(data, 4), color: 3, opacity: 0.2 },
+					{ label: t`Discards Received`, dataKey: (data) => sumPacketRate(data, 5), color: 1, opacity: 0.2 },
+				]}
+				tickFormatter={packetTickFormatter}
+				contentFormatter={packetContentFormatter}
+				legend={true}
 				showTotal={true}
 			/>
 		</ChartCard>
