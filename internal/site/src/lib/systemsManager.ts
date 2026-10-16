@@ -1,8 +1,17 @@
 /** biome-ignore-all lint/suspicious/noAssignInExpressions: it's fine :) */
 import type { PreinitializedMapStore } from "nanostores"
 import { pb } from "@/lib/api"
-import { $allSystemsById, $allSystemsByName, $downSystems, $pausedSystems, $upSystems } from "@/lib/stores"
-import { updateFavicon } from "@/lib/utils"
+import {
+	$allSystemsById,
+	$allSystemsByName,
+	$downSystems,
+	$longestSystemName,
+	$pausedSystems,
+	$systemsLoaded,
+	$textMeasureVersion,
+	$upSystems,
+} from "@/lib/stores"
+import { isVisuallyLonger, updateFavicon } from "@/lib/utils"
 import type { SystemRecord } from "@/types"
 import { SystemStatus } from "./enums"
 
@@ -152,6 +161,8 @@ export async function refresh() {
 		}
 	} catch (error) {
 		console.error("Failed to refresh systems:", error)
+	} finally {
+		$systemsLoaded.set(true)
 	}
 }
 
