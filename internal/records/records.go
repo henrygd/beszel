@@ -283,6 +283,9 @@ func AverageSystemStatsSlice(records []system.Stats) system.Stats {
 	fanCount := uint64(0)
 	zfsPoolCounts := make(map[string]uint64)
 	zfsCapacityCounts := make(map[string]uint64)
+	// memory pressure is only reported on Linux with PSI enabled
+	var memPressureSums []float64
+	memPressureCount := float64(0)
 
 	// Accumulate totals
 	for i := range records {
@@ -309,6 +312,22 @@ func AverageSystemStatsSlice(records []system.Stats) system.Stats {
 		sum.MemZfsArc += stats.MemZfsArc
 		sum.Swap += stats.Swap
 		sum.SwapUsed += stats.SwapUsed
+		sum.SwapIn += stats.SwapIn
+		sum.SwapOut += stats.SwapOut
+		sum.MemSlabReclaim += stats.MemSlabReclaim
+		sum.MemSlabUnreclaim += stats.MemSlabUnreclaim
+		sum.MemMajorFaults += stats.MemMajorFaults
+		// OOM kills are event counts, so they are summed rather than averaged
+		sum.MemOomKills += stats.MemOomKills
+		if stats.MemPressure != nil {
+			if len(memPressureSums) < len(stats.MemPressure) {
+				memPressureSums = append(memPressureSums, make([]float64, len(stats.MemPressure)-len(memPressureSums))...)
+			}
+			for j, v := range stats.MemPressure {
+				memPressureSums[j] += v
+			}
+			memPressureCount++
+		}
 		sum.DiskTotal += stats.DiskTotal
 		sum.DiskUsed += stats.DiskUsed
 		sum.DiskPct += stats.DiskPct
@@ -502,6 +521,17 @@ func AverageSystemStatsSlice(records []system.Stats) system.Stats {
 	sum.MemZfsArc = twoDecimals(sum.MemZfsArc / count)
 	sum.Swap = twoDecimals(sum.Swap / count)
 	sum.SwapUsed = twoDecimals(sum.SwapUsed / count)
+	sum.SwapIn = twoDecimals(sum.SwapIn / count)
+	sum.SwapOut = twoDecimals(sum.SwapOut / count)
+	sum.MemSlabReclaim = twoDecimals(sum.MemSlabReclaim / count)
+	sum.MemSlabUnreclaim = twoDecimals(sum.MemSlabUnreclaim / count)
+	sum.MemMajorFaults = twoDecimals(sum.MemMajorFaults / count)
+	if memPressureCount > 0 {
+		sum.MemPressure = make([]float64, len(memPressureSums))
+		for j, v := range memPressureSums {
+			sum.MemPressure[j] = twoDecimals(v / memPressureCount)
+		}
+	}
 	sum.DiskTotal = twoDecimals(sum.DiskTotal / count)
 	sum.DiskUsed = twoDecimals(sum.DiskUsed / count)
 	sum.DiskPct = twoDecimals(sum.DiskPct / count)

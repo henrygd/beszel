@@ -61,9 +61,16 @@ type Stats struct {
 	MaxDiskIoStats    [6]float64           `json:"diosm,omitzero" cbor:"-"`                     // max values for DiskIoStats
 	Fans              map[string]uint16    `json:"f,omitempty" cbor:"36,keyasint,omitempty"`
 	Batteries         map[string]uint8     `json:"bats,omitempty" cbor:"37,keyasint,omitempty"`
-	ZfsPools          map[string]*ZfsPool  `json:"z,omitempty" cbor:"39,keyasint,omitempty"`  // ZFS pool metrics, keyed by pool name
-	DiskIOTotal       [2]uint64            `json:"diot,omitzero" cbor:"38,keyasint,omitzero"` // [total read bytes, total write bytes] cumulative device counters
-	WiFi              map[string]int8      `json:"wf,omitempty" cbor:"40,keyasint,omitempty"` // RSSI dBm keyed by interface; unavailable readings omitted
+	ZfsPools          map[string]*ZfsPool  `json:"z,omitempty" cbor:"39,keyasint,omitempty"`    // ZFS pool metrics, keyed by pool name
+	DiskIOTotal       [2]uint64            `json:"diot,omitzero" cbor:"38,keyasint,omitzero"`   // [total read bytes, total write bytes] cumulative device counters
+	WiFi              map[string]int8      `json:"wf,omitempty" cbor:"40,keyasint,omitempty"`   // RSSI dBm keyed by interface; unavailable readings omitted
+	SwapIn            float64              `json:"si,omitzero" cbor:"41,keyasint,omitzero"`     // swap in rate (bytes/sec)
+	SwapOut           float64              `json:"so,omitzero" cbor:"42,keyasint,omitzero"`     // swap out rate (bytes/sec)
+	MemPressure       []float64            `json:"mpr,omitempty" cbor:"43,keyasint,omitempty"`  // PSI % of interval stalled [some, full]
+	MemOomKills       uint32               `json:"moom,omitzero" cbor:"44,keyasint,omitzero"`   // OOM kill event count delta
+	MemSlabReclaim    float64              `json:"msr,omitzero" cbor:"45,keyasint,omitzero"`    // reclaimable slab memory (GB)
+	MemSlabUnreclaim  float64              `json:"msu,omitzero" cbor:"46,keyasint,omitzero"`    // unreclaimable slab memory (GB)
+	MemMajorFaults    float64              `json:"mpf,omitzero" cbor:"47,keyasint,omitzero"`    // major page fault rate (faults/sec)
 
 }
 

@@ -197,6 +197,9 @@ func (a *Agent) getSystemStats(cacheTimeMs uint16) system.Stats {
 	// memory
 	a.updateMemoryStats(&systemStats)
 
+	// swap I/O, major faults, OOM kills, and memory pressure (Linux only)
+	a.updateMemExtras(cacheTimeMs, &systemStats)
+
 	// disk usage
 	a.updateDiskUsage(&systemStats)
 
