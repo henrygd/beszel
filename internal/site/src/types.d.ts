@@ -87,6 +87,8 @@ export interface SystemInfo {
 	efs?: Record<string, number>
 	/** services [totalServices, numFailedServices] */
 	sv?: [number, number]
+	/** unix timestamp of last agent data delivery */
+	ls?: number
 	/** custom root disk name */
 	rdn?: string
 	/** pending package updates [total, security] (security omitted if unknown) */
