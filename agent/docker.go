@@ -136,9 +136,10 @@ func (dm *dockerManager) shouldExcludeContainer(name string) bool {
 	return false
 }
 
-// Returns stats for all running containers with cache-time-aware delta tracking
+// Returns stats for all containers with cache-time-aware delta tracking.
+// Stopped/exited containers are included.
 func (dm *dockerManager) getDockerStats(cacheTimeMs uint16) ([]*container.Stats, error) {
-	resp, err := dm.client.Get("http://localhost/containers/json")
+	resp, err := dm.client.Get("http://localhost/containers/json?all=1")
 	if err != nil {
 		return nil, err
 	}
@@ -173,10 +174,11 @@ func (dm *dockerManager) getDockerStats(cacheTimeMs uint16) ([]*container.Stats,
 
 	for _, ctr := range dm.apiContainerList {
 		ctr.IdShort = ctr.Id[:12]
+		name := ctr.Names[0][1:]
 
 		// Skip this container if it matches the exclusion pattern
-		if dm.shouldExcludeContainer(ctr.Names[0][1:]) {
-			slog.Debug("Excluding container", "name", ctr.Names[0][1:])
+		if dm.shouldExcludeContainer(name) {
+			slog.Debug("Excluding container", "name", name)
 			continue
 		}
 
@@ -187,6 +189,27 @@ func (dm *dockerManager) getDockerStats(cacheTimeMs uint16) ([]*container.Stats,
 			// if so, remove old container data
 			dm.deleteContainerStatsSync(ctr.IdShort)
 		}
+
+		// Non-running containers: populate basic info without fetching stats
+		if ctr.State != "running" {
+			statusText, _ := parseDockerStatus(ctr.Status)
+			dm.containerStatsMutex.Lock()
+			stats, initialized := dm.containerStatsMap[ctr.IdShort]
+			if !initialized {
+				stats = &container.Stats{Name: name, Id: ctr.IdShort, Image: ctr.Image}
+				dm.containerStatsMap[ctr.IdShort] = stats
+			}
+			stats.Status = statusText
+			stats.Health = container.DockerHealthNone
+			stats.Cpu = 0
+			stats.Mem = 0
+			stats.Bandwidth = [2]uint64{0, 0}
+			stats.NetworkSent = 0
+			stats.NetworkRecv = 0
+			dm.containerStatsMutex.Unlock()
+			continue
+		}
+
 		dm.queue()
 		go func(ctr *container.ApiInfo) {
 			defer dm.dequeue()
