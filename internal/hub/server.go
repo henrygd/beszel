@@ -14,7 +14,7 @@ type PublicAppInfo struct {
 	BASE_PATH           string
 	HUB_VERSION         string
 	HUB_URL             string
-	OAUTH_DISABLE_POPUP bool `json:"OAUTH_DISABLE_POPUP,omitempty"`
+	OAUTH_DISABLE_POPUP bool `json:"OAUTH_DISABLE_POPUP,omitzero"`
 }
 
 // modifyIndexHTML injects the public app information into the index.html content
