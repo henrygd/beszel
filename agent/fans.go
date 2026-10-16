@@ -26,7 +26,7 @@ func newFanSensorCache(root string) func() ([]fanSensor, error) {
 // updateFans populates systemStats.Fans from the host's hwmon sysfs tree.
 // No-op on platforms where hwmon isn't available (see fans_other.go).
 func (a *Agent) updateFans(systemStats *system.Stats) {
-	if hwmonRoot == "" {
+	if hwmonRoot == "" || (a.sensorConfig != nil && a.sensorConfig.skipFans) {
 		return
 	}
 	sensors, err := getFanSensors()
