@@ -31,6 +31,7 @@ const Home = lazy(() => import("@/components/routes/home.tsx"))
 const Containers = lazy(() => import("@/components/routes/containers.tsx"))
 const Smart = lazy(() => import("@/components/routes/smart.tsx"))
 const Monitors = lazy(() => import("@/components/routes/monitors.tsx"))
+const Speedtests = lazy(() => import("@/components/routes/speedtests.tsx"))
 const SystemDetail = lazy(() => import("@/components/routes/system.tsx"))
 const CopyToClipboardDialog = lazy(() => import("@/components/copy-to-clipboard.tsx"))
 const ActiveAlerts = lazy(() => import("@/components/active-alerts.tsx").then((m) => ({ default: m.ActiveAlerts })))
@@ -83,6 +84,8 @@ const App = memo(() => {
 		return <Smart />
 	} else if (page.route === "monitors") {
 		return <Monitors />
+	} else if (page.route === "speedtests") {
+		return <Speedtests />
 	} else if (page.route === "settings") {
 		return <Settings />
 	}

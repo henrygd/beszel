@@ -111,6 +111,7 @@ func (h *Hub) StartHub() error {
 	h.App.OnRecordCreate("user_settings").BindFunc(h.um.InitializeUserSettings)
 
 	bindNetworkMonitorsEvents(h)
+	bindSpeedtestsEvents(h)
 
 	pb, ok := h.App.(*pocketbase.PocketBase)
 	if !ok {
