@@ -187,7 +187,7 @@ func TestSmartDeviceAlertMultipleUsers(t *testing.T) {
 	// Create user settings for the second user
 	_, err = beszelTests.CreateRecord(hub, "user_settings", map[string]any{
 		"user":     user2.Id,
-		"settings": `{"emails":["test2@example.com"],"webhooks":[]}`,
+		"settings": `{"notificationsEnabled":true,"emails":["test2@example.com"],"webhooks":[]}`,
 	})
 	assert.NoError(t, err)
 

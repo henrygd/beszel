@@ -133,9 +133,6 @@ func (am *AlertManager) evaluateNetworkMonitorAlerts(app core.App, systemID stri
 		}
 		now := time.Now()
 		for _, alert := range alerts {
-			if !userHasSystem(tx, alert.GetString("user"), systemID) {
-				continue
-			}
 			var state networkMonitorAlertState
 			if err := alert.UnmarshalJSONField("state", &state); err != nil {
 				return err
@@ -177,7 +174,7 @@ func (am *AlertManager) evaluateNetworkMonitorAlerts(app core.App, systemID stri
 						}
 						history := core.NewRecord(collection)
 						history.Load(map[string]any{
-							"alert_id": alert.Id, "user": alert.GetString("user"), "system": systemID,
+							"alert_id": alert.Id, "system": systemID,
 							"name": alertNameNetworkMonitorLoss, "monitor_name": label, "value": result.PacketLoss1h,
 						})
 						if err := tx.Save(history); err != nil {
@@ -196,10 +193,10 @@ func (am *AlertManager) evaluateNetworkMonitorAlerts(app core.App, systemID stri
 						state, comparison = "recovered", "is at or below"
 					}
 					messages = append(messages, AlertMessageData{
-						UserID: alert.GetString("user"), SystemID: systemID,
-						Title:   fmt.Sprintf("Network monitor %s on %s: %s", state, system.GetString("name"), label),
-						Message: fmt.Sprintf("%s on %s: loss over the past hour is %.2f%%, which %s the %.2f%% threshold.", label, system.GetString("name"), result.PacketLoss1h, comparison, alert.GetFloat("value")),
-						Link:    am.hub.MakeLink("system", systemID), LinkText: "View " + system.GetString("name"),
+						SystemID: systemID,
+						Title:    fmt.Sprintf("Network monitor %s on %s: %s", state, system.GetString("name"), label),
+						Message:  fmt.Sprintf("%s on %s: loss over the past hour is %.2f%%, which %s the %.2f%% threshold.", label, system.GetString("name"), result.PacketLoss1h, comparison, alert.GetFloat("value")),
+						Link:     am.hub.MakeLink("system", systemID), LinkText: "View " + system.GetString("name"),
 					})
 				}
 			}
