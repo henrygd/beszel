@@ -23,6 +23,7 @@ type AlertManager struct {
 	hub             hubLike
 	stopOnce        sync.Once
 	pendingAlerts   sync.Map
+	resolvingAlerts sync.Map // status alert IDs with a recovery in progress
 	alertsCache     *AlertsCache
 	networkMonitors *networkMonitorCache
 }
