@@ -1,7 +1,7 @@
 import { plural, t } from "@lingui/core/macro"
 import { type ClassValue, clsx } from "clsx"
 import { listenKeys } from "nanostores"
-import { timeDay, timeHour, timeMinute } from "d3-time"
+import { timeDay, timeHour, timeMinute, timeMonth, timeYear } from "d3-time"
 import { useEffect, useState } from "react"
 import { twMerge } from "tailwind-merge"
 import { toast } from "@/components/ui/use-toast"
@@ -95,6 +95,14 @@ export const formatDay = (timestamp: string) => {
 	return dayFormatter.format(new Date(timestamp))
 }
 
+const monthYearFormatter = new Intl.DateTimeFormat(undefined, {
+	month: "short",
+	year: "numeric",
+})
+export const formatMonthYear = (timestamp: string) => {
+	return monthYearFormatter.format(new Date(timestamp))
+}
+
 export const updateFavicon = (() => {
 	let prevDownCount = 0
 	return (downCount = 0) => {
@@ -173,6 +181,42 @@ export const chartTimeData: ChartTimeData = {
 		ticks: 30,
 		format: (timestamp: string) => formatDay(timestamp),
 		getOffset: (endTime: Date) => timeDay.offset(endTime, -30),
+	},
+	"6m": {
+		type: "24h",
+		expectedInterval: 60_000 * 1440,
+		label: () => t`6 months`,
+		ticks: 6,
+		format: (timestamp: string) => formatDay(timestamp),
+		getOffset: (endTime: Date) => timeMonth.offset(endTime, -6),
+		maxPoints: 200,
+	},
+	"1y": {
+		type: "24h",
+		expectedInterval: 60_000 * 1440,
+		label: () => t`1 year`,
+		ticks: 12,
+		format: (timestamp: string) => formatMonthYear(timestamp),
+		getOffset: (endTime: Date) => timeYear.offset(endTime, -1),
+		maxPoints: 400,
+	},
+	"2y": {
+		type: "24h",
+		expectedInterval: 60_000 * 1440,
+		label: () => t`2 years`,
+		ticks: 12,
+		format: (timestamp: string) => formatMonthYear(timestamp),
+		getOffset: (endTime: Date) => timeYear.offset(endTime, -2),
+		maxPoints: 800,
+	},
+	"5y": {
+		type: "24h",
+		expectedInterval: 60_000 * 1440,
+		label: () => t`5 years`,
+		ticks: 12,
+		format: (timestamp: string) => formatMonthYear(timestamp),
+		getOffset: (endTime: Date) => timeYear.offset(endTime, -5),
+		maxPoints: 2000,
 	},
 }
 
