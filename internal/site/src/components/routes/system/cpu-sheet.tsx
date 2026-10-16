@@ -154,21 +154,19 @@ export default memo(function CpuCoresSheet({
 							className="min-h-auto"
 						>
 							<AreaChartDefault
-								hideYAxis={true}
 								chartData={chartData}
 								maxToggled={maxValues}
 								legend={numCores < 10}
 								dataPoints={Array.from({ length: numCores }).map((_, i) => ({
 									label: `CPU ${i}`,
-									dataKey: ({ stats }: SystemStatsRecord) => stats?.cpus?.[i] ?? 1 / (stats?.cpus?.length ?? 1),
+									dataKey: ({ stats }: SystemStatsRecord) => stats?.cpus?.[i],
 									color: `hsl(${226 + (((i * 360) / Math.max(1, numCores)) % 360)}, var(--chart-saturation), var(--chart-lightness))`,
-									opacity: 0.35,
-									stackId: "a",
+									opacity: 0.1,
 								}))}
-								tickFormatter={(val) => `${val}%`}
+								domain={[0, highestCpuCorePct]}
+								tickFormatter={(val) => `${toFixedFloat(val, 2)}%`}
 								contentFormatter={({ value }) => `${value}%`}
-								reverseStackOrder={true}
-								itemSorter={() => 1}
+								itemSorter={(a, b) => b.value - a.value}
 							/>
 						</ChartCard>
 					)}
