@@ -17,11 +17,13 @@ export default memo(function CpuCoresSheet({
 	dataEmpty,
 	grid,
 	maxValues,
+	cpuFixed,
 }: {
 	chartData: ChartData
 	dataEmpty: boolean
 	grid: boolean
 	maxValues: boolean
+	cpuFixed?: boolean
 }) {
 	const [cpuCoresOpen, setCpuCoresOpen] = useState(false)
 	const hasOpened = useRef(false)
@@ -169,6 +171,7 @@ export default memo(function CpuCoresSheet({
 								contentFormatter={({ value }) => `${value}%`}
 								reverseStackOrder={true}
 								itemSorter={() => 1}
+								domain={cpuFixed ? [0, 100] : undefined}
 							/>
 						</ChartCard>
 					)}
@@ -186,7 +189,7 @@ export default memo(function CpuCoresSheet({
 							<AreaChartDefault
 								chartData={chartData}
 								maxToggled={maxValues}
-								domain={[0, highestCpuCorePct]}
+								domain={cpuFixed ? [0, 100] : [0, highestCpuCorePct]}
 								dataPoints={[
 									{
 										label: t`Usage`,
