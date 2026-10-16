@@ -317,20 +317,56 @@ func (d *diskDiscovery) addPartitionExtraFs(p disk.PartitionStat) {
 // that may not appear in partition discovery, while skipping mountpoints that
 // were already registered from higher-fidelity sources.
 func (d *diskDiscovery) addExtraFilesystemFolders(folderNames []string) {
-	existingMountpoints := make(map[string]bool, len(d.agent.fsStats))
-	for _, stats := range d.agent.fsStats {
-		existingMountpoints[stats.Mountpoint] = true
-	}
+    existingMountpoints := make(map[string]bool, len(d.agent.fsStats))
+    for _, stats := range d.agent.fsStats {
+        existingMountpoints[stats.Mountpoint] = true
+    }
 
-	for _, folderName := range folderNames {
-		mountpoint := filepath.Join(d.ctx.efPath, folderName)
-		slog.Debug("/extra-filesystems", "mountpoint", mountpoint)
-		if existingMountpoints[mountpoint] {
-			continue
-		}
-		device, customName := parseFilesystemEntry(folderName)
-		d.addFsStat(device, mountpoint, false, customName)
-	}
+    for _, folderName := range folderNames {
+        mountpoint := filepath.Join(d.ctx.efPath, folderName)
+        slog.Debug("/extra-filesystems", "mountpoint", mountpoint)
+        if existingMountpoints[mountpoint] {
+            slog.Debug("Skipping existing mountpoint", "mountpoint", mountpoint)
+            continue
+        }
+
+        slog.Debug("Processing folder", "folderName", folderName, "mountpoint", mountpoint)
+
+        // parseFilesystemEntry already handles the __ syntax
+        device, customName := parseFilesystemEntry(folderName)
+
+        // Try to find the actual device
+        realDevice := ""
+        for _, p := range d.partitions {
+            // Check whether the host mountpoint matches this folder
+            hostMountpoint := ""
+            switch folderName {
+            case "DATA":
+                hostMountpoint = "/mnt/data"
+            case "BACKUP":
+                hostMountpoint = "/mnt/backup"
+            case "HOME":
+                hostMountpoint = "/home"
+            case "BOOT":
+                hostMountpoint = "/boot"
+            }
+
+            if hostMountpoint != "" && p.Mountpoint == hostMountpoint {
+                realDevice = strings.TrimPrefix(p.Device, "/dev/")
+                slog.Debug("Found real device from partition", "folderName", folderName, "realDevice", realDevice, "partitionDevice", p.Device, "hostMountpoint", hostMountpoint)
+                break
+            }
+        }
+
+        if realDevice == "" {
+            slog.Debug("No real device found, using folder name", "folderName", folderName, "device", device)
+        } else {
+            device = realDevice
+            slog.Debug("Using real device for IO", "folderName", folderName, "device", device)
+        }
+
+        d.addFsStat(device, mountpoint, false, customName)
+    }
 }
 
 // Sets up the filesystems to monitor for disk usage and I/O.
@@ -340,11 +376,12 @@ func (a *Agent) initializeDiskInfo() {
 	hasRoot := false
 	isWindows := runtime.GOOS == "windows"
 
-	partitions, err := disk.PartitionsWithContext(context.Background(), true)
-	if err != nil {
-		slog.Error("Error getting disk partitions", "err", err)
-	}
-	slog.Debug("Disk", "partitions", partitions)
+    partitions, err := disk.PartitionsWithContext(context.Background(), true)
+    if err != nil {
+            slog.Error("Error getting disk partitions", "err", err)
+    }
+    a.partitions = partitions // Store partitions in the agent
+    slog.Debug("Disk", "partitions", partitions)
 
 	// trim trailing backslash for Windows devices (#1361)
 	if isWindows {
@@ -413,33 +450,74 @@ func (a *Agent) initializeDiskInfo() {
 
 // Removes extra filesystems that mirror root usage (https://github.com/henrygd/beszel/issues/1428).
 func (a *Agent) pruneDuplicateRootExtraFilesystems() {
-	var rootMountpoint string
-	for _, stats := range a.fsStats {
-		if stats != nil && stats.Root {
-			rootMountpoint = stats.Mountpoint
-			break
-		}
-	}
-	if rootMountpoint == "" {
-		return
-	}
-	rootUsage, err := disk.Usage(rootMountpoint)
-	if err != nil {
-		return
-	}
-	for name, stats := range a.fsStats {
-		if stats == nil || stats.Root {
-			continue
-		}
-		extraUsage, err := disk.Usage(stats.Mountpoint)
-		if err != nil {
-			continue
-		}
-		if hasSameDiskUsage(rootUsage, extraUsage) {
-			slog.Info("Ignoring duplicate FS", "name", name, "mount", stats.Mountpoint)
-			delete(a.fsStats, name)
-		}
-	}
+        var rootMountpoint string
+        var rootDevice string
+        for _, stats := range a.fsStats {
+                if stats != nil && stats.Root {
+                        rootMountpoint = stats.Mountpoint
+                        for _, p := range a.partitions {
+                                if p.Mountpoint == rootMountpoint {
+                                        rootDevice = p.Device
+                                        break
+                                }
+                        }
+                        break
+                }
+        }
+        if rootMountpoint == "" {
+                return
+        }
+
+        // Find the device for each extra filesystem entry
+        for name, stats := range a.fsStats {
+                if stats == nil || stats.Root {
+                        continue
+                }
+
+                // Try to find the device for this mountpoint
+                var extraDevice string
+
+                // 1. Try to find the mountpoint directly
+                for _, p := range a.partitions {
+                        if p.Mountpoint == stats.Mountpoint {
+                                extraDevice = p.Device
+                                break
+                        }
+                }
+
+                // 2. If not found, try to match by name
+                if extraDevice == "" {
+                        for _, p := range a.partitions {
+                                // Check whether the folder name occurs in the host mountpoint
+                                if strings.Contains(strings.ToLower(p.Mountpoint), strings.ToLower(name)) {
+                                        extraDevice = p.Device
+                                        break
+                                }
+                        }
+                }
+
+                // 3. If still not found, try to match the device key
+                if extraDevice == "" {
+                        // The key in fsStats is the device name (e.g. "nvme0n1p6")
+                        for _, p := range a.partitions {
+                                if strings.TrimPrefix(p.Device, "/dev/") == name {
+                                        extraDevice = p.Device
+                                        break
+                                }
+                        }
+                }
+
+                // If no device was found, skip it and keep the filesystem
+                if extraDevice == "" {
+                        continue
+                }
+
+                // Only remove it if it actually uses the same device
+                if rootDevice != "" && extraDevice != "" && rootDevice == extraDevice {
+                        slog.Info("Ignoring duplicate FS", "name", name, "mount", stats.Mountpoint, "device", extraDevice)
+                        delete(a.fsStats, name)
+                }
+        }
 }
 
 // hasSameDiskUsage compares root/extra usage with a small byte tolerance.
@@ -861,4 +939,14 @@ func (a *Agent) getRootMountPoint() string {
 	}
 
 	return "/"
+}
+
+// diskUsage returns the disk usage for a given path
+func (a *Agent) diskUsage(path string) uint64 {
+        usage, err := disk.Usage(path)
+        if err != nil {
+                slog.Error("Error getting disk usage", "path", path, "error", err)
+                return 0
+        }
+        return usage.Used
 }
