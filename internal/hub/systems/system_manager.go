@@ -218,6 +218,7 @@ func (sm *SystemManager) onRecordAfterUpdateSuccess(e *core.RecordEvent) error {
 		if ok {
 			// Pause monitoring but keep system in manager for potential resume
 			system.closeSSHConnection()
+			sm.updaters.Go(system.suspendNetworkMonitors)
 		}
 		_ = deactivateAlerts(e.App, e.Record.Id, false)
 		sm.hub.CancelPendingStatusAlerts(e.Record.Id)

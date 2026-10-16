@@ -74,12 +74,13 @@ func TestNetworkMonitorSyncSkipsOlderAgents(t *testing.T) {
 }
 
 func TestNetworkMonitorReconnectSync(t *testing.T) {
-	for _, change := range []string{"delete", "disable", "retry"} {
+	for _, change := range []string{"delete", "disable", "retry", "pause"} {
 		t.Run(change, func(t *testing.T) {
 			sys, app := newTestSystemWithHub(t)
 			record, err := app.FindRecordById("systems", sys.Id)
 			require.NoError(t, err)
-			// Suppress unrelated system-stat requests while exercising reconnects.
+			// Paused suppresses unrelated system-stat requests while exercising
+			// reconnects. Each connect resumes the system to trigger the sync.
 			record.Set("status", paused)
 			require.NoError(t, app.SaveNoValidate(record))
 			collection, err := app.FindCachedCollectionByNameOrId("network_monitors")
@@ -115,7 +116,7 @@ func TestNetworkMonitorReconnectSync(t *testing.T) {
 			}))
 			t.Cleanup(server.Close)
 			client := &monitorSyncClient{requests: make(chan common.HubRequest[monitor.SyncRequest], 2)}
-			connect := func() monitor.SyncRequest {
+			connect := func() (*System, monitor.SyncRequest) {
 				t.Helper()
 				conn, _, err := gws.NewClient(client, &gws.ClientOption{Addr: "ws" + strings.TrimPrefix(server.URL, "http")})
 				require.NoError(t, err)
@@ -127,27 +128,34 @@ func TestNetworkMonitorReconnectSync(t *testing.T) {
 				case <-time.After(3 * time.Second):
 					t.Fatal("websocket connection was not established")
 				}
+				system, err := sm.GetSystem(sys.Id)
+				require.NoError(t, err)
 				select {
 				case req := <-client.requests:
-					require.Equal(t, common.SyncNetworkMonitors, req.Action)
-					require.Equal(t, monitor.SyncActionReplace, req.Data.Action)
-					return req.Data
-				case <-time.After(3 * time.Second):
-					t.Fatal("reconnected agent did not receive a monitor replacement")
-					return monitor.SyncRequest{}
+					t.Fatalf("paused system received monitor sync %+v", req.Data)
+				case <-time.After(100 * time.Millisecond):
 				}
+				require.True(t, system.monitorsNeedSync.Load(), "paused system must sync once resumed")
+
+				// The first fetch after resuming syncs the pending monitors.
+				system.swapStatus(up)
+				_, err = system.fetchDataFromAgent(common.DataRequestOptions{})
+				require.NoError(t, err)
+				require.Len(t, client.requests, 1)
+				req := <-client.requests
+				require.Equal(t, common.SyncNetworkMonitors, req.Action)
+				require.Equal(t, monitor.SyncActionReplace, req.Data.Action)
+				return system, req.Data
 			}
 
 			client.failSync.Store(change == "retry")
-			initial := connect()
+			system, initial := connect()
 			require.Len(t, initial.Configs, 1)
 			require.Equal(t, probe.Id, initial.Configs[0].ID)
 			if change == "retry" {
-				system, err := sm.GetSystem(sys.Id)
-				require.NoError(t, err)
-				require.Eventually(t, system.monitorsNeedSync.Load, time.Second, time.Millisecond)
+				require.True(t, system.monitorsNeedSync.Load())
 				// A second failed sync must not fail the stats fetch or clear pending state.
-				_, err = system.fetchDataFromAgent(common.DataRequestOptions{})
+				_, err := system.fetchDataFromAgent(common.DataRequestOptions{})
 				require.NoError(t, err)
 				require.True(t, system.monitorsNeedSync.Load())
 				require.Len(t, client.requests, 1)
@@ -165,6 +173,30 @@ func TestNetworkMonitorReconnectSync(t *testing.T) {
 				require.Empty(t, client.requests, "successful sync must not repeat on every fetch")
 				return
 			}
+			if change == "pause" {
+				system.swapStatus(paused)
+				system.suspendNetworkMonitors()
+				require.Len(t, client.requests, 1)
+				suspend := <-client.requests
+				require.Equal(t, monitor.SyncActionReplace, suspend.Data.Action)
+				require.Empty(t, suspend.Data.Configs, "pause must stop the agent's monitors")
+				require.True(t, system.monitorsNeedSync.Load(), "monitors must sync again on resume")
+
+				// Edits while paused wait for the resume sync.
+				result, err := system.UpsertNetworkMonitor(initial.Configs[0], true)
+				require.NoError(t, err)
+				require.Nil(t, result)
+				system.syncPendingNetworkMonitors()
+				require.Empty(t, client.requests, "paused system must not receive monitor configs")
+
+				// A resume racing the suspend request must still sync afterwards.
+				system.swapStatus(up)
+				system.monitorsNeedSync.Store(false)
+				system.suspendNetworkMonitors()
+				<-client.requests
+				require.True(t, system.monitorsNeedSync.Load())
+				return
+			}
 			require.NoError(t, sm.RemoveSystem(sys.Id))
 			if change == "delete" {
 				require.NoError(t, app.Delete(probe))
@@ -172,7 +204,8 @@ func TestNetworkMonitorReconnectSync(t *testing.T) {
 				probe.Set("enabled", false)
 				require.NoError(t, app.SaveNoValidate(probe))
 			}
-			require.Empty(t, connect().Configs, "reconnect must clear the agent's previous probe")
+			_, cleared := connect()
+			require.Empty(t, cleared.Configs, "reconnect must clear the agent's previous probe")
 		})
 	}
 }

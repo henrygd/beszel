@@ -137,6 +137,52 @@ func TestMonitorManagerSyncMonitorsRestartsChangedConfig(t *testing.T) {
 	}
 }
 
+func TestMonitorManagerSuspendKeepsConfigsUntilResync(t *testing.T) {
+	cfg := monitor.Config{ID: "monitor-1", Target: "ignored", Protocol: "noop", Interval: 10}
+	pm := newMonitorManager()
+	defer pm.Stop()
+	pm.SyncMonitors([]monitor.Config{cfg})
+	task := pm.monitors[cfg.ID]
+	task.history.record(monitorSample{responseUs: 5000, timestamp: time.Now()})
+
+	pm.Suspend()
+
+	assert.Same(t, task, pm.monitors[cfg.ID], "suspend must keep the config")
+	assert.Error(t, task.ctx.Err(), "suspend must cancel probing")
+	assert.Nil(t, pm.resumeGuard.stop, "suspend must stop the resume guard")
+
+	// The hub's full sync on reconnect sends the unchanged config again.
+	pm.SyncMonitors([]monitor.Config{cfg})
+	restarted := pm.monitors[cfg.ID]
+	require.NotSame(t, task, restarted)
+	assert.NoError(t, restarted.ctx.Err())
+	assert.NotNil(t, pm.resumeGuard.stop)
+	_, ok := restarted.history.result(time.Minute, time.Now())
+	assert.True(t, ok, "restart must keep history")
+}
+
+func TestMonitorManagerUpsertRestartsSuspendedMonitor(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusNoContent)
+	}))
+	defer server.Close()
+	cfg := monitor.Config{ID: "monitor-1", Target: server.URL, Protocol: "http", Interval: 10}
+	pm := &MonitorManager{
+		monitors: make(map[string]*monitorTask),
+		probe:    networkMonitorProbe(server.Client(), nil),
+	}
+	defer pm.Stop()
+	_, err := pm.UpsertMonitor(cfg, false)
+	require.NoError(t, err)
+	pm.Suspend()
+
+	result, err := pm.UpsertMonitor(cfg, true)
+
+	require.NoError(t, err)
+	require.NotNil(t, result, "a suspended monitor must not skip the immediate run")
+	assert.NoError(t, pm.monitors[cfg.ID].ctx.Err(), "upsert must restart the schedule")
+}
+
 func TestMonitorManagerApplySyncUpsertRunsImmediatelyAndReturnsResult(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusNoContent)

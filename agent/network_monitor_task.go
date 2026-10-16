@@ -60,6 +60,12 @@ func newMonitorTaskFromExisting(config monitor.Config, existing *monitorTask) *m
 	return task
 }
 
+// runs reports whether the task is scheduled with config. Suspended tasks keep
+// their config but must be restarted when the hub syncs it again.
+func (task *monitorTask) runs(config monitor.Config) bool {
+	return task.config == config && task.ctx.Err() == nil
+}
+
 // runProbe shares an in-flight check between scheduled and immediate requests.
 // Every completed check contributes exactly one sample, regardless of how many
 // callers were waiting for it. No task or history lock is held during network I/O.

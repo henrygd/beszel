@@ -4,6 +4,7 @@ import (
 	"crypto/tls"
 	"errors"
 	"fmt"
+	"log/slog"
 	"net/http"
 	"sync"
 	"time"
@@ -57,7 +58,7 @@ func (pm *MonitorManager) SyncMonitors(configs []monitor.Config) {
 	// Start new monitors and restart tasks whose config changed.
 	for key, cfg := range newKeys {
 		task, exists := pm.monitors[key]
-		if exists && task.config == cfg {
+		if exists && task.runs(cfg) {
 			continue
 		}
 		if exists {
@@ -108,7 +109,7 @@ func (pm *MonitorManager) UpsertMonitor(config monitor.Config, runNow bool) (*mo
 
 	pm.mu.Lock()
 	task, exists := pm.monitors[config.ID]
-	if exists && task.config == config {
+	if exists && task.runs(config) {
 		pm.mu.Unlock()
 		if !runNow {
 			return nil, nil
@@ -186,6 +187,22 @@ func (pm *MonitorManager) GetResults(durationMs uint16) map[string]monitor.Resul
 	}
 
 	return results
+}
+
+// Suspend stops probing while the agent is disconnected from the hub, so monitors
+// don't generate traffic when no one is collecting their results. Tasks keep
+// their configs and history, and are restarted by the full sync the hub sends
+// on reconnect.
+func (pm *MonitorManager) Suspend() {
+	pm.mu.Lock()
+	defer pm.mu.Unlock()
+	if len(pm.monitors) > 0 {
+		slog.Debug("suspending network monitors", "count", len(pm.monitors))
+	}
+	for _, task := range pm.monitors {
+		task.cancel()
+	}
+	pm.resumeGuard.shutdown()
 }
 
 // Stop stops all monitor tasks.
