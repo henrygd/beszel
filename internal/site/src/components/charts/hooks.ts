@@ -103,7 +103,7 @@ export function useYAxisWidth() {
 			maxChars = str.length
 			const div = document.createElement("div")
 			div.className = "text-xs tabular-nums tracking-tighter table sr-only"
-			div.innerHTML = str
+			div.textContent = str
 			clearTimeout(timeout)
 			timeout = setTimeout(() => {
 				document.body.appendChild(div)

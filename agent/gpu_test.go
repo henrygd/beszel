@@ -1716,14 +1716,23 @@ func intelJSONSample(powerGPU, powerPkg float64, engines map[string]float64) str
 
 // intelJSONStream joins samples as intel_gpu_top -J prints them. Since v1.28
 // the output starts with "[" (withArray); older versions omit it.
+// Commas between objects are the well-formed case; some i915 builds omit them (#2587).
 func intelJSONStream(withArray bool, samples ...string) string {
+	return intelJSONStreamSep(withArray, true, samples...)
+}
+
+func intelJSONStreamSep(withArray, withCommas bool, samples ...string) string {
 	var sb strings.Builder
 	if withArray {
 		sb.WriteString("[\n")
 	}
 	for i, s := range samples {
 		if i > 0 {
-			sb.WriteString(",\n")
+			if withCommas {
+				sb.WriteString(",\n")
+			} else {
+				sb.WriteString("\n")
+			}
 		}
 		sb.WriteString(s)
 	}
@@ -1798,6 +1807,24 @@ func TestParseIntelJSONStream(t *testing.T) {
 		{
 			name:        "closed array",
 			input:       intelJSONStream(true, first, classView[0], classView[1]) + "\n]\n",
+			wantCount:   2,
+			wantPower:   3,
+			wantPkg:     5,
+			wantEngines: classViewWant,
+		},
+		{
+			// Some intel_gpu_top builds wrap samples in "["..."]" but omit commas
+			// between objects ("}\n{"). Observed on Arrow Lake i915 (#2587).
+			name:        "array without commas between objects",
+			input:       intelJSONStreamSep(true, false, first, classView[0], classView[1]) + "\n]\n",
+			wantCount:   2,
+			wantPower:   3,
+			wantPkg:     5,
+			wantEngines: classViewWant,
+		},
+		{
+			name:        "open array without commas between objects",
+			input:       intelJSONStreamSep(true, false, first, classView[0], classView[1]),
 			wantCount:   2,
 			wantPower:   3,
 			wantPkg:     5,
