@@ -8,16 +8,11 @@ import {
 	getFilteredRowModel,
 	getPaginationRowModel,
 	getSortedRowModel,
-	type PaginationState,
 	type SortingState,
 	useReactTable,
 } from "@tanstack/react-table"
 import {
 	ArrowUpDownIcon,
-	ChevronLeftIcon,
-	ChevronRightIcon,
-	ChevronsLeftIcon,
-	ChevronsRightIcon,
 	GitCompareArrowsIcon,
 	PackageCheckIcon,
 	PackageIcon,
@@ -29,14 +24,13 @@ import { useEffect, useMemo, useState } from "react"
 import { Badge, type BadgeProps } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { DataTablePagination, usePagination } from "@/components/ui/data-table-pagination"
 import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Separator } from "@/components/ui/separator"
 import { TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { pb } from "@/lib/api"
 import { classifyVersionChange, type VersionChange } from "@/lib/package-updates"
-import { cn, formatShortDate, useBrowserStorage } from "@/lib/utils"
+import { cn, formatShortDate } from "@/lib/utils"
 import type { PackageUpdate, PackageUpdates } from "@/types"
 
 interface PackageUpdateRow extends PackageUpdate {
@@ -53,8 +47,6 @@ const changeVariant: Record<VersionChange, BadgeProps["variant"]> = {
 	revision: "secondary",
 	other: "outline",
 }
-
-const pageSizes = [10, 20, 50, 100, 200]
 
 function changeLabel(change: VersionChange) {
 	switch (change) {
@@ -188,10 +180,7 @@ export default function PackageUpdatesTable({ systemId, counts }: { systemId: st
 	const [error, setError] = useState<string | null>(null)
 	const [sorting, setSorting] = useState<SortingState>([{ id: "name", desc: false }])
 	const [globalFilter, setGlobalFilter] = useState("")
-	// Store page size preference in local storage
-	const [pageSize, setPageSize] = useBrowserStorage("pu-page-size", pageSizes[1], sessionStorage)
-	const [pageIndex, setPageIndex] = useState(0)
-	const pagination = useMemo<PaginationState>(() => ({ pageIndex, pageSize }), [pageIndex, pageSize])
+	const { pagination, onPaginationChange, resetPageIndex } = usePagination()
 
 	useEffect(() => {
 		let cancelled = false
@@ -224,13 +213,16 @@ export default function PackageUpdatesTable({ systemId, counts }: { systemId: st
 		getSortedRowModel: getSortedRowModel(),
 		getFilteredRowModel: getFilteredRowModel(),
 		getPaginationRowModel: getPaginationRowModel(),
-		onSortingChange: setSorting,
-		onGlobalFilterChange: setGlobalFilter,
-		onPaginationChange: (updater) => {
-			const next = typeof updater === "function" ? updater(pagination) : updater
-			setPageIndex(next.pageIndex)
-			setPageSize(next.pageSize)
+		onSortingChange: (updater) => {
+			setSorting(updater)
+			resetPageIndex()
 		},
+		onGlobalFilterChange: (value) => {
+			setGlobalFilter(value)
+			resetPageIndex()
+		},
+		autoResetPageIndex: false,
+		onPaginationChange,
 		state: { sorting, globalFilter, pagination },
 		globalFilterFn: (row, _columnId, filterValue: string) => {
 			const pkg = row.original
@@ -341,73 +333,7 @@ export default function PackageUpdatesTable({ systemId, counts }: { systemId: st
 					</table>
 				</div>
 			)}
-			{!error && rows.length > pageSizes[0] && (
-				<div className="flex items-center gap-8 mt-3 sm:mt-4 ps-1 tabular-nums">
-					<div className="hidden items-center gap-2 me-auto @xl:flex">
-						<Label htmlFor="pu-rows-per-page" className="text-sm font-medium">
-							<Trans>Rows per page</Trans>
-						</Label>
-						<Select value={`${pageSize}`} onValueChange={(value) => table.setPageSize(Number(value))}>
-							<SelectTrigger className="w-18" id="pu-rows-per-page">
-								<SelectValue placeholder={pageSize} />
-							</SelectTrigger>
-							<SelectContent side="top">
-								{pageSizes.map((size) => (
-									<SelectItem key={size} value={`${size}`}>
-										{size}
-									</SelectItem>
-								))}
-							</SelectContent>
-						</Select>
-					</div>
-					<div className="flex w-fit items-center justify-center text-sm font-medium">
-						<Trans>
-							Page {pageIndex + 1} of {Math.max(table.getPageCount(), 1)}
-						</Trans>
-					</div>
-					<div className="ms-auto flex items-center gap-2 @xl:ms-0">
-						<Button
-							variant="outline"
-							className="hidden size-9 p-0 @xl:flex"
-							onClick={() => table.setPageIndex(0)}
-							disabled={!table.getCanPreviousPage()}
-						>
-							<span className="sr-only">Go to first page</span>
-							<ChevronsLeftIcon className="size-5" />
-						</Button>
-						<Button
-							variant="outline"
-							className="size-9"
-							size="icon"
-							onClick={() => table.previousPage()}
-							disabled={!table.getCanPreviousPage()}
-						>
-							<span className="sr-only">Go to previous page</span>
-							<ChevronLeftIcon className="size-5" />
-						</Button>
-						<Button
-							variant="outline"
-							className="size-9"
-							size="icon"
-							onClick={() => table.nextPage()}
-							disabled={!table.getCanNextPage()}
-						>
-							<span className="sr-only">Go to next page</span>
-							<ChevronRightIcon className="size-5" />
-						</Button>
-						<Button
-							variant="outline"
-							className="hidden size-9 @xl:flex"
-							size="icon"
-							onClick={() => table.setPageIndex(table.getPageCount() - 1)}
-							disabled={!table.getCanNextPage()}
-						>
-							<span className="sr-only">Go to last page</span>
-							<ChevronsRightIcon className="size-5" />
-						</Button>
-					</div>
-				</div>
-			)}
+			{!error && <DataTablePagination table={table} showSelected={false} />}
 		</Card>
 	)
 }

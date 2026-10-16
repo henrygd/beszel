@@ -414,6 +414,7 @@ export interface UserSettings {
 	monitorCols?: Record<string, boolean>
 	monitorSortMode?: Array<{ id: string; desc: boolean }>
 	monitorSortModeSystem?: Array<{ id: string; desc: boolean }>
+	pageSize?: number
 	grid?: boolean
 	displayMode?: "default" | "tabs"
 }
