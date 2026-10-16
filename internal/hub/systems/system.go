@@ -618,8 +618,13 @@ func createContainerRecords(app core.App, data []*container.Stats, systemId stri
 
 // getRecord retrieves the system record from the database.
 // If the record is not found, it removes the system from the manager.
+// Other errors, like a query timing out while the hub is stalled, leave the
+// system in place so the updater retries on the next tick (issue #2544).
 func (sys *System) getRecord(app core.App) (*core.Record, error) {
 	record, err := app.FindRecordById("systems", sys.Id)
+	if err != nil && !errors.Is(err, sql.ErrNoRows) {
+		return nil, err
+	}
 	if err != nil || record == nil {
 		_ = sys.manager.RemoveSystem(sys.Id)
 		if err == nil {
