@@ -276,6 +276,10 @@ func AverageSystemStatsSlice(records []system.Stats) system.Stats {
 	batteryCounts := make(map[string]uint64)
 	// accumulate per-core usage across records
 	var cpuCoresSums []uint64
+	// Count frequency samples per core: older agents and unavailable cores
+	// must not lower the average by contributing implicit zeroes.
+	var cpuFreqSums []float64
+	var cpuFreqCounts []uint64
 	// accumulate cpu breakdown [user, system, iowait, steal, idle]
 	var cpuBreakdownSums []float64
 	tempCount := float64(0)
@@ -346,6 +350,17 @@ func AverageSystemStatsSlice(records []system.Stats) system.Stats {
 				cpuCoresSums[j] += uint64(v)
 			}
 		}
+		// Accumulate frequency samples independently for each core.
+		if len(cpuFreqSums) < len(stats.CpuFreqs) {
+			additional := len(stats.CpuFreqs) - len(cpuFreqSums)
+			cpuFreqSums = append(cpuFreqSums, make([]float64, additional)...)
+			cpuFreqCounts = append(cpuFreqCounts, make([]uint64, additional)...)
+		}
+		for j, frequency := range stats.CpuFreqs {
+			cpuFreqSums[j] += frequency
+			cpuFreqCounts[j]++
+		}
+
 		// Set peak values
 		sum.MaxCpu = max(sum.MaxCpu, stats.MaxCpu, stats.Cpu)
 		sum.MaxMem = max(sum.MaxMem, stats.MaxMem, stats.MemUsed)
@@ -609,6 +624,14 @@ func AverageSystemStatsSlice(records []system.Stats) system.Stats {
 			avg[i] = uint8(v)
 		}
 		sum.CpuCoresUsage = avg
+	}
+
+	// Average CPU frequencies using only the samples available for each core.
+	if len(cpuFreqSums) > 0 {
+		sum.CpuFreqs = make([]float64, len(cpuFreqSums))
+		for i, total := range cpuFreqSums {
+			sum.CpuFreqs[i] = twoDecimals(total / float64(cpuFreqCounts[i]))
+		}
 	}
 
 	// Average CPU breakdown

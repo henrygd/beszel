@@ -211,8 +211,8 @@ type Details struct {
 	Podman        bool          `cbor:"8,keyasint,omitempty"`
 	MemoryTotal   uint64        `cbor:"9,keyasint"`
 	SmartInterval time.Duration `cbor:"10,keyasint,omitempty"`
-	CpuMHz        float64       `cbor:"11,keyasint,omitempty"` // max rated clock speed (cpuinfo_max_freq)
-	ZfsInterval   time.Duration `cbor:"12,keyasint,omitempty"` // interval for ZFS detail refresh
+	ZfsInterval   time.Duration `cbor:"11,keyasint,omitempty"` // interval for ZFS detail refresh
+	CpuMHz        float64       `cbor:"12,keyasint,omitempty"` // max rated clock speed (cpuinfo_max_freq)
 }
 
 // Final data structure to return to the hub
