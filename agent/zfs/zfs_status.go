@@ -11,10 +11,11 @@ import (
 
 // PoolStatus holds parsed `zpool status` information for one pool.
 type PoolStatus struct {
-	Name  string
-	State string // ONLINE, DEGRADED, FAULTED, ...
-	Scrub ScrubStatus
-	Vdevs []VdevStatus
+	Name   string
+	State  string // ONLINE, DEGRADED, FAULTED, ...
+	Status string // status: advisory message, when the pool carries one
+	Scrub  ScrubStatus
+	Vdevs  []VdevStatus
 }
 
 // ScrubStatus holds the scrub (or resilver) status parsed from the scan line.
@@ -54,6 +55,7 @@ func parseZpoolStatusOutput(out []byte) ([]PoolStatus, error) {
 	var pools []PoolStatus
 	var current *PoolStatus
 	inConfig := false
+	inStatus := false         // next indented line continues the status: message
 	scanContinuation := false // next non-blank line continues the scan line (progress)
 
 	scanner := bufio.NewScanner(bytes.NewReader(out))
@@ -66,17 +68,31 @@ func parseZpoolStatusOutput(out []byte) ([]PoolStatus, error) {
 			pools = append(pools, PoolStatus{Name: strings.TrimSpace(strings.TrimPrefix(trimmed, "pool:"))})
 			current = &pools[len(pools)-1]
 			inConfig = false
+			inStatus = false
 			scanContinuation = false
 		case current == nil:
 			continue
 		case strings.HasPrefix(trimmed, "state:"):
 			current.State = strings.TrimSpace(strings.TrimPrefix(trimmed, "state:"))
+		case strings.HasPrefix(trimmed, "status:"):
+			current.Status = strings.Join(strings.Fields(strings.TrimPrefix(trimmed, "status:")), " ")
+			inStatus = true
+		case strings.HasPrefix(trimmed, "action:"), strings.HasPrefix(trimmed, "see:"):
+			// action:/see: follow the status message; see: is itself indented.
+			inStatus = false
 		case strings.HasPrefix(trimmed, "scan:"):
 			current.Scrub = parseScanLine(trimmed)
 			// zpool status prints the progress percentage on the line after scan.
 			scanContinuation = true
+			inStatus = false
 		case trimmed == "config:":
 			inConfig = true
+			inStatus = false
+		case inStatus && trimmed != "" && (strings.HasPrefix(line, " ") || strings.HasPrefix(line, "\t")):
+			// The status message wraps onto indented continuation lines.
+			current.Status = strings.TrimSpace(current.Status + " " + strings.Join(strings.Fields(trimmed), " "))
+		case inStatus:
+			inStatus = false
 		case scanContinuation:
 			// The line after scan: may be an indented progress continuation.
 			if m := progressRe.FindStringSubmatch(trimmed); m != nil {
