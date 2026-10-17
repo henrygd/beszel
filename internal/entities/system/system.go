@@ -64,6 +64,9 @@ type Stats struct {
 	ZfsPools          map[string]*ZfsPool  `json:"z,omitempty" cbor:"39,keyasint,omitempty"`  // ZFS pool metrics, keyed by pool name
 	DiskIOTotal       [2]uint64            `json:"diot,omitzero" cbor:"38,keyasint,omitzero"` // [total read bytes, total write bytes] cumulative device counters
 	WiFi              map[string]int8      `json:"wf,omitempty" cbor:"40,keyasint,omitempty"` // RSSI dBm keyed by interface; unavailable readings omitted
+	InodesTotal       float64              `json:"it,omitzero" cbor:"41,keyasint,omitzero"`   // root filesystem inode total
+	InodesUsed        float64              `json:"iu,omitzero" cbor:"42,keyasint,omitzero"`   // root filesystem inode used
+	InodesPct         float64              `json:"ip,omitzero" cbor:"43,keyasint,omitzero"`   // root filesystem inode used percent
 
 }
 
@@ -137,6 +140,9 @@ type FsStats struct {
 	MaxDiskWriteBytes uint64     `json:"wbm,omitzero" cbor:"-"`
 	DiskIoStats       [6]float64 `json:"dios,omitzero" cbor:"8,keyasint,omitzero"` // [read time %, write time %, io utilization %, r_await ms, w_await ms, weighted io %]
 	MaxDiskIoStats    [6]float64 `json:"diosm,omitzero" cbor:"-"`                  // max values for DiskIoStats
+	InodesTotal       float64    `json:"it,omitzero" cbor:"11,keyasint,omitzero"`  // inode total
+	InodesUsed        float64    `json:"iu,omitzero" cbor:"12,keyasint,omitzero"`  // inode used
+	ReadOnly          bool       `json:"ro,omitzero" cbor:"13,keyasint,omitzero"`  // host mount is read-only
 }
 
 type NetIoStats struct {
@@ -185,16 +191,21 @@ type Info struct {
 	// LoadAvg5       float64 `json:"l5,omitempty" cbor:"16,keyasint,omitempty"`  // deprecated - use `la` array instead
 	// LoadAvg15      float64 `json:"l15,omitempty" cbor:"17,keyasint,omitempty"` // deprecated - use `la` array instead
 
-	BandwidthBytes uint64             `json:"bb" cbor:"18,keyasint"`
-	LoadAvg        [3]float64         `json:"la,omitempty" cbor:"19,keyasint"`
-	ConnectionType ConnectionType     `json:"ct,omitzero" cbor:"20,keyasint,omitempty,omitzero"`
-	ExtraFsPct     map[string]float64 `json:"efs,omitempty" cbor:"21,keyasint,omitempty"`
-	Services       []uint16           `json:"sv,omitempty" cbor:"22,keyasint,omitempty"`  // [totalServices, numFailedServices]
-	Battery        Battery            `json:"bat,omitzero" cbor:"23,keyasint,omitzero"`   // [percent, charge state]
-	RootDiskName   string             `json:"rdn,omitempty" cbor:"24,keyasint,omitempty"` // custom name for root disk (set via FILESYSTEM=device__name)
-	PackageUpdates []uint16           `json:"pu,omitempty" cbor:"25,keyasint,omitempty"`  // [totalUpdates, securityUpdates] (security omitted if unknown)
-	WiFi           map[string]WiFi    `json:"wf,omitempty" cbor:"26,keyasint,omitempty"`  // connected Wi-Fi interfaces
-	SystemdLogs    bool               `json:"jl,omitzero" cbor:"27,keyasint,omitempty"`   // agent can read the system journal
+	BandwidthBytes      uint64             `json:"bb" cbor:"18,keyasint"`
+	LoadAvg             [3]float64         `json:"la,omitempty" cbor:"19,keyasint"`
+	ConnectionType      ConnectionType     `json:"ct,omitzero" cbor:"20,keyasint,omitempty,omitzero"`
+	ExtraFsPct          map[string]float64 `json:"efs,omitempty" cbor:"21,keyasint,omitempty"`
+	Services            []uint16           `json:"sv,omitempty" cbor:"22,keyasint,omitempty"`   // [totalServices, numFailedServices]
+	Battery             Battery            `json:"bat,omitzero" cbor:"23,keyasint,omitzero"`    // [percent, charge state]
+	RootDiskName        string             `json:"rdn,omitempty" cbor:"24,keyasint,omitempty"`  // custom name for root disk (set via FILESYSTEM=device__name)
+	PackageUpdates      []uint16           `json:"pu,omitempty" cbor:"25,keyasint,omitempty"`   // [totalUpdates, securityUpdates] (security omitted if unknown)
+	WiFi                map[string]WiFi    `json:"wf,omitempty" cbor:"26,keyasint,omitempty"`   // connected Wi-Fi interfaces
+	SystemdLogs         bool               `json:"jl,omitzero" cbor:"27,keyasint,omitempty"`    // agent can read the system journal
+	InodesPct           float64            `json:"ip,omitzero" cbor:"28,keyasint,omitzero"`     // root filesystem inode used percent
+	ExtraFsInodesPct    map[string]float64 `json:"eip,omitempty" cbor:"29,keyasint,omitempty"`  // extra filesystem inode used percent
+	RootReadOnly        bool               `json:"rro,omitzero" cbor:"30,keyasint,omitzero"`    // root filesystem is read-only
+	ExtraFsReadOnly     map[string]bool    `json:"efro,omitempty" cbor:"31,keyasint,omitempty"` // extra filesystem read-only flags
+	ReadOnlyFilesystems []string           `json:"rof,omitempty" cbor:"32,keyasint,omitempty"`  // display names of unexpected RO mounts
 }
 
 // Data that does not change during process lifetime and is not needed in All Systems table

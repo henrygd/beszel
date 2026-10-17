@@ -69,6 +69,19 @@ func TestAverageSystemStatsSlice_SingleRecord(t *testing.T) {
 	assert.Equal(t, uint8(1), result.Battery[1])
 }
 
+func TestAverageSystemStatsSlice_Inodes(t *testing.T) {
+	input := []system.Stats{
+		{InodesTotal: 1000, InodesUsed: 400, InodesPct: 40},
+		{InodesTotal: 1000, InodesUsed: 600, InodesPct: 60},
+	}
+
+	result := records.AverageSystemStatsSlice(input)
+
+	assert.Equal(t, 1000.0, result.InodesTotal)
+	assert.Equal(t, 500.0, result.InodesUsed)
+	assert.Equal(t, 50.0, result.InodesPct)
+}
+
 func TestAverageSystemStatsSlice_BasicAveraging(t *testing.T) {
 	input := []system.Stats{
 		{
@@ -347,6 +360,8 @@ func TestAverageSystemStatsSlice_ExtraFs(t *testing.T) {
 				"/data": {
 					DiskTotal:         1000.0,
 					DiskUsed:          400.0,
+					InodesTotal:       10000.0,
+					InodesUsed:        4000.0,
 					DiskReadPs:        50.0,
 					DiskWritePs:       100.0,
 					MaxDiskReadPS:     60.0,
@@ -366,6 +381,8 @@ func TestAverageSystemStatsSlice_ExtraFs(t *testing.T) {
 				"/data": {
 					DiskTotal:         1000.0,
 					DiskUsed:          600.0,
+					InodesTotal:       10000.0,
+					InodesUsed:        6000.0,
 					DiskReadPs:        150.0,
 					DiskWritePs:       200.0,
 					MaxDiskReadPS:     160.0,
@@ -388,6 +405,8 @@ func TestAverageSystemStatsSlice_ExtraFs(t *testing.T) {
 	fs := result.ExtraFs["/data"]
 	assert.Equal(t, 1000.0, fs.DiskTotal)
 	assert.Equal(t, 500.0, fs.DiskUsed)
+	assert.Equal(t, 10000.0, fs.InodesTotal)
+	assert.Equal(t, 5000.0, fs.InodesUsed)
 	assert.Equal(t, 100.0, fs.DiskReadPs)
 	assert.Equal(t, 150.0, fs.DiskWritePs)
 	assert.Equal(t, 160.0, fs.MaxDiskReadPS)

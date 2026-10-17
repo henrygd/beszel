@@ -5,6 +5,9 @@ node_modules/
 # Go build artifacts and binaries
 build
 dist
+# Hub embeds the built site; keep it in the Docker build context.
+!internal/site/dist
+!internal/site/dist/**
 *.exe
 beszel-agent
 beszel_data*

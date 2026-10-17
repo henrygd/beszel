@@ -181,6 +181,24 @@ export function toFixedFloat(num: number, digits: number) {
 	return parseFloat((digits === 0 ? Math.ceil(num) : num).toFixed(digits))
 }
 
+/** Format a large count compactly (e.g. 1.2M, 850K) */
+export function formatCompactCount(num: number): string {
+	if (!Number.isFinite(num)) {
+		return "-"
+	}
+	const abs = Math.abs(num)
+	if (abs >= 1_000_000_000) {
+		return `${toFixedFloat(num / 1_000_000_000, abs >= 10_000_000_000 ? 0 : 1)}B`
+	}
+	if (abs >= 1_000_000) {
+		return `${toFixedFloat(num / 1_000_000, abs >= 10_000_000 ? 0 : 1)}M`
+	}
+	if (abs >= 1_000) {
+		return `${toFixedFloat(num / 1_000, abs >= 10_000 ? 0 : 1)}K`
+	}
+	return `${toFixedFloat(num, abs >= 10 ? 0 : 1)}`
+}
+
 const decimalFormatters: Map<number, Intl.NumberFormat> = new Map()
 /** Format number to x decimal places, maintaining trailing zeros */
 export function decimalString(num: number, digits = 2) {

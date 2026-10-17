@@ -1,5 +1,5 @@
 import { t } from "@lingui/core/macro"
-import { ContainerIcon, CpuIcon, HardDriveIcon, MemoryStickIcon, NetworkIcon, ServerCrashIcon, ServerIcon } from "lucide-react"
+import { ContainerIcon, CpuIcon, FilesIcon, HardDriveIcon, MemoryStickIcon, NetworkIcon, ServerCrashIcon, ServerIcon, ShieldAlertIcon } from "lucide-react"
 import type { RecordSubscription } from "pocketbase"
 import { EthernetIcon, GpuIcon } from "@/components/ui/icons"
 import { $alerts } from "@/lib/stores"
@@ -46,6 +46,21 @@ export const alertInfo: Record<string, AlertInfo> = {
     unit: "%",
     icon: HardDriveIcon,
     desc: () => t`Triggers when usage of any disk exceeds a threshold`,
+  },
+  Inodes: {
+    name: () => t`Inode Usage`,
+    unit: "%",
+    icon: FilesIcon,
+    desc: () => t`Triggers when inode usage of any filesystem exceeds a threshold`,
+  },
+  FilesystemReadOnly: {
+    name: () => t`Filesystem Read-Only`,
+    unit: "",
+    icon: ShieldAlertIcon,
+    desc: () => t`Triggers when a monitored filesystem becomes read-only`,
+    triggeredDesc: () => t`One or more filesystems are read-only`,
+    noDuration: true,
+    noThreshold: true,
   },
   Bandwidth: {
     name: () => t`Bandwidth`,

@@ -200,8 +200,21 @@ export function SystemsTableColumns(viewMode: "table" | "grid"): ColumnDef<Syste
 			accessorFn: ({ info }) => info.dp || undefined,
 			id: "disk",
 			name: () => t`Disk`,
-			cell: (info: CellContext<SystemRecord, unknown>) =>
-				info.row.original.info.efs ? DiskCellWithMultiple(info) : TableCellWithMeter(info),
+			cell: (info: CellContext<SystemRecord, unknown>) => {
+				if (info.row.original.info.efs) {
+					return DiskCellWithMultiple(info)
+				}
+				const readOnly = !!info.row.original.info.rro
+				if (!readOnly) {
+					return TableCellWithMeter(info)
+				}
+				return (
+					<span className="flex items-center gap-1.5">
+						{TableCellWithMeter(info)}
+						<span className="text-[0.65rem] font-medium text-red-600 dark:text-red-400">RO</span>
+					</span>
+				)
+			},
 			Icon: HardDriveIcon,
 			header: sortableHeader,
 		},
@@ -614,6 +627,11 @@ function DiskCellWithMultiple(info: CellContext<SystemRecord, unknown>) {
 	const extraFs = Object.entries(sysInfo.efs ?? {})
 	const rootDiskPct = sysInfo.dp
 	const rootDiskName = sysInfo.rdn
+	const rootInodesPct = sysInfo.ip
+	const extraFsInodes = sysInfo.eip ?? {}
+	const rootReadOnly = !!sysInfo.rro
+	const extraFsReadOnly = sysInfo.efro ?? {}
+	const anyReadOnly = rootReadOnly || Object.values(extraFsReadOnly).some(Boolean)
 
 	extraFs.sort((a, b) => a[0].localeCompare(b[0]))
 
@@ -650,6 +668,7 @@ function DiskCellWithMultiple(info: CellContext<SystemRecord, unknown>) {
 				>
 					<div className="flex gap-2 items-center tabular-nums tracking-tight">
 						<span className="min-w-8 shrink-0">{decimalString(rootDiskPct, rootDiskPct >= 10 ? 1 : 2)}%</span>
+						{anyReadOnly && <span className="text-[0.65rem] font-medium text-red-600 dark:text-red-400">RO</span>}
 						<span className="flex-1 min-w-8 flex items-center gap-0.5 px-1 justify-end bg-muted h-[1em] rounded-sm overflow-hidden relative">
 							{/* Root disk */}
 							<span
@@ -670,8 +689,9 @@ function DiskCellWithMultiple(info: CellContext<SystemRecord, unknown>) {
 			<TooltipContent side="right" className="max-w-xs pb-2">
 				<div className="grid gap-1">
 					<div className="grid gap-0.5">
-						<div className="text-[0.65rem] max-w-40 text-muted-foreground uppercase tracking-wide truncate tabular-nums">
+						<div className="text-[0.65rem] max-w-40 text-muted-foreground uppercase tracking-wide truncate tabular-nums flex items-center gap-1">
 							{rootDiskName ?? <Trans context="Root disk label">Root</Trans>}
+							{rootReadOnly && <span className="text-red-600 dark:text-red-400">RO</span>}
 						</div>
 						<div className="flex gap-2 items-center tabular-nums text-xs">
 							<span className="min-w-7">{decimalString(rootDiskPct, rootDiskPct >= 10 ? 1 : 2)}%</span>
@@ -679,12 +699,23 @@ function DiskCellWithMultiple(info: CellContext<SystemRecord, unknown>) {
 								<span className={getMeterClass(rootDiskPct)} style={{ width: `${rootDiskPct}%` }}></span>
 							</span>
 						</div>
+						{rootInodesPct !== undefined && (
+							<div className="flex gap-2 items-center tabular-nums text-xs text-muted-foreground">
+								<span className="min-w-7">{decimalString(rootInodesPct, rootInodesPct >= 10 ? 1 : 2)}%</span>
+								<span>
+									<Trans>Inodes</Trans>
+								</span>
+							</div>
+						)}
 					</div>
 					{extraFs.map(([name, pct]) => {
+						const inodesPct = extraFsInodes[name]
+						const readOnly = !!extraFsReadOnly[name]
 						return (
 							<div key={name} className="grid gap-0.5">
-								<div className="text-[0.65rem] max-w-40 text-muted-foreground uppercase tracking-wide truncate">
+								<div className="text-[0.65rem] max-w-40 text-muted-foreground uppercase tracking-wide truncate flex items-center gap-1">
 									{name}
+									{readOnly && <span className="text-red-600 dark:text-red-400">RO</span>}
 								</div>
 								<div className="flex gap-2 items-center tabular-nums text-xs">
 									<span className="min-w-7">{decimalString(pct, pct >= 10 ? 1 : 2)}%</span>
@@ -692,6 +723,14 @@ function DiskCellWithMultiple(info: CellContext<SystemRecord, unknown>) {
 										<span className={getMeterClass(pct)} style={{ width: `${pct}%` }}></span>
 									</span>
 								</div>
+								{inodesPct !== undefined && (
+									<div className="flex gap-2 items-center tabular-nums text-xs text-muted-foreground">
+										<span className="min-w-7">{decimalString(inodesPct, inodesPct >= 10 ? 1 : 2)}%</span>
+										<span>
+											<Trans>Inodes</Trans>
+										</span>
+									</div>
+								)}
 							</div>
 						)
 					})}

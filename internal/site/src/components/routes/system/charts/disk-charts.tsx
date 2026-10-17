@@ -1,6 +1,6 @@
 import { t } from "@lingui/core/macro"
 import AreaChartDefault from "@/components/charts/area-chart"
-import { decimalString, formatBytes, toFixedFloat } from "@/lib/utils"
+import { decimalString, formatBytes, formatCompactCount, toFixedFloat } from "@/lib/utils"
 import type { SystemStatsRecord } from "@/types"
 import { ChartCard, SelectAvgMax } from "../chart-card"
 import { Unit } from "@/lib/enums"
@@ -34,6 +34,12 @@ export const diskDataFns = {
 		(name: string) =>
 		({ stats }: SystemStatsRecord) =>
 			stats?.efs?.[name]?.du ?? 0,
+	// inodes
+	inodesUsed: ({ stats }: SystemStatsRecord) => stats?.iu ?? 0,
+	extraInodesUsed:
+		(name: string) =>
+		({ stats }: SystemStatsRecord) =>
+			stats?.efs?.[name]?.iu ?? 0,
 	// throughput
 	read: ({ stats }: SystemStatsRecord) => stats?.dio?.[0] ?? (stats?.dr ?? 0) * 1024 * 1024,
 	readMax: ({ stats }: SystemStatsRecord) => stats?.diom?.[0] ?? (stats?.drm ?? 0) * 1024 * 1024,
@@ -107,6 +113,7 @@ export function RootDiskCharts({ systemData }: { systemData: SystemData }) {
 	return (
 		<>
 			<DiskUsageChart systemData={systemData} />
+			<InodeUsageChart systemData={systemData} />
 			<DiskIOChart systemData={systemData} />
 		</>
 	)
@@ -148,6 +155,49 @@ export function DiskUsageChart({ systemData, extraFsName }: { systemData: System
 						color: 4,
 						opacity: 0.4,
 						dataKey: extraFsName ? diskDataFns.extraUsage(extraFsName) : diskDataFns.usage,
+					},
+				]}
+			></AreaChartDefault>
+		</ChartCard>
+	)
+}
+
+export function InodeUsageChart({ systemData, extraFsName }: { systemData: SystemData; extraFsName?: string }) {
+	const { chartData, grid, dataEmpty } = systemData
+
+	const hasInodes = chartData.systemStats?.some((record) => {
+		if (extraFsName) {
+			return (record.stats?.efs?.[extraFsName]?.it ?? 0) > 0
+		}
+		return (record.stats?.it ?? 0) > 0
+	})
+	if (!hasInodes) {
+		return null
+	}
+
+	let inodesTotal = chartData.systemStats?.at(-1)?.stats.it ?? NaN
+	if (extraFsName) {
+		inodesTotal = chartData.systemStats?.at(-1)?.stats.efs?.[extraFsName]?.it ?? NaN
+	}
+
+	const rootName = systemData.system?.info?.rdn
+	const rootLabel = rootName ?? t({ message: `Root`, context: "Root disk label" })
+	const title = extraFsName ? `${extraFsName} ${t`Inodes`}` : `${rootLabel} ${t`Inodes`}`
+	const description = t`Inode usage of ${{extraFsName: extraFsName ?? rootLabel.toLowerCase()}}`
+
+	return (
+		<ChartCard empty={dataEmpty} grid={grid} title={title} description={description}>
+			<AreaChartDefault
+				chartData={chartData}
+				domain={[0, inodesTotal]}
+				tickFormatter={(val) => formatCompactCount(val)}
+				contentFormatter={({ value }) => formatCompactCount(value)}
+				dataPoints={[
+					{
+						label: t`Inode Usage`,
+						color: 5,
+						opacity: 0.4,
+						dataKey: extraFsName ? diskDataFns.extraInodesUsed(extraFsName) : diskDataFns.inodesUsed,
 					},
 				]}
 			></AreaChartDefault>
@@ -285,7 +335,7 @@ export function ExtraFsCharts({ systemData }: { systemData: SystemData }) {
 				return (
 					<div key={extraFsName} className="contents">
 						<DiskUsageChart systemData={systemData} extraFsName={extraFsName} />
-
+						<InodeUsageChart systemData={systemData} extraFsName={extraFsName} />
 						<DiskIOChart systemData={systemData} extraFsName={extraFsName} />
 					</div>
 				)

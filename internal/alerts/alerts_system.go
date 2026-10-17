@@ -47,7 +47,12 @@ func (am *AlertManager) HandleSystemAlerts(systemRecord *core.Record, data *syst
 		return nil
 	}
 
-	alerts := am.alertsCache.GetAlertsExcludingNames(systemRecord.Id, "Status", alertNameSystemdFailed, containerAlertName, alertNameNetworkMonitorLoss)
+	// Filesystem read-only is a binary state alert (immediate, no threshold).
+	if err := am.HandleFilesystemReadOnlyAlerts(systemRecord, data); err != nil {
+		am.hub.Logger().Error("Error handling filesystem read-only alerts", "err", err)
+	}
+
+	alerts := am.alertsCache.GetAlertsExcludingNames(systemRecord.Id, "Status", alertNameSystemdFailed, containerAlertName, alertNameNetworkMonitorLoss, alertNameFilesystemReadOnly)
 	if len(alerts) == 0 {
 		return nil
 	}
@@ -80,6 +85,17 @@ func (am *AlertManager) HandleSystemAlerts(systemRecord *core.Record, data *syst
 			for _, pool := range data.Stats.ZfsPools {
 				if pool != nil && !pool.Raw && pool.Total > 0 {
 					usedPct := pool.Used / pool.Total * 100
+					if usedPct > maxUsedPct {
+						maxUsedPct = usedPct
+					}
+				}
+			}
+			val = maxUsedPct
+		case "Inodes":
+			maxUsedPct := data.Info.InodesPct
+			for _, fs := range data.Stats.ExtraFs {
+				if fs.InodesTotal > 0 {
+					usedPct := fs.InodesUsed / fs.InodesTotal * 100
 					if usedPct > maxUsedPct {
 						maxUsedPct = usedPct
 					}
@@ -264,6 +280,22 @@ func (am *AlertManager) HandleSystemAlerts(systemRecord *core.Record, data *syst
 						alert.mapSums[zfsKey] += float32(pool.Used / pool.Total * 100)
 					}
 				}
+			case "Inodes":
+				if alert.mapSums == nil {
+					alert.mapSums = make(map[string]float32, len(stats.ExtraFs)+1)
+				}
+				if _, ok := alert.mapSums["root"]; !ok {
+					alert.mapSums["root"] = 0.0
+				}
+				alert.mapSums["root"] += float32(stats.Inodes)
+				for key, fs := range stats.ExtraFs {
+					if fs.InodesTotal > 0 {
+						if _, ok := alert.mapSums[key]; !ok {
+							alert.mapSums[key] = 0.0
+						}
+						alert.mapSums[key] += float32(fs.InodesUsed / fs.InodesTotal * 100)
+					}
+				}
 			case "Temperature":
 				if alert.mapSums == nil {
 					alert.mapSums = make(map[string]float32, len(stats.Temperatures))
@@ -327,6 +359,16 @@ func (am *AlertManager) HandleSystemAlerts(systemRecord *core.Record, data *syst
 				}
 			}
 			alert.val = float64(maxPct / float32(alert.count))
+		case "Inodes":
+			maxPct := float32(0)
+			for key, value := range alert.mapSums {
+				sumPct := float32(value)
+				if sumPct > maxPct {
+					maxPct = sumPct
+					alert.descriptor = inodeAlertDescriptor(key)
+				}
+			}
+			alert.val = float64(maxPct / float32(alert.count))
 		case "Temperature":
 			maxTemp := float32(0)
 			for key, value := range alert.mapSums {
@@ -380,6 +422,10 @@ func diskAlertDescriptor(key string) string {
 	return fmt.Sprintf("Usage of %s", key)
 }
 
+func inodeAlertDescriptor(key string) string {
+	return fmt.Sprintf("Inode usage of %s", key)
+}
+
 func hasRepresentativeBattery(legacy [2]uint8, batteries map[string]uint8) bool {
 	return legacy != [2]uint8{} || len(batteries) > 0
 }
@@ -391,9 +437,12 @@ func (am *AlertManager) sendSystemAlert(alert SystemAlertData) {
 	if state, ok := cpuStateAlerts[alert.name]; ok {
 		alert.name = state.label
 	}
-	// change Disk to Disk usage
+	// change Disk / Inodes to usage labels
 	if alert.name == "Disk" {
 		alert.name += " usage"
+	}
+	if alert.name == "Inodes" {
+		alert.name = "Inode usage"
 	}
 	// format LoadAvg5 and LoadAvg15
 	if after, ok := strings.CutPrefix(alert.name, "LoadAvg"); ok {

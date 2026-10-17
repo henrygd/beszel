@@ -12,6 +12,8 @@ services:
     volumes:
       - ./beszel_agent_data:/var/lib/beszel-agent
       - /var/run/docker.sock:/var/run/docker.sock:ro
+      # host mount table for read-only filesystem alerts (emergency remount detection)
+      # - /proc/1/mountinfo:/host/proc/1/mountinfo:ro
       # monitor other disks / partitions by mounting a folder in /extra-filesystems
       # - /mnt/disk1/.beszel:/extra-filesystems/disk1:ro
     environment:
@@ -19,6 +21,7 @@ services:
       KEY: "<public key>"
       HUB_URL: "<hub url>"
       TOKEN: "<token>"
+      # HOST_MOUNTINFO: /host/proc/1/mountinfo
     # healthcheck:
     #   test: ['CMD', '/agent', 'health']
     #   interval: 120s

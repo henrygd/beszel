@@ -63,6 +63,16 @@ export interface SystemInfo {
 	mp: number
 	/** disk percent */
 	dp: number
+	/** root filesystem inode used percent */
+	ip?: number
+	/** extra filesystem inode used percent */
+	eip?: Record<string, number>
+	/** root filesystem is read-only */
+	rro?: boolean
+	/** extra filesystem read-only flags */
+	efro?: Record<string, boolean>
+	/** display names of unexpected read-only mounts */
+	rof?: string[]
 	/** battery percent and state */
 	bat?: [number, BatteryState]
 	/** bandwidth (mb) */
@@ -126,6 +136,12 @@ export interface SystemStats {
 	du: number
 	/** disk percent */
 	dp: number
+	/** root filesystem inode total */
+	it?: number
+	/** root filesystem inode used */
+	iu?: number
+	/** root filesystem inode used percent */
+	ip?: number
 	/** disk read (mb) */
 	dr: number
 	/** disk write (mb) */
@@ -277,6 +293,12 @@ export interface ExtraFsStats {
 	d: number
 	/** disk used (gb) */
 	du: number
+	/** inode total */
+	it?: number
+	/** inode used */
+	iu?: number
+	/** host mount is read-only */
+	ro?: boolean
 	/** total read (mb) */
 	r: number
 	/** total write (mb) */
