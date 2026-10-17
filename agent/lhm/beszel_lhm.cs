@@ -67,7 +67,7 @@ class Program
         {
           hardware.Update();
         }
-        catch (InvalidOperationException ex)
+        catch (Exception ex)
         {
           Console.Error.WriteLine($"Could not update {hardware.HardwareType} {hardware.Name}: {ex.Message}");
           return;
