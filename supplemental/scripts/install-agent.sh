@@ -137,6 +137,13 @@ escape_sed_replacement() {
   printf '%s' "$1" | sed 's/[\\&|]/\\&/g'
 }
 
+# Write a literal value to an env file that will be sourced by the shell.
+write_shell_assignment() {
+  printf "%s='" "$1"
+  printf '%s' "$2" | sed "s/'/'\\\\''/g"
+  printf "'\n"
+}
+
 # Generate FreeBSD rc service content
 generate_freebsd_rc_service() {
   cat <<'EOF'
@@ -821,9 +828,9 @@ if package_installed apk; then
     apk add tar curl coreutils shadow
   fi
 elif package_installed opkg; then
-  if ! package_installed tar || ! package_installed curl || ! package_installed sha256sum || ! package_installed cron; then
+  if ! package_installed tar || ! package_installed curl || ! package_installed sha256sum; then
     opkg update
-    opkg install tar curl coreutils cron
+    opkg install tar curl coreutils
   fi
   if is_entware && [ ! -s /opt/etc/ssl/certs/ca-certificates.crt ]; then
     opkg update || fail "Could not update Entware package lists."
@@ -1059,6 +1066,7 @@ rm -rf "$TEMP_DIR"
 TEMP_DIR=""
 
 # Make sure /etc/machine-id exists and is non-empty for persistent fingerprint
+# Entware keeps its data under /opt; /etc may be read-only on Keenetic.
 if ! is_entware && [ ! -s /etc/machine-id ]; then
   if [ -r /proc/sys/kernel/random/uuid ]; then
     tr -d '-' < /proc/sys/kernel/random/uuid > /etc/machine-id
@@ -1270,12 +1278,12 @@ elif is_entware; then
 
   (
     umask 077
-    cat > "$AGENT_DIR/env" <<EOF
-PORT="$PORT"
-KEY="$KEY"
-TOKEN="$TOKEN"
-HUB_URL="$HUB_URL"
-EOF
+    {
+      write_shell_assignment PORT "$PORT"
+      write_shell_assignment KEY "$KEY"
+      write_shell_assignment TOKEN "$TOKEN"
+      write_shell_assignment HUB_URL "$HUB_URL"
+    } > "$AGENT_DIR/env"
   )
   chmod 600 "$AGENT_DIR/env"
   mkdir -p "$AGENT_DIR/data"
@@ -1316,6 +1324,10 @@ EOF
   fi
   case "$AUTO_UPDATE" in
   [Yy]*)
+    if [ ! -x /opt/etc/init.d/S10cron ]; then
+      opkg update || fail "Could not update Entware package lists."
+      opkg install cron || fail "Could not install Entware cron."
+    fi
     [ -d /opt/etc/cron.daily ] || fail "Entware cron.daily directory is unavailable."
     cat > /opt/etc/cron.daily/beszel-agent <<EOF
 #!/bin/sh

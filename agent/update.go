@@ -55,6 +55,7 @@ func (e *entwareRestarter) Restart() error {
 	}
 	// Entware's rc.func stops every process named beszel-agent. Running restart
 	// here would kill this updater before it can exit cleanly.
+	ghupdate.ColorPrint(ghupdate.ColorYellow, "Restarting beszel-agent via Entware…")
 	cmd := exec.Command("/bin/sh", "-c", "sleep 2; /opt/etc/init.d/S99beszel-agent restart >/dev/null 2>&1 || logger -t beszel-agent 'Restart after update failed'")
 	if err := cmd.Start(); err != nil {
 		return err
