@@ -24,8 +24,10 @@ func TestPasswordSignInIsRateLimited(t *testing.T) {
 	require.LessOrEqual(t, rule.MaxRequests, 5)
 	require.GreaterOrEqual(t, rule.Duration, int64(1))
 
-	_, err := beszelTests.CreateUser(testHub, "signin@example.com", "password123")
+	user, err := beszelTests.CreateUser(testHub, "signin@example.com", "password123")
 	require.NoError(t, err)
+	user.SetVerified(true)
+	require.NoError(t, testHub.Save(user))
 
 	for attempt := 1; attempt <= rule.MaxRequests; attempt++ {
 		response := postPasswordSignIn(handler, "signin@example.com", "password123")
