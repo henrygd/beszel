@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"math"
 	"net"
+	"slices"
 	"strconv"
 	"time"
 
@@ -107,8 +108,8 @@ func (am *AlertManager) HandleNetworkMonitorAlerts(systemRecord *core.Record, re
 	if systemRecord.GetString("status") != "up" {
 		return nil
 	}
-	alerts := am.alertsCache.GetAlertsByName(systemRecord.Id, alertNameNetworkMonitorLoss)
-	alerts = append(alerts, am.alertsCache.GetAlertsByName(systemRecord.Id, alertNameNetworkMonitorCert)...)
+	alerts := am.alertsCache.GetSystemAlerts(systemRecord.Id)
+	alerts = slices.DeleteFunc(alerts, func(a CachedAlertData) bool { return !isNetworkMonitorAlert(a.Name) })
 	if len(alerts) == 0 {
 		return nil
 	}
@@ -137,12 +138,13 @@ func networkMonitorTransitionPending(alerts []CachedAlertData, monitors map[stri
 		}
 		if alert.Name == alertNameNetworkMonitorCert {
 			// Expiry depends on the clock, so check stored certificates rather than results.
+			cutoff := certExpiryCutoff(alert.Value, now)
 			for id, m := range monitors {
 				if m.certExpires <= 0 {
 					continue
 				}
 				_, active := alert.MonitorStates[id]
-				if certExpiresWithin(m.certExpires, alert.Value, now) != active {
+				if (m.certExpires <= cutoff) != active {
 					return true
 				}
 			}
@@ -299,14 +301,15 @@ func observeMonitorCert(m *core.Record, threshold float64, now time.Time) (monit
 	if err := m.UnmarshalJSONField("certInfo", &cert); err != nil || cert.Expires <= 0 {
 		return monitorObservation{}, false
 	}
-	triggered := certExpiresWithin(cert.Expires, threshold, now)
+	triggered := cert.Expires <= certExpiryCutoff(threshold, now)
 	return monitorObservation{triggered: triggered, value: float64(certDaysLeft(cert.Expires, now)), certExpires: cert.Expires}, true
 }
 
-// certExpiresWithin reports whether a certificate expires within the given number of days.
-// It compares exact times, so a threshold of 14 does not trigger with 14 days and 23 hours left.
-func certExpiresWithin(expires int64, days float64, now time.Time) bool {
-	return expires <= now.Add(time.Duration(days*float64(24*time.Hour))).UnixMilli()
+// certExpiryCutoff returns the latest expiry, in Unix milliseconds, that is within the given
+// number of days. It uses exact times, so a threshold of 14 does not trigger with 14 days and
+// 23 hours left.
+func certExpiryCutoff(days float64, now time.Time) int64 {
+	return now.Add(time.Duration(days * float64(24*time.Hour))).UnixMilli()
 }
 
 // certDaysLeft returns whole days until expiry for display, matching the days shown in the UI.
