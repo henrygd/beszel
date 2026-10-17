@@ -8,31 +8,23 @@ import { TagBadge } from "@/components/tags/tag-badge"
 import { pb } from "@/lib/api"
 import { $tags, $tagsById } from "@/lib/stores"
 import type { TagRecord } from "@/types"
-import { getRandomColor, getTagColorClasses } from "@/lib/tag-utils"
+import { getRandomColor, getTagColorClasses, useTags } from "@/lib/tag-utils"
 
 interface TagSelectorDialogProps {
 	selectedTags: string[]
-	tagSearchQuery: string
 	onSelectedTagsChange: (tags: string[]) => void
-	onSearchQueryChange: (query: string) => void
 }
 
-export function TagSelectorDialog({
-	selectedTags,
-	tagSearchQuery,
-	onSelectedTagsChange,
-	onSearchQueryChange,
-}: TagSelectorDialogProps) {
+export function TagSelectorDialog({ selectedTags, onSelectedTagsChange }: TagSelectorDialogProps) {
 	const availableTags = useStore($tags)
+	const selected = useTags(selectedTags)
 
 	async function createTagFromSearch(query: string) {
 		const name = query.trim()
-		if (!name) return
 		// Tag names are unique case-insensitively, so select the existing tag instead
 		const existing = availableTags.find((tag) => tag.name.toLowerCase() === name.toLowerCase())
 		if (existing) {
 			if (!selectedTags.includes(existing.id)) onSelectedTagsChange([...selectedTags, existing.id])
-			onSearchQueryChange("")
 			return
 		}
 		try {
@@ -42,7 +34,6 @@ export function TagSelectorDialog({
 			})
 			$tagsById.setKey(record.id, record)
 			onSelectedTagsChange([...selectedTags, record.id])
-			onSearchQueryChange("")
 		} catch (e: any) {
 			console.error("Failed to create tag", e)
 			toast({
@@ -50,16 +41,8 @@ export function TagSelectorDialog({
 				description: e.message || t`Check logs for more details.`,
 				variant: "destructive",
 			})
+			return false
 		}
-	}
-
-	const displayText = (selectedCount: number) => {
-		if (selectedCount === 0) return t`Select tags...`
-		if (selectedCount === 1) {
-			const tag = availableTags.find((t) => t.id === selectedTags[0])
-			return tag?.name || t`1 tag selected`
-		}
-		return t`${selectedCount} tags selected`
 	}
 
 	return (
@@ -67,21 +50,24 @@ export function TagSelectorDialog({
 			<SearchableDropdown
 				items={availableTags}
 				selectedIds={selectedTags}
-				searchQuery={tagSearchQuery}
-				onSearchChange={onSearchQueryChange}
 				onSelectionChange={onSelectedTagsChange}
 				getItemId={(tag) => tag.id}
 				getItemLabel={(tag) => tag.name}
 				renderItem={(tag) => <TagBadge tag={tag} />}
-				placeholder={t`Search or create tag...`}
-				getDisplayText={(count) => (count === 1 ? availableTags.find((t) => t.id === selectedTags[0])?.name || t`1 tag selected` : displayText(count))}
-				stopPropagation
-				onCreateItem={createTagFromSearch}
-				createMessage={
-					<div className="py-3 px-2 text-center text-sm text-muted-foreground">
-						<Trans>Press Enter to create "{tagSearchQuery}"</Trans>
-					</div>
+				displayText={
+					selected.length === 0
+						? t`Select tags...`
+						: selected.length === 1
+							? selected[0].name
+							: t`${selected.length} tags selected`
 				}
+				placeholder={t`Search or create tag...`}
+				onCreateItem={createTagFromSearch}
+				createMessage={(query) => (
+					<div className="py-3 px-2 text-center text-sm text-muted-foreground">
+						<Trans>Press Enter to create "{query}"</Trans>
+					</div>
+				)}
 				emptyMessage={
 					<div className="py-4 text-center text-sm text-muted-foreground">
 						<Trans>Type a name and press Enter to create a tag.</Trans>
@@ -95,8 +81,7 @@ export function TagSelectorDialog({
 			/>
 
 			<SelectedBadgeList
-				items={availableTags}
-				selectedIds={selectedTags}
+				items={selected}
 				getItemId={(tag) => tag.id}
 				getItemLabel={(tag) => tag.name}
 				getItemClasses={(tag) => getTagColorClasses(tag.color)}

@@ -1,29 +1,11 @@
-import { pb } from "@/lib/api"
+import { useStore } from "@nanostores/react"
+import { useMemo } from "react"
+import { sendInBatches } from "@/lib/api"
+import { $tagsById } from "@/lib/stores"
 import type { TagRecord } from "@/types"
 
-// Tag color names (Tailwind colors)
-export const tagColors = [
-	"red",
-	"orange",
-	"amber",
-	"yellow",
-	"lime",
-	"green",
-	"emerald",
-	"teal",
-	"cyan",
-	"sky",
-	"blue",
-	"indigo",
-	"violet",
-	"purple",
-	"fuchsia",
-	"pink",
-	"rose",
-]
-
-// Tag color classes mapping
-export const tagColorClasses: Record<string, string> = {
+// Badge classes per tag color (Tailwind colors). Class names must stay literal so Tailwind picks them up.
+const tagColorClasses: Record<string, string> = {
 	red: "bg-red-500/15! text-red-600 dark:text-red-400",
 	orange: "bg-orange-500/15! text-orange-600 dark:text-orange-400",
 	amber: "bg-amber-500/15! text-amber-600 dark:text-amber-400",
@@ -43,40 +25,17 @@ export const tagColorClasses: Record<string, string> = {
 	rose: "bg-rose-500/15! text-rose-600 dark:text-rose-400",
 }
 
-// Swatch-only (background) classes for a tag color, used by the color picker
-export const tagSwatchClasses: Record<string, string> = {
-	red: "bg-red-500/15",
-	orange: "bg-orange-500/15",
-	amber: "bg-amber-500/15",
-	yellow: "bg-yellow-500/15",
-	lime: "bg-lime-500/15",
-	green: "bg-green-500/15",
-	emerald: "bg-emerald-500/15",
-	teal: "bg-teal-500/15",
-	cyan: "bg-cyan-500/15",
-	sky: "bg-sky-500/15",
-	blue: "bg-blue-500/15",
-	indigo: "bg-indigo-500/15",
-	violet: "bg-violet-500/15",
-	purple: "bg-purple-500/15",
-	fuchsia: "bg-fuchsia-500/15",
-	pink: "bg-pink-500/15",
-	rose: "bg-rose-500/15",
-}
+/** Tag color names, in picker order */
+export const tagColors = Object.keys(tagColorClasses)
 
 // Generate a random color name
 export function getRandomColor(): string {
 	return tagColors[Math.floor(Math.random() * tagColors.length)]
 }
 
-// Get classes for a tag color
+// Get classes for a tag color (also used for the color picker swatches)
 export function getTagColorClasses(color?: string): string {
 	return tagColorClasses[color || "blue"] || tagColorClasses.blue
-}
-
-// Get swatch-only (background) classes for a tag color
-export function getSwatchColorClasses(color?: string): string {
-	return tagSwatchClasses[color || "blue"] || tagSwatchClasses.blue
 }
 
 /** Any record with a `tags` relation field (systems, and later network monitors) */
@@ -93,9 +52,21 @@ export function resolveTags(ids: string[] | undefined, tagsById: Record<string, 
 	return tags.sort((a, b) => a.name.localeCompare(b.name))
 }
 
-// Records that have the given tag assigned
-export function getRecordsForTag<T extends Taggable>(records: T[], tagId: string): T[] {
-	return records.filter((r) => r.tags?.includes(tagId))
+/** Tag records for the given tag ids, kept in sync with the tags store */
+export function useTags(ids: string[] | undefined): TagRecord[] {
+	const tagsById = useStore($tagsById)
+	return useMemo(() => resolveTags(ids, tagsById), [ids, tagsById])
+}
+
+// Map of tag id -> records having that tag assigned, preserving record order
+export function groupRecordsByTag<T extends Taggable>(records: T[]): Record<string, T[]> {
+	const groups: Record<string, T[]> = {}
+	for (const record of records) {
+		for (const tagId of record.tags ?? []) {
+			;(groups[tagId] ??= []).push(record)
+		}
+	}
+	return groups
 }
 
 // Whether a record has any of the given tag ids assigned
@@ -139,12 +110,5 @@ export async function syncTagAssignments(
 	for (const id of currentIds) {
 		if (!desiredIds.includes(id)) updates.push({ id, "tags-": tagId })
 	}
-
-	for (let i = 0; i < updates.length; i += 20) {
-		const batch = pb.createBatch()
-		for (const { id, ...data } of updates.slice(i, i + 20)) {
-			batch.collection(collection).update(id, data)
-		}
-		await batch.send()
-	}
+	await sendInBatches(updates, (batch, { id, ...data }) => batch.collection(collection).update(id, data))
 }

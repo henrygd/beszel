@@ -29,11 +29,11 @@ import {
 	InstallDropdown,
 } from "./install-dropdowns"
 import { $router, basePath, Link, navigate } from "./router"
+import { DropdownMenu, DropdownMenuTrigger } from "./ui/dropdown-menu"
 import { AppleIcon, DockerIcon, FreeBsdIcon, TuxIcon, WindowsIcon } from "./ui/icons"
 import { InputCopy } from "./ui/input-copy"
 import { toast } from "./ui/use-toast"
 import { TagSelectorDialog } from "./tags/tag-selector-dialog"
-import { DropdownMenu, DropdownMenuTrigger } from "@radix-ui/react-dropdown-menu"
 
 // To avoid a refactor of the dialog, we will just keep this function as a "skeleton" for the actual dialog
 export function AddSystemDialog({ open, setOpen }: { open: boolean; setOpen: (open: boolean) => void }) {
@@ -74,7 +74,6 @@ export const SystemDialog = ({ setOpen, system }: { setOpen: (open: boolean) => 
 	const [tab, setTab] = useBrowserStorage("as-tab", "docker")
 	const [token, setToken] = useState(system?.token ?? "")
 	const [selectedTags, setSelectedTags] = useState<string[]>(system?.tags ?? [])
-	const [tagSearchQuery, setTagSearchQuery] = useState("")
 
 	useEffect(() => {
 		;(async () => {
@@ -240,12 +239,7 @@ export const SystemDialog = ({ setOpen, system }: { setOpen: (open: boolean) => 
 						<Label htmlFor="tags" className="xs:text-end self-start pt-2">
 							<Trans>Tags</Trans>
 						</Label>
-						<TagSelectorDialog
-							selectedTags={selectedTags}
-							tagSearchQuery={tagSearchQuery}
-							onSelectedTagsChange={setSelectedTags}
-							onSearchQueryChange={setTagSearchQuery}
-						/>
+						<TagSelectorDialog selectedTags={selectedTags} onSelectedTagsChange={setSelectedTags} />
 					</div>
 					<DialogFooter className="flex justify-end gap-x-2 gap-y-3 flex-col mt-5">
 						<div className="grid">

@@ -54,8 +54,8 @@ const App = memo(() => {
 		})
 		// get user settings
 		updateUserSettings()
-		// get tags and subscribe to tag updates
-		tagsManager.refresh().then(tagsManager.subscribe)
+		// subscribe before fetching so changes made in between aren't missed
+		tagsManager.subscribe().then(tagsManager.refresh)
 		// need to get system list before alerts
 		systemsManager.init()
 		systemsManager

@@ -1,6 +1,5 @@
 import { plural } from "@lingui/core/macro"
 import { Trans, useLingui } from "@lingui/react/macro"
-import { useStore } from "@nanostores/react"
 import {
 	AppleIcon,
 	ChevronRightSquareIcon,
@@ -29,8 +28,7 @@ import { Separator } from "@/components/ui/separator"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 import { TagBadgeList } from "@/components/tags/tag-badge-list"
 import { ConnectionType, connectionTypeLabels, Os, SystemStatus } from "@/lib/enums"
-import { $tagsById } from "@/lib/stores"
-import { resolveTags } from "@/lib/tag-utils"
+import { useTags } from "@/lib/tag-utils"
 import { cn, formatBytes, getHostDisplayValue, secondsToUptimeString, toFixedFloat } from "@/lib/utils"
 import type { ChartData, SystemDetailsRecord, SystemRecord } from "@/types"
 
@@ -52,8 +50,7 @@ export default function InfoBar({
 	details: SystemDetailsRecord | null
 }) {
 	const { t } = useLingui()
-	const tagsById = useStore($tagsById)
-	const tags = useMemo(() => resolveTags(system.tags, tagsById), [system.tags, tagsById])
+	const tags = useTags(system.tags)
 
 	// values for system info bar - use details with fallback to system.info
 	const systemInfo = useMemo(() => {

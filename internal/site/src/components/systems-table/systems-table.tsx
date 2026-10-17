@@ -153,20 +153,14 @@ export default function SystemsTable() {
 	// Filter data based on status and tag filters
 	const filteredData = useMemo(() => {
 		let filtered = data
-
-		// Filter by status
 		if (statusFilter === SystemStatus.Up) {
-			filtered = Object.values(upSystems) ?? []
+			filtered = Object.values(upSystems)
 		} else if (statusFilter === SystemStatus.Down) {
-			filtered = Object.values(downSystems) ?? []
+			filtered = Object.values(downSystems)
 		} else if (statusFilter === SystemStatus.Paused) {
-			filtered = Object.values(pausedSystems) ?? []
+			filtered = Object.values(pausedSystems)
 		}
-
-		// Filter by tags
-		filtered = filterByTags(filtered, selectedTagFilter)
-
-		return filtered
+		return filterByTags(filtered, selectedTagFilter)
 	}, [data, statusFilter, selectedTagFilter, upSystems, downSystems, pausedSystems])
 
 	// Number of systems per tag, for the tag-filter dropdown

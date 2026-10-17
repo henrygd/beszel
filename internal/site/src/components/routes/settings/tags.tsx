@@ -1,5 +1,5 @@
-import { t } from "@lingui/core/macro"
-import { Trans, useLingui } from "@lingui/react/macro"
+import { plural, t } from "@lingui/core/macro"
+import { Trans } from "@lingui/react/macro"
 import {
 	flexRender,
 	getCoreRowModel,
@@ -39,168 +39,73 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { toast } from "@/components/ui/use-toast"
 import { cn, useBrowserStorage } from "@/lib/utils"
-import { pb } from "@/lib/api"
+import { sendInBatches } from "@/lib/api"
 import { $systems, $tags } from "@/lib/stores"
-import type { TagRecord } from "@/types"
 import { createTagsColumns, type TagWithSystems } from "@/components/tags/tags-columns"
 import { TagEditDialog } from "@/components/tags/tag-edit-dialog"
-import { getRandomColor, getRecordsForTag, syncTagAssignments } from "@/lib/tag-utils"
+import { groupRecordsByTag } from "@/lib/tag-utils"
 
 export default function TagsSettings() {
-	const { t: tFunc } = useLingui()
 	const tags = useStore($tags)
 	const systems = useStore($systems)
-	const [dialogOpen, setDialogOpen] = useState(false)
-	const [editingTag, setEditingTag] = useState<TagWithSystems | null>(null)
-	const [selectedSystems, setSelectedSystems] = useState<string[]>([])
-	const [newTagName, setNewTagName] = useState("")
-	const [newTagColor, setNewTagColor] = useState("blue")
-	const [systemSearchQuery, setSystemSearchQuery] = useState("")
+	const [editDialog, setEditDialog] = useState<{ open: boolean; tag: TagWithSystems | null }>({
+		open: false,
+		tag: null,
+	})
 	const [globalFilter, setGlobalFilter] = useState("")
 	const [sorting, setSorting] = useState<SortingState>([])
 	const [rowSelection, setRowSelection] = useState<RowSelectionState>({})
 	const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
-	const [tagToDelete, setTagToDelete] = useState<{ id: string; name: string } | null>(null)
+	// tag to delete from its row menu; null deletes the selected rows
+	const [tagToDelete, setTagToDelete] = useState<TagWithSystems | null>(null)
 	const [pagination, setPagination] = useBrowserStorage<PaginationState>("tags-pagination", {
 		pageIndex: 0,
 		pageSize: 10,
 	})
 
-	// Systems sorted by name, matching the picker order in TagEditDialog
-	const sortedSystems = useMemo(() => [...systems].sort((a, b) => a.name.localeCompare(b.name)), [systems])
-
-	// Combine tags with their systems (tags and systems both come from shared, realtime-updated stores)
+	// Combine tags with their systems, sorted by name (both come from shared, realtime-updated stores)
 	const tagsWithSystems = useMemo((): TagWithSystems[] => {
-		return tags.map((tag) => ({
-			...tag,
-			systems: getRecordsForTag(sortedSystems, tag.id),
-		}))
-	}, [tags, sortedSystems])
+		const systemsByTag = groupRecordsByTag([...systems].sort((a, b) => a.name.localeCompare(b.name)))
+		return tags.map((tag) => ({ ...tag, systems: systemsByTag[tag.id] ?? [] }))
+	}, [tags, systems])
 
-	function openCreateDialog() {
-		setEditingTag(null)
-		setNewTagName("")
-		setNewTagColor(getRandomColor())
-		setSelectedSystems([])
-		setSystemSearchQuery("")
-		setDialogOpen(true)
-	}
-
-	function openEditDialog(tag: TagWithSystems) {
-		setEditingTag(tag)
-		setNewTagName(tag.name)
-		setNewTagColor(tag.color || "blue")
-		setSelectedSystems(tag.systems.map((s) => s.id))
-		setSystemSearchQuery("")
-		setDialogOpen(true)
-	}
-
-	async function saveTag() {
-		if (!newTagName.trim()) {
-			toast({
-				title: tFunc`Tag name required`,
-				description: tFunc`Please enter a tag name.`,
-				variant: "destructive",
-			})
-			return
-		}
-
-		try {
-			let tagId: string
-			if (editingTag) {
-				// Update tag
-				await pb.collection("tags").update<TagRecord>(editingTag.id, {
-					name: newTagName.trim(),
-					color: newTagColor,
-				})
-				tagId = editingTag.id
-
-				// Update system assignments
-				const currentSystems = getRecordsForTag(systems, tagId).map((s) => s.id)
-				await syncTagAssignments("systems", tagId, currentSystems, selectedSystems)
-
-				toast({
-					title: tFunc`Tag updated`,
-					description: tFunc`The tag has been updated successfully.`,
-				})
-			} else {
-				// Create new tag
-				const record = await pb.collection("tags").create<TagRecord>({
-					name: newTagName.trim(),
-					color: newTagColor,
-				})
-				tagId = record.id
-
-				// Assign to selected systems
-				if (selectedSystems.length > 0) {
-					await syncTagAssignments("systems", tagId, [], selectedSystems)
-				}
-
-				toast({
-					title: tFunc`Tag created`,
-					description: tFunc`The tag has been created successfully.`,
-				})
-			}
-
-			setDialogOpen(false)
-		} catch (e: any) {
-			console.error("Failed to save tag", e)
-			toast({
-				title: editingTag ? tFunc`Failed to update tag` : tFunc`Failed to create tag`,
-				description: e.message || tFunc`Check logs for more details.`,
-				variant: "destructive",
-			})
-		}
-	}
-
-	function deleteTag(id: string, name: string) {
-		setTagToDelete({ id, name })
-		setDeleteDialogOpen(true)
-	}
+	const openEditDialog = (tag: TagWithSystems | null) => setEditDialog({ open: true, tag })
 
 	async function handleDelete() {
 		setDeleteDialogOpen(false)
-		const isSingleDelete = tagToDelete !== null
-		const selectedIds = isSingleDelete
-			? [tagToDelete.id]
-			: table.getSelectedRowModel().rows.map((row) => row.original.id)
-
+		const ids = tagToDelete ? [tagToDelete.id] : table.getSelectedRowModel().rows.map((row) => row.original.id)
 		try {
-			if (selectedIds.length === 1) {
-				await pb.collection("tags").delete(selectedIds[0])
-			} else {
-				let batch = pb.createBatch()
-				let inBatch = 0
-				for (const id of selectedIds) {
-					batch.collection("tags").delete(id)
-					inBatch++
-					if (inBatch > 20) {
-						await batch.send()
-						batch = pb.createBatch()
-						inBatch = 0
-					}
-				}
-				inBatch && (await batch.send())
-			}
-			if (!isSingleDelete) {
+			await sendInBatches(ids, (batch, id) => batch.collection("tags").delete(id))
+			if (!tagToDelete) {
 				table.resetRowSelection()
 			}
 			toast({
-				title: tFunc`Tag${selectedIds.length > 1 ? "s" : ""} deleted`,
-				description: tFunc`${selectedIds.length} tag(s) deleted successfully.`,
+				title: plural(ids.length, { one: "Tag deleted", other: "Tags deleted" }),
+				description: plural(ids.length, {
+					one: "# tag deleted successfully.",
+					other: "# tags deleted successfully.",
+				}),
 			})
 		} catch (e) {
 			console.error("Failed to delete tag(s)", e)
 			toast({
-				title: tFunc`Error`,
-				description: tFunc`Failed to delete tag(s).`,
+				title: t`Error`,
+				description: t`Failed to delete tag(s).`,
 				variant: "destructive",
 			})
 		}
 		setTagToDelete(null)
 	}
 
-	const columns = createTagsColumns(openEditDialog, deleteTag)
+	// callbacks only use state setters, so the columns never need rebuilding
+	const columns = useMemo(
+		() =>
+			createTagsColumns(openEditDialog, (tag) => {
+				setTagToDelete(tag)
+				setDeleteDialogOpen(true)
+			}),
+		[]
+	)
 
 	const table = useReactTable({
 		data: tagsWithSystems,
@@ -257,7 +162,7 @@ export default function TagsSettings() {
 						onChange={(e) => setGlobalFilter(e.target.value)}
 						className="w-full sm:w-48"
 					/>
-					<Button onClick={openCreateDialog} className="shrink-0">
+					<Button onClick={() => openEditDialog(null)} className="shrink-0">
 						<PlusIcon className="size-4 sm:me-2" />
 						<span className="hidden sm:inline">
 							<Trans>Create Tag</Trans>
@@ -268,19 +173,9 @@ export default function TagsSettings() {
 
 			{/* Create/Edit Tag Dialog */}
 			<TagEditDialog
-				open={dialogOpen}
-				onOpenChange={setDialogOpen}
-				editingTag={editingTag}
-				tagName={newTagName}
-				tagColor={newTagColor}
-				selectedSystems={selectedSystems}
-				systemSearchQuery={systemSearchQuery}
-				systems={sortedSystems}
-				onTagNameChange={setNewTagName}
-				onTagColorChange={setNewTagColor}
-				onSelectedSystemsChange={setSelectedSystems}
-				onSystemSearchQueryChange={setSystemSearchQuery}
-				onSave={saveTag}
+				open={editDialog.open}
+				onOpenChange={(open) => setEditDialog((prev) => ({ ...prev, open }))}
+				tag={editDialog.tag}
 			/>
 
 			{/* Delete Confirmation Dialog */}

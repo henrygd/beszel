@@ -1,5 +1,5 @@
 import { ChevronDownIcon } from "lucide-react"
-import { ReactNode, useRef } from "react"
+import { type ReactNode, useState } from "react"
 import { Button } from "@/components/ui/button"
 import {
 	DropdownMenu,
@@ -13,63 +13,53 @@ import { Input } from "@/components/ui/input"
 interface SearchableDropdownProps<T> {
 	items: T[]
 	selectedIds: string[]
-	searchQuery: string
-	onSearchChange: (query: string) => void
 	onSelectionChange: (ids: string[]) => void
 	getItemLabel: (item: T) => string
 	getItemId: (item: T) => string
-	renderItem: (item: T, isSelected: boolean) => ReactNode
+	renderItem: (item: T) => ReactNode
+	/** Trigger button text */
+	displayText: string
 	placeholder?: string
-	getDisplayText?: (selectedCount: number, selectedLabel?: string) => string
 	emptyMessage?: ReactNode
 	noResultsMessage?: ReactNode
-	createMessage?: ReactNode
-	stopPropagation?: boolean
-	onCreateItem?: (query: string) => Promise<void>
+	/** Shown below the results when `onCreateItem` is set and no item has exactly the searched label */
+	createMessage?: (query: string) => ReactNode
+	/** Called on Enter with the search text; should also handle an exact match (e.g. by selecting it).
+	 *  Return false to keep the search text (e.g. when creation failed). */
+	onCreateItem?: (query: string) => Promise<boolean | void> | boolean | void
 }
 
 export function SearchableDropdown<T>({
 	items,
 	selectedIds,
-	searchQuery,
-	onSearchChange,
 	onSelectionChange,
 	getItemLabel,
 	getItemId,
 	renderItem,
+	displayText,
 	placeholder = "Search...",
-	getDisplayText,
 	emptyMessage,
 	noResultsMessage,
 	createMessage,
-	stopPropagation = false,
 	onCreateItem,
 }: SearchableDropdownProps<T>) {
-	const inputRef = useRef<HTMLInputElement>(null)
+	const [searchQuery, setSearchQuery] = useState("")
 
 	const query = searchQuery.trim().toLowerCase()
 	const filteredItems = items.filter((item) => getItemLabel(item).toLowerCase().includes(query))
 	// offer creation unless an item with exactly this label exists (a partial match shouldn't block it)
 	const canCreate = !!onCreateItem && !!query && !items.some((item) => getItemLabel(item).toLowerCase() === query)
 
-	const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-		if (stopPropagation) {
-			e.stopPropagation()
-		}
-		// onCreateItem also handles an exact match by selecting the existing item
+	const handleKeyDown = async (e: React.KeyboardEvent<HTMLInputElement>) => {
+		// keep keys in the input instead of triggering the menu's typeahead / item focus
+		e.stopPropagation()
 		if (e.key === "Enter" && query && onCreateItem) {
 			e.preventDefault()
-			onCreateItem(searchQuery)
+			if ((await onCreateItem(searchQuery)) !== false) {
+				setSearchQuery("")
+			}
 		}
 	}
-
-	const defaultDisplayText = (selectedCount: number, selectedLabel?: string) => {
-		if (selectedCount === 0) return "Select..."
-		if (selectedCount === 1) return selectedLabel || "1 selected"
-		return `${selectedCount} selected`
-	}
-
-	const displayText = getDisplayText ? getDisplayText(selectedIds.length) : defaultDisplayText(selectedIds.length)
 
 	return (
 		<DropdownMenu>
@@ -82,12 +72,11 @@ export function SearchableDropdown<T>({
 			<DropdownMenuContent className="w-80" align="start">
 				<div className="px-2 py-1.5">
 					<Input
-						ref={inputRef}
 						placeholder={placeholder}
 						value={searchQuery}
-						onChange={(e) => onSearchChange(e.target.value)}
+						onChange={(e) => setSearchQuery(e.target.value)}
 						className="h-8"
-						onClick={(e) => stopPropagation && e.stopPropagation()}
+						onClick={(e) => e.stopPropagation()}
 						onKeyDown={handleKeyDown}
 					/>
 				</div>
@@ -96,30 +85,27 @@ export function SearchableDropdown<T>({
 					{filteredItems.length > 0 ? (
 						filteredItems.map((item) => {
 							const itemId = getItemId(item)
-							const isSelected = selectedIds.includes(itemId)
 							return (
 								<DropdownMenuCheckboxItem
 									key={itemId}
-									checked={isSelected}
+									checked={selectedIds.includes(itemId)}
 									onCheckedChange={(checked) => {
 										onSelectionChange(
-											checked
-												? [...selectedIds, itemId]
-												: selectedIds.filter((id) => id !== itemId)
+											checked ? [...selectedIds, itemId] : selectedIds.filter((id) => id !== itemId)
 										)
 									}}
 									onSelect={(e) => e.preventDefault()}
 								>
-									{renderItem(item, isSelected)}
+									{renderItem(item)}
 								</DropdownMenuCheckboxItem>
 							)
 						})
-					) : canCreate && createMessage ? null : searchQuery ? (
+					) : canCreate && createMessage ? null : query ? (
 						noResultsMessage || <div className="py-4 text-center text-sm text-muted-foreground">No items found.</div>
 					) : (
 						emptyMessage || <div className="py-4 text-center text-sm text-muted-foreground">No items available.</div>
 					)}
-					{canCreate && createMessage}
+					{canCreate && createMessage?.(searchQuery.trim())}
 				</div>
 			</DropdownMenuContent>
 		</DropdownMenu>

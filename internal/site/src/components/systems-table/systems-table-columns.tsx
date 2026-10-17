@@ -40,7 +40,7 @@ import {
 } from "@/lib/utils"
 import { batteryStateTranslations } from "@/lib/i18n"
 import { TagBadgeList } from "@/components/tags/tag-badge-list"
-import { resolveTags } from "@/lib/tag-utils"
+import { useTags } from "@/lib/tag-utils"
 import { connectedWiFi, strongestWiFi, strongestWiFiSignal, wifiSignalState } from "@/lib/wifi"
 import type { SystemRecord, WiFi } from "@/types"
 import { SystemDialog } from "../add-system"
@@ -611,8 +611,7 @@ function sortableHeader(context: HeaderContext<SystemRecord, unknown>) {
 }
 
 function SystemTagsCell({ system, max }: { system: SystemRecord; max: number }) {
-	const tagsById = useStore($tagsById)
-	const tags = useMemo(() => resolveTags(system.tags, tagsById), [system.tags, tagsById])
+	const tags = useTags(system.tags)
 	if (tags.length === 0) {
 		return null
 	}

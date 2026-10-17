@@ -26,7 +26,7 @@ export interface TagWithSystems extends TagRecord {
 // Create columns generator function that accepts callbacks
 export function createTagsColumns(
 	onEditTag: (tag: TagWithSystems) => void,
-	onDeleteTag: (id: string, name: string) => void
+	onDeleteTag: (tag: TagWithSystems) => void
 ): ColumnDef<TagWithSystems>[] {
 	return [
 		{
@@ -44,7 +44,7 @@ export function createTagsColumns(
 					className="ms-2"
 					checked={row.getIsSelected()}
 					onCheckedChange={(value) => row.toggleSelected(!!value)}
-  					onClick={(e) => e.stopPropagation()}
+					onClick={(e) => e.stopPropagation()}
 					aria-label="Select row"
 				/>
 			),
@@ -96,32 +96,34 @@ export function createTagsColumns(
 					<Trans>Actions</Trans>
 				</span>
 			),
+			// stop clicks on the menu (React events bubble through its portal) from also opening the row's edit dialog
 			cell: ({ row }) => (
-				<DropdownMenu>
-					<DropdownMenuTrigger asChild>
-						<Button variant="ghost" size="icon">
-							<span className="sr-only">
-								<Trans>Open menu</Trans>
-							</span>
-							<MoreHorizontalIcon className="size-5" />
-						</Button>
-					</DropdownMenuTrigger>
-					<DropdownMenuContent align="end">
-						<DropdownMenuItem onSelect={() => onEditTag(row.original)}>
-							<PencilIcon className="me-2.5 size-4" />
-							<Trans>Edit tag</Trans>
-						</DropdownMenuItem>
-						<DropdownMenuSeparator />
-						<DropdownMenuItem
-							className="text-destructive focus:text-destructive"
-							onSelect={() => onDeleteTag(row.original.id, row.original.name)}
-							onClick={(e) => e.stopPropagation()}
-						>
-							<TrashIcon className="me-2.5 size-4" />
-							<Trans>Delete tag</Trans>
-						</DropdownMenuItem>
-					</DropdownMenuContent>
-				</DropdownMenu>
+				<div onClick={(e) => e.stopPropagation()}>
+					<DropdownMenu>
+						<DropdownMenuTrigger asChild>
+							<Button variant="ghost" size="icon">
+								<span className="sr-only">
+									<Trans>Open menu</Trans>
+								</span>
+								<MoreHorizontalIcon className="size-5" />
+							</Button>
+						</DropdownMenuTrigger>
+						<DropdownMenuContent align="end">
+							<DropdownMenuItem onSelect={() => onEditTag(row.original)}>
+								<PencilIcon className="me-2.5 size-4" />
+								<Trans>Edit tag</Trans>
+							</DropdownMenuItem>
+							<DropdownMenuSeparator />
+							<DropdownMenuItem
+								className="text-destructive focus:text-destructive"
+								onSelect={() => onDeleteTag(row.original)}
+							>
+								<TrashIcon className="me-2.5 size-4" />
+								<Trans>Delete tag</Trans>
+							</DropdownMenuItem>
+						</DropdownMenuContent>
+					</DropdownMenu>
+				</div>
 			),
 		},
 	]
