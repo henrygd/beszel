@@ -119,6 +119,23 @@ func (h *Hub) StartHub() error {
 	return pb.Start()
 }
 
+// enableRequestLimits turns on request limits and keeps a sign-in rule available.
+// An existing sign-in rule is left unchanged so its threshold can be adjusted in settings.
+func enableRequestLimits(settings *core.Settings) {
+	for _, rule := range settings.RateLimits.Rules {
+		if rule.Label == "*:auth" {
+			settings.RateLimits.Enabled = true
+			return
+		}
+	}
+	settings.RateLimits.Rules = append([]core.RateLimitRule{{
+		Label:       "*:auth",
+		MaxRequests: 2,
+		Duration:    3,
+	}}, settings.RateLimits.Rules...)
+	settings.RateLimits.Enabled = true
+}
+
 // initialize sets up initial configuration (collections, settings, etc.)
 func (h *Hub) initialize(app core.App) error {
 	// set general settings
@@ -132,6 +149,8 @@ func (h *Hub) initialize(app core.App) error {
 		h.appURL = appURL
 		settings.Meta.AppURL = appURL
 	}
+	// Password sign-in stays limited when the hub starts, including hubs created earlier.
+	enableRequestLimits(settings)
 	if err := app.Save(settings); err != nil {
 		return err
 	}

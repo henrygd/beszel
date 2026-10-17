@@ -2,6 +2,8 @@
 
 For developers using the agent as a Go package, `Agent.Start` now requires a `context.Context`.
 
+- Limit how often password sign-in can be attempted
+
 - Add opt-in cgroup CPU and memory accounting (#2505)
 
 - Add `HUB_HEADERS` environment variable to set custom WebSocket headers on the agent (#2585)
