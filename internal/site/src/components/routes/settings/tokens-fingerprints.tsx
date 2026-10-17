@@ -21,6 +21,7 @@ import {
 	InstallDropdown,
 } from "@/components/install-dropdowns"
 import { $router } from "@/components/router"
+import { TokenValue } from "@/components/token-value"
 import { Button } from "@/components/ui/button"
 import { IconButton } from "@/components/ui/icon-button"
 import {
@@ -180,15 +181,8 @@ const SectionUniversalToken = memo(() => {
 									updateToken(checked ? 1 : 0, isPermanent ? 1 : 0)
 								}}
 							/>
-							<div className="min-w-0 flex-1 overflow-auto">
-								<span
-									className={cn(
-										"text-sm text-primary opacity-60 transition-opacity",
-										checked ? "opacity-100" : "select-none"
-									)}
-								>
-									{token}
-								</span>
+							<div className="min-w-0 flex-1">
+								<TokenValue key={`${checked}:${token}`} token={token} label={t`Universal token`} disabled={!checked} />
 							</div>
 							<ActionsButtonUniversalToken token={token} checked={checked} />
 						</div>
@@ -198,7 +192,7 @@ const SectionUniversalToken = memo(() => {
 								<span className="text-sm text-muted-foreground whitespace-nowrap">
 									<Trans>Public key</Trans>
 								</span>
-								<div className="min-w-0 flex-1 truncate">
+								<div className="min-w-0 truncate">
 									<span className="text-sm text-primary font-mono">{publicKey}</span>
 								</div>
 								<IconButton
@@ -207,7 +201,7 @@ const SectionUniversalToken = memo(() => {
 									onClick={() => copyToClipboard(publicKey)}
 									label={t`Copy public key`}
 								>
-									<CopyIcon className="w-4" />
+									<CopyIcon className="size-4" />
 								</IconButton>
 							</div>
 						)}
@@ -366,7 +360,13 @@ const SectionTable = memo(({ fingerprints = [] }: { fingerprints: FingerprintRec
 							<TableCell className="font-medium ps-5 py-2 max-w-60 truncate">
 								{fingerprint.expand.system.name}
 							</TableCell>
-							<TableCell className="font-mono text-[0.95em] py-2">{fingerprint.token}</TableCell>
+							<TableCell className="py-2">
+								<TokenValue
+									key={fingerprint.token}
+									token={fingerprint.token}
+									label={t`Token for ${fingerprint.expand.system.name}`}
+								/>
+							</TableCell>
 							<TableCell className="font-mono text-[0.95em] py-2">{fingerprint.fingerprint}</TableCell>
 							{!isReadOnly && (
 								<TableCell className="py-2 px-4 xl:px-2">

@@ -4,7 +4,7 @@ home: https://github.com/henrygd/beszel/tree/main/supplemental/helm/beszel-hub
 name: beszel-hub
 appVersion: "0.21.0"
 # Bump this version when publishing chart changes.
-version: 0.1.8
+version: 0.1.9
 sources:
   - https://github.com/henrygd/beszel/tree/main/supplemental/helm/beszel-hub
   - https://www.beszel.dev/
