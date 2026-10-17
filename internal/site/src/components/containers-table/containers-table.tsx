@@ -24,7 +24,7 @@ import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/ca
 import { type ContainerHealth, ContainerHealthLabels } from "@/lib/enums"
 import { cn, useBrowserStorage } from "@/lib/utils"
 import { Sheet, SheetTitle, SheetHeader, SheetContent, SheetDescription } from "../ui/sheet"
-import { Dialog, DialogContent, DialogTitle } from "../ui/dialog"
+import { FullscreenContentDialog } from "@/components/ui/fullscreen-content-dialog"
 import { Button } from "@/components/ui/button"
 import { $allSystemsById } from "@/lib/stores"
 import { LoaderCircleIcon, MaximizeIcon, RefreshCwIcon, XIcon } from "lucide-react"
@@ -32,7 +32,8 @@ import { Separator } from "../ui/separator"
 import { $router, Link } from "../router"
 import { listenKeys } from "nanostores"
 import { getPagePath } from "@nanostores/router"
-import { LogsDisplay, LogsFullscreenDialog, LogsIconButton, LogsTimestampToggle } from "@/components/logs-display"
+import { LogsDisplay, LogsFullscreenDialog, LogsTimestampToggle } from "@/components/logs-display"
+import { IconButton } from "@/components/ui/icon-button"
 import { getLogTimestampDecorations } from "@/lib/logs"
 
 const syntaxTheme = "github-dark-dimmed"
@@ -384,12 +385,13 @@ function ContainerSheet({
 				onRefresh={refreshLogs}
 				isRefreshing={isRefreshingLogs}
 			/>
-			<InfoFullscreenDialog
+			<FullscreenContentDialog
 				open={infoFullscreenOpen}
 				onOpenChange={setInfoFullscreenOpen}
-				infoDisplay={infoDisplay}
-				containerName={container.name}
-			/>
+				title={`${container.name} info`}
+			>
+				<div dangerouslySetInnerHTML={{ __html: infoDisplay }} />
+			</FullscreenContentDialog>
 			<Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
 				<SheetContent className="w-full sm:max-w-220 p-2">
 					<SheetHeader>
@@ -418,26 +420,21 @@ function ContainerSheet({
 						<div className="flex items-center w-full">
 							<h3>{t`Logs`}</h3>
 							<LogsTimestampToggle className="ms-auto" />
-							<LogsIconButton label={t`Refresh`} onClick={refreshLogs} disabled={isRefreshingLogs}>
+							<IconButton label={t`Refresh`} onClick={refreshLogs} disabled={isRefreshingLogs}>
 								<RefreshCwIcon
 									className={`size-4 transition-transform duration-300 ${isRefreshingLogs ? "animate-spin" : ""}`}
 								/>
-							</LogsIconButton>
-							<LogsIconButton label={t`Fullscreen`} onClick={() => setLogsFullscreenOpen(true)}>
+							</IconButton>
+							<IconButton label={t`Fullscreen`} onClick={() => setLogsFullscreenOpen(true)}>
 								<MaximizeIcon className="size-4" />
-							</LogsIconButton>
+							</IconButton>
 						</div>
 						<LogsDisplay logsDisplay={logsDisplay} containerRef={logsContainerRef} />
 						<div className="flex items-center w-full">
 							<h3>{t`Detail`}</h3>
-							<Button
-								variant="ghost"
-								size="sm"
-								onClick={() => setInfoFullscreenOpen(true)}
-								className="h-8 w-8 p-0 ms-auto"
-							>
+							<IconButton label={t`Fullscreen`} onClick={() => setInfoFullscreenOpen(true)} className="ms-auto">
 								<MaximizeIcon className="size-4" />
-							</Button>
+							</IconButton>
 						</div>
 						<div
 							className={cn(
@@ -502,28 +499,3 @@ const ContainerTableRow = memo(function ContainerTableRow({
 		</TableRow>
 	)
 })
-
-function InfoFullscreenDialog({
-	open,
-	onOpenChange,
-	infoDisplay,
-	containerName,
-}: {
-	open: boolean
-	onOpenChange: (open: boolean) => void
-	infoDisplay: string
-	containerName: string
-}) {
-	return (
-		<Dialog open={open} onOpenChange={onOpenChange}>
-			<DialogContent className="w-[calc(100vw-20px)] h-[calc(100dvh-20px)] max-w-none p-0 bg-gh-dark border-0 text-white">
-				<DialogTitle className="sr-only">{containerName} info</DialogTitle>
-				<div className="flex-1 overflow-auto">
-					<div className="h-full w-full overflow-auto p-3 rounded-md bg-gh-dark text-sm leading-relaxed">
-						<div dangerouslySetInnerHTML={{ __html: infoDisplay }} />
-					</div>
-				</div>
-			</DialogContent>
-		</Dialog>
-	)
-}
