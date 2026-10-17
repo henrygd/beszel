@@ -7,6 +7,7 @@ import {
 	$downSystems,
 	$longestSystemName,
 	$pausedSystems,
+	$systemsLoaded,
 	$textMeasureVersion,
 	$upSystems,
 } from "@/lib/stores"
@@ -188,6 +189,8 @@ export async function refresh() {
 		}
 	} catch (error) {
 		console.error("Failed to refresh systems:", error)
+	} finally {
+		$systemsLoaded.set(true)
 	}
 }
 

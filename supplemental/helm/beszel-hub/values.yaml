@@ -116,6 +116,18 @@ autoscaling:
 
 # volumeMounts: {}
 
+# -- Environment variables for the hub container
+env: {}
+  # APP_URL: https://beszel.example.com
+  # DISABLE_PASSWORD_AUTH: "true"
+
+# -- Load environment variables from Secrets or ConfigMaps
+envFrom: []
+  # - secretRef:
+  #     name: beszel-hub-env
+  # - configMapRef:
+  #     name: beszel-hub-config
+
 # -- `spec.PersitentVolumeClaim` configuration
 persistentVolumeClaim:
   # -- set to true to use pvc

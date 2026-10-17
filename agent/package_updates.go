@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"context"
 	"errors"
+	"fmt"
 	"log/slog"
 	"os"
 	"os/exec"
@@ -54,7 +55,8 @@ type packageUpdatesManager struct {
 
 // newPackageUpdatesManager returns nil if disabled or no supported package manager
 // is found. Agents running in a container are skipped because the container's
-// package database is not the host's. dataDir holds pacman's private sync databases.
+// package database is not the host's. dataDir holds the package managers' per-user
+// caches and state, which they cannot write to their usual locations as the agent user.
 func newPackageUpdatesManager(dataDir string) *packageUpdatesManager {
 	if runtime.GOOS != "linux" || runningInContainer() {
 		return nil
@@ -150,9 +152,9 @@ func detectPackageManager(dataDir string) (string, packageUpdatesCheck) {
 	case commandExists("apt-get") && exec.Command("dpkg-query", "-W", "apt").Run() == nil:
 		return "apt", checkApt
 	case commandExists("dnf"):
-		return "dnf", checkDnf
+		return "dnf", newDnfCheck(dataDir)
 	case commandExists("zypper"):
-		return "zypper", checkZypper
+		return "zypper", newZypperCheck(dataDir)
 	case commandExists("checkupdates"):
 		return "pacman", newPacmanCheck(dataDir)
 	case commandExists("apk"):
@@ -183,8 +185,14 @@ func runPackageCommandEnv(ctx context.Context, env []string, okCodes []int, name
 	// children can keep stdout open. WaitDelay stops Output from waiting on them.
 	cmd.WaitDelay = 10 * time.Second
 	out, err := cmd.Output()
-	if exitErr, ok := errors.AsType[*exec.ExitError](err); ok && slices.Contains(okCodes, exitErr.ExitCode()) {
-		return string(out), nil
+	if exitErr, ok := errors.AsType[*exec.ExitError](err); ok {
+		if slices.Contains(okCodes, exitErr.ExitCode()) {
+			return string(out), nil
+		}
+		// include stderr so a failure says why, not just "exit status 1"
+		if stderr := strings.TrimSpace(string(exitErr.Stderr)); stderr != "" {
+			err = fmt.Errorf("%s: %w: %s", name, err, stderr)
+		}
 	}
 	return string(out), err
 }
@@ -214,10 +222,26 @@ func checkApt(ctx context.Context) (packageUpdatesResult, error) {
 	}, nil
 }
 
+// newDnfCheck points dnf5's per-user state (log) and cache dirs into dataDir.
+// They default to $HOME/.local/state and $HOME/.cache, and the agent user's home
+// is usually /nonexistent. With -C, dnf5 still reads the system metadata cache.
+func newDnfCheck(dataDir string) packageUpdatesCheck {
+	var env []string
+	if dataDir != "" {
+		env = []string{
+			"XDG_STATE_HOME=" + filepath.Join(dataDir, "state"),
+			"XDG_CACHE_HOME=" + filepath.Join(dataDir, "cache"),
+		}
+	}
+	return func(ctx context.Context) (packageUpdatesResult, error) {
+		return checkDnf(ctx, env)
+	}
+}
+
 // checkDnf uses the system metadata cache only (-C), so it never downloads metadata.
 // check-update lists only available versions, so installed versions come from rpm.
-func checkDnf(ctx context.Context) (packageUpdatesResult, error) {
-	out, err := runPackageCommand(ctx, []int{100}, "dnf", "-q", "-C", "check-update")
+func checkDnf(ctx context.Context, env []string) (packageUpdatesResult, error) {
+	out, err := runPackageCommandEnv(ctx, env, []int{100}, "dnf", "-q", "-C", "check-update")
 	if err != nil {
 		return packageUpdatesResult{}, err
 	}
@@ -237,7 +261,7 @@ func checkDnf(ctx context.Context) (packageUpdatesResult, error) {
 		}
 	}
 
-	out, err = runPackageCommand(ctx, []int{100}, "dnf", "-q", "-C", "check-update", "--security")
+	out, err = runPackageCommandEnv(ctx, env, []int{100}, "dnf", "-q", "-C", "check-update", "--security")
 	if err == nil {
 		// --security lists the lowest version that fixes an advisory, which may be
 		// older than the version check-update offers, so match on name.arch only
@@ -261,20 +285,28 @@ func checkDnf(ctx context.Context) (packageUpdatesResult, error) {
 	return result, nil
 }
 
-// checkZypper lists package updates. Security updates come from patches, which
+// newZypperCheck lists package updates. Security updates come from patches, which
 // zypper does not map to packages here, so only the security count is known.
-func checkZypper(ctx context.Context) (packageUpdatesResult, error) {
-	out, err := runPackageCommand(ctx, nil, "zypper", "--no-refresh", "-q", "list-updates")
-	if err != nil {
-		return packageUpdatesResult{}, err
+// zypper rebuilds the solv cache from the raw metadata when it is missing or stale,
+// which the agent user cannot do in /var/cache/zypp, so it keeps its own in dataDir.
+func newZypperCheck(dataDir string) packageUpdatesCheck {
+	args := []string{"--no-refresh", "-q"}
+	if dataDir != "" {
+		args = append(args, "--solv-cache-dir", filepath.Join(dataDir, "zypp-solv"))
 	}
-	packages := parseZypperListUpdates(out)
-	result := packageUpdatesResult{packages: packages, counts: []uint16{uint16(len(packages))}}
-	out, err = runPackageCommand(ctx, nil, "zypper", "--no-refresh", "-q", "list-patches", "--category", "security")
-	if err == nil {
-		result.counts = append(result.counts, parseZypperTable(out))
+	return func(ctx context.Context) (packageUpdatesResult, error) {
+		out, err := runPackageCommand(ctx, nil, "zypper", slices.Concat(args, []string{"list-updates"})...)
+		if err != nil {
+			return packageUpdatesResult{}, err
+		}
+		packages := parseZypperListUpdates(out)
+		result := packageUpdatesResult{packages: packages, counts: []uint16{uint16(len(packages))}}
+		out, err = runPackageCommand(ctx, nil, "zypper", slices.Concat(args, []string{"list-patches", "--category", "security"})...)
+		if err == nil {
+			result.counts = append(result.counts, parseZypperTable(out))
+		}
+		return result, nil
 	}
-	return result, nil
 }
 
 // newPacmanCheck uses checkupdates (pacman-contrib), which syncs a private copy of
