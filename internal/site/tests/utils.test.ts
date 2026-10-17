@@ -5,7 +5,8 @@ mock.module("@lingui/core/macro", () => ({
 	plural: (count: number, forms: any) => forms.other ?? "",
 }))
 
-const { formatMicroseconds } = await import("../src/lib/utils")
+const { formatBytes, formatMicroseconds } = await import("../src/lib/utils")
+const { Unit } = await import("../src/lib/enums")
 
 describe("formatMicroseconds", () => {
 	test("formats with fixedDigits = true (default)", () => {
@@ -47,5 +48,23 @@ describe("formatMicroseconds", () => {
 		expect(formatMicroseconds(Number.NaN)).toBe("-")
 		expect(formatMicroseconds(Number.POSITIVE_INFINITY)).toBe("-")
 		expect(formatMicroseconds(Number.NEGATIVE_INFINITY)).toBe("-")
+	})
+})
+
+describe("formatBytes", () => {
+	test("bytes use binary divisors with IEC labels", () => {
+		expect(formatBytes(50)).toEqual({ value: 50, unit: "B" })
+		expect(formatBytes(1024)).toEqual({ value: 1, unit: "KiB" })
+		expect(formatBytes(1024 ** 2)).toEqual({ value: 1, unit: "MiB" })
+		expect(formatBytes(1024 ** 3)).toEqual({ value: 1, unit: "GiB" })
+		expect(formatBytes(1024 ** 4)).toEqual({ value: 1, unit: "TiB" })
+		expect(formatBytes(1024 ** 2, true)).toEqual({ value: 1, unit: "MiB/s" })
+		expect(formatBytes(1, false, Unit.Bytes, true)).toEqual({ value: 1, unit: "MiB" })
+	})
+
+	test("bits keep decimal divisors and labels", () => {
+		expect(formatBytes(125, true, Unit.Bits)).toEqual({ value: 1, unit: "Kbps" })
+		expect(formatBytes(125_000, true, Unit.Bits)).toEqual({ value: 1, unit: "Mbps" })
+		expect(formatBytes(125_000_000, false, Unit.Bits)).toEqual({ value: 1, unit: "Gb" })
 	})
 })
