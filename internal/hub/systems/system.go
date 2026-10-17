@@ -891,6 +891,14 @@ func (sys *System) FetchPackageUpdatesFromAgent() (system.PackageUpdates, error)
 	return result, err
 }
 
+// RequestAgentUpdate asks the agent to update itself via its remote update service.
+func (sys *System) RequestAgentUpdate() error {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	var ok bool
+	return sys.request(ctx, common.RequestAgentUpdate, nil, &ok)
+}
+
 // FetchZfsDataFromAgent fetches ZFS detail data from the agent.
 func (sys *System) FetchZfsDataFromAgent(force bool) (*zfs.ZfsData, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)

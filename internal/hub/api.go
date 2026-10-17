@@ -207,6 +207,8 @@ func (h *Hub) registerApiRoutes(se *core.ServeEvent) error {
 	apiAuth.GET("/systemd/logs", h.getSystemdLogs)
 	// get pending package updates
 	apiAuth.GET("/package-updates", h.getPackageUpdates)
+	// trigger an agent self-update (agent must have remote update enabled)
+	apiAuth.POST("/agent-update", h.requestAgentUpdate).BindFunc(requireAdminRole)
 	// /containers routes
 	if enabled, _ := utils.GetEnv("CONTAINER_DETAILS"); enabled != "false" {
 		// get container logs
@@ -504,6 +506,31 @@ func (h *Hub) getPackageUpdates(e *core.RequestEvent) error {
 		return e.InternalServerError("", err)
 	}
 	return e.JSON(http.StatusOK, updates)
+}
+
+// requestAgentUpdate handles POST /api/beszel/agent-update requests
+func (h *Hub) requestAgentUpdate(e *core.RequestEvent) error {
+	systemID := e.Request.URL.Query().Get("system")
+	if systemID == "" {
+		return e.BadRequestError("Invalid system parameter", nil)
+	}
+	system, err := h.sm.GetSystem(systemID)
+	if err != nil || !system.HasUser(e.App, e.Auth) {
+		return e.NotFoundError("", nil)
+	}
+	// Old agents and agents without the root-owned update service do not advertise this capability.
+	systemRecord, err := e.App.FindRecordById("systems", systemID)
+	if err != nil {
+		return e.NotFoundError("", err)
+	}
+	var info systementity.Info
+	if err := systemRecord.UnmarshalJSONField("info", &info); err != nil || !info.RemoteUpdate {
+		return e.BadRequestError("Remote update is not enabled on this agent", nil)
+	}
+	if err := system.RequestAgentUpdate(); err != nil {
+		return e.InternalServerError("", err)
+	}
+	return e.JSON(http.StatusOK, map[string]string{"status": "ok"})
 }
 
 // refreshSmartData handles POST /api/beszel/smart/refresh requests

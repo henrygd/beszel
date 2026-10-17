@@ -11,6 +11,7 @@ import {
 	ClockArrowUp,
 	CopyIcon,
 	CpuIcon,
+	DownloadIcon,
 	HardDriveIcon,
 	MemoryStickIcon,
 	MoreHorizontalIcon,
@@ -42,6 +43,7 @@ import { connectedWiFi, strongestWiFi, strongestWiFiSignal, wifiSignalState } fr
 import type { SystemRecord, WiFi } from "@/types"
 import { SystemDialog } from "../add-system"
 import AlertButton from "../alerts/alert-button"
+import { AgentUpdateDialog, canUpdateAgent } from "./agent-update"
 import { $router, Link } from "../router"
 import {
 	AlertDialog,
@@ -731,6 +733,7 @@ export function IndicatorDot({ system, className }: { system: SystemRecord; clas
 export const ActionsButton = memo(({ system }: { system: SystemRecord }) => {
 	const [deleteOpen, setDeleteOpen] = useState(false)
 	const [editOpen, setEditOpen] = useState(false)
+	const [updateOpen, setUpdateOpen] = useState(false)
 	const editOpened = useRef(false)
 	const { t } = useLingui()
 	const { id, status, host, name } = system
@@ -787,6 +790,12 @@ export const ActionsButton = memo(({ system }: { system: SystemRecord }) => {
 							<CopyIcon className="me-2.5 size-4" />
 							<Trans>Copy host</Trans>
 						</DropdownMenuItem>
+						{canUpdateAgent(system) && (
+							<DropdownMenuItem onSelect={() => setUpdateOpen(true)}>
+								<DownloadIcon className="me-2.5 size-4" />
+								<Trans>Update agent</Trans>
+							</DropdownMenuItem>
+						)}
 						<DropdownMenuSeparator className={cn(isReadOnlyUser() && "hidden")} />
 						<DropdownMenuItem className={cn(isReadOnlyUser() && "hidden")} onSelect={() => setDeleteOpen(true)}>
 							<Trash2Icon className="me-2.5 size-4" />
@@ -798,6 +807,8 @@ export const ActionsButton = memo(({ system }: { system: SystemRecord }) => {
 				<Dialog open={editOpen} onOpenChange={setEditOpen}>
 					{editOpened.current && <SystemDialog system={system} setOpen={setEditOpen} />}
 				</Dialog>
+				{/* agent update dialog */}
+				{updateOpen && <AgentUpdateDialog system={system} open={updateOpen} setOpen={setUpdateOpen} />}
 				{/* deletion dialog */}
 				<AlertDialog open={deleteOpen} onOpenChange={(open) => setDeleteOpen(open)}>
 					<AlertDialogContent>
@@ -827,5 +838,5 @@ export const ActionsButton = memo(({ system }: { system: SystemRecord }) => {
 				</AlertDialog>
 			</>
 		)
-	}, [id, status, host, name, system, t, deleteOpen, editOpen])
+	}, [id, status, host, name, system, t, deleteOpen, editOpen, updateOpen])
 })

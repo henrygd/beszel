@@ -121,6 +121,23 @@ func TestApiRoutesAuthentication(t *testing.T) {
 	})
 	require.NoError(t, err, "Failed to create test system")
 
+	// Systems owned by the admin user, with and without remote update enabled
+	adminSystem, err := beszelTests.CreateRecord(hub, "systems", map[string]any{
+		"name":  "admin-system",
+		"users": []string{adminUser.Id},
+		"host":  "127.0.0.2",
+	})
+	require.NoError(t, err, "Failed to create admin system")
+	adminRemoteUpdateSystem, err := beszelTests.CreateRecord(hub, "systems", map[string]any{
+		"name":  "admin-remote-update-system",
+		"users": []string{adminUser.Id},
+		"host":  "127.0.0.3",
+	})
+	require.NoError(t, err, "Failed to create admin remote update system")
+	// info is reset on create, so advertise the capability with an update
+	adminRemoteUpdateSystem.Set("info", map[string]any{"ru": true})
+	require.NoError(t, hub.Save(adminRemoteUpdateSystem), "Failed to set remote update info")
+
 	testAppFactory := func(t testing.TB) *pbTests.TestApp {
 		return hub.TestApp
 	}
@@ -599,6 +616,81 @@ func TestApiRoutesAuthentication(t *testing.T) {
 			URL:    fmt.Sprintf("/api/beszel/package-updates?system=%s", system.Id),
 			Headers: map[string]string{
 				"Authorization": userToken,
+			},
+			ExpectedStatus:  500,
+			ExpectedContent: []string{"Something went wrong while processing your request."},
+			TestAppFactory:  testAppFactory,
+		},
+		// /agent-update route
+		{
+			Name:            "POST /agent-update - no auth should fail",
+			Method:          http.MethodPost,
+			URL:             fmt.Sprintf("/api/beszel/agent-update?system=%s", adminRemoteUpdateSystem.Id),
+			ExpectedStatus:  401,
+			ExpectedContent: []string{"requires valid"},
+			TestAppFactory:  testAppFactory,
+		},
+		{
+			Name:   "POST /agent-update - non-admin user should fail",
+			Method: http.MethodPost,
+			URL:    fmt.Sprintf("/api/beszel/agent-update?system=%s", system.Id),
+			Headers: map[string]string{
+				"Authorization": userToken,
+			},
+			ExpectedStatus:  403,
+			ExpectedContent: []string{"The authorized record is not allowed to perform this action."},
+			TestAppFactory:  testAppFactory,
+		},
+		{
+			Name:   "POST /agent-update - readonly user should fail",
+			Method: http.MethodPost,
+			URL:    fmt.Sprintf("/api/beszel/agent-update?system=%s", system.Id),
+			Headers: map[string]string{
+				"Authorization": readOnlyUserToken,
+			},
+			ExpectedStatus:  403,
+			ExpectedContent: []string{"The authorized record is not allowed to perform this action."},
+			TestAppFactory:  testAppFactory,
+		},
+		{
+			Name:   "POST /agent-update - missing system param should fail",
+			Method: http.MethodPost,
+			URL:    "/api/beszel/agent-update",
+			Headers: map[string]string{
+				"Authorization": adminUserToken,
+			},
+			ExpectedStatus:  400,
+			ExpectedContent: []string{"Invalid", "parameter"},
+			TestAppFactory:  testAppFactory,
+		},
+		{
+			Name:   "POST /agent-update - admin request for non-owned system should fail",
+			Method: http.MethodPost,
+			URL:    fmt.Sprintf("/api/beszel/agent-update?system=%s", system.Id),
+			Headers: map[string]string{
+				"Authorization": adminUserToken,
+			},
+			ExpectedStatus:  404,
+			ExpectedContent: []string{"The requested resource wasn't found."},
+			TestAppFactory:  testAppFactory,
+		},
+		{
+			Name:   "POST /agent-update - system without remote update should fail",
+			Method: http.MethodPost,
+			URL:    fmt.Sprintf("/api/beszel/agent-update?system=%s", adminSystem.Id),
+			Headers: map[string]string{
+				"Authorization": adminUserToken,
+			},
+			ExpectedStatus:  400,
+			ExpectedContent: []string{"Remote update is not enabled"},
+			TestAppFactory:  testAppFactory,
+		},
+		{
+			Name:   "POST /agent-update - remote update system should pass validation",
+			Method: http.MethodPost,
+			URL:    fmt.Sprintf("/api/beszel/agent-update?system=%s", adminRemoteUpdateSystem.Id),
+			Headers: map[string]string{
+				"Authorization": adminUserToken,
 			},
 			ExpectedStatus:  500,
 			ExpectedContent: []string{"Something went wrong while processing your request."},
