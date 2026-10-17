@@ -49,67 +49,51 @@ class Program
   static void ProcessSensors(IHardware hardware, System.IO.TextWriter writer)
   {
     var updated = false;
-    try
+    foreach (var sensor in hardware.Sensors)
     {
-      foreach (var sensor in hardware.Sensors)
+      if (sensor.SensorType != SensorType.Temperature ||
+          sensor.Name.IndexOf("Distance", StringComparison.OrdinalIgnoreCase) >= 0 ||
+          sensor.Name.IndexOf("Limit", StringComparison.OrdinalIgnoreCase) >= 0 ||
+          sensor.Name.IndexOf("Critical", StringComparison.OrdinalIgnoreCase) >= 0 ||
+          sensor.Name.IndexOf("Warning", StringComparison.OrdinalIgnoreCase) >= 0 ||
+          sensor.Name.IndexOf("Resolution", StringComparison.OrdinalIgnoreCase) >= 0)
       {
-        var sensorName = "<unknown>";
+        continue;
+      }
+
+      if (!updated)
+      {
         try
         {
-          if (sensor.SensorType != SensorType.Temperature)
-          {
-            continue;
-          }
-
-          sensorName = sensor.Name;
-          if (sensorName.IndexOf("Distance", StringComparison.OrdinalIgnoreCase) >= 0 ||
-              sensorName.IndexOf("Limit", StringComparison.OrdinalIgnoreCase) >= 0 ||
-              sensorName.IndexOf("Critical", StringComparison.OrdinalIgnoreCase) >= 0 ||
-              sensorName.IndexOf("Warning", StringComparison.OrdinalIgnoreCase) >= 0 ||
-              sensorName.IndexOf("Resolution", StringComparison.OrdinalIgnoreCase) >= 0)
-          {
-            continue;
-          }
-
-          if (!updated)
-          {
-            try
-            {
-              hardware.Update();
-            }
-            catch (InvalidOperationException ex)
-            {
-              Console.Error.WriteLine($"Could not update {hardware.HardwareType} {hardware.Name}: {ex.Message}");
-              return;
-            }
-            updated = true;
-          }
-
-          // Read the value once after Update(), which may reset it to null.
-          var temperature = sensor.Value;
-          if (!temperature.HasValue)
-          {
-            continue;
-          }
-
-          var name = sensorName;
-          // Usually this is a number like Temperature 3.
-          if (sensorName.StartsWith("Temperature"))
-          {
-            name = hardware.Identifier.ToString().Replace("/", "_").TrimStart('_') + sensorName.Substring(11);
-          }
-
-          writer.WriteLine($"{name}|{temperature.Value.ToString("0.##", CultureInfo.InvariantCulture)}");
+          hardware.Update();
         }
         catch (InvalidOperationException ex)
         {
-          Console.Error.WriteLine($"Could not read {hardware.HardwareType} {hardware.Name} sensor {sensorName}: {ex.Message}");
+          Console.Error.WriteLine($"Could not update {hardware.HardwareType} {hardware.Name}: {ex.Message}");
+          return;
         }
+        updated = true;
       }
-    }
-    catch (InvalidOperationException ex)
-    {
-      Console.Error.WriteLine($"Could not enumerate sensors for {hardware.HardwareType} {hardware.Name}: {ex.Message}");
+
+      // Read the value once after Update(), which may reset it to null.
+      var temperature = sensor.Value;
+      if (!temperature.HasValue)
+      {
+        continue;
+      }
+
+      var name = sensor.Name;
+      // if sensor.Name starts with "Temperature" replace with hardware.Identifier but retain the rest of the name.
+      // usually this is a number like Temperature 3
+      if (sensor.Name.StartsWith("Temperature"))
+      {
+        name = hardware.Identifier.ToString().Replace("/", "_").TrimStart('_') + sensor.Name.Substring(11);
+      }
+
+      // invariant culture assures the value is parsable as a float
+      var value = temperature.Value.ToString("0.##", CultureInfo.InvariantCulture);
+      // write the name and value to the writer
+      writer.WriteLine($"{name}|{value}");
     }
   }
 }
