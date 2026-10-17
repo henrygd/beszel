@@ -594,6 +594,31 @@ func TestGetTempsWithTimeout(t *testing.T) {
 		assert.Nil(t, temps)
 		assert.ErrorIs(t, err, errTemperatureFetchTimeout)
 	})
+
+	t.Run("skips while a timed out read is still blocked", func(t *testing.T) {
+		agent := &Agent{sensorConfig: &SensorConfig{context: context.Background(), timeout: 10 * time.Millisecond}}
+		release := make(chan struct{})
+		_, err := agent.getTempsWithTimeout(func(ctx context.Context) ([]sensors.TemperatureStat, error) {
+			<-release
+			return nil, nil
+		})
+		assert.ErrorIs(t, err, errTemperatureFetchTimeout)
+
+		called := false
+		_, err = agent.getTempsWithTimeout(func(ctx context.Context) ([]sensors.TemperatureStat, error) {
+			called = true
+			return nil, nil
+		})
+		assert.ErrorIs(t, err, errSensorReadInFlight)
+		assert.False(t, called)
+
+		close(release)
+		require.Eventually(t, func() bool { return !agent.tempsReading.Load() }, time.Second, time.Millisecond)
+		_, err = agent.getTempsWithTimeout(func(ctx context.Context) ([]sensors.TemperatureStat, error) {
+			return nil, nil
+		})
+		assert.NoError(t, err)
+	})
 }
 
 func TestUpdateTemperaturesSkipsOnTimeout(t *testing.T) {
