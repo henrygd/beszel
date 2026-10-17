@@ -19,6 +19,7 @@ export function LoadAverageChart({
 	}
 	return (
 		<ChartCard
+			alertSection="load"
 			empty={dataEmpty}
 			grid={grid}
 			title={t`Load Average`}

@@ -27,6 +27,7 @@ export function CpuChart({
 
 	return (
 		<ChartCard
+			alertSection="cpu"
 			empty={dataEmpty}
 			grid={grid}
 			title={t`CPU Usage`}

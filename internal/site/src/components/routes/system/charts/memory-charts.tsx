@@ -28,6 +28,7 @@ export function MemoryChart({
 
 	return (
 		<ChartCard
+			alertSection="memory"
 			empty={dataEmpty}
 			grid={grid}
 			title={t`Memory Usage`}
