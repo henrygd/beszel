@@ -23,6 +23,7 @@ import {
 	DropdownMenuSeparator,
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { getDistro } from "@/components/ui/distro-icons"
 import { FreeBsdIcon, TuxIcon, WebSocketIcon, WindowsIcon } from "@/components/ui/icons"
 import { Separator } from "@/components/ui/separator"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
@@ -68,7 +69,7 @@ export default function InfoBar({
 
 		const osInfo = {
 			[Os.Linux]: {
-				Icon: TuxIcon,
+				Icon: getDistro(osName)?.Icon ?? TuxIcon,
 				// show kernel in tooltip if os name is available, otherwise show the kernel
 				value: osName || kernel,
 				label: osName ? kernel : undefined,
