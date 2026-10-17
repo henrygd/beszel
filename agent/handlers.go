@@ -128,7 +128,7 @@ func (h *CheckFingerprintHandler) Handle(hctx *HandlerContext) error {
 type GetContainerLogsHandler struct{}
 
 func (h *GetContainerLogsHandler) Handle(hctx *HandlerContext) error {
-	if hctx.Agent.dockerManager == nil {
+	if hctx.Agent.dockerManagers == nil {
 		return hctx.SendResponse("", hctx.RequestID)
 	}
 
@@ -138,7 +138,7 @@ func (h *GetContainerLogsHandler) Handle(hctx *HandlerContext) error {
 	}
 
 	ctx := context.Background()
-	logContent, err := hctx.Agent.dockerManager.getLogs(ctx, req.ContainerID)
+	logContent, err := hctx.Agent.dockerManagers.getLogs(ctx, req.ContainerID)
 	if err != nil {
 		return err
 	}
@@ -153,7 +153,7 @@ func (h *GetContainerLogsHandler) Handle(hctx *HandlerContext) error {
 type GetContainerInfoHandler struct{}
 
 func (h *GetContainerInfoHandler) Handle(hctx *HandlerContext) error {
-	if hctx.Agent.dockerManager == nil {
+	if hctx.Agent.dockerManagers == nil {
 		return hctx.SendResponse("", hctx.RequestID)
 	}
 
@@ -163,7 +163,7 @@ func (h *GetContainerInfoHandler) Handle(hctx *HandlerContext) error {
 	}
 
 	ctx := context.Background()
-	info, err := hctx.Agent.dockerManager.getContainerInfo(ctx, req.ContainerID)
+	info, err := hctx.Agent.dockerManagers.getContainerInfo(ctx, req.ContainerID)
 	if err != nil {
 		return err
 	}
