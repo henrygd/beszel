@@ -116,6 +116,10 @@ autoscaling:
 
 # volumeMounts: {}
 
+env: {}
+
+envFrom: []
+
 # -- `spec.PersitentVolumeClaim` configuration
 persistentVolumeClaim:
   # -- set to true to use pvc
