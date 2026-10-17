@@ -1,8 +1,6 @@
 package hub
 
 import (
-	"strings"
-
 	"github.com/henrygd/beszel/internal/hub/utils"
 	"github.com/pocketbase/pocketbase/core"
 )
@@ -100,11 +98,13 @@ func setCollectionAuthSettings(app core.App) error {
 		return err
 	}
 
+	// The system of an existing fingerprint cannot be changed through the API.
+	fingerprintsUpdateRule := systemScopedWriteRule + " && @request.body.system:changed = false"
 	if err := applyCollectionRules(app, []string{"fingerprints"}, collectionRules{
 		list:   &systemScopedWriteRule,
 		view:   &systemScopedWriteRule,
 		create: &systemScopedWriteRule,
-		update: &systemScopedWriteRule,
+		update: &fingerprintsUpdateRule,
 		delete: &systemScopedWriteRule,
 	}); err != nil {
 		return err
@@ -145,41 +145,29 @@ func setCollectionAuthSettings(app core.App) error {
 	}); err != nil {
 		return err
 	}
-	for _, relation := range []struct{ collection, field string }{
-		{"user_settings", "user"},
-		{"quiet_hours", "user"},
-		{"fingerprints", "system"},
-	} {
-		if err := restrictOwnershipUpdates(app, relation.collection, relation.field); err != nil {
-			return err
-		}
+
+	// User settings and quiet hours belong to their user, and the user of an
+	// existing record cannot be changed through the API.
+	userOwnedRule := authenticatedRule + " && user = @request.auth.id"
+	userOwnedUpdateRule := userOwnedRule + " && @request.body.user:changed = false"
+	if err := applyCollectionRules(app, []string{"user_settings"}, collectionRules{
+		list:   &userOwnedRule,
+		create: &userOwnedRule,
+		update: &userOwnedUpdateRule,
+	}); err != nil {
+		return err
+	}
+	if err := applyCollectionRules(app, []string{"quiet_hours"}, collectionRules{
+		list:   &userOwnedRule,
+		view:   &userOwnedRule,
+		create: &userOwnedRule,
+		update: &userOwnedUpdateRule,
+		delete: &userOwnedRule,
+	}); err != nil {
+		return err
 	}
 
 	return nil
-}
-
-// restrictOwnershipUpdates preserves existing update restrictions while preventing
-// API clients from moving a record across its ownership boundary.
-func restrictOwnershipUpdates(app core.App, collectionName, field string) error {
-	collection, err := app.FindCollectionByNameOrId(collectionName)
-	if err != nil {
-		return err
-	}
-	if collection.UpdateRule == nil {
-		return nil
-	}
-	constraint := "@request.body." + field + ":changed = false"
-	rule := *collection.UpdateRule
-	if rule == constraint || strings.HasSuffix(rule, " && "+constraint) {
-		return nil
-	}
-	if rule == "" {
-		rule = constraint
-	} else {
-		rule = "(" + rule + ") && " + constraint
-	}
-	collection.UpdateRule = &rule
-	return app.Save(collection)
 }
 
 func applyCollectionRules(app core.App, collectionNames []string, rules collectionRules) error {
