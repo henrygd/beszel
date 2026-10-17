@@ -28,8 +28,13 @@ export function TagSelectorDialog({
 	async function createTagFromSearch(query: string) {
 		const name = query.trim()
 		if (!name) return
-		// Check if tag with this name already exists
-		if (availableTags.some((tag) => tag.name.toLowerCase() === name.toLowerCase())) return
+		// Tag names are unique case-insensitively, so select the existing tag instead
+		const existing = availableTags.find((tag) => tag.name.toLowerCase() === name.toLowerCase())
+		if (existing) {
+			if (!selectedTags.includes(existing.id)) onSelectedTagsChange([...selectedTags, existing.id])
+			onSearchQueryChange("")
+			return
+		}
 		try {
 			const record = await pb.collection("tags").create<TagRecord>({
 				name,

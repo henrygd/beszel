@@ -117,7 +117,7 @@ export default function TagsSettings() {
 
 				// Update system assignments
 				const currentSystems = getRecordsForTag(systems, tagId).map((s) => s.id)
-				await syncTagAssignments("systems", tagId, currentSystems, selectedSystems, systems)
+				await syncTagAssignments("systems", tagId, currentSystems, selectedSystems)
 
 				toast({
 					title: tFunc`Tag updated`,
@@ -133,7 +133,7 @@ export default function TagsSettings() {
 
 				// Assign to selected systems
 				if (selectedSystems.length > 0) {
-					await syncTagAssignments("systems", tagId, [], selectedSystems, systems)
+					await syncTagAssignments("systems", tagId, [], selectedSystems)
 				}
 
 				toast({

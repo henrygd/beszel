@@ -47,15 +47,17 @@ export function SearchableDropdown<T>({
 }: SearchableDropdownProps<T>) {
 	const inputRef = useRef<HTMLInputElement>(null)
 
-	const filteredItems = items.filter((item) =>
-		getItemLabel(item).toLowerCase().includes(searchQuery.toLowerCase())
-	)
+	const query = searchQuery.trim().toLowerCase()
+	const filteredItems = items.filter((item) => getItemLabel(item).toLowerCase().includes(query))
+	// offer creation unless an item with exactly this label exists (a partial match shouldn't block it)
+	const canCreate = !!onCreateItem && !!query && !items.some((item) => getItemLabel(item).toLowerCase() === query)
 
 	const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
 		if (stopPropagation) {
 			e.stopPropagation()
 		}
-		if (e.key === "Enter" && searchQuery && onCreateItem && !filteredItems.length) {
+		// onCreateItem also handles an exact match by selecting the existing item
+		if (e.key === "Enter" && query && onCreateItem) {
 			e.preventDefault()
 			onCreateItem(searchQuery)
 		}
@@ -112,13 +114,12 @@ export function SearchableDropdown<T>({
 								</DropdownMenuCheckboxItem>
 							)
 						})
-					) : searchQuery && onCreateItem && createMessage ? (
-						createMessage
-					) : searchQuery ? (
+					) : canCreate && createMessage ? null : searchQuery ? (
 						noResultsMessage || <div className="py-4 text-center text-sm text-muted-foreground">No items found.</div>
 					) : (
 						emptyMessage || <div className="py-4 text-center text-sm text-muted-foreground">No items available.</div>
 					)}
+					{canCreate && createMessage}
 				</div>
 			</DropdownMenuContent>
 		</DropdownMenu>

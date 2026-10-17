@@ -122,36 +122,29 @@ export function buildTagCounts(records: Taggable[]): Record<string, number> {
 }
 
 /**
- * Synchronize tag assignments with records of the given collection
- * Handles adding/removing the tag based on current vs desired state
+ * Add or remove a tag on records of the given collection so that exactly
+ * desiredIds have it. Uses PocketBase's `tags+` / `tags-` modifiers so each
+ * record's other tags are changed server side and never overwritten with stale data.
  */
 export async function syncTagAssignments(
 	collection: string,
 	tagId: string,
 	currentIds: string[],
-	desiredIds: string[],
-	records: Taggable[]
-): Promise<{ toAdd: string[]; toRemove: string[] }> {
-	const toAdd = desiredIds.filter((id) => !currentIds.includes(id))
-	const toRemove = currentIds.filter((id) => !desiredIds.includes(id))
-
-	if (toAdd.length === 0 && toRemove.length === 0) return { toAdd, toRemove }
-
-	const updates = [
-		...toAdd.map((id) => {
-			const record = records.find((r) => r.id === id)
-			const newTags = [...(record?.tags || []), tagId]
-			return pb.collection(collection).update(id, { tags: newTags })
-		}),
-		...toRemove.map((id) => {
-			const record = records.find((r) => r.id === id)
-			const newTags = (record?.tags || []).filter((t) => t !== tagId)
-			return pb.collection(collection).update(id, { tags: newTags })
-		}),
-	]
-
-	if (updates.length > 0) {
-		await Promise.all(updates)
+	desiredIds: string[]
+): Promise<void> {
+	const updates: Record<string, string>[] = []
+	for (const id of desiredIds) {
+		if (!currentIds.includes(id)) updates.push({ id, "tags+": tagId })
 	}
-	return { toAdd, toRemove }
+	for (const id of currentIds) {
+		if (!desiredIds.includes(id)) updates.push({ id, "tags-": tagId })
+	}
+
+	for (let i = 0; i < updates.length; i += 20) {
+		const batch = pb.createBatch()
+		for (const { id, ...data } of updates.slice(i, i + 20)) {
+			batch.collection(collection).update(id, data)
+		}
+		await batch.send()
+	}
 }
