@@ -31,6 +31,7 @@ type SmartManager struct {
 	data            map[string]*smart.SmartData // collected data keyed by serial (or sysfs key)
 	refreshMutex    sync.Mutex                  // serializes refreshes; guards the fields below
 	last            map[string]smartResult      // last success per target key
+	woken           map[string]struct{}         // target keys already queried once without -n standby; never cleared
 	scanned         []smartDevice               // cached smartctl --scan result
 	scanErr         error                       // error of the cached scan
 	lastScan        time.Time
@@ -364,7 +365,7 @@ func (sm *SmartManager) collectTarget(target smartTarget) (smartResult, error) {
 	var err error
 	for _, i := range order {
 		attempt := target.attempts[i]
-		args := smartctlArgs(attempt, hasPrev && prev.ata)
+		args := smartctlArgs(attempt, hasPrev && prev.ata, true)
 		output, exitCode, runErr := sm.runSmartctl(15*time.Second, args...)
 		if runErr != nil {
 			err = runErr
@@ -375,15 +376,26 @@ func (sm *SmartManager) collectTarget(target smartTarget) (smartResult, error) {
 		if parseErr == nil {
 			return smartResult{key: data.SerialNumber, data: data, attempt: i, ata: protocol == "ata"}, nil
 		}
-		// Never wake a sleeping disk. Reuse its last data, or skip it until it
-		// wakes; the refresh is then incomplete, so the hub keeps its record.
+		// Don't wake a sleeping disk that was collected before: reuse its last data.
 		if isStandby(output, exitCode) {
 			if hasPrev {
 				slog.Debug("smartctl device in standby", "device", attempt.path)
 				return prev, nil
 			}
-			// smartctl also reports SLEEP when it lacks permission to check the
-			// power mode, so say so instead of failing silently.
+			// Wake a disk once per agent run so it is collected at least once. This
+			// is tracked apart from last, so a disk that fails after waking is not
+			// woken again on every refresh.
+			if _, ok := sm.woken[target.key]; !ok {
+				if sm.woken == nil {
+					sm.woken = make(map[string]struct{})
+				}
+				sm.woken[target.key] = struct{}{}
+				slog.Debug("smartctl waking device in standby for first collection", "device", attempt.path)
+				return sm.wakeTarget(attempt, i)
+			}
+			// Already woken once: skip it until it wakes, so the refresh is
+			// incomplete and the hub keeps its record. smartctl also reports SLEEP
+			// when it lacks permission to check the power mode, so say so.
 			if bytes.Contains(bytes.ToUpper(output), []byte("SLEEP MODE")) {
 				slog.Info("smartctl reports device asleep, skipping until it wakes; this also happens when smartctl lacks permission", "device", attempt.path)
 			} else {
@@ -397,9 +409,26 @@ func (sm *SmartManager) collectTarget(target smartTarget) (smartResult, error) {
 	return smartResult{}, err
 }
 
-// smartctlArgs returns the smartctl arguments for one attempt. -n standby is
-// always passed so sleeping disks are never woken.
-func smartctlArgs(attempt smartAttempt, ata bool) []string {
+// wakeTarget queries an attempt without -n standby, spinning up the disk.
+// A failure is returned as a real error rather than errStandby, which also
+// surfaces the permission problem that smartctl otherwise reports as SLEEP.
+func (sm *SmartManager) wakeTarget(attempt smartAttempt, i int) (smartResult, error) {
+	args := smartctlArgs(attempt, false, false)
+	output, exitCode, err := sm.runSmartctl(15*time.Second, args...)
+	if err != nil {
+		return smartResult{}, err
+	}
+	data, protocol, err := sm.parseSmartctl(output, attempt.dtype)
+	if err != nil {
+		slog.Debug("smartctl wake attempt failed", "device", attempt.path, "type", attempt.dtype, "args", args, "exit", exitCode, "err", err)
+		return smartResult{}, fmt.Errorf("%w (exit status %d)", err, exitCode)
+	}
+	return smartResult{key: data.SerialNumber, data: data, attempt: i, ata: protocol == "ata"}, nil
+}
+
+// smartctlArgs returns the smartctl arguments for one attempt. standby adds
+// -n standby so smartctl skips a sleeping disk instead of waking it.
+func smartctlArgs(attempt smartAttempt, ata, standby bool) []string {
 	args := make([]string, 0, 9)
 	if attempt.dtype != "" {
 		args = append(args, "-d", attempt.dtype)
@@ -408,7 +437,10 @@ func smartctlArgs(attempt smartAttempt, ata bool) []string {
 	if dtype := strings.ToLower(attempt.dtype); ata || dtype == "sat" || dtype == "ata" {
 		args = append(args, "-l", "devstat")
 	}
-	return append(args, "-n", "standby", attempt.path)
+	if standby {
+		args = append(args, "-n", "standby")
+	}
+	return append(args, attempt.path)
 }
 
 // isStandby reports whether smartctl skipped the device because -n standby

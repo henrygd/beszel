@@ -445,16 +445,19 @@ func TestSmartctlArgs(t *testing.T) {
 	for _, test := range []struct {
 		attempt smartAttempt
 		ata     bool
+		standby bool
 		want    string
 	}{
-		{smartAttempt{"/dev/sda", ""}, false, "-a --json=c -n standby /dev/sda"},
-		{smartAttempt{"/dev/sda", ""}, true, "-a --json=c -l devstat -n standby /dev/sda"},
-		{smartAttempt{"/dev/sda", "sat"}, false, "-d sat -a --json=c -l devstat -n standby /dev/sda"},
-		{smartAttempt{"/dev/sda", "ata"}, false, "-d ata -a --json=c -l devstat -n standby /dev/sda"},
-		{smartAttempt{"/dev/nvme0", "nvme"}, false, "-d nvme -a --json=c -n standby /dev/nvme0"},
-		{smartAttempt{"/dev/bus/0", "megaraid,1"}, true, "-d megaraid,1 -a --json=c -l devstat -n standby /dev/bus/0"},
+		{smartAttempt{"/dev/sda", ""}, false, true, "-a --json=c -n standby /dev/sda"},
+		{smartAttempt{"/dev/sda", ""}, true, true, "-a --json=c -l devstat -n standby /dev/sda"},
+		{smartAttempt{"/dev/sda", "sat"}, false, true, "-d sat -a --json=c -l devstat -n standby /dev/sda"},
+		{smartAttempt{"/dev/sda", "ata"}, false, true, "-d ata -a --json=c -l devstat -n standby /dev/sda"},
+		{smartAttempt{"/dev/nvme0", "nvme"}, false, true, "-d nvme -a --json=c -n standby /dev/nvme0"},
+		{smartAttempt{"/dev/bus/0", "megaraid,1"}, true, true, "-d megaraid,1 -a --json=c -l devstat -n standby /dev/bus/0"},
+		{smartAttempt{"/dev/sda", "sat"}, false, false, "-d sat -a --json=c -l devstat /dev/sda"},
+		{smartAttempt{"/dev/nvme0", "nvme"}, false, false, "-d nvme -a --json=c /dev/nvme0"},
 	} {
-		assert.Equal(t, test.want, strings.Join(smartctlArgs(test.attempt, test.ata), " "))
+		assert.Equal(t, test.want, strings.Join(smartctlArgs(test.attempt, test.ata, test.standby), " "))
 	}
 }
 
@@ -472,10 +475,12 @@ const standbyOutput = `{"smartctl":{"exit_status":2,"messages":[{"string":"Devic
 
 // fakeSmartctl answers smartctl calls from a table keyed by "<-d type> <path>"
 // (an empty type for auto-detection, e.g. " /dev/sda") and records each call.
+// Calls without -n standby are answered from wake first, if it has the key.
 type fakeSmartctl struct {
 	scan      string
 	scanErr   error
 	responses map[string]fakeResponse
+	wake      map[string]fakeResponse
 	calls     []string
 }
 
@@ -494,7 +499,11 @@ func (f *fakeSmartctl) run(_ time.Duration, args ...string) ([]byte, int, error)
 	if i := slices.Index(args, "-d"); i >= 0 {
 		dtype = args[i+1]
 	}
-	response, ok := f.responses[dtype+" "+args[len(args)-1]]
+	key := dtype + " " + args[len(args)-1]
+	response, ok := f.wake[key]
+	if !ok || slices.Contains(args, "-n") {
+		response, ok = f.responses[key]
+	}
 	if !ok {
 		return []byte(`{"smartctl":{"exit_status":2,"messages":[{"string":"No such device"}]}}`), 2, nil
 	}
@@ -645,22 +654,15 @@ func TestRefreshHonorsExclusions(t *testing.T) {
 	}
 }
 
-// Sleeping disks are never woken: their last data is reused, or they are
-// skipped and the refresh is reported incomplete so the hub keeps its record.
+// A sleeping disk that was collected before is never woken: its last data is reused.
 func TestRefreshStandby(t *testing.T) {
 	fake := &fakeSmartctl{
 		scan:      scanOf("/dev/sda:sat"),
-		responses: map[string]fakeResponse{"sat /dev/sda": {output: string(readSmartFixture(t, "sat_sleep_permission.json")), exit: 2}},
+		responses: map[string]fakeResponse{"sat /dev/sda": {output: string(readSmartFixture(t, "sda.json")), exit: 64}},
 	}
 	sm := newFakeSmartManager(t, fake)
 
 	complete, err := sm.Refresh(false)
-	assert.False(t, complete, "a skipped sleeping disk makes the refresh incomplete")
-	assert.ErrorIs(t, err, errNoValidSmartData)
-	assert.Empty(t, sm.GetCurrentData())
-
-	fake.responses["sat /dev/sda"] = fakeResponse{output: string(readSmartFixture(t, "sda.json")), exit: 64}
-	complete, err = sm.Refresh(false)
 	require.NoError(t, err)
 	assert.True(t, complete)
 
@@ -672,6 +674,60 @@ func TestRefreshStandby(t *testing.T) {
 
 	for _, call := range fake.deviceCalls() {
 		assert.Contains(t, call, "-n standby")
+	}
+}
+
+// A sleeping disk with no earlier data is woken once so it shows up.
+func TestRefreshWakesUncollectedStandbyDisk(t *testing.T) {
+	fake := &fakeSmartctl{
+		scan:      scanOf("/dev/sda:sat"),
+		responses: map[string]fakeResponse{"sat /dev/sda": {output: standbyOutput, exit: 2}},
+		wake:      map[string]fakeResponse{"sat /dev/sda": {output: string(readSmartFixture(t, "sda.json")), exit: 64}},
+	}
+	sm := newFakeSmartManager(t, fake)
+
+	complete, err := sm.Refresh(false)
+	require.NoError(t, err)
+	assert.True(t, complete)
+	assert.Equal(t, "P3-2TB", sm.GetCurrentData()["9C40918040082"].ModelName)
+	assert.Equal(t, []string{
+		"-d sat -a --json=c -l devstat -n standby /dev/sda",
+		"-d sat -a --json=c -l devstat /dev/sda",
+	}, fake.deviceCalls())
+
+	// Collected now, so later standby reuses its data instead of waking it.
+	fake.calls = nil
+	complete, err = sm.Refresh(false)
+	require.NoError(t, err)
+	assert.True(t, complete)
+	assert.Equal(t, []string{"-d sat -a --json=c -l devstat -n standby /dev/sda"}, fake.deviceCalls())
+}
+
+// A disk whose wake query fails is not woken again on later refreshes, and is
+// skipped with the refresh reported incomplete so the hub keeps its record.
+func TestRefreshWakeFailureNotRetried(t *testing.T) {
+	fake := &fakeSmartctl{
+		scan:      scanOf("/dev/sda:sat"),
+		responses: map[string]fakeResponse{"sat /dev/sda": {output: string(readSmartFixture(t, "sat_sleep_permission.json")), exit: 2}},
+		wake:      map[string]fakeResponse{"sat /dev/sda": {output: `{"smartctl":{"exit_status":2,"messages":[{"string":"Permission denied"}]}}`, exit: 2}},
+	}
+	sm := newFakeSmartManager(t, fake)
+
+	complete, err := sm.Refresh(false)
+	assert.False(t, complete)
+	assert.ErrorContains(t, err, "exit status 2", "the wake query's own error is reported, not standby")
+	assert.Empty(t, sm.GetCurrentData())
+	assert.Equal(t, []string{
+		"-d sat -a --json=c -l devstat -n standby /dev/sda",
+		"-d sat -a --json=c -l devstat /dev/sda",
+	}, fake.deviceCalls())
+
+	for range 2 {
+		fake.calls = nil
+		complete, err = sm.Refresh(false)
+		assert.False(t, complete, "a skipped sleeping disk makes the refresh incomplete")
+		assert.ErrorIs(t, err, errNoValidSmartData)
+		assert.Equal(t, []string{"-d sat -a --json=c -l devstat -n standby /dev/sda"}, fake.deviceCalls())
 	}
 }
 
