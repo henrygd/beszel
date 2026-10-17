@@ -40,7 +40,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { useToast } from "@/components/ui/use-toast"
 import { alertInfo } from "@/lib/alerts"
-import { pb } from "@/lib/api"
+import { pb, sendInBatches } from "@/lib/api"
 import { cn, formatDuration, formatShortDate, useBrowserStorage } from "@/lib/utils"
 import type { AlertsHistoryRecord } from "@/types"
 import { alertsHistoryColumns } from "../../alerts-history-columns"
@@ -171,18 +171,7 @@ export default function AlertsHistoryDataTable() {
 		setDeleteDialogOpen(false)
 		const selectedIds = table.getSelectedRowModel().rows.map((row) => row.original.id)
 		try {
-			let batch = pb.createBatch()
-			let inBatch = 0
-			for (const id of selectedIds) {
-				batch.collection("alerts_history").delete(id)
-				inBatch++
-				if (inBatch > 20) {
-					await batch.send()
-					batch = pb.createBatch()
-					inBatch = 0
-				}
-			}
-			inBatch && (await batch.send())
+			await sendInBatches(selectedIds, (batch, id) => batch.collection("alerts_history").delete(id))
 			table.resetRowSelection()
 		} catch (e) {
 			toast({

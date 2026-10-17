@@ -32,6 +32,8 @@ import { $router, basePath, Link, navigate } from "./router"
 import { DropdownMenu, DropdownMenuTrigger } from "./ui/dropdown-menu"
 import { AppleIcon, DockerIcon, FreeBsdIcon, TuxIcon, WindowsIcon } from "./ui/icons"
 import { InputCopy } from "./ui/input-copy"
+import { toast } from "./ui/use-toast"
+import { TagSelectorDialog } from "./tags/tag-selector-dialog"
 
 // To avoid a refactor of the dialog, we will just keep this function as a "skeleton" for the actual dialog
 export function AddSystemDialog({ open, setOpen }: { open: boolean; setOpen: (open: boolean) => void }) {
@@ -71,23 +73,30 @@ export const SystemDialog = ({ setOpen, system }: { setOpen: (open: boolean) => 
 	const isUnixSocket = hostValue.startsWith("/")
 	const [tab, setTab] = useBrowserStorage("as-tab", "docker")
 	const [token, setToken] = useState(system?.token ?? "")
+	const [selectedTags, setSelectedTags] = useState<string[]>(system?.tags ?? [])
 
 	useEffect(() => {
 		;(async () => {
 			// if no system, generate a new token
 			if (!system) {
 				nextSystemToken ||= generateToken()
-				return setToken(nextSystemToken)
+				setToken(nextSystemToken)
+				return
 			}
 			// if system exists,get the token from the fingerprint record
 			if (tokenMap.has(system.id)) {
-				return setToken(tokenMap.get(system.id)!)
+				setToken(tokenMap.get(system.id)!)
+				return
 			}
-			const { token } = await pb.collection("fingerprints").getFirstListItem(`system = "${system.id}"`, {
-				fields: "token",
-			})
-			tokenMap.set(system.id, token)
-			setToken(token)
+			try {
+				const { token } = await pb.collection("fingerprints").getFirstListItem(`system = "${system.id}"`, {
+					fields: "token",
+				})
+				tokenMap.set(system.id, token)
+				setToken(token)
+			} catch (e) {
+				console.error("Failed to load fingerprint", e)
+			}
 		})()
 	}, [system?.id, nextSystemToken])
 
@@ -96,8 +105,8 @@ export const SystemDialog = ({ setOpen, system }: { setOpen: (open: boolean) => 
 		const formData = new FormData(e.target as HTMLFormElement)
 		const data = Object.fromEntries(formData) as Record<string, any>
 		data.users = pb.authStore.record!.id
+		data.tags = selectedTags
 		try {
-			setOpen(false)
 			if (system) {
 				await pb.collection("systems").update(system.id, { ...data, status: SystemStatus.Pending })
 			} else {
@@ -110,9 +119,15 @@ export const SystemDialog = ({ setOpen, system }: { setOpen: (open: boolean) => 
 				// creation so next system gets a new token
 				nextSystemToken = null
 			}
+			setOpen(false)
 			navigate(basePath)
-		} catch (e) {
+		} catch (e: any) {
 			console.error(e)
+			toast({
+				title: system ? t`Failed to update system` : t`Failed to add system`,
+				description: e?.message || t`Check logs for more details.`,
+				variant: "destructive",
+			})
 		}
 	}
 
@@ -221,6 +236,10 @@ export const SystemDialog = ({ setOpen, system }: { setOpen: (open: boolean) => 
 							<Trans>Token</Trans>
 						</Label>
 						<InputCopy value={token} id="tkn" name="tkn" />
+						<Label htmlFor="tags" className="xs:text-end self-start pt-2">
+							<Trans>Tags</Trans>
+						</Label>
+						<TagSelectorDialog selectedTags={selectedTags} onSelectedTagsChange={setSelectedTags} />
 					</div>
 					<DialogFooter className="flex justify-end gap-x-2 gap-y-3 flex-col mt-5">
 						<div className="grid">
