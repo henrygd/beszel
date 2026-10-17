@@ -1,6 +1,5 @@
 using System;
 using System.Globalization;
-using System.Linq;
 using LibreHardwareMonitor.Hardware;
 
 class Program
@@ -52,8 +51,7 @@ class Program
     var updated = false;
     try
     {
-      // Updating hardware may change its sensor collection, so iterate a snapshot.
-      foreach (var sensor in hardware.Sensors.ToArray())
+      foreach (var sensor in hardware.Sensors)
       {
         var sensorName = "<unknown>";
         try
@@ -87,6 +85,7 @@ class Program
             updated = true;
           }
 
+          // Read the value once after Update(), which may reset it to null.
           var temperature = sensor.Value;
           if (!temperature.HasValue)
           {
