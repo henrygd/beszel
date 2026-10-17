@@ -75,7 +75,7 @@ export const alertInfo: Record<string, AlertInfo> = {
     name: () => t`Certificate Expiration`,
     unit: " days",
     icon: ShieldCheckIcon,
-    desc: () => t`Triggers when an HTTPS monitor certificate expires within a number of days`,
+    desc: () => t`Triggers when an HTTPS certificate nears expiration`,
     noDuration: true,
     min: 1,
     max: 365,
