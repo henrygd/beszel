@@ -84,6 +84,7 @@ func (a *Agent) refreshSystemDetails() {
 	// cpu model
 	if info, err := cpu.Info(); err == nil && len(info) > 0 {
 		a.systemDetails.CpuModel = info[0].ModelName
+		a.systemDetails.Sockets = cpuSockets(info)
 	}
 	// gopsutil doesn't parse the "cpu model" field from /proc/cpuinfo, which
 	// is the only source of the CPU model name on MIPS. Fall back to reading
