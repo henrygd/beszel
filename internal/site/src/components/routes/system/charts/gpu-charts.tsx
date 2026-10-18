@@ -159,6 +159,8 @@ export function GpuCharts({
 									/>
 								</ChartCard>
 
+								<GpuClientsChart chartData={chartData} grid={grid} dataEmpty={dataEmpty} gpuId={id} gpuName={gpu.n} />
+
 								{(gpu.mt ?? 0) > 0 && (
 									<ChartCard
 										empty={dataEmpty}
@@ -240,5 +242,75 @@ function GpuEnginesChart({ chartData }: { chartData: ChartData }) {
 			tickFormatter={(val) => `${toFixedFloat(val, 2)}%`}
 			contentFormatter={({ value }) => `${decimalString(value)}%`}
 		/>
+	)
+}
+
+/** Usage of a GPU per container, systemd service or process (from DRM fdinfo on Linux agents) */
+function GpuClientsChart({
+	chartData,
+	grid,
+	dataEmpty,
+	gpuId,
+	gpuName,
+}: {
+	chartData: ChartData
+	grid: boolean
+	dataEmpty: boolean
+	gpuId: string
+	gpuName: string
+}) {
+	const statsRef = useRef(chartData.systemStats)
+	statsRef.current = chartData.systemStats
+
+	// Derive stable client config key (cheap per render)
+	const clients = new Set<string>()
+	for (const record of chartData.systemStats) {
+		const c = record.stats?.g?.[gpuId]?.c
+		if (c) for (const key in c) clients.add(key)
+	}
+	const clientsKey = Array.from(clients).sort().join("\0")
+
+	const dataPoints = useMemo((): DataPoint[] => {
+		if (!clientsKey) return []
+		const totals = new Map<string, number>()
+		for (const record of statsRef.current) {
+			const c = record.stats?.g?.[gpuId]?.c
+			if (!c) continue
+			for (const key in c) totals.set(key, (totals.get(key) ?? 0) + c[key])
+		}
+		// busiest first; records only keep the top consumers, so cap the series the same way
+		const sorted = Array.from(totals.keys())
+			.sort((a, b) => (totals.get(b) ?? 0) - (totals.get(a) ?? 0))
+			.slice(0, 10)
+		return sorted.map((key, i) => ({
+			label: key.slice(2), // drop the c:/s:/p: kind prefix
+			dataKey: ({ stats }: SystemStatsRecord) => stats?.g?.[gpuId]?.c?.[key] ?? 0,
+			color: `hsl(${200 + (((i * 360) / sorted.length) % 360)}, 65%, 52%)`,
+			opacity: 0.35,
+		}))
+	}, [clientsKey, gpuId])
+
+	if (!dataPoints.length) {
+		return null
+	}
+
+	return (
+		<ChartCard
+			legend={true}
+			empty={dataEmpty}
+			grid={grid}
+			title={`${gpuName} ${t`Processes`}`}
+			description={t`Utilization by container, service, or process`}
+		>
+			<LineChartDefault
+				legend={true}
+				showTotal={true}
+				chartData={chartData}
+				dataPoints={dataPoints}
+				itemSorter={(a: { value: number }, b: { value: number }) => b.value - a.value}
+				tickFormatter={(val) => `${toFixedFloat(val, 2)}%`}
+				contentFormatter={({ value }) => `${decimalString(value)}%`}
+			/>
+		</ChartCard>
 	)
 }

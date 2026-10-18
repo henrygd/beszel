@@ -3,7 +3,11 @@ package system
 // TODO: this is confusing, make common package with common/types common/helpers etc
 
 import (
+	"cmp"
 	"encoding/json"
+	"maps"
+	"slices"
+	"strings"
 	"time"
 
 	"github.com/henrygd/beszel/internal/entities/container"
@@ -116,6 +120,27 @@ type GPUData struct {
 	Count       float64            `json:"-"`
 	Engines     map[string]float64 `json:"e,omitempty" cbor:"5,keyasint,omitempty"`
 	PowerPkg    float64            `json:"pp,omitzero" cbor:"6,keyasint,omitempty"`
+	// Usage (%) of the busiest engine per consumer, keyed by "c:<container>",
+	// "s:<systemd service>" or "p:<process name>"
+	Clients map[string]float64 `json:"c,omitempty" cbor:"7,keyasint,omitempty"`
+}
+
+// MaxGPUClients is the number of consumers kept per GPU.
+const MaxGPUClients = 10
+
+// TrimGPUClients returns clients limited to the max highest usages.
+func TrimGPUClients(clients map[string]float64, max int) map[string]float64 {
+	if len(clients) <= max {
+		return clients
+	}
+	names := slices.SortedFunc(maps.Keys(clients), func(a, b string) int {
+		return cmp.Or(cmp.Compare(clients[b], clients[a]), strings.Compare(a, b))
+	})
+	trimmed := make(map[string]float64, max)
+	for _, name := range names[:max] {
+		trimmed[name] = clients[name]
+	}
+	return trimmed
 }
 
 type FsStats struct {

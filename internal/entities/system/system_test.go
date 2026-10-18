@@ -171,3 +171,30 @@ func TestZeroValueJSONMatchesV1(t *testing.T) {
 		})
 	}
 }
+
+func TestTrimGPUClients(t *testing.T) {
+	clients := map[string]float64{"c:a": 5, "c:b": 50, "s:c": 20, "p:d": 20}
+	assert.Equal(t, clients, TrimGPUClients(clients, 4))
+	assert.Equal(t, map[string]float64{"c:b": 50, "p:d": 20}, TrimGPUClients(clients, 2))
+}
+
+func TestGPUDataClientsTransport(t *testing.T) {
+	gpus := map[string]GPUData{
+		"card0": {Name: "Intel", Clients: map[string]float64{"c:jellyfin": 30.5}},
+		"card1": {Name: "AMD"},
+	}
+
+	jsonData, err := jsonv2.Marshal(gpus)
+	require.NoError(t, err)
+	var jsonPayload map[string]map[string]any
+	require.NoError(t, json.Unmarshal(jsonData, &jsonPayload))
+	assert.Equal(t, map[string]any{"c:jellyfin": 30.5}, jsonPayload["card0"]["c"])
+	assert.NotContains(t, jsonPayload["card1"], "c")
+
+	cborData, err := cbor.Marshal(gpus)
+	require.NoError(t, err)
+	var decoded map[string]GPUData
+	require.NoError(t, cbor.Unmarshal(cborData, &decoded))
+	assert.Equal(t, gpus["card0"].Clients, decoded["card0"].Clients)
+	assert.Nil(t, decoded["card1"].Clients)
+}

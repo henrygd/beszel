@@ -50,6 +50,8 @@ type GPUManager struct {
 	lastSnapshots map[uint16]map[string]*gpuSnapshot
 	// Per-card energy snapshots for Intel sysfs power calculation.
 	intelSysfsEnergySnapshots map[string]intelSysfsEnergySnapshot
+	// Per-process usage from DRM fdinfo; nil if unsupported
+	clientTracker *gpuClientTracker
 }
 
 // gpuSnapshot stores the last observed incremental values for delta tracking
@@ -326,6 +328,9 @@ func (gm *GPUManager) GetCurrentData(cacheKey uint16) map[string]system.GPUData 
 			gpuAvg.Name = fmt.Sprintf("%s %s", gpu.Name, id)
 		}
 		gpuData[id] = gpuAvg
+	}
+	if gm.clientTracker != nil {
+		gm.clientTracker.attachGpuClients(gpuData, gm.clientTracker.collect(cacheKey))
 	}
 	slog.Debug("GPU", "data", gpuData)
 	return gpuData
@@ -785,6 +790,7 @@ func NewGPUManager() (*GPUManager, error) {
 	var gm GPUManager
 	caps := gm.discoverGpuCapabilities()
 	gm.GpuDataMap = make(map[string]*system.GPUData)
+	gm.clientTracker = newGpuClientTracker()
 
 	// Jetson devices should always use tegrastats (ignore GPU_COLLECTOR).
 	if caps.hasTegrastats {
