@@ -34,6 +34,7 @@ type diskDiscovery struct {
 	partitions     []disk.PartitionStat
 	usageFn        func(string) (*disk.UsageStat, error)
 	ctx            fsRegistrationContext
+	efFolders      []string // directory names found in ctx.efPath
 }
 
 // prevDisk stores previous per-device disk counters for a given cache interval
@@ -210,12 +211,33 @@ func (d *diskDiscovery) addConfiguredRootFs() bool {
 	// FILESYSTEM may name a physical disk absent from partitions (e.g. ZFS lists
 	// dataset paths like zroot/ROOT/default, not block devices).
 	if ioKey, match := findIoDevice(d.ctx.filesystem, d.ctx.diskIoCounters); match {
-		d.agent.fsStats[ioKey] = &system.FsStats{Root: true, Mountpoint: d.rootMountPoint, Name: d.ctx.filesystemName}
+		mountpoint, name := d.rootMountPoint, d.ctx.filesystemName
+		// In a container the root mount point is the container's own filesystem,
+		// so prefer an /extra-filesystems folder named for the same device (#1782).
+		if folderMount, folderName, ok := d.extraFsFolderForIoKey(ioKey); ok {
+			mountpoint = folderMount
+			if name == "" {
+				name = folderName
+			}
+		}
+		d.agent.fsStats[ioKey] = &system.FsStats{Root: true, Mountpoint: mountpoint, Name: name}
 		return true
 	}
 
 	slog.Warn("Partition details not found", "filesystem", d.ctx.filesystem)
 	return false
+}
+
+// extraFsFolderForIoKey returns the mount point and custom name of the first
+// /extra-filesystems folder whose device part resolves to ioKey.
+func (d *diskDiscovery) extraFsFolderForIoKey(ioKey string) (string, string, bool) {
+	for _, folderName := range d.efFolders {
+		device, customName := parseFilesystemEntry(folderName)
+		if matchedKey, match := findIoDevice(device, d.ctx.diskIoCounters); match && matchedKey == ioKey {
+			return filepath.Join(d.ctx.efPath, folderName), customName, true
+		}
+	}
+	return "", "", false
 }
 
 func isRootFallbackPartition(p disk.PartitionStat, rootMountPoint string) bool {
@@ -375,6 +397,14 @@ func (a *Agent) initializeDiskInfo() {
 		ctx:            ctx,
 	}
 
+	if folders, err := os.ReadDir(ctx.efPath); err == nil {
+		for _, folder := range folders {
+			if folder.IsDir() {
+				discovery.efFolders = append(discovery.efFolders, folder.Name())
+			}
+		}
+	}
+
 	hasRoot = discovery.addConfiguredRootFs()
 
 	// Add EXTRA_FILESYSTEMS env var values to fsStats
@@ -391,15 +421,7 @@ func (a *Agent) initializeDiskInfo() {
 	}
 
 	// Check all folders in /extra-filesystems and add them if not already present
-	if folders, err := os.ReadDir(discovery.ctx.efPath); err == nil {
-		folderNames := make([]string, 0, len(folders))
-		for _, folder := range folders {
-			if folder.IsDir() {
-				folderNames = append(folderNames, folder.Name())
-			}
-		}
-		discovery.addExtraFilesystemFolders(folderNames)
-	}
+	discovery.addExtraFilesystemFolders(discovery.efFolders)
 
 	// If no root filesystem set, try the most active I/O device as a last
 	// resort (e.g. ZFS where dataset names are unrelated to disk names).
