@@ -8,6 +8,7 @@ import (
 	"os"
 	"slices"
 	"strings"
+	"sync"
 	"testing"
 	"time"
 
@@ -1993,7 +1994,9 @@ func TestGPUCollectorSkipsUnparseableLines(t *testing.T) {
 
 	gm := &GPUManager{GpuDataMap: make(map[string]*system.GPUData)}
 	collector := gpuCollector{name: nvidiaSmiCmd, bufSize: 10 * 1024, parse: gm.parseNvidiaData}
-	require.NoError(t, collector.collect())
+	hasValidData, err := collector.collect()
+	require.NoError(t, err)
+	assert.True(t, hasValidData)
 
 	gpu := gm.GpuDataMap["0"]
 	require.NotNil(t, gpu)
@@ -2007,8 +2010,78 @@ func TestGPUCollectorNoValidData(t *testing.T) {
 
 	gm := &GPUManager{GpuDataMap: make(map[string]*system.GPUData)}
 	collector := gpuCollector{name: nvidiaSmiCmd, bufSize: 10 * 1024, parse: gm.parseNvidiaData}
-	err := collector.collect()
+	hasValidData, err := collector.collect()
+	assert.False(t, hasValidData)
 	require.ErrorIs(t, err, errNoValidData)
 	assert.Contains(t, err.Error(), "couldn't communicate with the NVIDIA driver", "the error should include the unparseable line")
 	assert.Empty(t, gm.GpuDataMap)
+}
+
+// The first nvidia-smi run happens before the driver is ready and prints an error
+// instead of CSV; later runs work. The collector must retry rather than stop.
+func TestGPUCollectorRetriesAfterNoValidData(t *testing.T) {
+	dir := t.TempDir()
+	t.Setenv("PATH", dir)
+	argsFile := gpuCommandFixture(t, dir, nvidiaSmiCmd, "NVIDIA-SMI has failed because it couldn't communicate with the NVIDIA driver. Make sure that the latest NVIDIA driver is installed and running.\n")
+	stdoutFile := strings.TrimSuffix(argsFile, ".args") + ".stdout"
+
+	var mu sync.Mutex
+	var waits []time.Duration
+	gm := &GPUManager{GpuDataMap: make(map[string]*system.GPUData)}
+	collector := &gpuCollector{
+		name:    nvidiaSmiCmd,
+		bufSize: 10 * 1024,
+		parse:   gm.parseNvidiaData,
+		sleep: func(d time.Duration) {
+			mu.Lock()
+			waits = append(waits, d)
+			first := len(waits) == 1
+			mu.Unlock()
+			if first {
+				// the driver is ready by the next run
+				_ = os.WriteFile(stdoutFile, []byte("0, NVIDIA Test GPU, 50, 1024, 4096, 25, 100\n"), 0600)
+				return
+			}
+			// park the collector once the fixture is removed after the test
+			select {}
+		},
+	}
+	go collector.start()
+
+	waitGPUs(t, gm, "0")
+	mu.Lock()
+	defer mu.Unlock()
+	assert.Equal(t, []time.Duration{retryWaitTime}, waits)
+}
+
+// A host with nvidia-smi but no usable GPU never produces data; the collector must still give up.
+func TestGPUCollectorStopsAfterRepeatedNoValidData(t *testing.T) {
+	dir := t.TempDir()
+	t.Setenv("PATH", dir)
+	gpuCommandFixture(t, dir, nvidiaSmiCmd, "No devices were found\n")
+
+	var waits []time.Duration
+	gm := &GPUManager{GpuDataMap: make(map[string]*system.GPUData)}
+	collector := &gpuCollector{
+		name:    nvidiaSmiCmd,
+		bufSize: 10 * 1024,
+		parse:   gm.parseNvidiaData,
+		sleep:   func(d time.Duration) { waits = append(waits, d) },
+	}
+	done := make(chan struct{})
+	go func() {
+		collector.start()
+		close(done)
+	}()
+	select {
+	case <-done:
+	case <-time.After(10 * time.Second):
+		t.Fatal("collector kept retrying a tool that never produces valid data")
+	}
+
+	want := make([]time.Duration, maxFailureRetries)
+	for i := range want {
+		want[i] = retryWaitTime
+	}
+	assert.Equal(t, want, waits)
 }
