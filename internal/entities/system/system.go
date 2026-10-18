@@ -20,23 +20,20 @@ type WiFi struct {
 }
 
 type Stats struct {
-	Cpu            float64             `json:"cpu" cbor:"0,keyasint"`
-	MaxCpu         float64             `json:"cpum,omitzero" cbor:"-"`
-	Mem            float64             `json:"m" cbor:"2,keyasint"`
-	MaxMem         float64             `json:"mm,omitzero" cbor:"-"`
-	MemUsed        float64             `json:"mu" cbor:"3,keyasint"`
-	MemPct         float64             `json:"mp" cbor:"4,keyasint"`
-	MemBuffCache   float64             `json:"mb" cbor:"5,keyasint"`
-	MemZfsArc      float64             `json:"mz,omitzero" cbor:"6,keyasint,omitempty"` // ZFS ARC memory
-	Swap           float64             `json:"s,omitzero" cbor:"7,keyasint,omitempty"`
-	SwapUsed       float64             `json:"su,omitzero" cbor:"8,keyasint,omitempty"`
-	DiskTotal      float64             `json:"d" cbor:"9,keyasint"`
-	DiskUsed       float64             `json:"du" cbor:"10,keyasint"`
-	DiskPct        float64             `json:"dp" cbor:"11,keyasint"`
-	DiskReadPs     float64             `json:"dr,omitzero" cbor:"12,keyasint,omitzero"` // deprecated 0.19.0 (MB) - keep field for old agents/records
-	DiskWritePs    float64             `json:"dw,omitzero" cbor:"13,keyasint,omitzero"` // deprecated 0.19.0 (MB) - keep field for old agents/records
-	MaxDiskReadPs  float64             `json:"drm,omitzero" cbor:"-"`
-	MaxDiskWritePs float64             `json:"dwm,omitzero" cbor:"-"`
+	Cpu          float64 `json:"cpu" cbor:"0,keyasint"`
+	MaxCpu       float64 `json:"cpum,omitzero" cbor:"-"`
+	Mem          float64 `json:"m" cbor:"2,keyasint"`
+	MaxMem       float64 `json:"mm,omitzero" cbor:"-"`
+	MemUsed      float64 `json:"mu" cbor:"3,keyasint"`
+	MemPct       float64 `json:"mp" cbor:"4,keyasint"`
+	MemBuffCache float64 `json:"mb" cbor:"5,keyasint"`
+	MemZfsArc    float64 `json:"mz,omitzero" cbor:"6,keyasint,omitempty"` // ZFS ARC memory
+	Swap         float64 `json:"s,omitzero" cbor:"7,keyasint,omitempty"`
+	SwapUsed     float64 `json:"su,omitzero" cbor:"8,keyasint,omitempty"`
+	DiskTotal    float64 `json:"d" cbor:"9,keyasint"`
+	DiskUsed     float64 `json:"du" cbor:"10,keyasint"`
+	DiskPct      float64 `json:"dp" cbor:"11,keyasint"`
+	// cbor keys 12-13 were DiskReadPs/DiskWritePs (removed) - do not reuse
 	NetworkSent    float64             `json:"ns,omitzero" cbor:"16,keyasint,omitzero"`
 	NetworkRecv    float64             `json:"nr,omitzero" cbor:"17,keyasint,omitzero"`
 	MaxNetworkSent float64             `json:"nsm,omitzero" cbor:"-"`
@@ -119,17 +116,14 @@ type GPUData struct {
 }
 
 type FsStats struct {
-	Root              bool       `json:"-"`
-	Mountpoint        string     `json:"-"`
-	Name              string     `json:"-"`
-	DiskTotal         float64    `json:"d" cbor:"0,keyasint"`
-	DiskUsed          float64    `json:"du" cbor:"1,keyasint"`
-	TotalRead         uint64     `json:"tr,omitzero" cbor:"9,keyasint,omitzero"`  // cumulative device read bytes
-	TotalWrite        uint64     `json:"tw,omitzero" cbor:"10,keyasint,omitzero"` // cumulative device write bytes
-	DiskReadPs        float64    `json:"r,omitzero" cbor:"2,keyasint,omitzero"`   // deprecated (MB) - use DiskReadBytes; keep field for old agents/records
-	DiskWritePs       float64    `json:"w,omitzero" cbor:"3,keyasint,omitzero"`   // deprecated (MB) - use DiskWriteBytes; keep field for old agents/records
-	MaxDiskReadPS     float64    `json:"rm,omitzero" cbor:"-"`
-	MaxDiskWritePS    float64    `json:"wm,omitzero" cbor:"-"`
+	Root       bool    `json:"-"`
+	Mountpoint string  `json:"-"`
+	Name       string  `json:"-"`
+	DiskTotal  float64 `json:"d" cbor:"0,keyasint"`
+	DiskUsed   float64 `json:"du" cbor:"1,keyasint"`
+	TotalRead  uint64  `json:"tr,omitzero" cbor:"9,keyasint,omitzero"`  // cumulative device read bytes
+	TotalWrite uint64  `json:"tw,omitzero" cbor:"10,keyasint,omitzero"` // cumulative device write bytes
+	// cbor keys 2-3 were DiskReadPs/DiskWritePs (removed) - do not reuse
 	DiskReadBytes     uint64     `json:"rb" cbor:"6,keyasint,omitempty"`
 	DiskWriteBytes    uint64     `json:"wb" cbor:"7,keyasint,omitempty"`
 	MaxDiskReadBytes  uint64     `json:"rbm,omitzero" cbor:"-"`

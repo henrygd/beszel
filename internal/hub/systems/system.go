@@ -1104,12 +1104,6 @@ func migrateDeprecatedFields(cd *system.CombinedData, createDetails bool) {
 		cd.Info.BandwidthBytes = uint64(cd.Info.Bandwidth * 1024 * 1024)
 		cd.Info.Bandwidth = 0
 	}
-	// migration added 0.19.0
-	if cd.Stats.DiskIO[0] == 0 && cd.Stats.DiskIO[1] == 0 {
-		cd.Stats.DiskIO[0] = uint64(cd.Stats.DiskReadPs * 1024 * 1024)
-		cd.Stats.DiskIO[1] = uint64(cd.Stats.DiskWritePs * 1024 * 1024)
-		cd.Stats.DiskReadPs, cd.Stats.DiskWritePs = 0, 0
-	}
 	// migration added 0.19.0 - Move deprecated Info fields to Details struct
 	if cd.Details == nil && cd.Info.Hostname != "" {
 		if createDetails {

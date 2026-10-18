@@ -55,29 +55,6 @@ func TestCombinedData_MigrateDeprecatedFields(t *testing.T) {
 		}
 	})
 
-	t.Run("Migrate DiskReadPs and DiskWritePs to DiskIO", func(t *testing.T) {
-		cd := &system.CombinedData{
-			Stats: system.Stats{
-				DiskReadPs:  3.0, // 3 MB
-				DiskWritePs: 4.0, // 4 MB
-			},
-		}
-		migrateDeprecatedFields(cd, true)
-
-		expectedRead := uint64(3 * 1024 * 1024)
-		expectedWrite := uint64(4 * 1024 * 1024)
-
-		if cd.Stats.DiskIO[0] != expectedRead {
-			t.Errorf("expected DiskIO[0] %d, got %d", expectedRead, cd.Stats.DiskIO[0])
-		}
-		if cd.Stats.DiskIO[1] != expectedWrite {
-			t.Errorf("expected DiskIO[1] %d, got %d", expectedWrite, cd.Stats.DiskIO[1])
-		}
-		if cd.Stats.DiskReadPs != 0 || cd.Stats.DiskWritePs != 0 {
-			t.Errorf("expected DiskReadPs and DiskWritePs to be reset, got %f, %f", cd.Stats.DiskReadPs, cd.Stats.DiskWritePs)
-		}
-	})
-
 	t.Run("Migrate Info fields to Details struct", func(t *testing.T) {
 		cd := &system.CombinedData{
 			Stats: system.Stats{
