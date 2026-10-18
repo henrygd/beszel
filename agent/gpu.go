@@ -184,10 +184,10 @@ func (c *gpuCollector) start() {
 const maxLoggedLineLen = 200
 
 // collect executes the command, parses output with the assigned parser function
-// and reports whether any valid data was found. Lines the parser rejects are skipped,
-// and the first one is logged at WARN if valid data came before it or more output after
-// it. If the command printed output but none of it was valid, collect returns
-// errNoValidData with the first rejected line.
+// and reports whether any valid data was found. Blank lines are ignored. Lines the parser
+// rejects are skipped, and the first one is logged at WARN if valid data came before it or
+// more output after it. If the command printed output but none of it was valid, collect
+// returns errNoValidData with the first rejected line.
 func (c *gpuCollector) collect() (hasValidData bool, err error) {
 	cmd := exec.Command(c.name, c.cmdArgs...)
 	stdout, err := cmd.StdoutPipe()
@@ -221,6 +221,11 @@ func (c *gpuCollector) collect() (hasValidData bool, err error) {
 		}
 	}
 	for scanner.Scan() {
+		if len(bytes.TrimSpace(scanner.Bytes())) == 0 {
+			// a separator, not output to parse or report; nvidia-smi -l has been seen
+			// printing these between samples (#1803)
+			continue
+		}
 		warnInvalidLine() // output kept coming after a rejected line
 		if c.parse(scanner.Bytes()) {
 			hasValidData = true

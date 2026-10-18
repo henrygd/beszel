@@ -2054,7 +2054,7 @@ func captureWarnings(t *testing.T) *syncBuffer {
 func TestGPUCollectorWarnsAboutUnparseableOutput(t *testing.T) {
 	tests := []struct {
 		name     string
-		output   string // one line per byte: v is valid CSV, b an unparseable line
+		output   string // one line per byte: v is valid CSV, b an unparseable line, _ a blank line
 		wantWarn bool
 	}{
 		{name: "output turns unparseable after valid data", output: "vbb", wantWarn: true},
@@ -2062,6 +2062,11 @@ func TestGPUCollectorWarnsAboutUnparseableOutput(t *testing.T) {
 		{name: "unparseable lines only, tool still printing", output: "bb", wantWarn: true},
 		{name: "single unparseable line before exit", output: "b"},
 		{name: "valid data only", output: "vv"},
+		// a blank separator is not unparseable output: it must not warn, use up the
+		// run's warning, or count as output after an error printed before exiting
+		{name: "blank lines between samples", output: "v_v_v"},
+		{name: "unparseable line after a blank one", output: "v_b", wantWarn: true},
+		{name: "unparseable line then a trailing blank line", output: "b_"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -2070,13 +2075,16 @@ func TestGPUCollectorWarnsAboutUnparseableOutput(t *testing.T) {
 			// below look at which lines were logged rather than how many times.
 			var lines, invalid []string
 			for i, kind := range tt.output {
-				if kind == 'v' {
+				switch kind {
+				case 'v':
 					lines = append(lines, "0, NVIDIA Test GPU, 50, 1024, 4096, 25, 100")
-					continue
+				case '_':
+					lines = append(lines, "")
+				default:
+					line := fmt.Sprintf("Unable to determine the device handle for GPU0000:0%d:00.0: Unknown Error (%s)", i, tt.name)
+					lines = append(lines, line)
+					invalid = append(invalid, line)
 				}
-				line := fmt.Sprintf("Unable to determine the device handle for GPU0000:0%d:00.0: Unknown Error (%s)", i, tt.name)
-				lines = append(lines, line)
-				invalid = append(invalid, line)
 			}
 			dir := t.TempDir()
 			t.Setenv("PATH", dir)
@@ -2093,6 +2101,7 @@ func TestGPUCollectorWarnsAboutUnparseableOutput(t *testing.T) {
 					warned = append(warned, record)
 				}
 			}
+			assert.NotContains(t, logs.String(), `line=""`, "a blank line is not unparseable output")
 			if !tt.wantWarn {
 				assert.Empty(t, warned)
 				return
