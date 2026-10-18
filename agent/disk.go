@@ -219,9 +219,9 @@ func (d *diskDiscovery) addConfiguredRootFs() bool {
 			if name == "" {
 				name = folderName
 			}
-			slog.Info("Using extra filesystem for root usage", "device", ioKey, "mount", folderMount)
 		}
 		d.agent.fsStats[ioKey] = &system.FsStats{Root: true, Mountpoint: mountpoint, Name: name}
+		slog.Info("Detected disk", "name", name, "device", d.ctx.filesystem, "mount", mountpoint, "io", ioKey, "root", true)
 		return true
 	}
 
@@ -230,11 +230,18 @@ func (d *diskDiscovery) addConfiguredRootFs() bool {
 }
 
 // extraFsFolderForIoKey returns the mount point and custom name of the first
-// /extra-filesystems folder whose device part resolves to ioKey.
+// /extra-filesystems folder whose device part is exactly the name or label of
+// ioKey. Prefix matches are not accepted, so a folder for a partition cannot
+// stand in for the whole disk.
 func (d *diskDiscovery) extraFsFolderForIoKey(ioKey string) (string, string, bool) {
+	counter, ok := d.ctx.diskIoCounters[ioKey]
+	if !ok {
+		return "", "", false
+	}
+	name, label := normalizeDeviceName(counter.Name), normalizeDeviceName(counter.Label)
 	for _, folderName := range d.efFolders {
 		device, customName := parseFilesystemEntry(folderName)
-		if matchedKey, match := findIoDevice(device, d.ctx.diskIoCounters); match && matchedKey == ioKey {
+		if n := normalizeDeviceName(device); n != "" && (n == name || n == label) {
 			return filepath.Join(d.ctx.efPath, folderName), customName, true
 		}
 	}

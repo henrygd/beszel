@@ -541,13 +541,24 @@ func TestAddConfiguredRootFs(t *testing.T) {
 		assert.Equal(t, filepath.FromSlash("/extra-filesystems/nvme0n1__Boot"), agent.fsStats["nvme0n1"].Mountpoint)
 	})
 
+	t.Run("uses extra filesystem folder without a custom name", func(t *testing.T) {
+		agent := &Agent{fsStats: make(map[string]*system.FsStats)}
+		discovery := zfsContainerDiscovery(agent, "")
+		discovery.efFolders = []string{"nvme0n1"}
+
+		assert.True(t, discovery.addConfiguredRootFs())
+		assert.Equal(t, filepath.FromSlash("/extra-filesystems/nvme0n1"), agent.fsStats["nvme0n1"].Mountpoint)
+		assert.Empty(t, agent.fsStats["nvme0n1"].Name)
+	})
+
 	t.Run("keeps root mount point when no extra filesystem folder names the root device", func(t *testing.T) {
 		agent := &Agent{fsStats: make(map[string]*system.FsStats)}
 		discovery := diskDiscovery{
 			agent:          agent,
 			rootMountPoint: "/",
-			// sda is another disk; nvme0n1p3 has its own diskstats entry
-			efFolders: []string{"nvme0n1p3__data", "sda__data"},
+			// sda is another disk, nvme0n1p3 has its own diskstats entry, and
+			// nvme0n1p9 has none, so only a prefix match would pick it
+			efFolders: []string{"nvme0n1p3__data", "nvme0n1p9__vms", "sda__data"},
 			ctx: fsRegistrationContext{
 				filesystem: "nvme0n1",
 				efPath:     filepath.FromSlash("/extra-filesystems"),
