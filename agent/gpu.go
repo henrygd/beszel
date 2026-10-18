@@ -143,9 +143,10 @@ type collectorDefinition struct {
 }
 
 // starts and manages the ongoing collection of GPU data for the specified GPU management utility.
-// A run without valid data is retried, since the tool may have started before the GPU driver
-// was ready (e.g. right after boot). Collection stops after maxFailureRetries consecutive runs
-// without valid data; a run that produces valid data resets the count.
+// A run without valid data is retried with a growing delay, since the tool may have started
+// before the GPU driver was ready (e.g. right after boot). Collection stops after
+// maxFailureRetries consecutive runs without valid data; a run that produces valid data resets
+// the count.
 func (c *gpuCollector) start() {
 	sleep := c.sleep
 	if sleep == nil {
@@ -166,8 +167,9 @@ func (c *gpuCollector) start() {
 				slog.Warn(c.name+" found no valid GPU data, stopping", "err", err)
 				return
 			}
-			slog.Warn(c.name+" found no valid GPU data, retrying", "err", err, "attempt", noDataRuns)
-			sleep(retryWaitTime)
+			delay := retryWaitTime * time.Duration(noDataRuns)
+			slog.Warn(c.name+" found no valid GPU data, retrying", "err", err, "attempt", noDataRuns, "delay", delay)
+			sleep(delay)
 			continue
 		}
 		slog.Warn(c.name+" failed, restarting", "err", err)

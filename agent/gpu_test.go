@@ -2079,9 +2079,10 @@ func TestGPUCollectorStopsAfterRepeatedNoValidData(t *testing.T) {
 		t.Fatal("collector kept retrying a tool that never produces valid data")
 	}
 
+	// the delay grows with each consecutive run without data: 5s, 10s, ... (75s in total by default)
 	want := make([]time.Duration, maxFailureRetries)
 	for i := range want {
-		want[i] = retryWaitTime
+		want[i] = retryWaitTime * time.Duration(i+1)
 	}
 	assert.Equal(t, want, waits)
 }
