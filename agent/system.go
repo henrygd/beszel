@@ -222,7 +222,7 @@ func (a *Agent) getSystemStats(cacheTimeMs uint16) system.Stats {
 	// TODO: maybe refactor to methods on systemStats
 	a.updateTemperatures(&systemStats)
 
-	// fan speeds (Linux sysfs hwmon, Windows LHM)
+	// fan speeds and Linux hwmon control levels
 	a.updateFans(&systemStats)
 
 	// GPU data

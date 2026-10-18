@@ -165,7 +165,7 @@ func TestFilterFanSensors(t *testing.T) {
 	writeFile(t, filepath.Join(root, "hwmon0", "fan3_input"), "0\n")
 	writeFile(t, filepath.Join(root, "hwmon0", "fan4_input"), "1100\n")
 	writeFile(t, filepath.Join(root, "hwmon0", "fan4_label"), "chassis\n")
-	writeFile(t, filepath.Join(root, "hwmon1", "name"), "gpio_fan\n")
+	writeFile(t, filepath.Join(root, "hwmon1", "name"), "dell_smm\n")
 	writeFile(t, filepath.Join(root, "hwmon1", "fan1_input"), "0\n")
 
 	discovered, err := discoverHwmonFans(root)
@@ -177,12 +177,12 @@ func TestFilterFanSensors(t *testing.T) {
 		fanSensors string
 		expected   []string
 	}{
-		{"empty list keeps all", "", []string{"nct6791_fan1", "nct6791_fan2", "nct6791_fan3", "nct6791_chassis", "gpio_fan_fan1"}},
+		{"empty list keeps all", "", []string{"nct6791_fan1", "nct6791_fan2", "nct6791_fan3", "nct6791_chassis", "dell_smm_fan1"}},
 		{"whitelist", "nct6791_fan2,nct6791_chassis", []string{"nct6791_fan2", "nct6791_chassis"}},
 		{"whitelist matches label not fan index", "nct6791_fan4", []string{}},
-		{"blacklist", "-gpio_fan_fan1", []string{"nct6791_fan1", "nct6791_fan2", "nct6791_fan3", "nct6791_chassis"}},
+		{"blacklist", "-dell_smm_fan1", []string{"nct6791_fan1", "nct6791_fan2", "nct6791_fan3", "nct6791_chassis"}},
 		{"whitelist wildcard", "nct6791_*", []string{"nct6791_fan1", "nct6791_fan2", "nct6791_fan3", "nct6791_chassis"}},
-		{"blacklist wildcard and exact", "-gpio_*, nct6791_fan1 ,nct6791_fan3", []string{"nct6791_fan2", "nct6791_chassis"}},
+		{"blacklist wildcard and exact", "-dell_*, nct6791_fan1 ,nct6791_fan3", []string{"nct6791_fan2", "nct6791_chassis"}},
 	}
 
 	for _, tt := range tests {

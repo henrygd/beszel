@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 	"strings"
 	"sync"
+	"sync/atomic"
 
 	"github.com/henrygd/beszel/agent/utils"
 	"github.com/henrygd/beszel/internal/entities/system"
@@ -27,8 +28,7 @@ func newFanSensorCache(root string) func() ([]fanSensor, error) {
 	})
 }
 
-// updateFans populates systemStats.Fans from the host's hwmon sysfs tree, or on
-// Windows from the LHM helper (see fans_windows.go). No-op on other platforms.
+// updateFans collects Linux hwmon fan speeds and control levels, or Windows LHM speeds.
 func (a *Agent) updateFans(systemStats *system.Stats) {
 	if a.sensorConfig != nil && a.sensorConfig.skipFans {
 		return
@@ -42,6 +42,7 @@ func (a *Agent) updateFans(systemStats *system.Stats) {
 	if hwmonRoot == "" {
 		return
 	}
+	a.updateFanControls(systemStats)
 	fans, err := a.readFansWithTimeout(getFanSensors)
 	if err != nil {
 		if errors.Is(err, errFanFetchTimeout) {
@@ -72,20 +73,24 @@ func (a *Agent) updateFans(systemStats *system.Stats) {
 // sysfs read (e.g. an i915 fan1_input stuck resuming the GPU) hang collection,
 // which holds the agent lock and would stall every later hub request.
 func (a *Agent) readFansWithTimeout(getSensors func() ([]fanSensor, error)) (map[string]uint16, error) {
+	return readFanChannelsWithTimeout(a.sensorConfig, &a.fansReading, getSensors, readFanSensors)
+}
+
+func readFanChannelsWithTimeout[T uint16 | float64](config *SensorConfig, inFlight *atomic.Bool, discover func() ([]fanSensor, error), read func([]fanSensor) map[string]T) (map[string]T, error) {
 	timeout := defaultSensorsTimeout
-	if a.sensorConfig != nil && a.sensorConfig.timeout > 0 {
-		timeout = a.sensorConfig.timeout
+	if config != nil && config.timeout > 0 {
+		timeout = config.timeout
 	}
-	return readWithTimeout(&a.fansReading, timeout, errFanFetchTimeout, func() (map[string]uint16, error) {
-		sensors, err := getSensors()
+	return readWithTimeout(inFlight, timeout, errFanFetchTimeout, func() (map[string]T, error) {
+		sensors, err := discover()
 		if err != nil {
 			return nil, err
 		}
-		// Filter before reading fan*_input: each read can wake an idle GPU.
-		if a.sensorConfig != nil {
-			sensors = a.sensorConfig.filterFans(sensors)
+		// Both RPM and PWM reads can wake an idle GPU.
+		if config != nil {
+			sensors = config.filterFans(sensors)
 		}
-		return readFanSensors(sensors), nil
+		return read(sensors), nil
 	})
 }
 
@@ -129,6 +134,11 @@ func discoverHwmonFans(root string) ([]fanSensor, error) {
 		}
 		if chipName == "" {
 			chipName = entry.Name()
+		}
+		// gpio-fan reports RPM from its configured speed table, not a
+		// tachometer. Its actual control setting is collected through pwmN.
+		if chipName == "gpio_fan" {
+			continue
 		}
 		for _, inputPath := range inputs {
 			base := strings.TrimSuffix(filepath.Base(inputPath), "_input")
