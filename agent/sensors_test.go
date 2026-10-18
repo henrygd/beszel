@@ -773,3 +773,51 @@ func TestUpdateTemperaturesSkipGpu(t *testing.T) {
 	newAgent(false).updateTemperatures(stats)
 	assert.Len(t, stats.Temperatures, 2)
 }
+
+func TestUpdateTemperaturesExcludedSensorKeepsNames(t *testing.T) {
+	originalGetSensorTemps := getSensorTemps
+	t.Cleanup(func() {
+		getSensorTemps = originalGetSensorTemps
+	})
+	// two drives that report the same SensorKey, plus an unrelated sensor
+	getSensorTemps = func(ctx context.Context) ([]sensors.TemperatureStat, error) {
+		return []sensors.TemperatureStat{
+			{SensorKey: "nvme_sensor_2", Temperature: 74.85},
+			{SensorKey: "nvme_sensor_2", Temperature: 41},
+			{SensorKey: "coretemp_core_0", Temperature: 55},
+		}, nil
+	}
+
+	newAgent := func(exclude string) *Agent {
+		config := map[string]struct{}{}
+		if exclude != "" {
+			config[exclude] = struct{}{}
+		}
+		return &Agent{
+			systemInfo: system.Info{},
+			sensorConfig: &SensorConfig{
+				context:     context.Background(),
+				timeout:     2 * time.Second,
+				sensors:     config,
+				isBlacklist: exclude != "",
+			},
+		}
+	}
+
+	// unfiltered: the second duplicate is suffixed with its index
+	stats := &system.Stats{}
+	newAgent("").updateTemperatures(stats)
+	assert.Equal(t, map[string]float64{
+		"nvme_sensor_2":   74.85,
+		"nvme_sensor_2_1": 41,
+		"coretemp_core_0": 55,
+	}, stats.Temperatures)
+
+	// excluding the first duplicate keeps the second one's name
+	stats = &system.Stats{}
+	newAgent("nvme_sensor_2").updateTemperatures(stats)
+	assert.Equal(t, map[string]float64{
+		"nvme_sensor_2_1": 41,
+		"coretemp_core_0": 55,
+	}, stats.Temperatures)
+}
