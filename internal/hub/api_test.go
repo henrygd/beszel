@@ -796,17 +796,17 @@ func TestApiRoutesAuthentication(t *testing.T) {
 				"systems": []string{system.Id},
 			}),
 		},
-		// this works but diff behavior on prod vs dev.
-		// dev returns 502; prod returns 200 with static html page 404
-		// TODO: align dev and prod behavior and re-enable this test
-		// {
-		// 	Name:               "GET /update - shouldn't exist without CHECK_UPDATES env var",
-		// 	Method:             http.MethodGet,
-		// 	URL:                "/api/beszel/update",
-		// 	NotExpectedContent: []string{"v:", "\"v\":"},
-		// 	ExpectedStatus: 502,
-		// 	TestAppFactory: testAppFactory,
-		// },
+		{
+			Name:   "GET /update - shouldn't exist without CHECK_UPDATES env var",
+			Method: http.MethodGet,
+			URL:    "/api/beszel/update",
+			Headers: map[string]string{
+				"Authorization": userToken,
+			},
+			NotExpectedContent: []string{"v:", "\"v\":"},
+			ExpectedStatus:     404,
+			TestAppFactory:     testAppFactory,
+		},
 	}
 
 	for _, scenario := range scenarios {
