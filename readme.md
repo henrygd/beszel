@@ -51,6 +51,7 @@ The [quick start guide](https://beszel.dev/guide/getting-started) and other docu
 - **Load average** - Host system.
 - **Temperature** - Host system sensors.
 - **Fan speed** - Host system sensors (Linux, via `/sys/class/hwmon`).
+- **Fan control** - Reported control level (0–100%) from Linux hwmon `pwmN` channels, including PWM and on/off (`gpio-fan`) drivers. Read-only; no pin configuration is needed. This is the driver's control setting, not measured RPM or confirmation of rotation. Historical points are averages of available samples, so on/off control can have intermediate historical values. Configured RPM values from `gpio-fan` are excluded from the speed chart because they are not tachometer measurements.
 - **GPU usage / power draw** - Nvidia, AMD, and Intel.
 - **Battery charge** - Host system and some peripherals.
 - **Containers** - Status and metrics of all running Docker / Podman containers.

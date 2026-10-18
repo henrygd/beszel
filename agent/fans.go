@@ -23,12 +23,13 @@ func newFanSensorCache(root string) func() ([]fanSensor, error) {
 	})
 }
 
-// updateFans populates systemStats.Fans from the host's hwmon sysfs tree.
+// updateFans populates fan RPM and control levels from the host's hwmon sysfs tree.
 // No-op on platforms where hwmon isn't available (see fans_other.go).
 func (a *Agent) updateFans(systemStats *system.Stats) {
 	if hwmonRoot == "" {
 		return
 	}
+	a.updateFanControls(systemStats)
 	sensors, err := getFanSensors()
 	if err != nil {
 		slog.Debug("Error reading fans", "err", err)
@@ -96,6 +97,11 @@ func discoverHwmonFans(root string) ([]fanSensor, error) {
 		}
 		if chipName == "" {
 			chipName = entry.Name()
+		}
+		// gpio-fan reports RPM from its configured speed table, not a
+		// tachometer. Its actual control setting is collected through pwmN.
+		if chipName == "gpio_fan" {
+			continue
 		}
 		for _, inputPath := range inputs {
 			base := strings.TrimSuffix(filepath.Base(inputPath), "_input")

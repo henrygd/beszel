@@ -281,12 +281,18 @@ func AverageSystemStatsSlice(records []system.Stats) system.Stats {
 	tempCount := float64(0)
 	var fanSums map[string]uint64
 	fanCount := uint64(0)
+	fanControlSums := make(map[string]float64)
+	fanControlCounts := make(map[string]uint64)
 	zfsPoolCounts := make(map[string]uint64)
 	zfsCapacityCounts := make(map[string]uint64)
 
 	// Accumulate totals
 	for i := range records {
 		stats := &records[i]
+		for key, level := range stats.FanControl {
+			fanControlSums[key] += level
+			fanControlCounts[key]++
+		}
 		for id, signal := range stats.WiFi {
 			wifiSums[id] += int(signal)
 			wifiCounts[id]++
@@ -553,6 +559,14 @@ func AverageSystemStatsSlice(records []system.Stats) system.Stats {
 		sum.Fans = make(map[string]uint16, len(fanSums))
 		for key, value := range fanSums {
 			sum.Fans[key] = uint16(value / fanCount)
+		}
+	}
+
+	// Missing control readings are not zero; count samples per channel.
+	if len(fanControlSums) > 0 {
+		sum.FanControl = make(map[string]float64, len(fanControlSums))
+		for key, total := range fanControlSums {
+			sum.FanControl[key] = twoDecimals(total / float64(fanControlCounts[key]))
 		}
 	}
 
