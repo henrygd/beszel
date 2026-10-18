@@ -527,6 +527,8 @@ export interface SystemDetailsRecord extends RecordModel {
 	kernel: string
 	cores: number
 	threads: number
+	/** physical CPU packages, 0 if unknown */
+	sockets?: number
 	cpu: string
 	os: Os
 	os_name: string
