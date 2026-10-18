@@ -66,6 +66,7 @@ type dockerManager struct {
 	isWindows            bool                        // Whether the Docker Engine API is running on Windows
 	buf                  *bytes.Buffer               // Buffer to store and read response bodies
 	excludeContainers    []string                    // Patterns to exclude containers by name
+	nameTemplate         *containerNameTemplate      // Optional template to build container names from labels
 	usingPodman          bool                        // Whether the Docker Engine API is running on Podman
 
 	registryClient       *http.Client                  // Client for registry requests; nil uses a client with a 10-second timeout
@@ -143,7 +144,7 @@ func (dm *dockerManager) getDockerStats(cacheTimeMs uint16) ([]*container.Stats,
 		return nil, err
 	}
 
-	dm.apiContainerList = dm.apiContainerList[:0]
+	dm.apiContainerList = resetContainerList(dm.apiContainerList)
 	if err := dm.decode(resp, &dm.apiContainerList); err != nil {
 		return nil, err
 	}
@@ -173,6 +174,10 @@ func (dm *dockerManager) getDockerStats(cacheTimeMs uint16) ([]*container.Stats,
 
 	for _, ctr := range dm.apiContainerList {
 		ctr.IdShort = ctr.Id[:12]
+	}
+	resolveContainerNames(dm.apiContainerList, dm.nameTemplate, dm.shouldExcludeContainer)
+
+	for _, ctr := range dm.apiContainerList {
 
 		// Skip this container if it matches the exclusion pattern
 		if dm.shouldExcludeContainer(ctr.Names[0][1:]) {
@@ -504,7 +509,10 @@ func (dm *dockerManager) getPodmanContainerHealth(containerID string) (container
 
 // Updates stats for individual container with cache-time-aware delta tracking
 func (dm *dockerManager) updateContainerStats(ctr *container.ApiInfo, cacheTimeMs uint16) error {
-	name := ctr.Names[0][1:]
+	name := ctr.DisplayName
+	if name == "" {
+		name = ctr.Names[0][1:]
+	}
 
 	resp, err := dm.client.Get(fmt.Sprintf("http://localhost/containers/%s/stats?stream=0&one-shot=1", ctr.IdShort))
 	if err != nil {
@@ -548,6 +556,7 @@ func (dm *dockerManager) updateContainerStats(ctr *container.ApiInfo, cacheTimeM
 	}
 
 	stats.Id = ctr.IdShort
+	stats.Name = name
 	stats.Status = statusText
 	stats.Health = health
 
@@ -716,6 +725,16 @@ func newDockerManager(agent *Agent) *dockerManager {
 		slog.Info("EXCLUDE_CONTAINERS", "patterns", excludeContainers)
 	}
 
+	var nameTemplate *containerNameTemplate
+	if value, _ := utils.GetEnv("CONTAINER_LABEL"); strings.TrimSpace(value) != "" {
+		var err error
+		if nameTemplate, err = parseContainerNameTemplate(value); err != nil {
+			slog.Error("Ignoring invalid CONTAINER_LABEL", "value", value, "err", err)
+		} else {
+			slog.Info("CONTAINER_LABEL", "template", value)
+		}
+	}
+
 	manager := &dockerManager{
 		agent: agent,
 		client: &http.Client{
@@ -726,6 +745,7 @@ func newDockerManager(agent *Agent) *dockerManager {
 		sem:                  make(chan struct{}, 5),
 		apiContainerList:     []*container.ApiInfo{},
 		excludeContainers:    excludeContainers,
+		nameTemplate:         nameTemplate,
 		imageUpdatesDisabled: dockerImageCheck == "false",
 
 		// Initialize cache-time-aware tracking structures

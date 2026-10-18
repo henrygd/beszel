@@ -10,6 +10,7 @@ type ApiInfo struct {
 	Status  string
 	State   string
 	Image   string
+	Labels  map[string]string
 	Health  struct {
 		Status string
 		// FailingStreak int
@@ -25,13 +26,15 @@ type ApiInfo struct {
 	// Created int64
 	// SizeRw     int64 `json:",omitempty"`
 	// SizeRootFs int64 `json:",omitempty"`
-	// Labels     map[string]string
 	// HostConfig struct {
 	// 	NetworkMode string            `json:",omitempty"`
 	// 	Annotations map[string]string `json:",omitempty"`
 	// }
 	// NetworkSettings *SummaryNetworkSettings
 	// Mounts          []MountPoint
+
+	// DisplayName is the name reported to the hub. Set by the agent, not part of the Docker response.
+	DisplayName string `json:"-"`
 }
 
 // Docker container resources from /containers/{id}/stats
