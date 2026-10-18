@@ -219,6 +219,7 @@ func (d *diskDiscovery) addConfiguredRootFs() bool {
 			if name == "" {
 				name = folderName
 			}
+			slog.Info("Using extra filesystem for root usage", "device", ioKey, "mount", folderMount)
 		}
 		d.agent.fsStats[ioKey] = &system.FsStats{Root: true, Mountpoint: mountpoint, Name: name}
 		return true
