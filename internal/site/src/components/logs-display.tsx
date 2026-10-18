@@ -2,7 +2,7 @@
 import { t } from "@lingui/core/macro"
 import { useStore } from "@nanostores/react"
 import { ClockIcon, RefreshCwIcon } from "lucide-react"
-import { type RefObject, useEffect, useRef } from "react"
+import { type RefObject, useEffect, useMemo, useRef } from "react"
 import { IconButton, type IconButtonProps } from "@/components/ui/icon-button"
 import { FullscreenContentDialog } from "@/components/ui/fullscreen-content-dialog"
 import { $showLogTimestamps, toggleLogTimestamps } from "@/lib/stores"
@@ -36,6 +36,8 @@ export function LogsTimestampToggle({
 // Shared by Docker and systemd service sheets so logs behave identically.
 export function LogsDisplay({ logsDisplay, containerRef }: LogsDisplayProps) {
 	const showTimestamps = useStore($showLogTimestamps)
+	// Keep the HTML prop stable so unrelated updates preserve text selection.
+	const logsHtml = useMemo(() => ({ __html: logsDisplay }), [logsDisplay])
 	return (
 		<div
 			ref={containerRef}
@@ -45,7 +47,7 @@ export function LogsDisplay({ logsDisplay, containerRef }: LogsDisplayProps) {
 				!logsDisplay && ["animate-pulse", "h-full"]
 			)}
 		>
-			<div dangerouslySetInnerHTML={{ __html: logsDisplay }} />
+			<div dangerouslySetInnerHTML={logsHtml} />
 		</div>
 	)
 }
@@ -67,6 +69,7 @@ export function LogsFullscreenDialog({
 }) {
 	const showTimestamps = useStore($showLogTimestamps)
 	const outerContainerRef = useRef<HTMLDivElement>(null)
+	const logsHtml = useMemo(() => ({ __html: logsDisplay }), [logsDisplay])
 
 	useEffect(() => {
 		if (open && logsDisplay) {
@@ -94,7 +97,7 @@ export function LogsFullscreenDialog({
 				</>
 			}
 		>
-			<div dangerouslySetInnerHTML={{ __html: logsDisplay }} />
+			<div dangerouslySetInnerHTML={logsHtml} />
 		</FullscreenContentDialog>
 	)
 }
