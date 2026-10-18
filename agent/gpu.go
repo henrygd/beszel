@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log/slog"
 	"maps"
@@ -145,8 +146,8 @@ func (c *gpuCollector) start() {
 	for {
 		err := c.collect()
 		if err != nil {
-			if err == errNoValidData {
-				slog.Warn(c.name + " found no valid GPU data, stopping")
+			if errors.Is(err, errNoValidData) {
+				slog.Warn(c.name+" found no valid GPU data, stopping", "err", err)
 				break
 			}
 			slog.Warn(c.name+" failed, restarting", "err", err)
@@ -156,7 +157,12 @@ func (c *gpuCollector) start() {
 	}
 }
 
-// collect executes the command, parses output with the assigned parser function
+// maxLoggedLineLen limits how much of an unparseable output line is included in errors
+const maxLoggedLineLen = 200
+
+// collect executes the command, parses output with the assigned parser function.
+// Lines the parser rejects are skipped. If the command printed output but none of
+// it was valid, collect returns errNoValidData with the first rejected line.
 func (c *gpuCollector) collect() error {
 	cmd := exec.Command(c.name, c.cmdArgs...)
 	stdout, err := cmd.StdoutPipe()
@@ -173,17 +179,35 @@ func (c *gpuCollector) collect() error {
 	}
 	scanner.Buffer(c.buf, bufio.MaxScanTokenSize)
 
+	var hasValidData, hasInvalidLine bool
+	var invalidLine string
 	for scanner.Scan() {
-		hasValidData := c.parse(scanner.Bytes())
-		if !hasValidData {
-			return errNoValidData
+		if c.parse(scanner.Bytes()) {
+			hasValidData = true
+			continue
+		}
+		slog.Debug(c.name+" skipping unparseable output", "line", scanner.Text())
+		if !hasInvalidLine {
+			hasInvalidLine = true
+			invalidLine = scanner.Text()
+			if len(invalidLine) > maxLoggedLineLen {
+				invalidLine = invalidLine[:maxLoggedLineLen] + "..."
+			}
 		}
 	}
 
 	if err := scanner.Err(); err != nil {
+		// we stopped reading, so the command may never exit on its own
+		_ = cmd.Process.Kill()
+		_ = cmd.Wait()
 		return fmt.Errorf("scanner error: %w", err)
 	}
-	return cmd.Wait()
+	// always wait so the process is reaped, even if its output was unusable
+	waitErr := cmd.Wait()
+	if !hasValidData && hasInvalidLine {
+		return fmt.Errorf("%w: %q", errNoValidData, invalidLine)
+	}
+	return waitErr
 }
 
 // getJetsonParser returns a function to parse the output of tegrastats and update the GPUData map

@@ -1980,3 +1980,35 @@ func TestIntelCollectorDeviceEnv(t *testing.T) {
 	require.Contains(t, argsStr, "-s ")
 	require.Contains(t, argsStr, "-J")
 }
+
+func TestGPUCollectorSkipsUnparseableLines(t *testing.T) {
+	dir := t.TempDir()
+	t.Setenv("PATH", dir)
+	gpuCommandFixture(t, dir, nvidiaSmiCmd, strings.Join([]string{
+		"0, NVIDIA Test GPU, 50, 1024, 4096, 25, 100",
+		"",
+		"Unable to determine the device handle for GPU0000:01:00.0: Unknown Error",
+		"0, NVIDIA Test GPU, 52, 1024, 4096, 35, 110",
+	}, "\n")+"\n")
+
+	gm := &GPUManager{GpuDataMap: make(map[string]*system.GPUData)}
+	collector := gpuCollector{name: nvidiaSmiCmd, bufSize: 10 * 1024, parse: gm.parseNvidiaData}
+	require.NoError(t, collector.collect())
+
+	gpu := gm.GpuDataMap["0"]
+	require.NotNil(t, gpu)
+	assert.Equal(t, float64(2), gpu.Count, "valid samples around unparseable lines should still be collected")
+}
+
+func TestGPUCollectorNoValidData(t *testing.T) {
+	dir := t.TempDir()
+	t.Setenv("PATH", dir)
+	gpuCommandFixture(t, dir, nvidiaSmiCmd, "NVIDIA-SMI has failed because it couldn't communicate with the NVIDIA driver. Make sure that the latest NVIDIA driver is installed and running.\n")
+
+	gm := &GPUManager{GpuDataMap: make(map[string]*system.GPUData)}
+	collector := gpuCollector{name: nvidiaSmiCmd, bufSize: 10 * 1024, parse: gm.parseNvidiaData}
+	err := collector.collect()
+	require.ErrorIs(t, err, errNoValidData)
+	assert.Contains(t, err.Error(), "couldn't communicate with the NVIDIA driver", "the error should include the unparseable line")
+	assert.Empty(t, gm.GpuDataMap)
+}
