@@ -3,8 +3,10 @@
 package agent
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
+	"log/slog"
 	"os"
 	"slices"
 	"strings"
@@ -2015,6 +2017,91 @@ func TestGPUCollectorNoValidData(t *testing.T) {
 	require.ErrorIs(t, err, errNoValidData)
 	assert.Contains(t, err.Error(), "couldn't communicate with the NVIDIA driver", "the error should include the unparseable line")
 	assert.Empty(t, gm.GpuDataMap)
+}
+
+// syncBuffer is a bytes.Buffer that can be written from several goroutines.
+type syncBuffer struct {
+	mu  sync.Mutex
+	buf bytes.Buffer
+}
+
+func (b *syncBuffer) Write(p []byte) (int, error) {
+	b.mu.Lock()
+	defer b.mu.Unlock()
+	return b.buf.Write(p)
+}
+
+func (b *syncBuffer) String() string {
+	b.mu.Lock()
+	defer b.mu.Unlock()
+	return b.buf.String()
+}
+
+// captureWarnings sends slog records at WARN and above to the returned buffer until the test ends.
+func captureWarnings(t *testing.T) *syncBuffer {
+	t.Helper()
+	logs := &syncBuffer{}
+	previous := slog.Default()
+	slog.SetDefault(slog.New(slog.NewTextHandler(logs, &slog.HandlerOptions{Level: slog.LevelWarn})))
+	t.Cleanup(func() { slog.SetDefault(previous) })
+	return logs
+}
+
+// With -l, nvidia-smi may keep running after its output turns into errors (a GPU
+// that fell off the bus), so collect has to report that itself, once per run.
+// A run that only printed an error and exited is left to start().
+func TestGPUCollectorWarnsAboutUnparseableOutput(t *testing.T) {
+	tests := []struct {
+		name     string
+		output   string // one line per byte: v is valid CSV, b an unparseable line
+		wantWarn bool
+	}{
+		{name: "output turns unparseable after valid data", output: "vbb", wantWarn: true},
+		{name: "unparseable line before valid data", output: "bv", wantWarn: true},
+		{name: "unparseable lines only, tool still printing", output: "bb", wantWarn: true},
+		{name: "single unparseable line before exit", output: "b"},
+		{name: "valid data only", output: "vv"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// Collectors left running by earlier tests can run this fixture too and log
+			// the same lines, so the unparseable lines carry the case name and the checks
+			// below look at which lines were logged rather than how many times.
+			var lines, invalid []string
+			for i, kind := range tt.output {
+				if kind == 'v' {
+					lines = append(lines, "0, NVIDIA Test GPU, 50, 1024, 4096, 25, 100")
+					continue
+				}
+				line := fmt.Sprintf("Unable to determine the device handle for GPU0000:0%d:00.0: Unknown Error (%s)", i, tt.name)
+				lines = append(lines, line)
+				invalid = append(invalid, line)
+			}
+			dir := t.TempDir()
+			t.Setenv("PATH", dir)
+			gpuCommandFixture(t, dir, nvidiaSmiCmd, strings.Join(lines, "\n")+"\n")
+			logs := captureWarnings(t)
+
+			gm := &GPUManager{GpuDataMap: make(map[string]*system.GPUData)}
+			collector := gpuCollector{name: nvidiaSmiCmd, bufSize: 10 * 1024, parse: gm.parseNvidiaData}
+			_, _ = collector.collect()
+
+			var warned []string
+			for _, record := range strings.Split(logs.String(), "\n") {
+				if strings.Contains(record, `msg="nvidia-smi skipping unparseable output"`) && strings.Contains(record, tt.name) {
+					warned = append(warned, record)
+				}
+			}
+			if !tt.wantWarn {
+				assert.Empty(t, warned)
+				return
+			}
+			require.NotEmpty(t, warned, "the first unparseable line should be logged at WARN")
+			for _, record := range warned {
+				assert.Contains(t, record, invalid[0], "only the first unparseable line of a run is logged at WARN")
+			}
+		})
+	}
 }
 
 // The first nvidia-smi run happens before the driver is ready and prints an error

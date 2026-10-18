@@ -181,8 +181,9 @@ func (c *gpuCollector) start() {
 const maxLoggedLineLen = 200
 
 // collect executes the command, parses output with the assigned parser function
-// and reports whether any valid data was found. Lines the parser rejects are skipped.
-// If the command printed output but none of it was valid, collect returns
+// and reports whether any valid data was found. Lines the parser rejects are skipped,
+// and the first one is logged at WARN if valid data came before it or more output after
+// it. If the command printed output but none of it was valid, collect returns
 // errNoValidData with the first rejected line.
 func (c *gpuCollector) collect() (hasValidData bool, err error) {
 	cmd := exec.Command(c.name, c.cmdArgs...)
@@ -200,20 +201,39 @@ func (c *gpuCollector) collect() (hasValidData bool, err error) {
 	}
 	scanner.Buffer(c.buf, bufio.MaxScanTokenSize)
 
-	var hasInvalidLine bool
-	var invalidLine string
+	var (
+		invalidLine       string // first line of this run the parser rejected
+		hasInvalidLine    bool
+		warnedInvalidLine bool
+	)
+	// warnInvalidLine logs the run's first rejected line at WARN, once per run. It is only
+	// called once the run is more than a tool that printed an error and exited, which start()
+	// reports when the run ends: valid data came before the rejected line, or more output
+	// followed it. With -l the tool may never exit, so this is how a stream that stops
+	// producing valid data mid-run shows up above debug level.
+	warnInvalidLine := func() {
+		if hasInvalidLine && !warnedInvalidLine {
+			warnedInvalidLine = true
+			slog.Warn(c.name+" skipping unparseable output", "line", invalidLine)
+		}
+	}
 	for scanner.Scan() {
+		warnInvalidLine() // output kept coming after a rejected line
 		if c.parse(scanner.Bytes()) {
 			hasValidData = true
 			continue
 		}
-		slog.Debug(c.name+" skipping unparseable output", "line", scanner.Text())
-		if !hasInvalidLine {
-			hasInvalidLine = true
-			invalidLine = scanner.Text()
-			if len(invalidLine) > maxLoggedLineLen {
-				invalidLine = invalidLine[:maxLoggedLineLen] + "..."
-			}
+		if hasInvalidLine {
+			slog.Debug(c.name+" skipping unparseable output", "line", scanner.Text())
+			continue
+		}
+		hasInvalidLine = true
+		invalidLine = scanner.Text()
+		if len(invalidLine) > maxLoggedLineLen {
+			invalidLine = invalidLine[:maxLoggedLineLen] + "..."
+		}
+		if hasValidData {
+			warnInvalidLine() // valid data came before it
 		}
 	}
 
