@@ -92,6 +92,27 @@ export default memo(function CpuCoresSheet({
 			stackId: "a",
 		},
 		{
+			label: "IRQ",
+			dataKey: ({ stats }: SystemStatsRecord) => stats?.cpub?.[5],
+			color: "hsl(195, 70%, 50%)",
+			opacity: 0.35,
+			stackId: "a",
+		},
+		{
+			label: t`SoftIRQ`,
+			dataKey: ({ stats }: SystemStatsRecord) => stats?.cpub?.[6],
+			color: "hsl(50, 80%, 52%)",
+			opacity: 0.35,
+			stackId: "a",
+		},
+		{
+			label: t`Nice`,
+			dataKey: ({ stats }: SystemStatsRecord) => stats?.cpub?.[7],
+			color: "hsl(300, 60%, 55%)",
+			opacity: 0.35,
+			stackId: "a",
+		},
+		{
 			label: t`Other`,
 			dataKey: ({ stats }: SystemStatsRecord) => {
 				const total = stats?.cpub?.reduce((acc, curr) => acc + curr, 0) ?? 0
