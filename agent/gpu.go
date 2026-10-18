@@ -146,7 +146,8 @@ type collectorDefinition struct {
 // A run without valid data is retried with a growing delay, since the tool may have started
 // before the GPU driver was ready (e.g. right after boot). Collection stops after
 // maxFailureRetries consecutive runs without valid data; a run that produces valid data resets
-// the count.
+// the count. Any other run is restarted after retryWaitTime, so a tool that keeps exiting right
+// away can't turn this into a busy loop.
 func (c *gpuCollector) start() {
 	sleep := c.sleep
 	if sleep == nil {
@@ -159,6 +160,8 @@ func (c *gpuCollector) start() {
 			noDataRuns = 0
 		}
 		if err == nil {
+			// the tool exited cleanly; tools started with -l or --interval normally never do
+			sleep(retryWaitTime)
 			continue
 		}
 		if errors.Is(err, errNoValidData) {

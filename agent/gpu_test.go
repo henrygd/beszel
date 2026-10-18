@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"log/slog"
 	"os"
+	"runtime"
 	"slices"
 	"strings"
 	"sync"
@@ -2105,40 +2106,54 @@ func TestGPUCollectorWarnsAboutUnparseableOutput(t *testing.T) {
 }
 
 // The first nvidia-smi run happens before the driver is ready and prints an error
-// instead of CSV; later runs work. The collector must retry rather than stop.
+// instead of CSV; the next one works. The collector must retry rather than stop,
+// and the run with valid data must reset the retry count.
 func TestGPUCollectorRetriesAfterNoValidData(t *testing.T) {
+	const notReady = "NVIDIA-SMI has failed because it couldn't communicate with the NVIDIA driver. Make sure that the latest NVIDIA driver is installed and running.\n"
 	dir := t.TempDir()
 	t.Setenv("PATH", dir)
-	argsFile := gpuCommandFixture(t, dir, nvidiaSmiCmd, "NVIDIA-SMI has failed because it couldn't communicate with the NVIDIA driver. Make sure that the latest NVIDIA driver is installed and running.\n")
+	argsFile := gpuCommandFixture(t, dir, nvidiaSmiCmd, notReady)
 	stdoutFile := strings.TrimSuffix(argsFile, ".args") + ".stdout"
 
-	var mu sync.Mutex
 	var waits []time.Duration
 	gm := &GPUManager{GpuDataMap: make(map[string]*system.GPUData)}
 	collector := &gpuCollector{
 		name:    nvidiaSmiCmd,
 		bufSize: 10 * 1024,
 		parse:   gm.parseNvidiaData,
+		// Each wait sets up the next run; no run is in progress while it does.
 		sleep: func(d time.Duration) {
-			mu.Lock()
 			waits = append(waits, d)
-			first := len(waits) == 1
-			mu.Unlock()
-			if first {
-				// the driver is ready by the next run
-				_ = os.WriteFile(stdoutFile, []byte("0, NVIDIA Test GPU, 50, 1024, 4096, 25, 100\n"), 0600)
-				return
+			switch len(waits) {
+			case 1: // after the failed first run: the driver is ready by the next one
+				assert.NoError(t, os.WriteFile(stdoutFile, []byte("0, NVIDIA Test GPU, 50, 1024, 4096, 25, 100\n"), 0600))
+			case 2: // after the good run, which exited cleanly: the driver goes away again
+				assert.NoError(t, os.WriteFile(stdoutFile, []byte(notReady), 0600))
+			default:
+				// start() has no stop signal, so end its goroutine here, before the
+				// test's cleanup removes the fixture
+				runtime.Goexit()
 			}
-			// park the collector once the fixture is removed after the test
-			select {}
 		},
 	}
-	go collector.start()
+	done := make(chan struct{})
+	go func() {
+		defer close(done)
+		collector.start()
+	}()
+	select {
+	case <-done:
+	case <-time.After(10 * time.Second):
+		t.Fatal("collector did not get through the three runs")
+	}
 
-	waitGPUs(t, gm, "0")
-	mu.Lock()
-	defer mu.Unlock()
-	assert.Equal(t, []time.Duration{retryWaitTime}, waits)
+	gm.Lock()
+	gpu := gm.GpuDataMap["0"]
+	gm.Unlock()
+	require.NotNil(t, gpu, "the run after the driver became ready should have produced data")
+	// failed run, pause after the good run, failed run again: the last delay is the
+	// first step of the backoff again because the good run reset the count
+	assert.Equal(t, []time.Duration{retryWaitTime, retryWaitTime, retryWaitTime}, waits)
 }
 
 // A host with nvidia-smi but no usable GPU never produces data; the collector must still give up.
