@@ -1,4 +1,3 @@
-import { cpuSocketDisplay } from "@/lib/cpu-sockets"
 import { plural } from "@lingui/core/macro"
 import { Trans, useLingui } from "@lingui/react/macro"
 import {
@@ -61,12 +60,8 @@ export default function InfoBar({
 		const kernel = details?.kernel ?? system.info.k
 		const cores = details?.cores ?? system.info.c
 		const threads = details?.threads ?? system.info.t ?? 0
+		const cpuModel = details?.cpu ?? system.info.m
 		const sockets = details?.sockets ?? 0
-		const cpu = cpuSocketDisplay(
-			details?.cpu ?? system.info.m,
-			sockets,
-			plural(sockets, { one: "# CPU", other: "# CPUs" })
-		)
 		const os = details?.os ?? system.info.os ?? Os.Linux
 		const osName = details?.os_name
 		const arch = details?.arch
@@ -107,10 +102,11 @@ export default function InfoBar({
 			{ value: secondsToUptimeString(system.info.u), Icon: ClockArrowUp, label: t`Uptime`, hide: !system.info.u },
 			osInfo[os],
 			{
-				value: cpu.model,
+				// 0 means the agent did not report a socket count
+				value: sockets > 1 ? `${sockets}x ${cpuModel}` : cpuModel,
 				Icon: CpuIcon,
-				hide: !cpu.model,
-				label: `${cpu.labelPrefix}${plural(cores, { one: "# core", other: "# cores" })} / ${plural(threads, { one: "# thread", other: "# threads" })}${arch ? ` / ${arch}` : ""}`,
+				hide: !cpuModel,
+				label: `${plural(cores, { one: "# core", other: "# cores" })} / ${plural(threads, { one: "# thread", other: "# threads" })}${arch ? ` / ${arch}` : ""}`,
 			},
 		] as {
 			value: string | number | undefined

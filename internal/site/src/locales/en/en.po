@@ -67,10 +67,6 @@ msgstr "{diskName} I/O"
 msgid "{numFailed, plural, one {# failed service} other {# failed services}}"
 msgstr "{numFailed, plural, one {# failed service} other {# failed services}}"
 
-#: src/components/routes/system/info-bar.tsx
-msgid "{sockets, plural, one {# CPU} other {# CPUs}}"
-msgstr "{sockets, plural, one {# CPU} other {# CPUs}}"
-
 #: src/components/active-alerts.tsx
 msgid "{systemCount, plural, one {Across # system} other {Across # systems}}"
 msgstr "{systemCount, plural, one {Across # system} other {Across # systems}}"

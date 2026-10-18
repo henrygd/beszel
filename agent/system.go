@@ -82,11 +82,10 @@ func (a *Agent) refreshSystemDetails() {
 	}
 
 	// cpu model
-	info, err := cpu.Info()
-	if err == nil && len(info) > 0 {
+	if info, err := cpu.Info(); err == nil && len(info) > 0 {
 		a.systemDetails.CpuModel = info[0].ModelName
+		a.systemDetails.Sockets = cpuSockets(info)
 	}
-	a.systemDetails.Sockets = cpuSockets(info)
 	// gopsutil doesn't parse the "cpu model" field from /proc/cpuinfo, which
 	// is the only source of the CPU model name on MIPS. Fall back to reading
 	// it directly when ModelName is empty.
@@ -278,6 +277,25 @@ func (a *Agent) getSystemStats(cacheTimeMs uint16) system.Stats {
 // (e.g. "MIPS 1004Kc V2.15"), while "system type" provides SoC information
 // on various embedded architectures.
 var cpuModelFallbackKeys = []string{"cpu model", "system type"}
+
+// cpuSockets returns the number of physical CPU packages, or 0 if unknown.
+// PhysicalID is only a socket id on x86 Linux; on Windows gopsutil returns
+// one entry per package.
+func cpuSockets(info []cpu.InfoStat) int {
+	switch {
+	case runtime.GOOS == "windows":
+		return len(info)
+	case runtime.GOOS == "linux" && (runtime.GOARCH == "amd64" || runtime.GOARCH == "386"):
+		ids := make(map[string]struct{})
+		for _, c := range info {
+			if c.PhysicalID != "" {
+				ids[c.PhysicalID] = struct{}{}
+			}
+		}
+		return len(ids)
+	}
+	return 0
+}
 
 // getCpuModelFromCpuinfo reads /proc/cpuinfo and returns a CPU model string.
 // This is a fallback for architectures where gopsutil's cpu.Info() does not
