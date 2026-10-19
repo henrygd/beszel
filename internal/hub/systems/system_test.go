@@ -78,6 +78,30 @@ func TestCombinedData_MigrateDeprecatedFields(t *testing.T) {
 		}
 	})
 
+	t.Run("Migrate ExtraFs DiskReadPs and DiskWritePs to DiskReadBytes and DiskWriteBytes", func(t *testing.T) {
+		cd := &system.CombinedData{
+			Stats: system.Stats{
+				ExtraFs: map[string]*system.FsStats{
+					"old": {DiskReadPs: 1.5, DiskWritePs: 2.5},
+					"new": {DiskReadBytes: 100, DiskWriteBytes: 200},
+					"nil": nil,
+				},
+			},
+		}
+		migrateDeprecatedFields(cd, true)
+
+		old := cd.Stats.ExtraFs["old"]
+		if old.DiskReadBytes != uint64(1.5*1024*1024) || old.DiskWriteBytes != uint64(2.5*1024*1024) {
+			t.Errorf("expected migrated bytes, got %d, %d", old.DiskReadBytes, old.DiskWriteBytes)
+		}
+		if old.DiskReadPs != 0 || old.DiskWritePs != 0 {
+			t.Errorf("expected DiskReadPs and DiskWritePs to be reset, got %f, %f", old.DiskReadPs, old.DiskWritePs)
+		}
+		if newFs := cd.Stats.ExtraFs["new"]; newFs.DiskReadBytes != 100 || newFs.DiskWriteBytes != 200 {
+			t.Errorf("expected existing bytes to be kept, got %d, %d", newFs.DiskReadBytes, newFs.DiskWriteBytes)
+		}
+	})
+
 	t.Run("Migrate Info fields to Details struct", func(t *testing.T) {
 		cd := &system.CombinedData{
 			Stats: system.Stats{
