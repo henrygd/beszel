@@ -570,6 +570,34 @@ func TestRefreshScsiFallsBackToSat(t *testing.T) {
 }
 
 // An explicit SMART_DEVICES type is a deliberate override and is not retried.
+// A disk scanned as ata is auto-detected but requests devstat from the first
+// query; after that the protocol of the reading decides.
+func TestRefreshScannedAtaRequestsDevstat(t *testing.T) {
+	for _, test := range []struct {
+		fixture, next string
+	}{
+		{"sda.json", "-a --json=c -l devstat -n standby /dev/sda"},
+		{"scsi.json", "-a --json=c -n standby /dev/sda"},
+	} {
+		t.Run(test.fixture, func(t *testing.T) {
+			fake := &fakeSmartctl{
+				scan:      scanOf("/dev/sda:ata"),
+				responses: map[string]fakeResponse{" /dev/sda": {output: string(readSmartFixture(t, test.fixture))}},
+			}
+			sm := newFakeSmartManager(t, fake)
+
+			_, err := sm.Refresh(false)
+			require.NoError(t, err)
+			assert.Equal(t, []string{"-a --json=c -l devstat -n standby /dev/sda"}, fake.deviceCalls())
+
+			fake.calls = nil
+			_, err = sm.Refresh(false)
+			require.NoError(t, err)
+			assert.Equal(t, []string{test.next}, fake.deviceCalls())
+		})
+	}
+}
+
 func TestRefreshExplicitTypeIsNotRetried(t *testing.T) {
 	t.Setenv("SMART_DEVICES", "/dev/sda:scsi")
 	fake := &fakeSmartctl{

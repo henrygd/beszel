@@ -380,7 +380,9 @@ func (sm *SmartManager) collectTarget(target smartTarget) (smartResult, error) {
 	var err error
 	for _, i := range order {
 		attempt := target.attempts[i]
-		args := smartctlArgs(attempt, hasPrev && prev.ata, true)
+		// A scanned ata type requests devstat until a reading confirms the protocol.
+		ata := prev.ata || !hasPrev && strings.EqualFold(target.dtype, "ata")
+		args := smartctlArgs(attempt, ata, true)
 		output, exitCode, runErr := sm.runSmartctl(15*time.Second, args...)
 		if runErr != nil {
 			err = runErr
