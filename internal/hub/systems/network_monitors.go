@@ -52,17 +52,6 @@ func (sys *System) suspendNetworkMonitors() {
 	}
 }
 
-// SyncNetworkMonitors sends monitor configurations to the agent.
-func (sys *System) SyncNetworkMonitors(configs []monitor.Config) error {
-	sys.monitorsMu.Lock()
-	defer sys.monitorsMu.Unlock()
-	if sys.GetStatus() == paused && len(configs) > 0 {
-		sys.monitorsNeedSync.Store(true)
-		return nil
-	}
-	return sys.replaceNetworkMonitorsLocked(configs)
-}
-
 // replaceNetworkMonitorsLocked requires monitorsMu through the agent response.
 func (sys *System) replaceNetworkMonitorsLocked(configs []monitor.Config) error {
 	_, err := sys.syncNetworkMonitors(monitor.SyncRequest{Action: monitor.SyncActionReplace, Configs: configs})

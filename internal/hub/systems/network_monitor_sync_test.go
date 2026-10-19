@@ -66,7 +66,7 @@ func TestNetworkMonitorSyncSkipsOlderAgents(t *testing.T) {
 			// No transport: attempting to send any request would fail.
 			sys := &System{}
 			sys.setAgentVersion(semver.MustParse(version))
-			require.NoError(t, sys.SyncNetworkMonitors(nil))
+			require.NoError(t, sys.replaceNetworkMonitorsLocked(nil))
 			result, err := sys.UpsertNetworkMonitor(monitor.Config{ID: "test"}, true)
 			require.NoError(t, err)
 			require.Nil(t, result)
