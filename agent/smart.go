@@ -284,7 +284,14 @@ func (sm *SmartManager) scanSmartctl(force bool) ([]smartDevice, error) {
 	if err == nil {
 		var devices []smartDevice
 		if devices, err = parseScan(output); err == nil {
-			sm.scanned = devices
+			// An empty scan after devices were found is more likely a transient
+			// failure than every disk being removed. Accepting it would let the
+			// hub prune all smartctl disks while sysfs devices still collect.
+			if len(devices) == 0 && len(sm.scanned) > 0 {
+				err = errors.New("smartctl scan found no devices")
+			} else {
+				sm.scanned = devices
+			}
 		}
 	}
 	// Keep the previous scan on failure so devices don't disappear.

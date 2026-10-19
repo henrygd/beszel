@@ -870,6 +870,7 @@ func TestRefreshScanFailureKeepsPreviousScan(t *testing.T) {
 		{name: "invalid JSON", output: "invalid JSON"},
 		{name: "nonzero exit without devices", output: `{"smartctl":{"exit_status":1}}`, exit: 1},
 		{name: "nonzero exit with partial devices", output: scanOf("/dev/sdb:sat"), exit: 1},
+		{name: "empty device list", output: scanOf()},
 	} {
 		t.Run(test.name, func(t *testing.T) {
 			fake := &fakeSmartctl{
