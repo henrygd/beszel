@@ -10,7 +10,6 @@ type ApiInfo struct {
 	Status  string
 	State   string
 	Image   string
-	Labels  map[string]string
 	Health  struct {
 		Status string
 		// FailingStreak int
@@ -33,7 +32,10 @@ type ApiInfo struct {
 	// NetworkSettings *SummaryNetworkSettings
 	// Mounts          []MountPoint
 
-	// DisplayName is the name reported to the hub. Set by the agent, not part of the Docker response.
+	// Set by the agent, not part of the Docker response.
+	// Labels is only filled when CONTAINER_NAME_LABEL is set, read in the same decode pass as the rest.
+	Labels map[string]string `json:"-"`
+	// DisplayName is the name reported to the hub.
 	DisplayName string `json:"-"`
 }
 

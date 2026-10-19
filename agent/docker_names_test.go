@@ -3,11 +3,17 @@
 package agent
 
 import (
-	"encoding/json"
+	"fmt"
+	"io"
+	"net/http"
+	"net/http/httptest"
+	"strings"
+	"sync"
 	"testing"
 
 	"github.com/henrygd/beszel/internal/entities/container"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func testCtr(dockerName string, labels map[string]string) *container.ApiInfo {
@@ -95,15 +101,127 @@ func TestResolveContainerNames(t *testing.T) {
 	})
 }
 
-func TestApiInfoLabelsDoNotLeakAcrossDecodes(t *testing.T) {
+func decodeList(t *testing.T, dm *dockerManager, body string) []*container.ApiInfo {
+	t.Helper()
+	resp := &http.Response{Body: io.NopCloser(strings.NewReader(body))}
+	require.NoError(t, dm.decodeContainerList(resp))
+	return dm.apiContainerList
+}
+
+func TestDecodeContainerListLabels(t *testing.T) {
 	// getDockerStats reuses the container slice between cycles
-	list := []*container.ApiInfo{}
 	first := `[{"Id":"1","Names":["/a"],"Labels":{"k":"v","only-first":"x"}}]`
 	second := `[{"Id":"2","Names":["/a"],"Labels":{"k":"w"}}]`
-	assert.NoError(t, json.Unmarshal([]byte(first), &list))
-	list = resetContainerList(list)
-	assert.NoError(t, json.Unmarshal([]byte(second), &list))
-	assert.Equal(t, map[string]string{"k": "w"}, list[0].Labels)
+
+	t.Run("labels are not decoded without a template", func(t *testing.T) {
+		dm := &dockerManager{}
+		list := decodeList(t, dm, first)
+		assert.Equal(t, "1", list[0].Id)
+		assert.Nil(t, list[0].Labels)
+	})
+
+	t.Run("labels are decoded with a template and do not carry over", func(t *testing.T) {
+		tmpl, err := parseContainerNameTemplate("k")
+		require.NoError(t, err)
+		dm := &dockerManager{nameTemplate: tmpl}
+		list := decodeList(t, dm, first)
+		assert.Equal(t, map[string]string{"k": "v", "only-first": "x"}, list[0].Labels)
+		list = decodeList(t, dm, second)
+		assert.Equal(t, "2", list[0].Id)
+		assert.Equal(t, map[string]string{"k": "w"}, list[0].Labels)
+	})
+
+	t.Run("list size changes between polls keep the right labels", func(t *testing.T) {
+		tmpl, err := parseContainerNameTemplate("k")
+		require.NoError(t, err)
+		dm := &dockerManager{nameTemplate: tmpl}
+		two := `[{"Id":"1","Names":["/a"],"Labels":{"k":"a"}},{"Id":"2","Names":["/b"],"Labels":{"k":"b"}}]`
+		one := `[{"Id":"3","Names":["/c"],"Labels":{"k":"c"}}]`
+		list := decodeList(t, dm, two)
+		require.Len(t, list, 2)
+		list = decodeList(t, dm, one)
+		require.Len(t, list, 1)
+		assert.Equal(t, map[string]string{"k": "c"}, list[0].Labels)
+		list = decodeList(t, dm, two)
+		require.Len(t, list, 2)
+		assert.Equal(t, map[string]string{"k": "a"}, list[0].Labels)
+		assert.Equal(t, map[string]string{"k": "b"}, list[1].Labels)
+	})
+}
+
+func TestGetDockerStatsNamesContainers(t *testing.T) {
+	var mu sync.Mutex
+	listBody := `[]`
+	setList := func(body string) {
+		mu.Lock()
+		defer mu.Unlock()
+		listBody = body
+	}
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		path := r.URL.EscapedPath()
+		switch {
+		case path == "/containers/json":
+			mu.Lock()
+			body := listBody
+			mu.Unlock()
+			fmt.Fprint(w, body)
+		case strings.HasPrefix(path, "/containers/") && strings.HasSuffix(path, "/stats"):
+			fmt.Fprint(w, `{"memory_stats":{"usage":1048576}}`)
+		default:
+			t.Errorf("unexpected path: %s", path)
+		}
+	}))
+	defer server.Close()
+
+	initialList := `[
+		{"Id":"aaaaaaaaaaaa1111","Names":["/app-api-1"],"Image":"app:1","State":"running","Status":"Up 3 days","Labels":{"coolify.serviceName":"api"}},
+		{"Id":"bbbbbbbbbbbb2222","Names":["/db-redeploy-x"],"Image":"db:1","State":"running","Status":"Up 3 days","Labels":{"coolify.serviceName":"db"}},
+		{"Id":"cccccccccccc3333","Names":["/hidden-1"],"Image":"hidden:1","State":"running","Status":"Up 3 days","Labels":{"coolify.serviceName":"hidden"}}
+	]`
+
+	namesByID := func(stats []*container.Stats) map[string]string {
+		out := make(map[string]string, len(stats))
+		for _, s := range stats {
+			out[s.Id] = s.Name
+		}
+		return out
+	}
+
+	t.Run("label names are reported and follow renames", func(t *testing.T) {
+		setList(initialList)
+		dm := newDockerManagerForVersionTest(server)
+		dm.dockerVersionChecked = true
+		dm.imageUpdatesDisabled = true
+		dm.excludeContainers = []string{"hidden*"}
+		tmpl, err := parseContainerNameTemplate("coolify.serviceName")
+		require.NoError(t, err)
+		dm.nameTemplate = tmpl
+
+		stats, err := dm.getDockerStats(defaultCacheTimeMs)
+		require.NoError(t, err)
+		assert.Equal(t, map[string]string{"aaaaaaaaaaaa": "api", "bbbbbbbbbbbb": "db"}, namesByID(stats))
+
+		// Redeploy: new Docker name suffix, and the label value changed
+		setList(`[
+			{"Id":"aaaaaaaaaaaa1111","Names":["/app-api-1"],"Image":"app:1","State":"running","Status":"Up 3 days","Labels":{"coolify.serviceName":"api"}},
+			{"Id":"bbbbbbbbbbbb2222","Names":["/db-redeploy-y"],"Image":"db:1","State":"running","Status":"Up 3 days","Labels":{"coolify.serviceName":"database"}}
+		]`)
+		stats, err = dm.getDockerStats(defaultCacheTimeMs)
+		require.NoError(t, err)
+		assert.Equal(t, map[string]string{"aaaaaaaaaaaa": "api", "bbbbbbbbbbbb": "database"}, namesByID(stats))
+	})
+
+	t.Run("docker names are reported without a template", func(t *testing.T) {
+		setList(initialList)
+		dm := newDockerManagerForVersionTest(server)
+		dm.dockerVersionChecked = true
+		dm.imageUpdatesDisabled = true
+		dm.excludeContainers = []string{"hidden*"}
+
+		stats, err := dm.getDockerStats(defaultCacheTimeMs)
+		require.NoError(t, err)
+		assert.Equal(t, map[string]string{"aaaaaaaaaaaa": "app-api-1", "bbbbbbbbbbbb": "db-redeploy-x"}, namesByID(stats))
+	})
 }
 
 func TestParseContainerNameTemplate(t *testing.T) {

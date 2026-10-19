@@ -9,7 +9,7 @@ import (
 
 // containerNameTemplate builds a container name from its Docker labels.
 //
-// CONTAINER_LABEL accepts either a plain label key ("coolify.serviceName") or a template
+// CONTAINER_NAME_LABEL accepts either a plain label key ("coolify.serviceName") or a template
 // that references labels with ${key} and may mix in literal text
 // ("${coolify.projectName} - ${coolify.serviceName}"). Write $$ for a literal dollar sign.
 type containerNameTemplate struct {
@@ -83,17 +83,16 @@ func (t *containerNameTemplate) render(labels map[string]string) (string, bool) 
 	return name, name != ""
 }
 
-// resetContainerList empties the list but drops the old entries first. The JSON decoder would
-// otherwise decode into the existing structs, merging stale labels into the next response.
-func resetContainerList(list []*container.ApiInfo) []*container.ApiInfo {
-	clear(list[:cap(list)])
-	return list[:0]
-}
-
 // resolveContainerNames sets DisplayName on each container. Without a template it is the Docker name.
 // With a template, the rendered name is used when it is complete and unique among the reported containers.
 // Containers that render to the same name (replicas) keep their Docker name so their series are never merged.
 func resolveContainerNames(list []*container.ApiInfo, tmpl *containerNameTemplate, excluded func(string) bool) {
+	if tmpl == nil {
+		for _, ctr := range list {
+			ctr.DisplayName = ctr.Names[0][1:]
+		}
+		return
+	}
 	candidates := make(map[*container.ApiInfo]string, len(list))
 	fromLabel := make(map[*container.ApiInfo]bool, len(list))
 	for _, ctr := range list {
@@ -103,9 +102,6 @@ func resolveContainerNames(list []*container.ApiInfo, tmpl *containerNameTemplat
 			continue
 		}
 		candidates[ctr] = dockerName
-		if tmpl == nil {
-			continue
-		}
 		if name, ok := tmpl.render(ctr.Labels); ok {
 			candidates[ctr] = name
 			fromLabel[ctr] = true

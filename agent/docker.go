@@ -59,6 +59,7 @@ type dockerManager struct {
 	sem                  chan struct{}               // Semaphore to limit concurrent container requests
 	containerStatsMutex  sync.RWMutex                // Mutex to prevent concurrent access to containerStatsMap
 	apiContainerList     []*container.ApiInfo        // List of containers from Docker API
+	labeledList          []*labeledContainer         // Reused container list that also carries labels (name template only)
 	containerStatsMap    map[string]*container.Stats // Keeps track of container stats
 	validIds             map[string]struct{}         // Map of valid container ids, used to prune invalid containers from containerStatsMap
 	goodDockerVersion    bool                        // Whether docker version is at least 25.0.0 (one-shot works correctly)
@@ -144,8 +145,7 @@ func (dm *dockerManager) getDockerStats(cacheTimeMs uint16) ([]*container.Stats,
 		return nil, err
 	}
 
-	dm.apiContainerList = resetContainerList(dm.apiContainerList)
-	if err := dm.decode(resp, &dm.apiContainerList); err != nil {
+	if err := dm.decodeContainerList(resp); err != nil {
 		return nil, err
 	}
 
@@ -178,7 +178,6 @@ func (dm *dockerManager) getDockerStats(cacheTimeMs uint16) ([]*container.Stats,
 	resolveContainerNames(dm.apiContainerList, dm.nameTemplate, dm.shouldExcludeContainer)
 
 	for _, ctr := range dm.apiContainerList {
-
 		// Skip this container if it matches the exclusion pattern
 		if dm.shouldExcludeContainer(ctr.Names[0][1:]) {
 			slog.Debug("Excluding container", "name", ctr.Names[0][1:])
@@ -726,12 +725,12 @@ func newDockerManager(agent *Agent) *dockerManager {
 	}
 
 	var nameTemplate *containerNameTemplate
-	if value, _ := utils.GetEnv("CONTAINER_LABEL"); strings.TrimSpace(value) != "" {
+	if value, _ := utils.GetEnv("CONTAINER_NAME_LABEL"); strings.TrimSpace(value) != "" {
 		var err error
 		if nameTemplate, err = parseContainerNameTemplate(value); err != nil {
-			slog.Error("Ignoring invalid CONTAINER_LABEL", "value", value, "err", err)
+			slog.Error("Ignoring invalid CONTAINER_NAME_LABEL", "value", value, "err", err)
 		} else {
-			slog.Info("CONTAINER_LABEL", "template", value)
+			slog.Info("CONTAINER_NAME_LABEL", "template", value)
 		}
 	}
 
@@ -825,6 +824,48 @@ func (dm *dockerManager) decode(resp *http.Response, d any) error {
 		return err
 	}
 	return json.Unmarshal(dm.buf.Bytes(), d)
+}
+
+// labeledContainer is a /containers/json entry decoded together with its labels. Only used when
+// a CONTAINER_NAME_LABEL template is set. Shadows ApiInfo.Labels, which is skipped by the decoder.
+type labeledContainer struct {
+	container.ApiInfo
+	Labels map[string]string
+}
+
+// Decodes a /containers/json response into apiContainerList using the reusable buffer.
+// Without a template, labels are not read at all. With a template, labels are read in the same
+// pass as the rest of the entry, into a reused list whose label maps are dropped each poll.
+func (dm *dockerManager) decodeContainerList(resp *http.Response) error {
+	if dm.buf == nil {
+		// initialize buffer with 256kb starting size
+		dm.buf = bytes.NewBuffer(make([]byte, 0, 1024*256))
+	}
+	defer resp.Body.Close()
+	defer dm.buf.Reset()
+	if _, err := dm.buf.ReadFrom(resp.Body); err != nil {
+		return err
+	}
+	if dm.nameTemplate == nil {
+		dm.apiContainerList = dm.apiContainerList[:0]
+		return json.Unmarshal(dm.buf.Bytes(), &dm.apiContainerList)
+	}
+	// Drop last poll's label maps first, so labels can't carry over into this response
+	for _, ctr := range dm.labeledList[:cap(dm.labeledList)] {
+		if ctr != nil {
+			ctr.Labels = nil
+		}
+	}
+	dm.labeledList = dm.labeledList[:0]
+	if err := json.Unmarshal(dm.buf.Bytes(), &dm.labeledList); err != nil {
+		return err
+	}
+	dm.apiContainerList = dm.apiContainerList[:0]
+	for _, ctr := range dm.labeledList {
+		ctr.ApiInfo.Labels = ctr.Labels
+		dm.apiContainerList = append(dm.apiContainerList, &ctr.ApiInfo)
+	}
+	return nil
 }
 
 // Test docker / podman sockets and return if one exists
