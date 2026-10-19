@@ -33,10 +33,8 @@ type Stats struct {
 	DiskTotal      float64             `json:"d" cbor:"9,keyasint"`
 	DiskUsed       float64             `json:"du" cbor:"10,keyasint"`
 	DiskPct        float64             `json:"dp" cbor:"11,keyasint"`
-	DiskReadPs     float64             `json:"dr,omitzero" cbor:"12,keyasint,omitzero"`
-	DiskWritePs    float64             `json:"dw,omitzero" cbor:"13,keyasint,omitzero"`
-	MaxDiskReadPs  float64             `json:"drm,omitzero" cbor:"-"`
-	MaxDiskWritePs float64             `json:"dwm,omitzero" cbor:"-"`
+	DiskReadPs     float64             `json:"dr,omitzero" cbor:"12,keyasint,omitzero"` // Deprecated: sent by agents < 0.13.0. Migrated to DiskIO by the hub.
+	DiskWritePs    float64             `json:"dw,omitzero" cbor:"13,keyasint,omitzero"` // Deprecated: sent by agents < 0.13.0. Migrated to DiskIO by the hub.
 	NetworkSent    float64             `json:"ns,omitzero" cbor:"16,keyasint,omitzero"`
 	NetworkRecv    float64             `json:"nr,omitzero" cbor:"17,keyasint,omitzero"`
 	MaxNetworkSent float64             `json:"nsm,omitzero" cbor:"-"`
@@ -119,18 +117,15 @@ type GPUData struct {
 }
 
 type FsStats struct {
-	Root           bool    `json:"-"`
-	Mountpoint     string  `json:"-"`
-	Name           string  `json:"-"`
-	DiskTotal      float64 `json:"d" cbor:"0,keyasint"`
-	DiskUsed       float64 `json:"du" cbor:"1,keyasint"`
-	TotalRead      uint64  `json:"tr,omitzero" cbor:"9,keyasint,omitzero"`  // cumulative device read bytes
-	TotalWrite     uint64  `json:"tw,omitzero" cbor:"10,keyasint,omitzero"` // cumulative device write bytes
-	DiskReadPs     float64 `json:"r" cbor:"2,keyasint"`
-	DiskWritePs    float64 `json:"w" cbor:"3,keyasint"`
-	MaxDiskReadPS  float64 `json:"rm,omitzero" cbor:"-"`
-	MaxDiskWritePS float64 `json:"wm,omitzero" cbor:"-"`
-	// TODO: remove DiskReadPs and DiskWritePs in future release in favor of DiskReadBytes and DiskWriteBytes
+	Root              bool       `json:"-"`
+	Mountpoint        string     `json:"-"`
+	Name              string     `json:"-"`
+	DiskTotal         float64    `json:"d" cbor:"0,keyasint"`
+	DiskUsed          float64    `json:"du" cbor:"1,keyasint"`
+	TotalRead         uint64     `json:"tr,omitzero" cbor:"9,keyasint,omitzero"`  // cumulative device read bytes
+	TotalWrite        uint64     `json:"tw,omitzero" cbor:"10,keyasint,omitzero"` // cumulative device write bytes
+	DiskReadPs        float64    `json:"r,omitzero" cbor:"2,keyasint,omitzero"`   // Deprecated: sent by agents < 0.13.0. Migrated to DiskReadBytes/DiskWriteBytes by the hub.
+	DiskWritePs       float64    `json:"w,omitzero" cbor:"3,keyasint,omitzero"`   // Deprecated: sent by agents < 0.13.0. Migrated to DiskReadBytes/DiskWriteBytes by the hub.
 	DiskReadBytes     uint64     `json:"rb" cbor:"6,keyasint,omitempty"`
 	DiskWriteBytes    uint64     `json:"wb" cbor:"7,keyasint,omitempty"`
 	MaxDiskReadBytes  uint64     `json:"rbm,omitzero" cbor:"-"`
