@@ -404,9 +404,9 @@ func (sm *SmartManager) collectTarget(target smartTarget) (smartResult, error) {
 			// incomplete and the hub keeps its record. smartctl also reports SLEEP
 			// when it lacks permission to check the power mode, so say so.
 			if bytes.Contains(bytes.ToUpper(output), []byte("SLEEP MODE")) {
-				slog.Info("smartctl reports device asleep, skipping until it wakes; this also happens when smartctl lacks permission", "device", attempt.path)
+				slog.Info("smartctl reports device asleep (or lacks permission), skipping", "device", attempt.path)
 			} else {
-				slog.Info("smartctl reports device in standby, skipping until it wakes", "device", attempt.path)
+				slog.Info("smartctl reports device in standby, skipping", "device", attempt.path)
 			}
 			return smartResult{}, errStandby
 		}
