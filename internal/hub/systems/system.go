@@ -58,6 +58,8 @@ type System struct {
 	zfsFetching    atomic.Bool                    // True if ZFS pools are currently being fetched
 	zfsInterval    time.Duration                  // Interval for periodic ZFS detail data updates
 
+	// Serialize monitor updates through the agent response so suspension is last.
+	monitorsMu sync.Mutex
 	// A fresh connection needs a full monitor configuration sync.
 	monitorsNeedSync atomic.Bool
 	// Serialize persistence from scheduled updates and resumes through commit.

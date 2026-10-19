@@ -13,23 +13,26 @@ import (
 // syncPendingNetworkMonitors runs on WebSocket connect and after successful stats
 // fetches. Failed syncs retry on the next update without taking the system down.
 func (sys *System) syncPendingNetworkMonitors() {
+	sys.monitorsMu.Lock()
+	defer sys.monitorsMu.Unlock()
+
 	// A paused system keeps the flag, so its monitors sync once it resumes.
 	if sys.GetStatus() == paused || !sys.monitorsNeedSync.Swap(false) {
 		return
 	}
-	if err := sys.syncAllNetworkMonitors(); err != nil {
+	if err := sys.syncAllNetworkMonitorsLocked(); err != nil {
 		sys.monitorsNeedSync.Store(true)
 		sys.manager.hub.Logger().Warn("failed to sync monitors to agent", "system", sys.Id, "err", err)
 	}
 }
 
-func (sys *System) syncAllNetworkMonitors() error {
+func (sys *System) syncAllNetworkMonitorsLocked() error {
 	configs, err := sys.manager.GetMonitorConfigsForSystem(sys.Id)
 	if err != nil {
 		return fmt.Errorf("failed to load monitors: %w", err)
 	}
 	// An empty set must also replace probes retained across a disconnect.
-	return sys.SyncNetworkMonitors(configs)
+	return sys.replaceNetworkMonitorsLocked(configs)
 }
 
 // suspendNetworkMonitors stops all monitors on the agent of a paused system. Pausing
@@ -37,22 +40,31 @@ func (sys *System) syncAllNetworkMonitors() error {
 // own; SSH agents suspend them when the hub closes the connection. The first update
 // after the system resumes syncs them again.
 func (sys *System) suspendNetworkMonitors() {
+	sys.monitorsMu.Lock()
+	defer sys.monitorsMu.Unlock()
+
 	sys.monitorsNeedSync.Store(true)
-	if sys.WsConn == nil || !sys.WsConn.IsConnected() {
+	if sys.GetStatus() != paused || sys.WsConn == nil || !sys.WsConn.IsConnected() {
 		return
 	}
-	if err := sys.SyncNetworkMonitors(nil); err != nil {
+	if err := sys.replaceNetworkMonitorsLocked(nil); err != nil {
 		sys.manager.hub.Logger().Warn("failed to suspend monitors on agent", "system", sys.Id, "err", err)
-	}
-	// A resume may have synced while this request was in flight and been undone by
-	// it, so make sure the next update syncs again.
-	if sys.GetStatus() != paused {
-		sys.monitorsNeedSync.Store(true)
 	}
 }
 
 // SyncNetworkMonitors sends monitor configurations to the agent.
 func (sys *System) SyncNetworkMonitors(configs []monitor.Config) error {
+	sys.monitorsMu.Lock()
+	defer sys.monitorsMu.Unlock()
+	if sys.GetStatus() == paused && len(configs) > 0 {
+		sys.monitorsNeedSync.Store(true)
+		return nil
+	}
+	return sys.replaceNetworkMonitorsLocked(configs)
+}
+
+// replaceNetworkMonitorsLocked requires monitorsMu through the agent response.
+func (sys *System) replaceNetworkMonitorsLocked(configs []monitor.Config) error {
 	_, err := sys.syncNetworkMonitors(monitor.SyncRequest{Action: monitor.SyncActionReplace, Configs: configs})
 	return err
 }
@@ -60,6 +72,9 @@ func (sys *System) SyncNetworkMonitors(configs []monitor.Config) error {
 // UpsertNetworkMonitor sends a single monitor configuration change to the agent.
 // A paused system gets the change with the full sync once it resumes.
 func (sys *System) UpsertNetworkMonitor(config monitor.Config, runNow bool) (*monitor.Result, error) {
+	sys.monitorsMu.Lock()
+	defer sys.monitorsMu.Unlock()
+
 	if sys.GetStatus() == paused {
 		sys.monitorsNeedSync.Store(true)
 		return nil, nil
@@ -81,6 +96,9 @@ func (sys *System) UpsertNetworkMonitor(config monitor.Config, runNow bool) (*mo
 
 // DeleteNetworkMonitor removes a single monitor task from the agent.
 func (sys *System) DeleteNetworkMonitor(id string) error {
+	sys.monitorsMu.Lock()
+	defer sys.monitorsMu.Unlock()
+
 	_, err := sys.syncNetworkMonitors(monitor.SyncRequest{
 		Action: monitor.SyncActionDelete,
 		Config: monitor.Config{ID: id},
@@ -88,6 +106,7 @@ func (sys *System) DeleteNetworkMonitor(id string) error {
 	return err
 }
 
+// syncNetworkMonitors requires monitorsMu to preserve request ordering.
 func (sys *System) syncNetworkMonitors(req monitor.SyncRequest) (monitor.SyncResponse, error) {
 	if sys.getAgentVersion().LT(beszel.MinVersionNetworkMonitors) {
 		return monitor.SyncResponse{}, nil

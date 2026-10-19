@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"strings"
+	"sync"
 	"sync/atomic"
 	"testing"
 	"time"
@@ -17,6 +18,7 @@ import (
 	esystem "github.com/henrygd/beszel/internal/entities/system"
 	"github.com/henrygd/beszel/internal/hub/ws"
 	"github.com/lxzan/gws"
+	"github.com/pocketbase/dbx"
 	"github.com/pocketbase/pocketbase/core"
 	"github.com/stretchr/testify/require"
 )
@@ -74,7 +76,7 @@ func TestNetworkMonitorSyncSkipsOlderAgents(t *testing.T) {
 }
 
 func TestNetworkMonitorReconnectSync(t *testing.T) {
-	for _, change := range []string{"delete", "disable", "retry", "pause"} {
+	for _, change := range []string{"delete", "disable", "retry", "pause", "pause-during-sync"} {
 		t.Run(change, func(t *testing.T) {
 			sys, app := newTestSystemWithHub(t)
 			record, err := app.FindRecordById("systems", sys.Id)
@@ -92,7 +94,10 @@ func TestNetworkMonitorReconnectSync(t *testing.T) {
 			})
 			require.NoError(t, app.SaveNoValidate(probe))
 
-			sm := NewSystemManager(stubHub{app})
+			db := &blockingMonitorDB{Builder: app.DB(), entered: make(chan struct{}), release: make(chan struct{})}
+			release := sync.OnceFunc(func() { close(db.release) })
+			t.Cleanup(release)
+			sm := NewSystemManager(monitorDBHub{hubLike: stubHub{app}, db: db})
 			require.NoError(t, sm.createSSHClientConfig())
 			t.Cleanup(func() {
 				sm.cancel()
@@ -173,6 +178,48 @@ func TestNetworkMonitorReconnectSync(t *testing.T) {
 				require.Empty(t, client.requests, "successful sync must not repeat on every fetch")
 				return
 			}
+			if change == "pause-during-sync" {
+				// Hold a full sync after its status check but before sending configs.
+				db.block.Store(true)
+				system.monitorsNeedSync.Store(true)
+				synced := make(chan struct{})
+				go func() { system.syncPendingNetworkMonitors(); close(synced) }()
+				select {
+				case <-db.entered:
+				case <-time.After(3 * time.Second):
+					t.Fatal("sync did not reach the config query")
+				}
+				system.swapStatus(paused)
+				suspended := make(chan struct{})
+				go func() { system.suspendNetworkMonitors(); close(suspended) }()
+				select {
+				case <-suspended:
+					t.Error("suspension overtook the in-flight sync")
+				case <-time.After(100 * time.Millisecond):
+				}
+				release()
+				for _, done := range []chan struct{}{synced, suspended} {
+					select {
+					case <-done:
+					case <-time.After(3 * time.Second):
+						t.Fatal("monitor update did not complete")
+					}
+				}
+				require.Len(t, client.requests, 2)
+				require.Equal(t, initial.Configs, (<-client.requests).Data.Configs)
+				stopped := <-client.requests
+				require.Equal(t, monitor.SyncActionReplace, stopped.Data.Action)
+				require.Empty(t, stopped.Data.Configs, "the last replacement must stop probing")
+				system.syncPendingNetworkMonitors()
+				require.Empty(t, client.requests)
+				require.True(t, system.monitorsNeedSync.Load())
+				system.swapStatus(up)
+				system.syncPendingNetworkMonitors()
+				require.Len(t, client.requests, 1)
+				require.Equal(t, initial.Configs, (<-client.requests).Data.Configs)
+				require.False(t, system.monitorsNeedSync.Load())
+				return
+			}
 			if change == "pause" {
 				system.swapStatus(paused)
 				system.suspendNetworkMonitors()
@@ -189,12 +236,15 @@ func TestNetworkMonitorReconnectSync(t *testing.T) {
 				system.syncPendingNetworkMonitors()
 				require.Empty(t, client.requests, "paused system must not receive monitor configs")
 
-				// A resume racing the suspend request must still sync afterwards.
+				// A queued suspension must not clear monitors after a resume.
 				system.swapStatus(up)
 				system.monitorsNeedSync.Store(false)
 				system.suspendNetworkMonitors()
-				<-client.requests
+				require.Empty(t, client.requests)
 				require.True(t, system.monitorsNeedSync.Load())
+				system.syncPendingNetworkMonitors()
+				require.Len(t, client.requests, 1)
+				require.Equal(t, initial.Configs, (<-client.requests).Data.Configs)
 				return
 			}
 			require.NoError(t, sm.RemoveSystem(sys.Id))
@@ -234,3 +284,25 @@ func TestGetMonitorConfigsForSystemQueryError(t *testing.T) {
 	_, err = sys.manager.GetMonitorConfigsForSystem(sys.Id)
 	require.Error(t, err, "a failed query must not be treated as an empty monitor set")
 }
+
+// blockingMonitorDB delays one config query to exercise pause ordering.
+type blockingMonitorDB struct {
+	dbx.Builder
+	block            atomic.Bool
+	entered, release chan struct{}
+}
+
+func (db *blockingMonitorDB) NewQuery(sql string) *dbx.Query {
+	if strings.Contains(sql, "FROM network_monitors WHERE") && db.block.Swap(false) {
+		close(db.entered)
+		<-db.release
+	}
+	return db.Builder.NewQuery(sql)
+}
+
+type monitorDBHub struct {
+	hubLike
+	db dbx.Builder
+}
+
+func (h monitorDBHub) DB() dbx.Builder { return h.db }
