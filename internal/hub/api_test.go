@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"sort"
+	"strings"
 	"testing"
 	"time"
 
@@ -807,6 +808,249 @@ func TestApiRoutesAuthentication(t *testing.T) {
 		// 	ExpectedStatus: 502,
 		// 	TestAppFactory: testAppFactory,
 		// },
+	}
+
+	for _, scenario := range scenarios {
+		scenario.Test(t)
+	}
+}
+
+func TestUniversalTokenEndpoint(t *testing.T) {
+	hub, user := beszelTests.GetHubWithUser(t)
+	defer hub.Cleanup()
+
+	userToken, err := user.NewAuthToken()
+	require.NoError(t, err, "Failed to create auth token")
+
+	otherUser, err := beszelTests.CreateUser(hub, "other@example.com", "password123")
+	require.NoError(t, err, "Failed to create other user")
+	otherUserToken, err := otherUser.NewAuthToken()
+	require.NoError(t, err, "Failed to create other user auth token")
+
+	readOnlyUser, err := beszelTests.CreateUserWithRole(hub, "readonly@example.com", "password123", "readonly")
+	require.NoError(t, err, "Failed to create readonly user")
+	readOnlyUserToken, err := readOnlyUser.NewAuthToken()
+	require.NoError(t, err, "Failed to create readonly user auth token")
+
+	superuser, err := beszelTests.CreateSuperuser(hub, "superuser@example.com", "password123")
+	require.NoError(t, err, "Failed to create superuser")
+	superuserToken, err := superuser.NewAuthToken()
+	require.NoError(t, err, "Failed to create superuser auth token")
+
+	testAppFactory := func(t testing.TB) *pbTests.TestApp {
+		return hub.TestApp
+	}
+
+	// token responses should never be cached
+	expectNoStore := func(t testing.TB, app *pbTests.TestApp, res *http.Response) {
+		require.Equal(t, "no-store", res.Header.Get("Cache-Control"))
+	}
+
+	// asserts whether the user has a permanent token record with the given token
+	expectPermanentRecord := func(userID, token string, exists bool) func(testing.TB, *pbTests.TestApp, *http.Response) {
+		return func(t testing.TB, app *pbTests.TestApp, res *http.Response) {
+			expectNoStore(t, app, res)
+			rec, err := app.FindFirstRecordByFilter("universal_tokens", "user = {:user}", dbx.Params{"user": userID})
+			if !exists {
+				require.Error(t, err, "Expected no permanent token record")
+				return
+			}
+			require.NoError(t, err, "Expected permanent token record")
+			require.Equal(t, token, rec.GetString("token"))
+		}
+	}
+
+	const path = "/api/beszel/universal-token"
+	const token = "post-universal-token-123"
+
+	// scenarios share app state and run in order
+	scenarios := []beszelTests.ApiScenario{
+		{
+			Name:            "POST /universal-token - no auth should fail",
+			Method:          http.MethodPost,
+			URL:             path,
+			Body:            jsonReader(map[string]any{"enable": 1}),
+			ExpectedStatus:  401,
+			ExpectedContent: []string{"requires valid"},
+			TestAppFactory:  testAppFactory,
+		},
+		{
+			Name:   "POST /universal-token - readonly user should fail",
+			Method: http.MethodPost,
+			URL:    path,
+			Body:   jsonReader(map[string]any{"enable": 1}),
+			Headers: map[string]string{
+				"Authorization": readOnlyUserToken,
+			},
+			ExpectedStatus:  403,
+			ExpectedContent: []string{"The authorized record is not allowed to perform this action."},
+			TestAppFactory:  testAppFactory,
+		},
+		{
+			Name:   "POST /universal-token - superuser should fail",
+			Method: http.MethodPost,
+			URL:    path,
+			Body:   jsonReader(map[string]any{"enable": 1}),
+			Headers: map[string]string{
+				"Authorization": superuserToken,
+			},
+			ExpectedStatus:  403,
+			ExpectedContent: []string{"Superusers cannot use universal tokens"},
+			TestAppFactory:  testAppFactory,
+			AfterTestFunc:   expectNoStore,
+		},
+		{
+			Name:   "POST /universal-token - invalid json should fail",
+			Method: http.MethodPost,
+			URL:    path,
+			Body:   strings.NewReader(`{`),
+			Headers: map[string]string{
+				"Authorization": userToken,
+			},
+			ExpectedStatus:  400,
+			ExpectedContent: []string{"Invalid universal token request"},
+			TestAppFactory:  testAppFactory,
+			AfterTestFunc:   expectNoStore,
+		},
+		{
+			Name:   "POST /universal-token - non-numeric enable should fail",
+			Method: http.MethodPost,
+			URL:    path,
+			Body:   jsonReader(map[string]any{"enable": "yes"}),
+			Headers: map[string]string{
+				"Authorization": userToken,
+			},
+			ExpectedStatus:  400,
+			ExpectedContent: []string{"Invalid universal token request"},
+			TestAppFactory:  testAppFactory,
+		},
+		{
+			Name:   "POST /universal-token - enable ephemeral token",
+			Method: http.MethodPost,
+			URL:    path,
+			Body:   jsonReader(map[string]any{"token": token, "enable": 1}),
+			Headers: map[string]string{
+				"Authorization": userToken,
+			},
+			ExpectedStatus:  200,
+			ExpectedContent: []string{`"token":"` + token + `"`, `"active":true`, `"permanent":false`},
+			TestAppFactory:  testAppFactory,
+			AfterTestFunc:   expectPermanentRecord(user.Id, "", false),
+		},
+		{
+			Name:   "POST /universal-token - empty body should read current state",
+			Method: http.MethodPost,
+			URL:    path,
+			Body:   jsonReader(map[string]any{}),
+			Headers: map[string]string{
+				"Authorization": userToken,
+			},
+			ExpectedStatus:  200,
+			ExpectedContent: []string{`"token":"` + token + `"`, `"active":true`, `"permanent":false`},
+			TestAppFactory:  testAppFactory,
+			AfterTestFunc:   expectNoStore,
+		},
+		{
+			Name:   "POST /universal-token - make token permanent",
+			Method: http.MethodPost,
+			URL:    path,
+			Body:   jsonReader(map[string]any{"token": token, "enable": 1, "permanent": 1}),
+			Headers: map[string]string{
+				"Authorization": userToken,
+			},
+			ExpectedStatus:  200,
+			ExpectedContent: []string{`"token":"` + token + `"`, `"active":true`, `"permanent":true`},
+			TestAppFactory:  testAppFactory,
+			AfterTestFunc:   expectPermanentRecord(user.Id, token, true),
+		},
+		{
+			Name:   "POST /universal-token - other user should not read token",
+			Method: http.MethodPost,
+			URL:    path,
+			Body:   jsonReader(map[string]any{}),
+			Headers: map[string]string{
+				"Authorization": otherUserToken,
+			},
+			ExpectedStatus:     200,
+			ExpectedContent:    []string{`"active":false`},
+			NotExpectedContent: []string{token},
+			TestAppFactory:     testAppFactory,
+		},
+		{
+			Name:   "POST /universal-token - other user should see token as inactive",
+			Method: http.MethodPost,
+			URL:    path,
+			Body:   jsonReader(map[string]any{"token": token}),
+			Headers: map[string]string{
+				"Authorization": otherUserToken,
+			},
+			ExpectedStatus:  200,
+			ExpectedContent: []string{`"token":"` + token + `"`, `"active":false`},
+			TestAppFactory:  testAppFactory,
+		},
+		{
+			Name:   "POST /universal-token - other user should not disable token",
+			Method: http.MethodPost,
+			URL:    path,
+			Body:   jsonReader(map[string]any{"enable": 0}),
+			Headers: map[string]string{
+				"Authorization": otherUserToken,
+			},
+			ExpectedStatus:  200,
+			ExpectedContent: []string{`"active":false`},
+			TestAppFactory:  testAppFactory,
+			AfterTestFunc:   expectPermanentRecord(user.Id, token, true),
+		},
+		{
+			Name:   "POST /universal-token - disable permanent token",
+			Method: http.MethodPost,
+			URL:    path,
+			Body:   jsonReader(map[string]any{"enable": 0}),
+			Headers: map[string]string{
+				"Authorization": userToken,
+			},
+			ExpectedStatus:  200,
+			ExpectedContent: []string{`"active":false`, `"permanent":false`},
+			TestAppFactory:  testAppFactory,
+			AfterTestFunc:   expectPermanentRecord(user.Id, "", false),
+		},
+		{
+			Name:   "POST /universal-token - read after disable should be inactive",
+			Method: http.MethodPost,
+			URL:    path,
+			Body:   jsonReader(map[string]any{}),
+			Headers: map[string]string{
+				"Authorization": userToken,
+			},
+			ExpectedStatus:     200,
+			ExpectedContent:    []string{`"active":false`, `"permanent":false`},
+			NotExpectedContent: []string{token},
+			TestAppFactory:     testAppFactory,
+		},
+		{
+			Name:   "GET /universal-token - legacy query params should still work",
+			Method: http.MethodGet,
+			URL:    path + "?enable=1&permanent=1&token=legacy-token-123",
+			Headers: map[string]string{
+				"Authorization": userToken,
+			},
+			ExpectedStatus:  200,
+			ExpectedContent: []string{`"token":"legacy-token-123"`, `"active":true`, `"permanent":true`},
+			TestAppFactory:  testAppFactory,
+			AfterTestFunc:   expectPermanentRecord(user.Id, "legacy-token-123", true),
+		},
+		{
+			Name:   "GET /universal-token - legacy read without query params",
+			Method: http.MethodGet,
+			URL:    path,
+			Headers: map[string]string{
+				"Authorization": userToken,
+			},
+			ExpectedStatus:  200,
+			ExpectedContent: []string{`"token":"legacy-token-123"`, `"active":true`, `"permanent":true`},
+			TestAppFactory:  testAppFactory,
+			AfterTestFunc:   expectNoStore,
+		},
 	}
 
 	for _, scenario := range scenarios {
