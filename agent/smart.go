@@ -390,8 +390,15 @@ func (sm *SmartManager) collectTarget(target smartTarget) (smartResult, error) {
 					sm.woken = make(map[string]struct{})
 				}
 				sm.woken[target.key] = struct{}{}
-				slog.Debug("smartctl waking device in standby for first collection", "device", attempt.path)
-				return sm.wakeTarget(attempt, i)
+				slog.Info("smartctl waking device in standby for first collection", "device", attempt.path)
+				result, wakeErr := sm.wakeTarget(attempt, i)
+				if wakeErr == nil {
+					return result, nil
+				}
+				// The disk is awake now, so the remaining attempts can run with
+				// -n standby (e.g. sat after scsi auto-detection, #2295).
+				err = wakeErr
+				continue
 			}
 			// Already woken once: skip it until it wakes, so the refresh is
 			// incomplete and the hub keeps its record. smartctl also reports SLEEP

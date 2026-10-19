@@ -731,6 +731,30 @@ func TestRefreshWakeFailureNotRetried(t *testing.T) {
 	}
 }
 
+// A failed wake query moves on to the next attempt, which runs with -n standby
+// against the now-awake disk (#2295).
+func TestRefreshWakeFallsBackToSat(t *testing.T) {
+	fake := &fakeSmartctl{
+		scan: scanOf("/dev/sda:scsi"),
+		responses: map[string]fakeResponse{
+			" /dev/sda":    {output: standbyOutput, exit: 2},
+			"sat /dev/sda": {output: string(readSmartFixture(t, "sat.json"))},
+		},
+		wake: map[string]fakeResponse{" /dev/sda": {output: string(readSmartFixture(t, "scsi_identity.json"))}},
+	}
+	sm := newFakeSmartManager(t, fake)
+
+	complete, err := sm.Refresh(false)
+	require.NoError(t, err)
+	assert.True(t, complete)
+	assert.Equal(t, "sat", sm.GetCurrentData()["Z4K2A01FS"].DiskType)
+	assert.Equal(t, []string{
+		"-a --json=c -n standby /dev/sda",
+		"-a --json=c /dev/sda",
+		"-d sat -a --json=c -l devstat -n standby /dev/sda",
+	}, fake.deviceCalls())
+}
+
 // Data is rebuilt on each refresh, so a removed disk disappears.
 func TestRefreshPrunesRemovedDevices(t *testing.T) {
 	fake := &fakeSmartctl{
