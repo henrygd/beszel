@@ -408,7 +408,7 @@ func (sm *SmartManager) collectTarget(target smartTarget) (smartResult, error) {
 				}
 				sm.woken[target.key] = struct{}{}
 				slog.Info("smartctl waking device in standby for first collection", "device", attempt.path)
-				result, wakeErr := sm.wakeTarget(attempt, i)
+				result, wakeErr := sm.wakeTarget(attempt, i, ata)
 				if wakeErr == nil {
 					return result, nil
 				}
@@ -436,8 +436,8 @@ func (sm *SmartManager) collectTarget(target smartTarget) (smartResult, error) {
 // wakeTarget queries an attempt without -n standby, spinning up the disk.
 // A failure is returned as a real error rather than errStandby, which also
 // surfaces the permission problem that smartctl otherwise reports as SLEEP.
-func (sm *SmartManager) wakeTarget(attempt smartAttempt, i int) (smartResult, error) {
-	args := smartctlArgs(attempt, false, false)
+func (sm *SmartManager) wakeTarget(attempt smartAttempt, i int, ata bool) (smartResult, error) {
+	args := smartctlArgs(attempt, ata, false)
 	output, exitCode, err := sm.runSmartctl(15*time.Second, args...)
 	if err != nil {
 		return smartResult{}, err

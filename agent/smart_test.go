@@ -569,28 +569,38 @@ func TestRefreshScsiFallsBackToSat(t *testing.T) {
 	assert.Equal(t, []string{"-d sat -a --json=c -l devstat -n standby /dev/sda"}, fake.deviceCalls())
 }
 
-// An explicit SMART_DEVICES type is a deliberate override and is not retried.
 // A disk scanned as ata is auto-detected but requests devstat from the first
-// query; after that the protocol of the reading decides.
+// query, including a wake query; after that the protocol of the reading decides.
 func TestRefreshScannedAtaRequestsDevstat(t *testing.T) {
 	for _, test := range []struct {
 		fixture, next string
+		asleep        bool
 	}{
-		{"sda.json", "-a --json=c -l devstat -n standby /dev/sda"},
-		{"scsi.json", "-a --json=c -n standby /dev/sda"},
+		{"sda.json", "-a --json=c -l devstat -n standby /dev/sda", false},
+		{"scsi.json", "-a --json=c -n standby /dev/sda", false},
+		{"sda.json", "-a --json=c -l devstat -n standby /dev/sda", true},
+		{"scsi.json", "-a --json=c -n standby /dev/sda", true},
 	} {
-		t.Run(test.fixture, func(t *testing.T) {
+		t.Run(fmt.Sprintf("%s/asleep=%t", test.fixture, test.asleep), func(t *testing.T) {
+			reading := fakeResponse{output: string(readSmartFixture(t, test.fixture))}
 			fake := &fakeSmartctl{
 				scan:      scanOf("/dev/sda:ata"),
-				responses: map[string]fakeResponse{" /dev/sda": {output: string(readSmartFixture(t, test.fixture))}},
+				responses: map[string]fakeResponse{" /dev/sda": reading},
+			}
+			wantCalls := []string{"-a --json=c -l devstat -n standby /dev/sda"}
+			if test.asleep {
+				fake.responses[" /dev/sda"] = fakeResponse{output: standbyOutput, exit: 2}
+				fake.wake = map[string]fakeResponse{" /dev/sda": reading}
+				wantCalls = append(wantCalls, "-a --json=c -l devstat /dev/sda")
 			}
 			sm := newFakeSmartManager(t, fake)
 
 			_, err := sm.Refresh(false)
 			require.NoError(t, err)
-			assert.Equal(t, []string{"-a --json=c -l devstat -n standby /dev/sda"}, fake.deviceCalls())
+			assert.Equal(t, wantCalls, fake.deviceCalls())
 
 			fake.calls = nil
+			fake.responses[" /dev/sda"] = reading
 			_, err = sm.Refresh(false)
 			require.NoError(t, err)
 			assert.Equal(t, []string{test.next}, fake.deviceCalls())
@@ -598,6 +608,7 @@ func TestRefreshScannedAtaRequestsDevstat(t *testing.T) {
 	}
 }
 
+// An explicit SMART_DEVICES type is a deliberate override and is not retried.
 func TestRefreshExplicitTypeIsNotRetried(t *testing.T) {
 	t.Setenv("SMART_DEVICES", "/dev/sda:scsi")
 	fake := &fakeSmartctl{
