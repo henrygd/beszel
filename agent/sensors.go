@@ -151,11 +151,23 @@ func (a *Agent) updateTemperatures(systemStats *system.Stats) {
 	}
 
 	systemStats.Temperatures = make(map[string]float64, len(temps))
+	// claimed tracks every name handed out, including names of sensors that are
+	// dropped below, so a sensor's key never depends on which sensors were filtered
+	claimed := make(map[string]struct{}, len(temps))
 	for i, sensor := range temps {
 		// check for malformed strings on darwin (gopsutil/issues/1832)
 		if runtime.GOOS == "darwin" && !utf8.ValidString(sensor.SensorKey) {
 			continue
 		}
+
+		// claim a name before any filtering, so excluding a sensor does not
+		// rename the sensors after it
+		sensorName := sensor.SensorKey
+		if _, ok := claimed[sensorName]; ok {
+			// if key already claimed, append int to key
+			sensorName = sensorName + "_" + strconv.Itoa(i)
+		}
+		claimed[sensorName] = struct{}{}
 
 		// scale temperature
 		if sensor.Temperature != 0 && sensor.Temperature < 1 {
@@ -164,11 +176,6 @@ func (a *Agent) updateTemperatures(systemStats *system.Stats) {
 		// skip if temperature is unreasonable
 		if sensor.Temperature <= 0 || sensor.Temperature >= 200 {
 			continue
-		}
-		sensorName := sensor.SensorKey
-		if _, ok := systemStats.Temperatures[sensorName]; ok {
-			// if key already exists, append int to key
-			sensorName = sensorName + "_" + strconv.Itoa(i)
 		}
 		// skip if not in whitelist or blacklist
 		if !isValidSensor(sensorName, a.sensorConfig) {
