@@ -73,6 +73,7 @@ export default function LineChartDefault({
 	truncate = false,
 	chartProps,
 	connectNulls,
+	interpolation = "monotoneX",
 }: {
 	chartData: ChartOptions & { systemStats?: SystemStatsRecord[] }
 	// biome-ignore lint/suspicious/noExplicitAny: accepts different data source types (systemStats or containerData)
@@ -100,6 +101,7 @@ export default function LineChartDefault({
 	truncate?: boolean
 	chartProps?: Omit<React.ComponentProps<typeof LineChart>, "data" | "margin">
 	connectNulls?: boolean
+	interpolation?: React.ComponentProps<typeof Line>["type"]
 }) {
 	const { yAxisWidth, updateYAxisWidth } = useYAxisWidth()
 	const hasRightAxis = !!dataPoints?.some((dp) => dp.yAxisId === "right")
@@ -125,7 +127,9 @@ export default function LineChartDefault({
 	}, [displayData, displayMaxToggled, isIntersecting, maxToggled, sourceData])
 
 	// Use a stable key derived from data point identities and visual properties
-	const linesKey = dataPoints?.map((d) => `${d.label}:${d.strokeOpacity}${d.dot}${d.yAxisId}${d.strokeDasharray}`).join("\0")
+	const linesKey = dataPoints
+		?.map((d) => `${d.label}:${d.strokeOpacity}${d.dot}${d.yAxisId}${d.strokeDasharray}`)
+		.join("\0")
 
 	const XAxis = xAxis(chartData.chartTime, displayData.at(-1)?.created)
 
@@ -141,7 +145,7 @@ export default function LineChartDefault({
 					yAxisId={dataPoint.yAxisId ?? "left"}
 					dataKey={dataPoint.dataKey}
 					name={dataPoint.label}
-					type="monotoneX"
+					type={interpolation}
 					dot={dataPoint.dot ?? (connectNulls ? false : isolatedDot)}
 					strokeWidth={1.5}
 					stroke={color}
@@ -155,7 +159,7 @@ export default function LineChartDefault({
 				/>
 			)
 		})
-	}, [linesKey, displayMaxToggled])
+	}, [linesKey, displayMaxToggled, interpolation, connectNulls])
 
 	return useMemo(() => {
 		if (displayData.length === 0) {

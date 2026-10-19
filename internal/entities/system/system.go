@@ -58,6 +58,7 @@ type Stats struct {
 	DiskIoStats       [6]float64           `json:"dios,omitzero" cbor:"35,keyasint,omitzero"`   // [read time %, write time %, io utilization %, r_await ms, w_await ms, weighted io %]
 	MaxDiskIoStats    [6]float64           `json:"diosm,omitzero" cbor:"-"`                     // max values for DiskIoStats
 	Fans              map[string]uint16    `json:"f,omitempty" cbor:"36,keyasint,omitempty"`
+	FanControl        map[string]float64   `json:"fc,omitempty" cbor:"42,keyasint,omitempty"` // reported fan control levels (0-100%); 41 reserved for CPU frequency
 	Batteries         map[string]uint8     `json:"bats,omitempty" cbor:"37,keyasint,omitempty"`
 	ZfsPools          map[string]*ZfsPool  `json:"z,omitempty" cbor:"39,keyasint,omitempty"`  // ZFS pool metrics, keyed by pool name
 	DiskIOTotal       [2]uint64            `json:"diot,omitzero" cbor:"38,keyasint,omitzero"` // [total read bytes, total write bytes] cumulative device counters

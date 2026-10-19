@@ -2532,3 +2532,15 @@ msgstr "Yes"
 #: src/components/routes/settings/layout.tsx
 msgid "Your user settings have been updated."
 msgstr "Your user settings have been updated."
+
+#: src/components/routes/system/charts/fan-control-chart.tsx
+msgid "Average reported control level (%)"
+msgstr "Average reported control level (%)"
+
+#: src/components/routes/system/charts/fan-control-chart.tsx
+msgid "Fan control"
+msgstr "Fan control"
+
+#: src/components/routes/system/charts/fan-control-chart.tsx
+msgid "Reported control level (%)"
+msgstr "Reported control level (%)"

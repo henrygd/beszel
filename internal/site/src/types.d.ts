@@ -152,6 +152,8 @@ export interface SystemStats {
 	t?: Record<string, number>
 	/** fan speeds (RPM) — keyed by `<chip>_<label-or-fan-idx>` */
 	f?: Record<string, number>
+	/** reported fan control levels (0-100%), including PWM and on/off controls */
+	fc?: Record<string, number>
 	/** extra filesystems */
 	efs?: Record<string, ExtraFsStats>
 	/** ZFS pool metrics */
