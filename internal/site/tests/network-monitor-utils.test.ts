@@ -5,7 +5,9 @@ mock.module("@lingui/core/macro", () => ({
 	plural: (_count: number, forms: { other?: string }) => forms.other ?? "",
 }))
 
-const { getMonitorStats, withMonitorGaps } = await import("../src/lib/network-monitor-utils")
+const { getMonitorStats, mergeMonitorStats, mergeSameTimestamps, withMonitorGaps } = await import(
+	"../src/lib/network-monitor-utils"
+)
 
 describe("monitor stats derived from stored counts", () => {
 	test("retains probe weights and response precision", () => {
@@ -85,5 +87,40 @@ describe("monitor gaps", () => {
 			record(120_000),
 		] as Parameters<typeof withMonitorGaps>[0]
 		expect(withMonitorGaps(records, monitor, 60_000)).toEqual([records[0], records[3]])
+	})
+})
+
+const raw = (monitor: string, created: number, res_sum = 10) => ({
+	monitor,
+	created,
+	res_min: 1,
+	res_max: 20,
+	total_count: 1,
+	success_count: 1,
+	res_sum,
+})
+
+describe("merging stats across monitors", () => {
+	test("keeps exact timestamps without bucketing", () => {
+		const merged = mergeMonitorStats([raw("a", 60_100), raw("b", 60_400)])
+		expect(merged.map((r) => r.created)).toEqual([60_100, 60_400])
+	})
+
+	test("aligns unaligned system timestamps into one row per bucket", () => {
+		const merged = mergeMonitorStats([raw("b", 120_900, 30), raw("a", 60_100), raw("b", 60_400, 20)], 60_000)
+		expect(merged).toHaveLength(2)
+		expect(merged[0].created).toBe(60_000)
+		expect(Object.keys(merged[0].stats).sort()).toEqual(["a", "b"])
+		expect(merged[0].stats.b.res_avg).toBe(20)
+		expect(merged[1].created).toBe(120_000)
+		expect(merged[1].stats.b.res_avg).toBe(30)
+	})
+
+	test("folds a late system's record into an existing cached bucket", () => {
+		const existing = mergeMonitorStats([raw("a", 60_100)], 60_000)
+		const late = mergeMonitorStats([raw("b", 60_700), raw("b", 120_200)], 60_000)
+		const remaining = mergeSameTimestamps(existing, late)
+		expect(Object.keys(existing[0].stats).sort()).toEqual(["a", "b"])
+		expect(remaining.map((r) => r.created)).toEqual([120_000])
 	})
 })

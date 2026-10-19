@@ -1,11 +1,11 @@
 {
 	"name": "beszel",
 	"private": true,
-	"version": "0.20.0",
+	"version": "0.21.0",
 	"type": "module",
 	"scripts": {
 		"dev": "vite --host",
-		"build": "lingui extract --overwrite && lingui compile && vite build",
+		"build": "lingui extract --overwrite && lingui compile && tsc -b && vite build",
 		"preview": "vite preview",
 		"sync": "lingui extract --overwrite && lingui compile",
 		"sync_no_compile": "lingui extract --overwrite --clean",
@@ -48,10 +48,10 @@
 		"recharts": "^2.15.4",
 		"shiki": "^3.13.0",
 		"tailwind-merge": "^3.3.1",
-		"valibot": "^1.3.1"
+		"valibot": "^1.4.2"
 	},
 	"devDependencies": {
-		"@biomejs/biome": "2.2.4",
+		"@biomejs/biome": "2.3.15",
 		"@lingui/cli": "^5.4.1",
 		"@lingui/swc-plugin": "^5.6.1",
 		"@lingui/vite-plugin": "^5.4.1",
@@ -64,7 +64,7 @@
 		"tailwindcss": "^4.1.12",
 		"tw-animate-css": "^1.3.7",
 		"typescript": "^5.9.2",
-		"vite": "^7.1.3"
+		"vite": "^7.3.5"
 	},
 	"overrides": {
 		"@nanostores/router": {

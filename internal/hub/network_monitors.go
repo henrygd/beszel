@@ -1,6 +1,7 @@
 package hub
 
 import (
+	"fmt"
 	"strconv"
 	"time"
 
@@ -21,7 +22,8 @@ func generateMonitorID(systemId string, config monitor.Config) string {
 	if config.Protocol == "dns" {
 		args = append(args, config.Server)
 	}
-	return systems.MakeStableHashId(args...)
+	// Meet the record ID minimum without changing existing IDs of six or more characters.
+	return fmt.Sprintf("%06s", systems.MakeStableHashId(args...))
 }
 
 // bindNetworkMonitorsEvents keeps monitor records and agent monitor state in sync.
@@ -47,7 +49,7 @@ func bindNetworkMonitorsEvents(hub *Hub) {
 		// If connected, run the monitor immediately. Paused systems may be absent
 		// from the manager; their monitors will sync when they reconnect.
 		system, err := hub.sm.GetSystem(e.Record.GetString("system"))
-		if err == nil && system.Status == "up" {
+		if err == nil && system.GetStatus() == "up" {
 			go hub.upsertNetworkMonitor(e.Record, true)
 		}
 		return nil
@@ -65,6 +67,10 @@ func bindNetworkMonitorsEvents(hub *Hub) {
 		// only dns uses server - clear it for other protocols
 		if protocol != "dns" {
 			e.Record.Set("server", "")
+		}
+		// only http uses TLS verification - clear it for other protocols
+		if protocol != "http" {
+			e.Record.Set("skipTlsVerify", false)
 		}
 		ID := generateMonitorID(systemID, *monitorConfigFromRecord(e.Record))
 		if ID != e.Record.Id {
@@ -113,6 +119,8 @@ func monitorConfigFromRecord(record *core.Record) *monitor.Config {
 		Port:     uint16(record.GetInt("port")),
 		Interval: uint16(record.GetInt("interval")),
 		Server:   record.GetString("server"),
+		// SkipTLSVerify is a probe option, not part of the monitor's identity, so it does not affect the ID.
+		SkipTLSVerify: record.GetBool("skipTlsVerify"),
 	}
 }
 
@@ -137,7 +145,7 @@ func copyMonitorToNewRecord(oldRecord *core.Record, newID string) *core.Record {
 	collection := oldRecord.Collection()
 	newRecord := core.NewRecord(collection)
 	newRecord.Id = newID
-	fields := []string{"system", "target", "protocol", "port", "server", "interval", "enabled"}
+	fields := []string{"system", "target", "protocol", "port", "server", "interval", "enabled", "skipTlsVerify"}
 	for _, field := range fields {
 		newRecord.Set(field, oldRecord.Get(field))
 	}

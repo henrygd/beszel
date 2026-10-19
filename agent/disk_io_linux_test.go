@@ -75,17 +75,30 @@ func TestUpdateDiskIoTimeCounterWrap(t *testing.T) {
 	}
 }
 
-// The first sample of a cache interval has no snapshot of its own. It must
-// measure the time counters from the same baseline as the byte counters.
-func TestUpdateDiskIoFirstSampleOfInterval(t *testing.T) {
+// backdateDiskBaseline moves the baseline of a device into the past so the
+// next seeded sample of an interval spans d.
+func backdateDiskBaseline(a *Agent, name string, d time.Duration) {
+	b := a.diskBaseline[name]
+	b.at = time.Now().Add(-d)
+	a.diskBaseline[name] = b
+}
+
+// setupDiskstats points gopsutil at a temp dir and returns a writer for its diskstats file.
+func setupDiskstats(t *testing.T) func(line string) {
 	dir := t.TempDir()
 	t.Setenv("HOST_PROC", dir)
 	t.Setenv("HOST_SYS", dir)
 	t.Setenv("HOST_DEV", dir)
 	t.Setenv("HOST_RUN", dir)
-	writeDiskstats := func(line string) {
+	return func(line string) {
 		require.NoError(t, os.WriteFile(filepath.Join(dir, "diskstats"), []byte(line), 0o644))
 	}
+}
+
+// The first sample of a cache interval has no snapshot of its own. It must
+// measure the time counters from the same baseline as the byte counters.
+func TestUpdateDiskIoFirstSampleOfInterval(t *testing.T) {
+	writeDiskstats := setupDiskstats(t)
 
 	writeDiskstats("   8       0 sda 1000 0 20000 900 500 0 10000 700 0 400 0\n")
 	counters, err := disk.IOCounters("sda")
@@ -97,9 +110,7 @@ func TestUpdateDiskIoFirstSampleOfInterval(t *testing.T) {
 		diskPrev: map[uint16]map[string]prevDisk{},
 	}
 	a.initializeDiskIoStats(counters)
-
-	// updateDiskIo skips samples less than 100ms apart.
-	time.Sleep(150 * time.Millisecond)
+	backdateDiskBaseline(a, "sda", 60*time.Second)
 
 	// Deltas: read 300ms / 10 ops, write 400ms / 20 ops, io time 1200ms, weighted io 3000ms.
 	writeDiskstats("   8       0 sda 1010 0 21200 1200 520 0 10400 1100 0 1600 3000\n")
@@ -115,11 +126,49 @@ func TestUpdateDiskIoFirstSampleOfInterval(t *testing.T) {
 	assert.NotZero(t, fs.DiskIoStats[5], "weighted io")
 
 	// A second interval starts from the latest counters, not from the ones at start.
-	time.Sleep(150 * time.Millisecond)
+	backdateDiskBaseline(a, "sda", time.Second)
 	// Deltas: read 100ms / 10 ops, write 100ms / 20 ops.
 	writeDiskstats("   8       0 sda 1020 0 22400 1300 540 0 10800 1200 0 1800 3500\n")
 	a.updateDiskIo(1000, &stats)
 
 	assert.InDelta(t, 10, fs.DiskIoStats[3], 0.01, "r_await")
 	assert.InDelta(t, 5, fs.DiskIoStats[4], 0.01, "w_await")
+}
+
+// Right after agent start the baseline is too recent to stand for a whole
+// interval. The first sample only stores a snapshot, and the next one is
+// measured from it.
+func TestUpdateDiskIoSkipsShortSeededSample(t *testing.T) {
+	writeDiskstats := setupDiskstats(t)
+
+	writeDiskstats("   8       0 sda 1000 0 20000 900 500 0 10000 700 0 400 0\n")
+	counters, err := disk.IOCounters("sda")
+	require.NoError(t, err)
+
+	fs := &system.FsStats{Root: true}
+	a := &Agent{
+		fsStats:  map[string]*system.FsStats{"sda": fs},
+		diskPrev: map[uint16]map[string]prevDisk{},
+	}
+	a.initializeDiskIoStats(counters)
+	backdateDiskBaseline(a, "sda", 2*time.Second)
+
+	// 1000 MB read in the 2s after start.
+	writeDiskstats("   8       0 sda 2000 0 2068000 900 500 0 10000 700 0 400 0\n")
+	var stats system.Stats
+	a.updateDiskIo(60000, &stats)
+
+	assert.Zero(t, fs.DiskReadBytes)
+	assert.Zero(t, stats.DiskIO[0])
+	require.Contains(t, a.diskPrev[60000], "sda", "snapshot is stored")
+
+	// Next sample is measured from the stored snapshot: 60 MB over 60s.
+	snap := a.diskPrev[60000]["sda"]
+	snap.at = time.Now().Add(-60 * time.Second)
+	a.diskPrev[60000]["sda"] = snap
+	writeDiskstats("   8       0 sda 3000 0 2190880 900 500 0 10000 700 0 400 0\n")
+	stats = system.Stats{}
+	a.updateDiskIo(60000, &stats)
+
+	assert.InDelta(t, 1_048_576, float64(stats.DiskIO[0]), 20_000)
 }

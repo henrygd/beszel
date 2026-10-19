@@ -1,3 +1,4 @@
+import { useLingui as useLinguiContext } from "@lingui/react"
 import { Trans, useLingui } from "@lingui/react/macro"
 import { useStore } from "@nanostores/react"
 import { subscribeKeys } from "nanostores"
@@ -24,6 +25,7 @@ import {
 	FilterIcon,
 	LayoutGridIcon,
 	LayoutListIcon,
+	LoaderCircleIcon,
 	Settings2Icon,
 	XIcon,
 } from "lucide-react"
@@ -44,7 +46,7 @@ import { Input } from "@/components/ui/input"
 import { TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { SystemStatus } from "@/lib/enums"
 import { queueUserSettings } from "@/lib/api"
-import { $downSystems, $pausedSystems, $systems, $upSystems, $userSettings } from "@/lib/stores"
+import { $downSystems, $pausedSystems, $systems, $systemsLoaded, $upSystems, $userSettings } from "@/lib/stores"
 import { cn, runOnce } from "@/lib/utils"
 import type { SystemRecord } from "@/types"
 import AlertButton from "../alerts/alert-button"
@@ -59,6 +61,7 @@ const preloadSystemDetail = runOnce(() => import("@/components/routes/system.tsx
 
 export default function SystemsTable() {
 	const data = useStore($systems)
+	const systemsLoaded = useStore($systemsLoaded)
 	const downSystems = $downSystems.get()
 	const upSystems = $upSystems.get()
 	const pausedSystems = $pausedSystems.get()
@@ -378,7 +381,7 @@ export default function SystemsTable() {
 			{viewMode === "table" ? (
 				// table layout
 				<div className="rounded-md">
-					<AllSystemsTable table={table} rows={rows} colLength={visibleColumns.length} />
+					<AllSystemsTable table={table} rows={rows} colLength={visibleColumns.length} isLoading={!systemsLoaded} />
 				</div>
 			) : (
 				// grid layout
@@ -389,7 +392,11 @@ export default function SystemsTable() {
 						})
 					) : (
 						<div className="col-span-full text-center py-8">
-							<Trans>No systems found.</Trans>
+							{systemsLoaded ? (
+								<Trans>No systems found.</Trans>
+							) : (
+								<LoaderCircleIcon className="animate-spin size-10 opacity-60 mx-auto" />
+							)}
 						</div>
 					)}
 				</div>
@@ -399,7 +406,17 @@ export default function SystemsTable() {
 }
 
 const AllSystemsTable = memo(
-	({ table, rows, colLength }: { table: TableType<SystemRecord>; rows: Row<SystemRecord>[]; colLength: number }) => {
+	({
+		table,
+		rows,
+		colLength,
+		isLoading,
+	}: {
+		table: TableType<SystemRecord>
+		rows: Row<SystemRecord>[]
+		colLength: number
+		isLoading: boolean
+	}) => {
 		// The virtualizer will need a reference to the scrollable container element
 		const scrollRef = useRef<HTMLDivElement>(null)
 
@@ -444,7 +461,11 @@ const AllSystemsTable = memo(
 							) : (
 								<TableRow>
 									<TableCell colSpan={colLength} className="h-37 text-center pointer-events-none">
-										<Trans>No systems found.</Trans>
+										{isLoading ? (
+											<LoaderCircleIcon className="animate-spin size-10 opacity-60 mx-auto" />
+										) : (
+											<Trans>No systems found.</Trans>
+										)}
 									</TableCell>
 								</TableRow>
 							)}
@@ -457,7 +478,7 @@ const AllSystemsTable = memo(
 )
 
 function SystemsTableHead({ table }: { table: TableType<SystemRecord> }) {
-	const { t } = useLingui()
+	useLinguiContext()
 	return (
 		<TableHeader className="sticky top-0 z-50 w-full border-b-2">
 			{table.getHeaderGroups().map((headerGroup) => (

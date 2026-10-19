@@ -16,10 +16,11 @@ import (
 )
 
 func TestSupportsZfsData(t *testing.T) {
-	sys := &System{agentVersion: semver.MustParse("0.18.8")}
+	sys := &System{}
+	sys.setAgentVersion(semver.MustParse("0.18.8"))
 	assert.False(t, sys.supportsZfsData())
 
-	sys.agentVersion = semver.MustParse("0.18.9")
+	sys.setAgentVersion(semver.MustParse("0.18.9"))
 	assert.True(t, sys.supportsZfsData())
 }
 
@@ -98,11 +99,12 @@ func TestSaveZfsPoolsCompleteEmptyPrunesFinalPool(t *testing.T) {
 	sys, app := newTestSystemWithHub(t)
 	require.NoError(t, sys.saveZfsPools(&zfs.ZfsData{
 		Complete: true,
-		Pools:    []*zfs.PoolDetail{{Name: "tank", Health: "ONLINE"}},
+		Pools:    []*zfs.PoolDetail{{Name: "tank", Health: "ONLINE", Status: "One or more devices has experienced an unrecoverable error."}},
 	}))
 	records, err := app.FindRecordsByFilter("zfs_pools", "system={:system}", "", 0, 0, map[string]any{"system": sys.Id})
 	require.NoError(t, err)
 	require.Len(t, records, 1)
+	assert.Equal(t, "One or more devices has experienced an unrecoverable error.", records[0].GetString("status"))
 	assert.False(t, records[0].GetDateTime("details_updated").Time().IsZero())
 
 	require.NoError(t, sys.saveZfsPools(&zfs.ZfsData{Complete: true}))

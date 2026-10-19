@@ -11,11 +11,11 @@ func init() {
 		jsonData := `[
 	{
 		"id": "elngm8x1l60zi2v",
-		"listRule": "@request.auth.id != \"\" && user = @request.auth.id",
+		"listRule": null,
 		"viewRule": null,
-		"createRule": "@request.auth.id != \"\" && user = @request.auth.id",
-		"updateRule": "@request.auth.id != \"\" && user = @request.auth.id",
-		"deleteRule": "@request.auth.id != \"\" && user = @request.auth.id",
+		"createRule": null,
+		"updateRule": null,
+		"deleteRule": null,
 		"name": "alerts",
 		"type": "base",
 		"fields": [

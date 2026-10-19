@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react"
+import { type ReactNode, useCallback, useEffect, useRef, useState } from "react"
 import { Trans, useLingui } from "@lingui/react/macro"
 import { useStore } from "@nanostores/react"
 import { pb } from "@/lib/api"
@@ -19,14 +19,16 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Sheet, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle } from "@/components/ui/sheet"
 import { Button } from "@/components/ui/button"
+import { Switch } from "@/components/ui/switch"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Textarea } from "@/components/ui/textarea"
-import { ChevronDownIcon, ListIcon, PlusIcon, SearchIcon, ServerIcon } from "lucide-react"
+import { ChevronDownIcon, GlobeIcon, ListIcon, type LucideIcon, PlusIcon, SearchIcon, ServerIcon } from "lucide-react"
 import { useToast } from "@/components/ui/use-toast"
 import { $systems } from "@/lib/stores"
 import { cn, supportsNetworkMonitors } from "@/lib/utils"
+import { getMonitorTarget, isHttpsTarget } from "@/lib/network-monitor-utils"
 import type { NetworkMonitorRecord } from "@/types"
 import * as v from "valibot"
 
@@ -39,6 +41,7 @@ type MonitorValues = {
 	port: number
 	server: string
 	interval: string
+	skipTlsVerify: boolean
 }
 
 type NormalizedMonitorValues = Omit<MonitorValues, "system" | "interval"> & {
@@ -62,6 +65,7 @@ const NormalizedMonitorValuesSchema = v.pipe(
 		port: v.number(),
 		server: v.pipe(v.string(), v.trim()),
 		interval: MonitorIntervalSchema,
+		skipTlsVerify: v.boolean(),
 	}),
 	v.transform((input): NormalizedMonitorValues => {
 		let { protocol, port } = input
@@ -83,6 +87,8 @@ const NormalizedMonitorValuesSchema = v.pipe(
 			// Only DNS monitors use a custom server; clear it for other protocols.
 			server: protocol === "dns" ? input.server : "",
 			interval: input.interval,
+			// Only HTTPS targets use TLS; clear it for everything else.
+			skipTlsVerify: protocol === "http" && isHttpsTarget(httpTarget) && input.skipTlsVerify,
 		}
 	}),
 	v.forward(
@@ -94,8 +100,21 @@ const NormalizedMonitorValuesSchema = v.pipe(
 			return Number.isInteger(input.port) && input.port >= 1 && input.port <= 65535
 		}, "Port must be between 1 and 65535"),
 		["port"]
+	),
+	// Resolving an IP literal returns it without querying anything, so the check would measure nothing.
+	v.forward(
+		v.check(
+			(input) => input.protocol !== "dns" || !isIpAddress(input.target),
+			"DNS target must be a domain name; put the resolver's IP in DNS Server"
+		),
+		["target"]
 	)
 )
+
+function isIpAddress(value: string) {
+	// Hostnames never contain ":", so any colon means an IPv6 literal (optionally bracketed).
+	return /^(\d{1,3}\.){3}\d{1,3}$/.test(value) || value.includes(":")
+}
 
 // Bulk parsing only trims raw CSV fields. Inference, defaults, and protocol-
 // specific validation still go through the shared normalization schema above.
@@ -184,6 +203,7 @@ function parseBulkMonitorLine(line: string, lineNumber: number, system: string) 
 		port: parsed.output.port ? Number(parsed.output.port) : 0,
 		server: parsed.output.server || "",
 		interval: parsed.output.interval || `${defaultInterval}`,
+		skipTlsVerify: false,
 	})
 }
 
@@ -194,20 +214,135 @@ export function formatBulkMonitorLine(monitor: BulkMonitorLineSource) {
 	return trimTrailingEmptyFields([monitor.target, monitor.protocol, port, interval, server]).join(",")
 }
 
-function SystemMultiSelect({
+export function SystemMultiSelect({
 	id,
 	selectedSystemIds,
 	onChange,
 	disabled,
 	className,
+	systemIds,
+	placeholder,
+	canSelectMore,
 }: {
 	id: string
 	selectedSystemIds: Set<string>
 	onChange: (ids: Set<string>) => void
 	disabled?: boolean
 	className?: string
+	/** Limit the options to these systems. Defaults to all systems that support network monitors. */
+	systemIds?: string[]
+	placeholder?: string
+	canSelectMore?: boolean
 }) {
 	const systems = useStore($systems)
+	const { t } = useLingui()
+	const options = systems
+		.filter((system) => (systemIds ? systemIds.includes(system.id) : supportsNetworkMonitors(system)))
+		.map((system) => ({ id: system.id, label: system.name }))
+	return (
+		<MultiSelect
+			id={id}
+			options={options}
+			selectedIds={selectedSystemIds}
+			onChange={onChange}
+			disabled={disabled}
+			className={className}
+			icon={ServerIcon}
+			canSelectMore={canSelectMore}
+			placeholder={placeholder ?? t`Select systems`}
+			searchPlaceholder={t`Search systems`}
+			emptyText={<Trans>No systems found.</Trans>}
+		/>
+	)
+}
+
+/** Pick monitors by target, e.g. other targets on the same system to compare against. */
+export function MonitorMultiSelect({
+	id,
+	monitors,
+	selectedMonitorIds,
+	onChange,
+	disabled,
+	className,
+	placeholder,
+	canSelectMore,
+}: {
+	id: string
+	monitors: NetworkMonitorRecord[]
+	selectedMonitorIds: Set<string>
+	onChange: (ids: Set<string>) => void
+	disabled?: boolean
+	className?: string
+	placeholder?: string
+	canSelectMore?: boolean
+}) {
+	const { t } = useLingui()
+	const labelCounts = new Map<string, number>()
+	for (const monitor of monitors) {
+		const label = getMonitorTarget(monitor)
+		labelCounts.set(label, (labelCounts.get(label) ?? 0) + 1)
+	}
+	const options = monitors
+		.map((monitor) => {
+			let label = getMonitorTarget(monitor)
+			// Show the URL scheme when it's all that tells http and https monitors apart.
+			if (monitor.protocol === "http" && (labelCounts.get(label) ?? 0) > 1) label = monitor.target
+			return { id: monitor.id, label, server: monitor.server }
+		})
+		.sort((a, b) => a.label.localeCompare(b.label))
+	return (
+		<MultiSelect
+			id={id}
+			options={options}
+			selectedIds={selectedMonitorIds}
+			onChange={onChange}
+			disabled={disabled}
+			className={cn("ps-9.5", className)}
+			icon={GlobeIcon}
+			canSelectMore={canSelectMore}
+			placeholder={placeholder ?? t`Select targets`}
+			searchPlaceholder={t`Search targets`}
+			emptyText={<Trans>No targets found.</Trans>}
+			renderOption={(option) => (
+				<>
+					<span className="truncate">{option.label}</span>
+					{option.server && <span className="ms-auto shrink-0 text-xs text-muted-foreground">{option.server}</span>}
+				</>
+			)}
+		/>
+	)
+}
+
+type MultiSelectOption = { id: string; label: string }
+
+function MultiSelect<T extends MultiSelectOption>({
+	id,
+	options,
+	selectedIds,
+	onChange,
+	disabled,
+	className,
+	icon: Icon,
+	placeholder,
+	searchPlaceholder,
+	emptyText,
+	renderOption = (option) => <span className="truncate">{option.label}</span>,
+	canSelectMore = true,
+}: {
+	id: string
+	options: T[]
+	selectedIds: Set<string>
+	onChange: (ids: Set<string>) => void
+	disabled?: boolean
+	className?: string
+	icon: LucideIcon
+	placeholder: string
+	searchPlaceholder: string
+	emptyText: ReactNode
+	renderOption?: (option: T) => ReactNode
+	/** False once the selection is full; only already selected options can then be toggled. */
+	canSelectMore?: boolean
+}) {
 	const { t } = useLingui()
 	const [search, setSearch] = useState("")
 	const searchRef = useRef<HTMLInputElement>(null)
@@ -220,17 +355,15 @@ function SystemMultiSelect({
 	}, [])
 	const contentRef = useRef<HTMLDivElement>(null)
 	const query = search.trim().toLocaleLowerCase()
-	const filteredSystems = systems.filter(
-		(system) => supportsNetworkMonitors(system) && system.name.toLocaleLowerCase().includes(query)
-	)
-	const allSelected = filteredSystems.every((system) => selectedSystemIds.has(system.id))
-	const anySelected = filteredSystems.some((system) => selectedSystemIds.has(system.id))
+	const filteredOptions = options.filter((option) => option.label.toLocaleLowerCase().includes(query))
+	const allSelected = filteredOptions.every((option) => selectedIds.has(option.id))
+	const anySelected = filteredOptions.some((option) => selectedIds.has(option.id))
 
 	const selectFiltered = (selected: boolean) => {
-		const next = new Set(selectedSystemIds)
-		for (const system of filteredSystems) {
-			if (selected) next.add(system.id)
-			else next.delete(system.id)
+		const next = new Set(selectedIds)
+		for (const option of filteredOptions) {
+			if (selected) next.add(option.id)
+			else next.delete(option.id)
 		}
 		onChange(next)
 	}
@@ -244,13 +377,13 @@ function SystemMultiSelect({
 					variant="outline"
 					className={cn("relative w-full min-w-0 ps-10 pe-10 justify-start font-normal text-start", className)}
 				>
-					<ServerIcon className="size-3.5 absolute start-4 top-1/2 -translate-y-1/2 opacity-85" />
+					<Icon className="size-3.5 absolute start-4 top-1/2 -translate-y-1/2 opacity-85" />
 					<span className="truncate">
-						{selectedSystemIds.size === 0
-							? t`Select systems`
-							: selectedSystemIds.size === 1
-								? systems.find((s) => selectedSystemIds.has(s.id))?.name
-								: t`${selectedSystemIds.size} selected`}
+						{selectedIds.size === 0
+							? placeholder
+							: selectedIds.size === 1
+								? options.find((option) => selectedIds.has(option.id))?.label
+								: t`${selectedIds.size} selected`}
 					</span>
 					<ChevronDownIcon className="size-4 absolute end-4 top-1/2 -translate-y-1/2 opacity-50" />
 				</Button>
@@ -273,8 +406,8 @@ function SystemMultiSelect({
 							ref={focusSearchOnMount}
 							value={search}
 							onChange={(event) => setSearch(event.target.value)}
-							placeholder={t`Search systems`}
-							aria-label={t`Search systems`}
+							placeholder={searchPlaceholder}
+							aria-label={searchPlaceholder}
 							className="h-10 min-w-0 rounded-none border-0 bg-transparent px-0 shadow-none focus-visible:ring-0 focus-visible:ring-offset-0"
 							onKeyDown={(event) => {
 								if (event.key === "Escape") return
@@ -296,7 +429,7 @@ function SystemMultiSelect({
 						<div className="flex items-center">
 							<DropdownMenuItem
 								className="px-1.5 py-1 text-xs text-muted-foreground"
-								disabled={!filteredSystems.length || allSelected}
+								disabled={!filteredOptions.length || allSelected || !canSelectMore}
 								onSelect={(event) => {
 									event.preventDefault()
 									selectFiltered(true)
@@ -318,32 +451,29 @@ function SystemMultiSelect({
 								{query ? <Trans>Clear matches</Trans> : <Trans>Clear all</Trans>}
 							</DropdownMenuItem>
 						</div>
-						<span className="px-1.5 text-xs tabular-nums text-muted-foreground">
-							{t`${selectedSystemIds.size} selected`}
-						</span>
+						<span className="px-1.5 text-xs tabular-nums text-muted-foreground">{t`${selectedIds.size} selected`}</span>
 					</div>
 				</div>
 				<div className="min-h-0 overflow-y-auto">
-					{filteredSystems.length === 0 && (
-						<output className="block px-2.5 py-3 text-sm text-muted-foreground">
-							<Trans>No systems found.</Trans>
-						</output>
+					{filteredOptions.length === 0 && (
+						<output className="block px-2.5 py-3 text-sm text-muted-foreground">{emptyText}</output>
 					)}
-					{filteredSystems.map((sys) => (
+					{filteredOptions.map((option) => (
 						<DropdownMenuCheckboxItem
-							key={sys.id}
-							checked={selectedSystemIds.has(sys.id)}
+							key={option.id}
+							checked={selectedIds.has(option.id)}
+							disabled={!canSelectMore && !selectedIds.has(option.id)}
 							onSelect={(event) => event.preventDefault()}
 							onCheckedChange={(checked) => {
-								const next = new Set(selectedSystemIds)
-								if (checked) next.add(sys.id)
-								else next.delete(sys.id)
+								const next = new Set(selectedIds)
+								if (checked) next.add(option.id)
+								else next.delete(option.id)
 								onChange(next)
 							}}
 							className="group min-w-0 gap-2.5 py-2 ps-2.5"
 							indicatorClassName="static size-4 shrink-0 rounded border border-input group-data-[state=checked]:border-primary group-data-[state=checked]:bg-primary group-data-[state=checked]:text-primary-foreground [&_svg]:size-3"
 						>
-							<span className="truncate">{sys.name}</span>
+							{renderOption(option)}
 						</DropdownMenuCheckboxItem>
 					))}
 				</div>
@@ -606,6 +736,7 @@ function MonitorDialogContent({
 	const [port, setPort] = useState(monitor?.protocol === "tcp" && monitor.port ? String(monitor.port) : "")
 	const [server, setServer] = useState(monitor?.protocol === "dns" ? (monitor.server ?? "") : "")
 	const [monitorInterval, setMonitorInterval] = useState(String(monitor?.interval ?? defaultInterval))
+	const [skipTlsVerify, setSkipTlsVerify] = useState(monitor?.skipTlsVerify ?? false)
 	const [loading, setLoading] = useState(false)
 	const [selectedSystemId, setSelectedSystemId] = useState(monitor?.system ?? "")
 	const [selectedSystemIds, setSelectedSystemIds] = useState<Set<string>>(new Set())
@@ -613,6 +744,9 @@ function MonitorDialogContent({
 	const { toast } = useToast()
 	const { t } = useLingui()
 	const isEditing = !!monitor
+	const dnsTargetIsIp = protocol === "dns" && isIpAddress(target.trim())
+	// Bare hostnames are normalized to https, so they can also skip verification.
+	const usesTls = protocol === "http" && !/^http:\/\//i.test(target.trim())
 
 	// When the dialog is opened, initialize form fields with monitor values (if editing) or defaults (if adding).
 	useEffect(() => {
@@ -625,6 +759,7 @@ function MonitorDialogContent({
 		setPort(monitor?.protocol === "tcp" && monitor.port ? String(monitor.port) : "")
 		setServer(monitor?.protocol === "dns" ? (monitor.server ?? "") : "")
 		setMonitorInterval(String(monitor?.interval ?? defaultInterval))
+		setSkipTlsVerify(monitor?.skipTlsVerify ?? false)
 		setSelectedSystemId(monitor?.system ?? "")
 		setSelectedSystemIds(new Set())
 		setLoading(false)
@@ -646,6 +781,7 @@ function MonitorDialogContent({
 					port: protocol === "tcp" ? Number(port) : 0,
 					server: protocol === "dns" ? server.trim() : "",
 					interval: monitorInterval,
+					skipTlsVerify,
 				},
 				monitor ? monitor.enabled : true
 			)
@@ -726,8 +862,14 @@ function MonitorDialogContent({
 						value={target}
 						onChange={(e) => setTarget(e.target.value)}
 						placeholder={protocol === "http" ? "http://localhost:8090" : protocol === "dns" ? "example.com" : "1.1.1.1"}
+						aria-invalid={dnsTargetIsIp}
 						required
 					/>
+					{dnsTargetIsIp && (
+						<p className="text-xs text-destructive">
+							<Trans>Enter a domain name to look up. Put the resolver's IP in DNS Server.</Trans>
+						</p>
+					)}
 				</div>
 				<div className="grid gap-2">
 					<Label>
@@ -789,6 +931,22 @@ function MonitorDialogContent({
 						required
 					/>
 				</div>
+				{usesTls && (
+					<label
+						htmlFor="monitor-skip-tls-verify"
+						className="flex items-center justify-between gap-4 cursor-pointer rounded-lg border border-muted-foreground/15 hover:border-muted-foreground/20 transition-colors duration-100 px-3.5 py-3"
+					>
+						<div className="grid gap-1 select-none">
+							<span className="text-sm font-medium">
+								<Trans>Ignore TLS certificate errors</Trans>
+							</span>
+							<span className="text-xs text-muted-foreground">
+								<Trans>Use for self-signed certificates.</Trans>
+							</span>
+						</div>
+						<Switch id="monitor-skip-tls-verify" checked={skipTlsVerify} onCheckedChange={setSkipTlsVerify} />
+					</label>
+				)}
 				<DialogFooter>
 					{!isEditing && onOpenBulkAdd && (
 						<Button
@@ -804,7 +962,9 @@ function MonitorDialogContent({
 					)}
 					<Button
 						type="submit"
-						disabled={loading || (!systemId && (isEditing ? !selectedSystemId : !selectedSystemIds.size))}
+						disabled={
+							loading || dnsTargetIsIp || (!systemId && (isEditing ? !selectedSystemId : !selectedSystemIds.size))
+						}
 					>
 						{isEditing ? (
 							<Trans>Save {{ foo: t`Monitor` }}</Trans>

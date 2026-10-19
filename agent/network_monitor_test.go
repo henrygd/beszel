@@ -145,7 +145,7 @@ func TestMonitorManagerApplySyncUpsertRunsImmediatelyAndReturnsResult(t *testing
 
 	pm := &MonitorManager{
 		monitors: make(map[string]*monitorTask),
-		probe:    networkMonitorProbe(server.Client()),
+		probe:    networkMonitorProbe(server.Client(), nil),
 	}
 
 	resp, err := pm.HandleSyncRequest(monitor.SyncRequest{
@@ -260,6 +260,24 @@ func TestMonitorHTTP(t *testing.T) {
 		responseUs, err := monitorHTTP(context.Background(), server.Client(), server.URL)
 		assert.Equal(t, int64(-1), responseUs)
 		require.Error(t, err)
+	})
+
+	t.Run("self-signed certificate", func(t *testing.T) {
+		server := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			w.WriteHeader(http.StatusNoContent)
+		}))
+		defer server.Close()
+		probe := newMonitorManager().probe
+		config := monitor.Config{Protocol: "http", Target: server.URL}
+
+		responseUs, err := probe(context.Background(), config)
+		assert.Equal(t, int64(-1), responseUs)
+		require.Error(t, err)
+
+		config.SkipTLSVerify = true
+		responseUs, err = probe(context.Background(), config)
+		require.NoError(t, err)
+		assert.GreaterOrEqual(t, responseUs, int64(0))
 	})
 }
 
@@ -576,7 +594,7 @@ func TestMonitorProbeTimeoutRecordsLoss(t *testing.T) {
 	defer server.Close()
 	defer close(release)
 	pm := newMonitorManager()
-	pm.probe = networkMonitorProbe(&http.Client{Timeout: 20 * time.Millisecond})
+	pm.probe = networkMonitorProbe(&http.Client{Timeout: 20 * time.Millisecond}, nil)
 	task := newMonitorTask(monitor.Config{ID: "timeout", Protocol: "http", Target: server.URL})
 	defer task.cancel()
 

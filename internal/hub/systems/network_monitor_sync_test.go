@@ -62,7 +62,8 @@ func TestNetworkMonitorSyncSkipsOlderAgents(t *testing.T) {
 	for _, version := range []string{"0.0.0", "0.18.0", "0.19.0"} {
 		t.Run(version, func(t *testing.T) {
 			// No transport: attempting to send any request would fail.
-			sys := &System{agentVersion: semver.MustParse(version)}
+			sys := &System{}
+			sys.setAgentVersion(semver.MustParse(version))
 			require.NoError(t, sys.SyncNetworkMonitors(nil))
 			result, err := sys.UpsertNetworkMonitor(monitor.Config{ID: "test"}, true)
 			require.NoError(t, err)
@@ -91,6 +92,7 @@ func TestNetworkMonitorReconnectSync(t *testing.T) {
 			require.NoError(t, app.SaveNoValidate(probe))
 
 			sm := NewSystemManager(stubHub{app})
+			require.NoError(t, sm.createSSHClientConfig())
 			t.Cleanup(func() {
 				sm.cancel()
 				_ = sm.RemoveSystem(sys.Id)
@@ -173,6 +175,23 @@ func TestNetworkMonitorReconnectSync(t *testing.T) {
 			require.Empty(t, connect().Configs, "reconnect must clear the agent's previous probe")
 		})
 	}
+}
+
+func TestGetMonitorConfigsForSystemIncludesSkipTLSVerify(t *testing.T) {
+	sys, app := newTestSystemWithHub(t)
+	collection, err := app.FindCachedCollectionByNameOrId("network_monitors")
+	require.NoError(t, err)
+	record := core.NewRecord(collection)
+	record.Load(map[string]any{
+		"system": sys.Id, "target": "https://self-signed.example", "protocol": "http",
+		"interval": 60, "enabled": true, "skipTlsVerify": true,
+	})
+	require.NoError(t, app.SaveNoValidate(record))
+
+	configs, err := sys.manager.GetMonitorConfigsForSystem(sys.Id)
+	require.NoError(t, err)
+	require.Len(t, configs, 1)
+	require.True(t, configs[0].SkipTLSVerify, "full sync must keep the skip TLS verify option")
 }
 
 func TestGetMonitorConfigsForSystemQueryError(t *testing.T) {

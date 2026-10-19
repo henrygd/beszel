@@ -47,11 +47,11 @@ func TestCollectionRulesDefault(t *testing.T) {
 	require.NoError(t, err, "Failed to find alerts collection")
 	assert.Equal(t, isUserMatchesUser, *alertsCollection.ListRule)
 	assert.Nil(t, alertsCollection.ViewRule)
-	assert.Equal(t, isUserMatchesUser, *alertsCollection.CreateRule)
-	assert.Equal(t, isUserMatchesUser, *alertsCollection.UpdateRule)
+	assert.Equal(t, isUserMatchesUser+` && system.users.id ?= @request.auth.id`, *alertsCollection.CreateRule)
+	assert.Equal(t, isUserMatchesUser+` && @request.body.user:changed = false && @request.body.system:changed = false && system.users.id ?= @request.auth.id`, *alertsCollection.UpdateRule)
 	assert.Equal(t, isUserMatchesUser, *alertsCollection.DeleteRule)
 	alertNames := alertsCollection.Fields.GetByName("name").(*core.SelectField).Values
-	for _, name := range []string{"CPUIOWait", "CPUSteal"} {
+	for _, name := range []string{"CPUIOWait", "CPUSteal", "NetworkMonitorCert"} {
 		assert.Contains(t, alertNames, name)
 	}
 	for _, name := range []string{"CPUSystem", "CPUUser", "CPUIdle", "CPUOther"} {
@@ -91,7 +91,7 @@ func TestCollectionRulesDefault(t *testing.T) {
 	assert.Equal(t, isUserInSystemUsersNotReadonly, *fingerprintsCollection.ListRule)
 	assert.Equal(t, isUserInSystemUsersNotReadonly, *fingerprintsCollection.ViewRule)
 	assert.Equal(t, isUserInSystemUsersNotReadonly, *fingerprintsCollection.CreateRule)
-	assert.Equal(t, isUserInSystemUsersNotReadonly, *fingerprintsCollection.UpdateRule)
+	assert.Equal(t, isUserInSystemUsersNotReadonly+` && @request.body.system:changed = false`, *fingerprintsCollection.UpdateRule)
 	assert.Equal(t, isUserInSystemUsersNotReadonly, *fingerprintsCollection.DeleteRule)
 
 	// quiet_hours collection
@@ -100,7 +100,7 @@ func TestCollectionRulesDefault(t *testing.T) {
 	assert.Equal(t, isUserMatchesUser, *quietHoursCollection.ListRule)
 	assert.Equal(t, isUserMatchesUser, *quietHoursCollection.ViewRule)
 	assert.Equal(t, isUserMatchesUser, *quietHoursCollection.CreateRule)
-	assert.Equal(t, isUserMatchesUser, *quietHoursCollection.UpdateRule)
+	assert.Equal(t, isUserMatchesUser+` && @request.body.user:changed = false`, *quietHoursCollection.UpdateRule)
 	assert.Equal(t, isUserMatchesUser, *quietHoursCollection.DeleteRule)
 
 	// smart_devices collection
@@ -163,7 +163,7 @@ func TestCollectionRulesDefault(t *testing.T) {
 	assert.Equal(t, isUserMatchesUser, *userSettingsCollection.ListRule)
 	assert.Nil(t, userSettingsCollection.ViewRule)
 	assert.Equal(t, isUserMatchesUser, *userSettingsCollection.CreateRule)
-	assert.Equal(t, isUserMatchesUser, *userSettingsCollection.UpdateRule)
+	assert.Equal(t, isUserMatchesUser+` && @request.body.user:changed = false`, *userSettingsCollection.UpdateRule)
 	assert.Nil(t, userSettingsCollection.DeleteRule)
 }
 
@@ -183,7 +183,7 @@ func TestCollectionRulesShareAllSystems(t *testing.T) {
 	assert.Equal(t, isUserMatchesUser, *alertsCollection.ListRule)
 	assert.Nil(t, alertsCollection.ViewRule)
 	assert.Equal(t, isUserMatchesUser, *alertsCollection.CreateRule)
-	assert.Equal(t, isUserMatchesUser, *alertsCollection.UpdateRule)
+	assert.Equal(t, isUserMatchesUser+` && @request.body.user:changed = false && @request.body.system:changed = false`, *alertsCollection.UpdateRule)
 	assert.Equal(t, isUserMatchesUser, *alertsCollection.DeleteRule)
 
 	// alerts_history collection
@@ -219,7 +219,7 @@ func TestCollectionRulesShareAllSystems(t *testing.T) {
 	assert.Equal(t, isUserNotReadonly, *fingerprintsCollection.ListRule)
 	assert.Equal(t, isUserNotReadonly, *fingerprintsCollection.ViewRule)
 	assert.Equal(t, isUserNotReadonly, *fingerprintsCollection.CreateRule)
-	assert.Equal(t, isUserNotReadonly, *fingerprintsCollection.UpdateRule)
+	assert.Equal(t, isUserNotReadonly+` && @request.body.system:changed = false`, *fingerprintsCollection.UpdateRule)
 	assert.Equal(t, isUserNotReadonly, *fingerprintsCollection.DeleteRule)
 
 	// quiet_hours collection
@@ -228,7 +228,7 @@ func TestCollectionRulesShareAllSystems(t *testing.T) {
 	assert.Equal(t, isUserMatchesUser, *quietHoursCollection.ListRule)
 	assert.Equal(t, isUserMatchesUser, *quietHoursCollection.ViewRule)
 	assert.Equal(t, isUserMatchesUser, *quietHoursCollection.CreateRule)
-	assert.Equal(t, isUserMatchesUser, *quietHoursCollection.UpdateRule)
+	assert.Equal(t, isUserMatchesUser+` && @request.body.user:changed = false`, *quietHoursCollection.UpdateRule)
 	assert.Equal(t, isUserMatchesUser, *quietHoursCollection.DeleteRule)
 
 	// smart_devices collection
@@ -291,7 +291,7 @@ func TestCollectionRulesShareAllSystems(t *testing.T) {
 	assert.Equal(t, isUserMatchesUser, *userSettingsCollection.ListRule)
 	assert.Nil(t, userSettingsCollection.ViewRule)
 	assert.Equal(t, isUserMatchesUser, *userSettingsCollection.CreateRule)
-	assert.Equal(t, isUserMatchesUser, *userSettingsCollection.UpdateRule)
+	assert.Equal(t, isUserMatchesUser+` && @request.body.user:changed = false`, *userSettingsCollection.UpdateRule)
 	assert.Nil(t, userSettingsCollection.DeleteRule)
 }
 

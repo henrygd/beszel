@@ -17,6 +17,7 @@ import (
 	"net/url"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"testing"
 	"time"
@@ -235,8 +236,11 @@ func TestWebSocketClient_TLSVerification(t *testing.T) {
 	t.Run("custom CA trusts self-signed certificate", func(t *testing.T) {
 		systemRoots, err := x509.SystemCertPool()
 		require.NoError(t, err)
+		require.True(t, systemRoots.AppendCertsFromPEM(serverCertPEM))
 		client := newClient(t, caCertFile)
-		assert.Greater(t, len(client.getOptions().TlsConfig.RootCAs.Subjects()), len(systemRoots.Subjects()))
+		tlsConfig := client.getOptions().TlsConfig
+		require.NotNil(t, tlsConfig)
+		assert.True(t, tlsConfig.RootCAs.Equal(systemRoots))
 		conn, _, err := gws.NewClient(&gws.BuiltinEventHandler{}, client.getOptions())
 		require.NoError(t, err)
 		require.NoError(t, conn.NetConn().Close())
@@ -316,7 +320,7 @@ func TestGetTLSConfigErrors(t *testing.T) {
 			require.Error(t, err)
 			assert.Nil(t, tlsConfig)
 			assert.Contains(t, err.Error(), tc.errorMatch)
-			assert.Contains(t, err.Error(), tc.path)
+			assert.Contains(t, err.Error(), strconv.Quote(tc.path))
 		})
 	}
 }
@@ -470,7 +474,7 @@ func TestWebSocketClient_HandleHubRequest(t *testing.T) {
 				Data:   cbor.RawMessage{},
 			}
 
-			err := client.handleHubRequest(hubRequest, nil)
+			err := client.handleHubRequest(hubRequest, nil, nil)
 
 			if tc.expectError {
 				assert.Error(t, err)
@@ -530,6 +534,18 @@ func TestWebSocketClient_Close(t *testing.T) {
 	assert.NotPanics(t, func() {
 		client.Close()
 	})
+}
+
+func TestWebSocketClient_IgnoresStaleClose(t *testing.T) {
+	agent := createTestAgent(t)
+	agent.connectionManager.eventChan = make(chan ConnectionEvent, 1)
+	current := &gws.Conn{}
+	client := &WebSocketClient{agent: agent, Conn: current, hubVerified: true}
+
+	client.OnClose(&gws.Conn{}, nil)
+	assert.Same(t, current, client.getConn())
+	assert.True(t, client.hubVerified)
+	assert.Empty(t, agent.connectionManager.eventChan)
 }
 
 // TestWebSocketClient_ConnectRateLimit tests connection rate limiting
@@ -681,12 +697,12 @@ func TestGetToken(t *testing.T) {
 
 	t.Run("error when TOKEN_FILE points to non-existent file", func(t *testing.T) {
 		// Set TOKEN_FILE to a non-existent file
-		t.Setenv("TOKEN_FILE", "/non/existent/file.txt")
+		t.Setenv("TOKEN_FILE", filepath.Join(t.TempDir(), "missing.txt"))
 
 		token, err := getToken()
 		assert.Error(t, err)
 		assert.Equal(t, "", token)
-		assert.Contains(t, err.Error(), "no such file or directory")
+		assert.ErrorIs(t, err, os.ErrNotExist)
 	})
 
 	t.Run("handles empty token file", func(t *testing.T) {
@@ -729,4 +745,128 @@ func TestWebSocketDeadlineCoversSlowCollection(t *testing.T) {
 	if wsDeadline < minimumDeadline {
 		t.Fatalf("WebSocket deadline %s is shorter than the slow-collection window of %s", wsDeadline, minimumDeadline)
 	}
+}
+
+// TestGetHubHeaders covers HUB_HEADERS parsing
+func TestGetHubHeaders(t *testing.T) {
+	testCases := []struct {
+		name    string
+		raw     string
+		want    http.Header
+		wantErr bool
+	}{
+		{
+			name: "unset",
+			raw:  "",
+			want: nil,
+		},
+		{
+			name: "two pairs with whitespace and trailing comma",
+			raw:  "  CF-Access-Client-Id:abc.access ,   CF-Access-Client-Secret:   def456  ,",
+			want: http.Header{
+				"Cf-Access-Client-Id":     []string{"abc.access"},
+				"Cf-Access-Client-Secret": []string{"def456"},
+			},
+		},
+		{
+			name: "written across lines",
+			raw:  "X-One: 1,\nX-Two: 2\n",
+			want: http.Header{"X-One": []string{"1"}, "X-Two": []string{"2"}},
+		},
+		{
+			name: "value may contain colons and equals",
+			raw:  "Authorization: Bearer a=b:c",
+			want: http.Header{"Authorization": []string{"Bearer a=b:c"}},
+		},
+		{
+			name: "empty value",
+			raw:  "X-Empty:",
+			want: http.Header{"X-Empty": []string{""}},
+		},
+		{
+			name: "repeated name adds value",
+			raw:  "X-Multi: one, X-Multi: two",
+			want: http.Header{"X-Multi": []string{"one", "two"}},
+		},
+		{
+			name:    "second pair missing colon",
+			raw:     "X-One: 1, oops",
+			wantErr: true,
+		},
+		{
+			name:    "invalid header name",
+			raw:     "Bad Header: value",
+			wantErr: true,
+		},
+		{
+			name:    "invalid header value",
+			raw:     "X-Bad: va\x7flue",
+			wantErr: true,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			t.Setenv("BESZEL_AGENT_HUB_HEADERS", tc.raw)
+			headers, err := getHubHeaders()
+			if tc.wantErr {
+				require.Error(t, err)
+				assert.ErrorIs(t, err, errInvalidHubHeaders)
+				assert.Nil(t, headers)
+				return
+			}
+			require.NoError(t, err)
+			assert.Equal(t, tc.want, headers)
+		})
+	}
+}
+
+// TestGetHubHeadersErrorOmitsValues verifies that parse errors do not leak
+// header values, which are often secrets
+func TestGetHubHeadersErrorOmitsValues(t *testing.T) {
+	const secret = "super-secret-value"
+	for _, raw := range []string{
+		"CF-Access-Client-Secret: " + secret + "\x7f",
+		"Bad Name: " + secret,
+		secret,
+	} {
+		t.Setenv("BESZEL_AGENT_HUB_HEADERS", raw)
+		_, err := getHubHeaders()
+		require.ErrorIs(t, err, errInvalidHubHeaders)
+		assert.NotContains(t, err.Error(), secret)
+	}
+}
+
+// TestWebSocketClient_GetOptionsHubHeaders verifies that
+// HUB_HEADERS values reach the handshake, and user supplied X-BESZEL values are ignored
+func TestWebSocketClient_GetOptionsHubHeaders(t *testing.T) {
+	agent := createTestAgent(t)
+	t.Setenv("BESZEL_AGENT_HUB_URL", "http://localhost:8080")
+	t.Setenv("BESZEL_AGENT_TOKEN", "test-token")
+	t.Setenv("BESZEL_AGENT_HUB_HEADERS",
+		"CF-Access-Client-Id: abc.access, User-Agent: curl/8.0, x-token: hijack, X-BESZEL: 0.0.1")
+
+	client, err := newWebSocketClient(agent)
+	require.NoError(t, err)
+
+	header := client.getOptions().RequestHeader
+	assert.Equal(t, "abc.access", header.Get("Cf-Access-Client-Id"))
+	assert.Equal(t, "curl/8.0", header.Get("User-Agent"))
+	assert.Equal(t, "test-token", header.Get("X-Token"))
+	assert.Equal(t, beszel.Version, header.Get("X-Beszel"))
+}
+
+// TestNewWebSocketClientInvalidHubHeaders verifies that a malformed
+// HUB_HEADERS value fails client creation
+func TestNewWebSocketClientInvalidHubHeaders(t *testing.T) {
+	agent := createTestAgent(t)
+	t.Setenv("BESZEL_AGENT_HUB_URL", "http://localhost:8080")
+	t.Setenv("BESZEL_AGENT_TOKEN", "test-token")
+	t.Setenv("BESZEL_AGENT_HUB_HEADERS", "malfored-header")
+
+	client, err := newWebSocketClient(agent)
+
+	require.Error(t, err)
+	assert.Nil(t, client)
+	assert.ErrorIs(t, err, errInvalidHubHeaders)
 }

@@ -1369,6 +1369,7 @@ ProtectHome=read-only
 ProtectHostname=yes
 ProtectKernelLogs=yes
 ProtectSystem=strict
+PrivateTmp=yes
 RemoveIPC=yes
 RestrictSUIDSGID=true
 
@@ -1387,6 +1388,20 @@ EOF
     [ "$KEY_PROVIDED" = "true" ] && sed -i "s|^Environment=\"KEY=.*\"|Environment=\"KEY=$SED_KEY\"|" /etc/systemd/system/beszel-agent.service
     [ "$TOKEN_PROVIDED" = "true" ] && sed -i "s|^Environment=\"TOKEN=.*\"|Environment=\"TOKEN=$SED_TOKEN\"|" /etc/systemd/system/beszel-agent.service
     [ "$HUB_URL_PROVIDED" = "true" ] && sed -i "s|^Environment=\"HUB_URL=.*\"|Environment=\"HUB_URL=$SED_HUB_URL\"|" /etc/systemd/system/beszel-agent.service
+  fi
+
+  # Let the agent service (not the beszel user) read the system journal for service logs.
+  # Admins can opt out with a drop-in that sets an empty SupplementaryGroups=.
+  if getent group systemd-journal >/dev/null 2>&1 && ! grep -q '^SupplementaryGroups=' /etc/systemd/system/beszel-agent.service; then
+    echo "Granting the agent service read access to the systemd journal"
+    sed -i '/^User=beszel$/a SupplementaryGroups=systemd-journal' /etc/systemd/system/beszel-agent.service
+  fi
+
+  # ProtectSystem=strict makes /var/tmp read-only, but dnf4 and zypper run as a non-root
+  # user keep temporary files in /var/tmp, so package update checks fail without this.
+  if grep -q '^ProtectSystem=strict$' /etc/systemd/system/beszel-agent.service && ! grep -q '^PrivateTmp=' /etc/systemd/system/beszel-agent.service; then
+    echo "Giving the agent service a private writable /tmp and /var/tmp"
+    sed -i '/^ProtectSystem=strict$/a PrivateTmp=yes' /etc/systemd/system/beszel-agent.service
   fi
 
   # Load and start the service
