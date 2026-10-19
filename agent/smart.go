@@ -100,6 +100,11 @@ func (sm *SmartManager) Refresh(forceScan bool) (bool, error) {
 	for _, target := range targets {
 		result, err := sm.collectTarget(target)
 		if err != nil {
+			// Keep the last successful reading for future standby reuse. Only
+			// targets still present are retained, so removed disks are forgotten.
+			if prev, ok := sm.last[target.key]; ok {
+				last[target.key] = prev
+			}
 			complete = false
 			if !errors.Is(err, errStandby) {
 				slog.Info("smartctl failed", "device", target.name, "err", err)
@@ -272,7 +277,10 @@ func (sm *SmartManager) scanSmartctl(force bool) ([]smartDevice, error) {
 	}
 	sm.lastScan = time.Now()
 
-	output, _, err := sm.runSmartctl(10*time.Second, "--scan", "-j")
+	output, exitCode, err := sm.runSmartctl(10*time.Second, "--scan", "-j")
+	if err == nil && exitCode != 0 {
+		err = fmt.Errorf("smartctl scan failed (exit status %d)", exitCode)
+	}
 	if err == nil {
 		var devices []smartDevice
 		if devices, err = parseScan(output); err == nil {

@@ -478,6 +478,7 @@ const standbyOutput = `{"smartctl":{"exit_status":2,"messages":[{"string":"Devic
 // Calls without -n standby are answered from wake first, if it has the key.
 type fakeSmartctl struct {
 	scan      string
+	scanExit  int
 	scanErr   error
 	responses map[string]fakeResponse
 	wake      map[string]fakeResponse
@@ -493,7 +494,7 @@ func (f *fakeSmartctl) run(_ time.Duration, args ...string) ([]byte, int, error)
 	call := strings.Join(args, " ")
 	f.calls = append(f.calls, call)
 	if call == "--scan -j" {
-		return []byte(f.scan), 0, f.scanErr
+		return []byte(f.scan), f.scanExit, f.scanErr
 	}
 	dtype := ""
 	if i := slices.Index(args, "-d"); i >= 0 {
@@ -677,6 +678,45 @@ func TestRefreshStandby(t *testing.T) {
 	}
 }
 
+// A temporary read failure must not forget the last successful reading used
+// when the disk subsequently enters standby, even if it was already woken once.
+func TestRefreshStandbyAfterCollectionFailure(t *testing.T) {
+	for _, initiallyAsleep := range []bool{false, true} {
+		t.Run(fmt.Sprintf("initiallyAsleep=%t", initiallyAsleep), func(t *testing.T) {
+			reading := fakeResponse{output: string(readSmartFixture(t, "sda.json"))}
+			standby := fakeResponse{output: standbyOutput, exit: 2}
+			fake := &fakeSmartctl{
+				scan:      scanOf("/dev/sda:sat"),
+				responses: map[string]fakeResponse{"sat /dev/sda": reading},
+				wake:      map[string]fakeResponse{"sat /dev/sda": reading},
+			}
+			if initiallyAsleep {
+				fake.responses["sat /dev/sda"] = standby
+			}
+			sm := newFakeSmartManager(t, fake)
+			_, err := sm.Refresh(false)
+			require.NoError(t, err)
+			previous := sm.GetCurrentData()
+
+			fake.responses["sat /dev/sda"] = fakeResponse{output: `{"smartctl":{"exit_status":4}}`, exit: 4}
+			for range 2 {
+				complete, err := sm.Refresh(false)
+				assert.Error(t, err)
+				assert.False(t, complete)
+				assert.Empty(t, sm.GetCurrentData(), "failed reads must not be reported as fresh data")
+			}
+
+			fake.responses["sat /dev/sda"] = standby
+			fake.calls = nil
+			complete, err := sm.Refresh(false)
+			require.NoError(t, err)
+			assert.True(t, complete)
+			assert.Equal(t, previous, sm.GetCurrentData())
+			assert.Equal(t, []string{"-d sat -a --json=c -l devstat -n standby /dev/sda"}, fake.deviceCalls())
+		})
+	}
+}
+
 // A sleeping disk with no earlier data is woken once so it shows up.
 func TestRefreshWakesUncollectedStandbyDisk(t *testing.T) {
 	fake := &fakeSmartctl{
@@ -770,8 +810,15 @@ func TestRefreshPrunesRemovedDevices(t *testing.T) {
 	require.NoError(t, err)
 	assert.Len(t, sm.GetCurrentData(), 2)
 
+	// A failed read retains standby history, but a subsequent scan that removes
+	// the disk must still discard that history.
+	delete(fake.responses, "sat /dev/sda")
+	complete, err := sm.Refresh(false)
+	require.NoError(t, err)
+	assert.False(t, complete)
+
 	fake.scan = scanOf("/dev/nvme0:nvme")
-	complete, err := sm.Refresh(true)
+	complete, err = sm.Refresh(true)
 	require.NoError(t, err)
 	assert.True(t, complete)
 	assert.Equal(t, []string{"2024031600129"}, slices.Collect(maps.Keys(sm.GetCurrentData())))
@@ -814,19 +861,47 @@ func TestRefreshDuplicateSerial(t *testing.T) {
 }
 
 func TestRefreshScanFailureKeepsPreviousScan(t *testing.T) {
-	fake := &fakeSmartctl{
-		scan:      scanOf("/dev/sda:sat"),
-		responses: map[string]fakeResponse{"sat /dev/sda": {output: string(readSmartFixture(t, "sda.json"))}},
-	}
-	sm := newFakeSmartManager(t, fake)
-	_, err := sm.Refresh(false)
-	require.NoError(t, err)
+	for _, test := range []struct {
+		name, output string
+		exit         int
+		err          error
+	}{
+		{name: "timeout", err: errors.New("scan timed out")},
+		{name: "invalid JSON", output: "invalid JSON"},
+		{name: "nonzero exit without devices", output: `{"smartctl":{"exit_status":1}}`, exit: 1},
+		{name: "nonzero exit with partial devices", output: scanOf("/dev/sdb:sat"), exit: 1},
+	} {
+		t.Run(test.name, func(t *testing.T) {
+			fake := &fakeSmartctl{
+				scan:      scanOf("/dev/sda:sat"),
+				responses: map[string]fakeResponse{"sat /dev/sda": {output: string(readSmartFixture(t, "sda.json"))}},
+			}
+			sm := newFakeSmartManager(t, fake)
+			_, err := sm.Refresh(false)
+			require.NoError(t, err)
 
-	fake.scanErr = errors.New("scan timed out")
-	complete, err := sm.Refresh(true)
-	require.NoError(t, err)
-	assert.False(t, complete, "a failed scan must not let the hub prune devices")
-	assert.Len(t, sm.GetCurrentData(), 1)
+			fake.scan, fake.scanExit, fake.scanErr = test.output, test.exit, test.err
+			for _, forceScan := range []bool{true, false} {
+				fake.calls = nil
+				complete, err := sm.Refresh(forceScan)
+				require.NoError(t, err)
+				assert.False(t, complete, "a failed scan must not let the hub prune devices")
+				assert.Contains(t, sm.GetCurrentData(), "9C40918040082")
+				assert.Error(t, sm.scanErr)
+				if test.exit != 0 {
+					assert.ErrorContains(t, sm.scanErr, "exit status 1")
+				}
+				assert.Equal(t, []string{"-d sat -a --json=c -l devstat -n standby /dev/sda"}, fake.deviceCalls())
+				assert.Equal(t, forceScan, slices.Contains(fake.calls, "--scan -j"))
+			}
+
+			fake.scan, fake.scanExit, fake.scanErr = scanOf("/dev/sda:sat"), 0, nil
+			complete, err := sm.Refresh(true)
+			require.NoError(t, err)
+			assert.True(t, complete)
+			assert.NoError(t, sm.scanErr)
+		})
+	}
 }
 
 func TestRefreshWithSmartDevices(t *testing.T) {
