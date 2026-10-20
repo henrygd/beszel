@@ -8,7 +8,7 @@ msgstr ""
 "Language: ja\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2026-10-01 02:40\n"
+"PO-Revision-Date: 2026-10-20 17:16\n"
 "Last-Translator: \n"
 "Language-Team: Japanese\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
@@ -652,7 +652,7 @@ msgstr "コア"
 #: src/components/systemd-table/systemd-table-columns.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "CPU"
-msgstr ""
+msgstr "CPU"
 
 #: src/components/routes/system/cpu-sheet.tsx
 msgid "CPU Cores"
@@ -1102,7 +1102,7 @@ msgstr "グローバル"
 
 #: src/components/routes/system.tsx
 msgid "GPU"
-msgstr ""
+msgstr "GPU"
 
 #: src/components/routes/system/charts/gpu-charts.tsx
 msgid "GPU Engines"
@@ -1848,7 +1848,7 @@ msgstr "ルート"
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Rotate token"
-msgstr "トークンをローテート"
+msgstr "トークンを更新"
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/system/package-updates-table.tsx
@@ -2537,3 +2537,4 @@ msgstr "はい"
 #: src/components/routes/settings/layout.tsx
 msgid "Your user settings have been updated."
 msgstr "ユーザー設定が更新されました。"
+
