@@ -6,6 +6,7 @@ import (
 	"os"
 	"path/filepath"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -119,4 +120,38 @@ func TestFilterGpuFans(t *testing.T) {
 	require.Len(t, filtered, 1)
 	assert.Equal(t, "nct6798_fan1", filtered[0].key)
 	assert.Len(t, discovered, 2)
+}
+
+func TestReadFansWithTimeout(t *testing.T) {
+	agent := &Agent{sensorConfig: &SensorConfig{timeout: 10 * time.Millisecond}}
+	release := make(chan struct{})
+	blocked := func() ([]fanSensor, error) {
+		<-release
+		return nil, nil
+	}
+
+	fans, err := agent.readFansWithTimeout(blocked)
+	assert.ErrorIs(t, err, errFanFetchTimeout)
+	assert.Nil(t, fans)
+
+	// a read still blocked in the kernel isn't retried on later polls
+	calls := 0
+	fans, err = agent.readFansWithTimeout(func() ([]fanSensor, error) {
+		calls++
+		return nil, nil
+	})
+	assert.ErrorIs(t, err, errSensorReadInFlight)
+	assert.Nil(t, fans)
+	assert.Zero(t, calls)
+
+	// once the blocked read returns, collection resumes
+	close(release)
+	require.Eventually(t, func() bool { return !agent.fansReading.Load() }, time.Second, time.Millisecond)
+
+	root := t.TempDir()
+	writeFile(t, filepath.Join(root, "hwmon0", "name"), "chip\n")
+	writeFile(t, filepath.Join(root, "hwmon0", "fan1_input"), "1000\n")
+	fans, err = agent.readFansWithTimeout(newFanSensorCache(root))
+	require.NoError(t, err)
+	assert.Equal(t, map[string]uint16{"chip_fan1": 1000}, fans)
 }
