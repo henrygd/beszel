@@ -116,7 +116,7 @@ export default memo(function CpuCoresSheet({
 			label: t`Other`,
 			dataKey: ({ stats }: SystemStatsRecord) => {
 				const total = stats?.cpub?.reduce((acc, curr) => acc + curr, 0) ?? 0
-				return total > 0 ? 100 - total : null
+				return total > 0 ? Math.max(0, 100 - total) : null
 			},
 			color: `hsl(80, 65%, 52%)`,
 			opacity: 0.35,
