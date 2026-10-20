@@ -11,6 +11,7 @@ import (
 	"runtime"
 	"strconv"
 	"strings"
+	"sync/atomic"
 	"time"
 	"unicode/utf8"
 
@@ -21,7 +22,12 @@ import (
 	"github.com/shirou/gopsutil/v4/sensors"
 )
 
-var errTemperatureFetchTimeout = errors.New("temperature collection timed out")
+var (
+	errTemperatureFetchTimeout = errors.New("temperature collection timed out")
+	errSensorReadInFlight      = errors.New("previous sensor read still in progress")
+)
+
+const defaultSensorsTimeout = 2 * time.Second
 
 // Matches sensors.TemperaturesWithContext to allow for panic recovery (gopsutil/issues/1832)
 type getTempsFn func(ctx context.Context) ([]sensors.TemperatureStat, error)
@@ -53,7 +59,7 @@ func (a *Agent) newSensorConfig() *SensorConfig {
 // newSensorConfigWithEnv creates a SensorConfig with the provided environment variables
 // sensorsSet indicates if the SENSORS environment variable was explicitly set (even to empty string)
 func (a *Agent) newSensorConfigWithEnv(primarySensor, sysSensors, sensorsEnvVal, sensorsTimeout string, skipCollection, skipGPU bool) *SensorConfig {
-	timeout := 2 * time.Second
+	timeout := defaultSensorsTimeout
 	if sensorsTimeout != "" {
 		if d, err := time.ParseDuration(sensorsTimeout); err == nil {
 			timeout = d
@@ -126,7 +132,7 @@ func (a *Agent) updateTemperatures(systemStats *system.Stats) {
 	temps, err := a.getTempsWithTimeout(getSensorTemps)
 	if err != nil {
 		// retry once on panic (gopsutil/issues/1832)
-		if !errors.Is(err, errTemperatureFetchTimeout) {
+		if !errors.Is(err, errTemperatureFetchTimeout) && !errors.Is(err, errSensorReadInFlight) {
 			temps, err = a.getTempsWithTimeout(getSensorTemps)
 		}
 		if err != nil {
@@ -145,11 +151,23 @@ func (a *Agent) updateTemperatures(systemStats *system.Stats) {
 	}
 
 	systemStats.Temperatures = make(map[string]float64, len(temps))
+	// claimed tracks every name handed out, including names of sensors that are
+	// dropped below, so a sensor's key never depends on which sensors were filtered
+	claimed := make(map[string]struct{}, len(temps))
 	for i, sensor := range temps {
 		// check for malformed strings on darwin (gopsutil/issues/1832)
 		if runtime.GOOS == "darwin" && !utf8.ValidString(sensor.SensorKey) {
 			continue
 		}
+
+		// claim a name before any filtering, so excluding a sensor does not
+		// rename the sensors after it
+		sensorName := sensor.SensorKey
+		if _, ok := claimed[sensorName]; ok {
+			// if key already claimed, append int to key
+			sensorName = sensorName + "_" + strconv.Itoa(i)
+		}
+		claimed[sensorName] = struct{}{}
 
 		// scale temperature
 		if sensor.Temperature != 0 && sensor.Temperature < 1 {
@@ -158,11 +176,6 @@ func (a *Agent) updateTemperatures(systemStats *system.Stats) {
 		// skip if temperature is unreasonable
 		if sensor.Temperature <= 0 || sensor.Temperature >= 200 {
 			continue
-		}
-		sensorName := sensor.SensorKey
-		if _, ok := systemStats.Temperatures[sensorName]; ok {
-			// if key already exists, append int to key
-			sensorName = sensorName + "_" + strconv.Itoa(i)
 		}
 		// skip if not in whitelist or blacklist
 		if !isValidSensor(sensorName, a.sensorConfig) {
@@ -195,11 +208,6 @@ func (a *Agent) getTempsWithPanicRecovery(getTemps getTempsFn) (temps []sensors.
 }
 
 func (a *Agent) getTempsWithTimeout(getTemps getTempsFn) ([]sensors.TemperatureStat, error) {
-	type result struct {
-		temps []sensors.TemperatureStat
-		err   error
-	}
-
 	// Use a longer timeout on the first run to allow for initialization
 	// (e.g. Windows LHM subprocess startup)
 	timeout := a.sensorConfig.timeout
@@ -208,17 +216,37 @@ func (a *Agent) getTempsWithTimeout(getTemps getTempsFn) ([]sensors.TemperatureS
 		timeout = 10 * time.Second
 	}
 
+	return readWithTimeout(&a.tempsReading, timeout, errTemperatureFetchTimeout, func() ([]sensors.TemperatureStat, error) {
+		return a.getTempsWithPanicRecovery(getTemps)
+	})
+}
+
+// readWithTimeout runs read in a goroutine and returns timeoutErr if it doesn't
+// finish within timeout. A sysfs read blocked in the kernel can't be cancelled,
+// so inflight stays set until it returns and later calls get errSensorReadInFlight
+// instead of stacking up another blocked goroutine on every poll.
+func readWithTimeout[T any](inflight *atomic.Bool, timeout time.Duration, timeoutErr error, read func() (T, error)) (T, error) {
+	var zero T
+	if !inflight.CompareAndSwap(false, true) {
+		return zero, errSensorReadInFlight
+	}
+
+	type result struct {
+		value T
+		err   error
+	}
 	resultCh := make(chan result, 1)
 	go func() {
-		temps, err := a.getTempsWithPanicRecovery(getTemps)
-		resultCh <- result{temps: temps, err: err}
+		value, err := read()
+		inflight.Store(false)
+		resultCh <- result{value, err}
 	}()
 
 	select {
 	case res := <-resultCh:
-		return res.temps, res.err
+		return res.value, res.err
 	case <-time.After(timeout):
-		return nil, errTemperatureFetchTimeout
+		return zero, timeoutErr
 	}
 }
 
