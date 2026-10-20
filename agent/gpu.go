@@ -52,6 +52,8 @@ type GPUManager struct {
 	intelSysfsEnergySnapshots map[string]intelSysfsEnergySnapshot
 	// Per-process usage from DRM fdinfo; nil if unsupported
 	clientTracker *gpuClientTracker
+	// gpuVendors maps GPU ids to their vendor, for attributing DRM clients
+	gpuVendors map[string]string
 }
 
 // gpuSnapshot stores the last observed incremental values for delta tracking
@@ -201,6 +203,7 @@ func (gm *GPUManager) getJetsonParser() func(output []byte) bool {
 	// jetson devices have only one gpu so we'll just initialize here
 	gpuData := &system.GPUData{Name: "GPU"}
 	gm.GpuDataMap["0"] = gpuData
+	gm.setGpuVendor("0", gpuVendorNvidia)
 
 	return func(output []byte) bool {
 		gm.Lock()
@@ -262,6 +265,7 @@ func (gm *GPUManager) parseNvidiaData(output []byte) bool {
 		if _, ok := gm.GpuDataMap[id]; !ok {
 			name := strings.TrimPrefix(fields[1], "NVIDIA ")
 			gm.GpuDataMap[id] = &system.GPUData{Name: strings.TrimSuffix(name, " Laptop GPU")}
+			gm.setGpuVendor(id, gpuVendorNvidia)
 		}
 		// update gpu data
 		gpu := gm.GpuDataMap[id]
@@ -297,6 +301,7 @@ func (gm *GPUManager) parseAmdData(output []byte) bool {
 		id := v.ID
 		if _, ok := gm.GpuDataMap[id]; !ok {
 			gm.GpuDataMap[id] = &system.GPUData{Name: v.Name}
+			gm.setGpuVendor(id, gpuVendorAmd)
 		}
 		gpu := gm.GpuDataMap[id]
 		gpu.Temperature, _ = strconv.ParseFloat(v.Temperature, 64)
@@ -330,10 +335,18 @@ func (gm *GPUManager) GetCurrentData(cacheKey uint16) map[string]system.GPUData 
 		gpuData[id] = gpuAvg
 	}
 	if gm.clientTracker != nil {
-		gm.clientTracker.attachGpuClients(gpuData, gm.clientTracker.collect(cacheKey))
+		gm.clientTracker.attachGpuClients(gpuData, gm.gpuVendors, gm.clientTracker.collect(cacheKey))
 	}
 	slog.Debug("GPU", "data", gpuData)
 	return gpuData
+}
+
+// setGpuVendor records the vendor of a GPU id. The caller must hold the lock.
+func (gm *GPUManager) setGpuVendor(id, vendor string) {
+	if gm.gpuVendors == nil {
+		gm.gpuVendors = make(map[string]string)
+	}
+	gm.gpuVendors[id] = vendor
 }
 
 // initializeSnapshots ensures snapshot maps are initialized for the given cache key

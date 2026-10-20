@@ -175,6 +175,7 @@ func (c *nvmlCollector) collect() {
 			name := string(nameBuf[:strings.Index(string(nameBuf[:]), "\x00")])
 			name = strings.TrimPrefix(name, "NVIDIA ")
 			c.gm.GpuDataMap[id] = &system.GPUData{Name: strings.TrimSuffix(name, " Laptop GPU")}
+			c.gm.setGpuVendor(id, gpuVendorNvidia)
 		}
 		gpu := c.gm.GpuDataMap[id]
 

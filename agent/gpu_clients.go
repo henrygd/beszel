@@ -19,9 +19,19 @@ import (
 )
 
 const (
-	// gpuClientsRescanInterval is how many scans pass before the fds of a known
-	// process are listed again, to catch processes that open the GPU later.
-	gpuClientsRescanInterval = 10
+	// gpuClientsRescanInterval is how long before the fds of a known process
+	// are listed again, to catch processes that open the GPU later.
+	gpuClientsRescanInterval = 10 * time.Second
+	// gpuClientsStartupWindow is how long after a process is first seen its fds
+	// are listed on every scan. A process is often seen before it has opened
+	// the GPU, or before it has exec'd and has its final name.
+	gpuClientsStartupWindow = 5 * time.Second
+
+	// GPU vendors, used to attribute DRM clients to GPUs whose collector id
+	// is not a sysfs card id.
+	gpuVendorIntel  = "intel"
+	gpuVendorAmd    = "amd"
+	gpuVendorNvidia = "nvidia"
 )
 
 // gpuClientTracker attributes GPU engine usage to containers, systemd services
@@ -51,9 +61,11 @@ type gpuClientTracker struct {
 
 // drmProc caches what a process is and which of its fds are DRM clients.
 type drmProc struct {
-	consumer string
-	fds      []string
-	listedAt int // scan number when fd/ was last listed
+	consumer  string
+	fds       []string
+	listedAt  time.Time // when fd/ was last listed; zero to list on the next scan
+	firstSeen time.Time
+	firstScan int // scan number when the process was first seen
 }
 
 // drmClientKey identifies a DRM client. The same client can be shared by
@@ -66,6 +78,10 @@ type drmClientKey struct {
 type drmClient struct {
 	consumer string
 	engines  map[string]drmEngine
+	// procScan is the scan in which the oldest process sharing the client was
+	// first seen. A client from a process that is new since the previous
+	// snapshot has no earlier busy time, so it can start from zero.
+	procScan int
 }
 
 // drmEngine holds the cumulative counters of one engine class for a client.
@@ -79,6 +95,7 @@ type drmEngine struct {
 
 type drmSnapshot struct {
 	time    time.Time
+	scan    int
 	clients map[drmClientKey]drmClient
 }
 
@@ -121,7 +138,9 @@ func (t *gpuClientTracker) collect(cacheTimeMs uint16) map[string]map[string]flo
 	if t.now != nil {
 		now = t.now
 	}
-	snap := &drmSnapshot{time: now(), clients: t.scan()}
+	ts := now()
+	clients := t.scan(ts)
+	snap := &drmSnapshot{time: ts, scan: t.scans, clients: clients}
 
 	if t.prev == nil {
 		t.prev = make(map[uint16]*drmSnapshot)
@@ -161,8 +180,14 @@ func drmUsageByConsumer(prev, cur *drmSnapshot) map[string]map[string]float64 {
 				}
 				fraction = float64(engine.cycles-prevEngine.cycles) / float64(engine.totalCycles-prevEngine.totalCycles)
 			default:
-				// A client created since the previous scan accumulated all of its
-				// busy time within this interval, so a zero baseline is correct.
+				// A new client of a process created since the previous snapshot
+				// accumulated all of its busy time within this interval, so a zero
+				// baseline is correct. A process seen before may have opened the
+				// GPU long before its fds were listed again, so it only gets a
+				// baseline.
+				if !existed && client.procScan <= prev.scan {
+					continue
+				}
 				if engine.busyNs < prevEngine.busyNs {
 					continue
 				}
@@ -194,10 +219,10 @@ func drmUsageByConsumer(prev, cur *drmSnapshot) map[string]map[string]float64 {
 	return usage
 }
 
-// scan reads the DRM clients of all visible processes. New processes have
-// their fds listed right away; known processes every gpuClientsRescanInterval
-// scans, or when one of their DRM fds disappears.
-func (t *gpuClientTracker) scan() map[drmClientKey]drmClient {
+// scan reads the DRM clients of all visible processes. Processes have their
+// fds listed on every scan during gpuClientsStartupWindow, then every
+// gpuClientsRescanInterval, or when one of their DRM fds disappears.
+func (t *gpuClientTracker) scan(now time.Time) map[drmClientKey]drmClient {
 	clients := make(map[drmClientKey]drmClient)
 	entries, err := os.ReadDir(t.procRoot)
 	if err != nil {
@@ -224,12 +249,18 @@ func (t *gpuClientTracker) scan() map[drmClientKey]drmClient {
 			if !ok {
 				continue
 			}
-			proc = &drmProc{consumer: consumer}
+			proc = &drmProc{consumer: consumer, firstSeen: now, firstScan: t.scans}
 			t.procs[pid] = proc
+		} else if proc.listedAt.IsZero() || now.Sub(proc.firstSeen) < gpuClientsStartupWindow || now.Sub(proc.listedAt) >= gpuClientsRescanInterval {
+			// a process may have exec'd or moved cgroup since it was first seen
+			if consumer, ok := t.consumerForPid(pid); ok {
+				proc.consumer = consumer
+			}
+			proc.listedAt = time.Time{}
 		}
-		if proc.listedAt == 0 || t.scans-proc.listedAt >= gpuClientsRescanInterval {
+		if proc.listedAt.IsZero() {
 			fds, err := t.drmFds(pid)
-			proc.listedAt = t.scans
+			proc.listedAt = now
 			proc.fds = fds
 			if err != nil {
 				if errors.Is(err, fs.ErrPermission) {
@@ -243,16 +274,21 @@ func (t *gpuClientTracker) scan() map[drmClientKey]drmClient {
 			data, err := os.ReadFile(filepath.Join(t.procRoot, pid, "fdinfo", fd))
 			if err != nil {
 				// fd was closed; list fds again next scan
-				proc.listedAt = t.scans - gpuClientsRescanInterval
+				proc.listedAt = time.Time{}
 				continue
 			}
 			key, engines, ok := parseDrmFdinfo(data)
 			if !ok {
 				continue
 			}
-			if _, dup := clients[key]; !dup {
-				clients[key] = drmClient{consumer: t.consumerName(proc.consumer), engines: engines}
+			if client, dup := clients[key]; dup {
+				if proc.firstScan < client.procScan {
+					client.procScan = proc.firstScan
+					clients[key] = client
+				}
+				continue
 			}
+			clients[key] = drmClient{consumer: t.consumerName(proc.consumer), engines: engines, procScan: proc.firstScan}
 		}
 	}
 
@@ -338,27 +374,74 @@ func (t *gpuClientTracker) gpuIdForDevice(device string) string {
 	return ""
 }
 
-// attachGpuClients sets Clients on the GPU each device belongs to. Devices that
-// don't match a GPU id are attached to the only GPU if there is exactly one.
-func (t *gpuClientTracker) attachGpuClients(gpuData map[string]system.GPUData, usage map[string]map[string]float64) {
-	var unmatched []map[string]float64
+// attachGpuClients sets Clients on the GPU each device belongs to. A device
+// that doesn't match a sysfs card id (e.g. intel_gpu_top reports "i0") is
+// attached to the only GPU of its vendor, if it's the only card of that vendor.
+// gpuVendors maps GPU ids to the vendor reported by their collector.
+func (t *gpuClientTracker) attachGpuClients(gpuData map[string]system.GPUData, gpuVendors map[string]string, usage map[string]map[string]float64) {
 	for device, clients := range usage {
 		id := t.gpuIdForDevice(device)
-		if gpu, ok := gpuData[id]; ok && id != "" {
+		if _, ok := gpuData[id]; !ok || id == "" {
+			id = t.gpuIdForVendor(gpuData, gpuVendors, drmDriverVendor(t.driverForDevice(device)))
+		}
+		if gpu, ok := gpuData[id]; ok && id != "" && gpu.Clients == nil {
 			gpu.Clients = clients
 			gpuData[id] = gpu
-			continue
 		}
-		unmatched = append(unmatched, clients)
 	}
-	if len(unmatched) == 1 && len(gpuData) == 1 {
-		for id, gpu := range gpuData {
-			if gpu.Clients == nil {
-				gpu.Clients = unmatched[0]
-				gpuData[id] = gpu
+}
+
+// gpuIdForVendor returns the id of the only GPU from vendor, or "" if there is
+// not exactly one, or the system has more than one card from that vendor.
+func (t *gpuClientTracker) gpuIdForVendor(gpuData map[string]system.GPUData, gpuVendors map[string]string, vendor string) string {
+	if vendor == "" || t.cardsForVendor(vendor) != 1 {
+		return ""
+	}
+	var match string
+	for id := range gpuData {
+		if gpuVendors[id] == vendor {
+			if match != "" {
+				return ""
 			}
+			match = id
 		}
 	}
+	return match
+}
+
+// cardsForVendor counts the DRM cards whose driver belongs to vendor.
+func (t *gpuClientTracker) cardsForVendor(vendor string) int {
+	drivers, _ := filepath.Glob(filepath.Join(t.sysRoot, "class/drm/card[0-9]*/device/driver"))
+	var n int
+	for _, driver := range drivers {
+		if link, err := os.Readlink(driver); err == nil && drmDriverVendor(filepath.Base(link)) == vendor {
+			n++
+		}
+	}
+	return n
+}
+
+// driverForDevice returns the kernel driver of a drm-pdev PCI address. A device
+// without drm-pdev is keyed by its driver name, which is returned as is.
+func (t *gpuClientTracker) driverForDevice(device string) string {
+	link, err := os.Readlink(filepath.Join(t.sysRoot, "bus/pci/devices", device, "driver"))
+	if err != nil {
+		return device
+	}
+	return filepath.Base(link)
+}
+
+// drmDriverVendor returns the GPU vendor of a DRM driver, or "" if unknown.
+func drmDriverVendor(driver string) string {
+	switch driver {
+	case "i915", "xe":
+		return gpuVendorIntel
+	case "amdgpu", "radeon":
+		return gpuVendorAmd
+	case "nouveau", "nvidia":
+		return gpuVendorNvidia
+	}
+	return ""
 }
 
 // parseDrmFdinfo parses the drm-* keys of a DRM file descriptor's fdinfo.

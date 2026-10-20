@@ -159,10 +159,9 @@ func TestGpuClientTrackerFdChanges(t *testing.T) {
 
 	// opening the GPU later is picked up when fds are listed again
 	proc.addFd(100, 4, testRenderNode, i915Fdinfo(200, 0, 0))
-	for range gpuClientsRescanInterval - 1 {
-		tick(time.Second)
-		assert.Empty(t, tracker.collect(60000))
-	}
+	tick(gpuClientsRescanInterval - time.Second)
+	assert.Empty(t, tracker.collect(60000))
+	assert.Empty(t, tracker.procs["100"].fds)
 	tick(time.Second)
 	assert.Empty(t, tracker.collect(60000), "baseline for the new client")
 	require.Equal(t, []string{"4"}, tracker.procs["100"].fds)
@@ -182,6 +181,29 @@ func TestGpuClientTrackerFdChanges(t *testing.T) {
 	require.NoError(t, os.RemoveAll(filepath.Join(proc.root, "100")))
 	tracker.collect(60000)
 	assert.NotContains(t, tracker.procs, "100")
+}
+
+func TestGpuClientTrackerStartup(t *testing.T) {
+	proc := newFakeProc(t)
+	tracker, tick := newTestTracker(proc)
+	tracker.collect(60000)
+	tracker.collect(1000)
+
+	// a shell forks and is seen before it execs ffmpeg, which then opens the GPU
+	tick(time.Second)
+	proc.addProcess(300, "bash", "0::/user.slice/user-1000.slice/session-2.scope\n", nil, nil)
+	assert.Empty(t, tracker.collect(1000))
+
+	tick(time.Second)
+	require.NoError(t, os.WriteFile(filepath.Join(proc.root, "300", "comm"), []byte("ffmpeg\n"), 0o644))
+	proc.addFd(300, 3, testRenderNode, i915Fdinfo(200, 0, 0.1e9))
+	assert.Empty(t, tracker.collect(1000), "the process was seen at the previous realtime scan")
+
+	tick(time.Second)
+	proc.setFdinfo(300, 3, i915Fdinfo(200, 0, 0.2e9))
+	assert.Equal(t, map[string]float64{"p:ffmpeg": 10}, tracker.collect(1000)[testPdev])
+	// but it's new since the 60s snapshot, so all of its time counts there
+	assert.Equal(t, map[string]float64{"p:ffmpeg": 6.67}, tracker.collect(60000)[testPdev])
 }
 
 func TestDrmUsageByConsumerCyclesAndCapacity(t *testing.T) {
@@ -205,30 +227,120 @@ func TestDrmUsageByConsumerCyclesAndCapacity(t *testing.T) {
 	assert.Equal(t, map[string]map[string]float64{"0000:03:00.0": {"c:a": 40}}, drmUsageByConsumer(prev, cur))
 }
 
-func TestAttachGpuClients(t *testing.T) {
+func TestGpuClientTrackerLateDiscovery(t *testing.T) {
+	proc := newFakeProc(t)
+	proc.addProcess(100, "jellyfin", dockerCgroup(testJellyfinId), []string{"/dev/null"}, []string{"pos: 0\n"})
+
+	tracker, tick := newTestTracker(proc)
+	tracker.collect(60000)
+	tick(gpuClientsStartupWindow)
+	tracker.collect(60000)
+
+	// ffmpeg opens the GPU right after a scan and runs at 10% until its fds are listed again
+	proc.addFd(100, 4, testRenderNode, i915Fdinfo(200, 0, 0))
+	for i := range 5 {
+		tick(time.Second)
+		proc.setFdinfo(100, 4, i915Fdinfo(200, 0, uint64(i+1)*0.1e9))
+		assert.Empty(t, tracker.collect(60000), "a known process's new client only gets a baseline")
+	}
+	require.Equal(t, []string{"4"}, tracker.procs["100"].fds)
+
+	tick(time.Second)
+	proc.setFdinfo(100, 4, i915Fdinfo(200, 0, 0.6e9))
+	assert.Equal(t, map[string]float64{"c:" + testJellyfinId[:12]: 10}, tracker.collect(60000)[testPdev])
+}
+
+func TestGpuClientTrackerDiscoveryAcrossCacheTimes(t *testing.T) {
+	proc := newFakeProc(t)
+	proc.addProcess(100, "worker", "0::/system.slice/worker.service\n", []string{testRenderNode}, []string{i915Fdinfo(200, 0, 0)})
+
+	tracker, tick := newTestTracker(proc)
+	tracker.collect(60000)
+	tracker.collect(1000)
+	tick(gpuClientsStartupWindow)
+	tracker.collect(1000)
+
+	// a client found by the realtime scans is still new to the 60s snapshot,
+	// but its process isn't, so it only gets a baseline there
+	proc.addFd(100, 4, testRenderNode, i915Fdinfo(201, 0, 0))
+	for i := range 5 {
+		tick(time.Second)
+		proc.setFdinfo(100, 4, i915Fdinfo(201, 0, uint64(i+1)*0.1e9))
+		tracker.collect(1000)
+	}
+	tick(time.Second)
+	proc.setFdinfo(100, 4, i915Fdinfo(201, 0, 0.6e9))
+	assert.Equal(t, map[string]float64{"s:worker": 10}, tracker.collect(1000)[testPdev])
+	assert.Empty(t, tracker.collect(60000))
+
+	// a process started after the 60s snapshot starts from zero
+	tick(time.Second)
+	proc.addProcess(101, "ffmpeg", "0::/system.slice/ffmpeg.service\n", []string{testRenderNode}, []string{i915Fdinfo(202, 0, 0)})
+	tracker.collect(1000)
+	tick(time.Second)
+	proc.setFdinfo(101, 3, i915Fdinfo(202, 0, 0.2e9))
+	assert.Equal(t, map[string]float64{"s:ffmpeg": 10}, tracker.collect(60000)[testPdev])
+}
+
+// fakeSys creates a sysfs with a DRM card per PCI device bound to driver.
+func fakeSys(t *testing.T, cards map[string][2]string) string {
 	sys := t.TempDir()
-	require.NoError(t, os.MkdirAll(filepath.Join(sys, "bus/pci/devices", testPdev, "drm", "card1"), 0o755))
-	require.NoError(t, os.MkdirAll(filepath.Join(sys, "bus/pci/devices", testPdev, "drm", "renderD128"), 0o755))
-	tracker := &gpuClientTracker{sysRoot: sys}
+	for card, dev := range cards {
+		pdev, driver := dev[0], dev[1]
+		pciDir := filepath.Join(sys, "bus/pci/devices", pdev)
+		require.NoError(t, os.MkdirAll(filepath.Join(pciDir, "drm", card), 0o755))
+		require.NoError(t, os.Symlink("../../../bus/pci/drivers/"+driver, filepath.Join(pciDir, "driver")))
+		require.NoError(t, os.MkdirAll(filepath.Join(sys, "class/drm", card), 0o755))
+		require.NoError(t, os.Symlink(pciDir, filepath.Join(sys, "class/drm", card, "device")))
+	}
+	return sys
+}
+
+func TestAttachGpuClients(t *testing.T) {
+	const nvidiaPdev = "0000:01:00.0"
+	intelUsage := func() map[string]map[string]float64 {
+		return map[string]map[string]float64{testPdev: {"c:jellyfin": 30}}
+	}
+	intelAndNvidia := &gpuClientTracker{sysRoot: fakeSys(t, map[string][2]string{
+		"card0": {nvidiaPdev, "nvidia"},
+		"card1": {testPdev, "i915"},
+	})}
 
 	t.Run("matches sysfs card id", func(t *testing.T) {
 		gpus := map[string]system.GPUData{"card1": {Name: "Intel"}, "card2": {Name: "AMD"}}
-		tracker.attachGpuClients(gpus, map[string]map[string]float64{testPdev: {"c:jellyfin": 30}})
+		intelAndNvidia.attachGpuClients(gpus, nil, intelUsage())
 		assert.Equal(t, map[string]float64{"c:jellyfin": 30}, gpus["card1"].Clients)
 		assert.Nil(t, gpus["card2"].Clients)
 	})
 
-	t.Run("falls back to the only gpu", func(t *testing.T) {
-		gpus := map[string]system.GPUData{"i0": {Name: "Intel"}}
-		tracker.attachGpuClients(gpus, map[string]map[string]float64{testPdev: {"c:jellyfin": 30}})
+	t.Run("intel_gpu_top and nvidia", func(t *testing.T) {
+		gpus := map[string]system.GPUData{"i0": {}, "0": {}}
+		vendors := map[string]string{"i0": gpuVendorIntel, "0": gpuVendorNvidia}
+		intelAndNvidia.attachGpuClients(gpus, vendors, intelUsage())
 		assert.Equal(t, map[string]float64{"c:jellyfin": 30}, gpus["i0"].Clients)
+		assert.Nil(t, gpus["0"].Clients)
 	})
 
-	t.Run("unmatched with several gpus is dropped", func(t *testing.T) {
-		gpus := map[string]system.GPUData{"i0": {}, "0": {}}
-		tracker.attachGpuClients(gpus, map[string]map[string]float64{"0000:09:00.0": {"c:jellyfin": 30}})
-		assert.Nil(t, gpus["i0"].Clients)
+	t.Run("intel clients are not put on an nvidia gpu", func(t *testing.T) {
+		gpus := map[string]system.GPUData{"0": {}}
+		intelAndNvidia.attachGpuClients(gpus, map[string]string{"0": gpuVendorNvidia}, intelUsage())
 		assert.Nil(t, gpus["0"].Clients)
+	})
+
+	t.Run("gpu without a known vendor", func(t *testing.T) {
+		gpus := map[string]system.GPUData{"n0": {}}
+		intelAndNvidia.attachGpuClients(gpus, nil, intelUsage())
+		assert.Nil(t, gpus["n0"].Clients)
+	})
+
+	t.Run("several cards of the vendor", func(t *testing.T) {
+		tracker := &gpuClientTracker{sysRoot: fakeSys(t, map[string][2]string{
+			"card0": {"0000:03:00.0", "i915"},
+			"card1": {testPdev, "i915"},
+		})}
+		gpus := map[string]system.GPUData{"i0": {}}
+		tracker.attachGpuClients(gpus, map[string]string{"i0": gpuVendorIntel}, intelUsage())
+		assert.Nil(t, gpus["i0"].Clients, "intel_gpu_top may report the other card")
 	})
 }
 
