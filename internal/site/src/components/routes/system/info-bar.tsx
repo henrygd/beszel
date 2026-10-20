@@ -204,13 +204,8 @@ export default function InfoBar({
 					<ChartTimeSelect className="w-full xl:w-40" agentVersion={chartData.agentVersion} />
 					<DropdownMenu>
 						<DropdownMenuTrigger asChild>
-							<Button
-								aria-label={t`Settings`}
-								variant="outline"
-								size="icon"
-								className="hidden xl:flex p-0 text-primary"
-							>
-								<Settings2Icon className="size-4 opacity-90" />
+							<Button aria-label={t`View`} variant="outline" size="icon" className="hidden xl:flex">
+								<Settings2Icon className="size-4 opacity-80" />
 							</Button>
 						</DropdownMenuTrigger>
 						<DropdownMenuContent align="end" className="min-w-44">
