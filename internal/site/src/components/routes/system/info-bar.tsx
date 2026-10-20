@@ -61,6 +61,7 @@ export default function InfoBar({
 		const cores = details?.cores ?? system.info.c
 		const threads = details?.threads ?? system.info.t ?? 0
 		const cpuModel = details?.cpu ?? system.info.m
+		const sockets = details?.sockets ?? 0
 		const os = details?.os ?? system.info.os ?? Os.Linux
 		const osName = details?.os_name
 		const arch = details?.arch
@@ -101,7 +102,8 @@ export default function InfoBar({
 			{ value: secondsToUptimeString(system.info.u), Icon: ClockArrowUp, label: t`Uptime`, hide: !system.info.u },
 			osInfo[os],
 			{
-				value: cpuModel,
+				// 0 means the agent did not report a socket count
+				value: sockets > 1 ? `${sockets}x ${cpuModel}` : cpuModel,
 				Icon: CpuIcon,
 				hide: !cpuModel,
 				label: `${plural(cores, { one: "# core", other: "# cores" })} / ${plural(threads, { one: "# thread", other: "# threads" })}${arch ? ` / ${arch}` : ""}`,

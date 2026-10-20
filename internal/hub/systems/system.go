@@ -381,6 +381,7 @@ func createSystemDetailsRecord(app core.App, data *system.Details, systemId stri
 		"kernel":   data.Kernel,
 		"cores":    data.Cores,
 		"threads":  data.Threads,
+		"sockets":  data.Sockets,
 		"cpu":      data.CpuModel,
 		"os":       data.Os,
 		"os_name":  data.OsName,

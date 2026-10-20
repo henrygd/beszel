@@ -259,3 +259,12 @@ func TestSSHFallbackDialsAgentUnlessDisabled(t *testing.T) {
 		})
 	}
 }
+
+func TestCreateRecordsSavesCpuSockets(t *testing.T) {
+	sys, app := newTestSystemWithHub(t)
+	_, err := sys.createRecords(&system.CombinedData{Details: &system.Details{Hostname: "host", Sockets: 2}})
+	require.NoError(t, err)
+	record, err := app.FindRecordById("system_details", sys.Id)
+	require.NoError(t, err)
+	require.Equal(t, 2, record.GetInt("sockets"))
+}
