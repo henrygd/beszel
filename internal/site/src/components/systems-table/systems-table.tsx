@@ -244,9 +244,8 @@ export default function SystemsTable() {
 						</div>
 						<DropdownMenu>
 							<DropdownMenuTrigger asChild>
-								<Button variant="outline">
-									<Settings2Icon className="me-1.5 size-4 opacity-80" />
-									<Trans>View</Trans>
+								<Button aria-label={t`View`} variant="outline" size="icon">
+									<Settings2Icon className="size-4 opacity-80" />
 								</Button>
 							</DropdownMenuTrigger>
 							<DropdownMenuContent align="end" className="h-72 md:h-auto min-w-48 md:min-w-auto overflow-y-auto">

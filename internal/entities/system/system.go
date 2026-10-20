@@ -37,10 +37,8 @@ type Stats struct {
 	DiskTotal      float64             `json:"d" cbor:"9,keyasint"`
 	DiskUsed       float64             `json:"du" cbor:"10,keyasint"`
 	DiskPct        float64             `json:"dp" cbor:"11,keyasint"`
-	DiskReadPs     float64             `json:"dr,omitzero" cbor:"12,keyasint,omitzero"`
-	DiskWritePs    float64             `json:"dw,omitzero" cbor:"13,keyasint,omitzero"`
-	MaxDiskReadPs  float64             `json:"drm,omitzero" cbor:"-"`
-	MaxDiskWritePs float64             `json:"dwm,omitzero" cbor:"-"`
+	DiskReadPs     float64             `json:"dr,omitzero" cbor:"12,keyasint,omitzero"` // Deprecated: sent by agents < 0.13.0. Migrated to DiskIO by the hub.
+	DiskWritePs    float64             `json:"dw,omitzero" cbor:"13,keyasint,omitzero"` // Deprecated: sent by agents < 0.13.0. Migrated to DiskIO by the hub.
 	NetworkSent    float64             `json:"ns,omitzero" cbor:"16,keyasint,omitzero"`
 	NetworkRecv    float64             `json:"nr,omitzero" cbor:"17,keyasint,omitzero"`
 	MaxNetworkSent float64             `json:"nsm,omitzero" cbor:"-"`
@@ -48,12 +46,9 @@ type Stats struct {
 	Temperatures   map[string]float64  `json:"t,omitempty" cbor:"20,keyasint,omitempty"`
 	ExtraFs        map[string]*FsStats `json:"efs,omitempty" cbor:"21,keyasint,omitempty"`
 	GPUData        map[string]GPUData  `json:"g,omitempty" cbor:"22,keyasint,omitempty"`
-	// LoadAvg1       float64             `json:"l1,omitempty" cbor:"23,keyasint,omitempty"`
-	// LoadAvg5       float64             `json:"l5,omitempty" cbor:"24,keyasint,omitempty"`
-	// LoadAvg15      float64             `json:"l15,omitempty" cbor:"25,keyasint,omitempty"`
-	Bandwidth    [2]uint64 `json:"b,omitzero" cbor:"26,keyasint,omitzero"` // [sent bytes, recv bytes]
-	MaxBandwidth [2]uint64 `json:"bm,omitzero" cbor:"-"`                   // [sent bytes, recv bytes]
-	// TODO: remove other load fields in future release in favor of load avg array
+	// cbor keys 23-25 were LoadAvg1/5/15 (removed) - do not reuse
+	Bandwidth         [2]uint64            `json:"b,omitzero" cbor:"26,keyasint,omitzero"` // [sent bytes, recv bytes]
+	MaxBandwidth      [2]uint64            `json:"bm,omitzero" cbor:"-"`                   // [sent bytes, recv bytes]
 	LoadAvg           [3]float64           `json:"la,omitempty" cbor:"28,keyasint"`
 	Battery           Battery              `json:"bat,omitzero" cbor:"29,keyasint,omitzero"`    // [percent, charge state]
 	NetworkInterfaces map[string][4]uint64 `json:"ni,omitempty" cbor:"31,keyasint,omitempty"`   // [upload bytes, download bytes, total upload, total download]
@@ -144,18 +139,15 @@ func TrimGPUClients(clients map[string]float64, max int) map[string]float64 {
 }
 
 type FsStats struct {
-	Root           bool    `json:"-"`
-	Mountpoint     string  `json:"-"`
-	Name           string  `json:"-"`
-	DiskTotal      float64 `json:"d" cbor:"0,keyasint"`
-	DiskUsed       float64 `json:"du" cbor:"1,keyasint"`
-	TotalRead      uint64  `json:"tr,omitzero" cbor:"9,keyasint,omitzero"`  // cumulative device read bytes
-	TotalWrite     uint64  `json:"tw,omitzero" cbor:"10,keyasint,omitzero"` // cumulative device write bytes
-	DiskReadPs     float64 `json:"r" cbor:"2,keyasint"`
-	DiskWritePs    float64 `json:"w" cbor:"3,keyasint"`
-	MaxDiskReadPS  float64 `json:"rm,omitzero" cbor:"-"`
-	MaxDiskWritePS float64 `json:"wm,omitzero" cbor:"-"`
-	// TODO: remove DiskReadPs and DiskWritePs in future release in favor of DiskReadBytes and DiskWriteBytes
+	Root              bool       `json:"-"`
+	Mountpoint        string     `json:"-"`
+	Name              string     `json:"-"`
+	DiskTotal         float64    `json:"d" cbor:"0,keyasint"`
+	DiskUsed          float64    `json:"du" cbor:"1,keyasint"`
+	TotalRead         uint64     `json:"tr,omitzero" cbor:"9,keyasint,omitzero"`  // cumulative device read bytes
+	TotalWrite        uint64     `json:"tw,omitzero" cbor:"10,keyasint,omitzero"` // cumulative device write bytes
+	DiskReadPs        float64    `json:"r,omitzero" cbor:"2,keyasint,omitzero"`   // Deprecated: sent by agents < 0.13.0. Migrated to DiskReadBytes/DiskWriteBytes by the hub.
+	DiskWritePs       float64    `json:"w,omitzero" cbor:"3,keyasint,omitzero"`   // Deprecated: sent by agents < 0.13.0. Migrated to DiskReadBytes/DiskWriteBytes by the hub.
 	DiskReadBytes     uint64     `json:"rb" cbor:"6,keyasint,omitempty"`
 	DiskWriteBytes    uint64     `json:"wb" cbor:"7,keyasint,omitempty"`
 	MaxDiskReadBytes  uint64     `json:"rbm,omitzero" cbor:"-"`
@@ -206,9 +198,7 @@ type Info struct {
 	GpuPct        float64 `json:"g,omitzero" cbor:"12,keyasint,omitempty"`
 	DashboardTemp float64 `json:"dt,omitzero" cbor:"13,keyasint,omitempty"`
 	Os            Os      `json:"os,omitzero" cbor:"14,keyasint,omitempty"` // deprecated - moved to Details struct
-	// LoadAvg1       float64 `json:"l1,omitempty" cbor:"15,keyasint,omitempty"`  // deprecated - use `la` array instead
-	// LoadAvg5       float64 `json:"l5,omitempty" cbor:"16,keyasint,omitempty"`  // deprecated - use `la` array instead
-	// LoadAvg15      float64 `json:"l15,omitempty" cbor:"17,keyasint,omitempty"` // deprecated - use `la` array instead
+	// cbor keys 15-17 were LoadAvg1/5/15 (removed) - do not reuse
 
 	BandwidthBytes uint64             `json:"bb" cbor:"18,keyasint"`
 	LoadAvg        [3]float64         `json:"la,omitempty" cbor:"19,keyasint"`
@@ -236,6 +226,7 @@ type Details struct {
 	MemoryTotal   uint64        `cbor:"9,keyasint"`
 	SmartInterval time.Duration `cbor:"10,keyasint,omitempty"`
 	ZfsInterval   time.Duration `cbor:"11,keyasint,omitempty"` // interval for ZFS detail refresh
+	Sockets       int           `cbor:"12,keyasint,omitempty"` // physical CPU packages, 0 if unknown
 }
 
 // Final data structure to return to the hub

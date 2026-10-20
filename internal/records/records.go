@@ -312,8 +312,6 @@ func AverageSystemStatsSlice(records []system.Stats) system.Stats {
 		sum.DiskTotal += stats.DiskTotal
 		sum.DiskUsed += stats.DiskUsed
 		sum.DiskPct += stats.DiskPct
-		sum.DiskReadPs += stats.DiskReadPs
-		sum.DiskWritePs += stats.DiskWritePs
 		sum.NetworkSent += stats.NetworkSent
 		sum.NetworkRecv += stats.NetworkRecv
 		sum.LoadAvg[0] += stats.LoadAvg[0]
@@ -351,8 +349,6 @@ func AverageSystemStatsSlice(records []system.Stats) system.Stats {
 		sum.MaxMem = max(sum.MaxMem, stats.MaxMem, stats.MemUsed)
 		sum.MaxNetworkSent = max(sum.MaxNetworkSent, stats.MaxNetworkSent, stats.NetworkSent)
 		sum.MaxNetworkRecv = max(sum.MaxNetworkRecv, stats.MaxNetworkRecv, stats.NetworkRecv)
-		sum.MaxDiskReadPs = max(sum.MaxDiskReadPs, stats.MaxDiskReadPs, stats.DiskReadPs)
-		sum.MaxDiskWritePs = max(sum.MaxDiskWritePs, stats.MaxDiskWritePs, stats.DiskWritePs)
 		sum.MaxBandwidth[0] = max(sum.MaxBandwidth[0], stats.MaxBandwidth[0], stats.Bandwidth[0])
 		sum.MaxBandwidth[1] = max(sum.MaxBandwidth[1], stats.MaxBandwidth[1], stats.Bandwidth[1])
 		sum.MaxDiskIO[0] = max(sum.MaxDiskIO[0], stats.MaxDiskIO[0], stats.DiskIO[0])
@@ -410,10 +406,6 @@ func AverageSystemStatsSlice(records []system.Stats) system.Stats {
 				fs := sum.ExtraFs[key]
 				fs.DiskTotal += value.DiskTotal
 				fs.DiskUsed += value.DiskUsed
-				fs.DiskWritePs += value.DiskWritePs
-				fs.DiskReadPs += value.DiskReadPs
-				fs.MaxDiskReadPS = max(fs.MaxDiskReadPS, value.MaxDiskReadPS, value.DiskReadPs)
-				fs.MaxDiskWritePS = max(fs.MaxDiskWritePS, value.MaxDiskWritePS, value.DiskWritePs)
 				fs.DiskReadBytes += value.DiskReadBytes
 				fs.DiskWriteBytes += value.DiskWriteBytes
 				fs.MaxDiskReadBytes = max(fs.MaxDiskReadBytes, value.MaxDiskReadBytes, value.DiskReadBytes)
@@ -514,8 +506,6 @@ func AverageSystemStatsSlice(records []system.Stats) system.Stats {
 	sum.DiskTotal = twoDecimals(sum.DiskTotal / count)
 	sum.DiskUsed = twoDecimals(sum.DiskUsed / count)
 	sum.DiskPct = twoDecimals(sum.DiskPct / count)
-	sum.DiskReadPs = twoDecimals(sum.DiskReadPs / count)
-	sum.DiskWritePs = twoDecimals(sum.DiskWritePs / count)
 	sum.DiskIO[0] = sum.DiskIO[0] / uint64(count)
 	sum.DiskIO[1] = sum.DiskIO[1] / uint64(count)
 	for i := range sum.DiskIoStats {
@@ -571,8 +561,6 @@ func AverageSystemStatsSlice(records []system.Stats) system.Stats {
 			fs := sum.ExtraFs[key]
 			fs.DiskTotal = twoDecimals(fs.DiskTotal / count)
 			fs.DiskUsed = twoDecimals(fs.DiskUsed / count)
-			fs.DiskWritePs = twoDecimals(fs.DiskWritePs / count)
-			fs.DiskReadPs = twoDecimals(fs.DiskReadPs / count)
 			fs.DiskReadBytes = fs.DiskReadBytes / uint64(count)
 			fs.DiskWriteBytes = fs.DiskWriteBytes / uint64(count)
 			for i := range fs.DiskIoStats {

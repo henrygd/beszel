@@ -59,6 +59,7 @@ type dockerManager struct {
 	sem                  chan struct{}               // Semaphore to limit concurrent container requests
 	containerStatsMutex  sync.RWMutex                // Mutex to prevent concurrent access to containerStatsMap
 	apiContainerList     []*container.ApiInfo        // List of containers from Docker API
+	labeledList          []*labeledContainer         // Reused container list that also carries labels (name template only)
 	containerStatsMap    map[string]*container.Stats // Keeps track of container stats
 	validIds             map[string]struct{}         // Map of valid container ids, used to prune invalid containers from containerStatsMap
 	goodDockerVersion    bool                        // Whether docker version is at least 25.0.0 (one-shot works correctly)
@@ -66,6 +67,7 @@ type dockerManager struct {
 	isWindows            bool                        // Whether the Docker Engine API is running on Windows
 	buf                  *bytes.Buffer               // Buffer to store and read response bodies
 	excludeContainers    []string                    // Patterns to exclude containers by name
+	nameTemplate         *containerNameTemplate      // Optional template to build container names from labels
 	usingPodman          bool                        // Whether the Docker Engine API is running on Podman
 
 	registryClient       *http.Client                  // Client for registry requests; nil uses a client with a 10-second timeout
@@ -143,8 +145,7 @@ func (dm *dockerManager) getDockerStats(cacheTimeMs uint16) ([]*container.Stats,
 		return nil, err
 	}
 
-	dm.apiContainerList = dm.apiContainerList[:0]
-	if err := dm.decode(resp, &dm.apiContainerList); err != nil {
+	if err := dm.decodeContainerList(resp); err != nil {
 		return nil, err
 	}
 
@@ -170,6 +171,10 @@ func (dm *dockerManager) getDockerStats(cacheTimeMs uint16) ([]*container.Stats,
 	dm.refreshImageUpdates(dm.apiContainerList, time.Now())
 
 	var failedContainers []*container.ApiInfo
+
+	if dm.nameTemplate != nil {
+		resolveContainerNames(dm.apiContainerList, dm.nameTemplate, dm.shouldExcludeContainer)
+	}
 
 	for _, ctr := range dm.apiContainerList {
 		ctr.IdShort = ctr.Id[:12]
@@ -380,9 +385,6 @@ func updateContainerStatsValues(stats *container.Stats, cpuPct float64, usedMemo
 	stats.Cpu = utils.TwoDecimals(cpuPct)
 	stats.Mem = utils.BytesToMegabytes(float64(usedMemory))
 	stats.Bandwidth = [2]uint64{sent_delta, recv_delta}
-	// TODO(0.19+): stop populating NetworkSent/NetworkRecv (deprecated in 0.18.3)
-	stats.NetworkSent = utils.BytesToMegabytes(float64(sent_delta))
-	stats.NetworkRecv = utils.BytesToMegabytes(float64(recv_delta))
 	stats.PrevReadTime = readTime
 }
 
@@ -504,7 +506,11 @@ func (dm *dockerManager) getPodmanContainerHealth(containerID string) (container
 
 // Updates stats for individual container with cache-time-aware delta tracking
 func (dm *dockerManager) updateContainerStats(ctr *container.ApiInfo, cacheTimeMs uint16) error {
-	name := ctr.Names[0][1:]
+	// DisplayName is only set when CONTAINER_NAME_LABEL is configured, so this fallback is required
+	name := ctr.DisplayName
+	if name == "" {
+		name = ctr.Names[0][1:]
+	}
 
 	resp, err := dm.client.Get(fmt.Sprintf("http://localhost/containers/%s/stats?stream=0&one-shot=1", ctr.IdShort))
 	if err != nil {
@@ -548,6 +554,7 @@ func (dm *dockerManager) updateContainerStats(ctr *container.ApiInfo, cacheTimeM
 	}
 
 	stats.Id = ctr.IdShort
+	stats.Name = name
 	stats.Status = statusText
 	stats.Health = health
 
@@ -562,9 +569,6 @@ func (dm *dockerManager) updateContainerStats(ctr *container.ApiInfo, cacheTimeM
 	stats.Cpu = 0
 	stats.Mem = 0
 	stats.Bandwidth = [2]uint64{0, 0}
-	// TODO(0.19+): stop populating NetworkSent/NetworkRecv (deprecated in 0.18.3)
-	stats.NetworkSent = 0
-	stats.NetworkRecv = 0
 
 	// Initialize CPU tracking for this cache time interval
 	dm.initializeCpuTracking(cacheTimeMs)
@@ -726,6 +730,16 @@ func newDockerManager(agent *Agent) *dockerManager {
 		slog.Info("EXCLUDE_CONTAINERS", "patterns", excludeContainers)
 	}
 
+	var nameTemplate *containerNameTemplate
+	if value, _ := utils.GetEnv("CONTAINER_NAME_LABEL"); strings.TrimSpace(value) != "" {
+		var err error
+		if nameTemplate, err = parseContainerNameTemplate(value); err != nil {
+			slog.Error("Ignoring invalid CONTAINER_NAME_LABEL", "value", value, "err", err)
+		} else {
+			slog.Info("CONTAINER_NAME_LABEL", "template", value)
+		}
+	}
+
 	manager := &dockerManager{
 		agent: agent,
 		client: &http.Client{
@@ -736,6 +750,7 @@ func newDockerManager(agent *Agent) *dockerManager {
 		sem:                  make(chan struct{}, 5),
 		apiContainerList:     []*container.ApiInfo{},
 		excludeContainers:    excludeContainers,
+		nameTemplate:         nameTemplate,
 		imageUpdatesDisabled: dockerImageCheck == "false",
 
 		// Initialize cache-time-aware tracking structures
@@ -815,6 +830,48 @@ func (dm *dockerManager) decode(resp *http.Response, d any) error {
 		return err
 	}
 	return json.Unmarshal(dm.buf.Bytes(), d)
+}
+
+// labeledContainer is a /containers/json entry decoded together with its labels. Only used when
+// a CONTAINER_NAME_LABEL template is set. Shadows ApiInfo.Labels, which is skipped by the decoder.
+type labeledContainer struct {
+	container.ApiInfo
+	Labels map[string]string
+}
+
+// Decodes a /containers/json response into apiContainerList using the reusable buffer.
+// Without a template, labels are not read at all. With a template, labels are read in the same
+// pass as the rest of the entry, into a reused list whose label maps are dropped each poll.
+func (dm *dockerManager) decodeContainerList(resp *http.Response) error {
+	if dm.buf == nil {
+		// initialize buffer with 256kb starting size
+		dm.buf = bytes.NewBuffer(make([]byte, 0, 1024*256))
+	}
+	defer resp.Body.Close()
+	defer dm.buf.Reset()
+	if _, err := dm.buf.ReadFrom(resp.Body); err != nil {
+		return err
+	}
+	if dm.nameTemplate == nil {
+		dm.apiContainerList = dm.apiContainerList[:0]
+		return json.Unmarshal(dm.buf.Bytes(), &dm.apiContainerList)
+	}
+	// Drop last poll's label maps first, so labels can't carry over into this response
+	for _, ctr := range dm.labeledList[:cap(dm.labeledList)] {
+		if ctr != nil {
+			ctr.Labels = nil
+		}
+	}
+	dm.labeledList = dm.labeledList[:0]
+	if err := json.Unmarshal(dm.buf.Bytes(), &dm.labeledList); err != nil {
+		return err
+	}
+	dm.apiContainerList = dm.apiContainerList[:0]
+	for _, ctr := range dm.labeledList {
+		ctr.ApiInfo.Labels = ctr.Labels
+		dm.apiContainerList = append(dm.apiContainerList, &ctr.ApiInfo)
+	}
+	return nil
 }
 
 // Test docker / podman sockets and return if one exists
