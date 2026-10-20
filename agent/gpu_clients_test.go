@@ -159,7 +159,7 @@ func TestGpuClientTrackerFdChanges(t *testing.T) {
 
 	// opening the GPU later is picked up when fds are listed again
 	proc.addFd(100, 4, testRenderNode, i915Fdinfo(200, 0, 0))
-	tick(gpuClientsRescanInterval - time.Second)
+	tick(gpuClientsFallbackInterval - time.Second)
 	assert.Empty(t, tracker.collect(60000))
 	assert.Empty(t, tracker.procs["100"].fds)
 	tick(time.Second)
@@ -204,6 +204,78 @@ func TestGpuClientTrackerStartup(t *testing.T) {
 	assert.Equal(t, map[string]float64{"p:ffmpeg": 10}, tracker.collect(1000)[testPdev])
 	// but it's new since the 60s snapshot, so all of its time counts there
 	assert.Equal(t, map[string]float64{"p:ffmpeg": 6.67}, tracker.collect(60000)[testPdev])
+}
+
+func TestGpuClientTrackerFdCount(t *testing.T) {
+	proc := newFakeProc(t)
+	proc.addProcess(100, "worker", "0::/system.slice/worker.service\n", []string{"/dev/null"}, []string{"pos: 0\n"})
+
+	tracker, tick := newTestTracker(proc)
+	counts := map[string]int64{"100": 1}
+	tracker.fdCount = func(pid string) int64 { return counts[pid] }
+	tracker.collect(60000)
+
+	// with an unchanged fd count, fds aren't listed again on the fallback interval
+	tick(gpuClientsStartupWindow)
+	proc.addFd(100, 4, testRenderNode, i915Fdinfo(200, 0, 0))
+	tick(gpuClientsFallbackInterval)
+	assert.Empty(t, tracker.collect(60000))
+	assert.Empty(t, tracker.procs["100"].fds, "fd count unchanged")
+
+	// the full listing catches an fd swapped for another, and it only gets a baseline
+	tick(gpuClientsRescanInterval - gpuClientsStartupWindow - gpuClientsFallbackInterval)
+	proc.setFdinfo(100, 4, i915Fdinfo(200, 0, 5e9))
+	assert.Empty(t, tracker.collect(60000))
+	require.Equal(t, []string{"4"}, tracker.procs["100"].fds)
+	tick(time.Second)
+	proc.setFdinfo(100, 4, i915Fdinfo(200, 0, 5.1e9))
+	assert.Equal(t, map[string]float64{"s:worker": 10}, tracker.collect(60000)[testPdev])
+
+	// a changed count on a known process is listed once the backoff has passed
+	proc.addFd(100, 5, testRenderNode, i915Fdinfo(201, 0, 0))
+	counts["100"] = 2
+	tick(gpuClientsRelistBackoff - 2*time.Second)
+	tracker.collect(60000)
+	assert.Equal(t, []string{"4"}, tracker.procs["100"].fds, "within the backoff")
+	tick(time.Second)
+	tracker.collect(60000)
+	assert.ElementsMatch(t, []string{"4", "5"}, tracker.procs["100"].fds)
+
+	// a young process is listed on every scan its count changes
+	proc.addProcess(101, "ffmpeg", "0::/system.slice/ffmpeg.service\n", nil, nil)
+	tick(time.Second)
+	tracker.collect(60000)
+	proc.addFd(101, 3, testRenderNode, i915Fdinfo(202, 0, 0))
+	counts["101"] = 1
+	tick(time.Second)
+	tracker.collect(60000)
+	assert.Equal(t, []string{"3"}, tracker.procs["101"].fds)
+}
+
+func TestListFdsIncremental(t *testing.T) {
+	proc := newFakeProc(t)
+	proc.addProcess(100, "worker", "0::/system.slice/worker.service\n", []string{"/dev/null", "/dev/null"}, []string{"pos: 0\n", "pos: 0\n"})
+	tracker := &gpuClientTracker{procRoot: proc.root}
+	drmProc := &drmProc{}
+
+	require.NoError(t, tracker.listFds("100", drmProc, true))
+	assert.Empty(t, drmProc.fds)
+	assert.Len(t, drmProc.otherFds, 2)
+
+	// known fds aren't resolved again, new ones are, and closed ones are dropped
+	fd3 := filepath.Join(proc.root, "100", "fd", "3")
+	require.NoError(t, os.Remove(fd3))
+	require.NoError(t, os.Symlink(testRenderNode, fd3))
+	proc.removeFd(100, 4)
+	proc.addFd(100, 5, testRenderNode, i915Fdinfo(200, 0, 0))
+	require.NoError(t, tracker.listFds("100", drmProc, false))
+	assert.Equal(t, []string{"5"}, drmProc.fds)
+	assert.Equal(t, map[string]struct{}{"3": {}}, drmProc.otherFds)
+
+	// a full listing resolves every fd
+	require.NoError(t, tracker.listFds("100", drmProc, true))
+	assert.ElementsMatch(t, []string{"3", "5"}, drmProc.fds)
+	assert.Empty(t, drmProc.otherFds)
 }
 
 func TestDrmUsageByConsumerCyclesAndCapacity(t *testing.T) {

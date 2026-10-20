@@ -19,9 +19,15 @@ import (
 )
 
 const (
-	// gpuClientsRescanInterval is how long before the fds of a known process
-	// are listed again, to catch processes that open the GPU later.
-	gpuClientsRescanInterval = 10 * time.Second
+	// gpuClientsRescanInterval is how long before every fd of a known process
+	// is resolved again, to catch a DRM fd that a change check missed.
+	gpuClientsRescanInterval = 5 * time.Minute
+	// gpuClientsFallbackInterval is how long before the fds of a known process
+	// are listed again on kernels that don't report the number of open fds.
+	gpuClientsFallbackInterval = 10 * time.Second
+	// gpuClientsRelistBackoff is the minimum time between listings when the
+	// number of open fds changes, so processes that churn fds stay cheap.
+	gpuClientsRelistBackoff = 5 * time.Second
 	// gpuClientsStartupWindow is how long after a process is first seen its fds
 	// are listed on every scan. A process is often seen before it has opened
 	// the GPU, or before it has exec'd and has its final name.
@@ -48,6 +54,9 @@ type gpuClientTracker struct {
 	procRoot string
 	sysRoot  string
 	now      func() time.Time
+	// fdCount returns the number of open fds of a process, or nil if the kernel
+	// doesn't report it (before Linux 6.2).
+	fdCount func(pid string) int64
 	// containerName resolves a short container id to its name. May be nil.
 	containerName func(shortId string) string
 
@@ -61,9 +70,13 @@ type gpuClientTracker struct {
 
 // drmProc caches what a process is and which of its fds are DRM clients.
 type drmProc struct {
-	consumer  string
-	fds       []string
-	listedAt  time.Time // when fd/ was last listed; zero to list on the next scan
+	consumer string
+	fds      []string            // fds pointing to a DRM device
+	otherFds map[string]struct{} // other fds, not resolved again until the next full listing
+	fdCount  int64               // number of open fds at the last listing
+	listedAt time.Time           // when fd/ was last listed; zero to list on the next scan
+	// fullAt is when every fd was last resolved, ignoring otherFds
+	fullAt    time.Time
 	firstSeen time.Time
 	firstScan int // scan number when the process was first seen
 }
@@ -108,6 +121,9 @@ func newGpuClientTracker() *gpuClientTracker {
 	tracker := &gpuClientTracker{procRoot: "/proc", sysRoot: "/sys"}
 	if !tracker.hasDrmClientStats() {
 		return nil
+	}
+	if info, err := os.Stat("/proc/self/fd"); err == nil && info.Size() > 0 {
+		tracker.fdCount = tracker.procFdCount
 	}
 	if os.Getpid() == 1 {
 		slog.Info("GPU processes: only the agent's own processes are visible; run the agent container with pid: host")
@@ -219,9 +235,8 @@ func drmUsageByConsumer(prev, cur *drmSnapshot) map[string]map[string]float64 {
 	return usage
 }
 
-// scan reads the DRM clients of all visible processes. Processes have their
-// fds listed on every scan during gpuClientsStartupWindow, then every
-// gpuClientsRescanInterval, or when one of their DRM fds disappears.
+// scan reads the DRM clients of all visible processes. See needsList for
+// when the fds of a process are listed.
 func (t *gpuClientTracker) scan(now time.Time) map[drmClientKey]drmClient {
 	clients := make(map[drmClientKey]drmClient)
 	entries, err := os.ReadDir(t.procRoot)
@@ -251,7 +266,7 @@ func (t *gpuClientTracker) scan(now time.Time) map[drmClientKey]drmClient {
 			}
 			proc = &drmProc{consumer: consumer, firstSeen: now, firstScan: t.scans}
 			t.procs[pid] = proc
-		} else if proc.listedAt.IsZero() || now.Sub(proc.firstSeen) < gpuClientsStartupWindow || now.Sub(proc.listedAt) >= gpuClientsRescanInterval {
+		} else if t.needsList(proc, pid, now) {
 			// a process may have exec'd or moved cgroup since it was first seen
 			if consumer, ok := t.consumerForPid(pid); ok {
 				proc.consumer = consumer
@@ -259,9 +274,15 @@ func (t *gpuClientTracker) scan(now time.Time) map[drmClientKey]drmClient {
 			proc.listedAt = time.Time{}
 		}
 		if proc.listedAt.IsZero() {
-			fds, err := t.drmFds(pid)
+			if t.fdCount != nil {
+				proc.fdCount = t.fdCount(pid)
+			}
+			full := now.Sub(proc.fullAt) >= gpuClientsRescanInterval
+			err := t.listFds(pid, proc, full)
 			proc.listedAt = now
-			proc.fds = fds
+			if full {
+				proc.fullAt = now
+			}
 			if err != nil {
 				if errors.Is(err, fs.ErrPermission) {
 					denied++
@@ -305,28 +326,74 @@ func (t *gpuClientTracker) scan(now time.Time) map[drmClientKey]drmClient {
 	return clients
 }
 
-// drmFds returns the fds of a process that point to a DRM device.
-func (t *gpuClientTracker) drmFds(pid string) ([]string, error) {
-	fdDir := filepath.Join(t.procRoot, pid, "fd")
-	entries, err := os.ReadDir(fdDir)
-	if err != nil {
-		return nil, err
+// needsList reports whether the fds of a known process should be listed:
+// on every scan while it starts up, when its number of open fds changes, and
+// every gpuClientsRescanInterval to catch an fd swapped for another one.
+// Without fd counts, every gpuClientsFallbackInterval instead.
+func (t *gpuClientTracker) needsList(proc *drmProc, pid string, now time.Time) bool {
+	sinceListed := now.Sub(proc.listedAt)
+	switch {
+	case proc.listedAt.IsZero(), now.Sub(proc.fullAt) >= gpuClientsRescanInterval:
+		return true
+	case t.fdCount == nil:
+		return now.Sub(proc.firstSeen) < gpuClientsStartupWindow || sinceListed >= gpuClientsFallbackInterval
+	case t.fdCount(pid) == proc.fdCount:
+		return false
+	default:
+		return now.Sub(proc.firstSeen) < gpuClientsStartupWindow || sinceListed >= gpuClientsRelistBackoff
 	}
+}
+
+// listFds updates the DRM fds of a process. Only fd numbers that weren't open
+// at the previous listing are resolved, unless full is set.
+func (t *gpuClientTracker) listFds(pid string, proc *drmProc, full bool) error {
+	fdDir := filepath.Join(t.procRoot, pid, "fd")
+	dir, err := os.Open(fdDir)
+	if err != nil {
+		proc.fds, proc.otherFds = nil, nil
+		return err
+	}
+	names, err := dir.Readdirnames(-1)
+	dir.Close()
+	if err != nil {
+		proc.fds, proc.otherFds = nil, nil
+		return err
+	}
+
 	var fds []string
-	for _, entry := range entries {
-		link, err := os.Readlink(filepath.Join(fdDir, entry.Name()))
+	others := make(map[string]struct{}, len(names))
+	for _, fd := range names {
+		if _, known := proc.otherFds[fd]; known && !full {
+			others[fd] = struct{}{}
+			continue
+		}
+		link, err := os.Readlink(filepath.Join(fdDir, fd))
 		if err != nil {
 			// listing fd/ is allowed without ptrace access, but readlink is not
 			if errors.Is(err, fs.ErrPermission) {
-				return nil, err
+				proc.fds, proc.otherFds = nil, nil
+				return err
 			}
 			continue
 		}
 		if strings.HasPrefix(link, "/dev/dri/") {
-			fds = append(fds, entry.Name())
+			fds = append(fds, fd)
+		} else {
+			others[fd] = struct{}{}
 		}
 	}
-	return fds, nil
+	proc.fds, proc.otherFds = fds, others
+	return nil
+}
+
+// procFdCount returns the number of open fds of a process, which Linux 6.2+
+// reports as the size of /proc/<pid>/fd. Returns -1 if it can't be read.
+func (t *gpuClientTracker) procFdCount(pid string) int64 {
+	info, err := os.Stat(filepath.Join(t.procRoot, pid, "fd"))
+	if err != nil {
+		return -1
+	}
+	return info.Size()
 }
 
 // consumerForPid names what a process belongs to, from files readable without
