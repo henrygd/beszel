@@ -262,10 +262,8 @@ func TestListFdsIncremental(t *testing.T) {
 	assert.Empty(t, drmProc.fds)
 	assert.Len(t, drmProc.otherFds, 2)
 
-	// known fds aren't resolved again, new ones are, and closed ones are dropped
-	fd3 := filepath.Join(proc.root, "100", "fd", "3")
-	require.NoError(t, os.Remove(fd3))
-	require.NoError(t, os.Symlink(testRenderNode, fd3))
+	// known fds aren't read again, new ones are, and closed ones are dropped
+	proc.setFdinfo(100, 3, i915Fdinfo(201, 0, 0))
 	proc.removeFd(100, 4)
 	proc.addFd(100, 5, testRenderNode, i915Fdinfo(200, 0, 0))
 	require.NoError(t, tracker.listFds("100", drmProc, false))
@@ -276,6 +274,12 @@ func TestListFdsIncremental(t *testing.T) {
 	require.NoError(t, tracker.listFds("100", drmProc, true))
 	assert.ElementsMatch(t, []string{"3", "5"}, drmProc.fds)
 	assert.Empty(t, drmProc.otherFds)
+
+	// fd/ of another user's process can't be listed with only CAP_SYS_PTRACE, fdinfo/ can
+	require.NoError(t, os.RemoveAll(filepath.Join(proc.root, "100", "fd")))
+	drmProc.otherFds, drmProc.fds = nil, nil
+	require.NoError(t, tracker.listFds("100", drmProc, true))
+	assert.ElementsMatch(t, []string{"3", "5"}, drmProc.fds)
 }
 
 func TestDrmUsageByConsumerCyclesAndCapacity(t *testing.T) {

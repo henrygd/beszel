@@ -74,7 +74,7 @@ type drmProc struct {
 	fds      []string            // fds pointing to a DRM device
 	otherFds map[string]struct{} // other fds, not resolved again until the next full listing
 	fdCount  int64               // number of open fds at the last listing
-	listedAt time.Time           // when fd/ was last listed; zero to list on the next scan
+	listedAt time.Time           // when fds were last listed; zero to list on the next scan
 	// fullAt is when every fd was last resolved, ignoring otherFds
 	fullAt    time.Time
 	firstSeen time.Time
@@ -344,11 +344,13 @@ func (t *gpuClientTracker) needsList(proc *drmProc, pid string, now time.Time) b
 	}
 }
 
-// listFds updates the DRM fds of a process. Only fd numbers that weren't open
-// at the previous listing are resolved, unless full is set.
+// listFds updates the DRM fds of a process from /proc/<pid>/fdinfo, which
+// needs only ptrace access. /proc/<pid>/fd of another user's process also
+// needs CAP_DAC_READ_SEARCH. Only the fdinfo of fd numbers that weren't open
+// at the previous listing is read, unless full is set.
 func (t *gpuClientTracker) listFds(pid string, proc *drmProc, full bool) error {
-	fdDir := filepath.Join(t.procRoot, pid, "fd")
-	dir, err := os.Open(fdDir)
+	fdinfoDir := filepath.Join(t.procRoot, pid, "fdinfo")
+	dir, err := os.Open(fdinfoDir)
 	if err != nil {
 		proc.fds, proc.otherFds = nil, nil
 		return err
@@ -360,23 +362,28 @@ func (t *gpuClientTracker) listFds(pid string, proc *drmProc, full bool) error {
 		return err
 	}
 
+	known := make(map[string]struct{}, len(proc.fds))
+	if !full {
+		for _, fd := range proc.fds {
+			known[fd] = struct{}{}
+		}
+	}
 	var fds []string
 	others := make(map[string]struct{}, len(names))
 	for _, fd := range names {
-		if _, known := proc.otherFds[fd]; known && !full {
+		if _, ok := known[fd]; ok {
+			fds = append(fds, fd)
+			continue
+		}
+		if _, ok := proc.otherFds[fd]; ok && !full {
 			others[fd] = struct{}{}
 			continue
 		}
-		link, err := os.Readlink(filepath.Join(fdDir, fd))
+		data, err := os.ReadFile(filepath.Join(fdinfoDir, fd))
 		if err != nil {
-			// listing fd/ is allowed without ptrace access, but readlink is not
-			if errors.Is(err, fs.ErrPermission) {
-				proc.fds, proc.otherFds = nil, nil
-				return err
-			}
 			continue
 		}
-		if strings.HasPrefix(link, "/dev/dri/") {
+		if bytes.Contains(data, []byte("drm-driver:")) {
 			fds = append(fds, fd)
 		} else {
 			others[fd] = struct{}{}
