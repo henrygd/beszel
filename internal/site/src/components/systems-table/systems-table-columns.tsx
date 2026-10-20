@@ -12,6 +12,7 @@ import {
 	CopyIcon,
 	CpuIcon,
 	HardDriveIcon,
+	Layers3Icon,
 	MemoryStickIcon,
 	MoreHorizontalIcon,
 	PackageIcon,
@@ -194,6 +195,14 @@ export function SystemsTableColumns(viewMode: "table" | "grid"): ColumnDef<Syste
 			name: () => t`Memory`,
 			cell: TableCellWithMeter,
 			Icon: MemoryStickIcon,
+			header: sortableHeader,
+		},
+		{
+			accessorFn: ({ info }) => info.sp,
+			id: "swap",
+			name: () => t`Swap`,
+			cell: TableCellWithMeter,
+			Icon: Layers3Icon,
 			header: sortableHeader,
 		},
 		{

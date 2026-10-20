@@ -21,8 +21,7 @@ func (a *Agent) updateMemoryStats(stats *system.Stats) {
 	if err == nil {
 		hostTotal = v.Total
 		// Swap retains its existing /proc/meminfo source in both memory paths.
-		stats.Swap = utils.BytesToGigabytes(v.SwapTotal)
-		stats.SwapUsed = utils.BytesToGigabytes(saturatingSub(v.SwapTotal, v.SwapFree))
+		stats.Swap, stats.SwapUsed, stats.SwapPct = calculateSwapUsage(v.SwapTotal, saturatingSub(v.SwapTotal, v.SwapFree))
 	}
 
 	metrics, fromCgroup := containerMemoryMetrics(hostTotal, a.forceUseCgroup)
