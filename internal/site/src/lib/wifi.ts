@@ -8,7 +8,7 @@ export function connectedWiFi(system: Pick<SystemRecord, "status" | "info">): [s
 }
 
 /** Strongest connection by RSSI, falling back to the first when none report a signal. */
-export function strongestWiFi(connections: [string, WiFi][]): [string, WiFi] | undefined {
+function strongestWiFi(connections: [string, WiFi][]): [string, WiFi] | undefined {
 	let strongest = connections[0]
 	for (const connection of connections) {
 		if ((connection[1].r ?? -Infinity) > (strongest[1].r ?? -Infinity)) {
@@ -18,8 +18,18 @@ export function strongestWiFi(connections: [string, WiFi][]): [string, WiFi] | u
 	return strongest
 }
 
-export function strongestWiFiSignal(system: Pick<SystemRecord, "status" | "info">): number | undefined {
-	return strongestWiFi(connectedWiFi(system))?.[1].r
+/**
+ * Strongest station connection, falling back to the strongest access point.
+ * Station RSSI describes the host's own link; an AP reports its clients' average,
+ * which must not mask a weak uplink on a repeater.
+ */
+export function primaryWiFi(connections: [string, WiFi][]): [string, WiFi] | undefined {
+	const stations = connections.filter(([, wifi]) => !wifi.a)
+	return strongestWiFi(stations.length ? stations : connections)
+}
+
+export function primaryWiFiSignal(system: Pick<SystemRecord, "status" | "info">): number | undefined {
+	return primaryWiFi(connectedWiFi(system))?.[1].r
 }
 
 /** Signal quality for an RSSI reading: good at -65 dBm or stronger, warn down to -75 dBm, crit below. */

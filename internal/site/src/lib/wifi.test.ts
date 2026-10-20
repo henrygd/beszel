@@ -1,6 +1,6 @@
 import { expect, test } from "bun:test"
 import { MeterState } from "@/lib/enums"
-import { connectedWiFi, strongestWiFiSignal, wifiColor, wifiSignalState } from "./wifi"
+import { connectedWiFi, primaryWiFi, primaryWiFiSignal, wifiColor, wifiSignalState } from "./wifi"
 import type { SystemInfo } from "@/types"
 
 const system = (wf?: SystemInfo["wf"], status: "up" | "down" = "up") => ({ status, info: { wf } as SystemInfo })
@@ -25,10 +25,19 @@ test("multiple interfaces retain independent stable identities and colors", () =
 	expect(wifiColor("wlan0")).not.toBe(wifiColor("wlan1"))
 })
 
-test("strongestWiFiSignal returns the strongest current native RSSI", () => {
-	expect(strongestWiFiSignal(system({ wlan0: { r: -63 }, wlan1: { r: -48 }, wlan2: {} }))).toBe(-48)
-	expect(strongestWiFiSignal(system({ wlan0: {} }))).toBeUndefined()
-	expect(strongestWiFiSignal(system({ wlan0: { r: -48 } }, "down"))).toBeUndefined()
+test("primaryWiFiSignal returns the strongest current native RSSI", () => {
+	expect(primaryWiFiSignal(system({ wlan0: { r: -63 }, wlan1: { r: -48 }, wlan2: {} }))).toBe(-48)
+	expect(primaryWiFiSignal(system({ wlan0: {} }))).toBeUndefined()
+	expect(primaryWiFiSignal(system({ wlan0: { r: -48 } }, "down"))).toBeUndefined()
+})
+
+test("primaryWiFi prefers stations over stronger access points", () => {
+	const repeater = connectedWiFi(system({ ap0: { r: -35, a: true }, wlan0: { r: -80 }, wlan1: {} }))
+	expect(primaryWiFi(repeater)?.[0]).toBe("wlan0")
+	expect(primaryWiFi(connectedWiFi(system({ wlan0: {}, ap0: { r: -35, a: true } })))?.[0]).toBe("wlan0")
+	const router = connectedWiFi(system({ ap0: { a: true }, ap1: { r: -60, a: true }, ap2: { r: -45, a: true } }))
+	expect(primaryWiFi(router)?.[0]).toBe("ap2")
+	expect(primaryWiFi([])).toBeUndefined()
 })
 
 test("wifiSignalState thresholds", () => {

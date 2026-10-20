@@ -226,12 +226,12 @@ func TestLinuxMixedModes(t *testing.T) {
 			if f.interfaceCalls != 1 || f.stationCalls != 1 {
 				t.Fatalf("netlink calls: interfaces=%d, stations=%d", f.interfaceCalls, f.stationCalls)
 			}
-			if len(got) != 3 || got["wlan0"].SSID != "home" || got["wlan0"].Signal == nil || *got["wlan0"].Signal != -52 {
+			if len(got) != 3 || got["wlan0"].SSID != "home" || got["wlan0"].AP || got["wlan0"].Signal == nil || *got["wlan0"].Signal != -52 {
 				t.Fatalf("station reading lost: %v", got)
 			}
 			for _, name := range []string{"ap0", "ap1"} {
 				reading := got[name]
-				if reading.SSID != "TestAP" || (reading.Signal == nil) != assocFails {
+				if reading.SSID != "TestAP" || !reading.AP || (reading.Signal == nil) != assocFails {
 					t.Fatalf("%s: %+v", name, reading)
 				}
 				if reading.Signal != nil && *reading.Signal != -40 {
@@ -267,7 +267,7 @@ func TestLinuxIwinfoDiscoveryFallback(t *testing.T) {
 			if !reflect.DeepEqual(calls, []string{"", "phy1-ap0 assoclist"}) {
 				t.Fatalf("unexpected commands: %v", calls)
 			}
-			if len(got) != 1 || got["phy1-ap0"].SSID != "TestAP" || got["phy1-ap0"].Signal == nil || *got["phy1-ap0"].Signal != -40 {
+			if len(got) != 1 || got["phy1-ap0"].SSID != "TestAP" || !got["phy1-ap0"].AP || got["phy1-ap0"].Signal == nil || *got["phy1-ap0"].Signal != -40 {
 				t.Fatalf("unexpected fallback readings: %v", got)
 			}
 		})

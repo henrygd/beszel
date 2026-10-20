@@ -222,7 +222,7 @@ func collectOpenWrtAP(ctx context.Context, aps []string, iwinfo iwinfoCommand) m
 			continue
 		}
 
-		reading := system.WiFi{SSID: validSSID(ssid)}
+		reading := system.WiFi{SSID: validSSID(ssid), AP: true}
 		if ctx.Err() != nil {
 			return results
 		}
