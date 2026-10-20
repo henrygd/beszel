@@ -134,9 +134,10 @@ sudo systemctl start beszel-agent.service
 ## NUT UPS/PDU monitoring
 
 The agent can collect UPS and PDU data from Network UPS Tools (NUT). Install
-NUT 2.8.5 or newer on the monitored system; earlier versions do not provide the
-JSON output required by the agent. Add the optional settings below to the agent
-service, then reload systemd and restart the agent.
+the `upsc` client on the monitored system. The agent uses the standard text
+output, including on older clients such as NUT 2.8.0 and 2.8.1; JSON support
+is not required. Add the optional settings below to the agent service, then
+reload systemd and restart the agent.
 
 ```ini
 # Defaults to localhost when omitted.
@@ -152,3 +153,20 @@ Environment="NUT_INTERVAL=60s"
 `NUT_AUTHCONF_FILE` is passed to `upsc -A`, so it must use NUT's
 `nutauth.conf` format and should be protected with mode 0600. It is not an
 `upscmd.conf` file.
+
+The optional auth file requires a client that supports `-A`; this is checked
+separately at startup. Leave it unset for ordinary read-only queries on older
+clients. The NUT server can run on another host.
+
+Power uses `ups.realpower` or `output.realpower` in watts. If neither is
+available, the agent estimates watts from `ups.load * ups.realpower.nominal / 100`
+and labels the result as estimated. Accuracy depends on how the driver reports
+load. `ups.power` is apparent power (VA), and `output.power` has inconsistent
+units across drivers, so neither is used as watts. Missing power is displayed as N/A; an actual zero is displayed
+as 0 W. Legacy samples without a power source are omitted from power charts.
+
+Notifications include a return to ONLINE from a known unhealthy state. Initial
+observations, unknown states, and unchanged states do not produce recovery
+notifications. Detection follows `NUT_INTERVAL` (default: one hour); choose a
+shorter interval such as 60s to detect shorter outages. These notifications do
+not provide outage counts or durations.

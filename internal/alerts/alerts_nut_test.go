@@ -180,7 +180,7 @@ func TestNutDeviceAlertNoAlertOnUnknownToFault(t *testing.T) {
 
 	assert.Zero(t, hub.TestMailer.TotalSend(), "should have 0 emails when changing from UNKNOWN to FAULT")
 
-	// FAULT -> ONLINE should NOT trigger alert (recovery)
+	// FAULT -> ONLINE should notify recovery.
 	nutDevice, err = hub.FindRecordById("nut_devices", nutDevice.Id)
 	assert.NoError(t, err)
 
@@ -190,7 +190,8 @@ func TestNutDeviceAlertNoAlertOnUnknownToFault(t *testing.T) {
 
 	time.Sleep(50 * time.Millisecond)
 
-	assert.Zero(t, hub.TestMailer.TotalSend(), "should have 0 emails when recovering from FAULT to ONLINE")
+	assert.EqualValues(t, 1, hub.TestMailer.TotalSend(), "should notify when recovering from FAULT to ONLINE")
+	assert.Contains(t, hub.TestMailer.LastMessage().Subject, "NUT back online")
 }
 
 func TestNutDeviceAlertNoAlertOnSameState(t *testing.T) {

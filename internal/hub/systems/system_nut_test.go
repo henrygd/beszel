@@ -249,3 +249,19 @@ func TestSaveNutDevices_WithOutlets(t *testing.T) {
 	assert.Equal(t, "on", storedOutlets[0].Status)
 	assert.Equal(t, 300.0, storedOutlets[0].Power)
 }
+
+func TestSaveNutDevices_PowerSource(t *testing.T) {
+	sys, app := newTestSystemWithHub(t)
+	for _, source := range []string{"measured", "estimated", "unknown"} {
+		require.NoError(t, sys.saveNutDevices(map[string]nut.NutData{
+			"ups1": {Model: "UPS", OutputPower: 0, OutputPowerSource: source},
+		}, true))
+		device, err := app.FindRecordById("nut_devices", MakeStableHashId(sys.Id, "ups1"))
+		require.NoError(t, err)
+		assert.Equal(t, source, device.GetString("output_power_source"))
+		stats, err := app.FindRecordsByFilter("nut_stats", "device={:device} && output_power_source={:source}", "", 0, 0, map[string]any{"device": device.Id, "source": source})
+		require.NoError(t, err)
+		require.Len(t, stats, 1)
+		assert.Zero(t, stats[0].GetFloat("output_power"))
+	}
+}

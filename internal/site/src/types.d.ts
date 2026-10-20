@@ -574,6 +574,7 @@ export interface NutDeviceRecord extends RecordModel {
 	load: number
 	output_current: number
 	output_power: number
+	output_power_source?: "measured" | "estimated" | "unknown" | ""
 	outlets: NutOutlet[]
 	updated: string
 }
@@ -591,6 +592,7 @@ export interface NutStatsRecord extends RecordModel {
 	load: number
 	output_current: number
 	output_power: number
+	output_power_source?: "measured" | "estimated" | "unknown" | ""
 }
 
 export interface SystemdRecord extends RecordModel {

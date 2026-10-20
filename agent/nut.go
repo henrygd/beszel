@@ -2,10 +2,10 @@ package agent
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"log/slog"
+	"math"
 	"os/exec"
 	"strconv"
 	"strings"
@@ -20,17 +20,17 @@ import (
 const nutCommandTimeout = 10 * time.Second
 
 // NutManager manages collection of UPS/PDU data from Network UPS Tools (NUT).
-// It shells out to `upsc` (NUT's CLI), which emits JSON, mirroring how the
+// It shells out to `upsc` (NUT's CLI), using its legacy text output, mirroring how the
 // SmartManager shells out to smartctl.
 type NutManager struct {
 	sync.Mutex
-	NutDataMap       map[string]*nut.NutData
-	upscPath         string
-	server           string
-	authFile         string
+	NutDataMap        map[string]*nut.NutData
+	upscPath          string
+	server            string
+	authFile          string
 	configuredDevices []string
-	excludedDevices  map[string]struct{}
-	lastListTime     time.Time
+	excludedDevices   map[string]struct{}
+	lastListTime      time.Time
 }
 
 // NewNutManager creates and initializes a NutManager. It returns an error when
@@ -40,9 +40,6 @@ func NewNutManager() (*NutManager, error) {
 	path, err := utils.LookPathHomebrew("upsc")
 	if err != nil {
 		return nil, fmt.Errorf("upsc not found: %w", err)
-	}
-	if err := checkUpscJSONSupport(path); err != nil {
-		return nil, err
 	}
 
 	nm := &NutManager{
@@ -56,21 +53,19 @@ func NewNutManager() (*NutManager, error) {
 	}
 	if authFile, ok := utils.GetEnv("NUT_AUTHCONF_FILE"); ok && strings.TrimSpace(authFile) != "" {
 		nm.authFile = strings.TrimSpace(authFile)
+		// Authentication support is independent of JSON support. Never silently
+		// discard explicitly configured connection security settings.
+		ctx, cancel := context.WithTimeout(context.Background(), nutCommandTimeout)
+		defer cancel()
+		if err := exec.CommandContext(ctx, path, "-A", nm.authFile, "-h").Run(); err != nil {
+			return nil, fmt.Errorf("NUT_AUTHCONF_FILE requires an upsc client with -A support: %w", err)
+		}
 	}
 	nm.parseConfiguredDevices()
 	nm.refreshExcludedDevices()
 
 	slog.Debug("nut manager initialized", "upsc", path, "server", nm.server)
 	return nm, nil
-}
-
-// checkUpscJSONSupport verifies that upsc understands -j without contacting a
-// NUT server. JSON output was added in NUT 2.8.5.
-func checkUpscJSONSupport(path string) error {
-	if err := exec.Command(path, "-j", "-h").Run(); err != nil {
-		return fmt.Errorf("upsc does not support JSON output; NUT 2.8.5 or newer is required: %w", err)
-	}
-	return nil
 }
 
 // parseConfiguredDevices reads the optional NUT_DEVICES env var, which lets the
@@ -147,14 +142,21 @@ func (nm *NutManager) listDevices() (map[string]string, error) {
 		}
 	}
 
-	output, err := nm.runUpsc(nm.upscArgs("-L", "-j", nm.server)...)
+	output, err := nm.runUpsc(nm.upscArgs("-l", nm.server)...)
 	if err != nil {
 		return nil, err
 	}
 
-	var devices map[string]string
-	if err := json.Unmarshal(output, &devices); err != nil {
-		return nil, fmt.Errorf("failed to parse upsc device list: %w", err)
+	devices := make(map[string]string)
+	for _, line := range strings.Split(strings.TrimSpace(string(output)), "\n") {
+		name := strings.TrimSpace(line)
+		if name == "" {
+			continue
+		}
+		if len(strings.Fields(name)) != 1 || strings.HasPrefix(name, "-") {
+			return nil, fmt.Errorf("invalid upsc device name: %q", name)
+		}
+		devices[name] = ""
 	}
 	if len(devices) == 0 {
 		return nil, errors.New("no NUT devices found")
@@ -199,13 +201,13 @@ func (nm *NutManager) Refresh() (bool, error) {
 
 // collectDevice fetches and stores the variables for a single NUT device.
 func (nm *NutManager) collectDevice(name string) error {
-	output, err := nm.runUpsc(nm.upscArgs("-j", name+"@"+nm.server)...)
+	output, err := nm.runUpsc(nm.upscArgs(name + "@" + nm.server)...)
 	if err != nil {
 		return err
 	}
 
-	var vars map[string]string
-	if err := json.Unmarshal(output, &vars); err != nil {
+	vars, err := parseUpscVariables(string(output))
+	if err != nil {
 		return fmt.Errorf("failed to parse upsc vars for %s: %w", name, err)
 	}
 	if msg, ok := vars["error"]; ok {
@@ -218,6 +220,27 @@ func (nm *NutManager) collectDevice(name string) error {
 	defer nm.Mutex.Unlock()
 	nm.NutDataMap[name] = &data
 	return nil
+}
+
+// parseUpscVariables parses the long-standing "variable: value" output. Split
+// only at the first colon so descriptions, timestamps and URLs survive intact.
+func parseUpscVariables(output string) (map[string]string, error) {
+	vars := make(map[string]string)
+	for _, line := range strings.Split(strings.TrimSpace(output), "\n") {
+		if strings.TrimSpace(line) == "" {
+			continue
+		}
+		key, value, ok := strings.Cut(line, ":")
+		key = strings.TrimSpace(key)
+		if !ok || key == "" || len(strings.Fields(key)) != 1 {
+			return nil, fmt.Errorf("invalid variable line: %q", line)
+		}
+		vars[key] = strings.TrimSpace(value)
+	}
+	if len(vars) == 0 {
+		return nil, errors.New("empty upsc variable response")
+	}
+	return vars, nil
 }
 
 // GetCurrentData returns a copy of the collected NUT data.
@@ -253,7 +276,7 @@ func parseNutData(name string, vars map[string]string) nut.NutData {
 	data.InputNominal = parseFloat(vars["input.voltage.nominal"])
 	data.Load = parseFloat(vars["ups.load"])
 	data.OutputCurrent = parseFloat(vars["output.current"])
-	data.OutputPower = parseFloat(vars["output.power"])
+	data.OutputPower, data.OutputPowerSource = nutRealPower(vars)
 
 	data.DeviceType = detectDeviceType(vars)
 	data.Outlets = parseOutlets(vars)
@@ -263,6 +286,29 @@ func parseNutData(name string, vars map[string]string) nut.NutData {
 		data.Model = name
 	}
 	return data
+}
+
+// nutRealPower uses explicit real-power fields, never ups.power (VA) or the
+// driver-dependent output.power field. Load-based power is only an estimate.
+func nutRealPower(vars map[string]string) (float64, string) {
+	read := func(key string) (float64, bool) {
+		v, err := strconv.ParseFloat(strings.TrimSpace(vars[key]), 64)
+		return v, err == nil && !math.IsNaN(v) && !math.IsInf(v, 0) && v >= 0
+	}
+	for _, key := range []string{"ups.realpower", "output.realpower"} {
+		if value, ok := read(key); ok {
+			return value, "measured"
+		}
+	}
+	load, hasLoad := read("ups.load")
+	nominal, hasNominal := read("ups.realpower.nominal")
+	if hasLoad && hasNominal && nominal > 0 {
+		power := load / 100 * nominal
+		if !math.IsInf(power, 0) {
+			return power, "estimated"
+		}
+	}
+	return 0, "unknown"
 }
 
 // detectDeviceType classifies a device as ups, pdu, or other based on the
