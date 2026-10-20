@@ -1,0 +1,40 @@
+{
+  "json_format_version": [
+    1,
+    0
+  ],
+  "smartctl": {
+    "version": [
+      7,
+      5
+    ],
+    "pre_release": false,
+    "argv": [
+      "smartctl",
+      "-d",
+      "sat",
+      "-a",
+      "--json=c",
+      "-n",
+      "standby",
+      "/dev/sda"
+    ],
+    "messages": [
+      {
+        "string": "Device is in SLEEP mode, exit(2)",
+        "severity": "information"
+      }
+    ],
+    "exit_status": 2
+  },
+  "device": {
+    "name": "/dev/sda",
+    "info_name": "/dev/sda [SAT]",
+    "type": "sat",
+    "protocol": "ATA"
+  },
+  "power_mode": {
+    "ata_value": -1,
+    "name": "SLEEP"
+  }
+}
