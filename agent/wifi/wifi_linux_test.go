@@ -9,6 +9,8 @@ import (
 	"net"
 	"os"
 	"path/filepath"
+	"reflect"
+	"strings"
 	"testing"
 	"time"
 
@@ -22,9 +24,11 @@ type fakeLinuxClient struct {
 	interfacesErr, bssErr, stationErr, deadlineErr error
 	deadline                                       time.Time
 	stationCalls                                   int
+	interfaceCalls                                 int
 }
 
 func (f *fakeLinuxClient) Interfaces() ([]*native.Interface, error) {
+	f.interfaceCalls++
 	return f.interfaces, f.interfacesErr
 }
 func (f *fakeLinuxClient) BSS(i *native.Interface) (*native.BSS, error) {
@@ -88,7 +92,7 @@ func TestLinuxSnapshots(t *testing.T) {
 			tc.modify(f)
 			ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 			defer cancel()
-			got := collectLinux(ctx, f)
+			got, _ := collectLinux(ctx, f)
 			if len(got) != tc.want {
 				t.Fatalf("got %#v", got)
 			}
@@ -111,16 +115,16 @@ func TestLinuxSnapshots(t *testing.T) {
 
 func TestReconnect(t *testing.T) {
 	f := connectedClient()
-	if len(collectLinux(context.Background(), f)) != 1 {
+	if got, _ := collectLinux(context.Background(), f); len(got) != 1 {
 		t.Fatal("initial")
 	}
 	f.bss["wlan0"].Status = native.BSSStatusNotAssociated
-	if len(collectLinux(context.Background(), f)) != 0 {
+	if got, _ := collectLinux(context.Background(), f); len(got) != 0 {
 		t.Fatal("stale association")
 	}
 	f.bss["wlan0"].Status = native.BSSStatusAssociated
 	f.bss["wlan0"].SSID = "new"
-	if collectLinux(context.Background(), f)["wlan0"].SSID != "new" {
+	if got, _ := collectLinux(context.Background(), f); got["wlan0"].SSID != "new" {
 		t.Fatal("stale SSID")
 	}
 }
@@ -128,7 +132,7 @@ func TestReconnect(t *testing.T) {
 func TestLinuxInvalidSSID(t *testing.T) {
 	f := connectedClient()
 	f.bss["wlan0"].SSID = "raw\xff"
-	got := collectLinux(context.Background(), f)
+	got, _ := collectLinux(context.Background(), f)
 	if len(got) != 1 || got["wlan0"].SSID != "" || got["wlan0"].Signal == nil {
 		t.Fatal(got)
 	}
@@ -154,9 +158,154 @@ func TestLinuxCancelled(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
 	cancel()
 	f := connectedClient()
-	if len(collectLinux(ctx, f)) != 0 || f.stationCalls != 0 {
+	if got, _ := collectLinux(ctx, f); len(got) != 0 || f.stationCalls != 0 {
 		t.Fatal("ignored cancellation")
 	}
+}
+
+func TestLinuxSkipsIwinfoWithoutAPs(t *testing.T) {
+	for _, tc := range []struct {
+		name   string
+		modify func(*fakeLinuxClient)
+	}{
+		{"connected", func(f *fakeLinuxClient) {}},
+		{"disconnected", func(f *fakeLinuxClient) { f.bss = nil }},
+		{"BSS unavailable", func(f *fakeLinuxClient) { f.bssErr = errors.New("denied") }},
+		{"signal unavailable", func(f *fakeLinuxClient) { f.stationErr = errors.New("denied") }},
+		{"monitor", func(f *fakeLinuxClient) { f.interfaces[0].Type = native.InterfaceTypeMonitor }},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			f := connectedClient()
+			tc.modify(f)
+			collectLinuxWithAP(context.Background(), f, func(context.Context, ...string) ([]byte, error) {
+				t.Fatal("ran iwinfo without an AP in the netlink inventory")
+				return nil, nil
+			})
+			if f.interfaceCalls != 1 {
+				t.Fatalf("queried inventory %d times", f.interfaceCalls)
+			}
+		})
+	}
+}
+
+func TestLinuxMixedModes(t *testing.T) {
+	for _, assocFails := range []bool{false, true} {
+		t.Run(map[bool]string{false: "signal available", true: "signal unavailable"}[assocFails], func(t *testing.T) {
+			f := connectedClient()
+			for _, name := range []string{"ap0", "ap1"} {
+				f.interfaces = append(f.interfaces, &native.Interface{Name: name, Type: native.InterfaceTypeAP})
+			}
+			var calls []string
+			ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+			defer cancel()
+			got := collectLinuxWithAP(ctx, f, func(commandCtx context.Context, args ...string) ([]byte, error) {
+				if commandCtx != ctx {
+					t.Fatal("command did not share the collection context")
+				}
+				calls = append(calls, strings.Join(args, " "))
+				if len(args) != 2 {
+					t.Fatal("ran discovery despite having an inventory")
+				}
+				switch args[1] {
+				case "info":
+					return []byte(args[0] + " ESSID: \"TestAP\"\n         Mode: Master\n"), nil
+				case "assoclist":
+					if assocFails {
+						return nil, errors.New("denied")
+					}
+					return []byte("02:00:00:00:00:01  -40 dBm / -95 dBm\n"), nil
+				default:
+					t.Fatalf("unexpected command: %v", args)
+					return nil, nil
+				}
+			})
+			wantCalls := []string{"ap0 info", "ap0 assoclist", "ap1 info", "ap1 assoclist"}
+			if !reflect.DeepEqual(calls, wantCalls) {
+				t.Fatalf("commands: got %v, want %v", calls, wantCalls)
+			}
+			if f.interfaceCalls != 1 || f.stationCalls != 1 {
+				t.Fatalf("netlink calls: interfaces=%d, stations=%d", f.interfaceCalls, f.stationCalls)
+			}
+			if len(got) != 3 || got["wlan0"].SSID != "home" || got["wlan0"].Signal == nil || *got["wlan0"].Signal != -52 {
+				t.Fatalf("station reading lost: %v", got)
+			}
+			for _, name := range []string{"ap0", "ap1"} {
+				reading := got[name]
+				if reading.SSID != "TestAP" || (reading.Signal == nil) != assocFails {
+					t.Fatalf("%s: %+v", name, reading)
+				}
+				if reading.Signal != nil && *reading.Signal != -40 {
+					t.Fatalf("%s: signal %v", name, *reading.Signal)
+				}
+			}
+		})
+	}
+}
+
+func TestLinuxIwinfoDiscoveryFallback(t *testing.T) {
+	for _, tc := range []struct {
+		name   string
+		client linuxClient
+	}{
+		{"no netlink client", nil},
+		{"enumeration unsupported", &fakeLinuxClient{interfacesErr: errors.New("unsupported")}},
+		{"empty inventory", &fakeLinuxClient{}},
+		{"unusable inventory", &fakeLinuxClient{interfaces: []*native.Interface{nil, {}}}},
+		{"deadline failure", &fakeLinuxClient{deadlineErr: errors.New("deadline")}},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			var calls []string
+			ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+			defer cancel()
+			got := collectLinuxWithAP(ctx, tc.client, func(_ context.Context, args ...string) ([]byte, error) {
+				calls = append(calls, strings.Join(args, " "))
+				if len(args) == 0 {
+					return []byte(iwinfoMixed), nil
+				}
+				return []byte("02:00:00:00:00:01  -40 dBm / -95 dBm\n"), nil
+			})
+			if !reflect.DeepEqual(calls, []string{"", "phy1-ap0 assoclist"}) {
+				t.Fatalf("unexpected commands: %v", calls)
+			}
+			if len(got) != 1 || got["phy1-ap0"].SSID != "TestAP" || got["phy1-ap0"].Signal == nil || *got["phy1-ap0"].Signal != -40 {
+				t.Fatalf("unexpected fallback readings: %v", got)
+			}
+		})
+	}
+}
+
+func TestLinuxIwinfoUnavailable(t *testing.T) {
+	f := connectedClient()
+	f.interfaces = append(f.interfaces, &native.Interface{Name: "ap0", Type: native.InterfaceTypeAP})
+	unavailable := func(context.Context, ...string) ([]byte, error) {
+		return nil, os.ErrNotExist
+	}
+	got := collectLinuxWithAP(context.Background(), f, unavailable)
+	if len(got) != 1 || got["wlan0"].Signal == nil || *got["wlan0"].Signal != -52 {
+		t.Fatalf("lost station reading when iwinfo is absent: %v", got)
+	}
+	if got := collectLinuxWithAP(context.Background(), nil, unavailable); got != nil {
+		t.Fatalf("expected empty snapshot without either backend: %v", got)
+	}
+}
+
+func TestLinuxAPCancellation(t *testing.T) {
+	ctx, cancel := context.WithCancel(context.Background())
+	f := connectedClient()
+	f.interfaces = append(f.interfaces, &native.Interface{Name: "ap0", Type: native.InterfaceTypeAP})
+	calls := 0
+	got := collectLinuxWithAP(ctx, f, func(context.Context, ...string) ([]byte, error) {
+		calls++
+		cancel()
+		return []byte("ap0 ESSID: \"TestAP\"\n         Mode: Master\n"), nil
+	})
+	if calls != 1 || len(got) != 1 || got["wlan0"].Signal == nil {
+		t.Fatalf("cancellation lost station data or started another command: calls=%d, readings=%v", calls, got)
+	}
+	collectLinuxWithAP(ctx, nil, func(context.Context, ...string) ([]byte, error) {
+		t.Fatal("ran discovery after cancellation")
+		return nil, nil
+	})
 }
 
 // Sample bare `iwinfo` output in the format printed by OpenWrt (nl80211): one
