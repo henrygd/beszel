@@ -130,7 +130,7 @@ var (
 	iwinfoIfaceRe = regexp.MustCompile(`(?m)^(\S+)[ \t]+ESSID:`)
 	iwinfoModeRe  = regexp.MustCompile(`Mode:[ \t]*Master`)
 	iwinfoSSIDRe  = regexp.MustCompile(`ESSID:\s*"([^"]+)"`)
-	iwinfoAssocRe = regexp.MustCompile(`(?m)^(?:[0-9a-fA-F]{2}[:-]){5}[0-9a-fA-F]{2}.*?(-?\d+)\s+dBm`)
+	iwinfoAssocRe = regexp.MustCompile(`(?m)^(?:[0-9a-fA-F]{2}[:-]){5}[0-9a-fA-F]{2}[ \t]+(-?\d+)[ \t]+dBm`)
 )
 
 type iwinfoBlock struct {

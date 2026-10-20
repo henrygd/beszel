@@ -238,6 +238,13 @@ func TestParseAssocRSSI(t *testing.T) {
 		{"no clients (empty output)", "", 0, false},
 		{"malformed", "garbage\n02:00:00 not-a-mac -50 dBm\n", 0, false},
 		{"missing rssi", "02:00:00:00:00:01  unknown signal  100 ms ago\n", 0, false},
+		{"unknown rssi with noise",
+			"02:00:00:00:00:01  unknown / -95 dBm (SNR 95)  100 ms ago\n",
+			0, false},
+		{"unknown rssi excluded from average",
+			"02:00:00:00:00:01  unknown / -95 dBm (SNR 95)  100 ms ago\n" +
+				"02:00:00:00:00:02  -40 dBm / -95 dBm (SNR 55)  100 ms ago\n",
+			-40, true},
 		{"invalid values ignored",
 			"02:00:00:00:00:01  -40 dBm / -95 dBm (SNR 55)  100 ms ago\n" +
 				"02:00:00:00:00:02  0 dBm / -95 dBm  100 ms ago\n" +
