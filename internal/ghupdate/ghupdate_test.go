@@ -3,9 +3,15 @@ package ghupdate
 import (
 	"archive/tar"
 	"compress/gzip"
+	"context"
+	"fmt"
+	"net/http"
+	"net/http/httptest"
 	"os"
 	"path/filepath"
 	"testing"
+
+	"github.com/blang/semver"
 )
 
 func TestArchiveSuffix(t *testing.T) {
@@ -50,6 +56,114 @@ func TestReleaseFindAssetBySuffix(t *testing.T) {
 
 	if asset.Id != 2 {
 		t.Fatalf("Expected asset with id %d, got %v", 2, asset)
+	}
+}
+
+func TestReleaseVersion(t *testing.T) {
+	tests := []struct {
+		name string
+		tag  string
+		want string
+	}{
+		{"with v prefix", "v0.19.0", "0.19.0"},
+		{"without prefix", "0.19.0", "0.19.0"},
+		{"prerelease", "v0.19.0-beta1", "0.19.0-beta1"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			v, err := releaseVersion(&release{Tag: tt.tag})
+			if err != nil {
+				t.Fatalf("releaseVersion(%q) returned error: %v", tt.tag, err)
+			}
+			if v.String() != tt.want {
+				t.Errorf("releaseVersion(%q) = %q, want %q", tt.tag, v.String(), tt.want)
+			}
+		})
+	}
+
+	if _, err := releaseVersion(&release{Tag: "not-a-version"}); err == nil {
+		t.Error("expected error for invalid tag")
+	}
+}
+
+func TestCapVersion(t *testing.T) {
+	latest := semver.MustParse("4.0.0")
+	tests := []struct {
+		name      string
+		max       string
+		want      string
+		wantCapped bool
+		wantErr   bool
+	}{
+		{"no max version means no cap", "", "4.0.0", false, false},
+		{"max version above latest is ignored", "5.0.0", "4.0.0", false, false},
+		{"max version equal to latest is ignored", "4.0.0", "4.0.0", false, false},
+		{"max version below latest caps", "3.2.0", "3.2.0", true, false},
+		{"max version with v prefix caps", "v3.2.0", "3.2.0", true, false},
+		{"prerelease max version caps", "3.2.0-beta.1", "3.2.0-beta.1", true, false},
+		{"invalid max version errors", "abc", "", false, true},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, capped, err := capVersion(latest, tt.max)
+			if tt.wantErr {
+				if err == nil {
+					t.Fatal("expected error, got nil")
+				}
+				return
+			}
+			if err != nil {
+				t.Fatalf("unexpected error: %v", err)
+			}
+			if capped != tt.wantCapped {
+				t.Errorf("capped = %v, want %v", capped, tt.wantCapped)
+			}
+			if got.String() != tt.want {
+				t.Errorf("result version = %q, want %q", got.String(), tt.want)
+			}
+		})
+	}
+}
+
+func TestGetAPIURLs(t *testing.T) {
+	latestURLs := map[bool]string{
+		false: "https://api.github.com/repos/henrygd/beszel/releases/latest",
+		true:  "https://gh.beszel.dev/repos/henrygd/beszel/releases/latest?api=true",
+	}
+	for mirror, want := range latestURLs {
+		if got := getApiURL(mirror, "henrygd", "beszel"); got != want {
+			t.Errorf("getApiURL(%v) = %q, want %q", mirror, got, want)
+		}
+	}
+
+	tagURLs := map[bool]string{
+		false: "https://api.github.com/repos/henrygd/beszel/releases/tags/v3.2.0",
+		true:  "https://gh.beszel.dev/repos/henrygd/beszel/releases/tags/v3.2.0?api=true",
+	}
+	for mirror, want := range tagURLs {
+		if got := getTagReleaseURL(mirror, "henrygd", "beszel", "v3.2.0"); got != want {
+			t.Errorf("getTagReleaseURL(%v) = %q, want %q", mirror, got, want)
+		}
+	}
+}
+
+func TestFetchReleaseByTag(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path != "/repos/henrygd/beszel/releases/tags/v3.2.0" {
+			http.Error(w, "not found", http.StatusNotFound)
+			return
+		}
+		w.Header().Set("Content-Type", "application/json")
+		fmt.Fprint(w, `{"tag_name":"v3.2.0","assets":[]}`)
+	}))
+	defer server.Close()
+
+	rel, err := FetchLatestRelease(context.Background(), &http.Client{}, server.URL+"/repos/henrygd/beszel/releases/tags/v3.2.0")
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if rel.Tag != "v3.2.0" {
+		t.Errorf("tag = %q, want %q", rel.Tag, "v3.2.0")
 	}
 }
 
