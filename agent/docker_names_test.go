@@ -24,12 +24,9 @@ func resolveNames(template string, excluded func(string) bool, ctrs ...*containe
 	if excluded == nil {
 		excluded = func(string) bool { return false }
 	}
-	var tmpl *containerNameTemplate
-	if template != "" {
-		var err error
-		if tmpl, err = parseContainerNameTemplate(template); err != nil {
-			panic(err)
-		}
+	tmpl, err := parseContainerNameTemplate(template)
+	if err != nil {
+		panic(err)
 	}
 	resolveContainerNames(ctrs, tmpl, excluded)
 	names := make([]string, len(ctrs))
@@ -41,11 +38,6 @@ func resolveNames(template string, excluded func(string) bool, ctrs ...*containe
 
 func TestResolveContainerNames(t *testing.T) {
 	const key = "coolify.serviceName"
-
-	t.Run("no label key keeps docker names", func(t *testing.T) {
-		names := resolveNames("", nil, testCtr("api-abc", map[string]string{key: "api"}))
-		assert.Equal(t, []string{"api-abc"}, names)
-	})
 
 	t.Run("label value replaces docker name", func(t *testing.T) {
 		names := resolveNames(key, nil,

@@ -172,12 +172,13 @@ func (dm *dockerManager) getDockerStats(cacheTimeMs uint16) ([]*container.Stats,
 
 	var failedContainers []*container.ApiInfo
 
-	for _, ctr := range dm.apiContainerList {
-		ctr.IdShort = ctr.Id[:12]
+	if dm.nameTemplate != nil {
+		resolveContainerNames(dm.apiContainerList, dm.nameTemplate, dm.shouldExcludeContainer)
 	}
-	resolveContainerNames(dm.apiContainerList, dm.nameTemplate, dm.shouldExcludeContainer)
 
 	for _, ctr := range dm.apiContainerList {
+		ctr.IdShort = ctr.Id[:12]
+
 		// Skip this container if it matches the exclusion pattern
 		if dm.shouldExcludeContainer(ctr.Names[0][1:]) {
 			slog.Debug("Excluding container", "name", ctr.Names[0][1:])
@@ -505,6 +506,7 @@ func (dm *dockerManager) getPodmanContainerHealth(containerID string) (container
 
 // Updates stats for individual container with cache-time-aware delta tracking
 func (dm *dockerManager) updateContainerStats(ctr *container.ApiInfo, cacheTimeMs uint16) error {
+	// DisplayName is only set when CONTAINER_NAME_LABEL is configured, so this fallback is required
 	name := ctr.DisplayName
 	if name == "" {
 		name = ctr.Names[0][1:]

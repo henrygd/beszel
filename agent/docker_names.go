@@ -83,16 +83,10 @@ func (t *containerNameTemplate) render(labels map[string]string) (string, bool) 
 	return name, name != ""
 }
 
-// resolveContainerNames sets DisplayName on each container. Without a template it is the Docker name.
-// With a template, the rendered name is used when it is complete and unique among the reported containers.
-// Containers that render to the same name (replicas) keep their Docker name so their series are never merged.
+// resolveContainerNames sets DisplayName on each container. The rendered name is used when it is
+// complete and unique among the reported containers. Containers that render to the same name
+// (replicas) keep their Docker name so their series are never merged. tmpl must not be nil.
 func resolveContainerNames(list []*container.ApiInfo, tmpl *containerNameTemplate, excluded func(string) bool) {
-	if tmpl == nil {
-		for _, ctr := range list {
-			ctr.DisplayName = ctr.Names[0][1:]
-		}
-		return
-	}
 	candidates := make(map[*container.ApiInfo]string, len(list))
 	fromLabel := make(map[*container.ApiInfo]bool, len(list))
 	for _, ctr := range list {
