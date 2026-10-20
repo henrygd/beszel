@@ -165,3 +165,50 @@ func TestMonitorInjectedProbeTimeoutRecordsLoss(t *testing.T) {
 		assert.NoError(t, pm.monitors["test"].ctx.Err())
 	})
 }
+
+func TestMonitorScheduleSkipsProbesWhileHubIdle(t *testing.T) {
+	synctest.Test(t, func(t *testing.T) {
+		var calls atomic.Int32
+		pm := newMonitorManagerWithProbe(func(context.Context, monitor.Config) (int64, error) {
+			calls.Add(1)
+			return 42, nil
+		})
+		defer pm.Stop()
+		a := &Agent{}
+		pm.agent = a
+		cfg := monitor.Config{ID: "test", Interval: 10}
+
+		// Configs synced before the first stats request don't probe on schedule.
+		pm.SyncMonitors([]monitor.Config{cfg})
+		time.Sleep(time.Minute)
+		synctest.Wait()
+		assert.Zero(t, calls.Load(), "monitors must not probe before the hub requests stats")
+
+		// Immediate probes requested by the hub still run.
+		result, err := pm.UpsertMonitor(cfg, true)
+		require.NoError(t, err)
+		require.NotNil(t, result)
+		assert.Equal(t, 1, int(calls.Load()))
+
+		a.markHubRequest()
+		time.Sleep(time.Minute)
+		synctest.Wait()
+		active := calls.Load()
+		assert.GreaterOrEqual(t, int(active), 6, "monitors must probe while the hub requests stats")
+
+		// Without further requests, probing stops once the idle timeout passes.
+		time.Sleep(monitorIdleTimeout)
+		synctest.Wait()
+		idle := calls.Load()
+		time.Sleep(10 * time.Minute)
+		synctest.Wait()
+		assert.Equal(t, idle, calls.Load(), "monitors must not probe while the hub is idle")
+		assert.NotNil(t, pm.monitors[cfg.ID], "idle monitors keep their config")
+
+		// The next stats request resumes the schedule without a resync.
+		a.markHubRequest()
+		time.Sleep(time.Minute)
+		synctest.Wait()
+		assert.Greater(t, calls.Load(), idle, "monitors must resume when the hub requests stats")
+	})
+}
