@@ -4,7 +4,7 @@ import { pb } from "./api"
 import { Unit } from "./enums"
 
 /** Default layout width. Used as fallback when user setting is unset. */
-export const defaultLayoutWidth = 1580
+export const defaultLayoutWidth = 1600
 
 /** Store if user is authenticated */
 export const $authenticated = atom(pb.authStore.isValid)
@@ -21,6 +21,8 @@ export const $downSystems = map<Record<string, SystemRecord>>({})
 export const $pausedSystems = map<Record<string, SystemRecord>>({})
 /** List of all system records */
 export const $systems: ReadableAtom<SystemRecord[]> = computed($allSystemsById, Object.values)
+/** Whether the initial systems list has been fetched */
+export const $systemsLoaded = atom(false)
 
 /** Map of alert records by system id and alert name */
 export const $alerts = map<AlertMap>({})

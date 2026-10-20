@@ -52,8 +52,6 @@ func TestAverageSystemStatsSlice_SingleRecord(t *testing.T) {
 			DiskTotal:    500.0,
 			DiskUsed:     250.0,
 			DiskPct:      50.0,
-			DiskReadPs:   100.5,
-			DiskWritePs:  200.75,
 			NetworkSent:  10.5,
 			NetworkRecv:  20.25,
 			LoadAvg:      [3]float64{1.5, 2.0, 3.5},
@@ -76,8 +74,6 @@ func TestAverageSystemStatsSlice_SingleRecord(t *testing.T) {
 	assert.Equal(t, 500.0, result.DiskTotal)
 	assert.Equal(t, 250.0, result.DiskUsed)
 	assert.Equal(t, 50.0, result.DiskPct)
-	assert.Equal(t, 100.5, result.DiskReadPs)
-	assert.Equal(t, 200.75, result.DiskWritePs)
 	assert.Equal(t, 10.5, result.NetworkSent)
 	assert.Equal(t, 20.25, result.NetworkRecv)
 	assert.Equal(t, [3]float64{1.5, 2.0, 3.5}, result.LoadAvg)
@@ -102,8 +98,6 @@ func TestAverageSystemStatsSlice_BasicAveraging(t *testing.T) {
 			DiskTotal:    500.0,
 			DiskUsed:     200.0,
 			DiskPct:      40.0,
-			DiskReadPs:   100.0,
-			DiskWritePs:  200.0,
 			NetworkSent:  10.0,
 			NetworkRecv:  20.0,
 			LoadAvg:      [3]float64{1.0, 2.0, 3.0},
@@ -124,8 +118,6 @@ func TestAverageSystemStatsSlice_BasicAveraging(t *testing.T) {
 			DiskTotal:    500.0,
 			DiskUsed:     300.0,
 			DiskPct:      60.0,
-			DiskReadPs:   200.0,
-			DiskWritePs:  400.0,
 			NetworkSent:  30.0,
 			NetworkRecv:  40.0,
 			LoadAvg:      [3]float64{3.0, 4.0, 5.0},
@@ -149,8 +141,6 @@ func TestAverageSystemStatsSlice_BasicAveraging(t *testing.T) {
 	assert.Equal(t, 500.0, result.DiskTotal)
 	assert.Equal(t, 250.0, result.DiskUsed)
 	assert.Equal(t, 50.0, result.DiskPct)
-	assert.Equal(t, 150.0, result.DiskReadPs)
-	assert.Equal(t, 300.0, result.DiskWritePs)
 	assert.Equal(t, 20.0, result.NetworkSent)
 	assert.Equal(t, 30.0, result.NetworkRecv)
 	assert.Equal(t, [3]float64{2.0, 3.0, 4.0}, result.LoadAvg)
@@ -171,10 +161,6 @@ func TestAverageSystemStatsSlice_PeakValues(t *testing.T) {
 			MaxNetworkSent: 15.0,
 			NetworkRecv:    20.0,
 			MaxNetworkRecv: 25.0,
-			DiskReadPs:     100.0,
-			MaxDiskReadPs:  120.0,
-			DiskWritePs:    200.0,
-			MaxDiskWritePs: 220.0,
 			Bandwidth:      [2]uint64{1000, 2000},
 			MaxBandwidth:   [2]uint64{1500, 2500},
 			DiskIO:         [2]uint64{400, 600},
@@ -191,10 +177,6 @@ func TestAverageSystemStatsSlice_PeakValues(t *testing.T) {
 			MaxNetworkSent: 35.0,
 			NetworkRecv:    40.0,
 			MaxNetworkRecv: 45.0,
-			DiskReadPs:     200.0,
-			MaxDiskReadPs:  210.0,
-			DiskWritePs:    400.0,
-			MaxDiskWritePs: 410.0,
 			Bandwidth:      [2]uint64{3000, 4000},
 			MaxBandwidth:   [2]uint64{3500, 4500},
 			DiskIO:         [2]uint64{600, 800},
@@ -210,8 +192,6 @@ func TestAverageSystemStatsSlice_PeakValues(t *testing.T) {
 	assert.Equal(t, 12.0, result.MaxMem)
 	assert.Equal(t, 35.0, result.MaxNetworkSent)
 	assert.Equal(t, 45.0, result.MaxNetworkRecv)
-	assert.Equal(t, 210.0, result.MaxDiskReadPs)
-	assert.Equal(t, 410.0, result.MaxDiskWritePs)
 	assert.Equal(t, [2]uint64{3500, 4500}, result.MaxBandwidth)
 	assert.Equal(t, [2]uint64{650, 850}, result.MaxDiskIO)
 	assert.Equal(t, [6]float64{30.0, 40.0, 50.0, 10.0, 13.0, 17.0}, result.DiskIoStats)
@@ -368,10 +348,6 @@ func TestAverageSystemStatsSlice_ExtraFs(t *testing.T) {
 				"/data": {
 					DiskTotal:         1000.0,
 					DiskUsed:          400.0,
-					DiskReadPs:        50.0,
-					DiskWritePs:       100.0,
-					MaxDiskReadPS:     60.0,
-					MaxDiskWritePS:    110.0,
 					DiskReadBytes:     5000,
 					DiskWriteBytes:    10000,
 					MaxDiskReadBytes:  6000,
@@ -387,10 +363,6 @@ func TestAverageSystemStatsSlice_ExtraFs(t *testing.T) {
 				"/data": {
 					DiskTotal:         1000.0,
 					DiskUsed:          600.0,
-					DiskReadPs:        150.0,
-					DiskWritePs:       200.0,
-					MaxDiskReadPS:     160.0,
-					MaxDiskWritePS:    210.0,
 					DiskReadBytes:     15000,
 					DiskWriteBytes:    20000,
 					MaxDiskReadBytes:  16000,
@@ -409,10 +381,6 @@ func TestAverageSystemStatsSlice_ExtraFs(t *testing.T) {
 	fs := result.ExtraFs["/data"]
 	assert.Equal(t, 1000.0, fs.DiskTotal)
 	assert.Equal(t, 500.0, fs.DiskUsed)
-	assert.Equal(t, 100.0, fs.DiskReadPs)
-	assert.Equal(t, 150.0, fs.DiskWritePs)
-	assert.Equal(t, 160.0, fs.MaxDiskReadPS)
-	assert.Equal(t, 210.0, fs.MaxDiskWritePS)
 	assert.Equal(t, uint64(10000), fs.DiskReadBytes)
 	assert.Equal(t, uint64(15000), fs.DiskWriteBytes)
 	assert.Equal(t, uint64(16000), fs.MaxDiskReadBytes)
@@ -462,8 +430,6 @@ func TestAverageSystemStatsSlice_ExtraFsPeaksFromCurrentValues(t *testing.T) {
 			Cpu: 10.0,
 			ExtraFs: map[string]*system.FsStats{
 				"/data": {
-					DiskReadPs:       500.0, // exceeds MaxDiskReadPS
-					MaxDiskReadPS:    100.0,
 					DiskReadBytes:    50000,
 					MaxDiskReadBytes: 10000,
 				},
@@ -473,8 +439,6 @@ func TestAverageSystemStatsSlice_ExtraFsPeaksFromCurrentValues(t *testing.T) {
 			Cpu: 20.0,
 			ExtraFs: map[string]*system.FsStats{
 				"/data": {
-					DiskReadPs:       50.0,
-					MaxDiskReadPS:    200.0,
 					DiskReadBytes:    5000,
 					MaxDiskReadBytes: 20000,
 				},
@@ -485,7 +449,6 @@ func TestAverageSystemStatsSlice_ExtraFsPeaksFromCurrentValues(t *testing.T) {
 	result := records.AverageSystemStatsSlice(input)
 
 	fs := result.ExtraFs["/data"]
-	assert.Equal(t, 500.0, fs.MaxDiskReadPS)
 	assert.Equal(t, uint64(50000), fs.MaxDiskReadBytes)
 }
 

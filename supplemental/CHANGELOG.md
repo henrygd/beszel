@@ -1,3 +1,177 @@
+## 0.21.1
+
+For developers using the agent as a Go package, `Agent.Start` now requires a `context.Context`.
+
+- Add opt-in cgroup CPU and memory accounting (#2505)
+
+- Add `HUB_HEADERS` environment variable to set custom WebSocket headers on the agent (#2585)
+
+- Add `OAUTH_DEFAULT_USER_ROLE` environment variable to set the role of new OAuth users (#2516)
+
+- Add option to ignore TLS errors for HTTPS monitors (#2500)
+
+- Add zpool status messages to ZFS pool health (#2509)
+
+- Add xbps support to package update checks (#2522)
+
+- Change the user created from `USER_EMAIL` to be an admin (#2516)
+
+- Fix btrfs pool health when sysfs device info is unavailable (#2489)
+
+- Fix ZFS pool capacity to use the root dataset (#2540)
+
+- Fix package update checks under the systemd sandbox (#2538)
+
+- Fix systemd service logs missing output from services running as a non-system user (#2553)
+
+- Fix systemd monitoring starting when systemd is not available on D-Bus (#2573)
+
+- Fix hub dropping slow agent connections between polls (#2435)
+
+- Fix hub keeping connections open to unresponsive agents
+
+- Fix agent reconnect and shutdown handling (#2464)
+
+- Fix network counter underflow when interfaces are removed or containers restart (#2574)
+
+- Fix host CPU usage after a counter rollback
+
+- Fix larger stored stats records caused by zero-value fields
+
+- Fix legacy hubs receiving a duplicate stats payload (#2529)
+
+- Fix NVIDIA GPU power when power usage is unsupported by falling back to NVML power samples (#2550)
+
+- Fix zero GPU package power being stored (#2551)
+
+- Fix `intel_gpu_top` parsing when samples are missing commas (#2589)
+
+- Fix NVMe unsafe shutdowns counter overflowing (#2583)
+
+- Fix NVMe namespace fallbacks being lost on rescan (#2597)
+
+- Fix handling of cached NVMe failures and empty SMART responses
+
+- Fix zypper's apt-get wrapper being detected as apt (#2523)
+
+- Fix updater stopping when the system record lookup fails (#2588)
+
+- Fix systems table losing the update count when a host is down (#2559)
+
+- Fix latency tolerance in 1m realtime charts (#2521)
+
+- Fix charts hiding isolated points and spinning endlessly on empty values (#2514)
+
+- Fix live metrics subscriptions not ending after leaving the 1m view (#2599)
+
+- Fix sorting of monitor targets without a URL scheme and show HTTPS in the badge (#2501)
+
+- Fix lazy loading of the systemd table (#2602)
+
+- Fix system dialog layout shifting between tabs (#2571)
+
+- Improve accessibility and fix login page translation (#2604)
+
+- Update Go to 1.27.2 and Go dependencies
+
+- Update npm packages with security alerts (#2575)
+
+## 0.21.0
+
+- Add pending package updates list to the system page (#2357, #2427)
+
+- Add Wi-Fi signal strength monitoring (#2367)
+
+- Add TLS certificate expiry check to HTTPS network monitors (#2401)
+
+- Add systemd service logs to service details (#2440)
+
+- Add option to set the DNS server queried by DNS monitors (#2389)
+
+- Add network monitor comparison across systems and within the same system (#2442, #2477)
+
+- Add `SYNC_SYSTEM_NAMES` environment variable to sync system names with hostnames (#1917)
+
+- Add `DISABLE_SSH` option to the hub to skip SSH fallback (#2469)
+
+- Add environment variable to disable container image update checks (#2371)
+
+- Add MB/s and GB/s unit selection to bandwidth alerts
+
+- Add log timestamp toggle (#2471)
+
+- Add view settings to the network monitors table (#2396)
+
+- Add Twemoji Country Flags font so flags always render (#2363)
+
+- Change active alerts grid to a banner and sheet (#2445)
+
+- Change network packet loss to a red line (#2377)
+
+- Improve Intel GPU monitoring by parsing `intel_gpu_top` JSON output (#2387)
+
+- Improve LXC guest CPU usage reporting using cgroup accounting (#2341)
+
+- Improve WebSocket and SSH fallback handling (#2441)
+
+- Fix LVM volumes not mapping to disk I/O by resolving device symlinks (#2486)
+
+- Fix ZFS pool I/O stats to include snapshot reads (#2474)
+
+- Fix inaccurate disk I/O on the first sample of an interval (#2420)
+
+- Fix Windows volume names being altered when matching I/O devices (#2419)
+
+- Fix 32-bit wrap of disk I/O time counters (#2407)
+
+- Fix partial NVMe SMART data handling (#2340)
+
+- Fix NVMe power-cycle SMART fields overflowing (#2484)
+
+- Fix `nvethernet` network counters (#2090)
+
+- Fix agent not reconnecting after an async WebSocket handshake failure (#2329, #2326)
+
+- Fix WebSocket reconnect loops on slow agent collections (#2294)
+
+- Fix `SKIP_GPU` not excluding GPU hwmon temperatures and fans (#2313)
+
+- Fix Docker image update check across all image repository digests (#2393)
+
+- Fix status alerts being lost during pending recovery (#2375)
+
+- Fix hub requiring system access for alert subscriptions and delivery (#2455)
+
+- Fix hub not honoring SSH request cancellation (#2450)
+
+- Fix hub not restarting `beszel-hub.service` after update (#2410)
+
+- Fix custom DNS resolvers being lost when syncing monitors (#2448)
+
+- Fix IP targets being accepted for DNS monitors (#2483)
+
+- Fix short monitor IDs failing schema validation (#2454)
+
+- Fix network monitor charts to show gaps for failed probes and disconnects (#2428)
+
+- Fix duplicate y-axis labels on network monitor response charts (#2426)
+
+- Fix confirmation before deleting a single network monitor (#2467)
+
+- Fix translations not refreshing on locale change (#2405)
+
+- Fix scrollbar layout shifts (#2406)
+
+- Fix hub returning 200 for unknown frontend routes (#2414)
+
+- Fix proxy caching of systemd details (#2456)
+
+- Fix agent not exiting with code 0 when run without a key on Windows (#2376, #2247)
+
+- Fix OpenWrt user account handling in the install script (#2370)
+
+- Update Go dependencies
+
 ## 0.20.0
 
 - Add network monitoring from agents (#2266, #1911)

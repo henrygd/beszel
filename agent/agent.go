@@ -5,9 +5,12 @@
 package agent
 
 import (
+	"context"
 	"log/slog"
+	"net"
 	"strings"
 	"sync"
+	"sync/atomic"
 	"time"
 
 	"github.com/gliderlabs/ssh"
@@ -26,6 +29,7 @@ type Agent struct {
 	debug                     bool                                                  // true if LOG_LEVEL is set to debug
 	zfs                       bool                                                  // true if system has arcstats
 	memCalc                   string                                                // Memory calculation formula
+	forceUseCgroup            bool                                                  // Explicitly use the cgroup mount root for CPU accounting
 	fsNames                   []string                                              // List of filesystem device names being monitored
 	fsStats                   map[string]*system.FsStats                            // Keeps track of disk stats for each filesystem
 	diskPrev                  map[uint16]map[string]prevDisk                        // Previous disk I/O counters per cache interval
@@ -37,6 +41,8 @@ type Agent struct {
 	netInterfaceDeltaTrackers map[uint16]*deltatracker.DeltaTracker[string, uint64] // Per-cache-time NIC delta trackers
 	dockerManager             *dockerManager                                        // Manages Docker API requests
 	sensorConfig              *SensorConfig                                         // Sensors config
+	tempsReading              atomic.Bool                                           // A temperature read is still running (possibly blocked in the kernel)
+	fansReading               atomic.Bool                                           // A fan read is still running (possibly blocked in the kernel)
 	systemInfo                system.Info                                           // Host system info (dynamic)
 	systemDetails             system.Details                                        // Host system details (static, once-per-connection)
 	detailsDirty              bool                                                  // Whether system details have changed and need to be resent
@@ -45,6 +51,8 @@ type Agent struct {
 	connectionManager         *ConnectionManager                                    // Channel to signal connection events
 	handlerRegistry           *HandlerRegistry                                      // Registry for routing incoming messages
 	server                    *ssh.Server                                           // SSH server
+	serverListener            net.Listener                                          // SSH listener, also closed if Serve has not started yet
+	serverMu                  sync.Mutex                                            // Guards server and serverListener
 	dataDir                   string                                                // Directory for persisting data
 	keys                      []gossh.PublicKey                                     // SSH public keys
 	smartManager              *SmartManager                                         // Manages SMART data
@@ -52,6 +60,7 @@ type Agent struct {
 	monitorManager            *MonitorManager                                       // Manages network monitors
 	storagePoolManager        *StoragePoolManager                                   // Manages storage pool and dataset data
 	packageUpdates            *packageUpdatesManager                                // Checks for pending package updates
+	lastHubRequest            atomic.Int64                                          // Wall clock Unix nanoseconds of the last hub stats request
 }
 
 // NewAgent creates a new agent with the given data directory for persisting data.
@@ -76,6 +85,11 @@ func NewAgent(dataDir ...string) (agent *Agent, err error) {
 	}
 
 	agent.memCalc, _ = utils.GetEnv("MEM_CALC")
+
+	if useCgroup, exists := utils.GetEnv("USE_CGROUP"); exists {
+		agent.forceUseCgroup = useCgroup == "true"
+	}
+	agent.initializeCpu()
 	agent.sensorConfig = agent.newSensorConfig()
 
 	// Parse disk usage cache duration (e.g., "15m", "1h") to avoid waking sleeping disks
@@ -103,6 +117,8 @@ func NewAgent(dataDir ...string) (agent *Agent, err error) {
 
 	slog.Debug(beszel.Version)
 
+	agent.warnIfRootCgroup()
+
 	// initialize docker manager
 	agent.dockerManager = newDockerManager(agent)
 
@@ -126,7 +142,7 @@ func NewAgent(dataDir ...string) (agent *Agent, err error) {
 	agent.handlerRegistry = NewHandlerRegistry()
 
 	// initialize monitor manager
-	agent.monitorManager = newMonitorManager()
+	agent.monitorManager = newMonitorManager(agent)
 
 	agent.storagePoolManager = newStoragePoolManager()
 
@@ -174,6 +190,18 @@ func NewAgent(dataDir ...string) (agent *Agent, err error) {
 	}
 
 	return agent, nil
+}
+
+// markHubRequest records a hub stats request. It doesn't use the agent lock,
+// which gatherStats holds through collection.
+func (a *Agent) markHubRequest() {
+	a.lastHubRequest.Store(time.Now().UnixNano())
+}
+
+// hubIdleFor reports whether the hub hasn't requested stats for at least d.
+// Wall time counts host suspend toward idle.
+func (a *Agent) hubIdleFor(d time.Duration) bool {
+	return time.Now().UnixNano()-a.lastHubRequest.Load() >= int64(d)
 }
 
 func (a *Agent) gatherStats(options common.DataRequestOptions) *system.CombinedData {
@@ -260,10 +288,11 @@ func (a *Agent) gatherStats(options common.DataRequestOptions) *system.CombinedD
 	return a.attachSystemDetails(data, cacheTimeMs, options.IncludeDetails)
 }
 
-// Start initializes and starts the agent with optional WebSocket connection
-func (a *Agent) Start(serverOptions ServerOptions) error {
+// Start initializes and starts the agent with optional WebSocket connection.
+// It runs until ctx is cancelled or the process receives SIGINT or SIGTERM.
+func (a *Agent) Start(ctx context.Context, serverOptions ServerOptions) error {
 	a.keys = serverOptions.Keys
-	err := a.connectionManager.Start(serverOptions)
+	err := a.connectionManager.Start(ctx, serverOptions)
 	if err != nil {
 		a.cleanupSensorShadow()
 	}

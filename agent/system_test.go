@@ -115,6 +115,32 @@ func TestCalculateSwapUsage(t *testing.T) {
 	}
 }
 
+func TestUpdateMemoryStatsSwapPercentage(t *testing.T) {
+	original := memoryVirtualMemory
+	t.Cleanup(func() { memoryVirtualMemory = original })
+	for _, tt := range []struct {
+		name        string
+		total, free uint64
+		want        float64
+	}{
+		{name: "no swap"},
+		{name: "unused", total: 1 << 30, free: 1 << 30},
+		{name: "small swap below GiB rounding", total: 1 << 20, free: 1 << 19, want: 50},
+		{name: "small usage below GiB rounding", total: 1 << 30, free: (1 << 30) - (1 << 20), want: 0.1},
+		{name: "free exceeds total", total: 1 << 20, free: 2 << 20},
+	} {
+		t.Run(tt.name, func(t *testing.T) {
+			memoryVirtualMemory = func() (*mem.VirtualMemoryStat, error) {
+				return &mem.VirtualMemoryStat{Total: 1 << 30, SwapTotal: tt.total, SwapFree: tt.free}, nil
+			}
+			a := &Agent{}
+			var stats system.Stats
+			a.updateMemoryStats(&stats)
+			assert.Equal(t, tt.want, stats.SwapPct)
+		})
+	}
+}
+
 func TestUpdateSystemDetailsMarksDetailsDirty(t *testing.T) {
 	agent := &Agent{}
 

@@ -130,14 +130,6 @@ export interface SystemStats {
 	du: number
 	/** disk percent */
 	dp: number
-	/** disk read (mb) */
-	dr: number
-	/** disk write (mb) */
-	dw: number
-	/** max disk read (mb) */
-	drm?: number
-	/** max disk write (mb) */
-	dwm?: number
 	/** disk I/O bytes [read, write] */
 	dio?: [number, number]
 	/** max disk I/O bytes [read, write] */
@@ -264,6 +256,8 @@ export interface ZfsPoolRecord extends RecordModel {
 	system: string
 	name: string
 	health: string
+	/** zpool status: advisory message, when the pool carries one */
+	status?: string
 	size: number
 	alloc: number
 	free: number
@@ -279,14 +273,6 @@ export interface ExtraFsStats {
 	d: number
 	/** disk used (gb) */
 	du: number
-	/** total read (mb) */
-	r: number
-	/** total write (mb) */
-	w: number
-	/** max read (mb) */
-	rm: number
-	/** max write (mb) */
-	wm: number
 	/** read per second (bytes) */
 	rb: number
 	/** write per second (bytes) */
@@ -698,6 +684,8 @@ export interface NetworkMonitorRecord {
 	protocol: "icmp" | "tcp" | "http" | "dns"
 	port: number
 	server: string
+	/** Skip TLS certificate verification for HTTPS targets. */
+	skipTlsVerify: boolean
 	res: number
 	resMin1h: number
 	resMax1h: number

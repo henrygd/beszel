@@ -380,7 +380,7 @@ func (sm *SystemManager) resetFailedSmartFetchState(systemID string) {
 func (sm *SystemManager) GetMonitorConfigsForSystem(systemID string) ([]monitor.Config, error) {
 	var configs []monitor.Config
 	err := sm.hub.DB().
-		NewQuery("SELECT id, target, protocol, port, interval, server FROM network_monitors WHERE system = {:system} AND enabled = true").
+		NewQuery("SELECT id, target, protocol, port, interval, server, skipTlsVerify FROM network_monitors WHERE system = {:system} AND enabled = true").
 		Bind(dbx.Params{"system": systemID}).
 		All(&configs)
 	return configs, err
@@ -427,7 +427,7 @@ func deactivateAlerts(app core.App, systemID string, preserveStatusAlert bool) e
 	// Note: Direct SQL updates don't trigger SSE, so we use the PocketBase API
 	// _, err := app.DB().NewQuery(fmt.Sprintf("UPDATE alerts SET triggered = false WHERE system = '%s'", systemID)).Execute()
 
-	alerts, err := app.FindRecordsByFilter("alerts", fmt.Sprintf("system = '%s' && triggered = 1 && name != 'NetworkMonitorLoss'", systemID), "", -1, 0)
+	alerts, err := app.FindRecordsByFilter("alerts", fmt.Sprintf("system = '%s' && triggered = 1 && name != 'NetworkMonitorLoss' && name != 'NetworkMonitorCert'", systemID), "", -1, 0)
 	if err != nil {
 		return err
 	}

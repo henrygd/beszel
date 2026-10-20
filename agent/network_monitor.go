@@ -1,14 +1,22 @@
 package agent
 
 import (
+	"crypto/tls"
 	"errors"
 	"fmt"
+	"log/slog"
 	"net/http"
 	"sync"
+	"sync/atomic"
 	"time"
 
 	"github.com/henrygd/beszel/internal/entities/monitor"
 )
+
+// monitorIdleTimeout is three default hub update intervals. The hub collects
+// monitor results only with stats, which it stops requesting while the system is
+// paused or the agent is disconnected, so scheduled probes stop after this long.
+const monitorIdleTimeout = 3 * time.Minute
 
 // MonitorManager manages network monitor configurations and task lifetimes.
 type MonitorManager struct {
@@ -17,10 +25,18 @@ type MonitorManager struct {
 	probe       monitorProbe
 	certCheck   certChecker
 	resumeGuard monitorResumeGuard
+	agent       *Agent // Reference to the parent agent; nil means the hub is never idle
+	idle        atomic.Bool
 }
 
-func newMonitorManager() *MonitorManager {
-	return newMonitorManagerWithProbe(networkMonitorProbe(&http.Client{Timeout: monitor.MaxProbeTimeout}))
+func newMonitorManager(agent *Agent) *MonitorManager {
+	client := &http.Client{Timeout: monitor.MaxProbeTimeout}
+	insecureTransport := http.DefaultTransport.(*http.Transport).Clone()
+	insecureTransport.TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
+	insecureClient := &http.Client{Timeout: monitor.MaxProbeTimeout, Transport: insecureTransport}
+	pm := newMonitorManagerWithProbe(networkMonitorProbe(client, insecureClient))
+	pm.agent = agent
+	return pm
 }
 
 func newMonitorManagerWithProbe(probe monitorProbe) *MonitorManager {
@@ -181,6 +197,20 @@ func (pm *MonitorManager) GetResults(durationMs uint16) map[string]monitor.Resul
 	}
 
 	return results
+}
+
+// hubIdle reports whether scheduled probes should be skipped because the hub
+// hasn't requested stats recently. Immediate probes requested by the hub still run.
+func (pm *MonitorManager) hubIdle() bool {
+	idle := pm.agent != nil && pm.agent.hubIdleFor(monitorIdleTimeout)
+	if pm.idle.Swap(idle) != idle {
+		if idle {
+			slog.Debug("pausing network monitors until the hub requests stats")
+		} else {
+			slog.Debug("resuming network monitors")
+		}
+	}
+	return idle
 }
 
 // Stop stops all monitor tasks.

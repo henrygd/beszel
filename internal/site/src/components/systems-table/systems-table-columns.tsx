@@ -359,7 +359,7 @@ export function SystemsTableColumns(viewMode: "table" | "grid"): ColumnDef<Syste
 		{
 			accessorFn: strongestWiFiSignal,
 			id: "wifi",
-			name: () => t`Wi-Fi`,
+			name: () => "Wi-Fi",
 			size: 80,
 			Icon: WifiIcon,
 			header: sortableHeader,
@@ -485,7 +485,7 @@ export function SystemsTableColumns(viewMode: "table" | "grid"): ColumnDef<Syste
 			},
 			cell(info) {
 				const sys = info.row.original
-				if (sys.status !== SystemStatus.Up || !sys.info.pu) {
+				if (!sys.info.pu) {
 					return null
 				}
 				const [total, security = 0] = sys.info.pu
@@ -496,6 +496,7 @@ export function SystemsTableColumns(viewMode: "table" | "grid"): ColumnDef<Syste
 								[STATUS_COLORS[SystemStatus.Down]]: security > 0,
 								[STATUS_COLORS[SystemStatus.Pending]]: security === 0 && total > 0,
 								[STATUS_COLORS[SystemStatus.Up]]: total === 0,
+								[STATUS_COLORS[SystemStatus.Paused]]: sys.status !== SystemStatus.Up,
 							})}
 						/>
 						{total === 0 ? t`Up to date` : plural(total, { one: "# update", other: "# updates" })}
