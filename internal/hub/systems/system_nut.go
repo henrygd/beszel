@@ -135,6 +135,7 @@ func (sys *System) createNutStatsRecord(app core.App, collection *core.Collectio
 	record.Set("load", device.Load)
 	record.Set("output_current", device.OutputCurrent)
 	record.Set("output_power", device.OutputPower)
+	record.Set("output_power_source", device.OutputPowerSource)
 	return app.SaveNoValidate(record)
 }
 
@@ -174,6 +175,7 @@ func (sys *System) upsertNutDeviceRecord(app core.App, collection *core.Collecti
 	record.Set("load", device.Load)
 	record.Set("output_current", device.OutputCurrent)
 	record.Set("output_power", device.OutputPower)
+	record.Set("output_power_source", device.OutputPowerSource)
 	record.Set("outlets", device.Outlets)
 
 	return app.SaveNoValidate(record)

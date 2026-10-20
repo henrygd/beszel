@@ -3,6 +3,8 @@
 package agent
 
 import (
+	"os"
+	"path/filepath"
 	"testing"
 
 	"github.com/henrygd/beszel/internal/entities/nut"
@@ -12,21 +14,21 @@ import (
 
 func TestParseNutDataBasic(t *testing.T) {
 	vars := map[string]string{
-		"ups.model":          "APC SMT 1500",
-		"ups.manufacturer":   "APC",
-		"ups.serial":         "ABC123",
-		"ups.firmware":       "v2.9",
-		"driver":             "apcupsd",
-		"ups.status":         "OL",
-		"battery.charge":     "100",
-		"battery.voltage":    "27.2",
-		"battery.runtime":    "1800",
-		"input.voltage":      "120.5",
-		"output.voltage":     "121.0",
+		"ups.model":             "APC SMT 1500",
+		"ups.manufacturer":      "APC",
+		"ups.serial":            "ABC123",
+		"ups.firmware":          "v2.9",
+		"driver":                "apcupsd",
+		"ups.status":            "OL",
+		"battery.charge":        "100",
+		"battery.voltage":       "27.2",
+		"battery.runtime":       "1800",
+		"input.voltage":         "120.5",
+		"output.voltage":        "121.0",
 		"input.voltage.nominal": "120",
-		"ups.load":           "45",
-		"output.current":     "3.2",
-		"output.power":       "388",
+		"ups.load":              "45",
+		"output.current":        "3.2",
+		"ups.realpower":         "388",
 	}
 
 	data := parseNutData("ups1", vars)
@@ -299,4 +301,76 @@ func TestParseInt64(t *testing.T) {
 	assert.Equal(t, int64(1800), parseInt64("1800"))
 	assert.Equal(t, int64(0), parseInt64("abc"))
 	assert.Equal(t, int64(42), parseInt64(" 42 "))
+}
+func TestNutRealPower(t *testing.T) {
+	for _, tc := range []struct {
+		name   string
+		vars   map[string]string
+		power  float64
+		source string
+	}{
+		{"measured preferred", map[string]string{"ups.realpower": "123", "output.realpower": "200", "ups.load": "50", "ups.realpower.nominal": "1000"}, 123, "measured"},
+		{"measured zero", map[string]string{"ups.realpower": "0", "ups.load": "50", "ups.realpower.nominal": "1000"}, 0, "measured"},
+		{"output real power", map[string]string{"output.realpower": "75"}, 75, "measured"},
+		{"estimated", map[string]string{"ups.load": "25", "ups.realpower.nominal": "1000", "ups.power": "500"}, 250, "estimated"},
+		{"estimated zero", map[string]string{"ups.load": "0", "ups.realpower.nominal": "1000"}, 0, "estimated"},
+		{"no explicit watts", map[string]string{"ups.power": "500", "output.power": "500"}, 0, "unknown"},
+		{"missing load", map[string]string{"ups.realpower.nominal": "1000"}, 0, "unknown"},
+		{"missing rating", map[string]string{"ups.load": "50"}, 0, "unknown"},
+		{"zero rating", map[string]string{"ups.load": "50", "ups.realpower.nominal": "0"}, 0, "unknown"},
+		{"invalid", map[string]string{"ups.realpower": "NaN", "output.realpower": "Inf", "ups.load": "bad"}, 0, "unknown"},
+		{"negative", map[string]string{"ups.realpower": "-1", "ups.load": "-1", "ups.realpower.nominal": "1000"}, 0, "unknown"},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			data := parseNutData("ups", tc.vars)
+			assert.Equal(t, tc.power, data.OutputPower)
+			assert.Equal(t, tc.source, data.OutputPowerSource)
+		})
+	}
+}
+
+func TestParseUpscVariables(t *testing.T) {
+	vars, err := parseUpscVariables("ups.model: Model: with spaces\r\nups.status: OB LB\r\nups.serial: \r\n")
+	require.NoError(t, err)
+	assert.Equal(t, "Model: with spaces", vars["ups.model"])
+	assert.Equal(t, "OB LB", vars["ups.status"])
+	assert.Equal(t, "", vars["ups.serial"])
+	for _, bad := range []string{"", "help output", ": missing key", "bad key: value"} {
+		_, err := parseUpscVariables(bad)
+		assert.Error(t, err)
+	}
+}
+
+func TestNutLegacyUpsc(t *testing.T) {
+	// Emulate an older client: reject JSON and auth flags, and emit the
+	// documented stdout format plus a diagnostic on stderr.
+	dir := t.TempDir()
+	path := filepath.Join(dir, "upsc")
+	require.NoError(t, os.WriteFile(path, []byte(`#!/bin/sh
+case "$1" in
+  -j|-A) exit 1 ;;
+  -l) printf 'ups1\n' ;;
+  ups1@localhost) printf 'SSL initialization diagnostic\n' >&2
+    printf 'ups.model: CyberPower\nups.status: OL\nups.load: 25\nups.realpower.nominal: 1000\n' ;;
+  *) exit 1 ;;
+esac
+`), 0700))
+	t.Setenv("PATH", dir)
+	t.Setenv("NUT_AUTHCONF_FILE", "")
+	t.Setenv("NUT_SERVER", "localhost")
+	t.Setenv("NUT_DEVICES", "")
+	t.Setenv("EXCLUDE_NUT", "")
+	nm, err := NewNutManager()
+	require.NoError(t, err)
+	complete, err := nm.Refresh()
+	require.NoError(t, err)
+	assert.True(t, complete)
+	data := nm.GetCurrentData()["ups1"]
+	assert.Equal(t, "CyberPower", data.Model)
+	assert.Equal(t, 250.0, data.OutputPower)
+	assert.Equal(t, "estimated", data.OutputPowerSource)
+
+	t.Setenv("NUT_AUTHCONF_FILE", "/etc/nut/nutauth.conf")
+	_, err = NewNutManager()
+	require.ErrorContains(t, err, "-A support")
 }

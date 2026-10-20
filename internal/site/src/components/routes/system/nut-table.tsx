@@ -63,7 +63,20 @@ import { atom } from "nanostores"
 const $nutChartTime = atom<ChartTimes>("1h")
 
 const NUT_DEVICE_FIELDS =
-	"id,system,name,model,manufacturer,serial,firmware,driver,device_type,state,status,battery_charge,battery_voltage,battery_runtime,input_voltage,output_voltage,input_nominal,load,output_current,output_power,updated"
+	"id,system,name,model,manufacturer,serial,firmware,driver,device_type,state,status,battery_charge,battery_voltage,battery_runtime,input_voltage,output_voltage,input_nominal,load,output_current,output_power,output_power_source,updated"
+
+function nutPowerValue(record: NutDeviceRecord | NutStatsRecord): number | null {
+	return record.output_power_source === "measured" || record.output_power_source === "estimated"
+		? record.output_power
+		: null
+}
+
+function formatNutPower(record: NutDeviceRecord | NutStatsRecord): string {
+	const value = nutPowerValue(record)
+	if (value == null) return "N/A"
+	const power = `${toFixedFloat(value, 0)} W`
+	return record.output_power_source === "estimated" ? t`${power} (estimated)` : power
+}
 
 function healthVariant(health: string): "success" | "warning" | "danger" | "outline" {
 	switch (health) {
@@ -210,13 +223,7 @@ export const createColumns = (
 		accessorKey: "output_power",
 		invertSorting: true,
 		header: ({ column }) => <HeaderButton column={column} name={t`Power`} Icon={ZapIcon} />,
-		cell: ({ getValue }) => {
-			const power = getValue() as number | undefined
-			if (power == null || power === 0) {
-				return <div className="text-sm text-muted-foreground ms-1">N/A</div>
-			}
-			return <span className="ms-1">{toFixedFloat(power, 0)} W</span>
-		},
+		cell: ({ row }) => <span className="ms-1">{formatNutPower(row.original)}</span>,
 	},
 	{
 		id: "updated",
@@ -682,7 +689,7 @@ function DeviceSheet({
 						created: getPbTimestamp(chartTime),
 					}),
 					fields:
-						"created,battery_charge,battery_runtime,battery_voltage,input_voltage,output_voltage,load,output_current,output_power",
+						"created,battery_charge,battery_runtime,battery_voltage,input_voltage,output_voltage,load,output_current,output_power,output_power_source",
 					sort: "created",
 				})
 				.then((records) => {
@@ -727,7 +734,7 @@ function DeviceSheet({
 	const inputNominal = device?.input_nominal
 	const load = device?.load
 	const outputCurrent = device?.output_current
-	const outputPower = device?.output_power
+	const outputPower = device ? nutPowerValue(device) : null
 	const outlets = device?.outlets || []
 
 	const isHealthy = health === "ONLINE"
@@ -870,13 +877,13 @@ function DeviceSheet({
 										<div className="font-medium">{toFixedFloat(load, 0)}%</div>
 									</div>
 								)}
-								{outputPower != null && outputPower > 0 && (
+								{outputPower != null && device && (
 									<div className="rounded-md border p-3">
 										<div className="text-muted-foreground text-xs mb-1">
 											<Trans>Output Power</Trans>
 										</div>
 										<div className="font-medium">
-											{toFixedFloat(outputPower, 0)} W
+											{formatNutPower(device)}
 											{outputCurrent != null && outputCurrent > 0 && (
 												<span className="text-muted-foreground ml-2">
 													{toFixedFloat(outputCurrent, 1)} A
@@ -916,7 +923,7 @@ function DeviceSheet({
 									empty={chartEmpty}
 									grid={true}
 									title={t`Power`}
-									description={t`Load and output power over time`}
+									description={t`Load and output power over time. Estimated power is calculated from load and rated watts.`}
 								>
 									<LineChartDefault
 										chartData={chartData}
@@ -925,13 +932,13 @@ function DeviceSheet({
 										tickFormatter2={(value) => `${toFixedFloat(value, 0)} W`}
 										contentFormatter={(item) =>
 											item.name === t`Output Power`
-												? `${toFixedFloat(item.value, 1)} W`
+												? formatNutPower(item.payload as NutStatsRecord)
 												: `${toFixedFloat(item.value, 1)}%`
 										}
 										legend={true}
 										dataPoints={[
 											{ label: t`Load`, color: 5, dataKey: (point: NutStatsRecord) => point.load },
-											{ label: t`Output Power`, color: 1, yAxisId: "right", dataKey: (point: NutStatsRecord) => point.output_power },
+											{ label: t`Output Power`, color: 1, yAxisId: "right", dataKey: (point: NutStatsRecord) => nutPowerValue(point) },
 										]}
 									/>
 								</ChartCard>

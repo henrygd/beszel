@@ -269,13 +269,33 @@ func (rm *RecordManager) createLongerNutRecords(app core.App, collection *core.C
 			record.Set("system", systemID)
 			record.Set("device", device.Id)
 			record.Set("type", period.longerType)
-			for _, field := range []string{"battery_charge", "battery_runtime", "battery_voltage", "input_voltage", "output_voltage", "load", "output_current", "output_power"} {
+			for _, field := range []string{"battery_charge", "battery_runtime", "battery_voltage", "input_voltage", "output_voltage", "load", "output_current"} {
 				total := 0.0
 				for _, row := range rows {
 					total += row.GetFloat(field)
 				}
 				record.Set(field, total/float64(len(rows)))
 			}
+			// Missing or legacy power values must not become zero-watt samples.
+			powerTotal, powerCount := 0.0, 0
+			powerSource := "measured"
+			for _, row := range rows {
+				source := row.GetString("output_power_source")
+				if source != "measured" && source != "estimated" {
+					continue
+				}
+				powerTotal += row.GetFloat("output_power")
+				powerCount++
+				if source == "estimated" {
+					powerSource = "estimated"
+				}
+			}
+			if powerCount == 0 {
+				powerSource = "unknown"
+			} else {
+				record.Set("output_power", powerTotal/float64(powerCount))
+			}
+			record.Set("output_power_source", powerSource)
 			if err := app.SaveNoValidate(record); err != nil {
 				return err
 			}

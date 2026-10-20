@@ -22,7 +22,7 @@ const (
 )
 
 // NutData is the per-device wire record sent from the agent to the hub.
-// Values are parsed from the flat variable map produced by `upsc -j`.
+// Values are parsed from the flat variable map produced by `upsc`.
 type NutData struct {
 	// Identity
 	Model        string `json:"mn,omitempty" cbor:"0,keyasint,omitempty"`
@@ -48,9 +48,10 @@ type NutData struct {
 	InputNominal  float64 `json:"ivn,omitempty" cbor:"14,keyasint,omitempty"` // nominal input volts
 
 	// Load / power
-	Load          float64 `json:"ld,omitempty" cbor:"15,keyasint,omitempty"` // percent
-	OutputCurrent float64 `json:"oc,omitempty" cbor:"16,keyasint,omitempty"` // amps
-	OutputPower   float64 `json:"op,omitempty" cbor:"17,keyasint,omitempty"` // watts
+	Load              float64 `json:"ld,omitempty" cbor:"15,keyasint,omitempty"`  // percent
+	OutputCurrent     float64 `json:"oc,omitempty" cbor:"16,keyasint,omitempty"`  // amps
+	OutputPower       float64 `json:"op,omitempty" cbor:"17,keyasint,omitempty"`  // watts
+	OutputPowerSource string  `json:"ops,omitempty" cbor:"19,keyasint,omitempty"` // measured | estimated | unknown
 
 	// Outlets (PDU)
 	Outlets []*NutOutlet `json:"o,omitempty" cbor:"18,keyasint,omitempty"`

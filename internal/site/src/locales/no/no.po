@@ -2705,3 +2705,10 @@ msgstr "Ja"
 msgid "Your user settings have been updated."
 msgstr "Dine brukerinnstillinger har blitt oppdatert."
 
+#: src/components/routes/system/nut-table.tsx
+msgid "{power} (estimated)"
+msgstr ""
+
+#: src/components/routes/system/nut-table.tsx
+msgid "Load and output power over time. Estimated power is calculated from load and rated watts."
+msgstr ""

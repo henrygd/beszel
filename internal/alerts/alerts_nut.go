@@ -6,7 +6,7 @@ import (
 	"github.com/pocketbase/pocketbase/core"
 )
 
-// handleNutDeviceAlert sends alerts when a NUT device health worsens.
+// handleNutDeviceAlert sends alerts when health worsens or a device recovers online.
 // This is automatic and does not require user opt-in.
 func (am *AlertManager) handleNutDeviceAlert(e *core.RecordEvent) error {
 	oldHealth := e.Record.Original().GetString("state")
@@ -65,7 +65,7 @@ func shouldSendNutDeviceAlert(oldHealth, newHealth string) bool {
 	oldSeverity := nutHealthSeverity(oldHealth)
 	newSeverity := nutHealthSeverity(newHealth)
 
-	return oldSeverity >= 1 && newSeverity > oldSeverity
+	return oldSeverity >= 1 && (newSeverity > oldSeverity || (oldSeverity > 1 && newHealth == "ONLINE"))
 }
 
 func nutHealthSeverity(health string) int {
@@ -85,6 +85,8 @@ func nutHealthSeverity(health string) int {
 
 func nutHealthEmoji(health string) string {
 	switch health {
+	case "ONLINE":
+		return "\u2705"
 	case "ON_BATTERY":
 		return "\U0001F50B"
 	case "LOW_BATTERY":
@@ -98,6 +100,8 @@ func nutHealthEmoji(health string) string {
 
 func nutHealthLabel(health string) string {
 	switch health {
+	case "ONLINE":
+		return "back online"
 	case "ON_BATTERY":
 		return "on battery"
 	case "LOW_BATTERY":
