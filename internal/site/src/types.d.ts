@@ -126,14 +126,6 @@ export interface SystemStats {
 	du: number
 	/** disk percent */
 	dp: number
-	/** disk read (mb) */
-	dr: number
-	/** disk write (mb) */
-	dw: number
-	/** max disk read (mb) */
-	drm?: number
-	/** max disk write (mb) */
-	dwm?: number
 	/** disk I/O bytes [read, write] */
 	dio?: [number, number]
 	/** max disk I/O bytes [read, write] */
@@ -277,14 +269,6 @@ export interface ExtraFsStats {
 	d: number
 	/** disk used (gb) */
 	du: number
-	/** total read (mb) */
-	r: number
-	/** total write (mb) */
-	w: number
-	/** max read (mb) */
-	rm: number
-	/** max write (mb) */
-	wm: number
 	/** read per second (bytes) */
 	rb: number
 	/** write per second (bytes) */
@@ -527,6 +511,8 @@ export interface SystemDetailsRecord extends RecordModel {
 	kernel: string
 	cores: number
 	threads: number
+	/** physical CPU packages, 0 if unknown */
+	sockets?: number
 	cpu: string
 	os: Os
 	os_name: string

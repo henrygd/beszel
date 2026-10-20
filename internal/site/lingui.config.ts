@@ -23,6 +23,7 @@ export default defineConfig({
 		"no",
 		"pl",
 		"pt",
+		"pt-BR",
 		"tr",
 		"ru",
 		"sl",
