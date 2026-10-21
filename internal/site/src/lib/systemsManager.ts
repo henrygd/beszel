@@ -5,13 +5,11 @@ import {
 	$allSystemsById,
 	$allSystemsByName,
 	$downSystems,
-	$longestSystemName,
 	$pausedSystems,
 	$systemsLoaded,
-	$textMeasureVersion,
 	$upSystems,
 } from "@/lib/stores"
-import { isVisuallyLonger, updateFavicon } from "@/lib/utils"
+import { updateFavicon } from "@/lib/utils"
 import type { SystemRecord } from "@/types"
 import { SystemStatus } from "./enums"
 
