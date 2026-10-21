@@ -773,8 +773,6 @@ func (a *Agent) updateDiskIo(cacheTimeMs uint16, systemStats *system.Stats) {
 			a.setDiskBaseline(name, prevDiskFromCounter(d, now))
 			stats.TotalRead = d.ReadBytes
 			stats.TotalWrite = d.WriteBytes
-			stats.DiskReadPs = readMbPerSecond
-			stats.DiskWritePs = writeMbPerSecond
 			stats.DiskReadBytes = diskIORead
 			stats.DiskWriteBytes = diskIOWrite
 			stats.DiskIoStats[0] = diskReadTime
@@ -785,8 +783,6 @@ func (a *Agent) updateDiskIo(cacheTimeMs uint16, systemStats *system.Stats) {
 			stats.DiskIoStats[5] = diskWeightedIO
 
 			if stats.Root {
-				systemStats.DiskReadPs = stats.DiskReadPs
-				systemStats.DiskWritePs = stats.DiskWritePs
 				systemStats.DiskIO[0] = diskIORead
 				systemStats.DiskIO[1] = diskIOWrite
 				systemStats.DiskIOTotal[0] = d.ReadBytes
