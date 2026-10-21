@@ -433,7 +433,15 @@ agent_service() {
   elif is_openwrt; then
     /etc/init.d/beszel-agent "$1"
   elif is_entware; then
-    /opt/etc/init.d/S99beszel-agent "$1"
+    if [ "$1" = stop ]; then
+      if /opt/etc/init.d/S99beszel-agent check >/dev/null 2>&1; then
+        /opt/etc/init.d/S99beszel-agent stop
+      else
+        return 0
+      fi
+    else
+      /opt/etc/init.d/S99beszel-agent "$1"
+    fi
   elif is_freebsd; then
     service beszel-agent "$1"
   else
@@ -1267,25 +1275,30 @@ EOF
   fi
 
 elif is_entware; then
-  if [ -f "$AGENT_DIR/env" ]; then
-    NEW_PORT=$PORT NEW_KEY=$KEY NEW_TOKEN=$TOKEN NEW_HUB_URL=$HUB_URL
-    . "$AGENT_DIR/env"
-    if [ "$PORT_PROVIDED" = true ]; then PORT=$NEW_PORT; fi
-    if [ "$KEY_PROVIDED" = true ]; then KEY=$NEW_KEY; fi
-    if [ "$TOKEN_PROVIDED" = true ]; then TOKEN=$NEW_TOKEN; fi
-    if [ "$HUB_URL_PROVIDED" = true ]; then HUB_URL=$NEW_HUB_URL; fi
-  fi
-
   (
+    set -e
     umask 077
-    {
-      write_shell_assignment PORT "$PORT"
-      write_shell_assignment KEY "$KEY"
-      write_shell_assignment TOKEN "$TOKEN"
-      write_shell_assignment HUB_URL "$HUB_URL"
-    } > "$AGENT_DIR/env"
+    ENV_TEMP=$(mktemp "$AGENT_DIR/env.XXXXXX")
+    trap 'rm -f "$ENV_TEMP"' 0
+    if [ -f "$AGENT_DIR/env" ]; then
+      cat "$AGENT_DIR/env" > "$ENV_TEMP"
+      printf '\n' >> "$ENV_TEMP"
+      if [ "$PORT_PROVIDED" = true ]; then write_shell_assignment PORT "$PORT" >> "$ENV_TEMP"; fi
+      if [ "$KEY_PROVIDED" = true ]; then write_shell_assignment KEY "$KEY" >> "$ENV_TEMP"; fi
+      if [ "$TOKEN_PROVIDED" = true ]; then write_shell_assignment TOKEN "$TOKEN" >> "$ENV_TEMP"; fi
+      if [ "$HUB_URL_PROVIDED" = true ]; then write_shell_assignment HUB_URL "$HUB_URL" >> "$ENV_TEMP"; fi
+    else
+      {
+        write_shell_assignment PORT "$PORT"
+        write_shell_assignment KEY "$KEY"
+        write_shell_assignment TOKEN "$TOKEN"
+        write_shell_assignment HUB_URL "$HUB_URL"
+      } > "$ENV_TEMP"
+    fi
+    chmod 600 "$ENV_TEMP"
+    mv -f "$ENV_TEMP" "$AGENT_DIR/env"
   )
-  chmod 600 "$AGENT_DIR/env"
+  [ "$?" -eq 0 ] || fail "Could not write the Entware environment configuration."
   mkdir -p "$AGENT_DIR/data"
   chmod 700 "$AGENT_DIR/data"
 
