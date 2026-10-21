@@ -76,7 +76,13 @@ func readFingerprint(dataDir string) (string, error) {
 
 // SaveFingerprint writes the fingerprint to the data directory.
 func SaveFingerprint(dataDir, fingerprint string) error {
-	return os.WriteFile(filepath.Join(dataDir, fingerprintFileName), []byte(fingerprint), 0o644)
+	path := filepath.Join(dataDir, fingerprintFileName)
+	if err := os.WriteFile(path, []byte(fingerprint), 0o600); err != nil {
+		return err
+	}
+	// WriteFile does not tighten the mode of an existing file; upgrades from
+	// the 0644 era converge to 0600 here.
+	return os.Chmod(path, 0o600)
 }
 
 // DeleteFingerprint removes the saved fingerprint file from the data directory.
