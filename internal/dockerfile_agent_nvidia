@@ -15,7 +15,7 @@ RUN CGO_ENABLED=0 GOOS=$TARGETOS GOARCH=$TARGETARCH go build -tags glibc -ldflag
 # --------------------------
 # Smartmontools builder stage
 # --------------------------
-FROM nvidia/cuda:12.2.2-base-ubuntu22.04 AS smartmontools-builder
+FROM nvidia/cuda:12.9.2-base-ubuntu24.04 AS smartmontools-builder
 
 RUN apt-get update && apt-get install -y \
   wget \
@@ -32,9 +32,33 @@ RUN apt-get update && apt-get install -y \
   && rm -rf /var/lib/apt/lists/*
 
 # --------------------------
+# Intel GPU tools builder stage (for iGPU)
+# --------------------------
+FROM nvidia/cuda:12.9.2-base-ubuntu24.04 AS igt-builder
+
+ARG IGT_VERSION=v2.4
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+  ca-certificates libpci-dev git build-essential meson ninja-build \
+  pkg-config flex bison python3 libdrm-dev libpciaccess-dev \
+  libkmod-dev libproc2-dev libunwind-dev libdw-dev libudev-dev \
+  libglib2.0-dev libcairo2-dev libpixman-1-dev libgsl-dev \
+  libjson-c-dev zlib1g-dev liblzma-dev \
+  && git clone --depth 1 --branch ${IGT_VERSION} \
+       https://gitlab.freedesktop.org/drm/igt-gpu-tools.git /igt-gpu-tools \
+  && cd /igt-gpu-tools \
+  && meson setup build \
+       --prefix=/usr --buildtype=release -Dtests=disabled \
+       -Ddocs=disabled -Dman=disabled -Drunner=disabled \
+       -Doverlay=disabled -Dchamelium=disabled -Dvalgrind=disabled \
+  && ninja -C build \
+  && DESTDIR=/igt-install ninja -C build install \
+  && rm -rf /igt-gpu-tools /var/lib/apt/lists/*
+
+# --------------------------
 # Final image: GPU-enabled agent with nvidia-smi
 # --------------------------
-FROM nvidia/cuda:12.2.2-base-ubuntu22.04
+FROM nvidia/cuda:12.9.2-base-ubuntu24.04
 COPY --from=builder /agent /agent
 
 # AMD GPU name lookup (used by agent on hybrid laptops when /usr/share/libdrm/amdgpu.ids is read)
@@ -43,10 +67,13 @@ COPY --from=builder /app/agent/test-data/amdgpu.ids /usr/share/libdrm/amdgpu.ids
 # Copy smartmontools binaries and config files
 COPY --from=smartmontools-builder /usr/sbin/smartctl /usr/sbin/smartctl
 
-# Install ZFS userspace utilities (zpool, zfs) for pool/dataset monitoring and intel-gpu-tools (intel_gpu_top) for iGPU monitoring
+# Copy intel_gpu_top binary
+COPY --from=igt-builder /igt-install/usr/bin/intel_gpu_top /usr/bin/intel_gpu_top
+
+# Install ZFS userspace utilities (zpool, zfs) for pool/dataset monitoring and IGT runtimes
 RUN apt-get update && apt-get install -y --no-install-recommends \
   zfsutils-linux \
-  intel-gpu-tools \
+    libpci3 \
   && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Ensure data persistence across container recreations
