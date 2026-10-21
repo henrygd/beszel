@@ -284,6 +284,61 @@ func TestNetworkMonitorShortIDRequests(t *testing.T) {
 	}
 }
 
+func TestNetworkMonitorNameUniquePerSystem(t *testing.T) {
+	hub, testApp, err := createTestHub(t)
+	require.NoError(t, err)
+	defer cleanupTestHub(hub, testApp)
+	bindNetworkMonitorsEvents(hub)
+	user, err := createTestUser(hub)
+	require.NoError(t, err)
+	var systems []*core.Record
+	for _, id := range []string{"000000000000001", "000000000000002"} {
+		system, err := createTestRecord(hub, "systems", map[string]any{
+			"id": id, "name": id, "host": "localhost", "port": "45876", "status": "paused", "users": []string{user.Id},
+		})
+		require.NoError(t, err)
+		systems = append(systems, system)
+	}
+	create := func(system *core.Record, name, target string) (*core.Record, error) {
+		return createTestRecord(hub, "network_monitors", map[string]any{
+			"system": system.Id, "name": name, "target": target, "protocol": "icmp", "interval": 60,
+		})
+	}
+
+	gateway, err := create(systems[0], "Gateway", "gateway.example.com")
+	require.NoError(t, err)
+	// The same target on another system can share the name.
+	_, err = create(systems[1], "Gateway", "gateway.example.com")
+	require.NoError(t, err)
+	// Unnamed monitors don't conflict.
+	_, err = create(systems[0], "", "one.example.com")
+	require.NoError(t, err)
+	_, err = create(systems[0], "", "two.example.com")
+	require.NoError(t, err)
+	_, err = create(systems[0], "Gateway", "other.example.com")
+	require.Error(t, err)
+
+	// Changing the target gives the monitor a new ID, which must keep its name.
+	data, err := json.Marshal(map[string]any{"target": "router.example.com"})
+	require.NoError(t, err)
+	token, err := user.NewAuthToken()
+	require.NoError(t, err)
+	router, err := apis.NewRouter(hub)
+	require.NoError(t, err)
+	handler, err := router.BuildMux()
+	require.NoError(t, err)
+	request := httptest.NewRequest(http.MethodPatch, "/api/collections/network_monitors/records/"+gateway.Id, bytes.NewReader(data))
+	request.Header.Set("Content-Type", "application/json")
+	request.Header.Set("Authorization", token)
+	response := httptest.NewRecorder()
+	handler.ServeHTTP(response, request)
+	require.Equal(t, http.StatusOK, response.Code, response.Body.String())
+	record, err := hub.FindFirstRecordByFilter("network_monitors", "system = {:system} && name = 'Gateway'", map[string]any{"system": systems[0].Id})
+	require.NoError(t, err)
+	assert.NotEqual(t, gateway.Id, record.Id)
+	assert.Equal(t, "router.example.com", record.GetString("target"))
+}
+
 func TestCopyMonitorToNewRecordDropsResultFields(t *testing.T) {
 	hub, testApp, err := createTestHub(t)
 	require.NoError(t, err)

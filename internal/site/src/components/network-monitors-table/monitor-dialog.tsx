@@ -30,6 +30,7 @@ import { $systems } from "@/lib/stores"
 import { cn, supportsNetworkMonitors } from "@/lib/utils"
 import { getMonitorLabel, isHttpsTarget } from "@/lib/network-monitor-utils"
 import type { NetworkMonitorRecord } from "@/types"
+import type { ClientResponseError } from "pocketbase"
 import * as v from "valibot"
 
 type MonitorProtocol = "icmp" | "tcp" | "http" | "dns"
@@ -539,11 +540,12 @@ export function AddMonitorDialog({ systemId, monitors }: { systemId?: string; mo
 			let totalCreated = 0
 			closedForSubmit = true
 
-			for (const system of targetSystems) {
+			// Check every system before creating anything, so a name conflict doesn't leave a partial import.
+			const newPayloadsBySystem = targetSystems.map((system) => {
 				const payloads = rawLines.map((line, index) => parseBulkMonitorLine(line, index + 1, system))
-				const existingMonitorKeys = new Set(
-					monitors.filter((monitor) => monitor.system === system).map((monitor) => getMonitorIdentityKey(monitor))
-				)
+				const systemMonitors = monitors.filter((monitor) => monitor.system === system)
+				const existingMonitorKeys = new Set(systemMonitors.map((monitor) => getMonitorIdentityKey(monitor)))
+				const usedNames = new Set(systemMonitors.map((monitor) => monitor.name).filter(Boolean))
 				const newPayloads: typeof payloads = []
 
 				for (const payload of payloads) {
@@ -551,10 +553,20 @@ export function AddMonitorDialog({ systemId, monitors }: { systemId?: string; mo
 					if (existingMonitorKeys.has(monitorKey)) {
 						continue
 					}
+					if (payload.name) {
+						if (usedNames.has(payload.name)) {
+							const systemName = systems.find((s) => s.id === system)?.name ?? system
+							throw new Error(`Name "${payload.name}" is already used on ${systemName}.`)
+						}
+						usedNames.add(payload.name)
+					}
 					existingMonitorKeys.add(monitorKey)
 					newPayloads.push(payload)
 				}
+				return newPayloads
+			})
 
+			for (const newPayloads of newPayloadsBySystem) {
 				if (!newPayloads.length) continue
 
 				let batch = pb.createBatch()
@@ -813,7 +825,12 @@ function MonitorDialogContent({
 				// Retain only unfinished systems so retrying cannot duplicate successful creates.
 				setSelectedSystemIds(remainingSystemIds)
 			}
-			toast({ variant: "destructive", title: t`Error`, description: (err as Error)?.message })
+			const nameTaken = (err as ClientResponseError)?.response?.data?.name?.code === "validation_not_unique"
+			toast({
+				variant: "destructive",
+				title: t`Error`,
+				description: nameTaken ? t`A monitor with this name already exists on this system.` : (err as Error)?.message,
+			})
 		} finally {
 			setLoading(false)
 		}
