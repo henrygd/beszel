@@ -2,6 +2,25 @@
 
 For developers using the agent as a Go package, `Agent.Start` now requires a `context.Context`.
 
+For authors of integrations, please note that existing memory fields other than memory percentage are deprecated in favor of new fields which provide raw byte values. The deprecated fields are still populated, but will be removed in a future version.
+
+```go
+type Stats struct {
+  // Deprecated fields (populated on hubs <= 0.21.1; will be removed in a future version)
+	Mem            float64     `json:"m" cbor:"2,keyasint"`  // Deprecated: GB, use MemBytes. Memory GB fields are kept for older hubs and integrations.
+	MaxMem         float64     `json:"mm,omitzero" cbor:"-"` // Deprecated: GB, use MaxMemBytes.
+	MemUsed        float64     `json:"mu" cbor:"3,keyasint"` // Deprecated: GB, use MemBytes.
+	MemBuffCache   float64     `json:"mb" cbor:"5,keyasint"` // Deprecated: GB, use MemBytes.
+	MemZfsArc      float64     `json:"mz,omitzero" cbor:"6,keyasint,omitempty"` // Deprecated: GB, use MemBytes.
+	Swap           float64     `json:"s,omitzero" cbor:"7,keyasint,omitempty"`  // Deprecated: GB, use SwapBytes.
+	SwapUsed       float64     `json:"su,omitzero" cbor:"8,keyasint,omitempty"` // Deprecated: GB, use SwapBytes.
+  // New fields (populated on hub version 0.21.1+ for all agents)
+	MemBytes       [4]uint64   `json:"mem,omitzero" cbor:"41,keyasint,omitzero"`  // [total, used, buff/cache, zfs arc] bytes
+	MaxMemBytes    uint64      `json:"memm,omitzero" cbor:"-"`                    // max used memory bytes
+	SwapBytes      [2]uint64   `json:"swap,omitzero" cbor:"42,keyasint,omitzero"` // [total, used] bytes
+}
+```
+
 - Add opt-in cgroup CPU and memory accounting (#2505)
 
 - Add `HUB_HEADERS` environment variable to set custom WebSocket headers on the agent (#2585)
