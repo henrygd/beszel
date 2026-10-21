@@ -886,23 +886,6 @@ function MonitorDialogContent({
 					</div>
 				)}
 				<div className="grid gap-2">
-					<Label>
-						<Trans>Target</Trans>
-					</Label>
-					<Input
-						value={target}
-						onChange={(e) => setTarget(e.target.value)}
-						placeholder={protocol === "http" ? "http://localhost:8090" : protocol === "dns" ? "example.com" : "1.1.1.1"}
-						aria-invalid={dnsTargetIsIp}
-						required
-					/>
-					{dnsTargetIsIp && (
-						<p className="text-xs text-destructive">
-							<Trans>Enter a domain name to look up. Put the resolver's IP in DNS Server.</Trans>
-						</p>
-					)}
-				</div>
-				<div className="grid gap-2">
 					<Label htmlFor="monitor-name">
 						<Trans>Name</Trans>
 					</Label>
@@ -930,6 +913,23 @@ function MonitorDialogContent({
 							<SelectItem value="dns">DNS</SelectItem>
 						</SelectContent>
 					</Select>
+				</div>
+				<div className="grid gap-2">
+					<Label>
+						<Trans>Target</Trans>
+					</Label>
+					<Input
+						value={target}
+						onChange={(e) => setTarget(e.target.value)}
+						placeholder={protocol === "http" ? "http://localhost:8090" : protocol === "dns" ? "example.com" : "1.1.1.1"}
+						aria-invalid={dnsTargetIsIp}
+						required
+					/>
+					{dnsTargetIsIp && (
+						<p className="text-xs text-destructive">
+							<Trans>Enter a domain name to look up. Put the resolver's IP in DNS Server.</Trans>
+						</p>
+					)}
 				</div>
 				{protocol === "tcp" && (
 					<div className="grid gap-2">
