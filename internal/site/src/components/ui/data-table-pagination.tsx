@@ -2,14 +2,14 @@ import { Trans } from "@lingui/react/macro"
 import { useStore } from "@nanostores/react"
 import type { PaginationState, Table, Updater } from "@tanstack/react-table"
 import { ChevronLeftIcon, ChevronRightIcon, ChevronsLeftIcon, ChevronsRightIcon } from "lucide-react"
-import { useCallback, useEffect, useMemo, useState } from "react"
+import { useCallback, useEffect, useId, useMemo, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { queueUserSettings } from "@/lib/api"
 import { $userSettings } from "@/lib/stores"
 
-const defaultPageSizes = [10, 20, 50, 100, 200]
+const defaultPageSizes = [10, 15, 20, 50, 100, 200]
 
 /**
  * Pagination state for a table. The page size is a user setting shared by all tables.
@@ -59,6 +59,8 @@ export function DataTablePagination<T>({
 }) {
 	const { pageIndex } = table.getState().pagination
 	const pageCount = table.getPageCount()
+	// unique per instance, since several tables can be on the same page
+	const selectId = useId()
 
 	// move back when the current page no longer exists (e.g. after rows are removed)
 	useEffect(() => {
@@ -67,26 +69,23 @@ export function DataTablePagination<T>({
 		}
 	}, [table, pageIndex, pageCount])
 
-	// hide the pagination row when all rows fit on one page
-	if (pageCount <= 1) {
-		return null
-	}
-
 	return (
-		<div className="flex items-center justify-between ps-1 my-3 tabular-nums">
-			<div className="text-muted-foreground hidden flex-1 text-sm lg:flex">
-				{showSelected ? (
-					<Trans>
-						{table.getFilteredSelectedRowModel().rows.length} of {table.getFilteredRowModel().rows.length} row(s)
-						selected.
-					</Trans>
-				) : (
-					<Trans>{table.getFilteredRowModel().rows.length} row(s)</Trans>
-				)}
-			</div>
-			<div className="flex w-full items-center gap-8 lg:w-fit lg:ms-auto">
-				<div className="hidden items-center gap-2 lg:flex">
-					<Label htmlFor="rows-per-page" className="text-sm font-medium">
+		// sections show based on the width of this container rather than the viewport,
+		// since tables are often rendered in cards narrower than the screen
+		<div className="@container mt-3.5">
+			<div className="flex items-center gap-4 ps-1 tabular-nums @xl:gap-6 @3xl:gap-8">
+				<div className="text-muted-foreground hidden flex-1 text-sm @3xl:flex">
+					{showSelected ? (
+						<Trans>
+							{table.getFilteredSelectedRowModel().rows.length} of {table.getFilteredRowModel().rows.length} row(s)
+							selected.
+						</Trans>
+					) : (
+						<Trans>{table.getFilteredRowModel().rows.length} row(s)</Trans>
+					)}
+				</div>
+				<div className="hidden items-center gap-2 @xs:flex">
+					<Label htmlFor={selectId} className="sr-only text-sm font-medium @xl:not-sr-only">
 						<Trans>Rows per page</Trans>
 					</Label>
 					<Select
@@ -95,7 +94,7 @@ export function DataTablePagination<T>({
 							table.setPageSize(Number(value))
 						}}
 					>
-						<SelectTrigger className="w-18" id="rows-per-page">
+						<SelectTrigger className="w-18" id={selectId}>
 							<SelectValue placeholder={table.getState().pagination.pageSize} />
 						</SelectTrigger>
 						<SelectContent side="top">
@@ -107,15 +106,16 @@ export function DataTablePagination<T>({
 						</SelectContent>
 					</Select>
 				</div>
-				<div className="flex w-fit items-center justify-center text-sm font-medium">
+				<div className="text-sm font-medium whitespace-nowrap">
 					<Trans>
-						Page {table.getState().pagination.pageIndex + 1} of {table.getPageCount()}
+						Page {pageIndex + 1} of {Math.max(1, pageCount)}
 					</Trans>
 				</div>
-				<div className="ms-auto flex items-center gap-2 lg:ms-0">
+				<div className="ms-auto flex items-center gap-2 @3xl:ms-0">
 					<Button
 						variant="outline"
-						className="hidden size-9 p-0 lg:flex"
+						className="hidden size-9 @md:flex"
+						size="icon"
 						onClick={() => table.setPageIndex(0)}
 						disabled={!table.getCanPreviousPage()}
 					>
@@ -144,9 +144,9 @@ export function DataTablePagination<T>({
 					</Button>
 					<Button
 						variant="outline"
-						className="hidden size-9 lg:flex"
+						className="hidden size-9 @md:flex"
 						size="icon"
-						onClick={() => table.setPageIndex(table.getPageCount() - 1)}
+						onClick={() => table.setPageIndex(pageCount - 1)}
 						disabled={!table.getCanNextPage()}
 					>
 						<span className="sr-only">Go to last page</span>
