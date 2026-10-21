@@ -5,6 +5,7 @@ export default defineConfig({
 		"en",
 		"ar",
 		"bg",
+		"ca",
 		"cs",
 		"da",
 		"de",
