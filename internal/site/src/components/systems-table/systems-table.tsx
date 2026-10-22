@@ -432,7 +432,8 @@ const AllSystemsTable = memo(
 		colLength: number
 		isLoading: boolean
 	}) => {
-		const rowHeight = rows.length > 10 ? 56 : 60
+		// based on all filtered rows rather than the current page, so every page uses the same height
+		const rowHeight = table.getPrePaginationRowModel().rows.length > 10 ? 56 : 60
 		return (
 			<div className="max-w-full relative overflow-auto border rounded-md">
 				<table className="text-sm w-full h-full">
