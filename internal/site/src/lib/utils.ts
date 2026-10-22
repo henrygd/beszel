@@ -1,3 +1,4 @@
+import { i18n } from "@lingui/core"
 import { plural, t } from "@lingui/core/macro"
 import { type ClassValue, clsx } from "clsx"
 import { listenKeys } from "nanostores"
@@ -181,19 +182,32 @@ export function toFixedFloat(num: number, digits: number) {
 	return parseFloat((digits === 0 ? Math.ceil(num) : num).toFixed(digits))
 }
 
-const decimalFormatters: Map<number, Intl.NumberFormat> = new Map()
+/** Locale used for number formatting: the app's selected language, not the browser's */
+function numberLocale() {
+	return i18n.locale || undefined
+}
+
+/** Format number using the app's selected language (e.g. decimal and grouping separators) */
+export function formatNumber(num: number) {
+	return num.toLocaleString(numberLocale(), { numberingSystem: "latn" })
+}
+
+const decimalFormatters: Map<string, Intl.NumberFormat> = new Map()
 /** Format number to x decimal places, maintaining trailing zeros */
 export function decimalString(num: number, digits = 2) {
 	if (digits === 0) {
 		return Math.ceil(num).toString()
 	}
-	let formatter = decimalFormatters.get(digits)
+	const locale = numberLocale()
+	const key = `${locale}:${digits}`
+	let formatter = decimalFormatters.get(key)
 	if (!formatter) {
-		formatter = new Intl.NumberFormat(undefined, {
+		formatter = new Intl.NumberFormat(locale, {
 			minimumFractionDigits: digits,
 			maximumFractionDigits: digits,
+			numberingSystem: "latn",
 		})
-		decimalFormatters.set(digits, formatter)
+		decimalFormatters.set(key, formatter)
 	}
 	return formatter.format(num)
 }
@@ -467,7 +481,7 @@ export function matchesFilterGroups(searchString: string, groups: string[][]): b
 /** Format seconds to hours, minutes, or seconds */
 export function secondsToString(seconds: number, unit: "hour" | "minute" | "day"): string {
 	const count = Math.floor(seconds / (unit === "hour" ? 3600 : unit === "minute" ? 60 : 86400))
-	const countString = count.toLocaleString()
+	const countString = formatNumber(count)
 	switch (unit) {
 		case "minute":
 			return plural(count, {
