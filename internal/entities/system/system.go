@@ -26,14 +26,14 @@ type WiFi struct {
 type Stats struct {
 	Cpu            float64             `json:"cpu" cbor:"0,keyasint"`
 	MaxCpu         float64             `json:"cpum,omitzero" cbor:"-"`
-	Mem            float64             `json:"m" cbor:"2,keyasint"`
-	MaxMem         float64             `json:"mm,omitzero" cbor:"-"`
-	MemUsed        float64             `json:"mu" cbor:"3,keyasint"`
+	Mem            float64             `json:"m" cbor:"2,keyasint"`  // Deprecated: GB, use MemBytes. Memory GB fields are kept for older hubs and integrations.
+	MaxMem         float64             `json:"mm,omitzero" cbor:"-"` // Deprecated: GB, use MaxMemBytes.
+	MemUsed        float64             `json:"mu" cbor:"3,keyasint"` // Deprecated: GB, use MemBytes.
 	MemPct         float64             `json:"mp" cbor:"4,keyasint"`
-	MemBuffCache   float64             `json:"mb" cbor:"5,keyasint"`
-	MemZfsArc      float64             `json:"mz,omitzero" cbor:"6,keyasint,omitempty"` // ZFS ARC memory
-	Swap           float64             `json:"s,omitzero" cbor:"7,keyasint,omitempty"`
-	SwapUsed       float64             `json:"su,omitzero" cbor:"8,keyasint,omitempty"`
+	MemBuffCache   float64             `json:"mb" cbor:"5,keyasint"`                    // Deprecated: GB, use MemBytes.
+	MemZfsArc      float64             `json:"mz,omitzero" cbor:"6,keyasint,omitempty"` // Deprecated: GB, use MemBytes.
+	Swap           float64             `json:"s,omitzero" cbor:"7,keyasint,omitempty"`  // Deprecated: GB, use SwapBytes.
+	SwapUsed       float64             `json:"su,omitzero" cbor:"8,keyasint,omitempty"` // Deprecated: GB, use SwapBytes.
 	DiskTotal      float64             `json:"d" cbor:"9,keyasint"`
 	DiskUsed       float64             `json:"du" cbor:"10,keyasint"`
 	DiskPct        float64             `json:"dp" cbor:"11,keyasint"`
@@ -63,7 +63,9 @@ type Stats struct {
 	ZfsPools          map[string]*ZfsPool  `json:"z,omitempty" cbor:"39,keyasint,omitempty"`  // ZFS pool metrics, keyed by pool name
 	DiskIOTotal       [2]uint64            `json:"diot,omitzero" cbor:"38,keyasint,omitzero"` // [total read bytes, total write bytes] cumulative device counters
 	WiFi              map[string]int8      `json:"wf,omitempty" cbor:"40,keyasint,omitempty"` // RSSI dBm keyed by interface; unavailable readings omitted
-
+	MemBytes          [4]uint64            `json:"mem,omitzero" cbor:"41,keyasint,omitzero"`  // [total, used, buff/cache, zfs arc] bytes
+	MaxMemBytes       uint64               `json:"memm,omitzero" cbor:"-"`                    // max used memory bytes
+	SwapBytes         [2]uint64            `json:"swap,omitzero" cbor:"42,keyasint,omitzero"` // [total, used] bytes
 }
 
 // ZfsPool holds per-pool ZFS metrics for a single collection interval.
