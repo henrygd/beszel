@@ -197,10 +197,22 @@ func runPackageCommandEnv(ctx context.Context, env []string, okCodes []int, name
 	return string(out), err
 }
 
-// countSecurity returns the number of packages flagged as security updates.
+// countSecurity returns the number of non-phased packages flagged as security
+// updates. A package both flagged and held back by phasing is not installable.
 func countSecurity(packages []system.PackageUpdate) (count uint16) {
 	for _, pkg := range packages {
-		if pkg.Security {
+		if pkg.Security && !pkg.Phased {
+			count++
+		}
+	}
+	return count
+}
+
+// countInstallable returns the number of packages the package manager would
+// install, excluding ones held back by a phased rollout.
+func countInstallable(packages []system.PackageUpdate) (count uint16) {
+	for _, pkg := range packages {
+		if !pkg.Phased {
 			count++
 		}
 	}
@@ -216,7 +228,7 @@ func checkApt(ctx context.Context) (packageUpdatesResult, error) {
 	}
 	packages := parseAptSimulate(out)
 	return packageUpdatesResult{
-		counts:        []uint16{uint16(len(packages)), countSecurity(packages)},
+		counts:        []uint16{countInstallable(packages), countSecurity(packages)},
 		packages:      packages,
 		securityKnown: true,
 	}, nil
@@ -362,10 +374,30 @@ func checkApk(ctx context.Context) (packageUpdatesResult, error) {
 // parseAptSimulate parses upgrades in `apt-get -s` output. Upgrade lines look like
 // "Inst libc6 [2.35-0ubuntu3.4] (2.35-0ubuntu3.15 Ubuntu:22.04/jammy-updates, Ubuntu:22.04/jammy-security [arm64])".
 // New dependencies have no "[old version]" and are skipped.
+// Packages listed in the "deferred due to phasing" section are kept back by a
+// phased rollout: they are marked Phased and, if apt nevertheless prints an
+// Inst line for them, stay the single entry so the count can exclude them.
 func parseAptSimulate(out string) (packages []system.PackageUpdate) {
+	deferred := make(map[string]struct{})
+	inDeferred := false
 	scanner := bufio.NewScanner(strings.NewReader(out))
 	for scanner.Scan() {
 		line := scanner.Text()
+		if inDeferred {
+			// the list is indented; any non-indented non-blank line ends the section
+			if !strings.HasPrefix(line, " ") {
+				inDeferred = false
+			} else {
+				for _, name := range strings.Fields(line) {
+					deferred[name] = struct{}{}
+				}
+				continue
+			}
+		}
+		if strings.HasPrefix(line, "The following upgrades have been deferred due to phasing:") {
+			inDeferred = true
+			continue
+		}
 		fields := strings.Fields(line)
 		if len(fields) < 4 || fields[0] != "Inst" || !strings.HasPrefix(fields[2], "[") || !strings.HasPrefix(fields[3], "(") {
 			continue
@@ -379,6 +411,15 @@ func parseAptSimulate(out string) (packages []system.PackageUpdate) {
 		end := strings.IndexByte(line, ')')
 		pkg.Security = start >= 0 && end > start && strings.Contains(line[start:end], "-security")
 		packages = append(packages, pkg)
+	}
+	// each deferred package is either merged into its own Inst line or appended
+	// name-only, since the deferral section does not carry versions
+	for name := range deferred {
+		if i := slices.IndexFunc(packages, func(pkg system.PackageUpdate) bool { return pkg.Name == name }); i >= 0 {
+			packages[i].Phased = true
+			continue
+		}
+		packages = append(packages, system.PackageUpdate{Name: name, Phased: true})
 	}
 	return packages
 }

@@ -6,6 +6,10 @@ type PackageUpdate struct {
 	Current   string `json:"current,omitempty" cbor:"1,keyasint,omitempty"` // installed version, empty if unknown
 	Available string `json:"available" cbor:"2,keyasint"`
 	Security  bool   `json:"security,omitzero" cbor:"3,keyasint,omitempty"`
+	// Phased is true for packages held back by a phased update rollout, which the
+	// distribution plans to install later. They are not installable yet, so they
+	// are excluded from the update counts.
+	Phased bool `json:"phased,omitzero" cbor:"4,keyasint,omitempty"`
 }
 
 // PackageUpdates is the detail payload returned by the agent for the
