@@ -26,9 +26,14 @@ msgstr "{0} در دسترس است"
 
 #. placeholder {0}: table.getFilteredSelectedRowModel().rows.length
 #. placeholder {1}: table.getFilteredRowModel().rows.length
-#: src/components/routes/settings/alerts-history-data-table.tsx
+#: src/components/ui/data-table-pagination.tsx
 msgid "{0} of {1} row(s) selected."
 msgstr "{0} از {1} ردیف انتخاب شده است."
+
+#. placeholder {0}: table.getFilteredRowModel().rows.length
+#: src/components/ui/data-table-pagination.tsx
+msgid "{0} row(s)"
+msgstr "{0} ردیف"
 
 #. placeholder {0}: selectedIds.size
 #: src/components/network-monitors-table/monitor-dialog.tsx
@@ -87,6 +92,10 @@ msgstr "{total, plural, one {# به‌روزرسانی} other {# به‌روزر
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "{totalCount, plural, one {# service} other {# services}}"
 msgstr "{totalCount, plural, one {# سرویس} other {# سرویس}}"
+
+#: src/components/alerts-history-columns.tsx
+msgid "{value, plural, one {# day} other {# days}}"
+msgstr "{value, plural, one {# روز} other {# روز}}"
 
 #: src/lib/utils.ts
 msgid "1 hour"
@@ -427,6 +436,10 @@ msgstr "سلسیوس (°C)"
 msgid "Certificate"
 msgstr "گواهی"
 
+#: src/lib/alerts.ts
+msgid "Certificate Expiration"
+msgstr "انقضای گواهی"
+
 #: src/components/network-monitors-table/network-monitors-table.tsx
 msgid "Certificate expired {expires}"
 msgstr "گواهی منقضی شد {expires}"
@@ -638,6 +651,11 @@ msgstr "دستور نصب عامل زیر را کپی کنید، یا عامل�
 #: src/components/add-system.tsx
 msgid "Copy the<0>docker-compose.yml</0> content for the agent below, or register agents automatically with a <1>universal token</1>."
 msgstr "محتوای <0>docker-compose.yml</0> عامل زیر را کپی کنید، یا عامل‌ها را به طور خودکار با <1>توکن جهانی</1> ثبت کنید."
+
+#: src/components/token-value.tsx
+#: src/components/token-value.tsx
+msgid "Copy token"
+msgstr "کپی توکن"
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Copy YAML"
@@ -958,6 +976,7 @@ msgstr "سیستم‌های موجود که در <0>config.yml</0> تعریف ن
 msgid "Exited active"
 msgstr "خروج فعال"
 
+#: src/components/alerts-history-columns.tsx
 #: src/components/network-monitors-table/network-monitors-columns.tsx
 msgid "Expired"
 msgstr "منقضی شده"
@@ -965,6 +984,10 @@ msgstr "منقضی شده"
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Expires after one hour or on hub restart."
 msgstr "پس از یک ساعت یا راه‌اندازی مجدد هاب منقضی می‌شود."
+
+#: src/components/alerts/alerts-sheet.tsx
+msgid "Expires within <0>{value, plural, one {# day} other {# days}}</0>"
+msgstr "تا <0>{value, plural, one {# روز} other {# روز}}</0> دیگر منقضی می‌شود"
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Export"
@@ -1142,6 +1165,11 @@ msgstr "ضربان قلب با موفقیت ارسال شد"
 msgid "Hide timestamps"
 msgstr "پنهان کردن مهر زمانی"
 
+#: src/components/token-value.tsx
+#: src/components/token-value.tsx
+msgid "Hide token"
+msgstr "پنهان کردن توکن"
+
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgctxt "Button to copy install command"
@@ -1183,6 +1211,10 @@ msgstr "بیکار"
 #: src/components/login/forgot-pass-form.tsx
 msgid "If you've lost the password to your admin account, you may reset it using the following command."
 msgstr "اگر رمز عبور حساب مدیر خود را گم کرده‌اید، می‌توانید آن را با استفاده از دستور زیر بازنشانی کنید."
+
+#: src/components/network-monitors-table/monitor-dialog.tsx
+msgid "Ignore TLS certificate errors"
+msgstr "نادیده گرفتن خطاهای گواهی TLS"
 
 #: src/components/containers-table/containers-table-columns.tsx
 msgctxt "Docker image"
@@ -1500,6 +1532,11 @@ msgstr "پشتیبانی از OAuth 2 / OIDC"
 msgid "On each restart, systems in the database will be updated to match the systems defined in the file."
 msgstr "در هر بار راه‌اندازی مجدد، سیستم‌های موجود در پایگاه داده با سیستم‌های تعریف شده در فایل مطابقت داده می‌شوند."
 
+#. placeholder {0}: alert.value
+#: src/components/active-alerts.tsx
+msgid "One or more certificates expire within {0, plural, one {# day} other {# days}}"
+msgstr "یک یا چند گواهی تا {0, plural, one {# روز} other {# روز}} دیگر منقضی می‌شوند"
+
 #: src/lib/alerts.ts
 msgid "One or more containers are unhealthy"
 msgstr "یک یا چند کانتینر در وضعیت ناسالم هستند"
@@ -1571,11 +1608,8 @@ msgid "Page"
 msgstr "صفحه"
 
 #. placeholder {0}: pageIndex + 1
-#. placeholder {0}: table.getState().pagination.pageIndex + 1
-#. placeholder {1}: Math.max(table.getPageCount(), 1)
-#. placeholder {1}: table.getPageCount()
-#: src/components/routes/settings/alerts-history-data-table.tsx
-#: src/components/routes/system/package-updates-table.tsx
+#. placeholder {1}: Math.max(1, pageCount)
+#: src/components/ui/data-table-pagination.tsx
 msgid "Page {0} of {1}"
 msgstr "صفحه {0} از {1}"
 
@@ -1834,6 +1868,11 @@ msgstr "راه‌اندازی مجدد"
 msgid "Resume"
 msgstr "ادامه"
 
+#: src/components/token-value.tsx
+#: src/components/token-value.tsx
+msgid "Reveal token"
+msgstr "نمایش توکن"
+
 #. Package version
 #: src/components/routes/system/package-updates-table.tsx
 msgid "Revision"
@@ -1850,8 +1889,7 @@ msgstr "ریشه"
 msgid "Rotate token"
 msgstr "چرخش توکن"
 
-#: src/components/routes/settings/alerts-history-data-table.tsx
-#: src/components/routes/system/package-updates-table.tsx
+#: src/components/ui/data-table-pagination.tsx
 msgid "Rows per page"
 msgstr "ردیف در هر صفحه"
 
@@ -2006,7 +2044,6 @@ msgstr "متغیرهای محیطی زیر را در هاب Beszel خود تنظ
 #: src/components/navbar.tsx
 #: src/components/routes/settings/layout.tsx
 #: src/components/routes/settings/layout.tsx
-#: src/components/routes/system/info-bar.tsx
 msgid "Settings"
 msgstr "تنظیمات"
 
@@ -2205,6 +2242,15 @@ msgstr "به ایمیل(ها)"
 msgid "Token"
 msgstr "توکن"
 
+#. placeholder {0}: fingerprint.expand.system.name
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Token for {0}"
+msgstr "توکن برای {0}"
+
+#: src/components/token-value.tsx
+msgid "Token hidden"
+msgstr "توکن پنهان است"
+
 #: src/components/command-palette.tsx
 #: src/components/routes/settings/layout.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
@@ -2267,6 +2313,10 @@ msgstr "هنگامی که میانگین بار ۵ دقیقه‌ای از یک �
 #: src/lib/alerts.ts
 msgid "Triggers when a container's health check reports unhealthy"
 msgstr "هنگامی فعال می‌شود که بررسی سلامت کانتینر وضعیت ناسالم را گزارش کند"
+
+#: src/lib/alerts.ts
+msgid "Triggers when an HTTPS certificate nears expiration"
+msgstr "زمانی که گواهی HTTPS نزدیک به انقضا باشد فعال می‌شود"
 
 #: src/lib/alerts.ts
 msgid "Triggers when any sensor exceeds a threshold"
@@ -2337,6 +2387,7 @@ msgid "Unit preferences"
 msgstr "تنظیمات واحدها"
 
 #: src/components/command-palette.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Universal token"
 msgstr "توکن جهانی"
@@ -2413,6 +2464,10 @@ msgstr "میزان استفاده"
 msgid "Usage of storage pool {displayName}"
 msgstr "استفاده از استخر ذخیره‌سازی {displayName}"
 
+#: src/components/network-monitors-table/monitor-dialog.tsx
+msgid "Use for self-signed certificates."
+msgstr "برای گواهی‌های خودامضا استفاده کنید."
+
 #: src/components/routes/system/charts/memory-charts.tsx
 #: src/components/routes/system/charts/memory-charts.tsx
 #: src/components/routes/system/storage-pools-table.tsx
@@ -2436,6 +2491,7 @@ msgid "Value"
 msgstr "مقدار"
 
 #: src/components/network-monitors-table/network-monitors-table.tsx
+#: src/components/routes/system/info-bar.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "View"
 msgstr "مشاهده"
@@ -2463,6 +2519,7 @@ msgstr "۲۰۰ هشدار اخیر خود را مشاهده کنید."
 msgid "Visible Fields"
 msgstr "فیلدهای قابل مشاهده"
 
+#: src/components/charts/chart-no-values.tsx
 #: src/components/routes/system/chart-card.tsx
 msgid "Waiting for enough records to display"
 msgstr "در انتظار رکوردهای کافی برای نمایش"
@@ -2537,4 +2594,3 @@ msgstr "بله"
 #: src/components/routes/settings/layout.tsx
 msgid "Your user settings have been updated."
 msgstr "تنظیمات کاربری شما به‌روزرسانی شد."
-
