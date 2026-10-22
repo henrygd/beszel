@@ -189,6 +189,8 @@ export interface GPUData {
 	pp?: number
 	/** engines */
 	e?: Record<string, number>
+	/** usage (%) per consumer, keyed by "c:<container>", "s:<service>" or "p:<process>" */
+	c?: Record<string, number>
 }
 
 export interface ZfsPool {

@@ -480,6 +480,15 @@ func AverageSystemStatsSlice(records []system.Stats) system.Stats {
 					}
 				}
 
+				if value.Clients != nil {
+					if gpu.Clients == nil {
+						gpu.Clients = make(map[string]float64, len(value.Clients))
+					}
+					for client, usage := range value.Clients {
+						gpu.Clients[client] += usage
+					}
+				}
+
 				sum.GPUData[id] = gpu
 			}
 		}
@@ -590,6 +599,13 @@ func AverageSystemStatsSlice(records []system.Stats) system.Stats {
 				for engineKey := range gpu.Engines {
 					gpu.Engines[engineKey] = twoDecimals(gpu.Engines[engineKey] / count)
 				}
+			}
+
+			if gpu.Clients != nil {
+				for client := range gpu.Clients {
+					gpu.Clients[client] = twoDecimals(gpu.Clients[client] / count)
+				}
+				gpu.Clients = system.TrimGPUClients(gpu.Clients, system.MaxGPUClients)
 			}
 
 			sum.GPUData[id] = gpu

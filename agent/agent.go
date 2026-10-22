@@ -183,6 +183,9 @@ func NewAgent(dataDir ...string) (agent *Agent, err error) {
 	if err != nil {
 		slog.Debug("GPU", "err", err)
 	}
+	if agent.gpuManager != nil && agent.gpuManager.clientTracker != nil && agent.dockerManager != nil {
+		agent.gpuManager.clientTracker.containerName = agent.dockerManager.containerName
+	}
 
 	// if debugging, print stats
 	if agent.debug {

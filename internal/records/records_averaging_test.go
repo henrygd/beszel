@@ -3,6 +3,7 @@
 package records_test
 
 import (
+	"fmt"
 	"sort"
 	"testing"
 
@@ -502,6 +503,28 @@ func TestAverageSystemStatsSlice_GPUData(t *testing.T) {
 	require.NotNil(t, gpu.Engines)
 	assert.Equal(t, 70.0, gpu.Engines["3D"])
 	assert.Equal(t, 20.0, gpu.Engines["Video"])
+}
+
+// Clients missing from a record count as idle, and only the busiest are kept.
+func TestAverageSystemStatsSlice_GPUClients(t *testing.T) {
+	first := map[string]float64{"c:jellyfin": 40, "s:ollama": 10}
+	for i := range system.MaxGPUClients {
+		first[fmt.Sprintf("p:idle%02d", i)] = 0.5
+	}
+	input := []system.Stats{
+		{GPUData: map[string]system.GPUData{"card0": {Name: "Intel", Clients: first}}},
+		{GPUData: map[string]system.GPUData{"card0": {Name: "Intel", Clients: map[string]float64{"c:jellyfin": 20, "p:ffmpeg": 30}}}},
+		{GPUData: map[string]system.GPUData{"card0": {Name: "Intel"}}},
+	}
+
+	clients := records.AverageSystemStatsSlice(input).GPUData["card0"].Clients
+
+	require.Len(t, clients, system.MaxGPUClients)
+	assert.Equal(t, 20.0, clients["c:jellyfin"])
+	assert.Equal(t, 10.0, clients["p:ffmpeg"])
+	assert.Equal(t, 3.33, clients["s:ollama"])
+	assert.Equal(t, 0.17, clients["p:idle00"])
+	assert.NotContains(t, clients, "p:idle09", "lowest usage is trimmed, ties by name")
 }
 
 func TestAverageSystemStatsSlice_MultipleGPUs(t *testing.T) {

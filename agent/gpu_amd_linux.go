@@ -139,6 +139,7 @@ func (gm *GPUManager) updateAmdGpuData(cardPath string) bool {
 	if !ok {
 		gpu = &system.GPUData{Name: getAmdGpuName(devicePath)}
 		gm.GpuDataMap[id] = gpu
+		gm.setGpuVendor(id, gpuVendorAmd)
 	}
 
 	if usageErr == nil {

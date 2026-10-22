@@ -168,6 +168,7 @@ func (gm *GPUManager) updateIntelSysfsGpuData(cardPath, hwmonDir string) bool {
 	if !ok {
 		gpu = &system.GPUData{Name: getIntelSysfsGpuName(cardPath)}
 		gm.GpuDataMap[id] = gpu
+		gm.setGpuVendor(id, gpuVendorIntel)
 	}
 
 	if usageErr == nil {
