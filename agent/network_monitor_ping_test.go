@@ -180,6 +180,26 @@ func TestMonitorICMPExecOutput(t *testing.T) {
 	}
 }
 
+func TestMonitorICMPExecStderr(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("test uses a POSIX shell stub for ping")
+	}
+	dir := t.TempDir()
+	script := "#!/bin/sh\necho 'ping: permission denied (are you root?)' >&2\necho 'second line' >&2\nexit 1\n"
+	require.NoError(t, os.WriteFile(filepath.Join(dir, "ping"), []byte(script), 0o755))
+	t.Setenv("PATH", dir+string(os.PathListSeparator)+os.Getenv("PATH"))
+	_, err := monitorICMPExec(t.Context(), "127.0.0.1", false)
+	require.Error(t, err)
+	assert.Equal(t, "ping failed: exit status 1: ping: permission denied (are you root?)", err.Error())
+}
+
+func TestIsPingPermissionError(t *testing.T) {
+	assert.True(t, isPingPermissionError("ping: permission denied (are you root?)"))
+	assert.True(t, isPingPermissionError("ping: socket: Operation not permitted"))
+	assert.False(t, isPingPermissionError("ping: sendto: Network is unreachable"))
+	assert.False(t, isPingPermissionError("ping: unknown host example.invalid"))
+}
+
 type icmpTestReply struct {
 	data []byte
 	peer net.Addr

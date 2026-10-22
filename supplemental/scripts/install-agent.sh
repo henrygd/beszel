@@ -386,6 +386,27 @@ remove_openwrt_account() {
   fi
 }
 
+# OpenWrt has no systemd to open up unprivileged ICMP sockets, so ICMP monitors
+# fail for the non-root agent. Allow only the beszel group, and leave an
+# existing range alone if it already covers it. Must run before the agent
+# starts because it detects the ICMP method once.
+configure_openwrt_ping_group() {
+  range_file=/proc/sys/net/ipv4/ping_group_range
+  [ -r "$range_file" ] || return 0
+  beszel_gid=$(awk -F: '$1 == "beszel" { print $3 }' /etc/group)
+  [ -n "$beszel_gid" ] || return 0
+  if awk -v gid="$beszel_gid" '{ exit !($1 <= gid && gid <= $2) }' "$range_file"; then
+    return 0
+  fi
+  echo "Allowing unprivileged ICMP for the beszel group..."
+  sysctl_file=/etc/sysctl.d/99-beszel-ping.conf
+  mkdir -p /etc/sysctl.d
+  echo "net.ipv4.ping_group_range = $beszel_gid $beszel_gid" > "$sysctl_file" ||
+    { warn "Could not write $sysctl_file; ICMP monitors may fail."; return 0; }
+  sysctl -p "$sysctl_file" >/dev/null ||
+    warn "Could not apply $sysctl_file; ICMP monitors may fail."
+}
+
 require_value() {
   [ "$#" -ge 2 ] && [ -n "$2" ] || fail "Option $1 requires a value."
 }
@@ -698,7 +719,7 @@ if [ "$UNINSTALL" = true ]; then
     /etc/init.d/beszel-agent disable || warn "Cleanup command failed: /etc/init.d/beszel-agent disable"
 
     echo "Removing the OpenWRT service files..."
-    rm -f /etc/init.d/beszel-agent
+    rm -f /etc/init.d/beszel-agent /etc/sysctl.d/99-beszel-ping.conf
 
     # Remove the update service if it exists
     echo "Removing the daily update service..."
@@ -866,6 +887,7 @@ if is_alpine; then
   
 elif is_openwrt; then
   configure_openwrt_account
+  configure_openwrt_ping_group
 
 elif is_freebsd; then
   if is_opnsense || is_pfsense; then
