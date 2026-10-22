@@ -26,9 +26,14 @@ msgstr "{0} verfügbar"
 
 #. placeholder {0}: table.getFilteredSelectedRowModel().rows.length
 #. placeholder {1}: table.getFilteredRowModel().rows.length
-#: src/components/routes/settings/alerts-history-data-table.tsx
+#: src/components/ui/data-table-pagination.tsx
 msgid "{0} of {1} row(s) selected."
 msgstr "{0} von {1} Zeile(n) ausgewählt."
+
+#. placeholder {0}: table.getFilteredRowModel().rows.length
+#: src/components/ui/data-table-pagination.tsx
+msgid "{0} row(s)"
+msgstr "{0} Zeile(n)"
 
 #. placeholder {0}: selectedIds.size
 #: src/components/network-monitors-table/monitor-dialog.tsx
@@ -87,6 +92,10 @@ msgstr "{total, plural, one {# Update} other {# Updates}}"
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "{totalCount, plural, one {# service} other {# services}}"
 msgstr "{totalCount, plural, one {# Dienst} other {# Dienste}}"
+
+#: src/components/alerts-history-columns.tsx
+msgid "{value, plural, one {# day} other {# days}}"
+msgstr "{value, plural, one {# Tag} other {# Tage}}"
 
 #: src/lib/utils.ts
 msgid "1 hour"
@@ -427,6 +436,10 @@ msgstr "Celsius (°C)"
 msgid "Certificate"
 msgstr "Zertifikat"
 
+#: src/lib/alerts.ts
+msgid "Certificate Expiration"
+msgstr "Zertifikatsablauf"
+
 #: src/components/network-monitors-table/network-monitors-table.tsx
 msgid "Certificate expired {expires}"
 msgstr "Zertifikat abgelaufen {expires}"
@@ -638,6 +651,11 @@ msgstr "Kopiere den Installationsbefehl für den Agent unten oder registriere Ag
 #: src/components/add-system.tsx
 msgid "Copy the<0>docker-compose.yml</0> content for the agent below, or register agents automatically with a <1>universal token</1>."
 msgstr "Kopiere den<0>docker-compose.yml</0> Inhalt für den Agent unten oder registriere Agents automatisch mit einem <1>universellen Token</1>."
+
+#: src/components/token-value.tsx
+#: src/components/token-value.tsx
+msgid "Copy token"
+msgstr "Token kopieren"
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Copy YAML"
@@ -958,6 +976,7 @@ msgstr "Bestehende Systeme, die nicht in der <0>config.yml</0> definiert sind, w
 msgid "Exited active"
 msgstr "Beendet aktiv"
 
+#: src/components/alerts-history-columns.tsx
 #: src/components/network-monitors-table/network-monitors-columns.tsx
 msgid "Expired"
 msgstr "Abgelaufen"
@@ -965,6 +984,10 @@ msgstr "Abgelaufen"
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Expires after one hour or on hub restart."
 msgstr "Läuft nach einer Stunde oder bei Hub-Neustart ab."
+
+#: src/components/alerts/alerts-sheet.tsx
+msgid "Expires within <0>{value, plural, one {# day} other {# days}}</0>"
+msgstr "Läuft innerhalb von <0>{value, plural, one {# Tag} other {# Tage}}</0> ab"
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Export"
@@ -1142,6 +1165,11 @@ msgstr "Heartbeat erfolgreich gesendet"
 msgid "Hide timestamps"
 msgstr "Zeitstempel ausblenden"
 
+#: src/components/token-value.tsx
+#: src/components/token-value.tsx
+msgid "Hide token"
+msgstr "Token ausblenden"
+
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgctxt "Button to copy install command"
@@ -1183,6 +1211,10 @@ msgstr "Untätig"
 #: src/components/login/forgot-pass-form.tsx
 msgid "If you've lost the password to your admin account, you may reset it using the following command."
 msgstr "Wenn du das Passwort für dein Administratorkonto verloren hast, kannst du es mit dem folgenden Befehl zurücksetzen."
+
+#: src/components/network-monitors-table/monitor-dialog.tsx
+msgid "Ignore TLS certificate errors"
+msgstr "TLS-Zertifikatsfehler ignorieren"
 
 #: src/components/containers-table/containers-table-columns.tsx
 msgctxt "Docker image"
@@ -1500,6 +1532,11 @@ msgstr "OAuth 2 / OIDC-Unterstützung"
 msgid "On each restart, systems in the database will be updated to match the systems defined in the file."
 msgstr "Bei jedem Neustart werden die Systeme in der Datenbank aktualisiert, um den in der Datei definierten Systemen zu entsprechen."
 
+#. placeholder {0}: alert.value
+#: src/components/active-alerts.tsx
+msgid "One or more certificates expire within {0, plural, one {# day} other {# days}}"
+msgstr "Ein oder mehrere Zertifikate laufen innerhalb von {0, plural, one {# Tag} other {# Tage}} ab"
+
 #: src/lib/alerts.ts
 msgid "One or more containers are unhealthy"
 msgstr "Ein oder mehrere Container sind fehlerhaft"
@@ -1571,11 +1608,8 @@ msgid "Page"
 msgstr "Seite"
 
 #. placeholder {0}: pageIndex + 1
-#. placeholder {0}: table.getState().pagination.pageIndex + 1
-#. placeholder {1}: Math.max(table.getPageCount(), 1)
-#. placeholder {1}: table.getPageCount()
-#: src/components/routes/settings/alerts-history-data-table.tsx
-#: src/components/routes/system/package-updates-table.tsx
+#. placeholder {1}: Math.max(1, pageCount)
+#: src/components/ui/data-table-pagination.tsx
 msgid "Page {0} of {1}"
 msgstr "Seite {0} von {1}"
 
@@ -1834,6 +1868,11 @@ msgstr "Neustarts"
 msgid "Resume"
 msgstr "Fortsetzen"
 
+#: src/components/token-value.tsx
+#: src/components/token-value.tsx
+msgid "Reveal token"
+msgstr "Token anzeigen"
+
 #. Package version
 #: src/components/routes/system/package-updates-table.tsx
 msgid "Revision"
@@ -1850,8 +1889,7 @@ msgstr "Root"
 msgid "Rotate token"
 msgstr "Token rotieren"
 
-#: src/components/routes/settings/alerts-history-data-table.tsx
-#: src/components/routes/system/package-updates-table.tsx
+#: src/components/ui/data-table-pagination.tsx
 msgid "Rows per page"
 msgstr "Zeilen pro Seite"
 
@@ -2006,7 +2044,6 @@ msgstr "Legen Sie die folgenden Umgebungsvariablen auf Ihrem Beszel-Hub fest, um
 #: src/components/navbar.tsx
 #: src/components/routes/settings/layout.tsx
 #: src/components/routes/settings/layout.tsx
-#: src/components/routes/system/info-bar.tsx
 msgid "Settings"
 msgstr "Einstellungen"
 
@@ -2205,6 +2242,15 @@ msgstr "An E-Mail(s)"
 msgid "Token"
 msgstr "Token"
 
+#. placeholder {0}: fingerprint.expand.system.name
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Token for {0}"
+msgstr "Token für {0}"
+
+#: src/components/token-value.tsx
+msgid "Token hidden"
+msgstr "Token ausgeblendet"
+
 #: src/components/command-palette.tsx
 #: src/components/routes/settings/layout.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
@@ -2267,6 +2313,10 @@ msgstr "Löst aus, wenn der Lastdurchschnitt der letzten 5 Minuten einen Schwell
 #: src/lib/alerts.ts
 msgid "Triggers when a container's health check reports unhealthy"
 msgstr "Wird ausgelöst, wenn die Integritätsprüfung eines Containers einen fehlerhaften Zustand meldet"
+
+#: src/lib/alerts.ts
+msgid "Triggers when an HTTPS certificate nears expiration"
+msgstr "Wird ausgelöst, wenn ein HTTPS-Zertifikat bald abläuft"
 
 #: src/lib/alerts.ts
 msgid "Triggers when any sensor exceeds a threshold"
@@ -2337,6 +2387,7 @@ msgid "Unit preferences"
 msgstr "Einheiten"
 
 #: src/components/command-palette.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Universal token"
 msgstr "Universeller Token"
@@ -2413,6 +2464,10 @@ msgstr "Nutzung"
 msgid "Usage of storage pool {displayName}"
 msgstr "Auslastung des Pools {displayName}"
 
+#: src/components/network-monitors-table/monitor-dialog.tsx
+msgid "Use for self-signed certificates."
+msgstr "Für selbstsignierte Zertifikate verwenden."
+
 #: src/components/routes/system/charts/memory-charts.tsx
 #: src/components/routes/system/charts/memory-charts.tsx
 #: src/components/routes/system/storage-pools-table.tsx
@@ -2436,6 +2491,7 @@ msgid "Value"
 msgstr "Wert"
 
 #: src/components/network-monitors-table/network-monitors-table.tsx
+#: src/components/routes/system/info-bar.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "View"
 msgstr "Ansicht"
@@ -2463,6 +2519,7 @@ msgstr "Sieh dir die neusten 200 Alarme an."
 msgid "Visible Fields"
 msgstr "Sichtbare Spalten"
 
+#: src/components/charts/chart-no-values.tsx
 #: src/components/routes/system/chart-card.tsx
 msgid "Waiting for enough records to display"
 msgstr "Warten auf genügend Datensätze zur Anzeige"
@@ -2537,4 +2594,3 @@ msgstr "Ja"
 #: src/components/routes/settings/layout.tsx
 msgid "Your user settings have been updated."
 msgstr "Deine Benutzereinstellungen wurden aktualisiert."
-

@@ -26,9 +26,14 @@ msgstr "{0} mavjud"
 
 #. placeholder {0}: table.getFilteredSelectedRowModel().rows.length
 #. placeholder {1}: table.getFilteredRowModel().rows.length
-#: src/components/routes/settings/alerts-history-data-table.tsx
+#: src/components/ui/data-table-pagination.tsx
 msgid "{0} of {1} row(s) selected."
 msgstr "{1} dan {0} qator tanlandi."
+
+#. placeholder {0}: table.getFilteredRowModel().rows.length
+#: src/components/ui/data-table-pagination.tsx
+msgid "{0} row(s)"
+msgstr "{0} qator"
 
 #. placeholder {0}: selectedIds.size
 #: src/components/network-monitors-table/monitor-dialog.tsx
@@ -87,6 +92,10 @@ msgstr "{total, plural, one {# ta yangilanish} other {# ta yangilanish}}"
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "{totalCount, plural, one {# service} other {# services}}"
 msgstr "{totalCount, plural, one {# ta xizmat} other {# ta xizmat}}"
+
+#: src/components/alerts-history-columns.tsx
+msgid "{value, plural, one {# day} other {# days}}"
+msgstr "{value, plural, one {# kun} other {# kun}}"
 
 #: src/lib/utils.ts
 msgid "1 hour"
@@ -427,6 +436,10 @@ msgstr "Selsiy (°C)"
 msgid "Certificate"
 msgstr "Sertifikat"
 
+#: src/lib/alerts.ts
+msgid "Certificate Expiration"
+msgstr "Sertifikat muddati tugashi"
+
 #: src/components/network-monitors-table/network-monitors-table.tsx
 msgid "Certificate expired {expires}"
 msgstr "Sertifikat muddati tugagan: {expires}"
@@ -638,6 +651,11 @@ msgstr "Agentni o'rnatish buyrug'ini pastdan nusxalang yoki agentlarni <0>univer
 #: src/components/add-system.tsx
 msgid "Copy the<0>docker-compose.yml</0> content for the agent below, or register agents automatically with a <1>universal token</1>."
 msgstr "Agent uchun<0>docker-compose.yml</0> mazmunini pastdan nusxalang yoki agentlarni <1>universal token</1> bilan avtomatik ro'yxatdan o'tkazing."
+
+#: src/components/token-value.tsx
+#: src/components/token-value.tsx
+msgid "Copy token"
+msgstr "Tokenni nusxalash"
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Copy YAML"
@@ -958,6 +976,7 @@ msgstr "<0>config.yml</0> da aniqlanmagan mavjud tizimlar o'chiriladi. Iltimos, 
 msgid "Exited active"
 msgstr "Faollikdan chiqdi"
 
+#: src/components/alerts-history-columns.tsx
 #: src/components/network-monitors-table/network-monitors-columns.tsx
 msgid "Expired"
 msgstr "Muddati tugagan"
@@ -965,6 +984,10 @@ msgstr "Muddati tugagan"
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Expires after one hour or on hub restart."
 msgstr "Bir soatdan keyin yoki hub qayta ishga tushganda muddati tugaydi."
+
+#: src/components/alerts/alerts-sheet.tsx
+msgid "Expires within <0>{value, plural, one {# day} other {# days}}</0>"
+msgstr "<0>{value, plural, one {# kun} other {# kun}}</0> ichida muddati tugaydi"
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Export"
@@ -1142,6 +1165,11 @@ msgstr "Heartbeat muvaffaqiyatli yuborildi"
 msgid "Hide timestamps"
 msgstr "Vaqt belgilarini yashirish"
 
+#: src/components/token-value.tsx
+#: src/components/token-value.tsx
+msgid "Hide token"
+msgstr "Tokenni yashirish"
+
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgctxt "Button to copy install command"
@@ -1183,6 +1211,10 @@ msgstr "Faolsiz"
 #: src/components/login/forgot-pass-form.tsx
 msgid "If you've lost the password to your admin account, you may reset it using the following command."
 msgstr "Agar admin hisobingiz parolini yo'qotgan bo'lsangiz, quyidagi buyruq yordamida uni tiklashingiz mumkin."
+
+#: src/components/network-monitors-table/monitor-dialog.tsx
+msgid "Ignore TLS certificate errors"
+msgstr "TLS sertifikat xatolarini e’tiborsiz qoldirish"
 
 #: src/components/containers-table/containers-table-columns.tsx
 msgctxt "Docker image"
@@ -1500,6 +1532,11 @@ msgstr "OAuth 2 / OIDC qo'llab-quvvatlash"
 msgid "On each restart, systems in the database will be updated to match the systems defined in the file."
 msgstr "Har qayta ishga tushirilganda, ma'lumotlar bazasidagi tizimlar fayldagi tizimlarga mos yangilanadi."
 
+#. placeholder {0}: alert.value
+#: src/components/active-alerts.tsx
+msgid "One or more certificates expire within {0, plural, one {# day} other {# days}}"
+msgstr "Bir yoki bir nechta sertifikatning muddati {0, plural, one {# kun} other {# kun}} ichida tugaydi"
+
 #: src/lib/alerts.ts
 msgid "One or more containers are unhealthy"
 msgstr "Bir yoki bir nechta konteyner nosog‘lom holatda"
@@ -1571,11 +1608,8 @@ msgid "Page"
 msgstr "Sahifa"
 
 #. placeholder {0}: pageIndex + 1
-#. placeholder {0}: table.getState().pagination.pageIndex + 1
-#. placeholder {1}: Math.max(table.getPageCount(), 1)
-#. placeholder {1}: table.getPageCount()
-#: src/components/routes/settings/alerts-history-data-table.tsx
-#: src/components/routes/system/package-updates-table.tsx
+#. placeholder {1}: Math.max(1, pageCount)
+#: src/components/ui/data-table-pagination.tsx
 msgid "Page {0} of {1}"
 msgstr "{0} / {1} sahifa"
 
@@ -1834,6 +1868,11 @@ msgstr "Qayta ishga tushirishlar"
 msgid "Resume"
 msgstr "Davom ettirish"
 
+#: src/components/token-value.tsx
+#: src/components/token-value.tsx
+msgid "Reveal token"
+msgstr "Tokenni ko‘rsatish"
+
 #. Package version
 #: src/components/routes/system/package-updates-table.tsx
 msgid "Revision"
@@ -1850,8 +1889,7 @@ msgstr "Ildiz"
 msgid "Rotate token"
 msgstr "Tokenni yangilash"
 
-#: src/components/routes/settings/alerts-history-data-table.tsx
-#: src/components/routes/system/package-updates-table.tsx
+#: src/components/ui/data-table-pagination.tsx
 msgid "Rows per page"
 msgstr "Sahifadagi qatorlar"
 
@@ -2006,7 +2044,6 @@ msgstr "Heartbeat monitoringni yoqish uchun Beszel hub'ingizda quyidagi muhit o'
 #: src/components/navbar.tsx
 #: src/components/routes/settings/layout.tsx
 #: src/components/routes/settings/layout.tsx
-#: src/components/routes/system/info-bar.tsx
 msgid "Settings"
 msgstr "Sozlamalar"
 
@@ -2205,6 +2242,15 @@ msgstr "Kimga (elektron pochta)"
 msgid "Token"
 msgstr "Token"
 
+#. placeholder {0}: fingerprint.expand.system.name
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Token for {0}"
+msgstr "{0} uchun token"
+
+#: src/components/token-value.tsx
+msgid "Token hidden"
+msgstr "Token yashirilgan"
+
 #: src/components/command-palette.tsx
 #: src/components/routes/settings/layout.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
@@ -2267,6 +2313,10 @@ msgstr "5 daqiqalik o'rtacha yuklanish chegaradan oshganda ishga tushadi"
 #: src/lib/alerts.ts
 msgid "Triggers when a container's health check reports unhealthy"
 msgstr "Konteyner sog‘liq tekshiruvi nosog‘lom holat haqida xabar berganda ishga tushadi"
+
+#: src/lib/alerts.ts
+msgid "Triggers when an HTTPS certificate nears expiration"
+msgstr "HTTPS sertifikatining muddati tugashiga yaqinlashganda ishga tushadi"
 
 #: src/lib/alerts.ts
 msgid "Triggers when any sensor exceeds a threshold"
@@ -2337,6 +2387,7 @@ msgid "Unit preferences"
 msgstr "Birlik parametrlari"
 
 #: src/components/command-palette.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Universal token"
 msgstr "Universal tokeni"
@@ -2413,6 +2464,10 @@ msgstr "Ishlatilishi"
 msgid "Usage of storage pool {displayName}"
 msgstr "{displayName} saqlash pool'ining ishlatilishi"
 
+#: src/components/network-monitors-table/monitor-dialog.tsx
+msgid "Use for self-signed certificates."
+msgstr "O‘zi imzolagan sertifikatlar uchun foydalaning."
+
 #: src/components/routes/system/charts/memory-charts.tsx
 #: src/components/routes/system/charts/memory-charts.tsx
 #: src/components/routes/system/storage-pools-table.tsx
@@ -2436,6 +2491,7 @@ msgid "Value"
 msgstr "Qiymat"
 
 #: src/components/network-monitors-table/network-monitors-table.tsx
+#: src/components/routes/system/info-bar.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "View"
 msgstr "Ko'rish"
@@ -2463,6 +2519,7 @@ msgstr "So'nggi 200 ta ogohlantirishingizni ko'ring."
 msgid "Visible Fields"
 msgstr "Ko'rinadigan maydonlar"
 
+#: src/components/charts/chart-no-values.tsx
 #: src/components/routes/system/chart-card.tsx
 msgid "Waiting for enough records to display"
 msgstr "Ko'rsatish uchun yetarli yozuvlar kutilmoqda"
@@ -2537,4 +2594,3 @@ msgstr "Ha"
 #: src/components/routes/settings/layout.tsx
 msgid "Your user settings have been updated."
 msgstr "Foydalanuvchi sozlamalaringiz yangilandi."
-

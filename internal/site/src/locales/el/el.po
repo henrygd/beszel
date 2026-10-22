@@ -26,9 +26,14 @@ msgstr "Διαθέσιμη έκδοση {0}"
 
 #. placeholder {0}: table.getFilteredSelectedRowModel().rows.length
 #. placeholder {1}: table.getFilteredRowModel().rows.length
-#: src/components/routes/settings/alerts-history-data-table.tsx
+#: src/components/ui/data-table-pagination.tsx
 msgid "{0} of {1} row(s) selected."
 msgstr "{0} από {1} σειρά(ες) επιλέχθηκαν."
+
+#. placeholder {0}: table.getFilteredRowModel().rows.length
+#: src/components/ui/data-table-pagination.tsx
+msgid "{0} row(s)"
+msgstr "{0} γραμμή(ές)"
 
 #. placeholder {0}: selectedIds.size
 #: src/components/network-monitors-table/monitor-dialog.tsx
@@ -87,6 +92,10 @@ msgstr "{total, plural, one {# ενημέρωση} other {# ενημερώσει
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "{totalCount, plural, one {# service} other {# services}}"
 msgstr "{totalCount, plural, one {# υπηρεσία} other {# υπηρεσίες}}"
+
+#: src/components/alerts-history-columns.tsx
+msgid "{value, plural, one {# day} other {# days}}"
+msgstr "{value, plural, one {# ημέρα} other {# ημέρες}}"
 
 #: src/lib/utils.ts
 msgid "1 hour"
@@ -427,6 +436,10 @@ msgstr "Κελσίου (°C)"
 msgid "Certificate"
 msgstr "Πιστοποιητικό"
 
+#: src/lib/alerts.ts
+msgid "Certificate Expiration"
+msgstr "Λήξη πιστοποιητικού"
+
 #: src/components/network-monitors-table/network-monitors-table.tsx
 msgid "Certificate expired {expires}"
 msgstr "Το πιστοποιητικό έληξε {expires}"
@@ -638,6 +651,11 @@ msgstr "Αντιγράψτε την παρακάτω εντολή εγκατάσ
 #: src/components/add-system.tsx
 msgid "Copy the<0>docker-compose.yml</0> content for the agent below, or register agents automatically with a <1>universal token</1>."
 msgstr "Αντιγράψτε το περιεχόμενο του <0>docker-compose.yml</0> για τον παρακάτω πράκτορα ή καταχωρίστε πράκτορες αυτόματα με ένα <1>καθολικό διακριτικό</1>."
+
+#: src/components/token-value.tsx
+#: src/components/token-value.tsx
+msgid "Copy token"
+msgstr "Αντιγραφή διακριτικού"
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Copy YAML"
@@ -958,6 +976,7 @@ msgstr "Τα υπάρχοντα συστήματα που δεν ορίζοντ�
 msgid "Exited active"
 msgstr "Ενεργό μετά την έξοδο"
 
+#: src/components/alerts-history-columns.tsx
 #: src/components/network-monitors-table/network-monitors-columns.tsx
 msgid "Expired"
 msgstr "Έληξε"
@@ -965,6 +984,10 @@ msgstr "Έληξε"
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Expires after one hour or on hub restart."
 msgstr "Λήγει μετά από μία ώρα ή με επανεκκίνηση του κόμβου."
+
+#: src/components/alerts/alerts-sheet.tsx
+msgid "Expires within <0>{value, plural, one {# day} other {# days}}</0>"
+msgstr "Λήγει εντός <0>{value, plural, one {# ημέρα} other {# ημέρες}}</0>"
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Export"
@@ -1142,6 +1165,11 @@ msgstr "Το heartbeat στάλθηκε με επιτυχία"
 msgid "Hide timestamps"
 msgstr "Απόκρυψη χρονοσφραγίδων"
 
+#: src/components/token-value.tsx
+#: src/components/token-value.tsx
+msgid "Hide token"
+msgstr "Απόκρυψη διακριτικού"
+
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgctxt "Button to copy install command"
@@ -1183,6 +1211,10 @@ msgstr "Αδράνεια"
 #: src/components/login/forgot-pass-form.tsx
 msgid "If you've lost the password to your admin account, you may reset it using the following command."
 msgstr "Αν έχετε χάσει τον κωδικό πρόσβασης του λογαριασμού διαχειριστή σας, μπορείτε να τον επαναφέρετε χρησιμοποιώντας την ακόλουθη εντολή."
+
+#: src/components/network-monitors-table/monitor-dialog.tsx
+msgid "Ignore TLS certificate errors"
+msgstr "Παράβλεψη σφαλμάτων πιστοποιητικού TLS"
 
 #: src/components/containers-table/containers-table-columns.tsx
 msgctxt "Docker image"
@@ -1500,6 +1532,11 @@ msgstr "Υποστήριξη OAuth 2 / OIDC"
 msgid "On each restart, systems in the database will be updated to match the systems defined in the file."
 msgstr "Σε κάθε επανεκκίνηση, τα συστήματα στη βάση δεδομένων θα ενημερώνονται ώστε να αντιστοιχούν στα συστήματα που ορίζονται στο αρχείο."
 
+#. placeholder {0}: alert.value
+#: src/components/active-alerts.tsx
+msgid "One or more certificates expire within {0, plural, one {# day} other {# days}}"
+msgstr "Ένα ή περισσότερα πιστοποιητικά λήγουν εντός {0, plural, one {# ημέρα} other {# ημέρες}}"
+
 #: src/lib/alerts.ts
 msgid "One or more containers are unhealthy"
 msgstr "Ένα ή περισσότερα κοντέινερ δεν είναι υγιή"
@@ -1571,11 +1608,8 @@ msgid "Page"
 msgstr "Σελίδα"
 
 #. placeholder {0}: pageIndex + 1
-#. placeholder {0}: table.getState().pagination.pageIndex + 1
-#. placeholder {1}: Math.max(table.getPageCount(), 1)
-#. placeholder {1}: table.getPageCount()
-#: src/components/routes/settings/alerts-history-data-table.tsx
-#: src/components/routes/system/package-updates-table.tsx
+#. placeholder {1}: Math.max(1, pageCount)
+#: src/components/ui/data-table-pagination.tsx
 msgid "Page {0} of {1}"
 msgstr "Σελίδα {0} από {1}"
 
@@ -1834,6 +1868,11 @@ msgstr "Επανεκκινήσεις"
 msgid "Resume"
 msgstr "Συνέχιση"
 
+#: src/components/token-value.tsx
+#: src/components/token-value.tsx
+msgid "Reveal token"
+msgstr "Εμφάνιση διακριτικού"
+
 #. Package version
 #: src/components/routes/system/package-updates-table.tsx
 msgid "Revision"
@@ -1850,8 +1889,7 @@ msgstr "Ρίζα"
 msgid "Rotate token"
 msgstr "Ανανέωση token"
 
-#: src/components/routes/settings/alerts-history-data-table.tsx
-#: src/components/routes/system/package-updates-table.tsx
+#: src/components/ui/data-table-pagination.tsx
 msgid "Rows per page"
 msgstr "Γραμμές ανά σελίδα"
 
@@ -2006,7 +2044,6 @@ msgstr "Ορίστε τις ακόλουθες μεταβλητές περιβά
 #: src/components/navbar.tsx
 #: src/components/routes/settings/layout.tsx
 #: src/components/routes/settings/layout.tsx
-#: src/components/routes/system/info-bar.tsx
 msgid "Settings"
 msgstr "Ρυθμίσεις"
 
@@ -2205,6 +2242,15 @@ msgstr "Προς email"
 msgid "Token"
 msgstr "Διακριτικό"
 
+#. placeholder {0}: fingerprint.expand.system.name
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Token for {0}"
+msgstr "Διακριτικό για {0}"
+
+#: src/components/token-value.tsx
+msgid "Token hidden"
+msgstr "Το διακριτικό είναι κρυφό"
+
 #: src/components/command-palette.tsx
 #: src/components/routes/settings/layout.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
@@ -2267,6 +2313,10 @@ msgstr "Ενεργοποιείται όταν ο μέσος φόρτος 5 λε�
 #: src/lib/alerts.ts
 msgid "Triggers when a container's health check reports unhealthy"
 msgstr "Ενεργοποιείται όταν ο έλεγχος υγείας ενός κοντέινερ αναφέρει μη υγιή κατάσταση"
+
+#: src/lib/alerts.ts
+msgid "Triggers when an HTTPS certificate nears expiration"
+msgstr "Ενεργοποιείται όταν ένα πιστοποιητικό HTTPS πλησιάζει στη λήξη του"
 
 #: src/lib/alerts.ts
 msgid "Triggers when any sensor exceeds a threshold"
@@ -2337,6 +2387,7 @@ msgid "Unit preferences"
 msgstr "Προτιμήσεις μονάδων μέτρησης"
 
 #: src/components/command-palette.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Universal token"
 msgstr "Καθολικό διακριτικό"
@@ -2413,6 +2464,10 @@ msgstr "Χρήση"
 msgid "Usage of storage pool {displayName}"
 msgstr "Χρήση του pool αποθήκευσης {displayName}"
 
+#: src/components/network-monitors-table/monitor-dialog.tsx
+msgid "Use for self-signed certificates."
+msgstr "Χρησιμοποιήστε το για αυτο-υπογεγραμμένα πιστοποιητικά."
+
 #: src/components/routes/system/charts/memory-charts.tsx
 #: src/components/routes/system/charts/memory-charts.tsx
 #: src/components/routes/system/storage-pools-table.tsx
@@ -2436,6 +2491,7 @@ msgid "Value"
 msgstr "Τιμή"
 
 #: src/components/network-monitors-table/network-monitors-table.tsx
+#: src/components/routes/system/info-bar.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "View"
 msgstr "Προβολή"
@@ -2463,6 +2519,7 @@ msgstr "Προβάλετε τις 200 πιο πρόσφατες ειδοποιή
 msgid "Visible Fields"
 msgstr "Ορατά πεδία"
 
+#: src/components/charts/chart-no-values.tsx
 #: src/components/routes/system/chart-card.tsx
 msgid "Waiting for enough records to display"
 msgstr "Αναμονή για αρκετές εγγραφές ώστε να εμφανιστούν"
@@ -2537,4 +2594,3 @@ msgstr "Ναι"
 #: src/components/routes/settings/layout.tsx
 msgid "Your user settings have been updated."
 msgstr "Οι ρυθμίσεις χρήστη σας ενημερώθηκαν."
-

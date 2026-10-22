@@ -26,9 +26,14 @@ msgstr "{0} tersedia"
 
 #. placeholder {0}: table.getFilteredSelectedRowModel().rows.length
 #. placeholder {1}: table.getFilteredRowModel().rows.length
-#: src/components/routes/settings/alerts-history-data-table.tsx
+#: src/components/ui/data-table-pagination.tsx
 msgid "{0} of {1} row(s) selected."
 msgstr "{0} dari {1} baris terpilih."
+
+#. placeholder {0}: table.getFilteredRowModel().rows.length
+#: src/components/ui/data-table-pagination.tsx
+msgid "{0} row(s)"
+msgstr "{0} baris"
 
 #. placeholder {0}: selectedIds.size
 #: src/components/network-monitors-table/monitor-dialog.tsx
@@ -87,6 +92,10 @@ msgstr "{total, plural, other {# pembaruan}}"
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "{totalCount, plural, one {# service} other {# services}}"
 msgstr "{totalCount, plural, other {# layanan}}"
+
+#: src/components/alerts-history-columns.tsx
+msgid "{value, plural, one {# day} other {# days}}"
+msgstr "{value, plural, other {# hari}}"
 
 #: src/lib/utils.ts
 msgid "1 hour"
@@ -427,6 +436,10 @@ msgstr "Celsius (°C)"
 msgid "Certificate"
 msgstr "Sertifikat"
 
+#: src/lib/alerts.ts
+msgid "Certificate Expiration"
+msgstr "Kedaluwarsa Sertifikat"
+
 #: src/components/network-monitors-table/network-monitors-table.tsx
 msgid "Certificate expired {expires}"
 msgstr "Sertifikat kedaluwarsa {expires}"
@@ -638,6 +651,11 @@ msgstr "Salin perintah instalasi untuk agen di bawah, atau daftarkan agen secara
 #: src/components/add-system.tsx
 msgid "Copy the<0>docker-compose.yml</0> content for the agent below, or register agents automatically with a <1>universal token</1>."
 msgstr "Salin konten <0>docker-compose.yml</0> untuk agen di bawah, atau daftarkan agen secara otomatis dengan <1>universal token</1>."
+
+#: src/components/token-value.tsx
+#: src/components/token-value.tsx
+msgid "Copy token"
+msgstr "Salin token"
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Copy YAML"
@@ -958,6 +976,7 @@ msgstr "Sistem yang ada yang tidak didefinisikan dalam <0>config.yml</0> akan di
 msgid "Exited active"
 msgstr "Keluar aktif"
 
+#: src/components/alerts-history-columns.tsx
 #: src/components/network-monitors-table/network-monitors-columns.tsx
 msgid "Expired"
 msgstr "Kedaluwarsa"
@@ -965,6 +984,10 @@ msgstr "Kedaluwarsa"
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Expires after one hour or on hub restart."
 msgstr "Kedaluwarsa setelah satu jam atau saat restart hub."
+
+#: src/components/alerts/alerts-sheet.tsx
+msgid "Expires within <0>{value, plural, one {# day} other {# days}}</0>"
+msgstr "Kedaluwarsa dalam <0>{value, plural, other {# hari}}</0>"
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Export"
@@ -1142,6 +1165,11 @@ msgstr "Heartbeat berhasil dikirim"
 msgid "Hide timestamps"
 msgstr "Sembunyikan stempel waktu"
 
+#: src/components/token-value.tsx
+#: src/components/token-value.tsx
+msgid "Hide token"
+msgstr "Sembunyikan token"
+
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgctxt "Button to copy install command"
@@ -1183,6 +1211,10 @@ msgstr "Menganggur"
 #: src/components/login/forgot-pass-form.tsx
 msgid "If you've lost the password to your admin account, you may reset it using the following command."
 msgstr "Jika anda kehilangan kata sandi untuk akun admin anda, anda dapat meresetnya menggunakan perintah berikut."
+
+#: src/components/network-monitors-table/monitor-dialog.tsx
+msgid "Ignore TLS certificate errors"
+msgstr "Abaikan kesalahan sertifikat TLS"
 
 #: src/components/containers-table/containers-table-columns.tsx
 msgctxt "Docker image"
@@ -1500,6 +1532,11 @@ msgstr "Dukungan OAuth 2 / OIDC"
 msgid "On each restart, systems in the database will be updated to match the systems defined in the file."
 msgstr "Pada setiap restart, sistem dalam database akan diperbarui untuk mencocokkan sistem yang didefinisikan dalam file."
 
+#. placeholder {0}: alert.value
+#: src/components/active-alerts.tsx
+msgid "One or more certificates expire within {0, plural, one {# day} other {# days}}"
+msgstr "Satu atau lebih sertifikat kedaluwarsa dalam {0, plural, other {# hari}}"
+
 #: src/lib/alerts.ts
 msgid "One or more containers are unhealthy"
 msgstr "Satu atau beberapa kontainer tidak sehat"
@@ -1571,11 +1608,8 @@ msgid "Page"
 msgstr "Halaman"
 
 #. placeholder {0}: pageIndex + 1
-#. placeholder {0}: table.getState().pagination.pageIndex + 1
-#. placeholder {1}: Math.max(table.getPageCount(), 1)
-#. placeholder {1}: table.getPageCount()
-#: src/components/routes/settings/alerts-history-data-table.tsx
-#: src/components/routes/system/package-updates-table.tsx
+#. placeholder {1}: Math.max(1, pageCount)
+#: src/components/ui/data-table-pagination.tsx
 msgid "Page {0} of {1}"
 msgstr "Halaman {0} dari {1}"
 
@@ -1834,6 +1868,11 @@ msgstr "Restart"
 msgid "Resume"
 msgstr "Lanjutkan"
 
+#: src/components/token-value.tsx
+#: src/components/token-value.tsx
+msgid "Reveal token"
+msgstr "Tampilkan token"
+
 #. Package version
 #: src/components/routes/system/package-updates-table.tsx
 msgid "Revision"
@@ -1850,8 +1889,7 @@ msgstr "Root"
 msgid "Rotate token"
 msgstr "Ganti ulang token"
 
-#: src/components/routes/settings/alerts-history-data-table.tsx
-#: src/components/routes/system/package-updates-table.tsx
+#: src/components/ui/data-table-pagination.tsx
 msgid "Rows per page"
 msgstr "Baris per halaman"
 
@@ -2006,7 +2044,6 @@ msgstr "Setel variabel lingkungan berikut di hub Beszel Anda untuk mengaktifkan 
 #: src/components/navbar.tsx
 #: src/components/routes/settings/layout.tsx
 #: src/components/routes/settings/layout.tsx
-#: src/components/routes/system/info-bar.tsx
 msgid "Settings"
 msgstr "Pengaturan"
 
@@ -2205,6 +2242,15 @@ msgstr "Ke email"
 msgid "Token"
 msgstr "Token"
 
+#. placeholder {0}: fingerprint.expand.system.name
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Token for {0}"
+msgstr "Token untuk {0}"
+
+#: src/components/token-value.tsx
+msgid "Token hidden"
+msgstr "Token disembunyikan"
+
 #: src/components/command-palette.tsx
 #: src/components/routes/settings/layout.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
@@ -2267,6 +2313,10 @@ msgstr "Dipicu ketika rata-rata beban 5 menit melebihi ambang batas"
 #: src/lib/alerts.ts
 msgid "Triggers when a container's health check reports unhealthy"
 msgstr "Dipicu saat pemeriksaan kesehatan kontainer melaporkan status tidak sehat"
+
+#: src/lib/alerts.ts
+msgid "Triggers when an HTTPS certificate nears expiration"
+msgstr "Terpicu saat sertifikat HTTPS mendekati kedaluwarsa"
 
 #: src/lib/alerts.ts
 msgid "Triggers when any sensor exceeds a threshold"
@@ -2337,6 +2387,7 @@ msgid "Unit preferences"
 msgstr "Pengaturan satuan"
 
 #: src/components/command-palette.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Universal token"
 msgstr "Token universal"
@@ -2413,6 +2464,10 @@ msgstr "Penggunaan"
 msgid "Usage of storage pool {displayName}"
 msgstr "Penggunaan pool penyimpanan {displayName}"
 
+#: src/components/network-monitors-table/monitor-dialog.tsx
+msgid "Use for self-signed certificates."
+msgstr "Gunakan untuk sertifikat yang ditandatangani sendiri."
+
 #: src/components/routes/system/charts/memory-charts.tsx
 #: src/components/routes/system/charts/memory-charts.tsx
 #: src/components/routes/system/storage-pools-table.tsx
@@ -2436,6 +2491,7 @@ msgid "Value"
 msgstr "Nilai"
 
 #: src/components/network-monitors-table/network-monitors-table.tsx
+#: src/components/routes/system/info-bar.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "View"
 msgstr "Lihat"
@@ -2463,6 +2519,7 @@ msgstr "Lihat 200 peringatan terbaru anda."
 msgid "Visible Fields"
 msgstr "Metrik yang Terlihat"
 
+#: src/components/charts/chart-no-values.tsx
 #: src/components/routes/system/chart-card.tsx
 msgid "Waiting for enough records to display"
 msgstr "Menunggu cukup record untuk ditampilkan"
@@ -2537,4 +2594,3 @@ msgstr "Ya"
 #: src/components/routes/settings/layout.tsx
 msgid "Your user settings have been updated."
 msgstr "Pengaturan pengguna anda telah diperbarui."
-
