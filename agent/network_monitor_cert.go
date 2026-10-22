@@ -13,10 +13,9 @@ import (
 	"github.com/henrygd/beszel/internal/entities/monitor"
 )
 
-const (
-	certCheckInterval      = 24 * time.Hour
-	certCheckRetryInterval = time.Hour
-)
+// certCheckInterval is how often a certificate is re-read, so renewals show up
+// within the hour.
+const certCheckInterval = time.Hour
 
 // certChecker fetches the leaf certificate for an HTTPS target.
 type certChecker func(context.Context, string) (monitor.CertInfo, error)

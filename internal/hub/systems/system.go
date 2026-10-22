@@ -1122,6 +1122,20 @@ func migrateDeprecatedFields(cd *system.CombinedData, createDetails bool) {
 		}
 		fs.DiskReadPs, fs.DiskWritePs = 0, 0
 	}
+	// migration added 0.21.1
+	const gb = 1024 * 1024 * 1024
+	if cd.Stats.MemBytes == [4]uint64{} {
+		cd.Stats.MemBytes = [4]uint64{
+			uint64(cd.Stats.Mem * gb),
+			uint64(cd.Stats.MemUsed * gb),
+			uint64(cd.Stats.MemBuffCache * gb),
+			uint64(cd.Stats.MemZfsArc * gb),
+		}
+	}
+	if cd.Stats.SwapBytes == [2]uint64{} {
+		cd.Stats.SwapBytes = [2]uint64{uint64(cd.Stats.Swap * gb), uint64(cd.Stats.SwapUsed * gb)}
+	}
+	// GB fields are kept in stored records for third-party integrations until they are removed
 	// migration added 0.19.0 - Move deprecated Info fields to Details struct
 	if cd.Details == nil && cd.Info.Hostname != "" {
 		if createDetails {
@@ -1133,7 +1147,7 @@ func migrateDeprecatedFields(cd *system.CombinedData, createDetails bool) {
 				CpuModel:    cd.Info.CpuModel,
 				Podman:      cd.Info.Podman,
 				Os:          cd.Info.Os,
-				MemoryTotal: uint64(cd.Stats.Mem * 1024 * 1024 * 1024),
+				MemoryTotal: cd.Stats.MemBytes[0],
 			}
 		}
 		// zero the deprecated fields to prevent saving them in systems.info DB json payload

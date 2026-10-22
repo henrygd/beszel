@@ -26,9 +26,14 @@ msgstr "{0} tilgængelig"
 
 #. placeholder {0}: table.getFilteredSelectedRowModel().rows.length
 #. placeholder {1}: table.getFilteredRowModel().rows.length
-#: src/components/routes/settings/alerts-history-data-table.tsx
+#: src/components/ui/data-table-pagination.tsx
 msgid "{0} of {1} row(s) selected."
 msgstr "{0} af {1} række(r) valgt."
+
+#. placeholder {0}: table.getFilteredRowModel().rows.length
+#: src/components/ui/data-table-pagination.tsx
+msgid "{0} row(s)"
+msgstr "{0} række(r)"
 
 #. placeholder {0}: selectedIds.size
 #: src/components/network-monitors-table/monitor-dialog.tsx
@@ -87,6 +92,10 @@ msgstr "{total, plural, one {# opdatering} other {# opdateringer}}"
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "{totalCount, plural, one {# service} other {# services}}"
 msgstr "{totalCount, plural, one {# tjeneste} other {# tjenester}}"
+
+#: src/components/alerts-history-columns.tsx
+msgid "{value, plural, one {# day} other {# days}}"
+msgstr "{value, plural, one {# dag} other {# dage}}"
 
 #: src/lib/utils.ts
 msgid "1 hour"
@@ -427,6 +436,10 @@ msgstr "Celsius (°C)"
 msgid "Certificate"
 msgstr "Certifikat"
 
+#: src/lib/alerts.ts
+msgid "Certificate Expiration"
+msgstr "Certifikatudløb"
+
 #: src/components/network-monitors-table/network-monitors-table.tsx
 msgid "Certificate expired {expires}"
 msgstr "Certifikatet udløb {expires}"
@@ -638,6 +651,11 @@ msgstr "Kopier installationskommandoen for agenten nedenfor, eller registrer age
 #: src/components/add-system.tsx
 msgid "Copy the<0>docker-compose.yml</0> content for the agent below, or register agents automatically with a <1>universal token</1>."
 msgstr "Kopier <0>docker-compose.yml</0> indholdet for agenten nedenfor, eller registrer agenter automatisk med en <1>universalnøgle</1>."
+
+#: src/components/token-value.tsx
+#: src/components/token-value.tsx
+msgid "Copy token"
+msgstr "Kopiér token"
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Copy YAML"
@@ -958,6 +976,7 @@ msgstr "Eksisterende systemer ikke defineret i <0>config.yml</0> vil blive slett
 msgid "Exited active"
 msgstr "Afsluttet aktiv"
 
+#: src/components/alerts-history-columns.tsx
 #: src/components/network-monitors-table/network-monitors-columns.tsx
 msgid "Expired"
 msgstr "Udløbet"
@@ -965,6 +984,10 @@ msgstr "Udløbet"
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Expires after one hour or on hub restart."
 msgstr "Udløber efter en time eller ved hub-genstart."
+
+#: src/components/alerts/alerts-sheet.tsx
+msgid "Expires within <0>{value, plural, one {# day} other {# days}}</0>"
+msgstr "Udløber inden for <0>{value, plural, one {# dag} other {# dage}}</0>"
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Export"
@@ -1142,6 +1165,11 @@ msgstr "Heartbeat sendt succesfuldt"
 msgid "Hide timestamps"
 msgstr "Skjul tidsstempler"
 
+#: src/components/token-value.tsx
+#: src/components/token-value.tsx
+msgid "Hide token"
+msgstr "Skjul token"
+
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgctxt "Button to copy install command"
@@ -1183,6 +1211,10 @@ msgstr "Inaktiv"
 #: src/components/login/forgot-pass-form.tsx
 msgid "If you've lost the password to your admin account, you may reset it using the following command."
 msgstr "Hvis du har mistet adgangskoden til din administratorkonto, kan du nulstille den ved hjælp af følgende kommando."
+
+#: src/components/network-monitors-table/monitor-dialog.tsx
+msgid "Ignore TLS certificate errors"
+msgstr "Ignorer TLS-certifikatfejl"
 
 #: src/components/containers-table/containers-table-columns.tsx
 msgctxt "Docker image"
@@ -1500,6 +1532,11 @@ msgstr "OAuth 2 / OIDC understøttelse"
 msgid "On each restart, systems in the database will be updated to match the systems defined in the file."
 msgstr "Ved hver genstart vil systemer i databasen blive opdateret til at matche de systemer, der er defineret i filen."
 
+#. placeholder {0}: alert.value
+#: src/components/active-alerts.tsx
+msgid "One or more certificates expire within {0, plural, one {# day} other {# days}}"
+msgstr "Et eller flere certifikater udløber inden for {0, plural, one {# dag} other {# dage}}"
+
 #: src/lib/alerts.ts
 msgid "One or more containers are unhealthy"
 msgstr "En eller flere containere er usunde"
@@ -1571,11 +1608,8 @@ msgid "Page"
 msgstr "Side"
 
 #. placeholder {0}: pageIndex + 1
-#. placeholder {0}: table.getState().pagination.pageIndex + 1
-#. placeholder {1}: Math.max(table.getPageCount(), 1)
-#. placeholder {1}: table.getPageCount()
-#: src/components/routes/settings/alerts-history-data-table.tsx
-#: src/components/routes/system/package-updates-table.tsx
+#. placeholder {1}: Math.max(1, pageCount)
+#: src/components/ui/data-table-pagination.tsx
 msgid "Page {0} of {1}"
 msgstr "Side {0} af {1}"
 
@@ -1834,6 +1868,11 @@ msgstr "Genstarter"
 msgid "Resume"
 msgstr "Genoptag"
 
+#: src/components/token-value.tsx
+#: src/components/token-value.tsx
+msgid "Reveal token"
+msgstr "Vis token"
+
 #. Package version
 #: src/components/routes/system/package-updates-table.tsx
 msgid "Revision"
@@ -1850,8 +1889,7 @@ msgstr "Root"
 msgid "Rotate token"
 msgstr "Roter nøgle"
 
-#: src/components/routes/settings/alerts-history-data-table.tsx
-#: src/components/routes/system/package-updates-table.tsx
+#: src/components/ui/data-table-pagination.tsx
 msgid "Rows per page"
 msgstr "Rækker per side"
 
@@ -2006,7 +2044,6 @@ msgstr "Indstil følgende miljøvariabler på din Beszel-hub for at aktivere hea
 #: src/components/navbar.tsx
 #: src/components/routes/settings/layout.tsx
 #: src/components/routes/settings/layout.tsx
-#: src/components/routes/system/info-bar.tsx
 msgid "Settings"
 msgstr "Indstillinger"
 
@@ -2205,6 +2242,15 @@ msgstr "Til email(s)"
 msgid "Token"
 msgstr "Nøgle"
 
+#. placeholder {0}: fingerprint.expand.system.name
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Token for {0}"
+msgstr "Token for {0}"
+
+#: src/components/token-value.tsx
+msgid "Token hidden"
+msgstr "Token skjult"
+
 #: src/components/command-palette.tsx
 #: src/components/routes/settings/layout.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
@@ -2267,6 +2313,10 @@ msgstr "Udløser når 5 minut belastning gennemsnit overstiger en tærskel"
 #: src/lib/alerts.ts
 msgid "Triggers when a container's health check reports unhealthy"
 msgstr "Udløses, når en containers helbredskontrol rapporterer en usund tilstand"
+
+#: src/lib/alerts.ts
+msgid "Triggers when an HTTPS certificate nears expiration"
+msgstr "Udløses, når et HTTPS-certifikat nærmer sig udløb"
 
 #: src/lib/alerts.ts
 msgid "Triggers when any sensor exceeds a threshold"
@@ -2337,6 +2387,7 @@ msgid "Unit preferences"
 msgstr "Enhedspræferencer"
 
 #: src/components/command-palette.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Universal token"
 msgstr "Universalnøgle"
@@ -2413,6 +2464,10 @@ msgstr "Forbrug"
 msgid "Usage of storage pool {displayName}"
 msgstr "Forbrug af lagerpool {displayName}"
 
+#: src/components/network-monitors-table/monitor-dialog.tsx
+msgid "Use for self-signed certificates."
+msgstr "Bruges til selvsignerede certifikater."
+
 #: src/components/routes/system/charts/memory-charts.tsx
 #: src/components/routes/system/charts/memory-charts.tsx
 #: src/components/routes/system/storage-pools-table.tsx
@@ -2436,6 +2491,7 @@ msgid "Value"
 msgstr "Værdi"
 
 #: src/components/network-monitors-table/network-monitors-table.tsx
+#: src/components/routes/system/info-bar.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "View"
 msgstr "Vis"
@@ -2463,6 +2519,7 @@ msgstr "Se dine 200 nyeste alarmer."
 msgid "Visible Fields"
 msgstr "Synlige felter"
 
+#: src/components/charts/chart-no-values.tsx
 #: src/components/routes/system/chart-card.tsx
 msgid "Waiting for enough records to display"
 msgstr "Venter på nok posteringer til at vise"
@@ -2537,4 +2594,3 @@ msgstr "Ja"
 #: src/components/routes/settings/layout.tsx
 msgid "Your user settings have been updated."
 msgstr "Dine brugerindstillinger er opdateret."
-
