@@ -305,20 +305,20 @@ export function formatBytes(
 	// bytes
 	const suffix = perSecond ? "/s" : ""
 	if (size < 100) return { value: size, unit: `B${suffix}` }
-	if (size < 1000 * 1024) return { value: size / 1024, unit: `KB${suffix}` }
+	if (size < 1000 * 1024) return { value: size / 1024, unit: `KiB${suffix}` }
 	if (size < 1000 * 1024 ** 2)
 		return {
 			value: size / 1024 ** 2,
-			unit: `MB${suffix}`,
+			unit: `MiB${suffix}`,
 		}
 	if (size < 1000 * 1024 ** 3)
 		return {
 			value: size / 1024 ** 3,
-			unit: `GB${suffix}`,
+			unit: `GiB${suffix}`,
 		}
 	return {
 		value: size / 1024 ** 4,
-		unit: `TB${suffix}`,
+		unit: `TiB${suffix}`,
 	}
 }
 

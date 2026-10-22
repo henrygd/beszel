@@ -210,7 +210,7 @@ export default function SettingsProfilePage({ userSettings }: { userSettings: Us
 								</SelectTrigger>
 								<SelectContent>
 									<SelectItem value={String(Unit.Bytes)}>
-										<Trans>Bytes (KB/s, MB/s, GB/s)</Trans>
+										<Trans>Bytes (KiB/s, MiB/s, GiB/s)</Trans>
 									</SelectItem>
 									<SelectItem value={String(Unit.Bits)}>
 										<Trans>Bits (Kbps, Mbps, Gbps)</Trans>
@@ -232,7 +232,7 @@ export default function SettingsProfilePage({ userSettings }: { userSettings: Us
 								</SelectTrigger>
 								<SelectContent>
 									<SelectItem value={String(Unit.Bytes)}>
-										<Trans>Bytes (KB/s, MB/s, GB/s)</Trans>
+										<Trans>Bytes (KiB/s, MiB/s, GiB/s)</Trans>
 									</SelectItem>
 									<SelectItem value={String(Unit.Bits)}>
 										<Trans>Bits (Kbps, Mbps, Gbps)</Trans>
