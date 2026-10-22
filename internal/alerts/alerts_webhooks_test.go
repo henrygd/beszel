@@ -27,9 +27,9 @@ func TestPersistedWebhooksUseCurrentOwnerRole(t *testing.T) {
 
 	settings, err := hub.FindFirstRecordByFilter("user_settings", "user={:user}", dbx.Params{"user": user.Id})
 	require.NoError(t, err)
-	settings.Set("settings", alerts.UserNotificationSettings{Webhooks: []string{"generic+" + server.URL}})
+	settings.Set("settings", alerts.UserNotificationSettings{Enabled: true, Webhooks: []string{"generic+" + server.URL}})
 	require.NoError(t, hub.Save(settings))
-	message := alerts.AlertMessageData{UserID: user.Id, Title: "Test", Message: "Persisted webhook"}
+	message := alerts.AlertMessageData{Title: "Test", Message: "Persisted webhook"}
 
 	// Keep the same URL and manager while changing roles, so cached privileges
 	// or treating previously saved URLs as trusted would fail this test.
@@ -58,9 +58,8 @@ func TestPersistedWebhooksUseCurrentOwnerRole(t *testing.T) {
 		const missingOwner = "missingowner123"
 		settings.Set("user", missingOwner)
 		require.NoError(t, hub.SaveNoValidate(settings))
-		message.UserID = missingOwner
-		err := am.SendAlert(message)
-		require.ErrorContains(t, err, "load notification owner")
+		// The orphaned recipient is skipped without blocking other recipients.
+		require.NoError(t, am.SendAlert(message))
 		require.EqualValues(t, 1, delivered.Load())
 	})
 }

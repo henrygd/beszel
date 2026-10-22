@@ -197,7 +197,7 @@ func TestNetworkMonitorCertAlertSteadyStateNoDatabaseWork(t *testing.T) {
 func TestNetworkMonitorCertAlertIndependentOfLossAlert(t *testing.T) {
 	hub, system, certAlert, m := certAlertSetup(t)
 	lossAlert, err := beszelTests.CreateRecord(hub, "alerts", map[string]any{
-		"name": "NetworkMonitorLoss", "system": system.Id, "user": certAlert.GetString("user"), "value": 5,
+		"name": "NetworkMonitorLoss", "system": system.Id, "value": 5,
 	})
 	require.NoError(t, err)
 	am := alerts.NewTestAlertManagerWithoutWorker(hub)
@@ -264,18 +264,20 @@ func TestNetworkMonitorCertAlertAPI(t *testing.T) {
 		{name: "too large threshold", value: 366, status: 400},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
-			hub, user := beszelTests.GetHubWithUser(t)
+			hub, _ := beszelTests.GetHubWithUser(t)
 			defer hub.Cleanup()
-			systems, err := beszelTests.CreateSystems(hub, 1, user.Id, "paused")
+			admin, err := beszelTests.CreateUserWithRole(hub, "admin@example.com", "password", "admin")
 			require.NoError(t, err)
-			token, err := user.NewAuthToken()
+			systems, err := beszelTests.CreateSystems(hub, 1, admin.Id, "paused")
+			require.NoError(t, err)
+			token, err := admin.NewAuthToken()
 			require.NoError(t, err)
 			for _, direct := range []bool{false, true} {
 				body := map[string]any{"name": "NetworkMonitorCert", "value": tc.value, "min": 10, "systems": []string{systems[0].Id}, "overwrite": true}
-				url := "/api/beszel/user-alerts"
+				url := "/api/beszel/alerts"
 				if direct {
 					url = "/api/collections/alerts/records"
-					body["system"], body["user"] = systems[0].Id, user.Id
+					body["system"] = systems[0].Id
 					existing, err := hub.FindAllRecords("alerts")
 					require.NoError(t, err)
 					for _, record := range existing {

@@ -59,7 +59,7 @@ func TestCreateRecordsHandlesSystemdAlertLifecycle(t *testing.T) {
 
 	settings, err := hub.FindFirstRecordByFilter("user_settings", "user={:user}", dbx.Params{"user": user.Id})
 	require.NoError(t, err)
-	settings.Set("settings", `{"emails":["test@example.com"],"webhooks":[]}`)
+	settings.Set("settings", `{"notificationsEnabled":true,"emails":["test@example.com"],"webhooks":[]}`)
 	require.NoError(t, hub.Save(settings))
 
 	systemRecords, err := tests.CreateSystems(hub, 1, user.Id, "paused")
