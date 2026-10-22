@@ -6,19 +6,24 @@ import { useCallback, useEffect, useId, useMemo, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { queueUserSettings } from "@/lib/api"
-import { $userSettings } from "@/lib/stores"
+import { atom } from "nanostores"
 
 const defaultPageSizes = [10, 15, 20, 30, 40, 50, 100, 200]
+const pageSizeKey = "besz-pageSize"
+
+// The page size is stored per device in localStorage rather than in user settings by design.
+// The right number of rows depends on screen size (e.g. 20 on desktop, 10 on a phone), so
+// syncing it across devices would mean changing it every time you switch devices.
+const $pageSize = atom<number>(getLocalPageSize())
 
 /**
- * Pagination state for a table. The page size is a user setting shared by all tables.
+ * Pagination state for a table. The page size is shared by all tables on this device.
  * Pass `pagination` to table state and `onPaginationChange` to the table options along with
  * `autoResetPageIndex: false`, so realtime data updates don't jump back to the first page.
  * Call `resetPageIndex` when the filter or sort changes.
  */
 export function usePagination() {
-	const { pageSize: savedPageSize = getLocalPageSize() } = useStore($userSettings, { keys: ["pageSize"] })
+	const savedPageSize = useStore($pageSize)
 	// saved sizes below the smallest option (e.g. the removed 5) fall back to the smallest option
 	const pageSize = Math.max(savedPageSize, defaultPageSizes[0])
 	const [pageIndex, setPageIndex] = useState(0)
@@ -28,9 +33,8 @@ export function usePagination() {
 			const next = typeof updater === "function" ? updater(pagination) : updater
 			setPageIndex(next.pageIndex)
 			if (next.pageSize !== pageSize) {
-				localStorage.setItem("besz-pageSize", JSON.stringify(next.pageSize))
-				$userSettings.setKey("pageSize", next.pageSize)
-				queueUserSettings({ pageSize: next.pageSize })
+				localStorage.setItem(pageSizeKey, JSON.stringify(next.pageSize))
+				$pageSize.set(next.pageSize)
 			}
 		},
 		[pagination, pageSize]
@@ -39,10 +43,10 @@ export function usePagination() {
 	return { pagination, onPaginationChange, resetPageIndex }
 }
 
-/** Page size saved on this device, used until user settings load from the server */
+/** Page size saved on this device */
 function getLocalPageSize(): number {
 	try {
-		return JSON.parse(localStorage.getItem("besz-pageSize") || "null") ?? 20
+		return JSON.parse(localStorage.getItem(pageSizeKey) || "null") ?? 20
 	} catch {
 		return 20
 	}
