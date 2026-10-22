@@ -178,6 +178,8 @@ func NewAgent(dataDir ...string) (agent *Agent, err error) {
 
 	agent.packageUpdates = newPackageUpdatesManager(agent.dataDir)
 
+	agent.systemInfo.RemoteUpdate = remoteUpdateEnabled()
+
 	// initialize GPU manager
 	agent.gpuManager, err = NewGPUManager()
 	if err != nil {

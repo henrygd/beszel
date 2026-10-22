@@ -513,6 +513,7 @@ KEY=""
 TOKEN=""
 HUB_URL=""
 AUTO_UPDATE_FLAG="" # empty string means prompt, "true" means auto-enable, "false" means skip
+REMOTE_UPDATE_FLAG=false
 # Track which of the reconfigurable values were explicitly passed as arguments,
 # so a reinstall only overwrites the fields the caller actually asked to change.
 KEY_PROVIDED=false
@@ -535,6 +536,7 @@ case "${1-}" in
   printf "  -u                    : Uninstall Beszel Agent\n"
   printf "  --auto-update [VALUE] : Control automatic daily updates\n"
   printf "                          VALUE can be true (enable) or false (disable). If not specified, will prompt.\n"
+  printf "  --remote-update       : Allow the hub to trigger agent updates (systemd only)\n"
   printf "  --mirror [URL]        : Use GitHub proxy to resolve network timeout issues in mainland China\n"
   printf "                          URL: optional custom proxy URL (default: https://gh.beszel.dev)\n"
   printf "  -h, --help            : Display this help message\n"
@@ -650,6 +652,9 @@ while [ $# -gt 0 ]; do
       AUTO_UPDATE_FLAG="true"
     fi
     ;;
+  --remote-update)
+    REMOTE_UPDATE_FLAG=true
+    ;;
   *)
     echo "Invalid option: $1" >&2
     exit 1
@@ -750,6 +755,11 @@ if [ "$UNINSTALL" = true ]; then
     systemctl disable beszel-agent-update.timer >/dev/null 2>&1 || warn "Cleanup command failed: systemctl disable beszel-agent-update.timer"
     rm -f /etc/systemd/system/beszel-agent-update.service
     rm -f /etc/systemd/system/beszel-agent-update.timer
+
+    # Remove the remote update path unit and service if they exist
+    systemctl disable --now beszel-agent-remote-update.path >/dev/null 2>&1 || true
+    rm -f /etc/systemd/system/beszel-agent-remote-update.path
+    rm -f /etc/systemd/system/beszel-agent-remote-update.service
 
     systemctl daemon-reload
   fi
@@ -1458,6 +1468,19 @@ EOF
     ;;
   esac
 
+  # Let the hub trigger updates through a root-owned path unit
+  if [ "$REMOTE_UPDATE_FLAG" = "true" ]; then
+    echo "Enabling remote updates from the hub..."
+    # Older agents don't know this subcommand and would start in the foreground
+    if ! "$BIN_PATH" --help 2>&1 | grep -q "remote-update"; then
+      warn "This agent version does not support remote updates."
+    elif [ -n "$GITHUB_PROXY_URL" ]; then
+      "$BIN_PATH" remote-update enable --china-mirrors || warn "Could not enable remote updates."
+    else
+      "$BIN_PATH" remote-update enable || warn "Could not enable remote updates."
+    fi
+  fi
+
   # Wait for the service to start or fail
   if [ "$(systemctl is-active beszel-agent.service)" != "active" ]; then
     echo "Error: The Beszel Agent service is not running."
@@ -1469,5 +1492,9 @@ fi
 UPGRADE_PENDING=false
 RUNNING_ADDRESS=$(configured_address)
 [ -n "$RUNNING_ADDRESS" ] || RUNNING_ADDRESS=$PORT
+
+if [ "$REMOTE_UPDATE_FLAG" = "true" ] && [ ! -f /etc/systemd/system/beszel-agent-remote-update.path ]; then
+  warn "Remote updates are only supported with systemd and were not enabled."
+fi
 
 printf "\n\033[32mBeszel Agent has been installed successfully! It is now running on $RUNNING_ADDRESS.\033[0m\n"

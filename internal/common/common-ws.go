@@ -30,6 +30,8 @@ const (
 	GetPackageUpdates
 	// Request recent logs for a systemd service from the agent.
 	GetSystemdLogs
+	// Ask the agent to update itself via its root-owned remote update service
+	RequestAgentUpdate
 	// Add new actions here...
 )
 
