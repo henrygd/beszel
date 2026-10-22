@@ -189,7 +189,7 @@ function numberLocale() {
 
 /** Format number using the app's selected language (e.g. decimal and grouping separators) */
 export function formatNumber(num: number) {
-	return num.toLocaleString(numberLocale())
+	return num.toLocaleString(numberLocale(), { numberingSystem: "latn" })
 }
 
 const decimalFormatters: Map<string, Intl.NumberFormat> = new Map()
@@ -205,6 +205,7 @@ export function decimalString(num: number, digits = 2) {
 		formatter = new Intl.NumberFormat(locale, {
 			minimumFractionDigits: digits,
 			maximumFractionDigits: digits,
+			numberingSystem: "latn",
 		})
 		decimalFormatters.set(key, formatter)
 	}
