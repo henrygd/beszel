@@ -1,8 +1,10 @@
 import { t } from "@lingui/core/macro"
 import { Trans } from "@lingui/react/macro"
+import { useStore } from "@nanostores/react"
 import { BellIcon, LoaderCircleIcon, PlusIcon, SaveIcon, Trash2Icon } from "lucide-react"
 import { type ChangeEventHandler, useEffect, useState } from "react"
 import * as v from "valibot"
+import { SystemMultiSelect } from "@/components/multi-select"
 import { prependBasePath } from "@/components/router"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
@@ -10,8 +12,10 @@ import { Input } from "@/components/ui/input"
 import { InputTags } from "@/components/ui/input-tags"
 import { Label } from "@/components/ui/label"
 import { Separator } from "@/components/ui/separator"
+import { Switch } from "@/components/ui/switch"
 import { toast } from "@/components/ui/use-toast"
 import { isAdmin, pb } from "@/lib/api"
+import { $systems } from "@/lib/stores"
 import type { UserSettings } from "@/types"
 import { saveSettings } from "./layout"
 import { QuietHours } from "./quiet-hours"
@@ -29,12 +33,17 @@ const NotificationSchema = v.object({
 })
 
 const SettingsNotificationsPage = ({ userSettings }: { userSettings: UserSettings }) => {
+	const systems = useStore($systems)
+	const [notificationsEnabled, setNotificationsEnabled] = useState(userSettings.notificationsEnabled ?? false)
+	const [subscribedSystems, setSubscribedSystems] = useState<string[]>(userSettings.systems ?? [])
 	const [webhooks, setWebhooks] = useState(userSettings.webhooks ?? [])
 	const [emails, setEmails] = useState<string[]>(userSettings.emails ?? [])
 	const [isLoading, setIsLoading] = useState(false)
 
 	// update values when userSettings changes
 	useEffect(() => {
+		setNotificationsEnabled(userSettings.notificationsEnabled ?? false)
+		setSubscribedSystems(userSettings.systems ?? [])
 		setWebhooks(userSettings.webhooks ?? [])
 		setEmails(userSettings.emails ?? [])
 	}, [userSettings])
@@ -59,7 +68,7 @@ const SettingsNotificationsPage = ({ userSettings }: { userSettings: UserSetting
 		setIsLoading(true)
 		try {
 			const parsedData = v.parse(NotificationSchema, { emails, webhooks })
-			await saveSettings(parsedData)
+			await saveSettings({ ...parsedData, notificationsEnabled, systems: subscribedSystems })
 		} catch (e: unknown) {
 			toast({
 				title: t`Failed to save settings`,
@@ -88,6 +97,44 @@ const SettingsNotificationsPage = ({ userSettings }: { userSettings: UserSetting
 			</div>
 			<Separator className="my-4" />
 			<div className="space-y-5">
+				<label htmlFor="notif-enabled" className="flex items-center justify-between gap-4 cursor-pointer">
+					<div>
+						<p className="font-medium mb-0.5">
+							<Trans>Receive alert notifications</Trans>
+						</p>
+						<p className="text-sm text-muted-foreground">
+							<Trans>Enable to receive notifications when alerts are triggered.</Trans>
+						</p>
+					</div>
+					<Switch
+						id="notif-enabled"
+						checked={notificationsEnabled}
+						onCheckedChange={setNotificationsEnabled}
+					/>
+				</label>
+				{notificationsEnabled && systems.length > 0 && (
+					<div>
+						<p className="font-medium mb-1">
+							<Trans>Systems</Trans>
+						</p>
+						<p className="text-sm text-muted-foreground mb-2">
+							{subscribedSystems.length === 0 ? (
+								<Trans>Receiving notifications for all systems.</Trans>
+							) : (
+								<Trans>Receiving notifications for {subscribedSystems.length} system(s).</Trans>
+							)}
+						</p>
+						<SystemMultiSelect
+							id="notif-systems"
+							systemIds={systems.map((system) => system.id)}
+							selectedSystemIds={new Set(subscribedSystems)}
+							onChange={(ids) => setSubscribedSystems(Array.from(ids))}
+							placeholder={t`All systems`}
+							className="sm:max-w-80"
+						/>
+					</div>
+				)}
+				<Separator />
 				<div className="grid gap-2">
 					<div className="mb-2">
 						<h3 className="mb-1 text-lg font-medium">

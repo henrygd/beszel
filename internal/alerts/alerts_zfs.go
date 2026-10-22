@@ -57,24 +57,16 @@ func (am *AlertManager) handleZfsPoolHealthAlert(e *core.RecordEvent, oldHealth 
 		message = fmt.Sprintf("Storage pool %s (%s) health changed from %s to %s", poolName, systemName, oldHealth, newHealth)
 	}
 
-	userIDs := systemRecord.GetStringSlice("users")
-	if len(userIDs) == 0 {
-		return e.Next()
+	if err := am.SendAlert(AlertMessageData{
+		SystemID: systemID,
+		Title:    title,
+		Message:  message,
+		Link:     am.hub.MakeLink("system", systemID),
+		LinkText: "View " + systemName,
+	}); err != nil {
+		e.App.Logger().Error("Failed to send ZFS alert", "err", err)
 	}
-
-	for _, userID := range userIDs {
-		if err := am.SendAlert(AlertMessageData{
-			UserID:   userID,
-			SystemID: systemID,
-			Title:    title,
-			Message:  message,
-			Link:     am.hub.MakeLink("system", systemID),
-			LinkText: "View " + systemName,
-		}); err != nil {
-			e.App.Logger().Error("Failed to send ZFS alert", "err", err, "userID", userID)
-		}
-		_ = createZfsPoolHistoryRecord(e.App, userID, systemID, e.Record.Id, poolName)
-	}
+	_ = createZfsPoolHistoryRecord(e.App, systemID, e.Record.Id, poolName)
 
 	return e.Next()
 }
@@ -110,13 +102,12 @@ func zfsPoolSeverity(health string) int {
 
 // createZfsPoolHistoryRecord logs a pool health alert in the alerts history so
 // it is visible in the UI without creating an editable alert configuration.
-func createZfsPoolHistoryRecord(app core.App, userID, systemID, alertID, poolName string) error {
+func createZfsPoolHistoryRecord(app core.App, systemID, alertID, poolName string) error {
 	collection, err := app.FindCachedCollectionByNameOrId("alerts_history")
 	if err != nil {
 		return err
 	}
 	record := core.NewRecord(collection)
-	record.Set("user", userID)
 	record.Set("system", systemID)
 	record.Set("alert_id", alertID)
 	record.Set("name", "Storage Pool: "+poolName)
@@ -124,7 +115,7 @@ func createZfsPoolHistoryRecord(app core.App, userID, systemID, alertID, poolNam
 }
 
 // resolveAllAlertHistoryRecords resolves every open history entry for an alert
-// record id (one per system user).
+// record id.
 func resolveAllAlertHistoryRecords(app core.App, alertID string) {
 	records, err := app.FindRecordsByFilter(
 		"alerts_history",

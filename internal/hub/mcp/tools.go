@@ -67,11 +67,11 @@ func registerTools(app core.App, server *mcpsdk.Server) {
 	}, h.listContainers)
 	mcpsdk.AddTool(server, &mcpsdk.Tool{
 		Name:        "list_alerts",
-		Description: "List the authenticated user's alert configurations (CPU, memory, disk, status, etc.) with state.",
+		Description: "List alert configurations of the systems the user can access (CPU, memory, disk, status, etc.) with state.",
 	}, h.listAlerts)
 	mcpsdk.AddTool(server, &mcpsdk.Tool{
 		Name: "list_alert_events",
-		Description: "List triggered/resolved alert history events for the authenticated user's alerts over a time range. " +
+		Description: "List triggered/resolved alert history events for the systems the user can access over a time range. " +
 			"Use this to answer questions like 'what alerts fired recently and are they resolved'.",
 	}, h.listAlertEvents)
 	mcpsdk.AddTool(server, &mcpsdk.Tool{
@@ -809,19 +809,17 @@ func (h *mcphub) listContainers(ctx context.Context, req *mcpsdk.CallToolRequest
 	return nil, result, nil
 }
 
-// listAlerts returns the authenticated user's alerts (all alerts for superusers).
+// listAlerts returns the alerts of systems visible to the auth record.
 func (h *mcphub) listAlerts(ctx context.Context, req *mcpsdk.CallToolRequest, _ noParams) (*mcpsdk.CallToolResult, alertList, error) {
 	auth, err := h.authRecord(ctx)
 	if err != nil {
 		return nil, alertList{}, err
 	}
-	params := dbx.Params{}
-	filter := ""
-	if !auth.IsSuperuser() {
-		filter = "user = {:uid}"
-		params["uid"] = auth.Id
+	scope, err := h.systemScope(auth, "")
+	if err != nil {
+		return nil, alertList{}, err
 	}
-	records, hasMore, err := h.findLimited("alerts", filter, "-updated", maxListRecords, params)
+	records, hasMore, err := h.findLimited("alerts", scope.filter, "-updated", maxListRecords, scope.params)
 	if err != nil {
 		return nil, alertList{}, err
 	}
@@ -996,9 +994,8 @@ type alertEventParams struct {
 	Hours float64 `json:"hours,omitzero" jsonschema:"how many hours to look back (1-720, default 168 = 7 days)"`
 }
 
-// listAlertEvents returns triggered/resolved alert history events. History is
-// scoped to the authenticated user's alerts like the alerts collection rules;
-// superusers see all events.
+// listAlertEvents returns triggered/resolved alert history events of systems
+// visible to the auth record, like the alerts_history collection rules.
 func (h *mcphub) listAlertEvents(ctx context.Context, req *mcpsdk.CallToolRequest, params alertEventParams) (*mcpsdk.CallToolResult, alertEventList, error) {
 	auth, err := h.authRecord(ctx)
 	if err != nil {
@@ -1012,15 +1009,12 @@ func (h *mcphub) listAlertEvents(ctx context.Context, req *mcpsdk.CallToolReques
 		hours = 720
 	}
 	now := time.Now().UTC()
-	queryParams := dbx.Params{
-		"from": now.Add(-time.Duration(hours * float64(time.Hour))).Format(types.DefaultDateLayout),
+	scope, err := h.systemScope(auth, "")
+	if err != nil {
+		return nil, alertEventList{}, err
 	}
-	filter := "created >= {:from}"
-	if !auth.IsSuperuser() {
-		filter = "user = {:uid} && created >= {:from}"
-		queryParams["uid"] = auth.Id
-	}
-	records, hasMore, err := h.findLimited("alerts_history", filter, "-created", maxListRecords, queryParams)
+	scope.params["from"] = now.Add(-time.Duration(hours * float64(time.Hour))).Format(types.DefaultDateLayout)
+	records, hasMore, err := h.findLimited("alerts_history", scope.and("created >= {:from}"), "-created", maxListRecords, scope.params)
 	if err != nil {
 		return nil, alertEventList{}, err
 	}
