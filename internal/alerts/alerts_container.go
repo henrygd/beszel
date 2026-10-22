@@ -205,7 +205,6 @@ func (am *AlertManager) sendContainerHealthAlert(unhealthy bool, systemName stri
 		}
 		title := fmt.Sprintf("%s containers are healthy ✅", systemName)
 		return am.SendAlert(AlertMessageData{
-			UserID:   alertData.UserID,
 			SystemID: alertData.SystemID,
 			Title:    title,
 			Message:  strings.TrimSuffix(title, " ✅"),
@@ -241,7 +240,6 @@ func (am *AlertManager) sendContainerHealthAlert(unhealthy bool, systemName stri
 	}
 
 	return am.SendAlert(AlertMessageData{
-		UserID:   alertData.UserID,
 		SystemID: alertData.SystemID,
 		Title:    title,
 		Message:  message,

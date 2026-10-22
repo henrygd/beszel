@@ -196,9 +196,9 @@ func (h *Hub) registerApiRoutes(se *core.ServeEvent) error {
 	// get, create, or delete universal tokens (POST keeps tokens out of URLs; GET is kept for legacy clients)
 	apiAuth.GET("/universal-token", h.handleUniversalToken).BindFunc(excludeReadOnlyRole)
 	apiAuth.POST("/universal-token", h.handleUniversalToken).BindFunc(excludeReadOnlyRole)
-	// update / delete user alerts
-	apiAuth.POST("/user-alerts", alerts.UpsertUserAlerts)
-	apiAuth.DELETE("/user-alerts", alerts.DeleteUserAlerts)
+	// update / delete alerts (admin only)
+	apiAuth.POST("/alerts", alerts.UpsertAlerts)
+	apiAuth.DELETE("/alerts", alerts.DeleteAlerts)
 	// refresh SMART devices for a system
 	apiAuth.POST("/smart/refresh", h.refreshSmartData).BindFunc(excludeReadOnlyRole)
 	// refresh ZFS pool details for a system
