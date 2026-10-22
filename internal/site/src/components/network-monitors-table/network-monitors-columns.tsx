@@ -17,6 +17,7 @@ import {
 	CopyIcon,
 	ShieldCheckIcon,
 	ShieldOffIcon,
+	TagIcon,
 } from "lucide-react"
 import { t } from "@lingui/core/macro"
 import type { NetworkMonitorRecord, SystemRecord } from "@/types"
@@ -135,6 +136,21 @@ export function getMonitorColumns({
 					),
 					[status, name]
 				)
+			},
+		},
+		{
+			id: "name",
+			meta: { label: t`Name` },
+			accessorFn: (record) => record.name ?? "",
+			sortingFn: (a, b) =>
+				(a.getValue("name") as string).localeCompare(b.getValue("name") as string, undefined, { numeric: true }),
+			header: ({ column }) => <HeaderButton column={column} name={t`Name`} Icon={TagIcon} />,
+			cell: ({ getValue }) => {
+				const name = getValue() as string
+				if (!name) {
+					return <span className="ms-1.5 text-muted-foreground">-</span>
+				}
+				return <span className="ms-1.5 block max-w-44 truncate">{name}</span>
 			},
 		},
 		{

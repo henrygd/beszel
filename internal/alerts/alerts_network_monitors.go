@@ -230,10 +230,7 @@ func (am *AlertManager) evaluateNetworkMonitorAlerts(app core.App, systemID stri
 					if obs.triggered == active {
 						continue
 					}
-					label := m.GetString("target")
-					if m.GetString("protocol") == "tcp" {
-						label = net.JoinHostPort(label, strconv.Itoa(m.GetInt("port")))
-					}
+					label := monitorAlertLabel(m)
 					if obs.triggered {
 						collection, err := tx.FindCachedCollectionByNameOrId("alerts_history")
 						if err != nil {
@@ -316,6 +313,19 @@ func certExpiryCutoff(days float64, now time.Time) int64 {
 // It is negative once the certificate has expired.
 func certDaysLeft(expires int64, now time.Time) int {
 	return int(math.Floor(float64(expires-now.UnixMilli()) / float64(time.Hour.Milliseconds()*24)))
+}
+
+// monitorAlertLabel identifies a monitor in alert messages and history, keeping the target
+// next to the monitor's name so it stays clear what failed.
+func monitorAlertLabel(m *core.Record) string {
+	label := m.GetString("target")
+	if m.GetString("protocol") == "tcp" {
+		label = net.JoinHostPort(label, strconv.Itoa(m.GetInt("port")))
+	}
+	if name := m.GetString("name"); name != "" {
+		label = name + " (" + label + ")"
+	}
+	return label
 }
 
 func networkMonitorAlertMessage(name string, obs monitorObservation, label, systemName string, threshold float64) (title, message string) {

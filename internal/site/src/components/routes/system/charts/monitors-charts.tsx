@@ -1,4 +1,4 @@
-import { getMonitorTarget, monitorGapRecord } from "@/lib/network-monitor-utils"
+import { getMonitorLabel, monitorGapRecord } from "@/lib/network-monitor-utils"
 import LineChartDefault from "@/components/charts/line-chart"
 import type { DataPoint } from "@/components/charts/line-chart"
 import { decimalString, formatMicroseconds, matchesFilterGroups, parseFilterGroups, toFixedFloat } from "@/lib/utils"
@@ -48,7 +48,7 @@ function MonitorChart({
 	contentFormatter,
 	domain,
 	color,
-	getLabel = getMonitorTarget,
+	getLabel = getMonitorLabel,
 	filterStore = $monitorFilter,
 	showFilter = monitors.length > 1,
 }: MonitorChartBaseProps) {
