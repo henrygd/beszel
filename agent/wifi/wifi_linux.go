@@ -5,8 +5,12 @@ package wifi
 import (
 	"context"
 	"errors"
+	"math"
 	"net"
 	"os"
+	"os/exec"
+	"regexp"
+	"strconv"
 	"time"
 
 	"github.com/henrygd/beszel/internal/entities/system"
@@ -99,36 +103,172 @@ func hasWirelessDevice(dir string) bool {
 }
 
 func collect(ctx context.Context) map[string]system.WiFi {
-	if !hasWirelessDevice(wiphyClassDir) {
-		return nil
+	var client linuxClient
+	if hasWirelessDevice(wiphyClassDir) {
+		if c, err := newNL80211Client(); err == nil {
+			client = c
+			defer client.Close()
+		}
 	}
-	client, err := newNL80211Client()
-	if err != nil {
-		return nil
-	}
-	defer client.Close()
-	return collectLinux(ctx, client)
+	return collectLinuxWithAP(ctx, client, runIwinfo)
 }
 
-func collectLinux(ctx context.Context, client linuxClient) map[string]system.WiFi {
+type iwinfoCommand func(context.Context, ...string) ([]byte, error)
+
+func runIwinfo(ctx context.Context, args ...string) ([]byte, error) {
+	return exec.CommandContext(ctx, "iwinfo", args...).Output()
+}
+
+func collectLinuxWithAP(ctx context.Context, client linuxClient, iwinfo iwinfoCommand) map[string]system.WiFi {
+	results, aps := collectLinux(ctx, client)
+	for k, v := range collectOpenWrtAP(ctx, aps, iwinfo) {
+		results[k] = v
+	}
+
+	if len(results) == 0 {
+		return nil
+	}
+	return results
+}
+
+var (
+	iwinfoIfaceRe = regexp.MustCompile(`(?m)^(\S+)[ \t]+ESSID:`)
+	iwinfoModeRe  = regexp.MustCompile(`Mode:[ \t]*Master`)
+	iwinfoSSIDRe  = regexp.MustCompile(`ESSID:\s*"([^"]+)"`)
+	iwinfoAssocRe = regexp.MustCompile(`(?m)^(?:[0-9a-fA-F]{2}[:-]){5}[0-9a-fA-F]{2}[ \t]+(-?\d+)[ \t]+dBm`)
+)
+
+type iwinfoBlock struct {
+	name string
+	text string
+}
+
+// splitIwinfoBlocks splits bare `iwinfo` output into one block per interface.
+func splitIwinfoBlocks(out string) []iwinfoBlock {
+	idx := iwinfoIfaceRe.FindAllStringSubmatchIndex(out, -1)
+	blocks := make([]iwinfoBlock, 0, len(idx))
+	for i, m := range idx {
+		end := len(out)
+		if i+1 < len(idx) {
+			end = idx[i+1][0]
+		}
+		blocks = append(blocks, iwinfoBlock{name: out[m[2]:m[3]], text: out[m[0]:end]})
+	}
+	return blocks
+}
+
+// parseIwinfoInfo reports whether a block is a Master (AP) interface and its SSID.
+func parseIwinfoInfo(block string) (ssid string, isAP bool) {
+	if !iwinfoModeRe.MatchString(block) {
+		return "", false
+	}
+	if m := iwinfoSSIDRe.FindStringSubmatch(block); len(m) > 1 {
+		ssid = m[1]
+	}
+	return ssid, true
+}
+
+// parseAssocRSSI returns the rounded average RSSI of associated clients.
+// ok is false when no valid RSSI value was found.
+func parseAssocRSSI(out string) (avg float64, ok bool) {
+	sum, count := 0, 0
+	for _, m := range iwinfoAssocRe.FindAllStringSubmatch(out, -1) {
+		rssi, err := strconv.Atoi(m[1])
+		if err != nil || rssi >= 0 || rssi < -150 {
+			continue
+		}
+		sum += rssi
+		count++
+	}
+	if count == 0 {
+		return 0, false
+	}
+	return math.Round(float64(sum) / float64(count)), true
+}
+
+// A nil aps requests discovery for drivers without a usable nl80211 inventory.
+// An empty, non-nil aps means enumeration succeeded and found no APs.
+func collectOpenWrtAP(ctx context.Context, aps []string, iwinfo iwinfoCommand) map[string]system.WiFi {
+	if ctx.Err() != nil || (aps != nil && len(aps) == 0) {
+		return nil
+	}
+	results := make(map[string]system.WiFi)
+	var blocks []iwinfoBlock
+	if aps == nil {
+		out, err := iwinfo(ctx)
+		if err != nil && len(out) == 0 {
+			return results
+		}
+		blocks = splitIwinfoBlocks(string(out))
+	} else {
+		for _, name := range aps {
+			blocks = append(blocks, iwinfoBlock{name: name})
+		}
+	}
+
+	for _, b := range blocks {
+		if ctx.Err() != nil {
+			return results
+		}
+		if aps != nil {
+			out, err := iwinfo(ctx, b.name, "info")
+			if err != nil {
+				continue
+			}
+			b.text = string(out)
+		}
+		ssid, isAP := parseIwinfoInfo(b.text)
+		if !isAP {
+			continue
+		}
+
+		reading := system.WiFi{SSID: validSSID(ssid), AP: true}
+		if ctx.Err() != nil {
+			return results
+		}
+		if assocOut, err := iwinfo(ctx, b.name, "assoclist"); err == nil {
+			if avg, ok := parseAssocRSSI(string(assocOut)); ok {
+				reading.Signal = &avg
+			}
+		}
+		results[b.name] = reading
+	}
+	return results
+}
+
+// collectLinux returns station readings and AP names from a single interface
+// query. A nil AP list signals that iwinfo discovery may be needed.
+func collectLinux(ctx context.Context, client linuxClient) (map[string]system.WiFi, []string) {
 	result := make(map[string]system.WiFi)
-	if ctx.Err() != nil {
-		return result
+	if ctx.Err() != nil || client == nil {
+		return result, nil
 	}
 	if deadline, ok := ctx.Deadline(); ok {
 		if client.SetDeadline(deadline) != nil {
-			return result
+			return result, nil
 		}
 	}
 	interfaces, err := client.Interfaces()
 	if err != nil {
-		return result
+		return result, nil
 	}
+	var aps []string
 	for _, iface := range interfaces {
 		if ctx.Err() != nil {
 			break
 		}
-		if iface == nil || iface.Type != native.InterfaceTypeStation || iface.Name == "" {
+		if iface == nil || iface.Name == "" {
+			continue
+		}
+		// Only an inventory with at least one named interface is usable.
+		// Empty dumps can also come from unsupported proprietary drivers.
+		if aps == nil {
+			aps = make([]string, 0)
+		}
+		if iface.Type == native.InterfaceTypeAP {
+			aps = append(aps, iface.Name)
+		}
+		if iface.Type != native.InterfaceTypeStation {
 			continue
 		}
 		// GET_SCAN reads the kernel's BSS cache, without triggering a scan.
@@ -151,5 +291,5 @@ func collectLinux(ctx context.Context, client linuxClient) map[string]system.WiF
 		}
 		result[iface.Name] = reading
 	}
-	return result
+	return result, aps
 }
