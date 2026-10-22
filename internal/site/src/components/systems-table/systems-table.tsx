@@ -29,7 +29,7 @@ import {
 	Settings2Icon,
 	XIcon,
 } from "lucide-react"
-import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react"
+import React, { memo, useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { Button } from "@/components/ui/button"
 import {
 	DropdownMenu,
@@ -54,6 +54,8 @@ import AlertButton from "../alerts/alert-button"
 import { $router, Link } from "../router"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui/card"
 import { SystemsTableColumns, ActionsButton, IndicatorDot } from "./systems-table-columns"
+import { TagFilterDropdown, useTagFilter } from "@/components/tags/tag-filter-dropdown"
+import { buildTagCounts, filterByTags } from "@/lib/tag-utils"
 
 type ViewMode = "table" | "grid"
 type StatusFilter = "all" | SystemRecord["status"]
@@ -74,6 +76,7 @@ export default function SystemsTable() {
 			(JSON.parse(localStorage.getItem("besz-statusFilter") || "null") as StatusFilter | null) ??
 			"all"
 	)
+	const [selectedTagFilter, setSelectedTagFilter] = useTagFilter()
 	const [sorting, setSorting] = useState<SortingState>(
 		() =>
 			$userSettings.get().sortMode ??
@@ -82,7 +85,7 @@ export default function SystemsTable() {
 	const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
 	const { pagination, onPaginationChange, resetPageIndex } = usePagination()
 	const [columnVisibility, setColumnVisibility] = useState<VisibilityState>(
-		() => $userSettings.get().cols ?? JSON.parse(localStorage.getItem("besz-cols") || "{}")
+		() => $userSettings.get().cols ?? JSON.parse(localStorage.getItem("besz-cols") || '{"tags":false}')
 	)
 
 	// Apply settings from server once they load (handles incognito / new devices)
@@ -157,19 +160,21 @@ export default function SystemsTable() {
 
 	const locale = i18n.locale
 
-	// Filter data based on status filter
+	// Filter data based on status and tag filters
 	const filteredData = useMemo(() => {
-		if (statusFilter === "all") {
-			return data
-		}
+		let filtered = data
 		if (statusFilter === SystemStatus.Up) {
-			return Object.values(upSystems) ?? []
+			filtered = Object.values(upSystems)
+		} else if (statusFilter === SystemStatus.Down) {
+			filtered = Object.values(downSystems)
+		} else if (statusFilter === SystemStatus.Paused) {
+			filtered = Object.values(pausedSystems)
 		}
-		if (statusFilter === SystemStatus.Down) {
-			return Object.values(downSystems) ?? []
-		}
-		return Object.values(pausedSystems) ?? []
-	}, [data, statusFilter])
+		return filterByTags(filtered, selectedTagFilter)
+	}, [data, statusFilter, selectedTagFilter, upSystems, downSystems, pausedSystems])
+
+	// Number of systems per tag, for the tag-filter dropdown
+	const tagCounts = useMemo(() => buildTagCounts(data), [data])
 
 	const [viewMode, setViewMode] = useState<ViewMode>(
 		() =>
@@ -264,7 +269,7 @@ export default function SystemsTable() {
 								</Button>
 							</DropdownMenuTrigger>
 							<DropdownMenuContent align="end" className="h-72 md:h-auto min-w-48 md:min-w-auto overflow-y-auto">
-								<div className="grid grid-cols-1 md:grid-cols-4 divide-y md:divide-s md:divide-y-0">
+								<div className="grid grid-cols-1 md:grid-cols-5 divide-y md:divide-s md:divide-y-0">
 									<div className="border-r">
 										<DropdownMenuLabel className="pt-2 px-3.5 flex items-center gap-2">
 											<LayoutGridIcon className="size-4" />
@@ -281,6 +286,14 @@ export default function SystemsTable() {
 												<Trans>Grid</Trans>
 											</DropdownMenuRadioItem>
 										</DropdownMenuRadioGroup>
+									</div>
+
+									<div className="border-r">
+										<TagFilterDropdown
+											selected={selectedTagFilter}
+											onChange={setSelectedTagFilter}
+											counts={tagCounts}
+										/>
 									</div>
 
 									<div className="border-r">
@@ -383,6 +396,8 @@ export default function SystemsTable() {
 		viewMode,
 		locale,
 		statusFilter,
+		selectedTagFilter,
+		tagCounts,
 		upSystemsLength,
 		downSystemsLength,
 		pausedSystemsLength,
@@ -553,21 +568,21 @@ const SystemCard = memo(
 								// @ts-expect-error
 								const { Icon, name } = column.columnDef as ColumnDef<SystemRecord, unknown>
 								return (
-									<>
-										<div key={`${column.id}-icon`} className="flex items-center">
+									<React.Fragment key={column.id}>
+										<div className="flex items-center">
 											{column.id === "lastSeen" ? (
 												<EyeIcon className="size-4 text-muted-foreground" />
 											) : (
 												Icon && <Icon className="size-4 text-muted-foreground" />
 											)}
 										</div>
-										<div key={`${column.id}-label`} className="flex items-center text-muted-foreground pr-3">
+										<div className="flex items-center text-muted-foreground pr-3">
 											{name()}:
 										</div>
 										<div key={`${column.id}-value`} className="flex items-center min-w-0">
 											{flexRender(cell.column.columnDef.cell, cell.getContext())}
 										</div>
-									</>
+									</React.Fragment>
 								)
 							})}
 						</div>
