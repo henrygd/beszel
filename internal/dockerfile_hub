@@ -16,8 +16,11 @@ RUN apk add --no-cache \
 RUN update-ca-certificates
 
 # Build
-ARG TARGETOS TARGETARCH
-RUN CGO_ENABLED=0 GOOS=$TARGETOS GOARCH=$TARGETARCH go build -ldflags "-w -s" -o /beszel ./internal/cmd/hub
+ARG TARGETOS TARGETARCH TARGETVARIANT
+RUN if [ "$TARGETARCH" = "arm" ] && [ -n "$TARGETVARIANT" ]; then \
+    export GOARM="${TARGETVARIANT#v}"; \
+  fi; \
+  CGO_ENABLED=0 GOOS=$TARGETOS GOARCH=$TARGETARCH go build -ldflags "-w -s" -o /beszel ./internal/cmd/hub
 
 # ? -------------------------
 FROM scratch

@@ -10,6 +10,7 @@ import (
 	"net"
 	"strings"
 	"sync"
+	"sync/atomic"
 	"time"
 
 	"github.com/gliderlabs/ssh"
@@ -40,6 +41,8 @@ type Agent struct {
 	netInterfaceDeltaTrackers map[uint16]*deltatracker.DeltaTracker[string, uint64] // Per-cache-time NIC delta trackers
 	dockerManager             *dockerManager                                        // Manages Docker API requests
 	sensorConfig              *SensorConfig                                         // Sensors config
+	tempsReading              atomic.Bool                                           // A temperature read is still running (possibly blocked in the kernel)
+	fansReading               atomic.Bool                                           // A fan read is still running (possibly blocked in the kernel)
 	systemInfo                system.Info                                           // Host system info (dynamic)
 	systemDetails             system.Details                                        // Host system details (static, once-per-connection)
 	detailsDirty              bool                                                  // Whether system details have changed and need to be resent
@@ -57,6 +60,7 @@ type Agent struct {
 	monitorManager            *MonitorManager                                       // Manages network monitors
 	storagePoolManager        *StoragePoolManager                                   // Manages storage pool and dataset data
 	packageUpdates            *packageUpdatesManager                                // Checks for pending package updates
+	lastHubRequest            atomic.Int64                                          // Wall clock Unix nanoseconds of the last hub stats request
 }
 
 // NewAgent creates a new agent with the given data directory for persisting data.
@@ -138,7 +142,7 @@ func NewAgent(dataDir ...string) (agent *Agent, err error) {
 	agent.handlerRegistry = NewHandlerRegistry()
 
 	// initialize monitor manager
-	agent.monitorManager = newMonitorManager()
+	agent.monitorManager = newMonitorManager(agent)
 
 	agent.storagePoolManager = newStoragePoolManager()
 
@@ -188,6 +192,18 @@ func NewAgent(dataDir ...string) (agent *Agent, err error) {
 	}
 
 	return agent, nil
+}
+
+// markHubRequest records a hub stats request. It doesn't use the agent lock,
+// which gatherStats holds through collection.
+func (a *Agent) markHubRequest() {
+	a.lastHubRequest.Store(time.Now().UnixNano())
+}
+
+// hubIdleFor reports whether the hub hasn't requested stats for at least d.
+// Wall time counts host suspend toward idle.
+func (a *Agent) hubIdleFor(d time.Duration) bool {
+	return time.Now().UnixNano()-a.lastHubRequest.Load() >= int64(d)
 }
 
 func (a *Agent) gatherStats(options common.DataRequestOptions) *system.CombinedData {

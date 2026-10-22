@@ -104,6 +104,7 @@ func (h *GetDataHandler) Handle(hctx *HandlerContext) error {
 	var options common.DataRequestOptions
 	_ = cbor.Unmarshal(hctx.Request.Data, &options)
 
+	hctx.Agent.markHubRequest()
 	sysStats := hctx.Agent.gatherStats(options)
 	// Cached stats may be shared by concurrent SSH and WebSocket requests.
 	// Set the transport on the response copy, not on the cached data.

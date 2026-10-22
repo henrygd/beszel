@@ -594,6 +594,31 @@ func TestGetTempsWithTimeout(t *testing.T) {
 		assert.Nil(t, temps)
 		assert.ErrorIs(t, err, errTemperatureFetchTimeout)
 	})
+
+	t.Run("skips while a timed out read is still blocked", func(t *testing.T) {
+		agent := &Agent{sensorConfig: &SensorConfig{context: context.Background(), timeout: 10 * time.Millisecond}}
+		release := make(chan struct{})
+		_, err := agent.getTempsWithTimeout(func(ctx context.Context) ([]sensors.TemperatureStat, error) {
+			<-release
+			return nil, nil
+		})
+		assert.ErrorIs(t, err, errTemperatureFetchTimeout)
+
+		called := false
+		_, err = agent.getTempsWithTimeout(func(ctx context.Context) ([]sensors.TemperatureStat, error) {
+			called = true
+			return nil, nil
+		})
+		assert.ErrorIs(t, err, errSensorReadInFlight)
+		assert.False(t, called)
+
+		close(release)
+		require.Eventually(t, func() bool { return !agent.tempsReading.Load() }, time.Second, time.Millisecond)
+		_, err = agent.getTempsWithTimeout(func(ctx context.Context) ([]sensors.TemperatureStat, error) {
+			return nil, nil
+		})
+		assert.NoError(t, err)
+	})
 }
 
 func TestUpdateTemperaturesSkipsOnTimeout(t *testing.T) {
@@ -772,4 +797,52 @@ func TestUpdateTemperaturesSkipGpu(t *testing.T) {
 	stats = &system.Stats{}
 	newAgent(false).updateTemperatures(stats)
 	assert.Len(t, stats.Temperatures, 2)
+}
+
+func TestUpdateTemperaturesExcludedSensorKeepsNames(t *testing.T) {
+	originalGetSensorTemps := getSensorTemps
+	t.Cleanup(func() {
+		getSensorTemps = originalGetSensorTemps
+	})
+	// two drives that report the same SensorKey, plus an unrelated sensor
+	getSensorTemps = func(ctx context.Context) ([]sensors.TemperatureStat, error) {
+		return []sensors.TemperatureStat{
+			{SensorKey: "nvme_sensor_2", Temperature: 74.85},
+			{SensorKey: "nvme_sensor_2", Temperature: 41},
+			{SensorKey: "coretemp_core_0", Temperature: 55},
+		}, nil
+	}
+
+	newAgent := func(exclude string) *Agent {
+		config := map[string]struct{}{}
+		if exclude != "" {
+			config[exclude] = struct{}{}
+		}
+		return &Agent{
+			systemInfo: system.Info{},
+			sensorConfig: &SensorConfig{
+				context:     context.Background(),
+				timeout:     2 * time.Second,
+				sensors:     config,
+				isBlacklist: exclude != "",
+			},
+		}
+	}
+
+	// unfiltered: the second duplicate is suffixed with its index
+	stats := &system.Stats{}
+	newAgent("").updateTemperatures(stats)
+	assert.Equal(t, map[string]float64{
+		"nvme_sensor_2":   74.85,
+		"nvme_sensor_2_1": 41,
+		"coretemp_core_0": 55,
+	}, stats.Temperatures)
+
+	// excluding the first duplicate keeps the second one's name
+	stats = &system.Stats{}
+	newAgent("nvme_sensor_2").updateTemperatures(stats)
+	assert.Equal(t, map[string]float64{
+		"nvme_sensor_2_1": 41,
+		"coretemp_core_0": 55,
+	}, stats.Temperatures)
 }
