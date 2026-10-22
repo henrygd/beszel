@@ -40,7 +40,7 @@ import { Input } from "@/components/ui/input"
 import { TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { useToast } from "@/components/ui/use-toast"
 import { isReadOnlyUser, queueUserSettings } from "@/lib/api"
-import { pb } from "@/lib/api"
+import { pb, sendInBatches } from "@/lib/api"
 import { SystemStatus } from "@/lib/enums"
 import { $allSystemsById, $direction, $userSettings, getUserChartTime } from "@/lib/stores"
 import { cn, formatShortDate, matchesFilterGroups, parseFilterGroups, parseSemVer } from "@/lib/utils"
@@ -156,21 +156,8 @@ export default function NetworkMonitorsTableNew({
 	)
 
 	const runMonitorBatch = useCallback(
-		async (ids: string[], enqueue: (batch: ReturnType<typeof pb.createBatch>, id: string) => void) => {
-			let batch = pb.createBatch()
-			let inBatch = 0
-			for (const id of ids) {
-				enqueue(batch, id)
-				if (++inBatch >= 20) {
-					await batch.send()
-					batch = pb.createBatch()
-					inBatch = 0
-				}
-			}
-			if (inBatch) {
-				await batch.send()
-			}
-		},
+		(ids: string[], enqueue: (batch: ReturnType<typeof pb.createBatch>, id: string) => void) =>
+			sendInBatches(ids, enqueue),
 		[]
 	)
 
