@@ -46,6 +46,7 @@ import {
 	secondsToString,
 	hourWithSeconds,
 	formatShortDate,
+	formatNumber,
 } from "@/lib/utils"
 import { Trans } from "@lingui/react/macro"
 import { useStore } from "@nanostores/react"
@@ -229,7 +230,7 @@ export const createColumns = (
 			if (cycles == null) {
 				return <div className="text-muted-foreground ms-1">N/A</div>
 			}
-			return <span className="ms-1">{cycles.toLocaleString()}</span>
+			return <span className="ms-1">{formatNumber(cycles)}</span>
 		},
 	},
 	{
