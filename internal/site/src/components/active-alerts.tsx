@@ -17,6 +17,13 @@ function AlertTriggeredDesc({ alert }: { alert: AlertRecord }) {
 	if (alert.name === "NetworkMonitorLoss") {
 		return <Trans>One or more monitors exceed {alert.value}% loss</Trans>
 	}
+	if (alert.name === "NetworkMonitorCert") {
+		return (
+			<Trans>
+				One or more certificates expire within <Plural value={alert.value} one="# day" other="# days" />
+			</Trans>
+		)
+	}
 	if (alert.name === "Status") {
 		return <Trans>Connection is down</Trans>
 	}

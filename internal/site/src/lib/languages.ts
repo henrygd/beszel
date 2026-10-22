@@ -1,6 +1,7 @@
 export default [
 	["ar", "العربية", "🇵🇸"],
 	["bg", "Български", "🇧🇬"],
+	["ca", "Català", ""],
 	["cs", "Čeština", "🇨🇿"],
 	["da", "Dansk", "🇩🇰"],
 	["de", "Deutsch", "🇩🇪"],
@@ -20,6 +21,7 @@ export default [
 	["no", "Norsk", "🇳🇴"],
 	["pl", "Polski", "🇵🇱"],
 	["pt", "Português", "🇵🇹"],
+	["pt-BR", "Português (Brasil)", "🇧🇷"],
 	["ru", "Русский", "🇷🇺"],
 	["sl", "Slovenščina", "🇸🇮"],
 	["sr", "Српски", "🇷🇸"],
