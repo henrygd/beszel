@@ -22,6 +22,7 @@ func TestLongerRecordsPreventDuplicates(t *testing.T) {
 			{"10m", "20m", 2},
 			{"20m", "120m", 6},
 			{"120m", "480m", 4},
+			{"480m", "24h", 3},
 		} {
 			t.Run(collection+"/"+tier.longer, func(t *testing.T) {
 				hub, err := tests.NewTestHub(t.TempDir())
