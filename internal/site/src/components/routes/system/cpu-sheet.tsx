@@ -3,6 +3,7 @@ import { MoreHorizontalIcon } from "lucide-react"
 import { memo, useRef, useState } from "react"
 import AreaChartDefault, { type DataPoint } from "@/components/charts/area-chart"
 import ChartTimeSelect from "@/components/charts/chart-time-select"
+import LineChartDefault from "@/components/charts/line-chart"
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 import { DialogTitle } from "@/components/ui/dialog"
@@ -17,11 +18,13 @@ export default memo(function CpuCoresSheet({
 	dataEmpty,
 	grid,
 	maxValues,
+	cpuMhz,
 }: {
 	chartData: ChartData
 	dataEmpty: boolean
 	grid: boolean
 	maxValues: boolean
+	cpuMhz?: number
 }) {
 	const [cpuCoresOpen, setCpuCoresOpen] = useState(false)
 	const hasOpened = useRef(false)
@@ -41,15 +44,23 @@ export default memo(function CpuCoresSheet({
 	const cpus = latest?.cpus ?? []
 	const numCores = cpus.length
 	const hasBreakdown = (latest?.cpub?.length ?? 0) > 0
+	const hasFrequency = (latest?.cf?.length ?? 0) > 0
 
 	// make sure all individual core data points have the same y axis domain to make relative comparison easier
 	let highestCpuCorePct = 1
+	// top of the frequency axis: rated max clock, or the highest observed frequency if boost exceeds it
+	let highestCpuFreq = (cpuMhz ?? 0) / 1000
 	if (hasOpened.current) {
-		for (let i = 0; i < numCores; i++) {
-			for (let j = 0; j < chartData.systemStats.length; j++) {
-				const pct = chartData.systemStats[j].stats?.cpus?.[i] ?? 0
+		for (const { stats } of chartData.systemStats) {
+			for (let i = 0; i < numCores; i++) {
+				const pct = stats?.cpus?.[i] ?? 0
 				if (pct > highestCpuCorePct) {
 					highestCpuCorePct = pct
+				}
+			}
+			for (const freq of stats?.cf ?? []) {
+				if (freq > highestCpuFreq) {
+					highestCpuFreq = freq
 				}
 			}
 		}
@@ -164,6 +175,33 @@ export default memo(function CpuCoresSheet({
 						</ChartCard>
 					)}
 
+					{hasFrequency && (
+						<ChartCard
+							key="cpu-frequency"
+							empty={dataEmpty}
+							grid={grid}
+							title={t`CPU Frequency`}
+							description={t`Per-core frequency`}
+							legend={numCores < 10}
+							className="min-h-auto"
+						>
+							<LineChartDefault
+								chartData={chartData}
+								maxToggled={maxValues}
+								legend={numCores < 10}
+								domain={[0, highestCpuFreq > 0 ? highestCpuFreq : "auto"]}
+								dataPoints={Array.from({ length: latest?.cf?.length ?? 0 }).map((_, i) => ({
+									label: `CPU ${i}`,
+									dataKey: ({ stats }: SystemStatsRecord) => stats?.cf?.[i],
+									color: `hsl(${226 + (((i * 360) / Math.max(1, latest?.cf?.length ?? 1)) % 360)}, var(--chart-saturation), var(--chart-lightness))`,
+								}))}
+								tickFormatter={(val) => `${toFixedFloat(val, 2)} GHz`}
+								contentFormatter={({ value }) => `${decimalString(value, 2)} GHz`}
+								itemSorter={() => 1}
+							/>
+						</ChartCard>
+					)}
+
 					{numCores > 0 && (
 						<ChartCard
 							key="cpu-cores-all"
@@ -221,6 +259,7 @@ export default memo(function CpuCoresSheet({
 							/>
 						</ChartCard>
 					))}
+
 				</SheetContent>
 			)}
 		</Sheet>

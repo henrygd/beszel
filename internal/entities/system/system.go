@@ -54,6 +54,7 @@ type Stats struct {
 	CpuCoresUsage     Uint8Slice           `json:"cpus,omitempty" cbor:"34,keyasint,omitempty"` // per-core busy usage [CPU0..]
 	DiskIoStats       [6]float64           `json:"dios,omitzero" cbor:"35,keyasint,omitzero"`   // [read time %, write time %, io utilization %, r_await ms, w_await ms, weighted io %]
 	MaxDiskIoStats    [6]float64           `json:"diosm,omitzero" cbor:"-"`                     // max values for DiskIoStats
+	CpuFreqs          []float64            `json:"cf,omitempty"   cbor:"41,keyasint,omitempty"` // per-core CPU frequency (GHz)
 	Fans              map[string]uint16    `json:"f,omitempty" cbor:"36,keyasint,omitempty"`
 	Batteries         map[string]uint8     `json:"bats,omitempty" cbor:"37,keyasint,omitempty"`
 	ZfsPools          map[string]*ZfsPool  `json:"z,omitempty" cbor:"39,keyasint,omitempty"`  // ZFS pool metrics, keyed by pool name
@@ -204,6 +205,7 @@ type Details struct {
 	SmartInterval time.Duration `cbor:"10,keyasint,omitempty"`
 	ZfsInterval   time.Duration `cbor:"11,keyasint,omitempty"` // interval for ZFS detail refresh
 	Sockets       int           `cbor:"12,keyasint,omitempty"` // physical CPU packages, 0 if unknown
+	CpuMHz        float64       `cbor:"13,keyasint,omitempty"` // max rated clock speed (cpuinfo_max_freq)
 }
 
 // Final data structure to return to the hub
