@@ -111,6 +111,7 @@ func (h *Hub) StartHub() error {
 	h.App.OnRecordCreate("users").BindFunc(h.um.InitializeUserRole)
 	h.App.OnRecordCreate("user_settings").BindFunc(h.um.InitializeUserSettings)
 
+	bindTagsEvents(h)
 	bindNetworkMonitorsEvents(h)
 	email.BindAuthEmails(h.App)
 
