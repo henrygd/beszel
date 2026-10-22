@@ -73,6 +73,11 @@ export function DataTablePagination<T>({
 		}
 	}, [table, pageIndex, pageCount])
 
+	// every page size option shows all rows, so there's nothing to paginate or change
+	if (table.getFilteredRowModel().rows.length <= Math.min(...pageSizes)) {
+		return null
+	}
+
 	return (
 		// sections show based on the width of this container rather than the viewport,
 		// since tables are often rendered in cards narrower than the screen
