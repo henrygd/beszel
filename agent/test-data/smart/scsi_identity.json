@@ -1,0 +1,20 @@
+{
+  "smartctl": {
+    "exit_status": 0
+  },
+  "device": {
+    "name": "/dev/sda",
+    "info_name": "/dev/sda",
+    "type": "scsi",
+    "protocol": "SCSI"
+  },
+  "scsi_vendor": "TOSHIBA",
+  "scsi_product": "MG03ACA200",
+  "scsi_model_name": "TOSHIBA MG03ACA200",
+  "scsi_revision": "5701",
+  "serial_number": "Z4K2A01FS",
+  "user_capacity": { "blocks": 5860533168, "bytes": 3000592982016 },
+  "smart_status": { "passed": null },
+  "temperature": { "current": 0, "drive_trip": 0 },
+  "power_on_time": { "hours": 0, "minutes": 0 }
+}

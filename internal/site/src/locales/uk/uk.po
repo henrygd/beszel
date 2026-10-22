@@ -8,7 +8,7 @@ msgstr ""
 "Language: uk\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2026-10-01 17:09\n"
+"PO-Revision-Date: 2026-10-20 17:16\n"
 "Last-Translator: \n"
 "Language-Team: Ukrainian\n"
 "Plural-Forms: nplurals=4; plural=((n%10==1 && n%100!=11) ? 0 : ((n%10 >= 2 && n%10 <=4 && (n%100 < 12 || n%100 > 14)) ? 1 : ((n%10 == 0 || (n%10 >= 5 && n%10 <=9)) || (n%100 >= 11 && n%100 <= 14)) ? 2 : 3));\n"
@@ -26,9 +26,14 @@ msgstr "{0} Доступно"
 
 #. placeholder {0}: table.getFilteredSelectedRowModel().rows.length
 #. placeholder {1}: table.getFilteredRowModel().rows.length
-#: src/components/routes/settings/alerts-history-data-table.tsx
+#: src/components/ui/data-table-pagination.tsx
 msgid "{0} of {1} row(s) selected."
 msgstr "Вибрано {0} з {1} рядків."
+
+#. placeholder {0}: table.getFilteredRowModel().rows.length
+#: src/components/ui/data-table-pagination.tsx
+msgid "{0} row(s)"
+msgstr "{0} рядк(ів)"
 
 #. placeholder {0}: selectedIds.size
 #: src/components/network-monitors-table/monitor-dialog.tsx
@@ -87,6 +92,10 @@ msgstr "{total, plural, one {# оновлення} few {# оновлення} ma
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "{totalCount, plural, one {# service} other {# services}}"
 msgstr "{totalCount, plural, one {# служба} few {# служби} many {# служб} other {# служб}}"
+
+#: src/components/alerts-history-columns.tsx
+msgid "{value, plural, one {# day} other {# days}}"
+msgstr "{value, plural, one {# день} few {# дні} many {# днів} other {# дня}}"
 
 #: src/lib/utils.ts
 msgid "1 hour"
@@ -427,6 +436,10 @@ msgstr "Цельсій (°C)"
 msgid "Certificate"
 msgstr "Сертифікат"
 
+#: src/lib/alerts.ts
+msgid "Certificate Expiration"
+msgstr "Закінчення терміну дії сертифіката"
+
 #: src/components/network-monitors-table/network-monitors-table.tsx
 msgid "Certificate expired {expires}"
 msgstr "Термін дії сертифіката закінчився {expires}"
@@ -568,7 +581,7 @@ msgstr "Контейнер"
 
 #: src/lib/alerts.ts
 msgid "Container Health"
-msgstr "Здоров'я контейнера"
+msgstr "Здоров’я контейнера"
 
 #: src/components/routes/system.tsx
 msgid "Containers"
@@ -638,6 +651,11 @@ msgstr "Скопіюйте наведену нижче команду встан
 #: src/components/add-system.tsx
 msgid "Copy the<0>docker-compose.yml</0> content for the agent below, or register agents automatically with a <1>universal token</1>."
 msgstr "Скопіюйте вміст <0>docker-compose.yml</0> для агента нижче, або зареєструйте агентів автоматично за допомогою <1>універсального токена</1>."
+
+#: src/components/token-value.tsx
+#: src/components/token-value.tsx
+msgid "Copy token"
+msgstr "Копіювати токен"
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Copy YAML"
@@ -900,7 +918,7 @@ msgstr "URL-адреса кінцевої точки для пінгу (обов
 
 #: src/components/network-monitors-table/monitor-dialog.tsx
 msgid "Enter a domain name to look up. Put the resolver's IP in DNS Server."
-msgstr "Введіть доменне ім'я для пошуку. IP-адресу резолвера вкажіть у полі DNS Server."
+msgstr "Введіть ім’я домену для пошуку. У полі «DNS-сервер» вкажіть IP-адресу резолвера."
 
 #: src/components/login/login.tsx
 msgid "Enter email address to reset password"
@@ -958,6 +976,7 @@ msgstr "Існуючі системи, не визначені в <0>config.yml<
 msgid "Exited active"
 msgstr "Завершилося активно"
 
+#: src/components/alerts-history-columns.tsx
 #: src/components/network-monitors-table/network-monitors-columns.tsx
 msgid "Expired"
 msgstr "Термін дії закінчився"
@@ -965,6 +984,10 @@ msgstr "Термін дії закінчився"
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Expires after one hour or on hub restart."
 msgstr "Закінчується через годину або при перезапуску Hub."
+
+#: src/components/alerts/alerts-sheet.tsx
+msgid "Expires within <0>{value, plural, one {# day} other {# days}}</0>"
+msgstr "Спливає через <0>{value, plural, one {# день} few {# дні} many {# днів} other {# дня}}</0>"
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Export"
@@ -1128,7 +1151,7 @@ msgstr "Здоров’я"
 
 #: src/components/routes/settings/layout.tsx
 msgid "Heartbeat"
-msgstr ""
+msgstr "Heartbeat"
 
 #: src/components/routes/settings/heartbeat.tsx
 msgid "Heartbeat Monitoring"
@@ -1141,6 +1164,11 @@ msgstr "Heartbeat успішно надіслано"
 #: src/components/logs-display.tsx
 msgid "Hide timestamps"
 msgstr "Приховувати часові мітки"
+
+#: src/components/token-value.tsx
+#: src/components/token-value.tsx
+msgid "Hide token"
+msgstr "Приховати токен"
 
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
@@ -1183,6 +1211,10 @@ msgstr "Неактивна"
 #: src/components/login/forgot-pass-form.tsx
 msgid "If you've lost the password to your admin account, you may reset it using the following command."
 msgstr "Якщо ви втратили пароль до свого адміністративного облікового запису, ви можете скинути його за допомогою наступної команди."
+
+#: src/components/network-monitors-table/monitor-dialog.tsx
+msgid "Ignore TLS certificate errors"
+msgstr "Ігнорувати помилки TLS-сертифіката"
 
 #: src/components/containers-table/containers-table-columns.tsx
 msgctxt "Docker image"
@@ -1361,7 +1393,7 @@ msgstr "Мін. за 1 год"
 #. Package version
 #: src/components/routes/system/package-updates-table.tsx
 msgid "Minor"
-msgstr "Мінорне"
+msgstr "Незначне"
 
 #. Device model
 #: src/components/routes/system/smart-table.tsx
@@ -1500,6 +1532,11 @@ msgstr "Підтримка OAuth 2 / OIDC"
 msgid "On each restart, systems in the database will be updated to match the systems defined in the file."
 msgstr "При кожному перезапуску системи в базі даних оновлюватимуться відповідно до систем, визначених у файлі."
 
+#. placeholder {0}: alert.value
+#: src/components/active-alerts.tsx
+msgid "One or more certificates expire within {0, plural, one {# day} other {# days}}"
+msgstr "Один або кілька сертифікатів спливають протягом {0, plural, one {# день} few {# дні} many {# днів} other {# дня}}"
+
 #: src/lib/alerts.ts
 msgid "One or more containers are unhealthy"
 msgstr "Один або кілька контейнерів мають нездоровий стан"
@@ -1534,7 +1571,7 @@ msgstr "Відкрити меню"
 
 #: src/components/network-monitors-table/monitor-dialog.tsx
 msgid "Optional. Defaults to the agent's system resolver."
-msgstr "Необов'язково. За замовчуванням використовується системний резолвер агента."
+msgstr "Необов’язково. За замовчуванням використовується системний резолвер агента."
 
 #: src/components/login/auth-form.tsx
 msgid "Or continue with"
@@ -1571,11 +1608,8 @@ msgid "Page"
 msgstr "Сторінка"
 
 #. placeholder {0}: pageIndex + 1
-#. placeholder {0}: table.getState().pagination.pageIndex + 1
-#. placeholder {1}: Math.max(table.getPageCount(), 1)
-#. placeholder {1}: table.getPageCount()
-#: src/components/routes/settings/alerts-history-data-table.tsx
-#: src/components/routes/system/package-updates-table.tsx
+#. placeholder {1}: Math.max(1, pageCount)
+#: src/components/ui/data-table-pagination.tsx
 msgid "Page {0} of {1}"
 msgstr "Сторінка {0} з {1}"
 
@@ -1834,6 +1868,11 @@ msgstr "Перезапуски"
 msgid "Resume"
 msgstr "Відновити"
 
+#: src/components/token-value.tsx
+#: src/components/token-value.tsx
+msgid "Reveal token"
+msgstr "Показати токен"
+
 #. Package version
 #: src/components/routes/system/package-updates-table.tsx
 msgid "Revision"
@@ -1850,8 +1889,7 @@ msgstr "Корінь"
 msgid "Rotate token"
 msgstr "Оновити токен"
 
-#: src/components/routes/settings/alerts-history-data-table.tsx
-#: src/components/routes/system/package-updates-table.tsx
+#: src/components/ui/data-table-pagination.tsx
 msgid "Rows per page"
 msgstr "Рядків на сторінку"
 
@@ -2006,7 +2044,6 @@ msgstr "Встановіть наступні змінні оточення в �
 #: src/components/navbar.tsx
 #: src/components/routes/settings/layout.tsx
 #: src/components/routes/settings/layout.tsx
-#: src/components/routes/system/info-bar.tsx
 msgid "Settings"
 msgstr "Налаштування"
 
@@ -2130,7 +2167,7 @@ msgstr "Ціль"
 #: src/components/network-monitors-table/monitor-dialog.tsx
 #: src/components/network-monitors-table/monitor-dialog.tsx
 msgid "target[,protocol[,port[,interval[,server]]]]"
-msgstr ""
+msgstr "target[,protocol[,port[,interval[,server]]]]"
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Tasks"
@@ -2205,6 +2242,15 @@ msgstr "На електронну пошту"
 msgid "Token"
 msgstr "Токен"
 
+#. placeholder {0}: fingerprint.expand.system.name
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Token for {0}"
+msgstr "Токен для {0}"
+
+#: src/components/token-value.tsx
+msgid "Token hidden"
+msgstr "Токен приховано"
+
 #: src/components/command-palette.tsx
 #: src/components/routes/settings/layout.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
@@ -2267,6 +2313,10 @@ msgstr "Спрацьовує, коли середнє навантаження �
 #: src/lib/alerts.ts
 msgid "Triggers when a container's health check reports unhealthy"
 msgstr "Спрацьовує, коли перевірка стану контейнера повідомляє про нездоровий стан"
+
+#: src/lib/alerts.ts
+msgid "Triggers when an HTTPS certificate nears expiration"
+msgstr "Спрацьовує, коли термін дії HTTPS-сертифіката добігає кінця"
 
 #: src/lib/alerts.ts
 msgid "Triggers when any sensor exceeds a threshold"
@@ -2337,6 +2387,7 @@ msgid "Unit preferences"
 msgstr "Налаштування одиниць вимірювання"
 
 #: src/components/command-palette.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Universal token"
 msgstr "Універсальний токен"
@@ -2413,6 +2464,10 @@ msgstr "Використання"
 msgid "Usage of storage pool {displayName}"
 msgstr "Використання пулу сховища {displayName}"
 
+#: src/components/network-monitors-table/monitor-dialog.tsx
+msgid "Use for self-signed certificates."
+msgstr "Використовуйте для самопідписаних сертифікатів."
+
 #: src/components/routes/system/charts/memory-charts.tsx
 #: src/components/routes/system/charts/memory-charts.tsx
 #: src/components/routes/system/storage-pools-table.tsx
@@ -2436,6 +2491,7 @@ msgid "Value"
 msgstr "Значення"
 
 #: src/components/network-monitors-table/network-monitors-table.tsx
+#: src/components/routes/system/info-bar.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "View"
 msgstr "Вигляд"
@@ -2463,6 +2519,7 @@ msgstr "Переглянути 200 останніх сповіщень."
 msgid "Visible Fields"
 msgstr "Видимі стовпці"
 
+#: src/components/charts/chart-no-values.tsx
 #: src/components/routes/system/chart-card.tsx
 msgid "Waiting for enough records to display"
 msgstr "Очікування достатньої кількості записів для відображення"
