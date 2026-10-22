@@ -1,8 +1,9 @@
+import { t } from "@lingui/core/macro"
 import * as SheetPrimitive from "@radix-ui/react-dialog"
 import { XIcon } from "lucide-react"
 import type * as React from "react"
 
-import { dialogIconButtonClassName } from "@/components/ui/dialog"
+import { IconButton } from "@/components/ui/icon-button"
 import { cn } from "@/lib/utils"
 
 function Sheet({ ...props }: React.ComponentProps<typeof SheetPrimitive.Root>) {
@@ -62,15 +63,11 @@ function SheetContent({
 				{...props}
 			>
 				{children}
-				<SheetPrimitive.Close
-					className={cn(
-						"ring-offset-background focus:ring-ring data-[state=open]:bg-secondary absolute top-3 end-3 rounded-xs opacity-70 transition-opacity hover:opacity-100 focus:ring-2 focus:ring-offset-2 focus:outline-hidden disabled:pointer-events-none",
-						dialogIconButtonClassName
-					)}
-				>
-					<XIcon className="size-4" />
-					<span className="sr-only">Close</span>
-				</SheetPrimitive.Close>
+				<IconButton label={t`Dismiss`} className="absolute top-2 end-2" asChild>
+					<SheetClose>
+						<XIcon className="size-4" />
+					</SheetClose>
+				</IconButton>
 			</SheetPrimitive.Content>
 		</SheetPortal>
 	)
