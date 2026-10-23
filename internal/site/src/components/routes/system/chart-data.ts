@@ -6,6 +6,8 @@ import type {
 	ChartTimes,
 	ContainerStatsRecord,
 	NetworkMonitorStatsRecord,
+	PodStats,
+	PodStatsRecord,
 	SystemStatsRecord,
 } from "@/types"
 
@@ -51,7 +53,7 @@ export function appendData<T extends { created: string | number | null }>(
 	return result
 }
 
-export async function getStats<T extends SystemStatsRecord | ContainerStatsRecord | NetworkMonitorStatsRecord>(
+export async function getStats<T extends SystemStatsRecord | ContainerStatsRecord | PodStatsRecord | NetworkMonitorStatsRecord>(
 	collection: string,
 	systemId: string,
 	chartTime: ChartTimes,
@@ -87,6 +89,38 @@ export function makeContainerPoint(created: number, stats: ContainerStatsRecord[
 	const point: ChartDataContainer = { created } as ChartDataContainer
 	for (const container of stats) {
 		;(point as Record<string, unknown>)[container.n] = container
+	}
+	return point
+}
+
+export function makePodData(pods: PodStatsRecord[]): ChartDataContainer[] {
+	const result = [] as ChartDataContainer[]
+	for (const { created, stats } of pods) {
+		if (!created) {
+			result.push({ created: null } as ChartDataContainer)
+			continue
+		}
+		result.push(makePodPoint(new Date(created).getTime(), stats))
+	}
+	return result
+}
+
+/** Transform one pod_stats record into a chart point keyed by namespace/name. */
+export function makePodPoint(created: number, stats: PodStats[] | null): ChartDataContainer {
+	const point: ChartDataContainer = { created } as ChartDataContainer
+	if (!Array.isArray(stats)) {
+		return point
+	}
+	for (const pod of stats) {
+		if (!pod?.name) continue
+		const key = pod.namespace ? `${pod.namespace}/${pod.name}` : pod.name
+		;(point as Record<string, unknown>)[key] = {
+			n: key,
+			c: pod.cpu ?? 0,
+			m: pod.m ?? 0,
+			ns: pod.ns ?? 0,
+			nr: pod.nr ?? 0,
+		}
 	}
 	return point
 }

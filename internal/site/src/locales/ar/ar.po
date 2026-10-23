@@ -254,13 +254,13 @@ msgstr "هل أنت متأكد؟"
 msgid "Automatic copy requires a secure context."
 msgstr "النسخ التلقائي يتطلب سياقًا آمنًا."
 
-#: src/components/routes/system/storage-pools-table.tsx
-msgctxt "Disk space available"
+#. Package version available to install
+#: src/components/routes/system/package-updates-table.tsx
 msgid "Available"
 msgstr "المتاح"
 
-#. Package version available to install
-#: src/components/routes/system/package-updates-table.tsx
+#: src/components/routes/system/storage-pools-table.tsx
+msgctxt "Disk space available"
 msgid "Available"
 msgstr "المتاح"
 
@@ -271,6 +271,10 @@ msgstr "متوسط"
 #: src/components/routes/system/charts/cpu-charts.tsx
 msgid "Average CPU utilization of containers"
 msgstr "متوسط استخدام وحدة المعالجة المركزية للحاويات"
+
+#: src/components/routes/system/charts/pod-charts.tsx
+msgid "Average CPU utilization of pods"
+msgstr ""
 
 #: src/components/alerts/alerts-sheet.tsx
 msgid "Average drops below <0>{value}{unitLabel}</0>"
@@ -1232,6 +1236,7 @@ msgid "Ignore TLS certificate errors"
 msgstr "تجاهل أخطاء شهادة TLS"
 
 #: src/components/containers-table/containers-table-columns.tsx
+#: src/components/pods-table/pods-table-columns.tsx
 msgctxt "Docker image"
 msgid "Image"
 msgstr "صورة"
@@ -1402,6 +1407,10 @@ msgstr "استخدام الذاكرة"
 msgid "Memory usage of containers"
 msgstr "استخدام الذاكرة للحاويات"
 
+#: src/components/routes/system/charts/pod-charts.tsx
+msgid "Memory usage of pods"
+msgstr ""
+
 #: src/components/network-monitors-table/network-monitors-columns.tsx
 #: src/components/network-monitors-table/network-monitors-columns.tsx
 msgid "Min 1h"
@@ -1476,6 +1485,10 @@ msgstr "مراقبو الشبكة"
 #: src/components/routes/system/charts/network-charts.tsx
 msgid "Network traffic of containers"
 msgstr "حركة مرور الشبكة للحاويات"
+
+#: src/components/routes/system/charts/pod-charts.tsx
+msgid "Network traffic of pods"
+msgstr ""
 
 #: src/components/routes/system/charts/network-charts.tsx
 #: src/components/routes/system/network-sheet.tsx
@@ -1744,6 +1757,22 @@ msgstr "يرجى الاطلاع على <0>التوثيق</0> للحصول على
 msgid "Please sign in to your account"
 msgstr "يرجى تسجيل الدخول إلى حسابك"
 
+#: src/components/routes/system/charts/pod-charts.tsx
+msgid "Pod CPU Usage"
+msgstr ""
+
+#: src/components/routes/system/charts/pod-charts.tsx
+msgid "Pod Memory Usage"
+msgstr ""
+
+#: src/components/routes/system/charts/pod-charts.tsx
+msgid "Pod Network I/O"
+msgstr ""
+
+#: src/components/routes/system.tsx
+msgid "Pods"
+msgstr ""
+
 #: src/components/routes/system/storage-pools-table.tsx
 msgid "Pool Health"
 msgstr "صحة مجموعة التخزين"
@@ -1758,6 +1787,7 @@ msgid "Port"
 msgstr "المنفذ"
 
 #: src/components/containers-table/containers-table-columns.tsx
+#: src/components/pods-table/pods-table-columns.tsx
 msgctxt "Container ports"
 msgid "Ports"
 msgstr "المنافذ"

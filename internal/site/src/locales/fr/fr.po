@@ -254,13 +254,13 @@ msgstr "Êtes-vous sûr ?"
 msgid "Automatic copy requires a secure context."
 msgstr "La copie automatique nécessite un contexte sécurisé."
 
-#: src/components/routes/system/storage-pools-table.tsx
-msgctxt "Disk space available"
+#. Package version available to install
+#: src/components/routes/system/package-updates-table.tsx
 msgid "Available"
 msgstr "Disponible"
 
-#. Package version available to install
-#: src/components/routes/system/package-updates-table.tsx
+#: src/components/routes/system/storage-pools-table.tsx
+msgctxt "Disk space available"
 msgid "Available"
 msgstr "Disponible"
 
@@ -271,6 +271,10 @@ msgstr "Moyenne"
 #: src/components/routes/system/charts/cpu-charts.tsx
 msgid "Average CPU utilization of containers"
 msgstr "Utilisation moyenne du CPU des conteneurs"
+
+#: src/components/routes/system/charts/pod-charts.tsx
+msgid "Average CPU utilization of pods"
+msgstr ""
 
 #: src/components/alerts/alerts-sheet.tsx
 msgid "Average drops below <0>{value}{unitLabel}</0>"
@@ -1232,6 +1236,7 @@ msgid "Ignore TLS certificate errors"
 msgstr "Ignorer les erreurs de certificat TLS"
 
 #: src/components/containers-table/containers-table-columns.tsx
+#: src/components/pods-table/pods-table-columns.tsx
 msgctxt "Docker image"
 msgid "Image"
 msgstr "Image"
@@ -1402,6 +1407,10 @@ msgstr "Utilisation de la mémoire"
 msgid "Memory usage of containers"
 msgstr "Utilisation de la mémoire des conteneurs"
 
+#: src/components/routes/system/charts/pod-charts.tsx
+msgid "Memory usage of pods"
+msgstr ""
+
 #: src/components/network-monitors-table/network-monitors-columns.tsx
 #: src/components/network-monitors-table/network-monitors-columns.tsx
 msgid "Min 1h"
@@ -1476,6 +1485,10 @@ msgstr "Moniteurs réseau"
 #: src/components/routes/system/charts/network-charts.tsx
 msgid "Network traffic of containers"
 msgstr "Trafic réseau des conteneurs"
+
+#: src/components/routes/system/charts/pod-charts.tsx
+msgid "Network traffic of pods"
+msgstr ""
 
 #: src/components/routes/system/charts/network-charts.tsx
 #: src/components/routes/system/network-sheet.tsx
@@ -1744,6 +1757,22 @@ msgstr "Veuillez consulter <0>la documentation</0> pour les instructions."
 msgid "Please sign in to your account"
 msgstr "Veuillez vous connecter à votre compte"
 
+#: src/components/routes/system/charts/pod-charts.tsx
+msgid "Pod CPU Usage"
+msgstr ""
+
+#: src/components/routes/system/charts/pod-charts.tsx
+msgid "Pod Memory Usage"
+msgstr ""
+
+#: src/components/routes/system/charts/pod-charts.tsx
+msgid "Pod Network I/O"
+msgstr ""
+
+#: src/components/routes/system.tsx
+msgid "Pods"
+msgstr ""
+
 #: src/components/routes/system/storage-pools-table.tsx
 msgid "Pool Health"
 msgstr "État du pool"
@@ -1758,6 +1787,7 @@ msgid "Port"
 msgstr "Port"
 
 #: src/components/containers-table/containers-table-columns.tsx
+#: src/components/pods-table/pods-table-columns.tsx
 msgctxt "Container ports"
 msgid "Ports"
 msgstr "Ports"

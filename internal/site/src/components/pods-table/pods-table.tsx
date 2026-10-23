@@ -50,7 +50,7 @@ export default function PodsTable({ systemId }: { systemId?: string }) {
 		function fetchData(systemId?: string) {
 			pb.collection<PodRecord>("pods")
 				.getList(0, 2000, {
-					fields: "id,name,namespace,cpu,memory,net,status,restarts,system,updated",
+					fields: "id,name,namespace,cpu,memory,net,status,restarts,image,ports,system,updated",
 					filter: systemId ? pb.filter("system={:system}", { system: systemId }) : undefined,
 				})
 				.then(

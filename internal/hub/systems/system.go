@@ -658,7 +658,7 @@ func createPodRecords(app core.App, data []*kubernetes.PodStats, systemId string
 		if len(podId) > 50 {
 			podId = fmt.Sprintf("%x", []byte(podId))[:15]
 		}
-		valueStrings = append(valueStrings, fmt.Sprintf("({:id%[1]s}, {:system}, {:name%[1]s}, {:namespace%[1]s}, {:status%[1]s}, {:cpu%[1]s}, {:memory%[1]s}, {:net%[1]s}, {:restarts%[1]s}, {:updated})", suffix))
+		valueStrings = append(valueStrings, fmt.Sprintf("({:id%[1]s}, {:system}, {:name%[1]s}, {:namespace%[1]s}, {:status%[1]s}, {:cpu%[1]s}, {:memory%[1]s}, {:net%[1]s}, {:restarts%[1]s}, {:image%[1]s}, {:ports%[1]s}, {:updated})", suffix))
 		params["id"+suffix] = podId
 		params["name"+suffix] = pod.Name
 		params["namespace"+suffix] = pod.Namespace
@@ -667,9 +667,11 @@ func createPodRecords(app core.App, data []*kubernetes.PodStats, systemId string
 		params["memory"+suffix] = pod.Mem
 		params["net"+suffix] = pod.NetworkSent + pod.NetworkRecv
 		params["restarts"+suffix] = pod.RestartCount
+		params["image"+suffix] = pod.Image
+		params["ports"+suffix] = pod.Ports
 	}
 	queryString := fmt.Sprintf(
-		"INSERT INTO pods (id, system, name, namespace, status, cpu, memory, net, restarts, updated) VALUES %s ON CONFLICT(id) DO UPDATE SET system = excluded.system, name = excluded.name, namespace = excluded.namespace, status = excluded.status, cpu = excluded.cpu, memory = excluded.memory, net = excluded.net, restarts = excluded.restarts, updated = excluded.updated",
+		"INSERT INTO pods (id, system, name, namespace, status, cpu, memory, net, restarts, image, ports, updated) VALUES %s ON CONFLICT(id) DO UPDATE SET system = excluded.system, name = excluded.name, namespace = excluded.namespace, status = excluded.status, cpu = excluded.cpu, memory = excluded.memory, net = excluded.net, restarts = excluded.restarts, image = excluded.image, ports = excluded.ports, updated = excluded.updated",
 		strings.Join(valueStrings, ","),
 	)
 	_, err := app.DB().NewQuery(queryString).Bind(params).Execute()

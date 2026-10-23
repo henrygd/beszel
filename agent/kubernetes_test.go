@@ -33,6 +33,38 @@ import (
 	metricsfake "k8s.io/metrics/pkg/client/clientset/versioned/fake"
 )
 
+func TestPodImageAndPorts(t *testing.T) {
+	pod := &corev1.Pod{
+		Spec: corev1.PodSpec{
+			Containers: []corev1.Container{
+				{
+					Name:  "app",
+					Image: "ghcr.io/example/app:1",
+					Ports: []corev1.ContainerPort{{ContainerPort: 8080}},
+				},
+				{
+					Name:  "sidecar",
+					Image: "ghcr.io/example/sidecar:2",
+					Ports: []corev1.ContainerPort{{ContainerPort: 9090, HostPort: 9090, HostIP: "10.0.0.1"}},
+				},
+				{
+					Name:  "same",
+					Image: "ghcr.io/example/app:1.2.3",
+					Ports: []corev1.ContainerPort{{ContainerPort: 8080}},
+				},
+			},
+		},
+		Status: corev1.PodStatus{
+			ContainerStatuses: []corev1.ContainerStatus{
+				{Name: "app", Image: "ghcr.io/example/app:1.2.3"},
+			},
+		},
+	}
+
+	assert.Equal(t, "ghcr.io/example/app:1.2.3, ghcr.io/example/sidecar:2", podImages(pod))
+	assert.Equal(t, ":8080, 10.0.0.1:9090", podPorts(pod))
+}
+
 // updatePodMetrics should aggregate container usage and scale CPU by node cores.
 func TestUpdatePodMetrics(t *testing.T) {
 	km := &kubernetesManager{nodeCpuCores: 4}

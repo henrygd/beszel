@@ -254,13 +254,13 @@ msgstr "Ishonchingiz komilmi?"
 msgid "Automatic copy requires a secure context."
 msgstr "Avtomatik nusxalash xavfsiz kontekstni talab qiladi."
 
-#: src/components/routes/system/storage-pools-table.tsx
-msgctxt "Disk space available"
+#. Package version available to install
+#: src/components/routes/system/package-updates-table.tsx
 msgid "Available"
 msgstr "Mavjud"
 
-#. Package version available to install
-#: src/components/routes/system/package-updates-table.tsx
+#: src/components/routes/system/storage-pools-table.tsx
+msgctxt "Disk space available"
 msgid "Available"
 msgstr "Mavjud"
 
@@ -271,6 +271,10 @@ msgstr "O'rtacha"
 #: src/components/routes/system/charts/cpu-charts.tsx
 msgid "Average CPU utilization of containers"
 msgstr "Konteynerlarning o'rtacha CPU yuklanishi"
+
+#: src/components/routes/system/charts/pod-charts.tsx
+msgid "Average CPU utilization of pods"
+msgstr ""
 
 #: src/components/alerts/alerts-sheet.tsx
 msgid "Average drops below <0>{value}{unitLabel}</0>"
@@ -1232,6 +1236,7 @@ msgid "Ignore TLS certificate errors"
 msgstr "TLS sertifikat xatolarini e’tiborsiz qoldirish"
 
 #: src/components/containers-table/containers-table-columns.tsx
+#: src/components/pods-table/pods-table-columns.tsx
 msgctxt "Docker image"
 msgid "Image"
 msgstr "Obraz"
@@ -1402,6 +1407,10 @@ msgstr "Xotira ishlatilishi"
 msgid "Memory usage of containers"
 msgstr "Konteynerlarning xotira ishlatilishi"
 
+#: src/components/routes/system/charts/pod-charts.tsx
+msgid "Memory usage of pods"
+msgstr ""
+
 #: src/components/network-monitors-table/network-monitors-columns.tsx
 #: src/components/network-monitors-table/network-monitors-columns.tsx
 msgid "Min 1h"
@@ -1476,6 +1485,10 @@ msgstr "Tarmoq monitorlari"
 #: src/components/routes/system/charts/network-charts.tsx
 msgid "Network traffic of containers"
 msgstr "Konteynerlarning tarmoq trafigi"
+
+#: src/components/routes/system/charts/pod-charts.tsx
+msgid "Network traffic of pods"
+msgstr ""
 
 #: src/components/routes/system/charts/network-charts.tsx
 #: src/components/routes/system/network-sheet.tsx
@@ -1744,6 +1757,22 @@ msgstr "Ko'rsatmalar uchun <0>hujjatlarni</0> ko'ring."
 msgid "Please sign in to your account"
 msgstr "Hisobingizga kiring"
 
+#: src/components/routes/system/charts/pod-charts.tsx
+msgid "Pod CPU Usage"
+msgstr ""
+
+#: src/components/routes/system/charts/pod-charts.tsx
+msgid "Pod Memory Usage"
+msgstr ""
+
+#: src/components/routes/system/charts/pod-charts.tsx
+msgid "Pod Network I/O"
+msgstr ""
+
+#: src/components/routes/system.tsx
+msgid "Pods"
+msgstr ""
+
 #: src/components/routes/system/storage-pools-table.tsx
 msgid "Pool Health"
 msgstr "Pool holati"
@@ -1758,6 +1787,7 @@ msgid "Port"
 msgstr "Port"
 
 #: src/components/containers-table/containers-table-columns.tsx
+#: src/components/pods-table/pods-table-columns.tsx
 msgctxt "Container ports"
 msgid "Ports"
 msgstr "Portlar"

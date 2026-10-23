@@ -44,6 +44,8 @@ func TestPodCollectionsCreated(t *testing.T) {
 	pods, err := hub.FindCollectionByNameOrId("pods")
 	require.NoError(t, err)
 	require.NotEmpty(t, pods.GetIndex("idx_pod_system"))
+	require.NotNil(t, pods.Fields.GetByName("image"))
+	require.NotNil(t, pods.Fields.GetByName("ports"))
 	_, err = tests.CreateRecord(hub, "pods", map[string]any{
 		"system":    system.Id,
 		"name":      "beszel",

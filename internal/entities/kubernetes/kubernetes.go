@@ -9,18 +9,21 @@ import "time"
 // PodStats represents metrics for a single pod running on a Kubernetes node.
 // Similar to container.Stats but for Kubernetes pods with additional K8s-specific fields.
 type PodStats struct {
-	Name           string    `json:"name" cbor:"0,keyasint"`                     // Pod name
-	Namespace      string    `json:"namespace" cbor:"1,keyasint"`                // Kubernetes namespace
-	Node           string    `json:"node,omitempty" cbor:"2,keyasint,omitempty"` // Node name (optional)
-	Cpu            float64   `json:"cpu" cbor:"3,keyasint"`                      // CPU usage percentage
-	Mem            float64   `json:"m" cbor:"4,keyasint"`                        // Memory usage in megabytes
-	MemLimit       float64   `json:"ml,omitempty" cbor:"5,keyasint,omitempty"`   // Memory limit in megabytes
-	NetworkSent    float64   `json:"ns" cbor:"6,keyasint"`                       // Network sent per second (MB/s)
-	NetworkRecv    float64   `json:"nr" cbor:"7,keyasint"`                       // Network received per second (MB/s)
-	Status         string    `json:"s" cbor:"8,keyasint"`                        // Pod phase (Running, Pending, etc.)
-	RestartCount   int32     `json:"rc,omitempty" cbor:"9,keyasint,omitempty"`   // Total container restart count
-	ContainerCount uint8     `json:"cc" cbor:"10,keyasint"`                      // Number of containers in pod
-	PrevReadTime   time.Time `json:"-" cbor:"-"`                                 // Last read time for delta calculation
+	Name           string  `json:"name" cbor:"0,keyasint"`                     // Pod name
+	Namespace      string  `json:"namespace" cbor:"1,keyasint"`                // Kubernetes namespace
+	Node           string  `json:"node,omitempty" cbor:"2,keyasint,omitempty"` // Node name (optional)
+	Cpu            float64 `json:"cpu" cbor:"3,keyasint"`                      // CPU usage percentage
+	Mem            float64 `json:"m" cbor:"4,keyasint"`                        // Memory usage in megabytes
+	MemLimit       float64 `json:"ml,omitempty" cbor:"5,keyasint,omitempty"`   // Memory limit in megabytes
+	NetworkSent    float64 `json:"ns" cbor:"6,keyasint"`                       // Network sent per second (MB/s)
+	NetworkRecv    float64 `json:"nr" cbor:"7,keyasint"`                       // Network received per second (MB/s)
+	Status         string  `json:"s" cbor:"8,keyasint"`                        // Pod phase (Running, Pending, etc.)
+	RestartCount   int32   `json:"rc,omitempty" cbor:"9,keyasint,omitempty"`   // Total container restart count
+	ContainerCount uint8   `json:"cc" cbor:"10,keyasint"`                      // Number of containers in pod
+	// Image and ports are current table fields. They are not stored in pod_stats.
+	Image        string    `json:"-" cbor:"11,keyasint,omitempty"`
+	Ports        string    `json:"-" cbor:"12,keyasint,omitempty"`
+	PrevReadTime time.Time `json:"-" cbor:"-"` // Last read time for delta calculation
 }
 
 // ClusterHealth represents cluster-wide health metrics.

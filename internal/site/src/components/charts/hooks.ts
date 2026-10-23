@@ -123,9 +123,10 @@ export function useYAxisWidth() {
 export function useContainerDataPoints(
 	chartConfig: ChartConfig,
 	// biome-ignore lint/suspicious/noExplicitAny: container data records have dynamic keys
-	dataFn: (key: string, data: Record<string, any>) => number | null
+	dataFn: (key: string, data: Record<string, any>) => number | null,
+	filterStore: typeof $containerFilter = $containerFilter
 ) {
-	const filter = useStore($containerFilter)
+	const filter = useStore(filterStore)
 	const { dataPoints, filteredKeys } = useMemo(() => {
 		const filterTerms = filter
 			? filter

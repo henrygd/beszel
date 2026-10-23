@@ -11,11 +11,22 @@ import {
 	ServerIcon,
 	BoxIcon,
 } from "lucide-react"
-import { EthernetIcon } from "../ui/icons"
+import { EthernetIcon, SquareArrowRightEnterIcon } from "../ui/icons"
 import { Badge } from "../ui/badge"
 import { t } from "@lingui/core/macro"
 import { $allSystemsById } from "@/lib/stores"
 import { useStore } from "@nanostores/react"
+import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip"
+
+function getPortValue(ports: string | undefined): number {
+	if (!ports) {
+		return 0
+	}
+	const first = ports.includes(",") ? ports.substring(0, ports.indexOf(",")) : ports
+	const colonIndex = first.lastIndexOf(":")
+	const portStr = colonIndex === -1 ? first : first.substring(colonIndex + 1)
+	return Number(portStr) || 0
+}
 
 export const podChartCols: ColumnDef<PodRecord>[] = [
 	{
@@ -84,6 +95,49 @@ export const podChartCols: ColumnDef<PodRecord>[] = [
 			const formatted = formatBytes(val, true, undefined, true)
 			return (
 				<span className="ms-1.5 tabular-nums">{`${decimalString(formatted.value, formatted.value >= 10 ? 1 : 2)} ${formatted.unit}`}</span>
+			)
+		},
+	},
+	{
+		id: "ports",
+		accessorFn: (record) => record.ports || undefined,
+		header: ({ column }) => (
+			<HeaderButton column={column} name={t({ message: "Ports", context: "Container ports" })} Icon={SquareArrowRightEnterIcon} />
+		),
+		sortingFn: (a, b) => getPortValue(a.original.ports) - getPortValue(b.original.ports),
+		cell: ({ getValue }) => {
+			const val = getValue() as string | undefined
+			if (!val) {
+				return <span className="ms-1.5 text-muted-foreground">-</span>
+			}
+			const className = "ms-1.5 w-27 block truncate tabular-nums"
+			if (val.length > 14) {
+				return (
+					<Tooltip>
+						<TooltipTrigger className={className}>{val}</TooltipTrigger>
+						<TooltipContent>{val}</TooltipContent>
+					</Tooltip>
+				)
+			}
+			return <span className={className}>{val}</span>
+		},
+	},
+	{
+		id: "image",
+		sortingFn: (a, b) => (a.original.image || "").localeCompare(b.original.image || ""),
+		accessorFn: (record) => record.image,
+		header: ({ column }) => (
+			<HeaderButton column={column} name={t({ message: "Image", context: "Docker image" })} Icon={LayersIcon} />
+		),
+		cell: ({ getValue }) => {
+			const val = (getValue() as string) || ""
+			if (!val) {
+				return <span className="ms-1.5 text-muted-foreground">-</span>
+			}
+			return (
+				<span className="ms-1.5 xl:w-40 block truncate" title={val}>
+					{val}
+				</span>
 			)
 		},
 	},

@@ -386,6 +386,62 @@ func (km *kubernetesManager) getNodeNetworkStats(cacheTimeMs uint16) (rxMBps flo
 	return rxMBps, txMBps, nil
 }
 
+// podImages returns the images of the pod's app containers, preferring the
+// image reported by the running container status.
+func podImages(pod *corev1.Pod) string {
+	running := make(map[string]string, len(pod.Status.ContainerStatuses))
+	for _, status := range pod.Status.ContainerStatuses {
+		if status.Image != "" {
+			running[status.Name] = status.Image
+		}
+	}
+	images := make([]string, 0, len(pod.Spec.Containers))
+	seen := make(map[string]struct{}, len(pod.Spec.Containers))
+	for _, container := range pod.Spec.Containers {
+		image := running[container.Name]
+		if image == "" {
+			image = container.Image
+		}
+		if image == "" {
+			continue
+		}
+		if _, ok := seen[image]; ok {
+			continue
+		}
+		seen[image] = struct{}{}
+		images = append(images, image)
+	}
+	return strings.Join(images, ", ")
+}
+
+// podPorts formats exposed container ports. A host port is shown as an
+// address binding; otherwise the container port is shown like ":8080".
+func podPorts(pod *corev1.Pod) string {
+	ports := make([]string, 0, 2)
+	seen := make(map[string]struct{})
+	for _, container := range pod.Spec.Containers {
+		for _, port := range container.Ports {
+			var label string
+			switch {
+			case port.HostPort > 0 && port.HostIP != "":
+				label = fmt.Sprintf("%s:%d", port.HostIP, port.HostPort)
+			case port.HostPort > 0:
+				label = fmt.Sprintf(":%d", port.HostPort)
+			case port.ContainerPort > 0:
+				label = fmt.Sprintf(":%d", port.ContainerPort)
+			default:
+				continue
+			}
+			if _, ok := seen[label]; ok {
+				continue
+			}
+			seen[label] = struct{}{}
+			ports = append(ports, label)
+		}
+	}
+	return strings.Join(ports, ", ")
+}
+
 // getPodStats collects pod metrics for pods running on the current node.
 // Follows the dockerManager pattern with cache-time-aware delta tracking.
 func (km *kubernetesManager) getPodStats(cacheTimeMs uint16) ([]*kubernetes.PodStats, error) {
@@ -465,6 +521,8 @@ func (km *kubernetesManager) getPodStats(cacheTimeMs uint16) ([]*kubernetes.PodS
 			Node:           pod.Spec.NodeName,
 			Status:         string(pod.Status.Phase),
 			ContainerCount: uint8(len(pod.Spec.Containers)),
+			Image:          podImages(pod),
+			Ports:          podPorts(pod),
 		}
 
 		// Count restarts
