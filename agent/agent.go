@@ -58,6 +58,7 @@ type Agent struct {
 	smartManager              *SmartManager                                         // Manages SMART data
 	systemdManager            *systemdManager                                       // Manages systemd services
 	monitorManager            *MonitorManager                                       // Manages network monitors
+	speedtestManager          *SpeedtestManager                                     // Manages scheduled speedtests
 	storagePoolManager        *StoragePoolManager                                   // Manages storage pool and dataset data
 	packageUpdates            *packageUpdatesManager                                // Checks for pending package updates
 	lastHubRequest            atomic.Int64                                          // Wall clock Unix nanoseconds of the last hub stats request
@@ -143,6 +144,9 @@ func NewAgent(dataDir ...string) (agent *Agent, err error) {
 
 	// initialize monitor manager
 	agent.monitorManager = newMonitorManager(agent)
+
+	// initialize speedtest manager
+	agent.speedtestManager = newSpeedtestManager(agent)
 
 	agent.storagePoolManager = newStoragePoolManager()
 
@@ -234,6 +238,11 @@ func (a *Agent) gatherStats(options common.DataRequestOptions) *system.CombinedD
 	if a.monitorManager != nil {
 		data.Monitors = a.monitorManager.GetResults(cacheTimeMs)
 		slog.Debug("Monitors", "data", data.Monitors)
+	}
+
+	if a.speedtestManager != nil {
+		data.Speedtests = a.speedtestManager.GetResults()
+		slog.Debug("Speedtests", "data", data.Speedtests)
 	}
 
 	// skip updating systemd services if cache time is not the default 60sec interval

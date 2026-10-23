@@ -373,13 +373,14 @@ async function fetchMonitors(system?: string) {
 	}
 }
 
-function applyMonitorEvents(
-	monitors: NetworkMonitorRecord[],
-	events: Iterable<RecordSubscription<NetworkMonitorRecord>>,
+/** Apply batched realtime record events to a list of system-scoped records, newest creations first. */
+export function applyMonitorEvents<T extends { id: string; system: string }>(
+	monitors: T[],
+	events: Iterable<RecordSubscription<T>>,
 	systemId?: string
 ) {
 	const monitorById = new Map(monitors.map((monitor) => [monitor.id, monitor]))
-	const createdMonitors: NetworkMonitorRecord[] = []
+	const createdMonitors: T[] = []
 
 	for (const { action, record } of events) {
 		const matchesSystemScope = !systemId || record.system === systemId
@@ -396,7 +397,7 @@ function applyMonitorEvents(
 		monitorById.set(record.id, record)
 	}
 
-	const nextMonitors: NetworkMonitorRecord[] = []
+	const nextMonitors: T[] = []
 	for (let index = createdMonitors.length - 1; index >= 0; index -= 1) {
 		nextMonitors.push(createdMonitors[index])
 	}
