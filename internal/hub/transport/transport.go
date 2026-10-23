@@ -125,6 +125,22 @@ func unmarshalLegacyResponse(resp common.AgentResponse, action common.WebSocketA
 		}
 		*d = *resp.String
 		return nil
+	case common.GetPodLogs:
+		return unmarshalLegacyString(resp, dest, "GetPodLogs", "no pod logs in response")
+	case common.GetPodInfo:
+		return unmarshalLegacyString(resp, dest, "GetPodInfo", "no pod info in response")
 	}
 	return fmt.Errorf("unsupported action: %d", action)
+}
+
+func unmarshalLegacyString(resp common.AgentResponse, dest any, action, empty string) error {
+	d, ok := dest.(*string)
+	if !ok {
+		return fmt.Errorf("unexpected dest type for %s: %T", action, dest)
+	}
+	if resp.String == nil {
+		return errors.New(empty)
+	}
+	*d = *resp.String
+	return nil
 }
