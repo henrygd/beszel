@@ -61,6 +61,7 @@ type Agent struct {
 	storagePoolManager        *StoragePoolManager                                   // Manages storage pool and dataset data
 	packageUpdates            *packageUpdatesManager                                // Checks for pending package updates
 	lastHubRequest            atomic.Int64                                          // Wall clock Unix nanoseconds of the last hub stats request
+	kubernetesManager         *kubernetesManager                                    // Manages Kubernetes metrics
 }
 
 // NewAgent creates a new agent with the given data directory for persisting data.
@@ -184,6 +185,13 @@ func NewAgent(dataDir ...string) (agent *Agent, err error) {
 		slog.Debug("GPU", "err", err)
 	}
 
+	// initialize Kubernetes manager
+	agent.kubernetesManager, err = newKubernetesManager()
+	if err != nil {
+		slog.Error("Kubernetes metrics disabled", "err", err)
+		agent.kubernetesManager = nil
+	}
+
 	// if debugging, print stats
 	if agent.debug {
 		slog.Debug("Stats", "data", agent.gatherStats(common.DataRequestOptions{CacheTimeMs: defaultDataCacheTimeMs, IncludeDetails: true}))
@@ -256,6 +264,37 @@ func (a *Agent) gatherStats(options common.DataRequestOptions) *system.CombinedD
 
 	if a.packageUpdates != nil {
 		data.Info.PackageUpdates = a.packageUpdates.get(time.Now())
+	}
+	// Collect Kubernetes metrics if available
+	if a.kubernetesManager != nil {
+		// Pod metrics (collected for all cache intervals)
+		if podStats, err := a.kubernetesManager.getPodStats(cacheTimeMs); err == nil {
+			data.Pods = podStats
+			slog.Debug("Kubernetes Pods", "count", len(podStats))
+		} else {
+			slog.Debug("Kubernetes Pods", "err", err)
+		}
+
+		// Cluster health and workload metrics (only at 60s interval to reduce API load)
+		if cacheTimeMs == 60_000 {
+			// Cluster health (if enabled)
+			if clusterEnabled, _ := utils.GetEnv("K8S_CLUSTER_METRICS"); clusterEnabled == "true" {
+				if health, err := a.kubernetesManager.getClusterHealth(); err == nil {
+					data.ClusterHealth = health
+					slog.Debug("Kubernetes Cluster Health", "nodes", health.NodesTotal, "pods", health.PodsTotal)
+				} else {
+					slog.Debug("Kubernetes Cluster Health", "err", err)
+				}
+			}
+
+			// Workload metrics
+			if workloads, err := a.kubernetesManager.getWorkloadMetrics(); err == nil {
+				data.Workloads = workloads
+				slog.Debug("Kubernetes Workloads", "deployments", len(workloads.Deployments))
+			} else {
+				slog.Debug("Kubernetes Workloads", "err", err)
+			}
+		}
 	}
 
 	data.Stats.ExtraFs = make(map[string]*system.FsStats)

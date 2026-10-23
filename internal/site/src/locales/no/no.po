@@ -225,9 +225,12 @@ msgstr "Alarmer"
 #: src/components/containers-table/containers-table.tsx
 #: src/components/navbar.tsx
 #: src/components/navbar.tsx
-#: src/components/routes/containers.tsx
 msgid "All Containers"
 msgstr "Alle containere"
+
+#: src/components/pods-table/pods-table.tsx
+msgid "All Pods"
+msgstr ""
 
 #: src/components/alerts/alerts-sheet.tsx
 #: src/components/command-palette.tsx
@@ -505,6 +508,7 @@ msgstr "Kontrollsumfeil"
 
 #: src/components/containers-table/containers-table.tsx
 #: src/components/network-monitors-table/network-monitors-table.tsx
+#: src/components/pods-table/pods-table.tsx
 #: src/components/routes/system/package-updates-table.tsx
 #: src/components/routes/system/smart-table.tsx
 #: src/components/routes/system/storage-pools-table.tsx
@@ -528,6 +532,10 @@ msgstr "Klikk på en container for å se mer informasjon."
 #: src/components/routes/system/smart-table.tsx
 msgid "Click on a device to view more information."
 msgstr "Klikk på en enhet for å se mer informasjon."
+
+#: src/components/pods-table/pods-table.tsx
+msgid "Click on a pod to view more information."
+msgstr ""
 
 #: src/components/routes/system/storage-pools-table.tsx
 msgid "Click on a pool to view vdev and dataset details."
@@ -586,6 +594,10 @@ msgstr "Containerhelse"
 #: src/components/routes/system.tsx
 msgid "Containers"
 msgstr "Containere"
+
+#: src/components/routes/containers.tsx
+msgid "Containers & Pods"
+msgstr ""
 
 #: src/components/network-monitors-table/network-monitors-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
@@ -667,6 +679,7 @@ msgid "Core"
 msgstr "Kjerne"
 
 #: src/components/containers-table/containers-table-columns.tsx
+#: src/components/pods-table/pods-table-columns.tsx
 #: src/components/systemd-table/systemd-table-columns.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "CPU"
@@ -792,6 +805,7 @@ msgid "Description"
 msgstr "Beskrivelse"
 
 #: src/components/containers-table/containers-table.tsx
+#: src/components/pods-table/pods-table.tsx
 msgid "Detail"
 msgstr "Detaljer"
 
@@ -1063,6 +1077,7 @@ msgstr "Vifter"
 
 #: src/components/containers-table/containers-table.tsx
 #: src/components/network-monitors-table/network-monitors-table.tsx
+#: src/components/pods-table/pods-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/system/chart-card.tsx
 #: src/components/routes/system/package-updates-table.tsx
@@ -1313,6 +1328,7 @@ msgstr "Innlogging mislyktes"
 #: src/components/command-palette.tsx
 #: src/components/containers-table/containers-table.tsx
 #: src/components/navbar.tsx
+#: src/components/pods-table/pods-table.tsx
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Logs"
 msgstr "Logger"
@@ -1360,6 +1376,7 @@ msgid "Max 1h"
 msgstr "Maks. 1 t"
 
 #: src/components/containers-table/containers-table-columns.tsx
+#: src/components/pods-table/pods-table-columns.tsx
 #: src/components/routes/system/info-bar.tsx
 #: src/components/systemd-table/systemd-table-columns.tsx
 #: src/components/systemd-table/systemd-table.tsx
@@ -1417,12 +1434,18 @@ msgstr "Monteringspunkt"
 #: src/components/add-system.tsx
 #: src/components/alerts-history-columns.tsx
 #: src/components/containers-table/containers-table-columns.tsx
+#: src/components/pods-table/pods-table-columns.tsx
 #: src/components/systemd-table/systemd-table-columns.tsx
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Name"
 msgstr "Navn"
 
+#: src/components/pods-table/pods-table-columns.tsx
+msgid "Namespace"
+msgstr ""
+
 #: src/components/containers-table/containers-table-columns.tsx
+#: src/components/pods-table/pods-table-columns.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Net"
 msgstr "Nett"
@@ -1489,6 +1512,9 @@ msgstr "Ingen resultater funnet."
 #: src/components/containers-table/containers-table.tsx
 #: src/components/containers-table/containers-table.tsx
 #: src/components/network-monitors-table/network-monitors-table.tsx
+#: src/components/pods-table/pods-table.tsx
+#: src/components/pods-table/pods-table.tsx
+#: src/components/pods-table/pods-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/system/package-updates-table.tsx
 #: src/components/routes/system/smart-table.tsx
@@ -1812,6 +1838,8 @@ msgstr "Mottatt"
 #: src/components/containers-table/containers-table.tsx
 #: src/components/logs-display.tsx
 #: src/components/logs-display.tsx
+#: src/components/pods-table/pods-table.tsx
+#: src/components/pods-table/pods-table.tsx
 #: src/components/routes/system/smart-table.tsx
 #: src/components/routes/system/storage-pools-table.tsx
 #: src/components/systemd-table/systemd-table.tsx
@@ -1859,6 +1887,8 @@ msgstr "Svar"
 msgid "Response time monitoring from agents."
 msgstr "Overvåking av svartid fra agenter."
 
+#: src/components/pods-table/pods-table-columns.tsx
+#: src/components/pods-table/pods-table.tsx
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Restarts"
 msgstr "Omstarter"
@@ -2087,6 +2117,7 @@ msgid "State"
 msgstr "Tilstand"
 
 #: src/components/containers-table/containers-table-columns.tsx
+#: src/components/pods-table/pods-table-columns.tsx
 #: src/components/routes/system/smart-table.tsx
 #: src/components/systemd-table/systemd-table.tsx
 #: src/components/systems-table/systems-table.tsx
@@ -2116,6 +2147,7 @@ msgstr "Bytt tema"
 #: src/components/network-monitors-table/monitor-dialog.tsx
 #: src/components/network-monitors-table/network-monitors-columns.tsx
 #: src/components/network-monitors-table/network-monitors-columns.tsx
+#: src/components/pods-table/pods-table-columns.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/quiet-hours.tsx
@@ -2426,6 +2458,7 @@ msgstr "Oppdater"
 #: src/components/containers-table/containers-table-columns.tsx
 #: src/components/network-monitors-table/network-monitors-columns.tsx
 #: src/components/network-monitors-table/network-monitors-columns.tsx
+#: src/components/pods-table/pods-table-columns.tsx
 #: src/components/routes/system/smart-table.tsx
 #: src/components/routes/system/storage-pools-table.tsx
 #: src/components/systemd-table/systemd-table-columns.tsx

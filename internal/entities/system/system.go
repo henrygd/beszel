@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/henrygd/beszel/internal/entities/container"
+	"github.com/henrygd/beszel/internal/entities/kubernetes"
 	"github.com/henrygd/beszel/internal/entities/monitor"
 	"github.com/henrygd/beszel/internal/entities/systemd"
 )
@@ -217,4 +218,8 @@ type CombinedData struct {
 	// that omitted systemd data (for example, a short-cache dashboard request).
 	SystemdServicesUpdated bool                      `json:"systemdUpdated,omitzero" cbor:"5,keyasint,omitempty"`
 	Monitors               map[string]monitor.Result `cbor:"6,keyasint"`
+	// Keys 5 and 6 are already used by systemd and network monitors.
+	Pods          []*kubernetes.PodStats      `json:"pods,omitempty" cbor:"7,keyasint,omitempty"`
+	ClusterHealth *kubernetes.ClusterHealth   `json:"k8s_health,omitempty" cbor:"8,keyasint,omitempty"`
+	Workloads     *kubernetes.WorkloadMetrics `json:"workloads,omitempty" cbor:"9,keyasint,omitempty"`
 }

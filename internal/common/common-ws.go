@@ -30,6 +30,10 @@ const (
 	GetPackageUpdates
 	// Request recent logs for a systemd service from the agent.
 	GetSystemdLogs
+	// Request pod logs from agent
+	GetPodLogs
+	// Request pod info from agent
+	GetPodInfo
 	// Add new actions here...
 )
 
@@ -90,4 +94,14 @@ type SystemdInfoRequest struct {
 
 type SystemdLogsRequest struct {
 	ServiceName string `cbor:"0,keyasint"`
+}
+
+type PodLogsRequest struct {
+	Namespace string `cbor:"0,keyasint"`
+	PodName   string `cbor:"1,keyasint"`
+}
+
+type PodInfoRequest struct {
+	Namespace string `cbor:"0,keyasint"`
+	PodName   string `cbor:"1,keyasint"`
 }

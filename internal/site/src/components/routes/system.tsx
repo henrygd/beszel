@@ -16,6 +16,7 @@ import { WiFiChart } from "./system/charts/wifi-chart"
 import { GpuPowerChart, GpuCharts } from "./system/charts/gpu-charts"
 import {
 	LazyContainersTable,
+	LazyPodsTable,
 	LazyNetworkMonitorsTable,
 	LazyPackageUpdatesTable,
 	LazySmartTable,
@@ -30,6 +31,7 @@ import ContainersTable from "../containers-table/containers-table"
 
 const SEMVER_0_14_0 = parseSemVer("0.14.0")
 const SEMVER_0_15_0 = parseSemVer("0.15.0")
+const SEMVER_0_17_0 = parseSemVer("0.17.0")
 
 export default memo(function SystemDetail({ id }: { id: string }) {
 	const systemData = useSystemData(id)
@@ -71,6 +73,7 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 	const hasContainers = containerData.length > 0
 	const maybeHasSmartData = compareSemVer(chartData.agentVersion, SEMVER_0_15_0) >= 0
 	const hasContainersTable = hasContainers && compareSemVer(chartData.agentVersion, SEMVER_0_14_0) >= 0
+	const hasPodsTable = compareSemVer(chartData.agentVersion, SEMVER_0_17_0) >= 0
 	const hasSystemd = system.info.sv
 	const hasGpu = hasGpuData || hasGpuPowerData
 	const hasZfs = Object.keys(systemStats.at(-1)?.stats?.z ?? {}).length > 0
@@ -165,6 +168,8 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 				{maybeHasSmartData && <LazySmartTable systemId={system.id} />}
 
 				{hasContainersTable && <LazyContainersTable systemId={system.id} />}
+
+				{hasPodsTable && <LazyPodsTable systemId={system.id} />}
 
 				{hasSystemd && <LazySystemdTable systemId={system.id} />}
 
