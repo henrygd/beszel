@@ -61,7 +61,28 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh api --method PUT \
-            -H "Accept: application/vnd.github+json" \
-            "/user/packages/container/${{ matrix.image }}/visibility" \
-            -f visibility=public
+          set +e
+          for endpoint in \
+            "/user/packages/container/${{ matrix.image }}" \
+            "/users/${{ github.repository_owner }}/packages/container/${{ matrix.image }}"
+          do
+            gh api --method PATCH \
+              -H "Accept: application/vnd.github+json" \
+              "$endpoint" \
+              -f visibility='public' && exit 0
+          done
+          exit 1
+
+      - name: Export image archive
+        run: |
+          image="ghcr.io/laurensbosscher/${{ matrix.image }}"
+          docker pull "$image:sha-${{ github.sha }}"
+          docker tag "$image:sha-${{ github.sha }}" "$image:k8s"
+          docker save -o "${{ matrix.image }}.tar" "$image:sha-${{ github.sha }}" "$image:k8s"
+
+      - name: Upload image archive
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.image }}
+          path: ${{ matrix.image }}.tar
+          retention-days: 7
