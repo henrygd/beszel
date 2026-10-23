@@ -56,10 +56,17 @@ func (h *monitorHistory) result(duration time.Duration, now time.Time) (monitor.
 }
 
 func (h *monitorHistory) record(sample monitorSample) monitor.Result {
+	return h.recordAll([]monitorSample{sample})
+}
+
+// recordAll stores the samples of one probe and returns the result as of the last sample.
+func (h *monitorHistory) recordAll(samples []monitorSample) monitor.Result {
 	h.mu.Lock()
 	defer h.mu.Unlock()
-	h.addSampleLocked(sample)
-	result, _ := h.resultLocked(time.Minute, sample.timestamp)
+	for _, sample := range samples {
+		h.addSampleLocked(sample)
+	}
+	result, _ := h.resultLocked(time.Minute, samples[len(samples)-1].timestamp)
 	return result
 }
 

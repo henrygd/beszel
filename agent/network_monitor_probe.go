@@ -17,9 +17,11 @@ import (
 
 const networkMonitorUserAgent = "Beszel-Agent/" + beszel.Version + " (+https://beszel.dev)"
 
-// monitorProbe performs one check. Errors are recorded as loss by the task runner.
-// Implementations must honor cancellation and bound their execution time.
-type monitorProbe func(context.Context, monitor.Config) (int64, error)
+// monitorProbe performs one check and returns one response per attempt, with -1
+// for each lost attempt. An error without responses is recorded as a single loss
+// by the task runner. Implementations must honor cancellation and bound their
+// execution time.
+type monitorProbe func(context.Context, monitor.Config) ([]int64, error)
 
 // monitorHTTPClients returns the HTTP client for an IP version and TLS mode.
 type monitorHTTPClients func(ipVersion uint8, skipTLSVerify bool) *http.Client
@@ -64,22 +66,28 @@ func newMonitorHTTPClient(ipVersion uint8, skipTLSVerify bool) *http.Client {
 // networkMonitorProbe returns a probe that picks the HTTP client for each
 // monitor's IP version and TLS mode from clients.
 func networkMonitorProbe(clients monitorHTTPClients) monitorProbe {
-	return func(ctx context.Context, config monitor.Config) (int64, error) {
+	return func(ctx context.Context, config monitor.Config) ([]int64, error) {
 		if !monitor.ValidIPVersion(config.IPVersion) {
-			return -1, fmt.Errorf("unknown monitor IP version: %d", config.IPVersion)
+			return nil, fmt.Errorf("unknown monitor IP version: %d", config.IPVersion)
 		}
+		var responseUs int64
+		var err error
 		switch config.Protocol {
 		case "icmp":
 			return monitorICMP(ctx, config.Target, config.IPVersion)
 		case "tcp":
-			return monitorTCP(ctx, config.Target, config.Port, config.IPVersion)
+			responseUs, err = monitorTCP(ctx, config.Target, config.Port, config.IPVersion)
 		case "http":
-			return monitorHTTP(ctx, clients(config.IPVersion, config.SkipTLSVerify), config)
+			responseUs, err = monitorHTTP(ctx, clients(config.IPVersion, config.SkipTLSVerify), config)
 		case "dns":
-			return monitorDNS(ctx, config.Target, config.Server, config.IPVersion)
+			responseUs, err = monitorDNS(ctx, config.Target, config.Server, config.IPVersion)
 		default:
-			return -1, fmt.Errorf("unknown monitor protocol: %s", config.Protocol)
+			return nil, fmt.Errorf("unknown monitor protocol: %s", config.Protocol)
 		}
+		if err != nil {
+			return nil, err
+		}
+		return []int64{responseUs}, nil
 	}
 }
 
