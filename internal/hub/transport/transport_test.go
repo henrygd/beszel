@@ -42,6 +42,24 @@ func TestUnmarshalSystemdLogsResponse(t *testing.T) {
 	assert.Equal(t, logs, result)
 }
 
+func TestUnmarshalPodStringResponses(t *testing.T) {
+	for _, test := range []struct {
+		name   string
+		action common.WebSocketAction
+		value  string
+	}{
+		{name: "pod logs", action: common.GetPodLogs, value: "line one\nline two"},
+		{name: "pod info", action: common.GetPodInfo, value: `{"metadata":{"name":"pod1"}}`},
+	} {
+		t.Run(test.name, func(t *testing.T) {
+			response := common.AgentResponse{String: &test.value}
+			var result string
+			require.NoError(t, UnmarshalResponse(response, test.action, &result))
+			assert.Equal(t, test.value, result)
+		})
+	}
+}
+
 func TestUnmarshalEmptySmartDataResponse(t *testing.T) {
 	payload, err := cbor.Marshal(common.AgentResponse{SmartData: map[string]smart.SmartData{}})
 	require.NoError(t, err)

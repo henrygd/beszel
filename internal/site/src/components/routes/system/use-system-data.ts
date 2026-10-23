@@ -11,6 +11,7 @@ import {
 	$chartTime,
 	$containerFilter,
 	$direction,
+	$podFilter,
 	$maxValues,
 	$systems,
 	$userSettings,
@@ -20,6 +21,8 @@ import { chartTimeData, listen, parseSemVer } from "@/lib/utils"
 import type {
 	ChartData,
 	ContainerStatsRecord,
+	PodStats,
+	PodStatsRecord,
 	SystemDetailsRecord,
 	SystemInfo,
 	SystemRecord,
@@ -27,7 +30,7 @@ import type {
 	SystemStatsRecord,
 } from "@/types"
 import { $router, navigate } from "../../router"
-import { appendData, cache, getStats, makeContainerData, makeContainerPoint } from "./chart-data"
+import { appendData, cache, getStats, makeContainerData, makeContainerPoint, makePodData, makePodPoint } from "./chart-data"
 
 export type SystemData = ReturnType<typeof useSystemData>
 
@@ -83,6 +86,7 @@ export function useSystemData(id: string) {
 	const [system, setSystem] = useState({} as SystemRecord)
 	const [systemStats, setSystemStats] = useState([] as SystemStatsRecord[])
 	const [containerData, setContainerData] = useState([] as ChartData["containerData"])
+	const [podData, setPodData] = useState([] as ChartData["podData"])
 	const persistChartTime = useRef(false)
 	const statsRequestId = useRef(0)
 	const [chartLoading, setChartLoading] = useState(true)
@@ -96,8 +100,10 @@ export function useSystemData(id: string) {
 			persistChartTime.current = false
 			setSystemStats([])
 			setContainerData([])
+			setPodData([])
 			setDetails({} as SystemDetailsRecord)
 			$containerFilter.set("")
+			$podFilter.set("")
 		}
 	}, [id])
 
@@ -160,7 +166,7 @@ export function useSystemData(id: string) {
 		pb.realtime
 			.subscribe(
 				`rt_metrics`,
-				(data: { container: ContainerStatsRecord[]; info: SystemInfo; stats: SystemStats }) => {
+				(data: { container: ContainerStatsRecord[]; pods?: PodStats[]; info: SystemInfo; stats: SystemStats }) => {
 					if (cancelled) {
 						return
 					}
@@ -170,16 +176,21 @@ export function useSystemData(id: string) {
 						data.container?.length > 0
 							? makeContainerPoint(now, data.container as unknown as ContainerStatsRecord["stats"])
 							: null
+					const podPoint = data.pods?.length ? makePodPoint(now, data.pods) : null
 					// on first message, make sure we clear out data from other time periods
 					if (isFirst) {
 						isFirst = false
 						setSystemStats([statsPoint])
 						setContainerData(containerPoint ? [containerPoint] : [])
+						setPodData(podPoint ? [podPoint] : [])
 						return
 					}
 					setSystemStats((prev) => appendData(prev, [statsPoint], expectedInterval, 60))
 					if (containerPoint) {
 						setContainerData((prev) => appendData(prev, [containerPoint], expectedInterval, 60))
+					}
+					if (podPoint) {
+						setPodData((prev) => appendData(prev, [podPoint], expectedInterval, 60))
 					}
 				},
 				{ query: { system: system.id } }
@@ -203,14 +214,16 @@ export function useSystemData(id: string) {
 		return {
 			systemStats,
 			containerData,
+			podData,
 			chartTime,
 			orientation: direction === "rtl" ? "right" : "left",
 			agentVersion,
 		}
-	}, [systemStats, containerData, direction])
+	}, [systemStats, containerData, podData, direction])
 
 	// Share chart config computation for all container charts
 	const containerChartConfigs = useContainerChartConfigs(containerData)
+	const podChartConfigs = useContainerChartConfigs(podData)
 
 	// get stats when system "changes." (Not just system to system,
 	// also when new info comes in via systemManager realtime connection, indicating an update)
@@ -224,14 +237,17 @@ export function useSystemData(id: string) {
 		const { expectedInterval } = chartTimeData[chartTime]
 		const ss_cache_key = `${systemId}_${chartTime}_system_stats`
 		const cs_cache_key = `${systemId}_${chartTime}_container_stats`
+		const ps_cache_key = `${systemId}_${chartTime}_pod_stats`
 
 		const cachedSystemStats = cache.get(ss_cache_key) as SystemStatsRecord[] | undefined
 		const cachedContainerData = cache.get(cs_cache_key) as ChartData["containerData"] | undefined
+		const cachedPodData = cache.get(ps_cache_key) as ChartData["podData"] | undefined
 
 		// Render from cache immediately if available
 		if (cachedSystemStats?.length) {
 			setSystemStats(cachedSystemStats)
 			setContainerData(cachedContainerData || [])
+			setPodData(cachedPodData || [])
 			setChartLoading(false)
 
 			// Skip the fetch if the latest cached point is recent enough that no new point is expected yet
@@ -246,7 +262,8 @@ export function useSystemData(id: string) {
 		Promise.allSettled([
 			getStats<SystemStatsRecord>("system_stats", systemId, chartTime, cachedSystemStats),
 			getStats<ContainerStatsRecord>("container_stats", systemId, chartTime, cachedContainerData),
-		]).then(([systemStats, containerStats]) => {
+			getStats<PodStatsRecord>("pod_stats", systemId, chartTime, cachedPodData),
+		]).then(([systemStats, containerStats, podStats]) => {
 			// Ignore responses for a previous system or chart time
 			if (requestId !== statsRequestId.current) {
 				return
@@ -268,6 +285,12 @@ export function useSystemData(id: string) {
 				cache.set(cs_cache_key, containerData)
 			}
 			setContainerData(containerData)
+			let nextPodData = (cache.get(ps_cache_key) || []) as ChartData["podData"]
+			if (podStats.status === "fulfilled" && podStats.value.length) {
+				nextPodData = appendData(nextPodData, makePodData(podStats.value), expectedInterval, 100)
+				cache.set(ps_cache_key, nextPodData)
+			}
+			setPodData(nextPodData)
 		})
 	}, [system, chartTime])
 
@@ -366,8 +389,10 @@ export function useSystemData(id: string) {
 		system,
 		systemStats,
 		containerData,
+		podData,
 		chartData,
 		containerChartConfigs,
+		podChartConfigs,
 		details,
 		grid,
 		setGrid,

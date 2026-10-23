@@ -320,6 +320,37 @@ export interface SystemStatsRecord extends RecordModel {
 	created: string | number
 }
 
+export interface PodStatsRecord extends RecordModel {
+	system: string
+	stats: PodStats[]
+	created: string | number
+}
+
+export interface PodStats {
+	/** name */
+	name: string
+	/** namespace */
+	namespace: string
+	/** node */
+	node?: string
+	/** cpu percent */
+	cpu: number
+	/** memory used (mb) */
+	m: number
+	/** memory limit (mb) */
+	ml?: number
+	/** network sent (mb/s) */
+	ns: number
+	/** network received (mb/s) */
+	nr: number
+	/** status */
+	s: string
+	/** restart count */
+	rc?: number
+	/** container count */
+	cc: number
+}
+
 export interface AlertRecord extends RecordModel {
 	id: string
 	system: string
@@ -367,6 +398,21 @@ export interface ContainerRecord extends RecordModel {
 	net: number
 	health: number
 	status: string
+	updated: number
+}
+
+export interface PodRecord extends RecordModel {
+	id: string
+	system: string
+	name: string
+	namespace: string
+	cpu: number
+	memory: number
+	net: number
+	status: string
+	restarts: number
+	image: string
+	ports: string
 	updated: number
 }
 
@@ -429,6 +475,7 @@ export interface ChartOptions {
 export interface ChartData extends ChartOptions {
 	systemStats: SystemStatsRecord[]
 	containerData: ChartDataContainer[]
+	podData: ChartDataContainer[]
 }
 
 export interface AlertInfo {

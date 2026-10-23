@@ -89,6 +89,9 @@ export function hydrateUserSettings(settings: UserSettings) {
 /** Container chart filter */
 export const $containerFilter = atom("")
 
+/** Pod chart filter */
+export const $podFilter = atom("")
+
 /** Temperature chart filter */
 export const $temperatureFilter = atom("")
 

@@ -11,11 +11,13 @@ import { MemoryChart, ContainerMemoryChart, SwapChart } from "./system/charts/me
 import { RootDiskCharts, ExtraFsCharts } from "./system/charts/disk-charts"
 import { ZfsCharts } from "./system/charts/storage-pool-charts"
 import { BandwidthChart, ContainerNetworkChart } from "./system/charts/network-charts"
+import { PodCpuChart, PodMemoryChart, PodNetworkChart } from "./system/charts/pod-charts"
 import { TemperatureChart, FanChart, BatteryChart } from "./system/charts/sensor-charts"
 import { WiFiChart } from "./system/charts/wifi-chart"
 import { GpuPowerChart, GpuCharts } from "./system/charts/gpu-charts"
 import {
 	LazyContainersTable,
+	LazyPodsTable,
 	LazyNetworkMonitorsTable,
 	LazyPackageUpdatesTable,
 	LazySmartTable,
@@ -24,12 +26,14 @@ import {
 	SystemdTable,
 } from "./system/lazy-tables"
 import { LoadAverageChart } from "./system/charts/load-average-chart"
-import { ContainerIcon, CpuIcon, HardDriveIcon, NetworkIcon, PackageIcon, TerminalSquareIcon } from "lucide-react"
+import { BoxIcon, ContainerIcon, CpuIcon, HardDriveIcon, NetworkIcon, PackageIcon, TerminalSquareIcon } from "lucide-react"
+import PodsTable from "../pods-table/pods-table"
 import { GpuIcon } from "../ui/icons"
 import ContainersTable from "../containers-table/containers-table"
 
 const SEMVER_0_14_0 = parseSemVer("0.14.0")
 const SEMVER_0_15_0 = parseSemVer("0.15.0")
+const SEMVER_0_17_0 = parseSemVer("0.17.0")
 
 export default memo(function SystemDetail({ id }: { id: string }) {
 	const systemData = useSystemData(id)
@@ -38,8 +42,10 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 		system,
 		systemStats,
 		containerData,
+		podData,
 		chartData,
 		containerChartConfigs,
+		podChartConfigs,
 		details,
 		grid,
 		setGrid,
@@ -69,8 +75,10 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 	}
 
 	const hasContainers = containerData.length > 0
+	const hasPods = podData.length > 0
 	const maybeHasSmartData = compareSemVer(chartData.agentVersion, SEMVER_0_15_0) >= 0
 	const hasContainersTable = hasContainers && compareSemVer(chartData.agentVersion, SEMVER_0_14_0) >= 0
+	const hasPodsTable = compareSemVer(chartData.agentVersion, SEMVER_0_17_0) >= 0
 	const hasSystemd = system.info.sv
 	const hasGpu = hasGpuData || hasGpuPowerData
 	const hasZfs = Object.keys(systemStats.at(-1)?.stats?.z ?? {}).length > 0
@@ -82,6 +90,7 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 	const tabs = ["core", "network", "disk"]
 	if (hasGpu) tabs.push("gpu")
 	if (hasContainers) tabs.push("containers")
+	if (hasPods) tabs.push("pods")
 	if (hasSystemd) tabs.push("services")
 	if (packageUpdates) tabs.push("updates")
 	tabsRef.current = tabs
@@ -132,6 +141,26 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 						/>
 					)}
 
+					{hasPods && (
+						<PodCpuChart chartData={chartData} grid={grid} dataEmpty={dataEmpty} cpuConfig={podChartConfigs.cpu} />
+					)}
+					{hasPods && (
+						<PodMemoryChart
+							chartData={chartData}
+							grid={grid}
+							dataEmpty={dataEmpty}
+							memoryConfig={podChartConfigs.memory}
+						/>
+					)}
+					{hasPods && (
+						<PodNetworkChart
+							chartData={chartData}
+							grid={grid}
+							dataEmpty={dataEmpty}
+							networkConfig={podChartConfigs.network}
+						/>
+					)}
+
 					<SwapChart chartData={chartData} grid={grid} dataEmpty={dataEmpty} systemStats={systemStats} />
 
 					<LoadAverageChart chartData={chartData} grid={grid} dataEmpty={dataEmpty} />
@@ -165,6 +194,8 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 				{maybeHasSmartData && <LazySmartTable systemId={system.id} />}
 
 				{hasContainersTable && <LazyContainersTable systemId={system.id} />}
+
+				{hasPodsTable && <LazyPodsTable systemId={system.id} />}
 
 				{hasSystemd && <LazySystemdTable systemId={system.id} />}
 
@@ -201,6 +232,12 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 						<TabsTrigger value="containers" className="w-full flex items-center gap-2">
 							<ContainerIcon className="size-3.5" />
 							<Trans>Containers</Trans>
+						</TabsTrigger>
+					)}
+					{hasPods && (
+						<TabsTrigger value="pods" className="w-full flex items-center gap-2">
+							<BoxIcon className="size-3.5" />
+							<Trans>Pods</Trans>
 						</TabsTrigger>
 					)}
 					{hasSystemd && (
@@ -298,6 +335,31 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 									/>
 								</div>
 								{hasContainersTable && <ContainersTable systemId={system.id} />}
+							</>
+						)}
+					</TabsContent>
+				)}
+
+				{hasPods && (
+					<TabsContent value="pods" forceMount className={activeTab === "pods" ? "contents" : "hidden"}>
+						{mountedTabs.has("pods") && (
+							<>
+								<div className="grid xl:grid-cols-2 gap-4">
+									<PodCpuChart chartData={chartData} grid={grid} dataEmpty={dataEmpty} cpuConfig={podChartConfigs.cpu} />
+									<PodMemoryChart
+										chartData={chartData}
+										grid={grid}
+										dataEmpty={dataEmpty}
+										memoryConfig={podChartConfigs.memory}
+									/>
+									<PodNetworkChart
+										chartData={chartData}
+										grid={grid}
+										dataEmpty={dataEmpty}
+										networkConfig={podChartConfigs.network}
+									/>
+								</div>
+								<PodsTable systemId={system.id} />
 							</>
 						)}
 					</TabsContent>

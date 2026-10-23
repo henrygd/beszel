@@ -19,6 +19,7 @@ import (
 	"github.com/henrygd/beszel/internal/hub/ws"
 
 	"github.com/henrygd/beszel/internal/entities/container"
+	"github.com/henrygd/beszel/internal/entities/kubernetes"
 	"github.com/henrygd/beszel/internal/entities/monitor"
 	"github.com/henrygd/beszel/internal/entities/smart"
 	"github.com/henrygd/beszel/internal/entities/system"
@@ -295,6 +296,27 @@ func (sys *System) createRecords(data *system.CombinedData) (*core.Record, error
 			containerStatsRecord.Set("stats", data.Containers)
 			containerStatsRecord.Set("type", "1m")
 			if err := txApp.SaveNoValidate(containerStatsRecord); err != nil {
+				return err
+			}
+		}
+
+		// add pod_stats records
+		if len(data.Pods) > 0 {
+			// create pod records for table view (only if pods have data)
+			if len(data.Pods) > 0 && data.Pods[0].Name != "" {
+				if err := createPodRecords(txApp, data.Pods, sys.Id); err != nil {
+					return err
+				}
+			}
+			podStatsCollection, err := txApp.FindCachedCollectionByNameOrId("pod_stats")
+			if err != nil {
+				return err
+			}
+			podStatsRecord := core.NewRecord(podStatsCollection)
+			podStatsRecord.Set("system", systemRecord.Id)
+			podStatsRecord.Set("stats", data.Pods)
+			podStatsRecord.Set("type", "1m")
+			if err := txApp.SaveNoValidate(podStatsRecord); err != nil {
 				return err
 			}
 		}
@@ -617,6 +639,45 @@ func createContainerRecords(app core.App, data []*container.Stats, systemId stri
 	return err
 }
 
+// createPodRecords creates pod records for Kubernetes pods
+func createPodRecords(app core.App, data []*kubernetes.PodStats, systemId string) error {
+	if len(data) == 0 {
+		return nil
+	}
+	// shared params for all records
+	params := dbx.Params{
+		"system":  systemId,
+		"updated": time.Now().UTC().UnixMilli(),
+	}
+	valueStrings := make([]string, 0, len(data))
+	for i, pod := range data {
+		suffix := fmt.Sprintf("%d", i)
+		// Create unique ID from namespace and pod name
+		podId := fmt.Sprintf("%s-%s", pod.Namespace, pod.Name)
+		// Hash to create shorter ID if needed
+		if len(podId) > 50 {
+			podId = fmt.Sprintf("%x", []byte(podId))[:15]
+		}
+		valueStrings = append(valueStrings, fmt.Sprintf("({:id%[1]s}, {:system}, {:name%[1]s}, {:namespace%[1]s}, {:status%[1]s}, {:cpu%[1]s}, {:memory%[1]s}, {:net%[1]s}, {:restarts%[1]s}, {:image%[1]s}, {:ports%[1]s}, {:updated})", suffix))
+		params["id"+suffix] = podId
+		params["name"+suffix] = pod.Name
+		params["namespace"+suffix] = pod.Namespace
+		params["status"+suffix] = pod.Status
+		params["cpu"+suffix] = pod.Cpu
+		params["memory"+suffix] = pod.Mem
+		params["net"+suffix] = pod.NetworkSent + pod.NetworkRecv
+		params["restarts"+suffix] = pod.RestartCount
+		params["image"+suffix] = pod.Image
+		params["ports"+suffix] = pod.Ports
+	}
+	queryString := fmt.Sprintf(
+		"INSERT INTO pods (id, system, name, namespace, status, cpu, memory, net, restarts, image, ports, updated) VALUES %s ON CONFLICT(id) DO UPDATE SET system = excluded.system, name = excluded.name, namespace = excluded.namespace, status = excluded.status, cpu = excluded.cpu, memory = excluded.memory, net = excluded.net, restarts = excluded.restarts, image = excluded.image, ports = excluded.ports, updated = excluded.updated",
+		strings.Join(valueStrings, ","),
+	)
+	_, err := app.DB().NewQuery(queryString).Bind(params).Execute()
+	return err
+}
+
 // getRecord retrieves the system record from the database.
 // If the record is not found, it removes the system from the manager.
 // Other errors, like a query timing out while the hub is stalled, leave the
@@ -848,6 +909,24 @@ func (sys *System) FetchContainerLogsFromAgent(containerID string) (string, erro
 	defer cancel()
 	var result string
 	err := sys.request(ctx, common.GetContainerLogs, common.ContainerLogsRequest{ContainerID: containerID}, &result)
+	return result, err
+}
+
+// FetchPodInfoFromAgent fetches pod info from the agent
+func (sys *System) FetchPodInfoFromAgent(namespace, podName string) (string, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	var result string
+	err := sys.request(ctx, common.GetPodInfo, common.PodInfoRequest{Namespace: namespace, PodName: podName}, &result)
+	return result, err
+}
+
+// FetchPodLogsFromAgent fetches pod logs from the agent
+func (sys *System) FetchPodLogsFromAgent(namespace, podName string) (string, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	var result string
+	err := sys.request(ctx, common.GetPodLogs, common.PodLogsRequest{Namespace: namespace, PodName: podName}, &result)
 	return result, err
 }
 
