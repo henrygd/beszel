@@ -4,6 +4,7 @@ import { getPagePath } from "@nanostores/router"
 import { DialogDescription } from "@radix-ui/react-dialog"
 import {
 	AlertOctagonIcon,
+	BatteryChargingIcon,
 	BookIcon,
 	ContainerIcon,
 	DatabaseBackupIcon,
@@ -119,6 +120,18 @@ export default memo(function CommandPalette({ open, setOpen }: { open: boolean; 
 						>
 							<HardDriveIcon className="me-2 size-4" />
 							<span>S.M.A.R.T.</span>
+							<CommandShortcut>
+								<Trans>Page</Trans>
+							</CommandShortcut>
+						</CommandItem>
+						<CommandItem
+							onSelect={() => {
+								navigate(getPagePath($router, "nut"))
+								setOpen(false)
+							}}
+						>
+							<BatteryChargingIcon className="me-2 size-4" />
+							<span>UPS / PDU</span>
 							<CommandShortcut>
 								<Trans>Page</Trans>
 							</CommandShortcut>
