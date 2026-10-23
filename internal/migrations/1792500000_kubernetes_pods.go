@@ -38,8 +38,21 @@ func init() {
 				MaxSelect: 1,
 				Values:    []string{"1m", "10m", "20m", "120m", "480m"},
 			},
+			// PocketBase 0.23+ base collections do not add created/updated unless
+			// these fields exist. The rollup queries and this index both use created.
+			&core.AutodateField{
+				Id:       "pod_stats_created",
+				Name:     "created",
+				OnCreate: true,
+			},
+			&core.AutodateField{
+				Id:       "pod_stats_updated",
+				Name:     "updated",
+				OnCreate: true,
+				OnUpdate: true,
+			},
 		)
-		podStats.AddIndex("idx_pod_stats01", false, "system, type, created", "")
+		podStats.AddIndex("idx_pod_stats01", false, "`system`, `type`, `created`", "")
 		if err := app.Save(podStats); err != nil {
 			return err
 		}
