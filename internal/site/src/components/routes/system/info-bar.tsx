@@ -23,6 +23,7 @@ import {
 	DropdownMenuSeparator,
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { ActionsButton } from "@/components/systems-table/systems-table-columns"
 import { FreeBsdIcon, TuxIcon, WebSocketIcon, WindowsIcon } from "@/components/ui/icons"
 import { Separator } from "@/components/ui/separator"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
@@ -204,6 +205,7 @@ export default function InfoBar({
 				</div>
 				<div className="xl:ms-auto flex items-center gap-2 max-sm:-mb-1">
 					<ChartTimeSelect className="w-full xl:w-40" agentVersion={chartData.agentVersion} />
+					<ActionsButton system={system} variant="outline" showAlerts />
 					<DropdownMenu>
 						<DropdownMenuTrigger asChild>
 							<Button aria-label={t`View`} variant="outline" size="icon" className="hidden xl:flex">
