@@ -177,16 +177,18 @@ type Info struct {
 	Os            Os      `json:"os,omitzero" cbor:"14,keyasint,omitempty"` // deprecated - moved to Details struct
 	// cbor keys 15-17 were LoadAvg1/5/15 (removed) - do not reuse
 
-	BandwidthBytes uint64             `json:"bb" cbor:"18,keyasint"`
-	LoadAvg        [3]float64         `json:"la,omitempty" cbor:"19,keyasint"`
-	ConnectionType ConnectionType     `json:"ct,omitzero" cbor:"20,keyasint,omitempty,omitzero"`
-	ExtraFsPct     map[string]float64 `json:"efs,omitempty" cbor:"21,keyasint,omitempty"`
-	Services       []uint16           `json:"sv,omitempty" cbor:"22,keyasint,omitempty"`  // [totalServices, numFailedServices]
-	Battery        Battery            `json:"bat,omitzero" cbor:"23,keyasint,omitzero"`   // [percent, charge state]
-	RootDiskName   string             `json:"rdn,omitempty" cbor:"24,keyasint,omitempty"` // custom name for root disk (set via FILESYSTEM=device__name)
-	PackageUpdates []uint16           `json:"pu,omitempty" cbor:"25,keyasint,omitempty"`  // [totalUpdates, securityUpdates] (security omitted if unknown)
-	WiFi           map[string]WiFi    `json:"wf,omitempty" cbor:"26,keyasint,omitempty"`  // connected Wi-Fi interfaces
-	SystemdLogs    bool               `json:"jl,omitzero" cbor:"27,keyasint,omitempty"`   // agent can read the system journal
+	BandwidthBytes     uint64             `json:"bb" cbor:"18,keyasint"`
+	LoadAvg            [3]float64         `json:"la,omitempty" cbor:"19,keyasint"`
+	ConnectionType     ConnectionType     `json:"ct,omitzero" cbor:"20,keyasint,omitempty,omitzero"`
+	ExtraFsPct         map[string]float64 `json:"efs,omitempty" cbor:"21,keyasint,omitempty"`
+	Services           []uint16           `json:"sv,omitempty" cbor:"22,keyasint,omitempty"`  // [totalServices, numFailedServices]
+	Battery            Battery            `json:"bat,omitzero" cbor:"23,keyasint,omitzero"`   // [percent, charge state]
+	RootDiskName       string             `json:"rdn,omitempty" cbor:"24,keyasint,omitempty"` // custom name for root disk (set via FILESYSTEM=device__name)
+	PackageUpdates     []uint16           `json:"pu,omitempty" cbor:"25,keyasint,omitempty"`  // [totalUpdates, securityUpdates] (security omitted if unknown)
+	WiFi               map[string]WiFi    `json:"wf,omitempty" cbor:"26,keyasint,omitempty"`  // connected Wi-Fi interfaces
+	SystemdLogs        bool               `json:"jl,omitzero" cbor:"27,keyasint,omitempty"`   // agent can read the system journal
+	BandwidthBytesSent uint64             `json:"bs,omitzero" cbor:"28,keyasint,omitzero"`
+	BandwidthBytesRecv uint64             `json:"br,omitzero" cbor:"29,keyasint,omitzero"`
 }
 
 // Data that does not change during process lifetime and is not needed in All Systems table
