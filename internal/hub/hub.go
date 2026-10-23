@@ -113,6 +113,7 @@ func (h *Hub) StartHub() error {
 
 	bindNetworkMonitorsEvents(h)
 	email.BindAuthEmails(h.App)
+	bindSpeedtestsEvents(h)
 
 	pb, ok := h.App.(*pocketbase.PocketBase)
 	if !ok {
