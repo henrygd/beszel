@@ -35,6 +35,8 @@ func (a *Agent) updateMemoryStats(stats *system.Stats) {
 		}
 		used, cacheBuff, _ := calculateHostMemoryUsage(v, a.memCalc == "htop")
 		metrics = memoryMetrics{Total: v.Total, Used: used, BuffCache: cacheBuff}
+		stats.MemSlabReclaim = utils.BytesToGigabytes(v.Sreclaimable)
+		stats.MemSlabUnreclaim = utils.BytesToGigabytes(v.Sunreclaim)
 		// Host ARC must not be subtracted from container-scoped accounting.
 		if a.zfs {
 			if size, _ := zfs.ARCSize(); size > 0 && size < metrics.Used {
