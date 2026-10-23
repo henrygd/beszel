@@ -29,7 +29,7 @@ import { useToast } from "@/components/ui/use-toast"
 import { $systems } from "@/lib/stores"
 import { cn, supportsNetworkMonitors } from "@/lib/utils"
 import { getMonitorTarget, isHttpsTarget } from "@/lib/network-monitor-utils"
-import type { NetworkMonitorRecord } from "@/types"
+import type { NetworkMonitorRecord, SystemRecord } from "@/types"
 import * as v from "valibot"
 
 type MonitorProtocol = "icmp" | "tcp" | "http" | "dns"
@@ -220,6 +220,7 @@ export function SystemMultiSelect({
 	onChange,
 	disabled,
 	className,
+	isEligible = supportsNetworkMonitors,
 	systemIds,
 	placeholder,
 	canSelectMore,
@@ -229,7 +230,9 @@ export function SystemMultiSelect({
 	onChange: (ids: Set<string>) => void
 	disabled?: boolean
 	className?: string
-	/** Limit the options to these systems. Defaults to all systems that support network monitors. */
+	/** Filters the selectable systems. Defaults to systems that support network monitors. */
+	isEligible?: (system: SystemRecord) => boolean
+	/** Limit the options to these systems. Overrides isEligible when set. */
 	systemIds?: string[]
 	placeholder?: string
 	canSelectMore?: boolean
@@ -237,7 +240,7 @@ export function SystemMultiSelect({
 	const systems = useStore($systems)
 	const { t } = useLingui()
 	const options = systems
-		.filter((system) => (systemIds ? systemIds.includes(system.id) : supportsNetworkMonitors(system)))
+		.filter((system) => (systemIds ? systemIds.includes(system.id) : isEligible(system)))
 		.map((system) => ({ id: system.id, label: system.name }))
 	return (
 		<MultiSelect
@@ -315,7 +318,7 @@ export function MonitorMultiSelect({
 
 type MultiSelectOption = { id: string; label: string }
 
-function MultiSelect<T extends MultiSelectOption>({
+export function MultiSelect<T extends MultiSelectOption>({
 	id,
 	options,
 	selectedIds,
