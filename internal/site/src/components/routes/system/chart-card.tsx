@@ -93,6 +93,7 @@ export function ChartCard({
 	cornerEl,
 	legend,
 	className,
+	alertSection,
 }: {
 	title: string
 	description: React.ReactNode
@@ -102,11 +103,13 @@ export function ChartCard({
 	cornerEl?: JSX.Element | null
 	legend?: boolean
 	className?: string
+	alertSection?: string
 }) {
 	const { isIntersecting, ref } = useIntersectionObserver()
 
 	return (
 		<Card
+			data-alert-section={alertSection}
 			className={cn(
 				"px-3 py-5 sm:py-6 sm:px-6 odd:last-of-type:col-span-full min-h-full",
 				{ "col-span-full": !grid },

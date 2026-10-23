@@ -1,11 +1,12 @@
 import { alertInfo } from "@/lib/alerts"
+import { $alertNavigation, getAlertDestination } from "@/lib/alert-navigation"
 import { $alerts, $allSystemsById } from "@/lib/stores"
 import { useBrowserStorage } from "@/lib/utils"
 import type { AlertRecord } from "@/types"
 import { Plural, Trans } from "@lingui/react/macro"
 import { useStore } from "@nanostores/react"
 import { getPagePath } from "@nanostores/router"
-import { useEffect, useMemo, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 import { AlertBannerSheet, AlertBannerSheetItem } from "./alert-banner-sheet"
 import { $router } from "./router"
 
@@ -57,6 +58,7 @@ export const ActiveAlerts = ({ className }: { className?: string }) => {
 	const alerts = useStore($alerts)
 	const systems = useStore($allSystemsById)
 	const [open, setOpen] = useState(false)
+	const navigating = useRef(false)
 	// ids of the alerts that were active when the banner was last dismissed.
 	// session storage because a retrigger while the page is closed keeps the same id.
 	const [dismissedIds, setDismissedIds] = useBrowserStorage<string[]>("dismissedAlerts", [], sessionStorage)
@@ -105,6 +107,12 @@ export const ActiveAlerts = ({ className }: { className?: string }) => {
 		return (
 			<AlertBannerSheet
 				open={open}
+				onCloseAutoFocus={(event) => {
+					if (navigating.current) {
+						event.preventDefault()
+						navigating.current = false
+					}
+				}}
 				onOpenChange={setOpen}
 				onDismiss={() => setDismissedIds(activeAlerts.map((alert) => alert.id))}
 				className={className}
@@ -134,8 +142,15 @@ export const ActiveAlerts = ({ className }: { className?: string }) => {
 					return (
 						<AlertBannerSheetItem
 							key={alert.id}
-							href={getPagePath($router, "system", { id: system?.id })}
-							onClick={() => setOpen(false)}
+							href={getPagePath($router, "system", {
+								id: alert.system,
+								alert: getAlertDestination(alert.name) ? alert.name : undefined,
+							})}
+							onClick={() => {
+								navigating.current = !!getAlertDestination(alert.name)
+								setOpen(false)
+								$alertNavigation.set($alertNavigation.get() + 1)
+							}}
 							icon={info.icon}
 							title={<AlertLabel alert={alert} systemName={system?.name} />}
 							description={<AlertTriggeredDesc alert={alert} />}
