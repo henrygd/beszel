@@ -152,3 +152,18 @@ func TestMonitorHistorySampleCount(t *testing.T) {
 	require.True(t, ok)
 	assert.EqualValues(t, 4, result.SampleCount)
 }
+
+func TestMonitorHistoryRecordAllBurst(t *testing.T) {
+	h := newMonitorHistory()
+	now := time.Now()
+	samples := make([]monitorSample, 0, 5)
+	for _, responseUs := range []int64{1000, 2000, -1, 3000, 4000} {
+		samples = append(samples, monitorSample{responseUs: responseUs, timestamp: now})
+	}
+	result := h.recordAll(samples)
+	assert.Equal(t, 20.0, result.PacketLoss)
+	assert.Equal(t, int64(2500), result.AvgResponse)
+	assert.Equal(t, int64(1000), result.MinResponse)
+	assert.Equal(t, int64(4000), result.MaxResponse)
+	assert.Equal(t, int64(5), result.SampleCount)
+}
