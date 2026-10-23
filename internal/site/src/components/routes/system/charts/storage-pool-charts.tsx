@@ -84,9 +84,11 @@ export function ZfsPoolIOChart({ systemData, poolName }: { systemData: SystemDat
 			grid={grid}
 			title={`${displayName} I/O`}
 			description={t`Throughput of storage pool ${displayName}`}
+			legend={true}
 		>
 			<AreaChartDefault
 				chartData={chartData}
+				legend={true}
 				showTotal={true}
 				dataPoints={[
 					{

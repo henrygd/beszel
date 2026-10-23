@@ -43,9 +43,11 @@ export function BandwidthChart({
 				</div>
 			}
 			description={t`Network traffic of public interfaces`}
+			legend={true}
 		>
 			<AreaChartDefault
 				chartData={chartData}
+				legend={true}
 				maxToggled={showMax}
 				dataPoints={[
 					{
@@ -160,10 +162,13 @@ export function ContainerNetworkChart({
 			title={dockerOrPodman(t`Docker Network I/O`, isPodman)}
 			description={t`Network traffic of containers`}
 			cornerEl={<FilterBar />}
+			legend={true}
 		>
 			<AreaChartDefault
 				chartData={chartData}
 				customData={chartData.containerData}
+				legend={true}
+				legendExclude={filteredKeys}
 				dataPoints={dataPoints}
 				tickFormatter={(val) => {
 					const { value, unit } = formatBytes(val, true, userSettings.unitNet, false)
