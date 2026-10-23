@@ -9,6 +9,7 @@ require (
 	github.com/ebitengine/purego v0.11.2
 	github.com/fxamacker/cbor/v2 v2.9.6
 	github.com/gliderlabs/ssh v0.3.8
+	github.com/gosnmp/gosnmp v1.43.2
 	github.com/lxzan/gws v1.10.2
 	github.com/mdlayher/genetlink v1.4.0
 	github.com/mdlayher/netlink v1.11.2
