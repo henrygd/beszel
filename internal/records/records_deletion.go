@@ -17,6 +17,10 @@ func (rm *RecordManager) DeleteOldRecords() {
 		if err != nil {
 			slog.Error("Error deleting old system stats", "err", err)
 		}
+		err = deleteOldSpeedtestStats(txApp)
+		if err != nil {
+			slog.Error("Error deleting old speedtest stats", "err", err)
+		}
 		err = deleteOldContainerRecords(txApp)
 		if err != nil {
 			slog.Error("Error deleting old container records", "err", err)
@@ -87,6 +91,15 @@ func deleteOldSystemStats(app core.App) error {
 				return fmt.Errorf("failed to delete from %s: %v", collection, err)
 			}
 		}
+	}
+	return nil
+}
+
+// Deletes speedtest_stats records older than the longest chart range (30 days)
+func deleteOldSpeedtestStats(app core.App) error {
+	cutoff := time.Now().UTC().Add(-30 * 24 * time.Hour).UnixMilli()
+	if _, err := app.DB().Delete("speedtest_stats", dbx.NewExp("created<{:created}", dbx.Params{"created": cutoff})).Execute(); err != nil {
+		return fmt.Errorf("failed to delete old speedtest stats: %v", err)
 	}
 	return nil
 }

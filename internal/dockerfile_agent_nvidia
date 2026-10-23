@@ -32,10 +32,29 @@ RUN apt-get update && apt-get install -y \
   && rm -rf /var/lib/apt/lists/*
 
 # --------------------------
+# Ookla speedtest CLI for speedtest monitoring (static binary, works in scratch)
+# --------------------------
+FROM --platform=$BUILDPLATFORM alpine:3.24 AS speedtest
+ARG TARGETARCH
+ARG TARGETVARIANT
+ARG SPEEDTEST_VERSION=1.2.0
+RUN set -eux; \
+  case "${TARGETARCH}${TARGETVARIANT}" in \
+    amd64*) arch=x86_64 ;; \
+    arm64*) arch=aarch64 ;; \
+    armv7) arch=armhf ;; \
+    armv6) arch=armel ;; \
+    *) echo "no Ookla speedtest CLI build for ${TARGETARCH}${TARGETVARIANT}" >&2; exit 1 ;; \
+  esac; \
+  wget -qO- "https://install.speedtest.net/app/cli/ookla-speedtest-${SPEEDTEST_VERSION}-linux-${arch}.tgz" \
+    | tar xz -C /usr/local/bin speedtest
+
+# --------------------------
 # Final image: GPU-enabled agent with nvidia-smi
 # --------------------------
 FROM nvidia/cuda:12.2.2-base-ubuntu22.04
 COPY --from=builder /agent /agent
+COPY --from=speedtest /usr/local/bin/speedtest /usr/bin/speedtest
 
 # AMD GPU name lookup (used by agent on hybrid laptops when /usr/share/libdrm/amdgpu.ids is read)
 COPY --from=builder /app/agent/test-data/amdgpu.ids /usr/share/libdrm/amdgpu.ids
