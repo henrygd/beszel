@@ -22,7 +22,10 @@ func init() {
 		}
 
 		minField := collection.Fields.GetByName("min").(*core.NumberField)
-		minField.Max = nil
+		min := float64(0)
+		max := float64(43200)
+		minField.Min = &min
+		minField.Max = &max
 		return app.Save(collection)
 	}, func(app core.App) error {
 		collection, err := app.FindCollectionByNameOrId("alerts")
@@ -36,6 +39,7 @@ func init() {
 		})
 
 		minField := collection.Fields.GetByName("min").(*core.NumberField)
+		minField.Min = nil
 		max := float64(60)
 		minField.Max = &max
 		return app.Save(collection)

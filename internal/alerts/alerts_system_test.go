@@ -3,6 +3,7 @@
 package alerts_test
 
 import (
+	"sync"
 	"testing"
 	"testing/synctest"
 	"time"
@@ -293,6 +294,30 @@ func TestPackageUpdatesMissingDataDoesNotResolveAlert(t *testing.T) {
 	})
 }
 
+func TestPackageUpdatesConcurrentObservationsNotifyOnce(t *testing.T) {
+	fixture := newSystemAlertTestFixture(t, "PackageUpdates", 0, 0)
+	defer fixture.cleanup()
+
+	data := createCombinedData([]uint16{3}, setPackageUpdateAlertValue)
+	var wg sync.WaitGroup
+	errs := make(chan error, 8)
+	for range 8 {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			errs <- fixture.hub.GetAlertManager().HandlePackageUpdateAlerts(fixture.system, data)
+		}()
+	}
+	wg.Wait()
+	close(errs)
+	for err := range errs {
+		require.NoError(t, err)
+	}
+
+	fixture.assertTriggered(t, true, "Concurrent observations should trigger the alert")
+	assert.Equal(t, 1, fixture.hub.TestMailer.TotalSend(), "Concurrent observations should send one email")
+}
+
 func TestPackageUpdatesPreservesPendingSinceAcrossManagerRestart(t *testing.T) {
 	fixture := newSystemAlertTestFixture(t, "PackageUpdates", 2, 0)
 	defer fixture.cleanup()
@@ -326,7 +351,10 @@ func TestPackageUpdatesAlertSchema(t *testing.T) {
 
 	minField, ok := collection.Fields.GetByName("min").(*core.NumberField)
 	require.True(t, ok)
-	assert.Nil(t, minField.Max)
+	require.NotNil(t, minField.Min)
+	require.NotNil(t, minField.Max)
+	assert.Equal(t, float64(0), *minField.Min)
+	assert.Equal(t, float64(43200), *minField.Max)
 
 }
 

@@ -23,6 +23,7 @@ type AlertManager struct {
 	hub             hubLike
 	stopOnce        sync.Once
 	pendingAlerts   sync.Map
+	packageLocks    sync.Map
 	alertsCache     *AlertsCache
 	networkMonitors *networkMonitorCache
 }
@@ -119,6 +120,18 @@ func NewAlertManager(app hubLike) *AlertManager {
 // Bind events to the alerts collection lifecycle
 func (am *AlertManager) bindEvents() {
 	am.bindNetworkMonitorAlertEvents()
+	am.hub.OnRecordCreateRequest("alerts").BindFunc(func(e *core.RecordRequestEvent) error {
+		if err := validateAlertDuration(e.Record); err != nil {
+			return err
+		}
+		return e.Next()
+	})
+	am.hub.OnRecordUpdateRequest("alerts").BindFunc(func(e *core.RecordRequestEvent) error {
+		if err := validateAlertDuration(e.Record); err != nil {
+			return err
+		}
+		return e.Next()
+	})
 	am.hub.OnRecordAfterUpdateSuccess("alerts").BindFunc(updateHistoryOnAlertUpdate)
 	am.hub.OnRecordAfterDeleteSuccess("alerts").BindFunc(resolveHistoryOnAlertDelete)
 	am.hub.OnRecordAfterUpdateSuccess("smart_devices").BindFunc(am.handleSmartDeviceAlert)
@@ -133,6 +146,7 @@ func (am *AlertManager) bindEvents() {
 		if err := resolveStatusAlerts(e.App); err != nil {
 			e.App.Logger().Error("Failed to resolve stale status alerts", "err", err)
 		}
+
 		if err := resolveSystemdAlerts(e.App); err != nil {
 			e.App.Logger().Error("Failed to resolve stale systemd alerts", "err", err)
 		}
@@ -141,6 +155,18 @@ func (am *AlertManager) bindEvents() {
 		}
 		return e.Next()
 	})
+}
+
+func validateAlertDuration(record *core.Record) error {
+	maxMin := 60
+	if record.GetString("name") == packageUpdateAlertName {
+		maxMin = 43200
+	}
+	min := record.GetInt("min")
+	if min < 0 || min > maxMin {
+		return fmt.Errorf("alert duration must be between 0 and %d minutes", maxMin)
+	}
+	return nil
 }
 
 // IsNotificationSilenced checks if a notification should be silenced based on configured quiet hours

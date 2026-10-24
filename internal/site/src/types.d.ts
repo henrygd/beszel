@@ -469,13 +469,7 @@ export interface AlertUnit {
 	inputStep?: number
 }
 
-export interface AlertDurationUnit {
-	unit: string
-	factor: number
-	min: number
-	max: number
-	step: number
-}
+export type AlertDurationUnit = AlertUnit
 
 export type AlertMap = Record<string, Map<string, AlertRecord>>
 
