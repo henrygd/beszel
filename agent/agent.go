@@ -256,6 +256,7 @@ func (a *Agent) gatherStats(options common.DataRequestOptions) *system.CombinedD
 
 	if a.packageUpdates != nil {
 		data.Info.PackageUpdates = a.packageUpdates.get(time.Now())
+		data.Info.RebootRequired = a.packageUpdates.rebootRequired()
 	}
 
 	data.Stats.ExtraFs = make(map[string]*system.FsStats)

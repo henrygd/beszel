@@ -91,6 +91,8 @@ export interface SystemInfo {
 	rdn?: string
 	/** pending package updates [total, security] (security omitted if unknown) */
 	pu?: [number, number?]
+	/** host needs a reboot to finish applying updates */
+	rr?: boolean
 }
 
 export interface SystemStats {
