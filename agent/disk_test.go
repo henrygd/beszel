@@ -1016,7 +1016,7 @@ func TestDiskUsageCaching(t *testing.T) {
 		agent := &Agent{
 			fsStats: map[string]*system.FsStats{
 				"sda": {Root: true, Mountpoint: "/", DiskTotal: 100, DiskUsed: 50},
-				"sdb": {Root: false, Mountpoint: "/mnt/storage", DiskTotal: 200, DiskUsed: 100},
+				"sdb": {Root: false, Mountpoint: "/mnt/storage", DiskTotal: 200, DiskUsed: 100, DiskBytes: [2]uint64{2 << 20, 1 << 20}},
 			},
 			diskUsageCacheDuration: 1 * time.Hour,
 			lastDiskUsageUpdate:    time.Now(), // cache is fresh
@@ -1031,6 +1031,8 @@ func TestDiskUsageCaching(t *testing.T) {
 
 		// Root should be updated (systemStats populated from disk.Usage call)
 		// We can't easily check if disk.Usage was called, but we verify the flow works
+
+		assert.Equal(t, [2]uint64{2 << 20, 1 << 20}, agent.fsStats["sdb"].DiskBytes)
 
 		// Extra filesystem should retain cached values (not reset)
 		assert.Equal(t, originalExtraTotal, agent.fsStats["sdb"].DiskTotal,

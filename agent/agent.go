@@ -267,7 +267,7 @@ func (a *Agent) gatherStats(options common.DataRequestOptions) *system.CombinedD
 			}
 			continue
 		}
-		if stats.DiskTotal > 0 {
+		if stats.DiskBytes[0] > 0 || stats.DiskTotal > 0 {
 			// Use custom name if available, otherwise use device name
 			key := name
 			if stats.Name != "" {
@@ -275,9 +275,12 @@ func (a *Agent) gatherStats(options common.DataRequestOptions) *system.CombinedD
 			}
 			data.Stats.ExtraFs[key] = stats
 			// Add percentages to Info struct for dashboard
-			if stats.DiskTotal > 0 {
-				pct := utils.TwoDecimals((stats.DiskUsed / stats.DiskTotal) * 100)
-				data.Info.ExtraFsPct[key] = pct
+			total, used := stats.DiskTotal, stats.DiskUsed
+			if stats.DiskBytes != [2]uint64{} {
+				total, used = float64(stats.DiskBytes[0]), float64(stats.DiskBytes[1])
+			}
+			if total > 0 {
+				data.Info.ExtraFsPct[key] = utils.TwoDecimals(used / total * 100)
 			}
 		}
 	}

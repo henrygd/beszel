@@ -477,6 +477,14 @@ func TestMarkDuplicatePoolCharts(t *testing.T) {
 	}
 }
 
+func TestDuplicateChartsSmallDiskBytes(t *testing.T) {
+	manager := &StoragePoolManager{backends: []*poolBackend{{poolData: []zfs.PoolStat{{Name: "tiny", MountID: "fs1"}}}}}
+	stats := &system.Stats{ZfsPools: map[string]*system.ZfsPool{"tiny": {}}}
+	filesystems := map[string]*system.FsStats{"flash": {DiskBytes: [2]uint64{2 << 20, 1 << 20}}}
+	manager.markDuplicateCharts(stats, filesystems, func(string) string { return "fs1" })
+	assert.True(t, stats.ZfsPools["tiny"].HideUsage)
+}
+
 func TestBtrfsPoolIdentities(t *testing.T) {
 	old := btrfsFilesystems
 	t.Cleanup(func() { btrfsFilesystems = old })

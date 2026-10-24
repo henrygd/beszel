@@ -309,8 +309,9 @@ func AverageSystemStatsSlice(records []system.Stats) system.Stats {
 		sum.SwapBytes[0] += swapBytes[0]
 		sum.SwapBytes[1] += swapBytes[1]
 		sum.MemPct += stats.MemPct
-		sum.DiskTotal += stats.DiskTotal
-		sum.DiskUsed += stats.DiskUsed
+		disk := diskBytes(stats.DiskBytes, stats.DiskTotal, stats.DiskUsed)
+		sum.DiskBytes[0] += disk[0]
+		sum.DiskBytes[1] += disk[1]
 		sum.DiskPct += stats.DiskPct
 		sum.NetworkSent += stats.NetworkSent
 		sum.NetworkRecv += stats.NetworkRecv
@@ -404,8 +405,9 @@ func AverageSystemStatsSlice(records []system.Stats) system.Stats {
 					sum.ExtraFs[key] = &system.FsStats{}
 				}
 				fs := sum.ExtraFs[key]
-				fs.DiskTotal += value.DiskTotal
-				fs.DiskUsed += value.DiskUsed
+				disk := diskBytes(value.DiskBytes, value.DiskTotal, value.DiskUsed)
+				fs.DiskBytes[0] += disk[0]
+				fs.DiskBytes[1] += disk[1]
 				fs.DiskReadBytes += value.DiskReadBytes
 				fs.DiskWriteBytes += value.DiskWriteBytes
 				fs.MaxDiskReadBytes = max(fs.MaxDiskReadBytes, value.MaxDiskReadBytes, value.DiskReadBytes)
@@ -501,8 +503,10 @@ func AverageSystemStatsSlice(records []system.Stats) system.Stats {
 	sum.MaxMem = bytesToGigabytes(sum.MaxMemBytes)
 	sum.Swap = bytesToGigabytes(sum.SwapBytes[0])
 	sum.SwapUsed = bytesToGigabytes(sum.SwapBytes[1])
-	sum.DiskTotal = twoDecimals(sum.DiskTotal / count)
-	sum.DiskUsed = twoDecimals(sum.DiskUsed / count)
+	sum.DiskBytes[0] /= uint64(count)
+	sum.DiskBytes[1] /= uint64(count)
+	sum.DiskTotal = bytesToGigabytes(sum.DiskBytes[0])
+	sum.DiskUsed = bytesToGigabytes(sum.DiskBytes[1])
 	sum.DiskPct = twoDecimals(sum.DiskPct / count)
 	sum.DiskIO[0] = sum.DiskIO[0] / uint64(count)
 	sum.DiskIO[1] = sum.DiskIO[1] / uint64(count)
@@ -557,8 +561,10 @@ func AverageSystemStatsSlice(records []system.Stats) system.Stats {
 	if sum.ExtraFs != nil {
 		for key := range sum.ExtraFs {
 			fs := sum.ExtraFs[key]
-			fs.DiskTotal = twoDecimals(fs.DiskTotal / count)
-			fs.DiskUsed = twoDecimals(fs.DiskUsed / count)
+			fs.DiskBytes[0] /= uint64(count)
+			fs.DiskBytes[1] /= uint64(count)
+			fs.DiskTotal = bytesToGigabytes(fs.DiskBytes[0])
+			fs.DiskUsed = bytesToGigabytes(fs.DiskBytes[1])
 			fs.DiskReadBytes = fs.DiskReadBytes / uint64(count)
 			fs.DiskWriteBytes = fs.DiskWriteBytes / uint64(count)
 			for i := range fs.DiskIoStats {
@@ -742,6 +748,15 @@ func memoryBytes(stats *system.Stats) (mem [4]uint64, swap [2]uint64, maxUsed ui
 		maxUsed = uint64(stats.MaxMem * gb)
 	}
 	return mem, swap, maxUsed
+}
+
+// diskBytes converts deprecated GB capacity fields from older records.
+// TODO: remove the GB conversion when the deprecated fields are removed.
+func diskBytes(bytes [2]uint64, total, used float64) [2]uint64 {
+	if bytes == [2]uint64{} {
+		return [2]uint64{uint64(total * gb), uint64(used * gb)}
+	}
+	return bytes
 }
 
 func bytesToGigabytes(b uint64) float64 {

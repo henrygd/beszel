@@ -30,8 +30,8 @@ type Stats struct {
 	MemZfsArc      float64             `json:"mz,omitzero" cbor:"6,keyasint,omitempty"` // Deprecated: GB, use MemBytes.
 	Swap           float64             `json:"s,omitzero" cbor:"7,keyasint,omitempty"`  // Deprecated: GB, use SwapBytes.
 	SwapUsed       float64             `json:"su,omitzero" cbor:"8,keyasint,omitempty"` // Deprecated: GB, use SwapBytes.
-	DiskTotal      float64             `json:"d" cbor:"9,keyasint"`
-	DiskUsed       float64             `json:"du" cbor:"10,keyasint"`
+	DiskTotal      float64             `json:"d" cbor:"9,keyasint"`                     // Deprecated: GB, use DiskBytes.
+	DiskUsed       float64             `json:"du" cbor:"10,keyasint"`                   // Deprecated: GB, use DiskBytes.
 	DiskPct        float64             `json:"dp" cbor:"11,keyasint"`
 	DiskReadPs     float64             `json:"dr,omitzero" cbor:"12,keyasint,omitzero"` // Deprecated: sent by agents < 0.13.0. Migrated to DiskIO by the hub.
 	DiskWritePs    float64             `json:"dw,omitzero" cbor:"13,keyasint,omitzero"` // Deprecated: sent by agents < 0.13.0. Migrated to DiskIO by the hub.
@@ -62,6 +62,7 @@ type Stats struct {
 	MemBytes          [4]uint64            `json:"mem,omitzero" cbor:"41,keyasint,omitzero"`  // [total, used, buff/cache, zfs arc] bytes
 	MaxMemBytes       uint64               `json:"memm,omitzero" cbor:"-"`                    // max used memory bytes
 	SwapBytes         [2]uint64            `json:"swap,omitzero" cbor:"42,keyasint,omitzero"` // [total, used] bytes
+	DiskBytes         [2]uint64            `json:"disk,omitzero" cbor:"43,keyasint,omitzero"` // [total, used] bytes
 }
 
 // ZfsPool holds per-pool ZFS metrics for a single collection interval.
@@ -119,12 +120,13 @@ type FsStats struct {
 	Root              bool       `json:"-"`
 	Mountpoint        string     `json:"-"`
 	Name              string     `json:"-"`
-	DiskTotal         float64    `json:"d" cbor:"0,keyasint"`
-	DiskUsed          float64    `json:"du" cbor:"1,keyasint"`
-	TotalRead         uint64     `json:"tr,omitzero" cbor:"9,keyasint,omitzero"`  // cumulative device read bytes
-	TotalWrite        uint64     `json:"tw,omitzero" cbor:"10,keyasint,omitzero"` // cumulative device write bytes
-	DiskReadPs        float64    `json:"r,omitzero" cbor:"2,keyasint,omitzero"`   // Deprecated: sent by agents < 0.13.0. Migrated to DiskReadBytes/DiskWriteBytes by the hub.
-	DiskWritePs       float64    `json:"w,omitzero" cbor:"3,keyasint,omitzero"`   // Deprecated: sent by agents < 0.13.0. Migrated to DiskReadBytes/DiskWriteBytes by the hub.
+	DiskTotal         float64    `json:"d" cbor:"0,keyasint"`                       // Deprecated: GB, use DiskBytes.
+	DiskUsed          float64    `json:"du" cbor:"1,keyasint"`                      // Deprecated: GB, use DiskBytes.
+	DiskBytes         [2]uint64  `json:"disk,omitzero" cbor:"11,keyasint,omitzero"` // [total, used] bytes
+	TotalRead         uint64     `json:"tr,omitzero" cbor:"9,keyasint,omitzero"`    // cumulative device read bytes
+	TotalWrite        uint64     `json:"tw,omitzero" cbor:"10,keyasint,omitzero"`   // cumulative device write bytes
+	DiskReadPs        float64    `json:"r,omitzero" cbor:"2,keyasint,omitzero"`     // Deprecated: sent by agents < 0.13.0. Migrated to DiskReadBytes/DiskWriteBytes by the hub.
+	DiskWritePs       float64    `json:"w,omitzero" cbor:"3,keyasint,omitzero"`     // Deprecated: sent by agents < 0.13.0. Migrated to DiskReadBytes/DiskWriteBytes by the hub.
 	DiskReadBytes     uint64     `json:"rb" cbor:"6,keyasint,omitempty"`
 	DiskWriteBytes    uint64     `json:"wb" cbor:"7,keyasint,omitempty"`
 	MaxDiskReadBytes  uint64     `json:"rbm,omitzero" cbor:"-"`

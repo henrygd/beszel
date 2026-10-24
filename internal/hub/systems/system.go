@@ -1111,6 +1111,7 @@ func migrateDeprecatedFields(cd *system.CombinedData, createDetails bool) {
 		cd.Stats.DiskIO[1] = uint64(cd.Stats.DiskWritePs * 1024 * 1024)
 		cd.Stats.DiskReadPs, cd.Stats.DiskWritePs = 0, 0
 	}
+	const gb = 1024 * 1024 * 1024
 	// migration added 0.21.1
 	for _, fs := range cd.Stats.ExtraFs {
 		if fs == nil {
@@ -1121,9 +1122,14 @@ func migrateDeprecatedFields(cd *system.CombinedData, createDetails bool) {
 			fs.DiskWriteBytes = uint64(fs.DiskWritePs * 1024 * 1024)
 		}
 		fs.DiskReadPs, fs.DiskWritePs = 0, 0
+		if fs.DiskBytes == [2]uint64{} {
+			fs.DiskBytes = [2]uint64{uint64(fs.DiskTotal * gb), uint64(fs.DiskUsed * gb)}
+		}
+	}
+	if cd.Stats.DiskBytes == [2]uint64{} {
+		cd.Stats.DiskBytes = [2]uint64{uint64(cd.Stats.DiskTotal * gb), uint64(cd.Stats.DiskUsed * gb)}
 	}
 	// migration added 0.21.1
-	const gb = 1024 * 1024 * 1024
 	if cd.Stats.MemBytes == [4]uint64{} {
 		cd.Stats.MemBytes = [4]uint64{
 			uint64(cd.Stats.Mem * gb),

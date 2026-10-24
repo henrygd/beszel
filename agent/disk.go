@@ -663,15 +663,19 @@ func (a *Agent) updateDiskUsage(systemStats *system.Stats) {
 		} else {
 			// reset stats if error (likely unmounted)
 			slog.Error("Error getting disk stats", "name", stats.Mountpoint, "err", err)
+			stats.DiskBytes = [2]uint64{}
 			stats.DiskTotal = 0
 			stats.DiskUsed = 0
 			stats.TotalRead = 0
 			stats.TotalWrite = 0
 			continue
 		}
+		stats.DiskBytes = [2]uint64{total, used}
+		// TODO: stop populating deprecated GB fields when older hubs are no longer supported
 		stats.DiskTotal = utils.BytesToGigabytes(total)
 		stats.DiskUsed = utils.BytesToGigabytes(used)
 		if stats.Root {
+			systemStats.DiskBytes = stats.DiskBytes
 			systemStats.DiskTotal = stats.DiskTotal
 			systemStats.DiskUsed = stats.DiskUsed
 			systemStats.DiskPct = utils.TwoDecimals(usedPct)

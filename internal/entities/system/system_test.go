@@ -171,3 +171,23 @@ func TestZeroValueJSONMatchesV1(t *testing.T) {
 		})
 	}
 }
+
+func TestDiskBytesTransport(t *testing.T) {
+	stats := Stats{DiskBytes: [2]uint64{4 << 20, 1 << 20}, ExtraFs: map[string]*FsStats{"flash": {DiskBytes: [2]uint64{2 << 20, 512 << 10}}}}
+	encoded, err := cbor.Marshal(stats)
+	require.NoError(t, err)
+	var wire map[uint64]cbor.RawMessage
+	require.NoError(t, cbor.Unmarshal(encoded, &wire))
+	var disk [2]uint64
+	require.NoError(t, cbor.Unmarshal(wire[43], &disk))
+	require.Equal(t, stats.DiskBytes, disk)
+	var decoded Stats
+	require.NoError(t, cbor.Unmarshal(encoded, &decoded))
+	require.Equal(t, stats.DiskBytes, decoded.DiskBytes)
+	require.Equal(t, stats.ExtraFs["flash"].DiskBytes, decoded.ExtraFs["flash"].DiskBytes)
+	encoded, err = json.Marshal(stats)
+	require.NoError(t, err)
+	var payload map[string]any
+	require.NoError(t, json.Unmarshal(encoded, &payload))
+	require.Equal(t, []any{float64(4 << 20), float64(1 << 20)}, payload["disk"])
+}
