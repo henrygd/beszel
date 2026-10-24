@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<meta name="supported-color-schemes" content="light dark">
+<title>{{.Title}}</title>
+<style>
+:root { color-scheme: light dark; supported-color-schemes: light dark; }
+.content p { margin: 0 0 16px; font-size: 15px; line-height: 1.6; color: #3f3f46; }
+.content a { color: #18181b; }
+.content a.btn { display: inline-block; padding: 10px 18px; font-size: 14px; font-weight: 600; color: #ffffff !important; background-color: #18181b !important; text-decoration: none !important; border-radius: 6px; }
+.content .hidden { display: none !important; }
+@media (prefers-color-scheme: dark) {
+  .bg { background-color: #09090b !important; }
+  .brand, .title { color: #fafafa !important; }
+  .card { background-color: #18181b !important; border-color: #27272a !important; }
+  .text, .content p { color: #d4d4d8 !important; }
+  .content a { color: #fafafa !important; }
+  .code { background-color: #09090b !important; border-color: #27272a !important; color: #e4e4e7 !important; }
+  .btn { background-color: #fafafa !important; }
+  .btn a, .content a.btn { color: #18181b !important; }
+  .content a.btn { background-color: #fafafa !important; }
+  .footer, .footer a { color: #a1a1aa !important; }
+}
+</style>
+</head>
+<body class="bg" style="margin:0;padding:0;background-color:#f4f4f5;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" class="bg" style="background-color:#f4f4f5;">
+<tr>
+<td align="center" style="padding:32px 16px;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:560px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
+<tr>
+<td class="brand" style="padding:0 4px 16px;font-size:18px;font-weight:700;letter-spacing:-0.01em;color:#18181b;">Beszel</td>
+</tr>
+<tr>
+<td class="card content" style="background-color:#ffffff;border:1px solid #e4e4e7;border-radius:10px;padding:28px 28px 32px;">
+<h1 class="title" style="margin:0 0 16px;font-size:20px;line-height:1.35;font-weight:600;color:#18181b;">{{.Title}}</h1>
+{{block "content" .}}{{end}}
+</td>
+</tr>
+{{- block "footer" .}}{{end}}
+</table>
+</td>
+</tr>
+</table>
+</body>
+</html>
