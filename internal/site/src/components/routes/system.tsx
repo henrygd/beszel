@@ -6,6 +6,7 @@ import type { GPUData } from "@/types"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import InfoBar from "./system/info-bar"
 import { useSystemData } from "./system/use-system-data"
+import { ContainerSelect } from "./system/chart-card"
 import { CpuChart, ContainerCpuChart } from "./system/charts/cpu-charts"
 import { MemoryChart, ContainerMemoryChart, SwapChart } from "./system/charts/memory-charts"
 import { RootDiskCharts, ExtraFsCharts } from "./system/charts/disk-charts"
@@ -69,6 +70,11 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 	}
 
 	const hasContainers = containerData.length > 0
+	const containerSelect = (
+		<div className="flex justify-end">
+			<ContainerSelect names={Object.keys(containerChartConfigs.cpu)} className="w-full sm:w-56" />
+		</div>
+	)
 	const maybeHasSmartData = compareSemVer(chartData.agentVersion, SEMVER_0_15_0) >= 0
 	const hasContainersTable = hasContainers && compareSemVer(chartData.agentVersion, SEMVER_0_14_0) >= 0
 	const hasSystemd = system.info.sv
@@ -92,6 +98,8 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 	function defaultLayout() {
 		return (
 			<>
+				{hasContainers && containerSelect}
+
 				{/* main charts */}
 				<div className="grid xl:grid-cols-2 gap-4">
 					<CpuChart {...coreProps} />
@@ -274,6 +282,7 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 					<TabsContent value="containers" forceMount className={activeTab === "containers" ? "contents" : "hidden"}>
 						{mountedTabs.has("containers") && (
 							<>
+								{containerSelect}
 								<div className="grid xl:grid-cols-2 gap-4">
 									<ContainerCpuChart
 										chartData={chartData}

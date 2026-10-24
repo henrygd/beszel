@@ -8,7 +8,7 @@ import type { ChartConfig } from "@/components/ui/chart"
 import type { ChartData, SystemStatsRecord } from "@/types"
 import { Separator } from "@/components/ui/separator"
 import NetworkSheet from "../network-sheet"
-import { ChartCard, FilterBar, SelectAvgMax } from "../chart-card"
+import { ChartCard, SelectAvgMax } from "../chart-card"
 import { dockerOrPodman } from "../chart-data"
 
 export function BandwidthChart({
@@ -101,7 +101,7 @@ export function ContainerNetworkChart({
 	networkConfig: ChartConfig
 }) {
 	const userSettings = $userSettings.get()
-	const { filter, dataPoints, filteredKeys } = useContainerDataPoints(networkConfig, (key, data) => {
+	const { dataPoints, filteredKeys } = useContainerDataPoints(networkConfig, (key, data) => {
 		const payload = data[key]
 		if (!payload) return null
 		const sent = payload?.b?.[0] ?? (payload?.ns ?? 0) * 1024 * 1024
@@ -159,7 +159,6 @@ export function ContainerNetworkChart({
 			grid={grid}
 			title={dockerOrPodman(t`Docker Network I/O`, isPodman)}
 			description={t`Network traffic of containers`}
-			cornerEl={<FilterBar />}
 		>
 			<AreaChartDefault
 				chartData={chartData}
@@ -172,7 +171,6 @@ export function ContainerNetworkChart({
 				contentFormatter={contentFormatter}
 				showTotal={true}
 				reverseStackOrder={true}
-				filter={filter}
 				truncate={true}
 				itemSorter={(a, b) => b.value - a.value}
 			/>
