@@ -263,7 +263,19 @@ export function AlertContent({
 	const hasControls = !(noThreshold && noDuration)
 
 	const [checked, setChecked] = useState(global ? false : !!alert)
-	const [min, setMin] = useState(alert?.min || (noDuration ? 0 : 10))
+	const { durationUnits } = alertData
+	const defaultDuration = durationUnits?.[0]
+		? durationUnits[0].min * durationUnits[0].factor
+		: noDuration
+			? 0
+			: 10
+	const [min, setMin] = useState(alert?.min ?? defaultDuration)
+	const [durationUnitIndex, setDurationUnitIndex] = useState(() =>
+		durationUnits ? getUnitIndex(durationUnits, alert?.min ?? defaultDuration) : 0
+	)
+	const durationUnit = durationUnits?.[durationUnitIndex]
+	const durationFactor = durationUnit?.factor ?? 1
+	const durationDisplayValue = durationUnit ? min / durationFactor : min
 	const { units } = alertData
 	const storedValue = alert?.value ?? (noThreshold ? 0 : (alertData.start ?? 80))
 	const [unitIndex, setUnitIndex] = useState(() => (units ? getUnitIndex(units, storedValue) : 0))
@@ -445,34 +457,69 @@ export function AlertContent({
 										</>
 									)}
 									<Trans>
-										For <strong className="text-foreground">{min}</strong>{" "}
-										<Plural value={min} one="minute" other="minutes" />
+										For <strong className="text-foreground">{durationDisplayValue}</strong>{" "}
+										{durationUnit ? durationUnit.unit : <Plural value={min} one="minute" other="minutes" />}
 									</Trans>
 								</p>
 								<div className="flex gap-3 items-center">
 									<Slider
 										aria-labelledby={`t${name}`}
-										value={[min]}
-										onValueCommit={(val) => sendUpsert(val[0], value)}
-										onValueChange={(val) => setMin(val[0])}
-										min={1}
-										max={60}
+										value={[durationDisplayValue]}
+										onValueCommit={(val) => {
+											const nextMin = Math.round(val[0] * durationFactor)
+											setMin(nextMin)
+											sendUpsert(nextMin, value)
+										}}
+										onValueChange={(val) => setMin(Math.round(val[0] * durationFactor))}
+										min={durationUnit?.min ?? (noDuration ? 0 : 1)}
+										max={durationUnit?.max ?? 60}
+										step={durationUnit?.step ?? 1}
 									/>
 									<Input
 										type="number"
-										value={min}
+										value={durationDisplayValue}
 										onChange={(e) => {
 											let val = parseInt(e.target.value, 10)
 											if (!Number.isNaN(val)) {
-												val = Math.max(1, Math.min(val, 60))
-												setMin(val)
-												sendUpsert(val, value)
+												val = Math.max(durationUnit?.min ?? (noDuration ? 0 : 1), Math.min(val, durationUnit?.max ?? 60))
+												const nextMin = Math.round(val * durationFactor)
+												setMin(nextMin)
+												sendUpsert(nextMin, value)
 											}
 										}}
-										min={1}
-										max={60}
+										min={durationUnit?.min ?? (noDuration ? 0 : 1)}
+										max={durationUnit?.max ?? 60}
+										step={durationUnit?.step ?? 1}
 										className="w-16 h-8 text-center px-1"
 									/>
+									{durationUnits && (
+										<Select
+											value={String(durationUnitIndex)}
+											onValueChange={(index) => {
+												const nextIndex = Number(index)
+												const nextUnit = durationUnits[nextIndex]
+												const nextValue = Math.min(
+													Math.max(roundToStep(min / nextUnit.factor, nextUnit.step), nextUnit.min),
+													nextUnit.max
+												)
+												const nextMin = Math.round(nextValue * nextUnit.factor)
+												setDurationUnitIndex(nextIndex)
+												setMin(nextMin)
+												sendUpsert(nextMin, value)
+											}}
+										>
+											<SelectTrigger className="w-auto shrink-0 h-8 gap-1.5 px-2.5">
+												<SelectValue />
+											</SelectTrigger>
+											<SelectContent>
+												{durationUnits.map(({ unit }, i) => (
+													<SelectItem key={unit} value={String(i)}>
+														{unit}
+													</SelectItem>
+												))}
+											</SelectContent>
+										</Select>
+									)}
 								</div>
 							</div>
 						)}

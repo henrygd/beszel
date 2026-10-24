@@ -82,7 +82,7 @@ type SystemAlertData struct {
 	triggered    bool
 	time         time.Time
 	count        uint8
-	min          uint8
+	min          uint16
 	mapSums      map[string]float32
 	descriptor   string // override descriptor in notification body (for temp sensor, disk partition, etc)
 }

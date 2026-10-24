@@ -1,5 +1,5 @@
 import { t } from "@lingui/core/macro"
-import { ContainerIcon, CpuIcon, HardDriveIcon, MemoryStickIcon, NetworkIcon, ServerCrashIcon, ServerIcon, ShieldCheckIcon } from "lucide-react"
+import { ContainerIcon, CpuIcon, HardDriveIcon, MemoryStickIcon, NetworkIcon, PackageOpenIcon, ServerCrashIcon, ServerIcon, ShieldCheckIcon } from "lucide-react"
 import type { RecordSubscription } from "pocketbase"
 import { EthernetIcon, GpuIcon } from "@/components/ui/icons"
 import { $alerts } from "@/lib/stores"
@@ -141,6 +141,19 @@ export const alertInfo: Record<string, AlertInfo> = {
     triggeredDesc: () => t`One or more containers are unhealthy`,
     singleDesc: () => `${t`Container`} ${t`Unhealthy`}`,
 
+  },
+  PackageUpdates: {
+    name: () => t`Package Updates`,
+    unit: "",
+    icon: PackageOpenIcon,
+    desc: () => t`Triggers when package updates remain available`,
+    triggeredDesc: () => t`Package updates are available`,
+    durationUnits: [
+      { unit: "minutes", factor: 1, min: 0, max: 60, step: 1 },
+      { unit: "hours", factor: 60, min: 1, max: 24, step: 1 },
+      { unit: "days", factor: 1440, min: 1, max: 30, step: 1 },
+    ],
+    noThreshold: true,
   },
   SystemdFailed: {
     name: () => t`Failed Services`,
