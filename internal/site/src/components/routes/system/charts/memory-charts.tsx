@@ -4,7 +4,7 @@ import { useContainerDataPoints } from "@/components/charts/hooks"
 import { Unit } from "@/lib/enums"
 import type { ChartConfig } from "@/components/ui/chart"
 import type { ChartData, SystemStatsRecord } from "@/types"
-import { ChartCard, FilterBar, SelectAvgMax } from "../chart-card"
+import { ChartCard, SelectAvgMax } from "../chart-card"
 import { dockerOrPodman } from "../chart-data"
 import { decimalString, formatBytes, toFixedFloat } from "@/lib/utils"
 
@@ -106,7 +106,7 @@ export function ContainerMemoryChart({
 	isPodman: boolean
 	memoryConfig: ChartConfig
 }) {
-	const { filter, dataPoints } = useContainerDataPoints(memoryConfig, (key, data) => data[key]?.m ?? null)
+	const { dataPoints } = useContainerDataPoints(memoryConfig, (key, data) => data[key]?.m ?? null)
 
 	return (
 		<ChartCard
@@ -114,7 +114,6 @@ export function ContainerMemoryChart({
 			grid={grid}
 			title={dockerOrPodman(t`Docker Memory Usage`, isPodman)}
 			description={t`Memory usage of containers`}
-			cornerEl={<FilterBar />}
 		>
 			<AreaChartDefault
 				chartData={chartData}
@@ -130,7 +129,6 @@ export function ContainerMemoryChart({
 				}}
 				showTotal={true}
 				reverseStackOrder={true}
-				filter={filter}
 				truncate={true}
 				itemSorter={(a, b) => b.value - a.value}
 			/>

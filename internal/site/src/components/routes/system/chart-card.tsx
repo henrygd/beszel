@@ -1,9 +1,10 @@
 import { t } from "@lingui/core/macro"
 import { Trans, useLingui } from "@lingui/react/macro"
 import { useStore } from "@nanostores/react"
-import { XIcon } from "lucide-react"
-import React, { type JSX, memo, useCallback, useEffect, useState } from "react"
-import { $containerFilter, $maxValues } from "@/lib/stores"
+import { ContainerIcon, XIcon } from "lucide-react"
+import React, { type JSX, memo, useCallback, useEffect, useId, useMemo, useState } from "react"
+import { MultiSelect } from "@/components/ui/multi-select"
+import { $containerSelection, $maxValues, type $temperatureFilter } from "@/lib/stores"
 import { useIntersectionObserver } from "@/lib/use-intersection-observer"
 import { cn } from "@/lib/utils"
 import Spinner from "../../spinner"
@@ -13,7 +14,7 @@ import { ChartAverage, ChartMax } from "../../ui/icons"
 import { Input } from "../../ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../ui/select"
 
-export function FilterBar({ store = $containerFilter }: { store?: typeof $containerFilter }) {
+export function FilterBar({ store }: { store: typeof $temperatureFilter }) {
 	const storeValue = useStore(store)
 	const [inputValue, setInputValue] = useState(storeValue)
 	const { t } = useLingui()
@@ -61,6 +62,36 @@ export function FilterBar({ store = $containerFilter }: { store?: typeof $contai
 				</Button>
 			)}
 		</>
+	)
+}
+
+/** Container multiselect shared by all container charts */
+export function ContainerSelect({ names, className }: { names: string[]; className?: string }) {
+	const selection = useStore($containerSelection)
+	const { t } = useLingui()
+	const id = useId()
+
+	const options = useMemo(() => {
+		// keep selected containers that are missing from the current data so they can be deselected
+		return Array.from(new Set([...names, ...selection]))
+			.sort((a, b) => a.localeCompare(b))
+			.map((name) => ({ id: name, label: name }))
+	}, [names, selection])
+
+	return (
+		<MultiSelect
+			id={id}
+			options={options}
+			selectedIds={new Set(selection)}
+			onChange={(ids) => $containerSelection.set(Array.from(ids))}
+			className={className}
+			contentClassName="min-w-64"
+			align="end"
+			icon={ContainerIcon}
+			placeholder={t`All containers`}
+			searchPlaceholder={t`Search containers`}
+			emptyText={<Trans>No containers found.</Trans>}
+		/>
 	)
 }
 
