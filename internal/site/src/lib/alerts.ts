@@ -3,9 +3,15 @@ import { ContainerIcon, CpuIcon, HardDriveIcon, MemoryStickIcon, NetworkIcon, Pa
 import type { RecordSubscription } from "pocketbase"
 import { EthernetIcon, GpuIcon } from "@/components/ui/icons"
 import { $alerts } from "@/lib/stores"
-import type { AlertInfo, AlertRecord } from "@/types"
+import type { AlertDurationUnit, AlertInfo, AlertRecord } from "@/types"
 import { pb } from "./api"
 import { ThermometerIcon, BatteryMediumIcon, HourglassIcon } from "@/components/ui/icons"
+
+export const alertDurationUnits: AlertDurationUnit[] = [
+  { unit: "minutes", factor: 1, min: 0, max: 60, step: 1 },
+  { unit: "hours", factor: 60, min: 1, max: 24, step: 1 },
+  { unit: "days", factor: 1440, min: 1, max: 30, step: 1 },
+]
 
 /** Alert info for each alert type */
 export const alertInfo: Record<string, AlertInfo> = {
@@ -148,11 +154,7 @@ export const alertInfo: Record<string, AlertInfo> = {
     icon: PackageOpenIcon,
     desc: () => t`Triggers when package updates remain available`,
     triggeredDesc: () => t`Package updates are available`,
-    durationUnits: [
-      { unit: "minutes", factor: 1, min: 0, max: 60, step: 1 },
-      { unit: "hours", factor: 60, min: 1, max: 24, step: 1 },
-      { unit: "days", factor: 1440, min: 1, max: 30, step: 1 },
-    ],
+    durationUnits: alertDurationUnits,
     noThreshold: true,
   },
   SystemdFailed: {

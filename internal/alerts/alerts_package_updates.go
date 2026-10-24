@@ -3,9 +3,11 @@ package alerts
 import (
 	"errors"
 	"fmt"
+	"sync"
 	"time"
 
 	"github.com/henrygd/beszel/internal/entities/system"
+	"github.com/pocketbase/dbx"
 	"github.com/pocketbase/pocketbase/core"
 )
 
@@ -30,32 +32,58 @@ func (am *AlertManager) HandlePackageUpdateAlerts(systemRecord *core.Record, dat
 
 	updateCount := int(data.Info.PackageUpdates[0])
 	now := time.Now().UTC()
+	if updated := systemRecord.GetDateTime("updated").Time().UTC(); !updated.IsZero() &&
+		updated.After(now.Add(-time.Hour)) && updated.Before(now.Add(time.Hour)) {
+		now = updated
+	}
 	var result error
 
 	for _, alertData := range alerts {
+		lockValue, _ := am.packageLocks.LoadOrStore(alertData.Id, &sync.Mutex{})
+		lock := lockValue.(*sync.Mutex)
+		lock.Lock()
 		if updateCount > 0 {
 			if alertData.Triggered {
+				lock.Unlock()
 				continue
 			}
-			pendingSince, err := am.setPendingPackageUpdateAlert(alertData, now)
-			if err != nil {
-				result = errors.Join(result, err)
-				continue
+			pendingSince := alertData.PendingSince
+			if pendingSince.IsZero() {
+				var err error
+				pendingSince, err = am.setPendingAlert(alertData, now)
+				if err != nil {
+					result = errors.Join(result, err)
+					lock.Unlock()
+					continue
+				}
 			}
 			if pendingSince.IsZero() {
+				lock.Unlock()
 				continue
 			}
 			min := int(alertData.Min)
 			if min > 0 && now.Before(pendingSince.Add(time.Duration(min)*time.Minute)) {
+				lock.Unlock()
+				continue
+			}
+			claimed, err := am.claimPendingPackageUpdateAlert(alertData)
+			if err != nil {
+				result = errors.Join(result, err)
+				lock.Unlock()
+				continue
+			}
+			if !claimed {
+				lock.Unlock()
 				continue
 			}
 			if err := am.sendPackageUpdateAlert(systemRecord, alertData, updateCount, true); err != nil {
 				result = errors.Join(result, err)
 			}
+			lock.Unlock()
 			continue
 		}
 
-		if err := am.clearPendingPackageUpdateAlert(alertData); err != nil {
+		if err := am.clearPendingAlert(alertData); err != nil {
 			result = errors.Join(result, err)
 		}
 		if alertData.Triggered {
@@ -63,43 +91,41 @@ func (am *AlertManager) HandlePackageUpdateAlerts(systemRecord *core.Record, dat
 				result = errors.Join(result, err)
 			}
 		}
+		lock.Unlock()
 	}
 	return result
 }
 
-func (am *AlertManager) setPendingPackageUpdateAlert(alertData CachedAlertData, since time.Time) (time.Time, error) {
-	record, err := am.hub.FindRecordById("alerts", alertData.Id)
+func (am *AlertManager) claimPendingPackageUpdateAlert(alertData CachedAlertData) (bool, error) {
+	result, err := am.hub.DB().NewQuery(`
+		UPDATE alerts
+		SET triggered = true, pending_since = {:zero}
+		WHERE id = {:id}
+		AND triggered = false
+		AND pending_since != {:zero}
+	`).Bind(dbx.Params{
+		"id":   alertData.Id,
+		"zero": time.Time{},
+	}).Execute()
 	if err != nil {
-		return time.Time{}, err
+		return false, err
 	}
-	if record.GetBool("triggered") {
-		return time.Time{}, nil
+	rows, err := result.RowsAffected()
+	if err == nil && rows == 1 {
+		record, findErr := am.hub.FindRecordById("alerts", alertData.Id)
+		if findErr != nil {
+			return false, findErr
+		}
+		am.alertsCache.Update(record)
 	}
-	if pendingSince := record.GetDateTime("pending_since").Time(); !pendingSince.IsZero() {
-		return pendingSince, nil
-	}
-	record.Set("pending_since", since.Truncate(time.Millisecond))
-	return since, am.hub.Save(record)
-}
-
-func (am *AlertManager) clearPendingPackageUpdateAlert(alertData CachedAlertData) error {
-	if alertData.PendingSince.IsZero() {
-		return nil
-	}
-	record, err := am.hub.FindRecordById("alerts", alertData.Id)
-	if err != nil {
-		return err
-	}
-	if record.GetDateTime("pending_since").Time().IsZero() {
-		return nil
-	}
-	record.Set("pending_since", nil)
-	return am.hub.Save(record)
+	return rows == 1, err
 }
 
 func (am *AlertManager) sendPackageUpdateAlert(systemRecord *core.Record, alertData CachedAlertData, count int, triggered bool) error {
-	if err := am.setAlertTriggered(alertData, triggered); err != nil {
-		return err
+	if !triggered {
+		if err := am.setAlertTriggered(alertData, false); err != nil {
+			return err
+		}
 	}
 	systemName := systemRecord.GetString("name")
 	title := fmt.Sprintf("%s has pending package updates", systemName)
@@ -124,4 +150,12 @@ func (am *AlertManager) sendPackageUpdateAlert(systemRecord *core.Record, alertD
 		Link:     am.hub.MakeLink("system", systemRecord.Id),
 		LinkText: "View " + systemName,
 	})
+}
+
+func (am *AlertManager) CancelPendingPackageUpdateAlerts(systemID string) {
+	for _, alertData := range am.alertsCache.GetAlertsByName(systemID, packageUpdateAlertName) {
+		if err := am.clearPendingAlert(alertData); err != nil {
+			am.hub.Logger().Error("Failed to clear pending package update alert", "err", err)
+		}
+	}
 }

@@ -34,6 +34,17 @@ const roundToStep = (val: number, step: number) => Number((Math.round(val / step
 /** Number input step and minimum for a unit, which may be finer than the slider */
 const getInputRange = ({ min, step, inputStep = step }: AlertUnit) => ({ step: inputStep, min: Math.min(min, inputStep) })
 
+function DurationUnitLabel({ unit, value }: { unit: string; value: number }) {
+	switch (unit) {
+		case "hours":
+			return <Plural value={value} one="hour" other="hours" />
+		case "days":
+			return <Plural value={value} one="day" other="days" />
+		default:
+			return <Plural value={value} one="minute" other="minutes" />
+	}
+}
+
 /** Index of the unit to display a stored value in: the largest unit whose input range and step fit it */
 function getUnitIndex(units: AlertUnit[], value: number) {
 	for (let i = units.length - 1; i > 0; i--) {
@@ -269,9 +280,10 @@ export function AlertContent({
 		: noDuration
 			? 0
 			: 10
-	const [min, setMin] = useState(alert?.min ?? defaultDuration)
+	const storedDuration = alert?.min || defaultDuration
+	const [min, setMin] = useState(storedDuration)
 	const [durationUnitIndex, setDurationUnitIndex] = useState(() =>
-		durationUnits ? getUnitIndex(durationUnits, alert?.min ?? defaultDuration) : 0
+		durationUnits ? getUnitIndex(durationUnits, storedDuration) : 0
 	)
 	const durationUnit = durationUnits?.[durationUnitIndex]
 	const durationFactor = durationUnit?.factor ?? 1
@@ -458,7 +470,11 @@ export function AlertContent({
 									)}
 									<Trans>
 										For <strong className="text-foreground">{durationDisplayValue}</strong>{" "}
-										{durationUnit ? durationUnit.unit : <Plural value={min} one="minute" other="minutes" />}
+										{durationUnit ? (
+											<DurationUnitLabel unit={durationUnit.unit} value={durationDisplayValue} />
+										) : (
+											<Plural value={min} one="minute" other="minutes" />
+										)}
 									</Trans>
 								</p>
 								<div className="flex gap-3 items-center">
