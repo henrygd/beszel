@@ -9,7 +9,7 @@ import {
 	$allSystemsById,
 	$allSystemsByName,
 	$chartTime,
-	$containerFilter,
+	$containerSelection,
 	$direction,
 	$maxValues,
 	$systems,
@@ -97,7 +97,7 @@ export function useSystemData(id: string) {
 			setSystemStats([])
 			setContainerData([])
 			setDetails({} as SystemDetailsRecord)
-			$containerFilter.set("")
+			$containerSelection.set([])
 		}
 	}, [id])
 
