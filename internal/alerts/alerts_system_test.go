@@ -7,8 +7,10 @@ import (
 	"testing/synctest"
 	"time"
 
+	"github.com/henrygd/beszel/internal/alerts"
 	"github.com/henrygd/beszel/internal/entities/system"
 	beszelTests "github.com/henrygd/beszel/internal/tests"
+	"github.com/pocketbase/pocketbase/core"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -18,6 +20,7 @@ type systemAlertValueSetter[T any] func(info *system.Info, stats *system.Stats, 
 type systemAlertTestFixture struct {
 	hub     *beszelTests.TestHub
 	alertID string
+	system  *core.Record
 	submit  func(*system.CombinedData) error
 }
 
@@ -64,6 +67,7 @@ func newSystemAlertTestFixture(t *testing.T, alertName string, min int, threshol
 	return &systemAlertTestFixture{
 		hub:     hub,
 		alertID: alertRecord.Id,
+		system:  systemRecord,
 		submit: func(data *system.CombinedData) error {
 			_, err := sysManagerSystem.CreateRecords(data)
 			return err
@@ -203,6 +207,10 @@ func setBatteryAlertValue(info *system.Info, stats *system.Stats, value [2]uint8
 	stats.Battery = value
 }
 
+func setPackageUpdateAlertValue(info *system.Info, _ *system.Stats, value []uint16) {
+	info.PackageUpdates = value
+}
+
 func TestSystemAlertsOneMin(t *testing.T) {
 	testOneMinuteSystemAlert(t, "CPU", 50, setCPUAlertValue, 51, 49)
 	for _, test := range cpuStateAlertTests {
@@ -219,6 +227,107 @@ func TestSystemAlertsOneMin(t *testing.T) {
 	testOneMinuteSystemAlert(t, "LoadAvg5", 4, setLoadAvgAlertValue, [3]float64{0, 4.1, 0}, [3]float64{0, 3.9, 0})
 	testOneMinuteSystemAlert(t, "LoadAvg15", 4, setLoadAvgAlertValue, [3]float64{0, 0, 4.1}, [3]float64{0, 0, 3.9})
 	testOneMinuteSystemAlert(t, "Battery", 20, setBatteryAlertValue, [2]uint8{0, 1}, [2]uint8{21, 0})
+}
+
+func TestPackageUpdatesImmediateAlert(t *testing.T) {
+	fixture := newSystemAlertTestFixture(t, "PackageUpdates", 0, 0)
+	defer fixture.cleanup()
+
+	synctest.Test(t, func(t *testing.T) {
+		submitValue(fixture, t, []uint16{3}, setPackageUpdateAlertValue)
+		waitForSystemAlert(time.Second)
+		fixture.assertTriggered(t, true, "A zero-minute alert should trigger immediately")
+		assert.Equal(t, 1, fixture.hub.TestMailer.TotalSend(), "An email should be sent immediately")
+
+		submitValue(fixture, t, []uint16{3}, setPackageUpdateAlertValue)
+		waitForSystemAlert(time.Second)
+		assert.Equal(t, 1, fixture.hub.TestMailer.TotalSend(), "Repeated observations should not notify again")
+
+		submitValue(fixture, t, []uint16{0}, setPackageUpdateAlertValue)
+		waitForSystemAlert(time.Second)
+		fixture.assertTriggered(t, false, "The alert should resolve when no updates remain")
+		assert.Equal(t, 2, fixture.hub.TestMailer.TotalSend(), "A recovery email should be sent")
+	})
+}
+
+func TestPackageUpdatesDelayedAlert(t *testing.T) {
+	fixture := newSystemAlertTestFixture(t, "PackageUpdates", 2, 0)
+	defer fixture.cleanup()
+
+	synctest.Test(t, func(t *testing.T) {
+		submitValue(fixture, t, []uint16{3}, setPackageUpdateAlertValue)
+		waitForSystemAlert(time.Minute + time.Second)
+		fixture.assertTriggered(t, false, "A delayed alert should not trigger before its duration")
+		assert.Zero(t, fixture.hub.TestMailer.TotalSend(), "No email should be sent before the duration")
+
+		waitForSystemAlert(time.Minute)
+		submitValue(fixture, t, []uint16{3}, setPackageUpdateAlertValue)
+		waitForSystemAlert(time.Second)
+		fixture.assertTriggered(t, true, "A delayed alert should trigger after its duration")
+		assert.Equal(t, 1, fixture.hub.TestMailer.TotalSend(), "An email should be sent after the duration")
+
+		submitValue(fixture, t, []uint16{3}, setPackageUpdateAlertValue)
+		waitForSystemAlert(time.Second)
+		assert.Equal(t, 1, fixture.hub.TestMailer.TotalSend(), "Repeated observations should not notify again")
+
+		submitValue(fixture, t, []uint16{0}, setPackageUpdateAlertValue)
+		waitForSystemAlert(time.Second)
+		fixture.assertTriggered(t, false, "The delayed alert should resolve")
+		assert.Equal(t, 2, fixture.hub.TestMailer.TotalSend(), "A recovery email should be sent")
+	})
+}
+
+func TestPackageUpdatesMissingDataDoesNotResolveAlert(t *testing.T) {
+	fixture := newSystemAlertTestFixture(t, "PackageUpdates", 0, 0)
+	defer fixture.cleanup()
+
+	synctest.Test(t, func(t *testing.T) {
+		submitValue(fixture, t, []uint16{3}, setPackageUpdateAlertValue)
+		waitForSystemAlert(time.Second)
+		fixture.assertTriggered(t, true, "The alert should trigger when updates are reported")
+
+		submitValue(fixture, t, []uint16(nil), setPackageUpdateAlertValue)
+		waitForSystemAlert(time.Second)
+		fixture.assertTriggered(t, true, "Missing update data must not resolve the alert")
+		assert.Equal(t, 1, fixture.hub.TestMailer.TotalSend(), "Missing update data should not send a recovery email")
+	})
+}
+
+func TestPackageUpdatesPreservesPendingSinceAcrossManagerRestart(t *testing.T) {
+	fixture := newSystemAlertTestFixture(t, "PackageUpdates", 2, 0)
+	defer fixture.cleanup()
+
+	synctest.Test(t, func(t *testing.T) {
+		data := createCombinedData([]uint16{3}, setPackageUpdateAlertValue)
+		require.NoError(t, fixture.hub.GetAlertManager().HandlePackageUpdateAlerts(fixture.system, data))
+		waitForSystemAlert(time.Minute + time.Second)
+
+		restarted := alerts.NewTestAlertManagerWithoutWorker(fixture.hub)
+		defer restarted.Stop()
+		require.NoError(t, restarted.HandlePackageUpdateAlerts(fixture.system, data))
+		fixture.assertTriggered(t, false, "A restarted manager should preserve the pending delay")
+
+		waitForSystemAlert(time.Minute)
+		require.NoError(t, restarted.HandlePackageUpdateAlerts(fixture.system, data))
+		fixture.assertTriggered(t, true, "The original pending timestamp should be preserved")
+		assert.Equal(t, 1, fixture.hub.TestMailer.TotalSend(), "An email should be sent after the original duration")
+	})
+}
+
+func TestPackageUpdatesAlertSchema(t *testing.T) {
+	hub, _ := beszelTests.GetHubWithUser(t)
+	defer hub.Cleanup()
+
+	collection, err := hub.FindCollectionByNameOrId("alerts")
+	require.NoError(t, err)
+	nameField, ok := collection.Fields.GetByName("name").(*core.SelectField)
+	require.True(t, ok)
+	assert.Contains(t, nameField.Values, "PackageUpdates")
+
+	minField, ok := collection.Fields.GetByName("min").(*core.NumberField)
+	require.True(t, ok)
+	assert.Nil(t, minField.Max)
+
 }
 
 func TestSystemAlertsTwoMin(t *testing.T) {

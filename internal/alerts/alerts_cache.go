@@ -17,7 +17,7 @@ type CachedAlertData struct {
 	Name         string
 	Value        float64
 	Triggered    bool
-	Min          uint8
+	Min          uint16
 	PendingSince time.Time
 	// Immutable after publication; decoded only when the alert record changes.
 	MonitorStates      map[string]string
@@ -32,7 +32,7 @@ func (a *CachedAlertData) PopulateFromRecord(record *core.Record) {
 	a.Name = record.GetString("name")
 	a.Value = record.GetFloat("value")
 	a.Triggered = record.GetBool("triggered")
-	a.Min = uint8(record.GetInt("min"))
+	a.Min = uint16(record.GetInt("min"))
 	a.PendingSince = record.GetDateTime("pending_since").Time()
 	if isNetworkMonitorAlert(a.Name) {
 		var state networkMonitorAlertState

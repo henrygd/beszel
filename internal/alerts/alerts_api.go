@@ -18,7 +18,7 @@ func UpsertUserAlerts(e *core.RequestEvent) error {
 	userID := e.Auth.Id
 
 	reqData := struct {
-		Min       uint8    `json:"min"`
+		Min       uint16   `json:"min"`
 		Value     float64  `json:"value"`
 		Name      string   `json:"name"`
 		Systems   []string `json:"systems"`
