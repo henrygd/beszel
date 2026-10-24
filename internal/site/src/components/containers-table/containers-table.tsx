@@ -35,6 +35,8 @@ import { listenKeys } from "nanostores"
 import { getPagePath } from "@nanostores/router"
 import { LogsDisplay, LogsFullscreenDialog, LogsIconButton, LogsTimestampToggle } from "@/components/logs-display"
 import { getLogTimestampDecorations } from "@/lib/logs"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { ContainerCharts } from "./container-charts"
 
 const syntaxTheme = "github-dark-dimmed"
 
@@ -316,6 +318,7 @@ function ContainerSheet({
 	const [logsFullscreenOpen, setLogsFullscreenOpen] = useState<boolean>(false)
 	const [infoFullscreenOpen, setInfoFullscreenOpen] = useState<boolean>(false)
 	const [isRefreshingLogs, setIsRefreshingLogs] = useState<boolean>(false)
+	const [tab, setTab] = useState("overview")
 	const logsContainerRef = useRef<HTMLDivElement>(null)
 
 	const container = activeContainer.current
@@ -401,40 +404,54 @@ function ContainerSheet({
 							{ContainerHealthLabels[container.health as ContainerHealth]} */}
 						</SheetDescription>
 					</SheetHeader>
-					<div className="px-3 pb-3 -mt-4 flex flex-col gap-3 h-full items-start">
-						<div className="flex items-center w-full">
-							<h3>{t`Logs`}</h3>
-							<LogsTimestampToggle className="ms-auto" />
-							<LogsIconButton label={t`Refresh`} onClick={refreshLogs} disabled={isRefreshingLogs}>
-								<RefreshCwIcon
-									className={`size-4 transition-transform duration-300 ${isRefreshingLogs ? "animate-spin" : ""}`}
-								/>
-							</LogsIconButton>
-							<LogsIconButton label={t`Fullscreen`} onClick={() => setLogsFullscreenOpen(true)}>
-								<MaximizeIcon className="size-4" />
-							</LogsIconButton>
-						</div>
-						<LogsDisplay logsDisplay={logsDisplay} containerRef={logsContainerRef} />
-						<div className="flex items-center w-full">
-							<h3>{t`Detail`}</h3>
-							<Button
-								variant="ghost"
-								size="sm"
-								onClick={() => setInfoFullscreenOpen(true)}
-								className="h-8 w-8 p-0 ms-auto"
-							>
-								<MaximizeIcon className="size-4" />
-							</Button>
-						</div>
-						<div
-							className={cn(
-								"grow h-[calc(50dvh-4rem)] w-full overflow-auto p-3 rounded-md bg-gh-dark text-white text-sm",
-								!infoDisplay && "animate-pulse"
-							)}
+					<Tabs value={tab} onValueChange={setTab} className="px-3 pb-3 -mt-4 flex flex-col h-full min-h-0">
+						<TabsList className="grid w-full grid-cols-2">
+							<TabsTrigger value="overview">{t`Overview`}</TabsTrigger>
+							<TabsTrigger value="usage">{t`Usage`}</TabsTrigger>
+						</TabsList>
+						{/* keep overview mounted so logs and scroll position persist across tab switches */}
+						<TabsContent
+							value="overview"
+							forceMount
+							className="flex flex-col gap-3 grow min-h-0 items-start data-[state=inactive]:hidden"
 						>
-							<div dangerouslySetInnerHTML={{ __html: infoDisplay }} />
-						</div>
-					</div>
+							<div className="flex items-center w-full">
+								<h3>{t`Logs`}</h3>
+								<LogsTimestampToggle className="ms-auto" />
+								<LogsIconButton label={t`Refresh`} onClick={refreshLogs} disabled={isRefreshingLogs}>
+									<RefreshCwIcon
+										className={`size-4 transition-transform duration-300 ${isRefreshingLogs ? "animate-spin" : ""}`}
+									/>
+								</LogsIconButton>
+								<LogsIconButton label={t`Fullscreen`} onClick={() => setLogsFullscreenOpen(true)}>
+									<MaximizeIcon className="size-4" />
+								</LogsIconButton>
+							</div>
+							<LogsDisplay logsDisplay={logsDisplay} containerRef={logsContainerRef} />
+							<div className="flex items-center w-full">
+								<h3>{t`Detail`}</h3>
+								<Button
+									variant="ghost"
+									size="sm"
+									onClick={() => setInfoFullscreenOpen(true)}
+									className="h-8 w-8 p-0 ms-auto"
+								>
+									<MaximizeIcon className="size-4" />
+								</Button>
+							</div>
+							<div
+								className={cn(
+									"grow h-[calc(50dvh-4rem)] w-full overflow-auto p-3 rounded-md bg-gh-dark text-white text-sm",
+									!infoDisplay && "animate-pulse"
+								)}
+							>
+								<div dangerouslySetInnerHTML={{ __html: infoDisplay }} />
+							</div>
+						</TabsContent>
+						<TabsContent value="usage" className="grow min-h-0 overflow-y-auto">
+							<ContainerCharts key={container.id} container={container} />
+						</TabsContent>
+					</Tabs>
 				</SheetContent>
 			</Sheet>
 		</>
