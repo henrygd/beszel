@@ -42,8 +42,9 @@ type UserNotificationSettings struct {
 }
 
 type SystemAlertFsStats struct {
-	DiskTotal float64 `json:"d"`
-	DiskUsed  float64 `json:"du"`
+	DiskBytes [2]uint64 `json:"disk"`
+	DiskTotal float64   `json:"d"`
+	DiskUsed  float64   `json:"du"`
 }
 
 // Values pulled from system_stats.stats that are relevant to alerts.

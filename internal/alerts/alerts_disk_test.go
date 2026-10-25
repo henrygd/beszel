@@ -20,6 +20,11 @@ import (
 // TestDiskAlertExtraFsMultiMinute tests that multi-minute disk alerts correctly use
 // historical per-minute values for extra (non-root) filesystems, not the current live snapshot.
 func TestDiskAlertExtraFsMultiMinute(t *testing.T) {
+	t.Run("legacy GB", func(t *testing.T) { testDiskAlertExtraFsMultiMinute(t, false) })
+	t.Run("small byte capacity", func(t *testing.T) { testDiskAlertExtraFsMultiMinute(t, true) })
+}
+
+func testDiskAlertExtraFsMultiMinute(t *testing.T, bytes bool) {
 	hub, user := beszelTests.GetHubWithUser(t)
 	defer hub.Cleanup()
 
@@ -43,6 +48,10 @@ func TestDiskAlertExtraFsMultiMinute(t *testing.T) {
 
 	extraFsHigh := map[string]*system.FsStats{
 		"/mnt/data": {DiskTotal: 1000, DiskUsed: 920}, // 92% - above threshold
+	}
+
+	if bytes {
+		extraFsHigh["/mnt/data"] = &system.FsStats{DiskBytes: [2]uint64{1000000, 920000}}
 	}
 
 	// Insert 4 historical records spread over 3 minutes (same pattern as battery tests).
@@ -73,10 +82,20 @@ func TestDiskAlertExtraFsMultiMinute(t *testing.T) {
 		require.NoError(t, err)
 	}
 
+	// Production live snapshots have already passed through Hub migration.
+	// Keep historical records above in their original format to test old data.
+	liveExtraFs := func(input map[string]*system.FsStats) map[string]*system.FsStats {
+		output := make(map[string]*system.FsStats, len(input))
+		for name, fs := range input {
+			output[name] = &system.FsStats{DiskBytes: system.DiskCapacityBytes(fs.DiskBytes, fs.DiskTotal, fs.DiskUsed)}
+		}
+		return output
+	}
+
 	combinedDataHigh := &system.CombinedData{
 		Stats: system.Stats{
 			DiskPct: 30,
-			ExtraFs: extraFsHigh,
+			ExtraFs: liveExtraFs(extraFsHigh),
 		},
 		Info: system.Info{
 			DiskPct: 30,
@@ -98,6 +117,10 @@ func TestDiskAlertExtraFsMultiMinute(t *testing.T) {
 
 	extraFsLow := map[string]*system.FsStats{
 		"/mnt/data": {DiskTotal: 1000, DiskUsed: 500}, // 50% - below threshold
+	}
+
+	if bytes {
+		extraFsLow["/mnt/data"] = &system.FsStats{DiskBytes: [2]uint64{1000000, 500000}}
 	}
 
 	newNow := now.Add(2 * time.Minute)
@@ -130,7 +153,7 @@ func TestDiskAlertExtraFsMultiMinute(t *testing.T) {
 	combinedDataLow := &system.CombinedData{
 		Stats: system.Stats{
 			DiskPct: 30,
-			ExtraFs: extraFsLow,
+			ExtraFs: liveExtraFs(extraFsLow),
 		},
 		Info: system.Info{
 			DiskPct: 30,

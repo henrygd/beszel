@@ -126,10 +126,12 @@ export interface SystemStats {
 	s?: number
 	/** @deprecated swap used (gb) - records before 0.21.1 */
 	su?: number
-	/** disk size (gb) */
-	d: number
-	/** disk used (gb) */
-	du: number
+	/** disk capacity bytes [total, used] */
+	disk?: [number, number]
+	/** @deprecated disk size (gb) */
+	d?: number
+	/** @deprecated disk used (gb) */
+	du?: number
 	/** disk percent */
 	dp: number
 	/** disk I/O bytes [read, write] */
@@ -271,10 +273,12 @@ export interface ZfsPoolRecord extends RecordModel {
 }
 
 export interface ExtraFsStats {
-	/** disk size (gb) */
-	d: number
-	/** disk used (gb) */
-	du: number
+	/** disk capacity bytes [total, used] */
+	disk?: [number, number]
+	/** @deprecated disk size (gb) */
+	d?: number
+	/** @deprecated disk used (gb) */
+	du?: number
 	/** read per second (bytes) */
 	rb: number
 	/** write per second (bytes) */

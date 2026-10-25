@@ -1135,6 +1135,13 @@ func migrateDeprecatedFields(cd *system.CombinedData, createDetails bool) {
 	if cd.Stats.SwapBytes == [2]uint64{} {
 		cd.Stats.SwapBytes = [2]uint64{uint64(cd.Stats.Swap * gb), uint64(cd.Stats.SwapUsed * gb)}
 	}
+	// migration added: unreleased (after 0.21.1). Set the release version when shipping.
+	cd.Stats.DiskBytes = system.DiskCapacityBytes(cd.Stats.DiskBytes, cd.Stats.DiskTotal, cd.Stats.DiskUsed)
+	for _, fs := range cd.Stats.ExtraFs {
+		if fs != nil {
+			fs.DiskBytes = system.DiskCapacityBytes(fs.DiskBytes, fs.DiskTotal, fs.DiskUsed)
+		}
+	}
 	// GB fields are kept in stored records for third-party integrations until they are removed
 	// migration added 0.19.0 - Move deprecated Info fields to Details struct
 	if cd.Details == nil && cd.Info.Hostname != "" {

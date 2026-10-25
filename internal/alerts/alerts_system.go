@@ -72,9 +72,8 @@ func (am *AlertManager) HandleSystemAlerts(systemRecord *core.Record, data *syst
 		case "Disk":
 			maxUsedPct := data.Info.DiskPct
 			for _, fs := range data.Stats.ExtraFs {
-				usedPct := fs.DiskUsed / fs.DiskTotal * 100
-				if usedPct > maxUsedPct {
-					maxUsedPct = usedPct
+				if fs.DiskBytes[0] > 0 {
+					maxUsedPct = max(maxUsedPct, float64(fs.DiskBytes[1])/float64(fs.DiskBytes[0])*100)
 				}
 			}
 			for _, pool := range data.Stats.ZfsPools {
@@ -247,11 +246,12 @@ func (am *AlertManager) HandleSystemAlerts(systemRecord *core.Record, data *syst
 				alert.mapSums["root"] += float32(stats.Disk)
 				// add extra disks from historical record
 				for key, fs := range stats.ExtraFs {
-					if fs.DiskTotal > 0 {
+					disk := system.DiskCapacityBytes(fs.DiskBytes, fs.DiskTotal, fs.DiskUsed)
+					if disk[0] > 0 {
 						if _, ok := alert.mapSums[key]; !ok {
 							alert.mapSums[key] = 0.0
 						}
-						alert.mapSums[key] += float32(fs.DiskUsed / fs.DiskTotal * 100)
+						alert.mapSums[key] += float32(float64(disk[1]) / float64(disk[0]) * 100)
 					}
 				}
 				// add zfs pool usage from historical record

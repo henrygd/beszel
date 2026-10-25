@@ -5,7 +5,7 @@ mock.module("@lingui/core/macro", () => ({
 	plural: (count: number, forms: any) => forms.other ?? "",
 }))
 
-const { formatMicroseconds } = await import("../src/lib/utils")
+const { formatMicroseconds, gbToBytes } = await import("../src/lib/utils")
 
 describe("formatMicroseconds", () => {
 	test("formats with fixedDigits = true (default)", () => {
@@ -47,5 +47,17 @@ describe("formatMicroseconds", () => {
 		expect(formatMicroseconds(Number.NaN)).toBe("-")
 		expect(formatMicroseconds(Number.POSITIVE_INFINITY)).toBe("-")
 		expect(formatMicroseconds(Number.NEGATIVE_INFINITY)).toBe("-")
+	})
+})
+
+describe("gbToBytes", () => {
+	test("preserves missing values and zero for legacy capacity fallbacks", () => {
+		expect(gbToBytes(undefined)).toBeUndefined()
+		expect(gbToBytes(0)).toBe(0)
+	})
+	test("converts GiB capacities without rounding small disks or memory", () => {
+		expect(gbToBytes(2)).toBe(2 * 1024 ** 3)
+		expect(gbToBytes(4 / 1024)).toBe(4 * 1024 ** 2)
+		expect(gbToBytes(512 / 1024 ** 3)).toBe(512)
 	})
 })

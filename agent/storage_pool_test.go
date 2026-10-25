@@ -172,7 +172,7 @@ func TestStoragePoolBackendOrder(t *testing.T) {
 	b.poolData[0].IODevice = "sda"
 	calls := 0
 	m.markDuplicateCharts(&stats, map[string]*system.FsStats{
-		"sda": {Mountpoint: "/", DiskTotal: 100},
+		"sda": {Mountpoint: "/", DiskBytes: [2]uint64{100 << 30, 0}},
 	}, func(string) string { calls++; return "uuid" })
 	assert.Equal(t, 1, calls, "resolve each filesystem once across all backends")
 	assert.True(t, stats.ZfsPools["b:uuid"].HideUsage)
@@ -461,7 +461,7 @@ func TestMarkDuplicatePoolCharts(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			zm := &StoragePoolManager{detailInterval: time.Hour, backends: []*poolBackend{{name: "zfs", poolData: []zfs.PoolStat{{Name: "arbitrary label", MountID: tc.poolID, IODevice: tc.device, Raw: tc.raw}}}}}
 			stats := &system.Stats{ZfsPools: map[string]*system.ZfsPool{"arbitrary label": {}}}
-			fs := map[string]*system.FsStats{"dm-0": {Root: true, Mountpoint: "/", DiskTotal: tc.diskTotal}}
+			fs := map[string]*system.FsStats{"dm-0": {Root: true, Mountpoint: "/", DiskBytes: [2]uint64{uint64(tc.diskTotal * (1 << 30)), 0}}}
 			zm.markDuplicateCharts(stats, fs, func(string) string { return "fs1" })
 			assert.Equal(t, tc.wantUsage, stats.ZfsPools["arbitrary label"].HideUsage)
 			assert.Equal(t, tc.wantIO, stats.ZfsPools["arbitrary label"].HideIO)
@@ -475,6 +475,14 @@ func TestMarkDuplicatePoolCharts(t *testing.T) {
 			assert.Equal(t, tc.wantIO, stats.ZfsPools["arbitrary label"].HideIO)
 		})
 	}
+}
+
+func TestDuplicateChartsSmallDiskBytes(t *testing.T) {
+	manager := &StoragePoolManager{backends: []*poolBackend{{poolData: []zfs.PoolStat{{Name: "tiny", MountID: "fs1"}}}}}
+	stats := &system.Stats{ZfsPools: map[string]*system.ZfsPool{"tiny": {}}}
+	filesystems := map[string]*system.FsStats{"flash": {DiskBytes: [2]uint64{2 << 20, 1 << 20}}}
+	manager.markDuplicateCharts(stats, filesystems, func(string) string { return "fs1" })
+	assert.True(t, stats.ZfsPools["tiny"].HideUsage)
 }
 
 func TestBtrfsPoolIdentities(t *testing.T) {
