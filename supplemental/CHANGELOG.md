@@ -2,6 +2,7 @@
 
 For authors of integrations, disk capacity now follows the memory byte counters added in 0.21.1. `Stats.DiskBytes` (`json:"disk"`, CBOR key 43) and `FsStats.DiskBytes` (`json:"disk"`, CBOR key 11) contain `[total, used]` bytes. Deprecated `DiskTotal` and `DiskUsed` GB fields remain populated for older hubs and third-party integrations.
 
+- Upgrade the hub before the agent: newly reported extra filesystems smaller than about 5 MiB can appear as `0 B` on hubs 0.21.1 and earlier, which only read the rounded GB capacity fields.
 - Preserve small root-disk and extra-filesystem capacities in collection, historical averages, charts, and disk alerts.
 - Convert legacy GB capacities from older agents and records, with frontend fallback for realtime data from older agents.
 

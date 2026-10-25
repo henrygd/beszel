@@ -1,6 +1,6 @@
 import { t } from "@lingui/core/macro"
 import AreaChartDefault from "@/components/charts/area-chart"
-import { decimalString, formatBytes, toFixedFloat } from "@/lib/utils"
+import { decimalString, formatBytes, gbToBytes, toFixedFloat } from "@/lib/utils"
 import type { SystemStatsRecord } from "@/types"
 import { ChartCard, SelectAvgMax } from "../chart-card"
 import { Unit } from "@/lib/enums"
@@ -8,9 +8,6 @@ import DiskIoSheet from "../disk-io-sheet"
 import type { SystemData } from "../use-system-data"
 import { useStore } from "@nanostores/react"
 import { $userSettings } from "@/lib/stores"
-
-/** Legacy records and realtime data from older agents still use GB capacity fields. */
-const gbToBytes = (gb?: number) => (gb === undefined ? undefined : gb * 1024 ** 3)
 
 // Helpers for indexed dios/diosm access
 const dios =
@@ -120,6 +117,7 @@ export function DiskUsageChart({ systemData, extraFsName }: { systemData: System
 
 	const lastStats = chartData.systemStats.at(-1)?.stats
 	const capacity = extraFsName ? lastStats?.efs?.[extraFsName] : lastStats
+	// Keep the capacity exact; only tick and tooltip labels round for display.
 	const diskSize = capacity?.disk?.[0] ?? gbToBytes(capacity?.d) ?? NaN
 
 	const rootName = systemData.system?.info?.rdn

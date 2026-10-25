@@ -486,7 +486,7 @@ func btrfsPoolStatuses(fs btrfs.Filesystem) zfs.PoolStatus {
 func (m *StoragePoolManager) markDuplicateCharts(stats *system.Stats, filesystems map[string]*system.FsStats, mountID func(string) string) {
 	identities := make(map[string]string, len(filesystems))
 	for device, fs := range filesystems {
-		if fs.DiskBytes[0] > 0 || fs.DiskTotal > 0 {
+		if fs.DiskBytes[0] > 0 {
 			identities[device] = mountID(fs.Mountpoint)
 		}
 	}

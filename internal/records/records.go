@@ -309,7 +309,7 @@ func AverageSystemStatsSlice(records []system.Stats) system.Stats {
 		sum.SwapBytes[0] += swapBytes[0]
 		sum.SwapBytes[1] += swapBytes[1]
 		sum.MemPct += stats.MemPct
-		disk := diskBytes(stats.DiskBytes, stats.DiskTotal, stats.DiskUsed)
+		disk := system.DiskCapacityBytes(stats.DiskBytes, stats.DiskTotal, stats.DiskUsed)
 		sum.DiskBytes[0] += disk[0]
 		sum.DiskBytes[1] += disk[1]
 		sum.DiskPct += stats.DiskPct
@@ -405,7 +405,7 @@ func AverageSystemStatsSlice(records []system.Stats) system.Stats {
 					sum.ExtraFs[key] = &system.FsStats{}
 				}
 				fs := sum.ExtraFs[key]
-				disk := diskBytes(value.DiskBytes, value.DiskTotal, value.DiskUsed)
+				disk := system.DiskCapacityBytes(value.DiskBytes, value.DiskTotal, value.DiskUsed)
 				fs.DiskBytes[0] += disk[0]
 				fs.DiskBytes[1] += disk[1]
 				fs.DiskReadBytes += value.DiskReadBytes
@@ -748,15 +748,6 @@ func memoryBytes(stats *system.Stats) (mem [4]uint64, swap [2]uint64, maxUsed ui
 		maxUsed = uint64(stats.MaxMem * gb)
 	}
 	return mem, swap, maxUsed
-}
-
-// diskBytes converts deprecated GB capacity fields from older records.
-// TODO: remove the GB conversion when the deprecated fields are removed.
-func diskBytes(bytes [2]uint64, total, used float64) [2]uint64 {
-	if bytes == [2]uint64{} {
-		return [2]uint64{uint64(total * gb), uint64(used * gb)}
-	}
-	return bytes
 }
 
 func bytesToGigabytes(b uint64) float64 {

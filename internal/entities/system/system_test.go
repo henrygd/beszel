@@ -191,3 +191,22 @@ func TestDiskBytesTransport(t *testing.T) {
 	require.NoError(t, json.Unmarshal(encoded, &payload))
 	require.Equal(t, []any{float64(4 << 20), float64(1 << 20)}, payload["disk"])
 }
+
+func TestDiskCapacityBytes(t *testing.T) {
+	for _, tc := range []struct {
+		name        string
+		bytes       [2]uint64
+		total, used float64
+		want        [2]uint64
+	}{
+		{name: "empty", want: [2]uint64{}},
+		{name: "legacy GB", total: 2, used: 0.5, want: [2]uint64{2 << 30, 512 << 20}},
+		{name: "legacy small capacity", total: 4.0 / 1024, used: 1.0 / 1024, want: [2]uint64{4 << 20, 1 << 20}},
+		{name: "bytes win", bytes: [2]uint64{4 << 20, 1 << 20}, total: 99, used: 99, want: [2]uint64{4 << 20, 1 << 20}},
+		{name: "zero used bytes win", bytes: [2]uint64{4 << 20, 0}, total: 99, used: 99, want: [2]uint64{4 << 20, 0}},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			require.Equal(t, tc.want, DiskCapacityBytes(tc.bytes, tc.total, tc.used))
+		})
+	}
+}

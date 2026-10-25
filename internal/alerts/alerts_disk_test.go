@@ -82,10 +82,20 @@ func testDiskAlertExtraFsMultiMinute(t *testing.T, bytes bool) {
 		require.NoError(t, err)
 	}
 
+	// Production live snapshots have already passed through Hub migration.
+	// Keep historical records above in their original format to test old data.
+	liveExtraFs := func(input map[string]*system.FsStats) map[string]*system.FsStats {
+		output := make(map[string]*system.FsStats, len(input))
+		for name, fs := range input {
+			output[name] = &system.FsStats{DiskBytes: system.DiskCapacityBytes(fs.DiskBytes, fs.DiskTotal, fs.DiskUsed)}
+		}
+		return output
+	}
+
 	combinedDataHigh := &system.CombinedData{
 		Stats: system.Stats{
 			DiskPct: 30,
-			ExtraFs: extraFsHigh,
+			ExtraFs: liveExtraFs(extraFsHigh),
 		},
 		Info: system.Info{
 			DiskPct: 30,
@@ -143,7 +153,7 @@ func testDiskAlertExtraFsMultiMinute(t *testing.T, bytes bool) {
 	combinedDataLow := &system.CombinedData{
 		Stats: system.Stats{
 			DiskPct: 30,
-			ExtraFs: extraFsLow,
+			ExtraFs: liveExtraFs(extraFsLow),
 		},
 		Info: system.Info{
 			DiskPct: 30,

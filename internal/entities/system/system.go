@@ -208,6 +208,16 @@ type Details struct {
 	Sockets       int           `cbor:"12,keyasint,omitempty"` // physical CPU packages, 0 if unknown
 }
 
+// DiskCapacityBytes returns byte counters, converting deprecated GB capacities only when absent.
+// TODO: remove the GB conversion when the deprecated fields are removed.
+func DiskCapacityBytes(bytes [2]uint64, total, used float64) [2]uint64 {
+	if bytes == [2]uint64{} {
+		const gb = 1024 * 1024 * 1024
+		return [2]uint64{uint64(total * gb), uint64(used * gb)}
+	}
+	return bytes
+}
+
 // Final data structure to return to the hub
 type CombinedData struct {
 	Stats           Stats              `json:"stats" cbor:"0,keyasint"`
