@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"bytes"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"log/slog"
 	"maps"
@@ -32,6 +31,7 @@ const (
 
 	// Command retry and timeout constants
 	retryWaitTime     time.Duration = 5 * time.Second
+	maxRetryBackoff   time.Duration = 5 * time.Minute
 	maxFailureRetries int           = 5
 
 	// Unit Conversions
@@ -143,41 +143,41 @@ type collectorDefinition struct {
 }
 
 // starts and manages the ongoing collection of GPU data for the specified GPU management utility.
-// A run without valid data is retried with a growing delay, since the tool may have started
-// before the GPU driver was ready (e.g. right after boot). Collection stops after
-// maxFailureRetries consecutive runs without valid data; a run that produces valid data resets
-// the count. Any other run is restarted after retryWaitTime, so a tool that keeps exiting right
-// away can't turn this into a busy loop.
+// The tool is restarted whenever it exits. A run without valid data counts as a failure, since the
+// tool may have started before the GPU driver was ready (e.g. right after boot) or may be broken,
+// and each consecutive failure doubles the delay up to maxRetryBackoff. A run that produces valid
+// data resets the count whatever its exit status, because tools started with -l or --interval
+// normally only exit when something ends them. Collection never stops for good, so it recovers
+// without an agent restart.
 func (c *gpuCollector) start() {
 	sleep := c.sleep
 	if sleep == nil {
 		sleep = time.Sleep
 	}
-	noDataRuns := 0
+	consecutiveFailures := 0
 	for {
 		hasValidData, err := c.collect()
 		if hasValidData {
-			noDataRuns = 0
+			consecutiveFailures = 0
+		} else {
+			consecutiveFailures++
 		}
-		if err == nil {
-			// the tool exited cleanly; tools started with -l or --interval normally never do
-			sleep(retryWaitTime)
-			continue
-		}
-		if errors.Is(err, errNoValidData) {
-			noDataRuns++
-			if noDataRuns > maxFailureRetries {
-				slog.Warn(c.name+" found no valid GPU data, stopping", "err", err)
-				return
-			}
-			delay := retryWaitTime * time.Duration(noDataRuns)
-			slog.Warn(c.name+" found no valid GPU data, retrying", "err", err, "attempt", noDataRuns, "delay", delay)
-			sleep(delay)
-			continue
-		}
-		slog.Warn(c.name+" failed, restarting", "err", err)
-		sleep(retryWaitTime)
+		wait := retryDelay(retryWaitTime, consecutiveFailures)
+		slog.Warn(c.name+" stopped, restarting", "err", err, "failures", consecutiveFailures, "wait", wait.String())
+		sleep(wait)
 	}
+}
+
+// retryDelay doubles the base wait after each consecutive failure, capping at maxRetryBackoff
+func retryDelay(base time.Duration, consecutiveFailures int) time.Duration {
+	backoff := base
+	for range consecutiveFailures - 1 {
+		backoff *= 2
+		if backoff >= maxRetryBackoff {
+			return maxRetryBackoff
+		}
+	}
+	return backoff
 }
 
 // maxLoggedLineLen limits how much of an unparseable output line is included in errors

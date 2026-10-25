@@ -2165,35 +2165,92 @@ func TestGPUCollectorRetriesAfterNoValidData(t *testing.T) {
 	assert.Equal(t, []time.Duration{retryWaitTime, retryWaitTime, retryWaitTime}, waits)
 }
 
-// A host with nvidia-smi but no usable GPU never produces data; the collector must still give up.
-func TestGPUCollectorStopsAfterRepeatedNoValidData(t *testing.T) {
-	dir := t.TempDir()
-	t.Setenv("PATH", dir)
-	gpuCommandFixture(t, dir, nvidiaSmiCmd, "No devices were found\n")
-
+// runGPUCollector runs start() until it has waited count times and returns those waits.
+func runGPUCollector(t *testing.T, collector *gpuCollector, count int) []time.Duration {
+	t.Helper()
 	var waits []time.Duration
-	gm := &GPUManager{GpuDataMap: make(map[string]*system.GPUData)}
-	collector := &gpuCollector{
-		name:    nvidiaSmiCmd,
-		bufSize: 10 * 1024,
-		parse:   gm.parseNvidiaData,
-		sleep:   func(d time.Duration) { waits = append(waits, d) },
+	collector.sleep = func(d time.Duration) {
+		waits = append(waits, d)
+		if len(waits) == count {
+			// start() has no stop signal, so end its goroutine here, before the
+			// test's cleanup removes the fixture
+			runtime.Goexit()
+		}
 	}
 	done := make(chan struct{})
 	go func() {
+		defer close(done)
 		collector.start()
-		close(done)
 	}()
 	select {
 	case <-done:
 	case <-time.After(10 * time.Second):
-		t.Fatal("collector kept retrying a tool that never produces valid data")
+		t.Fatalf("collector did not get through %d runs", count)
 	}
+	return waits
+}
 
-	// the delay grows with each consecutive run without data: 5s, 10s, ... (75s in total by default)
-	want := make([]time.Duration, maxFailureRetries)
-	for i := range want {
-		want[i] = retryWaitTime * time.Duration(i+1)
+// A broken tool (#2707) or a host with nvidia-smi but no usable GPU never produces data.
+// The collector must back off, however the run ended, and keep retrying at the cap.
+func TestGPUCollectorBacksOffWithoutValidData(t *testing.T) {
+	tests := []struct {
+		name   string
+		output string
+		fail   bool
+	}{
+		{name: "tool prints an error", output: "No devices were found\n"},
+		{name: "tool prints nothing and fails", fail: true},
+		{name: "tool prints nothing and exits cleanly"},
 	}
-	assert.Equal(t, want, waits)
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			dir := t.TempDir()
+			t.Setenv("PATH", dir)
+			argsFile := gpuCommandFixture(t, dir, nvidiaSmiCmd, tt.output)
+			if tt.fail {
+				require.NoError(t, os.WriteFile(strings.TrimSuffix(argsFile, ".args")+".fail", nil, 0600))
+			}
+
+			gm := &GPUManager{GpuDataMap: make(map[string]*system.GPUData)}
+			collector := &gpuCollector{name: nvidiaSmiCmd, bufSize: 10 * 1024, parse: gm.parseNvidiaData}
+			waits := runGPUCollector(t, collector, 8)
+
+			assert.Equal(t, []time.Duration{
+				5 * time.Second, 10 * time.Second, 20 * time.Second, 40 * time.Second,
+				80 * time.Second, 160 * time.Second, maxRetryBackoff, maxRetryBackoff,
+			}, waits)
+		})
+	}
+}
+
+// With -l a healthy nvidia-smi only exits when something ends it, usually with a
+// non-zero status, so valid data must reset the backoff even though the run failed.
+func TestGPUCollectorValidDataResetsBackoffOnFailedExit(t *testing.T) {
+	dir := t.TempDir()
+	t.Setenv("PATH", dir)
+	argsFile := gpuCommandFixture(t, dir, nvidiaSmiCmd, "0, NVIDIA Test GPU, 50, 1024, 4096, 25, 100\n")
+	require.NoError(t, os.WriteFile(strings.TrimSuffix(argsFile, ".args")+".fail", nil, 0600))
+
+	gm := &GPUManager{GpuDataMap: make(map[string]*system.GPUData)}
+	collector := &gpuCollector{name: nvidiaSmiCmd, bufSize: 10 * 1024, parse: gm.parseNvidiaData}
+	waits := runGPUCollector(t, collector, 4)
+
+	assert.Equal(t, []time.Duration{retryWaitTime, retryWaitTime, retryWaitTime, retryWaitTime}, waits)
+}
+
+func TestGPURetryDelay(t *testing.T) {
+	tests := []struct {
+		failures int
+		want     time.Duration
+	}{
+		{0, 5 * time.Second},
+		{1, 5 * time.Second},
+		{2, 10 * time.Second},
+		{3, 20 * time.Second},
+		{8, 5 * time.Minute},
+		{20, 5 * time.Minute},
+	}
+	for _, tt := range tests {
+		assert.Equal(t, tt.want, retryDelay(retryWaitTime, tt.failures), tt.failures)
+	}
 }
