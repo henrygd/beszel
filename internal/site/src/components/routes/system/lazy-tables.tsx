@@ -71,5 +71,9 @@ export function LazyNetworkMonitorsTable({ systemId }: { systemId: string }) {
 
 function SystemNetworkMonitorsTable({ systemId }: { systemId: string }) {
 	const { monitors, isLoading } = useNetworkMonitors({ systemId })
+	// hide the section for systems without monitors (they can be added from the Monitors page)
+	if (!monitors.length) {
+		return null
+	}
 	return <NetworkMonitorsTable systemId={systemId} monitors={monitors} isLoading={isLoading} />
 }
