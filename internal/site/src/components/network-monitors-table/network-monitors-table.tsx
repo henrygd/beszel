@@ -36,6 +36,7 @@ import { subscribeKeys } from "nanostores"
 import { getMonitorColumns } from "@/components/network-monitors-table/network-monitors-columns"
 import { Card, CardHeader, CardTitle } from "@/components/ui/card"
 import { DataTablePagination, usePagination } from "@/components/ui/data-table-pagination"
+import { SelectionToolbar } from "@/components/ui/data-table-selection"
 import { Input } from "@/components/ui/input"
 import { TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { useToast } from "@/components/ui/use-toast"
@@ -56,9 +57,12 @@ import {
 	GlobeIcon,
 	LandmarkIcon,
 	LoaderCircleIcon,
+	PauseCircleIcon,
+	PlayCircleIcon,
 	ServerIcon,
 	Settings2Icon,
 	ShieldCheckIcon,
+	Trash2Icon,
 	XIcon,
 } from "lucide-react"
 import {
@@ -80,6 +84,48 @@ import { atom } from "nanostores"
 import { Separator } from "../ui/separator"
 import { $router, Link } from "../router"
 import { getPagePath } from "@nanostores/router"
+
+function MonitorSelectionToolbar({
+	monitors,
+	onSetEnabled,
+	onDelete,
+	onClear,
+}: {
+	monitors: NetworkMonitorRecord[]
+	onSetEnabled: (monitors: NetworkMonitorRecord[], enabled: boolean) => Promise<void>
+	onDelete: (monitors: NetworkMonitorRecord[]) => void
+	onClear: () => void
+}) {
+	// Resuming probes each monitor before the hub responds, so block repeat clicks until it finishes.
+	const [isUpdating, setIsUpdating] = useState(false)
+	const shouldPause = monitors.some((monitor) => monitor.enabled)
+	const StatusIcon = isUpdating ? LoaderCircleIcon : shouldPause ? PauseCircleIcon : PlayCircleIcon
+	return (
+		<SelectionToolbar count={monitors.length} onClear={onClear}>
+			<Button
+				variant="outline"
+				disabled={isUpdating}
+				onClick={async () => {
+					setIsUpdating(true)
+					try {
+						await onSetEnabled(monitors, !shouldPause)
+					} finally {
+						setIsUpdating(false)
+					}
+				}}
+			>
+				<StatusIcon className={cn("size-4", isUpdating && "animate-spin")} />
+				<span className="ms-1.5">{shouldPause ? <Trans>Pause</Trans> : <Trans>Resume</Trans>}</span>
+			</Button>
+			<Button variant="destructive" disabled={isUpdating} onClick={() => onDelete(monitors)}>
+				<Trash2Icon className="size-4" />
+				<span className="ms-1.5">
+					<Trans>Delete</Trans>
+				</span>
+			</Button>
+		</SelectionToolbar>
+	)
+}
 
 export default function NetworkMonitorsTableNew({
 	systemId,
@@ -157,18 +203,19 @@ export default function NetworkMonitorsTableNew({
 
 	const runMonitorBatch = useCallback(
 		async (ids: string[], enqueue: (batch: ReturnType<typeof pb.createBatch>, id: string) => void) => {
+			// All batches share one SDK request key, so disable auto-cancel or overlapping batches abort each other.
 			let batch = pb.createBatch()
 			let inBatch = 0
 			for (const id of ids) {
 				enqueue(batch, id)
 				if (++inBatch >= 20) {
-					await batch.send()
+					await batch.send({ requestKey: null })
 					batch = pb.createBatch()
 					inBatch = 0
 				}
 			}
 			if (inBatch) {
-				await batch.send()
+				await batch.send({ requestKey: null })
 			}
 		},
 		[]
@@ -217,6 +264,7 @@ export default function NetworkMonitorsTableNew({
 				return
 			}
 
+			// Selection is kept so the toolbar can toggle back or chain another action.
 			try {
 				if (pendingUpdates.length === 1) {
 					await pb.collection("network_monitors").update(pendingUpdates[0].id, { enabled })
@@ -226,9 +274,6 @@ export default function NetworkMonitorsTableNew({
 					pendingUpdates.map((monitor) => monitor.id),
 					(batch, id) => batch.collection("network_monitors").update(id, { enabled })
 				)
-				if (monitorsToUpdate.length > 1) {
-					setRowSelection({})
-				}
 			} catch (err: unknown) {
 				toast({
 					variant: "destructive",
@@ -247,7 +292,7 @@ export default function NetworkMonitorsTableNew({
 			onSetEnabled: handleSetEnabled,
 		})
 		columns = systemId ? columns.filter((col) => col.id !== "system") : columns
-		columns = canManageMonitors ? columns : columns.filter((col) => col.id !== "actions")
+		columns = canManageMonitors ? columns : columns.filter((col) => col.id !== "actions" && col.id !== "select")
 		return columns
 	}, [canManageMonitors, handleDeleteRequest, handleSetEnabled, systemId])
 
@@ -295,6 +340,7 @@ export default function NetworkMonitorsTableNew({
 	})
 
 	const rows = table.getRowModel().rows
+	const selectedMonitors = table.getFilteredSelectedRowModel().rows.map((row) => row.original)
 	const visibleColumns = table.getVisibleLeafColumns()
 	const visibleColumnsKey = visibleColumns.map((column) => column.id).join(",")
 
@@ -311,6 +357,14 @@ export default function NetworkMonitorsTableNew({
 						</div>
 					</div>
 					<div className="md-lg:ms-auto flex items-center gap-2">
+						{canManageMonitors && selectedMonitors.length > 0 && (
+							<MonitorSelectionToolbar
+								monitors={selectedMonitors}
+								onSetEnabled={handleSetEnabled}
+								onDelete={handleDeleteRequest}
+								onClear={() => setRowSelection({})}
+							/>
+						)}
 						{monitors.length > 0 && (
 							<div className="relative grow">
 								<Input
