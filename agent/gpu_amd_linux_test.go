@@ -5,6 +5,7 @@ package agent
 import (
 	"os"
 	"path/filepath"
+	"strconv"
 	"testing"
 
 	"github.com/henrygd/beszel/agent/utils"
@@ -120,23 +121,77 @@ func TestAmdgpuNameCacheRoundTrip(t *testing.T) {
 }
 
 func TestUpdateAmdGpuDataWithFakeSysfs(t *testing.T) {
+	const gib = 1 << 30
+	// gpu_metrics starts with metrics_table_header: u16 structure_size, u8 format_revision, u8 content_revision
+	metrics := func(formatRevision byte) []byte { return []byte{0x68, 0x00, formatRevision, 0x00} }
+
 	tests := []struct {
 		name            string
-		writeGTT        bool
+		gpuMetrics      []byte // nil: no gpu_metrics file
+		vramUsed        int
+		vramTotal       int
+		gttUsed         int // 0: no gtt files
+		gttTotal        int
 		wantMemoryUsed  float64
 		wantMemoryTotal float64
 	}{
 		{
-			name:            "sums vram and gtt when gtt is present",
-			writeGTT:        true,
-			wantMemoryUsed:  utils.BytesToMegabytes(1073741824 + 536870912),
-			wantMemoryTotal: utils.BytesToMegabytes(2147483648 + 4294967296),
+			// Strix Halo style APU (issue 1569): 1 GiB carve-out, huge GTT
+			name:            "apu sums vram and gtt",
+			gpuMetrics:      metrics(2),
+			vramUsed:        gib / 4,
+			vramTotal:       gib,
+			gttUsed:         gib / 2,
+			gttTotal:        96 * gib,
+			wantMemoryUsed:  utils.BytesToMegabytes(gib/4 + gib/2),
+			wantMemoryTotal: utils.BytesToMegabytes(gib + 96*gib),
+		},
+		{
+			name:            "gpu_metrics v3 is an apu too",
+			gpuMetrics:      metrics(3),
+			vramUsed:        gib / 4,
+			vramTotal:       gib,
+			gttUsed:         gib / 2,
+			gttTotal:        4 * gib,
+			wantMemoryUsed:  utils.BytesToMegabytes(gib/4 + gib/2),
+			wantMemoryTotal: utils.BytesToMegabytes(gib + 4*gib),
+		},
+		{
+			// RX 5700 XT style card (issue 2682): GTT is system RAM, not VRAM
+			name:            "discrete card ignores gtt",
+			gpuMetrics:      metrics(1),
+			vramUsed:        gib / 2,
+			vramTotal:       8 * gib,
+			gttUsed:         21 << 20,
+			gttTotal:        15*gib + 700<<20,
+			wantMemoryUsed:  utils.BytesToMegabytes(gib / 2),
+			wantMemoryTotal: utils.BytesToMegabytes(8 * gib),
+		},
+		{
+			name:            "no gpu_metrics and large vram is a discrete card",
+			vramUsed:        gib,
+			vramTotal:       8 * gib,
+			gttUsed:         gib / 2,
+			gttTotal:        16 * gib,
+			wantMemoryUsed:  utils.BytesToMegabytes(gib),
+			wantMemoryTotal: utils.BytesToMegabytes(8 * gib),
+		},
+		{
+			name:            "no gpu_metrics and small vram is an apu",
+			vramUsed:        gib / 4,
+			vramTotal:       gib,
+			gttUsed:         gib / 2,
+			gttTotal:        4 * gib,
+			wantMemoryUsed:  utils.BytesToMegabytes(gib/4 + gib/2),
+			wantMemoryTotal: utils.BytesToMegabytes(gib + 4*gib),
 		},
 		{
 			name:            "falls back to vram when gtt is missing",
-			writeGTT:        false,
-			wantMemoryUsed:  utils.BytesToMegabytes(1073741824),
-			wantMemoryTotal: utils.BytesToMegabytes(2147483648),
+			gpuMetrics:      metrics(2),
+			vramUsed:        gib,
+			vramTotal:       2 * gib,
+			wantMemoryUsed:  utils.BytesToMegabytes(gib),
+			wantMemoryTotal: utils.BytesToMegabytes(2 * gib),
 		},
 	}
 
@@ -155,11 +210,14 @@ func TestUpdateAmdGpuDataWithFakeSysfs(t *testing.T) {
 			write("device", "0x1506")
 			write("revision", "0xc1")
 			write("gpu_busy_percent", "25")
-			write("mem_info_vram_used", "1073741824")
-			write("mem_info_vram_total", "2147483648")
-			if tt.writeGTT {
-				write("mem_info_gtt_used", "536870912")
-				write("mem_info_gtt_total", "4294967296")
+			write("mem_info_vram_used", strconv.Itoa(tt.vramUsed))
+			write("mem_info_vram_total", strconv.Itoa(tt.vramTotal))
+			if tt.gttUsed > 0 {
+				write("mem_info_gtt_used", strconv.Itoa(tt.gttUsed))
+				write("mem_info_gtt_total", strconv.Itoa(tt.gttTotal))
+			}
+			if tt.gpuMetrics != nil {
+				require.NoError(t, os.WriteFile(filepath.Join(devicePath, "gpu_metrics"), tt.gpuMetrics, 0o644))
 			}
 			require.NoError(t, os.WriteFile(filepath.Join(hwmonPath, "temp1_input"), []byte("45000"), 0o644))
 			require.NoError(t, os.WriteFile(filepath.Join(hwmonPath, "power1_input"), []byte("20000000"), 0o644))

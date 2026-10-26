@@ -95,6 +95,34 @@ func isAmdGpu(cardPath string) bool {
 	return vendor == "0x1002"
 }
 
+// unifiedMemoryMaxVram is the dedicated VRAM size below which a device without a
+// gpu_metrics table is taken for an APU (typical carve-out sizes are 512 MiB to 1 GiB).
+const unifiedMemoryMaxVram = 2 << 30
+
+// amdGpuIsUnifiedMemory reports whether the device shares memory with the CPU (an APU).
+//
+// amdgpu exposes the gpu_metrics table in sysfs, whose first four bytes are a
+// metrics_table_header (u16 structure_size, u8 format_revision, u8 content_revision).
+// Format revision 1 is used by discrete cards (gpu_metrics_v1_x), 2 and 3 by APUs
+// (gpu_metrics_v2_x / v3_x). When the table is missing or unreadable (older ASICs),
+// fall back to the size of the dedicated VRAM.
+func amdGpuIsUnifiedMemory(devicePath string, vramTotal float64) bool {
+	header := make([]byte, 4)
+	if f, err := os.Open(filepath.Join(devicePath, "gpu_metrics")); err == nil {
+		n, _ := f.Read(header)
+		f.Close()
+		if n == len(header) {
+			switch header[2] {
+			case 1:
+				return false
+			case 2, 3:
+				return true
+			}
+		}
+	}
+	return vramTotal < unifiedMemoryMaxVram
+}
+
 // updateAmdGpuData reads GPU metrics from sysfs and updates the GPU data map.
 // Returns true if at least some data was successfully read.
 func (gm *GPUManager) updateAmdGpuData(cardPath string) bool {
@@ -105,11 +133,15 @@ func (gm *GPUManager) updateAmdGpuData(cardPath string) bool {
 	usage, usageErr := readSysfsFloat(filepath.Join(devicePath, "gpu_busy_percent"))
 	memUsed, memUsedErr := readSysfsFloat(filepath.Join(devicePath, "mem_info_vram_used"))
 	memTotal, _ := readSysfsFloat(filepath.Join(devicePath, "mem_info_vram_total"))
-	// if gtt is present, add it to the memory used and total (https://github.com/henrygd/beszel/issues/1569#issuecomment-3837640484)
-	if gttUsed, err := readSysfsFloat(filepath.Join(devicePath, "mem_info_gtt_used")); err == nil && gttUsed > 0 {
-		if gttTotal, err := readSysfsFloat(filepath.Join(devicePath, "mem_info_gtt_total")); err == nil {
-			memUsed += gttUsed
-			memTotal += gttTotal
+	// On a unified memory device (APU) the GPU mostly uses system memory through GTT, so add it to the
+	// memory used and total (https://github.com/henrygd/beszel/issues/1569#issuecomment-3837640484).
+	// On a discrete card GTT is just mappable system RAM, not VRAM, and must not inflate the numbers.
+	if amdGpuIsUnifiedMemory(devicePath, memTotal) {
+		if gttUsed, err := readSysfsFloat(filepath.Join(devicePath, "mem_info_gtt_used")); err == nil && gttUsed > 0 {
+			if gttTotal, err := readSysfsFloat(filepath.Join(devicePath, "mem_info_gtt_total")); err == nil {
+				memUsed += gttUsed
+				memTotal += gttTotal
+			}
 		}
 	}
 
