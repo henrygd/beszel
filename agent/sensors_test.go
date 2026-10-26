@@ -391,6 +391,66 @@ func TestNewSensorConfig(t *testing.T) {
 	assert.Equal(t, "/test/path", sysPath)
 }
 
+func TestParseSensorFilter(t *testing.T) {
+	tests := []struct {
+		name     string
+		val      string
+		expected sensorFilter
+	}{
+		{"empty", "", sensorFilter{sensors: map[string]struct{}{}}},
+		{"blacklist prefix only", "-", sensorFilter{sensors: map[string]struct{}{}, isBlacklist: true}},
+		{"whitelist", "nct6791_fan2, nct6791_fan4,", sensorFilter{sensors: map[string]struct{}{"nct6791_fan2": {}, "nct6791_fan4": {}}}},
+		{"blacklist with wildcard", "-gpio_fan_*,nct6791_fan1", sensorFilter{sensors: map[string]struct{}{"gpio_fan_*": {}, "nct6791_fan1": {}}, isBlacklist: true, hasWildcards: true}},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.Equal(t, tt.expected, parseSensorFilter(tt.val))
+		})
+	}
+}
+
+func TestSensorFilterAllows(t *testing.T) {
+	tests := []struct {
+		name       string
+		filter     string
+		sensorName string
+		expected   bool
+	}{
+		{"empty list allows all", "", "nct6791_fan1", true},
+		{"blacklist prefix only allows all", "-", "nct6791_fan1", true},
+		{"whitelist exact match", "nct6791_fan2", "nct6791_fan2", true},
+		{"whitelist no match", "nct6791_fan2", "nct6791_fan1", false},
+		{"blacklist exact match", "-gpio_fan_fan1", "gpio_fan_fan1", false},
+		{"blacklist no match", "-gpio_fan_fan1", "nct6791_fan1", true},
+		{"whitelist wildcard match", "nct6791_*", "nct6791_chassis", true},
+		{"whitelist wildcard no match", "nct6791_*", "gpio_fan_fan1", false},
+		{"blacklist wildcard match", "-*_fan1", "nct6791_fan1", false},
+		{"blacklist wildcard no match", "-*_fan1", "nct6791_fan2", true},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.Equal(t, tt.expected, parseSensorFilter(tt.filter).allows(tt.sensorName))
+		})
+	}
+}
+
+func TestNewSensorConfigFanSensors(t *testing.T) {
+	t.Setenv("BESZEL_AGENT_FAN_SENSORS", "-gpio_fan_*")
+	config := (&Agent{}).newSensorConfig()
+	assert.True(t, config.fanSensors.isBlacklist)
+	assert.True(t, config.fanSensors.hasWildcards)
+	assert.Contains(t, config.fanSensors.sensors, "gpio_fan_*")
+	// SENSORS is unaffected
+	assert.Empty(t, config.sensors)
+
+	// set but empty keeps every fan
+	t.Setenv("BESZEL_AGENT_FAN_SENSORS", "")
+	config = (&Agent{}).newSensorConfig()
+	assert.Empty(t, config.fanSensors.sensors)
+}
+
 func TestScaleTemperature(t *testing.T) {
 	tests := []struct {
 		name     string

@@ -75,6 +75,9 @@ func (a *Agent) readFansWithTimeout(getSensors func() ([]fanSensor, error)) (map
 		if a.sensorConfig != nil && a.sensorConfig.skipGPU {
 			sensors = filterGpuFans(sensors)
 		}
+		if a.sensorConfig != nil && len(a.sensorConfig.fanSensors.sensors) > 0 {
+			sensors = filterFanSensors(sensors, a.sensorConfig.fanSensors)
+		}
 		return readFanSensors(sensors), nil
 	})
 }
@@ -151,6 +154,18 @@ func filterGpuFans(sensors []fanSensor) []fanSensor {
 			continue
 		}
 		kept = append(kept, sensor)
+	}
+	return kept
+}
+
+// filterFanSensors applies FAN_SENSORS to the fan keys shown in the UI.
+// Like filterGpuFans, it leaves the shared cache backing array untouched.
+func filterFanSensors(sensors []fanSensor, filter sensorFilter) []fanSensor {
+	kept := make([]fanSensor, 0, len(sensors))
+	for _, sensor := range sensors {
+		if filter.allows(sensor.key) {
+			kept = append(kept, sensor)
+		}
 	}
 	return kept
 }
