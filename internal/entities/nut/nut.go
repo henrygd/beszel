@@ -70,8 +70,11 @@ type NutOutlet struct {
 
 // NutDataResponse is the agent-to-hub payload. Complete reports whether every
 // discovered device was collected; older agents omit it, so hubs must not prune
-// from it.
+// from it. Sampled lists the devices collected during the current refresh;
+// devices present only in the agent's persistent cache are omitted so the hub
+// can tell a fresh measurement from a cached one. Older agents omit it (nil).
 type NutDataResponse struct {
 	Data     map[string]NutData `json:"data" cbor:"0,keyasint"`
 	Complete bool               `json:"complete" cbor:"1,keyasint,omitempty"`
+	Sampled  []string           `json:"sampled" cbor:"2,keyasint"`
 }

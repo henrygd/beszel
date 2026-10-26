@@ -211,6 +211,7 @@ func (h *GetNutDataHandler) Handle(hctx *HandlerContext) error {
 	return hctx.SendResponse(nut.NutDataResponse{
 		Data:     hctx.Agent.nutManager.GetCurrentData(),
 		Complete: complete,
+		Sampled:  hctx.Agent.nutManager.GetSampledNames(),
 	}, hctx.RequestID)
 }
 

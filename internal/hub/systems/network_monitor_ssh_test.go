@@ -25,6 +25,8 @@ func TestSSHNetworkMonitorReconnectSync(t *testing.T) {
 	sys, app := newTestSystemWithHub(t)
 	sys.manager.zfsFetchMap = expirymap.New[zfsFetchState](time.Hour)
 	t.Cleanup(sys.manager.zfsFetchMap.StopCleaner)
+	sys.manager.nutFetchMap = expirymap.New[nutFetchState](time.Hour)
+	t.Cleanup(sys.manager.nutFetchMap.StopCleaner)
 	sys.ctx = context.Background()
 	sys.Status = up
 	_, key, err := ed25519.GenerateKey(rand.Reader)
