@@ -28,8 +28,16 @@ func (sys *System) FetchAndSaveNutDevices() error {
 		sys.recordNutFetchResult(err, 0)
 		return err
 	}
-	err = sys.saveNutDevices(response.Data, response.Complete)
-	sys.recordNutFetchResult(err, len(response.Data))
+	sampled := response.Sampled
+	if sampled == nil {
+		// Older agents do not report which devices were collected this run.
+		sampled = make([]string, 0, len(response.Data))
+		for deviceKey := range response.Data {
+			sampled = append(sampled, deviceKey)
+		}
+	}
+	err = sys.saveNutDevices(response.Data, response.Complete, sampled)
+	sys.recordNutFetchResult(err, len(sampled))
 	return err
 }
 
@@ -68,12 +76,27 @@ func (sys *System) nutFetchInterval() time.Duration {
 }
 
 // saveNutDevices saves NUT device data and, after a complete refresh,
-// removes rows for devices that are no longer reported.
-func (sys *System) saveNutDevices(nutData map[string]nut.NutData, complete bool) error {
+// removes rows for devices that are no longer reported. Devices in sampled
+// were collected during this refresh; devices only present in the agent's
+// persistent cache are not rewritten or added to history, so a failed
+// collection is not presented as a new measurement.
+func (sys *System) saveNutDevices(nutData map[string]nut.NutData, complete bool, sampled []string) error {
 	hub := sys.manager.hub
 	collection, err := hub.FindCachedCollectionByNameOrId("nut_devices")
 	if err != nil {
 		return err
+	}
+
+	sampledSet := make(map[string]bool, len(sampled))
+	for _, name := range sampled {
+		sampledSet[name] = true
+	}
+	if sampled == nil {
+		// Callers that do not report which devices were collected (older agents)
+		// are treated as fully fresh data.
+		for deviceKey := range nutData {
+			sampledSet[deviceKey] = true
+		}
 	}
 
 	currentIDs := make(map[string]struct{}, len(nutData))
@@ -109,8 +132,12 @@ func (sys *System) saveNutDevices(nutData map[string]nut.NutData, complete bool)
 			return err
 		}
 		for deviceKey, device := range nutData {
-			if err := sys.upsertNutDeviceRecord(txApp, collection, deviceKey, device); err != nil {
+			fresh := sampledSet[deviceKey]
+			if err := sys.upsertNutDeviceRecord(txApp, collection, deviceKey, device, fresh); err != nil {
 				return err
+			}
+			if !fresh {
+				continue
 			}
 			if err := sys.createNutStatsRecord(txApp, statsCollection, deviceKey, device); err != nil {
 				return err
@@ -139,7 +166,7 @@ func (sys *System) createNutStatsRecord(app core.App, collection *core.Collectio
 	return app.SaveNoValidate(record)
 }
 
-func (sys *System) upsertNutDeviceRecord(app core.App, collection *core.Collection, deviceKey string, device nut.NutData) error {
+func (sys *System) upsertNutDeviceRecord(app core.App, collection *core.Collection, deviceKey string, device nut.NutData, fresh bool) error {
 	recordID := MakeStableHashId(sys.Id, deviceKey)
 
 	record, err := app.FindRecordById(collection, recordID)
@@ -149,6 +176,10 @@ func (sys *System) upsertNutDeviceRecord(app core.App, collection *core.Collecti
 		}
 		record = core.NewRecord(collection)
 		record.Set("id", recordID)
+	} else if !fresh {
+		// Cached data from a failed refresh: keep the existing record as-is
+		// instead of presenting stale values as a new observation.
+		return nil
 	}
 
 	name := device.Model

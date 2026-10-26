@@ -43,7 +43,15 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { getPbTimestamp, isReadOnlyUser, pb } from "@/lib/api"
 import type { ChartData, ChartTimes, NutDeviceRecord, NutOutlet, NutStatsRecord } from "@/types"
-import { chartTimeData, cn, parseSemVer, toFixedFloat, hourWithSeconds, formatShortDate, secondsToString } from "@/lib/utils"
+import {
+	chartTimeData,
+	cn,
+	parseSemVer,
+	toFixedFloat,
+	hourWithSeconds,
+	formatShortDate,
+	secondsToString,
+} from "@/lib/utils"
 import { Trans } from "@lingui/react/macro"
 import { useStore } from "@nanostores/react"
 import { $allSystemsById } from "@/lib/stores"
@@ -532,7 +540,13 @@ export default function NutTable({ systemId }: { systemId?: string }) {
 						</div>
 					</div>
 				</CardHeader>
-				<NutDevicesTable table={table} rows={rows} colLength={tableColumns.length} data={nutDevices} openSheet={openSheet} />
+				<NutDevicesTable
+					table={table}
+					rows={rows}
+					colLength={tableColumns.length}
+					data={nutDevices}
+					openSheet={openSheet}
+				/>
 			</Card>
 			<DeviceSheet deviceId={activeDeviceId} open={sheetOpen} onOpenChange={setSheetOpen} />
 		</div>
@@ -580,9 +594,7 @@ const NutDevicesTable = memo(function NutDevicesTable({
 						{rows.length ? (
 							virtualRows.map((virtualRow) => {
 								const row = rows[virtualRow.index]
-								return (
-									<NutDeviceTableRow key={row.id} row={row} virtualRow={virtualRow} openSheet={openSheet} />
-								)
+								return <NutDeviceTableRow key={row.id} row={row} virtualRow={virtualRow} openSheet={openSheet} />
 							})
 						) : (
 							<TableCell colSpan={colLength} className="h-37 text-center pointer-events-none">
@@ -834,9 +846,7 @@ function DeviceSheet({
 										<div className="font-medium">
 											{toFixedFloat(batteryCharge, 0)}%
 											{batteryVoltage != null && batteryVoltage > 0 && (
-												<span className="text-muted-foreground ml-2">
-													{toFixedFloat(batteryVoltage, 1)} V
-												</span>
+												<span className="text-muted-foreground ml-2">{toFixedFloat(batteryVoltage, 1)} V</span>
 											)}
 										</div>
 										{batteryRuntime != null && batteryRuntime > 0 && (
@@ -854,9 +864,7 @@ function DeviceSheet({
 										<div className="font-medium">
 											{toFixedFloat(inputVoltage, 1)} V
 											{inputNominal != null && inputNominal > 0 && (
-												<span className="text-muted-foreground ml-2">
-													/ {toFixedFloat(inputNominal, 0)} V
-												</span>
+												<span className="text-muted-foreground ml-2">/ {toFixedFloat(inputNominal, 0)} V</span>
 											)}
 										</div>
 									</div>
@@ -885,22 +893,27 @@ function DeviceSheet({
 										<div className="font-medium">
 											{formatNutPower(device)}
 											{outputCurrent != null && outputCurrent > 0 && (
-												<span className="text-muted-foreground ml-2">
-													{toFixedFloat(outputCurrent, 1)} A
-												</span>
+												<span className="text-muted-foreground ml-2">{toFixedFloat(outputCurrent, 1)} A</span>
 											)}
 										</div>
 									</div>
 								)}
 							</div>
 
+							{/* One time-window selector for all UPS charts, placed at the top like the rest of the UI */}
+							<div className="flex justify-end">
+								<ChartTimeSelect
+									agentVersion={parseSemVer("0.20.0")}
+									chartTimeStore={$nutChartTime}
+									allowRealtime={false}
+								/>
+							</div>
 							<div className="grid gap-4 lg:grid-cols-2">
 								<ChartCard
 									empty={chartEmpty}
 									grid={true}
 									title={t`Battery`}
 									description={t`Battery charge and estimated runtime over time`}
-									cornerEl={<ChartTimeSelect agentVersion={parseSemVer("0.20.0")} chartTimeStore={$nutChartTime} allowRealtime={false} />}
 								>
 									<LineChartDefault
 										chartData={chartData}
@@ -915,7 +928,12 @@ function DeviceSheet({
 										legend={true}
 										dataPoints={[
 											{ label: t`Charge`, color: 2, dataKey: (point: NutStatsRecord) => point.battery_charge },
-											{ label: t`Runtime`, color: 4, yAxisId: "right", dataKey: (point: NutStatsRecord) => point.battery_runtime },
+											{
+												label: t`Runtime`,
+												color: 4,
+												yAxisId: "right",
+												dataKey: (point: NutStatsRecord) => point.battery_runtime,
+											},
 										]}
 									/>
 								</ChartCard>
@@ -938,7 +956,12 @@ function DeviceSheet({
 										legend={true}
 										dataPoints={[
 											{ label: t`Load`, color: 5, dataKey: (point: NutStatsRecord) => point.load },
-											{ label: t`Output Power`, color: 1, yAxisId: "right", dataKey: (point: NutStatsRecord) => nutPowerValue(point) },
+											{
+												label: t`Output Power`,
+												color: 1,
+												yAxisId: "right",
+												dataKey: (point: NutStatsRecord) => nutPowerValue(point),
+											},
 										]}
 									/>
 								</ChartCard>
@@ -988,19 +1011,9 @@ function DeviceSheet({
 										<TableBody>
 											{outlets.map((outlet: NutOutlet) => (
 												<TableRow key={outlet.id}>
-													<TableCell className="font-medium">
-														{outlet.d || outlet.id}
-													</TableCell>
+													<TableCell className="font-medium">{outlet.d || outlet.id}</TableCell>
 													<TableCell>
-														<Badge
-															variant={
-																outlet.s === "on"
-																	? "success"
-																	: outlet.s === "off"
-																	? "danger"
-																	: "outline"
-															}
-														>
+														<Badge variant={outlet.s === "on" ? "success" : outlet.s === "off" ? "danger" : "outline"}>
 															{outlet.s || "unknown"}
 														</Badge>
 													</TableCell>

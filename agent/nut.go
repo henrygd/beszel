@@ -7,6 +7,7 @@ import (
 	"log/slog"
 	"math"
 	"os/exec"
+	"slices"
 	"strconv"
 	"strings"
 	"sync"
@@ -31,6 +32,7 @@ type NutManager struct {
 	configuredDevices []string
 	excludedDevices   map[string]struct{}
 	lastListTime      time.Time
+	sampledNames      []string // devices collected during the most recent refresh
 }
 
 // NewNutManager creates and initializes a NutManager. It returns an error when
@@ -177,6 +179,7 @@ func (nm *NutManager) Refresh() (bool, error) {
 
 	var collectErr error
 	collected := 0
+	sampled := make([]string, 0, len(devices))
 	for name := range devices {
 		if nm.isExcluded(name) {
 			continue
@@ -186,8 +189,13 @@ func (nm *NutManager) Refresh() (bool, error) {
 			collectErr = err
 			continue
 		}
+		sampled = append(sampled, name)
 		collected++
 	}
+
+	nm.Mutex.Lock()
+	nm.sampledNames = sampled
+	nm.Mutex.Unlock()
 
 	complete := listErr == nil && collectErr == nil
 	if !complete && collected == 0 {
@@ -256,14 +264,23 @@ func (nm *NutManager) GetCurrentData() map[string]nut.NutData {
 	return result
 }
 
+// GetSampledNames returns the device names collected during the most recent
+// refresh. Devices present only in the persistent cache are not included, so
+// the hub can tell a fresh measurement from a cached one.
+func (nm *NutManager) GetSampledNames() []string {
+	nm.Mutex.Lock()
+	defer nm.Mutex.Unlock()
+	return slices.Clone(nm.sampledNames)
+}
+
 // parseNutData maps the flat NUT variable set to a NutData record.
 func parseNutData(name string, vars map[string]string) nut.NutData {
 	data := nut.NutData{
 		Model:        vars["ups.model"],
-		Manufacturer: vars["ups.manufacturer"],
+		Manufacturer: firstNonEmpty(vars["ups.manufacturer"], vars["ups.mfr"], vars["device.mfr"]),
 		Serial:       vars["ups.serial"],
 		Firmware:     vars["ups.firmware"],
-		Driver:       vars["driver"],
+		Driver:       firstNonEmpty(vars["driver"], vars["driver.name"]),
 		Status:       vars["ups.status"],
 		Health:       deriveHealth(vars["ups.status"]),
 	}
@@ -388,20 +405,31 @@ func deriveHealth(status string) string {
 		_, ok := tokens[flag]
 		return ok
 	}
+	// Most severe state wins: a committed alarm or forced shutdown must not
+	// stay green, and an overload must not be masked by the battery flag.
 	switch {
+	case has("SD"), has("OFF"), has("OFFB"), has("COMM"), has("FSD"), has("ALARM"):
+		return nut.HealthFault
 	case has("LB"):
 		return nut.HealthLowBattery
-	case has("OB"):
-		return nut.HealthOnBattery
 	case has("OVER"):
 		return nut.HealthOverload
-	case has("SD"), has("OFF"), has("OFFB"), has("COMM"):
-		return nut.HealthFault
+	case has("OB"):
+		return nut.HealthOnBattery
 	case has("OL"):
 		return nut.HealthOnline
 	default:
 		return nut.HealthUnknown
 	}
+}
+
+func firstNonEmpty(values ...string) string {
+	for _, v := range values {
+		if v != "" {
+			return v
+		}
+	}
+	return ""
 }
 
 func parseFloat(s string) float64 {

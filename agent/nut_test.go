@@ -94,6 +94,10 @@ func TestDeriveHealth(t *testing.T) {
 		{"", nut.HealthUnknown},
 		{"OL OB LB", nut.HealthLowBattery},
 		{"OL COMM", nut.HealthFault},
+		{"OB OVER", nut.HealthOverload},
+		{"OL ALARM", nut.HealthFault},
+		{"OL FSD", nut.HealthFault},
+		{"OB LB OVER", nut.HealthLowBattery},
 	}
 
 	for _, tt := range tests {
@@ -219,7 +223,7 @@ func TestUpscArgsWithAuth(t *testing.T) {
 	assert.Equal(t, []string{"-A", "/etc/nut/upscmd.conf", "-j", "ups1@localhost"}, nm.upscArgs("-j", "ups1@localhost"))
 }
 
-func TestParseConfiguredDevices(t *testing.T) {
+func TestParseNutConfiguredDevices(t *testing.T) {
 	t.Setenv("NUT_DEVICES", "ups1, ups2 ,ups3")
 	nm := &NutManager{}
 	nm.parseConfiguredDevices()
@@ -373,4 +377,38 @@ esac
 	t.Setenv("NUT_AUTHCONF_FILE", "/etc/nut/nutauth.conf")
 	_, err = NewNutManager()
 	require.ErrorContains(t, err, "-A support")
+}
+
+func TestParseNutDataIdentityFallbacks(t *testing.T) {
+	vars := map[string]string{
+		"ups.mfr":     "Eaton",
+		"driver.name": "dummy-ups",
+		"ups.status":  "OL",
+	}
+	data := parseNutData("ups1", vars)
+	assert.Equal(t, "Eaton", data.Manufacturer, "generic ups.mfr must be used")
+	assert.Equal(t, "dummy-ups", data.Driver, "driver.name must be used")
+
+	// Explicit fields win over the generic fallbacks.
+	vars = map[string]string{
+		"ups.manufacturer": "APC",
+		"device.mfr":       "Generic",
+		"driver":           "usbhid-ups",
+		"driver.name":      "other",
+		"ups.status":       "OL",
+	}
+	data = parseNutData("ups1", vars)
+	assert.Equal(t, "APC", data.Manufacturer)
+	assert.Equal(t, "usbhid-ups", data.Driver)
+}
+
+func TestGetSampledNamesReturnsCopy(t *testing.T) {
+	nm := &NutManager{
+		NutDataMap:   make(map[string]*nut.NutData),
+		sampledNames: []string{"ups1"},
+	}
+	got := nm.GetSampledNames()
+	assert.Equal(t, []string{"ups1"}, got)
+	got[0] = "changed"
+	assert.Equal(t, "ups1", nm.sampledNames[0], "returned slice must be a copy")
 }

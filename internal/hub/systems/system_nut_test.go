@@ -136,7 +136,7 @@ func TestSaveNutDevices_RemovesStaleDevices(t *testing.T) {
 	err := sys.saveNutDevices(map[string]nut.NutData{
 		"ups1": {Model: "APC 1500", Health: nut.HealthOnline, BatteryCharge: 100},
 		"ups2": {Model: "Eaton 9130", Health: nut.HealthOnline, BatteryCharge: 95},
-	}, true)
+	}, true, nil)
 	require.NoError(t, err)
 
 	records := countNutDeviceRecords(t, testApp, sys.Id)
@@ -172,7 +172,7 @@ func TestSaveNutDevices_RemovesStaleDevices(t *testing.T) {
 	// Complete refresh confirms ups2 is gone
 	err = sys.saveNutDevices(map[string]nut.NutData{
 		"ups1": {Model: "APC 1500", Health: nut.HealthOnBattery, BatteryCharge: 80},
-	}, true)
+	}, true, nil)
 	require.NoError(t, err)
 
 	records = countNutDeviceRecords(t, testApp, sys.Id)
@@ -190,12 +190,12 @@ func TestSaveNutDevices_IncompleteDataDoesNotRemoveDevices(t *testing.T) {
 	require.NoError(t, sys.saveNutDevices(map[string]nut.NutData{
 		"ups1": {Model: "APC 1500", Health: nut.HealthOnline},
 		"ups2": {Model: "Eaton 9130", Health: nut.HealthOnline},
-	}, true))
+	}, true, nil))
 
 	// Incomplete response: only ups1 collected, ups2 failed
 	require.NoError(t, sys.saveNutDevices(map[string]nut.NutData{
 		"ups1": {Model: "APC 1500", Health: nut.HealthOnBattery, BatteryCharge: 75},
-	}, false))
+	}, false, nil))
 
 	assert.Len(t, countNutDeviceRecords(t, testApp, sys.Id), 2, "incomplete data should not remove devices")
 	record1, err := testApp.FindRecordById("nut_devices", MakeStableHashId(sys.Id, "ups1"))
@@ -209,10 +209,10 @@ func TestSaveNutDevices_CompleteEmptyDataRemovesStaleDevices(t *testing.T) {
 
 	err := sys.saveNutDevices(map[string]nut.NutData{
 		"ups1": {Model: "APC 1500", Health: nut.HealthOnline},
-	}, true)
+	}, true, nil)
 	require.NoError(t, err)
 
-	err = sys.saveNutDevices(map[string]nut.NutData{}, true)
+	err = sys.saveNutDevices(map[string]nut.NutData{}, true, nil)
 	require.NoError(t, err)
 
 	records := countNutDeviceRecords(t, testApp, sys.Id)
@@ -234,7 +234,7 @@ func TestSaveNutDevices_WithOutlets(t *testing.T) {
 			DeviceType: nut.DeviceTypePDU,
 			Outlets:    outlets,
 		},
-	}, true)
+	}, true, nil)
 	require.NoError(t, err)
 
 	records := countNutDeviceRecords(t, testApp, sys.Id)
@@ -255,7 +255,7 @@ func TestSaveNutDevices_PowerSource(t *testing.T) {
 	for _, source := range []string{"measured", "estimated", "unknown"} {
 		require.NoError(t, sys.saveNutDevices(map[string]nut.NutData{
 			"ups1": {Model: "UPS", OutputPower: 0, OutputPowerSource: source},
-		}, true))
+		}, true, nil))
 		device, err := app.FindRecordById("nut_devices", MakeStableHashId(sys.Id, "ups1"))
 		require.NoError(t, err)
 		assert.Equal(t, source, device.GetString("output_power_source"))
@@ -264,4 +264,48 @@ func TestSaveNutDevices_PowerSource(t *testing.T) {
 		require.Len(t, stats, 1)
 		assert.Zero(t, stats[0].GetFloat("output_power"))
 	}
+}
+
+func TestSaveNutDevices_CachedDevicesNotRewritten(t *testing.T) {
+	sys, testApp := newTestSystemWithHub(t)
+
+	// First refresh collects both devices.
+	require.NoError(t, sys.saveNutDevices(map[string]nut.NutData{
+		"ups1": {Model: "APC 1500", Health: nut.HealthOnBattery, BatteryCharge: 65},
+		"ups2": {Model: "Eaton 9130", Health: nut.HealthOnline, BatteryCharge: 95},
+	}, true, []string{"ups1", "ups2"}))
+
+	// The NUT server goes down: the agent returns its persistent cache for ups2,
+	// and only ups1 is collected during this run.
+	require.NoError(t, sys.saveNutDevices(map[string]nut.NutData{
+		"ups1": {Model: "APC 1500", Health: nut.HealthOnBattery, BatteryCharge: 60},
+		"ups2": {Model: "Eaton 9130", Health: nut.HealthOnline, BatteryCharge: 95},
+	}, false, []string{"ups1"}))
+
+	require.Len(t, nutStatsForSystem(t, testApp, sys.Id), 3, "cached device must not add a history row")
+
+	cached, err := testApp.FindRecordById("nut_devices", MakeStableHashId(sys.Id, "ups2"))
+	require.NoError(t, err)
+	assert.Equal(t, 95.0, cached.GetFloat("battery_charge"), "cached device record must not be rewritten")
+
+	// A cached device the hub has never seen is still created, without history.
+	require.NoError(t, sys.saveNutDevices(map[string]nut.NutData{
+		"ups3": {Model: "New UPS", Health: nut.HealthUnknown},
+	}, false, []string{}))
+	_, err = testApp.FindRecordById("nut_devices", MakeStableHashId(sys.Id, "ups3"))
+	require.NoError(t, err)
+	require.Len(t, nutStatsForSystem(t, testApp, sys.Id), 3, "cached device must not add a history row")
+}
+
+func nutStatsForSystem(t *testing.T, app core.App, systemID string) []*core.Record {
+	t.Helper()
+	records, err := app.FindAllRecords("nut_stats", nil)
+	require.NoError(t, err)
+	var forSystem []*core.Record
+	for _, r := range records {
+		if r.GetString("system") == systemID {
+			forSystem = append(forSystem, r)
+		}
+	}
+	return forSystem
 }

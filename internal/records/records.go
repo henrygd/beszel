@@ -262,7 +262,11 @@ func (rm *RecordManager) createLongerNutRecords(app core.App, collection *core.C
 			if err != nil {
 				return err
 			}
-			if len(rows) < period.minShorterRecords {
+			// NUT samples arrive at the system's configurable NUT interval, which
+			// can exceed the aggregation window (default one hour). Average any
+			// available records at every level and skip only empty windows, as
+			// the network-monitor aggregation already does.
+			if len(rows) == 0 {
 				continue
 			}
 			record := core.NewRecord(collection)
