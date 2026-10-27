@@ -41,35 +41,29 @@ func TestAverageSystemStatsSlice_Empty(t *testing.T) {
 func TestAverageSystemStatsSlice_SingleRecord(t *testing.T) {
 	input := []system.Stats{
 		{
-			Cpu:          45.67,
-			Mem:          16.0,
-			MemUsed:      8.5,
-			MemPct:       53.12,
-			MemBuffCache: 2.0,
-			Swap:         4.0,
-			SwapUsed:     1.0,
-			SwapPct:      25.0,
-			DiskTotal:    500.0,
-			DiskUsed:     250.0,
-			DiskPct:      50.0,
-			NetworkSent:  10.5,
-			NetworkRecv:  20.25,
-			LoadAvg:      [3]float64{1.5, 2.0, 3.5},
-			Bandwidth:    [2]uint64{1000, 2000},
-			DiskIO:       [2]uint64{500, 600},
-			Battery:      [2]uint8{80, 1},
+			Cpu:         45.67,
+			MemBytes:    [4]uint64{16000, 8500, 2000, 0},
+			MemPct:      53.12,
+			SwapBytes:   [2]uint64{4000, 1000},
+			SwapPct:     25.0,
+			DiskTotal:   500.0,
+			DiskUsed:    250.0,
+			DiskPct:     50.0,
+			NetworkSent: 10.5,
+			NetworkRecv: 20.25,
+			LoadAvg:     [3]float64{1.5, 2.0, 3.5},
+			Bandwidth:   [2]uint64{1000, 2000},
+			DiskIO:      [2]uint64{500, 600},
+			Battery:     [2]uint8{80, 1},
 		},
 	}
 
 	result := records.AverageSystemStatsSlice(input)
 
 	assert.Equal(t, 45.67, result.Cpu)
-	assert.Equal(t, 16.0, result.Mem)
-	assert.Equal(t, 8.5, result.MemUsed)
+	assert.Equal(t, [4]uint64{16000, 8500, 2000, 0}, result.MemBytes)
 	assert.Equal(t, 53.12, result.MemPct)
-	assert.Equal(t, 2.0, result.MemBuffCache)
-	assert.Equal(t, 4.0, result.Swap)
-	assert.Equal(t, 1.0, result.SwapUsed)
+	assert.Equal(t, [2]uint64{4000, 1000}, result.SwapBytes)
 	assert.Equal(t, 25.0, result.SwapPct)
 	assert.Equal(t, 500.0, result.DiskTotal)
 	assert.Equal(t, 250.0, result.DiskUsed)
@@ -86,57 +80,45 @@ func TestAverageSystemStatsSlice_SingleRecord(t *testing.T) {
 func TestAverageSystemStatsSlice_BasicAveraging(t *testing.T) {
 	input := []system.Stats{
 		{
-			Cpu:          20.0,
-			Mem:          16.0,
-			MemUsed:      6.0,
-			MemPct:       37.5,
-			MemBuffCache: 1.0,
-			MemZfsArc:    0.5,
-			Swap:         4.0,
-			SwapUsed:     1.0,
-			SwapPct:      25.0,
-			DiskTotal:    500.0,
-			DiskUsed:     200.0,
-			DiskPct:      40.0,
-			NetworkSent:  10.0,
-			NetworkRecv:  20.0,
-			LoadAvg:      [3]float64{1.0, 2.0, 3.0},
-			Bandwidth:    [2]uint64{1000, 2000},
-			DiskIO:       [2]uint64{400, 600},
-			Battery:      [2]uint8{80, 1},
+			Cpu:         20.0,
+			MemBytes:    [4]uint64{16000, 6000, 1000, 500},
+			MemPct:      37.5,
+			SwapBytes:   [2]uint64{4000, 1000},
+			SwapPct:     25.0,
+			DiskTotal:   500.0,
+			DiskUsed:    200.0,
+			DiskPct:     40.0,
+			NetworkSent: 10.0,
+			NetworkRecv: 20.0,
+			LoadAvg:     [3]float64{1.0, 2.0, 3.0},
+			Bandwidth:   [2]uint64{1000, 2000},
+			DiskIO:      [2]uint64{400, 600},
+			Battery:     [2]uint8{80, 1},
 		},
 		{
-			Cpu:          40.0,
-			Mem:          16.0,
-			MemUsed:      10.0,
-			MemPct:       62.5,
-			MemBuffCache: 3.0,
-			MemZfsArc:    1.5,
-			Swap:         4.0,
-			SwapUsed:     3.0,
-			SwapPct:      75.0,
-			DiskTotal:    500.0,
-			DiskUsed:     300.0,
-			DiskPct:      60.0,
-			NetworkSent:  30.0,
-			NetworkRecv:  40.0,
-			LoadAvg:      [3]float64{3.0, 4.0, 5.0},
-			Bandwidth:    [2]uint64{3000, 4000},
-			DiskIO:       [2]uint64{600, 800},
-			Battery:      [2]uint8{60, 1},
+			Cpu:         40.0,
+			MemBytes:    [4]uint64{16000, 10000, 3000, 1500},
+			MemPct:      62.5,
+			SwapBytes:   [2]uint64{4000, 3000},
+			SwapPct:     75.0,
+			DiskTotal:   500.0,
+			DiskUsed:    300.0,
+			DiskPct:     60.0,
+			NetworkSent: 30.0,
+			NetworkRecv: 40.0,
+			LoadAvg:     [3]float64{3.0, 4.0, 5.0},
+			Bandwidth:   [2]uint64{3000, 4000},
+			DiskIO:      [2]uint64{600, 800},
+			Battery:     [2]uint8{60, 1},
 		},
 	}
 
 	result := records.AverageSystemStatsSlice(input)
 
 	assert.Equal(t, 30.0, result.Cpu)
-	assert.Equal(t, 16.0, result.Mem)
-	assert.Equal(t, 8.0, result.MemUsed)
+	assert.Equal(t, [4]uint64{16000, 8000, 2000, 1000}, result.MemBytes)
 	assert.Equal(t, 50.0, result.MemPct)
-	assert.Equal(t, 2.0, result.MemBuffCache)
-	assert.Equal(t, 1.0, result.MemZfsArc)
-	assert.Equal(t, 4.0, result.Swap)
-	assert.Equal(t, 2.0, result.SwapUsed)
+	assert.Equal(t, [2]uint64{4000, 2000}, result.SwapBytes)
 	assert.Equal(t, 50.0, result.SwapPct)
 	assert.Equal(t, 500.0, result.DiskTotal)
 	assert.Equal(t, 250.0, result.DiskUsed)
@@ -155,8 +137,8 @@ func TestAverageSystemStatsSlice_PeakValues(t *testing.T) {
 		{
 			Cpu:            20.0,
 			MaxCpu:         25.0,
-			MemUsed:        6.0,
-			MaxMem:         7.0,
+			MemBytes:       [4]uint64{16000, 6000, 0, 0},
+			MaxMemBytes:    7000,
 			NetworkSent:    10.0,
 			MaxNetworkSent: 15.0,
 			NetworkRecv:    20.0,
@@ -171,8 +153,8 @@ func TestAverageSystemStatsSlice_PeakValues(t *testing.T) {
 		{
 			Cpu:            40.0,
 			MaxCpu:         50.0,
-			MemUsed:        10.0,
-			MaxMem:         12.0,
+			MemBytes:       [4]uint64{16000, 10000, 0, 0},
+			MaxMemBytes:    12000,
 			NetworkSent:    30.0,
 			MaxNetworkSent: 35.0,
 			NetworkRecv:    40.0,
@@ -189,7 +171,7 @@ func TestAverageSystemStatsSlice_PeakValues(t *testing.T) {
 	result := records.AverageSystemStatsSlice(input)
 
 	assert.Equal(t, 50.0, result.MaxCpu)
-	assert.Equal(t, 12.0, result.MaxMem)
+	assert.Equal(t, uint64(12000), result.MaxMemBytes)
 	assert.Equal(t, 35.0, result.MaxNetworkSent)
 	assert.Equal(t, 45.0, result.MaxNetworkRecv)
 	assert.Equal(t, [2]uint64{3500, 4500}, result.MaxBandwidth)
@@ -257,14 +239,49 @@ func TestAverageSystemStatsSlice_DiskIoStatsPeakFromCurrentValues(t *testing.T) 
 // (i.e., current cpu > MaxCpu should still win).
 func TestAverageSystemStatsSlice_PeakFromCurrentValues(t *testing.T) {
 	input := []system.Stats{
-		{Cpu: 95.0, MaxCpu: 80.0, MemUsed: 15.0, MaxMem: 10.0},
-		{Cpu: 10.0, MaxCpu: 20.0, MemUsed: 5.0, MaxMem: 8.0},
+		{Cpu: 95.0, MaxCpu: 80.0, MemBytes: [4]uint64{20000, 15000, 0, 0}, MaxMemBytes: 10000},
+		{Cpu: 10.0, MaxCpu: 20.0, MemBytes: [4]uint64{20000, 5000, 0, 0}, MaxMemBytes: 8000},
 	}
 
 	result := records.AverageSystemStatsSlice(input)
 
 	assert.Equal(t, 95.0, result.MaxCpu)
-	assert.Equal(t, 15.0, result.MaxMem)
+	assert.Equal(t, uint64(15000), result.MaxMemBytes)
+}
+
+// Tests that GB memory fields from records created before 0.21.1 are converted to bytes,
+// including when averaged together with newer records.
+func TestAverageSystemStatsSlice_LegacyMemoryFields(t *testing.T) {
+	const gb = 1024 * 1024 * 1024
+	input := []system.Stats{
+		{Mem: 16, MemUsed: 6, MemBuffCache: 2, MemZfsArc: 1, MaxMem: 7, Swap: 4, SwapUsed: 1},
+		{MemBytes: [4]uint64{16 * gb, 10 * gb, 4 * gb, 3 * gb}, SwapBytes: [2]uint64{4 * gb, 3 * gb}},
+	}
+
+	result := records.AverageSystemStatsSlice(input)
+
+	assert.Equal(t, [4]uint64{16 * gb, 8 * gb, 3 * gb, 2 * gb}, result.MemBytes)
+	assert.Equal(t, [2]uint64{4 * gb, 2 * gb}, result.SwapBytes)
+	assert.Equal(t, uint64(10*gb), result.MaxMemBytes)
+}
+
+// Tests that deprecated GB fields are derived from averaged bytes for third-party integrations.
+func TestAverageSystemStatsSlice_DeprecatedMemoryFields(t *testing.T) {
+	const gb = 1024 * 1024 * 1024
+	input := []system.Stats{
+		{MemBytes: [4]uint64{16 * gb, 6 * gb, 2 * gb, gb}, MaxMemBytes: 7 * gb, SwapBytes: [2]uint64{4 * gb, gb}},
+		{MemBytes: [4]uint64{16 * gb, 4 * gb, 3 * gb, 0}, SwapBytes: [2]uint64{4 * gb, 0}},
+	}
+
+	result := records.AverageSystemStatsSlice(input)
+
+	assert.Equal(t, 16.0, result.Mem)
+	assert.Equal(t, 5.0, result.MemUsed)
+	assert.Equal(t, 2.5, result.MemBuffCache)
+	assert.Equal(t, 0.5, result.MemZfsArc)
+	assert.Equal(t, 7.0, result.MaxMem)
+	assert.Equal(t, 4.0, result.Swap)
+	assert.Equal(t, 0.5, result.SwapUsed)
 }
 
 // Tests that records without temperature data are excluded from the temperature average.
@@ -610,15 +627,15 @@ func TestAverageSystemStatsSlice_ZeroRepresentativeBattery(t *testing.T) {
 
 func TestAverageSystemStatsSlice_ThreeRecordsRounding(t *testing.T) {
 	input := []system.Stats{
-		{Cpu: 10.0, Mem: 8.0},
-		{Cpu: 20.0, Mem: 8.0},
-		{Cpu: 30.0, Mem: 8.0},
+		{Cpu: 10.0, MemBytes: [4]uint64{8000, 1000, 0, 0}},
+		{Cpu: 20.0, MemBytes: [4]uint64{8000, 2000, 0, 0}},
+		{Cpu: 30.0, MemBytes: [4]uint64{8000, 2000, 0, 0}},
 	}
 
 	result := records.AverageSystemStatsSlice(input)
 
 	assert.Equal(t, 20.0, result.Cpu)
-	assert.Equal(t, 8.0, result.Mem)
+	assert.Equal(t, [4]uint64{8000, 1666, 0, 0}, result.MemBytes)
 }
 
 // Tests records where some have optional fields and others don't.
@@ -685,10 +702,9 @@ func TestAverageSystemStatsSlice_TenRecords(t *testing.T) {
 	input := make([]system.Stats, 10)
 	for i := range input {
 		input[i] = system.Stats{
-			Cpu:         float64(i * 10), // 0, 10, 20, ..., 90
-			Mem:         16.0,
-			MemUsed:     float64(4 + i),  // 4, 5, 6, ..., 13
-			MemPct:      float64(25 + i), // 25, 26, ..., 34
+			Cpu:         float64(i * 10),                               // 0, 10, 20, ..., 90
+			MemBytes:    [4]uint64{16000, uint64(4000 + i*1000), 0, 0}, // used 4000, 5000, ..., 13000
+			MemPct:      float64(25 + i),                               // 25, 26, ..., 34
 			DiskTotal:   500.0,
 			DiskUsed:    250.0,
 			DiskPct:     50.0,
@@ -701,9 +717,9 @@ func TestAverageSystemStatsSlice_TenRecords(t *testing.T) {
 
 	result := records.AverageSystemStatsSlice(input)
 
-	assert.Equal(t, 45.0, result.Cpu)    // avg of 0..90
-	assert.Equal(t, 16.0, result.Mem)    // constant
-	assert.Equal(t, 8.5, result.MemUsed) // avg of 4..13
+	assert.Equal(t, 45.0, result.Cpu)                              // avg of 0..90
+	assert.Equal(t, [4]uint64{16000, 8500, 0, 0}, result.MemBytes) // used is avg of 4000..13000
+	assert.Equal(t, uint64(13000), result.MaxMemBytes)
 	assert.Equal(t, 29.5, result.MemPct) // avg of 25..34
 	assert.Equal(t, 500.0, result.DiskTotal)
 	assert.Equal(t, 250.0, result.DiskUsed)

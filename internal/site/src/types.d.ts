@@ -100,28 +100,34 @@ export interface SystemStats {
 	cpu: number
 	/** peak cpu */
 	cpum?: number
-	/** cpu breakdown [user, system, iowait, steal, idle] (0-100 integers) */
+	/** cpu breakdown [user, system, iowait, steal, idle, irq, softirq, nice] (0-100 integers) */
 	cpub?: number[]
 	/** per-core cpu usage [CPU0..] (0-100 integers) */
 	cpus?: number[]
 	/** load average */
 	la?: [number, number, number]
-	/** total memory (gb) */
-	m: number
-	/** memory used (gb) */
-	mu: number
+	/** memory bytes [total, used, buffer + cache, zfs arc] */
+	mem?: [number, number, number, number]
+	/** max used memory (bytes) */
+	memm?: number
+	/** swap bytes [total, used] */
+	swap?: [number, number]
+	/** @deprecated total memory (gb) - records before 0.21.1 */
+	m?: number
+	/** @deprecated memory used (gb) - records before 0.21.1 */
+	mu?: number
 	/** memory percent */
 	mp: number
-	/** memory buffer + cache (gb) */
-	mb: number
-	/** max used memory (gb) */
+	/** @deprecated memory buffer + cache (gb) - records before 0.21.1 */
+	mb?: number
+	/** @deprecated max used memory (gb) - records before 0.21.1 */
 	mm?: number
-	/** zfs arc memory (gb) */
+	/** @deprecated zfs arc memory (gb) - records before 0.21.1 */
 	mz?: number
-	/** swap space (gb) */
-	s: number
-	/** swap used (gb) */
-	su: number
+	/** @deprecated swap space (gb) - records before 0.21.1 */
+	s?: number
+	/** @deprecated swap used (gb) - records before 0.21.1 */
+	su?: number
 	/** swap percent */
 	sp?: number
 	/** disk size (gb) */
@@ -515,6 +521,8 @@ export interface SystemDetailsRecord extends RecordModel {
 	kernel: string
 	cores: number
 	threads: number
+	/** physical CPU packages, 0 if unknown */
+	sockets?: number
 	cpu: string
 	os: Os
 	os_name: string

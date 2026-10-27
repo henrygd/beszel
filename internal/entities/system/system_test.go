@@ -119,7 +119,12 @@ func TestInfoSwapAndPackageUpdatesTransport(t *testing.T) {
 }
 
 func TestStatsSwapAndWiFiTransport(t *testing.T) {
-	stats := Stats{SwapPct: 42.5, WiFi: map[string]int8{"wlan0": -55}}
+	stats := Stats{
+		SwapPct:   42.5,
+		WiFi:      map[string]int8{"wlan0": -55},
+		MemBytes:  [4]uint64{1024, 512, 128, 0},
+		SwapBytes: [2]uint64{2000, 850},
+	}
 	data, err := cbor.Marshal(stats)
 	require.NoError(t, err)
 	var payload map[uint64]cbor.RawMessage
@@ -128,18 +133,28 @@ func TestStatsSwapAndWiFiTransport(t *testing.T) {
 	require.NoError(t, cbor.Unmarshal(payload[40], &wifi))
 	assert.Equal(t, stats.WiFi, wifi)
 	var swap float64
-	require.NoError(t, cbor.Unmarshal(payload[41], &swap))
+	require.NoError(t, cbor.Unmarshal(payload[43], &swap))
 	assert.Equal(t, stats.SwapPct, swap)
 	var decoded Stats
 	require.NoError(t, cbor.Unmarshal(data, &decoded))
 	assert.Equal(t, stats.WiFi, decoded.WiFi)
 	assert.Equal(t, stats.SwapPct, decoded.SwapPct)
+	assert.Equal(t, stats.MemBytes, decoded.MemBytes)
+	assert.Equal(t, stats.SwapBytes, decoded.SwapBytes)
+	var memoryBytes [4]uint64
+	require.NoError(t, cbor.Unmarshal(payload[41], &memoryBytes))
+	assert.Equal(t, stats.MemBytes, memoryBytes)
+	var swapBytes [2]uint64
+	require.NoError(t, cbor.Unmarshal(payload[42], &swapBytes))
+	assert.Equal(t, stats.SwapBytes, swapBytes)
 
-	legacyData, err := cbor.Marshal(map[uint64]any{40: stats.WiFi})
+	legacyData, err := cbor.Marshal(map[uint64]any{40: stats.WiFi, 41: stats.MemBytes, 42: stats.SwapBytes})
 	require.NoError(t, err)
 	var legacy Stats
 	require.NoError(t, cbor.Unmarshal(legacyData, &legacy))
 	assert.Equal(t, stats.WiFi, legacy.WiFi)
+	assert.Equal(t, stats.MemBytes, legacy.MemBytes)
+	assert.Equal(t, stats.SwapBytes, legacy.SwapBytes)
 	assert.Zero(t, legacy.SwapPct)
 }
 

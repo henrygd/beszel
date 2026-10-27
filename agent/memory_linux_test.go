@@ -146,6 +146,8 @@ func TestUpdateMemoryStatsCgroupAndFallback(t *testing.T) {
 	assert.Zero(t, stats.MemZfsArc)
 	assert.Equal(t, float64(2), stats.Swap)
 	assert.Equal(t, float64(1), stats.SwapUsed)
+	assert.Equal(t, [4]uint64{10 * gib, 4 * gib, 2 * gib, 0}, stats.MemBytes)
+	assert.Equal(t, [2]uint64{2 * gib, gib}, stats.SwapBytes)
 	assert.Equal(t, float64(50), stats.SwapPct)
 	assert.Equal(t, 10*gib, a.systemDetails.MemoryTotal)
 	assert.True(t, a.detailsDirty)
@@ -167,6 +169,7 @@ func TestUpdateMemoryStatsCgroupAndFallback(t *testing.T) {
 	assert.Equal(t, float64(12), stats.MemUsed)
 	assert.Equal(t, float64(4), stats.MemBuffCache)
 	assert.Equal(t, float64(60), stats.MemPct)
+	assert.Equal(t, [4]uint64{20 * gib, 12 * gib, 4 * gib, 0}, stats.MemBytes)
 	assert.Equal(t, float64(50), stats.SwapPct)
 	assert.Equal(t, 20*gib, a.systemDetails.MemoryTotal)
 
@@ -178,7 +181,9 @@ func TestUpdateMemoryStatsCgroupAndFallback(t *testing.T) {
 	assert.Equal(t, float64(8), stats.Mem)
 	assert.Equal(t, float64(6), stats.MemUsed)
 	assert.Equal(t, float64(75), stats.MemPct)
+	assert.Equal(t, [4]uint64{8 * gib, 6 * gib, 0, 0}, stats.MemBytes)
 	assert.Zero(t, stats.Swap)
+	assert.Zero(t, stats.SwapBytes)
 	assert.Zero(t, stats.SwapPct)
 }
 
@@ -221,4 +226,24 @@ func TestMemoryStatsExcludeActiveFileCache(t *testing.T) {
 	assert.Equal(t, float64(17.82), stats.MemUsed)
 	assert.Equal(t, float64(108.73), stats.MemBuffCache)
 	assert.Equal(t, float64(13.92), stats.MemPct)
+	assert.Equal(t, [4]uint64{137438953472, usage - (cache - shmem), cache - shmem, 0}, stats.MemBytes)
+}
+
+// Low memory systems need byte precision because the GB fields round to 10 MiB.
+func TestMemoryStatsLowMemoryPrecision(t *testing.T) {
+	dir := setupMemoryCgroup(t, true)
+	const mib = uint64(1 << 20)
+	writeMemoryFixture(t, dir, true, strconv.FormatUint(5*mib, 10), strconv.FormatUint(64*mib, 10),
+		"file "+strconv.FormatUint(2*mib, 10)+"\nshmem 0\n")
+	original := memoryVirtualMemory
+	t.Cleanup(func() { memoryVirtualMemory = original })
+	memoryVirtualMemory = func() (*mem.VirtualMemoryStat, error) {
+		return &mem.VirtualMemoryStat{Total: 128 * mib, SwapTotal: 32 * mib, SwapFree: 31 * mib}, nil
+	}
+	var stats system.Stats
+	a := &Agent{forceUseCgroup: true}
+	a.updateMemoryStats(&stats)
+	assert.Equal(t, [4]uint64{64 * mib, 3 * mib, 2 * mib, 0}, stats.MemBytes)
+	assert.Equal(t, [2]uint64{32 * mib, mib}, stats.SwapBytes)
+	assert.Equal(t, float64(0), stats.MemUsed)
 }
