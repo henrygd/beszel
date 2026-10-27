@@ -346,6 +346,8 @@ export function useMonitorAvailability(monitorId: string, enabled = true) {
 						created: Date.now() - ms,
 					}),
 					fields: "total_count,success_count",
+					// unique key so these parallel requests don't auto-cancel each other or the chart fetch
+					requestKey: `availability:${monitorId}:${type}`,
 				})
 				return getAvailability(records)
 			})
