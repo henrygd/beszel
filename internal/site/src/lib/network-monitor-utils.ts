@@ -21,6 +21,19 @@ export function getMonitorStats(record: RawMonitorStatsRecord): MonitorStats {
 	}
 }
 
+/** Percentage of successful probes across records (rounded down so any failure never shows 100), or null when none have been recorded. */
+export function getAvailability(
+	records: Pick<RawMonitorStatsRecord, "total_count" | "success_count">[]
+): number | null {
+	let total = 0
+	let success = 0
+	for (const record of records) {
+		total += record.total_count
+		success += record.success_count
+	}
+	return total > 0 ? Math.floor((success * 10000) / total) / 100 : null
+}
+
 /**
  * Realtime stats come from the agent without counts and report 0 response times when every
  * probe failed; clear them to match stored stats.

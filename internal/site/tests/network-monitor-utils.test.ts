@@ -5,7 +5,7 @@ mock.module("@lingui/core/macro", () => ({
 	plural: (_count: number, forms: { other?: string }) => forms.other ?? "",
 }))
 
-const { getMonitorStats, mergeMonitorStats, mergeSameTimestamps, withMonitorGaps } = await import(
+const { getAvailability, getMonitorStats, mergeMonitorStats, mergeSameTimestamps, withMonitorGaps } = await import(
 	"../src/lib/network-monitor-utils"
 )
 
@@ -122,5 +122,41 @@ describe("merging stats across monitors", () => {
 		const remaining = mergeSameTimestamps(existing, late)
 		expect(Object.keys(existing[0].stats).sort()).toEqual(["a", "b"])
 		expect(remaining.map((r) => r.created)).toEqual([120_000])
+	})
+})
+
+describe("availability", () => {
+	test("weights records by probe count", () => {
+		expect(
+			getAvailability([
+				{ total_count: 10, success_count: 10 },
+				{ total_count: 90, success_count: 80 },
+			])
+		).toBe(90)
+	})
+
+	test("returns null without probes", () => {
+		expect(getAvailability([])).toBeNull()
+		expect(getAvailability([{ total_count: 0, success_count: 0 }])).toBeNull()
+	})
+})
+
+describe("availability", () => {
+	test("weights records by probe count", () => {
+		expect(
+			getAvailability([
+				{ total_count: 10, success_count: 10 },
+				{ total_count: 90, success_count: 80 },
+			])
+		).toBe(90)
+	})
+
+	test("rounds down so a failure never shows 100", () => {
+		expect(getAvailability([{ total_count: 100000, success_count: 99999 }])).toBe(99.99)
+	})
+
+	test("returns null without probes", () => {
+		expect(getAvailability([])).toBeNull()
+		expect(getAvailability([{ total_count: 0, success_count: 0 }])).toBeNull()
 	})
 })
