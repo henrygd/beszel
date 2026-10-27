@@ -191,7 +191,8 @@ export const createColumns = (): ColumnDef<SmartDeviceRecord>[] => [
 		),
 		cell: ({ getValue }) => {
 			const hours = getValue() as number | undefined
-			if (hours == null) {
+			// hours is stored as 0 when the device doesn't report it (e.g. eMMC, mdraid)
+			if (!hours) {
 				return <div className="text-sm text-muted-foreground ms-1">N/A</div>
 			}
 			const seconds = hours * 3600
@@ -211,7 +212,7 @@ export const createColumns = (): ColumnDef<SmartDeviceRecord>[] => [
 		),
 		cell: ({ getValue }) => {
 			const cycles = getValue() as number | undefined
-			if (cycles == null) {
+			if (!cycles) {
 				return <div className="text-muted-foreground ms-1">N/A</div>
 			}
 			return <span className="ms-1">{formatNumber(cycles)}</span>
