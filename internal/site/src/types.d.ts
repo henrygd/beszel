@@ -61,6 +61,8 @@ export interface SystemInfo {
 	u: number
 	/** memory percent */
 	mp: number
+	/** swap percent */
+	sp?: number
 	/** disk percent */
 	dp: number
 	/** battery percent and state */
@@ -126,6 +128,8 @@ export interface SystemStats {
 	s?: number
 	/** @deprecated swap used (gb) - records before 0.21.1 */
 	su?: number
+	/** swap percent */
+	sp?: number
 	/** disk size (gb) */
 	d: number
 	/** disk used (gb) */
