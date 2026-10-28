@@ -42,6 +42,11 @@ const (
 type GPUManager struct {
 	sync.Mutex
 	GpuDataMap map[string]*system.GPUData
+	// ownUsage marks GPUs whose collector accumulates Usage itself, so their
+	// usage is not derived from the busiest engine
+	ownUsage map[string]bool
+	// nvidiaCollectorStarted tells the pdh collector to leave NVIDIA cards to the NVIDIA collector
+	nvidiaCollectorStarted bool
 	// lastAvgData stores the last calculated averages for each GPU
 	// Used when a collection happens before new data arrives (Count == 0)
 	lastAvgData map[string]system.GPUData
@@ -97,10 +102,12 @@ const (
 	collectorSourceRocmSMI      collectorSource = collectorSource(rocmSmiCmd)
 	collectorSourceMacmon       collectorSource = collectorSource(macmonCmd)
 	collectorSourcePowermetrics collectorSource = collectorSource(powermetricsCmd)
+	collectorSourcePDH          collectorSource = "pdh"
 	collectorGroupNvidia        string          = "nvidia"
 	collectorGroupIntel         string          = "intel"
 	collectorGroupAmd           string          = "amd"
 	collectorGroupApple         string          = "apple"
+	collectorGroupWindows       string          = "windows"
 )
 
 func isValidCollectorSource(source collectorSource) bool {
@@ -113,7 +120,8 @@ func isValidCollectorSource(source collectorSource) bool {
 		collectorSourceAmdSysfs,
 		collectorSourceRocmSMI,
 		collectorSourceMacmon,
-		collectorSourcePowermetrics:
+		collectorSourcePowermetrics,
+		collectorSourcePDH:
 		return true
 	}
 	return false
@@ -131,6 +139,7 @@ type gpuCapabilities struct {
 	hasNvtop        bool
 	hasMacmon       bool
 	hasPowermetrics bool
+	hasPdh          bool
 }
 
 type collectorDefinition struct {
@@ -385,7 +394,12 @@ func (gm *GPUManager) calculateGPUAverage(id string, gpu *system.GPUData, cacheK
 		// make fresh map for averaged engine metrics to avoid mutating
 		// the accumulator map stored in gm.GpuDataMap
 		gpuAvg.Engines = make(map[string]float64, len(gpu.Engines))
-		gpuAvg.Usage = gm.calculateIntelGPUUsage(&gpuAvg, gpu, lastSnapshot, deltaCount)
+		maxEngineUsage := gm.calculateIntelGPUUsage(&gpuAvg, gpu, lastSnapshot, deltaCount)
+		if gm.ownUsage[id] {
+			gpuAvg.Usage = utils.TwoDecimals(deltaUsage / float64(deltaCount))
+		} else {
+			gpuAvg.Usage = maxEngineUsage
+		}
 	} else {
 		gpuAvg.Usage = utils.TwoDecimals(deltaUsage / float64(deltaCount))
 	}
@@ -457,6 +471,7 @@ func (gm *GPUManager) discoverGpuCapabilities() gpuCapabilities {
 		hasAmdSysfs:   gm.hasAmdSysfs(),
 		hasXe:         gm.hasXe(),
 		hasIntelSysfs: gm.hasIntelSysfs(),
+		hasPdh:        gm.hasPdhGpu(),
 	}
 	if _, err := exec.LookPath(nvidiaSmiCmd); err == nil {
 		caps.hasNvidiaSmi = true
@@ -485,7 +500,7 @@ func (gm *GPUManager) discoverGpuCapabilities() gpuCapabilities {
 }
 
 func hasAnyGpuCollector(caps gpuCapabilities) bool {
-	return caps.hasNvidiaSmi || caps.hasRocmSmi || caps.hasAmdSysfs || caps.hasTegrastats || caps.hasIntelGpuTop || caps.hasIntelSysfs || caps.hasNvtop || caps.hasMacmon || caps.hasPowermetrics
+	return caps.hasNvidiaSmi || caps.hasRocmSmi || caps.hasAmdSysfs || caps.hasTegrastats || caps.hasIntelGpuTop || caps.hasIntelSysfs || caps.hasNvtop || caps.hasMacmon || caps.hasPowermetrics || caps.hasPdh
 }
 
 func (gm *GPUManager) startIntelCollector() {
@@ -622,6 +637,13 @@ func (gm *GPUManager) collectorDefinitions(caps gpuCapabilities) map[collectorSo
 				return true
 			},
 		},
+		collectorSourcePDH: {
+			group:     collectorGroupWindows,
+			available: caps.hasPdh,
+			start: func(_ func()) bool {
+				return gm.startPdhCollector()
+			},
+		},
 	}
 }
 
@@ -698,6 +720,11 @@ func (gm *GPUManager) startCollectorsByPriority(priorities []collectorSource, ca
 		if definition.start(nil) {
 			selectedGroups[group] = true
 			started++
+			if group == collectorGroupNvidia {
+				gm.Lock()
+				gm.nvidiaCollectorStarted = true
+				gm.Unlock()
+			}
 		}
 	}
 	return started
@@ -742,6 +769,11 @@ func (gm *GPUManager) resolveLegacyCollectorPriority(caps gpuCapabilities) []col
 	// } else if caps.hasPowermetrics {
 	// 	priorities = append(priorities, collectorSourcePowermetrics)
 	// }
+
+	// Windows performance counters cover the GPUs that no vendor collector reports.
+	if caps.hasPdh {
+		priorities = append(priorities, collectorSourcePDH)
+	}
 
 	// Keep nvtop as a last resort only when no vendor collector exists.
 	if len(priorities) == 0 && caps.hasNvtop {
