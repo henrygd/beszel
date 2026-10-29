@@ -32,12 +32,7 @@ func TestAgentCancellationReleasesListener(t *testing.T) {
 			return true
 		}, 2*time.Second, 10*time.Millisecond)
 		cancel()
-		select {
-		case err := <-done:
-			require.NoError(t, err)
-		case <-time.After(2 * time.Second):
-			t.Fatal("agent did not stop after cancellation")
-		}
+		requireAgentStopped(t, done, "agent did not stop after cancellation")
 		requirePortReleased(t, opts.Addr)
 	}
 }
@@ -77,14 +72,23 @@ func TestAgentCancellationJoinsReconnect(t *testing.T) {
 	require.NoError(t, client.Close())
 	require.Eventually(t, cm.isConnectingNow, time.Second, time.Millisecond)
 	cancel()
+	requireAgentStopped(t, done, "agent did not join its pending reconnect")
+	require.False(t, cm.isConnectingNow())
+	requirePortReleased(t, opts.Addr)
+}
+
+// requireAgentStopped waits for Start to return after the context is cancelled.
+// The window is a liveness bound, not a performance assertion: `go test ./...`
+// runs packages in parallel, and on a loaded machine shutdown can take several
+// seconds, which made a 2s wait flake.
+func requireAgentStopped(t *testing.T, done <-chan error, msg string) {
+	t.Helper()
 	select {
 	case err := <-done:
 		require.NoError(t, err)
-	case <-time.After(2 * time.Second):
-		t.Fatal("agent did not join its pending reconnect")
+	case <-time.After(30 * time.Second):
+		t.Fatal(msg)
 	}
-	require.False(t, cm.isConnectingNow())
-	requirePortReleased(t, opts.Addr)
 }
 
 // requirePortReleased fails unless addr becomes bindable again. The kernel can
@@ -123,10 +127,5 @@ func TestAgentCancellationDuringHandshake(t *testing.T) {
 		t.Fatal("agent did not reach the HTTP upgrade")
 	}
 	cancel()
-	select {
-	case err := <-done:
-		require.NoError(t, err)
-	case <-time.After(2 * time.Second):
-		t.Error("agent did not cancel its pending handshake")
-	}
+	requireAgentStopped(t, done, "agent did not cancel its pending handshake")
 }
