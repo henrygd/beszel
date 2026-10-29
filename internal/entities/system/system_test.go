@@ -161,6 +161,8 @@ func TestZeroValueJSONMatchesV1(t *testing.T) {
 			Datasets: []*zfs.Dataset{{}},
 		}}},
 		"smart": smart.SmartData{Attributes: []*smart.SmartAttribute{{}}},
+		// container stats are stored as JSON too, in container_stats.stats
+		"containers": []container.Stats{{}},
 	} {
 		t.Run(name, func(t *testing.T) {
 			v1Data, err := json.Marshal(value)
