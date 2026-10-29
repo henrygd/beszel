@@ -63,42 +63,86 @@ func TestSmartRawValueUnmarshalDurationRawValue(t *testing.T) {
 }
 
 func TestNVMeCounterUnmarshal(t *testing.T) {
-	var log NVMeSmartHealthInformationLog
-	err := json.Unmarshal([]byte(`{
-		"media_errors": 557325022338560884631142400,
-		"power_on_hours": 18446744073709551615,
-		"unsafe_shutdowns": 18446744073709551616,
-		"host_reads": 42
-	}`), &log)
-	assert.NoError(t, err)
-	assert.EqualValues(t, uint64(math.MaxUint64), log.MediaErrors)
-	assert.EqualValues(t, uint64(math.MaxUint64), log.PowerOnHours)
-	assert.EqualValues(t, uint64(math.MaxUint64), log.UnsafeShutdowns)
-	assert.EqualValues(t, 42, log.HostReads)
+	for _, tc := range []struct {
+		input    string
+		value    uint64
+		overflow bool
+	}{
+		{`42`, 42, false},
+		{`0`, 0, false},
+		{`null`, 0, false},
+		{`18446744073709551615`, math.MaxUint64, false},
+		{`18446744073709551616`, 0, true},
+		{`557325022338560884631142400`, 0, true},
+		{`340282366920938463463374607431768211455`, 0, true},
+		// Exponent form, as after the JSON was re-encoded
+		{`1e3`, 1000, false},
+		{`1.5E+3`, 1500, false},
+		{`1e19`, 10000000000000000000, false},
+		{`1.8446744073709552e19`, 0, true},
+		{`5.573250223385609e+26`, 0, true},
+		{`1e400`, 0, true},
+	} {
+		c := NVMeCounter{Value: 7, Overflow: !tc.overflow} // stale state must be reset
+		assert.NoError(t, json.Unmarshal([]byte(tc.input), &c), tc.input)
+		assert.Equal(t, NVMeCounter{Value: tc.value, Overflow: tc.overflow}, c, tc.input)
+	}
 
-	for _, input := range []string{`-1`, `1.5`, `"12"`} {
+	for _, input := range []string{`-1`, `-1e3`, `1.5`, `1.5e0`, `"12"`, `true`, `{}`} {
 		var c NVMeCounter
 		assert.Error(t, json.Unmarshal([]byte(input), &c), input)
+	}
+	assert.Equal(t, "invalid (out of range)", NVMeCounterInvalid)
+
+	// Not valid JSON, so json.Unmarshal never passes them on; ParseFloat would accept them.
+	for _, input := range []string{`Inf`, `+Inf`, `NaN`, `+5`, `1x`, ``} {
+		var c NVMeCounter
+		assert.Error(t, c.UnmarshalJSON([]byte(input)), input)
 	}
 }
 
 func TestNVMeCounterEvery128BitField(t *testing.T) {
-	fields := map[string]func(*NVMeSmartHealthInformationLog) uint64{
-		"data_units_read":      func(l *NVMeSmartHealthInformationLog) uint64 { return uint64(l.DataUnitsRead) },
-		"data_units_written":   func(l *NVMeSmartHealthInformationLog) uint64 { return uint64(l.DataUnitsWritten) },
-		"host_reads":           func(l *NVMeSmartHealthInformationLog) uint64 { return uint64(l.HostReads) },
-		"host_writes":          func(l *NVMeSmartHealthInformationLog) uint64 { return uint64(l.HostWrites) },
-		"controller_busy_time": func(l *NVMeSmartHealthInformationLog) uint64 { return uint64(l.ControllerBusyTime) },
-		"power_cycles":         func(l *NVMeSmartHealthInformationLog) uint64 { return uint64(l.PowerCycles) },
-		"power_on_hours":       func(l *NVMeSmartHealthInformationLog) uint64 { return uint64(l.PowerOnHours) },
-		"unsafe_shutdowns":     func(l *NVMeSmartHealthInformationLog) uint64 { return uint64(l.UnsafeShutdowns) },
-		"media_errors":         func(l *NVMeSmartHealthInformationLog) uint64 { return uint64(l.MediaErrors) },
-		"num_err_log_entries":  func(l *NVMeSmartHealthInformationLog) uint64 { return uint64(l.NumErrLogEntries) },
+	fields := map[string]func(*NVMeSmartHealthInformationLog) NVMeCounter{
+		"data_units_read":      func(l *NVMeSmartHealthInformationLog) NVMeCounter { return l.DataUnitsRead },
+		"data_units_written":   func(l *NVMeSmartHealthInformationLog) NVMeCounter { return l.DataUnitsWritten },
+		"host_reads":           func(l *NVMeSmartHealthInformationLog) NVMeCounter { return l.HostReads },
+		"host_writes":          func(l *NVMeSmartHealthInformationLog) NVMeCounter { return l.HostWrites },
+		"controller_busy_time": func(l *NVMeSmartHealthInformationLog) NVMeCounter { return l.ControllerBusyTime },
+		"power_cycles":         func(l *NVMeSmartHealthInformationLog) NVMeCounter { return l.PowerCycles },
+		"power_on_hours":       func(l *NVMeSmartHealthInformationLog) NVMeCounter { return l.PowerOnHours },
+		"unsafe_shutdowns":     func(l *NVMeSmartHealthInformationLog) NVMeCounter { return l.UnsafeShutdowns },
+		"media_errors":         func(l *NVMeSmartHealthInformationLog) NVMeCounter { return l.MediaErrors },
+		"num_err_log_entries":  func(l *NVMeSmartHealthInformationLog) NVMeCounter { return l.NumErrLogEntries },
 	}
 	for name, get := range fields {
-		var log NVMeSmartHealthInformationLog
-		err := json.Unmarshal([]byte(`{"`+name+`": 18446744073709551616}`), &log)
-		assert.NoError(t, err, name)
-		assert.EqualValues(t, uint64(math.MaxUint64), get(&log), name)
+		for _, tc := range []struct {
+			input string
+			want  NVMeCounter
+		}{
+			{`18446744073709551616`, NVMeCounter{Overflow: true}},
+			{`5.573250223385609e+26`, NVMeCounter{Overflow: true}},
+			{`12345`, NVMeCounter{Value: 12345}},
+			{`null`, NVMeCounter{}},
+		} {
+			var log NVMeSmartHealthInformationLog
+			err := json.Unmarshal([]byte(`{"`+name+`": `+tc.input+`}`), &log)
+			assert.NoError(t, err, name, tc.input)
+			assert.Equal(t, tc.want, get(&log), name, tc.input)
+		}
+	}
+
+	// TNVMCAP (nvme_total_capacity) is a 128-bit field too.
+	for _, tc := range []struct {
+		input string
+		want  NVMeCounter
+	}{
+		{`18446744073709551616`, NVMeCounter{Overflow: true}},
+		{`5.573250223385609e+26`, NVMeCounter{Overflow: true}},
+		{`1000204886016`, NVMeCounter{Value: 1000204886016}},
+		{`null`, NVMeCounter{}},
+	} {
+		var out SmartctlOutput
+		assert.NoError(t, json.Unmarshal([]byte(`{"nvme_total_capacity": `+tc.input+`}`), &out), tc.input)
+		assert.Equal(t, tc.want, out.NVMeTotalCapacity, tc.input)
 	}
 }

@@ -3,6 +3,7 @@ package smart
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"math"
 	"strconv"
 	"strings"
@@ -11,8 +12,9 @@ import (
 // SmartctlOutput holds the fields we read from `smartctl -a --json` for any
 // protocol. Sections that do not apply to a device are left nil or empty.
 //
-// Counters use wide integer types on purpose: a value that overflows its Go type
-// makes json.Unmarshal fail and drops the whole device (see #2484, #2582).
+// A value that overflows its Go type makes json.Unmarshal fail and drops the
+// whole device (see #2484, #2582, #2731). Use a wide type, or NVMeCounter for
+// the 128-bit NVMe fields, rather than a narrow one.
 type SmartctlOutput struct {
 	Smartctl struct {
 		ExitStatus int `json:"exit_status"`
@@ -34,7 +36,7 @@ type SmartctlOutput struct {
 	AtaDeviceStatistics json.RawMessage     `json:"ata_device_statistics"` // decoded lazily, only when needed
 
 	// NVMe
-	NVMeTotalCapacity             uint64                         `json:"nvme_total_capacity"`
+	NVMeTotalCapacity             NVMeCounter                    `json:"nvme_total_capacity"`
 	NVMeSmartHealthInformationLog *NVMeSmartHealthInformationLog `json:"nvme_smart_health_information_log"`
 
 	// SCSI (scsi_vendor/scsi_product are also reported for SATA disks behind SAT)
@@ -108,24 +110,53 @@ type NVMeSmartHealthInformationLog struct {
 	CriticalCompTime        uint64      `json:"critical_comp_time"`
 }
 
-// NVMeCounter holds one of the 128-bit counters in the NVMe health log.
-// smartctl prints the full value, so a drive can report a number past uint64
-// (#2731). Such values are capped at math.MaxUint64 instead of failing
-// json.Unmarshal and dropping the device.
-type NVMeCounter uint64
+// NVMeCounter holds one of the 128-bit fields smartctl reports for NVMe
+// drives (health log counters, total capacity). smartctl prints the full value,
+// so faulty firmware can report a number past uint64 (#2731). Such a value
+// decodes as Overflow with Value 0 instead of failing json.Unmarshal and
+// dropping the device, so it is never shown as a real reading.
+type NVMeCounter struct {
+	Value    uint64
+	Overflow bool
+}
+
+// NVMeCounterInvalid is the RawString of an attribute whose counter overflowed.
+const NVMeCounterInvalid = "invalid (out of range)"
 
 func (c *NVMeCounter) UnmarshalJSON(data []byte) error {
-	var v uint64
-	err := json.Unmarshal(data, &v)
+	*c = NVMeCounter{}
+	s := strings.TrimSpace(string(data))
+	if s == "null" {
+		return nil
+	}
+	v, err := strconv.ParseUint(s, 10, 64)
 	if err == nil {
-		*c = NVMeCounter(v)
+		c.Value = v
 		return nil
 	}
-	if _, perr := strconv.ParseUint(strings.TrimSpace(string(data)), 10, 64); errors.Is(perr, strconv.ErrRange) {
-		*c = math.MaxUint64
+	if errors.Is(err, strconv.ErrRange) {
+		c.Overflow = true
 		return nil
 	}
-	return err
+	// Exponent form, e.g. 5.573250223385609e+26 after the JSON was re-encoded.
+	// The digit check keeps out Inf, NaN and signs, which ParseFloat accepts.
+	if s == "" || s[0] < '0' || s[0] > '9' {
+		return fmt.Errorf("invalid NVMe counter %q", s)
+	}
+	f, ferr := strconv.ParseFloat(s, 64)
+	if errors.Is(ferr, strconv.ErrRange) && math.IsInf(f, 1) {
+		c.Overflow = true // past float64 too, e.g. 1e400
+		return nil
+	}
+	if ferr != nil || f != math.Trunc(f) {
+		return fmt.Errorf("invalid NVMe counter %q", s)
+	}
+	if f >= math.MaxUint64 {
+		c.Overflow = true
+		return nil
+	}
+	c.Value = uint64(f)
+	return nil
 }
 
 type ScsiErrorCounter struct {
