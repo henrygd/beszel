@@ -38,9 +38,7 @@ func TestAgentCancellationReleasesListener(t *testing.T) {
 		case <-time.After(2 * time.Second):
 			t.Fatal("agent did not stop after cancellation")
 		}
-		listener, err := net.Listen("tcp", opts.Addr)
-		require.NoError(t, err, "stopped agent must release its listening port")
-		require.NoError(t, listener.Close())
+		requirePortReleased(t, opts.Addr)
 	}
 }
 
@@ -86,9 +84,22 @@ func TestAgentCancellationJoinsReconnect(t *testing.T) {
 		t.Fatal("agent did not join its pending reconnect")
 	}
 	require.False(t, cm.isConnectingNow())
-	listener, err := net.Listen("tcp", opts.Addr)
-	require.NoError(t, err)
-	require.NoError(t, listener.Close())
+	requirePortReleased(t, opts.Addr)
+}
+
+// requirePortReleased fails unless addr becomes bindable again. The kernel can
+// hold the port for a moment after the agent closes its listener, so a single
+// immediate bind flakes with "address already in use".
+func requirePortReleased(t *testing.T, addr string) {
+	t.Helper()
+	require.Eventually(t, func() bool {
+		listener, err := net.Listen("tcp", addr)
+		if err != nil {
+			return false
+		}
+		_ = listener.Close()
+		return true
+	}, 2*time.Second, 10*time.Millisecond, "stopped agent must release its listening port %s", addr)
 }
 
 func TestAgentCancellationDuringHandshake(t *testing.T) {
