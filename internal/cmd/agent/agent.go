@@ -13,6 +13,7 @@ import (
 	"github.com/henrygd/beszel/agent"
 	"github.com/henrygd/beszel/agent/health"
 	"github.com/henrygd/beszel/agent/utils"
+	"github.com/henrygd/beszel/internal/ghupdate"
 	"github.com/spf13/pflag"
 	"golang.org/x/crypto/ssh"
 )
@@ -59,6 +60,9 @@ func (opts *cmdOptions) parse() bool {
 	pflag.StringVarP(&opts.hubURL, "url", "u", "", "URL of the Beszel hub")
 	pflag.StringVarP(&opts.token, "token", "t", "", "Token to use for authentication")
 	chinaMirrors := pflag.BoolP("china-mirrors", "c", false, "Use mirror for update (gh.beszel.dev) instead of GitHub")
+	if ghupdate.SelfUpdateDisabled {
+		_ = pflag.CommandLine.MarkHidden("china-mirrors")
+	}
 	version := pflag.BoolP("version", "v", false, "Show version information")
 	help := pflag.BoolP("help", "h", false, "Show this help message")
 
@@ -86,7 +90,9 @@ func (opts *cmdOptions) parse() bool {
 		builder.WriteString("\nCommands:\n")
 		builder.WriteString("  fingerprint  View or reset the agent fingerprint\n")
 		builder.WriteString("  health       Check if the agent is running\n")
-		builder.WriteString("  update       Update to the latest version\n")
+		if !ghupdate.SelfUpdateDisabled {
+			builder.WriteString("  update       Update to the latest version\n")
+		}
 		builder.WriteString("\nFlags:\n")
 		fmt.Print(builder.String())
 		pflag.PrintDefaults()
