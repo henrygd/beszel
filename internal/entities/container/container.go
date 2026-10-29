@@ -201,8 +201,10 @@ type Stats struct {
 	Image           string       `json:"-" cbor:"8,keyasint"`
 	Ports           string       `json:"-" cbor:"10,keyasint"`
 	UpdateAvailable bool         `json:"u,omitzero" cbor:"11,keyasint,omitzero"`
-	Stack           string       `json:"-" cbor:"12,keyasint,omitzero"`
-	Service         string       `json:"-" cbor:"13,keyasint,omitzero"`
+	// Stack and Service are stored with the stats, and AverageContainerStatsSlice carries them
+	// into the averaged records, so grouping holds in every chart range, not only the last hour.
+	Stack   string `json:"st,omitzero" cbor:"12,keyasint,omitzero"`
+	Service string `json:"sv,omitzero" cbor:"13,keyasint,omitzero"`
 	// PrevCpu     [2]uint64    `json:"-"`
 	CpuSystem    uint64       `json:"-"`
 	CpuContainer uint64       `json:"-"`

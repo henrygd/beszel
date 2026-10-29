@@ -102,20 +102,26 @@ func TestStatsWireCompatibility(t *testing.T) {
 	})
 }
 
-// The hub stores container stats as JSON, and nothing reads the group from those records yet, so
-// the fields stay off the stored shape like Health, Status, Id, Image and Ports. Storing them is a
-// hub change of its own: the averaged records would need to carry them too, or grouping would work
-// in the 1h view and vanish at 12h.
-func TestStatsJSONKeepsStoredShape(t *testing.T) {
+// The hub stores container stats as JSON, and the group is part of that: a chart range above 1m
+// reads averaged records, and those have to know their stack. Keys stay short because every
+// container of every system carries them on every record.
+func TestStatsJSONCarriesGroup(t *testing.T) {
 	data, err := json.Marshal(newStats())
 	require.NoError(t, err)
 	var decoded map[string]any
 	require.NoError(t, json.Unmarshal(data, &decoded))
-	assert.NotContains(t, decoded, "st")
-	assert.NotContains(t, decoded, "sv")
-	assert.NotContains(t, decoded, "Stack")
-	assert.NotContains(t, decoded, "Service")
-	// the fields that are stored are untouched
+	assert.Equal(t, "mentors", decoded["st"])
+	assert.Equal(t, "web", decoded["sv"])
 	assert.Equal(t, "mentors_web.1.kz9", decoded["n"])
-	assert.Equal(t, 12.5, decoded["c"])
+
+	t.Run("a container without a group adds nothing to the record", func(t *testing.T) {
+		stats := newStats()
+		stats.Stack, stats.Service = "", ""
+		data, err := json.Marshal(stats)
+		require.NoError(t, err)
+		var decoded map[string]any
+		require.NoError(t, json.Unmarshal(data, &decoded))
+		assert.NotContains(t, decoded, "st")
+		assert.NotContains(t, decoded, "sv")
+	})
 }

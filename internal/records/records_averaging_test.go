@@ -899,3 +899,55 @@ func TestAverageSystemStatsSlice_BtrfsDisplayName(t *testing.T) {
 	assert.Equal(t, "after", result.ZfsPools["b:uuid"].DisplayName)
 	assert.Equal(t, float64(15), result.ZfsPools["b:uuid"].Used)
 }
+
+func TestAverageContainerStatsSlice_KeepsContainerGroup(t *testing.T) {
+	input := [][]container.Stats{
+		{
+			{Name: "mentors_web.1.kz9", Cpu: 10, Mem: 100, Stack: "mentors", Service: "web"},
+			{Name: "solo", Cpu: 1, Mem: 10},
+		},
+		{
+			{Name: "mentors_web.1.kz9", Cpu: 20, Mem: 200, Stack: "mentors", Service: "web"},
+			{Name: "solo", Cpu: 3, Mem: 30},
+		},
+	}
+	byName := make(map[string]container.Stats)
+	for _, stat := range records.AverageContainerStatsSlice(input) {
+		byName[stat.Name] = stat
+	}
+	require.Len(t, byName, 2)
+
+	// an averaged record without its group would drop out of the stack in every range above 1m
+	web := byName["mentors_web.1.kz9"]
+	assert.Equal(t, "mentors", web.Stack)
+	assert.Equal(t, "web", web.Service)
+	assert.Equal(t, 15.0, web.Cpu)
+	assert.Equal(t, 150.0, web.Mem)
+
+	solo := byName["solo"]
+	assert.Empty(t, solo.Stack)
+	assert.Empty(t, solo.Service)
+}
+
+func TestAverageContainerStatsSlice_GroupFollowsTheLastRecord(t *testing.T) {
+	// a redeploy mid-window: the container reports its new stack from then on, and the averaged
+	// record follows it rather than keeping the stack the window started in
+	input := [][]container.Stats{
+		{{Name: "web", Cpu: 10, Stack: "mentors", Service: "web"}},
+		{{Name: "web", Cpu: 20, Stack: "tutors", Service: "api"}},
+	}
+	result := records.AverageContainerStatsSlice(input)
+	require.Len(t, result, 1)
+	assert.Equal(t, "tutors", result[0].Stack)
+	assert.Equal(t, "api", result[0].Service)
+
+	// and a record that reports no group at all does not erase what the window already knows
+	input = [][]container.Stats{
+		{{Name: "web", Cpu: 10, Stack: "mentors", Service: "web"}},
+		{{Name: "web", Cpu: 20}},
+	}
+	result = records.AverageContainerStatsSlice(input)
+	require.Len(t, result, 1)
+	assert.Equal(t, "mentors", result[0].Stack)
+	assert.Equal(t, "web", result[0].Service)
+}

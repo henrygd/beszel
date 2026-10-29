@@ -302,6 +302,10 @@ export interface ContainerStatsRecord extends RecordModel {
 interface ContainerStats {
 	/** name */
 	n: string
+	/** docker stack or compose project */
+	st?: string
+	/** service within the stack */
+	sv?: string
 	/** cpu percent */
 	c: number
 	/** memory used (mb) */
