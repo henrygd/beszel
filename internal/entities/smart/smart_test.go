@@ -81,3 +81,24 @@ func TestNVMeCounterUnmarshal(t *testing.T) {
 		assert.Error(t, json.Unmarshal([]byte(input), &c), input)
 	}
 }
+
+func TestNVMeCounterEvery128BitField(t *testing.T) {
+	fields := map[string]func(*NVMeSmartHealthInformationLog) uint64{
+		"data_units_read":      func(l *NVMeSmartHealthInformationLog) uint64 { return uint64(l.DataUnitsRead) },
+		"data_units_written":   func(l *NVMeSmartHealthInformationLog) uint64 { return uint64(l.DataUnitsWritten) },
+		"host_reads":           func(l *NVMeSmartHealthInformationLog) uint64 { return uint64(l.HostReads) },
+		"host_writes":          func(l *NVMeSmartHealthInformationLog) uint64 { return uint64(l.HostWrites) },
+		"controller_busy_time": func(l *NVMeSmartHealthInformationLog) uint64 { return uint64(l.ControllerBusyTime) },
+		"power_cycles":         func(l *NVMeSmartHealthInformationLog) uint64 { return uint64(l.PowerCycles) },
+		"power_on_hours":       func(l *NVMeSmartHealthInformationLog) uint64 { return uint64(l.PowerOnHours) },
+		"unsafe_shutdowns":     func(l *NVMeSmartHealthInformationLog) uint64 { return uint64(l.UnsafeShutdowns) },
+		"media_errors":         func(l *NVMeSmartHealthInformationLog) uint64 { return uint64(l.MediaErrors) },
+		"num_err_log_entries":  func(l *NVMeSmartHealthInformationLog) uint64 { return uint64(l.NumErrLogEntries) },
+	}
+	for name, get := range fields {
+		var log NVMeSmartHealthInformationLog
+		err := json.Unmarshal([]byte(`{"`+name+`": 18446744073709551616}`), &log)
+		assert.NoError(t, err, name)
+		assert.EqualValues(t, uint64(math.MaxUint64), get(&log), name)
+	}
+}
