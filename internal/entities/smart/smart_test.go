@@ -2,6 +2,7 @@ package smart
 
 import (
 	"encoding/json"
+	"math"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -59,4 +60,24 @@ func TestSmartRawValueUnmarshalDurationRawValue(t *testing.T) {
 	assert.NoError(t, err)
 
 	assert.EqualValues(t, 2748, raw.Value)
+}
+
+func TestNVMeCounterUnmarshal(t *testing.T) {
+	var log NVMeSmartHealthInformationLog
+	err := json.Unmarshal([]byte(`{
+		"media_errors": 557325022338560884631142400,
+		"power_on_hours": 18446744073709551615,
+		"unsafe_shutdowns": 18446744073709551616,
+		"host_reads": 42
+	}`), &log)
+	assert.NoError(t, err)
+	assert.EqualValues(t, uint64(math.MaxUint64), log.MediaErrors)
+	assert.EqualValues(t, uint64(math.MaxUint64), log.PowerOnHours)
+	assert.EqualValues(t, uint64(math.MaxUint64), log.UnsafeShutdowns)
+	assert.EqualValues(t, 42, log.HostReads)
+
+	for _, input := range []string{`-1`, `1.5`, `"12"`} {
+		var c NVMeCounter
+		assert.Error(t, json.Unmarshal([]byte(input), &c), input)
+	}
 }

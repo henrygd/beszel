@@ -2,6 +2,8 @@ package smart
 
 import (
 	"encoding/json"
+	"errors"
+	"math"
 	"strconv"
 	"strings"
 )
@@ -87,23 +89,43 @@ type AtaDeviceStatisticsEntry struct {
 }
 
 type NVMeSmartHealthInformationLog struct {
-	CriticalWarning         uint64 `json:"critical_warning"`
-	Temperature             int64  `json:"temperature"`
-	AvailableSpare          uint64 `json:"available_spare"`
-	AvailableSpareThreshold uint64 `json:"available_spare_threshold"`
-	PercentageUsed          uint64 `json:"percentage_used"`
-	DataUnitsRead           uint64 `json:"data_units_read"`
-	DataUnitsWritten        uint64 `json:"data_units_written"`
-	HostReads               uint64 `json:"host_reads"`
-	HostWrites              uint64 `json:"host_writes"`
-	ControllerBusyTime      uint64 `json:"controller_busy_time"`
-	PowerCycles             uint64 `json:"power_cycles"`
-	PowerOnHours            uint64 `json:"power_on_hours"`
-	UnsafeShutdowns         uint64 `json:"unsafe_shutdowns"`
-	MediaErrors             uint64 `json:"media_errors"`
-	NumErrLogEntries        uint64 `json:"num_err_log_entries"`
-	WarningTempTime         uint64 `json:"warning_temp_time"`
-	CriticalCompTime        uint64 `json:"critical_comp_time"`
+	CriticalWarning         uint64      `json:"critical_warning"`
+	Temperature             int64       `json:"temperature"`
+	AvailableSpare          uint64      `json:"available_spare"`
+	AvailableSpareThreshold uint64      `json:"available_spare_threshold"`
+	PercentageUsed          uint64      `json:"percentage_used"`
+	DataUnitsRead           NVMeCounter `json:"data_units_read"`
+	DataUnitsWritten        NVMeCounter `json:"data_units_written"`
+	HostReads               NVMeCounter `json:"host_reads"`
+	HostWrites              NVMeCounter `json:"host_writes"`
+	ControllerBusyTime      NVMeCounter `json:"controller_busy_time"`
+	PowerCycles             NVMeCounter `json:"power_cycles"`
+	PowerOnHours            NVMeCounter `json:"power_on_hours"`
+	UnsafeShutdowns         NVMeCounter `json:"unsafe_shutdowns"`
+	MediaErrors             NVMeCounter `json:"media_errors"`
+	NumErrLogEntries        NVMeCounter `json:"num_err_log_entries"`
+	WarningTempTime         uint64      `json:"warning_temp_time"`
+	CriticalCompTime        uint64      `json:"critical_comp_time"`
+}
+
+// NVMeCounter holds one of the 128-bit counters in the NVMe health log.
+// smartctl prints the full value, so a drive can report a number past uint64
+// (#2731). Such values are capped at math.MaxUint64 instead of failing
+// json.Unmarshal and dropping the device.
+type NVMeCounter uint64
+
+func (c *NVMeCounter) UnmarshalJSON(data []byte) error {
+	var v uint64
+	err := json.Unmarshal(data, &v)
+	if err == nil {
+		*c = NVMeCounter(v)
+		return nil
+	}
+	if _, perr := strconv.ParseUint(strings.TrimSpace(string(data)), 10, 64); errors.Is(perr, strconv.ErrRange) {
+		*c = math.MaxUint64
+		return nil
+	}
+	return err
 }
 
 type ScsiErrorCounter struct {

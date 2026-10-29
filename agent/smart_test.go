@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"maps"
+	"math"
 	"os"
 	"path/filepath"
 	"slices"
@@ -266,6 +267,26 @@ func TestParseSmartctlNvmeLargeCounters(t *testing.T) {
 	assertAttrValue(t, deviceData.Attributes, "PowerCycles", 70000)
 	assertAttrValue(t, deviceData.Attributes, "PowerOnHours", 5000000000)
 	assertAttrValue(t, deviceData.Attributes, "PercentageUsed", 300)
+}
+
+// NVMe health counters are 128-bit, so smartctl can print values past uint64.
+// They are capped instead of failing json.Unmarshal and dropping the device (#2731).
+func TestParseSmartctlNvmeCounterBeyondUint64(t *testing.T) {
+	deviceData := parseSmart(t, []byte(`{
+		"device": {"name": "/dev/nvme0", "type": "nvme"},
+		"serial_number": "NVME-OVERFLOW",
+		"smart_status": {"passed": true},
+		"nvme_smart_health_information_log": {
+			"temperature": 35,
+			"data_units_written": 340282366920938463463374607431768211455,
+			"power_on_hours": 1234,
+			"media_errors": 557325022338560884631142400
+		}
+	}`), "")
+	assertAttrValue(t, deviceData.Attributes, "MediaErrors", math.MaxUint64)
+	assertAttrValue(t, deviceData.Attributes, "DataUnitsWritten", math.MaxUint64)
+	assertAttrValue(t, deviceData.Attributes, "PowerOnHours", 1234)
+	assert.Equal(t, uint8(35), deviceData.Temperature)
 }
 
 // Out-of-range temperatures are clamped instead of failing the whole parse.
