@@ -164,7 +164,9 @@ export default function ContainersTable({ systemId }: { systemId?: string }) {
 			const healthLabel = ContainerHealthLabels[container.health as ContainerHealth] ?? ""
 			const image = container.image ?? ""
 			const ports = container.ports ?? ""
-			const searchString = `${systemName} ${id} ${name} ${healthLabel} ${status} ${image} ${ports}`.toLowerCase()
+			const stack = container.stack ?? ""
+			const service = container.service ?? ""
+			const searchString = `${systemName} ${id} ${name} ${healthLabel} ${status} ${image} ${ports} ${stack} ${service}`.toLowerCase()
 
 			return (filterValue as string)
 				.toLowerCase()
