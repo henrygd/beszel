@@ -65,6 +65,10 @@ msgstr "{count, plural, one {{countString} saat} other {{countString} saat}}"
 msgid "{count, plural, one {{countString} minute} few {{countString} minutes} many {{countString} minutes} other {{countString} minutes}}"
 msgstr "{count, plural, one {{countString} dakika} few {{countString} dakika} many {{countString} dakika} other {{countString} dakika}}"
 
+#: src/components/containers-table/container-group-row.tsx
+msgid "{count, plural, one {# container} other {# containers}}"
+msgstr ""
+
 #: src/components/network-monitors-table/network-monitors-columns.tsx
 msgid "{daysLeft, plural, one {# day} other {# days}}"
 msgstr "{daysLeft, plural, one {# gün} other {# gün}}"
@@ -541,6 +545,10 @@ msgstr "Daha fazla bilgi görmek için bir sisteme tıklayın."
 msgid "Click to copy"
 msgstr "Kopyalamak için tıklayın"
 
+#: src/components/containers-table/container-group-row.tsx
+msgid "Collapse group"
+msgstr ""
+
 #: src/components/login/forgot-pass-form.tsx
 #: src/components/login/forgot-pass-form.tsx
 msgid "Command line instructions"
@@ -976,6 +984,10 @@ msgstr "<0>config.yml</0> içinde tanımlanmayan mevcut sistemler silinecektir. 
 msgid "Exited active"
 msgstr "Aktif olarak çıktı"
 
+#: src/components/containers-table/container-group-row.tsx
+msgid "Expand group"
+msgstr ""
+
 #: src/components/alerts-history-columns.tsx
 #: src/components/network-monitors-table/network-monitors-columns.tsx
 msgid "Expired"
@@ -1143,6 +1155,10 @@ msgstr "GPU Kullanımı"
 #: src/components/systems-table/systems-table.tsx
 msgid "Grid"
 msgstr "Izgara"
+
+#: src/components/containers-table/containers-table.tsx
+msgid "Group by stack"
+msgstr ""
 
 #: src/components/containers-table/containers-table-columns.tsx
 #: src/components/routes/system/storage-pools-table.tsx
@@ -1413,6 +1429,10 @@ msgstr "Monitörler oluşturuldu"
 #: src/components/routes/system/storage-pools-table.tsx
 msgid "Mountpoint"
 msgstr "Bağlama noktası"
+
+#: src/components/containers-table/containers-table-columns.tsx
+msgid "Multiple nodes"
+msgstr ""
 
 #: src/components/add-system.tsx
 #: src/components/alerts-history-columns.tsx
@@ -2021,6 +2041,12 @@ msgstr "Gönderildi"
 msgid "Serial Number"
 msgstr "Seri Numarası"
 
+#: src/components/containers-table/containers-table-columns.tsx
+#: src/components/containers-table/containers-table.tsx
+msgctxt "Docker Swarm service"
+msgid "Service"
+msgstr ""
+
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Service Details"
 msgstr "Hizmet Ayrıntıları"
@@ -2072,6 +2098,12 @@ msgstr "SMTP ayarları"
 #: src/components/systems-table/systems-table.tsx
 msgid "Sort By"
 msgstr "Sıralama Ölçütü"
+
+#: src/components/containers-table/containers-table-columns.tsx
+#: src/components/containers-table/containers-table.tsx
+msgctxt "Docker Compose or Swarm stack"
+msgid "Stack"
+msgstr ""
 
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/quiet-hours.tsx
@@ -2490,6 +2522,7 @@ msgstr "Kullanım"
 msgid "Value"
 msgstr "Değer"
 
+#: src/components/containers-table/containers-table.tsx
 #: src/components/network-monitors-table/network-monitors-table.tsx
 #: src/components/routes/system/info-bar.tsx
 #: src/components/systems-table/systems-table.tsx
@@ -2514,6 +2547,7 @@ msgstr "Daha fazla göster"
 msgid "View your 200 most recent alerts."
 msgstr "En son 200 uyarınızı görüntüleyin."
 
+#: src/components/containers-table/containers-table.tsx
 #: src/components/network-monitors-table/network-monitors-table.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "Visible Fields"

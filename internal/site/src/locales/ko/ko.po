@@ -65,6 +65,10 @@ msgstr "{count, plural, one {{countString} 시간} other {{countString} 시간}}
 msgid "{count, plural, one {{countString} minute} few {{countString} minutes} many {{countString} minutes} other {{countString} minutes}}"
 msgstr "{count, plural, one {{countString} 분} few {{countString} 분} many {{countString} 분} other {{countString} 분}}"
 
+#: src/components/containers-table/container-group-row.tsx
+msgid "{count, plural, one {# container} other {# containers}}"
+msgstr ""
+
 #: src/components/network-monitors-table/network-monitors-columns.tsx
 msgid "{daysLeft, plural, one {# day} other {# days}}"
 msgstr "{daysLeft, plural, other {#일}}"
@@ -541,6 +545,10 @@ msgstr "더 많은 정보를 보려면 시스템을 클릭하세요."
 msgid "Click to copy"
 msgstr "클릭하여 복사"
 
+#: src/components/containers-table/container-group-row.tsx
+msgid "Collapse group"
+msgstr ""
+
 #: src/components/login/forgot-pass-form.tsx
 #: src/components/login/forgot-pass-form.tsx
 msgid "Command line instructions"
@@ -976,6 +984,10 @@ msgstr "<0>config.yml</0>에 정의되지 않은 기존 시스템은 삭제됩�
 msgid "Exited active"
 msgstr "활성 종료됨"
 
+#: src/components/containers-table/container-group-row.tsx
+msgid "Expand group"
+msgstr ""
+
 #: src/components/alerts-history-columns.tsx
 #: src/components/network-monitors-table/network-monitors-columns.tsx
 msgid "Expired"
@@ -1143,6 +1155,10 @@ msgstr "GPU 사용량"
 #: src/components/systems-table/systems-table.tsx
 msgid "Grid"
 msgstr "그리드"
+
+#: src/components/containers-table/containers-table.tsx
+msgid "Group by stack"
+msgstr ""
 
 #: src/components/containers-table/containers-table-columns.tsx
 #: src/components/routes/system/storage-pools-table.tsx
@@ -1413,6 +1429,10 @@ msgstr "모니터가 생성되었습니다"
 #: src/components/routes/system/storage-pools-table.tsx
 msgid "Mountpoint"
 msgstr "마운트 지점"
+
+#: src/components/containers-table/containers-table-columns.tsx
+msgid "Multiple nodes"
+msgstr ""
 
 #: src/components/add-system.tsx
 #: src/components/alerts-history-columns.tsx
@@ -2021,6 +2041,12 @@ msgstr "보냄"
 msgid "Serial Number"
 msgstr "시리얼 번호"
 
+#: src/components/containers-table/containers-table-columns.tsx
+#: src/components/containers-table/containers-table.tsx
+msgctxt "Docker Swarm service"
+msgid "Service"
+msgstr ""
+
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Service Details"
 msgstr "서비스 세부 정보"
@@ -2072,6 +2098,12 @@ msgstr "SMTP 설정"
 #: src/components/systems-table/systems-table.tsx
 msgid "Sort By"
 msgstr "정렬 기준"
+
+#: src/components/containers-table/containers-table-columns.tsx
+#: src/components/containers-table/containers-table.tsx
+msgctxt "Docker Compose or Swarm stack"
+msgid "Stack"
+msgstr ""
 
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/quiet-hours.tsx
@@ -2490,6 +2522,7 @@ msgstr "사용률"
 msgid "Value"
 msgstr "값"
 
+#: src/components/containers-table/containers-table.tsx
 #: src/components/network-monitors-table/network-monitors-table.tsx
 #: src/components/routes/system/info-bar.tsx
 #: src/components/systems-table/systems-table.tsx
@@ -2514,6 +2547,7 @@ msgstr "더 보기"
 msgid "View your 200 most recent alerts."
 msgstr "최근 200개의 알림을 봅니다."
 
+#: src/components/containers-table/containers-table.tsx
 #: src/components/network-monitors-table/network-monitors-table.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "Visible Fields"

@@ -65,6 +65,10 @@ msgstr "{count, plural, one {{countString} giờ} other {{countString} giờ}}"
 msgid "{count, plural, one {{countString} minute} few {{countString} minutes} many {{countString} minutes} other {{countString} minutes}}"
 msgstr "{count, plural, one {{countString} phút} few {{countString} phút} many {{countString} phút} other {{countString} phút}}"
 
+#: src/components/containers-table/container-group-row.tsx
+msgid "{count, plural, one {# container} other {# containers}}"
+msgstr ""
+
 #: src/components/network-monitors-table/network-monitors-columns.tsx
 msgid "{daysLeft, plural, one {# day} other {# days}}"
 msgstr "{daysLeft, plural, other {# ngày}}"
@@ -541,6 +545,10 @@ msgstr "Nhấp vào hệ thống để xem thêm thông tin."
 msgid "Click to copy"
 msgstr "Nhấp để sao chép"
 
+#: src/components/containers-table/container-group-row.tsx
+msgid "Collapse group"
+msgstr ""
+
 #: src/components/login/forgot-pass-form.tsx
 #: src/components/login/forgot-pass-form.tsx
 msgid "Command line instructions"
@@ -976,6 +984,10 @@ msgstr "Các hệ thống hiện có không được định nghĩa trong <0>con
 msgid "Exited active"
 msgstr "Đã thoát khi hoạt động"
 
+#: src/components/containers-table/container-group-row.tsx
+msgid "Expand group"
+msgstr ""
+
 #: src/components/alerts-history-columns.tsx
 #: src/components/network-monitors-table/network-monitors-columns.tsx
 msgid "Expired"
@@ -1143,6 +1155,10 @@ msgstr "Sử dụng GPU"
 #: src/components/systems-table/systems-table.tsx
 msgid "Grid"
 msgstr "Lưới"
+
+#: src/components/containers-table/containers-table.tsx
+msgid "Group by stack"
+msgstr ""
 
 #: src/components/containers-table/containers-table-columns.tsx
 #: src/components/routes/system/storage-pools-table.tsx
@@ -1413,6 +1429,10 @@ msgstr "Đã tạo trình giám sát"
 #: src/components/routes/system/storage-pools-table.tsx
 msgid "Mountpoint"
 msgstr "Điểm gắn kết"
+
+#: src/components/containers-table/containers-table-columns.tsx
+msgid "Multiple nodes"
+msgstr ""
 
 #: src/components/add-system.tsx
 #: src/components/alerts-history-columns.tsx
@@ -2021,6 +2041,12 @@ msgstr "Đã gửi"
 msgid "Serial Number"
 msgstr "Số seri"
 
+#: src/components/containers-table/containers-table-columns.tsx
+#: src/components/containers-table/containers-table.tsx
+msgctxt "Docker Swarm service"
+msgid "Service"
+msgstr ""
+
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Service Details"
 msgstr "Chi tiết dịch vụ"
@@ -2072,6 +2098,12 @@ msgstr "Cài đặt SMTP"
 #: src/components/systems-table/systems-table.tsx
 msgid "Sort By"
 msgstr "Sắp xếp theo"
+
+#: src/components/containers-table/containers-table-columns.tsx
+#: src/components/containers-table/containers-table.tsx
+msgctxt "Docker Compose or Swarm stack"
+msgid "Stack"
+msgstr ""
 
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/quiet-hours.tsx
@@ -2490,6 +2522,7 @@ msgstr "Sử dụng"
 msgid "Value"
 msgstr "Giá trị"
 
+#: src/components/containers-table/containers-table.tsx
 #: src/components/network-monitors-table/network-monitors-table.tsx
 #: src/components/routes/system/info-bar.tsx
 #: src/components/systems-table/systems-table.tsx
@@ -2514,6 +2547,7 @@ msgstr "Xem thêm"
 msgid "View your 200 most recent alerts."
 msgstr "Xem 200 cảnh báo gần đây nhất của bạn."
 
+#: src/components/containers-table/containers-table.tsx
 #: src/components/network-monitors-table/network-monitors-table.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "Visible Fields"

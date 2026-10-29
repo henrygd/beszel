@@ -65,6 +65,10 @@ msgstr "{count, plural, one {{countString} 時間} other {{countString} 時間}}
 msgid "{count, plural, one {{countString} minute} few {{countString} minutes} many {{countString} minutes} other {{countString} minutes}}"
 msgstr "{count, plural, one {{countString} 分} few {{countString} 分} many {{countString} 分} other {{countString} 分}}"
 
+#: src/components/containers-table/container-group-row.tsx
+msgid "{count, plural, one {# container} other {# containers}}"
+msgstr ""
+
 #: src/components/network-monitors-table/network-monitors-columns.tsx
 msgid "{daysLeft, plural, one {# day} other {# days}}"
 msgstr "{daysLeft, plural, one {# 日} other {# 日}}"
@@ -541,6 +545,10 @@ msgstr "システムをクリックして詳細を表示します。"
 msgid "Click to copy"
 msgstr "クリックしてコピー"
 
+#: src/components/containers-table/container-group-row.tsx
+msgid "Collapse group"
+msgstr ""
+
 #: src/components/login/forgot-pass-form.tsx
 #: src/components/login/forgot-pass-form.tsx
 msgid "Command line instructions"
@@ -976,6 +984,10 @@ msgstr "<0>config.yml</0>に定義されていない既存のシステムは削�
 msgid "Exited active"
 msgstr "アクティブ状態で終了"
 
+#: src/components/containers-table/container-group-row.tsx
+msgid "Expand group"
+msgstr ""
+
 #: src/components/alerts-history-columns.tsx
 #: src/components/network-monitors-table/network-monitors-columns.tsx
 msgid "Expired"
@@ -1143,6 +1155,10 @@ msgstr "GPU使用率"
 #: src/components/systems-table/systems-table.tsx
 msgid "Grid"
 msgstr "グリッド"
+
+#: src/components/containers-table/containers-table.tsx
+msgid "Group by stack"
+msgstr ""
 
 #: src/components/containers-table/containers-table-columns.tsx
 #: src/components/routes/system/storage-pools-table.tsx
@@ -1413,6 +1429,10 @@ msgstr "モニターを作成しました"
 #: src/components/routes/system/storage-pools-table.tsx
 msgid "Mountpoint"
 msgstr "マウントポイント"
+
+#: src/components/containers-table/containers-table-columns.tsx
+msgid "Multiple nodes"
+msgstr ""
 
 #: src/components/add-system.tsx
 #: src/components/alerts-history-columns.tsx
@@ -2021,6 +2041,12 @@ msgstr "送信"
 msgid "Serial Number"
 msgstr "シリアル番号"
 
+#: src/components/containers-table/containers-table-columns.tsx
+#: src/components/containers-table/containers-table.tsx
+msgctxt "Docker Swarm service"
+msgid "Service"
+msgstr ""
+
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Service Details"
 msgstr "サービス詳細"
@@ -2072,6 +2098,12 @@ msgstr "SMTP設定"
 #: src/components/systems-table/systems-table.tsx
 msgid "Sort By"
 msgstr "並び替え基準"
+
+#: src/components/containers-table/containers-table-columns.tsx
+#: src/components/containers-table/containers-table.tsx
+msgctxt "Docker Compose or Swarm stack"
+msgid "Stack"
+msgstr ""
 
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/quiet-hours.tsx
@@ -2490,6 +2522,7 @@ msgstr "利用率"
 msgid "Value"
 msgstr "値"
 
+#: src/components/containers-table/containers-table.tsx
 #: src/components/network-monitors-table/network-monitors-table.tsx
 #: src/components/routes/system/info-bar.tsx
 #: src/components/systems-table/systems-table.tsx
@@ -2514,6 +2547,7 @@ msgstr "もっと見る"
 msgid "View your 200 most recent alerts."
 msgstr "直近200件のアラートを表示します。"
 
+#: src/components/containers-table/containers-table.tsx
 #: src/components/network-monitors-table/network-monitors-table.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "Visible Fields"

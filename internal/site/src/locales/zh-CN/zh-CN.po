@@ -65,6 +65,10 @@ msgstr "{count, plural, one {{countString} 小时} other {{countString} 小时}}
 msgid "{count, plural, one {{countString} minute} few {{countString} minutes} many {{countString} minutes} other {{countString} minutes}}"
 msgstr "{count, plural, one {{countString} 分钟} few {{countString} 分钟} many {{countString} 分钟} other {{countString} 分钟}}"
 
+#: src/components/containers-table/container-group-row.tsx
+msgid "{count, plural, one {# container} other {# containers}}"
+msgstr ""
+
 #: src/components/network-monitors-table/network-monitors-columns.tsx
 msgid "{daysLeft, plural, one {# day} other {# days}}"
 msgstr "{daysLeft, plural, other {# 天}}"
@@ -541,6 +545,10 @@ msgstr "点击系统查看更多信息。"
 msgid "Click to copy"
 msgstr "点击复制"
 
+#: src/components/containers-table/container-group-row.tsx
+msgid "Collapse group"
+msgstr ""
+
 #: src/components/login/forgot-pass-form.tsx
 #: src/components/login/forgot-pass-form.tsx
 msgid "Command line instructions"
@@ -976,6 +984,10 @@ msgstr "未在<0>config.yml</0>中定义的客户端将被删除。请定期备�
 msgid "Exited active"
 msgstr "退出活动状态"
 
+#: src/components/containers-table/container-group-row.tsx
+msgid "Expand group"
+msgstr ""
+
 #: src/components/alerts-history-columns.tsx
 #: src/components/network-monitors-table/network-monitors-columns.tsx
 msgid "Expired"
@@ -1143,6 +1155,10 @@ msgstr "GPU 使用率"
 #: src/components/systems-table/systems-table.tsx
 msgid "Grid"
 msgstr "网格"
+
+#: src/components/containers-table/containers-table.tsx
+msgid "Group by stack"
+msgstr ""
 
 #: src/components/containers-table/containers-table-columns.tsx
 #: src/components/routes/system/storage-pools-table.tsx
@@ -1413,6 +1429,10 @@ msgstr "已创建监控"
 #: src/components/routes/system/storage-pools-table.tsx
 msgid "Mountpoint"
 msgstr "挂载点"
+
+#: src/components/containers-table/containers-table-columns.tsx
+msgid "Multiple nodes"
+msgstr ""
 
 #: src/components/add-system.tsx
 #: src/components/alerts-history-columns.tsx
@@ -2021,6 +2041,12 @@ msgstr "发送"
 msgid "Serial Number"
 msgstr "序列号"
 
+#: src/components/containers-table/containers-table-columns.tsx
+#: src/components/containers-table/containers-table.tsx
+msgctxt "Docker Swarm service"
+msgid "Service"
+msgstr ""
+
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Service Details"
 msgstr "服务详情"
@@ -2072,6 +2098,12 @@ msgstr "SMTP 设置"
 #: src/components/systems-table/systems-table.tsx
 msgid "Sort By"
 msgstr "排序依据"
+
+#: src/components/containers-table/containers-table-columns.tsx
+#: src/components/containers-table/containers-table.tsx
+msgctxt "Docker Compose or Swarm stack"
+msgid "Stack"
+msgstr ""
 
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/quiet-hours.tsx
@@ -2490,6 +2522,7 @@ msgstr "利用率"
 msgid "Value"
 msgstr "值"
 
+#: src/components/containers-table/containers-table.tsx
 #: src/components/network-monitors-table/network-monitors-table.tsx
 #: src/components/routes/system/info-bar.tsx
 #: src/components/systems-table/systems-table.tsx
@@ -2514,6 +2547,7 @@ msgstr "查看更多"
 msgid "View your 200 most recent alerts."
 msgstr "查看您最近的200个警报。"
 
+#: src/components/containers-table/containers-table.tsx
 #: src/components/network-monitors-table/network-monitors-table.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "Visible Fields"
