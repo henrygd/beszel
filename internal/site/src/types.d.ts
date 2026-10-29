@@ -367,6 +367,10 @@ export interface ContainerRecord extends RecordModel {
 	net: number
 	health: number
 	status: string
+	/** Docker stack or compose project, empty when the container has no grouping labels */
+	stack?: string
+	/** Service within the stack, with the stack prefix trimmed */
+	service?: string
 	updated: number
 }
 
