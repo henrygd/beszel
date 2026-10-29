@@ -9,6 +9,7 @@ import (
 	"strings"
 	"sync"
 	"testing"
+	"unicode/utf8"
 
 	"github.com/henrygd/beszel/internal/entities/container"
 	"github.com/stretchr/testify/assert"
@@ -76,6 +77,28 @@ func TestGroupLabels(t *testing.T) {
 			assert.Equal(t, test.want, group(test.labels))
 		})
 	}
+}
+
+func TestGroupLabelsAreCapped(t *testing.T) {
+	t.Run("an oversized label is cut to the cap", func(t *testing.T) {
+		long := strings.Repeat("a", 300)
+		stack, service := groupLabels{SwarmStack: long, SwarmService: long}.group()
+		assert.Len(t, stack, maxGroupValueLength)
+		assert.Len(t, service, maxGroupValueLength)
+	})
+
+	t.Run("the cut keeps valid utf-8", func(t *testing.T) {
+		// two bytes per character, so a byte-wise cut would split the last one
+		stack, _ := groupLabels{SwarmStack: strings.Repeat("ü", 300)}.group()
+		assert.True(t, utf8.ValidString(stack))
+		assert.Equal(t, maxGroupValueLength, utf8.RuneCountInString(stack))
+	})
+
+	t.Run("ordinary names are untouched", func(t *testing.T) {
+		stack, service := groupLabels{SwarmStack: "mentors", SwarmService: "mentors_web"}.group()
+		assert.Equal(t, "mentors", stack)
+		assert.Equal(t, "web", service)
+	})
 }
 
 func TestGroupLabelsFromMap(t *testing.T) {

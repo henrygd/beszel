@@ -12,6 +12,12 @@ const (
 	labelComposeService = "com.docker.compose.service"
 )
 
+// maxGroupValueLength caps a stack or service name. Labels are set by whoever runs the container
+// and Docker puts no limit on their length, while these two values are stored on every container
+// record and repeated in every stats record, so an oversized label must not be able to grow the
+// history without bound. Real stack and service names are far below this.
+const maxGroupValueLength = 100
+
 // groupLabels holds the only labels grouping needs. Decoding into a struct rather than a map skips
 // every other label without allocating, which matters because a busy node reports dozens of labels
 // per container and this runs on every poll.
@@ -33,7 +39,21 @@ type groupLabels struct {
 // Stats.Name and Stats.Id are what keep the replicas apart.
 func (l groupLabels) group() (stack, service string) {
 	stack = firstNonEmpty(l.SwarmStack, l.ComposeProject)
-	return stack, trimStackPrefix(stack, firstNonEmpty(l.SwarmService, l.ComposeService))
+	service = trimStackPrefix(stack, firstNonEmpty(l.SwarmService, l.ComposeService))
+	return truncateGroupValue(stack), truncateGroupValue(service)
+}
+
+// truncateGroupValue cuts a value to maxGroupValueLength characters, on a rune boundary so the
+// result stays valid UTF-8.
+func truncateGroupValue(value string) string {
+	if len(value) <= maxGroupValueLength {
+		return value
+	}
+	runes := []rune(value)
+	if len(runes) <= maxGroupValueLength {
+		return value
+	}
+	return string(runes[:maxGroupValueLength])
 }
 
 // groupLabelsFromMap reads the same labels out of a full label map, which the agent decodes only
