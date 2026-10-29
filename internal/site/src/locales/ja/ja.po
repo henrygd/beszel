@@ -8,7 +8,7 @@ msgstr ""
 "Language: ja\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2026-10-22 17:15\n"
+"PO-Revision-Date: 2026-10-29 20:26\n"
 "Last-Translator: \n"
 "Language-Team: Japanese\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
@@ -987,7 +987,7 @@ msgstr "1時間後、またはハブの再起動時に有効期限が切れま�
 
 #: src/components/alerts/alerts-sheet.tsx
 msgid "Expires within <0>{value, plural, one {# day} other {# days}}</0>"
-msgstr "<0>{value, plural, other {# 日}}</0>以内に期限切れ"
+msgstr "<0>{value, plural, other {# 日}}</0>に期限切れになります"
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Export"
@@ -1535,7 +1535,7 @@ msgstr "再起動のたびに、データベース内のシステムはファイ
 #. placeholder {0}: alert.value
 #: src/components/active-alerts.tsx
 msgid "One or more certificates expire within {0, plural, one {# day} other {# days}}"
-msgstr "1つ以上の証明書が{0, plural, other {# 日}}以内に期限切れになります"
+msgstr "1つ以上の証明書が{0, plural, other {# 日}}に期限切れになります"
 
 #: src/lib/alerts.ts
 msgid "One or more containers are unhealthy"
