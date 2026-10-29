@@ -3,7 +3,7 @@ import { useStore } from "@nanostores/react"
 import type { ChartConfig } from "@/components/ui/chart"
 import type { ChartData, SystemStats, SystemStatsRecord } from "@/types"
 import type { DataPoint } from "./area-chart"
-import { $containerFilter } from "@/lib/stores"
+import { $containerSelection } from "@/lib/stores"
 
 /** Chart configurations for CPU, memory, and network usage charts */
 export interface ContainerChartConfigs {
@@ -119,42 +119,37 @@ export function useYAxisWidth() {
 	return { yAxisWidth, updateYAxisWidth }
 }
 
-/** Subscribes to the container filter store and returns filtered DataPoints for container charts */
+/** Subscribes to the container selection store and returns DataPoints for the selected containers */
 export function useContainerDataPoints(
 	chartConfig: ChartConfig,
 	// biome-ignore lint/suspicious/noExplicitAny: container data records have dynamic keys
 	dataFn: (key: string, data: Record<string, any>) => number | null
 ) {
-	const filter = useStore($containerFilter)
+	const selection = useStore($containerSelection)
 	const { dataPoints, filteredKeys } = useMemo(() => {
-		const filterTerms = filter
-			? filter
-					.toLowerCase()
-					.split(" ")
-					.filter((term) => term.length > 0)
-			: []
 		const filtered = new Set<string>()
-		const points = Object.keys(chartConfig).map((key) => {
-			const isFiltered = filterTerms.length > 0 && !filterTerms.some((term) => key.toLowerCase().includes(term))
-			if (isFiltered) filtered.add(key)
-			return {
-				label: key,
-				// biome-ignore lint/suspicious/noExplicitAny: container data records have dynamic keys
-				dataKey: (data: Record<string, any>) => dataFn(key, data),
-				color: chartConfig[key].color ?? "",
-				opacity: isFiltered ? 0.05 : 0.4,
-				strokeOpacity: isFiltered ? 0.1 : 1,
-				activeDot: !isFiltered,
-				stackId: "a",
-			}
+		const selected = new Set(selection)
+		// unselected containers are removed entirely so the y axis rescales to the selection
+		const keys = Object.keys(chartConfig).filter((key) => {
+			if (selected.size === 0 || selected.has(key)) return true
+			filtered.add(key)
+			return false
 		})
+		const points = keys.map((key) => ({
+			label: key,
+			// biome-ignore lint/suspicious/noExplicitAny: container data records have dynamic keys
+			dataKey: (data: Record<string, any>) => dataFn(key, data),
+			color: chartConfig[key].color ?? "",
+			opacity: 0.4,
+			stackId: "a",
+		}))
 		return {
 			// biome-ignore lint/suspicious/noExplicitAny: container data records have dynamic keys
 			dataPoints: points as DataPoint<Record<string, any>>[],
 			filteredKeys: filtered,
 		}
-	}, [chartConfig, filter])
-	return { filter, dataPoints, filteredKeys }
+	}, [chartConfig, selection])
+	return { dataPoints, filteredKeys }
 }
 
 // Assures consistent colors for network interfaces
