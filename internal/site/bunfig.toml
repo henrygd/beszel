@@ -1,0 +1,5 @@
+[test]
+# web storage is not part of the bun runtime, and several modules read it while they are being
+# imported. The preload gives the test run a minimal in-memory implementation, so importing a
+# module that touches localStorage does not throw before a single test has run.
+preload = ["./tests/setup.ts"]
