@@ -59,7 +59,8 @@ type dockerManager struct {
 	sem                  chan struct{}               // Semaphore to limit concurrent container requests
 	containerStatsMutex  sync.RWMutex                // Mutex to prevent concurrent access to containerStatsMap
 	apiContainerList     []*container.ApiInfo        // List of containers from Docker API
-	labeledList          []*labeledContainer         // Reused container list that also carries labels (name template only)
+	labeledList          []*labeledContainer         // Reused container list that also carries the full label map (name template only)
+	groupedList          []*groupedContainer         // Reused container list that also carries the labels grouping needs
 	containerStatsMap    map[string]*container.Stats // Keeps track of container stats
 	validIds             map[string]struct{}         // Map of valid container ids, used to prune invalid containers from containerStatsMap
 	goodDockerVersion    bool                        // Whether docker version is at least 25.0.0 (one-shot works correctly)
@@ -555,6 +556,9 @@ func (dm *dockerManager) updateContainerStats(ctr *container.ApiInfo, cacheTimeM
 
 	stats.Id = ctr.IdShort
 	stats.Name = name
+	// Set on every poll, not only when the record is created, because the record is reused
+	stats.Stack = ctr.Stack
+	stats.Service = ctr.Service
 	stats.Status = statusText
 	stats.Health = health
 
@@ -815,6 +819,9 @@ func (dm *dockerManager) decode(resp *http.Response, d any) error {
 		dm.buf = bytes.NewBuffer(make([]byte, 0, 1024*256))
 	}
 	defer resp.Body.Close()
+	// Reset on the way in as well: a caller that returned early must not leave a body behind
+	// for the next decode to read together with its own.
+	dm.buf.Reset()
 	defer dm.buf.Reset()
 	if _, err := dm.buf.ReadFrom(resp.Body); err != nil {
 		return err
@@ -822,31 +829,63 @@ func (dm *dockerManager) decode(resp *http.Response, d any) error {
 	return json.Unmarshal(dm.buf.Bytes(), d)
 }
 
-// labeledContainer is a /containers/json entry decoded together with its labels. Only used when
-// a CONTAINER_NAME_LABEL template is set. Shadows ApiInfo.Labels, which is skipped by the decoder.
+// groupedContainer is a /containers/json entry decoded together with the four labels that say
+// which stack and service it belongs to. Shadows ApiInfo.Labels, which the decoder skips.
+type groupedContainer struct {
+	container.ApiInfo
+	Labels groupLabels
+}
+
+// labeledContainer is the same entry decoded with its full label map, which costs an allocation per
+// label and is only worth it when a CONTAINER_NAME_LABEL template needs arbitrary keys.
 type labeledContainer struct {
 	container.ApiInfo
 	Labels map[string]string
 }
 
-// Decodes a /containers/json response into apiContainerList using the reusable buffer.
-// Without a template, labels are not read at all. With a template, labels are read in the same
-// pass as the rest of the entry, into a reused list whose label maps are dropped each poll.
+// Decodes a /containers/json response into apiContainerList using the reusable buffer, resolving
+// each container's stack and service in the same pass. Only the four grouping labels are read,
+// unless a CONTAINER_NAME_LABEL template needs the whole map.
 func (dm *dockerManager) decodeContainerList(resp *http.Response) error {
 	if dm.buf == nil {
 		// initialize buffer with 256kb starting size
 		dm.buf = bytes.NewBuffer(make([]byte, 0, 1024*256))
 	}
 	defer resp.Body.Close()
+	dm.buf.Reset()
 	defer dm.buf.Reset()
 	if _, err := dm.buf.ReadFrom(resp.Body); err != nil {
 		return err
 	}
-	if dm.nameTemplate == nil {
-		dm.apiContainerList = dm.apiContainerList[:0]
-		return json.Unmarshal(dm.buf.Bytes(), &dm.apiContainerList)
+	if dm.nameTemplate != nil {
+		return dm.decodeContainerListWithLabelMap()
 	}
-	// Drop last poll's label maps first, so labels can't carry over into this response
+	return dm.decodeContainerListWithGroupLabels()
+}
+
+// Decodes the list with only the labels grouping needs. The entries are reused between polls, and
+// the decoder leaves absent fields untouched, so last poll's labels are cleared first.
+func (dm *dockerManager) decodeContainerListWithGroupLabels() error {
+	for _, ctr := range dm.groupedList[:cap(dm.groupedList)] {
+		if ctr != nil {
+			ctr.Labels = groupLabels{}
+		}
+	}
+	dm.groupedList = dm.groupedList[:0]
+	if err := json.Unmarshal(dm.buf.Bytes(), &dm.groupedList); err != nil {
+		return err
+	}
+	dm.apiContainerList = dm.apiContainerList[:0]
+	for _, ctr := range dm.groupedList {
+		ctr.Stack, ctr.Service = ctr.Labels.group()
+		dm.apiContainerList = append(dm.apiContainerList, &ctr.ApiInfo)
+	}
+	return nil
+}
+
+// Decodes the list with the full label map, for a CONTAINER_NAME_LABEL template. Groups come from
+// the same map, so the labels are still read once per poll.
+func (dm *dockerManager) decodeContainerListWithLabelMap() error {
 	for _, ctr := range dm.labeledList[:cap(dm.labeledList)] {
 		if ctr != nil {
 			ctr.Labels = nil
@@ -859,6 +898,7 @@ func (dm *dockerManager) decodeContainerList(resp *http.Response) error {
 	dm.apiContainerList = dm.apiContainerList[:0]
 	for _, ctr := range dm.labeledList {
 		ctr.ApiInfo.Labels = ctr.Labels
+		ctr.Stack, ctr.Service = groupLabelsFromMap(ctr.Labels).group()
 		dm.apiContainerList = append(dm.apiContainerList, &ctr.ApiInfo)
 	}
 	return nil
