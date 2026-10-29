@@ -6,6 +6,7 @@ package health
 
 import (
 	"errors"
+	"io/fs"
 	"log"
 	"os"
 	"path/filepath"
@@ -53,7 +54,12 @@ func Update() error {
 	return updateHealthFile(healthFile)
 }
 
-// CleanUp removes the health file
+// CleanUp removes the health file. The path is shared by every agent on the host, so a file that
+// is already gone - another agent removed it, or a test ran two agents - is not a failure to
+// report: it would surface as the error from Start.
 func CleanUp() error {
-	return os.Remove(healthFile)
+	if err := os.Remove(healthFile); err != nil && !errors.Is(err, fs.ErrNotExist) {
+		return err
+	}
+	return nil
 }
