@@ -1,6 +1,7 @@
 import { chartTimeData } from "@/lib/utils"
 import {
 	clearFailedResponse,
+	getAvailability,
 	mergeMonitorStats,
 	mergeSameTimestamps,
 	withMonitorGaps,
@@ -321,6 +322,48 @@ export function useNetworkMonitorStats(props: UseNetworkMonitorStatsProps) {
 		if (cacheKey.includes(",")) return monitorStats
 		return withMonitorGaps(monitorStats, { id: cacheKey, interval }, chartTimeData[chartTime].expectedInterval)
 	}, [monitorStats, cacheKey, interval, chartTime])
+}
+
+/** Availability windows, read from the retention tier that covers each one. */
+const AVAILABILITY_WINDOWS = [
+	{ type: "20m", ms: 24 * 60 * 60 * 1000 },
+	{ type: "480m", ms: 30 * 24 * 60 * 60 * 1000 },
+] as const
+
+/** Percentage of successful probes over the last 24 hours and 30 days; null while there's no data. */
+export function useMonitorAvailability(monitorId: string, enabled = true) {
+	const [result, setResult] = useState<{ id: string; values: (number | null)[] }>({ id: monitorId, values: [] })
+
+	useEffect(() => {
+		if (!enabled) return
+		let cancelled = false
+		Promise.all(
+			AVAILABILITY_WINDOWS.map(async ({ type, ms }) => {
+				const records = await pb.collection<RawMonitorStatsRecord>("network_monitor_stats").getFullList({
+					filter: pb.filter("monitor={:monitor} && type={:type} && created>{:created}", {
+						monitor: monitorId,
+						type,
+						created: Date.now() - ms,
+					}),
+					fields: "total_count,success_count",
+					// unique key so these parallel requests don't auto-cancel each other or the chart fetch
+					requestKey: `availability:${monitorId}:${type}`,
+				})
+				return getAvailability(records)
+			})
+		)
+			.then((values) => {
+				if (!cancelled) setResult({ id: monitorId, values })
+			})
+			.catch((error) => {
+				if (!cancelled) console.error("Failed to fetch monitor availability:", error)
+			})
+		return () => {
+			cancelled = true
+		}
+	}, [monitorId, enabled])
+
+	return result.id === monitorId ? result.values : []
 }
 
 /** Only what comparison charts and labels need. */
