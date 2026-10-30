@@ -434,6 +434,12 @@ export interface ChartOptions {
 	chartTime: ChartTimes
 }
 
+/**
+ * Level the container chart series are grouped by. Declared here because types.d.ts cannot
+ * import from lib; lib/container-series.ts re-exports it.
+ */
+export type SeriesLevel = "container" | "service" | "stack"
+
 export interface ChartData extends ChartOptions {
 	systemStats: SystemStatsRecord[]
 	containerData: ChartDataContainer[]
