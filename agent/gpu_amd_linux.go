@@ -4,6 +4,7 @@ package agent
 
 import (
 	"bufio"
+	"errors"
 	"fmt"
 	"log/slog"
 	"os"
@@ -11,6 +12,7 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+	"syscall"
 	"time"
 
 	"github.com/henrygd/beszel/agent/utils"
@@ -158,13 +160,82 @@ func (gm *GPUManager) updateAmdGpuData(cardPath string) bool {
 }
 
 // readSysfsFloat reads and parses a numeric value from a sysfs file.
+// Files that fail slowly or are unsupported are skipped for a while (see sysfsBackoff).
 func readSysfsFloat(path string) (float64, error) {
+	now := time.Now()
+	if !amdSysfsBackoff.allow(path, now) {
+		return 0, errSysfsBackoff
+	}
 	val, err := utils.ReadStringFileLimited(path, 64)
+	amdSysfsBackoff.record(path, err, time.Since(now), now)
 	if err != nil {
 		slog.Debug("Failed to read sysfs value", "path", path, "error", err)
 		return 0, err
 	}
 	return strconv.ParseFloat(val, 64)
+}
+
+const (
+	// sysfsSlowReadThreshold is how long a read may take to fail before the file is backed off.
+	// Healthy amdgpu reads take well under a millisecond.
+	sysfsSlowReadThreshold = 500 * time.Millisecond
+	sysfsBackoffMin        = 30 * time.Second
+	sysfsBackoffMax        = 10 * time.Minute
+)
+
+var errSysfsBackoff = errors.New("sysfs read skipped during backoff")
+
+// amdSysfsBackoff tracks AMD sysfs files to skip after slow failures or unsupported reads.
+var amdSysfsBackoff = newSysfsBackoff()
+
+// sysfsBackoff skips sysfs files whose reads fail slowly or with EOPNOTSUPP.
+// Slow successes are not backed off, since a stalled host can delay a healthy read.
+// When the amdgpu driver can't reach the SMU, reads can busy-wait in the kernel for
+// several seconds before failing, which burns a CPU core on every poll
+// (https://github.com/henrygd/beszel/issues/2699).
+type sysfsBackoff struct {
+	sync.Mutex
+	entries map[string]*sysfsBackoffEntry
+}
+
+type sysfsBackoffEntry struct {
+	until time.Time
+	delay time.Duration
+}
+
+func newSysfsBackoff() *sysfsBackoff {
+	return &sysfsBackoff{entries: make(map[string]*sysfsBackoffEntry)}
+}
+
+// allow reports whether path may be read at now.
+func (b *sysfsBackoff) allow(path string, now time.Time) bool {
+	b.Lock()
+	defer b.Unlock()
+	entry, ok := b.entries[path]
+	return !ok || !now.Before(entry.until)
+}
+
+// record updates the backoff state for path after a read that took elapsed.
+// Slow failures and unsupported reads double the delay up to sysfsBackoffMax; a success resets it.
+func (b *sysfsBackoff) record(path string, err error, elapsed time.Duration, now time.Time) {
+	b.Lock()
+	defer b.Unlock()
+	if err == nil {
+		delete(b.entries, path)
+		return
+	}
+	if elapsed < sysfsSlowReadThreshold && !errors.Is(err, syscall.EOPNOTSUPP) {
+		return
+	}
+	entry, ok := b.entries[path]
+	if !ok {
+		entry = &sysfsBackoffEntry{delay: sysfsBackoffMin}
+		b.entries[path] = entry
+	} else {
+		entry.delay = min(entry.delay*2, sysfsBackoffMax)
+	}
+	entry.until = now.Add(entry.delay)
+	slog.Warn("Backing off slow or unsupported sysfs file", "path", path, "elapsed", elapsed, "error", err, "retry", entry.delay)
 }
 
 // normalizeHexID normalizes hex IDs by trimming spaces, lowercasing, and dropping 0x.

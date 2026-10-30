@@ -6,6 +6,7 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
+	"syscall"
 	"testing"
 	"time"
 
@@ -145,6 +146,74 @@ func TestReadSysfsFloat(t *testing.T) {
 	require.NoError(t, os.WriteFile(badPath, []byte("not a number"), 0o644))
 	_, err = readSysfsFloat(badPath)
 	require.Error(t, err)
+}
+
+func TestSysfsBackoff(t *testing.T) {
+	const path = "/sys/class/drm/card1/device/gpu_busy_percent"
+	start := time.Now()
+	unsupported := &os.PathError{Op: "read", Path: path, Err: syscall.EOPNOTSUPP}
+
+	t.Run("fast reads are never backed off", func(t *testing.T) {
+		b := newSysfsBackoff()
+		b.record(path, nil, time.Millisecond, start)
+		b.record(path, os.ErrNotExist, time.Millisecond, start)
+		assert.True(t, b.allow(path, start))
+	})
+
+	t.Run("unsupported read backs off and doubles up to max", func(t *testing.T) {
+		b := newSysfsBackoff()
+		now := start
+		want := sysfsBackoffMin
+		for range 8 {
+			b.record(path, unsupported, time.Millisecond, now)
+			assert.False(t, b.allow(path, now.Add(want-time.Second)))
+			assert.True(t, b.allow(path, now.Add(want)))
+			now = now.Add(want)
+			want = min(want*2, sysfsBackoffMax)
+		}
+		assert.Equal(t, sysfsBackoffMax, b.entries[path].delay)
+	})
+
+	t.Run("slow failed read backs off", func(t *testing.T) {
+		b := newSysfsBackoff()
+		timedOut := &os.PathError{Op: "read", Path: path, Err: syscall.ETIME}
+		b.record(path, timedOut, sysfsSlowReadThreshold, start)
+		assert.False(t, b.allow(path, start))
+		assert.True(t, b.allow(path, start.Add(sysfsBackoffMin)))
+	})
+
+	t.Run("slow successful read is not backed off", func(t *testing.T) {
+		b := newSysfsBackoff()
+		b.record(path, nil, sysfsSlowReadThreshold, start)
+		assert.True(t, b.allow(path, start))
+	})
+
+	t.Run("slow successful read clears backoff", func(t *testing.T) {
+		b := newSysfsBackoff()
+		b.record(path, unsupported, time.Millisecond, start)
+		b.record(path, nil, sysfsSlowReadThreshold, start.Add(sysfsBackoffMin))
+		assert.Empty(t, b.entries)
+	})
+
+	t.Run("fast success resets delay", func(t *testing.T) {
+		b := newSysfsBackoff()
+		b.record(path, unsupported, time.Millisecond, start)
+		b.record(path, unsupported, time.Millisecond, start.Add(sysfsBackoffMin))
+		b.record(path, nil, time.Millisecond, start.Add(3*sysfsBackoffMin))
+		assert.True(t, b.allow(path, start.Add(3*sysfsBackoffMin)))
+		b.record(path, unsupported, time.Millisecond, start.Add(3*sysfsBackoffMin))
+		assert.Equal(t, sysfsBackoffMin, b.entries[path].delay)
+	})
+
+	t.Run("readSysfsFloat skips backed off files", func(t *testing.T) {
+		valPath := filepath.Join(t.TempDir(), "val")
+		require.NoError(t, os.WriteFile(valPath, []byte("42"), 0o644))
+		amdSysfsBackoff.record(valPath, unsupported, time.Millisecond, time.Now())
+		t.Cleanup(func() { amdSysfsBackoff.record(valPath, nil, 0, time.Now()) })
+
+		_, err := readSysfsFloat(valPath)
+		assert.ErrorIs(t, err, errSysfsBackoff)
+	})
 }
 
 func TestIsAmdGpu(t *testing.T) {
