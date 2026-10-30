@@ -2,6 +2,8 @@ package smart
 
 import (
 	"encoding/json"
+	"errors"
+	"fmt"
 	"strconv"
 	"strings"
 )
@@ -9,8 +11,9 @@ import (
 // SmartctlOutput holds the fields we read from `smartctl -a --json` for any
 // protocol. Sections that do not apply to a device are left nil or empty.
 //
-// Counters use wide integer types on purpose: a value that overflows its Go type
-// makes json.Unmarshal fail and drops the whole device (see #2484, #2582).
+// A value that overflows its Go type makes json.Unmarshal fail and drops the
+// whole device (see #2484, #2582, #2731). Use a wide type, or NVMeCounter for
+// the 128-bit NVMe fields, rather than a narrow one.
 type SmartctlOutput struct {
 	Smartctl struct {
 		ExitStatus int `json:"exit_status"`
@@ -32,7 +35,7 @@ type SmartctlOutput struct {
 	AtaDeviceStatistics json.RawMessage     `json:"ata_device_statistics"` // decoded lazily, only when needed
 
 	// NVMe
-	NVMeTotalCapacity             uint64                         `json:"nvme_total_capacity"`
+	NVMeTotalCapacity             NVMeCounter                    `json:"nvme_total_capacity"`
 	NVMeSmartHealthInformationLog *NVMeSmartHealthInformationLog `json:"nvme_smart_health_information_log"`
 
 	// SCSI (scsi_vendor/scsi_product are also reported for SATA disks behind SAT)
@@ -87,23 +90,117 @@ type AtaDeviceStatisticsEntry struct {
 }
 
 type NVMeSmartHealthInformationLog struct {
-	CriticalWarning         uint64 `json:"critical_warning"`
-	Temperature             int64  `json:"temperature"`
-	AvailableSpare          uint64 `json:"available_spare"`
-	AvailableSpareThreshold uint64 `json:"available_spare_threshold"`
-	PercentageUsed          uint64 `json:"percentage_used"`
-	DataUnitsRead           uint64 `json:"data_units_read"`
-	DataUnitsWritten        uint64 `json:"data_units_written"`
-	HostReads               uint64 `json:"host_reads"`
-	HostWrites              uint64 `json:"host_writes"`
-	ControllerBusyTime      uint64 `json:"controller_busy_time"`
-	PowerCycles             uint64 `json:"power_cycles"`
-	PowerOnHours            uint64 `json:"power_on_hours"`
-	UnsafeShutdowns         uint64 `json:"unsafe_shutdowns"`
-	MediaErrors             uint64 `json:"media_errors"`
-	NumErrLogEntries        uint64 `json:"num_err_log_entries"`
-	WarningTempTime         uint64 `json:"warning_temp_time"`
-	CriticalCompTime        uint64 `json:"critical_comp_time"`
+	CriticalWarning         uint64      `json:"critical_warning"`
+	Temperature             int64       `json:"temperature"`
+	AvailableSpare          uint64      `json:"available_spare"`
+	AvailableSpareThreshold uint64      `json:"available_spare_threshold"`
+	PercentageUsed          uint64      `json:"percentage_used"`
+	DataUnitsRead           NVMeCounter `json:"data_units_read"`
+	DataUnitsWritten        NVMeCounter `json:"data_units_written"`
+	HostReads               NVMeCounter `json:"host_reads"`
+	HostWrites              NVMeCounter `json:"host_writes"`
+	ControllerBusyTime      NVMeCounter `json:"controller_busy_time"`
+	PowerCycles             NVMeCounter `json:"power_cycles"`
+	PowerOnHours            NVMeCounter `json:"power_on_hours"`
+	UnsafeShutdowns         NVMeCounter `json:"unsafe_shutdowns"`
+	MediaErrors             NVMeCounter `json:"media_errors"`
+	NumErrLogEntries        NVMeCounter `json:"num_err_log_entries"`
+	WarningTempTime         uint64      `json:"warning_temp_time"`
+	CriticalCompTime        uint64      `json:"critical_comp_time"`
+}
+
+// NVMeCounter holds one of the 128-bit fields smartctl reports for NVMe
+// drives (health log counters, total capacity). smartctl prints the full value,
+// so faulty firmware can report a number past uint64 (#2731). Such a value
+// decodes as Overflow with Value 0 instead of failing json.Unmarshal and
+// dropping the device, so it is never shown as a real reading.
+type NVMeCounter struct {
+	Value    uint64
+	Overflow bool
+}
+
+// NVMeCounterInvalid is the RawString of an attribute whose counter overflowed.
+const NVMeCounterInvalid = "invalid (out of range)"
+
+func (c *NVMeCounter) UnmarshalJSON(data []byte) error {
+	*c = NVMeCounter{}
+	s := strings.TrimSpace(string(data))
+	if s == "null" {
+		return nil
+	}
+	// Exponent forms such as 5.573250223385609e+26 appear when the JSON was
+	// re-encoded, so the number is read exactly rather than through float64.
+	digits, exp, ok := splitJSONNumber(s)
+	switch {
+	case !ok:
+		return fmt.Errorf("invalid NVMe counter %q", s)
+	case digits == "":
+		return nil // zero
+	case exp < 0:
+		return fmt.Errorf("invalid NVMe counter %q: not an integer", s)
+	case int64(len(digits))+exp > 20: // at least 10^20, past uint64
+		c.Overflow = true
+		return nil
+	}
+	v, err := strconv.ParseUint(digits+strings.Repeat("0", int(exp)), 10, 64)
+	if errors.Is(err, strconv.ErrRange) {
+		c.Overflow = true
+		return nil
+	}
+	c.Value = v
+	return err
+}
+
+// splitJSONNumber reads a non-negative JSON number as digits * 10^exp, where
+// digits has no leading or trailing zeros ("" for zero). The exponent stops
+// growing far beyond any input length, so a huge one such as
+// 1e18446744073709551619 cannot wrap around.
+func splitJSONNumber(s string) (digits string, exp int64, ok bool) {
+	isDigit := func(b byte) bool { return '0' <= b && b <= '9' }
+	i := 0
+	for i < len(s) && isDigit(s[i]) {
+		i++
+	}
+	if i == 0 {
+		return "", 0, false
+	}
+	mantissa, frac := s[:i], ""
+	if i < len(s) && s[i] == '.' {
+		j := i + 1
+		for j < len(s) && isDigit(s[j]) {
+			j++
+		}
+		if j == i+1 {
+			return "", 0, false
+		}
+		frac, i = s[i+1:j], j
+	}
+	if i < len(s) && (s[i] == 'e' || s[i] == 'E') {
+		i++
+		neg := i < len(s) && s[i] == '-'
+		if i < len(s) && (s[i] == '+' || s[i] == '-') {
+			i++
+		}
+		start := i
+		for ; i < len(s) && isDigit(s[i]); i++ {
+			if exp < 1<<40 {
+				exp = exp*10 + int64(s[i]-'0')
+			}
+		}
+		if i == start {
+			return "", 0, false
+		}
+		if neg {
+			exp = -exp
+		}
+	}
+	if i != len(s) {
+		return "", 0, false
+	}
+	digits = strings.TrimLeft(mantissa+frac, "0")
+	trimmed := strings.TrimRight(digits, "0")
+	exp += int64(len(digits)-len(trimmed)) - int64(len(frac))
+	return trimmed, exp, true
 }
 
 type ScsiErrorCounter struct {
