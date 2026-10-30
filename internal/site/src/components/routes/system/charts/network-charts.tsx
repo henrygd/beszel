@@ -8,7 +8,7 @@ import type { ChartConfig } from "@/components/ui/chart"
 import type { ChartData, SystemStatsRecord } from "@/types"
 import { Separator } from "@/components/ui/separator"
 import NetworkSheet from "../network-sheet"
-import { ChartCard, FilterBar, SelectAvgMax } from "../chart-card"
+import { ChartCard, ContainerChartControls, SelectAvgMax } from "../chart-card"
 import { dockerOrPodman } from "../chart-data"
 
 export function BandwidthChart({
@@ -159,11 +159,11 @@ export function ContainerNetworkChart({
 			grid={grid}
 			title={dockerOrPodman(t`Docker Network I/O`, isPodman)}
 			description={t`Network traffic of containers`}
-			cornerEl={<FilterBar />}
+			cornerEl={<ContainerChartControls showSeriesLevel={chartData.hasStacks} />}
 		>
 			<AreaChartDefault
 				chartData={chartData}
-				customData={chartData.containerData}
+				customData={chartData.containerSeries}
 				dataPoints={dataPoints}
 				tickFormatter={(val) => {
 					const { value, unit } = formatBytes(val, true, userSettings.unitNet, false)

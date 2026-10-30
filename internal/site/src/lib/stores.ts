@@ -1,6 +1,7 @@
-import { atom, computed, map, type ReadableAtom } from "nanostores"
-import type { AlertMap, ChartTimes, SystemRecord, UpdateInfo, UserSettings } from "@/types"
+import { atom, computed, map, onMount, type ReadableAtom } from "nanostores"
+import type { AlertMap, ChartTimes, SeriesLevel, SystemRecord, UpdateInfo, UserSettings } from "@/types"
 import { pb } from "./api"
+import { DEFAULT_SERIES_LEVEL, isSeriesLevel } from "./container-series"
 import { Unit } from "./enums"
 
 /** Default layout width. Used as fallback when user setting is unset. */
@@ -88,6 +89,56 @@ export function hydrateUserSettings(settings: UserSettings) {
 
 /** Container chart filter */
 export const $containerFilter = atom("")
+
+const seriesLevelKey = "besz-series-level"
+
+/** Stored series level, or the default when nothing valid is stored */
+function storedSeriesLevel(): SeriesLevel {
+	try {
+		const saved = JSON.parse(localStorage.getItem(seriesLevelKey) ?? "null")
+		return isSeriesLevel(saved) ? saved : DEFAULT_SERIES_LEVEL
+	} catch {
+		// anything can end up under that key; a bad value must not take down the page
+		return DEFAULT_SERIES_LEVEL
+	}
+}
+
+/**
+ * Level the container charts group their series by: containers, services or stacks.
+ *
+ * Kept in localStorage like the grouping toggle of the container table, not in the user
+ * settings: it is a per-browser view preference and would mean a write to the database on every
+ * click. The stored value is read when the first component subscribes, so importing this module
+ * costs nothing and does not depend on web storage being present.
+ */
+export const $containerSeriesLevel = atom<SeriesLevel>(DEFAULT_SERIES_LEVEL)
+
+onMount($containerSeriesLevel, () => {
+	const stored = storedSeriesLevel()
+	if (stored !== $containerSeriesLevel.get()) {
+		$containerSeriesLevel.set(stored)
+	}
+})
+
+/**
+ * Switch the series level and remember it.
+ *
+ * The filter is cleared along with it: its terms are matched against series keys, and those mean
+ * something else on every level, so a filter typed for container names would blank out every
+ * stack series.
+ */
+export function setContainerSeriesLevel(level: SeriesLevel) {
+	if ($containerSeriesLevel.get() === level) {
+		return
+	}
+	$containerSeriesLevel.set(level)
+	$containerFilter.set("")
+	try {
+		localStorage.setItem(seriesLevelKey, JSON.stringify(level))
+	} catch {
+		// private mode or blocked storage: the level still applies for this session
+	}
+}
 
 /** Temperature chart filter */
 export const $temperatureFilter = atom("")

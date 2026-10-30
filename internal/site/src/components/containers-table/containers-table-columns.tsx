@@ -1,11 +1,13 @@
-import type { Column, ColumnDef } from "@tanstack/react-table"
+import type { CellContext, Column, ColumnDef, RowData } from "@tanstack/react-table"
 import { Button } from "@/components/ui/button"
 import { cn, decimalString, formatBytes, hourWithSeconds } from "@/lib/utils"
 import type { ContainerRecord } from "@/types"
 import { ContainerHealth, ContainerHealthLabels } from "@/lib/enums"
 import {
+	BoxesIcon,
 	CircleArrowUpIcon,
 	ClockIcon,
+	ComponentIcon,
 	ContainerIcon,
 	CpuIcon,
 	LayersIcon,
@@ -19,57 +21,109 @@ import { t } from "@lingui/core/macro"
 import { $allSystemsById } from "@/lib/stores"
 import { useStore } from "@nanostores/react"
 import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip"
+import { ContainerGroupLabel, GROUP_INDENT } from "@/components/containers-table/container-group-row"
+import { StackNodesCell } from "@/components/containers-table/stack-nodes-cell"
+import {
+	compareGroupAwareName,
+	comparePorts,
+	compareStatus,
+	countLeaves,
+	getServiceGroupingValue,
+	getServiceValue,
+	getStackGroupingValue,
+	getStackValue,
+	makeSystemComparator,
+	MULTIPLE_NODES,
+	sharedValue,
+	SERVICE_COLUMN_ID,
+	type StackNodeSummary,
+	STACK_COLUMN_ID,
+	worstHealth,
+} from "@/lib/container-grouping"
 
-// Unit names and their corresponding number of seconds for converting docker status strings
-const unitSeconds = [
-	["s", 1],
-	["mi", 60],
-	["h", 3600],
-	["d", 86400],
-	["w", 604800],
-	["mo", 2592000],
-] as const
-// Convert docker status string to number of seconds ("Up X minutes", "Up X hours", etc.)
-function getStatusValue(status: string): number {
-	const [_, num, unit] = status.split(" ")
-	// Docker uses "a" or "an" instead of "1" for singular units (e.g., "Up a minute", "Up an hour")
-	const numValue = num === "a" || num === "an" ? 1 : Number(num)
-	for (const [unitName, value] of unitSeconds) {
-		if (unit.startsWith(unitName)) {
-			return numValue * value
-		}
+declare module "@tanstack/react-table" {
+	interface TableMeta<TData extends RowData> {
+		/**
+		 * Node summary of every stack by stack name, built by the page from the full data. The
+		 * stack row reads it instead of its own leaf rows, so a filter narrows what is listed
+		 * without changing what the row says about where the stack lives.
+		 */
+		stackSummaries?: Map<string, StackNodeSummary>
 	}
-	return 0
 }
 
 export const containerChartCols: ColumnDef<ContainerRecord>[] = [
 	{
 		id: "name",
-		sortingFn: (a, b) => a.original.name.localeCompare(b.original.name),
+		sortingFn: compareGroupAwareName,
 		accessorFn: (record) => record.name,
+		// the number of containers lives here: the aggregation of a column the grouping runs on
+		// is never called, so the stack and service columns cannot carry it
+		aggregationFn: (_columnId, leafRows) => countLeaves(leafRows),
+		aggregatedCell: ({ row, getValue }) => <ContainerGroupLabel row={row} count={getValue() as number} />,
 		header: ({ column }) => <HeaderButton column={column} name={t`Name`} Icon={ContainerIcon} />,
-		cell: ({ getValue }) => {
-			return <span className="ms-1.5 xl:w-48 block truncate">{getValue() as string}</span>
+		cell: ({ getValue, row }) => {
+			// indented like the label of the group above it, so the nesting can be read per row.
+			// no style at all without grouping, so the flat table keeps exactly the markup it has
+			return (
+				<span
+					className="ms-1.5 xl:w-48 block truncate"
+					style={row.depth ? { paddingInlineStart: row.depth * GROUP_INDENT } : undefined}
+				>
+					{getValue() as string}
+				</span>
+			)
 		},
 	},
 	{
 		id: "system",
 		accessorFn: (record) => record.system,
-		sortingFn: (a, b) => {
-			const allSystems = $allSystemsById.get()
-			const systemNameA = allSystems[a.original.system]?.name ?? ""
-			const systemNameB = allSystems[b.original.system]?.name ?? ""
-			const primary = systemNameA.localeCompare(systemNameB)
-			if (primary !== 0) {
-				return primary
-			}
-			return a.original.name.localeCompare(b.original.name)
-		},
+		sortingFn: makeSystemComparator((value) => $allSystemsById.get()[value as string]?.name ?? ""),
+		// a stack can be spread over the swarm, a service row is always on one node
+		aggregationFn: (columnId, leafRows) =>
+			sharedValue(leafRows.map((leafRow) => leafRow.getValue<string>(columnId))) ?? MULTIPLE_NODES,
+		// a stack spans the swarm: the stack row counts its nodes and shows what runs where,
+		// instead of naming an aggregate that is not a node. A service row is always on one node
+		aggregatedCell: ({ row, getValue, table }) =>
+			row.groupingColumnId === STACK_COLUMN_ID ? (
+				<StackNodesCell row={row} table={table} />
+			) : (
+				<NodeNameCell value={getValue() as string} />
+			),
 		header: ({ column }) => <HeaderButton column={column} name={t`System`} Icon={ServerIcon} />,
-		cell: ({ getValue }) => {
-			const allSystems = useStore($allSystemsById)
-			return <div className="ms-1 max-w-40 truncate">{allSystems[getValue() as string]?.name ?? ""}</div>
-		},
+		cell: ({ getValue }) => <NodeNameCell value={getValue() as string} />,
+	},
+	{
+		id: STACK_COLUMN_ID,
+		accessorFn: (record) => getStackValue(record),
+		// containers without labels get a value of their own, so they don't end up in one group
+		getGroupingValue: (record) => getStackGroupingValue(record),
+		sortingFn: compareGroupAwareName,
+		header: ({ column }) => (
+			<HeaderButton
+				column={column}
+				name={t({ message: "Stack", context: "Docker Compose or Swarm stack" })}
+				Icon={BoxesIcon}
+			/>
+		),
+		cell: renderGroupValue,
+		aggregatedCell: renderGroupValue,
+	},
+	{
+		id: SERVICE_COLUMN_ID,
+		accessorFn: (record) => getServiceValue(record),
+		// the node is part of the key: replicas are only folded together per node
+		getGroupingValue: (record) => getServiceGroupingValue(record),
+		sortingFn: compareGroupAwareName,
+		header: ({ column }) => (
+			<HeaderButton
+				column={column}
+				name={t({ message: "Service", context: "Docker Swarm service" })}
+				Icon={ComponentIcon}
+			/>
+		),
+		cell: renderGroupValue,
+		aggregatedCell: renderGroupValue,
 	},
 	// {
 	// 	id: "id",
@@ -84,62 +138,40 @@ export const containerChartCols: ColumnDef<ContainerRecord>[] = [
 		id: "cpu",
 		accessorFn: (record) => record.cpu,
 		invertSorting: true,
+		aggregationFn: "sum",
 		header: ({ column }) => <HeaderButton column={column} name={t`CPU`} Icon={CpuIcon} />,
-		cell: ({ getValue }) => {
-			const val = getValue() as number
-			return <span className="ms-1 tabular-nums">{`${decimalString(val, val >= 10 ? 1 : 2)}%`}</span>
-		},
+		cell: renderCpu,
+		aggregatedCell: renderCpu,
 	},
 	{
 		id: "memory",
 		accessorFn: (record) => record.memory,
 		invertSorting: true,
+		aggregationFn: "sum",
 		header: ({ column }) => <HeaderButton column={column} name={t`Memory`} Icon={MemoryStickIcon} />,
-		cell: ({ getValue }) => {
-			const val = getValue() as number
-			const formatted = formatBytes(val, false, undefined, true)
-			return (
-				<span className="ms-1 tabular-nums">{`${decimalString(formatted.value, formatted.value >= 10 ? 1 : 2)} ${formatted.unit}`}</span>
-			)
-		},
+		cell: renderMemory,
+		aggregatedCell: renderMemory,
 	},
 	{
 		id: "net",
 		accessorFn: (record) => record.net,
 		invertSorting: true,
+		aggregationFn: "sum",
 		header: ({ column }) => <HeaderButton column={column} name={t`Net`} Icon={EthernetIcon} />,
 		minSize: 112,
-		cell: ({ getValue }) => {
-			const val = getValue() as number
-			const formatted = formatBytes(val, true, undefined, false)
-			return (
-				<div className="ms-1 tabular-nums">{`${decimalString(formatted.value, formatted.value >= 10 ? 1 : 2)} ${formatted.unit}`}</div>
-			)
-		},
+		cell: renderNet,
+		aggregatedCell: renderNet,
 	},
 	{
 		id: "health",
 		invertSorting: true,
 		accessorFn: (record) => record.health,
+		// worst health of the group: Unhealthy > Starting > Healthy > None
+		aggregationFn: (columnId, leafRows) => worstHealth(leafRows.map((leafRow) => leafRow.getValue<number>(columnId))),
 		header: ({ column }) => <HeaderButton column={column} name={t`Health`} Icon={ShieldCheckIcon} />,
 		minSize: 121,
-		cell: ({ getValue }) => {
-			const healthValue = getValue() as number
-			const healthStatus = ContainerHealthLabels[healthValue] || "Unknown"
-			return (
-				<Badge variant="outline" className="dark:border-white/12">
-					<span
-						className={cn("size-2 me-1.5 rounded-full", {
-							"bg-green-500": healthValue === ContainerHealth.Healthy,
-							"bg-red-500": healthValue === ContainerHealth.Unhealthy,
-							"bg-yellow-500": healthValue === ContainerHealth.Starting,
-							"bg-zinc-500": healthValue === ContainerHealth.None,
-						})}
-					></span>
-					{healthStatus}
-				</Badge>
-			)
-		},
+		cell: renderHealth,
+		aggregatedCell: renderHealth,
 	},
 	{
 		id: "ports",
@@ -151,7 +183,8 @@ export const containerChartCols: ColumnDef<ContainerRecord>[] = [
 				Icon={SquareArrowRightEnterIcon}
 			/>
 		),
-		sortingFn: (a, b) => getPortValue(a.original.ports) - getPortValue(b.original.ports),
+		sortingFn: comparePorts,
+		aggregatedCell: () => <NoAggregate />,
 		minSize: 147,
 		cell: ({ getValue }) => {
 			const val = getValue() as string | undefined
@@ -172,8 +205,10 @@ export const containerChartCols: ColumnDef<ContainerRecord>[] = [
 	},
 	{
 		id: "image",
-		sortingFn: (a, b) => a.original.image.localeCompare(b.original.image),
+		sortingFn: compareGroupAwareName,
 		accessorFn: (record) => record.image,
+		// no aggregate on purpose: a stack can run several images, and showing one would be a lie
+		aggregatedCell: () => <NoAggregate />,
 		header: ({ column }) => (
 			<HeaderButton column={column} name={t({ message: "Image", context: "Docker image" })} Icon={LayersIcon} />
 		),
@@ -204,7 +239,8 @@ export const containerChartCols: ColumnDef<ContainerRecord>[] = [
 		id: "status",
 		accessorFn: (record) => record.status,
 		invertSorting: true,
-		sortingFn: (a, b) => getStatusValue(a.original.status) - getStatusValue(b.original.status),
+		sortingFn: compareStatus,
+		aggregatedCell: () => <NoAggregate />,
 		header: ({ column }) => <HeaderButton column={column} name={t`Status`} Icon={HourglassIcon} />,
 		cell: ({ getValue }) => {
 			return <span className="ms-1 w-25 block truncate">{getValue() as string}</span>
@@ -214,13 +250,94 @@ export const containerChartCols: ColumnDef<ContainerRecord>[] = [
 		id: "updated",
 		invertSorting: true,
 		accessorFn: (record) => record.updated,
+		// freshest update in the group
+		aggregationFn: "max",
 		header: ({ column }) => <HeaderButton column={column} name={t`Updated`} Icon={ClockIcon} />,
-		cell: ({ getValue }) => {
-			const timestamp = getValue() as number
-			return <span className="ms-1 tabular-nums">{hourWithSeconds(new Date(timestamp).toISOString())}</span>
-		},
+		cell: renderUpdated,
+		aggregatedCell: renderUpdated,
 	},
 ]
+
+/**
+ * Cell renderers shared by the leaf rows and the group rows.
+ *
+ * The grouping feature of TanStack gives every column a default `aggregatedCell` that prints
+ * `getValue()?.toString()`, so a group row only keeps the formatting of the column when the
+ * column says so itself. Both keys point at one function instead of a copy of the format: the
+ * aggregate is in the same unit as the value of a single container.
+ */
+function renderCpu({ getValue }: CellContext<ContainerRecord, unknown>) {
+	const val = getValue() as number
+	return <span className="ms-1 tabular-nums">{`${decimalString(val, val >= 10 ? 1 : 2)}%`}</span>
+}
+
+function renderMemory({ getValue }: CellContext<ContainerRecord, unknown>) {
+	const formatted = formatBytes(getValue() as number, false, undefined, true)
+	return (
+		<span className="ms-1 tabular-nums">{`${decimalString(formatted.value, formatted.value >= 10 ? 1 : 2)} ${formatted.unit}`}</span>
+	)
+}
+
+function renderNet({ getValue }: CellContext<ContainerRecord, unknown>) {
+	const formatted = formatBytes(getValue() as number, true, undefined, false)
+	return (
+		<div className="ms-1 tabular-nums">{`${decimalString(formatted.value, formatted.value >= 10 ? 1 : 2)} ${formatted.unit}`}</div>
+	)
+}
+
+function renderHealth({ getValue }: CellContext<ContainerRecord, unknown>) {
+	const healthValue = getValue() as number
+	const healthStatus = ContainerHealthLabels[healthValue] || "Unknown"
+	return (
+		<Badge variant="outline" className="dark:border-white/12">
+			<span
+				className={cn("size-2 me-1.5 rounded-full", {
+					"bg-green-500": healthValue === ContainerHealth.Healthy,
+					"bg-red-500": healthValue === ContainerHealth.Unhealthy,
+					"bg-yellow-500": healthValue === ContainerHealth.Starting,
+					"bg-zinc-500": healthValue === ContainerHealth.None,
+				})}
+			></span>
+			{healthStatus}
+		</Badge>
+	)
+}
+
+function renderUpdated({ getValue }: CellContext<ContainerRecord, unknown>) {
+	const timestamp = getValue() as number
+	return <span className="ms-1 tabular-nums">{hourWithSeconds(new Date(timestamp).toISOString())}</span>
+}
+
+/**
+ * Stack or service of a single container, and the same value on the group row of that level.
+ * A container inside a group leaves the cell empty: the group row above already carries the
+ * label, and repeating it on every replica only adds noise.
+ */
+function renderGroupValue({ getValue, row }: CellContext<ContainerRecord, unknown>) {
+	if (!row.getIsGrouped() && row.depth > 0) {
+		return null
+	}
+	const value = getValue() as string
+	if (!value) {
+		return <div className="ms-1.5 text-muted-foreground">-</div>
+	}
+	return (
+		<span className="ms-1 xl:w-32 block truncate" title={value}>
+			{value}
+		</span>
+	)
+}
+
+/** Name of the node a container, or a whole service row, runs on */
+function NodeNameCell({ value }: { value: string }) {
+	const allSystems = useStore($allSystemsById)
+	return <div className="ms-1 max-w-40 truncate">{allSystems[value]?.name ?? ""}</div>
+}
+
+/** Placeholder for a column that cannot be summed up over a group */
+function NoAggregate() {
+	return <div className="ms-1.5 text-muted-foreground">-</div>
+}
 
 function HeaderButton({
 	column,
@@ -246,18 +363,4 @@ function HeaderButton({
 			{/* <ArrowUpDownIcon className="size-4" /> */}
 		</Button>
 	)
-}
-
-/**
- * Convert port string to a number for sorting.
- * Handles formats like "80", "127.0.0.1:80", and "80, 443" (takes the first mapping).
- */
-function getPortValue(ports: string | undefined): number {
-	if (!ports) {
-		return 0
-	}
-	const first = ports.includes(",") ? ports.substring(0, ports.indexOf(",")) : ports
-	const colonIndex = first.lastIndexOf(":")
-	const portStr = colonIndex === -1 ? first : first.substring(colonIndex + 1)
-	return Number(portStr) || 0
 }

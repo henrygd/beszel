@@ -3,18 +3,21 @@ import { t } from "@lingui/core/macro"
 import { Trans } from "@lingui/react/macro"
 import {
 	type ColumnFiltersState,
+	type ExpandedState,
 	flexRender,
 	getCoreRowModel,
+	getExpandedRowModel,
 	getFilteredRowModel,
 	getPaginationRowModel,
 	getSortedRowModel,
+	type GroupingState,
 	type Row,
 	type SortingState,
 	type Table as TableType,
 	useReactTable,
 	type VisibilityState,
 } from "@tanstack/react-table"
-import { memo, type RefObject, useEffect, useRef, useState } from "react"
+import { memo, type RefObject, useEffect, useMemo, useRef, useState } from "react"
 import { DataTablePagination, usePagination } from "@/components/ui/data-table-pagination"
 import { Input } from "@/components/ui/input"
 import { TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
@@ -28,13 +31,31 @@ import { Sheet, SheetTitle, SheetHeader, SheetContent, SheetDescription } from "
 import { Dialog, DialogContent, DialogTitle } from "../ui/dialog"
 import { Button } from "@/components/ui/button"
 import { $allSystemsById } from "@/lib/stores"
-import { LoaderCircleIcon, MaximizeIcon, RefreshCwIcon, XIcon } from "lucide-react"
+import { LoaderCircleIcon, MaximizeIcon, RefreshCwIcon, Settings2Icon, XIcon } from "lucide-react"
 import { Separator } from "../ui/separator"
 import { $router, Link } from "../router"
 import { listenKeys } from "nanostores"
+import { useStore } from "@nanostores/react"
 import { getPagePath } from "@nanostores/router"
 import { LogsDisplay, LogsFullscreenDialog, LogsIconButton, LogsTimestampToggle } from "@/components/logs-display"
 import { getLogTimestampDecorations } from "@/lib/logs"
+import { ContainerGroupRow } from "@/components/containers-table/container-group-row"
+import { getContainerGroupedRowModel } from "@/components/containers-table/containers-grouped-row-model"
+import {
+	buildGroupingState,
+	hasStacks,
+	SERVICE_COLUMN_ID,
+	STACK_COLUMN_ID,
+	summarizeStackNodes,
+} from "@/lib/container-grouping"
+import {
+	DropdownMenu,
+	DropdownMenuCheckboxItem,
+	DropdownMenuContent,
+	DropdownMenuLabel,
+	DropdownMenuSeparator,
+	DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 
 const syntaxTheme = "github-dark-dimmed"
 
@@ -47,20 +68,61 @@ export default function ContainersTable({ systemId }: { systemId?: string }) {
 		sessionStorage
 	)
 	const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
-	const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
+	// the new columns start hidden: until the data is in we don't know whether there are stacks
+	const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({
+		[STACK_COLUMN_ID]: false,
+		[SERVICE_COLUMN_ID]: false,
+	})
+	// escape hatch: grouping can be turned off to get the flat table back
+	const [groupByStack, setGroupByStack] = useBrowserStorage<boolean>("cgroup", true)
+	// group rows keep stable ids between data updates, so the expanded state survives polling
+	const [expanded, setExpanded] = useBrowserStorage<ExpandedState>(`cexp-${systemId ? 1 : 0}`, {}, sessionStorage)
 
-	// Hide ports column if no ports are present
+	// grouping only makes sense when the containers report stacks: a plain docker host keeps the
+	// table it has today, without the stack column, the chevrons and the grouping toggle
+	const stacksPresent = useMemo(() => hasStacks(data ?? []), [data])
+	const grouping = useMemo<GroupingState>(
+		() => buildGroupingState({ hasStacks: stacksPresent, enabled: groupByStack }),
+		[stacksPresent, groupByStack]
+	)
+
+	// where every stack lives, for the system column of its row. Built from the full data on
+	// purpose: a filter changes which rows are listed, not which nodes a stack runs on, and the
+	// mark about a service that is not up is needed exactly when the filter is on that service.
+	// The node names come from the store so the matrix keeps a stable column order, and the
+	// statuses the cell reads from the same store repaint the row when a system is paused
+	const allSystems = useStore($allSystemsById)
+	const stackSummaries = useMemo(
+		() => summarizeStackNodes(data ?? [], (node) => allSystems[node]?.name ?? node),
+		[data, allSystems]
+	)
+
+	// Hide ports column if no ports are present, stack and service columns if there are no stacks
+	const hadStacks = useRef<boolean | undefined>(undefined)
 	useEffect(() => {
 		if (data) {
 			const hasPorts = data.some((container) => container.ports)
+			// only follow the data when stacks appear or disappear, so manual changes stick
+			const stacksChanged = hadStacks.current !== stacksPresent
+			hadStacks.current = stacksPresent
 			setColumnVisibility((prev) => {
-				if (prev.ports === hasPorts) {
+				const next: VisibilityState = { ...prev, ports: hasPorts }
+				if (stacksChanged) {
+					next[STACK_COLUMN_ID] = stacksPresent
+					// the service column is declared but hidden by default
+					next[SERVICE_COLUMN_ID] = false
+				}
+				if (
+					next.ports === prev.ports &&
+					next[STACK_COLUMN_ID] === prev[STACK_COLUMN_ID] &&
+					next[SERVICE_COLUMN_ID] === prev[SERVICE_COLUMN_ID]
+				) {
 					return prev
 				}
-				return { ...prev, ports: hasPorts }
+				return next
 			})
 		}
-	}, [data])
+	}, [data, stacksPresent])
 
 	const [rowSelection, setRowSelection] = useState({})
 	const [globalFilter, setGlobalFilter] = useState("")
@@ -70,7 +132,7 @@ export default function ContainersTable({ systemId }: { systemId?: string }) {
 		function fetchData(systemId?: string) {
 			pb.collection<ContainerRecord>("containers")
 				.getList(0, 2000, {
-					fields: "id,name,image,updatable,ports,cpu,memory,net,health,status,system,updated",
+					fields: "id,name,image,updatable,ports,cpu,memory,net,health,status,system,stack,service,updated",
 					filter: systemId ? pb.filter("system={:system}", { system: systemId }) : undefined,
 				})
 				.then(({ items }) => {
@@ -128,9 +190,19 @@ export default function ContainersTable({ systemId }: { systemId?: string }) {
 		getCoreRowModel: getCoreRowModel(),
 		getSortedRowModel: getSortedRowModel(),
 		getFilteredRowModel: getFilteredRowModel(),
+		getGroupedRowModel: getContainerGroupedRowModel(),
+		getExpandedRowModel: getExpandedRowModel(),
 		getPaginationRowModel: getPaginationRowModel(),
 		autoResetPageIndex: false,
+		// without this every data update collapses all groups again
+		autoResetExpanded: false,
+		// keep the column order: by default the grouped columns are moved to the front
+		groupedColumnMode: false,
+		// pages are cut by top level rows, children travel with their parent
+		paginateExpandedRows: false,
+		meta: { stackSummaries },
 		onPaginationChange,
+		onExpandedChange: setExpanded,
 		onSortingChange: (updater) => {
 			setSorting(updater)
 			resetPageIndex()
@@ -150,6 +222,8 @@ export default function ContainersTable({ systemId }: { systemId?: string }) {
 			rowSelection,
 			globalFilter,
 			pagination,
+			grouping,
+			expanded,
 		},
 		onGlobalFilterChange: (value) => {
 			setGlobalFilter(value)
@@ -164,7 +238,10 @@ export default function ContainersTable({ systemId }: { systemId?: string }) {
 			const healthLabel = ContainerHealthLabels[container.health as ContainerHealth] ?? ""
 			const image = container.image ?? ""
 			const ports = container.ports ?? ""
-			const searchString = `${systemName} ${id} ${name} ${healthLabel} ${status} ${image} ${ports}`.toLowerCase()
+			const stack = container.stack ?? ""
+			const service = container.service ?? ""
+			const searchString =
+				`${systemName} ${id} ${name} ${healthLabel} ${status} ${image} ${ports} ${stack} ${service}`.toLowerCase()
 
 			return (filterValue as string)
 				.toLowerCase()
@@ -188,24 +265,68 @@ export default function ContainersTable({ systemId }: { systemId?: string }) {
 							<Trans>Click on a container to view more information.</Trans>
 						</CardDescription>
 					</div>
-					<div className="relative ms-auto w-full max-w-full md:w-64">
-						<Input
-							placeholder={t`Filter...`}
-							value={globalFilter}
-							onChange={(e) => table.setGlobalFilter(e.target.value)}
-							className="ps-4 pe-10 w-full"
-						/>
-						{globalFilter && (
-							<Button
-								type="button"
-								variant="ghost"
-								size="icon"
-								aria-label={t`Clear`}
-								className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 text-muted-foreground"
-								onClick={() => table.setGlobalFilter("")}
-							>
-								<XIcon className="h-4 w-4" />
-							</Button>
+					<div className="flex gap-2 ms-auto w-full max-w-full md:w-64">
+						<div className="relative flex-1">
+							<Input
+								placeholder={t`Filter...`}
+								value={globalFilter}
+								onChange={(e) => table.setGlobalFilter(e.target.value)}
+								className="ps-4 pe-10 w-full"
+							/>
+							{globalFilter && (
+								<Button
+									type="button"
+									variant="ghost"
+									size="icon"
+									aria-label={t`Clear`}
+									className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 text-muted-foreground"
+									onClick={() => table.setGlobalFilter("")}
+								>
+									<XIcon className="h-4 w-4" />
+								</Button>
+							)}
+						</div>
+						{stacksPresent && (
+							<DropdownMenu>
+								<DropdownMenuTrigger asChild>
+									<Button aria-label={t`View`} variant="outline" size="icon">
+										<Settings2Icon className="size-4 opacity-80" />
+									</Button>
+								</DropdownMenuTrigger>
+								<DropdownMenuContent align="end" className="min-w-52">
+									<DropdownMenuCheckboxItem
+										onSelect={(e) => e.preventDefault()}
+										checked={groupByStack}
+										onCheckedChange={(value) => setGroupByStack(!!value)}
+									>
+										<Trans>Group by stack</Trans>
+									</DropdownMenuCheckboxItem>
+									<DropdownMenuSeparator />
+									<DropdownMenuLabel className="text-muted-foreground font-normal">
+										<Trans>Visible Fields</Trans>
+									</DropdownMenuLabel>
+									{[STACK_COLUMN_ID, SERVICE_COLUMN_ID].map((columnId) => {
+										const column = table.getColumn(columnId)
+										if (!column) {
+											return null
+										}
+										return (
+											<DropdownMenuCheckboxItem
+												key={columnId}
+												onSelect={(e) => e.preventDefault()}
+												checked={column.getIsVisible()}
+												onCheckedChange={(value) => column.toggleVisibility(!!value)}
+											>
+												{columnId === STACK_COLUMN_ID ? (
+													<Trans context="Docker Compose or Swarm stack">Stack</Trans>
+												) : (
+													<Trans context="Docker Swarm service">Service</Trans>
+												)}
+											</DropdownMenuCheckboxItem>
+										)
+									})}
+								</DropdownMenuContent>
+							</DropdownMenu>
 						)}
 					</div>
 				</div>
@@ -242,7 +363,14 @@ const AllContainersTable = memo(function AllContainersTable({
 				<ContainersTableHead table={table} />
 				<TableBody>
 					{rows.length ? (
-						rows.map((row) => <ContainerTableRow key={row.id} row={row} openSheet={openSheet} />)
+						rows.map((row) =>
+							row.getIsGrouped() ? (
+								// expanded is passed so memo sees it change: TanStack keeps the same row object
+								<ContainerGroupRow key={row.id} row={row} />
+							) : (
+								<ContainerTableRow key={row.id} row={row} openSheet={openSheet} />
+							)
+						)
 					) : (
 						<TableRow>
 							<TableCell colSpan={colLength} className="h-37 text-center pointer-events-none">
@@ -470,7 +598,9 @@ const ContainerTableRow = memo(function ContainerTableRow({
 		<TableRow
 			data-state={row.getIsSelected() && "selected"}
 			className="cursor-pointer transition-opacity"
-			onClick={() => openSheet(row.original)}
+			// a group row carries the record of its first child as `original`, so it must never
+			// reach the sheet -- it would open the logs of a different container
+			onClick={() => !row.getIsGrouped() && openSheet(row.original)}
 		>
 			{row.getVisibleCells().map((cell) => (
 				<TableCell

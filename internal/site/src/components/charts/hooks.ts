@@ -1,88 +1,27 @@
 import { useMemo, useState } from "react"
 import { useStore } from "@nanostores/react"
 import type { ChartConfig } from "@/components/ui/chart"
-import type { ChartData, SystemStats, SystemStatsRecord } from "@/types"
+import type { ChartData, SeriesLevel, SystemStats, SystemStatsRecord } from "@/types"
 import type { DataPoint } from "./area-chart"
+import { type ContainerChartConfigs, containerChartConfigs } from "@/lib/container-series"
 import { $containerFilter } from "@/lib/stores"
 
-/** Chart configurations for CPU, memory, and network usage charts */
-export interface ContainerChartConfigs {
-	cpu: ChartConfig
-	memory: ChartConfig
-	network: ChartConfig
-}
+export type { ContainerChartConfigs }
 
 /**
- * Generates chart configurations for container metrics visualization
- * @param containerData - Array of container statistics data points
- * @returns Chart configurations for CPU, memory, and network metrics
+ * Chart configurations for the container charts, memoized.
+ *
+ * The computation itself lives in lib/container-series.ts: it is a pure function of the points
+ * and the level, which is what makes the ranking and the colours testable without a renderer.
+ *
+ * @param containerData - container stats points, already folded to `level`
+ * @param level - series level the points were folded to
  */
-export function useContainerChartConfigs(containerData: ChartData["containerData"]): ContainerChartConfigs {
-	return useMemo(() => {
-		const configs = {
-			cpu: {} as ChartConfig,
-			memory: {} as ChartConfig,
-			network: {} as ChartConfig,
-		}
-
-		// Aggregate usage metrics for each container
-		const totalUsage = {
-			cpu: new Map<string, number>(),
-			memory: new Map<string, number>(),
-			network: new Map<string, number>(),
-		}
-
-		// Process each data point to calculate totals
-		for (let i = 0; i < containerData.length; i++) {
-			const stats = containerData[i]
-			const containerNames = Object.keys(stats)
-
-			for (let j = 0; j < containerNames.length; j++) {
-				const containerName = containerNames[j]
-				// Skip metadata field
-				if (containerName === "created") {
-					continue
-				}
-
-				const containerStats = stats[containerName]
-				if (!containerStats) {
-					continue
-				}
-
-				// Accumulate metrics for CPU, memory, and network
-				const currentCpu = totalUsage.cpu.get(containerName) ?? 0
-				const currentMemory = totalUsage.memory.get(containerName) ?? 0
-				const currentNetwork = totalUsage.network.get(containerName) ?? 0
-				const sentBytes = containerStats.b?.[0] ?? (containerStats.ns ?? 0) * 1024 * 1024
-				const recvBytes = containerStats.b?.[1] ?? (containerStats.nr ?? 0) * 1024 * 1024
-
-				totalUsage.cpu.set(containerName, currentCpu + (containerStats.c ?? 0))
-				totalUsage.memory.set(containerName, currentMemory + (containerStats.m ?? 0))
-				totalUsage.network.set(containerName, currentNetwork + sentBytes + recvBytes)
-			}
-		}
-
-		// Generate chart configurations for each metric type
-		Object.entries(totalUsage).forEach(([chartType, usageMap]) => {
-			const sortedContainers = Array.from(usageMap.entries()).sort(([, a], [, b]) => b - a)
-			const chartConfig = {} as Record<string, { label: string; color: string }>
-			const count = sortedContainers.length
-
-			// Generate colors for each container
-			for (let i = 0; i < count; i++) {
-				const [containerName] = sortedContainers[i]
-				const hue = ((i * 360) / count) % 360
-				chartConfig[containerName] = {
-					label: containerName,
-					color: `hsl(${hue}, var(--chart-saturation), var(--chart-lightness))`,
-				}
-			}
-
-			configs[chartType as keyof typeof configs] = chartConfig
-		})
-
-		return configs
-	}, [containerData])
+export function useContainerChartConfigs(
+	containerData: ChartData["containerSeries"],
+	level: SeriesLevel = "container"
+): ContainerChartConfigs {
+	return useMemo(() => containerChartConfigs(containerData, level), [containerData, level])
 }
 
 /**

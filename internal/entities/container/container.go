@@ -33,10 +33,14 @@ type ApiInfo struct {
 	// Mounts          []MountPoint
 
 	// Set by the agent, not part of the Docker response.
-	// Labels is only filled when CONTAINER_NAME_LABEL is set, read in the same decode pass as the rest.
+	// Labels is only filled when a name template or container grouping needs them, read in the
+	// same decode pass as the rest.
 	Labels map[string]string `json:"-"`
 	// DisplayName is the name reported to the hub.
 	DisplayName string `json:"-"`
+	// Stack and Service are the container's group, resolved from its labels.
+	Stack   string `json:"-"`
+	Service string `json:"-"`
 }
 
 // Docker container resources from /containers/{id}/stats
@@ -197,6 +201,10 @@ type Stats struct {
 	Image           string       `json:"-" cbor:"8,keyasint"`
 	Ports           string       `json:"-" cbor:"10,keyasint"`
 	UpdateAvailable bool         `json:"u,omitzero" cbor:"11,keyasint,omitzero"`
+	// Stack and Service are stored with the stats, and AverageContainerStatsSlice carries them
+	// into the averaged records, so grouping holds in every chart range, not only the last hour.
+	Stack   string `json:"st,omitzero" cbor:"12,keyasint,omitzero"`
+	Service string `json:"sv,omitzero" cbor:"13,keyasint,omitzero"`
 	// PrevCpu     [2]uint64    `json:"-"`
 	CpuSystem    uint64       `json:"-"`
 	CpuContainer uint64       `json:"-"`

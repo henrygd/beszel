@@ -662,6 +662,12 @@ func AverageContainerStatsSlice(records [][]container.Stats) []container.Stats {
 			if _, ok := sums[stat.Name]; !ok {
 				sums[stat.Name] = &container.Stats{Name: stat.Name}
 			}
+			// Keep the last group a container reported in this window: an averaged record without
+			// it would drop out of its stack in every range above 1m.
+			if stat.Stack != "" || stat.Service != "" {
+				sums[stat.Name].Stack = stat.Stack
+				sums[stat.Name].Service = stat.Service
+			}
 			sums[stat.Name].Cpu += stat.Cpu
 			sums[stat.Name].Mem += stat.Mem
 			sentBytes := stat.Bandwidth[0]
@@ -679,6 +685,8 @@ func AverageContainerStatsSlice(records [][]container.Stats) []container.Stats {
 	for _, value := range sums {
 		result = append(result, container.Stats{
 			Name:      value.Name,
+			Stack:     value.Stack,
+			Service:   value.Service,
 			Cpu:       twoDecimals(value.Cpu / count),
 			Mem:       twoDecimals(value.Mem / count),
 			Bandwidth: [2]uint64{uint64(float64(value.Bandwidth[0]) / count), uint64(float64(value.Bandwidth[1]) / count)},

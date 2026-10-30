@@ -302,6 +302,10 @@ export interface ContainerStatsRecord extends RecordModel {
 interface ContainerStats {
 	/** name */
 	n: string
+	/** docker stack or compose project */
+	st?: string
+	/** service within the stack */
+	sv?: string
 	/** cpu percent */
 	c: number
 	/** memory used (mb) */
@@ -367,6 +371,10 @@ export interface ContainerRecord extends RecordModel {
 	net: number
 	health: number
 	status: string
+	/** Docker stack or compose project, empty when the container has no grouping labels */
+	stack?: string
+	/** Service within the stack, with the stack prefix trimmed */
+	service?: string
 	updated: number
 }
 
@@ -426,9 +434,21 @@ export interface ChartOptions {
 	chartTime: ChartTimes
 }
 
+/**
+ * Level the container chart series are grouped by. Declared here because types.d.ts cannot
+ * import from lib; lib/container-series.ts re-exports it.
+ */
+export type SeriesLevel = "container" | "service" | "stack"
+
 export interface ChartData extends ChartOptions {
 	systemStats: SystemStatsRecord[]
 	containerData: ChartDataContainer[]
+	/** containerData folded to `seriesLevel`; the same array as containerData on the container level */
+	containerSeries: ChartDataContainer[]
+	/** level the series actually use: "container" whenever the data reports no stacks */
+	seriesLevel: SeriesLevel
+	/** whether any container reports a stack, i.e. whether the level selector is worth showing */
+	hasStacks: boolean
 }
 
 export interface AlertInfo {
