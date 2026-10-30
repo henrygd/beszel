@@ -67,6 +67,12 @@ func (rm *RecordManager) CreateLongerRecords() {
 			longerType:         "480m",
 			longerTimeDuration: -480 * time.Minute,
 		},
+		{
+			shorterType:        "480m",
+			minShorterRecords:  3,
+			longerType:         "24h",
+			longerTimeDuration: -24 * time.Hour,
+		},
 	}
 	// wrap the operations in a transaction
 	// Pocketbase cron does not handle errors, log them here.
