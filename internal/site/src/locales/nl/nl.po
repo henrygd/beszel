@@ -66,6 +66,7 @@ msgid "{count, plural, one {{countString} minute} few {{countString} minutes} ma
 msgstr "{count, plural, one {{countString} minuut} other {{countString} minuten}}"
 
 #: src/components/containers-table/container-group-row.tsx
+#: src/components/containers-table/stack-nodes-cell.tsx
 msgid "{count, plural, one {# container} other {# containers}}"
 msgstr ""
 
@@ -76,6 +77,10 @@ msgstr "{daysLeft, plural, one {# dag} other {# dagen}}"
 #: src/components/routes/system/charts/disk-charts.tsx
 msgid "{diskName} I/O"
 msgstr "I/O van {diskName}"
+
+#: src/components/containers-table/stack-nodes-cell.tsx
+msgid "{nodeCount, plural, one {# node} other {# nodes}}"
+msgstr ""
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "{numFailed, plural, one {# failed service} other {# failed services}}"
@@ -988,6 +993,10 @@ msgstr "Beëindigd actief"
 msgid "Expand group"
 msgstr ""
 
+#: src/components/containers-table/stack-nodes-cell.tsx
+msgid "Expected nodes are inferred from where the stack currently runs. Docker Swarm desired replicas are not collected."
+msgstr ""
+
 #: src/components/alerts-history-columns.tsx
 #: src/components/network-monitors-table/network-monitors-columns.tsx
 msgid "Expired"
@@ -1431,8 +1440,8 @@ msgid "Mountpoint"
 msgstr "Koppelpunt"
 
 #: src/components/containers-table/containers-table-columns.tsx
-msgid "Multiple nodes"
-msgstr ""
+#~ msgid "Multiple nodes"
+#~ msgstr ""
 
 #: src/components/add-system.tsx
 #: src/components/alerts-history-columns.tsx
@@ -1492,6 +1501,14 @@ msgstr "Netwerk eenheid"
 msgid "No"
 msgstr "Nee"
 
+#: src/components/containers-table/stack-nodes-cell.tsx
+msgid "No containers of {service} on {nodes}"
+msgstr ""
+
+#: src/components/containers-table/stack-nodes-cell.tsx
+msgid "No data from {nodes}"
+msgstr ""
+
 #: src/components/routes/system/storage-pools-table.tsx
 msgid "No detail data for this pool."
 msgstr "Geen gedetailleerde gegevens beschikbaar voor deze pool."
@@ -1529,6 +1546,10 @@ msgstr "Geen systemen gevonden."
 #: src/components/network-monitors-table/monitor-dialog.tsx
 msgid "No targets found."
 msgstr "Geen doelen gevonden."
+
+#: src/components/containers-table/stack-nodes-cell.tsx
+msgid "Node is {status}"
+msgstr ""
 
 #: src/components/routes/system/storage-pools-table.tsx
 msgid "None"
@@ -2043,6 +2064,7 @@ msgstr "Serienummer"
 
 #: src/components/containers-table/containers-table-columns.tsx
 #: src/components/containers-table/containers-table.tsx
+#: src/components/containers-table/stack-nodes-cell.tsx
 msgctxt "Docker Swarm service"
 msgid "Service"
 msgstr ""
