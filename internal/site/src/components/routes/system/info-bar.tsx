@@ -203,7 +203,11 @@ export default function InfoBar({
 					</div>
 				</div>
 				<div className="xl:ms-auto flex items-center gap-2 max-sm:-mb-1">
-					<ChartTimeSelect className="w-full xl:w-40" agentVersion={chartData.agentVersion} />
+					<ChartTimeSelect
+						className="w-full xl:w-auto"
+						triggerClassName="xl:w-40 xl:flex-none"
+						agentVersion={chartData.agentVersion}
+					/>
 					<DropdownMenu>
 						<DropdownMenuTrigger asChild>
 							<Button aria-label={t`View`} variant="outline" size="icon" className="hidden xl:flex">
