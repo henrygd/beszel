@@ -17,7 +17,6 @@ import {
 	$userSettings,
 	getUserChartTime,
 } from "@/lib/stores"
-import { getRangeChartTime } from "@/lib/chart-range"
 import { chartTimeData, listen, parseSemVer } from "@/lib/utils"
 import type {
 	ChartData,
@@ -38,7 +37,7 @@ export function useSystemData(id: string) {
 	const systems = useStore($systems)
 	const range = useStore($chartRange)
 	const presetChartTime = useStore($chartTime)
-	const chartTime = useMemo(() => (range ? getRangeChartTime(range) : presetChartTime), [range, presetChartTime])
+	const chartTime = range ? range.chartTime : presetChartTime
 	const maxValues = useStore($maxValues)
 	const [grid, _setGrid] = useState<boolean>(
 		() => $userSettings.get().grid ?? JSON.parse(localStorage.getItem("besz-grid") ?? "null") ?? true

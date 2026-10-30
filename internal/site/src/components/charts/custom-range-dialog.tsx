@@ -12,17 +12,11 @@ import {
 } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import {
-	type ChartRange,
-	getRangeChartTime,
-	normalizeRange,
-	oldestRangeStart,
-	toDateTimeLocal,
-} from "@/lib/chart-range"
+import { type ChartRange, normalizeRange, oldestRangeStart, type TimeWindow, toDateTimeLocal } from "@/lib/chart-range"
 import { chartTimeData, formatDay, hourWithMinutes } from "@/lib/utils"
 
 /** Short label for a custom range, e.g. "Oct 29 12:00 – 18:00" */
-export function formatRange(range: ChartRange) {
+export function formatRange(range: TimeWindow) {
 	const start = new Date(range.start).toISOString()
 	const end = new Date(range.end).toISOString()
 	const startDay = formatDay(start)
@@ -40,7 +34,7 @@ export function CustomRangeDialog({
 }: {
 	open: boolean
 	onOpenChange: (open: boolean) => void
-	initialRange: ChartRange
+	initialRange: TimeWindow
 	onApply: (range: ChartRange) => void
 }) {
 	return (
@@ -58,7 +52,7 @@ function CustomRangeForm({
 	onApply,
 	onCancel,
 }: {
-	initialRange: ChartRange
+	initialRange: TimeWindow
 	onApply: (range: ChartRange) => void
 	onCancel: () => void
 }) {
@@ -68,7 +62,7 @@ function CustomRangeForm({
 	const [end, setEnd] = useState(() => toDateTimeLocal(initialRange.end))
 
 	const range = normalizeRange({ start: new Date(start).getTime(), end: new Date(end).getTime() }, now)
-	const minutes = range ? chartTimeData[getRangeChartTime(range, now)].expectedInterval / 60_000 : 0
+	const minutes = range ? chartTimeData[range.chartTime].expectedInterval / 60_000 : 0
 	const hours = minutes / 60
 
 	return (

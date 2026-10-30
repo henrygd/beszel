@@ -30,7 +30,15 @@ describe("normalizeRange", () => {
 		expect(normalizeRange({ start: now - 40 * day, end: now + hour }, now)).toEqual({
 			start: oldestRangeStart(now),
 			end: now,
+			chartTime: "30d",
 		})
+	})
+
+	test("stores the tier picked at normalize time", () => {
+		const range = normalizeRange({ start: now - 24 * hour, end: now }, now)
+		expect(range?.chartTime).toBe("24h")
+		// the dialog hint and the fetch both read this, so a later now can't move the range to 1w
+		expect(getRangeChartTime({ start: now - 24 * hour, end: now }, now + 2 * minute)).toBe("1w")
 	})
 
 	test("rejects empty, reversed or invalid ranges", () => {
@@ -41,20 +49,25 @@ describe("normalizeRange", () => {
 })
 
 describe("shiftRange", () => {
-	const range = { start: now - 2 * day, end: now - 2 * day + 6 * hour }
+	const range = { start: now - 2 * day, end: now - 2 * day + 6 * hour, chartTime: "1w" as const }
 
 	test("steps back and forward by the range length", () => {
-		expect(shiftRange(range, -1, now)).toEqual({ start: range.start - 6 * hour, end: range.start })
-		expect(shiftRange(range, 1, now)).toEqual({ start: range.end, end: range.end + 6 * hour })
+		expect(shiftRange(range, -1, now)).toEqual({
+			start: range.start - 6 * hour,
+			end: range.start,
+			chartTime: "1w",
+		})
+		expect(shiftRange(range, 1, now)).toEqual({ start: range.end, end: range.end + 6 * hour, chartTime: "1w" })
 	})
 
 	test("stops at the edges of the stored history", () => {
-		expect(shiftRange({ start: now - 3 * hour, end: now - hour }, 1, now)).toEqual({
+		expect(shiftRange({ start: now - 3 * hour, end: now - hour, chartTime: "12h" }, 1, now)).toEqual({
 			start: now - 2 * hour,
 			end: now,
+			chartTime: "12h",
 		})
-		expect(shiftRange({ start: now - hour, end: now }, 1, now)).toBeNull()
+		expect(shiftRange({ start: now - hour, end: now, chartTime: "1h" }, 1, now)).toBeNull()
 		const oldest = oldestRangeStart(now)
-		expect(shiftRange({ start: oldest, end: oldest + hour }, -1, now)).toBeNull()
+		expect(shiftRange({ start: oldest, end: oldest + hour, chartTime: "30d" }, -1, now)).toBeNull()
 	})
 })

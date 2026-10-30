@@ -3,7 +3,7 @@ import { useStore } from "@nanostores/react"
 import { ChevronLeftIcon, ChevronRightIcon, HistoryIcon, PencilIcon } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectSeparator, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { type ChartRange, shiftRange } from "@/lib/chart-range"
+import { shiftRange, type TimeWindow } from "@/lib/chart-range"
 import { $chartRange, $chartTime } from "@/lib/stores"
 import { chartTimeData, cn, compareSemVer, parseSemVer } from "@/lib/utils"
 import type { ChartTimes, SemVer } from "@/types"
@@ -50,11 +50,13 @@ export default memo(function ChartTimeSelect({
 			setDialogOpen(true)
 			return
 		}
-		$chartRange.set(null)
+		if (allowCustom) {
+			$chartRange.set(null)
+		}
 		chartTimeStore.set(value as ChartTimes)
 	}
 
-	function getInitialRange(): ChartRange {
+	function getInitialRange(): TimeWindow {
 		if (range) {
 			return range
 		}
@@ -63,8 +65,16 @@ export default memo(function ChartTimeSelect({
 		return { start: chartTimeData[preset].getOffset(new Date(end)).getTime(), end }
 	}
 
-	const prevRange = range && shiftRange(range, -1)
-	const nextRange = range && shiftRange(range, 1)
+	const canGoBack = range && shiftRange(range, -1)
+	const canGoForward = range && shiftRange(range, 1)
+
+	// shift again on click so the new range's tier is picked at the time it is applied
+	function shift(direction: -1 | 1) {
+		const shifted = range && shiftRange(range, direction)
+		if (shifted) {
+			$chartRange.set(shifted)
+		}
+	}
 
 	return (
 		<div className={cn("flex items-center gap-2", className)}>
@@ -74,8 +84,8 @@ export default memo(function ChartTimeSelect({
 					size="icon"
 					className="shrink-0"
 					aria-label={t`Previous period`}
-					disabled={!prevRange}
-					onClick={() => prevRange && $chartRange.set(prevRange)}
+					disabled={!canGoBack}
+					onClick={() => shift(-1)}
 				>
 					<ChevronLeftIcon className="size-4 rtl:rotate-180" />
 				</Button>
@@ -106,8 +116,8 @@ export default memo(function ChartTimeSelect({
 						size="icon"
 						className="shrink-0"
 						aria-label={t`Next period`}
-						disabled={!nextRange}
-						onClick={() => nextRange && $chartRange.set(nextRange)}
+						disabled={!canGoForward}
+						onClick={() => shift(1)}
 					>
 						<ChevronRightIcon className="size-4 rtl:rotate-180" />
 					</Button>
