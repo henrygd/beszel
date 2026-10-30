@@ -126,6 +126,20 @@ export interface SystemStats {
 	s?: number
 	/** @deprecated swap used (gb) - records before 0.21.1 */
 	su?: number
+	/** swap in rate (bytes/sec) */
+	si?: number
+	/** swap out rate (bytes/sec) */
+	so?: number
+	/** memory pressure, % of interval stalled [some, full] */
+	mpr?: [number, number]
+	/** OOM kill event count delta */
+	moom?: number
+	/** reclaimable slab memory (gb) */
+	msr?: number
+	/** unreclaimable slab memory (gb) */
+	msu?: number
+	/** major page fault rate (faults/sec) */
+	mpf?: number
 	/** disk size (gb) */
 	d: number
 	/** disk used (gb) */

@@ -106,7 +106,7 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 						/>
 					)}
 
-					<MemoryChart {...coreProps} />
+					<MemoryChart {...coreProps} systemData={systemData} />
 
 					{hasContainers && (
 						<ContainerMemoryChart
@@ -132,7 +132,7 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 						/>
 					)}
 
-					<SwapChart chartData={chartData} grid={grid} dataEmpty={dataEmpty} systemStats={systemStats} />
+					<SwapChart chartData={chartData} grid={grid} dataEmpty={dataEmpty} systemData={systemData} />
 
 					<LoadAverageChart chartData={chartData} grid={grid} dataEmpty={dataEmpty} />
 
@@ -221,8 +221,8 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 					<div className="grid xl:grid-cols-2 gap-4">
 						<CpuChart {...coreProps} />
 						<LoadAverageChart chartData={chartData} grid={grid} dataEmpty={dataEmpty} />
-						<MemoryChart {...coreProps} />
-						<SwapChart chartData={chartData} grid={grid} dataEmpty={dataEmpty} systemStats={systemStats} />
+						<MemoryChart {...coreProps} systemData={systemData} />
+						<SwapChart chartData={chartData} grid={grid} dataEmpty={dataEmpty} systemData={systemData} />
 						<TemperatureChart {...coreProps} setPageBottomExtraMargin={setPageBottomExtraMargin} />
 						<FanChart {...coreProps} />
 						<BatteryChart system={system} {...coreProps} />

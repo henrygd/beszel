@@ -3,10 +3,13 @@ import AreaChartDefault from "@/components/charts/area-chart"
 import { useContainerDataPoints } from "@/components/charts/hooks"
 import { Unit } from "@/lib/enums"
 import type { ChartConfig } from "@/components/ui/chart"
-import type { ChartData, SystemStatsRecord } from "@/types"
+import type { ChartData } from "@/types"
 import { ChartCard, FilterBar, SelectAvgMax } from "../chart-card"
 import { dockerOrPodman } from "../chart-data"
 import { decimalString, formatBytes, toFixedFloat } from "@/lib/utils"
+import MemorySheet from "../memory-sheet"
+import SwapSheet from "../swap-sheet"
+import type { SystemData } from "../use-system-data"
 
 /**
  * Converts deprecated GB memory values from records before 0.21.1 to bytes.
@@ -32,6 +35,7 @@ export function MemoryChart({
 	showMax,
 	isLongerChart,
 	maxValues,
+	systemData,
 }: {
 	chartData: ChartData
 	grid: boolean
@@ -39,10 +43,21 @@ export function MemoryChart({
 	showMax: boolean
 	isLongerChart: boolean
 	maxValues: boolean
+	systemData?: SystemData
 }) {
 	const maxValSelect = isLongerChart ? <SelectAvgMax max={maxValues} /> : null
 	const lastStats = chartData.systemStats.at(-1)?.stats
 	const totalMem = lastStats?.mem?.[0] ?? gbToBytes(lastStats?.m) ?? 0
+
+	let cornerEl = maxValSelect
+	if (systemData) {
+		cornerEl = (
+			<div className="flex gap-2">
+				{maxValSelect}
+				<MemorySheet systemData={systemData} />
+			</div>
+		)
+	}
 
 	return (
 		<ChartCard
@@ -50,7 +65,7 @@ export function MemoryChart({
 			grid={grid}
 			title={t`Memory Usage`}
 			description={t`Precise utilization at the recorded time`}
-			cornerEl={maxValSelect}
+			cornerEl={cornerEl}
 		>
 			<AreaChartDefault
 				chartData={chartData}
@@ -142,22 +157,28 @@ export function SwapChart({
 	chartData,
 	grid,
 	dataEmpty,
-	systemStats,
+	systemData,
 }: {
 	chartData: ChartData
 	grid: boolean
 	dataEmpty: boolean
-	systemStats: SystemStatsRecord[]
+	systemData?: SystemData
 }) {
-	// const userSettings = useStore($userSettings)
-
-	const lastStats = systemStats.at(-1)?.stats
-	const hasSwapData = (lastStats?.swap?.[1] ?? gbToBytes(lastStats?.su) ?? 0) > 0
-	if (!hasSwapData) {
+	// show even when swap is unused, but hide if the system has no swap configured
+	const lastStats = chartData.systemStats.at(-1)?.stats
+	const hasSwap = (lastStats?.swap?.[0] ?? gbToBytes(lastStats?.s) ?? 0) > 0
+	if (!hasSwap) {
 		return null
 	}
+	const cornerEl = systemData ? <SwapSheet systemData={systemData} /> : null
 	return (
-		<ChartCard empty={dataEmpty} grid={grid} title={t`Swap Usage`} description={t`Swap space used by the system`}>
+		<ChartCard
+			empty={dataEmpty}
+			grid={grid}
+			title={t`Swap Usage`}
+			description={t`Swap space used by the system`}
+			cornerEl={cornerEl}
+		>
 			<AreaChartDefault
 				chartData={chartData}
 				domain={[
