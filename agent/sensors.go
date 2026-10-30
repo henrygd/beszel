@@ -34,13 +34,12 @@ type getTempsFn func(ctx context.Context) ([]sensors.TemperatureStat, error)
 
 type SensorConfig struct {
 	context        context.Context
-	sensors        map[string]struct{}
+	sensors        sensorFilter
 	primarySensor  string
 	timeout        time.Duration
-	isBlacklist    bool
-	hasWildcards   bool
 	skipCollection bool
 	skipGPU        bool
+	skipFans       bool
 	fanSensors     sensorFilter
 	sensorShadow   string
 	firstRun       bool
@@ -57,7 +56,8 @@ func (a *Agent) newSensorConfig() *SensorConfig {
 	config := a.newSensorConfigWithEnv(primarySensor, sysSensors, sensorsEnvVal, sensorsTimeout, skipCollection, skipGPU == "true")
 
 	// FAN_SENSORS uses the same syntax as SENSORS, matched against fan keys
-	fanSensorsEnvVal, _ := utils.GetEnv("FAN_SENSORS")
+	fanSensorsEnvVal, fanSensorsSet := utils.GetEnv("FAN_SENSORS")
+	config.skipFans = fanSensorsSet && fanSensorsEnvVal == ""
 	config.fanSensors = parseSensorFilter(fanSensorsEnvVal)
 
 	return config
@@ -82,7 +82,7 @@ func (a *Agent) newSensorConfigWithEnv(primarySensor, sysSensors, sensorsEnvVal,
 		skipCollection: skipCollection,
 		skipGPU:        skipGPU,
 		firstRun:       true,
-		sensors:        make(map[string]struct{}),
+		sensors:        parseSensorFilter(sensorsEnvVal),
 	}
 
 	// Set sensors context (allows overriding sys location for sensors)
@@ -105,9 +105,6 @@ func (a *Agent) newSensorConfigWithEnv(primarySensor, sysSensors, sensorsEnvVal,
 			slog.Warn("SKIP_GPU sensor shadow unavailable, falling back to post-read filtering", "err", err)
 		}
 	}
-
-	filter := parseSensorFilter(sensorsEnvVal)
-	config.sensors, config.isBlacklist, config.hasWildcards = filter.sensors, filter.isBlacklist, filter.hasWildcards
 
 	return config
 }
@@ -277,7 +274,7 @@ func readWithTimeout[T any](inflight *atomic.Bool, timeout time.Duration, timeou
 
 // isValidSensor checks if a sensor is valid based on the sensor name and the sensor config
 func isValidSensor(sensorName string, config *SensorConfig) bool {
-	return sensorFilter{config.sensors, config.isBlacklist, config.hasWildcards}.allows(sensorName)
+	return config.sensors.allows(sensorName)
 }
 
 // allows checks if a sensor name passes the filter

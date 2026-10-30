@@ -29,7 +29,7 @@ func newFanSensorCache(root string) func() ([]fanSensor, error) {
 // updateFans populates systemStats.Fans from the host's hwmon sysfs tree.
 // No-op on platforms where hwmon isn't available (see fans_other.go).
 func (a *Agent) updateFans(systemStats *system.Stats) {
-	if hwmonRoot == "" {
+	if hwmonRoot == "" || (a.sensorConfig != nil && a.sensorConfig.skipFans) {
 		return
 	}
 	fans, err := a.readFansWithTimeout(getFanSensors)
@@ -72,11 +72,8 @@ func (a *Agent) readFansWithTimeout(getSensors func() ([]fanSensor, error)) (map
 			return nil, err
 		}
 		// Filter before reading fan*_input: each read can wake an idle GPU.
-		if a.sensorConfig != nil && a.sensorConfig.skipGPU {
-			sensors = filterGpuFans(sensors)
-		}
-		if a.sensorConfig != nil && len(a.sensorConfig.fanSensors.sensors) > 0 {
-			sensors = filterFanSensors(sensors, a.sensorConfig.fanSensors)
+		if a.sensorConfig != nil {
+			sensors = a.sensorConfig.filterFans(sensors)
 		}
 		return readFanSensors(sensors), nil
 	})
@@ -146,26 +143,18 @@ func readFanSensors(sensors []fanSensor) map[string]uint16 {
 	return fans
 }
 
-// filterGpuFans drops GPU chips without touching the shared cache backing array.
-func filterGpuFans(sensors []fanSensor) []fanSensor {
+// filterFans drops GPU chips (SKIP_GPU) and fans excluded by FAN_SENSORS in a
+// single pass, without touching the shared cache backing array.
+func (config *SensorConfig) filterFans(sensors []fanSensor) []fanSensor {
 	kept := make([]fanSensor, 0, len(sensors))
 	for _, sensor := range sensors {
-		if isGpuChipName(sensor.chip) {
+		if config.skipGPU && isGpuChipName(sensor.chip) {
+			continue
+		}
+		if !config.fanSensors.allows(sensor.key) {
 			continue
 		}
 		kept = append(kept, sensor)
-	}
-	return kept
-}
-
-// filterFanSensors applies FAN_SENSORS to the fan keys shown in the UI.
-// Like filterGpuFans, it leaves the shared cache backing array untouched.
-func filterFanSensors(sensors []fanSensor, filter sensorFilter) []fanSensor {
-	kept := make([]fanSensor, 0, len(sensors))
-	for _, sensor := range sensors {
-		if filter.allows(sensor.key) {
-			kept = append(kept, sensor)
-		}
 	}
 	return kept
 }
