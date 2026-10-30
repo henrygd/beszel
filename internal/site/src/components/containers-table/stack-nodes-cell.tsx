@@ -173,10 +173,10 @@ function stackGapLines(
 			byStatus.set(status, [...(byStatus.get(status) ?? []), node])
 		}
 	}
-	for (const [status, nodes] of byStatus) {
-		const names = nodes.map(nodeLabel).join(", ")
+	for (const [status, silentNodes] of byStatus) {
+		const nodes = silentNodes.map(nodeLabel).join(", ")
 		lines.push({
-			text: t`No data from ${names}`,
+			text: t`No data from ${nodes}`,
 			hint: status ? t`Node is ${status}` : undefined,
 			missing: false,
 		})
