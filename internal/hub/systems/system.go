@@ -498,6 +498,10 @@ func (sys *System) updateNetworkMonitorsRecords(app core.App, monitorResults map
 		case true:
 			var record *core.Record
 			record, err = app.FindRecordById(monitorCollectionName, id)
+			if errors.Is(err, sql.ErrNoRows) {
+				// Monitor no longer exists (matches the zero-rows case below).
+				continue
+			}
 			if err == nil {
 				if record.GetString("system") != systemId {
 					continue
