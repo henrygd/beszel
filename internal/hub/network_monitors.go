@@ -75,13 +75,14 @@ func bindNetworkMonitorsEvents(hub *Hub) {
 		ID := generateMonitorID(systemID, *monitorConfigFromRecord(e.Record))
 		if ID != e.Record.Id {
 			newRecord := copyMonitorToNewRecord(e.Record, ID)
-			if err := e.App.Save(newRecord); err != nil {
-				return err
-			}
-			if err := e.App.Delete(e.Record); err != nil {
-				return err
-			}
-			return nil
+			// Delete first so the new record can reuse the unique name; the transaction
+			// keeps the old record if saving the new one fails.
+			return e.App.RunInTransaction(func(tx core.App) error {
+				if err := tx.Delete(e.Record); err != nil {
+					return err
+				}
+				return tx.Save(newRecord)
+			})
 		}
 		err := e.Next()
 		if err != nil {
@@ -145,7 +146,7 @@ func copyMonitorToNewRecord(oldRecord *core.Record, newID string) *core.Record {
 	collection := oldRecord.Collection()
 	newRecord := core.NewRecord(collection)
 	newRecord.Id = newID
-	fields := []string{"system", "target", "protocol", "port", "server", "interval", "enabled", "skipTlsVerify"}
+	fields := []string{"system", "name", "target", "protocol", "port", "server", "interval", "enabled", "skipTlsVerify"}
 	for _, field := range fields {
 		newRecord.Set(field, oldRecord.Get(field))
 	}
