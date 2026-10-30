@@ -17,6 +17,8 @@ import (
 	"github.com/henrygd/beszel/internal/entities/system"
 )
 
+var amdSysfsSleep = time.Sleep
+
 var amdgpuNameCache = struct {
 	sync.RWMutex
 	hits   map[string]string
@@ -28,7 +30,7 @@ var amdgpuNameCache = struct {
 
 // hasAmdSysfs returns true if any AMD GPU sysfs nodes are found
 func (gm *GPUManager) hasAmdSysfs() bool {
-	cards, err := filepath.Glob("/sys/class/drm/card*/device/vendor")
+	cards, err := filepath.Glob(filepath.Join(drmSysfsRoot, "card*/device/vendor"))
 	if err != nil {
 		return false
 	}
@@ -44,7 +46,7 @@ func (gm *GPUManager) hasAmdSysfs() bool {
 // collectAmdStats collects AMD GPU metrics directly from sysfs to avoid the overhead of rocm-smi
 func (gm *GPUManager) collectAmdStats() error {
 	sysfsPollInterval := 3000 * time.Millisecond
-	cards, err := filepath.Glob("/sys/class/drm/card*")
+	cards, err := filepath.Glob(filepath.Join(drmSysfsRoot, "card*"))
 	if err != nil {
 		return err
 	}
@@ -74,15 +76,18 @@ func (gm *GPUManager) collectAmdStats() error {
 		}
 		if !hasData {
 			failures++
-			if failures > maxFailureRetries {
-				return errNoValidData
+			// Keep polling so transient sysfs failures can recover without an agent restart,
+			// but only warn for the first retries to avoid flooding the log.
+			log := slog.Debug
+			if failures <= maxFailureRetries {
+				log = slog.Warn
 			}
-			slog.Warn("No AMD GPU data from sysfs", "failures", failures)
-			time.Sleep(retryWaitTime)
+			log("No AMD GPU data from sysfs", "failures", failures)
+			amdSysfsSleep(retryWaitTime)
 			continue
 		}
 		failures = 0
-		time.Sleep(sysfsPollInterval)
+		amdSysfsSleep(sysfsPollInterval)
 	}
 }
 
