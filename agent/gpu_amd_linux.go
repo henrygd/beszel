@@ -78,11 +78,11 @@ func (gm *GPUManager) collectAmdStats() error {
 			failures++
 			// Keep polling so transient sysfs failures can recover without an agent restart,
 			// but only warn for the first retries to avoid flooding the log.
+			log := slog.Debug
 			if failures <= maxFailureRetries {
-				slog.Warn("No AMD GPU data from sysfs", "failures", failures)
-			} else {
-				slog.Debug("No AMD GPU data from sysfs", "failures", failures)
+				log = slog.Warn
 			}
+			log("No AMD GPU data from sysfs", "failures", failures)
 			amdSysfsSleep(retryWaitTime)
 			continue
 		}
