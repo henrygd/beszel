@@ -104,7 +104,7 @@ func bindNetworkMonitorsEvents(hub *Hub) {
 	// sync monitor to agent on delete
 	hub.OnRecordAfterDeleteSuccess("network_monitors").BindFunc(func(e *core.RecordEvent) error {
 		if err := hub.deleteNetworkMonitor(e.Record); err != nil {
-			hub.Logger().Warn("failed to delete monitor on agent", "system", e.Record.GetString("system"), "monitor", e.Record.Id, "err", err)
+			hub.Logger().Warn("failed to delete monitor on agent", "system", e.Record.Original().GetString("system"), "monitor", e.Record.Id, "err", err)
 		}
 		return e.Next()
 	})
@@ -170,7 +170,9 @@ func (h *Hub) upsertNetworkMonitor(record *core.Record, runNow bool) error {
 
 // deleteNetworkMonitor removes the record's monitor from the target system.
 func (h *Hub) deleteNetworkMonitor(record *core.Record) error {
-	systemID := record.GetString("system")
+	// Use the persisted system: a pending request may have changed the record's system,
+	// but the agent that holds the monitor is the one it was last saved with.
+	systemID := record.Original().GetString("system")
 	system, err := h.sm.GetSystem(systemID)
 	if err != nil {
 		return err
