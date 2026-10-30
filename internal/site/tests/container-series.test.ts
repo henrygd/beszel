@@ -180,9 +180,31 @@ describe("effectiveSeriesLevel", () => {
 		expect(effectiveSeriesLevel(noStacks, "stack")).toBe("container")
 		expect(effectiveSeriesLevel(noStacks, "service")).toBe("container")
 		expect(rollupContainerPoints(noStacks, effectiveSeriesLevel(noStacks, "stack"))).toBe(noStacks)
-		expect(containerChartConfigs(noStacks, effectiveSeriesLevel(noStacks, "stack"))).toEqual(
-			containerChartConfigs(noStacks, "container")
-		)
+	})
+
+	// The point of the fallback is that someone without stacks sees exactly what they saw before,
+	// so the expectation is written out here rather than taken from another call into the same
+	// function: a change in the key order, the label or the hue formula has to fail this test.
+	test("the fallback config is the one the charts built before", () => {
+		const points = [
+			point(60_000, [
+				{ n: "redis", c: 1, m: 10, b: [1, 1] },
+				{ n: "api", c: 4, m: 40, b: [4, 4] },
+			]),
+		]
+		const colour = (index: number) =>
+			`hsl(${((index * 360) / 2) % 360}, var(--chart-saturation), var(--chart-lightness))`
+		const expected = {
+			api: { label: "api", color: colour(0) },
+			redis: { label: "redis", color: colour(1) },
+		}
+		for (const requested of ["stack", "service"] as SeriesLevel[]) {
+			const configs = containerChartConfigs(points, effectiveSeriesLevel(points, requested))
+			expect(Object.keys(configs.cpu)).toEqual(["api", "redis"])
+			expect(configs.cpu).toEqual(expected)
+			expect(configs.memory).toEqual(expected)
+			expect(configs.network).toEqual(expected)
+		}
 	})
 
 	test("keeps the requested level when the data has stacks", () => {
