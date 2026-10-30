@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log/slog"
 	"maps"
@@ -80,6 +81,7 @@ type gpuCollector struct {
 	parse   func([]byte) bool // returns true if valid data was found
 	buf     []byte
 	bufSize uint16
+	sleep   func(time.Duration) // waits between runs; time.Sleep if nil
 }
 
 var errNoValidData = fmt.Errorf("no valid GPU data found") // Error for missing data
@@ -140,31 +142,60 @@ type collectorDefinition struct {
 	deprecationWarning string
 }
 
-// starts and manages the ongoing collection of GPU data for the specified GPU management utility
+// starts and manages the ongoing collection of GPU data for the specified GPU management utility.
+// A run without valid data is retried with a growing delay, since the tool may have started
+// before the GPU driver was ready (e.g. right after boot). Collection stops after
+// maxFailureRetries consecutive runs without valid data; a run that produces valid data resets
+// the count. Any other run is restarted after retryWaitTime, so a tool that keeps exiting right
+// away can't turn this into a busy loop.
 func (c *gpuCollector) start() {
+	sleep := c.sleep
+	if sleep == nil {
+		sleep = time.Sleep
+	}
+	noDataRuns := 0
 	for {
-		err := c.collect()
-		if err != nil {
-			if err == errNoValidData {
-				slog.Warn(c.name + " found no valid GPU data, stopping")
-				break
-			}
-			slog.Warn(c.name+" failed, restarting", "err", err)
-			time.Sleep(retryWaitTime)
+		hasValidData, err := c.collect()
+		if hasValidData {
+			noDataRuns = 0
+		}
+		if err == nil {
+			// the tool exited cleanly; tools started with -l or --interval normally never do
+			sleep(retryWaitTime)
 			continue
 		}
+		if errors.Is(err, errNoValidData) {
+			noDataRuns++
+			if noDataRuns > maxFailureRetries {
+				slog.Warn(c.name+" found no valid GPU data, stopping", "err", err)
+				return
+			}
+			delay := retryWaitTime * time.Duration(noDataRuns)
+			slog.Warn(c.name+" found no valid GPU data, retrying", "err", err, "attempt", noDataRuns, "delay", delay)
+			sleep(delay)
+			continue
+		}
+		slog.Warn(c.name+" failed, restarting", "err", err)
+		sleep(retryWaitTime)
 	}
 }
 
+// maxLoggedLineLen limits how much of an unparseable output line is included in errors
+const maxLoggedLineLen = 200
+
 // collect executes the command, parses output with the assigned parser function
-func (c *gpuCollector) collect() error {
+// and reports whether any valid data was found. Blank lines are ignored. Lines the parser
+// rejects are skipped, and the first one is logged at WARN if valid data came before it or
+// more output after it. If the command printed output but none of it was valid, collect
+// returns errNoValidData with the first rejected line.
+func (c *gpuCollector) collect() (hasValidData bool, err error) {
 	cmd := exec.Command(c.name, c.cmdArgs...)
 	stdout, err := cmd.StdoutPipe()
 	if err != nil {
-		return err
+		return false, err
 	}
 	if err := cmd.Start(); err != nil {
-		return err
+		return false, err
 	}
 
 	scanner := bufio.NewScanner(stdout)
@@ -173,17 +204,59 @@ func (c *gpuCollector) collect() error {
 	}
 	scanner.Buffer(c.buf, bufio.MaxScanTokenSize)
 
+	var (
+		invalidLine       string // first line of this run the parser rejected
+		hasInvalidLine    bool
+		warnedInvalidLine bool
+	)
+	// warnInvalidLine logs the run's first rejected line at WARN, once per run. It is only
+	// called once the run is more than a tool that printed an error and exited, which start()
+	// reports when the run ends: valid data came before the rejected line, or more output
+	// followed it. With -l the tool may never exit, so this is how a stream that stops
+	// producing valid data mid-run shows up above debug level.
+	warnInvalidLine := func() {
+		if hasInvalidLine && !warnedInvalidLine {
+			warnedInvalidLine = true
+			slog.Warn(c.name+" skipping unparseable output", "line", invalidLine)
+		}
+	}
 	for scanner.Scan() {
-		hasValidData := c.parse(scanner.Bytes())
-		if !hasValidData {
-			return errNoValidData
+		if len(bytes.TrimSpace(scanner.Bytes())) == 0 {
+			// a separator, not output to parse or report; nvidia-smi -l has been seen
+			// printing these between samples (#1803)
+			continue
+		}
+		warnInvalidLine() // output kept coming after a rejected line
+		if c.parse(scanner.Bytes()) {
+			hasValidData = true
+			continue
+		}
+		if hasInvalidLine {
+			slog.Debug(c.name+" skipping unparseable output", "line", scanner.Text())
+			continue
+		}
+		hasInvalidLine = true
+		invalidLine = scanner.Text()
+		if len(invalidLine) > maxLoggedLineLen {
+			invalidLine = invalidLine[:maxLoggedLineLen] + "..."
+		}
+		if hasValidData {
+			warnInvalidLine() // valid data came before it
 		}
 	}
 
 	if err := scanner.Err(); err != nil {
-		return fmt.Errorf("scanner error: %w", err)
+		// we stopped reading, so the command may never exit on its own
+		_ = cmd.Process.Kill()
+		_ = cmd.Wait()
+		return hasValidData, fmt.Errorf("scanner error: %w", err)
 	}
-	return cmd.Wait()
+	// always wait so the process is reaped, even if its output was unusable
+	waitErr := cmd.Wait()
+	if !hasValidData && hasInvalidLine {
+		return false, fmt.Errorf("%w: %q", errNoValidData, invalidLine)
+	}
+	return hasValidData, waitErr
 }
 
 // getJetsonParser returns a function to parse the output of tegrastats and update the GPUData map
@@ -539,7 +612,7 @@ func (gm *GPUManager) startRocmSmiCollector(pollInterval time.Duration) {
 	go func() {
 		failures := 0
 		for {
-			if err := collector.collect(); err != nil {
+			if _, err := collector.collect(); err != nil {
 				failures++
 				if failures > maxFailureRetries {
 					break
