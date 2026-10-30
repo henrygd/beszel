@@ -4,12 +4,14 @@ import { subscribeKeys } from "nanostores"
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useContainerChartConfigs } from "@/components/charts/hooks"
 import { pb, queueUserSettings } from "@/lib/api"
+import { pointsHaveStacks, resolveSeriesLevel, rollupContainerPoints } from "@/lib/container-series"
 import { SystemStatus } from "@/lib/enums"
 import {
 	$allSystemsById,
 	$allSystemsByName,
 	$chartTime,
 	$containerFilter,
+	$containerSeriesLevel,
 	$direction,
 	$maxValues,
 	$systems,
@@ -36,6 +38,7 @@ export function useSystemData(id: string) {
 	const systems = useStore($systems)
 	const chartTime = useStore($chartTime)
 	const maxValues = useStore($maxValues)
+	const requestedSeriesLevel = useStore($containerSeriesLevel)
 	const [grid, _setGrid] = useState<boolean>(
 		() => $userSettings.get().grid ?? JSON.parse(localStorage.getItem("besz-grid") ?? "null") ?? true
 	)
@@ -199,18 +202,34 @@ export function useSystemData(id: string) {
 
 	const agentVersion = useMemo(() => parseSemVer(system?.info?.v), [system?.info?.v])
 
+	// Fold the container points to the requested series level. Without a stack in the data there
+	// is nothing to group by: the level stays "container" and containerSeries is containerData
+	// itself, so the charts get the same array and never redraw because of this.
+	const { containerSeries, seriesLevel, hasStacks } = useMemo(() => {
+		const stacksPresent = pointsHaveStacks(containerData)
+		const level = resolveSeriesLevel(stacksPresent, requestedSeriesLevel)
+		return {
+			containerSeries: rollupContainerPoints(containerData, level),
+			seriesLevel: level,
+			hasStacks: stacksPresent,
+		}
+	}, [containerData, requestedSeriesLevel])
+
 	const chartData: ChartData = useMemo(() => {
 		return {
 			systemStats,
 			containerData,
+			containerSeries,
+			seriesLevel,
+			hasStacks,
 			chartTime,
 			orientation: direction === "rtl" ? "right" : "left",
 			agentVersion,
 		}
-	}, [systemStats, containerData, direction])
+	}, [systemStats, containerData, containerSeries, seriesLevel, hasStacks, direction])
 
 	// Share chart config computation for all container charts
-	const containerChartConfigs = useContainerChartConfigs(containerData)
+	const containerChartConfigs = useContainerChartConfigs(containerSeries, seriesLevel)
 
 	// get stats when system "changes." (Not just system to system,
 	// also when new info comes in via systemManager realtime connection, indicating an update)

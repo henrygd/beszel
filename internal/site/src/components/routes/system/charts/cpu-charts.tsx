@@ -5,7 +5,7 @@ import { decimalString, toFixedFloat } from "@/lib/utils"
 import type { ChartConfig } from "@/components/ui/chart"
 import type { ChartData } from "@/types"
 import CpuCoresSheet from "../cpu-sheet"
-import { ChartCard, FilterBar, SelectAvgMax } from "../chart-card"
+import { ChartCard, ContainerChartControls, SelectAvgMax } from "../chart-card"
 import { dockerOrPodman } from "../chart-data"
 
 export function CpuChart({
@@ -77,11 +77,11 @@ export function ContainerCpuChart({
 			grid={grid}
 			title={dockerOrPodman(t`Docker CPU Usage`, isPodman)}
 			description={t`Average CPU utilization of containers`}
-			cornerEl={<FilterBar />}
+			cornerEl={<ContainerChartControls showSeriesLevel={chartData.hasStacks} />}
 		>
 			<AreaChartDefault
 				chartData={chartData}
-				customData={chartData.containerData}
+				customData={chartData.containerSeries}
 				dataPoints={dataPoints}
 				tickFormatter={(val) => `${toFixedFloat(val, 2)}%`}
 				contentFormatter={({ value }) => `${decimalString(value)}%`}

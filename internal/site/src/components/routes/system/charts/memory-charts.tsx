@@ -4,7 +4,7 @@ import { useContainerDataPoints } from "@/components/charts/hooks"
 import { Unit } from "@/lib/enums"
 import type { ChartConfig } from "@/components/ui/chart"
 import type { ChartData, SystemStatsRecord } from "@/types"
-import { ChartCard, FilterBar, SelectAvgMax } from "../chart-card"
+import { ChartCard, ContainerChartControls, SelectAvgMax } from "../chart-card"
 import { dockerOrPodman } from "../chart-data"
 import { decimalString, formatBytes, toFixedFloat } from "@/lib/utils"
 
@@ -114,11 +114,11 @@ export function ContainerMemoryChart({
 			grid={grid}
 			title={dockerOrPodman(t`Docker Memory Usage`, isPodman)}
 			description={t`Memory usage of containers`}
-			cornerEl={<FilterBar />}
+			cornerEl={<ContainerChartControls showSeriesLevel={chartData.hasStacks} />}
 		>
 			<AreaChartDefault
 				chartData={chartData}
-				customData={chartData.containerData}
+				customData={chartData.containerSeries}
 				dataPoints={dataPoints}
 				tickFormatter={(val) => {
 					const { value, unit } = formatBytes(val, false, Unit.Bytes, true)

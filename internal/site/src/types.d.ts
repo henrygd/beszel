@@ -443,6 +443,12 @@ export type SeriesLevel = "container" | "service" | "stack"
 export interface ChartData extends ChartOptions {
 	systemStats: SystemStatsRecord[]
 	containerData: ChartDataContainer[]
+	/** containerData folded to `seriesLevel`; the same array as containerData on the container level */
+	containerSeries: ChartDataContainer[]
+	/** level the series actually use: "container" whenever the data reports no stacks */
+	seriesLevel: SeriesLevel
+	/** whether any container reports a stack, i.e. whether the level selector is worth showing */
+	hasStacks: boolean
 }
 
 export interface AlertInfo {

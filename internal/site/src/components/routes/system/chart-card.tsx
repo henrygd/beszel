@@ -1,9 +1,10 @@
 import { t } from "@lingui/core/macro"
 import { Trans, useLingui } from "@lingui/react/macro"
 import { useStore } from "@nanostores/react"
-import { XIcon } from "lucide-react"
+import { LayersIcon, XIcon } from "lucide-react"
 import React, { type JSX, memo, useCallback, useEffect, useState } from "react"
-import { $containerFilter, $maxValues } from "@/lib/stores"
+import { $containerFilter, $containerSeriesLevel, $maxValues, setContainerSeriesLevel } from "@/lib/stores"
+import type { SeriesLevel } from "@/types"
 import { useIntersectionObserver } from "@/lib/use-intersection-observer"
 import { cn } from "@/lib/utils"
 import Spinner from "../../spinner"
@@ -83,6 +84,47 @@ export const SelectAvgMax = memo(({ max }: { max: boolean }) => {
 		</Select>
 	)
 })
+
+/**
+ * Level the container chart series are grouped by. Only shown when the containers report stacks,
+ * so a plain docker host keeps exactly the charts it has today.
+ */
+export const SelectSeriesLevel = memo(() => {
+	const level = useStore($containerSeriesLevel)
+	return (
+		<Select value={level} onValueChange={(value) => setContainerSeriesLevel(value as SeriesLevel)}>
+			<SelectTrigger aria-label={t`Group series by`} className="relative ps-10 pe-5 w-full sm:w-44">
+				<LayersIcon className="h-4 w-4 absolute start-4 top-1/2 -translate-y-1/2 opacity-85" />
+				<SelectValue />
+			</SelectTrigger>
+			<SelectContent>
+				<SelectItem key="container" value="container">
+					<Trans context="Chart series level">Containers</Trans>
+				</SelectItem>
+				<SelectItem key="service" value="service">
+					<Trans context="Docker Swarm services">Services</Trans>
+				</SelectItem>
+				<SelectItem key="stack" value="stack">
+					<Trans context="Docker Compose or Swarm stacks">Stacks</Trans>
+				</SelectItem>
+			</SelectContent>
+		</Select>
+	)
+})
+
+/**
+ * Corner controls of the three container charts: the series level, when there is anything to
+ * group by, and the filter. The filter keeps its own positioning context, otherwise its clear
+ * button would land on the edge of the card header.
+ */
+export const ContainerChartControls = memo(({ showSeriesLevel }: { showSeriesLevel: boolean }) => (
+	<div className="flex gap-2">
+		{showSeriesLevel && <SelectSeriesLevel />}
+		<div className="relative flex items-center w-full sm:w-44">
+			<FilterBar />
+		</div>
+	</div>
+))
 
 export function ChartCard({
 	title,
