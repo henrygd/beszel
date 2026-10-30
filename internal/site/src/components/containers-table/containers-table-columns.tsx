@@ -1,4 +1,4 @@
-import type { CellContext, Column, ColumnDef } from "@tanstack/react-table"
+import type { CellContext, Column, ColumnDef, RowData } from "@tanstack/react-table"
 import { Button } from "@/components/ui/button"
 import { cn, decimalString, formatBytes, hourWithSeconds } from "@/lib/utils"
 import type { ContainerRecord } from "@/types"
@@ -22,6 +22,7 @@ import { $allSystemsById } from "@/lib/stores"
 import { useStore } from "@nanostores/react"
 import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip"
 import { ContainerGroupLabel, GROUP_INDENT } from "@/components/containers-table/container-group-row"
+import { StackNodesCell } from "@/components/containers-table/stack-nodes-cell"
 import {
 	compareGroupAwareName,
 	comparePorts,
@@ -35,9 +36,21 @@ import {
 	MULTIPLE_NODES,
 	sharedValue,
 	SERVICE_COLUMN_ID,
+	type StackNodeSummary,
 	STACK_COLUMN_ID,
 	worstHealth,
 } from "@/lib/container-grouping"
+
+declare module "@tanstack/react-table" {
+	interface TableMeta<TData extends RowData> {
+		/**
+		 * Node summary of every stack by stack name, built by the page from the full data. The
+		 * stack row reads it instead of its own leaf rows, so a filter narrows what is listed
+		 * without changing what the row says about where the stack lives.
+		 */
+		stackSummaries?: Map<string, StackNodeSummary>
+	}
+}
 
 export const containerChartCols: ColumnDef<ContainerRecord>[] = [
 	{
@@ -69,20 +82,16 @@ export const containerChartCols: ColumnDef<ContainerRecord>[] = [
 		// a stack can be spread over the swarm, a service row is always on one node
 		aggregationFn: (columnId, leafRows) =>
 			sharedValue(leafRows.map((leafRow) => leafRow.getValue<string>(columnId))) ?? MULTIPLE_NODES,
-		aggregatedCell: ({ getValue }) => {
-			const allSystems = useStore($allSystemsById)
-			const value = getValue() as string
-			return (
-				<div className="ms-1 max-w-40 truncate">
-					{value === MULTIPLE_NODES ? t`Multiple nodes` : (allSystems[value]?.name ?? "")}
-				</div>
-			)
-		},
+		// a stack spans the swarm: the stack row counts its nodes and shows what runs where,
+		// instead of naming an aggregate that is not a node. A service row is always on one node
+		aggregatedCell: ({ row, getValue, table }) =>
+			row.groupingColumnId === STACK_COLUMN_ID ? (
+				<StackNodesCell row={row} table={table} />
+			) : (
+				<NodeNameCell value={getValue() as string} />
+			),
 		header: ({ column }) => <HeaderButton column={column} name={t`System`} Icon={ServerIcon} />,
-		cell: ({ getValue }) => {
-			const allSystems = useStore($allSystemsById)
-			return <div className="ms-1 max-w-40 truncate">{allSystems[getValue() as string]?.name ?? ""}</div>
-		},
+		cell: ({ getValue }) => <NodeNameCell value={getValue() as string} />,
 	},
 	{
 		id: STACK_COLUMN_ID,
@@ -317,6 +326,12 @@ function renderGroupValue({ getValue, row }: CellContext<ContainerRecord, unknow
 			{value}
 		</span>
 	)
+}
+
+/** Name of the node a container, or a whole service row, runs on */
+function NodeNameCell({ value }: { value: string }) {
+	const allSystems = useStore($allSystemsById)
+	return <div className="ms-1 max-w-40 truncate">{allSystems[value]?.name ?? ""}</div>
 }
 
 /** Placeholder for a column that cannot be summed up over a group */

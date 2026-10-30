@@ -1,13 +1,20 @@
 import { describe, expect, mock, test } from "bun:test"
 import type { ReactElement, ReactNode } from "react"
 import { renderToStaticMarkup } from "react-dom/server"
-import type { CellContext, Row, Table, TableState, Updater } from "@tanstack/react-table"
+import type { CellContext, ColumnDef, Row, Table, TableState, Updater } from "@tanstack/react-table"
 import type { ContainerRecord } from "../src/types"
 
 mock.module("@lingui/core/macro", () => ({
-	t: (strings: string | TemplateStringsArray | { message?: string }) => {
+	t: (strings: string | TemplateStringsArray | { message?: string }, ...values: unknown[]) => {
 		if (typeof strings === "string") return strings
-		if (Array.isArray(strings)) return strings[0] ?? ""
+		// a tagged template has to be put back together: the node summary interpolates the service
+		// and the node names into its messages, and dropping them would hide what the row claims
+		if (Array.isArray(strings)) {
+			return strings.reduce<string>(
+				(text, part, index) => text + part + (index < values.length ? String(values[index]) : ""),
+				""
+			)
+		}
 		return (strings as { message?: string }).message ?? ""
 	},
 	plural: (_count: number, forms: { other?: string }) => forms.other ?? "",
@@ -29,9 +36,15 @@ const {
 const { containerChartCols } = await import("../src/components/containers-table/containers-table-columns")
 const { ContainerGroupRow } = await import("../src/components/containers-table/container-group-row")
 const { getContainerGroupedRowModel } = await import("../src/components/containers-table/containers-grouped-row-model")
-const { buildGroupingState, getServiceGroupingValue, getStackGroupingValue, groupRowId, hasStacks } = await import(
-	"../src/lib/container-grouping"
-)
+const {
+	buildGroupingState,
+	getServiceGroupingValue,
+	getStackGroupingValue,
+	groupRowId,
+	hasStacks,
+	summarizeStackNodes,
+} = await import("../src/lib/container-grouping")
+const { StackNodesMatrix } = await import("../src/components/containers-table/stack-nodes-cell")
 const { $allSystemsById } = await import("../src/lib/stores")
 
 const updatedAt = 1_760_000_000_000
@@ -114,16 +127,24 @@ const data = [
 ] as unknown as ContainerRecord[]
 
 $allSystemsById.set({
-	n1: { name: "node-1" },
-	n2: { name: "node-2" },
+	n1: { name: "node-1", status: "up" },
+	n2: { name: "node-2", status: "up" },
+	n3: { name: "node-3", status: "up" },
 } as unknown as ReturnType<typeof $allSystemsById.get>)
 
+const nodeName = (node: string) => $allSystemsById.get()[node]?.name ?? node
+
 /** The table of the containers page, with the same options the component passes */
-function makeTable(rows: ContainerRecord[]): Table<ContainerRecord> {
+function makeTable(
+	rows: ContainerRecord[],
+	columns: ColumnDef<ContainerRecord>[] = containerChartCols
+): Table<ContainerRecord> {
 	let state: TableState
 	const table = createTable<ContainerRecord>({
 		data: rows,
-		columns: containerChartCols,
+		columns,
+		// the summary is built from the full data, the same way the page builds it
+		meta: { stackSummaries: summarizeStackNodes(rows, nodeName) },
 		state: {} as TableState,
 		onStateChange: (updater: Updater<TableState>) => {
 			state = typeof updater === "function" ? updater(state) : updater
@@ -213,8 +234,9 @@ describe("group rows keep the formatting of their column", () => {
 		expect(html).not.toContain(">3<")
 		// the freshest update is a time, not an epoch in milliseconds
 		expect(html).not.toContain(String(updatedAt))
-		// a stack over several nodes says so instead of naming one of them
-		expect(html).toContain("Multiple nodes")
+		// a stack over several nodes counts them instead of naming one of them
+		expect(html).toContain("2 nodes")
+		expect(html).not.toContain("Multiple nodes")
 		expect(html).not.toContain("node-1")
 	})
 
@@ -318,5 +340,88 @@ describe("rows below a group", () => {
 		expect(visible(table)).toEqual(["leaf db.1@0", "leaf manual@0", "leaf web.1@0", "leaf web.2@0", "leaf web.3@0"])
 		expect(table.getRowModel().rows.every((row) => !row.getIsGrouped())).toBe(true)
 		expect(leafCellHtml(table.getRowModel().rows[0], "name")).not.toContain("padding-inline-start")
+	})
+})
+
+describe("stack row over nodes", () => {
+	// the same stack over three nodes: n3 runs web only, so db is absent from exactly one node
+	const onNode = (id: string, name: string, system: string, service: string) =>
+		({ ...data[0], id, name, system, service }) as ContainerRecord
+	const spread = [
+		data[0],
+		data[1],
+		data[2],
+		onNode("c6", "web.3", "n2", "web"),
+		onNode("c7", "db.2", "n2", "db"),
+		onNode("c8", "web.4", "n3", "web"),
+		onNode("c9", "web.5", "n3", "web"),
+		data[4],
+	]
+	const summaryOf = (rows: ContainerRecord[]) => {
+		const summary = summarizeStackNodes(rows, nodeName).get("mentors")
+		if (!summary) throw new Error("no summary for mentors")
+		return summary
+	}
+
+	test('the stack row counts its nodes instead of saying "multiple"', () => {
+		const table = makeTable(spread)
+		const html = groupRowHtml(findRow(table, stackId))
+		expect(html).toContain("3 nodes")
+		expect(html).not.toContain("Multiple nodes")
+		// the service row is on one node and still names it
+		table.setExpanded({ [stackId]: true, [serviceId]: true })
+		expect(groupRowHtml(findRow(table, serviceId))).toContain("node-1")
+	})
+
+	test("a service absent on a live node is flagged on the stack row", () => {
+		const table = makeTable(spread)
+		const html = groupRowHtml(findRow(table, stackId))
+		expect(html).toContain("No containers of db on node-3")
+		expect(html).not.toContain("node-1")
+
+		// the same node paused says nothing about the service instead of accusing it
+		$allSystemsById.setKey("n3", { name: "node-3", status: "paused" } as unknown as ReturnType<
+			typeof $allSystemsById.get
+		>["n3"])
+		const paused = groupRowHtml(findRow(makeTable(spread), stackId))
+		expect(paused).toContain("No data from node-3")
+		expect(paused).toContain("Node is paused")
+		expect(paused).not.toContain("No containers of")
+		$allSystemsById.setKey("n3", { name: "node-3", status: "up" } as unknown as ReturnType<
+			typeof $allSystemsById.get
+		>["n3"])
+	})
+
+	test("a stack on one node says so and is not flagged", () => {
+		const alone = spread.filter((record) => record.system === "n1")
+		const html = groupRowHtml(findRow(makeTable(alone), stackId))
+		expect(html).toContain("1 node")
+		expect(html).not.toContain("No containers of")
+		expect(html).not.toContain("No data from")
+	})
+
+	test("without the system column there is no node summary", () => {
+		// the page of a single system drops the column, and the stack row must not grow a summary
+		const table = makeTable(
+			spread,
+			containerChartCols.filter((column) => column.id !== "system")
+		)
+		const html = groupRowHtml(findRow(table, stackId))
+		expect(html).toContain("mentors")
+		expect(html).not.toContain("nodes")
+		expect(html).not.toContain("No containers of")
+	})
+
+	test("the matrix of the tooltip counts every service on every node", () => {
+		const html = renderToStaticMarkup(<StackNodesMatrix summary={summaryOf(spread)} nodeLabel={nodeName} />)
+		for (const name of ["node-1", "node-2", "node-3", "db", "web"]) {
+			expect(html).toContain(name)
+		}
+		// db runs on two of the three nodes, web on all three, and the empty pair reads as a dash
+		expect(html).toContain("7 containers")
+		expect(html).toContain("—")
+		// two body rows, then the totals per node of the footer
+		const cells = [...html.matchAll(/<td[^>]*>([^<]*)<\/td>/g)].map((match) => match[1])
+		expect(cells).toEqual(["db", "1", "1", "—", "web", "2", "1", "2", "3", "2", "2"])
 	})
 })
