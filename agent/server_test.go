@@ -49,7 +49,7 @@ func TestStartServer(t *testing.T) {
 	badSigner, err := gossh.NewSignerFromKey(badPrivKey)
 	require.NoError(t, err)
 
-	socketFile := filepath.Join(t.TempDir(), "beszel-test.sock")
+	socketFile := testSocketPath(t)
 
 	tests := []struct {
 		name        string
@@ -994,6 +994,17 @@ func TestGetHubVersionConcurrent(t *testing.T) {
 /////////////// Session Protocol Tests //////////////////////////
 /////////////////////////////////////////////////////////////////
 
+// testSocketPath returns a short path for a unix socket. t.TempDir() embeds the
+// test name, and on macOS it sits under /var/folders/…, so the full socket path
+// can pass the 104-byte sun_path limit and the listener fails to bind.
+func testSocketPath(t *testing.T) string {
+	t.Helper()
+	dir, err := os.MkdirTemp("", "bz")
+	require.NoError(t, err)
+	t.Cleanup(func() { _ = os.RemoveAll(dir) })
+	return filepath.Join(dir, "s.sock")
+}
+
 // dialTestAgentClient starts an agent SSH server on a private unix socket and
 // connects a real SSH client whose ClientVersion mimics a hub of the given
 // version, so session-protocol behavior can be exercised end to end.
@@ -1007,7 +1018,7 @@ func dialTestAgentClient(t *testing.T, clientVersion string) *gossh.Client {
 	sshPubKey, err := gossh.NewPublicKey(pubKey)
 	require.NoError(t, err)
 
-	socketFile := filepath.Join(t.TempDir(), "beszel-test.sock")
+	socketFile := testSocketPath(t)
 	agent, err := NewAgent("")
 	require.NoError(t, err)
 
@@ -1027,8 +1038,16 @@ func dialTestAgentClient(t *testing.T, clientVersion string) *gossh.Client {
 		}
 	})
 
-	// Wait for the listener instead of a fixed sleep.
+	// Wait for the listener instead of a fixed sleep. A bind failure arrives on
+	// errChan, so report it rather than waiting out the timeout with no reason.
+	var startErr error
 	require.Eventually(t, func() bool {
+		select {
+		case err := <-errChan:
+			startErr = err
+			return true
+		default:
+		}
 		conn, err := net.Dial("unix", socketFile)
 		if err != nil {
 			return false
@@ -1036,6 +1055,7 @@ func dialTestAgentClient(t *testing.T, clientVersion string) *gossh.Client {
 		_ = conn.Close()
 		return true
 	}, 5*time.Second, 25*time.Millisecond)
+	require.NoError(t, startErr, "SSH server failed to start")
 
 	client, err := gossh.Dial("unix", socketFile, &gossh.ClientConfig{
 		User:            "u",

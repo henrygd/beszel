@@ -5,6 +5,7 @@ package agent
 import (
 	"os"
 	"path/filepath"
+	"runtime"
 	"syscall"
 	"testing"
 	"time"
@@ -14,6 +15,72 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
+
+func TestCollectAmdStatsRecoversAfterReadFailures(t *testing.T) {
+	root := t.TempDir()
+	oldRoot, oldSleep := drmSysfsRoot, amdSysfsSleep
+	drmSysfsRoot = root
+	t.Cleanup(func() {
+		drmSysfsRoot, amdSysfsSleep = oldRoot, oldSleep
+	})
+
+	devicePath := filepath.Join(root, "card0", "device")
+	require.NoError(t, os.MkdirAll(devicePath, 0o755))
+	require.NoError(t, os.WriteFile(filepath.Join(devicePath, "vendor"), []byte("0x1002"), 0o644))
+	metrics := map[string]string{
+		"gpu_busy_percent":    "25",
+		"mem_info_vram_used":  "1073741824",
+		"mem_info_vram_total": "2147483648",
+	}
+	writeMetrics := func() {
+		for name, value := range metrics {
+			require.NoError(t, os.WriteFile(filepath.Join(devicePath, name), []byte(value), 0o644))
+		}
+	}
+	writeMetrics()
+
+	gm := &GPUManager{GpuDataMap: map[string]*system.GPUData{"card0": {Name: "AMD Test GPU"}}}
+	failures := 0
+	removed := false
+	recovered := false
+	amdSysfsSleep = func(delay time.Duration) {
+		if !removed {
+			assert.Equal(t, 1.0, gm.GpuDataMap["card0"].Count)
+			assert.Equal(t, 3*time.Second, delay)
+			for name := range metrics {
+				require.NoError(t, os.Remove(filepath.Join(devicePath, name)))
+			}
+			removed = true
+			return
+		}
+		if gm.GpuDataMap["card0"].Count == 2 {
+			assert.Equal(t, 3*time.Second, delay)
+			recovered = true
+			// Stop the collector goroutine after observing the recovered sample.
+			runtime.Goexit()
+		}
+		assert.Equal(t, retryWaitTime, delay)
+		failures++
+		if failures == maxFailureRetries+2 {
+			writeMetrics()
+		} else if failures > maxFailureRetries+2 {
+			runtime.Goexit()
+		}
+	}
+
+	done := make(chan struct{})
+	var err error
+	go func() {
+		defer close(done)
+		err = gm.collectAmdStats()
+	}()
+	<-done
+	require.NoError(t, err, "collector must keep polling through prolonged sysfs read failures")
+	require.True(t, recovered, "collector must resume when sysfs metrics are restored")
+	assert.Equal(t, maxFailureRetries+2, failures)
+	assert.Equal(t, 50.0, gm.GpuDataMap["card0"].Usage)
+	assert.Equal(t, utils.BytesToMegabytes(1073741824), gm.GpuDataMap["card0"].MemoryUsed)
+}
 
 func TestNormalizeHexID(t *testing.T) {
 	tests := []struct {
