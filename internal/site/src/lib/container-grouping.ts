@@ -368,3 +368,144 @@ export function portSortValue(ports: unknown): number {
 export function comparePorts(rowA: ComparableRow, rowB: ComparableRow, columnId: string): number {
 	return portSortValue(rowA.getValue<unknown>(columnId)) - portSortValue(rowB.getValue<unknown>(columnId))
 }
+
+/**
+ * Coverage of one service of a stack over the nodes the stack runs on.
+ * `countByNode` only holds the nodes that actually run a container of the service; the nodes of
+ * the stack that do not are listed in `absentOn`, whatever their status is.
+ */
+export interface StackServiceCoverage {
+	service: string
+	/** node → containers of this service on it */
+	countByNode: Record<string, number>
+	total: number
+	/** nodes of the stack without a container of this service */
+	absentOn: string[]
+}
+
+/**
+ * Where a stack lives: the nodes that run it, how many containers each of them runs, and the
+ * coverage of every named service. A container with a stack label and no service label counts
+ * on its node and in the total, but it is not a service of the stack: in the table it is a row
+ * of its own, not a replica, so giving it a coverage row would invent a service.
+ */
+export interface StackNodeSummary {
+	stack: string
+	/** ids of the systems with at least one container of the stack, in the order of their names */
+	nodes: string[]
+	containersByNode: Record<string, number>
+	/** by service name */
+	services: StackServiceCoverage[]
+	/** containers of the stack, equal to the sum over `containersByNode` */
+	total: number
+}
+
+/** Nodes a service is absent from, split by whether the node can be asked at all */
+export interface StackServiceGap {
+	service: string
+	/** the node is up and runs the stack, but not this service */
+	missingOn: string[]
+	/** the node is not up, so its containers say nothing about the service */
+	unknownOn: string[]
+}
+
+/**
+ * Build the node summary of every stack in one pass.
+ *
+ * Records without a stack label are skipped: the table shows them as rows of their own, and a
+ * summary of them would be a summary of unrelated containers. The expected nodes of a stack are
+ * the nodes it currently runs on — the agent reports the stack and service labels of a running
+ * container and nothing about desired replicas, so a node that stopped reporting simply leaves
+ * the set instead of turning into a ghost.
+ *
+ * Statuses are deliberately not read here: a system is paused or goes down independently of the
+ * container records, and the cell applies the current status on top (see {@link stackServiceGaps}).
+ *
+ * @param nodeName resolves a system id to its name, used to order the nodes
+ */
+export function summarizeStackNodes(
+	sources: ContainerGroupSource[],
+	nodeName: (node: string) => string = (node) => node
+): Map<string, StackNodeSummary> {
+	const summaries = new Map<string, StackNodeSummary>()
+	const coverages = new Map<string, Map<string, StackServiceCoverage>>()
+	for (const source of sources) {
+		const stack = getStackValue(source)
+		if (!stack) {
+			continue
+		}
+		let summary = summaries.get(stack)
+		let byService = coverages.get(stack)
+		if (!summary || !byService) {
+			summary = { stack, nodes: [], containersByNode: {}, services: [], total: 0 }
+			byService = new Map<string, StackServiceCoverage>()
+			summaries.set(stack, summary)
+			coverages.set(stack, byService)
+		}
+		const node = getNodeValue(source)
+		summary.containersByNode[node] = (summary.containersByNode[node] ?? 0) + 1
+		summary.total++
+		const service = getServiceValue(source)
+		if (!service) {
+			continue
+		}
+		let coverage = byService.get(service)
+		if (!coverage) {
+			coverage = { service, countByNode: {}, total: 0, absentOn: [] }
+			byService.set(service, coverage)
+		}
+		coverage.countByNode[node] = (coverage.countByNode[node] ?? 0) + 1
+		coverage.total++
+	}
+	for (const summary of summaries.values()) {
+		// by name, so the columns of the matrix do not jump around between polls; the id breaks
+		// the tie, so two systems with the same name still get a stable order
+		summary.nodes = Object.keys(summary.containersByNode).sort(
+			(a, b) => compareString(nodeName(a), nodeName(b)) || compareString(a, b)
+		)
+		summary.services = [...(coverages.get(summary.stack)?.values() ?? [])].sort((a, b) =>
+			compareString(a.service, b.service)
+		)
+		for (const coverage of summary.services) {
+			coverage.absentOn = summary.nodes.filter((node) => !(node in coverage.countByNode))
+		}
+	}
+	return summaries
+}
+
+/**
+ * Split the nodes a service is absent from: a node that is up says the service is not running on
+ * it, anything else — down, paused, pending, or a system that is not in the store at all — says
+ * nothing at all and must not be reported as a dead service.
+ */
+export function splitAbsentNodes(
+	absentOn: string[],
+	nodeStatus: (node: string) => string | undefined
+): { missingOn: string[]; unknownOn: string[] } {
+	const missingOn: string[] = []
+	const unknownOn: string[] = []
+	for (const node of absentOn) {
+		if (nodeStatus(node) === "up") {
+			missingOn.push(node)
+		} else {
+			unknownOn.push(node)
+		}
+	}
+	return { missingOn, unknownOn }
+}
+
+/** Gaps of a stack: one entry per service that is absent from a node of the stack */
+export function stackServiceGaps(
+	summary: StackNodeSummary,
+	nodeStatus: (node: string) => string | undefined
+): StackServiceGap[] {
+	const gaps: StackServiceGap[] = []
+	for (const coverage of summary.services) {
+		if (coverage.absentOn.length === 0) {
+			continue
+		}
+		const { missingOn, unknownOn } = splitAbsentNodes(coverage.absentOn, nodeStatus)
+		gaps.push({ service: coverage.service, missingOn, unknownOn })
+	}
+	return gaps
+}
