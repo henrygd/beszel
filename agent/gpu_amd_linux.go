@@ -160,7 +160,7 @@ func (gm *GPUManager) updateAmdGpuData(cardPath string) bool {
 }
 
 // readSysfsFloat reads and parses a numeric value from a sysfs file.
-// Files that are slow or unsupported are skipped for a while (see sysfsBackoff).
+// Files that fail slowly or are unsupported are skipped for a while (see sysfsBackoff).
 func readSysfsFloat(path string) (float64, error) {
 	now := time.Now()
 	if !amdSysfsBackoff.allow(path, now) {
@@ -176,7 +176,7 @@ func readSysfsFloat(path string) (float64, error) {
 }
 
 const (
-	// sysfsSlowReadThreshold is how long a read may take before the file is backed off.
+	// sysfsSlowReadThreshold is how long a read may take to fail before the file is backed off.
 	// Healthy amdgpu reads take well under a millisecond.
 	sysfsSlowReadThreshold = 500 * time.Millisecond
 	sysfsBackoffMin        = 30 * time.Second
@@ -185,10 +185,11 @@ const (
 
 var errSysfsBackoff = errors.New("sysfs read skipped during backoff")
 
-// amdSysfsBackoff tracks AMD sysfs files to skip after slow or unsupported reads.
+// amdSysfsBackoff tracks AMD sysfs files to skip after slow failures or unsupported reads.
 var amdSysfsBackoff = newSysfsBackoff()
 
-// sysfsBackoff skips sysfs files whose reads are slow or fail with EOPNOTSUPP.
+// sysfsBackoff skips sysfs files whose reads fail slowly or with EOPNOTSUPP.
+// Slow successes are not backed off, since a stalled host can delay a healthy read.
 // When the amdgpu driver can't reach the SMU, reads can busy-wait in the kernel for
 // several seconds before failing, which burns a CPU core on every poll
 // (https://github.com/henrygd/beszel/issues/2699).
@@ -215,14 +216,15 @@ func (b *sysfsBackoff) allow(path string, now time.Time) bool {
 }
 
 // record updates the backoff state for path after a read that took elapsed.
-// Slow or unsupported reads double the delay up to sysfsBackoffMax; a fast success resets it.
+// Slow failures and unsupported reads double the delay up to sysfsBackoffMax; a success resets it.
 func (b *sysfsBackoff) record(path string, err error, elapsed time.Duration, now time.Time) {
 	b.Lock()
 	defer b.Unlock()
+	if err == nil {
+		delete(b.entries, path)
+		return
+	}
 	if elapsed < sysfsSlowReadThreshold && !errors.Is(err, syscall.EOPNOTSUPP) {
-		if err == nil {
-			delete(b.entries, path)
-		}
 		return
 	}
 	entry, ok := b.entries[path]

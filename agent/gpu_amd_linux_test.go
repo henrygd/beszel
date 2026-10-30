@@ -174,11 +174,25 @@ func TestSysfsBackoff(t *testing.T) {
 		assert.Equal(t, sysfsBackoffMax, b.entries[path].delay)
 	})
 
-	t.Run("slow successful read backs off", func(t *testing.T) {
+	t.Run("slow failed read backs off", func(t *testing.T) {
 		b := newSysfsBackoff()
-		b.record(path, nil, sysfsSlowReadThreshold, start)
+		timedOut := &os.PathError{Op: "read", Path: path, Err: syscall.ETIME}
+		b.record(path, timedOut, sysfsSlowReadThreshold, start)
 		assert.False(t, b.allow(path, start))
 		assert.True(t, b.allow(path, start.Add(sysfsBackoffMin)))
+	})
+
+	t.Run("slow successful read is not backed off", func(t *testing.T) {
+		b := newSysfsBackoff()
+		b.record(path, nil, sysfsSlowReadThreshold, start)
+		assert.True(t, b.allow(path, start))
+	})
+
+	t.Run("slow successful read clears backoff", func(t *testing.T) {
+		b := newSysfsBackoff()
+		b.record(path, unsupported, time.Millisecond, start)
+		b.record(path, nil, sysfsSlowReadThreshold, start.Add(sysfsBackoffMin))
+		assert.Empty(t, b.entries)
 	})
 
 	t.Run("fast success resets delay", func(t *testing.T) {
