@@ -1,3 +1,4 @@
+import { formatDay, hourWithMinutes } from "@/lib/utils"
 import type { ChartTimes } from "@/types"
 
 /** Chart window in ms timestamps */
@@ -88,4 +89,28 @@ export function toDateTimeLocal(timestamp: number) {
 	const d = new Date(timestamp)
 	const pad = (n: number) => String(n).padStart(2, "0")
 	return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`
+}
+
+/** Short label for a custom range, e.g. "Oct 29 12:00 – 18:00" */
+export function formatRange(range: TimeWindow) {
+	const start = new Date(range.start).toISOString()
+	const end = new Date(range.end).toISOString()
+	const startDay = formatDay(start)
+	const endDay = formatDay(end)
+	const startLabel = `${startDay} ${hourWithMinutes(start)}`
+	const endLabel = startDay === endDay ? hourWithMinutes(end) : `${endDay} ${hourWithMinutes(end)}`
+	return `${startLabel} – ${endLabel}`
+}
+
+/**
+ * X axis ticks for a custom range. A range can come from a coarse tier but still be short
+ * (six hours from 1w data), so its labels follow the range length: times within a day,
+ * otherwise one tick per day.
+ */
+export function rangeAxisTicks(range: TimeWindow): { tickCount: number; daily: boolean } {
+	const days = (range.end - range.start) / (24 * hour)
+	if (days > 1) {
+		return { tickCount: Math.min(Math.round(days), 30), daily: true }
+	}
+	return { tickCount: 12, daily: false }
 }

@@ -1,5 +1,21 @@
-import { describe, expect, test } from "bun:test"
-import { getRangeChartTime, normalizeRange, oldestRangeStart, shiftRange } from "../src/lib/chart-range"
+import { describe, expect, mock, test } from "bun:test"
+
+// The real formatters depend on the browser locale, and lib/utils pulls in UI and lingui macros.
+// These stubs read UTC, which matches the ISO strings formatRange passes them.
+mock.module("../src/lib/utils", () => ({
+	formatDay: (timestamp: string) => timestamp.slice(0, 10),
+	hourWithMinutes: (timestamp: string) => timestamp.slice(11, 16),
+}))
+
+const {
+	formatRange,
+	getRangeChartTime,
+	normalizeRange,
+	oldestRangeStart,
+	rangeAxisTicks,
+	shiftRange,
+	toDateTimeLocal,
+} = await import("../src/lib/chart-range")
 
 const minute = 60 * 1000
 const hour = 60 * minute
@@ -69,5 +85,39 @@ describe("shiftRange", () => {
 		expect(shiftRange({ start: now - hour, end: now, chartTime: "1h" }, 1, now)).toBeNull()
 		const oldest = oldestRangeStart(now)
 		expect(shiftRange({ start: oldest, end: oldest + hour, chartTime: "30d" }, -1, now)).toBeNull()
+	})
+})
+
+describe("toDateTimeLocal", () => {
+	test("formats local time with zero padded fields", () => {
+		expect(toDateTimeLocal(new Date(2026, 0, 5, 9, 7, 30).getTime())).toBe("2026-01-05T09:07")
+		expect(toDateTimeLocal(new Date(2026, 11, 31, 23, 59).getTime())).toBe("2026-12-31T23:59")
+	})
+
+	test("round trips through a datetime-local value at minute precision", () => {
+		const timestamp = now + 42 * 1000
+		expect(new Date(toDateTimeLocal(timestamp)).getTime()).toBe(now)
+	})
+})
+
+describe("formatRange", () => {
+	test("shows the day once when the range stays within it", () => {
+		expect(formatRange({ start: now - 6 * hour, end: now })).toBe("2026-10-30 06:00 – 12:00")
+	})
+
+	test("shows both days when the range crosses midnight", () => {
+		expect(formatRange({ start: now - day, end: now - 6 * hour })).toBe("2026-10-29 12:00 – 2026-10-30 06:00")
+	})
+})
+
+describe("rangeAxisTicks", () => {
+	test("labels times of day for ranges up to a day", () => {
+		expect(rangeAxisTicks({ start: now - 6 * hour, end: now })).toEqual({ tickCount: 12, daily: false })
+		expect(rangeAxisTicks({ start: now - day, end: now })).toEqual({ tickCount: 12, daily: false })
+	})
+
+	test("puts one tick per day on longer ranges, up to 30", () => {
+		expect(rangeAxisTicks({ start: now - 3 * day - 2 * hour, end: now })).toEqual({ tickCount: 3, daily: true })
+		expect(rangeAxisTicks({ start: now - 40 * day, end: now })).toEqual({ tickCount: 30, daily: true })
 	})
 })

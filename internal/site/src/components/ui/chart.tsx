@@ -1,7 +1,7 @@
 import { useLingui } from "@lingui/react/macro"
 import * as React from "react"
 import * as RechartsPrimitive from "recharts"
-import type { ChartRange } from "@/lib/chart-range"
+import { type ChartRange, rangeAxisTicks } from "@/lib/chart-range"
 import { chartTimeData, cn, formatDay, formatNumber, hourWithMinutes } from "@/lib/utils"
 import type { ChartTimes } from "@/types"
 import { Separator } from "./separator"
@@ -427,12 +427,10 @@ function createXAxisData(chartTime: ChartTimes, range?: ChartRange): XAxisData {
 	const startTime = range ? new Date(range.start) : chartTimeData[chartTime].getOffset(axisEndDate)
 	let tickCount = chartTimeData[chartTime].ticks ?? 12
 	let tickFormatter = chartTimeData[chartTime].format
-	// A custom range can come from a coarse tier but still be short (six hours from 1w data),
-	// so its labels follow the range length: times within a day, otherwise one tick per day.
 	if (range) {
-		const days = (range.end - range.start) / (24 * 60 * 60 * 1000)
-		tickCount = days > 1 ? Math.min(Math.round(days), 30) : 12
-		tickFormatter = days > 1 ? formatDay : hourWithMinutes
+		const { tickCount: rangeTickCount, daily } = rangeAxisTicks(range)
+		tickCount = rangeTickCount
+		tickFormatter = daily ? formatDay : hourWithMinutes
 	}
 	const ticks = timeTicks(startTime, axisEndDate, tickCount).map((date) => date.getTime())
 	const domain: [number, number] = [startTime.getTime(), axisEndTime]

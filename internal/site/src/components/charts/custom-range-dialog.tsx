@@ -13,18 +13,7 @@ import {
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { type ChartRange, normalizeRange, oldestRangeStart, type TimeWindow, toDateTimeLocal } from "@/lib/chart-range"
-import { chartTimeData, formatDay, hourWithMinutes } from "@/lib/utils"
-
-/** Short label for a custom range, e.g. "Oct 29 12:00 – 18:00" */
-export function formatRange(range: TimeWindow) {
-	const start = new Date(range.start).toISOString()
-	const end = new Date(range.end).toISOString()
-	const startDay = formatDay(start)
-	const endDay = formatDay(end)
-	const startLabel = `${startDay} ${hourWithMinutes(start)}`
-	const endLabel = startDay === endDay ? hourWithMinutes(end) : `${endDay} ${hourWithMinutes(end)}`
-	return `${startLabel} – ${endLabel}`
-}
+import { chartTimeData } from "@/lib/utils"
 
 export function CustomRangeDialog({
 	open,
