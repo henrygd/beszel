@@ -43,6 +43,9 @@ const (
 type GPUManager struct {
 	sync.Mutex
 	GpuDataMap map[string]*system.GPUData
+	// Apple collector freshness state. It is unused on non-darwin platforms.
+	appleGPUHaveSample bool
+	appleGPULastSample time.Time
 	// lastAvgData stores the last calculated averages for each GPU
 	// Used when a collection happens before new data arrives (Count == 0)
 	lastAvgData map[string]system.GPUData
@@ -60,6 +63,8 @@ type gpuSnapshot struct {
 	power    float64
 	powerPkg float64
 	engines  map[string]float64
+	// Apple GPU averages are retained per cache key between collector samples.
+	appleAverage *system.GPUData
 }
 
 // RocmSmiJson represents the JSON structure of rocm-smi output
@@ -382,6 +387,7 @@ func (gm *GPUManager) parseAmdData(output []byte) bool {
 
 // GetCurrentData returns GPU utilization data averaged since the last call with this cacheKey
 func (gm *GPUManager) GetCurrentData(cacheKey uint16) map[string]system.GPUData {
+	gm.pruneAppleGPUData()
 	gm.Lock()
 	defer gm.Unlock()
 
@@ -434,9 +440,14 @@ func (gm *GPUManager) calculateGPUAverage(id string, gpu *system.GPUData, cacheK
 
 	// If no new data arrived
 	if deltaCount == 0 {
+		if gm.isAppleGPU(gpu.Name) && lastSnapshot != nil && lastSnapshot.appleAverage != nil {
+			average := *lastSnapshot.appleAverage
+			gm.lastAvgData[id] = average
+			return average
+		}
 		// Only discrete GPUs report temp/memory, so treat all-zero as suspended (return zeros).
 		// Engine-based (Intel) GPUs don't, so carry the last average forward across sample gaps.
-		if gpu.Engines == nil && gpu.Temperature == 0 && gpu.MemoryUsed == 0 {
+		if gpu.Engines == nil && gpu.Temperature == 0 && gpu.MemoryUsed == 0 && !gm.isAppleGPU(gpu.Name) {
 			return system.GPUData{Name: gpu.Name}
 		}
 		lastAvg := gm.lastAvgData[id] // zero value if not found
@@ -519,6 +530,10 @@ func (gm *GPUManager) storeSnapshot(id string, gpu *system.GPUData, cacheKey uin
 	if gpu.Engines != nil {
 		snapshot.engines = make(map[string]float64, len(gpu.Engines))
 		maps.Copy(snapshot.engines, gpu.Engines)
+	}
+	if gm.isAppleGPU(gpu.Name) {
+		average := gm.lastAvgData[id]
+		snapshot.appleAverage = &average
 	}
 	gm.lastSnapshots[cacheKey][id] = snapshot
 }
