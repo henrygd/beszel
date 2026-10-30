@@ -65,11 +65,6 @@ msgstr "{count, plural, one {{countString} ساعة} other {{countString} ساع
 msgid "{count, plural, one {{countString} minute} few {{countString} minutes} many {{countString} minutes} other {{countString} minutes}}"
 msgstr "{count, plural, one {{countString} دقيقة} few {{countString} دقائق} many {{countString} دقيقة} other {{countString} دقيقة}}"
 
-#: src/components/containers-table/container-group-row.tsx
-#: src/components/containers-table/stack-nodes-cell.tsx
-msgid "{count, plural, one {# container} other {# containers}}"
-msgstr ""
-
 #: src/components/network-monitors-table/network-monitors-columns.tsx
 msgid "{daysLeft, plural, one {# day} other {# days}}"
 msgstr "{daysLeft, plural, zero {# يوم} one {يوم واحد} two {يومان} few {# أيام} many {# يومًا} other {# يوم}}"
@@ -77,10 +72,6 @@ msgstr "{daysLeft, plural, zero {# يوم} one {يوم واحد} two {يومان
 #: src/components/routes/system/charts/disk-charts.tsx
 msgid "{diskName} I/O"
 msgstr "{diskName} إدخال/إخراج"
-
-#: src/components/containers-table/stack-nodes-cell.tsx
-msgid "{nodeCount, plural, one {# node} other {# nodes}}"
-msgstr ""
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "{numFailed, plural, one {# failed service} other {# failed services}}"
@@ -550,10 +541,6 @@ msgstr "انقر على نظام لعرض مزيد من المعلومات."
 msgid "Click to copy"
 msgstr "انقر للنسخ"
 
-#: src/components/containers-table/container-group-row.tsx
-msgid "Collapse group"
-msgstr ""
-
 #: src/components/login/forgot-pass-form.tsx
 #: src/components/login/forgot-pass-form.tsx
 msgid "Command line instructions"
@@ -595,11 +582,6 @@ msgstr "حاوية"
 #: src/lib/alerts.ts
 msgid "Container Health"
 msgstr "صحة الحاوية"
-
-#: src/components/routes/system/chart-card.tsx
-msgctxt "Chart series level"
-msgid "Containers"
-msgstr ""
 
 #: src/components/routes/system.tsx
 msgid "Containers"
@@ -994,14 +976,6 @@ msgstr "سيتم حذف الأنظمة الحالية غير المعرفة في
 msgid "Exited active"
 msgstr "خرج نشطًا"
 
-#: src/components/containers-table/container-group-row.tsx
-msgid "Expand group"
-msgstr ""
-
-#: src/components/containers-table/stack-nodes-cell.tsx
-msgid "Expected nodes are inferred from where the stack currently runs. Docker Swarm desired replicas are not collected."
-msgstr ""
-
 #: src/components/alerts-history-columns.tsx
 #: src/components/network-monitors-table/network-monitors-columns.tsx
 msgid "Expired"
@@ -1169,14 +1143,6 @@ msgstr "استخدام وحدة معالجة الرسوميات"
 #: src/components/systems-table/systems-table.tsx
 msgid "Grid"
 msgstr "شبكة"
-
-#: src/components/containers-table/containers-table.tsx
-msgid "Group by stack"
-msgstr ""
-
-#: src/components/routes/system/chart-card.tsx
-msgid "Group series by"
-msgstr ""
 
 #: src/components/containers-table/containers-table-columns.tsx
 #: src/components/routes/system/storage-pools-table.tsx
@@ -1448,10 +1414,6 @@ msgstr "تم إنشاء أجهزة المراقبة"
 msgid "Mountpoint"
 msgstr "نقطة الربط"
 
-#: src/components/containers-table/containers-table-columns.tsx
-#~ msgid "Multiple nodes"
-#~ msgstr ""
-
 #: src/components/add-system.tsx
 #: src/components/alerts-history-columns.tsx
 #: src/components/containers-table/containers-table-columns.tsx
@@ -1510,14 +1472,6 @@ msgstr "وحدة الشبكة"
 msgid "No"
 msgstr "لا"
 
-#: src/components/containers-table/stack-nodes-cell.tsx
-msgid "No containers of {service} on {nodes}"
-msgstr ""
-
-#: src/components/containers-table/stack-nodes-cell.tsx
-msgid "No data from {nodes}"
-msgstr ""
-
 #: src/components/routes/system/storage-pools-table.tsx
 msgid "No detail data for this pool."
 msgstr "لا تتوفر بيانات تفصيلية لمجموعة التخزين هذه."
@@ -1555,10 +1509,6 @@ msgstr "لم يتم العثور على أنظمة."
 #: src/components/network-monitors-table/monitor-dialog.tsx
 msgid "No targets found."
 msgstr "لم يتم العثور على أهداف."
-
-#: src/components/containers-table/stack-nodes-cell.tsx
-msgid "Node is {status}"
-msgstr ""
 
 #: src/components/routes/system/storage-pools-table.tsx
 msgid "None"
@@ -2071,21 +2021,9 @@ msgstr "تم الإرسال"
 msgid "Serial Number"
 msgstr "الرقم التسلسلي"
 
-#: src/components/containers-table/containers-table-columns.tsx
-#: src/components/containers-table/containers-table.tsx
-#: src/components/containers-table/stack-nodes-cell.tsx
-msgctxt "Docker Swarm service"
-msgid "Service"
-msgstr ""
-
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Service Details"
 msgstr "تفاصيل الخدمة"
-
-#: src/components/routes/system/chart-card.tsx
-msgctxt "Docker Swarm services"
-msgid "Services"
-msgstr ""
 
 #: src/components/routes/system.tsx
 #: src/components/systems-table/systems-table-columns.tsx
@@ -2134,17 +2072,6 @@ msgstr "إعدادات SMTP"
 #: src/components/systems-table/systems-table.tsx
 msgid "Sort By"
 msgstr "الترتيب حسب"
-
-#: src/components/containers-table/containers-table-columns.tsx
-#: src/components/containers-table/containers-table.tsx
-msgctxt "Docker Compose or Swarm stack"
-msgid "Stack"
-msgstr ""
-
-#: src/components/routes/system/chart-card.tsx
-msgctxt "Docker Compose or Swarm stacks"
-msgid "Stacks"
-msgstr ""
 
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/quiet-hours.tsx
@@ -2563,7 +2490,6 @@ msgstr "الاستخدام"
 msgid "Value"
 msgstr "القيمة"
 
-#: src/components/containers-table/containers-table.tsx
 #: src/components/network-monitors-table/network-monitors-table.tsx
 #: src/components/routes/system/info-bar.tsx
 #: src/components/systems-table/systems-table.tsx
@@ -2588,7 +2514,6 @@ msgstr "عرض المزيد"
 msgid "View your 200 most recent alerts."
 msgstr "عرض أحدث 200 تنبيه."
 
-#: src/components/containers-table/containers-table.tsx
 #: src/components/network-monitors-table/network-monitors-table.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "Visible Fields"

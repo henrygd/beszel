@@ -65,11 +65,6 @@ msgstr "{count, plural, one {{countString} 小時} other {{countString} 小時}}
 msgid "{count, plural, one {{countString} minute} few {{countString} minutes} many {{countString} minutes} other {{countString} minutes}}"
 msgstr "{count, plural, one {{countString} 分鐘} few {{countString} 分鐘} many {{countString} 分鐘} other {{countString} 分鐘}}"
 
-#: src/components/containers-table/container-group-row.tsx
-#: src/components/containers-table/stack-nodes-cell.tsx
-msgid "{count, plural, one {# container} other {# containers}}"
-msgstr ""
-
 #: src/components/network-monitors-table/network-monitors-columns.tsx
 msgid "{daysLeft, plural, one {# day} other {# days}}"
 msgstr "{daysLeft, plural, one {# 天} other {# 天}}"
@@ -77,10 +72,6 @@ msgstr "{daysLeft, plural, one {# 天} other {# 天}}"
 #: src/components/routes/system/charts/disk-charts.tsx
 msgid "{diskName} I/O"
 msgstr "{diskName} I/O"
-
-#: src/components/containers-table/stack-nodes-cell.tsx
-msgid "{nodeCount, plural, one {# node} other {# nodes}}"
-msgstr ""
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "{numFailed, plural, one {# failed service} other {# failed services}}"
@@ -550,10 +541,6 @@ msgstr "點擊系統以查看更多資訊。"
 msgid "Click to copy"
 msgstr "點擊複製"
 
-#: src/components/containers-table/container-group-row.tsx
-msgid "Collapse group"
-msgstr ""
-
 #: src/components/login/forgot-pass-form.tsx
 #: src/components/login/forgot-pass-form.tsx
 msgid "Command line instructions"
@@ -595,11 +582,6 @@ msgstr "容器"
 #: src/lib/alerts.ts
 msgid "Container Health"
 msgstr "容器健康狀態"
-
-#: src/components/routes/system/chart-card.tsx
-msgctxt "Chart series level"
-msgid "Containers"
-msgstr ""
 
 #: src/components/routes/system.tsx
 msgid "Containers"
@@ -994,14 +976,6 @@ msgstr "未在 <0>config.yml</0> 中定義的現有系統將會被刪除。請�
 msgid "Exited active"
 msgstr "結束"
 
-#: src/components/containers-table/container-group-row.tsx
-msgid "Expand group"
-msgstr ""
-
-#: src/components/containers-table/stack-nodes-cell.tsx
-msgid "Expected nodes are inferred from where the stack currently runs. Docker Swarm desired replicas are not collected."
-msgstr ""
-
 #: src/components/alerts-history-columns.tsx
 #: src/components/network-monitors-table/network-monitors-columns.tsx
 msgid "Expired"
@@ -1169,14 +1143,6 @@ msgstr "GPU 使用率"
 #: src/components/systems-table/systems-table.tsx
 msgid "Grid"
 msgstr "網格"
-
-#: src/components/containers-table/containers-table.tsx
-msgid "Group by stack"
-msgstr ""
-
-#: src/components/routes/system/chart-card.tsx
-msgid "Group series by"
-msgstr ""
 
 #: src/components/containers-table/containers-table-columns.tsx
 #: src/components/routes/system/storage-pools-table.tsx
@@ -1448,10 +1414,6 @@ msgstr "已建立監控"
 msgid "Mountpoint"
 msgstr "掛載點"
 
-#: src/components/containers-table/containers-table-columns.tsx
-#~ msgid "Multiple nodes"
-#~ msgstr ""
-
 #: src/components/add-system.tsx
 #: src/components/alerts-history-columns.tsx
 #: src/components/containers-table/containers-table-columns.tsx
@@ -1510,14 +1472,6 @@ msgstr "網路單位"
 msgid "No"
 msgstr "否"
 
-#: src/components/containers-table/stack-nodes-cell.tsx
-msgid "No containers of {service} on {nodes}"
-msgstr ""
-
-#: src/components/containers-table/stack-nodes-cell.tsx
-msgid "No data from {nodes}"
-msgstr ""
-
 #: src/components/routes/system/storage-pools-table.tsx
 msgid "No detail data for this pool."
 msgstr "此儲存池沒有可用的詳細資料。"
@@ -1555,10 +1509,6 @@ msgstr "找不到任何系統。"
 #: src/components/network-monitors-table/monitor-dialog.tsx
 msgid "No targets found."
 msgstr "找不到目標。"
-
-#: src/components/containers-table/stack-nodes-cell.tsx
-msgid "Node is {status}"
-msgstr ""
 
 #: src/components/routes/system/storage-pools-table.tsx
 msgid "None"
@@ -2071,21 +2021,9 @@ msgstr "傳送"
 msgid "Serial Number"
 msgstr "序號"
 
-#: src/components/containers-table/containers-table-columns.tsx
-#: src/components/containers-table/containers-table.tsx
-#: src/components/containers-table/stack-nodes-cell.tsx
-msgctxt "Docker Swarm service"
-msgid "Service"
-msgstr ""
-
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Service Details"
 msgstr "服務詳細資訊"
-
-#: src/components/routes/system/chart-card.tsx
-msgctxt "Docker Swarm services"
-msgid "Services"
-msgstr ""
 
 #: src/components/routes/system.tsx
 #: src/components/systems-table/systems-table-columns.tsx
@@ -2134,17 +2072,6 @@ msgstr "SMTP 設定"
 #: src/components/systems-table/systems-table.tsx
 msgid "Sort By"
 msgstr "排序"
-
-#: src/components/containers-table/containers-table-columns.tsx
-#: src/components/containers-table/containers-table.tsx
-msgctxt "Docker Compose or Swarm stack"
-msgid "Stack"
-msgstr ""
-
-#: src/components/routes/system/chart-card.tsx
-msgctxt "Docker Compose or Swarm stacks"
-msgid "Stacks"
-msgstr ""
 
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/quiet-hours.tsx
@@ -2563,7 +2490,6 @@ msgstr "利用率"
 msgid "Value"
 msgstr "值"
 
-#: src/components/containers-table/containers-table.tsx
 #: src/components/network-monitors-table/network-monitors-table.tsx
 #: src/components/routes/system/info-bar.tsx
 #: src/components/systems-table/systems-table.tsx
@@ -2588,7 +2514,6 @@ msgstr "查看更多"
 msgid "View your 200 most recent alerts."
 msgstr "檢視最近 200 則警報。"
 
-#: src/components/containers-table/containers-table.tsx
 #: src/components/network-monitors-table/network-monitors-table.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "Visible Fields"

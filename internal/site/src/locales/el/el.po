@@ -65,11 +65,6 @@ msgstr "{count, plural, one {{countString} ώρα} other {{countString} ώρες
 msgid "{count, plural, one {{countString} minute} few {{countString} minutes} many {{countString} minutes} other {{countString} minutes}}"
 msgstr "{count, plural, one {{countString} λεπτό} other {{countString} λεπτά}}"
 
-#: src/components/containers-table/container-group-row.tsx
-#: src/components/containers-table/stack-nodes-cell.tsx
-msgid "{count, plural, one {# container} other {# containers}}"
-msgstr ""
-
 #: src/components/network-monitors-table/network-monitors-columns.tsx
 msgid "{daysLeft, plural, one {# day} other {# days}}"
 msgstr "{daysLeft, plural, one {# ημέρα} other {# ημέρες}}"
@@ -77,10 +72,6 @@ msgstr "{daysLeft, plural, one {# ημέρα} other {# ημέρες}}"
 #: src/components/routes/system/charts/disk-charts.tsx
 msgid "{diskName} I/O"
 msgstr "I/O {diskName}"
-
-#: src/components/containers-table/stack-nodes-cell.tsx
-msgid "{nodeCount, plural, one {# node} other {# nodes}}"
-msgstr ""
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "{numFailed, plural, one {# failed service} other {# failed services}}"
@@ -550,10 +541,6 @@ msgstr "Κάντε κλικ σε ένα σύστημα για να δείτε π
 msgid "Click to copy"
 msgstr "Κάντε κλικ για αντιγραφή"
 
-#: src/components/containers-table/container-group-row.tsx
-msgid "Collapse group"
-msgstr ""
-
 #: src/components/login/forgot-pass-form.tsx
 #: src/components/login/forgot-pass-form.tsx
 msgid "Command line instructions"
@@ -595,11 +582,6 @@ msgstr "Κοντέινερ"
 #: src/lib/alerts.ts
 msgid "Container Health"
 msgstr "Υγεία κοντέινερ"
-
-#: src/components/routes/system/chart-card.tsx
-msgctxt "Chart series level"
-msgid "Containers"
-msgstr ""
 
 #: src/components/routes/system.tsx
 msgid "Containers"
@@ -994,14 +976,6 @@ msgstr "Τα υπάρχοντα συστήματα που δεν ορίζοντ�
 msgid "Exited active"
 msgstr "Ενεργό μετά την έξοδο"
 
-#: src/components/containers-table/container-group-row.tsx
-msgid "Expand group"
-msgstr ""
-
-#: src/components/containers-table/stack-nodes-cell.tsx
-msgid "Expected nodes are inferred from where the stack currently runs. Docker Swarm desired replicas are not collected."
-msgstr ""
-
 #: src/components/alerts-history-columns.tsx
 #: src/components/network-monitors-table/network-monitors-columns.tsx
 msgid "Expired"
@@ -1169,14 +1143,6 @@ msgstr "Χρήση GPU"
 #: src/components/systems-table/systems-table.tsx
 msgid "Grid"
 msgstr "Πλέγμα"
-
-#: src/components/containers-table/containers-table.tsx
-msgid "Group by stack"
-msgstr ""
-
-#: src/components/routes/system/chart-card.tsx
-msgid "Group series by"
-msgstr ""
 
 #: src/components/containers-table/containers-table-columns.tsx
 #: src/components/routes/system/storage-pools-table.tsx
@@ -1448,10 +1414,6 @@ msgstr "Τα monitors δημιουργήθηκαν"
 msgid "Mountpoint"
 msgstr "Σημείο προσάρτησης"
 
-#: src/components/containers-table/containers-table-columns.tsx
-#~ msgid "Multiple nodes"
-#~ msgstr ""
-
 #: src/components/add-system.tsx
 #: src/components/alerts-history-columns.tsx
 #: src/components/containers-table/containers-table-columns.tsx
@@ -1510,14 +1472,6 @@ msgstr "Μονάδα δικτύου"
 msgid "No"
 msgstr "Όχι"
 
-#: src/components/containers-table/stack-nodes-cell.tsx
-msgid "No containers of {service} on {nodes}"
-msgstr ""
-
-#: src/components/containers-table/stack-nodes-cell.tsx
-msgid "No data from {nodes}"
-msgstr ""
-
 #: src/components/routes/system/storage-pools-table.tsx
 msgid "No detail data for this pool."
 msgstr "Δεν υπάρχουν λεπτομερή δεδομένα για αυτό το pool."
@@ -1555,10 +1509,6 @@ msgstr "Δεν βρέθηκαν συστήματα."
 #: src/components/network-monitors-table/monitor-dialog.tsx
 msgid "No targets found."
 msgstr "Δεν βρέθηκαν στόχοι."
-
-#: src/components/containers-table/stack-nodes-cell.tsx
-msgid "Node is {status}"
-msgstr ""
 
 #: src/components/routes/system/storage-pools-table.tsx
 msgid "None"
@@ -2071,21 +2021,9 @@ msgstr "Απεστάλησαν"
 msgid "Serial Number"
 msgstr "Σειριακός αριθμός"
 
-#: src/components/containers-table/containers-table-columns.tsx
-#: src/components/containers-table/containers-table.tsx
-#: src/components/containers-table/stack-nodes-cell.tsx
-msgctxt "Docker Swarm service"
-msgid "Service"
-msgstr ""
-
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Service Details"
 msgstr "Λεπτομέρειες υπηρεσίας"
-
-#: src/components/routes/system/chart-card.tsx
-msgctxt "Docker Swarm services"
-msgid "Services"
-msgstr ""
 
 #: src/components/routes/system.tsx
 #: src/components/systems-table/systems-table-columns.tsx
@@ -2134,17 +2072,6 @@ msgstr "Ρυθμίσεις SMTP"
 #: src/components/systems-table/systems-table.tsx
 msgid "Sort By"
 msgstr "Ταξινόμηση κατά"
-
-#: src/components/containers-table/containers-table-columns.tsx
-#: src/components/containers-table/containers-table.tsx
-msgctxt "Docker Compose or Swarm stack"
-msgid "Stack"
-msgstr ""
-
-#: src/components/routes/system/chart-card.tsx
-msgctxt "Docker Compose or Swarm stacks"
-msgid "Stacks"
-msgstr ""
 
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/quiet-hours.tsx
@@ -2563,7 +2490,6 @@ msgstr "Χρήση"
 msgid "Value"
 msgstr "Τιμή"
 
-#: src/components/containers-table/containers-table.tsx
 #: src/components/network-monitors-table/network-monitors-table.tsx
 #: src/components/routes/system/info-bar.tsx
 #: src/components/systems-table/systems-table.tsx
@@ -2588,7 +2514,6 @@ msgstr "Προβολή περισσότερων"
 msgid "View your 200 most recent alerts."
 msgstr "Προβάλετε τις 200 πιο πρόσφατες ειδοποιήσεις σας."
 
-#: src/components/containers-table/containers-table.tsx
 #: src/components/network-monitors-table/network-monitors-table.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "Visible Fields"

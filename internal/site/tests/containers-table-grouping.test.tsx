@@ -185,8 +185,11 @@ const findRow = (table: Table<ContainerRecord>, id: string) => {
 	return row
 }
 
-const groupRowHtml = (row: Row<ContainerRecord>) =>
-	renderToStaticMarkup(<ContainerGroupRow row={row} expanded={row.getIsExpanded()} />)
+const groupRowHtml = (row: Row<ContainerRecord>) => renderToStaticMarkup(<ContainerGroupRow row={row} />)
+
+/** Cells the group row actually drew, in order */
+const groupRowCells = (row: Row<ContainerRecord>) =>
+	[...groupRowHtml(row).matchAll(/<td\b/g)].length
 
 /** Render one cell of a leaf row through the `cell` of its column */
 const leafCellHtml = (row: Row<ContainerRecord>, columnId: string) => {
@@ -197,6 +200,25 @@ const leafCellHtml = (row: Row<ContainerRecord>, columnId: string) => {
 }
 
 describe("group rows keep the formatting of their column", () => {
+	test("a group row draws the columns the table has visible, not the set it drew before", () => {
+		// what the maintainer of the upstream project hit: turning a column on under Visible
+		// Fields left the group rows on the previous set of cells, so their values sat under the
+		// wrong headers until the next poll replaced the rows. The row has to follow the table.
+		const table = makeTable(data)
+		const visibleColumns = () => table.getVisibleLeafColumns().length
+		const before = visibleColumns()
+		expect(groupRowCells(findRow(table, stackId))).toBe(before)
+
+		table.getColumn("service")?.toggleVisibility(false)
+		const after = visibleColumns()
+		expect(after).toBeLessThan(before)
+		expect(groupRowCells(findRow(table, stackId))).toBe(after)
+
+		table.getColumn("service")?.toggleVisibility(true)
+		expect(visibleColumns()).toBe(before)
+		expect(groupRowCells(findRow(table, stackId))).toBe(before)
+	})
+
 	test("no column falls back to the aggregated cell the library installs", () => {
 		const table = makeTable(data)
 		// the grouping feature gives every column a default aggregatedCell that prints

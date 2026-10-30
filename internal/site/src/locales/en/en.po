@@ -60,11 +60,6 @@ msgstr "{count, plural, one {{countString} hour} other {{countString} hours}}"
 msgid "{count, plural, one {{countString} minute} few {{countString} minutes} many {{countString} minutes} other {{countString} minutes}}"
 msgstr "{count, plural, one {{countString} minute} few {{countString} minutes} many {{countString} minutes} other {{countString} minutes}}"
 
-#: src/components/containers-table/container-group-row.tsx
-#: src/components/containers-table/stack-nodes-cell.tsx
-msgid "{count, plural, one {# container} other {# containers}}"
-msgstr "{count, plural, one {# container} other {# containers}}"
-
 #: src/components/network-monitors-table/network-monitors-columns.tsx
 msgid "{daysLeft, plural, one {# day} other {# days}}"
 msgstr "{daysLeft, plural, one {# day} other {# days}}"
@@ -72,10 +67,6 @@ msgstr "{daysLeft, plural, one {# day} other {# days}}"
 #: src/components/routes/system/charts/disk-charts.tsx
 msgid "{diskName} I/O"
 msgstr "{diskName} I/O"
-
-#: src/components/containers-table/stack-nodes-cell.tsx
-msgid "{nodeCount, plural, one {# node} other {# nodes}}"
-msgstr "{nodeCount, plural, one {# node} other {# nodes}}"
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "{numFailed, plural, one {# failed service} other {# failed services}}"
@@ -545,10 +536,6 @@ msgstr "Click on a system to view more information."
 msgid "Click to copy"
 msgstr "Click to copy"
 
-#: src/components/containers-table/container-group-row.tsx
-msgid "Collapse group"
-msgstr "Collapse group"
-
 #: src/components/login/forgot-pass-form.tsx
 #: src/components/login/forgot-pass-form.tsx
 msgid "Command line instructions"
@@ -590,11 +577,6 @@ msgstr "Container"
 #: src/lib/alerts.ts
 msgid "Container Health"
 msgstr "Container Health"
-
-#: src/components/routes/system/chart-card.tsx
-msgctxt "Chart series level"
-msgid "Containers"
-msgstr "Containers"
 
 #: src/components/routes/system.tsx
 msgid "Containers"
@@ -989,14 +971,6 @@ msgstr "Existing systems not defined in <0>config.yml</0> will be deleted. Pleas
 msgid "Exited active"
 msgstr "Exited active"
 
-#: src/components/containers-table/container-group-row.tsx
-msgid "Expand group"
-msgstr "Expand group"
-
-#: src/components/containers-table/stack-nodes-cell.tsx
-msgid "Expected nodes are inferred from where the stack currently runs. Docker Swarm desired replicas are not collected."
-msgstr "Expected nodes are inferred from where the stack currently runs. Docker Swarm desired replicas are not collected."
-
 #: src/components/alerts-history-columns.tsx
 #: src/components/network-monitors-table/network-monitors-columns.tsx
 msgid "Expired"
@@ -1164,14 +1138,6 @@ msgstr "GPU Usage"
 #: src/components/systems-table/systems-table.tsx
 msgid "Grid"
 msgstr "Grid"
-
-#: src/components/containers-table/containers-table.tsx
-msgid "Group by stack"
-msgstr "Group by stack"
-
-#: src/components/routes/system/chart-card.tsx
-msgid "Group series by"
-msgstr "Group series by"
 
 #: src/components/containers-table/containers-table-columns.tsx
 #: src/components/routes/system/storage-pools-table.tsx
@@ -1443,10 +1409,6 @@ msgstr "Monitors created"
 msgid "Mountpoint"
 msgstr "Mountpoint"
 
-#: src/components/containers-table/containers-table-columns.tsx
-#~ msgid "Multiple nodes"
-#~ msgstr "Multiple nodes"
-
 #: src/components/add-system.tsx
 #: src/components/alerts-history-columns.tsx
 #: src/components/containers-table/containers-table-columns.tsx
@@ -1505,14 +1467,6 @@ msgstr "Network unit"
 msgid "No"
 msgstr "No"
 
-#: src/components/containers-table/stack-nodes-cell.tsx
-msgid "No containers of {service} on {nodes}"
-msgstr "No containers of {service} on {nodes}"
-
-#: src/components/containers-table/stack-nodes-cell.tsx
-msgid "No data from {nodes}"
-msgstr "No data from {nodes}"
-
 #: src/components/routes/system/storage-pools-table.tsx
 msgid "No detail data for this pool."
 msgstr "No detail data for this pool."
@@ -1550,10 +1504,6 @@ msgstr "No systems found."
 #: src/components/network-monitors-table/monitor-dialog.tsx
 msgid "No targets found."
 msgstr "No targets found."
-
-#: src/components/containers-table/stack-nodes-cell.tsx
-msgid "Node is {status}"
-msgstr "Node is {status}"
 
 #: src/components/routes/system/storage-pools-table.tsx
 msgid "None"
@@ -2066,21 +2016,9 @@ msgstr "Sent"
 msgid "Serial Number"
 msgstr "Serial Number"
 
-#: src/components/containers-table/containers-table-columns.tsx
-#: src/components/containers-table/containers-table.tsx
-#: src/components/containers-table/stack-nodes-cell.tsx
-msgctxt "Docker Swarm service"
-msgid "Service"
-msgstr "Service"
-
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Service Details"
 msgstr "Service Details"
-
-#: src/components/routes/system/chart-card.tsx
-msgctxt "Docker Swarm services"
-msgid "Services"
-msgstr "Services"
 
 #: src/components/routes/system.tsx
 #: src/components/systems-table/systems-table-columns.tsx
@@ -2129,17 +2067,6 @@ msgstr "SMTP settings"
 #: src/components/systems-table/systems-table.tsx
 msgid "Sort By"
 msgstr "Sort By"
-
-#: src/components/containers-table/containers-table-columns.tsx
-#: src/components/containers-table/containers-table.tsx
-msgctxt "Docker Compose or Swarm stack"
-msgid "Stack"
-msgstr "Stack"
-
-#: src/components/routes/system/chart-card.tsx
-msgctxt "Docker Compose or Swarm stacks"
-msgid "Stacks"
-msgstr "Stacks"
 
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/quiet-hours.tsx
@@ -2558,7 +2485,6 @@ msgstr "Utilization"
 msgid "Value"
 msgstr "Value"
 
-#: src/components/containers-table/containers-table.tsx
 #: src/components/network-monitors-table/network-monitors-table.tsx
 #: src/components/routes/system/info-bar.tsx
 #: src/components/systems-table/systems-table.tsx
@@ -2583,7 +2509,6 @@ msgstr "View more"
 msgid "View your 200 most recent alerts."
 msgstr "View your 200 most recent alerts."
 
-#: src/components/containers-table/containers-table.tsx
 #: src/components/network-monitors-table/network-monitors-table.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "Visible Fields"

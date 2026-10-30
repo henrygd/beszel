@@ -2,7 +2,6 @@ import { t } from "@lingui/core/macro"
 import { Plural } from "@lingui/react/macro"
 import { flexRender, type Row } from "@tanstack/react-table"
 import { ChevronDownIcon } from "lucide-react"
-import { memo } from "react"
 import { TableCell, TableRow } from "@/components/ui/table"
 import { rowGroupLabel } from "@/lib/container-grouping"
 import { cn } from "@/lib/utils"
@@ -20,17 +19,15 @@ export const GROUP_INDENT = 18
  * from the column: the grouping feature installs a default one that just prints the value, so
  * falling back to `cell` here would never happen and the group row would lose every formatter.
  *
- * `expanded` is not read in the body -- it is a prop so that memo sees the change. TanStack keeps
- * the same row objects when only the expanded state changes, so comparing `row` alone would stop
- * the chevron from turning.
+ * Deliberately not memoized. Everything drawn here is read off the table at render time -- the
+ * visible cells, their widths, the expanded state -- while the row object stays the same across
+ * all of those changes. A memo would therefore have to list every one of them, and the one that
+ * was missed showed up as a group keeping the cells of the previous column set: toggling a column
+ * put values under the wrong header until the next poll replaced the rows. Group rows are as many
+ * as there are groups, so there is nothing here worth that risk.
  */
-export const ContainerGroupRow = memo(function ContainerGroupRow({
-	row,
-	expanded,
-}: {
-	row: Row<ContainerRecord>
-	expanded: boolean
-}) {
+export function ContainerGroupRow({ row }: { row: Row<ContainerRecord> }) {
+	const expanded = row.getIsExpanded()
 	return (
 		<TableRow
 			className="bg-muted/40 dark:bg-muted/25 font-medium cursor-pointer"
@@ -57,7 +54,7 @@ export const ContainerGroupRow = memo(function ContainerGroupRow({
 			))}
 		</TableRow>
 	)
-})
+}
 
 /**
  * Chevron, group label and number of containers. Rendered by the aggregated cell of the name

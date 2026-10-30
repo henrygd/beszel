@@ -366,7 +366,7 @@ const AllContainersTable = memo(function AllContainersTable({
 						rows.map((row) =>
 							row.getIsGrouped() ? (
 								// expanded is passed so memo sees it change: TanStack keeps the same row object
-								<ContainerGroupRow key={row.id} row={row} expanded={row.getIsExpanded()} />
+								<ContainerGroupRow key={row.id} row={row} />
 							) : (
 								<ContainerTableRow key={row.id} row={row} openSheet={openSheet} />
 							)
