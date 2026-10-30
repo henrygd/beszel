@@ -84,6 +84,7 @@ export function getUserChartTime(settings: UserSettings = $userSettings.get()): 
 export function hydrateUserSettings(settings: UserSettings) {
 	$userSettings.set(settings)
 	$chartTime.set(getUserChartTime(settings))
+	$maxValues.set(settings.chartValue === "max")
 }
 
 /** Container chart filter */
