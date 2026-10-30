@@ -1,6 +1,7 @@
 import { describe, expect, test } from "bun:test"
 
 import { ContainerHealth } from "../src/lib/enums"
+import type { StackNodeSummary } from "../src/lib/container-grouping"
 import {
 	buildGroupingState,
 	compareGroupAwareName,
@@ -17,7 +18,10 @@ import {
 	rowGroupLabel,
 	sharedValue,
 	shouldUnwrapContainerGroup,
+	splitAbsentNodes,
+	stackServiceGaps,
 	sumValues,
+	summarizeStackNodes,
 	UNGROUPED,
 	unwrapGroups,
 	worstHealth,
@@ -300,5 +304,138 @@ describe("comparators", () => {
 			comparePorts(leaf("1", { ports: "127.0.0.1:8080" }), leaf("2", { ports: "80, 443" }), "ports")
 		).toBeGreaterThan(0)
 		expect(comparePorts(group("stack", "myapp", []), leaf("2", { ports: "80" }), "ports")).toBeLessThan(0)
+	})
+})
+
+describe("stack over nodes", () => {
+	// a stack of two services over three nodes, plus one container that only carries a stack label
+	const nodeNames: Record<string, string> = { n1: "alpha", n2: "beta", n3: "gamma" }
+	const nodeName = (node: string) => nodeNames[node] ?? node
+
+	const spread = [
+		container("web.1", { system: "n1" }),
+		container("web.2", { system: "n1" }),
+		container("db.1", { system: "n1", service: "db" }),
+		container("web.3", { system: "n2" }),
+		container("web.4", { system: "n2" }),
+		container("db.2", { system: "n2", service: "db" }),
+		container("web.5", { system: "n3" }),
+		container("db.3", { system: "n3", service: "db" }),
+	]
+
+	const summaryOf = (sources: ReturnType<typeof container>[], resolve: (node: string) => string = nodeName) => {
+		const summary = summarizeStackNodes(sources, resolve).get("myapp")
+		if (!summary) throw new Error("no summary for myapp")
+		return summary
+	}
+	const serviceOf = (summary: StackNodeSummary, service: string) => {
+		const coverage = summary.services.find((candidate) => candidate.service === service)
+		if (!coverage) throw new Error(`no coverage for ${service}`)
+		return coverage
+	}
+
+	test("aggregates one stack across several systems", () => {
+		const summaries = summarizeStackNodes(spread, nodeName)
+		expect(summaries.size).toBe(1)
+		const summary = summaryOf(spread)
+		expect(summary.stack).toBe("myapp")
+		expect(summary.nodes).toEqual(["n1", "n2", "n3"])
+		expect(summary.containersByNode).toEqual({ n1: 3, n2: 3, n3: 2 })
+		expect(summary.total).toBe(8)
+		expect(summary.services.map((coverage) => coverage.service)).toEqual(["db", "web"])
+		const web = serviceOf(summary, "web")
+		expect(web.countByNode).toEqual({ n1: 2, n2: 2, n3: 1 })
+		expect(web.total).toBe(5)
+		expect(web.absentOn).toEqual([])
+		const db = serviceOf(summary, "db")
+		expect(db.countByNode).toEqual({ n1: 1, n2: 1, n3: 1 })
+		expect(db.total).toBe(3)
+		expect(db.absentOn).toEqual([])
+	})
+
+	test("flags a service with no containers on a live node", () => {
+		// the worker never made it to n3, which still runs web
+		const records = [
+			...spread.filter((record) => getServiceValue(record) === "web"),
+			container("worker.1", { system: "n1", service: "worker" }),
+			container("worker.2", { system: "n2", service: "worker" }),
+		]
+		const summary = summaryOf(records)
+		expect(summary.nodes).toEqual(["n1", "n2", "n3"])
+		expect(serviceOf(summary, "web").absentOn).toEqual([])
+		expect(serviceOf(summary, "worker").absentOn).toEqual(["n3"])
+
+		expect(splitAbsentNodes(["n3"], () => "up")).toEqual({ missingOn: ["n3"], unknownOn: [] })
+		expect(stackServiceGaps(summary, () => "up")).toEqual([{ service: "worker", missingOn: ["n3"], unknownOn: [] }])
+	})
+
+	test("a node that fell off is reported as unknown, not as a dead service", () => {
+		const records = [
+			...spread.filter((record) => getServiceValue(record) === "web"),
+			container("worker.1", { system: "n1", service: "worker" }),
+			container("worker.2", { system: "n2", service: "worker" }),
+		]
+		const summary = summaryOf(records)
+		const statuses: Record<string, string> = { n1: "up", n2: "up", n3: "down" }
+
+		expect(splitAbsentNodes(["n3"], (node) => statuses[node])).toEqual({ missingOn: [], unknownOn: ["n3"] })
+		expect(stackServiceGaps(summary, (node) => statuses[node])).toEqual([
+			{ service: "worker", missingOn: [], unknownOn: ["n3"] },
+		])
+		// a system that is not in the store at all (deleted, records not swept yet) is unknown too
+		expect(splitAbsentNodes(["n3"], () => undefined)).toEqual({ missingOn: [], unknownOn: ["n3"] })
+		expect(splitAbsentNodes(["n3"], () => "paused")).toEqual({ missingOn: [], unknownOn: ["n3"] })
+		expect(splitAbsentNodes(["n3"], () => "pending")).toEqual({ missingOn: [], unknownOn: ["n3"] })
+	})
+
+	test("a node that fell off completely disappears from the stack node set", () => {
+		const records = spread.filter((record) => record.system !== "n3")
+		const summary = summaryOf(records)
+		expect(summary.nodes).toEqual(["n1", "n2"])
+		expect(summary.nodes.length).toBe(2)
+		for (const coverage of summary.services) {
+			expect(coverage.absentOn).toEqual([])
+		}
+		expect(stackServiceGaps(summary, () => "up")).toEqual([])
+	})
+
+	test("records without stack labels are not part of any summary", () => {
+		const records = [
+			...spread,
+			container("loose.1", { system: "n1", stack: undefined, service: undefined }),
+			container("loose.2", { system: "n2", stack: undefined, service: undefined }),
+			container("loose.3", { system: "n3", stack: "" }),
+		]
+		const summaries = summarizeStackNodes(records, nodeName)
+		expect([...summaries.keys()]).toEqual(["myapp"])
+		expect(summaries.has("")).toBe(false)
+		expect([...summaries.keys()].some((key) => key.startsWith(UNGROUPED))).toBe(false)
+		expect(summaryOf(records).total).toBe(8)
+	})
+
+	test("stack totals equal the sum over nodes", () => {
+		// one container carries the stack label without a service label: it counts on its node,
+		// but it is not a service of the stack and gets no coverage row
+		const records = [...spread, container("manual", { system: "n3", service: undefined })]
+		const summary = summaryOf(records)
+		const overNodes = Object.values(summary.containersByNode).reduce((sum, count) => sum + count, 0)
+		expect(summary.total).toBe(overNodes)
+		expect(summary.total).toBe(9)
+		expect(summary.containersByNode.n3).toBe(3)
+		const overServices = summary.services.reduce((sum, coverage) => sum + coverage.total, 0)
+		expect(overServices).toBe(summary.total - 1)
+		expect(summary.services.map((coverage) => coverage.service)).toEqual(["db", "web"])
+	})
+
+	test("node order is stable and by system name", () => {
+		// names in the reverse order of the ids, so sorting by name is visible
+		const reversed = (node: string) => ({ n1: "gamma", n2: "beta", n3: "alpha" })[node] ?? node
+		expect(summaryOf(spread, reversed).nodes).toEqual(["n3", "n2", "n1"])
+		expect(summaryOf([...spread].reverse(), reversed).nodes).toEqual(["n3", "n2", "n1"])
+		expect(summaryOf([...spread].reverse(), nodeName).nodes).toEqual(["n1", "n2", "n3"])
+		// without a resolver the order falls back to the ids
+		expect(summarizeStackNodes(spread).get("myapp")?.nodes).toEqual(["n1", "n2", "n3"])
+		// two systems with the same name keep a deterministic order
+		expect(summaryOf(spread, () => "same").nodes).toEqual(["n1", "n2", "n3"])
 	})
 })

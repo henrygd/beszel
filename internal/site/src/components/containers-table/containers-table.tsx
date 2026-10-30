@@ -35,12 +35,19 @@ import { LoaderCircleIcon, MaximizeIcon, RefreshCwIcon, Settings2Icon, XIcon } f
 import { Separator } from "../ui/separator"
 import { $router, Link } from "../router"
 import { listenKeys } from "nanostores"
+import { useStore } from "@nanostores/react"
 import { getPagePath } from "@nanostores/router"
 import { LogsDisplay, LogsFullscreenDialog, LogsIconButton, LogsTimestampToggle } from "@/components/logs-display"
 import { getLogTimestampDecorations } from "@/lib/logs"
 import { ContainerGroupRow } from "@/components/containers-table/container-group-row"
 import { getContainerGroupedRowModel } from "@/components/containers-table/containers-grouped-row-model"
-import { buildGroupingState, hasStacks, SERVICE_COLUMN_ID, STACK_COLUMN_ID } from "@/lib/container-grouping"
+import {
+	buildGroupingState,
+	hasStacks,
+	SERVICE_COLUMN_ID,
+	STACK_COLUMN_ID,
+	summarizeStackNodes,
+} from "@/lib/container-grouping"
 import {
 	DropdownMenu,
 	DropdownMenuCheckboxItem,
@@ -77,6 +84,17 @@ export default function ContainersTable({ systemId }: { systemId?: string }) {
 	const grouping = useMemo<GroupingState>(
 		() => buildGroupingState({ hasStacks: stacksPresent, enabled: groupByStack }),
 		[stacksPresent, groupByStack]
+	)
+
+	// where every stack lives, for the system column of its row. Built from the full data on
+	// purpose: a filter changes which rows are listed, not which nodes a stack runs on, and the
+	// mark about a service that is not up is needed exactly when the filter is on that service.
+	// The node names come from the store so the matrix keeps a stable column order, and the
+	// statuses the cell reads from the same store repaint the row when a system is paused
+	const allSystems = useStore($allSystemsById)
+	const stackSummaries = useMemo(
+		() => summarizeStackNodes(data ?? [], (node) => allSystems[node]?.name ?? node),
+		[data, allSystems]
 	)
 
 	// Hide ports column if no ports are present, stack and service columns if there are no stacks
@@ -182,6 +200,7 @@ export default function ContainersTable({ systemId }: { systemId?: string }) {
 		groupedColumnMode: false,
 		// pages are cut by top level rows, children travel with their parent
 		paginateExpandedRows: false,
+		meta: { stackSummaries },
 		onPaginationChange,
 		onExpandedChange: setExpanded,
 		onSortingChange: (updater) => {
