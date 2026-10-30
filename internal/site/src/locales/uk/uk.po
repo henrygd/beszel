@@ -596,6 +596,11 @@ msgstr "Контейнер"
 msgid "Container Health"
 msgstr "Здоров’я контейнера"
 
+#: src/components/routes/system/chart-card.tsx
+msgctxt "Chart series level"
+msgid "Containers"
+msgstr ""
+
 #: src/components/routes/system.tsx
 msgid "Containers"
 msgstr "Контейнери"
@@ -1167,6 +1172,10 @@ msgstr "Сітка"
 
 #: src/components/containers-table/containers-table.tsx
 msgid "Group by stack"
+msgstr ""
+
+#: src/components/routes/system/chart-card.tsx
+msgid "Group series by"
 msgstr ""
 
 #: src/components/containers-table/containers-table-columns.tsx
@@ -2073,6 +2082,11 @@ msgstr ""
 msgid "Service Details"
 msgstr "Деталі служби"
 
+#: src/components/routes/system/chart-card.tsx
+msgctxt "Docker Swarm services"
+msgid "Services"
+msgstr ""
+
 #: src/components/routes/system.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Services"
@@ -2125,6 +2139,11 @@ msgstr "Сортувати за"
 #: src/components/containers-table/containers-table.tsx
 msgctxt "Docker Compose or Swarm stack"
 msgid "Stack"
+msgstr ""
+
+#: src/components/routes/system/chart-card.tsx
+msgctxt "Docker Compose or Swarm stacks"
+msgid "Stacks"
 msgstr ""
 
 #: src/components/routes/settings/quiet-hours.tsx

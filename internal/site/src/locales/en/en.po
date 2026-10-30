@@ -591,6 +591,11 @@ msgstr "Container"
 msgid "Container Health"
 msgstr "Container Health"
 
+#: src/components/routes/system/chart-card.tsx
+msgctxt "Chart series level"
+msgid "Containers"
+msgstr "Containers"
+
 #: src/components/routes/system.tsx
 msgid "Containers"
 msgstr "Containers"
@@ -1163,6 +1168,10 @@ msgstr "Grid"
 #: src/components/containers-table/containers-table.tsx
 msgid "Group by stack"
 msgstr "Group by stack"
+
+#: src/components/routes/system/chart-card.tsx
+msgid "Group series by"
+msgstr "Group series by"
 
 #: src/components/containers-table/containers-table-columns.tsx
 #: src/components/routes/system/storage-pools-table.tsx
@@ -2068,6 +2077,11 @@ msgstr "Service"
 msgid "Service Details"
 msgstr "Service Details"
 
+#: src/components/routes/system/chart-card.tsx
+msgctxt "Docker Swarm services"
+msgid "Services"
+msgstr "Services"
+
 #: src/components/routes/system.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Services"
@@ -2121,6 +2135,11 @@ msgstr "Sort By"
 msgctxt "Docker Compose or Swarm stack"
 msgid "Stack"
 msgstr "Stack"
+
+#: src/components/routes/system/chart-card.tsx
+msgctxt "Docker Compose or Swarm stacks"
+msgid "Stacks"
+msgstr "Stacks"
 
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/quiet-hours.tsx
