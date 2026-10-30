@@ -412,6 +412,27 @@ describe("stack row over nodes", () => {
 		expect(html).not.toContain("No containers of")
 	})
 
+	test("a filter changes which rows are listed, not what the stack row says", () => {
+		// the summary answers "where does this stack run", so it is built from the whole data set.
+		// Reading it off the visible rows instead would quietly disagree with the matrix.
+		const table = makeTable(spread)
+		table.setGlobalFilter("db")
+		const listed = visible(table)
+		expect(listed.some((entry) => entry.includes("web"))).toBe(false)
+		const html = groupRowHtml(findRow(table, stackId))
+		expect(html).toContain("3 nodes")
+		expect(html).toContain("No containers of")
+	})
+
+	test("a stack row without its summary stays empty instead of counting the visible rows", () => {
+		// same table, but the page passed no summary at all
+		const table = makeTable(spread)
+		table.setOptions((prev) => ({ ...prev, meta: {} }))
+		const html = groupRowHtml(findRow(table, stackId))
+		expect(html).toContain("mentors")
+		expect(html).not.toContain("nodes")
+	})
+
 	test("the matrix of the tooltip counts every service on every node", () => {
 		const html = renderToStaticMarkup(<StackNodesMatrix summary={summaryOf(spread)} nodeLabel={nodeName} />)
 		for (const name of ["node-1", "node-2", "node-3", "db", "web"]) {

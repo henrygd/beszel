@@ -29,6 +29,9 @@ export function StackNodesCell({ row, table }: { row: Row<ContainerRecord>; tabl
 		// rows, which would disagree with the matrix as soon as a filter is on
 		return null
 	}
+	// named, so the macro emits {count, plural, ...} - the same message the group row already uses,
+	// rather than a positional {0, plural, ...} that would reach translators as a duplicate
+	const nodeCount = summary.nodes.length
 	const nodeLabel = (node: string) => allSystems[node]?.name ?? node
 	const nodeStatus = (node: string) => allSystems[node]?.status
 	const lines = stackGapLines(summary, nodeLabel, nodeStatus)
@@ -42,7 +45,7 @@ export function StackNodesCell({ row, table }: { row: Row<ContainerRecord>; tabl
 					// the row toggles its group on click, so the trigger must keep the click
 					onClick={stopRowToggle}
 				>
-					<Plural value={summary.nodes.length} one="# node" other="# nodes" />
+					<Plural value={nodeCount} one="# node" other="# nodes" />
 				</TooltipTrigger>
 				<TooltipContent className="p-0">
 					<StackNodesMatrix summary={summary} nodeLabel={nodeLabel} />
@@ -88,6 +91,7 @@ export function StackNodesMatrix({
 	summary: StackNodeSummary
 	nodeLabel: (node: string) => string
 }) {
+	const count = summary.total
 	return (
 		<div className="px-3 py-2">
 			<table className="text-xs tabular-nums border-separate border-spacing-x-2 border-spacing-y-0.5">
@@ -116,7 +120,7 @@ export function StackNodesMatrix({
 				<tfoot>
 					<tr className="text-muted-foreground">
 						<th className="text-start font-normal">
-							<Plural value={summary.total} one="# container" other="# containers" />
+							<Plural value={count} one="# container" other="# containers" />
 						</th>
 						{summary.nodes.map((node) => (
 							<td key={node} className="text-end">
