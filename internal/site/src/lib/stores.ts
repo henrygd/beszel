@@ -1,4 +1,5 @@
 import { atom, computed, map, type ReadableAtom } from "nanostores"
+import type { ChartRange } from "@/lib/chart-range"
 import type { AlertMap, ChartTimes, SystemRecord, UpdateInfo, UserSettings } from "@/types"
 import { pb } from "./api"
 import { Unit } from "./enums"
@@ -38,6 +39,9 @@ export const defaultChartTime: ChartTimes = "1h"
 
 /** Chart time period */
 export const $chartTime = atom<ChartTimes>(defaultChartTime)
+
+/** Custom chart window on the system page. Overrides $chartTime while set. */
+export const $chartRange = atom<ChartRange | null>(null)
 
 /** Whether to display average or max chart values */
 export const $maxValues = atom(false)

@@ -8,6 +8,7 @@ import { SystemStatus } from "@/lib/enums"
 import {
 	$allSystemsById,
 	$allSystemsByName,
+	$chartRange,
 	$chartTime,
 	$containerFilter,
 	$direction,
@@ -16,6 +17,7 @@ import {
 	$userSettings,
 	getUserChartTime,
 } from "@/lib/stores"
+import { getRangeChartTime } from "@/lib/chart-range"
 import { chartTimeData, listen, parseSemVer } from "@/lib/utils"
 import type {
 	ChartData,
@@ -27,14 +29,16 @@ import type {
 	SystemStatsRecord,
 } from "@/types"
 import { $router, navigate } from "../../router"
-import { appendData, cache, getStats, makeContainerData, makeContainerPoint } from "./chart-data"
+import { appendData, cache, getRangeStats, getStats, makeContainerData, makeContainerPoint } from "./chart-data"
 
 export type SystemData = ReturnType<typeof useSystemData>
 
 export function useSystemData(id: string) {
 	const direction = useStore($direction)
 	const systems = useStore($systems)
-	const chartTime = useStore($chartTime)
+	const range = useStore($chartRange)
+	const presetChartTime = useStore($chartTime)
+	const chartTime = useMemo(() => (range ? getRangeChartTime(range) : presetChartTime), [range, presetChartTime])
 	const maxValues = useStore($maxValues)
 	const [grid, _setGrid] = useState<boolean>(
 		() => $userSettings.get().grid ?? JSON.parse(localStorage.getItem("besz-grid") ?? "null") ?? true
@@ -92,6 +96,7 @@ export function useSystemData(id: string) {
 		return () => {
 			if (!persistChartTime.current) {
 				$chartTime.set(getUserChartTime())
+				$chartRange.set(null)
 			}
 			persistChartTime.current = false
 			setSystemStats([])
@@ -204,6 +209,7 @@ export function useSystemData(id: string) {
 			systemStats,
 			containerData,
 			chartTime,
+			range: range ?? undefined,
 			orientation: direction === "rtl" ? "right" : "left",
 			agentVersion,
 		}
@@ -212,9 +218,39 @@ export function useSystemData(id: string) {
 	// Share chart config computation for all container charts
 	const containerChartConfigs = useContainerChartConfigs(containerData)
 
+	// get stats for a custom range. Past data doesn't change, so it is fetched once per range.
+	useEffect(() => {
+		const requestId = ++statsRequestId.current
+		if (!system.id || !range) {
+			return
+		}
+		const systemId = system.id
+		const { expectedInterval } = chartTimeData[chartTime]
+		setChartLoading(true)
+		Promise.allSettled([
+			getRangeStats<SystemStatsRecord>("system_stats", systemId, chartTime, range),
+			getRangeStats<ContainerStatsRecord>("container_stats", systemId, chartTime, range),
+		]).then(([systemStats, containerStats]) => {
+			if (requestId !== statsRequestId.current) {
+				return
+			}
+			setChartLoading(false)
+			setSystemStats(systemStats.status === "fulfilled" ? appendData([], systemStats.value, expectedInterval) : [])
+			setContainerData(
+				containerStats.status === "fulfilled"
+					? appendData([], makeContainerData(containerStats.value), expectedInterval)
+					: []
+			)
+		})
+	}, [system.id, range, chartTime])
+
 	// get stats when system "changes." (Not just system to system,
 	// also when new info comes in via systemManager realtime connection, indicating an update)
 	useEffect(() => {
+		// the custom range effect above owns the request id while a range is set
+		if (range) {
+			return
+		}
 		const requestId = ++statsRequestId.current
 		if (!system.id || !chartTime || chartTime === "1m") {
 			return
@@ -269,7 +305,7 @@ export function useSystemData(id: string) {
 			}
 			setContainerData(containerData)
 		})
-	}, [system, chartTime])
+	}, [system, chartTime, range])
 
 	// keyboard navigation between systems
 	// in tabs mode: arrow keys switch tabs, shift+arrow switches systems

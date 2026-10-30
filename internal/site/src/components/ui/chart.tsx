@@ -1,7 +1,8 @@
 import { useLingui } from "@lingui/react/macro"
 import * as React from "react"
 import * as RechartsPrimitive from "recharts"
-import { chartTimeData, cn, formatNumber } from "@/lib/utils"
+import type { ChartRange } from "@/lib/chart-range"
+import { chartTimeData, cn, formatDay, formatNumber, hourWithMinutes } from "@/lib/utils"
 import type { ChartTimes } from "@/types"
 import { Separator } from "./separator"
 import type { AxisDomain } from "recharts/types/util/types"
@@ -419,12 +420,21 @@ interface XAxisData {
 
 const xAxisCache = new Map<ChartTimes, XAxisData>()
 
-function createXAxisData(chartTime: ChartTimes): XAxisData {
+function createXAxisData(chartTime: ChartTimes, range?: ChartRange): XAxisData {
 	// console.log("Creating XAxis for", chartTime, new Date())
-	const axisEndTime = Date.now() + 500
+	const axisEndTime = range ? range.end : Date.now() + 500
 	const axisEndDate = new Date(axisEndTime)
-	const startTime = chartTimeData[chartTime].getOffset(axisEndDate)
-	const ticks = timeTicks(startTime, axisEndDate, chartTimeData[chartTime].ticks ?? 12).map((date) => date.getTime())
+	const startTime = range ? new Date(range.start) : chartTimeData[chartTime].getOffset(axisEndDate)
+	let tickCount = chartTimeData[chartTime].ticks ?? 12
+	let tickFormatter = chartTimeData[chartTime].format
+	// A custom range can come from a coarse tier but still be short (six hours from 1w data),
+	// so its labels follow the range length: times within a day, otherwise one tick per day.
+	if (range) {
+		const days = (range.end - range.start) / (24 * 60 * 60 * 1000)
+		tickCount = days > 1 ? Math.min(Math.round(days), 30) : 12
+		tickFormatter = days > 1 ? formatDay : hourWithMinutes
+	}
+	const ticks = timeTicks(startTime, axisEndDate, tickCount).map((date) => date.getTime())
 	const domain: [number, number] = [startTime.getTime(), axisEndTime]
 
 	return {
@@ -440,15 +450,23 @@ function createXAxisData(chartTime: ChartTimes): XAxisData {
 				minTickGap={12}
 				tickMargin={8}
 				axisLine={false}
-				tickFormatter={chartTimeData[chartTime].format}
+				tickFormatter={tickFormatter}
 			/>
 		),
 	}
 }
 
-function xAxis(chartTime: ChartTimes, lastCreated: number) {
+let rangeAxisCache: { range: ChartRange; data: XAxisData } | undefined
+
+function xAxis(chartTime: ChartTimes, lastCreated: number, range?: ChartRange) {
 	if (!lastCreated) {
 		return null
+	}
+	if (range) {
+		if (rangeAxisCache?.range !== range) {
+			rangeAxisCache = { range, data: createXAxisData(chartTime, range) }
+		}
+		return rangeAxisCache.data.el
 	}
 	const cachedAxis = xAxisCache.get(chartTime)
 

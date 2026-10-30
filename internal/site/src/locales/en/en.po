@@ -68,6 +68,14 @@ msgstr "{daysLeft, plural, one {# day} other {# days}}"
 msgid "{diskName} I/O"
 msgstr "{diskName} I/O"
 
+#: src/components/charts/custom-range-dialog.tsx
+msgid "{hours, plural, one {Charts will show one point every hour.} other {Charts will show one point every # hours.}}"
+msgstr "{hours, plural, one {Charts will show one point every hour.} other {Charts will show one point every # hours.}}"
+
+#: src/components/charts/custom-range-dialog.tsx
+msgid "{minutes, plural, one {Charts will show one point every minute.} other {Charts will show one point every # minutes.}}"
+msgstr "{minutes, plural, one {Charts will show one point every minute.} other {Charts will show one point every # minutes.}}"
+
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "{numFailed, plural, one {# failed service} other {# failed services}}"
 msgstr "{numFailed, plural, one {# failed service} other {# failed services}}"
@@ -232,6 +240,10 @@ msgstr "All Containers"
 #: src/components/systems-table/systems-table.tsx
 msgid "All Systems"
 msgstr "All Systems"
+
+#: src/components/charts/custom-range-dialog.tsx
+msgid "Apply"
+msgstr "Apply"
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Are you sure you want to delete {name}?"
@@ -402,6 +414,7 @@ msgstr "Can start"
 msgid "Can stop"
 msgstr "Can stop"
 
+#: src/components/charts/custom-range-dialog.tsx
 #: src/components/network-monitors-table/network-monitors-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/settings/quiet-hours.tsx
@@ -751,6 +764,11 @@ msgstr "Current"
 msgid "Current state"
 msgstr "Current state"
 
+#: src/components/charts/chart-time-select.tsx
+#: src/components/charts/custom-range-dialog.tsx
+msgid "Custom range"
+msgstr "Custom range"
+
 #. Power Cycles
 #: src/components/routes/system/smart-table.tsx
 msgid "Cycles"
@@ -879,6 +897,10 @@ msgstr "Edit"
 msgid "Edit {foo}"
 msgstr "Edit {foo}"
 
+#: src/components/charts/chart-time-select.tsx
+msgid "Edit custom range"
+msgstr "Edit custom range"
+
 #: src/components/add-system.tsx
 msgid "Edit System"
 msgstr "Edit System"
@@ -898,10 +920,15 @@ msgstr "Email notifications"
 msgid "Empty"
 msgstr "Empty"
 
+#: src/components/charts/custom-range-dialog.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "End Time"
 msgstr "End Time"
+
+#: src/components/charts/custom-range-dialog.tsx
+msgid "End time must be after start time."
+msgstr "End time must be after start time."
 
 #: src/components/routes/settings/heartbeat.tsx
 msgid "Endpoint URL"
@@ -1461,6 +1488,10 @@ msgstr "Network traffic of public interfaces"
 msgid "Network unit"
 msgstr "Network unit"
 
+#: src/components/charts/chart-time-select.tsx
+msgid "Next period"
+msgstr "Next period"
+
 #: src/components/systemd-table/systemd-table.tsx
 #: src/components/systemd-table/systemd-table.tsx
 #: src/components/systemd-table/systemd-table.tsx
@@ -1744,6 +1775,10 @@ msgstr "Precise utilization at the recorded time"
 #: src/components/routes/settings/general.tsx
 msgid "Preferred Language"
 msgstr "Preferred Language"
+
+#: src/components/charts/chart-time-select.tsx
+msgid "Previous period"
+msgstr "Previous period"
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Process started"
@@ -2068,6 +2103,7 @@ msgstr "SMTP settings"
 msgid "Sort By"
 msgstr "Sort By"
 
+#: src/components/charts/custom-range-dialog.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Start Time"
@@ -2080,6 +2116,10 @@ msgstr "Start Time"
 #: src/components/systemd-table/systemd-table-columns.tsx
 msgid "State"
 msgstr "State"
+
+#: src/components/charts/custom-range-dialog.tsx
+msgid "Stats are kept for 30 days, and older data is stored at a lower resolution."
+msgstr "Stats are kept for 30 days, and older data is stored at a lower resolution."
 
 #: src/components/containers-table/containers-table-columns.tsx
 #: src/components/routes/system/smart-table.tsx
