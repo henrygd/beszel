@@ -169,6 +169,46 @@ func (am *AlertManager) sendStatusAlert(alertStatus string, systemName string, a
 	})
 }
 
+// HandleRebootAlert sends an immediate notification when a system reboot is detected.
+func (am *AlertManager) HandleRebootAlert(systemRecord *core.Record) error {
+	alerts := am.alertsCache.GetAlertsByName(systemRecord.Id, "Reboot")
+	if len(alerts) == 0 {
+		return nil
+	}
+	systemName := systemRecord.GetString("name")
+	systemID := systemRecord.Id
+	now := time.Now().UTC()
+	for _, alertData := range alerts {
+		// Write history record directly as resolved — reboot is a point-in-time event
+		historyCollection, err := am.hub.FindCachedCollectionByNameOrId("alerts_history")
+		if err != nil {
+			am.hub.Logger().Error("Failed to find alerts_history collection", "err", err)
+			continue
+		}
+		historyRecord := core.NewRecord(historyCollection)
+		historyRecord.Set("alert_id", alertData.Id)
+		historyRecord.Set("user", alertData.UserID)
+		historyRecord.Set("system", systemID)
+		historyRecord.Set("name", "Reboot")
+		historyRecord.Set("value", 0)
+		historyRecord.Set("resolved", now)
+		if err := am.hub.Save(historyRecord); err != nil {
+			am.hub.Logger().Error("Failed to save reboot alert history", "err", err)
+		}
+		if err := am.SendAlert(AlertMessageData{
+			UserID:   alertData.UserID,
+			SystemID: systemID,
+			Title:    fmt.Sprintf("System rebooted: %s \U0001F504", systemName),
+			Message:  fmt.Sprintf("System rebooted: %s", systemName),
+			Link:     am.hub.MakeLink("system", systemID),
+			LinkText: "View " + systemName,
+		}); err != nil {
+			am.hub.Logger().Error("Failed to send reboot alert", "err", err)
+		}
+	}
+	return nil
+}
+
 // resolveStatusAlerts resolves any triggered status alerts that weren't resolved
 // when system came up (https://github.com/henrygd/beszel/issues/1052).
 func resolveStatusAlerts(app core.App) error {
