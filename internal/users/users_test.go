@@ -5,6 +5,7 @@ package users_test
 import (
 	"errors"
 	"io"
+	"net/http"
 	"net/http/httptest"
 	"strings"
 	"testing"
@@ -17,6 +18,39 @@ import (
 	"github.com/pocketbase/pocketbase/tools/router"
 	"github.com/stretchr/testify/require"
 )
+
+func TestCreateFirstUserPasswordMaxLength(t *testing.T) {
+	newHub := func(t *testing.T) (*beszelTests.TestHub, func(string) (int, string)) {
+		h, err := beszelTests.NewTestHub(t.TempDir())
+		require.NoError(t, err)
+		h.StartHub()
+		um := users.NewUserManager(h.App)
+		return h, func(password string) (int, string) {
+			req := httptest.NewRequest("POST", "/api/beszel/create-user",
+				strings.NewReader(`{"email":"operator@example.com","password":"`+password+`"}`))
+			req.Header.Set("Content-Type", "application/json")
+			res := httptest.NewRecorder()
+			require.NoError(t, um.CreateFirstUser(&core.RequestEvent{App: h.App, Event: router.Event{Request: req, Response: res}}))
+			return res.Code, res.Body.String()
+		}
+	}
+
+	t.Run("72 chars exceeds the PocketBase field max and 500s", func(t *testing.T) {
+		h, invoke := newHub(t)
+		defer h.Cleanup()
+		status, body := invoke(strings.Repeat("a", 72))
+		require.Equal(t, http.StatusInternalServerError, status)
+		require.Contains(t, body, "Must be less than 71 character(s)")
+	})
+
+	t.Run("71 chars succeeds", func(t *testing.T) {
+		h, invoke := newHub(t)
+		defer h.Cleanup()
+		status, body := invoke(strings.Repeat("a", 71))
+		require.Equal(t, http.StatusOK, status)
+		require.Contains(t, body, "User created")
+	})
+}
 
 type blockedBody struct {
 	io.Reader

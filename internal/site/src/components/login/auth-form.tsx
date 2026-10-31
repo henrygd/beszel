@@ -21,7 +21,7 @@ const emailSchema = v.pipe(v.string(), v.rfcEmail(t`Invalid email address.`))
 const passwordSchema = v.pipe(
 	v.string(),
 	v.minLength(8, t`Password must be at least 8 characters.`),
-	v.maxBytes(72, t`Password must be less than 72 bytes.`)
+	v.maxLength(71, t`Password must be at most 71 characters.`)
 )
 
 const LoginSchema = v.looseObject({
