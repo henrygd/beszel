@@ -22,12 +22,26 @@ func generateMonitorID(systemId string, config monitor.Config) string {
 	if config.Protocol == "dns" {
 		args = append(args, config.Server)
 	}
+	// only add the IP version when set, so Auto monitors keep their existing IDs while
+	// IPv4 and IPv6 monitors for the same target get distinct ones
+	if config.IPVersion != monitor.IPVersionAuto {
+		args = append(args, strconv.FormatUint(uint64(config.IPVersion), 10))
+	}
 	// Meet the record ID minimum without changing existing IDs of six or more characters.
 	return fmt.Sprintf("%06s", systems.MakeStableHashId(args...))
 }
 
 // bindNetworkMonitorsEvents keeps monitor records and agent monitor state in sync.
 func bindNetworkMonitorsEvents(hub *Hub) {
+	// reject IP versions the agent can't apply, since it would otherwise fail every probe
+	hub.OnRecordValidate("network_monitors").BindFunc(func(e *core.RecordEvent) error {
+		ipVersion := e.Record.GetInt("ipVersion")
+		if ipVersion < 0 || ipVersion > 255 || !monitor.ValidIPVersion(uint8(ipVersion)) {
+			return fmt.Errorf("invalid IP version: %d", ipVersion)
+		}
+		return e.Next()
+	})
+
 	// on create, make sure the id is set to a stable hash
 	hub.OnRecordCreate("network_monitors").BindFunc(func(e *core.RecordEvent) error {
 		systemID := e.Record.GetString("system")
@@ -121,6 +135,7 @@ func monitorConfigFromRecord(record *core.Record) *monitor.Config {
 		Server:   record.GetString("server"),
 		// SkipTLSVerify is a probe option, not part of the monitor's identity, so it does not affect the ID.
 		SkipTLSVerify: record.GetBool("skipTlsVerify"),
+		IPVersion:     uint8(record.GetInt("ipVersion")),
 	}
 }
 
@@ -145,7 +160,7 @@ func copyMonitorToNewRecord(oldRecord *core.Record, newID string) *core.Record {
 	collection := oldRecord.Collection()
 	newRecord := core.NewRecord(collection)
 	newRecord.Id = newID
-	fields := []string{"system", "target", "protocol", "port", "server", "interval", "enabled", "skipTlsVerify"}
+	fields := []string{"system", "target", "protocol", "port", "server", "interval", "enabled", "skipTlsVerify", "ipVersion"}
 	for _, field := range fields {
 		newRecord.Set(field, oldRecord.Get(field))
 	}

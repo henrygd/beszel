@@ -1,11 +1,9 @@
 package agent
 
 import (
-	"crypto/tls"
 	"errors"
 	"fmt"
 	"log/slog"
-	"net/http"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -30,11 +28,7 @@ type MonitorManager struct {
 }
 
 func newMonitorManager(agent *Agent) *MonitorManager {
-	client := &http.Client{Timeout: monitor.MaxProbeTimeout}
-	insecureTransport := http.DefaultTransport.(*http.Transport).Clone()
-	insecureTransport.TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
-	insecureClient := &http.Client{Timeout: monitor.MaxProbeTimeout, Transport: insecureTransport}
-	pm := newMonitorManagerWithProbe(networkMonitorProbe(client, insecureClient))
+	pm := newMonitorManagerWithProbe(networkMonitorProbe(newMonitorHTTPClients()))
 	pm.agent = agent
 	return pm
 }

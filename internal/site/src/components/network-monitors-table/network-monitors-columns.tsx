@@ -17,6 +17,7 @@ import {
 	CopyIcon,
 	ShieldCheckIcon,
 	ShieldOffIcon,
+	NetworkIcon,
 } from "lucide-react"
 import { t } from "@lingui/core/macro"
 import type { NetworkMonitorRecord, SystemRecord } from "@/types"
@@ -142,7 +143,8 @@ export function getMonitorColumns({
 			meta: { label: t`Target` },
 			sortingFn: (a, b) =>
 				(a.getValue("target") as string).localeCompare(b.getValue("target") as string, undefined, { numeric: true }),
-			accessorFn: (record) => getMonitorTarget(record),
+			// The protocol column shows the IP version as a badge, so leave it out of the target.
+			accessorFn: (record) => getMonitorTarget({ ...record, ipVersion: 0 }),
 			header: ({ column }) => <HeaderButton column={column} name={t`Target`} Icon={GlobeIcon} />,
 			cell: ({ row, getValue }) => {
 				const monitor = row.original
@@ -180,6 +182,16 @@ export function getMonitorColumns({
 					)
 				}
 				return <Badge className={cn("uppercase", protocolColors[protocol])}>{protocol}</Badge>
+			},
+		},
+		{
+			id: "ipVersion",
+			meta: { label: t`IP Version` },
+			accessorFn: (record) => record.ipVersion ?? 0,
+			header: ({ column }) => <HeaderButton column={column} name={t`IP`} Icon={NetworkIcon} />,
+			cell: ({ getValue }) => {
+				const ipVersion = getValue() as number
+				return <Badge variant="secondary">{ipVersion ? `IPv${ipVersion}` : <Trans>Auto</Trans>}</Badge>
 			},
 		},
 		{

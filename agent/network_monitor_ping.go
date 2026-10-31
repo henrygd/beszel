@@ -18,6 +18,7 @@ import (
 	"sync/atomic"
 	"time"
 
+	"github.com/henrygd/beszel/internal/entities/monitor"
 	"golang.org/x/net/icmp"
 	"golang.org/x/net/ipv4"
 	"golang.org/x/net/ipv6"
@@ -87,11 +88,11 @@ var (
 // unprivileged datagram, or exec fallback) is detected once per address
 // family and cached for subsequent monitors.
 // Returns response in microseconds, or -1 and an error on failure.
-func monitorICMP(ctx context.Context, target string) (int64, error) {
+func monitorICMP(ctx context.Context, target string, ipVersion uint8) (int64, error) {
 	ctx, cancel := context.WithTimeout(ctx, 3*time.Second)
 	defer cancel()
 
-	family, ip, err := resolveICMPTarget(ctx, target)
+	family, ip, err := resolveICMPTarget(ctx, target, ipVersion)
 	if err != nil {
 		return -1, err
 	}
@@ -116,18 +117,16 @@ func monitorICMP(ctx context.Context, target string) (int64, error) {
 }
 
 // resolveICMPTarget resolves a target hostname or IP to determine the address
-// family and concrete IP address. Prefers IPv4 for dual-stack hostnames.
-func resolveICMPTarget(ctx context.Context, target string) (*icmpFamily, net.IP, error) {
-	if ip := net.ParseIP(target); ip != nil {
-		if ip.To4() != nil {
-			return &icmpV4, ip.To4(), nil
-		}
-		return &icmpV6, ip, nil
-	}
-
-	ips, err := net.DefaultResolver.LookupIP(ctx, "ip", target)
-	if err != nil || len(ips) == 0 {
+// family and concrete IP address. With monitor.IPVersionAuto it prefers IPv4 for
+// dual-stack hostnames; otherwise only the requested family is used.
+func resolveICMPTarget(ctx context.Context, target string, ipVersion uint8) (*icmpFamily, net.IP, error) {
+	// IP literals are returned without a DNS query.
+	ips, err := lookupMonitorIPs(ctx, net.DefaultResolver, target, ipVersion)
+	if err != nil {
 		return nil, nil, err
+	}
+	if ipVersion == monitor.IPVersion6 {
+		return &icmpV6, ips[0], nil
 	}
 	for _, ip := range ips {
 		if v4 := ip.To4(); v4 != nil {

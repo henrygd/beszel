@@ -31,6 +31,36 @@ type Config struct {
 	// SkipTLSVerify disables certificate verification for HTTPS targets, such as
 	// those with self-signed certificates. Only used when Protocol is "http".
 	SkipTLSVerify bool `cbor:"6,keyasint,omitempty" db:"skipTlsVerify"`
+	// IPVersion restricts the probe to one address family: IPVersionAuto (0),
+	// IPVersion4 or IPVersion6. For DNS monitors it selects the A or AAAA record.
+	IPVersion uint8 `cbor:"7,keyasint,omitempty" db:"ipVersion"`
+}
+
+const (
+	// IPVersionAuto uses whichever address family the resolver and dialer pick.
+	IPVersionAuto uint8 = 0
+	// IPVersion4 resolves and connects over IPv4 only.
+	IPVersion4 uint8 = 4
+	// IPVersion6 resolves and connects over IPv6 only.
+	IPVersion6 uint8 = 6
+)
+
+// ValidIPVersion reports whether v is a supported IPVersion value.
+func ValidIPVersion(v uint8) bool {
+	return v == IPVersionAuto || v == IPVersion4 || v == IPVersion6
+}
+
+// Network restricts a Go network name such as "tcp" or "ip" to an IP version,
+// for example "tcp6" for IPVersion6. IPVersionAuto returns base unchanged.
+func Network(base string, ipVersion uint8) string {
+	switch ipVersion {
+	case IPVersion4:
+		return base + "4"
+	case IPVersion6:
+		return base + "6"
+	default:
+		return base
+	}
 }
 
 // CertInfo holds details of the leaf TLS certificate presented by a target.
