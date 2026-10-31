@@ -1,0 +1,27 @@
+{{define "content"}}
+{{- range .Blocks}}
+{{- if .Code}}
+<pre class="code" style="margin:0 0 16px;padding:12px 14px;background-color:#f4f4f5;border:1px solid #e4e4e7;border-radius:6px;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:12px;line-height:1.5;color:#27272a;white-space:pre-wrap;word-break:break-word;">{{range $i, $l := .Lines}}{{if $i}}
+{{end}}{{$l}}{{end}}</pre>
+{{- else}}
+<p class="text" style="margin:0 0 16px;font-size:15px;line-height:1.6;color:#3f3f46;">{{range $i, $l := .Lines}}{{if $i}}<br>{{end}}{{$l}}{{end}}</p>
+{{- end}}
+{{- end}}
+{{- if .Link}}
+<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin-top:8px;">
+<tr>
+<td class="btn" style="border-radius:6px;background-color:#18181b;">
+<a href="{{.Link}}" style="display:inline-block;padding:10px 18px;font-size:14px;font-weight:600;color:#ffffff;text-decoration:none;border-radius:6px;">{{.LinkText}}</a>
+</td>
+</tr>
+</table>
+{{- end}}
+{{end}}
+
+{{define "footer"}}
+<tr>
+<td class="footer" style="padding:16px 4px 0;font-size:12px;line-height:1.5;color:#71717a;">
+You're receiving this because email notifications are enabled in Beszel.{{if .SettingsLink}} <a href="{{.SettingsLink}}" style="color:#71717a;text-decoration:underline;">Manage notifications</a>{{end}}
+</td>
+</tr>
+{{end}}

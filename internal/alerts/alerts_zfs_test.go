@@ -45,6 +45,7 @@ func TestZfsPoolAlertOnlineToDegraded(t *testing.T) {
 	assert.Contains(t, lastMessage.Subject, "Storage pool DEGRADED on test-system")
 	assert.Contains(t, lastMessage.Subject, "tank")
 	assert.Contains(t, lastMessage.Text, "ONLINE to DEGRADED")
+	assert.Contains(t, lastMessage.HTML, "ONLINE to DEGRADED", "email should include an HTML part")
 }
 
 func TestZfsPoolAlertDegradedToFaulted(t *testing.T) {
