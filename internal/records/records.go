@@ -82,6 +82,10 @@ func (rm *RecordManager) CreateLongerRecords() {
 		if err != nil {
 			return err
 		}
+		nutStatsColl, err := txApp.FindCachedCollectionByNameOrId("nut_stats")
+		if err != nil {
+			return err
+		}
 		monitorStatsColl, err := txApp.FindCachedCollectionByNameOrId("network_monitor_stats")
 		if err != nil {
 			return err
@@ -163,6 +167,9 @@ func (rm *RecordManager) CreateLongerRecords() {
 					}
 				}
 			}
+			if err := rm.createLongerNutRecords(txApp, nutStatsColl, system.Id, longerRecordData, now); err != nil {
+				return err
+			}
 		}
 
 		// network_monitor_stats is aggregated per monitor (not per system)
@@ -230,6 +237,75 @@ func (rm *RecordManager) CreateLongerRecords() {
 	if err != nil {
 		rm.app.Logger().Error("failed to create longer records", "err", err)
 	}
+}
+
+func (rm *RecordManager) createLongerNutRecords(app core.App, collection *core.Collection, systemID string, periods []LongerRecordData, now time.Time) error {
+	var devices []struct {
+		Id string `db:"device"`
+	}
+	if err := app.DB().NewQuery("SELECT DISTINCT device FROM nut_stats WHERE system = {:system}").Bind(dbx.Params{"system": systemID}).All(&devices); err != nil {
+		return err
+	}
+	for _, device := range devices {
+		for _, period := range periods {
+			longerPeriod := now.Add(period.longerTimeDuration + time.Minute)
+			if period.longerType != "10m" {
+				count, err := app.CountRecords(collection.Id, dbx.NewExp("system={:system} AND device={:device} AND type={:type} AND created>{:created}", dbx.Params{"system": systemID, "device": device.Id, "type": period.longerType, "created": longerPeriod.Format(types.DefaultDateLayout)}))
+				if err != nil {
+					return err
+				}
+				if count > 0 {
+					continue
+				}
+			}
+			rows, err := app.FindRecordsByFilter(collection, "system={:system} && device={:device} && type={:type} && created>{:created}", "", 0, 0, dbx.Params{"system": systemID, "device": device.Id, "type": period.shorterType, "created": now.Add(period.longerTimeDuration).Format(types.DefaultDateLayout)})
+			if err != nil {
+				return err
+			}
+			// NUT samples arrive at the system's configurable NUT interval, which
+			// can exceed the aggregation window (default one hour). Average any
+			// available records at every level and skip only empty windows, as
+			// the network-monitor aggregation already does.
+			if len(rows) == 0 {
+				continue
+			}
+			record := core.NewRecord(collection)
+			record.Set("system", systemID)
+			record.Set("device", device.Id)
+			record.Set("type", period.longerType)
+			for _, field := range []string{"battery_charge", "battery_runtime", "battery_voltage", "input_voltage", "output_voltage", "load", "output_current"} {
+				total := 0.0
+				for _, row := range rows {
+					total += row.GetFloat(field)
+				}
+				record.Set(field, total/float64(len(rows)))
+			}
+			// Missing or legacy power values must not become zero-watt samples.
+			powerTotal, powerCount := 0.0, 0
+			powerSource := "measured"
+			for _, row := range rows {
+				source := row.GetString("output_power_source")
+				if source != "measured" && source != "estimated" {
+					continue
+				}
+				powerTotal += row.GetFloat("output_power")
+				powerCount++
+				if source == "estimated" {
+					powerSource = "estimated"
+				}
+			}
+			if powerCount == 0 {
+				powerSource = "unknown"
+			} else {
+				record.Set("output_power", powerTotal/float64(powerCount))
+			}
+			record.Set("output_power_source", powerSource)
+			if err := app.SaveNoValidate(record); err != nil {
+				return err
+			}
+		}
+	}
+	return nil
 }
 
 func getCreatedTimeField(collectionName string, period time.Time) any {

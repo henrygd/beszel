@@ -69,6 +69,8 @@ msgstr "{count, plural, one {{countString} دقيقة} few {{countString} دقا
 msgid "{daysLeft, plural, one {# day} other {# days}}"
 msgstr "{daysLeft, plural, zero {# يوم} one {يوم واحد} two {يومان} few {# أيام} many {# يومًا} other {# يوم}}"
 
+msgstr ""
+
 #: src/components/routes/system/charts/disk-charts.tsx
 msgid "{diskName} I/O"
 msgstr "{diskName} إدخال/إخراج"
@@ -80,6 +82,8 @@ msgstr "{numFailed, plural, zero {لا توجد خدمات فاشلة} one {خد
 #: src/components/active-alerts.tsx
 msgid "{systemCount, plural, one {Across # system} other {Across # systems}}"
 msgstr "{systemCount, plural, zero {عبر 0 نظام} one {عبر نظام واحد} two {عبر نظامين} few {عبر # أنظمة} many {عبر # نظامًا} other {عبر # نظام}}"
+
+msgstr ""
 
 #: src/components/routes/system/info-bar.tsx
 msgid "{threads, plural, one {# thread} other {# threads}}"
@@ -139,6 +143,7 @@ msgstr "5 دقائق"
 #. Table column
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
+#: src/components/routes/system/nut-table.tsx
 #: src/components/routes/system/smart-table.tsx
 #: src/components/routes/system/storage-pools-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
@@ -163,6 +168,8 @@ msgstr "الحالة النشطة"
 #: src/components/network-monitors-table/monitor-dialog.tsx
 msgid "Add"
 msgstr "إضافة"
+
+msgstr ""
 
 #: src/components/network-monitors-table/monitor-dialog.tsx
 #: src/components/network-monitors-table/monitor-dialog.tsx
@@ -333,9 +340,17 @@ msgstr "بطارية"
 
 #: src/components/routes/system/charts/sensor-charts.tsx
 #: src/components/routes/system/charts/sensor-charts.tsx
+#: src/components/routes/system/nut-table.tsx
+#: src/components/routes/system/nut-table.tsx
+#: src/components/routes/system/nut-table.tsx
+#: src/components/routes/system/nut-table.tsx
 #: src/lib/alerts.ts
 msgid "Battery"
 msgstr "البطارية"
+
+#: src/components/routes/system/nut-table.tsx
+msgid "Battery charge and estimated runtime over time"
+msgstr ""
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Became active"
@@ -453,6 +468,8 @@ msgstr "تنتهي صلاحية الشهادة {expires}"
 msgid "Change"
 msgstr "تغيير"
 
+msgstr ""
+
 #: src/components/routes/settings/general.tsx
 msgid "Change display units for metrics."
 msgstr "تغيير وحدات عرض المقاييس."
@@ -462,6 +479,7 @@ msgid "Change general application options."
 msgstr "تغيير خيارات التطبيق العامة."
 
 #: src/components/routes/system/charts/sensor-charts.tsx
+#: src/components/routes/system/nut-table.tsx
 msgid "Charge"
 msgstr "الشحن"
 
@@ -506,7 +524,8 @@ msgstr "أخطاء المجموع الاختباري"
 #: src/components/containers-table/containers-table.tsx
 #: src/components/network-monitors-table/network-monitors-table.tsx
 #: src/components/routes/system/package-updates-table.tsx
-#: src/components/routes/system/smart-table.tsx
+
+#: src/components/routes/system/nut-table.tsx#: src/components/routes/system/smart-table.tsx
 #: src/components/routes/system/storage-pools-table.tsx
 #: src/components/routes/system/storage-pools-table.tsx
 #: src/components/systems-table/systems-table.tsx
@@ -525,6 +544,7 @@ msgstr "مسح النتائج المطابقة"
 msgid "Click on a container to view more information."
 msgstr "انقر على حاوية لعرض مزيد من المعلومات."
 
+#: src/components/routes/system/nut-table.tsx
 #: src/components/routes/system/smart-table.tsx
 msgid "Click on a device to view more information."
 msgstr "انقر على جهاز لعرض مزيد من المعلومات."
@@ -746,9 +766,9 @@ msgstr "إجمالي الكتابة"
 
 #. Current package version
 #: src/components/routes/system/package-updates-table.tsx
+#: src/components/routes/system/nut-table.tsx
 msgid "Current"
 msgstr "الحالي"
-
 #. Context: Battery state
 #. Context: Battery state
 #: src/components/routes/system/charts/sensor-charts.tsx
@@ -778,6 +798,7 @@ msgstr "الفترة الزمنية الافتراضية"
 #: src/components/network-monitors-table/network-monitors-columns.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/system/nut-table.tsx
 #: src/components/routes/system/smart-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Delete"
@@ -795,9 +816,14 @@ msgstr "الوصف"
 msgid "Detail"
 msgstr "التفاصيل"
 
+#: src/components/routes/system/nut-table.tsx
 #: src/components/routes/system/smart-table.tsx
 msgid "Device"
 msgstr "الجهاز"
+
+#: src/components/routes/system/nut-table.tsx
+msgid "Device Type"
+msgstr ""
 
 #. Context: Battery state
 #: src/lib/i18n.ts
@@ -868,6 +894,10 @@ msgstr "معطل ({downSystemsLength})"
 #: src/components/routes/system/network-sheet.tsx
 msgid "Download"
 msgstr "تنزيل"
+
+#: src/components/routes/system/nut-table.tsx
+msgid "Driver"
+msgstr ""
 
 #: src/components/alerts-history-columns.tsx
 msgid "Duration"
@@ -1005,6 +1035,10 @@ msgstr "تصدير تكوين الأنظمة الحالية الخاصة بك."
 msgid "Fahrenheit (°F)"
 msgstr "فهرنهايت (°ف)"
 
+#: src/components/systems-table/systems-table-columns.tsx
+#~ msgid "Failed"
+#~ msgstr "فشل"
+
 #: src/components/routes/system/smart-table.tsx
 msgid "Failed Attributes:"
 msgstr "السمات الفاشلة:"
@@ -1066,7 +1100,8 @@ msgstr "المراوح"
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/system/chart-card.tsx
 #: src/components/routes/system/package-updates-table.tsx
-#: src/components/routes/system/smart-table.tsx
+
+#: src/components/routes/system/nut-table.tsx#: src/components/routes/system/smart-table.tsx
 #: src/components/routes/system/storage-pools-table.tsx
 #: src/components/routes/system/storage-pools-table.tsx
 #: src/components/systemd-table/systemd-table.tsx
@@ -1078,6 +1113,7 @@ msgstr "تصفية..."
 msgid "Fingerprint"
 msgstr "البصمة"
 
+#: src/components/routes/system/nut-table.tsx
 #: src/components/routes/system/smart-table.tsx
 msgid "Firmware"
 msgstr "البرمجيات الثابتة"
@@ -1231,6 +1267,15 @@ msgstr "يتوفر تحديث للصورة"
 msgid "Inactive"
 msgstr "غير نشط"
 
+#: src/components/routes/system/nut-table.tsx
+#: src/components/routes/system/nut-table.tsx
+msgid "Input Voltage"
+msgstr ""
+
+#: src/components/routes/system/nut-table.tsx
+msgid "Input, output, and battery voltage over time"
+msgstr ""
+
 #: src/components/network-monitors-table/network-monitors-columns.tsx
 #: src/components/network-monitors-table/network-monitors-columns.tsx
 #: src/components/routes/settings/heartbeat.tsx
@@ -1265,6 +1310,16 @@ msgstr "دورة الحياة"
 #: src/components/systemd-table/systemd-table.tsx
 msgid "limit"
 msgstr "الحد"
+
+#: src/components/routes/system/nut-table.tsx
+#: src/components/routes/system/nut-table.tsx
+#: src/components/routes/system/nut-table.tsx
+msgid "Load"
+msgstr ""
+
+#: src/components/routes/system/nut-table.tsx
+msgid "Load and output power over time"
+msgstr ""
 
 #: src/components/routes/system/charts/load-average-chart.tsx
 msgid "Load Average"
@@ -1396,6 +1451,8 @@ msgid "Minor"
 msgstr "ثانوي"
 
 #. Device model
+#. Device model
+#: src/components/routes/system/nut-table.tsx
 #: src/components/routes/system/smart-table.tsx
 msgid "Model"
 msgstr "الموديل"
@@ -1491,7 +1548,8 @@ msgstr "لم يتم العثور على نتائج."
 #: src/components/network-monitors-table/network-monitors-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/system/package-updates-table.tsx
-#: src/components/routes/system/smart-table.tsx
+
+#: src/components/routes/system/nut-table.tsx#: src/components/routes/system/smart-table.tsx
 #: src/components/systemd-table/systemd-table.tsx
 msgid "No results."
 msgstr "لا توجد نتائج."
@@ -1563,6 +1621,7 @@ msgstr "كلمة مرور لمرة واحدة"
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
+#: src/components/routes/system/nut-table.tsx
 #: src/components/routes/system/smart-table.tsx
 #: src/components/routes/system/storage-pools-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
@@ -1583,6 +1642,21 @@ msgstr "أو المتابعة باستخدام"
 msgid "Other"
 msgstr "أخرى"
 
+#: src/components/routes/system/nut-table.tsx
+msgid "Outlet"
+msgstr ""
+
+#: src/components/routes/system/nut-table.tsx
+#: src/components/routes/system/nut-table.tsx
+#: src/components/routes/system/nut-table.tsx
+msgid "Output Power"
+msgstr ""
+
+#: src/components/routes/system/nut-table.tsx
+#: src/components/routes/system/nut-table.tsx
+msgid "Output Voltage"
+msgstr ""
+
 #: src/components/alerts/alerts-sheet.tsx
 msgid "Overwrite existing alerts"
 msgstr "الكتابة فوق التنبيهات الحالية"
@@ -1600,6 +1674,7 @@ msgstr "تحديثات الحزم"
 msgid "Packet loss (%)"
 msgstr "فقدان الحزم (٪)"
 
+#: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
@@ -1736,6 +1811,12 @@ msgctxt "Container ports"
 msgid "Ports"
 msgstr "المنافذ"
 
+#: src/components/routes/system/nut-table.tsx
+#: src/components/routes/system/nut-table.tsx
+#: src/components/routes/system/nut-table.tsx
+msgid "Power"
+msgstr ""
+
 #. Power On Time
 #: src/components/routes/system/smart-table.tsx
 msgid "Power On"
@@ -1812,7 +1893,9 @@ msgstr "تم الاستلام"
 #: src/components/containers-table/containers-table.tsx
 #: src/components/logs-display.tsx
 #: src/components/logs-display.tsx
-#: src/components/routes/system/smart-table.tsx
+
+#: src/components/containers-table/containers-table.tsx
+#: src/components/routes/system/nut-table.tsx#: src/components/routes/system/smart-table.tsx
 #: src/components/routes/system/storage-pools-table.tsx
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Refresh"
@@ -1892,6 +1975,12 @@ msgstr "تدوير الرمز المميز"
 #: src/components/ui/data-table-pagination.tsx
 msgid "Rows per page"
 msgstr "صفوف لكل صفحة"
+
+#: src/components/routes/system/nut-table.tsx
+#: src/components/routes/system/nut-table.tsx
+#: src/components/routes/system/nut-table.tsx
+msgid "Runtime"
+msgstr ""
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Runtime Metrics"
@@ -2017,6 +2106,7 @@ msgstr "إرسال نبضة قلب اختبارية"
 msgid "Sent"
 msgstr "تم الإرسال"
 
+#: src/components/routes/system/nut-table.tsx
 #: src/components/routes/system/smart-table.tsx
 msgid "Serial Number"
 msgstr "الرقم التسلسلي"
@@ -2087,6 +2177,9 @@ msgid "State"
 msgstr "الحالة"
 
 #: src/components/containers-table/containers-table-columns.tsx
+#: src/components/routes/system/nut-table.tsx
+#: src/components/routes/system/nut-table.tsx
+#: src/components/routes/system/nut-table.tsx
 #: src/components/routes/system/smart-table.tsx
 #: src/components/systemd-table/systemd-table.tsx
 #: src/components/systems-table/systems-table.tsx
@@ -2121,6 +2214,7 @@ msgstr "تبديل السمة"
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
+#: src/components/routes/system/nut-table.tsx
 #: src/components/routes/system/smart-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 #: src/lib/alerts.ts
@@ -2167,6 +2261,8 @@ msgstr "الهدف"
 #: src/components/network-monitors-table/monitor-dialog.tsx
 #: src/components/network-monitors-table/monitor-dialog.tsx
 msgid "target[,protocol[,port[,interval[,server]]]]"
+
+msgid "target[,protocol[,port[,interval]]]"
 msgstr ""
 
 #: src/components/systemd-table/systemd-table.tsx
@@ -2368,6 +2464,7 @@ msgstr "يتم التفعيل عندما يتجاوز استخدام أي قرص
 
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/system/nut-table.tsx
 #: src/components/routes/system/smart-table.tsx
 #: src/components/routes/system/storage-pools-table.tsx
 msgid "Type"
@@ -2426,6 +2523,10 @@ msgstr "تحديث"
 #: src/components/containers-table/containers-table-columns.tsx
 #: src/components/network-monitors-table/network-monitors-columns.tsx
 #: src/components/network-monitors-table/network-monitors-columns.tsx
+
+#: src/components/routes/system/nut-table.tsx#: src/components/routes/system/smart-table.tsx
+
+#: src/components/routes/system/nut-table.tsx
 #: src/components/routes/system/smart-table.tsx
 #: src/components/routes/system/storage-pools-table.tsx
 #: src/components/systemd-table/systemd-table-columns.tsx
@@ -2444,6 +2545,10 @@ msgstr "التحديثات"
 #: src/components/routes/system/network-sheet.tsx
 msgid "Upload"
 msgstr "رفع"
+
+#: src/components/routes/system/nut-table.tsx
+msgid "UPS / PDU Details"
+msgstr ""
 
 #: src/components/routes/system/info-bar.tsx
 #: src/components/systems-table/systems-table-columns.tsx
@@ -2520,6 +2625,11 @@ msgid "Visible Fields"
 msgstr "الأعمدة الظاهرة"
 
 #: src/components/charts/chart-no-values.tsx
+
+#: src/components/routes/system/nut-table.tsx
+#: src/components/routes/system/nut-table.tsx
+msgid "Voltage"
+msgstr ""
 #: src/components/routes/system/chart-card.tsx
 msgid "Waiting for enough records to display"
 msgstr "في انتظار وجود سجلات كافية للعرض"
@@ -2594,3 +2704,11 @@ msgstr "نعم"
 #: src/components/routes/settings/layout.tsx
 msgid "Your user settings have been updated."
 msgstr "تم تحديث إعدادات المستخدم الخاصة بك."
+
+#: src/components/routes/system/nut-table.tsx
+msgid "{power} (estimated)"
+msgstr ""
+
+#: src/components/routes/system/nut-table.tsx
+msgid "Load and output power over time. Estimated power is calculated from load and rated watts."
+msgstr ""

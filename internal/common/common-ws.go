@@ -30,6 +30,8 @@ const (
 	GetPackageUpdates
 	// Request recent logs for a systemd service from the agent.
 	GetSystemdLogs
+	// Request NUT (UPS/PDU) data from agent
+	GetNutData
 	// Add new actions here...
 )
 

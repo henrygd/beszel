@@ -69,6 +69,8 @@ msgstr "{count, plural, one {{countString} minuta} few {{countString} minuty} ma
 msgid "{daysLeft, plural, one {# day} other {# days}}"
 msgstr "{daysLeft, plural, one {# den} few {# dny} many {# dne} other {# dnů}}"
 
+msgstr ""
+
 #: src/components/routes/system/charts/disk-charts.tsx
 msgid "{diskName} I/O"
 msgstr "I/O {diskName}"
@@ -80,6 +82,8 @@ msgstr "{numFailed, plural, one {# selhaná služba} few {# selhané služby} ma
 #: src/components/active-alerts.tsx
 msgid "{systemCount, plural, one {Across # system} other {Across # systems}}"
 msgstr "{systemCount, plural, one {Napříč # systémem} few {Napříč # systémy} many {Napříč # systému} other {Napříč # systémy}}"
+
+msgstr ""
 
 #: src/components/routes/system/info-bar.tsx
 msgid "{threads, plural, one {# thread} other {# threads}}"
@@ -139,6 +143,7 @@ msgstr "5 min"
 #. Table column
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
+#: src/components/routes/system/nut-table.tsx
 #: src/components/routes/system/smart-table.tsx
 #: src/components/routes/system/storage-pools-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
@@ -163,6 +168,8 @@ msgstr "Aktivní stav"
 #: src/components/network-monitors-table/monitor-dialog.tsx
 msgid "Add"
 msgstr "Přidat"
+
+msgstr ""
 
 #: src/components/network-monitors-table/monitor-dialog.tsx
 #: src/components/network-monitors-table/monitor-dialog.tsx
@@ -333,9 +340,17 @@ msgstr ""
 
 #: src/components/routes/system/charts/sensor-charts.tsx
 #: src/components/routes/system/charts/sensor-charts.tsx
+#: src/components/routes/system/nut-table.tsx
+#: src/components/routes/system/nut-table.tsx
+#: src/components/routes/system/nut-table.tsx
+#: src/components/routes/system/nut-table.tsx
 #: src/lib/alerts.ts
 msgid "Battery"
 msgstr "Baterie"
+
+#: src/components/routes/system/nut-table.tsx
+msgid "Battery charge and estimated runtime over time"
+msgstr ""
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Became active"
@@ -453,6 +468,8 @@ msgstr "Platnost certifikátu vyprší {expires}"
 msgid "Change"
 msgstr "Změnit"
 
+msgstr ""
+
 #: src/components/routes/settings/general.tsx
 msgid "Change display units for metrics."
 msgstr "Změnit jednotky zobrazení metrik."
@@ -462,6 +479,7 @@ msgid "Change general application options."
 msgstr "Změnit obecné nastavení aplikace."
 
 #: src/components/routes/system/charts/sensor-charts.tsx
+#: src/components/routes/system/nut-table.tsx
 msgid "Charge"
 msgstr "Nabíjení"
 
@@ -506,7 +524,8 @@ msgstr "Chyby kontrolního součtu"
 #: src/components/containers-table/containers-table.tsx
 #: src/components/network-monitors-table/network-monitors-table.tsx
 #: src/components/routes/system/package-updates-table.tsx
-#: src/components/routes/system/smart-table.tsx
+
+#: src/components/routes/system/nut-table.tsx#: src/components/routes/system/smart-table.tsx
 #: src/components/routes/system/storage-pools-table.tsx
 #: src/components/routes/system/storage-pools-table.tsx
 #: src/components/systems-table/systems-table.tsx
@@ -525,6 +544,7 @@ msgstr "Vymazat shody"
 msgid "Click on a container to view more information."
 msgstr "Klikněte na kontejner pro zobrazení dalších informací."
 
+#: src/components/routes/system/nut-table.tsx
 #: src/components/routes/system/smart-table.tsx
 msgid "Click on a device to view more information."
 msgstr "Klikněte na zařízení pro zobrazení dalších informací."
@@ -746,9 +766,9 @@ msgstr "Kumulativní zápis"
 
 #. Current package version
 #: src/components/routes/system/package-updates-table.tsx
+#: src/components/routes/system/nut-table.tsx
 msgid "Current"
 msgstr "Aktuální"
-
 #. Context: Battery state
 #. Context: Battery state
 #: src/components/routes/system/charts/sensor-charts.tsx
@@ -778,6 +798,7 @@ msgstr "Výchozí doba"
 #: src/components/network-monitors-table/network-monitors-columns.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/system/nut-table.tsx
 #: src/components/routes/system/smart-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Delete"
@@ -795,9 +816,14 @@ msgstr "Popis"
 msgid "Detail"
 msgstr "Detail"
 
+#: src/components/routes/system/nut-table.tsx
 #: src/components/routes/system/smart-table.tsx
 msgid "Device"
 msgstr "Zařízení"
+
+#: src/components/routes/system/nut-table.tsx
+msgid "Device Type"
+msgstr ""
 
 #. Context: Battery state
 #: src/lib/i18n.ts
@@ -868,6 +894,10 @@ msgstr "Nefunkční ({downSystemsLength})"
 #: src/components/routes/system/network-sheet.tsx
 msgid "Download"
 msgstr "Stažení"
+
+#: src/components/routes/system/nut-table.tsx
+msgid "Driver"
+msgstr ""
 
 #: src/components/alerts-history-columns.tsx
 msgid "Duration"
@@ -1005,6 +1035,10 @@ msgstr "Exportovat aktuální konfiguraci systémů."
 msgid "Fahrenheit (°F)"
 msgstr "Fahrenheita (°F)"
 
+#: src/components/systems-table/systems-table-columns.tsx
+#~ msgid "Failed"
+#~ msgstr "Selhalo"
+
 #: src/components/routes/system/smart-table.tsx
 msgid "Failed Attributes:"
 msgstr "Neúspěšné atributy:"
@@ -1066,7 +1100,8 @@ msgstr "Ventilátory"
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/system/chart-card.tsx
 #: src/components/routes/system/package-updates-table.tsx
-#: src/components/routes/system/smart-table.tsx
+
+#: src/components/routes/system/nut-table.tsx#: src/components/routes/system/smart-table.tsx
 #: src/components/routes/system/storage-pools-table.tsx
 #: src/components/routes/system/storage-pools-table.tsx
 #: src/components/systemd-table/systemd-table.tsx
@@ -1078,6 +1113,7 @@ msgstr "Filtr..."
 msgid "Fingerprint"
 msgstr "Otisk"
 
+#: src/components/routes/system/nut-table.tsx
 #: src/components/routes/system/smart-table.tsx
 msgid "Firmware"
 msgstr "Firmware"
@@ -1231,6 +1267,15 @@ msgstr "K dispozici je aktualizace obrazu"
 msgid "Inactive"
 msgstr "Neaktivní"
 
+#: src/components/routes/system/nut-table.tsx
+#: src/components/routes/system/nut-table.tsx
+msgid "Input Voltage"
+msgstr ""
+
+#: src/components/routes/system/nut-table.tsx
+msgid "Input, output, and battery voltage over time"
+msgstr ""
+
 #: src/components/network-monitors-table/network-monitors-columns.tsx
 #: src/components/network-monitors-table/network-monitors-columns.tsx
 #: src/components/routes/settings/heartbeat.tsx
@@ -1265,6 +1310,16 @@ msgstr "Životní cyklus"
 #: src/components/systemd-table/systemd-table.tsx
 msgid "limit"
 msgstr "limit"
+
+#: src/components/routes/system/nut-table.tsx
+#: src/components/routes/system/nut-table.tsx
+#: src/components/routes/system/nut-table.tsx
+msgid "Load"
+msgstr ""
+
+#: src/components/routes/system/nut-table.tsx
+msgid "Load and output power over time"
+msgstr ""
 
 #: src/components/routes/system/charts/load-average-chart.tsx
 msgid "Load Average"
@@ -1396,6 +1451,8 @@ msgid "Minor"
 msgstr "Vedlejší"
 
 #. Device model
+#. Device model
+#: src/components/routes/system/nut-table.tsx
 #: src/components/routes/system/smart-table.tsx
 msgid "Model"
 msgstr "Model"
@@ -1491,7 +1548,8 @@ msgstr "Nenalezeny žádné výskyty."
 #: src/components/network-monitors-table/network-monitors-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/system/package-updates-table.tsx
-#: src/components/routes/system/smart-table.tsx
+
+#: src/components/routes/system/nut-table.tsx#: src/components/routes/system/smart-table.tsx
 #: src/components/systemd-table/systemd-table.tsx
 msgid "No results."
 msgstr "Žádné výsledky."
@@ -1563,6 +1621,7 @@ msgstr "Jednorázové heslo"
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
+#: src/components/routes/system/nut-table.tsx
 #: src/components/routes/system/smart-table.tsx
 #: src/components/routes/system/storage-pools-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
@@ -1583,6 +1642,21 @@ msgstr "Nebo pokračujte s"
 msgid "Other"
 msgstr "Jiné"
 
+#: src/components/routes/system/nut-table.tsx
+msgid "Outlet"
+msgstr ""
+
+#: src/components/routes/system/nut-table.tsx
+#: src/components/routes/system/nut-table.tsx
+#: src/components/routes/system/nut-table.tsx
+msgid "Output Power"
+msgstr ""
+
+#: src/components/routes/system/nut-table.tsx
+#: src/components/routes/system/nut-table.tsx
+msgid "Output Voltage"
+msgstr ""
+
 #: src/components/alerts/alerts-sheet.tsx
 msgid "Overwrite existing alerts"
 msgstr "Přepsat existující upozornění"
@@ -1600,6 +1674,7 @@ msgstr "Aktualizace balíčků"
 msgid "Packet loss (%)"
 msgstr "Ztráta paketů (%)"
 
+#: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
@@ -1736,6 +1811,12 @@ msgctxt "Container ports"
 msgid "Ports"
 msgstr "Porty"
 
+#: src/components/routes/system/nut-table.tsx
+#: src/components/routes/system/nut-table.tsx
+#: src/components/routes/system/nut-table.tsx
+msgid "Power"
+msgstr ""
+
 #. Power On Time
 #: src/components/routes/system/smart-table.tsx
 msgid "Power On"
@@ -1812,7 +1893,9 @@ msgstr "Přijato"
 #: src/components/containers-table/containers-table.tsx
 #: src/components/logs-display.tsx
 #: src/components/logs-display.tsx
-#: src/components/routes/system/smart-table.tsx
+
+#: src/components/containers-table/containers-table.tsx
+#: src/components/routes/system/nut-table.tsx#: src/components/routes/system/smart-table.tsx
 #: src/components/routes/system/storage-pools-table.tsx
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Refresh"
@@ -1892,6 +1975,12 @@ msgstr "Změnit token"
 #: src/components/ui/data-table-pagination.tsx
 msgid "Rows per page"
 msgstr "Řádků na stránku"
+
+#: src/components/routes/system/nut-table.tsx
+#: src/components/routes/system/nut-table.tsx
+#: src/components/routes/system/nut-table.tsx
+msgid "Runtime"
+msgstr ""
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Runtime Metrics"
@@ -2017,6 +2106,7 @@ msgstr "Odeslat testovací heartbeat"
 msgid "Sent"
 msgstr "Odeslat"
 
+#: src/components/routes/system/nut-table.tsx
 #: src/components/routes/system/smart-table.tsx
 msgid "Serial Number"
 msgstr "Sériové číslo"
@@ -2087,6 +2177,9 @@ msgid "State"
 msgstr "Stav"
 
 #: src/components/containers-table/containers-table-columns.tsx
+#: src/components/routes/system/nut-table.tsx
+#: src/components/routes/system/nut-table.tsx
+#: src/components/routes/system/nut-table.tsx
 #: src/components/routes/system/smart-table.tsx
 #: src/components/systemd-table/systemd-table.tsx
 #: src/components/systems-table/systems-table.tsx
@@ -2121,6 +2214,7 @@ msgstr "Přepnout motiv"
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
+#: src/components/routes/system/nut-table.tsx
 #: src/components/routes/system/smart-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 #: src/lib/alerts.ts
@@ -2167,6 +2261,8 @@ msgstr "Cíl"
 #: src/components/network-monitors-table/monitor-dialog.tsx
 #: src/components/network-monitors-table/monitor-dialog.tsx
 msgid "target[,protocol[,port[,interval[,server]]]]"
+
+msgid "target[,protocol[,port[,interval]]]"
 msgstr ""
 
 #: src/components/systemd-table/systemd-table.tsx
@@ -2368,6 +2464,7 @@ msgstr "Spustí se, když využití disku překročí prahovou hodnotu"
 
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/system/nut-table.tsx
 #: src/components/routes/system/smart-table.tsx
 #: src/components/routes/system/storage-pools-table.tsx
 msgid "Type"
@@ -2426,6 +2523,10 @@ msgstr "Aktualizovat"
 #: src/components/containers-table/containers-table-columns.tsx
 #: src/components/network-monitors-table/network-monitors-columns.tsx
 #: src/components/network-monitors-table/network-monitors-columns.tsx
+
+#: src/components/routes/system/nut-table.tsx#: src/components/routes/system/smart-table.tsx
+
+#: src/components/routes/system/nut-table.tsx
 #: src/components/routes/system/smart-table.tsx
 #: src/components/routes/system/storage-pools-table.tsx
 #: src/components/systemd-table/systemd-table-columns.tsx
@@ -2444,6 +2545,10 @@ msgstr "Aktualizace"
 #: src/components/routes/system/network-sheet.tsx
 msgid "Upload"
 msgstr "Odeslání"
+
+#: src/components/routes/system/nut-table.tsx
+msgid "UPS / PDU Details"
+msgstr ""
 
 #: src/components/routes/system/info-bar.tsx
 #: src/components/systems-table/systems-table-columns.tsx
@@ -2520,6 +2625,11 @@ msgid "Visible Fields"
 msgstr "Viditelné sloupce"
 
 #: src/components/charts/chart-no-values.tsx
+
+#: src/components/routes/system/nut-table.tsx
+#: src/components/routes/system/nut-table.tsx
+msgid "Voltage"
+msgstr ""
 #: src/components/routes/system/chart-card.tsx
 msgid "Waiting for enough records to display"
 msgstr "Čeká se na dostatek záznamů k zobrazení"
@@ -2594,3 +2704,11 @@ msgstr "Ano"
 #: src/components/routes/settings/layout.tsx
 msgid "Your user settings have been updated."
 msgstr "Vaše uživatelská nastavení byla aktualizována."
+
+#: src/components/routes/system/nut-table.tsx
+msgid "{power} (estimated)"
+msgstr ""
+
+#: src/components/routes/system/nut-table.tsx
+msgid "Load and output power over time. Estimated power is calculated from load and rated watts."
+msgstr ""
