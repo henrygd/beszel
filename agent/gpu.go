@@ -458,7 +458,8 @@ func (gm *GPUManager) calculateGPUAverage(id string, gpu *system.GPUData, cacheK
 		// make fresh map for averaged engine metrics to avoid mutating
 		// the accumulator map stored in gm.GpuDataMap
 		gpuAvg.Engines = make(map[string]float64, len(gpu.Engines))
-		gpuAvg.Usage = gm.calculateIntelGPUUsage(&gpuAvg, gpu, lastSnapshot, deltaCount)
+		// nvtop reports media engines separately from its overall GPU utilization.
+		gpuAvg.Usage = max(utils.TwoDecimals(deltaUsage/float64(deltaCount)), gm.calculateIntelGPUUsage(&gpuAvg, gpu, lastSnapshot, deltaCount))
 	} else {
 		gpuAvg.Usage = utils.TwoDecimals(deltaUsage / float64(deltaCount))
 	}
