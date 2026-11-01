@@ -82,7 +82,8 @@ func (a *Agent) updateNetworkStats(cacheTimeMs uint16, systemStats *system.Stats
 
 	a.ensureNetworkInterfacesMap(systemStats)
 
-	if netIO, err := psutilNet.IOCounters(true); err == nil {
+	// [upload bytes, download bytes, total upload, total download]
+	if netIO, err := a.networkIO.IOCounters(); err == nil && netIO != nil {
 		nis, msElapsed := a.loadAndTickNetBaseline(cacheTimeMs)
 		bytesSentPerSecond, bytesRecvPerSecond := a.sumAndTrackPerNicDeltas(cacheTimeMs, msElapsed, netIO, systemStats)
 		a.applyNetworkTotals(cacheTimeMs, netIO, systemStats, nis, bytesSentPerSecond, bytesRecvPerSecond)
@@ -101,7 +102,9 @@ func (a *Agent) initializeNetIoStats() {
 	}
 
 	// get current network I/O stats and record valid interfaces
-	if netIO, err := psutilNet.IOCounters(true); err == nil {
+	// also if in here
+	netIO, err := a.networkIO.IOCounters()
+	if err == nil {
 		for _, v := range netIO {
 			if skipNetworkInterface(v, nicCfg) {
 				continue
