@@ -8,6 +8,7 @@ import (
 
 	"github.com/henrygd/beszel/internal/entities/container"
 	"github.com/henrygd/beszel/internal/entities/monitor"
+	"github.com/henrygd/beszel/internal/entities/speedtest"
 	"github.com/henrygd/beszel/internal/entities/systemd"
 )
 
@@ -215,6 +216,7 @@ type CombinedData struct {
 	Details         *Details           `cbor:"4,keyasint,omitempty"`
 	// SystemdServicesUpdated distinguishes a fresh empty snapshot from a response
 	// that omitted systemd data (for example, a short-cache dashboard request).
-	SystemdServicesUpdated bool                      `json:"systemdUpdated,omitzero" cbor:"5,keyasint,omitempty"`
-	Monitors               map[string]monitor.Result `cbor:"6,keyasint"`
+	SystemdServicesUpdated bool                        `json:"systemdUpdated,omitzero" cbor:"5,keyasint,omitempty"`
+	Monitors               map[string]monitor.Result   `cbor:"6,keyasint"`
+	Speedtests             map[string]speedtest.Result `cbor:"7,keyasint,omitempty"`
 }

@@ -1,6 +1,6 @@
 import { memo, useState } from "react"
 import { Trans } from "@lingui/react/macro"
-import { compareSemVer, parseSemVer, supportsNetworkMonitors } from "@/lib/utils"
+import { compareSemVer, parseSemVer, supportsNetworkMonitors, supportsSpeedtests } from "@/lib/utils"
 import { SystemStatus } from "@/lib/enums"
 import type { GPUData } from "@/types"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -17,6 +17,7 @@ import { GpuPowerChart, GpuCharts } from "./system/charts/gpu-charts"
 import {
 	LazyContainersTable,
 	LazyNetworkMonitorsTable,
+	LazySpeedtestsTable,
 	LazyPackageUpdatesTable,
 	LazySmartTable,
 	LazySystemdTable,
@@ -75,6 +76,7 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 	const hasGpu = hasGpuData || hasGpuPowerData
 	const hasZfs = Object.keys(systemStats.at(-1)?.stats?.z ?? {}).length > 0
 	const hasNetworkMonitors = supportsNetworkMonitors(system)
+	const hasSpeedtests = supportsSpeedtests(system)
 	// counts key the table so it refetches the list only after a new check
 	const packageUpdates = system.status === SystemStatus.Up && system.info.pu?.[0] ? system.info.pu.join(",") : ""
 
@@ -171,6 +173,8 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 				{packageUpdates && <LazyPackageUpdatesTable systemId={system.id} counts={packageUpdates} />}
 
 				{hasNetworkMonitors && <LazyNetworkMonitorsTable systemId={system.id} />}
+
+				{hasSpeedtests && <LazySpeedtestsTable systemId={system.id} />}
 			</>
 		)
 	}
@@ -238,6 +242,7 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 								<WiFiChart system={system} {...coreProps} />
 							</div>
 							{hasNetworkMonitors && <LazyNetworkMonitorsTable systemId={system.id} />}
+							{hasSpeedtests && <LazySpeedtestsTable systemId={system.id} />}
 						</>
 					)}
 				</TabsContent>

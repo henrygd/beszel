@@ -201,7 +201,7 @@ func (sm *SystemManager) onRecordUpdate(e *core.RecordEvent) error {
 // onRecordAfterUpdateSuccess handles system record updates after they're committed to the database.
 // It manages system lifecycle based on status changes and triggers appropriate alerts.
 // Status transitions are handled as follows:
-// - paused: Closes SSH connection and deactivates alerts
+// - paused: Closes SSH connection, stops speedtests and deactivates alerts
 // - pending: Starts monitoring (reuses WebSocket if available)
 // - up: Triggers system alerts
 // - down: Cancels pending container alerts and triggers status change alerts
@@ -217,6 +217,7 @@ func (sm *SystemManager) onRecordAfterUpdateSuccess(e *core.RecordEvent) error {
 	case paused:
 		if ok {
 			// Pause monitoring but keep system in manager for potential resume
+			go system.suspendSpeedtests()
 			system.closeSSHConnection()
 		}
 		_ = deactivateAlerts(e.App, e.Record.Id, false)
@@ -355,14 +356,15 @@ func (sm *SystemManager) AddWebSocketSystem(systemId string, agentVersion semver
 	system := sm.NewSystem(systemId)
 	system.WsConn = wsConn
 	system.setAgentVersion(agentVersion)
-	system.monitorsNeedSync.Store(true)
+	system.markAgentConfigsNeedSync()
 
 	if err := sm.AddRecord(systemRecord, system); err != nil {
 		return err
 	}
 
-	// Sync network monitors to the newly connected agent
-	go system.syncPendingNetworkMonitors()
+	// Sync network monitors and speedtests to the newly connected agent.
+	// Tracked with the updaters so shutdown waits for it to finish.
+	sm.updaters.Go(system.syncPendingAgentConfigs)
 
 	return nil
 }

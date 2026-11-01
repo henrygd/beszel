@@ -427,3 +427,54 @@ func TestDeleteOldSystemdServiceRecords(t *testing.T) {
 	assert.Len(t, remainingRecords, 1, "Should have exactly 1 record remaining")
 	assert.Equal(t, "apache.service", remainingRecords[0].Get("name"), "The recent record should be kept")
 }
+
+// TestDeleteOldSpeedtestStats tests that speedtest runs older than 30 days are deleted
+func TestDeleteOldSpeedtestStats(t *testing.T) {
+	hub, err := tests.NewTestHub(t.TempDir())
+	require.NoError(t, err)
+	defer hub.Cleanup()
+
+	rm := records.NewRecordManager(hub)
+
+	user, err := tests.CreateUser(hub, "test@example.com", "testtesttest")
+	require.NoError(t, err)
+
+	system, err := tests.CreateRecord(hub, "systems", map[string]any{
+		"name":   "test-system",
+		"host":   "localhost",
+		"port":   "45876",
+		"status": "up",
+		"users":  []string{user.Id},
+	})
+	require.NoError(t, err)
+
+	speedtest, err := tests.CreateRecord(hub, "speedtests", map[string]any{
+		"system":   system.Id,
+		"interval": 60,
+	})
+	require.NoError(t, err)
+
+	now := time.Now().UTC()
+
+	// created is a number field in Unix milliseconds, unlike the datetime created of other stats
+	for _, age := range []time.Duration{31 * 24 * time.Hour, 24 * time.Hour} {
+		_, err := tests.CreateRecord(hub, "speedtest_stats", map[string]any{
+			"system":    system.Id,
+			"speedtest": speedtest.Id,
+			"created":   now.Add(-age).UnixMilli(),
+			"download":  100_000_000,
+		})
+		require.NoError(t, err)
+	}
+
+	countBefore, err := hub.CountRecords("speedtest_stats")
+	require.NoError(t, err)
+	assert.Equal(t, int64(2), countBefore, "Should have 2 speedtest stats records initially")
+
+	rm.DeleteOldRecords()
+
+	remainingRecords, err := hub.FindRecordsByFilter("speedtest_stats", "", "", 10, 0, nil)
+	require.NoError(t, err)
+	require.Len(t, remainingRecords, 1, "Only the run within 30 days should be kept")
+	assert.Equal(t, now.Add(-24*time.Hour).UnixMilli(), int64(remainingRecords[0].GetInt("created")), "The recent run should be kept")
+}
