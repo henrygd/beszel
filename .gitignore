@@ -22,3 +22,8 @@ agent/lhm/bin
 dockerfile_agent_dev
 .cr-release-packages
 .tmp
+
+# Locally installed agent skills (npx skills add)
+.agents/skills
+.claude/skills
+skills-lock.json
