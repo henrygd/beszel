@@ -5,14 +5,83 @@ package agent
 import (
 	"os"
 	"path/filepath"
+	"runtime"
 	"strconv"
+	"syscall"
 	"testing"
+	"time"
 
 	"github.com/henrygd/beszel/agent/utils"
 	"github.com/henrygd/beszel/internal/entities/system"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
+
+func TestCollectAmdStatsRecoversAfterReadFailures(t *testing.T) {
+	root := t.TempDir()
+	oldRoot, oldSleep := drmSysfsRoot, amdSysfsSleep
+	drmSysfsRoot = root
+	t.Cleanup(func() {
+		drmSysfsRoot, amdSysfsSleep = oldRoot, oldSleep
+	})
+
+	devicePath := filepath.Join(root, "card0", "device")
+	require.NoError(t, os.MkdirAll(devicePath, 0o755))
+	require.NoError(t, os.WriteFile(filepath.Join(devicePath, "vendor"), []byte("0x1002"), 0o644))
+	metrics := map[string]string{
+		"gpu_busy_percent":    "25",
+		"mem_info_vram_used":  "1073741824",
+		"mem_info_vram_total": "2147483648",
+	}
+	writeMetrics := func() {
+		for name, value := range metrics {
+			require.NoError(t, os.WriteFile(filepath.Join(devicePath, name), []byte(value), 0o644))
+		}
+	}
+	writeMetrics()
+
+	gm := &GPUManager{GpuDataMap: map[string]*system.GPUData{"card0": {Name: "AMD Test GPU"}}}
+	failures := 0
+	removed := false
+	recovered := false
+	amdSysfsSleep = func(delay time.Duration) {
+		if !removed {
+			assert.Equal(t, 1.0, gm.GpuDataMap["card0"].Count)
+			assert.Equal(t, 3*time.Second, delay)
+			for name := range metrics {
+				require.NoError(t, os.Remove(filepath.Join(devicePath, name)))
+			}
+			removed = true
+			return
+		}
+		if gm.GpuDataMap["card0"].Count == 2 {
+			assert.Equal(t, 3*time.Second, delay)
+			recovered = true
+			// Stop the collector goroutine after observing the recovered sample.
+			runtime.Goexit()
+		}
+		assert.Equal(t, retryWaitTime, delay)
+		failures++
+		if failures == maxFailureRetries+2 {
+			writeMetrics()
+		} else if failures > maxFailureRetries+2 {
+			runtime.Goexit()
+		}
+	}
+
+	done := make(chan struct{})
+	var err error
+	go func() {
+		defer close(done)
+		err = gm.collectAmdStats()
+	}()
+	<-done
+	require.NoError(t, err, "collector must keep polling through prolonged sysfs read failures")
+	require.True(t, recovered, "collector must resume when sysfs metrics are restored")
+	assert.Equal(t, maxFailureRetries+2, failures)
+	assert.Equal(t, 50.0, gm.GpuDataMap["card0"].Usage)
+	assert.Equal(t, utils.BytesToMegabytes(1073741824), gm.GpuDataMap["card0"].MemoryUsed)
+}
 
 func TestNormalizeHexID(t *testing.T) {
 	tests := []struct {
@@ -78,6 +147,74 @@ func TestReadSysfsFloat(t *testing.T) {
 	require.NoError(t, os.WriteFile(badPath, []byte("not a number"), 0o644))
 	_, err = readSysfsFloat(badPath)
 	require.Error(t, err)
+}
+
+func TestSysfsBackoff(t *testing.T) {
+	const path = "/sys/class/drm/card1/device/gpu_busy_percent"
+	start := time.Now()
+	unsupported := &os.PathError{Op: "read", Path: path, Err: syscall.EOPNOTSUPP}
+
+	t.Run("fast reads are never backed off", func(t *testing.T) {
+		b := newSysfsBackoff()
+		b.record(path, nil, time.Millisecond, start)
+		b.record(path, os.ErrNotExist, time.Millisecond, start)
+		assert.True(t, b.allow(path, start))
+	})
+
+	t.Run("unsupported read backs off and doubles up to max", func(t *testing.T) {
+		b := newSysfsBackoff()
+		now := start
+		want := sysfsBackoffMin
+		for range 8 {
+			b.record(path, unsupported, time.Millisecond, now)
+			assert.False(t, b.allow(path, now.Add(want-time.Second)))
+			assert.True(t, b.allow(path, now.Add(want)))
+			now = now.Add(want)
+			want = min(want*2, sysfsBackoffMax)
+		}
+		assert.Equal(t, sysfsBackoffMax, b.entries[path].delay)
+	})
+
+	t.Run("slow failed read backs off", func(t *testing.T) {
+		b := newSysfsBackoff()
+		timedOut := &os.PathError{Op: "read", Path: path, Err: syscall.ETIME}
+		b.record(path, timedOut, sysfsSlowReadThreshold, start)
+		assert.False(t, b.allow(path, start))
+		assert.True(t, b.allow(path, start.Add(sysfsBackoffMin)))
+	})
+
+	t.Run("slow successful read is not backed off", func(t *testing.T) {
+		b := newSysfsBackoff()
+		b.record(path, nil, sysfsSlowReadThreshold, start)
+		assert.True(t, b.allow(path, start))
+	})
+
+	t.Run("slow successful read clears backoff", func(t *testing.T) {
+		b := newSysfsBackoff()
+		b.record(path, unsupported, time.Millisecond, start)
+		b.record(path, nil, sysfsSlowReadThreshold, start.Add(sysfsBackoffMin))
+		assert.Empty(t, b.entries)
+	})
+
+	t.Run("fast success resets delay", func(t *testing.T) {
+		b := newSysfsBackoff()
+		b.record(path, unsupported, time.Millisecond, start)
+		b.record(path, unsupported, time.Millisecond, start.Add(sysfsBackoffMin))
+		b.record(path, nil, time.Millisecond, start.Add(3*sysfsBackoffMin))
+		assert.True(t, b.allow(path, start.Add(3*sysfsBackoffMin)))
+		b.record(path, unsupported, time.Millisecond, start.Add(3*sysfsBackoffMin))
+		assert.Equal(t, sysfsBackoffMin, b.entries[path].delay)
+	})
+
+	t.Run("readSysfsFloat skips backed off files", func(t *testing.T) {
+		valPath := filepath.Join(t.TempDir(), "val")
+		require.NoError(t, os.WriteFile(valPath, []byte("42"), 0o644))
+		amdSysfsBackoff.record(valPath, unsupported, time.Millisecond, time.Now())
+		t.Cleanup(func() { amdSysfsBackoff.record(valPath, nil, 0, time.Now()) })
+
+		_, err := readSysfsFloat(valPath)
+		assert.ErrorIs(t, err, errSysfsBackoff)
+	})
 }
 
 func TestIsAmdGpu(t *testing.T) {
