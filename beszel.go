@@ -6,7 +6,7 @@ import "github.com/blang/semver"
 
 const (
 	// Version is the current version of the application.
-	Version = "0.21.1"
+	Version = "0.22.0"
 	// AppName is the name of the application.
 	AppName = "beszel"
 )
@@ -24,4 +24,4 @@ var MinVersionZfsData = semver.MustParse("0.18.9")
 var MinVersionNetworkMonitors = semver.MustParse("0.20.0")
 
 // MinVersionNutData is the minimum agent version that supports NUT (UPS/PDU) data requests.
-var MinVersionNutData = semver.MustParse("0.21.0")
+var MinVersionNutData = semver.MustParse("0.22.0")

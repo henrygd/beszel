@@ -31,7 +31,7 @@ import ContainersTable from "../containers-table/containers-table"
 
 const SEMVER_0_14_0 = parseSemVer("0.14.0")
 const SEMVER_0_15_0 = parseSemVer("0.15.0")
-const SEMVER_0_21_0 = parseSemVer("0.21.0")
+const SEMVER_0_22_0 = parseSemVer("0.22.0")
 
 export default memo(function SystemDetail({ id }: { id: string }) {
 	const systemData = useSystemData(id)
@@ -72,7 +72,7 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 
 	const hasContainers = containerData.length > 0
 	const maybeHasSmartData = compareSemVer(chartData.agentVersion, SEMVER_0_15_0) >= 0
-	const maybeHasNutData = compareSemVer(chartData.agentVersion, SEMVER_0_21_0) >= 0
+	const maybeHasNutData = compareSemVer(chartData.agentVersion, SEMVER_0_22_0) >= 0
 	const hasContainersTable = hasContainers && compareSemVer(chartData.agentVersion, SEMVER_0_14_0) >= 0
 	const hasSystemd = system.info.sv
 	const hasGpu = hasGpuData || hasGpuPowerData
