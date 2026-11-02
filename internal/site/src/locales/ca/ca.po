@@ -8,7 +8,7 @@ msgstr ""
 "Language: ca\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2026-11-02 22:36\n"
+"PO-Revision-Date: 2026-11-02 23:36\n"
 "Last-Translator: \n"
 "Language-Team: Catalan\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
@@ -1106,7 +1106,7 @@ msgstr "Ordre de FreeBSD"
 #: src/components/routes/system/info-bar.tsx
 #: src/lib/i18n.ts
 msgid "Full"
-msgstr "Plena"
+msgstr "Complet"
 
 #: src/components/containers-table/containers-table.tsx
 #: src/components/systemd-table/systemd-table.tsx
@@ -1777,7 +1777,7 @@ msgstr "Profunditat de la cua"
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Quiet Hours"
-msgstr "Hores de silenci"
+msgstr "Hores de descans"
 
 #: src/components/routes/system/raw-capacity-label.tsx
 #: src/components/routes/system/storage-pools-table.tsx
@@ -1932,11 +1932,11 @@ msgstr "Programació"
 
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Schedule quiet hours where notifications will not be sent, such as during maintenance periods."
-msgstr "Programa hores de silenci en què no s'enviaran notificacions, per exemple durant els períodes de manteniment."
+msgstr "Programa hores de descans en què no s'enviaran notificacions, per exemple durant els períodes de manteniment."
 
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Schedule quiet hours where notifications will not be sent."
-msgstr "Programa hores de silenci en què no s'enviaran notificacions."
+msgstr "Programa hores de descans en què no s'enviaran notificacions."
 
 #: src/components/navbar.tsx
 msgid "Search"
@@ -2259,7 +2259,8 @@ msgstr "Testimonis i empremtes"
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Tokens allow agents to connect and register. Fingerprints are stable identifiers unique to each system, set on first connection."
-msgstr "Els testimonis permeten que els agents es connectin i es registrin. Les empremtes són identificadors estables i únics de cada sistema, que s'estableixen en la primera connexió."
+msgstr "Els testimonis (tokens) permeten que els agents es connectin i es registrin. Les \n"
+"empremtes són identificadors estables i únics de cada sistema, que s'estableixen en la primera connexió."
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Tokens and fingerprints are used to authenticate WebSocket connections to the hub."
