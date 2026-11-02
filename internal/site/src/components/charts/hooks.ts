@@ -3,7 +3,8 @@ import { useStore } from "@nanostores/react"
 import type { ChartConfig } from "@/components/ui/chart"
 import type { ChartData, SystemStats, SystemStatsRecord } from "@/types"
 import type { DataPoint } from "./area-chart"
-import { $containerFilter } from "@/lib/stores"
+import { $containerFilter, $containerStackFilter, $containerStacks } from "@/lib/stores"
+import { containerInStack } from "@/lib/container-stacks"
 
 /** Chart configurations for CPU, memory, and network usage charts */
 export interface ContainerChartConfigs {
@@ -119,13 +120,15 @@ export function useYAxisWidth() {
 	return { yAxisWidth, updateYAxisWidth }
 }
 
-/** Subscribes to the container filter store and returns filtered DataPoints for container charts */
+/** Subscribes to the container filter stores and returns filtered DataPoints for container charts */
 export function useContainerDataPoints(
 	chartConfig: ChartConfig,
 	// biome-ignore lint/suspicious/noExplicitAny: container data records have dynamic keys
 	dataFn: (key: string, data: Record<string, any>) => number | null
 ) {
 	const filter = useStore($containerFilter)
+	const stackFilter = useStore($containerStackFilter)
+	const stacks = useStore($containerStacks)
 	const { dataPoints, filteredKeys } = useMemo(() => {
 		const filterTerms = filter
 			? filter
@@ -135,7 +138,9 @@ export function useContainerDataPoints(
 			: []
 		const filtered = new Set<string>()
 		const points = Object.keys(chartConfig).map((key) => {
-			const isFiltered = filterTerms.length > 0 && !filterTerms.some((term) => key.toLowerCase().includes(term))
+			const isFiltered =
+				(filterTerms.length > 0 && !filterTerms.some((term) => key.toLowerCase().includes(term))) ||
+				(stackFilter.size > 0 && ![...stackFilter].some((stack) => containerInStack(key, stack, stacks)))
 			if (isFiltered) filtered.add(key)
 			return {
 				label: key,
@@ -153,7 +158,7 @@ export function useContainerDataPoints(
 			dataPoints: points as DataPoint<Record<string, any>>[],
 			filteredKeys: filtered,
 		}
-	}, [chartConfig, filter])
+	}, [chartConfig, filter, stackFilter, stacks])
 	return { filter, dataPoints, filteredKeys }
 }
 

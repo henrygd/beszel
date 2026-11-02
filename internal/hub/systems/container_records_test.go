@@ -44,3 +44,27 @@ func TestCreateContainerRecordsPersistsImageUpdateAvailability(t *testing.T) {
 	assert.Equal(t, image, record.Image)
 	assert.False(t, record.UpdateAvailable)
 }
+
+func TestCreateContainerRecordsPersistsStack(t *testing.T) {
+	_, app := newTestSystemWithHub(t)
+
+	const containerID = "abcdef123456"
+
+	stack := func() string {
+		var record struct {
+			Stack string `db:"stack"`
+		}
+		require.NoError(t, app.DB().Select("stack").From("containers").
+			Where(dbx.HashExp{"id": containerID}).One(&record))
+		return record.Stack
+	}
+
+	data := &container.Stats{Id: containerID, Name: "web", Stack: "immich"}
+	require.NoError(t, createContainerRecords(app, []*container.Stats{data}, "system123"))
+	assert.Equal(t, "immich", stack())
+
+	// a container removed from its stack is updated on conflict
+	data.Stack = ""
+	require.NoError(t, createContainerRecords(app, []*container.Stats{data}, "system123"))
+	assert.Equal(t, "", stack())
+}

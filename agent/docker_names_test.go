@@ -141,6 +141,34 @@ func TestDecodeContainerListLabels(t *testing.T) {
 	})
 }
 
+func TestDecodeContainerListStack(t *testing.T) {
+	swarm := `[{"Id":"1","Names":["/a"],"Labels":{"com.docker.stack.namespace":"swarm","com.docker.compose.project":"compose"}}]`
+	compose := `[{"Id":"2","Names":["/b"],"Labels":{"com.docker.compose.project":"compose","k":"v"}}]`
+	none := `[{"Id":"3","Names":["/c"],"Labels":{"k":"v"}}]`
+
+	for _, template := range []string{"", "k"} {
+		t.Run(fmt.Sprintf("template %q", template), func(t *testing.T) {
+			dm := &dockerManager{}
+			if template != "" {
+				tmpl, err := parseContainerNameTemplate(template)
+				require.NoError(t, err)
+				dm.nameTemplate = tmpl
+			}
+			// swarm wins over compose
+			assert.Equal(t, "swarm", decodeList(t, dm, swarm)[0].StackLabels.Stack())
+			// compose alone, and the swarm label does not carry over
+			assert.Equal(t, "compose", decodeList(t, dm, compose)[0].StackLabels.Stack())
+			// no stack labels, and the compose label does not carry over
+			assert.Equal(t, "", decodeList(t, dm, none)[0].StackLabels.Stack())
+		})
+	}
+
+	t.Run("label map is not decoded without a template", func(t *testing.T) {
+		dm := &dockerManager{}
+		assert.Nil(t, decodeList(t, dm, compose)[0].Labels)
+	})
+}
+
 func TestGetDockerStatsNamesContainers(t *testing.T) {
 	var mu sync.Mutex
 	listBody := `[]`

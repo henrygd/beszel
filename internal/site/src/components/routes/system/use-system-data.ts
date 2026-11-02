@@ -10,6 +10,8 @@ import {
 	$allSystemsByName,
 	$chartTime,
 	$containerFilter,
+	$containerStackFilter,
+	$containerStacks,
 	$direction,
 	$maxValues,
 	$systems,
@@ -19,6 +21,7 @@ import {
 import { chartTimeData, listen, parseSemVer } from "@/lib/utils"
 import type {
 	ChartData,
+	ContainerRecord,
 	ContainerStatsRecord,
 	SystemDetailsRecord,
 	SystemInfo,
@@ -98,6 +101,8 @@ export function useSystemData(id: string) {
 			setContainerData([])
 			setDetails({} as SystemDetailsRecord)
 			$containerFilter.set("")
+			$containerStackFilter.set(new Set())
+			$containerStacks.set({})
 		}
 	}, [id])
 
@@ -139,6 +144,28 @@ export function useSystemData(id: string) {
 			})
 			.then(setDetails)
 	}, [system.id])
+
+	// fetch container stacks for the chart stack filter (stacks are not kept in the stats history)
+	useEffect(() => {
+		if (!system.id) {
+			return
+		}
+		pb.collection<ContainerRecord>("containers")
+			.getFullList({
+				fields: "name,stack",
+				filter: pb.filter("system={:system} && stack!=''", { system: system.id }),
+			})
+			.then((items) => {
+				const stacks: Record<string, string> = {}
+				for (const { name, stack } of items) {
+					if (stack) {
+						stacks[name] = stack
+					}
+				}
+				$containerStacks.set(stacks)
+			})
+			.catch(() => {})
+	}, [system])
 
 	// subscribe to realtime metrics if chart time is 1m
 	useEffect(() => {

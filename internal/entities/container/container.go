@@ -32,11 +32,34 @@ type ApiInfo struct {
 	// NetworkSettings *SummaryNetworkSettings
 	// Mounts          []MountPoint
 
+	// StackLabels holds only the labels that name the container's stack, so they can be read
+	// on every poll without allocating a label map.
+	StackLabels StackLabels `json:"Labels"`
+
 	// Set by the agent, not part of the Docker response.
 	// Labels is only filled when CONTAINER_NAME_LABEL is set, read in the same decode pass as the rest.
 	Labels map[string]string `json:"-"`
 	// DisplayName is the name reported to the hub.
 	DisplayName string `json:"-"`
+}
+
+const (
+	SwarmStackLabel     = "com.docker.stack.namespace"
+	ComposeProjectLabel = "com.docker.compose.project"
+)
+
+// Labels that name a container's stack
+type StackLabels struct {
+	SwarmStack     string `json:"com.docker.stack.namespace"`
+	ComposeProject string `json:"com.docker.compose.project"`
+}
+
+// Stack returns the Swarm stack, falling back to the Compose project.
+func (l StackLabels) Stack() string {
+	if l.SwarmStack != "" {
+		return l.SwarmStack
+	}
+	return l.ComposeProject
 }
 
 // Docker container resources from /containers/{id}/stats
@@ -197,6 +220,7 @@ type Stats struct {
 	Image           string       `json:"-" cbor:"8,keyasint"`
 	Ports           string       `json:"-" cbor:"10,keyasint"`
 	UpdateAvailable bool         `json:"u,omitzero" cbor:"11,keyasint,omitzero"`
+	Stack           string       `json:"-" cbor:"12,keyasint,omitzero"`
 	// PrevCpu     [2]uint64    `json:"-"`
 	CpuSystem    uint64       `json:"-"`
 	CpuContainer uint64       `json:"-"`

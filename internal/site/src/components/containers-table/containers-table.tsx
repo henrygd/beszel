@@ -28,8 +28,16 @@ import { Sheet, SheetTitle, SheetHeader, SheetContent, SheetDescription } from "
 import { Dialog, DialogContent, DialogTitle } from "../ui/dialog"
 import { Button } from "@/components/ui/button"
 import { $allSystemsById } from "@/lib/stores"
-import { LoaderCircleIcon, MaximizeIcon, RefreshCwIcon, XIcon } from "lucide-react"
+import { LoaderCircleIcon, MaximizeIcon, RefreshCwIcon, Settings2Icon, XIcon } from "lucide-react"
 import { Separator } from "../ui/separator"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import {
+	GroupByMenuItems,
+	groupingDefaultColumn,
+	isInGroup,
+	mapGroupedRows,
+	useTableGrouping,
+} from "@/components/ui/table-grouping"
 import { $router, Link } from "../router"
 import { listenKeys } from "nanostores"
 import { getPagePath } from "@nanostores/router"
@@ -49,18 +57,21 @@ export default function ContainersTable({ systemId }: { systemId?: string }) {
 	const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
 	const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
 
-	// Hide ports column if no ports are present
+	// Hide ports and stack columns if no container has them
 	useEffect(() => {
 		if (data) {
 			const hasPorts = data.some((container) => container.ports)
+			const hasStack = data.some((container) => container.stack)
 			setColumnVisibility((prev) => {
-				if (prev.ports === hasPorts) {
+				if (prev.ports === hasPorts && prev.stack === hasStack) {
 					return prev
 				}
-				return { ...prev, ports: hasPorts }
+				return { ...prev, ports: hasPorts, stack: hasStack }
 			})
 		}
 	}, [data])
+
+	const grouping = useTableGrouping<ContainerRecord>("group-c", columnVisibility.stack ? ["stack"] : [])
 
 	const [rowSelection, setRowSelection] = useState({})
 	const [globalFilter, setGlobalFilter] = useState("")
@@ -70,7 +81,7 @@ export default function ContainersTable({ systemId }: { systemId?: string }) {
 		function fetchData(systemId?: string) {
 			pb.collection<ContainerRecord>("containers")
 				.getList(0, 2000, {
-					fields: "id,name,image,updatable,ports,cpu,memory,net,health,status,system,updated",
+					fields: "id,name,image,updatable,ports,stack,cpu,memory,net,health,status,system,updated",
 					filter: systemId ? pb.filter("system={:system}", { system: systemId }) : undefined,
 				})
 				.then(({ items }) => {
@@ -129,6 +140,7 @@ export default function ContainersTable({ systemId }: { systemId?: string }) {
 		getSortedRowModel: getSortedRowModel(),
 		getFilteredRowModel: getFilteredRowModel(),
 		getPaginationRowModel: getPaginationRowModel(),
+		...grouping.tableOptions,
 		autoResetPageIndex: false,
 		onPaginationChange,
 		onSortingChange: (updater) => {
@@ -142,6 +154,7 @@ export default function ContainersTable({ systemId }: { systemId?: string }) {
 			sortUndefined: "last",
 			size: 100,
 			minSize: 0,
+			...groupingDefaultColumn,
 		},
 		state: {
 			sorting,
@@ -149,6 +162,7 @@ export default function ContainersTable({ systemId }: { systemId?: string }) {
 			columnVisibility,
 			rowSelection,
 			globalFilter,
+			...grouping.state,
 			pagination,
 		},
 		onGlobalFilterChange: (value) => {
@@ -164,7 +178,9 @@ export default function ContainersTable({ systemId }: { systemId?: string }) {
 			const healthLabel = ContainerHealthLabels[container.health as ContainerHealth] ?? ""
 			const image = container.image ?? ""
 			const ports = container.ports ?? ""
-			const searchString = `${systemName} ${id} ${name} ${healthLabel} ${status} ${image} ${ports}`.toLowerCase()
+			const stack = container.stack ?? ""
+			const searchString =
+				`${systemName} ${id} ${name} ${stack} ${healthLabel} ${status} ${image} ${ports}`.toLowerCase()
 
 			return (filterValue as string)
 				.toLowerCase()
@@ -188,24 +204,45 @@ export default function ContainersTable({ systemId }: { systemId?: string }) {
 							<Trans>Click on a container to view more information.</Trans>
 						</CardDescription>
 					</div>
-					<div className="relative ms-auto w-full max-w-full md:w-64">
-						<Input
-							placeholder={t`Filter...`}
-							value={globalFilter}
-							onChange={(e) => table.setGlobalFilter(e.target.value)}
-							className="ps-4 pe-10 w-full"
-						/>
-						{globalFilter && (
-							<Button
-								type="button"
-								variant="ghost"
-								size="icon"
-								aria-label={t`Clear`}
-								className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 text-muted-foreground"
-								onClick={() => table.setGlobalFilter("")}
-							>
-								<XIcon className="h-4 w-4" />
-							</Button>
+					<div className="flex gap-2 ms-auto w-full max-w-full md:w-auto">
+						<div className="relative w-full md:w-64">
+							<Input
+								placeholder={t`Filter...`}
+								value={globalFilter}
+								onChange={(e) => table.setGlobalFilter(e.target.value)}
+								className="ps-4 pe-10 w-full"
+							/>
+							{globalFilter && (
+								<Button
+									type="button"
+									variant="ghost"
+									size="icon"
+									aria-label={t`Clear`}
+									className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 text-muted-foreground"
+									onClick={() => table.setGlobalFilter("")}
+								>
+									<XIcon className="h-4 w-4" />
+								</Button>
+							)}
+						</div>
+						{columnVisibility.stack && (
+							<DropdownMenu>
+								<DropdownMenuTrigger asChild>
+									<Button aria-label={t`View`} variant="outline" size="icon" className="shrink-0">
+										<Settings2Icon className="size-4 opacity-80" />
+									</Button>
+								</DropdownMenuTrigger>
+								<DropdownMenuContent align="end" className="min-w-48">
+									<GroupByMenuItems
+										options={[{ value: "stack", label: t({ message: "Stack", context: "Docker stack" }) }]}
+										value={grouping.groupBy}
+										onChange={(value) => {
+											grouping.setGroupBy(value)
+											resetPageIndex()
+										}}
+									/>
+								</DropdownMenuContent>
+							</DropdownMenu>
 						)}
 					</div>
 				</div>
@@ -242,7 +279,7 @@ const AllContainersTable = memo(function AllContainersTable({
 				<ContainersTableHead table={table} />
 				<TableBody>
 					{rows.length ? (
-						rows.map((row) => <ContainerTableRow key={row.id} row={row} openSheet={openSheet} />)
+						mapGroupedRows(rows, (row) => <ContainerTableRow key={row.id} row={row} openSheet={openSheet} />)
 					) : (
 						<TableRow>
 							<TableCell colSpan={colLength} className="h-37 text-center pointer-events-none">
@@ -472,10 +509,10 @@ const ContainerTableRow = memo(function ContainerTableRow({
 			className="cursor-pointer transition-opacity"
 			onClick={() => openSheet(row.original)}
 		>
-			{row.getVisibleCells().map((cell) => (
+			{row.getVisibleCells().map((cell, i) => (
 				<TableCell
 					key={cell.id}
-					className="py-0 ps-4.5"
+					className={cn("py-0 ps-4.5", i === 0 && isInGroup(row) && "ps-10")}
 					style={{
 						height: 54,
 						width: cell.column.getSize(),

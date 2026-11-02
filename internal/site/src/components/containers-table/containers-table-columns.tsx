@@ -1,9 +1,10 @@
-import type { Column, ColumnDef } from "@tanstack/react-table"
+import type { AggregationFn, Column, ColumnDef, Row } from "@tanstack/react-table"
 import { Button } from "@/components/ui/button"
 import { cn, decimalString, formatBytes, hourWithSeconds } from "@/lib/utils"
 import type { ContainerRecord } from "@/types"
 import { ContainerHealth, ContainerHealthLabels } from "@/lib/enums"
 import {
+	BoxesIcon,
 	CircleArrowUpIcon,
 	ClockIcon,
 	ContainerIcon,
@@ -15,7 +16,8 @@ import {
 } from "lucide-react"
 import { EthernetIcon, HourglassIcon, SquareArrowRightEnterIcon } from "../ui/icons"
 import { Badge } from "../ui/badge"
-import { t } from "@lingui/core/macro"
+import { GroupNameCell, soloGroupingValue } from "../ui/table-grouping"
+import { plural, t } from "@lingui/core/macro"
 import { $allSystemsById } from "@/lib/stores"
 import { useStore } from "@nanostores/react"
 import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip"
@@ -42,15 +44,38 @@ function getStatusValue(status: string): number {
 	return 0
 }
 
+// Health ordered from least to most severe, so a stack shows its worst container
+const healthSeverity = [
+	ContainerHealth.None,
+	ContainerHealth.Healthy,
+	ContainerHealth.Starting,
+	ContainerHealth.Unhealthy,
+]
+
+const worstHealth: AggregationFn<ContainerRecord> = (_columnId, leafRows) => {
+	let worst = ContainerHealth.None
+	for (const row of leafRows) {
+		if (healthSeverity.indexOf(row.original.health) > healthSeverity.indexOf(worst)) {
+			worst = row.original.health
+		}
+	}
+	return worst
+}
+
+// Stack rows sort by stack name, containers by their own name
+const rowName = (row: Row<ContainerRecord>) =>
+	row.getIsGrouped() && row.original.stack ? row.original.stack : row.original.name
+
 export const containerChartCols: ColumnDef<ContainerRecord>[] = [
 	{
 		id: "name",
-		sortingFn: (a, b) => a.original.name.localeCompare(b.original.name),
+		sortingFn: (a, b) => rowName(a).localeCompare(rowName(b)),
 		accessorFn: (record) => record.name,
 		header: ({ column }) => <HeaderButton column={column} name={t`Name`} Icon={ContainerIcon} />,
 		cell: ({ getValue }) => {
 			return <span className="ms-1.5 xl:w-48 block truncate">{getValue() as string}</span>
 		},
+		aggregatedCell: ({ row }) => <GroupNameCell row={row} label={row.original.stack} className="xl:w-48" />,
 	},
 	{
 		id: "system",
@@ -70,6 +95,46 @@ export const containerChartCols: ColumnDef<ContainerRecord>[] = [
 			const allSystems = useStore($allSystemsById)
 			return <div className="ms-1 max-w-40 truncate">{allSystems[getValue() as string]?.name ?? ""}</div>
 		},
+		aggregatedCell: ({ row }) => {
+			const allSystems = useStore($allSystemsById)
+			const systemIds = new Set(row.getLeafRows().map((leaf) => leaf.original.system))
+			if (systemIds.size === 1) {
+				const [systemId] = systemIds
+				return <div className="ms-1 max-w-40 truncate">{allSystems[systemId]?.name ?? ""}</div>
+			}
+			return (
+				<div className="ms-1 text-muted-foreground">
+					{plural(systemIds.size, { one: "# system", other: "# systems" })}
+				</div>
+			)
+		},
+	},
+	{
+		id: "stack",
+		accessorFn: (record) => record.stack || undefined,
+		// Containers without a stack get a group of their own, which the table draws as a plain row
+		getGroupingValue: (record) => soloGroupingValue(record.stack, record.id),
+		sortingFn: (a, b) => {
+			const primary = (a.original.stack ?? "").localeCompare(b.original.stack ?? "")
+			if (primary !== 0) {
+				return primary
+			}
+			return a.original.name.localeCompare(b.original.name)
+		},
+		header: ({ column }) => (
+			<HeaderButton column={column} name={t({ message: "Stack", context: "Docker stack" })} Icon={BoxesIcon} />
+		),
+		cell: ({ getValue }) => {
+			const val = getValue() as string | undefined
+			if (!val) {
+				return <div className="ms-1.5 text-muted-foreground">-</div>
+			}
+			return (
+				<span className="ms-1.5 max-w-40 block truncate" title={val}>
+					{val}
+				</span>
+			)
+		},
 	},
 	// {
 	// 	id: "id",
@@ -83,6 +148,7 @@ export const containerChartCols: ColumnDef<ContainerRecord>[] = [
 	{
 		id: "cpu",
 		accessorFn: (record) => record.cpu,
+		aggregationFn: "sum",
 		invertSorting: true,
 		header: ({ column }) => <HeaderButton column={column} name={t`CPU`} Icon={CpuIcon} />,
 		cell: ({ getValue }) => {
@@ -93,6 +159,7 @@ export const containerChartCols: ColumnDef<ContainerRecord>[] = [
 	{
 		id: "memory",
 		accessorFn: (record) => record.memory,
+		aggregationFn: "sum",
 		invertSorting: true,
 		header: ({ column }) => <HeaderButton column={column} name={t`Memory`} Icon={MemoryStickIcon} />,
 		cell: ({ getValue }) => {
@@ -106,6 +173,7 @@ export const containerChartCols: ColumnDef<ContainerRecord>[] = [
 	{
 		id: "net",
 		accessorFn: (record) => record.net,
+		aggregationFn: "sum",
 		invertSorting: true,
 		header: ({ column }) => <HeaderButton column={column} name={t`Net`} Icon={EthernetIcon} />,
 		minSize: 112,
@@ -121,6 +189,7 @@ export const containerChartCols: ColumnDef<ContainerRecord>[] = [
 		id: "health",
 		invertSorting: true,
 		accessorFn: (record) => record.health,
+		aggregationFn: worstHealth,
 		header: ({ column }) => <HeaderButton column={column} name={t`Health`} Icon={ShieldCheckIcon} />,
 		minSize: 121,
 		cell: ({ getValue }) => {
@@ -214,6 +283,7 @@ export const containerChartCols: ColumnDef<ContainerRecord>[] = [
 		id: "updated",
 		invertSorting: true,
 		accessorFn: (record) => record.updated,
+		aggregationFn: "max",
 		header: ({ column }) => <HeaderButton column={column} name={t`Updated`} Icon={ClockIcon} />,
 		cell: ({ getValue }) => {
 			const timestamp = getValue() as number
