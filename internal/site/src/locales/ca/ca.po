@@ -8,7 +8,7 @@ msgstr ""
 "Language: ca\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2026-10-22 17:14\n"
+"PO-Revision-Date: 2026-11-02 22:36\n"
 "Last-Translator: \n"
 "Language-Team: Catalan\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
@@ -1137,7 +1137,7 @@ msgstr "Consum d'energia de la GPU"
 
 #: src/lib/alerts.ts
 msgid "GPU Usage"
-msgstr "Ús de la GPU"
+msgstr "Ús de la CPU"
 
 #: src/components/routes/system/info-bar.tsx
 #: src/components/systems-table/systems-table.tsx
