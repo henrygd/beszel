@@ -9,10 +9,10 @@ import {
 	flexRender,
 	getCoreRowModel,
 	getFilteredRowModel,
+	getPaginationRowModel,
 	getSortedRowModel,
 	useReactTable,
 } from "@tanstack/react-table"
-import { useVirtualizer, type VirtualItem } from "@tanstack/react-virtual"
 import {
 	Activity,
 	Box,
@@ -33,6 +33,7 @@ import {
 	ZapIcon,
 } from "lucide-react"
 import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
+import { DataTablePagination, usePagination } from "@/components/ui/data-table-pagination"
 import LineChartDefault from "@/components/charts/line-chart"
 import ChartTimeSelect from "@/components/charts/chart-time-select"
 import { ChartCard } from "./chart-card"
@@ -64,7 +65,7 @@ import {
 	DropdownMenuSeparator,
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { memo, useCallback, useMemo, useEffect, useRef, useState } from "react"
+import { memo, useCallback, useMemo, useEffect, useState } from "react"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 import { atom } from "nanostores"
 
@@ -115,11 +116,7 @@ function deviceTypeIcon(type: string) {
 	}
 }
 
-export const createColumns = (
-	longestName: string,
-	longestModel: string,
-	longestDevice: string
-): ColumnDef<NutDeviceRecord>[] => [
+export const createColumns = (): ColumnDef<NutDeviceRecord>[] => [
 	{
 		id: "system",
 		accessorFn: (record) => record.system,
@@ -132,14 +129,7 @@ export const createColumns = (
 		header: ({ column }) => <HeaderButton column={column} name={t`System`} Icon={ServerIcon} />,
 		cell: ({ getValue }) => {
 			const allSystems = useStore($allSystemsById)
-			return (
-				<div className="ms-1.5 relative w-fit max-w-44">
-					<span className="invisible block whitespace-nowrap" aria-hidden="true">
-						{longestName}
-					</span>
-					<span className="absolute inset-0 truncate">{allSystems[getValue() as string]?.name ?? ""}</span>
-				</div>
-			)
+			return <div className="ms-1.5 max-w-44 truncate">{allSystems[getValue() as string]?.name ?? ""}</div>
 		},
 	},
 	{
@@ -147,11 +137,8 @@ export const createColumns = (
 		sortingFn: (a, b) => a.original.name.localeCompare(b.original.name),
 		header: ({ column }) => <HeaderButton column={column} name={t`Device`} Icon={Battery} />,
 		cell: ({ getValue }) => (
-			<div className="font-medium ms-1 relative w-fit max-w-44" title={getValue() as string}>
-				<span className="invisible block whitespace-nowrap" aria-hidden="true">
-					{longestDevice}
-				</span>
-				<span className="absolute inset-0 truncate">{getValue() as string}</span>
+			<div className="font-medium ms-1 max-w-44 truncate" title={getValue() as string}>
+				{getValue() as string}
 			</div>
 		),
 	},
@@ -162,11 +149,8 @@ export const createColumns = (
 			<HeaderButton column={column} name={t({ message: "Model", comment: "Device model" })} Icon={Box} />
 		),
 		cell: ({ getValue }) => (
-			<div className="ms-1 relative w-fit max-w-44" title={getValue() as string}>
-				<span className="invisible block whitespace-nowrap" aria-hidden="true">
-					{longestModel}
-				</span>
-				<span className="absolute inset-0 truncate">{getValue() as string}</span>
+			<div className="ms-1 max-w-44 truncate" title={getValue() as string}>
+				{getValue() as string}
 			</div>
 		),
 	},
@@ -281,31 +265,7 @@ export default function NutTable({ systemId }: { systemId?: string }) {
 	const [sheetOpen, setSheetOpen] = useState(false)
 	const [rowActionState, setRowActionState] = useState<{ type: "refresh" | "delete"; id: string } | null>(null)
 	const [globalFilter, setGlobalFilter] = useState("")
-	const allSystems = useStore($allSystemsById)
-
-	const { longestName, longestModel, longestDevice } = useMemo(() => {
-		const result = { longestName: "", longestModel: "", longestDevice: "" }
-		if (!nutDevices || Object.keys(allSystems).length === 0) {
-			return result
-		}
-		const seenSystems = new Set<string>()
-		for (const device of nutDevices) {
-			if (!systemId && !seenSystems.has(device.system)) {
-				seenSystems.add(device.system)
-				const name = allSystems[device.system]?.name ?? ""
-				if (name.length > result.longestName.length) {
-					result.longestName = name
-				}
-			}
-			if ((device.model ?? "").length > result.longestModel.length) {
-				result.longestModel = device.model ?? ""
-			}
-			if ((device.name ?? "").length > result.longestDevice.length) {
-				result.longestDevice = device.name ?? ""
-			}
-		}
-		return result
-	}, [nutDevices, systemId, allSystems])
+	const { pagination, onPaginationChange, resetPageIndex } = usePagination()
 
 	const openSheet = (device: NutDeviceRecord) => {
 		setActiveDeviceId(device.id)
@@ -466,27 +426,37 @@ export default function NutTable({ systemId }: { systemId?: string }) {
 	)
 
 	const tableColumns = useMemo(() => {
-		const columns = createColumns(longestName, longestModel, longestDevice)
+		const columns = createColumns()
 		const baseColumns = systemId ? columns.filter((col) => col.id !== "system") : columns
 		return isReadOnlyUser() ? baseColumns : [...baseColumns, actionColumn]
-	}, [systemId, actionColumn, longestName, longestModel, longestDevice])
+	}, [systemId, actionColumn])
 
 	const table = useReactTable({
 		data: nutDevices || ([] as NutDeviceRecord[]),
 		columns: tableColumns,
-		onSortingChange: setSorting,
+		onSortingChange: (updater) => {
+			setSorting(updater)
+			resetPageIndex()
+		},
 		onColumnFiltersChange: setColumnFilters,
 		getCoreRowModel: getCoreRowModel(),
 		getSortedRowModel: getSortedRowModel(),
 		getFilteredRowModel: getFilteredRowModel(),
+		getPaginationRowModel: getPaginationRowModel(),
+		autoResetPageIndex: false,
+		onPaginationChange,
 		onRowSelectionChange: setRowSelection,
 		state: {
 			sorting,
 			columnFilters,
 			rowSelection,
 			globalFilter,
+			pagination,
 		},
-		onGlobalFilterChange: setGlobalFilter,
+		onGlobalFilterChange: (value) => {
+			setGlobalFilter(value)
+			resetPageIndex()
+		},
 		globalFilterFn: (row, _columnId, filterValue) => {
 			const device = row.original
 			const systemName = $allSystemsById.get()[device.system]?.name ?? ""
@@ -522,7 +492,7 @@ export default function NutTable({ systemId }: { systemId?: string }) {
 							<Input
 								placeholder={t`Filter...`}
 								value={globalFilter}
-								onChange={(event) => setGlobalFilter(event.target.value)}
+								onChange={(event) => table.setGlobalFilter(event.target.value)}
 								className="px-4 w-full max-w-full md:w-64"
 							/>
 							{globalFilter && (
@@ -532,7 +502,7 @@ export default function NutTable({ systemId }: { systemId?: string }) {
 									size="icon"
 									aria-label={t`Clear`}
 									className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 text-muted-foreground"
-									onClick={() => setGlobalFilter("")}
+									onClick={() => table.setGlobalFilter("")}
 								>
 									<XIcon className="h-4 w-4" />
 								</Button>
@@ -547,6 +517,7 @@ export default function NutTable({ systemId }: { systemId?: string }) {
 					data={nutDevices}
 					openSheet={openSheet}
 				/>
+				<DataTablePagination table={table} showSelected={false} />
 			</Card>
 			<DeviceSheet deviceId={activeDeviceId} open={sheetOpen} onOpenChange={setSheetOpen} />
 		</div>
@@ -566,48 +537,24 @@ const NutDevicesTable = memo(function NutDevicesTable({
 	data: NutDeviceRecord[] | undefined
 	openSheet: (device: NutDeviceRecord) => void
 }) {
-	const scrollRef = useRef<HTMLDivElement>(null)
-
-	const virtualizer = useVirtualizer<HTMLDivElement, HTMLTableRowElement>({
-		count: rows.length,
-		estimateSize: () => 65,
-		getScrollElement: () => scrollRef.current,
-		overscan: 5,
-	})
-	const virtualRows = virtualizer.getVirtualItems()
-
-	const paddingTop = Math.max(0, virtualRows[0]?.start ?? 0 - virtualizer.options.scrollMargin)
-	const paddingBottom = Math.max(0, virtualizer.getTotalSize() - (virtualRows[virtualRows.length - 1]?.end ?? 0))
-
 	return (
-		<div
-			className={cn(
-				"h-min max-h-[calc(100dvh-17rem)] max-w-full relative overflow-auto rounded-md border",
-				(!rows.length || rows.length > 2) && "min-h-50"
-			)}
-			ref={scrollRef}
-		>
-			<div style={{ height: `${virtualizer.getTotalSize() + 48}px`, paddingTop, paddingBottom }}>
-				<table className="w-full text-sm text-nowrap">
-					<NutTableHead table={table} />
-					<TableBody>
-						{rows.length ? (
-							virtualRows.map((virtualRow) => {
-								const row = rows[virtualRow.index]
-								return <NutDeviceTableRow key={row.id} row={row} virtualRow={virtualRow} openSheet={openSheet} />
-							})
-						) : (
-							<TableCell colSpan={colLength} className="h-37 text-center pointer-events-none">
-								{data ? (
-									<Trans>No results.</Trans>
-								) : (
-									<LoaderCircleIcon className="animate-spin size-10 opacity-60 mx-auto" />
-								)}
-							</TableCell>
-						)}
-					</TableBody>
-				</table>
-			</div>
+		<div className="max-w-full relative overflow-auto rounded-md border">
+			<table className="w-full text-sm text-nowrap">
+				<NutTableHead table={table} />
+				<TableBody>
+					{rows.length ? (
+						rows.map((row) => <NutDeviceTableRow key={row.id} row={row} openSheet={openSheet} />)
+					) : (
+						<TableCell colSpan={colLength} className="h-37 text-center pointer-events-none">
+							{data ? (
+								<Trans>No results.</Trans>
+							) : (
+								<LoaderCircleIcon className="animate-spin size-10 opacity-60 mx-auto" />
+							)}
+						</TableCell>
+					)}
+				</TableBody>
+			</table>
 		</div>
 	)
 })
@@ -630,11 +577,9 @@ function NutTableHead({ table }: { table: TableType<NutDeviceRecord> }) {
 
 const NutDeviceTableRow = memo(function NutDeviceTableRow({
 	row,
-	virtualRow,
 	openSheet,
 }: {
 	row: Row<NutDeviceRecord>
-	virtualRow: VirtualItem
 	openSheet: (device: NutDeviceRecord) => void
 }) {
 	return (
@@ -648,7 +593,7 @@ const NutDeviceTableRow = memo(function NutDeviceTableRow({
 					key={cell.id}
 					className="md:ps-5 py-0"
 					style={{
-						height: virtualRow.size,
+						height: 65,
 					}}
 				>
 					{flexRender(cell.column.columnDef.cell, cell.getContext())}

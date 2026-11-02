@@ -67,8 +67,6 @@ msgstr "{count, plural, one {{countString} хвилина} few {{countString} х
 
 #: src/components/network-monitors-table/network-monitors-columns.tsx
 msgid "{daysLeft, plural, one {# day} other {# days}}"
-msgstr "{daysLeft, plural, one {# день} few {# дні} many {# днів} other {# днів}}"
-
 msgstr ""
 
 #: src/components/routes/system/charts/disk-charts.tsx
@@ -79,10 +77,12 @@ msgstr "Ввід/вивід {diskName}"
 msgid "{numFailed, plural, one {# failed service} other {# failed services}}"
 msgstr "{numFailed, plural, one {# службу не запущено} few {# служби не запущено} many {# служб не запущено} other {# служб не запущено}}"
 
+#: src/components/routes/system/nut-table.tsx
+msgid "{power} (estimated)"
+msgstr ""
+
 #: src/components/active-alerts.tsx
 msgid "{systemCount, plural, one {Across # system} other {Across # systems}}"
-msgstr "{systemCount, plural, one {У # системі} few {У # системах} many {У # системах} other {У # системах}}"
-
 msgstr ""
 
 #: src/components/routes/system/info-bar.tsx
@@ -167,8 +167,6 @@ msgstr "Активний стан"
 
 #: src/components/network-monitors-table/monitor-dialog.tsx
 msgid "Add"
-msgstr "Додати"
-
 msgstr ""
 
 #: src/components/network-monitors-table/monitor-dialog.tsx
@@ -258,13 +256,13 @@ msgstr "Ви впевнені?"
 msgid "Automatic copy requires a secure context."
 msgstr "Автоматичне копіювання вимагає безпечного контексту."
 
-#: src/components/routes/system/storage-pools-table.tsx
-msgctxt "Disk space available"
+#. Package version available to install
+#: src/components/routes/system/package-updates-table.tsx
 msgid "Available"
 msgstr "Доступно"
 
-#. Package version available to install
-#: src/components/routes/system/package-updates-table.tsx
+#: src/components/routes/system/storage-pools-table.tsx
+msgctxt "Disk space available"
 msgid "Available"
 msgstr "Доступно"
 
@@ -466,8 +464,6 @@ msgstr "Термін дії сертифіката закінчується {exp
 #. Version change
 #: src/components/routes/system/package-updates-table.tsx
 msgid "Change"
-msgstr "Зміна"
-
 msgstr ""
 
 #: src/components/routes/settings/general.tsx
@@ -523,9 +519,9 @@ msgstr "Помилки контрольної суми"
 
 #: src/components/containers-table/containers-table.tsx
 #: src/components/network-monitors-table/network-monitors-table.tsx
+#: src/components/routes/system/nut-table.tsx
 #: src/components/routes/system/package-updates-table.tsx
-
-#: src/components/routes/system/nut-table.tsx#: src/components/routes/system/smart-table.tsx
+#: src/components/routes/system/smart-table.tsx
 #: src/components/routes/system/storage-pools-table.tsx
 #: src/components/routes/system/storage-pools-table.tsx
 #: src/components/systems-table/systems-table.tsx
@@ -765,10 +761,11 @@ msgid "Cumulative Write"
 msgstr "Сумарний запис"
 
 #. Current package version
-#: src/components/routes/system/package-updates-table.tsx
 #: src/components/routes/system/nut-table.tsx
+#: src/components/routes/system/package-updates-table.tsx
 msgid "Current"
 msgstr "Поточна"
+
 #. Context: Battery state
 #. Context: Battery state
 #: src/components/routes/system/charts/sensor-charts.tsx
@@ -1099,9 +1096,9 @@ msgstr "Вентилятори"
 #: src/components/network-monitors-table/network-monitors-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/system/chart-card.tsx
+#: src/components/routes/system/nut-table.tsx
 #: src/components/routes/system/package-updates-table.tsx
-
-#: src/components/routes/system/nut-table.tsx#: src/components/routes/system/smart-table.tsx
+#: src/components/routes/system/smart-table.tsx
 #: src/components/routes/system/storage-pools-table.tsx
 #: src/components/routes/system/storage-pools-table.tsx
 #: src/components/systemd-table/systemd-table.tsx
@@ -1318,7 +1315,11 @@ msgid "Load"
 msgstr ""
 
 #: src/components/routes/system/nut-table.tsx
-msgid "Load and output power over time"
+#~ msgid "Load and output power over time"
+#~ msgstr ""
+
+#: src/components/routes/system/nut-table.tsx
+msgid "Load and output power over time. Estimated power is calculated from load and rated watts."
 msgstr ""
 
 #: src/components/routes/system/charts/load-average-chart.tsx
@@ -1547,9 +1548,9 @@ msgstr "Результатів не знайдено."
 #: src/components/containers-table/containers-table.tsx
 #: src/components/network-monitors-table/network-monitors-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
+#: src/components/routes/system/nut-table.tsx
 #: src/components/routes/system/package-updates-table.tsx
-
-#: src/components/routes/system/nut-table.tsx#: src/components/routes/system/smart-table.tsx
+#: src/components/routes/system/smart-table.tsx
 #: src/components/systemd-table/systemd-table.tsx
 msgid "No results."
 msgstr "Немає результатів."
@@ -1893,9 +1894,8 @@ msgstr "Отримано"
 #: src/components/containers-table/containers-table.tsx
 #: src/components/logs-display.tsx
 #: src/components/logs-display.tsx
-
-#: src/components/containers-table/containers-table.tsx
-#: src/components/routes/system/nut-table.tsx#: src/components/routes/system/smart-table.tsx
+#: src/components/routes/system/nut-table.tsx
+#: src/components/routes/system/smart-table.tsx
 #: src/components/routes/system/storage-pools-table.tsx
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Refresh"
@@ -2263,8 +2263,8 @@ msgstr "Ціль"
 msgid "target[,protocol[,port[,interval[,server]]]]"
 msgstr "target[,protocol[,port[,interval[,server]]]]"
 
-msgid "target[,protocol[,port[,interval]]]"
-msgstr ""
+#~ msgid "target[,protocol[,port[,interval]]]"
+#~ msgstr ""
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Tasks"
@@ -2524,9 +2524,6 @@ msgstr "Оновити"
 #: src/components/containers-table/containers-table-columns.tsx
 #: src/components/network-monitors-table/network-monitors-columns.tsx
 #: src/components/network-monitors-table/network-monitors-columns.tsx
-
-#: src/components/routes/system/nut-table.tsx#: src/components/routes/system/smart-table.tsx
-
 #: src/components/routes/system/nut-table.tsx
 #: src/components/routes/system/smart-table.tsx
 #: src/components/routes/system/storage-pools-table.tsx
@@ -2625,12 +2622,12 @@ msgstr "Переглянути 200 останніх сповіщень."
 msgid "Visible Fields"
 msgstr "Видимі стовпці"
 
-#: src/components/charts/chart-no-values.tsx
-
 #: src/components/routes/system/nut-table.tsx
 #: src/components/routes/system/nut-table.tsx
 msgid "Voltage"
 msgstr ""
+
+#: src/components/charts/chart-no-values.tsx
 #: src/components/routes/system/chart-card.tsx
 msgid "Waiting for enough records to display"
 msgstr "Очікування достатньої кількості записів для відображення"
@@ -2705,11 +2702,3 @@ msgstr "Так"
 #: src/components/routes/settings/layout.tsx
 msgid "Your user settings have been updated."
 msgstr "Ваші налаштування користувача були оновлені."
-
-#: src/components/routes/system/nut-table.tsx
-msgid "{power} (estimated)"
-msgstr ""
-
-#: src/components/routes/system/nut-table.tsx
-msgid "Load and output power over time. Estimated power is calculated from load and rated watts."
-msgstr ""
