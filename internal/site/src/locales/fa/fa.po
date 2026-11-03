@@ -1627,8 +1627,8 @@ msgid "Password must be at least 8 characters."
 msgstr "رمز عبور باید حداقل ۸ کاراکتر باشد."
 
 #: src/components/login/auth-form.tsx
-msgid "Password must be less than 72 bytes."
-msgstr "رمز عبور باید کمتر از ۷۲ بایت باشد."
+msgid "Password must be less than 71 characters."
+msgstr ""
 
 #: src/components/login/forgot-pass-form.tsx
 msgid "Password reset request received"

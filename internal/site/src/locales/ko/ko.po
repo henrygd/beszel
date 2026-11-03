@@ -1627,8 +1627,8 @@ msgid "Password must be at least 8 characters."
 msgstr "비밀번호는 최소 8자 이상이어야 합니다."
 
 #: src/components/login/auth-form.tsx
-msgid "Password must be less than 72 bytes."
-msgstr "비밀번호는 72 바이트 이하여야 합니다."
+msgid "Password must be less than 71 characters."
+msgstr ""
 
 #: src/components/login/forgot-pass-form.tsx
 msgid "Password reset request received"

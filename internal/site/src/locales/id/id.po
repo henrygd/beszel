@@ -1627,8 +1627,8 @@ msgid "Password must be at least 8 characters."
 msgstr "Kata sandi harus minimal 8 karakter."
 
 #: src/components/login/auth-form.tsx
-msgid "Password must be less than 72 bytes."
-msgstr "Kata sandi harus kurang dari 72 byte."
+msgid "Password must be less than 71 characters."
+msgstr ""
 
 #: src/components/login/forgot-pass-form.tsx
 msgid "Password reset request received"

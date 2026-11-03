@@ -1627,8 +1627,8 @@ msgid "Password must be at least 8 characters."
 msgstr "Het wachtwoord moet minimaal 8 tekens bevatten."
 
 #: src/components/login/auth-form.tsx
-msgid "Password must be less than 72 bytes."
-msgstr "Het wachtwoord moet minder zijn dat 72 bytes."
+msgid "Password must be less than 71 characters."
+msgstr ""
 
 #: src/components/login/forgot-pass-form.tsx
 msgid "Password reset request received"

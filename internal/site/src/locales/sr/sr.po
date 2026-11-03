@@ -1627,8 +1627,8 @@ msgid "Password must be at least 8 characters."
 msgstr "Лозинка мора имати најмање 8 карактера."
 
 #: src/components/login/auth-form.tsx
-msgid "Password must be less than 72 bytes."
-msgstr "Лозинка мора бити мања од 72 бајта."
+msgid "Password must be less than 71 characters."
+msgstr ""
 
 #: src/components/login/forgot-pass-form.tsx
 msgid "Password reset request received"

@@ -1627,8 +1627,8 @@ msgid "Password must be at least 8 characters."
 msgstr "Пароль должен содержать не менее 8 символов."
 
 #: src/components/login/auth-form.tsx
-msgid "Password must be less than 72 bytes."
-msgstr "Пароль должен быть короче 72 символов."
+msgid "Password must be less than 71 characters."
+msgstr ""
 
 #: src/components/login/forgot-pass-form.tsx
 msgid "Password reset request received"
