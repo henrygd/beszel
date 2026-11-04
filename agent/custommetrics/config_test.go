@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"regexp"
 	"runtime"
 	"strings"
 	"testing"
@@ -208,6 +209,43 @@ logging: debug
 	assert.Equal(t, 10, cfg.MaxSeries, "the rest of the config applies")
 	assert.Equal(t, defaultMaxAge, cfg.MaxAge)
 	assert.Equal(t, rooted("/a"), cfg.Sources[0].Path)
+}
+
+// A key with a space is still an unknown key, not a type error that would
+// send its source through the per-source decode and lose the warning.
+func TestParseConfigUnknownKeyWithSpace(t *testing.T) {
+	cfg, warnings, err := parseConfig([]byte(rootedConfig(`metrics:
+  sources:
+    - path: /a
+      max_age: 30s
+      display names: {a: A}
+`)), "/")
+	require.NoError(t, err)
+	assert.Equal(t, []string{"unknown key display names on line 5 ignored"}, warnings)
+	require.Len(t, cfg.Sources, 1)
+	assert.Equal(t, rooted("/a"), cfg.Sources[0].Path)
+	assert.Equal(t, 30*time.Second, cfg.Sources[0].MaxAge, "the source's other settings apply")
+	assert.Nil(t, cfg.Sources[0].DisplayNames)
+}
+
+// If yaml rewords its unknown-key message, the message is logged as it is
+// rather than dropped.
+func TestParseConfigUnrecognisedMessageLogged(t *testing.T) {
+	original := unknownFieldPattern
+	unknownFieldPattern = regexp.MustCompile(`^$`) // matches no yaml message
+	t.Cleanup(func() { unknownFieldPattern = original })
+
+	cfg, warnings, err := parseConfig([]byte(rootedConfig("metrics:\n  sources:\n    - path: /a\n      url: http://localhost:9100/metrics\n")), "/")
+	require.NoError(t, err)
+	assert.Equal(t, []string{"line 4: field url not found in type custommetrics.SourceConfig (ignored)"}, warnings)
+	require.Len(t, cfg.Sources, 1)
+	assert.Equal(t, rooted("/a"), cfg.Sources[0].Path)
+
+	// Also without a metrics section.
+	cfg, warnings, err = parseConfig([]byte("other: 1\n"), "/")
+	require.NoError(t, err)
+	assert.Nil(t, cfg)
+	assert.Equal(t, []string{"line 1: field other not found in type custommetrics.fileConfig (ignored)"}, warnings)
 }
 
 func TestParseConfigInert(t *testing.T) {
