@@ -179,7 +179,12 @@ func (f *configFile) fallback() string {
 	return "keeping the previous one"
 }
 
-var unknownFieldPattern = regexp.MustCompile(`^line (\d+): field (\S+) not found in type \S+$`)
+// unknownFieldPattern reads yaml.v3's message for an unknown key. Matching the
+// text is the only way to name the key: yaml.v3 ignores KnownFields when
+// decoding a single node, so sources cannot be checked one by one. yaml.v3 is
+// frozen at v3.0.1 and the tests pin the text; a message that stops matching
+// is logged as it is (see parseConfig).
+var unknownFieldPattern = regexp.MustCompile(`^line (\d+): field (.+) not found in type \S+$`)
 
 // parseConfig decodes config.yml and applies defaults. Relative source paths
 // resolve against dir. It returns a nil config when there is no metrics
@@ -195,16 +200,23 @@ func parseConfig(data []byte, dir string) (*Config, []string, error) {
 		}
 		// Unknown keys warn; real type errors quarantine one bad source
 		// below instead of rejecting the file.
-		hasReal := false
+		var unmatched []string
 		for _, msg := range typeErr.Errors {
 			m := unknownFieldPattern.FindStringSubmatch(msg)
 			if m == nil {
-				hasReal = true
+				unmatched = append(unmatched, msg)
 				continue
 			}
 			warnings = append(warnings, fmt.Sprintf("unknown key %s on line %s ignored", m[2], m[1]))
 		}
-		if hasReal {
+		if len(unmatched) > 0 {
+			// Unless a skipped source accounts for them, the messages the
+			// pattern does not recognise are logged as they are.
+			ignoreUnmatched := func() {
+				for _, msg := range unmatched {
+					warnings = append(warnings, msg+" (ignored)")
+				}
+			}
 			// Top-level shape errors still reject the file; only bad
 			// source blocks are skipped, warning sources[i] and path.
 			var raw fileConfigRaw
@@ -215,9 +227,11 @@ func parseConfig(data []byte, dir string) (*Config, []string, error) {
 				return nil, nil, err
 			}
 			if raw.Metrics == nil {
+				ignoreUnmatched()
 				return nil, warnings, nil
 			}
 			cfg := &Config{MaxSeries: raw.Metrics.MaxSeries, MaxAge: raw.Metrics.MaxAge, Counters: raw.Metrics.Counters}
+			skipped := false
 			for i := range raw.Metrics.Sources {
 				var src SourceConfig
 				if err := raw.Metrics.Sources[i].Decode(&src); err != nil {
@@ -232,9 +246,13 @@ func parseConfig(data []byte, dir string) (*Config, []string, error) {
 					} else {
 						warnings = append(warnings, fmt.Sprintf("sources[%d] skipped: invalid value", i))
 					}
+					skipped = true
 					continue
 				}
 				cfg.Sources = append(cfg.Sources, src)
+			}
+			if !skipped {
+				ignoreUnmatched()
 			}
 			warnings = append(warnings, cfg.normalize(dir)...)
 			return cfg, warnings, nil
