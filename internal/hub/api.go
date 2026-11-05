@@ -16,7 +16,6 @@ import (
 	"github.com/blang/semver"
 	"github.com/henrygd/beszel"
 	"github.com/henrygd/beszel/internal/alerts"
-	systementity "github.com/henrygd/beszel/internal/entities/system"
 	"github.com/henrygd/beszel/internal/ghupdate"
 	"github.com/henrygd/beszel/internal/hub/config"
 	"github.com/henrygd/beszel/internal/hub/systems"
@@ -502,7 +501,9 @@ func (h *Hub) getSystemdLogs(e *core.RequestEvent) error {
 	if err != nil {
 		return e.NotFoundError("", err)
 	}
-	var info systementity.Info
+	var info struct {
+		SystemdLogs bool `json:"jl"`
+	}
 	if err := systemRecord.UnmarshalJSONField("info", &info); err != nil {
 		e.App.Logger().Error("failed to unmarshal system info for systemd logs", "system", systemID, "err", err)
 		return e.JSON(http.StatusOK, map[string]string{"logs": ""})
