@@ -503,7 +503,11 @@ func (h *Hub) getSystemdLogs(e *core.RequestEvent) error {
 		return e.NotFoundError("", err)
 	}
 	var info systementity.Info
-	if err := systemRecord.UnmarshalJSONField("info", &info); err != nil || !info.SystemdLogs {
+	if err := systemRecord.UnmarshalJSONField("info", &info); err != nil {
+		e.App.Logger().Error("failed to unmarshal system info for systemd logs", "system", systemID, "err", err)
+		return e.JSON(http.StatusOK, map[string]string{"logs": ""})
+	}
+	if !info.SystemdLogs {
 		return e.JSON(http.StatusOK, map[string]string{"logs": ""})
 	}
 

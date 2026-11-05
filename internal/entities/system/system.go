@@ -103,6 +103,15 @@ func (b Battery) MarshalJSON() ([]byte, error) {
 	return json.Marshal([2]uint16{uint16(b[0]), uint16(b[1])})
 }
 
+func (b *Battery) UnmarshalJSON(data []byte) error {
+	var arr [2]uint8
+	if err := json.Unmarshal(data, &arr); err != nil {
+		return err
+	}
+	*b = arr
+	return nil
+}
+
 type GPUData struct {
 	Name        string             `json:"n" cbor:"0,keyasint"`
 	Temperature float64            `json:"-"`

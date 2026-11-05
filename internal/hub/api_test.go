@@ -707,6 +707,32 @@ func TestApiRoutesAuthentication(t *testing.T) {
 				})
 			},
 		},
+		{
+			Name:   "GET /systemd/logs - agent with battery and capability proceeds to fetch logs",
+			Method: http.MethodGet,
+			URL:    fmt.Sprintf("/api/beszel/systemd/logs?system=%s&service=nginx.service", system.Id),
+			Headers: map[string]string{
+				"Authorization": userToken,
+			},
+			ExpectedStatus:  500,
+			ExpectedContent: []string{"Something went wrong while processing your request."},
+			TestAppFactory:  testAppFactory,
+			BeforeTestFunc: func(t testing.TB, app *pbTests.TestApp, e *core.ServeEvent) {
+				beszelTests.CreateRecord(app, "systemd_services", map[string]any{
+					"system": system.Id,
+					"name":   "nginx.service",
+					"state":  0,
+					"sub":    1,
+				})
+				sysRecord, err := app.FindRecordById("systems", system.Id)
+				require.NoError(t, err)
+				sysRecord.Set("info", map[string]any{
+					"bat": []int{59, 5},
+					"jl":  true,
+				})
+				require.NoError(t, app.Save(sysRecord))
+			},
+		},
 
 		// Auth Optional Routes - Should work without authentication
 		{
