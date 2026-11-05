@@ -23,33 +23,24 @@ func (noKeyProvidedError) Error() string {
 	return "no key provided: must set -key flag, KEY env var, or KEY_FILE env var. Use 'beszel-agent help' for usage"
 }
 
-// loadKeyMaterial parses inline SSH public key material, falling back to
-// reading it as a file when the input looks like a filesystem path
-// (e.g. `-k` given `/etc/beszel/hub.pub`).
-func loadKeyMaterial(value string) ([]ssh.PublicKey, error) {
-	keys, err := agent.ParseKeys(value)
-	if err == nil {
+// parseKeyOrFile parses inline SSH public key material, falling back to
+// reading it as a file when inline parsing fails.
+func parseKeyOrFile(value string) ([]ssh.PublicKey, error) {
+	keys, parseErr := agent.ParseKeys(value)
+	if parseErr == nil {
 		return keys, nil
 	}
-	if isLikelyFilePath(value) {
-		if pubKey, readErr := os.ReadFile(value); readErr == nil {
-			if fileKeys, parseErr := agent.ParseKeys(string(pubKey)); parseErr == nil {
-				return fileKeys, nil
-			}
-		}
-	}
-	return nil, err
-}
 
-// isLikelyFilePath reports whether the input is an existing file rather than
-// inline key material. Authorized_keys entries always contain spaces between
-// the key type and the base64 body; file paths don't.
-func isLikelyFilePath(value string) bool {
-	if strings.Contains(value, " ") || strings.Contains(value, "\n") {
-		return false
+	data, readErr := os.ReadFile(value)
+	if readErr != nil {
+		return nil, fmt.Errorf("invalid inline key or unreadable key file: %w", errors.Join(parseErr, readErr))
 	}
-	_, err := os.Stat(value)
-	return err == nil
+
+	keys, err := agent.ParseKeys(string(data))
+	if err != nil {
+		return nil, fmt.Errorf("invalid key file %q: %w", value, err)
+	}
+	return keys, nil
 }
 
 // cli options
@@ -151,7 +142,7 @@ func (opts *cmdOptions) parse() bool {
 func (opts *cmdOptions) loadPublicKeys() ([]ssh.PublicKey, error) {
 	// Try command line flag first
 	if opts.key != "" {
-		return loadKeyMaterial(opts.key)
+		return parseKeyOrFile(opts.key)
 	}
 
 	// Try environment variable

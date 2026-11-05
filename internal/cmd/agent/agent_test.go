@@ -160,14 +160,6 @@ func TestLoadPublicKeys(t *testing.T) {
 				"testkey.pub": pubKey,
 			},
 		},
-		{
-			name: "error on missing file path passed to flag",
-			opts: cmdOptions{
-				key: "missing-testkey.pub",
-			},
-			wantErr:     true,
-			errContains: "failed to parse key",
-		},
 	}
 
 	for _, tt := range tests {
@@ -207,6 +199,54 @@ func TestLoadPublicKeys(t *testing.T) {
 			assert.Equal(t, signer.PublicKey().Type(), keys[0].Type())
 		})
 	}
+}
+
+func TestParseKeyOrFile(t *testing.T) {
+	var publicKeys []ssh.PublicKey
+	var keyMaterial []byte
+	for range 2 {
+		pub, _, err := ed25519.GenerateKey(nil)
+		require.NoError(t, err)
+		key, err := ssh.NewPublicKey(pub)
+		require.NoError(t, err)
+		publicKeys = append(publicKeys, key)
+		keyMaterial = append(keyMaterial, ssh.MarshalAuthorizedKey(key)...)
+	}
+
+	t.Run("file path with spaces and multiple keys", func(t *testing.T) {
+		path := filepath.Join(t.TempDir(), "hub keys.pub")
+		require.NoError(t, os.WriteFile(path, keyMaterial, 0600))
+
+		keys, err := parseKeyOrFile(path)
+		require.NoError(t, err)
+		require.Len(t, keys, len(publicKeys))
+		for i, key := range keys {
+			assert.Equal(t, publicKeys[i].Marshal(), key.Marshal())
+		}
+	})
+
+	t.Run("invalid file contents", func(t *testing.T) {
+		path := filepath.Join(t.TempDir(), "invalid.pub")
+		require.NoError(t, os.WriteFile(path, []byte("invalid-key-data"), 0600))
+
+		_, err := parseKeyOrFile(path)
+		require.Error(t, err)
+		assert.Contains(t, err.Error(), "invalid key file")
+		assert.Contains(t, err.Error(), path)
+		assert.Contains(t, err.Error(), "failed to parse key: invalid-key-data")
+	})
+
+	t.Run("missing file preserves read error", func(t *testing.T) {
+		path := filepath.Join(t.TempDir(), "missing.pub")
+
+		_, err := parseKeyOrFile(path)
+		require.Error(t, err)
+		assert.ErrorIs(t, err, os.ErrNotExist)
+		assert.Contains(t, err.Error(), "failed to parse key")
+		var pathErr *os.PathError
+		require.ErrorAs(t, err, &pathErr)
+		assert.Equal(t, path, pathErr.Path)
+	})
 }
 
 func TestIsBenignStartupError(t *testing.T) {
