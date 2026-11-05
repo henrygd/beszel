@@ -102,6 +102,8 @@ export interface SystemStats {
 	cpub?: number[]
 	/** per-core cpu usage [CPU0..] (0-100 integers) */
 	cpus?: number[]
+	/** per-core CPU frequency (GHz) */
+	cf?: number[]
 	/** load average */
 	la?: [number, number, number]
 	/** memory bytes [total, used, buffer + cache, zfs arc] */
@@ -524,6 +526,7 @@ export interface SystemDetailsRecord extends RecordModel {
 	os_name: string
 	memory: number
 	podman: boolean
+	cpu_mhz?: number
 }
 
 export interface SmartDeviceRecord extends RecordModel {

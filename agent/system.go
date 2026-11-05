@@ -81,9 +81,10 @@ func (a *Agent) refreshSystemDetails() {
 		}
 	}
 
-	// cpu model
+	// cpu model and base clock
 	if info, err := cpu.Info(); err == nil && len(info) > 0 {
 		a.systemDetails.CpuModel = info[0].ModelName
+		a.systemDetails.CpuMHz = getCpuBaseClockMHz()
 		a.systemDetails.Sockets = cpuSockets(info)
 	}
 	// gopsutil doesn't parse the "cpu model" field from /proc/cpuinfo, which
@@ -187,6 +188,9 @@ func (a *Agent) getSystemStats(cacheTimeMs uint16) system.Stats {
 			systemStats.CpuCoresUsage = perCoreUsage
 		}
 	}
+
+	// per-core cpu frequencies (Linux sysfs, nil on other platforms)
+	systemStats.CpuFreqs = getCpuFrequencies()
 
 	// load average
 	if avgstat, err := load.Avg(); err == nil {

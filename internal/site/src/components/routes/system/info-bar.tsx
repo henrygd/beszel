@@ -66,6 +66,7 @@ export default function InfoBar({
 		const osName = details?.os_name
 		const arch = details?.arch
 		const memory = details?.memory
+		const cpuMHz = details?.cpu_mhz
 
 		const osInfo = {
 			[Os.Linux]: {
@@ -106,7 +107,7 @@ export default function InfoBar({
 				value: sockets > 1 ? `${sockets}x ${cpuModel}` : cpuModel,
 				Icon: CpuIcon,
 				hide: !cpuModel,
-				label: `${plural(cores, { one: "# core", other: "# cores" })} / ${plural(threads, { one: "# thread", other: "# threads" })}${arch ? ` / ${arch}` : ""}`,
+				label: `${plural(cores, { one: "# core", other: "# cores" })} / ${plural(threads, { one: "# thread", other: "# threads" })}${arch ? ` / ${arch}` : ""}${cpuMHz ? ` / ${toFixedFloat(cpuMHz / 1000, 2)} GHz` : ""}`,
 			},
 		] as {
 			value: string | number | undefined
