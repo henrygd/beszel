@@ -23,6 +23,35 @@ func (noKeyProvidedError) Error() string {
 	return "no key provided: must set -key flag, KEY env var, or KEY_FILE env var. Use 'beszel-agent help' for usage"
 }
 
+// loadKeyMaterial parses inline SSH public key material, falling back to
+// reading it as a file when the input looks like a filesystem path
+// (e.g. `-k` given `/etc/beszel/hub.pub`).
+func loadKeyMaterial(value string) ([]ssh.PublicKey, error) {
+	keys, err := agent.ParseKeys(value)
+	if err == nil {
+		return keys, nil
+	}
+	if isLikelyFilePath(value) {
+		if pubKey, readErr := os.ReadFile(value); readErr == nil {
+			if fileKeys, parseErr := agent.ParseKeys(string(pubKey)); parseErr == nil {
+				return fileKeys, nil
+			}
+		}
+	}
+	return nil, err
+}
+
+// isLikelyFilePath reports whether the input is an existing file rather than
+// inline key material. Authorized_keys entries always contain spaces between
+// the key type and the base64 body; file paths don't.
+func isLikelyFilePath(value string) bool {
+	if strings.Contains(value, " ") || strings.Contains(value, "\n") {
+		return false
+	}
+	_, err := os.Stat(value)
+	return err == nil
+}
+
 // cli options
 type cmdOptions struct {
 	key    string // key is the public key(s) for SSH authentication.
@@ -54,7 +83,7 @@ func (opts *cmdOptions) parse() bool {
 	}
 
 	// pflag.CommandLine.ParseErrorsWhitelist.UnknownFlags = true
-	pflag.StringVarP(&opts.key, "key", "k", "", "Public key(s) for SSH authentication")
+	pflag.StringVarP(&opts.key, "key", "k", "", "Public key(s) for SSH authentication: inline key material or path to a key file")
 	pflag.StringVarP(&opts.listen, "listen", "l", "", "Address or port to listen on")
 	pflag.StringVarP(&opts.hubURL, "url", "u", "", "URL of the Beszel hub")
 	pflag.StringVarP(&opts.token, "token", "t", "", "Token to use for authentication")
@@ -122,7 +151,7 @@ func (opts *cmdOptions) parse() bool {
 func (opts *cmdOptions) loadPublicKeys() ([]ssh.PublicKey, error) {
 	// Try command line flag first
 	if opts.key != "" {
-		return agent.ParseKeys(opts.key)
+		return loadKeyMaterial(opts.key)
 	}
 
 	// Try environment variable

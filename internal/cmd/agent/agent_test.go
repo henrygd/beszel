@@ -150,6 +150,24 @@ func TestLoadPublicKeys(t *testing.T) {
 			},
 			wantErr: true,
 		},
+		{
+			name: "load key from file path passed to flag",
+			opts: cmdOptions{
+				// rewritten to the real temporary path below
+				key: "testkey.pub",
+			},
+			setupFiles: map[string][]byte{
+				"testkey.pub": pubKey,
+			},
+		},
+		{
+			name: "error on missing file path passed to flag",
+			opts: cmdOptions{
+				key: "missing-testkey.pub",
+			},
+			wantErr:     true,
+			errContains: "failed to parse key",
+		},
 	}
 
 	for _, tt := range tests {
@@ -163,6 +181,9 @@ func TestLoadPublicKeys(t *testing.T) {
 					require.NoError(t, err)
 					if tt.envVars != nil {
 						tt.envVars["KEY_FILE"] = path
+					}
+					if tt.opts.key == name {
+						tt.opts.key = path
 					}
 				}
 			}
