@@ -50,6 +50,25 @@ func TestCreateFirstUserPasswordMaxLength(t *testing.T) {
 		require.Equal(t, http.StatusOK, status)
 		require.Contains(t, body, "User created")
 	})
+
+	// 37 'é' runes = 37 characters but 74 bytes in UTF-8: it passes the
+	// 71-character field max, then bcrypt rejects passwords over 72 bytes.
+	t.Run("37 multibyte chars (74 bytes) exceeds the bcrypt limit", func(t *testing.T) {
+		h, invoke := newHub(t)
+		defer h.Cleanup()
+		status, body := invoke(strings.Repeat("é", 37))
+		require.Equal(t, http.StatusBadRequest, status)
+		require.Contains(t, body, "must be less than 72 bytes")
+	})
+
+	// 36 'é' runes = 72 bytes exactly: still within the bcrypt limit.
+	t.Run("36 multibyte chars (exactly 72 bytes) succeeds", func(t *testing.T) {
+		h, invoke := newHub(t)
+		defer h.Cleanup()
+		status, body := invoke(strings.Repeat("é", 36))
+		require.Equal(t, http.StatusOK, status)
+		require.Contains(t, body, "User created")
+	})
 }
 
 type blockedBody struct {
