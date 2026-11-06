@@ -379,6 +379,58 @@ func TestUpdateAmdGpuDataWithFakeSysfs(t *testing.T) {
 	}
 }
 
+func TestAmdGpuIsUnifiedMemoryCaching(t *testing.T) {
+	const gib = 1 << 30
+	metrics := func(formatRevision byte) []byte { return []byte{0x68, 0x00, formatRevision, 0x00} }
+
+	t.Run("gpu_metrics result is cached", func(t *testing.T) {
+		devicePath := t.TempDir()
+		metricsPath := filepath.Join(devicePath, "gpu_metrics")
+		require.NoError(t, os.WriteFile(metricsPath, metrics(2), 0o644))
+
+		assert.True(t, amdGpuIsUnifiedMemory(devicePath, 8*gib))
+		// the table is not read again, so a changed (or removed) file has no effect
+		require.NoError(t, os.WriteFile(metricsPath, metrics(1), 0o644))
+		assert.True(t, amdGpuIsUnifiedMemory(devicePath, 8*gib))
+		require.NoError(t, os.Remove(metricsPath))
+		assert.True(t, amdGpuIsUnifiedMemory(devicePath, 8*gib))
+	})
+
+	t.Run("missing gpu_metrics caches size fallback", func(t *testing.T) {
+		devicePath := t.TempDir()
+		assert.True(t, amdGpuIsUnifiedMemory(devicePath, gib))
+		assert.False(t, amdGpuIsUnifiedMemory(devicePath, 8*gib), "size is re-evaluated each poll")
+		// a table appearing later is ignored: the fallback was cached
+		require.NoError(t, os.WriteFile(filepath.Join(devicePath, "gpu_metrics"), metrics(2), 0o644))
+		assert.False(t, amdGpuIsUnifiedMemory(devicePath, 8*gib))
+	})
+
+	t.Run("failed vram read is not taken for an apu", func(t *testing.T) {
+		assert.False(t, amdGpuIsUnifiedMemory(t.TempDir(), 0))
+	})
+
+	t.Run("transient read failure is retried", func(t *testing.T) {
+		devicePath := t.TempDir()
+		metricsPath := filepath.Join(devicePath, "gpu_metrics")
+		// opening a directory succeeds but reading it fails with EISDIR
+		require.NoError(t, os.Mkdir(metricsPath, 0o755))
+		assert.False(t, amdGpuIsUnifiedMemory(devicePath, 8*gib), "falls back to size while unreadable")
+
+		require.NoError(t, os.Remove(metricsPath))
+		require.NoError(t, os.WriteFile(metricsPath, metrics(2), 0o644))
+		assert.True(t, amdGpuIsUnifiedMemory(devicePath, 8*gib), "table is read again after a failure")
+	})
+
+	t.Run("unknown or short table falls back to size", func(t *testing.T) {
+		for _, data := range [][]byte{metrics(9), {0x68, 0x00}} {
+			devicePath := t.TempDir()
+			require.NoError(t, os.WriteFile(filepath.Join(devicePath, "gpu_metrics"), data, 0o644))
+			assert.True(t, amdGpuIsUnifiedMemory(devicePath, gib))
+			assert.False(t, amdGpuIsUnifiedMemory(devicePath, 8*gib))
+		}
+	})
+}
+
 func TestLookupAmdgpuNameInFile(t *testing.T) {
 	idsPath := filepath.Join("test-data", "amdgpu.ids")
 

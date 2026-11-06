@@ -6,6 +6,8 @@ import (
 	"bufio"
 	"errors"
 	"fmt"
+	"io"
+	"io/fs"
 	"log/slog"
 	"os"
 	"path/filepath"
@@ -106,28 +108,74 @@ func isAmdGpu(cardPath string) bool {
 // gpu_metrics table is taken for an APU (typical carve-out sizes are 512 MiB to 1 GiB).
 const unifiedMemoryMaxVram = 2 << 30
 
+// amdMemoryKind is the cached result of classifying an AMD device's memory.
+type amdMemoryKind uint8
+
+const (
+	amdMemoryUnknown  amdMemoryKind = iota // not classified yet; gpu_metrics is read again on the next poll
+	amdMemoryDiscrete                      // gpu_metrics format revision 1
+	amdMemoryUnified                       // gpu_metrics format revision 2 or 3
+	amdMemoryBySize                        // no usable gpu_metrics table; decide by dedicated VRAM size
+)
+
+// amdMemoryKindCache holds the memory kind per device path, since it never changes for a device.
+var amdMemoryKindCache = struct {
+	sync.Mutex
+	kinds map[string]amdMemoryKind
+}{kinds: make(map[string]amdMemoryKind)}
+
 // amdGpuIsUnifiedMemory reports whether the device shares memory with the CPU (an APU).
+// The gpu_metrics header is read only until it yields a stable answer, which is then cached.
+func amdGpuIsUnifiedMemory(devicePath string, vramTotal float64) bool {
+	amdMemoryKindCache.Lock()
+	kind := amdMemoryKindCache.kinds[devicePath]
+	amdMemoryKindCache.Unlock()
+
+	if kind == amdMemoryUnknown {
+		kind = detectAmdMemoryKind(devicePath)
+		if kind != amdMemoryUnknown {
+			amdMemoryKindCache.Lock()
+			amdMemoryKindCache.kinds[devicePath] = kind
+			amdMemoryKindCache.Unlock()
+		}
+	}
+
+	switch kind {
+	case amdMemoryDiscrete:
+		return false
+	case amdMemoryUnified:
+		return true
+	default:
+		// No gpu_metrics table (older ASICs) or a transient read failure: fall back to the
+		// size of the dedicated VRAM. A failed VRAM read (0) is not taken for an APU.
+		return vramTotal > 0 && vramTotal < unifiedMemoryMaxVram
+	}
+}
+
+// detectAmdMemoryKind classifies a device from its gpu_metrics table.
 //
 // amdgpu exposes the gpu_metrics table in sysfs, whose first four bytes are a
 // metrics_table_header (u16 structure_size, u8 format_revision, u8 content_revision).
 // Format revision 1 is used by discrete cards (gpu_metrics_v1_x), 2 and 3 by APUs
-// (gpu_metrics_v2_x / v3_x). When the table is missing or unreadable (older ASICs),
-// fall back to the size of the dedicated VRAM.
-func amdGpuIsUnifiedMemory(devicePath string, vramTotal float64) bool {
+// (gpu_metrics_v2_x / v3_x). Returns amdMemoryUnknown only for failures that may be
+// transient, so the table is read again on the next poll.
+func detectAmdMemoryKind(devicePath string) amdMemoryKind {
 	header := make([]byte, 4)
-	if f, err := os.Open(filepath.Join(devicePath, "gpu_metrics")); err == nil {
-		n, _ := f.Read(header)
-		f.Close()
-		if n == len(header) {
-			switch header[2] {
-			case 1:
-				return false
-			case 2, 3:
-				return true
-			}
+	n, err := readSysfsHead(filepath.Join(devicePath, "gpu_metrics"), header)
+	switch {
+	case err == nil && n == len(header):
+		switch header[2] {
+		case 1:
+			return amdMemoryDiscrete
+		case 2, 3:
+			return amdMemoryUnified
 		}
+		return amdMemoryBySize
+	case err == nil, errors.Is(err, fs.ErrNotExist), errors.Is(err, syscall.EOPNOTSUPP):
+		// short table, no table, or not supported by this ASIC: none of these change at runtime
+		return amdMemoryBySize
 	}
-	return vramTotal < unifiedMemoryMaxVram
+	return amdMemoryUnknown
 }
 
 // updateAmdGpuData reads GPU metrics from sysfs and updates the GPU data map.
@@ -205,6 +253,34 @@ func readSysfsFloat(path string) (float64, error) {
 		return 0, err
 	}
 	return strconv.ParseFloat(val, 64)
+}
+
+// readSysfsHead reads up to len(buf) bytes from the start of a binary sysfs file,
+// honoring the same backoff as readSysfsFloat. A file shorter than buf is not an error.
+func readSysfsHead(path string, buf []byte) (int, error) {
+	now := time.Now()
+	if !amdSysfsBackoff.allow(path, now) {
+		return 0, errSysfsBackoff
+	}
+	n, err := readFileHead(path, buf)
+	amdSysfsBackoff.record(path, err, time.Since(now), now)
+	if err != nil {
+		slog.Debug("Failed to read sysfs file", "path", path, "error", err)
+	}
+	return n, err
+}
+
+func readFileHead(path string, buf []byte) (int, error) {
+	f, err := os.Open(path)
+	if err != nil {
+		return 0, err
+	}
+	defer f.Close()
+	n, err := io.ReadFull(f, buf)
+	if errors.Is(err, io.EOF) || errors.Is(err, io.ErrUnexpectedEOF) {
+		err = nil
+	}
+	return n, err
 }
 
 const (
