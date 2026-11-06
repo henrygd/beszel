@@ -7,7 +7,10 @@ import (
 	"errors"
 	"fmt"
 	"net"
+	"net/http"
+	"net/http/httptest"
 	"net/url"
+	"strings"
 	"testing"
 	"testing/synctest"
 	"time"
@@ -353,6 +356,64 @@ func TestConnectionManager_ConnectWithRateLimit(t *testing.T) {
 	// This will fail due to no actual server, but should not be rate limited
 	assert.Error(t, err, "Connection should fail but not due to rate limiting")
 	assert.NotContains(t, err.Error(), "already connecting", "Error should not indicate rate limiting")
+}
+
+func TestConnectionManager_PreservesPendingWebSocket(t *testing.T) {
+	for _, verified := range []bool{false, true} {
+		t.Run(fmt.Sprintf("verified=%v", verified), func(t *testing.T) {
+			upgrader := gws.NewUpgrader(&gws.BuiltinEventHandler{}, nil)
+			hub := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				conn, err := upgrader.Upgrade(w, r)
+				if err == nil {
+					go conn.ReadLoop()
+				}
+			}))
+			defer hub.Close()
+
+			cm := newConnectionManager(&Agent{})
+			cm.ctx = t.Context()
+			cm.eventChan = make(chan ConnectionEvent, 1)
+			cm.agent.connectionManager = cm
+			client := &WebSocketClient{agent: cm.agent, hubURL: &url.URL{Host: "test-hub"}, options: &gws.ClientOption{
+				Addr: "ws" + strings.TrimPrefix(hub.URL, "http"),
+			}}
+			cm.wsClient = client
+			defer client.Close()
+			require.NoError(t, cm.startWebSocketConnection())
+			original := client.getConn()
+			require.NotNil(t, original)
+
+			// Reproduce a slow successful dial with the retry ticker ready before auth is processed.
+			client.lastConnectAttempt = time.Now().Add(-11 * time.Second)
+			if verified {
+				client.connMu.Lock()
+				client.hubVerified = true
+				client.connMu.Unlock()
+				cm.sendEvent(WebSocketConnect)
+			}
+			require.NoError(t, cm.startWebSocketConnection())
+			require.Same(t, original, client.getConn(), "retry must preserve the pending socket")
+
+			if verified {
+				cm.handleEvent(<-cm.eventChan)
+				require.Equal(t, WebSocketConnected, cm.getState())
+				return
+			}
+
+			// Authentication failure must still allow another attempt once OnClose clears the socket.
+			require.NoError(t, original.NetConn().Close())
+			select {
+			case event := <-cm.eventChan:
+				require.Equal(t, WebSocketDisconnect, event)
+			case <-time.After(time.Second):
+				t.Fatal("connection close did not notify the manager")
+			}
+			require.Nil(t, client.getConn())
+			require.NoError(t, cm.startWebSocketConnection())
+			require.NotNil(t, client.getConn())
+			require.NotSame(t, original, client.getConn())
+		})
+	}
 }
 
 // TestConnectionManager_StartWithInvalidConfig tests starting with invalid configuration
