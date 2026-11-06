@@ -67,7 +67,7 @@ func detectRestarter() restarter {
 		return &openWRTRestarter{cmd: path}
 	}
 	if path, err := exec.LookPath("service"); err == nil {
-		if runtime.GOOS == "freebsd" {
+		if runtime.GOOS == "freebsd" || runtime.GOOS == "dragonfly" {
 			return &freeBSDRestarter{cmd: path}
 		}
 	}
