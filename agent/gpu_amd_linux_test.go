@@ -265,10 +265,10 @@ func TestUpdateAmdGpuDataWithFakeSysfs(t *testing.T) {
 	tests := []struct {
 		name            string
 		gpuMetrics      []byte // nil: no gpu_metrics file
-		vramUsed        int
-		vramTotal       int
-		gttUsed         int // 0: no gtt files
-		gttTotal        int
+		vramUsed        int64
+		vramTotal       int64
+		gttUsed         int64 // 0: no gtt files
+		gttTotal        int64
 		wantMemoryUsed  float64
 		wantMemoryTotal float64
 	}{
@@ -347,11 +347,11 @@ func TestUpdateAmdGpuDataWithFakeSysfs(t *testing.T) {
 			write("device", "0x1506")
 			write("revision", "0xc1")
 			write("gpu_busy_percent", "25")
-			write("mem_info_vram_used", strconv.Itoa(tt.vramUsed))
-			write("mem_info_vram_total", strconv.Itoa(tt.vramTotal))
+			write("mem_info_vram_used", strconv.FormatInt(tt.vramUsed, 10))
+			write("mem_info_vram_total", strconv.FormatInt(tt.vramTotal, 10))
 			if tt.gttUsed > 0 {
-				write("mem_info_gtt_used", strconv.Itoa(tt.gttUsed))
-				write("mem_info_gtt_total", strconv.Itoa(tt.gttTotal))
+				write("mem_info_gtt_used", strconv.FormatInt(tt.gttUsed, 10))
+				write("mem_info_gtt_total", strconv.FormatInt(tt.gttTotal, 10))
 			}
 			if tt.gpuMetrics != nil {
 				require.NoError(t, os.WriteFile(filepath.Join(devicePath, "gpu_metrics"), tt.gpuMetrics, 0o644))
