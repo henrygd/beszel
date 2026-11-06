@@ -246,6 +246,22 @@ func readCgroupV1CpuSample() (cgroupCpuSample, bool) {
 	return s, true
 }
 
+// containerCpuCount reports assigned CPUs, independently of CPU time quota.
+func containerCpuCount(forceUseCgroup bool) int {
+	if !useCgroup(forceUseCgroup) {
+		return 0
+	}
+	if dir, ok := cgroupV2Dir(); ok {
+		if count := int(cpusetCount(dir)); count > 0 {
+			return count
+		}
+	}
+	if dir := utils.CgroupMountPoint(cgroupMountinfo, "cgroup", "cpuset"); dir != "" {
+		return int(cpusetCount(dir))
+	}
+	return 0
+}
+
 // cpuCgroupCores returns how many CPU cores the cgroup at dir may use: the
 // smallest of the process affinity mask, the cgroup cpuset, and the CPU quota.
 func cpuCgroupCores(dir string) float64 {
