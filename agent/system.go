@@ -194,6 +194,14 @@ func (a *Agent) getSystemStats(cacheTimeMs uint16) system.Stats {
 		systemStats.LoadAvg[1] = utils.TwoDecimals(avgstat.Load5)
 		systemStats.LoadAvg[2] = utils.TwoDecimals(avgstat.Load15)
 		slog.Debug("Load average", "5m", avgstat.Load5, "15m", avgstat.Load15)
+	} else if androidNoProcStat() {
+		// Unrooted Android: /proc/loadavg is SELinux-denied (#2346);
+		// synthesize load averages from the sysinfo(2) syscall.
+		if loads, ok := androidLoadAvg(); ok {
+			systemStats.LoadAvg[0] = utils.TwoDecimals(loads[0])
+			systemStats.LoadAvg[1] = utils.TwoDecimals(loads[1])
+			systemStats.LoadAvg[2] = utils.TwoDecimals(loads[2])
+		}
 	} else {
 		slog.Error("Error getting load average", "err", err)
 	}

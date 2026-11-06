@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"io"
 	"log/slog"
-	"os/exec"
 	"path/filepath"
 	"strconv"
 	"strings"
@@ -107,7 +106,7 @@ func (gm *GPUManager) updateNvtopSnapshots(snapshots []nvtopSnapshot) bool {
 
 // collectNvtopStats runs nvtop loop mode and continuously decodes JSON snapshots.
 func (gm *GPUManager) collectNvtopStats(interval string) error {
-	cmd := exec.Command(nvtopCmd, "-lP", "-d", interval)
+	cmd := safeCommand(nvtopCmd, "-lP", "-d", interval)
 	stdout, err := cmd.StdoutPipe()
 	if err != nil {
 		return err

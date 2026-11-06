@@ -1,0 +1,981 @@
+diff --git a/agent/android_compat.go b/agent/android_compat.go
+new file mode 100644
+index 0000000..7eaaaf5
+--- /dev/null
++++ b/agent/android_compat.go
+@@ -0,0 +1,75 @@
++package agent
++
++// Seccomp-safe executable lookup for Android.
++//
++// Since Go 1.24, exec.LookPath probes executables with the faccessat2
++// syscall (439). Android's seccomp filter only whitelisted that syscall
++// from Android 12 onwards; on older devices (e.g. Android 8) calling it
++// kills the process with SIGSYS: bad system call. The agent's package
++// update manager and GPU tool detection run LookPath at startup, so the
++// agent crashed on boot there.
++//
++// safeLookPath replicates LookPath by scanning PATH with os.Stat, which
++// uses the ancient newfstatat syscall that every Android seccomp filter
++// allows. Behavior matches exec.LookPath closely enough for the agent's
++// "does this tool exist" checks.
++
++import (
++	"io/fs"
++	"os"
++	"os/exec"
++	"path/filepath"
++	"strings"
++)
++
++// safeLookPath searches PATH for an executable file, or verifies a direct
++// path, without using faccessat2. Mirrors os/exec lp_unix.go semantics.
++func safeLookPath(file string) (string, error) {
++	if strings.Contains(file, "/") {
++		if err := androidExecutableCheck(file); err != nil {
++			return "", err
++		}
++		return file, nil
++	}
++	for _, dir := range filepath.SplitList(os.Getenv("PATH")) {
++		if dir == "" {
++			dir = "."
++		}
++		path := filepath.Join(dir, file)
++		if err := androidExecutableCheck(path); err == nil {
++			return path, nil
++		}
++	}
++	return "", fs.ErrNotExist
++}
++
++// androidExecutableCheck reports whether path exists and is a regular,
++// executable file, using only os.Stat (newfstatat).
++func androidExecutableCheck(path string) error {
++	fi, err := os.Stat(path)
++	if err != nil {
++		return err
++	}
++	if fi.IsDir() {
++		return fs.ErrInvalid
++	}
++	if fi.Mode()&0o111 == 0 {
++		return fs.ErrPermission
++	}
++	return nil
++}
++
++// safeCommand is a seccomp-safe exec.Command: it resolves the binary with
++// safeLookPath (os.Stat based) instead of exec.LookPath, whose faccessat2
++// probe kills the process on Android < 12. If the binary cannot be found,
++// behavior defers to exec.Command (the error surfaces on Run, exactly like
++// a missing binary would on a normal Linux host).
++func safeCommand(name string, args ...string) *exec.Cmd {
++	if path, err := safeLookPath(name); err == nil {
++		return &exec.Cmd{
++			Path: path,
++			Args: append([]string{name}, args...),
++		}
++	}
++	return exec.Command(name, args...)
++}
+diff --git a/agent/cpu.go b/agent/cpu.go
+index a433a37..b17b81f 100644
+--- a/agent/cpu.go
++++ b/agent/cpu.go
+@@ -16,9 +16,14 @@ var lastPerCoreCpuTimes = make(map[uint16][]cpu.TimesStat)
+ func init() {
+ 	if times, err := cpu.Times(false); err == nil && len(times) > 0 {
+ 		lastCpuTimes[60000] = times[0]
++	} else if androidNoProcStat() {
++		// Unrooted Android: /proc/stat is SELinux-denied; seed the fallback.
++		androidCpuTimes(false) //nolint:errcheck
+ 	}
+ 	if perCoreTimes, err := cpu.Times(true); err == nil && len(perCoreTimes) > 0 {
+ 		lastPerCoreCpuTimes[60000] = perCoreTimes
++	} else if androidNoProcStat() {
++		androidCpuTimes(true) //nolint:errcheck
+ 	}
+ }
+ 
+@@ -48,6 +53,15 @@ func getCpuMetrics(cacheTimeMs uint16, forceUseCgroup bool) (CpuMetrics, error)
+ 		return metrics, nil
+ 	}
+ 	times, err := cpu.Times(false)
++	if (err != nil || len(times) == 0) && androidNoProcStat() {
++		// Unrooted Android fallback (henrygd/beszel#2346): synthesize
++		// cumulative counters from process ticks or cpufreq residency.
++		if fallback, ferr := androidCpuTimes(false); ferr == nil && len(fallback) > 0 {
++			return cpuMetricsFromTimes(cacheTimeMs, fallback[0]), nil
++		} else if ferr != nil {
++			return CpuMetrics{}, ferr
++		}
++	}
+ 	if err != nil || len(times) == 0 {
+ 		return CpuMetrics{}, err
+ 	}
+@@ -99,6 +113,15 @@ func clampPercent(value float64) float64 {
+ // It uses cached previous measurements for the provided cache interval.
+ func getPerCoreCpuUsage(cacheTimeMs uint16) (system.Uint8Slice, error) {
+ 	perCoreTimes, err := cpu.Times(true)
++	if (err != nil || len(perCoreTimes) == 0) && androidNoProcStat() {
++		// Unrooted Android fallback (henrygd/beszel#2346).
++		if fallback, ferr := androidCpuTimes(true); ferr == nil && len(fallback) > 0 {
++			perCoreTimes = fallback
++			err = nil
++		} else if ferr != nil {
++			return nil, ferr
++		}
++	}
+ 	if err != nil || len(perCoreTimes) == 0 {
+ 		return nil, err
+ 	}
+diff --git a/agent/cpu_fallback.go b/agent/cpu_fallback.go
+new file mode 100644
+index 0000000..4e04928
+--- /dev/null
++++ b/agent/cpu_fallback.go
+@@ -0,0 +1,440 @@
++package agent
++
++// Android fallback CPU accounting for unrooted devices (Termux), where
++// SELinux denies untrusted-app reads of /proc/stat and /proc/loadavg
++// (henrygd/beszel#2346). gopsutil's cpu.Times / load.Avg therefore fail and
++// the agent reports 0% CPU.
++//
++// Two data sources are tried, in order of quality:
++//
++//  1. Process ticks: sum utime+stime of every readable /proc/[pid]/stat,
++//     converted to seconds via USER_HZ. These are genuine busy seconds with
++//     no unit guessing — the same estimation trick Android's toybox `top`
++//     uses when /proc/stat is unreadable. SELinux hides other UID's
++//     processes from an unprivileged app, but for a Termux agent that is
++//     exactly the workload being monitored (the agent itself, sshd,
++//     tailscaled, ...).
++//
++//  2. cpufreq residency ratios: /sys/devices/system/cpu/cpuN/cpufreq/stats/
++//     time_in_state, with busy ≈ 1 - (residency at the lowest frequency /
++//     total residency). Only a fallback: kernels that clock-gate idle cores
++//     stop accumulating time_in_state while the core sleeps, so all
++//     powered-on time counts as busy and the display pegs near 100%.
++//
++// Both results are synthesized into cumulative cpu.TimesStat values so the
++// existing delta logic (cpuMetricsFromTimes / calculateBusy) works unchanged.
++
++import (
++	"errors"
++	"log/slog"
++	"os"
++	"path/filepath"
++	"runtime"
++	"sort"
++	"strconv"
++	"strings"
++	"sync"
++	"syscall"
++	"time"
++
++	"github.com/shirou/gopsutil/v4/cpu"
++)
++
++// Hooks so tests can point at fixture paths / fake clocks.
++var (
++	androidProcStatPath  = "/proc/stat"
++	androidSysCpuRoot    = "/sys/devices/system/cpu"
++	androidProcPidRoot   = "/proc"
++	androidClockNow      = time.Now
++	androidClockTickRate = 100.0 // USER_HZ jiffies per second in /proc/*/stat
++)
++
++// androidNoProcStat is cached: true when /proc/stat is unreadable in this
++// environment (unrooted Android), meaning gopsutil's default source can
++// never work and the fallback should be used.
++var androidNoProcStat = sync.OnceValue(func() bool {
++	if runtime.GOOS != "linux" {
++		return false
++	}
++	_, statErr := os.ReadFile(androidProcStatPath)
++	return statErr != nil
++})
++
++// androidCpuState keeps cumulative counters between samples so each call can
++// produce monotonically increasing TimesStat values, matching gopsutil.
++type androidCpuState struct {
++	cumBusy float64 // cumulative busy seconds (all cores)
++	cumWall float64 // cumulative wall-clock seconds × core count
++	at      time.Time
++}
++
++var (
++	androidMu      sync.Mutex
++	androidTotal   androidCpuState   // for cpu.Times(false)
++	androidPerCore []androidCpuState // per core, for cpu.Times(true)
++)
++
++// androidCpuTimes returns cumulative CPU-time counters synthesized from
++// Android-readable sources, as a drop-in replacement for cpu.Times.
++// perCore mirrors gopsutil semantics: true returns one TimesStat per core.
++// Returns an empty slice on the first call (no delta yet), matching what
++// beszel's baseline-seeding logic expects, and a non-nil error only when no
++// data source works at all.
++func androidCpuTimes(perCore bool) ([]cpu.TimesStat, error) {
++	androidMu.Lock()
++	defer androidMu.Unlock()
++
++	now := androidClockNow()
++	cores := runtime.NumCPU()
++	if cores <= 0 {
++		cores = 1
++	}
++
++	// Sample busy time per core. cpufreq data is per core; the process-tick
++	// strategy yields one aggregate that we split evenly across cores.
++	perCoreBusy := androidSampleBusyPerCore(now, cores)
++	if len(perCoreBusy) == 0 {
++		return nil, errNoAndroidCpuSource
++	}
++
++	if perCore {
++		if len(perCoreBusy) != cores {
++			// Align the per-core baseline with whatever the source exposes
++			// (e.g. some cores lack cpufreq stats).
++			if len(perCoreBusy) == 0 {
++				return nil, errNoAndroidCpuSource
++			}
++			cores = len(perCoreBusy)
++		}
++		return androidBuildPerCore(perCoreBusy, now, cores), nil
++	}
++	return androidBuildTotal(perCoreBusy, now, cores), nil
++}
++
++// errNoAndroidCpuSource is returned when neither cpufreq nor process ticks
++// are readable.
++var errNoAndroidCpuSource = errors.New("no readable CPU data source (cpufreq/time_in_state, /proc/*/stat)")
++
++// androidBuildTotal converts the per-core busy snapshot into a single
++// aggregated cumulative TimesStat.
++func androidBuildTotal(perCoreBusy []float64, now time.Time, cores int) []cpu.TimesStat {
++	var busySum float64
++	for _, b := range perCoreBusy {
++		busySum += b
++	}
++
++	// Baseline per-core list must exist to seed wall time on first call.
++	prevTotal := androidTotal
++	if prevTotal.at.IsZero() {
++		androidTotal = androidCpuState{cumBusy: busySum, cumWall: 0, at: now}
++		return []cpu.TimesStat{}
++	}
++
++	elapsed := now.Sub(prevTotal.at).Seconds()
++	if elapsed <= 0 {
++		return []cpu.TimesStat{}
++	}
++	wallDelta := elapsed * float64(cores)
++	busyDelta := clampAndroid(busySum-prevTotal.cumBusy, wallDelta)
++
++	androidTotal = androidCpuState{
++		cumBusy: prevTotal.cumBusy + busyDelta,
++		cumWall: prevTotal.cumWall + wallDelta,
++		at:      now,
++	}
++	cur := androidTotal
++	return []cpu.TimesStat{{
++		User: cur.cumBusy,
++		Idle: cur.cumWall - cur.cumBusy,
++	}}
++}
++
++// androidBuildPerCore converts the busy snapshot into per-core cumulative
++// TimesStat entries. Cores without cpufreq data get the average busy share.
++func androidBuildPerCore(perCoreBusy []float64, now time.Time, cores int) []cpu.TimesStat {
++	if len(androidPerCore) != cores {
++		// Core count changed (hotplug) or first call: reset baseline.
++		androidPerCore = make([]androidCpuState, cores)
++		for i := range androidPerCore {
++			androidPerCore[i].at = now
++			androidPerCore[i].cumBusy = perCoreBusy[i]
++		}
++		return []cpu.TimesStat{}
++	}
++
++	elapsed := now.Sub(androidPerCore[0].at).Seconds()
++	if elapsed <= 0 {
++		return []cpu.TimesStat{}
++	}
++
++	out := make([]cpu.TimesStat, cores)
++	for i := 0; i < cores; i++ {
++		prev := androidPerCore[i]
++		wallDelta := elapsed
++		busyDelta := clampAndroid(perCoreBusy[i]-prev.cumBusy, wallDelta)
++		androidPerCore[i] = androidCpuState{
++			cumBusy: prev.cumBusy + busyDelta,
++			cumWall: prev.cumWall + wallDelta,
++			at:      now,
++		}
++		cur := androidPerCore[i]
++		out[i] = cpu.TimesStat{
++			User: cur.cumBusy,
++			Idle: cur.cumWall - cur.cumBusy,
++		}
++	}
++	return out
++}
++
++// clampAndroid clamps a delta to [0, max].
++func clampAndroid(delta, max float64) float64 {
++	if delta < 0 {
++		return 0
++	}
++	if delta > max {
++		return max
++	}
++	return delta
++}
++
++// androidLastRaw keeps the previous raw cpufreq counters per core so busy
++// time can be derived from unit-independent ratios instead of absolute
++// counts (whose units and idle-accounting semantics vary by kernel).
++type androidRawSamples struct {
++	total []float64 // cumulative residency across all frequencies
++	min   []float64 // cumulative residency at the lowest frequency
++	ok    bool
++	at    time.Time
++}
++
++var (
++	androidLastRaw androidRawSamples
++	androidCumBusy []float64 // accumulated busy seconds per core
++)
++
++// androidSourceLogged ensures the active fallback source is reported once.
++var androidSourceLogged sync.Once
++
++// androidSampleBusyPerCore reads cumulative busy seconds per core.
++// Returns nil when no source is readable at all.
++func androidSampleBusyPerCore(now time.Time, cores int) []float64 {
++	// Strategy 1: process ticks, aggregated then split evenly. Genuine
++	// busy seconds (utime/stime at USER_HZ), no unit guessing — matches
++	// what toybox top reports in the same environment.
++	if busy, found := androidProcessTicks(); found {
++		androidSourceLogged.Do(func() {
++			slog.Info("android CPU fallback: using process ticks (/proc/[pid]/stat)")
++		})
++		samples := make([]float64, cores)
++		for i := range samples {
++			samples[i] = busy / float64(cores)
++		}
++		return samples
++	}
++
++	// Strategy 2: cpufreq time_in_state residency ratios, per core.
++	dirs := androidCpuDirs()
++	if len(dirs) > 0 {
++		totals := make([]float64, len(dirs))
++		mins := make([]float64, len(dirs))
++		ok := 0
++		for i, dir := range dirs {
++			t, m, got := androidTimeInStateBusy(dir)
++			totals[i], mins[i] = t, m
++			if got {
++				ok++
++			}
++		}
++		if ok > 0 {
++			androidSourceLogged.Do(func() {
++				slog.Info("android CPU fallback: using cpufreq residency ratios")
++			})
++			return androidAccumulateBusy(totals, mins, now)
++		}
++	}
++	return nil
++}
++
++// androidAccumulateBusy converts raw cpufreq residency counters into
++// cumulative busy seconds per core.
++//
++// Absolute time_in_state counts cannot be trusted as seconds: the unit is
++// kernel-dependent (10 ms jiffies on most SoCs, other scales elsewhere) and
++// many kernels accumulate idle time into the current frequency's bucket, so
++// the raw total can equal or exceed wall-clock time (which made the first
++// attempt peg the CPU display at 100%).
++//
++// Instead we use the standard Android frequency-ratio heuristic:
++//
++//	idle fraction ≈ residency at the LOWEST frequency / total residency
++//	busy fraction = 1 - idle fraction
++//
++// The governor parks an idle core at its lowest frequency and raises the
++// frequency under load, so the ratio tracks utilization regardless of the
++// counter unit. Busy seconds = busy fraction × elapsed wall time.
++func androidAccumulateBusy(totals, mins []float64, now time.Time) []float64 {
++	sameShape := androidLastRaw.ok && len(androidLastRaw.total) == len(totals)
++	elapsed := 0.0
++	if sameShape {
++		elapsed = now.Sub(androidLastRaw.at).Seconds()
++		if elapsed <= 0 {
++			// Clock went backwards or sampled too fast; keep prior cumulative.
++			androidLastRaw.total, androidLastRaw.min, androidLastRaw.at = totals, mins, now
++			return androidCumBusy
++		}
++	}
++	if len(androidCumBusy) != len(totals) {
++		androidCumBusy = make([]float64, len(totals))
++	}
++	if sameShape {
++		for i := range totals {
++			dTotal := totals[i] - androidLastRaw.total[i]
++			dMin := mins[i] - androidLastRaw.min[i]
++			usage := androidUsageRatio(dTotal, dMin)
++			androidCumBusy[i] += usage * elapsed
++		}
++	}
++	// First sample: baseline only; cumulative stays where it is and real
++	// deltas begin on the next call, matching the seeding behavior of the
++	// rest of the fallback.
++	androidLastRaw.total, androidLastRaw.min, androidLastRaw.ok, androidLastRaw.at = totals, mins, true, now
++	return androidCumBusy
++}
++
++// androidUsageRatio computes the busy fraction of one core from residency
++// deltas: (total - lowest-freq) / total, clamped to [0,1]. A zero or
++// negative total delta (idle-saturated counter or hotplug gap) reports 0.
++func androidUsageRatio(dTotal, dMin float64) float64 {
++	if dTotal <= 0 {
++		return 0
++	}
++	idle := dMin / dTotal
++	if idle < 0 {
++		idle = 0
++	}
++	if idle > 1 {
++		idle = 1
++	}
++	return 1 - idle
++}
++
++// androidCpuDirs lists /sys/devices/system/cpu/cpuN directories, sorted.
++func androidCpuDirs() []string {
++	entries, err := os.ReadDir(androidSysCpuRoot)
++	if err != nil {
++		return nil
++	}
++	var dirs []string
++	for _, e := range entries {
++		name := e.Name()
++		if !strings.HasPrefix(name, "cpu") {
++			continue
++		}
++		if _, err := strconv.Atoi(strings.TrimPrefix(name, "cpu")); err != nil {
++			continue
++		}
++		dirs = append(dirs, filepath.Join(androidSysCpuRoot, name))
++	}
++	sort.Strings(dirs)
++	return dirs
++}
++
++// androidTimeInStateBusy reads one core's time_in_state file and returns
++// (cumulative residency across all frequencies, cumulative residency at the
++// lowest frequency, found). Units are kernel-internal and deliberately NOT
++// converted to seconds — only ratios of these values are ever used.
++func androidTimeInStateBusy(cpuDir string) (float64, float64, bool) {
++	data, err := os.ReadFile(filepath.Join(cpuDir, "cpufreq", "stats", "time_in_state"))
++	if err != nil {
++		return 0, 0, false
++	}
++	var total, minFreq, minCount float64
++	minFreq = -1
++	found := false
++	for line := range strings.SplitSeq(string(data), "\n") {
++		fields := strings.Fields(line)
++		if len(fields) < 2 {
++			continue
++		}
++		freq, err := strconv.ParseFloat(fields[0], 64)
++		if err != nil {
++			continue
++		}
++		count, err := strconv.ParseFloat(fields[1], 64)
++		if err != nil {
++			continue
++		}
++		total += count
++		if minFreq < 0 || freq < minFreq {
++			minFreq = freq
++			minCount = count
++		}
++		found = true
++	}
++	return total, minCount, found
++}
++
++// androidProcessTicks sums utime+stime (fields 14, 15) across every readable
++// /proc/[pid]/stat, converted to seconds via USER_HZ.
++func androidProcessTicks() (float64, bool) {
++	entries, err := os.ReadDir(androidProcPidRoot)
++	if err != nil {
++		return 0, false
++	}
++	var total float64
++	found := false
++	for _, e := range entries {
++		if !isPidName(e.Name()) {
++			continue
++		}
++		data, err := os.ReadFile(filepath.Join(androidProcPidRoot, e.Name(), "stat"))
++		if err != nil {
++			continue
++		}
++		// The comm field is parenthesized and may contain spaces; split after it.
++		close := strings.LastIndexByte(string(data), ')')
++		if close < 0 {
++			continue
++		}
++		fields := strings.Fields(string(data)[close+1:])
++		// After ')' the first field is state; utime/stime are fields 11/12
++		// (0-based) of the remainder.
++		if len(fields) < 13 {
++			continue
++		}
++		utime, err1 := strconv.ParseFloat(fields[11], 64)
++		stime, err2 := strconv.ParseFloat(fields[12], 64)
++		if err1 != nil || err2 != nil {
++			continue
++		}
++		total += utime + stime
++		found = true
++	}
++	return total / androidClockTickRate, found
++}
++
++// isPidName reports whether a /proc entry name is a numeric PID.
++func isPidName(name string) bool {
++	_, err := strconv.Atoi(name)
++	return err == nil
++}
++
++// androidLoadAvg synthesizes load averages from the sysinfo(2) syscall when
++// /proc/loadavg is unreadable. Kernel loads are fixed-point with
++// SI_LOAD_SHIFT = 16 bits of fraction.
++func androidLoadAvg() ([3]float64, bool) {
++	var si syscall.Sysinfo_t
++	if err := syscall.Sysinfo(&si); err != nil {
++		return [3]float64{}, false
++	}
++	const siLoadShift = 16
++	loads := [3]float64{}
++	for i, raw := range si.Loads {
++		if i > 2 {
++			break
++		}
++		loads[i] = float64(uint64(raw)) / float64(uint64(1)<<siLoadShift)
++	}
++	slog.Debug("androidLoadAvg fallback", "load1", loads[0], "load5", loads[1])
++	return loads, true
++}
+diff --git a/agent/cpu_fallback_test.go b/agent/cpu_fallback_test.go
+new file mode 100644
+index 0000000..0cef673
+--- /dev/null
++++ b/agent/cpu_fallback_test.go
+@@ -0,0 +1,156 @@
++package agent
++
++import (
++	"os"
++	"path/filepath"
++	"testing"
++	"time"
++)
++
++// TestAndroidCpuFallback simulates an unrooted Android environment where
++// /proc/stat is unreadable but process ticks and cpufreq time_in_state work.
++func TestAndroidCpuFallback(t *testing.T) {
++	tmp := t.TempDir()
++
++	// Fixture 1: two CPUs with time_in_state files (arbitrary units).
++	sysRoot := filepath.Join(tmp, "sys")
++	writeTis := func(lo0, hi0, lo1, hi1 int) {
++		vals := [][2]int{{lo0, hi0}, {lo1, hi1}}
++		for i, v := range vals {
++			dir := filepath.Join(sysRoot, "cpu"+string(rune('0'+i)))
++			if err := os.MkdirAll(filepath.Join(dir, "cpufreq", "stats"), 0o755); err != nil {
++				t.Fatal(err)
++			}
++			content := "800000 " + itoa(v[0]) + "\n1800000 " + itoa(v[1]) + "\n"
++			if err := os.WriteFile(filepath.Join(dir, "cpufreq", "stats", "time_in_state"), []byte(content), 0o644); err != nil {
++				t.Fatal(err)
++			}
++		}
++	}
++	// Initial state (baseline is re-seeded later, values are arbitrary).
++	writeTis(600, 400, 1200, 800)
++
++	// Fixture 2: a readable /proc/<pid>/stat with utime=300 stime=100.
++	procRoot := filepath.Join(tmp, "proc")
++	pidDir := filepath.Join(procRoot, "1234")
++	if err := os.MkdirAll(pidDir, 0o755); err != nil {
++		t.Fatal(err)
++	}
++	statLine := "1234 (bash) R 1 1 1 0 0 0 0 0 0 0 0 300 100 0 0 0 0 0 0 0\n"
++	if err := os.WriteFile(filepath.Join(pidDir, "stat"), []byte(statLine), 0o644); err != nil {
++		t.Fatal(err)
++	}
++
++	// /proc/stat unreadable.
++	if err := os.WriteFile(filepath.Join(procRoot, "stat"), []byte(""), 0o000); err != nil {
++		t.Fatal(err)
++	}
++
++	// Swap in fixture paths / fake clock.
++	oldStatPath, oldSysRoot, oldProcRoot := androidProcStatPath, androidSysCpuRoot, androidProcPidRoot
++	oldNow := androidClockNow
++	baseTime := time.Date(2026, 1, 1, 0, 0, 0, 0, time.UTC)
++	tick := 0
++	androidClockNow = func() time.Time {
++		tick++
++		return baseTime.Add(time.Duration(tick) * time.Minute)
++	}
++	resetState := func() {
++		androidMu.Lock()
++		androidTotal = androidCpuState{}
++		androidPerCore = nil
++		androidLastRaw = androidRawSamples{}
++		androidCumBusy = nil
++		androidMu.Unlock()
++	}
++	defer func() {
++		androidProcStatPath, androidSysCpuRoot, androidProcPidRoot = oldStatPath, oldSysRoot, oldProcRoot
++		androidClockNow = oldNow
++		resetState()
++	}()
++	androidProcStatPath, androidSysCpuRoot, androidProcPidRoot = filepath.Join(procRoot, "stat"), sysRoot, procRoot
++
++	// ---- Phase 1: process ticks are the primary source ----
++	// First call seeds the baseline (empty result).
++	first, err := androidCpuTimes(false)
++	if err != nil {
++		t.Fatalf("unexpected error: %v", err)
++	}
++	if len(first) != 0 {
++		t.Fatalf("expected empty baseline, got %d", len(first))
++	}
++
++	// Advance process ticks? No — the fixture pid stat is static; utime+stime
++	// stays 400 jiffies = 4s busy. One minute later (wall = 60s x 2 cores):
++	second, err := androidCpuTimes(false)
++	if err != nil {
++		t.Fatalf("unexpected error: %v", err)
++	}
++	if len(second) != 1 {
++		t.Fatalf("expected 1 aggregate, got %d", len(second))
++	}
++	cur := second[0]
++	if cur.User <= 0 || cur.Idle <= 0 {
++		t.Fatalf("expected positive busy/idle, got %+v", cur)
++	}
++	total := cur.User + cur.Idle
++	pct := cur.User / total * 100
++	// 4s busy of 120s wall = ~3.33%. The cpufreq fixture below (40% busy)
++	// must NOT leak into this number, proving process ticks win.
++	if pct < 2 || pct > 5 {
++		t.Fatalf("expected ~3.3%% busy from process ticks, got %.2f%% (user=%.2fs idle=%.2fs)", pct, cur.User, cur.Idle)
++	}
++
++	// Per-core: two cores. First call seeds the baseline.
++	if _, err := androidCpuTimes(true); err != nil {
++		t.Fatalf("unexpected error: %v", err)
++	}
++	perCore, err := androidCpuTimes(true)
++	if err != nil {
++		t.Fatalf("unexpected error: %v", err)
++	}
++	if len(perCore) != 2 {
++		t.Fatalf("expected 2 cores, got %d", len(perCore))
++	}
++
++	// ---- Phase 2: cpufreq residency-ratio fallback ----
++	// Hide the /proc pid fixture (keep /proc/stat unreadable) so only
++	// cpufreq remains. Advance counters: +1000 total per core, of which
++	// +600 at the lowest frequency => 40% busy over the interval.
++	procBackup := androidProcPidRoot
++	androidProcPidRoot = filepath.Join(tmp, "missing-proc")
++	tick = 0 // reset clock
++	resetState()
++	if _, err := androidCpuTimes(false); err != nil {
++		t.Fatalf("cpufreq fallback failed: %v", err)
++	}
++	writeTis(1200, 800, 1800, 1200)
++	fbTimes, err := androidCpuTimes(false)
++	if err != nil {
++		t.Fatalf("unexpected error: %v", err)
++	}
++	if len(fbTimes) != 1 {
++		t.Fatalf("expected 1 aggregate, got %d", len(fbTimes))
++	}
++	fb := fbTimes[0]
++	if fb.User <= 0 || fb.Idle <= 0 {
++		t.Fatalf("expected positive busy/idle, got %+v", fb)
++	}
++	fbPct := fb.User / (fb.User + fb.Idle) * 100
++	if fbPct < 35 || fbPct > 45 {
++		t.Fatalf("expected ~40%% busy from cpufreq ratios, got %.1f%% (user=%.1fs idle=%.1fs)", fbPct, fb.User, fb.Idle)
++	}
++	androidProcPidRoot = procBackup
++}
++
++func itoa(n int) string {
++	if n == 0 {
++		return "0"
++	}
++	digits := ""
++	for n > 0 {
++		digits = string(rune('0'+n%10)) + digits
++		n /= 10
++	}
++	return digits
++}
+diff --git a/agent/gpu.go b/agent/gpu.go
+index 2655c4f..610a168 100644
+--- a/agent/gpu.go
++++ b/agent/gpu.go
+@@ -7,7 +7,6 @@ import (
+ 	"fmt"
+ 	"log/slog"
+ 	"maps"
+-	"os/exec"
+ 	"regexp"
+ 	"runtime"
+ 	"strconv"
+@@ -189,7 +188,7 @@ const maxLoggedLineLen = 200
+ // more output after it. If the command printed output but none of it was valid, collect
+ // returns errNoValidData with the first rejected line.
+ func (c *gpuCollector) collect() (hasValidData bool, err error) {
+-	cmd := exec.Command(c.name, c.cmdArgs...)
++	cmd := safeCommand(c.name, c.cmdArgs...)
+ 	stdout, err := cmd.StdoutPipe()
+ 	if err != nil {
+ 		return false, err
+@@ -531,26 +530,26 @@ func (gm *GPUManager) discoverGpuCapabilities() gpuCapabilities {
+ 		hasXe:         gm.hasXe(),
+ 		hasIntelSysfs: gm.hasIntelSysfs(),
+ 	}
+-	if _, err := exec.LookPath(nvidiaSmiCmd); err == nil {
++	if _, err := safeLookPath(nvidiaSmiCmd); err == nil {
+ 		caps.hasNvidiaSmi = true
+ 	}
+-	if _, err := exec.LookPath(rocmSmiCmd); err == nil {
++	if _, err := safeLookPath(rocmSmiCmd); err == nil {
+ 		caps.hasRocmSmi = true
+ 	}
+-	if _, err := exec.LookPath(tegraStatsCmd); err == nil {
++	if _, err := safeLookPath(tegraStatsCmd); err == nil {
+ 		caps.hasTegrastats = true
+ 	}
+-	if _, err := exec.LookPath(intelGpuStatsCmd); err == nil {
++	if _, err := safeLookPath(intelGpuStatsCmd); err == nil {
+ 		caps.hasIntelGpuTop = true
+ 	}
+-	if _, err := exec.LookPath(nvtopCmd); err == nil {
++	if _, err := safeLookPath(nvtopCmd); err == nil {
+ 		caps.hasNvtop = true
+ 	}
+ 	if runtime.GOOS == "darwin" {
+ 		if _, err := utils.LookPathHomebrew(macmonCmd); err == nil {
+ 			caps.hasMacmon = true
+ 		}
+-		if _, err := exec.LookPath(powermetricsCmd); err == nil {
++		if _, err := safeLookPath(powermetricsCmd); err == nil {
+ 			caps.hasPowermetrics = true
+ 		}
+ 	}
+diff --git a/agent/gpu_intel.go b/agent/gpu_intel.go
+index 4325768..13e846d 100644
+--- a/agent/gpu_intel.go
++++ b/agent/gpu_intel.go
+@@ -6,7 +6,6 @@ import (
+ 	"fmt"
+ 	"io"
+ 	"log/slog"
+-	"os/exec"
+ 	"strconv"
+ 	"strings"
+ 
+@@ -59,7 +58,7 @@ func (gm *GPUManager) collectIntelStats() (err error) {
+ 	if dev, ok := utils.GetEnv("INTEL_GPU_DEVICE"); ok && dev != "" {
+ 		args = append(args, "-d", dev)
+ 	}
+-	cmd := exec.Command(intelGpuStatsCmd, args...)
++	cmd := safeCommand(intelGpuStatsCmd, args...)
+ 	// Avoid blocking if intel_gpu_top writes to stderr
+ 	cmd.Stderr = io.Discard
+ 	stdout, err := cmd.StdoutPipe()
+diff --git a/agent/gpu_nvtop.go b/agent/gpu_nvtop.go
+index 28136e8..b18df86 100644
+--- a/agent/gpu_nvtop.go
++++ b/agent/gpu_nvtop.go
+@@ -4,7 +4,6 @@ import (
+ 	"encoding/json"
+ 	"io"
+ 	"log/slog"
+-	"os/exec"
+ 	"path/filepath"
+ 	"strconv"
+ 	"strings"
+@@ -107,7 +106,7 @@ func (gm *GPUManager) updateNvtopSnapshots(snapshots []nvtopSnapshot) bool {
+ 
+ // collectNvtopStats runs nvtop loop mode and continuously decodes JSON snapshots.
+ func (gm *GPUManager) collectNvtopStats(interval string) error {
+-	cmd := exec.Command(nvtopCmd, "-lP", "-d", interval)
++	cmd := safeCommand(nvtopCmd, "-lP", "-d", interval)
+ 	stdout, err := cmd.StdoutPipe()
+ 	if err != nil {
+ 		return err
+diff --git a/agent/package_updates.go b/agent/package_updates.go
+index 4e81c37..971734b 100644
+--- a/agent/package_updates.go
++++ b/agent/package_updates.go
+@@ -65,6 +65,14 @@ func newPackageUpdatesManager(dataDir string) *packageUpdatesManager {
+ 	if !enabled {
+ 		return nil
+ 	}
++	if androidNoProcStat() {
++		// Unrooted Android (Termux): exec.Command resolves its binary with
++		// exec.LookPath, which uses the faccessat2 syscall that Android < 12
++		// seccomp filters reject with SIGSYS. Package databases inside
++		// Termux are also not meaningful system-wide, so skip detection.
++		slog.Debug("Package updates disabled: Android without /proc/stat access")
++		return nil
++	}
+ 	name, check := detectPackageManager(dataDir)
+ 	if check == nil {
+ 		return nil
+@@ -166,7 +174,7 @@ func detectPackageManager(dataDir string) (string, packageUpdatesCheck) {
+ }
+ 
+ func commandExists(name string) bool {
+-	_, err := exec.LookPath(name)
++	_, err := safeLookPath(name)
+ 	return err == nil
+ }
+ 
+diff --git a/agent/system.go b/agent/system.go
+index 084ad37..72f8611 100644
+--- a/agent/system.go
++++ b/agent/system.go
+@@ -194,6 +194,14 @@ func (a *Agent) getSystemStats(cacheTimeMs uint16) system.Stats {
+ 		systemStats.LoadAvg[1] = utils.TwoDecimals(avgstat.Load5)
+ 		systemStats.LoadAvg[2] = utils.TwoDecimals(avgstat.Load15)
+ 		slog.Debug("Load average", "5m", avgstat.Load5, "15m", avgstat.Load15)
++	} else if androidNoProcStat() {
++		// Unrooted Android: /proc/loadavg is SELinux-denied (#2346);
++		// synthesize load averages from the sysinfo(2) syscall.
++		if loads, ok := androidLoadAvg(); ok {
++			systemStats.LoadAvg[0] = utils.TwoDecimals(loads[0])
++			systemStats.LoadAvg[1] = utils.TwoDecimals(loads[1])
++			systemStats.LoadAvg[2] = utils.TwoDecimals(loads[2])
++		}
+ 	} else {
+ 		slog.Error("Error getting load average", "err", err)
+ 	}
+diff --git a/agent/update.go b/agent/update.go
+index 0164f5a..9c17591 100644
+--- a/agent/update.go
++++ b/agent/update.go
+@@ -57,16 +57,16 @@ func (f *freeBSDRestarter) Restart() error {
+ }
+ 
+ func detectRestarter() restarter {
+-	if path, err := exec.LookPath("systemctl"); err == nil {
++	if path, err := safeLookPath("systemctl"); err == nil {
+ 		return &systemdRestarter{cmd: path}
+ 	}
+-	if path, err := exec.LookPath("rc-service"); err == nil {
++	if path, err := safeLookPath("rc-service"); err == nil {
+ 		return &openRCRestarter{cmd: path}
+ 	}
+-	if path, err := exec.LookPath("procd"); err == nil {
++	if path, err := safeLookPath("procd"); err == nil {
+ 		return &openWRTRestarter{cmd: path}
+ 	}
+-	if path, err := exec.LookPath("service"); err == nil {
++	if path, err := safeLookPath("service"); err == nil {
+ 		if runtime.GOOS == "freebsd" {
+ 			return &freeBSDRestarter{cmd: path}
+ 		}
+@@ -100,7 +100,7 @@ func Update(useMirror bool) error {
+ 		ghupdate.ColorPrintf(ghupdate.ColorYellow, "Warning: failed to set executable permissions: %v", err)
+ 	}
+ 	// set ownership to beszel:beszel if possible
+-	if chownPath, err := exec.LookPath("chown"); err == nil {
++	if chownPath, err := safeLookPath("chown"); err == nil {
+ 		if err := exec.Command(chownPath, "beszel:beszel", exePath).Run(); err != nil {
+ 			ghupdate.ColorPrintf(ghupdate.ColorYellow, "Warning: failed to set file ownership: %v", err)
+ 		}
+diff --git a/agent/utils/utils.go b/agent/utils/utils.go
+index 8029b2d..8147329 100644
+--- a/agent/utils/utils.go
++++ b/agent/utils/utils.go
+@@ -4,9 +4,9 @@ package utils
+ import (
+ 	"fmt"
+ 	"io"
++	"io/fs"
+ 	"math"
+ 	"os"
+-	"os/exec"
+ 	"path/filepath"
+ 	"runtime"
+ 	"strconv"
+@@ -95,9 +95,47 @@ func ReadUintFile(path string) (uint64, bool) {
+ 	return parsed, true
+ }
+ 
++// safeLookPathHomebrewExec is a seccomp-safe replacement for exec.LookPath:
++// Android seccomp filters (Android < 12) kill processes that issue the
++// faccessat2 syscall which Go >= 1.24 uses inside exec.LookPath. Scanning
++// PATH with os.Stat (newfstatat) is safe on every Android version.
++func safeLookPathHomebrewExec(file string) (string, error) {
++	if strings.Contains(file, "/") {
++		if err := statExecutable(file); err != nil {
++			return "", err
++		}
++		return file, nil
++	}
++	for _, dir := range filepath.SplitList(os.Getenv("PATH")) {
++		if dir == "" {
++			dir = "."
++		}
++		path := filepath.Join(dir, file)
++		if err := statExecutable(path); err == nil {
++			return path, nil
++		}
++	}
++	return "", fs.ErrNotExist
++}
++
++// statExecutable reports whether path is a regular executable file.
++func statExecutable(path string) error {
++	fi, err := os.Stat(path)
++	if err != nil {
++		return err
++	}
++	if fi.IsDir() {
++		return fs.ErrInvalid
++	}
++	if fi.Mode()&0o111 == 0 {
++		return fs.ErrPermission
++	}
++	return nil
++}
++
+ // LookPathHomebrew is like exec.LookPath but also checks Homebrew paths.
+ func LookPathHomebrew(file string) (string, error) {
+-	foundPath, lookPathErr := exec.LookPath(file)
++	foundPath, lookPathErr := safeLookPathHomebrewExec(file)
+ 	if lookPathErr == nil {
+ 		return foundPath, nil
+ 	}
