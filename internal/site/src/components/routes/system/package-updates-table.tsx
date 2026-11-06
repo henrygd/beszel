@@ -102,7 +102,17 @@ function getColumns(securityKnown: boolean): ColumnDef<PackageUpdateRow>[] {
 					Icon={PackageIcon}
 				/>
 			),
-			cell: ({ getValue }) => <span className="ms-1.5 block">{getValue() as string}</span>,
+			cell: ({ row }) =>
+				row.original.phased ? (
+					<span className="ms-1.5 flex items-center gap-1.5">
+						{row.original.name}
+						<Badge variant="secondary">
+							<Trans comment="Held back by a phased update rollout">Phased</Trans>
+						</Badge>
+					</span>
+				) : (
+					<span className="ms-1.5 block">{row.original.name}</span>
+				),
 		},
 		{
 			id: "current",
@@ -204,6 +214,7 @@ export default function PackageUpdatesTable({ systemId, counts }: { systemId: st
 		[data]
 	)
 	const securityKnown = !!data?.securityKnown
+	const phasedCount = rows.filter((pkg) => pkg.phased).length
 	const columns = useMemo(() => getColumns(securityKnown), [securityKnown])
 
 	const table = useReactTable({
@@ -257,6 +268,12 @@ export default function PackageUpdatesTable({ systemId, counts }: { systemId: st
 								</>
 							)}
 							<Trans>Total: {rows.length}</Trans>
+							{phasedCount > 0 && (
+								<>
+									<Separator orientation="vertical" className="h-4 mx-2 bg-primary/40" />
+									<Trans comment="Held back by a phased update rollout">Phased: {phasedCount}</Trans>
+								</>
+							)}
 							{securityKnown && (
 								<>
 									<Separator orientation="vertical" className="h-4 mx-2 bg-primary/40" />

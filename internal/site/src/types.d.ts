@@ -233,6 +233,8 @@ export interface PackageUpdate {
 	current?: string
 	available: string
 	security?: boolean
+	/** true if the package is held back by a phased update rollout */
+	phased?: boolean
 }
 
 export interface PackageUpdates {
