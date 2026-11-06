@@ -98,6 +98,10 @@ func (a *Agent) refreshSystemDetails() {
 	if threads == 0 {
 		threads, _ = cpu.Counts(true)
 	}
+	// Container cpusets describe assigned logical CPUs; Docker may report a stale count.
+	if count := containerCpuCount(a.forceUseCgroup); count > 0 {
+		threads = count
+	}
 	// in lxc, logical cores reflects container limits, so use that as cores if lower
 	if threads > 0 && threads < cores {
 		cores = threads
