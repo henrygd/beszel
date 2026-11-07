@@ -59,6 +59,23 @@ func bindNetworkMonitorsEvents(hub *Hub) {
 	// record with the new ID and delete the old one. Otherwise, just update the existing monitor on the agent.
 	hub.OnRecordUpdateRequest("network_monitors").BindFunc(func(e *core.RecordRequestEvent) error {
 		systemID := e.Record.GetString("system")
+		if systemID != e.Record.Original().GetString("system") {
+			requestInfo, err := e.RequestInfo()
+			if err != nil {
+				return err
+			}
+			targetSystem, err := e.App.FindRecordById("systems", systemID)
+			if err != nil {
+				return e.ForbiddenError("", nil)
+			}
+			canAccess, err := e.App.CanAccessRecord(targetSystem, requestInfo, targetSystem.Collection().UpdateRule)
+			if err != nil {
+				return err
+			}
+			if !canAccess {
+				return e.ForbiddenError("", nil)
+			}
+		}
 		protocol := e.Record.GetString("protocol")
 		// only tcp uses port - set other protocols port to zero
 		if protocol != "tcp" {
