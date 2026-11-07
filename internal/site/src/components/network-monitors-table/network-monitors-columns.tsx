@@ -32,6 +32,7 @@ import { $allSystemsById } from "@/lib/stores"
 import { useStore } from "@nanostores/react"
 import { SystemStatus } from "@/lib/enums"
 import { Checkbox } from "@/components/ui/checkbox"
+import { SelectFilteredRowsCheckbox } from "@/components/ui/data-table-selection"
 import { useMemo } from "react"
 import { formatBulkMonitorLine } from "@/components/network-monitors-table/monitor-dialog"
 import { Badge } from "../ui/badge"
@@ -85,15 +86,7 @@ export function getMonitorColumns({
 	return [
 		{
 			id: "select",
-			header: ({ table }) => (
-				<Checkbox
-					className="ms-2"
-					checked={table.getIsAllRowsSelected() || (table.getIsSomeRowsSelected() && "indeterminate")}
-					onClick={(event) => event.stopPropagation()}
-					onCheckedChange={(value) => table.toggleAllRowsSelected(!!value)}
-					aria-label={t`Select all`}
-				/>
-			),
+			header: ({ table }) => <SelectFilteredRowsCheckbox table={table} />,
 			cell: ({ row }) => (
 				<Checkbox
 					checked={row.getIsSelected()}
@@ -296,15 +289,8 @@ export function getMonitorColumns({
 			enableHiding: false,
 			header: () => null,
 			size: 40,
-			cell: ({ row, table }) => {
-				const selectedRows = table.getSelectedRowModel().rows
-				const actionRows =
-					row.getIsSelected() && selectedRows.length > 1
-						? selectedRows.map((selectedRow) => selectedRow.original)
-						: [row.original]
-				const isBulkAction = actionRows.length > 1
-				const shouldPause = actionRows.some((monitor) => monitor.enabled)
-				const bulkCopyContent = actionRows.map((monitor) => formatBulkMonitorLine(monitor)).join("\n")
+			cell: ({ row }) => {
+				const monitor = row.original
 				return (
 					<DropdownMenu>
 						<DropdownMenuTrigger asChild>
@@ -316,22 +302,20 @@ export function getMonitorColumns({
 							</Button>
 						</DropdownMenuTrigger>
 						<DropdownMenuContent align="end" onClick={(event) => event.stopPropagation()}>
-							{!isBulkAction && (
-								<DropdownMenuItem
-									onClick={() => {
-										onEdit?.(row.original)
-									}}
-								>
-									<PenBoxIcon className="me-2.5 size-4" />
-									<Trans>Edit</Trans>
-								</DropdownMenuItem>
-							)}
 							<DropdownMenuItem
 								onClick={() => {
-									onSetEnabled?.(actionRows, !shouldPause)
+									onEdit?.(monitor)
 								}}
 							>
-								{shouldPause ? (
+								<PenBoxIcon className="me-2.5 size-4" />
+								<Trans>Edit</Trans>
+							</DropdownMenuItem>
+							<DropdownMenuItem
+								onClick={() => {
+									onSetEnabled?.([monitor], !monitor.enabled)
+								}}
+							>
+								{monitor.enabled ? (
 									<>
 										<PauseCircleIcon className="me-2.5 size-4" />
 										<Trans>Pause</Trans>
@@ -345,7 +329,7 @@ export function getMonitorColumns({
 							</DropdownMenuItem>
 							<DropdownMenuItem
 								onClick={() => {
-									copyToClipboard(bulkCopyContent)
+									copyToClipboard(formatBulkMonitorLine(monitor))
 								}}
 							>
 								<CopyIcon className="me-2.5 size-4" />
@@ -354,7 +338,7 @@ export function getMonitorColumns({
 							<DropdownMenuSeparator />
 							<DropdownMenuItem
 								onClick={() => {
-									onDelete?.(actionRows)
+									onDelete?.([monitor])
 								}}
 							>
 								<Trash2Icon className="me-2.5 size-4" />

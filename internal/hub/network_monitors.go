@@ -87,17 +87,25 @@ func bindNetworkMonitorsEvents(hub *Hub) {
 		if err != nil {
 			return err
 		}
-		if e.Record.GetBool("enabled") {
-			// if the monitor is enabled, sync the updated config to the agent now
-			runNow := !e.Record.Original().GetBool("enabled")
-			err = hub.upsertNetworkMonitor(e.Record, runNow)
-		} else {
-			// if the monitor is paused, remove it from the agent
-			err = hub.deleteNetworkMonitor(e.Record)
-		}
-		if err != nil {
-			hub.Logger().Warn("failed to sync updated monitor", "system", systemID, "monitor", e.Record.Id, "err", err)
-		}
+		// Sync with the agent in the background, like on create. Batch requests run inside a
+		// transaction holding the only write connection, so saving the probe result here would
+		// block until the batch times out. It also keeps bulk resumes from waiting on every probe.
+		record := e.Record
+		enabled := record.GetBool("enabled")
+		runNow := enabled && !record.Original().GetBool("enabled")
+		go func() {
+			var err error
+			if enabled {
+				// if the monitor is enabled, sync the updated config to the agent now
+				err = hub.upsertNetworkMonitor(record, runNow)
+			} else {
+				// if the monitor is paused, remove it from the agent
+				err = hub.deleteNetworkMonitor(record)
+			}
+			if err != nil {
+				hub.Logger().Warn("failed to sync updated monitor", "system", systemID, "monitor", record.Id, "err", err)
+			}
+		}()
 		return nil
 	})
 

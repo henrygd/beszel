@@ -27,6 +27,7 @@ import {
 import { Button, buttonVariants } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
 import { DataTablePagination, usePagination } from "@/components/ui/data-table-pagination"
+import { SelectFilteredRowsCheckbox, SelectionToolbar } from "@/components/ui/data-table-selection"
 import { Input } from "@/components/ui/input"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { useToast } from "@/components/ui/use-toast"
@@ -101,14 +102,7 @@ export default function AlertsHistoryDataTable() {
 		columns: [
 			{
 				id: "select",
-				header: ({ table }) => (
-					<Checkbox
-						className="ms-2"
-						checked={table.getIsAllPageRowsSelected() || (table.getIsSomePageRowsSelected() && "indeterminate")}
-						onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-						aria-label="Select all"
-					/>
-				),
+				header: ({ table }) => <SelectFilteredRowsCheckbox table={table} />,
 				cell: ({ row }) => (
 					<Checkbox
 						checked={row.getIsSelected()}
@@ -121,6 +115,8 @@ export default function AlertsHistoryDataTable() {
 			},
 			...alertsHistoryColumns,
 		],
+		// Key selection by record id so realtime inserts don't shift it onto other rows.
+		getRowId: (row) => row.id,
 		getCoreRowModel: getCoreRowModel(),
 		getPaginationRowModel: getPaginationRowModel(),
 		getSortedRowModel: getSortedRowModel(),
@@ -155,7 +151,7 @@ export default function AlertsHistoryDataTable() {
 	// Bulk delete handler
 	const handleBulkDelete = async () => {
 		setDeleteDialogOpen(false)
-		const selectedIds = table.getSelectedRowModel().rows.map((row) => row.original.id)
+		const selectedIds = table.getFilteredSelectedRowModel().rows.map((row) => row.original.id)
 		try {
 			let batch = pb.createBatch()
 			let inBatch = 0
@@ -181,7 +177,7 @@ export default function AlertsHistoryDataTable() {
 
 	// Export to CSV handler
 	const handleExportCSV = () => {
-		const selectedRows = table.getSelectedRowModel().rows
+		const selectedRows = table.getFilteredSelectedRowModel().rows
 		if (!selectedRows.length) return
 		const cells: Record<string, (record: AlertsHistoryRecord) => string> = {
 			system: (record) => record.expand?.system?.name || record.system,
@@ -210,18 +206,26 @@ export default function AlertsHistoryDataTable() {
 		URL.revokeObjectURL(url)
 	}
 
+	const selectedCount = table.getFilteredSelectedRowModel().rows.length
+
 	return (
 		<div className="@container w-full">
 			<div className="@3xl:flex items-end mb-4 gap-4">
 				<SectionIntro />
 				<div className="flex items-center gap-2 ms-auto mt-3 @3xl:mt-0">
-					{table.getFilteredSelectedRowModel().rows.length > 0 && (
-						<div className="fixed bottom-0 left-0 w-full p-4 grid grid-cols-2 items-center gap-4 z-50 backdrop-blur-md shrink-0 @lg:static @lg:p-0 @lg:w-auto @lg:gap-3">
+					{selectedCount > 0 && (
+						<SelectionToolbar count={selectedCount} onClear={() => table.resetRowSelection()}>
+							<Button variant="outline" onClick={handleExportCSV}>
+								<DownloadIcon className="size-4" />
+								<span className="ms-1.5">
+									<Trans>Export</Trans>
+								</span>
+							</Button>
 							<AlertDialog open={deleteOpen} onOpenChange={(open) => setDeleteDialogOpen(open)}>
 								<AlertDialogTrigger asChild>
-									<Button variant="destructive" className="h-9 shrink-0">
-										<Trash2Icon className="size-4 shrink-0" />
-										<span className="ms-1">
+									<Button variant="destructive">
+										<Trash2Icon className="size-4" />
+										<span className="ms-1.5">
 											<Trans>Delete</Trans>
 										</span>
 									</Button>
@@ -248,13 +252,7 @@ export default function AlertsHistoryDataTable() {
 									</AlertDialogFooter>
 								</AlertDialogContent>
 							</AlertDialog>
-							<Button variant="outline" className="h-10" onClick={handleExportCSV}>
-								<DownloadIcon className="size-4" />
-								<span className="ms-1">
-									<Trans>Export</Trans>
-								</span>
-							</Button>
-						</div>
+						</SelectionToolbar>
 					)}
 					<Input
 						placeholder={t`Filter...`}
