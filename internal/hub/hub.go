@@ -138,7 +138,7 @@ func (h *Hub) initialize(app core.App) error {
 		return err
 	}
 	// set auth settings
-	return setCollectionAuthSettings(app)
+	return ApplyCollectionAuthSettings(app)
 }
 
 // registerCronJobs sets up scheduled tasks
