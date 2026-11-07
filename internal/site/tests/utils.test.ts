@@ -5,7 +5,7 @@ mock.module("@lingui/core/macro", () => ({
 	plural: (count: number, forms: any) => forms.other ?? "",
 }))
 
-const { formatMicroseconds } = await import("../src/lib/utils")
+const { debounceByKey, formatMicroseconds } = await import("../src/lib/utils")
 
 describe("formatMicroseconds", () => {
 	test("formats with fixedDigits = true (default)", () => {
@@ -47,5 +47,27 @@ describe("formatMicroseconds", () => {
 		expect(formatMicroseconds(Number.NaN)).toBe("-")
 		expect(formatMicroseconds(Number.POSITIVE_INFINITY)).toBe("-")
 		expect(formatMicroseconds(Number.NEGATIVE_INFINITY)).toBe("-")
+	})
+})
+
+describe("debounceByKey", () => {
+	const wait = (ms: number) => new Promise((r) => setTimeout(r, ms))
+
+	test("calls for different keys within the wait are all delivered", async () => {
+		const calls: string[] = []
+		const send = debounceByKey((name: string) => calls.push(name), 20)
+		send("CPU", "CPU")
+		send("Memory", "Memory")
+		await wait(60)
+		expect(calls).toEqual(["CPU", "Memory"])
+	})
+
+	test("repeated calls for the same key keep only the last", async () => {
+		const calls: number[] = []
+		const send = debounceByKey((value: number) => calls.push(value), 20)
+		send("CPU", 80)
+		send("CPU", 90)
+		await wait(60)
+		expect(calls).toEqual([90])
 	})
 })

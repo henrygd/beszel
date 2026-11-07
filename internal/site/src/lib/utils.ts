@@ -444,6 +444,25 @@ export function debounce<T extends (...args: any[]) => any>(func: T, wait: numbe
 	}
 }
 
+/** Debounce separately per key, so a pending call for one key is never replaced by a call for another */
+// biome-ignore lint/suspicious/noExplicitAny: any is used to allow any function to be passed in
+export function debounceByKey<T extends (...args: any[]) => any>(
+	func: T,
+	wait: number
+): (key: string, ...args: Parameters<T>) => void {
+	const timeouts = new Map<string, ReturnType<typeof setTimeout>>()
+	return (key: string, ...args: Parameters<T>) => {
+		clearTimeout(timeouts.get(key))
+		timeouts.set(
+			key,
+			setTimeout(() => {
+				timeouts.delete(key)
+				func(...args)
+			}, wait)
+		)
+	}
+}
+
 // Cache for runOnce
 // biome-ignore lint/complexity/noBannedTypes: Function is used to allow any function to be passed in
 const runOnceCache = new WeakMap<Function, { done: boolean; result: unknown }>()
