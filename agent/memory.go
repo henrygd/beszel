@@ -1,6 +1,8 @@
 package agent
 
 import (
+	"runtime"
+
 	"github.com/henrygd/beszel/agent/utils"
 	"github.com/henrygd/beszel/agent/zfs"
 	"github.com/henrygd/beszel/internal/entities/system"
@@ -14,14 +16,28 @@ type memoryMetrics struct {
 }
 
 var memoryVirtualMemory = mem.VirtualMemory
+var memorySwapMemory = mem.SwapMemory
+var memoryGOOS = runtime.GOOS
+
+// hostSwap returns total and free swap bytes. gopsutil's VirtualMemory only
+// fills swap fields on Linux, so on macOS they come from SwapMemory.
+func hostSwap(v *mem.VirtualMemoryStat) (total, free uint64) {
+	if v.SwapTotal == 0 && memoryGOOS == "darwin" {
+		if s, err := memorySwapMemory(); err == nil {
+			return s.Total, s.Free
+		}
+	}
+	return v.SwapTotal, v.SwapFree
+}
 
 func (a *Agent) updateMemoryStats(stats *system.Stats) {
 	v, err := memoryVirtualMemory()
 	var hostTotal uint64
 	if err == nil {
 		hostTotal = v.Total
-		// Swap retains its existing /proc/meminfo source in both memory paths.
-		stats.SwapBytes = [2]uint64{v.SwapTotal, saturatingSub(v.SwapTotal, v.SwapFree)}
+		// Swap retains its existing /proc/meminfo source in both memory paths (SwapMemory on macOS).
+		swapTotal, swapFree := hostSwap(v)
+		stats.SwapBytes = [2]uint64{swapTotal, saturatingSub(swapTotal, swapFree)}
 		// TODO: stop populating deprecated GB fields once hubs < 0.21.1 are no longer supported
 		stats.Swap = utils.BytesToGigabytes(stats.SwapBytes[0])
 		stats.SwapUsed = utils.BytesToGigabytes(stats.SwapBytes[1])
