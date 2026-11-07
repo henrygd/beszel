@@ -28,14 +28,16 @@ import { ChevronDownIcon, GlobeIcon, ListIcon, type LucideIcon, PlusIcon, Search
 import { useToast } from "@/components/ui/use-toast"
 import { $systems } from "@/lib/stores"
 import { cn, supportsNetworkMonitors } from "@/lib/utils"
-import { getMonitorTarget, isHttpsTarget } from "@/lib/network-monitor-utils"
+import { getMonitorLabel, isHttpsTarget } from "@/lib/network-monitor-utils"
 import type { NetworkMonitorRecord } from "@/types"
+import type { ClientResponseError } from "pocketbase"
 import * as v from "valibot"
 
 type MonitorProtocol = "icmp" | "tcp" | "http" | "dns"
 
 type MonitorValues = {
 	system: string
+	name: string
 	target: string
 	protocol: MonitorProtocol
 	port: number
@@ -48,7 +50,7 @@ type NormalizedMonitorValues = Omit<MonitorValues, "system" | "interval"> & {
 	interval: number
 }
 
-type BulkMonitorLineSource = Pick<NetworkMonitorRecord, "target" | "protocol" | "port" | "interval" | "server">
+type BulkMonitorLineSource = Pick<NetworkMonitorRecord, "target" | "protocol" | "port" | "interval" | "server" | "name">
 
 const defaultInterval = 30
 
@@ -60,6 +62,7 @@ const MonitorIntervalSchema = v.pipe(v.string(), v.toNumber(), v.minValue(1), v.
 // defaults and HTTP target normalization stay in one place.
 const NormalizedMonitorValuesSchema = v.pipe(
 	v.object({
+		name: v.pipe(v.string(), v.trim(), v.maxLength(100, "Name must be 100 characters or less")),
 		target: v.pipe(v.string(), v.trim(), v.nonEmpty("target is required")),
 		protocol: MonitorProtocolSchema,
 		port: v.number(),
@@ -79,6 +82,7 @@ const NormalizedMonitorValuesSchema = v.pipe(
 			port = 443
 		}
 		return {
+			name: input.name,
 			// HTTP monitors may be entered as bare hostnames, so normalize them to a
 			// scheme-bearing URL before the payload is sent to PocketBase.
 			target: protocol === "http" ? httpTarget : input.target,
@@ -124,6 +128,7 @@ const BulkMonitorSchema = v.object({
 	port: v.optional(v.pipe(v.string(), v.trim())),
 	interval: v.optional(v.pipe(v.string(), v.trim())),
 	server: v.optional(v.pipe(v.string(), v.trim())),
+	name: v.optional(v.pipe(v.string(), v.trim())),
 })
 
 function normalizeHttpTarget(target: string, port = 0) {
@@ -182,13 +187,16 @@ function getMonitorIdentityKey({ system, target, protocol, port, server }: Monit
 }
 
 function parseBulkMonitorLine(line: string, lineNumber: number, system: string) {
-	const [rawTarget = "", rawProtocol = "", rawPort = "", rawInterval = "", rawServer = ""] = line.split(",")
+	// The name is last and takes the rest of the line, so it may contain commas.
+	const [rawTarget = "", rawProtocol = "", rawPort = "", rawInterval = "", rawServer = "", ...rawName] =
+		line.split(",")
 	const parsed = v.safeParse(BulkMonitorSchema, {
 		target: rawTarget,
 		protocol: rawProtocol,
 		port: rawPort,
 		interval: rawInterval,
 		server: rawServer,
+		name: rawName.join(","),
 	})
 	if (!parsed.success) {
 		throw new Error(`Line ${lineNumber}: ${parsed.issues[0]?.message || "invalid monitor entry"}`)
@@ -198,6 +206,7 @@ function parseBulkMonitorLine(line: string, lineNumber: number, system: string) 
 
 	return buildMonitorPayload({
 		system,
+		name: parsed.output.name || "",
 		target: parsed.output.target,
 		protocol,
 		port: parsed.output.port ? Number(parsed.output.port) : 0,
@@ -211,7 +220,9 @@ export function formatBulkMonitorLine(monitor: BulkMonitorLineSource) {
 	const port = monitor.protocol !== "tcp" || monitor.port === 443 ? "" : `${monitor.port}`
 	const interval = monitor.interval === defaultInterval ? "" : `${monitor.interval}`
 	const server = monitor.protocol !== "dns" ? "" : monitor.server
-	return trimTrailingEmptyFields([monitor.target, monitor.protocol, port, interval, server]).join(",")
+	return trimTrailingEmptyFields([monitor.target, monitor.protocol, port, interval, server, monitor.name ?? ""]).join(
+		","
+	)
 }
 
 export function SystemMultiSelect({
@@ -279,14 +290,14 @@ export function MonitorMultiSelect({
 	const { t } = useLingui()
 	const labelCounts = new Map<string, number>()
 	for (const monitor of monitors) {
-		const label = getMonitorTarget(monitor)
+		const label = getMonitorLabel(monitor)
 		labelCounts.set(label, (labelCounts.get(label) ?? 0) + 1)
 	}
 	const options = monitors
 		.map((monitor) => {
-			let label = getMonitorTarget(monitor)
+			let label = getMonitorLabel(monitor)
 			// Show the URL scheme when it's all that tells http and https monitors apart.
-			if (monitor.protocol === "http" && (labelCounts.get(label) ?? 0) > 1) label = monitor.target
+			if (!monitor.name && monitor.protocol === "http" && (labelCounts.get(label) ?? 0) > 1) label = monitor.target
 			return { id: monitor.id, label, server: monitor.server }
 		})
 		.sort((a, b) => a.label.localeCompare(b.label))
@@ -529,11 +540,12 @@ export function AddMonitorDialog({ systemId, monitors }: { systemId?: string; mo
 			let totalCreated = 0
 			closedForSubmit = true
 
-			for (const system of targetSystems) {
+			// Check every system before creating anything, so a name conflict doesn't leave a partial import.
+			const newPayloadsBySystem = targetSystems.map((system) => {
 				const payloads = rawLines.map((line, index) => parseBulkMonitorLine(line, index + 1, system))
-				const existingMonitorKeys = new Set(
-					monitors.filter((monitor) => monitor.system === system).map((monitor) => getMonitorIdentityKey(monitor))
-				)
+				const systemMonitors = monitors.filter((monitor) => monitor.system === system)
+				const existingMonitorKeys = new Set(systemMonitors.map((monitor) => getMonitorIdentityKey(monitor)))
+				const usedNames = new Set(systemMonitors.map((monitor) => monitor.name).filter(Boolean))
 				const newPayloads: typeof payloads = []
 
 				for (const payload of payloads) {
@@ -541,10 +553,20 @@ export function AddMonitorDialog({ systemId, monitors }: { systemId?: string; mo
 					if (existingMonitorKeys.has(monitorKey)) {
 						continue
 					}
+					if (payload.name) {
+						if (usedNames.has(payload.name)) {
+							const systemName = systems.find((s) => s.id === system)?.name ?? system
+							throw new Error(`Name "${payload.name}" is already used on ${systemName}.`)
+						}
+						usedNames.add(payload.name)
+					}
 					existingMonitorKeys.add(monitorKey)
 					newPayloads.push(payload)
 				}
+				return newPayloads
+			})
 
+			for (const newPayloads of newPayloadsBySystem) {
 				if (!newPayloads.length) continue
 
 				let batch = pb.createBatch()
@@ -636,7 +658,7 @@ export function AddMonitorDialog({ systemId, monitors }: { systemId?: string; mo
 							<Trans>Bulk Add {{ foo: t`Network Monitors` }}</Trans>
 						</SheetTitle>
 						<SheetDescription>
-							<Trans>target[,protocol[,port[,interval[,server]]]]</Trans>
+							<Trans>target[,protocol[,port[,interval[,server[,name]]]]]</Trans>
 						</SheetDescription>
 					</SheetHeader>
 					<form ref={bulkFormRef} onSubmit={handleBulkSubmit} className="flex h-full flex-col overflow-hidden">
@@ -675,11 +697,12 @@ export function AddMonitorDialog({ systemId, monitors }: { systemId?: string; mo
 										"example.com,tcp",
 										"https://example.com,http,,60",
 										"example.com,dns,,,1.1.1.1",
+										"10.0.0.1,tcp,22,,,Router SSH",
 									].join("\n")}
 									required
 								/>
 								<p className="text-xs text-muted-foreground">
-									<Trans>target[,protocol[,port[,interval[,server]]]]</Trans>
+									<Trans>target[,protocol[,port[,interval[,server[,name]]]]]</Trans>
 								</p>
 							</div>
 						</div>
@@ -732,6 +755,7 @@ function MonitorDialogContent({
 	onOpenBulkAdd?: (selectedSystemIds: Set<string>) => void
 }) {
 	const [protocol, setProtocol] = useState<MonitorProtocol>(monitor?.protocol ?? "icmp")
+	const [name, setName] = useState(monitor?.name ?? "")
 	const [target, setTarget] = useState(monitor?.target ?? "")
 	const [port, setPort] = useState(monitor?.protocol === "tcp" && monitor.port ? String(monitor.port) : "")
 	const [server, setServer] = useState(monitor?.protocol === "dns" ? (monitor.server ?? "") : "")
@@ -755,6 +779,7 @@ function MonitorDialogContent({
 		}
 
 		setProtocol(monitor?.protocol ?? "icmp")
+		setName(monitor?.name ?? "")
 		setTarget(monitor?.target ?? "")
 		setPort(monitor?.protocol === "tcp" && monitor.port ? String(monitor.port) : "")
 		setServer(monitor?.protocol === "dns" ? (monitor.server ?? "") : "")
@@ -776,6 +801,7 @@ function MonitorDialogContent({
 			const payload = buildMonitorPayload(
 				{
 					system: targetSystems[0],
+					name,
 					target,
 					protocol,
 					port: protocol === "tcp" ? Number(port) : 0,
@@ -799,7 +825,12 @@ function MonitorDialogContent({
 				// Retain only unfinished systems so retrying cannot duplicate successful creates.
 				setSelectedSystemIds(remainingSystemIds)
 			}
-			toast({ variant: "destructive", title: t`Error`, description: (err as Error)?.message })
+			const nameTaken = (err as ClientResponseError)?.response?.data?.name?.code === "validation_not_unique"
+			toast({
+				variant: "destructive",
+				title: t`Error`,
+				description: nameTaken ? t`A monitor with this name already exists on this system.` : (err as Error)?.message,
+			})
 		} finally {
 			setLoading(false)
 		}
@@ -855,21 +886,16 @@ function MonitorDialogContent({
 					</div>
 				)}
 				<div className="grid gap-2">
-					<Label>
-						<Trans>Target</Trans>
+					<Label htmlFor="monitor-name">
+						<Trans>Name</Trans>
 					</Label>
 					<Input
-						value={target}
-						onChange={(e) => setTarget(e.target.value)}
-						placeholder={protocol === "http" ? "http://localhost:8090" : protocol === "dns" ? "example.com" : "1.1.1.1"}
-						aria-invalid={dnsTargetIsIp}
-						required
+						id="monitor-name"
+						value={name}
+						onChange={(e) => setName(e.target.value)}
+						placeholder={t`Optional`}
+						maxLength={100}
 					/>
-					{dnsTargetIsIp && (
-						<p className="text-xs text-destructive">
-							<Trans>Enter a domain name to look up. Put the resolver's IP in DNS Server.</Trans>
-						</p>
-					)}
 				</div>
 				<div className="grid gap-2">
 					<Label>
@@ -887,6 +913,23 @@ function MonitorDialogContent({
 							<SelectItem value="dns">DNS</SelectItem>
 						</SelectContent>
 					</Select>
+				</div>
+				<div className="grid gap-2">
+					<Label>
+						<Trans>Target</Trans>
+					</Label>
+					<Input
+						value={target}
+						onChange={(e) => setTarget(e.target.value)}
+						placeholder={protocol === "http" ? "http://localhost:8090" : protocol === "dns" ? "example.com" : "1.1.1.1"}
+						aria-invalid={dnsTargetIsIp}
+						required
+					/>
+					{dnsTargetIsIp && (
+						<p className="text-xs text-destructive">
+							<Trans>Enter a domain name to look up. Put the resolver's IP in DNS Server.</Trans>
+						</p>
+					)}
 				</div>
 				{protocol === "tcp" && (
 					<div className="grid gap-2">

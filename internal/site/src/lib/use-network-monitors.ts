@@ -82,7 +82,7 @@ async function fetchMonitorStats(
 }
 
 const NETWORK_MONITOR_FIELDS =
-	"id,system,target,protocol,port,server,interval,skipTlsVerify,res,resMin1h,resMax1h,resAvg1h,loss1h,enabled,certInfo,updated"
+	"id,system,name,target,protocol,port,server,interval,skipTlsVerify,res,resMin1h,resMax1h,resAvg1h,loss1h,enabled,certInfo,updated"
 
 interface UseNetworkMonitorsProps {
 	systemId?: string
@@ -324,7 +324,7 @@ export function useNetworkMonitorStats(props: UseNetworkMonitorStatsProps) {
 }
 
 /** Only what comparison charts and labels need. */
-const COMPARE_MONITOR_FIELDS = "id,system,target,protocol,port,server,interval,resAvg1h"
+const COMPARE_MONITOR_FIELDS = "id,system,name,target,protocol,port,server,interval,resAvg1h"
 
 /**
  * Monitors of one protocol on all systems except the given one, to compare against (#2385).

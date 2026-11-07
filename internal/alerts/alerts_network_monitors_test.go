@@ -88,17 +88,20 @@ func TestNetworkMonitorAlertIndependentIncidents(t *testing.T) {
 
 func TestNetworkMonitorAlertTargetLabel(t *testing.T) {
 	for _, tc := range []struct {
-		protocol, target, label string
-		port                    int
+		protocol, target, name, label string
+		port                          int
 	}{
-		{"icmp", "gateway.example.com", "gateway.example.com", 0},
-		{"http", "https://example.com/health", "https://example.com/health", 0},
-		{"tcp", "example.com", "example.com:8443", 8443},
-		{"tcp", "2001:db8::1", "[2001:db8::1]:443", 443},
+		{"icmp", "gateway.example.com", "", "gateway.example.com", 0},
+		{"http", "https://example.com/health", "", "https://example.com/health", 0},
+		{"tcp", "example.com", "", "example.com:8443", 8443},
+		{"tcp", "2001:db8::1", "", "[2001:db8::1]:443", 443},
+		{"icmp", "gateway.example.com", "Gateway", "Gateway (gateway.example.com)", 0},
+		{"tcp", "example.com", "API", "API (example.com:8443)", 8443},
 	} {
 		t.Run(tc.label, func(t *testing.T) {
 			hub, system, alert, monitors := networkAlertSetup(t)
 			m := monitors[0]
+			m.Set("name", tc.name)
 			m.Set("protocol", tc.protocol)
 			m.Set("target", tc.target)
 			m.Set("port", tc.port)

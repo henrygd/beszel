@@ -15,6 +15,11 @@ export function getMonitorTarget(monitor: MonitorTarget) {
 	return `${host}:${monitor.port}`
 }
 
+/** The monitor's name, or its target when it has none. */
+export function getMonitorLabel(monitor: MonitorTarget & Partial<Pick<NetworkMonitorRecord, "name">>) {
+	return monitor.name || getMonitorTarget(monitor)
+}
+
 export function isHttpsTarget(target: string) {
 	return /^https:\/\//i.test(target)
 }
@@ -114,7 +119,7 @@ export function getMonitorCompareState({
 		return multiSystem && multiTarget ? `${systemName} · ${target}` : multiTarget ? target : systemName
 	}
 	for (const m of compareMonitors) {
-		const label = getSeriesLabel(m, getMonitorTarget(m))
+		const label = getSeriesLabel(m, getMonitorLabel(m))
 		labels.set(m.id, label)
 		counts.set(label, (counts.get(label) ?? 0) + 1)
 	}
@@ -139,6 +144,6 @@ export function getMonitorCompareState({
 		canAddSystem: targetMonitors.length * (systemIds.length + 2) <= MAX_COMPARE_MONITORS,
 		/** Monitors to chart, starting with the opened one. */
 		compareMonitors,
-		getLabel: (m: NetworkMonitorRecord) => labels.get(m.id) ?? getMonitorTarget(m),
+		getLabel: (m: NetworkMonitorRecord) => labels.get(m.id) ?? getMonitorLabel(m),
 	}
 }
