@@ -37,6 +37,8 @@ type packageUpdatesResult struct {
 	packages []system.PackageUpdate
 	// securityKnown is true if packages carry per-package security flags.
 	securityKnown bool
+	// rebootRequired is true if the host needs a reboot to finish applying updates.
+	rebootRequired bool
 }
 
 type packageUpdatesCheck func(ctx context.Context) (packageUpdatesResult, error)
@@ -47,6 +49,7 @@ type packageUpdatesManager struct {
 	sync.Mutex
 	name      string
 	check     packageUpdatesCheck
+	reboot    rebootCheck
 	interval  time.Duration
 	result    packageUpdatesResult
 	checkedAt time.Time
@@ -70,7 +73,7 @@ func newPackageUpdatesManager(dataDir string) *packageUpdatesManager {
 		return nil
 	}
 	slog.Debug("Package updates", "manager", name, "interval", interval)
-	return &packageUpdatesManager{name: name, check: check, interval: interval}
+	return &packageUpdatesManager{name: name, check: check, reboot: newRebootCheck(name, dnfEnv(dataDir)), interval: interval}
 }
 
 // packageUpdatesInterval reads PACKAGE_UPDATES_INTERVAL as a Go duration such as
@@ -105,6 +108,13 @@ func (pm *packageUpdatesManager) get(now time.Time) []uint16 {
 	return pm.result.counts
 }
 
+// rebootRequired returns the reboot state of the last check. Use get to start checks.
+func (pm *packageUpdatesManager) rebootRequired() bool {
+	pm.Lock()
+	defer pm.Unlock()
+	return pm.result.rebootRequired
+}
+
 // list returns the per-package details of the last check. It never starts a check.
 func (pm *packageUpdatesManager) list() system.PackageUpdates {
 	pm.Lock()
@@ -127,6 +137,9 @@ func (pm *packageUpdatesManager) refresh() {
 	if err != nil {
 		slog.Debug("Package updates check failed", "err", err)
 		result = packageUpdatesResult{}
+	}
+	if pm.reboot != nil {
+		result.rebootRequired = pm.reboot(ctx)
 	}
 	pm.Lock()
 	pm.result = result
@@ -222,17 +235,21 @@ func checkApt(ctx context.Context) (packageUpdatesResult, error) {
 	}, nil
 }
 
-// newDnfCheck points dnf5's per-user state (log) and cache dirs into dataDir.
+// dnfEnv points dnf5's per-user state (log) and cache dirs into dataDir.
 // They default to $HOME/.local/state and $HOME/.cache, and the agent user's home
 // is usually /nonexistent. With -C, dnf5 still reads the system metadata cache.
-func newDnfCheck(dataDir string) packageUpdatesCheck {
-	var env []string
-	if dataDir != "" {
-		env = []string{
-			"XDG_STATE_HOME=" + filepath.Join(dataDir, "state"),
-			"XDG_CACHE_HOME=" + filepath.Join(dataDir, "cache"),
-		}
+func dnfEnv(dataDir string) []string {
+	if dataDir == "" {
+		return nil
 	}
+	return []string{
+		"XDG_STATE_HOME=" + filepath.Join(dataDir, "state"),
+		"XDG_CACHE_HOME=" + filepath.Join(dataDir, "cache"),
+	}
+}
+
+func newDnfCheck(dataDir string) packageUpdatesCheck {
+	env := dnfEnv(dataDir)
 	return func(ctx context.Context) (packageUpdatesResult, error) {
 		return checkDnf(ctx, env)
 	}

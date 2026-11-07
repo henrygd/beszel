@@ -8,6 +8,7 @@ import {
 	GlobeIcon,
 	MemoryStickIcon,
 	MonitorIcon,
+	RotateCcwIcon,
 	Settings2Icon,
 } from "lucide-react"
 import { useMemo } from "react"
@@ -123,6 +124,10 @@ export default function InfoBar({
 				hide: !memory,
 				label: t`Memory`,
 			})
+		}
+
+		if (system.info.rr) {
+			info.push({ value: t`Reboot required`, Icon: RotateCcwIcon })
 		}
 
 		return info

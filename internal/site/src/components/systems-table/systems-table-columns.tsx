@@ -18,6 +18,7 @@ import {
 	PauseCircleIcon,
 	PenBoxIcon,
 	PlayCircleIcon,
+	RotateCcwIcon,
 	ServerIcon,
 	TerminalSquareIcon,
 	Trash2Icon,
@@ -487,6 +488,16 @@ export function SystemsTableColumns(viewMode: "table" | "grid"): ColumnDef<Syste
 							})}
 						/>
 						{total === 0 ? t`Up to date` : plural(total, { one: "# update", other: "# updates" })}
+						{sys.info.rr && (
+							<Tooltip>
+								<TooltipTrigger asChild>
+									<RotateCcwIcon className="size-3.5 text-yellow-500" aria-label={t`Reboot required`} />
+								</TooltipTrigger>
+								<TooltipContent>
+									<Trans>Reboot required</Trans>
+								</TooltipContent>
+							</Tooltip>
+						)}
 					</span>
 				)
 			},

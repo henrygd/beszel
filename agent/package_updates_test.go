@@ -493,6 +493,39 @@ func TestPackageUpdatesManagerCaching(t *testing.T) {
 	assert.False(t, pm.list().SecurityKnown)
 }
 
+func TestPackageUpdatesManagerRebootRequired(t *testing.T) {
+	reboot := true
+	pm := &packageUpdatesManager{
+		name:     "apt",
+		interval: time.Hour,
+		check: func(context.Context) (packageUpdatesResult, error) {
+			return packageUpdatesResult{counts: []uint16{0, 0}}, nil
+		},
+		reboot: func(context.Context) bool { return reboot },
+	}
+	waitIdle := func() {
+		require.Eventually(t, func() bool {
+			pm.Lock()
+			defer pm.Unlock()
+			return !pm.running
+		}, time.Second, time.Millisecond)
+	}
+
+	// unknown until the first check finishes
+	now := time.Now()
+	pm.get(now)
+	waitIdle()
+	assert.True(t, pm.rebootRequired())
+
+	// cached within interval, refreshed with the next check
+	reboot = false
+	pm.get(now.Add(time.Minute))
+	assert.True(t, pm.rebootRequired())
+	pm.get(now.Add(2 * time.Hour))
+	waitIdle()
+	assert.False(t, pm.rebootRequired())
+}
+
 func TestGetPackageUpdatesHandler(t *testing.T) {
 	var sent any
 	hctx := &HandlerContext{
