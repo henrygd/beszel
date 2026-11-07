@@ -34,13 +34,13 @@ type getTempsFn func(ctx context.Context) ([]sensors.TemperatureStat, error)
 
 type SensorConfig struct {
 	context        context.Context
-	sensors        map[string]struct{}
+	sensors        sensorFilter
 	primarySensor  string
 	timeout        time.Duration
-	isBlacklist    bool
-	hasWildcards   bool
 	skipCollection bool
 	skipGPU        bool
+	skipFans       bool
+	fanSensors     sensorFilter
 	sensorShadow   string
 	firstRun       bool
 }
@@ -53,7 +53,14 @@ func (a *Agent) newSensorConfig() *SensorConfig {
 	sensorsTimeout, _ := utils.GetEnv("SENSORS_TIMEOUT")
 	skipGPU, _ := utils.GetEnv("SKIP_GPU")
 
-	return a.newSensorConfigWithEnv(primarySensor, sysSensors, sensorsEnvVal, sensorsTimeout, skipCollection, skipGPU == "true")
+	config := a.newSensorConfigWithEnv(primarySensor, sysSensors, sensorsEnvVal, sensorsTimeout, skipCollection, skipGPU == "true")
+
+	// FAN_SENSORS uses the same syntax as SENSORS, matched against fan keys
+	fanSensorsEnvVal, fanSensorsSet := utils.GetEnv("FAN_SENSORS")
+	config.skipFans = fanSensorsSet && fanSensorsEnvVal == ""
+	config.fanSensors = parseSensorFilter(fanSensorsEnvVal)
+
+	return config
 }
 
 // newSensorConfigWithEnv creates a SensorConfig with the provided environment variables
@@ -75,7 +82,7 @@ func (a *Agent) newSensorConfigWithEnv(primarySensor, sysSensors, sensorsEnvVal,
 		skipCollection: skipCollection,
 		skipGPU:        skipGPU,
 		firstRun:       true,
-		sensors:        make(map[string]struct{}),
+		sensors:        parseSensorFilter(sensorsEnvVal),
 	}
 
 	// Set sensors context (allows overriding sys location for sensors)
@@ -99,23 +106,38 @@ func (a *Agent) newSensorConfigWithEnv(primarySensor, sysSensors, sensorsEnvVal,
 		}
 	}
 
+	return config
+}
+
+// sensorFilter is a parsed SENSORS-style list of sensor names
+type sensorFilter struct {
+	sensors      map[string]struct{}
+	isBlacklist  bool
+	hasWildcards bool
+}
+
+// parseSensorFilter parses a comma separated list of sensor names, which may
+// contain wildcards. A leading "-" turns the list into a blacklist.
+func parseSensorFilter(val string) sensorFilter {
+	filter := sensorFilter{sensors: make(map[string]struct{})}
+
 	// handle blacklist
-	if strings.HasPrefix(sensorsEnvVal, "-") {
-		config.isBlacklist = true
-		sensorsEnvVal = sensorsEnvVal[1:]
+	if strings.HasPrefix(val, "-") {
+		filter.isBlacklist = true
+		val = val[1:]
 	}
 
-	for sensor := range strings.SplitSeq(sensorsEnvVal, ",") {
+	for sensor := range strings.SplitSeq(val, ",") {
 		sensor = strings.TrimSpace(sensor)
 		if sensor != "" {
-			config.sensors[sensor] = struct{}{}
+			filter.sensors[sensor] = struct{}{}
 			if strings.Contains(sensor, "*") {
-				config.hasWildcards = true
+				filter.hasWildcards = true
 			}
 		}
 	}
 
-	return config
+	return filter
 }
 
 // updateTemperatures updates the agent with the latest sensor temperatures
@@ -252,32 +274,37 @@ func readWithTimeout[T any](inflight *atomic.Bool, timeout time.Duration, timeou
 
 // isValidSensor checks if a sensor is valid based on the sensor name and the sensor config
 func isValidSensor(sensorName string, config *SensorConfig) bool {
+	return config.sensors.allows(sensorName)
+}
+
+// allows checks if a sensor name passes the filter
+func (f sensorFilter) allows(sensorName string) bool {
 	// if no sensors configured, everything is valid
-	if len(config.sensors) == 0 {
+	if len(f.sensors) == 0 {
 		return true
 	}
 
 	// Exact match - return true if whitelist, false if blacklist
-	if _, exactMatch := config.sensors[sensorName]; exactMatch {
-		return !config.isBlacklist
+	if _, exactMatch := f.sensors[sensorName]; exactMatch {
+		return !f.isBlacklist
 	}
 
 	// If no wildcards, return true if blacklist, false if whitelist
-	if !config.hasWildcards {
-		return config.isBlacklist
+	if !f.hasWildcards {
+		return f.isBlacklist
 	}
 
 	// Check for wildcard patterns
-	for pattern := range config.sensors {
+	for pattern := range f.sensors {
 		if !strings.Contains(pattern, "*") {
 			continue
 		}
 		if match, _ := path.Match(pattern, sensorName); match {
-			return !config.isBlacklist
+			return !f.isBlacklist
 		}
 	}
 
-	return config.isBlacklist
+	return f.isBlacklist
 }
 
 // scaleTemperature scales temperatures in fractional values to reasonable Celsius values
