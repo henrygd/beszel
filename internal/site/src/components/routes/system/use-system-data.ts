@@ -76,10 +76,10 @@ export function useSystemData(id: string) {
 	const [mountedTabs, setMountedTabs] = useState(() => new Set<string>(["core"]))
 	const tabsRef = useRef<string[]>(["core", "disk"])
 
-	function setActiveTab(tab: string) {
+	const setActiveTab = useCallback((tab: string) => {
 		setActiveTabRaw(tab)
 		setMountedTabs((prev) => (prev.has(tab) ? prev : new Set([...prev, tab])))
-	}
+	}, [])
 	const [system, setSystem] = useState({} as SystemRecord)
 	const [systemStats, setSystemStats] = useState([] as SystemStatsRecord[])
 	const [containerData, setContainerData] = useState([] as ChartData["containerData"])

@@ -6,6 +6,7 @@ import type { GPUData } from "@/types"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import InfoBar from "./system/info-bar"
 import { useSystemData } from "./system/use-system-data"
+import { useAlertNavigation } from "./system/use-alert-navigation"
 import { CpuChart, ContainerCpuChart } from "./system/charts/cpu-charts"
 import { MemoryChart, ContainerMemoryChart, SwapChart } from "./system/charts/memory-charts"
 import { RootDiskCharts, ExtraFsCharts } from "./system/charts/disk-charts"
@@ -64,19 +65,15 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 	// where the tooltip can go past the bottom of the page if lots of sensors
 	const [pageBottomExtraMargin, setPageBottomExtraMargin] = useState(0)
 
-	if (!system.id) {
-		return null
-	}
-
 	const hasContainers = containerData.length > 0
 	const maybeHasSmartData = compareSemVer(chartData.agentVersion, SEMVER_0_15_0) >= 0
 	const hasContainersTable = hasContainers && compareSemVer(chartData.agentVersion, SEMVER_0_14_0) >= 0
-	const hasSystemd = system.info.sv
+	const hasSystemd = system.info?.sv
 	const hasGpu = hasGpuData || hasGpuPowerData
 	const hasZfs = Object.keys(systemStats.at(-1)?.stats?.z ?? {}).length > 0
 	const hasNetworkMonitors = supportsNetworkMonitors(system)
 	// counts key the table so it refetches the list only after a new check
-	const packageUpdates = system.status === SystemStatus.Up && system.info.pu?.[0] ? system.info.pu.join(",") : ""
+	const packageUpdates = system.status === SystemStatus.Up && system.info?.pu?.[0] ? system.info.pu.join(",") : ""
 
 	// keep tabsRef in sync for keyboard navigation
 	const tabs = ["core", "network", "disk"]
@@ -85,6 +82,16 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 	if (hasSystemd) tabs.push("services")
 	if (packageUpdates) tabs.push("updates")
 	tabsRef.current = tabs
+	const alertRef = useAlertNavigation({
+		id,
+		systemId: system.id,
+		displayMode,
+		tabs: tabs.join(","),
+		chartsReady: systemStats.length > 0 || dataEmpty,
+		setActiveTab,
+	})
+
+	if (!system.id) return null
 
 	// shared chart props
 	const coreProps = { chartData, grid, dataEmpty, showMax, isLongerChart, maxValues }
@@ -164,13 +171,25 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 
 				{maybeHasSmartData && <LazySmartTable systemId={system.id} />}
 
-				{hasContainersTable && <LazyContainersTable systemId={system.id} />}
+				{hasContainersTable && (
+					<div data-alert-section="containers">
+						<LazyContainersTable systemId={system.id} />
+					</div>
+				)}
 
-				{hasSystemd && <LazySystemdTable systemId={system.id} />}
+				{hasSystemd && (
+					<div data-alert-section="services">
+						<LazySystemdTable systemId={system.id} />
+					</div>
+				)}
 
 				{packageUpdates && <LazyPackageUpdatesTable systemId={system.id} counts={packageUpdates} />}
 
-				{hasNetworkMonitors && <LazyNetworkMonitorsTable systemId={system.id} />}
+				{hasNetworkMonitors && (
+					<div data-alert-section="monitors">
+						<LazyNetworkMonitorsTable systemId={system.id} />
+					</div>
+				)}
 			</>
 		)
 	}
@@ -237,7 +256,11 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 								<BandwidthChart {...coreProps} systemStats={systemStats} />
 								<WiFiChart system={system} {...coreProps} />
 							</div>
-							{hasNetworkMonitors && <LazyNetworkMonitorsTable systemId={system.id} />}
+							{hasNetworkMonitors && (
+								<div data-alert-section="monitors">
+									<LazyNetworkMonitorsTable systemId={system.id} />
+								</div>
+							)}
 						</>
 					)}
 				</TabsContent>
@@ -297,7 +320,11 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 										networkConfig={containerChartConfigs.network}
 									/>
 								</div>
-								{hasContainersTable && <ContainersTable systemId={system.id} />}
+								{hasContainersTable && (
+									<div data-alert-section="containers">
+										<ContainersTable systemId={system.id} />
+									</div>
+								)}
 							</>
 						)}
 					</TabsContent>
@@ -305,7 +332,11 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 
 				{hasSystemd && (
 					<TabsContent value="services" forceMount className={activeTab === "services" ? "contents" : "hidden"}>
-						{mountedTabs.has("services") && <SystemdTable systemId={system.id} />}
+						{mountedTabs.has("services") && (
+							<div data-alert-section="services">
+								<SystemdTable systemId={system.id} />
+							</div>
+						)}
 					</TabsContent>
 				)}
 
@@ -319,7 +350,7 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 	}
 
 	return (
-		<div className="grid gap-4 mb-14 overflow-x-clip">
+		<div ref={alertRef} className="grid gap-4 mb-14 overflow-x-clip">
 			{/* system info */}
 			<InfoBar
 				system={system}
