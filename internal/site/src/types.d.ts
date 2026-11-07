@@ -387,6 +387,8 @@ export interface ChartTimeData {
 export interface UserSettings {
 	/** may be missing in settings stored by older versions -- use getUserChartTime() */
 	chartTime?: ChartTimes
+	/** default value shown on charts longer than 1h -- missing means "avg" */
+	chartValue?: "avg" | "max"
 	emails?: string[]
 	webhooks?: string[]
 	unitTemp?: Unit
