@@ -1,0 +1,3 @@
+# bun:test preload: provide browser-global shims before any module import.
+[test]
+preload = ["./tests/globals.ts"]
