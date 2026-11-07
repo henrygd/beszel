@@ -3,6 +3,7 @@
 package alerts_test
 
 import (
+	"strings"
 	"testing"
 	"testing/synctest"
 	"time"
@@ -251,4 +252,50 @@ func TestCPUStateAlertWithoutBreakdown(t *testing.T) {
 		fixture.assertTriggered(t, false, "Alert should ignore missing CPU breakdown data")
 		assert.Zero(t, fixture.hub.TestMailer.TotalSend(), "No email should be sent without CPU breakdown data")
 	})
+}
+
+// Subjects carry an explicit state marker: "above"/"below threshold" alone is
+// ambiguous, and inverted for Battery.
+func TestSystemAlertSubjectMarksState(t *testing.T) {
+	cases := []struct {
+		name    string
+		run     func(f *systemAlertTestFixture, t *testing.T, trigger bool)
+		trigger string
+		resolve string
+	}{
+		{"CPU", func(f *systemAlertTestFixture, t *testing.T, trigger bool) {
+			v := 10.0
+			if trigger {
+				v = 90
+			}
+			submitValue(f, t, v, setCPUAlertValue)
+		}, "CPU above threshold \U0001F534", "CPU below threshold ✅"},
+		{"Battery", func(f *systemAlertTestFixture, t *testing.T, trigger bool) {
+			v := [2]uint8{80, 1}
+			if trigger {
+				v = [2]uint8{10, 1}
+			}
+			submitValue(f, t, v, setBatteryAlertValue)
+		}, "battery below threshold \U0001F534", "battery above threshold ✅"},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			fixture := newSystemAlertTestFixture(t, tc.name, 1, 50)
+			defer fixture.cleanup()
+
+			synctest.Test(t, func(t *testing.T) {
+				tc.run(fixture, t, true)
+				waitForSystemAlert(time.Second)
+				tc.run(fixture, t, false)
+				waitForSystemAlert(time.Second)
+
+				messages := fixture.hub.TestMailer.Messages()
+				require.Len(t, messages, 2)
+				assert.True(t, strings.HasSuffix(messages[0].Subject, tc.trigger), messages[0].Subject)
+				assert.True(t, strings.HasSuffix(messages[1].Subject, tc.resolve), messages[1].Subject)
+
+				waitForSystemAlert(time.Minute)
+			})
+		})
+	}
 }
