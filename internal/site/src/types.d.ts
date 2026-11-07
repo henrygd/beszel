@@ -36,6 +36,8 @@ export interface SystemRecord extends RecordModel {
 export interface WiFi {
 	s?: string
 	r?: number
+	/** access point; r is the average RSSI of associated clients */
+	a?: boolean
 }
 
 export interface SystemInfo {
