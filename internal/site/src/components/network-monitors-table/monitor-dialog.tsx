@@ -29,6 +29,7 @@ import { useToast } from "@/components/ui/use-toast"
 import { $systems } from "@/lib/stores"
 import { cn, supportsNetworkMonitors } from "@/lib/utils"
 import { getMonitorTarget, isHttpsTarget } from "@/lib/network-monitor-utils"
+import { formatMonitorFields, parseMonitorFields } from "@/lib/monitor-bulk-format"
 import type { NetworkMonitorRecord } from "@/types"
 import * as v from "valibot"
 
@@ -182,7 +183,7 @@ function getMonitorIdentityKey({ system, target, protocol, port, server }: Monit
 }
 
 function parseBulkMonitorLine(line: string, lineNumber: number, system: string) {
-	const [rawTarget = "", rawProtocol = "", rawPort = "", rawInterval = "", rawServer = ""] = line.split(",")
+	const [rawTarget = "", rawProtocol = "", rawPort = "", rawInterval = "", rawServer = ""] = parseMonitorFields(line)
 	const parsed = v.safeParse(BulkMonitorSchema, {
 		target: rawTarget,
 		protocol: rawProtocol,
@@ -211,7 +212,7 @@ export function formatBulkMonitorLine(monitor: BulkMonitorLineSource) {
 	const port = monitor.protocol !== "tcp" || monitor.port === 443 ? "" : `${monitor.port}`
 	const interval = monitor.interval === defaultInterval ? "" : `${monitor.interval}`
 	const server = monitor.protocol !== "dns" ? "" : monitor.server
-	return trimTrailingEmptyFields([monitor.target, monitor.protocol, port, interval, server]).join(",")
+	return formatMonitorFields(trimTrailingEmptyFields([monitor.target, monitor.protocol, port, interval, server]))
 }
 
 export function SystemMultiSelect({
