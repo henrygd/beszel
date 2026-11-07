@@ -77,6 +77,11 @@ export function getUserChartTime(settings: UserSettings = $userSettings.get()): 
 	return settings.chartTime || defaultChartTime
 }
 
+/** Favicon badge setting stored in user settings, or enabled if it's missing */
+export function getShowFaviconBadge(settings: UserSettings = $userSettings.get()): boolean {
+	return settings.showFaviconBadge !== false
+}
+
 /**
  * Apply settings loaded from the database, including the default chart time.
  * Other settings writes don't touch $chartTime so they can't reset the active chart range.

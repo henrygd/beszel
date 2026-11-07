@@ -8,6 +8,8 @@ import {
 	$pausedSystems,
 	$systemsLoaded,
 	$upSystems,
+	$userSettings,
+	getShowFaviconBadge,
 } from "@/lib/stores"
 import { updateFavicon } from "@/lib/utils"
 import type { SystemRecord } from "@/types"
@@ -26,6 +28,9 @@ export function init() {
 		return
 	}
 	initialized = true
+
+	// favicon badge can be turned off in user settings
+	$userSettings.listen(onSystemsChanged)
 
 	// sync system stores on change
 	$allSystemsById.listen((newSystems, oldSystems, changedKey) => {
@@ -71,7 +76,7 @@ export function init() {
 
 /** Update the favicon based on system status */
 function onSystemsChanged() {
-	updateFavicon(Object.keys($downSystems.get()).length)
+	updateFavicon(getShowFaviconBadge() ? Object.keys($downSystems.get()).length : 0)
 }
 
 /** Fetch systems from collection */
