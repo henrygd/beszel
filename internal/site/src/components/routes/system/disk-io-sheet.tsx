@@ -121,9 +121,10 @@ export default memo(function DiskIOSheet({
 						title={title}
 						description={description}
 						cornerEl={maxValSelect}
-						// legend={true}
+						legend={true}
 					>
 						<AreaChartDefault
+							legend={true}
 							chartData={chartData}
 							maxToggled={showMax}
 							chartProps={chartProps}
@@ -171,8 +172,10 @@ export default memo(function DiskIOSheet({
 						})}
 						className="min-h-auto"
 						cornerEl={maxValSelect}
+						legend={true}
 					>
 						<AreaChartDefault
+							legend={true}
 							chartData={chartData}
 							tickFormatter={(val) => `${toFixedFloat(val, 2)}%`}
 							contentFormatter={({ value }) => `${decimalString(value)}%`}
@@ -240,9 +243,10 @@ export default memo(function DiskIOSheet({
 							})}
 							className="min-h-auto"
 							cornerEl={maxValSelect}
-							// legend={true}
+							legend={true}
 						>
 							<AreaChartDefault
+								legend={true}
 								chartData={chartData}
 								tickFormatter={(val) => `${toFixedFloat(val, 2)} ms`}
 								contentFormatter={({ value }) => `${decimalString(value)} ms`}
