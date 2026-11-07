@@ -15,12 +15,13 @@ import (
 )
 
 type nvtopSnapshot struct {
-	DeviceName string  `json:"device_name"`
-	Temp       *string `json:"temp"`
-	PowerDraw  *string `json:"power_draw"`
-	GpuUtil    *string `json:"gpu_util"`
-	MemTotal   *string `json:"mem_total"`
-	MemUsed    *string `json:"mem_used"`
+	DeviceName   string  `json:"device_name"`
+	Temp         *string `json:"temp"`
+	PowerDraw    *string `json:"power_draw"`
+	GpuUtil      *string `json:"gpu_util"`
+	EncodeDecode *string `json:"encode_decode"`
+	MemTotal     *string `json:"mem_total"`
+	MemUsed      *string `json:"mem_used"`
 }
 
 // parseNvtopNumber parses nvtop numeric strings with units (C/W/%).
@@ -94,6 +95,12 @@ func (gm *GPUManager) updateNvtopSnapshots(snapshots []nvtopSnapshot) bool {
 		}
 		if sample.GpuUtil != nil {
 			gpu.Usage += parseNvtopNumber(*sample.GpuUtil)
+		}
+		if sample.EncodeDecode != nil {
+			if gpu.Engines == nil {
+				gpu.Engines = make(map[string]float64)
+			}
+			gpu.Engines["ENC/DEC"] += parseNvtopNumber(*sample.EncodeDecode)
 		}
 		if sample.PowerDraw != nil {
 			gpu.Power += parseNvtopNumber(*sample.PowerDraw)
