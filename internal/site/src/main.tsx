@@ -24,6 +24,7 @@ import {
 	defaultLayoutWidth,
 } from "@/lib/stores.ts"
 import * as systemsManager from "@/lib/systemsManager.ts"
+import * as tagsManager from "@/lib/tagsManager.ts"
 import type { BeszelInfo, UpdateInfo } from "./types"
 
 const LoginPage = lazy(() => import("@/components/login/login.tsx"))
@@ -53,6 +54,8 @@ const App = memo(() => {
 		})
 		// get user settings
 		updateUserSettings()
+		// subscribe before fetching so changes made in between aren't missed
+		tagsManager.subscribe().then(tagsManager.refresh)
 		// need to get system list before alerts
 		systemsManager.init()
 		systemsManager
@@ -68,6 +71,7 @@ const App = memo(() => {
 			unsubscribeAuth()
 			alertManager.unsubscribe()
 			systemsManager.unsubscribe()
+			tagsManager.unsubscribe()
 		}
 	}, [])
 

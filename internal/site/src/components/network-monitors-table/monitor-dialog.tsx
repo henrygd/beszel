@@ -1,7 +1,7 @@
 import { type ReactNode, useCallback, useEffect, useRef, useState } from "react"
 import { Trans, useLingui } from "@lingui/react/macro"
 import { useStore } from "@nanostores/react"
-import { pb } from "@/lib/api"
+import { pb, sendInBatches } from "@/lib/api"
 import {
 	Dialog,
 	DialogContent,
@@ -547,20 +547,7 @@ export function AddMonitorDialog({ systemId, monitors }: { systemId?: string; mo
 
 				if (!newPayloads.length) continue
 
-				let batch = pb.createBatch()
-				let inBatch = 0
-				for (const payload of newPayloads) {
-					batch.collection("network_monitors").create(payload)
-					inBatch++
-					if (inBatch > 20) {
-						await batch.send()
-						batch = pb.createBatch()
-						inBatch = 0
-					}
-				}
-				if (inBatch) {
-					await batch.send()
-				}
+				await sendInBatches(newPayloads, (batch, payload) => batch.collection("network_monitors").create(payload))
 				totalCreated += newPayloads.length
 			}
 
