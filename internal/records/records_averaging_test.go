@@ -899,3 +899,36 @@ func TestAverageSystemStatsSlice_BtrfsDisplayName(t *testing.T) {
 	assert.Equal(t, "after", result.ZfsPools["b:uuid"].DisplayName)
 	assert.Equal(t, float64(15), result.ZfsPools["b:uuid"].Used)
 }
+
+// Disk capacity must survive repeated rollups even when deprecated GB fields round to zero.
+func TestAverageSystemStatsSlice_SmallDiskBytes(t *testing.T) {
+	recordsToAverage := []system.Stats{
+		{DiskBytes: [2]uint64{4 << 20, 1 << 20}, ExtraFs: map[string]*system.FsStats{"flash": {DiskBytes: [2]uint64{2 << 20, 512 << 10}}}},
+		{DiskBytes: [2]uint64{4 << 20, 3 << 20}, ExtraFs: map[string]*system.FsStats{"flash": {DiskBytes: [2]uint64{2 << 20, 1536 << 10}}}},
+	}
+	result := records.AverageSystemStatsSlice(recordsToAverage)
+	for range 4 {
+		require.Equal(t, [2]uint64{4 << 20, 2 << 20}, result.DiskBytes)
+		require.Equal(t, [2]uint64{2 << 20, 1 << 20}, result.ExtraFs["flash"].DiskBytes)
+		require.Zero(t, result.DiskTotal)
+		require.Zero(t, result.DiskUsed)
+		result = records.AverageSystemStatsSlice([]system.Stats{result, result})
+	}
+}
+
+func TestAverageSystemStatsSlice_LegacyDiskFields(t *testing.T) {
+	const gb = 1024 * 1024 * 1024
+	input := []system.Stats{
+		{DiskTotal: 4.0 / 1024, DiskUsed: 1.0 / 1024, ExtraFs: map[string]*system.FsStats{"flash": {DiskTotal: 2, DiskUsed: 0.5}}},
+		{DiskBytes: [2]uint64{4 << 20, 3 << 20}, DiskTotal: 99, DiskUsed: 99, ExtraFs: map[string]*system.FsStats{"flash": {DiskBytes: [2]uint64{2 * gb, 1.5 * gb}, DiskTotal: 99, DiskUsed: 99}}},
+	}
+	result := records.AverageSystemStatsSlice(input)
+	require.Equal(t, [2]uint64{4 << 20, 2 << 20}, result.DiskBytes)
+	require.Equal(t, [2]uint64{2 * gb, gb}, result.ExtraFs["flash"].DiskBytes)
+	require.Equal(t, 2.0, result.ExtraFs["flash"].DiskTotal)
+	require.Equal(t, 1.0, result.ExtraFs["flash"].DiskUsed)
+	// Normal GB-sized root disks retain the same legacy fields for integrations.
+	result = records.AverageSystemStatsSlice([]system.Stats{{DiskBytes: [2]uint64{500 * gb, 125 * gb}}})
+	require.Equal(t, 500.0, result.DiskTotal)
+	require.Equal(t, 125.0, result.DiskUsed)
+}

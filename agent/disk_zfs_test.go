@@ -108,3 +108,34 @@ func TestInitializeDiskIoStatsSkipsZfsMountpoints(t *testing.T) {
 	// ZFS entry is present but untouched by diskstats initialization.
 	assert.Equal(t, uint64(0), agent.fsStats["tank"].TotalRead)
 }
+
+func TestUpdateDiskUsageSmallCapacityBytes(t *testing.T) {
+	zm := &StoragePoolManager{detailInterval: time.Hour, backends: []*poolBackend{{name: "zfs"}}}
+	zm.backends[0].datasetsFn = func() ([]zfs.Dataset, error) {
+		return []zfs.Dataset{
+			{Name: "tiny/root", Used: 1 << 20, Avail: 3 << 20, Mountpoint: "/tiny-root"},
+			{Name: "tiny/extra", Used: 512 << 10, Avail: 1536 << 10, Mountpoint: "/tiny-extra"},
+		}, nil
+	}
+	agent := &Agent{fsStats: map[string]*system.FsStats{
+		"root":  {Root: true, Mountpoint: "/tiny-root"},
+		"extra": {Mountpoint: "/tiny-extra"},
+	}, storagePoolManager: zm}
+	var stats system.Stats
+	agent.updateDiskUsage(&stats)
+	require.Equal(t, [2]uint64{4 << 20, 1 << 20}, stats.DiskBytes)
+	require.Equal(t, [2]uint64{2 << 20, 512 << 10}, agent.fsStats["extra"].DiskBytes)
+	require.Equal(t, 25.0, stats.DiskPct)
+	require.Zero(t, stats.DiskTotal)
+	require.Zero(t, stats.DiskUsed)
+}
+
+func TestUpdateDiskUsageErrorClearsBytes(t *testing.T) {
+	agent := &Agent{fsStats: map[string]*system.FsStats{
+		"unmounted": {Mountpoint: t.TempDir() + "/missing", DiskBytes: [2]uint64{4 << 20, 1 << 20}, DiskTotal: 1, DiskUsed: 0.5},
+	}}
+	var stats system.Stats
+	agent.updateDiskUsage(&stats)
+	require.Zero(t, agent.fsStats["unmounted"].DiskBytes)
+	require.Zero(t, agent.fsStats["unmounted"].DiskTotal)
+}

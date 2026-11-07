@@ -301,3 +301,23 @@ func TestCreateRecordsSavesCpuSockets(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, 2, record.GetInt("sockets"))
 }
+
+func TestMigrateDiskBytes(t *testing.T) {
+	const gb = 1024 * 1024 * 1024
+	data := &system.CombinedData{Stats: system.Stats{
+		DiskTotal: 4.0 / 1024, DiskUsed: 1.0 / 1024,
+		ExtraFs: map[string]*system.FsStats{
+			"old": {DiskTotal: 2, DiskUsed: 0.5},
+			"new": {DiskBytes: [2]uint64{2 << 20, 1 << 20}, DiskTotal: 99, DiskUsed: 99},
+			"nil": nil,
+		},
+	}}
+	migrateDeprecatedFields(data, true)
+	require.Equal(t, [2]uint64{4 << 20, 1 << 20}, data.Stats.DiskBytes)
+	require.Equal(t, [2]uint64{2 * gb, 0.5 * gb}, data.Stats.ExtraFs["old"].DiskBytes)
+	require.Equal(t, [2]uint64{2 << 20, 1 << 20}, data.Stats.ExtraFs["new"].DiskBytes)
+	require.Equal(t, 4.0/1024, data.Stats.DiskTotal)
+	data.Stats.DiskBytes = [2]uint64{8 << 20, 3 << 20}
+	migrateDeprecatedFields(data, true)
+	require.Equal(t, [2]uint64{8 << 20, 3 << 20}, data.Stats.DiskBytes)
+}
