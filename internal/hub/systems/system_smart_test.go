@@ -233,3 +233,74 @@ func TestSaveSmartDevices_EmptyDataIsNoop(t *testing.T) {
 	records := countSmartDeviceRecords(t, testApp, sys.Id)
 	assert.Len(t, records, 1, "empty fetch result should not delete existing devices")
 }
+
+func TestSaveSmartDevicesPersistsTrendHealth(t *testing.T) {
+	sys, testApp := newTestSystemWithHub(t)
+	attrs := []*smart.SmartAttribute{
+		{ID: 5, Name: "Reallocated_Sector_Ct", RawValue: 5},
+		{ID: 197, Name: "Current_Pending_Sector", RawValue: 0},
+		{ID: 198, Name: "Offline_Uncorrectable", RawValue: 0},
+	}
+	require.NoError(t, sys.saveSmartDevices(map[string]smart.SmartData{
+		"SERIAL": {SerialNumber: "SERIAL", DiskName: "sda", DiskType: "sat", SmartStatus: "WARNING", Attributes: attrs},
+	}, true))
+
+	record, err := testApp.FindRecordById("smart_devices", makeStableHashId(sys.Id, "SERIAL"))
+	require.NoError(t, err)
+	assert.Equal(t, "PASSED", record.GetString("state"), "the hub should replace the legacy any-nonzero agent warning")
+
+	var history smart.SmartTrendState
+	decodeRecordJSON(record, "smart_history", &history)
+	assert.Equal(t, "SERIAL", history.Serial)
+	require.Len(t, history.Samples, 1)
+	assert.EqualValues(t, 5, history.Samples[0].Reallocated)
+
+	var health smart.SmartHealthAnalysis
+	decodeRecordJSON(record, "smart_health", &health)
+	assert.Equal(t, "PASSED", health.Status)
+	assert.Equal(t, "WARNING", health.ReportedStatus)
+}
+
+func TestSaveSmartDevicesSeedsHistoryFromExistingRecord(t *testing.T) {
+	sys, testApp := newTestSystemWithHub(t)
+	collection, err := testApp.FindCachedCollectionByNameOrId("smart_devices")
+	require.NoError(t, err)
+	legacy := core.NewRecord(collection)
+	legacy.Set("id", makeStableHashId(sys.Id, "SERIAL"))
+	legacy.Set("system", sys.Id)
+	legacy.Set("name", "sda")
+	legacy.Set("serial", "SERIAL")
+	legacy.Set("state", "PASSED")
+	legacy.Set("attributes", []*smart.SmartAttribute{{ID: 5, RawValue: 1}, {ID: 197}, {ID: 198}})
+	require.NoError(t, testApp.SaveNoValidate(legacy))
+
+	require.NoError(t, sys.saveSmartDevices(map[string]smart.SmartData{
+		"SERIAL": {SerialNumber: "SERIAL", DiskName: "sda", DiskType: "sat", SmartStatus: "PASSED", Attributes: []*smart.SmartAttribute{{ID: 5, RawValue: 2}, {ID: 197}, {ID: 198}}},
+	}, true))
+
+	record, err := testApp.FindRecordById("smart_devices", makeStableHashId(sys.Id, "SERIAL"))
+	require.NoError(t, err)
+	var history smart.SmartTrendState
+	decodeRecordJSON(record, "smart_history", &history)
+	require.Len(t, history.Samples, 2)
+	assert.EqualValues(t, 1, history.Samples[0].Reallocated)
+	assert.EqualValues(t, 2, history.Samples[1].Reallocated)
+}
+
+func TestSaveSmartDevicesResetsTrendHistoryWhenSerialChanges(t *testing.T) {
+	sys, testApp := newTestSystemWithHub(t)
+	require.NoError(t, sys.saveSmartDevices(map[string]smart.SmartData{
+		"path-sda": {SerialNumber: "OLD", DiskName: "sda", DiskType: "sat", SmartStatus: "PASSED", Attributes: []*smart.SmartAttribute{{ID: 5, RawValue: 100}}},
+	}, true))
+	require.NoError(t, sys.saveSmartDevices(map[string]smart.SmartData{
+		"path-sda": {SerialNumber: "NEW", DiskName: "sda", DiskType: "sat", SmartStatus: "PASSED", Attributes: []*smart.SmartAttribute{{ID: 5, RawValue: 1}}},
+	}, true))
+
+	record, err := testApp.FindRecordById("smart_devices", makeStableHashId(sys.Id, "path-sda"))
+	require.NoError(t, err)
+	var history smart.SmartTrendState
+	decodeRecordJSON(record, "smart_history", &history)
+	assert.Equal(t, "NEW", history.Serial)
+	require.Len(t, history.Samples, 1)
+	assert.EqualValues(t, 1, history.Samples[0].Reallocated)
+}
