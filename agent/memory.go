@@ -36,7 +36,7 @@ func (a *Agent) updateMemoryStats(stats *system.Stats) {
 		used, cacheBuff, _ := calculateHostMemoryUsage(v, a.memCalc == "htop")
 		metrics = memoryMetrics{Total: v.Total, Used: used, BuffCache: cacheBuff}
 		// Host ARC must not be subtracted from container-scoped accounting.
-		if a.zfs {
+		if a.zfs && canSubtractZfsArc() {
 			if size, _ := zfs.ARCSize(); size > 0 && size < metrics.Used {
 				arcSize = size
 				metrics.Used -= arcSize

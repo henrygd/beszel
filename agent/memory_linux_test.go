@@ -125,6 +125,15 @@ func TestContainerMemoryScopeAndEnablement(t *testing.T) {
 	assert.False(t, ok)
 }
 
+func TestCanSubtractZfsArc(t *testing.T) {
+	setupMemoryCgroup(t, true)
+	inLxc = sync.OnceValue(detectLxc)
+	assert.True(t, canSubtractZfsArc())
+	markLxc(t)
+	inLxc = sync.OnceValue(detectLxc)
+	assert.False(t, canSubtractZfsArc()) // host ARC must not leak into LXC accounting
+}
+
 func TestUpdateMemoryStatsCgroupAndFallback(t *testing.T) {
 	dir := setupMemoryCgroup(t, true)
 	const gib = uint64(1 << 30)
