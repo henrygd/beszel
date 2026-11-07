@@ -13,6 +13,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/henrygd/beszel/internal/entities/monitor"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"golang.org/x/net/icmp"
@@ -408,7 +409,7 @@ func TestDetectICMPMode(t *testing.T) {
 
 func TestResolveICMPTarget(t *testing.T) {
 	t.Run("IPv4 literal", func(t *testing.T) {
-		family, ip, err := resolveICMPTarget(context.Background(), "127.0.0.1")
+		family, ip, err := resolveICMPTarget(context.Background(), "127.0.0.1", monitor.IPVersionAuto)
 		require.NoError(t, err)
 		require.NotNil(t, family)
 		assert.False(t, family.isIPv6)
@@ -416,7 +417,7 @@ func TestResolveICMPTarget(t *testing.T) {
 	})
 
 	t.Run("IPv6 literal", func(t *testing.T) {
-		family, ip, err := resolveICMPTarget(context.Background(), "::1")
+		family, ip, err := resolveICMPTarget(context.Background(), "::1", monitor.IPVersionAuto)
 		require.NoError(t, err)
 		require.NotNil(t, family)
 		assert.True(t, family.isIPv6)
@@ -424,10 +425,29 @@ func TestResolveICMPTarget(t *testing.T) {
 	})
 
 	t.Run("IPv4-mapped IPv6 resolves as IPv4", func(t *testing.T) {
-		family, ip, err := resolveICMPTarget(context.Background(), "::ffff:127.0.0.1")
+		family, ip, err := resolveICMPTarget(context.Background(), "::ffff:127.0.0.1", monitor.IPVersionAuto)
 		require.NoError(t, err)
 		require.NotNil(t, family)
 		assert.False(t, family.isIPv6)
 		assert.Equal(t, "127.0.0.1", ip.String())
+	})
+	t.Run("IP version selects the family", func(t *testing.T) {
+		family, ip, err := resolveICMPTarget(context.Background(), "127.0.0.1", monitor.IPVersion4)
+		require.NoError(t, err)
+		assert.False(t, family.isIPv6)
+		assert.Equal(t, "127.0.0.1", ip.String())
+
+		family, ip, err = resolveICMPTarget(context.Background(), "::1", monitor.IPVersion6)
+		require.NoError(t, err)
+		assert.True(t, family.isIPv6)
+		assert.Equal(t, "::1", ip.String())
+	})
+
+	t.Run("IP version rejects a literal of the other family", func(t *testing.T) {
+		_, _, err := resolveICMPTarget(context.Background(), "127.0.0.1", monitor.IPVersion6)
+		require.EqualError(t, err, "no IPv6 address for 127.0.0.1")
+
+		_, _, err = resolveICMPTarget(context.Background(), "::1", monitor.IPVersion4)
+		require.EqualError(t, err, "no IPv4 address for ::1")
 	})
 }

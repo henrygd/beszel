@@ -48,13 +48,22 @@ test("formats tcp targets with their port", () => {
 		"example.com/health"
 	)
 	expect(getMonitorTarget({ target: "http://example.com", protocol: "http", port: 0 })).toBe("example.com")
+	expect(getMonitorTarget({ target: "example.com", protocol: "icmp", port: 0, ipVersion: 6 })).toBe(
+		"example.com (IPv6)"
+	)
+	expect(getMonitorTarget({ target: "::1", protocol: "tcp", port: 22, ipVersion: 6 })).toBe("[::1]:22 (IPv6)")
+	expect(getMonitorTarget({ target: "https://example.com", protocol: "http", port: 0, ipVersion: 4 })).toBe(
+		"example.com (IPv4)"
+	)
 })
 
-test("identity ignores the system but not protocol, port or server", () => {
+test("identity ignores the system but not protocol, port, server or IP version", () => {
 	expect(getMonitorIdentityKey(a1)).toBe(getMonitorIdentityKey(b1))
 	expect(getMonitorIdentityKey(a1)).not.toBe(getMonitorIdentityKey({ ...a1, protocol: "http" }))
 	expect(getMonitorIdentityKey(a1)).not.toBe(getMonitorIdentityKey({ ...a1, port: 80 }))
 	expect(getMonitorIdentityKey(a1)).not.toBe(getMonitorIdentityKey({ ...a1, server: "1.1.1.1" }))
+	expect(getMonitorIdentityKey(a1)).toBe(getMonitorIdentityKey({ ...a1, ipVersion: 0 }))
+	expect(getMonitorIdentityKey(a1)).not.toBe(getMonitorIdentityKey({ ...a1, ipVersion: 6 }))
 })
 
 test("with nothing selected only the opened monitor is charted", () => {

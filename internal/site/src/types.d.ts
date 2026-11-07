@@ -690,6 +690,8 @@ export interface NetworkMonitorRecord {
 	server: string
 	/** Skip TLS certificate verification for HTTPS targets. */
 	skipTlsVerify: boolean
+	/** Address family the agent probes over: 0 (auto), 4 (IPv4), or 6 (IPv6). */
+	ipVersion: 0 | 4 | 6
 	res: number
 	resMin1h: number
 	resMax1h: number
