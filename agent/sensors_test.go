@@ -30,8 +30,10 @@ func TestIsValidSensor(t *testing.T) {
 			name:       "Whitelist - sensor in list",
 			sensorName: "cpu_temp",
 			config: &SensorConfig{
-				sensors:     map[string]struct{}{"cpu_temp": {}},
-				isBlacklist: false,
+				sensors: sensorFilter{
+					sensors:     map[string]struct{}{"cpu_temp": {}},
+					isBlacklist: false,
+				},
 			},
 			expectedValid: true,
 		},
@@ -39,8 +41,10 @@ func TestIsValidSensor(t *testing.T) {
 			name:       "Whitelist - sensor not in list",
 			sensorName: "gpu_temp",
 			config: &SensorConfig{
-				sensors:     map[string]struct{}{"cpu_temp": {}},
-				isBlacklist: false,
+				sensors: sensorFilter{
+					sensors:     map[string]struct{}{"cpu_temp": {}},
+					isBlacklist: false,
+				},
 			},
 			expectedValid: false,
 		},
@@ -48,8 +52,10 @@ func TestIsValidSensor(t *testing.T) {
 			name:       "Blacklist - sensor in list",
 			sensorName: "cpu_temp",
 			config: &SensorConfig{
-				sensors:     map[string]struct{}{"cpu_temp": {}},
-				isBlacklist: true,
+				sensors: sensorFilter{
+					sensors:     map[string]struct{}{"cpu_temp": {}},
+					isBlacklist: true,
+				},
 			},
 			expectedValid: false,
 		},
@@ -57,8 +63,10 @@ func TestIsValidSensor(t *testing.T) {
 			name:       "Blacklist - sensor not in list",
 			sensorName: "gpu_temp",
 			config: &SensorConfig{
-				sensors:     map[string]struct{}{"cpu_temp": {}},
-				isBlacklist: true,
+				sensors: sensorFilter{
+					sensors:     map[string]struct{}{"cpu_temp": {}},
+					isBlacklist: true,
+				},
 			},
 			expectedValid: true,
 		},
@@ -66,9 +74,11 @@ func TestIsValidSensor(t *testing.T) {
 			name:       "Whitelist with wildcard - matching pattern",
 			sensorName: "core_0_temp",
 			config: &SensorConfig{
-				sensors:      map[string]struct{}{"core_*_temp": {}},
-				isBlacklist:  false,
-				hasWildcards: true,
+				sensors: sensorFilter{
+					sensors:      map[string]struct{}{"core_*_temp": {}},
+					isBlacklist:  false,
+					hasWildcards: true,
+				},
 			},
 			expectedValid: true,
 		},
@@ -76,9 +86,11 @@ func TestIsValidSensor(t *testing.T) {
 			name:       "Whitelist with wildcard - non-matching pattern",
 			sensorName: "gpu_temp",
 			config: &SensorConfig{
-				sensors:      map[string]struct{}{"core_*_temp": {}},
-				isBlacklist:  false,
-				hasWildcards: true,
+				sensors: sensorFilter{
+					sensors:      map[string]struct{}{"core_*_temp": {}},
+					isBlacklist:  false,
+					hasWildcards: true,
+				},
 			},
 			expectedValid: false,
 		},
@@ -86,9 +98,11 @@ func TestIsValidSensor(t *testing.T) {
 			name:       "Blacklist with wildcard - matching pattern",
 			sensorName: "core_0_temp",
 			config: &SensorConfig{
-				sensors:      map[string]struct{}{"core_*_temp": {}},
-				isBlacklist:  true,
-				hasWildcards: true,
+				sensors: sensorFilter{
+					sensors:      map[string]struct{}{"core_*_temp": {}},
+					isBlacklist:  true,
+					hasWildcards: true,
+				},
 			},
 			expectedValid: false,
 		},
@@ -96,9 +110,11 @@ func TestIsValidSensor(t *testing.T) {
 			name:       "Blacklist with wildcard - non-matching pattern",
 			sensorName: "gpu_temp",
 			config: &SensorConfig{
-				sensors:      map[string]struct{}{"core_*_temp": {}},
-				isBlacklist:  true,
-				hasWildcards: true,
+				sensors: sensorFilter{
+					sensors:      map[string]struct{}{"core_*_temp": {}},
+					isBlacklist:  true,
+					hasWildcards: true,
+				},
 			},
 			expectedValid: true,
 		},
@@ -106,9 +122,11 @@ func TestIsValidSensor(t *testing.T) {
 			name:       "No sensors configured",
 			sensorName: "any_temp",
 			config: &SensorConfig{
-				sensors:        map[string]struct{}{},
-				isBlacklist:    false,
-				hasWildcards:   false,
+				sensors: sensorFilter{
+					sensors:      map[string]struct{}{},
+					isBlacklist:  false,
+					hasWildcards: false,
+				},
 				skipCollection: false,
 			},
 			expectedValid: true,
@@ -117,9 +135,11 @@ func TestIsValidSensor(t *testing.T) {
 			name:       "Mixed patterns in whitelist - exact match",
 			sensorName: "cpu_temp",
 			config: &SensorConfig{
-				sensors:      map[string]struct{}{"cpu_temp": {}, "core_*_temp": {}},
-				isBlacklist:  false,
-				hasWildcards: true,
+				sensors: sensorFilter{
+					sensors:      map[string]struct{}{"cpu_temp": {}, "core_*_temp": {}},
+					isBlacklist:  false,
+					hasWildcards: true,
+				},
 			},
 			expectedValid: true,
 		},
@@ -127,9 +147,11 @@ func TestIsValidSensor(t *testing.T) {
 			name:       "Mixed patterns in whitelist - wildcard match",
 			sensorName: "core_1_temp",
 			config: &SensorConfig{
-				sensors:      map[string]struct{}{"cpu_temp": {}, "core_*_temp": {}},
-				isBlacklist:  false,
-				hasWildcards: true,
+				sensors: sensorFilter{
+					sensors:      map[string]struct{}{"cpu_temp": {}, "core_*_temp": {}},
+					isBlacklist:  false,
+					hasWildcards: true,
+				},
 			},
 			expectedValid: true,
 		},
@@ -137,9 +159,11 @@ func TestIsValidSensor(t *testing.T) {
 			name:       "Mixed patterns in blacklist - exact match",
 			sensorName: "cpu_temp",
 			config: &SensorConfig{
-				sensors:      map[string]struct{}{"cpu_temp": {}, "core_*_temp": {}},
-				isBlacklist:  true,
-				hasWildcards: true,
+				sensors: sensorFilter{
+					sensors:      map[string]struct{}{"cpu_temp": {}, "core_*_temp": {}},
+					isBlacklist:  true,
+					hasWildcards: true,
+				},
 			},
 			expectedValid: false,
 		},
@@ -147,9 +171,11 @@ func TestIsValidSensor(t *testing.T) {
 			name:       "Mixed patterns in blacklist - wildcard match",
 			sensorName: "core_1_temp",
 			config: &SensorConfig{
-				sensors:      map[string]struct{}{"cpu_temp": {}, "core_*_temp": {}},
-				isBlacklist:  true,
-				hasWildcards: true,
+				sensors: sensorFilter{
+					sensors:      map[string]struct{}{"cpu_temp": {}, "core_*_temp": {}},
+					isBlacklist:  true,
+					hasWildcards: true,
+				},
 			},
 			expectedValid: false,
 		},
@@ -181,12 +207,14 @@ func TestNewSensorConfigWithEnv(t *testing.T) {
 			sysSensors:    "",
 			sensors:       "",
 			expectedConfig: &SensorConfig{
-				context:        context.Background(),
-				primarySensor:  "",
-				timeout:        2 * time.Second,
-				sensors:        map[string]struct{}{},
-				isBlacklist:    false,
-				hasWildcards:   false,
+				context:       context.Background(),
+				primarySensor: "",
+				timeout:       2 * time.Second,
+				sensors: sensorFilter{
+					sensors:      map[string]struct{}{},
+					isBlacklist:  false,
+					hasWildcards: false,
+				},
 				skipCollection: false,
 			},
 		},
@@ -199,7 +227,9 @@ func TestNewSensorConfigWithEnv(t *testing.T) {
 			expectedConfig: &SensorConfig{
 				context: context.Background(),
 				timeout: 5 * time.Second,
-				sensors: map[string]struct{}{},
+				sensors: sensorFilter{
+					sensors: map[string]struct{}{},
+				},
 			},
 		},
 		{
@@ -211,7 +241,9 @@ func TestNewSensorConfigWithEnv(t *testing.T) {
 			expectedConfig: &SensorConfig{
 				context: context.Background(),
 				timeout: 2 * time.Second,
-				sensors: map[string]struct{}{},
+				sensors: sensorFilter{
+					sensors: map[string]struct{}{},
+				},
 			},
 		},
 		{
@@ -221,12 +253,14 @@ func TestNewSensorConfigWithEnv(t *testing.T) {
 			sensors:        "",
 			skipCollection: true,
 			expectedConfig: &SensorConfig{
-				context:        context.Background(),
-				primarySensor:  "",
-				timeout:        2 * time.Second,
-				sensors:        map[string]struct{}{},
-				isBlacklist:    false,
-				hasWildcards:   false,
+				context:       context.Background(),
+				primarySensor: "",
+				timeout:       2 * time.Second,
+				sensors: sensorFilter{
+					sensors:      map[string]struct{}{},
+					isBlacklist:  false,
+					hasWildcards: false,
+				},
 				skipCollection: true,
 			},
 		},
@@ -239,9 +273,11 @@ func TestNewSensorConfigWithEnv(t *testing.T) {
 				context:       context.Background(),
 				primarySensor: "cpu_temp",
 				timeout:       2 * time.Second,
-				sensors:       map[string]struct{}{},
-				isBlacklist:   false,
-				hasWildcards:  false,
+				sensors: sensorFilter{
+					sensors:      map[string]struct{}{},
+					isBlacklist:  false,
+					hasWildcards: false,
+				},
 			},
 		},
 		{
@@ -253,12 +289,14 @@ func TestNewSensorConfigWithEnv(t *testing.T) {
 				context:       context.Background(),
 				primarySensor: "cpu_temp",
 				timeout:       2 * time.Second,
-				sensors: map[string]struct{}{
-					"cpu_temp": {},
-					"gpu_temp": {},
+				sensors: sensorFilter{
+					sensors: map[string]struct{}{
+						"cpu_temp": {},
+						"gpu_temp": {},
+					},
+					isBlacklist:  false,
+					hasWildcards: false,
 				},
-				isBlacklist:  false,
-				hasWildcards: false,
 			},
 		},
 		{
@@ -270,12 +308,14 @@ func TestNewSensorConfigWithEnv(t *testing.T) {
 				context:       context.Background(),
 				primarySensor: "cpu_temp",
 				timeout:       2 * time.Second,
-				sensors: map[string]struct{}{
-					"cpu_temp": {},
-					"gpu_temp": {},
+				sensors: sensorFilter{
+					sensors: map[string]struct{}{
+						"cpu_temp": {},
+						"gpu_temp": {},
+					},
+					isBlacklist:  true,
+					hasWildcards: false,
 				},
-				isBlacklist:  true,
-				hasWildcards: false,
 			},
 		},
 		{
@@ -287,12 +327,14 @@ func TestNewSensorConfigWithEnv(t *testing.T) {
 				context:       context.Background(),
 				primarySensor: "cpu_temp",
 				timeout:       2 * time.Second,
-				sensors: map[string]struct{}{
-					"cpu_*":    {},
-					"gpu_temp": {},
+				sensors: sensorFilter{
+					sensors: map[string]struct{}{
+						"cpu_*":    {},
+						"gpu_temp": {},
+					},
+					isBlacklist:  false,
+					hasWildcards: true,
 				},
-				isBlacklist:  false,
-				hasWildcards: true,
 			},
 		},
 		{
@@ -304,12 +346,14 @@ func TestNewSensorConfigWithEnv(t *testing.T) {
 				context:       context.Background(),
 				primarySensor: "cpu_temp",
 				timeout:       2 * time.Second,
-				sensors: map[string]struct{}{
-					"cpu_*":    {},
-					"gpu_temp": {},
+				sensors: sensorFilter{
+					sensors: map[string]struct{}{
+						"cpu_*":    {},
+						"gpu_temp": {},
+					},
+					isBlacklist:  false,
+					hasWildcards: true,
 				},
-				isBlacklist:  false,
-				hasWildcards: true,
 			},
 		},
 		{
@@ -320,11 +364,13 @@ func TestNewSensorConfigWithEnv(t *testing.T) {
 			expectedConfig: &SensorConfig{
 				primarySensor: "cpu_temp",
 				timeout:       2 * time.Second,
-				sensors: map[string]struct{}{
-					"cpu_temp": {},
+				sensors: sensorFilter{
+					sensors: map[string]struct{}{
+						"cpu_temp": {},
+					},
+					isBlacklist:  false,
+					hasWildcards: false,
 				},
-				isBlacklist:  false,
-				hasWildcards: false,
 			},
 		},
 	}
@@ -337,19 +383,19 @@ func TestNewSensorConfigWithEnv(t *testing.T) {
 			assert.Equal(t, tt.expectedConfig.primarySensor, result.primarySensor)
 
 			// Check sensor map
-			if tt.expectedConfig.sensors == nil {
-				assert.Nil(t, result.sensors)
+			if tt.expectedConfig.sensors.sensors == nil {
+				assert.Nil(t, result.sensors.sensors)
 			} else {
-				assert.Equal(t, len(tt.expectedConfig.sensors), len(result.sensors))
-				for sensor := range tt.expectedConfig.sensors {
-					_, exists := result.sensors[sensor]
+				assert.Equal(t, len(tt.expectedConfig.sensors.sensors), len(result.sensors.sensors))
+				for sensor := range tt.expectedConfig.sensors.sensors {
+					_, exists := result.sensors.sensors[sensor]
 					assert.True(t, exists, "Sensor %s should exist in the result", sensor)
 				}
 			}
 
 			// Check flags
-			assert.Equal(t, tt.expectedConfig.isBlacklist, result.isBlacklist)
-			assert.Equal(t, tt.expectedConfig.hasWildcards, result.hasWildcards)
+			assert.Equal(t, tt.expectedConfig.sensors.isBlacklist, result.sensors.isBlacklist)
+			assert.Equal(t, tt.expectedConfig.sensors.hasWildcards, result.sensors.hasWildcards)
 			assert.Equal(t, tt.expectedConfig.timeout, result.timeout)
 
 			// Check context
@@ -378,10 +424,10 @@ func TestNewSensorConfig(t *testing.T) {
 	// Verify results
 	assert.Equal(t, "test_primary", result.primarySensor)
 	assert.Equal(t, 7*time.Second, result.timeout)
-	assert.NotNil(t, result.sensors)
-	assert.Equal(t, 3, len(result.sensors))
-	assert.True(t, result.hasWildcards)
-	assert.False(t, result.isBlacklist)
+	assert.NotNil(t, result.sensors.sensors)
+	assert.Equal(t, 3, len(result.sensors.sensors))
+	assert.True(t, result.sensors.hasWildcards)
+	assert.False(t, result.sensors.isBlacklist)
 
 	// Check that sys sensors path is in context
 	envMap, ok := result.context.Value(common.EnvKey).(common.EnvMap)
@@ -389,6 +435,70 @@ func TestNewSensorConfig(t *testing.T) {
 	sysPath, ok := envMap[common.HostSysEnvKey]
 	require.True(t, ok, "EnvMap should contain HostSysEnvKey")
 	assert.Equal(t, "/test/path", sysPath)
+}
+
+func TestParseSensorFilter(t *testing.T) {
+	tests := []struct {
+		name     string
+		val      string
+		expected sensorFilter
+	}{
+		{"empty", "", sensorFilter{sensors: map[string]struct{}{}}},
+		{"blacklist prefix only", "-", sensorFilter{sensors: map[string]struct{}{}, isBlacklist: true}},
+		{"whitelist", "nct6791_fan2, nct6791_fan4,", sensorFilter{sensors: map[string]struct{}{"nct6791_fan2": {}, "nct6791_fan4": {}}}},
+		{"blacklist with wildcard", "-gpio_fan_*,nct6791_fan1", sensorFilter{sensors: map[string]struct{}{"gpio_fan_*": {}, "nct6791_fan1": {}}, isBlacklist: true, hasWildcards: true}},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.Equal(t, tt.expected, parseSensorFilter(tt.val))
+		})
+	}
+}
+
+func TestSensorFilterAllows(t *testing.T) {
+	tests := []struct {
+		name       string
+		filter     string
+		sensorName string
+		expected   bool
+	}{
+		{"empty list allows all", "", "nct6791_fan1", true},
+		{"blacklist prefix only allows all", "-", "nct6791_fan1", true},
+		{"whitelist exact match", "nct6791_fan2", "nct6791_fan2", true},
+		{"whitelist no match", "nct6791_fan2", "nct6791_fan1", false},
+		{"blacklist exact match", "-gpio_fan_fan1", "gpio_fan_fan1", false},
+		{"blacklist no match", "-gpio_fan_fan1", "nct6791_fan1", true},
+		{"whitelist wildcard match", "nct6791_*", "nct6791_chassis", true},
+		{"whitelist wildcard no match", "nct6791_*", "gpio_fan_fan1", false},
+		{"blacklist wildcard match", "-*_fan1", "nct6791_fan1", false},
+		{"blacklist wildcard no match", "-*_fan1", "nct6791_fan2", true},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.Equal(t, tt.expected, parseSensorFilter(tt.filter).allows(tt.sensorName))
+		})
+	}
+}
+
+func TestNewSensorConfigFanSensors(t *testing.T) {
+	t.Setenv("SENSORS", "")
+	t.Setenv("BESZEL_AGENT_SENSORS", "")
+
+	t.Setenv("BESZEL_AGENT_FAN_SENSORS", "-gpio_fan_*")
+	config := (&Agent{}).newSensorConfig()
+	assert.False(t, config.skipFans)
+	assert.True(t, config.fanSensors.isBlacklist)
+	assert.True(t, config.fanSensors.hasWildcards)
+	assert.Contains(t, config.fanSensors.sensors, "gpio_fan_*")
+	// SENSORS is unaffected
+	assert.Empty(t, config.sensors.sensors)
+
+	// set but empty skips fan collection, like SENSORS
+	t.Setenv("BESZEL_AGENT_FAN_SENSORS", "")
+	config = (&Agent{}).newSensorConfig()
+	assert.True(t, config.skipFans)
 }
 
 func TestScaleTemperature(t *testing.T) {
@@ -783,7 +893,9 @@ func TestUpdateTemperaturesSkipGpu(t *testing.T) {
 			sensorConfig: &SensorConfig{
 				context: context.Background(),
 				timeout: 2 * time.Second,
-				sensors: map[string]struct{}{},
+				sensors: sensorFilter{
+					sensors: map[string]struct{}{},
+				},
 				skipGPU: skipGPU,
 			},
 		}
@@ -821,10 +933,12 @@ func TestUpdateTemperaturesExcludedSensorKeepsNames(t *testing.T) {
 		return &Agent{
 			systemInfo: system.Info{},
 			sensorConfig: &SensorConfig{
-				context:     context.Background(),
-				timeout:     2 * time.Second,
-				sensors:     config,
-				isBlacklist: exclude != "",
+				context: context.Background(),
+				timeout: 2 * time.Second,
+				sensors: sensorFilter{
+					sensors:     config,
+					isBlacklist: exclude != "",
+				},
 			},
 		}
 	}

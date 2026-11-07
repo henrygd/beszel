@@ -76,9 +76,29 @@ func TestStatsDiskIOTotalAndFansTransport(t *testing.T) {
 }
 
 func TestStatsBatteryNumericArrayUnmarshal(t *testing.T) {
-	var stats Stats
-	require.NoError(t, json.Unmarshal([]byte(`{"bat":[50,4]}`), &stats))
-	assert.Equal(t, Battery{50, 4}, stats.Battery)
+	for name, unmarshal := range map[string]func([]byte, any) error{
+		"json_v1": json.Unmarshal,
+		"json_v2": func(data []byte, val any) error { return jsonv2.Unmarshal(data, val) },
+	} {
+		t.Run(name, func(t *testing.T) {
+			var stats Stats
+			require.NoError(t, unmarshal([]byte(`{"bat":[50,4]}`), &stats))
+			assert.Equal(t, Battery{50, 4}, stats.Battery)
+
+			var info Info
+			require.NoError(t, unmarshal([]byte(`{"bat":[59,5],"jl":true}`), &info))
+			assert.True(t, info.SystemdLogs)
+			assert.Equal(t, Battery{59, 5}, info.Battery)
+
+			var bat Battery
+			require.NoError(t, unmarshal([]byte(`[100,2]`), &bat))
+			assert.Equal(t, Battery{100, 2}, bat)
+
+			var nullBat Battery
+			require.NoError(t, unmarshal([]byte(`null`), &nullBat))
+			assert.Equal(t, Battery{0, 0}, nullBat)
+		})
+	}
 }
 
 func TestStatsLegacyBatteryPayload(t *testing.T) {
