@@ -70,7 +70,7 @@ export default function ContainersTable({ systemId }: { systemId?: string }) {
 		function fetchData(systemId?: string) {
 			pb.collection<ContainerRecord>("containers")
 				.getList(0, 2000, {
-					fields: "id,name,image,updatable,ports,cpu,memory,net,health,status,system,updated",
+					fields: "id,name,image,updatable,ports,cpu,memory,net,health,status,system,stack,service,updated",
 					filter: systemId ? pb.filter("system={:system}", { system: systemId }) : undefined,
 				})
 				.then(({ items }) => {
@@ -164,7 +164,10 @@ export default function ContainersTable({ systemId }: { systemId?: string }) {
 			const healthLabel = ContainerHealthLabels[container.health as ContainerHealth] ?? ""
 			const image = container.image ?? ""
 			const ports = container.ports ?? ""
-			const searchString = `${systemName} ${id} ${name} ${healthLabel} ${status} ${image} ${ports}`.toLowerCase()
+			const stack = container.stack ?? ""
+			const service = container.service ?? ""
+			const searchString =
+				`${systemName} ${id} ${name} ${healthLabel} ${status} ${image} ${ports} ${stack} ${service}`.toLowerCase()
 
 			return (filterValue as string)
 				.toLowerCase()
