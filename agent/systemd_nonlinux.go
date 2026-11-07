@@ -19,6 +19,9 @@ func newSystemdManager() (*systemdManager, error) {
 	return &systemdManager{}, nil
 }
 
+// setHubServicePatterns does nothing on non-linux systems.
+func (sm *systemdManager) setHubServicePatterns([]string) {}
+
 // getServiceStats returns nil for non-linux systems.
 func (sm *systemdManager) getServiceStats(conn any, refresh bool) []*systemd.Service {
 	return nil
