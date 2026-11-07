@@ -68,7 +68,7 @@ func (am *AlertManager) HandleSystemAlerts(systemRecord *core.Record, data *syst
 			val = data.Info.MemPct
 		case "Bandwidth":
 			val = float64(data.Info.BandwidthBytes) / (1024 * 1024)
-			unit = " MB/s"
+			unit = " MiB/s"
 		case "Disk":
 			maxUsedPct := data.Info.DiskPct
 			for _, fs := range data.Stats.ExtraFs {
