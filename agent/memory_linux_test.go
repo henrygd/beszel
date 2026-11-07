@@ -148,6 +148,7 @@ func TestUpdateMemoryStatsCgroupAndFallback(t *testing.T) {
 	assert.Equal(t, float64(1), stats.SwapUsed)
 	assert.Equal(t, [4]uint64{10 * gib, 4 * gib, 2 * gib, 0}, stats.MemBytes)
 	assert.Equal(t, [2]uint64{2 * gib, gib}, stats.SwapBytes)
+	assert.Equal(t, float64(50), stats.SwapPct)
 	assert.Equal(t, 10*gib, a.systemDetails.MemoryTotal)
 	assert.True(t, a.detailsDirty)
 
@@ -169,6 +170,7 @@ func TestUpdateMemoryStatsCgroupAndFallback(t *testing.T) {
 	assert.Equal(t, float64(4), stats.MemBuffCache)
 	assert.Equal(t, float64(60), stats.MemPct)
 	assert.Equal(t, [4]uint64{20 * gib, 12 * gib, 4 * gib, 0}, stats.MemBytes)
+	assert.Equal(t, float64(50), stats.SwapPct)
 	assert.Equal(t, 20*gib, a.systemDetails.MemoryTotal)
 
 	// Finite cgroup limits still work if /proc/meminfo cannot be read.
@@ -182,6 +184,7 @@ func TestUpdateMemoryStatsCgroupAndFallback(t *testing.T) {
 	assert.Equal(t, [4]uint64{8 * gib, 6 * gib, 0, 0}, stats.MemBytes)
 	assert.Zero(t, stats.Swap)
 	assert.Zero(t, stats.SwapBytes)
+	assert.Zero(t, stats.SwapPct)
 }
 
 func TestMemoryDetailsInitiallyUseCgroupLimit(t *testing.T) {

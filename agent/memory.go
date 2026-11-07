@@ -23,8 +23,7 @@ func (a *Agent) updateMemoryStats(stats *system.Stats) {
 		// Swap retains its existing /proc/meminfo source in both memory paths.
 		stats.SwapBytes = [2]uint64{v.SwapTotal, saturatingSub(v.SwapTotal, v.SwapFree)}
 		// TODO: stop populating deprecated GB fields once hubs < 0.21.1 are no longer supported
-		stats.Swap = utils.BytesToGigabytes(stats.SwapBytes[0])
-		stats.SwapUsed = utils.BytesToGigabytes(stats.SwapBytes[1])
+		stats.Swap, stats.SwapUsed, stats.SwapPct = calculateSwapUsage(stats.SwapBytes[0], stats.SwapBytes[1])
 	}
 
 	var arcSize uint64

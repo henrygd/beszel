@@ -309,6 +309,7 @@ func AverageSystemStatsSlice(records []system.Stats) system.Stats {
 		sum.SwapBytes[0] += swapBytes[0]
 		sum.SwapBytes[1] += swapBytes[1]
 		sum.MemPct += stats.MemPct
+		sum.SwapPct += stats.SwapPct
 		sum.DiskTotal += stats.DiskTotal
 		sum.DiskUsed += stats.DiskUsed
 		sum.DiskPct += stats.DiskPct
@@ -501,6 +502,7 @@ func AverageSystemStatsSlice(records []system.Stats) system.Stats {
 	sum.MaxMem = bytesToGigabytes(sum.MaxMemBytes)
 	sum.Swap = bytesToGigabytes(sum.SwapBytes[0])
 	sum.SwapUsed = bytesToGigabytes(sum.SwapBytes[1])
+	sum.SwapPct = twoDecimals(sum.SwapPct / count)
 	sum.DiskTotal = twoDecimals(sum.DiskTotal / count)
 	sum.DiskUsed = twoDecimals(sum.DiskUsed / count)
 	sum.DiskPct = twoDecimals(sum.DiskPct / count)
