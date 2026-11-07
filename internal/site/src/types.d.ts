@@ -444,6 +444,8 @@ export interface AlertInfo {
 	singleDesc?: () => string
 	/** Hides the duration slider for alerts that fire on first observation */
 	noDuration?: boolean
+	/** Selectable duration units. Values are stored in minutes. */
+	durationUnits?: AlertDurationUnit[]
 	/** Hides the threshold control for binary alerts */
 	noThreshold?: boolean
 	/** Description shown instead of numeric threshold and duration values */
@@ -466,6 +468,8 @@ export interface AlertUnit {
 	/** Finer step for the number input, which also accepts values down to this step */
 	inputStep?: number
 }
+
+export type AlertDurationUnit = AlertUnit
 
 export type AlertMap = Record<string, Map<string, AlertRecord>>
 
