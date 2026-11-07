@@ -213,12 +213,15 @@ func countMdraidMemberStates(blockName, root string) (faultyDisks, populatedDisk
 // explained by RAID slots that were never populated. QNAP configures system
 // arrays with raid_disks set to a large fixed maximum (e.g. 32) far beyond the
 // handful of slots it ever populates, so sparse slots outnumber populated ones.
+// Synology uses the bay count for raid_disks, so the ratio of sparse to populated
+// disks differs; we check whether the degraded count is consistent with sparse
+// slots only (no member is missing that was ever registered).
 func isSparseSlotDegraded(health mdraidHealth) bool {
 	if health.populatedDisks == 0 || health.raidDisks <= health.populatedDisks {
 		return false
 	}
 	sparseSlots := health.raidDisks - health.populatedDisks
-	return sparseSlots > health.populatedDisks
+	return sparseSlots >= health.degraded
 }
 
 // isMdraidBlockName matches /dev/mdN-style block device names.
