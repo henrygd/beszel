@@ -86,8 +86,8 @@ export function hydrateUserSettings(settings: UserSettings) {
 	$chartTime.set(getUserChartTime(settings))
 }
 
-/** Container chart filter */
-export const $containerFilter = atom("")
+/** Containers selected in the container charts. Empty shows all containers. */
+export const $containerSelection = atom<string[]>([])
 
 /** Temperature chart filter */
 export const $temperatureFilter = atom("")
