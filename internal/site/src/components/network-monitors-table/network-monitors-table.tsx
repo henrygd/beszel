@@ -755,7 +755,8 @@ function NetworkMonitorSheetContent({
 				<div className="grid gap-4">
 					<div className="flex flex-wrap items-center gap-2">
 						<ChartTimeSelect
-							className="bg-card flex-1 min-w-0 basis-full sm:basis-0"
+							className="flex-1 min-w-0 basis-full sm:basis-0"
+							triggerClassName="bg-card"
 							agentVersion={chartData.agentVersion}
 							chartTimeStore={chartTimeStore}
 							allowRealtime={false}
