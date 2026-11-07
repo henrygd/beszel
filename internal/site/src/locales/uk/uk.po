@@ -8,7 +8,7 @@ msgstr ""
 "Language: uk\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2026-10-20 17:16\n"
+"PO-Revision-Date: 2026-10-25 15:27\n"
 "Last-Translator: \n"
 "Language-Team: Ukrainian\n"
 "Plural-Forms: nplurals=4; plural=((n%10==1 && n%100!=11) ? 0 : ((n%10 >= 2 && n%10 <=4 && (n%100 < 12 || n%100 > 14)) ? 1 : ((n%10 == 0 || (n%10 >= 5 && n%10 <=9)) || (n%100 >= 11 && n%100 <= 14)) ? 2 : 3));\n"
@@ -33,7 +33,7 @@ msgstr "Вибрано {0} з {1} рядків."
 #. placeholder {0}: table.getFilteredRowModel().rows.length
 #: src/components/ui/data-table-pagination.tsx
 msgid "{0} row(s)"
-msgstr "{0} рядк(ів)"
+msgstr "Кількість рядків: {0}"
 
 #. placeholder {0}: selectedIds.size
 #: src/components/network-monitors-table/monitor-dialog.tsx
@@ -438,7 +438,7 @@ msgstr "Сертифікат"
 
 #: src/lib/alerts.ts
 msgid "Certificate Expiration"
-msgstr "Закінчення терміну дії сертифіката"
+msgstr "Термін дії сертифіката"
 
 #: src/components/network-monitors-table/network-monitors-table.tsx
 msgid "Certificate expired {expires}"
@@ -1535,7 +1535,7 @@ msgstr "При кожному перезапуску системи в базі 
 #. placeholder {0}: alert.value
 #: src/components/active-alerts.tsx
 msgid "One or more certificates expire within {0, plural, one {# day} other {# days}}"
-msgstr "Один або кілька сертифікатів спливають протягом {0, plural, one {# день} few {# дні} many {# днів} other {# дня}}"
+msgstr "Термін дії одного або кількох сертифікатів закінчується через {0, plural, one {# день} few {# дні} many {# днів} other {# дня}}"
 
 #: src/lib/alerts.ts
 msgid "One or more containers are unhealthy"
@@ -2594,3 +2594,4 @@ msgstr "Так"
 #: src/components/routes/settings/layout.tsx
 msgid "Your user settings have been updated."
 msgstr "Ваші налаштування користувача були оновлені."
+
