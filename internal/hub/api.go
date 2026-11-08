@@ -18,6 +18,7 @@ import (
 	"github.com/henrygd/beszel/internal/alerts"
 	"github.com/henrygd/beszel/internal/ghupdate"
 	"github.com/henrygd/beszel/internal/hub/config"
+	"github.com/henrygd/beszel/internal/hub/hwnames"
 	"github.com/henrygd/beszel/internal/hub/systems"
 	"github.com/henrygd/beszel/internal/hub/utils"
 	"github.com/pocketbase/dbx"
@@ -208,6 +209,8 @@ func (h *Hub) registerApiRoutes(se *core.ServeEvent) error {
 	apiAuth.GET("/systemd/logs", h.getSystemdLogs)
 	// get pending package updates
 	apiAuth.GET("/package-updates", h.getPackageUpdates)
+	// get the hardware inventory
+	apiAuth.GET("/hardware", h.getHardwareInventory)
 	// /containers routes
 	if enabled, _ := utils.GetEnv("CONTAINER_DETAILS"); enabled != "false" {
 		// get container logs
@@ -574,4 +577,22 @@ func (h *Hub) refreshZfsData(e *core.RequestEvent) error {
 	}
 
 	return e.JSON(http.StatusOK, map[string]string{"status": "ok"})
+}
+
+// getHardwareInventory handles GET /api/beszel/hardware requests
+func (h *Hub) getHardwareInventory(e *core.RequestEvent) error {
+	systemID := e.Request.URL.Query().Get("system")
+	if systemID == "" {
+		return e.BadRequestError("Invalid system parameter", nil)
+	}
+	system, err := h.sm.GetSystem(systemID)
+	if err != nil || !system.HasUser(e.App, e.Auth) {
+		return e.NotFoundError("", nil)
+	}
+	inventory, err := system.FetchHardwareInventoryFromAgent()
+	if err != nil {
+		return e.InternalServerError("", err)
+	}
+	hwnames.Resolve(&inventory)
+	return e.JSON(http.StatusOK, inventory)
 }
