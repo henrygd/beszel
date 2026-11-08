@@ -33,3 +33,7 @@ func TestClean(t *testing.T) {
 	assert.Equal(t, "Gigabyte", clean("  Gigabyte\x00\n"))
 	assert.Len(t, clean(string(make([]byte, 1000))), 0)
 }
+
+func TestPlaceholderUUID(t *testing.T) {
+	assert.Equal(t, "", clean("12345678-1234-5678-90AB-CDDEEFAABBCC"), "Insyde default UUID")
+}

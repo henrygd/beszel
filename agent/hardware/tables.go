@@ -30,6 +30,8 @@ var placeholders = map[string]bool{
 	"system manufacturer": true, "system version": true, "system serial number": true,
 	"base board serial number": true, "chassis serial number": true, "unknown": true,
 	"0123456789": true, "123456789": true, "0000000000": true, "o.e.m.": true,
+	// Insyde firmware default UUID, left unchanged by some vendors (e.g. Synology).
+	"12345678-1234-5678-90ab-cddeefaabbcc": true,
 }
 
 // clean trims whitespace and drops placeholder and non-printable values.

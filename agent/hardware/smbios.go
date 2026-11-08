@@ -164,8 +164,8 @@ func smbiosUUID(s structure) string {
 	if bytes.Equal(u, make([]byte, 16)) || bytes.Equal(u, bytes.Repeat([]byte{0xFF}, 16)) {
 		return ""
 	}
-	return fmt.Sprintf("%08x-%04x-%04x-%x-%x", binary.LittleEndian.Uint32(u[0:]),
-		binary.LittleEndian.Uint16(u[4:]), binary.LittleEndian.Uint16(u[6:]), u[8:10], u[10:16])
+	return clean(fmt.Sprintf("%08x-%04x-%04x-%x-%x", binary.LittleEndian.Uint32(u[0:]),
+		binary.LittleEndian.Uint16(u[4:]), binary.LittleEndian.Uint16(u[6:]), u[8:10], u[10:16]))
 }
 
 func lookup(table map[byte]string, v byte) string {

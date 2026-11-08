@@ -73,11 +73,12 @@ export default function HardwareInventoryCard({ systemId }: { systemId: string }
 							[t`BIOS`, inv.bios.vendor, inv.bios.version, inv.bios.date, undefined],
 							[t`Chassis`, inv.chassis.vendor, inv.chassis.type, undefined, mono(inv.chassis.serial)],
 							...(inv.cpus ?? []).map((c) => [
-								t`CPU`,
+								// number sockets only on multi-socket systems; CPUs have no serial
+								(inv.cpus?.length ?? 0) > 1 ? `${t`CPU`} ${c.socket}` : t`CPU`,
 								c.vendor,
 								c.model,
 								join(c.cores && `${c.cores}C`, c.threads && `${c.threads}T`, c.microcode && `µcode ${c.microcode}`),
-								c.socket,
+								undefined,
 							]),
 						]}
 					/>
