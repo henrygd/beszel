@@ -769,5 +769,7 @@ export interface HardwareInventory {
 	disks?: { name: string; model?: string; vendor?: string; size_bytes: number; rotational?: boolean; transport?: string; firmware?: string; serial?: string }[]
 	nics?: { name: string; driver?: string; pci?: string; speed_mbps?: number; mac?: string }[]
 	displays?: { connector: string; manufacturer?: string; product_code?: string; name?: string; year?: number; width_cm?: number; height_cm?: number; serial?: string }[]
+	security?: { secure_boot?: string; tpm?: string }
+	batteries?: { name: string; manufacturer?: string; model?: string; technology?: string; health_pct?: number; cycle_count?: number; serial?: string }[]
 	unavailable?: { section: string; reason: string }[]
 }

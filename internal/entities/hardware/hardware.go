@@ -21,6 +21,8 @@ type Inventory struct {
 	Disks     []Disk         `json:"disks,omitempty" cbor:"9,keyasint,omitempty"`
 	NICs      []NIC          `json:"nics,omitempty" cbor:"10,keyasint,omitempty"`
 	Displays  []Display      `json:"displays,omitempty" cbor:"11,keyasint,omitempty"`
+	Security  Security       `json:"security" cbor:"13,keyasint"`
+	Batteries []Battery      `json:"batteries,omitempty" cbor:"14,keyasint,omitempty"`
 	// Unavailable lists sections that could not be collected and why.
 	Unavailable []Gap `json:"unavailable,omitempty" cbor:"12,keyasint,omitempty"`
 }

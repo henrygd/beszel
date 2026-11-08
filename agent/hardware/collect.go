@@ -34,30 +34,9 @@ func Collect(opts Options) hardware.Inventory {
 	inv := collect(opts)
 	normalize(&inv)
 	if !opts.Identifiers {
-		stripIdentifiers(&inv)
+		inv.StripIdentifiers()
 	}
 	return inv
-}
-
-// stripIdentifiers removes every field that identifies a specific unit.
-func stripIdentifiers(inv *hardware.Inventory) {
-	inv.System.Serial, inv.System.UUID = "", ""
-	inv.Board.Serial, inv.Chassis.Serial = "", ""
-	for i := range inv.Memory {
-		inv.Memory[i].Serial = ""
-	}
-	for i := range inv.USB {
-		inv.USB[i].Serial = ""
-	}
-	for i := range inv.Disks {
-		inv.Disks[i].Serial = ""
-	}
-	for i := range inv.NICs {
-		inv.NICs[i].MAC = ""
-	}
-	for i := range inv.Displays {
-		inv.Displays[i].Serial = ""
-	}
 }
 
 // normalize sorts every list so the same hardware always yields the same inventory.

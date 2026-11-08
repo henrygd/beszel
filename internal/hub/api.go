@@ -593,6 +593,10 @@ func (h *Hub) getHardwareInventory(e *core.RequestEvent) error {
 	if err != nil {
 		return e.InternalServerError("", err)
 	}
+	// Serials, UUIDs and MACs identify specific units; only admins see them.
+	if e.Auth.GetString("role") != "admin" {
+		inventory.StripIdentifiers()
+	}
 	hwnames.Resolve(&inventory)
 	return e.JSON(http.StatusOK, inventory)
 }

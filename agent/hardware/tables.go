@@ -1,6 +1,9 @@
 package hardware
 
-import "strings"
+import (
+	"fmt"
+	"strings"
+)
 
 // SMBIOS 3.x enumerations (DSP0134), limited to values seen on real hardware.
 var memoryTypes = map[byte]string{
@@ -44,4 +47,26 @@ func clean(s string) string {
 		s = strings.ToValidUTF8(s[:256], "")
 	}
 	return s
+}
+
+// jedecManufacturers maps JEP106 codes of common memory module makers, keyed by
+// bank (1-based) and manufacturer ID with the parity bit cleared.
+var jedecManufacturers = map[[2]byte]string{
+	{1, 0x2C}: "Micron", {1, 0x2D}: "SK hynix", {1, 0x4E}: "Samsung", {1, 0x7E}: "Elpida",
+	{2, 0x18}: "Kingston", {3, 0x1E}: "Corsair", {5, 0x4B}: "ADATA", {5, 0x4D}: "G.Skill",
+	{5, 0x6F}: "Team Group", {6, 0x1B}: "Crucial",
+}
+
+// jedecManufacturer decodes the SMBIOS module manufacturer ID: the low byte is
+// the number of continuation codes (bank - 1), the high byte the ID, each with
+// an odd-parity bit 7.
+func jedecManufacturer(id uint16) string {
+	if id == 0 {
+		return ""
+	}
+	bank, code := byte(id&0x7F)+1, byte(id>>8)&0x7F
+	if name, ok := jedecManufacturers[[2]byte{bank, code}]; ok {
+		return name
+	}
+	return fmt.Sprintf("JEDEC bank %d 0x%02X", bank, code)
 }

@@ -18,7 +18,7 @@ func TestStripIdentifiers(t *testing.T) {
 		NICs:     []hardware.NIC{{Name: "eth0", MAC: "m"}},
 		Displays: []hardware.Display{{Name: "d", Serial: "s"}},
 	}
-	stripIdentifiers(&inv)
+	inv.StripIdentifiers()
 	assert.Equal(t, hardware.System{Product: "X470"}, inv.System)
 	assert.Empty(t, inv.Board.Serial+inv.Chassis.Serial+inv.Memory[0].Serial+inv.USB[0].Serial+
 		inv.Disks[0].Serial+inv.NICs[0].MAC+inv.Displays[0].Serial)

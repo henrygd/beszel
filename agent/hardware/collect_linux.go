@@ -39,6 +39,8 @@ func collect(opts Options) hardware.Inventory {
 	inv.Disks = disks(sys)
 	inv.NICs = nics(sys)
 	inv.Displays = displays(sys)
+	inv.Security = security(sys)
+	inv.Batteries = batteries(sys)
 	return inv
 }
 
@@ -69,7 +71,7 @@ func readSMBIOS(sys sysfs, configured string) (smbiosData, error) {
 
 // readFileLimited reads an operator-configured file, refusing anything oversized.
 func readFileLimited(name string) ([]byte, error) {
-	f, err := os.Open(name) // #nosec G304 -- path comes from the operator (--smbios) or systemd ($CREDENTIALS_DIRECTORY), never from the hub
+	f, err := os.Open(name) // #nosec G304 G703 -- path comes from the operator (--smbios, HARDWARE_INVENTORY_SMBIOS) or systemd ($CREDENTIALS_DIRECTORY), never from the hub
 	if err != nil {
 		return nil, err
 	}

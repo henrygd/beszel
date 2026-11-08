@@ -138,6 +138,11 @@ func memoryModule(s structure) hardware.MemoryModule {
 		SpeedMTs: int(s.word(0x15)), ConfiguredMTs: int(s.word(0x20)),
 		Manufacturer: s.str(0x17), Serial: s.str(0x18), PartNumber: s.str(0x1A),
 	}
+	// Many modules leave the manufacturer string as "Unknown"; SMBIOS 3.2+ also
+	// carries the JEDEC manufacturer code.
+	if m.Manufacturer == "" {
+		m.Manufacturer = jedecManufacturer(s.word(0x2A))
+	}
 	switch size := s.word(0x0C); {
 	case size == 0 || size == 0xFFFF: // empty slot / unknown
 	case size == 0x7FFF:

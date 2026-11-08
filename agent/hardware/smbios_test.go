@@ -92,3 +92,10 @@ func FuzzParseSMBIOS(f *testing.F) {
 		assert.LessOrEqual(t, len(d.Memory), maxSMBIOSStructures)
 	})
 }
+
+func TestJEDECManufacturer(t *testing.T) {
+	assert.Equal(t, "Corsair", jedecManufacturer(0x9E02), "bank 3, ID 0x9E with parity bit")
+	assert.Equal(t, "Samsung", jedecManufacturer(0xCE80), "bank 1 with parity bit set on the bank byte")
+	assert.Equal(t, "JEDEC bank 9 0x01", jedecManufacturer(0x0108))
+	assert.Equal(t, "", jedecManufacturer(0))
+}

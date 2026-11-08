@@ -1,55 +1,18 @@
 import { t } from "@lingui/core/macro"
 import { Trans } from "@lingui/react/macro"
 import { CircuitBoardIcon } from "lucide-react"
-import { type ReactNode, useEffect, useState } from "react"
+import { useEffect, useState } from "react"
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { pb } from "@/lib/api"
 import { formatShortDate } from "@/lib/utils"
 import type { HardwareInventory } from "@/types"
-
-
+import { HardwareSection as Section } from "./hardware-section"
 
 const decimalSize = (bytes: number) =>
 	bytes >= 1e12 ? `${(bytes / 1e12).toFixed(1)} TB` : `${Math.round(bytes / 1e9)} GB`
 
 const join = (...parts: (string | number | undefined)[]) => parts.filter(Boolean).join(" ")
-
-function Section({ title, head, rows }: { title: string; head: string[]; rows: ReactNode[][] }) {
-	if (rows.length === 0) return null
-	return (
-		<div className="grid gap-2">
-			<h3 className="px-2 sm:px-1 text-sm font-medium">{title}</h3>
-			<div className="rounded-md border overflow-x-auto">
-				<Table>
-					<TableHeader>
-						<TableRow>
-							{head.map((h) => (
-								<TableHead key={h} className="px-3">
-									{h}
-								</TableHead>
-							))}
-						</TableRow>
-					</TableHeader>
-					<TableBody>
-						{rows.map((row, i) => (
-							// biome-ignore lint/suspicious/noArrayIndexKey: rows are static per fetch
-							<TableRow key={i}>
-								{row.map((cell, j) => (
-									// biome-ignore lint/suspicious/noArrayIndexKey: columns are fixed
-									<TableCell key={j} className="px-3 py-2 whitespace-nowrap">
-										{cell ?? "-"}
-									</TableCell>
-								))}
-							</TableRow>
-						))}
-					</TableBody>
-				</Table>
-			</div>
-		</div>
-	)
-}
 
 export default function HardwareInventoryCard({ systemId }: { systemId: string }) {
 	const [data, setData] = useState<HardwareInventory | null>(null)
@@ -58,8 +21,15 @@ export default function HardwareInventoryCard({ systemId }: { systemId: string }
 	useEffect(() => {
 		let cancelled = false
 		pb.send<HardwareInventory>("/api/beszel/hardware", { query: { system: systemId } })
-			.then((result) => !cancelled && (setData(result), setError(null)))
-			.catch((err) => !cancelled && setError(err?.message || t`Failed to load hardware inventory`))
+			.then((result) => {
+				if (cancelled) return
+				setData(result)
+				setError(null)
+			})
+			.catch((err) => {
+				if (cancelled) return
+				setError(err?.message || t`Failed to load hardware inventory`)
+			})
 		return () => {
 			cancelled = true
 		}
@@ -92,7 +62,13 @@ export default function HardwareInventoryCard({ systemId }: { systemId: string }
 						title={t`System`}
 						head={[t`Component`, t`Vendor`, t`Model`, t`Version`, t`Serial`]}
 						rows={[
-							[t`System`, inv.system.vendor, inv.system.product, inv.system.version, mono(inv.system.serial ?? inv.system.uuid)],
+							[
+								t`System`,
+								inv.system.vendor,
+								inv.system.product,
+								inv.system.version,
+								mono(inv.system.serial ?? inv.system.uuid),
+							],
 							[t`Board`, inv.board.vendor, inv.board.product, inv.board.version, mono(inv.board.serial)],
 							[t`BIOS`, inv.bios.vendor, inv.bios.version, inv.bios.date, undefined],
 							[t`Chassis`, inv.chassis.vendor, inv.chassis.type, undefined, mono(inv.chassis.serial)],
@@ -104,6 +80,26 @@ export default function HardwareInventoryCard({ systemId }: { systemId: string }
 								c.socket,
 							]),
 						]}
+					/>
+					<Section
+						title={t`Security`}
+						head={[t`Feature`, t`State`]}
+						rows={[
+							[t`Secure Boot`, inv.security?.secure_boot ?? t`Unknown`],
+							[t`TPM`, inv.security?.tpm ?? t`Not detected`],
+						]}
+					/>
+					<Section
+						title={t`Batteries`}
+						head={[t`Battery`, t`Model`, t`Technology`, t`Health`, t`Cycles`, t`Serial`]}
+						rows={(inv.batteries ?? []).map((b) => [
+							b.name,
+							join(b.manufacturer, b.model) || undefined,
+							b.technology,
+							b.health_pct ? `${b.health_pct}%` : undefined,
+							b.cycle_count || undefined,
+							mono(b.serial),
+						])}
 					/>
 					<Section
 						title={t`Memory`}
