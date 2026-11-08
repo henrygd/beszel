@@ -20,6 +20,7 @@ ProtectHome=read-only
 ProtectHostname=yes
 ProtectKernelLogs=yes
 ProtectSystem=strict
+PrivateTmp=yes
 RemoveIPC=yes
 RestrictSUIDSGID=true
 

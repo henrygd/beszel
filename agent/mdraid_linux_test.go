@@ -6,8 +6,6 @@ import (
 	"os"
 	"path/filepath"
 	"testing"
-
-	"github.com/henrygd/beszel/internal/entities/smart"
 )
 
 func TestMdraidMockSysfsScanAndCollect(t *testing.T) {
@@ -56,26 +54,19 @@ func TestMdraidMockSysfsScanAndCollect(t *testing.T) {
 	if len(devs) != 1 {
 		t.Fatalf("scanMdraidDevices() = %d devices, want 1", len(devs))
 	}
-	if devs[0].Name != "/dev/md0" || devs[0].Type != "mdraid" {
-		t.Fatalf("scanMdraidDevices()[0] = %+v, want Name=/dev/md0 Type=mdraid", devs[0])
+	if devs[0] != "/dev/md0" {
+		t.Fatalf("scanMdraidDevices()[0] = %q, want /dev/md0", devs[0])
 	}
 
-	sm := &SmartManager{SmartDataMap: map[string]*smart.SmartData{}}
-	ok, err := sm.collectMdraidHealth(devs[0])
-	if err != nil || !ok {
-		t.Fatalf("collectMdraidHealth() = (ok=%v, err=%v), want (true,nil)", ok, err)
+	// sysfs targets are read directly instead of through smartctl.
+	result, err := (&SmartManager{}).collectTarget(smartTarget{name: devs[0], dtype: "mdraid"})
+	if err != nil {
+		t.Fatalf("collectTarget() err = %v", err)
 	}
-	if len(sm.SmartDataMap) != 1 {
-		t.Fatalf("SmartDataMap len=%d, want 1", len(sm.SmartDataMap))
+	if result.key != "mdraid:md0" {
+		t.Fatalf("key = %q, want mdraid:md0", result.key)
 	}
-	var got *smart.SmartData
-	for _, v := range sm.SmartDataMap {
-		got = v
-		break
-	}
-	if got == nil {
-		t.Fatalf("SmartDataMap value nil")
-	}
+	got := result.data
 	if got.DiskType != "mdraid" || got.DiskName != "/dev/md0" {
 		t.Fatalf("disk fields = (type=%q name=%q), want (mdraid,/dev/md0)", got.DiskType, got.DiskName)
 	}

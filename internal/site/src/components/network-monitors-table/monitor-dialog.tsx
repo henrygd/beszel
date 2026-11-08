@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Sheet, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle } from "@/components/ui/sheet"
 import { Button } from "@/components/ui/button"
+import { Switch } from "@/components/ui/switch"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
@@ -27,7 +28,7 @@ import { ChevronDownIcon, GlobeIcon, ListIcon, type LucideIcon, PlusIcon, Search
 import { useToast } from "@/components/ui/use-toast"
 import { $systems } from "@/lib/stores"
 import { cn, supportsNetworkMonitors } from "@/lib/utils"
-import { getMonitorTarget } from "@/lib/network-monitor-utils"
+import { getMonitorTarget, isHttpsTarget } from "@/lib/network-monitor-utils"
 import type { NetworkMonitorRecord } from "@/types"
 import * as v from "valibot"
 
@@ -40,6 +41,7 @@ type MonitorValues = {
 	port: number
 	server: string
 	interval: string
+	skipTlsVerify: boolean
 }
 
 type NormalizedMonitorValues = Omit<MonitorValues, "system" | "interval"> & {
@@ -63,6 +65,7 @@ const NormalizedMonitorValuesSchema = v.pipe(
 		port: v.number(),
 		server: v.pipe(v.string(), v.trim()),
 		interval: MonitorIntervalSchema,
+		skipTlsVerify: v.boolean(),
 	}),
 	v.transform((input): NormalizedMonitorValues => {
 		let { protocol, port } = input
@@ -84,6 +87,8 @@ const NormalizedMonitorValuesSchema = v.pipe(
 			// Only DNS monitors use a custom server; clear it for other protocols.
 			server: protocol === "dns" ? input.server : "",
 			interval: input.interval,
+			// Only HTTPS targets use TLS; clear it for everything else.
+			skipTlsVerify: protocol === "http" && isHttpsTarget(httpTarget) && input.skipTlsVerify,
 		}
 	}),
 	v.forward(
@@ -198,6 +203,7 @@ function parseBulkMonitorLine(line: string, lineNumber: number, system: string) 
 		port: parsed.output.port ? Number(parsed.output.port) : 0,
 		server: parsed.output.server || "",
 		interval: parsed.output.interval || `${defaultInterval}`,
+		skipTlsVerify: false,
 	})
 }
 
@@ -271,8 +277,18 @@ export function MonitorMultiSelect({
 	canSelectMore?: boolean
 }) {
 	const { t } = useLingui()
+	const labelCounts = new Map<string, number>()
+	for (const monitor of monitors) {
+		const label = getMonitorTarget(monitor)
+		labelCounts.set(label, (labelCounts.get(label) ?? 0) + 1)
+	}
 	const options = monitors
-		.map((monitor) => ({ id: monitor.id, label: getMonitorTarget(monitor), server: monitor.server }))
+		.map((monitor) => {
+			let label = getMonitorTarget(monitor)
+			// Show the URL scheme when it's all that tells http and https monitors apart.
+			if (monitor.protocol === "http" && (labelCounts.get(label) ?? 0) > 1) label = monitor.target
+			return { id: monitor.id, label, server: monitor.server }
+		})
 		.sort((a, b) => a.label.localeCompare(b.label))
 	return (
 		<MultiSelect
@@ -720,6 +736,7 @@ function MonitorDialogContent({
 	const [port, setPort] = useState(monitor?.protocol === "tcp" && monitor.port ? String(monitor.port) : "")
 	const [server, setServer] = useState(monitor?.protocol === "dns" ? (monitor.server ?? "") : "")
 	const [monitorInterval, setMonitorInterval] = useState(String(monitor?.interval ?? defaultInterval))
+	const [skipTlsVerify, setSkipTlsVerify] = useState(monitor?.skipTlsVerify ?? false)
 	const [loading, setLoading] = useState(false)
 	const [selectedSystemId, setSelectedSystemId] = useState(monitor?.system ?? "")
 	const [selectedSystemIds, setSelectedSystemIds] = useState<Set<string>>(new Set())
@@ -728,6 +745,8 @@ function MonitorDialogContent({
 	const { t } = useLingui()
 	const isEditing = !!monitor
 	const dnsTargetIsIp = protocol === "dns" && isIpAddress(target.trim())
+	// Bare hostnames are normalized to https, so they can also skip verification.
+	const usesTls = protocol === "http" && !/^http:\/\//i.test(target.trim())
 
 	// When the dialog is opened, initialize form fields with monitor values (if editing) or defaults (if adding).
 	useEffect(() => {
@@ -740,6 +759,7 @@ function MonitorDialogContent({
 		setPort(monitor?.protocol === "tcp" && monitor.port ? String(monitor.port) : "")
 		setServer(monitor?.protocol === "dns" ? (monitor.server ?? "") : "")
 		setMonitorInterval(String(monitor?.interval ?? defaultInterval))
+		setSkipTlsVerify(monitor?.skipTlsVerify ?? false)
 		setSelectedSystemId(monitor?.system ?? "")
 		setSelectedSystemIds(new Set())
 		setLoading(false)
@@ -761,6 +781,7 @@ function MonitorDialogContent({
 					port: protocol === "tcp" ? Number(port) : 0,
 					server: protocol === "dns" ? server.trim() : "",
 					interval: monitorInterval,
+					skipTlsVerify,
 				},
 				monitor ? monitor.enabled : true
 			)
@@ -910,6 +931,22 @@ function MonitorDialogContent({
 						required
 					/>
 				</div>
+				{usesTls && (
+					<label
+						htmlFor="monitor-skip-tls-verify"
+						className="flex items-center justify-between gap-4 cursor-pointer rounded-lg border border-muted-foreground/15 hover:border-muted-foreground/20 transition-colors duration-100 px-3.5 py-3"
+					>
+						<div className="grid gap-1 select-none">
+							<span className="text-sm font-medium">
+								<Trans>Ignore TLS certificate errors</Trans>
+							</span>
+							<span className="text-xs text-muted-foreground">
+								<Trans>Use for self-signed certificates.</Trans>
+							</span>
+						</div>
+						<Switch id="monitor-skip-tls-verify" checked={skipTlsVerify} onCheckedChange={setSkipTlsVerify} />
+					</label>
+				)}
 				<DialogFooter>
 					{!isEditing && onOpenBulkAdd && (
 						<Button

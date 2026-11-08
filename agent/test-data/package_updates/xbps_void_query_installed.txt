@@ -1,0 +1,29 @@
+ii acl-2.4.0_1                      Access Control List filesystem support
+ii attr-2.6.0_1                     Extended attribute support library for ACL support
+ii base-files-0.146_1               Void Linux base system files
+ii bzip2-1.0.8_2                    Freely available, patent free, high-quality data compressor
+ii ca-certificates-20250419+3.127_1 Common CA certificates for SSL/TLS from Mozilla
+ii coreutils-9.4_3                  GNU core utilities
+ii dash-0.5.12_3                    POSIX-compliant Unix shell, much smaller than GNU bash
+ii gawk-5.3.2_1                     GNU awk utility
+ii glibc-2.41_1                     GNU C library
+ii gmp-6.3.0_1                      Library for arbitrary precision arithmetic
+ii grep-3.12_1                      GNU grep utility
+ii libarchive-3.8.9_1               Library to read/write several different streaming archive formats
+ii libcap-2.78_1                    POSIX.1e capabilities suite
+ii libcrypto3-3.6.5_1               Toolkit for Secure Sockets Layer and Transport Layer Security - crypto library
+ii liblz4-1.10.0_1                  LZ4 compression library
+ii liblzma-5.8.3_1                  XZ-format compression library
+ii libpcre2-10.47_1                 Perl Compatible Regular Expressions (2nd version) - shared libraries
+ii libreadline8-8.2.010_1           GNU Readline Library
+ii libssl3-3.6.5_1                  Toolkit for Secure Sockets Layer and Transport Layer Security - SSL/TLS library
+ii libxbps-0.60.7_1                 XBPS package system utilities - runtime library
+ii libxcrypt-compat-4.4.38_1        Modern library for one-way hashing of passwords - legacy compatibility
+ii libzstd-1.5.7_1                  Fast real-time compression algorithm
+ii ncurses-libs-6.6_1               System V Release 4.0 curses emulation library -- shared libraries
+ii openssl-3.6.5_1                  Toolkit for Secure Sockets Layer and Transport Layer Security
+ii run-parts-5.23.2_1               Run scripts or programs in a directory
+ii sed-4.10_1                       GNU stream editor
+ii xbps-0.60.7_1                    XBPS package system utilities
+ii xbps-triggers-0.131_1            XBPS triggers for Void Linux
+ii zlib-1.3.2_1                     Compression/decompression Library

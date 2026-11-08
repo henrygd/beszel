@@ -3,6 +3,7 @@ import type { NetworkMonitorRecord } from "@/types"
 import {
 	getMonitorCompareState,
 	getMonitorIdentityKey,
+	getMonitorProtocolLabel,
 	getMonitorTarget,
 	MAX_COMPARE_MONITORS,
 } from "./monitor-compare"
@@ -43,6 +44,10 @@ test("formats tcp targets with their port", () => {
 	expect(getMonitorTarget({ target: "example.com", protocol: "icmp", port: 0 })).toBe("example.com")
 	expect(getMonitorTarget({ target: "example.com", protocol: "tcp", port: 443 })).toBe("example.com:443")
 	expect(getMonitorTarget({ target: "::1", protocol: "tcp", port: 22 })).toBe("[::1]:22")
+	expect(getMonitorTarget({ target: "https://example.com/health", protocol: "http", port: 0 })).toBe(
+		"example.com/health"
+	)
+	expect(getMonitorTarget({ target: "http://example.com", protocol: "http", port: 0 })).toBe("example.com")
 })
 
 test("identity ignores the system but not protocol, port or server", () => {
@@ -116,6 +121,23 @@ test("DNS lookups of the same name against different servers get the server in t
 	const s = state(d1, [d1, d2], [], ["d2"])
 	expect(s.getLabel(d1)).toBe("example.com (1.1.1.1)")
 	expect(s.getLabel(d2)).toBe("example.com (8.8.8.8)")
+})
+
+test("http and https URLs that are otherwise the same keep their scheme in their label", () => {
+	const h1 = mon("h1", "a", "http://example.com/health", { protocol: "http" })
+	const h2 = mon("h2", "a", "https://example.com/health", { protocol: "http" })
+	const h3 = mon("h3", "a", "https://other.example", { protocol: "http" })
+	const s = state(h1, [h1, h2, h3], [], ["h2", "h3"])
+	expect(s.getLabel(h1)).toBe("http://example.com/health")
+	expect(s.getLabel(h2)).toBe("https://example.com/health")
+	expect(s.getLabel(h3)).toBe("other.example")
+})
+
+test("shows https as the protocol for https targets", () => {
+	expect(getMonitorProtocolLabel({ target: "https://example.com", protocol: "http" })).toBe("https")
+	expect(getMonitorProtocolLabel({ target: "HTTPS://example.com", protocol: "http" })).toBe("https")
+	expect(getMonitorProtocolLabel({ target: "http://example.com", protocol: "http" })).toBe("http")
+	expect(getMonitorProtocolLabel({ target: "example.com", protocol: "tcp" })).toBe("tcp")
 })
 
 test("uses separate local and fetched monitor lists on single-system pages", () => {

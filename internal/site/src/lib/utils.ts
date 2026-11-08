@@ -1,3 +1,4 @@
+import { i18n } from "@lingui/core"
 import { plural, t } from "@lingui/core/macro"
 import { type ClassValue, clsx } from "clsx"
 import { listenKeys } from "nanostores"
@@ -7,7 +8,7 @@ import { twMerge } from "tailwind-merge"
 import { toast } from "@/components/ui/use-toast"
 import type { ChartTimeData, FingerprintRecord, SemVer, SystemRecord } from "@/types"
 import { HourFormat, Unit } from "./enums"
-import { $copyContent, $textMeasureVersion, $userSettings } from "./stores"
+import { $copyContent, $userSettings } from "./stores"
 
 export function cn(...inputs: ClassValue[]) {
 	return twMerge(clsx(inputs))
@@ -181,19 +182,32 @@ export function toFixedFloat(num: number, digits: number) {
 	return parseFloat((digits === 0 ? Math.ceil(num) : num).toFixed(digits))
 }
 
-const decimalFormatters: Map<number, Intl.NumberFormat> = new Map()
+/** Locale used for number formatting: the app's selected language, not the browser's */
+function numberLocale() {
+	return i18n.locale || undefined
+}
+
+/** Format number using the app's selected language (e.g. decimal and grouping separators) */
+export function formatNumber(num: number) {
+	return num.toLocaleString(numberLocale(), { numberingSystem: "latn" })
+}
+
+const decimalFormatters: Map<string, Intl.NumberFormat> = new Map()
 /** Format number to x decimal places, maintaining trailing zeros */
 export function decimalString(num: number, digits = 2) {
 	if (digits === 0) {
 		return Math.ceil(num).toString()
 	}
-	let formatter = decimalFormatters.get(digits)
+	const locale = numberLocale()
+	const key = `${locale}:${digits}`
+	let formatter = decimalFormatters.get(key)
 	if (!formatter) {
-		formatter = new Intl.NumberFormat(undefined, {
+		formatter = new Intl.NumberFormat(locale, {
 			minimumFractionDigits: digits,
 			maximumFractionDigits: digits,
+			numberingSystem: "latn",
 		})
-		decimalFormatters.set(digits, formatter)
+		decimalFormatters.set(key, formatter)
 	}
 	return formatter.format(num)
 }
@@ -450,92 +464,6 @@ export function runOnce<T extends (...args: any[]) => any>(fn: T): T {
 	}) as T
 }
 
-const visualWidthCache = new Map<string, number>()
-
-let measureContext: CanvasRenderingContext2D | null | undefined
-let measureFont = ""
-
-/** Canvas context for measuring text in the font the app renders with, or null where canvas is unavailable.
- *  Only relative widths matter here, so the font size is arbitrary.
- */
-function getMeasureContext(): CanvasRenderingContext2D | null {
-	if (measureContext === undefined) {
-		measureContext = document.createElement("canvas").getContext("2d")
-		// the fallback font has different metrics, so re-measure whenever a font finishes loading.
-		// loadingdone also covers fonts that start loading after the first measurement,
-		// which fonts.ready does not if it has already resolved.
-		if (measureContext && "fonts" in document) {
-			document.fonts.addEventListener("loadingdone", invalidateVisualWidths)
-		}
-	}
-	if (measureContext) {
-		const { fontFamily, fontWeight } = getComputedStyle(document.body)
-		const font = `${fontWeight} 16px ${fontFamily}`
-		if (font !== measureFont) {
-			const isFirstFont = !measureFont
-			measureFont = font
-			measureContext.font = font
-			visualWidthCache.clear()
-			// defer so stores aren't updated in the middle of a comparison or a render
-			if (!isFirstFont) {
-				queueMicrotask(invalidateVisualWidths)
-			}
-		}
-	}
-	return measureContext
-}
-
-/** Drop cached widths and notify anything holding a result from isVisuallyLonger */
-function invalidateVisualWidths() {
-	visualWidthCache.clear()
-	$textMeasureVersion.set($textMeasureVersion.get() + 1)
-}
-
-/** Get the visual width of a string, accounting for full-width and narrow punctuation characters.
- *  Don't use for monospaced fonts, use .length instead
- */
-function getVisualStringWidth(str: string): number {
-	const cached = visualWidthCache.get(str)
-	if (cached !== undefined) {
-		return cached
-	}
-	const measured = getMeasureContext()?.measureText(str).width
-	if (measured !== undefined) {
-		visualWidthCache.set(str, measured)
-		return measured
-	}
-	let width = 0
-	for (const char of str) {
-		if (char === ".") {
-			width += 0.7
-			continue
-		}
-		const code = char.codePointAt(0) || 0
-		// Hangul Jamo and Syllables are often slightly thinner than Hanzi/Kanji
-		if ((code >= 0x1100 && code <= 0x115f) || (code >= 0xac00 && code <= 0xd7af)) {
-			width += 1.8
-			continue
-		}
-		// Count CJK and other full-width characters as 2 units, others as 1
-		// Arabic and Cyrillic are counted as 1
-		const isFullWidth =
-			(code >= 0x2e80 && code <= 0x9fff) || // CJK Radicals, Symbols, and Ideographs
-			(code >= 0xf900 && code <= 0xfaff) || // CJK Compatibility Ideographs
-			(code >= 0xfe30 && code <= 0xfe6f) || // CJK Compatibility Forms
-			(code >= 0xff00 && code <= 0xff60) || // Fullwidth Forms
-			(code >= 0xffe0 && code <= 0xffe6) || // Fullwidth Symbols
-			code > 0xffff // Emojis and other supplementary plane characters
-		width += isFullWidth ? 2 : 1
-	}
-	visualWidthCache.set(str, width)
-	return width
-}
-
-/** Compare the visual width of two strings imprecisely */
-export function isVisuallyLonger(str1: string, str2: string): boolean {
-	return getVisualStringWidth(str1) > getVisualStringWidth(str2)
-}
-
 /** Parses a filter string into OR'd groups of AND'd terms: "a b, c" -> [["a","b"], ["c"]] */
 export function parseFilterGroups(value: string): string[][] {
 	return value
@@ -553,7 +481,7 @@ export function matchesFilterGroups(searchString: string, groups: string[][]): b
 /** Format seconds to hours, minutes, or seconds */
 export function secondsToString(seconds: number, unit: "hour" | "minute" | "day"): string {
 	const count = Math.floor(seconds / (unit === "hour" ? 3600 : unit === "minute" ? 60 : 86400))
-	const countString = count.toLocaleString()
+	const countString = formatNumber(count)
 	switch (unit) {
 		case "minute":
 			return plural(count, {

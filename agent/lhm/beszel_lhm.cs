@@ -51,8 +51,7 @@ class Program
     var updated = false;
     foreach (var sensor in hardware.Sensors)
     {
-      var validTemp = sensor.SensorType == SensorType.Temperature && sensor.Value.HasValue;
-      if (!validTemp ||
+      if (sensor.SensorType != SensorType.Temperature ||
           sensor.Name.IndexOf("Distance", StringComparison.OrdinalIgnoreCase) >= 0 ||
           sensor.Name.IndexOf("Limit", StringComparison.OrdinalIgnoreCase) >= 0 ||
           sensor.Name.IndexOf("Critical", StringComparison.OrdinalIgnoreCase) >= 0 ||
@@ -64,8 +63,23 @@ class Program
 
       if (!updated)
       {
-        hardware.Update();
+        try
+        {
+          hardware.Update();
+        }
+        catch (Exception ex)
+        {
+          Console.Error.WriteLine($"Could not update {hardware.HardwareType} {hardware.Name}: {ex.Message}");
+          return;
+        }
         updated = true;
+      }
+
+      // Read the value once after Update(), which may reset it to null.
+      var temperature = sensor.Value;
+      if (!temperature.HasValue)
+      {
+        continue;
       }
 
       var name = sensor.Name;
@@ -77,7 +91,7 @@ class Program
       }
 
       // invariant culture assures the value is parsable as a float
-      var value = sensor.Value.Value.ToString("0.##", CultureInfo.InvariantCulture);
+      var value = temperature.Value.ToString("0.##", CultureInfo.InvariantCulture);
       // write the name and value to the writer
       writer.WriteLine($"{name}|{value}");
     }

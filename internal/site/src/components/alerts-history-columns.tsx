@@ -1,5 +1,5 @@
 import { t } from "@lingui/core/macro"
-import { Trans } from "@lingui/react/macro"
+import { Plural, Trans } from "@lingui/react/macro"
 import type { ColumnDef } from "@tanstack/react-table"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -69,6 +69,13 @@ export const alertsHistoryColumns: ColumnDef<AlertsHistoryRecord>[] = [
 				return <span className="ps-2">{t`Down`}</span>
 			}
 			const value = getValue() as number
+			if (name === "NetworkMonitorCert") {
+				return (
+					<span className="tabular-nums ps-2.5">
+						{value < 0 ? <Trans>Expired</Trans> : <Plural value={value} one="# day" other="# days" />}
+					</span>
+				)
+			}
 			const unit = info?.unit
 			return (
 				<span className="tabular-nums ps-2.5">

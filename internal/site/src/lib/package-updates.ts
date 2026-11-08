@@ -16,7 +16,8 @@ interface SplitVersion {
 /**
  * Splits a distro version string into epoch, upstream version and packaging revision.
  * Works for the Debian ("1:2.3.4-1ubuntu1"), RPM ("2:9.2.390-1.fc42"), pacman ("1.3.7-1")
- * and apk ("1.2.5-r3") formats. The revision follows the last "-".
+ * apk ("1.2.5-r3") and xbps ("26.2.4_1") formats. The revision follows the last "-",
+ * or the last "_" for xbps, whose versions have no "-".
  */
 function splitVersion(version: string): SplitVersion {
 	let epoch = 0
@@ -25,9 +26,12 @@ function splitVersion(version: string): SplitVersion {
 		epoch = Number(epochMatch[1])
 		version = version.slice(epochMatch[0].length)
 	}
-	const dash = version.lastIndexOf("-")
-	if (dash > 0) {
-		return { epoch, upstream: version.slice(0, dash), revision: version.slice(dash + 1) }
+	let sep = version.lastIndexOf("-")
+	if (sep < 0) {
+		sep = version.lastIndexOf("_")
+	}
+	if (sep > 0) {
+		return { epoch, upstream: version.slice(0, sep), revision: version.slice(sep + 1) }
 	}
 	return { epoch, upstream: version, revision: "" }
 }

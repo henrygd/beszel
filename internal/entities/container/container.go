@@ -25,13 +25,18 @@ type ApiInfo struct {
 	// Created int64
 	// SizeRw     int64 `json:",omitempty"`
 	// SizeRootFs int64 `json:",omitempty"`
-	// Labels     map[string]string
 	// HostConfig struct {
 	// 	NetworkMode string            `json:",omitempty"`
 	// 	Annotations map[string]string `json:",omitempty"`
 	// }
 	// NetworkSettings *SummaryNetworkSettings
 	// Mounts          []MountPoint
+
+	// Set by the agent, not part of the Docker response.
+	// Labels is only filled when CONTAINER_NAME_LABEL is set, read in the same decode pass as the rest.
+	Labels map[string]string `json:"-"`
+	// DisplayName is the name reported to the hub.
+	DisplayName string `json:"-"`
 }
 
 // Docker container resources from /containers/{id}/stats
@@ -123,9 +128,9 @@ type CPUStats struct {
 	// CPU Usage. Linux and Windows.
 	CPUUsage CPUUsage `json:"cpu_usage"`
 	// System Usage. Linux only. Populated from /proc/stat on Docker; from cgroup cpu.stat on Podman.
-	SystemUsage uint64 `json:"system_cpu_usage,omitempty"`
+	SystemUsage uint64 `json:"system_cpu_usage,omitzero"`
 	// Number of online CPUs. Linux only. Used by Podman for time-based CPU calculation.
-	OnlineCPUs uint32 `json:"online_cpus,omitempty"`
+	OnlineCPUs uint32 `json:"online_cpus,omitzero"`
 }
 
 type CPUUsage struct {
@@ -137,16 +142,16 @@ type CPUUsage struct {
 
 type MemoryStats struct {
 	// current res_counter usage for memory
-	Usage uint64 `json:"usage,omitempty"`
+	Usage uint64 `json:"usage,omitzero"`
 	// all the stats exported via memory.stat.
 	Stats MemoryStatsStats `json:"stats"`
 	// private working set (Windows only)
-	PrivateWorkingSet uint64 `json:"privateworkingset,omitempty"`
+	PrivateWorkingSet uint64 `json:"privateworkingset,omitzero"`
 }
 
 type MemoryStatsStats struct {
-	Cache        uint64 `json:"cache,omitempty"`
-	InactiveFile uint64 `json:"inactive_file,omitempty"`
+	Cache        uint64 `json:"cache,omitzero"`
+	InactiveFile uint64 `json:"inactive_file,omitzero"`
 }
 
 type NetworkStats struct {

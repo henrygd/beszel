@@ -1,7 +1,7 @@
 import { expect, test } from "bun:test"
 import { classifyVersionChange } from "./package-updates"
 
-// version pairs are taken from real apt, dnf, zypper, pacman and apk output
+// version pairs are taken from real apt, dnf, zypper, pacman, apk and xbps output
 test("major, minor and patch use the first differing upstream component", () => {
 	expect(classifyVersionChange("1.10.7-1", "2.0.0-1")).toBe("major")
 	expect(classifyVersionChange("1.10.7-1", "1.11.0-1")).toBe("minor")
@@ -10,6 +10,7 @@ test("major, minor and patch use the first differing upstream component", () => 
 	expect(classifyVersionChange("0.21.7-1", "0.21.8.2-1")).toBe("patch")
 	expect(classifyVersionChange("3.3.0-r2", "3.3.7-r0")).toBe("patch")
 	expect(classifyVersionChange("0.7.36-2.fc42", "0.7.37-2.fc42")).toBe("patch")
+	expect(classifyVersionChange("26.2.3_1", "26.2.4_1")).toBe("patch")
 	// missing components count as zero
 	expect(classifyVersionChange("1.2", "1.2.1")).toBe("patch")
 	expect(classifyVersionChange("1.2", "1.3.0")).toBe("minor")
@@ -32,6 +33,7 @@ test("revision-only changes", () => {
 	expect(classifyVersionChange("1.36.1-r28", "1.36.1-r31")).toBe("revision")
 	expect(classifyVersionChange("4.4-150400.25.22", "4.4-150400.27.3.2")).toBe("revision")
 	expect(classifyVersionChange("42-30", "42-31")).toBe("revision")
+	expect(classifyVersionChange("12.3.2_1", "12.3.2_2")).toBe("revision")
 	expect(
 		classifyVersionChange("84.87+git20180409.04c9dae-150300.10.20.1", "84.87+git20180409.04c9dae-150300.10.23.1")
 	).toBe("revision")

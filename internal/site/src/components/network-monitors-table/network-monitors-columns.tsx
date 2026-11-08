@@ -16,6 +16,7 @@ import {
 	PlayCircleIcon,
 	CopyIcon,
 	ShieldCheckIcon,
+	ShieldOffIcon,
 } from "lucide-react"
 import { t } from "@lingui/core/macro"
 import type { NetworkMonitorRecord, SystemRecord } from "@/types"
@@ -28,14 +29,18 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Plural, Trans } from "@lingui/react/macro"
 import { $allSystemsById } from "@/lib/stores"
-import type { ReadableAtom } from "nanostores"
 import { useStore } from "@nanostores/react"
 import { SystemStatus } from "@/lib/enums"
 import { Checkbox } from "@/components/ui/checkbox"
 import { useMemo } from "react"
 import { formatBulkMonitorLine } from "@/components/network-monitors-table/monitor-dialog"
 import { Badge } from "../ui/badge"
-import { getCertDaysLeft, getCertExpiryLevel, getMonitorTarget } from "@/lib/network-monitor-utils"
+import {
+	getCertDaysLeft,
+	getCertExpiryLevel,
+	getMonitorProtocolLabel,
+	getMonitorTarget,
+} from "@/lib/network-monitor-utils"
 
 const certExpiryDotColors = { ok: "bg-green-500", warning: "bg-yellow-500", critical: "bg-red-500" }
 
@@ -48,8 +53,11 @@ declare module "@tanstack/react-table" {
 const protocolColors: Record<string, string> = {
 	icmp: "bg-blue-500/15! text-blue-600 dark:text-blue-400",
 	tcp: "bg-purple-500/15! text-purple-600 dark:text-purple-400",
-	http: "bg-green-500/15! text-green-700 dark:text-green-400",
+	http: "bg-teal-500/15! text-teal-700 dark:text-teal-400",
+	https: "bg-green-500/15! text-green-700 dark:text-green-400",
 	dns: "bg-amber-500/15! text-amber-600 dark:text-amber-400",
+	// HTTP monitors that skip TLS certificate verification
+	insecure: "bg-orange-500/15! text-orange-600 dark:text-orange-400",
 }
 
 const SYSTEM_STATUS_COLORS = {
@@ -65,19 +73,15 @@ const SYSTEM_STATUS_COLORS = {
 const isMuted = (record: NetworkMonitorRecord, systemRecord: SystemRecord | undefined) =>
 	!record.enabled || systemRecord?.status !== SystemStatus.Up
 
-export function getMonitorColumns(
-	longestTarget = "",
-	$longestSystemName: ReadableAtom<string>,
-	{
-		onEdit,
-		onDelete,
-		onSetEnabled,
-	}: {
-		onEdit?: (monitor: NetworkMonitorRecord) => void
-		onDelete?: (monitors: NetworkMonitorRecord[]) => void | Promise<void>
-		onSetEnabled?: (monitors: NetworkMonitorRecord[], enabled: boolean) => void | Promise<void>
-	} = {}
-): ColumnDef<NetworkMonitorRecord>[] {
+export function getMonitorColumns({
+	onEdit,
+	onDelete,
+	onSetEnabled,
+}: {
+	onEdit?: (monitor: NetworkMonitorRecord) => void
+	onDelete?: (monitors: NetworkMonitorRecord[]) => void | Promise<void>
+	onSetEnabled?: (monitors: NetworkMonitorRecord[], enabled: boolean) => void | Promise<void>
+} = {}): ColumnDef<NetworkMonitorRecord>[] {
 	return [
 		{
 			id: "select",
@@ -119,7 +123,6 @@ export function getMonitorColumns(
 			header: ({ column }) => <HeaderButton column={column} name={t`System`} Icon={ServerIcon} />,
 			cell: ({ getValue }) => {
 				const system = useStore($allSystemsById)[getValue() as string] as SystemRecord | undefined
-				const longestSystemName = useStore($longestSystemName)
 				const name = system?.name
 				const status = system?.status as SystemStatus // undefined val is fine but makes lsp mad
 
@@ -127,22 +130,18 @@ export function getMonitorColumns(
 					() => (
 						<div className="ms-1.5 max-w-44 flex gap-2 items-center tabular-nums">
 							<span className={cn("shrink-0 size-2 rounded-full", SYSTEM_STATUS_COLORS[status])} />
-							<div className="relative w-fit min-w-0 max-w-full">
-								<span className="invisible block whitespace-nowrap" aria-hidden="true">
-									{longestSystemName}
-								</span>
-								<span className="absolute inset-0 truncate">{name}</span>
-							</div>
+							<span className="truncate">{name}</span>
 						</div>
 					),
-					[status, name, longestSystemName]
+					[status, name]
 				)
 			},
 		},
 		{
 			id: "target",
 			meta: { label: t`Target` },
-			sortingFn: (a, b) => a.original.target.localeCompare(b.original.target),
+			sortingFn: (a, b) =>
+				(a.getValue("target") as string).localeCompare(b.getValue("target") as string, undefined, { numeric: true }),
 			accessorFn: (record) => getMonitorTarget(record),
 			header: ({ column }) => <HeaderButton column={column} name={t`Target`} Icon={GlobeIcon} />,
 			cell: ({ row, getValue }) => {
@@ -160,12 +159,7 @@ export function getMonitorColumns(
 				return (
 					<div className="ms-1.5 max-w-64 flex gap-2 items-center tabular-nums">
 						<span className={cn("shrink-0 size-2 rounded-full", color)} />
-						<div className="relative w-fit min-w-0 max-w-full">
-							<span className="invisible block overflow-hidden whitespace-nowrap" aria-hidden="true">
-								{longestTarget}
-							</span>
-							<span className="absolute inset-0 truncate">{getValue() as string}</span>
-						</div>
+						<span className="truncate">{getValue() as string}</span>
 					</div>
 				)
 			},
@@ -173,10 +167,18 @@ export function getMonitorColumns(
 		{
 			id: "protocol",
 			meta: { label: t`Protocol` },
-			accessorFn: (record) => record.protocol,
+			accessorFn: (record) => getMonitorProtocolLabel(record),
 			header: ({ column }) => <HeaderButton column={column} name={t`Protocol`} Icon={ArrowLeftRightIcon} />,
-			cell: ({ getValue }) => {
+			cell: ({ row, getValue }) => {
 				const protocol = getValue() as string
+				if (row.original.skipTlsVerify) {
+					return (
+						<Badge className={cn("uppercase gap-1", protocolColors.insecure)}>
+							{protocol}
+							<ShieldOffIcon className="size-3" />
+						</Badge>
+					)
+				}
 				return <Badge className={cn("uppercase", protocolColors[protocol])}>{protocol}</Badge>
 			},
 		},

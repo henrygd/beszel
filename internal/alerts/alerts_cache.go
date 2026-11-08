@@ -34,7 +34,7 @@ func (a *CachedAlertData) PopulateFromRecord(record *core.Record) {
 	a.Triggered = record.GetBool("triggered")
 	a.Min = uint8(record.GetInt("min"))
 	a.PendingSince = record.GetDateTime("pending_since").Time()
-	if a.Name == alertNameNetworkMonitorLoss {
+	if isNetworkMonitorAlert(a.Name) {
 		var state networkMonitorAlertState
 		a.MonitorStatesValid = record.UnmarshalJSONField("state", &state) == nil
 		a.MonitorStates = state.Monitors

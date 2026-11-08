@@ -84,9 +84,8 @@ func (a *Agent) updateNetworkStats(cacheTimeMs uint16, systemStats *system.Stats
 
 	if netIO, err := psutilNet.IOCounters(true); err == nil {
 		nis, msElapsed := a.loadAndTickNetBaseline(cacheTimeMs)
-		totalBytesSent, totalBytesRecv := a.sumAndTrackPerNicDeltas(cacheTimeMs, msElapsed, netIO, systemStats)
-		bytesSentPerSecond, bytesRecvPerSecond := a.computeBytesPerSecond(msElapsed, totalBytesSent, totalBytesRecv, nis)
-		a.applyNetworkTotals(cacheTimeMs, netIO, systemStats, nis, totalBytesSent, totalBytesRecv, bytesSentPerSecond, bytesRecvPerSecond)
+		bytesSentPerSecond, bytesRecvPerSecond := a.sumAndTrackPerNicDeltas(cacheTimeMs, msElapsed, netIO, systemStats)
+		a.applyNetworkTotals(cacheTimeMs, netIO, systemStats, nis, bytesSentPerSecond, bytesRecvPerSecond)
 	}
 }
 
@@ -154,8 +153,10 @@ func (a *Agent) loadAndTickNetBaseline(cacheTimeMs uint16) (netIoStat system.Net
 	return netIoStat, msElapsed
 }
 
-// sumAndTrackPerNicDeltas accumulates totals and records per-NIC up/down deltas into systemStats
-func (a *Agent) sumAndTrackPerNicDeltas(cacheTimeMs uint16, msElapsed uint64, netIO []psutilNet.IOCountersStat, systemStats *system.Stats) (totalBytesSent, totalBytesRecv uint64) {
+// sumAndTrackPerNicDeltas records per-NIC up/down deltas into systemStats and returns their summed rates.
+// Summing per-NIC deltas (rather than diffing summed counters) keeps the total from underflowing
+// when a tracked interface disappears or its counters reset.
+func (a *Agent) sumAndTrackPerNicDeltas(cacheTimeMs uint16, msElapsed uint64, netIO []psutilNet.IOCountersStat, systemStats *system.Stats) (bytesSentPerSecond, bytesRecvPerSecond uint64) {
 	tracker := a.netInterfaceDeltaTrackers[cacheTimeMs]
 	if tracker == nil {
 		tracker = deltatracker.NewDeltaTracker[string, uint64]()
@@ -171,9 +172,6 @@ func (a *Agent) sumAndTrackPerNicDeltas(cacheTimeMs uint16, msElapsed uint64, ne
 		if useMacCounters {
 			correctNvethernetCounters(&v)
 		}
-		totalBytesSent += v.BytesSent
-		totalBytesRecv += v.BytesRecv
-
 		var upDelta, downDelta uint64
 		upKey, downKey := fmt.Sprintf("%sup", v.Name), fmt.Sprintf("%sdown", v.Name)
 		tracker.Set(upKey, v.BytesSent)
@@ -199,17 +197,10 @@ func (a *Agent) sumAndTrackPerNicDeltas(cacheTimeMs uint16, msElapsed uint64, ne
 			}
 		}
 		systemStats.NetworkInterfaces[v.Name] = [4]uint64{upDelta, downDelta, v.BytesSent, v.BytesRecv}
+		bytesSentPerSecond += upDelta
+		bytesRecvPerSecond += downDelta
 	}
 
-	return totalBytesSent, totalBytesRecv
-}
-
-// computeBytesPerSecond calculates per-second totals from elapsed time and totals
-func (a *Agent) computeBytesPerSecond(msElapsed, totalBytesSent, totalBytesRecv uint64, nis system.NetIoStats) (bytesSentPerSecond, bytesRecvPerSecond uint64) {
-	if msElapsed > 0 {
-		bytesSentPerSecond = (totalBytesSent - nis.BytesSent) * 1000 / msElapsed
-		bytesRecvPerSecond = (totalBytesRecv - nis.BytesRecv) * 1000 / msElapsed
-	}
 	return bytesSentPerSecond, bytesRecvPerSecond
 }
 
@@ -219,7 +210,6 @@ func (a *Agent) applyNetworkTotals(
 	netIO []psutilNet.IOCountersStat,
 	systemStats *system.Stats,
 	nis system.NetIoStats,
-	totalBytesSent, totalBytesRecv uint64,
 	bytesSentPerSecond, bytesRecvPerSecond uint64,
 ) {
 	if bytesSentPerSecond > 10_000_000_000 || bytesRecvPerSecond > 10_000_000_000 {
@@ -238,8 +228,6 @@ func (a *Agent) applyNetworkTotals(
 	}
 
 	systemStats.Bandwidth[0], systemStats.Bandwidth[1] = bytesSentPerSecond, bytesRecvPerSecond
-	nis.BytesSent = totalBytesSent
-	nis.BytesRecv = totalBytesRecv
 	a.netIoStats[cacheTimeMs] = nis
 }
 

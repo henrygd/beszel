@@ -7,6 +7,8 @@ import (
 
 	"github.com/fxamacker/cbor/v2"
 	"github.com/henrygd/beszel/internal/entities/container"
+	"github.com/henrygd/beszel/internal/entities/smart"
+	"github.com/henrygd/beszel/internal/entities/zfs"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -36,6 +38,29 @@ func TestStatsBatteryTransport(t *testing.T) {
 	assert.Equal(t, stats.Batteries, decoded.Batteries)
 }
 
+// GPUs without a package power reading (e.g. NVIDIA) must not get a "pp" key,
+// otherwise the UI shows an empty package power series (PocketBase uses json/v2)
+func TestGPUDataPowerPkgOmittedWhenZero(t *testing.T) {
+	gpus := map[string]GPUData{
+		"0": {Name: "GeForce RTX 4060", Power: 91.21},
+		"1": {Name: "Arc A380", Power: 10, PowerPkg: 20},
+	}
+
+	for name, marshal := range map[string]func(any) ([]byte, error){
+		"json_v1": json.Marshal,
+		"json_v2": func(value any) ([]byte, error) { return jsonv2.Marshal(value) },
+	} {
+		t.Run(name, func(t *testing.T) {
+			jsonData, err := marshal(gpus)
+			require.NoError(t, err)
+			var jsonPayload map[string]map[string]any
+			require.NoError(t, json.Unmarshal(jsonData, &jsonPayload))
+			assert.NotContains(t, jsonPayload["0"], "pp")
+			assert.Equal(t, float64(20), jsonPayload["1"]["pp"])
+		})
+	}
+}
+
 func TestStatsDiskIOTotalAndFansTransport(t *testing.T) {
 	stats := Stats{
 		DiskIOTotal: [2]uint64{437348527104, 331522465792},
@@ -51,9 +76,29 @@ func TestStatsDiskIOTotalAndFansTransport(t *testing.T) {
 }
 
 func TestStatsBatteryNumericArrayUnmarshal(t *testing.T) {
-	var stats Stats
-	require.NoError(t, json.Unmarshal([]byte(`{"bat":[50,4]}`), &stats))
-	assert.Equal(t, Battery{50, 4}, stats.Battery)
+	for name, unmarshal := range map[string]func([]byte, any) error{
+		"json_v1": json.Unmarshal,
+		"json_v2": func(data []byte, val any) error { return jsonv2.Unmarshal(data, val) },
+	} {
+		t.Run(name, func(t *testing.T) {
+			var stats Stats
+			require.NoError(t, unmarshal([]byte(`{"bat":[50,4]}`), &stats))
+			assert.Equal(t, Battery{50, 4}, stats.Battery)
+
+			var info Info
+			require.NoError(t, unmarshal([]byte(`{"bat":[59,5],"jl":true}`), &info))
+			assert.True(t, info.SystemdLogs)
+			assert.Equal(t, Battery{59, 5}, info.Battery)
+
+			var bat Battery
+			require.NoError(t, unmarshal([]byte(`[100,2]`), &bat))
+			assert.Equal(t, Battery{100, 2}, bat)
+
+			var nullBat Battery
+			require.NoError(t, unmarshal([]byte(`null`), &nullBat))
+			assert.Equal(t, Battery{0, 0}, nullBat)
+		})
+	}
 }
 
 func TestStatsLegacyBatteryPayload(t *testing.T) {
@@ -116,4 +161,33 @@ func TestCombinedDataContainerValidityTransport(t *testing.T) {
 	var decodedInvalid CombinedData
 	require.NoError(t, cbor.Unmarshal(invalidData, &decodedInvalid))
 	assert.Nil(t, decodedInvalid.Containers)
+}
+
+// PocketBase marshals record JSON fields with encoding/json/v2, where omitempty
+// no longer omits zero numbers or false. Scalar fields must use omitzero so
+// stored records keep the same shape as encoding/json (v1).
+func TestZeroValueJSONMatchesV1(t *testing.T) {
+	for name, value := range map[string]any{
+		"stats": Stats{
+			ExtraFs:  map[string]*FsStats{"sda": {}},
+			GPUData:  map[string]GPUData{"0": {}},
+			ZfsPools: map[string]*ZfsPool{"tank": {}},
+		},
+		"info":            Info{WiFi: map[string]WiFi{"wlan0": {}}},
+		"package_updates": PackageUpdates{Packages: []PackageUpdate{{}}},
+		"zfs": zfs.ZfsData{Pools: []*zfs.PoolDetail{{
+			Scrub:    &zfs.Scrub{State: "NONE"}, // a scrub encoding to {} is dropped by v2 omitempty
+			Vdevs:    []*zfs.Vdev{{}},
+			Datasets: []*zfs.Dataset{{}},
+		}}},
+		"smart": smart.SmartData{Attributes: []*smart.SmartAttribute{{}}},
+	} {
+		t.Run(name, func(t *testing.T) {
+			v1Data, err := json.Marshal(value)
+			require.NoError(t, err)
+			v2Data, err := jsonv2.Marshal(value)
+			require.NoError(t, err)
+			assert.JSONEq(t, string(v1Data), string(v2Data))
+		})
+	}
 }

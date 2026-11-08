@@ -174,6 +174,13 @@ func (sys *System) update() error {
 
 	data, err := sys.fetchDataFromAgent(options)
 	if err != nil {
+		// Ping so a slow agent's connection survives until the next poll. Ping()
+		// extends the read deadline without needing a reply (see ws.deadline).
+		// Once the agent has been silent for maxAgentSilence, stop pinging and let
+		// the deadline close what is likely a dead connection.
+		if sys.WsConn != nil && sys.WsConn.IsConnected() && sys.WsConn.TimeSinceLastMessage() < maxAgentSilence {
+			_ = sys.WsConn.Ping()
+		}
 		return err
 	}
 
@@ -374,6 +381,7 @@ func createSystemDetailsRecord(app core.App, data *system.Details, systemId stri
 		"kernel":   data.Kernel,
 		"cores":    data.Cores,
 		"threads":  data.Threads,
+		"sockets":  data.Sockets,
 		"cpu":      data.CpuModel,
 		"os":       data.Os,
 		"os_name":  data.OsName,
@@ -490,6 +498,10 @@ func (sys *System) updateNetworkMonitorsRecords(app core.App, monitorResults map
 		case true:
 			var record *core.Record
 			record, err = app.FindRecordById(monitorCollectionName, id)
+			if errors.Is(err, sql.ErrNoRows) {
+				// Monitor no longer exists (matches the zero-rows case below).
+				continue
+			}
 			if err == nil {
 				if record.GetString("system") != systemId {
 					continue
@@ -611,8 +623,13 @@ func createContainerRecords(app core.App, data []*container.Stats, systemId stri
 
 // getRecord retrieves the system record from the database.
 // If the record is not found, it removes the system from the manager.
+// Other errors, like a query timing out while the hub is stalled, leave the
+// system in place so the updater retries on the next tick (issue #2544).
 func (sys *System) getRecord(app core.App) (*core.Record, error) {
 	record, err := app.FindRecordById("systems", sys.Id)
+	if err != nil && !errors.Is(err, sql.ErrNoRows) {
+		return nil, err
+	}
 	if err != nil || record == nil {
 		_ = sys.manager.RemoveSystem(sys.Id)
 		if err == nil {
@@ -799,6 +816,12 @@ func (sys *System) fetchDataFromAgent(options common.DataRequestOptions) (*syste
 // collection can legitimately take several seconds (e.g. a slow `zpool list`),
 // so this must be well above the request manager's 5s default.
 var wsDataRequestTimeout = 30 * time.Second
+
+// maxAgentSilence is how long a WebSocket agent may go without sending anything
+// before failed polls stop keeping its connection alive. An agent whose
+// collection runs past its own 120s deadline drops the connection itself, so a
+// live agent always answers within interval + 120s.
+var maxAgentSilence = 3 * time.Minute
 
 func (sys *System) fetchDataViaWebSocket(options common.DataRequestOptions) (*system.CombinedData, error) {
 	if sys.WsConn == nil || !sys.WsConn.IsConnected() {
@@ -1092,6 +1115,31 @@ func migrateDeprecatedFields(cd *system.CombinedData, createDetails bool) {
 		cd.Stats.DiskIO[1] = uint64(cd.Stats.DiskWritePs * 1024 * 1024)
 		cd.Stats.DiskReadPs, cd.Stats.DiskWritePs = 0, 0
 	}
+	// migration added 0.21.1
+	for _, fs := range cd.Stats.ExtraFs {
+		if fs == nil {
+			continue
+		}
+		if fs.DiskReadBytes == 0 && fs.DiskWriteBytes == 0 {
+			fs.DiskReadBytes = uint64(fs.DiskReadPs * 1024 * 1024)
+			fs.DiskWriteBytes = uint64(fs.DiskWritePs * 1024 * 1024)
+		}
+		fs.DiskReadPs, fs.DiskWritePs = 0, 0
+	}
+	// migration added 0.21.1
+	const gb = 1024 * 1024 * 1024
+	if cd.Stats.MemBytes == [4]uint64{} {
+		cd.Stats.MemBytes = [4]uint64{
+			uint64(cd.Stats.Mem * gb),
+			uint64(cd.Stats.MemUsed * gb),
+			uint64(cd.Stats.MemBuffCache * gb),
+			uint64(cd.Stats.MemZfsArc * gb),
+		}
+	}
+	if cd.Stats.SwapBytes == [2]uint64{} {
+		cd.Stats.SwapBytes = [2]uint64{uint64(cd.Stats.Swap * gb), uint64(cd.Stats.SwapUsed * gb)}
+	}
+	// GB fields are kept in stored records for third-party integrations until they are removed
 	// migration added 0.19.0 - Move deprecated Info fields to Details struct
 	if cd.Details == nil && cd.Info.Hostname != "" {
 		if createDetails {
@@ -1103,7 +1151,7 @@ func migrateDeprecatedFields(cd *system.CombinedData, createDetails bool) {
 				CpuModel:    cd.Info.CpuModel,
 				Podman:      cd.Info.Podman,
 				Os:          cd.Info.Os,
-				MemoryTotal: uint64(cd.Stats.Mem * 1024 * 1024 * 1024),
+				MemoryTotal: cd.Stats.MemBytes[0],
 			}
 		}
 		// zero the deprecated fields to prevent saving them in systems.info DB json payload

@@ -391,6 +391,7 @@ func (b *poolBackend) collectDetail(previous *zfsentity.ZfsData) (*zfsentity.Zfs
 			Free:        p.Free,
 		}
 		if st, ok := statusByPool[p.Name]; statusErr == nil && ok {
+			detail.Status = st.Status
 			if st.Scrub.State != "" && st.Scrub.State != "NONE" {
 				detail.Scrub = &zfsentity.Scrub{
 					State:    st.Scrub.State,
@@ -409,6 +410,7 @@ func (b *poolBackend) collectDetail(previous *zfsentity.ZfsData) (*zfsentity.Zfs
 			}
 		} else {
 			if cached := previousByPool[p.Name]; cached != nil {
+				detail.Status = cached.Status
 				detail.Scrub = cached.Scrub
 				detail.Vdevs = cached.Vdevs
 			}

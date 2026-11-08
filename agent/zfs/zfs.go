@@ -68,7 +68,8 @@ type Dataset struct {
 }
 
 // PoolStats returns capacity and health for all pools on the system using
-// `zpool list`. Frequent health and I/O sampling uses PoolKernelStats instead.
+// `zpool list`, with capacity taken from each pool's root dataset where it can
+// be read. Frequent health and I/O sampling uses PoolKernelStats instead.
 func PoolStats() ([]PoolStat, error) {
 	if err := checkZfsDevice(); err != nil {
 		return nil, err
@@ -81,7 +82,58 @@ func PoolStats() ([]PoolStat, error) {
 		}
 		return nil, fmt.Errorf("zpool list: %w", err)
 	}
-	return parseZpoolListOutput(out)
+	pools, err := parseZpoolListOutput(out)
+	if err != nil || len(pools) == 0 {
+		return pools, err
+	}
+	applyRootDatasetCapacity(pools)
+	return pools, nil
+}
+
+// applyRootDatasetCapacity replaces the raw `zpool list` figures, which include
+// parity on raidz and dRAID vdevs, with each pool's root dataset used and avail.
+// As with Btrfs, the effective capacity is used+avail, so Size-Alloc is what
+// applications can still write and the usage ratio matches df. A pool whose
+// root dataset cannot be read keeps its raw figures and is flagged as Raw.
+func applyRootDatasetCapacity(pools []PoolStat) {
+	var roots map[string]Dataset
+	if out, err := commandOutput("zfs", "list", "-Hp", "-d", "0", "-o", "name,used,avail,refquota"); err == nil {
+		roots = parseRootDatasetOutput(out)
+	}
+	for i := range pools {
+		root, ok := roots[pools[i].Name]
+		if !ok {
+			pools[i].Raw = true
+			continue
+		}
+		pools[i].Size, pools[i].Alloc, pools[i].Free = root.Used+root.Avail, root.Used, root.Avail
+	}
+}
+
+// parseRootDatasetOutput parses `zfs list -Hp -d 0 -o name,used,avail,refquota`
+// output into root datasets keyed by pool name. Roots with a refquota are left
+// out: the quota caps avail by the root's own data rather than the pool's free
+// space, which would understate capacity when children hold most of the data.
+// Malformed lines are skipped, so their pools fall back to raw figures.
+func parseRootDatasetOutput(out []byte) map[string]Dataset {
+	roots := make(map[string]Dataset)
+	scanner := bufio.NewScanner(bytes.NewReader(out))
+	for scanner.Scan() {
+		fields := strings.Split(strings.TrimSpace(scanner.Text()), "\t")
+		if len(fields) != 4 || (fields[3] != "0" && fields[3] != "none") {
+			continue
+		}
+		used, err := strconv.ParseUint(fields[1], 10, 64)
+		if err != nil {
+			continue
+		}
+		avail, err := strconv.ParseUint(fields[2], 10, 64)
+		if err != nil {
+			continue
+		}
+		roots[fields[0]] = Dataset{Name: fields[0], Used: used, Avail: avail}
+	}
+	return roots
 }
 
 // Datasets returns all datasets on the system with usage and mountpoint

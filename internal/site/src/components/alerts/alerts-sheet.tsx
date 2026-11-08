@@ -350,7 +350,14 @@ export function AlertContent({
 						{!noThreshold && (
 							<div className={cn(noDuration && "col-span-full")}>
 								<p id={`v${name}`} className="text-sm block h-6">
-									{alertData.invert ? (
+									{alertKey === "NetworkMonitorCert" ? (
+										<Trans>
+											Expires within{" "}
+											<strong className="text-foreground">
+												<Plural value={value} one="# day" other="# days" />
+											</strong>
+										</Trans>
+									) : alertData.invert ? (
 										<Trans>
 											Average drops below{" "}
 											<strong className="text-foreground">
@@ -386,6 +393,8 @@ export function AlertContent({
 											if (!Number.isNaN(val)) {
 												// keep values on the step grid so the unit can be inferred on reload
 												if (unit) val = roundToStep(val, inputStep)
+												// certificate thresholds are whole days
+												else if (alertKey === "NetworkMonitorCert") val = Math.round(val)
 												if (valueMax != null) val = Math.min(val, valueMax)
 												if (inputMin != null) val = Math.max(val, inputMin)
 												setValue(val)

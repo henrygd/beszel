@@ -33,8 +33,22 @@ func TestOAuthUserRole(t *testing.T) {
 	auth.Providers[provider] = func() auth.Provider { return &roleTestProvider{} }
 	t.Cleanup(func() { delete(auth.Providers, provider) })
 
-	for _, createData := range []string{`{}`, `{"role":"admin"}`, `{"role":"readonly"}`} {
-		t.Run(createData, func(t *testing.T) {
+	for _, tc := range []struct {
+		createData, defaultRole, want string
+	}{
+		{`{}`, "", "user"},
+		{`{"role":"admin"}`, "", "user"},
+		{`{"role":"readonly"}`, "", "user"},
+		{`{}`, "readonly", "readonly"},
+		{`{"role":"admin"}`, "readonly", "readonly"},
+		{`{}`, "user", "user"},
+		// admin and unknown values must never be granted through self-registration
+		{`{}`, "admin", "user"},
+		{`{"role":"readonly"}`, "bogus", "user"},
+	} {
+		t.Run(tc.createData+"/default="+tc.defaultRole, func(t *testing.T) {
+			t.Setenv("OAUTH_DEFAULT_USER_ROLE", tc.defaultRole)
+			createData := tc.createData
 			h, err := beszelTests.NewTestHub(t.TempDir())
 			require.NoError(t, err)
 			defer h.Cleanup()
@@ -62,7 +76,7 @@ func TestOAuthUserRole(t *testing.T) {
 			login()
 			user, err := h.FindAuthRecordByEmail("users", "oauth@example.com")
 			require.NoError(t, err)
-			require.Equal(t, "user", user.GetString("role"))
+			require.Equal(t, tc.want, user.GetString("role"))
 
 			// A later OAuth login must preserve a role assigned by an administrator.
 			user.Set("role", "admin")
@@ -75,7 +89,23 @@ func TestOAuthUserRole(t *testing.T) {
 	}
 }
 
+func TestEnvBootstrapUserIsAdmin(t *testing.T) {
+	t.Setenv("USER_EMAIL", "bootstrap@example.com")
+	t.Setenv("USER_PASSWORD", "password12345")
+	t.Setenv("OAUTH_DEFAULT_USER_ROLE", "readonly")
+	h, err := beszelTests.NewTestHub(t.TempDir())
+	require.NoError(t, err)
+	defer h.Cleanup()
+	h.StartHub()
+
+	user, err := h.FindAuthRecordByEmail("users", "bootstrap@example.com")
+	require.NoError(t, err)
+	require.Equal(t, "admin", user.GetString("role"))
+}
+
 func TestInternalUserRole(t *testing.T) {
+	// OAUTH_DEFAULT_USER_ROLE must not affect users created outside OAuth.
+	t.Setenv("OAUTH_DEFAULT_USER_ROLE", "readonly")
 	for _, role := range []string{"", "user", "admin", "readonly"} {
 		t.Run("role="+role, func(t *testing.T) {
 			h, err := beszelTests.NewTestHub(t.TempDir())

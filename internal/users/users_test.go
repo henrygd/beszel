@@ -5,6 +5,7 @@ package users_test
 import (
 	"errors"
 	"io"
+	"net/http"
 	"net/http/httptest"
 	"strings"
 	"testing"
@@ -17,6 +18,58 @@ import (
 	"github.com/pocketbase/pocketbase/tools/router"
 	"github.com/stretchr/testify/require"
 )
+
+func TestCreateFirstUserPasswordMaxLength(t *testing.T) {
+	newHub := func(t *testing.T) (*beszelTests.TestHub, func(string) (int, string)) {
+		h, err := beszelTests.NewTestHub(t.TempDir())
+		require.NoError(t, err)
+		h.StartHub()
+		um := users.NewUserManager(h.App)
+		return h, func(password string) (int, string) {
+			req := httptest.NewRequest("POST", "/api/beszel/create-user",
+				strings.NewReader(`{"email":"operator@example.com","password":"`+password+`"}`))
+			req.Header.Set("Content-Type", "application/json")
+			res := httptest.NewRecorder()
+			require.NoError(t, um.CreateFirstUser(&core.RequestEvent{App: h.App, Event: router.Event{Request: req, Response: res}}))
+			return res.Code, res.Body.String()
+		}
+	}
+
+	t.Run("72 chars exceeds the PocketBase field max and 500s", func(t *testing.T) {
+		h, invoke := newHub(t)
+		defer h.Cleanup()
+		status, body := invoke(strings.Repeat("a", 72))
+		require.Equal(t, http.StatusInternalServerError, status)
+		require.Contains(t, body, "Must be less than 71 character(s)")
+	})
+
+	t.Run("71 chars succeeds", func(t *testing.T) {
+		h, invoke := newHub(t)
+		defer h.Cleanup()
+		status, body := invoke(strings.Repeat("a", 71))
+		require.Equal(t, http.StatusOK, status)
+		require.Contains(t, body, "User created")
+	})
+
+	// 37 'é' runes = 37 characters but 74 bytes in UTF-8: it passes the
+	// 71-character field max, then bcrypt rejects passwords over 72 bytes.
+	t.Run("37 multibyte chars (74 bytes) exceeds the bcrypt limit", func(t *testing.T) {
+		h, invoke := newHub(t)
+		defer h.Cleanup()
+		status, body := invoke(strings.Repeat("é", 37))
+		require.Equal(t, http.StatusBadRequest, status)
+		require.Contains(t, body, "must be less than 72 bytes")
+	})
+
+	// 36 'é' runes = 72 bytes exactly: still within the bcrypt limit.
+	t.Run("36 multibyte chars (exactly 72 bytes) succeeds", func(t *testing.T) {
+		h, invoke := newHub(t)
+		defer h.Cleanup()
+		status, body := invoke(strings.Repeat("é", 36))
+		require.Equal(t, http.StatusOK, status)
+		require.Contains(t, body, "User created")
+	})
+}
 
 type blockedBody struct {
 	io.Reader

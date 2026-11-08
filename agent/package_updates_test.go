@@ -191,6 +191,66 @@ func TestParseRpmInstalled(t *testing.T) {
 	assert.Equal(t, "5.14.0-503.el9", installed["kernel.x86_64"])
 }
 
+func TestParseXbpsSimulate(t *testing.T) {
+	packages := parseXbpsSimulate(readPackageUpdatesTestData(t, "xbps_void_check_update.txt"))
+	assert.Len(t, packages, 3)
+	assert.Equal(t, system.PackageUpdate{Name: "libmariadbclient", Available: "12.3.2_2"}, findPackage(t, packages, "libmariadbclient"))
+
+	packages = parseXbpsSimulate(readPackageUpdatesTestData(t, "xbps_void_install_update.txt"))
+	assert.Len(t, packages, 7)
+	assert.Equal(t, system.PackageUpdate{Name: "ca-certificates", Available: "20250419+3.127_1"}, findPackage(t, packages, "ca-certificates"))
+	assert.Equal(t, system.PackageUpdate{Name: "libcrypto3", Available: "3.6.5_1"}, findPackage(t, packages, "libcrypto3"))
+	// new dependencies are not updates
+	assert.Empty(t, parseXbpsSimulate("libfoo-1.0_1 install x86_64 https://repo-default.voidlinux.org/current 100 50\n"))
+	assert.Empty(t, parseXbpsSimulate("\n"))
+}
+
+func TestParseXbpsInstalled(t *testing.T) {
+	installed := parseXbpsInstalled(readPackageUpdatesTestData(t, "xbps_void_query_installed.txt"))
+	assert.Len(t, installed, 29)
+	assert.Equal(t, "0.60.7_1", installed["xbps"])
+	assert.Equal(t, "0.131_1", installed["xbps-triggers"])
+	assert.Equal(t, "20250419+3.127_1", installed["ca-certificates"])
+}
+
+func TestXbpsCheckSync(t *testing.T) {
+	binDir := t.TempDir()
+	logFile := filepath.Join(binDir, "calls.log")
+	installedFile := filepath.Join(binDir, "installed.txt")
+	writeInstalled := func(lines string) {
+		require.NoError(t, os.WriteFile(installedFile, []byte(lines), 0o644))
+	}
+	writeInstalled("ii bash-5.2.021_1 GNU Bourne Again Shell\nii libgbm-26.2.3_1 Mesa gbm library\n")
+	fakeCommands(t, map[string]string{
+		"xbps-install": `echo "xbps-install $*" >> ` + logFile + `
+echo "bash-5.3.9_1 update x86_64 https://repo-default.voidlinux.org/current 100 50"
+echo "libgbm-26.2.4_1 update x86_64 https://repo-default.voidlinux.org/current 100 50"`,
+		"xbps-query": `cat ` + installedFile,
+	})
+	check := newXbpsCheck()
+
+	// first check fetches remote data
+	result, err := check(context.Background())
+	require.NoError(t, err)
+	assert.Equal(t, []uint16{2}, result.counts)
+	assert.False(t, result.securityKnown)
+	assert.Equal(t, []system.PackageUpdate{
+		{Name: "bash", Current: "5.2.021_1", Available: "5.3.9_1"},
+		{Name: "libgbm", Current: "26.2.3_1", Available: "26.2.4_1"},
+	}, result.packages)
+
+	// later checks reuse the fetched list and drop locally upgraded packages
+	writeInstalled("ii bash-5.3.9_1 GNU Bourne Again Shell\nii libgbm-26.2.3_1 Mesa gbm library\n")
+	result, err = check(context.Background())
+	require.NoError(t, err)
+	assert.Equal(t, []uint16{1}, result.counts)
+	assert.Equal(t, []system.PackageUpdate{{Name: "libgbm", Current: "26.2.3_1", Available: "26.2.4_1"}}, result.packages)
+
+	data, err := os.ReadFile(logFile)
+	require.NoError(t, err)
+	assert.Equal(t, "xbps-install -Mun\n", string(data))
+}
+
 func TestCheckDnf(t *testing.T) {
 	tests := []struct {
 		name, updates, security, installed string
@@ -218,7 +278,7 @@ exit 100`,
 				"rpm": `cat "` + testDataPath(t, tt.installed) + `"
 exit 1`,
 			})
-			result, err := checkDnf(context.Background())
+			result, err := newDnfCheck(t.TempDir())(context.Background())
 			require.NoError(t, err)
 			assert.Equal(t, []uint16{uint16(tt.total), uint16(tt.securityCount)}, result.counts)
 			assert.True(t, result.securityKnown)
@@ -237,12 +297,60 @@ echo "bash.x86_64 5.1.8-9.el9 baseos"
 exit 100`,
 			"rpm": `echo "bash.x86_64 5.1.8-6.el9_1"`,
 		})
-		result, err := checkDnf(context.Background())
+		result, err := newDnfCheck(t.TempDir())(context.Background())
 		require.NoError(t, err)
 		assert.Equal(t, []uint16{1}, result.counts)
 		assert.False(t, result.securityKnown)
 		assert.Equal(t, []system.PackageUpdate{{Name: "bash", Current: "5.1.8-6.el9_1", Available: "5.1.8-9.el9"}}, result.packages)
 	})
+
+	t.Run("error includes stderr", func(t *testing.T) {
+		fakeCommands(t, map[string]string{
+			"dnf": `echo "Error: Cache-only enabled but no cache for 'baseos'" >&2
+exit 1`,
+		})
+		_, err := newDnfCheck(t.TempDir())(context.Background())
+		require.Error(t, err)
+		assert.Equal(t, "dnf: exit status 1: Error: Cache-only enabled but no cache for 'baseos'", err.Error())
+	})
+
+	t.Run("state and cache in data dir", func(t *testing.T) {
+		dataDir := t.TempDir()
+		envFile := filepath.Join(t.TempDir(), "env")
+		fakeCommands(t, map[string]string{
+			"dnf": `echo "$XDG_STATE_HOME $XDG_CACHE_HOME" >> "` + envFile + `"`,
+		})
+		_, err := newDnfCheck(dataDir)(context.Background())
+		require.NoError(t, err)
+		env, err := os.ReadFile(envFile)
+		require.NoError(t, err)
+		want := filepath.Join(dataDir, "state") + " " + filepath.Join(dataDir, "cache") + "\n"
+		assert.Equal(t, want+want, string(env))
+	})
+}
+
+func TestDetectPackageManager(t *testing.T) {
+	tests := []struct {
+		name     string
+		commands map[string]string
+		manager  string
+	}{
+		{"apt", map[string]string{"apt-get": "", "dpkg-query": "exit 0"}, "apt"},
+		{"zypper-aptitude", map[string]string{"apt-get": "", "zypper": ""}, "zypper"},
+		{"zypper-aptitude with dpkg", map[string]string{"apt-get": "", "dpkg-query": "exit 1", "zypper": ""}, "zypper"},
+		{"dnf", map[string]string{"dnf": "", "rpm": ""}, "dnf"},
+		{"xbps", map[string]string{"xbps-install": ""}, "xbps"},
+		{"none", nil, ""},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			fakeCommands(t, tt.commands)
+			// only the fake commands, so the host's package managers are not found
+			t.Setenv("PATH", strings.SplitN(os.Getenv("PATH"), string(os.PathListSeparator), 2)[0])
+			manager, _ := detectPackageManager(t.TempDir())
+			assert.Equal(t, tt.manager, manager)
+		})
+	}
 }
 
 func TestParseZypperTable(t *testing.T) {
@@ -273,15 +381,25 @@ func TestParseZypperListUpdates(t *testing.T) {
 }
 
 func TestCheckZypper(t *testing.T) {
+	dataDir := t.TempDir()
+	argsFile := filepath.Join(t.TempDir(), "args")
 	fakeCommands(t, map[string]string{
-		"zypper": `case "$*" in *list-patches*) cat "` + testDataPath(t, "zypper_leap155_list_patches_security.txt") + `" ;; *) cat "` + testDataPath(t, "zypper_leap155_list_updates.txt") + `" ;; esac`,
+		"zypper": `echo "$*" >> "` + argsFile + `"
+case "$*" in *list-patches*) cat "` + testDataPath(t, "zypper_leap155_list_patches_security.txt") + `" ;; *) cat "` + testDataPath(t, "zypper_leap155_list_updates.txt") + `" ;; esac`,
 	})
-	result, err := checkZypper(context.Background())
+	result, err := newZypperCheck(dataDir)(context.Background())
 	require.NoError(t, err)
 	// security patches don't map to packages, so only the count is known
 	assert.Equal(t, []uint16{22, 4}, result.counts)
 	assert.False(t, result.securityKnown)
 	assert.Len(t, result.packages, 22)
+
+	// both commands use the agent's own solv cache
+	args, err := os.ReadFile(argsFile)
+	require.NoError(t, err)
+	solvDir := filepath.Join(dataDir, "zypp-solv")
+	assert.Equal(t, "--no-refresh -q --solv-cache-dir "+solvDir+" list-updates\n"+
+		"--no-refresh -q --solv-cache-dir "+solvDir+" list-patches --category security\n", string(args))
 }
 
 func TestParsePacmanCheckUpdates(t *testing.T) {

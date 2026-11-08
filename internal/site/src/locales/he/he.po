@@ -8,7 +8,7 @@ msgstr ""
 "Language: he\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2026-10-01 02:40\n"
+"PO-Revision-Date: 2026-10-20 17:16\n"
 "Last-Translator: \n"
 "Language-Team: Hebrew\n"
 "Plural-Forms: nplurals=3; plural=(n==1 ? 0 : n==2 ? 1 : 2);\n"
@@ -26,9 +26,14 @@ msgstr "{0} זמין"
 
 #. placeholder {0}: table.getFilteredSelectedRowModel().rows.length
 #. placeholder {1}: table.getFilteredRowModel().rows.length
-#: src/components/routes/settings/alerts-history-data-table.tsx
+#: src/components/ui/data-table-pagination.tsx
 msgid "{0} of {1} row(s) selected."
 msgstr "{0} מתוך {1} שורה(ות) נבחרו."
+
+#. placeholder {0}: table.getFilteredRowModel().rows.length
+#: src/components/ui/data-table-pagination.tsx
+msgid "{0} row(s)"
+msgstr "{0} שורות"
 
 #. placeholder {0}: selectedIds.size
 #: src/components/network-monitors-table/monitor-dialog.tsx
@@ -87,6 +92,10 @@ msgstr "{total, plural, one {עדכון #} two {# עדכונים} other {# עד�
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "{totalCount, plural, one {# service} other {# services}}"
 msgstr "{totalCount, plural, one {שירות #} two {# שירותים} other {# שירותים}}"
+
+#: src/components/alerts-history-columns.tsx
+msgid "{value, plural, one {# day} other {# days}}"
+msgstr "{value, plural, one {יום #} two {יומיים} other {# ימים}}"
 
 #: src/lib/utils.ts
 msgid "1 hour"
@@ -427,6 +436,10 @@ msgstr "צלזיוס (°C)"
 msgid "Certificate"
 msgstr "תעודה"
 
+#: src/lib/alerts.ts
+msgid "Certificate Expiration"
+msgstr "תפוגת אישור"
+
 #: src/components/network-monitors-table/network-monitors-table.tsx
 msgid "Certificate expired {expires}"
 msgstr "התעודה פגה {expires}"
@@ -639,6 +652,11 @@ msgstr "העתק את פקודת ההתקנה עבור הסוכן למטה, או
 msgid "Copy the<0>docker-compose.yml</0> content for the agent below, or register agents automatically with a <1>universal token</1>."
 msgstr "העתק את תוכן ה-<0>docker-compose.yml</0> עבור הסוכן למטה, או רשום סוכנים אוטומטית עם <1>token אוניברסלי</1>."
 
+#: src/components/token-value.tsx
+#: src/components/token-value.tsx
+msgid "Copy token"
+msgstr "העתק אסימון"
+
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Copy YAML"
 msgstr "העתק YAML"
@@ -652,7 +670,7 @@ msgstr "ליבה"
 #: src/components/systemd-table/systemd-table-columns.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "CPU"
-msgstr ""
+msgstr "CPU"
 
 #: src/components/routes/system/cpu-sheet.tsx
 msgid "CPU Cores"
@@ -958,6 +976,7 @@ msgstr "מערכות קיימות שלא מוגדרות ב-<0>config.yml</0> י�
 msgid "Exited active"
 msgstr "יצא פעיל"
 
+#: src/components/alerts-history-columns.tsx
 #: src/components/network-monitors-table/network-monitors-columns.tsx
 msgid "Expired"
 msgstr "פג תוקף"
@@ -965,6 +984,10 @@ msgstr "פג תוקף"
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Expires after one hour or on hub restart."
 msgstr "התוקף פג לאחר שעה או לאחר הפעלת ה־hub מחדש."
+
+#: src/components/alerts/alerts-sheet.tsx
+msgid "Expires within <0>{value, plural, one {# day} other {# days}}</0>"
+msgstr "יפוג תוך <0>{value, plural, one {יום #} two {יומיים} other {# ימים}}</0>"
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Export"
@@ -1142,6 +1165,11 @@ msgstr "הדופק נשלח בהצלחה"
 msgid "Hide timestamps"
 msgstr "הסתר חותמות זמן"
 
+#: src/components/token-value.tsx
+#: src/components/token-value.tsx
+msgid "Hide token"
+msgstr "הסתר אסימון"
+
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgctxt "Button to copy install command"
@@ -1183,6 +1211,10 @@ msgstr "לא פעיל"
 #: src/components/login/forgot-pass-form.tsx
 msgid "If you've lost the password to your admin account, you may reset it using the following command."
 msgstr "אם איבדת את הסיסמה לחשבון המנהל שלך, תוכל לאפס אותה באמצעות הפקודה הבאה."
+
+#: src/components/network-monitors-table/monitor-dialog.tsx
+msgid "Ignore TLS certificate errors"
+msgstr "התעלם משגיאות אישור TLS"
 
 #: src/components/containers-table/containers-table-columns.tsx
 msgctxt "Docker image"
@@ -1500,6 +1532,11 @@ msgstr "תמיכה ב-OAuth 2 / OIDC"
 msgid "On each restart, systems in the database will be updated to match the systems defined in the file."
 msgstr "בכל הפעלה מחדש, המערכות במסד הנתונים יעודכנו כדי להתאים למערכות המוגדרות בקובץ."
 
+#. placeholder {0}: alert.value
+#: src/components/active-alerts.tsx
+msgid "One or more certificates expire within {0, plural, one {# day} other {# days}}"
+msgstr "תוקפם של אישור אחד או יותר יפוג תוך {0, plural, one {יום #} two {יומיים} other {# ימים}}"
+
 #: src/lib/alerts.ts
 msgid "One or more containers are unhealthy"
 msgstr "קונטיינר אחד או יותר אינם תקינים"
@@ -1571,11 +1608,8 @@ msgid "Page"
 msgstr "עמוד"
 
 #. placeholder {0}: pageIndex + 1
-#. placeholder {0}: table.getState().pagination.pageIndex + 1
-#. placeholder {1}: Math.max(table.getPageCount(), 1)
-#. placeholder {1}: table.getPageCount()
-#: src/components/routes/settings/alerts-history-data-table.tsx
-#: src/components/routes/system/package-updates-table.tsx
+#. placeholder {1}: Math.max(1, pageCount)
+#: src/components/ui/data-table-pagination.tsx
 msgid "Page {0} of {1}"
 msgstr "עמוד {0} מתוך {1}"
 
@@ -1834,6 +1868,11 @@ msgstr "הפעלות מחדש"
 msgid "Resume"
 msgstr "המשך"
 
+#: src/components/token-value.tsx
+#: src/components/token-value.tsx
+msgid "Reveal token"
+msgstr "הצג אסימון"
+
 #. Package version
 #: src/components/routes/system/package-updates-table.tsx
 msgid "Revision"
@@ -1850,8 +1889,7 @@ msgstr "שורש"
 msgid "Rotate token"
 msgstr "סובב token"
 
-#: src/components/routes/settings/alerts-history-data-table.tsx
-#: src/components/routes/system/package-updates-table.tsx
+#: src/components/ui/data-table-pagination.tsx
 msgid "Rows per page"
 msgstr "שורות לעמוד"
 
@@ -2006,7 +2044,6 @@ msgstr "הגדר את משתני הסביבה הבאים ב-Beszel hub שלך כ
 #: src/components/navbar.tsx
 #: src/components/routes/settings/layout.tsx
 #: src/components/routes/settings/layout.tsx
-#: src/components/routes/system/info-bar.tsx
 msgid "Settings"
 msgstr "הגדרות"
 
@@ -2203,7 +2240,16 @@ msgstr "לאימייל(ים)"
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Token"
-msgstr ""
+msgstr "Token"
+
+#. placeholder {0}: fingerprint.expand.system.name
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Token for {0}"
+msgstr "אסימון עבור {0}"
+
+#: src/components/token-value.tsx
+msgid "Token hidden"
+msgstr "האסימון מוסתר"
 
 #: src/components/command-palette.tsx
 #: src/components/routes/settings/layout.tsx
@@ -2267,6 +2313,10 @@ msgstr "מופעל כאשר ממוצע העומס ל-5 דקות עולה על ס
 #: src/lib/alerts.ts
 msgid "Triggers when a container's health check reports unhealthy"
 msgstr "מופעל כאשר בדיקת התקינות של קונטיינר מדווחת על מצב לא תקין"
+
+#: src/lib/alerts.ts
+msgid "Triggers when an HTTPS certificate nears expiration"
+msgstr "מופעל כאשר אישור HTTPS מתקרב לתפוגה"
 
 #: src/lib/alerts.ts
 msgid "Triggers when any sensor exceeds a threshold"
@@ -2337,6 +2387,7 @@ msgid "Unit preferences"
 msgstr "העדפות יחידות"
 
 #: src/components/command-palette.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Universal token"
 msgstr "token אוניברסלי"
@@ -2413,6 +2464,10 @@ msgstr "שימוש"
 msgid "Usage of storage pool {displayName}"
 msgstr "שימוש במאגר האחסון {displayName}"
 
+#: src/components/network-monitors-table/monitor-dialog.tsx
+msgid "Use for self-signed certificates."
+msgstr "להשתמש עבור אישורים בחתימה עצמית."
+
 #: src/components/routes/system/charts/memory-charts.tsx
 #: src/components/routes/system/charts/memory-charts.tsx
 #: src/components/routes/system/storage-pools-table.tsx
@@ -2436,6 +2491,7 @@ msgid "Value"
 msgstr "ערך"
 
 #: src/components/network-monitors-table/network-monitors-table.tsx
+#: src/components/routes/system/info-bar.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "View"
 msgstr "צפה"
@@ -2463,6 +2519,7 @@ msgstr "צפה ב-200 ההתראות האחרונות שלך."
 msgid "Visible Fields"
 msgstr "שדות גלויים"
 
+#: src/components/charts/chart-no-values.tsx
 #: src/components/routes/system/chart-card.tsx
 msgid "Waiting for enough records to display"
 msgstr "ממתין לרשומות מספיקות לתצוגה"

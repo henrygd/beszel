@@ -28,6 +28,9 @@ type Config struct {
 	// Server is the DNS server to query (host or host:port, default port 53).
 	// Only used when Protocol is "dns"; empty means use the system resolver.
 	Server string `cbor:"5,keyasint,omitempty"`
+	// SkipTLSVerify disables certificate verification for HTTPS targets, such as
+	// those with self-signed certificates. Only used when Protocol is "http".
+	SkipTLSVerify bool `cbor:"6,keyasint,omitempty" db:"skipTlsVerify"`
 }
 
 // CertInfo holds details of the leaf TLS certificate presented by a target.

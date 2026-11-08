@@ -51,6 +51,10 @@ export function getLocale() {
 		}
 		return zhVariantMap[locale] || "zh-CN"
 	}
+	// handle pt-BR (other pt variants fall back to pt)
+	if (locale === "pt-BR") {
+		return locale
+	}
 	locale = (locale || "en").split("-")[0]
 	// use en if locale is not in languages
 	if (!languages.some((l) => l[0] === locale)) {

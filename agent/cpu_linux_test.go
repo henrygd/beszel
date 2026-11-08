@@ -3,6 +3,7 @@
 package agent
 
 import (
+	"net/http"
 	"os"
 	"path/filepath"
 	"sync"
@@ -22,13 +23,13 @@ func swapCpuContainerSeams(t *testing.T) {
 		numCPU                                   func() int
 		now                                      func() time.Time
 	}{
-		cpuCgroupRoot, cpuCgroupMountinfo, cpuProcSelfCgroup, cpuSystemdContPath, cpuNumCPU, cpuNow,
+		cgroupRoot, cgroupMountinfo, procSelfCgroup, cpuSystemdContPath, cpuNumCPU, cpuNow,
 	}
 	origInLxc := inLxc
 	samples := lastCgroupCpuSamples
 	env, hadEnv := os.LookupEnv("container")
 	t.Cleanup(func() {
-		cpuCgroupRoot, cpuCgroupMountinfo, cpuProcSelfCgroup, cpuSystemdContPath = backup.root, backup.mountinfo, backup.selfCgroup, backup.systemdCont
+		cgroupRoot, cgroupMountinfo, procSelfCgroup, cpuSystemdContPath = backup.root, backup.mountinfo, backup.selfCgroup, backup.systemdCont
 		cpuNumCPU, cpuNow = backup.numCPU, backup.now
 		inLxc = origInLxc
 		lastCgroupCpuSamples = samples
@@ -40,11 +41,13 @@ func swapCpuContainerSeams(t *testing.T) {
 	inLxc = sync.OnceValue(detectLxc)
 	lastCgroupCpuSamples = make(map[uint16]cgroupCpuSample)
 	os.Unsetenv("container")
+	t.Setenv("BESZEL_AGENT_USE_CGROUP", "")
+	t.Setenv("USE_CGROUP", "")
 
 	tmp := t.TempDir()
-	cpuCgroupRoot = filepath.Join(tmp, "cgroup")
-	cpuCgroupMountinfo = filepath.Join(tmp, "mountinfo")
-	cpuProcSelfCgroup = filepath.Join(tmp, "self-cgroup")
+	cgroupRoot = filepath.Join(tmp, "cgroup")
+	cgroupMountinfo = filepath.Join(tmp, "mountinfo")
+	procSelfCgroup = filepath.Join(tmp, "self-cgroup")
 	cpuSystemdContPath = filepath.Join(tmp, "systemd-container")
 }
 
@@ -80,16 +83,16 @@ func TestDetectLxc(t *testing.T) {
 		{"systemd container lxc", func(t *testing.T) { writeCpuFixture(t, cpuSystemdContPath, "lxc\n") }, true},
 		{"systemd container nspawn", func(t *testing.T) { writeCpuFixture(t, cpuSystemdContPath, "systemd-nspawn\n") }, false},
 		{"lxcfs serving /proc/stat", func(t *testing.T) {
-			writeCpuFixture(t, cpuCgroupMountinfo,
+			writeCpuFixture(t, cgroupMountinfo,
 				"31 25 0:28 / /proc/stat rw,nosuid,nodev,relatime - fuse.lxcfs lxcfs rw,user_id=0,group_id=0\n")
 		}, true},
 		// an LXC host (e.g. Proxmox) mounts lxcfs too, but not over its own /proc
 		{"lxcfs mounted on host", func(t *testing.T) {
-			writeCpuFixture(t, cpuCgroupMountinfo,
+			writeCpuFixture(t, cgroupMountinfo,
 				"45 25 0:40 / /var/lib/lxcfs rw,nosuid,nodev,relatime - fuse.lxcfs lxcfs rw,user_id=0,group_id=0\n")
 		}, false},
 		{"cgroup-only mountinfo", func(t *testing.T) {
-			writeCpuFixture(t, cpuCgroupMountinfo,
+			writeCpuFixture(t, cgroupMountinfo,
 				"36 25 0:32 / /sys/fs/cgroup rw - cgroup2 cgroup2 rw,nsdelegate\n")
 		}, false},
 	}
@@ -104,12 +107,12 @@ func TestDetectLxc(t *testing.T) {
 
 func TestReadCgroupV2CpuSample(t *testing.T) {
 	swapCpuContainerSeams(t)
-	writeCpuFixture(t, cpuProcSelfCgroup, "0::/\n")
-	writeCpuFixture(t, cpuCgroupMountinfo, "")
-	require.NoError(t, os.MkdirAll(cpuCgroupRoot, 0o755))
-	writeCpuFixture(t, filepath.Join(cpuCgroupRoot, "cpu.stat"),
+	writeCpuFixture(t, procSelfCgroup, "0::/\n")
+	writeCpuFixture(t, cgroupMountinfo, "")
+	require.NoError(t, os.MkdirAll(cgroupRoot, 0o755))
+	writeCpuFixture(t, filepath.Join(cgroupRoot, "cpu.stat"),
 		"usage_usec 3000000\nuser_usec 2000000\nsystem_usec 1000000\nnr_throttled 7\n")
-	writeCpuFixture(t, filepath.Join(cpuCgroupRoot, "cpuset.cpus.effective"), "2,5-7\n")
+	writeCpuFixture(t, filepath.Join(cgroupRoot, "cpuset.cpus.effective"), "2,5-7\n")
 	cpuNumCPU = func() int { return 8 }
 
 	s, ok := readCgroupV2CpuSample()
@@ -120,6 +123,89 @@ func TestReadCgroupV2CpuSample(t *testing.T) {
 	assert.InDelta(t, 4, s.cores, 0.001) // cpuset 2,5-7 = 4 cores
 }
 
+func TestCpuDetailsPreferContainerCpusetOverDocker(t *testing.T) {
+	for _, tt := range []struct {
+		name, cpus     string
+		cores, threads int
+	}{
+		{name: "stale Docker count", cpus: "0-2", cores: 3, threads: 3},
+		{name: "preserve physical cores", cpus: "0-7", cores: 4, threads: 8},
+	} {
+		t.Run(tt.name, func(t *testing.T) {
+			swapCpuContainerSeams(t)
+			markLxc(t)
+			writeCpuFixture(t, procSelfCgroup, "0::/system.slice/beszel-agent.service\n")
+			writeCpuFixture(t, cgroupMountinfo, "")
+			writeCpuFixture(t, filepath.Join(cgroupRoot, "cpuset.cpus.effective"), tt.cpus+"\n")
+			// CPU time quota is independent of the number of assigned CPUs.
+			writeCpuFixture(t, filepath.Join(cgroupRoot, "cpu.max"), "200000 100000\n")
+			sysRoot := t.TempDir()
+			t.Setenv("HOST_SYS", sysRoot)
+			for id, siblings := range map[string]string{
+				"0": "0,4", "1": "1,5", "2": "2,6", "3": "3,7",
+				"4": "0,4", "5": "1,5", "6": "2,6", "7": "3,7",
+			} {
+				writeCpuFixture(t, filepath.Join(sysRoot, "devices/system/cpu/cpu"+id+"/topology/core_cpus_list"), siblings+"\n")
+			}
+			transport := &recordingRoundTripper{statusCode: http.StatusOK, body: `{"NCPU":2}`}
+			a := &Agent{dockerManager: &dockerManager{client: &http.Client{Transport: transport}}}
+			a.refreshSystemDetails()
+			assert.Equal(t, "/info", transport.lastPath)
+			assert.Equal(t, tt.threads, a.systemDetails.Threads)
+			assert.Equal(t, tt.cores, a.systemDetails.Cores)
+		})
+	}
+}
+
+func TestContainerCpuCountHybridHierarchy(t *testing.T) {
+	swapCpuContainerSeams(t)
+	markLxc(t)
+	writeCpuFixture(t, procSelfCgroup, "3:cpuset:/system.slice/agent.service\n0::/system.slice/agent.service\n")
+	v1 := filepath.Join(t.TempDir(), "cpuset")
+	v2 := filepath.Join(t.TempDir(), "unified")
+	writeCpuFixture(t, cgroupMountinfo,
+		"30 25 0:26 / "+v1+" rw - cgroup cgroup rw,cpuset\n"+
+			"31 25 0:27 / "+v2+" rw - cgroup2 cgroup2 rw\n")
+	writeCpuFixture(t, filepath.Join(v1, "cpuset.cpus"), "0-2\n")
+	writeCpuFixture(t, filepath.Join(v2, "cgroup.controllers"), "\n")
+	assert.Equal(t, 3, containerCpuCount(false))
+}
+
+func TestContainerCpuCount(t *testing.T) {
+	for _, tt := range []struct {
+		name, cpus     string
+		lxc, force, v1 bool
+		want           int
+	}{
+		{name: "LXC v2", cpus: "0-2", lxc: true, want: 3},
+		{name: "LXC v1", cpus: "2,5-6", lxc: true, v1: true, want: 3},
+		{name: "explicit opt-in", cpus: "0-2", force: true, want: 3},
+		{name: "host keeps existing count", cpus: "0-2"},
+		{name: "missing cpuset keeps existing count", lxc: true},
+	} {
+		t.Run(tt.name, func(t *testing.T) {
+			swapCpuContainerSeams(t)
+			if tt.lxc {
+				markLxc(t)
+			}
+			file := "cpuset.cpus.effective"
+			if tt.v1 {
+				writeCpuFixture(t, procSelfCgroup, "3:cpuset:/system.slice/beszel-agent.service\n")
+				writeCpuFixture(t, cgroupMountinfo,
+					"30 25 0:26 / "+cgroupRoot+" rw - cgroup cgroup rw,cpuset\n")
+				file = "cpuset.cpus"
+			} else {
+				writeCpuFixture(t, procSelfCgroup, "0::/system.slice/beszel-agent.service\n")
+				writeCpuFixture(t, cgroupMountinfo, "")
+			}
+			if tt.cpus != "" {
+				writeCpuFixture(t, filepath.Join(cgroupRoot, file), tt.cpus+"\n")
+			}
+			assert.Equal(t, tt.want, containerCpuCount(tt.force))
+		})
+	}
+}
+
 // The agent may sit in a sub-cgroup of the guest (a systemd service, or the
 // ".lxc" leaf when started from an attached shell); the mount root still
 // accounts for the whole guest and must win.
@@ -127,10 +213,10 @@ func TestReadCgroupV2PrefersContainerRoot(t *testing.T) {
 	for _, rel := range []string{"system.slice/beszel-agent.service", ".lxc"} {
 		t.Run(rel, func(t *testing.T) {
 			swapCpuContainerSeams(t)
-			writeCpuFixture(t, cpuProcSelfCgroup, "0::/"+rel+"\n")
-			writeCpuFixture(t, cpuCgroupMountinfo, "")
-			writeCpuFixture(t, filepath.Join(cpuCgroupRoot, "cpu.stat"), "usage_usec 9000\n")
-			writeCpuFixture(t, filepath.Join(cpuCgroupRoot, rel, "cpu.stat"), "usage_usec 5\n")
+			writeCpuFixture(t, procSelfCgroup, "0::/"+rel+"\n")
+			writeCpuFixture(t, cgroupMountinfo, "")
+			writeCpuFixture(t, filepath.Join(cgroupRoot, "cpu.stat"), "usage_usec 9000\n")
+			writeCpuFixture(t, filepath.Join(cgroupRoot, rel, "cpu.stat"), "usage_usec 5\n")
 
 			s, ok := readCgroupV2CpuSample()
 			require.True(t, ok)
@@ -142,9 +228,9 @@ func TestReadCgroupV2PrefersContainerRoot(t *testing.T) {
 // Same for v1: the cpuacct mount root covers the agent's sibling services.
 func TestReadCgroupV1PrefersContainerRoot(t *testing.T) {
 	swapCpuContainerSeams(t)
-	writeCpuFixture(t, cpuProcSelfCgroup, "3:cpu,cpuacct:/system.slice/beszel-agent.service\n")
+	writeCpuFixture(t, procSelfCgroup, "3:cpu,cpuacct:/system.slice/beszel-agent.service\n")
 	v1 := filepath.Join(t.TempDir(), "cpu,cpuacct")
-	writeCpuFixture(t, cpuCgroupMountinfo,
+	writeCpuFixture(t, cgroupMountinfo,
 		"30 25 0:26 / "+v1+" rw,nosuid,nodev,noexec,relatime - cgroup cgroup rw,cpu,cpuacct\n")
 	writeCpuFixture(t, filepath.Join(v1, "cpuacct.usage"), "9000000\n")
 	writeCpuFixture(t, filepath.Join(v1, "system.slice/beszel-agent.service/cpuacct.usage"), "5000\n")
@@ -156,9 +242,9 @@ func TestReadCgroupV1PrefersContainerRoot(t *testing.T) {
 
 func TestReadCgroupV1CpuSample(t *testing.T) {
 	swapCpuContainerSeams(t)
-	writeCpuFixture(t, cpuProcSelfCgroup, "3:cpuacct:/\n2:memory:/\n")
+	writeCpuFixture(t, procSelfCgroup, "3:cpuacct:/\n2:memory:/\n")
 	v1 := filepath.Join(t.TempDir(), "cpuacct")
-	writeCpuFixture(t, cpuCgroupMountinfo,
+	writeCpuFixture(t, cgroupMountinfo,
 		"30 25 0:26 / "+v1+" rw,nosuid,nodev,noexec,relatime - cgroup cgroup rw,cpuacct\n")
 	writeCpuFixture(t, filepath.Join(v1, "cpuacct.usage"), "2000000000\n")
 	writeCpuFixture(t, filepath.Join(v1, "cpuacct.stat"), "user 100\nsystem 50\n")
@@ -175,24 +261,24 @@ func TestReadCgroupV1CpuSample(t *testing.T) {
 func TestContainerCpuMetricsMath(t *testing.T) {
 	swapCpuContainerSeams(t)
 	markLxc(t)
-	writeCpuFixture(t, cpuProcSelfCgroup, "0::/\n")
-	writeCpuFixture(t, cpuCgroupMountinfo, "")
-	require.NoError(t, os.MkdirAll(cpuCgroupRoot, 0o755))
-	writeCpuFixture(t, filepath.Join(cpuCgroupRoot, "cpuset.cpus.effective"), "0-3\n")
+	writeCpuFixture(t, procSelfCgroup, "0::/\n")
+	writeCpuFixture(t, cgroupMountinfo, "")
+	require.NoError(t, os.MkdirAll(cgroupRoot, 0o755))
+	writeCpuFixture(t, filepath.Join(cgroupRoot, "cpuset.cpus.effective"), "0-3\n")
 	cpuNumCPU = func() int { return 8 }
 	advance := fakeNow(t)
 
-	writeCpuFixture(t, filepath.Join(cpuCgroupRoot, "cpu.stat"),
+	writeCpuFixture(t, filepath.Join(cgroupRoot, "cpu.stat"),
 		"usage_usec 1000000\nuser_usec 600000\nsystem_usec 400000\n")
-	m, ok := containerCpuMetrics(60000)
+	m, ok := containerCpuMetrics(60000, false)
 	require.True(t, ok)
 	assert.Zero(t, m.Total) // first call only seeds the baseline
 
 	// 1s elapsed, container burned 2 core-seconds on 4 usable cores
 	advance(time.Second)
-	writeCpuFixture(t, filepath.Join(cpuCgroupRoot, "cpu.stat"),
+	writeCpuFixture(t, filepath.Join(cgroupRoot, "cpu.stat"),
 		"usage_usec 3000000\nuser_usec 1600000\nsystem_usec 900000\n")
-	m, ok = containerCpuMetrics(60000)
+	m, ok = containerCpuMetrics(60000, false)
 	require.True(t, ok)
 	assert.InDelta(t, 50, m.Total, 0.01)
 	assert.InDelta(t, 25, m.User, 0.01)
@@ -205,18 +291,18 @@ func TestContainerCpuMetricsMath(t *testing.T) {
 func TestContainerCpuMetricsHonorsQuota(t *testing.T) {
 	swapCpuContainerSeams(t)
 	markLxc(t)
-	writeCpuFixture(t, cpuProcSelfCgroup, "0::/\n")
-	writeCpuFixture(t, cpuCgroupMountinfo, "")
-	require.NoError(t, os.MkdirAll(cpuCgroupRoot, 0o755))
-	writeCpuFixture(t, filepath.Join(cpuCgroupRoot, "cpu.max"), "200000 100000\n") // 2 cores
+	writeCpuFixture(t, procSelfCgroup, "0::/\n")
+	writeCpuFixture(t, cgroupMountinfo, "")
+	require.NoError(t, os.MkdirAll(cgroupRoot, 0o755))
+	writeCpuFixture(t, filepath.Join(cgroupRoot, "cpu.max"), "200000 100000\n") // 2 cores
 	cpuNumCPU = func() int { return 8 }
 	advance := fakeNow(t)
 
-	writeCpuFixture(t, filepath.Join(cpuCgroupRoot, "cpu.stat"), "usage_usec 1000000\n")
-	containerCpuMetrics(60000)
+	writeCpuFixture(t, filepath.Join(cgroupRoot, "cpu.stat"), "usage_usec 1000000\n")
+	containerCpuMetrics(60000, false)
 	advance(time.Second)
-	writeCpuFixture(t, filepath.Join(cpuCgroupRoot, "cpu.stat"), "usage_usec 2000000\n")
-	m, ok := containerCpuMetrics(60000)
+	writeCpuFixture(t, filepath.Join(cgroupRoot, "cpu.stat"), "usage_usec 2000000\n")
+	m, ok := containerCpuMetrics(60000, false)
 	require.True(t, ok)
 	assert.InDelta(t, 50, m.Total, 0.01) // 1 core-second against a 2-core quota
 }
@@ -224,30 +310,30 @@ func TestContainerCpuMetricsHonorsQuota(t *testing.T) {
 func TestContainerCpuMetricsZeroAndBackwardDelta(t *testing.T) {
 	swapCpuContainerSeams(t)
 	markLxc(t)
-	writeCpuFixture(t, cpuProcSelfCgroup, "0::/\n")
-	writeCpuFixture(t, cpuCgroupMountinfo, "")
-	require.NoError(t, os.MkdirAll(cpuCgroupRoot, 0o755))
-	writeCpuFixture(t, filepath.Join(cpuCgroupRoot, "cpu.stat"), "usage_usec 5000000\n")
+	writeCpuFixture(t, procSelfCgroup, "0::/\n")
+	writeCpuFixture(t, cgroupMountinfo, "")
+	require.NoError(t, os.MkdirAll(cgroupRoot, 0o755))
+	writeCpuFixture(t, filepath.Join(cgroupRoot, "cpu.stat"), "usage_usec 5000000\n")
 	cpuNumCPU = func() int { return 4 }
 	advance := fakeNow(t)
 
 	// seed the baseline, then do not advance the clock: elapsed <= 0
-	containerCpuMetrics(60000)
-	m, ok := containerCpuMetrics(60000)
+	containerCpuMetrics(60000, false)
+	m, ok := containerCpuMetrics(60000, false)
 	require.True(t, ok)
 	assert.Zero(t, m.Total)
 
 	// counter goes backwards (cgroup recreated): report zero and re-baseline
 	advance(time.Second)
-	writeCpuFixture(t, filepath.Join(cpuCgroupRoot, "cpu.stat"), "usage_usec 100000\n")
-	m, ok = containerCpuMetrics(60000)
+	writeCpuFixture(t, filepath.Join(cgroupRoot, "cpu.stat"), "usage_usec 100000\n")
+	m, ok = containerCpuMetrics(60000, false)
 	require.True(t, ok)
 	assert.Zero(t, m.Total)
 
 	// next tick measures from the new baseline, not the stale one
 	advance(time.Second)
-	writeCpuFixture(t, filepath.Join(cpuCgroupRoot, "cpu.stat"), "usage_usec 1100000\n")
-	m, ok = containerCpuMetrics(60000)
+	writeCpuFixture(t, filepath.Join(cgroupRoot, "cpu.stat"), "usage_usec 1100000\n")
+	m, ok = containerCpuMetrics(60000, false)
 	require.True(t, ok)
 	assert.InDelta(t, 25, m.Total, 0.01) // 1e6 usec / (1s * 4 cores)
 }
@@ -255,34 +341,118 @@ func TestContainerCpuMetricsZeroAndBackwardDelta(t *testing.T) {
 func TestContainerCpuMetricsFallbacks(t *testing.T) {
 	t.Run("not in lxc", func(t *testing.T) {
 		swapCpuContainerSeams(t)
-		_, ok := containerCpuMetrics(60000)
+		_, ok := containerCpuMetrics(60000, false)
 		assert.False(t, ok)
 	})
 	// Docker agents monitor the host, so cgroup accounting must not kick in
 	// even when it is readable and no LXC marker is present.
 	t.Run("docker container", func(t *testing.T) {
 		swapCpuContainerSeams(t)
-		writeCpuFixture(t, cpuProcSelfCgroup, "0::/\n")
-		writeCpuFixture(t, cpuCgroupMountinfo, "")
-		writeCpuFixture(t, filepath.Join(cpuCgroupRoot, "cpu.stat"), "usage_usec 5000000\n")
-		_, ok := containerCpuMetrics(60000)
+		writeCpuFixture(t, procSelfCgroup, "0::/\n")
+		writeCpuFixture(t, cgroupMountinfo, "")
+		writeCpuFixture(t, filepath.Join(cgroupRoot, "cpu.stat"), "usage_usec 5000000\n")
+		_, ok := containerCpuMetrics(60000, false)
 		assert.False(t, ok)
 	})
 	t.Run("in lxc without cgroup accounting", func(t *testing.T) {
 		swapCpuContainerSeams(t)
 		markLxc(t)
-		writeCpuFixture(t, cpuProcSelfCgroup, "0::/\n")
-		writeCpuFixture(t, cpuCgroupMountinfo, "")
-		// cpuCgroupRoot has no cpu.stat
-		_, ok := containerCpuMetrics(60000)
+		writeCpuFixture(t, procSelfCgroup, "0::/\n")
+		writeCpuFixture(t, cgroupMountinfo, "")
+		// cgroupRoot has no cpu.stat
+		_, ok := containerCpuMetrics(60000, false)
 		assert.False(t, ok)
 	})
+}
+
+func TestContainerCpuMetricsExplicitOptIn(t *testing.T) {
+	swapCpuContainerSeams(t)
+	writeCpuFixture(t, procSelfCgroup, "0::/system.slice/beszel-agent.service\n")
+	writeCpuFixture(t, cgroupMountinfo, "")
+	writeCpuFixture(t, filepath.Join(cgroupRoot, "cpu.stat"), "usage_usec 1000000\n")
+	cpuNumCPU = func() int { return 4 }
+	advance := fakeNow(t)
+
+	a := &Agent{forceUseCgroup: true}
+	a.initializeCpu()
+	require.False(t, lastCgroupCpuSamples[60000].at.IsZero())
+	advance(time.Second)
+	writeCpuFixture(t, filepath.Join(cgroupRoot, "cpu.stat"), "usage_usec 3000000\n")
+	m, err := getCpuMetrics(60000, a.forceUseCgroup)
+	require.NoError(t, err)
+	assert.InDelta(t, 50, m.Total, 0.01)
+	assert.True(t, m.fromCgroup)
+}
+
+func TestContainerCpuMetricsExplicitOptInUnreadable(t *testing.T) {
+	swapCpuContainerSeams(t)
+	writeCpuFixture(t, procSelfCgroup, "0::/\n")
+	_, ok := containerCpuMetrics(60000, true)
+	assert.False(t, ok)
+}
+
+func TestInRootCgroupV2(t *testing.T) {
+	swapCpuContainerSeams(t)
+	writeCpuFixture(t, cgroupMountinfo, "")
+
+	// no cgroup v2 membership
+	writeCpuFixture(t, procSelfCgroup, "4:cpu,cpuacct:/docker/abc\n")
+	writeCpuFixture(t, filepath.Join(cgroupRoot, "cgroup.controllers"), "cpu memory\n")
+	assert.False(t, inRootCgroupV2())
+
+	// --cgroupns=host: the mount is the host root, which has no cgroup.type
+	writeCpuFixture(t, procSelfCgroup, "0::/system.slice/docker-abc.scope\n")
+	assert.True(t, inRootCgroupV2())
+
+	// --cgroupns=private: the mount is the container's own (non-root) cgroup
+	writeCpuFixture(t, filepath.Join(cgroupRoot, "cgroup.type"), "domain\n")
+	assert.False(t, inRootCgroupV2())
+
+	// no cgroup v2 mount at all
+	require.NoError(t, os.RemoveAll(cgroupRoot))
+	assert.False(t, inRootCgroupV2())
+}
+
+func TestInitializeCpuDetectsLxc(t *testing.T) {
+	swapCpuContainerSeams(t)
+	markLxc(t)
+	writeCpuFixture(t, procSelfCgroup, "0::/\n")
+	writeCpuFixture(t, cgroupMountinfo, "")
+	writeCpuFixture(t, filepath.Join(cgroupRoot, "cpu.stat"), "usage_usec 1000000\n")
+
+	a := &Agent{}
+	a.initializeCpu()
+	assert.EqualValues(t, 1000000, lastCgroupCpuSamples[60000].usageUsec)
+}
+
+func TestNewAgentInitializesCgroupCpuFromEnv(t *testing.T) {
+	swapCpuContainerSeams(t)
+	t.Setenv("BESZEL_AGENT_USE_CGROUP", "true")
+	writeCpuFixture(t, procSelfCgroup, "0::/system.slice/beszel-agent.service\n")
+	writeCpuFixture(t, cgroupMountinfo, "")
+	writeCpuFixture(t, filepath.Join(cgroupRoot, "cpu.stat"), "usage_usec 1000000\n")
+	cpuNumCPU = func() int { return 4 }
+	advance := fakeNow(t)
+
+	a, err := NewAgent(t.TempDir())
+	require.NoError(t, err)
+	require.True(t, a.forceUseCgroup)
+	assert.EqualValues(t, 1000000, lastCgroupCpuSamples[60000].usageUsec)
+
+	// Changing the environment later must not change this agent's CPU source.
+	t.Setenv("BESZEL_AGENT_USE_CGROUP", "false")
+	advance(time.Second)
+	writeCpuFixture(t, filepath.Join(cgroupRoot, "cpu.stat"), "usage_usec 3000000\n")
+	m, err := getCpuMetrics(60000, a.forceUseCgroup)
+	require.NoError(t, err)
+	assert.InDelta(t, 50, m.Total, 0.01)
+	assert.True(t, m.fromCgroup)
 }
 
 // The host path must keep reporting through gopsutil untouched.
 func TestGetCpuMetricsHostFallback(t *testing.T) {
 	swapCpuContainerSeams(t)
-	m, err := getCpuMetrics(60000)
+	m, err := getCpuMetrics(60000, false)
 	require.NoError(t, err)
 	assert.False(t, m.fromCgroup)
 	assert.GreaterOrEqual(t, m.Total, 0.0)
@@ -294,20 +464,20 @@ func TestGetCpuMetricsHostFallback(t *testing.T) {
 func TestGetCpuMetricsPrefersCgroup(t *testing.T) {
 	swapCpuContainerSeams(t)
 	markLxc(t)
-	writeCpuFixture(t, cpuProcSelfCgroup, "0::/\n")
-	writeCpuFixture(t, cpuCgroupMountinfo, "")
-	require.NoError(t, os.MkdirAll(cpuCgroupRoot, 0o755))
+	writeCpuFixture(t, procSelfCgroup, "0::/\n")
+	writeCpuFixture(t, cgroupMountinfo, "")
+	require.NoError(t, os.MkdirAll(cgroupRoot, 0o755))
 	cpuNumCPU = func() int { return 4 }
 	advance := fakeNow(t)
 
-	writeCpuFixture(t, filepath.Join(cpuCgroupRoot, "cpu.stat"), "usage_usec 0\n")
-	m, err := getCpuMetrics(60000)
+	writeCpuFixture(t, filepath.Join(cgroupRoot, "cpu.stat"), "usage_usec 0\n")
+	m, err := getCpuMetrics(60000, false)
 	require.NoError(t, err)
 	assert.Zero(t, m.Total)
 
 	advance(time.Second)
-	writeCpuFixture(t, filepath.Join(cpuCgroupRoot, "cpu.stat"), "usage_usec 2000000\n")
-	m, err = getCpuMetrics(60000)
+	writeCpuFixture(t, filepath.Join(cgroupRoot, "cpu.stat"), "usage_usec 2000000\n")
+	m, err = getCpuMetrics(60000, false)
 	require.NoError(t, err)
 	assert.InDelta(t, 50, m.Total, 0.01)
 	assert.True(t, m.fromCgroup) // per-core usage is skipped for this source

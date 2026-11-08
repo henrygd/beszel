@@ -386,13 +386,14 @@ func TestGetDetailFailureReturnsIncompleteCachedInventory(t *testing.T) {
 		return []zfs.PoolStat{{Name: "tank"}}, nil
 	}
 	zm.backends[0].poolStatusesFn = func() ([]zfs.PoolStatus, error) {
-		return []zfs.PoolStatus{{Name: "tank", Vdevs: []zfs.VdevStatus{{Name: "mirror-0"}}}}, nil
+		return []zfs.PoolStatus{{Name: "tank", Status: "test advisory", Vdevs: []zfs.VdevStatus{{Name: "mirror-0"}}}}, nil
 	}
 	zm.backends[0].datasetsFn = func() ([]zfs.Dataset, error) {
 		return []zfs.Dataset{{Name: "tank/data"}}, nil
 	}
 	first := zm.GetDetail(false)
 	require.True(t, first.Complete)
+	assert.Equal(t, "test advisory", first.Pools[0].Status)
 	require.Len(t, first.Pools[0].Vdevs, 1)
 	require.Len(t, first.Pools[0].Datasets, 1)
 
@@ -400,6 +401,7 @@ func TestGetDetailFailureReturnsIncompleteCachedInventory(t *testing.T) {
 	zm.backends[0].datasetsFn = func() ([]zfs.Dataset, error) { return nil, zfs.ErrNoZfs }
 	partial := zm.GetDetail(true)
 	require.True(t, partial.Complete)
+	assert.Equal(t, "test advisory", partial.Pools[0].Status)
 	require.Len(t, partial.Pools[0].Vdevs, 1)
 	require.Len(t, partial.Pools[0].Datasets, 1)
 

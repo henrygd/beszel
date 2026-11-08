@@ -746,3 +746,127 @@ func TestWebSocketDeadlineCoversSlowCollection(t *testing.T) {
 		t.Fatalf("WebSocket deadline %s is shorter than the slow-collection window of %s", wsDeadline, minimumDeadline)
 	}
 }
+
+// TestGetHubHeaders covers HUB_HEADERS parsing
+func TestGetHubHeaders(t *testing.T) {
+	testCases := []struct {
+		name    string
+		raw     string
+		want    http.Header
+		wantErr bool
+	}{
+		{
+			name: "unset",
+			raw:  "",
+			want: nil,
+		},
+		{
+			name: "two pairs with whitespace and trailing comma",
+			raw:  "  CF-Access-Client-Id:abc.access ,   CF-Access-Client-Secret:   def456  ,",
+			want: http.Header{
+				"Cf-Access-Client-Id":     []string{"abc.access"},
+				"Cf-Access-Client-Secret": []string{"def456"},
+			},
+		},
+		{
+			name: "written across lines",
+			raw:  "X-One: 1,\nX-Two: 2\n",
+			want: http.Header{"X-One": []string{"1"}, "X-Two": []string{"2"}},
+		},
+		{
+			name: "value may contain colons and equals",
+			raw:  "Authorization: Bearer a=b:c",
+			want: http.Header{"Authorization": []string{"Bearer a=b:c"}},
+		},
+		{
+			name: "empty value",
+			raw:  "X-Empty:",
+			want: http.Header{"X-Empty": []string{""}},
+		},
+		{
+			name: "repeated name adds value",
+			raw:  "X-Multi: one, X-Multi: two",
+			want: http.Header{"X-Multi": []string{"one", "two"}},
+		},
+		{
+			name:    "second pair missing colon",
+			raw:     "X-One: 1, oops",
+			wantErr: true,
+		},
+		{
+			name:    "invalid header name",
+			raw:     "Bad Header: value",
+			wantErr: true,
+		},
+		{
+			name:    "invalid header value",
+			raw:     "X-Bad: va\x7flue",
+			wantErr: true,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			t.Setenv("BESZEL_AGENT_HUB_HEADERS", tc.raw)
+			headers, err := getHubHeaders()
+			if tc.wantErr {
+				require.Error(t, err)
+				assert.ErrorIs(t, err, errInvalidHubHeaders)
+				assert.Nil(t, headers)
+				return
+			}
+			require.NoError(t, err)
+			assert.Equal(t, tc.want, headers)
+		})
+	}
+}
+
+// TestGetHubHeadersErrorOmitsValues verifies that parse errors do not leak
+// header values, which are often secrets
+func TestGetHubHeadersErrorOmitsValues(t *testing.T) {
+	const secret = "super-secret-value"
+	for _, raw := range []string{
+		"CF-Access-Client-Secret: " + secret + "\x7f",
+		"Bad Name: " + secret,
+		secret,
+	} {
+		t.Setenv("BESZEL_AGENT_HUB_HEADERS", raw)
+		_, err := getHubHeaders()
+		require.ErrorIs(t, err, errInvalidHubHeaders)
+		assert.NotContains(t, err.Error(), secret)
+	}
+}
+
+// TestWebSocketClient_GetOptionsHubHeaders verifies that
+// HUB_HEADERS values reach the handshake, and user supplied X-BESZEL values are ignored
+func TestWebSocketClient_GetOptionsHubHeaders(t *testing.T) {
+	agent := createTestAgent(t)
+	t.Setenv("BESZEL_AGENT_HUB_URL", "http://localhost:8080")
+	t.Setenv("BESZEL_AGENT_TOKEN", "test-token")
+	t.Setenv("BESZEL_AGENT_HUB_HEADERS",
+		"CF-Access-Client-Id: abc.access, User-Agent: curl/8.0, x-token: hijack, X-BESZEL: 0.0.1")
+
+	client, err := newWebSocketClient(agent)
+	require.NoError(t, err)
+
+	header := client.getOptions().RequestHeader
+	assert.Equal(t, "abc.access", header.Get("Cf-Access-Client-Id"))
+	assert.Equal(t, "curl/8.0", header.Get("User-Agent"))
+	assert.Equal(t, "test-token", header.Get("X-Token"))
+	assert.Equal(t, beszel.Version, header.Get("X-Beszel"))
+}
+
+// TestNewWebSocketClientInvalidHubHeaders verifies that a malformed
+// HUB_HEADERS value fails client creation
+func TestNewWebSocketClientInvalidHubHeaders(t *testing.T) {
+	agent := createTestAgent(t)
+	t.Setenv("BESZEL_AGENT_HUB_URL", "http://localhost:8080")
+	t.Setenv("BESZEL_AGENT_TOKEN", "test-token")
+	t.Setenv("BESZEL_AGENT_HUB_HEADERS", "malfored-header")
+
+	client, err := newWebSocketClient(agent)
+
+	require.Error(t, err)
+	assert.Nil(t, client)
+	assert.ErrorIs(t, err, errInvalidHubHeaders)
+}

@@ -59,6 +59,23 @@ func bindNetworkMonitorsEvents(hub *Hub) {
 	// record with the new ID and delete the old one. Otherwise, just update the existing monitor on the agent.
 	hub.OnRecordUpdateRequest("network_monitors").BindFunc(func(e *core.RecordRequestEvent) error {
 		systemID := e.Record.GetString("system")
+		if systemID != e.Record.Original().GetString("system") {
+			requestInfo, err := e.RequestInfo()
+			if err != nil {
+				return err
+			}
+			targetSystem, err := e.App.FindRecordById("systems", systemID)
+			if err != nil {
+				return e.ForbiddenError("", nil)
+			}
+			canAccess, err := e.App.CanAccessRecord(targetSystem, requestInfo, targetSystem.Collection().UpdateRule)
+			if err != nil {
+				return err
+			}
+			if !canAccess {
+				return e.ForbiddenError("", nil)
+			}
+		}
 		protocol := e.Record.GetString("protocol")
 		// only tcp uses port - set other protocols port to zero
 		if protocol != "tcp" {
@@ -67,6 +84,10 @@ func bindNetworkMonitorsEvents(hub *Hub) {
 		// only dns uses server - clear it for other protocols
 		if protocol != "dns" {
 			e.Record.Set("server", "")
+		}
+		// only http uses TLS verification - clear it for other protocols
+		if protocol != "http" {
+			e.Record.Set("skipTlsVerify", false)
 		}
 		ID := generateMonitorID(systemID, *monitorConfigFromRecord(e.Record))
 		if ID != e.Record.Id {
@@ -100,7 +121,7 @@ func bindNetworkMonitorsEvents(hub *Hub) {
 	// sync monitor to agent on delete
 	hub.OnRecordAfterDeleteSuccess("network_monitors").BindFunc(func(e *core.RecordEvent) error {
 		if err := hub.deleteNetworkMonitor(e.Record); err != nil {
-			hub.Logger().Warn("failed to delete monitor on agent", "system", e.Record.GetString("system"), "monitor", e.Record.Id, "err", err)
+			hub.Logger().Warn("failed to delete monitor on agent", "system", e.Record.Original().GetString("system"), "monitor", e.Record.Id, "err", err)
 		}
 		return e.Next()
 	})
@@ -115,6 +136,8 @@ func monitorConfigFromRecord(record *core.Record) *monitor.Config {
 		Port:     uint16(record.GetInt("port")),
 		Interval: uint16(record.GetInt("interval")),
 		Server:   record.GetString("server"),
+		// SkipTLSVerify is a probe option, not part of the monitor's identity, so it does not affect the ID.
+		SkipTLSVerify: record.GetBool("skipTlsVerify"),
 	}
 }
 
@@ -139,7 +162,7 @@ func copyMonitorToNewRecord(oldRecord *core.Record, newID string) *core.Record {
 	collection := oldRecord.Collection()
 	newRecord := core.NewRecord(collection)
 	newRecord.Id = newID
-	fields := []string{"system", "target", "protocol", "port", "server", "interval", "enabled"}
+	fields := []string{"system", "target", "protocol", "port", "server", "interval", "enabled", "skipTlsVerify"}
 	for _, field := range fields {
 		newRecord.Set(field, oldRecord.Get(field))
 	}
@@ -164,7 +187,9 @@ func (h *Hub) upsertNetworkMonitor(record *core.Record, runNow bool) error {
 
 // deleteNetworkMonitor removes the record's monitor from the target system.
 func (h *Hub) deleteNetworkMonitor(record *core.Record) error {
-	systemID := record.GetString("system")
+	// Use the persisted system: a pending request may have changed the record's system,
+	// but the agent that holds the monitor is the one it was last saved with.
+	systemID := record.Original().GetString("system")
 	system, err := h.sm.GetSystem(systemID)
 	if err != nil {
 		return err

@@ -1,5 +1,5 @@
 import { getMonitorTarget, monitorGapRecord } from "@/lib/network-monitor-utils"
-import LineChartDefault, { isolatedDot } from "@/components/charts/line-chart"
+import LineChartDefault from "@/components/charts/line-chart"
 import type { DataPoint } from "@/components/charts/line-chart"
 import { decimalString, formatMicroseconds, matchesFilterGroups, parseFilterGroups, toFixedFloat } from "@/lib/utils"
 import { $monitorFilter } from "@/lib/stores"
@@ -61,7 +61,8 @@ function MonitorChart({
 		const points: DataPoint<NetworkMonitorStatsRecord>[] = []
 		const visibleIDs: string[] = []
 		const filterGroups = parseFilterGroups(filter)
-		const dot = chartData.chartTime === "1m"
+		// show every point at 1m; otherwise the chart default draws only isolated points
+		const dot = chartData.chartTime === "1m" || undefined
 		for (let i = 0; i < count; i++) {
 			const p = sortedMonitors[i]
 			const label = getLabel(p)
@@ -138,7 +139,6 @@ export function AvgMinMaxResponseChart({ monitorStats, monitor, chartData, empty
 			record.stats?.[monitor?.id ?? ""]?.[metric] ?? null
 		const avgPoint = {
 			label: "Avg",
-			dot: isolatedDot,
 			dataKey: dataFn("res_avg"),
 			color: 1,
 			order: 0,
@@ -150,7 +150,6 @@ export function AvgMinMaxResponseChart({ monitorStats, monitor, chartData, empty
 		return [
 			{
 				label: "Max",
-				dot: isolatedDot,
 				dataKey: dataFn("res_max"),
 				color: 3,
 				order: 0,
@@ -158,7 +157,6 @@ export function AvgMinMaxResponseChart({ monitorStats, monitor, chartData, empty
 			avgPoint,
 			{
 				label: "Min",
-				dot: isolatedDot,
 				dataKey: dataFn("res_min"),
 				color: 2,
 				order: 2,

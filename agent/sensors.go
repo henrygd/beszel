@@ -11,6 +11,7 @@ import (
 	"runtime"
 	"strconv"
 	"strings"
+	"sync/atomic"
 	"time"
 	"unicode/utf8"
 
@@ -21,20 +22,25 @@ import (
 	"github.com/shirou/gopsutil/v4/sensors"
 )
 
-var errTemperatureFetchTimeout = errors.New("temperature collection timed out")
+var (
+	errTemperatureFetchTimeout = errors.New("temperature collection timed out")
+	errSensorReadInFlight      = errors.New("previous sensor read still in progress")
+)
+
+const defaultSensorsTimeout = 2 * time.Second
 
 // Matches sensors.TemperaturesWithContext to allow for panic recovery (gopsutil/issues/1832)
 type getTempsFn func(ctx context.Context) ([]sensors.TemperatureStat, error)
 
 type SensorConfig struct {
 	context        context.Context
-	sensors        map[string]struct{}
+	sensors        sensorFilter
 	primarySensor  string
 	timeout        time.Duration
-	isBlacklist    bool
-	hasWildcards   bool
 	skipCollection bool
 	skipGPU        bool
+	skipFans       bool
+	fanSensors     sensorFilter
 	sensorShadow   string
 	firstRun       bool
 }
@@ -47,13 +53,20 @@ func (a *Agent) newSensorConfig() *SensorConfig {
 	sensorsTimeout, _ := utils.GetEnv("SENSORS_TIMEOUT")
 	skipGPU, _ := utils.GetEnv("SKIP_GPU")
 
-	return a.newSensorConfigWithEnv(primarySensor, sysSensors, sensorsEnvVal, sensorsTimeout, skipCollection, skipGPU == "true")
+	config := a.newSensorConfigWithEnv(primarySensor, sysSensors, sensorsEnvVal, sensorsTimeout, skipCollection, skipGPU == "true")
+
+	// FAN_SENSORS uses the same syntax as SENSORS, matched against fan keys
+	fanSensorsEnvVal, fanSensorsSet := utils.GetEnv("FAN_SENSORS")
+	config.skipFans = fanSensorsSet && fanSensorsEnvVal == ""
+	config.fanSensors = parseSensorFilter(fanSensorsEnvVal)
+
+	return config
 }
 
 // newSensorConfigWithEnv creates a SensorConfig with the provided environment variables
 // sensorsSet indicates if the SENSORS environment variable was explicitly set (even to empty string)
 func (a *Agent) newSensorConfigWithEnv(primarySensor, sysSensors, sensorsEnvVal, sensorsTimeout string, skipCollection, skipGPU bool) *SensorConfig {
-	timeout := 2 * time.Second
+	timeout := defaultSensorsTimeout
 	if sensorsTimeout != "" {
 		if d, err := time.ParseDuration(sensorsTimeout); err == nil {
 			timeout = d
@@ -69,7 +82,7 @@ func (a *Agent) newSensorConfigWithEnv(primarySensor, sysSensors, sensorsEnvVal,
 		skipCollection: skipCollection,
 		skipGPU:        skipGPU,
 		firstRun:       true,
-		sensors:        make(map[string]struct{}),
+		sensors:        parseSensorFilter(sensorsEnvVal),
 	}
 
 	// Set sensors context (allows overriding sys location for sensors)
@@ -93,23 +106,38 @@ func (a *Agent) newSensorConfigWithEnv(primarySensor, sysSensors, sensorsEnvVal,
 		}
 	}
 
+	return config
+}
+
+// sensorFilter is a parsed SENSORS-style list of sensor names
+type sensorFilter struct {
+	sensors      map[string]struct{}
+	isBlacklist  bool
+	hasWildcards bool
+}
+
+// parseSensorFilter parses a comma separated list of sensor names, which may
+// contain wildcards. A leading "-" turns the list into a blacklist.
+func parseSensorFilter(val string) sensorFilter {
+	filter := sensorFilter{sensors: make(map[string]struct{})}
+
 	// handle blacklist
-	if strings.HasPrefix(sensorsEnvVal, "-") {
-		config.isBlacklist = true
-		sensorsEnvVal = sensorsEnvVal[1:]
+	if strings.HasPrefix(val, "-") {
+		filter.isBlacklist = true
+		val = val[1:]
 	}
 
-	for sensor := range strings.SplitSeq(sensorsEnvVal, ",") {
+	for sensor := range strings.SplitSeq(val, ",") {
 		sensor = strings.TrimSpace(sensor)
 		if sensor != "" {
-			config.sensors[sensor] = struct{}{}
+			filter.sensors[sensor] = struct{}{}
 			if strings.Contains(sensor, "*") {
-				config.hasWildcards = true
+				filter.hasWildcards = true
 			}
 		}
 	}
 
-	return config
+	return filter
 }
 
 // updateTemperatures updates the agent with the latest sensor temperatures
@@ -126,7 +154,7 @@ func (a *Agent) updateTemperatures(systemStats *system.Stats) {
 	temps, err := a.getTempsWithTimeout(getSensorTemps)
 	if err != nil {
 		// retry once on panic (gopsutil/issues/1832)
-		if !errors.Is(err, errTemperatureFetchTimeout) {
+		if !errors.Is(err, errTemperatureFetchTimeout) && !errors.Is(err, errSensorReadInFlight) {
 			temps, err = a.getTempsWithTimeout(getSensorTemps)
 		}
 		if err != nil {
@@ -145,11 +173,23 @@ func (a *Agent) updateTemperatures(systemStats *system.Stats) {
 	}
 
 	systemStats.Temperatures = make(map[string]float64, len(temps))
+	// claimed tracks every name handed out, including names of sensors that are
+	// dropped below, so a sensor's key never depends on which sensors were filtered
+	claimed := make(map[string]struct{}, len(temps))
 	for i, sensor := range temps {
 		// check for malformed strings on darwin (gopsutil/issues/1832)
 		if runtime.GOOS == "darwin" && !utf8.ValidString(sensor.SensorKey) {
 			continue
 		}
+
+		// claim a name before any filtering, so excluding a sensor does not
+		// rename the sensors after it
+		sensorName := sensor.SensorKey
+		if _, ok := claimed[sensorName]; ok {
+			// if key already claimed, append int to key
+			sensorName = sensorName + "_" + strconv.Itoa(i)
+		}
+		claimed[sensorName] = struct{}{}
 
 		// scale temperature
 		if sensor.Temperature != 0 && sensor.Temperature < 1 {
@@ -158,11 +198,6 @@ func (a *Agent) updateTemperatures(systemStats *system.Stats) {
 		// skip if temperature is unreasonable
 		if sensor.Temperature <= 0 || sensor.Temperature >= 200 {
 			continue
-		}
-		sensorName := sensor.SensorKey
-		if _, ok := systemStats.Temperatures[sensorName]; ok {
-			// if key already exists, append int to key
-			sensorName = sensorName + "_" + strconv.Itoa(i)
 		}
 		// skip if not in whitelist or blacklist
 		if !isValidSensor(sensorName, a.sensorConfig) {
@@ -195,11 +230,6 @@ func (a *Agent) getTempsWithPanicRecovery(getTemps getTempsFn) (temps []sensors.
 }
 
 func (a *Agent) getTempsWithTimeout(getTemps getTempsFn) ([]sensors.TemperatureStat, error) {
-	type result struct {
-		temps []sensors.TemperatureStat
-		err   error
-	}
-
 	// Use a longer timeout on the first run to allow for initialization
 	// (e.g. Windows LHM subprocess startup)
 	timeout := a.sensorConfig.timeout
@@ -208,48 +238,73 @@ func (a *Agent) getTempsWithTimeout(getTemps getTempsFn) ([]sensors.TemperatureS
 		timeout = 10 * time.Second
 	}
 
+	return readWithTimeout(&a.tempsReading, timeout, errTemperatureFetchTimeout, func() ([]sensors.TemperatureStat, error) {
+		return a.getTempsWithPanicRecovery(getTemps)
+	})
+}
+
+// readWithTimeout runs read in a goroutine and returns timeoutErr if it doesn't
+// finish within timeout. A sysfs read blocked in the kernel can't be cancelled,
+// so inflight stays set until it returns and later calls get errSensorReadInFlight
+// instead of stacking up another blocked goroutine on every poll.
+func readWithTimeout[T any](inflight *atomic.Bool, timeout time.Duration, timeoutErr error, read func() (T, error)) (T, error) {
+	var zero T
+	if !inflight.CompareAndSwap(false, true) {
+		return zero, errSensorReadInFlight
+	}
+
+	type result struct {
+		value T
+		err   error
+	}
 	resultCh := make(chan result, 1)
 	go func() {
-		temps, err := a.getTempsWithPanicRecovery(getTemps)
-		resultCh <- result{temps: temps, err: err}
+		value, err := read()
+		inflight.Store(false)
+		resultCh <- result{value, err}
 	}()
 
 	select {
 	case res := <-resultCh:
-		return res.temps, res.err
+		return res.value, res.err
 	case <-time.After(timeout):
-		return nil, errTemperatureFetchTimeout
+		return zero, timeoutErr
 	}
 }
 
 // isValidSensor checks if a sensor is valid based on the sensor name and the sensor config
 func isValidSensor(sensorName string, config *SensorConfig) bool {
+	return config.sensors.allows(sensorName)
+}
+
+// allows checks if a sensor name passes the filter
+func (f sensorFilter) allows(sensorName string) bool {
 	// if no sensors configured, everything is valid
-	if len(config.sensors) == 0 {
+	if len(f.sensors) == 0 {
 		return true
 	}
 
 	// Exact match - return true if whitelist, false if blacklist
-	if _, exactMatch := config.sensors[sensorName]; exactMatch {
-		return !config.isBlacklist
+	if _, exactMatch := f.sensors[sensorName]; exactMatch {
+		return !f.isBlacklist
 	}
 
 	// If no wildcards, return true if blacklist, false if whitelist
-	if !config.hasWildcards {
-		return config.isBlacklist
+	if !f.hasWildcards {
+		return f.isBlacklist
 	}
 
 	// Check for wildcard patterns
-	for pattern := range config.sensors {
+	for pattern := range f.sensors {
 		if !strings.Contains(pattern, "*") {
 			continue
 		}
 		if match, _ := path.Match(pattern, sensorName); match {
-			return !config.isBlacklist
+			return !f.isBlacklist
 		}
 	}
 
-	return config.isBlacklist
+	return f.isBlacklist
 }
 
 // scaleTemperature scales temperatures in fractional values to reasonable Celsius values

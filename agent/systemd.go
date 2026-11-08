@@ -114,6 +114,13 @@ func newSystemdManager() (*systemdManager, error) {
 		return nil, err
 	}
 
+	// dbus may be present without systemd (e.g. runit, OpenRC), so verify systemd is on the bus (#2555)
+	if _, err := conn.GetManagerProperty("Version"); err != nil {
+		conn.Close()
+		slog.Debug("Systemd not available on dbus", "err", err)
+		return nil, nil
+	}
+
 	manager := &systemdManager{
 		serviceStatsMap: make(map[string]*systemd.Service),
 		logsEnabled:     systemdLogsEnabled(),
@@ -367,7 +374,10 @@ func (sm *systemdManager) getServiceLogs(serviceName string) (string, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 2100*time.Millisecond)
 	defer cancel()
 
-	cmd := exec.CommandContext(ctx, "journalctl", "--system", "--quiet", "--no-pager", "--output=short-iso", "--unit", unitName, "--lines", strconv.Itoa(systemdLogsTail))
+	// No --system: journald (SplitMode=uid) stores output from services running
+	// as a non-system User= in user-UID.journal, which --system excludes.
+	// --unit still restricts results to the system unit.
+	cmd := exec.CommandContext(ctx, "journalctl", "--quiet", "--no-pager", "--output=short-iso", "--unit", unitName, "--lines", strconv.Itoa(systemdLogsTail))
 	output := limitedBuffer{limit: maxTotalLogSize}
 	cmd.Stdout = &output
 	stderr := limitedBuffer{limit: 1024}

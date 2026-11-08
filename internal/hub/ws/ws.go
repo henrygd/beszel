@@ -16,9 +16,14 @@ import (
 	"github.com/lxzan/gws"
 )
 
-const (
-	deadline = 70 * time.Second
-)
+// deadline bounds how long a connection may go without traffic from the agent.
+//
+// It has to outlast a whole failed poll: the updater polls every interval (60s)
+// and a fetch gives up after wsDataRequestTimeout (30s), so nothing can reset
+// the deadline before 90s into a stalled cycle. A shorter deadline expires
+// mid-collection, and by the time the failed fetch pings, the connection is
+// already closed. 100s keeps the same 10s margin the poll interval used to have.
+var deadline = 100 * time.Second
 
 // Handler implements the WebSocket event handler for agent connections.
 type Handler struct {
@@ -31,6 +36,7 @@ type WsConn struct {
 	requestManager *RequestManager
 	DownChan       chan struct{}
 	agentVersion   semver.Version
+	lastMessage    atomic.Int64 // unix nanoseconds of the last message from the agent
 }
 
 // FingerprintRecord is fingerprints collection record data in the hub
@@ -61,6 +67,7 @@ func NewWsConnection(conn *gws.Conn, agentVersion semver.Version) *WsConn {
 		agentVersion:   agentVersion,
 	}
 	ws.conn.Store(conn)
+	ws.lastMessage.Store(time.Now().UnixNano())
 	return ws
 }
 
@@ -80,6 +87,7 @@ func (h *Handler) OnMessage(conn *gws.Conn, message *gws.Message) {
 		_ = conn.WriteClose(1000, nil)
 		return
 	}
+	wsConn.(*WsConn).lastMessage.Store(time.Now().UnixNano())
 	wsConn.(*WsConn).requestManager.handleResponse(message)
 }
 
@@ -119,6 +127,11 @@ func (ws *WsConn) Ping() error {
 	}
 	conn.SetDeadline(time.Now().Add(deadline))
 	return conn.WritePing(nil)
+}
+
+// TimeSinceLastMessage returns how long it has been since the agent last sent a message.
+func (ws *WsConn) TimeSinceLastMessage() time.Duration {
+	return time.Since(time.Unix(0, ws.lastMessage.Load()))
 }
 
 // sendMessage encodes data to CBOR and sends it as a binary message to the agent.

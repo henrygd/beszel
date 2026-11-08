@@ -8,9 +8,20 @@ export const MAX_COMPARE_MONITORS = 24
 type MonitorTarget = Pick<NetworkMonitorRecord, "target" | "protocol" | "port">
 
 export function getMonitorTarget(monitor: MonitorTarget) {
+	// The protocol column already says http, so the URL scheme is redundant.
+	if (monitor.protocol === "http") return monitor.target.replace(/^https?:\/\//i, "")
 	if (monitor.protocol !== "tcp") return monitor.target
 	const host = monitor.target.includes(":") && !monitor.target.startsWith("[") ? `[${monitor.target}]` : monitor.target
 	return `${host}:${monitor.port}`
+}
+
+export function isHttpsTarget(target: string) {
+	return /^https:\/\//i.test(target)
+}
+
+/** The protocol to show next to a target, since getMonitorTarget hides whether an HTTP monitor uses https. */
+export function getMonitorProtocolLabel(monitor: Pick<NetworkMonitorRecord, "target" | "protocol">) {
+	return monitor.protocol === "http" && isHttpsTarget(monitor.target) ? "https" : monitor.protocol
 }
 
 /** Identifies what a monitor probes, regardless of which system probes it. */
@@ -98,17 +109,22 @@ export function getMonitorCompareState({
 	const multiTarget = targetIds.size > 0
 	const labels = new Map<string, string>()
 	const counts = new Map<string, number>()
-	for (const m of compareMonitors) {
+	const getSeriesLabel = (m: NetworkMonitorRecord, target: string) => {
 		const systemName = getSystemName(m.system)
-		const target = getMonitorTarget(m)
-		const label = multiSystem && multiTarget ? `${systemName} · ${target}` : multiTarget ? target : systemName
+		return multiSystem && multiTarget ? `${systemName} · ${target}` : multiTarget ? target : systemName
+	}
+	for (const m of compareMonitors) {
+		const label = getSeriesLabel(m, getMonitorTarget(m))
 		labels.set(m.id, label)
 		counts.set(label, (counts.get(label) ?? 0) + 1)
 	}
-	// DNS lookups of the same name against different servers would otherwise share a label.
+	// DNS lookups of the same name against different servers, and http and https URLs that are otherwise
+	// the same, would share a label.
 	for (const m of compareMonitors) {
 		const label = labels.get(m.id) as string
-		if ((counts.get(label) ?? 0) > 1 && m.server) labels.set(m.id, `${label} (${m.server})`)
+		if ((counts.get(label) ?? 0) < 2) continue
+		if (m.server) labels.set(m.id, `${label} (${m.server})`)
+		else if (m.protocol === "http") labels.set(m.id, getSeriesLabel(m, m.target))
 	}
 
 	return {
