@@ -451,6 +451,8 @@ export interface AlertInfo {
 	/** Additional information that remains visible while the alert is enabled */
 	note?: () => string
 	invert?: boolean
+	/** Threshold accepts whole numbers only */
+	integer?: boolean
 	/** Selectable threshold units. Values are stored in the first unit (factor 1) */
 	units?: AlertUnit[]
 }

@@ -7,13 +7,14 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 import { $alerts } from "@/lib/stores"
 import { cn } from "@/lib/utils"
 import type { SystemRecord } from "@/types"
-import { AlertDialogContent } from "./alerts-sheet"
+import { AlertDialogContent, hasSystemAlerts } from "./alerts-sheet"
 
 export default memo(function AlertsButton({ system }: { system: SystemRecord }) {
 	const [opened, setOpened] = useState(false)
 	const alerts = useStore($alerts)
 
-	const hasSystemAlert = alerts[system.id]?.size > 0
+	// Network monitor alerts are managed from the monitors table
+	const hasSystemAlert = hasSystemAlerts(alerts[system.id])
 	return useMemo(
 		() => (
 			<Sheet>

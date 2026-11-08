@@ -75,10 +75,15 @@ func TestAlertRecordSystemAccess(t *testing.T) {
 			require.NoError(t, err)
 			for _, name := range collection.Fields.GetByName("name").(*core.SelectField).Values {
 				t.Run(name, func(t *testing.T) {
+					// Down thresholds are failed checks in a row, capped at 20.
+					value := 50
+					if name == "NetworkMonitorDown" {
+						value = 5
+					}
 					// Scalar and array representations both pass through PocketBase's relation binding.
 					for _, relation := range []any{foreign[0].Id, []string{foreign[0].Id}} {
 						result := alertAPIRequest(t, handler, token, "POST", records, map[string]any{
-							"name": name, "user": user.Id, "system": relation, "value": 50,
+							"name": name, "user": user.Id, "system": relation, "value": value,
 						}, createStatus)
 						if id, ok := result["id"].(string); ok {
 							record, err := hub.FindRecordById("alerts", id)
@@ -87,7 +92,7 @@ func TestAlertRecordSystemAccess(t *testing.T) {
 						}
 					}
 					result := alertAPIRequest(t, handler, token, "POST", records, map[string]any{
-						"name": name, "user": user.Id, "system": own[0].Id, "value": 50,
+						"name": name, "user": user.Id, "system": own[0].Id, "value": value,
 					}, 200)
 					id := result["id"].(string)
 					defer func() {
@@ -95,7 +100,7 @@ func TestAlertRecordSystemAccess(t *testing.T) {
 						require.NoError(t, err)
 						require.NoError(t, hub.Delete(record))
 					}()
-					alertAPIRequest(t, handler, token, "PATCH", records+"/"+id, map[string]any{"value": 51}, 200)
+					alertAPIRequest(t, handler, token, "PATCH", records+"/"+id, map[string]any{"value": value + 1}, 200)
 					// The system of an existing alert is immutable through the API, even between accessible systems.
 					for _, body := range []map[string]any{
 						{"system": foreign[0].Id},
