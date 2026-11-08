@@ -184,6 +184,10 @@ msgstr "添加 系统"
 msgid "Add URL"
 msgstr "添加 URL"
 
+#: src/components/routes/system/hardware-inventory.tsx
+msgid "Address"
+msgstr ""
+
 #: src/components/routes/settings/general.tsx
 msgid "Adjust display options for charts."
 msgstr "调整图表的显示选项。"
@@ -251,13 +255,13 @@ msgstr "您确定吗？"
 msgid "Automatic copy requires a secure context."
 msgstr "自动复制所需的安全上下文。"
 
-#: src/components/routes/system/storage-pools-table.tsx
-msgctxt "Disk space available"
+#. Package version available to install
+#: src/components/routes/system/package-updates-table.tsx
 msgid "Available"
 msgstr "可用"
 
-#. Package version available to install
-#: src/components/routes/system/package-updates-table.tsx
+#: src/components/routes/system/storage-pools-table.tsx
+msgctxt "Disk space available"
 msgid "Available"
 msgstr "可用"
 
@@ -368,10 +372,18 @@ msgstr "Beszel 使用 <0>Shoutrrr</0> 以实现与常见的通知服务集成。
 msgid "Binary"
 msgstr "二进制"
 
+#: src/components/routes/system/hardware-inventory.tsx
+msgid "BIOS"
+msgstr ""
+
 #: src/components/routes/settings/general.tsx
 #: src/components/routes/settings/general.tsx
 msgid "Bits (Kbps, Mbps, Gbps)"
 msgstr "比特 (Kbps, Mbps, Gbps)"
+
+#: src/components/routes/system/hardware-inventory.tsx
+msgid "Board"
+msgstr ""
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Boot state"
@@ -385,6 +397,10 @@ msgstr "批量添加"
 #: src/components/network-monitors-table/monitor-dialog.tsx
 msgid "Bulk Add {foo}"
 msgstr "批量添加{foo}"
+
+#: src/components/routes/system/hardware-inventory.tsx
+msgid "Bus"
+msgstr ""
 
 #: src/components/routes/settings/general.tsx
 #: src/components/routes/settings/general.tsx
@@ -478,6 +494,10 @@ msgstr "图表选项"
 msgid "Chart width"
 msgstr "图表宽度"
 
+#: src/components/routes/system/hardware-inventory.tsx
+msgid "Chassis"
+msgstr ""
+
 #: src/components/login/forgot-pass-form.tsx
 msgid "Check {email} for a reset link."
 msgstr "检查 {email} 以获取重置链接。"
@@ -502,6 +522,10 @@ msgstr "检查于 {0}"
 #: src/components/routes/system/storage-pools-table.tsx
 msgid "Checksum errors"
 msgstr "校验和错误"
+
+#: src/components/routes/system/hardware-inventory.tsx
+msgid "Class"
+msgstr ""
 
 #: src/components/containers-table/containers-table.tsx
 #: src/components/network-monitors-table/network-monitors-table.tsx
@@ -541,6 +565,11 @@ msgstr "点击系统查看更多信息。"
 msgid "Click to copy"
 msgstr "点击复制"
 
+#. placeholder {0}: formatShortDate(new Date(inv.collected * 1000).toISOString())
+#: src/components/routes/system/hardware-inventory.tsx
+msgid "Collected {0}"
+msgstr ""
+
 #: src/components/login/forgot-pass-form.tsx
 #: src/components/login/forgot-pass-form.tsx
 msgid "Command line instructions"
@@ -553,6 +582,10 @@ msgstr "与其他系统比较"
 #: src/components/network-monitors-table/network-monitors-table.tsx
 msgid "Compare with other targets"
 msgstr "与其他目标比较"
+
+#: src/components/routes/system/hardware-inventory.tsx
+msgid "Component"
+msgstr ""
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Configure how you receive alert notifications."
@@ -574,6 +607,10 @@ msgstr "冲突"
 #: src/components/active-alerts.tsx
 msgid "Connection is down"
 msgstr "连接已断开"
+
+#: src/components/routes/system/hardware-inventory.tsx
+msgid "Connector"
+msgstr ""
 
 #: src/lib/alerts.ts
 msgid "Container"
@@ -667,6 +704,7 @@ msgid "Core"
 msgstr "核心"
 
 #: src/components/containers-table/containers-table-columns.tsx
+#: src/components/routes/system/hardware-inventory.tsx
 #: src/components/systemd-table/systemd-table-columns.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "CPU"
@@ -795,6 +833,9 @@ msgstr "描述"
 msgid "Detail"
 msgstr "详情"
 
+#: src/components/routes/system/hardware-inventory.tsx
+#: src/components/routes/system/hardware-inventory.tsx
+#: src/components/routes/system/hardware-inventory.tsx
 #: src/components/routes/system/smart-table.tsx
 msgid "Device"
 msgstr "设备"
@@ -822,6 +863,10 @@ msgstr "磁盘使用"
 msgid "Disk usage of {extraFsName}"
 msgstr "{extraFsName}的磁盘使用"
 
+#: src/components/routes/system/hardware-inventory.tsx
+msgid "Disks"
+msgstr ""
+
 #: src/components/alert-banner-sheet.tsx
 #: src/components/alert-banner-sheet.tsx
 msgid "Dismiss"
@@ -831,6 +876,10 @@ msgstr "忽略"
 msgctxt "Layout display options"
 msgid "Display"
 msgstr "显示"
+
+#: src/components/routes/system/hardware-inventory.tsx
+msgid "Displays"
+msgstr ""
 
 #: src/components/network-monitors-table/monitor-dialog.tsx
 msgid "DNS Server"
@@ -855,6 +904,7 @@ msgstr "文档"
 
 #. Context: System is down
 #: src/components/alerts-history-columns.tsx
+#: src/components/routes/system/hardware-inventory.tsx
 #: src/components/routes/system/info-bar.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 #: src/lib/alerts.ts
@@ -868,6 +918,11 @@ msgstr "离线 ({downSystemsLength})"
 #: src/components/routes/system/network-sheet.tsx
 msgid "Download"
 msgstr "下载"
+
+#: src/components/routes/system/hardware-inventory.tsx
+#: src/components/routes/system/hardware-inventory.tsx
+msgid "Driver"
+msgstr ""
 
 #: src/components/alerts-history-columns.tsx
 msgid "Duration"
@@ -899,6 +954,7 @@ msgid "Email notifications"
 msgstr "电子邮件通知"
 
 #. Context: Battery state
+#: src/components/routes/system/hardware-inventory.tsx
 #: src/lib/i18n.ts
 msgid "Empty"
 msgstr "空电"
@@ -1021,6 +1077,10 @@ msgstr "认证失败"
 msgid "Failed to delete monitors."
 msgstr "删除监控失败。"
 
+#: src/components/routes/system/hardware-inventory.tsx
+msgid "Failed to load hardware inventory"
+msgstr ""
+
 #: src/components/systemd-table/systemd-table.tsx
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Failed to load logs."
@@ -1078,6 +1138,7 @@ msgstr "过滤..."
 msgid "Fingerprint"
 msgstr "指纹"
 
+#: src/components/routes/system/hardware-inventory.tsx
 #: src/components/routes/system/smart-table.tsx
 msgid "Firmware"
 msgstr "固件"
@@ -1144,6 +1205,11 @@ msgstr "GPU 使用率"
 msgid "Grid"
 msgstr "网格"
 
+#: src/components/routes/system.tsx
+#: src/components/routes/system/hardware-inventory.tsx
+msgid "Hardware"
+msgstr ""
+
 #: src/components/containers-table/containers-table-columns.tsx
 #: src/components/routes/system/storage-pools-table.tsx
 msgid "Health"
@@ -1203,6 +1269,11 @@ msgctxt "Percent of time the disk is busy with I/O"
 msgid "I/O Utilization"
 msgstr "I/O 利用率"
 
+#: src/components/routes/system/hardware-inventory.tsx
+#: src/components/routes/system/hardware-inventory.tsx
+msgid "ID"
+msgstr ""
+
 #. Context: Battery state
 #: src/lib/i18n.ts
 msgid "Idle"
@@ -1230,6 +1301,10 @@ msgstr "有可用的镜像更新"
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Inactive"
 msgstr "非活跃"
+
+#: src/components/routes/system/hardware-inventory.tsx
+msgid "Interface"
+msgstr ""
 
 #: src/components/network-monitors-table/network-monitors-columns.tsx
 #: src/components/network-monitors-table/network-monitors-columns.tsx
@@ -1265,6 +1340,10 @@ msgstr "生命周期"
 #: src/components/systemd-table/systemd-table.tsx
 msgid "limit"
 msgstr "限制"
+
+#: src/components/routes/system/hardware-inventory.tsx
+msgid "Link"
+msgstr ""
 
 #: src/components/routes/system/charts/load-average-chart.tsx
 msgid "Load Average"
@@ -1331,6 +1410,10 @@ msgstr "丢包"
 msgid "Loss 1h"
 msgstr "1 小时丢包"
 
+#: src/components/routes/system/hardware-inventory.tsx
+msgid "MAC"
+msgstr ""
+
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Main PID"
 msgstr "主进程 ID"
@@ -1349,6 +1432,10 @@ msgstr "管理显示和通知偏好。"
 msgid "Manual setup instructions"
 msgstr "手动设置说明"
 
+#: src/components/routes/system/hardware-inventory.tsx
+msgid "Manufacturer"
+msgstr ""
+
 #. Chart select field. Please try to keep this short.
 #: src/components/routes/system/chart-card.tsx
 msgid "Max 1 min"
@@ -1360,6 +1447,7 @@ msgid "Max 1h"
 msgstr "1 小时最大"
 
 #: src/components/containers-table/containers-table-columns.tsx
+#: src/components/routes/system/hardware-inventory.tsx
 #: src/components/routes/system/info-bar.tsx
 #: src/components/systemd-table/systemd-table-columns.tsx
 #: src/components/systemd-table/systemd-table.tsx
@@ -1396,6 +1484,8 @@ msgid "Minor"
 msgstr "次要"
 
 #. Device model
+#: src/components/routes/system/hardware-inventory.tsx
+#: src/components/routes/system/hardware-inventory.tsx
 #: src/components/routes/system/smart-table.tsx
 msgid "Model"
 msgstr "型号"
@@ -1403,6 +1493,7 @@ msgstr "型号"
 #: src/components/network-monitors-table/monitor-dialog.tsx
 #: src/components/network-monitors-table/monitor-dialog.tsx
 #: src/components/network-monitors-table/monitor-dialog.tsx
+#: src/components/routes/system/hardware-inventory.tsx
 msgid "Monitor"
 msgstr "监控"
 
@@ -1428,6 +1519,7 @@ msgid "Net"
 msgstr "网络"
 
 #: src/components/routes/system.tsx
+#: src/components/routes/system/hardware-inventory.tsx
 msgid "Network"
 msgstr "网络"
 
@@ -1617,6 +1709,10 @@ msgstr "第 {0} 页，共 {1} 页"
 msgid "Pages / Settings"
 msgstr "页面 / 设置"
 
+#: src/components/routes/system/hardware-inventory.tsx
+msgid "Part number"
+msgstr ""
+
 #: src/components/login/auth-form.tsx
 #: src/components/login/auth-form.tsx
 msgid "Password"
@@ -1659,6 +1755,14 @@ msgstr "已暂停 ({pausedSystemsLength})"
 #: src/components/routes/settings/heartbeat.tsx
 msgid "Payload format"
 msgstr "有效载荷 (Payload) 格式"
+
+#: src/components/routes/system/hardware-inventory.tsx
+msgid "PCI"
+msgstr ""
+
+#: src/components/routes/system/hardware-inventory.tsx
+msgid "PCI devices"
+msgstr ""
 
 #: src/components/routes/system/cpu-sheet.tsx
 #: src/components/routes/system/cpu-sheet.tsx
@@ -2017,6 +2121,14 @@ msgstr "发送测试 心跳"
 msgid "Sent"
 msgstr "发送"
 
+#: src/components/routes/system/hardware-inventory.tsx
+#: src/components/routes/system/hardware-inventory.tsx
+#: src/components/routes/system/hardware-inventory.tsx
+#: src/components/routes/system/hardware-inventory.tsx
+#: src/components/routes/system/hardware-inventory.tsx
+msgid "Serial"
+msgstr ""
+
 #: src/components/routes/system/smart-table.tsx
 msgid "Serial Number"
 msgstr "序列号"
@@ -2064,6 +2176,16 @@ msgstr "登录"
 msgid "Signal strength of connected Wi-Fi interfaces"
 msgstr "已连接 Wi-Fi 接口的信号强度"
 
+#: src/components/routes/system/hardware-inventory.tsx
+#: src/components/routes/system/hardware-inventory.tsx
+#: src/components/routes/system/hardware-inventory.tsx
+msgid "Size"
+msgstr ""
+
+#: src/components/routes/system/hardware-inventory.tsx
+msgid "Slot"
+msgstr ""
+
 #: src/components/command-palette.tsx
 msgid "SMTP settings"
 msgstr "SMTP 设置"
@@ -2072,6 +2194,11 @@ msgstr "SMTP 设置"
 #: src/components/systems-table/systems-table.tsx
 msgid "Sort By"
 msgstr "排序依据"
+
+#: src/components/routes/system/hardware-inventory.tsx
+#: src/components/routes/system/hardware-inventory.tsx
+msgid "Speed"
+msgstr ""
 
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/quiet-hours.tsx
@@ -2121,6 +2248,8 @@ msgstr "切换主题"
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
+#: src/components/routes/system/hardware-inventory.tsx
+#: src/components/routes/system/hardware-inventory.tsx
 #: src/components/routes/system/smart-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 #: src/lib/alerts.ts
@@ -2368,6 +2497,8 @@ msgstr "当任何磁盘的使用率超过阈值时触发"
 
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/system/hardware-inventory.tsx
+#: src/components/routes/system/hardware-inventory.tsx
 #: src/components/routes/system/smart-table.tsx
 #: src/components/routes/system/storage-pools-table.tsx
 msgid "Type"
@@ -2464,6 +2595,10 @@ msgstr "使用"
 msgid "Usage of storage pool {displayName}"
 msgstr "存储池 {displayName} 的使用量"
 
+#: src/components/routes/system/hardware-inventory.tsx
+msgid "USB devices"
+msgstr ""
+
 #: src/components/network-monitors-table/monitor-dialog.tsx
 msgid "Use for self-signed certificates."
 msgstr "用于自签名证书。"
@@ -2489,6 +2624,14 @@ msgstr "利用率"
 #: src/components/alerts-history-columns.tsx
 msgid "Value"
 msgstr "值"
+
+#: src/components/routes/system/hardware-inventory.tsx
+msgid "Vendor"
+msgstr ""
+
+#: src/components/routes/system/hardware-inventory.tsx
+msgid "Version"
+msgstr ""
 
 #: src/components/network-monitors-table/network-monitors-table.tsx
 #: src/components/routes/system/info-bar.tsx
@@ -2584,6 +2727,10 @@ msgstr "YAML 配置"
 #: src/components/routes/settings/config-yaml.tsx
 msgid "YAML Configuration"
 msgstr "YAML 配置"
+
+#: src/components/routes/system/hardware-inventory.tsx
+msgid "Year"
+msgstr ""
 
 #: src/components/systemd-table/systemd-table.tsx
 #: src/components/systemd-table/systemd-table.tsx

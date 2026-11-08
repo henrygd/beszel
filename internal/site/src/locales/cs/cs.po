@@ -184,6 +184,10 @@ msgstr "Přidat Systém"
 msgid "Add URL"
 msgstr "Přidat URL"
 
+#: src/components/routes/system/hardware-inventory.tsx
+msgid "Address"
+msgstr ""
+
 #: src/components/routes/settings/general.tsx
 msgid "Adjust display options for charts."
 msgstr "Upravit možnosti zobrazení pro grafy."
@@ -251,13 +255,13 @@ msgstr "Jste si jistý?"
 msgid "Automatic copy requires a secure context."
 msgstr "Automatická kopie vyžaduje zabezpečený kontext."
 
-#: src/components/routes/system/storage-pools-table.tsx
-msgctxt "Disk space available"
+#. Package version available to install
+#: src/components/routes/system/package-updates-table.tsx
 msgid "Available"
 msgstr "Dostupné"
 
-#. Package version available to install
-#: src/components/routes/system/package-updates-table.tsx
+#: src/components/routes/system/storage-pools-table.tsx
+msgctxt "Disk space available"
 msgid "Available"
 msgstr "Dostupné"
 
@@ -368,10 +372,18 @@ msgstr "Beszel používá <0>Shoutrrr</0> k integraci s populárními notifikač
 msgid "Binary"
 msgstr "Binární"
 
+#: src/components/routes/system/hardware-inventory.tsx
+msgid "BIOS"
+msgstr ""
+
 #: src/components/routes/settings/general.tsx
 #: src/components/routes/settings/general.tsx
 msgid "Bits (Kbps, Mbps, Gbps)"
 msgstr "Bity (Kbps, Mbps, Gbps)"
+
+#: src/components/routes/system/hardware-inventory.tsx
+msgid "Board"
+msgstr ""
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Boot state"
@@ -385,6 +397,10 @@ msgstr "Hromadné přidání"
 #: src/components/network-monitors-table/monitor-dialog.tsx
 msgid "Bulk Add {foo}"
 msgstr "Hromadné přidání {foo}"
+
+#: src/components/routes/system/hardware-inventory.tsx
+msgid "Bus"
+msgstr ""
 
 #: src/components/routes/settings/general.tsx
 #: src/components/routes/settings/general.tsx
@@ -478,6 +494,10 @@ msgstr "Možnosti grafu"
 msgid "Chart width"
 msgstr "Šířka grafu"
 
+#: src/components/routes/system/hardware-inventory.tsx
+msgid "Chassis"
+msgstr ""
+
 #: src/components/login/forgot-pass-form.tsx
 msgid "Check {email} for a reset link."
 msgstr "Zkontrolujte {email} pro odkaz na obnovení."
@@ -502,6 +522,10 @@ msgstr "Zkontrolováno {0}"
 #: src/components/routes/system/storage-pools-table.tsx
 msgid "Checksum errors"
 msgstr "Chyby kontrolního součtu"
+
+#: src/components/routes/system/hardware-inventory.tsx
+msgid "Class"
+msgstr ""
 
 #: src/components/containers-table/containers-table.tsx
 #: src/components/network-monitors-table/network-monitors-table.tsx
@@ -541,6 +565,11 @@ msgstr "Klikněte na systém pro zobrazení více informací."
 msgid "Click to copy"
 msgstr "Klikněte pro zkopírování"
 
+#. placeholder {0}: formatShortDate(new Date(inv.collected * 1000).toISOString())
+#: src/components/routes/system/hardware-inventory.tsx
+msgid "Collected {0}"
+msgstr ""
+
 #: src/components/login/forgot-pass-form.tsx
 #: src/components/login/forgot-pass-form.tsx
 msgid "Command line instructions"
@@ -553,6 +582,10 @@ msgstr "Porovnat s dalšími systémy"
 #: src/components/network-monitors-table/network-monitors-table.tsx
 msgid "Compare with other targets"
 msgstr "Porovnat s dalšími cíli"
+
+#: src/components/routes/system/hardware-inventory.tsx
+msgid "Component"
+msgstr ""
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Configure how you receive alert notifications."
@@ -574,6 +607,10 @@ msgstr "Konflikty"
 #: src/components/active-alerts.tsx
 msgid "Connection is down"
 msgstr "Připojení je nedostupné"
+
+#: src/components/routes/system/hardware-inventory.tsx
+msgid "Connector"
+msgstr ""
 
 #: src/lib/alerts.ts
 msgid "Container"
@@ -667,6 +704,7 @@ msgid "Core"
 msgstr "Jádro"
 
 #: src/components/containers-table/containers-table-columns.tsx
+#: src/components/routes/system/hardware-inventory.tsx
 #: src/components/systemd-table/systemd-table-columns.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "CPU"
@@ -795,6 +833,9 @@ msgstr "Popis"
 msgid "Detail"
 msgstr "Detail"
 
+#: src/components/routes/system/hardware-inventory.tsx
+#: src/components/routes/system/hardware-inventory.tsx
+#: src/components/routes/system/hardware-inventory.tsx
 #: src/components/routes/system/smart-table.tsx
 msgid "Device"
 msgstr "Zařízení"
@@ -822,6 +863,10 @@ msgstr "Využití disku"
 msgid "Disk usage of {extraFsName}"
 msgstr "Využití disku {extraFsName}"
 
+#: src/components/routes/system/hardware-inventory.tsx
+msgid "Disks"
+msgstr ""
+
 #: src/components/alert-banner-sheet.tsx
 #: src/components/alert-banner-sheet.tsx
 msgid "Dismiss"
@@ -831,6 +876,10 @@ msgstr "Zavřít"
 msgctxt "Layout display options"
 msgid "Display"
 msgstr "Zobrazení"
+
+#: src/components/routes/system/hardware-inventory.tsx
+msgid "Displays"
+msgstr ""
 
 #: src/components/network-monitors-table/monitor-dialog.tsx
 msgid "DNS Server"
@@ -855,6 +904,7 @@ msgstr "Dokumentace"
 
 #. Context: System is down
 #: src/components/alerts-history-columns.tsx
+#: src/components/routes/system/hardware-inventory.tsx
 #: src/components/routes/system/info-bar.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 #: src/lib/alerts.ts
@@ -868,6 +918,11 @@ msgstr "Nefunkční ({downSystemsLength})"
 #: src/components/routes/system/network-sheet.tsx
 msgid "Download"
 msgstr "Stažení"
+
+#: src/components/routes/system/hardware-inventory.tsx
+#: src/components/routes/system/hardware-inventory.tsx
+msgid "Driver"
+msgstr ""
 
 #: src/components/alerts-history-columns.tsx
 msgid "Duration"
@@ -899,6 +954,7 @@ msgid "Email notifications"
 msgstr "Emailová upozornění"
 
 #. Context: Battery state
+#: src/components/routes/system/hardware-inventory.tsx
 #: src/lib/i18n.ts
 msgid "Empty"
 msgstr "Prázdná"
@@ -1021,6 +1077,10 @@ msgstr "Ověření se nezdařilo"
 msgid "Failed to delete monitors."
 msgstr "Nepodařilo se odstranit monitory."
 
+#: src/components/routes/system/hardware-inventory.tsx
+msgid "Failed to load hardware inventory"
+msgstr ""
+
 #: src/components/systemd-table/systemd-table.tsx
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Failed to load logs."
@@ -1078,6 +1138,7 @@ msgstr "Filtr..."
 msgid "Fingerprint"
 msgstr "Otisk"
 
+#: src/components/routes/system/hardware-inventory.tsx
 #: src/components/routes/system/smart-table.tsx
 msgid "Firmware"
 msgstr "Firmware"
@@ -1144,6 +1205,11 @@ msgstr "Využití GPU"
 msgid "Grid"
 msgstr "Mřížka"
 
+#: src/components/routes/system.tsx
+#: src/components/routes/system/hardware-inventory.tsx
+msgid "Hardware"
+msgstr ""
+
 #: src/components/containers-table/containers-table-columns.tsx
 #: src/components/routes/system/storage-pools-table.tsx
 msgid "Health"
@@ -1203,6 +1269,11 @@ msgctxt "Percent of time the disk is busy with I/O"
 msgid "I/O Utilization"
 msgstr "I/O Využití"
 
+#: src/components/routes/system/hardware-inventory.tsx
+#: src/components/routes/system/hardware-inventory.tsx
+msgid "ID"
+msgstr ""
+
 #. Context: Battery state
 #: src/lib/i18n.ts
 msgid "Idle"
@@ -1230,6 +1301,10 @@ msgstr "K dispozici je aktualizace obrazu"
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Inactive"
 msgstr "Neaktivní"
+
+#: src/components/routes/system/hardware-inventory.tsx
+msgid "Interface"
+msgstr ""
 
 #: src/components/network-monitors-table/network-monitors-columns.tsx
 #: src/components/network-monitors-table/network-monitors-columns.tsx
@@ -1265,6 +1340,10 @@ msgstr "Životní cyklus"
 #: src/components/systemd-table/systemd-table.tsx
 msgid "limit"
 msgstr "limit"
+
+#: src/components/routes/system/hardware-inventory.tsx
+msgid "Link"
+msgstr ""
 
 #: src/components/routes/system/charts/load-average-chart.tsx
 msgid "Load Average"
@@ -1331,6 +1410,10 @@ msgstr "Ztráta"
 msgid "Loss 1h"
 msgstr "Ztráta 1h"
 
+#: src/components/routes/system/hardware-inventory.tsx
+msgid "MAC"
+msgstr ""
+
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Main PID"
 msgstr "Hlavní PID"
@@ -1349,6 +1432,10 @@ msgstr "Správa nastavení zobrazení a oznámení."
 msgid "Manual setup instructions"
 msgstr "Pokyny k manuálnímu nastavení"
 
+#: src/components/routes/system/hardware-inventory.tsx
+msgid "Manufacturer"
+msgstr ""
+
 #. Chart select field. Please try to keep this short.
 #: src/components/routes/system/chart-card.tsx
 msgid "Max 1 min"
@@ -1360,6 +1447,7 @@ msgid "Max 1h"
 msgstr "Max. 1h"
 
 #: src/components/containers-table/containers-table-columns.tsx
+#: src/components/routes/system/hardware-inventory.tsx
 #: src/components/routes/system/info-bar.tsx
 #: src/components/systemd-table/systemd-table-columns.tsx
 #: src/components/systemd-table/systemd-table.tsx
@@ -1396,6 +1484,8 @@ msgid "Minor"
 msgstr "Vedlejší"
 
 #. Device model
+#: src/components/routes/system/hardware-inventory.tsx
+#: src/components/routes/system/hardware-inventory.tsx
 #: src/components/routes/system/smart-table.tsx
 msgid "Model"
 msgstr "Model"
@@ -1403,6 +1493,7 @@ msgstr "Model"
 #: src/components/network-monitors-table/monitor-dialog.tsx
 #: src/components/network-monitors-table/monitor-dialog.tsx
 #: src/components/network-monitors-table/monitor-dialog.tsx
+#: src/components/routes/system/hardware-inventory.tsx
 msgid "Monitor"
 msgstr "Monitor"
 
@@ -1428,6 +1519,7 @@ msgid "Net"
 msgstr "Síť"
 
 #: src/components/routes/system.tsx
+#: src/components/routes/system/hardware-inventory.tsx
 msgid "Network"
 msgstr "Síť"
 
@@ -1617,6 +1709,10 @@ msgstr "Stránka {0} z {1}"
 msgid "Pages / Settings"
 msgstr "Stránky / Nastavení"
 
+#: src/components/routes/system/hardware-inventory.tsx
+msgid "Part number"
+msgstr ""
+
 #: src/components/login/auth-form.tsx
 #: src/components/login/auth-form.tsx
 msgid "Password"
@@ -1659,6 +1755,14 @@ msgstr "Pozastaveno ({pausedSystemsLength})"
 #: src/components/routes/settings/heartbeat.tsx
 msgid "Payload format"
 msgstr "Formát payloadu"
+
+#: src/components/routes/system/hardware-inventory.tsx
+msgid "PCI"
+msgstr ""
+
+#: src/components/routes/system/hardware-inventory.tsx
+msgid "PCI devices"
+msgstr ""
 
 #: src/components/routes/system/cpu-sheet.tsx
 #: src/components/routes/system/cpu-sheet.tsx
@@ -2017,6 +2121,14 @@ msgstr "Odeslat testovací heartbeat"
 msgid "Sent"
 msgstr "Odeslat"
 
+#: src/components/routes/system/hardware-inventory.tsx
+#: src/components/routes/system/hardware-inventory.tsx
+#: src/components/routes/system/hardware-inventory.tsx
+#: src/components/routes/system/hardware-inventory.tsx
+#: src/components/routes/system/hardware-inventory.tsx
+msgid "Serial"
+msgstr ""
+
 #: src/components/routes/system/smart-table.tsx
 msgid "Serial Number"
 msgstr "Sériové číslo"
@@ -2064,6 +2176,16 @@ msgstr "Přihlásit se"
 msgid "Signal strength of connected Wi-Fi interfaces"
 msgstr "Síla signálu připojených rozhraní Wi-Fi"
 
+#: src/components/routes/system/hardware-inventory.tsx
+#: src/components/routes/system/hardware-inventory.tsx
+#: src/components/routes/system/hardware-inventory.tsx
+msgid "Size"
+msgstr ""
+
+#: src/components/routes/system/hardware-inventory.tsx
+msgid "Slot"
+msgstr ""
+
 #: src/components/command-palette.tsx
 msgid "SMTP settings"
 msgstr "Nastavení SMTP"
@@ -2072,6 +2194,11 @@ msgstr "Nastavení SMTP"
 #: src/components/systems-table/systems-table.tsx
 msgid "Sort By"
 msgstr "Seřadit podle"
+
+#: src/components/routes/system/hardware-inventory.tsx
+#: src/components/routes/system/hardware-inventory.tsx
+msgid "Speed"
+msgstr ""
 
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/quiet-hours.tsx
@@ -2121,6 +2248,8 @@ msgstr "Přepnout motiv"
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
+#: src/components/routes/system/hardware-inventory.tsx
+#: src/components/routes/system/hardware-inventory.tsx
 #: src/components/routes/system/smart-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 #: src/lib/alerts.ts
@@ -2368,6 +2497,8 @@ msgstr "Spustí se, když využití disku překročí prahovou hodnotu"
 
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/system/hardware-inventory.tsx
+#: src/components/routes/system/hardware-inventory.tsx
 #: src/components/routes/system/smart-table.tsx
 #: src/components/routes/system/storage-pools-table.tsx
 msgid "Type"
@@ -2464,6 +2595,10 @@ msgstr "Využití"
 msgid "Usage of storage pool {displayName}"
 msgstr "Využití fondu {displayName}"
 
+#: src/components/routes/system/hardware-inventory.tsx
+msgid "USB devices"
+msgstr ""
+
 #: src/components/network-monitors-table/monitor-dialog.tsx
 msgid "Use for self-signed certificates."
 msgstr "Použijte pro certifikáty podepsané svým držitelem."
@@ -2489,6 +2624,14 @@ msgstr "Využití"
 #: src/components/alerts-history-columns.tsx
 msgid "Value"
 msgstr "Hodnota"
+
+#: src/components/routes/system/hardware-inventory.tsx
+msgid "Vendor"
+msgstr ""
+
+#: src/components/routes/system/hardware-inventory.tsx
+msgid "Version"
+msgstr ""
 
 #: src/components/network-monitors-table/network-monitors-table.tsx
 #: src/components/routes/system/info-bar.tsx
@@ -2584,6 +2727,10 @@ msgstr "YAML konfigurace"
 #: src/components/routes/settings/config-yaml.tsx
 msgid "YAML Configuration"
 msgstr "YAML konfigurace"
+
+#: src/components/routes/system/hardware-inventory.tsx
+msgid "Year"
+msgstr ""
 
 #: src/components/systemd-table/systemd-table.tsx
 #: src/components/systemd-table/systemd-table.tsx

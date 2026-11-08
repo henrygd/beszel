@@ -184,6 +184,10 @@ msgstr "إضافة النظام"
 msgid "Add URL"
 msgstr "إضافة رابط"
 
+#: src/components/routes/system/hardware-inventory.tsx
+msgid "Address"
+msgstr ""
+
 #: src/components/routes/settings/general.tsx
 msgid "Adjust display options for charts."
 msgstr "تعديل خيارات العرض للرسوم البيانية."
@@ -251,13 +255,13 @@ msgstr "هل أنت متأكد؟"
 msgid "Automatic copy requires a secure context."
 msgstr "النسخ التلقائي يتطلب سياقًا آمنًا."
 
-#: src/components/routes/system/storage-pools-table.tsx
-msgctxt "Disk space available"
+#. Package version available to install
+#: src/components/routes/system/package-updates-table.tsx
 msgid "Available"
 msgstr "المتاح"
 
-#. Package version available to install
-#: src/components/routes/system/package-updates-table.tsx
+#: src/components/routes/system/storage-pools-table.tsx
+msgctxt "Disk space available"
 msgid "Available"
 msgstr "المتاح"
 
@@ -368,10 +372,18 @@ msgstr "يستخدم بيزيل <0>Shoutrrr</0> للتكامل مع خدمات �
 msgid "Binary"
 msgstr "ثنائي"
 
+#: src/components/routes/system/hardware-inventory.tsx
+msgid "BIOS"
+msgstr ""
+
 #: src/components/routes/settings/general.tsx
 #: src/components/routes/settings/general.tsx
 msgid "Bits (Kbps, Mbps, Gbps)"
 msgstr "بت (كيلوبت/ثانية، ميجابت/ثانية، جيجابت/ثانية)"
+
+#: src/components/routes/system/hardware-inventory.tsx
+msgid "Board"
+msgstr ""
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Boot state"
@@ -385,6 +397,10 @@ msgstr "إضافة جماعية"
 #: src/components/network-monitors-table/monitor-dialog.tsx
 msgid "Bulk Add {foo}"
 msgstr "إضافة جماعية {foo}"
+
+#: src/components/routes/system/hardware-inventory.tsx
+msgid "Bus"
+msgstr ""
 
 #: src/components/routes/settings/general.tsx
 #: src/components/routes/settings/general.tsx
@@ -478,6 +494,10 @@ msgstr "خيارات الرسم البياني"
 msgid "Chart width"
 msgstr "عرض الرسم البياني"
 
+#: src/components/routes/system/hardware-inventory.tsx
+msgid "Chassis"
+msgstr ""
+
 #: src/components/login/forgot-pass-form.tsx
 msgid "Check {email} for a reset link."
 msgstr "تحقق من {email} للحصول على رابط إعادة التعيين."
@@ -502,6 +522,10 @@ msgstr "تم الفحص {0}"
 #: src/components/routes/system/storage-pools-table.tsx
 msgid "Checksum errors"
 msgstr "أخطاء المجموع الاختباري"
+
+#: src/components/routes/system/hardware-inventory.tsx
+msgid "Class"
+msgstr ""
 
 #: src/components/containers-table/containers-table.tsx
 #: src/components/network-monitors-table/network-monitors-table.tsx
@@ -541,6 +565,11 @@ msgstr "انقر على نظام لعرض مزيد من المعلومات."
 msgid "Click to copy"
 msgstr "انقر للنسخ"
 
+#. placeholder {0}: formatShortDate(new Date(inv.collected * 1000).toISOString())
+#: src/components/routes/system/hardware-inventory.tsx
+msgid "Collected {0}"
+msgstr ""
+
 #: src/components/login/forgot-pass-form.tsx
 #: src/components/login/forgot-pass-form.tsx
 msgid "Command line instructions"
@@ -553,6 +582,10 @@ msgstr "مقارنة مع أنظمة أخرى"
 #: src/components/network-monitors-table/network-monitors-table.tsx
 msgid "Compare with other targets"
 msgstr "مقارنة مع أهداف أخرى"
+
+#: src/components/routes/system/hardware-inventory.tsx
+msgid "Component"
+msgstr ""
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Configure how you receive alert notifications."
@@ -574,6 +607,10 @@ msgstr "التعارضات"
 #: src/components/active-alerts.tsx
 msgid "Connection is down"
 msgstr "الاتصال مقطوع"
+
+#: src/components/routes/system/hardware-inventory.tsx
+msgid "Connector"
+msgstr ""
 
 #: src/lib/alerts.ts
 msgid "Container"
@@ -667,6 +704,7 @@ msgid "Core"
 msgstr "النواة"
 
 #: src/components/containers-table/containers-table-columns.tsx
+#: src/components/routes/system/hardware-inventory.tsx
 #: src/components/systemd-table/systemd-table-columns.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "CPU"
@@ -795,6 +833,9 @@ msgstr "الوصف"
 msgid "Detail"
 msgstr "التفاصيل"
 
+#: src/components/routes/system/hardware-inventory.tsx
+#: src/components/routes/system/hardware-inventory.tsx
+#: src/components/routes/system/hardware-inventory.tsx
 #: src/components/routes/system/smart-table.tsx
 msgid "Device"
 msgstr "الجهاز"
@@ -822,6 +863,10 @@ msgstr "استخدام القرص"
 msgid "Disk usage of {extraFsName}"
 msgstr "استخدام القرص لـ {extraFsName}"
 
+#: src/components/routes/system/hardware-inventory.tsx
+msgid "Disks"
+msgstr ""
+
 #: src/components/alert-banner-sheet.tsx
 #: src/components/alert-banner-sheet.tsx
 msgid "Dismiss"
@@ -831,6 +876,10 @@ msgstr "إغلاق"
 msgctxt "Layout display options"
 msgid "Display"
 msgstr "عرض"
+
+#: src/components/routes/system/hardware-inventory.tsx
+msgid "Displays"
+msgstr ""
 
 #: src/components/network-monitors-table/monitor-dialog.tsx
 msgid "DNS Server"
@@ -855,6 +904,7 @@ msgstr "التوثيق"
 
 #. Context: System is down
 #: src/components/alerts-history-columns.tsx
+#: src/components/routes/system/hardware-inventory.tsx
 #: src/components/routes/system/info-bar.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 #: src/lib/alerts.ts
@@ -868,6 +918,11 @@ msgstr "معطل ({downSystemsLength})"
 #: src/components/routes/system/network-sheet.tsx
 msgid "Download"
 msgstr "تنزيل"
+
+#: src/components/routes/system/hardware-inventory.tsx
+#: src/components/routes/system/hardware-inventory.tsx
+msgid "Driver"
+msgstr ""
 
 #: src/components/alerts-history-columns.tsx
 msgid "Duration"
@@ -899,6 +954,7 @@ msgid "Email notifications"
 msgstr "إشعارات البريد الإشباكي"
 
 #. Context: Battery state
+#: src/components/routes/system/hardware-inventory.tsx
 #: src/lib/i18n.ts
 msgid "Empty"
 msgstr "فارغة"
@@ -1021,6 +1077,10 @@ msgstr "فشل في المصادقة"
 msgid "Failed to delete monitors."
 msgstr "فشل حذف أجهزة المراقبة."
 
+#: src/components/routes/system/hardware-inventory.tsx
+msgid "Failed to load hardware inventory"
+msgstr ""
+
 #: src/components/systemd-table/systemd-table.tsx
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Failed to load logs."
@@ -1078,6 +1138,7 @@ msgstr "تصفية..."
 msgid "Fingerprint"
 msgstr "البصمة"
 
+#: src/components/routes/system/hardware-inventory.tsx
 #: src/components/routes/system/smart-table.tsx
 msgid "Firmware"
 msgstr "البرمجيات الثابتة"
@@ -1144,6 +1205,11 @@ msgstr "استخدام وحدة معالجة الرسوميات"
 msgid "Grid"
 msgstr "شبكة"
 
+#: src/components/routes/system.tsx
+#: src/components/routes/system/hardware-inventory.tsx
+msgid "Hardware"
+msgstr ""
+
 #: src/components/containers-table/containers-table-columns.tsx
 #: src/components/routes/system/storage-pools-table.tsx
 msgid "Health"
@@ -1203,6 +1269,11 @@ msgctxt "Percent of time the disk is busy with I/O"
 msgid "I/O Utilization"
 msgstr "استخدام الإدخال والإخراج"
 
+#: src/components/routes/system/hardware-inventory.tsx
+#: src/components/routes/system/hardware-inventory.tsx
+msgid "ID"
+msgstr ""
+
 #. Context: Battery state
 #: src/lib/i18n.ts
 msgid "Idle"
@@ -1230,6 +1301,10 @@ msgstr "يتوفر تحديث للصورة"
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Inactive"
 msgstr "غير نشط"
+
+#: src/components/routes/system/hardware-inventory.tsx
+msgid "Interface"
+msgstr ""
 
 #: src/components/network-monitors-table/network-monitors-columns.tsx
 #: src/components/network-monitors-table/network-monitors-columns.tsx
@@ -1265,6 +1340,10 @@ msgstr "دورة الحياة"
 #: src/components/systemd-table/systemd-table.tsx
 msgid "limit"
 msgstr "الحد"
+
+#: src/components/routes/system/hardware-inventory.tsx
+msgid "Link"
+msgstr ""
 
 #: src/components/routes/system/charts/load-average-chart.tsx
 msgid "Load Average"
@@ -1331,6 +1410,10 @@ msgstr "الفقد"
 msgid "Loss 1h"
 msgstr "الفقد 1h"
 
+#: src/components/routes/system/hardware-inventory.tsx
+msgid "MAC"
+msgstr ""
+
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Main PID"
 msgstr "معرف العملية الرئيسي"
@@ -1349,6 +1432,10 @@ msgstr "إدارة تفضيلات العرض والإشعارات."
 msgid "Manual setup instructions"
 msgstr "تعليمات الإعداد اليدوي"
 
+#: src/components/routes/system/hardware-inventory.tsx
+msgid "Manufacturer"
+msgstr ""
+
 #. Chart select field. Please try to keep this short.
 #: src/components/routes/system/chart-card.tsx
 msgid "Max 1 min"
@@ -1360,6 +1447,7 @@ msgid "Max 1h"
 msgstr "الأقصى 1h"
 
 #: src/components/containers-table/containers-table-columns.tsx
+#: src/components/routes/system/hardware-inventory.tsx
 #: src/components/routes/system/info-bar.tsx
 #: src/components/systemd-table/systemd-table-columns.tsx
 #: src/components/systemd-table/systemd-table.tsx
@@ -1396,6 +1484,8 @@ msgid "Minor"
 msgstr "ثانوي"
 
 #. Device model
+#: src/components/routes/system/hardware-inventory.tsx
+#: src/components/routes/system/hardware-inventory.tsx
 #: src/components/routes/system/smart-table.tsx
 msgid "Model"
 msgstr "الموديل"
@@ -1403,6 +1493,7 @@ msgstr "الموديل"
 #: src/components/network-monitors-table/monitor-dialog.tsx
 #: src/components/network-monitors-table/monitor-dialog.tsx
 #: src/components/network-monitors-table/monitor-dialog.tsx
+#: src/components/routes/system/hardware-inventory.tsx
 msgid "Monitor"
 msgstr "مراقب"
 
@@ -1428,6 +1519,7 @@ msgid "Net"
 msgstr "الشبكة"
 
 #: src/components/routes/system.tsx
+#: src/components/routes/system/hardware-inventory.tsx
 msgid "Network"
 msgstr "الشبكة"
 
@@ -1617,6 +1709,10 @@ msgstr "صفحة {0} من {1}"
 msgid "Pages / Settings"
 msgstr "الصفحات / الإعدادات"
 
+#: src/components/routes/system/hardware-inventory.tsx
+msgid "Part number"
+msgstr ""
+
 #: src/components/login/auth-form.tsx
 #: src/components/login/auth-form.tsx
 msgid "Password"
@@ -1659,6 +1755,14 @@ msgstr "متوقف مؤقتا ({pausedSystemsLength})"
 #: src/components/routes/settings/heartbeat.tsx
 msgid "Payload format"
 msgstr "تنسيق الحمولة"
+
+#: src/components/routes/system/hardware-inventory.tsx
+msgid "PCI"
+msgstr ""
+
+#: src/components/routes/system/hardware-inventory.tsx
+msgid "PCI devices"
+msgstr ""
 
 #: src/components/routes/system/cpu-sheet.tsx
 #: src/components/routes/system/cpu-sheet.tsx
@@ -2017,6 +2121,14 @@ msgstr "إرسال نبضة قلب اختبارية"
 msgid "Sent"
 msgstr "تم الإرسال"
 
+#: src/components/routes/system/hardware-inventory.tsx
+#: src/components/routes/system/hardware-inventory.tsx
+#: src/components/routes/system/hardware-inventory.tsx
+#: src/components/routes/system/hardware-inventory.tsx
+#: src/components/routes/system/hardware-inventory.tsx
+msgid "Serial"
+msgstr ""
+
 #: src/components/routes/system/smart-table.tsx
 msgid "Serial Number"
 msgstr "الرقم التسلسلي"
@@ -2064,6 +2176,16 @@ msgstr "تسجيل الدخول"
 msgid "Signal strength of connected Wi-Fi interfaces"
 msgstr "قوة إشارة واجهات Wi-Fi المتصلة"
 
+#: src/components/routes/system/hardware-inventory.tsx
+#: src/components/routes/system/hardware-inventory.tsx
+#: src/components/routes/system/hardware-inventory.tsx
+msgid "Size"
+msgstr ""
+
+#: src/components/routes/system/hardware-inventory.tsx
+msgid "Slot"
+msgstr ""
+
 #: src/components/command-palette.tsx
 msgid "SMTP settings"
 msgstr "إعدادات SMTP"
@@ -2072,6 +2194,11 @@ msgstr "إعدادات SMTP"
 #: src/components/systems-table/systems-table.tsx
 msgid "Sort By"
 msgstr "الترتيب حسب"
+
+#: src/components/routes/system/hardware-inventory.tsx
+#: src/components/routes/system/hardware-inventory.tsx
+msgid "Speed"
+msgstr ""
 
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/quiet-hours.tsx
@@ -2121,6 +2248,8 @@ msgstr "تبديل السمة"
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
+#: src/components/routes/system/hardware-inventory.tsx
+#: src/components/routes/system/hardware-inventory.tsx
 #: src/components/routes/system/smart-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 #: src/lib/alerts.ts
@@ -2368,6 +2497,8 @@ msgstr "يتم التفعيل عندما يتجاوز استخدام أي قرص
 
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/system/hardware-inventory.tsx
+#: src/components/routes/system/hardware-inventory.tsx
 #: src/components/routes/system/smart-table.tsx
 #: src/components/routes/system/storage-pools-table.tsx
 msgid "Type"
@@ -2464,6 +2595,10 @@ msgstr "الاستخدام"
 msgid "Usage of storage pool {displayName}"
 msgstr "استخدام مجموعة التخزين {displayName}"
 
+#: src/components/routes/system/hardware-inventory.tsx
+msgid "USB devices"
+msgstr ""
+
 #: src/components/network-monitors-table/monitor-dialog.tsx
 msgid "Use for self-signed certificates."
 msgstr "استخدمه للشهادات الموقعة ذاتيًا."
@@ -2489,6 +2624,14 @@ msgstr "الاستخدام"
 #: src/components/alerts-history-columns.tsx
 msgid "Value"
 msgstr "القيمة"
+
+#: src/components/routes/system/hardware-inventory.tsx
+msgid "Vendor"
+msgstr ""
+
+#: src/components/routes/system/hardware-inventory.tsx
+msgid "Version"
+msgstr ""
 
 #: src/components/network-monitors-table/network-monitors-table.tsx
 #: src/components/routes/system/info-bar.tsx
@@ -2584,6 +2727,10 @@ msgstr "تكوين YAML"
 #: src/components/routes/settings/config-yaml.tsx
 msgid "YAML Configuration"
 msgstr "تكوين YAML"
+
+#: src/components/routes/system/hardware-inventory.tsx
+msgid "Year"
+msgstr ""
 
 #: src/components/systemd-table/systemd-table.tsx
 #: src/components/systemd-table/systemd-table.tsx
