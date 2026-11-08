@@ -91,6 +91,10 @@ type Result struct {
 	ResponseSum  int64 `cbor:"12,keyasint"`
 	// Cert is set for HTTPS targets when a certificate check has new info the hub has not stored yet.
 	Cert *CertInfo `cbor:"13,keyasint,omitempty"`
+	// Streak counts consecutive probes with the latest outcome up to LastProbeAt:
+	// positive for successes, negative for failures. Zero means unknown, which is
+	// what agents that predate this field send.
+	Streak int64 `cbor:"14,keyasint,omitempty"`
 }
 
 // Stats holds response times in microseconds and packet loss percentage (0-100).

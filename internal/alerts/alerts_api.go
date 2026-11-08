@@ -33,7 +33,12 @@ func UpsertUserAlerts(e *core.RequestEvent) error {
 		if msg := networkMonitorThresholdError(reqData.Name, reqData.Value); msg != "" {
 			return e.BadRequestError(msg, nil)
 		}
-		reqData.Min = 0
+		if msg := networkMonitorMinError(reqData.Name, int(reqData.Min)); msg != "" {
+			return e.BadRequestError(msg, nil)
+		}
+		if reqData.Name != alertNameNetworkMonitorDown {
+			reqData.Min = 0
+		}
 	}
 
 	alertsCollection, err := e.App.FindCachedCollectionByNameOrId("alerts")

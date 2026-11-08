@@ -245,9 +245,9 @@ export default function NetworkMonitorsTableNew({
 			onEdit: setEditingMonitor,
 			onDelete: handleDeleteRequest,
 			onSetEnabled: handleSetEnabled,
+			canManage: canManageMonitors,
 		})
 		columns = systemId ? columns.filter((col) => col.id !== "system") : columns
-		columns = canManageMonitors ? columns : columns.filter((col) => col.id !== "actions")
 		return columns
 	}, [canManageMonitors, handleDeleteRequest, handleSetEnabled, systemId])
 

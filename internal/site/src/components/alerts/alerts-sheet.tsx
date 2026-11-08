@@ -89,7 +89,22 @@ const deleteAlerts = debounceByKey(async ({ name, systems }: { name: string; sys
 	}
 }, alertDebounce)
 
-export const AlertDialogContent = memo(function AlertDialogContent({ system }: { system: SystemRecord }) {
+/** Alert types that track incidents per network monitor */
+export const isNetworkMonitorAlert = (name: string) => name.startsWith("NetworkMonitor")
+
+/** Whether a system's alerts include any that aren't network monitor alerts */
+export const hasSystemAlerts = (systemAlerts?: Map<string, AlertRecord>) =>
+	!!systemAlerts && Array.from(systemAlerts.keys()).some((name) => !isNetworkMonitorAlert(name))
+
+export const AlertDialogContent = memo(function AlertDialogContent({
+	system,
+	monitorAlertsOnly = false,
+}: {
+	system: SystemRecord
+	/** Show only network monitor alerts, for the network monitors table. Otherwise they are hidden. */
+	monitorAlertsOnly?: boolean
+}) {
+	const keys = alertKeys.filter((name) => isNetworkMonitorAlert(name) === monitorAlertsOnly)
 	const alerts = useStore($alerts)
 	const systems = useStore($systems)
 	const [overwriteExisting, setOverwriteExisting] = useState<boolean | "indeterminate">(false)
@@ -100,19 +115,24 @@ export const AlertDialogContent = memo(function AlertDialogContent({ system }: {
 
 	const systemAlerts = alerts[system.id] ?? new Map()
 
-	// Systems that have at least one alert configured (excluding the current system)
+	// Systems that have at least one system alert configured (excluding the current system)
 	const systemsWithAlerts = useMemo(
-		() => systems.filter((s) => s.id !== system.id && alerts[s.id]?.size),
+		() => systems.filter((s) => s.id !== system.id && hasSystemAlerts(alerts[s.id])),
 		[systems, alerts, system.id]
 	)
 
+	/** Copies system alerts only; network monitor alerts on the target are left as they are */
 	async function copyAlertsFromSystem(sourceSystemId: string) {
-		const sourceAlerts = $alerts.get()[sourceSystemId]
-		if (!sourceAlerts?.size) return
+		const sourceAlerts = new Map(
+			Array.from($alerts.get()[sourceSystemId] ?? []).filter(([name]) => !isNetworkMonitorAlert(name))
+		)
+		if (!sourceAlerts.size) return
 		try {
 			const currentTargetAlerts = $alerts.get()[system.id] ?? new Map()
-			// Alert names present on target but absent from source should be deleted
-			const namesToDelete = Array.from(currentTargetAlerts.keys()).filter((name) => !sourceAlerts.has(name))
+			// System alert names present on target but absent from source should be deleted
+			const namesToDelete = Array.from(currentTargetAlerts.keys()).filter(
+				(name) => !isNetworkMonitorAlert(name) && !sourceAlerts.has(name)
+			)
 			await Promise.all([
 				...Array.from(sourceAlerts.values()).map(({ name, value, min }) =>
 					pb.send<{ success: boolean }>(endpoint, {
@@ -131,7 +151,9 @@ export const AlertDialogContent = memo(function AlertDialogContent({ system }: {
 			])
 			// Optimistically update the store so components re-mount with correct data
 			// before the realtime subscription event arrives.
-			const newSystemAlerts = new Map<string, AlertRecord>()
+			const newSystemAlerts = new Map<string, AlertRecord>(
+				Array.from(currentTargetAlerts).filter(([name]) => isNetworkMonitorAlert(name))
+			)
 			for (const alert of sourceAlerts.values()) {
 				newSystemAlerts.set(alert.name, { ...alert, system: system.id, triggered: false })
 			}
@@ -177,7 +199,7 @@ export const AlertDialogContent = memo(function AlertDialogContent({ system }: {
 							<Trans>All Systems</Trans>
 						</TabsTrigger>
 					</TabsList>
-					{systemsWithAlerts.length > 0 && currentTab === "system" && (
+					{!monitorAlertsOnly && systemsWithAlerts.length > 0 && currentTab === "system" && (
 						<DropdownMenu>
 							<DropdownMenuTrigger asChild>
 								<Button variant="ghost" size="sm" className="text-muted-foreground text-xs gap-1.5">
@@ -197,7 +219,7 @@ export const AlertDialogContent = memo(function AlertDialogContent({ system }: {
 				</div>
 				<TabsContent value="system">
 					<div key={copyKey} className="grid gap-3">
-						{alertKeys.map((name) => (
+						{keys.map((name) => (
 							<AlertContent
 								key={name}
 								alertKey={name}
@@ -222,7 +244,7 @@ export const AlertDialogContent = memo(function AlertDialogContent({ system }: {
 						<Trans>Overwrite existing alerts</Trans>
 					</label>
 					<div className="grid gap-3">
-						{alertKeys.map((name) => (
+						{keys.map((name) => (
 							<AlertContent
 								key={name}
 								alertKey={name}
@@ -263,13 +285,17 @@ export function AlertContent({
 	const singleDescription = alertData.singleDesc?.()
 	/** Alerts that fire on first observation have no duration to configure */
 	const noDuration = alertData.noDuration === true
+	/** Down alerts use the duration control for successful checks in a row before resolving */
+	const recovery = alertData.recoveryChecks
+	/** Upper bound of the duration control */
+	const minMax = recovery?.max ?? 60
 	/** Binary alerts have no threshold to configure */
 	const noThreshold = !!singleDescription || alertData.noThreshold === true
 	/** Whether enabling the alert reveals anything to configure */
 	const hasControls = !(noThreshold && noDuration)
 
 	const [checked, setChecked] = useState(global ? false : !!alert)
-	const [min, setMin] = useState(alert?.min || (noDuration ? 0 : 10))
+	const [min, setMin] = useState(alert?.min || (noDuration ? 0 : recovery ? 1 : 10))
 	const { units } = alertData
 	const storedValue = alert?.value ?? (noThreshold ? 0 : (alertData.start ?? 80))
 	const [unitIndex, setUnitIndex] = useState(() => (units ? getUnitIndex(units, storedValue) : 0))
@@ -356,7 +382,15 @@ export function AlertContent({
 						{!noThreshold && (
 							<div className={cn(noDuration && "col-span-full")}>
 								<p id={`v${name}`} className="text-sm block h-6">
-									{alertKey === "NetworkMonitorCert" ? (
+									{alertKey === "NetworkMonitorDown" ? (
+										<Trans>
+											After{" "}
+											<strong className="text-foreground">
+												<Plural value={value} one="# failed check" other="# failed checks" />
+											</strong>{" "}
+											in a row
+										</Trans>
+									) : alertKey === "NetworkMonitorCert" ? (
 										<Trans>
 											Expires within{" "}
 											<strong className="text-foreground">
@@ -399,8 +433,7 @@ export function AlertContent({
 											if (!Number.isNaN(val)) {
 												// keep values on the step grid so the unit can be inferred on reload
 												if (unit) val = roundToStep(val, inputStep)
-												// certificate thresholds are whole days
-												else if (alertKey === "NetworkMonitorCert") val = Math.round(val)
+												else if (alertData.integer) val = Math.round(val)
 												if (valueMax != null) val = Math.min(val, valueMax)
 												if (inputMin != null) val = Math.max(val, inputMin)
 												setValue(val)
@@ -443,17 +476,27 @@ export function AlertContent({
 						)}
 						{!noDuration && (
 							<div className={cn(singleDescription && "col-span-full lowercase")}>
-								<p id={`t${name}`} className="text-sm block h-6 first-letter:uppercase">
+								<p id={`t${name}`} className="text-sm block min-h-6 first-letter:uppercase">
 									{singleDescription && (
 										<>
 											{singleDescription}
 											{` `}
 										</>
 									)}
-									<Trans>
-										For <strong className="text-foreground">{min}</strong>{" "}
-										<Plural value={min} one="minute" other="minutes" />
-									</Trans>
+									{recovery ? (
+										<Trans>
+											Resolves after{" "}
+											<strong className="text-foreground">
+												<Plural value={min} one="# success" other="# successes" />
+											</strong>{" "}
+											in a row
+										</Trans>
+									) : (
+										<Trans>
+											For <strong className="text-foreground">{min}</strong>{" "}
+											<Plural value={min} one="minute" other="minutes" />
+										</Trans>
+									)}
 								</p>
 								<div className="flex gap-3 items-center">
 									<Slider
@@ -462,7 +505,7 @@ export function AlertContent({
 										onValueCommit={(val) => sendUpsert(val[0], value)}
 										onValueChange={(val) => setMin(val[0])}
 										min={1}
-										max={60}
+										max={minMax}
 									/>
 									<Input
 										type="number"
@@ -470,13 +513,13 @@ export function AlertContent({
 										onChange={(e) => {
 											let val = parseInt(e.target.value, 10)
 											if (!Number.isNaN(val)) {
-												val = Math.max(1, Math.min(val, 60))
+												val = Math.max(1, Math.min(val, minMax))
 												setMin(val)
 												sendUpsert(val, value)
 											}
 										}}
 										min={1}
-										max={60}
+										max={minMax}
 										className="w-16 h-8 text-center px-1"
 									/>
 								</div>
