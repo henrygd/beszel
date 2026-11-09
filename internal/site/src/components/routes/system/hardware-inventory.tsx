@@ -14,6 +14,13 @@ const decimalSize = (bytes: number) =>
 
 const join = (...parts: (string | number | undefined)[]) => parts.filter(Boolean).join(" ")
 
+/** Link speed in the usual units: "10 Gb/s", "2.5 Gb/s", "480 Mb/s". */
+const linkSpeed = (mbps?: number | string) => {
+	const n = Number(mbps)
+	if (!n) return undefined
+	return n >= 1000 ? `${n / 1000} Gb/s` : `${n} Mb/s`
+}
+
 export default function HardwareInventoryCard({ systemId }: { systemId: string }) {
 	const [data, setData] = useState<HardwareInventory | null>(null)
 	const [error, setError] = useState<string | null>(null)
@@ -144,7 +151,7 @@ export default function HardwareInventoryCard({ systemId }: { systemId: string }
 							u.name ?? u.product_name ?? `${u.vendor}:${u.product}`,
 							u.manufacturer ?? u.vendor_name,
 							u.kinds?.join(", "),
-							u.speed_mbps ? `${u.speed_mbps} Mb/s` : undefined,
+							linkSpeed(u.speed_mbps),
 							mono(`${u.vendor}:${u.product}`),
 							mono(u.serial),
 						])}
@@ -155,7 +162,7 @@ export default function HardwareInventoryCard({ systemId }: { systemId: string }
 						rows={(inv.nics ?? []).map((n) => [
 							mono(n.name),
 							n.driver,
-							n.speed_mbps ? `${n.speed_mbps} Mb/s` : t`Down`,
+							linkSpeed(n.speed_mbps) ?? t`Down`,
 							mono(n.pci),
 							mono(n.mac),
 						])}
