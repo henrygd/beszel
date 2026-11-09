@@ -251,7 +251,6 @@ export function DiskUtilizationChart({ systemData, extraFsName }: { systemData: 
 				tickFormatter={(val) => `${toFixedFloat(val, 2)}%`}
 				contentFormatter={({ value }) => `${decimalString(value)}%`}
 				maxToggled={showMax}
-				chartProps={{ syncId: "io" }}
 				dataPoints={[
 					{
 						label: t({ message: "Utilization", context: "Disk I/O utilization" }),

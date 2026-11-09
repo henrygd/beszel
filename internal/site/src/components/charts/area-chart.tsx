@@ -13,6 +13,7 @@ import { chartMargin, cn, formatShortDate } from "@/lib/utils"
 import type { ChartData, SystemStatsRecord } from "@/types"
 import { hasChartValues, useYAxisWidth } from "./hooks"
 import { ChartNoValues } from "./chart-no-values"
+import { useChartSync } from "./sync"
 import type { AxisDomain } from "recharts/types/util/types"
 import { useIntersectionObserver } from "@/lib/use-intersection-observer"
 
@@ -67,6 +68,7 @@ export default function AreaChartDefault({
 	chartProps?: Omit<React.ComponentProps<typeof AreaChart>, "data" | "margin">
 }) {
 	const { yAxisWidth, updateYAxisWidth } = useYAxisWidth()
+	const chartSync = useChartSync()
 	const { isIntersecting, ref } = useIntersectionObserver({ freeze: false })
 	const sourceData = customData ?? chartData.systemStats ?? []
 	const [displayData, setDisplayData] = useState(sourceData)
@@ -128,7 +130,7 @@ export default function AreaChartDefault({
 		return (
 			<ChartContainer
 				ref={ref}
-				className={cn("h-full w-full absolute aspect-auto bg-card opacity-0 transition-opacity", {
+				className={cn("h-full w-full absolute aspect-auto bg-card opacity-0 transition-opacity", chartSync.className, {
 					"opacity-100": yAxisWidth || hideYAxis,
 					"ps-4": hideYAxis,
 				})}
@@ -138,6 +140,7 @@ export default function AreaChartDefault({
 					accessibilityLayer
 					data={displayData}
 					margin={hideYAxis ? { ...chartMargin, left: 5 } : chartMargin}
+					{...chartSync.syncProps}
 					{...chartProps}
 				>
 					<CartesianGrid vertical={false} />
@@ -175,5 +178,5 @@ export default function AreaChartDefault({
 				</AreaChart>
 			</ChartContainer>
 		)
-	}, [displayData, yAxisWidth, filter, Areas, XAxis])
+	}, [displayData, yAxisWidth, filter, Areas, XAxis, chartSync])
 }

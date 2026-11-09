@@ -10,6 +10,7 @@ import {
 	MonitorIcon,
 	Settings2Icon,
 } from "lucide-react"
+import { useStore } from "@nanostores/react"
 import { useMemo } from "react"
 import ChartTimeSelect from "@/components/charts/chart-time-select"
 import { Button } from "@/components/ui/button"
@@ -26,9 +27,16 @@ import {
 import { FreeBsdIcon, TuxIcon, WebSocketIcon, WindowsIcon } from "@/components/ui/icons"
 import { Separator } from "@/components/ui/separator"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
+import { queueUserSettings } from "@/lib/api"
 import { ConnectionType, connectionTypeLabels, Os, SystemStatus } from "@/lib/enums"
+import { $chartSync, $userSettings } from "@/lib/stores"
 import { cn, formatBytes, getHostDisplayValue, secondsToUptimeString, toFixedFloat } from "@/lib/utils"
-import type { ChartData, SystemDetailsRecord, SystemRecord } from "@/types"
+import type { ChartData, ChartSync, SystemDetailsRecord, SystemRecord } from "@/types"
+
+function setChartSync(mode: ChartSync) {
+	$userSettings.setKey("chartSync", mode)
+	queueUserSettings({ chartSync: mode })
+}
 
 export default function InfoBar({
 	system,
@@ -48,6 +56,7 @@ export default function InfoBar({
 	details: SystemDetailsRecord | null
 }) {
 	const { t } = useLingui()
+	const chartSync = useStore($chartSync)
 
 	// values for system info bar - use details with fallback to system.info
 	const systemInfo = useMemo(() => {
@@ -206,7 +215,7 @@ export default function InfoBar({
 					<ChartTimeSelect className="w-full xl:w-40" agentVersion={chartData.agentVersion} />
 					<DropdownMenu>
 						<DropdownMenuTrigger asChild>
-							<Button aria-label={t`View`} variant="outline" size="icon" className="hidden xl:flex">
+							<Button aria-label={t`View`} variant="outline" size="icon" className="shrink-0">
 								<Settings2Icon className="size-4 opacity-80" />
 							</Button>
 						</DropdownMenuTrigger>
@@ -227,21 +236,44 @@ export default function InfoBar({
 									<Trans context="Tabs system layout option">Tabs</Trans>
 								</DropdownMenuRadioItem>
 							</DropdownMenuRadioGroup>
+							{/* chart width only matters in the two-column xl layout */}
+							<div className="hidden xl:block">
+								<DropdownMenuSeparator />
+								<DropdownMenuLabel className="px-3.5">
+									<Trans>Chart width</Trans>
+								</DropdownMenuLabel>
+								<DropdownMenuSeparator />
+								<DropdownMenuRadioGroup
+									className="px-1 pb-1"
+									value={grid ? "grid" : "full"}
+									onValueChange={(v) => setGrid(v === "grid")}
+								>
+									<DropdownMenuRadioItem value="grid" onSelect={(e) => e.preventDefault()}>
+										<Trans>Grid</Trans>
+									</DropdownMenuRadioItem>
+									<DropdownMenuRadioItem value="full" onSelect={(e) => e.preventDefault()}>
+										<Trans>Full</Trans>
+									</DropdownMenuRadioItem>
+								</DropdownMenuRadioGroup>
+							</div>
 							<DropdownMenuSeparator />
 							<DropdownMenuLabel className="px-3.5">
-								<Trans>Chart width</Trans>
+								<Trans>Sync hover</Trans>
 							</DropdownMenuLabel>
 							<DropdownMenuSeparator />
 							<DropdownMenuRadioGroup
 								className="px-1 pb-1"
-								value={grid ? "grid" : "full"}
-								onValueChange={(v) => setGrid(v === "grid")}
+								value={chartSync}
+								onValueChange={(v) => setChartSync(v as ChartSync)}
 							>
-								<DropdownMenuRadioItem value="grid" onSelect={(e) => e.preventDefault()}>
-									<Trans>Grid</Trans>
+								<DropdownMenuRadioItem value="off" onSelect={(e) => e.preventDefault()}>
+									<Trans>Off</Trans>
 								</DropdownMenuRadioItem>
-								<DropdownMenuRadioItem value="full" onSelect={(e) => e.preventDefault()}>
-									<Trans>Full</Trans>
+								<DropdownMenuRadioItem value="crosshair" onSelect={(e) => e.preventDefault()}>
+									<Trans>Crosshair only</Trans>
+								</DropdownMenuRadioItem>
+								<DropdownMenuRadioItem value="tooltip" onSelect={(e) => e.preventDefault()}>
+									<Trans>Crosshair and tooltip</Trans>
 								</DropdownMenuRadioItem>
 							</DropdownMenuRadioGroup>
 						</DropdownMenuContent>

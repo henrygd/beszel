@@ -406,7 +406,11 @@ export interface UserSettings {
 	monitorSortModeSystem?: Array<{ id: string; desc: boolean }>
 	grid?: boolean
 	displayMode?: "default" | "tabs"
+	/** Sync hover position across charts (#611) */
+	chartSync?: ChartSync
 }
+
+export type ChartSync = "off" | "crosshair" | "tooltip"
 
 type ChartDataContainer = {
 	created: number | null
