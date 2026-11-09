@@ -66,6 +66,7 @@
               echo "  make dev-hub | make dev-agent | make dev-server    hot-reload loops (npm ci in internal/site first)"
               echo "  go test -tags testing ./...                        Go tests"
               echo "  nix flake check                                     Go tests + UI types and lint, in the sandbox"
+              echo "  NIX_CONFIG='builders =' nix run nixpkgs#nix-update -- --flake --version=skip beszel   refresh vendorHash after go.mod changes"
             '';
           };
         }

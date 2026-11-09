@@ -37,7 +37,7 @@ in
 buildGoModule {
   pname = "beszel";
   inherit version src;
-  vendorHash = "sha256-NStpXYnaVkJxmzT1fIPFqSNbNSJqpnC0LsVQweFOwcI=";
+  vendorHash = "sha256-y74hKo/NoPp2mN3bVeDRC1CPYTBuAhh/LG39S7ZQ2NY=";
   subPackages = [
     "internal/cmd/agent"
     "internal/cmd/hub"
