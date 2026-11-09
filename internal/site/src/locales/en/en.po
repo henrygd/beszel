@@ -2589,3 +2589,15 @@ msgstr "Yes"
 #: src/components/routes/settings/layout.tsx
 msgid "Your user settings have been updated."
 msgstr "Your user settings have been updated."
+
+#: src/components/logs-display.tsx
+msgid "Open external link?"
+msgstr "Open external link?"
+
+#: src/components/logs-display.tsx
+msgid "Open link"
+msgstr "Open link"
+
+#: src/components/logs-display.tsx
+msgid "This URL comes from log output. Only open it if you trust the destination."
+msgstr "This URL comes from log output. Only open it if you trust the destination."
