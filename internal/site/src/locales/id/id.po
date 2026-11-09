@@ -2594,15 +2594,3 @@ msgstr "Ya"
 #: src/components/routes/settings/layout.tsx
 msgid "Your user settings have been updated."
 msgstr "Pengaturan pengguna anda telah diperbarui."
-
-#: src/components/logs-display.tsx
-msgid "Open external link?"
-msgstr ""
-
-#: src/components/logs-display.tsx
-msgid "Open link"
-msgstr ""
-
-#: src/components/logs-display.tsx
-msgid "This URL comes from log output. Only open it if you trust the destination."
-msgstr ""
