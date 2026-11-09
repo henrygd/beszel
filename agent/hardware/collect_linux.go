@@ -62,7 +62,8 @@ func readSMBIOS(sys sysfs, configured string) (smbiosData, error) {
 	}
 	if err != nil {
 		if errors.Is(err, fs.ErrPermission) {
-			return smbiosData{}, errors.New("permission denied (hand it to the agent with LoadCredential=smbios:/sys/firmware/dmi/tables/DMI)")
+			return smbiosData{}, errors.New("permission denied; give the agent a read-only copy " +
+				"(systemd: LoadCredential=smbios:/sys/firmware/dmi/tables/DMI; containers: bind mount it and set HARDWARE_INVENTORY_SMBIOS)")
 		}
 		return smbiosData{}, err
 	}

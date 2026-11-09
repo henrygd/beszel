@@ -37,3 +37,10 @@ func TestClean(t *testing.T) {
 func TestPlaceholderUUID(t *testing.T) {
 	assert.Equal(t, "", clean("12345678-1234-5678-90AB-CDDEEFAABBCC"), "Insyde default UUID")
 }
+
+func TestLimit(t *testing.T) {
+	inv := hardware.Inventory{PCI: make([]hardware.PCIDevice, maxEntries+3)}
+	limit(&inv)
+	assert.Len(t, inv.PCI, maxEntries)
+	assert.Equal(t, []hardware.Gap{{Section: "pci", Reason: "3 more entries not shown"}}, inv.Unavailable)
+}

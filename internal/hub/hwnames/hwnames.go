@@ -52,10 +52,14 @@ func Resolve(inv *hardware.Inventory) {
 
 func readFirst(dirs []string, file string) names {
 	for _, dir := range dirs {
-		if f, err := os.Open(filepath.Join(dir, file)); err == nil {
-			defer f.Close()
-			return parse(bufio.NewScanner(f))
+		// #nosec G304 -- dirs are the fixed hwdata locations or the operator's HWDATA_DIR
+		f, err := os.Open(filepath.Join(dir, file))
+		if err != nil {
+			continue
 		}
+		db := parse(bufio.NewScanner(f))
+		_ = f.Close() // read-only; nothing to flush
+		return db
 	}
 	return names{}
 }

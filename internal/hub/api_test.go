@@ -552,6 +552,48 @@ func TestApiRoutesAuthentication(t *testing.T) {
 			ExpectedContent: []string{"Something went wrong while processing your request."},
 			TestAppFactory:  testAppFactory,
 		},
+		// /hardware route
+		{
+			Name:            "GET /hardware - no auth should fail",
+			Method:          http.MethodGet,
+			URL:             fmt.Sprintf("/api/beszel/hardware?system=%s", system.Id),
+			ExpectedStatus:  401,
+			ExpectedContent: []string{"requires valid"},
+			TestAppFactory:  testAppFactory,
+		},
+		{
+			Name:   "GET /hardware - missing system param should fail",
+			Method: http.MethodGet,
+			URL:    "/api/beszel/hardware",
+			Headers: map[string]string{
+				"Authorization": userToken,
+			},
+			ExpectedStatus:  400,
+			ExpectedContent: []string{"Invalid", "parameter"},
+			TestAppFactory:  testAppFactory,
+		},
+		{
+			Name:   "GET /hardware - invalid system should fail",
+			Method: http.MethodGet,
+			URL:    "/api/beszel/hardware?system=invalid-system",
+			Headers: map[string]string{
+				"Authorization": userToken,
+			},
+			ExpectedStatus:  404,
+			ExpectedContent: []string{"The requested resource wasn't found."},
+			TestAppFactory:  testAppFactory,
+		},
+		{
+			Name:            "GET /hardware - request for valid non-user system should fail",
+			Method:          http.MethodGet,
+			URL:             fmt.Sprintf("/api/beszel/hardware?system=%s", system.Id),
+			ExpectedStatus:  404,
+			ExpectedContent: []string{"The requested resource wasn't found."},
+			TestAppFactory:  testAppFactory,
+			Headers: map[string]string{
+				"Authorization": user2Token,
+			},
+		},
 		// /package-updates route
 		{
 			Name:            "GET /package-updates - no auth should fail",

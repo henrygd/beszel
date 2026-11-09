@@ -18,8 +18,9 @@
         "aarch64-linux"
       ];
       forAll = f: nixpkgs.lib.genAttrs systems (system: f nixpkgs.legacyPackages.${system} system);
-      app = pkgs: program: {
+      app = pkgs: program: description: {
         type = "app";
+        meta = { inherit description; };
         program = pkgs.lib.getExe' self.packages.${pkgs.stdenv.hostPlatform.system}.beszel program;
       };
     in
@@ -35,9 +36,9 @@
       # nix run .#agent                                 (KEY/HUB_URL/TOKEN from the environment)
       apps = forAll (
         pkgs: _: {
-          hub = app pkgs "beszel-hub";
-          agent = app pkgs "beszel-agent";
-          default = app pkgs "beszel-hub";
+          hub = app pkgs "beszel-hub" "Beszel hub (web UI and API); try: serve --http 127.0.0.1:8090";
+          agent = app pkgs "beszel-agent" "Beszel agent; set KEY, HUB_URL and TOKEN in the environment";
+          default = app pkgs "beszel-hub" "Beszel hub (web UI and API)";
         }
       );
 

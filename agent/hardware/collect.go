@@ -9,6 +9,7 @@ package hardware
 
 import (
 	"cmp"
+	"fmt"
 	"slices"
 
 	"github.com/henrygd/beszel/internal/entities/hardware"
@@ -33,6 +34,7 @@ func Collect(opts Options) hardware.Inventory {
 	}
 	inv := collect(opts)
 	normalize(&inv)
+	limit(&inv)
 	if !opts.Identifiers {
 		inv.StripIdentifiers()
 	}
@@ -59,4 +61,30 @@ func fill(dst *string, src string) {
 	if *dst == "" {
 		*dst = src
 	}
+}
+
+// maxEntries caps each device list, so an unusual host (hundreds of SR-IOV
+// virtual functions, say) cannot flood the hub or the UI.
+const maxEntries = 512
+
+// limit truncates oversized lists and records how much was left out.
+func limit(inv *hardware.Inventory) {
+	inv.PCI = capList(inv, "pci", inv.PCI)
+	inv.USB = capList(inv, "usb", inv.USB)
+	inv.Disks = capList(inv, "disks", inv.Disks)
+	inv.NICs = capList(inv, "nics", inv.NICs)
+	inv.Memory = capList(inv, "memory", inv.Memory)
+	inv.Displays = capList(inv, "displays", inv.Displays)
+	inv.Batteries = capList(inv, "batteries", inv.Batteries)
+}
+
+func capList[T any](inv *hardware.Inventory, section string, list []T) []T {
+	if len(list) <= maxEntries {
+		return list
+	}
+	inv.Unavailable = append(inv.Unavailable, hardware.Gap{
+		Section: section,
+		Reason:  fmt.Sprintf("%d more entries not shown", len(list)-maxEntries),
+	})
+	return list[:maxEntries]
 }
