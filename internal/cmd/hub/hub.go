@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/henrygd/beszel"
+	"github.com/henrygd/beszel/internal/ghupdate"
 	"github.com/henrygd/beszel/internal/hub"
 	_ "github.com/henrygd/beszel/internal/migrations"
 
@@ -47,9 +48,10 @@ func getBaseApp() *pocketbase.PocketBase {
 	baseApp.RootCmd.Short = ""
 	// add update command
 	updateCmd := &cobra.Command{
-		Use:   "update",
-		Short: "Update " + beszel.AppName + " to the latest version",
-		Run:   hub.Update,
+		Use:    "update",
+		Short:  "Update " + beszel.AppName + " to the latest version",
+		Run:    hub.Update,
+		Hidden: ghupdate.SelfUpdateDisabled,
 	}
 	updateCmd.Flags().Bool("china-mirrors", false, "Use mirror (gh.beszel.dev) instead of GitHub")
 	baseApp.RootCmd.AddCommand(updateCmd)

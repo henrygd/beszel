@@ -99,6 +99,12 @@ func (um *UserManager) CreateFirstUser(e *core.RequestEvent) error {
 	if data.Email == "" || data.Password == "" {
 		return e.JSON(http.StatusBadRequest, map[string]string{"err": "Bad request"})
 	}
+	// bcrypt (used by the password field) rejects passwords longer than 72
+	// bytes; PocketBase's field validation counts characters, so a multibyte
+	// password can pass it and then fail hashing with a confusing error.
+	if len(data.Password) > 72 {
+		return e.JSON(http.StatusBadRequest, map[string]string{"err": "Password must be less than 72 bytes."})
+	}
 
 	err := um.app.RunInTransaction(func(txApp core.App) error {
 		totalUsers, err := txApp.CountRecords("users")
