@@ -82,7 +82,7 @@ export default function SystemsTable() {
 	const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
 	const { pagination, onPaginationChange, resetPageIndex } = usePagination()
 	const [columnVisibility, setColumnVisibility] = useState<VisibilityState>(
-		() => $userSettings.get().cols ?? JSON.parse(localStorage.getItem("besz-cols") || "{}")
+		() => $userSettings.get().cols ?? JSON.parse(localStorage.getItem("besz-cols") || '{"lastSeen":false}')
 	)
 
 	// Apply settings from server once they load (handles incognito / new devices)
