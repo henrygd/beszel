@@ -34,6 +34,7 @@ import { SystemStatus } from "@/lib/enums"
 import { Checkbox } from "@/components/ui/checkbox"
 import { useMemo } from "react"
 import { formatBulkMonitorLine } from "@/components/network-monitors-table/monitor-dialog"
+import { MonitorAlertsButton } from "@/components/network-monitors-table/monitor-alerts-sheet"
 import { Badge } from "../ui/badge"
 import {
 	getCertDaysLeft,
@@ -77,8 +78,11 @@ export function getMonitorColumns({
 	onEdit,
 	onDelete,
 	onSetEnabled,
+	canManage = true,
 }: {
 	onEdit?: (monitor: NetworkMonitorRecord) => void
+	/** Shows the edit, pause, and delete menu. The alerts bell is shown to everyone. */
+	canManage?: boolean
 	onDelete?: (monitors: NetworkMonitorRecord[]) => void | Promise<void>
 	onSetEnabled?: (monitors: NetworkMonitorRecord[], enabled: boolean) => void | Promise<void>
 } = {}): ColumnDef<NetworkMonitorRecord>[] {
@@ -295,7 +299,7 @@ export function getMonitorColumns({
 			enableSorting: false,
 			enableHiding: false,
 			header: () => null,
-			size: 40,
+			size: 80,
 			cell: ({ row, table }) => {
 				const selectedRows = table.getSelectedRowModel().rows
 				const actionRows =
@@ -306,62 +310,68 @@ export function getMonitorColumns({
 				const shouldPause = actionRows.some((monitor) => monitor.enabled)
 				const bulkCopyContent = actionRows.map((monitor) => formatBulkMonitorLine(monitor)).join("\n")
 				return (
-					<DropdownMenu>
-						<DropdownMenuTrigger asChild>
-							<Button variant="ghost" size="icon" className="size-10">
-								<span className="sr-only">
-									<Trans>Open menu</Trans>
-								</span>
-								<MoreHorizontalIcon className="w-5" />
-							</Button>
-						</DropdownMenuTrigger>
-						<DropdownMenuContent align="end" onClick={(event) => event.stopPropagation()}>
-							{!isBulkAction && (
-								<DropdownMenuItem
-									onClick={() => {
-										onEdit?.(row.original)
-									}}
-								>
-									<PenBoxIcon className="me-2.5 size-4" />
-									<Trans>Edit</Trans>
-								</DropdownMenuItem>
-							)}
-							<DropdownMenuItem
-								onClick={() => {
-									onSetEnabled?.(actionRows, !shouldPause)
-								}}
-							>
-								{shouldPause ? (
-									<>
-										<PauseCircleIcon className="me-2.5 size-4" />
-										<Trans>Pause</Trans>
-									</>
-								) : (
-									<>
-										<PlayCircleIcon className="me-2.5 size-4" />
-										<Trans>Resume</Trans>
-									</>
-								)}
-							</DropdownMenuItem>
-							<DropdownMenuItem
-								onClick={() => {
-									copyToClipboard(bulkCopyContent)
-								}}
-							>
-								<CopyIcon className="me-2.5 size-4" />
-								<Trans>Copy bulk config</Trans>
-							</DropdownMenuItem>
-							<DropdownMenuSeparator />
-							<DropdownMenuItem
-								onClick={() => {
-									onDelete?.(actionRows)
-								}}
-							>
-								<Trash2Icon className="me-2.5 size-4" />
-								<Trans>Delete</Trans>
-							</DropdownMenuItem>
-						</DropdownMenuContent>
-					</DropdownMenu>
+					<div className="flex justify-end items-center gap-1">
+						<MonitorAlertsButton systemId={row.original.system} />
+						{canManage && (
+							<DropdownMenu>
+								<DropdownMenuTrigger asChild>
+									<Button variant="ghost" size="icon" className="size-10">
+										<span className="sr-only">
+											<Trans>Open menu</Trans>
+										</span>
+										<MoreHorizontalIcon className="w-5" />
+									</Button>
+								</DropdownMenuTrigger>
+								<DropdownMenuContent align="end" onClick={(event) => event.stopPropagation()}>
+									{!isBulkAction && (
+										<DropdownMenuItem
+											onClick={() => {
+												onEdit?.(row.original)
+											}}
+										>
+											<PenBoxIcon className="me-2.5 size-4" />
+											<Trans>Edit</Trans>
+										</DropdownMenuItem>
+									)}
+
+									<DropdownMenuItem
+										onClick={() => {
+											onSetEnabled?.(actionRows, !shouldPause)
+										}}
+									>
+										{shouldPause ? (
+											<>
+												<PauseCircleIcon className="me-2.5 size-4" />
+												<Trans>Pause</Trans>
+											</>
+										) : (
+											<>
+												<PlayCircleIcon className="me-2.5 size-4" />
+												<Trans>Resume</Trans>
+											</>
+										)}
+									</DropdownMenuItem>
+									<DropdownMenuItem
+										onClick={() => {
+											copyToClipboard(bulkCopyContent)
+										}}
+									>
+										<CopyIcon className="me-2.5 size-4" />
+										<Trans>Copy bulk config</Trans>
+									</DropdownMenuItem>
+									<DropdownMenuSeparator />
+									<DropdownMenuItem
+										onClick={() => {
+											onDelete?.(actionRows)
+										}}
+									>
+										<Trash2Icon className="me-2.5 size-4" />
+										<Trans>Delete</Trans>
+									</DropdownMenuItem>
+								</DropdownMenuContent>
+							</DropdownMenu>
+						)}
+					</div>
 				)
 			},
 		},

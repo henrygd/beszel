@@ -1,5 +1,16 @@
 import { t } from "@lingui/core/macro"
-import { ContainerIcon, CpuIcon, HardDriveIcon, MemoryStickIcon, NetworkIcon, ServerCrashIcon, ServerIcon, ShieldCheckIcon } from "lucide-react"
+import {
+  ContainerIcon,
+  CpuIcon,
+  HardDriveIcon,
+  MemoryStickIcon,
+  NetworkIcon,
+  ServerCrashIcon,
+  ServerIcon,
+  ShieldCheckIcon,
+  TimerIcon,
+  WifiOffIcon,
+} from "lucide-react"
 import type { RecordSubscription } from "pocketbase"
 import { EthernetIcon, GpuIcon } from "@/components/ui/icons"
 import { $alerts } from "@/lib/stores"
@@ -80,6 +91,31 @@ export const alertInfo: Record<string, AlertInfo> = {
     min: 1,
     max: 365,
     start: 14,
+    integer: true,
+  },
+  NetworkMonitorDown: {
+    name: () => t`Network Monitor Down`,
+    unit: "",
+    icon: WifiOffIcon,
+    desc: () => t`Triggers when a monitor fails several checks in a row`,
+    note: () => t`Resolves on the next successful check.`,
+    noDuration: true,
+    min: 1,
+    max: 20,
+    start: 3,
+    integer: true,
+  },
+  NetworkMonitorLatency: {
+    name: () => t`Network Monitor Response Time`,
+    unit: " ms",
+    icon: TimerIcon,
+    desc: () => t`Triggers when one hour average response time exceeds a threshold`,
+    noDuration: true,
+    start: 500,
+    units: [
+      { unit: " ms", factor: 1, min: 10, max: 2000, step: 10, inputStep: 1 },
+      { unit: " s", factor: 1000, min: 0.1, max: 10, step: 0.1 },
+    ],
   },
   GPU: {
     name: () => t`GPU Usage`,

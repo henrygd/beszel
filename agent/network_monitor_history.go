@@ -30,8 +30,10 @@ const (
 type monitorHistory struct {
 	mu          sync.Mutex
 	sampleCount int64
-	samples     []monitorSample
-	buckets     [monitorMinuteBucketLen]monitorBucket
+	// streak is positive for consecutive successes and negative for consecutive failures.
+	streak  int64
+	samples []monitorSample
+	buckets [monitorMinuteBucketLen]monitorBucket
 }
 
 func newMonitorHistory() *monitorHistory {
@@ -46,6 +48,7 @@ func (h *monitorHistory) clone() *monitorHistory {
 	cloned.samples = append(cloned.samples, h.samples...)
 	cloned.buckets = h.buckets
 	cloned.sampleCount = h.sampleCount
+	cloned.streak = h.streak
 	return cloned
 }
 
@@ -189,6 +192,7 @@ func (h *monitorHistory) resultLocked(duration time.Duration, now time.Time) (mo
 	result.MaxResponse1h = hourAgg.maxUs
 	result.PacketLoss1h = hourAgg.lossPercentage()
 	result.SampleCount = h.sampleCount
+	result.Streak = h.streak
 
 	if hourAgg.successCount == 0 {
 		result.MinResponse1h, result.MaxResponse1h = 0, 0
@@ -245,6 +249,16 @@ func aggregateBucketsSince(buckets []monitorBucket, cutoff, now time.Time) monit
 // addSampleLocked stores a fresh sample in both raw and per-minute retention buffers.
 func (h *monitorHistory) addSampleLocked(sample monitorSample) {
 	h.sampleCount++
+	switch failed := sample.responseUs < 0; {
+	case failed && h.streak < 0:
+		h.streak--
+	case failed:
+		h.streak = -1
+	case h.streak > 0:
+		h.streak++
+	default:
+		h.streak = 1
+	}
 	cutoff := sample.timestamp.Add(-monitorRawRetention)
 	start := 0
 	for i := range h.samples {

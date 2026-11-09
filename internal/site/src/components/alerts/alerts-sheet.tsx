@@ -83,7 +83,22 @@ const deleteAlerts = debounce(async ({ name, systems }: { name: string; systems:
 	}
 }, alertDebounce)
 
-export const AlertDialogContent = memo(function AlertDialogContent({ system }: { system: SystemRecord }) {
+/** Alert types that track incidents per network monitor */
+export const isNetworkMonitorAlert = (name: string) => name.startsWith("NetworkMonitor")
+
+/** Whether a system's alerts include any that aren't network monitor alerts */
+export const hasSystemAlerts = (systemAlerts?: Map<string, AlertRecord>) =>
+	!!systemAlerts && Array.from(systemAlerts.keys()).some((name) => !isNetworkMonitorAlert(name))
+
+export const AlertDialogContent = memo(function AlertDialogContent({
+	system,
+	monitorAlertsOnly = false,
+}: {
+	system: SystemRecord
+	/** Show only network monitor alerts, for the network monitors table. Otherwise they are hidden. */
+	monitorAlertsOnly?: boolean
+}) {
+	const keys = alertKeys.filter((name) => isNetworkMonitorAlert(name) === monitorAlertsOnly)
 	const alerts = useStore($alerts)
 	const systems = useStore($systems)
 	const [overwriteExisting, setOverwriteExisting] = useState<boolean | "indeterminate">(false)
@@ -94,19 +109,24 @@ export const AlertDialogContent = memo(function AlertDialogContent({ system }: {
 
 	const systemAlerts = alerts[system.id] ?? new Map()
 
-	// Systems that have at least one alert configured (excluding the current system)
+	// Systems that have at least one system alert configured (excluding the current system)
 	const systemsWithAlerts = useMemo(
-		() => systems.filter((s) => s.id !== system.id && alerts[s.id]?.size),
+		() => systems.filter((s) => s.id !== system.id && hasSystemAlerts(alerts[s.id])),
 		[systems, alerts, system.id]
 	)
 
+	/** Copies system alerts only; network monitor alerts on the target are left as they are */
 	async function copyAlertsFromSystem(sourceSystemId: string) {
-		const sourceAlerts = $alerts.get()[sourceSystemId]
-		if (!sourceAlerts?.size) return
+		const sourceAlerts = new Map(
+			Array.from($alerts.get()[sourceSystemId] ?? []).filter(([name]) => !isNetworkMonitorAlert(name))
+		)
+		if (!sourceAlerts.size) return
 		try {
 			const currentTargetAlerts = $alerts.get()[system.id] ?? new Map()
-			// Alert names present on target but absent from source should be deleted
-			const namesToDelete = Array.from(currentTargetAlerts.keys()).filter((name) => !sourceAlerts.has(name))
+			// System alert names present on target but absent from source should be deleted
+			const namesToDelete = Array.from(currentTargetAlerts.keys()).filter(
+				(name) => !isNetworkMonitorAlert(name) && !sourceAlerts.has(name)
+			)
 			await Promise.all([
 				...Array.from(sourceAlerts.values()).map(({ name, value, min }) =>
 					pb.send<{ success: boolean }>(endpoint, {
@@ -125,7 +145,9 @@ export const AlertDialogContent = memo(function AlertDialogContent({ system }: {
 			])
 			// Optimistically update the store so components re-mount with correct data
 			// before the realtime subscription event arrives.
-			const newSystemAlerts = new Map<string, AlertRecord>()
+			const newSystemAlerts = new Map<string, AlertRecord>(
+				Array.from(currentTargetAlerts).filter(([name]) => isNetworkMonitorAlert(name))
+			)
 			for (const alert of sourceAlerts.values()) {
 				newSystemAlerts.set(alert.name, { ...alert, system: system.id, triggered: false })
 			}
@@ -171,7 +193,7 @@ export const AlertDialogContent = memo(function AlertDialogContent({ system }: {
 							<Trans>All Systems</Trans>
 						</TabsTrigger>
 					</TabsList>
-					{systemsWithAlerts.length > 0 && currentTab === "system" && (
+					{!monitorAlertsOnly && systemsWithAlerts.length > 0 && currentTab === "system" && (
 						<DropdownMenu>
 							<DropdownMenuTrigger asChild>
 								<Button variant="ghost" size="sm" className="text-muted-foreground text-xs gap-1.5">
@@ -191,7 +213,7 @@ export const AlertDialogContent = memo(function AlertDialogContent({ system }: {
 				</div>
 				<TabsContent value="system">
 					<div key={copyKey} className="grid gap-3">
-						{alertKeys.map((name) => (
+						{keys.map((name) => (
 							<AlertContent
 								key={name}
 								alertKey={name}
@@ -216,7 +238,7 @@ export const AlertDialogContent = memo(function AlertDialogContent({ system }: {
 						<Trans>Overwrite existing alerts</Trans>
 					</label>
 					<div className="grid gap-3">
-						{alertKeys.map((name) => (
+						{keys.map((name) => (
 							<AlertContent
 								key={name}
 								alertKey={name}
@@ -350,7 +372,15 @@ export function AlertContent({
 						{!noThreshold && (
 							<div className={cn(noDuration && "col-span-full")}>
 								<p id={`v${name}`} className="text-sm block h-6">
-									{alertKey === "NetworkMonitorCert" ? (
+									{alertKey === "NetworkMonitorDown" ? (
+										<Trans>
+											After{" "}
+											<strong className="text-foreground">
+												<Plural value={value} one="# failed check" other="# failed checks" />
+											</strong>{" "}
+											in a row
+										</Trans>
+									) : alertKey === "NetworkMonitorCert" ? (
 										<Trans>
 											Expires within{" "}
 											<strong className="text-foreground">
@@ -393,8 +423,7 @@ export function AlertContent({
 											if (!Number.isNaN(val)) {
 												// keep values on the step grid so the unit can be inferred on reload
 												if (unit) val = roundToStep(val, inputStep)
-												// certificate thresholds are whole days
-												else if (alertKey === "NetworkMonitorCert") val = Math.round(val)
+												else if (alertData.integer) val = Math.round(val)
 												if (valueMax != null) val = Math.min(val, valueMax)
 												if (inputMin != null) val = Math.max(val, inputMin)
 												setValue(val)
